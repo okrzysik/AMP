@@ -1,0 +1,95 @@
+
+Mesh = "brick.e"
+
+NumberOfLoadingSteps = 1
+
+VonMises_Model {
+  Youngs_Modulus = 2.08e11
+  Poissons_Ratio = 0.23
+  Linear_Strain_Hardening = 2.10e9
+  Elastic_Yield_Stress = 1.45e8
+}
+
+Mechanics_Nonlinear_Element_Normal {
+  USE_REDUCED_INTEGRATION = FALSE 
+  FE_ORDER = "FIRST"  
+  FE_FAMILY = "LAGRANGE"
+  QRULE_TYPE = "QGAUSS"
+  QRULE_ORDER = "DEFAULT"
+}
+
+Mechanics_Nonlinear_Element_Reduced {
+  USE_REDUCED_INTEGRATION = TRUE 
+  FE_ORDER = "FIRST"  
+  FE_FAMILY = "LAGRANGE"
+  QRULE_TYPE = "QGAUSS"
+  QRULE_ORDER = "DEFAULT"
+}
+
+Mechanics_Linear_Element_Normal {
+  USE_REDUCED_INTEGRATION = FALSE 
+  FE_ORDER = "FIRST"  
+  FE_FAMILY = "LAGRANGE"
+  QRULE_TYPE = "QGAUSS"
+  QRULE_ORDER = "DEFAULT"
+}
+
+Mechanics_Linear_Element_Reduced {
+  USE_REDUCED_INTEGRATION = TRUE 
+  FE_ORDER = "FIRST"  
+  FE_FAMILY = "LAGRANGE"
+  QRULE_TYPE = "QGAUSS"
+  QRULE_ORDER = "DEFAULT"
+}
+
+Mechanics_Nonlinear_Assembly {
+  print_info_level = 1
+  ActiveInputVariables {
+  DISPLACEMENT = "disp"
+  }
+  OutputVariable = "disp"
+  RESET_REUSES_RADIAL_RETURN = TRUE
+  JACOBIAN_REUSES_RADIAL_RETURN = TRUE
+}
+
+Mechanics_Linear_Assembly {
+  print_info_level = 1
+  reset_reuses_matrix = TRUE
+  InputVariable = "disp"
+  OutputVariable = "disp"
+}
+
+Displacement_Boundary {
+  print_info_level = 1
+  skip_params = FALSE
+  skip_rhs_correction = TRUE
+  number_of_ids = 1
+  id_0 = 2
+  number_of_dofs_0 = 3
+  dof_0_0 = 0
+  dof_0_1 = 1
+  dof_0_2 = 2
+  value_0_0 = 0.0
+  value_0_1 = 0.0
+  value_0_2 = 0.0
+}
+
+LinearBVPOperator {
+  print_info_level = 1
+}
+
+Load_Boundary {
+  print_info_level = 1
+  skip_params = FALSE
+  number_of_ids = 1
+  id_0 = 1
+  number_of_dofs_0 = 1
+  dof_0_0 = 2
+  value_0_0 = 10.0
+}
+
+NonlinearBVPOperator {
+  print_info_level = 1
+}
+
+

@@ -1,0 +1,73 @@
+Mesh = "brick.e"
+  
+NonlinearFickSoretOp {
+name = "FickSoretNonlinearFEOperator"
+FickOperator = "FickDiffusionNonlinearFEOperator"
+SoretOperator = "SoretDiffusionNonlinearFEOperator"
+
+}
+
+FickDiffusionNonlinearFEOperator{
+    name = "DiffusionNonlinearFEOperator" 
+
+    print_info_level = 1    
+    ActiveInputVariables {
+         concentration = "conc"
+         temperature = "temp"
+    }
+    OutputVariable = "woohoo"
+    PrincipalVariable = 1   
+  
+    DiffusionElement{
+        name = "DiffusionNonlinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+
+    LocalModel = "FickDiffusionTransportModel"
+}
+
+SoretDiffusionNonlinearFEOperator{
+    name = "DiffusionNonlinearFEOperator" 
+
+    print_info_level = 1    
+    ActiveInputVariables {
+         concentration = "conc"
+         temperature = "temp"
+    }
+    OutputVariable = "woohoo"
+    PrincipalVariable = 0 
+  
+    DiffusionElement{
+        name = "DiffusionNonlinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+
+    LocalModel = "SoretDiffusionTransportModel"
+
+}
+
+FickDiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "Ox_MSRZC_09"
+        Property = "FickCoefficient"
+        Default_Concentration = .15
+        Default_Temperature   = 300.
+        Default_Burnup   = 0.0
+} 
+
+SoretDiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "Ox_MSRZC_09"
+        Property = "ThermalDiffusionCoefficient"
+        Default_Concentration = .15
+        Default_Temperature   = 300.
+        Default_Burnup   = 0.0
+} 

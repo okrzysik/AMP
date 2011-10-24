@@ -1,0 +1,27 @@
+
+Mesh = "brick.e"
+
+number_of_tests = 22
+
+test_0 = "input_linearMechanics-1"
+test_1 = "input_linearMechanics-2"
+test_2 = "input_linearMechanics-3"
+test_3 = "input_linearMechanics-4"
+test_4 = "input_linearDiffusion-TUI-Fick-1"
+test_5 = "input_linearDiffusion-TUI-Soret-1"
+test_6 = "input_linearDiffusion-TUI-Thermal-1"
+test_7 = "input_linearDiffusion-UO2MSRZC09-Fick-1"
+test_8 = "input_linearDiffusion-UO2MSRZC09-Soret-1"
+test_9 = "input_linearDiffusion-UO2MSRZC09-Thermal-1"
+test_10 = "input_linearBVPOperator-Diffusion-TUI-Fick-DirichletMatrixCorrection-1"
+test_11 = "input_linearBVPOperator-Diffusion-TUI-Soret-DirichletMatrixCorrection-1"
+test_12 = "input_linearBVPOperator-Diffusion-TUI-Thermal-DirichletMatrixCorrection-1"
+test_13 = "input_linearBVPOperator-Diffusion-UO2MSRZC09-Fick-DirichletMatrixCorrection-1"
+test_14 = "input_linearBVPOperator-Diffusion-UO2MSRZC09-Soret-DirichletMatrixCorrection-1"
+test_15 = "input_linearBVPOperator-Diffusion-UO2MSRZC09-Thermal-DirichletMatrixCorrection-1"
+test_16 = "input_linearBVPOperator-Diffusion-TUI-Fick-RobinMatrixCorrection-1"
+test_17 = "input_linearBVPOperator-Diffusion-TUI-Soret-RobinMatrixCorrection-1"
+test_18 = "input_linearBVPOperator-Diffusion-TUI-Thermal-RobinMatrixCorrection-1"
+test_19 = "input_linearBVPOperator-Diffusion-UO2MSRZC09-Fick-RobinMatrixCorrection-1"
+test_20 = "input_linearBVPOperator-Diffusion-UO2MSRZC09-Soret-RobinMatrixCorrection-1"
+test_21 = "input_linearBVPOperator-Diffusion-UO2MSRZC09-Thermal-RobinMatrixCorrection-1"

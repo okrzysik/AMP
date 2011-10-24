@@ -1,0 +1,14 @@
+NumberOfMeshes = 1  // Only read the first mesh.  The second mesh is the one we want, but it doesn't work
+Mesh_1{
+  Filename = "halden_1_pellet_9mil.e"
+  MeshName = "fuel"
+  x_offset = 0.0
+  y_offset = 0.0
+  z_offset = 0.0
+  NumberOfElements = 1000
+}
+MyPowerShape{
+  print_info_level = 3
+    type = "diffusion"
+    coordinateSystem = "cylindrical"
+}

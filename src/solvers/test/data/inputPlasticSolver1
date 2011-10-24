@@ -1,0 +1,66 @@
+
+num_loading_steps = 1
+
+Mesh{
+  dim = 3
+  cube_side = 4
+  xMin = 0.0
+  xMax = 1.0
+  yMin = 0.0
+  yMax = 1.0
+  zMin = 0.0
+  zMax = 1.0
+}
+
+PlasticityOperator{
+  print_info_level = 1
+  Youngs_Modulus = 2.08e11
+  Poissons_Ratio = 0.23
+  Linear_Strain_Hardening = 2.10e9
+  Elastic_Yield_Stress = 1.45e8
+  Density = 1.905e4
+  Gravity = 9.8
+}
+
+NonlinearSolver{
+  print_info_level = 1
+  max_iterations = 100
+  max_error = 1e-10
+
+  absoluteTolerance = 1.0e-9
+  relativeTolerance = 1.0e-06
+  stepTolerance = 1.0e-10
+  maximumFunctionEvals = 100
+  usesJacobian=TRUE
+
+  LinearSolver{
+        print_info_level = 1
+        max_iterations = 10
+        max_error = 1e-10
+        ksp_type = "fgmres"
+        absolute_tolerance = 1.0e-9
+        relative_tolerance = 1.0e-06
+        divergence_tolerance = 1.0e03
+        max_krylov_dimension = 20
+        uses_preconditioner=TRUE
+        pc_type = "shell"
+        pc_side = "RIGHT"
+
+        Preconditioner{
+            print_info_level = 1
+            max_iterations = 1
+            max_error = 1e-10
+            ksp_type = "richardson"
+            absolute_tolerance = 1.0
+            relative_tolerance = 1.0
+            divergence_tolerance = 1.0
+            max_krylov_dimension = 20
+            uses_preconditioner=TRUE
+            pc_type = "ml"
+            pc_side = "RIGHT"
+            KSPAppendOptionsPrefix = "mlr_"
+        }
+   }
+}
+
+

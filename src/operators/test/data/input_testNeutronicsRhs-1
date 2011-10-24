@@ -1,0 +1,23 @@
+
+Mesh = "cube64.with.boundary.labels.e"
+
+NumberOfMeshes = 1
+Mesh_1{
+  Filename = "cube64.with.boundary.labels.e"
+  MeshName = "bar"
+  x_offset = 0.0
+  y_offset = 0.0
+  z_offset = 0.0
+  NumberOfElements = 1088
+}
+
+NeutronicsRhs{
+  name="NeutronicsRhsOperator"
+  type               = "Power"
+  numTimeSteps       = 3
+  timeSteps          = 1, 2., 100.
+  useFixedValue      = TRUE
+  OutputVariable     = "outpower"
+  fixedValues        = 1., 100., 10.
+  print_info_level   = 3
+}

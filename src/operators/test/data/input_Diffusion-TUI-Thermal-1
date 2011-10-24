@@ -1,0 +1,59 @@
+Mesh = "brick.e"
+  
+LinearDiffusionOp{
+    name = "DiffusionLinearFEOperator"
+    InputVariable = "temperature"
+    OutputVariable = "woohoo"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    FixedConcentration = TRUE
+    FixedBurnup = TRUE
+
+    DiffusionElement {
+        name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+	
+    LocalModel="DiffusionTransportModel"
+}
+
+NonlinearDiffusionOp{
+    name = "DiffusionNonlinearFEOperator" 
+
+    print_info_level = 1    
+    ActiveInputVariables {
+         temperature = "temperature"
+    }
+    OutputVariable = "woohoo"
+    PrincipalVariable = 0   
+  
+    DiffusionElement{
+        name = "DiffusionNonlinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+
+    LocalModel="DiffusionTransportModel"
+}
+
+DiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "Independent"
+        Property = "ThermalConductivity"
+        Default_Concentration = .15
+        Default_Temperature   = 300.
+        Default_Burnup   = 0.0
+    } 
+
+
+
+
+     
+

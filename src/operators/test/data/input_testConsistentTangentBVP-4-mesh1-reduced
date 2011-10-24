@@ -1,0 +1,112 @@
+
+mesh_file = "mesh1"
+
+NumberOfMeshes = 0
+
+NonlinearMechanicsOperator {
+  name = "NonlinearBVPOperator"
+  print_info_level = 1
+
+  VolumeOperator = "MechanicsNonlinearFEOperator"
+  BoundaryOperator = "DirichletVectorCorrection"
+
+}
+
+
+LinearMechanicsOperator {
+  name = "LinearBVPOperator"
+  print_info_level = 1
+
+  VolumeOperator = "MechanicsLinearFEOperator"
+  BoundaryOperator = "DirichletMatrixCorrection"
+
+}
+
+MechanicsNonlinearFEOperator{
+      name = "MechanicsNonlinearFEOperator"
+        print_info_level = 1
+        ActiveInputVariables {
+          DISPLACEMENT = "displacement"
+        }
+      OutputVariable = "displacement"
+        RESET_REUSES_RADIAL_RETURN = TRUE
+        JACOBIAN_REUSES_RADIAL_RETURN = TRUE
+
+        MechanicsElement {
+          name="MechanicsNonlinearElement"
+            USE_REDUCED_INTEGRATION = TRUE 
+            FE_ORDER = "FIRST"  
+            FE_FAMILY = "LAGRANGE"
+            QRULE_TYPE = "QGAUSS"
+            QRULE_ORDER = "DEFAULT"
+        }
+
+      LocalModel = "MechanicsMaterialModel"
+
+    }
+
+DirichletVectorCorrection{
+    name = "DirichletVectorCorrection"
+      print_info_level = 1
+      skip_params = FALSE
+      setResidual = FALSE
+      valuesType = 1
+      isAttachedToVolumeOperator = TRUE
+      number_of_ids = 1
+      id_0 = 1
+      number_of_dofs_0 = 3
+      dof_0_0 = 0
+      dof_0_1 = 1
+      dof_0_2 = 2
+      value_0_0 = 0.0
+      value_0_1 = 0.0
+      value_0_2 = 0.0
+  }
+
+MechanicsLinearFEOperator{
+      name = "MechanicsLinearFEOperator"
+        print_info_level = 1
+        reset_reuses_matrix = TRUE
+        isAttachedToNonlinearOperator = TRUE
+        isNonlinearOperatorInitialized = FALSE
+        InputVariable = "displacement"
+        OutputVariable = "displacement"
+
+        MechanicsElement {
+          name="MechanicsLinearElement"
+            USE_REDUCED_INTEGRATION = TRUE 
+            FE_ORDER = "FIRST"  
+            FE_FAMILY = "LAGRANGE"
+            QRULE_TYPE = "QGAUSS"
+            QRULE_ORDER = "DEFAULT"
+        }
+    }
+
+DirichletMatrixCorrection{
+    name = "DirichletMatrixCorrection"
+      print_info_level = 1
+      skip_params = FALSE
+      symmetric_correction = TRUE
+      zero_dirichlet_block = FALSE
+      skip_rhs_correction = TRUE
+      number_of_ids = 1
+      id_0 = 1
+      number_of_dofs_0 = 3
+      dof_0_0 = 0
+      dof_0_1 = 1
+      dof_0_2 = 2
+  }
+
+MechanicsMaterialModel {
+        USE_MATERIALS_LIBRARY = FALSE
+          Material = ""
+          name="IsotropicElasticModel"
+          Youngs_Modulus = 1.0e6
+          Poissons_Ratio = 0.25
+          Default_Temperature = 0.0
+          Default_Burnup = 0.0
+          Default_Oxygen_Concentration = 0.0
+      }
+
+
+

@@ -1,0 +1,126 @@
+
+Mesh = "cube.with.12.boundaries.e"
+
+NumberOfMeshes = 1
+Mesh_1{
+  Filename = "cube.with.12.boundaries.e"
+  MeshName = "bar"
+  x_offset = 0.0
+  y_offset = 0.0
+  z_offset = 0.0
+  NumberOfElements = 1000
+}
+
+DiffusionBVPOperator {
+   name="LinearBVPOperator"
+   print_info_level = 1
+
+   VolumeOperator="DiffusionLinearFEOperator"
+   BoundaryOperator="ColumnBoundaryOperator"
+
+}
+
+LinearSolver{
+  print_info_level = 3
+  max_iterations = 10
+  max_error = 1e-10
+}
+
+VolumeIntegralOperator{
+  name="VolumeIntegralOperator"
+  InputVariableType = "NodalScalar"
+  Number_Active_Variables = 1
+  Number_Auxillary_Variables = 0
+  ConstantSource   = FALSE
+  ActiveInputVariables{
+    ActiveVariable_0 = "therm" 
+  }
+  OutputVariable = "therm"
+  print_info_level = 3
+
+  SourceElement {
+    name="SourceNonlinearElement"
+    print_info_level = 3
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+  }
+}
+
+DiffusionLinearFEOperator{
+   name="DiffusionLinearFEOperator"
+   FixedTemperature = TRUE
+   FixedConcentration = TRUE
+   FixedBurnup   = TRUE
+   InputVariable = "therm"
+   OutputVariable = "therm"
+   print_info_level = 3
+   LocalModel = "DiffusionTransportModel"
+
+   DiffusionElement {
+     name="DiffusionLinearElement"
+     print_info_level = 3
+     FE_ORDER = "FIRST"  
+     FE_FAMILY = "LAGRANGE"
+     QRULE_TYPE = "QGAUSS"
+     QRULE_ORDER = "DEFAULT"
+   }
+ }
+
+ ColumnBoundaryOperator{
+   name="ColumnBoundaryOperator"
+   numberOfBoundaryOperators=1
+   boundaryOperators="RobinMatrixCorrection"
+
+
+ }
+
+RobinMatrixCorrection{
+   name="RobinMatrixCorrection"
+   skip_params = FALSE
+   FE_ORDER = "FIRST"  
+   FE_FAMILY = "LAGRANGE"
+   QRULE_TYPE = "QGAUSS"
+   QRULE_ORDER = "DEFAULT"
+   fConductivity  = 1.0
+   alpha          = 1.0
+   beta           = 1.0
+   gamma          = 1.0
+   print_info_level = 3
+   number_of_ids    = 6
+   id_0             = 1
+   id_1             = 2
+   id_2             = 3
+   id_3             = 4
+   id_4             = 5
+   id_5             = 6
+   number_of_dofs_0 =   1
+   number_of_dofs_1 =   1
+   number_of_dofs_2 =   1
+   number_of_dofs_3 =   1
+   number_of_dofs_4 =   1
+   number_of_dofs_5 =   1
+   dof_0_0          =   0
+   dof_1_0          =   0
+   dof_2_0          =   0
+   dof_3_0          =   0
+   dof_4_0          =   0
+   dof_5_0          =   0
+   value_0_0        = 1110.
+   value_1_0        = 111110.
+   value_2_0        = 111110.
+   value_3_0        = 1111110.
+   value_4_0        = 11111110.
+   value_5_0        = 111110.
+  }
+
+DiffusionTransportModel {
+     name="DiffusionTransportModel"
+     Material = "Independent"
+     Property = "ThermalConductivity"
+     print_info_level = 3
+     Default_Concentration = .1
+     Default_Temperature   = 300.
+     Default_Burnup   = 0.0
+   }

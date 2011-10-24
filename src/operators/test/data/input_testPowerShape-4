@@ -1,0 +1,20 @@
+NumberOfMeshes = 1  // Only read the first mesh.  The second mesh is the one we want, but it doesn't work
+Mesh_1{
+  Filename = "brick.e"
+  MeshName = "fuel"
+  x_offset = 0.0
+  y_offset = 0.0
+  z_offset = 0.0
+  NumberOfElements = 1000
+}
+MyPowerShape{
+    print_info_level = 3
+    coordinateSystem = "cylindrical"
+    type = "polynomial"
+    numRmoments = 1
+       Rmoments = 0.1
+    numTmoments = 2
+       Tmoments = 0.1, 0.2
+    numZmoments = 3
+       Zmoments = 0.1, 0.2, 0.3
+}

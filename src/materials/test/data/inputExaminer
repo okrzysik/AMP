@@ -1,0 +1,11 @@
+Material = "Ox_MSRZC_09"
+Property = "FickCoefficient"
+NumberOfTemperatures = 5
+LowTemperature = 300.
+HighTemperature = 1390.
+NumberOfConcentrations = 5
+LowConcentration = 0.0
+HighConcentration = 0.2
+NumberOfBurnups = 1
+LowBurnup  = 0.0
+HighBurnup = 1000.

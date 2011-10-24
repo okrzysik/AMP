@@ -1,0 +1,230 @@
+
+mesh_file = "oneBrick0"
+//mesh_file = "distortedBrick0"
+//mesh_file = "tenBrick0"
+//mesh_file = "twentyBrick0"
+
+NumberOfMeshes = 0
+
+NumberOfLoadingSteps = 10
+
+OutputFileName = "checkMatrix.txt"
+
+NonlinearMechanicsOperator {
+  name="NonlinearBVPOperator"
+    print_info_level = 3
+    VolumeOperator = "MechanicsNonlinearFEOperator1"
+    BoundaryOperator = "DirichletVectorCorrection1"
+}
+
+MechanicsNonlinearFEOperator1 {
+      name = "MechanicsNonlinearFEOperator"
+        print_info_level = 3
+        ActiveInputVariables {
+          DISPLACEMENT = "displacement"
+        }
+      OutputVariable = "displacement"
+        RESET_REUSES_RADIAL_RETURN = TRUE
+        JACOBIAN_REUSES_RADIAL_RETURN = TRUE
+        USE_UPDATED_LAGRANGIAN = TRUE
+
+        MechanicsElement {
+          name="MechanicsNonlinearUpdatedLagrangianElement"
+            USE_REDUCED_INTEGRATION = FALSE
+            USE_JAUMANN_RATE = TRUE
+            FE_ORDER = "FIRST"  
+            FE_FAMILY = "LAGRANGE"
+            QRULE_TYPE = "QGAUSS"
+            QRULE_ORDER = "DEFAULT"
+        }
+
+	LocalModel = "IsotropicElasticModel1"
+}
+
+DirichletVectorCorrection1 {
+    name = "DirichletVectorCorrection"
+      print_info_level = 1
+      skip_params = FALSE
+      setResidual = FALSE
+      valuesType = 1
+      isAttachedToVolumeOperator = TRUE
+
+      number_of_ids = 3
+
+      id_0 = 1
+      number_of_dofs_0 = 1
+      dof_0_0 = 2
+      value_0_0 = 0.0
+
+      id_1 = 2
+      number_of_dofs_1 = 2
+      dof_1_0 = 0
+      dof_1_1 = 1
+      value_1_0 = 0.0
+      value_1_1 = 0.0
+
+      id_2 = 3
+      number_of_dofs_2 = 1
+      dof_2_0 = 1
+      value_2_0 = 0.0
+
+      //number_of_ids = 1
+      //id_0 = 1
+      //number_of_dofs_0 = 3
+      //dof_0_0 = 0
+      //dof_0_1 = 1
+      //dof_0_2 = 2
+      //value_0_0 = 0.0
+      //value_0_1 = 0.0
+      //value_0_2 = 0.0
+}
+
+IsotropicElasticModel1 {
+        USE_MATERIALS_LIBRARY = FALSE
+        USE_UPDATED_LAGRANGIAN = TRUE
+        USE_JAUMANN_RATE = TRUE
+        print_info_level = 6
+          Material = ""
+          //name = "IsotropicElasticModel"
+          name = "VonMisesElastoPlasticModel"
+          Youngs_Modulus = 1.0e2
+          Poissons_Ratio = 0.3
+          Linear_Strain_Hardening = 5.0
+          Elastic_Yield_Stress = 0.25
+          Default_Temperature = 0.0
+          Default_Burnup = 0.0
+          Default_Oxygen_Concentration = 0.0
+      }
+
+LinearMechanicsOperator {
+  name="LinearBVPOperator"
+    print_info_level = 1
+    VolumeOperator = "MechanicsLinearFEOperator2"
+    BoundaryOperator = "DirichletMatrixCorrection2"
+}
+
+MechanicsLinearFEOperator2 {
+      name = "MechanicsLinearFEOperator"
+        print_info_level = 1
+        reset_reuses_matrix = TRUE
+        USE_UPDATED_LAGRANGIAN = TRUE
+        InputVariable = "displacement"
+        OutputVariable = "displacement"
+
+        MechanicsElement {
+          name="MechanicsLinearUpdatedLagrangianElement"
+            USE_REDUCED_INTEGRATION = FALSE 
+            USE_JAUMANN_RATE = TRUE
+            FE_ORDER = "FIRST"  
+            FE_FAMILY = "LAGRANGE"
+            QRULE_TYPE = "QGAUSS"
+            QRULE_ORDER = "DEFAULT"
+        }
+}
+
+DirichletMatrixCorrection2 {
+    name = "DirichletMatrixCorrection"
+      print_info_level = 1
+      skip_params = FALSE
+      symmetric_correction = TRUE
+      zero_dirichlet_block = FALSE
+      skip_rhs_correction = TRUE
+
+      number_of_ids = 3
+
+      id_0 = 1
+      number_of_dofs_0 = 1
+      dof_0_0 = 2
+
+      id_1 = 2
+      number_of_dofs_1 = 2
+      dof_1_0 = 0
+      dof_1_1 = 1
+
+      id_2 = 3
+      number_of_dofs_2 = 1
+      dof_2_0 = 1
+
+      //number_of_ids = 1
+      //id_0 = 1
+      //number_of_dofs_0 = 3
+      //dof_0_0 = 0
+      //dof_0_1 = 1
+      //dof_0_2 = 2
+  }
+
+Load_Boundary {
+  name = "DirichletVectorCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    setResidual = FALSE
+    valuesType = 1
+    isAttachedToVolumeOperator = FALSE
+
+    number_of_ids = 4
+    
+    id_0 = 4
+    number_of_dofs_0 = 1
+    dof_0_0 = 2
+    value_0_0 = 0.08
+    
+    id_1 = 5
+    number_of_dofs_1 = 1
+    dof_1_0 = 2
+    value_1_0 = 0.08
+    
+    id_2 = 6
+    number_of_dofs_2 = 1
+    dof_2_0 = 2
+    value_2_0 = 0.08
+    
+    id_3 = 7
+    number_of_dofs_3 = 1
+    dof_3_0 = 2
+    value_3_0 = 0.08
+}
+
+NonlinearSolver{
+  print_info_level = 1 
+    max_iterations = 100
+    max_error = 1e-10
+
+    absoluteTolerance = 1.0e-15
+    relativeTolerance = 1.0e-12
+    stepTolerance = 1.0e-10
+    maximumFunctionEvals = 1000
+    usesJacobian=TRUE
+
+    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ls_alpha 0.0001"
+
+    LinearSolver{
+      print_info_level = 1
+        max_iterations = 10
+        max_error = 1e-10
+        ksp_type = "fgmres"
+        absolute_tolerance = 1.0e-15
+        relative_tolerance = 1.0e-13
+        divergence_tolerance = 1.0e03
+        max_krylov_dimension = 40
+        uses_preconditioner=TRUE
+        pc_type = "shell"
+        pc_side = "RIGHT"
+
+        KSPOptions = "-ksp_monitor -ksp_converged_reason"
+
+        Preconditioner{
+          print_info_level = 1
+            PDE_equations = 3
+            max_levels = 1
+            max_iterations = 1
+            max_error = 1.0e-10
+            increasingordecreasing = "increasing"
+            aggregationtype = "Uncoupled"
+            smoothertype = "Chebyshev"
+            smoother_sweeps = 3
+            smoother_preorpost = "both"
+            coarse_type="Amesos-KLU"
+        }
+    }
+}
+

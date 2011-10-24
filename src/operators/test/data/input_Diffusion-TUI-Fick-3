@@ -1,0 +1,107 @@
+Mesh = "cube64.with.boundary.labels.e"
+
+ThermalNonlinearBVPOperator {
+   name="NonlinearBVPOperator"
+   print_info_level = 1
+
+   VolumeOperator="DiffusionNonlinearFEOperator"
+
+   BoundaryOperator="RobinMatrixCorrection"
+}
+
+ThermalLinearBVPOperator {
+   name="LinearBVPOperator"
+   print_info_level = 1
+
+   VolumeOperator=="DiffusionLinearFEOperator"
+
+   BoundaryOperator="RobinMatrixCorrection"
+}
+
+
+DiffusionNonlinearFEOperator{
+	 name="DiffusionNonlinearFEOperator"
+	 InputVariable="nDiffInput"
+	 OutputVariable="nDiffOutput"
+	 print_info_level = 1
+	
+	 ActiveInputVariables { 
+	   concentration = "concentration"
+	 }
+	 PrincipalVariable = 1
+	 LocalModel= "DiffusionTransportModel"
+	
+	   DiffusionElement {
+	      name = "DiffusionNonlinearElement"
+	      FE_ORDER = "FIRST"  
+	      FE_FAMILY = "LAGRANGE"
+	      QRULE_TYPE = "QGAUSS"
+	      QRULE_ORDER = "DEFAULT"
+	   }
+}
+
+
+DiffusionLinearFEOperator{
+      name="DiffusionLinearFEOperator"
+      InputVariable="inputLinear"
+      OutputVariable="outputLinear"
+      print_info_level = 3
+
+     DiffusionElement {
+       name = "DiffusionLinearElement"
+       print_info_level = 3
+       FE_ORDER = "FIRST"  
+       FE_FAMILY = "LAGRANGE"
+       QRULE_TYPE = "QGAUSS"
+       QRULE_ORDER = "DEFAULT"
+     }
+     LocalModel= "DiffusionTransportModel"
+}
+
+DiffusionTransportModel {
+	     name = "DiffusionTransportModel"
+	     Material = "Independent"
+	     Property = "FickCoefficient"
+	     print_info_level = 3 
+	     Default_Concentration = .15
+	     Default_Temperature   = 300.
+	     Default_Burnup   = 0.0
+}
+
+RobinVectorCorrection{
+   name="RobinVectorCorrection"
+   skip_params = FALSE
+   FE_ORDER = "FIRST"
+   FE_FAMILY = "LAGRANGE"
+   QRULE_TYPE = "QGAUSS"
+   QRULE_ORDER = "DEFAULT"
+   fConductivity  = 1.0
+   alpha          = 1.0
+   beta           = 1.0
+   gamma          = 1.0
+   print_info_level = 3
+   number_of_ids    = 1
+   id_0             = 2
+   number_of_dofs_0 =   1
+   dof_0_0          =   0
+   value_0_0        = 101.
+  }
+
+RobinMatrixCorrection{
+   name="RobinMatrixCorrection"
+   skip_params = FALSE
+   FE_ORDER = "FIRST"
+   FE_FAMILY = "LAGRANGE"
+   QRULE_TYPE = "QGAUSS"
+   QRULE_ORDER = "DEFAULT"
+   fConductivity  = 1.0
+   alpha          = 1.0
+   beta           = 1.0
+   gamma          = 1.0
+   print_info_level = 3
+   number_of_ids    = 1
+   id_0             = 2
+   number_of_dofs_0 =   1
+   dof_0_0          =   0
+   value_0_0        = 101.
+  }

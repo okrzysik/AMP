@@ -1,0 +1,14 @@
+mpd &
+
+rm -rf $2/repoWEEK
+mkdir $2/repoWEEK
+cd $2/repoWEEK
+svn co http://nstdsrv.ornl.gov/svn/amp/trunk
+cd trunk/build/optimized
+if [ -e $1_cmake ]
+then
+cat ../../AMP-source/ctest_weekly.in | sed s/HOSTNAME/$1/ | sed s/BBN/$1-optimized-weekly/ > ../../AMP-source/CTestConfig.cmake
+ctest -R WEEKLY -S ../../AMP-source/CTestConfig.cmake -VV --debug
+fi
+
+

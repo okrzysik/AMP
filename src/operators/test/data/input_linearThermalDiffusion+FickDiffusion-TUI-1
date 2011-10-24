@@ -1,0 +1,61 @@
+numberOfOperators=2
+
+testOperator1{
+    name = "DiffusionLinearFEOperator"
+    InputVariable = "temperature"
+    OutputVariable = "woohoot"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    FixedConcentration = TRUE
+    FixedBurnup = TRUE
+
+    DiffusionElement {
+        name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+
+    LocalModel = "ThermalDiffusionTransportModel"
+}
+  
+testOperator2{
+    name = "DiffusionLinearFEOperator"
+    InputVariable = "concentration"
+    OutputVariable = "woohoo"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    FixedTemperature = TRUE
+    FixedBurnup = TRUE
+
+    DiffusionElement {
+        name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+
+    LocalModel = "FickDiffusionTransportModel"
+}
+
+ThermalDiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "Independent"
+        Property = "ThermalConductivity"
+        Default_Concentration = .15
+        Default_Temperature   = 300.
+        Default_Burnup   = 0.0
+    } 
+
+FickDiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "Independent"
+        Property = "FickCoefficient"
+        Default_Concentration = .15
+        Default_Temperature   = 300.
+        Default_Burnup   = 0.0
+    } 

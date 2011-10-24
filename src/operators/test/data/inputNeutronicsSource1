@@ -1,0 +1,50 @@
+useConstantInitialGuess = FALSE
+initialGuessScaleFactor = 1000
+numFrequencies = 10
+
+CartesianGeometry{
+   domain_boxes = [(0,0), (7,7)]
+   x_lo         = 0.0e0, 0.0e0   
+   x_up         = 1.0e0, 1.0e0
+}
+
+ThermalOperator{
+  print_info_level = 3
+  isLinearOperator = TRUE
+  buildConductivityAtGaussPoints = TRUE
+  useConstantConductivity = FALSE
+  constantConductivityValue = 1.0
+}
+
+NeutronicsSource{
+numTimeSteps = 2
+timeSteps    = 1.0, 10000.
+power        = 1.0, 2.0
+numOutputs  = 2
+interleavePowerAndOxygen = FALSE
+print_info_level = 3 
+}
+
+Mesh{
+  dim = 3
+  cube_side = 6
+  xMin = 0.0
+  xMax = 1.0
+  yMin = 0.0
+  yMax = 1.0
+  zMin = 0.0
+  zMax = 1.0
+}
+
+PetscKrylovSolverParams{
+  max_iterations = 10
+  max_error = 1.0e-12
+  print_info_level = 1
+  zero_initial_guess = TRUE
+  relative_tolerance = 1.0e-9
+  absolute_tolerance = 1.0e-12
+  divergence_tolerance = 1.0e3
+  uses_preconditioner = TRUE
+  pc_type = "ml"
+}
+

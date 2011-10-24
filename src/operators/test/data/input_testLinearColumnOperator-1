@@ -1,0 +1,27 @@
+
+Mesh = "brick.e"
+
+number_of_tests = 22
+
+test_0 = "input_linearMechanics+ThermalDiffusion-TUI-1"
+test_1 = "input_linearMechanics+ThermalDiffusion-UO2MSRZC09-1"
+test_2 = "input_linearMechanics+FickDiffusion-TUI-1"
+test_3 = "input_linearMechanics+FickDiffusion-UO2MSRZC09-1"
+test_4 = "input_linearThermalDiffusion+FickDiffusion-TUI-1"
+test_5 = "input_linearThermalDiffusion+FickDiffusion-UO2MSRZC09-1"
+test_6 = "input_linearMechanics+ThermalDiffusion+FickDiffusion-TUI-1"
+test_7 = "input_linearMechanics+ThermalDiffusion+FickDiffusion-UO2MSRZC09-1"
+test_8 = "input_linearBVP-Thermal+Fick+Dirichlet-TUI-1"
+test_9 = "input_linearBVP-Thermal+Fick+Dirichlet-UO2MSRZC09-1"
+test_10 = "input_linearBVP-Thermal+Fick+Robin-TUI-1"
+test_11 = "input_linearBVP-Thermal+Fick+Robin-UO2MSRZC09-1"
+test_12 = "input_linearBVP-Mechanics+Dirichlet+Fick+Robin-TUI-1"
+test_13 = "input_linearBVP-Mechanics+Dirichlet+Thermal+Robin-TUI-1"
+test_14 = "input_linearBVP-Mechanics+Dirichlet+Fick+Robin-UO2MSRZC09-1"
+test_15 = "input_linearBVP-Mechanics+Thermal+Dirichlet-TUI-1"
+test_16 = "input_linearBVP-Mechanics+Dirichlet+Thermal+Robin-UO2MSRZC09-1"
+test_17 = "input_linearBVP-Mechanics+Thermal+Dirichlet-UO2MSRZC09-1"
+test_18 = "input_linearBVP-Mechanics+Dirichlet+Thermal+Robin+Fick+Dirichlet-TUI-1"
+test_19 = "input_linearBVP-Mechanics+Dirichlet+Thermal+Robin+Fick+Dirichlet-UO2MSRZC09-1"
+test_20 = "input_linearBVP-Mechanics+Thermal+Fick+Dirichlet-TUI-1"
+test_21 = "input_linearBVP-Mechanics+Thermal+Fick+Dirichlet-UO2MSRZC09-1"

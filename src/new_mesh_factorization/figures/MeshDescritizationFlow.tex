@@ -1,0 +1,46 @@
+% Define block styles
+\tikzstyle{decision} = [diamond, draw, fill=blue!20, 
+    text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt]
+\tikzstyle{block} = [rectangle, draw, fill=blue!20, 
+    minimum width=6em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, -latex']
+\tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=3cm,
+    minimum height=2em]
+    
+\begin{figure}[h]
+\begin{center}
+\label{fig:meshinheritance}
+\begin{tikzpicture}[node distance = 2cm, auto]
+    % Place nodes
+    \node [block] (Geom) {Geometry};
+    \node [block, right of=Geom, node distance=3cm] (Decom) {Decomposition};
+    \node [block, below of=Geom] (Mesh) {Mesh};
+    \node [block, below of=Mesh] (VectorSpace) {VectorSpace};
+    \node [block, below of=VectorSpace] (DOF) {DOF Manager};
+    \node [block, below of=DOF] (Vector) {Vector};
+    
+    %\node [block] (init) {initialize model};
+    %\node [cloud, left of=init] (expert) {expert};
+    %\node [cloud, right of=init] (system) {system};
+    %\node [block, below of=init] (identify) {identify candidate models};
+    %\node [block, below of=identify] (evaluate) {evaluate candidate models};
+    %\node [block, left of=evaluate, node distance=3cm] (update) {update model};
+    %\node [decision, below of=evaluate] (decide) {is best candidate better?};
+    %\node [block, below of=decide, node distance=3cm] (stop) {stop};
+    % Draw edges
+    \path [line] (Geom) -- (Mesh);
+    \path [line] (Decom) -- (Mesh);
+    \path [line] (Mesh) -- (VectorSpace);
+    \path [line] (Mesh.east) -- ++(1,0) |- (DOF.east);
+    \path [line] (VectorSpace) -- (DOF);
+    \path [line] (DOF) -- (Vector);
+    %\path [line] (decide) -| node [near start] {yes} (update);
+    %\path [line] (update) |- (identify);
+    %\path [line] (decide) -- node {no}(stop);
+    %\path [line,dashed] (expert) -- (init);
+    %\path [line,dashed] (system) -- (init);
+    %\path [line,dashed] (system) |- (evaluate);
+\end{tikzpicture}
+\caption{The mesh and descritization flow diagram}
+\end{center}
+\end{figure}

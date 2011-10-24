@@ -1,0 +1,19 @@
+INCLUDE (macros)
+
+ADD_AMP_TEST_1_2_4 ( testTimeIntegratorParameters )
+ADD_AMP_TEST_1_2_4 ( testIDA-LinearBVPOperator-1 )
+ADD_AMP_TEST_1_2_4 ( testIDA-NonlinearColumnOperator-1 )
+
+COPY_TEST_DATA_FILE ( inputIDATimeIntegrator )
+COPY_TEST_DATA_FILE ( input-LinearIDA-1 )
+COPY_TEST_DATA_FILE ( input-NonlinearIDA-1 )
+COPY_TEST_DATA_FILE ( input_testIDA-LinearBVPOperator-1 )
+COPY_TEST_DATA_FILE ( input_testIDA-NonlinearBVPOperator-1 )
+COPY_TEST_DATA_FILE ( input_testIDA-NonlinearColumnOperator-1 )
+COPY_TEST_DATA_FILE ( input_testIDA-TO-Preprocessor )
+COPY_TEST_DATA_FILE ( input_testIDA-NonlinearOperator-short )
+COPY_TEST_DATA_FILE ( input_testIDA-NonlinearOperator-long )
+COPY_TEST_DATA_FILE ( input_testIDA-NonlinearThermalOxygenDiffusion-1 )
+
+COPY_MESH_FILE ( unitCubeDirichlet.e )
+COPY_MESH_FILE ( simple_linear_thermomech.e )

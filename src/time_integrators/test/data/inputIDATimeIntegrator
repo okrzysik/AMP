@@ -1,0 +1,44 @@
+IDATimeIntegratorParams{
+		linear_solver_type		= 1
+		relative_tolerance		= 1.00e-10
+		absolute_tolerance		= 1.00e-10
+		initial_time 			= 0.0
+		final_time			= 5.0
+		max_integrator_steps		= 100
+		max_dt				= 0.5
+		min_dt				= 0.1
+	
+}
+
+ThermalOperatorParams{
+  print_info_level = 3
+  isLinearOperator = TRUE
+  buildConductivityAtGaussPoints = FALSE
+  useConstantConductivity = TRUE
+  constantConductivityValue = 1.0
+}
+
+Mesh{
+  dim = 3
+  cube_side = 3
+  xMin = 0.0
+  xMax = 1.0
+  yMin = 0.0
+  yMax = 1.0
+  zMin = 0.0
+  zMax = 1.0
+}
+
+MassMatrixParams{
+        print_info_level         = 0
+        weight_id                = 0
+        Thermal_cond_flag        = FALSE
+        Thermal_cond             = 1
+        Thermal_source           = 1
+}
+
+Preconditioner{
+		print_info_level = 3
+        max_iterations = 1
+        max_error = 1e-15
+}

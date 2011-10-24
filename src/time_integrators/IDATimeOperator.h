@@ -1,0 +1,102 @@
+#ifndef included_IDATimeOperator
+#define included_IDATimeOperator
+
+
+#include "boost/shared_ptr.hpp"
+#include "operators/Operator.h"
+#include "operators/OperatorParameters.h"
+#include "operators/MassLinearFEOperator.h"
+#include "vectors/Vector.h"
+#include "utils/Utilities.h"
+#include "utils/InputDatabase.h"
+#include "TimeOperatorParameters.h"
+#include "TimeOperator.h"
+#include "operators/OperatorBuilder.h"
+
+// BP : the next include is probably unnecessary
+#include "operators/VolumeIntegralOperator.h"
+
+namespace AMP{
+namespace TimeIntegrator{
+  
+  typedef  TimeOperatorParameters IDATimeOperatorParameters;
+  
+  /*!
+    @brief operator class associated with IDATimeIntegrator
+    
+    Class IDATimeOperator is derived from TimeOperator. It
+    is the operator class associated with a IDATimeIntegrator.
+    
+    @see IDATimeIntegrator
+    @see TimeOperator
+  */
+  
+  class IDATimeOperator: public TimeOperator
+  {
+  public:
+
+    /**
+     * Main constructor.
+     @param [in] params: shared pointer to TimeOperatorParameters object.
+     */
+    IDATimeOperator(boost::shared_ptr<AMP::Operator::OperatorParameters > params);
+
+    /**
+     * virtual destructor
+     */
+    virtual ~IDATimeOperator();
+    
+    /**
+     * This function is useful for re-initializing an operator
+     * \param params
+     *        parameter object containing parameters to change
+     */
+    //virtual void reset(const boost::shared_ptr<AMP::Operator::OperatorParameters>& params);
+    
+    void apply(const boost::shared_ptr<AMP::LinearAlgebra::Vector>  &f, 
+           const boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u,
+           boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r,
+           const double a = -1.0, const double b=1.0);
+
+    /**
+     * registers the time derivative vector provided by IDA with this operator
+     @param [in] vec : shared pointer to time derivative computed by IDA
+     */
+    void registerIDATimeDerivative(boost::shared_ptr<AMP::LinearAlgebra::Vector> vec) {d_pIDATimeDerivative = vec; }
+
+    /**
+     * registers a source term if any
+     @param [in] shared pointer to vector for source term
+     */
+    void registerSourceTerm(boost::shared_ptr<AMP::LinearAlgebra::Vector> vec) {d_pSourceTerm = vec; }
+
+    /**
+     * sets the current time
+     @param [in] sets the current time for the operator
+     */
+    void registerCurrentTime( double currentTime ) {d_current_time = currentTime;}        
+    
+  protected:
+
+    IDATimeOperator();
+    
+    boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pIDATimeDerivative;
+    
+    bool d_cloningHappened;
+    
+    //JL
+    //The test we want to run has a source term which depends on time
+    //The time comes from TimeIntegrator
+    double d_current_time; 
+    double d_beta;
+    
+  private:
+    
+    
+  };
+  
+}
+}
+
+#endif
+

@@ -1,0 +1,47 @@
+Mesh:
+
+
+
+
+
+
+
+
+FE:
+
+nodal variables
+gauss point vectors
+
+element, node, face iterators (with/without ghost)
+
+element-node connectivity
+node-element connectivity
+etc
+
+shape functions (lagrange, hermite, etc.) (independent of mesh), need element shape (cube, etc), 
+derivatives, jacobian, normals, areas/volumes
+
+function evaluation - needs shape
+
+
+
+Finite difference
+5-points
+
+
+
+
+DOF Map:
+map index from iterator to memory index
+Probably contains the iterators - needs to know about mesh, descritization, user defined ghost width, ...
+
+
+
+Mesh Cretion
+Mesh Decomposition 
+Discretization        Solver
+Data
+Re-decompose
+
+
+

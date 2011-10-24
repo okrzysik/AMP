@@ -1,0 +1,6 @@
+INCLUDE (macros)
+
+BEGIN_PACKAGE_CONFIG ( solvers )
+INSTALL_AMP_TARGET ( solvers )
+
+ADD_SUBDIRECTORY ( test )

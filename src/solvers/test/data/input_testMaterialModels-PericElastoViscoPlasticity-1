@@ -1,0 +1,16 @@
+
+MechanicsMaterialModel {
+        USE_MATERIALS_LIBRARY = FALSE
+          Material = ""
+          name="PericElastoViscoPlasticModel"
+          Youngs_Modulus = 100.0
+          Poissons_Ratio = 0.3
+          Linear_Strain_Hardening = 0.000001
+          Elastic_Yield_Stress = 0.25
+          Viscosity = 10.0
+          Strain_Exponent = 1.0
+          Default_Temperature = 310.0
+          Default_Burnup = 0.0
+          Default_Oxygen_Concentration = .1
+      }
+

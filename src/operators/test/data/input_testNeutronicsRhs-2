@@ -1,0 +1,22 @@
+
+Mesh = "cube64.with.boundary.labels.e"
+
+NumberOfMeshes = 1
+Mesh_1{
+  Filename = "cube64.with.boundary.labels.e"
+  MeshName = "bar"
+  x_offset = 0.0
+  y_offset = 0.0
+  z_offset = 0.0
+  NumberOfElements = 1088
+}
+
+NeutronicsRhs{
+  name="NeutronicsRhsOperator"
+  type               = "Metal"
+  numTimeSteps       = 3
+  timeSteps          = 1, 2., 100.
+  useFixedValue      = TRUE
+  fixedValues        = 0.9, 20., 11.
+  print_info_level   = 3
+}

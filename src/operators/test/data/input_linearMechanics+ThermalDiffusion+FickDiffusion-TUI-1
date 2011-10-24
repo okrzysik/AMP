@@ -1,0 +1,88 @@
+numberOfOperators=3
+
+testOperator1 {
+      name = "MechanicsLinearFEOperator"
+      print_info_level = 1
+      reset_reuses_matrix = TRUE
+      InputVariable = "disp"
+      OutputVariable = "disp"
+
+      MechanicsElement {
+       name="MechanicsLinearElement"
+       USE_REDUCED_INTEGRATION = FALSE 
+       FE_ORDER = "FIRST"  
+       FE_FAMILY = "LAGRANGE"
+       QRULE_TYPE = "QGAUSS"
+       QRULE_ORDER = "DEFAULT"
+      }
+
+      LocalModel = "MechanicsMaterialModel"
+}
+  
+testOperator2 {
+    name = "DiffusionLinearFEOperator"
+    InputVariable = "concentration"
+    OutputVariable = "woohoo"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    FixedTemperature = TRUE
+    FixedBurnup = TRUE
+
+    DiffusionElement {
+        name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+
+    LocalModel = "FickDiffusionTransportModel"
+}
+  
+testOperator3{
+    name = "DiffusionLinearFEOperator"
+    InputVariable = "temperature"
+    OutputVariable = "woohoot"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    FixedConcentration = TRUE
+    FixedBurnup = TRUE
+
+    DiffusionElement {
+        name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+
+    LocalModel = "ThermalDiffusionTransportModel"
+}
+
+
+MechanicsMaterialModel { 
+       name="IsotropicElasticModel"
+       Youngs_Modulus = 2.08e11
+       Poissons_Ratio = 0.23
+      }
+
+FickDiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "Independent"
+        Property = "FickCoefficient"
+        Default_Concentration = .15
+        Default_Temperature   = 300.
+        Default_Burnup   = 0.0
+    } 
+
+
+ThermalDiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "Independent"
+        Property = "ThermalConductivity"
+        Default_Concentration = .15
+        Default_Temperature   = 300.
+        Default_Burnup   = 0.0
+    } 

@@ -1,0 +1,58 @@
+
+Mesh = "brick.e"
+
+testNonlinearMechanicsOperator {
+      name = "MechanicsNonlinearFEOperator"
+      print_info_level = 1
+      ActiveInputVariables {
+         DISPLACEMENT = "disp"
+      }
+      OutputVariable = "disp"
+      RESET_REUSES_RADIAL_RETURN = TRUE
+      JACOBIAN_REUSES_RADIAL_RETURN = TRUE
+
+      MechanicsElement {
+       name="MechanicsNonlinearElement"
+       USE_REDUCED_INTEGRATION = FALSE 
+       FE_ORDER = "FIRST"  
+       FE_FAMILY = "LAGRANGE"
+       QRULE_TYPE = "QGAUSS"
+       QRULE_ORDER = "DEFAULT"
+      }
+
+      LocalModel = "MechanicsMaterialModel"
+
+}
+
+testLinearMechanicsOperator {
+      name = "MechanicsLinearFEOperator"
+      print_info_level = 1
+      reset_reuses_matrix = TRUE
+      InputVariable = "disp"
+      OutputVariable = "disp"
+
+      MechanicsElement {
+       name="MechanicsLinearElement"
+       USE_REDUCED_INTEGRATION = FALSE 
+       FE_ORDER = "FIRST"  
+       FE_FAMILY = "LAGRANGE"
+       QRULE_TYPE = "QGAUSS"
+       QRULE_ORDER = "DEFAULT"
+      }
+}
+
+MechanicsMaterialModel { 
+       USE_MATERIALS_LIBRARY = FALSE
+       Material = "UO2_MSRZC_09"
+       name="VonMisesElastoPlasticModel_NonlinearStrainHardening"
+       Youngs_Modulus = 2.08e11
+       Poissons_Ratio = 0.23
+       Linear_Strain_Hardening = 2.10e9
+       Elastic_Yield_Stress = 1.45e8
+       Limiting_Flow_Stress = 2.0e8
+       Exponent_Delta = 0.1
+       Default_Temperature = 310.0
+       Default_Burnup = 0.0
+       Default_Oxygen_Concentration = 0.0
+      }
+

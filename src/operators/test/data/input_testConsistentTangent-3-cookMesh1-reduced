@@ -1,0 +1,60 @@
+
+mesh_file = "cookMesh1"
+
+NumberOfMeshes = 0
+
+NonlinearMechanicsOperator {
+  name = "MechanicsNonlinearFEOperator"
+    print_info_level = 1
+    ActiveInputVariables {
+      DISPLACEMENT = "displacement"
+    }
+  OutputVariable = "displacement"
+    RESET_REUSES_RADIAL_RETURN = TRUE
+    JACOBIAN_REUSES_RADIAL_RETURN = TRUE
+
+    MechanicsElement {
+      name="MechanicsNonlinearElement"
+        USE_REDUCED_INTEGRATION = TRUE 
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
+
+  LocalModel = "MechanicsMaterialModel"
+
+}
+
+
+LinearMechanicsOperator {
+  name = "MechanicsLinearFEOperator"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    isAttachedToNonlinearOperator = TRUE
+    isNonlinearOperatorInitialized = FALSE
+    InputVariable = "displacement"
+    OutputVariable = "displacement"
+
+    MechanicsElement {
+      name="MechanicsLinearElement"
+        USE_REDUCED_INTEGRATION = TRUE 
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
+}
+
+MechanicsMaterialModel {
+    USE_MATERIALS_LIBRARY = FALSE
+      Material = ""
+      name="IsotropicElasticModel"
+      Youngs_Modulus = 1.0e6
+      Poissons_Ratio = 0.0
+      Default_Temperature = 0.0
+      Default_Burnup = 0.0
+      Default_Oxygen_Concentration = 0.0
+  }
+
+

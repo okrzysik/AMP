@@ -1,0 +1,129 @@
+
+NumberOfMeshes = 1
+
+Mesh_1{
+  Filename = "cylinder270.e"
+  MeshName = "cylinder"
+  x_offset = 0
+  y_offset = 0
+  z_offset = 0
+  NumberOfElements = 270
+}
+
+NumberOfLoadingSteps = 1
+
+testNonlinearMechanicsOperator {
+   name="NonlinearBVPOperator"
+   print_info_level = 1
+   
+   VolumeOperator = "MechanicsNonlinearFEOperator"
+   BoundaryOperator = "DirichletVectorCorrection"
+ 
+}
+
+testLinearMechanicsOperator {
+   name="LinearBVPOperator"
+   print_info_level = 1
+   
+   VolumeOperator = "MechanicsLinearFEOperator"
+   BoundaryOperator = "DirichletMatrixCorrection"
+
+}
+
+MechanicsNonlinearFEOperator{
+     name = "MechanicsNonlinearFEOperator"
+     print_info_level = 1
+     ActiveInputVariables {
+         DISPLACEMENT = "disp"
+         TEMPERATURE = "temperature"
+         BURNUP = "burnup"
+     }
+     OutputVariable = "disp"
+     RESET_REUSES_RADIAL_RETURN = TRUE
+     JACOBIAN_REUSES_RADIAL_RETURN = TRUE
+     FREEZE_TEMPERATURE = TRUE
+     FREEZE_BURNUP = TRUE
+
+     MechanicsElement {
+       name="MechanicsNonlinearElement"
+       USE_REDUCED_INTEGRATION = FALSE 
+       FE_ORDER = "FIRST"  
+       FE_FAMILY = "LAGRANGE"
+       QRULE_TYPE = "QGAUSS"
+       QRULE_ORDER = "DEFAULT"
+     }
+
+     LocalModel = "MechanicsMaterialModel"
+
+   }
+   
+DirichletVectorCorrection{
+     name = "DirichletVectorCorrection"
+     print_info_level = 1
+     skip_params = FALSE
+     number_of_ids = 2
+     id_0 = 2
+     number_of_dofs_0 = 3
+     dof_0_0 = 0
+     dof_0_1 = 1
+     dof_0_2 = 2
+     value_0_0 = 0.0
+     value_0_1 = 0.0
+     value_0_2 = 0.0
+     id_1 = 3
+     number_of_dofs_1 = 3
+     dof_1_0 = 0
+     dof_1_1 = 1
+     dof_1_2 = 2
+     value_1_0 = 0.0
+     value_1_1 = 0.0
+     value_1_2 = 0.0
+   }
+
+MechanicsLinearFEOperator{
+     name = "MechanicsLinearFEOperator"
+     print_info_level = 1
+     reset_reuses_matrix = TRUE
+     InputVariable = "disp"
+     OutputVariable = "disp"
+
+     MechanicsElement {
+       name="MechanicsLinearElement"
+       USE_REDUCED_INTEGRATION = FALSE 
+       FE_ORDER = "FIRST"  
+       FE_FAMILY = "LAGRANGE"
+       QRULE_TYPE = "QGAUSS"
+       QRULE_ORDER = "DEFAULT"
+     }
+   }
+
+DirichletMatrixCorrection{
+     name = "DirichletMatrixCorrection"
+     print_info_level = 1
+     skip_params = FALSE
+     skip_rhs_correction = TRUE
+     number_of_ids = 2
+     id_0          = 2
+     number_of_dofs_0 =  3
+     dof_0_0          =  0
+     dof_0_1          =  1
+     dof_0_2          =  2
+     id_1          = 3
+     number_of_dofs_1 = 3
+     dof_1_0 = 0
+     dof_1_1 = 1
+     dof_1_2 = 2
+   }
+
+
+MechanicsMaterialModel { 
+       USE_MATERIALS_LIBRARY = TRUE
+       Material = "UO2_MSRZC_09"
+       name="ThermalSwellingDensificationElasticity"
+       Use_Thermal_Strain = TRUE
+       Use_Swelling_Strain = TRUE
+       Use_Creep_Strain = TRUE
+       Default_Temperature = 310.0
+       Default_Burnup = 0.5
+       Default_Oxygen_Concentration = 0.01
+     }

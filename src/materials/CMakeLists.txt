@@ -1,0 +1,6 @@
+INCLUDE (macros)
+
+BEGIN_PACKAGE_CONFIG ( materials )
+INSTALL_AMP_TARGET ( materials )
+
+ADD_SUBDIRECTORY ( test )

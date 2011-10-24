@@ -1,0 +1,26 @@
+
+OutputFileName = "testEV.m"
+
+DISTORT_ELEMENT = FALSE
+
+Isotropic_Model {
+  Youngs_Modulus = 1.0
+  Poissons_Ratio = 0.499999
+}
+
+Mechanics_Linear_Element {
+  USE_REDUCED_INTEGRATION = FALSE 
+  FE_ORDER = "FIRST"  
+  FE_FAMILY = "LAGRANGE"
+  QRULE_TYPE = "QGAUSS"
+  QRULE_ORDER = "DEFAULT"
+}
+
+Mechanics_Assembly {
+  print_info_level = 1
+  reset_reuses_matrix = TRUE
+  InputVariable = "disp"
+  OutputVariable = "disp"
+}
+
+

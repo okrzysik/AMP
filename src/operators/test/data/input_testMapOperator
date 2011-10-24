@@ -1,0 +1,45 @@
+
+NumberOfMeshes = 2
+
+Mesh_1{
+  Filename = "halden_1_pellet_9mil.e"
+  MeshName = "pellet"
+  x_offset = 0.0
+  y_offset = 0.0
+  z_offset = 0.0
+  NumberOfElements = 5226
+}
+
+Mesh_2{
+  Filename = "halden_1_clad.e"
+  MeshName = "clad"
+  x_offset = 0.0
+  y_offset = 0.0
+  z_offset = 0.0
+  NumberOfElements = 4488
+}
+
+MapPelletto1D{
+  BoundaryId = 4
+  InputVariable = "MapSolution"
+  OutputVariable = "Gap"
+}
+
+Map1DtoClad{
+  BoundaryId = 8
+  InputVariable = "Gap"
+  OutputVariable = "MapSolution"
+}
+
+MapCladto1D{
+  BoundaryId = 8
+  InputVariable = "MapSolution"
+  OutputVariable = "Gap"
+}
+
+Map1DtoPellet{
+  BoundaryId = 4
+  InputVariable = "Gap"
+  OutputVariable = "MapSolution"
+}
+

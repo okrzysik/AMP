@@ -1,0 +1,44 @@
+//
+// File:	$URL: file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/database/MemoryDatabase.I $
+// Package:	AMP toolbox
+// Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
+// Revision:	$LastChangedRevision: 2122 $
+// Modified:	$LastChangedDate: 2008-04-08 15:37:28 -0700 (Tue, 08 Apr 2008) $
+// Description:	An memomory database structure that stores (key,value) pairs in memory
+//
+
+#ifdef DEBUG_NO_INLINE
+#define inline
+#endif
+
+namespace AMP {
+   
+
+
+
+inline
+MemoryDatabase::MemoryDatabase(const std::string& name)
+{
+   d_database_name = name;
+   comm = AMP_MPI(AMP_COMM_WORLD);
+}
+
+inline
+std::string
+MemoryDatabase::getName() const
+{
+   return(d_database_name);
+}
+
+inline
+bool MemoryDatabase::keyAccessed(const std::string& key)
+{
+   KeyData* keydata = findKeyData(key);
+   return(keydata ? keydata->d_accessed : false);
+}
+
+#ifdef DEBUG_NO_INLINE
+#undef inline
+#endif
+
+}

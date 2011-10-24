@@ -1,0 +1,116 @@
+# To run valgrind:
+# valgrind --leak-check=yes --show-reachable=yes --track-origins=yes --suppressions=../../../../../../AMP-source/ValgrindSuppresionFile --log-file=memory.log ./test_AMPManager
+# valgrind --leak-check=yes --show-reachable=yes --track-origins=yes --suppressions=../../../../../../AMP-source/ValgrindSuppresionFile --gen-suppressions=all --log-file=memory.log ./test_AMPManager
+
+
+#### Supress std::ios_base::sync_with_stdio memory errors
+{
+   std/ios_base/sync_with_stdio
+   Memcheck:Leak
+   ...
+   obj:/usr/lib/libstdc++.so.6.0.13
+   fun:_ZNSt8ios_base15sync_with_stdioEb
+   ...
+}
+
+
+#### Suppress minor PETsc memory errors
+{
+   PetscGetUserName/getpwuid
+   Memcheck:Leak
+   ...
+   fun:getpwuid
+   fun:PetscGetUserName
+   ...
+}
+{
+   PetscGetDate
+   Memcheck:Leak
+   ...
+   fun:PetscGetDate
+   fun:PetscErrorPrintfInitialize
+   fun:PetscInitialize
+   ...
+}
+{
+   PetscInitialize/MPI_Init
+   Memcheck:Leak
+   ...
+   fun:MPI_Init
+   fun:PetscInitialize
+   ...
+}
+
+
+
+#### Suppress all libgfortran errors
+{
+   LibGFortranCond
+    Memcheck:Cond
+   ...
+   obj:/usr/lib/libgfortran.so.3.0.0
+   ...
+}
+{
+   LibGFortranAddr
+   Memcheck:Addr8
+   ...
+   obj:/usr/lib/libgfortran.so.3.0.0
+   ...
+}
+{
+   LibGFortranLeak
+   Memcheck:Leak
+   ...
+   obj:/usr/lib/libgfortran.so.3.0.0
+   ...
+}
+
+
+#### Suppress all LibMesh errors
+{
+   LibMeshInit
+   Memcheck:Leak
+   ...
+   fun:_ZN11LibMeshInitC1ERiRPPci
+   ...
+}
+
+
+#### Supress Mac errors
+{
+   Mac/dyld_start/dyldbootstrap5start
+   Memcheck:Leak
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKcl
+   fun:_dyld_start
+}
+{
+   Mac/throw/unwind
+   Memcheck:Leak
+   ...
+   fun:unwind_phase2
+   fun:_Unwind_RaiseException
+   fun:__cxa_throw
+   ...
+}
+{
+   Mac/throw/unwind_Raise
+   Memcheck:Leak
+   ...
+   fun:_Unwind_RaiseException
+   fun:__cxa_throw
+   ...
+}
+{
+   Mac/allocate_exception
+   Memcheck:Leak
+   fun:malloc
+   fun:__emutls_get_address
+   fun:__cxa_get_globals
+   fun:__cxa_allocate_exception
+   ...
+}
+
+
+

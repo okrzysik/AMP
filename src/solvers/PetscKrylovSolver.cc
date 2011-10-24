@@ -1,0 +1,383 @@
+#include "PetscKrylovSolver.h"
+#include "vectors/ManagedPetscVector.h"
+#include "operators/LinearOperator.h"
+#include "matrices/Matrix.h"
+#include "matrices/PetscMatrix.h"
+
+extern "C"{
+#include "assert.h"
+#include "petscpc.h"
+}
+
+namespace AMP {
+namespace Solver {
+
+
+// Default Constructor
+PetscKrylovSolver::PetscKrylovSolver()
+{
+  d_bKSPCreatedInternally = false;
+}
+
+
+// Parameter based constructor
+PetscKrylovSolver::PetscKrylovSolver(boost::shared_ptr<PetscKrylovSolverParameters> parameters):SolverStrategy(parameters)
+{
+  assert(parameters.get()!=NULL);
+
+  d_comm = parameters->d_comm;
+
+  assert( !d_comm.isNull() );
+
+  KSPCreate(d_comm.getCommunicator(), &d_KrylovSolver);
+
+  // we should think about this more and see where it should be set
+  d_bKSPCreatedInternally = true;
+
+  initialize(parameters);
+}
+
+PetscKrylovSolver::~PetscKrylovSolver()
+{
+  if(d_bKSPCreatedInternally)
+    {
+      KSPDestroy(d_KrylovSolver);
+    }
+}
+
+
+// Function to get values from input
+void PetscKrylovSolver::getFromInput(const boost::shared_ptr<AMP::Database> &db)
+{
+    // fill this in
+    std::string petscOptions = db->getStringWithDefault("KSPOptions", "");
+    PetscOptionsInsertString(petscOptions.c_str());
+
+    d_sKspType = db->getStringWithDefault("ksp_type", "fgmres");
+    d_dRelativeTolerance = db->getDoubleWithDefault("relative_tolerance", 1.0e-9);
+    d_dAbsoluteTolerance = db->getDoubleWithDefault("absolute_tolerance", 1.0e-14);
+    d_dDivergenceTolerance = db->getDoubleWithDefault("divergence_tolerance", 1.0e+03);
+
+    d_KSPAppendOptionsPrefix = db->getStringWithDefault("KSPAppendOptionsPrefix", "");
+
+    if((d_sKspType=="fgmres")||(d_sKspType=="gmres")) {
+        d_iMaxKrylovDimension = db->getIntegerWithDefault("max_krylov_dimension", 20);
+        d_sGmresOrthogonalizationAlgorithm = db->getStringWithDefault("gmres_orthogonalization_algorithm", "modifiedgramschmidt");
+    }
+
+    d_bUsesPreconditioner = db->getBoolWithDefault("uses_preconditioner", false);
+
+    if (d_bUsesPreconditioner) {
+        if (db->keyExists("pc_type")) {
+            d_sPcType = db->getStringWithDefault("pc_type", "none");
+        } else {
+            // call error here
+            AMP_ERROR("pc_type does not exist");
+        }
+        std::string pc_side = db->getStringWithDefault("pc_side", "RIGHT");
+        if (pc_side=="RIGHT") {
+            d_PcSide = PC_RIGHT;
+        } else if (pc_side=="LEFT") {
+            d_PcSide = PC_LEFT;
+        } else if (pc_side=="SYMMETRIC") {
+            d_PcSide = PC_SYMMETRIC;
+        } else {
+            AMP_ERROR("Unknown value for pc_type");
+        }
+    } else {
+        d_sPcType = "none";
+    }
+
+}
+
+void
+PetscKrylovSolver::initialize(boost::shared_ptr<SolverStrategyParameters> const params)
+{
+  int ierr;
+
+  boost::shared_ptr<PetscKrylovSolverParameters> parameters = boost::dynamic_pointer_cast<PetscKrylovSolverParameters>(params);
+  d_pPreconditioner = parameters->d_pPreconditioner;
+
+  getFromInput(parameters->d_db);
+
+  ierr = KSPSetType(d_KrylovSolver,d_sKspType.c_str());
+
+  PC pc;
+  ierr = KSPGetPC(d_KrylovSolver,&pc);
+
+  if(d_KSPAppendOptionsPrefix!="")
+    {
+      KSPAppendOptionsPrefix(d_KrylovSolver, d_KSPAppendOptionsPrefix.c_str());
+      //      PCAppendOptionsPrefix(pc, d_KSPAppendOptionsPrefix.c_str());
+    }
+
+  if((d_sKspType=="fgmres")||(d_sKspType=="gmres"))
+    {
+      ierr = KSPGMRESSetRestart(d_KrylovSolver, d_iMaxKrylovDimension);
+    }
+
+  if(d_bUsesPreconditioner)
+    {
+      if(d_sPcType !="shell")
+    {
+      // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
+      assert(d_pPreconditioner.get()==NULL);
+      PCSetType(pc, d_sPcType.c_str());
+
+    }
+      else
+    {
+      // for a shell preconditioner the user context is set to an instance of this class
+      // and the setup and apply preconditioner functions for the PCSHELL
+      // are set to static member functions of this class. By doing this we do not need to introduce
+      // static member functions into every SolverStrategy that might be used as a preconditioner
+      ierr = PCSetType(pc,PCSHELL);
+      ierr = PCShellSetContext(pc, this);
+
+      ierr = PCShellSetSetUp(pc, PetscKrylovSolver::setupPreconditioner);
+      ierr = PCShellSetApply(pc, PetscKrylovSolver::applyPreconditioner);
+
+    }
+
+      ierr = KSPSetPreconditionerSide(d_KrylovSolver, d_PcSide);
+
+    }
+  else
+    {
+      ierr = PCSetType(pc,PCNONE);
+    }
+
+  //PetscTruth useZeroGuess = (d_bUseZeroInitialGuess) ? PETSC_TRUE : PETSC_FALSE;
+  //ierr = KSPSetInitialGuessNonzero(d_KrylovSolver, useZeroGuess);
+
+  PetscTruth useNonzeroGuess = (!d_bUseZeroInitialGuess) ? PETSC_TRUE : PETSC_FALSE;
+  ierr = KSPSetInitialGuessNonzero(d_KrylovSolver, useNonzeroGuess);
+
+  ierr = KSPSetTolerances(d_KrylovSolver, d_dRelativeTolerance, d_dAbsoluteTolerance, d_dDivergenceTolerance, d_iMaxIterations);
+  ierr = KSPSetFromOptions(d_KrylovSolver);
+  // in this case we make the assumption we can access a PetscMat for now
+  if(d_pOperator.get()!=NULL)
+  {
+    registerOperator(d_pOperator);
+  }
+
+}
+
+
+void
+PetscKrylovSolver::setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector>   )
+{
+
+}
+
+void
+PetscKrylovSolver::registerOperator(const boost::shared_ptr<AMP::Operator::Operator> op)
+{
+  // in this case we make the assumption we can access a PetscMat for now
+  assert(op.get()!=NULL);
+
+  d_pOperator = op;
+
+  boost::shared_ptr<AMP::Operator::LinearOperator> linearOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(op);
+  assert(linearOperator.get() != NULL);
+
+  boost::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix = boost::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(linearOperator->getMatrix());
+  assert(pMatrix.get()!=NULL);
+
+  Mat mat;
+  mat = pMatrix->getMat();
+
+  KSPSetOperators(d_KrylovSolver,mat,mat,DIFFERENT_NONZERO_PATTERN);
+
+}
+
+void
+PetscKrylovSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
+                  boost::shared_ptr<AMP::LinearAlgebra::Vector>  u)
+{
+  // fVecView and uVecView may be held in KSPSolve internals.
+  // by declaring a temporary vector, we ensure that the KSPSolve
+  // will be replaced by fVecView and uVecView before they are
+  // destroyed by boost.
+  AMP::LinearAlgebra::Vector::shared_ptr  f_thisGetsAroundPETScSharedPtrIssue = fVecView;
+  AMP::LinearAlgebra::Vector::shared_ptr  u_thisGetsAroundPETScSharedPtrIssue = uVecView;
+
+  fVecView = AMP::LinearAlgebra::PetscVector::view ( f );
+  uVecView = AMP::LinearAlgebra::PetscVector::view ( u );
+
+  if(d_iDebugPrintInfoLevel>1)
+    {
+      std::cout << "PetscKrylovSolver::solve: initial L2Norm of solution vector: " << u->L2Norm() << std::endl;
+      std::cout << "PetscKrylovSolver::solve: initial L2Norm of rhs vector: " << f->L2Norm() << std::endl;
+    }
+  Vec fVec = fVecView->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+  Vec uVec = uVecView->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+
+  // This will replace any PETSc references to pointers we also track
+  // After this, we are free to delet f_thisGetsAroundPETScSharedPtrIssue without
+  // memory leak.
+  KSPSolve(d_KrylovSolver, fVec, uVec);
+
+  if(d_iDebugPrintInfoLevel>2)
+    {
+      std::cout << "L2Norm of solution from KSP: " << u->L2Norm() << std::endl;
+    }
+}
+
+
+#if (PETSC_VERSION_RELEASE==1)
+
+int
+PetscKrylovSolver::setupPreconditioner(void*)
+{
+   int ierr = 0;
+
+   //   abort();
+#if 0
+   return( ((PetscKrylovSolver*)ctx)->getPreconditioner()->reset() );
+#endif
+
+   return ierr;
+}
+
+#else
+
+PetscErrorCode
+PetscKrylovSolver::setupPreconditioner(PC pc)
+{
+   int ierr = 0;
+   Vec current_solution;
+   void *ctx = NULL;
+
+   ierr = PCShellGetContext(pc, &ctx);
+
+   //   abort();
+
+#if 0
+   return( ((PetscKrylovSolver*)ctx)->getPreconditioner()->reset() );
+#endif
+   return ierr;
+
+}
+#endif
+
+#if (PETSC_VERSION_RELEASE==1)
+
+PetscErrorCode
+PetscKrylovSolver::applyPreconditioner(void* ctx, Vec r, Vec z)
+{
+  int ierr = 0;
+  double norm=0.0;
+/*
+  AMP::LinearAlgebra::PetscVector *rvec = new AMP::LinearAlgebra::PetscVector();
+  AMP::LinearAlgebra::PetscVector *zvec = new AMP::LinearAlgebra::PetscVector();
+
+  rvec->setPetsc_Vector(&r);
+  zvec->setPetsc_Vector(&z);
+
+  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_r(rvec);
+  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_z(zvec);
+*/
+  AMP_ASSERT(ctx!=NULL);
+
+  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_r ( reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>(r->data) , AMP::LinearAlgebra::ExternalVectorDeleter() );
+  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_z ( reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>(z->data) , AMP::LinearAlgebra::ExternalVectorDeleter() );
+
+  // these tests were helpful in finding a bug
+  if(((PetscKrylovSolver*)ctx)->getDebugPrintInfoLevel()>5)
+    {
+      VecNorm(r, NORM_2,&norm);
+      AMP_ASSERT(norm==sp_r->L2Norm());
+    }  
+  
+  ((PetscKrylovSolver*)ctx)->getPreconditioner()->solve(sp_r,sp_z);
+
+  // not sure why, but the state of sp_z is not updated
+  // and petsc uses the cached norm
+  if ( sp_z->isA<AMP::LinearAlgebra::DataChangeFirer>() )
+    {
+      sp_z->castTo<AMP::LinearAlgebra::DataChangeFirer>().fireDataChange();
+    }
+
+  // these tests were helpful in finding a bug
+  if(((PetscKrylovSolver*)ctx)->getDebugPrintInfoLevel()>5)
+    {
+      AMP::pout << "L2 Norm of sp_z " << sp_z->L2Norm() << std::endl;
+      VecNorm(z, NORM_2,&norm);
+      AMP::pout << "L2 Norm of z " << norm << std::endl;
+      AMP_ASSERT(norm==sp_z->L2Norm());      
+    }
+  
+  return (ierr);
+}
+
+#else
+
+PetscErrorCode
+PetscKrylovSolver::applyPreconditioner(PC pc, Vec r, Vec z)
+{
+  int ierr = 0;
+  void *ctx = NULL;
+
+ /*
+  AMP::LinearAlgebra::PetscVector *rvec = new AMP::LinearAlgebra::PetscVector();
+  AMP::LinearAlgebra::PetscVector *zvec = new AMP::LinearAlgebra::PetscVector();
+
+  rvec->setPetsc_Vector(&r);
+  zvec->setPetsc_Vector(&z);
+
+  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_r(rvec);
+  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_z(zvec);
+  */
+
+  ierr = PCShellGetContext(pc, &ctx);
+
+  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_r ( reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>(r->data) , AMP::LinearAlgebra::ExternalVectorDeleter() );
+  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_z ( reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>(z->data) , AMP::LinearAlgebra::ExternalVectorDeleter() );
+
+  ((PetscKrylovSolver*)ctx)->getPreconditioner()->solve(sp_r, sp_z);
+
+  // not sure why, but the state of sp_z is not updated
+  // and petsc uses the cached norm
+  if ( sp_z->isA<AMP::LinearAlgebra::DataChangeFirer>() )
+    {
+      sp_z->castTo<AMP::LinearAlgebra::DataChangeFirer>().fireDataChange();
+    }
+
+  return ierr;
+
+}
+#endif
+
+
+void
+PetscKrylovSolver::resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params)
+{
+  if(d_pOperator.get()!=NULL)
+    {
+      d_pOperator->reset(params);
+      boost::shared_ptr<AMP::Operator::LinearOperator> linearOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pOperator);
+      assert(linearOperator.get() != NULL);
+
+      boost::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix = boost::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(linearOperator->getMatrix());
+      assert(pMatrix.get()!=NULL);
+
+      Mat mat;
+      mat = pMatrix->getMat();
+
+      // for now we will assume the pc is affected at every iteration
+      KSPSetOperators(d_KrylovSolver,mat,mat,DIFFERENT_NONZERO_PATTERN);
+    }
+
+  // should add a mechanism for the linear operator to provide updated parameters for the preconditioner operator
+  // though it's unclear where this might be necessary
+  if(d_pPreconditioner.get()!=NULL)
+    {
+      d_pPreconditioner->resetOperator(params);
+    }
+}
+
+
+}
+}
+

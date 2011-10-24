@@ -1,0 +1,25 @@
+#ifndef included_AMP_Map3to1to3Parameters
+#define included_AMP_Map3to1to3Parameters
+
+#include "operators/map/AsyncMapOperatorParameters.h"
+
+
+namespace AMP {
+namespace Operator {
+
+  class Map3to1to3Parameters : public AsyncMapOperatorParameters
+  {
+    public:
+      int          d_MasterValue;
+      int          d_NumToSend;
+
+      Map3to1to3Parameters ( const boost::shared_ptr<AMP::Database> &db )
+        : AsyncMapOperatorParameters ( db ) 
+      {
+      }
+  };
+
+}
+}
+
+#endif

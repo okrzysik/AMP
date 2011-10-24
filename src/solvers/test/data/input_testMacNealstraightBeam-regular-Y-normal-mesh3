@@ -1,0 +1,94 @@
+
+mesh_file = "mesh3"
+
+NumberOfMeshes = 0
+
+MechanicsBVPOperator {
+  name="LinearBVPOperator"
+    print_info_level = 1
+
+    VolumeOperator="MechanicsLinearFEOperator"
+    BoundaryOperator="DirichletMatrixCorrection"
+}
+
+Load_Boundary {
+  name="DirichletVectorCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 1
+    dof_0_0 = 1
+    value_0_0 = 0.012345679
+}
+
+LinearSolver {
+  print_info_level = 10
+    max_iterations = 1000
+    max_error = 1e-10
+    ksp_type = "preonly"
+    absolute_tolerance = 1.0e-12
+    relative_tolerance = 1.0e-10
+    divergence_tolerance = 1.0e03
+    max_krylov_dimension = 40
+    uses_preconditioner=TRUE
+    pc_type = "shell"
+    pc_side = "RIGHT"
+
+    KSPOptions = "-ksp_monitor -ksp_converged_reason"
+
+    Preconditioner{
+      print_info_level = 10
+        PDE_equations = 3
+        max_levels = 1
+        max_iterations = 1
+        max_error = 1.0e-10
+        increasingordecreasing = "increasing"
+        aggregationtype = "Uncoupled"
+        smoothertype = "Chebyshev"
+        smoother_sweeps = 3
+        smoother_preorpost = "both"
+        coarse_type="Amesos-KLU"
+    }
+}
+
+MechanicsLinearFEOperator{
+      name="MechanicsLinearFEOperator"
+        print_info_level = 1
+        reset_reuses_matrix = TRUE
+        InputVariable = "displacement"
+        OutputVariable = "displacement"
+
+        MechanicsElement {
+          name="MechanicsLinearElement"
+            USE_REDUCED_INTEGRATION = FALSE 
+            FE_ORDER = "FIRST"  
+            FE_FAMILY = "LAGRANGE"
+            QRULE_TYPE = "QGAUSS"
+            QRULE_ORDER = "DEFAULT"
+        }
+	LocalModel = "MechanicsMaterialModel"
+    }
+
+DirichletMatrixCorrection{
+    name="DirichletMatrixCorrection"
+      print_info_level = 1
+      skip_params = FALSE
+      skip_rhs_correction = TRUE
+      number_of_ids = 1
+      id_0 = 1
+      number_of_dofs_0 = 3
+      dof_0_0 = 0
+      dof_0_1 = 1
+      dof_0_2 = 2
+  }
+
+MechanicsMaterialModel {
+        USE_MATERIALS_LIBRARY = FALSE
+          Material = "UO2_MSRZC_09"
+          name="IsotropicElasticModel"
+          Youngs_Modulus = 1.0e7
+          Poissons_Ratio = 0.3
+      }
+
+

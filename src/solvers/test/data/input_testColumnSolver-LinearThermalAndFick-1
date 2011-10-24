@@ -1,0 +1,173 @@
+
+NumberOfMeshes = 1
+
+Mesh_1{
+  Filename = "cylinder270.e"
+  MeshName = "cylinder"
+  x_offset = 0
+  y_offset = 0
+  z_offset = 0
+  NumberOfElements = 270
+}
+
+
+testLinearThermalOperator {
+   name = "LinearBVPOperator"
+   print_info_level = 3
+
+   VolumeOperator = "ThermalDiffusionLinearFEOperator"
+   BoundaryOperator = "ThermalDirichletMatrixCorrection"
+}
+
+testLinearFickOperator {
+   name = "LinearBVPOperator"
+   print_info_level = 3
+
+   VolumeOperator = "FickDiffusionLinearFEOperator"
+   BoundaryOperator="FickDirichletMatrixCorrection"
+}
+
+ThermalInitialGuess {
+  name = "DirichletVectorCorrection"
+  print_info_level = 1
+  skip_params = FALSE
+  number_of_ids = 2
+  id_0 = 2
+  number_of_dofs_0 = 1
+  dof_0_0 = 0
+  value_0_0 = 1000.0
+  id_1 = 3
+  number_of_dofs_1 = 1
+  dof_1_0 = 0
+  value_1_0 = 1000.0
+}
+
+FickInitialGuess {
+  name = "DirichletVectorCorrection"
+  print_info_level = 1
+  skip_params = FALSE
+  number_of_ids = 2
+  id_0 = 2
+  number_of_dofs_0 = 1
+  dof_0_0 = 0
+  value_0_0 = 1000.0
+  id_1 = 3
+  number_of_dofs_1 = 1
+  dof_1_0 = 0
+  value_1_0 = 1000.0
+}
+
+ColumnSolver{
+        print_info_level = 1
+        max_iterations = 100
+        max_error = 1e-10
+        absolute_tolerance = 1.0e-9
+        relative_tolerance = 1.0e-01
+        divergence_tolerance = 1.0e03
+
+        ThermalSolver{
+          print_info_level = 1
+          max_iterations = 1
+//          max_levels = 2
+          max_error = 1.0e-10
+          coarse_type="Amesos-KLU"
+        }
+        FickSolver{
+          print_info_level = 1
+          max_iterations = 1
+//          max_levels = 2
+          max_error = 1.0e-10
+          coarse_type="Amesos-KLU"
+        }
+}
+
+
+FickDiffusionLinearFEOperator{
+     name = "DiffusionLinearFEOperator"
+     print_info_level = 1
+     reset_reuses_matrix = TRUE
+     InputVariable = "concentration"
+     OutputVariable = "concentration"
+     FixedTemperature = TRUE
+     FixedBurnup = TRUE
+
+     DiffusionElement {
+        name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+     }    
+     LocalModel="FickDiffusionTransportModel"
+}
+
+FickDirichletMatrixCorrection{
+     name = "DirichletMatrixCorrection"
+     print_info_level = 1
+     skip_params = FALSE
+     skip_rhs_correction = TRUE
+     number_of_ids = 2
+     id_0          = 2
+     number_of_dofs_0 =  1
+     dof_0_0          =  0
+     id_1          = 3
+     number_of_dofs_1 = 1
+     dof_1_0 = 0
+   }
+
+FickDiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "Ox_MSRZC_09"
+        Property = "FickCoefficient"
+        Default_Concentration = .1
+        Default_Temperature   = 300.
+        Default_Burnup   = 0.0
+     } 
+
+ThermalDiffusionLinearFEOperator{
+     name = "DiffusionLinearFEOperator"
+     print_info_level = 1
+     reset_reuses_matrix = TRUE
+     InputVariable = "temp"
+     OutputVariable = "temp"
+     FixedConcentration = TRUE
+     FixedBurnup = TRUE
+
+     DiffusionElement {
+        name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+     }    
+     LocalModel = "ThermalDiffusionTransportModel"
+   }
+
+
+ThermalDirichletMatrixCorrection{
+     name = "DirichletMatrixCorrection"
+     print_info_level = 1
+     skip_params = FALSE
+     skip_rhs_correction = TRUE
+     number_of_ids = 2
+     id_0          = 2
+     number_of_dofs_0 =  1
+     dof_0_0          =  0
+     id_1          = 3
+     number_of_dofs_1 = 1
+     dof_1_0 = 0
+   }
+
+ThermalDiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "UO2_MSRZC_09"
+        Property = "ThermalConductivity"
+        Default_Concentration = .1
+        Default_Temperature   = 300.
+        Default_Burnup   = 0.0
+     } 
+
+
+

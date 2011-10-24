@@ -1,0 +1,7 @@
+number_of_tests=5
+
+test_0 = "input_MechanicsLinearElement-create-1"
+test_1="input_MechanicsNonlinearElement-create-1"
+test_2="input_DiffusionLinearElement-create-1"
+test_3="input_DiffusionNonlinearElement-create-1"
+test_4="input_MassLinearElement-create-1"

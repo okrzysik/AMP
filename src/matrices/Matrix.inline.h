@@ -1,0 +1,58 @@
+
+namespace AMP {
+namespace LinearAlgebra {
+
+  inline
+  Matrix::shared_ptr  Matrix::transpose () const 
+  { 
+    AMP_ERROR( "not implemented" ); 
+    return Matrix::shared_ptr ();
+  }
+
+  inline
+  Matrix::Matrix ( const Matrix & ) 
+  {
+  }
+
+  inline
+  Matrix :: Matrix () 
+  {
+  }
+
+  inline
+  Matrix :: Matrix ( ParametersPtr ) 
+  {
+  }
+
+  inline
+  Matrix :: ~Matrix () 
+  {
+  }
+
+  inline
+  void  Matrix::axpy ( double alpha , const Matrix::shared_ptr  &x ) 
+  { 
+    axpy ( alpha , *x ); 
+  }
+
+  inline
+  void Matrix::addValueByGlobalID ( int row , int col , double value )
+  {  
+    addValuesByGlobalID ( 1u , 1u , &row , &col , &value ); 
+  }
+
+  inline
+  void Matrix::setValueByGlobalID ( int row , int col , double value )
+  {  
+    setValuesByGlobalID ( 1u , 1u , &row , &col , &value ); 
+  }
+
+  inline
+  void Matrix::zero () 
+  { 
+    setScalar (0.0); 
+  }
+
+}
+}
+

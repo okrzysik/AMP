@@ -1,0 +1,14 @@
+Mesh = "brick.e"
+
+
+Parameter {
+  name="DirichletMatrixCorrection"
+  print_info_level = 1
+  skip_params = FALSE
+  number_of_ids = 1
+  id_0 = 2
+  number_of_dofs_0 = 3
+  dof_0_0 = 0
+  dof_0_1 = 1
+  dof_0_2 = 2
+}

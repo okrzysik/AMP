@@ -1,0 +1,100 @@
+# Filter std::string functions
+*std::string::*;std::char_traits*;std::basic_string* -- 0
+
+# Filter std::vector, std::map, std::set sub, and std::pair functions
+*std::__norm::vector::*;std::__debug::vector* -- 0
+*std::__norm::map::*;*std::__debug::map* -- 0
+*std::__norm::set::*;*std::__debug::set* -- 0
+*std::__norm::pair::*;*std::__debug::pair*;std::pair* -- 0
+
+# Filter iterators
+#*::_List_iterator* -- 0
+__gnu_cxx::__normal_iterator*;std::iterator_traits* -- 0
+__gnu_debug::_Safe_iterator_base::* -- 0
+std::iterator::* -- 0
+variant_filter_iterator* -- 0
+std::__norm::_Deque_iterator*;std::__norm::deque* -- 0
+
+
+# Filter basic math and logic
+*std::min*;*std::max* -- 0
+bool operator==*;bool std::operator==*;bool std::__norm::operator==*;__gnu_cxx::operator==* -- 0
+bool operator!=*;bool std::operator!=*;bool std::__norm::operator!=*;__gnu_cxx::operator!=* -- 0
+bool __gnu_cxx::__is_null_pointer* -- 0
+std::__norm::operator* -- 0
+
+# Filter memory allocation
+__gnu_cxx::new_allocator*;operator new*;*std::_Destroy*;*std::allocator* -- 0
+
+# Filter misc functions
+std::__uninitialized_*;std::uninitialized_*;void std::__uninitialized_*;void std::uninitialized_* -- 0
+__gnu_cxx::__exchange_and_add*;__gnu_cxx::__atomic_add* -- 0
+__gnu_cxx::__enable_if* -- 0
+__gthread_active_p* -- 0
+__gnu_debug::_Safe_sequence_base* -- 0
+std::_Construct* -- 0
+std::less* -- 0
+std::_Rb_tree* -- 0
+std::type_info::* -- 0
+std::operator* -- 0
+*std::copy*;*std::__copy*;*std::uninitialized_copy*;*std::__uninitialized_copy* -- 0
+*bool__gnu_debug::__valid_range* -- 0
+AutoPtr<*>::operator*;AutoPtr<*>::release*;AutoPtr<*>::~AutoPtr*;std::_Identity<*>::operator -- 0
+bool __gnu_debug::__valid_range* -- 0
+std::_Select1st* -- 0
+__gnu_cxx::__scoped_lock*;__gnu_cxx::__mutex::lock*;__gnu_cxx::__mutex::unlock*;__gnu_cxx::__mutex_lock*;__gnu_cxx::__mutex_unlock*;__gthread_mutex_lock*;__gthread_mutex_unlock* -- 0
+std::__norm::_Bit* -- 0
+std::__miter_base*;std::__niter_base* -- 0
+std::__lg* -- 0
+*std::fill_n*;*std::uninitialized_fill_n* -- 0
+std::_Identity* -- 0
+
+# Filter boost routines
+boost::detail::* -- 0
+boost::shared_ptr* -- 0
+
+
+# Filter Libmesh routines
+libMesh::processor_id* -- 0
+DofObject::* -- 0
+Elem::*;AutoPtr<Elem>* -- 0
+Hex::*;Hex8::* -- 0
+Point::Point*;Point::~Point* -- 0
+ReferenceCountedObject*;ReferenceCounter::* -- 0
+Threads::spin_mutex::scoped_lock*;Threads::atomic* -- 0
+TypeVector<*>* -- 0
+MeshBase::node_iterator*;MeshBase::element_iterator* -- 0
+
+
+# Filter select AMP routines
+AMP::AMP_MPI::getSize*;AMP::AMP_MPI::getRank* -- 0
+AMP::Castable::*;*AMP::Castable::castTo<*>* -- 0
+AMP::MemoryDatabase::*;yylex();yyparse() -- 0
+AMP::Parser::* -- 0
+AMP::Mesh::DOFMap::beginDOF*;AMP::Mesh::DOFMap::endDOF* -- 0
+AMP::Mesh::MeshObject::* -- 0
+AMP::Mesh::MeshElement::* -- 0
+AMP::Mesh::MeshNode::* -- 0
+AMP::Mesh::LibMeshElementTmpl* -- 0
+AMP::Mesh::MeshPoint::* -- 0
+AMP::Mesh::LibMeshNode::* -- 0
+AMP::Mesh::MeshIteratorWrapper<*>::*;bool AMP::Mesh::MeshIteratorWrapper* -- 0
+AMP::Mesh::DefaultMeshObjectSorter* -- 0
+AMP::LinearAlgebra::VectorEntryMap* -- 0
+AMP::LinearAlgebra::VectorVariable<*>::DOFsPerObject* -- 0
+AMP::LinearAlgebra::*::setValueByGlobalID(*);AMP::LinearAlgebra::*::setValuesByGlobalID(*) -- 0
+AMP::LinearAlgebra::*::createValueByGlobalID(*);AMP::LinearAlgebra::*::createValuesByGlobalID(*) -- 0
+AMP::LinearAlgebra::EpetraMatrix::VerfiyEpetraReturn* -- 0
+AMP::LinearAlgebra::ManagedDataMap::getLocalSize*;AMP::LinearAlgebra::ManagedDataMap::getRow*;AMP::LinearAlgebra::ManagedDataMap::firstRow* -- 0
+AMP::LinearAlgebra::VectorDataIterator::operator*;AMP::LinearAlgebra::VectorDataIterator::VectorDataIterator*;AMP::LinearAlgebra::VectorDataIterator::~VectorDataIterator*;AMP::LinearAlgebra::VectorDataIterator::dbSize* -- 0
+AMP::LinearAlgebra::ConstVectorDataIterator::operator*;AMP::LinearAlgebra::ConstVectorDataIterator::ConstVectorDataIterator*;AMP::LinearAlgebra::ConstVectorDataIterator::~ConstVectorDataIterator*;AMP::LinearAlgebra::ConstVectorDataIterator::dbSize* -- 0
+AMP::LinearAlgebra::ManagedVector::sizeOfDataBlock* -- 0
+AMP::LinearAlgebra::ManagedEpetraMatrixParameters::entriesInRow* -- 0
+AMP::LinearAlgebra::*::getLocalSize*;AMP::LinearAlgebra::*::sizeOfDataBlock* -- 0
+*AMP::LinearAlgebra::*::getRawDataBlock*;AMP::LinearAlgebra::*::getDataBlock* -- 0
+AMP::LinearAlgebra::EpetraVectorEngine::getEpetra_Vector* -- 0
+
+# Filter all remaining functions
+* -- 10000
+
+

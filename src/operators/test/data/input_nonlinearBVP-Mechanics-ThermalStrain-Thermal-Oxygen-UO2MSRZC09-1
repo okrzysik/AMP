@@ -1,0 +1,316 @@
+
+NumberOfMeshes = 1
+
+Mesh_1{
+  Filename = "cylinder270.e"
+  MeshName = "cylinder"
+  x_offset = 0
+  y_offset = 0
+  z_offset = 0
+  NumberOfElements = 270
+}
+
+NumberOfLoadingSteps = 1
+
+testNonlinearMechanicsOperator {
+   name="NonlinearBVPOperator"
+   print_info_level = 1
+   
+   VolumeOperator = "MechanicsNonlinearFEOperator"
+   BoundaryOperator = "MechanicsDirichletVectorCorrection"
+}
+
+testLinearMechanicsOperator {
+   name="LinearBVPOperator"
+   print_info_level = 1
+   
+   VolumeOperator = "MechanicsLinearFEOperator"
+   BoundaryOperator = "MechanicsDirichletMatrixCorrection"
+}
+
+testNonlinearThermalOperator {
+   name="NonlinearBVPOperator"
+   print_info_level = 1
+
+   VolumeOperator="DiffusionNonlinearFEOperator"
+   BoundaryOperator = "DiffusionDirichletVectorCorrection"
+}
+
+testLinearThermalOperator {
+   name="LinearBVPOperator"
+   print_info_level = 1
+
+   VolumeOperator="DiffusionLinearFEOperator"
+   BoundaryOperator="DiffusionDirichletMatrixCorrection"
+
+}
+
+
+testNonlinearOxygenOperator {
+   name="NonlinearBVPOperator"
+   print_info_level = 1
+
+   VolumeOperator="OxygenDiffusionNonlinearFEOperator"
+   BoundaryOperator = "OxygenDirichletVectorCorrection"
+
+}
+
+testLinearOxygenOperator {
+   name="LinearBVPOperator"
+   print_info_level = 1
+
+   VolumeOperator="OxygenDiffusionLinearFEOperator"
+   BoundaryOperator="OxygenDirichletMatrixCorrection"
+}
+
+
+MechanicsNonlinearFEOperator{
+     name = "MechanicsNonlinearFEOperator"
+     print_info_level = 1
+     ActiveInputVariables {
+         DISPLACEMENT = "displacement"
+         TEMPERATURE = "temperature"
+         OXYGEN_CONCENTRATION = "concentration"
+     }
+     OutputVariable = "displacement"
+     RESET_REUSES_RADIAL_RETURN = TRUE
+     JACOBIAN_REUSES_RADIAL_RETURN = TRUE
+     FREEZE_TEMPERATURE = FALSE
+     FREEZE_OXYGEN_CONCENTRATION = FALSE
+
+     MechanicsElement {
+       name="MechanicsNonlinearElement"
+       USE_REDUCED_INTEGRATION = FALSE 
+       FE_ORDER = "FIRST"  
+       FE_FAMILY = "LAGRANGE"
+       QRULE_TYPE = "QGAUSS"
+       QRULE_ORDER = "DEFAULT"
+     }
+
+     LocalModel = "MechanicsMaterialModel"
+
+   }
+
+MechanicsDirichletVectorCorrection{
+     name = "DirichletVectorCorrection"
+     print_info_level = 1
+     skip_params = FALSE
+     number_of_ids = 2
+     id_0 = 2
+     number_of_dofs_0 = 3
+     dof_0_0 = 0
+     dof_0_1 = 1
+     dof_0_2 = 2
+     value_0_0 = 0.0
+     value_0_1 = 0.0
+     value_0_2 = 0.0
+     id_1 = 3
+     number_of_dofs_1 = 3
+     dof_1_0 = 0
+     dof_1_1 = 1
+     dof_1_2 = 2
+     value_1_0 = 0.0
+     value_1_1 = 0.0
+     value_1_2 = 0.0
+   }
+   
+MechanicsMaterialModel { 
+      name="ThermalStrainMaterialModel"
+      USE_MATERIALS_LIBRARY = FALSE
+       Material = "UO2_MSRZC_09"
+       Youngs_Modulus = 2.08e11
+       Poissons_Ratio = 0.23
+       THERMAL_STRAIN_AS_SOURCE_TERM = FALSE
+       THERMAL_EXPANSION_COEFFICIENT = 2.0e-6 
+     }
+
+MechanicsLinearFEOperator{
+     name = "MechanicsLinearFEOperator"
+     print_info_level = 1
+     reset_reuses_matrix = TRUE
+     InputVariable = "displacement"
+     OutputVariable = "displacement"
+
+     MechanicsElement {
+       name="MechanicsLinearElement"
+       USE_REDUCED_INTEGRATION = FALSE 
+       FE_ORDER = "FIRST"  
+       FE_FAMILY = "LAGRANGE"
+       QRULE_TYPE = "QGAUSS"
+       QRULE_ORDER = "DEFAULT"
+     }
+   }
+
+MechanicsDirichletMatrixCorrection{
+     name = "DirichletMatrixCorrection"
+     print_info_level = 1
+     skip_params = FALSE
+     skip_rhs_correction = TRUE
+     number_of_ids = 2
+     id_0          = 2
+     number_of_dofs_0 =  3
+     dof_0_0          =  0
+     dof_0_1          =  1
+     dof_0_2          =  2
+     id_1          = 3
+     number_of_dofs_1 = 3
+     dof_1_0 = 0
+     dof_1_1 = 1
+     dof_1_2 = 2
+   }
+
+DiffusionNonlinearFEOperator{
+	 name="DiffusionNonlinearFEOperator"
+	 InputVariable="temperature"
+	 OutputVariable="temperature"
+	 print_info_level = 1
+	
+	 ActiveInputVariables { 
+	   temperature="temperature"
+	   concentration="concentration"
+	 }
+	 PrincipalVariable = 0
+	 Freezeconcentration = FALSE
+
+	 DiffusionElement {
+	      name = "DiffusionNonlinearElement"
+	      FE_ORDER = "FIRST"  
+	      FE_FAMILY = "LAGRANGE"
+	      QRULE_TYPE = "QGAUSS"
+	      QRULE_ORDER = "DEFAULT"
+         }
+        
+         LocalModel = "DiffusionTransportModel"   
+
+   }
+   
+DiffusionDirichletVectorCorrection{
+   	 name = "DirichletVectorCorrection"
+     print_info_level = 3
+     skip_params = FALSE
+     number_of_ids = 1
+     id_0         =   1 
+     number_of_dofs_0 =   1
+     dof_0_0          =   0
+     value_0_0        = 500.
+   }
+
+DiffusionLinearFEOperator{
+      name="DiffusionLinearFEOperator"
+      InputVariable="temperature"
+      OutputVariable="temperature"
+      print_info_level = 3
+
+     DiffusionElement {
+       name = "DiffusionLinearElement"
+       print_info_level = 3
+       FE_ORDER = "FIRST"  
+       FE_FAMILY = "LAGRANGE"
+       QRULE_TYPE = "QGAUSS"
+       QRULE_ORDER = "DEFAULT"
+     }
+        
+     LocalModel = "DiffusionTransportModel"   
+  }
+
+
+DiffusionDirichletMatrixCorrection{
+    name="DirichletMatrixCorrection"
+    skip_rhs_correction = FALSE
+    skip_rhs_add_correction = FALSE
+    skip_params = FALSE
+    print_info_level = 3
+    number_of_ids = 1
+    id_0             = 1
+    number_of_dofs_0 =   1
+    dof_0_0          =   0
+    value_0_0        = 300.
+}
+
+DiffusionTransportModel {
+	     name = "DiffusionTransportModel"
+	     Material = "UO2_MSRZC_09"
+	     Property = "ThermalConductivity"
+	     print_info_level = 3 
+	     Default_Concentration = .1
+	     Default_Temperature   = 300.
+	     Default_Burnup   = 0.0
+	   }
+
+OxygenDiffusionNonlinearFEOperator{
+	 name="DiffusionNonlinearFEOperator"
+	 InputVariable="concentration"
+	 OutputVariable="concentration"
+	 print_info_level = 1
+	
+	 ActiveInputVariables { 
+	   temperature="temperature"
+	   concentration="concentration"
+	 }
+	 PrincipalVariable = 1
+	 Freezetemperature = FALSE
+
+         LocalModel = "OxygenDiffusionTransportModel"
+         DiffusionElement {
+	      name = "DiffusionNonlinearElement"
+	      FE_ORDER = "FIRST"  
+	      FE_FAMILY = "LAGRANGE"
+	      QRULE_TYPE = "QGAUSS"
+	      QRULE_ORDER = "DEFAULT"
+	   }
+   }
+   
+
+OxygenDiffusionLinearFEOperator{
+      name="DiffusionLinearFEOperator"
+      InputVariable="concentration"
+      OutputVariable="concentration"
+      print_info_level = 3
+
+     DiffusionElement {
+       name = "DiffusionLinearElement"
+       print_info_level = 3
+       FE_ORDER = "FIRST"  
+       FE_FAMILY = "LAGRANGE"
+       QRULE_TYPE = "QGAUSS"
+       QRULE_ORDER = "DEFAULT"
+     }
+
+     LocalModel = "OxygenDiffusionTransportModel"
+  }
+
+OxygenDirichletVectorCorrection{
+   	 name = "DirichletVectorCorrection"
+     print_info_level = 3
+     skip_params = FALSE
+     number_of_ids = 1
+     id_0         =   1 
+     number_of_dofs_0 =   1
+     dof_0_0          =   0
+     value_0_0        = .1
+   }
+
+OxygenDirichletMatrixCorrection{
+    name="DirichletMatrixCorrection"
+    skip_rhs_correction = FALSE
+    skip_rhs_add_correction = FALSE
+    skip_params = FALSE
+    print_info_level = 3
+    number_of_ids = 1
+    id_0             = 1
+    number_of_dofs_0 =   1
+    dof_0_0          =   0
+    value_0_0        = .1
+  }
+
+OxygenDiffusionTransportModel {
+	     name = "DiffusionTransportModel"
+	     Material = "Ox_MSRZC_09"
+	     Property = "FickCoefficient"
+	     print_info_level = 3 
+	     Default_Concentration = .1
+	     Default_Temperature   = 300.
+	     Default_Burnup   = 0.0
+	   }
+	
+

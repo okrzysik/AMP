@@ -1,0 +1,26 @@
+
+Mesh{
+  dim = 3
+  cube_side = 4
+  xMin = 0.0
+  xMax = 1.0
+  yMin = 0.0
+  yMax = 1.0
+  zMin = 0.0
+  zMax = 1.0
+}
+
+PlasticityOperator{
+  print_info_level = 0
+  Youngs_Modulus = 2.08e11
+  Poissons_Ratio = 0.23
+  Linear_Strain_Hardening = 2.10e9
+  Elastic_Yield_Stress = 1.45e8
+  Density = 1.905e4
+  Gravity = 9.8
+}
+
+
+
+
+

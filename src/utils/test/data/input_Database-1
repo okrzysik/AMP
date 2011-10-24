@@ -1,0 +1,8 @@
+Try{
+number = 5
+intArray = 1,2,3,
+4,5
+doubleArray = 1
+,2,3,4,
+5
+}

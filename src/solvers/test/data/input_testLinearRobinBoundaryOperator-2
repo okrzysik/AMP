@@ -1,0 +1,133 @@
+
+Mesh = "cube.with.12.boundaries.e"
+
+NumberOfMeshes = 1
+Mesh_1{
+  Filename = "cube.with.12.boundaries.e"
+  MeshName = "bar"
+  x_offset = 0.0
+  y_offset = 0.0
+  z_offset = 0.0
+  NumberOfElements = 1000
+}
+
+DiffusionBVPOperator {
+   name="LinearBVPOperator"
+   print_info_level = 1
+   VolumeOperator="DiffusionLinearFEOperator"
+   BoundaryOperator="ColumnBoundaryOperator"
+
+}
+
+DirichletVectorCorrection {
+   name="DirichletVectorCorrection"
+   skip_params = FALSE
+   print_info_level = 3
+   number_of_ids = 3
+   id_0             = 9
+   id_1             = 11
+   number_of_dofs_0 =   1
+   number_of_dofs_1 =   1
+   dof_0_0          =   0
+   dof_1_0          =   0
+   value_0_0        = 300.
+   value_1_0        = 300.
+}
+
+LinearSolver{
+  print_info_level = 3
+  max_iterations = 10
+  max_error = 1e-10
+  }
+
+DiffusionLinearFEOperator{
+   name="DiffusionLinearFEOperator"
+   FixedTemperature = TRUE
+   FixedConcentration = TRUE
+   FixedBurnup   = TRUE
+   InputVariable = "therm"
+   OutputVariable = "therm"
+   print_info_level = 3
+   LocalModel = "DiffusionTransportModel"
+   DiffusionElement {
+     name="DiffusionLinearElement"
+     print_info_level = 3
+     FE_ORDER = "FIRST"  
+     FE_FAMILY = "LAGRANGE"
+     QRULE_TYPE = "QGAUSS"
+     QRULE_ORDER = "DEFAULT"
+   }
+ }
+
+ColumnBoundaryOperator{
+   name="ColumnBoundaryOperator"
+   numberOfBoundaryOperators=3
+   boundaryOperators="RobinBoundaryOperator","NeumannVectorCorrection","DirichletMatrixCorrection"
+
+
+}
+
+RobinBoundaryOperator {
+   name="RobinMatrixCorrection"
+   skip_params = FALSE
+   FE_ORDER = "FIRST"  
+   FE_FAMILY = "LAGRANGE"
+   QRULE_TYPE = "QGAUSS"
+   QRULE_ORDER = "DEFAULT"
+   fConductivity  = 1.0
+   alpha          = 1.0
+   beta           = 1.0
+   gamma          = 1.0
+   print_info_level = 3
+   number_of_ids    = 1
+   id_0             = 4
+   number_of_dofs_0 =   1
+   dof_0_0          =   0
+   value_0_0        = 101.
+  }
+
+
+NeumannVectorCorrection {
+   name="NeumannVectorCorrection"
+   FE_ORDER = "FIRST"  
+   FE_FAMILY = "LAGRANGE"
+   QRULE_TYPE = "QGAUSS"
+   QRULE_ORDER = "DEFAULT"
+   OutputVariable = "therm"
+   print_info_level = 3
+   skip_params = FALSE
+   number_of_ids = 1
+   id_0         =   6
+   number_of_dofs_0 =   1
+   dof_0_0          =   0
+   value_0_0        = 101.
+   }
+
+
+DirichletMatrixCorrection{
+   name="DirichletMatrixCorrection"
+   skip_params = FALSE
+   skip_rhs_correction = FALSE
+   skip_rhs_add_correction = FALSE
+   print_info_level = 3
+   number_of_ids = 2
+   id_0             = 9
+   id_1             = 11
+   number_of_dofs_0 =   1
+   number_of_dofs_1 =   1
+   dof_0_0          =   0
+   dof_1_0          =   0
+   value_0_0        = 300.
+   value_1_0        = 300.
+  }
+
+DiffusionTransportModel {
+     name="DiffusionTransportModel"
+     Material = "Independent"
+     Property = "ThermalConductivity"
+     print_info_level = 3
+     Default_Concentration = .1
+     Default_Temperature   = 300.
+     Default_Burnup   = 0.0
+   }
+

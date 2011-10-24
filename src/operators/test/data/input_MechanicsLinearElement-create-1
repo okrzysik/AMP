@@ -1,0 +1,9 @@
+ElementOperation {
+  name="MechanicsLinearElement"
+  USE_REDUCED_INTEGRATION = FALSE 
+  FE_ORDER = "FIRST"  
+  FE_FAMILY = "LAGRANGE"
+  QRULE_TYPE = "QGAUSS"
+  QRULE_ORDER = "DEFAULT"
+}
+

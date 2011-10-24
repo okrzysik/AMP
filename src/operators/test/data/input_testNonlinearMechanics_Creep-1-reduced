@@ -1,0 +1,54 @@
+
+Mesh = "brick.e"
+
+testNonlinearMechanicsOperator {
+      name = "MechanicsNonlinearFEOperator"
+      print_info_level = 1
+      ActiveInputVariables {
+         DISPLACEMENT = "disp"
+      }
+      OutputVariable = "disp"
+      RESET_REUSES_RADIAL_RETURN = TRUE
+      JACOBIAN_REUSES_RADIAL_RETURN = TRUE
+
+      MechanicsElement {
+       name="MechanicsNonlinearElement"
+       USE_REDUCED_INTEGRATION = TRUE 
+       FE_ORDER = "FIRST"  
+       FE_FAMILY = "LAGRANGE"
+       QRULE_TYPE = "QGAUSS"
+       QRULE_ORDER = "DEFAULT"
+      }
+
+      LocalModel = "MechanicsMaterialModel"
+
+}
+
+testLinearMechanicsOperator {
+      name = "MechanicsLinearFEOperator"
+      print_info_level = 1
+      reset_reuses_matrix = TRUE
+      InputVariable = "disp"
+      OutputVariable = "disp"
+
+      MechanicsElement {
+       name="MechanicsLinearElement"
+       USE_REDUCED_INTEGRATION = TRUE 
+       FE_ORDER = "FIRST"  
+       FE_FAMILY = "LAGRANGE"
+       QRULE_TYPE = "QGAUSS"
+       QRULE_ORDER = "DEFAULT"
+      }
+}
+
+MechanicsMaterialModel { 
+       USE_MATERIALS_LIBRARY = FALSE
+       Material = "UO2_MSRZC_09"
+       name="ExplicitCreepMaterialModel"
+       Youngs_Modulus = 2.08e11
+       Poissons_Ratio = 0.23
+       Creep_Coefficient_A = 1.0e-10
+       Creep_Stress_Exponent_n = 1.12
+       Creep_Delta_Time = 0.001
+      }
+

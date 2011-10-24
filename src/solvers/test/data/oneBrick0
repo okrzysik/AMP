@@ -1,0 +1,55 @@
+Mesh {
+NumberOfNodes = 8
+Point0 = 0.000000, 0.000000, 0.000000
+Point1 = 1.000000, 0.000000, 0.000000
+Point2 = 0.000000, 1.000000, 0.000000
+Point3 = 1.000000, 1.000000, 0.000000
+Point4 = 0.000000, 0.000000, 1.000000
+Point5 = 1.000000, 0.000000, 1.000000
+Point6 = 0.000000, 1.000000, 1.000000
+Point7 = 1.000000, 1.000000, 1.000000
+
+NumberOfElements = 1
+Elem0 = 0, 1, 3, 2, 4, 5, 7, 6
+
+NumberOfBoundaryNodeIds = 12
+
+NumberOfBoundaryNodes1 = 4
+BoundaryNodeId1 = 0, 1, 3, 2
+
+NumberOfBoundaryNodes2 = 1
+BoundaryNodeId2 = 0
+
+NumberOfBoundaryNodes3 = 1
+BoundaryNodeId3 = 1
+
+NumberOfBoundaryNodes4 = 1
+BoundaryNodeId4 = 4
+
+NumberOfBoundaryNodes5 = 1
+BoundaryNodeId5 = 5
+
+NumberOfBoundaryNodes6 = 1
+BoundaryNodeId6 = 6
+
+NumberOfBoundaryNodes7 = 1
+BoundaryNodeId7 = 7
+
+NumberOfBoundaryNodes8 = 4
+BoundaryNodeId8 = 4, 5, 6, 7
+
+NumberOfBoundaryNodes9 = 1
+BoundaryNodeId8 = 0
+
+NumberOfBoundaryNodes10 = 1
+BoundaryNodeId8 = 1
+
+NumberOfBoundaryNodes11 = 1
+BoundaryNodeId8 = 2
+
+NumberOfBoundaryNodes12 = 1
+BoundaryNodeId8 = 3
+
+NumberOfBoundarySideIds = 0
+
+}

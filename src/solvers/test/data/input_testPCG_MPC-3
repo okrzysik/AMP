@@ -1,0 +1,99 @@
+
+BinaryMeshes = TRUE
+mesh_file1 = "mpcMesh-bin-3"
+NumberOfMeshes = 0
+xOffset = 0.0
+yOffset = 0.0
+zOffset = 0.0
+maxIters = 22
+
+LoadOperator {
+  name="DirichletVectorCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    isAttachedToVolumeOperator = FALSE
+    setResidual = FALSE
+    valuesType = 1
+    number_of_ids = 4
+
+    id_0 = 3
+    id_1 = 4
+    id_2 = 5
+    id_3 = 6
+
+    number_of_dofs_0 = 1
+    number_of_dofs_1 = 1
+    number_of_dofs_2 = 1
+    number_of_dofs_3 = 1
+
+    dof_0_0 = 0
+    dof_1_0 = 0
+    dof_2_0 = 0
+    dof_3_0 = 0
+
+    value_0_0 = 4.0
+    value_1_0 = 2.0
+    value_2_0 = 2.0
+    value_3_0 = 1.0
+}
+
+
+BVPOperator {
+    name = "LinearBVPOperator"
+    print_info_level = 1
+    VolumeOperator = "MechanicsLinearFEOperator1"
+    BoundaryOperator = "DirichletMatrixCorrection1"
+}
+
+MechanicsLinearFEOperator1 {
+      name = "MechanicsLinearFEOperator"
+        print_info_level = 1
+        reset_reuses_matrix = TRUE
+        isAttachedToNonlinearOperator = FALSE
+        InputVariable = "displacement"
+        OutputVariable = "displacement"
+
+        MechanicsElement {
+          name="MechanicsLinearElement"
+            USE_REDUCED_INTEGRATION = FALSE 
+            FE_ORDER = "FIRST"  
+            FE_FAMILY = "LAGRANGE"
+            QRULE_TYPE = "QGAUSS"
+            QRULE_ORDER = "DEFAULT"
+        }
+
+	LocalModel = "IsotropicElasticModel1"
+}
+	
+DirichletMatrixCorrection1 {
+    name = "DirichletMatrixCorrection"
+      print_info_level = 1
+      skip_params = FALSE
+      symmetric_correction = TRUE
+      zero_dirichlet_block = FALSE
+      skip_rhs_correction = FALSE
+      skip_add_rhs_correction = TRUE
+      number_of_ids = 1
+      id_0 = 1
+      number_of_dofs_0 = 3
+      dof_0_0 = 0
+      dof_0_1 = 1
+      dof_0_2 = 2
+      value_0_0 = 0.0
+      value_0_1 = 0.0
+      value_0_2 = 0.0
+  }
+
+MechanicsIsotropicElasticModel1 {
+        USE_MATERIALS_LIBRARY = FALSE
+          Material = ""
+          name="IsotropicElasticModel"
+          Youngs_Modulus = 1.0e6
+          Poissons_Ratio = 0.0
+          Default_Temperature = 0.0
+          Default_Burnup = 0.0
+          Default_Oxygen_Concentration = 0.0
+      }
+
+
+

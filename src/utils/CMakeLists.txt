@@ -1,0 +1,6 @@
+INCLUDE (macros)
+
+BEGIN_PACKAGE_CONFIG ( utils )
+INSTALL_AMP_TARGET ( utils )
+
+ADD_SUBDIRECTORY ( test )

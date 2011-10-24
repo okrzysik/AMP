@@ -1,0 +1,7 @@
+INCLUDE (macros)
+
+BEGIN_PACKAGE_CONFIG ( matrices )
+ADD_PACKAGE_SUBDIRECTORY ( trilinos )
+INSTALL_AMP_TARGET ( matrices )
+
+ADD_SUBDIRECTORY ( test )

@@ -1,0 +1,80 @@
+
+mesh_file = "mesh7elem-1"
+
+MechanicsBVPOperator {
+  name="LinearBVPOperator"
+    print_info_level = 1
+
+    VolumeOperator="MechanicsLinearFEOperator"
+    BoundaryOperator="DirichletMatrixCorrection"
+}
+
+Load_Boundary {
+  name="DirichletVectorCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    isAttachedToVolumeOperator = FALSE
+    number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 1
+    dof_0_0 = 2
+    value_0_0 = 0.25
+}
+
+LinearSolver{
+  print_info_level = 3
+    max_iterations = 10000
+    max_error = 1e-10
+    max_levels = 10
+    ML_output = 10
+    increasingordecreasing = "increasing"
+    aggregationtype = "Uncoupled"
+    smoothertype = "Chebyshev"
+    smoother_sweeps = 3
+    smoother_preorpost = "both"
+    coarse_type = "Amesos-KLU"
+    PDE_equations = 3
+}
+
+MechanicsLinearFEOperator{
+      name="MechanicsLinearFEOperator"
+        print_info_level = 1
+        reset_reuses_matrix = TRUE
+        isAttachedToNonlinearOperator = FALSE
+        InputVariable = "displacement"
+        OutputVariable = "displacement"
+
+        MechanicsElement {
+          name="MechanicsLinearElement"
+            USE_REDUCED_INTEGRATION = FALSE 
+            FE_ORDER = "FIRST"  
+            FE_FAMILY = "LAGRANGE"
+            QRULE_TYPE = "QGAUSS"
+            QRULE_ORDER = "DEFAULT"
+        }
+	LocalModel = "MechanicsMaterialModel"
+    }
+
+DirichletMatrixCorrection{
+    name="DirichletMatrixCorrection"
+      print_info_level = 1
+      skip_params = FALSE
+      skip_rhs_correction = TRUE
+      number_of_ids = 1
+      id_0 = 1
+      number_of_dofs_0 = 3
+      dof_0_0 = 0
+      dof_0_1 = 1
+      dof_0_2 = 2
+      value_0_0 = 0.0
+      value_0_1 = 0.0
+      value_0_2 = 0.0
+  }
+
+MechanicsMaterialModel {
+        USE_MATERIALS_LIBRARY = FALSE
+          Material = "UO2_MSRZC_09"
+          name="IsotropicElasticModel"
+          Youngs_Modulus = 1.0e6
+          Poissons_Ratio = 0.25
+      }

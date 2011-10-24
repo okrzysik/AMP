@@ -1,0 +1,16 @@
+
+MechanicsMaterialModel {
+        USE_MATERIALS_LIBRARY = FALSE
+          Material = "UO2_MSRZC_09"
+          name="PericElastoViscoPlasticModel"
+          Youngs_Modulus = 100.0
+          Poissons_Ratio = 0.3
+          Linear_Strain_Hardening = 15.0
+          Elastic_Yield_Stress = 0.25
+          Viscosity = 20.0
+          Strain_Exponent = 0.5
+          Default_Temperature = 310.0
+          Default_Burnup = 0.0
+          Default_Oxygen_Concentration = .1
+      }
+

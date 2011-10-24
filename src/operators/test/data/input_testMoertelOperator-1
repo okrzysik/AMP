@@ -1,0 +1,26 @@
+
+NumberOfMeshes = 2
+Mesh_1{
+  Filename = "TC1-PELL-COARSE.e"
+  MeshName = "master"
+  x_offset = 0.0
+  y_offset = 0.0
+  z_offset = 0.0
+  NumberOfElements = 1326
+  DatabaseName = "db1"
+}
+
+Mesh_2{
+  Filename = "CLAD-COARSE.e"
+  MeshName = "slave"
+  x_offset = 0.0
+  y_offset = 0.0
+  z_offset = 0.0
+  NumberOfElements = 1360
+  DatabaseName = "db1"
+}
+
+
+db1 {
+  EmptyDb = 1.0
+}

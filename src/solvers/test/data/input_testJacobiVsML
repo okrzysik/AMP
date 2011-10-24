@@ -1,0 +1,138 @@
+
+NumberOfMeshes = 1
+
+Mesh_1{
+  Filename = "tiedContactV1_fusedpelletclad.e"
+    MeshName = "mesh"
+    x_offset = 0
+    y_offset = 0
+    z_offset = 0
+    NumberOfElements = 10
+}
+
+
+MechanicsBVPOperator {
+  name="LinearBVPOperator"
+    print_info_level = 1
+
+    VolumeOperator="MechanicsLinearFEOperator"
+    BoundaryOperator="DirichletMatrixCorrection"
+}
+
+Load_Boundary {
+  name="DirichletVectorCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    isAttachedToVolumeOperator = FALSE
+    setResidual = FALSE
+    valuesType = 1
+    number_of_ids = 1
+    id_0 = 9
+    //id_0 = 21
+    number_of_dofs_0 = 1
+    dof_0_0 = 2
+    value_0_0 = -1.0
+}
+
+CGsolver {
+  print_info_level = 10
+    zero_initial_guess = TRUE
+    max_iterations = 30
+    max_error = 1e-10
+    ksp_type = "cg"
+    absolute_tolerance = 1.0e-12
+    relative_tolerance = 1.0e-10
+    divergence_tolerance = 1.0e03
+    max_krylov_dimension = 40
+    uses_preconditioner=FALSE
+    pc_type = "none"
+    pc_side = "LEFT"
+
+    KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 30"
+}
+
+JacobiCGsolver {
+  print_info_level = 10
+    zero_initial_guess = TRUE
+    max_iterations = 30
+    max_error = 1e-10
+    ksp_type = "cg"
+    absolute_tolerance = 1.0e-12
+    relative_tolerance = 1.0e-10
+    divergence_tolerance = 1.0e03
+    max_krylov_dimension = 40
+    uses_preconditioner=TRUE
+    pc_type = "jacobi"
+    pc_side = "LEFT"
+
+    KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 30"
+}
+
+MLCGsolver {
+  print_info_level = 10
+    zero_initial_guess = TRUE
+    max_iterations = 30
+    max_error = 1e-10
+    ksp_type = "cg"
+    absolute_tolerance = 1.0e-12
+    relative_tolerance = 1.0e-10
+    divergence_tolerance = 1.0e03
+    max_krylov_dimension = 40
+    uses_preconditioner=TRUE
+    pc_type = "shell"
+    pc_side = "LEFT"
+
+    KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 30"
+
+    MLsolver {
+      print_info_level = 10
+        problem_type = "SA"
+        PDE_equations = 3
+        max_iterations = 1
+        max_error = 1e-10
+    }
+}
+
+MechanicsLinearFEOperator{
+      name="MechanicsLinearFEOperator"
+        print_info_level = 1
+        reset_reuses_matrix = TRUE
+        isAttachedToNonlinearOperator = FALSE
+        InputVariable = "displacement"
+        OutputVariable = "displacement"
+
+        MechanicsElement {
+          name="MechanicsLinearElement"
+            USE_REDUCED_INTEGRATION = FALSE 
+            FE_ORDER = "FIRST"  
+            FE_FAMILY = "LAGRANGE"
+            QRULE_TYPE = "QGAUSS"
+            QRULE_ORDER = "DEFAULT"
+        }
+	LocalModel = "MechanicsMaterialModel"
+     }
+
+DirichletMatrixCorrection{
+    name="DirichletMatrixCorrection"
+      print_info_level = 1
+      skip_params = FALSE
+      symmetric_correction = TRUE
+      zero_dirichlet_block = FALSE
+      skip_rhs_correction = TRUE
+
+      number_of_ids = 1
+      id_0 = 5
+      number_of_dofs_0 = 3
+      dof_0_0 = 0
+      dof_0_1 = 1
+      dof_0_2 = 2
+  }
+
+
+MechanicsMaterialModel {
+        USE_MATERIALS_LIBRARY = FALSE
+          Material = ""
+          name="IsotropicElasticModel"
+          Youngs_Modulus = 1.0e6
+          Poissons_Ratio = 0.2
+      }

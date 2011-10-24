@@ -1,0 +1,52 @@
+Mesh = "brick.e"
+testOperator {
+   name="LinearBVPOperator"
+   print_info_level = 1
+
+   VolumeOperator = "DiffusionLinearFEOperator"
+   BoundaryOperator="DirichletMatrixCorrection"
+}
+
+DiffusionLinearFEOperator{
+    name = "DiffusionLinearFEOperator"
+    InputVariable = "concentration"
+    OutputVariable = "woohoo"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    FixedConcentration = TRUE
+    FixedBurnup = TRUE
+
+    DiffusionElement {
+        name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+
+    LocalModel = "DiffusionTransportModel"
+}
+
+DirichletMatrixCorrection{
+    name="DirichletMatrixCorrection"
+    skip_params = FALSE
+    skip_rhs_correction = FALSE
+    print_info_level = 3
+    number_of_ids = 1
+    id_0             = 1
+    number_of_dofs_0 =   1
+    dof_0_0          =   0
+    value_0_0        = 300.
+  }
+
+DiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "Independent"
+        Property = "ThermalConductivity"
+        Default_Concentration = .1
+        Default_Temperature   = 300.
+        Default_Burnup   = 0.0
+    } 
+
+

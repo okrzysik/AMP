@@ -1,0 +1,266 @@
+
+Mesh = "halden_1_pellet_9mil.e"
+
+NumberOfMeshes = 1
+Mesh_1{
+  Filename = "halden_1_pellet_9mil.e"
+  MeshName = "bar"
+  x_offset = 0.0
+  y_offset = 0.0
+  z_offset = 0.0
+  NumberOfElements = 1000
+}
+
+NeutronicsOperator{
+  name="NeutronicsRhsOperator"
+  type               = "Power"
+  OutputVariable     = "SpecificPowerInWattsPerGram"
+  numTimeSteps       = 1
+  numValues          = 1
+  timeSteps          = .1
+  useFixedValue      = TRUE
+  fixedValues        = 1000.
+  print_info_level   = 3
+}
+
+NonlinearThermalOperator {
+  name="NonlinearBVPOperator"
+    print_info_level = 1
+    VolumeOperator = "DiffusionNonlinearFEOperator1"
+    BoundaryOperator = "DirichletVectorCorrection1"
+}
+
+DiffusionNonlinearFEOperator1 {
+      name = "DiffusionNonlinearFEOperator" 
+        print_info_level = 1
+        ActiveInputVariables {
+          temperature = "Temperature"
+        }
+      OutputVariable = "Temperature"
+        PrincipalVariable = 0 
+
+        DiffusionElement{
+          name = "DiffusionNonlinearElement"
+            TransportAtGaussPoints = TRUE
+            FE_ORDER = "FIRST"  
+            FE_FAMILY = "LAGRANGE"
+            QRULE_TYPE = "QGAUSS"
+            QRULE_ORDER = "DEFAULT"
+        }    
+
+	LocalModel = "DiffusionTransportModel1"
+    }
+
+DirichletVectorCorrection1 {
+          name="DirichletVectorCorrection"
+          skip_params = FALSE
+          isAttachedToVolumeOperator = TRUE
+          skip_rhs_correction = FALSE
+          skip_rhs_add_correction = FALSE
+          print_info_level = 0
+          number_of_ids = 1
+          id_0             =   1
+          number_of_dofs_0 =   1
+          dof_0_0          =   0
+          value_0_0        =   557.2
+
+}
+
+DiffusionTransportModel1{
+        name = "DiffusionTransportModel"
+        Material = "UO2_MSRZC_09"
+          Property = "ThermalConductivity"
+          Default_Concentration = 0.0
+          Default_Temperature   = 557.2
+          Default_Burnup   = 0.0
+      } 
+
+LinearThermalOperator {
+  name = "LinearBVPOperator"
+    print_info_level = 0
+    VolumeOperator = "DiffusionLinearFEOperator2"
+    BoundaryOperator = "DirichletMatrixCorrection2"
+}
+
+DiffusionLinearFEOperator2 {
+      name = "DiffusionLinearFEOperator"
+        print_info_level = 1
+        reset_reuses_matrix = TRUE
+        InputVariable = "Temperature"
+        OutputVariable = "Temperature"
+        FixedTemperature = FALSE
+
+        DiffusionElement {
+          name = "DiffusionLinearElement"
+            TransportAtGaussPoints = TRUE
+            FE_ORDER = "FIRST"  
+            FE_FAMILY = "LAGRANGE"
+            QRULE_TYPE = "QGAUSS"
+            QRULE_ORDER = "DEFAULT"
+        }    
+
+	LocalModel = "DiffusionTransportModel1"
+    }
+
+DirichletMatrixCorrection2 {
+          name="DirichletMatrixCorrection"
+          skip_params = FALSE
+          skip_rhs_correction = FALSE
+          skip_rhs_add_correction = TRUE
+          print_info_level = 0
+          number_of_ids = 1
+          id_0             =   1
+          number_of_dofs_0 =   1
+          dof_0_0          =   0
+          value_0_0        =   0.0
+
+}
+
+VolumeIntegralOperator{
+  name="VolumeIntegralOperator"
+    InputVariableType = "IntegrationPointScalar"
+    Number_Active_Variables = 1
+    Number_Auxillary_Variables = 0
+    ConstantSource   = FALSE
+    ActiveInputVariables{
+      ActiveVariable_0 = "SpecificPowerInWattsPerGram" 
+    }
+  OutputVariable = "heatsource"
+    print_info_level = 3
+    LocalModel = "SourcePhysicsModel"
+  SourceElement {
+    name="SourceNonlinearElement"
+      print_info_level = 3
+      FE_ORDER = "FIRST"  
+      FE_FAMILY = "LAGRANGE"
+      QRULE_TYPE = "QGAUSS"
+      QRULE_ORDER = "DEFAULT"
+  }
+}
+
+SourcePhysicsModel {
+      name = "SourcePhysicsModel"
+        Material = "UO2_MSRZC_09"
+        USE_ELEMENT_PHYSICS = "MassDensityModel"
+        Equation = "ThermalSource"
+        USE_MATERIALS_LIBRARY = TRUE 
+        Default_Concentration = .1
+        Default_Temperature   = 557.2 
+        Default_Burnup   = 0.0
+    }
+
+
+LinearSolver{
+  print_info_level = 3
+    max_iterations = 10
+    max_error = 1e-10
+}
+
+Map3Dto1D{
+  BoundaryId = 4
+    InputVariable = "Temperature"
+    OutputVariable = "Flow"
+}
+
+Map1Dto3D{
+  BoundaryId = 4
+    InputVariable = "Flow"
+    OutputVariable = "Temperature"
+}
+
+
+FlowFrapconOperator{
+  name = "FlowFrapconOperator"
+    InputVariable = "Flow"
+    OutputVariable = "Flow"
+    numpoints = 10
+    Channel_Diameter = 0.01
+    Heat_Capacity = 4179.6
+    Mass_Flux     = 10
+    Temp_Inlet    = 300
+    Conductivity  = 0.58  
+    Reynolds      = 100
+    Prandtl       = 1.0
+    number_of_dofs =   1
+    dof_0          =   0
+    value_0        = 300. 
+}
+
+FlowFrapconJacobian{
+  name = "FlowFrapconJacobian"
+    InputVariable = "Flow"
+    OutputVariable = "Flow"
+    numpoints = 10
+    Channel_Diameter = 0.01
+    Heat_Capacity = 4179.6
+    Mass_Flux     = 10
+    Temp_Inlet    = 300
+    Conductivity  = 0.58  
+    Reynolds      = 100
+    Prandtl       = 7.0
+    number_of_dofs =   1
+    dof_0          =   0
+    value_0        = 300. 
+}
+
+Flow1DSolver{
+  print_info_level = 7
+    max_iterations = 100
+    max_error = 1e-10
+
+    absoluteTolerance = 1.0e-9
+    relativeTolerance = 1.0e-6
+    stepTolerance = 1.0e-10
+    maximumFunctionEvals = 100
+    usesJacobian=FALSE
+}
+
+NonlinearSolver{
+  print_info_level = 7
+    max_iterations = 500
+    max_error = 1e-10
+
+    absoluteTolerance = 1.0e-10
+    relativeTolerance = 1.0e-10
+    stepTolerance = 1.0e-10
+    maximumFunctionEvals = 100
+    usesJacobian=FALSE
+
+    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ls_alpha 0.0001"
+
+    LinearSolver{
+      print_info_level = 0
+        max_iterations = 100
+        max_error = 1e-10
+        ksp_type = "fgmres"
+        absolute_tolerance = 1.0e-9
+        relative_tolerance = 1.0e-01
+        divergence_tolerance = 1.0e03
+        max_krylov_dimension = 40
+        uses_preconditioner=TRUE
+        pc_type = "shell"
+        pc_side = "RIGHT"
+
+        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100"
+
+        Preconditioner{
+          print_info_level = 0
+            max_iterations = 1
+            max_levels = 10
+            max_error = 1.0e-10
+
+            pelletThermalPreconditioner{
+              print_info_level = 0
+                max_iterations = 1
+                max_levels = 10
+                max_error = 1.0e-15
+                coarse_type="Amesos-KLU"
+                PDE_equations = 1
+            }
+
+        }
+    }
+}
+
+
+

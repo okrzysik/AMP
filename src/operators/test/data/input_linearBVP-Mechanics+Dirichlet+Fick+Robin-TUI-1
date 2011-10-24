@@ -1,0 +1,106 @@
+numberOfOperators=2
+
+testOperator1 {
+   name="LinearBVPOperator"
+   print_info_level = 1
+
+   VolumeOperator = "MechanicsLinearFEOperator"
+   BoundaryOperator="DirichletMatrixCorrection"
+}
+
+testOperator2 {
+   name="LinearBVPOperator"
+   print_info_level = 1
+
+   VolumeOperator = "DiffusionLinearFEOperator"
+   BoundaryOperator="RobinMatrixCorrection"
+}
+
+MechanicsLinearFEOperator{
+      name = "MechanicsLinearFEOperator"
+      print_info_level = 1
+      reset_reuses_matrix = TRUE
+      InputVariable = "disp"
+      OutputVariable = "disp"
+
+      MechanicsElement {
+       name="MechanicsLinearElement"
+       USE_REDUCED_INTEGRATION = FALSE 
+       FE_ORDER = "FIRST"  
+       FE_FAMILY = "LAGRANGE"
+       QRULE_TYPE = "QGAUSS"
+       QRULE_ORDER = "DEFAULT"
+      }
+
+      LocalModel="MechanicsMaterialModel"
+
+}
+
+DiffusionLinearFEOperator{
+    name = "DiffusionLinearFEOperator"
+    InputVariable = "concentration"
+    OutputVariable = "woohoo"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    FixedTemperature = TRUE
+    FixedBurnup = TRUE
+
+    DiffusionElement {
+        name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+
+    LocalModel="DiffusionTransportModel"
+}
+
+DirichletMatrixCorrection{
+      name="DirichletMatrixCorrection"
+      print_info_level = 1
+      skip_params = FALSE
+      skip_rhs_correction = TRUE
+      number_of_ids = 1
+      id_0          = 2
+      number_of_dofs_0 =  3
+      dof_0_0          =  0
+      dof_0_1          =  1
+      dof_0_2          =  2
+}
+
+RobinMatrixCorrection{
+   name="RobinMatrixCorrection"
+   skip_params = FALSE
+   FE_ORDER = "FIRST"
+   FE_FAMILY = "LAGRANGE"
+   QRULE_TYPE = "QGAUSS"
+   QRULE_ORDER = "DEFAULT"
+   fConductivity  = 1.0
+   alpha          = 1.0
+   beta           = 1.0
+   gamma          = 1.0
+   print_info_level = 3
+   number_of_ids    = 1
+   id_0             = 2
+   number_of_dofs_0 =   1
+   dof_0_0          =   0
+   value_0_0        = 101.
+  }
+
+
+DiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "Independent"
+        Property = "FickCoefficient"
+        Default_Concentration = .15
+        Default_Temperature   = 300.
+        Default_Burnup   = 0.0
+} 
+
+MechanicsMaterialModel { 
+       name="IsotropicElasticModel"
+       Youngs_Modulus = 2.08e11
+       Poissons_Ratio = 0.23
+}

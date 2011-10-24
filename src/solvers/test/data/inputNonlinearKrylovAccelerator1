@@ -1,0 +1,46 @@
+
+useConstantInitialGuess = FALSE
+initialGuessScaleFactor = 1000
+numFrequencies = 1
+
+Mesh{
+  dim = 3
+    cube_side = 4
+    xMin = 0.0
+    xMax = 1.0
+    yMin = 0.0
+    yMax = 1.0
+    zMin = 0.0
+    zMax = 1.0
+}
+
+ThermalOperator{
+  print_info_level = 3
+  isLinearOperator = FALSE
+  buildConductivityAtGaussPoints = TRUE
+  useConstantConductivity = FALSE
+  constantConductivityValue = 1.0
+}
+
+LinearSolver{
+  ksp_type = "fgmres"
+  print_info_level = 3
+  max_iterations = 10
+  max_error = 1e-10
+  uses_preconditioner=TRUE
+  pc_type="shell"
+  Preconditioner{
+        print_info_level = 3
+        max_iterations = 1
+        max_error = 1e-15
+  }
+}
+
+NonlinearSolver{
+  print_info_level = 3
+  max_iterations = 10
+  max_error = 1e-10
+  max_vectors = 10
+  angle_tolerance = 0.2
+}
+

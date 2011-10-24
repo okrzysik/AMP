@@ -1,0 +1,136 @@
+
+mesh_file = "mesh7elem-2"
+
+MechanicsBVPOperator {
+  name="LinearBVPOperator"
+    print_info_level = 1
+
+    VolumeOperator="MechanicsLinearFEOperator"
+    BoundaryOperator="DirichletMatrixCorrection"
+}
+
+LinearSolver{
+  print_info_level = 3
+    max_iterations = 10000
+    max_error = 1e-10
+    max_levels = 10
+    ML_output = 10
+    increasingordecreasing = "increasing"
+    aggregationtype = "Uncoupled"
+    smoothertype = "Chebyshev"
+    smoother_sweeps = 3
+    smoother_preorpost = "both"
+    coarse_type = "Amesos-KLU"
+    PDE_equations = 3
+}
+
+MechanicsLinearFEOperator{
+      name="MechanicsLinearFEOperator"
+        print_info_level = 1
+        reset_reuses_matrix = TRUE
+        isAttachedToNonlinearOperator = FALSE
+        InputVariable = "displacement"
+        OutputVariable = "displacement"
+
+        MechanicsElement {
+          name="MechanicsLinearElement"
+            USE_REDUCED_INTEGRATION = TRUE 
+            FE_ORDER = "FIRST"  
+            FE_FAMILY = "LAGRANGE"
+            QRULE_TYPE = "QGAUSS"
+            QRULE_ORDER = "DEFAULT"
+        }
+	LocalModel = "MechanicsMaterialModel"
+    }
+
+DirichletMatrixCorrection{
+    name="DirichletMatrixCorrection"
+      print_info_level = 1
+      skip_params = FALSE
+      skip_rhs_correction = FALSE
+      skip_rhs_add_correction = FALSE
+
+      number_of_ids = 8 
+
+      id_0 = 1 
+      number_of_dofs_0 = 3 
+      dof_0_0 = 0 
+      dof_0_1 = 1 
+      dof_0_2 = 2 
+      value_0_0 = 0.000000 
+      value_0_1 = 0.000000 
+      value_0_2 = 0.000000 
+
+      id_1 = 2 
+      number_of_dofs_1 = 3 
+      dof_1_0 = 0 
+      dof_1_1 = 1 
+      dof_1_2 = 2 
+      value_1_0 = 0.001000 
+      value_1_1 = 0.000500 
+      value_1_2 = 0.000500 
+
+      id_2 = 3 
+      number_of_dofs_2 = 3 
+      dof_2_0 = 0 
+      dof_2_1 = 1 
+      dof_2_2 = 2 
+      value_2_0 = 0.001500 
+      value_2_1 = 0.001500 
+      value_2_2 = 0.001000 
+
+      id_3 = 4 
+      number_of_dofs_3 = 3 
+      dof_3_0 = 0 
+      dof_3_1 = 1 
+      dof_3_2 = 2 
+      value_3_0 = 0.000500 
+      value_3_1 = 0.001000 
+      value_3_2 = 0.000500 
+
+      id_4 = 5 
+      number_of_dofs_4 = 3 
+      dof_4_0 = 0 
+      dof_4_1 = 1 
+      dof_4_2 = 2 
+      value_4_0 = 0.000500 
+      value_4_1 = 0.000500 
+      value_4_2 = 0.001000 
+
+      id_5 = 6 
+      number_of_dofs_5 = 3 
+      dof_5_0 = 0 
+      dof_5_1 = 1 
+      dof_5_2 = 2 
+      value_5_0 = 0.001500 
+      value_5_1 = 0.001000 
+      value_5_2 = 0.001500 
+
+      id_6 = 7 
+      number_of_dofs_6 = 3 
+      dof_6_0 = 0 
+      dof_6_1 = 1 
+      dof_6_2 = 2 
+      value_6_0 = 0.002000 
+      value_6_1 = 0.002000 
+      value_6_2 = 0.002000 
+
+      id_7 = 8 
+      number_of_dofs_7 = 3 
+      dof_7_0 = 0 
+      dof_7_1 = 1 
+      dof_7_2 = 2 
+      value_7_0 = 0.001000 
+      value_7_1 = 0.001500 
+      value_7_2 = 0.001500 
+
+  }
+
+
+MechanicsMaterialModel {
+        USE_MATERIALS_LIBRARY = FALSE
+          Material = "UO2_MSRZC_09"
+          name="IsotropicElasticModel"
+          Youngs_Modulus = 1.0e6
+          Poissons_Ratio = 0.25
+      }

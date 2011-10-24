@@ -1,0 +1,33 @@
+Mesh = "brick.e"
+  
+testOperator{
+    name = "DiffusionLinearFEOperator"
+    InputVariable = "temperature"
+    OutputVariable = "woohoo"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    FixedConcentration = TRUE
+    FixedBurnup = TRUE
+
+    DiffusionElement {
+        name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+
+    LocalModel = "DiffusionTransportModel"
+
+}
+
+DiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "Ox_MSRZC_09"
+        Property = "ThermalDiffusionCoefficient"
+        Default_Concentration = .1
+        Default_Temperature   = 301.
+        Default_Burnup   = 0.0
+    } 
+

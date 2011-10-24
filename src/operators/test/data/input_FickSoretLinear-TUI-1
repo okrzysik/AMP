@@ -1,0 +1,58 @@
+Mesh = "brick.e"
+
+ThisTestOperator {
+	name = "FickSoretLinearFEOperator"
+        FickOperator = "FickDiffusionLinearFEOperator"
+        SoretOperator = "SoretDiffusionLinearFEOperator"
+}
+
+FickDiffusionLinearFEOperator{
+	    name = "DiffusionLinearFEOperator"
+	    InputVariable = "concentration"
+	    OutputVariable = "woohoo"
+	    print_info_level = 1
+	    reset_reuses_matrix = TRUE
+	    FixedTemperature = TRUE
+	    FixedBurnup = TRUE
+
+	    DiffusionElement {
+	        name = "DiffusionLinearElement"
+	        TransportAtGaussPoints = TRUE
+	        FE_ORDER = "FIRST"  
+	        FE_FAMILY = "LAGRANGE"
+	        QRULE_TYPE = "QGAUSS"
+	        QRULE_ORDER = "DEFAULT"
+	    }    
+
+            LocalModel = "DiffusionTransportModel"
+}
+
+SoretDiffusionLinearFEOperator{
+	    name = "DiffusionLinearFEOperator"
+	    InputVariable = "temperature"
+	    OutputVariable = "woohoo"
+	    print_info_level = 1
+	    reset_reuses_matrix = TRUE
+	    FixedConcentration = TRUE
+	    FixedBurnup = TRUE
+
+	    DiffusionElement {
+	        name = "DiffusionLinearElement"
+	        TransportAtGaussPoints = TRUE
+	        FE_ORDER = "FIRST"  
+	        FE_FAMILY = "LAGRANGE"
+	        QRULE_TYPE = "QGAUSS"
+	        QRULE_ORDER = "DEFAULT"
+	    }    
+
+            LocalModel = "DiffusionTransportModel"
+}
+
+DiffusionTransportModel{
+	        name = "DiffusionTransportModel"
+	        Material = "Independent"
+	        Property = "FickCoefficient"
+	        Default_Concentration = .15
+	        Default_Temperature   = 300.
+	        Default_Burnup   = 0.0
+} 

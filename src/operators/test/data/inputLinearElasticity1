@@ -1,0 +1,22 @@
+
+Mesh{
+  dim = 3
+  cube_side = 4
+  xMin = 0.0
+  xMax = 1.0
+  yMin = 0.0
+  yMax = 1.0
+  zMin = 0.0
+  zMax = 1.0
+}
+
+ElasticityOperator{
+  print_info_level = 0
+  Youngs_Modulus = 2.08e11
+  Poissons_Ratio = 0.23
+}
+
+
+
+
+

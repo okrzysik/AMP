@@ -1,0 +1,29 @@
+
+testOperator {
+      name = "MechanicsLinearFEOperator"
+      print_info_level = 1
+      reset_reuses_matrix = TRUE
+      InputVariable = "disp"
+      OutputVariable = "disp"
+
+      MechanicsElement {
+       name="MechanicsLinearElement"
+       USE_REDUCED_INTEGRATION = TRUE 
+       FE_ORDER = "FIRST"  
+       FE_FAMILY = "LAGRANGE"
+       QRULE_TYPE = "QGAUSS"
+       QRULE_ORDER = "DEFAULT"
+      }
+
+      LocalModel = "MechanicsMaterialModel"
+
+}
+
+MechanicsMaterialModel { 
+       name="IsotropicElasticModel"
+       Youngs_Modulus = 2.08e11
+       Poissons_Ratio = 0.23
+      }
+
+
+

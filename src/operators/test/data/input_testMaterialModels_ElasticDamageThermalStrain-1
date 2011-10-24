@@ -1,0 +1,32 @@
+
+MechanicsMaterialModel {
+        USE_MATERIALS_LIBRARY = FALSE
+          Material = "UO2_MSRZC_09"
+          name="ElasticDamageThermalStrainModel"
+          //name="IsotropicElasticModel"
+          Youngs_Modulus = 70.0
+          Poissons_Ratio = 0.3333333
+          THERMAL_EXPANSION_COEFFICIENT = 2.0e-6
+          Initial_Damage_Threshold = 0.3
+          Critical_Damage_Threshold = 0.8
+          Default_Temperature = 310.0
+          Default_Burnup = 0.0
+          Default_Oxygen_Concentration = .1
+          //name="VonMises_IsotropicKinematicHardening"
+          //Youngs_Modulus = 70.0e9
+          //Poissons_Ratio = 0.3333333
+          //Cook_Membrane_Plasticity_Test = TRUE
+          //Thick_Walled_Cylinder_Plasticity_Test = FALSE
+// The following parameters are used for the Thick Walled cylinder test
+          //Linear_Strain_Hardening = 0.15e9
+          //Exponent_Delta = 0.1
+          //Value_K_0 = 0.2437e9
+          //K_Infinity = 0.343e9
+          //Fraction_Beta = 0.1
+// The following parameters are used for the Cook's Membrane Plasticity test
+          //Isotropic_Linear_Hardening = 0.015e9
+          //Kinematic_Linear_Hardening = 0.135e9
+          //Initial_Yield_Strength = 0.243e9
+// Parameters for the benchmark test ends here
+      }
+

@@ -1,0 +1,38 @@
+NumberOfMeshes = 2
+NumberOfMeshToMeshMaps = 1
+DomainDecomposition = 0
+
+Mesh_1{
+  Filename = "TC1-PELL-COARSE.e"
+  MeshName = "pellet_1"
+  x_offset = 0.0
+  y_offset = 0.0
+  z_offset = 0.0
+  NumberOfElements = 1326
+  DatabaseName = "db1"
+}
+
+Mesh_2{
+  Filename = "TC1-PELL-COARSE.e"
+  MeshName = "pellet_2"
+  x_offset = 0.0
+  y_offset = 0.0
+  z_offset = 0.5
+  NumberOfElements = 1326
+  DatabaseName = "db1"
+}
+
+MeshToMeshMap_1{
+  MapType = "NodeToNode"
+  Mesh1 = "pellet_1"
+  Surface1 = 1
+  Mesh2 = "pellet_2"
+  Surface2 = 2
+  DOFsPerObject = 3
+  VariableName = "displacement"
+  BoundaryId = 0
+}
+
+db1 {
+  EmptyDb = 1.0
+}

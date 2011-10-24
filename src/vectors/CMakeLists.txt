@@ -1,0 +1,9 @@
+INCLUDE (macros)
+
+
+BEGIN_PACKAGE_CONFIG ( vectors )
+ADD_PACKAGE_SUBDIRECTORY ( trilinos )
+INSTALL_AMP_TARGET ( vectors )
+
+ADD_SUBDIRECTORY ( test )
+

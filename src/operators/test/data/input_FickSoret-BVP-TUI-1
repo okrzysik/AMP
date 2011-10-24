@@ -1,0 +1,141 @@
+Mesh = "brick.e"
+
+testFickSoretBVPOperator {
+  name="NonlinearBVPOperator"
+  print_info_level = 3
+
+  VolumeOperator = "FickSoretNonlinearFEOperator"
+  BoundaryOperator = "DirichletVectorCorrection"
+}
+
+testLinearFickBVPOperator {
+    name = "LinearBVPOperator"
+    print_info_level = 3
+
+    VolumeOperator = "LinearFickDiffusionLinearFEOperator"
+    BoundaryOperator = "DirichletMatrixCorrection"
+}
+
+LinearFickDiffusionLinearFEOperator{
+        name = "DiffusionLinearFEOperator"
+        print_info_level = 1
+        reset_reuses_matrix = TRUE
+        InputVariable = "conc"
+        OutputVariable = "conc"
+        FixedConcentration = TRUE
+        FixedBurnup = TRUE
+
+        DiffusionElement {
+            name = "DiffusionLinearElement"
+            TransportAtGaussPoints = TRUE
+            FE_ORDER = "FIRST"  
+            FE_FAMILY = "LAGRANGE"
+            QRULE_TYPE = "QGAUSS"
+            QRULE_ORDER = "DEFAULT"
+        }    
+
+        LocalModel = "FickDiffusionTransportModel"
+
+}
+
+FickSoretNonlinearFEOperator{
+	  name = "FickSoretNonlinearFEOperator"
+          FickOperator = "FickDiffusionNonlinearFEOperator"
+          SoretOperator= "SoretDiffusionNonlinearFEOperator"
+}
+
+
+FickDiffusionNonlinearFEOperator{
+                  name = "DiffusionNonlinearFEOperator" 
+                  print_info_level = 1
+                  ActiveInputVariables {
+                  temperature = "temp"
+                  concentration = "conc"
+                  }
+                  OutputVariable = "conc"
+                  PrincipalVariable = 1
+
+                  DiffusionElement{
+                       name = "DiffusionNonlinearElement"
+                       TransportAtGaussPoints = TRUE
+                       FE_ORDER = "FIRST"  
+                       FE_FAMILY = "LAGRANGE"
+                       QRULE_TYPE = "QGAUSS"
+                       QRULE_ORDER = "DEFAULT"
+                 }    
+
+                 LocalModel = "FickDiffusionTransportModel"
+}
+
+SoretDiffusionNonlinearFEOperator{
+        name = "DiffusionNonlinearFEOperator" 
+
+        print_info_level = 1    
+        ActiveInputVariables {
+          temperature = "temp"
+          concentration = "conc"
+          }
+        OutputVariable = "conc"
+        PrincipalVariable = 0 
+  
+        DiffusionElement{
+          name = "DiffusionNonlinearElement"
+          TransportAtGaussPoints = TRUE
+          FE_ORDER = "FIRST"  
+          FE_FAMILY = "LAGRANGE"
+          QRULE_TYPE = "QGAUSS"
+          QRULE_ORDER = "DEFAULT"
+        }    
+
+        LocalModel = "ThermalDiffusionTransportModel"
+}
+
+DirichletVectorCorrection{
+      name = "DirichletVectorCorrection"
+      print_info_level = 1
+      skip_params = FALSE
+      number_of_ids = 2
+      id_0 = 4
+      number_of_dofs_0 = 1
+      dof_0_0 = 0
+      value_0_0 = 0.
+      id_1 = 8
+      number_of_dofs_1 = 1
+      dof_1_0 = 0
+      value_1_0 = 0.
+}
+
+DirichletMatrixCorrection{
+      name = "DirichletMatrixCorrection"
+      print_info_level = 1
+      skip_params = FALSE
+      skip_rhs_correction = TRUE
+      number_of_ids = 2
+      id_0          = 4
+      number_of_dofs_0 =  1
+      dof_0_0          =  0
+      id_1          = 8
+      number_of_dofs_1 = 1
+      dof_1_0 = 0
+
+}
+
+FickDiffusionTransportModel{
+          name = "DiffusionTransportModel"
+          Material = "Independent"
+          Property = "FickCoefficient"
+          Default_Concentration = .1
+          Default_Temperature   = 300.
+          Default_Burnup   = 0.0
+} 
+
+ThermalDiffusionTransportModel{
+          name = "DiffusionTransportModel"
+          Material = "Independent"
+          Property = "ThermalDiffusionCoefficient"
+          Default_Concentration = .1
+          Default_Temperature   = 300.
+          Default_Burnup   = 0.0
+} 
+
+

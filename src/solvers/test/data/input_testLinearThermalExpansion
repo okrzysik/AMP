@@ -1,0 +1,135 @@
+
+NumberOfMeshes = 1
+
+Mesh_1{
+  Filename = "halden_1_pellet_9mil.e"
+    MeshName = "pellet"
+    x_offset = 0
+    y_offset = 0
+    z_offset = 0
+    NumberOfElements = 10
+}
+
+MechanicsBVPOperator {
+  name="LinearBVPOperator"
+    print_info_level = 1
+
+    VolumeOperator="MechanicsLinearFEOperator"
+    BoundaryOperator="DirichletMatrixCorrection"
+}
+
+MechanicsLinearFEOperator{
+  name="MechanicsLinearFEOperator"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    InputVariable = "displacement"
+    OutputVariable = "displacement"
+
+    MechanicsElement {
+      name="MechanicsLinearElement"
+        USE_REDUCED_INTEGRATION = FALSE 
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
+  LocalModel = "MechanicsMaterialModel"
+}
+
+DirichletMatrixCorrection{
+  name="DirichletMatrixCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    symmetric_correction = TRUE
+    zero_dirichlet_block = FALSE
+    skip_rhs_correction = FALSE
+    skip_rhs_add_correction = TRUE
+
+    number_of_ids = 4
+
+    id_0 = 6
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+    value_0_0 = 0.0
+    value_0_1 = 0.0
+    value_0_2 = 0.0
+
+    id_1 = 5
+    number_of_dofs_1 = 2
+    dof_1_0 = 0
+    dof_1_1 = 1
+    value_1_0 = 0.0
+    value_1_1 = 0.0
+
+    id_2 = 7
+    number_of_dofs_2 = 1
+    dof_2_0 = 0
+    value_2_0 = 0.0
+
+    id_3 = 8
+    number_of_dofs_3 = 1
+    dof_3_0 = 1
+    value_3_0 = 0.0
+}
+
+MechanicsMaterialModel {
+  USE_MATERIALS_LIBRARY = FALSE
+    Material = ""
+    name="IsotropicElasticModel"
+    Youngs_Modulus = 1.0e6
+    Poissons_Ratio = 0.2
+}
+
+TemperatureRHS {
+  RhsElements {
+    FE_ORDER = "FIRST"  
+      FE_FAMILY = "LAGRANGE"
+      QRULE_TYPE = "QGAUSS"
+      QRULE_ORDER = "DEFAULT"
+      print_info_level = 0
+  }
+
+  RhsMaterialModel {
+    USE_MATERIALS_LIBRARY = FALSE
+      Material = ""
+      Youngs_Modulus = 1.0e6
+      Poissons_Ratio = 0.2
+      THERMAL_EXPANSION_COEFFICIENT = 2.0e-3
+  }
+}
+
+LinearSolver {
+  print_info_level = 10
+    max_iterations = 1000
+    max_error = 1e-12
+    ksp_type = "cg"
+    absolute_tolerance = 1.0e-12
+    relative_tolerance = 1.0e-11
+    divergence_tolerance = 1.0e03
+    max_krylov_dimension = 40
+    uses_preconditioner=TRUE
+    pc_type = "shell"
+    pc_side = "LEFT"
+
+    KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 1000"
+
+    Preconditioner {
+      problem_type = "SA"
+        PDE_equations = 3
+        print_info_level = 10
+        max_iterations = 1
+        max_levels = 10
+        max_error = 1e-13
+        absolute_tolerance = 1.0e-13
+        relative_tolerance = 1.0e-12
+        divergence_tolerance = 1.0e03
+    }
+}
+
+
+
+
+
+
