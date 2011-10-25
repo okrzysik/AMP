@@ -1,0 +1,26 @@
+rm -rf CMake*
+
+/usr/bin/cmake                                              \
+      -D AMP_DATA:PATH=/projects/AMP/AMP-Data               \
+      -D CMAKE_C_COMPILER:PATH=${CC}                        \
+      -D CMAKE_CXX_COMPILER:PATH=${CXX}                     \
+      -D CMAKE_Fortran_COMPILER:PATH=${F90}                 \
+      -D COMPILE_MODE:STRING=debug                          \
+      -D USE_BOOST=1                                        \
+         -D BOOST_DIRECTORY:PATH=/packages/boost_1_47_0     \
+      -D USE_SILO=0                                         \
+      -D USE_HDF5=0                                         \
+      -D USE_TRILINOS=0                                     \
+      -D USE_HYPRE=0                                        \
+      -D USE_PETSC=0                                        \
+      -D USE_SUNDIALS=0                                     \
+      -D USE_LIBMESH=0                                      \
+      -D USE_X11=0                                          \
+      -D USE_BLAS=0                                         \
+      -D USE_LAPACK=0                                       \
+      -D USE_MPI=1                                          \
+      -Wdev                                                 \
+      /projects/AMP2/AMP
+
+
+
