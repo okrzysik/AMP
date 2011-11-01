@@ -38,6 +38,15 @@ INCLUDE (macros)
 #     COPY_MESH_FILE ( mesh_file )
 #
 
+#COPY_MESH_FILE ( regCube16bin )
+#COPY_MESH_FILE ( regCube32bin )
+#COPY_MESH_FILE ( regCube64bin )
+#COPY_MESH_FILE ( regCube128bin )
+#COPY_MESH_FILE ( regCube256bin )
+
+ADD_AMP_PROVISIONAL_TEST ( testMechElasticLUvsML )
+COPY_TEST_DATA_FILE ( input_testMechElasticLUvsML )
+
 COPY_MESH_FILE ( cladSymmetric.e )
 COPY_MESH_FILE ( cladSymmetricRotated.e )
 COPY_MESH_FILE ( pellet_butterfly.e )

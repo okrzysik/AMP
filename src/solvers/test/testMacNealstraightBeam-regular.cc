@@ -49,17 +49,15 @@
 #include "ampmesh/SiloIO.h"
 
 
-#include "../PetscKrylovSolverParameters.h"
-#include "../PetscKrylovSolver.h"
-#include "../TrilinosMLSolver.h"
+#include "solvers/PetscKrylovSolverParameters.h"
+#include "solvers/PetscKrylovSolver.h"
+#include "solvers/TrilinosMLSolver.h"
 
-#include "ReadTestMesh.h"
+#include "utils/ReadTestMesh.h"
 
 extern "C"{
 #include "petsc.h"
 }
-
-
 
 void deformMesh(AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter,
     AMP::LinearAlgebra::Vector::shared_ptr mechSolVec) {
