@@ -1,9 +1,12 @@
 
 NumberOfMeshes = 0
-NumberOfMeshFiles = 3
+NumberOfMeshFiles = 4
 mesh1 = "regCube8bin"
 mesh2 = "regCube16bin"
 mesh3 = "regCube32bin"
+mesh4 = "regCube64bin"
+mesh5 = "regCube128bin"
+mesh6 = "regCube256bin"
 
 CG_Solver {
   print_info_level = 0
