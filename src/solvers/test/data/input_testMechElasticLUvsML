@@ -1,12 +1,14 @@
 
 NumberOfMeshes = 0
-NumberOfMeshFiles = 4
-mesh1 = "regCube8bin"
-mesh2 = "regCube16bin"
-mesh3 = "regCube32bin"
-mesh4 = "regCube64bin"
-mesh5 = "regCube128bin"
-mesh6 = "regCube256bin"
+NumberOfMeshFiles = 1
+mesh1 = "lumlmesh1"
+mesh2 = "lumlmesh2"
+mesh3 = "lumlmesh3"
+mesh4 = "lumlmesh4"
+mesh5 = "lumlmesh5"
+mesh6 = "lumlmesh6"
+mesh7 = "lumlmesh7"
+mesh8 = "lumlmesh8"
 
 CG_Solver {
   print_info_level = 0
