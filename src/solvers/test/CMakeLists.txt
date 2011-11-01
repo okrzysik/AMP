@@ -38,6 +38,7 @@ INCLUDE (macros)
 #     COPY_MESH_FILE ( mesh_file )
 #
 
+#COPY_MESH_FILE ( regCube8bin )
 #COPY_MESH_FILE ( regCube16bin )
 #COPY_MESH_FILE ( regCube32bin )
 #COPY_MESH_FILE ( regCube64bin )
