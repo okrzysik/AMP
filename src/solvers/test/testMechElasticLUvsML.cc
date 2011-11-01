@@ -50,6 +50,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   boost::shared_ptr<AMP::Database> rich_db = input_db->getDatabase("Richardson_Solver"); 
 
   for(int meshId = 1; meshId <= numMeshes; meshId++) {
+    std::cout<<"Working on mesh "<<meshId<<std::endl;
     AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
     AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
 
@@ -98,6 +99,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
     size_t numDofs = solVec->getGlobalSize();
 
+    std::cout<<"Solving using LU"<<std::endl;
     double luStartTime = AMP::AMP_MPI::time();
 
     boost::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> luParams(new AMP::Solver::TrilinosMLSolverParameters(lu_db));
@@ -129,6 +131,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     solVec->zero();
     resVec->zero();
 
+    std::cout<<"Solving using ML"<<std::endl;
     double mlStartTime = AMP::AMP_MPI::time();
 
     boost::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> mlParams(new AMP::Solver::TrilinosMLSolverParameters(ml_db));
