@@ -117,7 +117,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
     double luEndTime = AMP::AMP_MPI::time();
 
-    PetscInt richIters;
+    PetscInt richIters = 0;
     KSP richKsp = richSolver->getKrylovSolver();
     KSPGetIterationNumber(richKsp, &richIters);
     AMP_INSIST(richIters <= 1, "Should not need more than 1 LU-Richardson iteration.");
@@ -151,7 +151,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
     double mlEndTime = AMP::AMP_MPI::time();
 
-    PetscInt cgIters;
+    PetscInt cgIters = 0;
     KSP cgKsp = cgSolver->getKrylovSolver();
     KSPGetIterationNumber(cgKsp, &cgIters);
 

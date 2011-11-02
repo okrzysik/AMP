@@ -16,7 +16,7 @@ CG_Solver {
     max_error = 1.0e-30
     ksp_type = "cg"
     absolute_tolerance = 1.0e-30
-    relative_tolerance = 1.0e-14
+    relative_tolerance = 1.0e-12
     divergence_tolerance = 1.0e03
     uses_preconditioner = TRUE
     pc_type = "shell"
@@ -31,7 +31,7 @@ Richardson_Solver {
     max_error = 1.0e-30
     ksp_type = "richardson"
     absolute_tolerance = 1.0e-30
-    relative_tolerance = 1.0e-14
+    relative_tolerance = 1.0e-12
     divergence_tolerance = 1.0e03
     uses_preconditioner = TRUE
     pc_type = "shell"
