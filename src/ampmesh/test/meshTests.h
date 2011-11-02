@@ -9,60 +9,77 @@
 #include "ampmesh/MeshIterator.h"
 
 
-// This test checks that we can iterate over different elements
-// Note: in this context, elements refer to the highest dimension object
-class  ElementIteratorTest
+// This test checks a single mesh element iterator
+// ut           Unit test class to report the results
+// iterator     local iterator over elements
+// N_elem       number of local elements for the iterator
+void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator, const int N_elem )
 {
-public:
-    static const char * get_test_name () { return "verify element iterators"; }
-
-    static  void run_test ( AMP::UnitTest *utils, boost::shared_ptr<AMP::Mesh::Mesh> mesh ) {
-        // Get the number of elements
-        AMP::Mesh::GeomType type = mesh->getGeomType();
-        int number_of_local_elements = (int) mesh->numLocalElements(type);
-        if ( number_of_local_elements > 0 )
-            utils->passes ( "non trivial mesh generated" );
+    // Check that we can get the begin and end iterator
+    AMP::Mesh::MeshIterator  begin_it = iterator.begin();
+    AMP::Mesh::MeshIterator  end_it = iterator.end();
+    if ( N_elem==0 ) {
+        if ( begin_it == end_it )
+            ut->passes("trival iterator begin and end returned");
         else
-            utils->failure ( "trivial mesh generated" );
-        // Get the element iterator
-        AMP::Mesh::MeshIterator  cur_elem = mesh->getIterator(type,0);
-        AMP::Mesh::MeshIterator  end_elem = cur_elem.end();
-        std::set<size_t>  ids;
-        while ( cur_elem != end_elem )
-        {
-            ids.insert ( cur_elem->globalID() );
-            number_of_local_elements--;
-            cur_elem++;
-        }
-        if ( number_of_local_elements == 0 )
-            utils->passes ( "regular iterator count" );
-        else
-            utils->failure ( "regular iterator count" );
-        if ( ids.size() == mesh->numLocalElements(type) )
-            utils->passes ( "regular iterator uniqueness" );
-        else
-            utils->failure ( "regular iterator uniqueness" );
-
-/*        number_of_local_elements = mesh->numLocalElements ();
-        AMP::Mesh::MeshAdapter::ConstElementIterator  cur_const_elem = mesh->beginElement();
-        ids.clear();
-        while (!( cur_const_elem == mesh->endElement() ))
-        {
-            ids.insert ( cur_const_elem->globalID() );
-            number_of_local_elements--;
-            cur_const_elem++;
-        }
-        if ( number_of_local_elements == 0 )
-            utils->passes ( "const iterator" );
-        else
-            utils->failure ( "const iterator" );
-        if ( ids.size() == mesh->numLocalElements () )
-            utils->passes ( "const iterator uniqueness" );
-        else
-            utils->failure ( "const iterator uniqueness" );
-    */
+            ut->failure("trival iterator begin and end returned");
+        return;
     }
-};
+    if ( begin_it != end_it )
+        ut->passes("iterator begin and end returned");
+    else
+        ut->failure("iterator begin and end returned");
+
+    // Check that the iterator iterates through the proper number of elements
+    int number_of_local_elements = N_elem;
+    std::set<AMP::Mesh::MeshElementID>  ids;
+    AMP::Mesh::MeshIterator  cur_it = iterator.begin();
+    while ( cur_it != end_it ) {
+        AMP::Mesh::MeshElementID id = cur_it->globalID();
+        ids.insert ( id );
+        number_of_local_elements--;
+        cur_it++;
+    }
+    if ( number_of_local_elements == 0 )
+        ut->passes ( "regular iterator count" );
+    else
+        ut->failure ( "regular iterator count" );
+    if ( (int) ids.size() == N_elem )
+        ut->passes ( "regular iterator uniqueness" );
+    else
+        ut->failure ( "regular iterator uniqueness" );
+
+    // Run element tests
+
+}
+
+
+// Check the different mesh element iterators
+void MeshIteratorTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
+{
+    // Loop through the different geometric entities
+    for (int i=0; i<=(int)mesh->getGeomType(); i++) {
+        AMP::Mesh::GeomType type = (AMP::Mesh::GeomType) i;
+        try {
+            // Test regular iterator over local elements
+            int N_elem = (int) mesh->numLocalElements( type );
+            AMP::Mesh::MeshIterator iterator = mesh->getIterator(type,0);
+            ElementIteratorTest( ut, iterator, N_elem );
+            // Add tests with gcw != 0
+            // Add const iterator tests
+        } catch (...) {
+            if ( i==0 )
+                ut->failure ( "Node iterator failed" );
+            else if ( type==mesh->getGeomType() )
+                ut->failure ( "Geometric element iterator failed" );
+            else
+                ut->expected_failure ( "Intermediate element iterator failed" );
+        }
+    }
+    
+}
+
+
 
 /*
 class  ElementTest
@@ -404,52 +421,6 @@ public:
             curBid++;
         }
     }
-};
-
-
-class  NodeIteratorTest
-{
-public:
-        static const char * get_test_name () { return "verify node iterators"; }
-
-    static  void run_test ( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh ) {
-          int number_of_local_nodes = mesh->numLocalNodes ();
-          AMP::Mesh::MeshAdapter::NodeIterator  cur_node = mesh->beginNode();
-          std::set<size_t>  ids;
-          while ( cur_node != mesh->endNode() )
-          {
-            ids.insert ( cur_node->globalID() );
-            number_of_local_nodes--;
-            cur_node++;
-          }
-          if ( number_of_local_nodes == 0 )
-            utils->passes ( "regular iterator count" );
-          else
-            utils->failure ( "regular iterator count" );
-          if ( ids.size() == mesh->numLocalNodes () )
-            utils->passes ( "regular iterator uniqueness" );
-          else
-            utils->failure ( "regular iterator uniqueness" );
-
-
-          number_of_local_nodes = mesh->numLocalNodes ();
-          AMP::Mesh::MeshAdapter::ConstNodeIterator  cur_const_node = mesh->beginNode();
-          ids.clear();
-          while (!( cur_const_node == mesh->endNode() ))
-          {
-            ids.insert ( cur_const_node->globalID() );
-            number_of_local_nodes--;
-            cur_const_node++;
-          }
-          if ( number_of_local_nodes == 0 )
-            utils->passes ( "const iterator" );
-          else
-            utils->failure ( "const iterator" );
-          if ( ids.size() == mesh->numLocalNodes () )
-            utils->passes ( "const iterator uniqueness" );
-          else
-            utils->failure ( "const iterator uniqueness" );
-        }
 };
 
 

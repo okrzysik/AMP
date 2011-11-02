@@ -40,7 +40,9 @@ void testMeshCreation( AMP::UnitTest *ut )
 // Main function
 int main ( int argc , char ** argv )
 {
-    AMP::AMPManager::startup(argc, argv);
+    AMP::AMPManagerProperties startup_properties;
+    startup_properties.use_MPI_Abort = false;
+    AMP::AMPManager::startup(argc,argv,startup_properties);
     AMP::UnitTest ut;
 
     testMeshCreation( &ut );

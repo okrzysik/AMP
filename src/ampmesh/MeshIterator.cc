@@ -27,7 +27,7 @@ MeshIterator::MeshIterator(const MeshIterator& rhs)
     if ( rhs.iterator==NULL ) {
         iterator = NULL;
     } else {
-        iterator = rhs.clone();
+        iterator = rhs.iterator->clone();
     }
 }
 MeshIterator& MeshIterator::operator=(const MeshIterator& rhs)
@@ -38,7 +38,7 @@ MeshIterator& MeshIterator::operator=(const MeshIterator& rhs)
     if ( rhs.iterator==NULL ) {
         iterator = NULL;
     } else {
-        iterator = rhs.clone();
+        iterator = rhs.iterator->clone();
     }
     return *this;
 }

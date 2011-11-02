@@ -4,13 +4,11 @@
 #include "ampmesh/Mesh.h"
 #include "meshTests.h"
 
+
 void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
-    // Test a copy of the mesh
-
     // Test the iterators
-    ElementIteratorTest::run_test( ut, mesh );
-    //NodeIteratorTest::run_test( ut, mesh );
+    MeshIteratorTest( ut, mesh );
     //VerifyBoundaryNodeIterator::run_test( ut, mesh );
     //VerifyOwnedBoundaryNodeIterator::run_test( ut, mesh );
     //VerifyOwnedNodeIterator::run_test( ut, mesh );
