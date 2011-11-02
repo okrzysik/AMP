@@ -124,9 +124,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
     KSPConvergedReason richReason;
     KSPGetConvergedReason(richKsp, &richReason);
-    AMP_INSIST( ( (richReason == KSP_CONVERGED_RTOL_NORMAL) || 
-          (richReason == KSP_CONVERGED_ATOL_NORMAL) ||
-          (richReason == KSP_CONVERGED_RTOL) ||
+    AMP_INSIST( ( (richReason == KSP_CONVERGED_RTOL) ||
           (richReason == KSP_CONVERGED_ATOL) ), "KSP did not converge properly." );
 
     richSolver.reset();
@@ -159,9 +157,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
     KSPConvergedReason cgReason;
     KSPGetConvergedReason(cgKsp, &cgReason);
-    AMP_INSIST( ( (cgReason == KSP_CONVERGED_RTOL_NORMAL) || 
-          (cgReason == KSP_CONVERGED_ATOL_NORMAL) ||
-          (cgReason == KSP_CONVERGED_RTOL) ||
+    AMP_INSIST( ( (cgReason == KSP_CONVERGED_RTOL) ||
           (cgReason == KSP_CONVERGED_ATOL) ), "KSP did not converge properly." );
 
     cgSolver.reset();
