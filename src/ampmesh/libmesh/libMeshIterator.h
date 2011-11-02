@@ -78,7 +78,7 @@ private:
     void *d_end;
     void *d_pos;
     boost::shared_ptr< ::Mesh> d_libMesh;
-
+    MeshElement d_cur_element;
 };
 
 

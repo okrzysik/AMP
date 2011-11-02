@@ -1,5 +1,9 @@
 #include "ampmesh/libmesh/libMeshIterator.h"
+#include "ampmesh/libmesh/libMeshElement.h"
 #include "utils/Utilities.h"
+
+// libMesh includes
+#include "elem.h"
 
 namespace AMP {
 namespace Mesh {
@@ -217,14 +221,26 @@ bool libMeshIterator::operator!=(const MeshIterator& rhs)
 ********************************************************/
 MeshElement& libMeshIterator::operator*()
 {
-    AMP_ERROR("Not Implimented Yet");
-    nullElement = MeshElement();
-    return nullElement;
+    int dim = d_libMesh->mesh_dimension();
+    if ( d_type==0 ) {
+        // Node iterator
+        ::Mesh::node_iterator* it = (::Mesh::node_iterator*) d_pos;
+        ::Node *node = it->operator*();
+        d_cur_element = libMeshElement( dim, d_type, (void*) node );
+    } else if ( d_type==1 ) {
+        // Element iterator
+        ::Mesh::element_iterator* it = (::Mesh::element_iterator*) d_pos;
+        ::Elem *elem = it->operator*();
+        d_cur_element = libMeshElement( dim, d_type, (void*) elem );
+    } else {
+        AMP_ERROR("libMesh does not support iterators over this (unknown) type");
+    }
+    return d_cur_element;
 }
 MeshElement* libMeshIterator::operator->()
 {
-    AMP_ERROR("Not Implimented Yet");
-    return &nullElement;
+    d_cur_element = this->operator*();
+    return &d_cur_element;
 }
 
 

@@ -30,7 +30,7 @@ public:
         std::set<size_t>  ids;
         while ( cur_elem != end_elem )
         {
-            //ids.insert ( cur_elem->globalID() );
+            ids.insert ( cur_elem->globalID() );
             number_of_local_elements--;
             cur_elem++;
         }
