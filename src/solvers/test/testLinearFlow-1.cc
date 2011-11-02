@@ -69,23 +69,25 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
 	AMP::Mesh::MeshManagerParameters::shared_ptr meshmgrParams (new AMP::Mesh::MeshManagerParameters ( input_db ) );
 	AMP::Mesh::MeshManager::shared_ptr manager (new AMP::Mesh::MeshManager ( meshmgrParams ) );
-	AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ("cube");
+	AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapterH27 = manager->getMesh ("cubeH27");
+	AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapterH08 = manager->getMesh ("cubeH08");
 	
-  /////////////////////////////////////////////////
-  //   CREATE THE Conservation of Mass Operator  //
-  /////////////////////////////////////////////////
-
-	boost::shared_ptr<AMP::Operator::ElementPhysicsModel> FlowTransportModel; 
-	AMP_INSIST ( input_db->keyExists("ConsMassLinearFEOperator"),"key missing!");
-	boost::shared_ptr<AMP::Operator::LinearBVPOperator> ConsMassOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter, "ConsMassLinearBVPOperator", input_db, FlowTransportModel));
-
-        AMP::pout << "Finished creating Mass Operator" << std::endl;
   /////////////////////////////////////////////////
   //   CREATE THE Conservation of Momentum Operator  //
   /////////////////////////////////////////////////
 
+	boost::shared_ptr<AMP::Operator::ElementPhysicsModel> FlowTransportModel; 
 	AMP_INSIST ( input_db->keyExists("ConsMomentumLinearFEOperator"),"key missing!");
-	boost::shared_ptr<AMP::Operator::LinearBVPOperator> ConsMomentumOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter, "ConsMomentumLinearBVPOperator", input_db, FlowTransportModel));
+	boost::shared_ptr<AMP::Operator::LinearBVPOperator> ConsMomentumOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapterH27, "ConsMomentumLinearBVPOperator", input_db, FlowTransportModel));
+
+  /////////////////////////////////////////////////
+  //   CREATE THE Conservation of Mass Operator  //
+  /////////////////////////////////////////////////
+
+	AMP_INSIST ( input_db->keyExists("ConsMassLinearFEOperator"),"key missing!");
+	boost::shared_ptr<AMP::Operator::LinearBVPOperator> ConsMassOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapterH08, "ConsMassLinearBVPOperator", input_db, FlowTransportModel));
+
+        AMP::pout << "Finished creating Mass Operator" << std::endl;
 	
         //ease of use shared pointer
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;

@@ -58,6 +58,7 @@ COPY_MESH_FILE ( halden_contact_pellet_9mil_1x.e )
 COPY_MESH_FILE ( halden_1_pellet_9mil.e )
 COPY_MESH_FILE ( halden_1_clad.e )
 COPY_MESH_FILE ( cube343H27.e )
+COPY_MESH_FILE ( cube343H8.e )
 
 ADD_AMP_PROVISIONAL_TEST ( testContactV6 )
 COPY_TEST_DATA_FILE ( input_testContactV6 )
