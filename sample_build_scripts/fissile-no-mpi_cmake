@@ -1,0 +1,48 @@
+#! /bin/sh
+
+# Set paths
+export AMP_DATA=~/amp/AMP-Data
+export AMP_SOURCE=~/amp/AMP
+
+# Set compile flags
+export PETSC_ARCH=linux-gnu-c-dbg
+export METHOD=dbg
+export COMPILE_MODE=debug
+
+# Set the compilers
+export TYPE=intel
+export CC="icc"
+export CXX="icpc"
+export F77="ifort"
+export F90="ifort"
+export F90=/opt/mpich2/mpich2-1.3.2p1-intel64/bin/mpif90
+export PATH=${PATH}:/opt/intel/Compiler/11.1/064/bin/intel64/:/opt/intel/Compiler/11.1/064/lib/intel64/
+export PATH=${PATH}:/opt/mpich2/mpich2-1.3.2p1-intel64/bin/
+
+# Set the package base
+export BASE=/opt/amp/packages/serial/
+
+# Configure CMake
+/opt/amp/packages/cmake/bin/cmake                                           \
+   -D AMP_DATA:PATH=${AMP_DATA}                                             \
+   -D CMAKE_C_COMPILER:PATH=${CC}                                           \
+   -D CMAKE_CXX_COMPILER:PATH=${CXX}                                        \
+   -D CMAKE_Fortran_COMPILER:PATH=${F90}                                    \
+   -D COMPILE_MODE:STRING=${COMPILE_MODE}                                   \
+   -D DISABLE_GXX_DEBUG:BOOL=true                                           \
+   -D BOOST_DIRECTORY:PATH=/opt/intel-11.1.064/tpls/boost-1.47.0/           \
+   -D TRILINOS_DIRECTORY:PATH=${BASE}/trilinos/${METHOD}/${TYPE}            \
+   -D PETSC_DIRECTORY:PATH=${BASE}/petsc/${METHOD}/${TYPE}/petsc-3.0.0-p12  \
+      -D PETSC_ARCH:STRING=linux-gnu-c-dbg                                  \
+   -D HYPRE_DIRECTORY:PATH=${BASE}/hypre/${METHOD}/${TYPE}                  \
+   -D LIBMESH_DIRECTORY:PATH=${BASE}/libmesh/${METHOD}/${TYPE}              \
+      -D LIBMESH_HOSTTYPE:STRING=x86_64-unknown-linux-gnu                   \
+      -D LIBMESH_COMPILE_TYPE:STRING=${METHOD}                              \
+   -D SUNDIALS_DIRECTORY:PATH=${BASE}/sundials/${METHOD}/${TYPE}            \
+   -D SILO_DIRECTORY:PATH=${BASE}/silo/${METHOD}/${TYPE}                    \
+   -D HDF5_DIRECTORY:PATH=${BASE}/hdf5/${METHOD}/${TYPE}                    \
+   -D X11_DIRECTORY:PATH=/usr                                               \
+   -D USE_MPI=0                                                             \
+   ${AMP_SOURCE}
+
+
