@@ -1,4 +1,5 @@
-#ifdef USE_AMP_MESH
+#if 0
+//#ifdef USE_AMP_MESH
 #ifndef included_WriteSolutionToFile
 #define included_WriteSolutionToFile
 

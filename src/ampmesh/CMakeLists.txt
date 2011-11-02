@@ -1,0 +1,8 @@
+INCLUDE (macros)
+
+BEGIN_PACKAGE_CONFIG ( ampmesh )
+ADD_PACKAGE_SUBDIRECTORY ( libmesh )
+INSTALL_AMP_TARGET ( ampmesh )
+
+ADD_SUBDIRECTORY ( test )
+

@@ -1,4 +1,5 @@
-#ifdef USE_AMP_MESH
+#if 0
+//#ifdef USE_AMP_MESH
 #include "WriteSolutionToFile.h"
 
 void printSolution(AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter,

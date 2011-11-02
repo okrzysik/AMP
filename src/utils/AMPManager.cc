@@ -274,7 +274,7 @@ void AMPManager::initializeLibmesh( AMP_MPI libmeshComm )
         #endif
         // Reset the PETSc communicator back to the global communicator
         // LibMesh resets it to it's communicator regardless of weather it initializes it or not
-        #ifdef USE_MPI
+        #if defined(USE_PETSC) && defined(USE_MPI)
             PETSC_COMM_WORLD = MPI_COMM_WORLD;
         #endif
     #else

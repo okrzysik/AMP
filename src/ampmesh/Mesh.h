@@ -1,8 +1,11 @@
 #ifndef included_AMP_Mesh
 #define included_AMP_Mesh
 
+#include "MeshParameters.h"
 #include "MeshIterator.h"
 #include "MeshElement.h"
+#include "utils/AMP_MPI.h"
+#include <boost/shared_ptr.hpp>
 
 
 namespace AMP {
@@ -22,12 +25,14 @@ enum SetOP { Union, Intersection, Complement };
 class Mesh
 {
 public:
+
     /**
      *\typedef shared_ptr
      *\brief  Name for the shared pointer.
      *\details  Use this typedef for a reference counted pointer to a mesh manager object.
      */
-    typedef boost::shared_ptr<Mesh>  shared_ptr;
+    typedef boost::shared_ptr<AMP::Mesh::Mesh>  shared_ptr;
+
 
     /**
      * \param params Parameters for constructing a mesh from an input database
@@ -36,7 +41,8 @@ public:
      * processor contains a piece of each mesh.  For massive parallelism, each mesh is on its own
      * communicator.  As such, some math libraries must be initialized accordingly.
      */
-    virtual Mesh ( const MeshParameters::shared_ptr &params );
+    Mesh ( const MeshParameters::shared_ptr &params );
+
 
     /**
      * \brief Construct a new mesh from an existing mesh
@@ -48,7 +54,8 @@ public:
      * error.
      * \param old_mesh Existing mesh that we will use to construct the new mesh
      */
-    virtual Mesh ( const Mesh::shared_ptr &old_mesh );
+    Mesh ( const Mesh::shared_ptr &old_mesh );
+
 
     /**
      * \brief Construct a new mesh from an existing mesh.
@@ -61,7 +68,20 @@ public:
      * error.
      * \param old_mesh Existing mesh that we will use to construct the new mesh
      */
-    virtual Mesh ( const Mesh::shared_ptr &old_mesh, MeshIterator::shared_ptr &iterator);
+    Mesh ( const Mesh::shared_ptr &old_mesh, MeshIterator::shared_ptr &iterator);
+
+
+    //! Deconstructor
+     ~Mesh ();
+
+
+    //! Assignment operator
+    virtual Mesh operator=(const Mesh&);
+
+
+    //! Virtual function to copy the mesh (allows use to proply copy the derived class)
+    virtual Mesh copy() const;
+
 
     /**
      * \brief    Subset a mesh given a MeshIterator
@@ -71,12 +91,26 @@ public:
      */
     virtual boost::shared_ptr<Mesh>  Subset ( MeshIterator::shared_ptr &iterator );
 
+
     /**
      * \brief        Subset a mesh given another mesh
      * \details      This function will subset a mesh given another mesh
      * \param mesh   Mesh used to subset
      */
     virtual boost::shared_ptr<Mesh>  Subset ( Mesh &mesh );
+
+
+    /* Return the number of local element of the given type
+     * \param type   Geometric type
+     */
+    virtual size_t  numLocalElements( GeomType &type );
+
+
+    /* Return the global number of elements of the given type
+     * \param type   Geometric type
+     */
+    virtual size_t  numTotalElements( GeomType &type );
+
 
     /**
      * \brief    Return an MeshIterator over the given geometric objects
@@ -86,12 +120,14 @@ public:
      */
     virtual MeshIterator getIterator ( GeomType &type, int gcw=0 );
 
+
     /**
      * \brief    Return an MeshIterator over the given geometric objects on the surface
      * \details  Return an MeshIterator over the given geometric objects on the surface
      * \param type   Geometric type to iterate over
      */
     virtual MeshIterator getSurfaceIterator ( GeomType &type );
+
 
     /**
      * \brief    Return an MeshIterator constructed through a set operation of two other MeshIterators.
@@ -106,19 +142,28 @@ public:
     virtual MeshIterator getIterator ( SetOP &OP, MeshIterator::shared_ptr &A, MeshIterator::shared_ptr &B);
  
 
+    //! Get the largest geometric type in the mesh
+    virtual GeomType getGeomType() { return GeomDim; }
+
 protected:
 
     //!  Empty constructor for a mesh
-    Mesh ( );
+    Mesh() {}
 
     //! The mesh parameters
-    const MeshParameters::shared_ptr &params;
+    MeshParameters::shared_ptr params;
 
     //! The geometric dimension (equivalent to the highest geometric object that could be represented)
-    const GeomType &GeomDim;
+    GeomType GeomDim;
+
+    //! The physical dimension
+    short int PhysicalDim;
 
     //! The communicator over which the mesh is stored
-    AMP_MPI &comm;
+    AMP_MPI comm;
+
+    //! A pointer to an AMP database containing the mesh info
+    boost::shared_ptr<AMP::Database>  d_db;
 
 };
 

@@ -2,34 +2,46 @@
 #define included_AMP_MeshIterators
 
 #include <iterator>
+#include <boost/shared_ptr.hpp>
 #include "MeshElement.h"
 
 namespace AMP { 
 namespace Mesh {
 
 
-class MeshIterator: public iterator
+class MeshIterator
 {
 
 public:
-
     /**
-     * \brief MeshIterator constructor
-     * \details  This constructor will construct a new MeshIterator from an existing mesh iterator.
-     * \param mit Existing MeshIterator
+     *\typedef shared_ptr
+     *\brief  Name for the shared pointer.
+     *\details  Use this typedef for a reference counted pointer to a mesh manager object.
      */
-    MeshIterator(const MeshIterator& mit);
+    typedef boost::shared_ptr<MeshIterator>  shared_ptr;
 
-    //! Increment
+    //! Empty MeshIterator constructor
+    MeshIterator();
+
+    //! Copy constructor
+    MeshIterator(const MeshIterator&);
+
+    //! Assignment operator
+    MeshIterator& operator=(const MeshIterator&);
+
+    //! Deconstructor
+    virtual ~MeshIterator ();
+
+    //! Pre-Increment
     virtual MeshIterator& operator++();
     
-    //! Increment
+    //! Post-Increment (creates a temporary object)
     virtual MeshIterator operator++(int);
 
-    //! Decrement
+    //! Pre-Decrement
     virtual MeshIterator& operator--();
     
-    //! Decrement
+    //! Post-Decrement (creates a temporary object)
     virtual MeshIterator operator--(int);
 
     //! Check if two iterators are equal
@@ -39,12 +51,25 @@ public:
     virtual bool operator!=(const MeshIterator& rhs);
     
     //! Dereference the iterator
-    virtual MeshElement& operator*();
-};
+    virtual MeshElement &operator*(void);
+
+    //! Dereference the iterator
+    virtual MeshElement *operator->(void);
+
+    //! Return an iterator to the begining
+    virtual MeshIterator begin();
+
+    //! Return an iterator to the begining
+    virtual MeshIterator end();
 
 protected:
-    //! Empty MeshIterator constructor
-    MeshIterator();
+    // A pointer to the derived class
+    MeshIterator *iterator;
+    // Clone the iterator
+    virtual MeshIterator* clone() const;
+    // Unique (per class) ID for identifing the underlying iterator
+    int typeID;
+};
 
 
 }
