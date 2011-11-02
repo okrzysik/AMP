@@ -650,7 +650,8 @@ namespace Operator {
 
       for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) {
         double F_np1o2[3][3], R_np1o2[3][3], U_np1o2[3][3];
-        double dN_dxnp1o2[8], dN_dynp1o2[8], dN_dznp1o2[8], detJ_np1o2[1], d_np1o2[3][3], d_np1o2_temp[3][3], e_np1o2_tilda_rotated[3][3];
+        //double dN_dxnp1o2[8], dN_dynp1o2[8], dN_dznp1o2[8], detJ_np1o2[1], d_np1o2[3][3], d_np1o2_temp[3][3], e_np1o2_tilda_rotated[3][3];
+        double dN_dxnp1o2[8], dN_dynp1o2[8], dN_dznp1o2[8], detJ_np1o2[1], d_np1o2_temp[3][3];
   
         // The deformation gradients are computed in the next three lines.
         constructShapeFunctionDerivatives(dNdX, dNdY, dNdZ, refX, refY, refZ, currXi[qp], currEta[qp], currZeta[qp], detJ_0);

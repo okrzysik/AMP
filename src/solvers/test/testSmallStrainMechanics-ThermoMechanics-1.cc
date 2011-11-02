@@ -315,8 +315,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   ut->passes(exeName);
 
-  int exampleNum = 3;
 #ifdef USE_SILO
+  int exampleNum = 3;
   manager->registerVectorAsData ( solVec , "Solution_Vector" );
   manager->registerVectorAsData ( resVec , "Residual_Vector" );
   manager->registerVectorAsData ( burnVec, "InitialDamageThreshold" );
