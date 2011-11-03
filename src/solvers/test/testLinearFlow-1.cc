@@ -96,7 +96,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
         AMP::LinearAlgebra::Matrix::shared_ptr BMat = ConsMassOperator->getMatrix();
 
         AMP::LinearAlgebra::Matrix::shared_ptr BtMat =  BMat->transpose();
-        AMP::LinearAlgebra::Matrix::shared_ptr zeroMat = meshAdapter->createMatrix ( ConsMassOperator->getOutputVariable(), ConsMassOperator->getOutputVariable() ) ; 
+        AMP::LinearAlgebra::Matrix::shared_ptr zeroMat = meshAdapterH08->createMatrix ( ConsMassOperator->getOutputVariable(), ConsMassOperator->getOutputVariable() ) ; 
         zeroMat->zero();
 
         AMP::LinearAlgebra::Variable::shared_ptr velocityVar   = ConsMomentumOperator->getOutputVariable();
