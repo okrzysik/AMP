@@ -33,8 +33,6 @@ int main(int argc, char** argv) {
   std::vector<double> rMzArr(me + 1);
   std::vector<double> rPxArr(pe + 1);
   std::vector<double> rPzArr(pe + 1);
-  std::vector<double> dNxArr(ne + 1);
-  std::vector<double> dNzArr(ne + 1);
 
   for(int li = 0; li <= le; li++) {
     lYarr[li] = static_cast<double>(li)*c/static_cast<double>(le);
@@ -42,20 +40,14 @@ int main(int argc, char** argv) {
 
   for(int mi = 0; mi <= me; mi++) {
     mXarr[mi] = static_cast<double>(mi)*a/static_cast<double>(me);
-    double th = (__PI__/4.0) + (static_cast<double>(mi)*(__PI__)/(4.0*static_cast<double>(me)));
+    double th = (__PI__/2.0) - (static_cast<double>(mi)*(__PI__)/(4.0*static_cast<double>(me)));
     rMxArr[mi] = r*cos(th);
     rMzArr[mi] = r*sin(th);
   }//end for mi
 
-  double dX0 = r*cos(__PI__/4.0);
-  double dZ0 = r*sin(__PI__/4.0);
-  double dX1 = a;
-  double dZ1 = b;
   for(int ni = 0; ni <= ne; ni++) {
     nXarr[ni] = r  + (static_cast<double>(ni)*(a - r)/static_cast<double>(ne));
     nZarr[ni] = r  + (static_cast<double>(ni)*(b - r)/static_cast<double>(ne));
-    dNxArr[ni] = dX0 + ((dX1 - dX0)*static_cast<double>(ni)/static_cast<double>(ne));
-    dNzArr[ni] = dZ0 + ((dZ1 - dZ0)*static_cast<double>(ni)/static_cast<double>(ne));
   }//end for ni
 
   for(int pi = 0; pi <= pe; pi++) {
@@ -73,6 +65,47 @@ int main(int argc, char** argv) {
   fprintf(fp, "NumberOfNodes = %d \n", numPts);
 
   int nodeCnt = 0;
+  for(int li = 0; li <= le; li++) {
+
+    for(int ni = 0; ni <= ne; ni++) {
+      fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, 0.0, lYarr[li], nZarr[ni]);
+      nodeCnt++;
+    }//end for ni
+
+    for(int ni = 0; ni <= ne; ni++) {
+      fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, 0.0, lYarr[li], -nZarr[ni]);
+      nodeCnt++;
+    }//end for ni
+
+    for(int ni = 0; ni <= ne; ni++) {
+      fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, nXarr[ni], lYarr[li], 0.0);
+      nodeCnt++;
+    }//end for ni
+
+    for(int ni = 0; ni <= ne; ni++) {
+      fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, -nXarr[ni], lYarr[li], 0.0);
+      nodeCnt++;
+    }//end for ni
+
+    for(int mi = 1; mi <= me; mi++) {
+      for(int ni = 0; ni <= ne; ni++) {
+        double xPos = rMxArr[mi] + ((mXarr[mi] - rMxArr[mi])*static_cast<double>(ni)/static_cast<double>(ne));
+        double zPos = rMzArr[mi] + ((b - rMzArr[mi])*static_cast<double>(ni)/static_cast<double>(ne));
+        fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, xPos, lYarr[li], zPos);
+        nodeCnt++;
+      }//end for ni
+    }//end for mi
+
+    for(int pi = 1; pi < pe; pi++) {
+      for(int ni = 0; ni <= ne; ni++) {
+        double xPos = rPxArr[pi] + ((a - rPxArr[pi])*static_cast<double>(ni)/static_cast<double>(ne));
+        double zPos = rPzArr[pi] + ((pZarr[pi] - rPzArr[pi])*static_cast<double>(ni)/static_cast<double>(ne));
+        fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, xPos, lYarr[li], zPos);
+        nodeCnt++;
+      }//end for ni
+    }//end for pi
+
+  }//end for li
 
   fprintf(fp, "\n");
 
