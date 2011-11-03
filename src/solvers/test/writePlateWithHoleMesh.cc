@@ -19,11 +19,12 @@ int main(int argc, char** argv) {
   int ne = atoi(argv[3]);
   int pe = atoi(argv[4]);
 
-  double a = atof(argv[5]);
-  double b = atof(argv[6]);
-  double c = atof(argv[7]);
+  double a = atof(argv[5]); //X-dimension
+  double b = atof(argv[6]); //Z-dimension
+  double c = atof(argv[7]); //Y-dimension
   double r = atof(argv[8]);
 
+  std::vector<double> lYarr(le + 1);
   std::vector<double> mXarr(me + 1);
   std::vector<double> nXarr(ne + 1);
   std::vector<double> nZarr(ne + 1);
@@ -34,6 +35,10 @@ int main(int argc, char** argv) {
   std::vector<double> rPzArr(pe + 1);
   std::vector<double> dNxArr(ne + 1);
   std::vector<double> dNzArr(ne + 1);
+
+  for(int li = 0; li <= le; li++) {
+    lYarr[li] = static_cast<double>(li)*c/static_cast<double>(le);
+  }//end for li
 
   for(int mi = 0; mi <= me; mi++) {
     mXarr[mi] = static_cast<double>(mi)*a/static_cast<double>(me);
@@ -59,6 +64,7 @@ int main(int argc, char** argv) {
     rPxArr[pi] = r*cos(th);
     rPzArr[pi] = r*sin(th);
   }//end for pi
+
 
 }
 
