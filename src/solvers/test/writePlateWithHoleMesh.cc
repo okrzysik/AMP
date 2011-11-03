@@ -65,6 +65,41 @@ int main(int argc, char** argv) {
     rPzArr[pi] = r*sin(th);
   }//end for pi
 
+  FILE* fp = fopen(argv[9], "w");
+
+  fprintf(fp, "Mesh { \n");
+
+  int numPts = 4*(le + 1)*(ne + 1)*(me + pe);
+  fprintf(fp, "NumberOfNodes = %d \n", numPts);
+
+  int nodeCnt = 0;
+
+  fprintf(fp, "\n");
+
+  int numElem = 4*le*ne*(me + pe);
+  fprintf(fp, "NumberOfElements = %d \n", numElem);
+
+  int elemCnt = 0;
+
+  fprintf(fp,"\n");
+
+  fprintf(fp, "NumberOfBoundaryNodeIds = 2 \n\n");
+
+  fprintf(fp, "NumberOfBoundaryNodes1 = %d \n", ( ((2*me) + 1)*(le + 1) ) );
+  fprintf(fp, "BoundaryNodeId1 = ");
+
+  fprintf(fp,"\n\n");
+
+  fprintf(fp, "NumberOfBoundaryNodes2 = %d \n", ( ((2*me) + 1)*(le + 1) ) );
+  fprintf(fp, "BoundaryNodeId2 = ");
+
+  fprintf(fp,"\n\n");
+
+  fprintf(fp, "NumberOfBoundarySideIds = 0 \n\n");
+
+  fprintf(fp, "} \n");
+
+  fclose(fp);
 
 }
 
