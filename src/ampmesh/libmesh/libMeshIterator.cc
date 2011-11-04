@@ -231,12 +231,12 @@ MeshElement* libMeshIterator::operator->()
         // Node iterator
         ::Mesh::node_iterator* it = (::Mesh::node_iterator*) d_pos;
         ::Node *node = it->operator*();
-        d_cur_element = libMeshElement( dim, d_type, (void*) node );
+        d_cur_element = libMeshElement( dim, Vertex, (void*) node );
     } else if ( d_type==1 ) {
         // Element iterator
         ::Mesh::element_iterator* it = (::Mesh::element_iterator*) d_pos;
         ::Elem *elem = it->operator*();
-        d_cur_element = libMeshElement( dim, d_type, (void*) elem );
+        d_cur_element = libMeshElement( dim, (GeomType) dim, (void*) elem );
     } else {
         AMP_ERROR("libMesh does not support iterators over this (unknown) type");
     }

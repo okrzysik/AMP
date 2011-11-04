@@ -37,6 +37,8 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
             d_libMeshData = boost::shared_ptr< ::MeshData>( new ::MeshData(*d_libMesh) );
             // Use libMesh to read the data
             d_libMesh->read(d_db->getString("Filename"));
+            // Construct the neighbor information
+            d_libMesh->find_neighbors();
         } else {
             AMP_ERROR("Unable to construct mesh with given parameters");
         }

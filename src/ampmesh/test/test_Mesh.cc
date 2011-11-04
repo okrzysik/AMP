@@ -18,17 +18,7 @@ void testMeshCreation( AMP::UnitTest *ut )
     params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
 
     // Create an libMesh mesh
-    boost::shared_ptr<AMP::Mesh::libMesh> mesh1(new AMP::Mesh::libMesh(params));
-    /*AMP::Mesh::libMesh test1 = *mesh1;
-    AMP::Mesh::Mesh test2 = test1;
-    AMP::Mesh::GeomType type = mesh1->getGeomType();
-    size_t N1 = test1.numLocalElements(type);
-    size_t N2 = test2.numLocalElements(type);
-    if ( N1==N2)
-        ut->passes("Basic derived class copy works");
-    else
-        ut->failure("Basic derived class copy works");*/
-    
+    boost::shared_ptr<AMP::Mesh::libMesh> mesh1(new AMP::Mesh::libMesh(params));    
 
     // Run the mesh tests
     MeshTestLoop( ut, mesh1 );

@@ -15,35 +15,35 @@ libMeshElement::libMeshElement()
 {
     typeID = libMeshElementTypeID;
     element = NULL;
+    d_dim = -1;
+    d_elementType = null;
+    d_globalID = 0;
 }
-libMeshElement::libMeshElement(int dim, int type, void* libmesh_element)
+libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element)
 {
     typeID = libMeshElementTypeID;
-    d_dim = dim;
-    d_type = type;
     element = NULL;
+    d_elementType = type;
+    d_dim = dim;
     ptr_element = libmesh_element;
-    if ( d_type==0 ) {
+    if ( d_elementType==Vertex ) {
         d_elementType = Vertex;
         ::Node* node = (::Node*) ptr_element;
         d_globalID = node->id();
-    } else if ( d_type==1 ) {
+    } else {
         d_elementType = (GeomType) dim;
         ::Elem* elem = (::Elem*) ptr_element;
         d_globalID = elem->id();
-    } else {
-        AMP_ERROR("libMesh does not define this element type");
     }
 }
 libMeshElement::libMeshElement(const libMeshElement& rhs)
 {
     typeID = libMeshElementTypeID;
     element = NULL;
-    d_dim = rhs.d_dim;
-    d_type = rhs.d_type;
-    ptr_element = rhs.ptr_element;
     d_elementType = rhs.d_elementType;
     d_globalID = rhs.d_globalID;
+    d_dim = rhs.d_dim;
+    ptr_element = rhs.ptr_element;
 }
 libMeshElement& libMeshElement::operator=(const libMeshElement& rhs)
 {
@@ -51,11 +51,10 @@ libMeshElement& libMeshElement::operator=(const libMeshElement& rhs)
         return *this;
     this->typeID = libMeshElementTypeID;
     this->element = NULL;
-    this->d_dim = rhs.d_dim;
-    this->d_type = rhs.d_type;
-    this->ptr_element = rhs.ptr_element;
     this->d_elementType = rhs.d_elementType;
     this->d_globalID = rhs.d_globalID;
+    this->d_dim = rhs.d_dim;
+    this->ptr_element = rhs.ptr_element;
     return *this;
 }
 
@@ -83,7 +82,36 @@ MeshElement* libMeshElement::clone() const
 ********************************************************/
 std::vector<MeshElement> libMeshElement::getElements(GeomType &type)
 {
-    return std::vector<MeshElement>(0);
+    if ( d_elementType==Vertex )
+        AMP_ERROR("A vertex is the base element and cannot have and sub-elements");
+    if ( type >= d_elementType )
+        AMP_ERROR("type must be <= the GeomType of the current element");
+    std::vector<MeshElement> children(0);
+    ::Elem* elem = (::Elem*) ptr_element;
+    if ( type==d_elementType ) {
+        // Return the children of the current element
+        children.resize(elem->n_children());
+        for (unsigned int i=0; i<children.size(); i++)
+            children[i] = libMeshElement( d_dim, type, (void*)elem->child(i) );
+    } else if ( type==Vertex ) {
+        // Return the nodes of the current element
+        children.resize(elem->n_nodes());
+        for (unsigned int i=0; i<children.size(); i++)
+            children[i] = libMeshElement( d_dim, type, (void*)elem->get_node(i) );
+    } else if ( type==Edge ) {
+        // Return the edges of the current element
+        AMP_ERROR("unfinished");
+        //children.resize(elem->n_edges());
+        //for (unsigned int i=0; i<children.size(); i++)
+        //    children[i] = libMeshElement( d_dim, type, (void*)elem->build_edge(i) );
+    } else if ( type==Face ) {
+        // Return the edges of the current element
+        AMP_ERROR("unfinished");
+        //children.resize(elem->n_faces());
+        //for (unsigned int i=0; i<children.size(); i++)
+        //    //children[i] = libMeshElement( d_dim, type, (void*)elem->build_face(i) );
+    }
+    return children;
 }
 std::vector<MeshElement> libMeshElement::getNeighbors()
 {

@@ -1,7 +1,7 @@
 #ifndef included_test_VectorTests
 #define included_test_VectorTests
 #include <algorithm>
-#include "ampmesh/MeshAdapter.h"
+#include "ampmesh/Mesh.h"
 #include "utils/AMP_MPI.h"
 #include "utils/UnitTest.h"
 
@@ -1072,7 +1072,7 @@ class VerifyVectorGhostCreate
 
 };
 
-
+/*
 template <typename VECTOR_FACTORY>
 class VerifyVectorMakeConsistentAdd
   {
@@ -1202,7 +1202,7 @@ class VerifyVectorMakeConsistentSet
         if ( testPassed )
           utils->passes ( "ghost set correctly in alias" );
       }
-};
+};*/
 
 
 }

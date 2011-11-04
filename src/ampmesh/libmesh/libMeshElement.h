@@ -54,17 +54,16 @@ protected:
 
     /** Default constructor
      * \param dim       Spatial dimension
-     * \param type      Entity type:  0: node, 1: element
+     * \param type      Element type
      * \param element   Underlying libmesh element
      */
-    libMeshElement(int dim, int type, void* element);
+    libMeshElement(int dim, GeomType type, void* element);
 
     //! Clone the iterator
     virtual MeshElement* clone() const;
 
     //! The underlying libmesh element
     int d_dim;
-    int d_type;
     void* ptr_element;
 
     friend class AMP::Mesh::libMesh;

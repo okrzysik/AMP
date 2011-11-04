@@ -69,7 +69,7 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator, c
             if ( element.volume() <= 0.0 )
                 volume_pass = false;
         }
-        //for (int i=0; i<=(int)type; i++) {
+        //for (int i=0; i<(int)type; i++) {
         //    AMP::Mesh::GeomType type2 = (AMP::Mesh::GeomType) i;
         //    std::vector<AMP::Mesh::MeshElement> pieces = element.getElements(type2);
         //}
