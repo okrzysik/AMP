@@ -22,7 +22,7 @@ static MeshElement nullElement;
 libMeshIterator::libMeshIterator()
 {
     typeID = libMeshIteratorTypeID;
-    iterator = this;
+    iterator = NULL;
     d_begin=NULL;
     d_end=NULL;
     d_pos=NULL;
@@ -31,7 +31,7 @@ libMeshIterator::libMeshIterator()
 libMeshIterator::libMeshIterator(int type, boost::shared_ptr< ::Mesh> mesh, int gcw, void *begin, void *end, void *pos)
 {
     typeID = libMeshIteratorTypeID;
-    iterator = this;
+    iterator = NULL;
     d_type = type;
     d_libMesh = mesh;
     d_gcw = gcw;
@@ -52,7 +52,7 @@ libMeshIterator::libMeshIterator(int type, boost::shared_ptr< ::Mesh> mesh, int 
 libMeshIterator::libMeshIterator(const libMeshIterator& rhs)
 {
     typeID = libMeshIteratorTypeID;
-    iterator = this;
+    iterator = NULL;
     d_type = rhs.d_type;
     d_libMesh = rhs.d_libMesh;
     d_gcw = rhs.d_gcw;
@@ -75,7 +75,7 @@ libMeshIterator& libMeshIterator::operator=(const libMeshIterator& rhs)
     if (this == &rhs) // protect against invalid self-assignment
         return *this;
     this->typeID = libMeshIteratorTypeID;
-    this->iterator = this;
+    this->iterator = NULL;
     this->d_type = rhs.d_type;
     this->d_libMesh = rhs.d_libMesh;
     this->d_gcw = rhs.d_gcw;
@@ -221,6 +221,11 @@ bool libMeshIterator::operator!=(const MeshIterator& rhs)
 ********************************************************/
 MeshElement& libMeshIterator::operator*()
 {
+    this->operator->();      // Initialize d_cur_element
+    return d_cur_element;
+}
+MeshElement* libMeshIterator::operator->()
+{
     int dim = d_libMesh->mesh_dimension();
     if ( d_type==0 ) {
         // Node iterator
@@ -235,11 +240,6 @@ MeshElement& libMeshIterator::operator*()
     } else {
         AMP_ERROR("libMesh does not support iterators over this (unknown) type");
     }
-    return d_cur_element;
-}
-MeshElement* libMeshIterator::operator->()
-{
-    d_cur_element = this->operator*();
     return &d_cur_element;
 }
 

@@ -34,8 +34,14 @@ public:
     //! Empty constructor for a MeshElement
     MeshElement ( );
 
+    //! Copy constructor
+    MeshElement(const MeshElement&);
+
+    //! Assignment operator
+    MeshElement& operator=(const MeshElement&);
+
     //! De-constructor for a MeshElement
-    ~MeshElement ( );
+    virtual ~MeshElement ( );
 
     //! Return the element type
     virtual GeomType elementType() { return d_elementType; }
@@ -50,10 +56,10 @@ public:
     virtual std::vector<MeshElement> getNeighbors();
 
     //! Return the volume of the current element (does not apply to verticies)
-    virtual double getVolume();
+    virtual double volume();
 
     //! Return the coordinates of all verticies composing the element
-    virtual void getCoord(std::vector<double> &coords);
+    virtual std::vector<double> coord();
 
 protected:
 
@@ -62,6 +68,15 @@ protected:
 
     //! The unique global id of the element
     MeshElementID d_globalID;
+
+    // A pointer to the derived class
+    MeshElement *element;
+
+    // Clone the iterator
+    virtual MeshElement* clone() const;
+
+    // Unique (per class) ID for identifing the underlying iterator
+    int typeID;
 };
 
 

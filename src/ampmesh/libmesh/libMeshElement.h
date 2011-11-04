@@ -28,8 +28,27 @@ public:
     //! Empty constructor for a MeshElement
     libMeshElement ( );
 
+    //! Copy constructor
+    libMeshElement(const libMeshElement&);
+
+    //! Assignment operator
+    libMeshElement& operator=(const libMeshElement&);
+
     //! De-constructor for a MeshElement
-    ~libMeshElement ( );
+    virtual ~libMeshElement ( );
+
+    //! Return the elements composing the current element
+    virtual std::vector<MeshElement> getElements(GeomType &type);
+
+    //! Return the elements neighboring the current element
+    virtual std::vector<MeshElement> getNeighbors();
+
+    //! Return the volume of the current element (does not apply to verticies)
+    virtual double volume();
+
+    //! Return the coordinates of all verticies composing the element
+    virtual std::vector<double> coord();
+
 
 protected:
 
@@ -39,6 +58,9 @@ protected:
      * \param element   Underlying libmesh element
      */
     libMeshElement(int dim, int type, void* element);
+
+    //! Clone the iterator
+    virtual MeshElement* clone() const;
 
     //! The underlying libmesh element
     int d_dim;

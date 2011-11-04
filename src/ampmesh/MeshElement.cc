@@ -5,11 +5,54 @@ namespace AMP {
 namespace Mesh {
 
 
+// Create a unique id for this class
+static int MeshElementTypeID = 1;
+
+
 /********************************************************
 * Constructors                                          *
 ********************************************************/
 MeshElement::MeshElement()
 {
+    typeID = MeshElementTypeID;
+    element = NULL;
+    d_elementType = null;
+    d_globalID = 0;
+}
+MeshElement::MeshElement(const MeshElement& rhs)
+{
+    typeID = MeshElementTypeID;
+    element = NULL;
+    if ( rhs.element==NULL && rhs.typeID==MeshElementTypeID ) {
+        element = NULL;
+    } else if ( rhs.typeID!=MeshElementTypeID ) {
+        element = rhs.clone();
+    } else {
+        element = rhs.element->clone();
+    }
+    d_elementType = rhs.d_elementType;
+    d_globalID = rhs.d_globalID;
+}
+MeshElement& MeshElement::operator=(const MeshElement& rhs)
+{
+    if (this == &rhs) // protect against invalid self-assignment
+        return *this;
+    if ( element != NULL ) {
+        // Delete the existing element
+        delete element;
+        element = NULL;
+    }
+    typeID = MeshElementTypeID;
+    if ( rhs.element==NULL && rhs.typeID==MeshElementTypeID ) {
+        element = NULL;
+    } else if ( rhs.typeID!=MeshElementTypeID ) {
+        element = rhs.clone();
+    } else {
+        element = rhs.element->clone();
+    }
+    d_elementType = rhs.d_elementType;
+    d_globalID = rhs.d_globalID;
+    return *this;
 }
 
 
@@ -18,6 +61,22 @@ MeshElement::MeshElement()
 ********************************************************/
 MeshElement::~MeshElement()
 {
+    if ( element != NULL )
+        delete element;
+    element = NULL;
+}
+
+
+/********************************************************
+* Function to clone the element                         *
+********************************************************/
+MeshElement* MeshElement::clone() const
+{
+    if ( element==NULL )
+        return new MeshElement();
+    else
+        AMP_ERROR("clone must instantiated by the derived class");
+    return NULL;
 }
 
 
@@ -26,22 +85,27 @@ MeshElement::~MeshElement()
 ********************************************************/
 std::vector<MeshElement> MeshElement::getElements(GeomType &type)
 {
-    AMP_ERROR("Not Implimented Yet");
-    return std::vector<MeshElement>(0);
+    if ( element==NULL )
+        AMP_ERROR("getElements is not implimented for the base class");
+    return element->getElements(type);
 }
 std::vector<MeshElement> MeshElement::getNeighbors()
 {
-    AMP_ERROR("Not Implimented Yet");
-    return std::vector<MeshElement>(0);
+    if ( element==NULL )
+        AMP_ERROR("getNeighbors is not implimented for the base class");
+    return element->getNeighbors();
 }
-double MeshElement::getVolume()
+double MeshElement::volume()
 {
-    AMP_ERROR("Not Implimented Yet");
-    return 0.0;
+    if ( element==NULL )
+        AMP_ERROR("volume is not implimented for the base class");
+    return element->volume();
 }
-void MeshElement::getCoord(std::vector<double> &coords)
+std::vector<double> MeshElement::coord()
 {
-    AMP_ERROR("Not Implimented Yet");
+    if ( element==NULL )
+        AMP_ERROR("coord is not implimented for the base class");
+    return element->coord();
 }
 
 

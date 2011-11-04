@@ -13,7 +13,7 @@
 // ut           Unit test class to report the results
 // iterator     local iterator over elements
 // N_elem       number of local elements for the iterator
-void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator, const int N_elem )
+void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator, const int N_elem, const AMP::Mesh::GeomType type )
 {
     // Check that we can get the begin and end iterator
     AMP::Mesh::MeshIterator  begin_it = iterator.begin();
@@ -50,7 +50,44 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator, c
         ut->failure ( "regular iterator uniqueness" );
 
     // Run element tests
-
+    bool id_pass = true;
+    bool type_pass = true;
+    bool volume_pass = true;
+    bool coord_pass = true;
+    cur_it = iterator.begin();
+    while ( cur_it != end_it ) {
+        AMP::Mesh::MeshElement element = *cur_it;
+        if ( element.globalID() != cur_it->globalID() )
+            id_pass = false;
+        if ( element.elementType() != type )
+            type_pass = false;
+        if ( type==AMP::Mesh::Vertex ) {
+            std::vector<double> coord = element.coord();
+            if ( coord.size()==0 )
+                coord_pass = false;
+        } else {
+            if ( element.volume() <= 0.0 )
+                volume_pass = false;
+        }
+        //for (int i=0; i<=(int)type; i++) {
+        //    AMP::Mesh::GeomType type2 = (AMP::Mesh::GeomType) i;
+        //    std::vector<AMP::Mesh::MeshElement> pieces = element.getElements(type2);
+        //}
+        //std::vector<AMP::Mesh::MeshElement> neighbors = element.getNeighbors();
+        cur_it++;
+    }
+    if ( id_pass && type_pass && volume_pass && coord_pass ) {
+        ut->passes( "elements passed" );
+    } else {
+        if ( !id_pass )
+            ut->failure( "elements failed id test" );
+        if ( !type_pass )
+            ut->failure( "elements failed type test" );
+        if ( !volume_pass )
+            ut->failure( "elements failed volume test" );
+        if ( !coord_pass )
+            ut->failure( "elements failed coord test" );
+    }
 }
 
 
@@ -60,14 +97,16 @@ void MeshIteratorTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mes
     // Loop through the different geometric entities
     for (int i=0; i<=(int)mesh->getGeomType(); i++) {
         AMP::Mesh::GeomType type = (AMP::Mesh::GeomType) i;
+        // Try to create the iterator
+        int N_elem = 0;
+        AMP::Mesh::MeshIterator iterator;
+        bool iterator_created = true;
         try {
-            // Test regular iterator over local elements
-            int N_elem = (int) mesh->numLocalElements( type );
-            AMP::Mesh::MeshIterator iterator = mesh->getIterator(type,0);
-            ElementIteratorTest( ut, iterator, N_elem );
-            // Add tests with gcw != 0
-            // Add const iterator tests
+            N_elem = (int) mesh->numLocalElements( type );
+            iterator = mesh->getIterator(type,0);
+            ut->passes ( "Element iterator created" );
         } catch (...) {
+            iterator_created = false;
             if ( i==0 )
                 ut->failure ( "Node iterator failed" );
             else if ( type==mesh->getGeomType() )
@@ -75,6 +114,11 @@ void MeshIteratorTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mes
             else
                 ut->expected_failure ( "Intermediate element iterator failed" );
         }
+        // Test the regular iterator over local elements
+        if ( iterator_created )
+            ElementIteratorTest( ut, iterator, N_elem, type );
+        // Add tests with gcw != 0
+        // Add const iterator tests
     }
     
 }

@@ -24,19 +24,29 @@ MeshIterator::MeshIterator()
 MeshIterator::MeshIterator(const MeshIterator& rhs)
 {
     typeID = MeshIteratorTypeID;
-    if ( rhs.iterator==NULL ) {
+    iterator = NULL;
+    if ( rhs.iterator==NULL && rhs.typeID==MeshIteratorTypeID ) {
         iterator = NULL;
+    } else if ( rhs.typeID!=MeshIteratorTypeID ) {
+        iterator = rhs.clone();
     } else {
         iterator = rhs.iterator->clone();
     }
 }
 MeshIterator& MeshIterator::operator=(const MeshIterator& rhs)
 {
-    typeID = MeshIteratorTypeID;
     if (this == &rhs) // protect against invalid self-assignment
         return *this;
-    if ( rhs.iterator==NULL ) {
+    if ( iterator != NULL ) {
+        // Delete the existing element
+        delete iterator;
         iterator = NULL;
+    }
+    typeID = MeshIteratorTypeID;
+    if ( rhs.iterator==NULL && rhs.typeID==MeshIteratorTypeID ) {
+        iterator = NULL;
+    } else if ( rhs.typeID!=MeshIteratorTypeID ) {
+        iterator = rhs.clone();
     } else {
         iterator = rhs.iterator->clone();
     }
@@ -51,6 +61,7 @@ MeshIterator::~MeshIterator()
 {
     if ( iterator != NULL )
         delete iterator;
+    iterator = NULL;
 }
 
 
