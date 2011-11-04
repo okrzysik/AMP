@@ -64,29 +64,39 @@ int main(int argc, char** argv) {
   int numPts = 4*(le + 1)*(ne + 1)*(me + pe);
   fprintf(fp, "NumberOfNodes = %d \n", numPts);
 
+  std::vector<std::vector<int> > uniqueNodeId(le + 1);
+  for(int li = 0; li <= le; li++) {
+    uniqueNodeId[li].resize(4*(ne + 1)*(me + pe + 2));
+  }//end for li
+
   int nodeCnt = 0;
   for(int li = 0; li <= le; li++) {
 
+    //Node zone 1
     for(int ni = 0; ni <= ne; ni++) {
       fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, 0.0, lYarr[li], nZarr[ni]);
       nodeCnt++;
     }//end for ni
 
+    //Node zone 2
     for(int ni = 0; ni <= ne; ni++) {
       fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, 0.0, lYarr[li], -nZarr[ni]);
       nodeCnt++;
     }//end for ni
 
+    //Node zone 3
     for(int ni = 0; ni <= ne; ni++) {
       fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, nXarr[ni], lYarr[li], 0.0);
       nodeCnt++;
     }//end for ni
 
+    //Node zone 4
     for(int ni = 0; ni <= ne; ni++) {
       fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, -nXarr[ni], lYarr[li], 0.0);
       nodeCnt++;
     }//end for ni
 
+    //Node zone 5
     for(int mi = 1; mi <= me; mi++) {
       for(int ni = 0; ni <= ne; ni++) {
         double xPos = rMxArr[mi] + ((mXarr[mi] - rMxArr[mi])*static_cast<double>(ni)/static_cast<double>(ne));
@@ -96,6 +106,7 @@ int main(int argc, char** argv) {
       }//end for ni
     }//end for mi
 
+    //Node zone 6
     for(int pi = 1; pi < pe; pi++) {
       for(int ni = 0; ni <= ne; ni++) {
         double xPos = rPxArr[pi] + ((a - rPxArr[pi])*static_cast<double>(ni)/static_cast<double>(ne));
@@ -105,6 +116,7 @@ int main(int argc, char** argv) {
       }//end for ni
     }//end for pi
 
+    //Node zone 7
     for(int mi = 1; mi <= me; mi++) {
       for(int ni = 0; ni <= ne; ni++) {
         double xPos = rMxArr[mi] + ((mXarr[mi] - rMxArr[mi])*static_cast<double>(ni)/static_cast<double>(ne));
@@ -114,6 +126,7 @@ int main(int argc, char** argv) {
       }//end for ni
     }//end for mi
 
+    //Node zone 8
     for(int pi = 1; pi < pe; pi++) {
       for(int ni = 0; ni <= ne; ni++) {
         double xPos = rPxArr[pi] + ((a - rPxArr[pi])*static_cast<double>(ni)/static_cast<double>(ne));
@@ -123,6 +136,7 @@ int main(int argc, char** argv) {
       }//end for ni
     }//end for pi
 
+    //Node zone 9
     for(int mi = 1; mi <= me; mi++) {
       for(int ni = 0; ni <= ne; ni++) {
         double xPos = rMxArr[mi] + ((mXarr[mi] - rMxArr[mi])*static_cast<double>(ni)/static_cast<double>(ne));
@@ -132,6 +146,7 @@ int main(int argc, char** argv) {
       }//end for ni
     }//end for mi
 
+    //Node zone 10
     for(int pi = 1; pi < pe; pi++) {
       for(int ni = 0; ni <= ne; ni++) {
         double xPos = rPxArr[pi] + ((a - rPxArr[pi])*static_cast<double>(ni)/static_cast<double>(ne));
@@ -141,6 +156,7 @@ int main(int argc, char** argv) {
       }//end for ni
     }//end for pi
 
+    //Node zone 11
     for(int mi = 1; mi <= me; mi++) {
       for(int ni = 0; ni <= ne; ni++) {
         double xPos = rMxArr[mi] + ((mXarr[mi] - rMxArr[mi])*static_cast<double>(ni)/static_cast<double>(ne));
@@ -150,6 +166,7 @@ int main(int argc, char** argv) {
       }//end for ni
     }//end for mi
 
+    //Node zone 12
     for(int pi = 1; pi < pe; pi++) {
       for(int ni = 0; ni <= ne; ni++) {
         double xPos = rPxArr[pi] + ((a - rPxArr[pi])*static_cast<double>(ni)/static_cast<double>(ne));
@@ -167,6 +184,12 @@ int main(int argc, char** argv) {
   fprintf(fp, "NumberOfElements = %d \n", numElem);
 
   int elemCnt = 0;
+  for(int li = 0; li < le; li++) {
+
+    //fprintf(fp, "Elem%d = %d, %d, %d, %d, %d, %d, %d, %d \n", elemCnt, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]);
+    //elemCnt++;
+
+  }//end for li
 
   fprintf(fp,"\n");
 
