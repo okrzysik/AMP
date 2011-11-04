@@ -136,12 +136,14 @@ MACRO ( CONFIGURE_HDF5 )
             VERIFY_PATH ( ${HDF5_DIRECTORY} )
             INCLUDE_DIRECTORIES ( ${HDF5_DIRECTORY}/include )
             SET ( HDF5_INCLUDE ${HDF5_DIRECTORY}/include )
-            FIND_LIBRARY ( HDF5_LIB NAMES hdf5 PATHS ${HDF5_DIRECTORY}/lib  NO_DEFAULT_PATH )
+            FIND_LIBRARY ( HDF5_LIB    NAMES hdf5    PATHS ${HDF5_DIRECTORY}/lib  NO_DEFAULT_PATH )
+            FIND_LIBRARY ( HDF5_HL_LIB NAMES hdf5_hl PATHS ${HDF5_DIRECTORY}/lib  NO_DEFAULT_PATH )
         ELSE()
             MESSAGE ( FATAL_ERROR "Default search for hdf5 is not yet supported.  Use -D HDF5_DIRECTORY=" )
         ENDIF()
         SET ( HDF5_LIBS
             ${HDF5_LIB}
+            ${HDF5_HL_LIB}
         )
         ADD_DEFINITIONS ( "-D USE_HDF5" )  
         MESSAGE ( "Using hdf5" )
