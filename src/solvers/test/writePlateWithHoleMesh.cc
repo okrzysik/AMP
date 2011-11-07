@@ -14,15 +14,18 @@ int main(int argc, char** argv) {
     exit(0);
   }
 
-  int le = atoi(argv[1]);
-  int me = atoi(argv[2]);
-  int ne = atoi(argv[3]);
-  int pe = atoi(argv[4]);
+  int const le = atoi(argv[1]);
+  int const me = atoi(argv[2]);
+  int const ne = atoi(argv[3]);
+  int const pe = atoi(argv[4]);
 
-  double a = atof(argv[5]); //X-dimension
-  double b = atof(argv[6]); //Z-dimension
-  double c = atof(argv[7]); //Y-dimension
-  double r = atof(argv[8]);
+  int const ze[] = {ne, pe, me, ne, me, ne, ne, pe};
+  int const xe[] = {me, ne, ne, pe, ne, pe, me, ne};
+
+  double const a = atof(argv[5]); //X-dimension
+  double const b = atof(argv[6]); //Z-dimension
+  double const c = atof(argv[7]); //Y-dimension
+  double const r = atof(argv[8]);
 
   std::vector<double> lYarr(le + 1);
   std::vector<double> mXarr(me + 1);
@@ -64,34 +67,48 @@ int main(int argc, char** argv) {
   int numPts = 4*(le + 1)*(ne + 1)*(me + pe);
   fprintf(fp, "NumberOfNodes = %d \n", numPts);
 
-  std::vector<std::vector<int> > uniqueNodeId(le + 1);
-  for(int li = 0; li <= le; li++) {
-    uniqueNodeId[li].resize(4*(ne + 1)*(me + pe + 2));
-  }//end for li
+  std::vector<std::vector<std::vector<std::vector<int> > > > uniqueNodeId(8);
+  for(int ei = 0; ei < 8; ei++) {
+    uniqueNodeId[ei].resize(le + 1);
+    for(int li = 0; li <= le; li++) {
+      uniqueNodeId[ei][li].resize(ze[ei] + 1);
+      for(int k = 0; k < (ze[ei] + 1); k++) {
+        uniqueNodeId[ei][li][k].resize(xe[ei] + 1);
+      }//end for k
+    }//end for li
+  }//end for ei
 
   int nodeCnt = 0;
   for(int li = 0; li <= le; li++) {
 
     //Node zone 1
     for(int ni = 0; ni <= ne; ni++) {
+      uniqueNodeId[0][li][ni][0] = nodeCnt;
+      uniqueNodeId[4][li][0][ni] = nodeCnt;
       fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, 0.0, lYarr[li], nZarr[ni]);
       nodeCnt++;
     }//end for ni
 
     //Node zone 2
     for(int ni = 0; ni <= ne; ni++) {
+      uniqueNodeId[2][li][0][ni] = nodeCnt;
+      uniqueNodeId[6][li][ni][0] = nodeCnt;
       fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, 0.0, lYarr[li], -nZarr[ni]);
       nodeCnt++;
     }//end for ni
 
     //Node zone 3
     for(int ni = 0; ni <= ne; ni++) {
+      uniqueNodeId[1][li][0][ni] = nodeCnt;
+      uniqueNodeId[3][li][ni][0] = nodeCnt;
       fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, nXarr[ni], lYarr[li], 0.0);
       nodeCnt++;
     }//end for ni
 
     //Node zone 4
     for(int ni = 0; ni <= ne; ni++) {
+      uniqueNodeId[5][li][ni][0] = nodeCnt;
+      uniqueNodeId[7][li][0][ni] = nodeCnt;
       fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, -nXarr[ni], lYarr[li], 0.0);
       nodeCnt++;
     }//end for ni
@@ -99,6 +116,10 @@ int main(int argc, char** argv) {
     //Node zone 5
     for(int mi = 1; mi <= me; mi++) {
       for(int ni = 0; ni <= ne; ni++) {
+        uniqueNodeId[0][li][ni][mi] = nodeCnt;
+        if(mi == me) {
+          uniqueNodeId[1][li][pe][ni] = nodeCnt;
+        }
         double xPos = rMxArr[mi] + ((mXarr[mi] - rMxArr[mi])*static_cast<double>(ni)/static_cast<double>(ne));
         double zPos = rMzArr[mi] + ((b - rMzArr[mi])*static_cast<double>(ni)/static_cast<double>(ne));
         fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, xPos, lYarr[li], zPos);
@@ -109,6 +130,7 @@ int main(int argc, char** argv) {
     //Node zone 6
     for(int pi = 1; pi < pe; pi++) {
       for(int ni = 0; ni <= ne; ni++) {
+        uniqueNodeId[1][li][pi][ni] = nodeCnt;
         double xPos = rPxArr[pi] + ((a - rPxArr[pi])*static_cast<double>(ni)/static_cast<double>(ne));
         double zPos = rPzArr[pi] + ((pZarr[pi] - rPzArr[pi])*static_cast<double>(ni)/static_cast<double>(ne));
         fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, xPos, lYarr[li], zPos);
@@ -119,6 +141,10 @@ int main(int argc, char** argv) {
     //Node zone 7
     for(int mi = 1; mi <= me; mi++) {
       for(int ni = 0; ni <= ne; ni++) {
+        uniqueNodeId[2][li][mi][ni] = nodeCnt;
+        if(mi == me) {
+          uniqueNodeId[3][li][ni][pe] = nodeCnt;
+        }
         double xPos = rMxArr[mi] + ((mXarr[mi] - rMxArr[mi])*static_cast<double>(ni)/static_cast<double>(ne));
         double zPos = rMzArr[mi] + ((b - rMzArr[mi])*static_cast<double>(ni)/static_cast<double>(ne));
         fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, xPos, lYarr[li], -zPos);
@@ -129,6 +155,7 @@ int main(int argc, char** argv) {
     //Node zone 8
     for(int pi = 1; pi < pe; pi++) {
       for(int ni = 0; ni <= ne; ni++) {
+        uniqueNodeId[3][li][ni][pi] = nodeCnt;
         double xPos = rPxArr[pi] + ((a - rPxArr[pi])*static_cast<double>(ni)/static_cast<double>(ne));
         double zPos = rPzArr[pi] + ((pZarr[pi] - rPzArr[pi])*static_cast<double>(ni)/static_cast<double>(ne));
         fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, xPos, lYarr[li], -zPos);
@@ -139,6 +166,10 @@ int main(int argc, char** argv) {
     //Node zone 9
     for(int mi = 1; mi <= me; mi++) {
       for(int ni = 0; ni <= ne; ni++) {
+        uniqueNodeId[4][li][mi][ni] = nodeCnt;
+        if(mi == me) {
+          uniqueNodeId[5][li][ni][pe] = nodeCnt;
+        }
         double xPos = rMxArr[mi] + ((mXarr[mi] - rMxArr[mi])*static_cast<double>(ni)/static_cast<double>(ne));
         double zPos = rMzArr[mi] + ((b - rMzArr[mi])*static_cast<double>(ni)/static_cast<double>(ne));
         fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, -xPos, lYarr[li], zPos);
@@ -149,6 +180,7 @@ int main(int argc, char** argv) {
     //Node zone 10
     for(int pi = 1; pi < pe; pi++) {
       for(int ni = 0; ni <= ne; ni++) {
+        uniqueNodeId[5][li][ni][pi] = nodeCnt;
         double xPos = rPxArr[pi] + ((a - rPxArr[pi])*static_cast<double>(ni)/static_cast<double>(ne));
         double zPos = rPzArr[pi] + ((pZarr[pi] - rPzArr[pi])*static_cast<double>(ni)/static_cast<double>(ne));
         fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, -xPos, lYarr[li], zPos);
@@ -159,6 +191,10 @@ int main(int argc, char** argv) {
     //Node zone 11
     for(int mi = 1; mi <= me; mi++) {
       for(int ni = 0; ni <= ne; ni++) {
+        uniqueNodeId[6][li][ni][mi] = nodeCnt;
+        if(mi == me) {
+          uniqueNodeId[7][li][pe][ni] = nodeCnt;
+        }
         double xPos = rMxArr[mi] + ((mXarr[mi] - rMxArr[mi])*static_cast<double>(ni)/static_cast<double>(ne));
         double zPos = rMzArr[mi] + ((b - rMzArr[mi])*static_cast<double>(ni)/static_cast<double>(ne));
         fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, -xPos, lYarr[li], -zPos);
@@ -169,6 +205,7 @@ int main(int argc, char** argv) {
     //Node zone 12
     for(int pi = 1; pi < pe; pi++) {
       for(int ni = 0; ni <= ne; ni++) {
+        uniqueNodeId[7][li][pi][ni] = nodeCnt;
         double xPos = rPxArr[pi] + ((a - rPxArr[pi])*static_cast<double>(ni)/static_cast<double>(ne));
         double zPos = rPzArr[pi] + ((pZarr[pi] - rPzArr[pi])*static_cast<double>(ni)/static_cast<double>(ne));
         fprintf(fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, -xPos, lYarr[li], -zPos);
@@ -185,10 +222,23 @@ int main(int argc, char** argv) {
 
   int elemCnt = 0;
   for(int li = 0; li < le; li++) {
-
-    //fprintf(fp, "Elem%d = %d, %d, %d, %d, %d, %d, %d, %d \n", elemCnt, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]);
-    //elemCnt++;
-
+    for(int ei = 0; ei < 8; ei++) {
+      for(int zi = 0; zi < ze[ei]; zi++) {
+        for(int xi = 0; xi < xe[ei]; xi++) {
+          int p[8];
+          p[0] = uniqueNodeId[ei][li][zi][xi];
+          p[1] = uniqueNodeId[ei][li][zi][xi + 1];
+          p[2] = uniqueNodeId[ei][li + 1][zi][xi + 1];
+          p[3] = uniqueNodeId[ei][li + 1][zi][xi];
+          p[4] = uniqueNodeId[ei][li][zi + 1][xi];
+          p[5] = uniqueNodeId[ei][li][zi + 1][xi + 1];
+          p[6] = uniqueNodeId[ei][li + 1][zi + 1][xi + 1];
+          p[7] = uniqueNodeId[ei][li + 1][zi + 1][xi];
+          fprintf(fp, "Elem%d = %d, %d, %d, %d, %d, %d, %d, %d \n", elemCnt, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]);
+          elemCnt++;
+        }//end for xi
+      }//end for zi
+    }//end for ei
   }//end for li
 
   fprintf(fp,"\n");
