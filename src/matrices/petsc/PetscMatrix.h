@@ -36,7 +36,7 @@ extern "C"
 
 }
 
-#include "Matrix.h"
+#include "matrices/Matrix.h"
 
 namespace AMP {
 namespace LinearAlgebra {

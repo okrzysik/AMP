@@ -76,7 +76,7 @@ protected:
     virtual MeshElement* clone() const;
 
     // Unique (per class) ID for identifing the underlying iterator
-    int typeID;
+    unsigned int typeID;
 };
 
 

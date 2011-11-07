@@ -1,5 +1,6 @@
-#include "../NativePetscVector.h"
-#include "../ManagedPetscVector.h"
+#include "test_Vector.h"
+#include "vectors/petsc/NativePetscVector.h"
+#include "vectors/petsc/ManagedPetscVector.h"
 #include "test_PetscVectorTests.h"
 #include "utils/AMP_MPI.h"
 

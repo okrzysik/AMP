@@ -6,7 +6,7 @@ namespace Mesh {
 
 
 // Create a unique id for this class
-static int MeshElementTypeID = 1;
+static unsigned int MeshElementTypeID = TYPE_HASH(MeshElement);
 
 
 /********************************************************

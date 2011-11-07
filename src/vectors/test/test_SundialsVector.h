@@ -1,4 +1,4 @@
-#include "../ManagedSundialsVector.h"
+#include "vectors/sundials/ManagedSundialsVector.h"
 #include "utils/AMP_MPI.h"
 
 #include "test_SundialsVectorTests.h"

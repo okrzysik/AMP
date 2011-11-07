@@ -10,7 +10,7 @@ namespace Mesh {
 
 
 // Create a unique id for this class
-static int libMeshIteratorTypeID = 2;
+static unsigned int libMeshIteratorTypeID = TYPE_HASH(libMeshIterator);
 
 // unused global variable to prevent compiler warning
 static MeshElement nullElement;

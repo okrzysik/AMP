@@ -1,13 +1,11 @@
-
-
 #include "petscmat.h"
 #include "petscvec.h"
 
 #include "vectors/Vector.h"
-#include "vectors/ManagedPetscVector.h"
+#include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/trilinos/EpetraVectorEngine.h"
 
-#include "ManagedPetscMatrix.h"
+#include "matrices/petsc/ManagedPetscMatrix.h"
 
 
 

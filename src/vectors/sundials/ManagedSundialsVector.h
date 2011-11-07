@@ -1,11 +1,10 @@
 #ifndef included_AMP_ManagedSundialsVector
 #define included_AMP_ManagedSundialsVector
 
-#ifdef USE_SUNDIALS
-#include "SundialsVector.h"
-#include "trilinos/ManagedEpetraVector.h"
-#include "CyclicSharedPtr.h"
-#include "ExternalVectorDeleter.h"
+#include "vectors/sundials/SundialsVector.h"
+#include "vectors/trilinos/ManagedEpetraVector.h"
+#include "vectors/CyclicSharedPtr.h"
+#include "vectors/ExternalVectorDeleter.h"
 
 
 extern "C"{
@@ -101,7 +100,6 @@ namespace LinearAlgebra {
 
 #include "ManagedSundialsVector.inline.h"
 
-#endif
 #endif
 
 

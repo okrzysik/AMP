@@ -5,18 +5,17 @@
 #include "utils/UnitTest.h"
 
 #ifdef USE_SUNDIALS
-#include "vectors/ManagedSundialsVector.h"
+    #include "test_SundialsVectorTests.h"
+    #include "vectors/sundials/ManagedSundialsVector.h"
+    #include "vectors/sundials/SundialsVector.h"
 #endif
-
-#include "vectors/ManagedPetscVector.h"
-#include "vectors/PetscVector.h"
-#ifdef USE_SUNDIALS
-#include "vectors/SundialsVector.h"
+#ifdef USE_PETSC
+    #include "test_PetscVector.h"
+    #include "vectors/petsc/ManagedPetscVector.h"
+    #include "vectors/petsc/PetscVector.h"
 #endif
 #include "vectors/MultiVector.h"
 #include "test_Vector.h"
-#include "test_PetscVector.h"
-#include "test_SundialsVectorTests.h"
 
 /// \cond UNDOCUMENTED
 

@@ -2,9 +2,7 @@
 #define included_AMP_SundialsVector
 
 
-
-#ifdef USE_SUNDIALS
-#include "Vector.h"
+#include "vectors/Vector.h"
 
 extern "C"{
 #include "sundials/sundials_nvector.h"
@@ -156,7 +154,7 @@ namespace LinearAlgebra {
 
 #include "SundialsVector.inline.h"
 
-#endif  //USE_SUNDIALS
+
 
 #endif 
 

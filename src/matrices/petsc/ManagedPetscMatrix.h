@@ -7,8 +7,8 @@ extern "C"{
 }
 
 //AMP files
-#include "trilinos/ManagedEpetraMatrix.h"
-#include "PetscMatrix.h"
+#include "matrices/trilinos/ManagedEpetraMatrix.h"
+#include "matrices/petsc/PetscMatrix.h"
 
 namespace AMP {
 namespace LinearAlgebra {

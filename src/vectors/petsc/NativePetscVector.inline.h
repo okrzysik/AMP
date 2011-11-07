@@ -1,4 +1,4 @@
-#include "NativePetscVector.h"
+#include "vectors/petsc/NativePetscVector.h"
 
 extern "C"{
 #include "assert.h"

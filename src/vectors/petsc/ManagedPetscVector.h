@@ -1,10 +1,10 @@
 #ifndef included_AMP_ManagedPetscVector
 #define included_AMP_ManagedPetscVector
 
-#include "ManagedVector.h"
-#include "PetscVector.h"
-#include "CyclicSharedPtr.h"
-#include "ExternalVectorDeleter.h"
+#include "vectors/ManagedVector.h"
+#include "vectors/petsc/PetscVector.h"
+#include "vectors/CyclicSharedPtr.h"
+#include "vectors/ExternalVectorDeleter.h"
 
 
 extern "C"{

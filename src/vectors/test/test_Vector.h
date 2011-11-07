@@ -1,5 +1,8 @@
+#ifndef included_test_Vector
+#define included_test_Vector
+
 #include <vectors/NullVariable.h>
-#include <vectors/NativePetscVector.h>
+#include <vectors/petsc/NativePetscVector.h>
 #include "vectors/SimpleVector.h"
 #include "test_VectorTests.h"
 #include "utils/AMP_MPI.h"
@@ -170,3 +173,6 @@ class  MultiVectorFactory
 }
 
 /// \endcond
+
+#endif 
+

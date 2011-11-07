@@ -1,5 +1,4 @@
 #include "vectors/trilinos/EpetraVectorEngine.h"
-#include "ampmesh/MeshVariable.h"
 #include "test_Matrix.h"
 #include "test_MatrixTests.h"
 #include "utils/Utilities.h"

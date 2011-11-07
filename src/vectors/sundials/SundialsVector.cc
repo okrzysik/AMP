@@ -1,9 +1,4 @@
-
-
-
-#ifdef USE_SUNDIALS
-
-#include "ManagedSundialsVector.h"
+#include "vectors/sundials/ManagedSundialsVector.h"
 
 
 namespace AMP {
@@ -93,4 +88,3 @@ namespace LinearAlgebra {
 }
 }
 
-#endif

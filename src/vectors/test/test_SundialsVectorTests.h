@@ -8,7 +8,7 @@
 #ifdef USE_SUNDIALS
 
 #include "vectors/Vector.h"
-#include "vectors/ManagedSundialsVector.h"
+#include "vectors/sundials/ManagedSundialsVector.h"
 
 namespace AMP {
 namespace unit_test {

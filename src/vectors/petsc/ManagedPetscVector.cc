@@ -1,6 +1,6 @@
 #include "utils/Utilities.h"
-#include "ManagedPetscVector.h"
-#include "trilinos/EpetraVectorEngine.h"
+#include "vectors/petsc/ManagedPetscVector.h"
+#include "vectors/trilinos/EpetraVectorEngine.h"
 
 
 extern "C"{

@@ -1,6 +1,6 @@
 
-#include "MultiVector.h"
-#include "SimpleVector.h"
+#include "vectors/MultiVector.h"
+#include "vectors/SimpleVector.h"
 
 #include "ManagedPetscVector.h"
 

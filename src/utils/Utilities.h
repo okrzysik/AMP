@@ -18,6 +18,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "Logger.h"
+#include <typeinfo>
 
 namespace AMP {
   
@@ -111,6 +112,8 @@ namespace Utilities
     template<class T>
     void quicksort(std::vector<T> x);
 
+    //! Create a hash key from a char array
+    unsigned int hash_char(const char*);
 }
 
 
@@ -320,6 +323,11 @@ namespace Utilities
 } while (0)
 #endif
 #endif
+
+
+//! Get a hash key from the class type (requires the RTTI (Run-time type information) to be available.
+#define TYPE_HASH(X)  AMP::Utilities::hash_char(typeid(X).name())
+
 
 
 // templated quicksort routine

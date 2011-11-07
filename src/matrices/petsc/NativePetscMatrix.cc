@@ -5,9 +5,9 @@
 //}
 
 #include "Matrix.h"
-#include "NativePetscMatrix.h"
+#include "matrices/petsc/NativePetscMatrix.h"
 #include "vectors/Vector.h"
-#include "vectors/NativePetscVector.h"
+#include "vectors/petsc/NativePetscVector.h"
 
 #include <cassert>
 

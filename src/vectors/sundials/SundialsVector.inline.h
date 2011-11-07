@@ -1,4 +1,3 @@
-#ifdef USE_SUNDIALS
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -26,4 +25,3 @@ namespace LinearAlgebra {
 }
 
 
-#endif

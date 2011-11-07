@@ -1,7 +1,7 @@
 #ifndef included_test_MatrixTests
 #define included_test_MatrixTests
 
-#include "matrices/PetscMatrix.h"
+#include "matrices/petsc/PetscMatrix.h"
 #include "utils/UnitTest.h"
 
 #include "../../vectors/test/test_VectorLoops.h"

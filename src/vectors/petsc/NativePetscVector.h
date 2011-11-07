@@ -1,8 +1,8 @@
 #ifndef included_AMP_NativePetscVector
 #define included_AMP_NativePetscVector
 
-#include "NativeVector.h"
-#include "ManagedPetscVector.h"
+#include "vectors/NativeVector.h"
+#include "vectors/petsc/ManagedPetscVector.h"
 #include "utils/AMP_MPI.h"
 
 extern "C"{

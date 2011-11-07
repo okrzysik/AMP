@@ -1,9 +1,8 @@
 #ifndef included_AMP_PetscVector
 #define included_AMP_PetscVector
 
-#include "NativeVector.h"
-//#include "ManagedPetscVector.h"
-#include "DataChangeListener.h"
+#include "vectors/NativeVector.h"
+#include "vectors/DataChangeListener.h"
 
 extern "C"{
 

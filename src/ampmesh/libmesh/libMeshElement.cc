@@ -5,7 +5,7 @@ namespace AMP {
 namespace Mesh {
 
 // Create a unique id for this class
-static int libMeshElementTypeID = 2;
+static unsigned int libMeshElementTypeID = TYPE_HASH(libMeshElement);
 
 
 /********************************************************
