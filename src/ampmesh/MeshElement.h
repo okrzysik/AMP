@@ -11,7 +11,64 @@ namespace Mesh {
 //! Enumeration for basic mesh-based quantities
 enum GeomType { Vertex=0, Edge=1, Face=2, Volume=3, null=-1 };
 
-typedef size_t MeshElementID;
+
+/**
+ * \struct MeshElementID
+ * \brief  A structure used to identify the mesh element
+ * \details  This structure provides a unique id that can be used to identify a mesh element.
+ */
+struct MeshElementID{
+    GeomType type;              //!<  The geometric type of the element
+    unsigned int local_id;      //!<  The local id of the element on the owner processor and mesh
+    unsigned int owner_rank;    //!<  The rank of the owner proccessor (as defined from rank of the comm on the owner mesh)
+    size_t meshID;              //!<  The ID of the mesh that owns the rank (not implimented yet)
+    // Constructors used to initialize key values
+	MeshElementID() {
+        type = null;
+        local_id = static_cast<unsigned int>(-1);
+        owner_rank = static_cast<unsigned int>(-1);
+        meshID = static_cast<size_t>(-1);
+    }
+	MeshElementID(GeomType type_id, unsigned int local_ID, unsigned int owner_rank_id, size_t mesh_ID) {
+        type = type_id;
+        local_id = local_ID;
+        owner_rank = owner_rank_id;
+        meshID = mesh_ID;
+    }
+    // Overload key operators
+    bool operator== (const MeshElementID& rhs ) const {
+        return type==rhs.type && local_id==rhs.local_id && owner_rank==rhs.owner_rank && meshID==rhs.meshID;
+    }
+    bool operator!= (const MeshElementID& rhs ) const {
+        return type!=rhs.type || local_id!=rhs.local_id || owner_rank!=rhs.owner_rank || meshID!=rhs.meshID;
+    }
+    bool operator>= (const MeshElementID& rhs ) const {
+        // Sort by meshID first
+        if ( meshID < rhs.meshID )
+            return false;
+        // Sort by processor id next
+        if ( owner_rank < rhs.owner_rank )
+            return false;
+        // Sort by type next
+        if ( type < rhs.type )
+            return false;
+        // Finally check the local id
+        if ( local_id < rhs.local_id )
+            return false;
+        return true;
+    }
+    bool operator> (const MeshElementID& rhs ) const {
+        if ( this->operator>=(rhs) && this->operator!=(rhs) )
+            return true;
+        return false;
+    }
+    bool operator< (const MeshElementID& rhs ) const {
+        return !(this->operator>=(rhs));
+    }
+    bool operator<= (const MeshElementID& rhs ) const {
+        return !(this->operator>=(rhs)) || this->operator==(rhs);
+    }
+};
 
 
 /**
@@ -44,22 +101,22 @@ public:
     virtual ~MeshElement ( );
 
     //! Return the element type
-    virtual GeomType elementType() { return d_elementType; }
+    virtual GeomType elementType() const { return d_elementType; }
 
     //! Return the unique global ID of the element
-    virtual MeshElementID globalID() { return d_globalID; }
+    virtual MeshElementID globalID() const { return d_globalID; }
 
     //! Return the elements composing the current element
-    virtual std::vector<MeshElement> getElements(GeomType &type);
+    virtual std::vector<MeshElement> getElements(const GeomType type) const;
 
     //! Return the elements neighboring the current element
-    virtual std::vector<MeshElement> getNeighbors();
+    virtual std::vector<MeshElement> getNeighbors() const;
 
     //! Return the volume of the current element (does not apply to verticies)
-    virtual double volume();
+    virtual double volume() const;
 
     //! Return the coordinates of all verticies composing the element
-    virtual std::vector<double> coord();
+    virtual std::vector<double> coord() const;
 
 protected:
 

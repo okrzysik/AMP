@@ -103,13 +103,19 @@ public:
     /* Return the number of local element of the given type
      * \param type   Geometric type
      */
-    virtual size_t  numLocalElements( GeomType &type );
+    virtual size_t  numLocalElements( const GeomType type );
 
 
     /* Return the global number of elements of the given type
      * \param type   Geometric type
      */
-    virtual size_t  numTotalElements( GeomType &type );
+    virtual size_t  numGlobalElements( const GeomType type );
+
+
+    /* Return the number of ghost elements of the given type on the current processor
+     * \param type   Geometric type
+     */
+    virtual size_t  numGhostElements( const GeomType type, const int gcw );
 
 
     /**
@@ -118,7 +124,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost 
      */
-    virtual MeshIterator getIterator ( GeomType &type, int gcw=0 );
+    virtual MeshIterator getIterator ( const GeomType type, const int gcw=0 );
 
 
     /**
@@ -126,7 +132,7 @@ public:
      * \details  Return an MeshIterator over the given geometric objects on the surface
      * \param type   Geometric type to iterate over
      */
-    virtual MeshIterator getSurfaceIterator ( GeomType &type );
+    virtual MeshIterator getSurfaceIterator ( const GeomType type );
 
 
     /**
@@ -143,7 +149,11 @@ public:
  
 
     //! Get the largest geometric type in the mesh
-    virtual GeomType getGeomType() { return GeomDim; }
+    virtual GeomType getGeomType() { return GeomDim; } 
+
+
+    //! Get the largest geometric type in the mesh
+    virtual AMP_MPI getComm() { return comm; }
 
 protected:
 

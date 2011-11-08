@@ -55,12 +55,12 @@ boost::shared_ptr<Mesh> Mesh::Subset( Mesh & )
     AMP_ERROR("Not Implimented Yet");
     return boost::shared_ptr<Mesh>();
 }
-MeshIterator Mesh::getIterator( GeomType &, int )
+MeshIterator Mesh::getIterator( const GeomType, const int )
 {
     AMP_ERROR("Not Implimented Yet");
     return MeshIterator();
 }
-MeshIterator Mesh::getSurfaceIterator( GeomType & )
+MeshIterator Mesh::getSurfaceIterator( const GeomType )
 {
     AMP_ERROR("Not Implimented Yet");
     return MeshIterator();
@@ -70,12 +70,17 @@ MeshIterator Mesh::getIterator( SetOP &, MeshIterator::shared_ptr &, MeshIterato
     AMP_ERROR("Not Implimented Yet");
     return MeshIterator();
 }
-size_t Mesh::numLocalElements( GeomType &type )
+size_t Mesh::numLocalElements( const GeomType type )
 {
     AMP_ERROR("Not Implimented Yet");
     return 0;
 }
-size_t Mesh::numTotalElements( GeomType &type )
+size_t Mesh::numGlobalElements( const GeomType type )
+{
+    AMP_ERROR("Not Implimented Yet");
+    return 0;
+}
+size_t Mesh::numGhostElements( const GeomType type, int gcw )
 {
     AMP_ERROR("Not Implimented Yet");
     return 0;

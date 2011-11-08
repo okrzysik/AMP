@@ -1,41 +1,41 @@
-#ifndef included_AMP_DOF_Manager
-#define included_AMP_DOF_Manager
+#ifndef included_simpleDOF_Manager
+#define included_simpleDOF_Manager
 
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
+#include "descritization/DOF_Manager.h"
 #include "descritization/DOF_ManagerParameters.h"
-#include "vectors/Vector.h"
-
 
 namespace AMP {
 namespace Discretization {
 
-
 /**
- * \class DOF_Manager
- * \brief A class used to provide DOF and vector creation routines
- *
- * \details  This class provides routines for calculating, accessing, and 
- *    using the degrees of freedom (DOF) per object.  It is also responsible 
- *    for creating vectors.
+ * \class simpleDOF_Manager
+ * \brief A derived class to create a simple DOF_Manager
+ * \details  This derived class impliments a concrete DOF_Manager for creating Vectors 
+ *    over a mesh on a particular mesh entity.  For example it can create a NodalVector
+ *    over the entire Mesh.  Note: this class will be replaced by a more complete 
+ *    Discretization interface.
  */
-class DOFManager
+class simpleDOFManager: public DOFManager
 {
 public:
 
     /**
-     *\typedef shared_ptr
-     *\brief  Name for the shared pointer.
-     *\details  Use this typedef for a reference counted pointer to a DOF manager object.
+     * \brief Create a new DOF manager object
+     * \details  This is the standard constructor for creating a new DOF manager object.
+     * \param mesh  Mesh over which we want to construct the DOF map
+     * \param type  The geometric entity type for the DOF map
+     * \param gcw   The desired ghost width
      */
-    typedef boost::shared_ptr<AMP::Discretization::DOFManager>  shared_ptr;
+    simpleDOFManager ( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP::Mesh::GeomType type, int gcw );
 
 
     /** \brief Get the entry indices of nodal values given a mesh element
+     * \param[in]  obj  The element to collect nodal objects for.  Note: the mesh element may be any type (include a vertex).
+     * \param[out] ids  The entries in the vector associated with D.O.F.s on the nodes
+     * \param[in]  which  Which D.O.F. to get.  If not specified, return all D.O.F.s
      * \details  This will return a vector of pointers into a Vector that are associated with which.
-     * \param[in]  obj      The element to collect nodal objects for.  Note: the mesh element may be any type (include a vertex).
-     * \param[out] ids      The entries in the vector associated with D.O.F.s on the nodes
-     * \param[in]  which    Which D.O.F. to get.  If not specified, return all D.O.F.s
      */
     virtual void getDOFs ( const AMP::Mesh::MeshElement &obj, std::vector <unsigned int> &ids , unsigned int which = static_cast<unsigned int>(-1) ) const;
 
@@ -68,22 +68,18 @@ public:
      */
     //virtual  AMP::LinearAlgebra::Matrix::shared_ptr   createMatrix ( AMP::LinearAlgebra::Variable::shared_ptr operand , AMP::LinearAlgebra::Variable::shared_ptr result = AMP::LinearAlgebra::Variable::shared_ptr() );
 
- 
 
-protected:
-
-    //!  Empty constructor for a DOF manager object
-    DOFManager ( ) {};
-
-    //! The DOF manager parameters
-    const DOFManagerParameters::shared_ptr params;
-
+private:
+    boost::shared_ptr<AMP::Mesh::Mesh>  d_mesh;
+    AMP::Mesh::GeomType d_type;
+    int d_gcw;
+    std::vector<AMP::Mesh::MeshElementID> d_local_id;
+    std::vector<AMP::Mesh::MeshElementID> d_remote_id;
 };
 
 
-
-} // Discretization namespace
-} // AMP namespace
+}
+}
 
 #endif
 

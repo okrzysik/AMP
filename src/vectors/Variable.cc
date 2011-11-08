@@ -53,11 +53,6 @@ namespace LinearAlgebra {
     return cloneVariable ( d_VariableName ); 
   }
 
-  bool  Variable::isSameTypeAs ( Variable::shared_ptr rhs ) const
-  {
-    return (DOFsPerObject()-variableID()) == (rhs->DOFsPerObject()-rhs->variableID());
-  }
-
 }
 }
 

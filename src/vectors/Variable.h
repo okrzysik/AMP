@@ -134,13 +134,7 @@ namespace LinearAlgebra {
         */
       virtual  size_t   DOFsPerObject () const;
 
-      /** \brief  Attempt to determine if two variables are the same type
-        * \deprecated  This function does not always succeed
-        *
-        *  Do not use this function.  If this functionality is required, we can
-        *  tailor a better function for your needs
-        */
-      bool   isSameTypeAs ( Variable::shared_ptr rhs ) const;
+
 
       virtual  Variable::shared_ptr  getVariable ( size_t which );
   };

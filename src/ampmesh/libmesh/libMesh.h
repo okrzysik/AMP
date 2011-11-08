@@ -41,13 +41,19 @@ public:
     /* Return the number of local element of the given type
      * \param type   Geometric type
      */
-    virtual size_t  numLocalElements( GeomType &type );
+    virtual size_t  numLocalElements( const GeomType type );
 
 
     /* Return the global number of elements of the given type
      * \param type   Geometric type
      */
-    virtual size_t  numTotalElements( GeomType &type );
+    virtual size_t  numGlobalElements( const GeomType type );
+
+
+    /* Return the number of ghost elements of the given type on the current processor
+     * \param type   Geometric type
+     */
+    virtual size_t  numGhostElements( const GeomType type, const int gcw );
 
 
     /**
@@ -56,7 +62,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost 
      */
-    virtual MeshIterator getIterator ( GeomType &type, int gcw=0 );
+    virtual MeshIterator getIterator ( const GeomType type, const int gcw=0 );
 
 private:
 
@@ -67,6 +73,8 @@ private:
     boost::shared_ptr< ::Mesh>          d_libMesh;
     boost::shared_ptr< ::MeshData>      d_libMeshData;
 
+    // Some internal data
+    std::vector<size_t> n_local, n_global, n_ghost;
 };
 
 } // Mesh namespace

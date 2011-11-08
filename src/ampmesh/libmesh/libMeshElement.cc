@@ -17,7 +17,7 @@ libMeshElement::libMeshElement()
     element = NULL;
     d_dim = -1;
     d_elementType = null;
-    d_globalID = 0;
+    d_globalID = MeshElementID();
 }
 libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element)
 {
@@ -26,14 +26,19 @@ libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element)
     d_elementType = type;
     d_dim = dim;
     ptr_element = libmesh_element;
+    d_globalID = MeshElementID();
+    d_globalID.type = type;
+    d_globalID.meshID = -1;     // This is not finished yet
     if ( d_elementType==Vertex ) {
         d_elementType = Vertex;
         ::Node* node = (::Node*) ptr_element;
-        d_globalID = node->id();
+        d_globalID.local_id = node->id();
+        d_globalID.owner_rank = node->processor_id();
     } else {
         d_elementType = (GeomType) dim;
         ::Elem* elem = (::Elem*) ptr_element;
-        d_globalID = elem->id();
+        d_globalID.local_id = elem->id();
+        d_globalID.owner_rank = elem->processor_id();
     }
 }
 libMeshElement::libMeshElement(const libMeshElement& rhs)
@@ -80,7 +85,7 @@ MeshElement* libMeshElement::clone() const
 /********************************************************
 * Functions that aren't implimented yet                 *
 ********************************************************/
-std::vector<MeshElement> libMeshElement::getElements(GeomType &type)
+std::vector<MeshElement> libMeshElement::getElements(const GeomType type) const
 {
     if ( d_elementType==Vertex )
         AMP_ERROR("A vertex is the base element and cannot have and sub-elements");
@@ -113,19 +118,19 @@ std::vector<MeshElement> libMeshElement::getElements(GeomType &type)
     }
     return children;
 }
-std::vector<MeshElement> libMeshElement::getNeighbors()
+std::vector<MeshElement> libMeshElement::getNeighbors() const
 {
     AMP_ERROR("getNeighbors is not finished");
     return std::vector<MeshElement>(0);
 }
-double libMeshElement::volume()
+double libMeshElement::volume() const
 {
     if ( d_elementType == Vertex )
         AMP_ERROR("volume is is not defined Nodes");
     ::Elem* elem = (::Elem*) ptr_element;
     return elem->volume();
 }
-std::vector<double> libMeshElement::coord()
+std::vector<double> libMeshElement::coord() const
 {
     if ( d_elementType != Vertex )
         AMP_ERROR("coord is only defined for Nodes");

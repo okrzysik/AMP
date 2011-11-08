@@ -38,16 +38,16 @@ public:
     virtual ~libMeshElement ( );
 
     //! Return the elements composing the current element
-    virtual std::vector<MeshElement> getElements(GeomType &type);
+    virtual std::vector<MeshElement> getElements(const GeomType type) const;
 
     //! Return the elements neighboring the current element
-    virtual std::vector<MeshElement> getNeighbors();
+    virtual std::vector<MeshElement> getNeighbors() const;
 
     //! Return the volume of the current element (does not apply to verticies)
-    virtual double volume();
+    virtual double volume() const;
 
     //! Return the coordinates of all verticies composing the element
-    virtual std::vector<double> coord();
+    virtual std::vector<double> coord() const;
 
 
 protected:

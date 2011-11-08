@@ -1,20 +1,22 @@
-#include "DOF_ManagerParamters.h"
+#include "descritization/DOF_ManagerParameters.h"
 
 namespace AMP {
 namespace Discretization {
 
 
 /************************************************************************
-*  Empty constructor                                                    *
+*  Constructors                                                         *
 ************************************************************************/
 DOFManagerParameters::DOFManagerParameters() 
 {
 }
-
+DOFManagerParameters::DOFManagerParameters( boost::shared_ptr<AMP::Mesh::Mesh> mesh_in )
+{
+    mesh = mesh_in;
+}
 
 
 } // Discretization namespace
 } // AMP namespace
 
-#endif
 

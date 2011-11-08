@@ -17,7 +17,7 @@ MeshElement::MeshElement()
     typeID = MeshElementTypeID;
     element = NULL;
     d_elementType = null;
-    d_globalID = 0;
+    d_globalID = MeshElementID();
 }
 MeshElement::MeshElement(const MeshElement& rhs)
 {
@@ -83,25 +83,25 @@ MeshElement* MeshElement::clone() const
 /********************************************************
 * Functions that aren't implimented for the base class  *
 ********************************************************/
-std::vector<MeshElement> MeshElement::getElements(GeomType &type)
+std::vector<MeshElement> MeshElement::getElements(const GeomType type) const
 {
     if ( element==NULL )
         AMP_ERROR("getElements is not implimented for the base class");
     return element->getElements(type);
 }
-std::vector<MeshElement> MeshElement::getNeighbors()
+std::vector<MeshElement> MeshElement::getNeighbors() const
 {
     if ( element==NULL )
         AMP_ERROR("getNeighbors is not implimented for the base class");
     return element->getNeighbors();
 }
-double MeshElement::volume()
+double MeshElement::volume() const
 {
     if ( element==NULL )
         AMP_ERROR("volume is not implimented for the base class");
     return element->volume();
 }
-std::vector<double> MeshElement::coord()
+std::vector<double> MeshElement::coord() const
 {
     if ( element==NULL )
         AMP_ERROR("coord is not implimented for the base class");

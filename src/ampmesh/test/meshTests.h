@@ -94,35 +94,77 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator, c
 // Check the different mesh element iterators
 void MeshIteratorTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
-    // Loop through the different geometric entities
-    for (int i=0; i<=(int)mesh->getGeomType(); i++) {
-        AMP::Mesh::GeomType type = (AMP::Mesh::GeomType) i;
-        // Try to create the iterator
-        int N_elem = 0;
-        AMP::Mesh::MeshIterator iterator;
-        bool iterator_created = true;
-        try {
-            N_elem = (int) mesh->numLocalElements( type );
-            iterator = mesh->getIterator(type,0);
-            ut->passes ( "Element iterator created" );
-        } catch (...) {
-            iterator_created = false;
-            if ( i==0 )
-                ut->failure ( "Node iterator failed" );
-            else if ( type==mesh->getGeomType() )
-                ut->failure ( "Geometric element iterator failed" );
-            else
-                ut->expected_failure ( "Intermediate element iterator failed" );
+    char message[1000];
+    // Loop through different ghost widths
+    for (int gcw=0; gcw<=1; gcw++) {
+        // Loop through the different geometric entities
+        for (int i=0; i<=(int)mesh->getGeomType(); i++) {
+            AMP::Mesh::GeomType type = (AMP::Mesh::GeomType) i;
+            // Try to create the iterator
+            size_t N_elem = 0;
+            AMP::Mesh::MeshIterator iterator;
+            bool iterator_created = true;
+            try {
+                N_elem = mesh->numLocalElements(type) + mesh->numGhostElements(type,gcw);
+                iterator = mesh->getIterator(type,gcw);
+                sprintf(message,"Element iterator created (gcw=%i)",gcw);
+                ut->passes(message);
+            } catch (...) {
+                iterator_created = false;
+                if ( i==0 ) {
+                    sprintf(message,"Node iterator failed (gcw=%i)",gcw);
+                    ut->failure(message);
+                } else if ( type==mesh->getGeomType() ) {
+                    sprintf(message,"Geometric element iterator failed (gcw=%i)",gcw);
+                    ut->failure(message);
+                } else {
+                    sprintf(message,"Intermediate element iterator failed (gcw=%i)",gcw);
+                    ut->expected_failure(message);
+                }
+            }
+            // Test the regular iterator over local elements
+            if ( iterator_created )
+                ElementIteratorTest( ut, iterator, (int) N_elem, type );
+            // Add tests with gcw != 0
+            // Add const iterator tests
         }
-        // Test the regular iterator over local elements
-        if ( iterator_created )
-            ElementIteratorTest( ut, iterator, N_elem, type );
-        // Add tests with gcw != 0
-        // Add const iterator tests
-    }
-    
+    }    
 }
 
+
+// Test the number of elements in the mesh
+void MeshCountTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
+{
+    AMP::AMP_MPI comm = mesh->getComm();
+    for (int i=0; i<=(int)mesh->getGeomType(); i++) {
+        AMP::Mesh::GeomType type = (AMP::Mesh::GeomType) i;
+        if ( type!=AMP::Mesh::Vertex && type!=mesh->getGeomType() ) {
+            ut->expected_failure("Not finished testing all element type in MeshCountTest");
+            continue;
+        }
+        size_t N_local = mesh->numLocalElements(type);
+        size_t N_global = mesh->numGlobalElements(type);
+        size_t N_sum = comm.sumReduce(N_local);
+        if ( N_global > 0 )
+            ut->passes("Non-trival mesh created");
+        else
+            ut->failure("Non-trival mesh created");
+        if ( N_sum == N_global )
+            ut->passes("Sum of local mesh counts matches global count");
+        else
+            ut->failure("Sum of local mesh counts matches global count");
+        if ( mesh->numGhostElements(type,0) == 0 )
+            ut->passes("gcw=0 has no ghost elements");
+        else
+            ut->failure("gcw=0 has no ghost elements");
+        if ( comm.getSize() > 1 && type!=0 ) {
+            if ( mesh->numGhostElements(type,1)!=0 && (mesh->numGhostElements(type,1)+N_local)!=N_global )
+                ut->passes("gcw=1 has ghost elements");
+            else
+                ut->failure("gcw=1 has ghost elements");
+        }
+    }
+}
 
 
 /*
@@ -662,88 +704,6 @@ public:
           mesh2->createVector ( var );
           mesh2->createMatrix ( var );
           utils->passes ( "Bug 623" );
-        }
-};
-
-
-template <int DOF_PER_NODE>
-class VerifyGetVectorTest
-{
-public:
-    static const char * get_test_name () { return "Verify vector interface in MeshAdapter"; }
-
-    static  void run_test ( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh ) {
-
-        AMP::LinearAlgebra::Variable::shared_ptr variable ( new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable,DOF_PER_NODE> ( "test vector" ) );
-        AMP::LinearAlgebra::Vector::shared_ptr vectora = mesh->createVector ( variable );  // Generates new vector
-        AMP::LinearAlgebra::Vector::shared_ptr vectorb = mesh->createVector ( variable );  // Gets from the cached copy
-
-        size_t  num_dofs = mesh->numTotalNodes() * DOF_PER_NODE;
-        if ( vectora->getGlobalSize() == num_dofs )
-            utils->passes ( "global vector size" );
-        else
-            utils->failure ( "global vector size" );
-
-        vectora->setRandomValues ();
-        double t1 = vectora->L2Norm();
-        vectora->abs ( vectora );
-        if ( fabs ( vectora->L2Norm() - t1 ) < 0.0000001 )
-            utils->passes ( "non-trivial random vector" );
-        else
-            utils->failure ( "non-trivial random vector" );
-
-        vectorb->setToScalar ( 3. );
-        vectora->multiply ( vectora , vectorb );
-        if ( fabs ( vectora->L2Norm() - 3.*t1 ) < 0.00000001 )
-            utils->passes ( "trivial usage" );
-        else
-            utils->failure ( "trivial usage" );
-
-        // Verify some math...
-        globalMeshForMeshVectorFactory = mesh;
-        test_managed_vectors_loop< MeshVectorFactory<DOF_PER_NODE,false,false> > ( utils );
-        test_managed_vectors_loop< MeshVectorFactory<DOF_PER_NODE,false,true > > ( utils );
-        test_managed_vectors_loop< MeshVectorFactory<DOF_PER_NODE,true, false> > ( utils );
-        test_parallel_vectors_loop<MeshVectorFactory<DOF_PER_NODE,true, false> > ( utils );
-        globalMeshForMeshVectorFactory = AMP::Mesh::MeshAdapter::shared_ptr();
-    }
-};
-
-
-template <int DOF_PER_NODE>
-class VerifyGetMatrixTrivialTest
-{
-public:
-    static const char * get_test_name () { return "Verify matrix interface trivially in MeshAdapter"; }
-
-    static  void run_test ( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh ) {
-
-          AMP::LinearAlgebra::Variable::shared_ptr variable ( new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable,DOF_PER_NODE> ( "test vector" ) );
-          AMP::LinearAlgebra::Matrix::shared_ptr matrixa = mesh->createMatrix ( variable );  // Generates new mtrix
-          AMP::LinearAlgebra::Vector::shared_ptr vectorb = mesh->createVector ( variable );  // Gets vector from the cached copy
-          AMP::LinearAlgebra::Vector::shared_ptr vectorc = mesh->createVector ( variable );  // Gets vector from the cached copy
-
-          vectorb->setRandomValues ();
-          matrixa->makeConsistent ();
-          matrixa->mult ( vectorb , vectorc );
-          if ( vectorc->L1Norm() < 0.00000001 )
-            utils->passes ( "obtained 0 matrix from mesh" );
-          else
-            utils->failure ( "did not obtain 0 matrix from mesh" );
-
-          AMP::LinearAlgebra::Matrix::shared_ptr matrixb = mesh->createMatrix ( variable );   // Need to get another matrix to
-                                                                           // store data due to Epetra insert/replace
-                                                                           // idiom.  Matrixa is fixed with no entires.
-          vectorc->setToScalar ( 1. );
-          matrixb->makeConsistent ();
-          matrixb->setDiagonal ( vectorc );
-          matrixb->mult ( vectorb , vectorc );
-          vectorb->subtract ( vectorb , vectorc );
-
-          if ( vectorb->L1Norm() < 0.0000001 )
-            utils->passes ( "created identity matrix from mesh" );
-          else
-            utils->failure ( "created identity matrix from mesh" );
         }
 };
 

@@ -3,10 +3,19 @@
 #include "utils/UnitTest.h"
 #include "ampmesh/Mesh.h"
 #include "meshTests.h"
+#ifdef USE_AMP_VECTORS
+    #include "meshVectorTests.h"
+#endif
+#ifdef USE_AMP_MATRICIES
+    #include "meshMatrixTests.h"
+#endif
+
 
 
 void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
+    // Test the number of elements
+    MeshCountTest( ut, mesh );
     // Test the iterators
     MeshIteratorTest( ut, mesh );
     //VerifyBoundaryNodeIterator::run_test( ut, mesh );
@@ -33,39 +42,23 @@ void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 };
 
 
-#ifdef USE_VECTORS
-template <typename GENERATOR>
-class MeshAdapterVectorLoop
+#ifdef USE_AMP_VECTORS
+void MeshVectorTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
-public:
-    static void  test_mesh( AMP::UnitTest *ut )
-    {
-        // Create the mesh
-        GENERATOR generator;
-        AMP::Mesh::MeshAdapter::shared_ptr mesh = generator.getMesh();
-        // Run the vector tests
-        VerifyGetVectorTest<1>::run_test ( ut, mesh );
-        VerifyGetVectorTest<3>::run_test ( ut, mesh );
-    }
-};
+    // Run the vector tests
+    VerifyGetVectorTest<1>::run_test ( ut, mesh );
+    VerifyGetVectorTest<3>::run_test ( ut, mesh );
+}
 #endif
 
 
-#ifdef USE_MATRICIES
-template <typename GENERATOR>
-class MeshAdapterMatrixLoop
+#ifdef USE_AMP_MATRICIES
+void MeshMatrixTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
-public:
-    static void  test_mesh( AMP::UnitTest *ut )
-    {
-        // Create the mesh
-        GENERATOR generator;
-        AMP::Mesh::MeshAdapter::shared_ptr mesh = generator.getMesh();
-        // Run the matrix tests
-        VerifyGetMatrixTrivialTest<1>::run_test ( ut, mesh );
-        VerifyGetMatrixTrivialTest<3>::run_test ( ut, mesh );
-    }
-};
+    // Run the matrix tests
+    VerifyGetMatrixTrivialTest<1>::run_test ( ut, mesh );
+    VerifyGetMatrixTrivialTest<3>::run_test ( ut, mesh );
+}
 #endif
 
 
