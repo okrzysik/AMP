@@ -142,8 +142,8 @@ MACRO ( CONFIGURE_HDF5 )
             MESSAGE ( FATAL_ERROR "Default search for hdf5 is not yet supported.  Use -D HDF5_DIRECTORY=" )
         ENDIF()
         SET ( HDF5_LIBS
-            ${HDF5_LIB}
             ${HDF5_HL_LIB}
+            ${HDF5_LIB}
         )
         ADD_DEFINITIONS ( "-D USE_HDF5" )  
         MESSAGE ( "Using hdf5" )
