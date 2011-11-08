@@ -1,0 +1,326 @@
+
+NumberOfMeshes = 1
+
+Mesh_1{
+  Filename = "cylinder4K.e"
+    MeshName = "cylinder"
+    x_offset = 0
+    y_offset = 0
+    z_offset = 0
+    NumberOfElements = 540
+}
+
+NumberOfLoadingSteps = 1
+
+testNonlinearThermalOperator {
+    name="NonlinearBVPOperator"
+    print_info_level = 1
+    VolumeOperator = "DiffusionNonlinearFEOperator1"
+    BoundaryOperator = "DirichletVectorCorrection1"
+}
+
+DiffusionNonlinearFEOperator1 {
+      name = "DiffusionNonlinearFEOperator" 
+        print_info_level = 1
+        ActiveInputVariables {
+          temperature = "temp"
+        }
+      OutputVariable = "temp"
+        PrincipalVariable = 0 
+
+        DiffusionElement{
+          name = "DiffusionNonlinearElement"
+            TransportAtGaussPoints = TRUE
+            FE_ORDER = "FIRST"  
+            FE_FAMILY = "LAGRANGE"
+            QRULE_TYPE = "QGAUSS"
+            QRULE_ORDER = "DEFAULT"
+        }    
+
+	LocalModel = "DiffusionTransportModel1"
+}
+
+DirichletVectorCorrection1 {
+    name = "DirichletVectorCorrection"
+      print_info_level = 1
+      skip_params = FALSE
+      number_of_ids = 2
+      id_0 = 2
+      number_of_dofs_0 = 1
+      dof_0_0 = 0
+      value_0_0 = 0.0
+      id_1 = 3
+      number_of_dofs_1 = 1
+      dof_1_0 = 0
+      value_1_0 = 0.0
+}
+
+DiffusionTransportModel1{
+        name = "DiffusionTransportModel"
+          Material = "UO2_MSRZC_09"
+          Property = "ThermalConductivity"
+          Default_Concentration = .15
+          Default_Temperature   = 300.
+          Default_Burnup   = 0.0
+      } 
+
+testLinearThermalOperator {
+  name = "LinearBVPOperator"
+    print_info_level = 1
+    VolumeOperator = "DiffusionLinearFEOperator2"
+    BoundaryOperator = "DirichletMatrixCorrection2"
+}
+
+DiffusionLinearFEOperator2 {
+      name = "DiffusionLinearFEOperator"
+        print_info_level = 1
+        reset_reuses_matrix = TRUE
+        InputVariable = "temp"
+        OutputVariable = "temp"
+        FixedConcentration = TRUE
+        FixedBurnup = TRUE
+
+        DiffusionElement {
+          name = "DiffusionLinearElement"
+            TransportAtGaussPoints = TRUE
+            FE_ORDER = "FIRST"  
+            FE_FAMILY = "LAGRANGE"
+            QRULE_TYPE = "QGAUSS"
+            QRULE_ORDER = "DEFAULT"
+        }    
+
+	LocalModel = "DiffusionTransportModel1"
+    }
+
+DirichletMatrixCorrection2 {
+    name = "DirichletMatrixCorrection"
+      print_info_level = 1
+      skip_params = FALSE
+      skip_rhs_correction = TRUE
+      number_of_ids = 2
+      id_0          = 2
+      number_of_dofs_0 =  1
+      dof_0_0          =  0
+      id_1          = 3
+      number_of_dofs_1 = 1
+      dof_1_0 = 0
+  }
+
+testNonlinearMechanicsOperator {
+  name="NonlinearBVPOperator"
+    print_info_level = 3
+    VolumeOperator = "MechanicsNonlinearFEOperator3"
+    BoundaryOperator = "DirichletVectorCorrection3"
+}
+
+MechanicsNonlinearFEOperator3 {
+      name = "MechanicsNonlinearFEOperator"
+        print_info_level = 1
+        ActiveInputVariables {
+          DISPLACEMENT = "disp"
+            TEMPERATURE = "temp"
+        }
+      OutputVariable = "disp"
+        RESET_REUSES_RADIAL_RETURN = TRUE
+        JACOBIAN_REUSES_RADIAL_RETURN = TRUE
+        USE_UPDATED_LAGRANGIAN = TRUE
+        FREEZE_TEMPERATURE = FALSE
+
+        MechanicsElement {
+          name="MechanicsNonlinearUpdatedLagrangianElement"
+          //name="MechanicsNonlinearElement"
+            USE_REDUCED_INTEGRATION = FALSE 
+            USE_JAUMANN_RATE = TRUE
+            FE_ORDER = "FIRST"  
+            FE_FAMILY = "LAGRANGE"
+            QRULE_TYPE = "QGAUSS"
+            QRULE_ORDER = "DEFAULT"
+        }
+
+	LocalModel = "ThermalStrainMaterialModel3"
+}
+	
+
+DirichletVectorCorrection3 {
+    name = "DirichletVectorCorrection"
+      print_info_level = 1
+      skip_params = FALSE
+      number_of_ids = 2
+      id_0 = 2
+      number_of_dofs_0 = 3
+      dof_0_0 = 0
+      dof_0_1 = 1
+      dof_0_2 = 2
+      value_0_0 = 0.0
+      value_0_1 = 0.0
+      value_0_2 = 0.0
+      id_1 = 3
+      number_of_dofs_1 = 3
+      dof_1_0 = 0
+      dof_1_1 = 1
+      dof_1_2 = 2
+      value_1_0 = 0.0
+      value_1_1 = 0.0
+      value_1_2 = 0.0
+  }
+
+ThermalStrainMaterialModel3 { 
+        name="ThermalStrainMaterialModel"
+          USE_MATERIALS_LIBRARY = FALSE
+        USE_UPDATED_LAGRANGIAN = TRUE
+        USE_JAUMANN_RATE = TRUE
+          Material = "UO2_MSRZC_09"
+          Youngs_Modulus = 2.08e11
+          Poissons_Ratio = 0.23
+          THERMAL_STRAIN_AS_SOURCE_TERM = FALSE
+          THERMAL_EXPANSION_COEFFICIENT = 2.0e-4
+          Default_Oxygen_Concentration = 0.15
+          Default_Temperature = 300.0
+          Default_Burnup = 0.0
+      }
+
+testLinearMechanicsOperator {
+  name="LinearBVPOperator"
+    print_info_level = 1
+    VolumeOperator = "MechanicsLinearFEOperator4"
+    BoundaryOperator = "DirichletMatrixCorrection4"
+}
+
+MechanicsLinearFEOperator4 {
+      name = "MechanicsLinearFEOperator"
+        print_info_level = 1
+        reset_reuses_matrix = TRUE
+        InputVariable = "disp"
+        OutputVariable = "disp"
+        USE_UPDATED_LAGRANGIAN = TRUE
+
+        MechanicsElement {
+          name="MechanicsLinearUpdatedLagrangianElement"
+          //name="MechanicsLinearElement"
+            USE_REDUCED_INTEGRATION = FALSE 
+            USE_JAUMANN_RATE = TRUE
+            FE_ORDER = "FIRST"  
+            FE_FAMILY = "LAGRANGE"
+            QRULE_TYPE = "QGAUSS"
+            QRULE_ORDER = "DEFAULT"
+        }
+}
+
+DirichletMatrixCorrection4 {
+    name = "DirichletMatrixCorrection"
+      print_info_level = 1
+      skip_params = FALSE
+      skip_rhs_correction = TRUE
+      number_of_ids = 2
+      id_0          = 2
+      number_of_dofs_0 =  3
+      dof_0_0          =  0
+      dof_0_1          =  1
+      dof_0_2          =  2
+      id_1          = 3
+      number_of_dofs_1 = 3
+      dof_1_0 = 0
+      dof_1_1 = 1
+      dof_1_2 = 2
+  }
+
+MechanicsInitialGuess {
+  name = "DirichletVectorCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    number_of_ids = 2
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+    value_0_0 = 0.0
+    value_0_1 = 0.0
+    value_0_2 = 0.0
+    id_1 = 3
+    number_of_dofs_1 = 3
+    dof_1_0 = 0
+    dof_1_1 = 1
+    dof_1_2 = 2
+    value_1_0 = 0.0
+    value_1_1 = 0.0
+    value_1_2 = 0.0
+}
+
+ThermalInitialGuess {
+  name = "DirichletVectorCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    number_of_ids = 2
+    id_0 = 2
+    number_of_dofs_0 = 1
+    dof_0_0 = 0
+    value_0_0 = 1000.0
+    id_1 = 3
+    number_of_dofs_1 = 1
+    dof_1_0 = 0
+    value_1_0 = 350.0
+}
+
+NonlinearSolver{
+  print_info_level = 7
+    max_iterations = 100
+    max_error = 1e-10
+
+    absoluteTolerance = 1.0e-16
+    relativeTolerance = 1.0e-16
+    stepTolerance = 1.0e-16
+    maximumFunctionEvals = 100
+    usesJacobian=FALSE
+
+    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ls_alpha 0.01"
+
+    LinearSolver{
+      print_info_level = 10
+        max_iterations = 100
+        max_error = 1e-10
+        ksp_type = "fgmres"
+        absolute_tolerance = 1.0e-9
+        relative_tolerance = 0.1
+        divergence_tolerance = 1.0e03
+        max_krylov_dimension = 40
+        uses_preconditioner=TRUE
+        pc_type = "shell"
+        pc_side = "RIGHT"
+
+        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100"
+
+        Preconditioner{
+          print_info_level = 1
+            max_iterations = 1
+            max_error = 1e-10
+            absolute_tolerance = 1.0e-16
+            relative_tolerance = 1.0e-01
+            divergence_tolerance = 1.0e03
+
+            thermalPreconditioner{
+              print_info_level = 1
+                max_iterations = 1
+                max_levels = 5
+                max_error = 1.0e-10
+                coarse_type="Amesos-KLU"
+            }
+          mechanicsPreconditioner{
+            print_info_level = 1
+              PDE_equations = 3
+              max_levels = 10
+              max_iterations = 1
+              max_error = 1.0e-10
+              increasingordecreasing = "increasing"
+              aggregationtype = "Uncoupled"
+              smoothertype = "Chebyshev"
+              smoother_sweeps = 3
+              smoother_preorpost = "both"
+              coarse_type="Amesos-KLU"
+          }
+        }
+    }
+}
+
+
+
