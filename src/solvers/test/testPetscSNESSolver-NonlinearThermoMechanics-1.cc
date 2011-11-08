@@ -297,8 +297,10 @@ int main(int argc, char *argv[])
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    //exeNames.push_back("testPetscSNESSolver-NonlinearThermoMechanics-1");
+    exeNames.push_back("testPetscSNESSolver-NonlinearThermoMechanics-1");
     exeNames.push_back("testPetscSNESSolver-NonlinearThermoMechanics-1a");
+    exeNames.push_back("testPetscSNESSolver-NonlinearThermoMechanics-1b");
+    exeNames.push_back("testPetscSNESSolver-NonlinearThermoMechanics-1c");
 
     for(unsigned int i = 0; i < exeNames.size(); i++) {
         try {
