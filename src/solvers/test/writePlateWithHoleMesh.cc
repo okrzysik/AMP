@@ -245,13 +245,53 @@ int main(int argc, char** argv) {
 
   fprintf(fp, "NumberOfBoundaryNodeIds = 2 \n\n");
 
+  //Top
   fprintf(fp, "NumberOfBoundaryNodes1 = %d \n", ( ((2*me) + 1)*(le + 1) ) );
   fprintf(fp, "BoundaryNodeId1 = ");
 
+  for(int li = 0; li <= le; li++) {
+    //Elem zone 1
+    for(int mi = 0; mi <= me; mi++) {
+      fprintf(fp, "%d, ", uniqueNodeId[0][li][ne][mi]);
+    }//end for mi
+
+    //Elem zone 5
+    for(int mi = 1; mi < me; mi++) {
+      fprintf(fp, "%d, ", uniqueNodeId[4][li][mi][ne]);
+    }//end for mi
+
+    //Elem zone 5: mi = me
+    if(li < le) {
+      fprintf(fp, "%d, ", uniqueNodeId[4][li][me][ne]);
+    } else {
+      fprintf(fp, "%d ", uniqueNodeId[4][li][me][ne]);
+    }
+  }//end for li
+
   fprintf(fp,"\n\n");
 
+  //Bottom
   fprintf(fp, "NumberOfBoundaryNodes2 = %d \n", ( ((2*me) + 1)*(le + 1) ) );
   fprintf(fp, "BoundaryNodeId2 = ");
+
+  for(int li = 0; li <= le; li++) {
+    //Elem zone 3
+    for(int mi = 0; mi <= me; mi++) {
+      fprintf(fp, "%d, ", uniqueNodeId[2][li][mi][ne]);
+    }//end for mi
+
+    //Elem zone 7
+    for(int mi = 1; mi < me; mi++) {
+      fprintf(fp, "%d, ", uniqueNodeId[6][li][ne][mi]);
+    }//end for mi
+
+    //Elem zone 7: mi = me
+    if(li < le) {
+      fprintf(fp, "%d, ", uniqueNodeId[6][li][ne][me]);
+    } else {
+      fprintf(fp, "%d ", uniqueNodeId[6][li][ne][me]);
+    }
+  }//end for li
 
   fprintf(fp,"\n\n");
 
