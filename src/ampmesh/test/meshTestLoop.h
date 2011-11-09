@@ -46,8 +46,8 @@ void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 void MeshVectorTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // Run the vector tests
-    VerifyGetVectorTest<1>::run_test ( ut, mesh );
-    VerifyGetVectorTest<3>::run_test ( ut, mesh );
+    VerifyGetVectorTest<1>( ut, mesh );
+    VerifyGetVectorTest<3>( ut, mesh );
 }
 #endif
 

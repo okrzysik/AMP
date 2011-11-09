@@ -26,16 +26,21 @@ simpleDOFManager::simpleDOFManager( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP
     while ( pos != end ) {
         AMP::Mesh::MeshElementID id = pos->globalID();
         if ( id.is_local ) {
-            d_local_id[i] = pos->globalID();
+            d_local_id[i] = id;
             i++;
         } else {
-            d_remote_id[j] = pos->globalID();
+            d_remote_id[j] = id;
             j++;
         }
         pos++;
     }
     AMP::Utilities::quicksort(d_local_id);
     AMP::Utilities::quicksort(d_remote_id);
+    // Get the number of local elements per processor
+    AMP_MPI comm = d_mesh->getComm();
+    size_t N_local = d_local_id.size();
+    comm.sumScan<size_t>(&N_local,&d_end);
+    d_begin = d_end-N_local;
 }
 
 
@@ -90,21 +95,32 @@ size_t simpleDOFManager::endDOF( )
 ****************************************************************/
 AMP::LinearAlgebra::Vector::shared_ptr simpleDOFManager::createVector( AMP::LinearAlgebra::Variable::shared_ptr variable )
 {
+    // Check the inputs
     AMP::Mesh::GeomType type = (AMP::Mesh::GeomType) variable->variableID();
     if ( type != d_type )
         AMP_ERROR("The variableID must match the element type specified at construction");
+    // Get the number or local DOFs and the start and end DOF indicies
+    size_t N_global = d_mesh->numGlobalElements(type)*variable->DOFsPerObject();
+    size_t N_local = d_mesh->numLocalElements(type)*variable->DOFsPerObject();
+    size_t N_begin = d_begin*variable->DOFsPerObject();
+    size_t N_end = (d_end-1)*variable->DOFsPerObject()+1;
     // Create the communication list
     AMP::LinearAlgebra::CommunicationList::shared_ptr comm_list;
+    if ( d_gcw == 0 ) {
+        comm_list = AMP::LinearAlgebra::CommunicationList::createEmpty( N_local, d_mesh->getComm() );
+    } else {
+        AMP_ERROR("Not finished");
+    }
     // Create the vector parameters
     boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscVectorParameters> mvparams(
         new AMP::LinearAlgebra::ManagedPetscVectorParameters() );
     boost::shared_ptr<AMP::LinearAlgebra::EpetraVectorEngineParameters> eveparams(
-        new AMP::LinearAlgebra::EpetraVectorEngineParameters( d_mesh->numLocalElements(type), d_mesh->numGlobalElements(type), d_mesh->getComm() ) );
+        new AMP::LinearAlgebra::EpetraVectorEngineParameters( N_local, N_global, d_mesh->getComm() ) );
     int i = 0;
-    for (size_t local_start=this->beginDOF(); local_start!=this->endDOF(); local_start++, i++ ) {
+    for (size_t local_start=N_begin; local_start<N_end; local_start++, i++ ) {
         eveparams->addMapping ( i , local_start );
     }
-    AMP::LinearAlgebra::VectorEngine::BufferPtr t_buffer ( new AMP::LinearAlgebra::VectorEngine::Buffer ( d_mesh->numLocalElements(type) ) );
+    AMP::LinearAlgebra::VectorEngine::BufferPtr t_buffer ( new AMP::LinearAlgebra::VectorEngine::Buffer( N_local ) );
     AMP::LinearAlgebra::VectorEngine::shared_ptr epetra_engine( new AMP::LinearAlgebra::EpetraVectorEngine( eveparams, t_buffer ) );
     mvparams->d_Engine = epetra_engine;
     mvparams->d_CommList = comm_list;

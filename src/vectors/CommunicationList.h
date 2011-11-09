@@ -50,7 +50,7 @@ namespace LinearAlgebra {
     * computation.  This class tracks which local data need to be communicated with other cores
     * and which data should be received from those cores.
     */
-  class CommunicationList : public Castable
+  class CommunicationList
   {
     private:
       std::vector<unsigned int>           d_ReceiveSizes;
@@ -67,7 +67,7 @@ namespace LinearAlgebra {
       size_t                              d_iTotalRows;
       bool                                d_bFinalized;
 
-      CommunicationList () : Castable () {}
+      CommunicationList () {}
 
     protected:
 
@@ -83,53 +83,11 @@ namespace LinearAlgebra {
         */
       void   buildCommunicationArrays ( std::vector<unsigned int> &dofs , std::vector<unsigned int> &partition , int commRank );
 
-      /**
-        * \brief End run a runtime check in GNU debug vectors where an end of buffer iterator is
-        * dereferenced but never used.  As in all-to-all with 0 size.
-        * \param[in] in A std::vector containing a buffer to get a pointer for
-        * \return the pointer of said buffer
-        */
-      template <typename T>
-      static T * getBufferToAvoidDebugVectorCrashing ( std::vector<T> &in );
-
-      /**
-        * \brief End run a runtime check in GNU debug vectors where an end of buffer iterator is
-        * dereferenced but never used.  As in all-to-all with 0 size.
-        * \param[in] in A std::vector containing a buffer to get a pointer for
-        * \return the pointer of said buffer
-        */
-      template <typename T>
-      static const T * getBufferToAvoidDebugVectorCrashing ( const std::vector<T> &in );
-
-      /**
-        * \brief Finalize function to build communication lists
-        * \param[in] map A VectorEntryMap used to build the lists.  This comes through as a castable to
-        * avoid template instantiation issues
-        *
-        */
-
-      virtual void  finalizeList ( Castable &map );
 
     public:
 
-      /**
-        * \typedef Graph
-        * A simple sparse connectivity list for storing graphs
-        */
-      typedef  std::map<unsigned int , std::set<unsigned int> >              Graph;
-
-      /**
-        * \typedef NodeIterator
-        * An iterator over nodes in the CommunicationList::Graph type
-        */
-      typedef  std::map<unsigned int , std::set<unsigned int> >::iterator    NodeIterator;
-
-      /**
-        * \typedef NeighborIterator
-        * An iterator over the neighbors of a particular node in the CommunicationList::Graph
-        * type
-        */
-      typedef  std::set<unsigned int>::iterator                              NeighborIterator;
+      //! Short hand for shared point to CommunicationList
+      typedef  boost::shared_ptr<CommunicationList>      shared_ptr;
 
       /**
         * \brief Construct a communication list
@@ -144,11 +102,6 @@ namespace LinearAlgebra {
         * \brief Destroy the communication list
         */
       virtual ~CommunicationList ();
-
-      /**
-        * \brief Short hand for shared point to CommunicationList
-        */
-      typedef  boost::shared_ptr<CommunicationList>      shared_ptr;
 
       /**
         * \brief Retrieve list of global indices shared locally stored elsewhere
@@ -291,9 +244,8 @@ namespace LinearAlgebra {
 
       /**
         * \brief  A call to ensure the communication lists are constructed
-        * \param  map  A VectoryEntryMap
         */
-      void finalize ( Castable &map );
+      void finalize ( );
 
 
       /**
@@ -309,7 +261,6 @@ namespace LinearAlgebra {
 }
 }
 
-#include "CommunicationList.tmpl.h"
 #include "CommunicationList.inline.h"
 
 #endif

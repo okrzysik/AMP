@@ -6,9 +6,49 @@
 //class Vector;
 //typedef  boost::shared_ptr<Vector>   Vector_shared_ptr;
 
+
 namespace AMP {
 namespace LinearAlgebra {
 
+
+/************************************************************************
+* Some simple fuctions to get a pointer to the data in a std::vector,   *
+* where the vector may be empty.                                        *
+************************************************************************/
+template <typename T>
+static T* getBufferToAvoidDebugVectorCrashing( std::vector<T> &in )
+{
+    T *retVal = 0;
+    if ( in.size() > 0 ) retVal = &(in[0]);
+    return retVal;
+}
+template <typename T>
+static const T* getBufferToAvoidDebugVectorCrashing( const std::vector<T> &in )
+{
+    const T *retVal = 0;
+    if ( in.size() > 0 ) retVal = &(in[0]);
+    return retVal;
+}
+
+
+/************************************************************************
+* Constructors                                                          *
+************************************************************************/
+CommunicationList::CommunicationList ( CommunicationListParameters::shared_ptr params ):
+    d_comm ( params->d_comm ),
+    d_iNumRows ( params->d_localsize ),
+    d_bFinalized ( false )
+{
+    d_comm.sumScan((int*)&d_iNumRows,(int*)&d_iTotalRows,1);
+    d_iBegin = d_iTotalRows - params->d_localsize;
+    int size = d_comm.getSize();
+    d_iTotalRows = d_comm.bcast(d_iTotalRows,size-1);
+}
+
+
+/************************************************************************
+* All other functions                                                   *
+************************************************************************/
   CommunicationList::shared_ptr  CommunicationList::subset ( VectorIndexer::shared_ptr ndx )
   {
     CommunicationList *retVal = new CommunicationList;

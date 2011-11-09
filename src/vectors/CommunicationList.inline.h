@@ -2,10 +2,6 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-  inline
-  void CommunicationList::finalizeList ( Castable & )
-  {
-  }
 
   inline
   unsigned int CommunicationList::numLocalRows () const
@@ -14,12 +10,11 @@ namespace LinearAlgebra {
   }
 
   inline
-  void  CommunicationList::finalize ( Castable &map )
+  void  CommunicationList::finalize ( )
   {
     if ( !d_bFinalized )
     {
       d_bFinalized = true;
-      finalizeList ( map );
     }
   }
 
@@ -29,17 +24,6 @@ namespace LinearAlgebra {
     return d_iTotalRows;
   }
 
-  inline
-  CommunicationList::CommunicationList ( CommunicationListParameters::shared_ptr params )
-    : d_comm ( params->d_comm )
-    , d_iNumRows ( params->d_localsize )
-    , d_bFinalized ( false )
-  {
-    d_comm.sumScan((int*)&d_iNumRows,(int*)&d_iTotalRows,1);
-    d_iBegin = d_iTotalRows - params->d_localsize;
-    int size = d_comm.getSize();
-    d_iTotalRows = d_comm.bcast(d_iTotalRows,size-1);
-  }
 
   inline
   CommunicationList::shared_ptr  CommunicationList::createEmpty ( unsigned int local , AMP_MPI c )

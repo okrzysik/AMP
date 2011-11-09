@@ -344,6 +344,8 @@ template <class T>
 void Utilities::quicksort(std::vector<T> &x)
 {
     int n = (int) x.size();
+    if ( n <= 1 )
+        return;
     T *arr = &x[0];
     bool test;
     int i, ir, j, jstack, k, l, istack[100];
