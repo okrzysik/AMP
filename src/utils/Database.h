@@ -18,7 +18,6 @@
 #include <string>
 #include "boost/shared_ptr.hpp"
 
-#include "Castable.h"
 
 namespace AMP {
    
@@ -47,7 +46,7 @@ namespace AMP {
  * version of getTYPE() works in a similar fashion.
  */
 
-class Database : public Castable
+class Database
 {
 public:
    

@@ -23,8 +23,6 @@
 #define included_String
 #endif
 
-#include "Castable.h"
-
 #include "utils/AMP_MPI.h"
 
 namespace AMP {
@@ -52,7 +50,7 @@ namespace AMP {
  * output files from flex and bison.
  */
 
-class Parser : public Castable
+class Parser
 {
 public:
       typedef boost::shared_ptr<Parser> shared_ptr;

@@ -629,8 +629,7 @@ namespace LinearAlgebra {
 
   void ManagedPetscVector::initPetsc ()
   {
-    AMP_MPI comm = getParameters()->castTo<ManagedVectorParameters>()
-                          .d_Engine->getComm();
+    AMP_MPI comm = boost::dynamic_pointer_cast<ManagedVectorParameters>( getParameters() )->d_Engine->getComm();
     VecCreate( comm.getCommunicator() , &d_petscVec);
 
     d_petscVec->data = this;

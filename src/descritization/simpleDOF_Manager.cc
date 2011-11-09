@@ -17,13 +17,25 @@ simpleDOFManager::simpleDOFManager( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP
     d_type = type;
     d_gcw = gcw;
     // Create a sorted list of the local and remote types
-    d_local_id.resize(mesh->numLocalElements(AMP::Mesh::Vertex));
-    AMP::Mesh::MeshIterator pos = mesh->getIterator(type,0);
-    for (size_t i=0; i<d_local_id.size(); i++) {
-        d_local_id[i] = pos->globalID();
+    d_local_id.resize(mesh->numLocalElements(type));
+    d_remote_id.resize(mesh->numGhostElements(type,gcw));
+    AMP::Mesh::MeshIterator pos = mesh->getIterator(type,gcw);
+    AMP::Mesh::MeshIterator end = pos.end();
+    int i=0;
+    int j=0;
+    while ( pos != end ) {
+        AMP::Mesh::MeshElementID id = pos->globalID();
+        if ( id.is_local ) {
+            d_local_id[i] = pos->globalID();
+            i++;
+        } else {
+            d_remote_id[j] = pos->globalID();
+            j++;
+        }
         pos++;
     }
     AMP::Utilities::quicksort(d_local_id);
+    AMP::Utilities::quicksort(d_remote_id);
 }
 
 
@@ -79,8 +91,10 @@ size_t simpleDOFManager::endDOF( )
 AMP::LinearAlgebra::Vector::shared_ptr simpleDOFManager::createVector( AMP::LinearAlgebra::Variable::shared_ptr variable )
 {
     AMP::Mesh::GeomType type = (AMP::Mesh::GeomType) variable->variableID();
-    if ( type != AMP::Mesh::Vertex )
-        AMP_ERROR("Not yet programmed for elements other than nodes");
+    if ( type != d_type )
+        AMP_ERROR("The variableID must match the element type specified at construction");
+    // Create the communication list
+    AMP::LinearAlgebra::CommunicationList::shared_ptr comm_list;
     // Create the vector parameters
     boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscVectorParameters> mvparams(
         new AMP::LinearAlgebra::ManagedPetscVectorParameters() );
@@ -91,11 +105,11 @@ AMP::LinearAlgebra::Vector::shared_ptr simpleDOFManager::createVector( AMP::Line
         eveparams->addMapping ( i , local_start );
     }
     AMP::LinearAlgebra::VectorEngine::BufferPtr t_buffer ( new AMP::LinearAlgebra::VectorEngine::Buffer ( d_mesh->numLocalElements(type) ) );
-    mvparams->d_Engine = AMP::LinearAlgebra::VectorEngine::shared_ptr ( new AMP::LinearAlgebra::EpetraVectorEngine( eveparams, t_buffer ) );
-    //mvparams->d_CommList = d_vDOFMapCache[var->variableID()]->getCommunicationList();
-    AMP_ERROR("Not finished yet");
+    AMP::LinearAlgebra::VectorEngine::shared_ptr epetra_engine( new AMP::LinearAlgebra::EpetraVectorEngine( eveparams, t_buffer ) );
+    mvparams->d_Engine = epetra_engine;
+    mvparams->d_CommList = comm_list;
+    // Create the vector
     AMP::LinearAlgebra::Vector::shared_ptr vector = AMP::LinearAlgebra::Vector::shared_ptr( new AMP::LinearAlgebra::ManagedPetscVector(mvparams) );
-    
     return vector;
 }
 

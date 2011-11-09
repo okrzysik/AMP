@@ -75,6 +75,7 @@ private:
     int d_gcw;
     std::vector<AMP::Mesh::MeshElementID> d_local_id;
     std::vector<AMP::Mesh::MeshElementID> d_remote_id;
+    size_t d_begin, d_end;
 };
 
 

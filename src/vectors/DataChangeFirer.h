@@ -4,7 +4,6 @@
 #include <boost/shared_ptr.hpp>
 #include <algorithm>
 #include <deque>
-#include "utils/Castable.h"
 
 
 namespace AMP {

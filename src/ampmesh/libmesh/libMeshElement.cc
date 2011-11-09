@@ -19,7 +19,7 @@ libMeshElement::libMeshElement()
     d_elementType = null;
     d_globalID = MeshElementID();
 }
-libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element)
+libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element, boost::shared_ptr< ::Mesh> mesh)
 {
     typeID = libMeshElementTypeID;
     element = NULL;
@@ -29,16 +29,19 @@ libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element)
     d_globalID = MeshElementID();
     d_globalID.type = type;
     d_globalID.meshID = -1;     // This is not finished yet
+    d_libMesh = mesh;
     if ( d_elementType==Vertex ) {
         d_elementType = Vertex;
         ::Node* node = (::Node*) ptr_element;
         d_globalID.local_id = node->id();
         d_globalID.owner_rank = node->processor_id();
+        d_globalID.is_local = d_globalID.local_id==mesh->processor_id();
     } else {
         d_elementType = (GeomType) dim;
         ::Elem* elem = (::Elem*) ptr_element;
         d_globalID.local_id = elem->id();
         d_globalID.owner_rank = elem->processor_id();
+        d_globalID.is_local = !(elem->is_remote());
     }
 }
 libMeshElement::libMeshElement(const libMeshElement& rhs)
@@ -97,24 +100,24 @@ std::vector<MeshElement> libMeshElement::getElements(const GeomType type) const
         // Return the children of the current element
         children.resize(elem->n_children());
         for (unsigned int i=0; i<children.size(); i++)
-            children[i] = libMeshElement( d_dim, type, (void*)elem->child(i) );
+            children[i] = libMeshElement( d_dim, type, (void*)elem->child(i), d_libMesh );
     } else if ( type==Vertex ) {
         // Return the nodes of the current element
         children.resize(elem->n_nodes());
         for (unsigned int i=0; i<children.size(); i++)
-            children[i] = libMeshElement( d_dim, type, (void*)elem->get_node(i) );
+            children[i] = libMeshElement( d_dim, type, (void*)elem->get_node(i), d_libMesh );
     } else if ( type==Edge ) {
         // Return the edges of the current element
         AMP_ERROR("unfinished");
         //children.resize(elem->n_edges());
         //for (unsigned int i=0; i<children.size(); i++)
-        //    children[i] = libMeshElement( d_dim, type, (void*)elem->build_edge(i) );
+        //    children[i] = libMeshElement( d_dim, type, (void*)elem->build_edge(i), d_libMesh );
     } else if ( type==Face ) {
         // Return the edges of the current element
         AMP_ERROR("unfinished");
         //children.resize(elem->n_faces());
         //for (unsigned int i=0; i<children.size(); i++)
-        //    //children[i] = libMeshElement( d_dim, type, (void*)elem->build_face(i) );
+        //    //children[i] = libMeshElement( d_dim, type, (void*)elem->build_face(i), d_libMesh );
     }
     return children;
 }

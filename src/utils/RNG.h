@@ -3,115 +3,114 @@
 
 
 #include <boost/shared_ptr.hpp>
-#include "Castable.h"
 
-namespace AMP
+namespace AMP {
+
+
+//! Parameters used to instantiate a pseudorandom number generator
+class RNGParameters
 {
+public:
+    /**\brief Flag to let the RNG know if you want to provide a seed or use a global seed
+     */
+    enum  RNGOptions { USE_GLOBAL_SEED , USE_PARAMS_SEED };
 
-  /**\brief Parameters used to instantiate a pseudorandom number generator
-    */
-  class RNGParameters
-  {
-    public:
-      /**\brief Flag to let the RNG know if you want to provide a seed or use a global seed
-        */
-      enum  RNGOptions { USE_GLOBAL_SEED , USE_PARAMS_SEED };
+    /**\brief Shorthand for shared pointer to RNGParameters
+     */
+    typedef boost::shared_ptr<RNGParameters>  shared_ptr;
 
-      /**\brief Shorthand for shared pointer to RNGParameters
-        */
-      typedef boost::shared_ptr<RNGParameters>  shared_ptr;
+    /**\brief Seed to use when creating an RNG
+     */
+    size_t      d_Seed;
 
-      /**\brief Seed to use when creating an RNG
-        */
-      size_t      d_Seed;
+    /**\brief Rank of the RNG to use
+     *\details  It is common for simulations to require multiple i.i.d. streams.
+     * This parameter will allow the user to select which RNG to create
+     */
+    size_t      d_Rank;
 
-      /**\brief Rank of the RNG to use
-        *\details  It is common for simulations to require multiple i.i.d. streams.
-        * This parameter will allow the user to select which RNG to create
-        */
-      size_t      d_Rank;
+    /**\brief Which seed should be used
+     */
+    RNGOptions  d_WhichSeed;
 
-      /**\brief Which seed should be used
-        */
-      RNGOptions  d_WhichSeed;
+    /**\brief Constructor.
+     */
+    RNGParameters ( RNGOptions o=USE_GLOBAL_SEED , size_t rank = 0 , size_t seed = 0 );
+};
 
-      /**\brief Constructor.
-        */
-      RNGParameters ( RNGOptions o=USE_GLOBAL_SEED , size_t rank = 0 , size_t seed = 0 );
-  };
 
-  /**\brief A pseudorandom number stream
-    *\details This class implements a parallel pseudorandom number stream.  Given a seed
-    * and rank, this class will provide a stream of pseudorandom bits, integers, or doubles.
-    *
-    * USE OF THIS CLASS IS DANGEROUS FOR SIMULATION.  THIS WRAPS THE C FUNCTION RAND() AND
-    * DOES NOT GENERATE STREAMS OF SUFFICIENT INDEPENDENCE FOR USE WITH SIMULATION.  USE
-    * A DERIVED CLASS FOR BEST RESULTS.
-    */
-  class RNG : public Castable
-  {
-    protected:
+/**\brief A pseudorandom number stream
+ *\details This class implements a parallel pseudorandom number stream.  Given a seed
+ * and rank, this class will provide a stream of pseudorandom bits, integers, or doubles.
+ *
+ * USE OF THIS CLASS IS DANGEROUS FOR SIMULATION.  THIS WRAPS THE C FUNCTION RAND() AND
+ * DOES NOT GENERATE STREAMS OF SUFFICIENT INDEPENDENCE FOR USE WITH SIMULATION.  USE
+ * A DERIVED CLASS FOR BEST RESULTS.
+ */
+class RNG 
+{
+protected:
 
-      /**\brief  Constant used in the generation of random doubles
-        */
-      static double  d_SizeTDivisor;
+    /**\brief  Constant used in the generation of random doubles
+     */
+    static double  d_SizeTDivisor;
 
-      /**\brief  A global seed used for convenience
-        */
-      static size_t  d_Seed;
+    /**\brief  A global seed used for convenience
+     */
+    static size_t  d_Seed;
 
-      /**\brief  Parameters used to construct this class
-        */
-      RNGParameters::shared_ptr  d_Params;
+    /**\brief  Parameters used to construct this class
+     */
+    RNGParameters::shared_ptr  d_Params;
 
-    public:
-      /**\brief Shorthand for shared pointer to RNG
-        */
-      typedef  boost::shared_ptr<RNG>   shared_ptr;
+public:
+    /**\brief Shorthand for shared pointer to RNG
+     */
+    typedef  boost::shared_ptr<RNG>   shared_ptr;
 
-      /**\brief Initialization function to be called at program start
-        *\details  Computes the static constants
-        */
-      static void initialize ( size_t seed=0 );
+    /**\brief Initialization function to be called at program start
+     *\details  Computes the static constants
+     */
+    static void initialize ( size_t seed=0 );
 
-      /**\brief Constructor
-        * \param[in] params  Description of parameters to create RNG class
-        *\details  This calls srand() with the chosen seed plus the rank.  THIS IS A COMPLETELY
-        * INADEQUATE RNG.
-        */
-      RNG ( RNGParameters::shared_ptr  params );
+    /**\brief Constructor
+     * \param[in] params  Description of parameters to create RNG class
+     *\details  This calls srand() with the chosen seed plus the rank.  THIS IS A COMPLETELY
+     * INADEQUATE RNG.
+     */
+    RNG ( RNGParameters::shared_ptr  params );
 
-      /**\brief Destructor
-        */
-      virtual  ~RNG () {}
+    /**\brief Destructor
+     */
+    virtual  ~RNG () {}
 
-      /**\brief Fill a buffer with random bits
-        \param[in] buf   Buffer to fill
-        \param[in] len   Size of buffer in bytes
-        */
-      virtual  void  fillBuffer ( void *buf , size_t len );
+    /**\brief Fill a buffer with random bits
+       \param[in] buf   Buffer to fill
+       \param[in] len   Size of buffer in bytes
+     */
+    virtual  void  fillBuffer ( void *buf , size_t len );
 
-      /**\brief Return the next integer in (low, low+1 ,...,high-1)
-        *\param[in] low The smallest integer that may be returned
-        *\param[in] high  One more than the largest integer that may be returned
-        */
-      virtual int      nextInt ( int low , int high );
+    /**\brief Return the next integer in (low, low+1 ,...,high-1)
+     *\param[in] low The smallest integer that may be returned
+     *\param[in] high  One more than the largest integer that may be returned
+     */
+    virtual int      nextInt ( int low , int high );
 
-      /**\brief Return the next double in [low,high) using a simple algorithm
-        *\param[in] low  The smallest double that may be returned
-        *\param[in] high  The supremeum of numbers that may be returned.
-        *\details  The value is determined by dividing a random size_t with
-        * one more than the largest size_t.  d_SizeTDivisor is determined by
-        * approximating \f$\epsilon_{\mathit{mach}}\f$ and using this to
-        * compute the next largest representable double.
-        */
-      virtual double   nextDouble ( double low , double  high );
+    /**\brief Return the next double in [low,high) using a simple algorithm
+     *\param[in] low  The smallest double that may be returned
+     *\param[in] high  The supremeum of numbers that may be returned.
+     *\details  The value is determined by dividing a random size_t with
+     * one more than the largest size_t.  d_SizeTDivisor is determined by
+     * approximating \f$\epsilon_{\mathit{mach}}\f$ and using this to
+     * compute the next largest representable double.
+     */
+    virtual double   nextDouble ( double low , double  high );
 
-      /**\brief Return a new RNG with a different rank.
-        *\param[in]  new_rank  New rank of cloned RNG.
-        */
-      virtual RNG::shared_ptr   cloneRNG ( size_t new_rank );
-  };
+    /**\brief Return a new RNG with a different rank.
+     *\param[in]  new_rank  New rank of cloned RNG.
+     */
+    virtual RNG::shared_ptr   cloneRNG ( size_t new_rank );
+};
 
 
   /**\brief  A convenience class for using pseudorandom streams

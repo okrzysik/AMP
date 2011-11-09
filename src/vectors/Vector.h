@@ -37,7 +37,7 @@ namespace LinearAlgebra {
 
   /**\brief Parameters used to instantiate a Vector
     */
-  class VectorParameters : public ParameterBase
+  class VectorParameters : public ParameterBase, public Castable
   {
     public:
       /**\brief Convenience typedef

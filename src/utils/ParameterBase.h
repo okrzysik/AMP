@@ -6,14 +6,12 @@
 
 #include "boost/shared_ptr.hpp"
 
-#include "Castable.h"
-
 namespace AMP{
 
   /**\class ParameterBase
    * ParameterBase is a base class for classes that pass parameters to other classes
    */
-  class ParameterBase : public Castable
+  class ParameterBase
   {
     public:
 

@@ -18,7 +18,6 @@
 #define included_String
 #endif
 
-#include "Castable.h"
 
 #include "utils/AMP_MPI.h"
 
@@ -56,7 +55,7 @@ namespace AMP {
    *
    */
 
-  class InputManager : public Castable
+  class InputManager
   {
     public:
 
