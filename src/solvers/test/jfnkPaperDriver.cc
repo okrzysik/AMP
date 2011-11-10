@@ -25,6 +25,7 @@
 #include "operators/OperatorBuilder.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
+#include "operators/NonlinearFEOperator.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
 
 #include "solvers/PetscSNESSolverParameters.h"
@@ -105,6 +106,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
           AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
                 nlOpDbName, input_db, materialModel));
 
+        boost::shared_ptr<AMP::Operator::NonlinearFEOperator> nonlinearFEoperator = boost::dynamic_pointer_cast<
+          AMP::Operator::NonlinearFEOperator>(nonlinearBVPoperator->getVolumeOperator());
+
         boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearBVPoperator = boost::dynamic_pointer_cast<
           AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
                 linOpDbName, input_db, materialModel));
@@ -170,7 +174,36 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
             resVec->zero();
 
             nonlinearBVPoperator->modifyInitialSolutionVector(solVec);
+
+            std::cout<<"Solving ";
+            if(useUL) {
+              std::cout<<"UL ";
+            } else {
+              std::cout<<"SS ";
+            }
+            if(useConsistent) {
+              std::cout<<"Consistent ";
+            } else {
+              std::cout<<"Continuum ";
+            }
+            if(useJFNK) {
+              std::cout<<"with JFNK ";
+            }
+            if(useEW) {
+              std::cout<<"with EW ";
+            }
+            std::cout<<" on mesh: "<<meshFile<<std::endl;
+
+            linearBVPoperator->resetApplyCount();
+            nonlinearFEoperator->resetApplyCount();
+
             snesSolver->solve(rhsVec, solVec);
+
+            size_t numDofs = solVec->getGlobalSize();
+            unsigned int nonlinearCount = nonlinearFEoperator->getApplyCount();
+            unsigned int linearCount = linearBVPoperator->getApplyCount();
+
+            std::cout<<" "<<numDofs<<" & "<<nonlinearCount<<" & "<<linearCount<<" \\\\ "<<std::endl; 
 
           }//end useEW
         }//end useJFNK
