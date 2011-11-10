@@ -52,7 +52,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   boost::shared_ptr<AMP::Database> ml_db = input_db->getDatabase("ML_Solver"); 
 
   for(int meshId = 1; meshId <= numMeshes; meshId++) {
-    std::cout<<"Working on mesh "<<meshId<<std::endl;
     AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
     AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
 
@@ -68,6 +67,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       AMP::readTestMesh(meshFile, mesh);
     }
 
+    std::cout<<"Finished reading mesh "<<meshId<<std::endl;
+
     MeshCommunication().broadcast(*(mesh.get()));
     mesh->prepare_for_use(false);
 
@@ -79,6 +80,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> loadOperator = boost::dynamic_pointer_cast<
       AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
             "LoadOperator", input_db, dummyModel));
+
+    std::cout<<"Finished building load operator "<<std::endl;
 
     for(int useUL = 0; useUL < 2; useUL++) {
       std::string linOpDbName = "LinearBVP";
@@ -106,6 +109,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
           AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
                 nlOpDbName, input_db, materialModel));
 
+        std::cout<<"Finished building nonlinear operator "<<std::endl;
+
         boost::shared_ptr<AMP::Operator::NonlinearFEOperator> nonlinearFEoperator = boost::dynamic_pointer_cast<
           AMP::Operator::NonlinearFEOperator>(nonlinearBVPoperator->getVolumeOperator());
 
@@ -113,17 +118,20 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
           AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
                 linOpDbName, input_db, materialModel));
 
+        std::cout<<"Finished building linear operator "<<std::endl;
+
         AMP::LinearAlgebra::Variable::shared_ptr dispVar = nonlinearBVPoperator->getOutputVariable();
 
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         AMP::LinearAlgebra::Vector::shared_ptr solVec = manager->createVector(dispVar);
         AMP::LinearAlgebra::Vector::shared_ptr rhsVec = manager->createVector(dispVar);
-        AMP::LinearAlgebra::Vector::shared_ptr resVec = manager->createVector(dispVar);
 
         loadOperator->setVariable(dispVar);
         rhsVec->zero();
         loadOperator->apply(nullVec, nullVec, rhsVec, 1.0, 0.0);
         nonlinearBVPoperator->modifyRHSvector(rhsVec);
+
+        std::cout<<"Finished building RHS vec "<<std::endl;
 
         for(int useJFNK = 0; useJFNK < 2; useJFNK++) {
           if(useConsistent) {
@@ -150,6 +158,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
             mlParams->d_pOperator = linearBVPoperator;
             mlSolver.reset(new AMP::Solver::TrilinosMLSolver(mlParams));
 
+            std::cout<<"Finished building ML "<<std::endl;
+
             boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> snesParams(new
                 AMP::Solver::PetscSNESSolverParameters(snes_db));
             snesParams->d_comm = globalComm;
@@ -161,8 +171,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
               kspParams->d_comm = globalComm;
               kspSolver.reset(new AMP::Solver::PetscKrylovSolver(kspParams));
               snesParams->d_pKrylovSolver = kspSolver;
+              std::cout<<"Finished building KSP "<<std::endl;
             }
             snesSolver.reset(new AMP::Solver::PetscSNESSolver(snesParams));
+
+            std::cout<<"Finished building SNES "<<std::endl;
 
             if(useJFNK) {
               kspSolver = snesSolver->getKrylovSolver();
@@ -171,7 +184,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
             kspSolver->setPreconditioner(mlSolver);
 
             solVec->zero();
-            resVec->zero();
 
             nonlinearBVPoperator->modifyInitialSolutionVector(solVec);
 
