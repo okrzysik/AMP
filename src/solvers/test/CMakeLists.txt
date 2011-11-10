@@ -38,6 +38,8 @@ INCLUDE (macros)
 #     COPY_MESH_FILE ( mesh_file )
 #
 
+COPY_MESH_FILE ( regPlateWithHole1 )
+
 COPY_MESH_FILE ( lumlmesh1 )
 COPY_MESH_FILE ( lumlmesh2 )
 COPY_MESH_FILE ( lumlmesh3 )
@@ -46,6 +48,9 @@ COPY_MESH_FILE ( lumlmesh5 )
 COPY_MESH_FILE ( lumlmesh6 )
 COPY_MESH_FILE ( lumlmesh7 )
 COPY_MESH_FILE ( lumlmesh8 )
+
+ADD_AMP_PROVISIONAL_TEST ( jfnkPaperDriver )
+COPY_TEST_DATA_FILE ( input_jfnkPaperDriver )
 
 ADD_AMP_PROVISIONAL_TEST ( testMechElasticLUvsML )
 COPY_TEST_DATA_FILE ( input_testMechElasticLUvsML )

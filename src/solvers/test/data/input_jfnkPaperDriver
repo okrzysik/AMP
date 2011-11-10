@@ -1,0 +1,274 @@
+
+NumberOfMeshes = 0
+NumberOfMeshFiles = 1
+mesh1 = "regPlateWithHole1"
+
+ULConsistentModel {
+  USE_MATERIALS_LIBRARY = FALSE
+    Material = ""
+    USE_UPDATED_LAGRANGIAN = TRUE
+    USE_CONTINUUM_TANGENT = FALSE
+    USE_JAUMANN_RATE = FALSE
+    print_info_level = 6
+    name = "VonMisesElastoPlasticModel"
+    Youngs_Modulus = 1.0e5
+    Poissons_Ratio = 0.3
+    Linear_Strain_Hardening = 5000.0
+    Elastic_Yield_Stress = 250.0
+}
+
+SSConsistentModel {
+  USE_MATERIALS_LIBRARY = FALSE
+    Material = ""
+    USE_UPDATED_LAGRANGIAN = FALSE
+    USE_CONTINUUM_TANGENT = FALSE
+    USE_JAUMANN_RATE = FALSE
+    print_info_level = 6
+    name = "VonMisesElastoPlasticModel"
+    Youngs_Modulus = 1.0e5
+    Poissons_Ratio = 0.3
+    Linear_Strain_Hardening = 5000.0
+    Elastic_Yield_Stress = 250.0
+}
+
+ULContinuumModel {
+  USE_MATERIALS_LIBRARY = FALSE
+    Material = ""
+    USE_UPDATED_LAGRANGIAN = TRUE
+    USE_CONTINUUM_TANGENT = TRUE
+    USE_JAUMANN_RATE = FALSE
+    print_info_level = 6
+    name = "VonMisesElastoPlasticModel"
+    Youngs_Modulus = 1.0e5
+    Poissons_Ratio = 0.3
+    Linear_Strain_Hardening = 5000.0
+    Elastic_Yield_Stress = 250.0
+}
+
+SSContinuumModel {
+  USE_MATERIALS_LIBRARY = FALSE
+    Material = ""
+    USE_UPDATED_LAGRANGIAN = FALSE
+    USE_CONTINUUM_TANGENT = TRUE
+    USE_JAUMANN_RATE = FALSE
+    print_info_level = 6
+    name = "VonMisesElastoPlasticModel"
+    Youngs_Modulus = 1.0e5
+    Poissons_Ratio = 0.3
+    Linear_Strain_Hardening = 5000.0
+    Elastic_Yield_Stress = 250.0
+}
+
+LinearBVP_UL {
+  name="LinearBVPOperator"
+    print_info_level = 1
+    VolumeOperator = "MechanicsLinearFEOperatorUL"
+    BoundaryOperator = "DirichletMatrixCorrection"
+}
+
+LinearBVP_SS {
+  name="LinearBVPOperator"
+    print_info_level = 1
+    VolumeOperator = "MechanicsLinearFEOperatorSS"
+    BoundaryOperator = "DirichletMatrixCorrection"
+}
+
+NonlinearBVP_UL_Consistent {
+  name="NonlinearBVPOperator"
+    print_info_level = 3
+    VolumeOperator = "MechanicsNonlinearFEOperatorULConsistent"
+    BoundaryOperator = "DirichletVectorCorrection"
+}
+
+NonlinearBVP_SS_Consistent {
+  name="NonlinearBVPOperator"
+    print_info_level = 3
+    VolumeOperator = "MechanicsNonlinearFEOperatorSSConsistent"
+    BoundaryOperator = "DirichletVectorCorrection"
+}
+
+NonlinearBVP_UL_Continuum {
+  name="NonlinearBVPOperator"
+    print_info_level = 3
+    VolumeOperator = "MechanicsNonlinearFEOperatorULContinuum"
+    BoundaryOperator = "DirichletVectorCorrection"
+}
+
+NonlinearBVP_SS_Continuum {
+  name="NonlinearBVPOperator"
+    print_info_level = 3
+    VolumeOperator = "MechanicsNonlinearFEOperatorSSContinuum"
+    BoundaryOperator = "DirichletVectorCorrection"
+}
+
+LoadOperator {
+  name="DirichletVectorCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    isAttachedToVolumeOperator = FALSE
+    setResidual = FALSE
+    valuesType = 1
+    number_of_ids = 1
+    id_0 = 1
+    number_of_dofs_0 = 1
+    dof_0_0 = 2
+    value_0_0 = 1.0
+}
+
+DirichletVectorCorrection {
+  name="DirichletVectorCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    isAttachedToVolumeOperator = TRUE
+    setResidual = FALSE
+    valuesType = 1
+    number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+    value_0_0 = 0.0
+    value_0_1 = 0.0
+    value_0_2 = 0.0
+}
+
+DirichletMatrixCorrection {
+  name = "DirichletMatrixCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    symmetric_correction = TRUE
+    zero_dirichlet_block = FALSE
+    skip_rhs_correction = TRUE
+    number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+}
+
+
+ML_Solver {
+  problem_type = "SA"
+    print_info_level = 0
+    max_iterations = 1
+    max_levels = 30
+    max_error = 1.0e-16
+    PDE_equations = 3
+}
+
+SNES_EW_JFNK {
+  print_info_level = 0 
+    max_iterations = 100
+    max_error = 1e-10
+    absoluteTolerance = 1.0e-10
+    relativeTolerance = 1.0e-11
+    stepTolerance = 1.0e-12
+    maximumFunctionEvals = 1000
+    zero_initial_guess = FALSE
+    usesJacobian = FALSE
+
+    SNESOptions = "-snes_monitor -snes_converged_reason -snes_ksp_ew -snes_type ls -snes_ls_alpha 0.0001"
+
+    LinearSolver {
+      print_info_level = 0
+        max_iterations = 50
+        max_error = 1.0e-30
+        ksp_type = "cg"
+        absolute_tolerance = 1.0e-30
+        relative_tolerance = 1.0e-12
+        divergence_tolerance = 1.0e03
+        uses_preconditioner = TRUE
+        pc_type = "shell"
+        pc_side = "LEFT"
+        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 50"
+    }
+}
+
+SNES_JFNK {
+  print_info_level = 0 
+    max_iterations = 100
+    max_error = 1e-10
+    absoluteTolerance = 1.0e-10
+    relativeTolerance = 1.0e-11
+    stepTolerance = 1.0e-12
+    maximumFunctionEvals = 1000
+    zero_initial_guess = FALSE
+    usesJacobian = FALSE
+
+    SNESOptions = "-snes_monitor -snes_converged_reason -snes_type ls -snes_ls_alpha 0.0001"
+
+    LinearSolver {
+      print_info_level = 0
+        max_iterations = 50
+        max_error = 1.0e-30
+        ksp_type = "cg"
+        absolute_tolerance = 1.0e-30
+        relative_tolerance = 1.0e-12
+        divergence_tolerance = 1.0e03
+        uses_preconditioner = TRUE
+        pc_type = "shell"
+        pc_side = "LEFT"
+        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 50"
+    }
+}
+
+SNES_EW {
+  print_info_level = 0 
+    max_iterations = 100
+    max_error = 1e-10
+    absoluteTolerance = 1.0e-10
+    relativeTolerance = 1.0e-11
+    stepTolerance = 1.0e-12
+    maximumFunctionEvals = 1000
+    zero_initial_guess = FALSE
+    usesJacobian = TRUE
+
+    SNESOptions = "-snes_monitor -snes_converged_reason -snes_ksp_ew -snes_type ls -snes_ls_alpha 0.0001"
+
+    LinearSolver {
+      print_info_level = 0
+        max_iterations = 50
+        max_error = 1.0e-30
+        ksp_type = "cg"
+        absolute_tolerance = 1.0e-30
+        relative_tolerance = 1.0e-12
+        divergence_tolerance = 1.0e03
+        uses_preconditioner = TRUE
+        pc_type = "shell"
+        pc_side = "LEFT"
+        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 50"
+    }
+}
+
+SNES {
+  print_info_level = 0 
+    max_iterations = 100
+    max_error = 1e-10
+    absoluteTolerance = 1.0e-10
+    relativeTolerance = 1.0e-11
+    stepTolerance = 1.0e-12
+    maximumFunctionEvals = 1000
+    zero_initial_guess = FALSE
+    usesJacobian = TRUE
+
+    SNESOptions = "-snes_monitor -snes_converged_reason -snes_type ls -snes_ls_alpha 0.0001"
+
+    LinearSolver {
+      print_info_level = 0
+        max_iterations = 50
+        max_error = 1.0e-30
+        ksp_type = "cg"
+        absolute_tolerance = 1.0e-30
+        relative_tolerance = 1.0e-12
+        divergence_tolerance = 1.0e03
+        uses_preconditioner = TRUE
+        pc_type = "shell"
+        pc_side = "LEFT"
+        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 50"
+    }
+}
+
+
+

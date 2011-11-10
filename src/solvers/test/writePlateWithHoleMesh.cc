@@ -297,7 +297,12 @@ int main(int argc, char** argv) {
 
   fprintf(fp, "NumberOfBoundarySideIds = 0 \n\n");
 
-  fprintf(fp, "} \n");
+  fprintf(fp, "} \n\n");
+
+  fprintf(fp, " a = %lf\n b = %lf\n c = %lf\n r = %lf\n", a, b, c, r);
+  fprintf(fp, " le = %d\n me = %d\n ne = %d\n pe = %d\n", le, me, ne, pe); 
+
+  fprintf(fp,"\n\n");
 
   fclose(fp);
 
