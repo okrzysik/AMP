@@ -59,6 +59,44 @@ SSContinuumModel {
     Elastic_Yield_Stress = 250.0
 }
 
+MechanicsLinearFEOperatorUL {
+  name = "MechanicsLinearFEOperator"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    USE_UPDATED_LAGRANGIAN = TRUE
+    InputVariable = "displacement"
+    OutputVariable = "displacement"
+
+    MechanicsElement {
+      name="MechanicsLinearUpdatedLagrangianElement"
+        USE_REDUCED_INTEGRATION = FALSE 
+        USE_JAUMANN_RATE = FALSE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
+}
+
+MechanicsLinearFEOperatorSS {
+  name = "MechanicsLinearFEOperator"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    USE_UPDATED_LAGRANGIAN = FALSE
+    InputVariable = "displacement"
+    OutputVariable = "displacement"
+
+    MechanicsElement {
+      name="MechanicsLinearElement"
+        USE_REDUCED_INTEGRATION = FALSE 
+        USE_JAUMANN_RATE = FALSE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
+}
+
 LinearBVP_UL {
   name="LinearBVPOperator"
     print_info_level = 1
