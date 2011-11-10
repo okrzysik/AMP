@@ -43,13 +43,13 @@ public:
     /** \brief  The first D.O.F. on this core
      * \return The first D.O.F. on this core
      */
-    virtual size_t  beginDOF ();
+    virtual size_t  beginDOF ( );
 
 
     /** \brief  One past the last D.O.F. on this core
      * \return One past the last D.O.F. on this core
      */
-    virtual size_t  endDOF ();
+    virtual size_t  endDOF ( );
 
 
     /**

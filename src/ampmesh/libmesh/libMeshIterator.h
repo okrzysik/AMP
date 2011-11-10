@@ -2,8 +2,8 @@
 #define included_AMP_libMeshIterators
 
 #include <boost/shared_ptr.hpp>
-#include "ampmesh/MeshIterator.h"
 #include "ampmesh/libmesh/libMesh.h"
+#include "ampmesh/MeshIterator.h"
 
 #include "mesh.h"
 
@@ -63,7 +63,7 @@ protected:
      * \param gcw       gcw to use
      * \param pos       Pointer to iterator with the current position
      */
-    libMeshIterator(int type, boost::shared_ptr< ::Mesh> mesh, int gcw, void *begin, void *end, void *pos);
+    libMeshIterator(int type, AMP::Mesh::libMesh *mesh, int gcw, void *begin, void *end, void *pos);
 
     //! Clone the iterator
     virtual MeshIterator* clone() const;
@@ -77,7 +77,7 @@ private:
     void *d_begin;
     void *d_end;
     void *d_pos;
-    boost::shared_ptr< ::Mesh> d_libMesh;
+    AMP::Mesh::libMesh *d_mesh;
     MeshElement d_cur_element;
 };
 

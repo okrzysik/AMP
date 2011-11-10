@@ -103,19 +103,19 @@ public:
     /* Return the number of local element of the given type
      * \param type   Geometric type
      */
-    virtual size_t  numLocalElements( const GeomType type );
+    virtual size_t  numLocalElements( const GeomType type ) const;
 
 
     /* Return the global number of elements of the given type
      * \param type   Geometric type
      */
-    virtual size_t  numGlobalElements( const GeomType type );
+    virtual size_t  numGlobalElements( const GeomType type ) const;
 
 
     /* Return the number of ghost elements of the given type on the current processor
      * \param type   Geometric type
      */
-    virtual size_t  numGhostElements( const GeomType type, const int gcw );
+    virtual size_t  numGhostElements( const GeomType type, const int gcw ) const;
 
 
     /**
@@ -149,11 +149,16 @@ public:
  
 
     //! Get the largest geometric type in the mesh
-    virtual GeomType getGeomType() { return GeomDim; } 
+    virtual GeomType getGeomType() const { return GeomDim; } 
 
 
     //! Get the largest geometric type in the mesh
-    virtual AMP_MPI getComm() { return comm; }
+    virtual AMP_MPI getComm() const { return comm; }
+
+
+    //! Get the mesh ID
+    virtual inline size_t meshID() const { return d_meshID; }
+
 
 protected:
 
@@ -174,6 +179,17 @@ protected:
 
     //! A pointer to an AMP database containing the mesh info
     boost::shared_ptr<AMP::Database>  d_db;
+
+    //! A unique id for each mesh
+    size_t d_meshID;
+
+    /**
+     *  A function to create a unique id for the mesh (requires the comm to be set)
+     *  Note: this requires a global communication across the mesh communicator.
+     *  Note: this function is NOT thread safe, and will need to be modified before threads are used.
+     */
+    void setMeshID();
+
 
 };
 

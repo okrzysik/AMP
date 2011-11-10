@@ -1,9 +1,12 @@
 #ifndef included_test_VectorTests
 #define included_test_VectorTests
+
 #include <algorithm>
 #include "ampmesh/Mesh.h"
 #include "utils/AMP_MPI.h"
 #include "utils/UnitTest.h"
+#include "descritization/DOF_Manager.h"
+
 
 /// \cond UNDOCUMENTED
 namespace AMP {
@@ -1072,7 +1075,7 @@ class VerifyVectorGhostCreate
 
 };
 
-/*
+
 template <typename VECTOR_FACTORY>
 class VerifyVectorMakeConsistentAdd
   {
@@ -1081,13 +1084,13 @@ class VerifyVectorMakeConsistentAdd
 
       static void  run_test ( AMP::UnitTest *utils )
       {
-        AMP::Mesh::DOFMap::shared_ptr  dofmap = VECTOR_FACTORY::getDOFMap();
+        AMP::Discretization::DOFManager::shared_ptr  dofmap = VECTOR_FACTORY::getDOFMap();
         AMP::LinearAlgebra::Vector::shared_ptr  vector = VECTOR_FACTORY::getVector();
         AMP::LinearAlgebra::Vector::shared_ptr  vectorb = AMP::LinearAlgebra::PetscVector::view ( vector );
         if ( !vector || !vectorb )
             utils->failure ( "verify makeConsistent () for add" );
 
-        for ( unsigned int i = dofmap->firstElement() ; i != dofmap->endElement() ; i++ )
+        for ( unsigned int i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ )
         {
           vector->addValueByGlobalID ( i , (double) i );
         }
@@ -1095,13 +1098,13 @@ class VerifyVectorMakeConsistentAdd
         double offset = (double) (1 << utils->rank() );
         for ( size_t i = 0 ; i != vector->getGhostSize() ; i++ )
         {
-          unsigned int ndx = dofmap->getCommunicationList()->getGhostIDList()[i];
+          unsigned int ndx = vector->getCommunicationList()->getGhostIDList()[i];
           vector->addValueByGlobalID ( ndx , offset );
         }
 
         vector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
         std::map<int,std::set<unsigned int> >  ghosted_entities;
-        for ( unsigned int i = dofmap->firstElement() ; i != dofmap->endElement() ; i++ )
+        for ( unsigned int i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ )
         {
           double diff_double = fabs ( vector->getValueByGlobalID ( i ) - (double)i );
           if ( diff_double > 0.00001 )
@@ -1117,8 +1120,8 @@ class VerifyVectorMakeConsistentAdd
             }
           }
         }
-        std::vector<unsigned int>::const_iterator  cur_replicated = dofmap->getCommunicationList()->getReplicatedIDList().begin();
-        std::vector<unsigned int>::const_iterator  end_replicated = dofmap->getCommunicationList()->getReplicatedIDList().end();
+        std::vector<unsigned int>::const_iterator  cur_replicated = vector->getCommunicationList()->getReplicatedIDList().begin();
+        std::vector<unsigned int>::const_iterator  end_replicated = vector->getCommunicationList()->getReplicatedIDList().end();
         while ( cur_replicated != end_replicated )
         {
           bool found = false;
@@ -1158,11 +1161,11 @@ class VerifyVectorMakeConsistentSet
 
       static void  run_test ( AMP::UnitTest *utils )
       {
-        AMP::Mesh::DOFMap::shared_ptr  dofmap = VECTOR_FACTORY::getDOFMap();
+        AMP::Discretization::DOFManager::shared_ptr  dofmap = VECTOR_FACTORY::getDOFMap();
         AMP::LinearAlgebra::Vector::shared_ptr  vector = VECTOR_FACTORY::getVector();
         AMP::LinearAlgebra::Vector::shared_ptr  vectorb = AMP::LinearAlgebra::PetscVector::view ( vector );
 
-        for ( unsigned int i = dofmap->firstElement() ; i != dofmap->endElement() ; i++ )
+        for ( unsigned int i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ )
           vector->setValueByGlobalID ( i , (double) i );
 
         vector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
@@ -1170,10 +1173,10 @@ class VerifyVectorMakeConsistentSet
         if ( vector->getGhostSize() > 0 )
         {
           std::vector<double> ghostList ( vector->getGhostSize() );
-          vector->getValuesByGlobalID ( vector->getGhostSize() , (int *)&(dofmap->getCommunicationList()->getGhostIDList()[0]) , &(ghostList[0]) );
+          vector->getValuesByGlobalID ( vector->getGhostSize() , (int *)&(vector->getCommunicationList()->getGhostIDList()[0]) , &(ghostList[0]) );
           for ( size_t i = 0 ; i != vector->getGhostSize() ; i++ )
           {
-            if ( fabs ( ghostList[i] - (double)(dofmap->getCommunicationList()->getGhostIDList()[i]) ) > 0.0000001 )
+            if ( fabs ( ghostList[i] - (double)(vector->getCommunicationList()->getGhostIDList()[i]) ) > 0.0000001 )
             {
               utils->failure ( "ghost not set correctly in vector" );
               testPassed = false;
@@ -1189,7 +1192,7 @@ class VerifyVectorMakeConsistentSet
         {
           for ( size_t i = 0 ; i != vectorb->getGhostSize() ; i++ )
           {
-            unsigned int  ghostNdx = dofmap->getCommunicationList()->getGhostIDList()[i];
+            unsigned int  ghostNdx = vector->getCommunicationList()->getGhostIDList()[i];
             double  ghostVal = vectorb->getValueByGlobalID ( ghostNdx );
             if ( fabs ( ghostVal - (double)ghostNdx ) > 0.0000001 )
             {
@@ -1202,7 +1205,7 @@ class VerifyVectorMakeConsistentSet
         if ( testPassed )
           utils->passes ( "ghost set correctly in alias" );
       }
-};*/
+};
 
 
 }

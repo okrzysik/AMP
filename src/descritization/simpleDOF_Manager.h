@@ -28,7 +28,7 @@ public:
      * \param type  The geometric entity type for the DOF map
      * \param gcw   The desired ghost width
      */
-    simpleDOFManager ( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP::Mesh::GeomType type, int gcw );
+    simpleDOFManager ( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP::Mesh::GeomType type, int gcw, int DOFsPerElement );
 
 
     /** \brief Get the entry indices of nodal values given a mesh element
@@ -43,13 +43,13 @@ public:
     /** \brief  The first D.O.F. on this core
      * \return The first D.O.F. on this core
      */
-    virtual size_t  beginDOF ();
+    virtual size_t  beginDOF ( );
 
 
     /** \brief  One past the last D.O.F. on this core
      * \return One past the last D.O.F. on this core
      */
-    virtual size_t  endDOF ();
+    virtual size_t  endDOF ( );
 
 
     /**
@@ -73,8 +73,10 @@ private:
     boost::shared_ptr<AMP::Mesh::Mesh>  d_mesh;
     AMP::Mesh::GeomType d_type;
     int d_gcw;
+    int DOFsPerElement;
     std::vector<AMP::Mesh::MeshElementID> d_local_id;
     std::vector<AMP::Mesh::MeshElementID> d_remote_id;
+    std::vector<size_t> d_remote_dof;
     size_t d_begin, d_end;
 };
 

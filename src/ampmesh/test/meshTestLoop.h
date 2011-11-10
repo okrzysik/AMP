@@ -39,26 +39,19 @@ void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
     //Bug_761<7>::run_test( ut, mesh );
     //Bug_761<8>::run_test( ut, mesh );
     //MeshAdapterTest<AllPassTest>::run_test( ut, mesh );
-};
 
 
-#ifdef USE_AMP_VECTORS
-void MeshVectorTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
-{
     // Run the vector tests
-    VerifyGetVectorTest<1>( ut, mesh );
-    VerifyGetVectorTest<3>( ut, mesh );
-}
-#endif
+    #ifdef USE_AMP_VECTORS
+        VerifyGetVectorTest<1>( ut, mesh );
+        VerifyGetVectorTest<3>( ut, mesh );
+    #endif
 
-
-#ifdef USE_AMP_MATRICIES
-void MeshMatrixTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
-{
     // Run the matrix tests
-    VerifyGetMatrixTrivialTest<1>::run_test ( ut, mesh );
-    VerifyGetMatrixTrivialTest<3>::run_test ( ut, mesh );
-}
-#endif
+    #ifdef USE_AMP_MATRICIES
+        VerifyGetMatrixTrivialTest<1>::run_test ( ut, mesh );
+        VerifyGetMatrixTrivialTest<3>::run_test ( ut, mesh );
+    #endif
 
+};
 

@@ -39,10 +39,18 @@ CommunicationList::CommunicationList ( CommunicationListParameters::shared_ptr p
     d_iNumRows ( params->d_localsize ),
     d_bFinalized ( false )
 {
+    // Get the partition (the total number of DOFs for all ranks <= current rank)
+    std::vector<unsigned int> partition(d_comm.getSize(),0);
+    d_comm.allGather<unsigned int>( (unsigned int) params->d_localsize, &partition[0] );
+    for (int i=1; i<d_comm.getSize(); i++)
+        partition[i] += partition[i-1];
     d_comm.sumScan((int*)&d_iNumRows,(int*)&d_iTotalRows,1);
-    d_iBegin = d_iTotalRows - params->d_localsize;
-    int size = d_comm.getSize();
-    d_iTotalRows = d_comm.bcast(d_iTotalRows,size-1);
+    // Get the first DOF on the current rank
+    d_iBegin = partition[d_comm.getRank()] - params->d_localsize;
+    // Get the total number of DOFs
+    d_iTotalRows = partition[d_comm.getSize()-1];
+    // Construct the communication arrays
+    buildCommunicationArrays( params->d_remote_DOFs, partition, d_comm.getRank() );
 }
 
 

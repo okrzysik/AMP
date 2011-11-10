@@ -1,10 +1,10 @@
-export VT_FILTER_SPEC=/projects/AMP/trunk/AMP-source/vampir-filter
+export VT_FILTER_SPEC=/projects/AMP_mesh/AMP/vampir-filter
 export VT_BUFFER_SIZE=100M
 export VT_METRICS=PAPI_FP_OPS:PAPI_L2_TCM
 export VT_MAX_FLUSHES=5
 export VT_SYNC_FLUSH=yes
 export VT_IOTRACE=yes
-export VT_MEMTRACE=yes
+export VT_MEMTRACE=no
 
 nm --demangle --line-numbers testMultiPelletThermoMechanicsV3 > testMultiPelletThermoMechanicsV3.nm
 export VT_GNU_NMFILE=testMultiPelletThermoMechanicsV3.nm

@@ -38,7 +38,7 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator, c
         AMP::Mesh::MeshElementID id = cur_it->globalID();
         ids.insert ( id );
         number_of_local_elements--;
-        cur_it++;
+        ++cur_it;   // Pre-increment is faster than post-increment
     }
     if ( number_of_local_elements == 0 )
         ut->passes ( "regular iterator count" );
@@ -74,7 +74,7 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator, c
         //    std::vector<AMP::Mesh::MeshElement> pieces = element.getElements(type2);
         //}
         //std::vector<AMP::Mesh::MeshElement> neighbors = element.getNeighbors();
-        cur_it++;
+        ++cur_it;   // Pre-increment is faster than post-increment
     }
     if ( id_pass && type_pass && volume_pass && coord_pass ) {
         ut->passes( "elements passed" );

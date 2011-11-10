@@ -22,12 +22,6 @@ void testMeshCreation( AMP::UnitTest *ut )
 
     // Run the mesh tests
     MeshTestLoop( ut, mesh1 );
-    #ifdef USE_AMP_VECTORS
-        MeshVectorTestLoop( ut, mesh1 );
-    #endif
-    #ifdef USE_AMP_MATRICIES
-        MeshMatrixTestLoop( ut, mesh1 );
-    #endif
 
 }
 

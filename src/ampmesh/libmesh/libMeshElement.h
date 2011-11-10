@@ -57,7 +57,7 @@ protected:
      * \param type      Element type
      * \param element   Underlying libmesh element
      */
-    libMeshElement(int dim, GeomType type, void* element, boost::shared_ptr< ::Mesh> mesh);
+    libMeshElement(int dim, GeomType type, void* element, AMP::Mesh::libMesh *mesh);
 
     //! Clone the iterator
     virtual MeshElement* clone() const;
@@ -67,7 +67,7 @@ protected:
     void* ptr_element;
 
     //! The underlying mesh
-    boost::shared_ptr< ::Mesh> d_libMesh;
+    AMP::Mesh::libMesh *d_mesh;
 
     friend class AMP::Mesh::libMesh;
     friend class AMP::Mesh::libMeshIterator;

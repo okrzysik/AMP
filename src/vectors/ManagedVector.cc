@@ -61,7 +61,8 @@ namespace LinearAlgebra {
     while ( cur1 != end1 )
     {
       *cur1 = *cur2;
-      cur1++; cur2++;
+      ++cur1;
+      ++cur2;
     }
     copyGhostValues ( other );
   }

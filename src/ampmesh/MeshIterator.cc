@@ -83,21 +83,19 @@ MeshIterator* MeshIterator::clone() const
 ********************************************************/
 MeshIterator& MeshIterator::operator++()
 {
-    (*iterator)++;
-    return *this;
+    return iterator->operator++();
 }
-MeshIterator MeshIterator::operator++(int)
+MeshIterator MeshIterator::operator++(int i)
 {
-    return (*iterator)++;
+    return iterator->operator++(i);
 }
 MeshIterator& MeshIterator::operator--()
 {
-    (*iterator)--;
-    return *this;
+    return iterator->operator--();
 }
-MeshIterator MeshIterator::operator--(int)
+MeshIterator MeshIterator::operator--(int i)
 {
-    return (*iterator)++;
+    return iterator->operator--(i);
 }
 bool MeshIterator::operator==(const MeshIterator& rhs)
 {

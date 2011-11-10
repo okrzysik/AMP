@@ -64,6 +64,17 @@ ReferenceCountedObject*;ReferenceCounter::* -- 0
 Threads::spin_mutex::scoped_lock*;Threads::atomic* -- 0
 TypeVector<*>* -- 0
 MeshBase::node_iterator*;MeshBase::element_iterator* -- 0
+MeshBase::processor_id()* -- 0
+MeshBase::mesh_dimension()* -- 0
+
+
+# Filter AMP::Mesh routines
+AMP::Mesh::Mesh::meshID()* -- 0
+AMP::Mesh::libMesh::getlibMesh()* -- 0
+AMP::Mesh::MeshElement::* -- 0
+AMP::Mesh::MeshElementID::*;AMP::Mesh::libMeshElement::* -- 0
+AMP::Mesh::MeshIterator::operator==*;AMP::Mesh::MeshIterator::operator!=*;AMP::Mesh::libMeshIterator::operator==*;AMP::Mesh::libMeshIterator::operator!=* -- 0
+AMP::Mesh::MeshIterator::operator->();AMP::Mesh::libMeshIterator::operator->();AMP::Mesh::MeshIterator::operator*();AMP::Mesh::libMeshIterator::operator*() -- 0
 
 
 # Filter select AMP routines
@@ -71,15 +82,6 @@ AMP::AMP_MPI::getSize*;AMP::AMP_MPI::getRank* -- 0
 AMP::Castable::*;*AMP::Castable::castTo<*>* -- 0
 AMP::MemoryDatabase::*;yylex();yyparse() -- 0
 AMP::Parser::* -- 0
-AMP::Mesh::DOFMap::beginDOF*;AMP::Mesh::DOFMap::endDOF* -- 0
-AMP::Mesh::MeshObject::* -- 0
-AMP::Mesh::MeshElement::* -- 0
-AMP::Mesh::MeshNode::* -- 0
-AMP::Mesh::LibMeshElementTmpl* -- 0
-AMP::Mesh::MeshPoint::* -- 0
-AMP::Mesh::LibMeshNode::* -- 0
-AMP::Mesh::MeshIteratorWrapper<*>::*;bool AMP::Mesh::MeshIteratorWrapper* -- 0
-AMP::Mesh::DefaultMeshObjectSorter* -- 0
 AMP::LinearAlgebra::VectorEntryMap* -- 0
 AMP::LinearAlgebra::VectorVariable<*>::DOFsPerObject* -- 0
 AMP::LinearAlgebra::*::setValueByGlobalID(*);AMP::LinearAlgebra::*::setValuesByGlobalID(*) -- 0
