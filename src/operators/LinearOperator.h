@@ -69,9 +69,9 @@ namespace AMP {
 
         boost::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix; /**< The matrix shared pointer. */
 
-      private :
-
         unsigned int d_applyCount;
+
+      private :
 
     };
 

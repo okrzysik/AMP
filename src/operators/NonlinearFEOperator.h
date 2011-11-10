@@ -123,9 +123,9 @@ namespace AMP {
 
         boost::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
 
-      private :
-
         unsigned int d_applyCount;
+
+      private :
 
     };
 

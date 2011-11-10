@@ -298,7 +298,7 @@ ML_Solver {
 
 SNES_EW_JFNK {
   print_info_level = 0 
-    max_iterations = 100
+    max_iterations = 5
     max_error = 1e-10
     absoluteTolerance = 1.0e-10
     relativeTolerance = 1.0e-11
@@ -311,7 +311,7 @@ SNES_EW_JFNK {
 
     LinearSolver {
       print_info_level = 0
-        max_iterations = 50
+        max_iterations = 30
         max_error = 1.0e-30
         ksp_type = "cg"
         absolute_tolerance = 1.0e-30
@@ -320,13 +320,13 @@ SNES_EW_JFNK {
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "LEFT"
-        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 50"
+        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 30"
     }
 }
 
 SNES_JFNK {
   print_info_level = 0 
-    max_iterations = 100
+    max_iterations = 5
     max_error = 1e-10
     absoluteTolerance = 1.0e-10
     relativeTolerance = 1.0e-11
@@ -339,7 +339,7 @@ SNES_JFNK {
 
     LinearSolver {
       print_info_level = 0
-        max_iterations = 50
+        max_iterations = 30
         max_error = 1.0e-30
         ksp_type = "cg"
         absolute_tolerance = 1.0e-30
@@ -348,13 +348,13 @@ SNES_JFNK {
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "LEFT"
-        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 50"
+        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 30"
     }
 }
 
 SNES_EW {
   print_info_level = 0 
-    max_iterations = 100
+    max_iterations = 5
     max_error = 1e-10
     absoluteTolerance = 1.0e-10
     relativeTolerance = 1.0e-11
@@ -367,7 +367,7 @@ SNES_EW {
 
     LinearSolver {
       print_info_level = 0
-        max_iterations = 50
+        max_iterations = 30
         max_error = 1.0e-30
         ksp_type = "cg"
         absolute_tolerance = 1.0e-30
@@ -376,13 +376,13 @@ SNES_EW {
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "LEFT"
-        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 50"
+        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 30"
     }
 }
 
 SNES {
   print_info_level = 0 
-    max_iterations = 100
+    max_iterations = 5
     max_error = 1e-10
     absoluteTolerance = 1.0e-10
     relativeTolerance = 1.0e-11
@@ -395,7 +395,7 @@ SNES {
 
     LinearSolver {
       print_info_level = 0
-        max_iterations = 50
+        max_iterations = 30
         max_error = 1.0e-30
         ksp_type = "cg"
         absolute_tolerance = 1.0e-30
@@ -404,7 +404,7 @@ SNES {
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "LEFT"
-        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 50"
+        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 30"
     }
 }
 
