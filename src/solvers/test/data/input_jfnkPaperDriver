@@ -311,7 +311,7 @@ SNES_EW_JFNK {
 
     LinearSolver {
       print_info_level = 0
-        max_iterations = 30
+        max_iterations = 10
         max_error = 1.0e-30
         ksp_type = "cg"
         absolute_tolerance = 1.0e-30
@@ -320,7 +320,7 @@ SNES_EW_JFNK {
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "LEFT"
-        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 30"
+        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 10"
     }
 }
 
@@ -339,7 +339,7 @@ SNES_JFNK {
 
     LinearSolver {
       print_info_level = 0
-        max_iterations = 30
+        max_iterations = 10
         max_error = 1.0e-30
         ksp_type = "cg"
         absolute_tolerance = 1.0e-30
@@ -348,7 +348,7 @@ SNES_JFNK {
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "LEFT"
-        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 30"
+        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 10"
     }
 }
 
@@ -367,7 +367,7 @@ SNES_EW {
 
     LinearSolver {
       print_info_level = 0
-        max_iterations = 30
+        max_iterations = 10
         max_error = 1.0e-30
         ksp_type = "cg"
         absolute_tolerance = 1.0e-30
@@ -376,7 +376,7 @@ SNES_EW {
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "LEFT"
-        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 30"
+        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 10"
     }
 }
 
@@ -395,7 +395,7 @@ SNES {
 
     LinearSolver {
       print_info_level = 0
-        max_iterations = 30
+        max_iterations = 10
         max_error = 1.0e-30
         ksp_type = "cg"
         absolute_tolerance = 1.0e-30
@@ -404,7 +404,7 @@ SNES {
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "LEFT"
-        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 30"
+        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 10"
     }
 }
 

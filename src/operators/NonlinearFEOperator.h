@@ -108,14 +108,14 @@ namespace AMP {
           @param [in] a first constant used in the expression: r = a*A(u) + b*f. The default value is -1.
           @param [in] b second constant used in the expression: r = a*A(u) + b*f. The default value is 1.
           */
-        void apply(const  boost::shared_ptr<AMP::LinearAlgebra::Vector> & f, const  boost::shared_ptr<AMP::LinearAlgebra::Vector> & u,
+        virtual void apply(const  boost::shared_ptr<AMP::LinearAlgebra::Vector> & f, const  boost::shared_ptr<AMP::LinearAlgebra::Vector> & u,
             boost::shared_ptr<AMP::LinearAlgebra::Vector> & r, const double a = -1.0, const double b = 1.0);
 
-        void resetApplyCount() {
+        virtual void resetApplyCount() {
           d_applyCount = 0;
         }
 
-        unsigned int getApplyCount() {
+        virtual unsigned int getApplyCount() {
           return d_applyCount;
         }
 

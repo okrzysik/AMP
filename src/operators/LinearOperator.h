@@ -55,13 +55,13 @@ namespace AMP {
           Copies the shared pointer for the matrix representation of this linear operator.
           @param [in] in_mat The matrix representation of this linear operator.
           */
-        void setMatrix(const boost::shared_ptr<AMP::LinearAlgebra::Matrix> & in_mat);
+        virtual void setMatrix(const boost::shared_ptr<AMP::LinearAlgebra::Matrix> & in_mat);
 
-        void resetApplyCount()  {
+        virtual void resetApplyCount()  {
           d_applyCount = 0;      
         }
 
-        unsigned int getApplyCount() {
+        virtual unsigned int getApplyCount() {
           return d_applyCount;
         }
 
