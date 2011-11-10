@@ -14,284 +14,221 @@ namespace unit_test {
 
 
 template <typename VECTOR_FACTORY>
-class InstantiateVector
+void InstantiateVector( AMP::UnitTest *utils )
 {
-    public:
-      static const char * get_test_name () { return "instantiate vector"; }
-
-      static void run_test( AMP::UnitTest *utils )
-      {
-        AMP::LinearAlgebra::Vector::shared_ptr  vector ( VECTOR_FACTORY::getVector() );
-        if ( vector )
-            utils->passes( "created" );
-        else
-            utils->failure( "created" );
-      }
-};
+    AMP::LinearAlgebra::Vector::shared_ptr  vector ( VECTOR_FACTORY::getVector() );
+    if ( vector )
+        utils->passes( "created" );
+    else
+        utils->failure( "created" );
+}
 
 
 template <typename VECTOR_FACTORY>
-class CopyVectorConsistency
-  {
-    public:
-      static const char * get_test_name () { return "copyVector consistency check"; }
+void CopyVectorConsistency( AMP::UnitTest *utils )
+{
+    AMP::LinearAlgebra::Vector::shared_ptr  vec1 ( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr  vec2 = vec1->cloneVector();
+    AMP::LinearAlgebra::Vector::shared_ptr  vec3 = vec1->cloneVector();
+    AMP::LinearAlgebra::CommunicationList::shared_ptr  commList = vec1->getCommunicationList();
+    double *t1=NULL;
+    double *t2=NULL;
+    int *ndx=NULL;
+    int numGhosts = commList->getGhostIDList().size();
 
-      static void run_test( AMP::UnitTest *utils )
-      {
-        AMP::LinearAlgebra::Vector::shared_ptr  vec1 ( VECTOR_FACTORY::getVector() );
-        AMP::LinearAlgebra::Vector::shared_ptr  vec2 = vec1->cloneVector();
-        AMP::LinearAlgebra::Vector::shared_ptr  vec3 = vec1->cloneVector();
-        AMP::LinearAlgebra::CommunicationList::shared_ptr  commList = vec1->getCommunicationList();
-        double *t1=NULL;
-        double *t2=NULL;
-        int *ndx=NULL;
-        int numGhosts = commList->getGhostIDList().size();
-
-        vec1->setRandomValues ();
-        vec2->copyVector ( vec1 );
-        if ( numGhosts )
-        {
-          t1 = new double [ numGhosts ];
-          t2 = new double [ numGhosts ];
-          ndx = new int [ numGhosts ];
-          std::copy ( commList->getGhostIDList().begin() ,
-                      commList->getGhostIDList().end() ,
-                      ndx );
-          vec1->getValuesByGlobalID ( numGhosts , ndx , t1 );
-          vec2->getValuesByGlobalID ( numGhosts , ndx , t2 );
-          if ( std::equal ( t1 , t1 + numGhosts , t2 ) )
+    vec1->setRandomValues ();
+    vec2->copyVector ( vec1 );
+    if ( numGhosts ) {
+        t1 = new double [ numGhosts ];
+        t2 = new double [ numGhosts ];
+        ndx = new int [ numGhosts ];
+        std::copy ( commList->getGhostIDList().begin() ,
+                    commList->getGhostIDList().end() ,
+                    ndx );
+        vec1->getValuesByGlobalID ( numGhosts , ndx , t1 );
+        vec2->getValuesByGlobalID ( numGhosts , ndx , t2 );
+        if ( std::equal ( t1 , t1 + numGhosts , t2 ) )
             utils->passes ( "Ghosts are the same" );
-          else
+        else
             utils->failure ( "Ghosts are different" );
-        }
+    }
 
-        vec1->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-        vec3->copyVector ( vec1 );
-        if ( numGhosts )
-        {
-          vec1->getValuesByGlobalID ( numGhosts , ndx , t1 );
-          vec3->getValuesByGlobalID ( numGhosts , ndx , t2 );
-          if ( std::equal ( t1 , t1 + numGhosts , t2 ) )
+    vec1->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    vec3->copyVector ( vec1 );
+    if ( numGhosts ) {
+        vec1->getValuesByGlobalID ( numGhosts , ndx , t1 );
+        vec3->getValuesByGlobalID ( numGhosts , ndx , t2 );
+        if ( std::equal ( t1 , t1 + numGhosts , t2 ) )
             utils->passes ( "Ghosts are the same" );
-          else
+        else
             utils->failure ( "Ghosts are different" );
-          delete [] t1;
-          delete [] t2;
-          delete [] ndx;
-        }
+        delete [] t1;
+        delete [] t2;
+        delete [] ndx;
+    }
 
-      }
-};
+}
 
 
 template <typename VECTOR_FACTORY, typename VIEWER>
-class DeepCloneOfView
+void DeepCloneOfView( AMP::UnitTest *utils )
 {
-    public:
-      static const char * get_test_name () { return "Deep clone of a view"; }
-
-      static void run_test( AMP::UnitTest *utils )
-      {
-        AMP::LinearAlgebra::Vector::shared_ptr  vector1 ( VECTOR_FACTORY::getVector() );
-        if ( !vector1->isA<AMP::LinearAlgebra::MultiVector>() ) return;
-        vector1 = VIEWER::view ( vector1 );
-        AMP::LinearAlgebra::Vector::shared_ptr  vector2 = vector1->cloneVector ();
-        bool pass = true;
-        for ( size_t i = 0 ; i != vector1->numberOfDataBlocks() ; i++ )
-        {
-          pass &= (vector1->getRawDataBlock<double>(i) != vector2->getRawDataBlock<double>(i));
-        }
-        if ( pass )
-          utils->passes ( "Deep clone succeeded" );
-        else
-          utils->failure ( "Deep clone failed" );
-      }
-};
+    AMP::LinearAlgebra::Vector::shared_ptr  vector1 ( VECTOR_FACTORY::getVector() );
+    if ( !vector1->isA<AMP::LinearAlgebra::MultiVector>() ) return;
+    vector1 = VIEWER::view ( vector1 );
+    AMP::LinearAlgebra::Vector::shared_ptr  vector2 = vector1->cloneVector ();
+    bool pass = true;
+    for ( size_t i = 0 ; i != vector1->numberOfDataBlocks() ; i++ ) {
+        pass &= (vector1->getRawDataBlock<double>(i) != vector2->getRawDataBlock<double>(i));
+    }
+    if ( pass )
+        utils->passes ( "Deep clone succeeded" );
+    else
+        utils->failure ( "Deep clone failed" );
+}
 
 
 template <typename VECTOR_FACTORY>
-class Bug_728
+void Bug_728( AMP::UnitTest *utils )
 {
-    public:
-      static const char * get_test_name () { return "Bug 728"; }
+    AMP::LinearAlgebra::Vector::shared_ptr  vector ( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Variable::shared_ptr var1 = vector->getVariable ();
 
-      static void run_test( AMP::UnitTest *utils )
-      {
-        AMP::LinearAlgebra::Vector::shared_ptr  vector ( VECTOR_FACTORY::getVector() );
-        AMP::LinearAlgebra::Variable::shared_ptr var1 = vector->getVariable ();
+    // Exit if there is no associated variable
+    if ( !var1 )
+        return;
 
-        // Exit if there is no associated variable
-        if ( !var1 )
-          return;
+    AMP::LinearAlgebra::Variable::shared_ptr var2 = var1->cloneVariable ( var1->getName() );
 
-        AMP::LinearAlgebra::Variable::shared_ptr var2 = var1->cloneVariable ( var1->getName() );
+    if ( vector->subsetVectorForVariable ( var1 ) )
+        utils->passes ( "Found vector for same variable pointer" );
+    else
+        utils->failure ( "Did not find vector for same variable pointer" );
 
-        if ( vector->subsetVectorForVariable ( var1 ) )
-          utils->passes ( "Found vector for same variable pointer" );
-        else
-          utils->failure ( "Did not find vector for same variable pointer" );
-
-        if ( vector->subsetVectorForVariable ( var2 ) )
-          utils->passes ( "Found vector for cloned variable pointer" );
-        else
-          utils->failure ( "Did not find vector for cloned variable pointer" );
-      }
-};
+    if ( vector->subsetVectorForVariable ( var2 ) )
+        utils->passes ( "Found vector for cloned variable pointer" );
+    else
+        utils->failure ( "Did not find vector for cloned variable pointer" );
+}
 
 
 template <typename VECTOR_FACTORY>
-class SetToScalarVector
+void SetToScalarVector( AMP::UnitTest *utils )
 {
-    public:
-      static const char * get_test_name () { return "vector::setToScalar"; }
-
-      static void run_test( AMP::UnitTest *utils )
-      {
-        AMP::LinearAlgebra::Vector::shared_ptr  vector ( VECTOR_FACTORY::getVector() );
-        vector->setToScalar ( 0. );
-        utils->passes( "setToScalar ran to completion" );
-        bool fail = false;
-        AMP::LinearAlgebra::Vector::iterator  curVec = vector->begin();
-        AMP::LinearAlgebra::Vector::iterator  endVec = vector->end();
-        while ( curVec != endVec )
-        {
-          if ( *curVec != 0. )
-          {
+    AMP::LinearAlgebra::Vector::shared_ptr  vector ( VECTOR_FACTORY::getVector() );
+    vector->setToScalar ( 0. );
+    utils->passes( "setToScalar ran to completion" );
+    bool fail = false;
+    AMP::LinearAlgebra::Vector::iterator  curVec = vector->begin();
+    AMP::LinearAlgebra::Vector::iterator  endVec = vector->end();
+    while ( curVec != endVec ) {
+        if ( *curVec != 0. ) {
             fail = true;
             break;
-          }
-          curVec++;
         }
-        if ( !fail )
-          utils->passes ( "Set data to 0" );
-        else
-          utils->failure ( "Failed to set scalar to 0" );
-        fail = false;
-        vector->setToScalar ( 5. );
-        AMP::LinearAlgebra::Vector::iterator curVal = vector->begin();
-        while ( curVal != endVec )
-        {
-          if ( *curVal != 5. )
-          {
+        curVec++;
+    }
+    if ( !fail )
+        utils->passes ( "Set data to 0" );
+    else
+        utils->failure ( "Failed to set scalar to 0" );
+    fail = false;
+    vector->setToScalar ( 5. );
+    AMP::LinearAlgebra::Vector::iterator curVal = vector->begin();
+    while ( curVal != endVec ) {
+        if ( *curVal != 5. ) {
             utils->failure ( "Failed to set scalar to 5" );
             fail = true;
             break;
-          }
-          curVal++;
         }
-        if ( !fail )
-          utils->passes ( "Set data to 5" );
-      }
-};
+        curVal++;
+    }
+    if ( !fail )
+      utils->passes ( "Set data to 5" );
+}
 
 
 template <typename VECTOR_FACTORY>
-class CloneVector
-  {
-    public:
-      static const char * get_test_name () { return "vector::cloneVector"; }
-
-      static void run_test( AMP::UnitTest *utils )
-      {
-        AMP::LinearAlgebra::Vector::shared_ptr  vector ( VECTOR_FACTORY::getVector() );
-        AMP::LinearAlgebra::Vector::shared_ptr  clone = vector->cloneVector ( "cloned vector" );
-        clone->setToScalar ( 0. );
-        utils->passes( "Clone created" );
-        bool  pass = true;
-        for ( size_t i = 0 ; i != vector->numberOfDataBlocks() ; i++ )
-        {
-          double *clone_ptr = clone->getRawDataBlock<double>(i);
-          double *vector_ptr = vector->getRawDataBlock<double>(i);
-          if ( clone_ptr == vector_ptr )
-          {
+void CloneVector( AMP::UnitTest *utils )
+{
+    AMP::LinearAlgebra::Vector::shared_ptr  vector ( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr  clone = vector->cloneVector ( "cloned vector" );
+    clone->setToScalar ( 0. );
+    utils->passes( "Clone created" );
+    bool  pass = true;
+    for ( size_t i = 0 ; i != vector->numberOfDataBlocks() ; i++ ) {
+        double *clone_ptr = clone->getRawDataBlock<double>(i);
+        double *vector_ptr = vector->getRawDataBlock<double>(i);
+        if ( clone_ptr == vector_ptr )
             pass = false;
-          }
-        }
-        if ( pass )
-          utils->passes ( "New data allocated" );
-        else
-          utils->failure ( "Data not allocated" );
-      }
-};
+    }
+    if ( pass )
+        utils->passes ( "New data allocated" );
+    else
+        utils->failure ( "Data not allocated" );
+}
 
 
 template <typename VECTOR_FACTORY>
-class DotProductVector
-  {
-    public:
-      static const char * get_test_name () { return "vector::dot"; }
-
-        static void run_test( AMP::UnitTest *utils )
-        {
-          AMP::LinearAlgebra::Vector::shared_ptr  vector1 ( VECTOR_FACTORY::getVector() );
-          AMP::LinearAlgebra::Vector::shared_ptr  vector2 ( VECTOR_FACTORY::getVector() );
-          vector1->setToScalar ( 1. );
-          vector2->setToScalar ( 2. );
-          double  d11 , d12 , d21 , d22;
-          d11 = vector1->dot ( vector1 );
-          d12 = vector1->dot ( vector2 );
-          d21 = vector2->dot ( vector1 );
-          d22 = vector2->dot ( vector2 );
-          if ( 2.*d11 == d12 )
-            utils->passes ( "dot product 1" );
-          else
-            utils->failure ( "dot product 1" );
-          if ( 2.*d11 == d21 )
-            utils->passes ( "dot product 2" );
-          else
-            utils->failure ( "dot product 2" );
-          if ( 4.*d11 == d22 )
-            utils->passes ( "dot product 3" );
-          else
-            utils->failure ( "dot product 3" );
-          if ( d11 == vector1->getGlobalSize() )
-            utils->passes ( "dot product 4" );
-          else
-            utils->failure ( "dot product 4" );
-          if ( d21 == d12 )
-            utils->passes ( "dot product 5" );
-          else
-            utils->failure ( "dot product 5" );
-        }
-};
+void DotProductVector( AMP::UnitTest *utils )
+{
+    AMP::LinearAlgebra::Vector::shared_ptr  vector1 ( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr  vector2 ( VECTOR_FACTORY::getVector() );
+    vector1->setToScalar ( 1. );
+    vector2->setToScalar ( 2. );
+    double  d11 , d12 , d21 , d22;
+    d11 = vector1->dot ( vector1 );
+    d12 = vector1->dot ( vector2 );
+    d21 = vector2->dot ( vector1 );
+    d22 = vector2->dot ( vector2 );
+    if ( 2.*d11 == d12 )
+        utils->passes ( "dot product 1" );
+    else
+        utils->failure ( "dot product 1" );
+    if ( 2.*d11 == d21 )
+        utils->passes ( "dot product 2" );
+    else
+        utils->failure ( "dot product 2" );
+    if ( 4.*d11 == d22 )
+        utils->passes ( "dot product 3" );
+    else
+        utils->failure ( "dot product 3" );
+    if ( d11 == vector1->getGlobalSize() )
+        utils->passes ( "dot product 4" );
+    else
+        utils->failure ( "dot product 4" );
+    if ( d21 == d12 )
+        utils->passes ( "dot product 5" );
+    else
+        utils->failure ( "dot product 5" );
+}
 
 
 template <typename VECTOR_FACTORY>
-class L2NormVector
-  {
-    public:
-      static const char * get_test_name () { return "vector::L2Norm"; }
-
-      static void run_test( AMP::UnitTest *utils )
-      {
-        AMP::LinearAlgebra::Vector::shared_ptr  vector ( VECTOR_FACTORY::getVector() );
-        vector->setToScalar ( 1. );
-        double  norm , norm2;
-        norm = vector->L2Norm();
-        norm2 = vector->dot ( vector );
-        if ( fabs ( norm * norm - norm2 ) < 0.000001 )
-          utils->passes ( "L2 norm 1" );
-        else
-          utils->failure ( "L2 norm 1" );
-        vector->setRandomValues ();
-        norm = vector->L2Norm();
-        norm2 = vector->dot ( vector );
-        if ( fabs ( norm * norm - norm2 ) < 0.000001 )
-          utils->passes ( "L2 norm 2" );
-        else
-          utils->failure ( "L2 norm 2" );
-      }
-};
+void L2NormVector( AMP::UnitTest *utils )
+{
+    AMP::LinearAlgebra::Vector::shared_ptr  vector ( VECTOR_FACTORY::getVector() );
+    vector->setToScalar ( 1. );
+    double  norm , norm2;
+    norm = vector->L2Norm();
+    norm2 = vector->dot ( vector );
+    if ( fabs ( norm * norm - norm2 ) < 0.000001 )
+        utils->passes ( "L2 norm 1" );
+    else
+        utils->failure ( "L2 norm 1" );
+    vector->setRandomValues ();
+    norm = vector->L2Norm();
+    norm2 = vector->dot ( vector );
+    if ( fabs ( norm * norm - norm2 ) < 0.000001 )
+        utils->passes ( "L2 norm 2" );
+    else
+        utils->failure ( "L2 norm 2" );
+}
 
 
 template <typename VECTOR_FACTORY>
-class AbsVector
-  {
-    public:
-      static const char * get_test_name () { return "Vector::abs"; }
-
-      static void run_test( AMP::UnitTest *utils )
-      {
+void AbsVector( AMP::UnitTest *utils )
+{
         AMP::LinearAlgebra::Vector::shared_ptr  vec1 ( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr  vec2 = vec1->cloneVector ();
         vec1->setRandomValues ();
@@ -302,18 +239,12 @@ class AbsVector
           utils->passes ( "Abs passes" );
         else
           utils->failure ( "Abs failes" );
-      }
-};
+}
 
 
 template <typename VECTOR_FACTORY>
-class L1NormVector
-  {
-    public:
-      static const char * get_test_name () { return "vector::L1Norm"; }
-
-      static void run_test( AMP::UnitTest *utils )
-      {
+void L1NormVector( AMP::UnitTest *utils )
+{
         AMP::LinearAlgebra::Vector::shared_ptr  vector ( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr  vector_1 ( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr  vector_abs;
@@ -327,18 +258,12 @@ class L1NormVector
           utils->passes ( "L1 norm" );
         else
           utils->failure ( "L1 norm" );
-      }
-};
+}
 
 
 template <typename VECTOR_FACTORY>
-class MaxNormVector
-  {
-    public:
-      static const char * get_test_name () { return "vector::maxNorm"; }
-
-      static void run_test( AMP::UnitTest *utils )
-      {
+void MaxNormVector( AMP::UnitTest *utils )
+{
         AMP::LinearAlgebra::Vector::shared_ptr  vector ( VECTOR_FACTORY::getVector() );
         vector->setRandomValues ();
         double infNorm = vector->maxNorm();
@@ -357,18 +282,12 @@ class MaxNormVector
           utils->passes ( "Inf norm" );
         else
           utils->failure ( "Inf norm" );
-      }
-};
+}
 
 
 template <typename VECTOR_FACTORY>
-class ScaleVector
-  {
-    public:
-      static const char * get_test_name () { return "vector::scale"; }
-
-      static void run_test( AMP::UnitTest *utils )
-      {
+void ScaleVector( AMP::UnitTest *utils )
+{
         AMP::LinearAlgebra::Vector::shared_ptr  vector1 ( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr  vector2 ( VECTOR_FACTORY::getVector() );
         double beta = 1.2345;
@@ -395,18 +314,12 @@ class ScaleVector
           utils->passes ( "scale vector 2" );
         else
           utils->failure ( "scale vector 2" );
-      }
-};
+}
 
 
 template <typename VECTOR_FACTORY>
-class Bug_491
+void Bug_491( AMP::UnitTest *utils )
 {
-    public:
-      static const char * get_test_name () { return "test for Bug 491"; }
-
-      static void run_test( AMP::UnitTest *utils )
-      {
         AMP::LinearAlgebra::Vector::shared_ptr  vector1 ( VECTOR_FACTORY::getVector() );
         vector1->setRandomValues ();
         AMP::LinearAlgebra::Vector::shared_ptr  managed_petsc = AMP::LinearAlgebra::PetscVector::view ( vector1 );
@@ -472,18 +385,12 @@ class Bug_491
           utils->passes ( "inf norm -- Petsc interface begin/end" );
         else
           utils->failure ( "inf norm -- Petsc interface begin/end" );
-    }
-};
+}
 
 
 template <typename VECTOR_FACTORY>
-class AddVector
-  {
-    public:
-      static const char * get_test_name () { return "vector::add"; }
-
-      static void run_test( AMP::UnitTest *utils )
-      {
+void AddVector( AMP::UnitTest *utils )
+{
         AMP::LinearAlgebra::Vector::shared_ptr  vector1 ( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr  vector2 ( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr  vector3 ( VECTOR_FACTORY::getVector() );
@@ -508,18 +415,12 @@ class AddVector
           utils->passes ( "add vector" );
         else
           utils->failure ( "add vector" );
-      }
-};
+}
 
 
 template <typename VECTOR_FACTORY>
-class SubtractVector
-  {
-    public:
-      static const char * get_test_name () { return "vector::subtract"; }
-
-      static void run_test( AMP::UnitTest *utils )
-      {
+void SubtractVector( AMP::UnitTest *utils )
+{
         AMP::LinearAlgebra::Vector::shared_ptr  vector1 ( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr  vector2 ( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr  vector3 ( VECTOR_FACTORY::getVector() );
@@ -551,18 +452,12 @@ class SubtractVector
           utils->passes ( "vector subtract 2" );
         else
           utils->passes ( "vector subtract 2" );
-      }
-};
+}
 
 
 template <typename VECTOR_FACTORY>
-class MultiplyVector
-  {
-    public:
-      static const char * get_test_name () { return "vector::multiply"; }
-
-      static void run_test( AMP::UnitTest *utils )
-      {
+void MultiplyVector( AMP::UnitTest *utils )
+{
         AMP::LinearAlgebra::Vector::shared_ptr  vector1 ( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr  vector2 ( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr  vector3 ( VECTOR_FACTORY::getVector() );
@@ -586,18 +481,12 @@ class MultiplyVector
           utils->passes  ( "vector::multiply" );
         else
           utils->failure ( "vector::multiply" );
-      }
-};
+}
 
 
 template <typename VECTOR_FACTORY>
-class DivideVector
- {
-    public:
-      static const char * get_test_name () { return "vector::divide"; }
-
-      static void run_test( AMP::UnitTest *utils )
-      {
+void DivideVector( AMP::UnitTest *utils )
+{
         AMP::LinearAlgebra::Vector::shared_ptr  vector1 ( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr  vector2 ( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr  vector3 ( VECTOR_FACTORY::getVector() );
@@ -626,18 +515,12 @@ class DivideVector
         {
           std::cout << vector2 << std::endl;
         }
-      }
-};
+}
 
 
 template <typename VECTOR_FACTORY>
-class VectorIteratorLengthTest
-  {
-    public:
-      static const char * get_test_name () { return "Vector iterators length test"; }
-
-      static void run_test ( AMP::UnitTest *utils )
-      {
+void VectorIteratorLengthTest( AMP::UnitTest *utils )
+{
         AMP::LinearAlgebra::Vector::shared_ptr  vector1 ( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::iterator  curEntry = vector1->begin();
         AMP::LinearAlgebra::Vector::iterator  endEntry = vector1->end();
@@ -652,19 +535,11 @@ class VectorIteratorLengthTest
           utils->passes ( "Iterated over the correct number of entries" );
         else
           utils->failure ( "Wrong number of entries in iterator" );
-      }
-};
+}
 
-
-template <typename VECTOR_FACTORY>
-class VectorIteratorTests
+template <typename ITERATOR>
+void both_VectorIteratorTests ( AMP::LinearAlgebra::Vector::shared_ptr p , AMP::UnitTest *utils )
 {
-    public:
-      static const char * get_test_name () { return "VectorDataIterator tests"; }
-
-      template <typename ITERATOR>
-      static  void both_tests ( AMP::LinearAlgebra::Vector::shared_ptr p , AMP::UnitTest *utils )
-      {
         typename ITERATOR::vector_type  &ref = p->castTo<typename ITERATOR::vector_type> ();
 
         int kk = p->getLocalSize();
@@ -756,25 +631,21 @@ class VectorIteratorTests
           else
             utils->failure ( "Add-equal and iterating" );
         }
-    }
-
-    static void run_test( AMP::UnitTest *utils )
-    {
-      AMP::LinearAlgebra::Vector::shared_ptr  vector1 ( VECTOR_FACTORY::getVector() );
-      both_tests<AMP::LinearAlgebra::Vector::iterator> ( vector1, utils );
-      both_tests<AMP::LinearAlgebra::Vector::const_iterator> ( vector1, utils );
-    }
-};
+}
 
 
 template <typename VECTOR_FACTORY>
-class VerifyVectorMin
+void VectorIteratorTests( AMP::UnitTest *utils )
 {
-    public:
-      static const char * get_test_name () { return "vector::min"; }
+      AMP::LinearAlgebra::Vector::shared_ptr  vector1 ( VECTOR_FACTORY::getVector() );
+      both_VectorIteratorTests<AMP::LinearAlgebra::Vector::iterator> ( vector1, utils );
+      both_VectorIteratorTests<AMP::LinearAlgebra::Vector::const_iterator> ( vector1, utils );
+}
 
-      static void run_test( AMP::UnitTest *utils )
-      {
+
+template <typename VECTOR_FACTORY>
+void VerifyVectorMin( AMP::UnitTest *utils )
+{
         AMP::LinearAlgebra::Vector::shared_ptr  vec ( VECTOR_FACTORY::getVector() );
         vec->setRandomValues ();
         vec->scale ( -1.0 );           // make negative
@@ -782,36 +653,24 @@ class VerifyVectorMin
           utils->passes ( "minimum of negative vector == ||.||_infty" );
         else
           utils->failure ( "minimum of negative vector != ||.||_infty" );
-      }
-};
+}
 
 
 template <typename VECTOR_FACTORY>
-class VerifyVectorMax
-  {
-    public:
-      static const char * get_test_name () { return "vector::min"; }
-
-      static void run_test( AMP::UnitTest *utils )
-      {
+void VerifyVectorMax( AMP::UnitTest *utils )
+{
         AMP::LinearAlgebra::Vector::shared_ptr  vec ( VECTOR_FACTORY::getVector() );
         vec->setRandomValues ();
         if ( fabs ( vec->max() - vec->maxNorm() ) < 1.e-10 )
           utils->passes ( "maximum of positive vector == ||.||_infty" );
         else
           utils->failure ( "maximum of positive vector != ||.||_infty" );
-      }
-};
+}
 
 
 template <typename VECTOR_FACTORY>
-class VerifyVectorMaxMin
+void VerifyVectorMaxMin( AMP::UnitTest *utils )
 {
-    public:
-      static const char * get_test_name () { return "vector::min"; }
-
-      static void run_test( AMP::UnitTest *utils )
-      {
         AMP::LinearAlgebra::Vector::shared_ptr  vec ( VECTOR_FACTORY::getVector() );
         for ( size_t i = 0 ; i != 10 ; i++ )
         {
@@ -826,8 +685,7 @@ class VerifyVectorMaxMin
           else
             utils->failure ( "Max and min fail to predict maxNorm()" );
         }
-      }
-};
+}
 
 
 template <typename VECTOR_FACTORY>
@@ -872,13 +730,8 @@ class SetRandomValuesVector
 
 
 template <typename VECTOR_FACTORY>
-class ReciprocalVector
+void ReciprocalVector( AMP::UnitTest *utils )
 {
-    public:
-      static const char * get_test_name () { return "vector::reciprocal"; }
-
-      static void run_test( AMP::UnitTest *utils )
-      {
         AMP::LinearAlgebra::Vector::shared_ptr  vectora ( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr  vectorb ( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr  vectorc ( VECTOR_FACTORY::getVector() );
@@ -897,8 +750,7 @@ class ReciprocalVector
         {
           utils->failure ("vector::reciprocal");
         }
-      }
-};
+}
 
 
 template <typename VECTOR_FACTORY>
@@ -936,7 +788,6 @@ class LinearSumVector
 };
 
 
-
 template <typename VECTOR_FACTORY>
 class AxpyVector
 {
@@ -964,7 +815,7 @@ class AxpyVector
       {
         do_instance ( utils , 6.38295 , "axpy 1" );
         do_instance ( utils , -6.38295 , "axpy 2" );
-      }
+    }
 };
 
 
@@ -1007,7 +858,7 @@ class AxpbyVector
         do_instance ( utils , 6.38295 , -99.273624 , "axpby 2" );
         do_instance ( utils , -6.38295 , 99.273624 , "axpby 3" );
         do_instance ( utils , -6.38295 , -99.273624 , "axpby 4" );
-      }
+    }
 };
 
 
@@ -1047,17 +898,12 @@ class CopyVector
         do_instance ( utils , "copy vector 3" , "copy vector 4" );
         do_instance ( utils , "copy vector 5" , "copy vector 6" );
         do_instance ( utils , "copy vector 7" , "copy vector 8" );
-      }
+    }
 };
 
 
 template <typename VECTOR_FACTORY>
-class VerifyVectorGhostCreate
-{
-    public:
-      static const char * get_test_name () { return "verify ghosts created"; }
-
-      static void  run_test ( AMP::UnitTest *utils )
+void VerifyVectorGhostCreate( AMP::UnitTest *utils )
       {
         AMP::LinearAlgebra::Vector::shared_ptr  vector = VECTOR_FACTORY::getVector();
         int num_ghosts = vector->getGhostSize();
@@ -1071,19 +917,12 @@ class VerifyVectorGhostCreate
         else
           utils->failure ("verify ghosts created");
 
-      }
-
-};
+}
 
 
 template <typename VECTOR_FACTORY>
-class VerifyVectorMakeConsistentAdd
-  {
-    public:
-      static const char * get_test_name () { return "verify makeConsistent () for add"; }
-
-      static void  run_test ( AMP::UnitTest *utils )
-      {
+void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
+{
         AMP::Discretization::DOFManager::shared_ptr  dofmap = VECTOR_FACTORY::getDOFMap();
         AMP::LinearAlgebra::Vector::shared_ptr  vector = VECTOR_FACTORY::getVector();
         AMP::LinearAlgebra::Vector::shared_ptr  vectorb = AMP::LinearAlgebra::PetscVector::view ( vector );
@@ -1149,18 +988,12 @@ class VerifyVectorMakeConsistentAdd
           utils->passes ( "all ghosted values accounted for" );
         else
           utils->failure ( "some ghosted values not set" );
-      }
-};
+}
 
 
 template <typename VECTOR_FACTORY>
-class VerifyVectorMakeConsistentSet
-  {
-    public:
-      static const char * get_test_name () { return "verify AMP::LinearAlgebra::Vector::makeConsistent () for set"; }
-
-      static void  run_test ( AMP::UnitTest *utils )
-      {
+void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
+{
         AMP::Discretization::DOFManager::shared_ptr  dofmap = VECTOR_FACTORY::getDOFMap();
         AMP::LinearAlgebra::Vector::shared_ptr  vector = VECTOR_FACTORY::getVector();
         AMP::LinearAlgebra::Vector::shared_ptr  vectorb = AMP::LinearAlgebra::PetscVector::view ( vector );
@@ -1204,8 +1037,8 @@ class VerifyVectorMakeConsistentSet
         }
         if ( testPassed )
           utils->passes ( "ghost set correctly in alias" );
-      }
-};
+}
+
 
 
 }

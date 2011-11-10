@@ -29,7 +29,7 @@ int main ( int argc , char **argv )
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
     
     std::cout << "Testing Iterator" << std::endl;
-    VectorIteratorTests<MVFactory1>::run_test ( &ut );
+    VectorIteratorTests<MVFactory1> ( &ut );
     std::cout << std::endl;
     globalComm.barrier();
 
