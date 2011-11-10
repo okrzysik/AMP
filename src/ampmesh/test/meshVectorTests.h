@@ -99,10 +99,16 @@ void VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh
     // Verify some math...
     globalMeshForMeshVectorFactory = mesh;
     globalDOFforMeshVectorFactory = DOFs;
-    test_managed_vectors_loop< MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,0> > ( utils );
-    //test_managed_vectors_loop< MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,1> > ( utils );
-    test_parallel_vectors_loop<MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,0> > ( utils );
-    //test_parallel_vectors_loop<MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,1> > ( utils );
+    if ( gcw==0 ) {
+        // Only run the managed vector tests 
+        // We need to check each test to see if it is valid for gcw==0
+        test_managed_vectors_loop< MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,0> > ( utils );
+    } else if (gcw==1 ) {
+        test_managed_vectors_loop< MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,1> > ( utils );
+        test_parallel_vectors_loop<MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,1> > ( utils );
+    } else {
+        AMP_ERROR("Not finished");
+    }
     globalMeshForMeshVectorFactory = AMP::Mesh::Mesh::shared_ptr();
     globalDOFforMeshVectorFactory = AMP::Discretization::DOFManager::shared_ptr();
 }

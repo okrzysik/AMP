@@ -103,7 +103,7 @@ AMP::LinearAlgebra::Vector::shared_ptr simpleDOFManager::createVector( AMP::Line
     size_t N_global = d_mesh->numGlobalElements(type)*variable->DOFsPerObject();
     size_t N_local = d_mesh->numLocalElements(type)*variable->DOFsPerObject();
     size_t N_begin = d_begin*variable->DOFsPerObject();
-    size_t N_end = (d_end-1)*variable->DOFsPerObject()+1;
+    size_t N_end = d_end*variable->DOFsPerObject();
     // Create the communication list
     AMP::LinearAlgebra::CommunicationList::shared_ptr comm_list;
     if ( d_gcw == 0 ) {
