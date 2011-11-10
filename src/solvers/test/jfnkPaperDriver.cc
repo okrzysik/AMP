@@ -67,7 +67,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       AMP::readTestMesh(meshFile, mesh);
     }
 
-    std::cout<<"Finished reading mesh "<<meshId<<std::endl;
+    std::cout<<"Finished reading mesh: "<<meshFile<<std::endl;
 
     MeshCommunication().broadcast(*(mesh.get()));
     mesh->prepare_for_use(false);
@@ -86,8 +86,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     for(int useUL = 0; useUL < 2; useUL++) {
       std::string linOpDbName = "LinearBVP";
       if(useUL) {
+        std::cout<<"Using UL"<<std::endl;
         linOpDbName = linOpDbName + "_UL";
       } else {
+        std::cout<<"Using SS"<<std::endl;
         linOpDbName = linOpDbName + "_SS";
       }
 
@@ -99,8 +101,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
           nlOpDbName = nlOpDbName + "_SS";
         }
         if(useConsistent) {
+          std::cout<<"Using Consistent"<<std::endl;
           nlOpDbName = nlOpDbName + "_Consistent";
         } else {
+          std::cout<<"Using Continuum"<<std::endl;
           nlOpDbName = nlOpDbName + "_Continuum";
         }
 
