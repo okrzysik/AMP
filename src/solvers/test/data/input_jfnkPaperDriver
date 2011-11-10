@@ -17,11 +17,11 @@ ULConsistentModel {
     Elastic_Yield_Stress = 250.0
 }
 
-SSConsistentModel {
+ULContinuumModel {
   USE_MATERIALS_LIBRARY = FALSE
     Material = ""
-    USE_UPDATED_LAGRANGIAN = FALSE
-    USE_CONTINUUM_TANGENT = FALSE
+    USE_UPDATED_LAGRANGIAN = TRUE
+    USE_CONTINUUM_TANGENT = TRUE
     USE_JAUMANN_RATE = FALSE
     print_info_level = 6
     name = "VonMisesElastoPlasticModel"
@@ -31,11 +31,11 @@ SSConsistentModel {
     Elastic_Yield_Stress = 250.0
 }
 
-ULContinuumModel {
+SSConsistentModel {
   USE_MATERIALS_LIBRARY = FALSE
     Material = ""
-    USE_UPDATED_LAGRANGIAN = TRUE
-    USE_CONTINUUM_TANGENT = TRUE
+    USE_UPDATED_LAGRANGIAN = FALSE
+    USE_CONTINUUM_TANGENT = FALSE
     USE_JAUMANN_RATE = FALSE
     print_info_level = 6
     name = "VonMisesElastoPlasticModel"
@@ -111,6 +111,102 @@ LinearBVP_SS {
     BoundaryOperator = "DirichletMatrixCorrection"
 }
 
+MechanicsNonlinearFEOperatorULConsistent {
+  name = "MechanicsNonlinearFEOperator"
+    print_info_level = 3
+    ActiveInputVariables {
+      DISPLACEMENT = "displacement"
+    }
+  OutputVariable = "displacement"
+    RESET_REUSES_RADIAL_RETURN = TRUE
+    JACOBIAN_REUSES_RADIAL_RETURN = TRUE
+    USE_UPDATED_LAGRANGIAN = TRUE
+
+    MechanicsElement {
+      name="MechanicsNonlinearUpdatedLagrangianElement"
+        USE_REDUCED_INTEGRATION = FALSE 
+        USE_JAUMANN_RATE = FALSE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
+
+  LocalModel = "ULConsistentModel"
+}
+
+MechanicsNonlinearFEOperatorULContinuum {
+  name = "MechanicsNonlinearFEOperator"
+    print_info_level = 3
+    ActiveInputVariables {
+      DISPLACEMENT = "displacement"
+    }
+  OutputVariable = "displacement"
+    RESET_REUSES_RADIAL_RETURN = TRUE
+    JACOBIAN_REUSES_RADIAL_RETURN = TRUE
+    USE_UPDATED_LAGRANGIAN = TRUE
+
+    MechanicsElement {
+      name="MechanicsNonlinearUpdatedLagrangianElement"
+        USE_REDUCED_INTEGRATION = FALSE 
+        USE_JAUMANN_RATE = FALSE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
+
+  LocalModel = "ULContinuumModel"
+}
+
+MechanicsNonlinearFEOperatorSSConsistent {
+  name = "MechanicsNonlinearFEOperator"
+    print_info_level = 3
+    ActiveInputVariables {
+      DISPLACEMENT = "displacement"
+    }
+  OutputVariable = "displacement"
+    RESET_REUSES_RADIAL_RETURN = TRUE
+    JACOBIAN_REUSES_RADIAL_RETURN = TRUE
+    USE_UPDATED_LAGRANGIAN = FALSE
+
+    MechanicsElement {
+      name="MechanicsNonlinearElement"
+        USE_REDUCED_INTEGRATION = FALSE 
+        USE_JAUMANN_RATE = FALSE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
+
+  LocalModel = "SSConsistentModel"
+}
+
+MechanicsNonlinearFEOperatorSSContinuum {
+  name = "MechanicsNonlinearFEOperator"
+    print_info_level = 3
+    ActiveInputVariables {
+      DISPLACEMENT = "displacement"
+    }
+  OutputVariable = "displacement"
+    RESET_REUSES_RADIAL_RETURN = TRUE
+    JACOBIAN_REUSES_RADIAL_RETURN = TRUE
+    USE_UPDATED_LAGRANGIAN = FALSE
+
+    MechanicsElement {
+      name="MechanicsNonlinearElement"
+        USE_REDUCED_INTEGRATION = FALSE 
+        USE_JAUMANN_RATE = FALSE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
+
+  LocalModel = "SSContinuumModel"
+}
+
 NonlinearBVP_UL_Consistent {
   name="NonlinearBVPOperator"
     print_info_level = 3
@@ -118,17 +214,17 @@ NonlinearBVP_UL_Consistent {
     BoundaryOperator = "DirichletVectorCorrection"
 }
 
-NonlinearBVP_SS_Consistent {
-  name="NonlinearBVPOperator"
-    print_info_level = 3
-    VolumeOperator = "MechanicsNonlinearFEOperatorSSConsistent"
-    BoundaryOperator = "DirichletVectorCorrection"
-}
-
 NonlinearBVP_UL_Continuum {
   name="NonlinearBVPOperator"
     print_info_level = 3
     VolumeOperator = "MechanicsNonlinearFEOperatorULContinuum"
+    BoundaryOperator = "DirichletVectorCorrection"
+}
+
+NonlinearBVP_SS_Consistent {
+  name="NonlinearBVPOperator"
+    print_info_level = 3
+    VolumeOperator = "MechanicsNonlinearFEOperatorSSConsistent"
     BoundaryOperator = "DirichletVectorCorrection"
 }
 
