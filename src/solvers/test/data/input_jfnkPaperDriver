@@ -63,6 +63,8 @@ MechanicsLinearFEOperatorUL {
   name = "MechanicsLinearFEOperator"
     print_info_level = 1
     reset_reuses_matrix = TRUE
+    isNonlinearOperatorInitialized = FALSE  
+    isAttachedToNonlinearOperator = TRUE
     USE_UPDATED_LAGRANGIAN = TRUE
     InputVariable = "displacement"
     OutputVariable = "displacement"
@@ -82,6 +84,8 @@ MechanicsLinearFEOperatorSS {
   name = "MechanicsLinearFEOperator"
     print_info_level = 1
     reset_reuses_matrix = TRUE
+    isNonlinearOperatorInitialized = FALSE  
+    isAttachedToNonlinearOperator = TRUE
     USE_UPDATED_LAGRANGIAN = FALSE
     InputVariable = "displacement"
     OutputVariable = "displacement"
