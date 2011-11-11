@@ -30,7 +30,6 @@ namespace AMP {
           : Operator(params)
         {
           d_elemOp = (params->d_elemOp);
-          d_applyCount = 0;
         }
 
         /**
@@ -111,19 +110,9 @@ namespace AMP {
         virtual void apply(const  boost::shared_ptr<AMP::LinearAlgebra::Vector> & f, const  boost::shared_ptr<AMP::LinearAlgebra::Vector> & u,
             boost::shared_ptr<AMP::LinearAlgebra::Vector> & r, const double a = -1.0, const double b = 1.0);
 
-        virtual void resetApplyCount() {
-          d_applyCount = 0;
-        }
-
-        virtual unsigned int getApplyCount() {
-          return d_applyCount;
-        }
-
       protected :
 
         boost::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
-
-        unsigned int d_applyCount;
 
       private :
 

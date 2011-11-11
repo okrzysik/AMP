@@ -25,7 +25,6 @@
 #include "operators/OperatorBuilder.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
-#include "operators/NonlinearFEOperator.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
 
 #include "solvers/PetscSNESSolverParameters.h"
@@ -115,9 +114,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
         std::cout<<"Finished building nonlinear operator "<<std::endl;
 
-        boost::shared_ptr<AMP::Operator::NonlinearFEOperator> nonlinearFEoperator = boost::dynamic_pointer_cast<
-          AMP::Operator::NonlinearFEOperator>(nonlinearBVPoperator->getVolumeOperator());
-
         boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearBVPoperator = boost::dynamic_pointer_cast<
           AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
                 linOpDbName, input_db, materialModel));
@@ -154,6 +150,29 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
             boost::shared_ptr<AMP::Database> snes_db = input_db->getDatabase(snesDbName); 
             boost::shared_ptr<AMP::Database> ksp_db = snes_db->getDatabase("LinearSolver"); 
 
+            solVec->zero();
+
+            nonlinearBVPoperator->modifyInitialSolutionVector(solVec);
+
+            std::cout<<"Solving ";
+            if(useUL) {
+              std::cout<<"UL ";
+            } else {
+              std::cout<<"SS ";
+            }
+            if(useConsistent) {
+              std::cout<<"Consistent ";
+            } else {
+              std::cout<<"Continuum ";
+            }
+            if(useJFNK) {
+              std::cout<<"with JFNK ";
+            }
+            if(useEW) {
+              std::cout<<"with EW ";
+            }
+            std::cout<<" on mesh: "<<meshFile<<std::endl;
+
             boost::shared_ptr<AMP::Solver::PetscSNESSolver> snesSolver;
             boost::shared_ptr<AMP::Solver::PetscKrylovSolver> kspSolver;
             boost::shared_ptr<AMP::Solver::TrilinosMLSolver> mlSolver;
@@ -187,37 +206,22 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
             kspSolver->setPreconditioner(mlSolver);
 
-            solVec->zero();
-
-            nonlinearBVPoperator->modifyInitialSolutionVector(solVec);
-
-            std::cout<<"Solving ";
-            if(useUL) {
-              std::cout<<"UL ";
-            } else {
-              std::cout<<"SS ";
-            }
-            if(useConsistent) {
-              std::cout<<"Consistent ";
-            } else {
-              std::cout<<"Continuum ";
-            }
-            if(useJFNK) {
-              std::cout<<"with JFNK ";
-            }
-            if(useEW) {
-              std::cout<<"with EW ";
-            }
-            std::cout<<" on mesh: "<<meshFile<<std::endl;
-
-            nonlinearFEoperator->resetApplyCount();
-
             snesSolver->solve(rhsVec, solVec);
 
             size_t numDofs = solVec->getGlobalSize();
-            unsigned int nonlinearCount = nonlinearFEoperator->getApplyCount();
 
-            std::cout<<" "<<numDofs<<" & "<<nonlinearCount<<" & "<<" \\\\ "<<std::endl; 
+            SNES snes = snesSolver->getSNESSolver();
+
+            PetscInt nlFnCnt = 0;
+            SNESGetNumberFunctionEvals(snes, &nlFnCnt);
+
+            PetscInt snesItsCnt = 0;
+            SNESGetIterationNumber(snes, &snesItsCnt);
+
+            PetscInt kspItsCnt = 0;
+            SNESGetLinearSolveIterations(snes, &kspItsCnt);
+
+            std::cout<<" "<<numDofs<<" & "<<nlFnCnt<<" & "<<snesItsCnt<<" & "<<kspItsCnt<<" \\\\ "<<std::endl;
 
           }//end useEW
         }//end useJFNK

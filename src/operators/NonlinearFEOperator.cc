@@ -9,8 +9,6 @@ namespace AMP {
         const boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r,
         const double a,  const double b)
     {
-      d_applyCount++;
-
       AMP_INSIST( (r != NULL), "NULL Residual/Output Vector" );
 
       unsigned int numDOFMaps = this->numberOfDOFMaps();
