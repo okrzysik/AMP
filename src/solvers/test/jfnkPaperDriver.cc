@@ -202,7 +202,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
             PetscInt kspItsCnt = 0;
             SNESGetLinearSolveIterations(snes, &kspItsCnt);
 
-            std::cout<<" "<<numDofs<<" & "<<nlFnCnt<<" & "<<snesItsCnt<<" & "<<kspItsCnt<<" \\\\ "<<std::endl;
+            std::cout<<"Result: "<<numDofs<<" & "<<nlFnCnt<<" & "<<snesItsCnt<<" & "<<kspItsCnt<<" \\\\ "<<std::endl;
 
           }//end useEW
         }//end useJFNK
