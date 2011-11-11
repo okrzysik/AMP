@@ -25,6 +25,8 @@
 #include "operators/OperatorBuilder.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
+#include "operators/mechanics/MechanicsNonlinearFEOperator.h"
+#include "operators/mechanics/VonMisesElastoPlasticModel.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
 
 #include "solvers/PetscSNESSolverParameters.h"
@@ -103,6 +105,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
         boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearBVPoperator = boost::dynamic_pointer_cast<
           AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
                 nlOpDbName, input_db, materialModel));
+
+        boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> nlVolOp = boost::dynamic_pointer_cast<
+          AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearBVPoperator->getVolumeOperator());
+
+        boost::shared_ptr<AMP::Operator::VonMisesElastoPlasticModel> vonMisesModel = boost::dynamic_pointer_cast<
+          AMP::Operator::VonMisesElastoPlasticModel>(nlVolOp->getMaterialModel());
 
         boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearBVPoperator = boost::dynamic_pointer_cast<
           AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
@@ -202,7 +210,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
             PetscInt kspItsCnt = 0;
             SNESGetLinearSolveIterations(snes, &kspItsCnt);
 
-            std::cout<<"Result: "<<numDofs<<" & "<<nlFnCnt<<" & "<<snesItsCnt<<" & "<<kspItsCnt<<" \\\\ "<<std::endl;
+            double plFrac =  vonMisesModel->getFractionPlastic();
+
+            std::cout<<"Result: "<<numDofs<<" & "<<plFrac<<" & "<<nlFnCnt
+              <<" & "<<snesItsCnt<<" & "<<kspItsCnt<<" \\\\ "<<std::endl;
 
           }//end useEW
         }//end useJFNK
