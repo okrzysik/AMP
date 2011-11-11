@@ -3,6 +3,7 @@
 
 #include "matrices/petsc/PetscMatrix.h"
 #include "utils/UnitTest.h"
+#include "descritization/DOF_Manager.h"
 
 #include "../../vectors/test/test_VectorLoops.h"
 
@@ -13,7 +14,7 @@ namespace unit_test {
 template <class MATRIX_FACTORY>
 void  fillWithPseudoLaplacian ( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
 {
-    AMP::Mesh::DOFMap::shared_ptr  dofmap = MATRIX_FACTORY::getDOFMap();
+    AMP::Discretization::DOFManager::shared_ptr  dofmap = MATRIX_FACTORY::getDOFMap();
     for ( size_t i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ )
     {
         std::vector<unsigned int>  cols;
@@ -184,7 +185,7 @@ class VerifyGetSetValuesMatrix
       static  void run_test ( AMP::UnitTest *utils )
       {
         AMP::LinearAlgebra::Matrix::shared_ptr  matrix = FACTORY::getMatrix();
-        AMP::Mesh::DOFMap::shared_ptr  dofmap = FACTORY::getDOFMap();
+        AMP::Discretization::DOFManager::shared_ptr  dofmap = FACTORY::getDOFMap();
 
         matrix->makeConsistent();
         fillWithPseudoLaplacian<FACTORY>( matrix ); // puts 6 on the diagonal and -1 on allocated off-diagonals

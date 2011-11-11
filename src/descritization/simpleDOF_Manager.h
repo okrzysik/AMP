@@ -52,6 +52,18 @@ public:
     virtual size_t  endDOF ( );
 
 
+    /** \brief  The local number of D.O.F 
+     * \return  The local number of D.O.F 
+     */
+    virtual size_t  numLocalDOF ( );
+
+
+    /** \brief  The global number of D.O.F 
+     * \return  The global number of D.O.F 
+     */
+    virtual size_t  numGlobalDOF ( );
+
+
     /**
      * \brief Create a new AMP vector
      * \details  This function creates a new AMP vector for the given variable, using the current DOF properties.
@@ -66,7 +78,7 @@ public:
      * \param operand  Variable that will be used to create the matrix
      * \param result   Variable that will be used to create the matrix
      */
-    //virtual  AMP::LinearAlgebra::Matrix::shared_ptr   createMatrix ( AMP::LinearAlgebra::Variable::shared_ptr operand , AMP::LinearAlgebra::Variable::shared_ptr result = AMP::LinearAlgebra::Variable::shared_ptr() );
+    virtual  AMP::LinearAlgebra::Matrix::shared_ptr   createMatrix ( AMP::LinearAlgebra::Variable::shared_ptr operand , AMP::LinearAlgebra::Variable::shared_ptr result );
 
 
 private:
@@ -77,7 +89,7 @@ private:
     std::vector<AMP::Mesh::MeshElementID> d_local_id;
     std::vector<AMP::Mesh::MeshElementID> d_remote_id;
     std::vector<size_t> d_remote_dof;
-    size_t d_begin, d_end;
+    size_t d_begin, d_end, d_global;
 };
 
 

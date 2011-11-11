@@ -49,8 +49,8 @@ void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 
     // Run the matrix tests
     #ifdef USE_AMP_MATRICIES
-        VerifyGetMatrixTrivialTest<1>::run_test ( ut, mesh );
-        VerifyGetMatrixTrivialTest<3>::run_test ( ut, mesh );
+        VerifyGetMatrixTrivialTest<1>( ut, mesh );
+        VerifyGetMatrixTrivialTest<3>( ut, mesh );
     #endif
 
 };

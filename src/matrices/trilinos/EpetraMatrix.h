@@ -1,7 +1,7 @@
 #ifndef included_AMP_EpetraMatrix
 #define included_AMP_EpetraMatrix
 
-#include "Matrix.h"
+#include "matrices/Matrix.h"
 
 #include <Epetra_FECrsMatrix.h>
 #include <EpetraExt_Transpose_RowMatrix.h>

@@ -35,17 +35,17 @@ int main ( int argc , char **argv )
     AMP::AMPManager::startup(argc, argv);
     AMP::UnitTest ut;
 
-    SimpleMatrixFactory::initMesh ();
-    test_matrix_loop<SimpleMatrixFactory> ( &ut );
-    SimpleMatrixFactory::endMesh();
+    //SimpleMatrixFactory::initMesh ();
+    //test_matrix_loop<SimpleMatrixFactory> ( &ut );
+    //SimpleMatrixFactory::endMesh();
 
-    MeshMatrixTestFactory<3,3,ExodusReaderGenerator>::initMesh();
-    test_matrix_loop<MeshMatrixTestFactory<3,3,ExodusReaderGenerator> > ( &ut );
-    MeshMatrixTestFactory<3,3,ExodusReaderGenerator>::endMesh();
+    DOFMatrixTestFactory<3,3,ExodusReaderGenerator>::initMesh();
+    test_matrix_loop<DOFMatrixTestFactory<3,3,ExodusReaderGenerator> > ( &ut );
+    DOFMatrixTestFactory<3,3,ExodusReaderGenerator>::endMesh();
 
-    // MeshMatrixTestFactory< 1 , 3 , ExodusReaderGenerator>::initMesh();
-    // test_matrix_loop<MeshMatrixTestFactory < 1 , 3 , ExodusReaderGenerator> > ( ut );
-    // MeshMatrixTestFactory< 1 , 3 , ExodusReaderGenerator>::endMesh();
+    // MeshMatrixTestFactory<1,3,ExodusReaderGenerator>::initMesh();
+    // test_matrix_loop<MeshMatrixTestFactory<1,3,ExodusReaderGenerator> > ( ut );
+    // MeshMatrixTestFactory<1,3,ExodusReaderGenerator>::endMesh();
 
     ut.report();
 

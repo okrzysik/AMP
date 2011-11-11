@@ -3,6 +3,7 @@
 
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/trilinos/EpetraVectorEngine.h"
+#include "matrices/petsc/ManagedPetscMatrix.h"
 #include "utils/Utilities.h"
 
 namespace AMP {
@@ -47,6 +48,7 @@ simpleDOFManager::simpleDOFManager( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP
     size_t N_local = d_local_id.size();
     comm.sumScan<size_t>(&N_local,&d_end);
     d_begin = d_end-N_local;
+    d_global = comm.bcast(d_end,comm.getSize()-1);
     // Determine the remote DOFs (assuming 1 DOF per node)
     if ( meshIDs.size()==1 && *(meshIDs.begin())==mesh->meshID() ) {
         // We are dealing with a simple mesh
@@ -142,7 +144,7 @@ void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <
 
 
 /****************************************************************
-* Retrun the first D.O.F. on this core                          *
+* Return the first D.O.F. on this core                          *
 ****************************************************************/
 size_t simpleDOFManager::beginDOF( )
 {
@@ -151,7 +153,7 @@ size_t simpleDOFManager::beginDOF( )
 
 
 /****************************************************************
-* Retrun the last D.O.F. on this core                           *
+* Return the last D.O.F. on this core                           *
 ****************************************************************/
 size_t simpleDOFManager::endDOF( )
 {
@@ -160,7 +162,25 @@ size_t simpleDOFManager::endDOF( )
 
 
 /****************************************************************
-* Retrun the first D.O.F. on this core                          *
+* Return the local number of D.O.F.s                           *
+****************************************************************/
+size_t simpleDOFManager::numLocalDOF( )
+{
+    return (d_end-d_begin)*DOFsPerElement;
+}
+
+
+/****************************************************************
+* Return the global number of D.O.F.s                           *
+****************************************************************/
+size_t simpleDOFManager::numGlobalDOF( )
+{
+    return d_global*DOFsPerElement;
+}
+
+
+/****************************************************************
+* Create a vector                                               *
 ****************************************************************/
 AMP::LinearAlgebra::Vector::shared_ptr simpleDOFManager::createVector( AMP::LinearAlgebra::Variable::shared_ptr variable )
 {
@@ -208,6 +228,69 @@ AMP::LinearAlgebra::Vector::shared_ptr simpleDOFManager::createVector( AMP::Line
     // Create the vector
     AMP::LinearAlgebra::Vector::shared_ptr vector = AMP::LinearAlgebra::Vector::shared_ptr( new AMP::LinearAlgebra::ManagedPetscVector(mvparams) );
     return vector;
+}
+
+
+/****************************************************************
+* Create a matrix                                               *
+****************************************************************/
+AMP::LinearAlgebra::Matrix::shared_ptr simpleDOFManager::createMatrix( 
+    AMP::LinearAlgebra::Variable::shared_ptr operandVar, 
+    AMP::LinearAlgebra::Variable::shared_ptr resultVar )
+{
+    /*// Create the vectors (note: only square matricies are currently implimented)
+    DOFManager *operandDOF = this;
+    DOFManager *resultDOF = this;
+    AMP::LinearAlgebra::Vector::shared_ptr  operandVec = operandDOF->createVector(operandVar);
+    AMP::LinearAlgebra::Vector::shared_ptr  resultVec = resultDOF->createVector(resultVar);
+
+    // Create the matrix parameters
+    boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrixParameters> params( 
+        new AMP::LinearAlgebra::ManagedPetscMatrixParameters( resultDOF->numLocalDOF()/resultVar->DOFsPerObject(),
+                                                   resultDOF->numGlobalDOF()/resultVar->DOFsPerObject(),
+                                                   0,
+                                                   operandDOF->numGlobalDOF()/operandVar->DOFsPerObject(),
+                                                   0,
+                                                   d_mesh->getComm() ) );
+
+    int multiplier = operandVar->DOFsPerObject();
+    int divisor = resultVar->DOFsPerObject();
+    NodalRowMap rowMap = pResultDofMap->getCommunicationList()->castTo<NodalRowMap>();
+    size_t numLocalElements = pResultDofMap->numLocalElements();
+    for ( unsigned int i = 0 ; i != numLocalElements; i++ )
+    {
+      params->addMapping ( i , pResultDofMap->beginDOF() + i );
+      size_t nnz = rowMap.getNNZ ( i );
+      params->setEntriesInRow ( i , nnz * multiplier/divisor );
+      params->addColumns ( nnz * multiplier/divisor , (int *)rowMap.getColumns ( i*multiplier/divisor ) );
+    }
+
+    params->d_CommListLeft = d_vDOFMapCache[var_result->variableID()]->getCommunicationList();
+    params->d_CommListRight = d_vDOFMapCache[var_operand->variableID()]->getCommunicationList();
+    AMP::LinearAlgebra::Matrix::shared_ptr  newMatrix = AMP::LinearAlgebra::Matrix::shared_ptr ( new AMP::LinearAlgebra::ManagedPetscMatrix( params ) );
+    size_t  mat_id = (var_result->variableID() << 10) + var_operand->variableID();
+    d_vMatrixCache[mat_id] = newMatrix;
+
+    double  values[1000];  // A little bit of a hack...
+    for ( size_t i = 0 ; i != 1000 ; i++ )
+        values[i] = 0.0;
+    NodalRowMap rowMap2 = pOperandDofMap->getCommunicationList()->castTo<NodalRowMap>();
+    for ( size_t i=0 ; i!=numLocalElements; i++ )
+    {
+      int cur_row_id = (int)i + pResultDofMap->beginDOF();
+      int related_col = i * multiplier/divisor;
+      newMatrix->castTo<AMP::LinearAlgebra::ManagedMatrix>().createValuesByGlobalID ( 1 ,
+                                          rowMap2.getNNZ (related_col) ,
+                                         &cur_row_id ,
+                                   (int *)rowMap2.getColumns(related_col) ,
+                                          values );
+    }
+    newMatrix->castTo<AMP::LinearAlgebra::EpetraMatrix>().setEpetraMaps ( pResultVec , pOperandVec );
+    newMatrix->makeConsistent ();
+*/
+    AMP_ERROR("Not implimented yet");
+    return AMP::LinearAlgebra::Matrix::shared_ptr();
+
 }
 
 

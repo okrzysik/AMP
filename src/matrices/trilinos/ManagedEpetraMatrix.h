@@ -3,8 +3,8 @@
 
 #include <set>
 
-#include "EpetraMatrix.h"
-#include "ManagedMatrix.h"
+#include "matrices/ManagedMatrix.h"
+#include "matrices/trilinos/EpetraMatrix.h"
 #include "vectors/ManagedDataMap.h"
 #include "vectors/trilinos/EpetraVector.h"
 

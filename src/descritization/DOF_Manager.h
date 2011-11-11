@@ -5,6 +5,7 @@
 #include "ampmesh/MeshElement.h"
 #include "descritization/DOF_ManagerParameters.h"
 #include "vectors/Vector.h"
+#include "matrices/Matrix.h"
 
 
 namespace AMP {
@@ -52,6 +53,18 @@ public:
     virtual size_t  endDOF ( );
 
 
+    /** \brief  The local number of D.O.F 
+     * \return  The local number of D.O.F 
+     */
+    virtual size_t  numLocalDOF ( );
+
+
+    /** \brief  The global number of D.O.F 
+     * \return  The global number of D.O.F 
+     */
+    virtual size_t  numGlobalDOF ( );
+
+
     /**
      * \brief Create a new AMP vector
      * \details  This function creates a new AMP vector for the given variable, using the current DOF properties.
@@ -66,7 +79,7 @@ public:
      * \param operand  Variable that will be used to create the matrix
      * \param result   Variable that will be used to create the matrix
      */
-    //virtual  AMP::LinearAlgebra::Matrix::shared_ptr   createMatrix ( AMP::LinearAlgebra::Variable::shared_ptr operand , AMP::LinearAlgebra::Variable::shared_ptr result = AMP::LinearAlgebra::Variable::shared_ptr() );
+    virtual  AMP::LinearAlgebra::Matrix::shared_ptr   createMatrix ( AMP::LinearAlgebra::Variable::shared_ptr operand , AMP::LinearAlgebra::Variable::shared_ptr result );
 
  
 
