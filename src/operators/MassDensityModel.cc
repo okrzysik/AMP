@@ -6,6 +6,8 @@
  */
 
 #include "MassDensityModel.h"
+//#include "diffusion/DiffusionTransportModel.h"
+
 
 namespace AMP {
 namespace Operator {
@@ -157,11 +159,12 @@ void MassDensityModel::getDensityThermal(std::vector<double> & result,
     for (unsigned int i = 0; i < n; i++)
         result[i] = density[i] * specificheat[i];
 
-    if (d_UseBilogScaling)
+    AMP_ERROR("MassDensityModel is not converted yet");
+    /*if (d_UseBilogScaling)
     {
         DiffusionTransportModel::bilogScale(result, d_BilogRange[0],
                 d_BilogRange[1]);
-    }
+    }*/
 }
 
 void MassDensityModel::getDensityChemical(std::vector<double> & result,
@@ -173,11 +176,12 @@ void MassDensityModel::getDensityChemical(std::vector<double> & result,
     for (size_t i = 0; i < result.size(); i++)
         result[i] = 1.;
 
-    if (d_UseBilogScaling)
+    AMP_ERROR("MassDensityModel is not converted yet");
+    /*if (d_UseBilogScaling)
     {
         DiffusionTransportModel::bilogScale(result, d_BilogRange[0],
                 d_BilogRange[1]);
-    }
+    }*/
 }
 
 void MassDensityModel::getDensityManufactured(std::vector<double> & result,

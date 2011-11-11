@@ -4,8 +4,6 @@
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 #include "descritization/DOF_ManagerParameters.h"
-#include "vectors/Vector.h"
-#include "matrices/Matrix.h"
 
 
 namespace AMP {
@@ -38,7 +36,7 @@ public:
      * \param[out] ids      The entries in the vector associated with D.O.F.s on the nodes
      * \param[in]  which    Which D.O.F. to get.  If not specified, return all D.O.F.s
      */
-    virtual void getDOFs ( const AMP::Mesh::MeshElement &obj, std::vector <unsigned int> &ids , unsigned int which = static_cast<unsigned int>(-1) ) const;
+    virtual void getDOFs ( const AMP::Mesh::MeshElement &obj, std::vector <unsigned int> &ids , std::vector<unsigned int> which = std::vector<unsigned int>(0) ) const;
 
 
     /** \brief  The first D.O.F. on this core
@@ -63,24 +61,6 @@ public:
      * \return  The global number of D.O.F 
      */
     virtual size_t  numGlobalDOF ( );
-
-
-    /**
-     * \brief Create a new AMP vector
-     * \details  This function creates a new AMP vector for the given variable, using the current DOF properties.
-     * \param variable  Variable that will be used to create the vector
-     */
-    virtual AMP::LinearAlgebra::Vector::shared_ptr   createVector ( AMP::LinearAlgebra::Variable::shared_ptr variable );
-
-
-    /**
-     * \brief Create a new AMP matrix
-     * \details  This function creates a new AMP matrix for the given variable, using the current DOF properties.
-     * \param operand  Variable that will be used to create the matrix
-     * \param result   Variable that will be used to create the matrix
-     */
-    virtual  AMP::LinearAlgebra::Matrix::shared_ptr   createMatrix ( AMP::LinearAlgebra::Variable::shared_ptr operand , AMP::LinearAlgebra::Variable::shared_ptr result );
-
  
 
 protected:

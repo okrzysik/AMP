@@ -5,7 +5,7 @@
 #include "SolverStrategy.h"
 #include "ColumnSolver.h"
 #include "operators/ColumnOperator.h"
-#include "operators/map/AsyncMapColumnOperator.h"
+//#include "operators/map/AsyncMapColumnOperator.h"
 
 namespace AMP {
 namespace Solver {
@@ -76,9 +76,9 @@ namespace Solver {
         d_frozenVector = vec;
       }
 
-      void setMaps(boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> maps) {
-        d_n2nmaps = maps;
-      }
+      //void setMaps(boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> maps) {
+      //  d_n2nmaps = maps;
+      //}
 
       void setColumnSolver(boost::shared_ptr<ColumnSolver> colSolver) {
         d_columnSolver = colSolver;
@@ -109,10 +109,10 @@ namespace Solver {
     private:
       boost::shared_ptr<ColumnSolver> d_columnSolver;
       boost::shared_ptr<AMP::Operator::ColumnOperator> d_columnOperator;
-      boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  d_n2nmaps;
+      //boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  d_n2nmaps;
       size_t d_totalNumberOfPellets;
       AMP::LinearAlgebra::Vector::shared_ptr d_frozenVector;
-      std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> d_meshAdapters;
+      std::vector<AMP::Mesh::Mes::shared_ptr> d_mesh;
       std::vector<unsigned int> d_meshIds;
       std::vector<std::vector<short int> > d_boundaryIds;
       std::vector<std::vector<std::vector<unsigned int> > > d_dofIds;

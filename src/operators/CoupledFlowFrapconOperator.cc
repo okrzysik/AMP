@@ -10,7 +10,8 @@ namespace Operator {
 CoupledFlowFrapconOperator::CoupledFlowFrapconOperator(const boost::shared_ptr<OperatorParameters>& params)
         : ColumnOperator(params)
 {
-
+AMP_ERROR("CoupledFlowFrapconOperator not converted yet");
+/*
 	boost::shared_ptr<CoupledFlowFrapconOperatorParameters> myparams = boost::dynamic_pointer_cast<CoupledFlowFrapconOperatorParameters>(params);
 	d_Operators.push_back(myparams->d_Map3to1);
 
@@ -50,6 +51,7 @@ CoupledFlowFrapconOperator::CoupledFlowFrapconOperator(const boost::shared_ptr<O
 
 	d_Operators.push_back(d_flowInternal1to3);
 	d_Operators.push_back(myparams->d_Map1to3);
+*/
 }
 
 	void
@@ -57,6 +59,8 @@ CoupledFlowFrapconOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr
 		const AMP::LinearAlgebra::Vector::shared_ptr & u, AMP::LinearAlgebra::Vector::shared_ptr & r,
 		const double a, const double b)
 {
+AMP_ERROR("CoupledFlowFrapconOperator not converted yet");
+/*
 	AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
 
         AMP::LinearAlgebra::Variable::shared_ptr inpVar = (boost::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_Operators[3]) )->getOutputVariable();
@@ -70,7 +74,7 @@ CoupledFlowFrapconOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr
 	d_Operators[2]->apply(nullVec, d_flowInput, d_flowOutput, a, b);
 	d_Operators[3]->apply(nullVec, d_flowInput, nullVec, a, b);
 	d_Operators[4]->apply(nullVec, d_flowOutput, nullVec, a, b);
-
+*/
 }
 
 }

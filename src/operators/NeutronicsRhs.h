@@ -6,7 +6,6 @@
 #include "operators/Operator.h"
 #include "operators/OperatorParameters.h"
 #include "NeutronicsRhsParameters.h"
-#include "ampmesh/MeshVariable.h"
 #include "vectors/DualVariable.h"
 #include "vectors/Variable.h"
 #include "utils/Utilities.h"
@@ -35,8 +34,8 @@ namespace Operator {
   class NeutronicsRhs : public  Operator {
 
     public:
-      typedef AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable, 8>      HexGaussPointVariable;
-      typedef boost::shared_ptr<HexGaussPointVariable>      SP_HexGaussPointVariable;
+      //typedef AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable, 8>      HexGaussPointVariable;
+      //typedef boost::shared_ptr<HexGaussPointVariable>      SP_HexGaussPointVariable;
       typedef boost::shared_ptr<NeutronicsRhsParameters>               SP_Parameters;
       typedef boost::shared_ptr<OperatorParameters>            SP_OperatorParameters;
       typedef boost::shared_ptr<AMP::LinearAlgebra::Vector>                SP_Vector; 
@@ -90,21 +89,11 @@ namespace Operator {
         */
       void reset(const SP_OperatorParameters & parameters);
 
-      static SP_HexGaussPointVariable createOutputVariable (const std::string & name, int varId = -1) 
-      {
-        (void) varId;    
-        SP_HexGaussPointVariable var( new HexGaussPointVariable (name) );
-        return var;
-      }
+      //static SP_HexGaussPointVariable createOutputVariable (const std::string & name, int varId = -1);
 
-      void setOutputVariableName(const std::string & name, int varId = -1) {
-        (void) varId;      
-        d_outputVariable->setName(name);
-      }
+      void setOutputVariableName(const std::string & name, int varId = -1);
 
-      AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
-        return d_outputVariable;
-      }
+      AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
       void   setTimeStep ( int tStep ) { d_timeStep = tStep; }
       void   setTimeInSeconds ( double seconds );
@@ -128,9 +117,9 @@ namespace Operator {
       Vec_Dbl                    d_fixedValues;
       int                        d_timeStep;
       double                     d_timeStepInSeconds;
-      SP_HexGaussPointVariable   d_outputVariable;
+      //SP_HexGaussPointVariable   d_outputVariable;
       std::vector<Vec_Dbl>       d_values;
-      AMP::Mesh::MeshManager::Adapter::shared_ptr d_MeshAdapter;
+      AMP::Mesh::Mesh::shared_ptr  d_Mesh;
       double                     d_secondsPerDay;               
       SourceType str2id(std::string str);
   };

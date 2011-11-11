@@ -26,6 +26,7 @@
 #include "Variable.h"
 #include "VectorEngine.h"
 
+#include "descritization/DOF_Manager.h"
 
 #ifndef NULL
 #define NULL (0)
@@ -40,13 +41,14 @@ namespace LinearAlgebra {
   class VectorParameters : public ParameterBase, public Castable
   {
     public:
-      /**\brief Convenience typedef
-        */
+      //! Convenience typedef
       typedef boost::shared_ptr<VectorParameters>   shared_ptr;
 
-      /**\brief The CommunicationList for a vector
-        */
+      //! The CommunicationList for a vector
       CommunicationList::shared_ptr                 d_CommList;
+
+      //! The DOF_Manager for a vector
+      AMP::Discretization::DOFManager::shared_ptr   d_DOFManager;
   };
 
 
@@ -884,6 +886,10 @@ namespace LinearAlgebra {
         */
       virtual CommunicationList::shared_ptr  getCommunicationList () const;
 
+      /**\brief Get the CommunicationList for this Vector
+        */
+      virtual AMP::Discretization::DOFManager::shared_ptr  getDOFManager () const;
+
       /**\brief Set the CommunicationList for this Vector
         *\details  Setting the CommunicationList for a Vector may involve
         * reallocating ghost storage.
@@ -1015,6 +1021,9 @@ namespace LinearAlgebra {
       /** \brief Constructor
       */
       Vector();
+
+      //! The DOF_Manager
+      AMP::Discretization::DOFManager::shared_ptr  d_DOFManager;
 
     private:
 

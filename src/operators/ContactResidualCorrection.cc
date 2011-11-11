@@ -6,6 +6,8 @@ namespace AMP {
 
     void ContactResidualCorrection :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &,
         AMP::LinearAlgebra::Vector::shared_ptr  &r, const double , const double ) {
+AMP_ERROR("ContactResidualCorrection is not converted yet");
+/*
       AMP::LinearAlgebra::Vector::shared_ptr rMaster = r->subsetVectorForVariable(d_masterVariable);
       AMP::LinearAlgebra::Vector::shared_ptr rSlave = r->subsetVectorForVariable(d_slaveVariable);
 
@@ -32,6 +34,7 @@ namespace AMP {
           slaveVal = rSlave->getLocalValueByGlobalID( slaveGlobalIds[j] );
         }//end for j
       }//end for i
+*/
     }
 
   }

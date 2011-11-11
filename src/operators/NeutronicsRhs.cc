@@ -29,7 +29,7 @@ namespace Operator {
     : Operator(parameters),
       d_timeStep(0) {
       AMP_ASSERT(parameters);
-      d_MeshAdapter = parameters->d_MeshAdapter;
+      d_Mesh = parameters->d_Mesh;
       d_timeStepInSeconds = 0.;
       d_secondsPerDay = 86400.;      
       getFromInput(parameters->d_db);
@@ -66,6 +66,8 @@ namespace Operator {
   void 
     NeutronicsRhs::getFromInput(SP_Database db)
     {
+AMP_ERROR("NeutronicsRhs is not converted yet");
+/*
       AMP_ASSERT(db);
 
       // define the source type and create the output variable.
@@ -73,7 +75,7 @@ namespace Operator {
       d_type = str2id(str);
 
       std::string outVarName = db->getStringWithDefault("OutputVariable", str);
-      d_outputVariable.reset ( new  HexGaussPointVariable (outVarName,d_MeshAdapter) );
+      d_outputVariable.reset ( new  HexGaussPointVariable (outVarName,d_Mesh) );
 
       // number of time steps
       d_numTimeSteps = db->getIntegerWithDefault("numTimeSteps", 1);
@@ -106,7 +108,7 @@ namespace Operator {
           d_fixedValues[0] = 1.;
         }
       }
-
+*/
     }
 
   /*
@@ -177,6 +179,8 @@ namespace Operator {
                            const  double      a,
                            const  double      b) {
     (void) f; (void) u;
+AMP_ERROR("NeutronicsRhs is not converted yet");
+/*
       // NeutronicsRhs is made to provide a power, so a and b are not optional.
       AMP_ASSERT(AMP::Utilities::approx_equal(a,1.));
       AMP_ASSERT(AMP::Utilities::approx_equal(b,0.));
@@ -193,13 +197,13 @@ namespace Operator {
         double value = d_fixedValues[this_step];
         rInternal->setToScalar(value);
       } else {
-        AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_MeshAdapter->beginElement();
-        AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_MeshAdapter->endElement();
+        AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_Mesh->beginElement();
+        AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_Mesh->endElement();
 
         int gp = 0;
         for( ; elem != end_elems; ++elem) {
           for( unsigned int i = 0; i < 8; gp++ , i++ ) {
-            AMP::Mesh::DOFMap::shared_ptr  dof_map = d_MeshAdapter->getDOFMap ( d_outputVariable );
+            AMP::Mesh::DOFMap::shared_ptr  dof_map = d_Mesh->getDOFMap ( d_outputVariable );
             std::vector<unsigned int> ndx;
             std::vector<unsigned int> empty;
             dof_map->getDOFs ( *elem , ndx , empty );
@@ -207,8 +211,8 @@ namespace Operator {
             rInternal->setValueByGlobalID ( offset, d_values[this_step][gp] );
           }//end for gauss-points
         }//end for elements
-
       }
+*/
     }
 
 
@@ -226,6 +230,31 @@ namespace Operator {
     } 
     return NUM_SOURCE_TYPES;
   }
+
+
+      void NeutronicsRhs::setOutputVariableName(const std::string & name, int varId) {
+        (void) varId;      
+AMP_ERROR("NeutronicsRhs is not converted yet");
+/*
+        d_outputVariable->setName(name);
+*/
+      }
+
+      AMP::LinearAlgebra::Variable::shared_ptr NeutronicsRhs::getOutputVariable() {
+AMP_ERROR("NeutronicsRhs is not converted yet");
+/*
+        return d_outputVariable;
+*/
+      }
+
+
+  /*SP_HexGaussPointVariable NeutronicsRhs::createOutputVariable (const std::string & name, int varId = -1) 
+      {
+        (void) varId;    
+        SP_HexGaussPointVariable var( new HexGaussPointVariable (name) );
+        return var;
+      }*/
+
 
 }
  }

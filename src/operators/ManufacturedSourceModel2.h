@@ -2,19 +2,12 @@
 #define included_AMP_ManufacturedSourceModel2
 
 #include <iostream>
-
 #include <string>
-
-#include "ampmesh/DOFMap.h"
-
-#include "ElementPhysicsModel.h"
-
 #include "boost/shared_ptr.hpp"
 
+#include "ElementPhysicsModel.h"
 #include "materials/Material.h"
-
 #include "materials/Property.h"
-
 #include "diffusion/DiffusionConstants.h"
 
 namespace AMP {

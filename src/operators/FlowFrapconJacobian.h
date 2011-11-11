@@ -5,8 +5,8 @@
 #include "operators/Operator.h"
 #include "vectors/SimpleVector.h"
 #include "FlowFrapconJacobianParameters.h"
-#include "operators/map/Map3Dto1D.h"
-#include "operators/map/Map1Dto3D.h"
+//#include "operators/map/Map3Dto1D.h"
+//#include "operators/map/Map1Dto3D.h"
 
 /* Libmesh files */
 #include "fe_type.h"
@@ -28,19 +28,7 @@ namespace Operator {
         Constructor creates a simpleVariables for Input and Output. The reset is called to 
         read the flow parameters.
         */
-      FlowFrapconJacobian(const boost::shared_ptr<FlowFrapconJacobianParameters> & params)
-        : Operator (params)
-      {
-        std::string inpVar = params->d_db->getString("InputVariable");
-	d_inpVariable.reset(new AMP::Mesh::NodalScalarVariable(inpVar,d_MeshAdapter));
-
-        std::string outVar = params->d_db->getString("OutputVariable");
-	d_outVariable.reset(new AMP::Mesh::NodalScalarVariable(outVar,d_MeshAdapter));
-
-        d_SimpleVariable.reset(new AMP::LinearAlgebra::Variable("FlowInternal"));
-
-        reset(params);
-      }
+      FlowFrapconJacobian(const boost::shared_ptr<FlowFrapconJacobianParameters> & params);
 
       /**
         Destructor
@@ -69,37 +57,17 @@ namespace Operator {
         return (*one)(2) < (*two)(2);
       }
 */
-      AMP::LinearAlgebra::Variable::shared_ptr createInputVariable (const std::string & name, int varId = -1)
-      {
-        (void) varId;      
-        return d_inpVariable->cloneVariable(name);
-      }
+      AMP::LinearAlgebra::Variable::shared_ptr createInputVariable (const std::string & name, int varId = -1);
 
-      AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable (const std::string & name, int varId = -1) 
-      {
-        (void) varId;      
-        return d_outVariable->cloneVariable(name);
-      }
+      AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable (const std::string & name, int varId = -1) ;
 
-      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1) {
-        return d_inpVariable;
-      }
+      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
 
-      AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
-        return d_outVariable;
-      }
+      AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
-      void setInputVariableName(const std::string & name, int varId = -1) 
-      {
-        (void) varId;      
-        d_inpVariable->setName(name);
-      } 
+      void setInputVariableName(const std::string & name, int varId = -1);
 
-      void setOutputVariableName(const std::string & name, int varId = -1)
-      {
-        (void) varId;      
-        d_outVariable->setName(name);
-      }
+      void setOutputVariableName(const std::string & name, int varId = -1);
 
       /**
         @param [in] zloc is the location vector in z direction.
@@ -210,16 +178,16 @@ namespace Operator {
 
       /* Since the map has been taken out the Flow operator 
          now expects a SimpleVariable for input & output */
-      boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_inpVariable; /**< Input Variable */
+//      boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_inpVariable; /**< Input Variable */
 
-      boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_outVariable; /**< Output Variable */
+//      boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_outVariable; /**< Output Variable */
       
       boost::shared_ptr<AMP::LinearAlgebra::Variable> d_SimpleVariable; /**< Simple Input Variable */
 
-      boost::shared_ptr<AMP::Operator::Map3Dto1D> d_Map3to1;
+//      boost::shared_ptr<AMP::Operator::Map3Dto1D> d_Map3to1;
       AMP::LinearAlgebra::Vector::shared_ptr   flowInput; 
 
-      boost::shared_ptr<AMP::Operator::Map1Dto3D> d_Map1to3;
+//      boost::shared_ptr<AMP::Operator::Map1Dto3D> d_Map1to3;
       AMP::LinearAlgebra::Vector::shared_ptr   flowOutput; 
 
     protected :

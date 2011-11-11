@@ -52,6 +52,8 @@ namespace Operator {
 
   std::vector<std::vector<std::vector<Point > > > PressureBoundaryVectorCorrection :: getNormals()
   {
+AMP_ERROR("PressureBoundaryVectorCorrection not converted yet");
+/*
     if(!d_isConstantPressure){
       d_variablePressure->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     }
@@ -125,9 +127,14 @@ namespace Operator {
     }//end for j
 
     return allBoundaryIdsNormals;
+*/
   }
+
+
   void PressureBoundaryVectorCorrection :: computeRHScorrection()
   {
+AMP_ERROR("PressureBoundaryVectorCorrection not converted yet");
+/*
     if(!d_isConstantPressure){
       d_variablePressure->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     }
@@ -248,6 +255,7 @@ namespace Operator {
 
     d_rhsCorrectionAdd = rInternal->cloneVector();
     d_rhsCorrectionAdd->copyVector(rInternal);
+*/
   }
 
   void PressureBoundaryVectorCorrection :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a , const double b )

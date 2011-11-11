@@ -3,12 +3,10 @@
 
 #include <string>
 #include <valarray>
-#include "ampmesh/DOFMap.h"
 #include "ElementPhysicsModel.h"
 #include "boost/shared_ptr.hpp"
 #include "materials/Material.h"
 #include "materials/Property.h"
-#include "diffusion/DiffusionTransportModel.h"
 #include "utils/ManufacturedSolution.h"
 #include "point.h"
 

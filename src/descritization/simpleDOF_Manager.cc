@@ -122,10 +122,10 @@ simpleDOFManager::simpleDOFManager( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP
 * Note:  this function is likely temporary, we are assuming     *
 * all data will be stored on nodes.                             *
 ****************************************************************/
-void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <unsigned int> &ids, unsigned int which ) const
+void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <unsigned int> &ids, std::vector<unsigned int> which ) const
 {
-    std::vector<AMP::Mesh::MeshElement> elements = obj.getElements(AMP::Mesh::Vertex);
-    if ( which==static_cast<unsigned int>(-1) ) {
+    std::vector<AMP::Mesh::MeshElement> elements = obj.getElements(d_type);
+    if ( which.size()==0 ) {
         // Return all dofs
         ids.resize(elements.size());
         for (size_t i=0; i<elements.size(); i++) {
@@ -135,10 +135,12 @@ void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <
         }
     } else {
         // Return only the desired dof
-        ids.resize(1);
-        AMP::Mesh::MeshElementID local_id = elements[which].globalID();
-        ids[0] = AMP::Utilities::findfirst(d_local_id,local_id);
-        AMP_INSIST(local_id==d_local_id[ids[0]],"Internal Error: id not found");
+        ids.resize(which.size());
+        for (size_t i=0; i<which.size(); i++) {
+            AMP::Mesh::MeshElementID local_id = elements[which[i]].globalID();
+            ids[i] = AMP::Utilities::findfirst(d_local_id,local_id);
+            AMP_INSIST(local_id==d_local_id[ids[i]],"Internal Error: id not found");
+        }
     }
 }
 
@@ -225,6 +227,7 @@ AMP::LinearAlgebra::Vector::shared_ptr simpleDOFManager::createVector( AMP::Line
     AMP::LinearAlgebra::VectorEngine::shared_ptr epetra_engine( new AMP::LinearAlgebra::EpetraVectorEngine( eveparams, t_buffer ) );
     mvparams->d_Engine = epetra_engine;
     mvparams->d_CommList = comm_list;
+    mvparams->d_DOFManager = shared_from_this();
     // Create the vector
     AMP::LinearAlgebra::Vector::shared_ptr vector = AMP::LinearAlgebra::Vector::shared_ptr( new AMP::LinearAlgebra::ManagedPetscVector(mvparams) );
     return vector;

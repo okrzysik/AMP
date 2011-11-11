@@ -168,6 +168,26 @@ MeshIterator libMesh::getIterator( const GeomType type, const int gcw )
 }
 
 
+/********************************************************
+* Return an iterator over the given boundary ids        *
+********************************************************/
+std::vector<int> libMesh::getIDSets ( )
+{
+    AMP_ERROR("Not Implimented Yet");
+    return std::vector<int>(0);
+    //const std::set<short int> &libmeshIds = d_libMesh->boundary_info->get_boundary_ids();
+    //std::vector<int> ids(libmeshIds.begin(), libmeshIds.end());
+    //return ids;
+}
+
+MeshIterator libMesh::getIDsetIterator ( const GeomType, const int id, const int gcw )
+{
+    AMP_ERROR("Not Implimented Yet");
+    return MeshIterator();
+}
+
+
+
 } // Mesh namespace
 } // AMP namespace
 

@@ -3,8 +3,9 @@
 
 /* AMP files */
 #include "boost/shared_ptr.hpp"
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/DOFMap.h"
+#include "ampmesh/Mesh.h"
+#include "ampmesh/MeshElement.h"
+#include "descritization/DOF_Manager.h"
 #include "operators/diffusion/FickSoretNonlinearFEOperatorParameters.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
 

@@ -6,14 +6,16 @@ namespace AMP {
   namespace Solver {
 
     void ContactSolver :: solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>, boost::shared_ptr<AMP::LinearAlgebra::Vector>  u) {
+AMP_ERROR("ContactSolver is not converted yet");
+/*
       boost::shared_ptr<AMP::Operator::ContactResidualCorrection> op = boost::dynamic_pointer_cast<
         AMP::Operator::ContactResidualCorrection>(d_pOperator);
 
       AMP::LinearAlgebra::Variable::shared_ptr masterVariable = op->getMasterVariable();
       AMP::LinearAlgebra::Variable::shared_ptr slaveVariable = op->getSlaveVariable();
 
-      AMP::Mesh::MeshManager::Adapter::shared_ptr masterMesh = op->getMasterMesh();
-      AMP::Mesh::MeshManager::Adapter::shared_ptr slaveMesh = op->getSlaveMesh();
+      AMP::Mesh::Mesh::shared_ptr masterMesh = op->getMasterMesh();
+      AMP::Mesh::Mesh::shared_ptr slaveMesh = op->getSlaveMesh();
 
       std::vector<unsigned int> masterNodes = op->getMasterNodes();
       std::vector<unsigned int> slaveNodes = op->getSlaveNodes();
@@ -38,6 +40,7 @@ namespace AMP {
           uSlave->setLocalValueByGlobalID(slaveGlobalIds[j], masterVal);
         }//end for j
       }//end for i
+*/
     }
 
   }

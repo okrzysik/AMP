@@ -65,6 +65,23 @@ public:
     virtual MeshIterator getIterator ( const GeomType type, const int gcw=0 );
 
 
+    /**
+     * \brief    Return the list of all ID sets in the mesh
+     * \details  Return the list of all ID sets in the mesh
+     */
+    virtual std::vector<int> getIDSets ( );
+
+
+    /**
+     * \brief    Return an MeshIterator over the given geometric objects on the given ID set
+     * \details  Return an MeshIterator over the given geometric objects on the given ID set
+     * \param type   Geometric type to iterate over
+     * \param type   id for the elements (example: nodeset id)
+     */
+    virtual MeshIterator getIDsetIterator ( const GeomType type, const int id, const int gcw=0 );
+
+
+
     //! Return the underlying libMesh object
     inline boost::shared_ptr< ::Mesh> getlibMesh( ) const { return d_libMesh; }
 

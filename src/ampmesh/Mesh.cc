@@ -100,7 +100,17 @@ MeshIterator Mesh::getIterator( const GeomType, const int )
     AMP_ERROR("Not Implimented Yet");
     return MeshIterator();
 }
-MeshIterator Mesh::getSurfaceIterator( const GeomType ) 
+MeshIterator Mesh::getSurfaceIterator( const GeomType, const int ) 
+{
+    AMP_ERROR("Not Implimented Yet");
+    return MeshIterator();
+}
+std::vector<int> Mesh::getIDSets ( )
+{
+    AMP_ERROR("Not Implimented Yet");
+    return std::vector<int>();
+}
+MeshIterator Mesh::getIDsetIterator ( const GeomType, const int, const int )
 {
     AMP_ERROR("Not Implimented Yet");
     return MeshIterator();

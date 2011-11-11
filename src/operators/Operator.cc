@@ -26,7 +26,7 @@ namespace Operator {
 
     Operator :: d_iInstance_id++;
 
-    d_MeshAdapter = params->d_MeshAdapter;
+    d_Mesh = params->d_Mesh;
 
     // try and keep the next call the last in the function
     // so as not to override any parameters set through it 

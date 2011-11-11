@@ -19,11 +19,8 @@
 #include "operators/Operator.h"
 #include "operators/OperatorParameters.h"
 #include "PowerShapeParameters.h"
-#include "ampmesh/MeshVariable.h"
 #include "vectors/DualVariable.h"
 #include "vectors/Variable.h"
-
-
 #include "utils/InputDatabase.h"
 
 /*Boost files */
@@ -56,8 +53,8 @@ namespace Operator {
 class PowerShape : public  Operator {
 
     public:
-      typedef AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable, 8>      HexGaussPointVariable;
-      typedef boost::shared_ptr<HexGaussPointVariable>      SP_HexGaussPointVariable;
+      //typedef AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable, 8>      HexGaussPointVariable;
+      //typedef boost::shared_ptr<HexGaussPointVariable>      SP_HexGaussPointVariable;
       typedef boost::shared_ptr<PowerShapeParameters>                  SP_Parameters;
       typedef boost::shared_ptr<OperatorParameters>            SP_OperatorParameters;
       typedef boost::shared_ptr<AMP::LinearAlgebra::Vector>                                    SP_Vector; 
@@ -167,11 +164,11 @@ class PowerShape : public  Operator {
         */
       void reset(const SP_OperatorParameters & parameters);
 
-      SP_HexGaussPointVariable createOutputVariable (const std::string & name) 
+      /*SP_HexGaussPointVariable createOutputVariable (const std::string & name) 
       {
         SP_HexGaussPointVariable var( new HexGaussPointVariable (name) );
         return var;
-      }
+      }*/
 
       double evalFactorial(const int n);
       double choose(int, int);
@@ -197,13 +194,13 @@ class PowerShape : public  Operator {
 
       SP_Database d_db;
 
-      SP_HexGaussPointVariable d_Variable;
+      //SP_HexGaussPointVariable d_Variable;
 
       boost::shared_ptr < ::FEType > d_feType;
       boost::shared_ptr < ::FEBase > d_fe;
       boost::shared_ptr < ::QBase >  d_qrule;
 
-      AMP::Mesh::MeshManager::Adapter::shared_ptr d_MeshAdapter;
+      AMP::Mesh::Mesh::shared_ptr d_Mesh;
     private:
 
   };

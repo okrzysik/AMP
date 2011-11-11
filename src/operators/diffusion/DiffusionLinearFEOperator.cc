@@ -1,9 +1,48 @@
 #include "DiffusionLinearFEOperator.h"
 #include "utils/Utilities.h"
-#include "ampmesh/MeshVariable.h"
 
 namespace AMP {
 namespace Operator {
+/*
+
+AMP::LinearAlgebra::Variable::shared_ptr DiffusionLinearFEOperator::createInputVariable(const std::string & name, int varId = -1) 
+{ 
+    (void) varId;
+    return d_inpVariable->cloneVariable(name);
+}
+
+AMP::LinearAlgebra::Variable::shared_ptr DiffusionLinearFEOperator::createOutputVariable(const std::string & name, int varId = -1) 
+{ 
+    (void) varId;
+    return d_outVariable->cloneVariable(name);
+}
+
+AMP::LinearAlgebra::Variable::shared_ptr DiffusionLinearFEOperator::getInputVariable(int varId = -1)
+{
+    return d_inpVariable;
+}
+
+AMP::LinearAlgebra::Variable::shared_ptr DiffusionLinearFEOperator::getOutputVariable() 
+{
+    return d_outVariable;
+}
+
+
+    void DiffusionLinearFEOperator::setInputVariableName(const std::string & name, int varId = -1) { (void) varId;
+        d_inpVariable->setName(name);
+    }
+
+    void DiffusionLinearFEOperator::setOutputVariableName(const std::string & name, int varId = -1) { (void) varId;
+        d_outVariable->setName(name);
+    }
+
+    unsigned int DiffusionLinearFEOperator::numberOfDOFMaps() {
+        return 1;
+    }
+
+    AMP::LinearAlgebra::Variable::shared_ptr DiffusionLinearFEOperator::getVariableForDOFMap(unsigned int) {
+        return d_inpVariable;
+    }
 
 DiffusionLinearFEOperator::DiffusionLinearFEOperator(const boost::shared_ptr<
         DiffusionLinearFEOperatorParameters> & params) :
@@ -107,8 +146,8 @@ void DiffusionLinearFEOperator::postAssembly() {
 }
 
 void DiffusionLinearFEOperator::preElementOperation(
-        const AMP::Mesh::MeshManager::Adapter::Element & elem, const std::vector<
-                AMP::Mesh::DOFMap::shared_ptr> & dof_maps) {
+        const AMP::Mesh::MeshElement & elem, const std::vector<
+                MP::Discretization::DOFManager::shared_ptr> & dof_maps) {
 
     if( d_iDebugPrintInfoLevel > 7 ) {
       AMP::pout << "DiffusionLinearFEOperator::preElementOperation, entering" << std::endl;
@@ -192,6 +231,8 @@ void DiffusionLinearFEOperator::postElementOperation() {
       AMP::pout << "DiffusionLinearFEOperator::postElementOperation, leaving" << std::endl;
     }
 }
+*/
+
 
 }
 }//end namespace

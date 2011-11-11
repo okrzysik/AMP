@@ -5,14 +5,17 @@
 
 #include "EpetraMatrixOperator.h"
 #include "MoertelOperatorBuilderParameters.h"
-#include "ampmesh/MeshManager.h"
 
 #include "mrtr_segment_bilinearquad.H"
 #include "mrtr_manager.H"
 
+#include "ampmesh/Mesh.h"
+#include "descritization/DOF_Manager.h"
+
+
 namespace AMP {
 namespace Operator {
-
+/*
   class MoertelOperatorBuilder
   {
     private:
@@ -33,7 +36,7 @@ namespace Operator {
 
       void  subMatrix ( const Epetra_CrsMatrix *in , Epetra_CrsMatrix *&out , int row_start , int row_end , int col_start , int col_end );
       void  transposeMatrix ( const Epetra_CrsMatrix * , Epetra_CrsMatrix *& );
-      void  getNodes ( AMP::Mesh::MeshManager::Adapter::shared_ptr , NodeIterator , NodeIterator , MOERTEL::Interface & , AMP::Mesh::DOFMap::shared_ptr , int , size_t );
+      void  getNodes ( AMP::Mesh::Mesh::shared_ptr , NodeIterator , NodeIterator , MOERTEL::Interface & , AMP::Discretization::DOFManager::shared_ptr , int , size_t );
 
       size_t buildInformation ( AMP::Mesh::MeshManager::Adapter::shared_ptr , short int , AMP::Mesh::DOFMap::shared_ptr , MOERTEL::Interface & , int , size_t , size_t );
       void  buildLambdaVector ();
@@ -54,7 +57,7 @@ namespace Operator {
       }
   };
 
-
+*/
 
 }
 }

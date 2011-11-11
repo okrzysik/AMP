@@ -6,7 +6,6 @@
 #include "LinearFEOperator.h"
 #include "MassLinearFEOperatorParameters.h"
 #include "MassLinearElement.h"
-#include "ampmesh/MeshVariable.h"
 #include "utils/Utilities.h"
 
 /* Boost files */
@@ -29,47 +28,27 @@ namespace Operator {
 
       void postAssembly();
 
-      void preElementOperation(const AMP::Mesh::MeshManager::Adapter::Element &, const std::vector<AMP::Mesh::DOFMap::shared_ptr> &);
+      void preElementOperation(const AMP::Mesh::MeshElement &, const std::vector<AMP::Discretization::DOFManager::shared_ptr> &);
 
       void postElementOperation();
 
-      AMP::LinearAlgebra::Variable::shared_ptr createInputVariable (const std::string & name, int varId = -1) {
-        (void) varId;      
-        return d_inpVariable->cloneVariable(name);
-      }
+      AMP::LinearAlgebra::Variable::shared_ptr createInputVariable (const std::string & name, int varId = -1);
 
-      AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable (const std::string & name, int varId = -1) {
-        (void) varId;      
-        return d_outVariable->cloneVariable(name);
-      }
+      AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable (const std::string & name, int varId = -1);
 
-      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1) {
-        return d_inpVariable;
-      }
+      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
 
-      AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
-        return d_outVariable;
-      }
+      AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() ;
 
-      void setInputVariableName(const std::string & name, int varId = -1) {
-        (void) varId;      
-        d_inpVariable->setName(name);
-      }
+      void setInputVariableName(const std::string & name, int varId = -1);
 
-      void setOutputVariableName(const std::string & name, int varId = -1) {
-        (void) varId;      
-        d_outVariable->setName(name);
-      }
+      void setOutputVariableName(const std::string & name, int varId = -1);
 
-      unsigned int numberOfDOFMaps() {
-        return 1;
-      }
+      unsigned int numberOfDOFMaps();
 
-      AMP::LinearAlgebra::Variable::shared_ptr getVariableForDOFMap(unsigned int ) {
-        return d_inpVariable;
-      }
+      AMP::LinearAlgebra::Variable::shared_ptr getVariableForDOFMap(unsigned int );
 
-      boost::shared_ptr<MassDensityModel> getDensityModel(){return d_densityModel;}
+      boost::shared_ptr<MassDensityModel> getDensityModel();
 
     protected :
 
@@ -99,9 +78,9 @@ namespace Operator {
 
       boost::shared_ptr<MassDensityModel> d_densityModel;
 
-      boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_inpVariable;
+      //boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_inpVariable;
 
-      boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_outVariable;
+      //boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_outVariable;
 
     private :
 

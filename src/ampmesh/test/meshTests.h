@@ -178,34 +178,18 @@ void MeshCountTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 }
 
 
+
+
 /*
-class  ElementTest
-{
-public:
-    static const char * get_test_name () { return "check elements"; }
+// This tests loops over all boundary ids
+void VerifyOwnedBoundaryNodeIterator( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh ) {
+        const std::set<short int> bids = mesh->getBoundaryIds ();
+        std::set<short int>::const_iterator curBid = bids.begin();
+        while ( curBid != bids.end() )
+        {
+            verify_boundary ( utils, mesh, *curBid );
+            curBid++;
 
-    static  void run_test ( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh ) {
-        AMP::Mesh::MeshAdapter::ElementIterator  cur_elem = mesh->beginElement();
-        bool volume_pass = true;
-        while ( cur_elem != mesh->endElement() ) {
-            if ( (*cur_elem).volume() <= 0.0 )
-                volume_pass = false;
-            cur_elem++;
-        }
-        if ( volume_pass )
-            utils->passes ( "elements have volumes > 0" );
-        else
-            utils->failure ( "elements have volumes > 0" );
-    }
-};
-
-
-class  VerifyOwnedBoundaryNodeIterator
-{
-public:
-    static const char * get_test_name () { return "verfify BoundaryNodeIterator interface"; }
-
-    static  void verify_boundary ( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh, short int bid ) {
         AMP::Mesh::MeshAdapter::OwnedBoundaryNodeIterator curNode = mesh->beginOwnedBoundary ( bid );
         std::set<size_t>  node_ids;
         while ( curNode != mesh->endOwnedBoundary ( bid ) )
@@ -240,16 +224,9 @@ public:
             utils->failure ( "Node in iterator not on boundary" );
     }
 
-    static  void run_test ( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh ) {
-        const std::set<short int> bids = mesh->getBoundaryIds ();
-        std::set<short int>::const_iterator curBid = bids.begin();
-        while ( curBid != bids.end() )
-        {
-            verify_boundary ( utils, mesh, *curBid );
-            curBid++;
         }
     }
-};
+
 
 
 class  DisplaceNodes

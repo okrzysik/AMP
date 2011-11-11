@@ -7,8 +7,6 @@
 #include "vectors/Vector.h"
 
 #include "ColumnOperatorParameters.h"
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/DOFMap.h"
 #include "utils/Utilities.h"
 #include "boost/shared_ptr.hpp"
 

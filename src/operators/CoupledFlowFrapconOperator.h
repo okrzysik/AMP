@@ -3,8 +3,8 @@
 
 #include "ColumnOperator.h"
 #include "CoupledFlowFrapconOperatorParameters.h"
-#include "operators/map/Map3Dto1D.h"
-#include "operators/map/Map1Dto3D.h"
+//#include "operators/map/Map3Dto1D.h"
+//#include "operators/map/Map1Dto3D.h"
 #include "FlowFrapconOperator.h"
 #include "vectors/Vector.h"
 #include "utils/Utilities.h"
@@ -60,8 +60,8 @@ namespace Operator {
       AMP::LinearAlgebra::Vector::shared_ptr d_flowOutput; 
       AMP::LinearAlgebra::Vector::shared_ptr d_localCladVec;
 
-      AMP::Operator::MapOperator::shared_ptr d_flowInternal3to1;
-      AMP::Operator::MapOperator::shared_ptr d_flowInternal1to3;
+      //AMP::Operator::MapOperator::shared_ptr d_flowInternal3to1;
+      //AMP::Operator::MapOperator::shared_ptr d_flowInternal1to3;
   };
 
 }

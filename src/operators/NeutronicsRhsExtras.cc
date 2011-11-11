@@ -31,7 +31,10 @@ namespace Operator {
       d_numExtras(numExtras),
       d_extrasName(extrasName),
       d_timeStep(0),
-      d_extrasId(0) {
+      d_extrasId(0) 
+{
+AMP_ERROR("NeutronicsRhsExtras is not converted yet");
+/*
       AMP_ASSERT(parameters);
       d_MeshAdapter = parameters->d_MeshAdapter;
       d_timeStepInSeconds = 0.;
@@ -51,8 +54,9 @@ namespace Operator {
         }
 
       }
+*/
+}
 
-    }
 
   /* 
   *************************************************************************
@@ -73,6 +77,8 @@ namespace Operator {
   void 
     NeutronicsRhsExtras::getFromInput(SP_Database db)
     {
+AMP_ERROR("NeutronicsRhsExtras is not converted yet");
+/*
       AMP_ASSERT(db);
 
       // define the source type and create the output variable.
@@ -113,7 +119,7 @@ namespace Operator {
           d_fixedValues[0] = 1.;
         }
       }
-
+*/
     }
 
   /*
@@ -187,6 +193,8 @@ namespace Operator {
                            const  double      a,
                            const  double      b) {
     (void) f; (void) u;
+AMP_ERROR("NeutronicsRhsExtras is not converted yet");
+/*
       // NeutronicsRhsExtras is made to provide a power, so a and b are not optional.
       AMP_ASSERT(AMP::Utilities::approx_equal(a,1.));
       AMP_ASSERT(AMP::Utilities::approx_equal(b,0.));
@@ -219,8 +227,8 @@ namespace Operator {
         }//end for elements
 
       }
+*/
     }
-
 
 
   NeutronicsRhsExtras::SourceType NeutronicsRhsExtras::str2id(std::string str)
@@ -233,6 +241,22 @@ namespace Operator {
     } 
     return NUM_SOURCE_TYPES;
   }
+
+
+/*static SP_HexGaussPointVariable NeutronicsRhsExtras::createOutputVariable (const std::string & name, int varId) 
+{
+    (void) varId;    
+    SP_HexGaussPointVariable var( new HexGaussPointVariable (name) );
+    return var;
+}*/
+
+void NeutronicsRhsExtras::setOutputVariableName(const std::string & name, int varId)
+{
+    (void) varId;      
+    AMP_ERROR("NeutronicsRhsExtras is not converted yet");
+    //d_outputVariable->setName(name);
+}
+
 
 }
 }

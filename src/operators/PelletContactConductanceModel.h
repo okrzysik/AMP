@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "ElementPhysicsModelFactory.h"
-#include "DiffusionTransportModel.h"
+//#include "diffusion/DiffusionTransportModel.h"
 #include "RobinPhysicsModel.h"
 #include "boost/shared_ptr.hpp"
 
@@ -17,23 +17,7 @@ class PelletContactConductanceModel  : public RobinPhysicsModel
  {
     public :
       
-      PelletContactConductanceModel(const
-          boost::shared_ptr<RobinPhysicsModelParameters>& params) : RobinPhysicsModel (params) {
-      
-          d_nTransportModels   =  (params->d_db)->getInteger("Number_TransportModels");
-          d_transportModels.resize( d_nTransportModels );
-          boost::shared_ptr<ElementPhysicsModel> elementPhysicsModel;
-          
-          for (unsigned int i = 0; i < d_nTransportModels ; i++)
-          {
-            char key[100];
-            sprintf(key, "DiffusionTransportModel_%d", (int)i);
-            boost::shared_ptr<Database> transportModel_db = (params->d_db)->getDatabase(key);
-            elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
-            d_transportModels[i] = boost::dynamic_pointer_cast<DiffusionTransportModel>(elementPhysicsModel) ;
-          }
-
-      }
+      PelletContactConductanceModel(const boost::shared_ptr<RobinPhysicsModelParameters>& params);
 
       virtual ~PelletContactConductanceModel() {}
 
@@ -44,7 +28,7 @@ class PelletContactConductanceModel  : public RobinPhysicsModel
     protected:
 
       unsigned int d_nTransportModels; /**< Number of Transport Models. */
-      std::vector< boost::shared_ptr< DiffusionTransportModel > > d_transportModels;
+      //std::vector< boost::shared_ptr< DiffusionTransportModel > > d_transportModels;
 
     private:
 

@@ -3,8 +3,8 @@
 #include "utils/Utilities.h"
 
 #include "vectors/Vector.h"
-#include "vectors/ManagedPetscVector.h"
-#include "matrices/PetscMatrix.h"
+#include "vectors/petsc/ManagedPetscVector.h"
+#include "matrices/petsc/PetscMatrix.h"
 #include "operators/LinearOperator.h"
 #include "operators/ColumnOperator.h"
 

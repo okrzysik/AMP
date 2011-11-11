@@ -248,6 +248,7 @@ Vector::Vector( VectorParameters::shared_ptr  parameters)
     setCommunicationList ( parameters->d_CommList );
     d_UpdateState.reset( new UpdateState );
     *d_UpdateState = NOT_UPDATING;
+    d_DOFManager = parameters->d_DOFManager;
 }
 
 

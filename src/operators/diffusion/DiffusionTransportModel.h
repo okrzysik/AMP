@@ -7,7 +7,6 @@
 #include <map>
 #include "boost/shared_ptr.hpp"
 
-#include "ampmesh/DOFMap.h"
 #include "materials/Material.h"
 #include "materials/Property.h"
 #include "operators/ElementPhysicsModel.h"

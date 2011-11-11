@@ -34,7 +34,8 @@ namespace AMP {
       ///---for debugging purposes - allu
       deltaDisp->setToScalar(0.);
       AMP::pout << "Max and Min displacement"<< deltaDisp->max() << " , "<< deltaDisp->min() << std::endl;
-      d_MeshAdapter->displaceMesh(deltaDisp);
+      AMP_ERROR("MoveMeshOperator has not been converted");
+      //d_Mesh->displaceMesh(deltaDisp);
 
       d_prevDisp->copyVector(dispVec);
     }

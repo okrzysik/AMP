@@ -1,4 +1,4 @@
-
+/*
 #include "MultiPelletMechanicsSolver.h"
 #include "utils/AMP_MPI.h"
 #include "operators/map/NodeToNodeMap.h"
@@ -637,4 +637,4 @@ void MultiPelletMechanicsSolver :: reset(boost::shared_ptr<SolverStrategyParamet
 
 }
 }
-
+*/

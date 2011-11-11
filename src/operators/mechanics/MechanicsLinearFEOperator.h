@@ -8,7 +8,6 @@
 #include "MechanicsLinearFEOperatorParameters.h"
 #include "MechanicsLinearElement.h"
 #include "MechanicsLinearUpdatedLagrangianElement.h"
-#include "ampmesh/MeshVariable.h"
 #include "vectors/MultiVariable.h"
 
 #include <vector>
@@ -64,7 +63,7 @@ namespace Operator {
         the global mesh objects (DOFMap, global vectors and matrices) and
         passes them to the element operation.
         */
-      void preElementOperation(const AMP::Mesh::MeshManager::Adapter::Element &, const std::vector<AMP::Mesh::DOFMap::shared_ptr> &);
+      void preElementOperation(const AMP::Mesh::MeshElement &, const std::vector<AMP::Discretization::DOFManager::shared_ptr> &);
 
       /**
         This function will be called once for each element, just after performing the element operation.
@@ -77,63 +76,43 @@ namespace Operator {
         @param [in] name Name of the input variable.
         @param [in] varId This parameter is not used.
         */
-      void setInputVariableName(const std::string & name, int varId = -1) {
-        (void) varId;	  
-        d_inpVariable->setName(name);
-      }
+      void setInputVariableName(const std::string & name, int varId = -1);
 
       /**
         Sets the name for the output variable.
         @param [in] name Name of the output variable
         @param [in] varId This parameter is not used.
         */
-      void setOutputVariableName(const std::string & name, int varId = -1) {
-        (void) varId;	  
-        d_outVariable->setName(name);
-      }
+      void setOutputVariableName(const std::string & name, int varId = -1) ;
 
       /**
         Creates a variable that has the same type as the input variable and sets its name.
         @param [in] name Name of the variable.
         @param [in] varId This parameter is not used.
         */
-      static AMP::LinearAlgebra::Variable::shared_ptr createInputVariable (const std::string & name, int varId = -1) {
-        (void) varId;	  
-        AMP::LinearAlgebra::Variable::shared_ptr inpVar(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(name) );
-        return inpVar;
-      }
+      static AMP::LinearAlgebra::Variable::shared_ptr createInputVariable (const std::string & name, int varId = -1);
 
       /**
         Creates a variable that has the same type as the output variable and sets its name.
         @param [in] name Name of the variable. 
         @param [in] varId This parameter is not used.
         */
-      static AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable (const std::string & name, int varId = -1) {
-        (void) varId;	  
-        AMP::LinearAlgebra::Variable::shared_ptr outVar(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(name) );
-        return outVar;
-      }
+      static AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable (const std::string & name, int varId = -1);
 
       /**
         @return The variable for the input vector. 
         */
-      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1) {
-        return d_inpVariable;
-      }
+      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
 
       /**
         @return The variable for the output vector
         */
-      AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
-        return d_outVariable;
-      }
+      AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
       /**
         @return The number of different DOFMaps required to assemble this operator = 1. 
         */
-      unsigned int numberOfDOFMaps() {
-        return 1;
-      }
+      unsigned int numberOfDOFMaps();
 
       /**
         @param [in] id Identifier for the type of DOFMap required. It is
@@ -141,9 +120,7 @@ namespace Operator {
         @return The variable corresponding to the DOFMap specified by id. 
         @see numberOfDOFMaps
         */
-      AMP::LinearAlgebra::Variable::shared_ptr getVariableForDOFMap(unsigned int ) {
-        return d_inpVariable;
-      }
+      AMP::LinearAlgebra::Variable::shared_ptr getVariableForDOFMap(unsigned int );
 
       /**
         Writes the stress and strain at each Gauss point to a file.
@@ -187,9 +164,9 @@ namespace Operator {
 
     private :
 
-      boost::shared_ptr<AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3> > d_inpVariable; /**< Input variable */
+      //boost::shared_ptr<AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3> > d_inpVariable; /**< Input variable */
 
-      boost::shared_ptr<AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3> > d_outVariable; /**< Output variable */
+      //boost::shared_ptr<AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3> > d_outVariable; /**< Output variable */
 
   };
 

@@ -4,6 +4,47 @@
 
 namespace AMP {
   namespace Operator {
+/*
+// Functions moved from header
+      void MechanicsLinearFEOperator::setInputVariableName(const std::string & name, int varId) {
+        (void) varId;	  
+        d_inpVariable->setName(name);
+      }
+
+      void MechanicsLinearFEOperator::setOutputVariableName(const std::string & name, int varId) {
+        (void) varId;	  
+        d_outVariable->setName(name);
+      }
+
+      AMP::LinearAlgebra::Variable::shared_ptr MechanicsLinearFEOperator::createInputVariable (const std::string & name, int varId) {
+        (void) varId;	  
+        AMP::LinearAlgebra::Variable::shared_ptr inpVar(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(name) );
+        return inpVar;
+      }
+
+      AMP::LinearAlgebra::Variable::shared_ptr MechanicsLinearFEOperator::createOutputVariable (const std::string & name, int varId) {
+        (void) varId;	  
+        AMP::LinearAlgebra::Variable::shared_ptr MechanicsLinearFEOperator::outVar(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(name) );
+        return outVar;
+      }
+
+      AMP::LinearAlgebra::Variable::shared_ptr MechanicsLinearFEOperator::getInputVariable(int varId) {
+        return d_inpVariable;
+      }
+
+      AMP::LinearAlgebra::Variable::shared_ptr MechanicsLinearFEOperator::getOutputVariable() {
+        return d_outVariable;
+      }
+
+      unsigned int MechanicsLinearFEOperator::numberOfDOFMaps() {
+        return 1;
+      }
+
+      AMP::LinearAlgebra::Variable::shared_ptr MechanicsLinearFEOperator::getVariableForDOFMap(unsigned int ) {
+        return d_inpVariable;
+      }
+
+
 
     MechanicsLinearFEOperator :: MechanicsLinearFEOperator (
         const boost::shared_ptr<MechanicsLinearFEOperatorParameters> & params)
@@ -287,6 +328,8 @@ namespace AMP {
       d_materialModel->postLinearAssembly();
     }
 
+
+*/
   }
 }//end namespace
 

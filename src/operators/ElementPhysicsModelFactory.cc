@@ -1,4 +1,4 @@
-#include "ElementPhysicsModelFactory.h"
+/*#include "ElementPhysicsModelFactory.h"
 
 // mechanics material models
 #include "IsotropicElasticModel.h"
@@ -117,4 +117,4 @@ ElementPhysicsModelFactory::createElementPhysicsModel(boost::shared_ptr<Database
   
 }
 }
-
+*/

@@ -12,6 +12,85 @@
 namespace AMP {
 namespace Operator {
 
+/*
+
+// Functions moved from header
+    void DiffusionNonlinearFEOperator::setInputVariableName(const std::string & name, int varId = -1) {
+        if (varId == -1) {
+            d_inpVariables->setName(name);
+            d_MeshAdapter->appendMeshNameToVariable ( d_inpVariables );
+        } else {
+            (d_inpVariables->getVariable(varId))->setName(name);
+            d_MeshAdapter->appendMeshNameToVariable ( d_inpVariables->getVariable(varId) );
+        }
+    }
+
+    void DiffusionNonlinearFEOperator::setOutputVariableName(const std::string & name, int varId = -1) {
+      (void) varId;
+        d_outVariable->setName(name);
+        d_MeshAdapter->appendMeshNameToVariable ( d_outVariable );
+    }
+
+    AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::createInputVariable(const std::string & name,
+            int varId = -1) {
+        if (varId == -1) {
+            return d_inpVariables->cloneVariable(name);
+        } else {
+            return (d_inpVariables->getVariable(varId))->cloneVariable(name);
+        }
+    }
+
+    AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::createOutputVariable(const std::string & name,
+            int varId = -1) { (void) varId;
+        return d_outVariable->cloneVariable(name);
+    }
+
+    AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::getInputVariable(int varId = -1) {
+            if(varId == -1) {
+                    return d_inpVariables;
+            } else {
+                    return d_inpVariables->getVariable(varId);
+            }
+    }
+
+    AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::getOutputVariable() {
+            return d_outVariable;
+    }
+
+    unsigned int DiffusionNonlinearFEOperator::numberOfDOFMaps() {
+            return 1;
+    }
+
+    AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::getVariableForDOFMap(unsigned int id) {
+      (void) id;
+            return d_inpVariables->getVariable(d_PrincipalVariable);
+    }
+
+    unsigned int DiffusionNonlinearFEOperator::getPrincipalVariableId(){return d_PrincipalVariable;}
+
+    std::vector<unsigned int> getNonPrincipalVariableIds(){
+        std::vector<unsigned int> ids;
+        for (size_t i=0; i<Diffusion::NUMBER_VARIABLES; i++) {
+            if (i != d_PrincipalVariable and d_isActive[i]) ids.push_back(i);
+        }
+        return ids;
+    }
+
+    boost::shared_ptr<DiffusionTransportModel> DiffusionNonlinearFEOperator::getTransportModel(){
+        return d_transportModel;
+    }
+
+    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> DiffusionNonlinearFEOperator::getFrozen(){return d_Frozen;}
+
+    void DiffusionNonlinearFEOperator::setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec)
+    {
+      d_Frozen[id] = frozenVec->subsetVectorForVariable(d_inpVariables->getVariable(id));
+      (d_Frozen[id])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    }
+
+
+
+
 DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
         const boost::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params) :
     NonlinearFEOperator(params), d_Frozen(Diffusion::NUMBER_VARIABLES)
@@ -388,6 +467,8 @@ bool DiffusionNonlinearFEOperator::isValidInput(AMP::LinearAlgebra::Vector::shar
 
     return result;
 }
+*/
+
 
 }
 }//end namespace

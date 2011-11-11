@@ -8,6 +8,8 @@ namespace Operator {
 
   void DirichletMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>& params)
   {
+AMP_ERROR("DirichletMatrixCorrection.cc Not fixed yet");
+/*
     boost::shared_ptr<DirichletMatrixCorrectionParameters> myParams = 
       boost::dynamic_pointer_cast<DirichletMatrixCorrectionParameters>(params);
 
@@ -66,6 +68,7 @@ namespace Operator {
 
     //This does consistent for both "Sum-into" and "set".
     inputMatrix->makeConsistent();
+*/
   }
 
   void DirichletMatrixCorrection :: parseParams(const boost::shared_ptr<DirichletMatrixCorrectionParameters> & params)
@@ -156,7 +159,7 @@ namespace Operator {
 
       boost::shared_ptr<DirichletVectorCorrectionParameters> setDispOpParams(new DirichletVectorCorrectionParameters(tmp_db));
       setDispOpParams->d_variable = d_variable;
-      setDispOpParams->d_MeshAdapter = d_MeshAdapter;
+      setDispOpParams->d_Mesh = d_Mesh;
 
       if(d_rhsCorrectionSet.get() == NULL) {
         d_rhsCorrectionSet.reset(new DirichletVectorCorrection(setDispOpParams));
@@ -165,6 +168,8 @@ namespace Operator {
       }
 
       if(!d_skipRHSaddCorrection) {
+AMP_ERROR("DirichletMatrixCorrection.cc Not fixed yet");
+/*
         if(d_dispVals.get() == NULL) {
           d_dispVals = d_MeshAdapter->createVector(d_variable);
         }
@@ -184,6 +189,7 @@ namespace Operator {
         inputMatrix->mult(d_dispVals, d_rhsCorrectionAdd);
 
         d_rhsCorrectionAdd->scale(-1.0);
+*/
       }
     }
   }

@@ -1,15 +1,17 @@
 #include "ElementOperationFactory.h"
 #include "utils/Utilities.h"
-#include "MechanicsLinearElement.h"
-#include "MechanicsNonlinearElement.h"
-#include "MechanicsLinearUpdatedLagrangianElement.h"
-#include "MechanicsNonlinearUpdatedLagrangianElement.h"
-#include "DiffusionLinearElement.h"
-#include "DiffusionNonlinearElement.h"
-#include "ConsMomentumGalWFLinearElement.h"
-#include "ConsMassGalWFLinearElement.h"
 #include "MassLinearElement.h"
 #include "SourceNonlinearElement.h"
+//#include "ConsMomentumGalWFLinearElement.h"
+//#include "ConsMassGalWFLinearElement.h"
+//#include "MechanicsLinearElement.h"
+//#include "MechanicsNonlinearElement.h"
+//#include "MechanicsLinearUpdatedLagrangianElement.h"
+//#include "MechanicsNonlinearUpdatedLagrangianElement.h"
+//#include "DiffusionLinearElement.h"
+//#include "DiffusionNonlinearElement.h"
+//#include "operators/mechanics/MechanicsElement.h"
+//#include "operators/diffusion/DiffusionElement.h"
 
 namespace AMP {
 namespace Operator {
@@ -17,6 +19,8 @@ namespace Operator {
 boost::shared_ptr<ElementOperation>
 ElementOperationFactory::createElementOperation(boost::shared_ptr<Database>  elementOperationDb )
   {
+AMP_ERROR("ElementOperationFactory is not converted yet");
+/*
     boost::shared_ptr<ElementOperation> retElementOp;
     boost::shared_ptr<ElementOperationParameters> params;
     
@@ -68,7 +72,7 @@ ElementOperationFactory::createElementOperation(boost::shared_ptr<Database>  ele
       }
     
     return retElementOp;
-
+*/
 }
 }
   

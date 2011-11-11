@@ -1,9 +1,7 @@
-
 #include "FlowFrapconOperator.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 
-#include "ampmesh/MeshUtils.h"
 
 /* Libmesh files */
 #include "enum_order.h"
@@ -55,6 +53,8 @@ namespace Operator {
   void FlowFrapconOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
       AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a, const double b)
   {
+AMP_ERROR("FlowFrapconOperator is not converted yet");
+/*
     // AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_inpVariable);
 
     AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
@@ -63,8 +63,8 @@ namespace Operator {
     AMP::Mesh::min_max_struct<AMP::Mesh::simple_point>  extPoint ;
     extPoint = AMP::Mesh::computeExtremeCoordinates<AMP::Mesh::MeshManager::Adapter> ( d_MeshAdapter );
 
-//    std::cout << "Extreme Min Point in z = " << extPoint.min.z << std::endl;
-//    std::cout << "Extreme Max Point in z = " << extPoint.max.z << std::endl;
+    // std::cout << "Extreme Min Point in z = " << extPoint.min.z << std::endl;
+    // std::cout << "Extreme Max Point in z = " << extPoint.max.z << std::endl;
 
     AMP::LinearAlgebra::Vector::shared_ptr flowInputVec = u->subsetVectorForVariable(d_inpVariable);
 
@@ -72,30 +72,27 @@ namespace Operator {
 
     if( !zPoints.empty() ){d_numpoints = zPoints.size();}
 
-/*
-    AMP::LinearAlgebra::Variable::shared_ptr localVar ( new AMP::LinearAlgebra::Variable(d_cladVec->getVariable()->getName() ) ); 
-    d_localCladVec = AMP::LinearAlgebra::SimpleVector::create( d_numpoints, localVar ); 
-
-    boost::shared_ptr<AMP::InputDatabase> map3to1_db (new AMP::InputDatabase("Dummy"));
-    map3to1_db->putInteger("BoundaryId",4);
-    map3to1_db->putString("InputVariable",localVar->getName());
-    map3to1_db->putString("OutputVariable",localVar->getName());
-    boost::shared_ptr<AMP::Operator::MapOperatorParameters> map3to1Params (new AMP::Operator::MapOperatorParameters( map3to1_db ));
-    map3to1Params->d_MeshAdapter = d_MeshAdapter;
-    boost::shared_ptr<AMP::Operator::Map3Dto1D> mapCladto1 (new AMP::Operator::Map3Dto1D( map3to1Params ));
-
-    mapCladto1->setZLocations( d_Map1to3->getZLocations());
-
-    mapCladto1->setVector(d_localCladVec); 
-    mapCladto1->apply(nullVec, d_cladVec, nullVec);
-*/
+    // AMP::LinearAlgebra::Variable::shared_ptr localVar ( new AMP::LinearAlgebra::Variable(d_cladVec->getVariable()->getName() ) ); 
+    // d_localCladVec = AMP::LinearAlgebra::SimpleVector::create( d_numpoints, localVar ); 
+    // 
+    // boost::shared_ptr<AMP::InputDatabase> map3to1_db (new AMP::InputDatabase("Dummy"));
+    // map3to1_db->putInteger("BoundaryId",4);
+    // map3to1_db->putString("InputVariable",localVar->getName());
+    // map3to1_db->putString("OutputVariable",localVar->getName());
+    // boost::shared_ptr<AMP::Operator::MapOperatorParameters> map3to1Params (new AMP::Operator::MapOperatorParameters( map3to1_db ));
+    // map3to1Params->d_MeshAdapter = d_MeshAdapter;
+    // boost::shared_ptr<AMP::Operator::Map3Dto1D> mapCladto1 (new AMP::Operator::Map3Dto1D( map3to1Params ));
+    // 
+    // mapCladto1->setZLocations( d_Map1to3->getZLocations());
+    // 
+    // mapCladto1->setVector(d_localCladVec); 
+    // mapCladto1->apply(nullVec, d_cladVec, nullVec);
 
     const double min_z = extPoint.min.z ;
     const double max_z = extPoint.max.z ;
     const double del_z = (max_z-min_z)/d_numpoints ; 
 
-    /* should never use resize as it is assumed that
-       the vector is created using the right size !! */
+    // should never use resize as it is assumed that the vector is created using the right size !! 
     //outputVec->castTo<SimpleVector>().resize (d_numpoints);
 
     zPoints.resize(d_numpoints);
@@ -144,7 +141,7 @@ namespace Operator {
             outputVec->axpby(b, a, fInternal);
         }
     }
-
+*/
   }
 
   boost::shared_ptr<OperatorParameters> FlowFrapconOperator :: 

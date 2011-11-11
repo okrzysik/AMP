@@ -33,17 +33,20 @@ namespace AMP {
       d_operator = op;
     }
 
-    void TrilinosMatrixShellOperator :: setMeshManager(AMP::Mesh::MeshManager::shared_ptr manager) {
-      d_meshManager = manager;
+    void TrilinosMatrixShellOperator :: setMeshManager(AMP::Mesh::Mesh::shared_ptr manager) {
+      d_mesh = manager;
     }
 
     size_t TrilinosMatrixShellOperator :: getMatrixSize() {
-      AMP::LinearAlgebra::Vector::shared_ptr outVec = d_meshManager->createVector( getOutputVariable() );
-      return (outVec->getGlobalSize());
+AMP_ERROR("TrilinosMatrixShellOperator Not converted yet");
+      //AMP::LinearAlgebra::Vector::shared_ptr outVec = d_meshManager->createVector( getOutputVariable() );
+      //return (outVec->getGlobalSize());
     }
 
     int TrilinosMatrixShellOperator :: matVec(ML_Operator *data, int in_length, double in[], 
         int out_length, double out[]) {
+AMP_ERROR("TrilinosMatrixShellOperator Not converted yet");
+/*
       TrilinosMatrixShellOperator* op = reinterpret_cast<TrilinosMatrixShellOperator *>(ML_Get_MyMatvecData(data));
 
       AMP::LinearAlgebra::Vector::shared_ptr inVec = (op->d_meshManager)->createVector( op->getInputVariable() );
@@ -58,7 +61,7 @@ namespace AMP {
       for(int i = 0; i < out_length; i++) {
         out[i] = outPtr[i];
       }
-
+*/
       return 0;
     }
 
@@ -92,6 +95,8 @@ namespace AMP {
     }
 
     void TrilinosMatrixShellOperator :: getColumn(int column, std::vector<unsigned int> &rows, std::vector<double> &values) {
+AMP_ERROR("TrilinosMatrixShellOperator Not converted yet");
+/*
       AMP::LinearAlgebra::Vector::shared_ptr inVec = d_meshManager->createVector( getInputVariable() );
       AMP::LinearAlgebra::Vector::shared_ptr outVec = d_meshManager->createVector( getOutputVariable() );
 
@@ -113,6 +118,7 @@ namespace AMP {
           values.push_back(outPtr[i]);
         }
       }
+*/
     }
 
   }

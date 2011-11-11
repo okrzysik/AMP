@@ -40,6 +40,8 @@ namespace Operator {
     
         void MassMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>& params)
     {
+
+
         boost::shared_ptr<MassMatrixCorrectionParameters> myParams = 
         boost::dynamic_pointer_cast<MassMatrixCorrectionParameters>(params);
         
@@ -52,7 +54,8 @@ namespace Operator {
         AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = myParams->d_inputMatrix;
         AMP_INSIST( ((inputMatrix.get()) != NULL), "NULL matrix" );
         
-        AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap ( d_variable );
+        AMP_ERROR("This needs to be fixed");
+/*        AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap ( d_variable );
         
         unsigned int numIds = d_boundaryIds.size();
         
@@ -89,7 +92,8 @@ namespace Operator {
                 }//end for el
             }//end for bnd
         }//end for k
-        
+*/
+
         //This does consistent for both "Sum-into" and "set".
         inputMatrix->makeConsistent();
     }

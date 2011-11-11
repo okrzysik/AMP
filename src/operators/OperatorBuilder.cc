@@ -1,3 +1,4 @@
+/*
 #include "OperatorBuilder.h"
 #include "utils/Utilities.h"
 #include "DirichletMatrixCorrection.h"
@@ -1260,5 +1261,8 @@ OperatorBuilder::createOperator(AMP::Mesh::MeshManager::Adapter::shared_ptr mesh
   return retOperator;
 }
 
+
 }
 }
+*/
+

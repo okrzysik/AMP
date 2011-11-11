@@ -7,8 +7,8 @@
 #include "TimeIntegrator.h"
 #include "IDATimeIntegratorParameters.h"
 #include "IDATimeOperator.h"
-#include "vectors/SundialsVector.h"
-#include "vectors/ManagedSundialsVector.h"
+#include "vectors/sundials/SundialsVector.h"
+#include "vectors/sundials/ManagedSundialsVector.h"
 #include "solvers/TrilinosMLSolver.h"
 #include "matrices/ManagedMatrix.h"
 
@@ -17,8 +17,6 @@
 #include "operators/LinearOperator.h"
 // added by JLEE
 #include "operators/MassLinearFEOperator.h"
-#include "operators/diffusion/DiffusionLinearFEOperator.h"
-#include "operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "operators/VolumeIntegralOperator.h"
 
 /*

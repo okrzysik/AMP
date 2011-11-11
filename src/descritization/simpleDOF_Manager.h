@@ -1,10 +1,15 @@
 #ifndef included_simpleDOF_Manager
 #define included_simpleDOF_Manager
 
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 #include "descritization/DOF_Manager.h"
 #include "descritization/DOF_ManagerParameters.h"
+#include "vectors/Vector.h"
+#include "matrices/Matrix.h"
+
 
 namespace AMP {
 namespace Discretization {
@@ -17,7 +22,7 @@ namespace Discretization {
  *    over the entire Mesh.  Note: this class will be replaced by a more complete 
  *    Discretization interface.
  */
-class simpleDOFManager: public DOFManager
+class simpleDOFManager: public DOFManager, public boost::enable_shared_from_this<AMP::Discretization::simpleDOFManager>
 {
 public:
 
@@ -37,7 +42,7 @@ public:
      * \param[in]  which  Which D.O.F. to get.  If not specified, return all D.O.F.s
      * \details  This will return a vector of pointers into a Vector that are associated with which.
      */
-    virtual void getDOFs ( const AMP::Mesh::MeshElement &obj, std::vector <unsigned int> &ids , unsigned int which = static_cast<unsigned int>(-1) ) const;
+    virtual void getDOFs ( const AMP::Mesh::MeshElement &obj, std::vector <unsigned int> &ids , std::vector<unsigned int> which = std::vector<unsigned int>(0) ) const;
 
 
     /** \brief  The first D.O.F. on this core

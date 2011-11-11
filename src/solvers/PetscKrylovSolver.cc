@@ -1,8 +1,8 @@
 #include "PetscKrylovSolver.h"
-#include "vectors/ManagedPetscVector.h"
+#include "vectors/petsc/ManagedPetscVector.h"
 #include "operators/LinearOperator.h"
 #include "matrices/Matrix.h"
-#include "matrices/PetscMatrix.h"
+#include "matrices/petsc/PetscMatrix.h"
 
 extern "C"{
 #include "assert.h"

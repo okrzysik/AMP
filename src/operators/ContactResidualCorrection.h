@@ -29,12 +29,12 @@ namespace Operator {
         d_slaveVariable = var;
       }
 
-      void setMasterMesh(const AMP::Mesh::MeshManager::Adapter::shared_ptr & mesh) {
-        d_MeshAdapter = mesh;
+      void setMasterMesh(const AMP::Mesh::Mesh::shared_ptr & mesh) {
+        d_Mesh = mesh;
       }
 
-      void setSlaveMesh(const AMP::Mesh::MeshManager::Adapter::shared_ptr & mesh) {
-        d_slaveMeshAdapter = mesh;
+      void setSlaveMesh(const AMP::Mesh::Mesh::shared_ptr & mesh) {
+        d_slaveMesh = mesh;
       }
 
       void setMasterNodes(const std::vector<unsigned int> & vec) {
@@ -71,12 +71,12 @@ namespace Operator {
         return d_slaveVariable;
       }
 
-      AMP::Mesh::MeshManager::Adapter::shared_ptr getMasterMesh() {
-        return d_MeshAdapter;
+      AMP::Mesh::Mesh::shared_ptr getMasterMesh() {
+        return d_Mesh;
       }
 
-      AMP::Mesh::MeshManager::Adapter::shared_ptr getSlaveMesh() {
-        return d_slaveMeshAdapter;
+      AMP::Mesh::Mesh::shared_ptr getSlaveMesh() {
+        return d_slaveMesh;
       }
 
       std::vector<unsigned int> getMasterNodes() {
@@ -101,7 +101,7 @@ namespace Operator {
 
       std::vector<std::vector<unsigned int> > d_dofs;
 
-      AMP::Mesh::MeshManager::Adapter::shared_ptr d_slaveMeshAdapter;
+      AMP::Mesh::Mesh::shared_ptr d_slaveMesh;
   };
 
 }

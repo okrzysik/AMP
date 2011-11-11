@@ -1,7 +1,6 @@
 #include "RobinVectorCorrection.h"
 #include "RobinMatrixCorrectionParameters.h"
 #include "utils/Utilities.h"
-#include "ampmesh/MeshUtils.h"
 #include "utils/InputDatabase.h"
 
 /* Libmesh files */
@@ -49,6 +48,8 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
                  const double a,
                  const double b)
 {
+    AMP_ERROR("RobinVectorCorrection.cc Not fixed yet");
+/*
   AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_variable);
   
   AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
@@ -224,6 +225,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
       rInternal->axpby(b, a, fInternal);
     }
     }
+*/
 }
 
 boost::shared_ptr<OperatorParameters> RobinVectorCorrection::getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>&)

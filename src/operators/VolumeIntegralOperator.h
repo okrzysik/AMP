@@ -5,8 +5,8 @@
 #include "NonlinearFEOperator.h"
 #include "VolumeIntegralOperatorParameters.h"
 #include "SourceNonlinearElement.h"
-#include "ampmesh/MeshVariable.h"
 #include "vectors/MultiVariable.h"
+#include "matrices/Matrix.h"
 
 #include <vector>
 
@@ -51,7 +51,7 @@ namespace Operator {
       /**
         This function is called at the beginning of the element computation
         */
-      void preElementOperation(const AMP::Mesh::MeshManager::Adapter::Element &, const std::vector<AMP::Mesh::DOFMap::shared_ptr> &);
+      void preElementOperation(const AMP::Mesh::MeshElement &, const std::vector<AMP::Discretization::DOFManager::shared_ptr> &);
 
       /**
         This function is called at the end of the element computation

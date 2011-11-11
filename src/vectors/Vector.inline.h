@@ -114,6 +114,12 @@ namespace LinearAlgebra {
   }
 
   inline
+  AMP::Discretization::DOFManager::shared_ptr  Vector::getDOFManager () const
+  {
+    return d_DOFManager;
+  }
+
+  inline
   size_t Vector::getGhostSize() const
   {
     return d_Ghosts->size();

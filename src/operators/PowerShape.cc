@@ -19,8 +19,7 @@
 
 
 #include "utils/InputDatabase.h"
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/MeshUtils.h"
+#include "ampmesh/Mesh.h"
 #include "string_to_enum.h"
 #include "VolumeIntegralOperator.h"
 
@@ -42,7 +41,7 @@ namespace Operator {
 PowerShape:: PowerShape(boost::shared_ptr<PowerShapeParameters> parameters)
 :Operator(parameters) {
      AMP_ASSERT(parameters);
-     d_MeshAdapter = parameters->d_MeshAdapter;
+     d_Mesh = parameters->d_Mesh;
      d_db = parameters->d_db;
      getFromDatabase(d_db);
 }
@@ -116,7 +115,8 @@ void PowerShape::getFromDatabase(boost::shared_ptr<AMP::Database> db) {
 
     AMP_ASSERT(db);
       
-    d_Variable = createOutputVariable("RelativePower");
+    AMP_ERROR("createOutputVariable in PowerShape has not been converted");
+    //d_Variable = createOutputVariable("RelativePower");
 
     // Coordinate System
     d_coordinateSystem = db->getStringWithDefault("coordinateSystem","cartesian");
@@ -312,7 +312,8 @@ void PowerShape :: apply(const SP_Vector &  ,
                                SP_Vector & r,
                          const double       ,
                          const double        ) {
-
+AMP_ERROR("PowerShape is not converted yet");
+/*
     AMP_INSIST( ((u.get()) != NULL), "NULL Power Vector" );
     AMP_INSIST( ((r.get()) != NULL), "NULL PowerWithShape Vector" );
         
@@ -335,8 +336,8 @@ void PowerShape :: apply(const SP_Vector &  ,
 
     AMP::Mesh::min_max_struct<AMP::Mesh::simple_point>  min_max_pos;
     AMP::Mesh::min_max_struct<double>        min_max_rad;
-    min_max_pos = AMP::Mesh::computeExtremeCoordinates<AMP::Mesh::MeshManager::Adapter> ( d_MeshAdapter );
-    min_max_rad = AMP::Mesh::computeExtremeRadii<      AMP::Mesh::MeshManager::Adapter> ( d_MeshAdapter );
+    min_max_pos = AMP::Mesh::computeExtremeCoordinates<AMP::Mesh::MeshManager::Adapter> ( d_Mesh );
+    min_max_rad = AMP::Mesh::computeExtremeRadii<      AMP::Mesh::MeshManager::Adapter> ( d_Mesh );
 
     xmin = min_max_pos.min.x;
     xmax = min_max_pos.max.x;
@@ -352,8 +353,8 @@ void PowerShape :: apply(const SP_Vector &  ,
 
         if(d_type == "legendre") {
 
-            AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_MeshAdapter->beginElement();
-            AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_MeshAdapter->endElement();
+            AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_Mesh->beginElement();
+            AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_Mesh->endElement();
 
             if(d_iDebugPrintInfoLevel>3)
                 AMP::pout << "Starting Power Shape Loop over Gauss Points." << endl;
@@ -394,7 +395,7 @@ void PowerShape :: apply(const SP_Vector &  ,
                     countGP++;
 
                     // Set newval to this gauss point on this element of the vector r.
-                    AMP::Mesh::DOFMap::shared_ptr  dof_map = d_MeshAdapter->getDOFMap ( d_Variable );
+                    AMP::Mesh::DOFMap::shared_ptr  dof_map = d_Mesh->getDOFMap ( d_Variable );
                     std::vector<unsigned int> ndx;
                     std::vector<unsigned int> empty;
                     dof_map->getDOFs ( *elem , ndx , empty );
@@ -411,8 +412,8 @@ void PowerShape :: apply(const SP_Vector &  ,
 
         } else if(d_type == "gaussian") {
 
-            AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_MeshAdapter->beginElement();
-            AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_MeshAdapter->endElement();
+            AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_Mesh->beginElement();
+            AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_Mesh->endElement();
 
             if(d_iDebugPrintInfoLevel>3)
                 AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
@@ -446,7 +447,7 @@ void PowerShape :: apply(const SP_Vector &  ,
                     countGP++;
 
                     // Set newval to this gauss point on this element of the vector r.
-                    AMP::Mesh::DOFMap::shared_ptr  dof_map = d_MeshAdapter->getDOFMap ( d_Variable );
+                    AMP::Mesh::DOFMap::shared_ptr  dof_map = d_Mesh->getDOFMap ( d_Variable );
                     std::vector<unsigned int> ndx;
                     std::vector<unsigned int> empty;
                     dof_map->getDOFs ( *elem , ndx , empty );
@@ -478,8 +479,8 @@ void PowerShape :: apply(const SP_Vector &  ,
                 volumeIntegral = getVolumeIntegralSum(rmax);
             }
 
-            AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_MeshAdapter->beginElement();
-            AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_MeshAdapter->endElement();
+            AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_Mesh->beginElement();
+            AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_Mesh->endElement();
 
             if(d_iDebugPrintInfoLevel>3)
                 AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
@@ -515,7 +516,7 @@ void PowerShape :: apply(const SP_Vector &  ,
                     countGP++;
 
                     // Set newval to this gauss point on this element of the vector r.
-                    AMP::Mesh::DOFMap::shared_ptr  dof_map = d_MeshAdapter->getDOFMap ( d_Variable );
+                    AMP::Mesh::DOFMap::shared_ptr  dof_map = d_Mesh->getDOFMap ( d_Variable );
                     std::vector<unsigned int> ndx;
                     std::vector<unsigned int> empty;
                     dof_map->getDOFs ( *elem , ndx , empty );
@@ -534,8 +535,8 @@ void PowerShape :: apply(const SP_Vector &  ,
     
         // Infinite cylinder diffusion shape
         // Note: Dimensions are all in meter (m). 
-            AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_MeshAdapter->beginElement();
-            AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_MeshAdapter->endElement();
+            AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_Mesh->beginElement();
+            AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_Mesh->endElement();
             if(d_iDebugPrintInfoLevel>3)
                 AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
             // Loop over all elements on the mesh
@@ -556,7 +557,7 @@ void PowerShape :: apply(const SP_Vector &  ,
             
             
                     // Set newval to this gauss point on this element of the vector r.
-                    AMP::Mesh::DOFMap::shared_ptr  dof_map = d_MeshAdapter->getDOFMap ( d_Variable );
+                    AMP::Mesh::DOFMap::shared_ptr  dof_map = d_Mesh->getDOFMap ( d_Variable );
                     std::vector<unsigned int> ndx;
                     std::vector<unsigned int> empty;
                     dof_map->getDOFs ( *elem , ndx , empty );
@@ -592,9 +593,9 @@ void PowerShape :: apply(const SP_Vector &  ,
 		    act_db->putString("ActiveVariable_0",(u->getVariable())->getName());
 		    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> emptyModel;
 		    boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeIntegralOperator =
-		      boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(d_MeshAdapter, "VolumeIntegral", d_db, emptyModel));
+		      boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(d_Mesh, "VolumeIntegral", d_db, emptyModel));
 		    AMP::LinearAlgebra::Variable::shared_ptr nodalVariable = volumeIntegralOperator->getOutputVariable();
-		    AMP::LinearAlgebra::Vector::shared_ptr   nodalVector = d_MeshAdapter->createVector( nodalVariable );
+		    AMP::LinearAlgebra::Vector::shared_ptr   nodalVector = d_Mesh->createVector( nodalVariable );
 		    AMP::LinearAlgebra::Vector::shared_ptr  unodalPower = nodalVector->cloneVector();
 		    AMP::LinearAlgebra::Vector::shared_ptr  rnodalPower = nodalVector->cloneVector();
 		    
@@ -614,8 +615,8 @@ void PowerShape :: apply(const SP_Vector &  ,
      else if (d_type == "zernikeRadial") {
 
             // Note: Dimensions are all in meter (m). 
-            AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_MeshAdapter->beginElement();
-            AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_MeshAdapter->endElement();
+            AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_Mesh->beginElement();
+            AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_Mesh->endElement();
 
             if(d_iDebugPrintInfoLevel>3)
                 AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
@@ -649,7 +650,7 @@ void PowerShape :: apply(const SP_Vector &  ,
                     countGP++;
 
                     // Set newval to this gauss point on this element of the vector r.
-                    AMP::Mesh::DOFMap::shared_ptr  dof_map = d_MeshAdapter->getDOFMap ( d_Variable );
+                    AMP::Mesh::DOFMap::shared_ptr  dof_map = d_Mesh->getDOFMap ( d_Variable );
                     std::vector<unsigned int> ndx;
                     std::vector<unsigned int> empty;
                     dof_map->getDOFs ( *elem , ndx , empty );
@@ -667,8 +668,8 @@ void PowerShape :: apply(const SP_Vector &  ,
         } else if (d_type == "zernike") {
 
             // Note: Dimensions are all in meter (m). 
-            AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_MeshAdapter->beginElement();
-            AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_MeshAdapter->endElement();
+            AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_Mesh->beginElement();
+            AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_Mesh->endElement();
 
             if(d_iDebugPrintInfoLevel>3)
                 AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
@@ -698,7 +699,7 @@ void PowerShape :: apply(const SP_Vector &  ,
                     countGP++;
 
                     // Set newval to this gauss point on this element of the vector r.
-                    AMP::Mesh::DOFMap::shared_ptr  dof_map = d_MeshAdapter->getDOFMap ( d_Variable );
+                    AMP::Mesh::DOFMap::shared_ptr  dof_map = d_Mesh->getDOFMap ( d_Variable );
                     std::vector<unsigned int> ndx;
                     std::vector<unsigned int> empty;
                     dof_map->getDOFs ( *elem , ndx , empty );
@@ -719,6 +720,7 @@ void PowerShape :: apply(const SP_Vector &  ,
     } else {
       AMP_INSIST(0,"The coordinate system is not valid.");
     }
+*/
 } 
 
 /*!
@@ -879,13 +881,15 @@ double PowerShape::getVolumeIntegralAnalytical(double rmax)
 */
 double PowerShape::getVolumeIntegralSum(double rmax)
 {
+AMP_ERROR("PowerShape has not been converted yet");
+/*
     double integralFr=0;
     double numerator=0;
 
     double x, y, radius;
 
-    AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_MeshAdapter->beginElement();
-    AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_MeshAdapter->endElement();
+    AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_Mesh->beginElement();
+    AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_Mesh->endElement();
 
     for( ; elem != end_elems; ++elem) {
         d_fe->reinit( &(elem->getElem()) );
@@ -908,6 +912,7 @@ double PowerShape::getVolumeIntegralSum(double rmax)
     integralFr = integralFr/numerator;
 
     return integralFr;
+*/
 }
 
 /*!

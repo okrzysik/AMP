@@ -1,10 +1,29 @@
 #include "PelletContactConductanceModel.h"
 #include "utils/Utilities.h"
 #include <cmath>
-#include "ampmesh/MeshVariable.h"
 
 namespace AMP {
 namespace Operator {
+
+
+   PelletContactConductanceModel :: PelletContactConductanceModel(const
+          boost::shared_ptr<RobinPhysicsModelParameters>& params) : RobinPhysicsModel (params) {
+AMP_ERROR("PelletContactConductanceModel is not converted yet");      
+/*
+          d_nTransportModels   =  (params->d_db)->getInteger("Number_TransportModels");
+          d_transportModels.resize( d_nTransportModels );
+          boost::shared_ptr<ElementPhysicsModel> elementPhysicsModel;
+          
+          for (unsigned int i = 0; i < d_nTransportModels ; i++)
+          {
+            char key[100];
+            sprintf(key, "DiffusionTransportModel_%d", (int)i);
+            boost::shared_ptr<Database> transportModel_db = (params->d_db)->getDatabase(key);
+            elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
+            d_transportModels[i] = boost::dynamic_pointer_cast<DiffusionTransportModel>(elementPhysicsModel) ;
+          }
+*/
+      }
 
   void PelletContactConductanceModel :: getConductance(std::vector<double> & beta,
           std::vector<double> & gamma, const std::vector<std::vector <double> > & inputVectors)

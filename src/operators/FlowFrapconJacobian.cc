@@ -1,8 +1,6 @@
-
 #include "FlowFrapconJacobian.h"
 #include "utils/Utilities.h"
 
-#include "ampmesh/MeshUtils.h"
 
 /* Libmesh files */
 #include "enum_order.h"
@@ -15,6 +13,52 @@
 
 namespace AMP {
 namespace Operator {
+/*
+  FlowFrapconJacobian::FlowFrapconJacobian(const boost::shared_ptr<FlowFrapconJacobianParameters> & params)
+    : Operator (params)
+  {
+        std::string inpVar = params->d_db->getString("InputVariable");
+	d_inpVariable.reset(new AMP::Mesh::NodalScalarVariable(inpVar,d_MeshAdapter));
+
+        std::string outVar = params->d_db->getString("OutputVariable");
+	d_outVariable.reset(new AMP::Mesh::NodalScalarVariable(outVar,d_MeshAdapter));
+
+        d_SimpleVariable.reset(new AMP::LinearAlgebra::Variable("FlowInternal"));
+
+        reset(params);
+  }
+
+      void FlowFrapconJacobian::setInputVariableName(const std::string & name, int varId) 
+      {
+        (void) varId;      
+        d_inpVariable->setName(name);
+      } 
+
+      void FlowFrapconJacobian::setOutputVariableName(const std::string & name, int varId)
+      {
+        (void) varId;      
+        d_outVariable->setName(name);
+      }
+
+      AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::createInputVariable (const std::string & name, int varId)
+      {
+        (void) varId;      
+        return d_inpVariable->cloneVariable(name);
+      }
+
+      AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::createOutputVariable (const std::string & name, int varId) 
+      {
+        (void) varId;      
+        return d_outVariable->cloneVariable(name);
+      }
+
+      AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::getInputVariable(int varId = -1) {
+        return d_inpVariable;
+      }
+
+      AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::getOutputVariable() {
+        return d_outVariable;
+      }
 
   void FlowFrapconJacobian :: reset(const boost::shared_ptr<OperatorParameters>& params)
   {
@@ -85,8 +129,7 @@ namespace Operator {
     const double max_z = extPoint.max.z ;
     const double del_z = (max_z-min_z)/d_numpoints ; 
 
-    /* should never use resize as it is assumed that
-       the vector is created using the right size !! */
+    // should never use resize as it is assumed that the vector is created using the right size !!
     //outputVec->castTo<SimpleVector>().resize (d_numpoints);
 
     zPoints.resize(d_numpoints);
@@ -140,7 +183,7 @@ namespace Operator {
     }
 
   }
-
+*/
 }
 }
 

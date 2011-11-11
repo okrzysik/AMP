@@ -148,7 +148,6 @@ namespace Operator {
         */
       boost::shared_ptr<OperatorParameters> getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
 
-    protected :
 
       short int d_boundaryId;
 

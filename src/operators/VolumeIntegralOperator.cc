@@ -7,7 +7,7 @@
 
 namespace AMP {
 namespace Operator {
-
+/*
     VolumeIntegralOperator::VolumeIntegralOperator(
             const boost::shared_ptr<VolumeIntegralOperatorParameters> & params) : NonlinearFEOperator(params)
     {
@@ -268,7 +268,7 @@ namespace Operator {
 
         return d_pDiagonalMatrix;        
     }
-
+*/
 }
 }//end namespace
 

@@ -5,8 +5,7 @@
 #include "boost/shared_ptr.hpp"
 
 #include "operators/ElementOperation.h"
-#include "operators/mechanics/MechanicsElement.h"
-#include "operators/diffusion/DiffusionElement.h"
+
 
 namespace AMP {
 namespace Operator {

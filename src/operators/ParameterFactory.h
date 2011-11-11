@@ -2,7 +2,7 @@
 #define included_ParameterFactory
 
 /* AMP files */
-#include "ampmesh/MeshManager.h"
+#include "ampmesh/Mesh.h"
 #include "utils/Database.h"
 #include "operators/OperatorParameters.h"
 
@@ -15,7 +15,7 @@ class ParameterFactory{
   ParameterFactory(){}
   ~ParameterFactory(){}
 
-  static boost::shared_ptr<OperatorParameters>  createParameter(boost::shared_ptr<AMP::Database>  input_db, AMP::Mesh::MeshManager::Adapter::shared_ptr  mesh);
+  static boost::shared_ptr<OperatorParameters>  createParameter(boost::shared_ptr<AMP::Database>  input_db, AMP::Mesh::Mesh::Adapter::shared_ptr  mesh);
 
 };
   

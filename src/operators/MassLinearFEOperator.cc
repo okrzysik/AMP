@@ -1,10 +1,44 @@
-
 #include "MassLinearFEOperator.h"
 #include "utils/Utilities.h"
-#include "ampmesh/MeshVariable.h"
 
 namespace AMP {
 namespace Operator {
+/*
+      AMP::LinearAlgebra::Variable::shared_ptr MassLinearFEOperator :: createInputVariable (const std::string & name, int varId = -1) {
+        (void) varId;      
+        return d_inpVariable->cloneVariable(name);
+      }
+
+      AMP::LinearAlgebra::Variable::shared_ptr MassLinearFEOperator :: createOutputVariable (const std::string & name, int varId = -1) {
+        (void) varId;      
+        return d_outVariable->cloneVariable(name);
+      }
+
+      AMP::LinearAlgebra::Variable::shared_ptr MassLinearFEOperator :: getInputVariable(int varId = -1) {
+        return d_inpVariable;
+      }
+
+      AMP::LinearAlgebra::Variable::shared_ptr MassLinearFEOperator :: getOutputVariable() {
+        return d_outVariable;
+      }
+
+      void MassLinearFEOperator :: setInputVariableName(const std::string & name, int varId = -1) {
+        (void) varId;      
+        d_inpVariable->setName(name);
+      }
+
+      void MassLinearFEOperator :: setOutputVariableName(const std::string & name, int varId = -1) {
+        (void) varId;      
+        d_outVariable->setName(name);
+      }
+
+      unsigned int numberOfDOFMaps() {
+        return 1;
+      }
+
+      AMP::LinearAlgebra::Variable::shared_ptr MassLinearFEOperator :: getVariableForDOFMap(unsigned int ) {
+        return d_inpVariable;
+      }
 
   MassLinearFEOperator :: MassLinearFEOperator (const boost::shared_ptr<MassLinearFEOperatorParameters> & params)
     : LinearFEOperator (params) 
@@ -129,6 +163,7 @@ namespace Operator {
     }
 
   }
+*/
 
 }
 }//end namespace

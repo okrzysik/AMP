@@ -4,7 +4,7 @@
 
 #include "LinearOperator.h"
 
-#include "ampmesh/MeshManager.h"
+#include "ampmesh/Mesh.h"
 
 #include "ml_include.h"
 
@@ -18,7 +18,7 @@ namespace AMP {
 
         ~TrilinosMatrixShellOperator() { }
 
-        void setMeshManager(AMP::Mesh::MeshManager::shared_ptr manager);
+        void setMeshManager(AMP::Mesh::Mesh::shared_ptr manager);
 
         void setOperator(boost::shared_ptr<Operator> op);     
 
@@ -44,7 +44,7 @@ namespace AMP {
 
       private:
 
-        AMP::Mesh::MeshManager::shared_ptr d_meshManager;
+        AMP::Mesh::Mesh::shared_ptr d_mesh;
 
         boost::shared_ptr<Operator> d_operator;
 

@@ -3,13 +3,16 @@
 #include "CoupledFlow1DSolver.h"
 #include "Flow1DSolver.h"
 #include "MultiVector.h"
+#include "utils/InputDatabase.h"
+
 
 namespace AMP {
 namespace Solver {
 
 CoupledFlow1DSolver::CoupledFlow1DSolver(boost::shared_ptr<SolverStrategyParameters> parameters):SolverStrategy(parameters)
 {
-  
+AMP_ERROR("CoupledFlow1DSolver is not converted yet");
+/*
   assert(parameters.get()!=NULL);
 
     boost::shared_ptr<CoupledFlow1DSolverParameters> params =
@@ -45,7 +48,7 @@ CoupledFlow1DSolver::CoupledFlow1DSolver(boost::shared_ptr<SolverStrategyParamet
 
 	d_flowInput = AMP::LinearAlgebra::SimpleVector::create( d_numpoints, d_SimpleVariable ); 
 	d_flowOutput = AMP::LinearAlgebra::SimpleVector::create( d_numpoints, d_SimpleVariable ); 
-
+*/
 }
 
 CoupledFlow1DSolver::~CoupledFlow1DSolver()
@@ -81,6 +84,8 @@ CoupledFlow1DSolver::resetOperator(const boost::shared_ptr<AMP::Operator::Operat
 CoupledFlow1DSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
 		          boost::shared_ptr<AMP::LinearAlgebra::Vector>  u)
 {
+AMP_ERROR("CoupledFlow1DSolver is not converted yet");
+/*
 	AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
   
         d_inpVariable = d_flow1DSolver->getOperator()->getInputVariable();
@@ -95,7 +100,7 @@ CoupledFlow1DSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
         d_flowInternal3to1->apply(nullVec, d_Rhs, nullVec, -1, 1);
         d_flow1DSolver->solve(d_flowInput, d_flowOutput);
         d_flowInternal1to3->apply(nullVec, d_flowOutput , nullVec, -1, 1);
-
+*/
 }
 
 }

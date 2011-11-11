@@ -5,8 +5,9 @@
 /* AMP files */
 #include "LinearOperator.h"
 #include "FEOperatorParameters.h"
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/DOFMap.h"
+#include "ampmesh/Mesh.h"
+#include "ampmesh/MeshElement.h"
+#include "descritization/DOF_Manager.h"
 
 namespace AMP {
 namespace Operator {
@@ -83,7 +84,7 @@ namespace Operator {
         This function typically extracts the local information from
         these global objects and passes them to the element operation.
         */
-      virtual void preElementOperation(const AMP::Mesh::MeshManager::Adapter::Element &, const std::vector<AMP::Mesh::DOFMap::shared_ptr> &)
+      virtual void preElementOperation(const AMP::Mesh::MeshElement &, const std::vector<AMP::Discretization::DOFManager::shared_ptr> &)
       {
         //Implemented in derived classes. 
       }

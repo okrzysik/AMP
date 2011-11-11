@@ -7,6 +7,8 @@ namespace AMP {
 
     void LinearFEOperator :: reset(const boost::shared_ptr<OperatorParameters>& params) 
     {
+AMP_ERROR("NonlinearFEOperator is not converted yet");
+/*
       AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
       AMP_INSIST( (((params->d_db).get()) != NULL), "NULL database" );
 
@@ -39,6 +41,7 @@ namespace AMP {
       }//end for el
 
       this->postAssembly();
+*/
     }
 
   }

@@ -1,7 +1,7 @@
 
 #include "PetscMatrixShellOperator.h"
-#include "matrices/NativePetscMatrix.h"
-#include "vectors/NativePetscVector.h"
+#include "matrices/petsc/NativePetscMatrix.h"
+#include "vectors/petsc/NativePetscVector.h"
 
 namespace AMP {
   namespace Operator {

@@ -64,7 +64,7 @@ RobinMatrixCorrection :: RobinMatrixCorrection(const boost::shared_ptr<RobinMatr
   
   d_NeumannParams.reset(new AMP::Operator::NeumannVectorCorrectionParameters( params->d_db ));
   d_NeumannParams->d_variable = params->d_variable;
-  d_NeumannParams->d_MeshAdapter = params->d_MeshAdapter;
+  d_NeumannParams->d_Mesh = params->d_Mesh;
   d_NeumannParams->d_variableFlux = params->d_variableFlux;
   d_NeumannCorrection.reset(new NeumannVectorCorrection (d_NeumannParams));
   
@@ -73,6 +73,8 @@ RobinMatrixCorrection :: RobinMatrixCorrection(const boost::shared_ptr<RobinMatr
   
 void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>& params)
 {
+AMP_ERROR("RobinMatrixCorrection.cc is not fixed yet");
+/*
   boost::shared_ptr<RobinMatrixCorrectionParameters> myparams =
     boost::dynamic_pointer_cast<RobinMatrixCorrectionParameters>(params);
   
@@ -197,6 +199,7 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
     }// end for nid
       inputMatrix->makeConsistent();
     }//skip matrix
+*/
 }
   
 }

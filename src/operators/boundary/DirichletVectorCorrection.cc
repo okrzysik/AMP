@@ -91,15 +91,14 @@ namespace Operator {
   }
 
   void DirichletVectorCorrection :: applyZeroValues(AMP::LinearAlgebra::Vector::shared_ptr r) {
-    AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_variable);
 
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable(d_variable);
+    AMP::Discretization::DOFManager::shared_ptr dof_map = rInternal->getDOFManager();
 
     unsigned int numIds = d_boundaryIds.size();
-
     for(unsigned int j = 0; j < numIds; j++) {
-      AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator bnd = d_MeshAdapter->beginOwnedBoundary( d_boundaryIds[j] );
-      AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator end_bnd = d_MeshAdapter->endOwnedBoundary( d_boundaryIds[j] );
+      AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
+      AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
       for( ; bnd != end_bnd; ++bnd) {
         std::vector<unsigned int> bndGlobalIds;
@@ -114,15 +113,15 @@ namespace Operator {
   }
 
   void DirichletVectorCorrection :: applyNonZeroValues(AMP::LinearAlgebra::Vector::shared_ptr r) {
-    AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_variable);
 
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable(d_variable);
+    AMP::Discretization::DOFManager::shared_ptr dof_map = rInternal->getDOFManager();
 
     unsigned int numIds = d_boundaryIds.size();
 
     for(unsigned int j = 0; j < numIds; j++) {
-      AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator bnd = d_MeshAdapter->beginOwnedBoundary( d_boundaryIds[j] );
-      AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator end_bnd = d_MeshAdapter->endOwnedBoundary( d_boundaryIds[j] );
+      AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
+      AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
       for( ; bnd != end_bnd; ++bnd) {
         std::vector<unsigned int> bndGlobalIds;
@@ -143,14 +142,15 @@ namespace Operator {
   }
 
   void DirichletVectorCorrection :: applyResidual(AMP::LinearAlgebra::Vector::shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r) {
+
     AMP::LinearAlgebra::Vector::shared_ptr uInternal = u->subsetVectorForVariable(d_variable);
-    AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_variable);
+    AMP::Discretization::DOFManager::shared_ptr dof_map = u->getDOFManager();
 
     unsigned int numIds = d_boundaryIds.size();
 
     for(unsigned int j = 0; j < numIds; j++) {
-      AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator bnd = d_MeshAdapter->beginOwnedBoundary( d_boundaryIds[j] );
-      AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator end_bnd = d_MeshAdapter->endOwnedBoundary( d_boundaryIds[j] );
+      AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
+      AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
       for( ; bnd != end_bnd; ++bnd) {
         std::vector<unsigned int> bndGlobalIds;

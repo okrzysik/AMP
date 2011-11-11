@@ -9,7 +9,7 @@
 
 namespace AMP {
 namespace Operator {
-
+/*
   void MoertelOperatorBuilder::transposeMatrix ( const Epetra_CrsMatrix *in , Epetra_CrsMatrix *&out )
   {
     std::map<int , std::map<int , double> >  aij;
@@ -246,7 +246,7 @@ namespace Operator {
     retVal->setVariables ( invar , outvar );
     return retVal;
   }
-
+*/
 
 }
 }
