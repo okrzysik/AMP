@@ -3,13 +3,17 @@ NumberOfMeshes = 0
 NumberOfMeshFiles = 1
 mesh1 = "regPlateWithHole1"
 
+//Remove "CaseToRun" to run all cases
+//CaseToRun = 0
+CaseToRun = 1
+
 ULConsistentModel {
   USE_MATERIALS_LIBRARY = FALSE
     Material = ""
     USE_UPDATED_LAGRANGIAN = TRUE
     USE_CONTINUUM_TANGENT = FALSE
     USE_JAUMANN_RATE = FALSE
-    print_info_level = 6
+    print_info_level = 0
     name = "VonMisesElastoPlasticModel"
     Youngs_Modulus = 2.0e5
     Poissons_Ratio = 0.25
@@ -23,7 +27,7 @@ ULContinuumModel {
     USE_UPDATED_LAGRANGIAN = TRUE
     USE_CONTINUUM_TANGENT = TRUE
     USE_JAUMANN_RATE = FALSE
-    print_info_level = 6
+    print_info_level = 0
     name = "VonMisesElastoPlasticModel"
     Youngs_Modulus = 2.0e5
     Poissons_Ratio = 0.25
@@ -37,7 +41,7 @@ SSConsistentModel {
     USE_UPDATED_LAGRANGIAN = FALSE
     USE_CONTINUUM_TANGENT = FALSE
     USE_JAUMANN_RATE = FALSE
-    print_info_level = 6
+    print_info_level = 0
     name = "VonMisesElastoPlasticModel"
     Youngs_Modulus = 2.0e5
     Poissons_Ratio = 0.25
@@ -51,7 +55,7 @@ SSContinuumModel {
     USE_UPDATED_LAGRANGIAN = FALSE
     USE_CONTINUUM_TANGENT = TRUE
     USE_JAUMANN_RATE = FALSE
-    print_info_level = 6
+    print_info_level = 0
     name = "VonMisesElastoPlasticModel"
     Youngs_Modulus = 2.0e5
     Poissons_Ratio = 0.25
@@ -290,14 +294,16 @@ ML_Solver {
   problem_type = "SA"
     print_info_level = 0
     max_iterations = 1
-    max_levels = 1
+    //max_levels = 1
+    //max_levels = 10
+    max_levels = 20
     max_error = 1.0e-16
     PDE_equations = 3
 }
 
 SNES_EW_JFNK {
   print_info_level = 0 
-    max_iterations = 5
+    max_iterations = 30
     max_error = 1e-10
     absoluteTolerance = 1.0e-10
     relativeTolerance = 1.0e-11
@@ -325,7 +331,7 @@ SNES_EW_JFNK {
 
 SNES_JFNK {
   print_info_level = 0 
-    max_iterations = 5
+    max_iterations = 30
     max_error = 1e-10
     absoluteTolerance = 1.0e-10
     relativeTolerance = 1.0e-11
@@ -353,7 +359,7 @@ SNES_JFNK {
 
 SNES_EW {
   print_info_level = 0 
-    max_iterations = 5
+    max_iterations = 30
     max_error = 1e-10
     absoluteTolerance = 1.0e-10
     relativeTolerance = 1.0e-11
@@ -381,7 +387,7 @@ SNES_EW {
 
 SNES {
   print_info_level = 0 
-    max_iterations = 5
+    max_iterations = 30
     max_error = 1e-10
     absoluteTolerance = 1.0e-10
     relativeTolerance = 1.0e-11

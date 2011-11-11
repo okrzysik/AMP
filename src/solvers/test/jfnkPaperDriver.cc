@@ -52,6 +52,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   boost::shared_ptr<AMP::Database> ml_db = input_db->getDatabase("ML_Solver"); 
 
+  int caseToRun = -1;
+  if(input_db->keyExists("CaseToRun")) {
+    caseToRun = input_db->getInteger("CaseToRun");
+  }
+
+  int caseCnt = 0;
   for(int meshId = 1; meshId <= numMeshes; meshId++) {
     AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
     AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
@@ -134,92 +140,94 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
             }
           }
           for(int useEW = 0; useEW < 2; useEW++) {
-            std::string snesDbName = "SNES";
-            if(useEW) {
-              snesDbName = snesDbName + "_EW";
-            }
-            if(useJFNK) {
-              snesDbName = snesDbName + "_JFNK";
-            }
-            boost::shared_ptr<AMP::Database> snes_db = input_db->getDatabase(snesDbName); 
-            boost::shared_ptr<AMP::Database> ksp_db = snes_db->getDatabase("LinearSolver"); 
+            if( (caseToRun == -1) || (caseToRun == caseCnt) ) {
+              std::string snesDbName = "SNES";
+              if(useEW) {
+                snesDbName = snesDbName + "_EW";
+              }
+              if(useJFNK) {
+                snesDbName = snesDbName + "_JFNK";
+              }
+              boost::shared_ptr<AMP::Database> snes_db = input_db->getDatabase(snesDbName); 
+              boost::shared_ptr<AMP::Database> ksp_db = snes_db->getDatabase("LinearSolver"); 
 
-            solVec->zero();
+              solVec->zero();
 
-            nonlinearBVPoperator->modifyInitialSolutionVector(solVec);
+              nonlinearBVPoperator->modifyInitialSolutionVector(solVec);
 
-            std::cout<<"Solving ";
-            if(useUL) {
-              std::cout<<"UL ";
-            } else {
-              std::cout<<"SS ";
-            }
-            if(useConsistent) {
-              std::cout<<"Consistent ";
-            } else {
-              std::cout<<"Continuum ";
-            }
-            if(useJFNK) {
-              std::cout<<"with JFNK ";
-            }
-            if(useEW) {
-              std::cout<<"with EW ";
-            }
-            std::cout<<" on mesh: "<<meshFile<<std::endl;
+              std::cout<<"Solving ";
+              if(useUL) {
+                std::cout<<"UL ";
+              } else {
+                std::cout<<"SS ";
+              }
+              if(useConsistent) {
+                std::cout<<"Consistent ";
+              } else {
+                std::cout<<"Continuum ";
+              }
+              if(useJFNK) {
+                std::cout<<"with JFNK ";
+              }
+              if(useEW) {
+                std::cout<<"with EW ";
+              }
+              std::cout<<" on mesh: "<<meshFile<<std::endl;
 
-            boost::shared_ptr<AMP::Solver::PetscSNESSolver> snesSolver;
-            boost::shared_ptr<AMP::Solver::PetscKrylovSolver> kspSolver;
-            boost::shared_ptr<AMP::Solver::TrilinosMLSolver> mlSolver;
+              boost::shared_ptr<AMP::Solver::PetscSNESSolver> snesSolver;
+              boost::shared_ptr<AMP::Solver::PetscKrylovSolver> kspSolver;
+              boost::shared_ptr<AMP::Solver::TrilinosMLSolver> mlSolver;
 
-            boost::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> mlParams(new AMP::Solver::TrilinosMLSolverParameters(ml_db));
-            mlParams->d_pOperator = linearBVPoperator;
-            mlSolver.reset(new AMP::Solver::TrilinosMLSolver(mlParams));
+              boost::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> mlParams(new AMP::Solver::TrilinosMLSolverParameters(ml_db));
+              mlParams->d_pOperator = linearBVPoperator;
+              mlSolver.reset(new AMP::Solver::TrilinosMLSolver(mlParams));
 
-            boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> snesParams(new
-                AMP::Solver::PetscSNESSolverParameters(snes_db));
-            snesParams->d_comm = globalComm;
-            snesParams->d_pOperator = nonlinearBVPoperator;
-            snesParams->d_pInitialGuess = solVec;
-            if(!useJFNK) {
-              boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> kspParams(new AMP::Solver::PetscKrylovSolverParameters(ksp_db));
-              kspParams->d_pOperator = linearBVPoperator;
-              kspParams->d_comm = globalComm;
-              kspSolver.reset(new AMP::Solver::PetscKrylovSolver(kspParams));
-              snesParams->d_pKrylovSolver = kspSolver;
-            }
-            snesSolver.reset(new AMP::Solver::PetscSNESSolver(snesParams));
+              boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> snesParams(new
+                  AMP::Solver::PetscSNESSolverParameters(snes_db));
+              snesParams->d_comm = globalComm;
+              snesParams->d_pOperator = nonlinearBVPoperator;
+              snesParams->d_pInitialGuess = solVec;
+              if(!useJFNK) {
+                boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> kspParams(new AMP::Solver::PetscKrylovSolverParameters(ksp_db));
+                kspParams->d_pOperator = linearBVPoperator;
+                kspParams->d_comm = globalComm;
+                kspSolver.reset(new AMP::Solver::PetscKrylovSolver(kspParams));
+                snesParams->d_pKrylovSolver = kspSolver;
+              }
+              snesSolver.reset(new AMP::Solver::PetscSNESSolver(snesParams));
 
-            if(useJFNK) {
-              kspSolver = snesSolver->getKrylovSolver();
-            }
+              if(useJFNK) {
+                kspSolver = snesSolver->getKrylovSolver();
+              }
 
-            kspSolver->setPreconditioner(mlSolver);
+              kspSolver->setPreconditioner(mlSolver);
 
-            snesSolver->solve(rhsVec, solVec);
+              snesSolver->solve(rhsVec, solVec);
 
-            size_t numDofs = solVec->getGlobalSize();
+              size_t numDofs = solVec->getGlobalSize();
 
-            SNES snes = snesSolver->getSNESSolver();
+              SNES snes = snesSolver->getSNESSolver();
 
-            PetscInt nlFnCnt = 0;
-            SNESGetNumberFunctionEvals(snes, &nlFnCnt);
+              PetscInt nlFnCnt = 0;
+              SNESGetNumberFunctionEvals(snes, &nlFnCnt);
 
-            PetscInt snesItsCnt = 0;
-            SNESGetIterationNumber(snes, &snesItsCnt);
+              PetscInt snesItsCnt = 0;
+              SNESGetIterationNumber(snes, &snesItsCnt);
 
-            PetscInt kspItsCnt = 0;
-            SNESGetLinearSolveIterations(snes, &kspItsCnt);
+              PetscInt kspItsCnt = 0;
+              SNESGetLinearSolveIterations(snes, &kspItsCnt);
 
-            SNESConvergedReason reason;
-            SNESGetConvergedReason(snes, &reason);
-            AMP_ASSERT( (reason == SNES_CONVERGED_FNORM_ABS) ||
-                (reason == SNES_CONVERGED_FNORM_RELATIVE) );
+              SNESConvergedReason reason;
+              SNESGetConvergedReason(snes, &reason);
+              AMP_ASSERT( (reason == SNES_CONVERGED_FNORM_ABS) ||
+                  (reason == SNES_CONVERGED_FNORM_RELATIVE) );
 
-            double plFrac =  vonMisesModel->getFractionPlastic();
+              double plFrac =  vonMisesModel->getFractionPlastic();
 
-            std::cout<<"Result: "<<numDofs<<" & "<<plFrac<<" & "<<nlFnCnt
-              <<" & "<<snesItsCnt<<" & "<<kspItsCnt<<" \\\\ "<<std::endl;
-
+              std::cout<<"Result: "<<numDofs<<" & "<<plFrac<<" & "<<nlFnCnt
+                <<" & "<<snesItsCnt<<" & "<<kspItsCnt<<" \\\\ "<<std::endl;
+            }//end if caseToRun
+            caseCnt++;
           }//end useEW
         }//end useJFNK
       }//end useConsistent
