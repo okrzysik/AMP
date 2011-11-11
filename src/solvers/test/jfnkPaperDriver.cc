@@ -210,6 +210,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
             PetscInt kspItsCnt = 0;
             SNESGetLinearSolveIterations(snes, &kspItsCnt);
 
+            SNESConvergedReason reason;
+            SNESGetConvergedReason(snes, &reason);
+            AMP_ASSERT( (reason == SNES_CONVERGED_FNORM_ABS) ||
+                (reason == SNES_CONVERGED_FNORM_RELATIVE) );
+
             double plFrac =  vonMisesModel->getFractionPlastic();
 
             std::cout<<"Result: "<<numDofs<<" & "<<plFrac<<" & "<<nlFnCnt
