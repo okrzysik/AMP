@@ -4,7 +4,9 @@
 
 #include "boost/shared_ptr.hpp"
 
+#include "vectors/Vector.h"
 #include "operators/OperatorParameters.h"
+#include "ampmesh/Mesh.h"
 
 /* Libmesh files */
 #include "fe_type.h"
@@ -68,7 +70,7 @@ namespace Operator {
 
       const ::Elem *d_elem;
 
-      AMP::Mesh::MeshManager::Adapter::shared_ptr d_MeshAdapter;
+      AMP::Mesh::Mesh::shared_ptr d_Mesh;
 
     private :
 

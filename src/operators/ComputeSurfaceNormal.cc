@@ -3,12 +3,13 @@
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 
+
 namespace AMP {
 namespace Operator {
 
   ComputeSurfaceNormal :: ComputeSurfaceNormal(const boost::shared_ptr<OperatorParameters> & params)
   {
-    d_MeshAdapter = params->d_MeshAdapter;
+    d_Mesh = params->d_Mesh;
 
     std::string feTypeOrderName = (params->d_db)->getStringWithDefault("FE_ORDER", "FIRST");
 
@@ -60,7 +61,8 @@ namespace Operator {
 
   boost::shared_ptr<AMP::LinearAlgebra::Vector> ComputeSurfaceNormal :: getNormals(const AMP::LinearAlgebra::Vector::shared_ptr &u)
   {
-
+AMP_ERROR("ComputeSurfaceNormal is not converted yet");
+/*
     d_inputVec = u->subsetVectorForVariable(d_variable);
    
     d_outputVec = d_inputVec->cloneVector();
@@ -135,6 +137,7 @@ namespace Operator {
     d_outputVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
 
     return d_outputVec;
+*/
   }
 
 }
