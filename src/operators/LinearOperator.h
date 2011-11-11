@@ -57,19 +57,9 @@ namespace AMP {
           */
         virtual void setMatrix(const boost::shared_ptr<AMP::LinearAlgebra::Matrix> & in_mat);
 
-        virtual void resetApplyCount()  {
-          d_applyCount = 0;      
-        }
-
-        virtual unsigned int getApplyCount() {
-          return d_applyCount;
-        }
-
       protected :
 
         boost::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix; /**< The matrix shared pointer. */
-
-        unsigned int d_applyCount;
 
       private :
 

@@ -210,16 +210,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
             }
             std::cout<<" on mesh: "<<meshFile<<std::endl;
 
-            linearBVPoperator->resetApplyCount();
             nonlinearFEoperator->resetApplyCount();
 
             snesSolver->solve(rhsVec, solVec);
 
             size_t numDofs = solVec->getGlobalSize();
             unsigned int nonlinearCount = nonlinearFEoperator->getApplyCount();
-            unsigned int linearCount = linearBVPoperator->getApplyCount();
 
-            std::cout<<" "<<numDofs<<" & "<<nonlinearCount<<" & "<<linearCount<<" \\\\ "<<std::endl; 
+            std::cout<<" "<<numDofs<<" & "<<nonlinearCount<<" & "<<" \\\\ "<<std::endl; 
 
           }//end useEW
         }//end useJFNK

@@ -8,7 +8,6 @@ namespace AMP {
     LinearOperator :: LinearOperator (const boost::shared_ptr<OperatorParameters> & params)
       : Operator (params) {
         d_matrix.reset();
-        d_applyCount = 0;
       }
 
     boost::shared_ptr<AMP::LinearAlgebra::Matrix> LinearOperator :: getMatrix() {
@@ -22,8 +21,6 @@ namespace AMP {
     void LinearOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
         AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a, const double b)
     {
-      d_applyCount++;
-
       AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
       AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
       AMP_INSIST( ((d_matrix.get()) != NULL), "NULL Matrix" );
