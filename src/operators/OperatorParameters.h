@@ -7,10 +7,9 @@
 #include "boost/shared_ptr.hpp"
 
 #include "utils/Database.h"
-
 #include "utils/ParameterBase.h"
+#include "ampmesh/Mesh.h"
 
-#include "ampmesh/MeshManager.h"
 
 namespace AMP {
 namespace Operator {
@@ -43,7 +42,7 @@ namespace Operator {
        */
       boost::shared_ptr<AMP::Database> d_db;
 
-      AMP::Mesh::MeshManager::Adapter::shared_ptr d_MeshAdapter;
+      AMP::Mesh::Mesh::shared_ptr d_Mesh;
 
     protected :
 

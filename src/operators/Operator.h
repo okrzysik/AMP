@@ -104,8 +104,8 @@ namespace AMP {
 
         virtual bool isValidInput(boost::shared_ptr<AMP::LinearAlgebra::Vector>&){return true; }
 
-        AMP::Mesh::MeshManager::Adapter::shared_ptr getMeshAdapter() {
-          return d_MeshAdapter;
+        AMP::Mesh::Mesh::shared_ptr getMesh() {
+          return d_Mesh;
         }
 
       protected :
@@ -118,7 +118,7 @@ namespace AMP {
 
         static int d_iInstance_id;
 
-        AMP::Mesh::MeshManager::Adapter::shared_ptr d_MeshAdapter;
+        AMP::Mesh::Mesh::shared_ptr d_Mesh;
 
       private :
 
