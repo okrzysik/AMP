@@ -66,8 +66,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       AMP::readTestMesh(meshFile, mesh);
     }
 
-    std::cout<<"Finished reading mesh: "<<meshFile<<std::endl;
-
     MeshCommunication().broadcast(*(mesh.get()));
     mesh->prepare_for_use(false);
 
@@ -80,15 +78,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
             "LoadOperator", input_db, dummyModel));
 
-    std::cout<<"Finished building load operator "<<std::endl;
-
     for(int useUL = 0; useUL < 2; useUL++) {
       std::string linOpDbName = "LinearBVP";
       if(useUL) {
-        std::cout<<"Using UL"<<std::endl;
         linOpDbName = linOpDbName + "_UL";
       } else {
-        std::cout<<"Using SS"<<std::endl;
         linOpDbName = linOpDbName + "_SS";
       }
 
@@ -100,10 +94,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
           nlOpDbName = nlOpDbName + "_SS";
         }
         if(useConsistent) {
-          std::cout<<"Using Consistent"<<std::endl;
           nlOpDbName = nlOpDbName + "_Consistent";
         } else {
-          std::cout<<"Using Continuum"<<std::endl;
           nlOpDbName = nlOpDbName + "_Continuum";
         }
 
@@ -112,13 +104,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
           AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
                 nlOpDbName, input_db, materialModel));
 
-        std::cout<<"Finished building nonlinear operator "<<std::endl;
-
         boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearBVPoperator = boost::dynamic_pointer_cast<
           AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
                 linOpDbName, input_db, materialModel));
-
-        std::cout<<"Finished building linear operator "<<std::endl;
 
         AMP::LinearAlgebra::Variable::shared_ptr dispVar = nonlinearBVPoperator->getOutputVariable();
 
@@ -130,8 +118,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
         rhsVec->zero();
         loadOperator->apply(nullVec, nullVec, rhsVec, 1.0, 0.0);
         nonlinearBVPoperator->modifyRHSvector(rhsVec);
-
-        std::cout<<"Finished building RHS vec "<<std::endl;
 
         for(int useJFNK = 0; useJFNK < 2; useJFNK++) {
           if(useConsistent) {
@@ -181,8 +167,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
             mlParams->d_pOperator = linearBVPoperator;
             mlSolver.reset(new AMP::Solver::TrilinosMLSolver(mlParams));
 
-            std::cout<<"Finished building ML "<<std::endl;
-
             boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> snesParams(new
                 AMP::Solver::PetscSNESSolverParameters(snes_db));
             snesParams->d_comm = globalComm;
@@ -194,11 +178,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
               kspParams->d_comm = globalComm;
               kspSolver.reset(new AMP::Solver::PetscKrylovSolver(kspParams));
               snesParams->d_pKrylovSolver = kspSolver;
-              std::cout<<"Finished building KSP "<<std::endl;
             }
             snesSolver.reset(new AMP::Solver::PetscSNESSolver(snesParams));
-
-            std::cout<<"Finished building SNES "<<std::endl;
 
             if(useJFNK) {
               kspSolver = snesSolver->getKrylovSolver();
