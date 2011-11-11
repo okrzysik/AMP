@@ -320,7 +320,7 @@ SNES_EW_JFNK {
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "LEFT"
-        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 10"
+        KSPOptions = "-ksp_monitor_cancel -ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 10"
     }
 }
 
@@ -348,7 +348,7 @@ SNES_JFNK {
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "LEFT"
-        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 10"
+        KSPOptions = "-ksp_monitor_cancel -ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 10"
     }
 }
 
@@ -376,7 +376,7 @@ SNES_EW {
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "LEFT"
-        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 10"
+        KSPOptions = "-ksp_monitor_cancel -ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 10"
     }
 }
 
@@ -404,7 +404,7 @@ SNES {
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "LEFT"
-        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 10"
+        KSPOptions = "-ksp_monitor_cancel -ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 10"
     }
 }
 
