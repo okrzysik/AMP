@@ -181,7 +181,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   //Random initial guess
-  solVec->setRandomValues();
+  solVec->setToScalar(0.0);
   const double referenceTemperature=301.0;
   thermalNlSolVec->addScalar(thermalNlSolVec, referenceTemperature);
 
@@ -265,6 +265,18 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   std::cout<<"Final Residual Norm: "<<finalResidualNorm<<std::endl;
 
+  AMP::LinearAlgebra::Vector::shared_ptr mechUvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride("U", 0, 3) , "U" );
+  AMP::LinearAlgebra::Vector::shared_ptr mechVvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride("V", 1, 3) , "V" );
+  AMP::LinearAlgebra::Vector::shared_ptr mechWvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride("W", 2, 3) , "W" );
+
+  double finalMaxU = mechUvec->maxNorm();
+  double finalMaxV = mechVvec->maxNorm();
+  double finalMaxW = mechWvec->maxNorm();
+
+  AMP::pout<<"Maximum U displacement: "<<finalMaxU<<std::endl;
+  AMP::pout<<"Maximum V displacement: "<<finalMaxV<<std::endl;
+  AMP::pout<<"Maximum W displacement: "<<finalMaxW<<std::endl;
+
 #ifdef USE_SILO
   manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 1 );
 #endif
@@ -286,6 +298,9 @@ int main(int argc, char *argv[])
 
     std::vector<std::string> exeNames;
     exeNames.push_back("testPetscSNESSolver-NonlinearThermoMechanics-1");
+    exeNames.push_back("testPetscSNESSolver-NonlinearThermoMechanics-1a");
+    exeNames.push_back("testPetscSNESSolver-NonlinearThermoMechanics-1b");
+    exeNames.push_back("testPetscSNESSolver-NonlinearThermoMechanics-1c");
 
     for(unsigned int i = 0; i < exeNames.size(); i++) {
         try {

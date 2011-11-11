@@ -50,10 +50,9 @@ void test_with_shape(AMP::UnitTest *ut )
     shape_db->putString("type","zernikeRadial");
     shape_db->putInteger("print_info_level",10);
     
-    AMP::Operator::PowerShape::SP_HexGaussPointVariable shapeVar( new AMP::Operator::PowerShape::HexGaussPointVariable("PowerShape") );
-    AMP::LinearAlgebra::Vector::shared_ptr shapeVec = meshAdapter->createVector( shapeVar );
-
     #ifdef USE_SILO
+      AMP::Operator::PowerShape::SP_HexGaussPointVariable shapeVar( new AMP::Operator::PowerShape::HexGaussPointVariable("PowerShape") );
+      AMP::LinearAlgebra::Vector::shared_ptr shapeVec = meshAdapter->createVector( shapeVar );
       meshAdapter->registerVectorAsData ( shapeVec );
     #endif
       

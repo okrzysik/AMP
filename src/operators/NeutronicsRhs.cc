@@ -1,6 +1,6 @@
 #include "NeutronicsRhs.h"
 
-/*AMP Files */
+/* AMP Files */
 #include "operators/Operator.h"
 #include "NeutronicsRhs.h"
 #include "NeutronicsRhsParameters.h"

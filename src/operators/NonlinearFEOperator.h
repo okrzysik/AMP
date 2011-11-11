@@ -31,7 +31,6 @@ namespace AMP {
           : Operator(params)
         {
           d_elemOp = (params->d_elemOp);
-          d_applyCount = 0;
         }
 
         /**
@@ -109,24 +108,14 @@ namespace AMP {
           @param [in] a first constant used in the expression: r = a*A(u) + b*f. The default value is -1.
           @param [in] b second constant used in the expression: r = a*A(u) + b*f. The default value is 1.
           */
-        void apply(const  boost::shared_ptr<AMP::LinearAlgebra::Vector> & f, const  boost::shared_ptr<AMP::LinearAlgebra::Vector> & u,
+        virtual void apply(const  boost::shared_ptr<AMP::LinearAlgebra::Vector> & f, const  boost::shared_ptr<AMP::LinearAlgebra::Vector> & u,
             boost::shared_ptr<AMP::LinearAlgebra::Vector> & r, const double a = -1.0, const double b = 1.0);
-
-        void resetApplyCount() {
-          d_applyCount = 0;
-        }
-
-        unsigned int getApplyCount() {
-          return d_applyCount;
-        }
 
       protected :
 
         boost::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
 
       private :
-
-        unsigned int d_applyCount;
 
     };
 
