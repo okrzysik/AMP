@@ -1,6 +1,3 @@
-
-
-
 #include "AsyncMapOperator.h"
 #include "AsyncMapColumnOperator.h"
 

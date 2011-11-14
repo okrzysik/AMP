@@ -4,8 +4,6 @@
 #include "operators/map/Map3to1to3.h"
 #include "operators/map/Map3to1to3Parameters.h"
 
-#include "ampmesh/MeshManager.h"
-
 
 namespace AMP {
 namespace Operator {

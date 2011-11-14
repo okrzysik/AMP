@@ -1,4 +1,4 @@
-#include "descritization/DOF_ManagerParameters.h"
+#include "discretization/DOF_ManagerParameters.h"
 
 namespace AMP {
 namespace Discretization {

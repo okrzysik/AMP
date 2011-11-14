@@ -1,7 +1,7 @@
 
-/** \mainpage New Mesh and Descritization interface
+/** \mainpage New Mesh and Discretization interface
  *
- * This is the new design of the Mesh and Descritization refactorization.
+ * This is the new design of the Mesh and Discretization refactorization.
  *
  *
  * - \ref AMP::Mesh	    "Mesh"

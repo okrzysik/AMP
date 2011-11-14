@@ -8,8 +8,10 @@ namespace Operator {
 
 
   template <typename MAP_TYPE>
-  boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build ( AMP::Mesh::MeshManager::shared_ptr meshManager , boost::shared_ptr<Database> db )
+  boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build ( AMP::Mesh::Mesh::shared_ptr mesh , boost::shared_ptr<Database> db )
   {
+AMP_ERROR("Not converted yet");
+/*
     typedef boost::shared_ptr < AsyncMapOperator >             AsyncOp_ptr;
     typedef boost::shared_ptr < AsyncMapOperatorParameters >   AsyncOpParams_ptr;
     Map3to1to3::spMap::type       sharedMap ( new std::multimap<double,double> );
@@ -97,7 +99,9 @@ namespace Operator {
       }
     }
     return newMapColumn;
+*/
   }
+
 
 }
 }

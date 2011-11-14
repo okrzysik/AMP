@@ -90,7 +90,7 @@ namespace Operator {
 
       unsigned int d_boundaryId;
 
-      AMP::Mesh::MeshManager::Adapter::shared_ptr d_MapAdapter;
+      AMP::Mesh::Mesh::shared_ptr d_MapMesh;
 
     private :
 

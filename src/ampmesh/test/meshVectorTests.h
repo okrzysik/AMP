@@ -1,10 +1,10 @@
 #ifndef included_MeshVectorTests
 #define included_MeshVectorTests
 
-#include "descritization/simpleDOF_Manager.h"
-#include "descritization/NodalVariable.h"
-#include "descritization/DOF_ManagerParameters.h"
-#include "descritization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "discretization/NodalVariable.h"
+#include "discretization/DOF_ManagerParameters.h"
+#include "discretization/DOF_Manager.h"
 #include "vectors/Vector.h"
 
 #include "../../vectors/test/test_VectorLoops.h"

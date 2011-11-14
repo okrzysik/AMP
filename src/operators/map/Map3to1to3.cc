@@ -1,7 +1,7 @@
 
 #include "Map3to1to3.h"
 #include "Map3to1to3Parameters.h"
-
+#include "discretization/NodalVariable.h"
 
 
 namespace AMP {
@@ -64,8 +64,7 @@ Map3to1to3::Map3to1to3 ( const boost::shared_ptr<OperatorParameters> & params )
 
 
     d_FirstApply = true;
-    d_BeginNode = p->d_SetBegin;
-    d_EndNode = p->d_SetEnd;
+    d_BoundaryNodeIterator = p->d_BoundaryNodeIterator;
     d_MapComm = p->d_MapComm;
 
     p->d_ConstructionPhase = 0;
@@ -73,12 +72,7 @@ Map3to1to3::Map3to1to3 ( const boost::shared_ptr<OperatorParameters> & params )
     int DofsPerObj = p->d_db->getInteger ( "DOFsPerObject" );
     AMP_ASSERT ( ( DofsPerObj == 1 ) || ( DofsPerObj == 3 ) );
 
-    if ( DofsPerObj == 1 ) {
-        d_MapVariable = AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::Mesh::NodalScalarVariable ( p->d_db->getString ( "VariableName" ) , d_MeshAdapter ) );
-    }
-    if ( DofsPerObj == 3 ) {
-        d_MapVariable = AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::Mesh::Nodal3VectorVariable ( p->d_db->getString ( "VariableName" ) , d_MeshAdapter ) );
-    }
+    d_MapVariable = AMP::LinearAlgebra::Variable::shared_ptr( new AMP::Discretization::NodalVariable( DofsPerObj, p->d_db->getString("VariableName") ) );
 
     if ( p->d_IsMaster ) {
         d_SendTag = p->d_ToSlaveCommTag;

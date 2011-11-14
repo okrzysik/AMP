@@ -10,7 +10,7 @@
 #include "mrtr_manager.H"
 
 #include "ampmesh/Mesh.h"
-#include "descritization/DOF_Manager.h"
+#include "discretization/DOF_Manager.h"
 
 
 namespace AMP {

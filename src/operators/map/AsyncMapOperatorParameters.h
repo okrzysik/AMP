@@ -4,7 +4,6 @@
 #include "operators/AsynchronousOperatorParameters.h"
 #include "utils/AMP_MPI.h"
 
-#include "ampmesh/MeshManager.h"
 
 namespace AMP {
 namespace Operator {
@@ -12,11 +11,9 @@ namespace Operator {
   class AsyncMapOperatorParameters : public AsynchronousOperatorParameters
   {
     public:
-      typedef  AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator  BNIterator;
 
-      AMP_MPI          d_MapComm;
-      BNIterator       d_SetBegin;
-      BNIterator       d_SetEnd;
+      AMP_MPI                       d_MapComm;
+      AMP::Mesh::MeshIterator       d_BoundaryNodeIterator;
 
       bool             d_IsMaster;
       int              d_ToMasterCommTag;

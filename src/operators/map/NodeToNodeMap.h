@@ -9,7 +9,7 @@
 #include "operators/map/NodeToNodeMapParameters.h"
 
 #include "vectors/Vector.h"
-#include "ampmesh/MeshManager.h"
+#include "ampmesh/Mesh.h"
 #include "utils/AMP_MPI.h"
 
 

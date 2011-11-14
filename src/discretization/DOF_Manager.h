@@ -3,7 +3,7 @@
 
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
-#include "descritization/DOF_ManagerParameters.h"
+#include "discretization/DOF_ManagerParameters.h"
 
 
 namespace AMP {

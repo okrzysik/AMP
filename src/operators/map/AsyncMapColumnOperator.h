@@ -4,7 +4,7 @@
 #include "operators/AsynchronousColumnOperator.h"
 #include "operators/AsynchronousColumnOperatorParameters.h"
 
-#include "ampmesh/MeshManager.h"
+#include "ampmesh/Mesh.h"
 
 namespace AMP {
 namespace Operator {
@@ -48,7 +48,7 @@ namespace Operator {
         *  
         */
       template <typename MAP_TYPE>
-      static boost::shared_ptr<AsyncMapColumnOperator>  build ( AMP::Mesh::MeshManager::shared_ptr manager , boost::shared_ptr<Database> db );
+      static boost::shared_ptr<AsyncMapColumnOperator>  build ( AMP::Mesh::Mesh::shared_ptr mesh, boost::shared_ptr<Database> db );
   };
 
 

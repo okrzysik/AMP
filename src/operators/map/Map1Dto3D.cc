@@ -1,11 +1,12 @@
 #include "utils/AMP_MPI.h"
 #include "operators/map/Map1Dto3D.h"
-#include "ampmesh/MeshUtils.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 
+
 namespace AMP {
 namespace Operator {
+
 
  void Map1Dto3D :: reset(const boost::shared_ptr<OperatorParameters>& params)
  {
@@ -23,7 +24,7 @@ namespace Operator {
 
     AMP_INSIST( myparams->d_db->keyExists("OutputVariable"), "key not found" );
     std::string outVar = myparams->d_db->getString("OutputVariable");
-    d_outVariable.reset(new AMP::Mesh::NodalScalarVariable(outVar,d_MapAdapter));
+    d_outVariable.reset(new AMP::Discretization::NodalVariable(1,outVar));
 
  }
 
@@ -34,7 +35,8 @@ namespace Operator {
  }
 
  void Map1Dto3D::computeZLocations(){
-
+AMP_ERROR("Not finished");
+/*
    AMP::Mesh::MeshManager::Adapter::BoundaryNodeIterator bnd = d_MapAdapter->beginBoundary( d_boundaryId );
    AMP::Mesh::MeshManager::Adapter::BoundaryNodeIterator end_bnd = d_MapAdapter->endBoundary( d_boundaryId );
 
@@ -92,12 +94,14 @@ namespace Operator {
    }
    size_t newSize = curEnd - d_zLocations.begin() + 1;
    d_zLocations.resize ( newSize );
-
+*/
  }
 
  void Map1Dto3D :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &u,
      AMP::LinearAlgebra::Vector::shared_ptr  &r, const double , const double )
  { 
+AMP_ERROR("Not finished");
+/*
    AMP::Mesh::DOFMap::shared_ptr dof_map = d_MapAdapter->getDOFMap(d_outVariable);
 
    AMP_ASSERT(u != NULL);
@@ -152,8 +156,9 @@ namespace Operator {
      AMP::pout << "The output to Map1Dto3D " << std::endl;
      AMP::pout << outputVec << std::endl;
    }
-
+*/
  }
+
 
 }
 }

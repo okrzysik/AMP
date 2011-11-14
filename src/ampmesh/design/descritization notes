@@ -33,7 +33,7 @@ Finite difference
 
 DOF Map:
 map index from iterator to memory index
-Probably contains the iterators - needs to know about mesh, descritization, user defined ghost width, ...
+Probably contains the iterators - needs to know about mesh, discretization, user defined ghost width, ...
 
 
 

@@ -10,7 +10,7 @@ double AMP::Operator::NodeToNodeMap::Point::_precision;
 
 namespace AMP {
 namespace Operator {
-
+/*
   bool NodeToNodeMap::validMapType ( const std::string &t )
   {
     if ( t == "NodeToNode" )
@@ -579,7 +579,7 @@ namespace Operator {
 
     d_OutputVector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
   }
-
+*/
 }
 }
 

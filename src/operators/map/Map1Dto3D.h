@@ -11,6 +11,7 @@
 #include "operators/map/MapOperatorParameters.h"
 #include "vectors/Vector.h"
 #include "vectors/Variable.h"
+#include "discretization/NodalVariable.h"
 
 #include <string>
 
@@ -34,7 +35,7 @@ namespace Operator {
 				boost::shared_ptr<MapOperatorParameters> myparams = 
 					boost::dynamic_pointer_cast<MapOperatorParameters>(params);
 
-				d_MapAdapter = myparams->d_MapAdapter;
+				d_MapMesh = myparams->d_MapMesh;
 				reset(myparams);
 			}
 
@@ -116,7 +117,7 @@ namespace Operator {
 
 			boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable ; /**< Simple Input Variable */
 
-			boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_outVariable; /**< Nodal Scalar Variable */
+			boost::shared_ptr<AMP::Discretization::NodalVariable> d_outVariable; /**< Nodal Scalar Variable */
 
 			std::vector<double> d_zLocations; /**< std vector to store 1D z locations. */
 

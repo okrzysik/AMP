@@ -5,7 +5,7 @@
 #include "ampmesh/Mesh.h"
 #include "utils/AMP_MPI.h"
 #include "utils/UnitTest.h"
-#include "descritization/DOF_Manager.h"
+#include "discretization/DOF_Manager.h"
 
 
 /// \cond UNDOCUMENTED

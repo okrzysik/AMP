@@ -3,7 +3,7 @@
 
 namespace AMP {
 namespace Operator {
-
+/*
 
 // applyStart
 void FlowMapOperator::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , const AMP::LinearAlgebra::Vector::shared_ptr &u ,
@@ -242,7 +242,7 @@ void FlowMapOperator::smear ( double tolerance , std::multimap<double,double> &m
     }
 }
 
-
+*/
 } // Operators
 } // AMP
 

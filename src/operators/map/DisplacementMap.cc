@@ -29,9 +29,10 @@ namespace Operator {
     int size = d_MapComm.getSize();
 
     // Get a list of the IDs on the surface
-    std::set<size_t>  idsOnMySurface;
-    AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator  cur = p->d_SetBegin;
-    while ( cur != p->d_SetEnd )
+    std::set<AMP::Mesh::MeshElementID>  idsOnMySurface;
+    AMP::Mesh::MeshIterator  cur = p->d_BoundaryNodeIterator.begin();
+    AMP::Mesh::MeshIterator  end = p->d_BoundaryNodeIterator.end();
+    while ( cur != end )
     {
       idsOnMySurface.insert ( cur->globalID() );
       cur++;
@@ -41,16 +42,17 @@ namespace Operator {
     p->d_ids.resize ( idsOnMySurface.size() );
     p->d_disps.resize ( idsOnMySurface.size() * 3 );
 
-    cur = p->d_SetBegin;
+    cur = p->d_BoundaryNodeIterator.begin();
     size_t curId = 0;
-    while ( cur != p->d_SetEnd )
+    while ( cur != end )
     {
       p->d_ids[curId] = cur->globalID();
-      p->d_disps[3*curId + 0] = cur->x();
-      p->d_disps[3*curId + 1] = cur->y();
-      p->d_disps[3*curId + 2] = cur->z();
-      cur++;
-      curId++;
+      std::vector<double> pos = cur->coord();
+      p->d_disps[3*curId + 0] = pos[0];
+      p->d_disps[3*curId + 1] = pos[1];
+      p->d_disps[3*curId + 2] = pos[2];
+      ++cur;
+      ++curId;
     }
 
     if ( p->d_IsMaster )
@@ -77,6 +79,8 @@ namespace Operator {
 
   void DisplacementMap::recvSurface ( params_shared_ptr p )
   {
+AMP_ERROR("Not finished converting DisplacementMap");
+/*
     int size = d_MapComm.getSize();
     std::multiset<Point>  surfacePts;
     for ( int i = 0 ; i != size ; i++ )
@@ -122,14 +126,16 @@ namespace Operator {
     std::map<size_t , std::list<size_t> >   procToLocalIdList;
     std::map<size_t , size_t>              &remoteToLocalId = p->d_RemoteToLocalId;
 
-    AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator  cur = p->d_SetBegin;
+    AMP::Mesh::MeshIterator  cur = p->d_BoundaryNodeIterator.begin();
+    AMP::Mesh::MeshIterator  end = p->d_BoundaryNodeIterator.end();
     size_t  totToSend = 0;
-    while ( cur != p->d_SetEnd )
+    while ( cur != end )
     {
       Point t;
-      t._pos[0] = cur->x();
-      t._pos[1] = cur->y();
-      t._pos[2] = cur->z();
+      std::vector<double> pos = cur->coord();
+      t._pos[0] = pos[0];
+      t._pos[1] = pos[1];
+      t._pos[2] = pos[2];
       std::multiset<Point>::iterator whichPt = surfacePts.lower_bound ( t );
       AMP_ASSERT ( whichPt != surfacePts.end() );
       AMP_ASSERT ( whichPt != surfacePts.upper_bound ( t ) );
@@ -145,7 +151,7 @@ namespace Operator {
         curProc++;
         totToSend++;
       }
-      cur++;
+      ++cur;
     }
 
     int DofsPerObj = p->d_db->getInteger ( "DOFsPerObject" );
@@ -184,6 +190,7 @@ namespace Operator {
       *curReq = d_MapComm.Isend( (int*) buf + d_MySurfaceDisplsS[i],d_MySurfaceCountsS[i], i, d_SendTag );
       curReq++;
     }
+*/
   }
 
   void DisplacementMap::recvOrder ( params_shared_ptr p )
@@ -198,6 +205,8 @@ namespace Operator {
 
   void DisplacementMap::buildSendRecvList ( params_shared_ptr p )
   {
+AMP_ERROR("Not finished converting DisplacementMap");
+/*
     std::map<size_t , size_t>              &remoteToLocalId = p->d_RemoteToLocalId;
     int DofsPerObj = p->d_db->getInteger ( "DOFsPerObject" );
 
@@ -217,6 +226,7 @@ namespace Operator {
         p->d_NumPartners++;
       }
     }
+*/
   }
 
   void DisplacementMap::finalizeCommunication ( params_shared_ptr p )
@@ -300,6 +310,8 @@ namespace Operator {
   DisplacementMap::DisplacementMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> & params )
        : AMP::Operator::AsyncMapOperator ( params )
   {
+AMP_ERROR("Not finished converting DisplacementMap");
+/*
     // Cast the params appropriately
     d_OutputVector = AMP::LinearAlgebra::Vector::shared_ptr ();
     AMP_ASSERT ( params );
@@ -506,7 +518,7 @@ namespace Operator {
       }
     }
     reserveRequests ( 2*numPartners );
-
+*/
   }
 
   void DisplacementMap::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr &  ,

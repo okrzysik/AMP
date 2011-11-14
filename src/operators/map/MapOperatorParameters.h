@@ -3,6 +3,7 @@
 #define included_AMP_MapOperatorParameters
 
 #include "operators/OperatorParameters.h"
+#include "ampmesh/Mesh.h"
 
 namespace AMP {
 namespace Operator {
@@ -15,7 +16,7 @@ namespace Operator {
 
       ~MapOperatorParameters() { }
 
-      AMP::Mesh::MeshManager::Adapter::shared_ptr d_MapAdapter;
+      AMP::Mesh::Mesh::shared_ptr d_MapMesh;
 
     protected :
 

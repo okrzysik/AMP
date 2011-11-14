@@ -7,9 +7,8 @@
 
 #include "operators/map/AsyncMapOperator.h"
 #include "operators/map/DisplacementMapParameters.h"
-
 #include "vectors/Vector.h"
-#include "ampmesh/MeshManager.h"
+#include "ampmesh/Mesh.h"
 #include "utils/AMP_MPI.h"
 
 

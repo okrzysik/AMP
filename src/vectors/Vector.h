@@ -26,7 +26,7 @@
 #include "Variable.h"
 #include "VectorEngine.h"
 
-#include "descritization/DOF_Manager.h"
+#include "discretization/DOF_Manager.h"
 
 #ifndef NULL
 #define NULL (0)

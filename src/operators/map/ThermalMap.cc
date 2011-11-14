@@ -10,7 +10,7 @@ double AMP::Operator::ThermalMap::Point::_precision;
 
 namespace AMP {
 namespace Operator {
-
+/*
   bool ThermalMap::validMapType ( const std::string &t )
   {
     if ( t == "Thermal" )
@@ -579,7 +579,7 @@ namespace Operator {
 
     d_OutputVector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
   }
-
+*/
 }
 }
 

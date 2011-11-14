@@ -6,6 +6,7 @@
 
 #include "operators/map/AsyncMapOperator.h"
 #include "operators/map/AsyncMapOperatorParameters.h"
+#include "ampmesh/MeshIterator.h"
 
 
 namespace AMP {
@@ -30,8 +31,6 @@ namespace Operator {
 class Map3to1to3 : public AsyncMapOperator
 {
 public:
-    //! A convenience typedef
-    typedef  AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator   BNIterator;
 
     /**
      * \class  spMap
@@ -115,11 +114,8 @@ public:
 
 
 protected:
-    //!  The first node on the surface to be mapped
-    BNIterator d_BeginNode;
-
-    //!  One past the last node on the surface to be mapped
-    BNIterator d_EndNode;
+    //!  An iterator over the nodes on the boundary
+    AMP::Mesh::MeshIterator       d_BoundaryNodeIterator;
 
     //!  The variable of the appropriate vector to store the answer and to subset on the input
     AMP::LinearAlgebra::Variable::shared_ptr d_MapVariable;

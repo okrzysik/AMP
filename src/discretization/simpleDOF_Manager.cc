@@ -1,4 +1,4 @@
-#include "descritization/simpleDOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 #include "utils/Utilities.h"
 
 #include "vectors/petsc/ManagedPetscVector.h"

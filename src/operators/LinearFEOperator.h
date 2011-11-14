@@ -7,7 +7,7 @@
 #include "FEOperatorParameters.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
-#include "descritization/DOF_Manager.h"
+#include "discretization/DOF_Manager.h"
 
 namespace AMP {
 namespace Operator {

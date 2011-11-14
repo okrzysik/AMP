@@ -2,7 +2,7 @@
 #define included_AMP_ThermalMapParameters
 
 #include "operators/map/AsyncMapOperatorParameters.h"
-#include "ampmesh/MeshManager.h"
+#include "ampmesh/Mesh.h"
 
 namespace AMP {
 namespace Operator {

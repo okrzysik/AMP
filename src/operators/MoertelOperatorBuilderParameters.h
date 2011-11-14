@@ -2,7 +2,7 @@
 #define included_MoertelOperatorBuilderParameters_h
 
 #include "ampmesh/Mesh.h"
-#include "descritization/DOF_Manager.h"
+#include "discretization/DOF_Manager.h"
 #include "utils/AMP_MPI.h"
 
 namespace AMP {

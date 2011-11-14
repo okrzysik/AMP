@@ -1,8 +1,6 @@
 #include "MapOperator.h"
 #include "utils/Utilities.h"
 
-#include "ampmesh/MeshUtils.h"
-
 namespace AMP {
 namespace Operator {
 

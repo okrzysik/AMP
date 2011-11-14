@@ -1,11 +1,19 @@
-
 #include "operators/map/Map3Dto1D.h"
-#include "ampmesh/MeshUtils.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 
 namespace AMP {
 namespace Operator {
+
+
+Map3Dto1D :: Map3Dto1D(const boost::shared_ptr<OperatorParameters>& params): 
+    MapOperator (params)
+{
+    boost::shared_ptr<MapOperatorParameters> myparams = 
+        boost::dynamic_pointer_cast<MapOperatorParameters>(params);
+    reset(myparams);
+}
+
 
  void Map3Dto1D :: reset(const boost::shared_ptr<OperatorParameters>& params)
  {
@@ -17,7 +25,7 @@ namespace Operator {
 
     AMP_INSIST( myparams->d_db->keyExists("InputVariable"), "key not found" );
     std::string inpVar = myparams->d_db->getString("InputVariable");
-    d_inpVariable.reset(new AMP::Mesh::NodalScalarVariable(inpVar,d_MeshAdapter));
+    d_inpVariable.reset(new AMP::Discretization::NodalVariable(1,inpVar) );
 
     AMP_INSIST( myparams->d_db->keyExists("OutputVariable"), "key not found" );
     std::string outVar = myparams->d_db->getString("OutputVariable");
@@ -28,13 +36,10 @@ namespace Operator {
  void Map3Dto1D :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &u,
      AMP::LinearAlgebra::Vector::shared_ptr  &r, const double , const double )
  { 
-   AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_inpVariable);
-
    AMP_ASSERT(u != NULL);
 
    AMP::LinearAlgebra::Vector::shared_ptr inputVec = u->subsetVectorForVariable(d_inpVariable);
    inputVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-
    AMP_ASSERT( inputVec != NULL);
 
    if(d_iDebugPrintInfoLevel>5)
@@ -49,8 +54,12 @@ namespace Operator {
 
    const unsigned int numPoints = outputVec->getLocalSize();
 
-   AMP::Mesh::MeshManager::Adapter::BoundarySideIterator bnd = d_MeshAdapter->beginSideBoundary( d_boundaryId );
-   AMP::Mesh::MeshManager::Adapter::BoundarySideIterator end_bnd = d_MeshAdapter->endSideBoundary( d_boundaryId );
+AMP_ERROR("Not finished");
+/*
+   AMP::Mesh::MeshIterator bnd = d_Mesh->beginSideBoundary( d_boundaryId );
+   AMP::Mesh::MeshIterator end_bnd = bnd.end();
+   //AMP::Mesh::MeshManager::Adapter::BoundarySideIterator bnd = d_MeshAdapter->beginSideBoundary( d_boundaryId );
+   //AMP::Mesh::MeshManager::Adapter::BoundarySideIterator end_bnd = d_MeshAdapter->endSideBoundary( d_boundaryId );
 
    std::vector<double> mapValues(numPoints,0);
    std::vector<int> numFaceNodes(numPoints,0);
@@ -58,7 +67,7 @@ namespace Operator {
    // Iterator for the solid-clad boundary
    for( ; bnd != end_bnd; ++bnd) {
 
-     AMP::Mesh::MeshManager::Adapter::Element cur_side = *bnd;
+     AMP::Mesh::MeshElement cur_side = *bnd;
      const unsigned int num_nodes = cur_side.numNodes();
 
      std::vector<double> zcoords;
@@ -150,8 +159,10 @@ namespace Operator {
      AMP::pout << "The output to Map3Dto1D " << std::endl;
      AMP::pout << outputVec << std::endl;
    }
+*/
 
- }
+}
+
 
 }
 }
