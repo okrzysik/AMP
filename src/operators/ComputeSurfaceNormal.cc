@@ -48,6 +48,8 @@ namespace Operator {
 
     d_JxW = &(d_fe->get_JxW());
 
+    d_numIds = (params->d_db)->getInteger("number_of_ids");
+
     d_boundaryIds.resize(d_numIds);
 
     char key[100];
@@ -56,6 +58,11 @@ namespace Operator {
       AMP_INSIST( (params->d_db)->keyExists(key), "Key is missing!" );
       d_boundaryIds[j] = (params->d_db)->getInteger(key);
     }//end for j
+  }
+
+  void ComputeSurfaceNormal::setVariable(const AMP::LinearAlgebra::Variable::shared_ptr & u)
+  {   
+    d_variable = u;
   }
 
   boost::shared_ptr<AMP::LinearAlgebra::Vector> ComputeSurfaceNormal :: getNormals(const AMP::LinearAlgebra::Vector::shared_ptr &u)
@@ -73,9 +80,7 @@ namespace Operator {
 
     rInternal->zero();
 
-    unsigned int numIds = d_boundaryIds.size();
-
-    for(unsigned int j = 0; j < numIds; j++) {
+    for(unsigned int j = 0; j < d_numIds; j++) {
       AMP::Mesh::MeshManager::Adapter::BoundarySideIterator bnd = d_MeshAdapter->beginSideBoundary( d_boundaryIds[j] );
       AMP::Mesh::MeshManager::Adapter::BoundarySideIterator end_bnd = d_MeshAdapter->endSideBoundary( d_boundaryIds[j] );
 
@@ -85,8 +90,13 @@ namespace Operator {
         AMP::Mesh::MeshManager::Adapter::Element cur_side = *bnd;
 
         d_phi = &(d_fe_face->get_phi());
+        d_dphi = &(d_fe_face->get_dphi());
         d_JxW = &(d_fe_face->get_JxW());
         d_normal = &(d_fe->get_normals());
+
+        const std::vector<Real> & JxW = (*d_JxW);
+        const std::vector<Point> & normal = *d_normal;
+        const std::vector<std::vector<RealGradient> > & dphi = (*d_dphi);
 
         d_face = &cur_side.getElem();
         d_elem = &cur_elem.getElem();
@@ -102,31 +112,28 @@ namespace Operator {
         d_fe_face->reinit ( d_face );
         d_fe->reinit( d_elem, k );
 
-        const std::vector<std::vector<Real> > & phi = *d_phi;
-        const std::vector<Real> & djxw = *d_JxW;
-        const std::vector<Point> & normal = *d_normal;
-
-        for(int dofId = 0; dofId < 3; dofId++) {
-
           std::vector<unsigned int> bndGlobalIds;
-          dof_map->getDOFs(cur_side, bndGlobalIds, dofId);
+          dof_map->getDOFs(cur_side, bndGlobalIds);
 
           std::vector<double> outputValue(bndGlobalIds.size(), 0.0);
 
-          for(unsigned int i = 0; i < bndGlobalIds.size(); i++) {
+          for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) 
+          {
+            RealGradient grad_phi = 0.0;
 
-            double inputValue = d_inputVec->getValueByGlobalID(bndGlobalIds[i]); 
-
-            for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) 
-            {
-                outputValue[i] +=  (djxw[qp]*phi[i][qp]*inputValue*normal[qp](dofId));
+            for (size_t n = 0; n < bndGlobalIds.size(); n++) {
+              double inputValue = d_inputVec->getValueByGlobalID(bndGlobalIds[n]);
+                grad_phi += dphi[n][qp] * inputValue ;
             }
 
-          }//end for i
+            for(unsigned int i = 0; i < bndGlobalIds.size(); i++) {
+                outputValue[i] +=  (JxW[qp]*grad_phi*normal[qp]);
+            }
+
+          }//end for qp
 
           rInternal->addValuesByGlobalID((int)bndGlobalIds.size() , (int *)&(bndGlobalIds[0]), &(outputValue[0]));
 
-        }//end for dofId
 
       }//end for bnd
 

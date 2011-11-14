@@ -5,6 +5,7 @@
 #include "boost/shared_ptr.hpp"
 
 #include "operators/OperatorParameters.h"
+#include "operators/Operator.h"
 
 /* Libmesh files */
 #include "fe_type.h"
@@ -24,7 +25,7 @@
 namespace AMP {
 namespace Operator {
 
-  class ComputeSurfaceNormal
+  class ComputeSurfaceNormal 
   {
     public :
 
@@ -32,7 +33,9 @@ namespace Operator {
 
       virtual ~ComputeSurfaceNormal() { }
 
-      boost::shared_ptr<AMP::LinearAlgebra::Vector> getNormals(const AMP::LinearAlgebra::Vector::shared_ptr &);
+      AMP::LinearAlgebra::Vector::shared_ptr getNormals(const AMP::LinearAlgebra::Vector::shared_ptr &u);
+
+      void setVariable(const AMP::LinearAlgebra::Variable::shared_ptr & u);
 
     protected :
 
@@ -41,8 +44,6 @@ namespace Operator {
       AMP::LinearAlgebra::Vector::shared_ptr d_inputVec;
 
       AMP::LinearAlgebra::Vector::shared_ptr d_outputVec;
-
-      AMP::LinearAlgebra::Variable::shared_ptr d_variable;
 
       int d_numIds;
        
@@ -69,6 +70,8 @@ namespace Operator {
       const ::Elem *d_elem;
 
       AMP::Mesh::MeshManager::Adapter::shared_ptr d_MeshAdapter;
+
+      AMP::LinearAlgebra::Variable::shared_ptr d_variable;
 
     private :
 
