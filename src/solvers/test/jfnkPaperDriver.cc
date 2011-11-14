@@ -202,6 +202,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
               kspSolver->setPreconditioner(mlSolver);
 
+#ifdef USE_SILO
+              manager->registerVectorAsData(solVec, "Displacement");
+              char outFileName[200];
+              sprintf(outFileName, "%s_case_%d", exeName.c_str(), caseCnt);
+              manager->writeFile<AMP::Mesh::SiloIO>(outFileName, 1);
+#endif
+
               snesSolver->solve(rhsVec, solVec);
 
               size_t numDofs = solVec->getGlobalSize();
