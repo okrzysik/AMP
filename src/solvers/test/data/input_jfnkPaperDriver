@@ -2,6 +2,8 @@
 NumberOfMeshes = 0
 NumberOfMeshFiles = 1
 mesh1 = "regPlateWithHole1"
+//mesh1 = "regPlateWithHole2"
+//mesh1 = "regPlateWithHole3"
 
 //Remove "CaseToRun" to run all cases
 //CaseToRun = 0

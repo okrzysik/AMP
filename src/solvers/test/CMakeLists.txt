@@ -39,6 +39,8 @@ INCLUDE (macros)
 #
 
 COPY_MESH_FILE ( regPlateWithHole1 )
+COPY_MESH_FILE ( regPlateWithHole2 )
+COPY_MESH_FILE ( regPlateWithHole3 )
 
 COPY_MESH_FILE ( lumlmesh1 )
 COPY_MESH_FILE ( lumlmesh2 )
