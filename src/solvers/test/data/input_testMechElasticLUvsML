@@ -22,7 +22,7 @@ CG_Solver {
     pc_type = "shell"
     pc_side = "LEFT"
 
-    KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 50"
+    KSPOptions = "-ksp_monitor_cancel -ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 50"
 }
 
 Richardson_Solver {
@@ -37,7 +37,7 @@ Richardson_Solver {
     pc_type = "shell"
     pc_side = "LEFT"
 
-    KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_richardson_scale 1.0 -ksp_max_it 50"
+    KSPOptions = "-ksp_monitor_cancel -ksp_monitor_true_residual -ksp_converged_reason -ksp_richardson_scale 1.0 -ksp_max_it 50"
 }
 
 ML_Solver {

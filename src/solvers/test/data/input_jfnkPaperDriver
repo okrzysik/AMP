@@ -3,18 +3,22 @@ NumberOfMeshes = 0
 NumberOfMeshFiles = 1
 mesh1 = "regPlateWithHole1"
 
+//Remove "CaseToRun" to run all cases
+//CaseToRun = 0
+CaseToRun = 1
+
 ULConsistentModel {
   USE_MATERIALS_LIBRARY = FALSE
     Material = ""
     USE_UPDATED_LAGRANGIAN = TRUE
     USE_CONTINUUM_TANGENT = FALSE
     USE_JAUMANN_RATE = FALSE
-    print_info_level = 6
+    print_info_level = 0
     name = "VonMisesElastoPlasticModel"
-    Youngs_Modulus = 1.0e5
-    Poissons_Ratio = 0.3
-    Linear_Strain_Hardening = 5000.0
-    Elastic_Yield_Stress = 250.0
+    Youngs_Modulus = 2.0e5
+    Poissons_Ratio = 0.25
+    Linear_Strain_Hardening = 200.0
+    Elastic_Yield_Stress = 15.0
 }
 
 ULContinuumModel {
@@ -23,12 +27,12 @@ ULContinuumModel {
     USE_UPDATED_LAGRANGIAN = TRUE
     USE_CONTINUUM_TANGENT = TRUE
     USE_JAUMANN_RATE = FALSE
-    print_info_level = 6
+    print_info_level = 0
     name = "VonMisesElastoPlasticModel"
-    Youngs_Modulus = 1.0e5
-    Poissons_Ratio = 0.3
-    Linear_Strain_Hardening = 5000.0
-    Elastic_Yield_Stress = 250.0
+    Youngs_Modulus = 2.0e5
+    Poissons_Ratio = 0.25
+    Linear_Strain_Hardening = 200.0
+    Elastic_Yield_Stress = 15.0
 }
 
 SSConsistentModel {
@@ -37,12 +41,12 @@ SSConsistentModel {
     USE_UPDATED_LAGRANGIAN = FALSE
     USE_CONTINUUM_TANGENT = FALSE
     USE_JAUMANN_RATE = FALSE
-    print_info_level = 6
+    print_info_level = 0
     name = "VonMisesElastoPlasticModel"
-    Youngs_Modulus = 1.0e5
-    Poissons_Ratio = 0.3
-    Linear_Strain_Hardening = 5000.0
-    Elastic_Yield_Stress = 250.0
+    Youngs_Modulus = 2.0e5
+    Poissons_Ratio = 0.25
+    Linear_Strain_Hardening = 200.0
+    Elastic_Yield_Stress = 15.0
 }
 
 SSContinuumModel {
@@ -51,17 +55,17 @@ SSContinuumModel {
     USE_UPDATED_LAGRANGIAN = FALSE
     USE_CONTINUUM_TANGENT = TRUE
     USE_JAUMANN_RATE = FALSE
-    print_info_level = 6
+    print_info_level = 0
     name = "VonMisesElastoPlasticModel"
-    Youngs_Modulus = 1.0e5
-    Poissons_Ratio = 0.3
-    Linear_Strain_Hardening = 5000.0
-    Elastic_Yield_Stress = 250.0
+    Youngs_Modulus = 2.0e5
+    Poissons_Ratio = 0.25
+    Linear_Strain_Hardening = 200.0
+    Elastic_Yield_Stress = 15.0
 }
 
 MechanicsLinearFEOperatorUL {
   name = "MechanicsLinearFEOperator"
-    print_info_level = 1
+    print_info_level = 0
     reset_reuses_matrix = TRUE
     isNonlinearOperatorInitialized = FALSE  
     isAttachedToNonlinearOperator = TRUE
@@ -82,7 +86,7 @@ MechanicsLinearFEOperatorUL {
 
 MechanicsLinearFEOperatorSS {
   name = "MechanicsLinearFEOperator"
-    print_info_level = 1
+    print_info_level = 0
     reset_reuses_matrix = TRUE
     isNonlinearOperatorInitialized = FALSE  
     isAttachedToNonlinearOperator = TRUE
@@ -103,21 +107,21 @@ MechanicsLinearFEOperatorSS {
 
 LinearBVP_UL {
   name="LinearBVPOperator"
-    print_info_level = 1
+    print_info_level = 0
     VolumeOperator = "MechanicsLinearFEOperatorUL"
     BoundaryOperator = "DirichletMatrixCorrection"
 }
 
 LinearBVP_SS {
   name="LinearBVPOperator"
-    print_info_level = 1
+    print_info_level = 0
     VolumeOperator = "MechanicsLinearFEOperatorSS"
     BoundaryOperator = "DirichletMatrixCorrection"
 }
 
 MechanicsNonlinearFEOperatorULConsistent {
   name = "MechanicsNonlinearFEOperator"
-    print_info_level = 3
+    print_info_level = 0
     ActiveInputVariables {
       DISPLACEMENT = "displacement"
     }
@@ -141,7 +145,7 @@ MechanicsNonlinearFEOperatorULConsistent {
 
 MechanicsNonlinearFEOperatorULContinuum {
   name = "MechanicsNonlinearFEOperator"
-    print_info_level = 3
+    print_info_level = 0
     ActiveInputVariables {
       DISPLACEMENT = "displacement"
     }
@@ -165,7 +169,7 @@ MechanicsNonlinearFEOperatorULContinuum {
 
 MechanicsNonlinearFEOperatorSSConsistent {
   name = "MechanicsNonlinearFEOperator"
-    print_info_level = 3
+    print_info_level = 0
     ActiveInputVariables {
       DISPLACEMENT = "displacement"
     }
@@ -189,7 +193,7 @@ MechanicsNonlinearFEOperatorSSConsistent {
 
 MechanicsNonlinearFEOperatorSSContinuum {
   name = "MechanicsNonlinearFEOperator"
-    print_info_level = 3
+    print_info_level = 0
     ActiveInputVariables {
       DISPLACEMENT = "displacement"
     }
@@ -213,35 +217,35 @@ MechanicsNonlinearFEOperatorSSContinuum {
 
 NonlinearBVP_UL_Consistent {
   name="NonlinearBVPOperator"
-    print_info_level = 3
+    print_info_level = 0
     VolumeOperator = "MechanicsNonlinearFEOperatorULConsistent"
     BoundaryOperator = "DirichletVectorCorrection"
 }
 
 NonlinearBVP_UL_Continuum {
   name="NonlinearBVPOperator"
-    print_info_level = 3
+    print_info_level = 0
     VolumeOperator = "MechanicsNonlinearFEOperatorULContinuum"
     BoundaryOperator = "DirichletVectorCorrection"
 }
 
 NonlinearBVP_SS_Consistent {
   name="NonlinearBVPOperator"
-    print_info_level = 3
+    print_info_level = 0
     VolumeOperator = "MechanicsNonlinearFEOperatorSSConsistent"
     BoundaryOperator = "DirichletVectorCorrection"
 }
 
 NonlinearBVP_SS_Continuum {
   name="NonlinearBVPOperator"
-    print_info_level = 3
+    print_info_level = 0
     VolumeOperator = "MechanicsNonlinearFEOperatorSSContinuum"
     BoundaryOperator = "DirichletVectorCorrection"
 }
 
 LoadOperator {
   name="DirichletVectorCorrection"
-    print_info_level = 1
+    print_info_level = 0
     skip_params = FALSE
     isAttachedToVolumeOperator = FALSE
     setResidual = FALSE
@@ -250,12 +254,12 @@ LoadOperator {
     id_0 = 1
     number_of_dofs_0 = 1
     dof_0_0 = 2
-    value_0_0 = 1.0
+    value_0_0 = 10.0
 }
 
 DirichletVectorCorrection {
   name="DirichletVectorCorrection"
-    print_info_level = 1
+    print_info_level = 0
     skip_params = FALSE
     isAttachedToVolumeOperator = TRUE
     setResidual = FALSE
@@ -273,7 +277,7 @@ DirichletVectorCorrection {
 
 DirichletMatrixCorrection {
   name = "DirichletMatrixCorrection"
-    print_info_level = 1
+    print_info_level = 0
     skip_params = FALSE
     symmetric_correction = TRUE
     zero_dirichlet_block = FALSE
@@ -286,19 +290,20 @@ DirichletMatrixCorrection {
     dof_0_2 = 2
 }
 
-
 ML_Solver {
   problem_type = "SA"
     print_info_level = 0
     max_iterations = 1
-    max_levels = 30
+    //max_levels = 1
+    //max_levels = 10
+    max_levels = 20
     max_error = 1.0e-16
     PDE_equations = 3
 }
 
 SNES_EW_JFNK {
   print_info_level = 0 
-    max_iterations = 5
+    max_iterations = 30
     max_error = 1e-10
     absoluteTolerance = 1.0e-10
     relativeTolerance = 1.0e-11
@@ -311,7 +316,7 @@ SNES_EW_JFNK {
 
     LinearSolver {
       print_info_level = 0
-        max_iterations = 10
+        max_iterations = 20
         max_error = 1.0e-30
         ksp_type = "cg"
         absolute_tolerance = 1.0e-30
@@ -320,13 +325,13 @@ SNES_EW_JFNK {
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "LEFT"
-        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 10"
+        KSPOptions = "-ksp_monitor_cancel -ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 20"
     }
 }
 
 SNES_JFNK {
   print_info_level = 0 
-    max_iterations = 5
+    max_iterations = 30
     max_error = 1e-10
     absoluteTolerance = 1.0e-10
     relativeTolerance = 1.0e-11
@@ -339,7 +344,7 @@ SNES_JFNK {
 
     LinearSolver {
       print_info_level = 0
-        max_iterations = 10
+        max_iterations = 20
         max_error = 1.0e-30
         ksp_type = "cg"
         absolute_tolerance = 1.0e-30
@@ -348,13 +353,13 @@ SNES_JFNK {
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "LEFT"
-        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 10"
+        KSPOptions = "-ksp_monitor_cancel -ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 20"
     }
 }
 
 SNES_EW {
   print_info_level = 0 
-    max_iterations = 5
+    max_iterations = 30
     max_error = 1e-10
     absoluteTolerance = 1.0e-10
     relativeTolerance = 1.0e-11
@@ -367,7 +372,7 @@ SNES_EW {
 
     LinearSolver {
       print_info_level = 0
-        max_iterations = 10
+        max_iterations = 20
         max_error = 1.0e-30
         ksp_type = "cg"
         absolute_tolerance = 1.0e-30
@@ -376,13 +381,13 @@ SNES_EW {
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "LEFT"
-        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 10"
+        KSPOptions = "-ksp_monitor_cancel -ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 20"
     }
 }
 
 SNES {
   print_info_level = 0 
-    max_iterations = 5
+    max_iterations = 30
     max_error = 1e-10
     absoluteTolerance = 1.0e-10
     relativeTolerance = 1.0e-11
@@ -395,7 +400,7 @@ SNES {
 
     LinearSolver {
       print_info_level = 0
-        max_iterations = 10
+        max_iterations = 20
         max_error = 1.0e-30
         ksp_type = "cg"
         absolute_tolerance = 1.0e-30
@@ -404,7 +409,7 @@ SNES {
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "LEFT"
-        KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 10"
+        KSPOptions = "-ksp_monitor_cancel -ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 20"
     }
 }
 
