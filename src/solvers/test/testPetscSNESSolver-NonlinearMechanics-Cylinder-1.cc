@@ -198,17 +198,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
       ut->passes("Nonlinear solve for current loading step");
     }
 
-    unsigned int totalLinearApplyCount = linBvpOperator->getApplyCount();
-    unsigned int totalNonlinearApplyCount = (boost::dynamic_pointer_cast<AMP::Operator::NonlinearFEOperator>
-        (nonlinBvpOperator->getVolumeOperator()))->getApplyCount();
-
-    AMP::pout<<"Total linear apply count for loading step "<<(step+1)<<" is: "<<totalLinearApplyCount<<std::endl;
-    AMP::pout<<"Total nonlinear apply count for loading step "<<(step+1)<<" is: "<<totalNonlinearApplyCount<<std::endl;
-
-    linBvpOperator->resetApplyCount();
-    (boost::dynamic_pointer_cast<AMP::Operator::NonlinearFEOperator>
-     (nonlinBvpOperator->getVolumeOperator()))->resetApplyCount();
-
     double finalSolNorm = mechNlSolVec->L2Norm();
 
     AMP::pout<<"Final Solution Norm: "<<finalSolNorm<<std::endl;
