@@ -166,6 +166,10 @@ namespace AMP {
         // in this case we make the assumption we can access a EpetraMat for now
         AMP_INSIST(d_pOperator.get()!=NULL,"ERROR: TrilinosMLSolver::solve() operator cannot be NULL");
 
+        if(d_bUseZeroInitialGuess) {
+          u->zero();
+        }
+
         if(d_bCreationPhase) {
           if(d_bUseEpetra) {
             d_mlSolver->ComputePreconditioner();
@@ -188,6 +192,12 @@ namespace AMP {
           AMP::pout << "TrilinosMLSolver::solve(), L2 norm of residual before solve " <<std::setprecision(15)<< r->L2Norm() << std::endl;
         }
 
+        if( d_iDebugPrintInfoLevel > 2) 
+        {
+          double solution_norm = u->L2Norm();
+          AMP::pout << "TrilinosMLSolver : before solve solution norm: " <<std::setprecision(15)<< solution_norm << std::endl;
+        }
+
         if(d_bUseEpetra) {
           // These functions throw exceptions if this cannot be performed.
           Epetra_Vector &fVec = (AMP::LinearAlgebra::EpetraVector::view ( f ))->castTo<AMP::LinearAlgebra::EpetraVector>().getEpetra_Vector();
@@ -201,8 +211,6 @@ namespace AMP {
           ML_Iterate(d_ml, uArr, fArr);
         }
 
-        double solution_norm = u->L2Norm();
-
         // we are forced to update the state of u here
         // as Epetra is not going to change the state of a managed vector
         // an example where this will and has caused problems is when the
@@ -214,7 +222,8 @@ namespace AMP {
 
         if( d_iDebugPrintInfoLevel > 2) 
         {
-          AMP::pout << "TrilinosMLSolver : solution norm: " <<std::setprecision(15)<< solution_norm << std::endl;
+          double solution_norm = u->L2Norm();
+          AMP::pout << "TrilinosMLSolver : after solve solution norm: " <<std::setprecision(15)<< solution_norm << std::endl;
         }
 
         // for debugging in extreme cases, clone a temporary vector and compute the residual
