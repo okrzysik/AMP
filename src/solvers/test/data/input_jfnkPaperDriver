@@ -1,13 +1,12 @@
 
 NumberOfMeshes = 0
 NumberOfMeshFiles = 1
-mesh1 = "regPlateWithHole1"
-//mesh1 = "regPlateWithHole2"
-//mesh1 = "regPlateWithHole3"
+mesh1 = "regBox1"
+//mesh1 = "regPlateWithHole1"
 
 //Remove "CaseToRun" to run all cases
-//CaseToRun = 0
-CaseToRun = 1
+CaseToRun = 0
+//CaseToRun = 1
 
 ULConsistentModel {
   USE_MATERIALS_LIBRARY = FALSE
@@ -17,10 +16,10 @@ ULConsistentModel {
     USE_JAUMANN_RATE = FALSE
     print_info_level = 0
     name = "VonMisesElastoPlasticModel"
-    Youngs_Modulus = 2.0e5
+    Youngs_Modulus = 2.0e11
     Poissons_Ratio = 0.25
-    Linear_Strain_Hardening = 200.0
-    Elastic_Yield_Stress = 15.0
+    Linear_Strain_Hardening = 1.0e8
+    Elastic_Yield_Stress = 5.0e7
 }
 
 ULContinuumModel {
@@ -31,10 +30,10 @@ ULContinuumModel {
     USE_JAUMANN_RATE = FALSE
     print_info_level = 0
     name = "VonMisesElastoPlasticModel"
-    Youngs_Modulus = 2.0e5
+    Youngs_Modulus = 2.0e11
     Poissons_Ratio = 0.25
-    Linear_Strain_Hardening = 200.0
-    Elastic_Yield_Stress = 15.0
+    Linear_Strain_Hardening = 1.0e8
+    Elastic_Yield_Stress = 5.0e7
 }
 
 SSConsistentModel {
@@ -45,10 +44,10 @@ SSConsistentModel {
     USE_JAUMANN_RATE = FALSE
     print_info_level = 0
     name = "VonMisesElastoPlasticModel"
-    Youngs_Modulus = 2.0e5
+    Youngs_Modulus = 2.0e11
     Poissons_Ratio = 0.25
-    Linear_Strain_Hardening = 200.0
-    Elastic_Yield_Stress = 15.0
+    Linear_Strain_Hardening = 1.0e8
+    Elastic_Yield_Stress = 5.0e7
 }
 
 SSContinuumModel {
@@ -59,10 +58,10 @@ SSContinuumModel {
     USE_JAUMANN_RATE = FALSE
     print_info_level = 0
     name = "VonMisesElastoPlasticModel"
-    Youngs_Modulus = 2.0e5
+    Youngs_Modulus = 2.0e11
     Poissons_Ratio = 0.25
-    Linear_Strain_Hardening = 200.0
-    Elastic_Yield_Stress = 15.0
+    Linear_Strain_Hardening = 1.0e8
+    Elastic_Yield_Stress = 5.0e7
 }
 
 MechanicsLinearFEOperatorUL {
@@ -256,7 +255,7 @@ LoadOperator {
     id_0 = 1
     number_of_dofs_0 = 1
     dof_0_0 = 2
-    value_0_0 = 10.0
+    value_0_0 = 1.0
 }
 
 DirichletVectorCorrection {
