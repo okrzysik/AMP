@@ -39,6 +39,15 @@ void MeshParameters::setComm ( AMP::AMP_MPI comm_in )
 }
 
 
+/********************************************************
+* Return the database                                   *
+********************************************************/
+boost::shared_ptr<AMP::Database> MeshParameters::getDatabase ( )
+{
+    return d_db;
+}
+
+
 } // Mesh namespace
 } // AMP namespace
 

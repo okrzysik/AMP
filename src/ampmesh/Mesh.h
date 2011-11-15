@@ -71,6 +71,26 @@ public:
     Mesh ( const Mesh::shared_ptr &old_mesh, MeshIterator::shared_ptr &iterator);
 
 
+    /**
+     * \brief   Create a mesh 
+     * \details  This function will create a mesh (or series of meshes) based on
+     *   the input database.  
+     * \param params Parameters for constructing a mesh from an input database
+     */
+    static boost::shared_ptr<AMP::Mesh::Mesh> buildMesh( const MeshParameters::shared_ptr &params );
+
+
+    /**
+     * \brief   Estimate the number of elements in the mesh 
+     * \details  This function will estimate the number of elements in the mesh. 
+     *   This is used so that we can properly balance the meshes across multiple processors.
+     *   Ideally this should be both an accurate estimate and very fast.  It should not require
+     *   any communication and should not have to actually load a mesh.
+     * \param params Parameters for constructing a mesh from an input database
+     */
+    static size_t estimateMeshSize( const MeshParameters::shared_ptr &params );
+
+
     //! Deconstructor
      ~Mesh ();
 

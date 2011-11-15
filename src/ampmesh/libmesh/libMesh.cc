@@ -26,7 +26,7 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
     // Load the mesh
     if ( d_db.get() ) {
         // Database exists
-        if ( d_db->keyExists("Filename") ) {
+        if ( d_db->keyExists("FileName") ) {
             // Read an existing mesh
             AMP_INSIST(d_db->keyExists("dim"),"Variable 'dim' must be set in the database");
             PhysicalDim = d_db->getInteger("dim");
@@ -36,7 +36,7 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
             d_libMesh = boost::shared_ptr< ::Mesh>( new ::Mesh(PhysicalDim) );
             d_libMeshData = boost::shared_ptr< ::MeshData>( new ::MeshData(*d_libMesh) );
             // Use libMesh to read the data
-            d_libMesh->read(d_db->getString("Filename"));
+            d_libMesh->read(d_db->getString("FileName"));
             // Construct the neighbor information
             d_libMesh->find_neighbors();
         } else {
@@ -98,6 +98,18 @@ libMesh::~libMesh()
 Mesh libMesh::copy() const
 {
     return libMesh(*this);
+}
+
+
+/********************************************************
+* Function to estimate the mesh size                    *
+********************************************************/
+size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
+{
+    boost::shared_ptr<AMP::Database> database = params->getDatabase();
+    AMP_ASSERT(database.get()!=NULL);
+    AMP_INSIST(database->keyExists("NumberOfElements"),"Key NumberOfElements must exist in database to estimate the mesh size");
+    return (size_t) database->getInteger("NumberOfElements");
 }
 
 

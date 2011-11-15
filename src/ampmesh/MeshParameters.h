@@ -43,6 +43,9 @@ public:
      */
     void setComm ( AMP::AMP_MPI comm );
 
+    //!  Get the database for the mesh
+    boost::shared_ptr<AMP::Database> getDatabase ( );
+
     //! Deconstructor
      ~MeshParameters ();
 

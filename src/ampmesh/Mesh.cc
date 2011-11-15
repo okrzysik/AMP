@@ -1,6 +1,11 @@
 #include "ampmesh/Mesh.h"
 #include "utils/Utilities.h"
 
+#include "ampmesh/MultiMesh.h"
+#ifdef USE_LIBMESH
+#include "ampmesh/libmesh/libMesh.h"
+#endif
+
 namespace AMP {
 namespace Mesh {
 
@@ -11,6 +16,7 @@ static unsigned int nextLocalMeshID = 1;
 ********************************************************/
 Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
 {
+    // Set the base properties
     params = params_in;
     GeomDim = null;
     comm = params->comm;
@@ -42,6 +48,67 @@ Mesh Mesh::operator=(const Mesh& rhs)
 Mesh Mesh::copy() const
 {
     return Mesh(*this);
+}
+
+
+/********************************************************
+* Create a mesh from the input database                 *
+********************************************************/
+boost::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_ptr &params )
+{
+    boost::shared_ptr<AMP::Database> database = params->d_db;
+    AMP_ASSERT(database!=NULL);
+    AMP_INSIST(database->keyExists("MeshType"),"MeshType must exist in input database");
+    std::string MeshType = database->getString("MeshType");
+    boost::shared_ptr<AMP::Mesh::Mesh> mesh;
+    if ( MeshType == std::string("Multimesh") ) {
+        // The mesh is a multimesh
+        mesh = boost::shared_ptr<AMP::Mesh::MultiMesh>(new AMP::Mesh::MultiMesh(params) );
+    } else if ( MeshType == std::string("libMesh") ) {
+        // The mesh is a libmesh mesh
+        #ifdef USE_LIBMESH
+            mesh = boost::shared_ptr<AMP::Mesh::libMesh>(new AMP::Mesh::libMesh(params) );
+        #else
+            AMP_ERROR("AMP was compiled without support for libMesh");
+        #endif
+    } else {
+        // Unknown mesh type
+        AMP_ERROR( std::string("Unknown mesh type (") + MeshType + std::string(")") );
+    }
+    return mesh;
+}
+
+
+/********************************************************
+* Estimate the mesh size                                *
+********************************************************/
+size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
+{
+    boost::shared_ptr<AMP::Database> database = params->d_db;
+    AMP_ASSERT(database!=NULL);
+    size_t meshSize = 0;
+    // This is being called through the base class, call the appropriate function
+    AMP_INSIST(database->keyExists("MeshType"),"MeshType must exist in input database");
+    std::string MeshType = database->getString("MeshType");
+    boost::shared_ptr<AMP::Mesh::Mesh> mesh;
+    if ( MeshType == std::string("Multimesh") ) {
+        // The mesh is a multimesh
+        meshSize = AMP::Mesh::MultiMesh::estimateMeshSize(params);
+    } else if ( MeshType == std::string("libMesh") ) {
+        // The mesh is a libmesh mesh
+        #ifdef USE_LIBMESH
+            meshSize = AMP::Mesh::libMesh::estimateMeshSize(params);
+        #else
+            AMP_ERROR("AMP was compiled without support for libMesh");
+        #endif
+    } else if ( database->keyExists("NumberOfElements") ) {
+        int NumberOfElements = database->getInteger("NumberOfElements");
+        meshSize = NumberOfElements;
+    } else {
+        // Unknown mesh type
+        AMP_ERROR( "Unknown mesh type and NumberOfElements does not exist in database" );
+    }
+    return meshSize;
 }
 
 

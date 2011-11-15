@@ -1,11 +1,7 @@
-#ifndef included_AMP_LibMesh
-#define included_AMP_LibMesh
+#ifndef included_AMP_MultiMesh
+#define included_AMP_MultiMesh
 
 #include "ampmesh/Mesh.h"
-
-// LibMesh include
-#include "mesh.h"
-#include "mesh_data.h"
 
 
 namespace AMP {
@@ -14,12 +10,17 @@ namespace Mesh {
 
 
 /**
- * \class libMesh
- * \brief A concrete mesh class for libMesh
+ * \class MultiMesh
+ * \brief A concrete mesh class for a multi-mesh
  *
- * \details  This class provides routines for reading, accessing and writing libMesh meshes.
+ * \details  This class provides routines for creating and accessing multimeshes.
+ *   The concept of a multimesh is a mesh that is composed of multiple meshes.
+ *   This takes care of the need for a mesh manager while allowing all operations
+ *   on a given mesh to apply to multiple meshes.  Note: all meshes within a multimesh
+ *   are stored in a flat array.  This applies when we have a multimesh that may contain
+ *   other multimeshes that may (or may not) overlap.
  */
-class libMesh: public Mesh
+class MultiMesh: public Mesh
 {
 public:
 
@@ -30,14 +31,13 @@ public:
      * processor contains a piece of each mesh.  For massive parallelism, each mesh is on its own
      * communicator.  As such, some math libraries must be initialized accordingly.
      */
-    libMesh ( const MeshParameters::shared_ptr &params );
+    MultiMesh ( const MeshParameters::shared_ptr &params );
 
     //! Deconstructor
-     ~libMesh ();
+     ~MultiMesh ();
 
     //! Function to copy the mesh (allows use to proply copy the derived class)
     Mesh copy() const;
-
 
     /**
      * \brief   Estimate the number of elements in the mesh 
@@ -48,7 +48,6 @@ public:
      * \param params Parameters for constructing a mesh from an input database
      */
     static size_t estimateMeshSize( const MeshParameters::shared_ptr &params );
-
 
     /* Return the number of local element of the given type
      * \param type   Geometric type
@@ -94,20 +93,17 @@ public:
 
 
 
-    //! Return the underlying libMesh object
-    inline boost::shared_ptr< ::Mesh> getlibMesh( ) const { return d_libMesh; }
 
 private:
 
-    //!  Empty constructor for a mesh
-    libMesh ( ) {};
+    //! Empty constructor for a mesh
+    MultiMesh ( ) {};
 
-    // libMesh objects
-    boost::shared_ptr< ::Mesh>          d_libMesh;
-    boost::shared_ptr< ::MeshData>      d_libMeshData;
+    //! Function to create the databases for the meshes within the multimesh
+    static std::vector<boost::shared_ptr<AMP::Database> >  createDatabases(boost::shared_ptr<AMP::Database> database);
 
-    // Some internal data
-    std::vector<size_t> n_local, n_global, n_ghost;
+    //! A list of all meshes in the multimesh
+    std::vector<AMP::Mesh::Mesh::shared_ptr> d_meshes;
 
 };
 

@@ -12,7 +12,7 @@
 
 // Factory to create a vector from a mesh
 AMP::Mesh::Mesh::shared_ptr globalMeshForMeshVectorFactory = AMP::Mesh::Mesh::shared_ptr();
-AMP::Discretization::DOFManager::shared_ptr globalDOFforMeshVectorFactory = AMP::Discretization::DOFManager::shared_ptr();
+boost::shared_ptr<AMP::Discretization::simpleDOFManager> globalDOFforMeshVectorFactory = boost::shared_ptr<AMP::Discretization::simpleDOFManager>();
 template <int SIZE, AMP::Mesh::GeomType TYPE, int GCW>
 class  MeshVectorFactory
 {
@@ -48,7 +48,7 @@ public:
 
 
 template <int DOF_PER_NODE>
-void simpleNodalVectorTests( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh, AMP::Discretization::DOFManager::shared_ptr DOFs, int gcw ) {
+void simpleNodalVectorTests( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh, boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFs, int gcw ) {
 
         // Create a nodal variable 
         AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::Discretization::NodalVariable(DOF_PER_NODE,"test vector") );
@@ -118,7 +118,7 @@ void VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh
             AMP_ERROR("Not finished");
         }
         globalMeshForMeshVectorFactory = AMP::Mesh::Mesh::shared_ptr();
-        globalDOFforMeshVectorFactory = AMP::Discretization::DOFManager::shared_ptr();
+        globalDOFforMeshVectorFactory = boost::shared_ptr<AMP::Discretization::simpleDOFManager>();
 
     }
 }

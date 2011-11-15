@@ -7,19 +7,20 @@
 #include "utils/Utilities.h"
 #include "utils/PIO.h"
 
+#include "discretization/DOF_Manager.h"
+
 #include "operators/map/ScalarZAxisMap.h"
 #include "operators/map/AsyncMapColumnOperator.h"
 
 #include "petscsys.h"
 
 
-void  setBoundary ( size_t whichBnd , AMP::LinearAlgebra::Vector::shared_ptr &v1 , AMP::Mesh::MeshManager::shared_ptr &manager )
+void  setBoundary ( size_t whichBnd , AMP::LinearAlgebra::Vector::shared_ptr &v1 , AMP::Mesh::Mesh::shared_ptr &mesh )
 {
-    AMP::Mesh::MeshManager::Adapter::shared_ptr  mesh = manager->getMesh();
-    AMP::Mesh::DOFMap::shared_ptr  d1 = mesh->getDOFMap ( v1->castTo<AMP::LinearAlgebra::MultiVector>().getVector ( 0 )->getVariable() );
-    // AMP::Mesh::DOFMap::shared_ptr  d2 = mesh->getDOFMap ( v1->castTo<AMP::LinearAlgebra::MultiVector>().getVector ( 1 )->getVariable() );
-    AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator  curBnd = mesh->beginOwnedBoundary ( manager->getMapBoundaryId ( whichBnd ) );
-    AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator  endBnd = mesh->endOwnedBoundary   ( manager->getMapBoundaryId ( whichBnd ) );
+
+    AMP::Discretization::DOFManager::shared_ptr  d1 = v1->getDOFManager( );
+    AMP::Mesh::MeshIterator  curBnd = mesh->beginOwnedBoundary ( mesh->getMapBoundaryId ( whichBnd ) );
+    AMP::Mesh::MeshIterator  endBnd = mesh->endOwnedBoundary   ( mesh->getMapBoundaryId ( whichBnd ) );
 
     while ( curBnd != endBnd )
     {
