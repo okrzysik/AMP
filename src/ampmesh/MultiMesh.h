@@ -68,6 +68,17 @@ public:
 
 
     /**
+     * \brief    Subset a mesh given a MeshID
+     * \details  This function will return the mesh with the given meshID.
+     *    Note: for multmeshes, this will return the mesh with the given id.
+     *    For a single mesh this will return a pointer to itself if the meshID
+     *    matches the meshID of the mesh, and a null pointer otherwise.
+     * \param meshID  MeshID of the desired mesh
+     */
+    virtual boost::shared_ptr<Mesh>  Subset( size_t meshID );
+
+
+    /**
      * \brief    Return an MeshIterator over the given geometric objects
      * \details  Return an MeshIterator over the given geometric objects
      * \param type   Geometric type to iterate over

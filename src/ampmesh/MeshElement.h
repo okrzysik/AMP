@@ -39,36 +39,42 @@ struct MeshElementID{
         meshID = mesh_ID;
     }
     // Overload key operators
-    bool operator== (const MeshElementID& rhs ) const {
+    inline bool operator== (const MeshElementID& rhs ) const {
         return type==rhs.type && local_id==rhs.local_id && owner_rank==rhs.owner_rank && meshID==rhs.meshID;
     }
-    bool operator!= (const MeshElementID& rhs ) const {
+    inline bool operator!= (const MeshElementID& rhs ) const {
         return type!=rhs.type || local_id!=rhs.local_id || owner_rank!=rhs.owner_rank || meshID!=rhs.meshID;
     }
-    bool operator>= (const MeshElementID& rhs ) const {
+    inline bool operator>= (const MeshElementID& rhs ) const {
         // Sort by meshID first
         if ( meshID < rhs.meshID )
             return false;
+        else if ( meshID > rhs.meshID )
+            return true;
         // Sort by processor id next
         if ( owner_rank < rhs.owner_rank )
             return false;
+        else if ( owner_rank > rhs.owner_rank )
+            return true;
         // Sort by type next
         if ( type < rhs.type )
             return false;
+        else if ( type > rhs.type )
+            return true;
         // Finally check the local id
         if ( local_id < rhs.local_id )
             return false;
         return true;
     }
-    bool operator> (const MeshElementID& rhs ) const {
+    inline bool operator> (const MeshElementID& rhs ) const {
         if ( this->operator>=(rhs) && this->operator!=(rhs) )
             return true;
         return false;
     }
-    bool operator< (const MeshElementID& rhs ) const {
+    inline bool operator< (const MeshElementID& rhs ) const {
         return !(this->operator>=(rhs));
     }
-    bool operator<= (const MeshElementID& rhs ) const {
+    inline bool operator<= (const MeshElementID& rhs ) const {
         return !(this->operator>=(rhs)) || this->operator==(rhs);
     }
 };

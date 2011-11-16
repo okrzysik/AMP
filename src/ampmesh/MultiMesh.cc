@@ -258,6 +258,22 @@ MeshIterator MultiMesh::getIDsetIterator ( const GeomType, const int, const int 
 
 
 /********************************************************
+* Function to return the mesh with the given ID         *
+********************************************************/
+boost::shared_ptr<Mesh>  MultiMesh::Subset( size_t meshID ) 
+{
+    if ( d_meshID==meshID )
+        return shared_from_this();
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        boost::shared_ptr<Mesh> mesh = d_meshes[i]->Subset(meshID);
+        if ( mesh.get()!=NULL )
+            return mesh;
+    }
+    return boost::shared_ptr<Mesh>();
+}
+
+
+/********************************************************
 * Function to copy a key from database 1 to database 2  *
 * If the key is an array of size N, it will only copy   *
 * the ith value.                                        *

@@ -87,6 +87,10 @@ public:
 
 
 private:
+    // Function to find the remote DOF given a set of mesh element IDs
+    std::vector<size_t> getRemoteDOF(std::vector<AMP::Mesh::MeshElementID> remote_ids );
+
+    // Data members
     boost::shared_ptr<AMP::Mesh::Mesh>  d_mesh;
     AMP::Mesh::GeomType d_type;
     int d_gcw;

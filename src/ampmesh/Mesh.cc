@@ -150,7 +150,18 @@ void Mesh::setMeshID( )
 
 
 /********************************************************
-* Functions that aren't implimented for teh base class  *
+* Function to return the mesh with the given ID         *
+********************************************************/
+boost::shared_ptr<Mesh>  Mesh::Subset( size_t meshID ) {
+    if ( d_meshID==meshID ) 
+        return shared_from_this();
+    else
+        return boost::shared_ptr<Mesh>();
+}
+
+
+/********************************************************
+* Functions that aren't implimented for the base class  *
 ********************************************************/
 boost::shared_ptr<Mesh> Mesh::Subset( MeshIterator::shared_ptr & )
 {

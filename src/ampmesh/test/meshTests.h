@@ -12,13 +12,15 @@
 // This test checks a single mesh element iterator
 // ut           Unit test class to report the results
 // iterator     local iterator over elements
-// N_elem       number of local elements for the iterator
-void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator, const int N_elem, const AMP::Mesh::GeomType type )
+// N_local      number of local elements for the iterator
+// N_ghost      number of ghost elements for the iterator
+void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator, 
+    const size_t N_local, const size_t N_ghost, const AMP::Mesh::GeomType type )
 {
     // Check that we can get the begin and end iterator
     AMP::Mesh::MeshIterator  begin_it = iterator.begin();
     AMP::Mesh::MeshIterator  end_it = iterator.end();
-    if ( N_elem==0 ) {
+    if ( N_local+N_ghost==0 ) {
         if ( begin_it == end_it )
             ut->passes("trival iterator begin and end returned");
         else
@@ -31,23 +33,31 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator, c
         ut->failure("iterator begin and end returned");
 
     // Check that the iterator iterates through the proper number of elements
-    int number_of_local_elements = N_elem;
+    if ( iterator.size() == N_local+N_ghost )
+        ut->passes("regular iterator size()");
+    else
+        ut->failure("regular iterator size()");
+    size_t number_of_local_elements = 0;
+    size_t number_of_ghost_elements = 0;
     std::set<AMP::Mesh::MeshElementID>  ids;
     AMP::Mesh::MeshIterator  cur_it = iterator.begin();
     while ( cur_it != end_it ) {
         AMP::Mesh::MeshElementID id = cur_it->globalID();
         ids.insert ( id );
-        number_of_local_elements--;
+        if ( id.is_local )
+            number_of_local_elements++;
+        else
+            number_of_ghost_elements++;
         ++cur_it;   // Pre-increment is faster than post-increment
     }
-    if ( number_of_local_elements == 0 )
-        ut->passes ( "regular iterator count" );
+    if ( number_of_local_elements==N_local && number_of_ghost_elements==N_ghost )
+        ut->passes("regular iterator count");
     else
-        ut->failure ( "regular iterator count" );
-    if ( (int) ids.size() == N_elem )
-        ut->passes ( "regular iterator uniqueness" );
+        ut->failure("regular iterator count");
+    if ( ids.size() == N_local+N_ghost )
+        ut->passes("regular iterator uniqueness");
     else
-        ut->failure ( "regular iterator uniqueness" );
+        ut->failure("regular iterator uniqueness");
 
     // Run element tests
     bool id_pass = true;
@@ -112,11 +122,13 @@ void MeshIteratorTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mes
                 }
             }
             // Try to create the iterator
-            size_t N_elem = 0;
+            size_t N_local = 0;
+            size_t N_ghost = 0;
             AMP::Mesh::MeshIterator iterator;
             bool iterator_created = true;
             try {
-                N_elem = mesh->numLocalElements(type) + mesh->numGhostElements(type,gcw);
+                N_local = mesh->numLocalElements(type);
+                N_ghost = mesh->numGhostElements(type,gcw);
                 iterator = mesh->getIterator(type,gcw);
                 sprintf(message,"Element iterator created (gcw=%i)",gcw);
                 ut->passes(message);
@@ -135,7 +147,7 @@ void MeshIteratorTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mes
             }
             // Test the regular iterator over local elements
             if ( iterator_created )
-                ElementIteratorTest( ut, iterator, (int) N_elem, type );
+                ElementIteratorTest( ut, iterator, N_local, N_ghost, type );
             // Add tests with gcw != 0
             // Add const iterator tests
         }
@@ -177,6 +189,23 @@ void MeshCountTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
     }
 }
 
+
+// Test some basic Mesh properties
+void MeshBasicTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
+{
+    // test that we can get the mesh ID
+    size_t meshID = mesh->meshID();
+    if ( meshID>0 && meshID<1000 ) 
+        ut->passes("got meshID");
+    else
+        ut->failure("got meshID");
+    // Test that we can subset the mesh for it's self using the meshID
+    AMP::Mesh::Mesh::shared_ptr mesh2 = mesh->Subset(meshID);
+    if ( mesh2.get()==mesh.get() )
+        ut->passes("subset on meshID for self");
+    else
+        ut->failure("subset on meshID for self");
+}
 
 
 

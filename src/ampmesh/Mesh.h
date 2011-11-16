@@ -5,8 +5,9 @@
 #include "MeshIterator.h"
 #include "MeshElement.h"
 #include "utils/AMP_MPI.h"
-#include <boost/shared_ptr.hpp>
 
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 namespace AMP {
 namespace Mesh {
@@ -22,7 +23,7 @@ enum SetOP { Union, Intersection, Complement };
  *
  * \details  This class provides routines for reading, accessing and writing meshes.
  */
-class Mesh
+class Mesh: public boost::enable_shared_from_this<AMP::Mesh::Mesh>
 {
 public:
 
@@ -101,6 +102,17 @@ public:
 
     //! Virtual function to copy the mesh (allows use to proply copy the derived class)
     virtual Mesh copy() const;
+
+
+    /**
+     * \brief    Subset a mesh given a MeshID
+     * \details  This function will return the mesh with the given meshID.
+     *    Note: for multmeshes, this will return the mesh with the given id.
+     *    For a single mesh this will return a pointer to itself if the meshID
+     *    matches the meshID of the mesh, and a null pointer otherwise.
+     * \param meshID  MeshID of the desired mesh
+     */
+    virtual boost::shared_ptr<Mesh>  Subset ( size_t meshID );
 
 
     /**

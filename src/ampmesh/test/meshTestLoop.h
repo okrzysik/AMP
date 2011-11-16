@@ -14,6 +14,8 @@
 
 void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
+    // Run some basic sanity checks
+    MeshBasicTest( ut, mesh );
     // Test the number of elements
     MeshCountTest( ut, mesh );
     // Test the iterators

@@ -46,6 +46,7 @@ libMeshIterator::libMeshIterator(int type, AMP::Mesh::libMesh *mesh, int gcw, vo
         if ( size == -1 ) {
             ::Mesh::node_iterator cur_node = ::Mesh::node_iterator( *((::Mesh::node_iterator*)begin) );
             ::Mesh::node_iterator end_node = ::Mesh::node_iterator( *((::Mesh::node_iterator*)end) );
+            d_size = 0;
             while ( cur_node != end_node ) {
                 d_size++;
                 ++cur_node;
@@ -60,6 +61,7 @@ libMeshIterator::libMeshIterator(int type, AMP::Mesh::libMesh *mesh, int gcw, vo
         if ( size == -1 ) {
             ::Mesh::element_iterator cur_element = ::Mesh::element_iterator( *((::Mesh::element_iterator*)begin) );
             ::Mesh::element_iterator end_element = ::Mesh::element_iterator( *((::Mesh::element_iterator*)end) );
+            d_size = 0;
             while ( cur_element != end_element ) {
                 d_size++;
                 ++cur_element;
