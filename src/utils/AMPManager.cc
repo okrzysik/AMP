@@ -13,9 +13,9 @@
     #include "petscsys.h"   
 #endif
 
-#ifdef USE_LIBMESH
-    #include "ampmesh/libmesh/initializeLibMesh.h"
-#endif
+//#ifdef USE_LIBMESH
+//    #include "ampmesh/libmesh/initializeLibMesh.h"
+//#endif
 
 #include <new>
 #include <string.h>
@@ -163,11 +163,11 @@ void AMPManager::shutdown()
     // Shutdown the parallel IO
     PIO::finalize();
     // Shutdown LibMesh
-    #ifdef USE_LIBMESH
+    /*#ifdef USE_LIBMESH
         if ( AMP::Mesh::initializeLibMesh::isInitialized() ) {
             AMP_ERROR("Libmesh should be finalized before shutting down");
         }
-    #endif
+    #endif*/
     // Shutdown MPI
     if ( called_MPI_Init ) {
         double MPI_start_time = time();
