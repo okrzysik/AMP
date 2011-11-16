@@ -174,47 +174,57 @@ void CommunicationList::buildCommunicationArrays ( std::vector<unsigned int>  &D
 {
     d_iBegin = commRank ? partitionInfo[commRank-1] : 0;
 
-    d_ReceiveSizes.resize ( partitionInfo.size() );
-    d_ReceiveDisplacements.resize ( partitionInfo.size() );
-    d_SendSizes.resize ( partitionInfo.size() );
-    d_SendDisplacements.resize ( partitionInfo.size() );
-    d_ReceiveDOFList.resize ( 0 );
-    d_SendDOFList.resize ( 0 );
-    if ( partitionInfo.size() == 1 ) return;  // nothing to do in serial
+    size_t commSize = partitionInfo.size();
 
-    unsigned int cur_proc = 0;
-    std::vector<unsigned int>::iterator  curDof = DOFs.begin();
-    std::vector<unsigned int>::iterator  endDof = DOFs.end();
-    while ( curDof != endDof ) {
-        std::vector<unsigned int>::iterator  partStart = curDof;
-        int firstDof = curDof - DOFs.begin();
-        while ( curDof != endDof ) {
-            if ( *curDof >= partitionInfo[cur_proc] )
-                break;
-            curDof++;
-        }
-        int endDof = curDof - DOFs.begin();
-        d_ReceiveDisplacements[cur_proc] = d_ReceiveDOFList.size();
-        if ( (int)cur_proc != commRank ) {
-            d_ReceiveSizes[cur_proc] = endDof - firstDof;
-            d_ReceiveDOFList.insert ( d_ReceiveDOFList.end() , partStart , curDof );
-        }
-        cur_proc++;
+    // Check if we are working in serial
+    if ( commSize == 1 ) {
+        AMP_INSIST(DOFs.size()==0,"Error in communication list, remote DOFs are present for a serial vector");
+        d_ReceiveSizes.resize(1,0);
+        d_ReceiveDisplacements.resize(1,0);
+        d_SendSizes.resize(1,0);
+        d_SendDisplacements.resize(1,0);
+        d_ReceiveDOFList.resize(0);
+        d_SendDOFList.resize(0);
+        return;
     }
 
+    // Copy (and sort) the DOFs in d_ReceiveDOFList
+    d_ReceiveDOFList = DOFs;
+    AMP::Utilities::quicksort(d_ReceiveDOFList);
+
+    // Determine the number of DOFs recieved from each processor (this requires the DOFs to be sorted)
+    d_ReceiveSizes.resize( commSize, 0 );
+    d_ReceiveDisplacements.resize( commSize, 0 );
+    size_t rank = 0;
+    size_t start = 0;
+    size_t index = 0;
+    while ( index < d_ReceiveDOFList.size() ) {
+        if (  d_ReceiveDOFList[index] < partitionInfo[rank] ) {
+            // Move to the next DOF
+            index++;
+        } else {
+            // Store the number of DOFs with the given rank, and move to the next rank
+            d_ReceiveDisplacements[rank] = start;
+            d_ReceiveSizes[rank] = index-start;
+            start = index;
+            rank++;
+        }
+    }
+    d_ReceiveDisplacements[rank] = start;
+    d_ReceiveSizes[rank] = index-start;
+    AMP_ASSERT(d_ReceiveSizes[commRank]==0);
+
+    // Get the send sizes and displacements
+    d_SendSizes.resize( commSize, 0 );
+    d_SendDisplacements.resize( commSize, 0 );
     d_comm.allToAll( 1, &(d_ReceiveSizes[0]), &(d_SendSizes[0]) );
-
-    unsigned int send_buf_size = 0;
-    for ( unsigned int i = 0 ; i != partitionInfo.size() ; i++ ) {
-        if ( i > 0 )
-            d_SendDisplacements[i] = d_SendDisplacements[i-1] + d_SendSizes[i-1];
-        send_buf_size += d_SendSizes[i];
-    }
-
-    d_SendDOFList.resize ( send_buf_size );
-    d_ReceiveSizes[commRank] = 0;
     d_SendDisplacements[0] = 0;
+    for (size_t i=1; i<commSize; i++) 
+        d_SendDisplacements[i] = d_SendDisplacements[i-1] + d_SendSizes[i-1];
+    size_t send_buf_size = d_SendDisplacements[commSize-1] + d_SendSizes[commSize-1];
 
+    // Get the send DOFs (requires the recv DOFs to be sorted)
+    d_SendDOFList.resize( send_buf_size );
     d_comm.allToAll( getBufferToAvoidDebugVectorCrashing(d_ReceiveDOFList), (int *)&(d_ReceiveSizes[0]), (int *)&(d_ReceiveDisplacements[0]), 
                      getBufferToAvoidDebugVectorCrashing(d_SendDOFList), (int *)&(d_SendSizes[0]) , (int *)&(d_SendDisplacements[0]) , true );
 

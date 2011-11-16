@@ -15,7 +15,7 @@ void testlibMesh( AMP::UnitTest *ut )
     // Create a generic MeshParameters object
     boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
     database->putInteger("dim",3);
-    database->putString("FileName","pellet_1x.e");
+    database->putString("FileName","pellet_lo_res.e");
     boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
     params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
 
