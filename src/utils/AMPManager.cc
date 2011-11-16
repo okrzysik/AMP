@@ -14,7 +14,7 @@
 #endif
 
 #ifdef USE_LIBMESH
-    #include "libmesh.h"
+    #include "ampmesh/libmesh/initializeLibMesh.h"
 #endif
 
 #include <new>
@@ -41,28 +41,9 @@ bool AMPManager::called_PetscInitialize=false;
 bool AMPManager::use_MPI_Abort=true;
 bool AMPManager::print_times=false;
 AMP_MPI AMPManager::comm=AMP::AMP_MPI();
-void* AMPManager::lminit=NULL;
-int AMPManager::argc_libmesh=0;
-char** AMPManager::argv_libmesh=NULL;
-
-
-// Function to alter the command line arguments for libmesh
-#ifdef USE_LIBMESH
-static int add_libmesh_cmdline ( int argc , char **argv, char ***argv_new )
-{
-    const int N_add = 0;    // Number of additional arguments we want to add
-    // Copy the existing command-line arguments (shifting by the number of additional arguments)
-    *argv_new = new char*[argc+N_add];
-    for ( int i = 0 ; i != argc ; i++ ) {
-        (*argv_new)[i] = new char [ strlen ( argv[i] ) + 1 ];
-        strcpy ( (*argv_new)[i] , argv[i] );
-    }
-    /*// Add command to keep cout from all processors (not just rank 0)
-    (*argv_new)[argc] = new char [12];
-    strcpy ( (*argv_new)[argc] , "--keep-cout" );*/
-    return argc+N_add;
-}
-#endif
+int AMPManager::argc=0;
+char** AMPManager::argv=NULL;
+AMPManagerProperties AMPManager::properties=AMPManagerProperties();
 
 
 // Function to get the current time (preferably using a hi resolution timer
@@ -93,14 +74,17 @@ static int add_libmesh_cmdline ( int argc , char **argv, char ***argv_new )
 * (1) Initialize MPI                                                        *
 *									                                        *
 ****************************************************************************/
-void AMPManager::startup(int argc, char *argv[], const AMPManagerProperties &properties)
+void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerProperties &properties_in)
 {
-    double start_time = time();
-    double startup_time=0, petsc_time=0, MPI_time=0, libmesh_time=0;
-    print_times = properties.print_times;
     // Check if AMP was previously initialized
     if ( initialized )
         AMP_ERROR("AMP was previously initialized");
+    double start_time = time();
+    double startup_time=0, petsc_time=0, MPI_time=0;
+    argc = argc_in;
+    argv = argv_in;
+    properties = properties_in;
+    print_times = properties.print_times;
     // Set the abort method
     AMPManager::use_MPI_Abort = properties.use_MPI_Abort;
     // Initialize PETSc
@@ -140,18 +124,6 @@ void AMPManager::startup(int argc, char *argv[], const AMPManagerProperties &pro
         int size2 = 1;
     #endif
     AMP_INSIST(size1==size2,"AMP's MPI size does not match MPI_COMM_WORLD");
-    // Initialize LibMesh (must be done after initializing PETSc and MPI)
-    #ifdef USE_LIBMESH
-        double libmesh_start_time = time();
-        argc_libmesh = add_libmesh_cmdline(argc,argv,&argv_libmesh);
-        lminit = (void*) new LibMeshInit(argc_libmesh,argv_libmesh);
-        // Reset the PETSc communicator back to the global communicator
-        // LibMesh resets it to it's communicator regardless of whether it initializes it or not
-        #ifdef USE_PETSC
-            PETSC_COMM_WORLD = MPI_COMM_WORLD;
-        #endif
-        libmesh_time = time()-libmesh_start_time;
-    #endif
     // Initialize the parallel IO
     PIO::initialize();
     // Initialize the random number generator
@@ -165,10 +137,8 @@ void AMPManager::startup(int argc, char *argv[], const AMPManagerProperties &pro
         printf("startup time = %0.3f s\n",startup_time);
         if ( petsc_time!=0 )
             printf(" PETSc startup time = %0.3f s\n",petsc_time);
-        if ( libmesh_time!=0 )
-            printf(" libmesh startup time = %0.3f s\n",libmesh_time);
-        if ( MPI_time!=0 )
-            printf(" libmesh startup time = %0.3f s\n",MPI_time);
+         if ( MPI_time!=0 )
+            printf(" MPI startup time = %0.3f s\n",MPI_time);
     }
 }
 
@@ -182,7 +152,7 @@ void AMPManager::startup(int argc, char *argv[], const AMPManagerProperties &pro
 void AMPManager::shutdown()
 {    
     double start_time = time();
-    double shutdown_time=0, petsc_time=0, MPI_time=0, libmesh_time=0;
+    double shutdown_time=0, petsc_time=0, MPI_time=0;
     int rank = comm.getRank();
     // Check if AMP was previously initialized
     if ( !initialized )
@@ -192,11 +162,11 @@ void AMPManager::shutdown()
     ShutdownRegistry::callRegisteredShutdowns();
     // Shutdown the parallel IO
     PIO::finalize();
-    // Shtudown LibMesh
+    // Shutdown LibMesh
     #ifdef USE_LIBMESH
-        double libmesh_start_time = time();
-        delete (LibMeshInit*) lminit;
-        libmesh_time = time()-libmesh_start_time;
+        if ( AMP::Mesh::initializeLibMesh::isInitialized() ) {
+            AMP_ERROR("Libmesh should be finalized before shutting down");
+        }
     #endif
     // Shutdown MPI
     if ( called_MPI_Init ) {
@@ -212,14 +182,6 @@ void AMPManager::shutdown()
             petsc_time = time()-petsc_start_time;
         }
     #endif
-    // Delete internal variables
-    if ( argv_libmesh!=NULL ) {
-        for (int i=0; i<argc_libmesh; i++)
-            delete [] argv_libmesh[i];
-        delete[] argv_libmesh;
-        argv_libmesh = NULL;
-    }
-    argc_libmesh = 0;
     Sleep(10);
     shutdown_time = time()-start_time;
     if ( print_times && rank==0 ) {
@@ -227,9 +189,7 @@ void AMPManager::shutdown()
         if ( petsc_time!=0 )
             printf(" PETSc shutdown time = %0.3f s\n",petsc_time);
         if ( MPI_time!=0 )
-            printf(" libmesh shutdown time = %0.3f s\n",MPI_time);
-        if ( libmesh_time!=0 )
-            printf(" libmesh shutdown time = %0.3f s\n",libmesh_time);
+            printf(" MPI shutdown time = %0.3f s\n",MPI_time);
     }
     // Wait 50 milli-seconds for all processors to finish
     Sleep(50);
@@ -248,38 +208,20 @@ AMPManagerProperties::AMPManagerProperties() {
 }
 
 
-
 /****************************************************************************
-*									                                        *
-* Function to initialize Libmesh with a given communicator                  *
-* We want to preinitialize LibMesh with the global communicator used to     *
-* initialize PETSc and MPI.   Unfortunatelly, LibMesh needs to be           *
-* reinitialized with a different communicator if we are using a load        *
-* balancing that distributes the meshes into sub-groups of processors.      *
-* Since LibMesh does not have a clean way to do this and connot have        *
-* multiple LibMeshInit this function is provided to re-initialize libmesh.  *
-*									                                        *
+*  Some simple functions                                                    *
 ****************************************************************************/
-void AMPManager::initializeLibmesh( AMP_MPI libmeshComm )
-{
-    #ifdef USE_LIBMESH
-        // Delete the existing LibMeshInit object so we can re-initialize LibMesh
-        // Note:  This only works if MPI and PETSc have been initialized outside of LibMesh
-        delete (LibMeshInit*) lminit;
-        // Reinitialize LibMesh with the new communicator
-        #ifdef USE_MPI
-            AMP::AMPManager::lminit = new LibMeshInit ( argc_libmesh, argv_libmesh, libmeshComm.getCommunicator() );
-        #else
-            AMP::AMPManager::lminit = new LibMeshInit ( argc_libmesh, argv_libmesh );
-        #endif
-        // Reset the PETSc communicator back to the global communicator
-        // LibMesh resets it to it's communicator regardless of weather it initializes it or not
-        #if defined(USE_PETSC) && defined(USE_MPI)
-            PETSC_COMM_WORLD = MPI_COMM_WORLD;
-        #endif
-    #else
-        AMP_ERROR("Libmesh is disables, initializeLibmesh(AMP_MPI comm) is non-functional");
-    #endif
+int AMPManager::get_argc() {
+    AMP_INSIST(initialized,"AMP has not been initialized");
+    return argc;
+}
+char** AMPManager::get_argv() {
+    AMP_INSIST(initialized,"AMP has not been initialized");
+    return argv;
+}
+AMPManagerProperties AMPManager::getAMPManagerProperties() {
+    AMP_INSIST(initialized,"AMP has not been initialized");
+    return properties;
 }
 
 

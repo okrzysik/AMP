@@ -58,7 +58,7 @@ int main ( int argc , char ** argv )
     AMP::UnitTest ut;
 
     // Run tests on a libmesh mesh
-    //testlibMesh( &ut );
+    testlibMesh( &ut );
 
     // Run tests on the input file
     testInputMesh( &ut, "input_Mesh" );

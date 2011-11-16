@@ -1,3 +1,4 @@
+#include "ampmesh/libmesh/initializeLibMesh.h"
 #include "ampmesh/libmesh/libMesh.h"
 #include "ampmesh/libmesh/libMeshIterator.h"
 #include "utils/MemoryDatabase.h"
@@ -22,7 +23,7 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
     AMP_INSIST(params.get(),"Params must not be null");
     AMP_INSIST(comm!=AMP_MPI(AMP_COMM_NULL),"Communicator must be set");
     // Intialize libMesh (this needs to be moved out of AMPManager)
-    AMPManager::initializeLibmesh(comm);
+    libmeshInit = boost::shared_ptr<initializeLibMesh>(new initializeLibMesh(comm));
     // Load the mesh
     if ( d_db.get() ) {
         // Database exists
@@ -89,6 +90,10 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
 ********************************************************/
 libMesh::~libMesh()
 {
+    // We need to clear all libmesh objects before libmeshInit
+    d_libMeshData.reset();
+    d_libMesh.reset();
+    libmeshInit.reset();
 }
 
 

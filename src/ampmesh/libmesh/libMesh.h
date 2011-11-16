@@ -2,6 +2,7 @@
 #define included_AMP_LibMesh
 
 #include "ampmesh/Mesh.h"
+#include "ampmesh/libmesh/initializeLibMesh.h"
 
 // LibMesh include
 #include "mesh.h"
@@ -108,6 +109,7 @@ private:
 
     // Some internal data
     std::vector<size_t> n_local, n_global, n_ghost;
+    boost::shared_ptr<initializeLibMesh> libmeshInit;
 
 };
 

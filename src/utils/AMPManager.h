@@ -66,10 +66,21 @@ public:
     static bool isInitialized() { return initialized; }
 
     /*!
-     * Function to initialize Libmesh with a given communicator.
-     * Note: Libmesh can only have one communicator on a given processor 
+     * Function to return the number command line arguments that were used to initialize AMP.
      */
-    static void initializeLibmesh( AMP_MPI libmeshComm=AMP_MPI(AMP_COMM_WORLD));
+    static int get_argc( );
+
+    /*!
+     * Function to return the command line arguments that were used to initialize AMP.
+     * Note: This returns the pointer address for the command line arguments.  The user
+     * is responsible to ensure that the arguments are not modified.
+     */
+    static char** get_argv( );
+
+    /*!
+     * Function to return the AMPManagerProperties that was used to initialize AMP
+     */
+    static AMPManagerProperties getAMPManagerProperties( );
 
 private:
     // Private constructor (we do not actually want to create an object)
@@ -82,9 +93,9 @@ private:
     static bool use_MPI_Abort;
     static bool print_times;
     static AMP_MPI comm;
-    static void *lminit;    // We store the pointer to the libmesh object as a pointer so everyone doesn't include libmesh.h
-    static int argc_libmesh;
-    static char **argv_libmesh;
+    static int argc;
+    static char** argv;
+    static AMPManagerProperties properties;
 
     //! abort must be a friend to access use_MPI_Abort to change the abort behavior
     friend void AMP::Utilities::abort(const std::string &, const std::string &, const int);
