@@ -76,11 +76,14 @@ friend class AMP::Mesh::libMesh;
 private:
     // Data members
     int d_gcw;
+    int d_dim;
     int d_type;
     int d_size;
+    int d_rank;
     void *d_begin;
     void *d_end;
     void *d_pos;
+    size_t d_meshID;
     AMP::Mesh::libMesh *d_mesh;
     MeshElement d_cur_element;
 };

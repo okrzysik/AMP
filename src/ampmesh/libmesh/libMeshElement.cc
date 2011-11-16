@@ -19,29 +19,30 @@ libMeshElement::libMeshElement()
     d_elementType = null;
     d_globalID = MeshElementID();
 }
-libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element, AMP::Mesh::libMesh *mesh)
+libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element, unsigned int rank, size_t meshID)
 {
     typeID = libMeshElementTypeID;
     element = NULL;
     d_elementType = type;
     d_dim = dim;
-    d_mesh = mesh;
+    d_rank = rank;
+    d_meshID = meshID;
     ptr_element = libmesh_element;
     d_globalID = MeshElementID();
     d_globalID.type = type;
-    d_globalID.meshID = mesh->meshID();
+    d_globalID.meshID = meshID;
     if ( d_elementType==Vertex ) {
         d_elementType = Vertex;
         ::Node* node = (::Node*) ptr_element;
         d_globalID.local_id = node->id();
         d_globalID.owner_rank = node->processor_id();
-        d_globalID.is_local = d_globalID.owner_rank==mesh->getlibMesh()->processor_id();
+        d_globalID.is_local = d_globalID.owner_rank==d_rank;
     } else {
         d_elementType = (GeomType) dim;
         ::Elem* elem = (::Elem*) ptr_element;
         d_globalID.local_id = elem->id();
         d_globalID.owner_rank = elem->processor_id();
-        d_globalID.is_local = !(elem->is_remote());
+        d_globalID.is_local = d_globalID.owner_rank==d_rank;
     }
 }
 libMeshElement::libMeshElement(const libMeshElement& rhs)
@@ -52,7 +53,8 @@ libMeshElement::libMeshElement(const libMeshElement& rhs)
     d_globalID = rhs.d_globalID;
     d_dim = rhs.d_dim;
     ptr_element = rhs.ptr_element;
-    d_mesh = rhs.d_mesh;
+    d_rank = rhs.d_rank;
+    d_meshID = rhs.d_meshID;
 }
 libMeshElement& libMeshElement::operator=(const libMeshElement& rhs)
 {
@@ -64,7 +66,8 @@ libMeshElement& libMeshElement::operator=(const libMeshElement& rhs)
     this->d_globalID = rhs.d_globalID;
     this->d_dim = rhs.d_dim;
     this->ptr_element = rhs.ptr_element;
-    this->d_mesh = rhs.d_mesh;
+    this->d_rank = rhs.d_rank;
+    this->d_meshID = rhs.d_meshID;
     return *this;
 }
 
@@ -102,24 +105,24 @@ std::vector<MeshElement> libMeshElement::getElements(const GeomType type) const
         // Return the children of the current element
         children.resize(elem->n_children());
         for (unsigned int i=0; i<children.size(); i++)
-            children[i] = libMeshElement( d_dim, type, (void*)elem->child(i), d_mesh );
+            children[i] = libMeshElement( d_dim, type, (void*)elem->child(i), d_rank, d_meshID );
     } else if ( type==Vertex ) {
         // Return the nodes of the current element
         children.resize(elem->n_nodes());
         for (unsigned int i=0; i<children.size(); i++)
-            children[i] = libMeshElement( d_dim, type, (void*)elem->get_node(i), d_mesh );
+            children[i] = libMeshElement( d_dim, type, (void*)elem->get_node(i), d_rank, d_meshID );
     } else if ( type==Edge ) {
         // Return the edges of the current element
         AMP_ERROR("unfinished");
         //children.resize(elem->n_edges());
         //for (unsigned int i=0; i<children.size(); i++)
-        //    children[i] = libMeshElement( d_dim, type, (void*)elem->build_edge(i), d_mesh );
+        //    children[i] = libMeshElement( d_dim, type, (void*)elem->build_edge(i), d_rank, d_meshID );
     } else if ( type==Face ) {
         // Return the edges of the current element
         AMP_ERROR("unfinished");
         //children.resize(elem->n_faces());
         //for (unsigned int i=0; i<children.size(); i++)
-        //    //children[i] = libMeshElement( d_dim, type, (void*)elem->build_face(i), d_mesh );
+        //    //children[i] = libMeshElement( d_dim, type, (void*)elem->build_face(i), d_rank, d_meshID );
     }
     return children;
 }

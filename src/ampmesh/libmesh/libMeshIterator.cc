@@ -28,6 +28,7 @@ libMeshIterator::libMeshIterator()
     d_pos=NULL;
     d_type = -1;
     d_size = 0;
+    d_rank = 0;
 }
 libMeshIterator::libMeshIterator(int type, AMP::Mesh::libMesh *mesh, int gcw, void *begin, void *end, void *pos, int size)
 {
@@ -37,6 +38,9 @@ libMeshIterator::libMeshIterator(int type, AMP::Mesh::libMesh *mesh, int gcw, vo
     d_mesh = mesh;
     d_gcw = gcw;
     d_size = size;
+    d_rank = mesh->getComm().getRank();
+    d_meshID = d_mesh->meshID();
+    d_dim = d_mesh->getlibMesh()->mesh_dimension();
     if ( d_type==0 ) {
         // Node iterator
         d_begin = (void*) new ::Mesh::node_iterator( *((::Mesh::node_iterator*)begin) );
@@ -79,6 +83,9 @@ libMeshIterator::libMeshIterator(const libMeshIterator& rhs)
     d_mesh = rhs.d_mesh;
     d_gcw = rhs.d_gcw;
     d_size = rhs.d_size;
+    d_rank = rhs.d_rank;
+    d_meshID = rhs.d_meshID;
+    d_dim = rhs.d_dim;
     if ( d_type==0 ) {
         // Node iterator
         d_begin = (void*) new ::Mesh::node_iterator( *((::Mesh::node_iterator*)rhs.d_begin) );
@@ -103,6 +110,9 @@ libMeshIterator& libMeshIterator::operator=(const libMeshIterator& rhs)
     this->d_mesh = rhs.d_mesh;
     this->d_gcw = rhs.d_gcw;
     this->d_size = rhs.d_size;
+    this->d_rank = rhs.d_rank;
+    this->d_meshID = rhs.d_meshID;
+    this->d_dim = rhs.d_dim;
     if ( this->d_type==0 ) {
         // Node iterator
         this->d_begin = (void*) new ::Mesh::node_iterator( *((::Mesh::node_iterator*)rhs.d_begin) );
@@ -259,17 +269,16 @@ MeshElement& libMeshIterator::operator*()
 }
 MeshElement* libMeshIterator::operator->()
 {
-    int dim = d_mesh->getlibMesh()->mesh_dimension();
     if ( d_type==0 ) {
         // Node iterator
         ::Mesh::node_iterator* it = (::Mesh::node_iterator*) d_pos;
         ::Node *node = it->operator*();
-        d_cur_element = libMeshElement( dim, Vertex, (void*) node, d_mesh );
+        d_cur_element = libMeshElement( d_dim, Vertex, (void*) node, d_rank, d_meshID );
     } else if ( d_type==1 ) {
         // Element iterator
         ::Mesh::element_iterator* it = (::Mesh::element_iterator*) d_pos;
         ::Elem *elem = it->operator*();
-        d_cur_element = libMeshElement( dim, (GeomType) dim, (void*) elem, d_mesh );
+        d_cur_element = libMeshElement( d_dim, (GeomType) d_dim, (void*) elem, d_rank, d_meshID );
     } else {
         AMP_ERROR("libMesh does not support iterators over this (unknown) type");
     }

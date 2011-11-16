@@ -56,8 +56,11 @@ protected:
      * \param dim       Spatial dimension
      * \param type      Element type
      * \param element   Underlying libmesh element
+     * \param mesh      Underlying mesh
+     * \param rank      Rank of the current processor (must agree with libmesh->processor_id())
+     * \param meshID    ID of the current mesh
      */
-    libMeshElement(int dim, GeomType type, void* element, AMP::Mesh::libMesh *mesh);
+    libMeshElement(int dim, GeomType type, void* element, unsigned int rank, size_t meshID);
 
     //! Clone the iterator
     virtual MeshElement* clone() const;
@@ -66,8 +69,11 @@ protected:
     int d_dim;
     void* ptr_element;
 
-    //! The underlying mesh
-    AMP::Mesh::libMesh *d_mesh;
+    // The rank of the current processor
+    unsigned int d_rank;
+
+    // The ID of the current mesh
+    size_t d_meshID;
 
     friend class AMP::Mesh::libMesh;
     friend class AMP::Mesh::libMeshIterator;

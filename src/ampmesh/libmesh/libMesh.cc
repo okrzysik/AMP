@@ -46,6 +46,9 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
     } else {
         AMP_ERROR("Error: params must contain a database object");
     }
+    // Verify libmesh's rank and size agrees with the rank and size of the comm of the mesh
+    AMP_INSIST((int)d_libMesh->processor_id()==comm.getRank(),"rank of the mesh does not agree with libmesh");
+    AMP_INSIST((int)d_libMesh->n_processors()==comm.getSize(),"size of the mesh does not agree with libmesh");
     // Count the elements 
     n_local = std::vector<size_t>(PhysicalDim+1,0);
     n_global = std::vector<size_t>(PhysicalDim+1,0);

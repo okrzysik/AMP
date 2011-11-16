@@ -345,6 +345,10 @@ std::vector<size_t> simpleDOFManager::getRemoteDOF(std::vector<AMP::Mesh::MeshEl
         &remote_dof[0], &send_cnt[0], &send_disp[0], true);
     AMP_INSIST(N==(int)d_remote_id.size(),"Unexpected recieve size");
     remote_dof.resize(d_remote_id.size());
+    // Sort the dofs back to the original order for the remote_ids
+    AMP::Utilities::quicksort(remote_ids2,remote_dof);
+    for (size_t i=0; i<remote_ids.size(); i++)
+        AMP_ASSERT(remote_ids[i]==remote_ids2[i]);
     return remote_dof;
 }
 
