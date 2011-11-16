@@ -121,6 +121,10 @@ MeshIterator MeshIterator::end()
 {
     return iterator->end();
 }
+size_t MeshIterator::size() const
+{
+    return iterator->size();
+}
 
 
 

@@ -1,7 +1,10 @@
 #include "ampmesh/MultiMesh.h"
+#include "ampmesh/MultiIterator.h"
+#include "ampmesh/MeshElement.h"
 #include "utils/Utilities.h"
 #include "utils/Database.h"
 #include "utils/MemoryDatabase.h"
+
 
 namespace AMP {
 namespace Mesh {
@@ -192,7 +195,7 @@ std::vector<boost::shared_ptr<AMP::Database> >  MultiMesh::createDatabases(boost
 
 
 /********************************************************
-* Functions that aren't implimented yet                 *
+* Return basic mesh info                                *
 ********************************************************/
 size_t MultiMesh::numLocalElements( const GeomType type ) const
 {
@@ -218,10 +221,29 @@ size_t MultiMesh::numGhostElements( const GeomType type, int gcw ) const
         N += d_meshes[i]->numGhostElements(type,gcw);
     return N;
 }
-MeshIterator MultiMesh::getIterator( const GeomType, const int )
+GeomType MultiMesh::getGeomType( ) const
 {
-    AMP_ERROR("Not Implimented Yet");
-    return MeshIterator();
+    // Should we cache this?
+    GeomType type_max = null;
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        GeomType type = d_meshes[i]->getGeomType();
+        type_max = (type>type_max) ? type : type_max;
+    }
+    return type_max;
+}
+
+
+/********************************************************
+* Return mesh iterators                                 *
+********************************************************/
+MeshIterator MultiMesh::getIterator( const GeomType type, const int gcw )
+{
+    std::vector<boost::shared_ptr<MeshIterator> > iterators(d_meshes.size());
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        boost::shared_ptr<MeshIterator> iterator_ptr( new MeshIterator(d_meshes[i]->getIterator(type,gcw)) );
+        iterators[i] = iterator_ptr;
+    }
+    return MultiIterator(iterators);
 }
 std::vector<int> MultiMesh::getIDSets ( )
 {

@@ -92,7 +92,8 @@ public:
     virtual MeshIterator getIDsetIterator ( const GeomType type, const int id, const int gcw=0 );
 
 
-
+    //! Get the largest geometric type in the mesh
+    virtual GeomType getGeomType() const;
 
 private:
 

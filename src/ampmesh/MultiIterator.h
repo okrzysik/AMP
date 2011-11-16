@@ -1,30 +1,37 @@
-#ifndef included_AMP_libMeshIterators
-#define included_AMP_libMeshIterators
+#ifndef included_AMP_MultiIterator
+#define included_AMP_MultiIterator
 
 #include <boost/shared_ptr.hpp>
-#include "ampmesh/libmesh/libMesh.h"
 #include "ampmesh/MeshIterator.h"
-
-#include "mesh.h"
 
 namespace AMP { 
 namespace Mesh {
 
 
-class libMeshIterator: public MeshIterator {
+/**
+ * \class MultiIterator
+ * \brief A class used to combine multiple iterators
+ * \details  This class provides routines for iterating over a mesh.  More
+ *  specifically, this class combines multiple iterators into one.  This
+ *  is primarily needed for MultiMesh, but may be used for other applicaitons.
+ */
+class MultiIterator: public MeshIterator {
 public:
 
-    //! Empty MeshIterator constructor
-    libMeshIterator();
+    //! Empty MultiIterator constructor
+    MultiIterator();
+
+    //! Default MultiIterator constructor
+    MultiIterator( std::vector<boost::shared_ptr<MeshIterator> > iterators, size_t global_pos=0 );
 
     //! Deconstructor
-    ~libMeshIterator ();
+    ~MultiIterator ();
 
     //! Copy constructor
-    libMeshIterator(const libMeshIterator&);
+    MultiIterator(const MultiIterator&);
 
     //! Assignment operator
-    libMeshIterator& operator=(const libMeshIterator&);
+    MultiIterator& operator=(const MultiIterator&);
 
     //! Increment
     MeshIterator& operator++();
@@ -60,29 +67,16 @@ public:
     virtual size_t size() const;
 
 protected:
-    /** Default constructor
-     * \param type      Entity type:  0: node, 1: element
-     * \param mesh      Pointer to the libMesh mesh
-     * \param gcw       gcw to use
-     * \param pos       Pointer to iterator with the current position
-     */
-    libMeshIterator(int type, AMP::Mesh::libMesh *mesh, int gcw, void *begin, void *end, void *pos, int size=-1 );
 
     //! Clone the iterator
     virtual MeshIterator* clone() const;
 
-friend class AMP::Mesh::libMesh;
-
 private:
     // Data members
-    int d_gcw;
-    int d_type;
-    int d_size;
-    void *d_begin;
-    void *d_end;
-    void *d_pos;
-    AMP::Mesh::libMesh *d_mesh;
-    MeshElement d_cur_element;
+    size_t d_localPos, d_globalPos, d_iteratorNum, d_globalSize;
+    std::vector<size_t> d_iteratorSize;
+    std::vector<boost::shared_ptr<MeshIterator> > d_iterators;
+    MeshIterator cur_iterator;
 };
 
 

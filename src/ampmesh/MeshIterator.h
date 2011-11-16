@@ -62,6 +62,9 @@ public:
     //! Return an iterator to the begining
     virtual MeshIterator end();
 
+    //! Return the number of elements in the iterator
+    virtual size_t size() const;
+
 protected:
     // A pointer to the derived class
     MeshIterator *iterator;
