@@ -16,29 +16,29 @@ void VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_p
     AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::Discretization::NodalVariable(DOF_PER_NODE,"test vector") );
 
     // Create the matrix and vectors
-    AMP::LinearAlgebra::Matrix::shared_ptr matrixa = DOFs->createMatrix ( variable, variable );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb = DOFs->createVector ( variable );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc = DOFs->createVector ( variable );
+    AMP::LinearAlgebra::Vector::shared_ptr vector1 = DOFs->createVector ( variable );
+    AMP::LinearAlgebra::Vector::shared_ptr vector2 = DOFs->createVector ( variable );
+    AMP::LinearAlgebra::Matrix::shared_ptr matrixa = DOFs->createMatrix ( vector1, vector2 );
 
     // Run some tests
-    vectorb->setRandomValues ();
+    vector1->setRandomValues ();
     matrixa->makeConsistent ();
-    matrixa->mult ( vectorb , vectorc );
-    if ( vectorc->L1Norm() < 0.00000001 )
+    matrixa->mult ( vector1 , vector2 );
+    if ( vector2->L1Norm() < 0.00000001 )
         utils->passes ( "obtained 0 matrix from mesh" );
     else
         utils->failure ( "did not obtain 0 matrix from mesh" );
 
     // Need to get another matrix to store data due to Epetra insert/replace idiom.  Matrixa is fixed with no entires.
-    AMP::LinearAlgebra::Matrix::shared_ptr matrixb = DOFs->createMatrix ( variable, variable );
+    AMP::LinearAlgebra::Matrix::shared_ptr matrixb = DOFs->createMatrix ( vector1, vector2 );
 
-    vectorc->setToScalar ( 1. );
+    vector2->setToScalar ( 1. );
     matrixb->makeConsistent ();
-    matrixb->setDiagonal ( vectorc );
-    matrixb->mult ( vectorb , vectorc );
-    vectorb->subtract ( vectorb , vectorc );
+    matrixb->setDiagonal ( vector2 );
+    matrixb->mult ( vector1 , vector2 );
+    vector1->subtract ( vector1 , vector2 );
 
-    if ( vectorb->L1Norm() < 0.0000001 )
+    if ( vector1->L1Norm() < 0.0000001 )
         utils->passes ( "created identity matrix from mesh" );
     else
         utils->failure ( "created identity matrix from mesh" );

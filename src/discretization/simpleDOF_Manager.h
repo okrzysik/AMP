@@ -45,28 +45,50 @@ public:
     virtual void getDOFs ( const AMP::Mesh::MeshElement &obj, std::vector <unsigned int> &ids , std::vector<unsigned int> which = std::vector<unsigned int>(0) ) const;
 
 
+    /** \brief   Get an entry over the mesh elements associated with the DOFs
+     * \details  This will return an iterator over the mesh elements associated
+     *  with the DOFs.  Each element in the iterator will have 1 or more DOFs
+     *  that are associated with that element.  For eaxample, a NodalVectorDOF
+     *  would have 3 DOFs stored at each node, and would return an iterator over
+     *  all the nodes. 
+     */
+    virtual AMP::Mesh::MeshIterator getIterator() const;
+
+
     /** \brief  The first D.O.F. on this core
      * \return The first D.O.F. on this core
      */
-    virtual size_t  beginDOF ( );
+    virtual size_t  beginDOF ( ) const;
 
 
     /** \brief  One past the last D.O.F. on this core
      * \return One past the last D.O.F. on this core
      */
-    virtual size_t  endDOF ( );
+    virtual size_t  endDOF ( ) const;
 
 
     /** \brief  The local number of D.O.F 
      * \return  The local number of D.O.F 
      */
-    virtual size_t  numLocalDOF ( );
+    virtual size_t  numLocalDOF ( ) const;
 
 
     /** \brief  The global number of D.O.F 
      * \return  The global number of D.O.F 
      */
-    virtual size_t  numGlobalDOF ( );
+    virtual size_t  numGlobalDOF ( ) const;
+ 
+
+    //! Get the comm for the DOFManger
+    virtual AMP_MPI  getComm() const;
+ 
+
+    //! Get the remote DOFs for a vector
+    virtual std::vector<size_t> getRemoteDOFs() const;
+
+
+    //! Get the row DOFs given a mesh element
+    virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const;
 
 
     /**
@@ -74,7 +96,7 @@ public:
      * \details  This function creates a new AMP vector for the given variable, using the current DOF properties.
      * \param variable  Variable that will be used to create the vector
      */
-    virtual AMP::LinearAlgebra::Vector::shared_ptr   createVector ( AMP::LinearAlgebra::Variable::shared_ptr variable );
+    AMP::LinearAlgebra::Vector::shared_ptr   createVector ( AMP::LinearAlgebra::Variable::shared_ptr variable );
 
 
     /**
@@ -83,12 +105,12 @@ public:
      * \param operand  Variable that will be used to create the matrix
      * \param result   Variable that will be used to create the matrix
      */
-    virtual  AMP::LinearAlgebra::Matrix::shared_ptr   createMatrix ( AMP::LinearAlgebra::Variable::shared_ptr operand , AMP::LinearAlgebra::Variable::shared_ptr result );
+    AMP::LinearAlgebra::Matrix::shared_ptr   createMatrix ( AMP::LinearAlgebra::Vector::shared_ptr operand , AMP::LinearAlgebra::Vector::shared_ptr result );
 
 
 private:
     // Function to find the remote DOF given a set of mesh element IDs
-    std::vector<size_t> getRemoteDOF(std::vector<AMP::Mesh::MeshElementID> remote_ids );
+    std::vector<size_t> getRemoteDOF(std::vector<AMP::Mesh::MeshElementID> remote_ids ) const;
 
     // Data members
     boost::shared_ptr<AMP::Mesh::Mesh>  d_mesh;

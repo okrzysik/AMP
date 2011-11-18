@@ -20,7 +20,7 @@ class  DOFMatrixTestFactory
 {
 public:
     static AMP::Mesh::Mesh::shared_ptr mesh;
-    static AMP::Discretization::DOFManager::shared_ptr DOFs;
+    static boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFs;
 
     static void initMesh() 
     {
@@ -51,7 +51,9 @@ public:
     {
         AMP::LinearAlgebra::Variable::shared_ptr variable_a( new AMP::Discretization::NodalVariable(NUM_DOF_ROW,"a") );
         AMP::LinearAlgebra::Variable::shared_ptr variable_b( new AMP::Discretization::NodalVariable(NUM_DOF_COL,"b") );
-        return DOFs->createMatrix ( variable_a, variable_b );
+        AMP::LinearAlgebra::Vector::shared_ptr  vector_a = DOFs->createVector ( variable_a );
+        AMP::LinearAlgebra::Vector::shared_ptr  vector_b = DOFs->createVector ( variable_a );
+        return DOFs->createMatrix ( vector_a, vector_b );
     }
 
     //static AMP::Mesh::DOFMap::shared_ptr  getDOFMap()

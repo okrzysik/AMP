@@ -19,13 +19,16 @@ libMeshElement::libMeshElement()
     d_elementType = null;
     d_globalID = MeshElementID();
 }
-libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element, unsigned int rank, size_t meshID)
+libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element, 
+    unsigned int rank, size_t meshID, libMesh* mesh)
 {
+    AMP_ASSERT(libmesh_element!=NULL);
     typeID = libMeshElementTypeID;
     element = NULL;
     d_elementType = type;
     d_dim = dim;
     d_rank = rank;
+    d_mesh = mesh;
     d_meshID = meshID;
     ptr_element = libmesh_element;
     d_globalID = MeshElementID();
@@ -54,6 +57,7 @@ libMeshElement::libMeshElement(const libMeshElement& rhs)
     d_dim = rhs.d_dim;
     ptr_element = rhs.ptr_element;
     d_rank = rhs.d_rank;
+    d_mesh = rhs.d_mesh;
     d_meshID = rhs.d_meshID;
 }
 libMeshElement& libMeshElement::operator=(const libMeshElement& rhs)
@@ -67,6 +71,7 @@ libMeshElement& libMeshElement::operator=(const libMeshElement& rhs)
     this->d_dim = rhs.d_dim;
     this->ptr_element = rhs.ptr_element;
     this->d_rank = rhs.d_rank;
+    this->d_mesh = rhs.d_mesh;
     this->d_meshID = rhs.d_meshID;
     return *this;
 }
@@ -95,41 +100,72 @@ MeshElement* libMeshElement::clone() const
 ********************************************************/
 std::vector<MeshElement> libMeshElement::getElements(const GeomType type) const
 {
-    if ( d_elementType==Vertex )
-        AMP_ERROR("A vertex is the base element and cannot have and sub-elements");
-    if ( type >= d_elementType )
-        AMP_ERROR("type must be <= the GeomType of the current element");
+    AMP_INSIST(type<=d_elementType,"sub-elements must be of a smaller or equivalent type");
     std::vector<MeshElement> children(0);
     ::Elem* elem = (::Elem*) ptr_element;
-    if ( type==d_elementType ) {
+    if ( d_elementType==Vertex ) {
+        // A vertex does not have children, return itself
+        if ( type!=Vertex )
+            AMP_ERROR("A vertex is the base element and cannot have and sub-elements");
+        children.resize(1);
+        children[0] = *this;
+    } else if ( type==d_elementType ) {
         // Return the children of the current element
-        children.resize(elem->n_children());
-        for (unsigned int i=0; i<children.size(); i++)
-            children[i] = libMeshElement( d_dim, type, (void*)elem->child(i), d_rank, d_meshID );
+        if ( elem->has_children() ) {
+            children.resize(elem->n_children());
+            for (unsigned int i=0; i<children.size(); i++)
+                children[i] = libMeshElement( d_dim, type, (void*)elem->child(i), d_rank, d_meshID, d_mesh );
+        } else {
+            children.resize(1);
+            children[0] = *this;
+        }
     } else if ( type==Vertex ) {
         // Return the nodes of the current element
         children.resize(elem->n_nodes());
         for (unsigned int i=0; i<children.size(); i++)
-            children[i] = libMeshElement( d_dim, type, (void*)elem->get_node(i), d_rank, d_meshID );
+            children[i] = libMeshElement( d_dim, type, (void*)elem->get_node(i), d_rank, d_meshID, d_mesh );
     } else if ( type==Edge ) {
         // Return the edges of the current element
         AMP_ERROR("unfinished");
         //children.resize(elem->n_edges());
         //for (unsigned int i=0; i<children.size(); i++)
-        //    children[i] = libMeshElement( d_dim, type, (void*)elem->build_edge(i), d_rank, d_meshID );
+        //    children[i] = libMeshElement( d_dim, type, (void*)elem->build_edge(i), d_rank, d_meshID, d_mesh );
     } else if ( type==Face ) {
         // Return the edges of the current element
         AMP_ERROR("unfinished");
         //children.resize(elem->n_faces());
         //for (unsigned int i=0; i<children.size(); i++)
-        //    //children[i] = libMeshElement( d_dim, type, (void*)elem->build_face(i), d_rank, d_meshID );
+        //    //children[i] = libMeshElement( d_dim, type, (void*)elem->build_face(i), d_rank, d_meshID, d_mesh );
     }
     return children;
 }
-std::vector<MeshElement> libMeshElement::getNeighbors() const
+std::vector< MeshElement::shared_ptr > libMeshElement::getNeighbors() const
 {
-    AMP_ERROR("getNeighbors is not finished");
-    return std::vector<MeshElement>(0);
+    std::vector< MeshElement::shared_ptr > neighbors(0);
+    if ( d_elementType==Vertex ) {
+        // Return the neighbors of the current node
+        std::vector< ::Node* > neighbor_nodes = d_mesh->getNeighborNodes( d_globalID );
+        neighbors.resize(neighbor_nodes.size(),MeshElement::shared_ptr());
+        for (size_t i=0; i<neighbor_nodes.size(); i++) {
+            // There are no NULL neighbors
+            boost::shared_ptr<libMeshElement> neighbor(new libMeshElement( d_dim, Vertex, (void*)neighbor_nodes[i], d_rank, d_meshID, d_mesh ) );
+            neighbors[i] = neighbor;
+        }
+    } else if ( (int)d_elementType==d_dim ) {
+        // Return the neighbors of the current element
+        ::Elem* elem = (::Elem*) ptr_element;
+    	neighbors.resize(elem->n_neighbors());
+        for (size_t i=0; i<neighbors.size(); i++) {
+            void *neighbor_elem = (void*) elem->neighbor(i);
+            boost::shared_ptr<libMeshElement> neighbor;
+            if ( neighbor_elem != NULL )
+                neighbor = boost::shared_ptr<libMeshElement>(new libMeshElement( d_dim, d_elementType, neighbor_elem, d_rank, d_meshID, d_mesh ) );
+            neighbors[i] = neighbor;
+        }
+    } else  {
+        AMP_ERROR("unfinished");
+    }
+    return neighbors;
 }
 double libMeshElement::volume() const
 {

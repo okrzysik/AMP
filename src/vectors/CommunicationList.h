@@ -26,16 +26,16 @@ class CommunicationListParameters : public ParameterBase
 {
 public:
     //! Short hand name for the shared pointer for a communication list
-    typedef boost::shared_ptr<CommunicationListParameters>    shared_ptr;
+    typedef boost::shared_ptr<CommunicationListParameters>  shared_ptr;
 
     //! The communicator over which the communication list is computed
-    AMP_MPI                                                   d_comm;
+    AMP_MPI                                                 d_comm;
 
     //! The number of local entities in the vector
-    size_t                                                    d_localsize;
+    size_t                                                  d_localsize;
 
     //! The remote DOFs that we need to recieve
-    std::vector<unsigned int>                                 d_remote_DOFs;
+    std::vector<size_t>                                     d_remote_DOFs;
 };
 
 

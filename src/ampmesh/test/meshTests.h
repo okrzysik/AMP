@@ -79,11 +79,13 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator,
             if ( element.volume() <= 0.0 )
                 volume_pass = false;
         }
-        //for (int i=0; i<(int)type; i++) {
-        //    AMP::Mesh::GeomType type2 = (AMP::Mesh::GeomType) i;
-        //    std::vector<AMP::Mesh::MeshElement> pieces = element.getElements(type2);
-        //}
-        //std::vector<AMP::Mesh::MeshElement> neighbors = element.getNeighbors();
+        for (int i=0; i<=(int)type; i++) {
+            if ( i!=0 && i!=(int)type )
+                continue;  // getElements is unfinished for types other than verticies and elements
+            AMP::Mesh::GeomType type2 = (AMP::Mesh::GeomType) i;
+            std::vector<AMP::Mesh::MeshElement> pieces = element.getElements(type2);
+        }
+        std::vector< AMP::Mesh::MeshElement::shared_ptr > neighbors = element.getNeighbors();
         ++cur_it;   // Pre-increment is faster than post-increment
     }
     if ( id_pass && type_pass && volume_pass && coord_pass ) {

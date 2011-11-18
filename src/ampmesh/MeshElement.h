@@ -118,8 +118,14 @@ public:
     //! Return the elements composing the current element
     virtual std::vector<MeshElement> getElements(const GeomType type) const;
 
-    //! Return the elements neighboring the current element
-    virtual std::vector<MeshElement> getNeighbors() const;
+    /**
+     *  Return the elements neighboring the current element.
+     *  One neighbor is returned for each side of the element.
+     *  If the side is on the surface, then it's neighbor is null.
+     *  For Verticies, a list of all verticies that share an element is returned.
+     *  This list is in unsorted order.
+     */  
+    virtual std::vector< MeshElement::shared_ptr >  getNeighbors() const;
 
     //! Return the volume of the current element (does not apply to verticies)
     virtual double volume() const;

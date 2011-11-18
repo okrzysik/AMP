@@ -50,7 +50,10 @@ CommunicationList::CommunicationList ( CommunicationListParameters::shared_ptr p
     // Get the total number of DOFs
     d_iTotalRows = partition[d_comm.getSize()-1];
     // Construct the communication arrays
-    buildCommunicationArrays( params->d_remote_DOFs, partition, d_comm.getRank() );
+    std::vector<unsigned int> remote_DOFs(params->d_remote_DOFs.size());
+    for (size_t i=0; i<remote_DOFs.size(); i++)
+        remote_DOFs[i] = (unsigned int) params->d_remote_DOFs[i];
+    buildCommunicationArrays( remote_DOFs, partition, d_comm.getRank() );
 }
 
 

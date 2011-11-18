@@ -20,9 +20,9 @@ simpleDOFManager::simpleDOFManager( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP
     d_gcw = gcw;
     DOFsPerElement = DOFsPerObject;
     // Create a sorted list of the local and remote types
-    d_local_id.resize(mesh->numLocalElements(type));
-    d_remote_id.resize(mesh->numGhostElements(type,gcw));
-    AMP::Mesh::MeshIterator pos = mesh->getIterator(type,gcw);
+    d_local_id.resize(mesh->numLocalElements(d_type));
+    d_remote_id.resize(mesh->numGhostElements(d_type,d_gcw));
+    AMP::Mesh::MeshIterator pos = d_mesh->getIterator(d_type,d_gcw);
     AMP::Mesh::MeshIterator end = pos.end();
     int i=0;
     int j=0;
@@ -60,31 +60,48 @@ simpleDOFManager::simpleDOFManager( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP
 ****************************************************************/
 void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <unsigned int> &ids, std::vector<unsigned int> which ) const
 {
-    std::vector<AMP::Mesh::MeshElement> elements = obj.getElements(d_type);
+    std::vector<AMP::Mesh::MeshElement> elements;
+    if ( obj.elementType() == d_type )
+        elements = std::vector<AMP::Mesh::MeshElement>(1,obj);
+    else
+        elements = obj.getElements(d_type);
     if ( which.size()==0 ) {
         // Return all dofs
-        ids.resize(elements.size());
+        ids.resize(elements.size()*DOFsPerElement);
         for (size_t i=0; i<elements.size(); i++) {
             AMP::Mesh::MeshElementID local_id = elements[i].globalID();
-            ids[i] = AMP::Utilities::findfirst(d_local_id,local_id);
-            AMP_INSIST(local_id==d_local_id[ids[i]],"Internal Error: id not found");
+            size_t index = AMP::Utilities::findfirst(d_local_id,local_id);
+            AMP_INSIST(local_id==d_local_id[index],"Internal Error: id not found");
+            for (int j=0; j<DOFsPerElement; j++)
+                ids[i*DOFsPerElement+j] = index*DOFsPerElement+j;
         }
     } else {
         // Return only the desired dof
-        ids.resize(which.size());
+        ids.resize(which.size()*DOFsPerElement);
         for (size_t i=0; i<which.size(); i++) {
             AMP::Mesh::MeshElementID local_id = elements[which[i]].globalID();
-            ids[i] = AMP::Utilities::findfirst(d_local_id,local_id);
-            AMP_INSIST(local_id==d_local_id[ids[i]],"Internal Error: id not found");
+            size_t index = AMP::Utilities::findfirst(d_local_id,local_id);
+            AMP_INSIST(local_id==d_local_id[index],"Internal Error: id not found");
+            for (int j=0; j<DOFsPerElement; j++)
+                ids[i*DOFsPerElement+j] = index*DOFsPerElement+j;
         }
     }
 }
 
 
 /****************************************************************
+* Get an entry over the mesh elements associated with the DOFs  *
+****************************************************************/
+AMP::Mesh::MeshIterator simpleDOFManager::getIterator( ) const
+{
+    return d_mesh->getIterator(d_type,0);
+}
+
+
+/****************************************************************
 * Return the first D.O.F. on this core                          *
 ****************************************************************/
-size_t simpleDOFManager::beginDOF( )
+size_t simpleDOFManager::beginDOF( ) const
 {
     return d_begin*DOFsPerElement;
 }
@@ -93,7 +110,7 @@ size_t simpleDOFManager::beginDOF( )
 /****************************************************************
 * Return the last D.O.F. on this core                           *
 ****************************************************************/
-size_t simpleDOFManager::endDOF( )
+size_t simpleDOFManager::endDOF( ) const
 {
     return d_end*DOFsPerElement;
 }
@@ -102,7 +119,7 @@ size_t simpleDOFManager::endDOF( )
 /****************************************************************
 * Return the local number of D.O.F.s                           *
 ****************************************************************/
-size_t simpleDOFManager::numLocalDOF( )
+size_t simpleDOFManager::numLocalDOF( ) const
 {
     return (d_end-d_begin)*DOFsPerElement;
 }
@@ -111,9 +128,57 @@ size_t simpleDOFManager::numLocalDOF( )
 /****************************************************************
 * Return the global number of D.O.F.s                           *
 ****************************************************************/
-size_t simpleDOFManager::numGlobalDOF( )
+size_t simpleDOFManager::numGlobalDOF( ) const
 {
     return d_global*DOFsPerElement;
+}
+
+
+/****************************************************************
+* Return the global number of D.O.F.s                           *
+****************************************************************/
+AMP_MPI simpleDOFManager::getComm( ) const
+{
+    return d_mesh->getComm();
+}
+
+
+/****************************************************************
+* Return the global number of D.O.F.s                           *
+****************************************************************/
+std::vector<size_t> simpleDOFManager::getRemoteDOFs( ) const
+{
+    // Create the list of remote DOFs
+    std::vector<size_t> remote_DOFs(d_remote_id.size()*DOFsPerElement,(size_t)-1);
+    for (size_t i=0; i<d_remote_id.size(); i++) {
+        for (int j=0; j<DOFsPerElement; j++)
+            remote_DOFs[j+i*DOFsPerElement] = d_remote_dof[i]*DOFsPerElement + j;
+    }
+    AMP::Utilities::quicksort(remote_DOFs);
+    return remote_DOFs;
+}
+
+
+/****************************************************************
+* Return the global number of D.O.F.s                           *
+****************************************************************/
+std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
+{
+    AMP_INSIST(obj.elementType()==d_type,"Mixing types is not tested/supported yet");
+    std::vector< Mesh::MeshElement::shared_ptr > neighbor_elements = obj.getNeighbors();
+    std::vector< const Mesh::MeshElement* > elements(neighbor_elements.size()+1,&obj);
+    for (size_t i=0; i<neighbor_elements.size(); i++)
+        elements[i+1] = neighbor_elements[i].get();
+    std::vector<size_t> ids(elements.size()*DOFsPerElement);
+    for (size_t i=0; i<elements.size(); i++) {
+        AMP::Mesh::MeshElementID local_id = elements[i]->globalID();
+        size_t index = AMP::Utilities::findfirst(d_local_id,local_id);
+        AMP_INSIST(local_id==d_local_id[index],"Internal Error: id not found");
+        for (int j=0; j<DOFsPerElement; j++)
+            ids[i*DOFsPerElement+j] = index*DOFsPerElement+j;
+    }
+    AMP::Utilities::quicksort(ids);
+    return ids;
 }
 
 
@@ -124,46 +189,36 @@ AMP::LinearAlgebra::Vector::shared_ptr simpleDOFManager::createVector( AMP::Line
 {
     // Check the inputs
     AMP::Mesh::GeomType type = (AMP::Mesh::GeomType) variable->variableID();
+    boost::shared_ptr<AMP::Discretization::DOFManager> DOFs = shared_from_this();
     if ( type != d_type )
         AMP_ERROR("The variableID must match the element type specified at construction");
     if ( (int) variable->DOFsPerObject() != DOFsPerElement )
         AMP_ERROR("The variableID must have the same number of DOFs per object as the DOF Manager");
-    // Get the number or local DOFs and the start and end DOF indicies
-    size_t N_global = d_mesh->numGlobalElements(type)*DOFsPerElement;
-    size_t N_local = d_mesh->numLocalElements(type)*DOFsPerElement;
-    size_t N_begin = d_begin*DOFsPerElement;
-    size_t N_end = d_end*variable->DOFsPerObject();
-    // Create the list of remote DOFs
-    std::vector<unsigned int> remote_DOFs(d_remote_id.size()*DOFsPerElement,(unsigned int)-1);
-    for (size_t i=0; i<d_remote_id.size(); i++) {
-        for (int j=0; j<DOFsPerElement; j++)
-            remote_DOFs[j+i*DOFsPerElement] = d_remote_dof[i]*DOFsPerElement + j;
-    }
     // Create the communication list
     AMP::LinearAlgebra::CommunicationList::shared_ptr comm_list;
     if ( d_gcw == 0 ) {
-        comm_list = AMP::LinearAlgebra::CommunicationList::createEmpty( N_local, d_mesh->getComm() );
+        comm_list = AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), DOFs->getComm() );
     } else {
         AMP::LinearAlgebra::CommunicationListParameters::shared_ptr params( new AMP::LinearAlgebra::CommunicationListParameters );
-        params->d_comm = d_mesh->getComm();
-        params->d_localsize = N_local;
-        params->d_remote_DOFs = remote_DOFs;
+        params->d_comm = DOFs->getComm();
+        params->d_localsize = DOFs->numLocalDOF();
+        params->d_remote_DOFs = DOFs->getRemoteDOFs();
         comm_list = AMP::LinearAlgebra::CommunicationList::shared_ptr( new AMP::LinearAlgebra::CommunicationList(params) );
     }
     // Create the vector parameters
     boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscVectorParameters> mvparams(
         new AMP::LinearAlgebra::ManagedPetscVectorParameters() );
     boost::shared_ptr<AMP::LinearAlgebra::EpetraVectorEngineParameters> eveparams(
-        new AMP::LinearAlgebra::EpetraVectorEngineParameters( N_local, N_global, d_mesh->getComm() ) );
+        new AMP::LinearAlgebra::EpetraVectorEngineParameters( DOFs->numLocalDOF(), DOFs->numGlobalDOF(), DOFs->getComm() ) );
     int i = 0;
-    for (size_t local_start=N_begin; local_start<N_end; local_start++, i++ ) {
-        eveparams->addMapping ( i , local_start );
+    for (size_t local_start=DOFs->beginDOF(); local_start<DOFs->endDOF(); local_start++, i++ ) {
+        eveparams->addMapping( i, local_start );
     }
-    AMP::LinearAlgebra::VectorEngine::BufferPtr t_buffer ( new AMP::LinearAlgebra::VectorEngine::Buffer( N_local ) );
+    AMP::LinearAlgebra::VectorEngine::BufferPtr t_buffer ( new AMP::LinearAlgebra::VectorEngine::Buffer( DOFs->numLocalDOF() ) );
     AMP::LinearAlgebra::VectorEngine::shared_ptr epetra_engine( new AMP::LinearAlgebra::EpetraVectorEngine( eveparams, t_buffer ) );
     mvparams->d_Engine = epetra_engine;
     mvparams->d_CommList = comm_list;
-    mvparams->d_DOFManager = shared_from_this();
+    mvparams->d_DOFManager = DOFs;
     // Create the vector
     AMP::LinearAlgebra::Vector::shared_ptr vector = AMP::LinearAlgebra::Vector::shared_ptr( new AMP::LinearAlgebra::ManagedPetscVector(mvparams) );
     return vector;
@@ -174,62 +229,78 @@ AMP::LinearAlgebra::Vector::shared_ptr simpleDOFManager::createVector( AMP::Line
 * Create a matrix                                               *
 ****************************************************************/
 AMP::LinearAlgebra::Matrix::shared_ptr simpleDOFManager::createMatrix( 
-    AMP::LinearAlgebra::Variable::shared_ptr operandVar, 
-    AMP::LinearAlgebra::Variable::shared_ptr resultVar )
+    AMP::LinearAlgebra::Vector::shared_ptr operandVec, 
+    AMP::LinearAlgebra::Vector::shared_ptr resultVec )
 {
-    /*// Create the vectors (note: only square matricies are currently implimented)
-    DOFManager *operandDOF = this;
-    DOFManager *resultDOF = this;
-    AMP::LinearAlgebra::Vector::shared_ptr  operandVec = operandDOF->createVector(operandVar);
-    AMP::LinearAlgebra::Vector::shared_ptr  resultVec = resultDOF->createVector(resultVar);
+
+    // Get the DOFs
+    AMP::Discretization::DOFManager::shared_ptr operandDOF = operandVec->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr resultDOF = resultVec->getDOFManager();
+    if ( operandDOF->getComm().compare(resultVec->getComm()) == 0 )
+        AMP_ERROR("operandDOF and resultDOF on different comm groups is NOT tested, and needs to be fixed");
 
     // Create the matrix parameters
     boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrixParameters> params( 
-        new AMP::LinearAlgebra::ManagedPetscMatrixParameters( resultDOF->numLocalDOF()/resultVar->DOFsPerObject(),
-                                                   resultDOF->numGlobalDOF()/resultVar->DOFsPerObject(),
-                                                   0,
-                                                   operandDOF->numGlobalDOF()/operandVar->DOFsPerObject(),
-                                                   0,
-                                                   d_mesh->getComm() ) );
+        new AMP::LinearAlgebra::ManagedPetscMatrixParameters ( resultDOF->numLocalDOF(),
+        resultDOF->numGlobalDOF(), 0, operandDOF->numGlobalDOF(), 0, d_mesh->getComm() ) );
 
-    int multiplier = operandVar->DOFsPerObject();
-    int divisor = resultVar->DOFsPerObject();
-    NodalRowMap rowMap = pResultDofMap->getCommunicationList()->castTo<NodalRowMap>();
-    size_t numLocalElements = pResultDofMap->numLocalElements();
-    for ( unsigned int i = 0 ; i != numLocalElements; i++ )
-    {
-      params->addMapping ( i , pResultDofMap->beginDOF() + i );
-      size_t nnz = rowMap.getNNZ ( i );
-      params->setEntriesInRow ( i , nnz * multiplier/divisor );
-      params->addColumns ( nnz * multiplier/divisor , (int *)rowMap.getColumns ( i*multiplier/divisor ) );
+    // Add the rows to the matrix parameters
+    AMP::Mesh::MeshIterator cur_elem = resultDOF->getIterator();
+    AMP::Mesh::MeshIterator end_elem = cur_elem.end();
+    int columns[1000];   // Preallocate for the columns for speed
+    while ( cur_elem != end_elem) {
+        AMP::Mesh::MeshElement obj = *cur_elem;
+        // Get the result DOFs associated with the given element
+        std::vector<unsigned int> ids;
+        resultDOF->getDOFs(obj,ids);
+        // Get the operand DOFs associated with the given element
+        std::vector<size_t> row = operandDOF->getRowDOFs(obj);
+        size_t nnz = row.size();
+        for (size_t i=0; i<row.size(); i++)
+            columns[i] = (int) row[i];
+        // Add the rows
+        for (size_t i=0; i<ids.size(); i++) {
+            int globalRowID = ids[i];
+            int localRowID = globalRowID - resultDOF->beginDOF();
+            params->setEntriesInRow( localRowID, nnz );
+            params->addColumns ( nnz, columns );
+        }
+        ++cur_elem;
     }
 
-    params->d_CommListLeft = d_vDOFMapCache[var_result->variableID()]->getCommunicationList();
-    params->d_CommListRight = d_vDOFMapCache[var_operand->variableID()]->getCommunicationList();
-    AMP::LinearAlgebra::Matrix::shared_ptr  newMatrix = AMP::LinearAlgebra::Matrix::shared_ptr ( new AMP::LinearAlgebra::ManagedPetscMatrix( params ) );
-    size_t  mat_id = (var_result->variableID() << 10) + var_operand->variableID();
-    d_vMatrixCache[mat_id] = newMatrix;
+    // Get the communication lists for the vectors
+    params->d_CommListLeft = resultVec->getCommunicationList();
+    params->d_CommListRight = operandVec->getCommunicationList();
 
-    double  values[1000];  // A little bit of a hack...
-    for ( size_t i = 0 ; i != 1000 ; i++ )
-        values[i] = 0.0;
-    NodalRowMap rowMap2 = pOperandDofMap->getCommunicationList()->castTo<NodalRowMap>();
-    for ( size_t i=0 ; i!=numLocalElements; i++ )
-    {
-      int cur_row_id = (int)i + pResultDofMap->beginDOF();
-      int related_col = i * multiplier/divisor;
-      newMatrix->castTo<AMP::LinearAlgebra::ManagedMatrix>().createValuesByGlobalID ( 1 ,
-                                          rowMap2.getNNZ (related_col) ,
-                                         &cur_row_id ,
-                                   (int *)rowMap2.getColumns(related_col) ,
-                                          values );
+    // Create the matrix
+    boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrix>  newMatrix( new AMP::LinearAlgebra::ManagedPetscMatrix(params) );
+
+    // Initialize the matrix
+    cur_elem = resultDOF->getIterator();
+    end_elem = cur_elem.end();
+    double  values[1000];
+    for (size_t i=0 ; i<1000; i++) { values[i] = 0.0; }
+    while ( cur_elem != end_elem) {
+        AMP::Mesh::MeshElement obj = *cur_elem;
+        // Get the result DOFs associated with the given element
+        std::vector<unsigned int> ids;
+        resultDOF->getDOFs(obj,ids);
+        // Get the operand DOFs associated with the given element
+        std::vector<size_t> row = operandDOF->getRowDOFs(obj);
+        size_t nnz = row.size();
+        for (size_t i=0; i<row.size(); i++)
+            columns[i] = (int) row[i];
+        // Add the rows
+        for (size_t i=0; i<ids.size(); i++) {
+            int globalRowID = ids[i];
+            newMatrix->createValuesByGlobalID( 1, nnz, &globalRowID, columns, values );
+        }
+        ++cur_elem;
     }
-    newMatrix->castTo<AMP::LinearAlgebra::EpetraMatrix>().setEpetraMaps ( pResultVec , pOperandVec );
-    newMatrix->makeConsistent ();
-*/
-    AMP_ERROR("Not implimented yet");
-    return AMP::LinearAlgebra::Matrix::shared_ptr();
+    newMatrix->castTo<AMP::LinearAlgebra::EpetraMatrix>().setEpetraMaps( resultVec, operandVec );
+    newMatrix->makeConsistent();
 
+    return newMatrix;
 }
 
 
@@ -238,7 +309,7 @@ AMP::LinearAlgebra::Matrix::shared_ptr simpleDOFManager::createMatrix(
 * Note: for this function to work correctly, the remote ids     *
 * must be sorted, and d_local_id must be set                    *
 ****************************************************************/
-std::vector<size_t> simpleDOFManager::getRemoteDOF(std::vector<AMP::Mesh::MeshElementID> remote_ids )
+std::vector<size_t> simpleDOFManager::getRemoteDOF(std::vector<AMP::Mesh::MeshElementID> remote_ids ) const
 {
     AMP_MPI comm = d_mesh->getComm();
     // Get the set of mesh ids (must match on all processors)

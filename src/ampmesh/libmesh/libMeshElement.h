@@ -41,7 +41,7 @@ public:
     virtual std::vector<MeshElement> getElements(const GeomType type) const;
 
     //! Return the elements neighboring the current element
-    virtual std::vector<MeshElement> getNeighbors() const;
+    virtual std::vector< MeshElement::shared_ptr > getNeighbors() const;
 
     //! Return the volume of the current element (does not apply to verticies)
     virtual double volume() const;
@@ -60,7 +60,7 @@ protected:
      * \param rank      Rank of the current processor (must agree with libmesh->processor_id())
      * \param meshID    ID of the current mesh
      */
-    libMeshElement(int dim, GeomType type, void* element, unsigned int rank, size_t meshID);
+    libMeshElement(int dim, GeomType type, void* element, unsigned int rank, size_t meshID, libMesh* mesh );
 
     //! Clone the iterator
     virtual MeshElement* clone() const;
@@ -74,6 +74,9 @@ protected:
 
     // The ID of the current mesh
     size_t d_meshID;
+
+    // The pointer to the current mesh
+    libMesh* d_mesh;
 
     friend class AMP::Mesh::libMesh;
     friend class AMP::Mesh::libMeshIterator;

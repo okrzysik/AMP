@@ -89,7 +89,7 @@ std::vector<MeshElement> MeshElement::getElements(const GeomType type) const
         AMP_ERROR("getElements is not implimented for the base class");
     return element->getElements(type);
 }
-std::vector<MeshElement> MeshElement::getNeighbors() const
+std::vector< MeshElement::shared_ptr > MeshElement::getNeighbors() const
 {
     if ( element==NULL )
         AMP_ERROR("getNeighbors is not implimented for the base class");

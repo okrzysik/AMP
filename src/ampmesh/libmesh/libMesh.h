@@ -13,6 +13,8 @@ namespace AMP {
 namespace Mesh {
 
 
+class libMeshElement;
+
 
 /**
  * \class libMesh
@@ -98,18 +100,37 @@ public:
     //! Return the underlying libMesh object
     inline boost::shared_ptr< ::Mesh> getlibMesh( ) const { return d_libMesh; }
 
+protected:
+
+    /**  
+     *  Function to return the neighbors for a node.  The neighbors are defined
+     *  as those nodes that share an element with the given node.
+     *  Note: the nodes returns are returned in unsorted order.
+     */
+    std::vector< ::Node* > getNeighborNodes( MeshElementID );
+
+    // Friend functions to access protected functions    
+    friend class libMeshElement;
+
 private:
 
     //!  Empty constructor for a mesh
-    libMesh ( ) {};
+    libMesh( ) {};
+
+    //!  Function to properly initialize the internal data once a libmesh mesh is loaded
+    void initialize( );
 
     // libMesh objects
     boost::shared_ptr< ::Mesh>          d_libMesh;
     boost::shared_ptr< ::MeshData>      d_libMeshData;
 
-    // Some internal data
+    // Some basic internal data
     std::vector<size_t> n_local, n_global, n_ghost;
     boost::shared_ptr<initializeLibMesh> libmeshInit;
+
+    // Data use to store the node neighbor lists
+    std::vector<unsigned int> neighborNodeIDs;
+    std::vector< std::vector< ::Node* > > neighborNodes;
 
 };
 

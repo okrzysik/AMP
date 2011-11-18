@@ -38,14 +38,43 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
             d_libMeshData = boost::shared_ptr< ::MeshData>( new ::MeshData(*d_libMesh) );
             // Use libMesh to read the data
             d_libMesh->read(d_db->getString("FileName"));
-            // Construct the neighbor information
-            d_libMesh->find_neighbors();
         } else {
             AMP_ERROR("Unable to construct mesh with given parameters");
         }
     } else {
         AMP_ERROR("Error: params must contain a database object");
     }
+    // Initialize all of the internal data
+    initialize();
+}
+
+
+/********************************************************
+* De-constructor                                        *
+********************************************************/
+libMesh::~libMesh()
+{
+    // We need to clear all libmesh objects before libmeshInit
+    d_libMeshData.reset();
+    d_libMesh.reset();
+    libmeshInit.reset();
+}
+
+
+/********************************************************
+* Function to copy the mesh                             *
+********************************************************/
+Mesh libMesh::copy() const
+{
+    return libMesh(*this);
+}
+
+
+/********************************************************
+* Function to initialize the libMesh object             *
+********************************************************/
+void libMesh::initialize()
+{
     // Verify libmesh's rank and size agrees with the rank and size of the comm of the mesh
     AMP_INSIST((int)d_libMesh->processor_id()==comm.getRank(),"rank of the mesh does not agree with libmesh");
     AMP_INSIST((int)d_libMesh->n_processors()==comm.getSize(),"size of the mesh does not agree with libmesh");
@@ -85,27 +114,51 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
             n_ghost[i] = static_cast<size_t>(-1);
         }
     }
-}
-
-
-/********************************************************
-* De-constructor                                        *
-********************************************************/
-libMesh::~libMesh()
-{
-    // We need to clear all libmesh objects before libmeshInit
-    d_libMeshData.reset();
-    d_libMesh.reset();
-    libmeshInit.reset();
-}
-
-
-/********************************************************
-* Function to copy the mesh                             *
-********************************************************/
-Mesh libMesh::copy() const
-{
-    return libMesh(*this);
+    // Construct the element neighbor information
+    d_libMesh->find_neighbors();
+    // Construct the node neighbor information
+    neighborNodeIDs = std::vector<unsigned int>(n_local[0],(unsigned int)-1);
+    neighborNodes = std::vector< std::vector< ::Node* > >(n_local[0]);
+    ::Mesh::node_iterator node_pos = d_libMesh->local_nodes_begin();
+    ::Mesh::node_iterator node_end = d_libMesh->local_nodes_end();
+    size_t i=0;
+    while ( node_pos != node_end ) {
+        ::Node *node = node_pos.operator*();
+        neighborNodeIDs[i] = node->id();
+        ++node_pos;
+        i++;
+    }
+    AMP::Utilities::quicksort(neighborNodeIDs);
+    ::Mesh::element_iterator elem_pos = d_libMesh->local_elements_begin();
+    ::Mesh::element_iterator elem_end = d_libMesh->local_elements_end();
+    std::vector< std::set<unsigned int> > tmpNeighborNodes(n_local[0]);
+    int rank = comm.getRank();
+    while ( elem_pos != elem_end ) {
+        ::Elem *elem = elem_pos.operator*();
+        for (i=0; i<elem->n_nodes(); i++) {
+            ::Node *node = elem->get_node(i);
+            int p_id = node->processor_id();
+            if ( p_id==rank ) {
+                int j = AMP::Utilities::findfirst(neighborNodeIDs,node->id());
+                AMP_ASSERT(neighborNodeIDs[j]==node->id());
+                for (unsigned int k=0; k<elem->n_nodes(); k++) {
+                    if ( k==i )
+                        continue;
+                    ::Node *node2 = elem->get_node(k);
+                    tmpNeighborNodes[j].insert(node2->id());
+                }
+            }
+        }
+        ++elem_pos;
+    }
+    for (i=0; i<neighborNodeIDs.size(); i++) {
+        neighborNodes[i] = std::vector< ::Node* >(tmpNeighborNodes[i].size());
+        int j = 0;
+        for (std::set<unsigned int>::iterator it=tmpNeighborNodes[i].begin(); it!=tmpNeighborNodes[i].end(); it++) {
+            neighborNodes[i][j] = d_libMesh->node_ptr(*it);
+            j++;
+        }
+    }
 }
 
 
@@ -206,6 +259,19 @@ MeshIterator libMesh::getIDsetIterator ( const GeomType, const int id, const int
     return MeshIterator();
 }
 
+
+/********************************************************
+* Return pointers to the neighbor nodes give a node id  *
+********************************************************/
+std::vector< ::Node* > libMesh::getNeighborNodes( MeshElementID id )
+{
+    AMP_INSIST(id.type==Vertex,"This function is for nodes");
+    AMP_INSIST(id.meshID==d_meshID,"Unknown mesh");
+    AMP_INSIST(id.is_local,"Only owned nodes can return their neighbor lists");
+    int i = AMP::Utilities::findfirst(neighborNodeIDs,id.local_id);
+    AMP_ASSERT(neighborNodeIDs[i]==id.local_id);
+    return neighborNodes[i];
+}
 
 
 } // Mesh namespace
