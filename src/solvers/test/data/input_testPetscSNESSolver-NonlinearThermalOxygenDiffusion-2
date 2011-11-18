@@ -20,50 +20,50 @@ testNonlinearThermalOperator {
 }
 
 DiffusionNonlinearFEOperator1 {
-      name = "DiffusionNonlinearFEOperator" 
-        print_info_level = 1
-        ActiveInputVariables {
-          temperature = "temp"
-            concentration="concentration"
-        }
-      OutputVariable = "temp"
-        PrincipalVariable = 0 
-
-        DiffusionElement{
-          name = "DiffusionNonlinearElement"
-            TransportAtGaussPoints = TRUE
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }    
-
-	LocalModel = "DiffusionTransportModel1"
+  name = "DiffusionNonlinearFEOperator" 
+    print_info_level = 1
+    ActiveInputVariables {
+      temperature = "temp"
+        concentration="concentration"
     }
+  OutputVariable = "temp"
+    PrincipalVariable = 0 
+
+    DiffusionElement{
+      name = "DiffusionNonlinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+
+  LocalModel = "DiffusionTransportModel1"
+}
 
 DirichletVectorCorrection1 {
-    name = "DirichletVectorCorrection"
-      print_info_level = 0
-      skip_params = FALSE
-      isAttachedToVolumeOperator = TRUE
-      number_of_ids = 1
-      id_0 = 4
-      number_of_dofs_0 = 1
-      dof_0_0 = 0
-      value_0_0 = 750
-  }
+  name = "DirichletVectorCorrection"
+    print_info_level = 0
+    skip_params = FALSE
+    isAttachedToVolumeOperator = TRUE
+    number_of_ids = 1
+    id_0 = 4
+    number_of_dofs_0 = 1
+    dof_0_0 = 0
+    value_0_0 = 750
+}
 
 DiffusionTransportModel1{
-        name = "DiffusionTransportModel"
-          Material = "UO2_MSRZC_09"
-          Property = "ThermalConductivity"
-          Default_Concentration = .1
-          Default_Temperature   = 750.
-          Default_Burnup   = 0.0
-          UseBilogScaling = TRUE
-          BilogVariable = "concentration"
-          BilogScaleCoefficient = FALSE
-      } 
+  name = "DiffusionTransportModel"
+    Material = "UO2_MSRZC_09"
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 750.
+    Default_Burnup   = 0.0
+    UseBilogScaling = TRUE
+    BilogVariable = "concentration"
+    BilogScaleCoefficient = FALSE
+} 
 
 testLinearThermalOperator {
   name = "LinearBVPOperator"
@@ -73,88 +73,88 @@ testLinearThermalOperator {
 }
 
 DiffusionLinearFEOperator2 {
-      name = "DiffusionLinearFEOperator"
-        print_info_level = 1
-        reset_reuses_matrix = TRUE
-        InputVariable = "temp"
-        OutputVariable = "temp"
-        FixedConcentration = TRUE
-        FixedBurnup = TRUE
+  name = "DiffusionLinearFEOperator"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    InputVariable = "temp"
+    OutputVariable = "temp"
+    FixedConcentration = TRUE
+    FixedBurnup = TRUE
 
-        DiffusionElement {
-          name = "DiffusionLinearElement"
-            TransportAtGaussPoints = TRUE
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }    
+    DiffusionElement {
+      name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
 
-	LocalModel = "DiffusionTransportModel1"
-    }
+  LocalModel = "DiffusionTransportModel1"
+}
 
 DirichletMatrixCorrection2 {
-    name = "DirichletMatrixCorrection"
-      print_info_level = 1
-      skip_params = FALSE
-      skip_rhs_correction = TRUE
-      number_of_ids = 1
-      id_0          = 4
-      number_of_dofs_0 =  1
-      dof_0_0          =  0
-  }
+  name = "DirichletMatrixCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    skip_rhs_correction = TRUE
+    number_of_ids = 1
+    id_0          = 4
+    number_of_dofs_0 =  1
+    dof_0_0          =  0
+}
 
 testNonlinearOxygenOperator {
   name="NonlinearBVPOperator"
-  print_info_level = 1
-  VolumeOperator = "DiffusionNonlinearFEOperator3"
-  BoundaryOperator = "DirichletVectorCorrection3"
+    print_info_level = 1
+    VolumeOperator = "DiffusionNonlinearFEOperator3"
+    BoundaryOperator = "DirichletVectorCorrection3"
 }
 
 DiffusionNonlinearFEOperator3 {
-      name = "DiffusionNonlinearFEOperator" 
-        print_info_level = 1
-        ActiveInputVariables {
-          temperature="temp"
-            concentration = "concentration"
-        }
-      OutputVariable = "concentration"
-        PrincipalVariable = 1 
-
-        DiffusionElement{
-          name = "DiffusionNonlinearElement"
-            TransportAtGaussPoints = TRUE
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }    
-
-	LocalModel = "DiffusionTransportModel3"
+  name = "DiffusionNonlinearFEOperator" 
+    print_info_level = 1
+    ActiveInputVariables {
+      temperature="temp"
+        concentration = "concentration"
     }
+  OutputVariable = "concentration"
+    PrincipalVariable = 1 
+
+    DiffusionElement{
+      name = "DiffusionNonlinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+
+  LocalModel = "DiffusionTransportModel3"
+}
 
 DirichletVectorCorrection3 {
-    name = "DirichletVectorCorrection"
-      print_info_level = 0
-      skip_params = FALSE
-      isAttachedToVolumeOperator = TRUE
-      number_of_ids = 1
-      id_0 = 4
-      number_of_dofs_0 = 1
-      dof_0_0 = 0
-      value_0_0 = 0.01
-  }
+  name = "DirichletVectorCorrection"
+    print_info_level = 0
+    skip_params = FALSE
+    isAttachedToVolumeOperator = TRUE
+    number_of_ids = 1
+    id_0 = 4
+    number_of_dofs_0 = 1
+    dof_0_0 = 0
+    value_0_0 = 0.01
+}
 
 DiffusionTransportModel3{
-        name = "DiffusionTransportModel"
-          Material = "Ox_MSRZC_09"
-          Property = "FickCoefficient"
-          Default_Concentration = .1
-          Default_Temperature   = 750.
-          Default_Burnup   = 0.0
-          UseBilogScaling = TRUE
-          BilogVariable = "concentration"
-      } 
+  name = "DiffusionTransportModel"
+    Material = "Ox_MSRZC_09"
+    Property = "FickCoefficient"
+    Default_Concentration = .1
+    Default_Temperature   = 750.
+    Default_Burnup   = 0.0
+    UseBilogScaling = TRUE
+    BilogVariable = "concentration"
+} 
 
 testLinearOxygenOperator {
   name = "LinearBVPOperator"
@@ -164,36 +164,36 @@ testLinearOxygenOperator {
 }
 
 DiffusionLinearFEOperator4 {
-      name = "DiffusionLinearFEOperator"
-        print_info_level = 1
-        reset_reuses_matrix = TRUE
-        InputVariable = "concentration"
-        OutputVariable = "concentration"
-        FixedTemperature = TRUE
-        FixedBurnup = TRUE
+  name = "DiffusionLinearFEOperator"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    InputVariable = "concentration"
+    OutputVariable = "concentration"
+    FixedTemperature = TRUE
+    FixedBurnup = TRUE
 
-        DiffusionElement {
-          name = "DiffusionLinearElement"
-            TransportAtGaussPoints = TRUE
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }    
+    DiffusionElement {
+      name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
 
-	LocalModel = "DiffusionTransportModel3"
-    }
+  LocalModel = "DiffusionTransportModel3"
+}
 
-    DirichletMatrixCorrection4 {
-    name = "DirichletMatrixCorrection"
-      print_info_level = 0
-      skip_params = FALSE
-      skip_rhs_correction = TRUE
-      number_of_ids = 1
-      id_0          = 4
-      number_of_dofs_0 =  1
-      dof_0_0          =  0
-  }
+DirichletMatrixCorrection4 {
+  name = "DirichletMatrixCorrection"
+    print_info_level = 0
+    skip_params = FALSE
+    skip_rhs_correction = TRUE
+    number_of_ids = 1
+    id_0          = 4
+    number_of_dofs_0 =  1
+    dof_0_0          =  0
+}
 
 NonlinearSolver{
   print_info_level = 7
@@ -234,23 +234,13 @@ NonlinearSolver{
             thermalPreconditioner{
               print_info_level = 10
                 max_iterations = 1
-                max_levels = 5
-                max_error = 1.0e-10
-                coarse_type="Amesos-KLU"
+                max_error = 1.0e-15
             }
 
           oxygenPreconditioner{
             print_info_level = 10
-              PDE_equations = 1
-              max_levels = 10
               max_iterations = 1
-              max_error = 1.0e-10
-              increasingordecreasing = "increasing"
-              aggregationtype = "Uncoupled"
-              smoothertype = "Chebyshev"
-              smoother_sweeps = 3
-              smoother_preorpost = "both"
-              coarse_type="Amesos-KLU"
+              max_error = 1.0e-15
           }
         }
     }

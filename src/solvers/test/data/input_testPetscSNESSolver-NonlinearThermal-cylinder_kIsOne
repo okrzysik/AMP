@@ -20,91 +20,91 @@ testNonlinearThermalOperator {
 }
 
 DiffusionNonlinearFEOperator1 {
-      name = "DiffusionNonlinearFEOperator" 
-        print_info_level = 1
-        ActiveInputVariables {
-          temperature = "temp"
-        }
-      OutputVariable = "temp"
-        PrincipalVariable = 0 
-
-        DiffusionElement{
-          name = "DiffusionNonlinearElement"
-            TransportAtGaussPoints = TRUE
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }    
-
-	LocalModel = "DiffusionTransportModel1"
+  name = "DiffusionNonlinearFEOperator" 
+    print_info_level = 1
+    ActiveInputVariables {
+      temperature = "temp"
     }
+  OutputVariable = "temp"
+    PrincipalVariable = 0 
+
+    DiffusionElement{
+      name = "DiffusionNonlinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+
+  LocalModel = "DiffusionTransportModel1"
+}
 
 DirichletVectorCorrection1 {
-    name = "DirichletVectorCorrection"
-      print_info_level = 1
-      skip_params = FALSE
-      number_of_ids = 2
-      id_0 = 4
-      number_of_dofs_0 = 1
-      dof_0_0 = 0
-      value_0_0 = 0.
-      id_1 = 8
-      number_of_dofs_1 = 1
-      dof_1_0 = 0
-      value_1_0 = 0.
-  }
+  name = "DirichletVectorCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    number_of_ids = 2
+    id_0 = 4
+    number_of_dofs_0 = 1
+    dof_0_0 = 0
+    value_0_0 = 0.
+    id_1 = 8
+    number_of_dofs_1 = 1
+    dof_1_0 = 0
+    value_1_0 = 0.
+}
 
 DiffusionTransportModel1{
-        name = "DiffusionTransportModel"
-          Material = "Independent"
-          Property = "ThermalConductivity"
-          Default_Concentration = .1
-          Default_Temperature   = 300.
-          Default_Burnup   = 0.0
-      } 
+  name = "DiffusionTransportModel"
+    Material = "Independent"
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 300.
+    Default_Burnup   = 0.0
+} 
 
 testLinearThermalOperator {
-    name = "LinearBVPOperator"
+  name = "LinearBVPOperator"
     print_info_level = 3
     VolumeOperator = "DiffusionLinearFEOperator2"
     BoundaryOperator = "DirichletMatrixCorrection2"
 }
 
 DiffusionLinearFEOperator2 {
-      name = "DiffusionLinearFEOperator"
-        print_info_level = 1
-        reset_reuses_matrix = TRUE
-        InputVariable = "temp"
-        OutputVariable = "temp"
-        FixedConcentration = TRUE
-        FixedBurnup = TRUE
+  name = "DiffusionLinearFEOperator"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    InputVariable = "temp"
+    OutputVariable = "temp"
+    FixedConcentration = TRUE
+    FixedBurnup = TRUE
 
-        DiffusionElement {
-          name = "DiffusionLinearElement"
-            TransportAtGaussPoints = TRUE
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }    
+    DiffusionElement {
+      name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
 
-	LocalModel = "DiffusionTransportModel1"
-    }
+  LocalModel = "DiffusionTransportModel1"
+}
 
 DirichletMatrixCorrection2 {
-    name = "DirichletMatrixCorrection"
-      print_info_level = 1
-      skip_params = FALSE
-      skip_rhs_correction = TRUE
-      number_of_ids = 2
-      id_0          = 4
-      number_of_dofs_0 =  1
-      dof_0_0          =  0
-      id_1          = 8
-      number_of_dofs_1 = 1
-      dof_1_0 = 0
-  }
+  name = "DirichletMatrixCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    skip_rhs_correction = TRUE
+    number_of_ids = 2
+    id_0          = 4
+    number_of_dofs_0 =  1
+    dof_0_0          =  0
+    id_1          = 8
+    number_of_dofs_1 = 1
+    dof_1_0 = 0
+}
 
 ThermalInitialGuess {
   name = "DirichletVectorCorrection"
@@ -152,9 +152,7 @@ NonlinearSolver{
         Preconditioner{
           print_info_level = 1
             max_iterations = 1
-            max_levels = 10
-            max_error = 1.0e-10
-            coarse_type="Amesos-KLU"
+            max_error = 1.0e-15
         }
     }
 }

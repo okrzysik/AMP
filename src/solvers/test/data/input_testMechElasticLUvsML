@@ -41,17 +41,14 @@ Richardson_Solver {
 }
 
 ML_Solver {
-  problem_type = "SA"
-    print_info_level = 0
+  print_info_level = 0
     max_iterations = 1
-    max_levels = 30
     max_error = 1.0e-16
     PDE_equations = 3
 }
 
 LU_Solver {
-  problem_type = "SA"
-    print_info_level = 0
+  print_info_level = 0
     max_iterations = 1
     max_levels = 1
     max_error = 1.0e-16

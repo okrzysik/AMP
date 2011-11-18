@@ -4,45 +4,45 @@ Mesh = "cube.with.12.boundaries.e"
 NumberOfMeshes = 1
 Mesh_1{
   Filename = "cube.with.12.boundaries.e"
-  MeshName = "bar"
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 1000
+    MeshName = "bar"
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
+    NumberOfElements = 1000
 }
 
 FlowFrapconOperator{
   name = "FlowFrapconOperator"
-  InputVariable = "flow"
-  OutputVariable = "flow"
-  numpoints = 10
-  Channel_Diameter = 0.01
-  Heat_Capacity = 4179.6
-  Mass_Flux     = 10
-  Temp_Inlet    = 300
-  Conductivity  = 0.58  
-  Reynolds      = 100
-  Prandtl       = 7.0
-  number_of_dofs =   1
-  dof_0          =   0
-  value_0        = 300. 
+    InputVariable = "flow"
+    OutputVariable = "flow"
+    numpoints = 10
+    Channel_Diameter = 0.01
+    Heat_Capacity = 4179.6
+    Mass_Flux     = 10
+    Temp_Inlet    = 300
+    Conductivity  = 0.58  
+    Reynolds      = 100
+    Prandtl       = 7.0
+    number_of_dofs =   1
+    dof_0          =   0
+    value_0        = 300. 
 }
 
 FlowFrapconJacobian{
   name = "FlowFrapconJacobian"
-  InputVariable = "flow"
-  OutputVariable = "flow"
-  numpoints = 10
-  Channel_Diameter = 0.01
-  Heat_Capacity = 4179.6
-  Mass_Flux     = 10
-  Temp_Inlet    = 300
-  Conductivity  = 0.58  
-  Reynolds      = 100
-  Prandtl       = 7.0
-  number_of_dofs =   1
-  dof_0          =   0
-  value_0        = 300. 
+    InputVariable = "flow"
+    OutputVariable = "flow"
+    numpoints = 10
+    Channel_Diameter = 0.01
+    Heat_Capacity = 4179.6
+    Mass_Flux     = 10
+    Temp_Inlet    = 300
+    Conductivity  = 0.58  
+    Reynolds      = 100
+    Prandtl       = 7.0
+    number_of_dofs =   1
+    dof_0          =   0
+    value_0        = 300. 
 }
 
 
@@ -76,16 +76,8 @@ NonlinearSolver{
 
         Preconditioner{
           print_info_level = 1
-            PDE_equations = 1
-            max_levels = 10
             max_iterations = 1
-            max_error = 1.0e-10
-            increasingordecreasing = "increasing"
-            aggregationtype = "Uncoupled"
-            smoothertype = "Chebyshev"
-            smoother_sweeps = 3
-            smoother_preorpost = "both"
-            coarse_type="Amesos-KLU"
+            max_error = 1.0e-15
         }
     }
 }
@@ -120,16 +112,8 @@ Flow1DSolver{
 
         Preconditioner{
           print_info_level = 1
-            PDE_equations = 1
-            max_levels = 10
             max_iterations = 1
-            max_error = 1.0e-10
-            increasingordecreasing = "increasing"
-            aggregationtype = "Uncoupled"
-            smoothertype = "Chebyshev"
-            smoother_sweeps = 3
-            smoother_preorpost = "both"
-            coarse_type="Amesos-KLU"
+            max_error = 1.0e-15
         }
     }
 }
