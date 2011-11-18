@@ -33,26 +33,26 @@ VolumeIntegralOperator{
   OutputVariable = "heatsource"
     print_info_level = 0
     LocalModel = "SourcePhysicsModel"
-  SourceElement {
-    name="SourceNonlinearElement"
-      print_info_level = 3
-      FE_ORDER = "FIRST"  
-      FE_FAMILY = "LAGRANGE"
-      QRULE_TYPE = "QGAUSS"
-      QRULE_ORDER = "DEFAULT"
-  }
+    SourceElement {
+      name="SourceNonlinearElement"
+        print_info_level = 3
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
 }
 
 SourcePhysicsModel {
-      name = "SourcePhysicsModel"
-        Material = "UO2_MSRZC_09"
-        USE_ELEMENT_PHYSICS = "MassDensityModel"
-	Equation = "ThermalSource"
-        USE_MATERIALS_LIBRARY = TRUE 
-	Default_Concentration = .1
-	Default_Temperature   = 557.2
-	Default_Burnup   = 0.0
-    }
+  name = "SourcePhysicsModel"
+    Material = "UO2_MSRZC_09"
+    USE_ELEMENT_PHYSICS = "MassDensityModel"
+    Equation = "ThermalSource"
+    USE_MATERIALS_LIBRARY = TRUE 
+    Default_Concentration = .1
+    Default_Temperature   = 557.2
+    Default_Burnup   = 0.0
+}
 
 
 NumberOfLoadingSteps = 1
@@ -65,85 +65,85 @@ testNonlinearThermalOperator {
 }
 
 DiffusionNonlinearFEOperator1 {
-      name = "DiffusionNonlinearFEOperator" 
-        print_info_level = 0
-        ActiveInputVariables {
-          temperature = "temp"
-        }
-      OutputVariable = "temp"
-        PrincipalVariable = 0 
-
-        DiffusionElement{
-          name = "DiffusionNonlinearElement"
-            TransportAtGaussPoints = TRUE
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }    
-
-	LocalModel = "DiffusionTransportModel1"
+  name = "DiffusionNonlinearFEOperator" 
+    print_info_level = 0
+    ActiveInputVariables {
+      temperature = "temp"
     }
+  OutputVariable = "temp"
+    PrincipalVariable = 0 
+
+    DiffusionElement{
+      name = "DiffusionNonlinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+
+  LocalModel = "DiffusionTransportModel1"
+}
 
 DirichletVectorCorrection1 {
-    name = "DirichletVectorCorrection"
-      print_info_level = 0
-      skip_params = FALSE
-      isAttachedToVolumeOperator = TRUE
-      number_of_ids = 1
-      id_0             = 4
-      number_of_dofs_0 =   1
-      dof_0_0          =   0
-      value_0_0        = 557.2
-  }
+  name = "DirichletVectorCorrection"
+    print_info_level = 0
+    skip_params = FALSE
+    isAttachedToVolumeOperator = TRUE
+    number_of_ids = 1
+    id_0             = 4
+    number_of_dofs_0 =   1
+    dof_0_0          =   0
+    value_0_0        = 557.2
+}
 
 DiffusionTransportModel1{
-        name = "DiffusionTransportModel"
-          Material = "UO2_MSRZC_09"
-          Property = "ThermalConductivity"
-          Default_Concentration = .1
-          Default_Temperature   = 557.2
-          Default_Burnup   = 0.0
-      } 
+  name = "DiffusionTransportModel"
+    Material = "UO2_MSRZC_09"
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 557.2
+    Default_Burnup   = 0.0
+} 
 
 testLinearThermalOperator {
-    name = "LinearBVPOperator"
+  name = "LinearBVPOperator"
     print_info_level = 0
     VolumeOperator = "DiffusionLinearFEOperator2"
     BoundaryOperator = "DirichletMatrixCorrection2"
 }
 
 DiffusionLinearFEOperator2 {
-      name = "DiffusionLinearFEOperator"
-        print_info_level = 0
-        reset_reuses_matrix = TRUE
-        InputVariable = "temp"
-        OutputVariable = "temp"
-        FixedConcentration = TRUE
-        FixedBurnup = TRUE
+  name = "DiffusionLinearFEOperator"
+    print_info_level = 0
+    reset_reuses_matrix = TRUE
+    InputVariable = "temp"
+    OutputVariable = "temp"
+    FixedConcentration = TRUE
+    FixedBurnup = TRUE
 
-        DiffusionElement {
-          name = "DiffusionLinearElement"
-            TransportAtGaussPoints = TRUE
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }    
+    DiffusionElement {
+      name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
 
-	LocalModel = "DiffusionTransportModel1"
-    }
+  LocalModel = "DiffusionTransportModel1"
+}
 
 DirichletMatrixCorrection2 {
-    name = "DirichletMatrixCorrection"
-      print_info_level = 0
-      skip_params = FALSE
-      skip_rhs_correction = TRUE
-      number_of_ids = 1
-      id_0          = 4
-      number_of_dofs_0 =  1
-      dof_0_0          =  0
-  }
+  name = "DirichletMatrixCorrection"
+    print_info_level = 0
+    skip_params = FALSE
+    skip_rhs_correction = TRUE
+    number_of_ids = 1
+    id_0          = 4
+    number_of_dofs_0 =  1
+    dof_0_0          =  0
+}
 
 NonlinearSolver{
   print_info_level = 7
@@ -176,9 +176,7 @@ NonlinearSolver{
         Preconditioner{
           print_info_level = 0
             max_iterations = 1
-            max_levels = 10
-            max_error = 1.0e-10
-            coarse_type="Amesos-KLU"
+            max_error = 1.0e-15
         }
     }
 }

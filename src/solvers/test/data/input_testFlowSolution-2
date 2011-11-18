@@ -1,5 +1,5 @@
 regression{
-   expectedSolution = 3.0000000e+02 , 3.0133524e+02 , 3.0266686e+02 , 3.0399496e+02 , 3.0531964e+02 , 3.0664098e+02 , 3.0795904e+02 , 3.0927387e+02 , 3.1058551e+02 , 3.1189396e+02 , 3.1319922e+02 , 3.1450129e+02 , 3.1580013e+02 , 3.1709570e+02 , 3.1838794e+02 , 3.1967678e+02 , 3.2096212e+02 , 3.2224384e+02 
+  expectedSolution = 3.0000000e+02 , 3.0133524e+02 , 3.0266686e+02 , 3.0399496e+02 , 3.0531964e+02 , 3.0664098e+02 , 3.0795904e+02 , 3.0927387e+02 , 3.1058551e+02 , 3.1189396e+02 , 3.1319922e+02 , 3.1450129e+02 , 3.1580013e+02 , 3.1709570e+02 , 3.1838794e+02 , 3.1967678e+02 , 3.2096212e+02 , 3.2224384e+02 
 }
 
 max_iterations = 60
@@ -15,37 +15,37 @@ printCladStressStrain=FALSE
 
 Mesh_1{
   Filename = "halden_1_pellet_9mil.e"
-  MeshName = "pellet"
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 5226
+    MeshName = "pellet"
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
+    NumberOfElements = 5226
 }
 
 Mesh_2{
   Filename = "halden_1_clad.e"
-  MeshName = "clad"
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 4488
+    MeshName = "clad"
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
+    NumberOfElements = 4488
 }
 
 PowerNeutronicsOperator{
   name="NeutronicsRhsOperator"
-  type               = "Power"
-  OutputVariable     = "SpecificPowerInWattsPerGram"
-  numTimeSteps       = 3
-  timeSteps          = .1, .1, .1
-  useFixedValue      = TRUE
-  numValues         = 3
-  fixedValues        = 4045.318,12135.95,20226.59
-  print_info_level   = 3
+    type               = "Power"
+    OutputVariable     = "SpecificPowerInWattsPerGram"
+    numTimeSteps       = 3
+    timeSteps          = .1, .1, .1
+    useFixedValue      = TRUE
+    numValues         = 3
+    fixedValues        = 4045.318,12135.95,20226.59
+    print_info_level   = 3
 }
 
 BoundaryConditions{
   Heff = 2920., 3440., 4050.
-  cladSurfaceTemperature = 513.
+    cladSurfaceTemperature = 513.
 }
 
 
@@ -58,11 +58,11 @@ NonlinearThermalOperator2 {
 }
 
 LinearThermalOperator2 {
-   name = "LinearBVPOperator"
-   print_info_level = 0
+  name = "LinearBVPOperator"
+    print_info_level = 0
 
-   VolumeOperator = "DiffusionLinearFEOperator2"
-   BoundaryOperator="LinearColumnBoundaryOperator2"
+    VolumeOperator = "DiffusionLinearFEOperator2"
+    BoundaryOperator="LinearColumnBoundaryOperator2"
 }
 
 
@@ -75,49 +75,49 @@ NonlinearThermalOperator1 {
 }
 
 LinearThermalOperator1 {
-   name = "LinearBVPOperator"
-   print_info_level = 0
+  name = "LinearBVPOperator"
+    print_info_level = 0
 
-   VolumeOperator = "DiffusionLinearFEOperator1"
-   BoundaryOperator="RobinMatrixCorrection"
+    VolumeOperator = "DiffusionLinearFEOperator1"
+    BoundaryOperator="RobinMatrixCorrection"
 }
 
 VolumeIntegralOperator{
   name="VolumeIntegralOperator"
-  InputVariableType = "IntegrationPointScalar"
-  Number_Active_Variables = 1
-  Number_Auxillary_Variables = 0
-  ConstantSource   = FALSE
-  ActiveInputVariables{
-    ActiveVariable_0 = "SpecificPowerInWattsPerGram" 
-  }
+    InputVariableType = "IntegrationPointScalar"
+    Number_Active_Variables = 1
+    Number_Auxillary_Variables = 0
+    ConstantSource   = FALSE
+    ActiveInputVariables{
+      ActiveVariable_0 = "SpecificPowerInWattsPerGram" 
+    }
   OutputVariable = "Temperature"
-  print_info_level = 1
-  LocalModel = "SourcePhysicsModel"
+    print_info_level = 1
+    LocalModel = "SourcePhysicsModel"
 
-  SourceElement {
-    name="SourceNonlinearElement"
-    print_info_level = 0
-    FE_ORDER = "FIRST"  
-    FE_FAMILY = "LAGRANGE"
-    QRULE_TYPE = "QGAUSS"
-    QRULE_ORDER = "DEFAULT"
-  }
+    SourceElement {
+      name="SourceNonlinearElement"
+        print_info_level = 0
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
 }
 
 MapCladtoPellet{
   BoundaryId = 0
-  name="MapSurface"
+    name="MapSurface"
 
-  Map3Dto1D{
+    Map3Dto1D{
       print_info_level=0
-      BoundaryId = 8
-      InputVariable = "Temperature"
-      OutputVariable = "Gap"
+        BoundaryId = 8
+        InputVariable = "Temperature"
+        OutputVariable = "Gap"
     }
 
   Map1Dto3D{
-      print_info_level=0
+    print_info_level=0
       BoundaryId = 4
       InputVariable = "Gap"
       OutputVariable = "Temperature"
@@ -127,18 +127,18 @@ MapCladtoPellet{
 
 MapPellettoClad{
   BoundaryId = 0
-  name="MapSurface"
+    name="MapSurface"
 
-Map3Dto1D{
-    print_info_level=0
-    BoundaryId = 4
-      InputVariable = "Temperature"
-      OutputVariable = "Gap"
-  }
+    Map3Dto1D{
+      print_info_level=0
+        BoundaryId = 4
+        InputVariable = "Temperature"
+        OutputVariable = "Gap"
+    }
 
   Map1Dto3D{
     print_info_level=0
-    BoundaryId = 8
+      BoundaryId = 8
       InputVariable = "Gap"
       OutputVariable = "Temperature"
   }
@@ -146,30 +146,30 @@ Map3Dto1D{
 
 MapCladto1DFlow{
   BoundaryId = 4
-  InputVariable = "Temperature"
-  OutputVariable = "FlowInternal"
+    InputVariable = "Temperature"
+    OutputVariable = "FlowInternal"
 }
 
 Map1DFlowto3DFlow{
   BoundaryId = 4
-  InputVariable = "FlowInternal"
-  OutputVariable = "Flow"
+    InputVariable = "FlowInternal"
+    OutputVariable = "Flow"
 }
 
 MapFlowtoClad{
   BoundaryId = 0
-  name="MapSurface"
+    name="MapSurface"
 
-Map3Dto1D{
-    print_info_level=0
-    BoundaryId = 4
-      InputVariable = "Flow"
-      OutputVariable = "Gap"
-  }
+    Map3Dto1D{
+      print_info_level=0
+        BoundaryId = 4
+        InputVariable = "Flow"
+        OutputVariable = "Gap"
+    }
 
   Map1Dto3D{
     print_info_level=0
-    BoundaryId = 4
+      BoundaryId = 4
       InputVariable = "Gap"
       OutputVariable = "Temperature"
   }
@@ -177,36 +177,36 @@ Map3Dto1D{
 
 FlowFrapconOperator{
   name = "FlowFrapconOperator"
-  InputVariable = "FlowInternal"
-  OutputVariable = "FlowInternal"
-  numpoints = 10
-  Channel_Diameter = 0.01
-  Heat_Capacity = 4100
-  Mass_Flux     = 10
-  Temp_Inlet    = 300
-  Conductivity  = 0.58  
-  Reynolds      = 500
-  Prandtl       = 7.0
-  number_of_dofs =   1
-  dof_0          =   0
-  value_0        = 300. 
+    InputVariable = "FlowInternal"
+    OutputVariable = "FlowInternal"
+    numpoints = 10
+    Channel_Diameter = 0.01
+    Heat_Capacity = 4100
+    Mass_Flux     = 10
+    Temp_Inlet    = 300
+    Conductivity  = 0.58  
+    Reynolds      = 500
+    Prandtl       = 7.0
+    number_of_dofs =   1
+    dof_0          =   0
+    value_0        = 300. 
 }
 
 FlowFrapconJacobian{
   name = "FlowFrapconJacobian"
-  InputVariable = "FlowInternal"
-  OutputVariable = "FlowInternal"
-  numpoints = 10
-  Channel_Diameter = 0.01
-  Heat_Capacity = 4100
-  Mass_Flux     = 10
-  Temp_Inlet    = 300
-  Conductivity  = 0.58  
-  Reynolds      = 500
-  Prandtl       = 7.0
-  number_of_dofs =   1
-  dof_0          =   0
-  value_0        = 300. 
+    InputVariable = "FlowInternal"
+    OutputVariable = "FlowInternal"
+    numpoints = 10
+    Channel_Diameter = 0.01
+    Heat_Capacity = 4100
+    Mass_Flux     = 10
+    Temp_Inlet    = 300
+    Conductivity  = 0.58  
+    Reynolds      = 500
+    Prandtl       = 7.0
+    number_of_dofs =   1
+    dof_0          =   0
+    value_0        = 300. 
 }
 
 Flow1DSolver{
@@ -241,7 +241,7 @@ NonlinearSolver{
         max_error = 1e-10
         absolute_tolerance = 1.0e-9
         ksp_type = "fgmres"
-//        ksp_type = "bcgs"
+        //        ksp_type = "bcgs"
         relative_tolerance = 1.0e-01
         divergence_tolerance = 1.0e03
         max_krylov_dimension = 40
@@ -252,318 +252,304 @@ NonlinearSolver{
         KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 10000 -ksp_rtol 1.0e-1 -ksp_atol 1.0e-13 -ksp_gmres_restart 100"
 
         Preconditioner{
-            print_info_level = 0
+          print_info_level = 0
             max_iterations = 1
             max_error = 1.0e-10
             absolute_tolerance = 1.0e-16
             relative_tolerance = 1.0e-10
             divergence_tolerance = 1.0e03
 
-           pelletThermalPreconditioner{
-              print_info_level = 0
-              max_iterations = 1
-              max_levels = 10
-              max_error = 1.0e-15
-              coarse_type="Amesos-KLU"
-              PDE_equations = 1
-            }
-
-           cladThermalPreconditioner{
+            pelletThermalPreconditioner{
               print_info_level = 0
                 max_iterations = 1
-                max_levels = 10
                 max_error = 1.0e-15
-                coarse_type="Amesos-KLU"
-                PDE_equations = 1
             }
 
-            flowPreconditioner{
-              print_info_level = 0
-              PDE_equations = 1
-              max_levels = 10
+          cladThermalPreconditioner{
+            print_info_level = 0
               max_iterations = 1
               max_error = 1.0e-15
-              increasingordecreasing = "increasing"
-              aggregationtype = "Uncoupled"
-              smoothertype = "Chebyshev"
-              smoother_sweeps = 3
-              smoother_preorpost = "both"
-              coarse_type="Amesos-KLU"
-            }
+          }
+
+          flowPreconditioner{
+            print_info_level = 0
+              max_iterations = 1
+              max_error = 1.0e-15
+          }
 
         }
     }
 }
 
 DiffusionNonlinearFEOperator2{
-      name = "DiffusionNonlinearFEOperator" 
-        print_info_level = 1
-        ActiveInputVariables {
-          temperature = "Temperature"
-        }
-      OutputVariable = "Temperature"
-        PrincipalVariable = 0 
-
-        DiffusionElement{
-          name = "DiffusionNonlinearElement"
-            TransportAtGaussPoints = TRUE
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }    
-	LocalModel = "DiffusionTransportModel2"
+  name = "DiffusionNonlinearFEOperator" 
+    print_info_level = 1
+    ActiveInputVariables {
+      temperature = "Temperature"
     }
+  OutputVariable = "Temperature"
+    PrincipalVariable = 0 
 
-ColumnBoundaryOperator2{
-   name="ColumnBoundaryOperator"
-   numberOfBoundaryOperators=2
-   boundaryOperators="RobinVectorCorrection1", "RobinVectorCorrection2"
-
-
- }
-
-RobinVectorCorrection1 {
-   name="RobinVectorCorrection"
-   FE_ORDER = "FIRST"  
-   FE_FAMILY = "LAGRANGE"
-   QRULE_TYPE = "QGAUSS"
-   QRULE_ORDER = "DEFAULT"
-   fConductivity  = 1.0
-   alpha          = 1.0
-   beta           = 2920.0
-   gamma          = 2920.0
-   print_info_level = 0
-   skip_set_boundary_ids = FALSE
-   skip_params = FALSE
-   number_of_ids = 1
-   IsCoupledBoundary_0 = TRUE
-   id_0         =   8
-   number_of_dofs_0 =   1
-   dof_0_0          =   0
-   value_0_0        =  0.
-   }
-
-RobinVectorCorrection2 {
-   name="RobinVectorCorrection"
-   FE_ORDER = "FIRST"  
-   FE_FAMILY = "LAGRANGE"
-   QRULE_TYPE = "QGAUSS"
-   QRULE_ORDER = "DEFAULT"
-   fConductivity  = 1.0
-   alpha          = 1.0
-   beta           = 220.0
-   gamma          = 220.0
-   print_info_level = 0
-   skip_set_boundary_ids = FALSE
-   skip_params = FALSE
-   number_of_ids = 1
-   IsCoupledBoundary_0 = TRUE
-   id_0         =   4
-   number_of_dofs_0 =   1
-   dof_0_0          =   0
-   value_0_0        =  0.
-   }
-
-DiffusionLinearFEOperator2{
-     name = "DiffusionLinearFEOperator"
-     print_info_level = 1
-     reset_reuses_matrix = TRUE
-     InputVariable = "Temperature"
-     OutputVariable = "Temperature"
-     FixedTemperature = FALSE
-     FixedConcentration = TRUE
-     FixedBurnup = TRUE
-
-     DiffusionElement {
-        name = "DiffusionLinearElement"
+    DiffusionElement{
+      name = "DiffusionNonlinearElement"
         TransportAtGaussPoints = TRUE
         FE_ORDER = "FIRST"  
         FE_FAMILY = "LAGRANGE"
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
-     }    
-     LocalModel = "DiffusionTransportModel2"
+    }    
+  LocalModel = "DiffusionTransportModel2"
+}
+
+ColumnBoundaryOperator2{
+  name="ColumnBoundaryOperator"
+    numberOfBoundaryOperators=2
+    boundaryOperators="RobinVectorCorrection1", "RobinVectorCorrection2"
+
+
+}
+
+RobinVectorCorrection1 {
+  name="RobinVectorCorrection"
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+    fConductivity  = 1.0
+    alpha          = 1.0
+    beta           = 2920.0
+    gamma          = 2920.0
+    print_info_level = 0
+    skip_set_boundary_ids = FALSE
+    skip_params = FALSE
+    number_of_ids = 1
+    IsCoupledBoundary_0 = TRUE
+    id_0         =   8
+    number_of_dofs_0 =   1
+    dof_0_0          =   0
+    value_0_0        =  0.
+}
+
+RobinVectorCorrection2 {
+  name="RobinVectorCorrection"
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+    fConductivity  = 1.0
+    alpha          = 1.0
+    beta           = 220.0
+    gamma          = 220.0
+    print_info_level = 0
+    skip_set_boundary_ids = FALSE
+    skip_params = FALSE
+    number_of_ids = 1
+    IsCoupledBoundary_0 = TRUE
+    id_0         =   4
+    number_of_dofs_0 =   1
+    dof_0_0          =   0
+    value_0_0        =  0.
+}
+
+DiffusionLinearFEOperator2{
+  name = "DiffusionLinearFEOperator"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    InputVariable = "Temperature"
+    OutputVariable = "Temperature"
+    FixedTemperature = FALSE
+    FixedConcentration = TRUE
+    FixedBurnup = TRUE
+
+    DiffusionElement {
+      name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+  LocalModel = "DiffusionTransportModel2"
 }
 
 LinearColumnBoundaryOperator2{
-   name="ColumnBoundaryOperator"
-   numberOfBoundaryOperators=2
-   boundaryOperators="RobinMatrixCorrection1","RobinMatrixCorrection2"
+  name="ColumnBoundaryOperator"
+    numberOfBoundaryOperators=2
+    boundaryOperators="RobinMatrixCorrection1","RobinMatrixCorrection2"
 
- }
+}
 
 RobinMatrixCorrection1 {
-   name="RobinMatrixCorrection"
-   FE_ORDER = "FIRST"  
-   FE_FAMILY = "LAGRANGE"
-   QRULE_TYPE = "QGAUSS"
-   QRULE_ORDER = "DEFAULT"
-   fConductivity  = 1.0
-   alpha          = 1.0
-   beta           = 2920.0
-   gamma          = 2920.0
-   print_info_level = 0
-   skip_set_boundary_ids = FALSE
-   skip_params = FALSE
-   number_of_ids = 1
-   IsCoupledBoundary_0 = TRUE
-   id_0         =   8
-   number_of_dofs_0 =   1
-   dof_0_0          =   0
-   value_0_0        =  100.
-   }
+  name="RobinMatrixCorrection"
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+    fConductivity  = 1.0
+    alpha          = 1.0
+    beta           = 2920.0
+    gamma          = 2920.0
+    print_info_level = 0
+    skip_set_boundary_ids = FALSE
+    skip_params = FALSE
+    number_of_ids = 1
+    IsCoupledBoundary_0 = TRUE
+    id_0         =   8
+    number_of_dofs_0 =   1
+    dof_0_0          =   0
+    value_0_0        =  100.
+}
 
 
 RobinMatrixCorrection2 {
-   name="RobinMatrixCorrection"
-   FE_ORDER = "FIRST"  
-   FE_FAMILY = "LAGRANGE"
-   QRULE_TYPE = "QGAUSS"
-   QRULE_ORDER = "DEFAULT"
-   fConductivity  = 1.0
-   alpha          = 1.0
-   beta           = 220.0
-   gamma          = 220.0
-   print_info_level = 0
-   skip_set_boundary_ids = FALSE
-   skip_params = FALSE
-   number_of_ids = 1
-   IsCoupledBoundary_0 = TRUE
-   id_0         =   4
-   number_of_dofs_0 =   1
-   dof_0_0          =   0
-   value_0_0        =  100.
-   }
-
-DiffusionNonlinearFEOperator1{
-      name = "DiffusionNonlinearFEOperator" 
-        print_info_level = 1
-        ActiveInputVariables {
-          temperature = "Temperature"
-        }
-      OutputVariable = "Temperature"
-        PrincipalVariable = 0 
-
-        DiffusionElement{
-          name = "DiffusionNonlinearElement"
-            TransportAtGaussPoints = TRUE
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }    
-	LocalModel = "DiffusionTransportModel1"
+  name="RobinMatrixCorrection"
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+    fConductivity  = 1.0
+    alpha          = 1.0
+    beta           = 220.0
+    gamma          = 220.0
+    print_info_level = 0
+    skip_set_boundary_ids = FALSE
+    skip_params = FALSE
+    number_of_ids = 1
+    IsCoupledBoundary_0 = TRUE
+    id_0         =   4
+    number_of_dofs_0 =   1
+    dof_0_0          =   0
+    value_0_0        =  100.
 }
 
-DiffusionLinearFEOperator1{
-     name = "DiffusionLinearFEOperator"
-     print_info_level = 1
-     reset_reuses_matrix = TRUE
-     InputVariable = "Temperature"
-     OutputVariable = "Temperature"
-     FixedTemperature = FALSE
-     FixedConcentration = TRUE
-     FixedBurnup = TRUE
+DiffusionNonlinearFEOperator1{
+  name = "DiffusionNonlinearFEOperator" 
+    print_info_level = 1
+    ActiveInputVariables {
+      temperature = "Temperature"
+    }
+  OutputVariable = "Temperature"
+    PrincipalVariable = 0 
 
-     DiffusionElement {
-        name = "DiffusionLinearElement"
+    DiffusionElement{
+      name = "DiffusionNonlinearElement"
         TransportAtGaussPoints = TRUE
         FE_ORDER = "FIRST"  
         FE_FAMILY = "LAGRANGE"
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
-     }    
-     LocalModel = "DiffusionTransportModel1"
+    }    
+  LocalModel = "DiffusionTransportModel1"
+}
+
+DiffusionLinearFEOperator1{
+  name = "DiffusionLinearFEOperator"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    InputVariable = "Temperature"
+    OutputVariable = "Temperature"
+    FixedTemperature = FALSE
+    FixedConcentration = TRUE
+    FixedBurnup = TRUE
+
+    DiffusionElement {
+      name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+  LocalModel = "DiffusionTransportModel1"
 }
 
 RobinVectorCorrection{
-      name = "RobinVectorCorrection"
-      FE_ORDER = "FIRST"  
-      FE_FAMILY = "LAGRANGE"
-      QRULE_TYPE = "QGAUSS"
-      QRULE_ORDER = "DEFAULT"
-      fConductivity  = 1.0
-      alpha          = 1.0
-      beta           = 2920.0
-      gamma          = 2920.0
-      print_info_level = 0
-      skip_set_boundary_ids = FALSE
-      skip_params = FALSE
-      number_of_ids = 1
-      IsCoupledBoundary_0 = TRUE
-      id_0         =   4
-      number_of_dofs_0 =   1
-      dof_0_0          =   0
-      value_0_0        =  0.0
-  }
+  name = "RobinVectorCorrection"
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+    fConductivity  = 1.0
+    alpha          = 1.0
+    beta           = 2920.0
+    gamma          = 2920.0
+    print_info_level = 0
+    skip_set_boundary_ids = FALSE
+    skip_params = FALSE
+    number_of_ids = 1
+    IsCoupledBoundary_0 = TRUE
+    id_0         =   4
+    number_of_dofs_0 =   1
+    dof_0_0          =   0
+    value_0_0        =  0.0
+}
 
 DiffusionLinearFEOperator1{
-     name = "DiffusionLinearFEOperator"
-     print_info_level = 1
-     reset_reuses_matrix = TRUE
-     InputVariable = "Temperature"
-     OutputVariable = "Temperature"
-     FixedTemperature = FALSE
-     FixedConcentration = TRUE
-     FixedBurnup = FALSE 
+  name = "DiffusionLinearFEOperator"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    InputVariable = "Temperature"
+    OutputVariable = "Temperature"
+    FixedTemperature = FALSE
+    FixedConcentration = TRUE
+    FixedBurnup = FALSE 
 
-     DiffusionElement {
-        name = "DiffusionLinearElement"
+    DiffusionElement {
+      name = "DiffusionLinearElement"
         TransportAtGaussPoints = TRUE
         FE_ORDER = "FIRST"  
         FE_FAMILY = "LAGRANGE"
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
-     }    
-   }
+    }    
+}
 
 RobinMatrixCorrection{
-   name="RobinMatrixCorrection"
-   FE_ORDER = "FIRST"  
-   FE_FAMILY = "LAGRANGE"
-   QRULE_TYPE = "QGAUSS"
-   QRULE_ORDER = "DEFAULT"
-   fConductivity  = 1.0
-   alpha          = 1.0
-   beta           = 2920.0
-   gamma          = 2920.0
-   print_info_level = 0
-   skip_set_boundary_ids = FALSE
-   skip_params = FALSE
-   number_of_ids = 1
-   IsCoupledBoundary_0 = TRUE
-   id_0         =   4
-   number_of_dofs_0 =   1
-   dof_0_0          =   0
-   value_0_0        =  100.
- }
+  name="RobinMatrixCorrection"
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+    fConductivity  = 1.0
+    alpha          = 1.0
+    beta           = 2920.0
+    gamma          = 2920.0
+    print_info_level = 0
+    skip_set_boundary_ids = FALSE
+    skip_params = FALSE
+    number_of_ids = 1
+    IsCoupledBoundary_0 = TRUE
+    id_0         =   4
+    number_of_dofs_0 =   1
+    dof_0_0          =   0
+    value_0_0        =  100.
+}
 
 DiffusionTransportModel2{
-        name = "DiffusionTransportModel"
-          Material = "Steel316_MSRZC_09"
-          Property = "ThermalConductivity"
-          Default_Concentration = 0.0
-          Default_Temperature   = 513.2
-          Default_Burnup   = 0.0
-      } 
+  name = "DiffusionTransportModel"
+    Material = "Steel316_MSRZC_09"
+    Property = "ThermalConductivity"
+    Default_Concentration = 0.0
+    Default_Temperature   = 513.2
+    Default_Burnup   = 0.0
+} 
 
 DiffusionTransportModel1{
-        name = "DiffusionTransportModel"
-        Material = "UO2_MSRZC_09"
-          Property = "ThermalConductivity"
-          Default_Concentration = 0.0
-          Default_Temperature   = 557.2
-          Default_Burnup   = 0.0
-      } 
+  name = "DiffusionTransportModel"
+    Material = "UO2_MSRZC_09"
+    Property = "ThermalConductivity"
+    Default_Concentration = 0.0
+    Default_Temperature   = 557.2
+    Default_Burnup   = 0.0
+} 
 
 SourcePhysicsModel {
-    name = "SourcePhysicsModel"
+  name = "SourcePhysicsModel"
     Material = "UO2_MSRZC_09"
     USE_ELEMENT_PHYSICS = "MassDensityModel"
     Equation = "ThermalSource"
     USE_MATERIALS_LIBRARY = TRUE 
-     Default_Concentration = 0.0
-     Default_Temperature   = 557.2 
-     Default_Burnup   = 0.0
-  }
+    Default_Concentration = 0.0
+    Default_Temperature   = 557.2 
+    Default_Burnup   = 0.0
+}
