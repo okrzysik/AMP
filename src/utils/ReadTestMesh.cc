@@ -177,7 +177,6 @@ namespace AMP {
       }
     }//end for bid 
 
-    AMP_INSIST(n==0, "fread returned non-zero error code");
     fclose(fp);
   }
 
