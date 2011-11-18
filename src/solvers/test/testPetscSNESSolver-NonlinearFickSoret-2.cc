@@ -130,11 +130,10 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setToScalar(300.);  // Fill in manufactured solution
   AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator iterator = meshAdapter->beginOwnedNode();
   for( ; iterator != meshAdapter->endOwnedNode(); iterator++ ) {
-	double x, y, z;
+	double x, y;
 	std::valarray<double> poly(10);
 	x = iterator->x();
 	y = iterator->y();
-	z = iterator->z();
 	size_t gid = iterator->globalID();
 	double value = 300. + 450*(1.-(x*x/lenscale/lenscale+y*y/lenscale/lenscale));
 	fickFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setValueByGlobalID(gid, value);
