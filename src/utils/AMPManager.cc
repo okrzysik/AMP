@@ -40,7 +40,7 @@ bool AMPManager::called_MPI_Init=false;
 bool AMPManager::called_PetscInitialize=false;
 bool AMPManager::use_MPI_Abort=true;
 bool AMPManager::print_times=false;
-AMP_MPI AMPManager::comm=AMP::AMP_MPI();
+AMP_MPI AMPManager::comm_world=AMP::AMP_MPI();
 void* AMPManager::lminit=NULL;
 int AMPManager::argc_libmesh=0;
 char** AMPManager::argv_libmesh=NULL;
@@ -131,15 +131,10 @@ void AMPManager::startup(int argc, char *argv[], const AMPManagerProperties &pro
         }
     #endif
     // Initialize AMP's MPI
-    comm = AMP_MPI(AMP_COMM_WORLD);
-    int size1 = comm.getSize();
-    #ifdef USE_MPI
-        int size2 = 0;
-        MPI_Comm_size(MPI_COMM_WORLD,&size2);
-    #else
-        int size2 = 1;
-    #endif
-    AMP_INSIST(size1==size2,"AMP's MPI size does not match MPI_COMM_WORLD");
+    if ( properties.COMM_WORLD == AMP_COMM_WORLD ) 
+        comm_world = AMP_MPI(MPI_COMM_WORLD);
+    else
+        comm_world = AMP_MPI(properties.COMM_WORLD);
     // Initialize LibMesh (must be done after initializing PETSc and MPI)
     #ifdef USE_LIBMESH
         double libmesh_start_time = time();
@@ -161,7 +156,7 @@ void AMPManager::startup(int argc, char *argv[], const AMPManagerProperties &pro
     // Initialization finished
     initialized = true;
     startup_time = time()-start_time;
-    if ( print_times && comm.getRank()==0 ) {
+    if ( print_times && comm_world.getRank()==0 ) {
         printf("startup time = %0.3f s\n",startup_time);
         if ( petsc_time!=0 )
             printf(" PETSc startup time = %0.3f s\n",petsc_time);
@@ -183,12 +178,12 @@ void AMPManager::shutdown()
 {    
     double start_time = time();
     double shutdown_time=0, petsc_time=0, MPI_time=0, libmesh_time=0;
-    int rank = comm.getRank();
+    int rank = comm_world.getRank();
     // Check if AMP was previously initialized
     if ( !initialized )
         AMP_ERROR("AMP is not initialized, did you forget to call startup or call shutdown more than once");
     // Syncronize all processors
-    comm.barrier();
+    comm_world.barrier();
     ShutdownRegistry::callRegisteredShutdowns();
     // Shutdown the parallel IO
     PIO::finalize();
@@ -232,6 +227,7 @@ void AMPManager::shutdown()
             printf(" libmesh shutdown time = %0.3f s\n",libmesh_time);
     }
     // Wait 50 milli-seconds for all processors to finish
+    initialized = false;
     Sleep(50);
 }
 
@@ -245,6 +241,7 @@ void AMPManager::shutdown()
 AMPManagerProperties::AMPManagerProperties() {
     use_MPI_Abort = true;
     print_times = false;
+    COMM_WORLD = AMP_COMM_WORLD;
 }
 
 

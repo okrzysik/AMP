@@ -5,8 +5,9 @@
     #include "mpi.h"
 #endif
 
-// Include AMP_MPI.h (must be after mpi.h)
+// Include AMP headers
 #include "utils/AMP_MPI.h"
+#include "utils/AMPManager.h"
 
 // Include all other headers
 #include <stdlib.h>
@@ -140,7 +141,7 @@ AMP_MPI::AMP_MPI( MPI_Comm comm ) {
     #ifdef USE_MPI
         // We are using MPI, use the MPI communicator to initialize the data
         if ( comm==AMP_COMM_WORLD ) {
-            communicator = MPI_COMM_WORLD;
+            communicator = AMP::AMPManager::comm_world.communicator;
         } else if ( comm==AMP_COMM_SELF ) {
             communicator = MPI_COMM_SELF;
         } else if ( comm==AMP_COMM_NULL ) {
