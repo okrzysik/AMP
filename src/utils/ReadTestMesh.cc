@@ -1,3 +1,4 @@
+
 #ifdef USE_AMP_MESH
 #include "ReadTestMesh.h"
 
@@ -12,14 +13,17 @@ namespace AMP {
   void readBinaryTestMesh(std::string mesh_file, boost::shared_ptr< ::Mesh> mesh) {
     FILE* fp = fopen(mesh_file.c_str(), "rb");
 
-    int num_nodes, n;
+    int num_nodes;
+    size_t n;
     n = fread(&num_nodes, sizeof(int), 1, fp);
+    AMP_INSIST((n == 1), "Error while reading the file");
 
     mesh->reserve_nodes(num_nodes);
 
     std::vector<double> points(3*num_nodes);
 
     n = fread(&(points[0]), sizeof(double), (3*num_nodes), fp);
+    AMP_INSIST((n == (3*num_nodes)), "Error while reading the file");
 
     for(int i = 0; i < num_nodes; i++) {
       mesh->add_point(::Point(points[(3*i) + 0], points[(3*i) + 1], points[(3*i) + 2]), i);
@@ -29,12 +33,14 @@ namespace AMP {
 
     int num_elem;
     n = fread(&num_elem, sizeof(int), 1, fp);
+    AMP_INSIST((n == 1), "Error while reading the file");
 
     mesh->reserve_elem(num_elem);
 
     std::vector<int> elemNodeMap(8*num_elem);
 
     n = fread(&(elemNodeMap[0]), sizeof(int), (8*num_elem), fp);
+    AMP_INSIST((n == (8*num_elem)), "Error while reading the file");
 
     for(int i = 0; i < num_elem; i++) {
       ::Elem* newElem = new ::Hex8;
@@ -49,14 +55,17 @@ namespace AMP {
 
     int num_boundaryNodeIds;
     n = fread(&num_boundaryNodeIds, sizeof(int), 1, fp);
+    AMP_INSIST((n == 1), "Error while reading the file");
 
     for(int bid = 1; bid <= num_boundaryNodeIds; bid++) {
       int bndDofSize;
       n = fread(&bndDofSize, sizeof(int), 1, fp);
+      AMP_INSIST((n == 1), "Error while reading the file");
       if(bndDofSize > 0) {
         int idx;
         for(int i = 0; i < bndDofSize; i++) {
           n = fread(&idx, sizeof(int), 1, fp);
+          AMP_INSIST((n == 1), "Error while reading the file");
           mesh->boundary_info->add_node(mesh->node_ptr(idx), bid);
         }
       }
@@ -64,16 +73,20 @@ namespace AMP {
 
     int num_boundarySideIds;
     n = fread(&num_boundarySideIds, sizeof(int), 1, fp);
+    AMP_INSIST((n == 1), "Error while reading the file");
 
     for(int bid = 1; bid <= num_boundarySideIds; bid++) {
       int bndDofSize;
       n = fread(&bndDofSize, sizeof(int), 1, fp);
+      AMP_INSIST((n == 1), "Error while reading the file");
       if(bndDofSize > 0) {
         int idxE;
         int idxS;
         for(int i = 0; i < bndDofSize; i++) {
           n = fread(&idxE, sizeof(int), 1, fp);
+          AMP_INSIST((n == 1), "Error while reading the file");
           n = fread(&idxS, sizeof(int), 1, fp);
+          AMP_INSIST((n == 1), "Error while reading the file");
           mesh->boundary_info->add_side(mesh->elem(idxE), idxS, bid);
         }
       }
@@ -257,4 +270,6 @@ namespace AMP {
   }
 
 #endif
+
+
 
