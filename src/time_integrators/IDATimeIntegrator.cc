@@ -434,6 +434,7 @@ namespace TimeIntegrator{
         ierr = IDAGetCurrentOrder(((IDATimeIntegrator*)user_data)->getIDAMem(), &current_order);
         ierr = IDAGetLastStep(((IDATimeIntegrator*)user_data)->getIDAMem(), &last_stepsize);
         ierr = IDAGetCurrentStep(((IDATimeIntegrator*)user_data)->getIDAMem(), &current_stepsize);
+        assert(ierr==IDA_SUCCESS);
         
         AMP::pout << "cj = " << cj << std::endl;
         

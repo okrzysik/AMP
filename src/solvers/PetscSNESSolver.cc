@@ -191,10 +191,10 @@ PetscSNESSolver::apply(SNES ,Vec x,Vec r,void *ctx)
   boost::shared_ptr<AMP::Operator::Operator> op(((PetscSNESSolver *)ctx)->getOperator());
 
   op->apply(sp_f, sp_x, sp_r, 1.0, -1.0);
-  
+/* 
   double a = sp_x->L2Norm();
   a = sp_r->L2Norm();
-  
+*/
 
   return  (ierr);
 }

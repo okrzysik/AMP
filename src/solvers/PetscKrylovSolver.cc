@@ -101,9 +101,11 @@ PetscKrylovSolver::initialize(boost::shared_ptr<SolverStrategyParameters> const 
   getFromInput(parameters->d_db);
 
   ierr = KSPSetType(d_KrylovSolver,d_sKspType.c_str());
+  AMP_INSIST(ierr==0, "KSPSetType returned non-zero error code");
 
   PC pc;
   ierr = KSPGetPC(d_KrylovSolver,&pc);
+  AMP_INSIST(ierr==0, "Petsc returned non-zero error code");
 
   if(d_KSPAppendOptionsPrefix!="")
     {
@@ -114,6 +116,7 @@ PetscKrylovSolver::initialize(boost::shared_ptr<SolverStrategyParameters> const 
   if((d_sKspType=="fgmres")||(d_sKspType=="gmres"))
     {
       ierr = KSPGMRESSetRestart(d_KrylovSolver, d_iMaxKrylovDimension);
+      AMP_INSIST(ierr==0, "Petsc returned non-zero error code");
     }
 
   if(d_bUsesPreconditioner)
@@ -132,19 +135,25 @@ PetscKrylovSolver::initialize(boost::shared_ptr<SolverStrategyParameters> const 
       // are set to static member functions of this class. By doing this we do not need to introduce
       // static member functions into every SolverStrategy that might be used as a preconditioner
       ierr = PCSetType(pc,PCSHELL);
+      AMP_INSIST(ierr==0, "Petsc returned non-zero error code");
       ierr = PCShellSetContext(pc, this);
+      AMP_INSIST(ierr==0, "Petsc returned non-zero error code");
 
       ierr = PCShellSetSetUp(pc, PetscKrylovSolver::setupPreconditioner);
+      AMP_INSIST(ierr==0, "Petsc returned non-zero error code");
       ierr = PCShellSetApply(pc, PetscKrylovSolver::applyPreconditioner);
+      AMP_INSIST(ierr==0, "Petsc returned non-zero error code");
 
     }
 
       ierr = KSPSetPreconditionerSide(d_KrylovSolver, d_PcSide);
+      AMP_INSIST(ierr==0, "Petsc returned non-zero error code");
 
     }
   else
     {
       ierr = PCSetType(pc,PCNONE);
+      AMP_INSIST(ierr==0, "Petsc returned non-zero error code");
     }
 
   //PetscTruth useZeroGuess = (d_bUseZeroInitialGuess) ? PETSC_TRUE : PETSC_FALSE;
@@ -152,9 +161,12 @@ PetscKrylovSolver::initialize(boost::shared_ptr<SolverStrategyParameters> const 
 
   PetscTruth useNonzeroGuess = (!d_bUseZeroInitialGuess) ? PETSC_TRUE : PETSC_FALSE;
   ierr = KSPSetInitialGuessNonzero(d_KrylovSolver, useNonzeroGuess);
+  AMP_INSIST(ierr==0, "Petsc returned non-zero error code");
 
   ierr = KSPSetTolerances(d_KrylovSolver, d_dRelativeTolerance, d_dAbsoluteTolerance, d_dDivergenceTolerance, d_iMaxIterations);
+  AMP_INSIST(ierr==0, "Petsc returned non-zero error code");
   ierr = KSPSetFromOptions(d_KrylovSolver);
+  AMP_INSIST(ierr==0, "Petsc returned non-zero error code");
   // in this case we make the assumption we can access a PetscMat for now
   if(d_pOperator.get()!=NULL)
   {
