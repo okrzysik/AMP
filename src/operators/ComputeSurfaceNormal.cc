@@ -80,7 +80,7 @@ namespace Operator {
 
     rInternal->zero();
 
-    for(unsigned int j = 0; j < d_numIds; j++) {
+    for(int j = 0; j < d_numIds; j++) {
       AMP::Mesh::MeshManager::Adapter::BoundarySideIterator bnd = d_MeshAdapter->beginSideBoundary( d_boundaryIds[j] );
       AMP::Mesh::MeshManager::Adapter::BoundarySideIterator end_bnd = d_MeshAdapter->endSideBoundary( d_boundaryIds[j] );
 
