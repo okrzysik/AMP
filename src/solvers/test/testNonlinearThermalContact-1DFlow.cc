@@ -317,19 +317,19 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   AMP::LinearAlgebra::Variable::shared_ptr   outputVariable =  flowOperator->getOutputVariable() ;
 
   //double Cp, De, G, K, Re, Pr, hclad, dz, Tc, Tin;
-  double Cp, De, G, K, Re, Pr, hclad, dz, Tin;
+  double De, K, Re, Pr, hclad;
 
-  Cp   = (flowDatabase)->getDouble("Heat_Capacity");
+  //Cp   = (flowDatabase)->getDouble("Heat_Capacity");
   De   = (flowDatabase)->getDouble("Channel_Diameter");
-  G    = (flowDatabase)->getDouble("Mass_Flux");
+  //G    = (flowDatabase)->getDouble("Mass_Flux");
   K    = (flowDatabase)->getDouble("Conductivity");
   Re   = (flowDatabase)->getDouble("Reynolds");
   Pr   = (flowDatabase)->getDouble("Prandtl");
-  Tin  = (flowDatabase)->getDouble("Temp_Inlet");
+  //Tin  = (flowDatabase)->getDouble("Temp_Inlet");
 
   hclad = (0.023*K/De)*pow(Re,0.8)*pow(Pr,0.4);
 
-  dz = 0.0127/flowVecSize ;
+  //dz = 0.0127/flowVecSize ;
 
   AMP::LinearAlgebra::Vector::shared_ptr solVec  = AMP::LinearAlgebra::SimpleVector::create( flowVecSize , inputVariable  );
   AMP::LinearAlgebra::Vector::shared_ptr rhsVec  = AMP::LinearAlgebra::SimpleVector::create( flowVecSize , outputVariable );

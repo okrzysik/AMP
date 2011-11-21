@@ -66,7 +66,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   //double sigy = 0.243, E = 70.0, Ep = 0.135, nu = 0.3333333, diff_norm, alp = 1.0;
   double alp = 1.0;
   //double eph11[500], sig11[500], sig11_init[500], slope[500], sig11p[500], eph11p[500], slope_p[500], d_strain[6], damage_param[500];
-  double eph11[500], sig11[500], slope[500], sig11p[500], eph11p[500], slope_p[500], d_strain[6], damage_param[500];
+  double eph11[500], sig11[500], slope[500], sig11p[500], eph11p[500], d_strain[6], damage_param[500];
   std::vector<std::vector<double> > strain(2);
   strain[0].push_back(0.0);
   strain[0].push_back(0.0);
@@ -99,10 +99,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
     if(i == 0) {
       slope[0] = 0.0;
-      slope_p[0] = 0.0;
+      //slope_p[0] = 0.0;
     } else {
       slope[i] = (sig11[i] - sig11[i-1]) / (eph11[i] - eph11[i-1]);
-      slope_p[i] = (sig11p[i] - sig11p[i-1]) / (eph11p[i] - eph11p[i-1]);
+      //slope_p[i] = (sig11p[i] - sig11p[i-1]) / (eph11p[i] - eph11p[i-1]);
     }
   }
 

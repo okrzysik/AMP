@@ -340,7 +340,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
           std::cout << "PowerInWattsVec norm  inside loop = " << RightHandSideVec1->L2Norm() <<"\n";
 
           map2ToLowDim->apply(nullVec,TemperatureInKelvinVec2,gapVecPellet ,1.0, 0.0);
-          double a = gapVecPellet->L2Norm();
+          //double a = gapVecPellet->L2Norm();
           map2ToHighDim->apply(nullVec,gapVecPellet , scratchTempVec1,1.0, 0.0);
           a = scratchTempVec1->L2Norm();
 

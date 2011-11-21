@@ -336,7 +336,8 @@ namespace Operator {
     double one3 = 1.0 / 3.0, two3 = 2.0 / 3.0;
 
     double sig_dev[6], n_dir[6];
-    double q_np1 = 1.0, sig_np1_kk = 1.0, lam = 1.0;
+    //double q_np1 = 1.0, sig_np1_kk = 1.0, lam = 1.0;
+    double sig_np1_kk = 1.0, lam = 1.0;
     double beta = 1.0, gamma = 1.0, gamma_bar = 1.0, term1 = 1.0, term2 = 1.0, kappa_prime = 1.0;
     double delta = 1.0, h_alpha = 1.0, k_0 = 1.0, k_inf = 1.0, beta_1 = 1.0, h_alpha_prime = 1.0;
     if(d_TW_Test == true) {
@@ -346,8 +347,10 @@ namespace Operator {
       beta_1 = d_beta;
     }
 
-    double a_np1[6], alpha_kk = 1.0, delta_H_alpha = 1.0, H_alpha_prime = 1.0, xi_dev[6], xi_np1 = 1.0;
-    double a_n[6], xi_trial_eff = 1.0, xi_trial[6], alpha_n_kk = 1.0;
+    double a_np1[6], delta_H_alpha = 1.0, H_alpha_prime = 1.0, xi_dev[6], xi_np1 = 1.0;
+    double a_n[6], xi_trial_eff = 1.0, xi_trial[6];
+    //double a_np1[6], alpha_kk = 1.0, delta_H_alpha = 1.0, H_alpha_prime = 1.0, xi_dev[6], xi_np1 = 1.0;
+    //double a_n[6], xi_trial_eff = 1.0, xi_trial[6], alpha_n_kk = 1.0;
 
     one3 = 1.0/3.0;
     two3 = 2.0/3.0;
@@ -417,8 +420,8 @@ namespace Operator {
 
     //Hydrostatic component of the stress tensor.
     sig_np1_kk = sig_np1[0] + sig_np1[1] + sig_np1[2];
-    alpha_kk = alpha_np1[0] + alpha_np1[1] + alpha_np1[2];
-    alpha_n_kk = alpha_n[0] + alpha_n[1] + alpha_n[2];
+    //alpha_kk = alpha_np1[0] + alpha_np1[1] + alpha_np1[2];
+    //alpha_n_kk = alpha_n[0] + alpha_n[1] + alpha_n[2];
     // Deviatoric component of the stress tensor. 
     for(int i = 0; i < 3; i++) {
       sig_dev[i] = sig_np1[i] - (one3 * sig_np1_kk);
@@ -441,13 +444,14 @@ namespace Operator {
     }*/
 
     // The effective stress. 
+/*
     q_np1 = sqrt((sig_dev[0] * sig_dev[0]) +
         (sig_dev[1] * sig_dev[1]) +
         (sig_dev[2] * sig_dev[2]) +
         (2.0 * sig_dev[3] * sig_dev[3]) +
         (2.0 * sig_dev[4] * sig_dev[4]) +
         (2.0 * sig_dev[5] * sig_dev[5]));
-
+*/
     xi_np1 = sqrt((xi_dev[0] * xi_dev[0]) +
         (xi_dev[1] * xi_dev[1]) +
         (xi_dev[2] * xi_dev[2]) +
@@ -575,11 +579,13 @@ namespace Operator {
     int counter;
 
     double sig_n[6], d_strain[6];
-    double ephbp_n = 1.0, ephbp_np1 = 1.0, sigy_n = 1.0, sigy_np1 = 1.0, lam = 1.0;
+    //double ephbp_n = 1.0, ephbp_np1 = 1.0, sigy_n = 1.0, sigy_np1 = 1.0, lam = 1.0;
+    double ephbp_n = 1.0, ephbp_np1 = 1.0, sigy_np1 = 1.0, lam = 1.0;
     double G = 1.0, K = 1.0, Ep = 1.0, sq23 = 1.0, term1 = 1.0, term2 = 1.0;
     double tol = 1.0E-8, one3 = 1.0 / 3.0, two3 = 2.0 / 3.0;
     double deph_dev[6], sig_dev[6], sig_trial_dev[6], n_dir[6];
-    double deph_kk = 1.0, sig_kk = 1.0, sig_trial_kk = 1.0, q_trial = 1.0, twoG = 1.0, phi = 1.0;
+    //double deph_kk = 1.0, sig_kk = 1.0, sig_trial_kk = 1.0, q_trial = 1.0, twoG = 1.0, phi = 1.0;
+    double deph_kk = 1.0, sig_kk = 1.0, sig_trial_kk = 1.0, twoG = 1.0, phi = 1.0;
     double g_lam = 1.0, Dg_lam = 1.0, kappa_np1 = 1.0, kappa_prime = 1.0, h_alpha = 1.0, h_alpha_prime = 1.0;
     double delta = 1.0, d_lam = 1.0, k_0 = 1.0, k_inf = 1.0, beta_1 = 1.0;
     if(d_TW_Test == true) {
@@ -604,7 +610,7 @@ namespace Operator {
     two3 = 2.0/3.0;
     sq23 = sqrt(two3);
     ephbp_n = eph_bar_plas_n;    //Effective plastic strain at the previous time step.
-    sigy_n = ystre_n;           //Yield stress at the previous time step.
+    //sigy_n = ystre_n;           //Yield stress at the previous time step.
 
     if(d_TW_Test == true) {
       delta = d_delta;
@@ -653,13 +659,14 @@ namespace Operator {
     sig_trial_kk = sig_kk + (3.0*K*deph_kk);
 
     // Compute the trial effective stress. 
+/*
     q_trial = sqrt((sig_trial_dev[0] * sig_trial_dev[0]) +
         (sig_trial_dev[1] * sig_trial_dev[1]) +
         (sig_trial_dev[2] * sig_trial_dev[2]) +
         (2.0 * sig_trial_dev[3] * sig_trial_dev[3]) +
         (2.0 * sig_trial_dev[4] * sig_trial_dev[4]) +
         (2.0 * sig_trial_dev[5] * sig_trial_dev[5]));
-
+*/
     xi_trial = sqrt((xi_trial_dev[0] * xi_trial_dev[0]) +
         (xi_trial_dev[1] * xi_trial_dev[1]) +
         (xi_trial_dev[2] * xi_trial_dev[2]) +

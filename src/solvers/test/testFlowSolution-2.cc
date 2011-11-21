@@ -245,15 +245,16 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 																							  input_db,
 																							  flowtransportModel));
 
-      double Cp, De, G, K, Re, Pr, heff, nP;
+      //double Cp, De, G, K, Re, Pr, heff, nP;
+      double De, K, Re, Pr, heff;
 
-      Cp  = (flowDatabase)->getDouble("Heat_Capacity");
+      //Cp  = (flowDatabase)->getDouble("Heat_Capacity");
       De  = (flowDatabase)->getDouble("Channel_Diameter");
-      G   = (flowDatabase)->getDouble("Mass_Flux");
+      //G   = (flowDatabase)->getDouble("Mass_Flux");
       K   = (flowDatabase)->getDouble("Conductivity");
       Re  = (flowDatabase)->getDouble("Reynolds");
       Pr  = (flowDatabase)->getDouble("Prandtl");
-      nP  = (flowDatabase)->getDouble("numpoints");
+      //nP  = (flowDatabase)->getDouble("numpoints");
 
       heff = (0.023*K/De)*pow(Re,0.8)*pow(Pr,0.4);
 
