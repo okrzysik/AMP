@@ -116,15 +116,10 @@ LinearSolver {
     KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 1000"
 
     Preconditioner {
-      problem_type = "SA"
         PDE_equations = 3
         print_info_level = 10
         max_iterations = 1
-        max_levels = 10
-        max_error = 1e-13
-        absolute_tolerance = 1.0e-13
-        relative_tolerance = 1.0e-12
-        divergence_tolerance = 1.0e03
+        max_error = 1e-15
     }
 }
 
