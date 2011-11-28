@@ -4,6 +4,7 @@
 
 #include "solvers/SolverStrategy.h"
 #include "solvers/ColumnSolver.h"
+#include "solvers/PelletStackMechanicsSolverParameters.h"
 #include "operators/PelletStackOperator.h"
 
 namespace AMP {
@@ -11,13 +12,11 @@ namespace AMP {
 
     class PelletStackMechanicsSolver: public SolverStrategy {
       public:
-        PelletStackMechanicsSolver(boost::shared_ptr<SolverStrategyParameters> params);
+        PelletStackMechanicsSolver(boost::shared_ptr<PelletStackMechanicsSolverParameters> params);
 
         ~PelletStackMechanicsSolver() { }
 
         void resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params);
-
-        void setColumnSolver(boost::shared_ptr<ColumnSolver> colSolver);
 
         void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector> f, boost::shared_ptr<AMP::LinearAlgebra::Vector> u);
 

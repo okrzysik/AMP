@@ -1,18 +1,14 @@
 
 #include "solvers/PelletStackMechanicsSolver.h"
-#include "utils/Utilities.h"
 
 namespace AMP {
   namespace Solver {
 
     PelletStackMechanicsSolver :: PelletStackMechanicsSolver(boost::shared_ptr<
-        SolverStrategyParameters> params) : SolverStrategy(params) {
+        PelletStackMechanicsSolverParameters> params) : SolverStrategy(params) {
       d_useSerial = (params->d_db)->getBoolWithDefault("USE_SERIAL", false);
+      d_columnSolver = params->d_columnSolver;
       d_pelletStackOp = boost::dynamic_pointer_cast<AMP::Operator::PelletStackOperator>(d_pOperator);
-    }
-
-    void PelletStackMechanicsSolver :: setColumnSolver(boost::shared_ptr<ColumnSolver> colSolver) {
-      d_columnSolver = colSolver;
     }
 
     void PelletStackMechanicsSolver :: resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params) {
