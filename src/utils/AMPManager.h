@@ -86,7 +86,7 @@ private:
     AMPManager() {  }
 
     // Static variables
-    static bool initialized;
+    static int initialized;
     static bool called_MPI_Init;
     static bool called_PetscInitialize;
     static bool use_MPI_Abort;
