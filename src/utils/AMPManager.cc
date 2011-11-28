@@ -35,7 +35,7 @@ namespace AMP {
 
 
 // Initialize static member variables
-bool AMPManager::initialized=false;
+int AMPManager::initialized=0;
 bool AMPManager::called_MPI_Init=false;
 bool AMPManager::called_PetscInitialize=false;
 bool AMPManager::use_MPI_Abort=true;
@@ -99,8 +99,10 @@ void AMPManager::startup(int argc, char *argv[], const AMPManagerProperties &pro
     double startup_time=0, petsc_time=0, MPI_time=0, libmesh_time=0;
     print_times = properties.print_times;
     // Check if AMP was previously initialized
-    if ( initialized )
-        AMP_ERROR("AMP was previously initialized");
+    if ( initialized==1 )
+        AMP_ERROR("AMP was previously initialized and shutdown.  It cannot be reinitialized");
+    if ( initialized==-1 )
+        AMP_ERROR("AMP was previously initialized and shutdown.  It cannot be reinitialized");
     // Set the abort method
     AMPManager::use_MPI_Abort = properties.use_MPI_Abort;
     // Initialize PETSc
@@ -154,7 +156,7 @@ void AMPManager::startup(int argc, char *argv[], const AMPManagerProperties &pro
     // Initialize the Materials interface
     //AMP::Materials::initialize();
     // Initialization finished
-    initialized = true;
+    initialized = 1;
     startup_time = time()-start_time;
     if ( print_times && comm_world.getRank()==0 ) {
         printf("startup time = %0.3f s\n",startup_time);
@@ -180,8 +182,10 @@ void AMPManager::shutdown()
     double shutdown_time=0, petsc_time=0, MPI_time=0, libmesh_time=0;
     int rank = comm_world.getRank();
     // Check if AMP was previously initialized
-    if ( !initialized )
+    if ( initialized==0 )
         AMP_ERROR("AMP is not initialized, did you forget to call startup or call shutdown more than once");
+    if ( initialized==-1 )
+        AMP_ERROR("AMP has been initialized and shutdown.  Calling shutdown more than once is invalid");
     // Syncronize all processors
     comm_world.barrier();
     ShutdownRegistry::callRegisteredShutdowns();
@@ -227,7 +231,7 @@ void AMPManager::shutdown()
             printf(" libmesh shutdown time = %0.3f s\n",libmesh_time);
     }
     // Wait 50 milli-seconds for all processors to finish
-    initialized = false;
+    initialized = -1;
     Sleep(50);
 }
 
