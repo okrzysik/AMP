@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
             // Create a new comm to initialize AMPManager
             int rank;
             MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-            int color = rank/procMax;
+            int color = rank%procMax;
             MPI_Comm_split(MPI_COMM_WORLD,color,0,&AMP_comm);
         }
     #endif
