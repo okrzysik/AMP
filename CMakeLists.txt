@@ -40,16 +40,6 @@ INCLUDE ( CheckIncludeFile )
 INCLUDE ( macros )
 INCLUDE ( libraries )
 
-# Create the target for documentation
-SET ( DOXYFILE_IN ${AMP_SOURCE_DIR}/doxygen/Doxyfile.in)
-SET ( DOXY_HEADER_FILE ${AMP_SOURCE_DIR}/doxygen/html/header.html )
-SET ( DOXY_FOOTER_FILE ${AMP_SOURCE_DIR}/doxygen/html/footer.html )
-SET ( DOXYFILE_OUTPUT_DIR ${AMP_INSTALL_DIR}/doc/ )
-SET ( DOXYFILE_SRC_HTML_DIR ${AMP_SOURCE_DIR}/doxygen/html )
-SET ( DOXYFILE_SOURCE_DIR ${AMP_SOURCE_DIR}/src )
-SET ( REL_PACKAGE_HTML "" )
-SET ( DOXYGEN_MACROS "USE_SUNDIALS:=1" )
-INCLUDE (UseDoxygen)
 
 # Create custom targets for build-test, check, and distclean
 ADD_CUSTOM_TARGET ( build-test )
@@ -69,6 +59,7 @@ ELSE ()
   ENDIF()
 ENDIF()
 
+
 # Configure external libraries
 CONFIGURE_MPI ()   # MPI must be before other libraries
 CONFIGURE_TRILINOS_LIBRARIES ()
@@ -83,8 +74,10 @@ CONFIGURE_SILO ()
 CONFIGURE_HDF5 ()
 CONFIGURE_BOOST ()
 
+
 # Configure AMP (all external libraries must be configured first)
 CONFIGURE_AMP ()
+
 
 # Some more configure options
 CONFIGURE_TIMERS ()
@@ -98,8 +91,22 @@ if( (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel") AND (${CMAKE_SYSTEM_NAME} ST
 	set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-common")
 endif( (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel") AND (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin") )
 
+
+# Create the target for documentation
+SET ( DOXYFILE_IN ${AMP_SOURCE_DIR}/doxygen/Doxyfile.in)
+SET ( DOXY_HEADER_FILE ${AMP_SOURCE_DIR}/doxygen/html/header.html )
+SET ( DOXY_FOOTER_FILE ${AMP_SOURCE_DIR}/doxygen/html/footer.html )
+SET ( DOXYFILE_OUTPUT_DIR ${AMP_INSTALL_DIR}/doc/ )
+SET ( DOXYFILE_SRC_HTML_DIR ${AMP_SOURCE_DIR}/doxygen/html )
+SET ( DOXYFILE_SOURCE_DIR "${AMP_DOC_DIRS}"  )
+SET ( REL_PACKAGE_HTML "" )
+SET ( DOXYGEN_MACROS "USE_SUNDIALS:=1" )
+INCLUDE (UseDoxygen)
+
+
 # Add the src directory
 ADD_SUBDIRECTORY ( src )
+
 
 # Save the configuration info for applications 
 SAVE_CMAKE_FLAGS()
