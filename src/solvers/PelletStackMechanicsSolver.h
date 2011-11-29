@@ -28,7 +28,8 @@ namespace AMP {
         boost::shared_ptr<AMP::Operator::PelletStackOperator> d_pelletStackOp;
         boost::shared_ptr<AMP::Solver::ColumnSolver> d_columnSolver;
         bool d_useSerial;
-        bool d_solveAfterScan;
+        bool d_onlyZcorrection;
+        bool d_useScaling;
     };
 
   }
