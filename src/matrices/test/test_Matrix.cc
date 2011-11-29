@@ -10,9 +10,12 @@
 using namespace AMP::unit_test;
 
 
+
 template <typename FACTORY>
 void  test_matrix_loop ( AMP::UnitTest *ut )
 {
+    FACTORY factory;
+    factory.initMesh();
     InstantiateMatrix<FACTORY>::run_test ( ut );
     VerifyGetSetValuesMatrix<FACTORY>::run_test ( ut );
     VerifyAXPYMatrix<FACTORY>::run_test ( ut );
@@ -20,6 +23,7 @@ void  test_matrix_loop ( AMP::UnitTest *ut )
     VerifyMultMatrix<FACTORY>::run_test ( ut );
     VerifyGetLeftRightVector<FACTORY>::run_test ( ut );
     VerifyExtractDiagonal<FACTORY>::run_test ( ut );
+    factory.endMesh();
 }
 
 
@@ -35,13 +39,9 @@ int main ( int argc , char **argv )
     AMP::AMPManager::startup(argc, argv);
     AMP::UnitTest ut;
 
-    SimpleMatrixFactory::initMesh ();
     test_matrix_loop<SimpleMatrixFactory> ( &ut );
-    SimpleMatrixFactory::endMesh();
 
-    DOFMatrixTestFactory<3,3,ExodusReaderGenerator>::initMesh();
-    test_matrix_loop<DOFMatrixTestFactory<3,3,ExodusReaderGenerator> > ( &ut );
-    DOFMatrixTestFactory<3,3,ExodusReaderGenerator>::endMesh();
+    //test_matrix_loop<DOFMatrixTestFactory<3,3,ExodusReaderGenerator> > ( &ut );
 
     ut.report();
 

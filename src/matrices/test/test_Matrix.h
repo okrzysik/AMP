@@ -15,6 +15,8 @@ namespace AMP {
 namespace unit_test {
 
 
+
+// Class to create a matrix from a simpleDOFManager
 template <int NUM_DOF_ROW , int NUM_DOF_COL , class GENERATOR>
 class  DOFMatrixTestFactory
 {
@@ -56,20 +58,25 @@ public:
         return DOFs->createMatrix ( vector_a, vector_b );
     }
 
-    static AMP::Discretization::DOFManager::shared_ptr  getDOFMap()
-    {
-        return DOFs;
-    }
+    static AMP::Discretization::DOFManager::shared_ptr  getDOFMap() { return DOFs; }
     
-    static AMP::Discretization::DOFManager::shared_ptr  getDOFMapL()
-    {
-        return DOFs;
-    }
+    static AMP::Discretization::DOFManager::shared_ptr  getDOFMapL() { return DOFs; }
+
 };
 
 
 typedef DOFMatrixTestFactory<1,1,LibMeshCubeGenerator<5> >   SimpleMatrixFactory;
 
+
+// Initialize templated static data members
+template<> AMP::Mesh::Mesh::shared_ptr DOFMatrixTestFactory<1,1,LibMeshCubeGenerator<5> >::mesh = AMP::Mesh::Mesh::shared_ptr();
+template<> AMP::Mesh::Mesh::shared_ptr DOFMatrixTestFactory<3,3,LibMeshCubeGenerator<5> >::mesh = AMP::Mesh::Mesh::shared_ptr();
+template<> AMP::Mesh::Mesh::shared_ptr DOFMatrixTestFactory<1,1,ExodusReaderGenerator>::mesh = AMP::Mesh::Mesh::shared_ptr();
+template<> AMP::Mesh::Mesh::shared_ptr DOFMatrixTestFactory<3,3,ExodusReaderGenerator>::mesh = AMP::Mesh::Mesh::shared_ptr();
+template<> boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFMatrixTestFactory<1,1,LibMeshCubeGenerator<5> >::DOFs = boost::shared_ptr<AMP::Discretization::simpleDOFManager>();
+template<> boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFMatrixTestFactory<3,3,LibMeshCubeGenerator<5> >::DOFs = boost::shared_ptr<AMP::Discretization::simpleDOFManager>();
+template<> boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFMatrixTestFactory<1,1,ExodusReaderGenerator>::DOFs = boost::shared_ptr<AMP::Discretization::simpleDOFManager>();
+template<> boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFMatrixTestFactory<3,3,ExodusReaderGenerator>::DOFs = boost::shared_ptr<AMP::Discretization::simpleDOFManager>();
 
 }
 }

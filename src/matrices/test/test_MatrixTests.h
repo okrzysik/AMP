@@ -360,7 +360,7 @@ class VerifyExtractDiagonal
           {
             break;
           }
-          matrix->setValueByGlobalID ( row , row , static_cast<double> ( row ) );
+          matrix->setValueByGlobalID ( row , row , static_cast<double> ( row+1 ) );
         }
         AMP::LinearAlgebra::Vector::shared_ptr   diag = matrix->extractDiagonal ();
         double l1norm = diag->L1Norm();
