@@ -1,44 +1,47 @@
 # Filter std::string functions
-*std::string::*;std::char_traits*;std::basic_string* -- 0
+std::string::*;std::char_traits*;std::basic_string* -- 0
 
 # Filter std::vector, std::map, std::set sub, and std::pair functions
-*std::__norm::vector::*;std::__debug::vector* -- 0
-*std::__norm::map::*;*std::__debug::map* -- 0
-*std::__norm::set::*;*std::__debug::set* -- 0
-*std::__norm::pair::*;*std::__debug::pair*;std::pair* -- 0
+std::__norm::vector::*;std::__debug::vector*;std::__norm::vector*;std::__norm::_Vector_base* -- 0
+std::__norm::map::*;*std::__debug::map*;std::__norm::map*;std::__norm::_Map_base* -- 0
+std::__norm::set::*;*std::__debug::set*;std::__norm::set*;std::__norm::_Set_base* -- 0
+std::__norm::pair::*;*std::__debug::pair*;std::pair*;std::__norm::pair*;std::__norm::_Pair_base* -- 0
 
 # Filter iterators
-#*::_List_iterator* -- 0
+std::__norm::_List_iterator* -- 0
 __gnu_cxx::__normal_iterator*;std::iterator_traits* -- 0
-__gnu_debug::_Safe_iterator_base::* -- 0
+__gnu_debug::_Safe_iterator* -- 0
 std::iterator::* -- 0
 variant_filter_iterator* -- 0
-std::__norm::_Deque_iterator*;std::__norm::deque* -- 0
+std::__norm::_Deque*;std::__norm::deque*;std::__debug::deque* -- 0
 
 
 # Filter basic math and logic
-*std::min*;*std::max* -- 0
-bool operator==*;bool std::operator==*;bool std::__norm::operator==*;__gnu_cxx::operator==* -- 0
-bool operator!=*;bool std::operator!=*;bool std::__norm::operator!=*;__gnu_cxx::operator!=* -- 0
+std::min*;std::max* -- 0
+bool operator==*;bool std::operator==*;bool std::__norm::operator==*;bool __gnu_cxx::operator==* -- 0
+bool operator!=*;bool std::operator!=*;bool std::__norm::operator!=*;bool __gnu_cxx::operator!=* -- 0
 bool __gnu_cxx::__is_null_pointer* -- 0
 std::__norm::operator* -- 0
 
 # Filter memory allocation
-__gnu_cxx::new_allocator*;operator new*;*std::_Destroy*;*std::allocator* -- 0
+__gnu_cxx::new_allocator*;operator new*;std::_Destroy*;std::allocator* -- 0
+void std::_Destroy* -- 0
 
 # Filter misc functions
 std::__uninitialized_*;std::uninitialized_*;void std::__uninitialized_*;void std::uninitialized_* -- 0
 __gnu_cxx::__exchange_and_add*;__gnu_cxx::__atomic_add* -- 0
 __gnu_cxx::__enable_if* -- 0
 __gthread_active_p* -- 0
-__gnu_debug::_Safe_sequence_base* -- 0
+__gnu_debug::_Safe_sequence* -- 0
 std::_Construct* -- 0
 std::less* -- 0
 std::_Rb_tree* -- 0
 std::type_info::* -- 0
 std::operator* -- 0
-*std::copy*;*std::__copy*;*std::uninitialized_copy*;*std::__uninitialized_copy* -- 0
-*bool__gnu_debug::__valid_range* -- 0
+void std::swap<* -- 0
+*std::__copy_move_* -- 0
+#*std::copy*;*std::__copy*;*std::uninitialized_copy*;*std::__uninitialized_copy* -- 0
+#*bool__gnu_debug::__valid_range* -- 0
 AutoPtr<*>::operator*;AutoPtr<*>::release*;AutoPtr<*>::~AutoPtr*;std::_Identity<*>::operator -- 0
 bool __gnu_debug::__valid_range* -- 0
 std::_Select1st* -- 0
@@ -46,12 +49,18 @@ __gnu_cxx::__scoped_lock*;__gnu_cxx::__mutex::lock*;__gnu_cxx::__mutex::unlock*;
 std::__norm::_Bit* -- 0
 std::__miter_base*;std::__niter_base* -- 0
 std::__lg* -- 0
-*std::fill_n*;*std::uninitialized_fill_n* -- 0
+#*std::fill_n*;*std::uninitialized_fill_n* -- 0
 std::_Identity* -- 0
+__static_initialization_and_destruction* -- 0
+global constructors keyed to* -- 0
+std::__norm::list*;std::__debug::list*;std::__norm::_List_base* -- 0
 
 # Filter boost routines
 boost::detail::* -- 0
 boost::shared_ptr* -- 0
+boost::enable_shared_from_this*;void boost::detail::sp_enable_shared_from_this* -- 0
+void boost::check_delete*;void boost::checked_delete* -- 0
+boost::weak_ptr<*>::expired* -- 0
 
 
 # Filter Libmesh routines
@@ -71,15 +80,15 @@ MeshBase::mesh_dimension()* -- 0
 # Filter AMP::Mesh routines
 AMP::Mesh::Mesh::meshID()* -- 0
 AMP::Mesh::libMesh::getlibMesh()* -- 0
-AMP::Mesh::MeshElement::* -- 0
-AMP::Mesh::MeshElementID::*;AMP::Mesh::libMeshElement::* -- 0
+AMP::Mesh::MeshElement::*;AMP::Mesh::libMeshElement::* -- 0
+AMP::Mesh::MeshElementID::operator* -- 0
 AMP::Mesh::MeshIterator::operator==*;AMP::Mesh::MeshIterator::operator!=*;AMP::Mesh::libMeshIterator::operator==*;AMP::Mesh::libMeshIterator::operator!=* -- 0
 AMP::Mesh::MeshIterator::operator->();AMP::Mesh::libMeshIterator::operator->();AMP::Mesh::MeshIterator::operator*();AMP::Mesh::libMeshIterator::operator*() -- 0
 
 
 # Filter select AMP routines
 AMP::AMP_MPI::getSize*;AMP::AMP_MPI::getRank* -- 0
-AMP::Castable::*;*AMP::Castable::castTo<*>* -- 0
+AMP::Castable::*;AMP::Castable::castTo<*>* -- 0
 AMP::MemoryDatabase::*;yylex();yyparse() -- 0
 AMP::Parser::* -- 0
 AMP::LinearAlgebra::VectorEntryMap* -- 0
@@ -93,7 +102,7 @@ AMP::LinearAlgebra::ConstVectorDataIterator::operator*;AMP::LinearAlgebra::Const
 AMP::LinearAlgebra::ManagedVector::sizeOfDataBlock* -- 0
 AMP::LinearAlgebra::ManagedEpetraMatrixParameters::entriesInRow* -- 0
 AMP::LinearAlgebra::*::getLocalSize*;AMP::LinearAlgebra::*::sizeOfDataBlock* -- 0
-*AMP::LinearAlgebra::*::getRawDataBlock*;AMP::LinearAlgebra::*::getDataBlock* -- 0
+AMP::LinearAlgebra::*::getRawDataBlock*;AMP::LinearAlgebra::*::getDataBlock* -- 0
 AMP::LinearAlgebra::EpetraVectorEngine::getEpetra_Vector* -- 0
 
 # Filter all remaining functions
