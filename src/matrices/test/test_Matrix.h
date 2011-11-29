@@ -1,4 +1,4 @@
-//#include "ampmesh/test/test_MeshGenerators.h"
+#include "../../ampmesh/test/meshGenerators.h"
 #include "ampmesh/Mesh.h"
 #include "discretization/NodalVariable.h"
 #include "discretization/DOF_Manager.h"
@@ -56,19 +56,19 @@ public:
         return DOFs->createMatrix ( vector_a, vector_b );
     }
 
-    //static AMP::Mesh::DOFMap::shared_ptr  getDOFMap()
-    //{
-    //    return mesh->getDOFMap ( AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable,NUM_DOF_ROW> ( "a" ) ) );
-    //}
+    static AMP::Discretization::DOFManager::shared_ptr  getDOFMap()
+    {
+        return DOFs;
+    }
     
-    //static AMP::Mesh::DOFMap::shared_ptr  getDOFMapL()
-    //{
-    //    return mesh->getDOFMap ( AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable,NUM_DOF_COL> ( "a" ) ) );
-    //}
+    static AMP::Discretization::DOFManager::shared_ptr  getDOFMapL()
+    {
+        return DOFs;
+    }
 };
 
 
-//typedef DOFMatrixTestFactory<1,1,LibMeshCubeGenerator<5> >   SimpleMatrixFactory;
+typedef DOFMatrixTestFactory<1,1,LibMeshCubeGenerator<5> >   SimpleMatrixFactory;
 
 
 }
