@@ -7,7 +7,8 @@ namespace AMP {
     PelletStackMechanicsSolver :: PelletStackMechanicsSolver(boost::shared_ptr<
         PelletStackMechanicsSolverParameters> params) : SolverStrategy(params) {
       d_useSerial = (params->d_db)->getBoolWithDefault("USE_SERIAL", false);
-      d_solveAfterScan = (params->d_db)->getBoolWithDefault("SOLVE_AFTER_SCAN", false);
+      d_onlyZcorrection = (params->d_db)->getBoolWithDefault("ONLY_Z_CORRECTION", false);
+      d_useScaling = (params->d_db)->getBoolWithDefault("USE_SCALING", false);
       d_columnSolver = params->d_columnSolver;
       d_pelletStackOp = boost::dynamic_pointer_cast<AMP::Operator::PelletStackOperator>(d_pOperator);
     }
@@ -18,10 +19,16 @@ namespace AMP {
 
     void PelletStackMechanicsSolver :: solve(boost::shared_ptr<AMP::LinearAlgebra::Vector> f, 
         boost::shared_ptr<AMP::LinearAlgebra::Vector> u) {
+      if(d_useScaling) {
+        d_pelletStackOp->applyScaling(f);
+      }
       if(d_useSerial) {
         solveSerial(f, u);
       } else {
         solveScan(f, u);
+      }
+      if(d_useScaling) {
+        d_pelletStackOp->applyUnscaling(f);
       }
     }
 
@@ -64,16 +71,17 @@ namespace AMP {
     void PelletStackMechanicsSolver :: solveScan(boost::shared_ptr<AMP::LinearAlgebra::Vector> f, 
         boost::shared_ptr<AMP::LinearAlgebra::Vector> u) {
       d_columnSolver->solve(f, u);
-      if(d_solveAfterScan) {
+      if(d_onlyZcorrection) {
+        AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+        d_pelletStackOp->apply(nullVec, nullVec, u);
+      } else {
         AMP::LinearAlgebra::Vector::shared_ptr fCopy = f->cloneVector();
         d_pelletStackOp->apply(f, u, fCopy);
         d_columnSolver->solve(fCopy, u);
-      } else {
-        AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-        d_pelletStackOp->apply(nullVec, nullVec, u);
       }
     }
 
   }
 }
+
 

@@ -19,6 +19,12 @@ namespace AMP {
       return true;
     }
 
+    void PelletStackOperator :: applyScaling(AMP::LinearAlgebra::Vector::shared_ptr f) {
+    }
+
+    void PelletStackOperator :: applyUnscaling(AMP::LinearAlgebra::Vector::shared_ptr f) {
+    }
+
     AMP::LinearAlgebra::Variable::shared_ptr PelletStackOperator :: getOutputVariable() {
       AMP::LinearAlgebra::Variable::shared_ptr emptyPointer;
       return emptyPointer;
