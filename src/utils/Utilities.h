@@ -128,7 +128,7 @@ namespace Utilities
      * \param value  Value to search for
      */
     template<class T>
-    int findfirst(const std::vector<T> x, const T value);
+    int findfirst(const std::vector<T> &x, const T &value);
 
     //! Create a hash key from a char array
     unsigned int hash_char(const char*);
@@ -562,10 +562,11 @@ void Utilities::quicksort(std::vector<T1> &x, std::vector<T2> &y)
 * Returns -1 if no value is larger.                                     *
 ************************************************************************/
 template<class T>
-int Utilities::findfirst(const std::vector<T> x, const T value) 
+int Utilities::findfirst(const std::vector<T> &x_in, const T &value) 
 {
-    int n = x.size();
+    int n = x_in.size();
     AMP_INSIST(n>0,"x must not be empty");
+    const T *x = &x_in[0];   // Use the pointer for speed
     // Check if value is within the range of x
     if ( value <= x[0] )
         return 0;
