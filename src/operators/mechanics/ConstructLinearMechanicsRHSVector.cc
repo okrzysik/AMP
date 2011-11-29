@@ -56,7 +56,8 @@ void computeTemperatureRhsVector( AMP::Mesh::MeshManager::Adapter::shared_ptr me
 
   boost::shared_ptr<AMP::Materials::Material> d_material;
   double youngsModulus = 1.0e10, poissonsRatio = 0.33, thermalExpansionCoefficient = 2.0e-6;
-  double default_TEMPERATURE, default_BURNUP, default_OXYGEN_CONCENTRATION;
+  //double default_TEMPERATURE, default_BURNUP, default_OXYGEN_CONCENTRATION;
+  double default_BURNUP, default_OXYGEN_CONCENTRATION;
 
   bool d_useMaterialsLibrary = materialModelDatabase->getBoolWithDefault("USE_MATERIALS_LIBRARY",false);
   if(d_useMaterialsLibrary == true) {
@@ -75,7 +76,7 @@ void computeTemperatureRhsVector( AMP::Mesh::MeshManager::Adapter::shared_ptr me
     poissonsRatio = materialModelDatabase->getDouble("Poissons_Ratio");
   }
 
-  default_TEMPERATURE = materialModelDatabase->getDoubleWithDefault("Default_Temperature",310.0);
+  //default_TEMPERATURE = materialModelDatabase->getDoubleWithDefault("Default_Temperature",310.0);
   default_BURNUP = materialModelDatabase->getDoubleWithDefault("Default_Burnup",0.0);
   default_OXYGEN_CONCENTRATION = materialModelDatabase->getDoubleWithDefault("Default_Oxygen_Concentration",0.0);
 

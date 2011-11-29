@@ -316,7 +316,8 @@ namespace Operator {
       d_materialModel->preNonlinearAssemblyGaussPointOperation();
 
       double F_n[3][3], F_np1[3][3], F_np1o2[3][3], U_n[3][3], U_np1[3][3], U_np1o2[3][3], R_n[3][3], R_np1[3][3], R_np1o2[3][3];
-      double Identity[3][3], e_np1o2_tilda_rotated[3][3], Bl_np1[6][24], spin_np1[3][3], d_np1[3][3], el_np1[6], detF = 1.0, detF_np1, detF_n;
+      //double Identity[3][3], e_np1o2_tilda_rotated[3][3], Bl_np1[6][24], spin_np1[3][3], d_np1[3][3], el_np1[6], detF = 1.0, detF_np1, detF_n;
+      double Identity[3][3], e_np1o2_tilda_rotated[3][3], Bl_np1[6][24], spin_np1[3][3], d_np1[3][3], el_np1[6], detF = 1.0;
       double dN_dxnp1o2[8], dN_dynp1o2[8], dN_dznp1o2[8], detJ_np1o2[1], d_np1o2[3][3], d_np1o2_temp[3][3];
      
       computeShapeFunctions(N, currXi[qp], currEta[qp], currZeta[qp]);
@@ -426,8 +427,8 @@ namespace Operator {
           }
         }
 
-        detF_np1 = matDeterminant(F_np1);
-        detF_n = matDeterminant(F_n);
+        //detF_np1 = matDeterminant(F_np1);
+        //detF_n = matDeterminant(F_n);
         //detF = detF_np1 / detF_n;
         detF = 1.0; // Based on a test by Bathe, this transformation is not required. So temporary hack, passing unity.
       }

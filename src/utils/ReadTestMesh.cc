@@ -102,6 +102,7 @@ namespace AMP {
 
     //Mesh {
     n = fscanf(fp, "%s {", str);
+    AMP_INSIST((n == 1), "Error while reading the file");
 
     int num_nodes;
     //NumberOfNodes = <val>
@@ -130,8 +131,10 @@ namespace AMP {
       n = fscanf(fp, "%s = %d,", str, &(nodesForElem[0]));
       for(int j = 1; j < 7; j++) {
         n = fscanf(fp, "%d,", &(nodesForElem[j]));
+        AMP_INSIST((n == 1), "Error while reading the file");
       }//end for j
       n = fscanf(fp, "%d", &(nodesForElem[7]));
+      AMP_INSIST((n == 1), "Error while reading the file");
       elemNodeMap.push_back(nodesForElem);
     }//end for i
 
@@ -155,9 +158,11 @@ namespace AMP {
       if(bndDofSize > 0) {
         //BoundaryNodeIdK =
         n = fscanf(fp, "%s =", str);
+        AMP_INSIST((n == 1), "Error while reading the file");
         int idx;
         for(int i = 0; i < (bndDofSize - 1); i++) {
           n = fscanf(fp, "%d,", &idx);
+          AMP_INSIST((n == 1), "Error while reading the file");
           mesh->boundary_info->add_node(mesh->node_ptr(idx), bid);
         }//end for i
         n = fscanf(fp, "%d", &idx);
@@ -180,11 +185,15 @@ namespace AMP {
         int idxS;
         for(int i = 0; i < (bndDofSize - 1); i++) {
           n = fscanf(fp, "%d,", &idxE);
+          AMP_INSIST((n == 1), "Error while reading the file");
           n = fscanf(fp, "%d,", &idxS);
+          AMP_INSIST((n == 1), "Error while reading the file");
           mesh->boundary_info->add_side(mesh->elem(idxE), idxS, bid);
         }//end for i
         n = fscanf(fp, "%d,", &idxE);
+        AMP_INSIST((n == 1), "Error while reading the file");
         n = fscanf(fp, "%d", &idxS);
+        AMP_INSIST((n == 1), "Error while reading the file");
         mesh->boundary_info->add_side(mesh->elem(idxE), idxS, bid);
       }
     }//end for bid 
