@@ -21,6 +21,21 @@ class libMeshElement;
  * \brief A concrete mesh class for libMesh
  *
  * \details  This class provides routines for reading, accessing and writing libMesh meshes.
+ * The generation of the mesh is controlled by the database passed in through the params object.
+ * The database fields control the mesh and provide several options: 
+ * @code
+ *    dim - required integer specifying the physical dimension
+ *    FileName - If specified this will load the mesh from the given file
+ *    Generator - If specified this will generate a new mesh using the optional parameters in the database
+ *       This field must be a string specifying the generator to use.  Valid gerators are:
+ *          "cube" - Will generate a cube mesh
+ *       Additional areguments:
+ *          size - Integer array specifying the number of elements in each direction
+ * @endcode
+ * The parallel decomposition of the mesh is controlled by libmesh and occurs on the communicator
+ * specified through the params object.  Note that libmesh does not support meshes on overlapping 
+ * communicators.  If multiple meshes are used, they must either share communicators or have unique 
+ * communicators.
  */
 class libMesh: public Mesh
 {
@@ -67,6 +82,7 @@ public:
 
     /* Return the number of ghost elements of the given type on the current processor
      * \param type   Geometric type
+     * \param gcw    Desired ghost cell width
      */
     virtual size_t  numGhostElements( const GeomType type, const int gcw ) const;
 
@@ -75,7 +91,7 @@ public:
      * \brief    Return an MeshIterator over the given geometric objects
      * \details  Return an MeshIterator over the given geometric objects
      * \param type   Geometric type to iterate over
-     * \param gcw    Desired ghost 
+     * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator getIterator ( const GeomType type, const int gcw=0 );
 
@@ -91,7 +107,8 @@ public:
      * \brief    Return an MeshIterator over the given geometric objects on the given ID set
      * \details  Return an MeshIterator over the given geometric objects on the given ID set
      * \param type   Geometric type to iterate over
-     * \param type   id for the elements (example: nodeset id)
+     * \param id     id for the elements (example: nodeset id)
+     * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator getIDsetIterator ( const GeomType type, const int id, const int gcw=0 );
 

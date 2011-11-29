@@ -82,7 +82,7 @@ public:
      * \brief    Return an MeshIterator over the given geometric objects
      * \details  Return an MeshIterator over the given geometric objects
      * \param type   Geometric type to iterate over
-     * \param gcw    Desired ghost 
+     * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator getIterator ( const GeomType type, const int gcw=0 );
 
@@ -98,7 +98,8 @@ public:
      * \brief    Return an MeshIterator over the given geometric objects on the given ID set
      * \details  Return an MeshIterator over the given geometric objects on the given ID set
      * \param type   Geometric type to iterate over
-     * \param type   id for the elements (example: nodeset id)
+     * \param id     id for the elements (example: nodeset id)
+     * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator getIDsetIterator ( const GeomType type, const int id, const int gcw=0 );
 

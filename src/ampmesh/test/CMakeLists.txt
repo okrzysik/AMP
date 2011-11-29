@@ -2,6 +2,7 @@ INCLUDE (macros)
 
 # Copy meshes and input files
 COPY_MESH_FILE ( pellet_1x.e )
+COPY_MESH_FILE ( clad_1x_1pellet.e )
 COPY_MESH_FILE ( cube343H27.e )
 COPY_MESH_FILE ( pellet_lo_res.e )
 COPY_MESH_FILE ( clad_lo_res_4pellet.e )

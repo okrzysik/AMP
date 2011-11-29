@@ -8,6 +8,8 @@
 // LibMesh include
 #include "mesh.h"
 #include "mesh_data.h"
+#include "mesh_generation.h"
+
 
 namespace AMP {
 namespace Mesh {
@@ -27,17 +29,29 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
     // Load the mesh
     if ( d_db.get() ) {
         // Database exists
+        AMP_INSIST(d_db->keyExists("dim"),"Variable 'dim' must be set in the database");
+        PhysicalDim = d_db->getInteger("dim");
+        AMP_INSIST(PhysicalDim>0&&PhysicalDim<10,"Invalid dimension");
+        GeomDim = (GeomType) PhysicalDim;
+        // Create the libMesh objects
+        d_libMesh = boost::shared_ptr< ::Mesh>( new ::Mesh(PhysicalDim) );
+        d_libMeshData = boost::shared_ptr< ::MeshData>( new ::MeshData(*d_libMesh) );
         if ( d_db->keyExists("FileName") ) {
             // Read an existing mesh
-            AMP_INSIST(d_db->keyExists("dim"),"Variable 'dim' must be set in the database");
-            PhysicalDim = d_db->getInteger("dim");
-            GeomDim = (GeomType) PhysicalDim;
-            AMP_INSIST(PhysicalDim>0&&PhysicalDim<10,"Invalid dimension");
-            // Create the libMesh objects
-            d_libMesh = boost::shared_ptr< ::Mesh>( new ::Mesh(PhysicalDim) );
-            d_libMeshData = boost::shared_ptr< ::MeshData>( new ::MeshData(*d_libMesh) );
-            // Use libMesh to read the data
             d_libMesh->read(d_db->getString("FileName"));
+        } else if ( d_db->keyExists("Generator") ) {
+            // Generate a new mesh
+            std::string generator = d_db->getString("Generator");
+            if ( generator.compare("cube")==0 ) {
+                // Generate a cube mesh
+                AMP_INSIST(PhysicalDim==3,"libMesh cube generation currently supports only 3d meshes");
+                AMP_INSIST(d_db->keyExists("size"),"Variable 'size' must be set in the database");
+                std::vector<int> size = d_db->getIntegerArray("size");
+                AMP_INSIST(size.size()==(size_t)PhysicalDim,"Variable 'size' must by an integer array of size dim");
+                MeshTools::Generation::build_cube( *d_libMesh, size[0], size[1], size[2], -1., 1, -1, 1, -1, 1, HEX8 );
+            } else {
+                AMP_ERROR(std::string("Unknown libmesh generator: ")+generator);
+            }
         } else {
             AMP_ERROR("Unable to construct mesh with given parameters");
         }

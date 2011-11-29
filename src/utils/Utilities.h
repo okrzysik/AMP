@@ -125,6 +125,7 @@ namespace Utilities
      * This routine only works on sorted arrays and does not check if the array is sorted
      * This routine returns -1 if no value in the array is >= the desired value
      * \param x      vector to sort
+     * \param value  Value to search for
      */
     template<class T>
     int findfirst(const std::vector<T> x, const T value);

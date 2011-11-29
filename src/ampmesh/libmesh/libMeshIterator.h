@@ -64,7 +64,10 @@ protected:
      * \param type      Entity type:  0: node, 1: element
      * \param mesh      Pointer to the libMesh mesh
      * \param gcw       gcw to use
+     * \param begin     Pointer to iterator with the begining position
+     * \param end       Pointer to iterator with the end position
      * \param pos       Pointer to iterator with the current position
+     * \param size      Number of elements in the iterator
      */
     libMeshIterator(int type, AMP::Mesh::libMesh *mesh, int gcw, void *begin, void *end, void *pos, int size=-1 );
 

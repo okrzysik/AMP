@@ -8,8 +8,35 @@
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "meshTestLoop.h"
+#include "meshGenerators.h"
 
-// Function to test the creation/destruction of empty meshes
+
+// Function to test the creation/destruction of a mesh with the mesh generators
+// Note: this only runs the mesh tests, not the vector or matrix tests
+void testMeshGenerators( AMP::UnitTest *ut )
+{
+    boost::shared_ptr<AMP::unit_test::MeshGenerator> generator;
+    // Test the libmesh cube generator
+    generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::LibMeshCubeGenerator<5> );
+    generator->build_mesh();
+    MeshTestLoop( ut, generator->getMesh() );
+    // Test the libmesh reader generator
+    generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::ExodusReaderGenerator);
+    generator->build_mesh();
+    MeshTestLoop( ut, generator->getMesh() );
+    // // Test the multimesh generator
+    // generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::MultiMeshGenerator );
+    // generator->build_mesh();
+    // MeshTestLoop( ut, generator->getMesh() );
+    // // Test the ThreeElementLGenerator generator
+    // generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::ThreeElementLGenerator );
+    // generator->build_mesh();
+    // MeshTestLoop( ut, generator->getMesh() );
+
+}
+
+
+// Function to test the creation/destruction of a libmesh mesh
 void testlibMesh( AMP::UnitTest *ut )
 {
     // Create a generic MeshParameters object
@@ -20,10 +47,12 @@ void testlibMesh( AMP::UnitTest *ut )
     params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
 
     // Create an libMesh mesh
-    boost::shared_ptr<AMP::Mesh::libMesh> mesh1(new AMP::Mesh::libMesh(params));    
+    boost::shared_ptr<AMP::Mesh::libMesh> mesh(new AMP::Mesh::libMesh(params));    
 
     // Run the mesh tests
-    MeshTestLoop( ut, mesh1 );
+    MeshTestLoop( ut, mesh );
+    MeshVectorTestLoop( ut, mesh );
+    MeshMatrixTestLoop( ut, mesh );
 
 }
 
@@ -44,6 +73,8 @@ void testInputMesh( AMP::UnitTest *ut, std::string filename )
 
     // Run the mesh tests
     MeshTestLoop( ut, mesh );
+    MeshVectorTestLoop( ut, mesh );
+    MeshMatrixTestLoop( ut, mesh );
 
 }
 
@@ -63,8 +94,12 @@ int main ( int argc , char ** argv )
     // Run tests on the input file
     testInputMesh( &ut, "input_Mesh" );
 
-    ut.report ();
+    // Run the basic tests on all mesh generators
+    testMeshGenerators( &ut );
 
+
+    // Print the results and return
+    ut.report ();
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();
     return num_failed;

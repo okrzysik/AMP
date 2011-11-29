@@ -36,11 +36,11 @@ public:
 
 
     /**
-     * \param params Parameters for constructing a mesh from an input database
      * \brief Read in mesh files, partition domain, and prepare environment for simulation
      * \details  For trivial parallelsim, this method reads in the meshes on each processor.  Each
      * processor contains a piece of each mesh.  For massive parallelism, each mesh is on its own
      * communicator.  As such, some math libraries must be initialized accordingly.
+     * \param params  Parameters for constructing a mesh from an input database
      */
     Mesh ( const MeshParameters::shared_ptr &params );
 
@@ -53,7 +53,7 @@ public:
      * from a subset or superset of other meshes.  Note that instantion of this routine 
      * may not be able to create it's mesh from any arbitrary mesh, and may throw an 
      * error.
-     * \param old_mesh Existing mesh that we will use to construct the new mesh
+     * \param old_mesh  Existing mesh that we will use to construct the new mesh
      */
     Mesh ( const Mesh::shared_ptr &old_mesh );
 
@@ -67,7 +67,8 @@ public:
      * from a subset or superset of other meshes.  Note that instantion of this routine 
      * may not be able to create it's mesh from any arbitrary mesh, and may throw an 
      * error.
-     * \param old_mesh Existing mesh that we will use to construct the new mesh
+     * \param old_mesh  Existing mesh that we will use to construct the new mesh
+     * \param iterator  Iterator over the existing mesh
      */
     Mesh ( const Mesh::shared_ptr &old_mesh, MeshIterator::shared_ptr &iterator);
 
@@ -154,7 +155,7 @@ public:
      * \brief    Return an MeshIterator over the given geometric objects
      * \details  Return an MeshIterator over the given geometric objects
      * \param type   Geometric type to iterate over
-     * \param gcw    Desired ghost 
+     * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator getIterator ( const GeomType type, const int gcw=0 );
 
@@ -163,6 +164,7 @@ public:
      * \brief    Return an MeshIterator over the given geometric objects on the surface
      * \details  Return an MeshIterator over the given geometric objects on the surface
      * \param type   Geometric type to iterate over
+     * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator getSurfaceIterator ( const GeomType type, const int gcw=0 );
 
@@ -178,7 +180,8 @@ public:
      * \brief    Return an MeshIterator over the given geometric objects on the given ID set
      * \details  Return an MeshIterator over the given geometric objects on the given ID set
      * \param type   Geometric type to iterate over
-     * \param type   id for the elements (example: nodeset id)
+     * \param id     id for the elements (example: nodeset id)
+     * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator getIDsetIterator ( const GeomType type, const int id, const int gcw=0 );
 

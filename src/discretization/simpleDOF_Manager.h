@@ -38,7 +38,7 @@ public:
 
     /** \brief Get the entry indices of nodal values given a mesh element
      * \param[in]  obj  The element to collect nodal objects for.  Note: the mesh element may be any type (include a vertex).
-     * \param[out] ids  The entries in the vector associated with D.O.F.s on the nodes
+     * \param[out] ids  The entries in the vector associated with D.O.F.s on the nodes (global index)
      * \param[in]  which  Which D.O.F. to get.  If not specified, return all D.O.F.s
      * \details  This will return a vector of pointers into a Vector that are associated with which.
      */

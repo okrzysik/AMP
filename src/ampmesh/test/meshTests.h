@@ -67,7 +67,8 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator,
     cur_it = iterator.begin();
     while ( cur_it != end_it ) {
         AMP::Mesh::MeshElement element = *cur_it;
-        if ( element.globalID() != cur_it->globalID() )
+        AMP::Mesh::MeshElementID id = element.globalID();
+        if ( id != cur_it->globalID() )
             id_pass = false;
         if ( element.elementType() != type )
             type_pass = false;
@@ -79,13 +80,15 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator,
             if ( element.volume() <= 0.0 )
                 volume_pass = false;
         }
-        for (int i=0; i<=(int)type; i++) {
-            if ( i!=0 && i!=(int)type )
-                continue;  // getElements is unfinished for types other than verticies and elements
-            AMP::Mesh::GeomType type2 = (AMP::Mesh::GeomType) i;
-            std::vector<AMP::Mesh::MeshElement> pieces = element.getElements(type2);
+        if ( id.is_local ) {
+            for (int i=0; i<=(int)type; i++) {
+                if ( i!=0 && i!=(int)type )
+                    continue;  // getElements is unfinished for types other than verticies and elements
+                AMP::Mesh::GeomType type2 = (AMP::Mesh::GeomType) i;
+                std::vector<AMP::Mesh::MeshElement> pieces = element.getElements(type2);
+            }
+            std::vector< AMP::Mesh::MeshElement::shared_ptr > neighbors = element.getNeighbors();
         }
-        std::vector< AMP::Mesh::MeshElement::shared_ptr > neighbors = element.getNeighbors();
         ++cur_it;   // Pre-increment is faster than post-increment
     }
     if ( id_pass && type_pass && volume_pass && coord_pass ) {
