@@ -502,7 +502,7 @@ namespace Operator {
       d_materialModel->getInternalStress(fieldsAtGaussPt, currStress);
 
       /* Convert Voigt Notation into Matrix Notation */
-
+/*
       double T[3][3];
 
       T[0][0] = currStress[0]; //xx
@@ -516,7 +516,7 @@ namespace Operator {
       T[2][0] = currStress[4]; //zx
       T[2][1] = currStress[3]; //zy
       T[2][2] = currStress[2]; //zz
-
+*/
       for(unsigned int j = 0; j < num_nodes; j++) {
         for(unsigned int d = 0; d < 3; d++) {
 
@@ -761,7 +761,7 @@ namespace Operator {
       d_materialModel->getInternalStress(fieldsAtGaussPt, currStress);
 
       // Convert Voigt Notation into Matrix Notation 
-
+/*
       double T[3][3];
 
       T[0][0] = currStress[0]; //xx
@@ -775,7 +775,7 @@ namespace Operator {
       T[2][0] = currStress[4]; //zx
       T[2][1] = currStress[3]; //zy
       T[2][2] = currStress[2]; //zz
-
+*/
       for(unsigned int j = 0; j < num_nodes; j++) {
         for(unsigned int d = 0; d < 3; d++) {
 

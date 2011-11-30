@@ -338,7 +338,7 @@ namespace AMP {
 
       double E = d_E[d_gaussPtCnt];
       double Nu = d_Nu[d_gaussPtCnt]; 
-      double H = d_H;
+      //double H = d_H;
       //double Sig0 = d_Sig0;
       double tol = 1.0E-12;
 
@@ -362,7 +362,7 @@ namespace AMP {
       double sig_np1[6];
       //double sigy_np1;
       //double G, K, Ep, sq23;
-      double G, K, Ep;
+      double G, K;
       double one3, two3, three2 = 3.0 / 2.0;
       double sig_dev[6], n_dir[6];
       double q_np1, sig_np1_kk, q_trial, lam, dlam_dqtr;
@@ -426,7 +426,7 @@ namespace AMP {
       G = E/(2.0*(1.0 + Nu));              // of Elastic
       AMP_INSIST(term2 > tol, "Divide by zero in PericElastoViscoPlasticModel. Line 258");
       K = E/(3.0*(1.0 - (2.0*Nu)));        // and other
-      Ep = H;                           // constants.
+      //Ep = H;                           // constants.
 
       //for(int i = 0; i < 6; i++) {
       //std::cout << "stre_np1[" << i << "] = " << stre_np1[i] << std::endl;
