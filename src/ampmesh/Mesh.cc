@@ -23,6 +23,7 @@ Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
     d_db = params->d_db;
     AMP_ASSERT(comm!=AMP_MPI(AMP_COMM_NULL));
     setMeshID();
+    d_name = "NULL";
 }
 Mesh::Mesh( const Mesh::shared_ptr &old_mesh )
 {
@@ -59,7 +60,9 @@ boost::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared
     boost::shared_ptr<AMP::Database> database = params->d_db;
     AMP_ASSERT(database!=NULL);
     AMP_INSIST(database->keyExists("MeshType"),"MeshType must exist in input database");
+    AMP_INSIST(database->keyExists("MeshName"),"MeshName must exist in input database");
     std::string MeshType = database->getString("MeshType");
+    std::string MeshName = database->getString("MeshName");
     boost::shared_ptr<AMP::Mesh::Mesh> mesh;
     if ( MeshType == std::string("Multimesh") ) {
         // The mesh is a multimesh
@@ -75,6 +78,7 @@ boost::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared
         // Unknown mesh type
         AMP_ERROR( std::string("Unknown mesh type (") + MeshType + std::string(")") );
     }
+    mesh->setName(MeshName);
     return mesh;
 }
 
@@ -154,6 +158,17 @@ void Mesh::setMeshID( )
 ********************************************************/
 boost::shared_ptr<Mesh>  Mesh::Subset( size_t meshID ) {
     if ( d_meshID==meshID ) 
+        return shared_from_this();
+    else
+        return boost::shared_ptr<Mesh>();
+}
+
+
+/********************************************************
+* Function to return the mesh with the given name       *
+********************************************************/
+boost::shared_ptr<Mesh>  Mesh::Subset( std::string name ) {
+    if ( d_name==name ) 
         return shared_from_this();
     else
         return boost::shared_ptr<Mesh>();

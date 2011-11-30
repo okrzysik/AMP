@@ -210,6 +210,30 @@ void MeshBasicTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
         ut->passes("subset on meshID for self");
     else
         ut->failure("subset on meshID for self");
+    // test that we can get and set the mesh name
+    std::string meshName = mesh->getName();
+    mesh->setName("testing mesh name");
+    bool setName = mesh->getName().compare("testing mesh name")==0;
+    mesh->setName(meshName);
+    if ( meshName.compare("NULL")!=0 ) 
+        ut->passes("non-null mesh name");
+    else
+        ut->failure("non-null mesh name");
+    if ( setName ) 
+        ut->passes("get/set mesh name");
+    else
+        ut->failure("get/set mesh name");
+    // Test that we can subset the mesh by the mesh name
+    mesh2 = mesh->Subset(meshName);
+    if ( mesh2.get()==mesh.get() )
+        ut->passes("subset on mesh name for self");
+    else
+        ut->failure("subset on mesh name for self");
+    mesh2 = mesh->Subset("Garbage name");
+    if ( mesh2.get()==NULL )
+        ut->passes("subset on mesh name for garbage");
+    else
+        ut->failure("subset on mesh name for garbage");
 }
 
 
@@ -219,7 +243,7 @@ void VerifyBoundaryNodeIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_p
     const std::vector<int> bids = mesh->getIDSets();
     for (size_t i=0; i<bids.size(); i++) {
         int bid = bids[i];
-        for (int gcw=0; gcw<=1; gcw++) {
+        for (int gcw=0; gcw<=0; gcw++) {
             // Get the iterator over the current boundary id
             AMP::Mesh::MeshIterator curNode = mesh->getIDsetIterator( AMP::Mesh::Vertex, bid, gcw );
             AMP::Mesh::MeshIterator endNode = curNode.end();
@@ -232,7 +256,8 @@ void VerifyBoundaryNodeIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_p
                     testPassed = false;
                 curNode++;
             }
-            if ( node_ids.size()==0 )
+            size_t total_size = mesh->getComm().sumReduce(node_ids.size());
+            if (total_size==0 )
                 testPassed = false;
             // Verify that all nodes were found
             size_t  numFound = 0;

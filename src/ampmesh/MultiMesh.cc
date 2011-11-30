@@ -286,6 +286,21 @@ boost::shared_ptr<Mesh>  MultiMesh::Subset( size_t meshID )
 
 
 /********************************************************
+* Function to return the mesh with the given name       *
+********************************************************/
+boost::shared_ptr<Mesh>  MultiMesh::Subset( std::string name ) {
+    if ( d_name==name )
+        return shared_from_this();
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        boost::shared_ptr<Mesh> mesh = d_meshes[i]->Subset(name);
+        if ( mesh.get()!=NULL )
+            return mesh;
+    }
+    return boost::shared_ptr<Mesh>();
+}
+
+
+/********************************************************
 * Function to copy a key from database 1 to database 2  *
 * If the key is an array of size N, it will only copy   *
 * the ith value.                                        *

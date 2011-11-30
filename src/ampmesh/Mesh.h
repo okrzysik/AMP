@@ -108,12 +108,26 @@ public:
     /**
      * \brief    Subset a mesh given a MeshID
      * \details  This function will return the mesh with the given meshID.
-     *    Note: for multmeshes, this will return the mesh with the given id.
+     *    Note: for multimeshes, this will return the mesh with the given id.
      *    For a single mesh this will return a pointer to itself if the meshID
      *    matches the meshID of the mesh, and a null pointer otherwise.
      * \param meshID  MeshID of the desired mesh
      */
     virtual boost::shared_ptr<Mesh>  Subset ( size_t meshID );
+
+
+    /**
+     * \brief    Subset a mesh given a mesh name
+     * \details  This function will return the mesh with the given name.
+     *    Note: for multimeshes, this will return the mesh with the given name.
+     *    For a single mesh this will return a pointer to itself if the mesh name
+     *    matches the name of the mesh, and a null pointer otherwise.
+     *    Note: The mesh name is not gaurenteed to be unique.  If there are multiple
+     *    meshes with the same name, the first mesh with the given name will be returned.
+     *    It is strongly recommended to use the meshID when possible.
+     * \param name  Name of the desired mesh
+     */
+    virtual boost::shared_ptr<Mesh>  Subset ( std::string name );
 
 
     /**
@@ -211,6 +225,14 @@ public:
     virtual inline size_t meshID() const { return d_meshID; }
 
 
+    //! Get the mesh name
+    virtual inline std::string getName() const { return d_name; }
+
+
+    //! Set the mesh name
+    virtual inline void setName(std::string name) { d_name = name; }
+
+
 protected:
 
     //!  Empty constructor for a mesh
@@ -233,6 +255,9 @@ protected:
 
     //! A unique id for each mesh
     size_t d_meshID;
+
+    //! A name for the mesh
+    std::string d_name;
 
     /**
      *  A function to create a unique id for the mesh (requires the comm to be set)

@@ -33,7 +33,9 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
     if ( d_db.get() ) {
         // Database exists
         AMP_INSIST(d_db->keyExists("dim"),"Variable 'dim' must be set in the database");
+        AMP_INSIST(d_db->keyExists("MeshName"),"MeshName must exist in input database");
         PhysicalDim = d_db->getInteger("dim");
+        d_name = d_db->getString("MeshName");
         AMP_INSIST(PhysicalDim>0&&PhysicalDim<10,"Invalid dimension");
         GeomDim = (GeomType) PhysicalDim;
         // Create the libMesh objects
@@ -307,6 +309,7 @@ MeshIterator libMesh::getIterator( const GeomType type, const int gcw )
 
 /********************************************************
 * Return an iterator over the given boundary ids        *
+* Note: we have not programmed this for ghosts yet      *
 ********************************************************/
 std::vector<int> libMesh::getIDSets ( )
 {
@@ -319,9 +322,9 @@ std::vector<int> libMesh::getIDSets ( )
     }
     return bids;
 }
-
 MeshIterator libMesh::getIDsetIterator ( const GeomType type, const int id, const int gcw )
 {
+    AMP_INSIST(gcw==0,"Iterator over ghost boundary elements is not supported yet");
     std::pair<int,GeomType> mapid = std::pair<int,GeomType>(id,type);
     std::map< std::pair<int,GeomType>, boost::shared_ptr<std::vector<MeshElement> > >::iterator it;
     boost::shared_ptr<std::vector<MeshElement> > list( new std::vector<MeshElement>() );
