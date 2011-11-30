@@ -41,7 +41,7 @@ int main ( int argc , char **argv )
 
     test_matrix_loop<SimpleMatrixFactory> ( &ut );
 
-    //test_matrix_loop<DOFMatrixTestFactory<3,3,ExodusReaderGenerator> > ( &ut );
+    test_matrix_loop<DOFMatrixTestFactory<3,3,ExodusReaderGenerator> > ( &ut );
 
     ut.report();
 
