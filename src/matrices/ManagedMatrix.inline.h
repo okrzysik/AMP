@@ -9,7 +9,7 @@ namespace LinearAlgebra {
   }
 
   inline
-  ManagedMatrix::ManagedMatrix ( ParametersPtr p ) 
+  ManagedMatrix::ManagedMatrix ( MatrixParameters::shared_ptr p ) 
     : Matrix ( p ) 
   {
   }

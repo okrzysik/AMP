@@ -32,7 +32,7 @@ void ManagedEpetraMatrix::multiply ( shared_ptr other_op , shared_ptr &result )
                  d_epetraMatrix->RowMap().NumGlobalElements() , 
                  d_epetraMatrix->RowMap().MinMyGID() , 
                  AMP_MPI(epetraComm) );
-    ManagedEpetraMatrix *res = new ManagedEpetraMatrix ( ParametersPtr ( memp ) );
+    ManagedEpetraMatrix *res = new ManagedEpetraMatrix ( MatrixParameters::shared_ptr ( memp ) );
     EpetraExt::MatrixMatrix::Multiply ( *d_epetraMatrix , false , *(other_op->castTo<ManagedEpetraMatrix> ().d_epetraMatrix) , false , *(res->d_epetraMatrix) , true );
     result = Matrix::shared_ptr ( res );
 }
@@ -201,12 +201,12 @@ void ManagedEpetraMatrixParameters::addColumns ( int a , int *b )
 }
 
 
-ManagedEpetraMatrix::ManagedEpetraMatrix ( ParametersPtr params )
+ManagedEpetraMatrix::ManagedEpetraMatrix ( MatrixParameters::shared_ptr params )
         : EpetraMatrix ( params->castTo<ManagedEpetraMatrixParameters>().getEpetraRowMap() , 
                          params->castTo<ManagedEpetraMatrixParameters>().getEpetraColMap()  ,
                          params->castTo<ManagedEpetraMatrixParameters>().entryList() ) ,
           ManagedMatrix ( params ) ,
-          d_pParameters ( params )
+          d_pParameters ( boost::static_pointer_cast<ManagedEpetraMatrixParameters>(params) )
 {
 }
 
@@ -358,14 +358,14 @@ void ManagedEpetraMatrix::setDiagonal ( const Vector::shared_ptr &in )
 
 
 void ManagedEpetraMatrix::getRowByGlobalID ( int row , std::vector<unsigned int> &cols , std::vector<double> &values ) const
-{
-    int firstRow = d_pParameters->castTo<ManagedEpetraMatrixParameters>().firstRow();
-    int numRows = d_pParameters->castTo<ManagedEpetraMatrixParameters>().getLocalSize();
+{   
+    int firstRow = d_pParameters->firstRow();
+    int numRows = d_pParameters->getLocalSize();
     AMP_ASSERT ( row >= firstRow );
     AMP_ASSERT ( row < firstRow + numRows );
 
-    int localRow = row - d_pParameters->castTo<ManagedEpetraMatrixParameters>().firstRow();
-    int numCols = d_pParameters->castTo<ManagedEpetraMatrixParameters>().entriesInRow ( localRow );
+    int localRow = row - d_pParameters->firstRow();
+    int numCols = d_pParameters->entriesInRow ( localRow );
     cols.resize ( numCols );
     values.resize ( numCols );
 

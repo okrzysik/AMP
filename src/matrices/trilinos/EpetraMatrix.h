@@ -36,7 +36,7 @@ namespace LinearAlgebra {
     private:
       EpetraMatrix();
       EpetraMatrix ( const EpetraMatrix &rhs );
-      EpetraMatrix( ParametersPtr );
+      EpetraMatrix( MatrixParameters::shared_ptr );
 
     protected:
       /** \brief Bare pointer to an Epetra_CrsMatrix

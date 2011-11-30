@@ -70,7 +70,7 @@ namespace LinearAlgebra {
   inline
   ManagedEpetraMatrix::ManagedEpetraMatrix ( Epetra_CrsMatrix *m , bool dele ) 
      : EpetraMatrix ( m , dele ) 
-     , ManagedMatrix ( ParametersPtr () ) 
+     , ManagedMatrix ( MatrixParameters::shared_ptr() ) 
   {
   }
 

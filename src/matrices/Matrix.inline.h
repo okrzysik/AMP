@@ -20,7 +20,7 @@ namespace LinearAlgebra {
   }
 
   inline
-  Matrix :: Matrix ( ParametersPtr ) 
+  Matrix :: Matrix ( MatrixParameters::shared_ptr ) 
   {
   }
 

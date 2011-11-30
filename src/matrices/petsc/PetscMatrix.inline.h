@@ -6,7 +6,7 @@ namespace LinearAlgebra {
   }
 
   inline
-  PetscMatrix::PetscMatrix( ParametersPtr params ) 
+  PetscMatrix::PetscMatrix( MatrixParameters::shared_ptr params ) 
     : Matrix ( params ) 
   {
   }

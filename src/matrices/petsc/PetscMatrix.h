@@ -85,7 +85,7 @@ namespace LinearAlgebra {
       /** \brief Create a PetscMatrix from a set of parameters
         * \param[in] params  Description of the PetscMatrix
         */
-      PetscMatrix( ParametersPtr params );
+      PetscMatrix( MatrixParameters::shared_ptr params );
 
       /** \brief  Destructor
         */

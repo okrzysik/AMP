@@ -40,7 +40,7 @@ std::type_info::* -- 0
 std::operator* -- 0
 void std::swap<* -- 0
 *std::__copy_move_* -- 0
-#*std::copy*;*std::__copy*;*std::uninitialized_copy*;*std::__uninitialized_copy* -- 0
+*std::copy*;*std::__copy*;*std::uninitialized_copy*;*std::__uninitialized_copy* -- 0
 #*bool__gnu_debug::__valid_range* -- 0
 AutoPtr<*>::operator*;AutoPtr<*>::release*;AutoPtr<*>::~AutoPtr*;std::_Identity<*>::operator -- 0
 bool __gnu_debug::__valid_range* -- 0

@@ -120,7 +120,7 @@ namespace LinearAlgebra {
     MatShellSetOperation ( d_Mat , MATOP_SCALE , (void(*)(void)) _AMP_Scale );
   }
 
-  ManagedPetscMatrix::ManagedPetscMatrix ( ParametersPtr params )
+  ManagedPetscMatrix::ManagedPetscMatrix ( MatrixParameters::shared_ptr params )
     : PetscMatrix ( params )
     , ManagedEpetraMatrix ( params )
   {
@@ -156,7 +156,7 @@ namespace LinearAlgebra {
       params->addMapping ( i , global_start );
       i++;
     }
-    Matrix::shared_ptr  ret_val ( new ManagedPetscMatrix ( ParametersPtr ( params ) ) );
+    Matrix::shared_ptr  ret_val ( new ManagedPetscMatrix( MatrixParameters::shared_ptr( params ) ) );
     return ret_val;
   }
 

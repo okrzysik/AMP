@@ -272,9 +272,12 @@ AMP::LinearAlgebra::Matrix::shared_ptr simpleDOFManager::createMatrix(
         for (size_t i=0; i<ids.size(); i++) {
             int globalRowID = ids[i];
             int localRowID = globalRowID - resultDOF->beginDOF();
+            params->addMapping( localRowID, globalRowID );
             params->setEntriesInRow( localRowID, nnz );
-            params->addColumns ( nnz, columns );
         }
+        // Add the columns
+        params->addColumns( nnz, columns );
+        // Increment the iterator (pre-increment for speed)
         ++cur_elem;
     }
 

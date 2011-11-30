@@ -23,7 +23,7 @@ namespace LinearAlgebra {
       ManagedMatrix ();
 
     public:
-      ManagedMatrix ( ParametersPtr p );
+      ManagedMatrix ( MatrixParameters::shared_ptr p );
 
       /** \brief  Create values in a matrix
         * \param[in]  num_rows  number of rows in values

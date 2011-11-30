@@ -174,7 +174,7 @@ namespace LinearAlgebra {
     protected:
       /** \brief  Parameters used to construct the matrix
         */
-      ParametersPtr         d_pParameters;
+      boost::shared_ptr<ManagedEpetraMatrixParameters>         d_pParameters;
       
       /** \brief  Unimplemented constructor
         */
@@ -198,7 +198,7 @@ namespace LinearAlgebra {
       /** \brief Constructor
         * \param[in] p  The description of the matrix
         */
-      ManagedEpetraMatrix( ParametersPtr p );
+      ManagedEpetraMatrix( MatrixParameters::shared_ptr p );
 
       /** \brief Constructor from Epetra_CrsMatrix
         * \param[in]  m  Matrix to wrap

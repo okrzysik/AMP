@@ -35,12 +35,8 @@ namespace LinearAlgebra {
   class Matrix : public Castable 
   {
     public:
-      /** \brief Convenience typedef
-        */
+      //! Convenience typedef
       typedef  boost::shared_ptr<Matrix>      shared_ptr;
-      /** \brief Convenience typedef
-        */
-      typedef  MatrixParameters::shared_ptr   ParametersPtr;
 
     protected:
       /** \brief Unimplemented constructor
@@ -63,7 +59,7 @@ namespace LinearAlgebra {
       /** \brief Constructor
         * \param[in] params  Description of the matrix
         */
-      Matrix( ParametersPtr params );
+      Matrix( MatrixParameters::shared_ptr  params );
 
       /** \brief Destructor
         */
