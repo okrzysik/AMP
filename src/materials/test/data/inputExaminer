@@ -1,11 +1,7 @@
 Material = "Ox_MSRZC_09"
 Property = "FickCoefficient"
-NumberOfTemperatures = 5
-LowTemperature = 300.
-HighTemperature = 1390.
-NumberOfConcentrations = 5
-LowConcentration = 0.0
-HighConcentration = 0.2
-NumberOfBurnups = 1
-LowBurnup  = 0.0
-HighBurnup = 1000.
+Count_temperature = 5
+Low_temperature = 300.
+High_temperature = 1390.
+Grid_concentration = .01, .06, .11, .16
+Format = "Mathematica"

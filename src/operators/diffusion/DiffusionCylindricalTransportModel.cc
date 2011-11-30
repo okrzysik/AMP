@@ -21,12 +21,14 @@ DiffusionCylindricalTransportModel::
 DiffusionCylindricalTransportModel(const boost::shared_ptr<DiffusionCylindricalTransportModelParameters> params):
 DiffusionTransportTensorModel(params)
 {
+	AMP_INSIST(params->d_db->keyExists("RadiusArgument"), "must specify RadiusArgument for material");
+	d_RadiusArgument = params->d_db->getString("RadiusArgument");
 }
 
 void
 DiffusionCylindricalTransportModel::
 getTensorTransport(
-	std::vector< std::vector< std::vector<double> > >& result,
+	std::vector< std::vector< boost::shared_ptr<std::vector<double> > > >& result,
 	std::map<std::string, boost::shared_ptr<std::vector<double> > >& args,
     const std::vector<Point>& coordinates)
 {
@@ -50,15 +52,19 @@ getTensorTransport(
 
 	// evaluate material property as a function of radius
 	// first fill in radius array
-	std::vector<double> radialCoefficient(result.size());
-	if (args.find("radius") != args.end()) {
-		std::vector<double> &radius(*args["radius"]);
-		for (size_t k=0; k<radius.size(); k++) {
-			double x = coordinates[k](0);
-			double y = coordinates[k](1);
-			double r = sqrt(x*x+y*y);
-			radius[k] = r;
-		}
+	std::vector<double> radialCoefficient(coordinates.size());
+	if (args.find(d_RadiusArgument) != args.end()) {
+		AMP_INSIST(args[d_RadiusArgument]->size() == coordinates.size(), "radial size mismatch");
+	} else {
+		args.insert(std::make_pair(d_RadiusArgument,
+				boost::shared_ptr<std::vector<double> >(new std::vector<double>(coordinates.size()))));
+	}
+	std::vector<double> &radius(*args[d_RadiusArgument]);
+	for (size_t k=0; k<radius.size(); k++) {
+		double x = coordinates[k](0);
+		double y = coordinates[k](1);
+		double r = sqrt(x*x+y*y);
+		radius[k] = r;
 	}
 	d_property->evalv(radialCoefficient, args);
 
@@ -79,24 +85,25 @@ getTensorTransport(
 	}
 
 	// form angle-dependent tensor factor
-	AMP_ASSERT(coordinates.size() == result.size());
-	for (size_t k=0; k<coordinates.size(); k++) {
-		for (size_t i=0; i<3; i++) for (size_t j=0; j<3; j++) {
-			result[k][i][j] = 0.;
+	for (size_t i=0; i<3; i++) {
+		AMP_INSIST(result.size() == 3, "result tensor must be 3x3");
+		for (size_t j=0; j<3; j++) {
+			AMP_INSIST(result[i].size() == 3, "result tensor must be 3x3");
+			AMP_INSIST(result[i][j]->size() == coordinates.size(),
+					"result tensor components must be same size as coordinates");
+			if (i==2 or j==2) for (size_t k=0; k<coordinates.size(); k++) (*result[i][j])[k] = 0.;
 		}
+	}
+	for (size_t k=0; k<coordinates.size(); k++) {
 		double x = coordinates[k](0);
 		double y = coordinates[k](1);
 		double r2 = x*x+y*y;
-		result[k][0][0] = x*x/r2;
-		result[k][0][1] = x*y/r2;
-		result[k][1][0]	= x*y/r2;
-		result[k][1][1] = y*y/r2;
-		for (size_t i=0; i<2; i++) for (size_t j=0; j<2; j++) {
-			result[k][i][j] *= radialCoefficient[k];
-		}
+		(*result[0][0])[k] = radialCoefficient[k]* x*x/r2;
+		(*result[0][1])[k] = radialCoefficient[k]* x*y/r2;
+		(*result[1][0])[k] = radialCoefficient[k]* x*y/r2;
+		(*result[1][1])[k] = radialCoefficient[k]* y*y/r2;
 	}
 }
-
 
 }
 }

@@ -2,6 +2,7 @@
 #define included_AMP_DiffusionTransportTensorModel
 
 #include "operators/diffusion/DiffusionTransportModel.h"
+#include "materials/TensorProperty.h"
 #include "utils/Utilities.h"
 
 namespace AMP {
@@ -22,6 +23,9 @@ public:
     virtual void getTensorTransport(std::vector< std::vector< boost::shared_ptr<std::vector<double> > > >& result,
              std::map<std::string, boost::shared_ptr<std::vector<double> > >& args,
              const std::vector<Point>& Coordinates=d_DummyCoords);
+
+private:
+    boost::shared_ptr<AMP::Materials::TensorProperty<double> > d_tensorProperty; /// tensor property pointer
 };
 
 }

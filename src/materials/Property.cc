@@ -7,6 +7,7 @@
 
 #include "Property.h"
 #include "utils/Utilities.h"
+#include "vectors/Vector.h"
 
 #include <algorithm>
 
@@ -48,39 +49,7 @@ const std::map< std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> >& ar
 }
 
 template<>
-void Property<double>::evalv(std::vector<boost::shared_ptr<AMP::LinearAlgebra::Vector> >& r,
-const std::map< std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> >& args)
-{
-	AMP_ASSERT(in_range(args));
-	evalvActualVector(r, args);
-}
-
-template<>
-void Property<double>::evalv(std::vector< std::vector< boost::shared_ptr<AMP::LinearAlgebra::Vector> > >& r,
-const std::map< std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> >& args)
-{
-	AMP_ASSERT(in_range(args));
-	evalvActualTensor(r, args);
-}
-
-template<>
 void Property<double>::evalv(boost::shared_ptr<AMP::LinearAlgebra::Vector>& r,
-const boost::shared_ptr<AMP::LinearAlgebra::MultiVector>& args)
-{
-	std::map<std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> > mapargs = make_map(args);
-	evalv(r, mapargs);
-}
-
-template<>
-void Property<double>::evalv(std::vector<boost::shared_ptr<AMP::LinearAlgebra::Vector> >& r,
-const boost::shared_ptr<AMP::LinearAlgebra::MultiVector>& args)
-{
-	std::map<std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> > mapargs = make_map(args);
-	evalv(r, mapargs);
-}
-
-template<>
-void Property<double>::evalv(std::vector< std::vector< boost::shared_ptr<AMP::LinearAlgebra::Vector> > >& r,
 const boost::shared_ptr<AMP::LinearAlgebra::MultiVector>& args)
 {
 	std::map<std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> > mapargs = make_map(args);

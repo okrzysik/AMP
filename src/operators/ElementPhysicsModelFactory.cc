@@ -19,6 +19,9 @@
 // diffusion transport tensor model
 #include "DiffusionTransportTensorModel.h"
 
+// diffusion transport cylindrical model
+#include "DiffusionCylindricalTransportModel.h"
+
 // Pellet Contact Conductance model
 #include "PelletContactConductanceModel.h"
 
@@ -85,6 +88,10 @@ ElementPhysicsModelFactory::createElementPhysicsModel(boost::shared_ptr<Database
     else if(name=="DiffusionTransportTensorModel")
       {
         retElementPhysicsModel.reset(new DiffusionTransportTensorModel(params));
+      }
+    else if(name=="DiffusionCylindricalTransportModel")
+      {
+        retElementPhysicsModel.reset(new DiffusionCylindricalTransportModel(params));
       }
     else if(name=="FlowTransportModel")
       {

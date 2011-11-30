@@ -81,7 +81,9 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName)
   std::cout.flush();
 
   // set up defaults for materials arguments and create transport model
-  boost::shared_ptr<AMP::Database> transportModel_db = input_db->getDatabase("DiffusionTransportModel");
+  boost::shared_ptr<AMP::Database> transportModel_db;
+  if (input_db->keyExists("DiffusionTransportModel"))
+	  transportModel_db = input_db->getDatabase("DiffusionTransportModel");
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
           AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
   boost::shared_ptr<AMP::Operator::DiffusionTransportModel> transportModel =
@@ -272,16 +274,18 @@ int main(int argc, char *argv[])
 
     AMP::UnitTest ut;
 
-  const int NUMFILES=12;
+  const int NUMFILES=14;
   std::string files[NUMFILES] = {
-        "Diffusion-TUI-Thermal-1", "Diffusion-TUI-Fick-1", "Diffusion-TUI-Soret-1",
+      "Diffusion-CylindricalFick-1", "Diffusion-TUI-Thermal-1",
+      "Diffusion-TUI-Fick-1", "Diffusion-TUI-Soret-1",
       "Diffusion-UO2MSRZC09-Thermal-1", "Diffusion-UO2MSRZC09-Fick-1", "Diffusion-UO2MSRZC09-Soret-1",
       "Diffusion-TUI-Thermal-ActiveTemperatureAndConcentration-1",
       "Diffusion-TUI-Fick-ActiveTemperatureAndConcentration-1",
       "Diffusion-TUI-Soret-ActiveTemperatureAndConcentration-1",
       "Diffusion-UO2MSRZC09-Thermal-ActiveTemperatureAndConcentration-1",
       "Diffusion-UO2MSRZC09-Fick-ActiveTemperatureAndConcentration-1",
-      "Diffusion-UO2MSRZC09-Soret-ActiveTemperatureAndConcentration-1"
+      "Diffusion-UO2MSRZC09-Soret-ActiveTemperatureAndConcentration-1",
+      "Diffusion-TUI-TensorFick-1"
   };
 
     try {

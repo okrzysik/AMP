@@ -371,20 +371,21 @@ bool DiffusionNonlinearFEOperator::isValidInput(AMP::LinearAlgebra::Vector::shar
             }
         }
     }
-    if(nnames>0) AMP_INSIST(found, "internal issue: goofy material argument names");
 
-    AMP::LinearAlgebra::Vector::shared_ptr uinp = u->subsetVectorForVariable(d_inpVariables->getVariable(d_PrincipalVariable));
-
-    size_t nvals = 0, nit=0;
-    for (AMP::LinearAlgebra::Vector::iterator val = uinp->begin(); val != uinp->end(); val++) {
-        nvals++;
+    bool result = true;
+    if (found) {
+		AMP::LinearAlgebra::Vector::shared_ptr uinp = u->subsetVectorForVariable(d_inpVariables->getVariable(d_PrincipalVariable));
+		size_t nvals = 0, nit=0;
+		for (AMP::LinearAlgebra::Vector::iterator val = uinp->begin(); val != uinp->end(); val++) {
+			nvals++;
+		}
+		std::vector<double> vals(nvals);
+		for (AMP::LinearAlgebra::Vector::iterator val = uinp->begin(); val != uinp->end(); val++) {
+			vals[nit] = *val;
+			nit++;
+		}
+		result = property->in_range(argname, vals);
     }
-    std::vector<double> vals(nvals);
-    for (AMP::LinearAlgebra::Vector::iterator val = uinp->begin(); val != uinp->end(); val++) {
-        vals[nit] = *val;
-        nit++;
-    }
-    bool result = property->in_range(argname, vals);
 
     return result;
 }

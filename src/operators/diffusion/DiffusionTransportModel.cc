@@ -6,6 +6,7 @@
  */
 
 #include "DiffusionTransportModel.h"
+#include "DiffusionTransportTensorModel.h"
 #include "utils/Database.h"
 #include "utils/Utilities.h"
 #include <cmath>
@@ -32,7 +33,7 @@ DiffusionTransportModel::DiffusionTransportModel(
     d_property = d_material->property(propname);
 
     // load and check defaults
-    // initially set them to the minimum of the range
+    // initially set them to the minimum of the range plus a bit
     d_defaults.resize(d_property->get_number_arguments());
     std::vector<std::vector<double> > ranges = d_property->get_arg_ranges();
     for (size_t i=0; i<d_defaults.size(); ++i) { d_defaults[i] = ranges[i][0]*(1.0000001);}
@@ -58,6 +59,7 @@ DiffusionTransportModel::DiffusionTransportModel(
     }
     d_property->set_defaults(d_defaults);
 
+    // process bilog scaling details
     d_UseBilogScaling = params->d_db->getBoolWithDefault("UseBilogScaling", false);
     if (d_UseBilogScaling) {
         AMP_INSIST(params->d_db->keyExists("BilogVariable"), "must specify BilogVariable");
@@ -70,12 +72,32 @@ DiffusionTransportModel::DiffusionTransportModel(
         d_BilogEpsilonRangeLimit = params->d_db->getDoubleWithDefault("BilogEpsilonRangeLimit", 1.0e-06);
     }
 
+    // for tensor properties, set or change dimension
+    if (d_property->isTensor()) {
+    	boost::shared_ptr<AMP::Materials::TensorProperty<double> > tensprop =
+    			boost::dynamic_pointer_cast<AMP::Materials::TensorProperty<double> >(d_property);
+    	if (tensprop->variable_dimensions()) {
+			if (params->d_db->keyExists("Dimensions")) {
+				std::vector<int> dims =  params->d_db->getIntegerArray("Dimensions");
+				AMP_INSIST(dims.size() == 2, "only two dimensions allowed for tensor property");
+				std::vector<size_t> dims2(dims.size());
+				dims2[0] = dims[0]; dims2[1] = dims[1];
+				tensprop->set_dimensions(dims2);
+			}
+    	}
+    }
+
+    // set property parameters
     if (params->d_db->keyExists("Parameters")) {
         params->d_db->getArray("Parameters", d_MaterialParameters);
         size_t nparams = d_MaterialParameters.size();
         size_t ndefparams = d_property->get_parameters().size();
-        AMP_INSIST(nparams == ndefparams, "attempted to set incorrect number of parameters for this property");
-        d_property->set_parameters(&d_MaterialParameters[0], d_MaterialParameters.size());
+        if (d_property->variable_number_parameters()) {
+        	d_property->set_parameters_and_number(&d_MaterialParameters[0], d_MaterialParameters.size());
+        } else {
+        	AMP_INSIST(nparams == ndefparams, "attempted to set incorrect number of parameters for this property");
+        	d_property->set_parameters(&d_MaterialParameters[0], d_MaterialParameters.size());
+        }
     }
 }
 

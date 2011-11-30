@@ -22,6 +22,8 @@ using std::map;
 
 #include "materials/Material.h"
 #include "materials/Property.h"
+#include "materials/VectorProperty.h"
+#include "materials/TensorProperty.h"
 #include "utils/Factory.h"
 #include "utils/Utilities.h"
 #include "utils/AMPManager.h"
@@ -40,15 +42,19 @@ using std::map;
 
 static const size_t NSUCCESS = 12;
 static const size_t NARGEVAL = 2;
+static const size_t NVECTOR = 6;
+static const size_t NTENSOR = 6;
 
 class PropTestResult {
 public:
 	PropTestResult() :
-		range(false), params(false), unknown(false), name("none") {
+		range(false), params(false), unknown(false), name("none"), isVector(false), isTensor(false) {
 		for (size_t i = 0; i < NSUCCESS; i++)
 			success[i] = false;
 		for (size_t i = 0; i < NARGEVAL; i++)
 			nargeval[i] = false;
+		for (size_t i = 0; i < NVECTOR; i++)
+			vector[i] = false;
 	}
 	bool range;
 	bool success[NSUCCESS];
@@ -56,6 +62,10 @@ public:
 	bool nargeval[NARGEVAL];
 	bool unknown;
 	string name;
+	bool vector[NVECTOR];
+	bool isVector;
+	bool tensor[NTENSOR];
+	bool isTensor;
 };
 
 class MatTestResult {
@@ -110,12 +120,40 @@ MatTestResult testMaterial(string &name) {
 
 		string propname = proplist[type];
 		results.propResults[type].name = propname;
-		vector<string> argnames(mat->property(propname)->get_arguments());
-		size_t nargs = mat->property(propname)->get_number_arguments();
+		AMP::Materials::PropertyPtr property = mat->property(propname);
+
+		// test parameter get and set
+		try {
+			valarray<double> params = property->get_parameters();
+			if (params.size() > 0) {
+				params *= 10.0;
+				property->set_parameters(&params[0], params.size());
+				params /= 10.0;
+				property->set_parameters(&params[0], params.size());
+				valarray<double> nparams = property->get_parameters();
+				bool good = abs(nparams - params).max() <= 1.e-10
+						* abs(params).max();
+				if (good)
+					results.propResults[type].params = true;
+				else
+					results.propResults[type].params = false;
+			} else {
+				results.propResults[type].params = true;
+			}
+		} catch (std::exception &) {
+			results.propResults[type].params = false;
+		} catch (...) {
+			results.propResults[type].params = false;
+			results.propResults[type].unknown = true;
+		}
+
+		// get argument info
+		vector<string> argnames(property->get_arguments());
+		size_t nargs = property->get_number_arguments();
 
 		// get min and max arg values
 		vector<vector<double> > ranges =
-				mat->property(propname)->get_arg_ranges();
+				property->get_arg_ranges();
 		const size_t npoints = 10;
 		vector<vector<double> > toosmall(nargs, vector<double> (npoints));
 		vector<vector<double> > justright(nargs, vector<double> (npoints));
@@ -178,8 +216,10 @@ MatTestResult testMaterial(string &name) {
 		// set up AMP::Vector arguments to evalv
 		AMP::LinearAlgebra::Variable::shared_ptr valueVar(new AMP::LinearAlgebra::Variable("value"));
 		AMP::LinearAlgebra::Vector::shared_ptr valueVec = AMP::LinearAlgebra::SimpleVector::create(npoints, valueVar);
+		valueVec->setCommunicationList(commlist);
 		AMP::LinearAlgebra::Variable::shared_ptr nominalVar(new AMP::LinearAlgebra::Variable("nominal"));
 		AMP::LinearAlgebra::Vector::shared_ptr nominalVec = AMP::LinearAlgebra::SimpleVector::create(npoints, nominalVar);
+		nominalVec->setCommunicationList(commlist);
 		map<string, AMP::LinearAlgebra::Vector::shared_ptr > argsVec;
 		for (size_t i = 0; i < nargs; i++) {
 			argsVec.insert(std::make_pair(argnames[i], justrightVec[i]));
@@ -211,260 +251,26 @@ MatTestResult testMaterial(string &name) {
 		bool good = true;
 		good = good and nargs == argnames.size();
 		for (size_t i = 0; i < argnames.size(); i++) {
-			range = mat->property(propname)->get_arg_range(argnames[i]);
+			range = property->get_arg_range(argnames[i]);
 			good = good and range[0] <= range[1];
 			good = good and range[0] == ranges[i][0] and range[1] == ranges[i][1];
-			good = good and     mat->property(propname)->in_range(argnames[i], justright[i]);
-			good = good and not mat->property(propname)->in_range(argnames[i], toosmall[i]);
-			good = good and not mat->property(propname)->in_range(argnames[i], toobig[i]);
-			good = good and     mat->property(propname)->in_range(argnames[i], justright[i][0]);
-			good = good and not mat->property(propname)->in_range(argnames[i], toosmall[i][0]);
-			good = good and not mat->property(propname)->in_range(argnames[i], toobig[i][0]);
+			good = good and     property->in_range(argnames[i], justright[i]);
+			good = good and not property->in_range(argnames[i], toosmall[i]);
+			good = good and not property->in_range(argnames[i], toobig[i]);
+			good = good and     property->in_range(argnames[i], justright[i][0]);
+			good = good and not property->in_range(argnames[i], toosmall[i][0]);
+			good = good and not property->in_range(argnames[i], toobig[i][0]);
 
-			good = good and     mat->property(propname)->in_range(argnames[i], *justrightVec[i]);
-			good = good and not mat->property(propname)->in_range(argnames[i], *toosmallVec[i]);
-			good = good and not mat->property(propname)->in_range(argnames[i], *toobigVec[i]);
+			good = good and     property->in_range(argnames[i], *justrightVec[i]);
+			good = good and not property->in_range(argnames[i], *toosmallVec[i]);
+			good = good and not property->in_range(argnames[i], *toobigVec[i]);
 		}
 		if (good)
 			results.propResults[type].range = true;
 
-		// all in range
-		try {
-			mat->property(propname)->evalv(value, args);
-			nominal = value;
-			results.propResults[type].success[0] = true;
-		} catch (std::exception &) {
-			results.propResults[type].success[0] = false;
-		} catch (...) {
-			results.propResults[type].success[0] = false;
-			results.propResults[type].unknown = true;
-		}
-
-		// first out of range low
-		if(args.size()>0) {
-			try {
-				args.find(argnames[0])->second->operator[](5) = toosmall[0][5];
-				mat->property(propname)->evalv(value, args);
-				args.find(argnames[0])->second->operator[](5) = justright[0][5];
-				results.propResults[type].success[1] = false;
-			} catch (std::exception &) {
-				results.propResults[type].success[1] = true;
-				args.find(argnames[0])->second->operator[](5) = justright[0][5];
-			} catch (...) {
-				results.propResults[type].success[1] = false;
-				results.propResults[type].unknown = true;
-			}
-		} else {
-			results.propResults[type].success[1] = true;
-		}
-
-		// first out of range hi
-		if(args.size() >0) {
-			try {
-				args.find(argnames[0])->second->operator[](5) = toobig[0][5];
-				mat->property(propname)->evalv(value, args);
-				args.find(argnames[0])->second->operator[](5) = justright[0][5];
-				results.propResults[type].success[2] = false;
-			} catch (std::exception &) {
-				results.propResults[type].success[2] = true;
-				args.find(argnames[0])->second->operator[](5) = justright[0][5];
-			} catch (...) {
-				results.propResults[type].success[2] = false;
-			results.propResults[type].unknown = true;
-			}
-		} else {
-			results.propResults[type].success[2] = true;
-		}
-
-		// all in range, AMP::Vector
-		try {
-			mat->property(propname)->evalv(valueVec, argsVec);
-			nominalVec->copyVector(valueVec);
-			results.propResults[type].success[4] = true;
-		} catch (std::exception &) {
-			results.propResults[type].success[4] = false;
-		} catch (...) {
-			results.propResults[type].success[4] = false;
-			results.propResults[type].unknown = true;
-		}
-
-		// first out of range low, AMP::Vector
-		if( nargs>0 ) {
-			try {
-				argsVec.find(argnames[0])->second->setValueByLocalID(5,toosmall[0][5]);
-				mat->property(propname)->evalv(valueVec, argsVec);
-				argsVec.find(argnames[0])->second->setValueByLocalID(5,justright[0][5]);
-				results.propResults[type].success[5] = false;
-			} catch (std::exception &) {
-				results.propResults[type].success[5] = true;
-				argsVec.find(argnames[0])->second->setValueByLocalID(5,justright[0][5]);
-			} catch (...) {
-				results.propResults[type].success[5] = false;
-				results.propResults[type].unknown = true;
-			}
-		} else {
-			results.propResults[type].success[5] = true;
-		}
-
-		// first out of range hi, AMP::Vector
-		if( nargs>0 ) {
-			try {
-				argsVec.find(argnames[0])->second->setValueByLocalID(5,toobig[0][5]);
-				mat->property(propname)->evalv(valueVec, argsVec);
-				argsVec.find(argnames[0])->second->setValueByLocalID(5,justright[0][5]);
-				results.propResults[type].success[6] = false;
-			} catch (std::exception &) {
-				results.propResults[type].success[6] = true;
-				argsVec.find(argnames[0])->second->setValueByLocalID(5,justright[0][5]);
-			} catch (...) {
-				results.propResults[type].success[6] = false;
-				results.propResults[type].unknown = true;
-			}
-		} else {
-			results.propResults[type].success[6] = true;
-		}
-
-		// test make_map, first without setting a translator or setting an empty translator
-		std::map<std::string, AMP::LinearAlgebra::Vector::shared_ptr> testMap;
-		std::map<std::string, std::string> currentXlator = mat->property(propname)->get_translator();
-		if (not currentXlator.empty()) {
-			currentXlator.clear();
-			mat->property(propname)->set_translator(currentXlator);
-		}
-		bool xlateGood = false;
-		if ( nargs>0 ) {
-			try {
-				testMap = mat->property(propname)->make_map(argsMultiVec);
-				results.propResults[type].success[7] = false;
-			} catch (std::exception &) {
-				xlateGood = true;
-			} catch (...) {
-				results.propResults[type].success[7] = false;
-				results.propResults[type].unknown = true;
-			}
-		} else {
-			xlateGood = true;
-		}
-		mat->property(propname)->set_translator(xlator);
-		std::map<std::string, std::string> testXlatorGet = mat->property(propname)->get_translator();
-		if (testXlatorGet == xlator and xlateGood) {
-			results.propResults[type].success[7] = true;
-		}
-
-		// test make_map, now with a translator
-		try {
-			testMap = mat->property(propname)->make_map(argsMultiVec);
-			bool good = true;
-			for (size_t i=0; i<nargs; i++) {
-				map<std::string, AMP::LinearAlgebra::Vector::shared_ptr>::iterator vec1It = testMap.find(argnames[i]);
-				map<std::string, AMP::LinearAlgebra::Vector::shared_ptr>::iterator vec2It = argsVec.find(argnames[i]);
-				bool goodIt=true;
-				if (vec1It == testMap.end()) {
-					goodIt = false; // make_map missed an argument
-				}
-				if (vec2It == argsVec.end()) {
-					AMP_INSIST(false, "argsVec composed incorrectly");
-				}
-				if (goodIt) {
-					good = good and vec1It->second == vec2It->second;
-				}
-			}
-			if (good) results.propResults[type].success[8] = true;
-			else results.propResults[type].success[8] = false;
-		} catch (std::exception &) {
-			results.propResults[type].success[8] = false;
-		} catch (...) {
-			results.propResults[type].success[8] = false;
-			results.propResults[type].unknown = true;
-		}
-
-		// all in range, AMP::MultiVector
-		try {
-			mat->property(propname)->evalv(valueVec, argsMultiVec);
-			nominalMultiVec->copyVector(valueVec);
-			results.propResults[type].success[9] = true;
-		} catch (std::exception &) {
-			results.propResults[type].success[9] = false;
-		} catch (...) {
-			results.propResults[type].success[9] = false;
-			results.propResults[type].unknown = true;
-		}
-
-		// first out of range low, AMP::MultiVector
-		if( nargs>0 ) {
-			try {
-				argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,toosmall[0][5]);
-				mat->property(propname)->evalv(valueVec, argsMultiVec);
-				argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,justright[0][5]);
-				results.propResults[type].success[10] = false;
-			} catch (std::exception &) {
-				results.propResults[type].success[10] = true;
-				argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,justright[0][5]);
-			} catch (...) {
-				results.propResults[type].success[10] = false;
-				results.propResults[type].unknown = true;
-			}
-		} else {
-			results.propResults[type].success[10] = true;
-		}
-
-		// first out of range hi, AMP::MultiVector
-		if( nargs>0 ) {
-			try {
-				argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,toobig[0][5]);
-				mat->property(propname)->evalv(valueVec, argsMultiVec);
-				argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,justright[0][5]);
-				results.propResults[type].success[11] = false;
-			} catch (std::exception &) {
-				results.propResults[type].success[11] = true;
-				argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,justright[0][5]);
-			} catch (...) {
-				results.propResults[type].success[11] = false;
-				results.propResults[type].unknown = true;
-			}
-		} else {
-			results.propResults[type].success[11] = true;
-		}
-
-		// check vector, Vector, MultiVector all agree
-		good=true;
-		for (size_t i=0; i<npoints; i++) {
-			double vstd = nominal[i];
-			double vVec = nominalVec->getValueByLocalID(i);
-			double vMultiVec = nominalMultiVec->getValueByLocalID(i);
-			good = good and (vstd == vVec and vVec == vMultiVec);
-		}
-		if (good) results.propResults[type].success[3] = true;
-
-		// test parameter get and set
-		try {
-			PropertyPtr prop = mat->property(propname);
-			valarray<double> params = prop->get_parameters();
-			if (params.size() > 0) {
-				params *= 10.0;
-				prop->set_parameters(&params[0], params.size());
-				params /= 10.0;
-				prop->set_parameters(&params[0], params.size());
-				valarray<double> nparams = prop->get_parameters();
-				bool good = abs(nparams - params).max() <= 1.e-10
-						* abs(params).max();
-				if (good)
-					results.propResults[type].params = true;
-				else
-					results.propResults[type].params = false;
-			} else {
-				results.propResults[type].params = true;
-			}
-		} catch (std::exception &) {
-			results.propResults[type].params = false;
-		} catch (...) {
-			results.propResults[type].params = false;
-			results.propResults[type].unknown = true;
-		}
-
 		// test defaults get and set
 		try {
-			PropertyPtr prop = mat->property(propname);
+			PropertyPtr prop = property;
 			vector<double> defin(nargs);
 			for (size_t i = 0; i < nargs; i++)
 				defin[i] = justright[i][0];
@@ -481,22 +287,932 @@ MatTestResult testMaterial(string &name) {
 			results.propResults[type].unknown = true;
 		}
 
-		map<string, boost::shared_ptr<vector<double> > > argsm(args);
-		if( nargs>0 ) {
-			map<string, boost::shared_ptr<vector<double> > >::iterator argend = argsm.end();
-			argend--;
-			argsm.erase(argend);
-		}
+		/////////////////////////////////////////////////////////////////////////////////////////
+		// Scalar Property
+		/////////////////////////////////////////////////////////////////////////////////////////
+		if (property->isScalar()) {
 
-		// check that evalv with fewer than normal number of arguments works
-		try {
-			mat->property(propname)->evalv(value, argsm);
-			results.propResults[type].nargeval[1] = true;
-		} catch (std::exception &) {
-			results.propResults[type].nargeval[1] = false;
-		} catch (...) {
-			results.propResults[type].nargeval[1] = false;
-			results.propResults[type].unknown = true;
+			// all in range, std::vector
+			try {
+				property->evalv(value, args);
+				nominal = value;
+				results.propResults[type].success[0] = true;
+			} catch (std::exception &) {
+				results.propResults[type].success[0] = false;
+			} catch (...) {
+				results.propResults[type].success[0] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// first out of range low, std::vector
+			if(args.size()>0) {
+				try {
+					args.find(argnames[0])->second->operator[](5) = toosmall[0][5];
+					property->evalv(value, args);
+					args.find(argnames[0])->second->operator[](5) = justright[0][5];
+					results.propResults[type].success[1] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[1] = true;
+					args.find(argnames[0])->second->operator[](5) = justright[0][5];
+				} catch (...) {
+					results.propResults[type].success[1] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[1] = true;
+			}
+
+			// first out of range hi, std::vector
+			if(args.size() >0) {
+				try {
+					args.find(argnames[0])->second->operator[](5) = toobig[0][5];
+					property->evalv(value, args);
+					args.find(argnames[0])->second->operator[](5) = justright[0][5];
+					results.propResults[type].success[2] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[2] = true;
+					args.find(argnames[0])->second->operator[](5) = justright[0][5];
+				} catch (...) {
+					results.propResults[type].success[2] = false;
+				results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[2] = true;
+			}
+
+			// all in range, AMP::Vector
+			try {
+				property->evalv(valueVec, argsVec);
+				nominalVec->copyVector(valueVec);
+				results.propResults[type].success[4] = true;
+			} catch (std::exception &) {
+				results.propResults[type].success[4] = false;
+			} catch (...) {
+				results.propResults[type].success[4] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// first out of range low, AMP::Vector
+			if( nargs>0 ) {
+				try {
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,toosmall[0][5]);
+					property->evalv(valueVec, argsVec);
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,justright[0][5]);
+					results.propResults[type].success[5] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[5] = true;
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,justright[0][5]);
+				} catch (...) {
+					results.propResults[type].success[5] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[5] = true;
+			}
+
+			// first out of range hi, AMP::Vector
+			if( nargs>0 ) {
+				try {
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,toobig[0][5]);
+					property->evalv(valueVec, argsVec);
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,justright[0][5]);
+					results.propResults[type].success[6] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[6] = true;
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,justright[0][5]);
+				} catch (...) {
+					results.propResults[type].success[6] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[6] = true;
+			}
+
+			// test make_map, first without setting a translator or setting an empty translator
+			std::map<std::string, AMP::LinearAlgebra::Vector::shared_ptr> testMap;
+			std::map<std::string, std::string> currentXlator = property->get_translator();
+			if (not currentXlator.empty()) {
+				currentXlator.clear();
+				property->set_translator(currentXlator);
+			}
+			bool xlateGood = false;
+			if ( nargs>0 ) {
+				try {
+					testMap = property->make_map(argsMultiVec);
+					results.propResults[type].success[7] = false;
+				} catch (std::exception &) {
+					xlateGood = true;
+				} catch (...) {
+					results.propResults[type].success[7] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				xlateGood = true;
+			}
+			property->set_translator(xlator);
+			std::map<std::string, std::string> testXlatorGet = property->get_translator();
+			if (testXlatorGet == xlator and xlateGood) {
+				results.propResults[type].success[7] = true;
+			}
+
+			// test make_map, now with a translator
+			try {
+				testMap = property->make_map(argsMultiVec);
+				bool good = true;
+				for (size_t i=0; i<nargs; i++) {
+					map<std::string, AMP::LinearAlgebra::Vector::shared_ptr>::iterator vec1It = testMap.find(argnames[i]);
+					map<std::string, AMP::LinearAlgebra::Vector::shared_ptr>::iterator vec2It = argsVec.find(argnames[i]);
+					bool goodIt=true;
+					if (vec1It == testMap.end()) {
+						goodIt = false; // make_map missed an argument
+					}
+					if (vec2It == argsVec.end()) {
+						AMP_INSIST(false, "argsVec composed incorrectly");
+					}
+					if (goodIt) {
+						good = good and vec1It->second == vec2It->second;
+					}
+				}
+				if (good) results.propResults[type].success[8] = true;
+				else results.propResults[type].success[8] = false;
+			} catch (std::exception &) {
+				results.propResults[type].success[8] = false;
+			} catch (...) {
+				results.propResults[type].success[8] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// all in range, AMP::MultiVector
+			try {
+				property->evalv(valueVec, argsMultiVec);
+				nominalMultiVec->copyVector(valueVec);
+				results.propResults[type].success[9] = true;
+			} catch (std::exception &) {
+				results.propResults[type].success[9] = false;
+			} catch (...) {
+				results.propResults[type].success[9] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// first out of range low, AMP::MultiVector
+			if( nargs>0 ) {
+				try {
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,toosmall[0][5]);
+					property->evalv(valueVec, argsMultiVec);
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,justright[0][5]);
+					results.propResults[type].success[10] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[10] = true;
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,justright[0][5]);
+				} catch (...) {
+					results.propResults[type].success[10] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[10] = true;
+			}
+
+			// first out of range hi, AMP::MultiVector
+			if( nargs>0 ) {
+				try {
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,toobig[0][5]);
+					property->evalv(valueVec, argsMultiVec);
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,justright[0][5]);
+					results.propResults[type].success[11] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[11] = true;
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,justright[0][5]);
+				} catch (...) {
+					results.propResults[type].success[11] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[11] = true;
+			}
+
+			// check vector, Vector, MultiVector all agree
+			good=true;
+			if (results.propResults[type].success[0] and
+				results.propResults[type].success[4] and
+				results.propResults[type].success[9])
+			{
+				for (size_t i=0; i<npoints; i++) {
+					double vstd = nominal[i];
+					double vVec = nominalVec->getValueByLocalID(i);
+					double vMultiVec = nominalMultiVec->getValueByLocalID(i);
+					good = good and (vstd == vVec and vVec == vMultiVec);
+				}
+				if (good) results.propResults[type].success[3] = true;
+			} else {
+				results.propResults[type].success[3] = false;
+			}
+
+			// set up reduced argument list
+			map<string, boost::shared_ptr<vector<double> > > argsm(args);
+			if( nargs>0 ) {
+				map<string, boost::shared_ptr<vector<double> > >::iterator argend = argsm.end();
+				argend--;
+				argsm.erase(argend);
+			}
+
+			// check that evalv with fewer than normal number of arguments works
+			if (results.propResults[type].success[0]) {
+				try {
+					property->evalv(value, argsm);
+					results.propResults[type].nargeval[1] = true;
+				} catch (std::exception &) {
+					results.propResults[type].nargeval[1] = false;
+				} catch (...) {
+					results.propResults[type].nargeval[1] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].nargeval[1] = false;
+			}
+
+
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		// Vector Property
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		} else if (property->isVector()) {
+
+			results.propResults[type].isVector = true;
+
+			boost::shared_ptr<AMP::Materials::VectorProperty<double> > vectorProperty =
+					boost::dynamic_pointer_cast<AMP::Materials::VectorProperty<double> >(property);
+
+			// check that scalar nature is not signaled
+			if (vectorProperty->isScalar()) {
+				results.propResults[type].vector[2] = false;
+			} else {
+				results.propResults[type].vector[2] = true;
+			}
+
+			// check scalar evaluator for std::vector disabled
+			try {
+				vectorProperty->evalv(value, args);
+				results.propResults[type].vector[3] = false;
+			} catch (std::exception &) {
+				results.propResults[type].vector[3] = true;
+			} catch (...) {
+				results.propResults[type].vector[3] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// check scalar evaluator for AMP::Vector disabled
+			try {
+				vectorProperty->evalv(valueVec, argsVec);
+				results.propResults[type].vector[4] = false;
+			} catch (std::exception &) {
+				results.propResults[type].vector[4] = true;
+			} catch (...) {
+				results.propResults[type].vector[4] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// test make_map, first without setting a translator or setting an empty translator
+			std::map<std::string, AMP::LinearAlgebra::Vector::shared_ptr> testMap;
+			std::map<std::string, std::string> currentXlator = vectorProperty->get_translator();
+			if (not currentXlator.empty()) {
+				currentXlator.clear();
+				vectorProperty->set_translator(currentXlator);
+			}
+			bool xlateGood = false;
+			if ( nargs>0 ) {
+				try {
+					testMap = vectorProperty->make_map(argsMultiVec);
+					results.propResults[type].success[7] = false;
+				} catch (std::exception &) {
+					xlateGood = true;
+				} catch (...) {
+					results.propResults[type].success[7] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				xlateGood = true;
+			}
+			vectorProperty->set_translator(xlator);
+			std::map<std::string, std::string> testXlatorGet = vectorProperty->get_translator();
+			if (testXlatorGet == xlator and xlateGood) {
+				results.propResults[type].success[7] = true;
+			}
+
+			// test make_map, now with a translator
+			try {
+				testMap = vectorProperty->make_map(argsMultiVec);
+				bool good = true;
+				for (size_t i=0; i<nargs; i++) {
+					map<std::string, AMP::LinearAlgebra::Vector::shared_ptr>::iterator vec1It = testMap.find(argnames[i]);
+					map<std::string, AMP::LinearAlgebra::Vector::shared_ptr>::iterator vec2It = argsVec.find(argnames[i]);
+					bool goodIt=true;
+					if (vec1It == testMap.end()) {
+						goodIt = false; // make_map missed an argument
+					}
+					if (vec2It == argsVec.end()) {
+						AMP_INSIST(false, "argsVec composed incorrectly");
+					}
+					if (goodIt) {
+						good = good and vec1It->second == vec2It->second;
+					}
+				}
+				if (good) results.propResults[type].success[8] = true;
+				else results.propResults[type].success[8] = false;
+			} catch (std::exception &) {
+				results.propResults[type].success[8] = false;
+			} catch (...) {
+				results.propResults[type].success[8] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// check scalar evaluator for AMP::MultiVector disabled
+			try {
+				vectorProperty->evalv(valueVec, argsMultiVec);
+				results.propResults[type].vector[5] = false;
+			} catch (std::exception &) {
+				results.propResults[type].vector[5] = true;
+			} catch (...) {
+				results.propResults[type].vector[5] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// prepare results vector, check for reasonable size info
+			size_t nvec=0;
+			try {
+				nvec = vectorProperty->get_dimension();
+				results.propResults[type].vector[0] = true;
+			} catch (std::exception &) {
+				results.propResults[type].vector[0] = false;
+			} catch (...) {
+				results.propResults[type].vector[0] = false;
+				results.propResults[type].unknown = true;
+			}
+			std::vector<boost::shared_ptr<std::vector<double> > >stdEval(nvec);
+			std::vector<boost::shared_ptr<std::vector<double> > >nominalEval(nvec);
+			for (size_t i=0; i<nvec; i++) {
+				stdEval[i] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(npoints));
+				nominalEval[i] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(npoints));
+			}
+
+			// check that number of components is positive
+			if (results.propResults[type].vector[0] and nvec>0) {
+				results.propResults[type].vector[1] = true;
+			} else {
+				results.propResults[type].vector[1] = false;
+			}
+
+			// all in range, std::vector
+			try {
+				vectorProperty->evalv(stdEval, args);
+				nominalEval= stdEval;
+				results.propResults[type].success[0] = true;
+			} catch (std::exception &) {
+				results.propResults[type].success[0] = false;
+			} catch (...) {
+				results.propResults[type].success[0] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// first out of range low, std::vector
+			if(args.size()>0) {
+				try {
+					args.find(argnames[0])->second->operator[](5) = toosmall[0][5];
+					vectorProperty->evalv(stdEval, args);
+					args.find(argnames[0])->second->operator[](5) = justright[0][5];
+					results.propResults[type].success[1] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[1] = true;
+					args.find(argnames[0])->second->operator[](5) = justright[0][5];
+				} catch (...) {
+					results.propResults[type].success[1] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[1] = true;
+			}
+
+			// first out of range hi, std::vector
+			if(args.size() >0) {
+				try {
+					args.find(argnames[0])->second->operator[](5) = toobig[0][5];
+					vectorProperty->evalv(stdEval, args);
+					args.find(argnames[0])->second->operator[](5) = justright[0][5];
+					results.propResults[type].success[2] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[2] = true;
+					args.find(argnames[0])->second->operator[](5) = justright[0][5];
+				} catch (...) {
+					results.propResults[type].success[2] = false;
+				results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[2] = true;
+			}
+
+			// setup AMP::Vector evalv results
+			std::vector<AMP::LinearAlgebra::Variable::shared_ptr> ampEvalVar(nvec);
+			std::vector<AMP::LinearAlgebra::Vector::shared_ptr> ampEval(nvec);
+			std::vector<AMP::LinearAlgebra::Variable::shared_ptr> nominalAmpEvalVar(nvec);
+			std::vector<AMP::LinearAlgebra::Vector::shared_ptr> nominalAmpEval(nvec);
+			std::vector<AMP::LinearAlgebra::Variable::shared_ptr> nominalMultiEvalVar(nvec);
+			std::vector<AMP::LinearAlgebra::Vector::shared_ptr> nominalMultiEval(nvec);
+			for (size_t i=0; i<nvec; i++) {
+				std::stringstream istr;
+				istr << i;
+				ampEvalVar[i].reset(new AMP::LinearAlgebra::Variable("ampEval"+istr.str()));
+				ampEval[i] = AMP::LinearAlgebra::SimpleVector::create(npoints, ampEvalVar[i]);
+				ampEval[i]->setCommunicationList(commlist);
+				nominalAmpEvalVar[i].reset(new AMP::LinearAlgebra::Variable("nominalAmpEval"+istr.str()));
+				nominalAmpEval[i] = AMP::LinearAlgebra::SimpleVector::create(npoints, nominalAmpEvalVar[i]);
+				nominalAmpEval[i]->setCommunicationList(commlist);
+				nominalMultiEvalVar[i].reset(new AMP::LinearAlgebra::Variable("nominalMultiEval"+istr.str()));
+				nominalMultiEval[i] = AMP::LinearAlgebra::SimpleVector::create(npoints, nominalMultiEvalVar[i]);
+				nominalMultiEval[i]->setCommunicationList(commlist);
+			}
+
+			// all in range, AMP::Vector
+			try {
+				vectorProperty->evalv(ampEval, argsVec);
+				for (size_t i=0; i<nvec; i++) nominalAmpEval[i]->copyVector(ampEval[i]);
+				results.propResults[type].success[4] = true;
+			} catch (std::exception &) {
+				results.propResults[type].success[4] = false;
+			} catch (...) {
+				results.propResults[type].success[4] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// first out of range low, AMP::Vector
+			if( nargs>0 ) {
+				try {
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,toosmall[0][5]);
+					vectorProperty->evalv(ampEval, argsVec);
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,justright[0][5]);
+					results.propResults[type].success[5] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[5] = true;
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,justright[0][5]);
+				} catch (...) {
+					results.propResults[type].success[5] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[5] = true;
+			}
+
+			// first out of range hi, AMP::Vector
+			if( nargs>0 ) {
+				try {
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,toobig[0][5]);
+					vectorProperty->evalv(ampEval, argsVec);
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,justright[0][5]);
+					results.propResults[type].success[6] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[6] = true;
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,justright[0][5]);
+				} catch (...) {
+					results.propResults[type].success[6] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[6] = true;
+			}
+
+			// all in range, AMP::MultiVector
+			try {
+				vectorProperty->evalv(ampEval, argsMultiVec);
+				for (size_t i=0; i<nvec; i++) nominalMultiEval[i]->copyVector(ampEval[i]);
+				results.propResults[type].success[9] = true;
+			} catch (std::exception &) {
+				results.propResults[type].success[9] = false;
+			} catch (...) {
+				results.propResults[type].success[9] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// first out of range low, AMP::MultiVector
+			if( nargs>0 ) {
+				try {
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,toosmall[0][5]);
+					vectorProperty->evalv(ampEval, argsMultiVec);
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,justright[0][5]);
+					results.propResults[type].success[10] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[10] = true;
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,justright[0][5]);
+				} catch (...) {
+					results.propResults[type].success[10] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[10] = true;
+			}
+
+			// first out of range hi, AMP::MultiVector
+			if( nargs>0 ) {
+				try {
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,toobig[0][5]);
+					vectorProperty->evalv(ampEval, argsMultiVec);
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,justright[0][5]);
+					results.propResults[type].success[11] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[11] = true;
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,justright[0][5]);
+				} catch (...) {
+					results.propResults[type].success[11] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[11] = true;
+			}
+
+			// check vector, Vector, MultiVector all agree
+			good=true;
+			if (results.propResults[type].success[0] and
+				results.propResults[type].success[4] and
+				results.propResults[type].success[9])
+			{
+				for (size_t j=0; j<nvec; j++) {
+					for (size_t i=0; i<npoints; i++) {
+						double vstd = (*nominalEval[j])[i];
+						double vVec = nominalAmpEval[j]->getValueByLocalID(i);
+						double vMultiVec = nominalMultiEval[j]->getValueByLocalID(i);
+						good = good and (vstd == vVec and vVec == vMultiVec);
+					}
+				}
+				if (good) results.propResults[type].success[3] = true;
+			} else {
+				results.propResults[type].success[3] = false;
+			}
+
+			// set up reduced argument list
+			map<string, boost::shared_ptr<vector<double> > > argsm(args);
+			if( nargs>0 ) {
+				map<string, boost::shared_ptr<vector<double> > >::iterator argend = argsm.end();
+				argend--;
+				argsm.erase(argend);
+			}
+
+			// check that evalv with fewer than normal number of arguments works
+			if (results.propResults[type].success[0]) {
+				try {
+					vectorProperty->evalv(stdEval, argsm);
+					results.propResults[type].nargeval[1] = true;
+				} catch (std::exception &) {
+					results.propResults[type].nargeval[1] = false;
+				} catch (...) {
+					results.propResults[type].nargeval[1] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].nargeval[1] = false;
+			}
+
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		// Tensor Property
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		} else if (property->isTensor()) {
+
+			results.propResults[type].isTensor = true;
+
+			boost::shared_ptr<AMP::Materials::TensorProperty<double> > tensorProperty =
+					boost::dynamic_pointer_cast<AMP::Materials::TensorProperty<double> >(property);
+
+			// check that scalar nature is not signaled
+			if (tensorProperty->isScalar()) {
+				results.propResults[type].tensor[2] = false;
+			} else {
+				results.propResults[type].tensor[2] = true;
+			}
+
+			// check scalar evaluator for std::vector disabled
+			try {
+				tensorProperty->evalv(value, args);
+				results.propResults[type].tensor[3] = false;
+			} catch (std::exception &) {
+				results.propResults[type].tensor[3] = true;
+			} catch (...) {
+				results.propResults[type].tensor[3] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// check scalar evaluator for AMP::Vector disabled
+			try {
+				tensorProperty->evalv(valueVec, argsVec);
+				results.propResults[type].tensor[4] = false;
+			} catch (std::exception &) {
+				results.propResults[type].tensor[4] = true;
+			} catch (...) {
+				results.propResults[type].tensor[4] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// test make_map, first without setting a translator or setting an empty translator
+			std::map<std::string, AMP::LinearAlgebra::Vector::shared_ptr> testMap;
+			std::map<std::string, std::string> currentXlator = tensorProperty->get_translator();
+			if (not currentXlator.empty()) {
+				currentXlator.clear();
+				tensorProperty->set_translator(currentXlator);
+			}
+			bool xlateGood = false;
+			if ( nargs>0 ) {
+				try {
+					testMap = tensorProperty->make_map(argsMultiVec);
+					results.propResults[type].success[7] = false;
+				} catch (std::exception &) {
+					xlateGood = true;
+				} catch (...) {
+					results.propResults[type].success[7] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				xlateGood = true;
+			}
+			tensorProperty->set_translator(xlator);
+			std::map<std::string, std::string> testXlatorGet = tensorProperty->get_translator();
+			if (testXlatorGet == xlator and xlateGood) {
+				results.propResults[type].success[7] = true;
+			}
+
+			// test make_map, now with a translator
+			try {
+				testMap = tensorProperty->make_map(argsMultiVec);
+				bool good = true;
+				for (size_t i=0; i<nargs; i++) {
+					map<std::string, AMP::LinearAlgebra::Vector::shared_ptr>::iterator vec1It = testMap.find(argnames[i]);
+					map<std::string, AMP::LinearAlgebra::Vector::shared_ptr>::iterator vec2It = argsVec.find(argnames[i]);
+					bool goodIt=true;
+					if (vec1It == testMap.end()) {
+						goodIt = false; // make_map missed an argument
+					}
+					if (vec2It == argsVec.end()) {
+						AMP_INSIST(false, "argsVec composed incorrectly");
+					}
+					if (goodIt) {
+						good = good and vec1It->second == vec2It->second;
+					}
+				}
+				if (good) results.propResults[type].success[8] = true;
+				else results.propResults[type].success[8] = false;
+			} catch (std::exception &) {
+				results.propResults[type].success[8] = false;
+			} catch (...) {
+				results.propResults[type].success[8] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// check scalar evaluator for AMP::MultiVector disabled
+			try {
+				tensorProperty->evalv(valueVec, argsMultiVec);
+				results.propResults[type].tensor[5] = false;
+			} catch (std::exception &) {
+				results.propResults[type].tensor[5] = true;
+			} catch (...) {
+				results.propResults[type].tensor[5] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// prepare results vector, check for reasonable size info
+			std::vector<size_t> nvecs(2,0U);
+			try {
+				nvecs = tensorProperty->get_dimensions();
+				results.propResults[type].tensor[0] = true;
+			} catch (std::exception &) {
+				results.propResults[type].tensor[0] = false;
+			} catch (...) {
+				results.propResults[type].tensor[0] = false;
+				results.propResults[type].unknown = true;
+			}
+			std::vector<std::vector<boost::shared_ptr<std::vector<double> > > > stdEval(nvecs[0],
+					    std::vector<boost::shared_ptr<std::vector<double> > >(nvecs[1]));
+			std::vector<std::vector<boost::shared_ptr<std::vector<double> > > > nominalEval(nvecs[0],
+		    			std::vector<boost::shared_ptr<std::vector<double> > >(nvecs[1]));
+			for (size_t i=0; i<nvecs[0]; i++) for (size_t j=0; j<nvecs[1]; j++) {
+				stdEval[i][j] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(npoints));
+				nominalEval[i][j] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(npoints));
+			}
+
+			// check that number of components is positive
+			if (results.propResults[type].tensor[0] and nvecs[0]>0 and nvecs[1]>0 and nvecs.size()==2) {
+				results.propResults[type].tensor[1] = true;
+			} else {
+				results.propResults[type].tensor[1] = false;
+			}
+
+			// all in range, std::vector
+			try {
+				tensorProperty->evalv(stdEval, args);
+				nominalEval= stdEval;
+				results.propResults[type].success[0] = true;
+			} catch (std::exception &) {
+				results.propResults[type].success[0] = false;
+			} catch (...) {
+				results.propResults[type].success[0] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// first out of range low, std::vector
+			if(args.size()>0) {
+				try {
+					args.find(argnames[0])->second->operator[](5) = toosmall[0][5];
+					tensorProperty->evalv(stdEval, args);
+					args.find(argnames[0])->second->operator[](5) = justright[0][5];
+					results.propResults[type].success[1] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[1] = true;
+					args.find(argnames[0])->second->operator[](5) = justright[0][5];
+				} catch (...) {
+					results.propResults[type].success[1] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[1] = true;
+			}
+
+			// first out of range hi, std::vector
+			if(args.size() >0) {
+				try {
+					args.find(argnames[0])->second->operator[](5) = toobig[0][5];
+					tensorProperty->evalv(stdEval, args);
+					args.find(argnames[0])->second->operator[](5) = justright[0][5];
+					results.propResults[type].success[2] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[2] = true;
+					args.find(argnames[0])->second->operator[](5) = justright[0][5];
+				} catch (...) {
+					results.propResults[type].success[2] = false;
+				results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[2] = true;
+			}
+
+			// setup AMP::Vector evalv results
+			std::vector<std::vector<AMP::LinearAlgebra::Variable::shared_ptr> > ampEvalVar(nvecs[0],
+						std::vector<AMP::LinearAlgebra::Variable::shared_ptr>(nvecs[1]));
+			std::vector<std::vector<AMP::LinearAlgebra::Vector::shared_ptr> > ampEval(nvecs[0],
+						std::vector<AMP::LinearAlgebra::Vector::shared_ptr>(nvecs[1]));
+			std::vector<std::vector<AMP::LinearAlgebra::Variable::shared_ptr> > nominalAmpEvalVar(nvecs[0],
+						std::vector<AMP::LinearAlgebra::Variable::shared_ptr>(nvecs[1]));
+			std::vector<std::vector<AMP::LinearAlgebra::Vector::shared_ptr> > nominalAmpEval(nvecs[0],
+						std::vector<AMP::LinearAlgebra::Vector::shared_ptr>(nvecs[1]));
+			std::vector<std::vector<AMP::LinearAlgebra::Variable::shared_ptr> > nominalMultiEvalVar(nvecs[0],
+						std::vector<AMP::LinearAlgebra::Variable::shared_ptr>(nvecs[1]));
+			std::vector<std::vector<AMP::LinearAlgebra::Vector::shared_ptr> > nominalMultiEval(nvecs[0],
+						std::vector<AMP::LinearAlgebra::Vector::shared_ptr>(nvecs[1]));
+			for (size_t i=0; i<nvecs[0]; i++) for (size_t j=0; j<nvecs[1]; j++) {
+				std::stringstream istr;
+				istr << i;
+				ampEvalVar[i][j].reset(new AMP::LinearAlgebra::Variable("ampEval"+istr.str()));
+				ampEval[i][j] = AMP::LinearAlgebra::SimpleVector::create(npoints, ampEvalVar[i][j]);
+				ampEval[i][j]->setCommunicationList(commlist);
+				nominalAmpEvalVar[i][j].reset(new AMP::LinearAlgebra::Variable("nominalAmpEval"+istr.str()));
+				nominalAmpEval[i][j] = AMP::LinearAlgebra::SimpleVector::create(npoints, nominalAmpEvalVar[i][j]);
+				nominalAmpEval[i][j]->setCommunicationList(commlist);
+				nominalMultiEvalVar[i][j].reset(new AMP::LinearAlgebra::Variable("nominalMultiEval"+istr.str()));
+				nominalMultiEval[i][j] = AMP::LinearAlgebra::SimpleVector::create(npoints, nominalMultiEvalVar[i][j]);
+				nominalMultiEval[i][j]->setCommunicationList(commlist);
+			}
+
+			// all in range, AMP::Vector
+			try {
+				tensorProperty->evalv(ampEval, argsVec);
+				for (size_t i=0; i<nvecs[0]; i++)  for (size_t j=0; j<nvecs[1]; j++) nominalAmpEval[i][j]->copyVector(ampEval[i][j]);
+				results.propResults[type].success[4] = true;
+			} catch (std::exception &) {
+				results.propResults[type].success[4] = false;
+			} catch (...) {
+				results.propResults[type].success[4] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// first out of range low, AMP::Vector
+			if( nargs>0 ) {
+				try {
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,toosmall[0][5]);
+					tensorProperty->evalv(ampEval, argsVec);
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,justright[0][5]);
+					results.propResults[type].success[5] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[5] = true;
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,justright[0][5]);
+				} catch (...) {
+					results.propResults[type].success[5] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[5] = true;
+			}
+
+			// first out of range hi, AMP::Vector
+			if( nargs>0 ) {
+				try {
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,toobig[0][5]);
+					tensorProperty->evalv(ampEval, argsVec);
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,justright[0][5]);
+					results.propResults[type].success[6] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[6] = true;
+					argsVec.find(argnames[0])->second->setValueByLocalID(5,justright[0][5]);
+				} catch (...) {
+					results.propResults[type].success[6] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[6] = true;
+			}
+
+			// all in range, AMP::MultiVector
+			try {
+				tensorProperty->evalv(ampEval, argsMultiVec);
+				for (size_t i=0; i<nvecs[0]; i++)  for (size_t j=0; j<nvecs[1]; j++) nominalMultiEval[i][j]->copyVector(ampEval[i][j]);
+				results.propResults[type].success[9] = true;
+			} catch (std::exception &) {
+				results.propResults[type].success[9] = false;
+			} catch (...) {
+				results.propResults[type].success[9] = false;
+				results.propResults[type].unknown = true;
+			}
+
+			// first out of range low, AMP::MultiVector
+			if( nargs>0 ) {
+				try {
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,toosmall[0][5]);
+					tensorProperty->evalv(ampEval, argsMultiVec);
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,justright[0][5]);
+					results.propResults[type].success[10] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[10] = true;
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,justright[0][5]);
+				} catch (...) {
+					results.propResults[type].success[10] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[10] = true;
+			}
+
+			// first out of range hi, AMP::MultiVector
+			if( nargs>0 ) {
+				try {
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,toobig[0][5]);
+					tensorProperty->evalv(ampEval, argsMultiVec);
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,justright[0][5]);
+					results.propResults[type].success[11] = false;
+				} catch (std::exception &) {
+					results.propResults[type].success[11] = true;
+					argsMultiVec->subsetVectorForVariable(justrightVec[0]->getVariable())->setValueByLocalID(5,justright[0][5]);
+				} catch (...) {
+					results.propResults[type].success[11] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].success[11] = true;
+			}
+
+			// check vector, Vector, MultiVector all agree
+			good=true;
+			if (results.propResults[type].success[0] and
+				results.propResults[type].success[4] and
+				results.propResults[type].success[9])
+			{
+				for (size_t k=0; k<nvecs[0]; k++) {
+					for (size_t j=0; j<nvecs[1]; j++) {
+						for (size_t i=0; i<npoints; i++) {
+							double vstd = (*nominalEval[k][j])[i];
+							double vVec = nominalAmpEval[k][j]->getValueByLocalID(i);
+							double vMultiVec = nominalMultiEval[k][j]->getValueByLocalID(i);
+							good = good and (vstd == vVec and vVec == vMultiVec);
+						}
+					}
+				}
+				if (good) results.propResults[type].success[3] = true;
+			} else {
+				results.propResults[type].success[3] = false;
+			}
+
+			// set up reduced argument list
+			map<string, boost::shared_ptr<vector<double> > > argsm(args);
+			if( nargs>0 ) {
+				map<string, boost::shared_ptr<vector<double> > >::iterator argend = argsm.end();
+				argend--;
+				argsm.erase(argend);
+			}
+
+			// check that evalv with fewer than normal number of arguments works
+			if (results.propResults[type].success[0]) {
+				try {
+					tensorProperty->evalv(stdEval, argsm);
+					results.propResults[type].nargeval[1] = true;
+				} catch (std::exception &) {
+					results.propResults[type].nargeval[1] = false;
+				} catch (...) {
+					results.propResults[type].nargeval[1] = false;
+					results.propResults[type].unknown = true;
+				}
+			} else {
+				results.propResults[type].nargeval[1] = false;
+			}
+
 		}
 	}
 
@@ -561,7 +1277,7 @@ int main(int argc, char **argv) {
 				cout << "          ";
 				cout << xlate(j->range) << "   ";
 				cout << xlate(j->params) << "    ";
-				unsigned int nsuccess = 0, nargeval = 0;
+				unsigned int nsuccess = 0, nargeval = 0, nvector = 0, ntensor = 0;
 				for (size_t k = 0; k < NSUCCESS; k++)
 					if (j->success[k])
 						nsuccess++;
@@ -570,6 +1286,18 @@ int main(int argc, char **argv) {
 					if (j->nargeval[k])
 						nargeval++;
 				cout << nargeval << "/" << NARGEVAL << "      ";
+				if (j->isVector) {
+					for (size_t k = 0; k < NVECTOR; k++)
+						if (j->vector[k])
+							nvector++;
+					cout << nvector << "/" << NVECTOR << "      ";
+				}
+				if (j->isTensor) {
+					for (size_t k = 0; k < NTENSOR; k++)
+						if (j->tensor[k])
+							ntensor++;
+					cout << ntensor << "/" << NTENSOR << "      ";
+				}
 				cout << xlate(j->unknown) << "     ";
 				cout << endl;
 			}
@@ -674,6 +1402,40 @@ int main(int argc, char **argv) {
 				else
 					ut.failure(msg + "evalv with missing arguments");
 				maxpassed += 17;
+
+				if (j->isVector) {
+					if (j->vector[0])
+						ut.passes(msg + "get_dimension() ok");
+					else
+						ut.failure(msg + "get_dimension() ok");
+
+					if (j->vector[1])
+						ut.passes(msg + "number of components positive");
+					else
+						ut.failure(msg + "number of components positive");
+
+					if (j->vector[2])
+						ut.passes(msg + "not a scalar");
+					else
+						ut.failure(msg + "not a scalar");
+
+					if (j->vector[3])
+						ut.passes(msg + "scalar evaluator std::vector disabled");
+					else
+						ut.failure(msg + "scalar evaluator std::vector disabled");
+
+					if (j->vector[4])
+						ut.passes(msg + "scalar evaluator AMP::Vector disabled");
+					else
+						ut.failure(msg + "scalar evaluator AMP::Vector disabled");
+
+					if (j->vector[5])
+						ut.passes(msg + "scalar evaluator AMP::Multivector disabled");
+					else
+						ut.failure(msg + "scalar evaluator AMP::Multivector disabled");
+
+					maxpassed += 6;
+				}
 			}
 		}
 		cout << endl << endl << endl;
