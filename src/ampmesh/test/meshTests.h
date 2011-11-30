@@ -214,53 +214,50 @@ void MeshBasicTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 
 
 
-/*
 // This tests loops over all boundary ids
-void VerifyOwnedBoundaryNodeIterator( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh ) {
-        const std::set<short int> bids = mesh->getBoundaryIds ();
-        std::set<short int>::const_iterator curBid = bids.begin();
-        while ( curBid != bids.end() )
-        {
-            verify_boundary ( utils, mesh, *curBid );
-            curBid++;
-
-        AMP::Mesh::MeshAdapter::OwnedBoundaryNodeIterator curNode = mesh->beginOwnedBoundary ( bid );
-        std::set<size_t>  node_ids;
-        while ( curNode != mesh->endOwnedBoundary ( bid ) )
-        {
-            node_ids.insert ( curNode->globalID() );
-            curNode++;
-        }
-
-        bool testPassed = true;
-        size_t  numFound = 0;
-        AMP::Mesh::MeshAdapter::OwnedNodeIterator  curMNode = mesh->beginOwnedNode();
-        while ( curMNode != mesh->endOwnedNode() )
-        {
-            if ( mesh->isOnBoundary ( *curMNode , bid ) )
-            {
-              numFound++;
-              if ( node_ids.find ( curMNode->globalID() ) == node_ids.end() )
-              {
-                testPassed = false;
-                break;
-              }
+void VerifyBoundaryNodeIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) {
+    const std::vector<int> bids = mesh->getIDSets();
+    for (size_t i=0; i<bids.size(); i++) {
+        int bid = bids[i];
+        for (int gcw=0; gcw<=1; gcw++) {
+            // Get the iterator over the current boundary id
+            AMP::Mesh::MeshIterator curNode = mesh->getIDsetIterator( AMP::Mesh::Vertex, bid, gcw );
+            AMP::Mesh::MeshIterator endNode = curNode.end();
+            // Get the set of all nodes in the iterator
+            bool testPassed = true;
+            std::set<AMP::Mesh::MeshElementID>  node_ids;
+            while ( curNode != endNode ) {
+                node_ids.insert( curNode->globalID() );
+                if ( !curNode->isOnBoundary(bid) )
+                    testPassed = false;
+                curNode++;
             }
-            curMNode++;
+            if ( node_ids.size()==0 )
+                testPassed = false;
+            // Verify that all nodes were found
+            size_t  numFound = 0;
+            AMP::Mesh::MeshIterator  curMNode = mesh->getIterator(AMP::Mesh::Vertex,gcw);
+            AMP::Mesh::MeshIterator  endMNode = curMNode.end();
+            while ( curMNode != endMNode ) {
+                if ( curMNode->isOnBoundary( bid ) ) {
+                    numFound++;
+                    if ( node_ids.find( curMNode->globalID() ) == node_ids.end() )
+                        testPassed = false;
+                }
+                curMNode++;
+            }
+            if ( numFound != node_ids.size() )
+                testPassed = false;
+            if ( testPassed )
+                utils->passes ( "Found all boundary nodes" );
+            else
+                utils->failure( "Found all boundary nodes" );
         }
-        if ( testPassed )
-            utils->passes ( "Found all boundary nodes" );
-        else
-            utils->failure ( "Node on boundary not in iterator" );
-        if ( numFound == node_ids.size() )
-            utils->passes ( "All boundary nodes accounted for" );
-        else
-            utils->failure ( "Node in iterator not on boundary" );
     }
+}
 
-        }
-    }
 
+/*
 
 
 class  DisplaceNodes
@@ -304,46 +301,6 @@ public:
             utils->passes ( "displacement changed volumes" );
         else
             utils->failure ( "displacement changed volumes" );
-    }
-};
-
-
-class  VerifyOwnedNodeIterator
-{
-public:
-        static const char * get_test_name () { return "verify owned node iterator"; }
-
-    static  void run_test ( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh ) {
-        AMP::Mesh::MeshAdapter::OwnedNodeIterator   curONode = mesh->beginOwnedNode ();
-        std::set<size_t>  ids1,ids2;
-        while ( curONode != mesh->endOwnedNode () )
-        {
-            ids1.insert ( curONode->globalID() );
-            curONode++;
-        }
-        AMP::Mesh::MeshAdapter::NodeIterator  curNode = mesh->beginNode();
-        while ( curNode != mesh->endNode() )
-        {
-            if ( curNode->isOwned() )
-            {
-              ids2.insert ( curNode->globalID() );
-            }
-            curNode++;
-        }
-        if ( ids1.size() == ids2.size() )
-        {
-            if ( std::equal ( ids1.begin() , ids1.end() , ids2.begin() ) )
-              utils->passes ( "All owned nodes found" );
-            else
-              utils->failure ( "Owned node sets are different sizes" );
-        }
-        else
-        {
-            if ( ids1.size() > ids2.size() )
-              utils->passes ( "OwnedNodeIterator found too many nodes" );
-            else
-              utils->passes ( "OwnedNodeIterator did not find enough nodes" );
-        }
     }
 };
 
@@ -468,68 +425,6 @@ public:
     }
 };
 
-
-class  VerifyBoundaryNodeIterator
-{
-public:
-    static const char * get_test_name () { return "verfify BoundaryNodeIterator interface"; }
-
-    static  void verify_boundary ( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh, short int bid ) {
-        AMP::Mesh::MeshAdapter::BoundaryNodeIterator curNode = mesh->beginBoundary ( bid );
-        std::set<size_t>  node_ids;
-        while ( curNode != mesh->endBoundary ( bid ) )
-        {
-            size_t  gid = curNode->globalID();
-            node_ids.insert ( gid );
-            curNode++;
-        }
-
-        bool testPassed = true;
-        AMP::Mesh::MeshAdapter::NodeIterator  curMNode = mesh->beginNode();
-        while ( curMNode != mesh->endNode() )
-          {
-            if ( mesh->isOnBoundary ( *curMNode , bid ) )
-            {
-              if ( node_ids.find ( curMNode->globalID() ) == node_ids.end() )
-              {
-                testPassed = false;
-                break;
-              }
-              else
-              {
-                node_ids.erase ( curMNode->globalID() );
-              }
-            }
-            curMNode++;
-        }
-        if ( testPassed )
-            utils->passes ( "Found all boundary nodes" );
-        else
-            utils->failure ( "Node on boundary not in iterator" );
-
-        /** It would be nice to be able to do this test, but libmesh insists on preventing me.
-        size_t k = node_ids.size();
-        if ( k == 0 )
-            utils->passes ( "All boundary nodes accounted for" );
-        else
-        {
-            std::stringstream msg;
-            msg << "Node " << (*(node_ids.begin())) << " in iterator not on boundary!";
-            utils->failure ( msg.str().c_str() );
-        }
-            */ /*
-    }
-
-    static  void run_test ( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh ) {
-        const std::set<short int> bids = mesh->getBoundaryIds ();
-        std::set<short int>::const_iterator curBid = bids.begin();
-        while ( curBid != bids.end() )
-        {
-            verify_boundary ( utils, mesh, *curBid );
-            curBid++;
-        }
-    }
-};
 
 
 AMP::Mesh::MeshAdapter::shared_ptr globalMeshForMeshVectorFactory = AMP::Mesh::MeshAdapter::shared_ptr();

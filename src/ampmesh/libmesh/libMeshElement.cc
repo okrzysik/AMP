@@ -1,8 +1,11 @@
 #include "ampmesh/libmesh/libMeshElement.h"
 #include "utils/Utilities.h"
 
+#include "boundary_info.h"
+
 namespace AMP {
 namespace Mesh {
+
 
 // Create a unique id for this class
 static unsigned int libMeshElementTypeID = TYPE_HASH(libMeshElement);
@@ -77,27 +80,27 @@ libMeshElement& libMeshElement::operator=(const libMeshElement& rhs)
 }
 
 
-/********************************************************
-* De-constructor                                        *
-********************************************************/
+/****************************************************************
+* De-constructor                                                *
+****************************************************************/
 libMeshElement::~libMeshElement()
 {
     element = NULL;
 }
 
 
-/********************************************************
-* Function to clone the element                         *
-********************************************************/
+/****************************************************************
+* Function to clone the element                                 *
+****************************************************************/
 MeshElement* libMeshElement::clone() const
 {
     return new libMeshElement(*this);
 }
 
 
-/********************************************************
-* Functions that aren't implimented yet                 *
-********************************************************/
+/****************************************************************
+* Function to get the elements composing the current element    *
+****************************************************************/
 std::vector<MeshElement> libMeshElement::getElements(const GeomType type) const
 {
     AMP_INSIST(type<=d_elementType,"sub-elements must be of a smaller or equivalent type");
@@ -139,6 +142,11 @@ std::vector<MeshElement> libMeshElement::getElements(const GeomType type) const
     }
     return children;
 }
+
+
+/****************************************************************
+* Function to get the neighboring elements                      *
+****************************************************************/
 std::vector< MeshElement::shared_ptr > libMeshElement::getNeighbors() const
 {
     std::vector< MeshElement::shared_ptr > neighbors(0);
@@ -167,6 +175,11 @@ std::vector< MeshElement::shared_ptr > libMeshElement::getNeighbors() const
     }
     return neighbors;
 }
+
+
+/****************************************************************
+* Functions to get basic element properties                     *
+****************************************************************/
 double libMeshElement::volume() const
 {
     if ( d_elementType == Vertex )
@@ -184,8 +197,27 @@ std::vector<double> libMeshElement::coord() const
         x[i] = (*node)(i);
     return x;
 }
-
-
+bool libMeshElement::isOnBoundary(int id) const
+{
+    bool on_boundary = false;
+    boost::shared_ptr< ::Mesh> d_libMesh = d_mesh->getlibMesh();
+    if ( d_elementType==Vertex ) {
+        ::Node* node = (::Node*) ptr_element;
+        std::vector< short int > bids = d_libMesh->boundary_info->boundary_ids(node);
+        for (size_t i=0; i<bids.size(); i++) {
+            if ( bids[i]==id )
+                on_boundary = true;
+        }
+    } else if ( (int)d_elementType==d_dim ) {
+        ::Elem* elem = (::Elem*) ptr_element;
+        unsigned int side = d_libMesh->boundary_info->side_with_boundary_id(elem,id);
+        if ( side != static_cast<unsigned int>(-1) )
+            on_boundary = true;
+    } else  {
+        AMP_ERROR("unfinished");
+    }
+    return on_boundary;
+}
 
 } // Mesh namespace
 } // AMP namespace

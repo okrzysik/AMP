@@ -49,6 +49,13 @@ public:
     //! Return the coordinates of all verticies composing the element
     virtual std::vector<double> coord() const;
 
+    /**
+     * \brief     Check if the current element is on the given boundary
+     * \details   Check if the current element is on the boundary specified by the given id
+     * \param id  The boundary id to check
+     */
+    virtual bool isOnBoundary(int id) const;
+
 
 protected:
 

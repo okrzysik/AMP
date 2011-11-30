@@ -1,14 +1,17 @@
 #include "ampmesh/libmesh/initializeLibMesh.h"
 #include "ampmesh/libmesh/libMesh.h"
 #include "ampmesh/libmesh/libMeshIterator.h"
+#include "ampmesh/MeshElementVectorIterator.h"
 #include "utils/MemoryDatabase.h"
 #include "utils/AMPManager.h"
+#include "utils/Utilities.h"
 
 
 // LibMesh include
 #include "mesh.h"
 #include "mesh_data.h"
 #include "mesh_generation.h"
+#include "boundary_info.h"
 
 
 namespace AMP {
@@ -68,6 +71,8 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
 ********************************************************/
 libMesh::~libMesh()
 {
+    // First we need to destroy the boundary sets
+    d_boundarySets.clear();
     // We need to clear all libmesh objects before libmeshInit
     d_libMeshData.reset();
     d_libMesh.reset();
@@ -173,6 +178,51 @@ void libMesh::initialize()
             j++;
         }
     }
+    // Construct the boundary lists
+    const std::set<short int> libmesh_bids = d_libMesh->boundary_info->get_boundary_ids();
+    std::vector<short int> bids(libmesh_bids.begin(),libmesh_bids.end());
+    Utilities::quicksort(bids);
+    std::vector<short int> side_ids;
+    std::vector<short int> node_ids;
+    d_libMesh->boundary_info->build_side_boundary_ids(side_ids);
+    d_libMesh->boundary_info->build_node_list_from_side_list();
+    d_libMesh->boundary_info->build_node_boundary_ids(node_ids);
+    for (int type2=0; type2<=(int)GeomDim; type2++) {
+        GeomType type = (GeomType) type2;
+        if ( type!=Vertex && type!=GeomDim ) {
+            // Not all types are supported yet for iterators
+            continue;
+        }
+        MeshIterator iterator = getIterator(type,0);
+        for (size_t i=0; i<bids.size(); i++) {
+            int id = (int) bids[i];
+            // Count the number of elements on the given boundary
+            MeshIterator curElem = iterator.begin();
+            MeshIterator endElem = iterator.end();
+            int N = 0;
+            while ( curElem != endElem ) {
+                if ( curElem->isOnBoundary(id) )
+                    N++;
+                ++curElem;
+            }
+            // Create the boundary list
+            boost::shared_ptr<std::vector<MeshElement> > list( new std::vector<MeshElement>(N) );
+            curElem = iterator.begin();
+            endElem = iterator.end();
+            N = 0;
+            while ( curElem != endElem ) {
+                if ( curElem->isOnBoundary(id) ) {
+                    list->operator[](N) = *curElem;
+                    N++;
+                }
+                ++curElem;
+            }
+            // Store the list
+            std::pair<int,GeomType> mapid = std::pair<int,GeomType>(id,type);
+            std::pair< std::pair<int,GeomType>, boost::shared_ptr<std::vector<MeshElement> > > entry(mapid,list);
+            d_boundarySets.insert(entry);
+        }
+    }
 }
 
 
@@ -260,17 +310,25 @@ MeshIterator libMesh::getIterator( const GeomType type, const int gcw )
 ********************************************************/
 std::vector<int> libMesh::getIDSets ( )
 {
-    AMP_ERROR("Not Implimented Yet");
-    return std::vector<int>(0);
-    //const std::set<short int> &libmeshIds = d_libMesh->boundary_info->get_boundary_ids();
-    //std::vector<int> ids(libmeshIds.begin(), libmeshIds.end());
-    //return ids;
+    const std::set<short int> libmesh_bids = d_libMesh->boundary_info->get_boundary_ids();
+    std::vector<int> bids(libmesh_bids.size(),0);
+    std::set<short int>::iterator it = libmesh_bids.begin();
+    for (size_t i=0; i<bids.size(); i++) {
+        bids[i] = *it;
+        ++it;
+    }
+    return bids;
 }
 
-MeshIterator libMesh::getIDsetIterator ( const GeomType, const int id, const int gcw )
+MeshIterator libMesh::getIDsetIterator ( const GeomType type, const int id, const int gcw )
 {
-    AMP_ERROR("Not Implimented Yet");
-    return MeshIterator();
+    std::pair<int,GeomType> mapid = std::pair<int,GeomType>(id,type);
+    std::map< std::pair<int,GeomType>, boost::shared_ptr<std::vector<MeshElement> > >::iterator it;
+    boost::shared_ptr<std::vector<MeshElement> > list( new std::vector<MeshElement>() );
+    it = d_boundarySets.find(mapid);
+    if ( it != d_boundarySets.end() )
+        list = it->second;
+    return MultiVectorIterator( list, 0 );
 }
 
 

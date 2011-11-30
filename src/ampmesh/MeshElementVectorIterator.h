@@ -1,0 +1,86 @@
+#ifndef included_AMP_MultiVectorIterator
+#define included_AMP_MultiVectorIterator
+
+#include <iterator>
+#include <boost/shared_ptr.hpp>
+#include "MeshElement.h"
+#include "MeshIterator.h"
+
+namespace AMP { 
+namespace Mesh {
+
+
+/**
+ * \class MultiVectorIterator
+ * \brief A class used to iterate over a set of mesh elements.
+ * \details  This class provides routines for iterating over a set
+ * of mesh elments that are in a std::vector.
+ */
+class MultiVectorIterator: public MeshIterator {
+public:
+
+    //! Empty MultiVectorIterator constructor
+    MultiVectorIterator();
+
+    //! Default MultiVectorIterator constructor
+    MultiVectorIterator( boost::shared_ptr<std::vector<MeshElement> > elements, size_t pos=0 );
+
+    //! Deconstructor
+    ~MultiVectorIterator ();
+
+    //! Copy constructor
+    MultiVectorIterator(const MultiVectorIterator&);
+
+    //! Assignment operator
+    MultiVectorIterator& operator=(const MultiVectorIterator&);
+
+    //! Increment
+    MeshIterator& operator++();
+    
+    //! Increment
+    MeshIterator operator++(int);
+
+    //! Decrement
+    MeshIterator& operator--();
+    
+    //! Decrement
+    MeshIterator operator--(int);
+
+    //! Check if two iterators are equal
+    bool operator==(const MeshIterator& rhs);
+
+    //! Check if two iterators are not equal
+    bool operator!=(const MeshIterator& rhs);
+    
+    //! Dereference the iterator
+    MeshElement &operator*(void);
+
+    //! Dereference the iterator
+    MeshElement *operator->(void);
+
+    //! Return an iterator to the begining
+    MeshIterator begin();
+
+    //! Return an iterator to the begining
+    MeshIterator end();
+
+    //! Return the number of elements in the iterator
+    virtual size_t size() const;
+
+protected:
+
+    //! Clone the iterator
+    virtual MeshIterator* clone() const;
+
+    // A pointer to a std::vector containing the desired mesh elements
+    boost::shared_ptr<std::vector<MeshElement> > d_elements;
+    // An integer containing the current position
+    size_t d_pos;
+};
+
+
+}
+}
+
+#endif
+

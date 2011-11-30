@@ -5,6 +5,8 @@
 #include "utils/Database.h"
 #include "utils/MemoryDatabase.h"
 
+#include <set>
+#include <vector>
 
 namespace AMP {
 namespace Mesh {
@@ -245,15 +247,25 @@ MeshIterator MultiMesh::getIterator( const GeomType type, const int gcw )
     }
     return MultiIterator(iterators);
 }
-std::vector<int> MultiMesh::getIDSets ( )
+std::vector<int> MultiMesh::getIDSets( )
 {
-    AMP_ERROR("Not Implimented Yet");
-    return std::vector<int>();
+    std::set<int> ids_set;
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        std::vector<int> mesh_idSet = d_meshes[i]->getIDSets();
+        ids_set.insert(mesh_idSet.begin(),mesh_idSet.end());
+    }
+    return std::vector<int>(ids_set.begin(),ids_set.end());
 }
-MeshIterator MultiMesh::getIDsetIterator ( const GeomType, const int, const int )
+MeshIterator MultiMesh::getIDsetIterator( const GeomType type, const int id, const int gcw )
 {
-    AMP_ERROR("Not Implimented Yet");
-    return MeshIterator();
+    std::vector<boost::shared_ptr<MeshIterator> > iterators;
+    iterators.reserve(d_meshes.size());
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        MeshIterator it = d_meshes[i]->getIDsetIterator(type,id,gcw);
+        if ( it.size() > 0 )
+            iterators.push_back( boost::shared_ptr<MeshIterator>( new MeshIterator(it) ) );
+    }
+    return MultiIterator(iterators);
 }
 
 

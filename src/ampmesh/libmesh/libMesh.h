@@ -145,9 +145,12 @@ private:
     std::vector<size_t> n_local, n_global, n_ghost;
     boost::shared_ptr<initializeLibMesh> libmeshInit;
 
-    // Data use to store the node neighbor lists
+    // Data used to store the node neighbor lists
     std::vector<unsigned int> neighborNodeIDs;
     std::vector< std::vector< ::Node* > > neighborNodes;
+
+    // Data used to store the boundary elements
+    std::map< std::pair<int,GeomType>, boost::shared_ptr<std::vector<MeshElement> > >  d_boundarySets;
 
 };
 

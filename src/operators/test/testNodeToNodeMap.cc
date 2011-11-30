@@ -6,27 +6,26 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 #include "utils/PIO.h"
-
+#include "ampmesh/Mesh.h"
+#include "discretization/DOF_Manager.h"
 #include "operators/map/NodeToNodeMap.h"
 #include "operators/map/AsyncMapColumnOperator.h"
 
-#include "vectors/PetscVector.h"
-//#include "petscsys.h"
 
 
-void  setBoundary ( size_t whichBnd , AMP::LinearAlgebra::Vector::shared_ptr &v1 , AMP::Mesh::MeshManager::shared_ptr &manager , AMP::Mesh::MeshManager::Adapter::shared_ptr mesh )
+void  setBoundary ( size_t whichBnd , AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     AMP::LinearAlgebra::Vector::shared_ptr  vv1 = v1->castTo<AMP::LinearAlgebra::MultiVector>().getVector(0);
-    AMP::Mesh::DOFMap::shared_ptr  d1 = mesh->getDOFMap ( vv1->getVariable() );
+    AMP::Discretization::DOFManager::shared_ptr  d1 = vv1->getDOFManager();
 
     //AMP::DOFMap::shared_ptr  d2 = mesh->getDOFMap ( v1->castTo<AMP::LinearAlgebra::MultiVector>().getVector ( 1 )->getVariable() );
-    AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator  curBnd = mesh->beginOwnedBoundary ( manager->getMapBoundaryId ( whichBnd ) );
-    AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator  endBnd = mesh->endOwnedBoundary   ( manager->getMapBoundaryId ( whichBnd ) );
+    AMP::Mesh::MeshIterator  curBnd = mesh->beginOwnedBoundary ( mesh->getMapBoundaryId ( whichBnd ) );
+    AMP::Mesh::MeshIterator  endBnd = curBnd->end();
 
     while ( curBnd != endBnd ) {
         vv1->setValueByGlobalID( d1->getGlobalID ( curBnd->globalID() , 0 ) , curBnd->x() );
         // v1->castTo<AMP::LinearAlgebra::MultiVector>().getVector ( 1 )->setValueByGlobalID( d2->getGlobalID ( curBnd->globalID() , 0 ) , curBnd->x() );
-        curBnd++;
+        ++curBnd;
     }
 }
 
