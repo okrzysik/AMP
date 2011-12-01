@@ -20,6 +20,12 @@ namespace AMP {
 
         unsigned int getTotalNumberOfPellets();
 
+        bool useSerial();
+
+        bool onlyZcorrection();
+
+        bool useScaling();
+
         void applyScaling(AMP::LinearAlgebra::Vector::shared_ptr f);
 
         void applyUnscaling(AMP::LinearAlgebra::Vector::shared_ptr f);
@@ -32,6 +38,11 @@ namespace AMP {
         AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
 
       protected:
+
+        bool d_useSerial;
+        bool d_onlyZcorrection;
+        bool d_useScaling;
+        double d_scalingFactor;
 
     };
 

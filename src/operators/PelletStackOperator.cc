@@ -6,7 +6,27 @@ namespace AMP {
 
     PelletStackOperator :: PelletStackOperator(const boost::shared_ptr<OperatorParameters> & params)
       : Operator(params) {
+        d_useSerial = (params->d_db)->getBool("USE_SERIAL");
+        d_onlyZcorrection = (params->d_db)->getBool("ONLY_Z_CORRECTION");
+        if((params->d_db)->keyExists("SCALING_FACTOR")) {
+          d_useScaling = true;
+          d_scalingFactor = (params->d_db)->getDouble("SCALING_FACTOR");
+        } else {
+          d_useScaling = false;
+        }
       }
+
+    bool PelletStackOperator :: useSerial() {
+      return d_useSerial;
+    }
+
+    bool PelletStackOperator :: onlyZcorrection() {
+      return d_onlyZcorrection;
+    }
+
+    bool PelletStackOperator :: useScaling() {
+      return d_useScaling;
+    }
 
     void PelletStackOperator :: setCurrentPellet(unsigned int pellId) {
     }
