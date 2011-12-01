@@ -244,7 +244,9 @@ namespace AMP {
 
       d_materialModel->preNonlinearAssembly();
 
-      d_mechNULElem->zeroOutGaussPointCount();
+      if(d_useUpdatedLagrangian == true) {
+        d_mechNULElem->zeroOutGaussPointCount();
+      }
     }
 
     void MechanicsNonlinearFEOperator :: postAssembly()
