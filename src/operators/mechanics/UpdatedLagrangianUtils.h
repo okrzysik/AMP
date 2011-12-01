@@ -13,6 +13,10 @@ namespace Operator {
 
   void matMatMultiply(double A[3][3], double B[3][3], double C[3][3]);
 
+  void matVecMultiply(double A[3][3], double b[3], double c[3]);
+
+  void vecVecAddition(double a[3], double b[3], double c[3]);
+
   void matTranspose(double A[3][3], double B[3][3]);
 
   void matInverse(double A[3][3], double B[3][3]);

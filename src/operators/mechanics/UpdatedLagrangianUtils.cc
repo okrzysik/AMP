@@ -494,6 +494,22 @@ namespace Operator {
     }//end for i
   }
 
+  void matVecMultiply(double A[3][3], double b[3], double c[3]) {
+    // Here c = A * b is implemented.
+    c[0] = c[1] = c[2] = 0.0;
+    for(int i = 0; i < 3; i++) {
+      for(int j = 0; j < 3; j++) {
+        c[i] += (A[i][j] * b[j]);
+      }
+    }
+  }
+
+  void vecVecAddition(double a[3], double b[3], double c[3]) {
+    for(int i = 0; i < 3; i++) {
+      c[i] = a[i] + b[i];
+    }
+  }
+
   void matCopy(double A[3][3], double B[3][3]) {
     for(int i = 0; i < 3; i++) {
       for(int j = 0; j < 3; j++) {
