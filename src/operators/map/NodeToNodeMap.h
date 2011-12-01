@@ -18,9 +18,6 @@ namespace Operator {
 
   class NodeToNodeMap : public AMP::Operator::AsyncMapOperator 
   {
-    public:
-      typedef  boost::shared_ptr<NodeToNodeMapParameters>   params_shared_ptr;
-
     private:
       std::vector<int>          d_MySurfaceIndicesSend;
       std::vector<int>          d_MySurfaceIndicesRecv;
@@ -41,18 +38,18 @@ namespace Operator {
       int   d_SendTag;
       int   d_RecvTag;
 
-      void  sendSurface ( params_shared_ptr );
-      void  recvSurface ( params_shared_ptr );
-      void  sendOrder ( params_shared_ptr );
-      void  recvOrder ( params_shared_ptr );
-      void  buildSendRecvList ( params_shared_ptr );
-      void  finalizeCommunication ( params_shared_ptr );
+      void  sendSurface ( boost::shared_ptr<NodeToNodeMapParameters> );
+      void  recvSurface ( boost::shared_ptr<NodeToNodeMapParameters> );
+      void  sendOrder ( boost::shared_ptr<NodeToNodeMapParameters> );
+      void  recvOrder ( boost::shared_ptr<NodeToNodeMapParameters> );
+      void  buildSendRecvList ( boost::shared_ptr<NodeToNodeMapParameters> );
+      void  finalizeCommunication ( boost::shared_ptr<NodeToNodeMapParameters> );
 
       class Point
       {
         public:
           double _pos[3];
-          size_t _id;
+          AMP::Mesh::MeshElementID _id;
           // Allows me to push data to things in a multiset.
           mutable std::list<int>  _procs;
 
@@ -67,7 +64,7 @@ namespace Operator {
       class CommInfo
       {
         public:
-          size_t           _remId;
+          AMP::Mesh::MeshElementID   _remId;
           std::list<int>   _procs;
       };
 
@@ -75,15 +72,11 @@ namespace Operator {
     public:
 
 
-      /** \brief  Returns true if MapType = "GapSize"
+      /** \brief  Returns true if MapType = "NodeToNode"
         * \param[in] s  A string extracted from the MapType line in a MeshToMeshMap db
-        * \return  True iff s == "GapSize"
+        * \return  True iff s == "NodeToNode"
         */
       static bool  validMapType ( const std::string &s );
-
-      /** \brief  Typedef to identify the parameters class of this operator
-        */
-      typedef NodeToNodeMapParameters   Parameters;
 
       /** \brief  The base tag used in communication.
         */

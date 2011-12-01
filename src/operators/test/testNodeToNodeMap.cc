@@ -8,23 +8,25 @@
 #include "utils/PIO.h"
 #include "ampmesh/Mesh.h"
 #include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 #include "operators/map/NodeToNodeMap.h"
 #include "operators/map/AsyncMapColumnOperator.h"
 
 
 
-void  setBoundary ( size_t whichBnd , AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::Mesh::Mesh::shared_ptr mesh )
+void  setBoundary ( int id , AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     AMP::LinearAlgebra::Vector::shared_ptr  vv1 = v1->castTo<AMP::LinearAlgebra::MultiVector>().getVector(0);
     AMP::Discretization::DOFManager::shared_ptr  d1 = vv1->getDOFManager();
 
-    //AMP::DOFMap::shared_ptr  d2 = mesh->getDOFMap ( v1->castTo<AMP::LinearAlgebra::MultiVector>().getVector ( 1 )->getVariable() );
-    AMP::Mesh::MeshIterator  curBnd = mesh->beginOwnedBoundary ( mesh->getMapBoundaryId ( whichBnd ) );
-    AMP::Mesh::MeshIterator  endBnd = curBnd->end();
+    AMP::Mesh::MeshIterator  curBnd = mesh->getIDsetIterator( AMP::Mesh::Vertex, id, 0 );
+    AMP::Mesh::MeshIterator  endBnd = curBnd.end();
 
+    std::vector<unsigned int> ids;
     while ( curBnd != endBnd ) {
-        vv1->setValueByGlobalID( d1->getGlobalID ( curBnd->globalID() , 0 ) , curBnd->x() );
-        // v1->castTo<AMP::LinearAlgebra::MultiVector>().getVector ( 1 )->setValueByGlobalID( d2->getGlobalID ( curBnd->globalID() , 0 ) , curBnd->x() );
+        d1->getDOFs( *curBnd, ids );
+        std::vector<double> x = curBnd->coord();
+        vv1->setLocalValuesByGlobalID( ids.size(), (int*)&ids[0], &x[0] );
         ++curBnd;
     }
 }
@@ -32,38 +34,51 @@ void  setBoundary ( size_t whichBnd , AMP::LinearAlgebra::Vector::shared_ptr &v1
 
 void  runTest ( const std::string &fname , AMP::UnitTest *ut )
 {
+
+    // Read the input file
     boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
     AMP::InputManager::getManager()->parseInputFile ( fname , input_db );
     input_db->printClassData (AMP::plog);
-    AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-    AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-    AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-    globalComm.barrier();
+    // Get the Mesh database and create the mesh parameters
+    boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(mesh_db));
+    params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+
+    // Create the meshes from the input database
+    boost::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params);
+
+    // Get the database for the node to node maps
+    boost::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "NodeToNodeMaps" );
+
 
     // Test the creation/destruction of NodeToNodeMap (no apply call)
     try { 
         boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  n2nmaps;
-        n2nmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap> ( manager , input_db  );
+        n2nmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap> ( mesh , map_db  );
         n2nmaps.reset();
         ut->passes("Created / Destroyed NodeToNodeMap ("+fname+")");
     } catch ( ... ) {
         ut->failure("Created / Destroyed NodeToNodeMap ("+fname+")");
     }
 
+
     // Perform a complete test of NodeToNodeMap
     boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  n2nmaps;
-    n2nmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap> ( manager , input_db  );
+    n2nmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap> ( mesh , map_db  );
 
-    AMP::LinearAlgebra::Vector::shared_ptr  dummy;
-    AMP::LinearAlgebra::Vector::shared_ptr  v1 = manager->createVector ( n2nmaps->getOutputVariable() );
-    AMP::LinearAlgebra::Vector::shared_ptr  v2 = manager->createVector ( n2nmaps->getOutputVariable() );
+    // Create a simple DOFManager and the vectors
+    AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
+    boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFs( new AMP::Discretization::simpleDOFManager(mesh,AMP::Mesh::Vertex,1,3) );
+    AMP::LinearAlgebra::Vector::shared_ptr v1 = DOFs->createVector ( n2nmaps->getOutputVariable() );
+    AMP::LinearAlgebra::Vector::shared_ptr v2 = DOFs->createVector ( n2nmaps->getOutputVariable() );
     n2nmaps->setVector ( v2 );
 
-    for ( size_t i = 0 ; i != manager->getNumMaps() ; i++ ) {
-        AMP::Mesh::MeshManager::Adapter::shared_ptr curMesh = manager->getMesh ( manager->getMapMeshName ( i ) );
+/*    for (int i=0; i<n2nmaps->getNumberOfOperators(); i++) {
+        boost::shared_ptr<AMP::Operator::AsyncMapOperator>  map = getOperator(i);
+        AMP::Mesh::Mesh::shared_ptr curMesh = manager->getMesh ( manager->getMapMeshName ( i ) );
         AMP::LinearAlgebra::Vector::shared_ptr tv1 = v1->select ( AMP::Mesh::VS_ByMeshTmpl<AMP::Mesh::MeshManager::Adapter> ( curMesh ) , "tt" );
-        setBoundary ( i , tv1 , manager , curMesh );
+        setBoundary( id , tv1 , manager , curMesh );
     }
 
     std::cout << v1->maxNorm() << std::endl;
@@ -75,7 +90,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     } else {
         ut->failure("Node to node map test ("+fname+")");
     }
-    std::cout << v1->maxNorm() << std::endl;
+    std::cout << v1->maxNorm() << std::endl;*/
 }
 
 

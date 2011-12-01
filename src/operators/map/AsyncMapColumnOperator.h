@@ -38,7 +38,7 @@ namespace Operator {
 
 
       /** \brief  A factory method.
-        * \param[in]  manager  The mesh manager to search for maps to add to the column
+        * \param[in]  manager  The multi-mesh to search for maps to add to the column
         * \param[in]  db  The global database of the simulation
         * \tparam  MAP_TYPE  The type of map to create
         * \return  A column of map operators of type MAP_TYPE
@@ -48,7 +48,7 @@ namespace Operator {
         *  
         */
       template <typename MAP_TYPE>
-      static boost::shared_ptr<AsyncMapColumnOperator>  build ( AMP::Mesh::Mesh::shared_ptr mesh, boost::shared_ptr<Database> db );
+      static boost::shared_ptr<AsyncMapColumnOperator>  build ( AMP::Mesh::Mesh::shared_ptr manager, boost::shared_ptr<Database> db );
   };
 
 
