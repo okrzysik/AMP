@@ -28,7 +28,7 @@ simpleDOFManager::simpleDOFManager( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP
     int j=0;
     while ( pos != end ) {
         AMP::Mesh::MeshElementID id = pos->globalID();
-        if ( id.is_local ) {
+        if ( id.is_local() ) {
             d_local_id[i] = id;
             i++;
         } else {
@@ -173,7 +173,7 @@ std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
     size_t *ids2 = &ids[0];     // Use the pointer directly for speed
     for (size_t i=0; i<elements.size(); i++) {
         AMP::Mesh::MeshElementID  id = elements[i]->globalID();
-        if ( id.is_local ) {
+        if ( id.is_local() ) {
             // We are dealing with a local element
             size_t index = AMP::Utilities::findfirst(d_local_id,id);
             AMP_INSIST(id==d_local_id[index],"Internal Error: id not found");
@@ -328,7 +328,7 @@ std::vector<size_t> simpleDOFManager::getRemoteDOF(std::vector<AMP::Mesh::MeshEl
     // Get the set of mesh ids (must match on all processors)
     std::set<size_t> meshIDs;
     for (size_t i=0; i<remote_ids.size(); i++)
-        meshIDs.insert(remote_ids[i].meshID);
+        meshIDs.insert(remote_ids[i].meshID());
     std::vector<size_t> tmpLocalIDs(meshIDs.begin(),meshIDs.end());
     int N = (int) comm.sumReduce<size_t>(tmpLocalIDs.size());
     if ( N==0 ) {
@@ -372,8 +372,8 @@ std::vector<size_t> simpleDOFManager::getRemoteDOF(std::vector<AMP::Mesh::MeshEl
         }
         // Get the rank of the proccessor that will own each meshElement
         for (size_t i=0; i<remote_ids.size(); i++) {
-            if ( remote_ids[i].meshID == meshID ) {
-                int subowner_rank = remote_ids[i].owner_rank;
+            if ( remote_ids[i].meshID() == meshID ) {
+                int subowner_rank = remote_ids[i].owner_rank();
                 AMP_ASSERT(rank_map[subowner_rank]!=-1);
                 owner_rank[i] = rank_map[subowner_rank];
             }

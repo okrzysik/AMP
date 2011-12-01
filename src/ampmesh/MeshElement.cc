@@ -1,4 +1,5 @@
 #include "ampmesh/MeshElement.h"
+#include "ampmesh/MeshElementID.h"
 #include "utils/Utilities.h"
 
 namespace AMP {
@@ -12,14 +13,15 @@ static unsigned int MeshElementTypeID = TYPE_HASH(MeshElement);
 /********************************************************
 * Constructors                                          *
 ********************************************************/
-MeshElement::MeshElement()
+MeshElement::MeshElement():
+    d_globalID(false,null,-1,-1,-1)
 {
     typeID = MeshElementTypeID;
     element = NULL;
     d_elementType = null;
-    d_globalID = MeshElementID();
 }
-MeshElement::MeshElement(const MeshElement& rhs)
+MeshElement::MeshElement(const MeshElement& rhs):
+    d_globalID(false,null,-1,-1,-1)
 {
     typeID = MeshElementTypeID;
     element = NULL;

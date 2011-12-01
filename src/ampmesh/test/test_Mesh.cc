@@ -8,6 +8,7 @@
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "meshTestLoop.h"
+#include "meshTests.h"
 #include "meshGenerators.h"
 
 
@@ -88,6 +89,9 @@ int main ( int argc , char ** argv )
     startup_properties.use_MPI_Abort = false;
     AMP::AMPManager::startup(argc,argv,startup_properties);
     AMP::UnitTest ut;
+
+    // Run the ID test
+    testID( &ut );
 
     // Run tests on a libmesh mesh
     testlibMesh( &ut );

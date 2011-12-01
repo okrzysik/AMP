@@ -3,6 +3,7 @@
 
 #include "utils/AMP_MPI.h"
 #include "utils/UnitTest.h"
+#include "utils/Utilities.h"
 
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
@@ -44,7 +45,7 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator,
     while ( cur_it != end_it ) {
         AMP::Mesh::MeshElementID id = cur_it->globalID();
         ids.insert ( id );
-        if ( id.is_local )
+        if ( id.is_local() )
             number_of_local_elements++;
         else
             number_of_ghost_elements++;
@@ -80,7 +81,7 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator,
             if ( element.volume() <= 0.0 )
                 volume_pass = false;
         }
-        if ( id.is_local ) {
+        if ( id.is_local() ) {
             for (int i=0; i<=(int)type; i++) {
                 if ( i!=0 && i!=(int)type )
                     continue;  // getElements is unfinished for types other than verticies and elements
@@ -279,6 +280,66 @@ void VerifyBoundaryNodeIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_p
                 utils->failure( "Found all boundary nodes" );
         }
     }
+}
+
+
+// This tests basic id info
+void testID( AMP::UnitTest *utils )
+{
+    unsigned int num_failed0 = utils->NumFailLocal();
+    // Create some IDs for testing
+    AMP::Mesh::MeshElementID id0;
+    AMP::Mesh::MeshElementID id1(false,AMP::Mesh::Vertex,2,1,103);
+    AMP::Mesh::MeshElementID id2(true,AMP::Mesh::Vertex,2,1,103);
+    AMP::Mesh::MeshElementID id3(true,AMP::Mesh::Volume,2,1,103);
+    AMP::Mesh::MeshElementID id4(true,AMP::Mesh::Vertex,3,1,103);
+    AMP::Mesh::MeshElementID id5(true,AMP::Mesh::Vertex,2,4,103);
+    AMP::Mesh::MeshElementID id6(true,AMP::Mesh::Vertex,2,1,105);
+    // Test == and != operators
+    if ( !(id1==id1) || !(id1==id2) )
+        utils->failure("MeshElementID test ==");
+    if ( (id1!=id1) || (id1!=id2) )
+        utils->failure("MeshElementID test !=");
+    if ( id1==id3 || id1==id4 || id1==id5 || id1==id6 )
+        utils->failure("MeshElementID test == (2)");
+    // Test that the basic properties were assigned correctly
+    if ( id1.is_local() || !id2.is_local() )
+        utils->failure("MeshElementID test is_local");
+    if ( id1.type()!=AMP::Mesh::Vertex || id1.local_id()!=2 || id1.owner_rank()!=1 || id1.meshID()!=103 )
+        utils->failure("MeshElementID test values");
+    id1.set_is_local(true);
+    id2.set_is_local(false);
+    if ( !id1.is_local() || id2.is_local() )
+        utils->failure("MeshElementID test is_local (2)");
+    // test greater than and less than operators
+    if ( !(id1<=id2) || !(id1>=id2) || id1>id2 || id1<id2 )
+        utils->failure("MeshElementID test <,> (1)");
+    if ( id1>id3 || id1>=id3 || id3<id1 || id3<=id1 )
+        utils->failure("MeshElementID test <,> (2)");
+    if ( id1>id4 || id1>=id4 || id4<id1 || id4<=id1 )
+        utils->failure("MeshElementID test <,> (3)");
+    if ( id1>id5 || id1>=id5 || id5<id1 || id5<=id1 )
+        utils->failure("MeshElementID test <,> (4)");
+    if ( id1>id6 || id1>=id6 || id6<id1 || id6<=id1 )
+        utils->failure("MeshElementID test <,> (5)");
+    // The elements should sort by meshID, processor id, type, then local id
+    std::vector<AMP::Mesh::MeshElementID> list(6);
+    list[0] = id0;
+    list[1] = id3;
+    list[2] = id4;
+    list[3] = id6;
+    list[4] = id5;
+    list[5] = id1;
+    AMP::Utilities::quicksort(list);
+    if ( list[0]!=id1 || list[1]!=id4 || list[2]!=id3 || list[3]!=id5 || list[4]!=id6 || list[5]!=id0 )
+        utils->failure("MeshElementID test sort");
+    // Test the default values
+    if ( id0.meshID()!=static_cast<size_t>(-1) || id0.is_local() || id0.type()!=0 || id0.owner_rank()!=0 || id0.local_id()!=static_cast<unsigned int>(-1) )
+        utils->failure("MeshElementID test defaults");
+    if ( num_failed0 == utils->NumFailLocal() )
+        utils->passes("MeshElementID tests");
+    else
+        utils->failure("MeshElementID tests");
 }
 
 

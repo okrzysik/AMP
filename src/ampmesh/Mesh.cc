@@ -17,6 +17,7 @@ static unsigned int nextLocalMeshID = 1;
 Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
 {
     // Set the base properties
+    AMP_ASSERT(sizeof(MeshElementID)==16);
     params = params_in;
     GeomDim = null;
     comm = params->comm;

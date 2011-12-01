@@ -20,7 +20,7 @@ libMeshElement::libMeshElement()
     element = NULL;
     d_dim = -1;
     d_elementType = null;
-    d_globalID = MeshElementID();
+    d_globalID = MeshElementID(false,null,-1,-1,-1);
 }
 libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element, 
     unsigned int rank, size_t meshID, libMesh* mesh)
@@ -34,22 +34,23 @@ libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element,
     d_mesh = mesh;
     d_meshID = meshID;
     ptr_element = libmesh_element;
-    d_globalID = MeshElementID();
-    d_globalID.type = type;
-    d_globalID.meshID = meshID;
+    unsigned int local_id=-1;
+    unsigned int owner_rank=-1;
+    bool is_local=false;
     if ( d_elementType==Vertex ) {
         d_elementType = Vertex;
         ::Node* node = (::Node*) ptr_element;
-        d_globalID.local_id = node->id();
-        d_globalID.owner_rank = node->processor_id();
-        d_globalID.is_local = d_globalID.owner_rank==d_rank;
+        local_id = node->id();
+        owner_rank = node->processor_id();
+        is_local = owner_rank==d_rank;
     } else {
         d_elementType = (GeomType) dim;
         ::Elem* elem = (::Elem*) ptr_element;
-        d_globalID.local_id = elem->id();
-        d_globalID.owner_rank = elem->processor_id();
-        d_globalID.is_local = d_globalID.owner_rank==d_rank;
+        local_id = elem->id();
+        owner_rank = elem->processor_id();
+        is_local = owner_rank==d_rank;
     }
+    d_globalID = MeshElementID(is_local,d_elementType,local_id,owner_rank,meshID);
 }
 libMeshElement::libMeshElement(const libMeshElement& rhs)
 {

@@ -340,11 +340,11 @@ MeshIterator libMesh::getIDsetIterator ( const GeomType type, const int id, cons
 ********************************************************/
 std::vector< ::Node* > libMesh::getNeighborNodes( MeshElementID id )
 {
-    AMP_INSIST(id.type==Vertex,"This function is for nodes");
-    AMP_INSIST(id.meshID==d_meshID,"Unknown mesh");
-    AMP_INSIST(id.is_local,"Only owned nodes can return their neighbor lists");
-    int i = AMP::Utilities::findfirst(neighborNodeIDs,id.local_id);
-    AMP_ASSERT(neighborNodeIDs[i]==id.local_id);
+    AMP_INSIST(id.type()==Vertex,"This function is for nodes");
+    AMP_INSIST(id.meshID()==d_meshID,"Unknown mesh");
+    AMP_INSIST(id.is_local(),"Only owned nodes can return their neighbor lists");
+    int i = AMP::Utilities::findfirst(neighborNodeIDs,id.local_id());
+    AMP_ASSERT(neighborNodeIDs[i]==id.local_id());
     return neighborNodes[i];
 }
 
