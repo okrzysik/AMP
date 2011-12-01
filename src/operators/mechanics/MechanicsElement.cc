@@ -25,6 +25,12 @@ namespace Operator {
 
     d_useJaumannRate = (params->d_db)->getBoolWithDefault("USE_JAUMANN_RATE", false);
 
+    d_useFlanaganTaylorElem = (params->d_db)->getBoolWithDefault("USE_FLANAGAN_TAYLOR_ELEMENT_FORMULATION", false);
+
+    if(d_useFlanaganTaylorElem == true) {
+      AMP_INSIST((d_useJaumannRate == false), "Flanagan Taylor element formulation can only be used with Green-Naghdi stress rate.");
+    }
+
     std::string feTypeOrderName = (params->d_db)->getStringWithDefault("FE_ORDER", "FIRST");
 
     libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>(feTypeOrderName);
