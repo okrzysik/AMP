@@ -1,11 +1,12 @@
 
-//mesh_file = "mesh3_mod"
-mesh_file = "mesh2_mod"
-//mesh_file = "mesh2_mod_1"
+mesh_file = "oneBrick0"
+//mesh_file = "distortedBrick0"
+//mesh_file = "tenBrick0"
+//mesh_file = "twentyBrick0"
 
 NumberOfMeshes = 0
 
-NumberOfLoadingSteps = 10
+NumberOfLoadingSteps = 40
 
 OutputFileName = "checkMatrix.txt"
 
@@ -29,16 +30,16 @@ MechanicsNonlinearFEOperator1 {
 
         MechanicsElement {
           name="MechanicsNonlinearUpdatedLagrangianElement"
-            USE_REDUCED_INTEGRATION = FALSE 
+            USE_REDUCED_INTEGRATION = FALSE
             USE_JAUMANN_RATE = FALSE
-            USE_FLANAGAN_TAYLOR_ELEMENT_FORMULATION = FALSE
+            USE_FLANAGAN_TAYLOR_ELEMENT_FORMULATION = TRUE
             FE_ORDER = "FIRST"  
             FE_FAMILY = "LAGRANGE"
             QRULE_TYPE = "QGAUSS"
             QRULE_ORDER = "DEFAULT"
         }
 
-	LocalModel = "VonMisesElastoPlasticModel1"
+	LocalModel = "IsotropicElasticModel1"
 }
 
 DirichletVectorCorrection1 {
@@ -49,39 +50,67 @@ DirichletVectorCorrection1 {
       valuesType = 1
       isAttachedToVolumeOperator = TRUE
 
-      number_of_ids = 3
+      number_of_ids = 4
 
       id_0 = 1
-      number_of_dofs_0 = 1
+      number_of_dofs_0 = 3
       dof_0_0 = 0
+      dof_0_1 = 1
+      dof_0_2 = 2
       value_0_0 = 0.0
+      value_0_1 = 0.0
+      value_0_2 = 0.0
 
-      id_1 = 2
-      number_of_dofs_1 = 2
-      dof_1_0 = 1
-      dof_1_1 = 2
+      //id_1 = 2
+      //number_of_dofs_1 = 2
+      //dof_1_0 = 0
+      //dof_1_1 = 1
+      //value_1_0 = 0.0
+      //value_1_1 = 0.0
+
+      //id_2 = 3
+      //number_of_dofs_2 = 1
+      //dof_2_0 = 1
+      //value_2_0 = 0.0
+
+      id_1 = 8
+      number_of_dofs_1 = 1
+      dof_1_0 = 2
       value_1_0 = 0.0
-      value_1_1 = 0.0
 
-      id_2 = 3
+      id_2 = 8
       number_of_dofs_2 = 1
-      dof_2_0 = 2
-      value_2_0 = 0.0
+      dof_2_0 = 1
+      value_2_0 = 0.16
+
+      id_3 = 8
+      number_of_dofs_3 = 1
+      dof_3_0 = 0
+      value_3_0 = 0.0
+
+      //number_of_ids = 1
+      //id_0 = 1
+      //number_of_dofs_0 = 3
+      //dof_0_0 = 0
+      //dof_0_1 = 1
+      //dof_0_2 = 2
+      //value_0_0 = 0.0
+      //value_0_1 = 0.0
+      //value_0_2 = 0.0
 }
 
-VonMisesElastoPlasticModel1 {
+IsotropicElasticModel1 {
         USE_MATERIALS_LIBRARY = FALSE
         USE_UPDATED_LAGRANGIAN = TRUE
         USE_JAUMANN_RATE = FALSE
-        USE_CONTINUUM_TANGENT = FALSE
         print_info_level = 6
           Material = ""
-          //name = "VonMisesElastoPlasticModel"
           name = "IsotropicElasticModel"
-          Youngs_Modulus = 1.0e5
-          Poissons_Ratio = 0.3
-          Linear_Strain_Hardening = 5000.0
-          Elastic_Yield_Stress = 250.0
+          //name = "VonMisesElastoPlasticModel"
+          Youngs_Modulus = 1.0e2
+          Poissons_Ratio = 0.0
+          Linear_Strain_Hardening = 5.0
+          Elastic_Yield_Stress = 0.25
           Default_Temperature = 0.0
           Default_Burnup = 0.0
           Default_Oxygen_Concentration = 0.0
@@ -106,13 +135,13 @@ MechanicsLinearFEOperator2 {
           name="MechanicsLinearUpdatedLagrangianElement"
             USE_REDUCED_INTEGRATION = FALSE 
             USE_JAUMANN_RATE = FALSE
-            USE_FLANAGAN_TAYLOR_ELEMENT_FORMULATION = FALSE
+            USE_FLANAGAN_TAYLOR_ELEMENT_FORMULATION = TRUE
             FE_ORDER = "FIRST"  
             FE_FAMILY = "LAGRANGE"
             QRULE_TYPE = "QGAUSS"
             QRULE_ORDER = "DEFAULT"
         }
-}
+    }
 
 DirichletMatrixCorrection2 {
     name = "DirichletMatrixCorrection"
@@ -122,20 +151,41 @@ DirichletMatrixCorrection2 {
       zero_dirichlet_block = FALSE
       skip_rhs_correction = TRUE
 
-      number_of_ids = 3
+      number_of_ids = 4
 
       id_0 = 1
-      number_of_dofs_0 = 1
+      number_of_dofs_0 = 3
       dof_0_0 = 0
+      dof_0_1 = 1
+      dof_0_2 = 2
 
-      id_1 = 2
-      number_of_dofs_1 = 2
-      dof_1_0 = 1
-      dof_1_1 = 2
+      //id_1 = 2
+      //number_of_dofs_1 = 2
+      //dof_1_0 = 0
+      //dof_1_1 = 1
 
-      id_2 = 3
+      //id_2 = 3
+      //number_of_dofs_2 = 1
+      //dof_2_0 = 1
+
+      id_1 = 8
+      number_of_dofs_1 = 1
+      dof_1_0 = 2
+
+      id_2 = 8
       number_of_dofs_2 = 1
-      dof_2_0 = 2
+      dof_2_0 = 1
+
+      id_3 = 8
+      number_of_dofs_3 = 1
+      dof_3_0 = 0
+
+      //number_of_ids = 1
+      //id_0 = 1
+      //number_of_dofs_0 = 3
+      //dof_0_0 = 0
+      //dof_0_1 = 1
+      //dof_0_2 = 2
   }
 
 Load_Boundary {
@@ -146,41 +196,27 @@ Load_Boundary {
     valuesType = 1
     isAttachedToVolumeOperator = FALSE
 
-    //number_of_ids = 1
-
-    //id_0 = 9
-    //number_of_dofs_0 = 1
-    //dof_0_0 = 0
-    //value_0_0 = 0.06
-
     number_of_ids = 4
     
-    id_0 = 5
+    id_0 = 4
     number_of_dofs_0 = 1
-    dof_0_0 = 0
-    value_0_0 = 1.28
+    dof_0_0 = 1
+    value_0_0 = 0.0
     
-    id_1 = 6
+    id_1 = 5
     number_of_dofs_1 = 1
-    dof_1_0 = 0
-    value_1_0 = 0.64
+    dof_1_0 = 1
+    value_1_0 = 0.0
     
-    id_2 = 7
+    id_2 = 6
     number_of_dofs_2 = 1
-    dof_2_0 = 0
-    value_2_0 = 0.64
+    dof_2_0 = 1
+    value_2_0 = 0.0
     
-    id_3 = 8
+    id_3 = 7
     number_of_dofs_3 = 1
-    dof_3_0 = 0
-    value_3_0 = 0.32
-
-    //number_of_ids = 1
-
-    //id_0 = 10
-    //number_of_dofs_0 = 1
-    //dof_0_0 = 0
-    //value_0_0 = 1.5
+    dof_3_0 = 1
+    value_3_0 = 0.0
 }
 
 NonlinearSolver{
@@ -189,12 +225,12 @@ NonlinearSolver{
     max_error = 1e-10
 
     absoluteTolerance = 1.0e-15
-    relativeTolerance = 1.0e-11
+    relativeTolerance = 1.0e-12
     stepTolerance = 1.0e-10
     maximumFunctionEvals = 1000
     usesJacobian=TRUE
 
-    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ls_alpha 0.0000001"
+    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ls_alpha 0.0001"
 
     LinearSolver{
       print_info_level = 1
@@ -202,7 +238,7 @@ NonlinearSolver{
         max_error = 1e-10
         ksp_type = "fgmres"
         absolute_tolerance = 1.0e-15
-        relative_tolerance = 1.0e-10
+        relative_tolerance = 1.0e-13
         divergence_tolerance = 1.0e03
         max_krylov_dimension = 40
         uses_preconditioner=TRUE
@@ -212,12 +248,17 @@ NonlinearSolver{
         KSPOptions = "-ksp_monitor -ksp_converged_reason"
 
         Preconditioner{
-            problem_type = "SA"
-            print_info_level = 1
+          print_info_level = 1
             PDE_equations = 3
             max_levels = 1
             max_iterations = 1
             max_error = 1.0e-10
+            increasingordecreasing = "increasing"
+            aggregationtype = "Uncoupled"
+            smoothertype = "Chebyshev"
+            smoother_sweeps = 3
+            smoother_preorpost = "both"
+            coarse_type="Amesos-KLU"
         }
     }
 }
