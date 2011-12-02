@@ -218,7 +218,7 @@ std::vector<boost::shared_ptr<AMP::Database> >  MultiMesh::createDatabases(boost
                     // These keys are used by the mesh-array and should not be copied
                 } else {
                     // We need to copy the key
-                    copyKey(database1,database2,keys[k],N,i);
+                    copyKey(database1,database2,keys[k],N,j);
                 }
             }
             // Recursively replace all instances of iterator with the index

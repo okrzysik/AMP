@@ -107,8 +107,6 @@ boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build ( AMP::
             maps.push_back(mymap);
         }
 
-std::cout << maps[0].meshName << " " << maps[0].boundaryId << ", " << maps[1].meshName << " " << maps[1].boundaryId << std::endl;
-
         // Create the maps
         for (size_t j=0; j<maps.size(); j++) {
 
