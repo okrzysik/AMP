@@ -6,6 +6,7 @@ namespace AMP {
 
     PelletStackOperator :: PelletStackOperator(const boost::shared_ptr<OperatorParameters> & params)
       : Operator(params) {
+        d_totalNumberOfPellets = (params->d_db)->getInteger("TOTAL_NUMBER_OF_PELLETS");
         d_useSerial = (params->d_db)->getBool("USE_SERIAL");
         d_onlyZcorrection = (params->d_db)->getBool("ONLY_Z_CORRECTION");
         if((params->d_db)->keyExists("SCALING_FACTOR")) {
@@ -14,6 +15,7 @@ namespace AMP {
         } else {
           d_useScaling = false;
         }
+        d_currentPellet = 0;
       }
 
     bool PelletStackOperator :: useSerial() {
@@ -29,10 +31,11 @@ namespace AMP {
     }
 
     void PelletStackOperator :: setCurrentPellet(unsigned int pellId) {
+      d_currentPellet = pellId;
     }
 
     unsigned int PelletStackOperator :: getTotalNumberOfPellets() {
-      return 0;
+      return d_totalNumberOfPellets;
     }
 
     bool PelletStackOperator :: hasPellet(unsigned int pellId) {

@@ -39,6 +39,8 @@ namespace AMP {
 
       protected:
 
+        unsigned int d_totalNumberOfPellets;
+        unsigned int d_currentPellet;
         bool d_useSerial;
         bool d_onlyZcorrection;
         bool d_useScaling;
