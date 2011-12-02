@@ -155,24 +155,26 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
               nonlinearBVPoperator->modifyInitialSolutionVector(solVec);
 
-              std::cout<<"Solving ";
-              if(useUL) {
-                std::cout<<"UL ";
-              } else {
-                std::cout<<"SS ";
+              if(globalComm.getRank() == 0) {
+                std::cout<<"Solving ";
+                if(useUL) {
+                  std::cout<<"UL ";
+                } else {
+                  std::cout<<"SS ";
+                }
+                if(useConsistent) {
+                  std::cout<<"Consistent ";
+                } else {
+                  std::cout<<"Continuum ";
+                }
+                if(useJFNK) {
+                  std::cout<<"with JFNK ";
+                }
+                if(useEW) {
+                  std::cout<<"with EW ";
+                }
+                std::cout<<" on mesh: "<<meshFile<<std::endl;
               }
-              if(useConsistent) {
-                std::cout<<"Consistent ";
-              } else {
-                std::cout<<"Continuum ";
-              }
-              if(useJFNK) {
-                std::cout<<"with JFNK ";
-              }
-              if(useEW) {
-                std::cout<<"with EW ";
-              }
-              std::cout<<" on mesh: "<<meshFile<<std::endl;
 
               boost::shared_ptr<AMP::Solver::PetscSNESSolver> snesSolver;
               boost::shared_ptr<AMP::Solver::PetscKrylovSolver> kspSolver;
@@ -202,6 +204,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
               kspSolver->setPreconditioner(mlSolver);
 
+#ifdef USE_SILO
+              manager->registerVectorAsData(solVec, "Displacement");
+              char outFileName[200];
+              sprintf(outFileName, "%s_case_%d", exeName.c_str(), caseCnt);
+              manager->writeFile<AMP::Mesh::SiloIO>(outFileName, 1);
+#endif
+
               snesSolver->solve(rhsVec, solVec);
 
               size_t numDofs = solVec->getGlobalSize();
@@ -222,10 +231,18 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
               AMP_ASSERT( (reason == SNES_CONVERGED_FNORM_ABS) ||
                   (reason == SNES_CONVERGED_FNORM_RELATIVE) );
 
-              double plFrac =  vonMisesModel->getFractionPlastic();
+              unsigned int locPlCount = vonMisesModel->getLocalPlasticGaussPointCount();
+              unsigned int locGpCount = vonMisesModel->getLocalGaussPointCount();
 
-              std::cout<<"Result: "<<numDofs<<" & "<<plFrac<<" & "<<nlFnCnt
-                <<" & "<<snesItsCnt<<" & "<<kspItsCnt<<" \\\\ "<<std::endl;
+              unsigned int totPlCount = globalComm.sumReduce<unsigned int>(locPlCount);
+              unsigned int totGpCount = globalComm.sumReduce<unsigned int>(locGpCount);
+
+              double plFrac = 100.0*((double)totPlCount) / ((double)totGpCount);
+
+              if(globalComm.getRank() == 0) {
+                std::cout<<"Result: "<<numDofs<<" & "<<plFrac<<" & "<<nlFnCnt
+                  <<" & "<<snesItsCnt<<" & "<<kspItsCnt<<" \\\\ "<<std::endl;
+              }
             }//end if caseToRun
             caseCnt++;
           }//end useEW

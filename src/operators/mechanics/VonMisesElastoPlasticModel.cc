@@ -333,16 +333,16 @@ namespace AMP {
 
       const double* stre_np1;
       double ystre_np1;
-      double eph_bar_plas_np1;
+     // double eph_bar_plas_np1;
 
       if(d_jacobianReusesRadialReturn) {
         stre_np1 = &(d_tmp1Stress[6*d_gaussPtCnt]);
         ystre_np1 = d_tmp1YieldStress[d_gaussPtCnt];
-        eph_bar_plas_np1 = d_tmp1EffectivePlasticStrain[d_gaussPtCnt];
+        //eph_bar_plas_np1 = d_tmp1EffectivePlasticStrain[d_gaussPtCnt];
       } else {
         stre_np1 = &(d_tmp2Stress[6*d_gaussPtCnt]);
         ystre_np1 = d_tmp2YieldStress[d_gaussPtCnt];
-        eph_bar_plas_np1 = d_tmp2EffectivePlasticStrain[d_gaussPtCnt];
+        //eph_bar_plas_np1 = d_tmp2EffectivePlasticStrain[d_gaussPtCnt];
       }
 
       double sig_np1[6];

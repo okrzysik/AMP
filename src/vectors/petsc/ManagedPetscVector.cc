@@ -665,6 +665,7 @@ namespace LinearAlgebra {
       }
 
     ierr = PetscObjectChangeTypeName(reinterpret_cast<PetscObject>(d_petscVec), my_name.c_str());
+    AMP_INSIST(ierr==0, "PetscObjectChangeTypeName returned non-zero error code");
 
     VecSetFromOptions ( d_petscVec );
   }

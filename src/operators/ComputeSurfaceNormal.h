@@ -6,6 +6,7 @@
 
 #include "vectors/Vector.h"
 #include "operators/OperatorParameters.h"
+#include "operators/Operator.h"
 #include "ampmesh/Mesh.h"
 
 /* Libmesh files */

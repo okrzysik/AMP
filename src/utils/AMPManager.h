@@ -28,6 +28,16 @@ public:
     //! Print the time required to initialize or shutdown each package.  Default is false.
     bool print_times;
 
+    /*!
+     *  MPI communicator to use for AMP_COMM_WORLD.  By default this should be set to 
+     *  AMP_COMM_WORLD if MPI is not initialized.  If MPI is initialized, this can be 
+     *  set to AMP_COMM_WORLD, MPI_COMM_WORLD, or any valid MPI communicator.  If it
+     *  is set to AMP_COMM_WORLD then is will default internally to MPI_COMM_WORLD.  
+     *  Note:  Currently AMP_COMM_WORLD cannot be changed once AMPManager::startup 
+     *  has been called.
+     */
+    MPI_Comm  COMM_WORLD;
+
 private:
     friend class AMPManager;
     
@@ -87,12 +97,12 @@ private:
     AMPManager() {  }
 
     // Static variables
-    static bool initialized;
+    static int initialized;
     static bool called_MPI_Init;
     static bool called_PetscInitialize;
     static bool use_MPI_Abort;
     static bool print_times;
-    static AMP_MPI comm;
+    static AMP_MPI comm_world;
     static int argc;
     static char** argv;
     static AMPManagerProperties properties;
@@ -100,6 +110,8 @@ private:
     //! abort must be a friend to access use_MPI_Abort to change the abort behavior
     friend void AMP::Utilities::abort(const std::string &, const std::string &, const int);
 
+    //! AMP_MPI must be a friend to access comm_world
+    friend class AMP::AMP_MPI;
 };
 
 

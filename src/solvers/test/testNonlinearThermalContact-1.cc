@@ -361,9 +361,8 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
 	  nonlinearSolver1->solve(RightHandSideVec1, TemperatureInKelvinVec1);
           a = TemperatureInKelvinVec1->L2Norm();
           nonlinearThermalOperator1->apply(RightHandSideVec1, TemperatureInKelvinVec1, ResidualVec1);
-          a = TemperatureInKelvinVec1->L2Norm();
 
-          std::cout<<"Norm of TemperatureInKelvinVec1: "<< TemperatureInKelvinVec1->L2Norm() <<endl;
+          std::cout<<"Norm of TemperatureInKelvinVec1: "<< a <<endl;
 
           //------------------------------------------------------------
           map1ToLowDim->apply(nullVec,TemperatureInKelvinVec1,gapVecClad ,1.0, 0.0);

@@ -8,6 +8,8 @@
 #include "Independent.h"
 
 #include "Property.h"
+#include "VectorProperty.h"
+#include "TensorProperty.h"
 #include "Material.h"
 
 #include <string>
@@ -77,7 +79,7 @@ Journal of Nuclear Materials 394 (2009) 182--189");
 	class SoretCoefficientProp : public Property<double>{
 	public:
 		SoretCoefficientProp() :
-			Property<double> (	name_base + "_" + "FickCoefficient",		// Name string
+			Property<double> (	name_base + "_" + "SoretCoefficient",		// Name string
 								source,										// Reference source
 								&fickval,									// Property parameters
 								1U,											// Number of parameters
@@ -233,30 +235,51 @@ Journal of Nuclear Materials 394 (2009) 182--189");
 		virtual double eval( std::vector<double>& args );
 	};
 
-	class VectorFickCoefficientProp : public Property<double>{
+	class VectorFickCoefficientProp : public VectorProperty<double>{
 	public:
-		VectorFickCoefficientProp() :
-			Property<double> (	name_base + "_" + "VectorFickCoefficient",	// Name string
+		VectorFickCoefficientProp(const size_t dim=1) :
+		VectorProperty<double> (name_base + "_" + "VectorFickCoefficient",	// Name string
 								source,										// Reference source
 								fickVectorVal,								// Property parameters
-								3U,											// Number of parameters
+								1U,											// Number of parameters
 								arguments,									// Names of arguments to the eval function
 								0,											// Number of arguments
-								(double(*)[2])(NULL), false, true, false){}
+								(double(*)[2])(NULL),						// ranges
+								dim)										// dimension
+								{AMP_INSIST(d_nparams==dim, "dimensions and number of parameters don't match");
+								 d_variableNumberParameters = true;
+								 d_variableDimension = true;}
+
+		// NOTE: must change dimension first before changing number of parameters
+		virtual void set_parameters_and_number(const double* params, const unsigned int nparams) {
+			AMP_INSIST(d_dimension == nparams, "number of new parameters must be same as dimension");
+			Property<double>::set_parameters_and_number(params, nparams);
+		}
 
 		virtual std::vector<double> evalVector( std::vector<double>& args );
 	};
 
-	class TensorFickCoefficientProp : public Property<double>{
+	class TensorFickCoefficientProp : public TensorProperty<double>{
 	public:
-		TensorFickCoefficientProp() :
-			Property<double> (	name_base + "_" + "FickCoefficient",		// Name string
+		TensorFickCoefficientProp(const std::vector<size_t> dims=std::vector<size_t>(2,1)) :
+		TensorProperty<double> (name_base + "_" + "TensorFickCoefficient",		// Name string
 								source,										// Reference source
 								fickTensorVal,								// Property parameters
-								9U,											// Number of parameters
+								1U,											// Number of parameters
 								arguments,									// Names of arguments to the eval function
 								0,											// Number of arguments
-								(double(*)[2])(NULL), false, false, true){}
+								(double(*)[2])(NULL),						// ranges
+								dims)										// dimensions
+								{AMP_INSIST(d_nparams==dims[0]*dims[1], "dimensions and number of parameters don't match");
+								 d_variableNumberParameters = true;
+								 d_variableDimensions=true;}
+
+		// NOTE: must change dimension first before changing number of parameters
+		virtual void set_parameters_and_number(const double* params, const unsigned int nparams) {
+			AMP_INSIST(d_dimensions[0]*d_dimensions[1] == nparams,
+					"number of new parameters must be product of dimensions");
+			Property<double>::set_parameters_and_number(params, nparams);
+		}
 
 		virtual std::vector<std::vector<double> > evalTensor( std::vector<double>& args );
 	};
@@ -330,15 +353,17 @@ Journal of Nuclear Materials 394 (2009) 182--189");
 		  return get_parameters()[0];
 	}
 
-	inline std::vector<double> VectorFickCoefficientProp::evalVector( std::vector<double>& args ){
-		  std::vector<double> result(3);
-		  for (size_t i=0; i<3; i++) result[i] = d_params[i];
+	std::vector<double> VectorFickCoefficientProp::evalVector( std::vector<double>& args ){
+		  std::vector<double> result(d_dimension);
+		  for (size_t i=0; i<d_dimension; i++) result[i] = d_params[i];
 		  return result;
 	}
 
-	inline std::vector<std::vector<double> > TensorFickCoefficientProp::evalTensor( std::vector<double>& args ){
-		  std::vector<std::vector<double> > result(3, std::vector<double>(3));
-		  for (size_t i=0; i<3; i++) for (size_t j=0; j<3; j++) result[i][j] = d_params[i*3+j];
+	std::vector<std::vector<double> > TensorFickCoefficientProp::evalTensor( std::vector<double>& args ){
+		  std::vector<std::vector<double> > result(d_dimensions[0], std::vector<double>(d_dimensions[1]));
+		  for (size_t i=0; i<d_dimensions[0]; i++)
+			  for (size_t j=0; j<d_dimensions[1]; j++)
+				  result[i][j] = d_params[i*d_dimensions[1]+j];
 		  return result;
 	}
 }
@@ -363,8 +388,9 @@ Independent::Independent()
 		INSERT_PROPERTY_IN_MAP(YoungsModulus, 			Independent_NS);
 		INSERT_PROPERTY_IN_MAP(PoissonRatio, 			Independent_NS);
 		INSERT_PROPERTY_IN_MAP(ThermalDiffusionCoefficient,	Independent_NS);
+		INSERT_PROPERTY_IN_MAP(VectorFickCoefficient, Independent_NS);
+		INSERT_PROPERTY_IN_MAP(TensorFickCoefficient, Independent_NS);
 }
-
 
 } 
 }

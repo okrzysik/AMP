@@ -7,6 +7,7 @@
 
 #include "DiffusionTransportTensorModel.h"
 #include "utils/Database.h"
+#include "utils/Utilities.h"
 #include <cmath>
 
 namespace AMP {
@@ -17,6 +18,12 @@ DiffusionTransportTensorModel(const boost::shared_ptr<DiffusionTransportTensorMo
 DiffusionTransportModel(params)
 {
 	d_IsTensor = true;
+
+	std::string modelName = params->d_db->getString("name");
+	if (not (modelName == "DiffusionCylindricalTransportModel")) {
+		AMP_INSIST(d_property->isTensor(), "material property must be of tensor type");
+		d_tensorProperty = boost::dynamic_pointer_cast<AMP::Materials::TensorProperty<double> >(d_property);
+	}
 }
 
 void
@@ -47,7 +54,7 @@ getTensorTransport(
 	// evaluate material property
 	// material library has been temporarily supplied with a dummy evalv for tensors
 	// new material interface will fix.
-	d_property->evalv(result, args);
+	d_tensorProperty->evalv(result, args);
 
 	if (d_UseBilogScaling) {
 		// restore untransformed argument value

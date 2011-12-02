@@ -90,6 +90,14 @@ namespace AMP {
 
         void nonlinearJacobianGaussPointOperation_UL(const std::vector<std::vector<double> >&, double[3][3], double[3][3] );
 
+        unsigned int getLocalPlasticGaussPointCount() {
+          return Plastic_Gauss_Point;
+        }
+
+        unsigned int getLocalGaussPointCount() {
+          return Total_Gauss_Point;
+        }
+
         double getFractionPlastic() {
           double Plastic_Fraction = ((double)Plastic_Gauss_Point) / ((double)Total_Gauss_Point);
           Plastic_Fraction = Plastic_Fraction * 100.0;

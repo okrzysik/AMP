@@ -240,6 +240,39 @@ namespace Operator {
       d_materialModel->nonlinearInitGaussPointOperation(tempAtGaussPt);
 
       d_materialModel->postNonlinearInitGaussPointOperation();
+
+      if((d_useJaumannRate == false) && (d_useFlanaganTaylorElem == true)) {
+        for(unsigned int i = 0; i < 3; i++) {
+          for(unsigned int j = 0; j < 3; j++) {
+
+            if(i == j) {
+              d_leftStretchV_n.push_back(1.0);
+            } else {
+              d_leftStretchV_n.push_back(0.0);
+            }
+
+            if(i == j) {
+              d_leftStretchV_np1.push_back(1.0);
+            } else {
+              d_leftStretchV_np1.push_back(0.0);
+            }
+
+            if(i == j) {
+              d_rotationR_n.push_back(1.0);
+            } else {
+              d_rotationR_n.push_back(0.0);
+            }
+
+            if(i == j) {
+              d_rotationR_np1.push_back(1.0);
+            } else {
+              d_rotationR_np1.push_back(0.0);
+            }
+          }
+        }
+
+        d_gaussPtCnt++;
+      }
     }//end for qp
 
     d_materialModel->postNonlinearInitElementOperation();
@@ -316,7 +349,8 @@ namespace Operator {
       d_materialModel->preNonlinearAssemblyGaussPointOperation();
 
       double F_n[3][3], F_np1[3][3], F_np1o2[3][3], U_n[3][3], U_np1[3][3], U_np1o2[3][3], R_n[3][3], R_np1[3][3], R_np1o2[3][3];
-      double Identity[3][3], e_np1o2_tilda_rotated[3][3], Bl_np1[6][24], spin_np1[3][3], d_np1[3][3], el_np1[6], detF = 1.0, detF_np1, detF_n;
+      //double Identity[3][3], e_np1o2_tilda_rotated[3][3], Bl_np1[6][24], spin_np1[3][3], d_np1[3][3], el_np1[6], detF = 1.0, detF_np1, detF_n;
+      double Identity[3][3], e_np1o2_tilda_rotated[3][3], Bl_np1[6][24], spin_np1[3][3], d_np1[3][3], el_np1[6], detF = 1.0;
       double dN_dxnp1o2[8], dN_dynp1o2[8], dN_dznp1o2[8], detJ_np1o2[1], d_np1o2[3][3], d_np1o2_temp[3][3];
      
       computeShapeFunctions(N, currXi[qp], currEta[qp], currZeta[qp]);
@@ -353,14 +387,153 @@ namespace Operator {
         }
         //std::cout<<"difference in F's = "<<difference<<std::endl;
 
-        // Polar decomposition (F=RU) of the deformation gradient is conducted here.
-        //std::cout<<"Will do it for the n-th step."<<std::endl;
-        polarDecompositionFeqRU_Simo(F_n, R_n, U_n);
-        //polarDecomposeRU(F_n, R_n, U_n);
-        polarDecompositionFeqRU_Simo(F_np1, R_np1, U_np1);
-        //polarDecomposeRU(F_np1, R_np1, U_np1);
-        polarDecompositionFeqRU_Simo(F_np1o2, R_np1o2, U_np1o2);
-        //polarDecomposeRU(F_np1o2, R_np1o2, U_np1o2);
+        if(d_useFlanaganTaylorElem == false) {
+          // Polar decomposition (F=RU) of the deformation gradient is conducted here.
+          //std::cout<<"Will do it for the n-th step."<<std::endl;
+          polarDecompositionFeqRU_Simo(F_n, R_n, U_n);
+          //polarDecomposeRU(F_n, R_n, U_n);
+          polarDecompositionFeqRU_Simo(F_np1, R_np1, U_np1);
+          //polarDecomposeRU(F_np1, R_np1, U_np1);
+          polarDecompositionFeqRU_Simo(F_np1o2, R_np1o2, U_np1o2);
+          //polarDecomposeRU(F_np1o2, R_np1o2, U_np1o2);
+        } else {
+          // The Flanagan-Taylor element formulation is being implemented here.
+          double R_curr[3][3], V_curr[3][3], R_prev[3][3], V_prev[3][3];
+          double L_curr[3][3], D_curr[3][3], W_curr[3][3], Omega[3][3], tempMat[3][3], invTempMat[3][3];
+          double ImhO[3][3], IphO[3][3], invImhO[3][3], IphOR_prev[3][3];
+          double DpWV[3][3], VO[3][3], delta_V[3][3], DV[3][3], VD[3][3], Z_curr[3][3];
+          double z[3], w[3], omega[3], tempVec[3];
+          double traceV_curr;
+
+          for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+              R_curr[i][j] = d_rotationR_np1[(9 * d_gaussPtCnt) + (3 * i) + j];
+              R_prev[i][j] = d_rotationR_n[(9 * d_gaussPtCnt) + (3 * i) + j];
+              V_curr[i][j] = d_leftStretchV_np1[(9 * d_gaussPtCnt) + (3 * i) + j];
+              V_prev[i][j] = d_leftStretchV_n[(9 * d_gaussPtCnt) + (3 * i) + j];
+              Omega[i][j] = 0.0;
+            }
+          }
+
+          constructShapeFunctionDerivatives(dNdx, dNdy, dNdz, currX, currY, currZ, currXi[qp], currEta[qp], currZeta[qp], detJ);
+          computeGradient(dNdx, dNdy, dNdz, delta_u, delta_v, delta_w, num_nodes, L_curr);
+
+          for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+              D_curr[i][j] = 0.5 * (L_curr[i][j] + L_curr[j][i]);
+              W_curr[i][j] = 0.5 * (L_curr[i][j] - L_curr[j][i]);
+            }
+          }
+
+          w[0] = W_curr[2][1];
+          w[1] = W_curr[0][2];
+          w[2] = W_curr[1][0];
+
+          matMatMultiply(D_curr, V_curr, DV);
+
+          matMatMultiply(V_curr, D_curr, VD);
+
+          for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+              Z_curr[i][j] = DV[i][j] - VD[i][j];
+              //AMP::pout<<"D_curr["<<i<<"]["<<j<<"]="<<D_curr[i][j]<<"    V_curr["<<i<<"]["<<j<<"]="<<V_curr[i][j]<<"    Z_curr["<<i<<"]["<<j<<"]="<<Z_curr[i][j]<<std::endl;
+            }
+          }
+
+          z[0] = z[1] = z[2] = 0.0;
+          for(int i = 0; i < 3; i++) {
+            //z[0] = (D_curr[2][i] * V_curr[i][1]) - (D_curr[1][i] * V_curr[i][2]);
+            z[0] = Z_curr[2][1];
+            //z[1] = - (D_curr[2][i] * V_curr[i][0]) + (D_curr[0][i] * V_curr[i][2]);
+            z[1] = Z_curr[0][2];
+            //z[2] = (D_curr[1][i] * V_curr[i][0]) - (D_curr[0][i] * V_curr[i][1]);
+            z[2] = Z_curr[1][0];
+          }
+
+          traceV_curr = V_curr[0][0] + V_curr[1][1] + V_curr[2][2];
+          for(int i = 0; i < 3; i++) 
+            for(int j = 0; j < 3; j++) 
+              tempMat[i][j] = ((Identity[i][j] * traceV_curr) - V_curr[i][j]);
+
+          matInverse(tempMat, invTempMat);
+
+          matVecMultiply(invTempMat, z, tempVec);
+          for(int i = 0; i < 3; i++) 
+            tempVec[i] = 1.0 * tempVec[i];
+
+          vecVecAddition(w, tempVec, omega);
+          for(int i = 0; i < 3; i++) 
+            omega[i] = 1.0 * omega[i];
+
+          if(d_iDebugPrintInfoLevel > 11) {
+            for(int i = 0; i < 3; i++) { 
+              AMP::pout<<"tempVec["<<i<<"]="<<tempVec[i]<<"  z["<<i<<"]="<<z[i]<<std::endl;
+            }
+          }
+        
+          Omega[0][1] = -omega[2];
+          Omega[0][2] = omega[1];
+          Omega[1][0] = omega[2];
+          Omega[1][2] = -omega[0];
+          Omega[2][0] = -omega[1];
+          Omega[2][1] = omega[0];
+
+          for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+              ImhO[i][j] = Identity[i][j] - (0.5 * Omega[i][j]);
+              IphO[i][j] = Identity[i][j] + (0.5 * Omega[i][j]);
+            }
+          }
+
+          matMatMultiply(IphO, R_prev, IphOR_prev);
+
+          matInverse(ImhO, invImhO);
+
+          if(d_iDebugPrintInfoLevel > 11) {
+            for(int i = 0; i < 3; i++) { 
+              for(int j = 0; j < 3; j++) {
+                AMP::pout<<"ImhO["<<i<<"]["<<j<<"]="<<ImhO[i][j]<<"  invImhO["<<i<<"]["<<j<<"]="<<invImhO[i][j]<<std::endl;
+              }
+            }
+          }
+        
+          matMatMultiply(invImhO, IphOR_prev, R_curr);
+
+          matMatMultiply(L_curr, V_curr, DpWV);
+
+          matMatMultiply(V_curr, Omega, VO);
+
+          for(int i = 0; i < 3; i++)
+            for(int j = 0; j < 3; j++)
+              delta_V[i][j] = DpWV[i][j] - VO[i][j];
+
+          for(int i = 0; i < 3; i++)
+            for(int j = 0; j < 3; j++)
+              V_curr[i][j] = V_prev[i][j] + delta_V[i][j];
+
+          for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+              //AMP::pout<<"delta_V["<<i<<"]["<<j<<"]="<<delta_V[i][j]<<"    DpWV["<<i<<"]["<<j<<"]="<<DpWV[i][j]<<"    VO["<<i<<"]["<<j<<"]="<<VO[i][j]<<std::endl;
+              d_rotationR_np1[(9 * d_gaussPtCnt) + (3 * i) + j] = R_curr[i][j];
+              d_leftStretchV_np1[(9 * d_gaussPtCnt) + (3 * i) + j] = V_curr[i][j];
+              // The rotation matrices are updated here.
+              R_n[i][j] = R_prev[i][j];
+              R_np1o2[i][j] = R_curr[i][j]; // Mid-step rotation tensor gets the value of the current rotation tensor.
+              R_np1[i][j] = R_curr[i][j];
+            }
+          }
+
+          d_gaussPtCnt++;
+        } // Flanagan-Taylor element formulation ends here.
+
+        if(d_iDebugPrintInfoLevel > 11) {
+          for(int i = 0; i < 3; i++) { 
+            for(int j = 0; j < 3; j++) {
+              //R_np1o2[i][j] = R_np1[i][j];
+              AMP::pout<<"R_n["<<i<<"]["<<j<<"]="<<R_n[i][j]<<"  R_np1["<<i<<"]["<<j<<"]="<<R_np1[i][j]<<std::endl;
+            }
+          }
+        }
         
         // Gradient of the incremental displacement with respect to the np1o2 configuration.
         constructShapeFunctionDerivatives(dN_dxnp1o2, dN_dynp1o2, dN_dznp1o2, x_np1o2, y_np1o2, z_np1o2, currXi[qp], currEta[qp], currZeta[qp], detJ_np1o2);
@@ -426,8 +599,8 @@ namespace Operator {
           }
         }
 
-        detF_np1 = matDeterminant(F_np1);
-        detF_n = matDeterminant(F_n);
+        //detF_np1 = matDeterminant(F_np1);
+        //detF_n = matDeterminant(F_n);
         //detF = detF_np1 / detF_n;
         detF = 1.0; // Based on a test by Bathe, this transformation is not required. So temporary hack, passing unity.
       }
@@ -658,10 +831,12 @@ namespace Operator {
         //computeDeformationGradient(dphi, xyz_np1o2, num_nodes, qp, F_np1o2);
         computeGradient(dNdX, dNdY, dNdZ, x_np1o2, y_np1o2, z_np1o2, num_nodes, F_np1o2);
   
-        // Polar decomposition (F=RU) of the deformation gradient is conducted here.
-        //std::cout<<"Will do it for the n-th step."<<std::endl;
-        polarDecompositionFeqRU_Simo(F_np1o2, R_np1o2, U_np1o2);
-        //polarDecomposeRU(F_np1o2, R_np1o2, U_np1o2);
+        if(d_useFlanaganTaylorElem == false) {
+          // Polar decomposition (F=RU) of the deformation gradient is conducted here.
+          //std::cout<<"Will do it for the n-th step."<<std::endl;
+          polarDecompositionFeqRU_Simo(F_np1o2, R_np1o2, U_np1o2);
+          //polarDecomposeRU(F_np1o2, R_np1o2, U_np1o2);
+        }
         
         // Gradient of the incremental displacement with respect to the np1o2 configuration.
         constructShapeFunctionDerivatives(dN_dxnp1o2, dN_dynp1o2, dN_dznp1o2, x_np1o2, y_np1o2, z_np1o2, currXi[qp], currEta[qp], currZeta[qp], detJ_np1o2);
@@ -756,14 +931,16 @@ namespace Operator {
       computeGradient(dNdX, dNdY, dNdZ, x_np1o2, y_np1o2, z_np1o2, num_nodes, F_np1o2);
   
       if(d_useJaumannRate == false) {
-        // Polar decomposition (F=RU) of the deformation gradient is conducted here.
-        //std::cout<<"Will do it for the n-th step."<<std::endl;
-        polarDecompositionFeqRU_Simo(F_n, R_n, U_n);
-        //polarDecomposeRU(F_n, R_n, U_n);
-        polarDecompositionFeqRU_Simo(F_np1, R_np1, U_np1);
-        //polarDecomposeRU(F_np1, R_np1, U_np1);
-        polarDecompositionFeqRU_Simo(F_np1o2, R_np1o2, U_np1o2);
-        //polarDecomposeRU(F_np1o2, R_np1o2, U_np1o2);
+        if(d_useFlanaganTaylorElem == false) {
+          // Polar decomposition (F=RU) of the deformation gradient is conducted here.
+          //std::cout<<"Will do it for the n-th step."<<std::endl;
+          polarDecompositionFeqRU_Simo(F_n, R_n, U_n);
+          //polarDecomposeRU(F_n, R_n, U_n);
+          polarDecompositionFeqRU_Simo(F_np1, R_np1, U_np1);
+          //polarDecomposeRU(F_np1, R_np1, U_np1);
+          polarDecompositionFeqRU_Simo(F_np1o2, R_np1o2, U_np1o2);
+          //polarDecomposeRU(F_np1o2, R_np1o2, U_np1o2);
+        }
         
         // Gradient of the incremental displacement with respect to the np1o2 configuration.
         constructShapeFunctionDerivatives(dN_dxnp1o2, dN_dynp1o2, dN_dznp1o2, x_np1o2, y_np1o2, z_np1o2, currXi[qp], currEta[qp], currZeta[qp], detJ_np1o2);
@@ -1012,6 +1189,19 @@ namespace Operator {
       elementRefXYZ[(3 * ijk) + 2] = xyz[ijk](2);
     }
 
+  }
+
+  void MechanicsNonlinearUpdatedLagrangianElement :: preNonlinearElementInit()
+  {
+    d_leftStretchV_n.clear();
+
+    d_leftStretchV_np1.clear();
+
+    d_rotationR_n.clear();
+
+    d_rotationR_np1.clear();
+
+    d_gaussPtCnt = 0;
   }
 
 }

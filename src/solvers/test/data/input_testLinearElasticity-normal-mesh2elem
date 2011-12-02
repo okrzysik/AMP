@@ -27,16 +27,8 @@ Load_Boundary {
 
 LinearSolver{
   print_info_level = 3
-    max_iterations = 10000
-    max_error = 1e-10
-    max_levels = 10
-    ML_output = 10
-    increasingordecreasing = "increasing"
-    aggregationtype = "Uncoupled"
-    smoothertype = "Chebyshev"
-    smoother_sweeps = 3
-    smoother_preorpost = "both"
-    coarse_type = "Amesos-KLU"
+    max_iterations = 50
+    max_error = 1e-15
     PDE_equations = 3
 }
 

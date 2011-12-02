@@ -183,6 +183,8 @@ COPY_TEST_DATA_FILE ( input_Diffusion-TUI-Soret-1 )
 COPY_TEST_DATA_FILE ( input_Diffusion-UO2MSRZC09-Thermal-1 )
 COPY_TEST_DATA_FILE ( input_Diffusion-UO2MSRZC09-Fick-1 )
 COPY_TEST_DATA_FILE ( input_Diffusion-UO2MSRZC09-Soret-1 )
+COPY_TEST_DATA_FILE ( input_Diffusion-TUI-TensorFick-1 )
+COPY_TEST_DATA_FILE ( input_Diffusion-CylindricalFick-1 )
 
 ADD_AMP_TEST_1_2_4 ( testLinearDiffusion-2 )
 COPY_TEST_DATA_FILE ( input_Diffusion-TUI-Thermal-2  )
@@ -220,6 +222,8 @@ COPY_TEST_DATA_FILE ( input_Diffusion-TUI-Soret-ActiveTemperatureAndConcentratio
 COPY_TEST_DATA_FILE ( input_Diffusion-UO2MSRZC09-Thermal-ActiveTemperatureAndConcentration-1 )
 COPY_TEST_DATA_FILE ( input_Diffusion-UO2MSRZC09-Fick-ActiveTemperatureAndConcentration-1 )
 COPY_TEST_DATA_FILE ( input_Diffusion-UO2MSRZC09-Soret-ActiveTemperatureAndConcentration-1 )
+COPY_TEST_DATA_FILE ( input_Diffusion-TUI-TensorFick-1 )
+COPY_TEST_DATA_FILE ( input_Diffusion-CylindricalFick-1 )
 
 ADD_AMP_TEST_1_2_4 ( testNonlinearDiffusion-2 )
 COPY_TEST_DATA_FILE ( input_Diffusion-TUI-Thermal-1  )

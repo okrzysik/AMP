@@ -35,12 +35,12 @@ namespace AMP {
 
 
 // Initialize static member variables
-bool AMPManager::initialized=false;
+int AMPManager::initialized=0;
 bool AMPManager::called_MPI_Init=false;
 bool AMPManager::called_PetscInitialize=false;
 bool AMPManager::use_MPI_Abort=true;
 bool AMPManager::print_times=false;
-AMP_MPI AMPManager::comm=AMP::AMP_MPI();
+AMP_MPI AMPManager::comm_world=AMP::AMP_MPI();
 int AMPManager::argc=0;
 char** AMPManager::argv=NULL;
 AMPManagerProperties AMPManager::properties=AMPManagerProperties();
@@ -77,8 +77,10 @@ AMPManagerProperties AMPManager::properties=AMPManagerProperties();
 void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerProperties &properties_in)
 {
     // Check if AMP was previously initialized
-    if ( initialized )
-        AMP_ERROR("AMP was previously initialized");
+    if ( initialized==1 )
+        AMP_ERROR("AMP was previously initialized and shutdown.  It cannot be reinitialized");
+    if ( initialized==-1 )
+        AMP_ERROR("AMP was previously initialized and shutdown.  It cannot be reinitialized");
     double start_time = time();
     double startup_time=0, petsc_time=0, MPI_time=0;
     argc = argc_in;
@@ -115,25 +117,19 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
         }
     #endif
     // Initialize AMP's MPI
-    comm = AMP_MPI(AMP_COMM_WORLD);
-    int size1 = comm.getSize();
-    #ifdef USE_MPI
-        int size2 = 0;
-        MPI_Comm_size(MPI_COMM_WORLD,&size2);
-    #else
-        int size2 = 1;
-    #endif
-    AMP_INSIST(size1==size2,"AMP's MPI size does not match MPI_COMM_WORLD");
-    // Initialize the parallel IO
+    if ( properties.COMM_WORLD == AMP_COMM_WORLD ) 
+        comm_world = AMP_MPI(MPI_COMM_WORLD);
+    else
+        comm_world = AMP_MPI(properties.COMM_WORLD);    // Initialize the parallel IO
     PIO::initialize();
     // Initialize the random number generator
     AMP::RNG::initialize(123);
     // Initialize the Materials interface
     //AMP::Materials::initialize();
     // Initialization finished
-    initialized = true;
+    initialized = 1;
     startup_time = time()-start_time;
-    if ( print_times && comm.getRank()==0 ) {
+    if ( print_times && comm_world.getRank()==0 ) {
         printf("startup time = %0.3f s\n",startup_time);
         if ( petsc_time!=0 )
             printf(" PETSc startup time = %0.3f s\n",petsc_time);
@@ -153,12 +149,13 @@ void AMPManager::shutdown()
 {    
     double start_time = time();
     double shutdown_time=0, petsc_time=0, MPI_time=0;
-    int rank = comm.getRank();
-    // Check if AMP was previously initialized
-    if ( !initialized )
+    int rank = comm_world.getRank();
+    if ( initialized==0 )
         AMP_ERROR("AMP is not initialized, did you forget to call startup or call shutdown more than once");
+    if ( initialized==-1 )
+        AMP_ERROR("AMP has been initialized and shutdown.  Calling shutdown more than once is invalid");
     // Syncronize all processors
-    comm.barrier();
+    comm_world.barrier();
     ShutdownRegistry::callRegisteredShutdowns();
     // Shutdown the parallel IO
     PIO::finalize();
@@ -205,6 +202,7 @@ void AMPManager::shutdown()
 AMPManagerProperties::AMPManagerProperties() {
     use_MPI_Abort = true;
     print_times = false;
+    COMM_WORLD = AMP_COMM_WORLD;
 }
 
 

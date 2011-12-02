@@ -4,23 +4,23 @@ Mesh = "halden_1_pellet_9mil.e"
 NumberOfMeshes = 1
 Mesh_1{
   Filename = "halden_1_pellet_9mil.e"
-  MeshName = "bar"
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 1000
+    MeshName = "bar"
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
+    NumberOfElements = 1000
 }
 
 NeutronicsOperator{
   name="NeutronicsRhsOperator"
-  type               = "Power"
-  OutputVariable     = "SpecificPowerInWattsPerGram"
-  numTimeSteps       = 1
-  numValues          = 1
-  timeSteps          = .1
-  useFixedValue      = TRUE
-  fixedValues        = 1000.
-  print_info_level   = 3
+    type               = "Power"
+    OutputVariable     = "SpecificPowerInWattsPerGram"
+    numTimeSteps       = 1
+    numValues          = 1
+    timeSteps          = .1
+    useFixedValue      = TRUE
+    fixedValues        = 1000.
+    print_info_level   = 3
 }
 
 NonlinearThermalOperator {
@@ -31,49 +31,49 @@ NonlinearThermalOperator {
 }
 
 DiffusionNonlinearFEOperator1 {
-      name = "DiffusionNonlinearFEOperator" 
-        print_info_level = 1
-        ActiveInputVariables {
-          temperature = "Temperature"
-        }
-      OutputVariable = "Temperature"
-        PrincipalVariable = 0 
-
-        DiffusionElement{
-          name = "DiffusionNonlinearElement"
-            TransportAtGaussPoints = TRUE
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }    
-
-	LocalModel = "DiffusionTransportModel1"
+  name = "DiffusionNonlinearFEOperator" 
+    print_info_level = 1
+    ActiveInputVariables {
+      temperature = "Temperature"
     }
+  OutputVariable = "Temperature"
+    PrincipalVariable = 0 
+
+    DiffusionElement{
+      name = "DiffusionNonlinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+
+  LocalModel = "DiffusionTransportModel1"
+}
 
 DirichletVectorCorrection1 {
-          name="DirichletVectorCorrection"
-          skip_params = FALSE
-          isAttachedToVolumeOperator = TRUE
-          skip_rhs_correction = FALSE
-          skip_rhs_add_correction = FALSE
-          print_info_level = 0
-          number_of_ids = 1
-          id_0             =   1
-          number_of_dofs_0 =   1
-          dof_0_0          =   0
-          value_0_0        =   557.2
+  name="DirichletVectorCorrection"
+    skip_params = FALSE
+    isAttachedToVolumeOperator = TRUE
+    skip_rhs_correction = FALSE
+    skip_rhs_add_correction = FALSE
+    print_info_level = 0
+    number_of_ids = 1
+    id_0             =   1
+    number_of_dofs_0 =   1
+    dof_0_0          =   0
+    value_0_0        =   557.2
 
 }
 
 DiffusionTransportModel1{
-        name = "DiffusionTransportModel"
-        Material = "UO2_MSRZC_09"
-          Property = "ThermalConductivity"
-          Default_Concentration = 0.0
-          Default_Temperature   = 557.2
-          Default_Burnup   = 0.0
-      } 
+  name = "DiffusionTransportModel"
+    Material = "UO2_MSRZC_09"
+    Property = "ThermalConductivity"
+    Default_Concentration = 0.0
+    Default_Temperature   = 557.2
+    Default_Burnup   = 0.0
+} 
 
 LinearThermalOperator {
   name = "LinearBVPOperator"
@@ -83,36 +83,36 @@ LinearThermalOperator {
 }
 
 DiffusionLinearFEOperator2 {
-      name = "DiffusionLinearFEOperator"
-        print_info_level = 1
-        reset_reuses_matrix = TRUE
-        InputVariable = "Temperature"
-        OutputVariable = "Temperature"
-        FixedTemperature = FALSE
+  name = "DiffusionLinearFEOperator"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    InputVariable = "Temperature"
+    OutputVariable = "Temperature"
+    FixedTemperature = FALSE
 
-        DiffusionElement {
-          name = "DiffusionLinearElement"
-            TransportAtGaussPoints = TRUE
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }    
+    DiffusionElement {
+      name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
 
-	LocalModel = "DiffusionTransportModel1"
-    }
+  LocalModel = "DiffusionTransportModel1"
+}
 
 DirichletMatrixCorrection2 {
-          name="DirichletMatrixCorrection"
-          skip_params = FALSE
-          skip_rhs_correction = FALSE
-          skip_rhs_add_correction = TRUE
-          print_info_level = 0
-          number_of_ids = 1
-          id_0             =   1
-          number_of_dofs_0 =   1
-          dof_0_0          =   0
-          value_0_0        =   0.0
+  name="DirichletMatrixCorrection"
+    skip_params = FALSE
+    skip_rhs_correction = FALSE
+    skip_rhs_add_correction = TRUE
+    print_info_level = 0
+    number_of_ids = 1
+    id_0             =   1
+    number_of_dofs_0 =   1
+    dof_0_0          =   0
+    value_0_0        =   0.0
 
 }
 
@@ -128,26 +128,26 @@ VolumeIntegralOperator{
   OutputVariable = "heatsource"
     print_info_level = 3
     LocalModel = "SourcePhysicsModel"
-  SourceElement {
-    name="SourceNonlinearElement"
-      print_info_level = 3
-      FE_ORDER = "FIRST"  
-      FE_FAMILY = "LAGRANGE"
-      QRULE_TYPE = "QGAUSS"
-      QRULE_ORDER = "DEFAULT"
-  }
+    SourceElement {
+      name="SourceNonlinearElement"
+        print_info_level = 3
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
 }
 
 SourcePhysicsModel {
-      name = "SourcePhysicsModel"
-        Material = "UO2_MSRZC_09"
-        USE_ELEMENT_PHYSICS = "MassDensityModel"
-        Equation = "ThermalSource"
-        USE_MATERIALS_LIBRARY = TRUE 
-        Default_Concentration = .1
-        Default_Temperature   = 557.2 
-        Default_Burnup   = 0.0
-    }
+  name = "SourcePhysicsModel"
+    Material = "UO2_MSRZC_09"
+    USE_ELEMENT_PHYSICS = "MassDensityModel"
+    Equation = "ThermalSource"
+    USE_MATERIALS_LIBRARY = TRUE 
+    Default_Concentration = .1
+    Default_Temperature   = 557.2 
+    Default_Burnup   = 0.0
+}
 
 
 LinearSolver{
@@ -246,16 +246,12 @@ NonlinearSolver{
         Preconditioner{
           print_info_level = 0
             max_iterations = 1
-            max_levels = 10
-            max_error = 1.0e-10
+            max_error = 1.0e-15
 
             pelletThermalPreconditioner{
               print_info_level = 0
                 max_iterations = 1
-                max_levels = 10
                 max_error = 1.0e-15
-                coarse_type="Amesos-KLU"
-                PDE_equations = 1
             }
 
         }

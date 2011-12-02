@@ -13,6 +13,10 @@
 
 #include "Property.h"
 
+// do not use property name with an embedded underscore
+#define INSERT_PROPERTY_IN_MAP(name,space) \
+	d_propertyMap->insert(std::make_pair( #name, boost::shared_ptr<space::name##Prop>(new space::name##Prop)));
+
 namespace AMP {
 namespace Materials {
 
@@ -43,17 +47,18 @@ public:
 
 public:
 
-	// check if a property exists in the material
+	/// check if a property exists in the material
 	bool hasProperty(std::string type);
 
-	// get a pointer to a specific property through its name
+	/// get a pointer to a specific scalar property through its name
 	PropertyPtr property(std::string type);
 
-	// return a list of all properties in this material
+	/// return a list of all properties in this material
 	std::vector<std::string> list();
 
 protected:
 
+	/// database of scalar properties
 	std::map<std::string, PropertyPtr > *d_propertyMap;
 };
 
@@ -75,6 +80,7 @@ namespace																\
 #include "Ox_MSRZC_09.h"
 #include "Steel316_MSRZC_09.h"
 #include "UO2_MSRZC_09.h"
+#include "RadialPolynomial.h"
 
 
 

@@ -14,9 +14,9 @@
     typedef int MPI_Comm;
     typedef int MPI_Request;
 #endif
-#define AMP_COMM_WORLD ((MPI_Comm)0x44000000)
-#define AMP_COMM_SELF  ((MPI_Comm)0x44000001)
-#define AMP_COMM_NULL  ((MPI_Comm)0x04000000)
+#define AMP_COMM_WORLD ((MPI_Comm)0xF4000010)
+#define AMP_COMM_SELF  ((MPI_Comm)0xF4000001)
+#define AMP_COMM_NULL  ((MPI_Comm)0xF4000000)
 
 
 

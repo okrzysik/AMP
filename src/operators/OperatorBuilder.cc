@@ -421,9 +421,12 @@ OperatorBuilder::createLinearDiffusionOperator( AMP::Mesh::MeshManager::Adapter:
     }
   else
     {
-      AMP_INSIST(input_db->keyExists("DiffusionTransportModel"), "Key ''DiffusionTransportModel'' is missing!");
-      
-      boost::shared_ptr<AMP::Database> transportModel_db = input_db->getDatabase("DiffusionTransportModel");
+	  boost::shared_ptr<AMP::Database> transportModel_db;
+      if (input_db->keyExists("DiffusionTransportModel")) {
+    	  transportModel_db = input_db->getDatabase("DiffusionTransportModel");
+      } else {
+    	  AMP_INSIST(false, "Key ''DiffusionTransportModel'' is missing!");
+      }
       elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
       transportModel = boost::dynamic_pointer_cast<DiffusionTransportModel>(elementPhysicsModel);
     }
@@ -513,19 +516,15 @@ OperatorBuilder::createNonlinearDiffusionOperator( AMP::Mesh::MeshManager::Adapt
   if(elementPhysicsModel.get()!=NULL)
     {
       transportModel = boost::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>(elementPhysicsModel);
-      if ( !transportModel )
-        {
-          AMP_INSIST(input_db->keyExists("DiffusionTransportModel"), "Key ''DiffusionTransportModel'' is missing!");
-	  
-          boost::shared_ptr<AMP::Database> transportModel_db = input_db->getDatabase("DiffusionTransportModel");
-          transportModel = boost::dynamic_pointer_cast<DiffusionTransportModel>(ElementPhysicsModelFactory::createElementPhysicsModel ( transportModel_db ) );
-        }
     }
   else
     {
-      AMP_INSIST(input_db->keyExists("DiffusionTransportModel"), "Key ''DiffusionTransportModel'' is missing!");
-      
-      boost::shared_ptr<AMP::Database> transportModel_db = input_db->getDatabase("DiffusionTransportModel");
+	  boost::shared_ptr<AMP::Database> transportModel_db;
+      if (input_db->keyExists("DiffusionTransportModel")) {
+    	  transportModel_db = input_db->getDatabase("DiffusionTransportModel");
+      } else {
+    	  AMP_INSIST(false, "Key ''DiffusionTransportModel'' is missing!");
+      }
       elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
       transportModel = boost::dynamic_pointer_cast<DiffusionTransportModel>(elementPhysicsModel);
     }

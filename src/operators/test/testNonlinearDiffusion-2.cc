@@ -78,7 +78,9 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName,
   std::cout.flush();
 
   // set up defaults for materials arguments and create transport model
-  boost::shared_ptr<AMP::Database> transportModel_db = input_db->getDatabase("DiffusionTransportModel");
+  boost::shared_ptr<AMP::Database> transportModel_db;
+  if (input_db->keyExists("DiffusionTransportModel"))
+	  transportModel_db = input_db->getDatabase("DiffusionTransportModel");
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
           AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
   boost::shared_ptr<AMP::Operator::DiffusionTransportModel> transportModel =

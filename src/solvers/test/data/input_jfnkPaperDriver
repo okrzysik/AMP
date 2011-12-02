@@ -1,11 +1,28 @@
 
 NumberOfMeshes = 0
 NumberOfMeshFiles = 1
-mesh1 = "regPlateWithHole1"
+mesh1 = "regBox1"
+//mesh1 = "regBox2"
+//mesh1 = "regPlateWithHole1"
+//mesh1 = "regPlateWithHole2"
 
 //Remove "CaseToRun" to run all cases
-//CaseToRun = 0
-CaseToRun = 1
+CaseToRun = 0
+//CaseToRun = 1
+
+LoadOperator {
+  name="DirichletVectorCorrection"
+    print_info_level = 0
+    skip_params = FALSE
+    isAttachedToVolumeOperator = FALSE
+    setResidual = FALSE
+    valuesType = 1
+    number_of_ids = 1
+    id_0 = 1
+    number_of_dofs_0 = 1
+    dof_0_0 = 2
+    value_0_0 = 1.0
+}
 
 ULConsistentModel {
   USE_MATERIALS_LIBRARY = FALSE
@@ -15,10 +32,10 @@ ULConsistentModel {
     USE_JAUMANN_RATE = FALSE
     print_info_level = 0
     name = "VonMisesElastoPlasticModel"
-    Youngs_Modulus = 2.0e5
+    Youngs_Modulus = 2.0e11
     Poissons_Ratio = 0.25
-    Linear_Strain_Hardening = 200.0
-    Elastic_Yield_Stress = 15.0
+    Linear_Strain_Hardening = 1.0e8
+    Elastic_Yield_Stress = 5.0e7
 }
 
 ULContinuumModel {
@@ -29,10 +46,10 @@ ULContinuumModel {
     USE_JAUMANN_RATE = FALSE
     print_info_level = 0
     name = "VonMisesElastoPlasticModel"
-    Youngs_Modulus = 2.0e5
+    Youngs_Modulus = 2.0e11
     Poissons_Ratio = 0.25
-    Linear_Strain_Hardening = 200.0
-    Elastic_Yield_Stress = 15.0
+    Linear_Strain_Hardening = 1.0e8
+    Elastic_Yield_Stress = 5.0e7
 }
 
 SSConsistentModel {
@@ -43,10 +60,10 @@ SSConsistentModel {
     USE_JAUMANN_RATE = FALSE
     print_info_level = 0
     name = "VonMisesElastoPlasticModel"
-    Youngs_Modulus = 2.0e5
+    Youngs_Modulus = 2.0e11
     Poissons_Ratio = 0.25
-    Linear_Strain_Hardening = 200.0
-    Elastic_Yield_Stress = 15.0
+    Linear_Strain_Hardening = 1.0e8
+    Elastic_Yield_Stress = 5.0e7
 }
 
 SSContinuumModel {
@@ -57,10 +74,10 @@ SSContinuumModel {
     USE_JAUMANN_RATE = FALSE
     print_info_level = 0
     name = "VonMisesElastoPlasticModel"
-    Youngs_Modulus = 2.0e5
+    Youngs_Modulus = 2.0e11
     Poissons_Ratio = 0.25
-    Linear_Strain_Hardening = 200.0
-    Elastic_Yield_Stress = 15.0
+    Linear_Strain_Hardening = 1.0e8
+    Elastic_Yield_Stress = 5.0e7
 }
 
 MechanicsLinearFEOperatorUL {
@@ -243,20 +260,6 @@ NonlinearBVP_SS_Continuum {
     BoundaryOperator = "DirichletVectorCorrection"
 }
 
-LoadOperator {
-  name="DirichletVectorCorrection"
-    print_info_level = 0
-    skip_params = FALSE
-    isAttachedToVolumeOperator = FALSE
-    setResidual = FALSE
-    valuesType = 1
-    number_of_ids = 1
-    id_0 = 1
-    number_of_dofs_0 = 1
-    dof_0_0 = 2
-    value_0_0 = 10.0
-}
-
 DirichletVectorCorrection {
   name="DirichletVectorCorrection"
     print_info_level = 0
@@ -291,12 +294,8 @@ DirichletMatrixCorrection {
 }
 
 ML_Solver {
-  problem_type = "SA"
     print_info_level = 0
     max_iterations = 1
-    //max_levels = 1
-    //max_levels = 10
-    max_levels = 20
     max_error = 1.0e-16
     PDE_equations = 3
 }
@@ -387,12 +386,12 @@ SNES_EW {
 
 SNES {
   print_info_level = 0 
-    max_iterations = 30
+    max_iterations = 200
     max_error = 1e-10
-    absoluteTolerance = 1.0e-10
-    relativeTolerance = 1.0e-11
+    absoluteTolerance = 1.0e-9
+    relativeTolerance = 1.0e-10
     stepTolerance = 1.0e-12
-    maximumFunctionEvals = 1000
+    maximumFunctionEvals = 10000
     zero_initial_guess = FALSE
     usesJacobian = TRUE
 
@@ -400,16 +399,16 @@ SNES {
 
     LinearSolver {
       print_info_level = 0
-        max_iterations = 20
+        max_iterations = 50
         max_error = 1.0e-30
         ksp_type = "cg"
         absolute_tolerance = 1.0e-30
-        relative_tolerance = 1.0e-12
+        relative_tolerance = 1.0e-11
         divergence_tolerance = 1.0e03
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "LEFT"
-        KSPOptions = "-ksp_monitor_cancel -ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 20"
+        KSPOptions = "-ksp_monitor_cancel -ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 50"
     }
 }
 

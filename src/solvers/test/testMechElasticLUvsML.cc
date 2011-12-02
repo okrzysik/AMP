@@ -99,7 +99,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
     size_t numDofs = solVec->getGlobalSize();
 
-    std::cout<<"Solving using LU"<<std::endl;
+    if(globalComm.getRank() == 0) {
+      std::cout<<"Solving using LU"<<std::endl;
+    }
+    globalComm.barrier();
     double luStartTime = AMP::AMP_MPI::time();
 
     boost::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> luParams(new AMP::Solver::TrilinosMLSolverParameters(lu_db));
@@ -115,6 +118,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
     richSolver->solve(rhsVec, solVec);
 
+    globalComm.barrier();
     double luEndTime = AMP::AMP_MPI::time();
 
     PetscInt richIters = 0;
@@ -133,7 +137,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     solVec->zero();
     resVec->zero();
 
-    std::cout<<"Solving using ML"<<std::endl;
+    if(globalComm.getRank() == 0) {
+      std::cout<<"Solving using ML"<<std::endl;
+    }
+    globalComm.barrier();
     double mlStartTime = AMP::AMP_MPI::time();
 
     boost::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> mlParams(new AMP::Solver::TrilinosMLSolverParameters(ml_db));
@@ -149,6 +156,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
     cgSolver->solve(rhsVec, solVec);
 
+    globalComm.barrier();
     double mlEndTime = AMP::AMP_MPI::time();
 
     PetscInt cgIters = 0;
@@ -163,9 +171,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     cgSolver.reset();
     mlPC.reset();
 
-    std::cout<<"Result: "<<numDofs<<" & "<<globalComm.getSize()<<
-      " & "<<cgIters<<" & "<<(luEndTime - luStartTime)<<" & "
-      <<(mlEndTime - mlStartTime)<<" \\\\ "<<std::endl; 
+    if(globalComm.getRank() == 0) {
+      std::cout<<"Result: "<<numDofs<<" & "<<globalComm.getSize()<<
+        " & "<<cgIters<<" & "<<(luEndTime - luStartTime)<<" & "
+        <<(mlEndTime - mlStartTime)<<" \\\\ "<<std::endl; 
+    }
 
   }//end for meshId
 

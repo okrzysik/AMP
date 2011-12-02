@@ -338,7 +338,7 @@ namespace AMP {
 
       double E = d_E[d_gaussPtCnt];
       double Nu = d_Nu[d_gaussPtCnt]; 
-      double H = d_H;
+      //double H = d_H;
       //double Sig0 = d_Sig0;
       double tol = 1.0E-12;
 
@@ -346,22 +346,23 @@ namespace AMP {
       int el_or_pl = d_ElPl[d_gaussPtCnt];
 
       const double* stre_np1;
-      double ystre_np1;
-      double eph_bar_plas_np1;
+      //double ystre_np1;
+      //double eph_bar_plas_np1;
 
       if(d_jacobianReusesRadialReturn) {
         stre_np1 = &(d_tmp1Stress[6*d_gaussPtCnt]);
-        ystre_np1 = d_tmp1YieldStress[d_gaussPtCnt];
-        eph_bar_plas_np1 = d_tmp1EffectivePlasticStrain[d_gaussPtCnt];
+        //ystre_np1 = d_tmp1YieldStress[d_gaussPtCnt];
+        //eph_bar_plas_np1 = d_tmp1EffectivePlasticStrain[d_gaussPtCnt];
       } else {
         stre_np1 = &(d_tmp2Stress[6*d_gaussPtCnt]);
-        ystre_np1 = d_tmp2YieldStress[d_gaussPtCnt];
-        eph_bar_plas_np1 = d_tmp2EffectivePlasticStrain[d_gaussPtCnt];
+        //ystre_np1 = d_tmp2YieldStress[d_gaussPtCnt];
+        //eph_bar_plas_np1 = d_tmp2EffectivePlasticStrain[d_gaussPtCnt];
       }
 
       double sig_np1[6];
-      double sigy_np1;
-      double G, K, Ep, sq23;
+      //double sigy_np1;
+      //double G, K, Ep, sq23;
+      double G, K;
       double one3, two3, three2 = 3.0 / 2.0;
       double sig_dev[6], n_dir[6];
       double q_np1, sig_np1_kk, q_trial, lam, dlam_dqtr;
@@ -370,7 +371,7 @@ namespace AMP {
 
       one3 = 1.0/3.0;
       two3 = 2.0/3.0;
-      sq23 = sqrt(two3);
+      //sq23 = sqrt(two3);
 
       d_Delta_Time = d_currentTime - d_previousTime;
 
@@ -417,7 +418,7 @@ namespace AMP {
       }
 
       // Stress inside the plastic range : The elasto-plastic tangent is calculated. 
-      sigy_np1 = ystre_np1;               //Yield stress.
+      //sigy_np1 = ystre_np1;               //Yield stress.
       lam = lambda;
       term1 = 2.0 * (1.0 + Nu);
       term2 = 3.0 * (1.0 - (2.0 * Nu));
@@ -425,7 +426,7 @@ namespace AMP {
       G = E/(2.0*(1.0 + Nu));              // of Elastic
       AMP_INSIST(term2 > tol, "Divide by zero in PericElastoViscoPlasticModel. Line 258");
       K = E/(3.0*(1.0 - (2.0*Nu)));        // and other
-      Ep = H;                           // constants.
+      //Ep = H;                           // constants.
 
       //for(int i = 0; i < 6; i++) {
       //std::cout << "stre_np1[" << i << "] = " << stre_np1[i] << std::endl;
@@ -695,8 +696,10 @@ namespace AMP {
       double sig_n[6], d_strain[6];
       double ephbp_n, ephbp_np1, sigy_n, sigy_np1, lam, d_lam;
       double E1, dE1_dlam;
-      double G, K, Ep, sq23, term1, term2;
-      double tol = 1.0E-12, one3, two3;
+      //double G, K, Ep, sq23, term1, term2;
+      double G, K, Ep, term1, term2;
+      //double tol = 1.0E-12, one3, two3;
+      double tol = 1.0E-12, one3;
       double deph_dev[6], sig_dev[6], sig_trial_dev[6], n_dir[6];
       double deph_kk, sig_kk, sig_trial_kk, q_trial, twoG, phi;
       double one2 = 1.0 / 2.0, three2 = 3.0 / 2.0;
@@ -720,8 +723,8 @@ namespace AMP {
             }
             */
       one3 = 1.0/3.0;
-      two3 = 2.0/3.0;
-      sq23 = sqrt(two3);
+      //two3 = 2.0/3.0;
+      //sq23 = sqrt(two3);
       ephbp_n = eph_bar_plas_n;    //Effective plastic strain at the previous time step.
       sigy_n = ystre_n;           //Yield stress at the previous time step.
       term1 = 2.0 * (1.0 + Nu);

@@ -272,10 +272,11 @@ int main(int argc, char *argv[])
     AMP::AMPManager::startup(argc, argv);
     AMP::UnitTest ut;
 
-  const int NUMFILES=6;
+  const int NUMFILES=8;
   std::string files[NUMFILES] = {
           "Diffusion-TUI-Thermal-1", "Diffusion-TUI-Fick-1", "Diffusion-TUI-Soret-1",
-          "Diffusion-UO2MSRZC09-Thermal-1", "Diffusion-UO2MSRZC09-Fick-1", "Diffusion-UO2MSRZC09-Soret-1"
+          "Diffusion-UO2MSRZC09-Thermal-1", "Diffusion-UO2MSRZC09-Fick-1", "Diffusion-UO2MSRZC09-Soret-1",
+          "Diffusion-TUI-TensorFick-1", "Diffusion-CylindricalFick-1"
   };
 
     try {

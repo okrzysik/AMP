@@ -85,15 +85,8 @@ LinearSolver {
         TrilinosPreconditioner {
             print_info_level = 1
             PDE_equations = 3
-            max_levels = 10
             max_iterations = 1
             max_error = 1.0e-16
-            increasingordecreasing = "increasing"
-            aggregationtype = "Uncoupled"
-            smoothertype = "Chebyshev"
-            smoother_sweeps = 3
-            smoother_preorpost = "both"
-            coarse_type="Amesos-KLU"
         }
     }
 }

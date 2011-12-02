@@ -23,11 +23,11 @@ AMP_ERROR("ContactResidualCorrection is not converted yet");
         slave_dof_map->getDOFs(slaveNd, slaveGlobalIds, d_dofs[i]);
         for(size_t j = 0; j < d_dofs[i].size(); j++) {
           double slaveVal = rSlave->getLocalValueByGlobalID( slaveGlobalIds[j] );
-          double masterVal = rMaster->getLocalValueByGlobalID( masterGlobalIds[j] );
+          //double masterVal = rMaster->getLocalValueByGlobalID( masterGlobalIds[j] );
 
           rMaster->addLocalValueByGlobalID(masterGlobalIds[j], slaveVal);
 
-          masterVal = rMaster->getLocalValueByGlobalID( masterGlobalIds[j] );
+          //masterVal = rMaster->getLocalValueByGlobalID( masterGlobalIds[j] );
 
           rSlave->setLocalValueByGlobalID(slaveGlobalIds[j], 0.0);
 

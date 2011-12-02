@@ -1,9 +1,0 @@
-
-namespace AMP {
-namespace Operator {
-
-
-
-}
-}
-

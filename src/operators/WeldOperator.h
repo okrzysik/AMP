@@ -43,7 +43,7 @@ namespace AMP {
           AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator bnd = d_MeshAdapter->beginOwnedBoundary( d_inputBoundaryId );
           AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator end_bnd = d_MeshAdapter->endOwnedBoundary( d_inputBoundaryId );
 
-          double val;
+          double val=0.;
           int cnt = 0;
           for( ; bnd != end_bnd; ++bnd) {
             std::vector<unsigned int> bndGlobalIds;

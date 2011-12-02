@@ -38,7 +38,22 @@ INCLUDE (macros)
 #     COPY_MESH_FILE ( mesh_file )
 #
 
+ADD_AMP_PROVISIONAL_TEST ( testMLfailure )
+COPY_TEST_DATA_FILE ( input_testMLfailure )
+COPY_MESH_FILE ( reg3ptBox1 )
+COPY_MESH_FILE ( reg3ptBox2 )
+
+ADD_AMP_PROVISIONAL_TEST ( jfnkPaperDriver )
+COPY_TEST_DATA_FILE ( input_jfnkPaperDriver )
+
 COPY_MESH_FILE ( regPlateWithHole1 )
+COPY_MESH_FILE ( regPlateWithHole2 )
+
+COPY_MESH_FILE ( regBox1 )
+COPY_MESH_FILE ( regBox2 )
+
+ADD_AMP_PROVISIONAL_TEST ( testMechElasticLUvsML )
+COPY_TEST_DATA_FILE ( input_testMechElasticLUvsML )
 
 COPY_MESH_FILE ( lumlmesh1 )
 COPY_MESH_FILE ( lumlmesh2 )
@@ -48,12 +63,6 @@ COPY_MESH_FILE ( lumlmesh5 )
 COPY_MESH_FILE ( lumlmesh6 )
 COPY_MESH_FILE ( lumlmesh7 )
 COPY_MESH_FILE ( lumlmesh8 )
-
-ADD_AMP_PROVISIONAL_TEST ( jfnkPaperDriver )
-COPY_TEST_DATA_FILE ( input_jfnkPaperDriver )
-
-ADD_AMP_PROVISIONAL_TEST ( testMechElasticLUvsML )
-COPY_TEST_DATA_FILE ( input_testMechElasticLUvsML )
 
 COPY_MESH_FILE ( cladSymmetric.e )
 COPY_MESH_FILE ( cladSymmetricRotated.e )
@@ -168,6 +177,8 @@ COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianMechanics-LinearElasticity-2 )
 COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianMechanics-LinearElasticity-3 )
 ADD_AMP_WEEKLY_TEST ( testSmallStrainMechanics-ThermoMechanics-1 1 )
 COPY_TEST_DATA_FILE ( input_testSmallStrainMechanics-ThermoMechanics-1 )
+ADD_AMP_TEST ( testUpdatedLagrangianMechanics-FlanaganTaylorElement-1 )
+COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianMechanics-FlanaganTaylorElement-1 )
 
 ADD_AMP_PROVISIONAL_TEST ( testMatrixFreeML )
 COPY_TEST_DATA_FILE ( input_testMatrixFreeML-1 )
