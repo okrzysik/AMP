@@ -343,53 +343,74 @@ void testID( AMP::UnitTest *utils )
 }
 
 
-/*
-
-
-class  DisplaceNodes
+// Test the displacement of the mesh
+void DisplaceMesh( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) 
 {
-public:
-    static const char * get_test_name () { return "displace nodes"; }
-
-    static  void run_test ( AMP::UnitTest *utils, AMP::Mesh::MeshAdapter::shared_ptr mesh ) {
-        // Get the volume of each element
-        std::vector<double> orig_vol(mesh->numLocalElements(),0.0);
-        AMP::Mesh::MeshAdapter::ElementIterator  cur_elem = mesh->beginElement();
-        for (size_t i=0; i<mesh->numLocalElements(); i++) {
-            orig_vol[i] = (*cur_elem).volume();
-            cur_elem++;
-        }
-        // Get the position of the nodes
-        AMP::LinearAlgebra::Vector::shared_ptr  posVec1 = mesh->getPositionVector ( "pos_before" );
-        // Displace the mesh
-        AMP::LinearAlgebra::Vector::shared_ptr  dispVec = posVec1->cloneVector ( "displ" );
-        dispVec->copyVector(posVec1);
-        dispVec->scale(1e-3);
-        mesh->displaceMesh ( dispVec );
-        // Get the new positions
-        AMP::LinearAlgebra::Vector::shared_ptr  posVec2 = mesh->getPositionVector ( "pos_after" );
-        AMP::LinearAlgebra::Vector::shared_ptr diff = dispVec->cloneVector ( "diff" );
-        diff->subtract ( posVec2 , posVec1 );
-        if ( diff->equals ( dispVec ) )
-            utils->passes ( "displacement successfully applied" );
-        else
-            utils->failure ( "displacement failed" );
-        // Get the new volumes
-        bool volume_changed = true;
-        cur_elem = mesh->beginElement();
-        for (size_t i=0; i<mesh->numLocalElements(); i++) {
-            double vol_ratio = (*cur_elem).volume() / orig_vol[i];
-            if ( !AMP::Utilities::approx_equal(vol_ratio,1.003003001,1e-9) )        // The new volume should be (1+10^-3)^dim the original volume
-                volume_changed = false;
-            cur_elem++;
-        }
-        if ( volume_changed )
-            utils->passes ( "displacement changed volumes" );
-        else
-            utils->failure ( "displacement changed volumes" );
+    // Test the scalar displacement
+    std::vector<double> box1 = mesh->getBoundingBox();
+    std::vector<double> displacement(mesh->getDim(),1.0);
+    mesh->displaceMesh(displacement);
+    std::vector<double> box2 = mesh->getBoundingBox();
+    displacement = std::vector<double>(mesh->getDim(),-1.0);
+    double volume = 1.0;
+    for (int i=0; i<mesh->getDim(); i++)
+        volume *= box1[2*i+1]-box1[2*i+0];
+    if ( volume > 0.0 )
+        utils->passes("non-zero bounding box");
+    else
+        utils->failure("non-zero bounding box");
+    bool passes = true;
+    for (size_t i=0; i<box1.size(); i++) {
+        if ( fabs(box2[i]-box1[i]-1.0) > 1e-12 )
+            passes = false;
     }
-};
+    if ( volume > 0.0 )
+        utils->passes("scalar displacement test");
+    else
+        utils->failure("scalar displacement test");
+    // Test displacement vector (not implimented yet
+    utils->expected_failure("displacement vector test is not implimented yet");
+    /* // Get the volume of each element
+    std::vector<double> orig_vol(mesh->numLocalElements(),0.0);
+    AMP::Mesh::MeshAdapter::ElementIterator  cur_elem = mesh->beginElement();
+    for (size_t i=0; i<mesh->numLocalElements(); i++) {
+        orig_vol[i] = (*cur_elem).volume();
+        cur_elem++;
+    }
+    // Get the position of the nodes
+    AMP::LinearAlgebra::Vector::shared_ptr  posVec1 = mesh->getPositionVector ( "pos_before" );
+    // Displace the mesh
+    AMP::LinearAlgebra::Vector::shared_ptr  dispVec = posVec1->cloneVector ( "displ" );
+    dispVec->copyVector(posVec1);
+    dispVec->scale(1e-3);
+    mesh->displaceMesh ( dispVec );
+    // Get the new positions
+    AMP::LinearAlgebra::Vector::shared_ptr  posVec2 = mesh->getPositionVector ( "pos_after" );
+    AMP::LinearAlgebra::Vector::shared_ptr diff = dispVec->cloneVector ( "diff" );
+    diff->subtract ( posVec2 , posVec1 );
+    if ( diff->equals ( dispVec ) )
+        utils->passes ( "displacement successfully applied" );
+    else
+        utils->failure ( "displacement failed" );
+    // Get the new volumes
+    bool volume_changed = true;
+    cur_elem = mesh->beginElement();
+    for (size_t i=0; i<mesh->numLocalElements(); i++) {
+        double vol_ratio = (*cur_elem).volume() / orig_vol[i];
+        if ( !AMP::Utilities::approx_equal(vol_ratio,1.003003001,1e-9) )        // The new volume should be (1+10^-3)^dim the original volume
+            volume_changed = false;
+        cur_elem++;
+    }
+    if ( volume_changed )
+        utils->passes ( "displacement changed volumes" );
+    else
+        utils->failure ( "displacement changed volumes" );
+    */
+}
 
+
+
+/*
 
 class  VerifyElementForNode
 {

@@ -21,6 +21,9 @@ void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
     // Test the iterators
     MeshIteratorTest( ut, mesh );
     VerifyBoundaryNodeIterator( ut, mesh );
+    // Test displacement
+    DisplaceMesh( ut, mesh );
+
     //VerifyNodeElemMapIteratorTest::run_test( ut, mesh );
     // Test the elements
     //VerifyBoundaryIteratorTest::run_test( ut, mesh );
@@ -29,8 +32,6 @@ void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
     //VerifyProcAndIsOwnedInterface<NodeHelper>::run_test( ut, mesh );
     // Test element for node
     //VerifyElementForNode::run_test( ut, mesh );
-    // Test displacement
-    //DisplaceNodes::run_test( ut, mesh );
     // Bug tests
     //Bug_758::run_test( ut, mesh );
     //Bug_761<1>::run_test( ut, mesh );

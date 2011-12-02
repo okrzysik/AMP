@@ -10,8 +10,6 @@ namespace AMP {
 namespace Operator {
 
 
-double AMP::Operator::NodeToNodeMap::Point::_precision;
-
 
 /********************************************************
 * Constructor                                           *
@@ -28,10 +26,9 @@ NodeToNodeMap::NodeToNodeMap ( const boost::shared_ptr<AMP::Operator::OperatorPa
 
     // Set class members
     int dim = d_Mesh->getDim();
-    AMP_INSIST(dim==3,"Node to Node map has only been tested in 3d (see Point)");
+    AMP_INSIST(dim<=3,"Node to Node map only works up to 3d (see Point)");
     d_MapComm = Params.d_MapComm;
     int DofsPerObj = Params.d_db->getInteger ( "DOFsPerObject" );
-    AMP_ASSERT ( ( DofsPerObj == 1 ) || ( DofsPerObj == 3 ) );
 
     // Create a nodal variable 
     AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::Discretization::NodalVariable(DofsPerObj,"VariableName") );    
@@ -41,7 +38,6 @@ NodeToNodeMap::NodeToNodeMap ( const boost::shared_ptr<AMP::Operator::OperatorPa
     d_MySurfaceDisplsS.resize ( commSize );
     d_MySurfaceCountsR.resize ( commSize );
     d_MySurfaceDisplsR.resize ( commSize );
-    Point::_precision = 1.e-8;
 
     // If this needs to be built asynchronously, exit
     if ( Params.d_AsynchronousConstructionParam > 0 )
@@ -119,9 +115,9 @@ NodeToNodeMap::NodeToNodeMap ( const boost::shared_ptr<AMP::Operator::OperatorPa
     }
 
     // Calculate who receives data from me..
-    std::map<size_t , CommInfo>             myIdToDestination;
-    std::map<size_t , std::list<size_t> >   procToLocalIdList;
-    std::map<size_t , size_t>               remoteToLocalId;
+    std::map<AMP::Mesh::MeshElementID,CommInfo>            myIdToDestination;
+    std::map< int, std::list<AMP::Mesh::MeshElementID> >   procToLocalIdList;
+    //std::map<size_t , size_t>               remoteToLocalId;
 
     cur = cur.begin();
     size_t  totToSend = 0;
@@ -137,7 +133,7 @@ NodeToNodeMap::NodeToNodeMap ( const boost::shared_ptr<AMP::Operator::OperatorPa
         AMP_INSIST ( whichPt != surfacePts.end() , "Node-to-node map not aligned correctly" );
         AMP_INSIST ( *whichPt == t , "Node-to-node map not aligned correctly" );
 
-        remoteToLocalId [ whichPt->_id ] = cur->globalID();
+        //remoteToLocalId [ whichPt->_id ] = cur->globalID();
         CommInfo &data = myIdToDestination [ cur->globalID() ];
         data._remId = whichPt->_id;
         data._procs.insert ( data._procs.begin() , whichPt->_procs.begin() , whichPt->_procs.end() );
@@ -158,7 +154,7 @@ NodeToNodeMap::NodeToNodeMap ( const boost::shared_ptr<AMP::Operator::OperatorPa
     for (int i = 0; i!=commSize; i++)
     {
       d_MySurfaceDisplsR[i] = d_MySurfaceDisplsS[i] = curOffset;
-      std::list<size_t>::iterator  localToSend = procToLocalIdList[i].begin();
+      std::list<AMP::Mesh::MeshElementID>::iterator  localToSend = procToLocalIdList[i].begin();
       while ( localToSend != procToLocalIdList[i].end() )
       {
         for (int j=0; j!=DofsPerObj; j++)
@@ -179,13 +175,14 @@ NodeToNodeMap::NodeToNodeMap ( const boost::shared_ptr<AMP::Operator::OperatorPa
                          getBufferToAvoidDebugVectorCrashing ( d_MySurfaceDisplsR ) ,
                          true );
 
-    AMP::Mesh::DOFMap::shared_ptr  varDof = d_MeshAdapter->getDOFMap ( d_inpVariable );
+AMP_ERROR("Not converted yet");
+    /*AMP::Mesh::DOFMap::shared_ptr  varDof = d_MeshAdapter->getDOFMap ( d_inpVariable );
     for ( size_t i = 0 ; i != d_MySurfaceIndicesSend.size() ; i++ )
     {
       AMP_ASSERT ( remoteToLocalId.find ( d_MySurfaceIndicesRecv[i] ) != remoteToLocalId.end() );
       d_MySurfaceIndicesRecv[i] = varDof->getGlobalID ( remoteToLocalId[d_MySurfaceIndicesRecv[i]] , i % DofsPerObj );
       d_MySurfaceIndicesSend[i] = varDof->getGlobalID ( d_MySurfaceIndicesSend[i] , i % DofsPerObj );
-    }
+    }*/
 
     size_t numPartners = 0;
     for ( size_t i = 0 ; i != d_MySurfaceCountsS.size() ; i++ )
@@ -208,13 +205,16 @@ NodeToNodeMap::~NodeToNodeMap ()
 }
 
 
-
+/********************************************************
+* Check if the string matches a NodeToNode map          *
+********************************************************/
 bool NodeToNodeMap::validMapType ( const std::string &t )
 {
     if ( t == "NodeToNode" )
         return true;
     return false;
 }
+
 
 
 void NodeToNodeMap::sendSurface ( boost::shared_ptr<NodeToNodeMapParameters> p )
@@ -270,18 +270,17 @@ void NodeToNodeMap::recvSurface ( boost::shared_ptr<NodeToNodeMapParameters> p )
     for (int i=0; i!=size; i++) {
         std::vector <AMP::Mesh::MeshElementID>     inIds;
         std::vector <double>  inDisps;
-        int vecSize = d_MapComm.probe(i,d_RecvTag)/sizeof(int);
-        int vecSize3 = d_MapComm.probe(i,2*d_RecvTag)/sizeof(double);
-        AMP_ASSERT(vecSize3==3*vecSize);
+        int vecSize = d_MapComm.probe(i,d_RecvTag)/sizeof(AMP::Mesh::MeshElementID);
+        int vecSizeX = d_MapComm.probe(i,2*d_RecvTag)/sizeof(double);
+        AMP_ASSERT(vecSizeX==dim*vecSize);
         inIds.resize ( vecSize );
-        inDisps.resize ( vecSize3 );
+        inDisps.resize ( vecSizeX );
         d_MapComm.recv( getBufferToAvoidDebugVectorCrashing(inIds), vecSize, i, false, d_RecvTag );
-        d_MapComm.recv( getBufferToAvoidDebugVectorCrashing(inDisps), vecSize3, i, false, 2*d_RecvTag );
-        for ( int j = 0 ; j != vecSize ; j++ ) {
+        d_MapComm.recv( getBufferToAvoidDebugVectorCrashing(inDisps), vecSizeX, i, false, 2*d_RecvTag );
+        for (int j=0; j!=vecSize; j++) {
             Point temp;
-            temp._pos[0] = inDisps [ 3*j + 0 ];
-            temp._pos[1] = inDisps [ 3*j + 1 ];
-            temp._pos[2] = inDisps [ 3*j + 2 ];
+            for (int k=0; k<dim; k++)
+                temp._pos[k] = inDisps[dim*j+k];
 
             bool found = false;
             std::multiset<Point>::iterator  iter = surfacePts.lower_bound ( temp );
@@ -312,10 +311,10 @@ void NodeToNodeMap::recvSurface ( boost::shared_ptr<NodeToNodeMapParameters> p )
         std::vector<double> pos = cur->coord();
         for (int j=0; j<dim; j++)
             t._pos[j] = pos[j];
-        std::multiset<Point>::iterator whichPt = surfacePts.lower_bound ( t );
-        AMP_ASSERT ( whichPt != surfacePts.end() );
-        AMP_ASSERT ( whichPt != surfacePts.upper_bound ( t ) );
-        AMP_ASSERT ( *whichPt == t );
+        std::multiset<Point>::iterator whichPt = surfacePts.lower_bound(t);
+        AMP_ASSERT ( whichPt != surfacePts.end() );             // Check that iterator points to a valid point
+        AMP_ASSERT ( whichPt != surfacePts.upper_bound(t) );    // Check that the point was found
+        AMP_ASSERT ( *whichPt == t );                           // Check that the point matches the found point
         //remoteToLocalId [ whichPt->_id ] = cur->globalID();
         CommInfo &data = myIdToDestination [ cur->globalID() ];
         data._remId = whichPt->_id;
@@ -364,9 +363,11 @@ void NodeToNodeMap::sendOrder ( boost::shared_ptr<NodeToNodeMapParameters> p )
     std::vector<MPI_Request>::iterator  curReq = beginRequests ();
     for ( size_t i = 0 ; i != d_MySurfaceCountsS.size() ; i++ )
     {
-      int *buf = getBufferToAvoidDebugVectorCrashing ( d_MySurfaceIndicesSend );
-      *curReq = d_MapComm.Isend( (int*) buf + d_MySurfaceDisplsS[i],d_MySurfaceCountsS[i], i, d_SendTag );
-      curReq++;
+        AMP::Mesh::MeshElementID* buf = NULL;
+        if ( d_MySurfaceIndicesSend.size()>0 )
+            buf = &d_MySurfaceIndicesSend[d_MySurfaceDisplsS[i]];
+        *curReq = d_MapComm.Isend( (int*) buf + d_MySurfaceDisplsS[i], d_MySurfaceCountsS[i], i, d_SendTag );
+        curReq++;
     }
 }
 
@@ -376,14 +377,18 @@ void NodeToNodeMap::recvOrder ( boost::shared_ptr<NodeToNodeMapParameters> p )
     int size = d_MapComm.getSize();
     for ( int i = 0 ; i != size ; i++ )
     {
-      int *buf = getBufferToAvoidDebugVectorCrashing ( d_MySurfaceIndicesRecv );
-      d_MapComm.recv( (int*) buf+d_MySurfaceDisplsR[i], d_MySurfaceCountsR[i], i, false, d_RecvTag );
+        AMP::Mesh::MeshElementID* buf = NULL;
+        if ( d_MySurfaceIndicesRecv.size()>0 )
+            buf = &d_MySurfaceIndicesRecv[d_MySurfaceDisplsR[i]];
+        d_MapComm.recv( (int*) buf+d_MySurfaceDisplsR[i], d_MySurfaceCountsR[i], i, false, d_RecvTag );
     }
 }
 
 
 void NodeToNodeMap::buildSendRecvList ( boost::shared_ptr<NodeToNodeMapParameters> p )
 {
+AMP_ERROR("Not converted yet");
+/*
     std::map<size_t , size_t>              &remoteToLocalId = p->d_RemoteToLocalId;
     int DofsPerObj = p->d_db->getInteger ( "DOFsPerObject" );
 
@@ -403,6 +408,7 @@ void NodeToNodeMap::buildSendRecvList ( boost::shared_ptr<NodeToNodeMapParameter
         p->d_NumPartners++;
       }
     }
+*/
 }
 
 
@@ -448,47 +454,6 @@ bool NodeToNodeMap::continueAsynchronousConstruction ( const boost::shared_ptr <
 }
 
 
-NodeToNodeMap::Point::Point ()
-{
-}
-
-
-NodeToNodeMap::Point::Point ( const Point &rhs )
-{
-    for ( size_t i = 0 ; i != 3 ; i++ )
-      _pos[i] = rhs._pos[i];
-    _id = rhs._id;
-    _procs.insert ( _procs.begin() , rhs._procs.begin() , rhs._procs.end() );
-}
-
-
-bool NodeToNodeMap::Point::operator == ( const Point &rhs ) const
-{
-    double dist = 0.0;
-    for ( size_t i = 0 ; i != 3 ; i++ )
-    {
-      dist += (rhs._pos[i] - _pos[i]) * (rhs._pos[i] - _pos[i]);
-    }
-    if ( sqrt ( dist ) < _precision )
-      return true;
-    return false;
-}
-
-
-bool NodeToNodeMap::Point::operator < ( const Point &rhs ) const
-{
-    if ( !operator == ( rhs ) )
-    {
-      for ( size_t i = 0 ; i != 3 ; i++ )
-      {
-        if ( ( _pos[i] - rhs._pos[i] ) > _precision ) return false;
-        if ( ( rhs._pos[i] - _pos[i] ) > _precision ) return true;
-      }
-    }
-    return false;
-}
-
-
 
 void NodeToNodeMap::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr &  ,
                               const AMP::LinearAlgebra::Vector::shared_ptr &u ,
@@ -496,6 +461,8 @@ void NodeToNodeMap::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & 
                               const double ,
                               const double )
 {
+AMP_ERROR("Not converted yet");
+/*
     AMP::LinearAlgebra::Vector::shared_ptr   curPhysics = u->subsetVectorForVariable ( d_inpVariable );
     AMP_INSIST ( curPhysics , "apply received bogus stuff" );
 
@@ -516,7 +483,7 @@ void NodeToNodeMap::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & 
         curReq++;
       }
     }
-
+*/
 }
 
 
@@ -533,6 +500,8 @@ void NodeToNodeMap::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr &
                               const double ,
                               const double )
 {
+AMP_ERROR("Not converted yet");
+/*
 
     waitForAllRequests ();
 //    bool  copyToOutput = false;
@@ -561,6 +530,53 @@ void NodeToNodeMap::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr &
 //    }
 
     d_OutputVector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+*/
+}
+
+
+
+
+/********************************************************
+* Constructors for Point                                *
+********************************************************/
+NodeToNodeMap::Point::Point ()
+{
+    for ( size_t i=0; i!=3; i++)
+      _pos[i] = 0.0;
+}
+NodeToNodeMap::Point::Point ( const Point &rhs )
+{
+    for ( size_t i=0; i!=3; i++)
+      _pos[i] = rhs._pos[i];
+    _id = rhs._id;
+    _procs.insert ( _procs.begin(), rhs._procs.begin(), rhs._procs.end() );
+}
+
+
+/********************************************************
+* Operators for Point                                   *
+* Note: we use a tolerance of 1e-8 for checking points  *
+********************************************************/
+bool NodeToNodeMap::Point::operator == ( const Point &rhs ) const
+{
+    // Two points are == if they share the same position (within tolerance)
+    double dist = 0.0;
+    for ( size_t i=0; i!=3; i++)
+        dist += (rhs._pos[i] - _pos[i]) * (rhs._pos[i] - _pos[i]);
+    if ( dist < 1e-16 )     // check the square of the distance (faster without sqrt)
+        return true;
+    return false;
+}
+bool NodeToNodeMap::Point::operator < ( const Point &rhs ) const
+{
+    // A point is less than another based on it's x-value, then y, then z
+    if ( !operator==(rhs) ) {
+        for ( size_t i=0; i!=3; i++) {
+            if ( ( _pos[i] - rhs._pos[i] ) > 1e-8 ) return false;
+            if ( ( rhs._pos[i] - _pos[i] ) > 1e-8 ) return true;
+        }
+    }
+    return false;
 }
 
 

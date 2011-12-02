@@ -113,6 +113,16 @@ public:
     virtual MeshIterator getIDsetIterator ( const GeomType type, const int id, const int gcw=0 );
 
 
+    /**
+     * \brief    Displace the entire mesh
+     * \details  This function will displace the entire mesh by a scalar value.
+     *   This function is a blocking call for the mesh communicator, and requires
+     *   the same value on all processors.  The displacement vector should be the 
+     *   size of the physical dimension.
+     * \param x  Displacement vector
+     */
+    virtual void displaceMesh( std::vector<double> x );
+
 
     //! Return the underlying libMesh object
     inline boost::shared_ptr< ::Mesh> getlibMesh( ) const { return d_libMesh; }

@@ -229,6 +229,10 @@ size_t Mesh::numGhostElements( const GeomType type, int gcw ) const
     AMP_ERROR("Not Implimented Yet");
     return 0;
 }
+void Mesh::displaceMesh( std::vector<double> x )
+{
+    AMP_ERROR("displace mesh is not implimented yet");
+}
 
 
 } // Mesh namespace

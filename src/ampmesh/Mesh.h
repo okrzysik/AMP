@@ -237,6 +237,26 @@ public:
     virtual inline void setName(std::string name) { d_name = name; }
 
 
+    /**
+     * \brief    Get the bounding box for the mesh
+     * \details  This function will return the bounding box for a mesh.  The
+     *   vector returned contains the box that contains the mesh in the form
+     *   [ x_min  x_max  y_min  y_max  z_min  z_max ].
+     */
+    virtual std::vector<double> getBoundingBox() { return d_box; }
+
+
+    /**
+     * \brief    Displace the entire mesh
+     * \details  This function will displace the entire mesh by a scalar value.
+     *   This function is a blocking call for the mesh communicator, and requires
+     *   the same value on all processors.  The displacement vector should be the 
+     *   size of the physical dimension.
+     * \param x  Displacement vector
+     */
+    virtual void displaceMesh( std::vector<double> x );
+
+
 protected:
 
     //!  Empty constructor for a mesh
@@ -262,6 +282,9 @@ protected:
 
     //! A name for the mesh
     std::string d_name;
+
+    //! The bounding box for the mesh
+    std::vector<double> d_box;
 
     /**
      *  A function to create a unique id for the mesh (requires the comm to be set)

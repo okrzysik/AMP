@@ -4,6 +4,8 @@
 namespace AMP {
 namespace Operator {
 
+size_t mapTagOffset = 0;
+
   AsyncMapOperator::AsyncMapOperator ( const boost::shared_ptr <OperatorParameters> &p )
     : AsynchronousOperator ( p )
   {

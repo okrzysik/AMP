@@ -100,7 +100,7 @@ int main ( int argc , char ** argv )
     testInputMesh( &ut, "input_Mesh" );
 
     // Run the basic tests on all mesh generators
-    testMeshGenerators( &ut );
+    //testMeshGenerators( &ut );
 
 
     // Print the results and return

@@ -6,6 +6,9 @@ namespace AMP {
 namespace Operator {
 
 
+size_t globalMapTagOffset = 0;      // Initialize the global map tag offset
+
+
   AsyncMapColumnOperator::AsyncMapColumnOperator ( const boost::shared_ptr<OperatorParameters> & params )
     : AsynchronousColumnOperator ( params )
   {

@@ -7,6 +7,8 @@
 
 #include <set>
 #include <vector>
+#include <iostream>
+#include <string>
 
 namespace AMP {
 namespace Mesh {
@@ -41,6 +43,7 @@ static inline T vecmax(std::vector<T> x) {
 
 // Misc function declerations
 static void copyKey(boost::shared_ptr<AMP::Database>&,boost::shared_ptr<AMP::Database>&,std::string,int,int);
+static void replaceText(boost::shared_ptr<AMP::Database>&,std::string,std::string);
 
 
 /********************************************************
@@ -98,6 +101,38 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ):
     d_meshes = std::vector<AMP::Mesh::Mesh::shared_ptr>(meshParameters.size());
     for (size_t i=0; i<meshParameters.size(); i++)
         d_meshes[i] = AMP::Mesh::Mesh::buildMesh(meshParameters[i]);
+    // Get the physical dimension and the highest geometric type
+    PhysicalDim = d_meshes[0]->getDim();
+    GeomDim = d_meshes[0]->getGeomType();
+    for (size_t i=1; i<d_meshes.size(); i++) {
+        AMP_INSIST(PhysicalDim==d_meshes[i]->getDim(),"Physical dimension must match for all meshes in multimesh");
+        if ( d_meshes[i]->getGeomType() > GeomDim )
+            GeomDim = d_meshes[i]->getGeomType();
+    }
+    // Compute the bounding box of the multimesh
+    d_box = d_meshes[0]->getBoundingBox();
+    for (size_t i=1; i<d_meshes.size(); i++) {
+        std::vector<double> meshBox = d_meshes[i]->getBoundingBox();
+        for (int j=0; j<PhysicalDim; j++) {
+            if ( meshBox[2*j+0] < d_box[2*j+0] ) { d_box[2*j+0] = meshBox[2*j+0]; }
+            if ( meshBox[2*j+1] > d_box[2*j+1] ) { d_box[2*j+1] = meshBox[2*j+1]; }
+        }
+    }
+    // Displace the meshes
+    std::vector<double> displacement(PhysicalDim,0.0);
+    if ( d_db->keyExists("x_offset") )
+        displacement[0] = d_db->getDouble("x_offset");
+    if ( d_db->keyExists("y_offset") )
+        displacement[1] = d_db->getDouble("y_offset");
+    if ( d_db->keyExists("z_offset") )
+        displacement[2] = d_db->getDouble("z_offset");
+    bool test = false;
+    for (size_t i=0; i<displacement.size(); i++) {
+        if ( displacement[i] != 0.0 )
+            test = true;
+    }        
+    if ( test )
+        displaceMesh(displacement);
 }
 
 
@@ -186,8 +221,27 @@ std::vector<boost::shared_ptr<AMP::Database> >  MultiMesh::createDatabases(boost
                     copyKey(database1,database2,keys[k],N,i);
                 }
             }
-            // We still need to perform the text search and replace
-
+            // Recursively replace all instances of iterator with the index
+            if ( database1->keyExists("iterator") ) {
+                std::string iterator = database1->getString("iterator");
+                AMP_ASSERT(database1->keyExists("indicies"));
+                AMP::Database::DataType dataType = database1->getArrayType("indicies");
+                std::string index;
+                if ( dataType==AMP::Database::AMP_INT ) {
+                    std::vector<int> array = database1->getIntegerArray("indicies");
+                    AMP_ASSERT((int)array.size()==N);
+                    std::stringstream ss;
+                    ss << array[j];
+                    index = ss.str();
+                } else if ( dataType==AMP::Database::AMP_STRING ) {
+                    std::vector<std::string> array = database1->getStringArray("indicies");
+                    AMP_ASSERT((int)array.size()==N);
+                    index = array[j];
+                } else {
+                    AMP_ERROR("Unknown type for indicies");
+                }
+                replaceText(database2,iterator,index);
+            }
             boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database2));
             meshDatabases.push_back(database2);
         }
@@ -301,6 +355,28 @@ boost::shared_ptr<Mesh>  MultiMesh::Subset( std::string name ) {
 
 
 /********************************************************
+* Displace a mesh by a scalar ammount                   *
+********************************************************/
+void MultiMesh::displaceMesh( std::vector<double> x_in )
+{
+    // Check x
+    AMP_INSIST((short int)x_in.size()==PhysicalDim,"Displacement vector size should match PhysicalDim");
+    std::vector<double> x = x_in;
+    comm.minReduce(&x[0],x.size());
+    for (size_t i=0; i<x.size(); i++)
+        AMP_INSIST(fabs(x[i]-x_in[i])<1e-12,"x does not match on all processors");
+    // Displace the meshes
+    for (size_t i=0; i<d_meshes.size(); i++)
+        d_meshes[i]->displaceMesh(x);
+    // Update the bounding box
+    for (int i=0; i<PhysicalDim; i++) {
+        d_box[2*i+0] += x[i];
+        d_box[2*i+1] += x[i];
+    }
+}
+
+
+/********************************************************
 * Function to copy a key from database 1 to database 2  *
 * If the key is an array of size N, it will only copy   *
 * the ith value.                                        *
@@ -392,6 +468,57 @@ static void copyKey(boost::shared_ptr<AMP::Database> &database1,
             AMP_ERROR("Unknown key type");
     }
 }
+
+
+/********************************************************
+* Function to recursively replace all string values     *
+* that match a substring.                               *
+********************************************************/
+static void replaceSubString( std::string& string, std::string search, std::string replace )
+{
+    while ( 1 ) {
+        size_t pos = string.find(search);
+        if ( pos == std::string::npos ) 
+            break;
+        string.replace( pos, search.size(), replace );
+    }
+}
+static void replaceText( boost::shared_ptr<AMP::Database>& database, std::string search, std::string replace )
+{
+    std::vector<std::string> key = database->getAllKeys();
+    for (size_t i=0; i<key.size(); i++) {
+        AMP::Database::DataType type = database->getArrayType(key[i]);
+        switch (type) {
+            case AMP::Database::AMP_DATABASE: {
+                // Search the database
+                boost::shared_ptr<AMP::Database> database2 = database->getDatabase(key[i]);
+                replaceText( database2, search, replace );
+                } break;
+            case AMP::Database::AMP_STRING: {
+                // Search the string
+                std::vector<std::string> data = database->getStringArray(key[i]);
+                for (size_t j=0; j<data.size(); j++) {
+                    replaceSubString(data[j],search,replace);
+                }
+                database->putStringArray(key[i],data);
+                } break;
+            // Cases that we don't need to do anything for
+            case AMP::Database::AMP_CHAR:
+            case AMP::Database::AMP_INVALID:
+            case AMP::Database::AMP_BOOL:
+            case AMP::Database::AMP_INT:
+            case AMP::Database::AMP_COMPLEX:
+            case AMP::Database::AMP_DOUBLE:
+            case AMP::Database::AMP_FLOAT:
+            case AMP::Database::AMP_BOX:
+                break;
+            // Unknown case
+            default:
+                AMP_ERROR("Unknown key type");
+        }
+    }
+}
+
 
 
 } // Mesh namespace

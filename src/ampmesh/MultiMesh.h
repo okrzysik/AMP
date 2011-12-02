@@ -121,6 +121,17 @@ public:
     //! Get the largest geometric type in the mesh
     virtual GeomType getGeomType() const;
 
+    /**
+     * \brief    Displace the entire mesh
+     * \details  This function will displace the entire mesh by a scalar value.
+     *   This function is a blocking call for the mesh communicator, and requires
+     *   the same value on all processors.  The displacement vector should be the 
+     *   size of the physical dimension.
+     * \param x  Displacement vector
+     */
+    virtual void displaceMesh( std::vector<double> x );
+
+
 private:
 
     //! Empty constructor for a mesh

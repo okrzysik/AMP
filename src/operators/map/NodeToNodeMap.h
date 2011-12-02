@@ -16,93 +16,94 @@
 namespace AMP {
 namespace Operator {
 
-  class NodeToNodeMap : public AMP::Operator::AsyncMapOperator 
-  {
-    private:
-      std::vector<int>          d_MySurfaceIndicesSend;
-      std::vector<int>          d_MySurfaceIndicesRecv;
 
-      std::vector<int>          d_MySurfaceCountsS;
-      std::vector<int>          d_MySurfaceDisplsS;
-      std::vector<int>          d_MySurfaceCountsR;
-      std::vector<int>          d_MySurfaceDisplsR;
+class NodeToNodeMap : public AMP::Operator::AsyncMapOperator 
+{
+public:
+    //! brief  Typedef to identify the parameters class of this operator
+    typedef  NodeToNodeMapParameters   Parameters;
 
-      std::vector<double>       d_SendBuffer;
-      std::vector<double>       d_RecvBuffer;
+private:
+    std::vector<AMP::Mesh::MeshElementID>          d_MySurfaceIndicesSend;
+    std::vector<AMP::Mesh::MeshElementID>          d_MySurfaceIndicesRecv;
 
-      AMP_MPI                   d_MapComm;
+    std::vector<int>          d_MySurfaceCountsS;
+    std::vector<int>          d_MySurfaceDisplsS;
+    std::vector<int>          d_MySurfaceCountsR;
+    std::vector<int>          d_MySurfaceDisplsR;
 
-      AMP::LinearAlgebra::Vector::shared_ptr        d_OutputVector;
-      AMP::LinearAlgebra::Variable::shared_ptr      d_inpVariable;
+    std::vector<double>       d_SendBuffer;
+    std::vector<double>       d_RecvBuffer;
 
-      int   d_SendTag;
-      int   d_RecvTag;
+    AMP_MPI                   d_MapComm;
 
-      void  sendSurface ( boost::shared_ptr<NodeToNodeMapParameters> );
-      void  recvSurface ( boost::shared_ptr<NodeToNodeMapParameters> );
-      void  sendOrder ( boost::shared_ptr<NodeToNodeMapParameters> );
-      void  recvOrder ( boost::shared_ptr<NodeToNodeMapParameters> );
-      void  buildSendRecvList ( boost::shared_ptr<NodeToNodeMapParameters> );
-      void  finalizeCommunication ( boost::shared_ptr<NodeToNodeMapParameters> );
+    AMP::LinearAlgebra::Vector::shared_ptr        d_OutputVector;
+    AMP::LinearAlgebra::Variable::shared_ptr      d_inpVariable;
 
-      class Point
-      {
-        public:
+    int   d_SendTag;
+    int   d_RecvTag;
+
+    void  sendSurface ( boost::shared_ptr<NodeToNodeMapParameters> );
+    void  recvSurface ( boost::shared_ptr<NodeToNodeMapParameters> );
+    void  sendOrder ( boost::shared_ptr<NodeToNodeMapParameters> );
+    void  recvOrder ( boost::shared_ptr<NodeToNodeMapParameters> );
+    void  buildSendRecvList ( boost::shared_ptr<NodeToNodeMapParameters> );
+    void  finalizeCommunication ( boost::shared_ptr<NodeToNodeMapParameters> );
+
+    class Point
+    {
+       public:
           double _pos[3];
           AMP::Mesh::MeshElementID _id;
           // Allows me to push data to things in a multiset.
           mutable std::list<int>  _procs;
 
-          static double _precision;
-
           Point ();
           Point ( const Point &rhs );
           bool operator == ( const Point &rhs ) const;
           bool operator <  ( const Point &rhs ) const;
-      };
+    };
 
-      class CommInfo
-      {
-        public:
+    class CommInfo
+    {
+       public:
           AMP::Mesh::MeshElementID   _remId;
           std::list<int>   _procs;
-      };
+    };
 
-    protected:
-    public:
+protected:
 
+public:
 
-      /** \brief  Returns true if MapType = "NodeToNode"
-        * \param[in] s  A string extracted from the MapType line in a MeshToMeshMap db
-        * \return  True iff s == "NodeToNode"
-        */
-      static bool  validMapType ( const std::string &s );
+    /** \brief  Returns true if MapType = "NodeToNode"
+      * \param[in] s  A string extracted from the MapType line in a MeshToMeshMap db
+      * \return  True iff s == "NodeToNode"
+      */
+    static bool  validMapType ( const std::string &s );
 
-      /** \brief  The base tag used in communication.
-        */
-      enum { CommTagBase = 10000 };
+    //!  The base tag used in communication.
+    enum { CommTagBase = 10000 };
 
-      /** Constructor
-        */
+    //! Constructor
       NodeToNodeMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> & params );
-      /** Destructor
-        */
-      virtual ~NodeToNodeMap ();
 
-      virtual bool continueAsynchronousConstruction ( const boost::shared_ptr < AMP::Operator::OperatorParameters > &params );
+    //! Destructor
+    virtual ~NodeToNodeMap ();
+
+    virtual bool continueAsynchronousConstruction ( const boost::shared_ptr < AMP::Operator::OperatorParameters > &params );
 
 
-      virtual void applyStart(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-          AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
+    virtual void applyStart(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
+        AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
 
-      virtual void applyFinish(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-          AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
+    virtual void applyFinish(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
+        AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
 
-      virtual void  setVector ( AMP::LinearAlgebra::Vector::shared_ptr &p );
+    virtual void  setVector ( AMP::LinearAlgebra::Vector::shared_ptr &p );
 
-      virtual AMP::LinearAlgebra::Variable::shared_ptr  getInputVariable (int varId = -1) { return d_inpVariable; }
-      virtual AMP::LinearAlgebra::Variable::shared_ptr  getOutputVariable () { return d_inpVariable; }
-  };
+    virtual AMP::LinearAlgebra::Variable::shared_ptr  getInputVariable (int varId = -1) { return d_inpVariable; }
+    virtual AMP::LinearAlgebra::Variable::shared_ptr  getOutputVariable () { return d_inpVariable; }
+};
 
 
 }

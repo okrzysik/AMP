@@ -5,6 +5,9 @@ Mesh{
     MeshType = "Multimesh"
     MeshDatabasePrefix = "Mesh_"
     MeshArrayDatabasePrefix = "MeshArray_"
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
     
     // This is a multimesh for all pellets
     Mesh_1 {

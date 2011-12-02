@@ -60,11 +60,26 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
         } else {
             AMP_ERROR("Unable to construct mesh with given parameters");
         }
+        // Initialize all of the internal data
+        initialize();
+        // Displace the mesh
+        std::vector<double> displacement(PhysicalDim,0.0);
+        if ( d_db->keyExists("x_offset") )
+            displacement[0] = d_db->getDouble("x_offset");
+        if ( d_db->keyExists("y_offset") )
+            displacement[1] = d_db->getDouble("y_offset");
+        if ( d_db->keyExists("z_offset") )
+            displacement[2] = d_db->getDouble("z_offset");
+        bool test = false;
+        for (size_t i=0; i<displacement.size(); i++) {
+            if ( displacement[i] != 0.0 )
+                test = true;
+        }        
+        if ( test )
+            displaceMesh(displacement);
     } else {
         AMP_ERROR("Error: params must contain a database object");
     }
-    // Initialize all of the internal data
-    initialize();
 }
 
 
@@ -135,13 +150,30 @@ void libMesh::initialize()
             n_ghost[i] = static_cast<size_t>(-1);
         }
     }
+    // Compute the bounding box of the mesh
+    d_box = std::vector<double>(PhysicalDim*2);
+    for (int i=0; i<PhysicalDim; i++) {
+        d_box[2*i+0] = 1e200;
+        d_box[2*i+1] = -1e200;
+    }
+    ::Mesh::node_iterator node_pos = d_libMesh->nodes_begin();
+    ::Mesh::node_iterator node_end = d_libMesh->nodes_end();
+    while ( node_pos != node_end ) {
+        ::Node* node = *node_pos;
+        for (int i=0; i<PhysicalDim; i++) {
+            double x = (*node)(i);
+            if ( x < d_box[2*i+0] ) { d_box[2*i+0] = x; }
+            if ( x > d_box[2*i+1] ) { d_box[2*i+1] = x; }
+        }
+        ++node_pos;
+    }
     // Construct the element neighbor information
     d_libMesh->find_neighbors();
     // Construct the node neighbor information
     neighborNodeIDs = std::vector<unsigned int>(n_local[0],(unsigned int)-1);
     neighborNodes = std::vector< std::vector< ::Node* > >(n_local[0]);
-    ::Mesh::node_iterator node_pos = d_libMesh->local_nodes_begin();
-    ::Mesh::node_iterator node_end = d_libMesh->local_nodes_end();
+    node_pos = d_libMesh->local_nodes_begin();
+    node_end = d_libMesh->local_nodes_end();
     size_t i=0;
     while ( node_pos != node_end ) {
         ::Node *node = node_pos.operator*();
@@ -346,6 +378,34 @@ std::vector< ::Node* > libMesh::getNeighborNodes( MeshElementID id )
     int i = AMP::Utilities::findfirst(neighborNodeIDs,id.local_id());
     AMP_ASSERT(neighborNodeIDs[i]==id.local_id());
     return neighborNodes[i];
+}
+
+
+/********************************************************
+* Displace a mesh by a scalar ammount                   *
+********************************************************/
+void libMesh::displaceMesh( std::vector<double> x_in )
+{
+    // Check x
+    AMP_INSIST((short int)x_in.size()==PhysicalDim,"Displacement vector size should match PhysicalDim");
+    std::vector<double> x = x_in;
+    comm.minReduce(&x[0],x.size());
+    for (size_t i=0; i<x.size(); i++)
+        AMP_INSIST(fabs(x[i]-x_in[i])<1e-12,"x does not match on all processors");
+    // Move the mesh
+    ::Mesh::node_iterator cur = d_libMesh->nodes_begin();
+    ::Mesh::node_iterator end = d_libMesh->nodes_end();
+    while ( cur != end ) {
+        ::Node  *d_Node = *cur;
+        for (size_t i=0; i<x.size(); i++)
+            (*d_Node)(i) += x[i];
+        ++cur;
+    }
+    // Update the bounding box
+    for (int i=0; i<PhysicalDim; i++) {
+        d_box[2*i+0] += x[i];
+        d_box[2*i+1] += x[i];
+    }
 }
 
 

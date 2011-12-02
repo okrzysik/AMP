@@ -12,6 +12,22 @@ namespace Operator {
 
 static std::vector<boost::shared_ptr<AMP::Database> >  createDatabases(boost::shared_ptr<AMP::Database>);
 
+enum  MapDominance { Master , Slave };
+enum  MapConstructionType { Synchronous , Asynchronous };
+struct MapConstructionParam {
+    int                                 boundaryId;
+    AMP_MPI                             comm;
+    MapConstructionType                 construction;
+    MapDominance                        dominance;
+    boost::shared_ptr<AMP::Database>    database;
+    std::string                         meshName;
+    AMP::Mesh::Mesh::shared_ptr         mesh;
+    std::string                         mapType;
+    size_t                              tagOffset;
+};
+
+extern size_t globalMapTagOffset;      // We need a global unique tag offset for every map
+
 
 template <typename MAP_TYPE>
 boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build ( AMP::Mesh::Mesh::shared_ptr manager, boost::shared_ptr<Database> database )
@@ -30,90 +46,125 @@ boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build ( AMP::
 
     // Check that the map type matches the maps we are building
     AMP_ASSERT(database->keyExists("MapType"));
-    AMP_ASSERT( !MAP_TYPE::validMapType( database->getString("MapType") ) );
+    AMP_ASSERT( MAP_TYPE::validMapType( database->getString("MapType") ) );
 
     // Get the number of maps in the database
     AMP_INSIST(database->keyExists("N_maps"),"N_maps must exist in input database");
-    int N_maps = database->getInteger("NumberOfMeshToMeshMaps");
+    int N_maps = database->getInteger("N_maps");
 
     // Create the databases for the individual maps
     std::vector<boost::shared_ptr<AMP::Database> >  map_databases = createDatabases(database);
 
-/*    // Loop through the maps
-    for ( int i=1; i<=N_maps; i++ ) {
+    // Loop through the maps
+    AMP_MPI managerComm = manager->getComm();
+    for ( int i=0; i<N_maps; i++ ) {
 
-        // Create the map parameters
-        AsyncOpParams_ptr  mapParams ( new typename MAP_TYPE::Parameters( map_databases[i] ) );
+        // Get the names of the 2 meshes involved
+        std::string meshName1 = map_databases[i]->getString("Mesh1");
+        std::string meshName2 = map_databases[i]->getString("Mesh2");
 
+        // Subset the multmesh for the 2 meshes
+        boost::shared_ptr<AMP::Mesh::Mesh> mesh1 = manager->Subset(meshName1);
+        boost::shared_ptr<AMP::Mesh::Mesh> mesh2 = manager->Subset(meshName2);
+        int inComm = -1;
+        if ( mesh1 || mesh2 )
+            inComm = 1;
 
-      AMP::Mesh::MeshManager::Adapter::shared_ptr  mesh = meshManager->getMesh ( meshManager->getMapMeshName ( i ) );
-
-      mapParams->d_MapComm           = meshManager->getMapComm ( i );
-      mapParams->d_SetBegin          = mesh->beginOwnedBoundary ( meshManager->getMapBoundaryId ( i ) );
-      mapParams->d_SetEnd            = mesh->endOwnedBoundary ( meshManager->getMapBoundaryId ( i ) );
-      mapParams->d_IsMaster          = meshManager->getMapDominance ( i ) == AMP::Mesh::MeshManager::Master;
-      mapParams->d_MeshAdapter       = mesh;
-      mapParams->d_ConstructionPhase = 0;
-
-      size_t  tagOffset = meshManager->getMapTagOffset ( i );
-      mapParams->d_ToMasterCommTag = MAP_TYPE::CommTagBase + tagOffset;
-      mapParams->d_ToSlaveCommTag  = MAP_TYPE::CommTagBase + tagOffset + 1;
-      if ( meshManager->getMapConstructionParam ( i ) == AMP::Mesh::MeshManager::Synchronous )
-      {
-        mapParams->d_AsynchronousConstructionParam  = 0;
-      }
-      else
-      {
-        if ( mapParams->d_IsMaster )
-        {
-          mapParams->d_AsynchronousConstructionParam  = 1;
+        // Determine the maps that need to be created on the current processor
+        AMP_MPI mapComm = managerComm.split(inComm);
+        globalMapTagOffset = manager->getComm().maxReduce(globalMapTagOffset+2);    // Increment the global tag offset by 2
+        std::vector<MapConstructionParam> maps;
+        if ( mesh1 ) {
+            MapConstructionParam  mymap;
+            mymap.comm = mapComm;
+            mymap.database = map_databases[i];
+            mymap.meshName = meshName1;
+            mymap.mesh = mesh1;
+            mymap.boundaryId = mymap.database->getInteger("Surface1");
+            if ( mesh2 )
+                mymap.construction = Asynchronous;
+            else
+                mymap.construction = Synchronous;
+            mymap.dominance = Master;
+            mymap.mapType = map_databases[i]->getString("MapType");
+            mymap.tagOffset = globalMapTagOffset;
+            maps.push_back(mymap);
         }
-        else
-        {
-          mapParams->d_AsynchronousConstructionParam  = 2;
+        if ( mesh2 ) {
+            MapConstructionParam  mymap;
+            mymap.comm = mapComm;
+            mymap.database = map_databases[i];
+            mymap.meshName = meshName2;
+            mymap.mesh = mesh2;
+            mymap.boundaryId = mymap.database->getInteger("Surface2");
+            if ( mesh1 )
+                mymap.construction = Asynchronous;
+            else
+                mymap.construction = Synchronous;
+            mymap.dominance = Slave;
+            mymap.mapType = map_databases[i]->getString("MapType");
+            mymap.tagOffset = globalMapTagOffset;
+            maps.push_back(mymap);
         }
-      }
 
-      AsyncOp_ptr  mapOp ( new MAP_TYPE ( mapParams ) );
-      boost::shared_ptr<Map3to1to3>  curM313;
-      if ( curM313 = boost::dynamic_pointer_cast<Map3to1to3> ( mapOp ) )
-      {
-        curM313->getMapData() = sharedMap;
-      }
+std::cout << maps[0].meshName << " " << maps[0].boundaryId << ", " << maps[1].meshName << " " << maps[1].boundaryId << std::endl;
 
-      newMapColumn->append ( mapOp );
+        // Create the maps
+        for (size_t j=0; j<maps.size(); j++) {
 
-      if ( meshManager->getMapConstructionParam ( i ) == AMP::Mesh::MeshManager::Asynchronous )
-      {
-        asyncToDo.push_back ( mapOp );
-        asyncParams.push_back ( mapParams );
-      }
+            // Create the map parameters
+            boost::shared_ptr<AsyncMapOperatorParameters>  mapParams( new typename MAP_TYPE::Parameters( maps[j].database ) );
+            mapParams->d_Mesh              = maps[j].mesh;
+            mapParams->d_MapComm           = maps[j].comm;
+            mapParams->d_BoundaryNodeIterator = maps[j].mesh->getIDsetIterator(AMP::Mesh::Vertex,maps[j].boundaryId,0);
+            mapParams->d_IsMaster          = maps[j].dominance == Master;
+            mapParams->d_ConstructionPhase = 0;
+
+            size_t  tagOffset = maps[j].tagOffset;
+            mapParams->d_ToMasterCommTag = MAP_TYPE::CommTagBase + tagOffset;
+            mapParams->d_ToSlaveCommTag  = MAP_TYPE::CommTagBase + tagOffset + 1;
+            if ( maps[j].construction == Synchronous ) {
+                mapParams->d_AsynchronousConstructionParam  = 0;
+            } else {
+                if ( mapParams->d_IsMaster )
+                    mapParams->d_AsynchronousConstructionParam  = 1;
+                else
+                    mapParams->d_AsynchronousConstructionParam  = 2;
+            }
+
+            AsyncOp_ptr  mapOp ( new MAP_TYPE ( mapParams ) );
+            boost::shared_ptr<Map3to1to3>  curM313;
+            if ( curM313 = boost::dynamic_pointer_cast<Map3to1to3> ( mapOp ) )
+                curM313->getMapData() = sharedMap;
+
+            newMapColumn->append ( mapOp );
+
+            if ( maps[j].construction == Asynchronous ) {
+                asyncToDo.push_back ( mapOp );
+                asyncParams.push_back ( mapParams );
+            }
+        }
     }
 
 
-    while ( asyncToDo.size() )
-    {
-      std::vector<AsyncOp_ptr>::iterator        curOp;
-      std::vector<AsyncOpParams_ptr>::iterator  curParams;
+    while ( asyncToDo.size() ) {
+        std::vector<AsyncOp_ptr>::iterator        curOp;
+        std::vector<AsyncOpParams_ptr>::iterator  curParams;
 
-      curOp = asyncToDo.begin();
-      curParams = asyncParams.begin();
+        curOp = asyncToDo.begin();
+        curParams = asyncParams.begin();
 
-      while ( curOp != asyncToDo.end() )
-      {
-        if ( (*curOp)->continueAsynchronousConstruction ( *curParams ) )
-        {
-          curOp = asyncToDo.erase ( curOp );
-          curParams = asyncParams.erase ( curParams );
+        while ( curOp != asyncToDo.end() ) {
+            if ( (*curOp)->continueAsynchronousConstruction ( *curParams ) ) {
+                curOp = asyncToDo.erase ( curOp );
+                curParams = asyncParams.erase ( curParams );
+            } else {
+                curOp++;
+                curParams++;
+            }
         }
-        else
-        {
-          curOp++;
-          curParams++;
-        }
-      }
     }
-    return newMapColumn;*/
+    return newMapColumn;
 
 }
 
@@ -218,9 +269,10 @@ static void copyKey(boost::shared_ptr<AMP::Database> &database1,
 static std::vector<boost::shared_ptr<AMP::Database> >  createDatabases(boost::shared_ptr<AMP::Database> database1)
 {
     AMP_INSIST(database1->keyExists("N_maps"),"N_maps must exist in input database");
-    int N_maps = database1->getInteger("NumberOfMeshToMeshMaps");
+    int N_maps = database1->getInteger("N_maps");
     // Create the basic databases for each mesh
-    std::vector<boost::shared_ptr<AMP::Database> > meshDatabases(N_maps);
+    std::vector<boost::shared_ptr<AMP::Database> > meshDatabases;
+    meshDatabases.reserve(N_maps);
     for (int i=0; i<N_maps; i++) {
         // Create a new database from the existing database
         boost::shared_ptr<AMP::Database> database2( new AMP::MemoryDatabase("MapDatabase") );
@@ -232,8 +284,8 @@ static std::vector<boost::shared_ptr<AMP::Database> >  createDatabases(boost::sh
                 // We need to copy the key
                 copyKey(database1,database2,keys[k],N_maps,i);
             }
-            meshDatabases.push_back(database2);
         }
+        meshDatabases.push_back(database2);
     }
     return meshDatabases;
 }
