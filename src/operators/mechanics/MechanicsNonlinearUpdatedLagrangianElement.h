@@ -137,6 +137,19 @@ namespace Operator {
         d_elementRefXYZ = elementRefXYZ;
       }
 
+      void preNonlinearElementInit();
+
+      void zeroOutGaussPointCount() {
+        d_gaussPtCnt = 0;
+      }
+
+      void resetElementInfo() {
+        if((d_useJaumannRate == false) && (d_useFlanaganTaylorElem == true)) {
+          d_leftStretchV_n = d_leftStretchV_np1;
+          d_rotationR_n = d_rotationR_np1;
+        }
+      }
+
     protected :
 
       template <MaterialUpdateType type>
@@ -184,6 +197,16 @@ namespace Operator {
       bool d_onePointShearIntegration;
 
       std::vector<double> d_elementRefXYZ;
+
+      std::vector<double> d_leftStretchV_n;
+
+      std::vector<double> d_leftStretchV_np1;
+
+      std::vector<double> d_rotationR_n;
+
+      std::vector<double> d_rotationR_np1;
+
+      int d_gaussPtCnt;
 
     private :
 
@@ -383,15 +406,17 @@ namespace Operator {
         double dN_dxnp1o2[8], dN_dynp1o2[8], dN_dznp1o2[8], detJ_np1o2[1], d_np1o2[3][3], d_np1o2_temp[3][3];
 
         if(d_useJaumannRate == false) {
-          // The deformation gradients are computed in the next three lines.
-          computeDeformationGradient(dphi, xyz_n, num_nodes, qp, F_n);
-          computeDeformationGradient(dphi, xyz_np1, num_nodes, qp, F_np1);
-          computeDeformationGradient(dphi, xyz_np1o2, num_nodes, qp, F_np1o2);
+          if(d_useFlanaganTaylorElem == false) {
+            // The deformation gradients are computed in the next three lines.
+            computeDeformationGradient(dphi, xyz_n, num_nodes, qp, F_n);
+            computeDeformationGradient(dphi, xyz_np1, num_nodes, qp, F_np1);
+            computeDeformationGradient(dphi, xyz_np1o2, num_nodes, qp, F_np1o2);
 
-          // Polar decomposition (F=RU) of the deformation gradient is conducted here.
-          polarDecompositionFeqRU_Simo(F_n, R_n, U_n);
-          polarDecompositionFeqRU_Simo(F_np1, R_np1, U_np1);
-          polarDecompositionFeqRU_Simo(F_np1o2, R_np1o2, U_np1o2);
+            // Polar decomposition (F=RU) of the deformation gradient is conducted here.
+            polarDecompositionFeqRU_Simo(F_n, R_n, U_n);
+            polarDecompositionFeqRU_Simo(F_np1, R_np1, U_np1);
+            polarDecompositionFeqRU_Simo(F_np1o2, R_np1o2, U_np1o2);
+          }
 
           // Gradient of the incremental displacement with respect to the np1o2 configuration.
           constructShapeFunctionDerivatives(dN_dxnp1o2, dN_dynp1o2, dN_dznp1o2, x_np1o2, y_np1o2, z_np1o2, currXi[qp], currEta[qp], currZeta[qp], detJ_np1o2);

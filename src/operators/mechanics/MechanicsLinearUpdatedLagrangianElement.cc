@@ -322,7 +322,9 @@ namespace Operator {
         constructShapeFunctionDerivatives(dNdX, dNdY, dNdZ, refX, refY, refZ, currXi[qp], currEta[qp], currZeta[qp], detJ_0);
         //computeDeformationGradientLin(dphi, xyz_np1, num_nodes, qp, F_np1);
         computeGradient(dNdX, dNdY, dNdZ, currX, currY, currZ, num_nodes, F_np1);
-        polarDecompositionFeqRU_Simo(F_np1, R_np1, U_np1);
+        if(d_useFlanaganTaylorElem == false) {
+          polarDecompositionFeqRU_Simo(F_np1, R_np1, U_np1);
+        }
       }
 
       d_materialModel->getConstitutiveMatrixUpdatedLagrangian(constitutiveMatrix, R_np1);
@@ -597,7 +599,16 @@ namespace Operator {
         constructShapeFunctionDerivatives(dNdX, dNdY, dNdZ, refX, refY, refZ, currXi[qp], currEta[qp], currZeta[qp], detJ_0);
         //computeDeformationGradientLin(dphi, xyz_np1, num_nodes, qp, F_np1);
         computeGradient(dNdX, dNdY, dNdZ, currX, currY, currZ, num_nodes, F_np1);
-        polarDecompositionFeqRU_Simo(F_np1, R_np1, U_np1);
+        if(d_useFlanaganTaylorElem == false) {
+          polarDecompositionFeqRU_Simo(F_np1, R_np1, U_np1);
+        } else {
+          for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+              R_np1[i][j] = 0.0;
+              if(i == j) R_np1[i][j] = 1.0;
+            }
+          }
+        }
       }
 
       d_materialModel->getConstitutiveMatrixUpdatedLagrangian(constitutiveMatrix, R_np1);

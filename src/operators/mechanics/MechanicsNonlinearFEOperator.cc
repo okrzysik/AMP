@@ -243,6 +243,10 @@ namespace AMP {
       d_outVec->zero();
 
       d_materialModel->preNonlinearAssembly();
+
+      if(d_useUpdatedLagrangian == true) {
+        d_mechNULElem->zeroOutGaussPointCount();
+      }
     }
 
     void MechanicsNonlinearFEOperator :: postAssembly()
@@ -390,6 +394,10 @@ namespace AMP {
 
       d_materialModel->preNonlinearInit(d_resetReusesRadialReturn, d_jacobianReusesRadialReturn);
 
+      if(d_useUpdatedLagrangian) {
+        d_mechNULElem->preNonlinearElementInit();
+      }
+
       for( ; el != end_el; ++el) {
         std::vector<unsigned int> dofIndices;
         if(d_isActive[Mechanics::TEMPERATURE]) {
@@ -511,6 +519,10 @@ namespace AMP {
         }//end for el
 
         d_materialModel->postNonlinearReset();
+      }
+
+      if(d_useUpdatedLagrangian == true) {
+        d_mechNULElem->resetElementInfo();
       }
 
       if(d_useUpdatedLagrangian) {

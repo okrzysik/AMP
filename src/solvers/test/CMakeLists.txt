@@ -177,6 +177,8 @@ COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianMechanics-LinearElasticity-2 )
 COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianMechanics-LinearElasticity-3 )
 ADD_AMP_WEEKLY_TEST ( testSmallStrainMechanics-ThermoMechanics-1 1 )
 COPY_TEST_DATA_FILE ( input_testSmallStrainMechanics-ThermoMechanics-1 )
+ADD_AMP_TEST ( testUpdatedLagrangianMechanics-FlanaganTaylorElement-1 )
+COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianMechanics-FlanaganTaylorElement-1 )
 
 ADD_AMP_PROVISIONAL_TEST ( testMatrixFreeML )
 COPY_TEST_DATA_FILE ( input_testMatrixFreeML-1 )
