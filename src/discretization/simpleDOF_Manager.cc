@@ -332,28 +332,28 @@ std::vector<size_t> simpleDOFManager::getRemoteDOF(std::vector<AMP::Mesh::MeshEl
 {
     AMP_MPI comm = d_mesh->getComm();
     // Get the set of mesh ids (must match on all processors)
-    std::set<size_t> meshIDs;
+    std::set<AMP::Mesh::MeshID> meshIDs;
     for (size_t i=0; i<remote_ids.size(); i++)
         meshIDs.insert(remote_ids[i].meshID());
-    std::vector<size_t> tmpLocalIDs(meshIDs.begin(),meshIDs.end());
+    std::vector<AMP::Mesh::MeshID> tmpLocalIDs(meshIDs.begin(),meshIDs.end());
     int N = (int) comm.sumReduce<size_t>(tmpLocalIDs.size());
     if ( N==0 ) {
         // Nobody has any remote ids to identify
         return std::vector<size_t>();
     }
-    size_t *send_ptr=NULL;
+    AMP::Mesh::MeshID *send_ptr=NULL;
     if ( tmpLocalIDs.size()>0 )
         send_ptr = &tmpLocalIDs[0];
-    std::vector<size_t> tmpGlobalIDs(N);
-    int N_recv = comm.allGather(send_ptr,tmpLocalIDs.size(),&tmpGlobalIDs[0]);
+    std::vector<AMP::Mesh::MeshID> tmpGlobalIDs(N);
+    int N_recv = comm.allGather<AMP::Mesh::MeshID>(send_ptr,tmpLocalIDs.size(),&tmpGlobalIDs[0]);
     AMP_ASSERT(N_recv==N);
     for (size_t i=0; i<tmpGlobalIDs.size(); i++)
         meshIDs.insert(tmpGlobalIDs[i]);
     // Get the rank that will own each MeshElement on the current communicator
     std::vector<int> owner_rank(remote_ids.size(),-1);
-    for (std::set<size_t>::iterator it=meshIDs.begin() ; it!=meshIDs.end(); it++) {
+    for (std::set<AMP::Mesh::MeshID>::iterator it=meshIDs.begin() ; it!=meshIDs.end(); it++) {
         // Get the mesh with the given meshID
-        size_t meshID = *it;
+        AMP::Mesh::MeshID meshID = *it;
         AMP::Mesh::Mesh::shared_ptr submesh = d_mesh->Subset(meshID);
         // Create a map from the rank of the submesh to the current mesh
         int rank_submesh = -1;

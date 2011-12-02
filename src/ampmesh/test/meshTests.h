@@ -200,7 +200,7 @@ void MeshCountTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 void MeshBasicTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // test that we can get the mesh ID
-    size_t meshID = mesh->meshID();
+    AMP::Mesh::MeshID meshID = mesh->meshID();
     if ( meshID>0 && meshID<1000 ) 
         ut->passes("got meshID");
     else

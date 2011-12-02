@@ -2,6 +2,7 @@
 #define included_AMP_MultiIterator
 
 #include <boost/shared_ptr.hpp>
+#include "ampmesh/Mesh.h"
 #include "ampmesh/MeshIterator.h"
 
 namespace AMP { 

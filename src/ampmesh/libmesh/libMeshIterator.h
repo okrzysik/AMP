@@ -86,7 +86,7 @@ private:
     void *d_begin;
     void *d_end;
     void *d_pos;
-    size_t d_meshID;
+    MeshID d_meshID;
     AMP::Mesh::libMesh *d_mesh;
     MeshElement d_cur_element;
 };

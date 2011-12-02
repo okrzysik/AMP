@@ -20,10 +20,10 @@ libMeshElement::libMeshElement()
     element = NULL;
     d_dim = -1;
     d_elementType = null;
-    d_globalID = MeshElementID(false,null,-1,-1,-1);
+    d_globalID = MeshElementID(false,null,-1,-1,MeshID());
 }
 libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element, 
-    unsigned int rank, size_t meshID, libMesh* mesh)
+    unsigned int rank, MeshID meshID, libMesh* mesh)
 {
     AMP_ASSERT(libmesh_element!=NULL);
     typeID = libMeshElementTypeID;

@@ -3,8 +3,8 @@
 
 #include <iterator>
 #include <boost/shared_ptr.hpp>
-#include "MeshElement.h"
-#include "MeshIterator.h"
+#include "ampmesh/Mesh.h"
+#include "ampmesh/MeshIterator.h"
 
 namespace AMP { 
 namespace Mesh {

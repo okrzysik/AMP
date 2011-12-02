@@ -1,9 +1,9 @@
 #ifndef included_AMP_Mesh
 #define included_AMP_Mesh
 
-#include "MeshParameters.h"
-#include "MeshIterator.h"
-#include "MeshElement.h"
+#include "ampmesh/MeshParameters.h"
+#include "ampmesh/MeshID.h"
+#include "ampmesh/MeshIterator.h"
 #include "utils/AMP_MPI.h"
 
 #include <boost/shared_ptr.hpp>
@@ -113,7 +113,7 @@ public:
      *    matches the meshID of the mesh, and a null pointer otherwise.
      * \param meshID  MeshID of the desired mesh
      */
-    virtual boost::shared_ptr<Mesh>  Subset ( size_t meshID );
+    virtual boost::shared_ptr<Mesh>  Subset ( MeshID meshID );
 
 
     /**
@@ -226,7 +226,7 @@ public:
 
 
     //! Get the mesh ID
-    virtual inline size_t meshID() const { return d_meshID; }
+    virtual inline MeshID meshID() const { return d_meshID; }
 
 
     //! Get the mesh name
@@ -278,7 +278,7 @@ protected:
     boost::shared_ptr<AMP::Database>  d_db;
 
     //! A unique id for each mesh
-    size_t d_meshID;
+    MeshID d_meshID;
 
     //! A name for the mesh
     std::string d_name;

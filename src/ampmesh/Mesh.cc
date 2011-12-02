@@ -126,38 +126,16 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 ********************************************************/
 void Mesh::setMeshID( )
 {
-    if ( comm.getRank()==0 ) {
-        AMP_MPI globalComm = AMP_MPI(AMP_COMM_WORLD);
-        // I am the root processor, create the mesh ID
-        if ( sizeof(size_t) == 8 ) {
-            // 64-bit integer, use the first 32-bits for the processor
-            // and the second 32-bits for the local id
-            d_meshID = globalComm.getRank();
-            d_meshID <<= 32;
-            d_meshID += (size_t) nextLocalMeshID;
-            nextLocalMeshID++;
-        } else {
-            // 32-bit integer, use the first 16-bits for the processor
-            // and the second 16-bits for the local id
-            if ( globalComm.getSize() > 0xFFFF )
-                AMP_ERROR("Too many processors for meshID");
-            d_meshID = globalComm.getRank();
-            d_meshID <<= 16;
-            d_meshID += (size_t) nextLocalMeshID;
-            nextLocalMeshID++;
-            if ( nextLocalMeshID > 0xFFFF )
-                AMP_ERROR("Ran out of unique mesh IDs");
-        }
-    }
-    // Broadcast the meshID to all processors
-    d_meshID = comm.bcast(d_meshID,0);
+    AMP_MPI globalComm(AMP_COMM_WORLD);
+    unsigned int root = comm.bcast(globalComm.getRank(),0);
+    d_meshID = MeshID(root,nextLocalMeshID);
 }
 
 
 /********************************************************
 * Function to return the mesh with the given ID         *
 ********************************************************/
-boost::shared_ptr<Mesh>  Mesh::Subset( size_t meshID ) {
+boost::shared_ptr<Mesh>  Mesh::Subset( MeshID meshID ) {
     if ( d_meshID==meshID ) 
         return shared_from_this();
     else

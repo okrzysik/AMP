@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <boost/shared_ptr.hpp>
-#include "ampmesh/MeshElementID.h"
+#include "ampmesh/MeshID.h"
 
 
 namespace AMP {

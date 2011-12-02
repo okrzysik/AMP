@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <boost/shared_ptr.hpp>
+#include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 #include "ampmesh/libmesh/libMesh.h"
 #include "ampmesh/libmesh/libMeshIterator.h"
@@ -67,7 +68,7 @@ protected:
      * \param rank      Rank of the current processor (must agree with libmesh->processor_id())
      * \param meshID    ID of the current mesh
      */
-    libMeshElement(int dim, GeomType type, void* element, unsigned int rank, size_t meshID, libMesh* mesh );
+    libMeshElement(int dim, GeomType type, void* element, unsigned int rank, MeshID meshID, libMesh* mesh );
 
     //! Clone the iterator
     virtual MeshElement* clone() const;
@@ -80,7 +81,7 @@ protected:
     unsigned int d_rank;
 
     // The ID of the current mesh
-    size_t d_meshID;
+    MeshID d_meshID;
 
     // The pointer to the current mesh
     libMesh* d_mesh;
