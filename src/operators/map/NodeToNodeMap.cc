@@ -2,6 +2,7 @@
 #include "operators/map/NodeToNodeMapParameters.h"
 #include "ampmesh/MeshElement.h"
 #include "discretization/NodalVariable.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include <set>
 
@@ -30,8 +31,9 @@ NodeToNodeMap::NodeToNodeMap ( const boost::shared_ptr<AMP::Operator::OperatorPa
     d_MapComm = Params.d_MapComm;
     int DofsPerObj = Params.d_db->getInteger ( "DOFsPerObject" );
 
-    // Create a nodal variable 
-    AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::Discretization::NodalVariable(DofsPerObj,"VariableName") );    
+    // Create a nodal variable and DOFManager (this should be moved out of here)
+    d_inpVariable = AMP::LinearAlgebra::Variable::shared_ptr( new AMP::Discretization::NodalVariable(DofsPerObj,"VariableName") );
+    d_DOFManager = AMP::Discretization::DOFManager::shared_ptr( new AMP::Discretization::simpleDOFManager(d_Mesh,AMP::Mesh::Vertex,0,DofsPerObj) );
 
     int commSize = d_MapComm.getSize();
     d_MySurfaceCountsS.resize ( commSize );
@@ -327,8 +329,7 @@ void NodeToNodeMap::recvSurface ( boost::shared_ptr<NodeToNodeMapParameters> p )
         }
         ++cur;
     }
-AMP_ERROR("Not finished converting");
-/*
+
     int DofsPerObj = p->d_db->getInteger ( "DOFsPerObject" );
 
     // Compute the send/recv vectors for the all to all communication
@@ -351,7 +352,7 @@ AMP_ERROR("Not finished converting");
       }
       d_MySurfaceCountsR[i] = d_MySurfaceCountsS[i] = curOffset - d_MySurfaceDisplsS[i];
     }
-*/
+
 }
 
 

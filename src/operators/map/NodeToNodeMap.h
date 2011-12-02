@@ -11,6 +11,7 @@
 #include "vectors/Vector.h"
 #include "ampmesh/Mesh.h"
 #include "utils/AMP_MPI.h"
+#include "discretization/DOF_Manager.h"
 
 
 namespace AMP {
@@ -39,6 +40,7 @@ private:
 
     AMP::LinearAlgebra::Vector::shared_ptr        d_OutputVector;
     AMP::LinearAlgebra::Variable::shared_ptr      d_inpVariable;
+    AMP::Discretization::DOFManager::shared_ptr   d_DOFManager;
 
     int   d_SendTag;
     int   d_RecvTag;

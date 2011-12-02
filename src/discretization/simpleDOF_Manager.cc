@@ -55,10 +55,8 @@ simpleDOFManager::simpleDOFManager( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP
 
 /****************************************************************
 * Get the entry indices of nodal values given a mesh element    *
-* Note:  this function is likely temporary, we are assuming     *
-* all data will be stored on nodes.                             *
 ****************************************************************/
-void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <unsigned int> &ids, std::vector<unsigned int> which ) const
+void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <unsigned int> &dofs, std::vector<unsigned int> which ) const
 {
     std::vector<AMP::Mesh::MeshElement> elements;
     if ( obj.elementType() == d_type )
@@ -67,25 +65,33 @@ void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <
         elements = obj.getElements(d_type);
     if ( which.size()==0 ) {
         // Return all dofs
-        ids.resize(elements.size()*DOFsPerElement);
+        dofs.resize(elements.size()*DOFsPerElement);
         for (size_t i=0; i<elements.size(); i++) {
             AMP::Mesh::MeshElementID local_id = elements[i].globalID();
             size_t index = AMP::Utilities::findfirst(d_local_id,local_id);
             AMP_INSIST(local_id==d_local_id[index],"Internal Error: id not found");
             for (int j=0; j<DOFsPerElement; j++)
-                ids[i*DOFsPerElement+j] = (index+d_begin)*DOFsPerElement + j;
+                dofs[i*DOFsPerElement+j] = (index+d_begin)*DOFsPerElement + j;
         }
     } else {
         // Return only the desired dof
-        ids.resize(which.size()*DOFsPerElement);
+        dofs.resize(which.size()*DOFsPerElement);
         for (size_t i=0; i<which.size(); i++) {
             AMP::Mesh::MeshElementID local_id = elements[which[i]].globalID();
             size_t index = AMP::Utilities::findfirst(d_local_id,local_id);
             AMP_INSIST(local_id==d_local_id[index],"Internal Error: id not found");
             for (int j=0; j<DOFsPerElement; j++)
-                ids[i*DOFsPerElement+j] = (index+d_begin)*DOFsPerElement + j;
+                dofs[i*DOFsPerElement+j] = (index+d_begin)*DOFsPerElement + j;
         }
     }
+}
+void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <unsigned int> &dofs ) const
+{
+    dofs.resize(DOFsPerElement);
+    size_t index = AMP::Utilities::findfirst(d_local_id,id);
+    AMP_INSIST(id==d_local_id[index],"Internal Error: id not found");
+    for (int j=0; j<DOFsPerElement; j++)
+        dofs[j] = (index+d_begin)*DOFsPerElement + j;
 }
 
 

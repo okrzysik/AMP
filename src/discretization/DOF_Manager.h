@@ -34,10 +34,18 @@ public:
     /** \brief Get the entry indices of DOFs given a mesh element
      * \details  This will return a vector of pointers into a Vector that are associated with which.
      * \param[in]  obj      The element to collect nodal objects for.  Note: the mesh element may be any type (include a vertex).
-     * \param[out] ids      The entries in the vector associated with D.O.F.s on the nodes
+     * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
      * \param[in]  which    Which D.O.F. to get.  If not specified, return all D.O.F.s
      */
-    virtual void getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <unsigned int> &ids , std::vector<unsigned int> which = std::vector<unsigned int>(0) ) const;
+    virtual void getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <unsigned int> &dofs , std::vector<unsigned int> which = std::vector<unsigned int>(0) ) const;
+
+
+    /** \brief Get the entry indices of DOFs given a mesh element ID
+     * \details  This will return a vector of pointers into a Vector that are associated with which.
+     * \param[in]  id       The element ID to collect nodal objects for.  Note: the mesh element may be any type (include a vertex).
+     * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
+     */
+    virtual void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <unsigned int> &dofs ) const;
 
 
     /** \brief   Get an entry over the mesh elements associated with the DOFs

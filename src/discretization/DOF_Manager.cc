@@ -9,7 +9,11 @@ namespace Discretization {
 /****************************************************************
 * Get the entry indices of DOFs given a mesh element            *
 ****************************************************************/
-void DOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <unsigned int> &ids, std::vector<unsigned int> ) const
+void DOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <unsigned int> &dofs, std::vector<unsigned int> ) const
+{
+    AMP_ERROR("getDOFs is not implimented for the base class");
+}
+void DOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <unsigned int> &dofs ) const
 {
     AMP_ERROR("getDOFs is not implimented for the base class");
 }
