@@ -4,18 +4,21 @@
 namespace AMP {
 namespace Operator {
 
-size_t mapTagOffset = 0;
 
-  AsyncMapOperator::AsyncMapOperator ( const boost::shared_ptr <OperatorParameters> &p )
+AsyncMapOperator::AsyncMapOperator ( const boost::shared_ptr <OperatorParameters> &p )
     : AsynchronousOperator ( p )
-  {
+{
     boost::shared_ptr<AsyncMapOperatorParameters> params = boost::dynamic_pointer_cast<AsyncMapOperatorParameters>(p);
-    d_IsMaster = params->d_IsMaster;
-  }
+    d_comm = params->d_MapComm;
+    d_mesh1 = params->d_Mesh1;
+    d_mesh2 = params->d_Mesh2;
+}
 
-  AsyncMapOperator::~AsyncMapOperator ()
-  {
-  }
+
+AsyncMapOperator::~AsyncMapOperator ()
+{
+}
+
 
 }
 }

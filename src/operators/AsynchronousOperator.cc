@@ -20,10 +20,10 @@ AsynchronousOperator::~AsynchronousOperator ()
 }
 
 
-bool AsynchronousOperator::continueAsynchronousConstruction ( const boost::shared_ptr < OperatorParameters > & )
+/*bool AsynchronousOperator::continueAsynchronousConstruction ( const boost::shared_ptr < OperatorParameters > & )
 {
     return true;
-}
+}*/
 
 
 void AsynchronousOperator::waitForAllRequests ()

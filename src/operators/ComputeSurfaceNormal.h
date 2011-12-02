@@ -37,6 +37,8 @@ namespace Operator {
 
       boost::shared_ptr<AMP::LinearAlgebra::Vector> getNormals(const AMP::LinearAlgebra::Vector::shared_ptr &);
 
+      void setVariable(const AMP::LinearAlgebra::Variable::shared_ptr & u);
+
     protected :
 
       std::vector<short int> d_boundaryIds;

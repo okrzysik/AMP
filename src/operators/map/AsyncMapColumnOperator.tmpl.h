@@ -1,6 +1,6 @@
 #include "operators/map/AsyncMapOperator.h"
 #include "operators/map/AsyncMapOperatorParameters.h"
-#include "operators/map/Map3to1to3.h"
+//#include "operators/map/Map3to1to3.h"
 #include "utils/MemoryDatabase.h"
 #include "utils/Database.h"
 
@@ -35,8 +35,8 @@ boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build ( AMP::
 
     typedef boost::shared_ptr < AsyncMapOperator >             AsyncOp_ptr;
     typedef boost::shared_ptr < AsyncMapOperatorParameters >   AsyncOpParams_ptr;
-    Map3to1to3::spMap::type       sharedMap ( new std::multimap<double,double> );
-    sharedMap.isComputed = false;
+    // Map3to1to3::spMap::type       sharedMap ( new std::multimap<double,double> );
+    //sharedMap.isComputed = false;
 
     std::vector < AsyncOp_ptr >           asyncToDo;
     std::vector < AsyncOpParams_ptr >     asyncParams;
@@ -70,98 +70,31 @@ boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build ( AMP::
         if ( mesh1 || mesh2 )
             inComm = 1;
 
-        // Determine the maps that need to be created on the current processor
+        // Increment the global tag offset by 2
+        globalMapTagOffset = manager->getComm().maxReduce(globalMapTagOffset+2);
+
+        // Create a comm spanning the meshes
         AMP_MPI mapComm = managerComm.split(inComm);
-        globalMapTagOffset = manager->getComm().maxReduce(globalMapTagOffset+2);    // Increment the global tag offset by 2
-        std::vector<MapConstructionParam> maps;
-        if ( mesh1 ) {
-            MapConstructionParam  mymap;
-            mymap.comm = mapComm;
-            mymap.database = map_databases[i];
-            mymap.meshName = meshName1;
-            mymap.mesh = mesh1;
-            mymap.boundaryId = mymap.database->getInteger("Surface1");
-            if ( mesh2 )
-                mymap.construction = Asynchronous;
-            else
-                mymap.construction = Synchronous;
-            mymap.dominance = Master;
-            mymap.mapType = map_databases[i]->getString("MapType");
-            mymap.tagOffset = globalMapTagOffset;
-            maps.push_back(mymap);
-        }
-        if ( mesh2 ) {
-            MapConstructionParam  mymap;
-            mymap.comm = mapComm;
-            mymap.database = map_databases[i];
-            mymap.meshName = meshName2;
-            mymap.mesh = mesh2;
-            mymap.boundaryId = mymap.database->getInteger("Surface2");
-            if ( mesh1 )
-                mymap.construction = Asynchronous;
-            else
-                mymap.construction = Synchronous;
-            mymap.dominance = Slave;
-            mymap.mapType = map_databases[i]->getString("MapType");
-            mymap.tagOffset = globalMapTagOffset;
-            maps.push_back(mymap);
-        }
+        if ( inComm==-1 )
+            continue;
 
-        // Create the maps
-        for (size_t j=0; j<maps.size(); j++) {
+        // Create the map parameters
+        boost::shared_ptr<AsyncMapOperatorParameters>  mapParams( new typename MAP_TYPE::Parameters( map_databases[i] ) );
+        mapParams->d_MapComm = mapComm;
+        mapParams->d_Mesh1 = mesh1;
+        mapParams->d_Mesh2 = mesh2;
+        mapParams->d_BoundaryID1 = map_databases[i]->getInteger("Surface1");
+        mapParams->d_BoundaryID2 = map_databases[i]->getInteger("Surface2");
 
-            // Create the map parameters
-            boost::shared_ptr<AsyncMapOperatorParameters>  mapParams( new typename MAP_TYPE::Parameters( maps[j].database ) );
-            mapParams->d_Mesh              = maps[j].mesh;
-            mapParams->d_MapComm           = maps[j].comm;
-            mapParams->d_BoundaryNodeIterator = maps[j].mesh->getIDsetIterator(AMP::Mesh::Vertex,maps[j].boundaryId,0);
-            mapParams->d_IsMaster          = maps[j].dominance == Master;
-            mapParams->d_ConstructionPhase = 0;
+        // Create the map
+        AsyncOp_ptr  mapOp ( new MAP_TYPE ( mapParams ) );
+        //boost::shared_ptr<Map3to1to3>  curM313;
+        //if ( curM313 = boost::dynamic_pointer_cast<Map3to1to3> ( mapOp ) )
+        //    curM313->getMapData() = sharedMap;
+        newMapColumn->append ( mapOp );
 
-            size_t  tagOffset = maps[j].tagOffset;
-            mapParams->d_ToMasterCommTag = MAP_TYPE::CommTagBase + tagOffset;
-            mapParams->d_ToSlaveCommTag  = MAP_TYPE::CommTagBase + tagOffset + 1;
-            if ( maps[j].construction == Synchronous ) {
-                mapParams->d_AsynchronousConstructionParam  = 0;
-            } else {
-                if ( mapParams->d_IsMaster )
-                    mapParams->d_AsynchronousConstructionParam  = 1;
-                else
-                    mapParams->d_AsynchronousConstructionParam  = 2;
-            }
-
-            AsyncOp_ptr  mapOp ( new MAP_TYPE ( mapParams ) );
-            boost::shared_ptr<Map3to1to3>  curM313;
-            if ( curM313 = boost::dynamic_pointer_cast<Map3to1to3> ( mapOp ) )
-                curM313->getMapData() = sharedMap;
-
-            newMapColumn->append ( mapOp );
-
-            if ( maps[j].construction == Asynchronous ) {
-                asyncToDo.push_back ( mapOp );
-                asyncParams.push_back ( mapParams );
-            }
-        }
     }
 
-
-    while ( asyncToDo.size() ) {
-        std::vector<AsyncOp_ptr>::iterator        curOp;
-        std::vector<AsyncOpParams_ptr>::iterator  curParams;
-
-        curOp = asyncToDo.begin();
-        curParams = asyncParams.begin();
-
-        while ( curOp != asyncToDo.end() ) {
-            if ( (*curOp)->continueAsynchronousConstruction ( *curParams ) ) {
-                curOp = asyncToDo.erase ( curOp );
-                curParams = asyncParams.erase ( curParams );
-            } else {
-                curOp++;
-                curParams++;
-            }
-        }
-    }
     return newMapColumn;
 
 }

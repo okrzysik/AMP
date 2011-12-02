@@ -2,6 +2,7 @@
 #define included_AMP_AsyncMapOperatorParameters
 
 #include "operators/AsynchronousOperatorParameters.h"
+#include "ampmesh/Mesh.h"
 #include "utils/AMP_MPI.h"
 
 
@@ -13,7 +14,10 @@ namespace Operator {
     public:
 
       AMP_MPI                       d_MapComm;
-      AMP::Mesh::MeshIterator       d_BoundaryNodeIterator;
+      AMP::Mesh::Mesh::shared_ptr   d_Mesh1;
+      AMP::Mesh::Mesh::shared_ptr   d_Mesh2;
+      int                           d_BoundaryID1;
+      int                           d_BoundaryID2;
 
       bool             d_IsMaster;
       int              d_ToMasterCommTag;

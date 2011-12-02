@@ -80,13 +80,8 @@ namespace Operator {
 
     public:
       AsynchronousOperator ( const boost::shared_ptr < OperatorParameters > &params );
-      virtual ~AsynchronousOperator ();
 
-      /** \brief  Continue the construction of the object requiring asynchronous calls
-        * \param[in] params  The parameters to pass to the continuation
-        * \return True if construction is complete
-        */
-      virtual bool continueAsynchronousConstruction ( const boost::shared_ptr < OperatorParameters > &params );
+      virtual ~AsynchronousOperator ();
 
       /** \brief  Start a communicative apply operation
         * \param[in]  f  An input vector
