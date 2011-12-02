@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
   //exeNames.push_back("testElementLevel-16-ElementMesh-Elasticity");
   //exeNames.push_back("testElementLevel-VonMisesIsotropicHardeningPlasticity");
   //exeNames.push_back("testElementLevel-VonMisesKinematicHardeningPlasticity");
-  exeNames.push_back("testElementLevel-VonMisesPlasticity-1");
+  exeNames.push_back("testElementLevel-VonMisesPlasticity-ML-1");
 
     for(unsigned int i = 0; i < exeNames.size(); i++) {
         try {
