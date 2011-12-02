@@ -126,9 +126,14 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 ********************************************************/
 void Mesh::setMeshID( )
 {
-    AMP_MPI globalComm(AMP_COMM_WORLD);
-    unsigned int root = comm.bcast(globalComm.getRank(),0);
-    d_meshID = MeshID(root,nextLocalMeshID);
+    if ( comm.getRank()==0 ) {
+        // Root will create the meshID
+        AMP_MPI globalComm(AMP_COMM_WORLD);
+        d_meshID = MeshID(globalComm.getRank(),nextLocalMeshID);
+        nextLocalMeshID++;
+    }
+    // Broadcast the meshID to all processors
+    d_meshID = comm.bcast(d_meshID,0);
 }
 
 
