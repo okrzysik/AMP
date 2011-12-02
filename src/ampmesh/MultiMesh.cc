@@ -326,7 +326,7 @@ MeshIterator MultiMesh::getIDsetIterator( const GeomType type, const int id, con
 /********************************************************
 * Function to return the mesh with the given ID         *
 ********************************************************/
-boost::shared_ptr<Mesh>  MultiMesh::Subset( size_t meshID ) 
+boost::shared_ptr<Mesh>  MultiMesh::Subset( MeshID meshID ) 
 {
     if ( d_meshID==meshID )
         return shared_from_this();

@@ -75,7 +75,7 @@ public:
      *    matches the meshID of the mesh, and a null pointer otherwise.
      * \param meshID  MeshID of the desired mesh
      */
-    virtual boost::shared_ptr<Mesh>  Subset( size_t meshID );
+    virtual boost::shared_ptr<Mesh>  Subset( MeshID meshID );
 
 
     /**
