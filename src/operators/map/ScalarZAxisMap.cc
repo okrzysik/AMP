@@ -68,7 +68,7 @@ void ScalarZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr 
     double v1 = (*ub).second;
 
     // Loop through the points in the output vector
-    const double TOL = 1e-8;
+    const double TOL = 1e-12;
     AMP::Mesh::DOFMap::shared_ptr dof = d_MeshAdapter->getDOFMap ( getInputVariable() );
     BNIterator cur = d_BeginNode;
     while ( cur != d_EndNode ) {
@@ -101,6 +101,7 @@ void ScalarZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr 
         double hi = ub->first;
         double wt = (pos - lo) / (hi - lo);
         double ans = (1.-wt) * lb->second + wt * ub->second;
+        //double ans = ( (hi-pos) * lb->second + (pos-lo) * ub->second )/ (hi-lo);
         vec->setValueByGlobalID ( dof->getGlobalID ( cur->globalID() , 0 ) , ans );
 
         cur++;

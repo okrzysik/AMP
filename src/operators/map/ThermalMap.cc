@@ -326,7 +326,7 @@ namespace Operator {
     d_MySurfaceDisplsS.resize ( commSize );
     d_MySurfaceCountsR.resize ( commSize );
     d_MySurfaceDisplsR.resize ( commSize );
-    Point::_precision = 1.e-8;
+    Point::_precision = 1.e-12;
 
     // If this needs to be built asynchronously, exit
     if ( Params.d_AsynchronousConstructionParam > 0 )
