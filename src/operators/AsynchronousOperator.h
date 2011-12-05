@@ -84,6 +84,8 @@ namespace Operator {
       virtual ~AsynchronousOperator ();
 
       /** \brief  Start a communicative apply operation
+        * \details  The specific meaning of applyStart will vary depending on the operator,
+        *   but the intended purpose is to start non-blocking communication.
         * \param[in]  f  An input vector
         * \param[in]  u  An input vector
         * \param[out] r  An output vector
@@ -95,6 +97,9 @@ namespace Operator {
              const double a = -1.0, const double b = 1.0) = 0;
 
       /** \brief  Finish a communicative apply operation
+        * \details  The specific meaning of applyFinish will vary depending on the operator,
+        *   but the intended purpose is to finish non-blocking communication and any remaining 
+        *   operations for the vector
         * \param[in]  f  An input vector
         * \param[in]  u  An input vector
         * \param[out] r  An output vector
@@ -105,6 +110,14 @@ namespace Operator {
              const  AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r,
              const double a = -1.0, const double b = 1.0) = 0;
 
+      /** \brief  Apply operation
+        * \details  The apply opertion for an asyncronous operator simply calls applyStart and applyFinish.
+        * \param[in]  f  An input vector
+        * \param[in]  u  An input vector
+        * \param[out] r  An output vector
+        * \param[in]  a  A weight
+        * \param[in]  b  A weight
+        */
       virtual void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
              const  AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r,
              const double a = -1.0, const double b = 1.0);

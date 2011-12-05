@@ -20,6 +20,26 @@ AsyncMapOperator::~AsyncMapOperator ()
 }
 
 
+void AsyncMapOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
+        const  AMP::LinearAlgebra::Vector::shared_ptr &u, 
+        AMP::LinearAlgebra::Vector::shared_ptr  &r,
+        const double a, const double b)
+{
+    applyStart  ( f , u , r , a , b );
+    applyFinish ( f , u , r , a , b );
+    if ( requiresMakeConsistentSet() ) {
+        AMP_ASSERT(d_OutputVector.get()!=NULL);
+        d_OutputVector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    }
+}
+
+
+bool AsyncMapOperator::requiresMakeConsistentSet()
+{ 
+    return false;
+}
+
+
 }
 }
 

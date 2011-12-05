@@ -28,11 +28,28 @@ public:
      */
     virtual void setVector ( AMP::LinearAlgebra::Vector::shared_ptr &p ) = 0;
 
+    // Overload the apply operator to include makeConsistent
+    virtual void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
+             const  AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r,
+             const double a = -1.0, const double b = 1.0);    
+
+    // Function to determine if a makeConsistentSet is required
+    virtual bool requiresMakeConsistentSet();
+
 protected:
+
+    // Communicator for the Map
     AMP_MPI d_comm;
-    AMP::Mesh::Mesh::shared_ptr d_mesh1;
-    AMP::Mesh::Mesh::shared_ptr d_mesh2;
+
+    // Variables to store the individual meshes and the DOFManager
+    AMP::Mesh::Mesh::shared_ptr  d_mesh1;
+    AMP::Mesh::Mesh::shared_ptr  d_mesh2;
+    AMP::Discretization::DOFManager::shared_ptr  d_DOFManager;
+
+    // Frozen vector for the output results
+    AMP::LinearAlgebra::Vector::shared_ptr  d_OutputVector;
 };
+
 
 }
 }

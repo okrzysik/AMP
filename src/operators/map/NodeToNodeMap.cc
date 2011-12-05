@@ -43,7 +43,7 @@ NodeToNodeMap::NodeToNodeMap ( const boost::shared_ptr<AMP::Operator::OperatorPa
     AMP_INSIST(DofsPerObj<=3,"Node to Node map only works for <= 3 DOFs per node (see Point)");
     d_DOFManager = Params.d_DOFManager;
     d_commTag = Params.d_commTag;
-
+    d_callMakeConsistentSet = Params.callMakeConsistentSet;
 
     // Create a nodal variable and DOFManager (this should be moved out of here)
     std::string variableName = Params.d_db->getString("VariableName");
@@ -99,6 +99,10 @@ void  NodeToNodeMap::setVector ( AMP::LinearAlgebra::Vector::shared_ptr &p )
 {
     d_OutputVector = p->subsetVectorForVariable ( d_inpVariable );
     AMP_INSIST ( d_OutputVector , "setVector received bogus stuff" );
+}
+bool NodeToNodeMap::requiresMakeConsistentSet()
+{ 
+    return !d_callMakeConsistentSet;
 }
 
 
@@ -174,7 +178,8 @@ void NodeToNodeMap::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr &
     curPhysics->setValuesByGlobalID( d_recvList.size(),  getPtr( DOFs ), getPtr( d_recvBuffer ) );
 
     // Update ghost cells
-    curPhysics->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    if ( d_callMakeConsistentSet ) 
+        curPhysics->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 }
 
 

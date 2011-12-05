@@ -41,9 +41,10 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     input_db->printClassData (AMP::plog);
 
     // Get the Mesh database and create the mesh parameters
+    AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
     boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
     boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(mesh_db));
-    params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+    params->setComm(globalComm);
 
     // Create the meshes from the input database
     boost::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params);
@@ -76,6 +77,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     n2nmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap> ( mesh, DOFs, map_db  );
 
     // Create the vectors
+    AMP::LinearAlgebra::Vector::shared_ptr  dummy;
     AMP::LinearAlgebra::Vector::shared_ptr v1 = DOFs->createVector( nodalVariable );
     AMP::LinearAlgebra::Vector::shared_ptr v2 = DOFs->createVector( nodalVariable );
     n2nmaps->setVector ( v2 );
@@ -116,9 +118,12 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     }
 
     // Apply the maps
+    globalComm.barrier();
     std::cout << v1->maxNorm() << "  " << v2->maxNorm() << std::endl;
-    AMP::LinearAlgebra::Vector::shared_ptr  dummy;
+    double start_time = AMP::AMP_MPI::time();
     n2nmaps->apply ( dummy , v1 , v2 );
+    globalComm.barrier();
+    double end_time = AMP::AMP_MPI::time();
     std::cout << v1->maxNorm() << "  " << v2->maxNorm() << std::endl;
     v1->subtract ( v1 , v2 );
     if ( v1->maxNorm() < 1.e-12 ) {
@@ -127,6 +132,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
         ut->failure("Node to node map test ("+fname+")");
     }
     std::cout << v1->maxNorm() << std::endl;
+    std::cout << "Time for apply call: " << end_time-start_time << std::endl;
 }
 
 

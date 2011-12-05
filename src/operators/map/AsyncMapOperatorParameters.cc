@@ -10,6 +10,7 @@ AsyncMapOperatorParameters::AsyncMapOperatorParameters ( const boost::shared_ptr
     d_BoundaryID1 = -1;
     d_BoundaryID2 = -1;
     d_commTag = -1;
+    callMakeConsistentSet = true;
 }
 
 

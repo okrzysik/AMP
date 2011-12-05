@@ -5,29 +5,42 @@ namespace AMP {
 namespace Operator {
 
 
-  void AsynchronousColumnOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-      AMP::LinearAlgebra::Vector::shared_ptr &r, const double a , const double b )
-  {
-    // Initiate all applies in the column
-    for ( int i = 0 ; i != getNumberOfOperators() ; i++ )
-    {
-      boost::dynamic_pointer_cast<AsynchronousOperator> ( getOperator ( i ) )->applyStart ( f , u , r , a , b );
-    }
-
-    // Finish all applies in the column
-    for ( int i = 0 ; i != getNumberOfOperators() ; i++ )
-    {
-      boost::dynamic_pointer_cast<AsynchronousOperator> ( getOperator ( i ) )->applyFinish ( f , u , r , a , b );
-    }
-  }
-
-  AsynchronousColumnOperator::AsynchronousColumnOperator ( const boost::shared_ptr <OperatorParameters> &params )
+AsynchronousColumnOperator::AsynchronousColumnOperator ( const boost::shared_ptr <OperatorParameters> &params )
     : ColumnOperator ( params )
-  {
-  }
+{
+}
 
-  void AsynchronousColumnOperator::append(boost::shared_ptr< Operator > op)
-  {
+
+void AsynchronousColumnOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
+      AMP::LinearAlgebra::Vector::shared_ptr &r, const double a , const double b )
+{
+    applyStart( f, u, r, a, b );
+    applyFinish( f, u, r, a, b );
+}
+
+
+// Initiate all applies in the column
+void AsynchronousColumnOperator::applyStart(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
+      AMP::LinearAlgebra::Vector::shared_ptr &r, const double a , const double b )
+{
+    for ( int i = 0 ; i != getNumberOfOperators() ; i++ )
+        boost::dynamic_pointer_cast<AsynchronousOperator> ( getOperator ( i ) )->applyStart ( f , u , r , a , b );
+}
+
+
+
+// Finish all applies in the column
+void AsynchronousColumnOperator::applyFinish(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
+      AMP::LinearAlgebra::Vector::shared_ptr &r, const double a , const double b )
+{
+    for ( int i = 0 ; i != getNumberOfOperators() ; i++ )
+        boost::dynamic_pointer_cast<AsynchronousOperator> ( getOperator ( i ) )->applyFinish ( f , u , r , a , b );
+}
+
+
+
+void AsynchronousColumnOperator::append(boost::shared_ptr< Operator > op)
+{
     if ( boost::dynamic_pointer_cast<AsynchronousOperator> ( op ) )
     {
       ColumnOperator::append ( op );
@@ -40,7 +53,7 @@ namespace Operator {
         append ( aco->getOperator ( i ) );
       }
     }
-  }
+}
 
 
 }

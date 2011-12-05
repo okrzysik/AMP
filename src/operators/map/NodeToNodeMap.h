@@ -101,6 +101,7 @@ private:
     // Other data
     AMP::LinearAlgebra::Vector::shared_ptr        d_OutputVector;
     AMP::LinearAlgebra::Variable::shared_ptr      d_inpVariable;
+    bool d_callMakeConsistentSet;
 
     // Function to compute the pairs of points for each mesh
     // Note: This function requires global communication across the map comm
@@ -112,6 +113,8 @@ private:
     // Function to create the communication lists
     void  buildSendRecvList( );
 
+    // Function to determine if a makeConsistentSet is required
+    virtual bool requiresMakeConsistentSet();
 
 protected:
 
