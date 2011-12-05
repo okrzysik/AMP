@@ -345,6 +345,11 @@ void PowerShape :: apply(const SP_Vector &  ,
     zmin = min_max_pos.min.z;
     zmax = min_max_pos.max.z;
     rmax = min_max_rad.max;
+    AMP::Mesh::simple_point center;
+
+    center.x = 0.5*( min_max_pos.min.x + min_max_pos.max.x );
+    center.y = 0.5*( min_max_pos.min.y + min_max_pos.max.y );
+    center.z = 0.5*( min_max_pos.min.z + min_max_pos.max.z );
 
     r->setToScalar(1.);
 
@@ -489,8 +494,8 @@ void PowerShape :: apply(const SP_Vector &  ,
 
                 // Loop over all gauss-points on the element.
                 for( unsigned int i = 0; i != d_fe->get_xyz().size(); i++ ) {
-                    x = d_fe->get_xyz()[i](0);
-                    y = d_fe->get_xyz()[i](1);
+                    x = d_fe->get_xyz()[i](0)-center.x;
+                    y = d_fe->get_xyz()[i](1)-center.y;
                     z = d_fe->get_xyz()[i](2);
 
                     // r based on Frapcon.
@@ -544,8 +549,8 @@ void PowerShape :: apply(const SP_Vector &  ,
 
                 // Loop over all gauss-points on the element.
                 for( unsigned int i = 0; i != d_fe->get_xyz().size(); i++ ) {
-                    x = d_fe->get_xyz()[i](0);
-                    y = d_fe->get_xyz()[i](1);
+                    x = d_fe->get_xyz()[i](0)-center.x;
+                    y = d_fe->get_xyz()[i](1)-center.y;
                     z = d_fe->get_xyz()[i](2);
                     // r based on Frapcon.
                     double relativeRadius = sqrt ( x*x + y*y )/rmax;
@@ -625,8 +630,8 @@ void PowerShape :: apply(const SP_Vector &  ,
 
                 // Loop over all gauss-points on the element.
                 for( unsigned int i = 0; i != d_fe->get_xyz().size(); i++ ) {
-                    x = d_fe->get_xyz()[i](0);
-                    y = d_fe->get_xyz()[i](1);
+                    x = d_fe->get_xyz()[i](0)-center.x;
+                    y = d_fe->get_xyz()[i](1)-center.y;
                     z = d_fe->get_xyz()[i](2);
 
                     // r based on Frapcon.
@@ -678,8 +683,8 @@ void PowerShape :: apply(const SP_Vector &  ,
 
                 // Loop over all gauss-points on the element.
                 for( unsigned int i = 0; i != d_fe->get_xyz().size(); i++ ) {
-                    x = d_fe->get_xyz()[i](0);
-                    y = d_fe->get_xyz()[i](1);
+                    x = d_fe->get_xyz()[i](0)-center.x;
+                    y = d_fe->get_xyz()[i](1)-center.y;
                     z = d_fe->get_xyz()[i](2);
 
                     // r based on Frapcon.
