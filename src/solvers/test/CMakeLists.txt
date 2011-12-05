@@ -158,7 +158,6 @@ ADD_AMP_TEST ( testElementLevel-VonMisesPlasticity-LoadingUnloadingLoop )
 ADD_AMP_WEEKLY_TEST ( testTrilinosMLSolver-LinearThermalOperator-2 8 )
 ADD_AMP_WEEKLY_TEST ( testNonlinearThermalContact-1 8 )
 ADD_AMP_TEST ( testElementLevel-VonMisesPlasticity )
-ADD_AMP_TEST ( testElementLevel-VonMisesPlasticity-ML )
 
 ADD_AMP_TEST ( testElementLevel-VonMisesPlasticity-LoadingUnloading )
 
@@ -349,7 +348,6 @@ COPY_TEST_DATA_FILE (input_testFixedBeam-CreepLoading-1)
 COPY_TEST_DATA_FILE (input_testElementLevel-CreepLoading-2-1)
 COPY_TEST_DATA_FILE (input_testElementLevel-16-ElementMesh-Elasticity)
 COPY_TEST_DATA_FILE (input_testElementLevel-VonMisesPlasticity-1)
-COPY_TEST_DATA_FILE (input_testElementLevel-VonMisesPlasticity-ML-1)
 
 COPY_TEST_DATA_FILE ( input_testNonlinearThermalContactFlowPicard )
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearThermal-cylinder_MATPRO2 )
