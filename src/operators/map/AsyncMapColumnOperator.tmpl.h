@@ -89,6 +89,7 @@ boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build (
         mapParams->d_BoundaryID1 = map_databases[i]->getInteger("Surface1");
         mapParams->d_BoundaryID2 = map_databases[i]->getInteger("Surface2");
         mapParams->d_DOFManager = DOFManager;
+        mapParams->d_commTag = globalMapTagOffset;
 
         // Create the map
         AsyncOp_ptr  mapOp ( new MAP_TYPE ( mapParams ) );

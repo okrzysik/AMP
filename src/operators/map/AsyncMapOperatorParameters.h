@@ -20,6 +20,7 @@ namespace Operator {
       int                           d_BoundaryID1;
       int                           d_BoundaryID2;
       AMP::Discretization::DOFManager::shared_ptr  d_DOFManager;
+      int                           d_commTag;
 
       AsyncMapOperatorParameters ( const boost::shared_ptr<AMP::Database> &db );
 

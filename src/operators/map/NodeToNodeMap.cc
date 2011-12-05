@@ -42,6 +42,7 @@ NodeToNodeMap::NodeToNodeMap ( const boost::shared_ptr<AMP::Operator::OperatorPa
     DofsPerObj = Params.d_db->getInteger ( "DOFsPerObject" );
     AMP_INSIST(DofsPerObj<=3,"Node to Node map only works for <= 3 DOFs per node (see Point)");
     d_DOFManager = Params.d_DOFManager;
+    d_commTag = Params.d_commTag;
 
 
     // Create a nodal variable and DOFManager (this should be moved out of here)
@@ -131,9 +132,9 @@ void NodeToNodeMap::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & 
                 d_recvBuffer[j] = d_sendBuffer[j];
         } else if ( d_count[i] > 0 ) {
             // Start asyncronous communication
-            *curReq = d_MapComm.Isend( &d_sendBuffer[d_displ[i]], d_count[i], i, d_SendTag );
+            *curReq = d_MapComm.Isend( &d_sendBuffer[d_displ[i]], d_count[i], i, d_commTag );
             curReq++;
-            *curReq = d_MapComm.Irecv( &d_recvBuffer[d_displ[i]], d_count[i], i, d_RecvTag );
+            *curReq = d_MapComm.Irecv( &d_recvBuffer[d_displ[i]], d_count[i], i, d_commTag );
             curReq++;
         }
     }

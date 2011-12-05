@@ -92,6 +92,7 @@ private:
     std::vector<size_t>                     d_recvList;
 
     // Variables for communication
+    int                                     d_commTag;
     std::vector<int>                        d_count;
     std::vector<int>                        d_displ;
     std::vector<double>                     d_sendBuffer;
@@ -100,9 +101,6 @@ private:
     // Other data
     AMP::LinearAlgebra::Vector::shared_ptr        d_OutputVector;
     AMP::LinearAlgebra::Variable::shared_ptr      d_inpVariable;
-
-    int   d_SendTag;
-    int   d_RecvTag;
 
     // Function to compute the pairs of points for each mesh
     // Note: This function requires global communication across the map comm
