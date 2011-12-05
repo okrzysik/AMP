@@ -118,9 +118,7 @@ COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearMechanics-PlateWithHole
 COPY_MESH_FILE ( thick_walled_cylinder_ver2.e )
 
 ADD_AMP_TEST ( testUpdatedLagrangianThermoMechanics-LinearElasticity-1 )
-ADD_AMP_TEST ( testUpdatedLagrangianThermoMechanics-LinearElasticity-ML-1 )
 COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianThermoMechanics-LinearElasticity-1 )
-COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianThermoMechanics-LinearElasticity-ML-1 )
 
 ADD_AMP_TEST ( testUpdatedLagrangianMechanics-eigenValues-1 )
 COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianMechanics-eigenValues-1 )
