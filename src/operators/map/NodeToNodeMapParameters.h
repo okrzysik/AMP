@@ -14,6 +14,7 @@ namespace Operator {
       std::vector<double>                           d_disps;
       std::map<size_t,size_t>                       d_RemoteToLocalId;
       size_t                                        d_NumPartners;
+      
 
       NodeToNodeMapParameters ( const boost::shared_ptr<AMP::Database> &db )
         : AsyncMapOperatorParameters ( db )

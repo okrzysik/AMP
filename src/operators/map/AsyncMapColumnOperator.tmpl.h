@@ -30,7 +30,10 @@ extern size_t globalMapTagOffset;      // We need a global unique tag offset for
 
 
 template <typename MAP_TYPE>
-boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build ( AMP::Mesh::Mesh::shared_ptr manager, boost::shared_ptr<Database> database )
+boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build ( 
+    AMP::Mesh::Mesh::shared_ptr manager, 
+    AMP::Discretization::DOFManager::shared_ptr DOFManager, 
+    boost::shared_ptr<Database> database )
 {
 
     typedef boost::shared_ptr < AsyncMapOperator >             AsyncOp_ptr;
@@ -85,6 +88,7 @@ boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build ( AMP::
         mapParams->d_Mesh2 = mesh2;
         mapParams->d_BoundaryID1 = map_databases[i]->getInteger("Surface1");
         mapParams->d_BoundaryID2 = map_databases[i]->getInteger("Surface2");
+        mapParams->d_DOFManager = DOFManager;
 
         // Create the map
         AsyncOp_ptr  mapOp ( new MAP_TYPE ( mapParams ) );

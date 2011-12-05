@@ -237,6 +237,7 @@ AMP::LinearAlgebra::Vector::shared_ptr simpleDOFManager::createVector( AMP::Line
     mvparams->d_DOFManager = DOFs;
     // Create the vector
     AMP::LinearAlgebra::Vector::shared_ptr vector = AMP::LinearAlgebra::Vector::shared_ptr( new AMP::LinearAlgebra::ManagedPetscVector(mvparams) );
+    vector->setVariable(variable);
     return vector;
 }
 

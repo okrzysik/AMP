@@ -4,6 +4,7 @@
 #include "operators/AsynchronousOperatorParameters.h"
 #include "ampmesh/Mesh.h"
 #include "utils/AMP_MPI.h"
+#include "discretization/DOF_Manager.h"
 
 
 namespace AMP {
@@ -18,10 +19,7 @@ namespace Operator {
       AMP::Mesh::Mesh::shared_ptr   d_Mesh2;
       int                           d_BoundaryID1;
       int                           d_BoundaryID2;
-
-      bool             d_IsMaster;
-      int              d_ToMasterCommTag;
-      int              d_ToSlaveCommTag;
+      AMP::Discretization::DOFManager::shared_ptr  d_DOFManager;
 
       AsyncMapOperatorParameters ( const boost::shared_ptr<AMP::Database> &db );
 

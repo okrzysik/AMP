@@ -38,17 +38,19 @@ namespace Operator {
 
 
       /** \brief  A factory method.
-        * \param[in]  manager  The multi-mesh to search for maps to add to the column
-        * \param[in]  db  The global database of the simulation
-        * \tparam  MAP_TYPE  The type of map to create
         * \return  A column of map operators of type MAP_TYPE
         * \details  In order to use this builder, the MAP_TYPE must have 3 things:  a static member 
         * (or enum) called CommTagBase, a static method:  bool validMapType ( const std::string & ), and
         * a typedef for the parameters of the class called Parameters.
+        * \tparam  MAP_TYPE  The type of map to create
+        * \param[in]  manager     The multi-mesh to search for maps to add to the column
+        * \param[in]  DOFManager  The DOFManager for the data (needed to get the correct DOFs)
+        * \param[in]  database    The global database of the simulation
         *  
         */
       template <typename MAP_TYPE>
-      static boost::shared_ptr<AsyncMapColumnOperator>  build ( AMP::Mesh::Mesh::shared_ptr manager, boost::shared_ptr<Database> db );
+      static boost::shared_ptr<AsyncMapColumnOperator>  build ( AMP::Mesh::Mesh::shared_ptr manager, 
+        AMP::Discretization::DOFManager::shared_ptr DOFManager, boost::shared_ptr<Database> database );
   };
 
 

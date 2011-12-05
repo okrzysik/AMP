@@ -9,6 +9,7 @@
 #include "ampmesh/Mesh.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
+#include "discretization/NodalVariable.h"
 #include "operators/map/NodeToNodeMap.h"
 #include "operators/map/AsyncMapColumnOperator.h"
 
@@ -16,8 +17,7 @@
 
 void  setBoundary ( int id , AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr  vv1 = v1->castTo<AMP::LinearAlgebra::MultiVector>().getVector(0);
-    AMP::Discretization::DOFManager::shared_ptr  d1 = vv1->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr  d1 = v1->getDOFManager();
 
     AMP::Mesh::MeshIterator  curBnd = mesh->getIDsetIterator( AMP::Mesh::Vertex, id, 0 );
     AMP::Mesh::MeshIterator  endBnd = curBnd.end();
@@ -26,7 +26,7 @@ void  setBoundary ( int id , AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::Me
     while ( curBnd != endBnd ) {
         d1->getDOFs( *curBnd, ids );
         std::vector<double> x = curBnd->coord();
-        vv1->setLocalValuesByGlobalID( ids.size(), (int*)&ids[0], &x[0] );
+        v1->setLocalValuesByGlobalID( ids.size(), (int*)&ids[0], &x[0] );
         ++curBnd;
     }
 }
@@ -51,11 +51,17 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     // Get the database for the node to node maps
     boost::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "NodeToNodeMaps" );
 
+    // Create a simple DOFManager and the vectors
+    int DOFsPerNode = map_db->getInteger("DOFsPerObject");
+    std::string varName = map_db->getString("VariableName");
+    AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::Discretization::NodalVariable(DOFsPerNode,varName) );
+    AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
+    boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFs( new AMP::Discretization::simpleDOFManager(mesh,AMP::Mesh::Vertex,1,DOFsPerNode) );
 
     // Test the creation/destruction of NodeToNodeMap (no apply call)
     try { 
         boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  n2nmaps;
-        n2nmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap> ( mesh , map_db  );
+        n2nmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap> ( mesh, DOFs, map_db  );
         n2nmaps.reset();
         ut->passes("Created / Destroyed NodeToNodeMap ("+fname+")");
     } catch ( ... ) {
@@ -65,32 +71,62 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
 
     // Perform a complete test of NodeToNodeMap
     boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  n2nmaps;
-    n2nmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap> ( mesh , map_db  );
 
-    // Create a simple DOFManager and the vectors
-    AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
-    boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFs( new AMP::Discretization::simpleDOFManager(mesh,AMP::Mesh::Vertex,1,3) );
-    AMP::LinearAlgebra::Vector::shared_ptr v1 = DOFs->createVector ( n2nmaps->getOutputVariable() );
-    AMP::LinearAlgebra::Vector::shared_ptr v2 = DOFs->createVector ( n2nmaps->getOutputVariable() );
+    // Build the maps
+    n2nmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap> ( mesh, DOFs, map_db  );
+
+    // Create the vectors
+    AMP::LinearAlgebra::Vector::shared_ptr v1 = DOFs->createVector( nodalVariable );
+    AMP::LinearAlgebra::Vector::shared_ptr v2 = DOFs->createVector( nodalVariable );
     n2nmaps->setVector ( v2 );
 
-/*    for (int i=0; i<n2nmaps->getNumberOfOperators(); i++) {
-        boost::shared_ptr<AMP::Operator::AsyncMapOperator>  map = getOperator(i);
-        AMP::Mesh::Mesh::shared_ptr curMesh = manager->getMesh ( manager->getMapMeshName ( i ) );
-        AMP::LinearAlgebra::Vector::shared_ptr tv1 = v1->select ( AMP::Mesh::VS_ByMeshTmpl<AMP::Mesh::MeshManager::Adapter> ( curMesh ) , "tt" );
-        setBoundary( id , tv1 , manager , curMesh );
+    // Initialize the vectors
+    v1->setToScalar(0.0);
+    v2->setToScalar(0.0);
+    size_t N_maps = (size_t) map_db->getInteger("N_maps");
+    std::vector<std::string> mesh1 = map_db->getStringArray("Mesh1");
+    std::vector<std::string> mesh2 = map_db->getStringArray("Mesh2");
+    std::vector<int> surface1 = map_db->getIntegerArray("Surface1");
+    std::vector<int> surface2 = map_db->getIntegerArray("Surface2");
+    AMP_ASSERT(mesh1.size()==N_maps||mesh1.size()==1);
+    AMP_ASSERT(mesh2.size()==N_maps||mesh2.size()==1);
+    AMP_ASSERT(surface1.size()==N_maps||surface1.size()==1);
+    AMP_ASSERT(surface2.size()==N_maps||surface2.size()==1);
+    for (size_t i=0; i<N_maps; i++) {
+        std::string meshname1,  meshname2;
+        if ( mesh1.size() == N_maps ) {
+            meshname1 = mesh1[i];
+            meshname2 = mesh2[i];
+        } else {
+            meshname1 = mesh1[0];
+            meshname2 = mesh2[0];
+        }
+        int surface_id1, surface_id2;
+        if ( surface1.size() == N_maps ) {
+            surface_id1 = surface1[i];
+            surface_id2 = surface2[i];
+        } else {
+            surface_id1 = surface1[0];
+            surface_id2 = surface2[0];
+        }
+        AMP::Mesh::Mesh::shared_ptr curMesh = mesh->Subset( meshname1 );
+        setBoundary( surface_id1, v1, curMesh );
+        curMesh = mesh->Subset( meshname2 );
+        setBoundary( surface_id2, v1, curMesh );
     }
 
-    std::cout << v1->maxNorm() << std::endl;
+    // Apply the maps
+    std::cout << v1->maxNorm() << "  " << v2->maxNorm() << std::endl;
+    AMP::LinearAlgebra::Vector::shared_ptr  dummy;
     n2nmaps->apply ( dummy , v1 , v2 );
-    std::cout << v2->maxNorm() << std::endl;
+    std::cout << v1->maxNorm() << "  " << v2->maxNorm() << std::endl;
     v1->subtract ( v1 , v2 );
     if ( v1->maxNorm() < 1.e-12 ) {
         ut->passes("Node to node map test ("+fname+")");
     } else {
         ut->failure("Node to node map test ("+fname+")");
     }
-    std::cout << v1->maxNorm() << std::endl;*/
+    std::cout << v1->maxNorm() << std::endl;
 }
 
 
