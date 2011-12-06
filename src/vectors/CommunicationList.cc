@@ -162,14 +162,16 @@ CommunicationList::CommunicationList ( CommunicationListParameters::shared_ptr p
 
   unsigned int  CommunicationList::getLocalGhostID ( int GID ) const
   {
-    std::vector<unsigned int>::const_iterator pos =
-                        std::lower_bound ( d_ReceiveDOFList.begin() , d_ReceiveDOFList.end() , GID );
-    if ( pos == d_ReceiveDOFList.end() )
-    {
-      std::cout << "GID = " << GID << std::endl;
+    // Search d_ReceiveDOFList for GID
+    // Note: d_ReceiveDOFList must be sorted for this to work
+    int pos = AMP::Utilities::findfirst( d_ReceiveDOFList, (unsigned int) GID );
+    bool found = pos>=0 && pos<(int)d_ReceiveDOFList.size();
+    if ( found ) { if ( d_ReceiveDOFList[pos]!=(unsigned int) GID ) { found = false; } }
+    if ( !found ) {
+        std::cout << "GID = " << GID << std::endl;
+        AMP_ERROR("GID was not found in the ghost list");
     }
-    AMP_ASSERT ( pos != d_ReceiveDOFList.end() );
-    return pos - d_ReceiveDOFList.begin();
+    return pos;
   }
 
 

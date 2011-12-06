@@ -10,9 +10,6 @@
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "discretization/NodalVariable.h"
-#include "operators/map/NodeToNodeMap.h"
-#include "operators/map/AsyncMapColumnOperator.h"
-
 
 
 
@@ -33,7 +30,7 @@ void  runTest ( AMP::UnitTest *ut )
     boost::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params);
 
     // Create a simple DOFManager
-    int DOFsPerNode = 3;
+    int DOFsPerNode = 1;
     std::string varName = "test";
     AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::Discretization::NodalVariable(DOFsPerNode,varName) );
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
@@ -54,7 +51,16 @@ void  runTest ( AMP::UnitTest *ut )
     v1->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     globalComm.barrier();
     double end_time = AMP::AMP_MPI::time();
-    std::cout << "Time for makeConsistent: " << end_time-start_time << std::endl;
+    std::cout << std::endl << "Time for makeConsistent: " << end_time-start_time << std::endl;
+
+    // Print the number of ghost values in the communication list
+    AMP::LinearAlgebra::CommunicationList::shared_ptr  communicationList = v1->getCommunicationList();
+    std::vector<unsigned int> ghost_ids = communicationList->getGhostIDList();
+    size_t N_ghosts = globalComm.sumReduce(ghost_ids.size());
+    size_t N_ghosts2 = globalComm.sumReduce(mesh->numGhostElements(AMP::Mesh::Vertex,1));
+    std::cout << std::endl << "There are " << N_ghosts << " global ghost values" << std::endl;
+    std::cout << std::endl << "There are " << N_ghosts2 << " global ghost values in the iterator" << std::endl;
+
 }
 
 

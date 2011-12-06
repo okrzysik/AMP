@@ -199,10 +199,10 @@ MACRO ( SET_WARNINGS )
     # Disable warnings that I think are irrelavent (may need to be revisited)
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wno-reorder " )
     # Disable warnings that occur frequently, but should be fixed eventually
-    SET(CMAKE_CXX_FLAGS " ${CMAKE_C_FLAGS} -Wno-unused-variable" )
+    SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -Wno-unused-variable" )
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wno-unused-variable" )
     # Add gcc specific flags
-    SET(CMAKE_CXX_FLAGS " ${CMAKE_C_FLAGS} -ldl" )
+    SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -ldl" )
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -ldl" )
   ELSEIF ( USING_MICROSOFT )
     # Add Microsoft specifc compiler options

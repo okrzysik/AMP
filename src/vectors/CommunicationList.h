@@ -237,7 +237,7 @@ protected:
 private:
     std::vector<unsigned int>           d_ReceiveSizes;
     std::vector<unsigned int>           d_ReceiveDisplacements;
-    std::vector<unsigned int>           d_ReceiveDOFList;
+    std::vector<unsigned int>           d_ReceiveDOFList;           // Sorted DOF lists
 
     std::vector<unsigned int>           d_SendSizes;
     std::vector<unsigned int>           d_SendDisplacements;
