@@ -164,9 +164,14 @@ void PowerShape::getFromDatabase(boost::shared_ptr<AMP::Database> db) {
 
         }else if(d_type == "gaussian") {
 
+            AMP::Mesh::min_max_struct<AMP::Mesh::simple_point>  min_max_pos;
+            min_max_pos = AMP::Mesh::computeExtremeCoordinates<AMP::Mesh::MeshManager::Adapter> ( d_MeshAdapter );
+            double centerx = 0.5*( min_max_pos.min.x + min_max_pos.max.x );
+            double centery = 0.5*( min_max_pos.min.y + min_max_pos.max.y );
+
             // Read mu and sigma for gaussian distribution.
-            d_muX    = db->getDoubleWithDefault("muX",0.0);  
-            d_muY    = db->getDoubleWithDefault("muY",0.0);  
+            d_muX    = db->getDoubleWithDefault("muX",centerx);  
+            d_muY    = db->getDoubleWithDefault("muY",centery);  
             d_sigmaX = db->getDoubleWithDefault("sigmaX",3.0);  
             d_sigmaY = db->getDoubleWithDefault("sigmaY",3.0);  
 
@@ -480,7 +485,7 @@ void PowerShape :: apply(const SP_Vector &  ,
             if ( d_frapconVolumeIntegral == "analytical"){
                 volumeIntegral = getVolumeIntegralAnalytical(rmax);
             }else if(d_frapconVolumeIntegral == "sum"){
-                volumeIntegral = getVolumeIntegralSum(rmax);
+                volumeIntegral = getVolumeIntegralSum(rmax, center.x, center.y);
             }
 
             AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_MeshAdapter->beginElement();
@@ -882,7 +887,7 @@ double PowerShape::getVolumeIntegralAnalytical(double rmax)
  * \brief Evaluates the volume integral by Sum ( Sum( f(r) )*elemVolume/8 )*
 ****************************************************************************
 */
-double PowerShape::getVolumeIntegralSum(double rmax)
+double PowerShape::getVolumeIntegralSum(double rmax, double cx, double cy)
 {
     double integralFr=0;
     double numerator=0;
@@ -899,8 +904,8 @@ double PowerShape::getVolumeIntegralSum(double rmax)
         double elemSum = 0;
         // Loop over all gauss-points on the element.
         for( unsigned int i = 0; i != d_fe->get_xyz().size(); i++ ) {
-            x = d_fe->get_xyz()[i](0);
-            y = d_fe->get_xyz()[i](1);
+            x = d_fe->get_xyz()[i](0) - cx;
+            y = d_fe->get_xyz()[i](1) - cy;
             radius = sqrt ( x*x + y*y ) ;
                
             elemSum += getFrapconFr(radius, rmax);
