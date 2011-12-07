@@ -8,6 +8,7 @@ namespace AMP {
         PelletStackMechanicsSolverParameters> params) : SolverStrategy(params) {
       d_columnSolver = params->d_columnSolver;
       d_pelletStackOp = boost::dynamic_pointer_cast<AMP::Operator::PelletStackOperator>(d_pOperator);
+      d_fCopy.reset();
     }
 
     void PelletStackMechanicsSolver :: resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params) {
@@ -16,16 +17,19 @@ namespace AMP {
 
     void PelletStackMechanicsSolver :: solve(boost::shared_ptr<AMP::LinearAlgebra::Vector> f, 
         boost::shared_ptr<AMP::LinearAlgebra::Vector> u) {
+      boost::shared_ptr<AMP::LinearAlgebra::Vector> fInternal = f;
       if(d_pelletStackOp->useScaling()) {
-        d_pelletStackOp->applyUnscaling(f);
+        if(d_fCopy == NULL) {
+          d_fCopy = f->cloneVector();
+        }
+        d_fCopy->copyVector(f);
+        d_pelletStackOp->applyUnscaling(d_fCopy);
+        fInternal = d_fCopy;
       }
       if(d_pelletStackOp->useSerial()) {
-        solveSerial(f, u);
+        solveSerial(fInternal, u);
       } else {
-        solveScan(f, u);
-      }
-      if(d_pelletStackOp->useScaling()) {
-        d_pelletStackOp->applyScaling(f);
+        solveScan(fInternal, u);
       }
     }
 

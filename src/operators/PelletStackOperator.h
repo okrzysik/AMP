@@ -26,8 +26,6 @@ namespace AMP {
 
         bool useScaling();
 
-        void applyScaling(AMP::LinearAlgebra::Vector::shared_ptr f);
-
         void applyUnscaling(AMP::LinearAlgebra::Vector::shared_ptr f);
 
         void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,

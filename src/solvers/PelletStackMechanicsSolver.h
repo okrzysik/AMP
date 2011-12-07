@@ -27,6 +27,7 @@ namespace AMP {
 
         boost::shared_ptr<AMP::Operator::PelletStackOperator> d_pelletStackOp;
         boost::shared_ptr<AMP::Solver::ColumnSolver> d_columnSolver;
+        boost::shared_ptr<AMP::LinearAlgebra::Vector> d_fCopy;
     };
 
   }
