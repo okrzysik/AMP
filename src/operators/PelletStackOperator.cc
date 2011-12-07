@@ -40,6 +40,12 @@ namespace AMP {
       return d_totalNumberOfPellets;
     }
 
+    void PelletStackOperator :: setVariables(AMP::LinearAlgebra::Variable::shared_ptr rhs, 
+        AMP::LinearAlgebra::Variable::shared_ptr sol) {
+      d_rhsVar = boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(rhs);
+      d_solVar = boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(sol);
+    }
+
     void PelletStackOperator :: setLocalMeshes(std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> inp) {
       d_meshes = inp;
     }
@@ -50,16 +56,6 @@ namespace AMP {
 
     bool PelletStackOperator :: hasPellet(unsigned int pellId) {
       return ( find(d_pelletIds.begin(), d_pelletIds.end(), pellId) != d_pelletIds.end() );
-    }
-
-    AMP::LinearAlgebra::Variable::shared_ptr PelletStackOperator :: getOutputVariable() {
-      AMP::LinearAlgebra::Variable::shared_ptr emptyPointer;
-      return emptyPointer;
-    }
-
-    AMP::LinearAlgebra::Variable::shared_ptr PelletStackOperator :: getInputVariable(int varId) {
-      AMP::LinearAlgebra::Variable::shared_ptr emptyPointer;
-      return emptyPointer;
     }
 
     void PelletStackOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,

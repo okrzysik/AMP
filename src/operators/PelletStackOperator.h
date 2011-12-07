@@ -31,13 +31,11 @@ namespace AMP {
         void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
             AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
 
-        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
-
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
-
         void setLocalMeshes(std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> inp);
 
         void setLocalPelletIds(std::vector<unsigned int> inp);
+
+        void setVariables(AMP::LinearAlgebra::Variable::shared_ptr rhs, AMP::LinearAlgebra::Variable::shared_ptr sol);
 
       protected:
         void applySerial(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
@@ -58,7 +56,8 @@ namespace AMP {
         short int d_slaveId;
         std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> d_meshes;
         std::vector<unsigned int> d_pelletIds;
-
+        boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_rhsVar;
+        boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_solVar;
     };
 
   }
