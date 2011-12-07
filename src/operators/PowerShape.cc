@@ -354,7 +354,7 @@ void PowerShape :: apply(const SP_Vector &  ,
 
     center.x = 0.5*( min_max_pos.min.x + min_max_pos.max.x );
     center.y = 0.5*( min_max_pos.min.y + min_max_pos.max.y );
-    center.z = 0.5*( min_max_pos.min.z + min_max_pos.max.z );
+    //center.z = 0.5*( min_max_pos.min.z + min_max_pos.max.z );
 
     rmax = rmax - sqrt( center.x*center.x + center.y*center.y );
     r->setToScalar(1.);
