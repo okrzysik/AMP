@@ -1,6 +1,7 @@
 NumberOfMeshes = 1  // Only read the first mesh.  The second mesh is the one we want, but it doesn't work
 Mesh_1{
-  Filename = "brick.e"
+  Filename = "halden_1_pellet_9mil.e"
+  //Filename = "brick.e"
   MeshName = "fuel"
   x_offset = 0.0
   y_offset = 0.0
