@@ -33,15 +33,15 @@ void CopyVectorConsistency( AMP::UnitTest *utils )
     AMP::LinearAlgebra::CommunicationList::shared_ptr  commList = vec1->getCommunicationList();
     double *t1=NULL;
     double *t2=NULL;
-    int *ndx=NULL;
-    int numGhosts = commList->getGhostIDList().size();
+    size_t *ndx=NULL;
+    size_t numGhosts = commList->getGhostIDList().size();
 
     vec1->setRandomValues ();
     vec2->copyVector ( vec1 );
     if ( numGhosts ) {
-        t1 = new double [ numGhosts ];
-        t2 = new double [ numGhosts ];
-        ndx = new int [ numGhosts ];
+        t1 = new double[ numGhosts ];
+        t2 = new double[ numGhosts ];
+        ndx = new size_t[ numGhosts ];
         std::copy ( commList->getGhostIDList().begin() ,
                     commList->getGhostIDList().end() ,
                     ndx );
@@ -929,7 +929,7 @@ void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
         if ( !vector || !vectorb )
             utils->failure ( "verify makeConsistent () for add" );
 
-        for ( unsigned int i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ )
+        for (size_t i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ )
         {
           vector->addValueByGlobalID ( i , (double) i );
         }
@@ -937,13 +937,13 @@ void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
         double offset = (double) (1 << utils->rank() );
         for ( size_t i = 0 ; i != vector->getGhostSize() ; i++ )
         {
-          unsigned int ndx = vector->getCommunicationList()->getGhostIDList()[i];
+          size_t ndx = vector->getCommunicationList()->getGhostIDList()[i];
           vector->addValueByGlobalID ( ndx , offset );
         }
 
         vector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
-        std::map<int,std::set<unsigned int> >  ghosted_entities;
-        for ( unsigned int i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ )
+        std::map<int,std::set<size_t> >  ghosted_entities;
+        for ( size_t i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ )
         {
           double diff_double = fabs ( vector->getValueByGlobalID ( i ) - (double)i );
           if ( diff_double > 0.00001 )
@@ -959,14 +959,14 @@ void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
             }
           }
         }
-        std::vector<unsigned int>::const_iterator  cur_replicated = vector->getCommunicationList()->getReplicatedIDList().begin();
-        std::vector<unsigned int>::const_iterator  end_replicated = vector->getCommunicationList()->getReplicatedIDList().end();
+        std::vector<size_t>::const_iterator  cur_replicated = vector->getCommunicationList()->getReplicatedIDList().begin();
+        std::vector<size_t>::const_iterator  end_replicated = vector->getCommunicationList()->getReplicatedIDList().end();
         while ( cur_replicated != end_replicated )
         {
           bool found = false;
           for ( int i = 0 ; i != utils->size() ; i++ )
           {
-            std::set<unsigned int>::iterator  location = ghosted_entities[i].find ( *cur_replicated );
+            std::set<size_t>::iterator  location = ghosted_entities[i].find ( *cur_replicated );
             if ( location != ghosted_entities[i].end() )
             {
               found = true;
@@ -998,7 +998,7 @@ void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
         AMP::LinearAlgebra::Vector::shared_ptr  vector = VECTOR_FACTORY::getVector();
         AMP::LinearAlgebra::Vector::shared_ptr  vectorb = AMP::LinearAlgebra::PetscVector::view ( vector );
 
-        for ( unsigned int i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ )
+        for (size_t i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ )
           vector->setValueByGlobalID ( i , (double) i );
 
         vector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
@@ -1006,7 +1006,7 @@ void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
         if ( vector->getGhostSize() > 0 )
         {
           std::vector<double> ghostList ( vector->getGhostSize() );
-          vector->getValuesByGlobalID ( vector->getGhostSize() , (int *)&(vector->getCommunicationList()->getGhostIDList()[0]) , &(ghostList[0]) );
+          vector->getValuesByGlobalID ( vector->getGhostSize() , (size_t*) &(vector->getCommunicationList()->getGhostIDList()[0]) , &(ghostList[0]) );
           for ( size_t i = 0 ; i != vector->getGhostSize() ; i++ )
           {
             if ( fabs ( ghostList[i] - (double)(vector->getCommunicationList()->getGhostIDList()[i]) ) > 0.0000001 )

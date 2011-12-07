@@ -122,7 +122,7 @@ namespace LinearAlgebra {
         * \param[in]  val  The values to copy in
         * \details  This will not set ghost values
         */
-      virtual void setValuesByLocalID(int i, int *ndx , const double *val) = 0;
+      virtual void setValuesByLocalID(int i, size_t *ndx , const double *val) = 0;
 
       /** \brief Set values in the engine's buffer
         * \param[in]  i  The number of values to set
@@ -130,7 +130,7 @@ namespace LinearAlgebra {
         * \param[in]  val  The values to copy in
         * \details  This will not set ghost values
         */
-      virtual void setLocalValuesByGlobalID(int i, int *ndx , const double *val) = 0;
+      virtual void setLocalValuesByGlobalID(int i, size_t *ndx , const double *val) = 0;
 
       /** \brief Add values in the engine's buffer
         * \param[in]  i  The number of values to set
@@ -138,7 +138,7 @@ namespace LinearAlgebra {
         * \param[in]  val  The values to copy in
         * \details  This will not set ghost values
         */
-      virtual void addValuesByLocalID(int i, int *ndx , const double *val) = 0;
+      virtual void addValuesByLocalID(int i, size_t *ndx , const double *val) = 0;
 
       /** \brief Add values in the engine's buffer
         * \param[in]  i  The number of values to set
@@ -146,7 +146,7 @@ namespace LinearAlgebra {
         * \param[in]  val  The values to copy in
         * \details  This will not set ghost values
         */
-      virtual void addLocalValuesByGlobalID(int i, int *ndx , const double *val) = 0;
+      virtual void addLocalValuesByGlobalID(int i, size_t *ndx , const double *val) = 0;
 
       /** \brief Get values in the engine's buffer
         * \param[in]  i  The number of values to set
@@ -154,7 +154,7 @@ namespace LinearAlgebra {
         * \param[out]  val  The values requested
         * \details  This will not set ghost values
         */
-      virtual void getValuesByLocalID(int i, int *ndx ,double *val) const = 0;
+      virtual void getValuesByLocalID(int i, size_t *ndx ,double *val) const = 0;
 
       /** \brief Get values in the engine's buffer
         * \param[in]  i  The number of values to set
@@ -162,7 +162,7 @@ namespace LinearAlgebra {
         * \param[out]  val  The values requested
         * \details  This will not set ghost values
         */
-      virtual void getLocalValuesByGlobalID(int i, int *ndx ,double *val) const = 0;
+      virtual void getLocalValuesByGlobalID(int i, size_t *ndx ,double *val) const = 0;
 
       /** \brief  Return the communicator associated with this engine
         * \return  The communicator associated with this engine

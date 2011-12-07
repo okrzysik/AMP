@@ -8,7 +8,7 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-  void  SubsetVectorUsingSuperDOFs::setValuesByLocalID ( int cnt , int *ndx , const double *vals )
+  void  SubsetVectorUsingSuperDOFs::setValuesByLocalID ( int cnt , size_t *ndx , const double *vals )
   {
     if ( d_ViewVector )
     {
@@ -20,7 +20,7 @@ namespace LinearAlgebra {
     }
   }
 
-  void  SubsetVectorUsingSuperDOFs::setLocalValuesByGlobalID ( int cnt , int *ndx , const double *vals )
+  void  SubsetVectorUsingSuperDOFs::setLocalValuesByGlobalID ( int cnt , size_t *ndx , const double *vals )
   {
     if ( d_ViewVector )
     {
@@ -35,7 +35,7 @@ namespace LinearAlgebra {
     }
   }
 
-  void  SubsetVectorUsingSuperDOFs::addValuesByLocalID ( int cnt , int *ndx , const double *vals )
+  void  SubsetVectorUsingSuperDOFs::addValuesByLocalID ( int cnt , size_t *ndx , const double *vals )
   {
     if ( d_ViewVector )
     {
@@ -47,7 +47,7 @@ namespace LinearAlgebra {
     }
   }
 
-  void  SubsetVectorUsingSuperDOFs::addLocalValuesByGlobalID ( int cnt , int *ndx , const double *vals )
+  void  SubsetVectorUsingSuperDOFs::addLocalValuesByGlobalID ( int cnt , size_t *ndx , const double *vals )
   {
     if ( d_ViewVector )
     {
@@ -62,7 +62,7 @@ namespace LinearAlgebra {
     }
   }
 
-  void  SubsetVectorUsingSuperDOFs::getLocalValuesByGlobalID ( int cnt , int *ndx , double *vals ) const
+  void  SubsetVectorUsingSuperDOFs::getLocalValuesByGlobalID ( int cnt , size_t *ndx , double *vals ) const
   {
     if ( d_ViewVector )
     {

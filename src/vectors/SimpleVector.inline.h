@@ -83,7 +83,7 @@ namespace LinearAlgebra {
   }
 
   inline
-  void SimpleVector::setValuesByLocalID ( int num , int *indices , const double *vals )
+  void SimpleVector::setValuesByLocalID ( int num , size_t *indices , const double *vals )
   {
     INCREMENT_COUNT("Virtual");
     for ( int i = 0 ; i != num ; i++ )
@@ -93,14 +93,14 @@ namespace LinearAlgebra {
   }
 
   inline
-  void SimpleVector::setLocalValuesByGlobalID ( int , int * , const double * )
+  void SimpleVector::setLocalValuesByGlobalID ( int , size_t * , const double * )
   {
     INCREMENT_COUNT("Virtual");
     AMP_ERROR( "Not implemented" );
   }
 
   inline
-  void SimpleVector::addValuesByLocalID ( int num , int *indices , const double *vals )
+  void SimpleVector::addValuesByLocalID ( int num , size_t *indices , const double *vals )
   {
     INCREMENT_COUNT("Virtual");
     for ( int i = 0 ; i != num ; i++ )
@@ -110,14 +110,14 @@ namespace LinearAlgebra {
   }
 
   inline
-  void SimpleVector::addLocalValuesByGlobalID ( int , int * , const double * )
+  void SimpleVector::addLocalValuesByGlobalID ( int , size_t * , const double * )
   {
     INCREMENT_COUNT("Virtual");
     AMP_ERROR( "Not implemented" );
   }
 
   inline
-  void SimpleVector::getLocalValuesByGlobalID ( int , int * , double * ) const
+  void SimpleVector::getLocalValuesByGlobalID ( int , size_t * , double * ) const
   {
     INCREMENT_COUNT("Virtual");
     AMP_ERROR( "Not implemented" );

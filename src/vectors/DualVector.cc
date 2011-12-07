@@ -36,12 +36,12 @@ namespace LinearAlgebra {
     return retVal;
   }
 
-  void  DualVector::partitionValues ( int num , int *indices , const double *vals , int start2 ,
-                    std::vector<int> &Ndx1 , std::vector<int> &Ndx2 , 
+  void  DualVector::partitionValues ( size_t num , size_t *indices , const double *vals , size_t start2 ,
+                    std::vector<size_t> &Ndx1 , std::vector<size_t> &Ndx2 , 
                     std::vector<double> &Vals1 , std::vector<double> &Vals2 ) const
   {
-    int num1Vals = 0;
-    for ( int i = 0 ; i != num ; i++ )
+    size_t num1Vals = 0;
+    for (size_t i=0; i<num; i++)
     {
       if ( indices[i] < start2 )
         num1Vals++;
@@ -52,7 +52,7 @@ namespace LinearAlgebra {
     Vals2.resize ( num - num1Vals );
     int num1Off = 0;
     int num2Off = 0;
-    for ( int i = 0 ; i != num ; i++ )
+    for (size_t i=0; i<num; i++)
     {
       if ( indices[i] < start2 )
       {
@@ -69,9 +69,9 @@ namespace LinearAlgebra {
     }
   }
 
-  void DualVector::setValuesByLocalID ( int num , int *indices , const double *vals )
+  void DualVector::setValuesByLocalID ( int num , size_t *indices , const double *vals )
   {
-    std::vector<int>     ndx1 , ndx2;
+    std::vector<size_t>  ndx1 , ndx2;
     std::vector<double>  val1 , val2;
     partitionValues ( num , indices , vals , d_pVector1->getLocalSize() , ndx1 , ndx2 , val1 , val2 );
     if ( ndx1.size() )
@@ -80,9 +80,9 @@ namespace LinearAlgebra {
       d_pVector2->setValuesByLocalID ( ndx2.size() , &(ndx2[0]) , &(val2[0]) );
   }
 
-  void DualVector::setLocalValuesByGlobalID ( int num , int *indices , const double *vals )
+  void DualVector::setLocalValuesByGlobalID ( int num , size_t *indices , const double *vals )
   {
-    std::vector<int>     ndx1 , ndx2;
+    std::vector<size_t>  ndx1 , ndx2;
     std::vector<double>  val1 , val2;
     partitionValues ( num , indices , vals , d_pVector1->getGlobalSize() , ndx1 , ndx2 , val1 , val2 );
     if ( ndx1.size() )
@@ -91,9 +91,9 @@ namespace LinearAlgebra {
       d_pVector2->setLocalValuesByGlobalID ( ndx2.size() , &(ndx2[0]) , &(val2[0]) );
   }
 
-  void DualVector::setValuesByGlobalID ( int num , int *indices , const double *vals )
+  void DualVector::setValuesByGlobalID ( int num , size_t *indices , const double *vals )
   {
-    std::vector<int>     ndx1 , ndx2;
+    std::vector<size_t>  ndx1 , ndx2;
     std::vector<double>  val1 , val2;
     partitionValues ( num , indices , vals , d_pVector1->getGlobalSize() , ndx1 , ndx2 , val1 , val2 );
     if ( ndx1.size() )
@@ -102,9 +102,9 @@ namespace LinearAlgebra {
       d_pVector2->setValuesByGlobalID ( ndx2.size() , &(ndx2[0]) , &(val2[0]) );
   }
 
-  void DualVector::addValuesByLocalID ( int num , int *indices , const double *vals )
+  void DualVector::addValuesByLocalID ( int num , size_t *indices , const double *vals )
   {
-    std::vector<int>     ndx1 , ndx2;
+    std::vector<size_t>  ndx1 , ndx2;
     std::vector<double>  val1 , val2;
     partitionValues ( num , indices , vals , d_pVector1->getLocalSize() , ndx1 , ndx2 , val1 , val2 );
     if ( ndx1.size() )
@@ -113,9 +113,9 @@ namespace LinearAlgebra {
       d_pVector2->addValuesByLocalID ( ndx2.size() , &(ndx2[0]) , &(val2[0]) );
   }
 
-  void DualVector::addLocalValuesByGlobalID ( int num , int *indices , const double *vals )
+  void DualVector::addLocalValuesByGlobalID ( int num , size_t *indices , const double *vals )
   {
-    std::vector<int>     ndx1 , ndx2;
+    std::vector<size_t>  ndx1 , ndx2;
     std::vector<double>  val1 , val2;
     partitionValues ( num , indices , vals , d_pVector1->getGlobalSize() , ndx1 , ndx2 , val1 , val2 );
     if ( ndx1.size() )
@@ -124,9 +124,9 @@ namespace LinearAlgebra {
       d_pVector2->addLocalValuesByGlobalID ( ndx2.size() , &(ndx2[0]) , &(val2[0]) );
   }
 
-  void DualVector::addValuesByGlobalID ( int num , int *indices , const double *vals )
+  void DualVector::addValuesByGlobalID ( int num , size_t *indices , const double *vals )
   {
-    std::vector<int>     ndx1 , ndx2;
+    std::vector<size_t>  ndx1 , ndx2;
     std::vector<double>  val1 , val2;
     partitionValues ( num , indices , vals , d_pVector1->getGlobalSize() , ndx1 , ndx2 , val1 , val2 );
     if ( ndx1.size() )
@@ -135,9 +135,9 @@ namespace LinearAlgebra {
       d_pVector2->addValuesByGlobalID ( ndx2.size() , &(ndx2[0]) , &(val2[0]) );
   }
 
-  void DualVector::getValuesByGlobalID ( int num , int *indices , double *vals ) const
+  void DualVector::getValuesByGlobalID ( int num , size_t *indices , double *vals ) const
   {
-    std::vector<int>     ndx1 , ndx2;
+    std::vector<size_t>  ndx1 , ndx2;
     std::vector<double>  val1 , val2;
     partitionValues ( num , indices , vals , d_pVector1->getGlobalSize() , ndx1 , ndx2 , val1 , val2 );
 
@@ -146,8 +146,8 @@ namespace LinearAlgebra {
     if ( ndx2.size() )
       d_pVector2->getValuesByGlobalID ( ndx2.size() , &(ndx2[0]) , &(val2[0]) );
 
-    std::vector<int>::iterator  ndx1_iter , ndx2_iter;
-    std::vector<double>::iterator val1_iter , val2_iter;
+    std::vector<size_t>::iterator  ndx1_iter , ndx2_iter;
+    std::vector<double>::iterator  val1_iter , val2_iter;
 
     if ( ndx1.size() == 0 )
       ndx1.push_back ( -1 );
@@ -172,9 +172,9 @@ namespace LinearAlgebra {
     }
   }
 
-  void DualVector::getLocalValuesByGlobalID ( int num , int *indices , double *vals ) const
+  void DualVector::getLocalValuesByGlobalID ( int num , size_t *indices , double *vals ) const
   {
-    std::vector<int>     ndx1 , ndx2;
+    std::vector<size_t>  ndx1 , ndx2;
     std::vector<double>  val1 , val2;
     partitionValues ( num , indices , vals , d_pVector1->getGlobalSize() , ndx1 , ndx2 , val1 , val2 );
 
@@ -183,8 +183,8 @@ namespace LinearAlgebra {
     if ( ndx2.size() )
       d_pVector2->getLocalValuesByGlobalID ( ndx2.size() , &(ndx2[0]) , &(val2[0]) );
 
-    std::vector<int>::iterator  ndx1_iter , ndx2_iter;
-    std::vector<double>::iterator val1_iter , val2_iter;
+    std::vector<size_t>::iterator  ndx1_iter , ndx2_iter;
+    std::vector<double>::iterator  val1_iter , val2_iter;
 
     if ( ndx1.size() == 0 )
       ndx1.push_back ( -1 );
@@ -208,9 +208,9 @@ namespace LinearAlgebra {
       }
     }
   }
-  void DualVector::getValuesByLocalID ( int num , int *indices , double *vals ) const
+  void DualVector::getValuesByLocalID ( int num , size_t *indices , double *vals ) const
   {
-    std::vector<int>     ndx1 , ndx2;
+    std::vector<size_t>  ndx1 , ndx2;
     std::vector<double>  val1 , val2;
     partitionValues ( num , indices , vals , d_pVector1->getLocalSize() , ndx1 , ndx2 , val1 , val2 );
 
@@ -219,8 +219,8 @@ namespace LinearAlgebra {
     if ( ndx2.size() )
       d_pVector2->getValuesByLocalID ( ndx2.size() , &(ndx2[0]) , &(val2[0]) );
 
-    std::vector<int>::iterator  ndx1_iter , ndx2_iter;
-    std::vector<double>::iterator val1_iter , val2_iter;
+    std::vector<size_t>::iterator  ndx1_iter , ndx2_iter;
+    std::vector<double>::iterator  val1_iter , val2_iter;
 
     if ( ndx1.size() == 0 )
       ndx1.push_back ( -1 );

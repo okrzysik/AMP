@@ -991,7 +991,8 @@ class VerifySqrtPetscVector
         vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
         checkPetscError<VECTOR_FACTORY> ( utils , VecSqrt ( veca ) );
         checkPetscError<VECTOR_FACTORY> ( utils , VecSqrt ( vecb ) );
-        if ( vectora->equals ( vectorb ) )
+        bool equal = vectora->equals ( vectorb );
+        if ( equal )
           utils->passes ( "Vector square root passes" );
         else
           utils->failure ( "Vector square root fails" );

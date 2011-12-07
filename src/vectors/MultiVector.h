@@ -68,10 +68,10 @@ namespace LinearAlgebra {
         * \details  This is the method that handles all of the bookkeeping associated with
         * treating a set of vectors of arbitrary length as a single vector
         */
-      void  partitionValues ( int num , 
-                              int *indices , 
+      void  partitionValues ( size_t num , 
+                              size_t *indices , 
                               const double *vals ,
-                              std::vector<std::vector<int> >  &out_indices , 
+                              std::vector<std::vector<size_t> >  &out_indices , 
                               std::vector<std::vector<double > >  &out_vals ,
                               const std::vector<size_t>  &offset_vec , 
                               std::vector< std::vector<size_t> >  *remap = 0 ) const ;
@@ -211,15 +211,15 @@ namespace LinearAlgebra {
       virtual double min(void) const;
       virtual double max(void) const;
       virtual void setRandomValues(void);
-      virtual void setValuesByLocalID ( int num , int *indices , const double *vals );
-      virtual void setLocalValuesByGlobalID ( int num , int *indices , const double *vals );
-      virtual void setValuesByGlobalID ( int num , int *indices , const double *vals );
-      virtual void addValuesByLocalID ( int num , int *indices , const double *vals );
-      virtual void addLocalValuesByGlobalID ( int num , int *indices , const double *vals );
-      virtual void addValuesByGlobalID ( int num , int *indices , const double *vals );
-      virtual void getValuesByGlobalID ( int numVals , int *ndx , double *vals ) const;
-      virtual void getLocalValuesByGlobalID ( int numVals , int *ndx , double *vals ) const;
-      virtual void getValuesByLocalID ( int numVals , int *ndx , double *vals ) const;
+      virtual void setValuesByLocalID ( int num , size_t *indices , const double *vals );
+      virtual void setLocalValuesByGlobalID ( int num , size_t *indices , const double *vals );
+      virtual void setValuesByGlobalID ( int num , size_t *indices , const double *vals );
+      virtual void addValuesByLocalID ( int num , size_t *indices , const double *vals );
+      virtual void addLocalValuesByGlobalID ( int num , size_t *indices , const double *vals );
+      virtual void addValuesByGlobalID ( int num , size_t *indices , const double *vals );
+      virtual void getValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
+      virtual void getLocalValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
+      virtual void getValuesByLocalID ( int numVals , size_t *ndx , double *vals ) const;
       virtual void makeConsistent ( ScatterType  t );
       virtual void assemble();
       virtual double L1Norm(void) const;

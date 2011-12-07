@@ -122,10 +122,7 @@ void NodeToNodeMap::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & 
     AMP_INSIST( curPhysics->getDOFManager()==d_DOFManager,"The DOF Manager that created the vector must match the one for the map" );
 
     // Get the DOFs to send
-    std::vector<int> DOFs(d_sendList.size(),0);
-    for (size_t i=0; i<d_sendList.size(); i++)
-        DOFs[i] = (int) d_sendList[i];
-    curPhysics->getValuesByGlobalID( d_sendList.size(), getPtr( DOFs ), getPtr( d_sendBuffer ) );
+    curPhysics->getValuesByGlobalID( d_sendList.size(), getPtr( d_sendList ), getPtr( d_sendBuffer ) );
 
     // Start the communication
     std::vector<MPI_Request>::iterator  curReq = beginRequests();
@@ -172,10 +169,7 @@ void NodeToNodeMap::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr &
     AMP_INSIST( curPhysics->getDOFManager()==d_DOFManager,"The DOF Manager that created the vector must match the one for the map" );
 
     // Store the DOFs
-    std::vector<int> DOFs(d_recvList.size(),0);
-    for (size_t i=0; i<d_recvList.size(); i++)
-        DOFs[i] = (int) d_recvList[i];
-    curPhysics->setValuesByGlobalID( d_recvList.size(),  getPtr( DOFs ), getPtr( d_recvBuffer ) );
+    curPhysics->setValuesByGlobalID( d_recvList.size(),  getPtr( d_recvList ), getPtr( d_recvBuffer ) );
 
     // Update ghost cells
     if ( d_callMakeConsistentSet ) 
@@ -349,7 +343,7 @@ std::vector<NodeToNodeMap::Point> NodeToNodeMap::createOwnedPoints(
     std::vector<Point> surfacePts(iterator.size());
     AMP::Mesh::MeshIterator cur = iterator.begin();
     int rank = d_MapComm.getRank();
-    std::vector<unsigned int> dofs(DofsPerObj,-1);
+    std::vector<size_t> dofs(DofsPerObj,-1);
     for (size_t i=0; i<surfacePts.size(); i++) {
         // Get the properties of the current element
         AMP::Mesh::MeshElementID id = cur->globalID();

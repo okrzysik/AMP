@@ -39,12 +39,12 @@ namespace LinearAlgebra {
     std::swap ( d_ViewVector , s.d_ViewVector );
   }
 
-  void  SubsetVector::addLocalValuesByGlobalID ( int cnt , int *ndx ,  const double *vals )
+  void  SubsetVector::addLocalValuesByGlobalID ( int cnt , size_t *ndx ,  const double *vals )
   {
     INCREMENT_COUNT("Virtual");
     if ( d_ViewVector )
     {
-      int  *t = new int [ cnt ];
+      size_t  *t = new size_t[ cnt ];
       for ( int i = 0 ; i != cnt ; i++ )
       {
         t[i] = d_SubsetLocalIDToViewGlobalID [ ndx[i] - getCommunicationList()->getStartGID() ];
@@ -61,12 +61,12 @@ namespace LinearAlgebra {
     }
   }
 
-  void  SubsetVector::addValuesByLocalID ( int cnt , int *ndx ,  const double *vals )
+  void  SubsetVector::addValuesByLocalID ( int cnt , size_t *ndx ,  const double *vals )
   {
     INCREMENT_COUNT("Virtual");
     if ( d_ViewVector )
     {
-      int  *t = new int [ cnt ];
+      size_t  *t = new size_t[ cnt ];
       for ( int i = 0 ; i != cnt ; i++ )
       {
         t[i] = d_SubsetLocalIDToViewGlobalID [ ndx[i] ];
@@ -83,12 +83,12 @@ namespace LinearAlgebra {
     }
   }
 
-  void  SubsetVector::getLocalValuesByGlobalID ( int cnt , int *ndx , double *vals ) const
+  void  SubsetVector::getLocalValuesByGlobalID ( int cnt , size_t *ndx , double *vals ) const
   {
     INCREMENT_COUNT("Virtual");
     if ( d_ViewVector )
     {
-      int  *t = new int [ cnt ];
+      size_t  *t = new size_t[ cnt ];
       for ( int i = 0 ; i != cnt ; i++ )
       {
         t[i] = d_SubsetLocalIDToViewGlobalID [ ndx[i] - getCommunicationList()->getStartGID() ];
@@ -105,12 +105,12 @@ namespace LinearAlgebra {
     }
   }
 
-  void  SubsetVector::setLocalValuesByGlobalID ( int cnt , int *ndx ,  const double *vals )
+  void  SubsetVector::setLocalValuesByGlobalID ( int cnt , size_t *ndx ,  const double *vals )
   {
     INCREMENT_COUNT("Virtual");
     if ( d_ViewVector )
     {
-      int  *t = new int [ cnt ];
+      size_t  *t = new size_t[ cnt ];
       for ( int i = 0 ; i != cnt ; i++ )
       {
         t[i] = d_SubsetLocalIDToViewGlobalID [ ndx[i] - getCommunicationList()->getStartGID() ];
@@ -127,12 +127,12 @@ namespace LinearAlgebra {
     }
   }
 
-  void  SubsetVector::setValuesByLocalID ( int cnt , int *ndx ,  const double *vals )
+  void  SubsetVector::setValuesByLocalID ( int cnt , size_t *ndx ,  const double *vals )
   {
     INCREMENT_COUNT("Virtual");
     if ( d_ViewVector )
     {
-      int  *t = new int [ cnt ];
+      size_t  *t = new size_t[ cnt ];
       for ( int i = 0 ; i != cnt ; i++ )
       {
         t[i] = d_SubsetLocalIDToViewGlobalID [ ndx[i] ];

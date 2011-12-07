@@ -27,7 +27,9 @@ namespace LinearAlgebra {
   inline
   Vector::shared_ptr  VectorStriderSubsetter::subset ( Vector::shared_ptr p )
   { 
-    return SubsetVector::view ( p , Variable::shared_ptr ( new StridedVariable ( d_Name , d_Offset , d_Stride ) ) ); 
+    Variable::shared_ptr  variable ( new StridedVariable( d_Name , d_Offset , d_Stride ) );
+    Vector::shared_ptr  vector = SubsetVector::view ( p, variable ); 
+    return vector;
   }
 
 }

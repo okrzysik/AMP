@@ -56,7 +56,7 @@ class  SimpleManagedVectorFactory
       return AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::NullVariable ( "..." ));   // no variable.....
     }
 
-    static AMP::LinearAlgebra::Vector::shared_ptr  getVector()
+    static boost::shared_ptr<T>  getVector()
     {
       const int num_local = 210;
       AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
@@ -66,7 +66,7 @@ class  SimpleManagedVectorFactory
       AMP::LinearAlgebra::ManagedVectorParameters *p1 = new AMP::LinearAlgebra::ManagedVectorParameters;
       p1->d_Engine = AMP::LinearAlgebra::VectorEngine::shared_ptr ( new AMP::LinearAlgebra::EpetraVectorEngine ( AMP::LinearAlgebra::VectorEngineParameters::shared_ptr ( p ) , AMP::LinearAlgebra::VectorEngine::BufferPtr ( new AMP::LinearAlgebra::VectorEngine::Buffer ( 210 ) ) ) );
       p1->d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty ( 210 );
-      AMP::LinearAlgebra::Vector::shared_ptr retval ( new T ( AMP::LinearAlgebra::VectorParameters::shared_ptr ( p1 ) ) );
+      boost::shared_ptr<T>  retval ( new T ( AMP::LinearAlgebra::VectorParameters::shared_ptr ( p1 ) ) );
       retval->setVariable ( AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::NullVariable ( "Test Vector" ) ) );
       return retval;
     }

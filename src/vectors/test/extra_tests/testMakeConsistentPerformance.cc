@@ -55,7 +55,7 @@ void  runTest ( AMP::UnitTest *ut )
 
     // Print the number of ghost values in the communication list
     AMP::LinearAlgebra::CommunicationList::shared_ptr  communicationList = v1->getCommunicationList();
-    std::vector<unsigned int> ghost_ids = communicationList->getGhostIDList();
+    std::vector<size_t> ghost_ids = communicationList->getGhostIDList();
     size_t N_ghosts = globalComm.sumReduce(ghost_ids.size());
     size_t N_ghosts2 = globalComm.sumReduce(mesh->numGhostElements(AMP::Mesh::Vertex,1));
     std::cout << std::endl << "There are " << N_ghosts << " global ghost values" << std::endl;

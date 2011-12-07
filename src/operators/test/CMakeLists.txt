@@ -302,7 +302,7 @@ COPY_MESH_FILE ( halden_1_clad.e )
 
 # Add node-node tests
 ADD_AMP_TEST_1_2_4 ( testNodeToNodeMap inputNodeToNodeMap-1 )           # This input is valid for all processors
-ADD_AMP_TEST_PARALLEL ( testNodeToNodeMap 4 inputNodeToNodeMap-2 )      # This input requires 4 or more processors
+#ADD_AMP_TEST_PARALLEL ( testNodeToNodeMap 4 inputNodeToNodeMap-2 )      # This input requires 4 or more processors
 COPY_TEST_DATA_FILE ( inputNodeToNodeMap-1 )
 COPY_TEST_DATA_FILE ( inputNodeToNodeMap-2 )
 

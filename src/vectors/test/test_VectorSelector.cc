@@ -1,5 +1,6 @@
 #include "vectors/VectorSelector.h"
 #include "vectors/MultiVector.h"
+#include "vectors/VectorSelector.h"
 
 #include "test_VectorLoops.h"
 #include "utils/AMPManager.h"
@@ -80,7 +81,6 @@ template <typename T>
 class StridedVectorFactory
 {
 public:
-    typedef typename T::vector           vector;
 
     static AMP::LinearAlgebra::Variable::shared_ptr  getVariable()
     {
@@ -89,7 +89,13 @@ public:
 
     static AMP::LinearAlgebra::Vector::shared_ptr   getVector()
     {
-        return T::getVector()->select ( AMP::LinearAlgebra::VS_Stride ( "thirds" , 1 , 3 ) , "thirds" );
+        boost::shared_ptr<typename T::vector>  vec = T::getVector();
+        AMP::LinearAlgebra::VS_Stride criterion = AMP::LinearAlgebra::VS_Stride("thirds",1,3);
+        AMP::LinearAlgebra::Vector::shared_ptr  vec_select = vec->select( criterion, "thirds" );
+        size_t N1 = vec->getGlobalSize();
+        size_t N2 = vec_select->getGlobalSize();
+        AMP_ASSERT(N1/3==N2);
+        return vec_select;
     }
 };
 

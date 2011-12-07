@@ -136,7 +136,7 @@ namespace LinearAlgebra {
       virtual size_t getLocalSize() const;
       virtual size_t getGlobalSize() const;
 
-      virtual void getLocalValuesByGlobalID ( int numVals , int *ndx , double *vals ) const;
+      virtual void getLocalValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
 
       virtual void setToScalar(double alpha);
       virtual void scale(double alpha, const VectorOperations &x);
@@ -154,10 +154,10 @@ namespace LinearAlgebra {
       virtual double min(void) const;
       virtual double max(void) const;
       virtual void setRandomValues(void);
-      virtual void setValuesByLocalID(int i, int * , const double *val);
-      virtual void setLocalValuesByGlobalID(int i, int * , const double *val);
-      virtual void addValuesByLocalID(int i, int * , const double *val);
-      virtual void addLocalValuesByGlobalID(int i, int * , const double *val);
+      virtual void setValuesByLocalID(int i, size_t * , const double *val);
+      virtual void setLocalValuesByGlobalID(int i, size_t * , const double *val);
+      virtual void addValuesByLocalID(int i, size_t * , const double *val);
+      virtual void addLocalValuesByGlobalID(int i, size_t * , const double *val);
       virtual void putRawData ( double *in );
       virtual void copyOutRawData ( double **in );
       double L1Norm(void) const;

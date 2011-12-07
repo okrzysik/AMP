@@ -36,6 +36,11 @@ public:
 
     //! The remote DOFs that we need to recieve
     std::vector<size_t>                                     d_remote_DOFs;
+
+    //! Default constructor
+    CommunicationListParameters();
+    //! Copy constructor
+    CommunicationListParameters(const CommunicationListParameters&);
 };
 
 
@@ -74,7 +79,7 @@ public:
      * \brief Retrieve list of global indices shared locally stored elsewhere
      * \return A vector of indices not owned by the core but are stored locally.
      */
-    const std::vector<unsigned int>   &getGhostIDList () const;
+    const std::vector<size_t>   &getGhostIDList () const;
 
     /**
      * \brief Subset a communication list based on a VectorIndexer
@@ -86,21 +91,21 @@ public:
      * \brief Retrieve list of global indices stored here and shared elsewhere
      * \return A vector of indices owned by the core and shared on other cores.
      */
-    const std::vector<unsigned int>   &getReplicatedIDList () const;
+    const std::vector<size_t>   &getReplicatedIDList () const;
 
     /**
      * \brief Retrieve the size of the buffer used to receive data from other processes
      * \details This is an alias of getGhostIDList().size()
      * \return The number of unowned entries on this core
      */
-    unsigned int   getVectorReceiveBufferSize () const;
+    size_t   getVectorReceiveBufferSize () const;
 
     /**
      * \brief Retrieve the size of the buffer used to send data to other processes
      * \details This is an alias of getReplicatedIDList().size()
      * \return The number of owned entries on this core shared with other cores
      */
-    unsigned int   getVectorSendBufferSize () const;
+    size_t   getVectorSendBufferSize () const;
 
     /**
      * \brief Scatter data stored here to processors that share the data.
@@ -177,18 +182,18 @@ public:
      * \brief  Return the first d.o.f. on this core
      * \return The first d.o.f. on this core
      */
-    unsigned int getStartGID () const;
+    size_t getStartGID () const;
 
     /**
      * \brief  Return the total d.o.f. on entire communicator
      */
-    unsigned int getTotalSize () const;
+    size_t getTotalSize () const;
 
     /**
      * \brief  Return the number of local rows for this communication list
      * \return The number of local d.o.f. for this communication list
      */
-    virtual unsigned int numLocalRows () const;
+    virtual size_t numLocalRows () const;
 
     /**
      * \brief  Return the local index of a shared datum.
@@ -197,7 +202,7 @@ public:
      * array.  This function returns the local offset of a shared datum into the shared array
      * \return The index into the shared array for the global index.
      */
-    unsigned int getLocalGhostID ( int dof ) const;
+    size_t getLocalGhostID ( size_t dof ) const;
 
     /**
      * \brief  Return the communicator used for this communication list
@@ -218,7 +223,7 @@ public:
      * \param[in]  c  The AMP_MPI for the vector.
      * \details  Create a communication list with no communication.
      */
-    static CommunicationList::shared_ptr  createEmpty ( unsigned int local , AMP_MPI c = AMP_MPI(AMP_COMM_WORLD) );
+    static CommunicationList::shared_ptr  createEmpty ( size_t local , AMP_MPI c = AMP_MPI(AMP_COMM_WORLD) );
 
 protected:
 
@@ -232,22 +237,22 @@ protected:
      * \details  Given dofs, the list of needed data for this core, it will compute the send
      * and receive lists for this processor so that scatters can be done in minimal space.
      */
-    void   buildCommunicationArrays ( std::vector<unsigned int> &dofs , std::vector<unsigned int> &partition , int commRank );
+    void   buildCommunicationArrays ( std::vector<size_t> &dofs , std::vector<size_t> &partition , int commRank );
 
 private:
-    std::vector<unsigned int>           d_ReceiveSizes;
-    std::vector<unsigned int>           d_ReceiveDisplacements;
-    std::vector<unsigned int>           d_ReceiveDOFList;           // Sorted DOF lists
+    std::vector<int>              d_ReceiveSizes;
+    std::vector<int>              d_ReceiveDisplacements;
+    std::vector<size_t>           d_ReceiveDOFList;           // Sorted DOF lists
 
-    std::vector<unsigned int>           d_SendSizes;
-    std::vector<unsigned int>           d_SendDisplacements;
-    std::vector<unsigned int>           d_SendDOFList;
-    unsigned int                        d_iBegin;
+    std::vector<int>              d_SendSizes;
+    std::vector<int>              d_SendDisplacements;
+    std::vector<size_t>           d_SendDOFList;
+    size_t                        d_iBegin;
 
-    AMP_MPI                             d_comm;
-    unsigned int                        d_iNumRows;
-    size_t                              d_iTotalRows;
-    bool                                d_bFinalized;
+    AMP_MPI                       d_comm;
+    size_t                        d_iNumRows;
+    size_t                        d_iTotalRows;
+    bool                          d_bFinalized;
 
     CommunicationList () {}
 

@@ -14,47 +14,50 @@ extern "C"{
 namespace AMP {
 namespace LinearAlgebra {
 
-  /** \class NativePetscVectorParameters
-    * \brief Parameters to set when creating a NativePetscVector
-    */
-  class NativePetscVectorParameters : public NativeVectorParameters
-  {
-    public:
-      /** \brief  The vector to wrap
-        */
-      Vec          d_InVec;
 
-      /** \brief  The communicator associated with the Vec
-        */
-      AMP_MPI     d_Comm;
 
-      /** \brief  If true, ~NativePetscVector() will call VecDestroy()
-        */
-      bool         d_Deleteable;
+/** \class NativePetscVectorParameters
+  * \brief Parameters to set when creating a NativePetscVector
+  */
+class NativePetscVectorParameters : public NativeVectorParameters
+{
+public:
+    //!  The vector to wrap
+    Vec         d_InVec;
 
-      /** \brief Constructor
-        * \param[in] v The vector to wrap
-        */
-      NativePetscVectorParameters ( Vec v );
-  };
+    //!  The communicator associated with the Vec
+    AMP_MPI     d_Comm;
 
-  /** \class NativePetscVector
-    * \brief An AMP Vector that uses PETSc for parallel data management, linear algebra,
-    * etc.
-    * \details  This is an AMP wrapper to PETSc.  This is different from ManagedPetscVector
-    * in that this class does not replace calls to Vec*.  Rather, it wraps these calls.
-    * This class is used when PETSc is chosen as the default linear algebra engine.
-    *
-    * This class is not to be used directly, just through base class interfaces.
-    * \see PetscVector
-    * \see ManagedPetscVector
-    */
+    //!  If true, ~NativePetscVector() will call VecDestroy()
+    bool        d_Deleteable;
 
-  class NativePetscVector : public NativeVector , 
-                            public PetscVector , 
-                            public VectorEngine
-  {
-    public:
+    //! The number of local entities in the vector
+    size_t      d_localsize;
+
+    /** \brief Constructor
+      * \param[in] v The vector to wrap
+      */
+    NativePetscVectorParameters ( Vec v );
+};
+
+
+
+/** \class NativePetscVector
+  * \brief An AMP Vector that uses PETSc for parallel data management, linear algebra,
+  * etc.
+  * \details  This is an AMP wrapper to PETSc.  This is different from ManagedPetscVector
+  * in that this class does not replace calls to Vec*.  Rather, it wraps these calls.
+  * This class is used when PETSc is chosen as the default linear algebra engine.
+  *
+  * This class is not to be used directly, just through base class interfaces.
+  * \see PetscVector
+  * \see ManagedPetscVector
+  */
+class NativePetscVector : public NativeVector , 
+                          public PetscVector , 
+                          public VectorEngine
+{
+public:
       /** \brief Conveninece typedef
         */
       typedef  NativeVector::parameters_ptr           parameters_ptr;
@@ -110,13 +113,13 @@ namespace LinearAlgebra {
       virtual double maxNorm(void) const;
       virtual double dot(const VectorOperations &x) const;
 
-      virtual void setValuesByLocalID(int , int * , const double *);
-      virtual void setLocalValuesByGlobalID(int , int * , const double *);
-      virtual void addValuesByLocalID(int , int * , const double *);
-      virtual void addLocalValuesByGlobalID(int , int * , const double *);
+      virtual void setValuesByLocalID(int , size_t * , const double *);
+      virtual void setLocalValuesByGlobalID(int , size_t * , const double *);
+      virtual void addValuesByLocalID(int , size_t * , const double *);
+      virtual void addLocalValuesByGlobalID(int , size_t * , const double *);
 
-      virtual void getLocalValuesByGlobalID ( int numVals , int *ndx , double *vals ) const;
-      virtual void getValuesByLocalID ( int numVals , int *ndx , double *vals ) const;
+      virtual void getLocalValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
+      virtual void getValuesByLocalID ( int numVals , size_t *ndx , double *vals ) const;
 
       virtual void assemble();
 
@@ -140,7 +143,7 @@ namespace LinearAlgebra {
 
       virtual boost::shared_ptr<ParameterBase> getParameters ();
 
-    protected:
+protected:
 
       void *getRawDataBlockAsVoid ( size_t i );
       const void *getRawDataBlockAsVoid ( size_t i ) const;
@@ -148,11 +151,12 @@ namespace LinearAlgebra {
       void  resetArray ();
       void  resetArray () const;
 
-    private:
+private:
       parameters_ptr   d_pParameters;
       bool              d_bDeleteMe;
       mutable double   *d_pArray;  //mutable so that we can cache the value
-  };
+};
+
 
 }
 }

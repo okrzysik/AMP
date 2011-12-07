@@ -84,7 +84,7 @@ namespace LinearAlgebra {
     d_vBuffer = in.d_vBuffer;
   }
 
-  void ManagedVector::getLocalValuesByGlobalID ( int numVals , int *ndx , double *vals ) const
+  void ManagedVector::getLocalValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const
   {
     INCREMENT_COUNT("Virtual");
     if ( d_vBuffer )

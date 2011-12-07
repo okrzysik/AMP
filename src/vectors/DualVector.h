@@ -119,8 +119,8 @@ namespace LinearAlgebra {
         * \param Vals1 The values destined for the first vector
         * \param Vals2 The values destined for the second vector
         */
-      void  partitionValues ( int num , int *indices , const double *vals , int start2 ,
-                    std::vector<int> &Ndx1 , std::vector<int> &Ndx2 , 
+      void  partitionValues ( size_t num , size_t *indices , const double *vals , size_t start2 ,
+                    std::vector<size_t> &Ndx1 , std::vector<size_t> &Ndx2 , 
                     std::vector<double> &Vals1 , std::vector<double> &Vals2 ) const;
 
       DualVector ( Vector::shared_ptr v1 , Vector::shared_ptr v2 , Variable::shared_ptr name );
@@ -188,15 +188,15 @@ namespace LinearAlgebra {
       virtual double maxNorm(void) const;
       virtual double dot(const VectorOperations &x) const;
 
-      virtual void setValuesByLocalID ( int , int * , const double * );
-      virtual void setLocalValuesByGlobalID ( int , int * , const double * );
-      virtual void setValuesByGlobalID ( int , int * , const double * );
-      virtual void addValuesByLocalID ( int , int * , const double * );
-      virtual void addLocalValuesByGlobalID ( int , int * , const double * );
-      virtual void addValuesByGlobalID ( int , int * , const double * );
-      virtual void getValuesByGlobalID ( int , int * , double * ) const;
-      virtual void getLocalValuesByGlobalID ( int , int * , double * ) const;
-      virtual void getValuesByLocalID ( int , int * , double * ) const;
+      virtual void setValuesByLocalID ( int , size_t * , const double * );
+      virtual void setLocalValuesByGlobalID ( int , size_t * , const double * );
+      virtual void setValuesByGlobalID ( int , size_t * , const double * );
+      virtual void addValuesByLocalID ( int , size_t * , const double * );
+      virtual void addLocalValuesByGlobalID ( int , size_t * , const double * );
+      virtual void addValuesByGlobalID ( int , size_t * , const double * );
+      virtual void getValuesByGlobalID ( int , size_t * , double * ) const;
+      virtual void getLocalValuesByGlobalID ( int , size_t * , double * ) const;
+      virtual void getValuesByLocalID ( int , size_t * , double * ) const;
 
       virtual void makeConsistent ( ScatterType  t );
       virtual void assemble();

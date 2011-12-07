@@ -18,11 +18,11 @@ namespace LinearAlgebra {
     public:
       static  Vector::shared_ptr   view ( Vector::shared_ptr , Variable::shared_ptr );
 
-      virtual void     setValuesByLocalID ( int , int * , const double * );
-      virtual void     setLocalValuesByGlobalID ( int , int * , const double * );
-      virtual void     addValuesByLocalID ( int , int * , const double * );
-      virtual void     addLocalValuesByGlobalID ( int , int * , const double * );
-      virtual void     getLocalValuesByGlobalID ( int , int * , double * ) const ;
+      virtual void     setValuesByLocalID ( int , size_t * , const double * );
+      virtual void     setLocalValuesByGlobalID ( int , size_t * , const double * );
+      virtual void     addValuesByLocalID ( int , size_t * , const double * );
+      virtual void     addLocalValuesByGlobalID ( int , size_t * , const double * );
+      virtual void     getLocalValuesByGlobalID ( int , size_t * , double * ) const ;
 
       /* A SubsetVectorUsingSuperDOFs is assumed to be a subset of a vector on a volume and
          can interact with said volume.  For this reason, these methods return the size

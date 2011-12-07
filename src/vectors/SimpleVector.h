@@ -65,20 +65,20 @@ namespace LinearAlgebra {
       virtual void copyVector(const Vector &src_vec);
       virtual void swapVectors(Vector &other);
       virtual void aliasVector(Vector &other);
-      virtual void setValuesByLocalID ( int num , int *indices , const double *vals );
+      virtual void setValuesByLocalID ( int num , size_t *indices , const double *vals );
 
       /** \brief Not implemented
         */
-      virtual void setLocalValuesByGlobalID ( int num , int *indices , const double *vals );
-      virtual void addValuesByLocalID ( int num , int *indices , const double *vals );
+      virtual void setLocalValuesByGlobalID ( int num , size_t *indices , const double *vals );
+      virtual void addValuesByLocalID ( int num , size_t *indices , const double *vals );
 
       /** \brief Not implemented
         */
-      virtual void addLocalValuesByGlobalID ( int num , int *indices , const double *vals );
+      virtual void addLocalValuesByGlobalID ( int num , size_t *indices , const double *vals );
 
       /** \brief Not implemented
         */
-      virtual void getLocalValuesByGlobalID ( int num , int *indices , double *vals ) const;
+      virtual void getLocalValuesByGlobalID ( int num , size_t *indices , double *vals ) const;
       virtual void assemble();
       virtual void   putRawData ( double *in );
       virtual size_t getLocalSize() const;

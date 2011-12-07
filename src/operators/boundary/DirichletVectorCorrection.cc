@@ -95,16 +95,16 @@ namespace Operator {
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable(d_variable);
     AMP::Discretization::DOFManager::shared_ptr dof_map = rInternal->getDOFManager();
 
-    unsigned int numIds = d_boundaryIds.size();
-    for(unsigned int j = 0; j < numIds; j++) {
+    size_t numIds = d_boundaryIds.size();
+    for(size_t j = 0; j < numIds; j++) {
       AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
       AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
       for( ; bnd != end_bnd; ++bnd) {
-        std::vector<unsigned int> bndGlobalIds;
+        std::vector<size_t> bndGlobalIds;
         dof_map->getDOFs(*bnd, bndGlobalIds, d_dofIds[j]);
 
-        for(unsigned int i = 0; i < bndGlobalIds.size(); i++) {
+        for(size_t i = 0; i < bndGlobalIds.size(); i++) {
           rInternal->setLocalValueByGlobalID(bndGlobalIds[i], 0.0);
         }//end for i
       }//end for bnd
@@ -117,17 +117,17 @@ namespace Operator {
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable(d_variable);
     AMP::Discretization::DOFManager::shared_ptr dof_map = rInternal->getDOFManager();
 
-    unsigned int numIds = d_boundaryIds.size();
+    size_t numIds = d_boundaryIds.size();
 
-    for(unsigned int j = 0; j < numIds; j++) {
+    for(size_t j = 0; j < numIds; j++) {
       AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
       AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
       for( ; bnd != end_bnd; ++bnd) {
-        std::vector<unsigned int> bndGlobalIds;
+        std::vector<size_t> bndGlobalIds;
         dof_map->getDOFs(*bnd, bndGlobalIds, d_dofIds[j]);
 
-        for(unsigned int i = 0; i < bndGlobalIds.size(); i++) {
+        for(size_t i = 0; i < bndGlobalIds.size(); i++) {
           double dVal;
           if(d_valuesType == 1) {
             dVal = d_dirichletValues1[j][i];
@@ -146,17 +146,17 @@ namespace Operator {
     AMP::LinearAlgebra::Vector::shared_ptr uInternal = u->subsetVectorForVariable(d_variable);
     AMP::Discretization::DOFManager::shared_ptr dof_map = u->getDOFManager();
 
-    unsigned int numIds = d_boundaryIds.size();
+    size_t numIds = d_boundaryIds.size();
 
-    for(unsigned int j = 0; j < numIds; j++) {
+    for(size_t j = 0; j < numIds; j++) {
       AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
       AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
       for( ; bnd != end_bnd; ++bnd) {
-        std::vector<unsigned int> bndGlobalIds;
+        std::vector<size_t> bndGlobalIds;
         dof_map->getDOFs(*bnd, bndGlobalIds, d_dofIds[j]);
 
-        for(unsigned int i = 0; i < bndGlobalIds.size(); i++) {
+        for(size_t i = 0; i < bndGlobalIds.size(); i++) {
           double uVal = uInternal->getLocalValueByGlobalID( bndGlobalIds[i] );
           double dVal;
           if(d_valuesType == 1) {

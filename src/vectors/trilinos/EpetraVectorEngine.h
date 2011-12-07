@@ -128,12 +128,12 @@ namespace LinearAlgebra {
       virtual double min(void) const;
       virtual double max(void) const;
       virtual void setRandomValues(void);
-      virtual void setValuesByLocalID(int i, int * , const double *val);
-      virtual void setLocalValuesByGlobalID(int i, int * , const double *val);
-      virtual void addValuesByLocalID(int i, int * , const double *val);
-      virtual void addLocalValuesByGlobalID(int i, int * , const double *val);
-      virtual void getValuesByLocalID(int i, int * ,double *val) const;
-      virtual void getLocalValuesByGlobalID(int i, int * ,double *val) const;
+      virtual void setValuesByLocalID(int i, size_t * , const double *val);
+      virtual void setLocalValuesByGlobalID(int i, size_t * , const double *val);
+      virtual void addValuesByLocalID(int i, size_t * , const double *val);
+      virtual void addLocalValuesByGlobalID(int i, size_t * , const double *val);
+      virtual void getValuesByLocalID(int i, size_t * ,double *val) const;
+      virtual void getLocalValuesByGlobalID(int i, size_t * ,double *val) const;
       double L1Norm(void) const;
       double L2Norm(void) const;
       double maxNorm(void) const;

@@ -19,6 +19,9 @@ namespace LinearAlgebra {
     if ( comm!=d_Comm.getCommunicator() )
         d_Comm = AMP_MPI(comm);
     d_Deleteable = false;
+    int lsize;
+    VecGetLocalSize ( v, &lsize );
+    d_localsize = (size_t) lsize;
   }
 
   inline
@@ -74,7 +77,7 @@ namespace LinearAlgebra {
   }
 
   inline
-  void NativePetscVector::getValuesByLocalID ( int numVals , int *ndx , double *vals ) const
+  void NativePetscVector::getValuesByLocalID ( int numVals , size_t *ndx , double *vals ) const
   {
     INCREMENT_COUNT("Virtual");
     Vector::getValuesByLocalID ( numVals , ndx , vals );
@@ -324,7 +327,7 @@ namespace LinearAlgebra {
 
 
   inline
-  void  NativePetscVector::setValuesByLocalID(int num , int *indices , const double *vals)
+  void  NativePetscVector::setValuesByLocalID(int num , size_t *indices , const double *vals)
   {
     INCREMENT_COUNT("Virtual");
     for ( int i = 0 ; i != num ; i++ )
@@ -333,16 +336,24 @@ namespace LinearAlgebra {
 
 
   inline
-  void  NativePetscVector::setLocalValuesByGlobalID(int num, int *indices , const double *vals)
+  void  NativePetscVector::setLocalValuesByGlobalID(int num, size_t *indices , const double *vals)
   {
     INCREMENT_COUNT("Virtual");
     resetArray();
-    VecSetValues ( d_petscVec , num , indices , vals , INSERT_VALUES );
+    if ( sizeof(size_t) == sizeof(PetscInt) ) {
+        VecSetValues ( d_petscVec , num , (PetscInt*) indices , vals , INSERT_VALUES );
+    } else {
+        AMP_ASSERT(getGlobalSize()<0x80000000);
+        std::vector<PetscInt> indices2(num,0);
+        for (int i=0; i<num; i++)
+            indices2[i] = (PetscInt) indices[i];
+        VecSetValues ( d_petscVec , num , &indices2[0] , vals , INSERT_VALUES );
+    }
   }
 
 
   inline
-  void  NativePetscVector::addValuesByLocalID(int num , int *indices , const double *vals)
+  void  NativePetscVector::addValuesByLocalID(int num , size_t *indices , const double *vals)
   {
     INCREMENT_COUNT("Virtual");
     for ( int i = 0 ; i != num ; i++ )
@@ -350,11 +361,19 @@ namespace LinearAlgebra {
   }
 
   inline
-  void  NativePetscVector::addLocalValuesByGlobalID(int num, int *indices , const double *vals)
+  void  NativePetscVector::addLocalValuesByGlobalID(int num, size_t *indices , const double *vals)
   {
     INCREMENT_COUNT("Virtual");
     resetArray();
-    VecSetValues ( d_petscVec , num , indices , vals , ::ADD_VALUES );
+    if ( sizeof(size_t) == sizeof(PetscInt) ) {
+        VecSetValues ( d_petscVec , num , (PetscInt*) indices , vals , ::ADD_VALUES );
+    } else {
+        AMP_ASSERT(getGlobalSize()<0x80000000);
+        std::vector<PetscInt> indices2(num,0);
+        for (int i=0; i<num; i++)
+            indices2[i] = (PetscInt) indices[i];
+        VecSetValues ( d_petscVec , num , &indices2[0] , vals , ::ADD_VALUES );
+    }
   }
 
 
@@ -407,10 +426,18 @@ namespace LinearAlgebra {
 
 
   inline
-  void NativePetscVector::getLocalValuesByGlobalID ( int numVals , int *ndx , double *vals ) const
+  void NativePetscVector::getLocalValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const
   {
     INCREMENT_COUNT("Virtual");
-    VecGetValues ( d_petscVec , numVals , ndx , vals );
+    if ( sizeof(size_t) == sizeof(PetscInt) ) {
+        VecGetValues ( d_petscVec , numVals , (PetscInt*) ndx , vals );
+    } else {
+        AMP_ASSERT(getGlobalSize()<0x80000000);
+        std::vector<PetscInt> ndx2(numVals,0);
+        for (int i=0; i<numVals; i++)
+            ndx2[i] = (PetscInt) ndx[i];
+        VecGetValues ( d_petscVec , numVals , &ndx2[0] , vals );
+    }
   }
 
 }

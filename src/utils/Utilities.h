@@ -123,12 +123,12 @@ namespace Utilities
     /*!
      * Search a std::vector for the first entry >= the given value
      * This routine only works on sorted arrays and does not check if the array is sorted
-     * This routine returns -1 if no value in the array is >= the desired value
+     * This routine returns the size of the vector if no entries in the vector are >= the desired entry.
      * \param x      vector to sort
      * \param value  Value to search for
      */
     template<class T>
-    int findfirst(const std::vector<T> &x, const T &value);
+    size_t findfirst(const std::vector<T> &x, const T &value);
 
     //! Create a hash key from a char array
     unsigned int hash_char(const char*);
@@ -562,20 +562,20 @@ void Utilities::quicksort(std::vector<T1> &x, std::vector<T2> &y)
 * Returns -1 if no value is larger.                                     *
 ************************************************************************/
 template<class T>
-int Utilities::findfirst(const std::vector<T> &x_in, const T &value) 
+size_t Utilities::findfirst(const std::vector<T> &x_in, const T &value) 
 {
-    int n = x_in.size();
+    size_t n = x_in.size();
     AMP_INSIST(n>0,"x must not be empty");
     const T *x = &x_in[0];   // Use the pointer for speed
     // Check if value is within the range of x
     if ( value <= x[0] )
         return 0;
     else if ( value > x[n-1] )
-        return -1;
+        return n;
     // Perform the search
-    int lower = 0;
-    int upper = n-1;
-    int index;
+    size_t lower = 0;
+    size_t upper = n-1;
+    size_t index;
     while ( (upper-lower) != 1 ) {
         index = (upper+lower)/2;
         if ( x[index] >= value )

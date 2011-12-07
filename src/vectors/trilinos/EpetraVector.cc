@@ -1,7 +1,6 @@
 #include "EpetraVector.h"
 #include "ManagedEpetraVector.h"
 #include "MultiVector.h"
-#include "CommCollectVector.h"
 
 
 namespace AMP {
@@ -9,10 +8,6 @@ namespace LinearAlgebra {
 
   const Vector::shared_ptr  EpetraVector::constView ( const Vector::shared_ptr inVector )
   {
-    if ( inVector->isA<CommCollectVector>() )
-    {
-      return constView ( inVector->castTo<const CommCollectVector>().getSmallCommVector() );
-    }
     if ( inVector->isA<EpetraVector> () )
     {
       return inVector;
@@ -41,10 +36,6 @@ namespace LinearAlgebra {
     if ( inVector->isA<EpetraVector> () )
     {
       retVal = inVector;
-    }
-    else if ( inVector->isA<CommCollectVector>() )
-    {
-      retVal = view ( inVector->castTo<CommCollectVector>().getSmallCommVector() );
     }
     else if ( inVector->isA<MultiVector> () )
     {

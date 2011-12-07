@@ -17,6 +17,7 @@ namespace LinearAlgebra {
     d_pArray = 0; 
     CommunicationListParameters::shared_ptr params ( new CommunicationListParameters () );
     params->d_comm = npvParams.d_Comm;
+    params->d_localsize = npvParams.d_localsize;
     setCommunicationList ( CommunicationList::shared_ptr ( new CommunicationList ( params ) ) );
     d_bDeleteMe = npvParams.d_Deleteable;
   }

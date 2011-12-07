@@ -22,11 +22,11 @@ void  setBoundary ( int id , AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::Me
     AMP::Mesh::MeshIterator  curBnd = mesh->getIDsetIterator( AMP::Mesh::Vertex, id, 0 );
     AMP::Mesh::MeshIterator  endBnd = curBnd.end();
 
-    std::vector<unsigned int> ids;
+    std::vector<size_t> ids;
     while ( curBnd != endBnd ) {
         d1->getDOFs( *curBnd, ids );
         std::vector<double> x = curBnd->coord();
-        v1->setLocalValuesByGlobalID( ids.size(), (int*)&ids[0], &x[0] );
+        v1->setLocalValuesByGlobalID( ids.size(), &ids[0], &x[0] );
         ++curBnd;
     }
 }

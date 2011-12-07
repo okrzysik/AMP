@@ -16,17 +16,17 @@ namespace LinearAlgebra {
 * where the vector may be empty.                                        *
 ************************************************************************/
 template <typename T>
-static T* getBufferToAvoidDebugVectorCrashing( std::vector<T> &in )
+static T* getPtr( std::vector<T> &in )
 {
     T *retVal = 0;
     if ( in.size() > 0 ) retVal = &(in[0]);
     return retVal;
 }
 template <typename T>
-static const T* getBufferToAvoidDebugVectorCrashing( const std::vector<T> &in )
+static T* getPtr( const std::vector<T> &in )
 {
-    const T *retVal = 0;
-    if ( in.size() > 0 ) retVal = &(in[0]);
+    T *retVal = 0;
+    if ( in.size() > 0 ) retVal = (T*) &(in[0]);
     return retVal;
 }
 
@@ -34,26 +34,59 @@ static const T* getBufferToAvoidDebugVectorCrashing( const std::vector<T> &in )
 /************************************************************************
 * Constructors                                                          *
 ************************************************************************/
+CommunicationListParameters::CommunicationListParameters()
+{
+    d_comm = AMP_MPI(AMP_COMM_NULL);
+    d_localsize = (size_t) -1;
+    d_remote_DOFs = std::vector<size_t>(0);
+}
+CommunicationListParameters::CommunicationListParameters(const CommunicationListParameters& rhs)
+{
+    d_comm = rhs. d_comm;
+    d_localsize = rhs.d_localsize;
+    d_remote_DOFs = rhs.d_remote_DOFs;
+}
 CommunicationList::CommunicationList ( CommunicationListParameters::shared_ptr params ):
     d_comm ( params->d_comm ),
     d_iNumRows ( params->d_localsize ),
     d_bFinalized ( false )
 {
+    // Check the input parameters
+    AMP_ASSERT((params->d_localsize>>48)==0);
+    AMP_ASSERT(params->d_comm!=AMP_MPI(AMP_COMM_NULL));
     // Get the partition (the total number of DOFs for all ranks <= current rank)
-    std::vector<unsigned int> partition(d_comm.getSize(),0);
-    d_comm.allGather<unsigned int>( (unsigned int) params->d_localsize, &partition[0] );
+    std::vector<size_t> partition(d_comm.getSize(),0);
+    d_comm.allGather<size_t>( params->d_localsize, &partition[0] );
     for (int i=1; i<d_comm.getSize(); i++)
         partition[i] += partition[i-1];
-    d_comm.sumScan((int*)&d_iNumRows,(int*)&d_iTotalRows,1);
     // Get the first DOF on the current rank
     d_iBegin = partition[d_comm.getRank()] - params->d_localsize;
     // Get the total number of DOFs
     d_iTotalRows = partition[d_comm.getSize()-1];
     // Construct the communication arrays
-    std::vector<unsigned int> remote_DOFs(params->d_remote_DOFs.size());
-    for (size_t i=0; i<remote_DOFs.size(); i++)
-        remote_DOFs[i] = (unsigned int) params->d_remote_DOFs[i];
-    buildCommunicationArrays( remote_DOFs, partition, d_comm.getRank() );
+    buildCommunicationArrays( params->d_remote_DOFs, partition, d_comm.getRank() );
+}
+CommunicationList::shared_ptr  CommunicationList::createEmpty ( size_t local , AMP_MPI comm )
+{
+    int size = comm.getSize();
+    CommunicationList  *retVal = new CommunicationList;
+    retVal->d_ReceiveSizes.resize ( size );
+    retVal->d_ReceiveDisplacements.resize ( size );
+    retVal->d_ReceiveDOFList.resize ( 0 );
+
+    retVal->d_SendSizes.resize ( size );
+    retVal->d_SendDisplacements.resize ( size );
+    retVal->d_SendDOFList.resize ( 0 );
+
+    size_t lastRow=0;
+    comm.sumScan(&local,&(lastRow),1);
+    retVal->d_iBegin = lastRow - local;
+    retVal->d_comm = comm;
+    retVal->d_iNumRows = local;
+    retVal->d_iTotalRows = comm.bcast(lastRow,size-1);
+    retVal->d_bFinalized = true;
+
+    return CommunicationList::shared_ptr ( retVal );
 }
 
 
@@ -73,7 +106,7 @@ CommunicationList::CommunicationList ( CommunicationListParameters::shared_ptr p
     {
       retVal->d_SendDisplacements[i] = curOff;
       retVal->d_SendSizes[i] = 0;
-      for ( size_t j = 0 ; j != d_SendSizes[i] ; j++ )
+      for ( int j = 0 ; j != d_SendSizes[i] ; j++ )
       {
         if ( ndx->isInSub ( d_SendDOFList[d_SendDisplacements[i] + j] ) )
         {
@@ -83,8 +116,8 @@ CommunicationList::CommunicationList ( CommunicationListParameters::shared_ptr p
         }
       }
     }
-    d_comm.allToAll(1, getBufferToAvoidDebugVectorCrashing(retVal->d_SendSizes), 
-        getBufferToAvoidDebugVectorCrashing(retVal->d_ReceiveSizes) );
+    d_comm.allToAll(1, getPtr(retVal->d_SendSizes), 
+        getPtr(retVal->d_ReceiveSizes) );
 
     retVal->d_ReceiveDisplacements[0] = 0;
     size_t ii;
@@ -95,13 +128,8 @@ CommunicationList::CommunicationList ( CommunicationListParameters::shared_ptr p
 
     retVal->d_ReceiveDOFList.resize ( retVal->d_ReceiveDisplacements[ii-1] + retVal->d_ReceiveSizes[ii-1] );
 
-    d_comm.allToAll( getBufferToAvoidDebugVectorCrashing ( retVal->d_SendDOFList ) ,
-                    (int *)&(retVal->d_SendSizes[0]) ,
-                    (int *)&(retVal->d_SendDisplacements[0] ) ,
-                    getBufferToAvoidDebugVectorCrashing ( retVal->d_ReceiveDOFList ) ,
-                    (int *)&(retVal->d_ReceiveSizes[0]) ,
-                    (int *)&(retVal->d_ReceiveDisplacements[0] ) ,
-                    true );
+    d_comm.allToAll( getPtr(retVal->d_SendDOFList), &(retVal->d_SendSizes[0]), &(retVal->d_SendDisplacements[0]),
+            getPtr(retVal->d_ReceiveDOFList), &(retVal->d_ReceiveSizes[0]), &(retVal->d_ReceiveDisplacements[0]), true );
 
     retVal->d_comm = d_comm;
 
@@ -111,7 +139,7 @@ CommunicationList::CommunicationList ( CommunicationListParameters::shared_ptr p
       if ( ndx->isInSub ( i ) )
         retVal->d_iNumRows ++;
     }
-    d_comm.sumScan( (int*)&(retVal->d_iNumRows), (int*)&(retVal->d_iTotalRows), 1);
+    d_comm.sumScan( &(retVal->d_iNumRows), &(retVal->d_iTotalRows), 1);
     retVal->d_iBegin = retVal->d_iTotalRows - retVal->d_iNumRows;
     retVal->d_iTotalRows = d_comm.bcast(retVal->d_iTotalRows,retVal->d_SendSizes.size()-1);
 
@@ -123,50 +151,40 @@ CommunicationList::CommunicationList ( CommunicationListParameters::shared_ptr p
   void  CommunicationList::packReceiveBuffer ( std::vector<double> &send , const Vector &vec ) const
   {
     AMP_ASSERT ( send.size() == d_ReceiveDOFList.size() );
-    int *doflist = (int *)getBufferToAvoidDebugVectorCrashing ( d_ReceiveDOFList );
-    double *dofval = getBufferToAvoidDebugVectorCrashing ( send );
-    vec.getGhostAddValuesByGlobalID ( (int) send.size() , doflist , dofval );
+    vec.getGhostAddValuesByGlobalID ( (int) send.size(), getPtr(d_ReceiveDOFList),  getPtr(send) );
   }
 
   void  CommunicationList::packSendBuffer ( std::vector<double> &send , const Vector &vec ) const
   {
     AMP_ASSERT ( send.size() == d_SendDOFList.size() );
-    int *doflist = (int *)getBufferToAvoidDebugVectorCrashing ( d_SendDOFList );
-    double *dofval = getBufferToAvoidDebugVectorCrashing ( send );
-    vec.getLocalValuesByGlobalID ( (int) send.size() , doflist , dofval );
+    vec.getLocalValuesByGlobalID ( (int) send.size(), getPtr(d_SendDOFList),  getPtr(send) );
   }
 
   void  CommunicationList::unpackReceiveBufferSet ( const std::vector<double> &recv , Vector &vec ) const
   {
     AMP_ASSERT ( recv.size() == d_ReceiveDOFList.size() );
-    int *doflist = (int *)getBufferToAvoidDebugVectorCrashing ( d_ReceiveDOFList );
-    const double *dofval = getBufferToAvoidDebugVectorCrashing ( recv );
-    vec.setValuesByGlobalID ( (int)recv.size() , doflist , dofval );
+    vec.setValuesByGlobalID ( (int)recv.size(), getPtr(d_ReceiveDOFList), getPtr(recv) );
   }
 
   void  CommunicationList::unpackSendBufferAdd ( const std::vector<double> &recv , Vector &vec ) const
   {
     AMP_ASSERT ( recv.size() == d_SendDOFList.size() );
-    int *doflist = (int *)getBufferToAvoidDebugVectorCrashing ( d_SendDOFList );
-    const double *dofval = getBufferToAvoidDebugVectorCrashing ( recv );
-    vec.addLocalValuesByGlobalID ( (int)recv.size() , doflist , dofval );
+    vec.addLocalValuesByGlobalID ( (int)recv.size(), getPtr(d_SendDOFList), getPtr(recv) );
   }
 
   void  CommunicationList::unpackSendBufferSet ( const std::vector<double> &recv , Vector &vec ) const
   {
     AMP_ASSERT ( recv.size() == d_SendDOFList.size() );
-    int *doflist = (int *)getBufferToAvoidDebugVectorCrashing ( d_SendDOFList );
-    const double *dofval = getBufferToAvoidDebugVectorCrashing ( recv );
-    vec.setLocalValuesByGlobalID ( (int)recv.size() , doflist , dofval );
+    vec.setLocalValuesByGlobalID ( (int)recv.size() , getPtr(d_SendDOFList), getPtr(recv) );
   }
 
-  unsigned int  CommunicationList::getLocalGhostID ( int GID ) const
+  size_t  CommunicationList::getLocalGhostID ( size_t GID ) const
   {
     // Search d_ReceiveDOFList for GID
     // Note: d_ReceiveDOFList must be sorted for this to work
-    int pos = AMP::Utilities::findfirst( d_ReceiveDOFList, (unsigned int) GID );
-    bool found = pos>=0 && pos<(int)d_ReceiveDOFList.size();
-    if ( found ) { if ( d_ReceiveDOFList[pos]!=(unsigned int) GID ) { found = false; } }
+    size_t pos = AMP::Utilities::findfirst( d_ReceiveDOFList, (size_t) GID );
+    bool found = pos>=0 && pos<d_ReceiveDOFList.size();
+    if ( found ) { if ( d_ReceiveDOFList[pos]!=GID ) { found = false; } }
     if ( !found ) {
         std::cout << "GID = " << GID << std::endl;
         AMP_ERROR("GID was not found in the ghost list");
@@ -175,7 +193,7 @@ CommunicationList::CommunicationList ( CommunicationListParameters::shared_ptr p
   }
 
 
-void CommunicationList::buildCommunicationArrays ( std::vector<unsigned int>  &DOFs , std::vector<unsigned int> &partitionInfo , int commRank )
+void CommunicationList::buildCommunicationArrays ( std::vector<size_t>  &DOFs , std::vector<size_t> &partitionInfo , int commRank )
 {
     d_iBegin = commRank ? partitionInfo[commRank-1] : 0;
 
@@ -230,8 +248,8 @@ void CommunicationList::buildCommunicationArrays ( std::vector<unsigned int>  &D
 
     // Get the send DOFs (requires the recv DOFs to be sorted)
     d_SendDOFList.resize( send_buf_size );
-    d_comm.allToAll( getBufferToAvoidDebugVectorCrashing(d_ReceiveDOFList), (int *)&(d_ReceiveSizes[0]), (int *)&(d_ReceiveDisplacements[0]), 
-                     getBufferToAvoidDebugVectorCrashing(d_SendDOFList), (int *)&(d_SendSizes[0]) , (int *)&(d_SendDisplacements[0]) , true );
+    d_comm.allToAll( getPtr(d_ReceiveDOFList), &(d_ReceiveSizes[0]), &(d_ReceiveDisplacements[0]), 
+                     getPtr(d_SendDOFList), &(d_SendSizes[0]) , &(d_SendDisplacements[0]) , true );
 
 }
 
@@ -240,10 +258,10 @@ void CommunicationList::scatter_set( std::vector<double> &in , std::vector<doubl
   {
     if ( d_SendSizes.size() == 0 )
       return;
-    double *send_buf = getBufferToAvoidDebugVectorCrashing ( in );
+    double *send_buf = getPtr ( in );
     int *send_sizes = (int *)&(d_SendSizes[0]);
     int *send_disps = (int *)&(d_SendDisplacements[0]);
-    double *recv_buf = getBufferToAvoidDebugVectorCrashing ( out );
+    double *recv_buf = getPtr ( out );
     int *recv_sizes = (int *)&(d_ReceiveSizes[0]);
     int *recv_disps = (int *)&(d_ReceiveDisplacements[0]);
 
@@ -252,10 +270,10 @@ void CommunicationList::scatter_set( std::vector<double> &in , std::vector<doubl
 
   void CommunicationList::scatter_add( std::vector<double> &in , std::vector<double> &out ) const
   {
-    double *send_buf = getBufferToAvoidDebugVectorCrashing ( in );
+    double *send_buf = getPtr ( in );
     int *send_sizes = (int *)&(d_ReceiveSizes[0]);
     int *send_disps = (int *)&(d_ReceiveDisplacements[0]);
-    double *recv_buf = getBufferToAvoidDebugVectorCrashing ( out );
+    double *recv_buf = getPtr ( out );
     int *recv_sizes = (int *)&(d_SendSizes[0]);
     int *recv_disps = (int *)&(d_SendDisplacements[0]);
 

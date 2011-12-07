@@ -90,7 +90,7 @@ namespace Operator {
         return d_boundaryIds;
       }
 
-      std::vector<std::vector<unsigned int> > getDofIds() {
+      std::vector<std::vector<size_t> > getDofIds() {
         return d_dofIds;
       }
 
@@ -98,7 +98,7 @@ namespace Operator {
 
       std::vector<short int> d_boundaryIds;
 
-      std::vector<std::vector<unsigned int> > d_dofIds;
+      std::vector<std::vector<size_t> > d_dofIds;
 
       std::vector<std::vector<double> > d_dirichletValues1;
 

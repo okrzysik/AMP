@@ -48,7 +48,7 @@ namespace LinearAlgebra {
   {
     private:
       // This must be int instead of size_t to align with signed interfaces....
-      std::vector<int>            d_SubsetLocalIDToViewGlobalID;
+      std::vector<size_t>            d_SubsetLocalIDToViewGlobalID;
 
 
 
@@ -81,11 +81,11 @@ namespace LinearAlgebra {
       virtual size_t   getGlobalSize () const;
       virtual void     assemble () {}
 
-      virtual void     setValuesByLocalID ( int , int * , const double * );
-      virtual void     setLocalValuesByGlobalID ( int , int * , const double * );
-      virtual void     addValuesByLocalID ( int , int * , const double * );
-      virtual void     addLocalValuesByGlobalID ( int , int * , const double * );
-      virtual void     getLocalValuesByGlobalID ( int , int * , double * ) const ;
+      virtual void     setValuesByLocalID ( int , size_t * , const double * );
+      virtual void     setLocalValuesByGlobalID ( int , size_t * , const double * );
+      virtual void     addValuesByLocalID ( int , size_t * , const double * );
+      virtual void     addLocalValuesByGlobalID ( int , size_t * , const double * );
+      virtual void     getLocalValuesByGlobalID ( int , size_t * , double * ) const ;
   };
 
 

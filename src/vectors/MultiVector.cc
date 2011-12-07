@@ -544,8 +544,8 @@ Vector::shared_ptr MultiVector::cloneVector(const Variable::shared_ptr name) con
 }
 
 
-void  MultiVector::partitionValues ( int num , int *indices , const double *vals ,
-                        std::vector<std::vector<int> >    &out_indices ,
+void  MultiVector::partitionValues ( size_t num , size_t *indices , const double *vals ,
+                        std::vector<std::vector<size_t> >  &out_indices ,
                         std::vector<std::vector<double> >  &out_vals ,
                         const std::vector<size_t>    &offset_vec ,
                         std::vector<std::vector<size_t> >   *remap ) const
@@ -558,10 +558,10 @@ void  MultiVector::partitionValues ( int num , int *indices , const double *vals
       remap->resize ( offset_vec.size()-1 );
     }
 
-    for ( int i = 0 ; i != num ; i++ )
+    for ( size_t i = 0 ; i != num ; i++ )
     {
       std::vector<size_t>::const_iterator  lower_bound = std::lower_bound ( offset_vec.begin() , offset_vec.end() , indices[i] );
-      if ( indices[i] == (int)*lower_bound )  // Silly fence posts
+      if ( indices[i] == *lower_bound )  // Silly fence posts
       {
         lower_bound++;
       }
@@ -580,10 +580,10 @@ void  MultiVector::partitionValues ( int num , int *indices , const double *vals
       cur_spot[i] = 0;
     }
 
-    for ( int i = 0 ; i != num ; i++ )
+    for ( size_t i = 0 ; i != num ; i++ )
     {
       std::vector<size_t>::const_iterator  lower_bound = std::lower_bound ( offset_vec.begin() , offset_vec.end() , indices[i] );
-      if ( indices[i] == (int)*lower_bound )  // Silly fence posts
+      if ( indices[i] == *lower_bound )  // Silly fence posts
       {
         lower_bound++;
       }
@@ -600,10 +600,10 @@ void  MultiVector::partitionValues ( int num , int *indices , const double *vals
 }
 
 
-void MultiVector::setValuesByLocalID ( int num , int *indices , const double *in_vals )
+void MultiVector::setValuesByLocalID ( int num , size_t *indices , const double *in_vals )
 {
     INCREMENT_COUNT("Virtual");
-    std::vector<std::vector<int> >     ndxs;
+    std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
     partitionValues ( num , indices , in_vals , ndxs , vals , d_vLocalOffsets );
     for ( size_t i = 0 ; i != ndxs.size() ; i++ )
@@ -616,10 +616,10 @@ void MultiVector::setValuesByLocalID ( int num , int *indices , const double *in
 }
 
 
-void MultiVector::setLocalValuesByGlobalID ( int num , int *indices , const double *in_vals )
+void MultiVector::setLocalValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
 {
     INCREMENT_COUNT("Virtual");
-    std::vector<std::vector<int> >     ndxs;
+    std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
     partitionValues ( num , indices , in_vals , ndxs , vals , d_vGlobalOffsets );
     for ( size_t i = 0 ; i != ndxs.size() ; i++ )
@@ -632,10 +632,10 @@ void MultiVector::setLocalValuesByGlobalID ( int num , int *indices , const doub
 }
 
 
-void MultiVector::setValuesByGlobalID ( int num , int *indices , const double *in_vals )
+void MultiVector::setValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
 {
     INCREMENT_COUNT("Virtual");
-    std::vector<std::vector<int> >     ndxs;
+    std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
     partitionValues ( num , indices , in_vals , ndxs , vals , d_vGlobalOffsets );
     for ( size_t i = 0 ; i != ndxs.size() ; i++ )
@@ -648,10 +648,10 @@ void MultiVector::setValuesByGlobalID ( int num , int *indices , const double *i
 }
 
 
-void MultiVector::addValuesByLocalID ( int num , int *indices , const double *in_vals )
+void MultiVector::addValuesByLocalID ( int num , size_t *indices , const double *in_vals )
 {
     INCREMENT_COUNT("Virtual");
-    std::vector<std::vector<int> >     ndxs;
+    std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
     partitionValues ( num , indices , in_vals , ndxs , vals , d_vLocalOffsets );
     for ( size_t i = 0 ; i != ndxs.size() ; i++ )
@@ -664,10 +664,10 @@ void MultiVector::addValuesByLocalID ( int num , int *indices , const double *in
 }
 
 
-void MultiVector::addLocalValuesByGlobalID ( int num , int *indices , const double *in_vals )
+void MultiVector::addLocalValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
 {
     INCREMENT_COUNT("Virtual");
-    std::vector<std::vector<int> >     ndxs;
+    std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
     partitionValues ( num , indices , in_vals , ndxs , vals , d_vGlobalOffsets );
     for ( size_t i = 0 ; i != ndxs.size() ; i++ )
@@ -680,10 +680,10 @@ void MultiVector::addLocalValuesByGlobalID ( int num , int *indices , const doub
 }
 
 
-void MultiVector::addValuesByGlobalID ( int num , int *indices , const double *in_vals )
+void MultiVector::addValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
 {
     INCREMENT_COUNT("Virtual");
-    std::vector<std::vector<int> >     ndxs;
+    std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
     partitionValues ( num , indices , in_vals , ndxs , vals , d_vGlobalOffsets );
     for ( size_t i = 0 ; i != ndxs.size() ; i++ )
@@ -696,10 +696,10 @@ void MultiVector::addValuesByGlobalID ( int num , int *indices , const double *i
 }
 
 
-void MultiVector::getValuesByGlobalID ( int num , int *indices , double *out_vals ) const
+void MultiVector::getValuesByGlobalID ( int num , size_t *indices , double *out_vals ) const
 {
     INCREMENT_COUNT("Virtual");
-    std::vector<std::vector<int> >     ndxs;
+    std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
     std::vector<std::vector<size_t> >  remap;
     partitionValues ( num , indices , out_vals , ndxs , vals , d_vGlobalOffsets , &remap );
@@ -722,10 +722,10 @@ void MultiVector::getValuesByGlobalID ( int num , int *indices , double *out_val
 }
 
 
-void MultiVector::getLocalValuesByGlobalID ( int num , int *indices , double *out_vals ) const
+void MultiVector::getLocalValuesByGlobalID ( int num , size_t *indices , double *out_vals ) const
 {
     INCREMENT_COUNT("Virtual");
-    std::vector<std::vector<int> >     ndxs;
+    std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
     std::vector<std::vector<size_t> >  remap;
     partitionValues ( num , indices , out_vals , ndxs , vals , d_vGlobalOffsets , &remap );
@@ -748,10 +748,10 @@ void MultiVector::getLocalValuesByGlobalID ( int num , int *indices , double *ou
 }
 
 
-void MultiVector::getValuesByLocalID ( int num , int *indices , double *out_vals ) const
+void MultiVector::getValuesByLocalID ( int num , size_t *indices , double *out_vals ) const
 {
     INCREMENT_COUNT("Virtual");
-    std::vector<std::vector<int> >     ndxs;
+    std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
     std::vector<std::vector<size_t> >  remap;
     partitionValues ( num , indices , out_vals , ndxs , vals , d_vLocalOffsets , &remap );

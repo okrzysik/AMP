@@ -1,5 +1,4 @@
 #include "VectorSelector.h"
-#include "CommCollectVector.h"
 #include "utils/Utilities.h"
 
 namespace AMP {
@@ -27,21 +26,6 @@ namespace LinearAlgebra {
     if ( d_vBuffer )
       return shared_from_this();
     Vector *t = &(d_Engine->castTo<Vector>());
-    while ( ( t->isA<MultiVector>() ) || ( t->isA<CommCollectVector>() ) )
-    {
-      if ( t->isA<MultiVector>() )
-      {
-        if ( t->numberOfDataBlocks() > 1 )
-        {
-          AMP_ERROR( "Multiple root vectors found" );
-        }
-        t = t->castTo<MultiVector>().getVector(0).get();
-      }
-      if ( t->isA<CommCollectVector>() )
-      {
-        t = t->castTo<CommCollectVector>().getSmallCommVector().get();
-      }
-    }
     if ( t->isA<ManagedVector>() )
       return t->castTo<ManagedVector>().getRootVector();
     return Vector::shared_ptr();
@@ -190,7 +174,7 @@ namespace LinearAlgebra {
   }
 
   inline
-  void ManagedVector::setValuesByLocalID(int i, int *id , const double *val)
+  void ManagedVector::setValuesByLocalID(int i, size_t *id , const double *val)
   {
     INCREMENT_COUNT("Virtual");
     AMP_ASSERT ( *d_UpdateState != ADDING );
@@ -200,7 +184,7 @@ namespace LinearAlgebra {
   }
 
   inline
-  void ManagedVector::setLocalValuesByGlobalID(int i, int *id , const double *val)
+  void ManagedVector::setLocalValuesByGlobalID(int i, size_t *id , const double *val)
   {
     INCREMENT_COUNT("Virtual");
     AMP_ASSERT ( *d_UpdateState != ADDING );
@@ -210,7 +194,7 @@ namespace LinearAlgebra {
   }
 
   inline
-  void ManagedVector::addValuesByLocalID(int i, int *id , const double *val)
+  void ManagedVector::addValuesByLocalID(int i, size_t *id , const double *val)
   {
     INCREMENT_COUNT("Virtual");
     AMP_ASSERT ( *d_UpdateState != SETTING );
@@ -220,7 +204,7 @@ namespace LinearAlgebra {
   }
 
   inline
-  void ManagedVector::addLocalValuesByGlobalID(int i, int *id , const double *val)
+  void ManagedVector::addLocalValuesByGlobalID(int i, size_t *id , const double *val)
   {
     INCREMENT_COUNT("Virtual");
     AMP_ASSERT ( *d_UpdateState != SETTING );

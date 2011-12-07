@@ -625,14 +625,14 @@ namespace LinearAlgebra {
         * from 0.
         * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
         */
-      virtual void setValuesByLocalID ( int num , int *indices , const double *vals ) = 0;
+      virtual void setValuesByLocalID ( int num , size_t *indices , const double *vals ) = 0;
       /**
         * \brief Set a single value in the vector by local ID
         * \param[in] i  offset of value to set
         * \param[in] val the value to place in the vector
         * \details An alias for setValuesByLocalID ( 1 , &num , &val );
         */
-      void setValueByLocalID(int i, const double val);
+      void setValueByLocalID(size_t i, const double val);
 
       /**
         * \brief Set owned values using global identifier
@@ -642,14 +642,14 @@ namespace LinearAlgebra {
         *
         * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
         */
-      virtual void setLocalValuesByGlobalID ( int num , int *indices , const double *vals ) = 0;
+      virtual void setLocalValuesByGlobalID ( int num , size_t *indices , const double *vals ) = 0;
       /**
         * \brief Set a single owned value using global identifier
         * \param[in] i  offset of value to set
         * \param[in] val the value to place in the vector
         * \details An alias for setLocalValuesByGlobalID ( 1 , &i , &val );
         */
-      void setLocalValueByGlobalID(int i, const double val);
+      void setLocalValueByGlobalID(size_t i, const double val);
 
       /**
         * \brief Set owned or shared values using global identifier
@@ -660,7 +660,7 @@ namespace LinearAlgebra {
         * this function must sort the data by buffer before setting
         * values.
         */
-      virtual void setValuesByGlobalID ( int num , int *indices , const double *vals );
+      virtual void setValuesByGlobalID ( int num , size_t *indices , const double *vals );
 
       /**
         * \brief Set an owned or shared value using global identifier
@@ -668,7 +668,7 @@ namespace LinearAlgebra {
         * \param[in] val the value to place in the vector
         * \details  An alias for setValuesByGlobalID ( 1 , &i , &val )
         */
-      void setValueByGlobalID(int i, const double val);
+      void setValueByGlobalID(size_t i, const double val);
 
 
       /**
@@ -680,14 +680,14 @@ namespace LinearAlgebra {
         * from 0.
         * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} + \mathit{vals}_i \f$
         */
-      virtual void addValuesByLocalID ( int num , int *indices , const double *vals ) = 0;
+      virtual void addValuesByLocalID ( int num , size_t *indices , const double *vals ) = 0;
       /**
         * \brief Add a single value in the vector by local ID
         * \param[in] i  offset of value to set
         * \param[in] val the value to place in the vector
         * \details An alias for addValuesByLocalID ( 1 , &num , &val );
         */
-      void addValueByLocalID(int i, const double val);
+      void addValueByLocalID(size_t i, const double val);
 
       /**
         * \brief Add owned values using global identifier
@@ -697,14 +697,14 @@ namespace LinearAlgebra {
         *
         * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} + \mathit{vals}_i \f$
         */
-      virtual void addLocalValuesByGlobalID ( int num , int *indices , const double *vals ) = 0;
+      virtual void addLocalValuesByGlobalID ( int num , size_t *indices , const double *vals ) = 0;
       /**
         * \brief Add a single owned value using global identifier
         * \param[in] i  offset of value to set
         * \param[in] val the value to place in the vector
         * \details An alias for addLocalValuesByGlobalID ( 1 , &i , &val );
         */
-      void addLocalValueByGlobalID(int i, const double val);
+      void addLocalValueByGlobalID(size_t i, const double val);
 
       /**
         * \brief Add owned or shared values using global identifier
@@ -715,7 +715,7 @@ namespace LinearAlgebra {
         * this function must sort the data by buffer before setting
         * values.
         */
-      virtual void addValuesByGlobalID ( int num , int *indices , const double *vals );
+      virtual void addValuesByGlobalID ( int num , size_t *indices , const double *vals );
 
       /**
         * \brief Add an owned or shared value using global identifier
@@ -723,7 +723,7 @@ namespace LinearAlgebra {
         * \param[in] val the value to place in the vector
         * \details  An alias for setValuesByGlobalID ( 1 , &i , &val )
         */
-      void addValueByGlobalID(int i, const double val);
+      void addValueByGlobalID(size_t i, const double val);
 
       /**
         * \brief get ghosted values to add to off-proc elements
@@ -733,7 +733,7 @@ namespace LinearAlgebra {
         * \details This will get the ghosted updates this processor has made.  All indices are
         * from global 0.
         */
-      virtual void getGhostAddValuesByGlobalID ( int num , int *indices , double *vals ) const;
+      virtual void getGhostAddValuesByGlobalID ( int num , size_t *indices , double *vals ) const;
 
       /**
         * \brief get values in the vector by their local offset
@@ -743,7 +743,7 @@ namespace LinearAlgebra {
         * \details This will get the owned values for this core.  All indices are
         * from 0.
         */
-      virtual void getValuesByGlobalID ( int num , int *indices , double *vals ) const;
+      virtual void getValuesByGlobalID ( int num , size_t *indices , double *vals ) const;
 
       /**
         * \brief Return a value from the vector.
@@ -751,7 +751,7 @@ namespace LinearAlgebra {
         * \return The value stored at the index
         * \details This uses getValuesByGlobalID to get the value
         */
-      double getValueByGlobalID ( int i ) const;
+      double getValueByGlobalID ( size_t i ) const;
 
       /**
         * \brief Get local values in the vector by their global offset
@@ -760,7 +760,7 @@ namespace LinearAlgebra {
         * \param[out] vals the values to place in the vector
         * \details This will get any value owned by this core.
         */
-      virtual void getLocalValuesByGlobalID ( int num , int *indices , double *vals ) const = 0;
+      virtual void getLocalValuesByGlobalID ( int num , size_t *indices , double *vals ) const = 0;
 
       /**
         * \brief Return a local value from the vector.
@@ -768,7 +768,7 @@ namespace LinearAlgebra {
         * \return The value stored at the index
         * \details This uses getLocalValuesByGlobalID to get the value
         */
-      double getLocalValueByGlobalID ( int i ) const;
+      double getLocalValueByGlobalID ( size_t i ) const;
 
 
       /**
@@ -778,7 +778,7 @@ namespace LinearAlgebra {
         * \param[out] vals the values to place in the vector
         * \details This will get any value used by this core.
         */
-      virtual void getValuesByLocalID ( int num , int *indices , double *vals ) const;
+      virtual void getValuesByLocalID ( int num , size_t *indices , double *vals ) const;
 
       /**
         * \brief Return a local value from the vector.
@@ -786,7 +786,7 @@ namespace LinearAlgebra {
         * \return The value stored at the index
         * \details This uses getValuesByGlobalID to get the value
         */
-      double getValueByLocalID ( int i ) const;
+      double getValueByLocalID ( size_t i ) const;
 
       /**
         * \brief This method is used to implement the assemble interface

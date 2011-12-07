@@ -56,7 +56,7 @@ simpleDOFManager::simpleDOFManager( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP
 /****************************************************************
 * Get the entry indices of nodal values given a mesh element    *
 ****************************************************************/
-void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <unsigned int> &dofs, std::vector<unsigned int> which ) const
+void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <size_t> &dofs, std::vector<size_t> which ) const
 {
     std::vector<AMP::Mesh::MeshElement> elements;
     if ( obj.elementType() == d_type )
@@ -85,7 +85,7 @@ void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <
         }
     }
 }
-void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <unsigned int> &dofs ) const
+void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <size_t> &dofs ) const
 {
     dofs.resize(DOFsPerElement);
     size_t index = AMP::Utilities::findfirst(d_local_id,id);
@@ -268,7 +268,7 @@ AMP::LinearAlgebra::Matrix::shared_ptr simpleDOFManager::createMatrix(
     while ( cur_elem != end_elem) {
         AMP::Mesh::MeshElement obj = *cur_elem;
         // Get the result DOFs associated with the given element
-        std::vector<unsigned int> ids;
+        std::vector<size_t> ids;
         resultDOF->getDOFs(obj,ids);
         // Get the operand DOFs associated with the given element
         std::vector<size_t> row = operandDOF->getRowDOFs(obj);
@@ -303,7 +303,7 @@ AMP::LinearAlgebra::Matrix::shared_ptr simpleDOFManager::createMatrix(
     while ( cur_elem != end_elem) {
         AMP::Mesh::MeshElement obj = *cur_elem;
         // Get the result DOFs associated with the given element
-        std::vector<unsigned int> ids;
+        std::vector<size_t> ids;
         resultDOF->getDOFs(obj,ids);
         // Get the operand DOFs associated with the given element
         std::vector<size_t> row = operandDOF->getRowDOFs(obj);

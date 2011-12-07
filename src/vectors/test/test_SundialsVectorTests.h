@@ -101,7 +101,9 @@ class ConstSundialsVector : public SundialsTestHelper
           utils->passes ( "Set vector to 0" );
 
         N_VConst ( 1. , vec_a );
-        if ( ( vectora->maxNorm() == 1. ) && ( vectora->L1Norm() == (double)vectora->getGlobalSize() ) )
+        maxNorm = vectora->maxNorm();
+        double L1Norm = vectora->L1Norm();
+        if ( ( maxNorm == 1. ) && ( L1Norm == (double)vectora->getGlobalSize() ) )
           utils->passes ( "Set vector to 1" );
         else
           utils->failure ( "Failed to set to 1" );

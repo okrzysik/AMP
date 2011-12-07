@@ -22,19 +22,30 @@ RNG::shared_ptr  Vector::d_DefaultRNG;
 
 void Vector::selectInto ( const VectorSelector &s , Vector::shared_ptr retVal )
 {
-    if ( s.isSelected ( shared_from_this () ) )
-    {
-      retVal->castTo<MultiVector> ().addVector ( s.getSubsetter()->subset ( shared_from_this () ) );
+    if ( s.isSelected ( shared_from_this () ) ) {
+        // Subset the vector
+        Vector::shared_ptr subvector = s.getSubsetter()->subset( shared_from_this() );
+        retVal->castTo<MultiVector>().addVector ( subvector );
+        // Check the global size of the new vector to make sure it is <= the current size
+        size_t N1 = this->getGlobalSize();
+        size_t N2 = subvector->getGlobalSize();
+        AMP_ASSERT(N2<=N1);
     }
 }
 
 
 Vector::shared_ptr  Vector::select ( const VectorSelector &s , const std::string &name )
 {
+    // Create a new multivector to hold the subset
     Vector::shared_ptr  retVal = MultiVector::create ( name , getComm() );
+    // Add the subset vector
     selectInto ( s , retVal );
     if ( retVal->numberOfDataBlocks() )
       return retVal;
+    // Check that the global size of the new vector is <= the current size
+    size_t N1 = this->getGlobalSize();
+    size_t N2 = retVal->getGlobalSize();
+    AMP_ASSERT(N2<=N1);
     return Vector::shared_ptr ();
 }
 
@@ -279,15 +290,15 @@ void Vector::makeConsistent ( ScatterType  t )
 }
 
 
-void Vector::setValuesByGlobalID ( int numVals , int *ndx , const double *vals )
+void Vector::setValuesByGlobalID ( int numVals , size_t *ndx , const double *vals )
 {
     INCREMENT_COUNT("Virtual");
     AMP_ASSERT ( *d_UpdateState != ADDING );
     *d_UpdateState = SETTING;
-    for ( unsigned int i = 0 ; i != (unsigned int) numVals ; i++ )
+    for (int i=0; i<numVals; i++)
     {
-      if ( ( ((unsigned int) ndx[i]) < getLocalStartID() ) ||
-           ( ((unsigned int) ndx[i]) >= (getLocalStartID() + getLocalMaxID()) ) )
+      if ( ( ndx[i] < getLocalStartID() ) ||
+           ( ndx[i] >= (getLocalStartID() + getLocalMaxID()) ) )
       {
         (*d_Ghosts)[d_CommList->getLocalGhostID ( ndx[i] )] = vals[i];
       }
@@ -299,15 +310,15 @@ void Vector::setValuesByGlobalID ( int numVals , int *ndx , const double *vals )
 }
 
 
-void Vector::addValuesByGlobalID ( int numVals , int *ndx , const double *vals )
+void Vector::addValuesByGlobalID ( int numVals , size_t *ndx , const double *vals )
 {
     INCREMENT_COUNT("Virtual");
     AMP_ASSERT ( *d_UpdateState != SETTING );
     *d_UpdateState = ADDING;
-    for ( unsigned int i = 0 ; i != (unsigned int) numVals ; i++ )
+    for (int i=0; i<numVals; i++)
     {
-      if ( ( ((unsigned int) ndx[i]) < getLocalStartID() ) ||
-           ( ((unsigned int) ndx[i]) >= (getLocalStartID() + getLocalMaxID()) ) )
+      if ( ( ndx[i] < getLocalStartID() ) ||
+           ( ndx[i] >= (getLocalStartID() + getLocalMaxID()) ) )
       {
         (*d_AddBuffer)[d_CommList->getLocalGhostID ( ndx[i] )] += vals[i];
       }
@@ -319,18 +330,18 @@ void Vector::addValuesByGlobalID ( int numVals , int *ndx , const double *vals )
 }
 
 
-void Vector::getValuesByLocalID ( int num , int *ndx , double *vals ) const
+void Vector::getValuesByLocalID ( int num , size_t *ndx , double *vals ) const
 {
     INCREMENT_COUNT("Virtual");
     for ( int i = 0 ; i != num ; i++ )
     {
-      int block_number = 0;
-      int offset = ndx[i];
-      while ( offset >= (int)sizeOfDataBlock ( block_number ) )
+      size_t block_number = 0;
+      size_t offset = ndx[i];
+      while ( offset >= sizeOfDataBlock( block_number ) )
       {
-        offset -= (int)sizeOfDataBlock ( block_number );
+        offset -= sizeOfDataBlock( block_number );
         block_number++;
-        if ( block_number >= (int)numberOfDataBlocks() )
+        if ( block_number >= numberOfDataBlocks() )
         {
           AMP_ERROR( "Bad local id!" );
         }
@@ -340,13 +351,13 @@ void Vector::getValuesByLocalID ( int num , int *ndx , double *vals ) const
 }
 
 
-void Vector::getValuesByGlobalID ( int numVals , int *ndx , double *vals ) const
+void Vector::getValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const
 {
     INCREMENT_COUNT("Virtual");
-    for ( unsigned int i = 0 ; i != (unsigned int) numVals ; i++ )
+    for (int i=0; i<numVals; i++)
     {
-      if ( ( ((unsigned int) ndx[i]) < getLocalStartID() ) ||
-           ( ((unsigned int) ndx[i]) >= (getLocalStartID() + getLocalMaxID()) ) )
+      if ( ( ndx[i] < getLocalStartID() ) ||
+           ( ndx[i] >= (getLocalStartID() + getLocalMaxID()) ) )
       {
         vals[i] = (*d_Ghosts)[d_CommList->getLocalGhostID ( ndx[i] )] +
                   (*d_AddBuffer)[d_CommList->getLocalGhostID ( ndx[i] )];
@@ -359,13 +370,13 @@ void Vector::getValuesByGlobalID ( int numVals , int *ndx , double *vals ) const
 }
 
 
-void Vector::getGhostAddValuesByGlobalID ( int numVals , int *ndx , double *vals ) const
+void Vector::getGhostAddValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const
 {
     INCREMENT_COUNT("Virtual");
-    for ( unsigned int i = 0 ; i != (unsigned int) numVals ; i++ )
+    for (int i=0; i<numVals; i++)
     {
-      if ( ( ((unsigned int) ndx[i]) < getLocalStartID() ) ||
-           ( ((unsigned int) ndx[i]) >= (getLocalStartID() + getLocalMaxID()) ) )
+      if ( ( ndx[i] < getLocalStartID() ) ||
+           ( ndx[i] >= (getLocalStartID() + getLocalMaxID()) ) )
       {
         vals[i] = (*d_AddBuffer)[d_CommList->getLocalGhostID ( ndx[i] )];
       }
@@ -399,13 +410,10 @@ void  Vector::dumpOwnedData ( std::ostream &out , size_t GIDoffset , size_t LIDo
 void  Vector::dumpGhostedData ( std::ostream &out , size_t offset ) const
 {
     if ( !getCommunicationList() ) return;
-    const std::vector<unsigned int> &ghosts = getCommunicationList()->getGhostIDList();
-    std::vector<unsigned int>::const_iterator curGhost = ghosts.begin();
+    const std::vector<size_t> &ghosts = getCommunicationList()->getGhostIDList();
     std::vector<double>::iterator curVal = d_Ghosts->begin();
-    while ( curVal != d_Ghosts->end() )
-    {
-      out << "  GID: " << (*curGhost + offset ) << "  Value: " << (*curVal) << "\n";
-      curGhost++;
+    for (size_t i=0; i<ghosts.size(); i++) {
+      out << "  GID: " << (ghosts[i] + offset ) << "  Value: " << (*curVal) << "\n";
       curVal++;
     }
 }

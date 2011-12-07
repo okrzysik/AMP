@@ -202,43 +202,43 @@ namespace LinearAlgebra {
   }
 
   inline
-  void  Vector::setValueByLocalID(int i, const double val)
+  void  Vector::setValueByLocalID(size_t i, const double val)
   {
     setValuesByLocalID ( 1 , &i , &val );
   }
 
   inline
-  void  Vector::setLocalValueByGlobalID(int i, const double val)
+  void  Vector::setLocalValueByGlobalID(size_t i, const double val)
   {
     setLocalValuesByGlobalID ( 1 , &i , &val );
   }
 
   inline
-  void  Vector::setValueByGlobalID(int i, const double val)
+  void  Vector::setValueByGlobalID(size_t i, const double val)
   {
     setValuesByGlobalID ( 1 , &i , &val );
   }
 
   inline
-  void  Vector::addValueByLocalID(int i, const double val)
+  void  Vector::addValueByLocalID(size_t i, const double val)
   {
     addValuesByLocalID ( 1 , &i , &val );
   }
 
   inline
-  void  Vector::addLocalValueByGlobalID(int i, const double val)
+  void  Vector::addLocalValueByGlobalID(size_t i, const double val)
   {
     addLocalValuesByGlobalID ( 1 , &i , &val );
   }
 
   inline
-  void  Vector::addValueByGlobalID(int i, const double val)
+  void  Vector::addValueByGlobalID(size_t i, const double val)
   {
     addValuesByGlobalID ( 1 , &i , &val );
   }
 
   inline
-  double  Vector::getValueByGlobalID ( int i ) const
+  double  Vector::getValueByGlobalID ( size_t i ) const
   {
     double ans;
     getValuesByGlobalID ( 1 , &i , &ans );
@@ -246,7 +246,7 @@ namespace LinearAlgebra {
   }
 
   inline
-  double Vector::getLocalValueByGlobalID ( int i ) const
+  double Vector::getLocalValueByGlobalID ( size_t i ) const
   {
     double ans;
     getLocalValuesByGlobalID ( 1 , &i , &ans );
@@ -254,7 +254,7 @@ namespace LinearAlgebra {
   }
 
   inline
-  double Vector::getValueByLocalID ( int ndx ) const
+  double Vector::getValueByLocalID ( size_t ndx ) const
   {
     double ans;
     getValuesByLocalID ( 1 , &ndx , &ans );
