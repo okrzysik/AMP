@@ -8,7 +8,6 @@ namespace AMP {
         PelletStackMechanicsSolverParameters> params) : SolverStrategy(params) {
       d_columnSolver = params->d_columnSolver;
       d_pelletStackOp = boost::dynamic_pointer_cast<AMP::Operator::PelletStackOperator>(d_pOperator);
-      d_fCopy.reset();
     }
 
     void PelletStackMechanicsSolver :: resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params) {
@@ -19,12 +18,12 @@ namespace AMP {
         boost::shared_ptr<AMP::LinearAlgebra::Vector> u) {
       boost::shared_ptr<AMP::LinearAlgebra::Vector> fInternal = f;
       if(d_pelletStackOp->useScaling()) {
-        if(d_fCopy == NULL) {
-          d_fCopy = f->cloneVector();
+        if(d_fbuffer1 == NULL) {
+          d_fbuffer1 = f->cloneVector();
         }
-        d_fCopy->copyVector(f);
-        d_pelletStackOp->applyUnscaling(d_fCopy);
-        fInternal = d_fCopy;
+        d_fbuffer1->copyVector(f);
+        d_pelletStackOp->applyUnscaling(d_fbuffer1);
+        fInternal = d_fbuffer1;
       }
       if(d_pelletStackOp->useSerial()) {
         solveSerial(fInternal, u);
@@ -35,7 +34,9 @@ namespace AMP {
 
     void PelletStackMechanicsSolver :: solveSerial(boost::shared_ptr<AMP::LinearAlgebra::Vector> f, 
         boost::shared_ptr<AMP::LinearAlgebra::Vector> u) {
-      AMP::LinearAlgebra::Vector::shared_ptr fCopy = f->cloneVector();
+      if(d_fbuffer2 == NULL) {
+        d_fbuffer2 = f->cloneVector();
+      }
 
       unsigned int totalNumberOfPellets = d_pelletStackOp->getTotalNumberOfPellets();
 
@@ -54,14 +55,14 @@ namespace AMP {
 
       for(unsigned int pellId = 2; pellId <= totalNumberOfPellets; pellId++) {
         d_pelletStackOp->setCurrentPellet(pellId);
-        d_pelletStackOp->apply(f, u, fCopy);
+        d_pelletStackOp->apply(f, u, d_fbuffer2);
         if(d_pelletStackOp->hasPellet(pellId)) {
           boost::shared_ptr<AMP::Solver::SolverStrategy> currSolver = d_columnSolver->getSolver(locPellIdx);
           boost::shared_ptr<AMP::Operator::Operator> currOp = currSolver->getOperator();
           AMP::LinearAlgebra::Variable::shared_ptr inputVar = currOp->getInputVariable();
           AMP::LinearAlgebra::Variable::shared_ptr outputVar = currOp->getOutputVariable();
           AMP::LinearAlgebra::Vector::shared_ptr subUvec = u->subsetVectorForVariable(inputVar);
-          AMP::LinearAlgebra::Vector::shared_ptr subFvec = fCopy->subsetVectorForVariable(outputVar);
+          AMP::LinearAlgebra::Vector::shared_ptr subFvec = d_fbuffer2->subsetVectorForVariable(outputVar);
           currSolver->solve(subFvec, subUvec);
           locPellIdx++;
         }
@@ -76,9 +77,11 @@ namespace AMP {
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         d_pelletStackOp->apply(nullVec, nullVec, u);
       } else {
-        AMP::LinearAlgebra::Vector::shared_ptr fCopy = f->cloneVector();
-        d_pelletStackOp->apply(f, u, fCopy);
-        d_columnSolver->solve(fCopy, u);
+        if(d_fbuffer2 == NULL) {
+          d_fbuffer2 = f->cloneVector();
+        }
+        d_pelletStackOp->apply(f, u, d_fbuffer2);
+        d_columnSolver->solve(d_fbuffer2, u);
       }
     }
 
