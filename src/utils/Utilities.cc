@@ -196,5 +196,19 @@ void Utilities::abort(const std::string &message,
 }
 
 
+// Function to create a 32-bit hash key from a character array
+unsigned int Utilities::hash_char(const char* name)
+{
+    AMP_INSIST(sizeof(unsigned int)==4,"Need unsigned 32-bit int");
+    unsigned int hash = 5381;
+    unsigned char c;
+    while((c = *name++)) {
+        // hash = hash * 33 ^ c
+        hash = ((hash << 5) + hash) ^ c;
+    }
+    return hash;
+}
+
+
 }
 
