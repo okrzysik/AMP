@@ -143,13 +143,12 @@ min_max_struct<double>  computeExtremeRadii ( typename ADAPTER::shared_ptr adapt
 
     // compute the min radius (i.e. inside of cladding or hole in pellet)
     if( fabs(centerX)<1e-8 && fabs(centerY)<1e-8 ) {
-      min_max_struct<double>  local , retval;
       local = MeshAccumulate<min_max_radius<typename ADAPTER::NodeIterator> > ( adapter->beginNode() , adapter->endNode() );
-      adapter->getComm().minReduce((double*)&local.min,(double*)&retval.min,1);
     } else {
       // I don't know - hope we don't need it.
-      retval.min = 0.;
+      local.min = 0.;
     }
+    adapter->getComm().minReduce((double*)&local.min,(double*)&retval.min,1);
     return retval;
 }
 
