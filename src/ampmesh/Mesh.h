@@ -222,7 +222,7 @@ public:
 
 
     //! Get the largest geometric type in the mesh
-    virtual AMP_MPI getComm() const { return comm; }
+    virtual AMP_MPI getComm() const { return d_comm; }
 
 
     //! Get the mesh ID
@@ -272,7 +272,7 @@ protected:
     short int PhysicalDim;
 
     //! The communicator over which the mesh is stored
-    AMP_MPI comm;
+    AMP_MPI d_comm;
 
     //! A pointer to an AMP database containing the mesh info
     boost::shared_ptr<AMP::Database>  d_db;

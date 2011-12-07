@@ -68,35 +68,13 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ):
     for (size_t i=0; i<meshSizes.size(); i++)
         totalMeshSize += meshSizes[i];
     // Determine the load balancing we want to use and create the communicator for the parameters for each mesh
-    int method = 1;
-    if ( method == 1 ) {
-        // This is the simplist load balancing, all meshes exist on the same communicator
-        // This is equivalant to the old DomainDecomposition=0
-        for (size_t i=0; i<meshParameters.size(); i++)
-            meshParameters[i]->setComm(comm);
-    } else if ( method == 2 ) {
-        // This tries not mak each comm as small as possible while balancing the elements.  
-        // No communicators may overlap, and only a simple load balancing scheme is used.
-        // This is similar to the old DomainDecomposition=1, but does NOT guarantee that a
-        // processor contains only one mesh.
-        // First get the ~ number of processors needed for each mesh
-        std::vector<double> N_procs(meshParameters.size(),0);
-        for (size_t i=0; i<meshSizes.size(); i++)
-            N_procs[i] = ((double)meshSizes[i])/((double)totalMeshSize)*((double)comm.getSize());
-        // Group the meshes into communicator groups
-        std::vector<int> group(meshParameters.size(),-1);
-        std::vector<int> commSize(0);
-        if ( vecmin(N_procs)>=0.5 && comm.getSize()>=(int)meshSizes.size() ) {
-            // We have enough processors for each mesh to have a seperate group 
-            AMP_ERROR("Not finished");
-        } else {
-            // We need to combine some processors into larger groups for their communicators
-            AMP_ERROR("Not finished");
-        }
-        AMP_ERROR("Not finished");
-    } else {
-        AMP_ERROR("Unknown load balancer");
-    }
+    std::vector<double> weights(meshParameters.size(),0);
+    for (size_t i=0; i<meshSizes.size(); i++)
+        weights[i] = ((double)meshSizes[i])/((double)totalMeshSize);
+    std::vector<AMP_MPI> comms = loadBalancer( weights, 1.2 );
+    //std::vector<AMP_MPI> comms = loadBalancer( weights, 0.5 );
+    for (size_t i=0; i<meshParameters.size(); i++)
+        meshParameters[i]->setComm(comms[i]);
     // Create the meshes
     d_meshes = std::vector<AMP::Mesh::Mesh::shared_ptr>(meshParameters.size());
     for (size_t i=0; i<meshParameters.size(); i++)
@@ -362,7 +340,7 @@ void MultiMesh::displaceMesh( std::vector<double> x_in )
     // Check x
     AMP_INSIST((short int)x_in.size()==PhysicalDim,"Displacement vector size should match PhysicalDim");
     std::vector<double> x = x_in;
-    comm.minReduce(&x[0],x.size());
+    d_comm.minReduce(&x[0],x.size());
     for (size_t i=0; i<x.size(); i++)
         AMP_INSIST(fabs(x[i]-x_in[i])<1e-12,"x does not match on all processors");
     // Displace the meshes
@@ -517,6 +495,42 @@ static void replaceText( boost::shared_ptr<AMP::Database>& database, std::string
                 AMP_ERROR("Unknown key type");
         }
     }
+}
+
+
+/********************************************************
+* Function to create the sub-communicators              *
+********************************************************/
+std::vector<AMP_MPI> MultiMesh::loadBalancer( std::vector<double> &weights_in, double factor)
+{
+    if ( weights_in.size()<=1 || factor>1.0 )
+        return std::vector<AMP_MPI>(weights_in.size(),d_comm);
+    // Get the relative weights (sum to 1.0)
+    std::vector<double> weights = weights_in;
+    double sum_weights = 0.0;
+    for (size_t i=0; i<weights.size(); i++)
+        sum_weights += weights[i];
+    for (size_t i=0; i<weights.size(); i++)
+        weights[i] /= sum_weights;
+    // Allocate space for the comms
+    std::vector<AMP_MPI> comms(weights.size(),AMP_MPI(AMP_COMM_NULL));
+    // Find the smallest and largest weight
+    double min_weight = 1.0;
+    double max_weight = 1.0;
+    for (size_t i=0; i<weights.size(); i++) {
+        if ( weights[i] < min_weight )
+            min_weight = weights[i];
+        if ( weights[i] > max_weight )
+            max_weight = weights[i];
+    }
+    if ( min_weight < factor*max_weight ) {
+        // One (or more) of the groups is less than the tolerance.  Combine it with another group
+        // and compute the load balance recursively
+        AMP_ERROR("Not finished");
+    } else {
+        AMP_ERROR("Not finished");
+    }
+    return comms;
 }
 
 

@@ -26,9 +26,9 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
 {
     // Check for valid inputs
     AMP_INSIST(params.get(),"Params must not be null");
-    AMP_INSIST(comm!=AMP_MPI(AMP_COMM_NULL),"Communicator must be set");
+    AMP_INSIST(d_comm!=AMP_MPI(AMP_COMM_NULL),"Communicator must be set");
     // Intialize libMesh (this needs to be moved out of AMPManager)
-    libmeshInit = boost::shared_ptr<initializeLibMesh>(new initializeLibMesh(comm));
+    libmeshInit = boost::shared_ptr<initializeLibMesh>(new initializeLibMesh(d_comm));
     // Load the mesh
     if ( d_db.get() ) {
         // Database exists
@@ -112,8 +112,8 @@ Mesh libMesh::copy() const
 void libMesh::initialize()
 {
     // Verify libmesh's rank and size agrees with the rank and size of the comm of the mesh
-    AMP_INSIST((int)d_libMesh->processor_id()==comm.getRank(),"rank of the mesh does not agree with libmesh");
-    AMP_INSIST((int)d_libMesh->n_processors()==comm.getSize(),"size of the mesh does not agree with libmesh");
+    AMP_INSIST((int)d_libMesh->processor_id()==d_comm.getRank(),"rank of the mesh does not agree with libmesh");
+    AMP_INSIST((int)d_libMesh->n_processors()==d_comm.getSize(),"size of the mesh does not agree with libmesh");
     // Count the elements 
     n_local = std::vector<size_t>(PhysicalDim+1,0);
     n_global = std::vector<size_t>(PhysicalDim+1,0);
@@ -185,7 +185,7 @@ void libMesh::initialize()
     ::Mesh::element_iterator elem_pos = d_libMesh->local_elements_begin();
     ::Mesh::element_iterator elem_end = d_libMesh->local_elements_end();
     std::vector< std::set<unsigned int> > tmpNeighborNodes(n_local[0]);
-    int rank = comm.getRank();
+    int rank = d_comm.getRank();
     while ( elem_pos != elem_end ) {
         ::Elem *elem = elem_pos.operator*();
         for (i=0; i<elem->n_nodes(); i++) {
@@ -389,7 +389,7 @@ void libMesh::displaceMesh( std::vector<double> x_in )
     // Check x
     AMP_INSIST((short int)x_in.size()==PhysicalDim,"Displacement vector size should match PhysicalDim");
     std::vector<double> x = x_in;
-    comm.minReduce(&x[0],x.size());
+    d_comm.minReduce(&x[0],x.size());
     for (size_t i=0; i<x.size(); i++)
         AMP_INSIST(fabs(x[i]-x_in[i])<1e-12,"x does not match on all processors");
     // Move the mesh

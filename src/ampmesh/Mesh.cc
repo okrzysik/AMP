@@ -20,9 +20,9 @@ Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
     AMP_ASSERT(sizeof(MeshElementID)==16);
     params = params_in;
     GeomDim = null;
-    comm = params->comm;
+    d_comm = params->comm;
     d_db = params->d_db;
-    AMP_ASSERT(comm!=AMP_MPI(AMP_COMM_NULL));
+    AMP_ASSERT(d_comm!=AMP_MPI(AMP_COMM_NULL));
     setMeshID();
     d_name = "NULL";
 }
@@ -126,14 +126,14 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 ********************************************************/
 void Mesh::setMeshID( )
 {
-    if ( comm.getRank()==0 ) {
+    if ( d_comm.getRank()==0 ) {
         // Root will create the meshID
         AMP_MPI globalComm(AMP_COMM_WORLD);
         d_meshID = MeshID(globalComm.getRank(),nextLocalMeshID);
         nextLocalMeshID++;
     }
     // Broadcast the meshID to all processors
-    d_meshID = comm.bcast(d_meshID,0);
+    d_meshID = d_comm.bcast(d_meshID,0);
 }
 
 

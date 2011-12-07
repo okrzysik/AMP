@@ -140,8 +140,28 @@ private:
     //! Function to create the databases for the meshes within the multimesh
     static std::vector<boost::shared_ptr<AMP::Database> >  createDatabases(boost::shared_ptr<AMP::Database> database);
 
+    /**
+     * \brief    A function to compute the comms given a weight
+     * \details  This function computes the sub communicators given the weights 
+     *   for each submesh.  Note that this function requires global communication
+     *   on the current comm.
+     * \param weights   Standard vector with the relative weights for each group
+     *                  Note: the weights do not need to be normalized, 
+     *                  but need to be the same on all processors.
+     * \param factor    Load balance tolerance.  This determines the relative 
+     *                  tolerance allowed in order to seperate the comms.
+     *                  A value of 0.0 means we do not care about an even load balance
+     *                  and want seperate comms for each value.
+     *                  A value of 1.0 means we require perfect balancing.  This often
+     *                  requires that all meshes share the same comm.  A value > 0 will 
+     *                  force all meshes to share the same comm.
+     *                  A default value of 0.5 is recommended for most purposes.
+     */
+    std::vector<AMP_MPI> loadBalancer( std::vector<double> &weights, double factor=0.5 );
+
     //! A list of all meshes in the multimesh
     std::vector<AMP::Mesh::Mesh::shared_ptr> d_meshes;
+
 
 };
 
