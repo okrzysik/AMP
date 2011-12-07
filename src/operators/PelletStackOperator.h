@@ -35,7 +35,18 @@ namespace AMP {
 
         AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
 
+        void setLocalMeshes(std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> inp);
+
+        void setLocalPelletIds(std::vector<unsigned int> inp);
+
       protected:
+        void applySerial(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
+            AMP::LinearAlgebra::Vector::shared_ptr  &r);
+
+        void applyOnlyZcorrection(AMP::LinearAlgebra::Vector::shared_ptr &r);
+
+        void applyXYZcorrection(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
+            AMP::LinearAlgebra::Vector::shared_ptr  &r);
 
         unsigned int d_totalNumberOfPellets;
         unsigned int d_currentPellet;
@@ -43,6 +54,10 @@ namespace AMP {
         bool d_onlyZcorrection;
         bool d_useScaling;
         double d_scalingFactor;
+        short int d_masterId;
+        short int d_slaveId;
+        std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> d_meshes;
+        std::vector<unsigned int> d_pelletIds;
 
     };
 

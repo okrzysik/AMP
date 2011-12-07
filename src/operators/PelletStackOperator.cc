@@ -9,6 +9,8 @@ namespace AMP {
         d_totalNumberOfPellets = (params->d_db)->getInteger("TOTAL_NUMBER_OF_PELLETS");
         d_useSerial = (params->d_db)->getBool("USE_SERIAL");
         d_onlyZcorrection = (params->d_db)->getBool("ONLY_Z_CORRECTION");
+        d_masterId = (params->d_db)->getInteger("MASTER");
+        d_slaveId = (params->d_db)->getInteger("SLAVE");
         if((params->d_db)->keyExists("SCALING_FACTOR")) {
           d_useScaling = true;
           d_scalingFactor = (params->d_db)->getDouble("SCALING_FACTOR");
@@ -38,11 +40,16 @@ namespace AMP {
       return d_totalNumberOfPellets;
     }
 
-    bool PelletStackOperator :: hasPellet(unsigned int pellId) {
-      return true;
+    void PelletStackOperator :: setLocalMeshes(std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> inp) {
+      d_meshes = inp;
     }
 
-    void PelletStackOperator :: applyUnscaling(AMP::LinearAlgebra::Vector::shared_ptr f) {
+    void PelletStackOperator :: setLocalPelletIds(std::vector<unsigned int> inp) {
+      d_pelletIds = inp;
+    }
+
+    bool PelletStackOperator :: hasPellet(unsigned int pellId) {
+      return ( find(d_pelletIds.begin(), d_pelletIds.end(), pellId) != d_pelletIds.end() );
     }
 
     AMP::LinearAlgebra::Variable::shared_ptr PelletStackOperator :: getOutputVariable() {
@@ -58,6 +65,27 @@ namespace AMP {
     void PelletStackOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
         const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
         const double a, const double b) {
+      if(d_useSerial) {
+        applySerial(f, u, r);
+      } else if(d_onlyZcorrection) {
+        applyOnlyZcorrection(r);
+      } else {
+        applyXYZcorrection(f, u, r);
+      }
+    }
+
+    void PelletStackOperator :: applyUnscaling(AMP::LinearAlgebra::Vector::shared_ptr f) {
+    }
+
+    void PelletStackOperator :: applySerial(const AMP::LinearAlgebra::Vector::shared_ptr &f,
+        const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r) {
+    }
+
+    void PelletStackOperator :: applyOnlyZcorrection(AMP::LinearAlgebra::Vector::shared_ptr &r) {
+    }
+
+    void PelletStackOperator :: applyXYZcorrection(const AMP::LinearAlgebra::Vector::shared_ptr &f,
+        const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r) {
     }
 
   }
