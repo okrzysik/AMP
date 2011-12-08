@@ -24,7 +24,8 @@ public:
     }
 
     static AMP::LinearAlgebra::Vector::shared_ptr getVector() {
-        return T::getVector()->cloneVector();
+        AMP::LinearAlgebra::Vector::shared_ptr vec = T::getVector();
+        return vec->cloneVector();
     }
 };
 
