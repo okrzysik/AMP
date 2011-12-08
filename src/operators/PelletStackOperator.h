@@ -41,7 +41,7 @@ namespace AMP {
         void applySerial(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
             AMP::LinearAlgebra::Vector::shared_ptr  &r);
 
-        void applyOnlyZcorrection(AMP::LinearAlgebra::Vector::shared_ptr &r);
+        void applyOnlyZcorrection(AMP::LinearAlgebra::Vector::shared_ptr &u);
 
         void applyXYZcorrection(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
             AMP::LinearAlgebra::Vector::shared_ptr  &r);

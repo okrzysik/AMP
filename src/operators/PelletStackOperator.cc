@@ -71,13 +71,30 @@ namespace AMP {
     }
 
     void PelletStackOperator :: applyUnscaling(AMP::LinearAlgebra::Vector::shared_ptr f) {
+      for(size_t i = 0; i < d_pelletIds.size(); i++) {
+        AMP::LinearAlgebra::Variable::shared_ptr currVar = d_rhsVar->getVariable(i);
+        AMP::LinearAlgebra::Vector::shared_ptr subF = f->subsetVectorForVariable(currVar);
+        AMP::Mesh::DOFMap::shared_ptr dof_map = d_meshes[i]->getDOFMap(currVar);
+        AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator bnd = d_meshes[i]->beginOwnedBoundary( d_slaveId );
+        AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator end_bnd = d_meshes[i]->endOwnedBoundary( d_slaveId );
+        std::vector<unsigned int> dofIds(3);
+        dofIds[0] = 0; dofIds[1] = 1; dofIds[2] = 2;
+        for( ; bnd != end_bnd; ++bnd) {
+          std::vector<unsigned int> bndGlobalIds;
+          dof_map->getDOFs(*bnd, bndGlobalIds, dofIds);
+          for(unsigned int j = 0; j < bndGlobalIds.size(); j++) {
+            double val = subF->getLocalValueByGlobalID( bndGlobalIds[j] );
+            subF->setLocalValueByGlobalID(bndGlobalIds[j], val/d_scalingFactor);
+          }//end for j
+        }//end for bnd
+      }//end for i
     }
 
     void PelletStackOperator :: applySerial(const AMP::LinearAlgebra::Vector::shared_ptr &f,
         const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r) {
     }
 
-    void PelletStackOperator :: applyOnlyZcorrection(AMP::LinearAlgebra::Vector::shared_ptr &r) {
+    void PelletStackOperator :: applyOnlyZcorrection(AMP::LinearAlgebra::Vector::shared_ptr &u) {
     }
 
     void PelletStackOperator :: applyXYZcorrection(const AMP::LinearAlgebra::Vector::shared_ptr &f,
