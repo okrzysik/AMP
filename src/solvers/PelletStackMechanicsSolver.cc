@@ -42,7 +42,7 @@ namespace AMP {
 
       unsigned int locPellIdx = 0;
 
-      if(d_pelletStackOp->hasPellet(1)) {
+      if(d_pelletStackOp->hasPellet(0)) {
         boost::shared_ptr<AMP::Solver::SolverStrategy> currSolver = d_columnSolver->getSolver(locPellIdx);
         boost::shared_ptr<AMP::Operator::Operator> currOp = currSolver->getOperator();
         AMP::LinearAlgebra::Variable::shared_ptr inputVar = currOp->getInputVariable();
@@ -53,7 +53,7 @@ namespace AMP {
         locPellIdx++;
       }
 
-      for(unsigned int pellId = 2; pellId <= totalNumberOfPellets; pellId++) {
+      for(unsigned int pellId = 1; pellId < totalNumberOfPellets; pellId++) {
         d_pelletStackOp->setCurrentPellet(pellId);
         d_pelletStackOp->apply(f, u, d_fbuffer2);
         if(d_pelletStackOp->hasPellet(pellId)) {
