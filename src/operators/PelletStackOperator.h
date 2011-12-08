@@ -37,6 +37,8 @@ namespace AMP {
 
         void setVariables(AMP::LinearAlgebra::Variable::shared_ptr rhs, AMP::LinearAlgebra::Variable::shared_ptr sol);
 
+        void setPelletStackComm(AMP_MPI comm);
+
       protected:
         void applySerial(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
             AMP::LinearAlgebra::Vector::shared_ptr  &r);
@@ -58,6 +60,7 @@ namespace AMP {
         std::vector<unsigned int> d_pelletIds;
         boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_rhsVar;
         boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_solVar;
+        AMP_MPI d_pelletStackComm;
     };
 
   }
