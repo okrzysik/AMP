@@ -72,8 +72,11 @@ void  runTest ( AMP::UnitTest *ut, std::string input_file )
     // Run the test with > 2^24  DOFs
     simpleDOFManagerVectorTest( ut, mesh, 0x1000001 );
 
+    // Run the test with > 2^30 DOFs
+    simpleDOFManagerVectorTest( ut, mesh, 0x10000001 );
+
     // Run the test with > 2^31 DOFs
-    //simpleDOFManagerVectorTest( ut, mesh, 0x80000001 );
+    // simpleDOFManagerVectorTest( ut, mesh, 0x80000001 );
 
     // Run the test with > 2^32 DOFs
     //simpleDOFManagerVectorTest( ut, mesh, 0x100000001 );
