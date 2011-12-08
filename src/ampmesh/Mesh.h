@@ -154,6 +154,7 @@ public:
 
 
     /* Return the global number of elements of the given type
+     * Note: depending on the mesh this routine may require global communication across the mesh.
      * \param type   Geometric type
      */
     virtual size_t  numGlobalElements( const GeomType type ) const;
@@ -186,6 +187,7 @@ public:
     /**
      * \brief    Return the list of all ID sets in the mesh
      * \details  Return the list of all ID sets in the mesh
+     * Note: depending on the mesh this routine may require global communication across the mesh.
      */
     virtual std::vector<int> getIDSets ( );
 

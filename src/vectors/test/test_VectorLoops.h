@@ -158,7 +158,7 @@ template <class FACTORY>
 void test_parallel_vectors_loop ( AMP::UnitTest *ut )
 {
     InstantiateVector<FACTORY>( ut );
-    VerifyVectorGhostCreate<FACTORY>( ut );
+    //VerifyVectorGhostCreate<FACTORY>( ut );
     VerifyVectorMakeConsistentSet<FACTORY>( ut );
     VerifyVectorMakeConsistentAdd<FACTORY>( ut );
     CopyVectorConsistency<FACTORY>( ut );

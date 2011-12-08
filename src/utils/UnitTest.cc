@@ -11,7 +11,7 @@
 #else
     // Linux
     // usleep is defined in microseconds, create a Sleep command
-    #define Sleep(x) usleep(x*1000)
+    #define Sleep(x) { sched_yield(); usleep(x*1000); sched_yield(); }
 #endif
 
 
@@ -35,6 +35,9 @@ UnitTest::UnitTest() {
 void UnitTest::report(const int level0) {
     int size = comm.getSize();
     int rank = comm.getRank();
+    // Give all processors a chance to print any remaining messages
+    comm.barrier();
+    Sleep(10);
     // Brodcast the print level from rank 0
     int level = comm.bcast(level0,0);
     if ( level<0 || level > 2 )
@@ -181,6 +184,8 @@ void UnitTest::report(const int level0) {
     }
     // Add a barrier to syncronize all processors (rank 0 is much slower)
     comm.barrier();
+    Sleep(10);      // Need a brief pause to allow any printing to finish
+
 }
 
 

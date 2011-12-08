@@ -116,17 +116,6 @@ void MeshIteratorTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mes
         // Loop through the different geometric entities
         for (int i=0; i<=(int)mesh->getGeomType(); i++) {
             AMP::Mesh::GeomType type = (AMP::Mesh::GeomType) i;
-            // Check that the mesh has ghost cells if gcw>0 and N_proc>1
-            if ( gcw>0 && mesh->getComm().getSize()>1 ) {
-                if ( type==0 || type==mesh->getGeomType() ) {
-                    if ( mesh->numGhostElements(type,gcw) > 0 )
-                        ut->passes("Mesh has ghost cells");
-                    else 
-                        ut->failure("Mesh has ghost cells");
-                } else {
-                    ut->expected_failure("ghost cell test with intermediate element type is not supported yet");
-                }
-            }
             // Try to create the iterator
             size_t N_local = 0;
             size_t N_ghost = 0;
@@ -186,12 +175,6 @@ void MeshCountTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
             ut->passes("gcw=0 has no ghost elements");
         else
             ut->failure("gcw=0 has no ghost elements");
-        if ( comm.getSize() > 1 && type!=0 ) {
-            if ( mesh->numGhostElements(type,1)!=0 && (mesh->numGhostElements(type,1)+N_local)!=N_global )
-                ut->passes("gcw=1 has ghost elements");
-            else
-                ut->failure("gcw=1 has ghost elements");
-        }
     }
 }
 

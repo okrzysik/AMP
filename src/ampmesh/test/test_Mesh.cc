@@ -91,16 +91,16 @@ int main ( int argc , char ** argv )
     AMP::UnitTest ut;
 
     // Run the ID test
-    testID( &ut );
+    //testID( &ut );
 
     // Run tests on a libmesh mesh
-    testlibMesh( &ut );
+    //testlibMesh( &ut );
 
     // Run tests on the input file
     testInputMesh( &ut, "input_Mesh" );
 
     // Run the basic tests on all mesh generators
-    testMeshGenerators( &ut );
+    //testMeshGenerators( &ut );
 
 
     // Print the results and return

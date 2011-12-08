@@ -55,7 +55,10 @@ public:
     virtual size_t  numLocalElements( const GeomType type ) const;
 
 
-    /* Return the global number of elements of the given type
+    /* Return the global number of elements of the given type.
+     * Note: for a multimesh this will require global communication.
+     * To avoid this in the future we would need to cache the value, and register
+     *  some type of listener to check if the value changed on any sub meshes.
      * \param type   Geometric type
      */
     virtual size_t  numGlobalElements( const GeomType type ) const;
@@ -104,6 +107,9 @@ public:
     /**
      * \brief    Return the list of all ID sets in the mesh
      * \details  Return the list of all ID sets in the mesh
+     *   Note: for a multimesh this will require global communication.
+     *   To avoid this in the future we would need to cache the value, and register
+     *   some type of listener to check if the value changed on any sub meshes.
      */
     virtual std::vector<int> getIDSets ( );
 
@@ -117,9 +123,6 @@ public:
      */
     virtual MeshIterator getIDsetIterator ( const GeomType type, const int id, const int gcw=0 );
 
-
-    //! Get the largest geometric type in the mesh
-    virtual GeomType getGeomType() const;
 
     /**
      * \brief    Displace the entire mesh
@@ -140,6 +143,9 @@ private:
     //! Function to create the databases for the meshes within the multimesh
     static std::vector<boost::shared_ptr<AMP::Database> >  createDatabases(boost::shared_ptr<AMP::Database> database);
 
+    //! A list of all meshes in the multimesh
+    std::vector<AMP::Mesh::Mesh::shared_ptr> d_meshes;
+
     /**
      * \brief    A function to compute the comms given a weight
      * \details  This function computes the sub communicators given the weights 
@@ -148,20 +154,31 @@ private:
      * \param weights   Standard vector with the relative weights for each group
      *                  Note: the weights do not need to be normalized, 
      *                  but need to be the same on all processors.
-     * \param factor    Load balance tolerance.  This determines the relative 
-     *                  tolerance allowed in order to seperate the comms.
-     *                  A value of 0.0 means we do not care about an even load balance
-     *                  and want seperate comms for each value.
-     *                  A value of 1.0 means we require perfect balancing.  This often
-     *                  requires that all meshes share the same comm.  A value > 0 will 
-     *                  force all meshes to share the same comm.
-     *                  A default value of 0.5 is recommended for most purposes.
+     * \param method    Method to use for the load balance calculation
+     *                  0: All meshes will be on the same communication
+     *                  1: Minimize comm size and split the meshes.
+     *                     If there are more processor than meshes, then every
+     *                     mesh will be on a different set of processors regardless
+     *                     of the effect on the load balancer.
+     *                  2: Non-overlapping communicators that tries to achieve a good
+     *                     load balancing.  This will attempt to split the meshes onto different
+     *                     communicators, but may combine them to achieve a better load
+     *                     balance.  This is not implimented yet.
      */
-    std::vector<AMP_MPI> loadBalancer( std::vector<double> &weights, double factor=0.5 );
+    std::vector<AMP_MPI> loadBalancer( std::vector<double> &weights, int method=1 );
 
-    //! A list of all meshes in the multimesh
-    std::vector<AMP::Mesh::Mesh::shared_ptr> d_meshes;
 
+    // Structure used to create communication groups
+    struct comm_groups{
+        int N_procs;                // Number of processor in the group
+        std::vector<int> ids;       // ids in the groups
+    };
+    
+    // Function to distribute N groups with weights onto M processors (M>N) with the greatest number of groups possible (smallest comms)
+    std::vector<comm_groups>  independentGroups1( int N_procs, std::vector<std::pair<double,int> >  &ids);
+
+    // Function to distribute N groups with weights onto M processors (N>M) with the greatest number of groups possible (comm size = 1)
+    std::vector<comm_groups>  independentGroups2( int N_procs, std::vector<std::pair<double,int> >  &ids );
 
 };
 

@@ -71,14 +71,27 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ):
     std::vector<double> weights(meshParameters.size(),0);
     for (size_t i=0; i<meshSizes.size(); i++)
         weights[i] = ((double)meshSizes[i])/((double)totalMeshSize);
-    std::vector<AMP_MPI> comms = loadBalancer( weights, 1.2 );
-    //std::vector<AMP_MPI> comms = loadBalancer( weights, 0.5 );
-    for (size_t i=0; i<meshParameters.size(); i++)
-        meshParameters[i]->setComm(comms[i]);
+    std::vector<AMP_MPI> comms = loadBalancer( weights, 1 );
+    // Check that every mesh exist on some comm
+    AMP_MPI commNull(AMP_COMM_NULL);
+    std::vector<int> onComm(meshParameters.size(),0);
+    for (size_t i=0; i<meshParameters.size(); i++) {
+        if ( comms[i] != commNull )
+            onComm[i] = 1;
+    }
+    d_comm.maxReduce(&onComm[0],onComm.size());
+    for (size_t i=0; i<onComm.size(); i++)
+        AMP_ASSERT(onComm[i]==1);
     // Create the meshes
-    d_meshes = std::vector<AMP::Mesh::Mesh::shared_ptr>(meshParameters.size());
-    for (size_t i=0; i<meshParameters.size(); i++)
-        d_meshes[i] = AMP::Mesh::Mesh::buildMesh(meshParameters[i]);
+    d_meshes = std::vector<AMP::Mesh::Mesh::shared_ptr>(0);
+    for (size_t i=0; i<meshParameters.size(); i++) {
+        if ( comms[i] == commNull )
+            continue;
+        AMP::Mesh::MeshParameters::shared_ptr  params = meshParameters[i];
+        params->setComm(comms[i]);
+        AMP::Mesh::Mesh::shared_ptr new_mesh = AMP::Mesh::Mesh::buildMesh(params);
+        d_meshes.push_back(new_mesh);
+    }
     // Get the physical dimension and the highest geometric type
     PhysicalDim = d_meshes[0]->getDim();
     GeomDim = d_meshes[0]->getGeomType();
@@ -87,6 +100,7 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ):
         if ( d_meshes[i]->getGeomType() > GeomDim )
             GeomDim = d_meshes[i]->getGeomType();
     }
+    GeomDim = (GeomType) d_comm.maxReduce((int)GeomDim);
     // Compute the bounding box of the multimesh
     d_box = d_meshes[0]->getBoundingBox();
     for (size_t i=1; i<d_meshes.size(); i++) {
@@ -242,10 +256,8 @@ size_t MultiMesh::numLocalElements( const GeomType type ) const
 size_t MultiMesh::numGlobalElements( const GeomType type ) const
 {
     // Should we cache this?
-    size_t N = 0;
-    for (size_t i=0; i<d_meshes.size(); i++)
-        N += d_meshes[i]->numGlobalElements(type);
-    return N;
+    size_t N = numLocalElements(type);
+    return d_comm.sumReduce(N);
 }
 size_t MultiMesh::numGhostElements( const GeomType type, int gcw ) const
 {
@@ -254,16 +266,6 @@ size_t MultiMesh::numGhostElements( const GeomType type, int gcw ) const
     for (size_t i=0; i<d_meshes.size(); i++)
         N += d_meshes[i]->numGhostElements(type,gcw);
     return N;
-}
-GeomType MultiMesh::getGeomType( ) const
-{
-    // Should we cache this?
-    GeomType type_max = null;
-    for (size_t i=0; i<d_meshes.size(); i++) {
-        GeomType type = d_meshes[i]->getGeomType();
-        type_max = (type>type_max) ? type : type_max;
-    }
-    return type_max;
 }
 
 
@@ -281,11 +283,32 @@ MeshIterator MultiMesh::getIterator( const GeomType type, const int gcw )
 }
 std::vector<int> MultiMesh::getIDSets( )
 {
+    // Get all local id sets
     std::set<int> ids_set;
     for (size_t i=0; i<d_meshes.size(); i++) {
         std::vector<int> mesh_idSet = d_meshes[i]->getIDSets();
         ids_set.insert(mesh_idSet.begin(),mesh_idSet.end());
     }
+    std::vector<int> local_ids(ids_set.begin(),ids_set.end());
+    // Perform a global communication to syncronize the id sets across all processors
+    int N_id_local = (int) local_ids.size();
+    std::vector<int> count(d_comm.getSize(),0);
+    std::vector<int> disp(d_comm.getSize(),0);
+    d_comm.allGather(N_id_local,&count[0]);
+    for (int i=1; i<d_comm.getSize(); i++)
+        disp[i] = disp[i-1] + count[i-1];
+    int N_id_global = disp[d_comm.getSize()-1] + count[d_comm.getSize()-1];
+    if ( N_id_global == 0 )
+        return std::vector<int>();
+    std::vector<int> global_id_list(N_id_global,0);
+    int *ptr = NULL;
+    if ( N_id_local > 0 )
+        ptr = &local_ids[0];
+    d_comm.allGather( ptr, N_id_local, &global_id_list[0], &count[0], &disp[0], true );
+    // Get the unique set
+    for (size_t i=0; i<global_id_list.size(); i++)
+        ids_set.insert(global_id_list[i]);
+    // Return the final vector of ids
     return std::vector<int>(ids_set.begin(),ids_set.end());
 }
 MeshIterator MultiMesh::getIDsetIterator( const GeomType type, const int id, const int gcw )
@@ -501,38 +524,135 @@ static void replaceText( boost::shared_ptr<AMP::Database>& database, std::string
 /********************************************************
 * Function to create the sub-communicators              *
 ********************************************************/
-std::vector<AMP_MPI> MultiMesh::loadBalancer( std::vector<double> &weights_in, double factor)
+std::vector<AMP_MPI> MultiMesh::loadBalancer( std::vector<double> &weights, int method)
 {
-    if ( weights_in.size()<=1 || factor>1.0 )
-        return std::vector<AMP_MPI>(weights_in.size(),d_comm);
-    // Get the relative weights (sum to 1.0)
-    std::vector<double> weights = weights_in;
-    double sum_weights = 0.0;
-    for (size_t i=0; i<weights.size(); i++)
-        sum_weights += weights[i];
-    for (size_t i=0; i<weights.size(); i++)
-        weights[i] /= sum_weights;
-    // Allocate space for the comms
-    std::vector<AMP_MPI> comms(weights.size(),AMP_MPI(AMP_COMM_NULL));
-    // Find the smallest and largest weight
-    double min_weight = 1.0;
-    double max_weight = 1.0;
-    for (size_t i=0; i<weights.size(); i++) {
-        if ( weights[i] < min_weight )
-            min_weight = weights[i];
-        if ( weights[i] > max_weight )
-            max_weight = weights[i];
-    }
-    if ( min_weight < factor*max_weight ) {
-        // One (or more) of the groups is less than the tolerance.  Combine it with another group
-        // and compute the load balance recursively
-        AMP_ERROR("Not finished");
+    // Deal with the special cases directly
+    if ( weights.size()<=1 || d_comm.getSize()==1 )
+        return std::vector<AMP_MPI>(weights.size(),d_comm);
+    // Choose the appropriate load balancer
+    if ( method == 0 ) {
+        // Everybody is on the same communicator
+        return std::vector<AMP_MPI>(weights.size(),d_comm);
+    } else if ( method == 1 ) {
+        // We want to split the meshes onto independent processors
+        std::vector<std::pair<double,int> >  ids(weights.size());
+        for (size_t i=0; i<weights.size(); i++)
+            ids[i] = std::pair<double,int>( weights[i], (int) i );
+        std::vector<comm_groups> groups;
+        if ( d_comm.getSize() >= (int)weights.size() )
+            groups = independentGroups1( d_comm.getSize(), ids );
+        else
+            groups = independentGroups2( d_comm.getSize(), ids );
+        // Split the comm into the appropriate groups
+        std::vector<int> cum_N_proc(groups.size());
+        cum_N_proc[0] = groups[0].N_procs;
+        for (size_t i=1; i<groups.size(); i++)
+            cum_N_proc[i] = cum_N_proc[i-1] + groups[i].N_procs;
+        int myid = AMP::Utilities::findfirst(cum_N_proc,d_comm.getRank()+1);
+        AMP_MPI myComm = d_comm.split(myid,d_comm.getRank());
+        std::vector<AMP_MPI> newComms(weights.size(),AMP_MPI(AMP_COMM_NULL));
+        for (size_t i=0; i<groups[myid].ids.size(); i++)
+            newComms[groups[myid].ids[i]] = myComm;
+        return newComms;
+    } else if ( method == 2 ) {
+        // We want to try to achieve a balanced approach to the load balance
+        AMP_ERROR("This load balancer is not implimented yet");
     } else {
-        AMP_ERROR("Not finished");
+        AMP_ERROR("Unknown load balancer");
     }
-    return comms;
+    return std::vector<AMP_MPI>(0);
 }
 
+
+/********************************************************
+* Functions to solve simple load balancing computations *
+********************************************************/
+std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups1(int N_procs, std::vector<std::pair<double,int> >  &ids_in)
+{
+    // This will distribute the groups onto the processors such that no groups share any processors
+    // Note: this requires the number of processors to be >= the number of ids
+    AMP_ASSERT(N_procs>=(int)ids_in.size());
+    std::vector<std::pair<double,int> > ids = ids_in;
+    AMP::Utilities::quicksort(ids);
+    // Start with the smallest mesh and start assigning processors
+    double weight_remaining = 0.0;
+    for (size_t i=0; i<ids.size(); i++)
+        weight_remaining += ids[i].first;
+    int N_procs_remaining = N_procs;
+    std::vector<comm_groups> groups(ids.size());
+    for (size_t i=0; i<ids.size(); i++) {
+        double N_proc_d = ids[i].first/weight_remaining * ((double) N_procs_remaining);
+        int N_proc = (int) (N_proc_d+0.5);      // Round to the nearest processor count
+        if ( N_proc < 1 ) { N_proc=1; }         // We require at least on processor
+        if ( (N_procs_remaining-N_proc) < (int)(ids.size()-i-1) ) 
+            N_proc--;       // We need at least the 1 processors for each of the remaining meshes
+        groups[i].N_procs = N_proc;
+        groups[i].ids = std::vector<int>(1,ids[i].second);
+        N_procs_remaining -= N_proc;
+        weight_remaining -= ids[i].first;
+    }
+    return groups;
+}
+std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups2(int N_procs, std::vector<std::pair<double,int> >  &ids_in)
+{
+    // This will distribute the groups onto the processors such that each group has exactly one processor.  
+    // Note: this requires the number of processors to be <= the number of ids
+    AMP_ASSERT(N_procs<=(int)ids_in.size());
+    std::vector<std::pair<double,int> > ids = ids_in;
+    double total_weight = 0.0;
+    for (size_t i=0; i<ids.size(); i++)
+        total_weight += ids[i].first;
+    double weight_avg = total_weight / ((double) N_procs);
+    std::vector<comm_groups> groups;
+    // Remove any ids that require a processor by themselves
+    std::vector<std::pair<double,int> >::iterator  iterator = ids.begin();
+    while ( iterator != ids.end() ) {
+        if ( iterator->first >= weight_avg ) {
+            comm_groups tmp;
+            tmp.N_procs = 1;
+            tmp.ids = std::vector<int>(1,iterator->second);
+            groups.push_back(tmp);
+            ids.erase(iterator);
+        } else {
+            ++iterator;
+        }
+    }
+    if ( groups.size() == 0 ) {
+        // We did not remove any elements, lets begin grouping them together
+        if ( ( ids[0].first + ids[ids.size()-1].first ) > weight_avg ) {
+            // The first and last elements create a valid bin, add them together
+            comm_groups tmp;
+            tmp.N_procs = 1;
+            tmp.ids = std::vector<int>(2);
+            tmp.ids[0] = ids[0].second;
+            tmp.ids[1] = ids[ids.size()-1].second;
+            ids.erase(ids.begin());
+            ids.erase(ids.end());
+            groups.push_back(tmp);
+        } else {
+            // Combine the first set of elements that sum to the desired value
+            int n = 1;
+            double weight_sum = ids[0].first;
+            while ( weight_sum < weight_avg ) {
+                weight_sum += ids[n].first;
+                n++;
+            }
+            comm_groups tmp;
+            tmp.N_procs = 1;
+            tmp.ids = std::vector<int>(n);
+            for (int i=0; i<n; i++)
+                tmp.ids[i] = ids[i].second;
+            ids.erase(ids.begin(),ids.begin()+n);
+            groups.push_back(tmp);
+        }
+    }
+    // Recursively add the remaining ids
+    if ( ids.size() > 0 ) {
+        std::vector<MultiMesh::comm_groups> groups2 = independentGroups2( N_procs-groups.size(), ids );
+        groups.insert( groups.end(), groups2.begin(), groups2.end() );
+    }
+    return groups;
+}
 
 
 } // Mesh namespace

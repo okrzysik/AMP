@@ -511,10 +511,10 @@ void DivideVector( AMP::UnitTest *utils )
         else
           utils->failure ( "vector::divide" );
 
-        if ( utils->rank() == 2 )
-        {
-          std::cout << vector2 << std::endl;
-        }
+        //if ( utils->rank() == 2 )
+        //{
+        //  std::cout << vector2 << std::endl;
+        //}
 }
 
 
