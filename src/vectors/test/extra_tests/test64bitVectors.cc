@@ -25,9 +25,9 @@
 // Create a vector with the desired number of unknowns and run some simple tests
 void  simpleDOFManagerVectorTest ( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, size_t N_DOFs )
 {
-    // Calculate the number of DOFs per Node
+    // Calculate the number of DOFs per Node (we require that the # of DOFs is >= N_DOFs)
     double avgDOFsPerNode = ((double) N_DOFs) / ((double) mesh->numGlobalElements(AMP::Mesh::Vertex));
-    int DOFsPerNode = (int) (avgDOFsPerNode+0.5);
+    int DOFsPerNode = (int) ceil(avgDOFsPerNode);
     // Create a simple DOFManager
     std::string varName = "test";
     AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::Discretization::NodalVariable(DOFsPerNode,varName) );
@@ -36,6 +36,13 @@ void  simpleDOFManagerVectorTest ( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_pt
     // Create the vector
     AMP::LinearAlgebra::Vector::shared_ptr v1 = DOFs->createVector( nodalVariable );
     std::cout << std::endl << "Vector size: " << v1->getGlobalSize() << std::endl;
+    // Initialize the vector and set some random values
+    v1->zero();
+    AMP_ASSERT(v1->L2Norm()==0.0);
+    size_t index = v1->getGlobalSize()-4;
+    double val = (double) index;
+    if ( v1->containsGlobalElement(index) )
+        v1->setValueByGlobalID(index,val);
     // Time makeConsistentSet
     mesh->getComm().barrier();
     double start_time = AMP::AMP_MPI::time();
@@ -43,7 +50,7 @@ void  simpleDOFManagerVectorTest ( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_pt
     mesh->getComm().barrier();
     double end_time = AMP::AMP_MPI::time();
     std::cout << std::endl << "Time for makeConsistent: " << end_time-start_time << std::endl;
-
+    AMP_ASSERT(v1->L2Norm()==val);
 }
 
 
@@ -62,8 +69,14 @@ void  runTest ( AMP::UnitTest *ut, std::string input_file )
     // Create the meshes from the input database
     boost::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params);
 
-    // Create run the test with ~1e7 elements
-    simpleDOFManagerVectorTest( ut, mesh, 0xFFFFFF );
+    // Run the test with > 2^24  DOFs
+    simpleDOFManagerVectorTest( ut, mesh, 0x1000001 );
+
+    // Run the test with > 2^31 DOFs
+    //simpleDOFManagerVectorTest( ut, mesh, 0x80000001 );
+
+    // Run the test with > 2^32 DOFs
+    //simpleDOFManagerVectorTest( ut, mesh, 0x100000001 );
 
 }
 
