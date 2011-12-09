@@ -10,7 +10,7 @@
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "discretization/NodalVariable.h"
-
+#include "vectors/VectorBuilder.h"
 
 
 void  runTest ( AMP::UnitTest *ut )
@@ -38,8 +38,8 @@ void  runTest ( AMP::UnitTest *ut )
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr  dummy;
-    AMP::LinearAlgebra::Vector::shared_ptr v1 = DOFs->createVector( nodalVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr v2 = DOFs->createVector( nodalVariable );
+    AMP::LinearAlgebra::Vector::shared_ptr v1 = createVector( DOFs, nodalVariable );
+    AMP::LinearAlgebra::Vector::shared_ptr v2 = createVector( DOFs, nodalVariable );
 
     // Initialize the vectors
     v1->setToScalar(0.0);

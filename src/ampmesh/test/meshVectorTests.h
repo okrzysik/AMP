@@ -6,13 +6,14 @@
 #include "discretization/DOF_ManagerParameters.h"
 #include "discretization/DOF_Manager.h"
 #include "vectors/Vector.h"
+#include "vectors/VectorBuilder.h"
 
 #include "../../vectors/test/test_VectorLoops.h"
 
 
 // Factory to create a vector from a mesh
 AMP::Mesh::Mesh::shared_ptr globalMeshForMeshVectorFactory = AMP::Mesh::Mesh::shared_ptr();
-boost::shared_ptr<AMP::Discretization::simpleDOFManager> globalDOFforMeshVectorFactory = boost::shared_ptr<AMP::Discretization::simpleDOFManager>();
+AMP::Discretization::DOFManager::shared_ptr globalDOFforMeshVectorFactory = boost::shared_ptr<AMP::Discretization::simpleDOFManager>();
 template <int SIZE, AMP::Mesh::GeomType TYPE, int GCW>
 class  MeshVectorFactory
 {
@@ -34,7 +35,7 @@ public:
             AMP_ERROR("mesh must be set before this can be called");
         if ( globalDOFforMeshVectorFactory.get()==NULL )
             AMP_ERROR("DOF must be set before this can be called");
-        return globalDOFforMeshVectorFactory->createVector( getVariable() );
+        return AMP::LinearAlgebra::createVector( globalDOFforMeshVectorFactory, getVariable() );
     }
 
     static  AMP::Discretization::DOFManager::shared_ptr getDOFMap()
@@ -48,14 +49,14 @@ public:
 
 
 template <int DOF_PER_NODE>
-void simpleNodalVectorTests( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh, boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFs, int gcw ) {
+void simpleNodalVectorTests( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh, AMP::Discretization::DOFManager::shared_ptr DOFs, int gcw ) {
 
         // Create a nodal variable 
         AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::Discretization::NodalVariable(DOF_PER_NODE,"test vector") );
 
         // Create the vectors
-        AMP::LinearAlgebra::Vector::shared_ptr vectora = DOFs->createVector ( variable );  // Generates new vector
-        AMP::LinearAlgebra::Vector::shared_ptr vectorb = DOFs->createVector ( variable );  // Gets from the cached copy
+        AMP::LinearAlgebra::Vector::shared_ptr vectora = AMP::LinearAlgebra::createVector( DOFs, variable );
+        AMP::LinearAlgebra::Vector::shared_ptr vectorb = AMP::LinearAlgebra::createVector( DOFs, variable );
 
         // Check the size of the vector
         size_t  num_dofs = mesh->numGlobalElements(AMP::Mesh::Vertex) * DOF_PER_NODE;
@@ -98,7 +99,7 @@ void VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh
 
         // Create the DOF_Manager
         AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
-        boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFs( new AMP::Discretization::simpleDOFManager(mesh,AMP::Mesh::Vertex,gcw,DOF_PER_NODE) );
+        AMP::Discretization::DOFManager::shared_ptr DOFs( new AMP::Discretization::simpleDOFManager(mesh,AMP::Mesh::Vertex,gcw,DOF_PER_NODE) );
 
         // Run some basic nodal vector tests
         simpleNodalVectorTests<DOF_PER_NODE>( utils, mesh, DOFs, gcw );

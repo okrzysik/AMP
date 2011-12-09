@@ -24,10 +24,10 @@ Mesh{
 // Database for displacement node to node maps
 NodeToNodeMaps{
     MapType = "NodeToNode"
-    N_maps = 1
-    Mesh1 = "pellet_1"
+    N_maps = 2
+    Mesh1 = "pellet_1", "pellet_2"
     Surface1 = 1
-    Mesh2 = "pellet_2"
+    Mesh2 = "pellet_2, ""pellet_3"
     Surface2 = 2
     DOFsPerObject = 3
     VariableName = "displacement"

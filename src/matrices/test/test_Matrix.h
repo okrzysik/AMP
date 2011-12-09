@@ -9,7 +9,8 @@
 #include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
-
+#include "vectors/VectorBuilder.h"
+#include "matrices/MatrixBuilder.h"
 
 namespace AMP {
 namespace unit_test {
@@ -22,7 +23,7 @@ class  DOFMatrixTestFactory
 {
 public:
     static AMP::Mesh::Mesh::shared_ptr mesh;
-    static boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFs;
+    static AMP::Discretization::DOFManager::shared_ptr DOFs;
 
     static void initMesh() 
     {
@@ -33,7 +34,7 @@ public:
         if ( NUM_DOF_ROW != NUM_DOF_COL )
             AMP_ERROR("DOF Manager is not finished to the point we can have different number of DOFs for the two matrix variables");
         AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
-        DOFs = boost::shared_ptr<AMP::Discretization::simpleDOFManager>( new AMP::Discretization::simpleDOFManager(mesh,AMP::Mesh::Vertex,1,NUM_DOF_ROW) );
+        DOFs = boost::shared_ptr<AMP::Discretization::DOFManager>( new AMP::Discretization::simpleDOFManager(mesh,AMP::Mesh::Vertex,1,NUM_DOF_ROW) );
 
     }
 
@@ -46,16 +47,16 @@ public:
     static AMP::LinearAlgebra::Vector::shared_ptr  getVector()
     {
         AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::Discretization::NodalVariable(NUM_DOF_ROW,"a") );
-        return DOFs->createVector ( variable );
+        return AMP::LinearAlgebra::createVector( DOFs, variable );
     }
 
     static AMP::LinearAlgebra::Matrix::shared_ptr  getMatrix()
     {
         AMP::LinearAlgebra::Variable::shared_ptr variable_a( new AMP::Discretization::NodalVariable(NUM_DOF_ROW,"a") );
         AMP::LinearAlgebra::Variable::shared_ptr variable_b( new AMP::Discretization::NodalVariable(NUM_DOF_COL,"b") );
-        AMP::LinearAlgebra::Vector::shared_ptr  vector_a = DOFs->createVector ( variable_a );
-        AMP::LinearAlgebra::Vector::shared_ptr  vector_b = DOFs->createVector ( variable_a );
-        return DOFs->createMatrix ( vector_a, vector_b );
+        AMP::LinearAlgebra::Vector::shared_ptr  vector_a = AMP::LinearAlgebra::createVector( DOFs, variable_a );
+        AMP::LinearAlgebra::Vector::shared_ptr  vector_b = AMP::LinearAlgebra::createVector( DOFs, variable_b );
+        return AMP::LinearAlgebra::createMatrix ( vector_a, vector_b );
     }
 
     static AMP::Discretization::DOFManager::shared_ptr  getDOFMap() { return DOFs; }
@@ -73,10 +74,10 @@ template<> AMP::Mesh::Mesh::shared_ptr DOFMatrixTestFactory<1,1,LibMeshCubeGener
 template<> AMP::Mesh::Mesh::shared_ptr DOFMatrixTestFactory<3,3,LibMeshCubeGenerator<5> >::mesh = AMP::Mesh::Mesh::shared_ptr();
 template<> AMP::Mesh::Mesh::shared_ptr DOFMatrixTestFactory<1,1,ExodusReaderGenerator>::mesh = AMP::Mesh::Mesh::shared_ptr();
 template<> AMP::Mesh::Mesh::shared_ptr DOFMatrixTestFactory<3,3,ExodusReaderGenerator>::mesh = AMP::Mesh::Mesh::shared_ptr();
-template<> boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFMatrixTestFactory<1,1,LibMeshCubeGenerator<5> >::DOFs = boost::shared_ptr<AMP::Discretization::simpleDOFManager>();
-template<> boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFMatrixTestFactory<3,3,LibMeshCubeGenerator<5> >::DOFs = boost::shared_ptr<AMP::Discretization::simpleDOFManager>();
-template<> boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFMatrixTestFactory<1,1,ExodusReaderGenerator>::DOFs = boost::shared_ptr<AMP::Discretization::simpleDOFManager>();
-template<> boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFMatrixTestFactory<3,3,ExodusReaderGenerator>::DOFs = boost::shared_ptr<AMP::Discretization::simpleDOFManager>();
+template<> AMP::Discretization::DOFManager::shared_ptr DOFMatrixTestFactory<1,1,LibMeshCubeGenerator<5> >::DOFs = boost::shared_ptr<AMP::Discretization::DOFManager>();
+template<> AMP::Discretization::DOFManager::shared_ptr DOFMatrixTestFactory<3,3,LibMeshCubeGenerator<5> >::DOFs = boost::shared_ptr<AMP::Discretization::DOFManager>();
+template<> AMP::Discretization::DOFManager::shared_ptr DOFMatrixTestFactory<1,1,ExodusReaderGenerator>::DOFs = boost::shared_ptr<AMP::Discretization::DOFManager>();
+template<> AMP::Discretization::DOFManager::shared_ptr DOFMatrixTestFactory<3,3,ExodusReaderGenerator>::DOFs = boost::shared_ptr<AMP::Discretization::DOFManager>();
 
 }
 }

@@ -20,6 +20,7 @@
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "discretization/NodalVariable.h"
+#include "vectors/VectorBuilder.h"
 
 
 // Create a vector with the desired number of unknowns and run some simple tests
@@ -34,7 +35,7 @@ void  simpleDOFManagerVectorTest ( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_pt
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
     boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFs( new AMP::Discretization::simpleDOFManager(mesh,AMP::Mesh::Vertex,1,DOFsPerNode) );
     // Create the vector
-    AMP::LinearAlgebra::Vector::shared_ptr v1 = DOFs->createVector( nodalVariable );
+    AMP::LinearAlgebra::Vector::shared_ptr v1 = createVector( DOFs, nodalVariable );
     std::cout << std::endl << "Vector size: " << v1->getGlobalSize() << std::endl;
     // Initialize the vector and set some random values
     v1->zero();

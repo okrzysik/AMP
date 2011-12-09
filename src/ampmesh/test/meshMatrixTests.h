@@ -3,7 +3,8 @@
 
 #include "ampmesh/Mesh.h"
 #include "matrices/Matrix.h"
-
+#include "vectors/VectorBuilder.h"
+#include "matrices/MatrixBuilder.h"
 
 template <int DOF_PER_NODE>
 void VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) 
@@ -16,9 +17,9 @@ void VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_p
     AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::Discretization::NodalVariable(DOF_PER_NODE,"test vector") );
 
     // Create the matrix and vectors
-    AMP::LinearAlgebra::Vector::shared_ptr vector1 = DOFs->createVector ( variable );
-    AMP::LinearAlgebra::Vector::shared_ptr vector2 = DOFs->createVector ( variable );
-    AMP::LinearAlgebra::Matrix::shared_ptr matrixa = DOFs->createMatrix ( vector1, vector2 );
+    AMP::LinearAlgebra::Vector::shared_ptr vector1 = AMP::LinearAlgebra::createVector ( DOFs, variable );
+    AMP::LinearAlgebra::Vector::shared_ptr vector2 = AMP::LinearAlgebra::createVector ( DOFs, variable );
+    AMP::LinearAlgebra::Matrix::shared_ptr matrixa = AMP::LinearAlgebra::createMatrix ( vector1, vector2 );
 
     // Run some tests
     vector1->setRandomValues ();
@@ -30,7 +31,7 @@ void VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_p
         utils->failure ( "did not obtain 0 matrix from mesh" );
 
     // Need to get another matrix to store data due to Epetra insert/replace idiom.  Matrixa is fixed with no entires.
-    AMP::LinearAlgebra::Matrix::shared_ptr matrixb = DOFs->createMatrix ( vector1, vector2 );
+    AMP::LinearAlgebra::Matrix::shared_ptr matrixb = AMP::LinearAlgebra::createMatrix ( vector1, vector2 );
 
     vector2->setToScalar ( 1. );
     matrixb->makeConsistent ();

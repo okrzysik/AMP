@@ -101,23 +101,6 @@ public:
     virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const;
 
 
-    /**
-     * \brief Create a new AMP vector
-     * \details  This function creates a new AMP vector for the given variable, using the current DOF properties.
-     * \param variable  Variable that will be used to create the vector
-     */
-    AMP::LinearAlgebra::Vector::shared_ptr   createVector ( AMP::LinearAlgebra::Variable::shared_ptr variable );
-
-
-    /**
-     * \brief Create a new AMP matrix
-     * \details  This function creates a new AMP matrix for the given variable, using the current DOF properties.
-     * \param operand  Variable that will be used to create the matrix
-     * \param result   Variable that will be used to create the matrix
-     */
-    AMP::LinearAlgebra::Matrix::shared_ptr   createMatrix ( AMP::LinearAlgebra::Vector::shared_ptr operand , AMP::LinearAlgebra::Vector::shared_ptr result );
-
-
 private:
     // Function to find the remote DOF given a set of mesh element IDs
     std::vector<size_t> getRemoteDOF(std::vector<AMP::Mesh::MeshElementID> remote_ids ) const;
