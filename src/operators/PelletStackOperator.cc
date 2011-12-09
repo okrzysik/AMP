@@ -1,5 +1,6 @@
 
 #include "operators/PelletStackOperator.h"
+#include "operators/map/NodeToNodeMap.h"
 
 namespace AMP {
   namespace Operator {
@@ -227,11 +228,82 @@ namespace AMP {
       AMP::LinearAlgebra::Vector::shared_ptr nullVec;
       int currPellIdx = getLocalIndexForPellet(d_currentPellet);
       int prevPellIdx = getLocalIndexForPellet(d_currentPellet - 1);
+      int numMaps = d_n2nMaps->getNumberOfOperators();
+      if(currPellIdx != -1) {
+        AMP::LinearAlgebra::Variable::shared_ptr currVar = d_solVar->getVariable(currPellIdx);
+        for(int m = 0; m < numMaps; m++) {
+          boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
+            AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
+          AMP::LinearAlgebra::Variable::shared_ptr currMapVar = currMap->getInputVariable();
+          if((*currMapVar) == (*currVar)) {
+            if(currMap->isMaster() == false) {
+              currMap->applyStart(nullVec, u, nullVec, 1.0, 0.0);
+              break;
+            }
+          }
+        }//end for m
+      }
+      if(prevPellIdx != -1) {
+        AMP::LinearAlgebra::Variable::shared_ptr currVar = d_solVar->getVariable(prevPellIdx);
+        for(int m = 0; m < numMaps; m++) {
+          boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
+            AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
+          AMP::LinearAlgebra::Variable::shared_ptr currMapVar = currMap->getInputVariable();
+          if((*currMapVar) == (*currVar)) {
+            if(currMap->isMaster() == true) {
+              currMap->applyStart(nullVec, u, nullVec, 1.0, 0.0);
+              break;
+            }
+          }
+        }//end for m
+      }
+      if(currPellIdx != -1) {
+        AMP::LinearAlgebra::Variable::shared_ptr currVar = d_solVar->getVariable(currPellIdx);
+        for(int m = 0; m < numMaps; m++) {
+          boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
+            AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
+          AMP::LinearAlgebra::Variable::shared_ptr currMapVar = currMap->getInputVariable();
+          if((*currMapVar) == (*currVar)) {
+            if(currMap->isMaster() == false) {
+              currMap->applyFinish(nullVec, u, nullVec, 1.0, 0.0);
+              break;
+            }
+          }
+        }//end for m
+      }
+      if(prevPellIdx != -1) {
+        AMP::LinearAlgebra::Variable::shared_ptr currVar = d_solVar->getVariable(prevPellIdx);
+        for(int m = 0; m < numMaps; m++) {
+          boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
+            AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
+          AMP::LinearAlgebra::Variable::shared_ptr currMapVar = currMap->getInputVariable();
+          if((*currMapVar) == (*currVar)) {
+            if(currMap->isMaster() == true) {
+              currMap->applyFinish(nullVec, u, nullVec, 1.0, 0.0);
+              break;
+            }
+          }
+        }//end for m
+      }
       if(currPellIdx != -1) {
         AMP::LinearAlgebra::Variable::shared_ptr currVar = d_rhsVar->getVariable(currPellIdx);
         AMP::LinearAlgebra::Vector::shared_ptr subF = f->subsetVectorForVariable(currVar);
         AMP::LinearAlgebra::Vector::shared_ptr subR = r->subsetVectorForVariable(currVar);
+        AMP::LinearAlgebra::Vector::shared_ptr subU = d_frozenVectorForMaps->subsetVectorForVariable(currVar);
         subR->copyVector(subF);
+        AMP::Mesh::DOFMap::shared_ptr dof_map = d_meshes[currPellIdx]->getDOFMap(currVar);
+        AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator bnd = d_meshes[currPellIdx]->beginOwnedBoundary( d_slaveId );
+        AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator end_bnd = d_meshes[currPellIdx]->endOwnedBoundary( d_slaveId );
+        std::vector<unsigned int> dofIds(3);
+        dofIds[0] = 0; dofIds[1] = 1; dofIds[2] = 2;
+        for( ; bnd != end_bnd; ++bnd) {
+          std::vector<unsigned int> bndGlobalIds;
+          dof_map->getDOFs(*bnd, bndGlobalIds, dofIds);
+          for(unsigned int j = 0; j < bndGlobalIds.size(); j++) {
+            double val = subU->getLocalValueByGlobalID( bndGlobalIds[j] );
+            subR->addLocalValueByGlobalID(bndGlobalIds[j], val);
+          }//end for j
+        }//end for bnd
       }
     }
 
