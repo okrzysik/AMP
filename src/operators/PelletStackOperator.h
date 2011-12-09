@@ -2,7 +2,7 @@
 #ifndef included_AMP_PelletStackOperator
 #define included_AMP_PelletStackOperator
 
-#include "operators/Operator.h"
+#include "operators/map/AsyncMapColumnOperator.h"
 
 namespace AMP {
   namespace Operator {
@@ -14,7 +14,7 @@ namespace AMP {
 
         ~PelletStackOperator() { }
 
-        bool hasPellet(unsigned int pellId); 
+        int getLocalIndexForPellet(unsigned int pellId);
 
         void setCurrentPellet(unsigned int pellId);
 
@@ -29,7 +29,7 @@ namespace AMP {
         void applyUnscaling(AMP::LinearAlgebra::Vector::shared_ptr f);
 
         void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-            AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
+            AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
 
         void setLocalMeshes(std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> inp);
 
@@ -39,14 +39,20 @@ namespace AMP {
 
         void setPelletStackComm(AMP_MPI comm);
 
+        void setFrozenVectorForMaps(AMP::LinearAlgebra::Vector::shared_ptr vec);
+
+        void setMaps(boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> maps);
+
       protected:
         void applySerial(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-            AMP::LinearAlgebra::Vector::shared_ptr  &r);
+            AMP::LinearAlgebra::Vector::shared_ptr &r);
 
         void applyOnlyZcorrection(AMP::LinearAlgebra::Vector::shared_ptr &u);
 
         void applyXYZcorrection(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-            AMP::LinearAlgebra::Vector::shared_ptr  &r);
+            AMP::LinearAlgebra::Vector::shared_ptr &r);
+
+        void computeZscan(const AMP::LinearAlgebra::Vector::shared_ptr &u, std::vector<double> &finalMaxZdispsList);
 
         unsigned int d_totalNumberOfPellets;
         unsigned int d_currentPellet;
@@ -61,6 +67,8 @@ namespace AMP {
         boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_rhsVar;
         boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_solVar;
         AMP_MPI d_pelletStackComm;
+        boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  d_n2nMaps;
+        AMP::LinearAlgebra::Vector::shared_ptr d_frozenVectorForMaps;
     };
 
   }
