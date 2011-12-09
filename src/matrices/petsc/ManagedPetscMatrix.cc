@@ -168,9 +168,11 @@ namespace LinearAlgebra {
       int num_cols;
       const int *cols;
       const double  *data;
-      MatGetRow ( m , *cur_entry , &num_cols , &cols , &data );
-      createValuesByGlobalID ( 1 , num_cols , &*cur_entry , const_cast<int *>(cols) , const_cast<double *>(data) );
-      MatRestoreRow ( m , *cur_entry , &num_cols , &cols , &data );
+      AMP_ASSERT(*cur_entry<0x80000000);    // We have not converted matricies to 64-bits yet
+      int id = (int) *cur_entry;
+      MatGetRow ( m, *cur_entry, &num_cols, &cols, &data );
+      createValuesByGlobalID ( 1, num_cols, &id, const_cast<int *>(cols), const_cast<double *>(data) );
+      MatRestoreRow ( m, *cur_entry, &num_cols, &cols, &data );
       cur_entry++;
     }
     d_epetraMatrix->FillComplete ();

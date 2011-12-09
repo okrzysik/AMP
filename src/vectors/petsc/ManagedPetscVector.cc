@@ -715,10 +715,23 @@ namespace LinearAlgebra {
     parameters_ptr params = boost::dynamic_pointer_cast<ManagedVectorParameters> (dest.castTo<ManagedVector>().getParameters());
     if ( !params ) throw ( "Incompatible vector types" );
 
-    VecGetValues ( source , 
-                   dest.getLocalSize() , 
-               &(*(params->d_Engine->getEngineParameters()->castTo<EpetraVectorEngineParameters>().begin())) ,
-                   dest.getRawDataBlock<double> () );
+    EpetraVectorEngineParameters eparams = params->d_Engine->getEngineParameters()->castTo<EpetraVectorEngineParameters>();
+    
+    PetscInt *ids = NULL;
+    if ( sizeof(PetscInt) != sizeof(size_t) ) {
+        AMP_INSIST(dest.getGlobalSize()<0x80000000,"PETsc is compiled with 32-bit integers and we are trying to use a vector with more than 2^31 elements");
+        ids = new PetscInt[eparams.getLocalSize()];
+        EpetraVectorEngineParameters::iterator it = eparams.begin();
+        for (size_t i=0; i<eparams.getLocalSize(); i++) {
+            ids[i] = (PetscInt) *it;
+            ++it;
+        }
+    } else {
+        ids = (PetscInt*) &(*(eparams.begin()));
+    }
+    VecGetValues( source, dest.getLocalSize(), ids, dest.getRawDataBlock<double>() );
+    if ( sizeof(PetscInt) != sizeof(size_t) )
+        delete [] ids;
   }
 
   boost::shared_ptr<AMP::LinearAlgebra::Vector>  ManagedPetscVector::createFromPetscVec ( Vec source , AMP_MPI &comm )

@@ -18,8 +18,15 @@ namespace LinearAlgebra {
     #else
         Epetra_SerialComm  comm;
     #endif
+    AMP_INSIST(getGlobalSize()<0x80000000,"Epetra does not support vectors with global size greater than 2^31");
+    std::vector<int> ids(getLocalSize(),0);
+    iterator it = begin();
+    for (size_t i=0; i<getLocalSize(); i++) {
+        ids[i] = (int) *it;
+        ++it;
+    }
     if ( d_emap.get() == 0 )
-      d_emap = boost::shared_ptr<Epetra_Map> ( new Epetra_Map ( getGlobalSize() , getLocalSize() , &*begin() , 0 , comm ) );
+      d_emap = boost::shared_ptr<Epetra_Map> ( new Epetra_Map ( (int) getGlobalSize(), (int) getLocalSize(), &ids[0], 0, comm ) );
     return *d_emap;
   }
 

@@ -4,7 +4,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
   inline
-  int   ManagedDataMap::firstRow () 
+  size_t   ManagedDataMap::firstRow () 
   { 
     return d_FirstRow;
   }
@@ -46,7 +46,7 @@ namespace LinearAlgebra {
   }
 
   inline
-  ManagedDataMap::ManagedDataMap ( int local_size , int global_size )
+  ManagedDataMap::ManagedDataMap ( size_t local_size , size_t global_size )
     : d_vMapping ( new mapping ( local_size ) ),
       d_uiLocalSize ( local_size ) ,
       d_uiGlobalSize ( global_size ) 
@@ -57,9 +57,9 @@ namespace LinearAlgebra {
 
 
   inline
-  void ManagedDataMap::addMapping ( int local_id , int global_id )
+  void ManagedDataMap::addMapping ( size_t local_id , size_t global_id )
   {
-    if ( (unsigned int)local_id >= d_uiLocalSize ) 
+    if ( local_id >= d_uiLocalSize ) 
       AMP_ERROR( "local_id out of bounds" );
 
     (*d_vMapping)[local_id] = global_id;
