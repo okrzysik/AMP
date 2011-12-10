@@ -91,7 +91,7 @@ namespace LinearAlgebra {
   ManagedVectorParameters::ManagedVectorParameters ()
   {
     d_CloneEngine = true;
-    d_Buffer = VectorEngine::BufferPtr ();
+    d_Buffer = VectorEngine::BufferPtr();
   }
 
   inline

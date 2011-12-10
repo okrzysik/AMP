@@ -220,10 +220,10 @@ public:
     /**
      * \brief  Construct a CommunicationList with no comunication
      * \param[in]  local  The number of local elements in the vector
-     * \param[in]  c  The AMP_MPI for the vector.
+     * \param[in]  comm   The AMP_MPI for the vector.
      * \details  Create a communication list with no communication.
      */
-    static CommunicationList::shared_ptr  createEmpty ( size_t local , AMP_MPI c = AMP_MPI(AMP_COMM_WORLD) );
+    static CommunicationList::shared_ptr  createEmpty ( size_t local , AMP_MPI comm );
 
 protected:
 

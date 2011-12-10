@@ -7,6 +7,18 @@ namespace Discretization {
 
 
 /****************************************************************
+* Constructors                                                  *
+****************************************************************/
+DOFManager::DOFManager ( size_t N_local, AMP_MPI comm )
+{
+    d_comm = comm;
+    d_comm.sumScan(&N_local,&d_end,1);
+    d_begin = d_end - N_local;
+    d_global = d_comm.bcast(d_end,d_comm.getSize()-1);
+}
+
+
+/****************************************************************
 * Get the entry indices of DOFs given a mesh element            *
 ****************************************************************/
 void DOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <size_t> &dofs, std::vector<size_t> ) const
@@ -29,13 +41,13 @@ AMP::Mesh::MeshIterator DOFManager::getIterator( ) const
 }
 
 
+
 /****************************************************************
 * Return the first D.O.F. on this core                          *
 ****************************************************************/
 size_t DOFManager::beginDOF( ) const
 {
-    AMP_ERROR("beginDOF is not implimented for the base class");
-    return 0;
+    return d_begin;
 }
 
 
@@ -44,8 +56,7 @@ size_t DOFManager::beginDOF( ) const
 ****************************************************************/
 size_t DOFManager::endDOF( ) const
 {
-    AMP_ERROR("endDOF is not implimented for the base class");
-    return 0;
+    return d_end;
 }
 
 
@@ -54,8 +65,7 @@ size_t DOFManager::endDOF( ) const
 ****************************************************************/
 size_t DOFManager::numLocalDOF( ) const
 {
-    AMP_ERROR("numGlobalDOF is not implimented for the base class");
-    return 0;
+    return (d_end-d_begin);
 }
 
 
@@ -64,18 +74,16 @@ size_t DOFManager::numLocalDOF( ) const
 ****************************************************************/
 size_t DOFManager::numGlobalDOF( ) const
 {
-    AMP_ERROR("numGlobalDOF is not implimented for the base class");
-    return 0;
+    return d_global;
 }
 
 
 /****************************************************************
-* Return the global number of D.O.F.s                           *
+* Return the communicator                                       *
 ****************************************************************/
 AMP_MPI DOFManager::getComm( ) const
 {
-    AMP_ERROR("getComm is not implimented for the base class");
-    return AMP_MPI(AMP_COMM_NULL);
+    return d_comm;
 }
 
 

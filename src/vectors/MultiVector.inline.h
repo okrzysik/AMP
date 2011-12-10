@@ -76,20 +76,6 @@ namespace LinearAlgebra {
   }
 
   inline
-  MultiVector::vector_iterator  MultiVector::eraseVector ( vector_iterator c )
-  {
-    return d_vVectors.erase ( c );
-  }
-  
-  inline
-  Vector::shared_ptr  MultiVector::create ( Variable::shared_ptr name , AMP_MPI comm )
-  {
-    Vector::shared_ptr retval ( new MultiVector ( name ) );
-    retval->castTo<MultiVector>().d_Comm = comm;
-    return retval;
-  }
-
-  inline
   AMP_MPI MultiVector::getComm() const
   {
     return d_Comm;
@@ -99,22 +85,6 @@ namespace LinearAlgebra {
   void MultiVector::dataChanged () 
   { 
     fireDataChange(); 
-  }
-
-  inline
-  Vector::shared_ptr  MultiVector::create ( const std::string &name , AMP_MPI comm )
-  {
-    Vector::shared_ptr retval ( new MultiVector ( Variable::shared_ptr ( new MultiVariable ( name ) ) ) );
-    retval->castTo<MultiVector>().d_Comm = comm;
-    return retval;
-  }
-
-  inline
-  MultiVector::MultiVector ( Variable::shared_ptr name )
-  {
-    setVariable ( name );
-    d_vGlobalOffsets.push_back ( 0 );
-    d_vLocalOffsets.push_back ( 0 );
   }
 
   inline

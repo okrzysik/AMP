@@ -152,6 +152,5 @@ namespace LinearAlgebra {
 }
 }
 
-#include "EpetraVector.inline.h"
 
 #endif

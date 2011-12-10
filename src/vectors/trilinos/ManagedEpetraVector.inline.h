@@ -21,6 +21,7 @@ namespace LinearAlgebra {
     p->d_Buffer = VectorEngine::BufferPtr ( new VectorEngine::Buffer ( d_vBuffer->size() ) );
     p->d_Engine = d_pParameters->d_Engine->cloneEngine( p->d_Buffer );
     p->d_CommList = getCommunicationList();
+    p->d_DOFManager = getDOFManager();
     p->d_CloneEngine = false;
     Vector::shared_ptr retVal = Vector::shared_ptr ( new ManagedEpetraVector ( boost::dynamic_pointer_cast<VectorParameters> ( p ) ) );
     retVal->setVariable ( var );

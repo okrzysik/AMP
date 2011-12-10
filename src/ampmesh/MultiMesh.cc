@@ -73,10 +73,9 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ):
         weights[i] = ((double)meshSizes[i])/((double)totalMeshSize);
     std::vector<AMP_MPI> comms = loadBalancer( weights, 1 );
     // Check that every mesh exist on some comm
-    AMP_MPI commNull(AMP_COMM_NULL);
     std::vector<int> onComm(meshParameters.size(),0);
     for (size_t i=0; i<meshParameters.size(); i++) {
-        if ( comms[i] != commNull )
+        if ( !comms[i].isNull() )
             onComm[i] = 1;
     }
     d_comm.maxReduce(&onComm[0],onComm.size());
@@ -85,7 +84,7 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ):
     // Create the meshes
     d_meshes = std::vector<AMP::Mesh::Mesh::shared_ptr>(0);
     for (size_t i=0; i<meshParameters.size(); i++) {
-        if ( comms[i] == commNull )
+        if ( comms[i].isNull() )
             continue;
         AMP::Mesh::MeshParameters::shared_ptr  params = meshParameters[i];
         params->setComm(comms[i]);

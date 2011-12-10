@@ -31,6 +31,16 @@ public:
     typedef boost::shared_ptr<AMP::Discretization::DOFManager>  shared_ptr;
 
 
+    /** \brief Basic constructor for DOFManager
+     * \details  This will create a very simple DOFManager with the given number of DOFs on each processor.
+     *   It will not contain info to relate that to a mesh.  A derived implimentation should be used for
+     *   more advanced features.  For example see simpleDOFManager and multiDOFManager.
+     * \param[in]  N_local  The local number of DOFs
+     * \param[in]  comm     The comm over which the DOFManager exists
+     */
+    DOFManager( size_t N_local, AMP_MPI comm );
+
+
     /** \brief Get the entry indices of DOFs given a mesh element
      * \details  This will return a vector of pointers into a Vector that are associated with which.
      * \param[in]  obj      The element to collect nodal objects for.  Note: the mesh element may be any type (include a vertex).
@@ -102,6 +112,11 @@ protected:
     //! The DOF manager parameters
     const DOFManagerParameters::shared_ptr params;
 
+    //! The begining DOF, ending DOF and number of local DOFs for this processor
+    size_t d_begin, d_end, d_global;
+
+    //! The comm for this DOFManager
+    AMP_MPI d_comm;
 };
 
 

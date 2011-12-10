@@ -225,6 +225,8 @@ namespace LinearAlgebra {
     retVal->setVariable ( var );
     retVal->d_ViewVector = v;
     retVal->setCommunicationList ( v->getCommunicationList()->subset ( var->castTo<SubsetVariable>().getIndexer() ) );
+    AMP_ERROR("Need to subset DOFManager");
+    //retVal->d_DOFManager ( v->getDOFManager()->subset ( var->castTo<SubsetVariable>().getIndexer() ) );
     retVal->computeIDMap ();
     return Vector::shared_ptr ( retVal );
   }

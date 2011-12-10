@@ -1,7 +1,6 @@
 #ifndef included_AMP_UnitTest_test_VectorLoops
 #define included_AMP_UnitTest_test_VectorLoops
 
-#include "vectors/DualVector.h"
 #include "utils/UnitTest.h"
 
 #ifdef USE_SUNDIALS

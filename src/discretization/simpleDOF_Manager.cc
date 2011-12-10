@@ -15,6 +15,7 @@ simpleDOFManager::simpleDOFManager( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP
     d_mesh = mesh;
     d_type = type;
     d_gcw = gcw;
+    d_comm = d_mesh->getComm();
     DOFsPerElement = DOFsPerObject;
     // Create a sorted list of the local and remote types
     d_local_id.resize(mesh->numLocalElements(d_type));
@@ -39,11 +40,10 @@ simpleDOFManager::simpleDOFManager( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP
     AMP::Utilities::quicksort(d_local_id);
     AMP::Utilities::quicksort(d_remote_id);
     // Get the number of local elements per processor and the global number of DOFs
-    AMP_MPI comm = d_mesh->getComm();
-    size_t N_local = d_local_id.size();
-    comm.sumScan<size_t>(&N_local,&d_end);
+    size_t N_local = d_local_id.size()*DOFsPerElement;
+    d_comm.sumScan<size_t>(&N_local,&d_end);
     d_begin = d_end-N_local;
-    d_global = comm.bcast(d_end,comm.getSize()-1);
+    d_global = d_comm.bcast(d_end,d_comm.getSize()-1);
     // Determine the remote DOFs (assuming 1 DOF per node)
     // Note: this must be done after d_local_id is set, d_begin and d_global are set, and remote_ids must be sorted.
     d_remote_dof = getRemoteDOF(d_remote_id);
@@ -68,7 +68,7 @@ void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <
             size_t index = AMP::Utilities::findfirst(d_local_id,local_id);
             AMP_INSIST(local_id==d_local_id[index],"Internal Error: id not found");
             for (int j=0; j<DOFsPerElement; j++)
-                dofs[i*DOFsPerElement+j] = (index+d_begin)*DOFsPerElement + j;
+                dofs[i*DOFsPerElement+j] = index*DOFsPerElement + d_begin + j;
         }
     } else {
         // Return only the desired dof
@@ -78,7 +78,7 @@ void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <
             size_t index = AMP::Utilities::findfirst(d_local_id,local_id);
             AMP_INSIST(local_id==d_local_id[index],"Internal Error: id not found");
             for (int j=0; j<DOFsPerElement; j++)
-                dofs[i*DOFsPerElement+j] = (index+d_begin)*DOFsPerElement + j;
+                dofs[i*DOFsPerElement+j] = index*DOFsPerElement + d_begin + j;
         }
     }
 }
@@ -88,7 +88,7 @@ void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector 
     size_t index = AMP::Utilities::findfirst(d_local_id,id);
     AMP_INSIST(id==d_local_id[index],"Internal Error: id not found");
     for (int j=0; j<DOFsPerElement; j++)
-        dofs[j] = (index+d_begin)*DOFsPerElement + j;
+        dofs[j] = index*DOFsPerElement + d_begin + j;
 }
 
 
@@ -98,51 +98,6 @@ void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector 
 AMP::Mesh::MeshIterator simpleDOFManager::getIterator( ) const
 {
     return d_mesh->getIterator(d_type,0);
-}
-
-
-/****************************************************************
-* Return the first D.O.F. on this core                          *
-****************************************************************/
-size_t simpleDOFManager::beginDOF( ) const
-{
-    return d_begin*DOFsPerElement;
-}
-
-
-/****************************************************************
-* Return the last D.O.F. on this core                           *
-****************************************************************/
-size_t simpleDOFManager::endDOF( ) const
-{
-    return d_end*DOFsPerElement;
-}
-
-
-/****************************************************************
-* Return the local number of D.O.F.s                           *
-****************************************************************/
-size_t simpleDOFManager::numLocalDOF( ) const
-{
-    return (d_end-d_begin)*DOFsPerElement;
-}
-
-
-/****************************************************************
-* Return the global number of D.O.F.s                           *
-****************************************************************/
-size_t simpleDOFManager::numGlobalDOF( ) const
-{
-    return d_global*DOFsPerElement;
-}
-
-
-/****************************************************************
-* Return the communicator                                       *
-****************************************************************/
-AMP_MPI simpleDOFManager::getComm( ) const
-{
-    return d_mesh->getComm();
 }
 
 
@@ -181,7 +136,7 @@ std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
             size_t index = AMP::Utilities::findfirst(d_local_id,id);
             AMP_INSIST(id==d_local_id[index],"Internal Error: id not found");
             for (int j=0; j<DOFsPerElement; j++)
-                ids2[i*DOFsPerElement+j] = (index+d_begin)*DOFsPerElement + j;
+                ids2[i*DOFsPerElement+j] = index*DOFsPerElement + d_begin + j;
         } else {
             // We are dealing with a remote element, hopefully we know where it is
             size_t index = AMP::Utilities::findfirst(d_remote_id,id);
@@ -310,7 +265,7 @@ std::vector<size_t> simpleDOFManager::getRemoteDOF(std::vector<AMP::Mesh::MeshEl
     for (size_t i=0; i<tot_size; i++) {
         int j = AMP::Utilities::findfirst(d_local_id,recv_id[i]);
         AMP_ASSERT(d_local_id[j]==recv_id[i]);
-        recieved_DOF[i] = d_begin + j;
+        recieved_DOF[i] = d_begin/DOFsPerElement + j;
     }
     // Send the DOFs back to the original processor
     std::vector<size_t> remote_dof;

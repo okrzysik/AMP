@@ -26,7 +26,7 @@ struct MeshElementID{
 public:
     // Constructors used to initialize key values
 	MeshElementID() {
-        data[0] = 0xFFFFFFFFFFFFFFFF;       // set the mesh id to -1
+        data[0] = ~((size_t)0);             // set the mesh id to -1
         data[1] = 0x00000000FFFFFFFF;       // set is_local to false, local id to 0, owner_rank to 0, and local_id to -1
     }
 	MeshElementID(bool isLocal, GeomType type_id, unsigned int local_ID, unsigned int owner_rank_id, size_t mesh_ID) {

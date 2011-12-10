@@ -1,5 +1,5 @@
-#ifndef included_simpleDOF_Manager
-#define included_simpleDOF_Manager
+#ifndef included_MultiDOF_Manager
+#define included_MultiDOF_Manager
 
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -14,26 +14,27 @@
 namespace AMP {
 namespace Discretization {
 
+
 /**
- * \class simpleDOFManager
- * \brief A derived class to create a simple DOF_Manager
- * \details  This derived class impliments a concrete DOF_Manager for creating Vectors 
- *    over a mesh on a particular mesh entity.  For example it can create a NodalVector
- *    over the entire Mesh.  Note: this class will be replaced by a more complete 
- *    Discretization interface.
+ * \class multiDOFManager
+ * \brief A derived class to combine multiple DOFManagers
+ * \details  This derived class impliments a concrete DOF_Manager for creating DOFs that
+ *   consist of multiple DOFManagers.  This is useful to combine multiple DOFs over meshes
+ *   on a multiVector, for combining multiple discretizations, and for combining vectors.
+ *   A multivector will have a pointer to a multiDOFManager instead of a standard DOFManager.
+ *   It is also possible that a standard vector can use a multiDOFManager.
  */
-class simpleDOFManager: public DOFManager, public boost::enable_shared_from_this<AMP::Discretization::simpleDOFManager>
+class multiDOFManager: public DOFManager
 {
 public:
 
     /**
      * \brief Create a new DOF manager object
-     * \details  This is the standard constructor for creating a new DOF manager object.
-     * \param mesh  Mesh over which we want to construct the DOF map
-     * \param type  The geometric entity type for the DOF map
-     * \param gcw   The desired ghost width
+     * \details  This is the standard constructor for creating a new multiDOFManager object.
+     * \param comm  Comm over which the DOFManager will exist
+     * \param managers  List of the DOFManagers on the current processor
      */
-    simpleDOFManager ( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP::Mesh::GeomType type, int gcw, int DOFsPerElement );
+    multiDOFManager ( AMP_MPI comm, std::vector<DOFManager::shared_ptr> managers );
 
 
     /** \brief Get the entry indices of DOFs given a mesh element
@@ -56,14 +57,11 @@ public:
 
 
     /** \brief   Get an entry over the mesh elements associated with the DOFs
-     * \details  This will return an iterator over the mesh elements associated
-     *  with the DOFs.  Each element in the iterator will have 1 or more DOFs
-     *  that are associated with that element.  For eaxample, a NodalVectorDOF
-     *  would have 3 DOFs stored at each node, and would return an iterator over
-     *  all the nodes. 
+     * \details  This will return an iterator over the mesh elements associated with the DOFs.  
+     * Note: if any sub-DOFManagers are the same, then this will iterate over repeated elements.
      */
     virtual AMP::Mesh::MeshIterator getIterator() const;
-
+ 
 
     //! Get the remote DOFs for a vector
     virtual std::vector<size_t> getRemoteDOFs() const;
@@ -72,19 +70,21 @@ public:
     //! Get the row DOFs given a mesh element
     virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const;
 
+    //! Function to convert DOFs from a sub-manager DOF to the global DOF
+    std::vector<size_t>  getGlobalDOF(DOFManager::shared_ptr, std::vector<size_t>&) const;
+
+    /** Function to convert DOFs from the global DOF to a sub-manager DOF
+     *  If a given global DOF is not in the given sub-manager, then -1 will
+     *  be returned for its value.
+     */
+    std::vector<size_t>  getSubDOF(DOFManager::shared_ptr, std::vector<size_t>&) const;
 
 private:
-    // Function to find the remote DOF given a set of mesh element IDs
-    std::vector<size_t> getRemoteDOF(std::vector<AMP::Mesh::MeshElementID> remote_ids ) const;
-
-    // Data members
-    boost::shared_ptr<AMP::Mesh::Mesh>  d_mesh;
-    AMP::Mesh::GeomType d_type;
-    int d_gcw;
-    int DOFsPerElement;
-    std::vector<AMP::Mesh::MeshElementID> d_local_id;
-    std::vector<AMP::Mesh::MeshElementID> d_remote_id;
-    std::vector<size_t> d_remote_dof;
+    std::vector<DOFManager::shared_ptr>                         d_managers;
+    std::vector<size_t>                                         d_localSize;
+    std::vector<size_t>                                         d_globalSize;
+    std::vector< std::vector< std::pair<size_t,size_t> > >      d_subToGlobalDOF;
+    std::vector< std::vector< std::pair<size_t,size_t> > >      d_globalToSubDOF;
 };
 
 

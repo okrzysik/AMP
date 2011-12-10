@@ -28,6 +28,7 @@ namespace LinearAlgebra {
       p->d_Engine = d_Engine->cloneEngine ( p->d_Buffer );
     }
     p->d_CommList = getCommunicationList();
+    p->d_DOFManager = getDOFManager();
     ManagedPetscVector *retVal = new ManagedPetscVector ( boost::dynamic_pointer_cast<VectorParameters> ( p ) );
     return retVal;
   }

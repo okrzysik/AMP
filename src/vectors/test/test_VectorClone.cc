@@ -1,8 +1,6 @@
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/sundials/ManagedSundialsVector.h"
 #include "vectors/trilinos/ManagedEpetraVector.h"
-#include "vectors/DualVector.h"
-#include "vectors/DualVariable.h"
 #include "vectors/MultiVector.h"
 #include "vectors/MultiVariable.h"
 

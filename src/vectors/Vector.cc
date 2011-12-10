@@ -247,20 +247,21 @@ double Vector::wrmsNormMask ( const VectorOperations &x , const VectorOperations
 
 /************************************************************************
 *                                                                       *
-* The constructor for Vector<DIM> objects initializes vector structure. *
+* The constructor for Vector objects initializes vector structure.      *
 *                                                                       *
 ************************************************************************/
 Vector::Vector( VectorParameters::shared_ptr  parameters)
 {
-
     // Set default output stream
     d_output_stream = &AMP::plog;
-
+    // Copy the relavent parameters
+    AMP_INSIST(parameters->d_CommList.get()!=NULL,"d_CommList must be set in VectorParameters");
+    AMP_INSIST(parameters->d_DOFManager.get()!=NULL,"d_DOFManager must be set in VectorParameters");
     setCommunicationList ( parameters->d_CommList );
     d_UpdateState.reset( new UpdateState );
     *d_UpdateState = NOT_UPDATING;
     d_DOFManager = parameters->d_DOFManager;
-}
+ }
 
 
 void Vector::makeConsistent ( ScatterType  t )

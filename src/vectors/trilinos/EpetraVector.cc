@@ -6,6 +6,15 @@
 namespace AMP {
 namespace LinearAlgebra {
 
+
+  EpetraVector::EpetraVector()
+  {
+  }
+
+  EpetraVector::~EpetraVector ()
+  {
+  }
+
   const Vector::shared_ptr  EpetraVector::constView ( const Vector::shared_ptr inVector )
   {
     if ( inVector->isA<EpetraVector> () )

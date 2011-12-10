@@ -19,6 +19,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
 {
     // Create the communication list
     AMP_MPI comm = DOFs->getComm();
+    AMP_ASSERT( !comm.isNull() );
     AMP::LinearAlgebra::CommunicationList::shared_ptr comm_list;
     std::vector<size_t> remote_DOFs = DOFs->getRemoteDOFs();
     bool ghosts = comm.maxReduce<char>(remote_DOFs.size()>0)==1;

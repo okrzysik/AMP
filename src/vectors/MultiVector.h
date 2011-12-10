@@ -9,239 +9,227 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-  /// \brief Typedef for the parameters to create a MultiVector
-  typedef VectorParameters MultiVectorParameters;
 
-  /** \brief A collection of AMP Vectors that appear as one vector
-    * \details
-       Given a set of vectors \f$(\mathrm{v}_1 , \mathrm{v}_2 , \ldots , 
-       \mathrm{v}_n)\f$, they can be collected into a single \f$\tilde{\mathrm{v}} = 
-       \{\mathrm{v}_1  \mathrm{v}_2  \ldots  \mathrm{v}_n\}^T\f$.  This class
-       accomplishes this task.
+/** \brief A collection of AMP Vectors that appear as one vector
+  * \details
+  *    Given a set of vectors \f$(\mathrm{v}_1 , \mathrm{v}_2 , \ldots , 
+  *    \mathrm{v}_n)\f$, they can be collected into a single \f$\tilde{\mathrm{v}} = 
+  *    \{\mathrm{v}_1  \mathrm{v}_2  \ldots  \mathrm{v}_n\}^T\f$.  This class
+  *    accomplishes this task.
+  *
+  *    The new vector is numbered such that if \f$\mathrm{v}_i \in \mathbb{R}^{n_i}\f$,
+  *    the first entry in \f$\mathrm{v}_i\f$ relative to the first entry of the multivector
+  *    is \f[\sum_j=0^{i-1} n_i\f].
+  */
+class MultiVector : public Vector , public VectorEngine , public DataChangePassThrough
+{
+public:
+    //!  Iterator typedef
+    typedef std::vector<Vector::shared_ptr>::iterator  vector_iterator;
 
-       The new vector is numbered such that if \f$\mathrm{v}_i \in \mathbb{R}^{n_i}\f$,
-       the first entry in \f$\mathrm{v}_i\f$ relative to the first entry of the multivector
-       is \f[\sum_j=0^{i-1} n_i\f].
-       */
-  class MultiVector : public Vector , public VectorEngine , public DataChangePassThrough
-  {
-    protected:
-      /// \brief  The communicator this multivector is on
-      AMP_MPI                            d_Comm;
-      /// \brief  Indicates if the multivector created the communicator
-      bool                               d_CommCreated;
+    //!  Iterator typedef
+    typedef std::vector<Vector::shared_ptr>::const_iterator  vector_const_iterator;
 
-      /// \brief The list of AMP Vectors that comprise this Vector
-      std::vector<Vector::shared_ptr>    d_vVectors;
-      /// \brief The global lengths of each vector
-      std::vector<size_t>                d_vGlobalOffsets;
-      /// \brief The local length of each vector
-      std::vector<size_t>                d_vLocalOffsets;
+    /** \brief Return the first vector in the MultiVector
+      * \return The first vector
+      */
+    vector_iterator beginVector();
 
-      virtual void *getRawDataBlockAsVoid ( size_t );
-      virtual const void *getRawDataBlockAsVoid ( size_t ) const;
+    /** \brief Return one past the last vector in the MultiVector
+      * \return One past the last vector
+      */
+    vector_iterator endVector();
 
-      /** \brief A convenience method for extracting vectors from a base class
-        * \param[in]  vec  The vector to extract a vector from
-        * \param[in]  which  Which vector to get
-        * \return     The extracted vector
-        */
-      const Vector::shared_ptr &getVector ( const VectorOperations &vec , size_t which ) const;
+    /** \brief Determine if a Vector is a constituent
+      * \param[in]  p  The vector to look for
+      * \return True if the pointer p is in the multivector
+      */
+    bool  containsPointer ( const Vector::shared_ptr p ) const;
 
-      /** \brief A convenience method for extracting vectors from a base class
-        * \param[in]  vec  The vector to extract a vector from
-        * \param[in]  which  Which vector to get
-        * \return     The extracted vector
-        */
-            Vector::shared_ptr &getVector (       VectorOperations &vec , size_t which ) const;
+    /** \brief Create a new multivector in parallel
+      * \param[in] name  Variable describing the new vector
+      * \param[in] comm  Communicator to build the MultiVector on
+      */
+    static Vector::shared_ptr  create ( Variable::shared_ptr name , AMP_MPI  comm );
 
-      /** \brief A method that will translate an array of global ids relative to the multivector
-        * into an array of arrays of global ids relative to the component vectors
-        * \param[in] num            The length of the id array indices and double array vals
-        * \param[in] indices        The indices of the values relative to the multivector
-        * \param[in] vals           Values associated somehow with the indices
-        * \param[out] out_indices   An array of arrays of mapped indices relative to constituent vectors
-        * \param[out] out_vals      The values partitioned according to out_indices
-        * \param[in] offset_vec     The lengths of the constituent vectors
-        * \param[out] remap         If not null, this is a list of where in the indices array 
-        *                           an entry comes from
-        * \details  This is the method that handles all of the bookkeeping associated with
-        * treating a set of vectors of arbitrary length as a single vector
-        */
-      void  partitionValues ( size_t num , 
-                              size_t *indices , 
-                              const double *vals ,
-                              std::vector<std::vector<size_t> >  &out_indices , 
-                              std::vector<std::vector<double > >  &out_vals ,
-                              const std::vector<size_t>  &offset_vec , 
-                              std::vector< std::vector<size_t> >  *remap = 0 ) const ;
+    /** \brief Create a new multivector in parallel
+      * \param[in] name  Name of the new vector
+      * \param[in] comm  Communicator to build the MultiVector on
+      */
+    static Vector::shared_ptr  create ( const std::string &name , AMP_MPI comm );
 
-      /** Constructor:  create a MultiVector with a particular variable
-        * \param[in]  names  The vector to create the MultiVector from
-        */
-      MultiVector ( Variable::shared_ptr names );
+    /** \brief Create a multivector view of a vector
+      * \param[in] vec  The vector to view
+      * \param[in] comm  Communicator to create the MultiVector on
+      * \details  If vec is a MultiVector, it is returned.  Otherwise, a MultiVector is created
+      * and vec is added to it.  If vec is not a parallel vector (such as a SimpleVector), comm
+      * must be specified.
+      */
+    static Vector::shared_ptr  view ( Vector::shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
 
-      virtual void dataChanged ();
+    /** \brief Encapsulate a vector in a MultiVector
+      * \param[in] vec  The vector to view
+      * \param[in] comm  Communicator to create the MultiVector on
+      * \details  If vec is a MultiVector, it is returned.  Otherwise, a MultiVector is created
+      * and vec is added to it.  If vec is not a parallel vector (such as a SimpleVector), comm
+      * must be specified.
+      */
+    static Vector::shared_ptr  encapsulate ( Vector::shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
 
-    public:
-      /** Iterator typedef
-        */
-      typedef std::vector<Vector::shared_ptr>::iterator  vector_iterator;
+    virtual void addVector ( Vector::shared_ptr );
 
-      /** Iterator typedef
-        */
-      typedef std::vector<Vector::shared_ptr>::const_iterator  vector_const_iterator;
+    /** \brief  Remove a vector from a MultiVector
+      * \param[in]  vec  The Vector to remove from the MultiVector
+      */
+    virtual void eraseVector ( Vector::shared_ptr vec );
 
-      /** \brief Return the first vector in the MultiVector
-        * \return The first vector
-        */
-      vector_iterator beginVector();
+    /** \brief  Return the i-th Vector in this MultiVector
+      * \param[in]  i  Which vector to return
+      * \return  The i-th Vector
+      */
+    virtual Vector::shared_ptr  getVector ( size_t i );
 
-      /** \brief Return one past the last vector in the MultiVector
-        * \return One past the last vector
-        */
-      vector_iterator endVector();
+    /** \brief  Obtain the number of Vector objects in this MultiVector
+      * \return  The number of Vector objects in this MultiVector
+      */
+    size_t  getNumberOfSubvectors ();
 
-      /** \brief Determine if a Vector is a constituent
-        * \param[in]  p  The vector to look for
-        * \return True if the pointer p is in the multivector
-        */
-      bool  containsPointer ( const Vector::shared_ptr p ) const;
+    /** \brief  Return the beginning iterator of the i-th Vector
+      * \param[in] i  Which Vector to return the beginning iterator from
+      * \return The iterator
+      */
+    virtual Vector::iterator    getIterator ( size_t i );
 
-      /** \brief Create a new multivector in parallel
-        * \param[in] name  Variable describing the new vector
-        * \param[in] comm  Communicator to build the MultiVector on
-        */
-      static Vector::shared_ptr  create ( Variable::shared_ptr name , AMP_MPI  comm );
+    /** \brief  Return the beginning iterator of the i-th Vector
+      * \param[in] i  Which Vector to return the beginning iterator from
+      * \return The iterator
+      */
+    virtual Vector::const_iterator    getIterator ( size_t i ) const;
 
-      /** \brief Create a new multivector in parallel
-        * \param[in] name  Name of the new vector
-        * \param[in] comm  Communicator to build the MultiVector on
-        */
-      static Vector::shared_ptr  create ( const std::string &name , AMP_MPI comm );
+    //!  Destructor
+    virtual ~MultiVector();
 
-      /** \brief Create a multivector view of a vector
-        * \param[in] vec  The vector to view
-        * \param[in] comm  Communicator to create the MultiVector on
-        * \details  If vec is a MultiVector, it is returned.  Otherwise, a MultiVector is created
-        * and vec is added to it.  If vec is not a parallel vector (such as a SimpleVector), comm
-        * must be specified.
-        */
-      static Vector::shared_ptr  view ( Vector::shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
+    // Vector functions
+    virtual Vector::iterator    begin();
+    virtual Vector::iterator    end();
+    virtual Vector::const_iterator    begin() const;
+    virtual Vector::const_iterator    end() const;
 
-      /** \brief Encapsulate a vector in a MultiVector
-        * \param[in] vec  The vector to view
-        * \param[in] comm  Communicator to create the MultiVector on
-        * \details  If vec is a MultiVector, it is returned.  Otherwise, a MultiVector is created
-        * and vec is added to it.  If vec is not a parallel vector (such as a SimpleVector), comm
-        * must be specified.
-        */
-      static Vector::shared_ptr  encapsulate ( Vector::shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
+    virtual void      selectInto ( const VectorSelector & , Vector::shared_ptr );
 
-      virtual void addVector ( Vector::shared_ptr );
+    virtual void      dumpOwnedData ( std::ostream &out , size_t GIDoffset=0 , size_t LIDoffset = 0 ) const;
+    virtual void      dumpGhostedData ( std::ostream &out , size_t offset=0 ) const;
+    virtual std::string type() const;
 
-      /** \brief  Remove a vector from a MultiVector
-        * \param[in]  vec  The Vector to remove from the MultiVector
-        * \return  The next Vector in the MultiVector
-        */
-      virtual vector_iterator eraseVector ( vector_iterator vec );
+    virtual AMP_MPI  getComm () const;
 
-      /** \brief  Return the i-th Vector in this MultiVector
-        * \param[in]  i  Which vector to return
-        * \return  The i-th Vector
-        */
-      virtual Vector::shared_ptr  getVector ( size_t i );
+    virtual size_t numberOfDataBlocks () const;
 
-      /** \brief  Obtain the number of Vector objects in this MultiVector
-        * \return  The number of Vector objects in this MultiVector
-        */
-      size_t  getNumberOfSubvectors ();
+    virtual size_t sizeOfDataBlock ( size_t i ) const;
 
-      /** \brief  Return the beginning iterator of the i-th Vector
-        * \param[in] i  Which Vector to return the beginning iterator from
-        * \return The iterator
-        */
-      virtual Vector::iterator    getIterator ( size_t i );
+    virtual Vector::shared_ptr  subsetVectorForVariable ( const Variable::shared_ptr &name );
+    virtual Vector::shared_ptr cloneVector(const Variable::shared_ptr name) const;
+//    virtual void copyVector(const Vector &src_vec);
+    virtual void swapVectors(Vector &other);
+    virtual void aliasVector(Vector &other);
+    virtual void setToScalar(double alpha);
+    virtual void scale(double alpha, const VectorOperations &x);
+    virtual void scale(double alpha);
+    virtual void add(const VectorOperations &x, const VectorOperations &y);
+    virtual void subtract(const VectorOperations &x, const VectorOperations &y);
+    virtual void multiply( const VectorOperations &x, const VectorOperations &y);
+    virtual void divide( const VectorOperations &x, const VectorOperations &y);
+    virtual void reciprocal(const VectorOperations &x);
+    virtual void linearSum(double alpha, const VectorOperations &x,
+          double beta, const VectorOperations &y);
+    virtual void axpy(double alpha, const VectorOperations &x, const VectorOperations &y);
+    virtual void axpby(double alpha, double beta, const VectorOperations &x);
+    virtual void abs(const VectorOperations &x);
+    virtual double min(void) const;
+    virtual double max(void) const;
+    virtual void setRandomValues(void);
+    virtual void setValuesByLocalID ( int num , size_t *indices , const double *vals );
+    virtual void setLocalValuesByGlobalID ( int num , size_t *indices , const double *vals );
+    virtual void setValuesByGlobalID ( int num , size_t *indices , const double *vals );
+    virtual void addValuesByLocalID ( int num , size_t *indices , const double *vals );
+    virtual void addLocalValuesByGlobalID ( int num , size_t *indices , const double *vals );
+    virtual void addValuesByGlobalID ( int num , size_t *indices , const double *vals );
+    virtual void getValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
+    virtual void getLocalValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
+    virtual void getValuesByLocalID ( int numVals , size_t *ndx , double *vals ) const;
+    virtual void makeConsistent ( ScatterType  t );
+    virtual void assemble();
+    virtual double L1Norm(void) const;
+    virtual double L2Norm(void) const;
+    virtual double maxNorm(void) const;
+    virtual double dot(const VectorOperations &x) const;
+    virtual size_t getLocalSize() const;
+    virtual size_t getGlobalSize() const;
+    virtual size_t getGhostSize() const;
+    virtual void   putRawData ( double * );
 
-      /** \brief  Return the beginning iterator of the i-th Vector
-        * \param[in] i  Which Vector to return the beginning iterator from
-        * \return The iterator
-        */
-      virtual Vector::const_iterator    getIterator ( size_t i ) const;
+    // Vector engine functions
+    virtual boost::shared_ptr<std::vector<double> >  getNewBuffer();
+    virtual bool               sameEngine ( VectorEngine &rhs ) const;
+    virtual VectorEngine::shared_ptr cloneEngine ( boost::shared_ptr<std::vector<double> > ) const;
+    virtual void               swapEngines ( VectorEngine::shared_ptr p );
+    virtual const void          *getDataBlock ( size_t i ) const;
+    virtual void              *getDataBlock ( size_t i );
 
-      /** \brief  Destructor
-        */
-      virtual ~MultiVector();
-
-      virtual Vector::iterator    begin();
-      virtual Vector::iterator    end();
-      virtual Vector::const_iterator    begin() const;
-      virtual Vector::const_iterator    end() const;
-
-      virtual void        selectInto ( const VectorSelector & , Vector::shared_ptr );
-
-      virtual void        dumpOwnedData ( std::ostream &out , size_t GIDoffset=0 , size_t LIDoffset = 0 ) const;
-      virtual void        dumpGhostedData ( std::ostream &out , size_t offset=0 ) const;
-      virtual std::string type() const;
-
-      virtual AMP_MPI  getComm () const;
-
-      virtual size_t numberOfDataBlocks () const;
-
-      virtual size_t sizeOfDataBlock ( size_t i ) const;
-
-      virtual Vector::shared_ptr  subsetVectorForVariable ( const Variable::shared_ptr &name );
-      virtual Vector::shared_ptr cloneVector(const Variable::shared_ptr name) const;
-//      virtual void copyVector(const Vector &src_vec);
-      virtual void swapVectors(Vector &other);
-      virtual void aliasVector(Vector &other);
-      virtual void setToScalar(double alpha);
-      virtual void scale(double alpha, const VectorOperations &x);
-      virtual void scale(double alpha);
-      virtual void add(const VectorOperations &x, const VectorOperations &y);
-      virtual void subtract(const VectorOperations &x, const VectorOperations &y);
-      virtual void multiply( const VectorOperations &x, const VectorOperations &y);
-      virtual void divide( const VectorOperations &x, const VectorOperations &y);
-      virtual void reciprocal(const VectorOperations &x);
-      virtual void linearSum(double alpha, const VectorOperations &x,
-              double beta, const VectorOperations &y);
-      virtual void axpy(double alpha, const VectorOperations &x, const VectorOperations &y);
-      virtual void axpby(double alpha, double beta, const VectorOperations &x);
-      virtual void abs(const VectorOperations &x);
-      virtual double min(void) const;
-      virtual double max(void) const;
-      virtual void setRandomValues(void);
-      virtual void setValuesByLocalID ( int num , size_t *indices , const double *vals );
-      virtual void setLocalValuesByGlobalID ( int num , size_t *indices , const double *vals );
-      virtual void setValuesByGlobalID ( int num , size_t *indices , const double *vals );
-      virtual void addValuesByLocalID ( int num , size_t *indices , const double *vals );
-      virtual void addLocalValuesByGlobalID ( int num , size_t *indices , const double *vals );
-      virtual void addValuesByGlobalID ( int num , size_t *indices , const double *vals );
-      virtual void getValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
-      virtual void getLocalValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
-      virtual void getValuesByLocalID ( int numVals , size_t *ndx , double *vals ) const;
-      virtual void makeConsistent ( ScatterType  t );
-      virtual void assemble();
-      virtual double L1Norm(void) const;
-      virtual double L2Norm(void) const;
-      virtual double maxNorm(void) const;
-      virtual double dot(const VectorOperations &x) const;
-      virtual size_t getLocalSize() const;
-      virtual size_t getGlobalSize() const;
-      virtual size_t getGhostSize() const;
-      virtual void   putRawData ( double * );
+    virtual void   copyOutRawData ( double ** out );
 
 
-      ///Vector engine functions
-      virtual VectorEngine::BufferPtr  getNewBuffer();
-      virtual bool                     sameEngine ( VectorEngine &rhs ) const;
-      virtual VectorEngine::shared_ptr cloneEngine ( VectorEngine::BufferPtr  ) const;
-      virtual void                     swapEngines ( VectorEngine::shared_ptr p );
-      virtual const void              *getDataBlock ( size_t i ) const;
-      virtual void                    *getDataBlock ( size_t i );
+protected:
+    //! The communicator this multivector is on
+    AMP_MPI                    d_Comm;
+    //! Indicates if the multivector created the communicator
+    bool                     d_CommCreated;
 
-      virtual void   copyOutRawData ( double ** out );
-  };
+    //! The list of AMP Vectors that comprise this Vector
+    std::vector<Vector::shared_ptr>    d_vVectors;
+
+    virtual void *getRawDataBlockAsVoid ( size_t );
+    virtual const void *getRawDataBlockAsVoid ( size_t ) const;
+
+    /** \brief A convenience method for extracting vectors from a base class
+      * \param[in]  vec  The vector to extract a vector from
+      * \param[in]  which  Which vector to get
+      * \return     The extracted vector
+      */
+    const Vector::shared_ptr &getVector ( const VectorOperations &vec , size_t which ) const;
+
+    /** \brief A convenience method for extracting vectors from a base class
+      * \param[in]  vec  The vector to extract a vector from
+      * \param[in]  which  Which vector to get
+      * \return     The extracted vector
+      */
+    Vector::shared_ptr &getVector (     VectorOperations &vec , size_t which ) const;
+
+    /** Constructor:  create a MultiVector with a particular variable
+      * \param[in]  names  The vector to create the MultiVector from
+      */
+    MultiVector ( Variable::shared_ptr names );
+
+    virtual void dataChanged ();
+
+    /** A method that will translate an array of global ids relative to the multivector
+      * into an array of arrays of global ids relative to the component vectors
+      * \param[in] num            The number of DOFs that need to be mapped
+      * \param[in] indices        The indices of the values relative to the multivector
+      * \param[in] vals           Values associated somehow with the indices
+      * \param[out] out_indices   An array of arrays of mapped indices relative to constituent vectors
+      * \param[out] out_vals      The values partitioned according to out_indices
+      * \param[out] remap         If not null, this is a list of where in the indices array an entry comes from
+      */
+    void  partitionValues ( const int num, 
+                            const size_t *indices, 
+                            const double *vals,
+                            std::vector<std::vector<size_t> >  &out_indices, 
+                            std::vector<std::vector<double> >  &out_vals,
+                            std::vector<std::vector<int> > *remap=NULL ) const;
+
+};
+
 
 }
 }
