@@ -92,7 +92,6 @@ AMP_MPI DOFManager::getComm( ) const
 ****************************************************************/
 std::vector<size_t> DOFManager::getRemoteDOFs( ) const
 {
-    AMP_ERROR("getRemoteDOFs is not implimented for the base class");
     return std::vector<size_t>();
 }
 

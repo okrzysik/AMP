@@ -11,7 +11,51 @@ namespace Discretization {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-
+subsetDOFManager::subsetDOFManager( DOFManager::shared_ptr parentDOFManager, const std::vector <size_t> &dofs )
+{
+    d_parentDOFManager = parentDOFManager;
+    d_comm = d_parentDOFManager->getComm();
+    // Copy the local list of DOFs
+    d_localDOFs = dofs;
+    AMP::Utilities::quicksort(d_localDOFs);
+    size_t N_local = dofs.size();
+    d_comm.sumScan(&N_local,&d_end,1);
+    d_begin = d_end - N_local;
+    d_global = d_comm.bcast(d_end,d_comm.getSize()-1);
+    // Get the parent begin, end and global DOFs
+    d_parentBegin = d_parentDOFManager->beginDOF();
+    d_parentEnd = d_parentDOFManager->endDOF();
+    d_parentGlobal = d_parentDOFManager->numGlobalDOF();
+    // Determine which remote DOFs we will need to keep
+    size_t *send_data = NULL;
+    if ( N_local > 0 )
+        send_data = &d_localDOFs[0];
+    int *N_remote = new int[d_comm.getSize()];
+    int *N_disp = new int[d_comm.getSize()];
+    std::vector<size_t> recv_data(d_global);
+    d_comm.allGather( (int) N_local, N_remote );
+    N_disp[0] = 0;
+    for (int i=0; i<d_comm.getSize(); i++)
+        N_disp[i] = N_disp[i-1] + N_remote[i-1];
+    d_comm.allGather( send_data, (int) N_local, &recv_data[0], N_remote, N_disp, true );
+    AMP::Utilities::quicksort( recv_data );
+    std::vector<size_t> remoteDOFs = d_parentDOFManager->getRemoteDOFs();
+    d_remoteParentDOFs = std::vector<size_t>();
+    d_remoteSubsetDOFs = std::vector<size_t>();
+    d_remoteParentDOFs.reserve(remoteDOFs.size());
+    d_remoteSubsetDOFs.reserve(remoteDOFs.size());
+    size_t k = 0;
+    for (size_t i=0; i<remoteDOFs.size(); i++ ) {
+        size_t index = AMP::Utilities::findfirst(recv_data,remoteDOFs[i]);
+        if ( recv_data[index]==remoteDOFs[i] ) {
+            d_remoteParentDOFs[k] = remoteDOFs[i];
+            d_remoteSubsetDOFs[k] = index;
+            k++;
+        }
+    }
+    delete [] N_remote;
+    delete [] N_disp;
+}
 
 
 /****************************************************************
@@ -68,7 +112,7 @@ AMP::Mesh::MeshIterator subsetDOFManager::getIterator( ) const
 ****************************************************************/
 std::vector<size_t> subsetDOFManager::getRemoteDOFs( ) const
 {
-    return getSubsetDOF( d_remoteDOFs );
+    return d_remoteSubsetDOFs;
 }
 
 
@@ -93,15 +137,47 @@ std::vector<size_t> subsetDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
 /****************************************************************
 * Function to convert DOFs                                      *
 ****************************************************************/
-std::vector<size_t> subsetDOFManager::getParentDOF( const std::vector<size_t> &subDOFs ) const
+std::vector<size_t> subsetDOFManager::getParentDOF( const std::vector<size_t> &subsetDOFs ) const
 {
-    AMP_ERROR("Not programmed");
-    return std::vector<size_t>();
+    std::vector<size_t> parentDOFs(subsetDOFs.size());
+    for (size_t i=0; i<subsetDOFs.size(); i++) {
+        size_t DOF = subsetDOFs[i];
+        AMP_ASSERT(DOF<d_global);
+        if ( DOF>=d_begin && DOF<d_end ) {
+            // The DOF is local
+            parentDOFs[i] = d_localDOFs[DOF-d_begin];
+        } else {
+            // The DOF is a remote DOF
+            size_t index = AMP::Utilities::findfirst(d_remoteSubsetDOFs,DOF);
+            AMP_ASSERT(d_remoteSubsetDOFs[index]==DOF);
+            parentDOFs[i] = d_remoteParentDOFs[index];
+        }
+    }
+    return parentDOFs;
 }
-std::vector<size_t> subsetDOFManager::getSubsetDOF( const std::vector<size_t> &globalDOFs ) const
+std::vector<size_t> subsetDOFManager::getSubsetDOF( const std::vector<size_t> &parentDOFs ) const
 {
-    AMP_ERROR("Not programmed");
-    return std::vector<size_t>();
+    std::vector<size_t> subsetDOFs(subsetDOFs.size(),-1);
+    for (size_t i=0; i<parentDOFs.size(); i++) {
+        size_t DOF = parentDOFs[i];
+        AMP_ASSERT(DOF<d_parentGlobal);
+        if ( DOF>=d_parentBegin && DOF<d_parentEnd ) {
+            // The DOF is local
+            size_t index = AMP::Utilities::findfirst(d_localDOFs,DOF);
+            if ( d_localDOFs[index] == DOF )
+                subsetDOFs[i] = index + d_begin;
+        } else {
+            // The DOF is a remote DOF
+            size_t index = AMP::Utilities::findfirst(d_remoteParentDOFs,DOF);
+            if ( d_remoteParentDOFs[index] == DOF )
+                subsetDOFs[i] = d_remoteSubsetDOFs[index];
+        }
+    }
+    return parentDOFs;
+}
+std::vector<size_t> subsetDOFManager::getLocalParentDOFs( ) const
+{
+    return d_localDOFs;
 }
 
 

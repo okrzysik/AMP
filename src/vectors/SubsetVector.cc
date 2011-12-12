@@ -6,42 +6,69 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-  void   SubsetVector::computeIDMap ()
-  {
-    AMP_ERROR("Need to convert to use subset DOFManager");
-    VectorIndexer::shared_ptr  ndx = getVariable()->castTo<SubsetVariable>().getIndexer();
-    d_SubsetLocalIDToViewGlobalID.resize ( getLocalSize() );
-    for ( size_t i = 0 ; i != getLocalSize() ; i++ )
-    {
-      d_SubsetLocalIDToViewGlobalID[i] = ndx->getSuperID ( getCommunicationList()->getStartGID() + i );
-    }
-  }
 
-  size_t SubsetVector::numberOfDataBlocks () const
-  {
+/****************************************************************
+* Contructors                                                   *
+****************************************************************/
+Vector::shared_ptr  SubsetVector::view ( Vector::shared_ptr v , Variable::shared_ptr var_in )
+{
+    boost::shared_ptr<SubsetVariable> var = boost::dynamic_pointer_cast<SubsetVariable>( var_in );
+    AMP_ASSERT( var.get() != NULL );
+    // Subset the DOFManager and create a new communication list
+    boost::shared_ptr<AMP::Discretization::subsetDOFManager> subsetDOF = 
+        var->castTo<SubsetVariable>().getSubsetDOF( v->getDOFManager() );
+    std::vector<size_t> remote_DOFs = subsetDOF->getRemoteDOFs();
+    bool ghosts = v->getComm().maxReduce<char>(remote_DOFs.size()>0)==1;
+    AMP::LinearAlgebra::CommunicationList::shared_ptr commList;
+    if ( !ghosts ) {
+        commList = AMP::LinearAlgebra::CommunicationList::createEmpty( subsetDOF->numLocalDOF(), subsetDOF->getComm() );
+    } else {
+        // Construct the communication list
+        AMP::LinearAlgebra::CommunicationListParameters::shared_ptr params( new AMP::LinearAlgebra::CommunicationListParameters );
+        params->d_comm = subsetDOF->getComm();
+        params->d_localsize = subsetDOF->numLocalDOF();
+        params->d_remote_DOFs = remote_DOFs;
+        commList = AMP::LinearAlgebra::CommunicationList::shared_ptr( new AMP::LinearAlgebra::CommunicationList(params) );
+    }
+    // Create the new subset vector
+    SubsetVector *retVal = new SubsetVector();
+    retVal->setVariable ( var );
+    retVal->d_ViewVector = v;
+    retVal->d_DOFManager = subsetDOF;
+    retVal->setCommunicationList( commList );
+    retVal->d_SubsetLocalIDToViewGlobalID = subsetDOF->getLocalParentDOFs();
+    return Vector::shared_ptr ( retVal );
+}
+
+
+size_t SubsetVector::numberOfDataBlocks () const
+{
     if ( d_ViewVector )
       return d_ViewVector->numberOfDataBlocks();
     return 1;
-  }
+}
 
-  size_t SubsetVector::sizeOfDataBlock ( size_t i ) const
-  {
+
+size_t SubsetVector::sizeOfDataBlock ( size_t i ) const
+{
     if ( d_ViewVector )
       return d_ViewVector->sizeOfDataBlock ( i );
     if ( i > 0 )
       return 0;
     return d_Space.size();
-  }
+}
 
-  void  SubsetVector::swapVectors ( Vector &rhs )
-  {
+
+void  SubsetVector::swapVectors ( Vector &rhs )
+{
     SubsetVector &s = rhs.castTo<SubsetVector> ();
     d_Space.swap ( s.d_Space );
     std::swap ( d_ViewVector , s.d_ViewVector );
-  }
+}
 
-  void  SubsetVector::addLocalValuesByGlobalID ( int cnt , size_t *ndx ,  const double *vals )
-  {
+
+void  SubsetVector::addLocalValuesByGlobalID ( int cnt , size_t *ndx ,  const double *vals )
+{
     INCREMENT_COUNT("Virtual");
     if ( d_ViewVector )
     {
@@ -60,7 +87,7 @@ namespace LinearAlgebra {
         d_Space[ndx[i] - getCommunicationList()->getStartGID()] += vals[i];
       }
     }
-  }
+}
 
   void  SubsetVector::addValuesByLocalID ( int cnt , size_t *ndx ,  const double *vals )
   {
@@ -219,39 +246,29 @@ namespace LinearAlgebra {
     return retVal;
   }
 
-  Vector::shared_ptr  SubsetVector::view ( Vector::shared_ptr v , Variable::shared_ptr var )
-  {
-    SubsetVector *retVal = new SubsetVector();
-    AMP_ASSERT ( var->isA<SubsetVariable> () );
-    retVal->setVariable ( var );
-    retVal->d_ViewVector = v;
-    retVal->setCommunicationList ( v->getCommunicationList()->subset ( var->castTo<SubsetVariable>().getIndexer() ) );
-    AMP_ERROR("Need to subset DOFManager");
-    //retVal->d_DOFManager ( v->getDOFManager()->subset ( var->castTo<SubsetVariable>().getIndexer() ) );
-    retVal->computeIDMap ();
-    return Vector::shared_ptr ( retVal );
-  }
 
   Vector::iterator  SubsetVector::begin()
   {
-    if ( d_ViewVector )
+    AMP_ERROR("Not converted");
+    /*if ( d_ViewVector )
     {
       VectorIndexer::shared_ptr ndx = getVariable()->castTo<SubsetVariable>().getIndexer();
       return iterator ( this , 0 , ndx->getSuperID ( 0 ) , ndx );
     }
 
-    return Vector::begin();
+    return Vector::begin();*/
   }
 
   Vector::const_iterator  SubsetVector::begin() const
   {
-    if ( d_ViewVector )
+    AMP_ERROR("Not converted");
+    /*if ( d_ViewVector )
     {
       VectorIndexer::shared_ptr ndx = getVariable()->castTo<SubsetVariable>().getIndexer();
       return const_iterator ( this , 0 , ndx->getSuperID ( 0 ) , ndx );
     }
 
-    return Vector::begin();
+    return Vector::begin();*/
   }
 
 

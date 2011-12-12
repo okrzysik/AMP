@@ -1,5 +1,5 @@
-#ifndef included_MultiDOF_Manager
-#define included_MultiDOF_Manager
+#ifndef included_subsetDOF_Manager
+#define included_subsetDOF_Manager
 
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -24,6 +24,14 @@ namespace Discretization {
 class subsetDOFManager: public DOFManager
 {
 public:
+
+    /** \brief Default constructor
+     * \details  This is the default constructor for creating a subset DOF manager.  
+     * \param[in]  parentDOFManager  The parent DOF manager
+     * \param[out] dofs     The DOFs that will be part of the subset
+     */
+    subsetDOFManager( DOFManager::shared_ptr parentDOFManager, const std::vector <size_t> &dofs );
+
 
     /** \brief Get the entry indices of DOFs given a mesh element
      * \details  This will return a vector of pointers into a Vector that are associated with which.
@@ -59,11 +67,19 @@ public:
     virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const;
 
 
+    //! Function to return the local DOFs on the parent DOF manager
+    std::vector<size_t>  getLocalParentDOFs( ) const;
+
+
     //! Function to convert DOFs from a subset DOFManager DOF to the parent DOF
     std::vector<size_t>  getParentDOF( const std::vector<size_t>& ) const;
 
 
-    //! Function to convert DOFs from the parent DOF to a subset manager DOF
+    /**
+      *  Function to convert DOFs from the parent DOF to a subset manager DOF.
+      *  Note: if the parent DOF does not exist in the subset, then -1 will be
+      *  returned in it's place
+      */
     std::vector<size_t>  getSubsetDOF( const std::vector<size_t>& ) const;
 
 
@@ -76,14 +92,15 @@ private:
     //! The parent DOF Manager
     DOFManager::shared_ptr d_parentDOFManager;
 
-    //! The parent end DOFs for each processor
-    std::vector<size_t> d_parentEndDOF;
+    //! The parent begin, end, and global DOFs
+    size_t d_parentBegin, d_parentEnd, d_parentGlobal;
 
     //! The list of local DOFs (sorted, using the parent DOF numbering)
     std::vector<size_t> d_localDOFs;
 
-    //! The list of remote DOFs (sorted, using the parent DOF numbering)
-    std::vector<size_t> d_remoteDOFs;
+    //! The list of remote DOFs
+    std::vector<size_t> d_remoteParentDOFs;
+    std::vector<size_t> d_remoteSubsetDOFs;
 
 };
 

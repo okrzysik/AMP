@@ -2,7 +2,6 @@
 #define included_AMP_VectorSubsetter
 
 #include "SubsetVector.h"
-#include "SubsetVectorUsingSuperDOFs.h"
 #include "boost/shared_ptr.hpp"
 #include "StridedVariable.h"
 #include "RandomAccessIndexer.h"
@@ -73,26 +72,15 @@ namespace LinearAlgebra {
       VectorIndexer::shared_ptr  d_RAIndexer;
 
     public:
-      VectorRandomAccessSubsetter ( const std::string &n )
-        : d_Name ( n )
-        , d_RAIndexer ( new RandomAccessIndexer () )
-      {
-      }
+      VectorRandomAccessSubsetter ( const std::string &n );
 
       void   addID ( size_t i ) { d_RAIndexer->castTo<RandomAccessIndexer> ().addID ( i ); }
       virtual ~VectorRandomAccessSubsetter () {}
-      virtual Vector::shared_ptr   subset ( Vector::shared_ptr p )
-      {
-        d_RAIndexer->castTo<RandomAccessIndexer>().finalize();
-        Variable *pNewVar = new RandomSubsetVariable ( d_Name , d_RAIndexer );
-        Variable::shared_ptr spNewVar ( pNewVar );
-        return SubsetVectorUsingSuperDOFs::view ( p , spNewVar );
-      }
+      virtual Vector::shared_ptr   subset ( Vector::shared_ptr p );
   };
 
 }
 }
 
-#include "VectorSubsetter.inline.h"
 
 #endif

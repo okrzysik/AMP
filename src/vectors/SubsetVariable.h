@@ -2,6 +2,8 @@
 #define  included_AMP_SubsetVariable_H
 
 #include "VectorIndexer.h"
+#include "discretization/subsetDOFManager.h"
+
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -19,10 +21,11 @@ namespace LinearAlgebra {
         */
       SubsetVariable ( const std::string &name );
 
-      /** \brief Return a VectorIndexer that describes the subset
-        * \return The VectorIndexer
+      /** \brief Return a DOFManager that describes the subset
+        * \return The DOFManager
+        * \param[in]  manager  The DOF manager we want to subset
         */
-      virtual VectorIndexer::shared_ptr  getIndexer () = 0;
+      virtual boost::shared_ptr<AMP::Discretization::subsetDOFManager>  getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr manager ) = 0;
   };
 
 }
