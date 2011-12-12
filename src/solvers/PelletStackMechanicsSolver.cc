@@ -40,9 +40,9 @@ namespace AMP {
 
       unsigned int totalNumberOfPellets = d_pelletStackOp->getTotalNumberOfPellets();
 
-      unsigned int locPellIdx = 0;
+      int locPellIdx = d_pelletStackOp->getLocalIndexForPellet(0);
 
-      if(d_pelletStackOp->getLocalIndexForPellet(0) != -1) {
+      if(locPellIdx != -1) {
         boost::shared_ptr<AMP::Solver::SolverStrategy> currSolver = d_columnSolver->getSolver(locPellIdx);
         boost::shared_ptr<AMP::Operator::Operator> currOp = currSolver->getOperator();
         AMP::LinearAlgebra::Variable::shared_ptr inputVar = currOp->getInputVariable();
@@ -50,13 +50,13 @@ namespace AMP {
         AMP::LinearAlgebra::Vector::shared_ptr subUvec = u->subsetVectorForVariable(inputVar);
         AMP::LinearAlgebra::Vector::shared_ptr subFvec = f->subsetVectorForVariable(outputVar);
         currSolver->solve(subFvec, subUvec);
-        locPellIdx++;
       }
 
       for(unsigned int pellId = 1; pellId < totalNumberOfPellets; pellId++) {
         d_pelletStackOp->setCurrentPellet(pellId);
         d_pelletStackOp->apply(f, u, d_fbuffer2);
-        if(d_pelletStackOp->getLocalIndexForPellet(pellId) != -1) {
+        locPellIdx = d_pelletStackOp->getLocalIndexForPellet(pellId);
+        if(locPellIdx != -1) {
           boost::shared_ptr<AMP::Solver::SolverStrategy> currSolver = d_columnSolver->getSolver(locPellIdx);
           boost::shared_ptr<AMP::Operator::Operator> currOp = currSolver->getOperator();
           AMP::LinearAlgebra::Variable::shared_ptr inputVar = currOp->getInputVariable();
@@ -64,7 +64,6 @@ namespace AMP {
           AMP::LinearAlgebra::Vector::shared_ptr subUvec = u->subsetVectorForVariable(inputVar);
           AMP::LinearAlgebra::Vector::shared_ptr subFvec = d_fbuffer2->subsetVectorForVariable(outputVar);
           currSolver->solve(subFvec, subUvec);
-          locPellIdx++;
         }
       }//end for pellId
 
