@@ -8,8 +8,8 @@ namespace AMP {
     PelletStackOperator :: PelletStackOperator(const boost::shared_ptr<OperatorParameters> & params)
       : Operator(params) {
         d_totalNumberOfPellets = (params->d_db)->getInteger("TOTAL_NUMBER_OF_PELLETS");
-        d_useSerial = (params->d_db)->getBool("USE_SERIAL");
-        d_onlyZcorrection = (params->d_db)->getBool("ONLY_Z_CORRECTION");
+        d_useSerial = (params->d_db)->getBoolWithDefault("USE_SERIAL", false);
+        d_onlyZcorrection = (params->d_db)->getBoolWithDefault("ONLY_Z_CORRECTION", false);
         d_masterId = (params->d_db)->getInteger("MASTER");
         d_slaveId = (params->d_db)->getInteger("SLAVE");
         if((params->d_db)->keyExists("SCALING_FACTOR")) {

@@ -38,6 +38,10 @@ INCLUDE (macros)
 #     COPY_MESH_FILE ( mesh_file )
 #
 
+ADD_AMP_PROVISIONAL_TEST ( testPelletStackMechanicsSolver )
+COPY_TEST_DATA_FILE ( input_testPelletStackMechanicsSolver )
+COPY_MESH_FILE ( simple_pellet_1x.e )
+
 ADD_AMP_PROVISIONAL_TEST ( testMLfailure )
 COPY_TEST_DATA_FILE ( input_testMLfailure )
 COPY_MESH_FILE ( reg3ptBox1 )
