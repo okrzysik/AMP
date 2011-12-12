@@ -16,26 +16,14 @@ namespace Discretization {
 
 
 /**
- * \class multiDOFManager
- * \brief A derived class to combine multiple DOFManagers
- * \details  This derived class impliments a concrete DOF_Manager for creating DOFs that
- *   consist of multiple DOFManagers.  This is useful to combine multiple DOFs over meshes
- *   on a multiVector, for combining multiple discretizations, and for combining vectors.
- *   A multivector will have a pointer to a multiDOFManager instead of a standard DOFManager.
- *   It is also possible that a standard vector can use a multiDOFManager.
+ * \class subsetDOFManager
+ * \brief A derived class to subset a DOFManagers
+ * \details  This derived class impliments a concrete DOF_Manager for maintaining
+ *   a subset of a DOFManager.
  */
-class multiDOFManager: public DOFManager
+class subsetDOFManager: public DOFManager
 {
 public:
-
-    /**
-     * \brief Create a new DOF manager object
-     * \details  This is the standard constructor for creating a new multiDOFManager object.
-     * \param comm  Comm over which the DOFManager will exist
-     * \param managers  List of the DOFManagers on the current processor
-     */
-    multiDOFManager ( AMP_MPI comm, std::vector<DOFManager::shared_ptr> managers );
-
 
     /** \brief Get the entry indices of DOFs given a mesh element
      * \details  This will return a vector of pointers into a Vector that are associated with which.
@@ -71,27 +59,32 @@ public:
     virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const;
 
 
-    //! Function to convert DOFs from a sub-manager DOF to the global DOF
-    std::vector<size_t>  getGlobalDOF(DOFManager::shared_ptr, std::vector<size_t>&) const;
+    //! Function to convert DOFs from a subset DOFManager DOF to the parent DOF
+    std::vector<size_t>  getParentDOF( const std::vector<size_t>& ) const;
 
 
-    /** Function to convert DOFs from the global DOF to a sub-manager DOF
-     *  If a given global DOF is not in the given sub-manager, then -1 will
-     *  be returned for its value.
-     */
-    std::vector<size_t>  getSubDOF(DOFManager::shared_ptr, std::vector<size_t>&) const;
+    //! Function to convert DOFs from the parent DOF to a subset manager DOF
+    std::vector<size_t>  getSubsetDOF( const std::vector<size_t>& ) const;
 
 
-    //! Get the DOFManagers that compose the multiDOFManager
-    std::vector<DOFManager::shared_ptr>  getDOFManagers() const;
+    //! Get the parent DOFManager
+    DOFManager::shared_ptr  getDOFManager() const;
 
 
 private:
-    std::vector<DOFManager::shared_ptr>                         d_managers;
-    std::vector<size_t>                                         d_localSize;
-    std::vector<size_t>                                         d_globalSize;
-    std::vector< std::vector< std::pair<size_t,size_t> > >      d_subToGlobalDOF;
-    std::vector< std::vector< std::pair<size_t,size_t> > >      d_globalToSubDOF;
+
+    //! The parent DOF Manager
+    DOFManager::shared_ptr d_parentDOFManager;
+
+    //! The parent end DOFs for each processor
+    std::vector<size_t> d_parentEndDOF;
+
+    //! The list of local DOFs (sorted, using the parent DOF numbering)
+    std::vector<size_t> d_localDOFs;
+
+    //! The list of remote DOFs (sorted, using the parent DOF numbering)
+    std::vector<size_t> d_remoteDOFs;
+
 };
 
 

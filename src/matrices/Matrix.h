@@ -4,8 +4,6 @@
 #include "utils/Castable.h"
 #include "utils/ParameterBase.h"
 #include "vectors/Vector.h"
-#include "Matrix.h"  //Does Matrix.h need to include Matrix.h?
-
 #include "boost/shared_ptr.hpp"
 
 namespace AMP {

@@ -52,6 +52,7 @@ Vector::shared_ptr ManagedEpetraMatrix::getRightVector ()
     p_params->d_Buffer = VectorEngine::BufferPtr ( new std::vector<double> ( localSize ) );
     p_params->d_Engine = VectorEngine::shared_ptr ( new EpetraVectorEngine ( p_eng , p_params->d_Buffer ) );
     p_params->d_CommList = memp.d_CommListRight;
+    p_params->d_DOFManager = memp.d_DOFManagerRight;
     return Vector::shared_ptr ( new ManagedEpetraVector ( VectorParameters::shared_ptr ( p_params ) ) );
 }
 
@@ -70,6 +71,7 @@ Vector::shared_ptr ManagedEpetraMatrix::getLeftVector ()
     p_params->d_Buffer = VectorEngine::BufferPtr ( new std::vector<double> ( localSize ) );
     p_params->d_Engine = VectorEngine::shared_ptr ( new EpetraVectorEngine ( p_eng , p_params->d_Buffer ) );
     p_params->d_CommList = memp.d_CommListLeft;
+    p_params->d_DOFManager = memp.d_DOFManagerLeft;
     return Vector::shared_ptr ( new ManagedEpetraVector ( VectorParameters::shared_ptr ( p_params ) ) );
 }
 

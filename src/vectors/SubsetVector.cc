@@ -8,6 +8,7 @@ namespace LinearAlgebra {
 
   void   SubsetVector::computeIDMap ()
   {
+    AMP_ERROR("Need to convert to use subset DOFManager");
     VectorIndexer::shared_ptr  ndx = getVariable()->castTo<SubsetVariable>().getIndexer();
     d_SubsetLocalIDToViewGlobalID.resize ( getLocalSize() );
     for ( size_t i = 0 ; i != getLocalSize() ; i++ )

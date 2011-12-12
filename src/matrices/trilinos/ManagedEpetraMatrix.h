@@ -7,6 +7,7 @@
 #include "matrices/trilinos/EpetraMatrix.h"
 #include "vectors/ManagedDataMap.h"
 #include "vectors/trilinos/EpetraVector.h"
+#include "discretization/DOF_Manager.h"
 
 #include <Epetra_FECrsMatrix.h>
 
@@ -62,12 +63,14 @@ namespace LinearAlgebra {
         */
       typedef  ManagedDataMap::const_iterator        const_iterator;
 
-      /** \brief The communication list of a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
-        */
+      //!  The communication list of a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
       CommunicationList::shared_ptr   d_CommListLeft;
-      /** \brief The communication list of a right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
-        */
+      //!  The communication list of a right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
       CommunicationList::shared_ptr   d_CommListRight;
+      //!  The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
+      AMP::Discretization::DOFManager::shared_ptr   d_DOFManagerLeft;
+      //!  The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
+      AMP::Discretization::DOFManager::shared_ptr   d_DOFManagerRight;
 
       /** \brief Constructor
         * \param[in] local_size  Number of rows on this core

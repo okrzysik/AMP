@@ -61,6 +61,8 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix(
     // Get the communication lists for the vectors
     params->d_CommListLeft = resultVec->getCommunicationList();
     params->d_CommListRight = operandVec->getCommunicationList();
+    params->d_DOFManagerLeft = resultDOF;
+    params->d_DOFManagerRight = operandDOF;
 
     // Create the matrix
     boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrix>  newMatrix( new AMP::LinearAlgebra::ManagedPetscMatrix(params) );

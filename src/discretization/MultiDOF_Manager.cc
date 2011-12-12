@@ -173,6 +173,15 @@ std::vector<size_t> multiDOFManager::getSubDOF( DOFManager::shared_ptr manager, 
 }
 
 
+/****************************************************************
+* Function to return the DOFManagers                            *
+****************************************************************/
+std::vector<DOFManager::shared_ptr>  multiDOFManager::getDOFManagers() const
+{
+    return d_managers;
+}
+
+
 }
 }
 
