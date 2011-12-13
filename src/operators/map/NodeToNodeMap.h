@@ -107,6 +107,8 @@ namespace Operator {
 
       virtual void  setVector ( AMP::LinearAlgebra::Vector::shared_ptr &p );
 
+      virtual AMP::LinearAlgebra::Vector::shared_ptr getFrozenVector() { return d_OutputVector; }
+
       virtual AMP::LinearAlgebra::Variable::shared_ptr  getInputVariable (int varId = -1) { return d_inpVariable; }
       virtual AMP::LinearAlgebra::Variable::shared_ptr  getOutputVariable () { return d_inpVariable; }
   };
