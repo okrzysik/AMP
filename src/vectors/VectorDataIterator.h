@@ -10,61 +10,54 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-  class MultiVector;
-  class ConstVectorDataIterator;
+class MultiVector;
+class ConstVectorDataIterator;
 
-  /**
-    * \class VectorDataIterator
-    * \brief  Iterator for local data in a vector
-    *
-    * \details Even though a vector may have non-contiguous storage of data, the
-    * interface presents a contiguous block of memory to the user:  each element
-    * in the vector is given an offset from 0 and the vector is packed.
-    * This allows for a random access iterator on the data.
-    *
-    * Vector::begin() and Vector::end() return this class.  This class
-    * uses the DataBlock interface in vectors to access data.  As a result,
-    * for some non-AMP managed vectors, this class may not be the most efficient.
-    */
 
-  class VectorDataIterator
-  {
-    private:
-      MultiVector *d_MultiVector;
+/**
+  * \class VectorDataIterator
+  * \brief  Iterator for local data in a vector
+  *
+  * \details Even though a vector may have non-contiguous storage of data, the
+  * interface presents a contiguous block of memory to the user:  each element
+  * in the vector is given an offset from 0 and the vector is packed.
+  * This allows for a random access iterator on the data.
+  *
+  * Vector::begin() and Vector::end() return this class.  This class
+  * uses the DataBlock interface in vectors to access data.  As a result,
+  * for some non-AMP managed vectors, this class may not be the most efficient.
+  */
+class VectorDataIterator
+{
+private:
       Vector   *d_Vec;
       double   *d_Block;
-      size_t    d_CurBlock, d_CurOffset;
-      VectorIndexer::shared_ptr   d_Indexer;
+      size_t    d_CurBlock, d_CurBlockSize, d_CurOffset, d_position, d_size;
 
-      size_t   dbSize () const;
+      void advance( size_t );
+      void recede( size_t );
 
-      static void advance ( int , VectorDataIterator & );
-      static void recede  ( int , VectorDataIterator & );
-      static int subtract ( const VectorDataIterator & , const VectorDataIterator & );
-
-    public:
-      /** \brief  Convenince typedef for testing
-        */
+public:
+      //!  Convenince typedef for testing
       typedef  Vector        vector_type;
-      /** \brief  Required typedef for iterator_traits
-        */
+
+      //!  Required typedef for iterator_traits
       typedef  int            difference_type;
-      /** \brief  Required typedef for iterator_traits
-        */
+
+      //!  Required typedef for iterator_traits
       typedef  double         value_type;
-      /** \brief  Required typedef for iterator_traits
-        */
+
+      //!  Required typedef for iterator_traits
       typedef  double *       pointer;
-      /** \brief  Required typedef for iterator_traits
-        */
+
+      //!  Required typedef for iterator_traits
       typedef  double &       reference;
-      /** \brief  Required typedef for iterator_traits
-        */
+
+      //!  Required typedef for iterator_traits
       typedef  std::random_access_iterator_tag  iterator_category;
 
-      /** \brief  Default constructor
-        * \details  Creates an iterator that points nowhere in particular
-        */
+
+      //!  Default constructor
       VectorDataIterator ();
 
       /** \brief Copy constructor
@@ -74,21 +67,13 @@ namespace LinearAlgebra {
       VectorDataIterator ( const VectorDataIterator &rhs );
 
       /** \brief Constructor from a vector
-        * \param[in] p  a (non-reference counted) pointer to the vector being iterated over
-        * \param[in] block the contiguous block in the vector that holds the data being pointed to
-        * \param[in] offset the offset of the data being pointed to.
-        * \param[in] ndx An optional indexer for handling iterators on sparse vectors.
-        * \details Vector::begin() and Vector::end() call this function to instantiate a new iterator.
-        * This method should not be invoked outside of this use.
+        * \details This will construct an iterator over the local data in the vector.
+        *   Vector::begin() and Vector::end() call this function to instantiate a new iterator.
+        *   This method should not be invoked outside of this use.  
+        * \param[in] p  A (non-reference counted) pointer to the vector being iterated over
+        * \param[in] position  The local position in the vector.
         */
-      VectorDataIterator ( Vector *p , int block , int offset , VectorIndexer::shared_ptr ndx = VectorIndexer::shared_ptr () );
-
-      /** \brief Constructor used to advance an iterator to the next vector in a multivector
-        * \param[in]  i  The iterator to advance
-        * \param[in]  p  The multivector pointed to
-        * \param[in]  blockNum  The next block to use in the multivector
-        */
-      VectorDataIterator ( VectorDataIterator i , MultiVector *p , size_t blockNum );
+      VectorDataIterator ( Vector *p , size_t position );
 
       /** \brief Dereference the iterator
         * \return Value pointed to by the iterator
@@ -237,17 +222,12 @@ namespace LinearAlgebra {
   class ConstVectorDataIterator
   {
     private:
-      MultiVector * d_MultiVector;
       const Vector   *d_Vec;
       const double   *d_Block;
-      size_t    d_CurBlock, d_CurOffset;
-      VectorIndexer::shared_ptr  d_Indexer;
+      size_t    d_CurBlock, d_CurBlockSize, d_CurOffset, d_position, d_size;
 
-      size_t   dbSize () const;
-
-      static void advance ( int , ConstVectorDataIterator & );
-      static void recede  ( int , ConstVectorDataIterator & );
-      static int subtract ( const ConstVectorDataIterator & , const ConstVectorDataIterator & );
+      void advance( size_t );
+      void recede( size_t );
 
     public:
       /** \brief  Convenince typedef for testing
@@ -288,23 +268,13 @@ namespace LinearAlgebra {
       ConstVectorDataIterator ( const VectorDataIterator &rhs );
 
       /** \brief Constructor from a vector
-        * \param p  a (non-reference counted) pointer to the vector being iterated over
-        $ \param block  The block of the vector being indexed
-        * \param offset the offset of the data being pointed to.
-        * \param ndx a vector indexer if p is a sparse vector
-        * \details Vector::begin() and Vector::end() call this function to instantiate a new iterator.
-        * This method should not be invoked outside of this use.
+        * \details This will construct an iterator over the local data in the vector.
+        *   Vector::begin() and Vector::end() call this function to instantiate a new iterator.
+        *   This method should not be invoked outside of this use.  
+        * \param[in] p  A (non-reference counted) pointer to the vector being iterated over
+        * \param[in] position  The local position in the vector.
         */
-      ConstVectorDataIterator ( const Vector *p , int block , int offset , VectorIndexer::shared_ptr ndx = VectorIndexer::shared_ptr () );
-
-      /** \brief Constructor used to advance an iterator to the next vector in a multivector
-        * \param[in]  i  The iterator to advance
-        * \param[in]  p  The multivector pointed to
-        * \param[in]  blockNum  The next block to use in the multivector
-        */
-      ConstVectorDataIterator ( ConstVectorDataIterator i , const MultiVector * const p , size_t blockNum );
-
-      //ConstVectorDataIterator &operator = ( const ConstVectorDataIterator &rhs );
+      ConstVectorDataIterator ( const Vector *p , size_t position );
 
       /** \brief Dereference the iterator
         */
@@ -412,7 +382,5 @@ namespace LinearAlgebra {
 
 }
 }
-
-#include "VectorDataIterator.inline.h"
 
 #endif

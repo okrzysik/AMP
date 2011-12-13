@@ -49,11 +49,7 @@ class  SubsetVector : public Vector
 public:
     static Vector::shared_ptr   view ( Vector::shared_ptr , Variable::shared_ptr );
 
-    virtual Vector::iterator        begin();
-    virtual Vector::const_iterator  begin() const;
-
     virtual std::string  type() const;
-
 
     virtual Vector::shared_ptr  cloneVector ( Variable::shared_ptr ) const;
     virtual size_t   numberOfDataBlocks () const;
@@ -82,7 +78,9 @@ protected:
     const void *getRawDataBlockAsVoid ( size_t i ) const ;
 
 private:
-    std::vector<size_t>            d_SubsetLocalIDToViewGlobalID;
+    std::vector<size_t>        d_SubsetLocalIDToViewGlobalID;
+    std::vector<size_t>        d_dataBlockSize;
+    std::vector<double*>       d_dataBlockPtr;
 
 };
 

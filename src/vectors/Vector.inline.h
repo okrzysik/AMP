@@ -86,25 +86,25 @@ namespace LinearAlgebra {
   inline
   ConstVectorDataIterator  Vector::end () const
   {
-    return ConstVectorDataIterator ( this , numberOfDataBlocks() , 0 );
+    return ConstVectorDataIterator ( this, getLocalSize() );
   }
 
   inline
   ConstVectorDataIterator  Vector::begin () const
   {
-    return ConstVectorDataIterator ( this , 0 , 0 );
+    return ConstVectorDataIterator ( this, 0 );
   }
 
   inline
   VectorDataIterator  Vector::begin ()
   {
-    return VectorDataIterator ( this , 0 , 0 );
+    return VectorDataIterator ( this, 0  );
   }
 
   inline
   VectorDataIterator  Vector::end ()
   {
-    return VectorDataIterator ( this , numberOfDataBlocks() , 0 );
+    return VectorDataIterator ( this, getLocalSize() );
   }
 
   inline

@@ -31,32 +31,41 @@ Vector::shared_ptr  SubsetVector::view ( Vector::shared_ptr v , Variable::shared
         commList = AMP::LinearAlgebra::CommunicationList::shared_ptr( new AMP::LinearAlgebra::CommunicationList(params) );
     }
     // Create the new subset vector
-    SubsetVector *retVal = new SubsetVector();
+    boost::shared_ptr<SubsetVector> retVal( new SubsetVector() );
     retVal->setVariable ( var );
     retVal->d_ViewVector = v;
     retVal->d_DOFManager = subsetDOF;
     retVal->setCommunicationList( commList );
     retVal->d_SubsetLocalIDToViewGlobalID = subsetDOF->getLocalParentDOFs();
-    return Vector::shared_ptr ( retVal );
+    // Get the data blocks
+    AMP_ERROR("Need to compute the data blocks");
+    return retVal;
 }
 
 
+/****************************************************************
+* Functions to access the raw data blocks                       *
+****************************************************************/
 size_t SubsetVector::numberOfDataBlocks () const
 {
-    if ( d_ViewVector )
-      return d_ViewVector->numberOfDataBlocks();
-    return 1;
+    return d_dataBlockSize.size();
 }
-
-
 size_t SubsetVector::sizeOfDataBlock ( size_t i ) const
 {
-    if ( d_ViewVector )
-      return d_ViewVector->sizeOfDataBlock ( i );
-    if ( i > 0 )
-      return 0;
-    return d_Space.size();
+    return d_dataBlockSize[i];
 }
+void *SubsetVector::getRawDataBlockAsVoid ( size_t i )
+{
+    double *ptr = d_dataBlockPtr[i];
+    return (void *) ptr;
+  }
+
+const void *SubsetVector::getRawDataBlockAsVoid ( size_t i ) const
+{
+    double *ptr = d_dataBlockPtr[i];
+    return (const void *) ptr;
+}
+
 
 
 void  SubsetVector::swapVectors ( Vector &rhs )
@@ -199,25 +208,6 @@ void  SubsetVector::addLocalValuesByGlobalID ( int cnt , size_t *ndx ,  const do
     return getCommunicationList ()->getTotalSize();
   }
 
-  void *SubsetVector::getRawDataBlockAsVoid ( size_t i )
-  {
-    if ( d_ViewVector )
-      return (void *)d_ViewVector->getRawDataBlock<double> ( i );
-    if ( i )
-      return 0;
-    if ( d_Space.size() == 0 ) return 0;
-    return (void *)&(d_Space[0]);
-  }
-
-  const void *SubsetVector::getRawDataBlockAsVoid ( size_t i ) const
-  {
-    if ( d_ViewVector )
-      return (void *)d_ViewVector->getRawDataBlock<double> ( i );
-    if ( i )
-      return 0;
-    if ( d_Space.size() == 0 ) return 0;
-    return (const void *)&(d_Space[0]);
-  }
 
   void  SubsetVector::aliasVector ( Vector & )
   {
@@ -244,31 +234,6 @@ void  SubsetVector::addLocalValuesByGlobalID ( int cnt , size_t *ndx ,  const do
       retVal += " )";
     }
     return retVal;
-  }
-
-
-  Vector::iterator  SubsetVector::begin()
-  {
-    AMP_ERROR("Not converted");
-    /*if ( d_ViewVector )
-    {
-      VectorIndexer::shared_ptr ndx = getVariable()->castTo<SubsetVariable>().getIndexer();
-      return iterator ( this , 0 , ndx->getSuperID ( 0 ) , ndx );
-    }
-
-    return Vector::begin();*/
-  }
-
-  Vector::const_iterator  SubsetVector::begin() const
-  {
-    AMP_ERROR("Not converted");
-    /*if ( d_ViewVector )
-    {
-      VectorIndexer::shared_ptr ndx = getVariable()->castTo<SubsetVariable>().getIndexer();
-      return const_iterator ( this , 0 , ndx->getSuperID ( 0 ) , ndx );
-    }
-
-    return Vector::begin();*/
   }
 
 

@@ -94,27 +94,10 @@ public:
       */
     size_t  getNumberOfSubvectors ();
 
-    /** \brief  Return the beginning iterator of the i-th Vector
-      * \param[in] i  Which Vector to return the beginning iterator from
-      * \return The iterator
-      */
-    virtual Vector::iterator    getIterator ( size_t i );
-
-    /** \brief  Return the beginning iterator of the i-th Vector
-      * \param[in] i  Which Vector to return the beginning iterator from
-      * \return The iterator
-      */
-    virtual Vector::const_iterator    getIterator ( size_t i ) const;
-
     //!  Destructor
     virtual ~MultiVector();
 
     // Vector functions
-    virtual Vector::iterator    begin();
-    virtual Vector::iterator    end();
-    virtual Vector::const_iterator    begin() const;
-    virtual Vector::const_iterator    end() const;
-
     virtual void      selectInto ( const VectorSelector & , Vector::shared_ptr );
 
     virtual void      dumpOwnedData ( std::ostream &out , size_t GIDoffset=0 , size_t LIDoffset = 0 ) const;

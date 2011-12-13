@@ -10,47 +10,6 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-  inline
-  Vector::iterator    MultiVector::begin() 
-  { 
-    return Vector::iterator ( d_vVectors.front()->begin() , this , 0 ); 
-  }
-
-  inline
-  Vector::iterator    MultiVector::end() 
-  { 
-    return Vector::iterator ( d_vVectors.back()->end() , this , d_vVectors.size()-1 ); 
-  }
-
-  inline
-  Vector::const_iterator    MultiVector::begin() const 
-  { 
-    return Vector::const_iterator ( d_vVectors.front()->castTo<const Vector>().begin() , this , 0 ); 
-  }
-
-  inline
-  Vector::const_iterator    MultiVector::end() const 
-  { 
-    return Vector::const_iterator ( d_vVectors.back()->castTo<const Vector>().end() , this , d_vVectors.size()-1 ); 
-  }
-
-  inline
-  Vector::iterator    MultiVector::getIterator ( size_t i )
-  {
-    if ( i < d_vVectors.size() )
-      return d_vVectors[i]->begin();
-    else
-      return d_vVectors.back()->end();
-  }
-
-  inline
-  Vector::const_iterator    MultiVector::getIterator ( size_t i ) const
-  {
-    if ( i < d_vVectors.size() )
-      return boost::dynamic_pointer_cast<const Vector> (d_vVectors[i])->begin();
-    else
-      return boost::dynamic_pointer_cast<const Vector> (d_vVectors.back())->end();
-  }
 
   inline
   Vector::shared_ptr  MultiVector::getVector ( size_t i ) 
