@@ -10,6 +10,9 @@ namespace AMP {
       d_pelletStackOp = boost::dynamic_pointer_cast<AMP::Operator::PelletStackOperator>(d_pOperator);
     }
 
+    void PelletStackMechanicsSolver :: setInitialGuess(boost::shared_ptr<AMP::LinearAlgebra::Vector> ) {
+    }
+
     void PelletStackMechanicsSolver :: resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params) {
       d_columnSolver->resetOperator(params);
     }
