@@ -124,12 +124,6 @@ namespace AMP {
         void initialize(boost::shared_ptr<SolverStrategyParameters> const parameters);
 
         /**
-         * Provide the initial guess for the solver.
-         * @param [in] initialGuess: shared pointer to the initial guess vector.
-         */
-        void setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess );
-
-        /**
          * Register the operator that the solver will use during solves
          @param [in] op shared pointer to the linear operator $A$ for equation \f$A u = f\f$ 
          */

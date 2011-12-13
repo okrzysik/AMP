@@ -125,12 +125,6 @@ namespace Solver {
   void initialize(boost::shared_ptr<SolverStrategyParameters> const parameters);
 
   /**
-   * sets the initial guess
-   @param [in] initialGuess shared pointer to initialGuess vector
-  */
-  void setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess );
-
-  /**
    * returns a shared pointer to a preconditioner object. The preconditioner is derived from
    * a SolverStrategy class
    */

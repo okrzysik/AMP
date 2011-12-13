@@ -20,8 +20,6 @@ namespace AMP {
 
         void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector> f, boost::shared_ptr<AMP::LinearAlgebra::Vector> u);
 
-        void setInitialGuess(boost::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess);
-
       protected:
         void solveSerial(boost::shared_ptr<AMP::LinearAlgebra::Vector> f, boost::shared_ptr<AMP::LinearAlgebra::Vector> u);
 

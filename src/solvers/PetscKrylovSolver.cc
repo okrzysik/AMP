@@ -177,12 +177,6 @@ PetscKrylovSolver::initialize(boost::shared_ptr<SolverStrategyParameters> const 
 
 
 void
-PetscKrylovSolver::setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector>   )
-{
-
-}
-
-void
 PetscKrylovSolver::registerOperator(const boost::shared_ptr<AMP::Operator::Operator> op)
 {
   // in this case we make the assumption we can access a PetscMat for now

@@ -154,12 +154,6 @@ namespace AMP {
       }
 
     void
-      TrilinosMLSolver::setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector>   )
-      {
-
-      }
-
-    void
       TrilinosMLSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
           boost::shared_ptr<AMP::LinearAlgebra::Vector>  u)
       {
