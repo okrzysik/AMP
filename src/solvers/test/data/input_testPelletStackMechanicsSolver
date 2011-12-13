@@ -1,0 +1,91 @@
+
+NumberOfMeshes = 3
+NumberOfMeshToMeshMaps = 2
+
+NumberOfLoadingSteps = 1
+USE_POINT_LOAD = TRUE
+USE_THERMAL_LOAD = FALSE
+
+PelletStackOperator {
+  TOTAL_NUMBER_OF_PELLETS = 3
+    USE_SERIAL = FALSE
+    ONLY_Z_CORRECTION = TRUE
+    MASTER = 1 
+    SLAVE = 2
+    SCALING_FACTOR = 1.0
+}
+
+Mesh_1 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_0"
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
+    NumberOfElements = 1300
+    DatabaseName = "pellet_bottom"
+}
+
+Mesh_2 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_1"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.0105
+    NumberOfElements = 1300
+    DatabaseName = "pellet"
+}
+
+Mesh_3 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_2"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.0210
+    NumberOfElements = 1300
+    DatabaseName = "pellet"
+}
+
+MeshToMeshMap_1 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_0"
+    Mesh2 = "pellet_1"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_2 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_1"
+    Mesh2 = "pellet_2"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+PointLoad {
+}
+
+BottomNonlinearMechanicsOperator {
+}
+
+BottomLinearMechanicsOperator {
+}
+
+NonlinearMechanicsOperator {
+}
+
+LinearMechanicsOperator {
+}
+
+
+
+
