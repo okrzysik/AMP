@@ -36,6 +36,8 @@
 #include "solvers/ColumnSolver.h"
 #include "solvers/PelletStackMechanicsSolver.h"
 
+#include "PelletStackHelpers.h"
+
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
   std::string log_file = "output_" + exeName;
@@ -114,25 +116,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   }//end for id
 
   AMP::LinearAlgebra::Variable::shared_ptr dispVar = nonlinearColumnOperator->getOutputVariable();
-
-  AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::CommCollectVector::view (
-      manager->createVector ( dispVar ) , globalComm );
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::CommCollectVector::view (
-      manager->createVector ( dispVar ) , globalComm );
-  AMP::LinearAlgebra::Vector::shared_ptr scaledRhsVec = AMP::LinearAlgebra::CommCollectVector::view (
-      manager->createVector ( dispVar ) , globalComm );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::CommCollectVector::view (
-      manager->createVector ( dispVar ) , globalComm );
   AMP::LinearAlgebra::Vector::shared_ptr dirichletValues = AMP::LinearAlgebra::CommCollectVector::view (
       manager->createVector ( dispVar ) , globalComm );
-
-  solVec->zero();
-  rhsVec->zero();
-  resVec->zero();
-
   n2nmaps->setVector(dirichletValues);
-
   for(unsigned int id = 0; id < localPelletIds.size(); id++) {
     if(localPelletIds[id] > 0) {
       boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletOp =
@@ -141,9 +127,17 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
               nonlinearColumnOperator->getOperator(id))->getBoundaryOperator());
       dirichletOp->setDirichletValues(dirichletValues);
     }
+  }//end for id
 
+  AMP::LinearAlgebra::Vector::shared_ptr nullVec, solVec, rhsVec, scaledRhsVec, resVec;
+  helperCreateVectors(manager, nonlinearColumnOperator, globalComm, solVec, rhsVec, scaledRhsVec, resVec);
+
+  solVec->zero();
+  rhsVec->zero();
+  resVec->zero();
+
+  for(unsigned int id = 0; id < localPelletIds.size(); id++) {
     (pointLoadOperators[id])->apply(nullVec, nullVec, rhsVec, 1.0, 0.0);
-
     boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinOperator =
       boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
           nonlinearColumnOperator->getOperator(id));
