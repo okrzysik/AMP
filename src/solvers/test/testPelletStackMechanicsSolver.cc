@@ -69,34 +69,28 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp(new AMP::Operator::CoupledOperator(coupledOpParams));
 
   boost::shared_ptr<AMP::Database> pelletStackOp_db = global_input_db->getDatabase("PelletStackOperator");
-  boost::shared_ptr<AMP::Operator::OperatorParameters> pelletStackOpParams(new 
-      AMP::Operator::OperatorParameters(pelletStackOp_db));
+  boost::shared_ptr<AMP::Operator::PelletStackOperatorParameters> pelletStackOpParams(new 
+      AMP::Operator::PelletStackOperatorParameters(pelletStackOp_db));
+  pelletStackOpParams->d_pelletStackComm = globalComm;
+  pelletStackOpParams->d_n2nMaps = n2nmaps;
+  pelletStackOpParams->d_meshManager = manager;
   boost::shared_ptr<AMP::Operator::PelletStackOperator> pelletStackOp(new 
       AMP::Operator::PelletStackOperator(pelletStackOpParams));
 
-  unsigned int totalNumberOfPellets = pelletStackOp->getTotalNumberOfPellets();
+  std::vector<unsigned int> localPelletIds = pelletStackOp->getLocalPelletIds();
 
-  std::vector<unsigned int> localPelletIds;
-
-  std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> localMeshes;
+  std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> localMeshes = pelletStackOp->getLocalMeshes();
 
   std::vector<boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> > pointLoadOperators;
 
-  for(unsigned int pellId = 0; pellId < totalNumberOfPellets; pellId++) {
-    char meshName[256];
-    sprintf(meshName, "pellet_%d", (int)pellId);
-    AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh(meshName);
-    if(meshAdapter.get() == NULL) {
-      continue;
-    }
-
-    localPelletIds.push_back(pellId);
-    localMeshes.push_back(meshAdapter);
+  for(unsigned int id = 0; id < localPelletIds.size(); id++) {
     std::string prefix = "";
-    if(pellId == 0)
+    if(localPelletIds[id] == 0)
     {
       prefix = "Bottom";
     }
+
+    AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = localMeshes[id];
 
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> mechModel;
     boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinOperator =
@@ -117,7 +111,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       loadOp->setVariable(nonlinOperator->getOutputVariable());
       pointLoadOperators.push_back(loadOp);
     } 
-  }//end for pellId
+  }//end for id
 
   AMP::LinearAlgebra::Variable::shared_ptr dispVar = nonlinearColumnOperator->getOutputVariable();
 
@@ -138,13 +132,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   resVec->zero();
 
   n2nmaps->setVector(dirichletValues);
-
-  pelletStackOp->setLocalMeshes(localMeshes);
-  pelletStackOp->setLocalPelletIds(localPelletIds);
-  pelletStackOp->setVariables(dispVar, dispVar);
-  pelletStackOp->setPelletStackComm(globalComm);
-  pelletStackOp->setFrozenVectorForMaps(dirichletValues);
-  pelletStackOp->setMaps(n2nmaps);
 
   for(unsigned int id = 0; id < localPelletIds.size(); id++) {
     if(localPelletIds[id] > 0) {

@@ -2,7 +2,7 @@
 #ifndef included_AMP_PelletStackOperator
 #define included_AMP_PelletStackOperator
 
-#include "operators/map/AsyncMapColumnOperator.h"
+#include "operators/PelletStackOperatorParameters.h"
 
 namespace AMP {
   namespace Operator {
@@ -10,13 +10,11 @@ namespace AMP {
     class PelletStackOperator : public Operator 
     {
       public :
-        PelletStackOperator(const boost::shared_ptr<OperatorParameters> & params);
+        PelletStackOperator(const boost::shared_ptr<PelletStackOperatorParameters> & params);
 
         ~PelletStackOperator() { }
 
         int getLocalIndexForPellet(unsigned int pellId);
-
-        void setCurrentPellet(unsigned int pellId);
 
         unsigned int getTotalNumberOfPellets();
 
@@ -26,22 +24,16 @@ namespace AMP {
 
         bool useScaling();
 
+        void reset(const boost::shared_ptr<OperatorParameters>& params);
+
         void applyUnscaling(AMP::LinearAlgebra::Vector::shared_ptr f);
 
         void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
             AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
 
-        void setLocalMeshes(std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> inp);
+        std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> getLocalMeshes();
 
-        void setLocalPelletIds(std::vector<unsigned int> inp);
-
-        void setVariables(AMP::LinearAlgebra::Variable::shared_ptr rhs, AMP::LinearAlgebra::Variable::shared_ptr sol);
-
-        void setPelletStackComm(AMP_MPI comm);
-
-        void setFrozenVectorForMaps(AMP::LinearAlgebra::Vector::shared_ptr vec);
-
-        void setMaps(boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> maps);
+        std::vector<unsigned int> getLocalPelletIds();
 
       protected:
         void applySerial(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
@@ -64,11 +56,10 @@ namespace AMP {
         short int d_slaveId;
         std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> d_meshes;
         std::vector<unsigned int> d_pelletIds;
-        boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_rhsVar;
-        boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_solVar;
+        std::vector<AMP::LinearAlgebra::Variable::shared_ptr> d_var;
+        std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_frozenVectorForMaps;
         AMP_MPI d_pelletStackComm;
         boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  d_n2nMaps;
-        AMP::LinearAlgebra::Vector::shared_ptr d_frozenVectorForMaps;
     };
 
   }
