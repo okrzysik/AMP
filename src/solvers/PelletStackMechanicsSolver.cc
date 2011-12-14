@@ -53,7 +53,11 @@ namespace AMP {
       }
 
       for(unsigned int pellId = 1; pellId < totalNumberOfPellets; pellId++) {
-        d_pelletStackOp->setCurrentPellet(pellId);
+        boost::shared_ptr<AMP::Database> emptyDb;
+        boost::shared_ptr<AMP::Operator::PelletStackOperatorParameters> pelletStackOpParams(new 
+            AMP::Operator::PelletStackOperatorParameters(emptyDb));
+        pelletStackOpParams->d_currentPellet = pellId;
+        d_pelletStackOp->reset(pelletStackOpParams);
         d_pelletStackOp->apply(f, u, d_fbuffer2);
         locPellIdx = d_pelletStackOp->getLocalIndexForPellet(pellId);
         if(locPellIdx != -1) {
