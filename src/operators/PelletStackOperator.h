@@ -18,6 +18,10 @@ namespace AMP {
 
         unsigned int getTotalNumberOfPellets();
 
+        std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> getLocalMeshes();
+
+        std::vector<unsigned int> getLocalPelletIds();
+
         bool useSerial();
 
         bool onlyZcorrection();
@@ -30,10 +34,6 @@ namespace AMP {
 
         void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
             AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
-
-        std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> getLocalMeshes();
-
-        std::vector<unsigned int> getLocalPelletIds();
 
       protected:
         void applySerial(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
@@ -58,6 +58,7 @@ namespace AMP {
         std::vector<unsigned int> d_pelletIds;
         std::vector<AMP::LinearAlgebra::Variable::shared_ptr> d_var;
         std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_frozenVectorForMaps;
+        bool d_frozenVectorSet;
         AMP_MPI d_pelletStackComm;
         boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  d_n2nMaps;
     };

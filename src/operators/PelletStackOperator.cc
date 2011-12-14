@@ -18,14 +18,16 @@ namespace AMP {
         } else {
           d_useScaling = false;
         }
+        d_frozenVectorSet = false;
         std::string varName = (params->d_db)->getString("Variable");
+        std::string meshNamePrefix = (params->d_db)->getString("MeshNamePrefix");
         d_currentPellet = params->d_currentPellet;
         d_pelletStackComm = params->d_pelletStackComm;
         d_n2nMaps = params->d_n2nMaps;
         for(unsigned int pellId = 0; pellId < d_totalNumberOfPellets; pellId++) {
-          char meshName[256];
-          sprintf(meshName, "pellet_%d", (int)pellId);
-          AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = (params->d_meshManager)->getMesh(meshName);
+          char pellId2Str[256];
+          sprintf(pellId2Str, "%d", pellId);
+          AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = (params->d_meshManager)->getMesh(meshNamePrefix + "_" + pellId2Str);
           if(meshAdapter.get() == NULL) {
             continue;
           }
@@ -78,12 +80,28 @@ namespace AMP {
     void PelletStackOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
         const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
         const double a, const double b) {
-      if(d_useSerial) {
-        applySerial(f, u, r);
-      } else if(d_onlyZcorrection) {
+      if(d_onlyZcorrection) {
         applyOnlyZcorrection(r);
       } else {
-        applyXYZcorrection(f, u, r);
+        if(!d_frozenVectorSet) {
+          for(size_t i = 0; i < d_pelletIds.size(); i++) {
+            for(size_t j = 0; j < d_n2nMaps->getNumberOfOperators(); j++) {
+              boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
+                AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(j));
+              if(currMap->getMeshAdapter() == d_meshes[i]) {
+                d_frozenVectorForMaps.push_back(currMap->getFrozenVector());
+                break;
+              }
+            }//end for j
+          }//end for i
+          AMP_ASSERT(d_frozenVectorForMaps.size() == d_pelletIds.size());
+          d_frozenVectorSet = true;
+        }
+        if(d_useSerial) {
+          applySerial(f, u, r);
+        } else {
+          applyXYZcorrection(f, u, r);
+        }
       }
     }
 
@@ -124,6 +142,7 @@ namespace AMP {
 
     void PelletStackOperator :: applyXYZcorrection(const AMP::LinearAlgebra::Vector::shared_ptr &f,
         const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r) {
+      AMP_ASSERT(d_frozenVectorSet);
       AMP::LinearAlgebra::Vector::shared_ptr nullVec;
       r->copyVector(f);
       d_n2nMaps->apply(nullVec, u, nullVec, 1.0, 0.0);
@@ -223,6 +242,7 @@ namespace AMP {
 
     void PelletStackOperator :: applySerial(const AMP::LinearAlgebra::Vector::shared_ptr &f,
         const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r) {
+      AMP_ASSERT(d_frozenVectorSet);
       AMP_ASSERT(d_currentPellet > 0);
       AMP::LinearAlgebra::Vector::shared_ptr nullVec;
       int currPellIdx = getLocalIndexForPellet(d_currentPellet);
