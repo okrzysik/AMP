@@ -8,35 +8,18 @@
 
 #include "mpi.h"
 
+#include "PelletStackHelpers.h"
+
 #include "utils/InputManager.h"
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
-#include "vectors/CommCollectVector.h"
-#include "boost/shared_ptr.hpp"
-
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/MeshAdapter.h"
 #include "ampmesh/SiloIO.h"
 
-#include "operators/OperatorBuilder.h"
-#include "operators/CoupledOperator.h"
-#include "operators/map/NodeToNodeMap.h"
-#include "operators/map/AsyncMapColumnOperator.h"
-#include "operators/LinearBVPOperator.h"
-#include "operators/NonlinearBVPOperator.h"
 #include "operators/mechanics/MechanicsNonlinearFEOperatorParameters.h"
-#include "operators/PelletStackOperator.h"
-#include "operators/boundary/DirichletVectorCorrection.h"
 
 #include "solvers/PetscSNESSolver.h"
-#include "solvers/PetscKrylovSolver.h"
-#include "solvers/TrilinosMLSolver.h"
-#include "solvers/ColumnSolver.h"
-#include "solvers/PelletStackMechanicsSolver.h"
-
-#include "PelletStackHelpers.h"
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
@@ -91,38 +74,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver");
   boost::shared_ptr<AMP::Database> pelletStackSolver_db = linearSolver_db->getDatabase("PelletStackSolver");
   boost::shared_ptr<AMP::Database> columnSolver_db = pelletStackSolver_db->getDatabase("ColumnSolver");
-  boost::shared_ptr<AMP::Database> ikspSolver_db = columnSolver_db->getDatabase("KrylovSolver");
-  boost::shared_ptr<AMP::Database> mlSolver_db = ikspSolver_db->getDatabase("MLSolver");
 
-  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> columnSolverParams(new
-      AMP::Solver::SolverStrategyParameters(columnSolver_db));
-  columnSolverParams->d_pOperator = linearColumnOperator;
-  boost::shared_ptr<AMP::Solver::ColumnSolver> columnSolver(new AMP::Solver::ColumnSolver(columnSolverParams));
+  boost::shared_ptr<AMP::Solver::ColumnSolver> columnSolver;
+  helperBuildColumnSolver(columnSolver_db, linearColumnOperator, columnSolver);
 
-  for(unsigned int id = 0; id < localPelletIds.size(); id++) {
-    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams(new
-        AMP::Solver::SolverStrategyParameters(mlSolver_db));
-    mlSolverParams->d_pOperator = linearColumnOperator->getOperator(id);
-    boost::shared_ptr<AMP::Solver::TrilinosMLSolver> mlSolver(new
-        AMP::Solver::TrilinosMLSolver(mlSolverParams));
-
-    boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> ikspSolverParams(new
-        AMP::Solver::PetscKrylovSolverParameters(ikspSolver_db));
-    ikspSolverParams->d_pOperator = linearColumnOperator->getOperator(id);
-    ikspSolverParams->d_comm = (localMeshes[id])->getComm();
-    ikspSolverParams->d_pPreconditioner = mlSolver;
-    boost::shared_ptr<AMP::Solver::PetscKrylovSolver> ikspSolver(new
-        AMP::Solver::PetscKrylovSolver(ikspSolverParams));
-
-    columnSolver->append(ikspSolver);
-  }//end for id
-
-  boost::shared_ptr<AMP::Solver::PelletStackMechanicsSolverParameters> pelletStackSolverParams(new
-      AMP::Solver::PelletStackMechanicsSolverParameters(pelletStackSolver_db));
-  pelletStackSolverParams->d_columnSolver = columnSolver;
-  pelletStackSolverParams->d_pOperator = pelletStackOp;
-  boost::shared_ptr<AMP::Solver::PelletStackMechanicsSolver> pelletStackSolver(new 
-      AMP::Solver::PelletStackMechanicsSolver(pelletStackSolverParams));
+  boost::shared_ptr<AMP::Solver::PelletStackMechanicsSolver> pelletStackSolver;
+  helperBuildPelletStackSolver(pelletStackSolver_db, pelletStackOp, columnSolver, pelletStackSolver);
 
   boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new
       AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
@@ -156,7 +113,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperatorParameters> tmpParams(new
         AMP::Operator::MechanicsNonlinearFEOperatorParameters(tmp_db));
 
-    for(unsigned int id = 0; id < localPelletIds.size(); id++) {
+    for(int id = 0; id < nonlinearColumnOperator->getNumberOfOperators(); id++) {
       boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinOperator =
         boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             nonlinearColumnOperator->getOperator(id));
