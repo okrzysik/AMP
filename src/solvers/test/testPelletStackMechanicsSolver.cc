@@ -73,19 +73,19 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp;
   helperCreateCoupledOperator(n2nmaps, nonlinearColumnOperator, coupledOp);
 
-  helperSetFrozenVectorForMaps(manager, globalComm, localPelletIds, n2nmaps, nonlinearColumnOperator);
+  helperSetFrozenVectorForMaps(manager, globalComm, coupledOp);
 
   AMP::LinearAlgebra::Vector::shared_ptr solVec, rhsVec, scaledRhsVec;
   helperCreateVectors(manager, nonlinearColumnOperator, globalComm, solVec, rhsVec, scaledRhsVec);
 
   if(usePointLoad) {
-    helperBuildPointLoadRHS(localPelletIds, localMeshes, global_input_db, nonlinearColumnOperator, rhsVec);
+    helperBuildPointLoadRHS(global_input_db, nonlinearColumnOperator, rhsVec);
   } else {
     rhsVec->zero();
   }
 
   solVec->zero();
-  helperApplyBoundaryCorrections(localPelletIds, nonlinearColumnOperator, solVec, rhsVec);
+  helperApplyBoundaryCorrections(nonlinearColumnOperator, solVec, rhsVec);
 
   boost::shared_ptr<AMP::Database> nonlinearSolver_db = global_input_db->getDatabase("NonlinearSolver");
   boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver");
