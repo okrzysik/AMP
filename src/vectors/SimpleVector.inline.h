@@ -4,10 +4,6 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-  inline
-  SimpleVector::SimpleVector () : Vector ()
-  {
-  }
 
   inline
   void SimpleVector::copyVector(const Vector &src_vec)
@@ -17,15 +13,6 @@ namespace LinearAlgebra {
       AMP_ERROR( "Mismatched vectors" );
     }
     std::copy ( src_vec.begin() , src_vec.end() , begin() );
-  }
-
-  inline
-  Vector::shared_ptr  SimpleVector::create ( size_t localSize , Variable::shared_ptr var )
-  {
-    SimpleVector *retVal = new SimpleVector;
-    retVal->d_Data.resize ( localSize );
-    retVal->setVariable ( var );
-    return Vector::shared_ptr ( retVal );
   }
 
   inline

@@ -31,7 +31,6 @@ using std::map;
 #include "utils/UnitTest.h"
 #include "vectors/SimpleVector.h"
 #include "vectors/MultiVector.h"
-#include "vectors/CommunicationList.h"
 
 // Allow external materials to include additional headers in the test
 // Note: this includes 1 additional include header that is passed from the command line:
@@ -104,13 +103,6 @@ MatTestResult testMaterial(string &name) {
 		results.undefined = false;
 		results.unknown = true;
 	}
-
-	// set up communication list for AMP::Vectors
-	AMP::AMP_MPI comm(AMP_COMM_SELF);
-	AMP::LinearAlgebra::CommunicationListParameters::shared_ptr commlistparam(new AMP::LinearAlgebra::CommunicationListParameters);
-	commlistparam->d_comm = comm;
-	commlistparam->d_localsize = 1;
-	AMP::LinearAlgebra::CommunicationList::shared_ptr commlist(new AMP::LinearAlgebra::CommunicationList(commlistparam));
 
 	// test property evaluations
 	vector<string> proplist(mat->list());
@@ -199,9 +191,6 @@ MatTestResult testMaterial(string &name) {
 				justrightVec[i]->setValueByLocalID(j,justright[i][j]);
 				toobigVec[i]   ->setValueByLocalID(j,toobig[i][j]);
 			}
-			toosmallVec[i]->setCommunicationList(commlist);
-			justrightVec[i]->setCommunicationList(commlist);
-			toobigVec[i]->setCommunicationList(commlist);
 		}
 
 		// set up std::vector arguments to evalv
@@ -216,10 +205,8 @@ MatTestResult testMaterial(string &name) {
 		// set up AMP::Vector arguments to evalv
 		AMP::LinearAlgebra::Variable::shared_ptr valueVar(new AMP::LinearAlgebra::Variable("value"));
 		AMP::LinearAlgebra::Vector::shared_ptr valueVec = AMP::LinearAlgebra::SimpleVector::create(npoints, valueVar);
-		valueVec->setCommunicationList(commlist);
 		AMP::LinearAlgebra::Variable::shared_ptr nominalVar(new AMP::LinearAlgebra::Variable("nominal"));
 		AMP::LinearAlgebra::Vector::shared_ptr nominalVec = AMP::LinearAlgebra::SimpleVector::create(npoints, nominalVar);
-		nominalVec->setCommunicationList(commlist);
 		map<string, AMP::LinearAlgebra::Vector::shared_ptr > argsVec;
 		for (size_t i = 0; i < nargs; i++) {
 			argsVec.insert(std::make_pair(argnames[i], justrightVec[i]));
@@ -230,7 +217,6 @@ MatTestResult testMaterial(string &name) {
 				AMP::LinearAlgebra::MultiVector::create("argsMultiVec", AMP_COMM_SELF);
 		boost::shared_ptr<AMP::LinearAlgebra::MultiVector> argsMultiVec =
 				boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(argsMultiVecVec);
-		argsMultiVec->setCommunicationList(commlist);
 		for (size_t i=0; i<nargs; i++) {
 			argsMultiVec->addVector(toosmallVec[i]); // extra junk, should be ignored
 			argsMultiVec->addVector(justrightVec[i]); // paydirt
@@ -720,13 +706,10 @@ MatTestResult testMaterial(string &name) {
 				istr << i;
 				ampEvalVar[i].reset(new AMP::LinearAlgebra::Variable("ampEval"+istr.str()));
 				ampEval[i] = AMP::LinearAlgebra::SimpleVector::create(npoints, ampEvalVar[i]);
-				ampEval[i]->setCommunicationList(commlist);
 				nominalAmpEvalVar[i].reset(new AMP::LinearAlgebra::Variable("nominalAmpEval"+istr.str()));
 				nominalAmpEval[i] = AMP::LinearAlgebra::SimpleVector::create(npoints, nominalAmpEvalVar[i]);
-				nominalAmpEval[i]->setCommunicationList(commlist);
 				nominalMultiEvalVar[i].reset(new AMP::LinearAlgebra::Variable("nominalMultiEval"+istr.str()));
 				nominalMultiEval[i] = AMP::LinearAlgebra::SimpleVector::create(npoints, nominalMultiEvalVar[i]);
-				nominalMultiEval[i]->setCommunicationList(commlist);
 			}
 
 			// all in range, AMP::Vector
@@ -1064,13 +1047,10 @@ MatTestResult testMaterial(string &name) {
 				istr << i;
 				ampEvalVar[i][j].reset(new AMP::LinearAlgebra::Variable("ampEval"+istr.str()));
 				ampEval[i][j] = AMP::LinearAlgebra::SimpleVector::create(npoints, ampEvalVar[i][j]);
-				ampEval[i][j]->setCommunicationList(commlist);
 				nominalAmpEvalVar[i][j].reset(new AMP::LinearAlgebra::Variable("nominalAmpEval"+istr.str()));
 				nominalAmpEval[i][j] = AMP::LinearAlgebra::SimpleVector::create(npoints, nominalAmpEvalVar[i][j]);
-				nominalAmpEval[i][j]->setCommunicationList(commlist);
 				nominalMultiEvalVar[i][j].reset(new AMP::LinearAlgebra::Variable("nominalMultiEval"+istr.str()));
 				nominalMultiEval[i][j] = AMP::LinearAlgebra::SimpleVector::create(npoints, nominalMultiEvalVar[i][j]);
-				nominalMultiEval[i][j]->setCommunicationList(commlist);
 			}
 
 			// all in range, AMP::Vector

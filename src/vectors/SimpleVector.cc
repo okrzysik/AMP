@@ -1,10 +1,31 @@
 #include "math.h"
 
 #include "SimpleVector.h"
-
+#include "discretization/DOF_Manager.h"
 
 namespace AMP {
 namespace LinearAlgebra {
+
+
+/****************************************************************
+* Constructors                                                  *
+****************************************************************/
+SimpleVector::SimpleVector () : Vector ()
+{
+}
+Vector::shared_ptr  SimpleVector::create ( size_t localSize , Variable::shared_ptr var )
+{
+    boost::shared_ptr<SimpleVector> retVal( new SimpleVector );
+    retVal->setVariable ( var );
+    retVal->d_Data.resize ( localSize );
+    AMP_MPI comm(AMP_COMM_SELF);
+    AMP::Discretization::DOFManager::shared_ptr DOFs( new AMP::Discretization::DOFManager( localSize, comm ) );
+    retVal->d_DOFManager = DOFs;
+    retVal->setCommunicationList( AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
+    return retVal;
+}
+
+
 
   double SimpleVector::L1Norm(void) const
   {

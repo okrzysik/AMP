@@ -71,7 +71,7 @@ ConstVectorDataIterator::ConstVectorDataIterator ( const VectorDataIterator &rhs
     d_CurOffset = rhs.d_CurOffset;
     d_position = rhs.d_position;
     d_size = rhs.d_size;
-    d_CurBlockSize = 0;
+    d_CurBlockSize = rhs.d_CurBlockSize;
 }
 ConstVectorDataIterator::ConstVectorDataIterator ( const ConstVectorDataIterator &rhs )
 {
@@ -143,6 +143,7 @@ inline void ConstVectorDataIterator::advance( size_t i  )
     while ( togo > 0 ) {
         if ( togo >= d_CurBlockSize-d_CurOffset ) {
             // We need to advance to the next data block
+            AMP_ASSERT(d_CurBlockSize>0);
             d_position += d_CurBlockSize-d_CurOffset;
             togo -= d_CurBlockSize-d_CurOffset;
             d_CurOffset = 0;
