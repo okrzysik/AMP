@@ -124,8 +124,10 @@ inline void VectorDataIterator::advance( size_t i  )
             togo -= d_CurBlockSize-d_CurOffset;
             d_CurOffset = 0;
             d_CurBlock++;
-            d_Block = d_Vec->getRawDataBlock<double>(d_CurBlock);
-            d_CurBlockSize = d_Vec->sizeOfDataBlock(d_CurBlock);
+            if ( d_position < d_size ) {
+                d_Block = d_Vec->getRawDataBlock<double>(d_CurBlock);
+                d_CurBlockSize = d_Vec->sizeOfDataBlock(d_CurBlock);
+            }
         } else {
             // We need to advance to the correct position within the current data block
             d_position += togo;
@@ -145,8 +147,10 @@ inline void ConstVectorDataIterator::advance( size_t i  )
             togo -= d_CurBlockSize-d_CurOffset;
             d_CurOffset = 0;
             d_CurBlock++;
-            d_Block = d_Vec->getRawDataBlock<double>(d_CurBlock);
-            d_CurBlockSize = d_Vec->sizeOfDataBlock(d_CurBlock);
+            if ( d_position < d_size ) {
+                d_Block = d_Vec->getRawDataBlock<double>(d_CurBlock);
+                d_CurBlockSize = d_Vec->sizeOfDataBlock(d_CurBlock);
+            }
         } else {
             // We need to advance to the correct position within the current data block
             d_position += togo;

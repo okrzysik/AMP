@@ -546,6 +546,8 @@ Vector::shared_ptr MultiVector::cloneVector(const Variable::shared_ptr name) con
     Vector::shared_ptr  retVal = Vector::shared_ptr ( new MultiVector ( name ) );
     MultiVector  &ret = retVal->castTo<MultiVector> ();
     ret.d_Comm = d_Comm;
+    ret.d_DOFManager = d_DOFManager;
+    ret.d_CommList = d_CommList;
     ret.d_vVectors.resize ( d_vVectors.size() );
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
         ret.d_vVectors[i] = d_vVectors[i]->cloneVector ();

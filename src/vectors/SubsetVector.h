@@ -61,26 +61,25 @@ public:
     virtual size_t   getGlobalSize () const;
     virtual void     assemble () {}
 
-    virtual void     setValuesByLocalID ( int , size_t * , const double * );
-    virtual void     setLocalValuesByGlobalID ( int , size_t * , const double * );
     virtual void     addValuesByLocalID ( int , size_t * , const double * );
+    virtual void     setValuesByLocalID ( int , size_t * , const double * );
+    virtual void     getValuesByLocalID ( int , size_t * , double *vals ) const;
     virtual void     addLocalValuesByGlobalID ( int , size_t * , const double * );
+    virtual void     setLocalValuesByGlobalID ( int , size_t * , const double * );
     virtual void     getLocalValuesByGlobalID ( int , size_t * , double * ) const ;
 
-protected:
-    std::vector<double>         d_Space;
-    Vector::shared_ptr          d_ViewVector;
-
+private:
     SubsetVector  () {}
     void  computeIDMap ();
 
     void *getRawDataBlockAsVoid ( size_t i );
     const void *getRawDataBlockAsVoid ( size_t i ) const ;
 
-private:
-    std::vector<size_t>        d_SubsetLocalIDToViewGlobalID;
-    std::vector<size_t>        d_dataBlockSize;
-    std::vector<double*>       d_dataBlockPtr;
+    // Internal data
+    Vector::shared_ptr      d_ViewVector;                   // Vector we subsetted for the view
+    std::vector<size_t>     d_SubsetLocalIDToViewGlobalID;  // The list of global ID in the parent vector
+    std::vector<size_t>     d_dataBlockSize;                // The size of the data blocks
+    std::vector<double*>    d_dataBlockPtr;                 // The pointers to the data blocks
 
 };
 

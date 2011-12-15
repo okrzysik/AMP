@@ -35,7 +35,7 @@ subsetDOFManager::subsetDOFManager( DOFManager::shared_ptr parentDOFManager, con
     std::vector<size_t> recv_data(d_global);
     d_comm.allGather( (int) N_local, N_remote );
     N_disp[0] = 0;
-    for (int i=0; i<d_comm.getSize(); i++)
+    for (int i=1; i<d_comm.getSize(); i++)
         N_disp[i] = N_disp[i-1] + N_remote[i-1];
     d_comm.allGather( send_data, (int) N_local, &recv_data[0], N_remote, N_disp, true );
     AMP::Utilities::quicksort( recv_data );
