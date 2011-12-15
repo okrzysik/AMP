@@ -10,6 +10,7 @@
 #include "operators/CoupledOperator.h"
 #include "operators/map/NodeToNodeMap.h"
 #include "operators/map/AsyncMapColumnOperator.h"
+#include "operators/mechanics/MechanicsNonlinearFEOperator.h"
 
 #include "ampmesh/MeshManager.h"
 #include "ampmesh/MeshAdapter.h"
@@ -134,6 +135,44 @@ void helperApplyBoundaryCorrections(boost::shared_ptr<AMP::Operator::ColumnOpera
           nonlinearColumnOperator->getOperator(id));
     nonlinOperator->modifyInitialSolutionVector(solVec);
     nonlinOperator->modifyRHSvector(rhsVec);
+  }//end for id
+}
+
+void helperCreateTemperatureVectors(AMP::Mesh::MeshManager::shared_ptr manager, 
+    boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator,
+    AMP::LinearAlgebra::Vector::shared_ptr & initialTemperatureVec,
+    AMP::LinearAlgebra::Vector::shared_ptr & finalTemperatureVec) {
+  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> tempVar( new AMP::LinearAlgebra::MultiVariable("ColumnVariable"));
+  for(int id = 0; id < nonlinearColumnOperator->getNumberOfOperators(); id++) {
+    AMP::LinearAlgebra::Variable::shared_ptr opVar = 
+      (nonlinearColumnOperator->getOperator(id))->getInputVariable(AMP::Operator::Mechanics::TEMPERATURE);
+    if(opVar.get() != NULL) {
+      tempVar->add(opVar);
+    }
+  }//end for id
+  initialTemperatureVec = manager->createVector(tempVar);
+  finalTemperatureVec = initialTemperatureVec->cloneVector();
+}
+
+void helperSetReferenceTemperature(boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator,
+    AMP::LinearAlgebra::Vector::shared_ptr initialTemperatureVec) {
+  for(int id = 0; id < nonlinearColumnOperator->getNumberOfOperators(); id++) {
+    boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> bvpOp = boost::dynamic_pointer_cast<
+      AMP::Operator::NonlinearBVPOperator>(nonlinearColumnOperator->getOperator(id));
+    boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechOp = boost::dynamic_pointer_cast<
+      AMP::Operator::MechanicsNonlinearFEOperator>(bvpOp->getVolumeOperator());
+    mechOp->setReferenceTemperature(initialTemperatureVec);
+  }//end for id
+}
+
+void helperSetFinalTemperature(boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator,
+    AMP::LinearAlgebra::Vector::shared_ptr finalTemperatureVec) {
+  for(int id = 0; id < nonlinearColumnOperator->getNumberOfOperators(); id++) {
+    boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> bvpOp = boost::dynamic_pointer_cast<
+      AMP::Operator::NonlinearBVPOperator>(nonlinearColumnOperator->getOperator(id));
+    boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechOp = boost::dynamic_pointer_cast<
+      AMP::Operator::MechanicsNonlinearFEOperator>(bvpOp->getVolumeOperator());
+    mechOp->setVector(AMP::Operator::Mechanics::TEMPERATURE, finalTemperatureVec); 
   }//end for id
 }
 

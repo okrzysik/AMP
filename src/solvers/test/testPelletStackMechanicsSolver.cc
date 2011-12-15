@@ -17,8 +17,6 @@
 
 #include "ampmesh/SiloIO.h"
 
-#include "operators/mechanics/MechanicsNonlinearFEOperatorParameters.h"
-
 #include "solvers/PetscSNESSolver.h"
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
@@ -67,6 +65,17 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     rhsVec->zero();
   }
 
+  AMP::LinearAlgebra::Vector::shared_ptr initialTemperatureVec, finalTemperatureVec;
+  if(useThermalLoad) {
+    helperCreateTemperatureVectors(manager, nonlinearColumnOperator, initialTemperatureVec, finalTemperatureVec);
+  }
+
+  if(useThermalLoad) {
+    double initialTemp = global_input_db->getDouble("InitialTemperature");
+    initialTemperatureVec->setToScalar(initialTemp);
+    helperSetReferenceTemperature(nonlinearColumnOperator, initialTemperatureVec);
+  }
+
   solVec->zero();
   helperApplyBoundaryCorrections(nonlinearColumnOperator, solVec, rhsVec);
 
@@ -100,8 +109,16 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     AMP::pout << "########################################" << std::endl;
     AMP::pout << "The current loading step is " << (step+1) << std::endl;
 
-    double scaleValue  = ((static_cast<double>(step)) + 1.0)/(static_cast<double>(NumberOfLoadingSteps));
+    double scaleValue  = (static_cast<double>(step + 1))/(static_cast<double>(NumberOfLoadingSteps));
     scaledRhsVec->scale(scaleValue, rhsVec);
+
+    if(useThermalLoad) {
+      double initialTemp = global_input_db->getDouble("InitialTemperature");
+      double finalTemp = global_input_db->getDouble("FinalTemperature");
+      double deltaTemp = initialTemp + ((static_cast<double>(step + 1))*(finalTemp - initialTemp)/(static_cast<double>(NumberOfLoadingSteps)));
+      finalTemperatureVec->setToScalar(deltaTemp);
+      helperSetFinalTemperature(nonlinearColumnOperator, finalTemperatureVec);
+    }
 
     nonlinearSolver->solve(scaledRhsVec, solVec);
 
