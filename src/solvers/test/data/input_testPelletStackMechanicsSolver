@@ -1,10 +1,13 @@
 
+DomainDecomposition = 0
 NumberOfMeshes = 3
 NumberOfMeshToMeshMaps = 2
 
 NumberOfLoadingSteps = 1
 USE_POINT_LOAD = TRUE
 USE_THERMAL_LOAD = FALSE
+InitialTemperature = 310.0
+FinalTemperature = 400.0
 
 PelletStackOperator {
   TOTAL_NUMBER_OF_PELLETS = 3
@@ -13,6 +16,8 @@ PelletStackOperator {
     MASTER = 1 
     SLAVE = 2
     SCALING_FACTOR = 1.0
+    Variable = "displacement"
+    MeshNamePrefix = "pellet"
 }
 
 Mesh_1 {
@@ -74,17 +79,35 @@ MeshToMeshMap_2 {
 PointLoad {
 }
 
-BottomNonlinearMechanicsOperator {
+BottomPelletNonlinearMechanicsOperator {
+  name = "NonlinearBVPOperator"
+    print_info_level = 1
+    VolumeOperator = "PelletMechanicsNonlinearFEOperator"
+    BoundaryOperator = "DirichletVectorCorrection1"
 }
 
-BottomLinearMechanicsOperator {
+BottomPelletLinearMechanicsOperator {
 }
 
-NonlinearMechanicsOperator {
+PelletNonlinearMechanicsOperator {
 }
 
-LinearMechanicsOperator {
+PelletLinearMechanicsOperator {
 }
+
+NonlinearSolver {
+  LinearSolver {
+    PelletStackSolver {
+      ColumnSolver {
+        KrylovSolver {
+          MLSolver {
+          }
+        }
+      }
+    }
+  }
+}
+
 
 
 
