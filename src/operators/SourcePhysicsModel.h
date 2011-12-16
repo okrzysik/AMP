@@ -57,12 +57,16 @@ namespace Operator {
          d_DefaultTemperature = params->d_db->getDoubleWithDefault("Default_Temperature",300.);
          d_DefaultConcentration = params->d_db->getDoubleWithDefault("Default_Concentration",0.1);
          d_DefaultBurnup = params->d_db->getDoubleWithDefault("Default_Burnup",0.);
+         d_DefaultFractionOfTheoreticalDensity = params->d_db->getDoubleWithDefault("Default_FractionalTD",0.);
+         d_DefaultFractionOfGadolinia = params->d_db->getDoubleWithDefault("Default_MassFractionGadolinia",0.);
          
-         d_defaults.resize(3);
+         d_defaults.resize(5);
 
          d_defaults[0] = d_DefaultTemperature;
          d_defaults[1] = d_DefaultConcentration;
          d_defaults[2] = d_DefaultBurnup;
+         d_defaults[3] = d_DefaultFractionOfTheoreticalDensity;
+         d_defaults[4] = d_DefaultFractionOfGadolinia;
 
     }
 
@@ -87,14 +91,20 @@ namespace Operator {
              std::string temperatureString = "temperature"; // in the future get from input file
              std::string burnupString = "burnup"; // in the future get from input file
              std::string oxygenString = "concentration"; // in the future get from input file
+             std::string fracTDString = "fractionalTD"; // in the future get from input file
+             std::string fracGdString = "massFractionGd"; // in the future get from input file
 
              boost::shared_ptr<std::vector<double> > tempVec(new std::vector<double> );      
              boost::shared_ptr<std::vector<double> > burnupVec( new std::vector<double>(result.size(),d_DefaultBurnup) );
              boost::shared_ptr<std::vector<double> > oxygenVec( new std::vector<double>(result.size(),d_DefaultConcentration) );
+             boost::shared_ptr<std::vector<double> > fracTDVec( new std::vector<double>(result.size(),d_DefaultFractionOfTheoreticalDensity) );
+             boost::shared_ptr<std::vector<double> > fracGdVec( new std::vector<double>(result.size(),d_DefaultFractionOfGadolinia) );
 
              inputMaterialParameters.insert( std::make_pair( temperatureString, tempVec) );
              inputMaterialParameters.insert( std::make_pair( burnupString, burnupVec) );
              inputMaterialParameters.insert( std::make_pair( oxygenString, oxygenVec) );
+             inputMaterialParameters.insert( std::make_pair( fracTDString, fracTDVec) );
+             inputMaterialParameters.insert( std::make_pair( fracGdString, fracGdVec) );
 
              int switchId = InputVec.size();  
              switch(switchId) {
@@ -213,6 +223,8 @@ namespace Operator {
      double d_DefaultTemperature;
      double d_DefaultConcentration;
      double d_DefaultBurnup;
+     double d_DefaultFractionOfTheoreticalDensity;
+     double d_DefaultFractionOfGadolinia;
 
      std::vector<double> d_defaults;
 
