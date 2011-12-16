@@ -34,7 +34,7 @@ void  runTest ( AMP::UnitTest *ut )
     std::string varName = "test";
     AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::Discretization::NodalVariable(DOFsPerNode,varName) );
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
-    boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFs( new AMP::Discretization::simpleDOFManager(mesh,AMP::Mesh::Vertex,1,DOFsPerNode) );
+    AMP::Discretization::DOFManager::shared_ptr DOFs = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,DOFsPerNode);
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr  dummy;

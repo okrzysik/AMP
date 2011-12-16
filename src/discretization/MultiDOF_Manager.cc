@@ -159,15 +159,18 @@ std::vector<size_t> multiDOFManager::getSubDOF( DOFManager::shared_ptr manager, 
             subDOFs = std::vector<size_t>(globalDOFs.size(),-1);
             std::pair<size_t,size_t> search(0,~((size_t)0));
             for (size_t j=0; j<globalDOFs.size(); j++) {
-                search.first = globalDOFs[i];
+                search.first = globalDOFs[j];
                 size_t index = AMP::Utilities::findfirst(d_globalToSubDOF[i],search);
                 index--;
                 subDOFs[j] = globalDOFs[j] - d_subToGlobalDOF[i][j].first + d_globalToSubDOF[i][j].second;
-                AMP_ERROR("This is not tested and likely does not work properly");                
-                if ( subDOFs[j]<0 || subDOFs[i]>=d_globalSize[i] )
-                    subDOFs[j] = ~((size_t)0);
             }
         }
+    }
+    // If we did not recover the global DOF, then the DOF is not on the given sub-manager
+    std::vector<size_t> globalDOFs2 = getGlobalDOF( manager, subDOFs );
+    for (size_t i=0; i<globalDOFs.size(); i++) {
+        if ( globalDOFs2[i] != globalDOFs[i] )
+            subDOFs[i] = ~((size_t)0);
     }
     return subDOFs;
 }

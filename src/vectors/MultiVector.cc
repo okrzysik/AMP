@@ -20,73 +20,63 @@ MultiVector::MultiVector ( Variable::shared_ptr name )
 {
     setVariable ( name );
 }
-Vector::shared_ptr  MultiVector::create ( Variable::shared_ptr variable, AMP_MPI comm )
+boost::shared_ptr<MultiVector>  MultiVector::create ( Variable::shared_ptr variable, AMP_MPI comm )
 {
     boost::shared_ptr<MultiVector>  retval( new MultiVector( variable ) );
     retval->d_Comm = comm;
     return retval;
 }
-Vector::shared_ptr  MultiVector::create ( const std::string &name , AMP_MPI comm )
+boost::shared_ptr<MultiVector>  MultiVector::create ( const std::string &name , AMP_MPI comm )
 {
     Variable::shared_ptr  variable( new MultiVariable( name ) );
     boost::shared_ptr<MultiVector>  retval( new MultiVector( variable ) );
     retval->d_Comm = comm;
     return retval;
 }
-Vector::shared_ptr  MultiVector::encapsulate ( Vector::shared_ptr &vec , AMP_MPI comm )
+boost::shared_ptr<MultiVector>  MultiVector::encapsulate ( Vector::shared_ptr &vec , AMP_MPI comm )
 {
     if ( vec->isA<MultiVector>() ) {
         if ( !comm.isNull() )
             AMP_ASSERT( comm.compare(vec->getComm()) != 0 );
-        return vec;
+        return boost::dynamic_pointer_cast<MultiVector>( vec );
     }
     if ( comm.isNull() )
         comm = vec->getComm();
-    Vector::shared_ptr  retval = create ( vec->getVariable()->getName(), comm );
-    retval->castTo<MultiVector>().addVector ( vec );
+    boost::shared_ptr<MultiVector>  retval = create ( vec->getVariable()->getName(), comm );
+    retval->addVector ( vec );
     if ( vec->isA<DataChangeFirer>() )
     {
       vec->castTo<DataChangeFirer>().registerListener ( &(retval->castTo<DataChangeListener>()) );
     }
     return retval;
 }
-Vector::shared_ptr  MultiVector::view ( Vector::shared_ptr &vec , AMP_MPI comm )
+boost::shared_ptr<MultiVector>  MultiVector::view ( Vector::shared_ptr &vec , AMP_MPI comm )
 {
-    Vector::shared_ptr  retval = Vector::shared_ptr ();
+    boost::shared_ptr<MultiVector>  retval;
     // Check to see if this is a multivector
-    printf("start\n");
     if ( vec->isA<MultiVector>() ) {
-        printf("Step 1\n");
         if ( !comm.isNull() )
             AMP_ASSERT( comm.compare(vec->getComm()) != 0 );
-        retval = vec;
+        retval = boost::dynamic_pointer_cast<MultiVector>( vec );
     }
     // Check to see if the engine is a multivector
     if ( vec->isA<ManagedVector>() ) {
-        printf("Step 2\n");
         if ( vec->castTo<ManagedVector>().getVectorEngine()->isA<MultiVector>() ) {
             if ( !comm.isNull() )
                 AMP_ASSERT( comm.compare(vec->getComm()) != 0 );
-            retval = boost::dynamic_pointer_cast<Vector> ( vec->castTo<ManagedVector>().getVectorEngine() );
+            retval = boost::dynamic_pointer_cast<MultiVector> ( vec->castTo<ManagedVector>().getVectorEngine() );
         }
     }
     // If still don't have a multivector, make one
     if ( !retval ) {
-        printf("Step 3\n");
         if ( comm.isNull() )
             comm = vec->getComm();
         retval = create ( vec->getVariable()->getName() , comm );
-        printf("Step 3.1\n");
-        MultiVector &tretval = retval->castTo<MultiVector> ();
-        printf("Step 3.2\n");
-        tretval.addVector ( vec );
-        printf("Step 3.3\n");
+        retval->addVector ( vec );
         if ( vec->isA<DataChangeFirer>() ) {
-            vec->castTo<DataChangeFirer>().registerListener ( &tretval );
+            vec->castTo<DataChangeFirer>().registerListener ( retval.get() );
         }
-        printf("Step 3.4\n");
     }
-    printf("exit\n");
     return retval;
 }
 
@@ -129,6 +119,18 @@ void MultiVector::addVector ( Vector::shared_ptr  v )
         AMP_INSIST(managers[i].get()!=NULL,"All vectors must have a DOFManager for MultiVector to work properly");
     }
     d_DOFManager = AMP::Discretization::DOFManager::shared_ptr( new AMP::Discretization::multiDOFManager( d_Comm, managers ) );
+    // Create a new communication list
+    std::vector<size_t> remote_DOFs = d_DOFManager->getRemoteDOFs();
+    bool ghosts = d_Comm.maxReduce<char>(remote_DOFs.size()>0)==1;
+    if ( !ghosts ) {
+         d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( d_DOFManager->numLocalDOF(), d_Comm );
+    } else {
+         AMP::LinearAlgebra::CommunicationListParameters::shared_ptr params( new AMP::LinearAlgebra::CommunicationListParameters );
+         params->d_comm = d_Comm;
+         params->d_localsize = d_DOFManager->numLocalDOF();
+         params->d_remote_DOFs = remote_DOFs;
+         d_CommList = AMP::LinearAlgebra::CommunicationList::shared_ptr( new AMP::LinearAlgebra::CommunicationList(params) );
+    }
 }
 void  MultiVector::eraseVector ( Vector::shared_ptr  v )
 {
@@ -303,14 +305,12 @@ size_t MultiVector::getLocalSize () const
     size_t ans = 0;
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
       ans += d_vVectors[i]->getLocalSize();
+    AMP_ASSERT(ans==d_DOFManager->numLocalDOF());
     return ans;
 }
 size_t MultiVector::getGlobalSize () const
 {
-    size_t ans = 0;
-    for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
-      ans += d_vVectors[i]->getGlobalSize();
-    return ans;
+    return d_DOFManager->numGlobalDOF();
 }
 size_t MultiVector::getGhostSize () const
 {

@@ -138,6 +138,19 @@ void Mesh::setMeshID( )
 
 
 /********************************************************
+* Function to return the meshID composing the mesh      *
+********************************************************/
+std::vector<MeshID> Mesh::getAllMeshIDs() const
+{
+    return std::vector<MeshID>(1,d_meshID);
+}
+std::vector<MeshID> Mesh::getBaseMeshIDs() const
+{
+    return std::vector<MeshID>(1,d_meshID);
+}
+
+
+/********************************************************
 * Function to return the mesh with the given ID         *
 ********************************************************/
 boost::shared_ptr<Mesh>  Mesh::Subset( MeshID meshID ) {

@@ -13,8 +13,8 @@
 
 // Factory to create a vector from a mesh
 AMP::Mesh::Mesh::shared_ptr globalMeshForMeshVectorFactory = AMP::Mesh::Mesh::shared_ptr();
-AMP::Discretization::DOFManager::shared_ptr globalDOFforMeshVectorFactory = boost::shared_ptr<AMP::Discretization::simpleDOFManager>();
-template <int SIZE, AMP::Mesh::GeomType TYPE, int GCW>
+AMP::Discretization::DOFManager::shared_ptr globalDOFforMeshVectorFactory = boost::shared_ptr<AMP::Discretization::DOFManager>();
+template <int SIZE, AMP::Mesh::GeomType TYPE, int GCW, bool SPLIT>
 class  MeshVectorFactory
 {
 public:
@@ -35,7 +35,7 @@ public:
             AMP_ERROR("mesh must be set before this can be called");
         if ( globalDOFforMeshVectorFactory.get()==NULL )
             AMP_ERROR("DOF must be set before this can be called");
-        return AMP::LinearAlgebra::createVector( globalDOFforMeshVectorFactory, getVariable() );
+        return AMP::LinearAlgebra::createVector( globalDOFforMeshVectorFactory, getVariable(), SPLIT );
     }
 
     static  AMP::Discretization::DOFManager::shared_ptr getDOFMap()
@@ -48,15 +48,15 @@ public:
 };
 
 
-template <int DOF_PER_NODE>
+template <int DOF_PER_NODE, bool SPLIT>
 void simpleNodalVectorTests( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh, AMP::Discretization::DOFManager::shared_ptr DOFs, int gcw ) {
 
         // Create a nodal variable 
         AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::Discretization::NodalVariable(DOF_PER_NODE,"test vector") );
 
         // Create the vectors
-        AMP::LinearAlgebra::Vector::shared_ptr vectora = AMP::LinearAlgebra::createVector( DOFs, variable );
-        AMP::LinearAlgebra::Vector::shared_ptr vectorb = AMP::LinearAlgebra::createVector( DOFs, variable );
+        AMP::LinearAlgebra::Vector::shared_ptr vectora = AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );
+        AMP::LinearAlgebra::Vector::shared_ptr vectorb = AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );
 
         // Check the size of the vector
         size_t  num_dofs = mesh->numGlobalElements(AMP::Mesh::Vertex) * DOF_PER_NODE;
@@ -92,17 +92,17 @@ void simpleNodalVectorTests( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr m
 }
 
 
-template <int DOF_PER_NODE>
+template <int DOF_PER_NODE, bool SPLIT>
 void VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) {
 
     for (int gcw=0; gcw<=1; gcw++) {
 
         // Create the DOF_Manager
         AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
-        AMP::Discretization::DOFManager::shared_ptr DOFs( new AMP::Discretization::simpleDOFManager(mesh,AMP::Mesh::Vertex,gcw,DOF_PER_NODE) );
+        AMP::Discretization::DOFManager::shared_ptr DOFs = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,gcw,DOF_PER_NODE,SPLIT);
 
         // Run some basic nodal vector tests
-        simpleNodalVectorTests<DOF_PER_NODE>( utils, mesh, DOFs, gcw );
+        simpleNodalVectorTests<DOF_PER_NODE,SPLIT>( utils, mesh, DOFs, gcw );
         
         // Run the vector tests
         globalMeshForMeshVectorFactory = mesh;
@@ -110,16 +110,16 @@ void VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh
         if ( gcw==0 ) {
             // Only run the managed vector tests 
             // We need to check each test to see if it is valid for gcw==0
-            test_managed_vectors_loop< MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,0> > ( utils );
-            test_managed_vectors_loop< MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,0> > ( utils );
+            test_managed_vectors_loop< MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,0,SPLIT> > ( utils );
+            test_managed_vectors_loop< MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,0,SPLIT> > ( utils );
         } else if ( gcw==1 ) {
-            test_managed_vectors_loop< MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,1> > ( utils );
-            test_parallel_vectors_loop<MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,1> > ( utils );
+            test_managed_vectors_loop< MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,1,SPLIT> > ( utils );
+            test_parallel_vectors_loop<MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,1,SPLIT> > ( utils );
         } else {
             AMP_ERROR("Not finished");
         }
         globalMeshForMeshVectorFactory = AMP::Mesh::Mesh::shared_ptr();
-        globalDOFforMeshVectorFactory = boost::shared_ptr<AMP::Discretization::simpleDOFManager>();
+        globalDOFforMeshVectorFactory = boost::shared_ptr<AMP::Discretization::DOFManager>();
 
     }
 }

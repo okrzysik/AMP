@@ -324,6 +324,60 @@ MeshIterator MultiMesh::getIDsetIterator( const GeomType type, const int id, con
 
 
 /********************************************************
+* Function to return the meshID composing the mesh      *
+********************************************************/
+std::vector<MeshID> MultiMesh::getAllMeshIDs() const
+{
+    std::set<MeshID> ids;
+    ids.insert(d_meshID);
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        std::vector<MeshID> mesh_ids = d_meshes[i]->getAllMeshIDs();
+        for (size_t j=0; j<mesh_ids.size(); j++)
+            ids.insert(mesh_ids[j]);
+    }
+    int send_cnt = ids.size();
+    int recv_cnt = d_comm.sumReduce(send_cnt);
+    MeshID *send_data = new MeshID[send_cnt];
+    MeshID *recv_data = new MeshID[recv_cnt];
+    std::set<MeshID>::iterator iterator = ids.begin();
+    for (int i=0; i<send_cnt; i++) {
+        send_data[i] = *iterator;
+        iterator++;
+    }
+    d_comm.allGather( send_data, send_cnt, recv_data );
+    for (int i=0; i<recv_cnt; i++)
+        ids.insert(recv_data[i]);
+    delete [] send_data;
+    delete [] recv_data;
+    return std::vector<MeshID>(ids.begin(),ids.end());
+}
+std::vector<MeshID> MultiMesh::getBaseMeshIDs() const
+{
+    std::set<MeshID> ids;
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        std::vector<MeshID> mesh_ids = d_meshes[i]->getBaseMeshIDs();
+        for (size_t j=0; j<mesh_ids.size(); j++)
+            ids.insert(mesh_ids[j]);
+    }
+    int send_cnt = ids.size();
+    int recv_cnt = d_comm.sumReduce(send_cnt);
+    MeshID *send_data = new MeshID[send_cnt];
+    MeshID *recv_data = new MeshID[recv_cnt];
+    std::set<MeshID>::iterator iterator = ids.begin();
+    for (int i=0; i<send_cnt; i++) {
+        send_data[i] = *iterator;
+        iterator++;
+    }
+    d_comm.allGather( send_data, send_cnt, recv_data );
+    for (int i=0; i<recv_cnt; i++)
+        ids.insert(recv_data[i]);
+    delete [] send_data;
+    delete [] recv_data;
+    return std::vector<MeshID>(ids.begin(),ids.end());
+}
+
+
+/********************************************************
 * Function to return the mesh with the given ID         *
 ********************************************************/
 boost::shared_ptr<Mesh>  MultiMesh::Subset( MeshID meshID ) 

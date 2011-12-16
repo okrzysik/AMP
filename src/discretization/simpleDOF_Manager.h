@@ -29,11 +29,13 @@ public:
     /**
      * \brief Create a new DOF manager object
      * \details  This is the standard constructor for creating a new DOF manager object.
-     * \param mesh  Mesh over which we want to construct the DOF map
-     * \param type  The geometric entity type for the DOF map
-     * \param gcw   The desired ghost width
+     * \param mesh      Mesh over which we want to construct the DOF map
+     * \param type      The geometric entity type for the DOF map
+     * \param gcw       The desired ghost width
+     * \param split     Do we want to split the DOFManager by the meshes returning a multiDOFManager
      */
-    simpleDOFManager ( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP::Mesh::GeomType type, int gcw, int DOFsPerElement );
+    static DOFManager::shared_ptr  create( boost::shared_ptr<AMP::Mesh::Mesh> mesh, 
+        AMP::Mesh::GeomType type, int gcw, int DOFsPerElement, bool split=false );
 
 
     /** \brief Get the entry indices of DOFs given a mesh element

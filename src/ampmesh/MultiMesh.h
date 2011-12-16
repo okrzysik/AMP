@@ -135,6 +135,20 @@ public:
     virtual void displaceMesh( std::vector<double> x );
 
 
+    /**
+     *  Get the meshIDs of all meshes that compose the current mesh (including its self)
+     *  Note: This function will require global communication
+     */
+    virtual std::vector<MeshID> getAllMeshIDs() const;
+
+
+    /**
+     *  Get the meshIDs of all the basic meshes that compose the current mesh (excluding multimeshes and subset meshes)
+     *  Note: This function will require global communication
+     */
+    virtual std::vector<MeshID> getBaseMeshIDs() const;
+
+
 private:
 
     //! Empty constructor for a mesh

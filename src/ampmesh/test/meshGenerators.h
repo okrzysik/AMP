@@ -67,12 +67,41 @@ public:
 
 
 // MulitMesh generator
-template <typename ADAPTER>
 class   MultiMeshGenerator : public MeshGenerator
 {
 public:
     virtual void build_mesh() {
-        AMP_ERROR("Not implimented yet");
+        int N_meshes = 4;
+        // Create the multimesh database
+        boost::shared_ptr<AMP::MemoryDatabase> meshDatabase(new AMP::MemoryDatabase("Mesh"));
+        meshDatabase->putString("MeshName","PelletMeshes");
+        meshDatabase->putString("MeshType","Multimesh");
+        meshDatabase->putString("MeshDatabasePrefix","Mesh_");
+        meshDatabase->putString("MeshArrayDatabasePrefix","MeshArray_");
+        // Create the mesh array database
+        boost::shared_ptr<Database> meshArrayDatabase = meshDatabase->putDatabase("MeshArray_1");
+        meshArrayDatabase->putInteger("N",N_meshes);
+        meshArrayDatabase->putString("iterator","%i");
+        std::vector<int> indexArray(N_meshes);
+        for (int i=0; i<N_meshes; i++)
+            indexArray[i] = i+1;
+        meshArrayDatabase->putIntegerArray("indicies",indexArray);
+        meshArrayDatabase->putString("MeshName","pellet_%i");
+        meshArrayDatabase->putString("FileName","pellet_lo_res.e");
+        meshArrayDatabase->putString("MeshType","libMesh");
+        meshArrayDatabase->putInteger("dim",3);
+        meshArrayDatabase->putDouble("x_offset",0.0);
+        meshArrayDatabase->putDouble("y_offset",0.0);
+        std::vector<double> offsetArray(N_meshes);
+        for (int i=0; i<N_meshes; i++)
+            offsetArray[i] = ((double) i)*0.0105;
+        meshArrayDatabase->putDoubleArray("z_offset",offsetArray);
+        meshArrayDatabase->putInteger("NumberOfElements",80);
+        // Create the parameter object
+        boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(meshDatabase));
+        params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+        // Create the mesh
+        mesh = AMP::Mesh::Mesh::buildMesh(params);
     }
 };
 

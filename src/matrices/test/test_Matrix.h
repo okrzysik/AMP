@@ -34,7 +34,7 @@ public:
         if ( NUM_DOF_ROW != NUM_DOF_COL )
             AMP_ERROR("DOF Manager is not finished to the point we can have different number of DOFs for the two matrix variables");
         AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
-        DOFs = boost::shared_ptr<AMP::Discretization::DOFManager>( new AMP::Discretization::simpleDOFManager(mesh,AMP::Mesh::Vertex,1,NUM_DOF_ROW) );
+        DOFs = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,NUM_DOF_ROW);
 
     }
 

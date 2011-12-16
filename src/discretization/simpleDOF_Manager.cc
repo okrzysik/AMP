@@ -1,7 +1,8 @@
 #include "discretization/simpleDOF_Manager.h"
+#include "discretization/MultiDOF_Manager.h"
+#include "ampmesh/MultiMesh.h"
 #include "utils/Utilities.h"
 
-#include "utils/Utilities.h"
 
 namespace AMP {
 namespace Discretization {
@@ -10,43 +11,60 @@ namespace Discretization {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-simpleDOFManager::simpleDOFManager( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP::Mesh::GeomType type, int gcw, int DOFsPerObject )
+DOFManager::shared_ptr  simpleDOFManager::create( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP::Mesh::GeomType type, int gcw, int DOFsPerObject, bool split )
 {
-    d_mesh = mesh;
-    d_type = type;
-    d_gcw = gcw;
-    d_comm = d_mesh->getComm();
-    DOFsPerElement = DOFsPerObject;
-    // Create a sorted list of the local and remote types
-    d_local_id.resize(mesh->numLocalElements(d_type));
-    d_remote_id.resize(mesh->numGhostElements(d_type,d_gcw));
-    AMP::Mesh::MeshIterator pos = d_mesh->getIterator(d_type,d_gcw);
-    AMP::Mesh::MeshIterator end = pos.end();
-    int i=0;
-    int j=0;
-    while ( pos != end ) {
-        AMP::Mesh::MeshElementID id = pos->globalID();
-        if ( id.is_local() ) {
-            d_local_id[i] = id;
-            i++;
-        } else {
-            d_remote_id[j] = id;
-            j++;
+    if ( split && boost::dynamic_pointer_cast<AMP::Mesh::MultiMesh>(mesh).get()!=NULL ) {
+        // We want to split the DOFs by the mesh
+        std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getBaseMeshIDs();
+        std::vector<DOFManager::shared_ptr> managers;
+        for (size_t i=0; i<meshIDs.size(); i++) {
+            AMP::Mesh::Mesh::shared_ptr subMesh = mesh->Subset(meshIDs[i]);
+            if ( subMesh.get() != NULL )
+                managers.push_back( create( subMesh, type, gcw, DOFsPerObject, false ) );
         }
-        ++pos;
+        boost::shared_ptr<multiDOFManager> rtn( new multiDOFManager( mesh->getComm(), managers ) );
+        return rtn;
+    } else {
+        // We are ready to create the simpleDOFManager
+        boost::shared_ptr<simpleDOFManager> rtn( new simpleDOFManager() );
+        rtn->d_mesh = mesh;
+        rtn->d_type = type;
+        rtn->d_gcw = gcw;
+        rtn->d_comm = mesh->getComm();
+        rtn->DOFsPerElement = DOFsPerObject;
+        // Create a sorted list of the local and remote types
+        rtn->d_local_id.resize(mesh->numLocalElements(type));
+        rtn->d_remote_id.resize(mesh->numGhostElements(type,gcw));
+        AMP::Mesh::MeshIterator pos = mesh->getIterator(type,gcw);
+        AMP::Mesh::MeshIterator end = pos.end();
+        int i=0;
+        int j=0;
+        while ( pos != end ) {
+            AMP::Mesh::MeshElementID id = pos->globalID();
+            if ( id.is_local() ) {
+                rtn->d_local_id[i] = id;
+                i++;
+            } else {
+                rtn->d_remote_id[j] = id;
+                j++;
+            }
+            ++pos;
+        }
+        // Sort the elements (they will be sorted by the meshID, then the rank on the 
+        // comm of the given mesh, then the element type, and finally the local id)
+        AMP::Utilities::quicksort(rtn->d_local_id);
+        AMP::Utilities::quicksort(rtn->d_remote_id);
+        // Get the number of local elements per processor and the global number of DOFs
+        size_t N_local = rtn->d_local_id.size()*DOFsPerObject;
+        rtn->d_comm.sumScan<size_t>(&N_local,&rtn->d_end);
+        rtn->d_begin = rtn->d_end-N_local;
+        rtn->d_global = rtn->d_comm.bcast(rtn->d_end,rtn->d_comm.getSize()-1);
+        // Determine the remote DOFs (assuming 1 DOF per node)
+        // Note: this must be done after d_local_id is set, d_begin and d_global are set, and remote_ids must be sorted.
+        rtn->d_remote_dof = rtn->getRemoteDOF(rtn->d_remote_id);
+        return rtn;
     }
-    // Sort the elements (they will be sorted by the meshID, then the rank on the 
-    // comm of the given mesh, then the element type, and finally the local id)
-    AMP::Utilities::quicksort(d_local_id);
-    AMP::Utilities::quicksort(d_remote_id);
-    // Get the number of local elements per processor and the global number of DOFs
-    size_t N_local = d_local_id.size()*DOFsPerElement;
-    d_comm.sumScan<size_t>(&N_local,&d_end);
-    d_begin = d_end-N_local;
-    d_global = d_comm.bcast(d_end,d_comm.getSize()-1);
-    // Determine the remote DOFs (assuming 1 DOF per node)
-    // Note: this must be done after d_local_id is set, d_begin and d_global are set, and remote_ids must be sorted.
-    d_remote_dof = getRemoteDOF(d_remote_id);
+    return DOFManager::shared_ptr();
 }
 
 

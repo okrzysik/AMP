@@ -50,13 +50,13 @@ public:
       * \param[in] name  Variable describing the new vector
       * \param[in] comm  Communicator to build the MultiVector on
       */
-    static Vector::shared_ptr  create ( Variable::shared_ptr name , AMP_MPI  comm );
+    static boost::shared_ptr<MultiVector>  create ( Variable::shared_ptr name , AMP_MPI  comm );
 
     /** \brief Create a new multivector in parallel
       * \param[in] name  Name of the new vector
       * \param[in] comm  Communicator to build the MultiVector on
       */
-    static Vector::shared_ptr  create ( const std::string &name , AMP_MPI comm );
+    static boost::shared_ptr<MultiVector>  create ( const std::string &name , AMP_MPI comm );
 
     /** \brief Create a multivector view of a vector
       * \param[in] vec  The vector to view
@@ -65,7 +65,7 @@ public:
       * and vec is added to it.  If vec is not a parallel vector (such as a SimpleVector), comm
       * must be specified.
       */
-    static Vector::shared_ptr  view ( Vector::shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
+    static boost::shared_ptr<MultiVector>   view ( Vector::shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
 
     /** \brief Encapsulate a vector in a MultiVector
       * \param[in] vec  The vector to view
@@ -74,8 +74,9 @@ public:
       * and vec is added to it.  If vec is not a parallel vector (such as a SimpleVector), comm
       * must be specified.
       */
-    static Vector::shared_ptr  encapsulate ( Vector::shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
+    static boost::shared_ptr<MultiVector>   encapsulate ( Vector::shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
 
+    // Add a vector to the multivector
     virtual void addVector ( Vector::shared_ptr );
 
     /** \brief  Remove a vector from a MultiVector
