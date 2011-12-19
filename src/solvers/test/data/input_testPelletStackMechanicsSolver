@@ -76,6 +76,10 @@ MeshToMeshMap_2 {
 PointLoad {
   name = "DirichletVectorCorrection"
     number_of_ids = 1
+    id_0 = 1
+    number_of_dofs_0 = 1
+    dof_0_0 = 2
+    value_0_0 = -1.0e-1
 }
 
 BottomPelletMechanicsNonlinearBVPOperator {
@@ -111,25 +115,51 @@ PelletMechanicsNonlinearFEOperator {
 
 PelletMechanicsLinearFEOperator {
   name = "MechanicsLinearFEOperator"
+    MechanicsElement {
+      name="MechanicsLinearElement"
+    }
+  InputVariable = "displacement"
+    OutputVariable = "displacement"
+    isAttachedToNonlinearOperator = TRUE
 }
 
 BottomPelletMechanicsNonlinearBC {
   name = "DirichletVectorCorrection"
     isAttachedToVolumeOperator = TRUE
     number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+    value_0_0 = 0
+    value_0_1 = 0
+    value_0_2 = 0
 }
 
 PelletMechanicsNonlinearBC {
   name = "DirichletVectorCorrection"
+    SCALING_FACTOR = 1.0
     isAttachedToVolumeOperator = TRUE
     valuesType = 2
     setResidual = TRUE
     number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
 }
 
 PelletMechanicsLinearBC {
   name = "DirichletMatrixCorrection"
+    symmetric_correction = FALSE
     number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
 }
 
 PelletMechanicsMaterialModel {
