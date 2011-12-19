@@ -40,37 +40,37 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp;
   boost::shared_ptr<AMP::Operator::ColumnOperator> linearColumnOperator;
   boost::shared_ptr<AMP::Operator::PelletStackOperator> pelletStackOp; 
-  helperCreateAllOperators(manager, globalComm, global_input_db, coupledOp, linearColumnOperator, pelletStackOp);
+  helperCreateAllOperatorsForPelletMechanics(manager, globalComm, global_input_db, coupledOp, linearColumnOperator, pelletStackOp);
 
   AMP::LinearAlgebra::Vector::shared_ptr solVec, rhsVec, scaledRhsVec;
-  helperCreateVectors(manager, coupledOp, globalComm, solVec, rhsVec, scaledRhsVec);
+  helperCreateVectorsForPelletMechanics(manager, coupledOp, globalComm, solVec, rhsVec, scaledRhsVec);
 
   if(usePointLoad) {
-    helperBuildPointLoadRHS(global_input_db, coupledOp, rhsVec);
+    helperBuildPointLoadRHSForPelletMechanics(global_input_db, coupledOp, rhsVec);
   } else {
     rhsVec->zero();
   }
 
   AMP::LinearAlgebra::Vector::shared_ptr initialTemperatureVec, finalTemperatureVec;
   if(useThermalLoad) {
-    helperCreateTemperatureVectors(manager, coupledOp, initialTemperatureVec, finalTemperatureVec);
+    helperCreateTemperatureVectorsForPelletMechanics(manager, coupledOp, initialTemperatureVec, finalTemperatureVec);
   }
 
   if(useThermalLoad) {
     double initialTemp = global_input_db->getDouble("InitialTemperature");
     initialTemperatureVec->setToScalar(initialTemp);
-    helperSetReferenceTemperature(coupledOp, initialTemperatureVec);
+    helperSetReferenceTemperatureForPelletMechanics(coupledOp, initialTemperatureVec);
   }
 
   solVec->zero();
-  helperApplyBoundaryCorrections(coupledOp, solVec, rhsVec);
+  helperApplyBoundaryCorrectionsForPelletMechanics(coupledOp, solVec, rhsVec);
 
   boost::shared_ptr<AMP::Database> nonlinearSolver_db = global_input_db->getDatabase("NonlinearSolver");
   boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver");
   boost::shared_ptr<AMP::Database> pelletStackSolver_db = linearSolver_db->getDatabase("PelletStackSolver");
 
   boost::shared_ptr<AMP::Solver::PelletStackMechanicsSolver> pelletStackSolver;
-  helperBuildPelletStackSolver(pelletStackSolver_db, pelletStackOp, linearColumnOperator, pelletStackSolver);
+  helperBuildStackSolverForPelletMechanics(pelletStackSolver_db, pelletStackOp, linearColumnOperator, pelletStackSolver);
 
   boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new
       AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
@@ -99,7 +99,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       double finalTemp = global_input_db->getDouble("FinalTemperature");
       double deltaTemp = initialTemp + ((static_cast<double>(step + 1))*(finalTemp - initialTemp)/(static_cast<double>(NumberOfLoadingSteps)));
       finalTemperatureVec->setToScalar(deltaTemp);
-      helperSetFinalTemperature(coupledOp, finalTemperatureVec);
+      helperSetFinalTemperatureForPelletMechanics(coupledOp, finalTemperatureVec);
     }
 
     nonlinearSolver->solve(scaledRhsVec, solVec);
@@ -108,7 +108,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     manager->writeFile<AMP::Mesh::SiloIO> ( exeName , step );
 #endif
 
-    helperResetNonlinearOperator(coupledOp);
+    helperResetNonlinearOperatorForPelletMechanics(coupledOp);
   }//end for step
 
   ut->passes(exeName);
