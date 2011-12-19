@@ -5,7 +5,7 @@ NumberOfMeshToMeshMaps = 2
 
 NumberOfLoadingSteps = 1
 USE_POINT_LOAD = TRUE
-USE_THERMAL_LOAD = FALSE
+USE_THERMAL_LOAD = TRUE
 InitialTemperature = 310.0
 FinalTemperature = 400.0
 
@@ -74,18 +74,71 @@ MeshToMeshMap_2 {
 }
 
 PointLoad {
+  name = "DirichletVectorCorrection"
+    number_of_ids = 1
 }
 
 BottomPelletMechanicsNonlinearBVPOperator {
-}
-
-BottomPelletMechanicsLinearBVPOperator {
+  name = "NonlinearBVPOperator"
+    VolumeOperator = "PelletMechanicsNonlinearFEOperator"
+    BoundaryOperator = "BottomPelletMechanicsNonlinearBC"
 }
 
 PelletMechanicsNonlinearBVPOperator {
+  name = "NonlinearBVPOperator"
+    VolumeOperator = "PelletMechanicsNonlinearFEOperator"
+    BoundaryOperator = "PelletMechanicsNonlinearBC"
 }
 
 PelletMechanicsLinearBVPOperator {
+  name = "LinearBVPOperator"
+    VolumeOperator = "PelletMechanicsLinearFEOperator"
+    BoundaryOperator = "PelletMechanicsLinearBC"
+}
+
+PelletMechanicsNonlinearFEOperator {
+  name = "MechanicsNonlinearFEOperator"
+    LocalModel = "PelletMechanicsMaterialModel"
+    MechanicsElement {
+      name="MechanicsNonlinearElement"
+    }
+  ActiveInputVariables {
+    DISPLACEMENT = "displacement"
+      TEMPERATURE = "temperature"
+  }
+  OutputVariable = "displacement"
+}
+
+PelletMechanicsLinearFEOperator {
+  name = "MechanicsLinearFEOperator"
+}
+
+BottomPelletMechanicsNonlinearBC {
+  name = "DirichletVectorCorrection"
+    isAttachedToVolumeOperator = TRUE
+    number_of_ids = 1
+}
+
+PelletMechanicsNonlinearBC {
+  name = "DirichletVectorCorrection"
+    isAttachedToVolumeOperator = TRUE
+    valuesType = 2
+    setResidual = TRUE
+    number_of_ids = 1
+}
+
+PelletMechanicsLinearBC {
+  name = "DirichletMatrixCorrection"
+    number_of_ids = 1
+}
+
+PelletMechanicsMaterialModel {
+  name="ThermalVonMisesMatModel" 
+    Youngs_Modulus = 2.08e11
+    Poissons_Ratio = 0.23  
+    THERMAL_EXPANSION_COEFFICIENT = 2.0e-6
+    Linear_Strain_Hardening = 5.10e10   
+    Elastic_Yield_Stress = 3.45e9  
 }
 
 NonlinearSolver {
