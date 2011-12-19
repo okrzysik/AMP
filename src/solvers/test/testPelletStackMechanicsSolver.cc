@@ -78,7 +78,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   nonlinearSolverParams->d_pOperator = coupledOp;
   nonlinearSolverParams->d_pInitialGuess = solVec;
   boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
-  nonlinearSolver->setZeroInitialGuess(false);
 
   boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
   linearSolver->setPreconditioner(pelletStackSolver);
