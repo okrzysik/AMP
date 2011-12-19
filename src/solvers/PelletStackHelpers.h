@@ -249,7 +249,7 @@ void helperBuildColumnSolverForPelletMechanics(boost::shared_ptr<AMP::Database> 
 void helperBuildStackSolverForPelletMechanics(boost::shared_ptr<AMP::Database> pelletStackSolver_db, 
     boost::shared_ptr<AMP::Operator::PelletStackOperator> pelletStackOp, 
     boost::shared_ptr<AMP::Operator::ColumnOperator> linearColumnOperator, 
-    boost::shared_ptr<AMP::Solver::PelletStackMechanicsSolver> & pelletStackSolver) 
+    boost::shared_ptr<AMP::Solver::SolverStrategy> & pelletStackSolver) 
 {
   boost::shared_ptr<AMP::Database> columnSolver_db = pelletStackSolver_db->getDatabase("ColumnSolver");
   boost::shared_ptr<AMP::Solver::ColumnSolver> columnSolver;

@@ -69,7 +69,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver");
   boost::shared_ptr<AMP::Database> pelletStackSolver_db = linearSolver_db->getDatabase("PelletStackSolver");
 
-  boost::shared_ptr<AMP::Solver::PelletStackMechanicsSolver> pelletStackSolver;
+  boost::shared_ptr<AMP::Solver::SolverStrategy> pelletStackSolver;
   helperBuildStackSolverForPelletMechanics(pelletStackSolver_db, pelletStackOp, linearColumnOperator, pelletStackSolver);
 
   boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new
