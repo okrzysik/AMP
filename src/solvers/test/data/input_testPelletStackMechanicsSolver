@@ -172,16 +172,36 @@ PelletMechanicsMaterialModel {
 }
 
 NonlinearSolver {
-  LinearSolver {
-    PelletStackSolver {
-      ColumnSolver {
-        KrylovSolver {
-          MLSolver {
-          }
+  max_iterations = 50
+    max_error = 1e-11
+    zero_initial_guess = FALSE
+
+    LinearSolver {
+      max_iterations = 50
+        max_error = 1e-11
+
+        PelletStackSolver {
+          max_iterations = 1
+            max_error = 1e-11
+
+            ColumnSolver {
+              max_iterations = 1
+                max_error = 1e-11
+
+                KrylovSolver {
+                  max_iterations = 10
+                    max_error = 1e-11
+
+                    MLSolver {
+                      max_iterations = 1
+                        max_error = 1e-11
+                        problem_type = "NSSA"
+                        PDE_equations = 3
+                    }
+                }
+            }
         }
-      }
     }
-  }
 }
 
 
