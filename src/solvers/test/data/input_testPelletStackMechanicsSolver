@@ -11,8 +11,8 @@ FinalTemperature = 400.0
 
 PelletStackOperator {
   TOTAL_NUMBER_OF_PELLETS = 3
-    USE_SERIAL = FALSE
-    ONLY_Z_CORRECTION = TRUE
+    ONLY_Z_CORRECTION = FALSE
+    USE_SERIAL = TRUE
     MASTER = 1 
     SLAVE = 2
     SCALING_FACTOR = 1.0
@@ -215,7 +215,7 @@ NonlinearSolver {
                     pc_type = "shell"
                     pc_side = "RIGHT"
                     KSPAppendOptionsPrefix = "kspPC_"
-                    KSPOptions = "-kspPC_ksp_max_it 50 " 
+                    KSPOptions = "-kspPC_ksp_max_it 50 -kspPC_ksp_converged_reason" 
 
                     MLSolver {
                       max_iterations = 1
