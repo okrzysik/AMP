@@ -90,8 +90,56 @@ private:
     std::vector<DOFManager::shared_ptr>                         d_managers;
     std::vector<size_t>                                         d_localSize;
     std::vector<size_t>                                         d_globalSize;
-    std::vector< std::vector< std::pair<size_t,size_t> > >      d_subToGlobalDOF;
-    std::vector< std::vector< std::pair<size_t,size_t> > >      d_globalToSubDOF;
+
+    // Data used to convert between the local (sub) and global (parent) DOFs
+    struct subDOF_struct {
+        size_t DOF1_begin;
+        size_t DOF1_end;
+        size_t DOF2_begin;
+        size_t DOF2_end;
+        // Constructors
+        inline subDOF_struct( size_t v1, size_t v2, size_t v3, size_t v4 ) {
+            DOF1_begin = v1;
+            DOF1_end   = v2;
+            DOF2_begin = v3;
+            DOF2_end   = v4;
+        } 
+        inline subDOF_struct( ) {
+            DOF1_begin = ~size_t(0);
+            DOF1_end   = ~size_t(0);
+            DOF2_begin = ~size_t(0);
+            DOF2_end   = ~size_t(0);
+        }
+        // Overload key operators
+        inline bool operator== (const subDOF_struct& rhs ) const {
+            return DOF1_begin==rhs.DOF1_begin && DOF1_end==rhs.DOF1_end &&
+                   DOF2_begin==rhs.DOF2_begin && DOF2_end==rhs.DOF2_end;
+        }
+        inline bool operator!= (const subDOF_struct& rhs ) const {
+            return DOF1_begin!=rhs.DOF1_begin || DOF1_end!=rhs.DOF1_end ||
+                   DOF2_begin!=rhs.DOF2_begin || DOF2_end!=rhs.DOF2_end;
+        }
+        inline bool operator>= (const subDOF_struct& rhs ) const {
+            if ( DOF1_begin != rhs.DOF1_begin )
+                return DOF1_begin>=rhs.DOF1_begin;
+            if ( DOF1_end != rhs.DOF1_end )
+                return DOF1_end>=rhs.DOF1_end;
+            if ( DOF2_begin != rhs.DOF2_begin )
+                return DOF2_begin>=rhs.DOF2_begin;
+            return DOF2_end>=rhs.DOF2_end;
+        }
+        inline bool operator> (const subDOF_struct& rhs ) const {
+            return operator>=(rhs) && operator!=(rhs);
+        }
+        inline bool operator< (const subDOF_struct& rhs ) const {
+            return !operator>=(rhs);
+        }
+        inline bool operator<= (const subDOF_struct& rhs ) const {
+            return !operator>=(rhs) || operator==(rhs);
+        }
+    };
+    std::vector< std::vector<subDOF_struct> >      d_subToGlobalDOF;
+    std::vector< std::vector<subDOF_struct> >      d_globalToSubDOF;
 };
 
 

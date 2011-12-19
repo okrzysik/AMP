@@ -28,22 +28,26 @@ multiDOFManager::multiDOFManager ( AMP_MPI globalComm, std::vector<DOFManager::s
     d_begin = d_end - local_size;
     d_global = d_comm.bcast(d_end,d_comm.getSize()-1);
     // Compute the relationships between the DOFs
-    d_subToGlobalDOF = std::vector< std::vector< std::pair<size_t,size_t> > >(managers.size());
-    d_globalToSubDOF = std::vector< std::vector< std::pair<size_t,size_t> > >(managers.size());
+    d_subToGlobalDOF = std::vector< std::vector<subDOF_struct> >(managers.size());
+    d_globalToSubDOF = std::vector< std::vector<subDOF_struct> >(managers.size());
     size_t manager_begin = d_begin;
-    std::pair<size_t,size_t>  mypair;
+    subDOF_struct  mypair;
     for (size_t i=0; i<managers.size(); i++) {
         AMP_MPI comm = managers[i]->getComm();
         comm.barrier();     // Make sure all necessary processors are at the same point
-        mypair.first = managers[i]->beginDOF();
-        mypair.second = manager_begin;
-        d_subToGlobalDOF[i] = std::vector< std::pair<size_t,size_t> >(comm.getSize());
+        mypair.DOF1_begin = managers[i]->beginDOF();
+        mypair.DOF2_begin = manager_begin;
+        mypair.DOF1_end = managers[i]->endDOF();
+        mypair.DOF2_end = manager_begin+d_localSize[i];
+        d_subToGlobalDOF[i] = std::vector<subDOF_struct>(comm.getSize());
         comm.allGather(mypair,&d_subToGlobalDOF[i][0]);
         AMP::Utilities::quicksort(d_subToGlobalDOF[i]);
-        d_globalToSubDOF[i] = std::vector< std::pair<size_t,size_t> >(comm.getSize());
+        d_globalToSubDOF[i] = std::vector<subDOF_struct>(comm.getSize());
         for (size_t j=0; j<d_subToGlobalDOF[i].size(); j++) {
-            mypair.first = d_subToGlobalDOF[i][j].second;
-            mypair.second = d_subToGlobalDOF[i][j].first;
+            mypair.DOF1_begin = d_subToGlobalDOF[i][j].DOF2_begin;
+            mypair.DOF2_begin = d_subToGlobalDOF[i][j].DOF1_begin;
+            mypair.DOF1_end = d_subToGlobalDOF[i][j].DOF2_end;
+            mypair.DOF2_end = d_subToGlobalDOF[i][j].DOF1_end;
             d_globalToSubDOF[i][j] = mypair;
         }
         AMP::Utilities::quicksort(d_globalToSubDOF[i]);
@@ -140,12 +144,13 @@ std::vector<size_t> multiDOFManager::getGlobalDOF( DOFManager::shared_ptr manage
     for (size_t i=0; i<d_managers.size(); i++) {
         if ( d_managers[i]==manager ) {
             globalDOFs = std::vector<size_t>(subDOFs.size(),-1);
-            std::pair<size_t,size_t> search(0,~((size_t)0));
+            subDOF_struct search(0,~((size_t)0),~((size_t)0),~((size_t)0));
             for (size_t j=0; j<subDOFs.size(); j++) {
-                search.first = subDOFs[j];
+                search.DOF1_begin = subDOFs[j];
                 size_t index = AMP::Utilities::findfirst(d_subToGlobalDOF[i],search);
                 index--;
-                globalDOFs[j] = subDOFs[j] - d_subToGlobalDOF[i][j].first + d_subToGlobalDOF[i][j].second; 
+                AMP_ASSERT(index>=0&&index<d_subToGlobalDOF.size());
+                globalDOFs[j] = subDOFs[j] - d_subToGlobalDOF[i][index].DOF1_begin + d_subToGlobalDOF[i][index].DOF2_begin; 
             }
         }
     }
@@ -153,24 +158,23 @@ std::vector<size_t> multiDOFManager::getGlobalDOF( DOFManager::shared_ptr manage
 }
 std::vector<size_t> multiDOFManager::getSubDOF( DOFManager::shared_ptr manager, std::vector<size_t> &globalDOFs ) const
 {
-    std::vector<size_t> subDOFs;
+    size_t neg_one = ~((size_t)0);
+    std::vector<size_t> subDOFs(globalDOFs.size());
+    for (size_t i=0; i<globalDOFs.size(); i++)
+        subDOFs[i] = neg_one;
     for (size_t i=0; i<d_managers.size(); i++) {
         if ( d_managers[i]==manager ) {
-            subDOFs = std::vector<size_t>(globalDOFs.size(),-1);
-            std::pair<size_t,size_t> search(0,~((size_t)0));
+            subDOF_struct search(0,neg_one,neg_one,neg_one);
             for (size_t j=0; j<globalDOFs.size(); j++) {
-                search.first = globalDOFs[j];
+                search.DOF1_begin = globalDOFs[j];
                 size_t index = AMP::Utilities::findfirst(d_globalToSubDOF[i],search);
                 index--;
-                subDOFs[j] = globalDOFs[j] - d_subToGlobalDOF[i][j].first + d_globalToSubDOF[i][j].second;
+                if ( index>=0 && index<d_globalToSubDOF.size() ) {
+                    if ( globalDOFs[j]>=d_globalToSubDOF[i][index].DOF1_begin && globalDOFs[j]<d_globalToSubDOF[i][index].DOF1_end )
+                        subDOFs[j] = globalDOFs[j] - d_globalToSubDOF[i][index].DOF1_begin + d_globalToSubDOF[i][index].DOF2_begin;
+                }
             }
         }
-    }
-    // If we did not recover the global DOF, then the DOF is not on the given sub-manager
-    std::vector<size_t> globalDOFs2 = getGlobalDOF( manager, subDOFs );
-    for (size_t i=0; i<globalDOFs.size(); i++) {
-        if ( globalDOFs2[i] != globalDOFs[i] )
-            subDOFs[i] = ~((size_t)0);
     }
     return subDOFs;
 }
