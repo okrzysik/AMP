@@ -173,24 +173,49 @@ PelletMechanicsMaterialModel {
 
 NonlinearSolver {
   max_iterations = 50
-    max_error = 1e-11
+    max_error = 1e-12
     zero_initial_guess = FALSE
+    absoluteTolerance = 1.0e-12
+    relativeTolerance = 1.0e-10
+    stepTolerance = 1.0e-14
+    maximumFunctionEvals = 1000
+    usesJacobian = FALSE
+    SNESOptions = "-snes_monitor -snes_type ls -snes_ksp_ew -snes_converged_reason -snes_ls_alpha 1.0e-4"
 
     LinearSolver {
       max_iterations = 50
-        max_error = 1e-11
+        max_error = 1e-12
+        ksp_type = "fgmres"
+        absolute_tolerance = 1.0e-12
+        relative_tolerance = 1.0e-11
+        divergence_tolerance = 1.0e03
+        max_krylov_dimension = 40
+        uses_preconditioner = TRUE
+        pc_type = "shell"
+        pc_side = "RIGHT"
+        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 50"
 
         PelletStackSolver {
           max_iterations = 1
-            max_error = 1e-11
+            max_error = 1e-12
 
             ColumnSolver {
               max_iterations = 1
-                max_error = 1e-11
+                max_error = 1e-12
 
                 KrylovSolver {
-                  max_iterations = 10
-                    max_error = 1e-11
+                  max_iterations = 50
+                    max_error = 1e-12
+                    ksp_type = "fgmres"
+                    absolute_tolerance = 1.0e-12
+                    relative_tolerance = 1.0e-11
+                    divergence_tolerance = 1.0e03
+                    max_krylov_dimension = 40
+                    uses_preconditioner = TRUE
+                    pc_type = "shell"
+                    pc_side = "RIGHT"
+                    KSPAppendOptionsPrefix = "kspPC_"
+                    KSPOptions = "-kspPC_ksp_max_it 50 " 
 
                     MLSolver {
                       max_iterations = 1
