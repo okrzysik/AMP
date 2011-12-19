@@ -56,12 +56,12 @@ void helperCreateColumnOperators(std::vector<unsigned int> localPelletIds,
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> mechModel;
     boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinOperator =
       boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-            prefix+"NonlinearMechanicsOperator", global_input_db, mechModel));
+            prefix+"PelletMechanicsNonlinearBVPOperator", global_input_db, mechModel));
     nonlinearColumnOperator->append(nonlinOperator);
 
     boost::shared_ptr<AMP::Operator::LinearBVPOperator> linOperator =
       boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-            prefix+"LinearMechanicsOperator", global_input_db, mechModel));
+            prefix+"PelletMechanicsLinearBVPOperator", global_input_db, mechModel));
     linearColumnOperator->append(linOperator);
   }//end for id
 } 

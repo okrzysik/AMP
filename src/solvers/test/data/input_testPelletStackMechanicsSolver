@@ -27,7 +27,6 @@ Mesh_1 {
     y_offset = 0.0
     z_offset = 0.0
     NumberOfElements = 1300
-    DatabaseName = "pellet_bottom"
 }
 
 Mesh_2 {
@@ -38,7 +37,6 @@ Mesh_2 {
     //IMPORTANT: Pellet Height is 0.0105
     z_offset = 0.0105
     NumberOfElements = 1300
-    DatabaseName = "pellet"
 }
 
 Mesh_3 {
@@ -49,7 +47,6 @@ Mesh_3 {
     //IMPORTANT: Pellet Height is 0.0105
     z_offset = 0.0210
     NumberOfElements = 1300
-    DatabaseName = "pellet"
 }
 
 MeshToMeshMap_1 {
@@ -79,20 +76,16 @@ MeshToMeshMap_2 {
 PointLoad {
 }
 
-BottomPelletNonlinearMechanicsOperator {
-  name = "NonlinearBVPOperator"
-    print_info_level = 1
-    VolumeOperator = "PelletMechanicsNonlinearFEOperator"
-    BoundaryOperator = "DirichletVectorCorrection1"
+BottomPelletMechanicsNonlinearBVPOperator {
 }
 
-BottomPelletLinearMechanicsOperator {
+BottomPelletMechanicsLinearBVPOperator {
 }
 
-PelletNonlinearMechanicsOperator {
+PelletMechanicsNonlinearBVPOperator {
 }
 
-PelletLinearMechanicsOperator {
+PelletMechanicsLinearBVPOperator {
 }
 
 NonlinearSolver {
