@@ -61,7 +61,7 @@ void helperCreateColumnOperators(std::vector<unsigned int> localPelletIds,
 
     boost::shared_ptr<AMP::Operator::LinearBVPOperator> linOperator =
       boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-            prefix+"PelletMechanicsLinearBVPOperator", global_input_db, mechModel));
+            "PelletMechanicsLinearBVPOperator", global_input_db, mechModel));
     linearColumnOperator->append(linOperator);
   }//end for id
 } 
