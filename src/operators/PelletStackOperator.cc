@@ -10,6 +10,7 @@ namespace AMP {
         d_totalNumberOfPellets = (params->d_db)->getInteger("TOTAL_NUMBER_OF_PELLETS");
         d_useSerial = (params->d_db)->getBoolWithDefault("USE_SERIAL", false);
         d_onlyZcorrection = (params->d_db)->getBoolWithDefault("ONLY_Z_CORRECTION", false);
+        AMP_ASSERT(!(d_useSerial && d_onlyZcorrection));
         d_masterId = (params->d_db)->getInteger("MASTER");
         d_slaveId = (params->d_db)->getInteger("SLAVE");
         if((params->d_db)->keyExists("SCALING_FACTOR")) {

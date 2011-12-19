@@ -70,6 +70,8 @@ namespace AMP {
 
       AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable(d_variable);
 
+      AMP_ASSERT(rInternal != NULL);
+
       if(d_iDebugPrintInfoLevel>3)
       {
         AMP::pout << "L2 Norm of rInternal entering DirichletVectorCorrection::apply is : " << rInternal->L2Norm() << std::endl;
@@ -92,9 +94,15 @@ namespace AMP {
     }
 
     void DirichletVectorCorrection :: applyZeroValues(AMP::LinearAlgebra::Vector::shared_ptr r) {
+      AMP_ASSERT(d_MeshAdapter != NULL);
+
       AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_variable);
 
+      AMP_ASSERT(dof_map != NULL);
+
       AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable(d_variable);
+
+      AMP_ASSERT(rInternal != NULL);
 
       unsigned int numIds = d_boundaryIds.size();
 
@@ -115,9 +123,19 @@ namespace AMP {
     }
 
     void DirichletVectorCorrection :: applyNonZeroValues(AMP::LinearAlgebra::Vector::shared_ptr r) {
+      AMP_ASSERT(d_MeshAdapter != NULL);
+
       AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_variable);
 
+      AMP_ASSERT(dof_map != NULL);
+
       AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable(d_variable);
+
+      AMP_ASSERT(rInternal != NULL);
+
+      if(d_valuesType == 2) {
+        AMP_ASSERT(d_dirichletValues2 != NULL);
+      }
 
       unsigned int numIds = d_boundaryIds.size();
 
@@ -144,8 +162,15 @@ namespace AMP {
     }
 
     void DirichletVectorCorrection :: applyResidual(AMP::LinearAlgebra::Vector::shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r) {
-      AMP::LinearAlgebra::Vector::shared_ptr uInternal = u->subsetVectorForVariable(d_variable);
+      AMP_ASSERT(d_MeshAdapter != NULL);
+
       AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_variable);
+
+      AMP_ASSERT(dof_map != NULL);
+
+      AMP::LinearAlgebra::Vector::shared_ptr uInternal = u->subsetVectorForVariable(d_variable);
+
+      AMP_ASSERT(uInternal != NULL);
 
       unsigned int numIds = d_boundaryIds.size();
 

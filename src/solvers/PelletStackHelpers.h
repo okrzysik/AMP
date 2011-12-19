@@ -21,7 +21,7 @@
 #include "solvers/PelletStackMechanicsSolver.h"
 #include "solvers/TrilinosMLSolver.h"
 
-void helperCreatePelletStackOperator(AMP::Mesh::MeshManager::shared_ptr manager,
+void helperCreateStackOperatorForPelletMechanics(AMP::Mesh::MeshManager::shared_ptr manager,
     boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps, AMP::AMP_MPI globalComm,
     boost::shared_ptr<AMP::InputDatabase> global_input_db, 
     boost::shared_ptr<AMP::Operator::PelletStackOperator> & pelletStackOp)
@@ -35,7 +35,7 @@ void helperCreatePelletStackOperator(AMP::Mesh::MeshManager::shared_ptr manager,
   pelletStackOp.reset(new AMP::Operator::PelletStackOperator(pelletStackOpParams));
 }
 
-void helperCreateColumnOperators(std::vector<unsigned int> localPelletIds, 
+void helperCreateColumnOperatorsForPelletMechanics(std::vector<unsigned int> localPelletIds, 
     std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> localMeshes,
     boost::shared_ptr<AMP::InputDatabase> global_input_db,
     boost::shared_ptr<AMP::Operator::ColumnOperator> & nonlinearColumnOperator,
@@ -56,17 +56,17 @@ void helperCreateColumnOperators(std::vector<unsigned int> localPelletIds,
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> mechModel;
     boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinOperator =
       boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-            prefix+"NonlinearMechanicsOperator", global_input_db, mechModel));
+            prefix+"PelletMechanicsNonlinearBVPOperator", global_input_db, mechModel));
     nonlinearColumnOperator->append(nonlinOperator);
 
     boost::shared_ptr<AMP::Operator::LinearBVPOperator> linOperator =
       boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-            prefix+"LinearMechanicsOperator", global_input_db, mechModel));
+            "PelletMechanicsLinearBVPOperator", global_input_db, mechModel));
     linearColumnOperator->append(linOperator);
   }//end for id
 } 
 
-void helperCreateCoupledOperator(boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps, 
+void helperCreateCoupledOperatorForPelletMechanics(boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps, 
     boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator,
     boost::shared_ptr<AMP::Operator::CoupledOperator> & coupledOp) 
 {
@@ -78,7 +78,7 @@ void helperCreateCoupledOperator(boost::shared_ptr<AMP::Operator::AsyncMapColumn
   coupledOp.reset(new AMP::Operator::CoupledOperator(coupledOpParams));
 }
 
-void helperSetFrozenVectorForMaps(AMP::Mesh::MeshManager::shared_ptr manager, AMP::AMP_MPI globalComm,
+void helperSetFrozenVectorForMapsForPelletMechanics(AMP::Mesh::MeshManager::shared_ptr manager, AMP::AMP_MPI globalComm,
     boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp) 
 {
   boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps = 
@@ -98,7 +98,7 @@ void helperSetFrozenVectorForMaps(AMP::Mesh::MeshManager::shared_ptr manager, AM
   }//end for id
 }
 
-void helperCreateAllOperators(AMP::Mesh::MeshManager::shared_ptr manager,
+void helperCreateAllOperatorsForPelletMechanics(AMP::Mesh::MeshManager::shared_ptr manager,
     AMP::AMP_MPI globalComm, boost::shared_ptr<AMP::InputDatabase> global_input_db,
     boost::shared_ptr<AMP::Operator::CoupledOperator> & coupledOp,
     boost::shared_ptr<AMP::Operator::ColumnOperator> & linearColumnOperator, 
@@ -107,18 +107,18 @@ void helperCreateAllOperators(AMP::Mesh::MeshManager::shared_ptr manager,
   boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps =
     AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap> ( manager , global_input_db );
 
-  helperCreatePelletStackOperator(manager, n2nmaps, globalComm, global_input_db, pelletStackOp);
+  helperCreateStackOperatorForPelletMechanics(manager, n2nmaps, globalComm, global_input_db, pelletStackOp);
 
   std::vector<unsigned int> localPelletIds = pelletStackOp->getLocalPelletIds();
   std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> localMeshes = pelletStackOp->getLocalMeshes();
 
   boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator;
-  helperCreateColumnOperators(localPelletIds, localMeshes, global_input_db, nonlinearColumnOperator, linearColumnOperator);
-  helperCreateCoupledOperator(n2nmaps, nonlinearColumnOperator, coupledOp);
-  helperSetFrozenVectorForMaps(manager, globalComm, coupledOp);
+  helperCreateColumnOperatorsForPelletMechanics(localPelletIds, localMeshes, global_input_db, nonlinearColumnOperator, linearColumnOperator);
+  helperCreateCoupledOperatorForPelletMechanics(n2nmaps, nonlinearColumnOperator, coupledOp);
+  helperSetFrozenVectorForMapsForPelletMechanics(manager, globalComm, coupledOp);
 }
 
-void helperCreateVectors(AMP::Mesh::MeshManager::shared_ptr manager,
+void helperCreateVectorsForPelletMechanics(AMP::Mesh::MeshManager::shared_ptr manager,
     AMP::Operator::Operator::shared_ptr coupledOp, AMP::AMP_MPI globalComm, 
     AMP::LinearAlgebra::Vector::shared_ptr & solVec,
     AMP::LinearAlgebra::Vector::shared_ptr & rhsVec,
@@ -133,7 +133,7 @@ void helperCreateVectors(AMP::Mesh::MeshManager::shared_ptr manager,
       manager->createVector ( dispVar ) , globalComm );
 }
 
-void helperBuildPointLoadRHS(boost::shared_ptr<AMP::InputDatabase> global_input_db, 
+void helperBuildPointLoadRHSForPelletMechanics(boost::shared_ptr<AMP::InputDatabase> global_input_db, 
     boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp,
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec) 
 {
@@ -154,7 +154,7 @@ void helperBuildPointLoadRHS(boost::shared_ptr<AMP::InputDatabase> global_input_
   }//end for id
 }
 
-void helperApplyBoundaryCorrections(boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp,
+void helperApplyBoundaryCorrectionsForPelletMechanics(boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp,
     AMP::LinearAlgebra::Vector::shared_ptr solVec, 
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec) 
 {
@@ -169,7 +169,7 @@ void helperApplyBoundaryCorrections(boost::shared_ptr<AMP::Operator::CoupledOper
   }//end for id
 }
 
-void helperCreateTemperatureVectors(AMP::Mesh::MeshManager::shared_ptr manager, 
+void helperCreateTemperatureVectorsForPelletMechanics(AMP::Mesh::MeshManager::shared_ptr manager, 
     boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp,
     AMP::LinearAlgebra::Vector::shared_ptr & initialTemperatureVec,
     AMP::LinearAlgebra::Vector::shared_ptr & finalTemperatureVec) 
@@ -188,7 +188,7 @@ void helperCreateTemperatureVectors(AMP::Mesh::MeshManager::shared_ptr manager,
   finalTemperatureVec = initialTemperatureVec->cloneVector();
 }
 
-void helperSetReferenceTemperature(boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp,
+void helperSetReferenceTemperatureForPelletMechanics(boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp,
     AMP::LinearAlgebra::Vector::shared_ptr initialTemperatureVec) 
 {
   boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator = 
@@ -202,7 +202,7 @@ void helperSetReferenceTemperature(boost::shared_ptr<AMP::Operator::CoupledOpera
   }//end for id
 }
 
-void helperSetFinalTemperature(boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp,
+void helperSetFinalTemperatureForPelletMechanics(boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp,
     AMP::LinearAlgebra::Vector::shared_ptr finalTemperatureVec) 
 {
   boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator = 
@@ -216,7 +216,7 @@ void helperSetFinalTemperature(boost::shared_ptr<AMP::Operator::CoupledOperator>
   }//end for id
 }
 
-void helperBuildColumnSolver(boost::shared_ptr<AMP::Database> columnSolver_db,
+void helperBuildColumnSolverForPelletMechanics(boost::shared_ptr<AMP::Database> columnSolver_db,
     boost::shared_ptr<AMP::Operator::ColumnOperator> linearColumnOperator,
     boost::shared_ptr<AMP::Solver::ColumnSolver> & columnSolver) 
 {
@@ -246,14 +246,14 @@ void helperBuildColumnSolver(boost::shared_ptr<AMP::Database> columnSolver_db,
   }//end for id
 }
 
-void helperBuildPelletStackSolver(boost::shared_ptr<AMP::Database> pelletStackSolver_db, 
+void helperBuildStackSolverForPelletMechanics(boost::shared_ptr<AMP::Database> pelletStackSolver_db, 
     boost::shared_ptr<AMP::Operator::PelletStackOperator> pelletStackOp, 
     boost::shared_ptr<AMP::Operator::ColumnOperator> linearColumnOperator, 
     boost::shared_ptr<AMP::Solver::PelletStackMechanicsSolver> & pelletStackSolver) 
 {
   boost::shared_ptr<AMP::Database> columnSolver_db = pelletStackSolver_db->getDatabase("ColumnSolver");
   boost::shared_ptr<AMP::Solver::ColumnSolver> columnSolver;
-  helperBuildColumnSolver(columnSolver_db, linearColumnOperator, columnSolver);
+  helperBuildColumnSolverForPelletMechanics(columnSolver_db, linearColumnOperator, columnSolver);
   boost::shared_ptr<AMP::Solver::PelletStackMechanicsSolverParameters> pelletStackSolverParams(new
       AMP::Solver::PelletStackMechanicsSolverParameters(pelletStackSolver_db));
   pelletStackSolverParams->d_columnSolver = columnSolver;
@@ -261,7 +261,7 @@ void helperBuildPelletStackSolver(boost::shared_ptr<AMP::Database> pelletStackSo
   pelletStackSolver.reset(new AMP::Solver::PelletStackMechanicsSolver(pelletStackSolverParams));
 }
 
-void helperResetNonlinearOperator(boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp) 
+void helperResetNonlinearOperatorForPelletMechanics(boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp) 
 {
   boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator =
     boost::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(coupledOp->getOperator(2));

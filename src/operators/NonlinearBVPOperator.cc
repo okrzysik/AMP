@@ -13,6 +13,7 @@ namespace Operator {
   {
     d_volumeOperator = params->d_volumeOperator;
     d_boundaryOperator = params->d_boundaryOperator;
+    d_MeshAdapter = d_volumeOperator->getMeshAdapter();
   }
 
   void
