@@ -70,8 +70,8 @@ void testMultiDOFMap( AMP::UnitTest *ut, boost::shared_ptr<AMP::Discretization::
         }
         // Check that we created the proper list
         bool passes = localDOFList.size()==managers[i]->numGlobalDOF();
-        for (size_t j=1; j<localDOFList.size(); j++) {
-            if ( localDOFList[j] != localDOFList[j-1]+1 )
+        for (size_t j=0; j<localDOFList.size(); j++) {
+            if ( localDOFList[j] != j )
                 passes = false;
         }
         if ( passes )

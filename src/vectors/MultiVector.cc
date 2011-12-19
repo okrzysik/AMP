@@ -702,7 +702,7 @@ void  MultiVector::partitionValues ( const int num, const size_t *indices, const
         count = 0; 
         for (size_t j=0; j<subDOFs.size(); j++) {
             if ( subDOFs[j] != ~((size_t)0) ) {
-                out_indices[i][count] = indices[j];
+                out_indices[i][count] = subDOFs[j];
                 out_vals[i][count] = vals[j];
                 if ( remap != NULL )
                     remap->operator[](i)[count] = j;
