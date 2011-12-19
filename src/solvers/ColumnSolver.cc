@@ -11,7 +11,7 @@ namespace Solver {
     assert(parameters.get()!=NULL);
     const boost::shared_ptr<AMP::Database> &db = parameters->d_db;
     d_IterationType = db->getStringWithDefault("IterationType", "GaussSeidel");
-    d_resetColumnOperator = db->getBoolWithDefault("ResetColumnOperator", true);
+    d_resetColumnOperator = db->getBoolWithDefault("ResetColumnOperator", false);
   }
 
   void
