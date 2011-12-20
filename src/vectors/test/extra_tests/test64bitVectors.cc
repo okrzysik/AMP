@@ -51,7 +51,13 @@ void  simpleDOFManagerVectorTest ( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_pt
     mesh->getComm().barrier();
     double end_time = AMP::AMP_MPI::time();
     std::cout << std::endl << "Time for makeConsistent: " << end_time-start_time << std::endl;
-    AMP_ASSERT(v1->L2Norm()==val);
+    // Time L2Norm
+    start_time = AMP::AMP_MPI::time();
+    double norm2 = v1->L2Norm();
+    AMP_ASSERT(norm2==val);
+    mesh->getComm().barrier();
+    end_time = AMP::AMP_MPI::time();
+    std::cout << std::endl << "Time for L2 norm: " << end_time-start_time << std::endl;
 }
 
 

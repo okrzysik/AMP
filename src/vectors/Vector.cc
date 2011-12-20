@@ -519,56 +519,61 @@ double Vector::L2Norm(void) const
 }
 double Vector::localMin(void) const
 {
-    const_iterator  curMe = begin();
-    const_iterator  last = end();
-    double ans = *curMe;
-    while ( curMe != last ) {
-        ans = std::min ( *curMe , ans );
-        ++curMe;
+    size_t N_blocks = numberOfDataBlocks();
+    double ans = 1e300;
+    for (size_t i=0; i<N_blocks; i++) {
+        size_t size = sizeOfDataBlock(i);
+        const double *data = getRawDataBlock<double>(i);
+        for (size_t j=0; j<size; j++)
+             ans = std::min( data[j], ans );
     }
     return ans;
 }
 double Vector::localMax(void) const
 {
-    const_iterator  curMe = begin();
-    const_iterator  last = end();
-    double ans = *curMe;
-    while ( curMe != last ) {
-        ans = std::max ( *curMe , ans );
-        ++curMe;
+    size_t N_blocks = numberOfDataBlocks();
+    double ans = -1e300;
+    for (size_t i=0; i<N_blocks; i++) {
+        size_t size = sizeOfDataBlock(i);
+        const double *data = getRawDataBlock<double>(i);
+        for (size_t j=0; j<size; j++)
+             ans = std::max( data[j], ans );
     }
     return ans;
 }
 double Vector::localL1Norm(void) const
 {
-    const_iterator  curMe = begin();
-    const_iterator  last = end();
+    size_t N_blocks = numberOfDataBlocks();
     double ans = 0.0;
-    while ( curMe != last ) {
-        ans += fabs ( *curMe );
-        ++curMe;
+    for (size_t i=0; i<N_blocks; i++) {
+        size_t size = sizeOfDataBlock(i);
+        const double *data = getRawDataBlock<double>(i);
+        for (size_t j=0; j<size; j++)
+             ans += fabs(data[j]);
     }
     return ans;
 }
 double Vector::localL2Norm(void) const
 {
-    const_iterator  curMe = begin();
-    const_iterator  last = end();
+    size_t N_blocks = numberOfDataBlocks();
     double ans = 0.0;
-    while ( curMe != last ) {
-        ans += *curMe * *curMe;
-        ++curMe;
+    for (size_t i=0; i<N_blocks; i++) {
+        size_t size = sizeOfDataBlock(i);
+        const double *data = getRawDataBlock<double>(i);
+        for (size_t j=0; j<size; j++)
+             ans += data[j]*data[j];
     }
     return sqrt(ans);
 }
 double Vector::localMaxNorm(void) const
 {
-    const_iterator  curMe = begin();
-    const_iterator  last = end();
+    size_t N_blocks = numberOfDataBlocks();
     double ans = 0.0;
-    while ( curMe != last ) {
-        ans = std::max ( ans , fabs ( *curMe ) );
-        ++curMe;
+    for (size_t i=0; i<N_blocks; i++) {
+        size_t size = sizeOfDataBlock(i);
+        const double *data = getRawDataBlock<double>(i);
+        for (size_t j=0; j<size; j++)
+             ans = std::max( fabs(data[j]), ans );
     }
     return ans;
 }
