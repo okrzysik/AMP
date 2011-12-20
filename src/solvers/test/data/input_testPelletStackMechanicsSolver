@@ -22,7 +22,7 @@ PelletStackOperator {
 
 Mesh_1 {
   Filename = "simple_pellet_1x.e"
-    MeshName = "pellet_0"
+    MeshName = "pellet_1"
     x_offset = 0.0
     y_offset = 0.0
     z_offset = 0.0
@@ -31,7 +31,7 @@ Mesh_1 {
 
 Mesh_2 {
   Filename = "simple_pellet_1x.e"
-    MeshName = "pellet_1"
+    MeshName = "pellet_2"
     x_offset = 0.0
     y_offset = 0.0
     //IMPORTANT: Pellet Height is 0.0105
@@ -41,7 +41,7 @@ Mesh_2 {
 
 Mesh_3 {
   Filename = "simple_pellet_1x.e"
-    MeshName = "pellet_2"
+    MeshName = "pellet_3"
     x_offset = 0.0
     y_offset = 0.0
     //IMPORTANT: Pellet Height is 0.0105
@@ -51,8 +51,8 @@ Mesh_3 {
 
 MeshToMeshMap_1 {
   MapType = "NodeToNode"
-    Mesh1 = "pellet_0"
-    Mesh2 = "pellet_1"
+    Mesh1 = "pellet_1"
+    Mesh2 = "pellet_2"
     Surface1 = 1 //Top of Mesh1
     Surface2 = 2 //Bottom of Mesh2
     DOFsPerObject = 3
@@ -63,8 +63,8 @@ MeshToMeshMap_1 {
 
 MeshToMeshMap_2 {
   MapType = "NodeToNode"
-    Mesh1 = "pellet_1"
-    Mesh2 = "pellet_2"
+    Mesh1 = "pellet_2"
+    Mesh2 = "pellet_3"
     Surface1 = 1 //Top of Mesh1
     Surface2 = 2 //Bottom of Mesh2
     DOFsPerObject = 3
