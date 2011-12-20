@@ -78,7 +78,7 @@ void helperCreateCoupledOperatorForPelletMechanics(boost::shared_ptr<AMP::Operat
   coupledOp.reset(new AMP::Operator::CoupledOperator(coupledOpParams));
 }
 
-void helperSetFrozenVectorForMapsForPelletMechanics(AMP::Mesh::MeshManager::shared_ptr manager, AMP::AMP_MPI globalComm,
+void helperSetFrozenVectorForMapsForPelletMechanics(AMP::Mesh::MeshManager::shared_ptr manager, 
     boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp) 
 {
   boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps = 
@@ -114,7 +114,7 @@ void helperCreateAllOperatorsForPelletMechanics(AMP::Mesh::MeshManager::shared_p
   boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator;
   helperCreateColumnOperatorsForPelletMechanics(localPelletIds, localMeshes, global_input_db, nonlinearColumnOperator, linearColumnOperator);
   helperCreateCoupledOperatorForPelletMechanics(n2nmaps, nonlinearColumnOperator, coupledOp);
-  helperSetFrozenVectorForMapsForPelletMechanics(manager, globalComm, coupledOp);
+  helperSetFrozenVectorForMapsForPelletMechanics(manager, coupledOp);
 }
 
 void helperCreateVectorsForPelletMechanics(AMP::Mesh::MeshManager::shared_ptr manager,
