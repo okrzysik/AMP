@@ -92,17 +92,7 @@ PetscErrorCode _AMP_dot_local(Vec a ,Vec b,PetscScalar *ans)
 {
   PETSC_RECAST(x,a);
   PETSC_RECAST(y,b);
-
-  AMP::LinearAlgebra::VectorDataIterator  a_iter , b_iter, a_end;
-  a_iter = x->ManagedVector::begin();
-  b_iter = y->ManagedVector::begin();
-  a_end = x->ManagedVector::end();
-  *ans = 0.;
-  while ( a_iter != a_end )
-  {
-    *ans += *a_iter * *b_iter;
-    a_iter++; b_iter++;
-  }
+  *ans = x->localDot ( y->shared_from_this() );
   return 0;
 }
 
@@ -399,34 +389,23 @@ PetscErrorCode _AMP_waxpy(Vec w, PetscScalar alpha ,Vec x, Vec y)
 
 PetscErrorCode _AMP_norm_local(Vec in ,NormType type ,PetscReal *ans)
 {
-  PETSC_RECAST(x,in);
-  *ans = 0.0;
-  AMP::LinearAlgebra::VectorDataIterator  cur = x->ManagedVector::begin();
-  AMP::LinearAlgebra::VectorDataIterator  end = x->ManagedVector::end();
-  while ( cur != end )
+  if ( type == NORM_1 )
+    *ans = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( in->data )->localL1Norm();
+  else if ( type == NORM_2 )
+    *ans = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( in->data )->localL2Norm();
+  else if ( type == NORM_INFINITY )
+    *ans = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( in->data )->localMaxNorm();
+  else if ( type == NORM_1_AND_2 )
   {
-    if ( type == NORM_1 )
-    {
-      *ans += fabs ( *cur );
-    }
-    else if ( type == NORM_2 )
-    {
-      *ans += *cur * *cur;
-    }
-    else if ( type == NORM_INFINITY )
-    {
-      *ans = std::max ( *ans , fabs ( *cur ) );
-    }
-    else
-    {
-      AMP_ERROR( "Norm not implemented" );
-    }
-    cur++;
+    *ans = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( in->data )->localL1Norm();
+    *(ans+1) = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( in->data )->localL2Norm();
   }
-  if ( type == NORM_2 )
-  {
-    *ans = sqrt ( *ans );
+  else
+    AMP_ERROR( "Unknown norm type" );
+  if (type!=NORM_1_AND_2) {
+    PetscObjectComposedDataSetReal(reinterpret_cast< ::PetscObject>(in),NormIds[type],ans[0]);
   }
+  PetscObjectStateIncrease(reinterpret_cast< ::PetscObject>(in));
   return 0;
 }
 

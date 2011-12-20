@@ -112,6 +112,10 @@ public:
       virtual double L2Norm(void) const;
       virtual double maxNorm(void) const;
       virtual double dot(const VectorOperations &x) const;
+    
+      virtual double localL1Norm(void) const;
+      virtual double localL2Norm(void) const;
+      virtual double localMaxNorm(void) const;
 
       virtual void setValuesByLocalID(int , size_t * , const double *);
       virtual void setLocalValuesByGlobalID(int , size_t * , const double *);
