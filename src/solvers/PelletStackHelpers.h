@@ -86,8 +86,7 @@ void helperSetFrozenVectorForMapsForPelletMechanics(AMP::Mesh::MeshManager::shar
   boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(coupledOp->getOperator(2));
   AMP::LinearAlgebra::Variable::shared_ptr dispVar = nonlinearColumnOperator->getOutputVariable();
-  AMP::LinearAlgebra::Vector::shared_ptr dirichletValues = AMP::LinearAlgebra::CommCollectVector::view (
-      manager->createVector ( dispVar ) , globalComm );
+  AMP::LinearAlgebra::Vector::shared_ptr dirichletValues =  manager->createVector ( dispVar );
   n2nmaps->setVector(dirichletValues);
   for(int id = 0; id < nonlinearColumnOperator->getNumberOfOperators(); id++) {
     boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletOp =

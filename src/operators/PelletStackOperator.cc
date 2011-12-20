@@ -27,7 +27,7 @@ namespace AMP {
         d_n2nMaps = params->d_n2nMaps;
         for(unsigned int pellId = 0; pellId < d_totalNumberOfPellets; pellId++) {
           char pellId2Str[256];
-          sprintf(pellId2Str, "%d", pellId);
+          sprintf(pellId2Str, "%d", pellId+1);
           AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = (params->d_meshManager)->getMesh(meshNamePrefix + "_" + pellId2Str);
           if(meshAdapter.get() == NULL) {
             continue;
