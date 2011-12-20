@@ -20,15 +20,15 @@ void testMeshGenerators( AMP::UnitTest *ut )
     // Test the libmesh cube generator
     generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::LibMeshCubeGenerator<5> );
     generator->build_mesh();
-//    MeshTestLoop( ut, generator->getMesh() );
+    MeshTestLoop( ut, generator->getMesh() );
     // Test the libmesh reader generator
     generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::ExodusReaderGenerator);
     generator->build_mesh();
-//    MeshTestLoop( ut, generator->getMesh() );
+    MeshTestLoop( ut, generator->getMesh() );
     // Test the multimesh generator
     generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::MultiMeshGenerator );
     generator->build_mesh();
-//    MeshTestLoop( ut, generator->getMesh() );
+    MeshTestLoop( ut, generator->getMesh() );
     MeshVectorTestLoop( ut, generator->getMesh() );
     // // Test the ThreeElementLGenerator generator
     // generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::ThreeElementLGenerator );
@@ -87,18 +87,18 @@ void testInputMesh( AMP::UnitTest *ut, std::string filename )
 int main ( int argc , char ** argv )
 {
     AMP::AMPManagerProperties startup_properties;
-    //startup_properties.use_MPI_Abort = false;
+    startup_properties.use_MPI_Abort = false;
     AMP::AMPManager::startup(argc,argv,startup_properties);
     AMP::UnitTest ut;
 
     // Run the ID test
-    //testID( &ut );
+    testID( &ut );
 
     // Run tests on a libmesh mesh
-    //testlibMesh( &ut );
+    testlibMesh( &ut );
 
     // Run tests on the input file
-    //testInputMesh( &ut, "input_Mesh" );
+    testInputMesh( &ut, "input_Mesh" );
 
     // Run the basic tests on all mesh generators
     testMeshGenerators( &ut );

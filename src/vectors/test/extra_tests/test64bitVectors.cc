@@ -35,8 +35,14 @@ void  simpleDOFManagerVectorTest ( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_pt
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
     AMP::Discretization::DOFManager::shared_ptr DOFs = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,DOFsPerNode,split);
     // Create the vector
+    double start_time = AMP::AMP_MPI::time();
     AMP::LinearAlgebra::Vector::shared_ptr v1 = AMP::LinearAlgebra::createVector( DOFs, nodalVariable, split );
-    std::cout << std::endl << "Vector size: " << v1->getGlobalSize() << std::endl;
+    mesh->getComm().barrier();
+    double end_time = AMP::AMP_MPI::time();
+    if ( mesh->getComm().getRank()==0 ) {
+        std::cout << std::endl << "Vector size: " << v1->getGlobalSize() << std::endl;
+        std::cout << "Time for vector create: " << end_time-start_time << std::endl;
+    }
     // Initialize the vector and set some random values
     v1->zero();
     AMP_ASSERT(v1->L2Norm()==0.0);
@@ -46,18 +52,20 @@ void  simpleDOFManagerVectorTest ( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_pt
         v1->setValueByGlobalID(index,val);
     // Time makeConsistentSet
     mesh->getComm().barrier();
-    double start_time = AMP::AMP_MPI::time();
+    start_time = AMP::AMP_MPI::time();
     v1->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     mesh->getComm().barrier();
-    double end_time = AMP::AMP_MPI::time();
-    std::cout << std::endl << "Time for makeConsistent: " << end_time-start_time << std::endl;
+    end_time = AMP::AMP_MPI::time();
+    if ( mesh->getComm().getRank()==0 )
+        std::cout << "Time for makeConsistent: " << end_time-start_time << std::endl;
     // Time L2Norm
     start_time = AMP::AMP_MPI::time();
     double norm2 = v1->L2Norm();
     AMP_ASSERT(norm2==val);
     mesh->getComm().barrier();
     end_time = AMP::AMP_MPI::time();
-    std::cout << std::endl << "Time for L2 norm: " << end_time-start_time << std::endl;
+    if ( mesh->getComm().getRank()==0 )
+        std::cout << "Time for L2 norm: " << end_time-start_time << std::endl;
 }
 
 
@@ -77,17 +85,20 @@ void  runTest ( AMP::UnitTest *ut, std::string input_file )
     boost::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params);
 
     // Run the test with > 2^24  DOFs
-    simpleDOFManagerVectorTest( ut, mesh, 0x1000001, false );
-    simpleDOFManagerVectorTest( ut, mesh, 0x1000001, true );
+    //simpleDOFManagerVectorTest( ut, mesh, 0x1000001, false );
+    //simpleDOFManagerVectorTest( ut, mesh, 0x1000001, true );
+
+    // Run the test with > 2^27  DOFs
+    simpleDOFManagerVectorTest( ut, mesh, 0x8000001, false );
 
     // Run the test with > 2^30 DOFs
-    //simpleDOFManagerVectorTest( ut, mesh, 0x10000001, false );
+    //simpleDOFManagerVectorTest( ut, mesh, 0x40000001, false );
 
     // Run the test with > 2^31 DOFs
     // simpleDOFManagerVectorTest( ut, mesh, 0x80000001, false );
 
     // Run the test with > 2^32 DOFs
-    //simpleDOFManagerVectorTest( ut, mesh, 0x100000001, false );
+    //simpleDOFManagerVectorTest( ut, mesh, 0x100000001, true );
 
 }
 

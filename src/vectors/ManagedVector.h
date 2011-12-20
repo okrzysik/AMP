@@ -5,7 +5,6 @@
 #include <vector>
 #include <stdexcept>
 #include "Vector.h"
-#include "ManagedDataMap.h"
 #include "DataChangeFirer.h"
 #include "MultiVector.h"
 
@@ -120,7 +119,7 @@ namespace LinearAlgebra {
       virtual Vector::shared_ptr  subsetVectorForVariable ( const Variable::shared_ptr &name );
       virtual size_t  numberOfDataBlocks () const;
       virtual size_t  sizeOfDataBlock ( size_t i ) const;
-      virtual void copyVector ( const Vector &other );
+      virtual void copyVector ( const Vector::const_shared_ptr &src_vec  );
       virtual void swapVectors ( Vector &other );
       virtual void aliasVector ( Vector &other );
 
@@ -136,7 +135,12 @@ namespace LinearAlgebra {
       virtual size_t getLocalSize() const;
       virtual size_t getGlobalSize() const;
 
+      virtual void getValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
       virtual void getLocalValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
+      virtual void getGhostValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
+      virtual void setValuesByGlobalID(int i, size_t * , const double *val);
+      virtual void setLocalValuesByGlobalID(int i, size_t * , const double *val);
+      virtual void setGhostValuesByGlobalID(int i, size_t * , const double *val);
 
       virtual void setToScalar(double alpha);
       virtual void scale(double alpha, const VectorOperations &x);
@@ -155,7 +159,6 @@ namespace LinearAlgebra {
       virtual double max(void) const;
       virtual void setRandomValues(void);
       virtual void setValuesByLocalID(int i, size_t * , const double *val);
-      virtual void setLocalValuesByGlobalID(int i, size_t * , const double *val);
       virtual void addValuesByLocalID(int i, size_t * , const double *val);
       virtual void addLocalValuesByGlobalID(int i, size_t * , const double *val);
       virtual void putRawData ( double *in );

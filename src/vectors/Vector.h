@@ -231,14 +231,12 @@ public:
     virtual size_t  sizeOfDataBlock ( size_t i = 0 ) const = 0;
 
     /** \brief Copy the elements of a vector into <i>this</i>
-      * \param[in] src_vec  the Vector to copy the data from
+      *   Note: if the ghosts in the rhs do not match the ghosts in this, 
+      *   a makeConsistent is performed to fill the ghosts.  Otherwise it
+      *   is assumed that rhs has consistent ghost values.
+      * \param[in] rhs  a shared pointer to the Vector to copy the data from
      */
-    virtual void copyVector(const Vector &src_vec);
-
-    /** \brief Copy the elements of a vector into <i>this</i>
-      * \param[in] src_vec  a shared pointer to the Vector to copy the data from
-     */
-    void copyVector ( const Vector::shared_ptr &src_vec );
+    virtual void copyVector ( const Vector::const_shared_ptr &rhs );
 
     /** \brief  Swap the data in this Bector for another
       * \param[in]  other  Vector to swap data with
@@ -679,6 +677,7 @@ public:
       * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
       */
     virtual void setLocalValuesByGlobalID ( int num , size_t *indices , const double *vals ) = 0;
+
     /**
       * \brief Set a single owned value using global identifier
       * \param[in] i  offset of value to set
@@ -686,6 +685,24 @@ public:
       * \details An alias for setLocalValuesByGlobalID ( 1 , &i , &val );
       */
     void setLocalValueByGlobalID(size_t i, const double val);
+
+    /**
+      * \brief Set ghost values using global identifier
+      * \param[in] num  number of values to set
+      * \param[in] indices the indices of the values to set
+      * \param[in] vals the values to place in the vector
+      *
+      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
+      */
+    virtual void setGhostValuesByGlobalID ( int num , size_t *indices , const double *vals );
+
+    /**
+      * \brief Set a ghost owned value using global identifier
+      * \param[in] i  offset of value to set
+      * \param[in] val the value to place in the vector
+      * \details An alias for setLocalValuesByGlobalID ( 1 , &i , &val );
+      */
+    void setGhostValueByGlobalID(size_t i, const double val);
 
     /**
       * \brief Set owned or shared values using global identifier
@@ -805,6 +822,23 @@ public:
       * \details This uses getLocalValuesByGlobalID to get the value
       */
     double getLocalValueByGlobalID ( size_t i ) const;
+
+    /**
+      * \brief Get ghost values in the vector by their global offset
+      * \param[in] num  number of values to set
+      * \param[in] indices the indices of the values to set
+      * \param[out] vals the values to place in the vector
+      * \details This will get any value owned by this core.
+      */
+    virtual void getGhostValuesByGlobalID ( int num , size_t *indices , double *vals ) const;
+
+    /**
+      * \brief Return a ghost value from the vector.
+      * \param[in] i The global index into the vector
+      * \return The value stored at the index
+      * \details This uses getGhostValuesByGlobalID to get the value
+      */
+    double getGhostValueByGlobalID ( size_t i ) const;
 
 
     /**
@@ -1004,7 +1038,7 @@ protected:
       * are the same without a call to makeConsistent.
       * \see makeConsistent
       */
-    void  copyGhostValues ( const Vector &rhs );
+    void  copyGhostValues ( const boost::shared_ptr<const Vector> &rhs );
 
     /** \brief Notify listeners that data has changed in this vector.
       */

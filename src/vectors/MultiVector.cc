@@ -134,6 +134,56 @@ void MultiVector::addVector ( Vector::shared_ptr  v )
          d_CommList = AMP::LinearAlgebra::CommunicationList::shared_ptr( new AMP::LinearAlgebra::CommunicationList(params) );
     }
 }
+void MultiVector::addVector ( std::vector<Vector::shared_ptr> v )
+{
+    // Add the vectors
+    for (size_t i=0; i<v.size(); i++) {
+        if ( v[i].get() != NULL ) {
+            boost::shared_ptr<MultiVector> vec;
+            if ( v[i]->isA<MultiVector>() ) {
+                vec = boost::dynamic_pointer_cast<MultiVector>( v[i] );
+            } else if ( v[i]->isA<ManagedVector>() ) {
+                if ( v[i]->castTo<ManagedVector>().getVectorEngine()->isA<MultiVector>() ) {
+                    vec = boost::dynamic_pointer_cast<MultiVector> ( v[i]->castTo<ManagedVector>().getVectorEngine() );
+                }
+            }
+            if ( vec.get() != NULL ) {
+                for ( size_t i = 0 ; i != vec->castTo<MultiVector>().getNumberOfSubvectors() ; i++ ) {
+                    Vector::shared_ptr  curvec = vec->castTo<MultiVector>().getVector ( i );
+                    d_vVectors.push_back ( curvec );
+                    if ( curvec->isA<DataChangeFirer>() ) {
+                        curvec->castTo<DataChangeFirer>().registerListener ( this );
+                    }
+                }
+            } else {
+                d_vVectors.push_back ( v[i] );
+                if ( v[i]->isA<DataChangeFirer>() ) {
+                    v[i]->castTo<DataChangeFirer>().registerListener ( this );
+                }
+            }
+        }
+    }
+    // Create a new multiDOFManager for the multivector
+    std::vector<AMP::Discretization::DOFManager::shared_ptr> managers(d_vVectors.size());
+    for (size_t i=0; i<d_vVectors.size(); i++) {
+        AMP_ASSERT(d_vVectors[i].get()!=NULL);
+        managers[i] = d_vVectors[i]->getDOFManager();
+        AMP_INSIST(managers[i].get()!=NULL,"All vectors must have a DOFManager for MultiVector to work properly");
+    }
+    d_DOFManager = AMP::Discretization::DOFManager::shared_ptr( new AMP::Discretization::multiDOFManager( d_Comm, managers ) );
+    // Create a new communication list
+    std::vector<size_t> remote_DOFs = d_DOFManager->getRemoteDOFs();
+    bool ghosts = d_Comm.maxReduce<char>(remote_DOFs.size()>0)==1;
+    if ( !ghosts ) {
+         d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( d_DOFManager->numLocalDOF(), d_Comm );
+    } else {
+         AMP::LinearAlgebra::CommunicationListParameters::shared_ptr params( new AMP::LinearAlgebra::CommunicationListParameters );
+         params->d_comm = d_Comm;
+         params->d_localsize = d_DOFManager->numLocalDOF();
+         params->d_remote_DOFs = remote_DOFs;
+         d_CommList = AMP::LinearAlgebra::CommunicationList::shared_ptr( new AMP::LinearAlgebra::CommunicationList(params) );
+    }
+}
 void  MultiVector::eraseVector ( Vector::shared_ptr  v )
 {
     AMP_ERROR("Needs to be fixed");
@@ -586,6 +636,16 @@ void MultiVector::setLocalValuesByGlobalID ( int num , size_t *indices , const d
         if ( ndxs[i].size() )
             d_vVectors[i]->setLocalValuesByGlobalID ( ndxs[i].size() , &(ndxs[i][0]) , &(vals[i][0]) );
     }
+}void MultiVector::setGhostValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
+{
+    INCREMENT_COUNT("Virtual");
+    std::vector<std::vector<size_t> >  ndxs;
+    std::vector<std::vector<double> >  vals;
+    partitionValues( num, indices, in_vals, ndxs, vals );
+    for ( size_t i = 0 ; i != ndxs.size() ; i++ ) {
+        if ( ndxs[i].size() )
+            d_vVectors[i]->setGhostValuesByGlobalID ( ndxs[i].size() , &(ndxs[i][0]) , &(vals[i][0]) );
+    }
 }
 void MultiVector::setValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
 {
@@ -657,6 +717,22 @@ void MultiVector::getLocalValuesByGlobalID ( int num , size_t *indices , double 
     for ( size_t i = 0 ; i != ndxs.size() ; i++ ) {
         if ( ndxs[i].size() )
             d_vVectors[i]->getLocalValuesByGlobalID ( ndxs[i].size() , &(ndxs[i][0]) , &(vals[i][0]) );
+    }
+    for ( size_t i = 0 ; i != remap.size() ; i++ ) {
+        for ( size_t j = 0 ; j != remap[i].size() ; j++ )
+            out_vals[remap[i][j]] = vals[i][j];
+    }
+}
+void MultiVector::getGhostValuesByGlobalID ( int num , size_t *indices , double *out_vals ) const
+{
+    INCREMENT_COUNT("Virtual");
+    std::vector<std::vector<size_t> >  ndxs;
+    std::vector<std::vector<double> >  vals;
+    std::vector<std::vector<int> >  remap;
+    partitionValues ( num, indices, out_vals, ndxs, vals, &remap );
+    for ( size_t i = 0 ; i != ndxs.size() ; i++ ) {
+        if ( ndxs[i].size() )
+            d_vVectors[i]->getGhostValuesByGlobalID ( ndxs[i].size() , &(ndxs[i][0]) , &(vals[i][0]) );
     }
     for ( size_t i = 0 ; i != remap.size() ; i++ ) {
         for ( size_t j = 0 ; j != remap[i].size() ; j++ )

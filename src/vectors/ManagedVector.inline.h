@@ -174,46 +174,6 @@ namespace LinearAlgebra {
   }
 
   inline
-  void ManagedVector::setValuesByLocalID(int i, size_t *id , const double *val)
-  {
-    INCREMENT_COUNT("Virtual");
-    AMP_ASSERT ( *d_UpdateState != ADDING );
-    *d_UpdateState = SETTING;
-    d_Engine->setValuesByLocalID ( i , id , val );
-    fireDataChange();
-  }
-
-  inline
-  void ManagedVector::setLocalValuesByGlobalID(int i, size_t *id , const double *val)
-  {
-    INCREMENT_COUNT("Virtual");
-    AMP_ASSERT ( *d_UpdateState != ADDING );
-    *d_UpdateState = SETTING;
-    d_Engine->setLocalValuesByGlobalID ( i , id , val );
-    fireDataChange();
-  }
-
-  inline
-  void ManagedVector::addValuesByLocalID(int i, size_t *id , const double *val)
-  {
-    INCREMENT_COUNT("Virtual");
-    AMP_ASSERT ( *d_UpdateState != SETTING );
-    *d_UpdateState = ADDING;
-    d_Engine->addValuesByLocalID ( i , id , val );
-    fireDataChange();
-  }
-
-  inline
-  void ManagedVector::addLocalValuesByGlobalID(int i, size_t *id , const double *val)
-  {
-    INCREMENT_COUNT("Virtual");
-    AMP_ASSERT ( *d_UpdateState != SETTING );
-    *d_UpdateState = ADDING;
-    d_Engine->addLocalValuesByGlobalID ( i , id , val );
-    fireDataChange();
-  }
-
-  inline
   double ManagedVector::L1Norm(void) const
   {
     return d_Engine->L1Norm ();

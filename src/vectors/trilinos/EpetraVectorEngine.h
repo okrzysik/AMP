@@ -5,36 +5,25 @@
 #include <Epetra_Map.h>
 
 #include "vectors/VectorEngine.h"
-#include "vectors/ManagedDataMap.h"
 #include "EpetraVector.h"
 
 
 namespace AMP {
 namespace LinearAlgebra {
 
-  /** \class EpetraVectorEngineParameters
-    * \brief Class that details how to construct an EpetraVectorEngine
-    */
-  class EpetraVectorEngineParameters : public VectorEngineParameters , public ManagedDataMap
-  {
-    private:
-      boost::shared_ptr<Epetra_Map>      d_emap;
-      AMP_MPI                            d_comm;
-
-    public:
-      /** \brief Constructor
-          \param[in] m   A mapping from local id to global id
-          \param[in] c   Communicator to construct the engine on
-          */
-      EpetraVectorEngineParameters ( ManagedDataMap &m , AMP_MPI c );
-
+/** \class EpetraVectorEngineParameters
+  * \brief Class that details how to construct an EpetraVectorEngine
+  */
+class EpetraVectorEngineParameters : public VectorEngineParameters
+{
+public:
       /** \brief Constructor
           \param[in] local_size  The number of elements on this core
           \param[in] global_size  The number of elements in total
           \param[in] c  Communicator to create the vector on
           \details  This assumes a contiguous allocation of data.  Core 0 has global ids \f$(0,1,\ldots,n-1)\f$, core 1 has global ids \f$(n,n+1,n+2,\ldots,m)\f$, etc.
           */
-      EpetraVectorEngineParameters ( int local_size , int global_size , AMP_MPI c );
+      EpetraVectorEngineParameters ( size_t local_size , size_t global_size , AMP_MPI comm );
 
       /** \brief Constructor
         * \param[in]  local_size  The number of elements on this core
@@ -43,7 +32,7 @@ namespace LinearAlgebra {
         * \param[in]  ecomm  An Epetra_MpiComm for constructing the vector on
         * \details  This allows construction of an EpetraVectorEngine from handy Epetra objects
         */
-      EpetraVectorEngineParameters ( int local_size , int global_size , boost::shared_ptr<Epetra_Map> emap , AMP_MPI ecomm );
+      EpetraVectorEngineParameters ( size_t local_size , size_t global_size , boost::shared_ptr<Epetra_Map> emap , AMP_MPI ecomm );
 
       /** \brief  Return the Epetra_Map for this engine
         * \return  The Epetra_Map
@@ -54,7 +43,26 @@ namespace LinearAlgebra {
         * \return The Epetra_MpiComm
         */
       AMP_MPI  getEpetraComm ();
-  };
+
+     //! Return the local size
+     size_t getLocalSize(); 
+
+     //! Return the local size
+     size_t getGlobalSize();
+
+     //! Return the first DOF on this core
+     size_t beginDOF(); 
+
+     //! Return 1 past the last DOF on this core
+     size_t endDOF();
+
+private:
+      size_t                             d_begin;       // Starting DOF
+      size_t                             d_end;         // Ending DOF
+      size_t                             d_global;      // Number of global DOFs
+      boost::shared_ptr<Epetra_Map>      d_emap;        // Epetra map
+      AMP_MPI                            d_comm;        // Comm
+};
 
 
   /** \class EpetraVectorEngine

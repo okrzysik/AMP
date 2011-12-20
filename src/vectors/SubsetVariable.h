@@ -1,7 +1,8 @@
 #ifndef  included_AMP_SubsetVariable_H
 #define  included_AMP_SubsetVariable_H
 
-#include "VectorIndexer.h"
+#include "vectors/VectorIndexer.h"
+#include "vectors/Variable.h"
 #include "discretization/subsetDOFManager.h"
 
 

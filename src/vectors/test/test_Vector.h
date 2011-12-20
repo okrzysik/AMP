@@ -63,8 +63,6 @@ class  SimpleManagedVectorFactory
       AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
       boost::shared_ptr<AMP::LinearAlgebra::EpetraVectorEngineParameters>  epetraParams (
          new AMP::LinearAlgebra::EpetraVectorEngineParameters ( num_local , num_local*globalComm.getSize(), globalComm ) );
-      for ( int i = 0; i != num_local ; i++ )
-          epetraParams->addMapping ( i , i + globalComm.getRank()*num_local );
       boost::shared_ptr<AMP::LinearAlgebra::ManagedVectorParameters>  managedParams( new AMP::LinearAlgebra::ManagedVectorParameters );
       AMP::LinearAlgebra::VectorEngine::BufferPtr  buffer( new std::vector<double>(120) );
       managedParams->d_Engine = AMP::LinearAlgebra::VectorEngine::shared_ptr ( new AMP::LinearAlgebra::EpetraVectorEngine( epetraParams, buffer ) );

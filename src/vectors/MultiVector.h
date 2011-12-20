@@ -76,8 +76,17 @@ public:
       */
     static boost::shared_ptr<MultiVector>   encapsulate ( Vector::shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
 
-    // Add a vector to the multivector
-    virtual void addVector ( Vector::shared_ptr );
+    /** \brief  Add a vector to a MultiVector.
+      *   Note: this is a collective operation, vec may be NULL on some processors
+      * \param[in]  vec  The Vector to add to the MultiVector
+      */
+    virtual void addVector ( Vector::shared_ptr vec );
+
+    /** \brief  Add vector(s) to a MultiVector.
+      *   Note: This is a collective operation, vec may be different sizes on different processors
+      * \param[in]  vec  The Vector to add to the MultiVector
+      */
+    virtual void addVector ( std::vector<Vector::shared_ptr> vec );
 
     /** \brief  Remove a vector from a MultiVector
       * \param[in]  vec  The Vector to remove from the MultiVector
@@ -134,12 +143,14 @@ public:
     virtual void setRandomValues(void);
     virtual void setValuesByLocalID ( int num , size_t *indices , const double *vals );
     virtual void setLocalValuesByGlobalID ( int num , size_t *indices , const double *vals );
+    virtual void setGhostValuesByGlobalID ( int num , size_t *indices , const double *vals );
     virtual void setValuesByGlobalID ( int num , size_t *indices , const double *vals );
     virtual void addValuesByLocalID ( int num , size_t *indices , const double *vals );
     virtual void addLocalValuesByGlobalID ( int num , size_t *indices , const double *vals );
     virtual void addValuesByGlobalID ( int num , size_t *indices , const double *vals );
     virtual void getValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
     virtual void getLocalValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
+    virtual void getGhostValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
     virtual void getValuesByLocalID ( int numVals , size_t *ndx , double *vals ) const;
     virtual void makeConsistent ( ScatterType  t );
     virtual void assemble();

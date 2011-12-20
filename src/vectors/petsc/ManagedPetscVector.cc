@@ -314,7 +314,7 @@ PetscErrorCode _AMP_copy(Vec in , Vec out )
 {
   PETSC_RECAST(x,in);
   PETSC_RECAST(y,out);
-  y->copyVector(*x);
+  y->copyVector(x->shared_from_this());
   return 0;
 }
 
@@ -694,23 +694,17 @@ namespace LinearAlgebra {
     parameters_ptr params = boost::dynamic_pointer_cast<ManagedVectorParameters> (dest.castTo<ManagedVector>().getParameters());
     if ( !params ) throw ( "Incompatible vector types" );
 
-    EpetraVectorEngineParameters eparams = params->d_Engine->getEngineParameters()->castTo<EpetraVectorEngineParameters>();
-    
-    PetscInt *ids = NULL;
-    if ( sizeof(PetscInt) != sizeof(size_t) ) {
+    if ( sizeof(PetscInt) < 8 )
         AMP_INSIST(dest.getGlobalSize()<0x80000000,"PETsc is compiled with 32-bit integers and we are trying to use a vector with more than 2^31 elements");
-        ids = new PetscInt[eparams.getLocalSize()];
-        EpetraVectorEngineParameters::iterator it = eparams.begin();
-        for (size_t i=0; i<eparams.getLocalSize(); i++) {
-            ids[i] = (PetscInt) *it;
-            ++it;
-        }
-    } else {
-        ids = (PetscInt*) &(*(eparams.begin()));
-    }
+
+    EpetraVectorEngineParameters eparams = params->d_Engine->getEngineParameters()->castTo<EpetraVectorEngineParameters>();
+    PetscInt *ids = new PetscInt[eparams.getLocalSize()];
+    PetscInt begin = (PetscInt) eparams.beginDOF();
+    PetscInt end = (PetscInt) eparams.endDOF();
+    for (PetscInt i=begin; i<end; i++) 
+        ids[i-begin] = i;
     VecGetValues( source, dest.getLocalSize(), ids, dest.getRawDataBlock<double>() );
-    if ( sizeof(PetscInt) != sizeof(size_t) )
-        delete [] ids;
+    delete [] ids;
   }
 
   boost::shared_ptr<AMP::LinearAlgebra::Vector>  ManagedPetscVector::createFromPetscVec ( Vec source , AMP_MPI &comm )
@@ -721,13 +715,7 @@ namespace LinearAlgebra {
     VecGetOwnershipRange ( source , &local_start , &local_end );
     parameters_ptr t ( new ManagedPetscVectorParameters () );
     VectorEngineParameters::shared_ptr ve_params ( new EpetraVectorEngineParameters ( local_size , global_size , comm ) );
-    int i = 0;
-    for ( ; local_start != local_end ; local_start++ )
-    {
-      ve_params->castTo<EpetraVectorEngineParameters>().addMapping ( i , local_start );
-      i++;
-    }
-    t->d_Engine = VectorEngine::shared_ptr ( new EpetraVectorEngine ( ve_params , VectorEngine::BufferPtr ( new VectorEngine::Buffer ( local_size ) ) ) );
+    t->d_Engine = VectorEngine::shared_ptr( new EpetraVectorEngine ( ve_params , VectorEngine::BufferPtr ( new VectorEngine::Buffer ( local_size ) ) ) );
     ManagedPetscVector *pRetVal_t = new ManagedPetscVector ( boost::dynamic_pointer_cast<VectorParameters> ( t ) );
     Vector::shared_ptr pRetVal ( pRetVal_t );
     return pRetVal;

@@ -6,6 +6,7 @@
 #include "utils/AMP_MPI.h"
 #include "utils/UnitTest.h"
 #include "discretization/DOF_Manager.h"
+#include "vectors/Vector.h"
 
 
 /// \cond UNDOCUMENTED
@@ -994,49 +995,46 @@ void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
 template <typename VECTOR_FACTORY>
 void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
 {
-        AMP::Discretization::DOFManager::shared_ptr  dofmap = VECTOR_FACTORY::getDOFMap();
-        AMP::LinearAlgebra::Vector::shared_ptr  vector = VECTOR_FACTORY::getVector();
-        AMP::LinearAlgebra::Vector::shared_ptr  vectorb = AMP::LinearAlgebra::PetscVector::view ( vector );
+    AMP::Discretization::DOFManager::shared_ptr  dofmap = VECTOR_FACTORY::getDOFMap();
+    AMP::LinearAlgebra::Vector::shared_ptr  vector = VECTOR_FACTORY::getVector();
+    AMP::LinearAlgebra::Vector::shared_ptr  vectorb = AMP::LinearAlgebra::PetscVector::view ( vector );
+    AMP_ASSERT(vector->getGhostSize()==vectorb->getGhostSize());
 
-        for (size_t i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ )
-          vector->setValueByGlobalID ( i , (double) i );
+    for (size_t i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ )
+        vector->setValueByGlobalID ( i , (double) i );
 
-        vector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    vector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+
+    if ( vector->getGhostSize() > 0 ) {
+        AMP::LinearAlgebra::CommunicationList::shared_ptr comm_list = vector->getCommunicationList();
+        std::vector<double> ghostList ( vector->getGhostSize() );
+        std::vector<size_t> ghostIDList = comm_list->getGhostIDList();
+        vector->getValuesByGlobalID ( vector->getGhostSize() , (size_t*) &(ghostIDList[0]) , &(ghostList[0]) );
         bool testPassed = true;
-        if ( vector->getGhostSize() > 0 )
-        {
-          std::vector<double> ghostList ( vector->getGhostSize() );
-          vector->getValuesByGlobalID ( vector->getGhostSize() , (size_t*) &(vector->getCommunicationList()->getGhostIDList()[0]) , &(ghostList[0]) );
-          for ( size_t i = 0 ; i != vector->getGhostSize() ; i++ )
-          {
-            if ( fabs ( ghostList[i] - (double)(vector->getCommunicationList()->getGhostIDList()[i]) ) > 0.0000001 )
-            {
-              utils->failure ( "ghost not set correctly in vector" );
-              testPassed = false;
-              break;
-            }
-          }
+        for ( size_t i = 0 ; i != vector->getGhostSize() ; i++ ) {
+            if ( fabs ( ghostList[i] - (double)(ghostIDList[i]) ) > 0.0000001 )
+                testPassed = false;
         }
         if ( testPassed )
-          utils->passes ( "ghost set correctly in vector" );
-
-        testPassed = true;
-        if ( vectorb->getGhostSize() > 0 )
-        {
-          for ( size_t i = 0 ; i != vectorb->getGhostSize() ; i++ )
-          {
-            unsigned int  ghostNdx = vector->getCommunicationList()->getGhostIDList()[i];
+            utils->passes ( "ghost set correctly in vector" );
+        else
+            utils->failure ( "ghost not set correctly in vector" );
+    }
+    if ( vectorb->getGhostSize() > 0 ) {
+        AMP::LinearAlgebra::CommunicationList::shared_ptr comm_list = vector->getCommunicationList();
+        std::vector<size_t> ghostIDList = comm_list->getGhostIDList();
+        bool testPassed = true;
+        for ( size_t i = 0 ; i != vectorb->getGhostSize() ; i++ ) {
+            size_t  ghostNdx = ghostIDList[i];
             double  ghostVal = vectorb->getValueByGlobalID ( ghostNdx );
             if ( fabs ( ghostVal - (double)ghostNdx ) > 0.0000001 )
-            {
-              utils->failure ( "ghost not set correctly in alias" );
-              testPassed = false;
-              break;
-            }
-          }
+                testPassed = false;
         }
         if ( testPassed )
-          utils->passes ( "ghost set correctly in alias" );
+            utils->passes ( "ghost set correctly in alias" );
+        else
+            utils->failure ( "ghost set correctly in alias" );
+    }
 }
 
 

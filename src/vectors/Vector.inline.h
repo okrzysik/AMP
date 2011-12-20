@@ -78,6 +78,10 @@ inline void  Vector::setLocalValueByGlobalID(size_t i, const double val)
 {
     setLocalValuesByGlobalID ( 1 , &i , &val );
 }
+inline void  Vector::setGhostValueByGlobalID(size_t i, const double val)
+{
+    setGhostValuesByGlobalID ( 1 , &i , &val );
+}
 inline void  Vector::setValueByGlobalID(size_t i, const double val)
 {
     setValuesByGlobalID ( 1 , &i , &val );
@@ -104,6 +108,12 @@ inline double Vector::getLocalValueByGlobalID ( size_t i ) const
 {
     double ans;
     getLocalValuesByGlobalID ( 1 , &i , &ans );
+    return ans;
+}
+inline double Vector::getGhostValueByGlobalID ( size_t i ) const
+{
+    double ans;
+    getGhostValuesByGlobalID ( 1 , &i , &ans );
     return ans;
 }
 inline double Vector::getValueByLocalID ( size_t ndx ) const
@@ -143,13 +153,6 @@ inline double Vector::getValueByLocalID ( size_t ndx ) const
     }
     return d_DefaultRNG;
   }
-
-  inline
-  void Vector::copyGhostValues ( const Vector &rhs )
-  {
-    std::copy ( rhs.d_Ghosts->begin() , rhs.d_Ghosts->end() , d_Ghosts->begin() );
-  }
-
 
   inline
   bool Vector::containsGlobalElement ( size_t i )
@@ -220,12 +223,6 @@ inline double Vector::getValueByLocalID ( size_t ndx ) const
   bool  Vector::equals ( Vector::shared_ptr &rhs , double  tol )
   {
     return equals (*rhs,tol);
-  }
-
-  inline
-  void  Vector::copyVector ( const shared_ptr &src_vec )
-  {
-    copyVector ( *src_vec );
   }
 
   inline

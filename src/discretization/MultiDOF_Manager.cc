@@ -105,9 +105,8 @@ AMP::Mesh::MeshIterator multiDOFManager::getIterator( ) const
 std::vector<size_t> multiDOFManager::getRemoteDOFs( ) const
 {
     std::vector<size_t> global_dofs;
-    std::vector<size_t> local_dofs;
     for (size_t i=0; i<d_managers.size(); i++) {
-        d_managers[i]->getRemoteDOFs( );
+        std::vector<size_t> local_dofs = d_managers[i]->getRemoteDOFs( );
         if ( local_dofs.size() > 0 ) {
             std::vector<size_t> tmp_dofs = getGlobalDOF( d_managers[i], local_dofs );
             global_dofs.insert(global_dofs.end(),tmp_dofs.begin(),tmp_dofs.end());
@@ -149,7 +148,7 @@ std::vector<size_t> multiDOFManager::getGlobalDOF( DOFManager::shared_ptr manage
                 search.DOF1_begin = subDOFs[j];
                 size_t index = AMP::Utilities::findfirst(d_subToGlobalDOF[i],search);
                 index--;
-                AMP_ASSERT(index>=0&&index<d_subToGlobalDOF.size());
+                AMP_ASSERT(index>=0&&index<d_subToGlobalDOF[i].size());
                 globalDOFs[j] = subDOFs[j] - d_subToGlobalDOF[i][index].DOF1_begin + d_subToGlobalDOF[i][index].DOF2_begin; 
             }
         }
@@ -169,7 +168,7 @@ std::vector<size_t> multiDOFManager::getSubDOF( DOFManager::shared_ptr manager, 
                 search.DOF1_begin = globalDOFs[j];
                 size_t index = AMP::Utilities::findfirst(d_globalToSubDOF[i],search);
                 index--;
-                if ( index>=0 && index<d_globalToSubDOF.size() ) {
+                if ( index>=0 && index<d_globalToSubDOF[i].size() ) {
                     if ( globalDOFs[j]>=d_globalToSubDOF[i][index].DOF1_begin && globalDOFs[j]<d_globalToSubDOF[i][index].DOF1_end )
                         subDOFs[j] = globalDOFs[j] - d_globalToSubDOF[i][index].DOF1_begin + d_globalToSubDOF[i][index].DOF2_begin;
                 }

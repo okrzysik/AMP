@@ -11,24 +11,51 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-  Epetra_Map  &EpetraVectorEngineParameters::getEpetraMap()
-  {
+
+/********************************************************
+* EpetraVectorEngineParameters constructors             *
+********************************************************/
+EpetraVectorEngineParameters::EpetraVectorEngineParameters ( size_t local_size , size_t global_size , AMP_MPI c ):
+    VectorEngineParameters(),
+    d_comm( c.getCommunicator() ) 
+{
+    d_global = global_size;
+    d_comm.sumScan( &local_size, &d_end, 1 );
+    d_begin = d_end - local_size;
+}
+EpetraVectorEngineParameters::EpetraVectorEngineParameters ( size_t local_size , size_t global_size , boost::shared_ptr<Epetra_Map> emap , AMP_MPI ecomm ):
+    VectorEngineParameters(),
+    d_emap( emap ),
+    d_comm( ecomm )
+{
+    d_global = global_size;
+    d_comm.sumScan( &local_size, &d_end, 1 );
+    d_begin = d_end - local_size;
+}
+
+
+/********************************************************
+* Function to return (and create) the Epetra_Map        *
+********************************************************/
+Epetra_Map  &EpetraVectorEngineParameters::getEpetraMap()
+{
+    if ( d_emap.get() != NULL )
+        return *d_emap;
+    // Create the epetra map
     #ifdef USE_MPI
         Epetra_MpiComm  comm = d_comm.getCommunicator();
     #else
         Epetra_SerialComm  comm;
     #endif
-    AMP_INSIST(getGlobalSize()<0x80000000,"Epetra does not support vectors with global size greater than 2^31");
-    std::vector<int> ids(getLocalSize(),0);
-    iterator it = begin();
-    for (size_t i=0; i<getLocalSize(); i++) {
-        ids[i] = (int) *it;
-        ++it;
-    }
-    if ( d_emap.get() == 0 )
-      d_emap = boost::shared_ptr<Epetra_Map> ( new Epetra_Map ( (int) getGlobalSize(), (int) getLocalSize(), &ids[0], 0, comm ) );
+    AMP_INSIST(d_global<0x80000000,"Epetra does not support vectors with global size greater than 2^31");
+    size_t local_size = d_end-d_begin;
+    std::vector<int> ids(local_size,0);
+    for (size_t i=0; i<local_size; i++)
+        ids[i] = (int) (i+d_begin);
+    d_emap = boost::shared_ptr<Epetra_Map> ( new Epetra_Map ( (int) d_global, (int) local_size, &ids[0], 0, comm ) );
     return *d_emap;
-  }
+}
+
 
   EpetraVectorEngine::EpetraVectorEngine ( VectorEngineParameters::shared_ptr  alias , BufferPtr buf )
     : d_epetraVector ( View , alias->castTo<EpetraVectorEngineParameters>().getEpetraMap() , &*(buf->begin()) )

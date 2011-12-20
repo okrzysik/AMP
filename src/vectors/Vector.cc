@@ -130,10 +130,8 @@ void Vector::setValuesByGlobalID ( int numVals , size_t *ndx , const double *val
     INCREMENT_COUNT("Virtual");
     AMP_ASSERT ( *d_UpdateState != ADDING );
     *d_UpdateState = SETTING;
-    for (int i=0; i<numVals; i++)
-    {
-      if ( ( ndx[i] < getLocalStartID() ) ||
-           ( ndx[i] >= (getLocalStartID() + getLocalMaxID()) ) )
+    for (int i=0; i<numVals; i++) {
+      if ( ( ndx[i] < getLocalStartID() ) || ( ndx[i] >= (getLocalStartID() + getLocalMaxID()) ) )
       {
         (*d_Ghosts)[d_CommList->getLocalGhostID ( ndx[i] )] = vals[i];
       }
@@ -141,6 +139,19 @@ void Vector::setValuesByGlobalID ( int numVals , size_t *ndx , const double *val
       {
         setLocalValuesByGlobalID ( 1 , ndx+i , vals+i );
       }
+    }
+}
+void Vector::setGhostValuesByGlobalID ( int numVals , size_t *ndx , const double *vals )
+{
+    INCREMENT_COUNT("Virtual");
+    AMP_ASSERT ( *d_UpdateState != ADDING );
+    *d_UpdateState = SETTING;
+    for (int i=0; i<numVals; i++) {
+        if ( ( ndx[i] < getLocalStartID() ) || ( ndx[i] >= (getLocalStartID() + getLocalMaxID()) ) ) {
+            (*d_Ghosts)[d_CommList->getLocalGhostID ( ndx[i] )] = vals[i];
+        } else {
+            AMP_ERROR("Non ghost index");
+        }
     }
 }
 void Vector::addValuesByGlobalID ( int numVals , size_t *ndx , const double *vals )
@@ -183,34 +194,35 @@ void Vector::getValuesByLocalID ( int num , size_t *ndx , double *vals ) const
 void Vector::getValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const
 {
     INCREMENT_COUNT("Virtual");
-    for (int i=0; i<numVals; i++)
-    {
-      if ( ( ndx[i] < getLocalStartID() ) ||
-           ( ndx[i] >= (getLocalStartID() + getLocalMaxID()) ) )
-      {
-        vals[i] = (*d_Ghosts)[d_CommList->getLocalGhostID ( ndx[i] )] +
-                  (*d_AddBuffer)[d_CommList->getLocalGhostID ( ndx[i] )];
+    for (int i=0; i<numVals; i++) {
+        if ( ( ndx[i] < getLocalStartID() ) || ( ndx[i] >= (getLocalStartID() + getLocalMaxID()) ) )  {
+            getGhostValuesByGlobalID ( 1 , ndx+i , vals+i );
+        } else {
+            getLocalValuesByGlobalID ( 1 , ndx+i , vals+i );
       }
-      else
-      {
-        getLocalValuesByGlobalID ( 1 , ndx+i , vals+i );
+    }
+}
+void Vector::getGhostValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const
+{
+    INCREMENT_COUNT("Virtual");
+    for (int i=0; i<numVals; i++) {
+        if ( ( ndx[i] < getLocalStartID() ) || ( ndx[i] >= (getLocalStartID() + getLocalMaxID()) ) )  {
+            vals[i] = (*d_Ghosts)[d_CommList->getLocalGhostID ( ndx[i] )] +
+                      (*d_AddBuffer)[d_CommList->getLocalGhostID ( ndx[i] )];
+        } else {
+            AMP_ERROR( "Tried to get a non-ghost ghost value" );
       }
     }
 }
 void Vector::getGhostAddValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const
 {
     INCREMENT_COUNT("Virtual");
-    for (int i=0; i<numVals; i++)
-    {
-      if ( ( ndx[i] < getLocalStartID() ) ||
-           ( ndx[i] >= (getLocalStartID() + getLocalMaxID()) ) )
-      {
-        vals[i] = (*d_AddBuffer)[d_CommList->getLocalGhostID ( ndx[i] )];
-      }
-      else
-      {
-        AMP_ERROR( "Tried to get a non-ghost ghost value" );
-      }
+    for (int i=0; i<numVals; i++) {
+        if ( ( ndx[i] < getLocalStartID() ) || ( ndx[i] >= (getLocalStartID() + getLocalMaxID()) ) ) {
+            vals[i] = (*d_AddBuffer)[d_CommList->getLocalGhostID ( ndx[i] )];
+        } else {
+            AMP_ERROR( "Tried to get a non-ghost ghost value" );
+        }
     }
 }
 
@@ -263,15 +275,15 @@ void  Vector::setRandomValues ( RNG::shared_ptr rng )
 /****************************************************************
 * Basic linear algebra                                          *
 ****************************************************************/
-void Vector::copyVector ( const Vector &other )
+void Vector::copyVector ( const Vector::const_shared_ptr &rhs )
 {
-    if ( other.getLocalSize() != getLocalSize() )
+    if ( rhs->getLocalSize() != getLocalSize() )
     {  // Another error condition
       AMP_ERROR( "Destination vector and source vector not the same size" );
     }
     VectorDataIterator  cur1 = begin();
     VectorDataIterator  end1 = end();
-    ConstVectorDataIterator  cur2 = other.begin();
+    ConstVectorDataIterator  cur2 = rhs->begin();
     while ( cur1 != end1 )
     {
       *cur1 = *cur2;
@@ -281,7 +293,7 @@ void Vector::copyVector ( const Vector &other )
     {
       castTo<DataChangeFirer>().fireDataChange();
     }
-    copyGhostValues ( other );
+    copyGhostValues ( rhs );
 }
 void Vector::scale(double alpha)
 {
@@ -745,6 +757,28 @@ void Vector::makeConsistent ( ScatterType  t )
     d_CommList->unpackReceiveBufferSet ( recv_vec , *this );
     *d_UpdateState = NOT_UPDATING;
 }
+
+
+
+void Vector::copyGhostValues ( const boost::shared_ptr<const Vector> &rhs )
+{
+    if ( getGhostSize() == 0 ) {
+        // No ghosts to fill, we don't need to do anything
+    } else if ( getGhostSize() == rhs->getGhostSize() ) {
+        // The ghosts in the src vector match the current vector
+        // Copy the ghosts assuming that they are consistent in the rhs
+        std::vector<size_t> ghostIDs = getCommunicationList()->getGhostIDList();
+        std::vector<double> values(ghostIDs.size());
+        rhs->getGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
+        this->setGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
+    } else {
+        // We can't copy the ghosts from the rhs
+        // Use makeConsistent to fill the ghosts
+        // Note: this will incure global communication
+        makeConsistent(CONSISTENT_SET);
+    }
+}
+
 
 
 

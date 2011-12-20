@@ -46,7 +46,7 @@ namespace LinearAlgebra {
       virtual std::string type() const;
 
       virtual Vector::shared_ptr  cloneVector ( const Variable::shared_ptr var ) const;
-      virtual void copyVector(const Vector &vec);
+      virtual void copyVector(const Vector::const_shared_ptr &vec);
 
             Epetra_Vector &getEpetra_Vector ();
       const Epetra_Vector &getEpetra_Vector () const;

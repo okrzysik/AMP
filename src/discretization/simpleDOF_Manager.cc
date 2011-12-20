@@ -2,6 +2,8 @@
 #include "discretization/MultiDOF_Manager.h"
 #include "ampmesh/MultiMesh.h"
 #include "utils/Utilities.h"
+#include <vector>
+#include <set>
 
 
 namespace AMP {

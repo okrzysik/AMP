@@ -5,7 +5,6 @@
 
 #include "matrices/ManagedMatrix.h"
 #include "matrices/trilinos/EpetraMatrix.h"
-#include "vectors/ManagedDataMap.h"
 #include "vectors/trilinos/EpetraVector.h"
 #include "discretization/DOF_Manager.h"
 
@@ -17,8 +16,7 @@ namespace LinearAlgebra {
   /** \class ManagedEpetraMatrixParameters
     * \brief  A class used to create an Epetra matrix
     */
-  class ManagedEpetraMatrixParameters : public MatrixParameters ,
-                                        public ManagedDataMap
+  class ManagedEpetraMatrixParameters : public MatrixParameters
   {
     private:
       boost::shared_ptr < Epetra_Map >   d_eRowMap;
@@ -55,13 +53,6 @@ namespace LinearAlgebra {
       int    d_RowBase;
 
     public:
-      /** \brief Convenience typedef
-        */
-      typedef  ManagedDataMap::iterator              iterator;
-
-      /** \brief Convenience typedef
-        */
-      typedef  ManagedDataMap::const_iterator        const_iterator;
 
       //!  The communication list of a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
       CommunicationList::shared_ptr   d_CommListLeft;

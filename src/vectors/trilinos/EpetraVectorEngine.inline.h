@@ -1,36 +1,31 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-  inline
-  EpetraVectorEngineParameters::EpetraVectorEngineParameters ( ManagedDataMap &m , AMP_MPI c )
-       : VectorEngineParameters ( )
-       , ManagedDataMap ( m )
-       , d_comm ( c.getCommunicator() ) 
-  {
-  }
 
-  inline
-  EpetraVectorEngineParameters::EpetraVectorEngineParameters ( int local_size , int global_size , AMP_MPI c )
-       : VectorEngineParameters ()
-       , ManagedDataMap ( local_size , global_size ) ,
-         d_comm ( c.getCommunicator() ) 
-  {
-  }
-
-  inline
-  EpetraVectorEngineParameters::EpetraVectorEngineParameters ( int local_size , int global_size , boost::shared_ptr<Epetra_Map> emap , AMP_MPI ecomm )
-       : VectorEngineParameters ()
-       , ManagedDataMap ( local_size , global_size )
-       , d_emap ( emap )
-       , d_comm ( ecomm )
-  {
-  }
-
-  inline
-  AMP_MPI  EpetraVectorEngineParameters::getEpetraComm () 
-  { 
+inline AMP_MPI  EpetraVectorEngineParameters::getEpetraComm () 
+{ 
     return d_comm; 
-  }
+}
+
+inline size_t  EpetraVectorEngineParameters::getLocalSize () 
+{ 
+    return d_end-d_begin; 
+}
+
+inline size_t  EpetraVectorEngineParameters::getGlobalSize () 
+{ 
+    return d_global; 
+}
+
+inline size_t  EpetraVectorEngineParameters::beginDOF () 
+{ 
+    return d_begin; 
+}
+
+inline size_t  EpetraVectorEngineParameters::endDOF () 
+{ 
+    return d_end; 
+}
 
   inline
   EpetraVectorEngine::~EpetraVectorEngine () 
