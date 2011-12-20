@@ -115,6 +115,38 @@ MassDensityModel::MassDensityModel
         boost::shared_ptr<Database> mfg_db = params->d_db->getDatabase("ManufacturedSolution");
         d_ManufacturedSolution.reset(new ManufacturedSolution(mfg_db));
     }
+
+    if (d_equation == Mechanics)
+    {
+      AMP::Materials::PropertyPtr property = d_material->property("Density");
+
+      // load and check defaults
+      // initially set them to the minimum of the range plus a bit
+      std::vector<double> defaults(property->get_number_arguments());
+      std::vector<std::vector<double> > ranges = property->get_arg_ranges();
+      for (size_t i=0; i<defaults.size(); ++i) { defaults[i] = ranges[i][0]*(1.0000001);}
+      if (params->d_db->keyExists("Defaults")) {
+        // check for correct names
+        boost::shared_ptr<Database> defaults_db = params->d_db->getDatabase("Defaults");
+        std::vector<std::string> defaultkeys = defaults_db->getAllKeys();
+        AMP_INSIST(defaultkeys.size() == property->get_number_arguments(),
+            "Incorrect number of defaults supplied.");
+        std::vector<std::string> argnames = property-> get_arguments();
+        for (std::vector<std::string>::iterator key= defaultkeys.begin(); key!=defaultkeys.end(); ++key)
+        {
+          std::vector<std::string>::iterator hit = std::find(argnames.begin(), argnames.end(), *key);
+          AMP_INSIST(hit!=argnames.end(), std::string("Argument name ")+*key+std::string(" is invalid"));
+        }
+
+        // load defaults into the material property, checking range validity
+        for (size_t i=0; i<argnames.size(); ++i) {
+          defaults[i] = defaults_db->getDouble(argnames[i]);
+          AMP_INSIST(property->in_range(argnames[i], defaults[i]),
+          std::string("Default for argument ")+argnames[i]+std::string(" is out of range"));
+        }
+      property->set_defaults(defaults);
+      }
+    }
 }
 
 void MassDensityModel::getDensityMechanics(std::vector<double> & result,
