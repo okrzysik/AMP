@@ -31,6 +31,8 @@ boost::shared_ptr<MultiVector>  MultiVector::create ( const std::string &name , 
     Variable::shared_ptr  variable( new MultiVariable( name ) );
     boost::shared_ptr<MultiVector>  retval( new MultiVector( variable ) );
     retval->d_Comm = comm;
+    std::vector<AMP::Discretization::DOFManager::shared_ptr> managers;
+    retval->d_DOFManager = AMP::Discretization::DOFManager::shared_ptr( new AMP::Discretization::multiDOFManager( retval->d_Comm, managers ) );
     return retval;
 }
 boost::shared_ptr<MultiVector>  MultiVector::encapsulate ( Vector::shared_ptr &vec , AMP_MPI comm )
