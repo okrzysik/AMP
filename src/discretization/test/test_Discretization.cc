@@ -15,9 +15,9 @@ int main ( int argc , char ** argv )
     AMP::UnitTest ut;
 
     // Run the tests
-    //testSimpleDOFManager<LibMeshCubeGenerator<5> >( &ut );
-    //testSimpleDOFManager<ExodusReaderGenerator>( &ut );
-    //testSimpleDOFManager<MultiMeshGenerator>( &ut );
+    testSimpleDOFManager<LibMeshCubeGenerator<5> >( &ut );
+    testSimpleDOFManager<ExodusReaderGenerator>( &ut );
+    testSimpleDOFManager<MultiMeshGenerator>( &ut );
     testMultiDOFManager<MultiMeshGenerator>( &ut );
 
     // Print the results and return

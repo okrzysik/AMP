@@ -3,34 +3,126 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-  inline
-  size_t Vector::getGlobalMaxID() const
-  {
+
+/****************************************************************
+* Get the size of the vector                                    *
+****************************************************************/
+inline size_t Vector::getGlobalMaxID() const
+{
     return getGlobalSize();
-  }
-
-  inline
-  size_t Vector::getLocalMaxID() const
-  {
+}
+inline size_t Vector::getLocalMaxID() const
+{
     return getLocalSize();
-  }
-
-  inline
-  size_t Vector::getLocalStartID() const
-  {
+}
+inline size_t Vector::getLocalStartID() const
+{
     return getCommunicationList()->getStartGID();
-  }
+}
+
+
+/****************************************************************
+* Create vector iterators                                       *
+****************************************************************/
+inline ConstVectorDataIterator  Vector::end () const
+{
+    return ConstVectorDataIterator ( this, getLocalSize() );
+}
+inline ConstVectorDataIterator  Vector::begin () const
+{
+    return ConstVectorDataIterator ( this, 0 );
+}
+inline VectorDataIterator  Vector::begin ()
+{
+    return VectorDataIterator ( this, 0  );
+}
+inline VectorDataIterator  Vector::end ()
+{
+    return VectorDataIterator ( this, getLocalSize() );
+}
+inline size_t Vector::getGhostSize() const
+{
+    return d_Ghosts->size();
+}
+
+
+/****************************************************************
+* Get basic info                                                *
+****************************************************************/
+inline boost::shared_ptr<ParameterBase> Vector::getParameters ()
+{
+    return  boost::shared_ptr<ParameterBase> ( );
+}
+inline CommunicationList::shared_ptr  Vector::getCommunicationList () const
+{
+    return d_CommList;
+}
+inline AMP::Discretization::DOFManager::shared_ptr  Vector::getDOFManager () const
+{
+    return d_DOFManager;
+}
+inline AMP_MPI Vector::getComm() const
+{
+    return d_CommList->getComm();
+}
+
+
+/****************************************************************
+* Set/Get individual values                                     *
+****************************************************************/
+inline void  Vector::setValueByLocalID(size_t i, const double val)
+{
+    setValuesByLocalID ( 1 , &i , &val );
+}
+inline void  Vector::setLocalValueByGlobalID(size_t i, const double val)
+{
+    setLocalValuesByGlobalID ( 1 , &i , &val );
+}
+inline void  Vector::setValueByGlobalID(size_t i, const double val)
+{
+    setValuesByGlobalID ( 1 , &i , &val );
+}
+inline void  Vector::addValueByLocalID(size_t i, const double val)
+{
+    addValuesByLocalID ( 1 , &i , &val );
+}
+inline void  Vector::addLocalValueByGlobalID(size_t i, const double val)
+{
+    addLocalValuesByGlobalID ( 1 , &i , &val );
+}
+inline void  Vector::addValueByGlobalID(size_t i, const double val)
+{
+    addValuesByGlobalID ( 1 , &i , &val );
+}
+inline double  Vector::getValueByGlobalID ( size_t i ) const
+{
+    double ans;
+    getValuesByGlobalID ( 1 , &i , &ans );
+    return ans;
+}
+inline double Vector::getLocalValueByGlobalID ( size_t i ) const
+{
+    double ans;
+    getLocalValuesByGlobalID ( 1 , &i , &ans );
+    return ans;
+}
+inline double Vector::getValueByLocalID ( size_t ndx ) const
+{
+    double ans;
+    getValuesByLocalID ( 1 , &ndx , &ans );
+    return ans;
+}
+
+
+
+
 
   inline
   void  Vector::dataChanged()
   {
   }
 
-  inline
-  boost::shared_ptr<ParameterBase> Vector::getParameters ()
-  {
-    return  boost::shared_ptr<ParameterBase> ( );
-  }
+
 
   inline
   void Vector::setDefaultRNG ( RNG::shared_ptr p )
@@ -83,47 +175,7 @@ namespace LinearAlgebra {
     }
   }
 
-  inline
-  ConstVectorDataIterator  Vector::end () const
-  {
-    return ConstVectorDataIterator ( this, getLocalSize() );
-  }
 
-  inline
-  ConstVectorDataIterator  Vector::begin () const
-  {
-    return ConstVectorDataIterator ( this, 0 );
-  }
-
-  inline
-  VectorDataIterator  Vector::begin ()
-  {
-    return VectorDataIterator ( this, 0  );
-  }
-
-  inline
-  VectorDataIterator  Vector::end ()
-  {
-    return VectorDataIterator ( this, getLocalSize() );
-  }
-
-  inline
-  CommunicationList::shared_ptr  Vector::getCommunicationList () const
-  {
-    return d_CommList;
-  }
-
-  inline
-  AMP::Discretization::DOFManager::shared_ptr  Vector::getDOFManager () const
-  {
-    return d_DOFManager;
-  }
-
-  inline
-  size_t Vector::getGhostSize() const
-  {
-    return d_Ghosts->size();
-  }
 
   inline
   void Vector::copyOutRawData ( double **in )
@@ -148,19 +200,6 @@ namespace LinearAlgebra {
   Vector::shared_ptr Vector::cloneVector () const
   {
     return cloneVector ( getVariable() );
-  }
-
-
-  inline
-  Vector::~Vector()
-  {
-  }
-
-  inline
-  Vector::Vector(
-      const Vector&rhs ) : VectorOperations ()
-                         , boost::enable_shared_from_this<Vector> (rhs)
-  {
   }
 
 
@@ -199,77 +238,6 @@ namespace LinearAlgebra {
   void  Vector::aliasVector ( shared_ptr &other )
   {
     aliasVector ( *other );
-  }
-
-  inline
-  void  Vector::setValueByLocalID(size_t i, const double val)
-  {
-    setValuesByLocalID ( 1 , &i , &val );
-  }
-
-  inline
-  void  Vector::setLocalValueByGlobalID(size_t i, const double val)
-  {
-    setLocalValuesByGlobalID ( 1 , &i , &val );
-  }
-
-  inline
-  void  Vector::setValueByGlobalID(size_t i, const double val)
-  {
-    setValuesByGlobalID ( 1 , &i , &val );
-  }
-
-  inline
-  void  Vector::addValueByLocalID(size_t i, const double val)
-  {
-    addValuesByLocalID ( 1 , &i , &val );
-  }
-
-  inline
-  void  Vector::addLocalValueByGlobalID(size_t i, const double val)
-  {
-    addLocalValuesByGlobalID ( 1 , &i , &val );
-  }
-
-  inline
-  void  Vector::addValueByGlobalID(size_t i, const double val)
-  {
-    addValuesByGlobalID ( 1 , &i , &val );
-  }
-
-  inline
-  double  Vector::getValueByGlobalID ( size_t i ) const
-  {
-    double ans;
-    getValuesByGlobalID ( 1 , &i , &ans );
-    return ans;
-  }
-
-  inline
-  double Vector::getLocalValueByGlobalID ( size_t i ) const
-  {
-    double ans;
-    getLocalValuesByGlobalID ( 1 , &i , &ans );
-    return ans;
-  }
-
-  inline
-  double Vector::getValueByLocalID ( size_t ndx ) const
-  {
-    double ans;
-    getValuesByLocalID ( 1 , &ndx , &ans );
-    return ans;
-  }
-
-  inline
-  void Vector::zero()
-  {
-    setToScalar (0.0);
-    for ( size_t i = 0 ; i != d_Ghosts->size() ; i++ )
-    {
-      (*d_Ghosts)[i] = 0.0;
-    }
-    (*getUpdateStatus()) = NOT_UPDATING;
   }
 
   inline
@@ -356,12 +324,6 @@ namespace LinearAlgebra {
   double Vector::dot ( const shared_ptr &x )
   {
     return dot ( *x );
-  }
-
-  inline
-  AMP_MPI Vector::getComm() const
-  {
-    return d_CommList->getComm();
   }
 
   inline

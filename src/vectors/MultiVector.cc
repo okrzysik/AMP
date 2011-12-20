@@ -209,61 +209,10 @@ void MultiVector::abs ( const VectorOperations &x )
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
         d_vVectors[i]->abs ( getVector ( x , i ) );
 }
-double MultiVector::min(void) const
-{
-    double retVal = 0.0;
-    if ( d_vVectors.size() > 0 ) {
-        retVal = d_vVectors[0]->min();
-        for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
-            retVal = std::min ( retVal , d_vVectors[i]->min () );
-    }
-    return retVal;
-}
-double MultiVector::max(void) const
-{
-    double retVal = 0.0;
-    if ( d_vVectors.size() > 0 ) {
-        retVal = d_vVectors[0]->max();
-        for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
-            retVal = std::max ( retVal , d_vVectors[i]->max () );
-    }
-    return retVal;
-}
 void MultiVector::setRandomValues ()
 {
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
         d_vVectors[i]->setRandomValues ();
-}
-double MultiVector::L1Norm () const
-{
-    double ans = 0.0;
-    for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
-      ans += d_vVectors[i]->L1Norm ();
-    return ans;
-}
-double MultiVector::L2Norm () const
-{
-    double ans = 0.0;
-    for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
-    {
-      double t = d_vVectors[i]->L2Norm();
-      ans += t*t;
-    }
-    return sqrt ( ans );
-}
-double MultiVector::maxNorm () const
-{
-    double ans = 0.0;
-    for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
-      ans = std::max ( ans , d_vVectors[i]->maxNorm () );
-    return ans;
-}
-double MultiVector::dot ( const VectorOperations &rhs ) const
-{
-    double ans = 0.0;
-    for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
-      ans += d_vVectors[i]->dot ( getVector ( rhs , i ) );
-    return ans;
 }
 void MultiVector::setToScalar ( double alpha )
 {
@@ -284,6 +233,62 @@ void MultiVector::add ( const VectorOperations &x , const VectorOperations &y )
 {
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
       d_vVectors[i]->add ( getVector ( x , i ) , getVector ( y , i ) );
+}
+
+
+/****************************************************************
+* min, max, norms, etc.                                         *
+* Note: these routines require communication                    *
+****************************************************************/
+double MultiVector::min(void) const
+{
+    double ans = 1e300;
+    for (size_t i=0; i<d_vVectors.size(); i++)
+        ans = std::min ( ans, d_vVectors[i]->localMin() );
+    ans = getComm().minReduce(ans);
+    return ans;
+}
+double MultiVector::max(void) const
+{
+    double ans = -1e300;
+    for (size_t i=0; i<d_vVectors.size(); i++)
+        ans = std::max ( ans, d_vVectors[i]->localMax() );
+    ans = getComm().maxReduce(ans);
+    return ans;
+}
+double MultiVector::L1Norm () const
+{
+    double ans = 0.0;
+    for (size_t i=0; i<d_vVectors.size(); i++)
+        ans += d_vVectors[i]->localL1Norm();
+    ans = getComm().sumReduce(ans);
+    return ans;
+}
+double MultiVector::L2Norm () const
+{
+    double ans = 0.0;
+    for (size_t i=0; i<d_vVectors.size(); i++) {
+        double tmp = d_vVectors[i]->localL2Norm();
+        ans += tmp*tmp;
+    }
+    ans = getComm().sumReduce(ans);
+    return sqrt( ans );
+}
+double MultiVector::maxNorm () const
+{
+    double ans = 0.0;
+    for (size_t i=0; i<d_vVectors.size(); i++)
+        ans = std::max ( ans, d_vVectors[i]->localMaxNorm() );
+    ans = getComm().maxReduce(ans);
+    return ans;
+}
+double MultiVector::dot ( const VectorOperations &rhs ) const
+{
+    double ans = 0.0;
+    for (size_t i=0; i<d_vVectors.size(); i++)
+        ans += d_vVectors[i]->localDot( getVector( rhs, i ) );
+    ans = getComm().sumReduce(ans);
+    return ans;
 }
 
 
