@@ -121,8 +121,8 @@ void ManagedEpetraMatrix::setOtherData ()
     myComm.allGather( cols, dataLen, aggregateCols );
     myComm.allGather( data, dataLen, aggregateData );
 
-    int MyFirstRow = d_pParameters->castTo<ManagedEpetraMatrixParameters>().firstRow();
-    int MyEndRow = MyFirstRow + d_pParameters->castTo<ManagedEpetraMatrixParameters>().getLocalSize();
+    int MyFirstRow = d_pParameters->castTo<ManagedEpetraMatrixParameters>().d_DOFManagerLeft->beginDOF();
+    int MyEndRow = d_pParameters->castTo<ManagedEpetraMatrixParameters>().d_DOFManagerLeft->endDOF();
     for ( int i = 0 ; i != totDataLen ; i++ )
     {
       if ( ( aggregateRows[i] >= MyFirstRow ) && ( aggregateRows[i] < MyEndRow ) )
@@ -143,7 +143,6 @@ void ManagedEpetraMatrix::setOtherData ()
 
 ManagedEpetraMatrixParameters::ManagedEpetraMatrixParameters ( int local_size , int global_size , int first_dof , AMP_MPI comm )
         : MatrixParameters () ,
-          ManagedDataMap ( local_size , global_size ) ,
           d_comm ( comm ) ,
           d_vEntriesPerRow ( local_size ) ,
           d_ColGlobal ( global_size ) ,
@@ -155,7 +154,6 @@ ManagedEpetraMatrixParameters::ManagedEpetraMatrixParameters ( int local_size , 
 
 ManagedEpetraMatrixParameters::ManagedEpetraMatrixParameters ( int local_size , int global_size , int first_dof , int col_global , int col_base , AMP_MPI comm )
         : MatrixParameters () ,
-          ManagedDataMap ( local_size , global_size ) ,
           d_comm ( comm ) ,
           d_vEntriesPerRow ( local_size ) ,
           d_ColGlobal ( col_global ) ,
@@ -172,8 +170,10 @@ Epetra_Map  &ManagedEpetraMatrixParameters::getEpetraRowMap ()
     #else
         Epetra_SerialComm  comm;
     #endif
+    size_t N_row_local = d_DOFManagerLeft->numLocalDOF();
+    size_t N_row_global = d_DOFManagerLeft->numGlobalDOF();
     if ( d_eRowMap.get() == 0 )
-      d_eRowMap = boost::shared_ptr<Epetra_Map> ( new Epetra_Map ( getGlobalSize() , getLocalSize() , d_RowBase , comm ) );
+        d_eRowMap = boost::shared_ptr<Epetra_Map>( new Epetra_Map ( N_row_global, N_row_local, d_RowBase, comm ) );
     return *d_eRowMap;
 }
 
@@ -222,8 +222,7 @@ ManagedEpetraMatrix::ManagedEpetraMatrix ( const ManagedEpetraMatrix &rhs )
           d_pParameters ( rhs.d_pParameters )
 {
     ManagedEpetraMatrixParameters  &params = d_pParameters->castTo<ManagedEpetraMatrixParameters> ();
-    for ( size_t i = params.firstRow() ; i != params.firstRow() + params.getLocalSize() ; i++ )
-    {
+    for ( size_t i = params.d_DOFManagerLeft->beginDOF(); i!=params.d_DOFManagerLeft->endDOF(); i++ ) {
       std::vector<unsigned int>  cols;
       std::vector<double>        vals;
       rhs.getRowByGlobalID ( (int)i , cols , vals );
@@ -318,8 +317,9 @@ void  ManagedEpetraMatrix::createValuesByGlobalID ( int  num_rows , int num_cols
 void  ManagedEpetraMatrix::setValuesByGlobalID ( int  num_rows , int num_cols , int *rows , int *cols , double *values )
 {
     ManagedEpetraMatrixParameters &EpetraParamters = d_pParameters->castTo<ManagedEpetraMatrixParameters>();
-    int MyFirstRow = EpetraParamters.firstRow();
-    int MyEndRow = MyFirstRow + EpetraParamters.getLocalSize();
+
+    int MyFirstRow = EpetraParamters.d_DOFManagerLeft->beginDOF();
+    int MyEndRow = EpetraParamters.d_DOFManagerLeft->endDOF();
     for ( int i = 0 ; i != num_rows ; i++ )
     {
       VerifyEpetraReturn (d_epetraMatrix->ReplaceGlobalValues ( rows[i] , num_cols , values+num_cols*i , cols ) , "setValuesByGlobalID" );
@@ -361,12 +361,12 @@ void ManagedEpetraMatrix::setDiagonal ( const Vector::shared_ptr &in )
 
 void ManagedEpetraMatrix::getRowByGlobalID ( int row , std::vector<unsigned int> &cols , std::vector<double> &values ) const
 {   
-    int firstRow = d_pParameters->firstRow();
-    int numRows = d_pParameters->getLocalSize();
+    int firstRow = d_pParameters->d_DOFManagerLeft->beginDOF();
+    int numRows = d_pParameters->d_DOFManagerLeft->endDOF();
     AMP_ASSERT ( row >= firstRow );
     AMP_ASSERT ( row < firstRow + numRows );
 
-    int localRow = row - d_pParameters->firstRow();
+    int localRow = row - firstRow;
     int numCols = d_pParameters->entriesInRow ( localRow );
     cols.resize ( numCols );
     values.resize ( numCols );

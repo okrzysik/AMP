@@ -104,12 +104,17 @@ namespace LinearAlgebra {
   {
     ManagedPetscMatrixParameters &params = d_pParameters->castTo<ManagedPetscMatrixParameters> ();
     MPI_Comm petsc_comm = params.getEpetraComm().getCommunicator();
-    MatCreateShell ( petsc_comm ,
-                     params.getLocalSize(),
-                     params.getLocalSize() ,
-                     PETSC_DETERMINE ,
-                     PETSC_DETERMINE ,
-                     static_cast<void *> ( this ) ,
+    size_t N_col_local = params.d_DOFManagerRight->numLocalDOF();
+    size_t N_row_local = params.d_DOFManagerLeft->numLocalDOF();
+    size_t N_col_global = params.d_DOFManagerRight->numGlobalDOF();
+    size_t N_row_global = params.d_DOFManagerLeft->numGlobalDOF();
+
+    MatCreateShell ( petsc_comm,
+                     N_row_local,
+                     N_col_local,
+                     N_row_global,
+                     N_col_global,
+                     static_cast<void *> ( this ),
                      &d_Mat );
 
     MatShellSetOperation ( d_Mat , MATOP_MULT , (void(*)(void)) _AMP_Mult );
@@ -153,7 +158,6 @@ namespace LinearAlgebra {
       MatGetRow ( m , global_start , &num_cols , PETSC_NULL , PETSC_NULL );
       params->setEntriesInRow ( i , num_cols );
       MatRestoreRow ( m , global_start , &num_cols , PETSC_NULL , PETSC_NULL );
-      params->addMapping ( i , global_start );
       i++;
     }
     Matrix::shared_ptr  ret_val ( new ManagedPetscMatrix( MatrixParameters::shared_ptr( params ) ) );
@@ -162,7 +166,8 @@ namespace LinearAlgebra {
 
   void  ManagedPetscMatrix::copyFromMat ( Mat m )
   {
-    ManagedPetscMatrixParameters::iterator  cur_entry = d_pParameters->castTo<ManagedPetscMatrixParameters>().begin();
+AMP_ERROR("Not converted");
+/*    ManagedPetscMatrixParameters::iterator  cur_entry = d_pParameters->castTo<ManagedPetscMatrixParameters>().begin();
     while ( cur_entry != d_pParameters->castTo<ManagedPetscMatrixParameters>().end() )
     {
       int num_cols;
@@ -176,7 +181,7 @@ namespace LinearAlgebra {
       cur_entry++;
     }
     d_epetraMatrix->FillComplete ();
-
+*/
   }
 
 }

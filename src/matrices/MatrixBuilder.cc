@@ -49,7 +49,6 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix(
         for (size_t i=0; i<ids.size(); i++) {
             int globalRowID = ids[i];
             int localRowID = globalRowID - resultDOF->beginDOF();
-            params->addMapping( localRowID, globalRowID );
             params->setEntriesInRow( localRowID, nnz );
         }
         // Add the columns
