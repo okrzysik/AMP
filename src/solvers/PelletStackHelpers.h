@@ -68,8 +68,8 @@ void helperCreateColumnOperatorsForPelletMechanics(std::vector<unsigned int> loc
 } 
 
 void helperCreateCoupledOperatorForPelletMechanics(boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps, 
-    boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator,
-    boost::shared_ptr<AMP::Operator::CoupledOperator> & coupledOp) 
+						   boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator,
+						   boost::shared_ptr<AMP::Operator::CoupledOperator> & coupledOp) 
 {
   boost::shared_ptr<AMP::InputDatabase> emptyDb;
   boost::shared_ptr<AMP::Operator::CoupledOperatorParameters> coupledOpParams(new
