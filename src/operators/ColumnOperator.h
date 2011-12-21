@@ -25,6 +25,9 @@ namespace Operator {
       ColumnOperator(const boost::shared_ptr<OperatorParameters>& params)
         : Operator () { (void) params; }
 
+      /** Default empty constructor */
+      ColumnOperator() : Operator() { }
+
       virtual ~ColumnOperator() { }
 
       /**
