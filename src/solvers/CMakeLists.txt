@@ -5,3 +5,5 @@ ADD_PACKAGE_SUBDIRECTORY ( newFrozenVectorDesign )
 INSTALL_AMP_TARGET ( solvers )
 
 ADD_SUBDIRECTORY ( test )
+ADD_SUBDIRECTORY ( newFrozenVectorDesign/test )
+
