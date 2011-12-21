@@ -1,8 +1,11 @@
 
 FirstOperator {
+  Variable = "x"
 }
 
 SecondOperator {
+  PrimaryVariable = "y"
+    SecondaryVariable = "x"
 }
 
 Solver {
