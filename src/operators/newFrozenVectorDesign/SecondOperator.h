@@ -29,6 +29,13 @@ namespace AMP {
           }
         }
 
+        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1) {
+          boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(new AMP::LinearAlgebra::MultiVariable("MultiVariable"));
+          retVariable->add(d_primaryVar);
+          retVariable->add(d_secondaryVar);
+          return retVariable;
+        }
+
         AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
           return d_primaryVar;
         }

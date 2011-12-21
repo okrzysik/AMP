@@ -27,6 +27,10 @@ namespace AMP {
           }
         }
 
+        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1) {
+          return d_var;
+        }
+
         AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
           return d_var;
         }

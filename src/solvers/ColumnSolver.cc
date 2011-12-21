@@ -43,16 +43,11 @@ namespace Solver {
           boost::shared_ptr<AMP::Operator::Operator> op = d_Solvers[i]->getOperator();
           AMP_INSIST(op.get()!=NULL, "EROR: NULL Operator returned by SolverStrategy::getOperator");
 
-          //boost::shared_ptr<AMP::Operator::LinearOperator> linearOperator = boost::dynamic_pointer_cast<LinearOperator>(op);
-          //AMP_INSIST(AMP::Operator::linearOperator.get()!=NULL, "ERROR: NULL LinearOperator returned by cast in ColumnSolver");
-          //Variable::shared_ptr inputVar = linearOperator->getInputVariable();
-          //Variable::shared_ptr outputVar = linearOperator->getOutputVariable();
-
           AMP::LinearAlgebra::Variable::shared_ptr inputVar = op->getInputVariable();
           AMP::LinearAlgebra::Variable::shared_ptr outputVar = op->getOutputVariable();
 
-          AMP_INSIST(inputVar.get()!=NULL, "ERROR: Null input variable for linear operator");
-          AMP_INSIST(outputVar.get()!=NULL, "ERROR: Null output variable for linear operator");
+          AMP_INSIST(inputVar.get()!=NULL, "ERROR: Null input variable for operator");
+          AMP_INSIST(outputVar.get()!=NULL, "ERROR: Null output variable for operator");
 
           boost::shared_ptr<AMP::LinearAlgebra::Vector> sf = f->subsetVectorForVariable(outputVar);
           AMP_INSIST(sf.get()!=NULL, "ERROR: subset on rhs f yields NULL vector in ColumnSolver::solve");
@@ -74,16 +69,11 @@ namespace Solver {
           boost::shared_ptr<AMP::Operator::Operator> op = d_Solvers[i]->getOperator();
           AMP_INSIST(op.get()!=NULL, "EROR: NULL Operator returned by SolverStrategy::getOperator");
 
-          //boost::shared_ptr<AMP::Operator::LinearOperator> linearOperator = boost::dynamic_pointer_cast<LinearOperator>(op);
-          //AMP_INSIST(AMP::Operator::linearOperator.get()!=NULL, "ERROR: NULL LinearOperator returned by cast in ColumnSolver");
-          //Variable::shared_ptr inputVar = linearOperator->getInputVariable();
-          //Variable::shared_ptr outputVar = linearOperator->getOutputVariable();
-
           AMP::LinearAlgebra::Variable::shared_ptr inputVar = op->getInputVariable();
           AMP::LinearAlgebra::Variable::shared_ptr outputVar = op->getOutputVariable();
 
-          AMP_INSIST(inputVar.get()!=NULL, "ERROR: Null input variable for linear operator");
-          AMP_INSIST(outputVar.get()!=NULL, "ERROR: Null output variable for linear operator");
+          AMP_INSIST(inputVar.get()!=NULL, "ERROR: Null input variable for operator");
+          AMP_INSIST(outputVar.get()!=NULL, "ERROR: Null output variable for operator");
 
           boost::shared_ptr<AMP::LinearAlgebra::Vector> sf = f->subsetVectorForVariable(outputVar);
           AMP_INSIST(sf.get()!=NULL, "ERROR: subset on rhs f yields NULL vector in ColumnSolver::solve");
@@ -98,16 +88,11 @@ namespace Solver {
           boost::shared_ptr<AMP::Operator::Operator> op = d_Solvers[i]->getOperator();
           AMP_INSIST(op.get()!=NULL, "EROR: NULL Operator returned by SolverStrategy::getOperator");
 
-          //boost::shared_ptr<AMP::Operator::LinearOperator> linearOperator = boost::dynamic_pointer_cast<LinearOperator>(op);
-          //AMP_INSIST(AMP::Operator::linearOperator.get()!=NULL, "ERROR: NULL LinearOperator returned by cast in ColumnSolver");
-          //Variable::shared_ptr inputVar = linearOperator->getInputVariable();
-          //Variable::shared_ptr outputVar = linearOperator->getOutputVariable();
-
           AMP::LinearAlgebra::Variable::shared_ptr inputVar = op->getInputVariable();
           AMP::LinearAlgebra::Variable::shared_ptr outputVar = op->getOutputVariable();
 
-          AMP_INSIST(inputVar.get()!=NULL, "ERROR: Null input variable for linear operator");
-          AMP_INSIST(outputVar.get()!=NULL, "ERROR: Null output variable for linear operator");
+          AMP_INSIST(inputVar.get()!=NULL, "ERROR: Null input variable for operator");
+          AMP_INSIST(outputVar.get()!=NULL, "ERROR: Null output variable for operator");
 
           boost::shared_ptr<AMP::LinearAlgebra::Vector> sf = f->subsetVectorForVariable(outputVar);
           AMP_INSIST(sf.get()!=NULL, "ERROR: subset on rhs f yields NULL vector in ColumnSolver::solve");
