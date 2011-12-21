@@ -49,10 +49,20 @@ Epetra_Map  &EpetraVectorEngineParameters::getEpetraMap()
     #endif
     AMP_INSIST(d_global<0x80000000,"Epetra does not support vectors with global size greater than 2^31");
     size_t local_size = d_end-d_begin;
-    std::vector<int> ids(local_size,0);
-    for (size_t i=0; i<local_size; i++)
-        ids[i] = (int) (i+d_begin);
-    d_emap = boost::shared_ptr<Epetra_Map> ( new Epetra_Map ( (int) d_global, (int) local_size, &ids[0], 0, comm ) );
+    //std::vector<int> ids(local_size,0);
+    //for (size_t i=0; i<local_size; i++)
+    //    ids[i] = (int) (i+d_begin);
+    //d_emap = boost::shared_ptr<Epetra_Map> ( new Epetra_Map ( (int) d_global, (int) local_size, &ids[0], 0, comm ) );
+    d_emap = boost::shared_ptr<Epetra_Map> ( new Epetra_Map ( (int) d_global, (int) local_size, 0, comm ) );
+    // Check the map to make sure it is correct
+    AMP_ASSERT(local_size==(size_t)d_emap->NumMyPoints());
+    AMP_ASSERT(d_global==(size_t)d_emap->NumGlobalPoints());
+    AMP_ASSERT(d_begin==(size_t)d_emap->MinMyGID());
+    AMP_ASSERT(d_end-1==(size_t)d_emap->MaxMyGID());
+    AMP_ASSERT(0==(size_t)d_emap->MinAllGID());
+    AMP_ASSERT(d_global-1==(size_t)d_emap->MaxAllGID());
+    AMP_ASSERT(0==(size_t)d_emap->MinLID());
+    AMP_ASSERT(local_size-1==(size_t)d_emap->MaxLID());
     return *d_emap;
 }
 
