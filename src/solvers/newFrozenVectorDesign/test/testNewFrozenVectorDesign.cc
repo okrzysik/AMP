@@ -9,6 +9,7 @@
 #include "utils/UnitTest.h"
 
 #include "vectors/SimpleVector.h"
+#include "vectors/MultiVector.h"
 
 #include "operators/ColumnOperator.h"
 #include "operators/newFrozenVectorDesign/FirstOperator.h"
@@ -29,15 +30,55 @@ int main(int argc, char *argv[]) {
   boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
 
-  boost::shared_ptr<AMP::Database> secondOp_db = input_db->getDatabase("FirstOperator");
+  boost::shared_ptr<AMP::Database> firstOp_db = input_db->getDatabase("FirstOperator");
+  boost::shared_ptr<AMP::Operator::OperatorParameters> firstOpParams(new AMP::Operator::OperatorParameters(firstOp_db));
+  boost::shared_ptr<AMP::Operator::FirstOperator> firstOp(new AMP::Operator::FirstOperator(firstOpParams)); 
 
-  boost::shared_ptr<AMP::Database> firstOp_db = input_db->getDatabase("SecondOperator");
+  boost::shared_ptr<AMP::Database> secondOp_db = input_db->getDatabase("SecondOperator");
+  boost::shared_ptr<AMP::Operator::OperatorParameters> secondOpParams(new AMP::Operator::OperatorParameters(secondOp_db));
+  boost::shared_ptr<AMP::Operator::SecondOperator> secondOp(new AMP::Operator::SecondOperator(secondOpParams)); 
 
-  boost::shared_ptr<AMP::Operator::ColumnOperator> columnOp(new AMP::Operator::ColumnOperator());
+  boost::shared_ptr<AMP::Operator::ColumnOperator> columnOp(new AMP::Operator::ColumnOperator);
+  columnOp->append(firstOp);
+  columnOp->append(secondOp);
 
   boost::shared_ptr<AMP::Database> solver_db = input_db->getDatabase("Solver");
 
-  boost::shared_ptr<AMP::Solver::ColumnSolver> columnSolver(new AMP::Solver::ColumnSolver());
+  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> firstSolverParams(new AMP::Solver::SolverStrategyParameters(solver_db));
+  firstSolverParams->d_pOperator = firstOp;
+  boost::shared_ptr<AMP::Solver::OnePointSolver> firstSolver(new AMP::Solver::OnePointSolver(firstSolverParams));
+
+  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> secondSolverParams(new AMP::Solver::SolverStrategyParameters(solver_db));
+  secondSolverParams->d_pOperator = secondOp;
+  boost::shared_ptr<AMP::Solver::OnePointSolver> secondSolver(new AMP::Solver::OnePointSolver(secondSolverParams));
+
+  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> columnSolverParams(new AMP::Solver::SolverStrategyParameters(solver_db));
+  columnSolverParams->d_pOperator = columnOp;
+  boost::shared_ptr<AMP::Solver::ColumnSolver> columnSolver(new AMP::Solver::ColumnSolver(columnSolverParams));
+  columnSolver->append(firstSolver);
+  columnSolver->append(secondSolver);
+
+  AMP::LinearAlgebra::Variable::shared_ptr firstVar = firstOp->getOutputVariable();
+  AMP::LinearAlgebra::Variable::shared_ptr secondVar = secondOp->getOutputVariable();
+
+  AMP::LinearAlgebra::Vector::shared_ptr firstVec = AMP::LinearAlgebra::SimpleVector::create(1, firstVar);
+  AMP::LinearAlgebra::Vector::shared_ptr secondVec = AMP::LinearAlgebra::SimpleVector::create(1, secondVar);
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::joinVectors(firstVec, secondVec);
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = rhsVec->cloneVector();
+
+  firstVec->setToScalar(3.0);
+  secondVec->setToScalar(5.0);
+
+  columnSolver->solve(rhsVec, solVec);
+
+  boost::shared_ptr<AMP::LinearAlgebra::SimpleVector> firstSol = 
+    boost::dynamic_pointer_cast<AMP::LinearAlgebra::SimpleVector>(solVec->subsetVectorForVariable(firstVar));
+
+  boost::shared_ptr<AMP::LinearAlgebra::SimpleVector> secondSol = 
+    boost::dynamic_pointer_cast<AMP::LinearAlgebra::SimpleVector>(solVec->subsetVectorForVariable(secondVar));
+
+  std::cout<<"First Solution = "<<((*firstSol)[0])<<std::endl;
+  std::cout<<"Second Solution = "<<((*secondSol)[0])<<std::endl;
 
   ut.passes(exeName);
 

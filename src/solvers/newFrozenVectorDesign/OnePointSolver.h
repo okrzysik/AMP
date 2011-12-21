@@ -20,7 +20,6 @@ namespace AMP {
           //General solution: To avoid making the above assumption, we can replace 
           //getInputVariable() with getPrimaryVariable() and use it for the u vector. 
           AMP::LinearAlgebra::Vector::shared_ptr myU = u->subsetVectorForVariable(d_onePointOp->getOutputVariable());
-          AMP::LinearAlgebra::Vector::shared_ptr myF = f->subsetVectorForVariable(d_onePointOp->getOutputVariable());
           if(d_bUseZeroInitialGuess) {
             myU->zero();
           }
