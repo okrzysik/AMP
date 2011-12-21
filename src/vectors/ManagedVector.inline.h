@@ -372,18 +372,6 @@ namespace LinearAlgebra {
     return retVal;
   }
 
-  inline
-  ManagedVector::ManagedVector ( VectorParameters::shared_ptr params )
-    : Vector ( params ) ,
-      d_vBuffer ( params->castTo<ManagedVectorParameters>().d_Buffer ?
-                  params->castTo<ManagedVectorParameters>().d_Buffer :
-                  params->castTo<ManagedVectorParameters>().d_Engine->getNewBuffer() ) ,
-      d_Engine ( params->castTo<ManagedVectorParameters>().d_CloneEngine ?
-                 params->castTo<ManagedVectorParameters>().d_Engine->cloneEngine ( d_vBuffer ) :
-                 params->castTo<ManagedVectorParameters>().d_Engine ),
-      d_pParameters ( boost::dynamic_pointer_cast<ManagedVectorParameters>(params) )
-  {
-  }
 
   inline
   ManagedVector::~ManagedVector ()

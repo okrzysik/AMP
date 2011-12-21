@@ -1,11 +1,43 @@
 #include "utils/Utilities.h"
 #include "ManagedVector.h"
 #include <stdexcept>
-
+#include <iostream>
+#include <string>
 
 
 namespace AMP {
 namespace LinearAlgebra {
+
+
+/********************************************************
+* Constructors                                          *
+********************************************************/
+ManagedVector::ManagedVector ( VectorParameters::shared_ptr params_in ):
+    Vector ( params_in )
+      
+{
+    d_pParameters = boost::dynamic_pointer_cast<ManagedVectorParameters>(params_in);
+    if ( d_pParameters->d_Buffer.get() != NULL )
+        d_vBuffer = d_pParameters->d_Buffer;
+    else
+        d_vBuffer = d_pParameters->d_Engine->getNewBuffer();
+    if ( d_pParameters->d_CloneEngine )
+        d_Engine = d_pParameters->d_Engine->cloneEngine( d_vBuffer );
+    else
+        d_Engine = d_pParameters->d_Engine;
+    d_pParameters->d_CloneEngine = true;
+}
+ManagedVector::ManagedVector ( shared_ptr  alias ):
+    Vector ( boost::dynamic_pointer_cast<VectorParameters> ( alias->castTo<ManagedVector>().getParameters() ) ) ,
+    d_vBuffer ( alias->castTo<ManagedVector>().d_vBuffer ) ,
+    d_Engine ( alias->castTo<ManagedVector>().d_Engine->cloneEngine ( d_vBuffer ) )
+{
+    d_Engine = alias->castTo<ManagedVector>().d_Engine;
+    setVariable ( alias->getVariable() );
+    d_pParameters = alias->castTo<ManagedVector>().d_pParameters;
+    aliasGhostBuffer ( alias );
+}
+
 
 
   Vector::shared_ptr  ManagedVector::subsetVectorForVariable ( const Variable::shared_ptr &name )
@@ -36,16 +68,7 @@ namespace LinearAlgebra {
     return retVal;
   }
 
-  ManagedVector::ManagedVector ( shared_ptr  alias )
-    : Vector ( boost::dynamic_pointer_cast<VectorParameters> ( alias->castTo<ManagedVector>().getParameters() ) ) ,
-      d_vBuffer ( alias->castTo<ManagedVector>().d_vBuffer ) ,
-      d_Engine ( alias->castTo<ManagedVector>().d_Engine->cloneEngine ( d_vBuffer ) )
-  {
-    d_Engine = alias->castTo<ManagedVector>().d_Engine;
-    setVariable ( alias->getVariable() );
-    d_pParameters = alias->castTo<ManagedVector>().d_pParameters;
-    aliasGhostBuffer ( alias );
-  }
+
 
 
   void ManagedVector::copyVector ( const Vector::const_shared_ptr &other )

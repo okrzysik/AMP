@@ -1,13 +1,29 @@
 #ifdef USE_AMP_DISCRETIZATION
 
 #include "VectorBuilder.h"
-
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/trilinos/EpetraVectorEngine.h"
 #include "discretization/MultiDOF_Manager.h"
 
+#include <iostream>
+
+
 namespace AMP {
 namespace LinearAlgebra {
+
+
+/*static void memory_usage( std::string prefix = std::string("") ) {
+    std::ostringstream mem;
+    std::ifstream proc("/proc/self/status");
+    std::string s;
+    while(getline(proc, s), !proc.fail()) {
+        if(s.substr(0, 6) == "VmSize") {
+            mem << s;
+            break;
+            }
+    }
+    std::cout << prefix << mem.str() << std::endl;
+}*/
 
 
 /********************************************************
@@ -42,7 +58,8 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
         AMP_MPI comm = DOFs->getComm();
         AMP_ASSERT( !comm.isNull() );
         comm.barrier();
-        double t1 = AMP::AMP_MPI::time();
+        // memory_usage();
+        double t1 = AMP::AMP_MPI::time(); 
         AMP::LinearAlgebra::CommunicationList::shared_ptr comm_list;
         std::vector<size_t> remote_DOFs = DOFs->getRemoteDOFs();
         bool ghosts = comm.maxReduce<char>(remote_DOFs.size()>0)==1;
@@ -68,19 +85,22 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
         comm.barrier();
         double t4 = AMP::AMP_MPI::time();
         AMP::LinearAlgebra::VectorEngine::BufferPtr t_buffer ( new AMP::LinearAlgebra::VectorEngine::Buffer( DOFs->numLocalDOF() ) );
+        double t5 = AMP::AMP_MPI::time();
         AMP::LinearAlgebra::VectorEngine::shared_ptr epetra_engine( new AMP::LinearAlgebra::EpetraVectorEngine( eveparams, t_buffer ) );
         mvparams->d_Engine = epetra_engine;
+        mvparams->d_Buffer = t_buffer;
         mvparams->d_CommList = comm_list;
         mvparams->d_DOFManager = DOFs;
         // Create the vector
         comm.barrier();
-        double t5 = AMP::AMP_MPI::time();
+        double t6 = AMP::AMP_MPI::time();
         AMP::LinearAlgebra::Vector::shared_ptr vector = AMP::LinearAlgebra::Vector::shared_ptr( new AMP::LinearAlgebra::ManagedPetscVector(mvparams) );
         vector->setVariable(variable);
         comm.barrier();
-        double t6 = AMP::AMP_MPI::time();
-        //if ( comm.getRank()==0 )
-        //    printf("time = %f (1-2), %f (2-3), %f (3-4), %f (4-5), %f (5-6)\n",t2-t1,t3-t2,t4-t3,t5-t4,t6-t5);
+        double t7 = AMP::AMP_MPI::time(); 
+        // memory_usage();
+        if ( comm.getRank()==0 )
+            printf("time = %f (1-2), %f (2-3), %f (3-4), %f (4-5), %f (5-6), %f (6-7)\n",t2-t1,t3-t2,t4-t3,t5-t4,t6-t5,t7-t6);
         return vector;
     } 
     return AMP::LinearAlgebra::Vector::shared_ptr();
