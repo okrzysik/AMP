@@ -85,14 +85,14 @@ void  runTest ( AMP::UnitTest *ut, std::string input_file )
     boost::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params);
 
     // Run the test with > 2^24  DOFs
-    //simpleDOFManagerVectorTest( ut, mesh, 0x1000001, false );
-    //simpleDOFManagerVectorTest( ut, mesh, 0x1000001, true );
+    simpleDOFManagerVectorTest( ut, mesh, 0x1000001, false );
+    simpleDOFManagerVectorTest( ut, mesh, 0x1000001, true );
 
     // Run the test with > 2^27  DOFs
     //simpleDOFManagerVectorTest( ut, mesh, 0x8000001, false );
 
     // Run the test with > 2^30 DOFs
-    simpleDOFManagerVectorTest( ut, mesh, 0x40000001, false );
+    //simpleDOFManagerVectorTest( ut, mesh, 0x40000001, false );
 
     // Run the test with > 2^31 DOFs
     //simpleDOFManagerVectorTest( ut, mesh, 0x80000001, true );

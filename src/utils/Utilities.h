@@ -132,6 +132,9 @@ namespace Utilities
 
     //! Create a hash key from a char array
     unsigned int hash_char(const char*);
+
+    //! Function to get the memory usage
+    size_t getMemoryUsage();
 }
 
 

@@ -210,5 +210,23 @@ unsigned int Utilities::hash_char(const char* name)
 }
 
 
+// Function to get the memory usage
+size_t getMemoryUsage()
+{
+    AMP_ERROR("Not finished");
+/*    std::ostringstream mem;
+    std::ifstream proc("/proc/self/status");
+    std::string s;
+    while(getline(proc, s), !proc.fail()) {
+        if(s.substr(0, 6) == "VmSize") {
+            mem << s;
+            break;
+            }
+    }
+    std::cout << mem.str() << std::endl;*/
+    return 0;
+}
+
+
 }
 
