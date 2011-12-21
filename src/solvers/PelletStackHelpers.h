@@ -27,6 +27,7 @@ void helperCreateStackOperatorForPelletMechanics(AMP::Mesh::MeshManager::shared_
     boost::shared_ptr<AMP::Operator::PelletStackOperator> & pelletStackOp)
 {
   boost::shared_ptr<AMP::Database> pelletStackOp_db = global_input_db->getDatabase("PelletStackOperator");
+  pelletStackOp_db->putInteger("TOTAL_NUMBER_OF_PELLETS", global_input_db->getInteger("NumberOfPelletMeshes"));
   boost::shared_ptr<AMP::Operator::PelletStackOperatorParameters> pelletStackOpParams(new 
       AMP::Operator::PelletStackOperatorParameters(pelletStackOp_db));
   pelletStackOpParams->d_pelletStackComm = globalComm;
