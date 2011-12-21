@@ -1,5 +1,6 @@
 
 DomainDecomposition = 0
+NumberOfPelletMeshes = 3
 NumberOfMeshes = 3
 NumberOfMeshToMeshMaps = 2
 
@@ -10,7 +11,6 @@ InitialTemperature = 310.0
 FinalTemperature = 400.0
 
 PelletStackOperator {
-  TOTAL_NUMBER_OF_PELLETS = 3
     ONLY_Z_CORRECTION = FALSE
     USE_SERIAL = TRUE
     MASTER = 1 
