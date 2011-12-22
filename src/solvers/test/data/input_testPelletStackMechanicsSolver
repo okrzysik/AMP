@@ -1,8 +1,8 @@
 
 DomainDecomposition = 0
-NumberOfPelletMeshes = 2
-NumberOfMeshes = 2
-NumberOfMeshToMeshMaps = 1
+NumberOfPelletMeshes = 10
+NumberOfMeshes = 10
+NumberOfMeshToMeshMaps = 9
 
 NumberOfLoadingSteps = 1
 USE_POINT_LOAD = TRUE
@@ -11,11 +11,11 @@ InitialTemperature = 310.0
 FinalTemperature = 400.0
 
 PelletStackOperator {
-    ONLY_Z_CORRECTION = TRUE
-    USE_SERIAL = FALSE
+  ONLY_Z_CORRECTION = FALSE
+    USE_SERIAL = TRUE
     MASTER = 1 
     SLAVE = 2
-    SCALING_FACTOR = 1.0
+    SCALING_FACTOR = 1.0e10
     Variable = "displacement"
     MeshNamePrefix = "pellet"
 }
@@ -39,10 +39,186 @@ Mesh_2 {
     NumberOfElements = 1300
 }
 
+Mesh_3 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_3"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.021
+    NumberOfElements = 1300
+}
+
+Mesh_4 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_4"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.0315
+    NumberOfElements = 1300
+}
+
+Mesh_5 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_5"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.042
+    NumberOfElements = 1300
+}
+
+Mesh_6 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_6"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.0525
+    NumberOfElements = 1300
+}
+
+Mesh_7 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_7"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.063
+    NumberOfElements = 1300
+}
+
+Mesh_8 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_8"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.0735
+    NumberOfElements = 1300
+}
+
+Mesh_9 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_9"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.084
+    NumberOfElements = 1300
+}
+
+Mesh_10 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_10"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.0945
+    NumberOfElements = 1300
+}
+
 MeshToMeshMap_1 {
   MapType = "NodeToNode"
     Mesh1 = "pellet_1"
     Mesh2 = "pellet_2"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_2 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_2"
+    Mesh2 = "pellet_3"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_3 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_3"
+    Mesh2 = "pellet_4"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_4 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_4"
+    Mesh2 = "pellet_5"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_5 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_5"
+    Mesh2 = "pellet_6"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_6 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_6"
+    Mesh2 = "pellet_7"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_7 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_7"
+    Mesh2 = "pellet_8"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_8 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_8"
+    Mesh2 = "pellet_9"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_9 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_9"
+    Mesh2 = "pellet_10"
     Surface1 = 1 //Top of Mesh1
     Surface2 = 2 //Bottom of Mesh2
     DOFsPerObject = 3
@@ -117,7 +293,7 @@ BottomPelletMechanicsNonlinearBC {
 
 PelletMechanicsNonlinearBC {
   name = "DirichletVectorCorrection"
-    SCALING_FACTOR = 1.0
+    SCALING_FACTOR = 1.0e10
     isAttachedToVolumeOperator = TRUE
     valuesType = 2
     setResidual = TRUE
@@ -161,7 +337,7 @@ NonlinearSolver {
     SNESOptions = "-snes_monitor -snes_type ls -snes_ksp_ew -snes_converged_reason -snes_ls_alpha 1.0e-4"
 
     LinearSolver {
-      max_iterations = 50
+      max_iterations = 100
         max_error = 1e-12
         ksp_type = "fgmres"
         absolute_tolerance = 1.0e-12
@@ -171,38 +347,35 @@ NonlinearSolver {
         uses_preconditioner = TRUE
         pc_type = "shell"
         pc_side = "RIGHT"
-        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 50"
+        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100"
 
         PelletStackSolver {
-          max_iterations = 1
-            max_error = 1e-12
+          ColumnSolver {
+            max_iterations = 1
+              max_error = 1e-12
 
-            ColumnSolver {
-              max_iterations = 1
-                max_error = 1e-12
+              KrylovSolver {
+                max_iterations = 100
+                  max_error = 1e-12
+                  ksp_type = "fgmres"
+                  absolute_tolerance = 1.0e-12
+                  relative_tolerance = 1.0e-11
+                  divergence_tolerance = 1.0e03
+                  max_krylov_dimension = 40
+                  uses_preconditioner = TRUE
+                  pc_type = "shell"
+                  pc_side = "RIGHT"
+                  KSPAppendOptionsPrefix = "kspPC_"
+                  KSPOptions = "-kspPC_ksp_max_it 100 -kspPC_ksp_converged_reason" 
 
-                KrylovSolver {
-                  max_iterations = 50
-                    max_error = 1e-12
-                    ksp_type = "fgmres"
-                    absolute_tolerance = 1.0e-12
-                    relative_tolerance = 1.0e-11
-                    divergence_tolerance = 1.0e03
-                    max_krylov_dimension = 40
-                    uses_preconditioner = TRUE
-                    pc_type = "shell"
-                    pc_side = "RIGHT"
-                    KSPAppendOptionsPrefix = "kspPC_"
-                    KSPOptions = "-kspPC_ksp_max_it 50 -kspPC_ksp_converged_reason" 
-
-                    MLSolver {
-                      max_iterations = 1
-                        max_error = 1e-11
-                        problem_type = "NSSA"
-                        PDE_equations = 3
-                    }
-                }
-            }
+                  MLSolver {
+                    max_iterations = 1
+                      max_error = 1e-11
+                      problem_type = "NSSA"
+                      PDE_equations = 3
+                  }
+              }
+          }
         }
     }
 }
