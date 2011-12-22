@@ -66,11 +66,14 @@ int main(int argc, char *argv[]) {
   AMP::LinearAlgebra::Variable::shared_ptr firstVar = firstOp->getOutputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr secondVar = secondOp->getOutputVariable();
 
-  AMP::LinearAlgebra::Vector::shared_ptr firstVecTmp = AMP::LinearAlgebra::SimpleVector::create(1, firstVar);
-  AMP::LinearAlgebra::Vector::shared_ptr secondVecTmp = AMP::LinearAlgebra::SimpleVector::create(1, secondVar);
+  AMP::LinearAlgebra::Vector::shared_ptr firstVec = AMP::LinearAlgebra::SimpleVector::create(1, firstVar);
+  AMP::LinearAlgebra::Vector::shared_ptr secondVec = AMP::LinearAlgebra::SimpleVector::create(1, secondVar);
 
-  AMP::LinearAlgebra::Vector::shared_ptr firstVec = AMP::LinearAlgebra::MultiVector::view(firstVecTmp, AMP_COMM_SELF);
-  AMP::LinearAlgebra::Vector::shared_ptr secondVec = AMP::LinearAlgebra::MultiVector::view(secondVecTmp, AMP_COMM_SELF);
+  AMP::LinearAlgebra::CommunicationList::shared_ptr commList = 
+    AMP::LinearAlgebra::CommunicationList::createEmpty(1, AMP_COMM_SELF);
+
+  firstVec->setCommunicationList(commList);
+  secondVec->setCommunicationList(commList);
 
   AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::joinVectors(firstVec, secondVec);
   AMP::LinearAlgebra::Vector::shared_ptr solVec = rhsVec->cloneVector();
