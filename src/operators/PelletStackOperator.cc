@@ -221,7 +221,7 @@ namespace AMP {
         recvDisps[i] = recvDisps[i - 1] + recvCnts[i - 1];
       }//end for i
 
-      std::vector<unsigned int> allPelletIds((*(recvDisps.end())) + (*(recvCnts.end())));
+      std::vector<unsigned int> allPelletIds((*(recvDisps.end() - 1)) + (*(recvCnts.end() - 1)));
       d_pelletStackComm.allGather<unsigned int>(&(d_pelletIds[0]), d_pelletIds.size(), &(allPelletIds[0]), 
           &(recvCnts[0]), &(recvDisps[0]), true);
 
