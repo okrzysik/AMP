@@ -75,13 +75,16 @@ namespace Operator {
 void
 NeumannVectorCorrection :: computeRHScorrection(const boost::shared_ptr<NeumannVectorCorrectionParameters> & params)
 {
-  AMP::LinearAlgebra::Vector::shared_ptr fluxVec = d_MeshAdapter->createVector(d_variable);
+  AMP::LinearAlgebra::Variable::shared_ptr fluxVar; 
 
   if(!d_isConstantFlux)
   {
     d_variableFlux->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-    fluxVec->copyVector(d_variableFlux);
+  }else{
+    d_variableFlux = d_MeshAdapter->createVector(d_variable);
   }
+
+  fluxVar = d_variableFlux->getVariable();
 
   d_gamma.resize(1);
   d_gamma[0] = 1.0;
@@ -90,7 +93,9 @@ NeumannVectorCorrection :: computeRHScorrection(const boost::shared_ptr<NeumannV
     d_gamma[0] = (params->d_db)->getDouble("gamma");
   }
 
-  AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_variable);
+  AMP::Mesh::DOFMap::shared_ptr flux_dof_map , dof_map ;
+  flux_dof_map = d_MeshAdapter->getDOFMap(d_variableFlux->getVariable());
+  dof_map = d_MeshAdapter->getDOFMap(d_variable);
 
   AMP::LinearAlgebra::Vector::shared_ptr rInternal = d_MeshAdapter->createVector(d_variable);
   rInternal->zero();
@@ -108,7 +113,7 @@ NeumannVectorCorrection :: computeRHScorrection(const boost::shared_ptr<NeumannV
         
         if(d_isConstantFlux)
         {
-          fluxVec->setToScalar(d_neumannValues[j][k]);
+          d_variableFlux->setToScalar(d_neumannValues[j][k]);
         }
 
         unsigned int dofId;
@@ -130,19 +135,36 @@ NeumannVectorCorrection :: computeRHScorrection(const boost::shared_ptr<NeumannV
 
           d_fe->reinit ( &cur_side.getElem() );
 
-          std::vector<unsigned int> bndGlobalIds;
+          std::vector<unsigned int> bndFluxGlobalIds , bndGlobalIds;
+          flux_dof_map->getDOFs(cur_side, bndFluxGlobalIds, dofId);
           dof_map->getDOFs(cur_side, bndGlobalIds, dofId);
 
           std::vector<double> flux(bndGlobalIds.size(), 0.0);
           const std::vector<std::vector<Real> > &phi = *d_phi;
           const std::vector<Real> &djxw = *d_JxW;
 
-          for(unsigned int i = 0; i < bndGlobalIds.size(); i++)
+          unsigned int globalId , num_nodes ; 
+          num_nodes = (&cur_side.getElem())->n_nodes();
+
+          for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
           {
-            for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) 
+
+            std::vector<std::vector<double> > temp(1, std::vector<double>(1,0)) ;
+
+            for(unsigned int i = 0; i < num_nodes ; i++)
             {
-              std::vector<std::vector<double> > temp(1) ;
-              temp[0].push_back(fluxVec->getValueByGlobalID(bndGlobalIds[i]) );
+              if( fluxVar->isA<AMP::Mesh::IntegrationPointVariable> () ){
+                globalId =  flux_dof_map->getGlobalID(bnd->globalID(), qp);
+              }else{
+                globalId =  bndGlobalIds[i];
+              }
+
+              temp[0][0] += phi[i][qp] * d_variableFlux->getValueByGlobalID(globalId) ;
+
+            }
+
+            for(unsigned int i = 0; i < num_nodes ; i++)
+            {
 
               if(d_robinPhysicsModel)
               {
@@ -150,6 +172,7 @@ NeumannVectorCorrection :: computeRHScorrection(const boost::shared_ptr<NeumannV
               }
 
               flux[i] +=  (d_gamma[0])*djxw[qp]*phi[i][qp]*temp[0][0];
+
             }
 
           }//end for i
@@ -209,6 +232,10 @@ getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& ) {
   tmp_db->putBool("skip_params", true);
 
   boost::shared_ptr<NeumannVectorCorrectionParameters> outParams(new NeumannVectorCorrectionParameters(tmp_db));
+
+  if(!d_isConstantFlux){
+    outParams->d_variableFlux = d_variableFlux ;      
+  }
 
   return outParams;
 }
