@@ -1,4 +1,5 @@
 #include "discretization/DOF_Manager.h"
+#include "discretization/subsetDOFManager.h"
 #include "utils/Utilities.h"
 
 
@@ -21,13 +22,27 @@ DOFManager::DOFManager ( size_t N_local, AMP_MPI comm )
 /****************************************************************
 * Get the entry indices of DOFs given a mesh element            *
 ****************************************************************/
-void DOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <size_t> &dofs, std::vector<size_t> ) const
+void DOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector<size_t> &dofs, std::vector<size_t> ) const
 {
     AMP_ERROR("getDOFs is not implimented for the base class");
 }
-void DOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <size_t> &dofs ) const
+void DOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const
 {
     AMP_ERROR("getDOFs is not implimented for the base class");
+}
+void DOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids, std::vector<size_t> &dofs ) const
+{
+    // This is a simple loop to provide a vector interface.  Ideally this should be overwritten by the user
+    dofs.resize(0);
+    dofs.reserve(2);
+    std::vector<size_t> local_dofs;
+    for (size_t i=0; i<ids.size(); i++) {
+        getDOFs( ids[i], local_dofs );
+        if ( local_dofs.size()+dofs.size() > dofs.capacity() )
+            dofs.reserve(2*dofs.capacity());
+        for (size_t j=0; j<local_dofs.size(); j++)
+            dofs.push_back( local_dofs[j] );
+    }
 }
 
 
@@ -103,6 +118,82 @@ std::vector<size_t> DOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) 
 {
     AMP_ERROR("getRowDOFs is not implimented for the base class");
     return std::vector<size_t>();
+}
+
+
+
+/****************************************************************
+* Subset the DOF manager                                        *
+****************************************************************/
+DOFManager::shared_ptr DOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh )
+{
+    // Get a list of the elements in the mesh
+    AMP::Mesh::MeshIterator iterator = getIterator();
+    std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getBaseMeshIDs();
+    std::vector<AMP::Mesh::MeshElementID> element_list;
+    element_list.reserve(iterator.size());
+    for (size_t i=0; i<iterator.size(); i++) {
+        AMP::Mesh::MeshElementID id = iterator->globalID();
+        AMP::Mesh::MeshID meshID = id.meshID();
+        for (size_t j=0; j<meshIDs.size(); j++) {
+            if ( meshID == meshIDs[j] ) {
+                element_list.push_back(id);
+                break;
+            }
+        }
+        ++iterator;
+    }
+    // Get the DOFs
+    std::vector<size_t> dofs;
+    getDOFs( element_list, dofs );
+    // Sort and check the DOFs for errors
+    AMP::Utilities::quicksort(dofs);
+    for (size_t i=0; i<dofs.size(); i++) {
+        if ( dofs[i]<d_begin || dofs[i]>=d_end )
+            AMP_ERROR("Internal error subsetting DOF manager (out of range)");
+    }
+    for (size_t i=1; i<dofs.size(); i++) {
+        if ( dofs[i]==dofs[i-1] )
+            AMP_ERROR("Internal error subsetting DOF manager (duplicate)");
+    }
+    size_t tot_size = d_comm.sumReduce(dofs.size());
+    // Create the subset DOF Manager    
+    if ( tot_size == 0 )
+        return DOFManager::shared_ptr();
+    if ( tot_size == d_global )
+        return shared_from_this();
+    return boost::shared_ptr<DOFManager>( new subsetDOFManager( shared_from_this(), dofs ) );
+}
+DOFManager::shared_ptr DOFManager::subset( const AMP::Mesh::MeshIterator &iterator )
+{
+    // Get the intesection of the current iterator with the given iterator
+    AMP::Mesh::MeshIterator intersection = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Intersection, iterator, getIterator() );
+    // Get the list of element we want
+    std::vector<AMP::Mesh::MeshElementID> element_list(iterator.size());
+    for (size_t i=0; i<intersection.size(); i++) {
+        element_list[i] = intersection->globalID();
+        ++intersection;
+    }
+    // Get the DOFs
+    std::vector<size_t> dofs;
+    getDOFs( element_list, dofs );
+    // Sort and check the DOFs for errors
+    AMP::Utilities::quicksort(dofs);
+    for (size_t i=0; i<dofs.size(); i++) {
+        if ( dofs[i]<d_begin || dofs[i]>=d_end )
+            AMP_ERROR("Internal error subsetting DOF manager (out of range)");
+    }
+    for (size_t i=1; i<dofs.size(); i++) {
+        if ( dofs[i]==dofs[i-1] )
+            AMP_ERROR("Internal error subsetting DOF manager (duplicate)");
+    }
+    size_t tot_size = d_comm.sumReduce(dofs.size());
+    // Create the subset DOF Manager    
+    if ( tot_size == 0 )
+        return DOFManager::shared_ptr();
+    if ( tot_size == d_global )
+        return shared_from_this();
+    return boost::shared_ptr<DOFManager>( new subsetDOFManager( shared_from_this(), dofs ) );
 }
 
 

@@ -205,7 +205,7 @@ MeshIterator Mesh::getIDsetIterator ( const GeomType, const int, const int )
     AMP_ERROR("Not Implimented Yet");
     return MeshIterator();
 }
-MeshIterator Mesh::getIterator( SetOP &, MeshIterator::shared_ptr &, MeshIterator::shared_ptr &)
+MeshIterator Mesh::getIterator( SetOP, const MeshIterator &, const MeshIterator &)
 {
     AMP_ERROR("Not Implimented Yet");
     return MeshIterator();

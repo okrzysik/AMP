@@ -212,7 +212,7 @@ public:
      * \param A  Pointer to MeshIterator A
      * \param B  Pointer to MeshIterator B
      */
-    virtual MeshIterator getIterator ( SetOP &OP, MeshIterator::shared_ptr &A, MeshIterator::shared_ptr &B);
+    static MeshIterator getIterator ( SetOP OP, const MeshIterator &A, const MeshIterator &B);
  
 
     //! Get the largest geometric type in the mesh

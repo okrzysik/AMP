@@ -19,7 +19,7 @@ namespace Discretization {
  *    using the degrees of freedom (DOF) per object.  It is also responsible 
  *    for creating vectors.
  */
-class DOFManager
+class DOFManager: public boost::enable_shared_from_this<AMP::Discretization::DOFManager>
 {
 public:
 
@@ -56,6 +56,14 @@ public:
      * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
      */
     virtual void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <size_t> &dofs ) const;
+
+
+    /** \brief Get the entry indices of DOFs given a mesh element ID
+     * \details  This will return a vector of pointers into a Vector that are associated with which.
+     * \param[in]  id       The element IDs to collect nodal objects for.  Note: the mesh element may be any type (include a vertex).
+     * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
+     */
+    virtual void getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids, std::vector <size_t> &dofs ) const;
 
 
     /** \brief   Get an entry over the mesh elements associated with the DOFs
@@ -103,6 +111,13 @@ public:
     //! Get the row DOFs given a mesh element
     virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const;
 
+
+    //! Subset the DOF Manager for a mesh (requires global communication)
+    virtual DOFManager::shared_ptr subset( const AMP::Mesh::Mesh::shared_ptr mesh );
+
+
+    //! Subset the DOF Manager for a mesh element iterator (requires global communication)
+    virtual DOFManager::shared_ptr subset( const AMP::Mesh::MeshIterator &iterator );
 
 protected:
 

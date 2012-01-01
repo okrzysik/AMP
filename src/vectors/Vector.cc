@@ -65,7 +65,7 @@ void Vector::selectInto ( const VectorSelector &s , Vector::shared_ptr retVal )
 {
     if ( s.isSelected ( shared_from_this () ) ) {
         // Subset the vector
-        Vector::shared_ptr subvector = s.getSubsetter()->subset( shared_from_this() );
+        Vector::shared_ptr subvector = s.subset( shared_from_this() );
         retVal->castTo<MultiVector>().addVector ( subvector );
         // Check the global size of the new vector to make sure it is <= the current size
         size_t N1 = this->getGlobalSize();
