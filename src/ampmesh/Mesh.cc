@@ -28,7 +28,7 @@ Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
 }
 Mesh::Mesh( const Mesh::shared_ptr &old_mesh )
 {
-    AMP_ERROR("Not Implimented Yet");
+    AMP_ERROR("Copy constructor is not Implimented Yet");
 }
 
 
@@ -177,52 +177,52 @@ boost::shared_ptr<Mesh>  Mesh::Subset( std::string name ) {
 ********************************************************/
 boost::shared_ptr<Mesh> Mesh::Subset( MeshIterator::shared_ptr & )
 {
-    AMP_ERROR("Not Implimented Yet");
+    AMP_ERROR("Subset is not implimented for the base class");
     return boost::shared_ptr<Mesh>();
 }
 boost::shared_ptr<Mesh> Mesh::Subset( Mesh & )
 {
-    AMP_ERROR("Not Implimented Yet");
+    AMP_ERROR("Subset is not implimented for the base class");
     return boost::shared_ptr<Mesh>();
 }
 MeshIterator Mesh::getIterator( const GeomType, const int )
 {
-    AMP_ERROR("Not Implimented Yet");
+    AMP_ERROR("getIterator is not implimented for the base class");
     return MeshIterator();
 }
 MeshIterator Mesh::getSurfaceIterator( const GeomType, const int ) 
 {
-    AMP_ERROR("Not Implimented Yet");
+    AMP_ERROR("getSurfaceIterator is not implimented for the base class");
     return MeshIterator();
 }
 std::vector<int> Mesh::getIDSets ( )
 {
-    AMP_ERROR("Not Implimented Yet");
+    AMP_ERROR("getIDSets is not implimented for the base class");
     return std::vector<int>();
 }
 MeshIterator Mesh::getIDsetIterator ( const GeomType, const int, const int )
 {
-    AMP_ERROR("Not Implimented Yet");
+    AMP_ERROR("getIDsetIterator is not implimented for the base class");
     return MeshIterator();
 }
 MeshIterator Mesh::getIterator( SetOP, const MeshIterator &, const MeshIterator &)
 {
-    AMP_ERROR("Not Implimented Yet");
+    AMP_ERROR("getIterator is not implimented for the base class");
     return MeshIterator();
 }
 size_t Mesh::numLocalElements( const GeomType type ) const
 {
-    AMP_ERROR("Not Implimented Yet");
+    AMP_ERROR("numLocalElements is not implimented for the base class");
     return 0;
 }
 size_t Mesh::numGlobalElements( const GeomType type ) const
 {
-    AMP_ERROR("Not Implimented Yet");
+    AMP_ERROR("numGlobalElements is not implimented for the base class");
     return 0;
 }
 size_t Mesh::numGhostElements( const GeomType type, int gcw ) const
 {
-    AMP_ERROR("Not Implimented Yet");
+    AMP_ERROR("numGhostElements is not implimented for the base class");
     return 0;
 }
 void Mesh::displaceMesh( std::vector<double> x )

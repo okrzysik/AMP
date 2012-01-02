@@ -1,7 +1,13 @@
 #ifndef included_AMP_VectorSelector_h
 #define included_AMP_VectorSelector_h
 
-#include "Vector.h"
+#include "vectors/Vector.h"
+
+#ifdef USE_AMP_MESH
+    #include "ampmesh/Mesh.h"
+    #include "ampmesh/MeshIterator.h"
+#endif
+
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -89,19 +95,6 @@ public:
   */
 class VS_Stride : public VectorSelector
 {
-protected:
-    /** \brief  Offset to start striding on
-      */
-    size_t  d_Offset; 
-
-    /** \brief  The stride to use
-      */
-    size_t  d_Stride;
-
-    /** \brief  The name of this subset
-      */
-    std::string  d_Name;
-
 public:
     /** \brief Constructor
       * \param[in]  n  The name of the new variable
@@ -111,7 +104,61 @@ public:
     VS_Stride ( const std::string &n , size_t a , size_t b );
 
     virtual  Vector::shared_ptr  subset ( Vector::shared_ptr p ) const;
+
+protected:
+    //  Offset to start striding on
+    size_t  d_Offset; 
+    //  The stride to use
+    size_t  d_Stride;
+    //  The name of this subset
+    std::string  d_Name;
 };
+
+
+#ifdef USE_AMP_MESH
+/** \brief  Create a subset based on a mesh 
+  * \details  This will select the portion of a vector that is on the given mesh
+  */
+class VS_Mesh : public VectorSelector
+{
+public:
+    /** \brief Constructor
+      * \param[in]  name    The name of the new variable
+      * \param[in]  mesh    The desired mesh
+      */
+    VS_Mesh ( const std::string &name, AMP::Mesh::Mesh::shared_ptr mesh );
+
+    virtual  Vector::shared_ptr  subset ( Vector::shared_ptr p ) const;
+
+protected:
+    //  The name of this subset
+    std::string  d_Name;
+    //  Mesh
+    AMP::Mesh::Mesh::shared_ptr  d_mesh;
+};
+
+
+/** \brief  Create a subset based on a mesh iterator
+  * \details  This will select the portion of a vector that is on the given mesh iterator
+  */
+class VS_MeshIterator : public VectorSelector
+{
+public:
+    /** \brief Constructor
+      * \param[in]  name        The name of the new variable
+      * \param[in]  iterator    The mesh iterator to use
+      */
+    VS_MeshIterator ( const std::string &name, const AMP::Mesh::MeshIterator &iterator );
+
+    virtual  Vector::shared_ptr  subset ( Vector::shared_ptr p ) const;
+
+protected:
+    //  The name of this subset
+    std::string  d_Name;
+    //  MeshIterator
+    const AMP::Mesh::MeshIterator  d_iterator;
+};
+#endif
 
 
 }

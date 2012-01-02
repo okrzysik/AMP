@@ -221,9 +221,8 @@ void MeshBasicTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 }
 
 
-
 // This tests loops over all boundary ids
-void VerifyBoundaryNodeIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) {
+void VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) {
     const std::vector<int> bids = mesh->getIDSets();
     for (size_t i=0; i<bids.size(); i++) {
         int bid = bids[i];
@@ -261,6 +260,27 @@ void VerifyBoundaryNodeIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_p
                 utils->passes ( "Found all boundary nodes" );
             else
                 utils->failure( "Found all boundary nodes" );
+        }
+    }
+}
+
+
+// This tests loops over the boundary
+void VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) {
+    for (int gcw=0; gcw<=0; gcw++) {
+        for (int type2=0; type2<=(int)mesh->getGeomType(); type2++) {
+            AMP::Mesh::GeomType type = (AMP::Mesh::GeomType) type2;
+            if ( type!=AMP::Mesh::Vertex && type!=mesh->getGeomType() ) {
+                // Not all types are currently supported
+                continue;
+            }
+            // Get the iterator over the current boundary id
+            AMP::Mesh::MeshIterator iterator = mesh->getSurfaceIterator( type, gcw );
+            size_t global_size = mesh->getComm().sumReduce(iterator.size());
+            if ( global_size>0 && global_size<mesh->numGlobalElements(type) )
+                utils->passes("Non-trivial surface iterator created");
+            else
+                utils->failure("Non-trivial surface iterator created");
         }
     }
 }

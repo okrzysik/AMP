@@ -20,7 +20,7 @@ namespace Discretization {
  *    over the entire Mesh.  Note: this class will be replaced by a more complete 
  *    Discretization interface.
  */
-class simpleDOFManager: public DOFManager, public boost::enable_shared_from_this<AMP::Discretization::simpleDOFManager>
+class simpleDOFManager: public DOFManager
 {
 public:
 

@@ -2,6 +2,7 @@
 #include "vectors/VectorSelector.h"
 #include "vectors/SubsetVector.h"
 #include "vectors/StridedVariable.h"
+#include "vectors/MeshVariable.h"
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -37,7 +38,7 @@ bool   VS_ByVariableName::isSelected ( Vector::const_shared_ptr v ) const
 
 
 /********************************************************
-* VS_ByVariableName                                     *
+* VS_Stride                                             *
 ********************************************************/
 VS_Stride::VS_Stride ( const std::string &n , size_t a , size_t b ) : 
     d_Offset ( a ),
@@ -53,6 +54,40 @@ Vector::shared_ptr  VS_Stride::subset ( Vector::shared_ptr p ) const
 }
 
 
+/********************************************************
+* VS_Mesh                                               *
+********************************************************/
+#ifdef USE_AMP_MESH
+VS_Mesh::VS_Mesh ( const std::string &name, AMP::Mesh::Mesh::shared_ptr mesh )
+{
+    d_Name = name;
+    d_mesh = mesh;
+}
+Vector::shared_ptr  VS_Mesh::subset ( Vector::shared_ptr p ) const
+{ 
+    Variable::shared_ptr  variable ( new MeshVariable( d_Name, d_mesh ) );
+    Vector::shared_ptr  vector = SubsetVector::view ( p, variable ); 
+    return vector;
+}
+#endif
+
+
+/********************************************************
+* VS_MeshIterator                                       *
+********************************************************/
+#ifdef USE_AMP_MESH
+VS_MeshIterator::VS_MeshIterator ( const std::string &name, const AMP::Mesh::MeshIterator &iterator ):
+    d_iterator( iterator )
+{
+    d_Name = name;
+}
+Vector::shared_ptr  VS_MeshIterator::subset ( Vector::shared_ptr p ) const
+{ 
+    Variable::shared_ptr  variable ( new MeshIteratorVariable( d_Name, d_iterator ) );
+    Vector::shared_ptr  vector = SubsetVector::view ( p, variable ); 
+    return vector;
+}
+#endif
 
 
 }

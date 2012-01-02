@@ -93,14 +93,23 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getIterator ( const GeomType type, const int gcw=0 );
+    virtual MeshIterator  getIterator ( const GeomType type, const int gcw=0 );
+
+
+    /**
+     * \brief    Return an MeshIterator over the given geometric objects on the surface
+     * \details  Return an MeshIterator over the given geometric objects on the surface
+     * \param type   Geometric type to iterate over
+     * \param gcw    Desired ghost cell width
+     */
+    virtual MeshIterator  getSurfaceIterator ( const GeomType type, const int gcw=0 );
 
 
     /**
      * \brief    Return the list of all ID sets in the mesh
      * \details  Return the list of all ID sets in the mesh
      */
-    virtual std::vector<int> getIDSets ( );
+    virtual std::vector<int>  getIDSets ( );
 
 
     /**
@@ -110,7 +119,7 @@ public:
      * \param id     id for the elements (example: nodeset id)
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getIDsetIterator ( const GeomType type, const int id, const int gcw=0 );
+    virtual MeshIterator  getIDsetIterator ( const GeomType type, const int id, const int gcw=0 );
 
 
     /**
@@ -161,6 +170,9 @@ private:
 
     // Data used to store the boundary elements
     std::map< std::pair<int,GeomType>, boost::shared_ptr<std::vector<MeshElement> > >  d_boundarySets;
+
+    // Data used to store the surface elements
+    std::vector< boost::shared_ptr<std::vector<MeshElement> > >  d_surfaceSets;
 
 };
 

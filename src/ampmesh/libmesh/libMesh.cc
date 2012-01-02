@@ -1,6 +1,7 @@
 #include "ampmesh/libmesh/initializeLibMesh.h"
 #include "ampmesh/libmesh/libMesh.h"
 #include "ampmesh/libmesh/libMeshIterator.h"
+#include "ampmesh/libmesh/libMeshElement.h"
 #include "ampmesh/MeshElementVectorIterator.h"
 #include "utils/MemoryDatabase.h"
 #include "utils/AMPManager.h"
@@ -212,6 +213,38 @@ void libMesh::initialize()
             j++;
         }
     }
+    // Construct the boundary elements
+    d_surfaceSets = std::vector< boost::shared_ptr<std::vector<MeshElement> > >((int)GeomDim+1);
+    elem_pos = d_libMesh->local_elements_begin();
+    elem_end = d_libMesh->local_elements_end();
+    std::set< ::Elem* > boundaryElements;
+    std::set< ::Node* > boundaryNodes;
+    while ( elem_pos != elem_end ) {
+        ::Elem* element = *elem_pos;
+        if ( element->on_boundary() ) {
+            boundaryElements.insert(element);
+            for (unsigned int i=0; i<element->n_sides(); i++) {
+                if ( element->neighbor(i) == NULL ) {
+                    ::AutoPtr< ::Elem > side = element->build_side(i);
+                    for (unsigned int j=0; j<side->n_nodes(); j++)
+                        boundaryNodes.insert(side->get_node(j));
+                }
+            }
+        }
+        elem_pos++;
+    }
+    d_surfaceSets[Vertex] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(boundaryElements.size()) );
+    std::set< ::Elem* >::iterator elem_iterator= boundaryElements.begin();
+    for (size_t i=0; i<boundaryElements.size(); i++) {
+        (*d_surfaceSets[Vertex])[i] = libMeshElement(PhysicalDim, Vertex, (void*) *elem_iterator, d_comm.getRank(), d_meshID, this );
+        elem_iterator++;
+    }
+    d_surfaceSets[GeomDim] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(boundaryNodes.size()) );
+    std::set< ::Node* >::iterator node_iterator = boundaryNodes.begin();
+    for (size_t i=0; i<boundaryNodes.size(); i++) {
+        (*d_surfaceSets[GeomDim])[i] = libMeshElement(PhysicalDim, GeomDim, (void*) *node_iterator, d_comm.getRank(), d_meshID, this );
+        node_iterator++;
+    }
     // Construct the boundary lists
     const std::set<short int> libmesh_bids = d_libMesh->boundary_info->get_boundary_ids();
     std::vector<short int> bids(libmesh_bids.begin(),libmesh_bids.end());
@@ -336,6 +369,21 @@ MeshIterator libMesh::getIterator( const GeomType type, const int gcw )
     }
     MeshIterator test = iterator;
     return test;
+}
+
+
+/********************************************************
+* Return an iterator over the given boundary ids        *
+* Note: we have not programmed this for ghosts yet      *
+********************************************************/
+MeshIterator libMesh::getSurfaceIterator ( const GeomType type, const int gcw )
+{
+    AMP_INSIST(gcw==0,"Iterator over ghost boundary elements is not supported yet");
+    AMP_ASSERT( type>=0 && type<=GeomDim );
+    boost::shared_ptr<std::vector<MeshElement> > list = d_surfaceSets[type];
+    if ( list.get() == NULL )
+        AMP_ERROR("Surface iterator over the given geometry type is not supported");
+    return MultiVectorIterator( list, 0 );
 }
 
 

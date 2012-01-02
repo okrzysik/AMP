@@ -125,11 +125,13 @@ std::vector<size_t> DOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) 
 /****************************************************************
 * Subset the DOF manager                                        *
 ****************************************************************/
-DOFManager::shared_ptr DOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh )
+boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // Get a list of the elements in the mesh
     AMP::Mesh::MeshIterator iterator = getIterator();
-    std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getBaseMeshIDs();
+    std::vector<AMP::Mesh::MeshID> meshIDs;
+    if ( mesh.get() != NULL )
+        meshIDs = mesh->getBaseMeshIDs();
     std::vector<AMP::Mesh::MeshElementID> element_list;
     element_list.reserve(iterator.size());
     for (size_t i=0; i<iterator.size(); i++) {
@@ -157,14 +159,15 @@ DOFManager::shared_ptr DOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mes
             AMP_ERROR("Internal error subsetting DOF manager (duplicate)");
     }
     size_t tot_size = d_comm.sumReduce(dofs.size());
-    // Create the subset DOF Manager    
-    if ( tot_size == 0 )
+    // Create the subset DOF Manager
+    /*if ( tot_size == 0 )
         return DOFManager::shared_ptr();
     if ( tot_size == d_global )
-        return shared_from_this();
-    return boost::shared_ptr<DOFManager>( new subsetDOFManager( shared_from_this(), dofs ) );
+        return shared_from_this();*/
+    boost::shared_ptr<DOFManager> parentDOF = shared_from_this();
+    return boost::shared_ptr<subsetDOFManager>( new subsetDOFManager( parentDOF, dofs ) );
 }
-DOFManager::shared_ptr DOFManager::subset( const AMP::Mesh::MeshIterator &iterator )
+boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::MeshIterator &iterator )
 {
     // Get the intesection of the current iterator with the given iterator
     AMP::Mesh::MeshIterator intersection = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Intersection, iterator, getIterator() );
@@ -189,11 +192,11 @@ DOFManager::shared_ptr DOFManager::subset( const AMP::Mesh::MeshIterator &iterat
     }
     size_t tot_size = d_comm.sumReduce(dofs.size());
     // Create the subset DOF Manager    
-    if ( tot_size == 0 )
+    /*if ( tot_size == 0 )
         return DOFManager::shared_ptr();
     if ( tot_size == d_global )
-        return shared_from_this();
-    return boost::shared_ptr<DOFManager>( new subsetDOFManager( shared_from_this(), dofs ) );
+        return shared_from_this();*/
+    return boost::shared_ptr<subsetDOFManager>( new subsetDOFManager( shared_from_this(), dofs ) );
 }
 
 

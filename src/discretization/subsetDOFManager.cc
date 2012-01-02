@@ -26,6 +26,9 @@ subsetDOFManager::subsetDOFManager( DOFManager::shared_ptr parentDOFManager, con
     d_parentBegin = d_parentDOFManager->beginDOF();
     d_parentEnd = d_parentDOFManager->endDOF();
     d_parentGlobal = d_parentDOFManager->numGlobalDOF();
+    // Return if the subset DOF is empty
+    if ( d_global==0 )
+        return;
     // Determine which remote DOFs we will need to keep
     size_t *send_data = NULL;
     if ( N_local > 0 )

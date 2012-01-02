@@ -8,6 +8,42 @@
 using namespace AMP::unit_test;
 
 
+// Function to test subsetting a DOF manager
+template <class GENERATOR>
+void testSubsetDOFManager( AMP::UnitTest *ut )
+{
+    // Get the mesh
+    GENERATOR mesh_generator;
+    mesh_generator.build_mesh();
+    AMP::Mesh::Mesh::shared_ptr mesh = mesh_generator.getMesh();
+
+    // Create a simple DOF manager
+    AMP::Discretization::DOFManager::shared_ptr DOF =  AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 0, 1, false );
+    
+    // Subset for each mesh
+    AMP::Discretization::DOFManager::shared_ptr subsetDOF = DOF->subset( mesh );
+    if ( DOF->numGlobalDOF() == subsetDOF->numGlobalDOF() )
+        ut->passes("Subset DOF on full mesh");
+    else
+        ut->failure("Subset DOF on full mesh");
+    std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getBaseMeshIDs();
+    if ( meshIDs.size() > 1 ) {
+        size_t tot_size = 0;
+        for (size_t i=0; i<meshIDs.size(); i++) {
+            AMP::Mesh::Mesh::shared_ptr subsetMesh = mesh->Subset(meshIDs[i]);
+            subsetDOF = DOF->subset(subsetMesh);
+            if ( subsetDOF.get() != NULL )
+                tot_size += subsetDOF->numGlobalDOF();
+        }
+        if ( tot_size == DOF->numGlobalDOF() )
+            ut->passes("Subset DOF for each mesh");
+        else
+            ut->failure("Subset DOF for each mesh");
+    }
+
+}
+
+
 // Function to test the creation/destruction of a simpleDOFManager
 template <class GENERATOR>
 void testSimpleDOFManager( AMP::UnitTest *ut )

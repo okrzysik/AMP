@@ -19,6 +19,7 @@ int main ( int argc , char ** argv )
     testSimpleDOFManager<ExodusReaderGenerator>( &ut );
     testSimpleDOFManager<MultiMeshGenerator>( &ut );
     testMultiDOFManager<MultiMeshGenerator>( &ut );
+    testSubsetDOFManager<MultiMeshGenerator>( &ut );
 
     // Print the results and return
     ut.report ();
