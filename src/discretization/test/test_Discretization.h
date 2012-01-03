@@ -89,6 +89,13 @@ void testSimpleDOFManager( AMP::UnitTest *ut )
     else
         ut->failure("DOFs agree");
 
+    // Check the iterator based constructor
+    DOF1 =  AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1, false );
+    DOF2 =  AMP::Discretization::simpleDOFManager::create( mesh, mesh->getIterator(AMP::Mesh::Vertex,1), mesh->getIterator(AMP::Mesh::Vertex,0), 1 );
+    if ( DOF1->numGlobalDOF() == DOF2->numGlobalDOF())
+        ut->passes("iterator-based constructor created");
+    else
+        ut->failure("iterator-based constructor created");
 }
 
 

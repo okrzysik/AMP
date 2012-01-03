@@ -36,6 +36,17 @@ public:
         AMP::Mesh::GeomType type, int gcw, int DOFsPerElement, bool split=false );
 
 
+    /**
+     * \brief Create a new DOF manager object
+     * \details  This is will create a new simpleDOFManager from a mesh iterator
+     * \param mesh      Mesh over which the iterators are defined
+     * \param it1       The iterator over the elements (including ghost cells)
+     * \param it2       The iterator over the elements (excluding ghost cells)
+     */
+    static DOFManager::shared_ptr  create( boost::shared_ptr<AMP::Mesh::Mesh> mesh, 
+        const AMP::Mesh::MeshIterator it1, const AMP::Mesh::MeshIterator it2, int DOFsPerElement );
+
+
     /** \brief Get the entry indices of DOFs given a mesh element
      * \details  This will return a vector of pointers into a Vector that are associated with which.
      * \param[in]  obj      The element to collect nodal objects for.  Note: the mesh element may be any type (include a vertex).
@@ -77,10 +88,14 @@ private:
     // Function to find the remote DOF given a set of mesh element IDs
     std::vector<size_t> getRemoteDOF(std::vector<AMP::Mesh::MeshElementID> remote_ids ) const;
 
+    // Function to initialize the data
+    void initialize();
+
     // Data members
     boost::shared_ptr<AMP::Mesh::Mesh>  d_mesh;
     AMP::Mesh::GeomType d_type;
-    int d_gcw;
+    AMP::Mesh::MeshIterator d_localIterator;
+    AMP::Mesh::MeshIterator d_ghostIterator;
     int DOFsPerElement;
     std::vector<AMP::Mesh::MeshElementID> d_local_id;
     std::vector<AMP::Mesh::MeshElementID> d_remote_id;
