@@ -5,6 +5,8 @@ rm -rf CMake*
       -D CMAKE_C_COMPILER:PATH=${CC}                            \
       -D CMAKE_CXX_COMPILER:PATH=${CXX}                         \
       -D CMAKE_Fortran_COMPILER:PATH=${F90}                     \
+         -D CFLAGS=${CFLAGS}                                    \
+         -D CXXFLAGS=${CXXFLAGS}                                \
       -D USE_BOOST=1                                            \
          -D BOOST_DIRECTORY:PATH=/packages/boost_1_47_0         \
       -D USE_TRILINOS=1                                         \
@@ -35,15 +37,21 @@ rm -rf CMake*
       -D USE_MPI=1                                              \
          -D USE_MPI_FOR_SERIAL_TESTS=0                          \
          -D MPIEXEC_NUMPROC_FLAG:STRING="-np"                   \
+         -D MPI_DIRECTORY=/usr                                  \
       -Wdev                                                     \
       -D USE_AMP_UTILS=1                                        \
       -D USE_AMP_MESH=1                                         \
+      -D USE_AMP_DISCRETIZATION=1                               \
       -D USE_AMP_VECTORS=1                                      \
       -D USE_AMP_MATRICIES=1                                    \
       -D USE_AMP_MATERIALS=1                                    \
-      -D USE_AMP_OPERATORS=1                                    \
-      -D USE_AMP_TIME_INTEGRATORS=1                             \
-      /projects/AMP2/AMP
+      -D USE_AMP_OPERATORS=0                                    \
+      -D USE_AMP_SOLVERS=0                                      \
+      -D USE_AMP_TIME_INTEGRATORS=0                             \
+      /projects/AMP_mesh/AMP
+
+
+
 
 
 
