@@ -79,7 +79,24 @@ MeshIterator* MeshIterator::clone() const
 
 
 /********************************************************
-* Functions that aren't implimented for the base class  *
+* Functions to return the begin or end iterator         *
+********************************************************/
+MeshIterator MeshIterator::begin() const
+{
+    if ( iterator==NULL )
+        return MeshIterator();
+    return iterator->begin();
+}
+MeshIterator MeshIterator::end() const
+{
+    if ( iterator==NULL )
+        return MeshIterator();
+    return iterator->end();
+}
+
+
+/********************************************************
+* Functions for incrementing/decrementing               *
 ********************************************************/
 MeshIterator& MeshIterator::operator++()
 {
@@ -97,14 +114,28 @@ MeshIterator MeshIterator::operator--(int i)
 {
     return iterator->operator--(i);
 }
+
+
+/********************************************************
+* Functions for incrementing/decrementing               *
+********************************************************/
 bool MeshIterator::operator==(const MeshIterator& rhs)
 {
+    if ( iterator==NULL )
+        return rhs.iterator==NULL;
     return iterator->operator==(rhs);
 }
 bool MeshIterator::operator!=(const MeshIterator& rhs)
 {
+    if ( iterator==NULL )
+        return rhs.iterator!=NULL;
     return iterator->operator!=(rhs);
 }
+
+
+/********************************************************
+* Functions for dereferencing the iterator              *
+********************************************************/
 MeshElement& MeshIterator::operator*()
 {
     return iterator->operator*();
@@ -113,16 +144,15 @@ MeshElement* MeshIterator::operator->()
 {
     return iterator->operator->();
 }
-MeshIterator MeshIterator::begin() const
-{
-    return iterator->begin();
-}
-MeshIterator MeshIterator::end() const
-{
-    return iterator->end();
-}
+
+
+/********************************************************
+* Function to get the size of the iterator              *
+********************************************************/
 size_t MeshIterator::size() const
 {
+    if ( iterator==NULL )
+        return 0;
     return iterator->size();
 }
 

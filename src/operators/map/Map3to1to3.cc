@@ -203,12 +203,16 @@ void  Map3to1to3::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr & ,
     }
 
     // Smear the data
-    smear( map1, 1.e-8 );
-    smear( map2, 1.e-8 );
+    if ( d_mesh1.get() != NULL )
+        smear( map1, 1.e-8 );
+    if ( d_mesh2.get() != NULL )
+        smear( map2, 1.e-8 );
 
     // Build the return vector
-    buildReturn( d_ResultVector, d_iterator1, map1 );
-    buildReturn( d_ResultVector, d_iterator2, map2 );
+    if ( d_mesh1.get() != NULL )
+        buildReturn( d_ResultVector, d_iterator1, map1 );
+    if ( d_mesh2.get() != NULL )
+        buildReturn( d_ResultVector, d_iterator2, map2 );
 
     // Apply make consistent
     d_ResultVector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );

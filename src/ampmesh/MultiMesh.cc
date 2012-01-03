@@ -665,7 +665,7 @@ std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups2(int N_procs, 
             tmp.N_procs = 1;
             tmp.ids = std::vector<int>(1,iterator->second);
             groups.push_back(tmp);
-            ids.erase(iterator);
+            iterator = ids.erase(iterator);
         } else {
             ++iterator;
         }
@@ -679,9 +679,9 @@ std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups2(int N_procs, 
             tmp.ids = std::vector<int>(2);
             tmp.ids[0] = ids[0].second;
             tmp.ids[1] = ids[ids.size()-1].second;
-            ids.erase(ids.begin());
-            ids.erase(ids.end());
-            groups.push_back(tmp);
+            ids.erase(ids.begin());     // erase the first element
+            ids.resize(ids.size()-1);   // erase the last element
+            groups.push_back(tmp);      // add the new element
         } else {
             // Combine the first set of elements that sum to the desired value
             int n = 1;

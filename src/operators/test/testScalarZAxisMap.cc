@@ -17,6 +17,9 @@
 
 void  setBoundary ( int id , AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::Mesh::Mesh::shared_ptr mesh )
 {
+    if ( mesh.get() == NULL )
+        return;
+
     AMP::Discretization::DOFManager::shared_ptr  d1 = v1->getDOFManager();
 
     AMP::Mesh::MeshIterator  curBnd = mesh->getIDsetIterator( AMP::Mesh::Vertex, id, 0 );
