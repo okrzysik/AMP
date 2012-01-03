@@ -9,7 +9,7 @@ AsyncMapOperator::AsyncMapOperator ( const boost::shared_ptr <OperatorParameters
     : AsynchronousOperator ( p )
 {
     boost::shared_ptr<AsyncMapOperatorParameters> params = boost::dynamic_pointer_cast<AsyncMapOperatorParameters>(p);
-    d_comm = params->d_MapComm;
+    d_MapComm = params->d_MapComm;
     d_mesh1 = params->d_Mesh1;
     d_mesh2 = params->d_Mesh2;
 }

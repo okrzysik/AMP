@@ -109,11 +109,11 @@ MultiIterator::~MultiIterator()
 /********************************************************
 * Return an iterator to the beginning or end            *
 ********************************************************/
-MeshIterator MultiIterator::begin()
+MeshIterator MultiIterator::begin() const
 {
     return MultiIterator( d_iterators, 0 );
 }
-MeshIterator MultiIterator::end()
+MeshIterator MultiIterator::end() const
 {
     return MultiIterator( d_iterators, d_globalSize );
 }

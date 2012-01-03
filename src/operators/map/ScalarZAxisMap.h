@@ -43,14 +43,14 @@ public:
     ScalarZAxisMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> & );
 
     //! Destructor
-      virtual ~ScalarZAxisMap ();
+    virtual ~ScalarZAxisMap ();
 
 protected:
     // Implimented buildMap routine
-    virtual void buildMap ( const AMP::LinearAlgebra::Vector::shared_ptr );
+    virtual std::multimap<double,double>  buildMap( const AMP::LinearAlgebra::Vector::shared_ptr, const AMP::Mesh::MeshIterator& );
 
     // Implimented buildReturn routine
-    virtual void buildReturn ( AMP::LinearAlgebra::Vector::shared_ptr );
+    virtual void buildReturn( AMP::LinearAlgebra::Vector::shared_ptr, const AMP::Mesh::MeshIterator&, const std::multimap<double,double>& );
 };
 
 

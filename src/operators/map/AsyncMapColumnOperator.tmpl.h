@@ -38,8 +38,6 @@ boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build (
 
     typedef boost::shared_ptr < AsyncMapOperator >             AsyncOp_ptr;
     typedef boost::shared_ptr < AsyncMapOperatorParameters >   AsyncOpParams_ptr;
-    // Map3to1to3::spMap::type       sharedMap ( new std::multimap<double,double> );
-    //sharedMap.isComputed = false;
 
     std::vector < AsyncOp_ptr >           asyncToDo;
     std::vector < AsyncOpParams_ptr >     asyncParams;
@@ -94,9 +92,6 @@ boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build (
 
         // Create the map
         AsyncOp_ptr  mapOp ( new MAP_TYPE ( mapParams ) );
-        //boost::shared_ptr<Map3to1to3>  curM313;
-        //if ( curM313 = boost::dynamic_pointer_cast<Map3to1to3> ( mapOp ) )
-        //    curM313->getMapData() = sharedMap;
         newMapColumn->append ( mapOp );
 
     }

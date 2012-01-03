@@ -113,11 +113,11 @@ MeshElement* MeshIterator::operator->()
 {
     return iterator->operator->();
 }
-MeshIterator MeshIterator::begin()
+MeshIterator MeshIterator::begin() const
 {
     return iterator->begin();
 }
-MeshIterator MeshIterator::end()
+MeshIterator MeshIterator::end() const
 {
     return iterator->end();
 }

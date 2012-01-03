@@ -1,38 +1,43 @@
-NumberOfMeshes = 2
-NumberOfMeshToMeshMaps = 1
-DomainDecomposition = 1
-
-Mesh_1{
-  Filename = "pellet_1x.e"
-  MeshName = "pellet_1"
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 1326
-  DatabaseName = "db1"
+// Database for all the meshes
+Mesh{
+    // This is the main multimesh that will contain all meshes
+    MeshName = "MainMesh"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
+    Mesh_1 {
+        MeshName = "pellet_1"
+        MeshType = "libMesh"
+        FileName = "pellet_1x.e"
+        dim = 3
+        x_offset = 0.0
+        y_offset = 0.0
+        z_offset = 0.0
+        NumberOfElements = 3315
+    }
+    Mesh_2 {
+        MeshName = "clad"
+        MeshType = "libMesh"
+        FileName = "clad_1x_1pellet.e"
+        dim = 3
+        x_offset = 0.0
+        y_offset = 0.0
+        z_offset = 0.0
+        NumberOfElements = 1620
+    }
 }
 
-Mesh_2{
-  Filename = "clad_1x_1pellet.e"
-  MeshName = "clad"
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 1326
-  DatabaseName = "db1"
+
+MeshToMeshMaps{
+    MapType = "ScalarZAxis"
+    N_maps = 1
+    Mesh1 = "pellet_1"
+    Surface1 = 4
+    Mesh2 = "clad"
+    Surface2 = 8
+    DOFsPerObject = 1
+    VariableName = "Temperature"
+    BoundaryId = 0
 }
 
-MeshToMeshMap_1{
-  MapType = "ScalarZAxis"
-  Mesh1 = "pellet_1"
-  Surface1 = 4
-  Mesh2 = "clad"
-  Surface2 = 8
-  DOFsPerObject = 1
-  VariableName = "Temperature"
-  BoundaryId = 0
-}
 
-db1 {
-  EmptyDb = 1.0
-}

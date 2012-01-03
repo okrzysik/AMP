@@ -1,8 +1,8 @@
-
 #ifndef included_AMP_ContactResidualCorrection
 #define included_AMP_ContactResidualCorrection
 
 #include "operators/Operator.h"
+#include "vectors/MultiVariable.h"
 
 namespace AMP {
 namespace Operator {

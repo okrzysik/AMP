@@ -19,7 +19,6 @@ static T* getPtr( std::vector<T> &x ) {
 }
 
 
-
 /********************************************************
 * Constructor                                           *
 ********************************************************/
@@ -29,11 +28,9 @@ NodeToNodeMap::NodeToNodeMap ( const boost::shared_ptr<AMP::Operator::OperatorPa
     // Cast the params appropriately
     d_OutputVector = AMP::LinearAlgebra::Vector::shared_ptr ();
     AMP_ASSERT ( params );
-    NodeToNodeMapParameters &Params =
-                        *(boost::dynamic_pointer_cast<NodeToNodeMapParameters> ( params ) );
+    NodeToNodeMapParameters &Params = *(boost::dynamic_pointer_cast<NodeToNodeMapParameters> ( params ) );
 
     // Set class members
-    d_MapComm = Params.d_MapComm;
     dim = -1;
     if ( d_mesh1.get() != NULL )
         dim = d_mesh1->getDim();

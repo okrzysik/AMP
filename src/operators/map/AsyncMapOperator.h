@@ -39,7 +39,7 @@ public:
 protected:
 
     // Communicator for the Map
-    AMP_MPI d_comm;
+    AMP_MPI d_MapComm;
 
     // Variables to store the individual meshes and the DOFManager
     AMP::Mesh::Mesh::shared_ptr  d_mesh1;

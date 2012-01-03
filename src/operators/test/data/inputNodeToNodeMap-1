@@ -27,7 +27,7 @@ NodeToNodeMaps{
     N_maps = 2
     Mesh1 = "pellet_1", "pellet_2"
     Surface1 = 1
-    Mesh2 = "pellet_2, ""pellet_3"
+    Mesh2 = "pellet_2", "pellet_3"
     Surface2 = 2
     DOFsPerObject = 3
     VariableName = "displacement"

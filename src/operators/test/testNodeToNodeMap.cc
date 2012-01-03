@@ -12,7 +12,7 @@
 #include "discretization/NodalVariable.h"
 #include "operators/map/NodeToNodeMap.h"
 #include "operators/map/AsyncMapColumnOperator.h"
-
+#include "vectors/VectorBuilder.h"
 
 
 void  setBoundary ( int id , AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::Mesh::Mesh::shared_ptr mesh )
@@ -57,7 +57,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     std::string varName = map_db->getString("VariableName");
     AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::Discretization::NodalVariable(DOFsPerNode,varName) );
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
-    boost::shared_ptr<AMP::Discretization::simpleDOFManager> DOFs( new AMP::Discretization::simpleDOFManager(mesh,AMP::Mesh::Vertex,1,DOFsPerNode) );
+    AMP::Discretization::DOFManager::shared_ptr  DOFs = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,DOFsPerNode);
 
     // Test the creation/destruction of NodeToNodeMap (no apply call)
     try { 
@@ -78,8 +78,8 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr  dummy;
-    AMP::LinearAlgebra::Vector::shared_ptr v1 = DOFs->createVector( nodalVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr v2 = DOFs->createVector( nodalVariable );
+    AMP::LinearAlgebra::Vector::shared_ptr v1 = AMP::LinearAlgebra::createVector(  DOFs, nodalVariable );
+    AMP::LinearAlgebra::Vector::shared_ptr v2 = AMP::LinearAlgebra::createVector(  DOFs, nodalVariable );
     n2nmaps->setVector ( v2 );
 
     // Initialize the vectors

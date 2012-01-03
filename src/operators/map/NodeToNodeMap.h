@@ -77,7 +77,6 @@ private:
     // Some basic variables
     int dim;
     int DofsPerObj;
-    AMP_MPI  d_MapComm;
     AMP::Mesh::MeshIterator  d_iterator1;
     AMP::Mesh::MeshIterator  d_iterator2;
     AMP::Discretization::DOFManager::shared_ptr   d_DOFManager;

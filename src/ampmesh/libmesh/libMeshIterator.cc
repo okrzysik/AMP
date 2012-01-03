@@ -164,11 +164,11 @@ libMeshIterator::~libMeshIterator()
 /********************************************************
 * Return an iterator to the beginning or end            *
 ********************************************************/
-MeshIterator libMeshIterator::begin()
+MeshIterator libMeshIterator::begin() const
 {
     return libMeshIterator( d_type, d_mesh, d_gcw, d_begin, d_end, d_begin, d_size );
 }
-MeshIterator libMeshIterator::end()
+MeshIterator libMeshIterator::end() const
 {
     return libMeshIterator( d_type, d_mesh, d_gcw, d_begin, d_end, d_end, d_size );
 }

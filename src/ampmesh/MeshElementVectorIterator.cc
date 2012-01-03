@@ -65,11 +65,11 @@ MultiVectorIterator::~MultiVectorIterator()
 /********************************************************
 * Return an iterator to the beginning or end            *
 ********************************************************/
-MeshIterator MultiVectorIterator::begin()
+MeshIterator MultiVectorIterator::begin() const
 {
     return MultiVectorIterator( d_elements, 0 );
 }
-MeshIterator MultiVectorIterator::end()
+MeshIterator MultiVectorIterator::end() const
 {
     return MultiVectorIterator( d_elements, d_elements->size() );
 }

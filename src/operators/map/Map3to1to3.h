@@ -32,40 +32,6 @@ class Map3to1to3 : public AsyncMapOperator
 {
 public:
 
-    /**
-     * \class  spMap
-     * \brief  A class used to ...
-     * \details  ...
-     */
-    class spMap
-    {
-    public:
-        class type : public boost::shared_ptr<std::multimap<double,double> > 
-        {
-        public:
-            bool isComputed;
-            type ( ) : boost::shared_ptr<std::multimap<double,double> > ( ) {}
-            type ( std::multimap<double,double> *a ) : boost::shared_ptr<std::multimap<double,double> > ( a ) {}
-        };
-
-        typedef std::multimap<double,double>::iterator iterator;
-
-    protected:
-        type   d_Map;
-
-    public:
-        void      insert ( std::pair<double,double> a ) { d_Map->insert ( a ); }
-        iterator  find ( double a ) { return d_Map->find ( a ); }
-        iterator  begin ()          { return d_Map->begin (); }
-        iterator  end ()            { return d_Map->end (); }
-        size_t    size ()           { return d_Map->size (); }
-        iterator  upper_bound ( double a ) { return d_Map->upper_bound ( a ); }
-        iterator  lower_bound ( double a ) { return d_Map->lower_bound ( a ); }
-        void      clear () { d_Map->clear(); }
-        void      erase ( iterator a , iterator b ) { d_Map->erase ( a , b ); }
-        type     &data ()           { return d_Map; }
-    };
-
     /** \brief   Standard constructor
      * \param[in] params  Input parameters
      */
@@ -79,12 +45,6 @@ public:
      * \param result    The results vector
      */
     virtual void  setVector ( AMP::LinearAlgebra::Vector::shared_ptr &result );
-
-    /** \brief   Continue the construction of the object requiring asynchronous calls. 
-     * \details  Continue the construction of the object requiring asynchronous calls. 
-     * \param[in] params  Input parameters
-     */
-    virtual bool continueAsynchronousConstruction ( const boost::shared_ptr < OperatorParameters > &params );
 
     /** \brief   Start a communicative apply operation. 
      * \details  Start a communicative apply operation. 
@@ -108,14 +68,41 @@ public:
      */
     virtual AMP::LinearAlgebra::Variable::shared_ptr  getOutputVariable() { return d_MapVariable; }
 
-    /** \brief   
-     */
-    spMap::type  &getMapData () { return d_1DMultiMap.data(); }
-
-
 protected:
-    //!  An iterator over the nodes on the boundary
-    AMP::Mesh::MeshIterator       d_BoundaryNodeIterator;
+    /** \brief  This method will average nearby points in the interpolant
+     * \param[in/out] map    The map to smear
+     * \param[in] tolerance  The distance across which values are assumed to be the same
+     */
+    virtual void smear( std::multimap<double,double> &map, double tolerance=1.e-8 );
+
+    /** \brief  Add an ordered pair to the set of interpolant values
+     * \param[in/out] map   The map to add the point to
+     * \param [in] z        The ordinate
+     * \param [in] val      The abscissa
+     */
+    void addTo1DMap( std::multimap<double,double> &map, double z , double val );
+
+    /** \brief   A virtual method to construct the map from a vector
+     * \details  This function constructs the map from a given vector.
+     *    The inherited class must impliment this function
+     * \param [in] vec  The vector to be used to construct the map
+     * \param [in] it   The iterator over the boundary used for the map
+     */
+    virtual std::multimap<double,double>  buildMap( const AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::MeshIterator &it );
+
+    /** \brief  A virtual method to construct a vector from a map
+     * \details  This function constructs a vector from the map.
+     *    The inherited class must impliment this function
+     * \param [out] vec The vector to be used to construct the map
+     * \param [in] it   The iterator over the boundary used for the map
+     * \param [in] map  The map containing all of the points
+     */
+    virtual void buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::MeshIterator &it, const std::multimap<double,double> &map );
+
+private:
+    //!  Iterators over the nodes on the boundary
+    AMP::Mesh::MeshIterator  d_iterator1;
+    AMP::Mesh::MeshIterator  d_iterator2;
 
     //!  The variable of the appropriate vector to store the answer and to subset on the input
     AMP::LinearAlgebra::Variable::shared_ptr d_MapVariable;
@@ -123,51 +110,19 @@ protected:
     //!  The place to put the mapped values
     AMP::LinearAlgebra::Vector::shared_ptr d_ResultVector;
 
-    //!  The storage for the interpolant
-    spMap d_1DMultiMap;
-
-    //!  A list of processors to exchange data with
-    std::vector<char> d_SendToProc;
+    //!  A list of processors that own each mesh
+    std::vector<bool> d_own_mesh1;
+    std::vector<bool> d_own_mesh2;
 
     //!  The buffer used to perform the asynchronous communication
-    std::vector<double> d_SendBuf;
-
-    //!  The communicator this map resides on
-    AMP_MPI d_MapComm;
+    std::vector<double> d_SendBuf1;
+    std::vector<double> d_SendBuf2;
 
     //!  True if the map hasn't been "applied" yet
     bool d_FirstApply;
 
-    //!  The tag used to send data
-    int d_SendTag;
-
-    //!  The tag used to recv data
-    int d_RecvTag;
-
-    /** \brief  This method will average nearby points in the interpolant
-     * \param[in] tolerance  The distance across which values are assumed to be the same
-     */
-    virtual void smear ( double tolerance = 1.e-8 );
-
-    /** \brief  Add an ordered pair to the set of interpolant values
-     * \param [in] z   The ordinate
-     * \param [in] val  The abscissa
-     */
-    void addTo1DMap ( double z , double val );
-
-    /** \brief   A virtual method to construct the map from a vector
-     * \details  This function constructs the map from a given vector.
-     *    The inherited class must impliment this function
-     * \param [in] p  The vector to be used to construct the map
-     */
-    virtual void buildMap ( const AMP::LinearAlgebra::Vector::shared_ptr p );
-
-    /** \brief  A virtual method to construct a vector from a map
-     * \details  This function constructs a vector from the map.
-     *    The inherited class must impliment this function
-     * \param [out] p  The vector to be constructed from the map
-     */
-    virtual void buildReturn ( AMP::LinearAlgebra::Vector::shared_ptr p );
+    //!  The tag used for communication
+    int d_commTag;
 
 };
 

@@ -57,10 +57,10 @@ public:
     virtual MeshElement *operator->(void);
 
     //! Return an iterator to the begining
-    virtual MeshIterator begin();
+    virtual MeshIterator begin() const;
 
     //! Return an iterator to the begining
-    virtual MeshIterator end();
+    virtual MeshIterator end() const;
 
     //! Return the number of elements in the iterator
     virtual size_t size() const;
