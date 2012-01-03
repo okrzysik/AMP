@@ -21,7 +21,7 @@ void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
     // Test the iterators
     MeshIteratorTest( ut, mesh );
     VerifyBoundaryIDNodeIterator( ut, mesh );
-    //VerifyBoundaryIterator( ut, mesh );
+    VerifyBoundaryIterator( ut, mesh );
     // Test displacement
     DisplaceMesh( ut, mesh );
 

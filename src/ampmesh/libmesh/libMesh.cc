@@ -233,16 +233,16 @@ void libMesh::initialize()
         }
         elem_pos++;
     }
-    d_surfaceSets[Vertex] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(boundaryElements.size()) );
+    d_surfaceSets[GeomDim] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(boundaryElements.size()) );
     std::set< ::Elem* >::iterator elem_iterator= boundaryElements.begin();
     for (size_t i=0; i<boundaryElements.size(); i++) {
-        (*d_surfaceSets[Vertex])[i] = libMeshElement(PhysicalDim, Vertex, (void*) *elem_iterator, d_comm.getRank(), d_meshID, this );
+        (*d_surfaceSets[GeomDim])[i] = libMeshElement(PhysicalDim, GeomDim, (void*) *elem_iterator, d_comm.getRank(), d_meshID, this );
         elem_iterator++;
     }
-    d_surfaceSets[GeomDim] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(boundaryNodes.size()) );
+    d_surfaceSets[Vertex] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(boundaryNodes.size()) );
     std::set< ::Node* >::iterator node_iterator = boundaryNodes.begin();
     for (size_t i=0; i<boundaryNodes.size(); i++) {
-        (*d_surfaceSets[GeomDim])[i] = libMeshElement(PhysicalDim, GeomDim, (void*) *node_iterator, d_comm.getRank(), d_meshID, this );
+        (*d_surfaceSets[Vertex])[i] = libMeshElement(PhysicalDim, Vertex, (void*) *node_iterator, d_comm.getRank(), d_meshID, this );
         node_iterator++;
     }
     // Construct the boundary lists

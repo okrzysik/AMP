@@ -105,6 +105,15 @@ public:
 
 
     /**
+     * \brief    Return an MeshIterator over the given geometric objects on the surface
+     * \details  Return an MeshIterator over the given geometric objects on the surface
+     * \param type   Geometric type to iterate over
+     * \param gcw    Desired ghost cell width
+     */
+    virtual MeshIterator  getSurfaceIterator ( const GeomType type, const int gcw=0 );
+
+
+    /**
      * \brief    Return the list of all ID sets in the mesh
      * \details  Return the list of all ID sets in the mesh
      *   Note: for a multimesh this will require global communication.

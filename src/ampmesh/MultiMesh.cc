@@ -280,6 +280,15 @@ MeshIterator MultiMesh::getIterator( const GeomType type, const int gcw )
     }
     return MultiIterator(iterators);
 }
+MeshIterator MultiMesh::getSurfaceIterator ( const GeomType type, const int gcw )
+{
+    std::vector<boost::shared_ptr<MeshIterator> > iterators(d_meshes.size());
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        boost::shared_ptr<MeshIterator> iterator_ptr( new MeshIterator(d_meshes[i]->getSurfaceIterator(type,gcw)) );
+        iterators[i] = iterator_ptr;
+    }
+    return MultiIterator(iterators);
+}
 std::vector<int> MultiMesh::getIDSets( )
 {
     // Get all local id sets
