@@ -41,6 +41,20 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
             ut->failure("Subset DOF for each mesh");
     }
 
+    // Subset for iterators
+    AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::Vertex, 0 );
+    subsetDOF = DOF->subset( iterator );
+    if ( DOF->numGlobalDOF() == subsetDOF->numGlobalDOF() )
+        ut->passes("Subset DOF on full mesh iterator");
+    else
+        ut->failure("Subset DOF on full mesh iterator");
+    iterator = mesh->getSurfaceIterator( AMP::Mesh::Vertex, 0 );
+    subsetDOF = DOF->subset( iterator );
+    if ( subsetDOF->numGlobalDOF()<DOF->numGlobalDOF() && subsetDOF->numGlobalDOF()>0 )
+        ut->passes("Subset DOF on surface mesh iterator");
+    else
+        ut->failure("Subset DOF on surface mesh iterator");
+
 }
 
 

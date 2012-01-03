@@ -5,6 +5,7 @@
 #ifdef USE_LIBMESH
 #include "ampmesh/libmesh/libMesh.h"
 #endif
+#include "ampmesh/MeshElementVectorIterator.h"
 
 namespace AMP {
 namespace Mesh {
@@ -205,11 +206,6 @@ MeshIterator Mesh::getIDsetIterator ( const GeomType, const int, const int )
     AMP_ERROR("getIDsetIterator is not implimented for the base class");
     return MeshIterator();
 }
-MeshIterator Mesh::getIterator( SetOP, const MeshIterator &, const MeshIterator &)
-{
-    AMP_ERROR("getIterator is not implimented for the base class");
-    return MeshIterator();
-}
 size_t Mesh::numLocalElements( const GeomType type ) const
 {
     AMP_ERROR("numLocalElements is not implimented for the base class");
@@ -228,6 +224,138 @@ size_t Mesh::numGhostElements( const GeomType type, int gcw ) const
 void Mesh::displaceMesh( std::vector<double> x )
 {
     AMP_ERROR("displace mesh is not implimented yet");
+}
+
+
+/********************************************************
+* MeshIterator set operations                           *
+********************************************************/
+MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshIterator &B )
+{
+    if ( OP == Union ) {
+        // Perform a union: A U B
+        // Get the union using the mesh IDs
+        std::set<MeshElementID> union_set;
+        MeshIterator curA = A.begin();
+        for (size_t i=0; i<A.size(); i++) {
+            union_set.insert(curA->globalID());
+            ++curA;
+        }
+        MeshIterator curB = B.begin();
+        for (size_t i=0; i<B.size(); i++) {
+            union_set.insert(curB->globalID());
+            ++curB;
+        }
+        std::vector<MeshElementID> union_ids(union_set.begin(),union_set.end());
+        // Create the iterator
+        if ( union_ids.size()==A.size() ) {
+            return MeshIterator(A);
+        } else if ( union_ids.size()==B.size() ) {
+            return MeshIterator(B);
+        } else {
+            boost::shared_ptr<std::vector<MeshElement> > elements( new std::vector<MeshElement>(union_ids.size()) );
+            curA = A.begin();
+            for (size_t i=0; i<A.size(); i++) {
+                MeshElementID idA = curA->globalID();
+                size_t index = Utilities::findfirst(union_ids,idA);
+                if ( index == union_ids.size() ) { index--; }
+                if ( union_ids[index] == idA )
+                    (*elements)[index] = *curA;
+                ++curA;
+            }
+            curB = B.begin();
+            for (size_t i=0; i<B.size(); i++) {
+                MeshElementID idB = curB->globalID();
+                size_t index = Utilities::findfirst(union_ids,idB);
+                if ( index == union_ids.size() ) { index--; }
+                if ( union_ids[index] == idB )
+                    (*elements)[index] = *curB;
+                ++curB;
+            }
+            return MultiVectorIterator( elements, 0 );
+        }
+    } else if ( OP == Intersection ) {
+        // Perform a intersection: A n B
+        // Get the intersection using the mesh IDs
+        std::vector<MeshElementID> idA(A.size());
+        MeshIterator curA = A.begin();
+        for (size_t i=0; i<A.size(); i++) {
+            idA[i] = curA->globalID();
+            ++curA;
+        }
+        Utilities::quicksort(idA);
+        std::vector<MeshElementID> intersection;
+        intersection.reserve(B.size());
+        MeshIterator curB = B.begin();
+        for (size_t i=0; i<B.size(); i++) {
+            MeshElementID idB = curB->globalID();
+            size_t index = Utilities::findfirst(idA,idB);
+            if ( index == idA.size() ) { index--; }
+            if ( idA[index] == idB )
+                intersection.push_back(idB);
+            ++curB;
+        }
+        if ( intersection.size() == 0 )
+            return MeshIterator();
+        // Sort the intersection and check for duplicates
+        Utilities::quicksort(intersection);
+        for (size_t i=1; i<intersection.size(); i++)
+            AMP_ASSERT(intersection[i]!=intersection[i-1]);
+        // Create the iterator
+        if ( intersection.size()==A.size() ) {
+            return MeshIterator(A);
+        } else if ( intersection.size()==B.size() ) {
+            return MeshIterator(B);
+        } else {
+            boost::shared_ptr<std::vector<MeshElement> > elements( new std::vector<MeshElement>(intersection.size()) );
+            curB = B.begin();
+            for (size_t i=0; i<B.size(); i++) {
+                MeshElementID idB = curB->globalID();
+                size_t index = Utilities::findfirst(intersection,idB);
+                if ( index == intersection.size() ) { index--; }
+                if ( intersection[index] == idB )
+                    (*elements)[index] = *curB;
+                ++curB;
+            }
+            return MultiVectorIterator( elements, 0 );
+        }
+    } else if ( OP == Complement ) {
+        // Perform a Complement:  A - B
+        // Get the compliment using the mesh IDs
+        std::set<MeshElementID> compliment_set;
+        MeshIterator curA = A.begin();
+        for (size_t i=0; i<A.size(); i++) {
+            compliment_set.insert(curA->globalID());
+            ++curA;
+        }
+        MeshIterator curB = B.begin();
+        for (size_t i=0; i<B.size(); i++) {
+            compliment_set.erase(curB->globalID());
+            ++curB;
+        }
+        std::vector<MeshElementID> compliment(compliment_set.begin(),compliment_set.end());
+        if ( compliment.size() == 0 )
+            return MeshIterator();
+        // Create the iterator
+        if ( compliment.size()==A.size() ) {
+            return MeshIterator(A);
+        } else {
+            boost::shared_ptr<std::vector<MeshElement> > elements( new std::vector<MeshElement>(compliment.size()) );
+            curA = A.begin();
+            for (size_t i=0; i<A.size(); i++) {
+                MeshElementID idA = curA->globalID();
+                size_t index = Utilities::findfirst(compliment,idA);
+                if ( index == compliment.size() ) { index--; }
+                if ( compliment[index] == idA )
+                    (*elements)[index] = *curA;
+                ++curA;
+            }
+            return MultiVectorIterator( elements, 0 );
+        }
+    } else {
+        AMP_ERROR("Unknown set operation");
+    }
+    return MeshIterator();
 }
 
 
