@@ -33,7 +33,7 @@ public:
      * \param split     Do we want to split the DOFManager by the meshes returning a multiDOFManager
      */
     static DOFManager::shared_ptr  create( boost::shared_ptr<AMP::Mesh::Mesh> mesh, 
-        AMP::Mesh::GeomType type, int gcw, int DOFsPerElement, bool split=false );
+        AMP::Mesh::GeomType type, int gcw, int DOFsPerElement, bool split=true );
 
 
     /**

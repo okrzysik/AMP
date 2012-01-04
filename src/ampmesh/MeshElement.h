@@ -60,7 +60,7 @@ public:
     //! Return the volume of the current element (does not apply to verticies)
     virtual double volume() const;
 
-    //! Return the coordinates of all verticies composing the element
+    //! Return the coordinates of the vertex (only applies to verticies)
     virtual std::vector<double> coord() const;
 
     /**
