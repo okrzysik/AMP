@@ -143,11 +143,29 @@ void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <
 }
 void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <size_t> &dofs ) const
 {
-    dofs.resize(DOFsPerElement);
+    dofs.resize(0);
+    // Search for the dof locally
     size_t index = AMP::Utilities::findfirst(d_local_id,id);
-    AMP_INSIST(id==d_local_id[index],"Internal Error: id not found");
-    for (int j=0; j<DOFsPerElement; j++)
-        dofs[j] = index*DOFsPerElement + d_begin + j;
+    if ( index == d_local_id.size() ) { index--; }
+    if ( id==d_local_id[index] ) {
+        // The id was found
+        dofs.resize(DOFsPerElement);
+        for (int j=0; j<DOFsPerElement; j++)
+            dofs[j] = index*DOFsPerElement + d_begin + j;
+        return;
+    } 
+    // Search for the dof in the remote list
+    if ( !d_remote_id.empty() && dofs.empty() ) {
+        index = AMP::Utilities::findfirst(d_remote_id,id);
+        if ( index == d_remote_id.size() ) { index--; }
+        if ( id==d_remote_id[index] ) {
+            // The id was found
+            dofs.resize(DOFsPerElement);
+            for (int j=0; j<DOFsPerElement; j++)
+                dofs[j] = d_remote_dof[index]*DOFsPerElement + j;
+            return;
+        } 
+    }
 }
 
 

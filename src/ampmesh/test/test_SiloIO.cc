@@ -40,11 +40,14 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
 
     // Create a simple DOFManager
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
-    AMP::Discretization::DOFManager::shared_ptr DOFs = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,3,true);
+    AMP::Discretization::DOFManager::shared_ptr DOF_scalar = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,1,true);
+    AMP::Discretization::DOFManager::shared_ptr DOF_vector = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,3,true);
 
     // Create the vectors
+    AMP::LinearAlgebra::Variable::shared_ptr rank_var( new AMP::Discretization::NodalVariable(1,"rank") );
+    AMP::LinearAlgebra::Vector::shared_ptr rank_vec = AMP::LinearAlgebra::createVector( DOF_scalar, rank_var, true );
     AMP::LinearAlgebra::Variable::shared_ptr displacement_var( new AMP::Discretization::NodalVariable(3,"displacement") );
-    AMP::LinearAlgebra::Vector::shared_ptr displacement = AMP::LinearAlgebra::createVector( DOFs, displacement_var, true );
+    AMP::LinearAlgebra::Vector::shared_ptr displacement = AMP::LinearAlgebra::createVector( DOF_vector, displacement_var, true );
     //AMP::LinearAlgebra::Variable::shared_ptr  gp_var ( new AMP::Mesh::SingleGaussPointVariable ( "gp_var" ) );
     //AMP::LinearAlgebra::Variable::shared_ptr  gp_var2 ( new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable , 8> ( "gp_var2" ) );
     //gp_var->setUnits ( "newton-fathom / acre^2" );
@@ -67,11 +70,14 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     // Create the silo writer and register the data
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
     siloWriter->registerMesh( mesh );
-    //siloWriter->registerVector( displacement );
+    siloWriter->registerVector( rank_vec, mesh, AMP::Mesh::Vertex, "rank" );
+    siloWriter->registerVector( displacement, mesh, AMP::Mesh::Vertex, "displacement" );
     //siloWriter->registerVector( gauss_pt );
     //siloWriter->registerVector( gauss_pt2 );
 
     // Initialize the data
+    rank_vec->setToScalar(globalComm.getRank());
+    rank_vec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     displacement->zero();
 
     // Write the file
