@@ -1,8 +1,8 @@
 
 DomainDecomposition = 0
-NumberOfPelletMeshes = 10
-NumberOfMeshes = 10
-NumberOfMeshToMeshMaps = 9
+NumberOfPelletMeshes = 12
+NumberOfMeshes = 12
+NumberOfMeshToMeshMaps = 11
 
 NumberOfLoadingSteps = 1
 USE_POINT_LOAD = TRUE
@@ -119,6 +119,26 @@ Mesh_10 {
     NumberOfElements = 1300
 }
 
+Mesh_11 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_11"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.105
+    NumberOfElements = 1300
+}
+
+Mesh_12 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_12"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.1155
+    NumberOfElements = 1300
+}
+
 MeshToMeshMap_1 {
   MapType = "NodeToNode"
     Mesh1 = "pellet_1"
@@ -219,6 +239,30 @@ MeshToMeshMap_9 {
   MapType = "NodeToNode"
     Mesh1 = "pellet_9"
     Mesh2 = "pellet_10"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_10 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_10"
+    Mesh2 = "pellet_11"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_11 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_11"
+    Mesh2 = "pellet_12"
     Surface1 = 1 //Top of Mesh1
     Surface2 = 2 //Bottom of Mesh2
     DOFsPerObject = 3
