@@ -745,6 +745,9 @@ MACRO ( CONFIGURE_AMP )
         ADD_DEFINITIONS ( -D USE_AMP_UTILS )  
         SET ( AMP_DOC_DIRS "${AMP_DOC_DIRS}  \"${AMP_SOURCE_DIR}/src/utils\"" )
     ENDIF()
+    # Repeat all amp libraries to take care of circular dependencies 
+    # Example: Mesh depends on Vectors which depends on Discretization which depends on Mesh
+    SET ( AMP_LIBS ${AMP_LIBS} ${AMP_LIBS} )
 ENDMACRO ()
 
 
