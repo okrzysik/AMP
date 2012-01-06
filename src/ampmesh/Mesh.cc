@@ -3,9 +3,13 @@
 
 #include "ampmesh/MultiMesh.h"
 #ifdef USE_LIBMESH
-#include "ampmesh/libmesh/libMesh.h"
+    #include "ampmesh/libmesh/libMesh.h"
 #endif
 #include "ampmesh/MeshElementVectorIterator.h"
+
+#ifdef USE_AMP_VECTORS
+    #include "vectors/Vector.h"
+#endif
 
 namespace AMP {
 namespace Mesh {
@@ -223,8 +227,19 @@ size_t Mesh::numGhostElements( const GeomType type, int gcw ) const
 }
 void Mesh::displaceMesh( std::vector<double> x )
 {
-    AMP_ERROR("displace mesh is not implimented yet");
+    AMP_ERROR("displaceMesh is not implimented for the base class");
 }
+#ifdef USE_AMP_VECTORS
+void Mesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
+{
+    AMP_ERROR("displaceMesh is not implimented for the base class");
+}
+AMP::LinearAlgebra::Vector::shared_ptr  Mesh::getPositionVector( std::string name, const int gcw )
+{
+    AMP_ERROR("getPositionVector is not implimented for the base class");
+    return AMP::LinearAlgebra::Vector::shared_ptr();
+}
+#endif
 
 
 /********************************************************

@@ -114,30 +114,29 @@ void simpleDOFManager::initialize()
 ****************************************************************/
 void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <size_t> &dofs, std::vector<size_t> which ) const
 {
+    dofs.resize(0);
     std::vector<AMP::Mesh::MeshElement> elements;
     if ( obj.elementType() == d_type )
         elements = std::vector<AMP::Mesh::MeshElement>(1,obj);
     else
         elements = obj.getElements(d_type);
+    std::vector <size_t> dofs2(DOFsPerElement);
     if ( which.size()==0 ) {
         // Return all dofs
-        dofs.resize(elements.size()*DOFsPerElement);
+        dofs.reserve(elements.size()*DOFsPerElement);
         for (size_t i=0; i<elements.size(); i++) {
-            AMP::Mesh::MeshElementID local_id = elements[i].globalID();
-            size_t index = AMP::Utilities::findfirst(d_local_id,local_id);
-            AMP_INSIST(local_id==d_local_id[index],"Internal Error: id not found");
-            for (int j=0; j<DOFsPerElement; j++)
-                dofs[i*DOFsPerElement+j] = index*DOFsPerElement + d_begin + j;
+            getDOFs( elements[i].globalID(), dofs2 );
+            for (size_t j=0; j<dofs2.size(); j++)
+                dofs.push_back(dofs2[j]);
         }
     } else {
         // Return only the desired dof
-        dofs.resize(which.size()*DOFsPerElement);
+        dofs.reserve(which.size()*DOFsPerElement);
         for (size_t i=0; i<which.size(); i++) {
-            AMP::Mesh::MeshElementID local_id = elements[which[i]].globalID();
-            size_t index = AMP::Utilities::findfirst(d_local_id,local_id);
-            AMP_INSIST(local_id==d_local_id[index],"Internal Error: id not found");
-            for (int j=0; j<DOFsPerElement; j++)
-                dofs[i*DOFsPerElement+j] = index*DOFsPerElement + d_begin + j;
+            AMP::Mesh::MeshElementID id = elements[which[i]].globalID();
+            getDOFs( id, dofs2 );
+            for (size_t j=0; j<dofs2.size(); j++)
+                dofs.push_back(dofs2[j]);
         }
     }
 }
@@ -195,7 +194,7 @@ std::vector<size_t> simpleDOFManager::getRemoteDOFs( ) const
 
 
 /****************************************************************
-* Return the global number of D.O.F.s                           *
+* Return the row DOFs                                           *
 ****************************************************************/
 std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
 {
@@ -204,26 +203,17 @@ std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
     std::vector< const Mesh::MeshElement* > elements(neighbor_elements.size()+1,&obj);
     for (size_t i=0; i<neighbor_elements.size(); i++)
         elements[i+1] = neighbor_elements[i].get();
-    std::vector<size_t> ids(elements.size()*DOFsPerElement);
-    size_t *ids2 = &ids[0];     // Use the pointer directly for speed
+    std::vector<size_t> dofs;
+    dofs.reserve(elements.size()*DOFsPerElement);
+    std::vector<size_t> dofs2(DOFsPerElement);
     for (size_t i=0; i<elements.size(); i++) {
         AMP::Mesh::MeshElementID  id = elements[i]->globalID();
-        if ( id.is_local() ) {
-            // We are dealing with a local element
-            size_t index = AMP::Utilities::findfirst(d_local_id,id);
-            AMP_INSIST(id==d_local_id[index],"Internal Error: id not found");
-            for (int j=0; j<DOFsPerElement; j++)
-                ids2[i*DOFsPerElement+j] = index*DOFsPerElement + d_begin + j;
-        } else {
-            // We are dealing with a remote element, hopefully we know where it is
-            size_t index = AMP::Utilities::findfirst(d_remote_id,id);
-            AMP_INSIST(id==d_remote_id[index],"Internal Error: remote id not found");
-            for (int j=0; j<DOFsPerElement; j++)
-                ids2[i*DOFsPerElement+j] = d_remote_dof[index]*DOFsPerElement + j;
-        }
+        getDOFs( id, dofs2 );
+        for (size_t j=0; j<dofs2.size(); j++)
+            dofs.push_back(dofs2[j]);
     }
-    AMP::Utilities::quicksort(ids);
-    return ids;
+    AMP::Utilities::quicksort(dofs);
+    return dofs;
 }
 
 

@@ -6,6 +6,14 @@
 #include "ampmesh/MeshIterator.h"
 #include "utils/AMP_MPI.h"
 
+#ifdef USE_AMP_VECTORS
+    namespace AMP {
+    namespace LinearAlgebra {
+        class Vector;
+    }
+    }
+#endif
+
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
@@ -271,6 +279,29 @@ public:
      * \param x  Displacement vector
      */
     virtual void displaceMesh( std::vector<double> x );
+
+
+#ifdef USE_AMP_VECTORS
+    /**
+     * \brief    Displace the entire mesh
+     * \details  This function will displace the entire mesh by displacing
+     *   each node by the values provided in the vector.  This function is 
+     *   a blocking call for the mesh communicator
+     * \param x  Displacement vector.  Must have N DOFs per node where N 
+     *           is the physical dimension of the mesh.
+     */
+    virtual void displaceMesh ( boost::shared_ptr<const AMP::LinearAlgebra::Vector> x );
+
+
+    /**
+     * \brief    Get a vector of the coordinates of the nodes
+     * \details  This function will return a const vector containing the coordinates of 
+     *           all the nodes.  
+     * \param name   Name of the vector
+     * \param gcw    Desired ghost cell width
+     */
+    virtual boost::shared_ptr<AMP::LinearAlgebra::Vector>  getPositionVector( std::string name, const int gcw=0 );
+#endif
 
 
 protected:

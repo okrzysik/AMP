@@ -5,6 +5,11 @@
 #include "utils/Database.h"
 #include "utils/MemoryDatabase.h"
 
+#ifdef USE_AMP_VECTORS
+    #include "vectors/Vector.h"
+    #include "vectors/MultiVector.h"
+#endif
+
 #include <set>
 #include <vector>
 #include <iostream>
@@ -418,7 +423,25 @@ boost::shared_ptr<Mesh>  MultiMesh::Subset( std::string name ) {
 
 
 /********************************************************
-* Displace a mesh by a scalar ammount                   *
+* Return the position vector                            *
+********************************************************/
+#ifdef USE_AMP_VECTORS
+AMP::LinearAlgebra::Vector::shared_ptr  MultiMesh::getPositionVector( std::string name, const int gcw )
+{
+    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vectors(d_meshes.size());
+    for (size_t i=0; i<d_meshes.size(); i++)
+        vectors[i] = d_meshes[i]->getPositionVector( name, gcw );
+    boost::shared_ptr<AMP::LinearAlgebra::MultiVector>  multivector = 
+        AMP::LinearAlgebra::MultiVector::create ( name , d_comm );
+    for (size_t i=0; i<d_meshes.size(); i++)
+        multivector->addVector( vectors[i] );
+    return multivector;
+}
+#endif
+
+
+/********************************************************
+* Displace a mesh                                       *
 ********************************************************/
 void MultiMesh::displaceMesh( std::vector<double> x_in )
 {
@@ -437,6 +460,13 @@ void MultiMesh::displaceMesh( std::vector<double> x_in )
         d_box[2*i+1] += x[i];
     }
 }
+#ifdef USE_AMP_VECTORS
+void MultiMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
+{
+    for (size_t i=0; i<d_meshes.size(); i++)
+        d_meshes[i]->displaceMesh(x);
+}
+#endif
 
 
 /********************************************************

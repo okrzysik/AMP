@@ -7,6 +7,17 @@
 #include "utils/AMPManager.h"
 #include "utils/Utilities.h"
 
+#ifdef USE_AMP_VECTORS
+    #include "vectors/Vector.h"
+    #include "vectors/Variable.h"
+    #include "vectors/VectorBuilder.h"
+#endif
+#ifdef USE_AMP_DISCRETIZATION
+    #include "discretization/DOF_Manager.h"
+    #include "discretization/simpleDOF_Manager.h"
+    #include "discretization/NodalVariable.h"
+#endif
+
 
 // LibMesh include
 #include "mesh.h"
@@ -430,7 +441,38 @@ std::vector< ::Node* > libMesh::getNeighborNodes( MeshElementID id )
 
 
 /********************************************************
-* Displace a mesh by a scalar ammount                   *
+* Return the position vector                            *
+********************************************************/
+#ifdef USE_AMP_VECTORS
+AMP::LinearAlgebra::Vector::shared_ptr  libMesh::getPositionVector( std::string name, const int gcw )
+{
+    #ifdef USE_AMP_DISCRETIZATION
+        AMP::Discretization::DOFManager::shared_ptr DOFs = 
+            AMP::Discretization::simpleDOFManager::create( 
+            shared_from_this(), AMP::Mesh::Vertex, gcw, PhysicalDim, false );
+        AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::Discretization::NodalVariable( PhysicalDim, name ) );
+        AMP::LinearAlgebra::Vector::shared_ptr position = AMP::LinearAlgebra::createVector( DOFs, nodalVariable, false );
+        std::vector<size_t> dofs(PhysicalDim);
+        AMP::Mesh::MeshIterator cur = DOFs->getIterator();
+        AMP::Mesh::MeshIterator end = cur.end();
+        while ( cur != end ) {
+            AMP::Mesh::MeshElementID id = cur->globalID();
+            std::vector<double> coord = cur->coord();
+            DOFs->getDOFs( id, dofs );
+            position->setValuesByGlobalID( dofs.size(), &dofs[0], &coord[0] );
+            ++cur;
+        }
+        return position;
+    #else
+        AMP_ERROR("getPositionVector requires DISCRETIZATION");
+        return AMP::LinearAlgebra::Vector::shared_ptr();
+    #endif
+}
+#endif
+
+
+/********************************************************
+* Displace a mesh                                       *
 ********************************************************/
 void libMesh::displaceMesh( std::vector<double> x_in )
 {
@@ -455,6 +497,55 @@ void libMesh::displaceMesh( std::vector<double> x_in )
         d_box[2*i+1] += x[i];
     }
 }
+#ifdef USE_AMP_VECTORS
+void libMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
+{
+    #ifdef USE_AMP_DISCRETIZATION
+        // Create the position vector with the necessary ghost nodes
+        AMP::Discretization::DOFManager::shared_ptr DOFs = 
+        AMP::Discretization::simpleDOFManager::create( 
+            shared_from_this(), getIterator(AMP::Mesh::Vertex,1), getIterator(AMP::Mesh::Vertex,0), PhysicalDim );
+        AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::Discretization::NodalVariable( PhysicalDim, "tmp_pos" ) );
+        AMP::LinearAlgebra::Vector::shared_ptr displacement = AMP::LinearAlgebra::createVector( DOFs, nodalVariable, false );
+        std::vector<size_t> dofs1(PhysicalDim);
+        std::vector<size_t> dofs2(PhysicalDim);
+        AMP::Mesh::MeshIterator cur = getIterator(AMP::Mesh::Vertex,0);
+        AMP::Mesh::MeshIterator end = cur.end();
+        AMP::Discretization::DOFManager::shared_ptr DOFx = x->getDOFManager();
+        std::vector<double> data(PhysicalDim);
+        while ( cur != end ) {
+            AMP::Mesh::MeshElementID id = cur->globalID();
+            DOFx->getDOFs( id, dofs1 );
+            DOFs->getDOFs( id, dofs2 );
+            x->getValuesByGlobalID( PhysicalDim, &dofs1[0], &data[0] );
+            displacement->setValuesByGlobalID( PhysicalDim, &dofs2[0], &data[0] );
+            ++cur;
+        }
+        displacement->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        // Move all nodes (including the ghost nodes
+        ::Mesh::node_iterator node_cur = d_libMesh->nodes_begin();
+        ::Mesh::node_iterator node_end = d_libMesh->nodes_end();
+        int rank = d_comm.getRank();
+        while ( node_cur != node_end ) {
+            ::Node* node = *node_cur;
+            // Create the element id
+            unsigned int owner_rank = node->processor_id();
+            unsigned int local_id = node->id();
+            bool is_local = (int)owner_rank==rank;
+            AMP::Mesh::MeshElementID id( is_local ,AMP::Mesh::Vertex, local_id, owner_rank, d_meshID);
+            // Get the position of the point
+            DOFs->getDOFs( id, dofs2 );
+            displacement->getValuesByGlobalID( PhysicalDim, &dofs2[0], &data[0] );
+            // Move the point
+            for (int i=0; i<PhysicalDim; i++)
+                (*node)(i) += data[i];
+            ++node_cur;
+        }
+    #else
+        AMP_ERROR("getPositionVector requires DISCRETIZATION");
+    #endif
+}
+#endif
 
 
 } // Mesh namespace

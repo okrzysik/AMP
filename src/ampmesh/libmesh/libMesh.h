@@ -136,6 +136,30 @@ public:
     //! Return the underlying libMesh object
     inline boost::shared_ptr< ::Mesh> getlibMesh( ) const { return d_libMesh; }
 
+
+#ifdef USE_AMP_VECTORS
+    /**
+     * \brief    Displace the entire mesh
+     * \details  This function will displace the entire mesh by displacing
+     *   each node by the values provided in the vector.  This function is 
+     *   a blocking call for the mesh communicator
+     * \param x  Displacement vector.  Must have N DOFs per node where N 
+     *           is the physical dimension of the mesh.
+     */
+    virtual void displaceMesh ( boost::shared_ptr<const AMP::LinearAlgebra::Vector> x );
+
+
+    /**
+     * \brief    Get a vector of the coordinates of the nodes
+     * \details  This function will return a const vector containing the coordinates of 
+     *           all the nodes.  
+     * \param name   Name of the vector
+     * \param gcw    Desired ghost cell width
+     */
+    virtual boost::shared_ptr<AMP::LinearAlgebra::Vector>  getPositionVector( std::string name, const int gcw=0 );
+#endif
+
+
 protected:
 
     /**  

@@ -112,6 +112,7 @@ std::vector<size_t> multiDOFManager::getRemoteDOFs( ) const
             global_dofs.insert(global_dofs.end(),tmp_dofs.begin(),tmp_dofs.end());
         }
     }
+    AMP::Utilities::quicksort(global_dofs);
     return global_dofs;
 }
 
@@ -122,14 +123,14 @@ std::vector<size_t> multiDOFManager::getRemoteDOFs( ) const
 std::vector<size_t> multiDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
 {
     std::vector<size_t> global_dofs;
-    std::vector<size_t> local_dofs;
     for (size_t i=0; i<d_managers.size(); i++) {
-        d_managers[i]->getRowDOFs( obj );
+        std::vector<size_t> local_dofs = d_managers[i]->getRowDOFs( obj );
         if ( local_dofs.size() > 0 ) {
             std::vector<size_t> tmp_dofs = getGlobalDOF( d_managers[i], local_dofs );
             global_dofs.insert(global_dofs.end(),tmp_dofs.begin(),tmp_dofs.end());
         }
     }
+    AMP::Utilities::quicksort(global_dofs);
     return global_dofs;
 }
 
