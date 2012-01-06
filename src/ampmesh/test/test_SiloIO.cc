@@ -24,6 +24,8 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
 
     AMP::PIO::logOnlyNodeZero ( "outputMeshManagerTest1" );
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
+    globalComm.barrier();
+    double t1 = AMP::AMP_MPI::time();
 
     // Read the input file
     boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
@@ -37,6 +39,8 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
 
     // Create the meshes from the input database
     boost::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params);
+    globalComm.barrier();
+    double t2 = AMP::AMP_MPI::time();
 
     // Create a simple DOFManager
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
@@ -46,8 +50,8 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     // Create the vectors
     AMP::LinearAlgebra::Variable::shared_ptr rank_var( new AMP::Discretization::NodalVariable(1,"rank") );
     AMP::LinearAlgebra::Vector::shared_ptr rank_vec = AMP::LinearAlgebra::createVector( DOF_scalar, rank_var, true );
-    AMP::LinearAlgebra::Variable::shared_ptr displacement_var( new AMP::Discretization::NodalVariable(3,"displacement") );
-    AMP::LinearAlgebra::Vector::shared_ptr displacement = AMP::LinearAlgebra::createVector( DOF_vector, displacement_var, true );
+    AMP::LinearAlgebra::Variable::shared_ptr position_var( new AMP::Discretization::NodalVariable(3,"position") );
+    AMP::LinearAlgebra::Vector::shared_ptr position = AMP::LinearAlgebra::createVector( DOF_vector, position_var, true );
     //AMP::LinearAlgebra::Variable::shared_ptr  gp_var ( new AMP::Mesh::SingleGaussPointVariable ( "gp_var" ) );
     //AMP::LinearAlgebra::Variable::shared_ptr  gp_var2 ( new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable , 8> ( "gp_var2" ) );
     //gp_var->setUnits ( "newton-fathom / acre^2" );
@@ -56,37 +60,50 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     //AMP::LinearAlgebra::Vector::shared_ptr  displacement = manager->createPositionVector ( "displacement" );
     //displacement->getVariable()->setUnits ( "leagues" );
     //gauss_pt2->setToScalar ( 100 );
-
-    //AMP::LinearAlgebra::Vector::iterator  curd = gauss_pt2->begin();
-    //AMP::LinearAlgebra::Vector::iterator  end = gauss_pt2->end();
-    //size_t i = 0;
-    //while ( curd != end )
-    //{
-    //    *curd += (double)(i%8);
-    //    i++;
-    //    curd++;
-    //}
+    globalComm.barrier();
+    double t3 = AMP::AMP_MPI::time();
 
     // Create the silo writer and register the data
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
     siloWriter->registerMesh( mesh );
     siloWriter->registerVector( rank_vec, mesh, AMP::Mesh::Vertex, "rank" );
-    siloWriter->registerVector( displacement, mesh, AMP::Mesh::Vertex, "displacement" );
+    siloWriter->registerVector( position, mesh, AMP::Mesh::Vertex, "position" );
     //siloWriter->registerVector( gauss_pt );
     //siloWriter->registerVector( gauss_pt2 );
+    globalComm.barrier();
+    double t4 = AMP::AMP_MPI::time();
 
     // Initialize the data
     rank_vec->setToScalar(globalComm.getRank());
     rank_vec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-    displacement->zero();
+    std::vector<size_t> dofs;
+    for (AMP::Mesh::MeshIterator it=DOF_vector->getIterator(); it!=it.end(); it++) {
+        AMP::Mesh::MeshElementID id = it->globalID();
+        DOF_vector->getDOFs( id, dofs );
+        std::vector<double> pos = it->coord();
+        position->setValuesByGlobalID( dofs.size(), &dofs[0], &pos[0] );
+    }
+    position->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    globalComm.barrier();
+    double t5 = AMP::AMP_MPI::time();
 
     // Write the file
     std::stringstream  fname;
     fname << "2pellet_clad_" << globalComm.getSize() << "proc";
     globalComm.barrier();
-    double t4 = AMP::AMP_MPI::time();
+    double t6 = AMP::AMP_MPI::time();
     siloWriter->writeFile( fname.str() , 0 );
+    globalComm.barrier();
+    double t7 = AMP::AMP_MPI::time();
 
+    if ( globalComm.getRank() == 0 ) {
+        std::cout << "Read in meshes: " << t2-t1 << std::endl;
+        std::cout << "Allocate vectors: " << t3-t2 << std::endl;
+        std::cout << "Register data: " << t4-t3 << std::endl;
+        std::cout << "Initialize vectors: " << t5-t4 << std::endl;
+        std::cout << "Write a file: " << t7-t5 << std::endl;
+        std::cout << "Total time: " << t7-t1 << std::endl;
+    }
 }
 
 

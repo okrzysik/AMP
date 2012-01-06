@@ -397,13 +397,12 @@ void SiloIO::writeSummary( std::string filename )
     if ( d_comm.getRank()==0 ) {
         DBfile  *FileHandle;
         FileHandle = DBOpen ( filename.c_str(), DB_HDF5, DB_APPEND );
+        DBMkDir ( FileHandle, "test" );
+        //DBSetDir( FileHandle, "test" );
         std::map<AMP::Mesh::MeshID,siloMultiMeshData>::iterator it;
-        //for (it=multimeshes.begin(); it!=multimeshes.end(); it++) {
-        { it=multimeshes.find(AMP::Mesh::MeshID(-1,0));
+        for (it=multimeshes.begin(); it!=multimeshes.end(); it++) {
             // Create the multimesh            
             siloMultiMeshData data = it->second;
-            //DBMkDir ( FileHandle, (data.name).c_str() );
-            //DBSetDir( FileHandle, (data.name).c_str() );
             std::vector<std::string> meshNames(data.meshes.size());
             for (size_t i=0; i<data.meshes.size(); i++)
                 meshNames[i] = data.meshes[i].file+":"+data.meshes[i].path+"/"+data.meshes[i].meshName;
@@ -417,13 +416,18 @@ void SiloIO::writeSummary( std::string filename )
             DBPutMultimesh( FileHandle, data.name.c_str(), meshNames.size(), meshnames, meshtypes, NULL );
             delete [] meshnames;
             delete [] meshtypes;
-            // Generate the multi-variables
-            //DBMkDir ( FileHandle, (data.name+"_").c_str() );
-            //DBSetDir( FileHandle, (data.name+"_").c_str() );
+        }
+        //DBSetDir( FileHandle, "/" );
+        // Generate the multi-variables
+        //for (it=multimeshes.begin(); it!=multimeshes.end(); it++) {
+        //{ it = multimeshes.begin(); it++;
+        { it = multimeshes.find(AMP::Mesh::MeshID(-1,0));
+            siloMultiMeshData data = it->second;
+            //std::cout << data.name << std::endl;
             for (std::set<std::string>::iterator var_it=d_varNames.begin(); var_it!=d_varNames.end(); var_it++) {
                 std::string varName = *var_it;
                 bool keep = true;
-                for (size_t i=0; i<data.meshes.size(); i++) {
+                /*for (size_t i=0; i<data.meshes.size(); i++) {
                     bool found = false;
                     for (size_t j=0; j<data.meshes[i].varName.size(); j++) {
                         if ( data.meshes[i].varName[j] == varName )
@@ -431,7 +435,7 @@ void SiloIO::writeSummary( std::string filename )
                     }
                     if ( !found )
                         keep = false;
-                }
+                }*/
                 if ( keep ) {
                     std::vector<std::string> varNames(data.meshes.size());
                     char **varnames = new char*[data.meshes.size()];
@@ -442,18 +446,19 @@ void SiloIO::writeSummary( std::string filename )
                         varNames[i] = data.meshes[i].file+":"+data.meshes[i].path+"/"+varName+"P"+stream.str();
                         varnames[i] = (char*) varNames[i].c_str();
                         vartypes[i] = DB_UCDVAR;
-                        std::cout << varNames[i] << std::endl;
+                        //std::cout << varNames[i] << std::endl;
                     }
-                    std::string multiMeshName = filename+":"+data.name;
-                    //DBoptlist *opts = DBMakeOptlist(1);
-                    //DBAddOption( opts, DBOPT_MMESH_NAME, (char*) multiMeshName.c_str() );
-                    std::string tmp = varName+"P1";
-                    DBPutMultivar( FileHandle, varName.c_str(), varNames.size(), varnames, vartypes, NULL );
+                    //std::string multiMeshName = "/"+data.name;
+                    std::string multiMeshName = data.name;
+                    //std::cout << multiMeshName << std::endl;
+                    DBoptlist *opts = DBMakeOptlist(1);
+                    DBAddOption( opts, DBOPT_MMESH_NAME, (char*) multiMeshName.c_str() );
+                    DBPutMultivar( FileHandle, (varName).c_str(), varNames.size(), varnames, vartypes, opts );
+                    DBFreeOptlist( opts );
                     delete [] varnames;
                     delete [] vartypes;
                 }
             }
-            //DBSetDir( FileHandle, "/" );
         }
         DBClose ( FileHandle );
     }
