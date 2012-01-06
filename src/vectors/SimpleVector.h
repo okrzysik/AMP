@@ -55,6 +55,7 @@ namespace LinearAlgebra {
       virtual double L2Norm(void) const;
       virtual double maxNorm(void) const;
 
+      using Vector::dot;
       virtual double dot(const VectorOperations &x) const;
 
 
@@ -62,6 +63,7 @@ namespace LinearAlgebra {
       virtual Vector::shared_ptr cloneVector(const Variable::shared_ptr name) const;
       virtual size_t  numberOfDataBlocks () const;
       virtual size_t  sizeOfDataBlock ( size_t i = 0 ) const;
+      using Vector::copyVector;
       virtual void copyVector(const Vector &src_vec);
       virtual void swapVectors(Vector &other);
       virtual void aliasVector(Vector &other);

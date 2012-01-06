@@ -157,6 +157,7 @@ public:
     virtual double L1Norm(void) const;
     virtual double L2Norm(void) const;
     virtual double maxNorm(void) const;
+    using Vector::dot;
     virtual double dot(const VectorOperations &x) const;
     virtual size_t getLocalSize() const;
     virtual size_t getGlobalSize() const;

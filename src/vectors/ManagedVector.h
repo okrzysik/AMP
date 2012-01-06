@@ -166,6 +166,7 @@ namespace LinearAlgebra {
       double L1Norm(void) const;
       double L2Norm(void) const;
       double maxNorm(void) const;
+      using Vector::dot;
       double dot(const VectorOperations &x) const;
 
     protected:

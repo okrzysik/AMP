@@ -80,6 +80,7 @@ public:
      */
     virtual boost::shared_ptr<Mesh>  Subset( MeshID meshID );
 
+    using Mesh::Subset;
 
     /**
      * \brief    Subset a mesh given a mesh name

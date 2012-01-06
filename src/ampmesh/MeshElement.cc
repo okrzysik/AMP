@@ -13,14 +13,14 @@ static unsigned int MeshElementTypeID = TYPE_HASH(MeshElement);
 * Constructors                                          *
 ********************************************************/
 MeshElement::MeshElement():
-    d_globalID(false,null,-1,-1,-1)
+    d_globalID()
 {
     typeID = MeshElementTypeID;
     element = NULL;
     d_elementType = null;
 }
 MeshElement::MeshElement(const MeshElement& rhs):
-    d_globalID(false,null,-1,-1,-1)
+    d_globalID()
 {
     typeID = MeshElementTypeID;
     element = NULL;

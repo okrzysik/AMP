@@ -158,9 +158,9 @@ boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::Mesh::shared
         if ( dofs[i]==dofs[i-1] )
             AMP_ERROR("Internal error subsetting DOF manager (duplicate)");
     }
-    size_t tot_size = d_comm.sumReduce(dofs.size());
     // Create the subset DOF Manager
-    /*if ( tot_size == 0 )
+    /*size_t tot_size = d_comm.sumReduce(dofs.size());
+    if ( tot_size == 0 )
         return DOFManager::shared_ptr();
     if ( tot_size == d_global )
         return shared_from_this();*/
@@ -190,9 +190,9 @@ boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::MeshIterator
         if ( dofs[i]==dofs[i-1] )
             AMP_ERROR("Internal error subsetting DOF manager (duplicate)");
     }
-    size_t tot_size = d_comm.sumReduce(dofs.size());
     // Create the subset DOF Manager    
-    /*if ( tot_size == 0 )
+    /*size_t tot_size = d_comm.sumReduce(dofs.size());
+    if ( tot_size == 0 )
         return DOFManager::shared_ptr();
     if ( tot_size == d_global )
         return shared_from_this();*/

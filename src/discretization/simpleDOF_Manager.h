@@ -24,6 +24,9 @@ class simpleDOFManager: public DOFManager
 {
 public:
 
+    using DOFManager::getDOFs;
+
+
     /**
      * \brief Create a new DOF manager object
      * \details  This is the standard constructor for creating a new DOF manager object.

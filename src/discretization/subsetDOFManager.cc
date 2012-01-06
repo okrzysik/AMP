@@ -160,7 +160,7 @@ std::vector<size_t> subsetDOFManager::getParentDOF( const std::vector<size_t> &s
 }
 std::vector<size_t> subsetDOFManager::getSubsetDOF( const std::vector<size_t> &parentDOFs ) const
 {
-    std::vector<size_t> subsetDOFs(subsetDOFs.size(),-1);
+    std::vector<size_t> subsetDOFs(subsetDOFs.size(),(size_t)-1);
     for (size_t i=0; i<parentDOFs.size(); i++) {
         size_t DOF = parentDOFs[i];
         AMP_ASSERT(DOF<d_parentGlobal);

@@ -20,7 +20,7 @@ libMeshElement::libMeshElement()
     element = NULL;
     d_dim = -1;
     d_elementType = null;
-    d_globalID = MeshElementID(false,null,-1,-1,MeshID());
+    d_globalID = MeshElementID();
 }
 libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element, 
     unsigned int rank, MeshID meshID, libMesh* mesh)
@@ -34,8 +34,8 @@ libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element,
     d_mesh = mesh;
     d_meshID = meshID;
     ptr_element = libmesh_element;
-    unsigned int local_id=-1;
-    unsigned int owner_rank=-1;
+    unsigned int local_id = (unsigned int)-1;
+    unsigned int owner_rank = (unsigned int)-1;
     bool is_local=false;
     if ( d_elementType==Vertex ) {
         d_elementType = Vertex;

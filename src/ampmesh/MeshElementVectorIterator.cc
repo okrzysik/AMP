@@ -147,13 +147,13 @@ bool MultiVectorIterator::operator!=(const MeshIterator& rhs)
 ********************************************************/
 MeshElement& MultiVectorIterator::operator*()
 {
-    if ( d_pos<0 || d_pos>=d_elements->size() )
+    if ( d_pos>=d_elements->size() )
         AMP_ERROR("Invalid dereference (iterator is out of range");
     return d_elements->operator[](d_pos);
 }
 MeshElement* MultiVectorIterator::operator->()
 {
-    if ( d_pos<0 || d_pos>=d_elements->size() )
+    if ( d_pos>=d_elements->size() )
         AMP_ERROR("Invalid dereference (iterator is out of range");
     return &(d_elements->operator[](d_pos));
 }

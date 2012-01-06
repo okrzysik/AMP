@@ -91,18 +91,17 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     std::stringstream  fname;
     fname << "2pellet_clad_" << globalComm.getSize() << "proc";
     globalComm.barrier();
-    double t6 = AMP::AMP_MPI::time();
     siloWriter->writeFile( fname.str() , 0 );
     globalComm.barrier();
-    double t7 = AMP::AMP_MPI::time();
+    double t6 = AMP::AMP_MPI::time();
 
     if ( globalComm.getRank() == 0 ) {
         std::cout << "Read in meshes: " << t2-t1 << std::endl;
         std::cout << "Allocate vectors: " << t3-t2 << std::endl;
         std::cout << "Register data: " << t4-t3 << std::endl;
         std::cout << "Initialize vectors: " << t5-t4 << std::endl;
-        std::cout << "Write a file: " << t7-t5 << std::endl;
-        std::cout << "Total time: " << t7-t1 << std::endl;
+        std::cout << "Write a file: " << t6-t5 << std::endl;
+        std::cout << "Total time: " << t6-t1 << std::endl;
     }
 }
 

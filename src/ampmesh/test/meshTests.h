@@ -69,6 +69,8 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator,
     bool type_pass = true;
     bool volume_pass = true;
     bool coord_pass = true;
+    bool elements_pass = true;
+    bool neighbor_pass = true;
     cur_it = iterator.begin();
     while ( cur_it != end_it ) {
         AMP::Mesh::MeshElement element = *cur_it;
@@ -91,8 +93,12 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator,
                     continue;  // getElements is unfinished for types other than verticies and elements
                 AMP::Mesh::GeomType type2 = (AMP::Mesh::GeomType) i;
                 std::vector<AMP::Mesh::MeshElement> pieces = element.getElements(type2);
+                if ( pieces.empty() )
+                    elements_pass = false;
             }
             std::vector< AMP::Mesh::MeshElement::shared_ptr > neighbors = element.getNeighbors();
+            if ( neighbors.empty() )
+                neighbor_pass = false;
         }
         ++cur_it;   // Pre-increment is faster than post-increment
     }
@@ -107,6 +113,10 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator,
             ut->failure( "elements failed volume test" );
         if ( !coord_pass )
             ut->failure( "elements failed coord test" );
+        if ( !elements_pass )
+            ut->failure( "elements failed getElements test" );
+        if ( !neighbor_pass )
+            ut->failure( "elements failed getNeighbors test" );
     }
 }
 

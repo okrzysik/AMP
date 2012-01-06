@@ -34,8 +34,6 @@ void SiloIO::readFile( const std::string &fname )
 ************************************************************/
 void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
 { 
-    // Create the master file
-    DBfile  *FileHandle;
     std::string fname = fname_in + "." + getExtension();
     for (int i=0; i<d_comm.getSize(); i++) {
         if ( d_comm.getRank()==i ) {
@@ -113,7 +111,7 @@ void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
     AMP::Mesh::MeshIterator iterator1 = mesh->getIterator( type, 0 );
     AMP::Mesh::MeshIterator iterator2 = DOFs->getIterator( );
     AMP::Mesh::MeshIterator iterator3 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Intersection, iterator1, iterator2 );
-    if ( iterator1.size() != iterator2.size() )
+    if ( iterator1.size() != iterator3.size() )
         AMP_ERROR("vector does not cover the entire mesh for the given entity type");
     std::vector<size_t> dofs;
     DOFs->getDOFs( iterator1->globalID(), dofs );
@@ -381,7 +379,7 @@ void SiloIO::writeSummary( std::string filename )
     }
     // Add the whole mesh
     siloMultiMeshData wholemesh;
-    wholemesh.id = AMP::Mesh::MeshID(-1,0);
+    wholemesh.id = AMP::Mesh::MeshID((unsigned int)-1,0);
     wholemesh.name = "whole_mesh";
     std::map<AMP::Mesh::MeshID,siloBaseMeshData>::iterator iterator2;
     for (iterator2=d_baseMeshes.begin(); iterator2!=d_baseMeshes.end(); iterator2++) {
@@ -421,7 +419,7 @@ void SiloIO::writeSummary( std::string filename )
         // Generate the multi-variables
         //for (it=multimeshes.begin(); it!=multimeshes.end(); it++) {
         //{ it = multimeshes.begin(); it++;
-        { it = multimeshes.find(AMP::Mesh::MeshID(-1,0));
+        { it = multimeshes.find(AMP::Mesh::MeshID((unsigned int)-1,0));
             siloMultiMeshData data = it->second;
             //std::cout << data.name << std::endl;
             for (std::set<std::string>::iterator var_it=d_varNames.begin(); var_it!=d_varNames.end(); var_it++) {

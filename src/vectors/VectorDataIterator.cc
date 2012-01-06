@@ -165,7 +165,6 @@ inline void VectorDataIterator::recede ( size_t i )
     AMP_INSIST(d_position>=i,"Attempted to iterate past the beginning of the iterator");
     size_t togo = i;
     while ( togo > 0 ) {
-        size_t dataBlockSize = d_Vec->sizeOfDataBlock(d_CurBlock);
         if ( togo > d_CurOffset ) {
             // We need to advance to the next data block
             d_position -= d_CurOffset;
@@ -187,7 +186,6 @@ inline void ConstVectorDataIterator::recede ( size_t i )
     AMP_INSIST(d_position>=i,"Attempted to iterate past the beginning of the iterator");
     size_t togo = i;
     while ( togo > 0 ) {
-        size_t dataBlockSize = d_Vec->sizeOfDataBlock(d_CurBlock);
         if ( togo > d_CurOffset ) {
             // We need to advance to the next data block
             d_position -= d_CurOffset;

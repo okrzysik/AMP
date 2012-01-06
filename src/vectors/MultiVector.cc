@@ -763,7 +763,8 @@ void MultiVector::getValuesByLocalID ( int num , size_t *indices , double *out_v
 void  MultiVector::partitionValues ( const int num, const size_t *indices, const double *vals,
     std::vector<std::vector<size_t> > &out_indices, std::vector<std::vector<double> > &out_vals, std::vector<std::vector<int> > *remap ) const
 {
-    std::vector<size_t> globalDOFs(num,-1);
+    const size_t neg_one = ~((size_t)0);
+    std::vector<size_t> globalDOFs(num,neg_one);
     for (int i=0; i<num; i++)
         globalDOFs[i] = indices[i];
     out_indices.resize( d_vVectors.size() );
@@ -775,16 +776,16 @@ void  MultiVector::partitionValues ( const int num, const size_t *indices, const
         std::vector<size_t> subDOFs = manager->getSubDOF( d_vVectors[i]->getDOFManager(), globalDOFs );
         size_t count = 0; 
         for (size_t j=0; j<subDOFs.size(); j++) {
-            if ( subDOFs[j] != ~((size_t)0) )
+            if ( subDOFs[j] != neg_one )
                 count++;
         }
-        out_indices[i] = std::vector<size_t>(count,-1);
+        out_indices[i] = std::vector<size_t>(count,neg_one);
         out_vals[i] = std::vector<double>(count,0.0);
         if ( remap != NULL ) 
-            remap->operator[](i) = std::vector<int>(count,-1);
+            remap->operator[](i) = std::vector<int>(count,neg_one);
         count = 0; 
         for (size_t j=0; j<subDOFs.size(); j++) {
-            if ( subDOFs[j] != ~((size_t)0) ) {
+            if ( subDOFs[j] != neg_one ) {
                 out_indices[i][count] = subDOFs[j];
                 out_vals[i][count] = vals[j];
                 if ( remap != NULL )

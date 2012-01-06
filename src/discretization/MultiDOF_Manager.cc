@@ -140,16 +140,17 @@ std::vector<size_t> multiDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &o
 ****************************************************************/
 std::vector<size_t> multiDOFManager::getGlobalDOF( DOFManager::shared_ptr manager, std::vector<size_t> &subDOFs ) const
 {
+    const size_t neg_one = ~((size_t)0);
     std::vector<size_t> globalDOFs;
     for (size_t i=0; i<d_managers.size(); i++) {
         if ( d_managers[i]==manager ) {
-            globalDOFs = std::vector<size_t>(subDOFs.size(),-1);
-            subDOF_struct search(0,~((size_t)0),~((size_t)0),~((size_t)0));
+            globalDOFs = std::vector<size_t>(subDOFs.size(),neg_one);
+            subDOF_struct search(0,neg_one,neg_one,neg_one);
             for (size_t j=0; j<subDOFs.size(); j++) {
                 search.DOF1_begin = subDOFs[j];
                 size_t index = AMP::Utilities::findfirst(d_subToGlobalDOF[i],search);
                 index--;
-                AMP_ASSERT(index>=0&&index<d_subToGlobalDOF[i].size());
+                AMP_ASSERT(index<d_subToGlobalDOF[i].size());
                 globalDOFs[j] = subDOFs[j] - d_subToGlobalDOF[i][index].DOF1_begin + d_subToGlobalDOF[i][index].DOF2_begin; 
             }
         }
@@ -169,7 +170,7 @@ std::vector<size_t> multiDOFManager::getSubDOF( DOFManager::shared_ptr manager, 
                 search.DOF1_begin = globalDOFs[j];
                 size_t index = AMP::Utilities::findfirst(d_globalToSubDOF[i],search);
                 index--;
-                if ( index>=0 && index<d_globalToSubDOF[i].size() ) {
+                if ( index<d_globalToSubDOF[i].size() ) {
                     if ( globalDOFs[j]>=d_globalToSubDOF[i][index].DOF1_begin && globalDOFs[j]<d_globalToSubDOF[i][index].DOF1_end )
                         subDOFs[j] = globalDOFs[j] - d_globalToSubDOF[i][index].DOF1_begin + d_globalToSubDOF[i][index].DOF2_begin;
                 }
