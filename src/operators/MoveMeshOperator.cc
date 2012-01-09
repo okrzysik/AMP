@@ -31,15 +31,14 @@ namespace AMP {
       AMP::LinearAlgebra::Vector::shared_ptr deltaDisp = dispVec->cloneVector();
       deltaDisp->subtract(dispVec, d_prevDisp);
 
-      ///---for debugging purposes - allu
-      deltaDisp->setToScalar(0.);
-      AMP::pout << "Max and Min displacement"<< deltaDisp->max() << " , "<< deltaDisp->min() << std::endl;
-      AMP_ERROR("MoveMeshOperator has not been converted");
-      //d_Mesh->displaceMesh(deltaDisp);
+      d_Mesh->displaceMesh(deltaDisp);
 
       d_prevDisp->copyVector(dispVec);
     }
 
   }
 }
+
+
+
 
