@@ -3,6 +3,7 @@ INCLUDE (macros)
 
 BEGIN_PACKAGE_CONFIG ( vectors )
 ADD_PACKAGE_SUBDIRECTORY ( trilinos )
+ADD_PACKAGE_SUBDIRECTORY ( newFrozenVectorDesign )
 INSTALL_AMP_TARGET ( vectors )
 
 ADD_SUBDIRECTORY ( test )

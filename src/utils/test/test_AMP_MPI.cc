@@ -910,8 +910,10 @@ int main(int argc, char *argv[])
             ut.passes("Global communicator size");
         else
             ut.failure("Global communicator size");
-        if ( globalComm.getRank()==0 ) 
-            std::cout << "MPI_COMM_WORLD = " << global_size << " processors" << std::endl << std::endl;
+        if ( globalComm.getRank()==0 )  {
+            std::cout << "MPI_COMM_WORLD = " << global_size << " processors" << std::endl;
+            std::cout << "   Largest tag value = " << globalComm.maxTag() << std::endl << std::endl;
+        }
         #ifdef USE_MPI
             if ( globalComm.getCommunicator() == MPI_COMM_WORLD )
                 ut.passes("Communicator == MPI_COMM_WORLD");

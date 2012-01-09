@@ -37,11 +37,21 @@ void test_Silo(AMP::UnitTest *ut) {
     AMP::LinearAlgebra::Variable::shared_ptr  random_var ( new AMP::Mesh::Nodal3VectorVariable ( "random" ) );
     AMP::LinearAlgebra::Variable::shared_ptr  gp_var ( new AMP::Mesh::SingleGaussPointVariable ( "gp_var" ) );
     AMP::LinearAlgebra::Variable::shared_ptr  gp_var2 ( new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable , 8> ( "gp_var2" ) );
-    gp_var->setUnits ( "newton-fathom / acre^2" );
     AMP::LinearAlgebra::Vector::shared_ptr  random = manager->createVector ( random_var );
     AMP::LinearAlgebra::Vector::shared_ptr  gauss_pt = manager->createVector ( gp_var );
     AMP::LinearAlgebra::Vector::shared_ptr  gauss_pt2 = manager->createVector ( gp_var2 );
+    commGlobal.barrier();
+    double t3 = AMP::AMP_MPI::time();
     AMP::LinearAlgebra::Vector::shared_ptr  displacement = manager->createPositionVector ( "displacement" );
+
+    manager->registerVectorAsData ( displacement );
+    manager->registerVectorAsData ( gauss_pt );
+    manager->registerVectorAsData ( gauss_pt2 );
+    commGlobal.barrier();
+    double t4 = AMP::AMP_MPI::time();
+
+    // Initialize the data
+    gp_var->setUnits ( "newton-fathom / acre^2" );
     displacement->getVariable()->setUnits ( "leagues" );
     gauss_pt2->setToScalar ( 100 );
 
@@ -54,20 +64,15 @@ void test_Silo(AMP::UnitTest *ut) {
         i++;
         curd++;
     }
-
     commGlobal.barrier();
-    double t3 = AMP::AMP_MPI::time();
-    manager->registerVectorAsData ( displacement );
-    manager->registerVectorAsData ( gauss_pt );
-    manager->registerVectorAsData ( gauss_pt2 );
+    double t5 = AMP::AMP_MPI::time();
 
     std::stringstream  fname;
     fname << "2pellet_clad_" << size << "proc";
-    commGlobal.barrier();
-    double t4 = AMP::AMP_MPI::time();
     manager->writeFile<AMP::Mesh::SiloIO> ( fname.str() , 0 );
     commGlobal.barrier();
-    double t5 = AMP::AMP_MPI::time();
+
+    double t6 = AMP::AMP_MPI::time();
     for ( int t = 1 ; t <= 2 ; t += 1 )
     {
         gauss_pt->setToScalar ( (double) t );
@@ -81,16 +86,18 @@ void test_Silo(AMP::UnitTest *ut) {
         manager->writeFile<AMP::Mesh::SiloIO> ( fname.str() , 3*t );
     }
     ut->passes ( "silo file written" );
-
     commGlobal.barrier();
-    double t6 = AMP::AMP_MPI::time();
+    double t7 = AMP::AMP_MPI::time();
+
     int rank = commGlobal.getRank();
     if ( rank == 0 )
     {
-        std::cout << "Read in and partition mesh: " << (t2-t1) << std::endl;
-        std::cout << "Allocate 2 3-vectors: " << (t3 - t2) << std::endl;
-        std::cout << "Write a file: " << (t5-t4) << std::endl;
-        std::cout << "10 iterations: " << (t6-t5) << std::endl;
+        std::cout << "Read in and partition mesh: " << t2-t1 << std::endl;
+        std::cout << "Allocate vectors: " << t3-t2 << std::endl;
+        std::cout << "Register data: " << t4-t3 << std::endl;
+        std::cout << "Initialize vectors: " << t5-t4 << std::endl;
+        std::cout << "Write a file: " << t6-t5 << std::endl;
+        std::cout << "10 iterations: " << t7-t6 << std::endl;
     }
 #else
     ut->expected_failure ( "test skipped since no silo configured" );

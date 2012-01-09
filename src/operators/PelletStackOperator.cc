@@ -10,6 +10,7 @@ namespace AMP {
         d_totalNumberOfPellets = (params->d_db)->getInteger("TOTAL_NUMBER_OF_PELLETS");
         d_useSerial = (params->d_db)->getBoolWithDefault("USE_SERIAL", false);
         d_onlyZcorrection = (params->d_db)->getBoolWithDefault("ONLY_Z_CORRECTION", false);
+        AMP_ASSERT(!(d_useSerial && d_onlyZcorrection));
         d_masterId = (params->d_db)->getInteger("MASTER");
         d_slaveId = (params->d_db)->getInteger("SLAVE");
         if((params->d_db)->keyExists("SCALING_FACTOR")) {
@@ -26,7 +27,7 @@ namespace AMP {
         d_n2nMaps = params->d_n2nMaps;
         for(unsigned int pellId = 0; pellId < d_totalNumberOfPellets; pellId++) {
           char pellId2Str[256];
-          sprintf(pellId2Str, "%d", pellId);
+          sprintf(pellId2Str, "%u", (pellId + 1));
           AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = (params->d_meshManager)->getMesh(meshNamePrefix + "_" + pellId2Str);
           if(meshAdapter.get() == NULL) {
             continue;
@@ -220,7 +221,7 @@ namespace AMP {
         recvDisps[i] = recvDisps[i - 1] + recvCnts[i - 1];
       }//end for i
 
-      std::vector<unsigned int> allPelletIds((*(recvDisps.end())) + (*(recvCnts.end())));
+      std::vector<unsigned int> allPelletIds((*(recvDisps.end() - 1)) + (*(recvCnts.end() - 1)));
       d_pelletStackComm.allGather<unsigned int>(&(d_pelletIds[0]), d_pelletIds.size(), &(allPelletIds[0]), 
           &(recvCnts[0]), &(recvDisps[0]), true);
 

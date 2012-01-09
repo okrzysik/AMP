@@ -215,6 +215,12 @@ public:
 
 
     /**
+     * Return the maximum tag
+     */
+    int maxTag() const { return d_maxTag; }
+
+
+    /**
      * Call MPI_Abort or exit depending on whether running with one or more 
      * processes and value set by function above, if called.  The default is
      * to call exit(-1) if running with one processor and to call MPI_Abort()
@@ -760,6 +766,9 @@ private:
      * we don not need to block (recognizing that the value may not be 100% accurate).
      */
     static volatile unsigned int N_MPI_Comm_created;
+
+    // Some attributes
+    int d_maxTag;
 
     // Add a variable for data alignment (necessary for some Intel builds)
     double tmp_allignment;
