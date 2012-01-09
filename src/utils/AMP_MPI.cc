@@ -65,6 +65,7 @@ AMP_MPI::AMP_MPI() {
     count = NULL;
     comm_rank = 0;
     comm_size = 1;
+    d_maxTag = 0x7FFFFFFF;
     d_isNull = true;
     call_abort_in_serial_instead_of_exit = true;
 }
@@ -108,6 +109,7 @@ AMP_MPI::AMP_MPI( const AMP::AMP_MPI& comm ) {
     comm_rank = comm.comm_rank;
     comm_size = comm.comm_size;
     d_isNull = comm.d_isNull;
+    d_maxTag = comm.d_maxTag;
     call_abort_in_serial_instead_of_exit = comm.call_abort_in_serial_instead_of_exit;
     // Set and increment the count
     count = comm.count;
@@ -125,6 +127,7 @@ AMP_MPI& AMP_MPI::operator=(const AMP::AMP_MPI& comm) {
     this->comm_rank = comm.comm_rank;
     this->comm_size = comm.comm_size;
     this->d_isNull = comm.d_isNull;
+    this->d_maxTag = comm.d_maxTag;
     this->call_abort_in_serial_instead_of_exit = comm.call_abort_in_serial_instead_of_exit;
     // Set and increment the count
     this->count = comm.count;
@@ -152,9 +155,19 @@ AMP_MPI::AMP_MPI( MPI_Comm comm ) {
         if ( communicator!=MPI_COMM_NULL) {
             MPI_Comm_rank(communicator, &comm_rank);
             MPI_Comm_size(communicator, &comm_size);
+            int flag, *val;
+            MPI_Comm_get_attr(communicator,MPI_TAG_UB,&val,&flag);
+            if ( flag==0 ) { 
+                d_maxTag = 0x7FFFFFFF;     // The tag is not a valid attribute (set to 2^31-1)
+            } else {
+                d_maxTag = *val;
+                if ( d_maxTag<0 ) { d_maxTag = 0x7FFFFFFF; }    // The maximum tag is > a signed int (set to 2^31-1)
+                AMP_INSIST(d_maxTag>=0x7FFF,"maximum tag size is < MPI standard");
+            }
         } else {
             comm_rank = 1;
             comm_size = 1;
+            d_maxTag = 0x7FFFFFFF;
         }
         d_isNull = communicator==MPI_COMM_NULL;
     #else
@@ -1254,6 +1267,7 @@ void AMP_MPI::send<char>(const char *buf, const int length,
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Send the recieve length if necessary
     if (send_length) {
         int size = length;
@@ -1269,6 +1283,7 @@ void AMP_MPI::send<int>(const int *buf, const int length,
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Send the recieve length if necessary
     if (send_length) {
         int size = length;
@@ -1284,6 +1299,7 @@ void AMP_MPI::send<float>(const float *buf, const int length,
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Send the recieve length if necessary
     if (send_length) {
         int size = length;
@@ -1299,6 +1315,7 @@ void AMP_MPI::send<double>(const double *buf, const int length,
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Send the recieve length if necessary
     if (send_length) {
         int size = length;
@@ -1327,6 +1344,8 @@ void AMP_MPI::send<char>(const char *buf, const int length,
 template <>
 MPI_Request AMP_MPI::Isend<char>(const char *buf, const int length, const int recv_proc, const int tag) const
 {
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    AMP_INSIST(tag>=0,"tag must be >= 0");
     MPI_Request request;
     MPI_Isend((void*)buf, length, MPI_CHAR, recv_proc, tag, communicator, &request);
     return request;
@@ -1335,6 +1354,8 @@ MPI_Request AMP_MPI::Isend<char>(const char *buf, const int length, const int re
 template <>
 MPI_Request AMP_MPI::Isend<int>(const int *buf, const int length, const int recv_proc, const int tag) const
 {
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    AMP_INSIST(tag>=0,"tag must be >= 0");
     MPI_Request request;
     MPI_Isend((void*)buf, length, MPI_INT, recv_proc, tag, communicator, &request);
     return request;
@@ -1343,6 +1364,8 @@ MPI_Request AMP_MPI::Isend<int>(const int *buf, const int length, const int recv
 template <>
 MPI_Request AMP_MPI::Isend<float>(const float *buf, const int length, const int recv_proc, const int tag) const
 {
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    AMP_INSIST(tag>=0,"tag must be >= 0");
     MPI_Request request;
     MPI_Isend((void*)buf, length, MPI_FLOAT, recv_proc, tag, communicator, &request);
     return request;
@@ -1351,6 +1374,8 @@ MPI_Request AMP_MPI::Isend<float>(const float *buf, const int length, const int 
 template <>
 MPI_Request AMP_MPI::Isend<double>(const double *buf, const int length, const int recv_proc, const int tag) const
 {
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    AMP_INSIST(tag>=0,"tag must be >= 0");
     MPI_Request request;
     MPI_Isend((void*)buf, length, MPI_DOUBLE, recv_proc, tag, communicator, &request);
     return request;
@@ -1372,6 +1397,8 @@ MPI_Request AMP_MPI::Isend<char>(const char *buf, const int length, const int re
 void AMP_MPI::sendBytes(const void *buf, const int number_bytes, 
     const int recv_proc_number, int tag) const
 {
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    AMP_INSIST(tag>=0,"tag must be >= 0");
     send<char>((const char*)buf,number_bytes,recv_proc_number,false,tag);
 }
 
@@ -1381,6 +1408,8 @@ void AMP_MPI::sendBytes(const void *buf, const int number_bytes,
 ************************************************************************/
 MPI_Request AMP_MPI::IsendBytes(const void *buf, const int number_bytes, const int recv_proc, const int tag) const
 {
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    AMP_INSIST(tag>=0,"tag must be >= 0");
     return Isend<char>((const char*)buf,number_bytes,recv_proc,tag);
 }
 
@@ -1397,6 +1426,7 @@ void AMP_MPI::recv<char>(char *buf, int &length,
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Get the recieve length if necessary
     int size = length;
     if (get_length) {
@@ -1416,6 +1446,7 @@ void AMP_MPI::recv<int>(int *buf, int &length,
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Get the recieve length if necessary
     int size = length;
     if (get_length) {
@@ -1435,6 +1466,7 @@ void AMP_MPI::recv<float>(float *buf, int &length,
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Get the recieve length if necessary
     int size = length;
     if (get_length) {
@@ -1454,6 +1486,7 @@ void AMP_MPI::recv<double>(double *buf, int &length,
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Get the recieve length if necessary
     int size = length;
     if (get_length) {
@@ -1486,6 +1519,8 @@ void AMP_MPI::recv<char>(char *buf, int &length,
 template <>
 MPI_Request AMP_MPI::Irecv<char>(char *buf, const int length, const int send_proc, const int tag) const
 {
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    AMP_INSIST(tag>=0,"tag must be >= 0");
     MPI_Request request;
     MPI_Irecv((void*)buf, length, MPI_CHAR, send_proc, tag, communicator, &request);
     return request;
@@ -1494,6 +1529,8 @@ MPI_Request AMP_MPI::Irecv<char>(char *buf, const int length, const int send_pro
 template <>
 MPI_Request AMP_MPI::Irecv<int>(int *buf, const int length, const int send_proc, const int tag) const
 {
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    AMP_INSIST(tag>=0,"tag must be >= 0");
     MPI_Request request;
     MPI_Irecv((void*)buf, length, MPI_INT, send_proc, tag, communicator, &request);
     return request;
@@ -1502,6 +1539,8 @@ MPI_Request AMP_MPI::Irecv<int>(int *buf, const int length, const int send_proc,
 template <>
 MPI_Request AMP_MPI::Irecv<float>(float *buf, const int length, const int send_proc, const int tag) const
 {
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    AMP_INSIST(tag>=0,"tag must be >= 0");
     MPI_Request request;
     MPI_Irecv((void*)buf, length, MPI_FLOAT, send_proc, tag, communicator, &request);
     return request;
@@ -1510,6 +1549,8 @@ MPI_Request AMP_MPI::Irecv<float>(float *buf, const int length, const int send_p
 template <>
 MPI_Request AMP_MPI::Irecv<double>(double *buf, const int length, const int send_proc, const int tag) const
 {
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    AMP_INSIST(tag>=0,"tag must be >= 0");
     MPI_Request request;
     MPI_Irecv((void*)buf, length, MPI_DOUBLE, send_proc, tag, communicator, &request);
     return request;
@@ -1539,6 +1580,8 @@ void AMP_MPI::recvBytes(void *buf, int &number_bytes, const int send_proc, int t
 ************************************************************************/
 MPI_Request AMP_MPI::IrecvBytes(void *buf, const int number_bytes, const int send_proc, const int tag) const
 {
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    AMP_INSIST(tag>=0,"tag must be >= 0");
     return Irecv<char>((char*)buf,number_bytes,send_proc,tag);
 }
 
@@ -1972,6 +2015,8 @@ void AMP_MPI::waitAll( int count, MPI_Request *request) {
 ************************************************************************/
 #ifdef USE_MPI
 int AMP_MPI::Iprobe( int source, int tag) const {
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    AMP_INSIST(tag>=0,"tag must be >= 0");
     MPI_Status status;
     int flag = 0;
     MPI_Iprobe(source,tag,communicator,&flag,&status);
@@ -1983,6 +2028,8 @@ int AMP_MPI::Iprobe( int source, int tag) const {
     return count;
 }
 int AMP_MPI::probe( int source, int tag) const {
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    AMP_INSIST(tag>=0,"tag must be >= 0");
     MPI_Status status;
     MPI_Probe(source,tag,communicator,&status);
     int count;

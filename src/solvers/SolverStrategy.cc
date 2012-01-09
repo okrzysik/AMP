@@ -43,21 +43,9 @@ namespace AMP {
       {
         AMP_INSIST(db.get()!=NULL,"InputDatabase object must be non-NULL");
 
-        if (db->keyExists("max_iterations")) {
-          d_iMaxIterations = db->getInteger("max_iterations");
-        } else {
-          AMP_ERROR("SolverStrategy"
-              << " -- Required key `max_iterations'"
-              << " missing in input.");
-        }
+        d_iMaxIterations = db->getIntegerWithDefault("max_iterations", 1);
 
-        if (db->keyExists("max_error")) {
-          d_dMaxError = db->getDouble("max_error");
-        } else {
-          AMP_ERROR("SolverStrategy"
-              << " -- Required key `max_error'"
-              << " missing in input.");
-        }
+        d_dMaxError = db->getDoubleWithDefault("max_error", 1.0e-12);
 
         d_iDebugPrintInfoLevel = db->getIntegerWithDefault("print_info_level", 0);
 

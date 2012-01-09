@@ -2,7 +2,7 @@
 #ifndef included_AMP_PelletStackOperator
 #define included_AMP_PelletStackOperator
 
-#include "operators/Operator.h"
+#include "operators/PelletStackOperatorParameters.h"
 
 namespace AMP {
   namespace Operator {
@@ -10,15 +10,17 @@ namespace AMP {
     class PelletStackOperator : public Operator 
     {
       public :
-        PelletStackOperator(const boost::shared_ptr<OperatorParameters> & params);
+        PelletStackOperator(const boost::shared_ptr<PelletStackOperatorParameters> & params);
 
         ~PelletStackOperator() { }
 
-        bool hasPellet(unsigned int pellId); 
-
-        void setCurrentPellet(unsigned int pellId);
+        int getLocalIndexForPellet(unsigned int pellId);
 
         unsigned int getTotalNumberOfPellets();
+
+        std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> getLocalMeshes();
+
+        std::vector<unsigned int> getLocalPelletIds();
 
         bool useSerial();
 
@@ -26,18 +28,23 @@ namespace AMP {
 
         bool useScaling();
 
-        void applyScaling(AMP::LinearAlgebra::Vector::shared_ptr f);
+        void reset(const boost::shared_ptr<OperatorParameters>& params);
 
         void applyUnscaling(AMP::LinearAlgebra::Vector::shared_ptr f);
 
         void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-            AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
-
-        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
-
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
+            AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
 
       protected:
+        void applySerial(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
+            AMP::LinearAlgebra::Vector::shared_ptr &r);
+
+        void applyOnlyZcorrection(AMP::LinearAlgebra::Vector::shared_ptr &u);
+
+        void applyXYZcorrection(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
+            AMP::LinearAlgebra::Vector::shared_ptr &r);
+
+        void computeZscan(const AMP::LinearAlgebra::Vector::shared_ptr &u, std::vector<double> &finalMaxZdispsList);
 
         unsigned int d_totalNumberOfPellets;
         unsigned int d_currentPellet;
@@ -45,7 +52,15 @@ namespace AMP {
         bool d_onlyZcorrection;
         bool d_useScaling;
         double d_scalingFactor;
-
+        short int d_masterId;
+        short int d_slaveId;
+        std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> d_meshes;
+        std::vector<unsigned int> d_pelletIds;
+        std::vector<AMP::LinearAlgebra::Variable::shared_ptr> d_var;
+        std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_frozenVectorForMaps;
+        bool d_frozenVectorSet;
+        AMP_MPI d_pelletStackComm;
+        boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  d_n2nMaps;
     };
 
   }

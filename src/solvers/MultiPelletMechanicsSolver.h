@@ -61,8 +61,6 @@ namespace Solver {
 
       void initialize(boost::shared_ptr<SolverStrategyParameters> const parameters) { }
 
-      void setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess ) { } 
-
       void reset(boost::shared_ptr<SolverStrategyParameters> params);
       
       void resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params) {

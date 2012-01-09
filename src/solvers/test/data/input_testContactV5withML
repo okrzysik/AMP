@@ -1,7 +1,7 @@
 
 USE_ML_PC = TRUE
 NumberOfMeshes = 2
-maxCGiters = 40
+maxCGiters = 5
 
 Num1Dcells = 40
 
