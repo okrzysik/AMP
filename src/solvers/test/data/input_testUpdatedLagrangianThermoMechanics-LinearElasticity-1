@@ -173,6 +173,7 @@ NonlinearSolver{
         Preconditioner{
           print_info_level = 1
             PDE_equations = 3
+            max_levels = 1
             max_iterations = 1
             max_error = 1.0e-15
         }

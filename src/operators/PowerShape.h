@@ -175,7 +175,7 @@ class PowerShape : public  Operator {
       double evalZernike(const int m, const int n, const double rho, const double phi);
       double evalLegendre(const int n, const double x);
       double getVolumeIntegralAnalytical(double rmax);
-      double getVolumeIntegralSum(double rmax);
+      double getVolumeIntegralSum(double rmax, double cx, double cy);
       double getFrapconFr(double radius, double rmax);
       double getZernikeRadial(double rho);
       double getZernike(double rho, double phi);

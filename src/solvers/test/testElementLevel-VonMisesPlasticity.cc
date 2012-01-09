@@ -219,7 +219,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   AMP::pout<<"epsilon = "<<epsilon<<std::endl;
 
-  AMP::pout<<solVec<<std::endl;
+  //AMP::pout<<solVec<<std::endl;
 
   mechanicsNonlinearVolumeOperator->printStressAndStrain(solVec, output_file);
 

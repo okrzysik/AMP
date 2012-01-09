@@ -113,7 +113,8 @@ void PowerShape::reset(const boost::shared_ptr<OperatorParameters> & parameters)
 */
 void PowerShape::getFromDatabase(boost::shared_ptr<AMP::Database> db) {
 
-    AMP_ASSERT(db);
+    AMP_ERROR("PowerShape::getFromDatabase is not converted yet");
+/*    AMP_ASSERT(db);
       
     AMP_ERROR("createOutputVariable in PowerShape has not been converted");
     //d_Variable = createOutputVariable("RelativePower");
@@ -164,9 +165,14 @@ void PowerShape::getFromDatabase(boost::shared_ptr<AMP::Database> db) {
 
         }else if(d_type == "gaussian") {
 
+            AMP::Mesh::min_max_struct<AMP::Mesh::simple_point>  min_max_pos;
+            min_max_pos = AMP::Mesh::computeExtremeCoordinates<AMP::Mesh::MeshManager::Adapter> ( d_MeshAdapter );
+            double centerx = 0.5*( min_max_pos.min.x + min_max_pos.max.x );
+            double centery = 0.5*( min_max_pos.min.y + min_max_pos.max.y );
+
             // Read mu and sigma for gaussian distribution.
-            d_muX    = db->getDoubleWithDefault("muX",0.0);  
-            d_muY    = db->getDoubleWithDefault("muY",0.0);  
+            d_muX    = db->getDoubleWithDefault("muX",centerx);  
+            d_muY    = db->getDoubleWithDefault("muY",centery);  
             d_sigmaX = db->getDoubleWithDefault("sigmaX",3.0);  
             d_sigmaY = db->getDoubleWithDefault("sigmaY",3.0);  
 
@@ -287,7 +293,7 @@ void PowerShape::getFromDatabase(boost::shared_ptr<AMP::Database> db) {
 
         d_qrule.reset( (::QBase::build(qruleType, dimension, qruleOrder)).release() );
         d_fe->attach_quadrature_rule( d_qrule.get() );
-    }
+    }*/
 
 }
 
@@ -346,7 +352,13 @@ AMP_ERROR("PowerShape is not converted yet");
     zmin = min_max_pos.min.z;
     zmax = min_max_pos.max.z;
     rmax = min_max_rad.max;
+    AMP::Mesh::simple_point center;
 
+    center.x = 0.5*( min_max_pos.min.x + min_max_pos.max.x );
+    center.y = 0.5*( min_max_pos.min.y + min_max_pos.max.y );
+    //center.z = 0.5*( min_max_pos.min.z + min_max_pos.max.z );
+
+    rmax = rmax - sqrt( center.x*center.x + center.y*center.y );
     r->setToScalar(1.);
 
     if(d_coordinateSystem == "cartesian") {
@@ -476,7 +488,7 @@ AMP_ERROR("PowerShape is not converted yet");
             if ( d_frapconVolumeIntegral == "analytical"){
                 volumeIntegral = getVolumeIntegralAnalytical(rmax);
             }else if(d_frapconVolumeIntegral == "sum"){
-                volumeIntegral = getVolumeIntegralSum(rmax);
+                volumeIntegral = getVolumeIntegralSum(rmax, center.x, center.y);
             }
 
             AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_Mesh->beginElement();
@@ -490,8 +502,8 @@ AMP_ERROR("PowerShape is not converted yet");
 
                 // Loop over all gauss-points on the element.
                 for( unsigned int i = 0; i != d_fe->get_xyz().size(); i++ ) {
-                    x = d_fe->get_xyz()[i](0);
-                    y = d_fe->get_xyz()[i](1);
+                    x = d_fe->get_xyz()[i](0)-center.x;
+                    y = d_fe->get_xyz()[i](1)-center.y;
                     z = d_fe->get_xyz()[i](2);
 
                     // r based on Frapcon.
@@ -545,8 +557,8 @@ AMP_ERROR("PowerShape is not converted yet");
 
                 // Loop over all gauss-points on the element.
                 for( unsigned int i = 0; i != d_fe->get_xyz().size(); i++ ) {
-                    x = d_fe->get_xyz()[i](0);
-                    y = d_fe->get_xyz()[i](1);
+                    x = d_fe->get_xyz()[i](0)-center.x;
+                    y = d_fe->get_xyz()[i](1)-center.y;
                     z = d_fe->get_xyz()[i](2);
                     // r based on Frapcon.
                     double relativeRadius = sqrt ( x*x + y*y )/rmax;
@@ -626,8 +638,8 @@ AMP_ERROR("PowerShape is not converted yet");
 
                 // Loop over all gauss-points on the element.
                 for( unsigned int i = 0; i != d_fe->get_xyz().size(); i++ ) {
-                    x = d_fe->get_xyz()[i](0);
-                    y = d_fe->get_xyz()[i](1);
+                    x = d_fe->get_xyz()[i](0)-center.x;
+                    y = d_fe->get_xyz()[i](1)-center.y;
                     z = d_fe->get_xyz()[i](2);
 
                     // r based on Frapcon.
@@ -679,8 +691,8 @@ AMP_ERROR("PowerShape is not converted yet");
 
                 // Loop over all gauss-points on the element.
                 for( unsigned int i = 0; i != d_fe->get_xyz().size(); i++ ) {
-                    x = d_fe->get_xyz()[i](0);
-                    y = d_fe->get_xyz()[i](1);
+                    x = d_fe->get_xyz()[i](0)-center.x;
+                    y = d_fe->get_xyz()[i](1)-center.y;
                     z = d_fe->get_xyz()[i](2);
 
                     // r based on Frapcon.
@@ -879,7 +891,7 @@ double PowerShape::getVolumeIntegralAnalytical(double rmax)
  * \brief Evaluates the volume integral by Sum ( Sum( f(r) )*elemVolume/8 )*
 ****************************************************************************
 */
-double PowerShape::getVolumeIntegralSum(double rmax)
+double PowerShape::getVolumeIntegralSum(double rmax, double cx, double cy)
 {
 AMP_ERROR("PowerShape has not been converted yet");
 /*
@@ -898,8 +910,8 @@ AMP_ERROR("PowerShape has not been converted yet");
         double elemSum = 0;
         // Loop over all gauss-points on the element.
         for( unsigned int i = 0; i != d_fe->get_xyz().size(); i++ ) {
-            x = d_fe->get_xyz()[i](0);
-            y = d_fe->get_xyz()[i](1);
+            x = d_fe->get_xyz()[i](0) - cx;
+            y = d_fe->get_xyz()[i](1) - cy;
             radius = sqrt ( x*x + y*y ) ;
                
             elemSum += getFrapconFr(radius, rmax);

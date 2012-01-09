@@ -91,7 +91,7 @@ class SolverStrategy
     * need to provide an implementation of.
     * @param [in] initialGuess: shared pointer to the initial guess vector.
     */
-   virtual void setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) = 0;
+   virtual void setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) { }
    
    /**
     * Specify stopping criteria.

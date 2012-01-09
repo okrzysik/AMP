@@ -3,7 +3,7 @@ NumberOfMeshes = 1
 
 Mesh_1{
   Filename = "PlateWithHole-1.e"
-    MeshName = "cylinder"
+    MeshName = "brick"
     x_offset = 0
     y_offset = 0
     z_offset = 0
@@ -173,6 +173,31 @@ Load_Boundary {
     value_0_0 = 100.0
 }
 
+Displacement_Boundary {
+  name = "DirichletVectorCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+
+    number_of_ids = 3
+
+    id_0 = 1
+    number_of_dofs_0 = 1
+    dof_0_0 = 1
+    value_0_0 = 0.0
+
+    id_1 = 3
+    number_of_dofs_1 = 2
+    dof_1_0 = 0
+    dof_1_1 = 2
+    value_1_0 = 0.0
+    value_1_1 = 0.0
+
+    id_2 = 4
+    number_of_dofs_2 = 1
+    dof_2_0 = 2
+    value_2_0 = 0.0
+}
+
 Pressure_Boundary {
   name = "PressureBoundaryVectorCorrection"
     print_info_level = 1
@@ -219,6 +244,7 @@ NonlinearSolver{
         Preconditioner{
           print_info_level = 1
             PDE_equations = 3
+            max_levels = 1
             max_iterations = 1
             max_error = 1.0e-15
         }
