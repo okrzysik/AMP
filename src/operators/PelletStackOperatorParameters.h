@@ -20,7 +20,7 @@ namespace AMP {
         unsigned int d_currentPellet;
         AMP_MPI d_pelletStackComm;
         boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> d_n2nMaps;
-        AMP::Mesh::MeshManager::shared_ptr d_meshManager;
+        //AMP::Mesh::MeshManager::shared_ptr d_meshManager;
     };
 
   }  

@@ -11,9 +11,12 @@ namespace Operator {
   NonlinearBVPOperator :: NonlinearBVPOperator(const boost::shared_ptr<BVPOperatorParameters>& params)
     : Operator (params) 
   {
+    AMP_ERROR("NonlinearBVPOperator is not converted yet");
+    /*
     d_volumeOperator = params->d_volumeOperator;
     d_boundaryOperator = params->d_boundaryOperator;
     d_MeshAdapter = d_volumeOperator->getMeshAdapter();
+    */
   }
 
   void

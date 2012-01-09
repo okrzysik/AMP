@@ -7,6 +7,8 @@ namespace AMP {
 
     PelletStackOperator :: PelletStackOperator(const boost::shared_ptr<PelletStackOperatorParameters> & params)
       : Operator(params) {
+AMP_ERROR("PelletStackOperator::applyXYZcorrection has not been converted yet");
+/*
         d_totalNumberOfPellets = (params->d_db)->getInteger("TOTAL_NUMBER_OF_PELLETS");
         d_useSerial = (params->d_db)->getBoolWithDefault("USE_SERIAL", false);
         d_onlyZcorrection = (params->d_db)->getBoolWithDefault("ONLY_Z_CORRECTION", false);
@@ -38,6 +40,7 @@ namespace AMP {
               AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(varName, meshAdapter) );
           d_var.push_back(tmpVar);       
         }//end for pellId
+*/
       }
 
     void PelletStackOperator :: reset(const boost::shared_ptr<OperatorParameters>& params) {
@@ -45,9 +48,9 @@ namespace AMP {
       d_currentPellet = myParams->d_currentPellet;
     }
 
-    std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> PelletStackOperator :: getLocalMeshes() {
-      return d_meshes;
-    }
+//    std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> PelletStackOperator :: getLocalMeshes() {
+//      return d_meshes;
+//    }
 
     std::vector<unsigned int> PelletStackOperator :: getLocalPelletIds() {
       return d_pelletIds;
@@ -81,6 +84,8 @@ namespace AMP {
     void PelletStackOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
         const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
         const double a, const double b) {
+AMP_ERROR("PelletStackOperator::applyXYZcorrection has not been converted yet");
+/*
       if(d_onlyZcorrection) {
         applyOnlyZcorrection(r);
       } else {
@@ -104,9 +109,12 @@ namespace AMP {
           applyXYZcorrection(f, u, r);
         }
       }
+*/
     }
 
     void PelletStackOperator :: applyUnscaling(AMP::LinearAlgebra::Vector::shared_ptr f) {
+AMP_ERROR("PelletStackOperator::applyXYZcorrection has not been converted yet");
+/*
       for(size_t i = 0; i < d_pelletIds.size(); i++) {
         if(d_pelletIds[i] > 0) {
           AMP::LinearAlgebra::Variable::shared_ptr currVar = d_var[i];
@@ -126,9 +134,12 @@ namespace AMP {
           }//end for bnd
         }
       }//end for i
+*/
     }
 
     void PelletStackOperator :: applyOnlyZcorrection(AMP::LinearAlgebra::Vector::shared_ptr &u) {
+AMP_ERROR("PelletStackOperator::applyXYZcorrection has not been converted yet");
+/*
       std::vector<double> finalMaxZdispsList;
       computeZscan(u, finalMaxZdispsList); 
       for(size_t i = 0; i < d_pelletIds.size(); i++) {
@@ -139,10 +150,13 @@ namespace AMP {
           zVec->addScalar(zVec, finalMaxZdispsList[d_pelletIds[i] - 1]);
         }
       }//end for i
+*/
     }
 
     void PelletStackOperator :: applyXYZcorrection(const AMP::LinearAlgebra::Vector::shared_ptr &f,
         const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r) {
+AMP_ERROR("PelletStackOperator::applyXYZcorrection has not been converted yet");
+/*
       AMP_ASSERT(d_frozenVectorSet);
       AMP::LinearAlgebra::Vector::shared_ptr nullVec;
       r->copyVector(f);
@@ -187,10 +201,13 @@ namespace AMP {
           }//end for bnd
         }
       }//end for i
+*/
     }
 
     void PelletStackOperator :: computeZscan(const AMP::LinearAlgebra::Vector::shared_ptr &u, 
         std::vector<double> &finalMaxZdispsList) {
+AMP_ERROR("PelletStackOperator::applyXYZcorrection has not been converted yet");
+/*
       std::vector<double> myMaxZdisps(d_pelletIds.size(), 0.0);
       for(size_t i = 0; i < d_pelletIds.size(); i++) {
         AMP::LinearAlgebra::Variable::shared_ptr currVar = d_var[i];
@@ -239,10 +256,13 @@ namespace AMP {
       for(size_t i = 1; i < d_totalNumberOfPellets; i++) {
         finalMaxZdispsList[i] += finalMaxZdispsList[i - 1];
       }//end for i
+*/
     }
 
     void PelletStackOperator :: applySerial(const AMP::LinearAlgebra::Vector::shared_ptr &f,
         const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r) {
+AMP_ERROR("PelletStackOperator::applyXYZcorrection has not been converted yet");
+/*
       AMP_ASSERT(d_frozenVectorSet);
       AMP_ASSERT(d_currentPellet > 0);
       AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -325,6 +345,7 @@ namespace AMP {
           }//end for j
         }//end for bnd
       }
+*/
     }
 
   }

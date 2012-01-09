@@ -12,10 +12,13 @@ namespace Operator {
   LinearBVPOperator :: LinearBVPOperator(const boost::shared_ptr<BVPOperatorParameters>& params)
     : LinearOperator (params) 
   {
+    AMP_ERROR("NonlinearBVPOperator is not converted yet");
+/*
     d_volumeOperator = boost::dynamic_pointer_cast<LinearOperator>(params->d_volumeOperator);
     d_boundaryOperator = params->d_boundaryOperator;
     d_MeshAdapter = d_volumeOperator->getMeshAdapter();
     d_matrix = d_volumeOperator->getMatrix();
+*/
   }
 
   void

@@ -113,7 +113,8 @@ void PowerShape::reset(const boost::shared_ptr<OperatorParameters> & parameters)
 */
 void PowerShape::getFromDatabase(boost::shared_ptr<AMP::Database> db) {
 
-    AMP_ASSERT(db);
+    AMP_ERROR("PowerShape::getFromDatabase is not converted yet");
+/*    AMP_ASSERT(db);
       
     AMP_ERROR("createOutputVariable in PowerShape has not been converted");
     //d_Variable = createOutputVariable("RelativePower");
@@ -292,7 +293,7 @@ void PowerShape::getFromDatabase(boost::shared_ptr<AMP::Database> db) {
 
         d_qrule.reset( (::QBase::build(qruleType, dimension, qruleOrder)).release() );
         d_fe->attach_quadrature_rule( d_qrule.get() );
-    }
+    }*/
 
 }
 
