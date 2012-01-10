@@ -1,11 +1,13 @@
 
 #include "TrilinosMatrixShellOperator.h"
+#include "vectors/VectorBuilder.h"
 
 namespace AMP {
   namespace Operator {
 
     TrilinosMatrixShellOperator :: TrilinosMatrixShellOperator(const boost::shared_ptr<OperatorParameters>& params)
-      : LinearOperator (params) {  }
+      : LinearOperator (params) { 
+      }
 
     void TrilinosMatrixShellOperator :: setGetRow(void (*func)(void* object, int row, std::vector<unsigned int> &cols, std::vector<double> &values)) {
       d_getRow = func;
@@ -33,24 +35,20 @@ namespace AMP {
       d_operator = op;
     }
 
-    void TrilinosMatrixShellOperator :: setMeshManager(AMP::Mesh::Mesh::shared_ptr manager) {
-      d_mesh = manager;
+    void TrilinosMatrixShellOperator :: setNodalDofMap(boost::shared_ptr<AMP::Discretization::DOFManager> dofMap) {
+      d_nodalDofMap = dofMap;
     }
 
     size_t TrilinosMatrixShellOperator :: getMatrixSize() {
-AMP_ERROR("TrilinosMatrixShellOperator Not converted yet");
-      //AMP::LinearAlgebra::Vector::shared_ptr outVec = d_meshManager->createVector( getOutputVariable() );
-      //return (outVec->getGlobalSize());
+      return (d_nodalDofMap->numGlobalDOF());
     }
 
     int TrilinosMatrixShellOperator :: matVec(ML_Operator *data, int in_length, double in[], 
         int out_length, double out[]) {
-AMP_ERROR("TrilinosMatrixShellOperator Not converted yet");
-/*
       TrilinosMatrixShellOperator* op = reinterpret_cast<TrilinosMatrixShellOperator *>(ML_Get_MyMatvecData(data));
 
-      AMP::LinearAlgebra::Vector::shared_ptr inVec = (op->d_meshManager)->createVector( op->getInputVariable() );
-      AMP::LinearAlgebra::Vector::shared_ptr outVec = (op->d_meshManager)->createVector( op->getOutputVariable() );
+      AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector( (op->d_nodalDofMap), (op->getInputVariable()), false );
+      AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector( (op->d_nodalDofMap), (op->getOutputVariable()), false );
 
       inVec->putRawData(in);
 
@@ -61,7 +59,6 @@ AMP_ERROR("TrilinosMatrixShellOperator Not converted yet");
       for(int i = 0; i < out_length; i++) {
         out[i] = outPtr[i];
       }
-*/
       return 0;
     }
 
@@ -95,10 +92,8 @@ AMP_ERROR("TrilinosMatrixShellOperator Not converted yet");
     }
 
     void TrilinosMatrixShellOperator :: getColumn(int column, std::vector<unsigned int> &rows, std::vector<double> &values) {
-AMP_ERROR("TrilinosMatrixShellOperator Not converted yet");
-/*
-      AMP::LinearAlgebra::Vector::shared_ptr inVec = d_meshManager->createVector( getInputVariable() );
-      AMP::LinearAlgebra::Vector::shared_ptr outVec = d_meshManager->createVector( getOutputVariable() );
+      AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector( d_nodalDofMap, getInputVariable(), false );
+      AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector( d_nodalDofMap, getOutputVariable(), false );
 
       inVec->zero();
       inVec->setValueByGlobalID(column, 1.0);
@@ -118,7 +113,6 @@ AMP_ERROR("TrilinosMatrixShellOperator Not converted yet");
           values.push_back(outPtr[i]);
         }
       }
-*/
     }
 
   }
