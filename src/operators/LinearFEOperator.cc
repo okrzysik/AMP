@@ -1,47 +1,41 @@
 
 #include "LinearFEOperator.h"
 #include "utils/Utilities.h"
+#include "matrices/MatrixBuilder.h"
+#include "vectors/VectorBuilder.h"
 
 namespace AMP {
   namespace Operator {
 
     void LinearFEOperator :: reset(const boost::shared_ptr<OperatorParameters>& params) 
     {
-      AMP_ERROR("LinearFEOperator is not converted yet");
-      /*
-         AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
-         AMP_INSIST( (((params->d_db).get()) != NULL), "NULL database" );
+      AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
+      AMP_INSIST( (((params->d_db).get()) != NULL), "NULL database" );
 
-         const bool reuse_matrix = (params->d_db)->getBoolWithDefault("reset_reuses_matrix", true);
+      const bool reuse_matrix = (params->d_db)->getBoolWithDefault("reset_reuses_matrix", true);
 
-         if( (d_matrix.get() == NULL) || (!reuse_matrix) ) {
-         d_matrix = d_MeshAdapter->createMatrix ( this->getInputVariable(), this->getOutputVariable() );
-         }
+      if( (d_matrix.get() == NULL) || (!reuse_matrix) ) {
+        AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector(d_inDofMap, getInputVariable(), false);
+        AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector(d_outDofMap, getOutputVariable(), false);
+        d_matrix = AMP::LinearAlgebra::createMatrix(inVec, outVec);
+      }
 
-         unsigned int numDOFMaps = this->numberOfDOFMaps();
-         std::vector<AMP::Mesh::DOFMap::shared_ptr> dof_maps(numDOFMaps);
+      AMP::Mesh::MeshIterator  el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
+      AMP::Mesh::MeshIterator  end_el = el.end();
 
-         for(unsigned int i = 0; i < numDOFMaps; i++) {
-         dof_maps[i] = d_MeshAdapter->getDOFMap( this->getVariableForDOFMap(i) );
-         }
+      this->preAssembly(params);
 
-         AMP::Mesh::MeshManager::Adapter::ElementIterator  el = d_MeshAdapter->beginElement();
-         AMP::Mesh::MeshManager::Adapter::ElementIterator  end_el = d_MeshAdapter->endElement();
+      for( ; el != end_el; ++el) {
 
-         this->preAssembly(params);
+        this->preElementOperation(*el);
 
-         for( ; el != end_el; ++el) {
+        d_elemOp->apply();
 
-         this->preElementOperation(*el, dof_maps);
+        this->postElementOperation();
 
-         d_elemOp->apply();
+      }//end for el
 
-         this->postElementOperation();
-
-         }//end for el
-
-         this->postAssembly();
-         */
+      this->postAssembly();
     }
 
   }
