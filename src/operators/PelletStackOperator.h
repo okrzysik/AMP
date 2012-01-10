@@ -18,7 +18,7 @@ namespace AMP {
 
         unsigned int getTotalNumberOfPellets();
 
-        //std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> getLocalMeshes();
+        std::vector<AMP::Mesh::Mesh::shared_ptr> getLocalMeshes();
 
         std::vector<unsigned int> getLocalPelletIds();
 
@@ -54,7 +54,7 @@ namespace AMP {
         double d_scalingFactor;
         short int d_masterId;
         short int d_slaveId;
-        //std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> d_meshes;
+        std::vector<AMP::Mesh::Mesh::shared_ptr> d_meshes;
         std::vector<unsigned int> d_pelletIds;
         std::vector<AMP::LinearAlgebra::Variable::shared_ptr> d_var;
         std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_frozenVectorForMaps;
