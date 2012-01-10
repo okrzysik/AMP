@@ -28,6 +28,7 @@ class NodeToNodeMap : public AMP::Operator::AsyncMapOperator
 public:
     //! brief  Typedef to identify the parameters class of this operator
     typedef  NodeToNodeMapParameters   Parameters;
+
     /** \brief  Returns true if MapType = "NodeToNode"
       * \param[in] s  A string extracted from the MapType line in a MeshToMeshMap db
       * \return  True iff s == "NodeToNode"
@@ -43,6 +44,8 @@ public:
     //! Destructor
     virtual ~NodeToNodeMap ();
 
+    //!  Returns the frozen vector
+    virtual AMP::LinearAlgebra::Vector::shared_ptr getFrozenVector() { return d_OutputVector; }
 
     virtual void applyStart(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
         AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
