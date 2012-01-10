@@ -4,8 +4,6 @@
 
 #include "LinearOperator.h"
 
-#include "ampmesh/Mesh.h"
-
 #include "ml_include.h"
 
 namespace AMP {
@@ -18,9 +16,9 @@ namespace AMP {
 
         ~TrilinosMatrixShellOperator() { }
 
-        void setMeshManager(AMP::Mesh::Mesh::shared_ptr manager);
+        void setOperator(boost::shared_ptr<Operator> op); 
 
-        void setOperator(boost::shared_ptr<Operator> op);     
+        void setNodalDofMap(boost::shared_ptr<AMP::Discretization::DOFManager> dofMap);
 
         void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
             AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
@@ -34,7 +32,7 @@ namespace AMP {
         static int matVec(ML_Operator *data, int in_length, double in[], int out_length, double out[]);
 
         static int getRow(ML_Operator *data, int N_requested_rows, int requested_rows[],
-            int allocated_space, int columns[], double values[], int row_lengths[] );
+            int allocated_space, int columns[], double values[], int row_lengths[]);
 
         void setGetRow(void (*func)(void* object, int row, std::vector<unsigned int> &cols, std::vector<double> &values));
 
@@ -44,7 +42,7 @@ namespace AMP {
 
       private:
 
-        AMP::Mesh::Mesh::shared_ptr d_mesh;
+        boost::shared_ptr<AMP::Discretization::DOFManager> d_nodalDofMap;
 
         boost::shared_ptr<Operator> d_operator;
 
