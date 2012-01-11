@@ -199,7 +199,9 @@ namespace Solver {
     
     // strategy to use for MFFD differencing (DS or WP)
     std::string d_sMFFDDifferencingStrategy;
-    
+
+    // string prefix for SNES options passed on command line or through petsc options
+    std::string d_SNESAppendOptionsPrefix;
     // error in MFFD approximations
     double d_dMFFDFunctionDifferencingError;
     
