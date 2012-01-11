@@ -330,15 +330,20 @@ PelletMechanicsLinearFEOperator {
 BottomPelletMechanicsNonlinearBC {
   name = "DirichletVectorCorrection"
     isAttachedToVolumeOperator = TRUE
-    number_of_ids = 1
-    id_0 = 2
+    number_of_ids = 3
+    id_0 = 5
     number_of_dofs_0 = 3
     dof_0_0 = 0
     dof_0_1 = 1
     dof_0_2 = 2
-    value_0_0 = 0
-    value_0_1 = 0
-    value_0_2 = 0
+    id_1 = 6
+    number_of_dofs_1 = 2
+    dof_1_0 = 1 
+    dof_1_1 = 2
+    id_2 = 7
+    number_of_dofs_2 = 2
+    dof_2_0 = 0
+    dof_2_1 = 2
 }
 
 PelletMechanicsNonlinearBC {
