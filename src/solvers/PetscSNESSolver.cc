@@ -79,6 +79,12 @@ PetscSNESSolver::initialize(boost::shared_ptr<SolverStrategyParameters> params)
 			   d_dAbsoluteTolerance,  d_dRelativeTolerance, d_dStepTolerance,
 			   d_iMaxIterations, d_iMaximumFunctionEvals);
 
+
+  if(d_SNESAppendOptionsPrefix!="")
+    {
+      SNESAppendOptionsPrefix(d_SNESSolver, d_SNESAppendOptionsPrefix.c_str());
+    }
+
   // if the initial guess is non-zero set the vectors accordingly
   if(parameters->d_pInitialGuess.get()!=NULL)
     {
@@ -383,6 +389,8 @@ PetscSNESSolver::getFromInput(const boost::shared_ptr<AMP::Database> db)
   d_bUsesJacobian = db->getBoolWithDefault("usesJacobian", false);
   d_sMFFDDifferencingStrategy = db->getStringWithDefault("MFFDDifferencingStrategy", MATMFFD_WP);
   d_dMFFDFunctionDifferencingError = db->getDoubleWithDefault("MFFDFunctionDifferencingError", PETSC_DEFAULT);
+
+  d_SNESAppendOptionsPrefix = db->getStringWithDefault("SNESAppendOptionsPrefix", "");
 
   if (db->keyExists("maximumFunctionEvals"))
      {
