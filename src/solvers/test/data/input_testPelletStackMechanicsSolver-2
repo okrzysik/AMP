@@ -21,7 +21,7 @@ PelletStackOperator {
 }
 
 Mesh_1 {
-  Filename = "simple_pellet_1x.e"
+  Filename = "butterfly_pellet_1x.e"
     MeshName = "pellet_1"
     x_offset = 0.0
     y_offset = 0.0
@@ -30,7 +30,7 @@ Mesh_1 {
 }
 
 Mesh_2 {
-  Filename = "simple_pellet_1x.e"
+  Filename = "butterfly_pellet_1x.e"
     MeshName = "pellet_2"
     x_offset = 0.0
     y_offset = 0.0
@@ -40,7 +40,7 @@ Mesh_2 {
 }
 
 Mesh_3 {
-  Filename = "simple_pellet_1x.e"
+  Filename = "butterfly_pellet_1x.e"
     MeshName = "pellet_3"
     x_offset = 0.0
     y_offset = 0.0
@@ -50,7 +50,7 @@ Mesh_3 {
 }
 
 Mesh_4 {
-  Filename = "simple_pellet_1x.e"
+  Filename = "butterfly_pellet_1x.e"
     MeshName = "pellet_4"
     x_offset = 0.0
     y_offset = 0.0
@@ -60,7 +60,7 @@ Mesh_4 {
 }
 
 Mesh_5 {
-  Filename = "simple_pellet_1x.e"
+  Filename = "butterfly_pellet_1x.e"
     MeshName = "pellet_5"
     x_offset = 0.0
     y_offset = 0.0
@@ -70,7 +70,7 @@ Mesh_5 {
 }
 
 Mesh_6 {
-  Filename = "simple_pellet_1x.e"
+  Filename = "butterfly_pellet_1x.e"
     MeshName = "pellet_6"
     x_offset = 0.0
     y_offset = 0.0
@@ -80,7 +80,7 @@ Mesh_6 {
 }
 
 Mesh_7 {
-  Filename = "simple_pellet_1x.e"
+  Filename = "butterfly_pellet_1x.e"
     MeshName = "pellet_7"
     x_offset = 0.0
     y_offset = 0.0
@@ -90,7 +90,7 @@ Mesh_7 {
 }
 
 Mesh_8 {
-  Filename = "simple_pellet_1x.e"
+  Filename = "butterfly_pellet_1x.e"
     MeshName = "pellet_8"
     x_offset = 0.0
     y_offset = 0.0
@@ -100,7 +100,7 @@ Mesh_8 {
 }
 
 Mesh_9 {
-  Filename = "simple_pellet_1x.e"
+  Filename = butterfly_pellet_1x.e"
     MeshName = "pellet_9"
     x_offset = 0.0
     y_offset = 0.0
@@ -110,7 +110,7 @@ Mesh_9 {
 }
 
 Mesh_10 {
-  Filename = "simple_pellet_1x.e"
+  Filename = "butterfly_pellet_1x.e"
     MeshName = "pellet_10"
     x_offset = 0.0
     y_offset = 0.0
@@ -120,7 +120,7 @@ Mesh_10 {
 }
 
 Mesh_11 {
-  Filename = "simple_pellet_1x.e"
+  Filename = "butterfly_pellet_1x.e"
     MeshName = "pellet_11"
     x_offset = 0.0
     y_offset = 0.0
@@ -130,7 +130,7 @@ Mesh_11 {
 }
 
 Mesh_12 {
-  Filename = "simple_pellet_1x.e"
+  Filename = "butterfly_pellet_1x.e"
     MeshName = "pellet_12"
     x_offset = 0.0
     y_offset = 0.0
@@ -292,6 +292,12 @@ PelletMechanicsNonlinearBVPOperator {
     BoundaryOperator = "PelletMechanicsNonlinearBC"
 }
 
+BottomPelletMechanicsLinearBVPOperator {
+  name = "LinearBVPOperator"
+    VolumeOperator = "PelletMechanicsLinearFEOperator"
+    BoundaryOperator = "BottomPelletMechanicsLinearBC"
+}
+
 PelletMechanicsLinearBVPOperator {
   name = "LinearBVPOperator"
     VolumeOperator = "PelletMechanicsLinearFEOperator"
@@ -347,6 +353,25 @@ PelletMechanicsNonlinearBC {
     dof_0_0 = 0
     dof_0_1 = 1
     dof_0_2 = 2
+}
+
+BottomPelletMechanicsLinearBC {
+  name = "DirichletMatrixCorrection"
+    symmetric_correction = FALSE
+    number_of_ids = 3
+    id_0 = 5
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+    id_1 = 6
+    number_of_dofs_1 = 2
+    dof_1_0 = 1 
+    dof_1_1 = 2
+    id_2 = 7
+    number_of_dofs_2 = 2
+    dof_2_0 = 0
+    dof_2_1 = 2
 }
 
 PelletMechanicsLinearBC {
