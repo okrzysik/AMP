@@ -6,37 +6,39 @@
 #include "ElementOperation.h"
 
 namespace AMP {
-namespace Operator {
+  namespace Operator {
 
-  /**
-   * This class encapsulates parameters used to initialize or reset operators using a
-   finite element discretization (FEOperators). It is an abstract base class.    
-   @see LinearFEOperator
-   @see NonlinearFEOperator
-   */
-  class FEOperatorParameters : public OperatorParameters {
-    public :
+    /**
+     * This class encapsulates parameters used to initialize or reset operators using a
+     finite element discretization (FEOperators). It is an abstract base class.    
+     @see LinearFEOperator
+     @see NonlinearFEOperator
+     */
+    class FEOperatorParameters : public OperatorParameters {
+      public :
 
-      /**
-        Constructor.
-        */
-      FEOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
-        : OperatorParameters(db) {  }
+        /**
+          Constructor.
+          */
+        FEOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
+          : OperatorParameters(db) {  }
 
-      /**
-        Destructor.
-        */
-      virtual ~FEOperatorParameters() {}
+        /**
+          Destructor.
+          */
+        virtual ~FEOperatorParameters() {}
 
-      boost::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to an element operation */
+        boost::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to an element operation */
+        boost::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
+        boost::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
 
-    protected :
+      protected :
 
-    private :
+      private :
 
-  };
+    };
 
-}
+  }
 }
 
 #endif

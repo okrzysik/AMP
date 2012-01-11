@@ -104,17 +104,9 @@ namespace AMP {
           */
         void reset(const boost::shared_ptr<OperatorParameters>& );
 
-        void setDofMaps(boost::shared_ptr<AMP::Discretization::DOFManager> inMap, 
-            boost::shared_ptr<AMP::Discretization::DOFManager> outMap) {
-          d_inDofMap = inMap;
-          d_outDofMap = outMap;
-        }
-
       protected :
 
         boost::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
-        boost::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
-        boost::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
 
       private :
 
