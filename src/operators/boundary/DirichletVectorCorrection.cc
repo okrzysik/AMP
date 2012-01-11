@@ -56,8 +56,7 @@ namespace AMP {
 
             if(d_valuesType == 1) {
               sprintf(key, "value_%d_%d", j, i);
-              AMP_INSIST( (params->d_db)->keyExists(key), "Key is missing!" );
-              d_dirichletValues1[j][i] = (params->d_db)->getDouble(key);
+              d_dirichletValues1[j][i] = (params->d_db)->getDoubleWithDefault(key, 0.0);
             }
           }//end for i
         }//end for j
