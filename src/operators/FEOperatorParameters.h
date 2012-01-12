@@ -4,6 +4,7 @@
 
 #include "operators/OperatorParameters.h"
 #include "ElementOperation.h"
+#include "discretization/DOF_Manager.h"
 
 namespace AMP {
   namespace Operator {
