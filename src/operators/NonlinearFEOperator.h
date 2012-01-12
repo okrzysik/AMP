@@ -7,7 +7,6 @@
 #include "FEOperatorParameters.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
-#include "discretization/DOF_Manager.h"
 
 #include <vector>
 
@@ -39,23 +38,6 @@ namespace AMP {
         virtual ~NonlinearFEOperator() {  }
 
         /**
-          This function must be implemented in the derived clases.
-          @return The number of different DOFMaps required for the FE assembly. This is typically 1
-          for square single-physics operators, 2 for rectangular single-physics operators and for 
-          multi-physics operators it depends on the variable types of the vectors corresponding to each physics.
-          */
-        virtual unsigned int numberOfDOFMaps() = 0;
-
-        /**
-          This function must be implemented in the derived clases.
-          @param [in] id Identifier for the type of DOFMap required. It is a
-          number between 0 (included) and numberOfDOFMaps (excluded)
-          @return the variable corresponding to the DOFMap specified by id. 
-          @see numberOfDOFMaps
-          */
-        virtual AMP::LinearAlgebra::Variable::shared_ptr getVariableForDOFMap(unsigned int id) = 0;
-
-        /**
           This function will be called just before looping over the elements to form the residual vector, so if the
           derived classes need to perform some initialization operations just before looping over the elements they can 
           do so by implementing these operations in this function.
@@ -85,7 +67,7 @@ namespace AMP {
           DOFMap and global vectors and matrices. This function typically extracts the local information from
           these global objects and passes them to the element operation.
           */
-        virtual void preElementOperation(const AMP::Mesh::MeshElement &, const std::vector<AMP::Discretization::DOFManager::shared_ptr> &)
+        virtual void preElementOperation(const AMP::Mesh::MeshElement &)
         {
           //Implemented in derived classes. 
         }

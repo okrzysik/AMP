@@ -9,57 +9,44 @@ namespace AMP {
         const boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r,
         const double a,  const double b)
     {
-      AMP_ERROR("NonlinearFEOperator is not converted yet");
-      /*
+      AMP_INSIST( (r != NULL), "NULL Residual/Output Vector" );
 
-         d_applyCount++;
+      AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable( this->getOutputVariable() );
 
-         AMP_INSIST( (r != NULL), "NULL Residual/Output Vector" );
+      AMP::Mesh::MeshIterator  el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
+      AMP::Mesh::MeshIterator  end_el = el.end();
 
-         unsigned int numDOFMaps = this->numberOfDOFMaps();
-         std::vector<AMP::Mesh::DOFMap::shared_ptr> dof_maps(numDOFMaps);
+      this->preAssembly(u, rInternal);
 
-         for(unsigned int i = 0; i < numDOFMaps; i++) {
-         dof_maps[i] = d_MeshAdapter->getDOFMap( this->getVariableForDOFMap(i) );
-         }
+      for( ; el != end_el; ++el) {
+        this->preElementOperation(*el);
 
-         AMP::Mesh::MeshManager::Adapter::ElementIterator  el = d_MeshAdapter->beginElement();
-         AMP::Mesh::MeshManager::Adapter::ElementIterator  end_el = d_MeshAdapter->endElement();
+        d_elemOp->apply();
 
-         AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable( this->getOutputVariable() );
+        this->postElementOperation();
+      }//end for el
 
-         this->preAssembly(u, rInternal);
+      this->postAssembly();
 
-         for( ; el != end_el; ++el) {
-         this->preElementOperation(*el, dof_maps);
+      if(f.get() == NULL) {
+        rInternal->scale(a);
+      } else {
+        AMP::LinearAlgebra::Vector::shared_ptr fInternal = f->subsetVectorForVariable( this->getOutputVariable() );
+        if(fInternal.get() == NULL) {
+          rInternal->scale(a);
+        } else {
+          rInternal->axpby(b, a, fInternal);
+        }
+      }
 
-         d_elemOp->apply();
-
-         this->postElementOperation();
-         }//end for el
-
-         this->postAssembly();
-
-         if(f.get() == NULL) {
-         rInternal->scale(a);
-         } else {
-         AMP::LinearAlgebra::Vector::shared_ptr fInternal = f->subsetVectorForVariable( this->getOutputVariable() );
-         if(fInternal.get() == NULL) {
-         rInternal->scale(a);
-         } else {
-         rInternal->axpby(b, a, fInternal);
-         }
-         }
-
-         if(d_iDebugPrintInfoLevel>2)
-         {
-         AMP::pout << "L2 norm of result of NonlinearFEOperator::apply is: " << rInternal->L2Norm() << std::endl;
-         }
-         if(d_iDebugPrintInfoLevel>5)
-         {
-         std::cout << rInternal << std::endl;
-         }
-         */
+      if(d_iDebugPrintInfoLevel>2)
+      {
+        AMP::pout << "L2 norm of result of NonlinearFEOperator::apply is: " << rInternal->L2Norm() << std::endl;
+      }
+      if(d_iDebugPrintInfoLevel>5)
+      {
+        std::cout << rInternal << std::endl;
+      }
     }
 
   }
