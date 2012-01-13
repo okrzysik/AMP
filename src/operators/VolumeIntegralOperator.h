@@ -51,7 +51,7 @@ namespace Operator {
       /**
         This function is called at the beginning of the element computation
         */
-      void preElementOperation(const AMP::Mesh::MeshElement &, const std::vector<AMP::Discretization::DOFManager::shared_ptr> &);
+      void preElementOperation(const AMP::Mesh::MeshElement &);
 
       /**
         This function is called at the end of the element computation

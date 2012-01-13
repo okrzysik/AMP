@@ -376,7 +376,7 @@ NodeToNodeMap::Point::Point ()
     for ( size_t i=0; i!=3; i++)
       pos[i] = 0.0;
     for ( size_t i=0; i!=3; i++)
-      dof[i] = -1;
+      dof[i] = static_cast<unsigned int>(-1);
 }
 NodeToNodeMap::Point::Point ( const Point &rhs )
 {
