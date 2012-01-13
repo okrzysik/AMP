@@ -251,6 +251,10 @@ COPY_TEST_DATA_FILE ( input_Diffusion-Fick-OxMSRZC09-MMS-1 )
 COPY_TEST_DATA_FILE ( input_Diffusion-Fick-TUI-MMS-1 )
 COPY_MESH_FILE ( cube4096.e )
 
+ADD_AMP_TEST_1_2_4 ( testTensorDiffusionManufacturedSolution-1 )
+COPY_TEST_DATA_FILE ( input_TensorDiffusion-Fick-MMS-1 )
+COPY_MESH_FILE ( cube4096.e )
+
 ADD_AMP_TEST_1_2_4 ( testLinearColumnOperator-1 )
 COPY_TEST_DATA_FILE ( input_testLinearColumnOperator-1 )
 COPY_TEST_DATA_FILE ( input_linearMechanics+ThermalDiffusion-TUI-1 )

@@ -6,6 +6,7 @@
  */
 
 #include "MassDensityModel.h"
+#include "materials/TensorProperty.h"
 
 namespace AMP {
 namespace Operator {
@@ -220,9 +221,8 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
     AMP_ASSERT((T.size() == U.size()) && (U.size() == result.size()) && (B.size() == U.size()));
     AMP_ASSERT(xyz.size() == result.size());
 
-    std::valarray<double> poly(10);
+    std::valarray<double> soln(10);
     size_t neval = result.size();
-    std::vector<double> coeff(neval), dCoeff(neval,0.);
 
     AMP::Materials::PropertyPtr sourceType;
     AMP::Materials::PropertyPtr dSourceType;
@@ -248,18 +248,50 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
     args.insert(std::make_pair("temperature", boost::shared_ptr<std::vector<double> >(new std::vector<double>(T))));
     args.insert(std::make_pair("concentration", boost::shared_ptr<std::vector<double> >(new std::vector<double>(U))));
     args.insert(std::make_pair("burnup", boost::shared_ptr<std::vector<double> >(new std::vector<double>(B))));
-    sourceType->evalv(coeff, args);
-    if (needD) {
-        dSourceType->evalv(dCoeff, args);
+
+    if (sourceType->isScalar()) {
+        std::vector<double> coeff(neval), dCoeff(neval,0.);
+		sourceType->evalv(coeff, args);
+		if (needD) {
+			dSourceType->evalv(dCoeff, args);
+		}
+
+		for (size_t i = 0; i < neval; i++)
+		{
+			d_ManufacturedSolution->evaluate(soln, xyz[i](0), xyz[i](1), xyz[i](2));
+
+			result[i] = coeff[i]*(soln[4]+soln[7]+soln[9]) +
+						dCoeff[i]*(soln[1]*soln[1]+soln[2]*soln[2]+soln[3]*soln[3]);
+		}
     }
 
-    for (size_t i = 0; i < neval; i++)
-    {
-        d_ManufacturedSolution->evaluate(poly, xyz[i](0), xyz[i](1), xyz[i](2));
+    if (sourceType->isTensor()) {
+    	boost::shared_ptr<Materials::TensorProperty<double> > sourceTensorType =
+    			boost::dynamic_pointer_cast<Materials::TensorProperty<double> >(sourceType);
+    	std::vector<size_t> dimensions = sourceTensorType->get_dimensions();
+    	std::vector<std::vector<boost::shared_ptr<std::vector<double> > > >
+    		coeff(dimensions[0], std::vector<boost::shared_ptr<std::vector<double> > >(dimensions[1],
+    				boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
+		sourceTensorType->evalv(coeff, args);
 
-        result[i] = coeff[i]*(poly[4]+poly[7]+poly[9]) +
-                    dCoeff[i]*(poly[1]*poly[1]+poly[2]*poly[2]+poly[3]*poly[3]);
+		// 4 + xx xy xz yy yz zz =
+		//      4  5  6  7  8  9 =
+		// xx xy xz
+		// yx yy yz
+		// zx zy zz
+		size_t xlate[3][3]={{4, 5, 6}, {5, 7, 8}, {6, 8, 9}};
+
+		for (size_t k = 0; k < neval; k++)
+		{
+			d_ManufacturedSolution->evaluate(soln, xyz[k](0), xyz[k](1), xyz[k](2));
+
+			result[k] = 0.;
+			for (size_t i=0; i<dimensions[0]; i++) for (size_t j=0; j<dimensions[1]; j++) {
+				result[k] +=  (*coeff[i][j])[k] * soln[xlate[i][j]];
+			}
+		}
     }
+
 }
 
 }
