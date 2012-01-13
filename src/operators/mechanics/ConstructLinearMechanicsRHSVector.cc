@@ -1,6 +1,8 @@
 
 #include "ConstructLinearMechanicsRHSVector.h"
 
+   //This file has not been converted!
+  /*
 void computeTemperatureRhsVector( AMP::Mesh::MeshManager::Adapter::shared_ptr mesh,
     boost::shared_ptr<AMP::Database> input_db,  
     AMP::LinearAlgebra::Variable::shared_ptr temperatureVar, 
@@ -264,6 +266,8 @@ void computeTemperatureRhsVector( AMP::Mesh::MeshManager::Adapter::shared_ptr me
   rInternal->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
 
 }
+
+*/
 
 
 

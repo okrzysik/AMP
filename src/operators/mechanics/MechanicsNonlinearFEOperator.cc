@@ -3,6 +3,9 @@
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 
+#if 0
+//This file has not been converted!
+
 namespace AMP {
   namespace Operator {
 
@@ -1089,4 +1092,5 @@ namespace AMP {
   }
 }//end namespace
 
+#endif
 

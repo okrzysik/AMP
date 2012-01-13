@@ -2,49 +2,19 @@
 #include "MechanicsLinearFEOperator.h"
 #include "utils/Utilities.h"
 
+#if 0
+//This file has not been converted!
+
 namespace AMP {
   namespace Operator {
-/*
-// Functions moved from header
-      void MechanicsLinearFEOperator::setInputVariableName(const std::string & name, int varId) {
-        (void) varId;	  
-        d_inpVariable->setName(name);
-      }
 
-      void MechanicsLinearFEOperator::setOutputVariableName(const std::string & name, int varId) {
-        (void) varId;	  
-        d_outVariable->setName(name);
-      }
+    AMP::LinearAlgebra::Variable::shared_ptr MechanicsLinearFEOperator::getInputVariable(int varId) {
+      return d_inpVariable;
+    }
 
-      AMP::LinearAlgebra::Variable::shared_ptr MechanicsLinearFEOperator::createInputVariable (const std::string & name, int varId) {
-        (void) varId;	  
-        AMP::LinearAlgebra::Variable::shared_ptr inpVar(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(name) );
-        return inpVar;
-      }
-
-      AMP::LinearAlgebra::Variable::shared_ptr MechanicsLinearFEOperator::createOutputVariable (const std::string & name, int varId) {
-        (void) varId;	  
-        AMP::LinearAlgebra::Variable::shared_ptr MechanicsLinearFEOperator::outVar(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(name) );
-        return outVar;
-      }
-
-      AMP::LinearAlgebra::Variable::shared_ptr MechanicsLinearFEOperator::getInputVariable(int varId) {
-        return d_inpVariable;
-      }
-
-      AMP::LinearAlgebra::Variable::shared_ptr MechanicsLinearFEOperator::getOutputVariable() {
-        return d_outVariable;
-      }
-
-      unsigned int MechanicsLinearFEOperator::numberOfDOFMaps() {
-        return 1;
-      }
-
-      AMP::LinearAlgebra::Variable::shared_ptr MechanicsLinearFEOperator::getVariableForDOFMap(unsigned int ) {
-        return d_inpVariable;
-      }
-
-
+    AMP::LinearAlgebra::Variable::shared_ptr MechanicsLinearFEOperator::getOutputVariable() {
+      return d_outVariable;
+    }
 
     MechanicsLinearFEOperator :: MechanicsLinearFEOperator (
         const boost::shared_ptr<MechanicsLinearFEOperatorParameters> & params)
@@ -78,7 +48,7 @@ namespace AMP {
         if(d_useUpdatedLagrangian) {
           d_refXYZ = d_MeshAdapter->createVector(d_inpVariable);
           d_refXYZ->zero();
-          
+
           AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_inpVariable);
 
           AMP::Mesh::MeshManager::Adapter::ElementIterator  el = d_MeshAdapter->beginElement();
@@ -159,8 +129,7 @@ namespace AMP {
       d_matrix->makeConsistent ();
     }
 
-    void MechanicsLinearFEOperator :: preElementOperation( const AMP::Mesh::MeshManager::Adapter::Element & elem, 
-        const std::vector<AMP::Mesh::DOFMap::shared_ptr> & dof_maps ) {
+    void MechanicsLinearFEOperator :: preElementOperation( const AMP::Mesh::MeshManager::Adapter::Element & elem) {
       unsigned int num_local_dofs = 0;
       for(unsigned int i = 0; i < 3; i++) {
         (dof_maps[0])->getDOFs (elem, d_dofIndices[i], i);
@@ -328,9 +297,8 @@ namespace AMP {
       d_materialModel->postLinearAssembly();
     }
 
-
-*/
   }
 }//end namespace
 
+#endif
 

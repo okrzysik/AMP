@@ -8,10 +8,12 @@
 #include "MechanicsNonlinearFEOperatorParameters.h"
 #include "MechanicsNonlinearElement.h"
 #include "MechanicsNonlinearUpdatedLagrangianElement.h"
-#include "ampmesh/MeshVariable.h"
 #include "vectors/MultiVariable.h"
 
 #include <vector>
+
+#if 0
+//This file has not been converted!
 
 namespace AMP {
 namespace Operator {
@@ -305,6 +307,8 @@ namespace Operator {
     }
 }
 }
+
+#endif
 
 #endif
 

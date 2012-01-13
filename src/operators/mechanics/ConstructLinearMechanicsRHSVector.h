@@ -6,10 +6,6 @@
 
 #include "boost/shared_ptr.hpp"
 
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/DOFMap.h"
-#include "ampmesh/MeshVariable.h"
-
 #include "utils/Utilities.h"
 #include "utils/Database.h"
 
@@ -31,6 +27,8 @@
 #include <algorithm>
 #include <vector>
 
+/*
+ //This file has not been converted! 
   void computeTemperatureRhsVector( AMP::Mesh::MeshManager::Adapter::shared_ptr mesh, 
       boost::shared_ptr<AMP::Database> input_db, 
       AMP::LinearAlgebra::Variable::shared_ptr temperatureVar, 
@@ -38,6 +36,7 @@
       const boost::shared_ptr<AMP::LinearAlgebra::Vector> &currTemperatureVec, 
       const boost::shared_ptr<AMP::LinearAlgebra::Vector> &prevTemperatureVec, 
       boost::shared_ptr<AMP::LinearAlgebra::Vector> &rhsVec);
+*/
 
 #endif
 

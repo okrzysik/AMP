@@ -1,3 +1,4 @@
+
 #ifndef included_AMP_DiffusionLinearFEOperator
 #define included_AMP_DiffusionLinearFEOperator
 
@@ -13,75 +14,67 @@
 
 #include <vector>
 
+#if 0
+//This file has not been converted!
+
 namespace AMP {
-namespace Operator {
+  namespace Operator {
 
-class DiffusionLinearFEOperator: public LinearFEOperator {
-public:
+    class DiffusionLinearFEOperator: public LinearFEOperator {
+      public:
 
-    DiffusionLinearFEOperator(const boost::shared_ptr<
+        DiffusionLinearFEOperator(const boost::shared_ptr<
             DiffusionLinearFEOperatorParameters>& params);
 
-    ~DiffusionLinearFEOperator() {
-    }
+        ~DiffusionLinearFEOperator() {
+        }
 
-    void preAssembly(const boost::shared_ptr<OperatorParameters>& params);
+        void preAssembly(const boost::shared_ptr<OperatorParameters>& params);
 
-    void postAssembly();
+        void postAssembly();
 
-    void preElementOperation(const AMP::Mesh::MeshElement &,
-            const std::vector<AMP::Discretization::DOFManager::shared_ptr> &);
+        void preElementOperation(const AMP::Mesh::MeshElement &);
 
-    void postElementOperation();
+        void postElementOperation();
 
-    AMP::LinearAlgebra::Variable::shared_ptr createInputVariable(const std::string & name, int varId = -1);
+        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
 
-    AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable(const std::string & name, int varId = -1);
+        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
+      protected:
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
+        bool d_useConstantTemperature;
 
-    void setInputVariableName(const std::string & name, int varId = -1);
+        bool d_useConstantConcentration;
 
-    void setOutputVariableName(const std::string & name, int varId = -1);
+        bool d_useConstantBurnup;
 
-    unsigned int numberOfDOFMaps();
+        AMP::LinearAlgebra::Vector::shared_ptr d_temperature;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getVariableForDOFMap(unsigned int);
+        AMP::LinearAlgebra::Vector::shared_ptr d_concentration;
 
-protected:
+        AMP::LinearAlgebra::Vector::shared_ptr d_burnup;
 
-    bool d_useConstantTemperature;
+        std::vector<unsigned int> d_dofIndices;
 
-    bool d_useConstantConcentration;
+        std::vector<std::vector<double> > d_elementStiffnessMatrix;
 
-    bool d_useConstantBurnup;
+        boost::shared_ptr<DiffusionLinearElement> d_diffLinElem;
 
-    AMP::LinearAlgebra::Vector::shared_ptr d_temperature;
+        boost::shared_ptr<DiffusionTransportModel> d_transportModel;
 
-    AMP::LinearAlgebra::Vector::shared_ptr d_concentration;
+        boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_inpVariable;
 
-    AMP::LinearAlgebra::Vector::shared_ptr d_burnup;
+        boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_outVariable;
 
-    std::vector<unsigned int> d_dofIndices;
+      private:
 
-    std::vector<std::vector<double> > d_elementStiffnessMatrix;
+    };
 
-    boost::shared_ptr<DiffusionLinearElement> d_diffLinElem;
-
-    boost::shared_ptr<DiffusionTransportModel> d_transportModel;
-
-    //boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_inpVariable;
-
-    //boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_outVariable;
-
-private:
-
-};
-
+  }
 }
-}
+
+#endif
 
 #endif
 
