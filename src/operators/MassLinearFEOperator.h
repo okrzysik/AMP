@@ -28,7 +28,7 @@ namespace Operator {
 
       void postAssembly();
 
-      void preElementOperation(const AMP::Mesh::MeshElement &, const std::vector<AMP::Discretization::DOFManager::shared_ptr> &);
+      void preElementOperation(const AMP::Mesh::MeshElement &);
 
       void postElementOperation();
 
