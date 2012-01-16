@@ -76,7 +76,7 @@ void calculateGrad(AMP::UnitTest *ut)
     std::cout << "Entering Gauss Point loop : "<< qrule.n_points()<< std::endl;
     for(unsigned int qp = 0; qp < qrule.n_points(); qp++) 
     {
-      std::cout<<"dphidx.size = "<<dphidx.size()<<std::endl;
+      std::cout<<"dphidx.size = "<<dphi3d.size()<<std::endl;
       for(size_t l = 0; l < dphi3d.size(); l++) {
           std::cout<<"dphidx["<<l<<"]["<<qp<<"]  = "<<dphi3d[l][qp]<<std::endl;
       }
