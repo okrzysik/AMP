@@ -118,7 +118,8 @@ int main(int argc, char *argv[])
   AMP::AMPManager::startup(argc, argv);
   AMP::UnitTest ut;
 
-  std::string exeName = "testPelletStackMechanicsSolver";
+  //std::string exeName = "testPelletStackMechanicsSolver-1";
+  std::string exeName = "testPelletStackMechanicsSolver-2";
 
   try {
     myTest(&ut, exeName);

@@ -116,8 +116,7 @@ namespace Operator {
 
           for(int i = 0; i < numDofIds; i++) {
             sprintf(key, "value_%d_%d", j, i);
-            AMP_INSIST( (params->d_db)->keyExists(key), "Key is missing!" );
-            d_dirichletValues[j][i] = (params->d_db)->getDouble(key);
+            d_dirichletValues[j][i] = (params->d_db)->getDoubleWithDefault(key, 0.0);
           }//end for i
         }//end for j
       }

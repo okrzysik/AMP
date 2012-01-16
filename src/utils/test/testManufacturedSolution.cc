@@ -46,7 +46,8 @@ void testit(AMP::UnitTest *ut,
 
     for (size_t i=0; i<na; i++) param[i] = i;
     for (size_t i=0; i<nc; i++) in[i] = i+1;
-    ms.evaluate(out, x,y,z, in, param);
+    ms.setTricubicParams(in, param);
+    ms.evaluate(out, x,y,z);
 
     std::string msg=geom+" " + order + " " + bc + " basics";
     ut->passes(msg);
@@ -59,7 +60,7 @@ int main ( int argc , char **argv )
     AMP::UnitTest ut;
     AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);
 
-    if (globalComm.getRank() == 1) {
+    if (globalComm.getRank() == 0) {
         try {
 	        testit( &ut, "Brick", "Quadratic", "Neumann", 5.,60.,700.);
             testit( &ut, "Brick", "Quadratic", "Dirichlet-1", 5.,60.,700.);
