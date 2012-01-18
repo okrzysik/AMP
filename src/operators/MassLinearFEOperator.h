@@ -14,79 +14,67 @@
 #include <vector>
 
 namespace AMP {
-namespace Operator {
+  namespace Operator {
 
-  class MassLinearFEOperator : public LinearFEOperator 
-  {
-    public :
+    class MassLinearFEOperator : public LinearFEOperator 
+    {
+      public :
 
-      MassLinearFEOperator(const boost::shared_ptr<MassLinearFEOperatorParameters>& params);
+        MassLinearFEOperator(const boost::shared_ptr<MassLinearFEOperatorParameters>& params);
 
-      ~MassLinearFEOperator() { }
+        ~MassLinearFEOperator() { }
 
-      void preAssembly(const boost::shared_ptr<AMP::Operator::OperatorParameters>&);
+        void preAssembly(const boost::shared_ptr<AMP::Operator::OperatorParameters>&);
 
-      void postAssembly();
+        void postAssembly();
 
-      void preElementOperation(const AMP::Mesh::MeshElement &);
+        void preElementOperation(const AMP::Mesh::MeshElement &);
 
-      void postElementOperation();
+        void postElementOperation();
 
-      AMP::LinearAlgebra::Variable::shared_ptr createInputVariable (const std::string & name, int varId = -1);
+        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
 
-      AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable (const std::string & name, int varId = -1);
+        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() ;
 
-      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
+        boost::shared_ptr<MassDensityModel> getDensityModel();
 
-      AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() ;
+      protected :
 
-      void setInputVariableName(const std::string & name, int varId = -1);
+        bool d_useConstantTemperature;
 
-      void setOutputVariableName(const std::string & name, int varId = -1);
+        bool d_useConstantConcentration;
 
-      unsigned int numberOfDOFMaps();
+        bool d_useConstantBurnup;
 
-      AMP::LinearAlgebra::Variable::shared_ptr getVariableForDOFMap(unsigned int );
+        double d_constantTemperatureValue;
 
-      boost::shared_ptr<MassDensityModel> getDensityModel();
+        double d_constantConcentrationValue;
 
-    protected :
+        double d_constantBurnupValue;
 
-      bool d_useConstantTemperature;
+        AMP::LinearAlgebra::Vector::shared_ptr d_temperature;
 
-      bool d_useConstantConcentration;
+        AMP::LinearAlgebra::Vector::shared_ptr d_concentration;
 
-      bool d_useConstantBurnup;
+        AMP::LinearAlgebra::Vector::shared_ptr d_burnup;
 
-      double d_constantTemperatureValue;
+        std::vector<unsigned int> d_dofIndices;
 
-      double d_constantConcentrationValue;
+        std::vector<std::vector<double> > d_elementMassMatrix;
 
-      double d_constantBurnupValue;
+        boost::shared_ptr<MassLinearElement> d_massLinElem;
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_temperature;
+        boost::shared_ptr<MassDensityModel> d_densityModel;
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_concentration;
+        //boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_inpVariable;
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_burnup;
+        //boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_outVariable;
 
-      std::vector<unsigned int> d_dofIndices;
+      private :
 
-      std::vector<std::vector<double> > d_elementMassMatrix;
+    };
 
-      boost::shared_ptr<MassLinearElement> d_massLinElem;
-
-      boost::shared_ptr<MassDensityModel> d_densityModel;
-
-      //boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_inpVariable;
-
-      //boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_outVariable;
-
-    private :
-
-  };
-
-}
+  }
 }
 
 #endif

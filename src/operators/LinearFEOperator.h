@@ -28,6 +28,8 @@ namespace AMP {
           : LinearOperator (params) 
         { 
           d_elemOp = (params->d_elemOp);
+          d_inDofMap = (params->d_inDofMap);
+          d_outDofMap = (params->d_outDofMap);
         }
 
         /**
@@ -89,6 +91,8 @@ namespace AMP {
       protected :
 
         boost::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
+        boost::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
+        boost::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
 
       private :
 

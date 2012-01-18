@@ -38,8 +38,8 @@ namespace AMP {
       return d_operator->getOutputVariable();
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr PetscMatrixShellOperator :: getInputVariable(int varId) {
-      return d_operator->getInputVariable(varId);
+    AMP::LinearAlgebra::Variable::shared_ptr PetscMatrixShellOperator :: getInputVariable() {
+      return d_operator->getInputVariable();
     }
 
     void PetscMatrixShellOperator :: setOperator(boost::shared_ptr<Operator> op) { 

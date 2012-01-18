@@ -93,12 +93,8 @@ namespace Operator {
           return d_outVariable->cloneVariable(name);
       }
 
-      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId) {
-        if(varId == -1) {
+      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
           return d_inpVariables; 
-        } else {
-          return d_inpVariables->getVariable(varId);
-        }
       }
 
       AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {

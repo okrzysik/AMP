@@ -141,61 +141,6 @@ namespace AMP {
         d_isInitialized = false;
       }
 
-    unsigned int MechanicsNonlinearFEOperator :: numberOfDOFMaps() {
-      if( d_isActive[Mechanics::TEMPERATURE] || d_isActive[Mechanics::BURNUP] || 
-          d_isActive[Mechanics::OXYGEN_CONCENTRATION] || d_isActive[Mechanics::LHGR] ) {
-        return 2;
-      } else {
-        return 1; 
-      }
-    }
-
-    AMP::LinearAlgebra::Variable::shared_ptr MechanicsNonlinearFEOperator :: getVariableForDOFMap(unsigned int id) {
-      AMP_ASSERT( id < (this->numberOfDOFMaps()) );
-      if(id == 0) {
-        return (d_inpVariables->getVariable(Mechanics::DISPLACEMENT));
-      } else {
-        if(d_isActive[Mechanics::TEMPERATURE]) {
-          return (d_inpVariables->getVariable(Mechanics::TEMPERATURE));
-        } else if(d_isActive[Mechanics::BURNUP]) {
-          return (d_inpVariables->getVariable(Mechanics::BURNUP));
-        } else if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
-          return (d_inpVariables->getVariable(Mechanics::OXYGEN_CONCENTRATION));
-        } else {
-          AMP_ASSERT(d_isActive[Mechanics::LHGR]);
-          return (d_inpVariables->getVariable(Mechanics::LHGR));
-        }
-      }
-    }
-
-    AMP::LinearAlgebra::Variable::shared_ptr MechanicsNonlinearFEOperator :: createInputVariable(const std::string & name, int varId) {
-      AMP::LinearAlgebra::Variable::shared_ptr inpVar;
-      switch(varId) {
-        case Mechanics::DISPLACEMENT : {
-                                         inpVar.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(name) );
-                                         break;
-                                       }
-        case Mechanics::TEMPERATURE : {
-                                        inpVar.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1>(name) );
-                                        break;
-                                      }
-        case Mechanics::BURNUP : {
-                                   inpVar.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1>(name) );
-                                   break;
-                                 }
-        case Mechanics::OXYGEN_CONCENTRATION : {
-                                                 inpVar.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1>(name) );
-                                                 break;
-                                               }
-        case Mechanics::LHGR : {
-                                 inpVar.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1>(name) );
-                                 break;
-                               }
-        default: 
-                               assert(false);
-      }
-      return inpVar;
-    }
 
     void MechanicsNonlinearFEOperator :: preAssembly(const boost::shared_ptr< AMP::LinearAlgebra::Vector >  &u, 
         boost::shared_ptr< AMP::LinearAlgebra::Vector >  &r) {
@@ -259,8 +204,7 @@ namespace AMP {
       d_outVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
     }
 
-    void MechanicsNonlinearFEOperator :: preElementOperation( const AMP::Mesh::MeshManager::Adapter::Element & elem, 
-        const std::vector<AMP::Mesh::DOFMap::shared_ptr> & dof_maps )
+    void MechanicsNonlinearFEOperator :: preElementOperation( const AMP::Mesh::MeshManager::Adapter::Element & elem )
     {
       unsigned int num_local_type0Dofs = 0;
       for(unsigned int i = 0; i < 3; i++) {

@@ -58,7 +58,7 @@ namespace Operator {
        */
       virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
-      virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
+      virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
 
       bool isValidInput(boost::shared_ptr<AMP::LinearAlgebra::Vector> &u);
       

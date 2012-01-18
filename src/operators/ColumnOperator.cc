@@ -57,13 +57,13 @@ namespace AMP {
         d_Operators.push_back(op);
       }
 
-    AMP::LinearAlgebra::Variable::shared_ptr ColumnOperator::getInputVariable(int varId)
+    AMP::LinearAlgebra::Variable::shared_ptr ColumnOperator::getInputVariable()
     {
       boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable( new AMP::LinearAlgebra::MultiVariable("ColumnVariable"));
 
       for(unsigned int i = 0; i < d_Operators.size(); i++)
       {
-        AMP::LinearAlgebra::Variable::shared_ptr opVar = d_Operators[i]->getInputVariable(varId);
+        AMP::LinearAlgebra::Variable::shared_ptr opVar = d_Operators[i]->getInputVariable();
         if(opVar.get()!=NULL)
         {
           retVariable->add(opVar);

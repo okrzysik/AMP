@@ -27,7 +27,7 @@ namespace AMP {
 
         AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
+        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
 
         static int matVec(ML_Operator *data, int in_length, double in[], int out_length, double out[]);
 

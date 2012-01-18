@@ -48,8 +48,8 @@ namespace Operator {
       return d_OutputVariable;
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1) {
-        return d_FickOperator->getInputVariable(varId);
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
+        return d_FickOperator->getInputVariable();
     }
 
     /**

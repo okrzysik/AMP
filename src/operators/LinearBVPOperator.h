@@ -45,9 +45,9 @@ namespace Operator {
        */
       void reset(const boost::shared_ptr<OperatorParameters>& );
 
-      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1) 
+      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() 
       {
-        return d_volumeOperator->getInputVariable(varId);
+        return d_volumeOperator->getInputVariable();
       }
 
       AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() 

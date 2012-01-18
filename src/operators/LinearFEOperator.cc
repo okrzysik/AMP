@@ -14,16 +14,14 @@ namespace AMP {
 
       const bool reuse_matrix = (params->d_db)->getBoolWithDefault("reset_reuses_matrix", true);
 
-      boost::shared_ptr<FEOperatorParameters> feOpParams = boost::dynamic_pointer_cast<FEOperatorParameters>(params);
-
       if( (d_matrix.get() == NULL) || (!reuse_matrix) ) {
-        AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector((feOpParams->d_inDofMap), getInputVariable(), false);
-        AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector((feOpParams->d_outDofMap), getOutputVariable(), false);
+        AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector(d_inDofMap, getInputVariable(), false);
+        AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector(d_outDofMap, getOutputVariable(), false);
         d_matrix = AMP::LinearAlgebra::createMatrix(inVec, outVec);
       }
 
-      AMP::Mesh::MeshIterator  el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
-      AMP::Mesh::MeshIterator  end_el = el.end();
+      AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
+      AMP::Mesh::MeshIterator end_el = el.end();
 
       this->preAssembly(params);
 

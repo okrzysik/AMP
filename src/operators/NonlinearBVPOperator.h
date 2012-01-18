@@ -73,9 +73,9 @@ namespace AMP {
 
         void modifyInitialSolutionVector(AMP::LinearAlgebra::Vector::shared_ptr sol);
 
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1) 
+        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() 
         {
-          return d_volumeOperator->getInputVariable(varId);
+          return d_volumeOperator->getInputVariable();
         }
 
         AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() 
