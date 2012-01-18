@@ -60,7 +60,7 @@ void calculateGrad(AMP::UnitTest *ut)
 
   AutoPtr<FEBase> fe_3d  (FEBase::build(3, fe_type));
   fe_3d->attach_quadrature_rule (&qrule);
-  const std::vector<Point>& q_point3d = fe_3d->get_xyz();
+  //const std::vector<Point>& q_point3d = fe_3d->get_xyz();
   
   const std::vector<std::vector<Real> >& dphi3d = fe_3d->get_dphidx();
 
