@@ -77,7 +77,7 @@ namespace Operator {
         return d_outVariable->cloneVariable(name);
       }
 
-      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1) {
+      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
         return d_inpVariable;
       }
 

@@ -61,7 +61,7 @@ namespace Operator {
 
       AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable (const std::string & name, int varId = -1) ;
 
-      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
+      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
 
       AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 

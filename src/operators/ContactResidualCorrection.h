@@ -56,7 +56,7 @@ namespace Operator {
         return retVariable;
       }
 
-      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1) {
+      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
         boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable( new AMP::LinearAlgebra::MultiVariable("ContactVariable"));
         retVariable->add(d_masterVariable);
         retVariable->add(d_slaveVariable);

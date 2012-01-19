@@ -39,7 +39,7 @@ namespace AMP {
       return var;
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr BlockOperator :: getInputVariable(int varId) {
+    AMP::LinearAlgebra::Variable::shared_ptr BlockOperator :: getInputVariable() {
       boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> var( new AMP::LinearAlgebra::MultiVariable("BlockVariable"));
       for(int i = 0; i < d_iNumColumnBlocks; i++) {
         var->add(d_blocks[0][i]->getInputVariable());

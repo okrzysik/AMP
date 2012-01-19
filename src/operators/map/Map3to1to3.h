@@ -62,7 +62,7 @@ public:
 
     /** \brief    
      */
-    virtual AMP::LinearAlgebra::Variable::shared_ptr  getInputVariable( int varID = -1 ) { return d_MapVariable; }
+    virtual AMP::LinearAlgebra::Variable::shared_ptr  getInputVariable() { return d_MapVariable; }
 
     /** \brief   
      */

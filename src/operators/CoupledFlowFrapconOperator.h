@@ -28,7 +28,7 @@ namespace Operator {
         d_Operators[2]->reset(params);
       }
 
-      virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1) {
+      virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
         return d_Operators[4]->getOutputVariable();
       }
 

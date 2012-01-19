@@ -14,7 +14,7 @@ namespace AMP {
       d_var = var;
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr MoveMeshOperator :: getInputVariable(int varId) {
+    AMP::LinearAlgebra::Variable::shared_ptr MoveMeshOperator :: getInputVariable() {
       return d_var;
     }
 

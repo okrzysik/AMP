@@ -33,7 +33,7 @@ VectorCopyOperator::getOutputVariable()
 }
 
 AMP::LinearAlgebra::Variable::shared_ptr
-VectorCopyOperator::getInputVariable(int)
+VectorCopyOperator::getInputVariable()
 {
   return d_copyVariable;
 }

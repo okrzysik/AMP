@@ -15,7 +15,7 @@ namespace AMP {
 
         void setVariable(AMP::LinearAlgebra::Variable::shared_ptr var);
 
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
+        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
 
         virtual void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, 
             const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,

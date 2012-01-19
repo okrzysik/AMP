@@ -26,7 +26,7 @@ public:
 
     void postAssembly();
 
-    void preElementOperation(const AMP::Mesh::MeshElement &, const std::vector<AMP::Discretization::DOFManager::shared_ptr> &);
+    void preElementOperation(const AMP::Mesh::MeshElement &);
 
     void postElementOperation();
 
@@ -43,7 +43,7 @@ public:
 
     AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable(const std::string & name, int varId = -1);
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
 
     AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
