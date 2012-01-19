@@ -416,7 +416,7 @@ namespace TimeIntegrator{
     
         ((IDATimeIntegrator*)user_data)->getIDATimeOperator()->apply(f, amp_yy, d_residual_Sundials, 1.0, 0.0);
 
-        (static_cast<AMP::LinearAlgebra::ManagedSundialsVector*>(rr->content))->copyVector( *d_residual_Sundials );
+        (static_cast<AMP::LinearAlgebra::ManagedSundialsVector*>(rr->content))->copyVector( d_residual_Sundials );
         
         
         return(IDA_SUCCESS);

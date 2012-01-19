@@ -168,8 +168,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   nonlinearSolver->setZeroInitialGuess(false);
 
-  FILE *fout1;
-  fout1 = fopen("Loading_Loop.txt","w");
+  //FILE *fout1;
+  //fout1 = fopen("Loading_Loop.txt","w");
 
   //double delta_displacement_shear = 0.00006;
   //double delta_displacement_axial = 0.00006;

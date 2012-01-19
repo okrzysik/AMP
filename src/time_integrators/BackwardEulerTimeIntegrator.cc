@@ -98,7 +98,7 @@ void
 BackwardEulerTimeIntegrator::updateSolution( void )
 {
   // we can figure out a swap later
-   d_pPreviousTimeSolution->copyVector( *d_solution );
+   d_pPreviousTimeSolution->copyVector( d_solution );
 }
 
 /*

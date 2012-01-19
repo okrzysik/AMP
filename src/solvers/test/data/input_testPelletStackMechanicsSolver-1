@@ -1,0 +1,433 @@
+
+DomainDecomposition = 0
+NumberOfPelletMeshes = 12
+NumberOfMeshes = 12
+NumberOfMeshToMeshMaps = 11
+
+NumberOfLoadingSteps = 1
+USE_POINT_LOAD = TRUE
+USE_THERMAL_LOAD = TRUE
+InitialTemperature = 310.0
+FinalTemperature = 400.0
+
+PelletStackOperator {
+  ONLY_Z_CORRECTION = FALSE
+    USE_SERIAL = TRUE
+    MASTER = 1 
+    SLAVE = 2
+    SCALING_FACTOR = 1.0e10
+    Variable = "displacement"
+    MeshNamePrefix = "pellet"
+}
+
+Mesh_1 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_1"
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
+    NumberOfElements = 1300
+}
+
+Mesh_2 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_2"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.0105
+    NumberOfElements = 1300
+}
+
+Mesh_3 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_3"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.021
+    NumberOfElements = 1300
+}
+
+Mesh_4 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_4"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.0315
+    NumberOfElements = 1300
+}
+
+Mesh_5 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_5"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.042
+    NumberOfElements = 1300
+}
+
+Mesh_6 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_6"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.0525
+    NumberOfElements = 1300
+}
+
+Mesh_7 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_7"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.063
+    NumberOfElements = 1300
+}
+
+Mesh_8 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_8"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.0735
+    NumberOfElements = 1300
+}
+
+Mesh_9 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_9"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.084
+    NumberOfElements = 1300
+}
+
+Mesh_10 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_10"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.0945
+    NumberOfElements = 1300
+}
+
+Mesh_11 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_11"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.105
+    NumberOfElements = 1300
+}
+
+Mesh_12 {
+  Filename = "simple_pellet_1x.e"
+    MeshName = "pellet_12"
+    x_offset = 0.0
+    y_offset = 0.0
+    //IMPORTANT: Pellet Height is 0.0105
+    z_offset = 0.1155
+    NumberOfElements = 1300
+}
+
+MeshToMeshMap_1 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_1"
+    Mesh2 = "pellet_2"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_2 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_2"
+    Mesh2 = "pellet_3"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_3 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_3"
+    Mesh2 = "pellet_4"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_4 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_4"
+    Mesh2 = "pellet_5"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_5 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_5"
+    Mesh2 = "pellet_6"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_6 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_6"
+    Mesh2 = "pellet_7"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_7 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_7"
+    Mesh2 = "pellet_8"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_8 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_8"
+    Mesh2 = "pellet_9"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_9 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_9"
+    Mesh2 = "pellet_10"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_10 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_10"
+    Mesh2 = "pellet_11"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+MeshToMeshMap_11 {
+  MapType = "NodeToNode"
+    Mesh1 = "pellet_11"
+    Mesh2 = "pellet_12"
+    Surface1 = 1 //Top of Mesh1
+    Surface2 = 2 //Bottom of Mesh2
+    DOFsPerObject = 3
+    VariableName = "displacement"
+    //IGNORE THIS
+    BoundaryId = 0
+}
+
+PointLoad {
+  name = "DirichletVectorCorrection"
+    number_of_ids = 1
+    id_0 = 1
+    number_of_dofs_0 = 1
+    dof_0_0 = 2
+    value_0_0 = -1.0e-1
+}
+
+BottomPelletMechanicsNonlinearBVPOperator {
+  name = "NonlinearBVPOperator"
+    VolumeOperator = "PelletMechanicsNonlinearFEOperator"
+    BoundaryOperator = "BottomPelletMechanicsNonlinearBC"
+}
+
+PelletMechanicsNonlinearBVPOperator {
+  name = "NonlinearBVPOperator"
+    VolumeOperator = "PelletMechanicsNonlinearFEOperator"
+    BoundaryOperator = "PelletMechanicsNonlinearBC"
+}
+
+BottomPelletMechanicsLinearBVPOperator {
+  name = "LinearBVPOperator"
+    VolumeOperator = "PelletMechanicsLinearFEOperator"
+    BoundaryOperator = "PelletMechanicsLinearBC"
+}
+
+PelletMechanicsLinearBVPOperator {
+  name = "LinearBVPOperator"
+    VolumeOperator = "PelletMechanicsLinearFEOperator"
+    BoundaryOperator = "PelletMechanicsLinearBC"
+}
+
+PelletMechanicsNonlinearFEOperator {
+  name = "MechanicsNonlinearFEOperator"
+    LocalModel = "PelletMechanicsMaterialModel"
+    MechanicsElement {
+      name="MechanicsNonlinearElement"
+    }
+  ActiveInputVariables {
+    DISPLACEMENT = "displacement"
+      TEMPERATURE = "temperature"
+  }
+  OutputVariable = "displacement"
+}
+
+PelletMechanicsLinearFEOperator {
+  name = "MechanicsLinearFEOperator"
+    MechanicsElement {
+      name="MechanicsLinearElement"
+    }
+  InputVariable = "displacement"
+    OutputVariable = "displacement"
+    isAttachedToNonlinearOperator = TRUE
+}
+
+BottomPelletMechanicsNonlinearBC {
+  name = "DirichletVectorCorrection"
+    isAttachedToVolumeOperator = TRUE
+    number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+}
+
+PelletMechanicsNonlinearBC {
+  name = "DirichletVectorCorrection"
+    SCALING_FACTOR = 1.0e10
+    isAttachedToVolumeOperator = TRUE
+    valuesType = 2
+    setResidual = TRUE
+    number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+}
+
+PelletMechanicsLinearBC {
+  name = "DirichletMatrixCorrection"
+    symmetric_correction = FALSE
+    number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+}
+
+PelletMechanicsMaterialModel {
+  name="ThermalVonMisesMatModel" 
+    Youngs_Modulus = 2.08e11
+    Poissons_Ratio = 0.23  
+    THERMAL_EXPANSION_COEFFICIENT = 2.0e-6
+    Linear_Strain_Hardening = 5.10e10   
+    Elastic_Yield_Stress = 3.45e9  
+}
+
+NonlinearSolver {
+  max_iterations = 50
+    max_error = 1e-12
+    zero_initial_guess = FALSE
+    absoluteTolerance = 1.0e-12
+    relativeTolerance = 1.0e-10
+    stepTolerance = 1.0e-14
+    maximumFunctionEvals = 1000
+    usesJacobian = FALSE
+    SNESOptions = "-snes_monitor -snes_type ls -snes_ksp_ew -snes_converged_reason -snes_ls_alpha 1.0e-4"
+
+    LinearSolver {
+      max_iterations = 100
+        max_error = 1e-12
+        ksp_type = "fgmres"
+        absolute_tolerance = 1.0e-12
+        relative_tolerance = 1.0e-11
+        divergence_tolerance = 1.0e03
+        max_krylov_dimension = 40
+        uses_preconditioner = TRUE
+        pc_type = "shell"
+        pc_side = "RIGHT"
+        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100"
+
+        PelletStackSolver {
+          ColumnSolver {
+            max_iterations = 1
+              max_error = 1e-12
+
+              KrylovSolver {
+                max_iterations = 100
+                  max_error = 1e-12
+                  ksp_type = "fgmres"
+                  absolute_tolerance = 1.0e-12
+                  relative_tolerance = 1.0e-11
+                  divergence_tolerance = 1.0e03
+                  max_krylov_dimension = 40
+                  uses_preconditioner = TRUE
+                  pc_type = "shell"
+                  pc_side = "RIGHT"
+                  KSPAppendOptionsPrefix = "kspPC_"
+                  KSPOptions = "-kspPC_ksp_max_it 100 -kspPC_ksp_converged_reason" 
+
+                  MLSolver {
+                    max_iterations = 1
+                      max_error = 1e-11
+                      problem_type = "NSSA"
+                      PDE_equations = 3
+                  }
+              }
+          }
+        }
+    }
+}
+
+
+
+
+

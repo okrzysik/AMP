@@ -9,6 +9,7 @@
 #include "MechanicsNonlinearElement.h"
 #include "MechanicsNonlinearUpdatedLagrangianElement.h"
 #include "vectors/MultiVariable.h"
+#include "vectors/Variable.h"
 #include "discretization/DOF_Manager.h"
 #include "ampmesh/MeshElement.h"
 
@@ -213,7 +214,7 @@ namespace AMP {
         std::vector<std::vector<double> > elementInputVectors1(Mechanics::TOTAL_NUMBER_OF_VARIABLES);
         std::vector<std::vector<double> > elementInputVectors_pre1(Mechanics::TOTAL_NUMBER_OF_VARIABLES);
 
-        updateMaterialForElementCommonFunction(elem, dof_maps, elementInputVectors1, elementInputVectors_pre1);
+        updateMaterialForElementCommonFunction(elem, elementInputVectors1, elementInputVectors_pre1);
 
         d_mechNonlinElem->updateMaterialModel<updateType>(elementInputVectors1);
       }
@@ -224,7 +225,7 @@ namespace AMP {
         std::vector<std::vector<double> > elementInputVectors2(Mechanics::TOTAL_NUMBER_OF_VARIABLES);
         std::vector<std::vector<double> > elementInputVectors_pre2(Mechanics::TOTAL_NUMBER_OF_VARIABLES);
 
-        updateMaterialForElementCommonFunction(elem, dof_maps, elementInputVectors2, elementInputVectors_pre2);
+        updateMaterialForElementCommonFunction(elem, elementInputVectors2, elementInputVectors_pre2);
 
         d_mechNULElem->updateMaterialModel<updateType>(elementInputVectors2, elementInputVectors_pre2);
       }

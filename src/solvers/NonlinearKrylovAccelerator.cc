@@ -307,7 +307,7 @@ NonlinearKrylovAccelerator::correction(boost::shared_ptr<AMP::LinearAlgebra::Vec
   d_iFreeVectorIndex = d_piNext[d_iFreeVectorIndex];
 
   /* Save the original f for the next call. */
-  d_pFunctionDifferenceVectors[new_loc]->copyVector(*f);
+  d_pFunctionDifferenceVectors[new_loc]->copyVector(f);
 
   if (d_bIsSubspace) 
     {
@@ -350,7 +350,7 @@ NonlinearKrylovAccelerator::correction(boost::shared_ptr<AMP::LinearAlgebra::Vec
 
   /* Save the accelerated correction for the next call. */
 
-  d_pCorrectionVectors[new_loc]->copyVector(*f);
+  d_pCorrectionVectors[new_loc]->copyVector(f);
 
   /* Prepend the new vectors to the list. */
   d_piPrevious[new_loc] = EOL;

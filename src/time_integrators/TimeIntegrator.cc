@@ -72,10 +72,10 @@ TimeIntegrator::initialize( boost::shared_ptr< TimeIntegratorParameters > parame
    // for now the solution is set to the initial conditions
    // by Jungho  
    d_solution = (parameters->d_ic_vector)->cloneVector();
-   d_solution->copyVector(*parameters->d_ic_vector);
+   d_solution->copyVector(parameters->d_ic_vector);
 
    d_pPreviousTimeSolution = (parameters->d_ic_vector)->cloneVector();
-   d_pPreviousTimeSolution->copyVector(*parameters->d_ic_vector);
+   d_pPreviousTimeSolution->copyVector(parameters->d_ic_vector);
 
    d_pSourceTerm = parameters->d_pSourceTerm;
    

@@ -42,6 +42,10 @@ namespace Operator {
           return (d_Operators[2]->getJacobianParameters(u));
         }
 
+      boost::shared_ptr<AMP::Operator::Operator> getBVPOperator() {
+        return d_Operators[2];
+      }
+
       virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
         return d_Operators[2]->getOutputVariable();
       }

@@ -23,7 +23,7 @@ namespace AMP {
     std::vector<double> points(3*num_nodes);
 
     n = fread(&(points[0]), sizeof(double), (3*num_nodes), fp);
-    AMP_INSIST((n == (3*num_nodes)), "Error while reading the file");
+    AMP_INSIST((n == size_t(3*num_nodes)), "Error while reading the file");
 
     for(int i = 0; i < num_nodes; i++) {
       mesh->add_point(::Point(points[(3*i) + 0], points[(3*i) + 1], points[(3*i) + 2]), i);
@@ -40,7 +40,7 @@ namespace AMP {
     std::vector<int> elemNodeMap(8*num_elem);
 
     n = fread(&(elemNodeMap[0]), sizeof(int), (8*num_elem), fp);
-    AMP_INSIST((n == (8*num_elem)), "Error while reading the file");
+    AMP_INSIST((n == size_t(8*num_elem)), "Error while reading the file");
 
     for(int i = 0; i < num_elem; i++) {
       ::Elem* newElem = new ::Hex8;
