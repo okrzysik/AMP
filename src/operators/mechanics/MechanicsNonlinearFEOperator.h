@@ -9,7 +9,6 @@
 #include "MechanicsNonlinearElement.h"
 #include "MechanicsNonlinearUpdatedLagrangianElement.h"
 #include "vectors/MultiVariable.h"
-#include "discretization/NodalVariable.h"
 #include "discretization/DOF_Manager.h"
 #include "ampmesh/MeshElement.h"
 
@@ -198,7 +197,7 @@ namespace AMP {
 
         boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables; /**< Input variables. */
 
-        boost::shared_ptr<AMP::Discretization::NodalVariable> d_outVariable; /**< Output variable */
+        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output variable */
         
         boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[Mechanics::TOTAL_NUMBER_OF_VARIABLES];
     };

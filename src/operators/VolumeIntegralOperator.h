@@ -69,19 +69,6 @@ namespace Operator {
       boost::shared_ptr<OperatorParameters>
           getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>&);
 
-      void setInputVariableName(const std::string & name, int varId = -1) {
-          if(varId == -1) {
-              d_inpVariables->setName(name);
-          } else {
-              (d_inpVariables->getVariable(varId))->setName(name);
-          }
-      }
-
-      void setOutputVariableName(const std::string & name, int varId = -1) {
-          (void) varId;
-          d_outVariable->setName(name);
-      }
-
       void setAuxVariable(const boost::shared_ptr<AMP::LinearAlgebra::MultiVariable>& var) {
         d_auxVariables = var;
       }

@@ -85,18 +85,6 @@ namespace Operator {
         return d_outVariable;
       }
 
-      void setInputVariableName(const std::string & name, int varId = -1) 
-      {
-        (void) varId;      
-        d_inpVariable->setName(name);
-      } 
-
-      void setOutputVariableName(const std::string & name, int varId = -1)
-      {
-        (void) varId;      
-        d_outVariable->setName(name);
-      }
-
       /**
         @param [in] zloc is the location vector in z direction.
         */
