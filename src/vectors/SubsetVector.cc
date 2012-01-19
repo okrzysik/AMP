@@ -16,8 +16,7 @@ Vector::shared_ptr  SubsetVector::view ( Vector::shared_ptr v , Variable::shared
     boost::shared_ptr<SubsetVariable> var = boost::dynamic_pointer_cast<SubsetVariable>( var_in );
     AMP_ASSERT( var.get() != NULL );
     // Subset the DOFManager and create a new communication list
-    boost::shared_ptr<AMP::Discretization::subsetDOFManager> subsetDOF = 
-        var->castTo<SubsetVariable>().getSubsetDOF( v->getDOFManager() );
+    boost::shared_ptr<AMP::Discretization::subsetDOFManager> subsetDOF = var->getSubsetDOF( v->getDOFManager() );
     if ( subsetDOF->numGlobalDOF() == 0 )
         return Vector::shared_ptr();
     std::vector<size_t> remote_DOFs = subsetDOF->getRemoteDOFs();

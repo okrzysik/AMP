@@ -25,11 +25,11 @@ namespace AMP {
 
         AMP_INSIST( params->d_db->keyExists("InputVariable"), "key not found" );
         std::string inpVarName = params->d_db->getString("InputVariable");
-        d_inpVariable.reset(new AMP::Discretization::NodalVariable(3, inpVarName) );
+        d_inpVariable.reset(new AMP::LinearAlgebra::Variable(inpVarName) );
 
         AMP_INSIST( params->d_db->keyExists("OutputVariable"), "key not found" );
         std::string outVarName = params->d_db->getString("OutputVariable");
-        d_outVariable.reset(new AMP::Discretization::NodalVariable(3, outVarName) );
+        d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVarName) );
 
         if(d_useUpdatedLagrangian) {
           d_refXYZ = AMP::LinearAlgebra::createVector(d_inDofMap, d_inpVariable, false);

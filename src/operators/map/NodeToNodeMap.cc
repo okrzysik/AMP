@@ -1,7 +1,7 @@
 #include "operators/map/NodeToNodeMap.h"
 #include "operators/map/NodeToNodeMapParameters.h"
 #include "ampmesh/MeshElement.h"
-#include "discretization/NodalVariable.h"
+#include "vectors/Variable.h"
 #include "discretization/simpleDOF_Manager.h"
 
 #include <set>
@@ -44,7 +44,7 @@ NodeToNodeMap::NodeToNodeMap ( const boost::shared_ptr<AMP::Operator::OperatorPa
 
     // Create a nodal variable and DOFManager (this should be moved out of here)
     std::string variableName = Params.d_db->getString("VariableName");
-    d_inpVariable = AMP::LinearAlgebra::Variable::shared_ptr( new AMP::Discretization::NodalVariable(DofsPerObj,variableName) );
+    d_inpVariable = AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable(variableName) );
 
     // Create the element iterators
     if ( d_mesh1.get() != NULL )
@@ -115,7 +115,6 @@ void NodeToNodeMap::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & 
     // Subset the vector for the variable
     AMP::LinearAlgebra::Vector::shared_ptr   curPhysics = u->subsetVectorForVariable ( d_inpVariable );
     AMP_INSIST( curPhysics , "apply received bogus stuff" );
-    AMP_INSIST( curPhysics->getVariable()->DOFsPerObject()==(size_t)DofsPerObj, "vector has different # of DOFs per node than map" );
     AMP_INSIST( curPhysics->getDOFManager()==d_DOFManager,"The DOF Manager that created the vector must match the one for the map" );
 
     // Get the DOFs to send

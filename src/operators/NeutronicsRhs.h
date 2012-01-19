@@ -6,7 +6,6 @@
 #include "operators/Operator.h"
 #include "operators/OperatorParameters.h"
 #include "NeutronicsRhsParameters.h"
-#include "vectors/DualVariable.h"
 #include "vectors/Variable.h"
 #include "utils/Utilities.h"
 

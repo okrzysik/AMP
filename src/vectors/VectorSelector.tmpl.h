@@ -3,9 +3,10 @@ namespace LinearAlgebra {
 
 
 template <typename T>
-bool   VS_ByVariableType<T>::isSelected ( Vector::const_shared_ptr v ) const
+bool  VS_ByVariableType<T>::isSelected ( Vector::const_shared_ptr v ) const
 {
-    return v->getVariable()->isA<T>();
+    T *ret_val = dynamic_cast<T *>(const_cast<Variable *>(v->getVariable().get()));
+    return ret_val != 0;
 }
 
 

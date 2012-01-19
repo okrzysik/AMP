@@ -83,12 +83,6 @@ namespace LinearAlgebra {
         */
       virtual Variable::shared_ptr  getVariable ( size_t which );
 
-      /** \brief  Throws an exception
-        *
-        * \details  Since this function is used to aid memory allocation, the
-        * fact that it throws an exception should not affect general users
-        */
-      virtual  size_t  variableID () const;
 
       /** \brief Returns the number of variables in the list
         *
@@ -123,15 +117,6 @@ namespace LinearAlgebra {
         * This is bounds checked in debug builds
         */
       virtual void setVariable ( size_t i , Variable::shared_ptr &var  );
-
-      /** \brief  Throws an exception
-        *
-        *  As mentioned in the details of Variable::DOFsPerObject, the number of DOFs may
-        *  be a field on the discretization.  It is possible to create such a variable with
-        *  multivectors.  Since the return value is undefined for MultiVariables, this method
-        *  throws an integer.
-        */
-			virtual  size_t   DOFsPerObject () const { throw 1; }
 
 
       // These are adequately documented elsewhere.

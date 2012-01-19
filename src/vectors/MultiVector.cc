@@ -563,37 +563,28 @@ Vector::shared_ptr  MultiVector::subsetVectorForVariable ( const Variable::share
 
     AMP_ASSERT ( name );
     retVal_1 = Vector::subsetVectorForVariable ( name );
-    if ( !retVal_1 )
-    {
-      for ( unsigned int i = 0 ; i != d_vVectors.size() ; i++ )
-      {
-        retVal_1 = d_vVectors[i]->subsetVectorForVariable ( name );
-        if ( retVal_1 )
-        {
-          break;
+    if ( !retVal_1 ) {
+        for (size_t i=0; i!=d_vVectors.size(); i++) {
+            retVal_1 = d_vVectors[i]->subsetVectorForVariable ( name );
+            if ( retVal_1 )
+                break;
         }
-      }
     }
-    if ( !retVal_1 )
-    {
-      if ( name->isA<MultiVariable> () )
-      {
-        retVal_1 = create ( name , getComm() );
-        MultiVector  &out_vec = retVal_1->castTo<MultiVector> ();
-        MultiVariable &in_var = name->castTo<MultiVariable> ();
-        for ( size_t i = 0 ; i != in_var.numVariables () ; i++ )
-        {
-          Vector::shared_ptr  t = subsetVectorForVariable ( in_var.getVariable ( i ) );
-          if ( !t )
-          {
-            retVal_1.reset ();
-            break;
-          }
-          out_vec.addVector ( t );
+    if ( !retVal_1 ) {
+        boost::shared_ptr<MultiVariable> multivariable = boost::dynamic_pointer_cast<MultiVariable>(name);
+        if ( multivariable.get() != NULL ) {
+            retVal_1 = create ( name , getComm() );
+            MultiVector  &out_vec = retVal_1->castTo<MultiVector> ();
+            for (size_t i=0; i!=multivariable->numVariables(); i++) {
+                Vector::shared_ptr  t = subsetVectorForVariable ( multivariable->getVariable ( i ) );
+                if ( !t ) {
+                    retVal_1.reset ();
+                    break;
+                }
+                out_vec.addVector ( t );
+            }
         }
-      }
     }
-
     return retVal_1;
 }
 
