@@ -74,16 +74,6 @@ namespace Operator {
 				return d_outVariable;
 			}
 
-			void setInputVariableName(const std::string & name, int  = -1) 
-			{
-				d_inpVariable->setName(name);
-			} 
-
-			void setOutputVariableName(const std::string & name, int  = -1)
-			{
-				d_outVariable->setName(name);
-			}
-
 			/**
 			  This member function is used to compute 1D locations.
 			  */
