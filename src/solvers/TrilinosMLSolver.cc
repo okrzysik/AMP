@@ -2,6 +2,7 @@
 #include "utils/Utilities.h"
 #include "TrilinosMLSolver.h"
 #include "vectors/trilinos/EpetraVector.h"
+#include "vectors/DataChangeFirer.h"
 #include "matrices/Matrix.h"
 #include "matrices/trilinos/EpetraMatrix.h"
 #include "operators/LinearOperator.h"

@@ -67,6 +67,16 @@ public:
     virtual const std::string  &getName() const;
 
 
+    /** \brief  Set the name of a variable
+      * \param  NewName  the new name of the variable
+      *
+      * \details Due to the hierarchical nature of Vectors and Variables, changing
+      *  the name of a variable can be a Very Dangerous Thing.  Before invoking
+      *  this function, make sure this is what you really want to do.
+      */
+    virtual void setName ( const std::string &NewName );
+
+
     /** \brief  Compares two variables for equality.
       * \param  rhs  Variable to compare 
       *

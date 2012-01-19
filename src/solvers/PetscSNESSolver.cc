@@ -377,7 +377,7 @@ PetscSNESSolver::setSNESFunction( boost::shared_ptr<AMP::LinearAlgebra::Vector> 
 void
 PetscSNESSolver::setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess )
 {
-  d_pSolutionVector->copyVector(*initialGuess);
+  d_pSolutionVector->copyVector(initialGuess);
 }
 
 void

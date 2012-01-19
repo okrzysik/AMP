@@ -63,12 +63,12 @@ namespace AMP {
         }//end for i
 
         std::string dispVarName = activeInpVar_db->getString("DISPLACEMENT");
-        AMP::LinearAlgebra::Variable::shared_ptr dispVar(new AMP::Discretization::NodalVariable(3, dispVarName) ); 
+        AMP::LinearAlgebra::Variable::shared_ptr dispVar(new AMP::LinearAlgebra::Variable(dispVarName) ); 
         d_inpVariables->setVariable(Mechanics::DISPLACEMENT, dispVar);
 
         if(d_isActive[Mechanics::TEMPERATURE]) {
           std::string varName = activeInpVar_db->getString("TEMPERATURE");
-          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::Discretization::NodalVariable(1, varName) );
+          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::Variable(varName) );
           d_inpVariables->setVariable(Mechanics::TEMPERATURE, dummyVar);
           if(d_isFrozen[Mechanics::TEMPERATURE]) {
             if( params->d_FrozenTemperature != NULL ) {
@@ -79,7 +79,7 @@ namespace AMP {
 
         if(d_isActive[Mechanics::BURNUP]) {
           std::string varName = activeInpVar_db->getString("BURNUP");
-          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::Discretization::NodalVariable(1, varName) );
+          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::Variable(varName) );
           d_inpVariables->setVariable(Mechanics::BURNUP, dummyVar);
           if(d_isFrozen[Mechanics::BURNUP]) {
             if( params->d_FrozenBurnup != NULL ) {
@@ -90,7 +90,7 @@ namespace AMP {
 
         if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
           std::string varName = activeInpVar_db->getString("OXYGEN_CONCENTRATION");
-          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::Discretization::NodalVariable(1, varName) );
+          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::Variable(varName) );
           d_inpVariables->setVariable(Mechanics::OXYGEN_CONCENTRATION, dummyVar);
           if(d_isFrozen[Mechanics::OXYGEN_CONCENTRATION]) {
             if( params->d_FrozenOxygenConcentration != NULL ) {
@@ -101,7 +101,7 @@ namespace AMP {
 
         if(d_isActive[Mechanics::LHGR]) {
           std::string varName = activeInpVar_db->getString("LHGR");
-          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::Discretization::NodalVariable(1, varName) );
+          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::Variable(varName) );
           d_inpVariables->setVariable(Mechanics::LHGR, dummyVar);
           if(d_isFrozen[Mechanics::LHGR]) {
             if( params->d_FrozenLHGR != NULL ) {
@@ -130,7 +130,7 @@ namespace AMP {
 
         AMP_INSIST( params->d_db->keyExists("OutputVariable"), "key not found" );
         std::string outVarName = params->d_db->getString("OutputVariable");
-        d_outVariable.reset(new AMP::Discretization::NodalVariable(3, outVarName) );
+        d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVarName) );
 
         d_isInitialized = false;
       }

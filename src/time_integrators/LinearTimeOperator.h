@@ -57,7 +57,7 @@ class LinearTimeOperator: public AMP::Operator::LinearOperator
   boost::shared_ptr<AMP::Operator::OperatorParameters> getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u); 
 
   // added by JL //correction by RS
-  AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1){ return d_pRhsOperator->getInputVariable(varId); }
+  AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(){ return d_pRhsOperator->getInputVariable(); }
 
   /**
    * returns a Variable object corresponding to the rhs operator
