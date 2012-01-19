@@ -2,63 +2,66 @@
 #ifndef included_AMP_MechanicsNonlinearFEOperatorParameters
 #define included_AMP_MechanicsNonlinearFEOperatorParameters
 
-#include "MechanicsLinearFEOperatorParameters.h"
+#include "FEOperatorParameters.h"
+#include "MechanicsMaterialModel.h"
 
 #include "vectors/Vector.h"
 
 namespace AMP {
-namespace Operator {
+  namespace Operator {
 
-  /**
-   * This class encapsulates parameters used to initialize or reset the
-   MechanicsNonlinearFEOperator.    
-   @see MechanicsNonlinearFEOperator
-   */
-  class MechanicsNonlinearFEOperatorParameters : public MechanicsLinearFEOperatorParameters {
-    public :
+    /**
+     * This class encapsulates parameters used to initialize or reset the
+     MechanicsNonlinearFEOperator.    
+     @see MechanicsNonlinearFEOperator
+     */
+    class MechanicsNonlinearFEOperatorParameters : public FEOperatorParameters {
+      public :
 
-      /**
-        Constructor.
-        */
-      MechanicsNonlinearFEOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
-        : MechanicsLinearFEOperatorParameters(db) { }
+        /**
+          Constructor.
+          */
+        MechanicsNonlinearFEOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
+          : FEOperatorParameters(db) { }
 
-      /**
-        Destructor.
-        */
-      virtual ~MechanicsNonlinearFEOperatorParameters() { }
+        /**
+          Destructor.
+          */
+        virtual ~MechanicsNonlinearFEOperatorParameters() { }
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_EquilibriumDisplacement; /**< Displacement at equilibrium. */
+        boost::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_EquilibriumTemperature; /**< Temperature at equilibrium. */
+        AMP::LinearAlgebra::Vector::shared_ptr d_EquilibriumDisplacement; /**< Displacement at equilibrium. */
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_EquilibriumBurnup; /**< Burnup at equilibrium. */
+        AMP::LinearAlgebra::Vector::shared_ptr d_EquilibriumTemperature; /**< Temperature at equilibrium. */
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_EquilibriumOxygenConcentration; /**< Oxygen concentration at equilibrium. */
+        AMP::LinearAlgebra::Vector::shared_ptr d_EquilibriumBurnup; /**< Burnup at equilibrium. */
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_EquilibriumLHGR; /**< Linear Heat Generation Rate at equilibrium. */
+        AMP::LinearAlgebra::Vector::shared_ptr d_EquilibriumOxygenConcentration; /**< Oxygen concentration at equilibrium. */
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_ReferenceTemperature; /**< Reference temperature */
+        AMP::LinearAlgebra::Vector::shared_ptr d_EquilibriumLHGR; /**< Linear Heat Generation Rate at equilibrium. */
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_FrozenTemperature; /**< Frozen temperature. This is used when displacement 
-                                                and temperature are solved in an uncoupled fashion. */
+        AMP::LinearAlgebra::Vector::shared_ptr d_ReferenceTemperature; /**< Reference temperature */
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_FrozenBurnup; /**< Frozen burnup. This is used when displacement and burnup
-                                           are solved in an uncoupled fashion. */
+        AMP::LinearAlgebra::Vector::shared_ptr d_FrozenTemperature; /**< Frozen temperature. This is used when displacement 
+                                                                      and temperature are solved in an uncoupled fashion. */
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_FrozenOxygenConcentration; /**< Frozen oxygen concentration. This is used when
-                                                        displacement and oxygen concentration
-                                                        are solved in an uncoupled fashion. */
+        AMP::LinearAlgebra::Vector::shared_ptr d_FrozenBurnup; /**< Frozen burnup. This is used when displacement and burnup
+                                                                 are solved in an uncoupled fashion. */
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_FrozenLHGR; /**< Frozen Linear Heat Generation Rate. This is used when creep is simulated. */
+        AMP::LinearAlgebra::Vector::shared_ptr d_FrozenOxygenConcentration; /**< Frozen oxygen concentration. This is used when
+                                                                              displacement and oxygen concentration
+                                                                              are solved in an uncoupled fashion. */
 
-    protected :
+        AMP::LinearAlgebra::Vector::shared_ptr d_FrozenLHGR; /**< Frozen Linear Heat Generation Rate. This is used when creep is simulated. */
 
-    private :
+      protected :
 
-  };
+      private :
 
-}
+    };
+
+  }
 }
 
 #endif

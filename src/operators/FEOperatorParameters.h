@@ -4,7 +4,6 @@
 
 #include "operators/OperatorParameters.h"
 #include "ElementOperation.h"
-#include "discretization/DOF_Manager.h"
 
 namespace AMP {
   namespace Operator {
@@ -30,8 +29,6 @@ namespace AMP {
         virtual ~FEOperatorParameters() {}
 
         boost::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to an element operation */
-        boost::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
-        boost::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
 
       protected :
 

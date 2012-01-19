@@ -9,11 +9,11 @@
 #include "MechanicsNonlinearElement.h"
 #include "MechanicsNonlinearUpdatedLagrangianElement.h"
 #include "vectors/MultiVariable.h"
+#include "discretization/NodalVariable.h"
+#include "discretization/DOF_Manager.h"
+#include "ampmesh/MeshElement.h"
 
 #include <vector>
-
-#if 0
-//This file has not been converted!
 
 namespace AMP {
   namespace Operator {
@@ -72,7 +72,7 @@ namespace AMP {
           input vector that is relevant for the computation in the current element is extracted 
           and passed to MechanicsNonlinearElement.
           */
-        void preElementOperation(const AMP::Mesh::MeshManager::Adapter::Element &);
+        void preElementOperation(const AMP::Mesh::MeshElement &);
 
         /**
           This function is called at the end of the element computation. The entries of the 
@@ -147,34 +147,18 @@ namespace AMP {
           */
         void printStressAndStrain(AMP::LinearAlgebra::Vector::shared_ptr u, const std::string & fname);
 
-        /**
-          Creates vectors containing the stress and strain values at each Gauss point.
-          The 6 components of stress and strain at each Gauss point are arranged in the order:
-          xx, yy, zz, yz, xz and  xy.
-          @param [in] u Input vector 
-          @param [out] stress Stresses
-          @param [out] strain Strains
-          */
-        void computeStressesAndStrains(AMP::LinearAlgebra::Vector::shared_ptr u,
-            AMP::LinearAlgebra::Vector::shared_ptr & stress, AMP::LinearAlgebra::Vector::shared_ptr & strain);
-
         boost::shared_ptr<MechanicsMaterialModel> getMaterialModel() { return d_materialModel; }
 
       protected :
 
         template <MechanicsNonlinearElement::MaterialUpdateType updateType>
-          void updateMaterialForElement(const AMP::Mesh::MeshManager::Adapter::Element & , 
-              const std::vector<AMP::Mesh::DOFMap::shared_ptr> & );
+          void updateMaterialForElement(const AMP::Mesh::MeshElement &);
 
         template <MechanicsNonlinearUpdatedLagrangianElement::MaterialUpdateType updateType>
-          void updateMaterialForUpdatedLagrangianElement(const AMP::Mesh::MeshManager::Adapter::Element & ,
-              const std::vector<AMP::Mesh::DOFMap::shared_ptr> & );
+          void updateMaterialForUpdatedLagrangianElement(const AMP::Mesh::MeshElement &);
 
-        void updateMaterialForElementCommonFunction(const AMP::Mesh::MeshManager::Adapter::Element & , const std::vector<AMP::Mesh::DOFMap::shared_ptr> &, 
+        void updateMaterialForElementCommonFunction(const AMP::Mesh::MeshElement &, 
             std::vector<std::vector<double> >&, std::vector<std::vector<double> >& );
-
-        std::vector<unsigned int> d_type0DofIndices[3]; /**< DOF indices for the DISPLACEMENT variable type. */
-        std::vector<unsigned int> d_type1DofIndices; /**< DOF indices for the TEMPERATURE/BURNUP/OXYGEN_CONCENTRATION/LHGR variable types. */
 
         unsigned int d_numNodesForCurrentElement; /**< Number of nodes in the current element. */
 
@@ -210,20 +194,17 @@ namespace AMP {
 
         bool d_useUpdatedLagrangian; /**< A flag that checks whether to use Updated Lagrangian formulation or not. */
 
-      private :
-
         bool d_isInitialized; /**< A flag that is true if init() has been called and false otherwsie. */
 
         boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables; /**< Input variables. */
 
-        boost::shared_ptr<AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3> > d_outVariable; /**< Output variable. */
-
+        boost::shared_ptr<AMP::Discretization::NodalVariable> d_outVariable; /**< Output variable */
+        
+        boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[Mechanics::TOTAL_NUMBER_OF_VARIABLES];
     };
 
     template <MechanicsNonlinearElement::MaterialUpdateType updateType>
-      void MechanicsNonlinearFEOperator :: updateMaterialForElement(const
-          AMP::Mesh::MeshManager::Adapter::Element & elem, const std::vector<AMP::Mesh::DOFMap::shared_ptr> & dof_maps)
-      {
+      void MechanicsNonlinearFEOperator :: updateMaterialForElement(const AMP::Mesh::MeshElement & elem) {
         std::vector<std::vector<double> > elementInputVectors1(Mechanics::TOTAL_NUMBER_OF_VARIABLES);
         std::vector<std::vector<double> > elementInputVectors_pre1(Mechanics::TOTAL_NUMBER_OF_VARIABLES);
 
@@ -233,8 +214,7 @@ namespace AMP {
       }
 
     template <MechanicsNonlinearUpdatedLagrangianElement::MaterialUpdateType updateType>
-      void MechanicsNonlinearFEOperator :: updateMaterialForUpdatedLagrangianElement(const
-          AMP::Mesh::MeshManager::Adapter::Element & elem, const std::vector<AMP::Mesh::DOFMap::shared_ptr> & dof_maps)
+      void MechanicsNonlinearFEOperator :: updateMaterialForUpdatedLagrangianElement(const AMP::Mesh::MeshElement & elem)
       {
         std::vector<std::vector<double> > elementInputVectors2(Mechanics::TOTAL_NUMBER_OF_VARIABLES);
         std::vector<std::vector<double> > elementInputVectors_pre2(Mechanics::TOTAL_NUMBER_OF_VARIABLES);
@@ -245,8 +225,6 @@ namespace AMP {
       }
   }
 }
-
-#endif
 
 #endif
 

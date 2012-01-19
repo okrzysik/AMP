@@ -2,7 +2,7 @@
 #ifndef included_AMP_MechanicsLinearFEOperatorParameters
 #define included_AMP_MechanicsLinearFEOperatorParameters
 
-#include "operators/FEOperatorParameters.h"
+#include "operators/LinearFEOperatorParameters.h"
 #include "MechanicsMaterialModel.h"
 
 #include <vector>
@@ -15,14 +15,14 @@ namespace AMP {
      MechanicsLinearFEOperator.    
      @see MechanicsLinearFEOperator
      */
-    class MechanicsLinearFEOperatorParameters : public FEOperatorParameters {
+    class MechanicsLinearFEOperatorParameters : public LinearFEOperatorParameters {
       public :
 
         /**
           Constructor.
           */
         MechanicsLinearFEOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
-          : FEOperatorParameters(db) {  }
+          : LinearFEOperatorParameters(db) {  }
 
         /**
           Destructor.

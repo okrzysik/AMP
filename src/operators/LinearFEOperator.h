@@ -4,7 +4,7 @@
 
 /* AMP files */
 #include "LinearOperator.h"
-#include "FEOperatorParameters.h"
+#include "LinearFEOperatorParameters.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 
@@ -24,7 +24,7 @@ namespace AMP {
         /**
           Constructor. This copies the share pointer to the element operation from the input parameter object.
           */
-        LinearFEOperator(const boost::shared_ptr<FEOperatorParameters>& params)
+        LinearFEOperator(const boost::shared_ptr<LinearFEOperatorParameters>& params)
           : LinearOperator (params) 
         { 
           d_elemOp = (params->d_elemOp);
@@ -93,8 +93,6 @@ namespace AMP {
         boost::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
         boost::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
         boost::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
-
-      private :
 
     };
 
