@@ -40,18 +40,14 @@ public:
 
 	ManufacturedSolution(boost::shared_ptr<Database> db);
 
-	void evaluate(std::valarray<double> &result, const double x, const double y, const double z)
-	{
-		AMP_ASSERT(x>=d_MinX and x<=d_MaxX);
-		AMP_ASSERT(y>=d_MinY and y<=d_MaxY);
-		AMP_ASSERT(z>=d_MinZ and z<=d_MaxZ);
-		double xs, ys, zs;
-		xs = (x-d_MinX)*d_ScaleX;
-		ys = (y-d_MinY)*d_ScaleY;
-		zs = (z-d_MinZ)*d_ScaleZ;
-
-		(*d_functionPointer)(result, xs, ys, zs, this);
-	}
+	/**
+	 * Evaluate the manufactured solution at a point.
+	 *  \param result output derivatives (length >= 10)
+	 *  \param x x-coordinate
+	 *  \param y y-coordinate
+	 *  \param z z-coordinate
+	 */
+	void evaluate(std::valarray<double> &result, const double x, const double y, const double z);
 
 	size_t getNumberOfParameters(){return d_NumberOfParameters;}
 
@@ -98,15 +94,15 @@ private:
 			
 	static void quad_cyl_rod_none(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
 			
-	static void cubic_cyl_rod_neumann(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
+	static void cubic_cyl_shell_neumann(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
 
 	static void cubic_cyl_rod_dirichletz2(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
+
+	static void cubic_cyl_rod_rz_none(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
 
 	static void cubic_cyl_rod_none(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
 
 	static void quad_cyl_shell_neumann(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
-
-	static void quad_cyl_shell_none(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
 
 	static void quad_cyl_qtr_shell_neumann(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
 
@@ -130,7 +126,7 @@ private:
 	std::valarray<std::valarray<double> > geths(){return d_hs;}
 
 	enum FunctionType {POLYNOMIAL, GENERALQUADRATIC};
-	enum Geometry {BRICK, CYLROD, CYLSHELL, QTRCYLSHELL, LASTGeometry};
+	enum Geometry {BRICK, CYLROD, CYLRODRZ, CYLSHELL, QTRCYLSHELL, LASTGeometry};
 	enum Order {QUADRATIC, CUBIC, FOURIER, GAUSSIAN, LASTOrder};
 	enum BCType {NEUMANN, DIRICHLET1, DIRICHLET2, DIRICHLETZ2, NONE, LASTType};
 
@@ -152,9 +148,15 @@ private:
 	double d_MinX, d_MaxX, d_ScaleX;
 	double d_MinY, d_MaxY, d_ScaleY;
 	double d_MinZ, d_MaxZ, d_ScaleZ;
+	double d_MinR, d_MaxR, d_ScaleR;
+	double d_MinTh, d_MaxTh, d_ScaleTh;
+	double d_MaximumTheta;
+	double d_Pi;
 
 	std::valarray<std::valarray<double> > d_h;
 	std::valarray<std::valarray<double> > d_hs; // symmetrized h
+
+	bool d_CylindricalCoords;
 };
 
 }

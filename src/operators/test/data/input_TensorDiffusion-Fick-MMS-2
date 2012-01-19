@@ -1,0 +1,147 @@
+NumberOfMeshes = 1
+Mesh_1{
+  Filename = "cylinder4K.e"
+  MeshName = "Mesh"
+  x_offset = 0.0
+  y_offset = 0.0
+  z_offset = 0.0
+  NumberOfElements = 4096
+}
+
+FickNonlinearBVPOperator {
+   name="NonlinearBVPOperator"
+   print_info_level = 1
+
+  VolumeOperator="FickDiffusionNonlinearFEOperator"
+   
+  BoundaryOperator="FickDirichletVectorCorrection"
+}
+
+FickLinearBVPOperator {
+   name="LinearBVPOperator"
+   print_info_level = 1
+
+   VolumeOperator="FickDiffusionLinearFEOperator"
+   BoundaryOperator="FickDirichletMatrixCorrection"
+}
+
+ManufacturedSourceOperator {
+    name = "MassLinearFEOperator"
+    InputVariable = "concentration"
+    OutputVariable = "manufactured"
+    print_info_level = 3
+    reset_reuses_matrix = TRUE
+    FixedConcentration = 0.15
+    FixedTemperature   = 750
+    FixedBurnup   = 0.0
+
+    MassElement {
+        name = "MassLinearElement"
+		print_info_level = 3
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }    
+    LocalModel ="MassDensityModel"  
+}
+
+FickDiffusionNonlinearFEOperator{
+	 name="DiffusionNonlinearFEOperator"
+	 InputVariable="concentration"
+	 OutputVariable="divergence"
+	 print_info_level = 1
+	
+	 ActiveInputVariables { 
+	   concentration = "concentration"
+	 }
+	 PrincipalVariable = 1
+
+         LocalModel = "DiffusionTransportModel"
+
+         DiffusionElement {
+	      name = "DiffusionNonlinearElement"
+	      FE_ORDER = "FIRST"  
+	      FE_FAMILY = "LAGRANGE"
+	      QRULE_TYPE = "QGAUSS"
+	      QRULE_ORDER = "DEFAULT"
+	   }
+   }
+
+FickDirichletVectorCorrection{
+   	 name = "DirichletVectorCorrection"
+     print_info_level = 3
+     skip_params = FALSE
+     number_of_ids = 2
+     id_0         =   4
+     number_of_dofs_0 =   1
+     dof_0_0          =   0
+     value_0_0        =  -4.982361720289004
+     id_1         =   6 
+     number_of_dofs_1 =   1
+     dof_1_0          =   0
+     value_1_0        =  -4.426041611890331
+   }
+
+FickDiffusionLinearFEOperator{
+      name="DiffusionLinearFEOperator"
+      InputVariable="concentration"
+      OutputVariable="divergence"
+      print_info_level = 3
+
+     DiffusionElement {
+       name = "DiffusionLinearElement"
+       print_info_level = 3
+       FE_ORDER = "FIRST"  
+       FE_FAMILY = "LAGRANGE"
+       QRULE_TYPE = "QGAUSS"
+       QRULE_ORDER = "DEFAULT"
+     }
+
+     LocalModel = "DiffusionTransportModel"
+   }
+   
+FickDirichletMatrixCorrection{
+   	 name = "DirichletVectorCorrection"
+     print_info_level = 3
+     skip_params = FALSE
+     number_of_ids = 2
+     id_0         =   4
+     number_of_dofs_0 =   1
+     dof_0_0          =   0
+     value_0_0        =  -4.982361720289004
+     id_1         =   6 
+     number_of_dofs_1 =   1
+     dof_1_0          =   0
+     value_1_0        =  -4.426041611890331
+   }
+
+DiffusionTransportModel{
+        name = "DiffusionCylindricalTransportModel"
+        Material = "RadialPolynomial"
+        Property = "FickCoefficient"
+ 		RadiusArgument = "radius"
+ 		// coefficients for the polynomial 1. + 1000 r (1 - r) (r - .2) (r - .52) (r - .63) (r - .8)
+        Parameters =  1., 52.416, -564.016, 2149.2, -3787.6, 3150., -1000.
+} 
+	
+MassDensityModel{
+        name = "MassDensityModel"
+        Material = "Independent"
+		Equation = "ManufacturedSource"
+		ManufacturedSourceEquation = "Fick"
+		ManufacturedVariable = "Concentration"
+        Property = "TensorFickCoefficient"
+	    print_info_level = 3
+     	ManufacturedSolution {
+     		Geometry = "CylindricalRodRZ"
+     		Order = "Cubic"
+     		BoundaryType = "None"
+     		Coefficients = -3.298170124741389, -3.3608066162412227, 2.4361892675032273, -1.8456453120058591, -1.5481742098989426, -2.207065870729561, 3.813255767348492, -1.7669959446433472, 1.4561206341191433, -1.2690771317293819, 3.995237387986208, 1.139269470399439, -2.04866241907197, 3.812693842387503, -2.350545154388764, 1.700897116750693
+     		MinR = 0.
+     		MaxR = 1.1
+     		MinZ = -2.1
+     		MaxZ = 2.1
+     	}
+}  

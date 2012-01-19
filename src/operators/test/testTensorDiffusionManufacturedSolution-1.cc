@@ -43,7 +43,7 @@
 #include "applyTests.h"
 
 
-void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
+void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string meshName)
 {
   // Tests diffusion Dirchlet BVP operator for temperature
 
@@ -62,7 +62,7 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
   // Mesh
   AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
   AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "cube" );
+  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( meshName.c_str() );
 
   // Create nonlinear diffusion BVP operator and access volume nonlinear Diffusion operator
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> nonlinearPhysicsModel;
@@ -89,6 +89,7 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
   boost::shared_ptr<AMP::Operator::MassLinearFEOperator> sourceOp =
          boost::dynamic_pointer_cast<AMP::Operator::MassLinearFEOperator>(sourceOperator);
 
+
   boost::shared_ptr<AMP::Operator::MassDensityModel> densityModel = sourceOp->getDensityModel();
   boost::shared_ptr<AMP::ManufacturedSolution> mfgSolution = densityModel->getManufacturedSolution();
 
@@ -108,16 +109,27 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
   rhsVec->setToScalar(0.0);
 
   // Fill in manufactured solution
+  boost::shared_ptr<AMP::Database> source_db = input_db->getDatabase("ManufacturedSourceOperator");
+  std::string sourceModelName = source_db->getString("LocalModel");
+  boost::shared_ptr<AMP::Database> sourceModel_db = input_db->getDatabase(sourceModelName);
+  boost::shared_ptr<AMP::Database> mfgSolution_db = sourceModel_db->getDatabase("ManufacturedSolution");
+  bool isCylindrical = false;
+  if (mfgSolution_db->keyExists("Geometry")) {
+	  std::string geom = mfgSolution_db->getString("Geometry");
+	  size_t pos = geom.find("Cylindrical");
+	  size_t len = geom.size();
+	  isCylindrical = (pos < len);
+  }
   AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator iterator = meshAdapter->beginOwnedNode();
   for( ; iterator != meshAdapter->endOwnedNode(); iterator++ ) {
-    double x, y, z;
-    std::valarray<double> poly(10);
-    x = iterator->x();
-    y = iterator->y();
-    z = iterator->z();
-    mfgSolution->evaluate(poly,x,y,z);
-    size_t gid = iterator->globalID();
-    solVec->setValueByGlobalID(gid, poly[0]);
+	double x, y, z;
+	std::valarray<double> poly(10);
+	x = iterator->x();
+	y = iterator->y();
+	z = iterator->z();
+	mfgSolution->evaluate(poly,x,y,z);
+	size_t gid = iterator->globalID();
+	solVec->setValueByGlobalID(gid, poly[0]);
   }
 
   // Evaluate manufactured solution as an FE source
@@ -215,13 +227,14 @@ int main(int argc, char *argv[])
 {
     AMP::AMPManager::startup(argc, argv);
     AMP::UnitTest ut;
-    std::vector<std::string> files;
-    files.push_back("TensorDiffusion-Fick-MMS-1");
+    std::vector<std::string> files, meshes;
+    files.push_back("TensorDiffusion-Fick-MMS-1"); meshes.push_back("cube");
+    files.push_back("TensorDiffusion-Fick-MMS-2"); meshes.push_back("Mesh");
     //files.push_back("Diffusion-Fick-OxMSRZC09-MMS-1");
 
     try {
         for (size_t i=0; i<files.size(); i++)
-            bvpTest1(&ut, files[i]);
+            bvpTest1(&ut, files[i], meshes[i]);
     } catch (std::exception &err) {
         std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
         ut.failure("ERROR: While testing");
