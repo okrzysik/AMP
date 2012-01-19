@@ -9,9 +9,9 @@
 #include "ampmesh/Mesh.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
-#include "discretization/NodalVariable.h"
 #include "operators/map/NodeToNodeMap.h"
 #include "operators/map/AsyncMapColumnOperator.h"
+#include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
 
 
@@ -58,7 +58,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     // Create a simple DOFManager and the vectors
     int DOFsPerNode = map_db->getInteger("DOFsPerObject");
     std::string varName = map_db->getString("VariableName");
-    AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::Discretization::NodalVariable(DOFsPerNode,varName) );
+    AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::LinearAlgebra::Variable(varName) );
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
     AMP::Discretization::DOFManager::shared_ptr  DOFs = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,DOFsPerNode);
 

@@ -14,7 +14,7 @@
 #include "ampmesh/SiloIO.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
-#include "discretization/NodalVariable.h"
+#include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"
@@ -48,9 +48,9 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     AMP::Discretization::DOFManager::shared_ptr DOF_vector = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,3,true);
 
     // Create the vectors
-    AMP::LinearAlgebra::Variable::shared_ptr rank_var( new AMP::Discretization::NodalVariable(1,"rank") );
+    AMP::LinearAlgebra::Variable::shared_ptr rank_var( new AMP::LinearAlgebra::Variable("rank") );
     AMP::LinearAlgebra::Vector::shared_ptr rank_vec = AMP::LinearAlgebra::createVector( DOF_scalar, rank_var, true );
-    AMP::LinearAlgebra::Variable::shared_ptr position_var( new AMP::Discretization::NodalVariable(3,"position") );
+    AMP::LinearAlgebra::Variable::shared_ptr position_var( new AMP::LinearAlgebra::Variable("position") );
     AMP::LinearAlgebra::Vector::shared_ptr position = AMP::LinearAlgebra::createVector( DOF_vector, position_var, true );
     //AMP::LinearAlgebra::Variable::shared_ptr  gp_var ( new AMP::Mesh::SingleGaussPointVariable ( "gp_var" ) );
     //AMP::LinearAlgebra::Variable::shared_ptr  gp_var2 ( new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable , 8> ( "gp_var2" ) );

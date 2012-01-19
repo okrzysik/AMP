@@ -2,10 +2,10 @@
 #define included_MeshVectorTests
 
 #include "discretization/simpleDOF_Manager.h"
-#include "discretization/NodalVariable.h"
 #include "discretization/DOF_ManagerParameters.h"
 #include "discretization/DOF_Manager.h"
 #include "vectors/Vector.h"
+#include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
 
 #include "../../vectors/test/test_VectorLoops.h"
@@ -22,7 +22,7 @@ public:
     static  AMP::LinearAlgebra::Variable::shared_ptr  getVariable ()
     {
         if ( TYPE==AMP::Mesh::Vertex ) {
-            return AMP::LinearAlgebra::Variable::shared_ptr( new AMP::Discretization::NodalVariable(SIZE,"test vector") );
+            return AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable("test vector") );
         } else {
             AMP_ERROR("Unfinished");
         }
@@ -52,7 +52,7 @@ template <int DOF_PER_NODE, bool SPLIT>
 void simpleNodalVectorTests( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh, AMP::Discretization::DOFManager::shared_ptr DOFs, int gcw ) {
 
         // Create a nodal variable 
-        AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::Discretization::NodalVariable(DOF_PER_NODE,"test vector") );
+        AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::LinearAlgebra::Variable("test vector") );
 
         // Create the vectors
         AMP::LinearAlgebra::Vector::shared_ptr vectora = AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );

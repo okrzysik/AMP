@@ -1,6 +1,6 @@
 #include "Map3to1to3.h"
 #include "Map3to1to3Parameters.h"
-#include "discretization/NodalVariable.h"
+#include "vectors/Variable.h"
 
 
 namespace AMP {
@@ -34,7 +34,7 @@ Map3to1to3::Map3to1to3 ( const boost::shared_ptr<OperatorParameters> & params_in
     if ( d_mesh2.get() != NULL )
         d_iterator2 = d_mesh2->getIDsetIterator( AMP::Mesh::Vertex, params->d_BoundaryID2, 0 );
 
-    d_MapVariable = AMP::LinearAlgebra::Variable::shared_ptr( new AMP::Discretization::NodalVariable( DofsPerObj, params->d_db->getString("VariableName") ) );
+    d_MapVariable = AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable( params->d_db->getString("VariableName") ) );
 
     // Determine which processors we will be sending/receiving data from
     // 0: No communication, 1: send/recv data

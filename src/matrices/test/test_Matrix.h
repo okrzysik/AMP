@@ -1,6 +1,5 @@
 #include "../../ampmesh/test/meshGenerators.h"
 #include "ampmesh/Mesh.h"
-#include "discretization/NodalVariable.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "matrices/Matrix.h"
@@ -9,6 +8,7 @@
 #include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
+#include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
 #include "matrices/MatrixBuilder.h"
 
@@ -46,14 +46,14 @@ public:
 
     static AMP::LinearAlgebra::Vector::shared_ptr  getVector()
     {
-        AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::Discretization::NodalVariable(NUM_DOF_ROW,"a") );
+        AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::LinearAlgebra::Variable("a") );
         return AMP::LinearAlgebra::createVector( DOFs, variable );
     }
 
     static AMP::LinearAlgebra::Matrix::shared_ptr  getMatrix()
     {
-        AMP::LinearAlgebra::Variable::shared_ptr variable_a( new AMP::Discretization::NodalVariable(NUM_DOF_ROW,"a") );
-        AMP::LinearAlgebra::Variable::shared_ptr variable_b( new AMP::Discretization::NodalVariable(NUM_DOF_COL,"b") );
+        AMP::LinearAlgebra::Variable::shared_ptr variable_a( new AMP::LinearAlgebra::Variable("a") );
+        AMP::LinearAlgebra::Variable::shared_ptr variable_b( new AMP::LinearAlgebra::Variable("b") );
         AMP::LinearAlgebra::Vector::shared_ptr  vector_a = AMP::LinearAlgebra::createVector( DOFs, variable_a );
         AMP::LinearAlgebra::Vector::shared_ptr  vector_b = AMP::LinearAlgebra::createVector( DOFs, variable_b );
         return AMP::LinearAlgebra::createMatrix ( vector_a, vector_b );

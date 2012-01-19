@@ -1,7 +1,7 @@
 #ifndef included_test_Vector
 #define included_test_Vector
 
-#include <vectors/NullVariable.h>
+#include <vectors/Variable.h>
 #include <vectors/petsc/NativePetscVector.h>
 #include "vectors/SimpleVector.h"
 #include "test_VectorTests.h"
@@ -20,7 +20,7 @@ public:
     typedef typename T::vector                  vector;
 
     static AMP::LinearAlgebra::Variable::shared_ptr  getVariable() {
-        return T::getVariable()->cloneVariable ();
+        return T::getVariable()->cloneVariable("noname");
     }
 
     static AMP::LinearAlgebra::Vector::shared_ptr getVector() {
@@ -54,7 +54,7 @@ class  SimpleManagedVectorFactory
 
     static AMP::LinearAlgebra::Variable::shared_ptr  getVariable()
     {
-      return AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::NullVariable ( "..." ));   // no variable.....
+      return AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "..." ));   // no variable.....
     }
 
     static boost::shared_ptr<T>  getVector()
@@ -69,7 +69,7 @@ class  SimpleManagedVectorFactory
       managedParams->d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( 210, globalComm );
       managedParams->d_DOFManager = AMP::Discretization::DOFManager::shared_ptr( new AMP::Discretization::DOFManager( 210, globalComm ) );
       boost::shared_ptr<T>  retval ( new T ( managedParams ) );
-      retval->setVariable ( AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::NullVariable ( "Test Vector" ) ) );
+      retval->setVariable ( AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "Test Vector" ) ) );
       return retval;
     }
 };
@@ -100,7 +100,7 @@ class  PetscManagedVectorFactory
       p1->d_Engine = AMP::LinearAlgebra::VectorEngine::shared_ptr ( newVec );
       p1->d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty ( 210, globalComm );
       AMP::LinearAlgebra::Vector::shared_ptr retval ( new T ( AMP::LinearAlgebra::VectorParameters::shared_ptr ( p1 ) ) );
-      retval->setVariable ( AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::NullVariable ( "Test Vector" ) ) );
+      retval->setVariable ( AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "Test Vector" ) ) );
       return retval;
     }
 };
@@ -122,24 +122,6 @@ class  ViewFactory
     }
 };
 
-/*template <typename FACTORY1,typename FACTORY2>
-class  DualVectorFactory
-{
-  public:
-    typedef  AMP::LinearAlgebra::DualVector                vector;
-
-    static AMP::LinearAlgebra::Variable::shared_ptr  getVariable()
-    {
-      return AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::DualVariable ( FACTORY1::getVariable() , FACTORY2::getVariable() ) );
-    }
-
-    static AMP::LinearAlgebra::Vector::shared_ptr getVector ()
-    {
-      AMP::LinearAlgebra::Vector::shared_ptr p1 ( FACTORY1::getVector() );
-      AMP::LinearAlgebra::Vector::shared_ptr p2 ( FACTORY2::getVector() );
-      return AMP::LinearAlgebra::DualVector::create ( p1 , p2 , getVariable() );
-    }
-};*/
 
 template <typename FACTORY1,int NUM1 ,typename FACTORY2,int NUM2>
 class  MultiVectorFactory

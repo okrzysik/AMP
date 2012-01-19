@@ -8,7 +8,7 @@
 #include "MechanicsLinearFEOperatorParameters.h"
 #include "MechanicsLinearElement.h"
 #include "MechanicsLinearUpdatedLagrangianElement.h"
-#include "discretization/NodalVariable.h"
+#include "vectors/Variable.h"
 
 #include <vector>
 
@@ -119,9 +119,9 @@ namespace AMP {
 
         bool d_useUpdatedLagrangian;
 
-        boost::shared_ptr<AMP::Discretization::NodalVariable> d_inpVariable; /**< Input variable */
+        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Input variable */
 
-        boost::shared_ptr<AMP::Discretization::NodalVariable> d_outVariable; /**< Output variable */
+        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output variable */
 
     };
 

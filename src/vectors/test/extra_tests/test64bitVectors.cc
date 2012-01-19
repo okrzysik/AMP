@@ -19,7 +19,7 @@
 #include "ampmesh/Mesh.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
-#include "discretization/NodalVariable.h"
+#include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
 
 
@@ -34,7 +34,7 @@ void  simpleDOFManagerVectorTest ( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_pt
     AMP::Discretization::DOFManager::shared_ptr DOFs = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,DOFsPerNode,split);
     // Create the vector
     double start_time = AMP::AMP_MPI::time();
-    AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::Discretization::NodalVariable(DOFsPerNode,varName) );
+    AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::LinearAlgebra::Variable(varName) );
     AMP::LinearAlgebra::Vector::shared_ptr v1 = AMP::LinearAlgebra::createVector( DOFs, nodalVariable, split );
     mesh->getComm().barrier();
     double end_time = AMP::AMP_MPI::time();

@@ -15,7 +15,6 @@
 #ifdef USE_AMP_DISCRETIZATION
     #include "discretization/DOF_Manager.h"
     #include "discretization/simpleDOF_Manager.h"
-    #include "discretization/NodalVariable.h"
 #endif
 
 
@@ -450,7 +449,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  libMesh::getPositionVector( std::string 
         AMP::Discretization::DOFManager::shared_ptr DOFs = 
             AMP::Discretization::simpleDOFManager::create( 
             shared_from_this(), AMP::Mesh::Vertex, gcw, PhysicalDim, false );
-        AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::Discretization::NodalVariable( PhysicalDim, name ) );
+        AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::LinearAlgebra::Variable(name) );
         AMP::LinearAlgebra::Vector::shared_ptr position = AMP::LinearAlgebra::createVector( DOFs, nodalVariable, false );
         std::vector<size_t> dofs(PhysicalDim);
         AMP::Mesh::MeshIterator cur = DOFs->getIterator();
@@ -505,7 +504,7 @@ void libMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
         AMP::Discretization::DOFManager::shared_ptr DOFs = 
         AMP::Discretization::simpleDOFManager::create( 
             shared_from_this(), getIterator(AMP::Mesh::Vertex,1), getIterator(AMP::Mesh::Vertex,0), PhysicalDim );
-        AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::Discretization::NodalVariable( PhysicalDim, "tmp_pos" ) );
+        AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::LinearAlgebra::Variable( "tmp_pos" ) );
         AMP::LinearAlgebra::Vector::shared_ptr displacement = AMP::LinearAlgebra::createVector( DOFs, nodalVariable, false );
         std::vector<size_t> dofs1(PhysicalDim);
         std::vector<size_t> dofs2(PhysicalDim);
