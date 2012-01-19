@@ -92,7 +92,7 @@ bool   MultiVariable::operator == ( const Variable &rhs ) const
         if ( d_vVariables[i] != multivariable->d_vVariables[i] )
             return false;
     }
-    return d_VariableName == multivariable->d_VariableName;
+    return true;
 }
 
 
