@@ -38,13 +38,6 @@ bool Variable::operator != ( const Variable & rhs ) const
     return ( !( (*this) == rhs ) );
 }
 
-
-void Variable::setName ( const std::string &s ) 
-{ 
-    d_VariableName = s; 
-}
-
-
 void  Variable::setUnits ( const std::string &t )
 {
     d_Units = t;
