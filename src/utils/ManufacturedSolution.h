@@ -41,40 +41,19 @@ public:
 	ManufacturedSolution(boost::shared_ptr<Database> db);
 
 	/**
-	 * \param poly array of results
-	 * \param x x-coordinate
-	 * \param y y-coordinate
-	 * \param z z-coordinate
-	 * \param c input boundary data
-	 * \param a input function constants
-	 *
-	 * \code poly \endcode is a valarray of length 10 whose components are
-	 * [f, df/dx, df/dy, df/dz, d^2 f/dx dx, d^2 f / dx dy, d^2 f / dx dz,
-	 *  d^2 f / dy dy, d^2 f / dy dz, d^2 f / dz dz]
-	 *  where f is the manufactured solution function evaluation result
+	 * Evaluate the manufactured solution at a point.
+	 *  \param result output derivatives (length >= 10)
+	 *  \param x x-coordinate
+	 *  \param y y-coordinate
+	 *  \param z z-coordinate
 	 */
-	void evaluate(std::valarray<double> &poly, const double x, const double y, const double z,
-			const std::valarray<double> &c, const std::valarray<double> &a)
-	{
-		AMP_ASSERT(x>=d_MinX and x<=d_MaxX);
-		AMP_ASSERT(y>=d_MinY and y<=d_MaxY);
-		AMP_ASSERT(z>=d_MinZ and z<=d_MaxZ);
-		double xs, ys, zs;
-		xs = (x-d_MinX)*d_ScaleX;
-		ys = (y-d_MinY)*d_ScaleY;
-		zs = (z-d_MinZ)*d_ScaleZ;
-
-		(*d_functionPointer)(poly, xs, ys, zs, c, a);
-	}
-
-	void evaluate(std::valarray<double> &poly, const double x, const double y, const double z)
-	{
-		evaluate(poly, x, y, z, d_c, d_a);
-	}
+	void evaluate(std::valarray<double> &result, const double x, const double y, const double z);
 
 	size_t getNumberOfParameters(){return d_NumberOfParameters;}
 
 	size_t getNumberOfInputs(){return d_NumberOfInputs;}
+
+	void setTricubicParams(const std::valarray<double> &cin, const std::valarray<double> &ain){d_c=cin; d_a=ain;}
 
 private:
 	/**
@@ -90,73 +69,68 @@ private:
 	 *	\frac{\partial^2 u}{\partial y^2},  \frac{\partial^2 u}{\partial y \partial z},  \frac{\partial^2 u}{\partial z^2},
 	 *	\f]
 	 *
-	 *  \param poly output derivatives (length >= 10)
+	 *  \param result output derivatives (length >= 10)
 	 *  \param x x-coordinate
 	 *  \param y y-coordinate
 	 *  \param z z-coordinate
 	 *  \param c specification of boundary conditions (length >= 6)
 	 *  \param a arbitrary parameters (length >= 1)
 	 */
-	static void quad_neumann(std::valarray<double> &poly, const double x, const double y,
-			const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void quad_neumann(std::valarray<double> &result, const double x, const double y, const double z, ManufacturedSolution* mfs);
 
-	static void quad_dirichlet1(std::valarray<double> &poly, const double x, const double y,
-			const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void quad_dirichlet1(std::valarray<double> &result, const double x, const double y, const double z, ManufacturedSolution* mfs);
 
-	static void quad_dirichlet2(std::valarray<double> &poly, const double x, const double y,
-			const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void quad_dirichlet2(std::valarray<double> &result, const double x, const double y, const double z, ManufacturedSolution* mfs);
 
-	static void quad_none(std::valarray<double> &poly, const double x, const double y,
-			const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void quad_none(std::valarray<double> &result, const double x, const double y, const double z, ManufacturedSolution* mfs);
 
-	static void cubic_neumann(std::valarray<double> &poly, const double x, const double y,
-			const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void cubic_neumann(std::valarray<double> &result, const double x, const double y, const double z, ManufacturedSolution* mfs);
 
-	static void cubic_dirichlet1(std::valarray<double> &poly, const double x, const double y,
-			const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void cubic_dirichlet1(std::valarray<double> &result, const double x, const double y, const double z, ManufacturedSolution* mfs);
 
-	static void cubic_dirichlet2(std::valarray<double> &poly, const double x, const double y,
-			const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void cubic_dirichlet2(std::valarray<double> &result, const double x, const double y, const double z, ManufacturedSolution* mfs);
 
-	static void cubic_none(std::valarray<double> &poly, const double x, const double y,
-			const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void cubic_none(std::valarray<double> &result, const double x, const double y, const double z, ManufacturedSolution* mfs);
 			
-	static void quad_cyl_rod_none(std::valarray<double> &poly, const double r,
-			const double th, const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void quad_cyl_rod_none(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
 			
-	static void cubic_cyl_rod_neumann(std::valarray<double> &poly, const double r,
-			const double th, const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void cubic_cyl_shell_neumann(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
 
-	static void cubic_cyl_rod_dirichletz2(std::valarray<double> &poly, const double r,
-			const double th, const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void cubic_cyl_rod_dirichletz2(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
 
-	static void cubic_cyl_rod_none(std::valarray<double> &poly, const double r,
-			const double th, const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void cubic_cyl_rod_rz_none(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
 
-	static void quad_cyl_shell_neumann(std::valarray<double> &poly, const double r,
-			const double th, const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void cubic_cyl_rod_none(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
 
-	static void quad_cyl_shell_none(std::valarray<double> &poly, const double r,
-			const double th, const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void quad_cyl_shell_neumann(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
 
-	static void quad_cyl_qtr_shell_neumann(std::valarray<double> &poly, const double r,
-			const double th, const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void quad_cyl_qtr_shell_neumann(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
 
-	static void quad_cyl_qtr_shell_dirichlet2(std::valarray<double> &poly, const double r,
-			const double th, const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void quad_cyl_qtr_shell_dirichlet2(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
 
-	static void quad_cyl_qtr_shell_none(std::valarray<double> &poly, const double r,
-			const double th, const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void quad_cyl_qtr_shell_none(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
 
-	static void cubic_cyl_qtr_shell_neumann(std::valarray<double> &poly, const double r,
-			const double th, const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void cubic_cyl_qtr_shell_neumann(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
 			
-	static void cubic_cyl_qtr_shell_none(std::valarray<double> &poly, const double r,
-			const double th, const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	static void cubic_cyl_qtr_shell_none(std::valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs);
 
-	enum Geometry {BRICK, CYLROD, CYLSHELL, QTRCYLSHELL, LASTGeometry};
+	static void general_quadratic_exponential(std::valarray<double> &result, const double x, const double y, const double z, ManufacturedSolution* mfs);
+
+	static void general_quadratic_sinusoid(std::valarray<double> &result, const double x, const double y, const double z, ManufacturedSolution* mfs);
+
+	static void general_quadratic_exponential_sinusoid(std::valarray<double> &result, const double x, const double y, const double z, ManufacturedSolution* mfs);
+
+	std::valarray<double> getc(){return d_c;}
+	std::valarray<double> geta(){return d_a;}
+	std::valarray<std::valarray<double> > geth(){return d_h;}
+	std::valarray<std::valarray<double> > geths(){return d_hs;}
+
+	enum FunctionType {POLYNOMIAL, GENERALQUADRATIC};
+	enum Geometry {BRICK, CYLROD, CYLRODRZ, CYLSHELL, QTRCYLSHELL, LASTGeometry};
 	enum Order {QUADRATIC, CUBIC, FOURIER, GAUSSIAN, LASTOrder};
 	enum BCType {NEUMANN, DIRICHLET1, DIRICHLET2, DIRICHLETZ2, NONE, LASTType};
+
+	FunctionType d_FunctionType;
 
 	Geometry d_geom;
 	Order d_order;
@@ -164,18 +138,25 @@ private:
 	size_t d_NumberOfParameters;
 	size_t d_NumberOfInputs;
 
-	void (*d_functionPointer)(std::valarray<double> &poly, const double r,
-		const double th, const double z, const std::valarray<double> &c, const std::valarray<double> &a);
+	void (*d_functionPointer)(std::valarray<double> &result, const double, const double, const double, ManufacturedSolution*);
 
 	bool d_internalParameters;
 
 	std::valarray<double> d_c;
-
 	std::valarray<double> d_a;
 
 	double d_MinX, d_MaxX, d_ScaleX;
 	double d_MinY, d_MaxY, d_ScaleY;
 	double d_MinZ, d_MaxZ, d_ScaleZ;
+	double d_MinR, d_MaxR, d_ScaleR;
+	double d_MinTh, d_MaxTh, d_ScaleTh;
+	double d_MaximumTheta;
+	double d_Pi;
+
+	std::valarray<std::valarray<double> > d_h;
+	std::valarray<std::valarray<double> > d_hs; // symmetrized h
+
+	bool d_CylindricalCoords;
 };
 
 }

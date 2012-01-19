@@ -91,6 +91,10 @@ namespace Operator {
         return d_fe;
       }
 
+      unsigned int getNumberOfGaussPoints() {
+        return (d_qrule->n_points());
+      }
+
     protected :
 
       std::vector<std::vector<double> > d_elementInputVector;

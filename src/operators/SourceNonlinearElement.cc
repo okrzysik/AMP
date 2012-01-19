@@ -139,18 +139,18 @@ namespace Operator {
         for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++) {
 
             for (unsigned int j = 0; j < num_nodes; j++) {
-                if(d_sourcePhysicsModel.get() != NULL){
-                    elementOutputVector[j] += (JxW[qp] * source_physics[qp] * phi[j][qp] );
+              if(d_sourcePhysicsModel.get() != NULL){
+                elementOutputVector[j] += (JxW[qp] * source_physics[qp] * phi[j][qp] );
+              }else{
+                if(d_integrateVolume){
+                  AMP_INSIST( (source_vectors.size() == 1), "In absence of SourcePhysicsModel Element Operation Expects only one source vector" );
+                  elementOutputVector[j] += (JxW[qp] * source_vectors[0][qp] * phi[j][qp] );
                 }else{
-                                  if(d_integrateVolume){
-                    AMP_INSIST( (source_vectors.size() == 1), "In absence of SourcePhysicsModel Element Operation Expects only one source vector" );
-                    elementOutputVector[j] += (JxW[qp] * source_vectors[0][qp] * phi[j][qp] );
-                                  }else{
-                    AMP_INSIST( (source_vectors.size() == 1), "In absence of SourcePhysicsModel Element Operation Expects only one source vector" );
-                    elementOutputVector[j] += ( source_vectors[0][qp] * phi[j][qp] )/8;
-                                  }
-                                        
+                  AMP_INSIST( (source_vectors.size() == 1), "In absence of SourcePhysicsModel Element Operation Expects only one source vector" );
+                  elementOutputVector[j] += ( source_vectors[0][qp] * phi[j][qp] )/8;
                 }
+
+              }
             }//end for j
 
         }//end for qp

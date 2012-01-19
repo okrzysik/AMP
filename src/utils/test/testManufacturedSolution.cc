@@ -34,9 +34,13 @@ void testit(AMP::UnitTest *ut,
     db->putDouble("MinX", 4.);
     db->putDouble("MaxX", 14.);
     db->putDouble("MinY", 40.);
-    db->putDouble("MaxY", 140.);
+    db->putDouble("MaxY", 80.);
     db->putDouble("MinZ", 400.);
-    db->putDouble("MaxZ", 1400.);
+    db->putDouble("MaxZ", 1000.);
+    db->putDouble("MinR", 30.);
+    db->putDouble("MaxR", 100.);
+    db->putDouble("MinTh", 0.);
+    db->putDouble("MaxTh", 6.284);
 
     AMP::ManufacturedSolution ms(db);
     size_t nc = ms.getNumberOfInputs();
@@ -46,7 +50,8 @@ void testit(AMP::UnitTest *ut,
 
     for (size_t i=0; i<na; i++) param[i] = i;
     for (size_t i=0; i<nc; i++) in[i] = i+1;
-    ms.evaluate(out, x,y,z, in, param);
+    ms.setTricubicParams(in, param);
+    ms.evaluate(out, x,y,z);
 
     std::string msg=geom+" " + order + " " + bc + " basics";
     ut->passes(msg);
@@ -59,7 +64,7 @@ int main ( int argc , char **argv )
     AMP::UnitTest ut;
     AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);
 
-    if (globalComm.getRank() == 1) {
+    if (globalComm.getRank() == 0) {
         try {
 	        testit( &ut, "Brick", "Quadratic", "Neumann", 5.,60.,700.);
             testit( &ut, "Brick", "Quadratic", "Dirichlet-1", 5.,60.,700.);
@@ -67,7 +72,7 @@ int main ( int argc , char **argv )
 	        testit( &ut, "Brick", "Cubic", "Neumann", 5.,60.,700.);
 	        testit( &ut, "Brick", "Cubic", "Dirichlet-1", 5.,60.,700.);
 	        testit( &ut, "Brick", "Cubic", "Dirichlet-2", 5.,60.,700.);
-	        testit( &ut, "CylindricalRod", "Cubic", "Neumann", 5.,60.,700.);
+	        testit( &ut, "CylindricalRod", "Cubic", "None", 5.,60.,700.);
 	        testit( &ut, "CylindricalRod", "Cubic", "Dirichlet-2-z", 5.,60.,700.);
 	        testit( &ut, "CylindricalShell", "Quadratic", "Neumann", 5.,60.,700.);
         } catch (std::exception &err) {

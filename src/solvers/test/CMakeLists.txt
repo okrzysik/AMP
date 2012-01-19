@@ -20,7 +20,7 @@ INCLUDE (macros)
 #     ADD_AMP_TEST ( exe_name )
 #
 #  To add a parallel test:
-#     ADD_AMP_TEST_PARALLEL ( exe_name , num_cores )
+#     ADD_AMP_TEST_PARALLEL ( exe_name num_cores )
 #
 #  To add the AMP 1, 2, and 4 processor test
 #     ADD_AMP_TEST_1_2_4 ( exe_name )
@@ -29,7 +29,7 @@ INCLUDE (macros)
 #     ADD_AMP_PROVISIONAL_TEST ( exe_name )
 #
 #  To add a parallel test for the weekly regression:
-#     ADD_AMP_WEEKLY_TEST ( exe_name , num_cores )
+#     ADD_AMP_WEEKLY_TEST ( exe_name num_cores )
 #
 #  To add an input file from the data/ directory
 #     COPY_TEST_DATA_FILE ( input_file )
@@ -39,8 +39,10 @@ INCLUDE (macros)
 #
 
 ADD_AMP_PROVISIONAL_TEST ( testPelletStackMechanicsSolver )
-COPY_TEST_DATA_FILE ( input_testPelletStackMechanicsSolver )
+COPY_TEST_DATA_FILE ( input_testPelletStackMechanicsSolver-1 )
+COPY_TEST_DATA_FILE ( input_testPelletStackMechanicsSolver-2 )
 COPY_MESH_FILE ( simple_pellet_1x.e )
+COPY_MESH_FILE ( butterfly_pellet_1x.e )
 
 ADD_AMP_PROVISIONAL_TEST ( testMLfailure )
 COPY_TEST_DATA_FILE ( input_testMLfailure )

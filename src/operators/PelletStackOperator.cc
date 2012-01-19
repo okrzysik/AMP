@@ -89,7 +89,8 @@ namespace AMP {
       } else {
         if(!d_frozenVectorSet) {
           for(size_t i = 0; i < d_pelletIds.size(); i++) {
-            for(size_t j = 0; j < d_n2nMaps->getNumberOfOperators(); j++) {
+            //for(size_t j = 0; j < d_n2nMaps->getNumberOfOperators(); j++) {  // getNumberOfOperators should be unsigned int
+            for(int j = 0; j < d_n2nMaps->getNumberOfOperators(); j++) {
               boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
                 AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(j));
               if(currMap->getMeshAdapter() == d_meshes[i]) {

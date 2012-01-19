@@ -43,16 +43,16 @@ void testMap(AMP::UnitTest *ut, std::string exeName )
 
   AMP::PIO::logAllNodes(log_file);
 
-  AMP::MeshManagerParameters::shared_ptr mgrParams ( new AMP::MeshManagerParameters ( input_db ) );
-  AMP::MeshManager::shared_ptr manager ( new AMP::MeshManager ( mgrParams ) );
-  AMP::MeshManager::Adapter::shared_ptr meshAdapter1 = manager->getMesh ( "pellet" );
-  AMP::MeshManager::Adapter::shared_ptr meshAdapter2 = manager->getMesh ( "clad" );
+  AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
+  AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
+  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter1 = manager->getMesh ( "pellet" );
+  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter2 = manager->getMesh ( "clad" );
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-  AMP::LinearAlgebra::Variable::shared_ptr testVariable ( new AMP::NodalScalarVariable ( "MapSolution" ) );
-  AMP::LinearAlgebra::Variable::shared_ptr testVariable1 ( new AMP::NodalScalarVariable ( "MapSolution", meshAdapter1  ) );
-  AMP::LinearAlgebra::Variable::shared_ptr testVariable2 ( new AMP::NodalScalarVariable ( "MapSolution", meshAdapter2 ) );
+  AMP::LinearAlgebra::Variable::shared_ptr testVariable ( new AMP::Mesh::NodalScalarVariable ( "MapSolution" ) );
+  AMP::LinearAlgebra::Variable::shared_ptr testVariable1 ( new AMP::Mesh::NodalScalarVariable ( "MapSolution", meshAdapter1  ) );
+  AMP::LinearAlgebra::Variable::shared_ptr testVariable2 ( new AMP::Mesh::NodalScalarVariable ( "MapSolution", meshAdapter2 ) );
   boost::shared_ptr<AMP::LinearAlgebra::Variable> gapVariable(new AMP::LinearAlgebra::Variable("Gap"));
 
   AMP::LinearAlgebra::Vector::shared_ptr mapSolution = manager->createVector ( testVariable );
@@ -64,26 +64,26 @@ void testMap(AMP::UnitTest *ut, std::string exeName )
  //-------------------------------------
 
   boost::shared_ptr<AMP::InputDatabase> map3dto1d_db1  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapPelletto1D"));
-  boost::shared_ptr<AMP::MapOperatorParameters> map3dto1dParams1 (new AMP::MapOperatorParameters( map3dto1d_db1 ));
+  boost::shared_ptr<AMP::Operator::MapOperatorParameters> map3dto1dParams1 (new AMP::Operator::MapOperatorParameters( map3dto1d_db1 ));
   map3dto1dParams1->d_MeshAdapter = meshAdapter1;
   boost::shared_ptr<AMP::Operator::Map3Dto1D> map1ToLowDim (new AMP::Operator::Map3Dto1D( map3dto1dParams1 ));
 
   boost::shared_ptr<AMP::InputDatabase> map1dto3d_db1  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("Map1DtoClad"));
-  boost::shared_ptr<AMP::MapOperatorParameters> map1dto3dParams1 (new AMP::MapOperatorParameters( map1dto3d_db1 ));
+  boost::shared_ptr<AMP::Operator::MapOperatorParameters> map1dto3dParams1 (new AMP::Operator::MapOperatorParameters( map1dto3d_db1 ));
   map1dto3dParams1->d_MapAdapter = meshAdapter2;
-  boost::shared_ptr<AMP::Map1Dto3D> map1ToHighDim (new AMP::Map1Dto3D( map1dto3dParams1 ));
+  boost::shared_ptr<AMP::Operator::Map1Dto3D> map1ToHighDim (new AMP::Operator::Map1Dto3D( map1dto3dParams1 ));
 
   map1ToLowDim->setZLocations( map1ToHighDim->getZLocations());
 
   boost::shared_ptr<AMP::InputDatabase> map3dto1d_db2  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapCladto1D"));
-  boost::shared_ptr<AMP::MapOperatorParameters> map3dto1dParams2 (new AMP::MapOperatorParameters( map3dto1d_db2 ));
+  boost::shared_ptr<AMP::Operator::MapOperatorParameters> map3dto1dParams2 (new AMP::Operator::MapOperatorParameters( map3dto1d_db2 ));
   map3dto1dParams2->d_MeshAdapter = meshAdapter2;
   boost::shared_ptr<AMP::Operator::Map3Dto1D> map2ToLowDim (new AMP::Operator::Map3Dto1D( map3dto1dParams2 ));
 
   boost::shared_ptr<AMP::InputDatabase> map1dto3d_db2  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("Map1DtoPellet"));
-  boost::shared_ptr<AMP::MapOperatorParameters> map1dto3dParams2 (new AMP::MapOperatorParameters( map1dto3d_db2 ));
+  boost::shared_ptr<AMP::Operator::MapOperatorParameters> map1dto3dParams2 (new AMP::Operator::MapOperatorParameters( map1dto3d_db2 ));
   map1dto3dParams2->d_MapAdapter = meshAdapter1;
-  boost::shared_ptr<AMP::Map1Dto3D> map2ToHighDim (new AMP::Map1Dto3D( map1dto3dParams2 ));
+  boost::shared_ptr<AMP::Operator::Map1Dto3D> map2ToHighDim (new AMP::Operator::Map1Dto3D( map1dto3dParams2 ));
 
   map2ToLowDim->setZLocations( map2ToHighDim->getZLocations());
  //-------------------------------------
@@ -96,13 +96,13 @@ void testMap(AMP::UnitTest *ut, std::string exeName )
  //-------------------------------------
   unsigned int d_boundaryId = map3dto1d_db1->getInteger("BoundaryId");  
 
-  AMP::MeshManager::Adapter::BoundarySideIterator bnd = meshAdapter1->beginSideBoundary( d_boundaryId );
-  AMP::MeshManager::Adapter::BoundarySideIterator end_bnd = meshAdapter1->endSideBoundary( d_boundaryId );
+  AMP::Mesh::MeshManager::Adapter::BoundarySideIterator bnd = meshAdapter1->beginSideBoundary( d_boundaryId );
+  AMP::Mesh::MeshManager::Adapter::BoundarySideIterator end_bnd = meshAdapter1->endSideBoundary( d_boundaryId );
 
-  AMP::DOFMap::shared_ptr dof_map = meshAdapter1->getDOFMap(testVariable1);
+  AMP::Mesh::DOFMap::shared_ptr dof_map = meshAdapter1->getDOFMap(testVariable1);
 
   for( ; bnd != end_bnd; ++bnd) {
-      AMP::MeshManager::Adapter::Element cur_side = *bnd;
+      AMP::Mesh::MeshManager::Adapter::Element cur_side = *bnd;
       std::vector<unsigned int> bndGlobalIds;
       dof_map->getDOFs(cur_side, bndGlobalIds);
       for(unsigned int ii=0; ii<cur_side.numNodes(); ii++)
@@ -122,22 +122,26 @@ void testMap(AMP::UnitTest *ut, std::string exeName )
   {
     cnt++;
 
+    map1ToLowDim->setVector(gapVecClad);
+    map1ToHighDim->setVector(mapSolutionSlave);
     map1ToLowDim->apply(nullVec,mapSolutionMaster,gapVecClad ,1.0, 0.0);
     map1ToHighDim->apply(nullVec,gapVecClad , mapSolutionSlave ,1.0, 0.0);
 
       std::cout<<"Master Map Solution " <<std::endl;
-      for( int i=0; i<gapVecCladSize; i++) {
+      for(size_t i=0; i<gapVecCladSize; i++) {
           std::cout<<" @i : "<< i<<" is "<<gapVecClad->getValueByLocalID(i) ;
       }
       std::cout<<std::endl;
     //------------------------------------------------------------
 //    mapSolutionSlave->setToScalar(90);
 
+    map2ToLowDim->setVector(gapVecPellet);
+    map2ToHighDim->setVector(mapSolutionMaster);
     map2ToLowDim->apply(nullVec,mapSolutionSlave,gapVecPellet ,1.0, 0.0);
     map2ToHighDim->apply(nullVec,gapVecPellet , mapSolutionMaster,1.0, 0.0);
 
       std::cout<<"Slave Map Solution " <<std::endl;
-      for( int i=0; i<gapVecPelletSize; i++) {
+      for(size_t i=0; i<gapVecPelletSize; i++) {
           std::cout<<" @i : "<< i<<" is "<<gapVecPellet->getValueByLocalID(i) ;
       }
       std::cout<<std::endl;
@@ -154,25 +158,22 @@ void testMap(AMP::UnitTest *ut, std::string exeName )
 
   }
 
-  if( nodes == 1 ) {
+  AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
+  if( globalComm.getSize() == 1 ) {
 #ifdef USE_SILO
-    manager->writeFile<AMP::SiloIO> ( exeName , 0 );
+    manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 0 );
 #endif
   }
   //-------------------------------------
 
   if( testPassed )
-  {
-    ut.passes("Seggregated solve of Composite Operator using control loop of Thermal+Robin->Map->Gap->Map->Thermal+Robin .");
-  }
+    ut->passes("Seggregated solve of Composite Operator using control loop of Thermal+Robin->Map->Gap->Map->Thermal+Robin .");
   else
-  {
-    ITFAILS;
-  }
+    ut->failure("Seggregated solve of Composite Operator using control loop of Thermal+Robin->Map->Gap->Map->Thermal+Robin .");
 
   input_db.reset();
 
-  ut.passes(exeName);
+  ut->passes(exeName);
 
   //  AMP::AMPManager::shutdown();
 
@@ -184,7 +185,7 @@ int main(int argc, char *argv[])
     AMP::UnitTest ut;
 
     try {
-    testMap(ut, "testMapOperator");
+        testMap( &ut, "testMapOperator");
     } catch (std::exception &err) {
         std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
         ut.failure("ERROR: While testing");
