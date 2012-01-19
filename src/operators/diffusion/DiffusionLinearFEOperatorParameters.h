@@ -1,19 +1,19 @@
 #ifndef included_AMP_DiffusionLinearFEOperatorParameters
 #define included_AMP_DiffusionLinearFEOperatorParameters
 
-#include "operators/FEOperatorParameters.h"
+#include "operators/LinearFEOperatorParameters.h"
 
 #include "operators/diffusion/DiffusionTransportModel.h"
 
 namespace AMP {
 namespace Operator {
 
-class DiffusionLinearFEOperatorParameters: public FEOperatorParameters {
+class DiffusionLinearFEOperatorParameters: public LinearFEOperatorParameters {
 public:
 
     DiffusionLinearFEOperatorParameters(
             const boost::shared_ptr<AMP::Database> &db) :
-        FEOperatorParameters(db) {
+        LinearFEOperatorParameters(db) {
     }
 
     virtual ~DiffusionLinearFEOperatorParameters() {

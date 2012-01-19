@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "vectors/Vector.h"
-#include "operators/diffusion/DiffusionLinearFEOperatorParameters.h"
 #include "operators/diffusion/DiffusionTransportModel.h"
 #include "operators/diffusion/DiffusionConstants.h"
 
@@ -12,12 +11,12 @@
 namespace AMP {
 namespace Operator {
 
-class DiffusionNonlinearFEOperatorParameters: public DiffusionLinearFEOperatorParameters {
+class DiffusionNonlinearFEOperatorParameters: public FEOperatorParameters {
 public:
 
     DiffusionNonlinearFEOperatorParameters(const boost::shared_ptr<
             AMP::Database> &db) :
-        DiffusionLinearFEOperatorParameters(db)
+        FEOperatorParameters(db)
     {
     }
 

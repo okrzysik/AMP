@@ -160,7 +160,11 @@ namespace AMP {
         void updateMaterialForElementCommonFunction(const AMP::Mesh::MeshElement &, 
             std::vector<std::vector<double> >&, std::vector<std::vector<double> >& );
 
-        unsigned int d_numNodesForCurrentElement; /**< Number of nodes in the current element. */
+        void getDofIndicesForCurrentElement(int varId, std::vector<std::vector<size_t> > & dofIds);
+
+        void createCurrentLibMeshElement();
+
+        void destroyCurrentLibMeshElement();
 
         std::vector<double> d_elementOutputVector; /**< Element output vector. */
 
@@ -201,6 +205,12 @@ namespace AMP {
         boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output variable */
         
         boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[Mechanics::TOTAL_NUMBER_OF_VARIABLES];
+        
+        std::vector<AMP::Mesh::MeshElement> d_currNodes;
+
+        ::Elem* d_currElemPtr;
+        
+        std::vector<std::vector<size_t> > d_dofIndices; /**< Primary DOF indices */
     };
 
     template <MechanicsNonlinearElement::MaterialUpdateType updateType>
