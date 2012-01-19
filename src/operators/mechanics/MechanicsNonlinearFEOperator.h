@@ -160,6 +160,8 @@ namespace AMP {
         void updateMaterialForElementCommonFunction(const AMP::Mesh::MeshElement &, 
             std::vector<std::vector<double> >&, std::vector<std::vector<double> >& );
 
+        void getDofIndicesForCurrentElement(int varId, std::vector<std::vector<size_t> > & dofIds);
+
         void createCurrentLibMeshElement();
 
         void destroyCurrentLibMeshElement();
@@ -207,6 +209,8 @@ namespace AMP {
         std::vector<AMP::Mesh::MeshElement> d_currNodes;
 
         ::Elem* d_currElemPtr;
+        
+        std::vector<std::vector<size_t> > d_dofIndices; /**< Primary DOF indices */
     };
 
     template <MechanicsNonlinearElement::MaterialUpdateType updateType>
