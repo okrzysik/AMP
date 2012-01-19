@@ -14,23 +14,11 @@ using std::valarray;
 ManufacturedSolution::ManufacturedSolution(boost::shared_ptr<Database> db):
 		d_internalParameters(false), d_c(1), d_a(1),
 		d_h(std::valarray<std::valarray<double> >(std::valarray<double>(3), 3)),
-		d_hs(std::valarray<std::valarray<double> >(std::valarray<double>(3), 3))
+		d_hs(std::valarray<std::valarray<double> >(std::valarray<double>(3), 3)),
+		d_CylindricalCoords(false), d_Pi(3.1415926535898), d_MaximumTheta(2.*d_Pi)
 {
 	std::string name = db->getName();
 	AMP_INSIST(name == "ManufacturedSolution", "incorrect database name");
-
-	d_MinX = db->getDoubleWithDefault("MinX", 0.);
-	d_MinY = db->getDoubleWithDefault("MinY", 0.);
-	d_MinZ = db->getDoubleWithDefault("MinZ", 0.);
-	d_MaxX = db->getDoubleWithDefault("MaxX", 0.);
-	d_MaxY = db->getDoubleWithDefault("MaxY", 0.);
-	d_MaxZ = db->getDoubleWithDefault("MaxZ", 0.);
-	AMP_ASSERT(d_MaxX >= d_MinX);
-	AMP_ASSERT(d_MaxY >= d_MinY);
-	AMP_ASSERT(d_MaxZ >= d_MinZ);
-	d_ScaleX = 1./(d_MaxX - d_MinX + std::numeric_limits<double>::epsilon());
-	d_ScaleY = 1./(d_MaxY - d_MinY + std::numeric_limits<double>::epsilon());
-	d_ScaleZ = 1./(d_MaxZ - d_MinZ + std::numeric_limits<double>::epsilon());
 
 	if (db->keyExists("Geometry") and db->keyExists("Order") and db->keyExists("BoundaryType")) {
 
@@ -42,6 +30,7 @@ ManufacturedSolution::ManufacturedSolution(boost::shared_ptr<Database> db):
 
 		if (geom == "Brick") d_geom = BRICK;
 		else if (geom == "CylindricalRod") d_geom = CYLROD;
+		else if (geom == "CylindricalRodRZ") d_geom = CYLRODRZ;
 		else if (geom == "CylindricalShell") d_geom = CYLSHELL;
 		else if (geom == "CylindricalQuarterShell") d_geom = QTRCYLSHELL;
 		else AMP_INSIST(false, "improper specification of geometry");
@@ -109,17 +98,13 @@ ManufacturedSolution::ManufacturedSolution(boost::shared_ptr<Database> db):
 					AMP_INSIST(false, "manufactured solution combination is not available");
 				}
 			} else if (d_order == CUBIC) {
-				if (d_bcType == NEUMANN) {
-					d_functionPointer = &cubic_cyl_rod_neumann;
-					d_NumberOfParameters = 9;
-					d_NumberOfInputs = 4;
-				} else if (d_bcType == DIRICHLETZ2) {
+				if (d_bcType == DIRICHLETZ2) {
 					d_functionPointer = &cubic_cyl_rod_dirichletz2;
 					d_NumberOfParameters = 96;
 					d_NumberOfInputs = 2;
 				} else if (d_bcType == NONE) {
 					d_functionPointer = &cubic_cyl_rod_none;
-					d_NumberOfParameters = 35;
+					d_NumberOfParameters = 64;
 					d_NumberOfInputs = 0;
 				} else {
 					AMP_INSIST(false, "manufactured solution combination is not available");
@@ -127,6 +112,16 @@ ManufacturedSolution::ManufacturedSolution(boost::shared_ptr<Database> db):
 			} else {
 				AMP_INSIST(false, "manufactured solution combination is not available");
 			}
+			d_CylindricalCoords = true;
+		} else if (d_geom == CYLRODRZ) {
+			if (d_bcType == NONE) {
+					d_functionPointer = &cubic_cyl_rod_rz_none;
+					d_NumberOfParameters = 16;
+					d_NumberOfInputs = 0;
+			} else {
+				AMP_INSIST(false, "manufactured solution combination is not available");
+			}
+			d_CylindricalCoords = true;
 		} else if (d_geom == CYLSHELL) {
 			if (d_order == QUADRATIC) {
 				if (d_bcType == NEUMANN) {
@@ -149,6 +144,7 @@ ManufacturedSolution::ManufacturedSolution(boost::shared_ptr<Database> db):
 			} else {
 				AMP_INSIST(false, "manufactured solution combination is not available");
 			}
+			d_CylindricalCoords = true;
 		} else if (d_geom == QTRCYLSHELL) {
 			if (d_order == QUADRATIC) {
 				if (d_bcType == NEUMANN) {
@@ -179,7 +175,12 @@ ManufacturedSolution::ManufacturedSolution(boost::shared_ptr<Database> db):
 					AMP_INSIST(false, "manufactured solution combination is not available");
 				}
 			}
+			d_CylindricalCoords = true;
+			d_MaximumTheta = d_Pi/2.;
 		}
+
+		d_c.resize(d_NumberOfInputs);
+		d_a.resize(d_NumberOfParameters);
 
 		bool hasCoefficients=false, hasBoundaryData=false;
 		if (db->keyExists("Coefficients")) {
@@ -223,23 +224,86 @@ ManufacturedSolution::ManufacturedSolution(boost::shared_ptr<Database> db):
 		AMP_INSIST(false, "unrecognized manufactured solution type or missing keys");
 
 	}
+
+	if (not d_CylindricalCoords) {
+		d_MinX = db->getDoubleWithDefault("MinX", 0.);
+		d_MinY = db->getDoubleWithDefault("MinY", 0.);
+		d_MinZ = db->getDoubleWithDefault("MinZ", 0.);
+		d_MaxX = db->getDoubleWithDefault("MaxX", 1.);
+		d_MaxY = db->getDoubleWithDefault("MaxY", 1.);
+		d_MaxZ = db->getDoubleWithDefault("MaxZ", 1.);
+		AMP_ASSERT(d_MaxX >= d_MinX);
+		AMP_ASSERT(d_MaxY >= d_MinY);
+		AMP_ASSERT(d_MaxZ >= d_MinZ);
+		d_ScaleX = 1./(d_MaxX - d_MinX + std::numeric_limits<double>::epsilon());
+		d_ScaleY = 1./(d_MaxY - d_MinY + std::numeric_limits<double>::epsilon());
+		d_ScaleZ = 1./(d_MaxZ - d_MinZ + std::numeric_limits<double>::epsilon());
+	} else {
+		d_MinR  = db->getDoubleWithDefault("MinR", 0.);
+		d_MinTh = 0.;
+		d_MinZ  = db->getDoubleWithDefault("MinZ", 0.);
+		d_MaxR  = db->getDoubleWithDefault("MaxR", 1.);
+		d_MaxTh = 2.*d_Pi;
+		d_MaxZ  = db->getDoubleWithDefault("MaxZ", 1.);
+		if (d_MaximumTheta < 2.*d_Pi) {
+			d_MinTh = db->getDoubleWithDefault("MinTh", 0.);
+			d_MaxTh = db->getDoubleWithDefault("MaxTh", 2.*d_Pi);
+		}
+		d_ScaleR  = 1./(d_MaxR  - d_MinR  + std::numeric_limits<double>::epsilon());
+		d_ScaleTh = 1./(d_MaxTh - d_MinTh + std::numeric_limits<double>::epsilon());
+		d_ScaleZ  = 1./(d_MaxZ  - d_MinZ  + std::numeric_limits<double>::epsilon());
+	}
 }
 
-#undef DBC
+void ManufacturedSolution::evaluate(std::valarray<double> &result, const double x, const double y, const double z)
+{
+	if (not d_CylindricalCoords) {
+		AMP_ASSERT(x>=d_MinX and x<=d_MaxX);
+		AMP_ASSERT(y>=d_MinY and y<=d_MaxY);
+		AMP_ASSERT(z>=d_MinZ and z<=d_MaxZ);
+		double xs, ys, zs;
+		xs = (x-d_MinX)*d_ScaleX;
+		ys = (y-d_MinY)*d_ScaleY;
+		zs = (z-d_MinZ)*d_ScaleZ;
+
+		(*d_functionPointer)(result, xs, ys, zs, this);
+	} else {
+		double r, th;
+		std::valarray<double> poly(10);
+		r = sqrt(x*x+y*y);
+		th = 0.;
+		if (r>0.) {
+			th = acos(x/r);
+			if (y<0.) th = 2*d_Pi-th;
+		}
+		AMP_ASSERT(r >=d_MinR  and r <=d_MaxR );
+		AMP_ASSERT(th>=d_MinTh and th<=d_MaxTh);
+		AMP_ASSERT(z >=d_MinZ  and z <=d_MaxZ );
+		double rs, ths=th, zs;
+		rs  = (r -d_MinR )*d_ScaleR;
+		zs  = (z -d_MinZ )*d_ScaleZ;
+		if (d_MaximumTheta < 2.*d_Pi)
+			ths = (th-d_MinTh)*d_ScaleTh;
+
+		(*d_functionPointer)(result, rs, ths, zs, this);
+	}
+}
+
+#define CHECKSIZES
 
 void ManufacturedSolution::quad_neumann(
 		valarray<double> &result,
 		const double x, const double y, const double z, ManufacturedSolution* mfs)
 {
-    #ifdef DBC
+    const valarray<double> c=mfs->getc(), a=mfs->geta();
+
+    #ifdef CHECKSIZES
         size_t na=1;
         size_t nc=6;
         AMP_INSIST(c.size()>=nc, "not enough boundary values specified");
         AMP_INSIST(a.size()>=na, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
-
-    const valarray<double> c=mfs->getc(), a=mfs->geta();
 
     result[0] = a[0] + x*(-c[0] + x*(c[0]/2 + c[1]/2)) + y*(-c[2] + y*(c[2]/2 + c[3]/2)) + z*(-c[4] + z*(c[4]/2 + c[5]/2));
     result[1] = -c[0] + x*(c[0] + c[1]);
@@ -258,15 +322,15 @@ void ManufacturedSolution::quad_dirichlet1(
 		valarray<double> &result,
 		const double x, const double, const double, ManufacturedSolution* mfs)
 {
-    #ifdef DBC
+    const valarray<double> c=mfs->getc(), a=mfs->geta();
+
+    #ifdef CHECKSIZES
         size_t na=1;
         size_t nc=2;
         AMP_INSIST(c.size()>=nc, "not enough boundary values specified");
         AMP_INSIST(a.size()>=na, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
-
-    const valarray<double> c=mfs->getc(), a=mfs->geta();
 
     result[0] = c[0] + x*(a[0] + x*(-a[0]/2 + c[1]/2));
     result[1] = a[0] + x*(-a[0] + c[1]);
@@ -285,15 +349,15 @@ void ManufacturedSolution::quad_dirichlet2(
 		valarray<double> &result,
 		const double x, const double, const double, ManufacturedSolution* mfs)
 {
-    #ifdef DBC
+    const valarray<double> c=mfs->getc(), a=mfs->geta();
+
+    #ifdef CHECKSIZES
         size_t na=1;
         size_t nc=2;
         AMP_INSIST(c.size()>=nc, "not enough boundary values specified");
         AMP_INSIST(a.size()>=na, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
-
-    const valarray<double> c=mfs->getc(), a=mfs->geta();
 
     result[0] = c[0] + x*(a[0] + x*(-a[0] - c[0] + c[1]));
     result[1] = a[0] + x*(-2*a[0] - 2*c[0] + 2*c[1]);
@@ -310,15 +374,13 @@ void ManufacturedSolution::quad_dirichlet2(
 
 void ManufacturedSolution::quad_none(valarray<double> &result, const double x, const double y, const double z, ManufacturedSolution* mfs)
 {
-    #ifdef DBC
+    const valarray<double> a=mfs->geta();
+
+    #ifdef CHECKSIZES
         size_t na=10;
-        size_t nc=0;
-        AMP_INSIST(c.size()>=nc, "not enough boundary values specified");
         AMP_INSIST(a.size()>=na or a.size()==0, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
-
-    const valarray<double> a=mfs->geta();
 
     result[0] = a[0] + z*(a[1] + z*a[2]) + y*(a[3] + z*a[4] + y*a[5]) + x*(a[6] + z*a[7] + y*a[8] + x*a[9]);
     result[1] = a[6] + z*a[7] + y*a[8] + 2*x*a[9];
@@ -337,15 +399,15 @@ void ManufacturedSolution::cubic_neumann(
 		valarray<double> &result,
 		const double x, const double y, const double z, ManufacturedSolution* mfs)
 {
-    #ifdef DBC
+    const valarray<double> c=mfs->getc(), a=mfs->geta();
+
+    #ifdef CHECKSIZES
         size_t na=8;
         size_t nc=6;
         AMP_INSIST(c.size()>=nc, "not enough boundary values specified");
         AMP_INSIST(a.size()>=na, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
-
-    const valarray<double> c=mfs->getc(), a=mfs->geta();
 
     result[0] = a[0] + x*(-c[0] + x*(a[4] + z*z*(a[5] - (2*z*a[5])/3) + y*y*(a[6] + z*z*(a[7] - (2*z*a[7])/3) + y*((-2*a[6])/3 + z*z*((-2*a[7])/3 + (4*z*a[7])/9))) + x*((-2*a[4])/3 + z*z*((-2*a[5])/3 + (4*z*a[5])/9) + y*y*((-2*a[6])/3 + z*z*((-2*a[7])/3 + (4*z*a[7])/9) + y*((4*a[6])/9 + z*z*((4*a[7])/9 - (8*z*a[7])/27))) + c[0]/3 + c[1]/3))) + y*(-c[2] + y*(a[2] + z*z*(a[3] - (2*z*a[3])/3) + y*((-2*a[2])/3 + z*z*((-2*a[3])/3 + (4*z*a[3])/9) + c[2]/3 + c[3]/3))) + z*(-c[4] + z*(a[1] + z*((-2*a[1])/3 + c[4]/3 + c[5]/3)));
     result[1] = -c[0] + x*(2*a[4] + z*z*(2*a[5] - (4*z*a[5])/3) + y*y*(2*a[6] + z*z*(2*a[7] - (4*z*a[7])/3) + y*((-4*a[6])/3 + z*z*((-4*a[7])/3 + (8*z*a[7])/9))) + x*(-2*a[4] + z*z*(-2*a[5] + (4*z*a[5])/3) + y*y*(-2*a[6] + z*z*(-2*a[7] + (4*z*a[7])/3) + y*((4*a[6])/3 + z*z*((4*a[7])/3 - (8*z*a[7])/9))) + c[0] + c[1]));
@@ -364,15 +426,15 @@ void ManufacturedSolution::cubic_dirichlet1(
 		valarray<double> &result,
 		const double x, const double y, const double z, ManufacturedSolution* mfs)
 {
-    #ifdef DBC
+    const valarray<double> c=mfs->getc(), a=mfs->geta();
+
+    #ifdef CHECKSIZES
         size_t na=8;
         size_t nc=2;
         AMP_INSIST(c.size()>=nc, "not enough boundary values specified");
         AMP_INSIST(a.size()>=na, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
-
-    const valarray<double> c=mfs->getc(), a=mfs->geta();
 
     result[0] = c[0] + x*(a[0] + z*z*(a[1] - (2*z*a[1])/3) + y*y*(a[2] + z*z*(a[3] - (2*z*a[3])/3) + y*((-2*a[2])/3 + z*z*((-2*a[3])/3 + (4*z*a[3])/9))) + x*(a[4] + z*z*(a[5] - (2*z*a[5])/3) + y*y*(a[6] + z*z*(a[7] - (2*z*a[7])/3) + y*((-2*a[6])/3 + z*z*((-2*a[7])/3 + (4*z*a[7])/9))) + x*(-a[0]/3 - (2*a[4])/3 + z*z*(-a[1]/3 + z*((2*a[1])/9 + (4*a[5])/9) - (2*a[5])/3) + y*y*(-a[2]/3 - (2*a[6])/3 + y*((2*a[2])/9 + (4*a[6])/9 + z*z*((2*a[3])/9 + z*((-4*a[3])/27 - (8*a[7])/27) + (4*a[7])/9)) + z*z*(-a[3]/3 + z*((2*a[3])/9 + (4*a[7])/9) - (2*a[7])/3)) + c[1]/3)));
     result[1] = a[0] + z*z*(a[1] - (2*z*a[1])/3) + y*y*(a[2] + z*z*(a[3] - (2*z*a[3])/3) + y*((-2*a[2])/3 + z*z*((-2*a[3])/3 + (4*z*a[3])/9))) + x*(2*a[4] + z*z*(2*a[5] - (4*z*a[5])/3) + y*y*(2*a[6] + z*z*(2*a[7] - (4*z*a[7])/3) + y*((-4*a[6])/3 + z*z*((-4*a[7])/3 + (8*z*a[7])/9))) + x*(-a[0] - 2*a[4] + z*z*(-a[1] - 2*a[5] + z*((2*a[1])/3 + (4*a[5])/3)) + y*y*(-a[2] - 2*a[6] + z*z*(-a[3] - 2*a[7] + z*((2*a[3])/3 + (4*a[7])/3)) + y*((2*a[2])/3 + (4*a[6])/3 + z*z*((2*a[3])/3 + z*((-4*a[3])/9 - (8*a[7])/9) + (4*a[7])/3))) + c[1]));
@@ -391,15 +453,15 @@ void ManufacturedSolution::cubic_dirichlet2(
 		valarray<double> &result,
 		const double x, const double y, const double z, ManufacturedSolution* mfs)
 {
-    #ifdef DBC
+    const valarray<double> c=mfs->getc(), a=mfs->geta();
+
+    #ifdef CHECKSIZES
         size_t na=8;
         size_t nc=2;
         AMP_INSIST(c.size()>=nc, "not enough boundary values specified");
         AMP_INSIST(a.size()>=na, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
-
-    const valarray<double> c=mfs->getc(), a=mfs->geta();
 
     result[0] = c[0] + x*(a[0] + z*z*(a[1] - (2*z*a[1])/3) + y*y*(a[2] + z*z*(a[3] - (2*z*a[3])/3) + y*((-2*a[2])/3 + z*z*((-2*a[3])/3 + (4*z*a[3])/9))) + x*(a[4] + z*z*(a[5] - (2*z*a[5])/3) + y*y*(a[6] + z*z*(a[7] - (2*z*a[7])/3) + y*((-2*a[6])/3 + z*z*((-2*a[7])/3 + (4*z*a[7])/9))) + x*(-a[0] - a[4] + z*z*(-a[1] + z*((2*a[1])/3 + (2*a[5])/3) - a[5]) + y*y*(-a[2] - a[6] + y*((2*a[2])/3 + (2*a[6])/3 + z*z*((2*a[3])/3 + z*((-4*a[3])/9 - (4*a[7])/9) + (2*a[7])/3)) + z*z*(-a[3] + z*((2*a[3])/3 + (2*a[7])/3) - a[7])) - c[0] + c[1])));
     result[1] = a[0] + z*z*(a[1] - (2*z*a[1])/3) + y*y*(a[2] + z*z*(a[3] - (2*z*a[3])/3) + y*((-2*a[2])/3 + z*z*((-2*a[3])/3 + (4*z*a[3])/9))) + x*(2*a[4] + z*z*(2*a[5] - (4*z*a[5])/3) + y*y*(2*a[6] + z*z*(2*a[7] - (4*z*a[7])/3) + y*((-4*a[6])/3 + z*z*((-4*a[7])/3 + (8*z*a[7])/9))) + x*(-3*a[0] - 3*a[4] + z*z*(-3*a[1] - 3*a[5] + z*(2*a[1] + 2*a[5])) + y*y*(-3*a[2] - 3*a[6] + z*z*(-3*a[3] - 3*a[7] + z*(2*a[3] + 2*a[7])) + y*(2*a[2] + 2*a[6] + z*z*(2*a[3] + z*((-4*a[3])/3 - (4*a[7])/3) + 2*a[7]))) - 3*c[0] + 3*c[1]));
@@ -416,15 +478,13 @@ void ManufacturedSolution::cubic_dirichlet2(
 
 void ManufacturedSolution::cubic_none(valarray<double> &result, const double x, const double y, const double z, ManufacturedSolution* mfs)
 {
-    #ifdef DBC
+    const valarray<double> a=mfs->geta();
+
+    #ifdef CHECKSIZES
         size_t na=20;
-        size_t nc=0;
-        AMP_INSIST(c.size()>=nc, "not enough boundary values specified");
         AMP_INSIST(a.size()>=na or a.size()==0, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
-
-    const valarray<double> a=mfs->geta();
 
     result[0] = a[0] + z*(a[1] + z*(a[2] + z*a[3])) + y*(a[4] + z*(a[5] + z*a[6]) + y*(a[7] + z*a[8] + y*a[9])) + x*(a[10] + z*(a[11] + z*a[12]) + y*(a[13] + z*a[14] + y*a[15]) + x*(a[16] + z*a[17] + y*a[18] + x*a[19]));
     result[1] = a[10] + z*(a[11] + z*a[12] + y*a[14] + 2*x*a[17]) + y*(a[13] + y*a[15] + 2*x*a[18]) + x*(2*a[16] + 3*x*a[19]);
@@ -443,15 +503,13 @@ void ManufacturedSolution::quad_cyl_rod_none(
 		valarray<double> &result,
 		const double r, const double th, const double z, ManufacturedSolution* mfs)
 {
-    #ifdef DBC
+    const valarray<double> a=mfs->geta();
+
+    #ifdef CHECKSIZES
         size_t na=15;
-        size_t nc=0;
-        AMP_INSIST(c.size()>=nc, "not enough boundary values specified");
         AMP_INSIST(a.size()>=na or a.size()==0, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
-
-    const valarray<double> a=mfs->geta();
 
     double sth=sin(th), cth=cos(th);
     result[0] = a[0] + cth*a[0] + cth*cth*a[0] + sth*a[0] + cth*sth*a[0] + sth*sth*a[0] + z*(a[1] + cth*a[1] + sth*a[1] + z*a[2]) + r*(a[10] + cth*a[10] + sth*a[10] + z*a[11] + r*a[14]);
@@ -467,19 +525,19 @@ void ManufacturedSolution::quad_cyl_rod_none(
 }
 
 
-void ManufacturedSolution::cubic_cyl_rod_neumann(
+void ManufacturedSolution::cubic_cyl_shell_neumann(
 		valarray<double> &result,
 		const double r, const double th, const double z, ManufacturedSolution* mfs)
 {
-    #ifdef DBC
+    const valarray<double> c=mfs->getc(), a=mfs->geta();
+
+    #ifdef CHECKSIZES
         size_t na=9;
         size_t nc=4;
         AMP_INSIST(c.size()>=nc, "not enough boundary values specified");
         AMP_INSIST(a.size()>=na, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
-
-    const valarray<double> c=mfs->getc(), a=mfs->geta();
 
     const double sth=sin(th), cth=cos(th);
     result[0] = a[0] + cth*(a[1] + cth*a[2]) + sth*(a[3] + cth*(a[4] + cth*a[5]) + sth*(a[6] + cth*(a[7] + cth*a[8]))) + r*(-2*c[0] - c[1] + r*(c[0] + c[1])) + z*(-c[2] + z*(c[2]/2 + c[3]/2));
@@ -499,15 +557,15 @@ void ManufacturedSolution::cubic_cyl_rod_dirichletz2(
 		valarray<double> &result,
 		const double r, const double th, const double z, ManufacturedSolution* mfs)
 {
-    #ifdef DBC
+    const valarray<double> c=mfs->getc(), a=mfs->geta();
+
+    #ifdef CHECKSIZES
         size_t na=96;
         size_t nc=2;
         AMP_INSIST(c.size()>=nc, "not enough boundary values specified");
         AMP_INSIST(a.size()>=na, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
-
-    const valarray<double> c=mfs->getc(), a=mfs->geta();
 
     const double sth=sin(th), cth=cos(th);
     result[0] = cth*(z*(a[2] + z*(z*(-a[2] - a[3]) + a[3])) + cth*(z*(a[4] + z*(z*(-a[4] - a[5]) + a[5])) + cth*z*(a[6] + z*(z*(-a[6] - a[7]) + a[7])))) + sth*(z*(a[8] + z*(z*(-a[8] - a[9]) + a[9])) + cth*(z*(a[10] + z*(z*(-a[10] - a[11]) + a[11])) + cth*(z*(a[12] + z*(z*(-a[12] - a[13]) + a[13])) + cth*z*(a[14] + z*(z*(-a[14] - a[15]) + a[15])))) + sth*(z*(a[16] + z*(z*(-a[16] - a[17]) + a[17])) + cth*(z*(a[18] + z*(z*(-a[18] - a[19]) + a[19])) + cth*(z*(a[20] + z*(z*(-a[20] - a[21]) + a[21])) + cth*z*(a[22] + z*(z*(-a[22] - a[23]) + a[23])))) + sth*(z*(a[24] + z*(z*(-a[24] - a[25]) + a[25])) + cth*(z*(a[26] + z*(z*(-a[26] - a[27]) + a[27])) + cth*(z*(a[28] + z*(z*(-a[28] - a[29]) + a[29])) + cth*z*(a[30] + z*(z*(-a[30] - a[31]) + a[31]))))))) + r*(z*(a[32] + z*(z*(-a[32] - a[33]) + a[33])) + cth*(z*(a[34] + z*(z*(-a[34] - a[35]) + a[35])) + cth*(z*(a[36] + z*(z*(-a[36] - a[37]) + a[37])) + cth*z*(a[38] + z*(z*(-a[38] - a[39]) + a[39])))) + sth*(z*(a[40] + z*(z*(-a[40] - a[41]) + a[41])) + cth*(z*(a[42] + z*(z*(-a[42] - a[43]) + a[43])) + cth*(z*(a[44] + z*(z*(-a[44] - a[45]) + a[45])) + cth*z*(a[46] + z*(z*(-a[46] - a[47]) + a[47])))) + sth*(z*(a[48] + z*(z*(-a[48] - a[49]) + a[49])) + cth*(z*(a[50] + z*(z*(-a[50] - a[51]) + a[51])) + cth*(z*(a[52] + z*(z*(-a[52] - a[53]) + a[53])) + cth*z*(a[54] + z*(z*(-a[54] - a[55]) + a[55])))) + sth*(z*(a[56] + z*(z*(-a[56] - a[57]) + a[57])) + cth*(z*(a[58] + z*(z*(-a[58] - a[59]) + a[59])) + cth*(z*(a[60] + z*(z*(-a[60] - a[61]) + a[61])) + cth*z*(a[62] + z*(z*(-a[62] - a[63]) + a[63]))))))) + r*(z*(a[64] + z*(z*(-a[64] - a[65]) + a[65])) + cth*(z*(a[66] + z*(z*(-a[66] - a[67]) + a[67])) + cth*(z*(a[68] + z*(z*(-a[68] - a[69]) + a[69])) + cth*z*(a[70] + z*(z*(-a[70] - a[71]) + a[71])))) + r*(z*(-a[32]/3 - (2*a[64])/3 + z*(-a[33]/3 + z*(a[32]/3 + a[33]/3 + (2*a[64])/3 + (2*a[65])/3) - (2*a[65])/3)) + cth*(z*(-a[34]/3 - (2*a[66])/3 + z*(-a[35]/3 + z*(a[34]/3 + a[35]/3 + (2*a[66])/3 + (2*a[67])/3) - (2*a[67])/3)) + cth*(z*(-a[36]/3 - (2*a[68])/3 + z*(-a[37]/3 + z*(a[36]/3 + a[37]/3 + (2*a[68])/3 + (2*a[69])/3) - (2*a[69])/3)) + cth*z*(-a[38]/3 - (2*a[70])/3 + z*(-a[39]/3 + z*(a[38]/3 + a[39]/3 + (2*a[70])/3 + (2*a[71])/3) - (2*a[71])/3)))) + sth*(z*(-a[40]/3 - (2*a[72])/3 + z*(-a[41]/3 + z*(a[40]/3 + a[41]/3 + (2*a[72])/3 + (2*a[73])/3) - (2*a[73])/3)) + cth*(z*(-a[42]/3 - (2*a[74])/3 + z*(-a[43]/3 + z*(a[42]/3 + a[43]/3 + (2*a[74])/3 + (2*a[75])/3) - (2*a[75])/3)) + cth*(z*(-a[44]/3 - (2*a[76])/3 + z*(-a[45]/3 + z*(a[44]/3 + a[45]/3 + (2*a[76])/3 + (2*a[77])/3) - (2*a[77])/3)) + cth*z*(-a[46]/3 - (2*a[78])/3 + z*(-a[47]/3 + z*(a[46]/3 + a[47]/3 + (2*a[78])/3 + (2*a[79])/3) - (2*a[79])/3)))) + sth*(z*(-a[48]/3 - (2*a[80])/3 + z*(-a[49]/3 + z*(a[48]/3 + a[49]/3 + (2*a[80])/3 + (2*a[81])/3) - (2*a[81])/3)) + cth*(z*(-a[50]/3 - (2*a[82])/3 + z*(-a[51]/3 + z*(a[50]/3 + a[51]/3 + (2*a[82])/3 + (2*a[83])/3) - (2*a[83])/3)) + cth*(z*(-a[52]/3 - (2*a[84])/3 + z*(-a[53]/3 + z*(a[52]/3 + a[53]/3 + (2*a[84])/3 + (2*a[85])/3) - (2*a[85])/3)) + cth*z*(-a[54]/3 - (2*a[86])/3 + z*(-a[55]/3 + z*(a[54]/3 + a[55]/3 + (2*a[86])/3 + (2*a[87])/3) - (2*a[87])/3)))) + sth*(z*(-a[56]/3 - (2*a[88])/3 + z*(-a[57]/3 + z*(a[56]/3 + a[57]/3 + (2*a[88])/3 + (2*a[89])/3) - (2*a[89])/3)) + cth*(z*(-a[58]/3 - (2*a[90])/3 + z*(-a[59]/3 + z*(a[58]/3 + a[59]/3 + (2*a[90])/3 + (2*a[91])/3) - (2*a[91])/3)) + cth*(z*(-a[60]/3 - (2*a[92])/3 + z*(-a[61]/3 + z*(a[60]/3 + a[61]/3 + (2*a[92])/3 + (2*a[93])/3) - (2*a[93])/3)) + cth*z*(-a[62]/3 - (2*a[94])/3 + z*(-a[63]/3 + z*(a[62]/3 + a[63]/3 + (2*a[94])/3 + (2*a[95])/3) - (2*a[95])/3)))))))) + sth*(z*(a[72] + z*(z*(-a[72] - a[73]) + a[73])) + cth*(z*(a[74] + z*(z*(-a[74] - a[75]) + a[75])) + cth*(z*(a[76] + z*(z*(-a[76] - a[77]) + a[77])) + cth*z*(a[78] + z*(z*(-a[78] - a[79]) + a[79])))) + sth*(z*(a[80] + z*(z*(-a[80] - a[81]) + a[81])) + cth*(z*(a[82] + z*(z*(-a[82] - a[83]) + a[83])) + cth*(z*(a[84] + z*(z*(-a[84] - a[85]) + a[85])) + cth*z*(a[86] + z*(z*(-a[86] - a[87]) + a[87])))) + sth*(z*(a[88] + z*(z*(-a[88] - a[89]) + a[89])) + cth*(z*(a[90] + z*(z*(-a[90] - a[91]) + a[91])) + cth*(z*(a[92] + z*(z*(-a[92] - a[93]) + a[93])) + cth*z*(a[94] + z*(z*(-a[94] - a[95]) + a[95]))))))))) + c[0] + z*(a[0] + z*(a[1] + z*(-a[0] - a[1] - c[0] + c[1])));
@@ -523,29 +581,51 @@ void ManufacturedSolution::cubic_cyl_rod_dirichletz2(
 }
 
 
-void ManufacturedSolution::cubic_cyl_rod_none(valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs)
+void ManufacturedSolution::cubic_cyl_rod_rz_none(valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs)
 {
-    #ifdef DBC
-        size_t na=35;
-        size_t nc=0;
-        AMP_INSIST(c.size()>=nc, "not enough boundary values specified");
+    const valarray<double> a=mfs->geta();
+
+    #ifdef CHECKSIZES
+		size_t na=16;
         AMP_INSIST(a.size()>=na or a.size()==0, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
 
+    result[0] = a[0] + z*(a[1] + z*(a[2] + z*a[3])) + r*(a[4] + z*(a[5] + z*(a[6] + z*a[7])) + r*(a[8] + z*(a[9] + z*(a[10] + z*a[11])) + r*(a[12] + z*(a[13] + z*(a[14] + z*a[15])))));
+    result[1] = a[4] + z*(a[5] + z*(a[6] + z*a[7])) + r*(2*a[8] + z*(2*a[9] + z*(2*a[10] + 2*z*a[11])) + r*(3*a[12] + z*(3*a[13] + z*(3*a[14] + 3*z*a[15]))));
+    result[2] = 0;
+    result[3] = a[1] + z*(2*a[2] + 3*z*a[3]) + r*(a[5] + z*(2*a[6] + 3*z*a[7]) + r*(a[9] + z*(2*a[10] + 3*z*a[11]) + r*(a[13] + z*(2*a[14] + 3*z*a[15]))));
+    result[4] = 2*a[8] + z*(2*a[9] + z*(2*a[10] + 2*z*a[11])) + r*(6*a[12] + z*(6*a[13] + z*(6*a[14] + 6*z*a[15])));
+    result[5] = 0;
+    result[6] = a[5] + z*(2*a[6] + 3*z*a[7]) + r*(2*a[9] + z*(4*a[10] + 6*z*a[11]) + r*(3*a[13] + z*(6*a[14] + 9*z*a[15])));
+    result[7] = 0;
+    result[8] = 0;
+    result[9] = 2*a[2] + 6*z*a[3] + r*(2*a[6] + 6*z*a[7] + r*(2*a[10] + 6*z*a[11] + r*(2*a[14] + 6*z*a[15])));
+}
+
+
+void ManufacturedSolution::cubic_cyl_rod_none(valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs)
+{
     const valarray<double> a=mfs->geta();
 
-    double sth=sin(th), cth=cos(th);
-    result[0] = a[0] + cth*a[0] + cth*cth*a[0] + cth*cth*cth*a[0] + sth*a[0] + cth*sth*a[0] + cth*cth*sth*a[0] + sth*sth*a[0] + cth*sth*sth*a[0] + sth*sth*sth*a[0] + z*(a[1] + cth*a[1] + cth*cth*a[1] + sth*a[1] + cth*sth*a[1] + sth*sth*a[1] + z*(a[2] + cth*a[2] + sth*a[2] + z*a[3])) + r*(a[20] + cth*a[20] + cth*cth*a[20] + sth*a[20] + cth*sth*a[20] + sth*sth*a[20] + z*(a[21] + cth*a[21] + sth*a[21] + z*a[22]) + r*(a[30] + cth*a[30] + sth*a[30] + z*a[31] + r*a[34]));
-    result[1] = a[20] + cth*(a[20] + cth*a[20] + z*a[21]) + sth*(a[20] + cth*a[20] + sth*a[20] + z*a[21]) + z*(a[21] + z*a[22]) + r*(2*a[30] + 2*cth*a[30] + 2*sth*a[30] + 2*z*a[31] + 3*r*a[34]);
-    result[2] = sth*(-a[0] - cth*cth*a[0] + sth*(-a[0] + cth*a[0] - sth*a[0] - z*a[1]) + z*(-a[1] - z*a[2])) + cth*(a[0] + cth*(a[0] + cth*a[0] + z*a[1]) + z*(a[1] + z*a[2])) + r*(sth*(-a[20] - sth*a[20] - z*a[21]) + cth*(a[20] + cth*a[20] + z*a[21]) + r*(cth*a[30] - sth*a[30]));
-    result[3] = a[1] + cth*(a[1] + cth*a[1] + 2*z*a[2]) + sth*(a[1] + cth*a[1] + sth*a[1] + 2*z*a[2]) + z*(2*a[2] + 3*z*a[3]) + r*(a[21] + cth*a[21] + sth*a[21] + 2*z*a[22] + r*a[31]);
-    result[4] = 2*a[30] + 2*cth*a[30] + 2*sth*a[30] + 2*z*a[31] + 6*r*a[34];
-    result[5] = sth*(-a[20] - sth*a[20] - z*a[21]) + cth*(a[20] + cth*a[20] + z*a[21]) + r*(2*cth*a[30] - 2*sth*a[30]);
-    result[6] = a[21] + cth*a[21] + sth*a[21] + 2*z*a[22] + 2*r*a[31];
-    result[7] = cth*(-a[0] - cth*cth*a[0] + z*(-a[1] - z*a[2])) + sth*(-a[0] + sth*(-(cth*a[0]) - sth*a[0]) + cth*(-4*a[0] - cth*a[0] - 4*z*a[1]) + z*(-a[1] - z*a[2])) + r*(cth*(-a[20] - z*a[21]) + sth*(-a[20] - 4*cth*a[20] - z*a[21]) + r*(-(cth*a[30]) - sth*a[30]));
-    result[8] = sth*(-a[1] - sth*a[1] - 2*z*a[2]) + cth*(a[1] + cth*a[1] + 2*z*a[2]) + r*(cth*a[21] - sth*a[21]);
-    result[9] = 2*a[2] + 2*cth*a[2] + 2*sth*a[2] + 6*z*a[3] + 2*r*a[22];
+    #ifdef CHECKSIZES
+        size_t na=64;
+        AMP_INSIST(a.size()>=na or a.size()==0, "incorrect number of parameters specified");
+        AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
+    #endif
+
+    double sth=sin(th), s2th=sin(2.*th), s3th=sin(3.*th);
+    double cth=cos(th), c2th=cos(2.*th), c3th=cos(3.*th);
+    result[0] = a[0] + cth*(a[4] + z*(a[5] + z*(a[6] + z*a[7]))) + c2th*a[8] + c3th*a[12] + z*(a[1] + c2th*a[9] + c3th*a[13] + z*(a[2] + c2th*a[10] + c3th*a[14] + z*(a[3] + c2th*a[11] + c3th*a[15]))) + r*(a[16] + cth*(a[20] + z*(a[21] + z*(a[22] + z*a[23]))) + c2th*a[24] + c3th*a[28] + z*(a[17] + c2th*a[25] + c3th*a[29] + z*(a[18] + c2th*a[26] + c3th*a[30] + z*(a[19] + c2th*a[27] + c3th*a[31]))) + r*(a[32] + cth*(a[36] + z*(a[37] + z*(a[38] + z*a[39]))) + c2th*a[40] + c3th*a[44] + z*(a[33] + c2th*a[41] + c3th*a[45] + z*(a[34] + c2th*a[42] + c3th*a[46] + z*(a[35] + c2th*a[43] + c3th*a[47]))) + r*(a[48] + cth*(a[52] + z*(a[53] + z*(a[54] + z*a[55]))) + c2th*a[56] + c3th*a[60] + z*(a[49] + c2th*a[57] + c3th*a[61] + z*(a[50] + c2th*a[58] + c3th*a[62] + z*(a[51] + c2th*a[59] + c3th*a[63]))))));
+    result[1] = a[16] + cth*(a[20] + z*(a[21] + z*(a[22] + z*a[23]))) + c2th*a[24] + c3th*a[28] + z*(a[17] + c2th*a[25] + c3th*a[29] + z*(a[18] + c2th*a[26] + c3th*a[30] + z*(a[19] + c2th*a[27] + c3th*a[31]))) + r*(2*a[32] + cth*(2*a[36] + z*(2*a[37] + z*(2*a[38] + 2*z*a[39]))) + 2*c2th*a[40] + 2*c3th*a[44] + z*(2*a[33] + 2*c2th*a[41] + 2*c3th*a[45] + z*(2*a[34] + 2*c2th*a[42] + 2*c3th*a[46] + z*(2*a[35] + 2*c2th*a[43] + 2*c3th*a[47]))) + r*(3*a[48] + cth*(3*a[52] + z*(3*a[53] + z*(3*a[54] + 3*z*a[55]))) + 3*c2th*a[56] + 3*c3th*a[60] + z*(3*a[49] + 3*c2th*a[57] + 3*c3th*a[61] + z*(3*a[50] + 3*c2th*a[58] + 3*c3th*a[62] + z*(3*a[51] + 3*c2th*a[59] + 3*c3th*a[63])))));
+    result[2] = sth*(-a[4] + z*(-a[5] + z*(-a[6] - z*a[7]))) - 2*s2th*a[8] - 3*s3th*a[12] + z*(-2*s2th*a[9] - 3*s3th*a[13] + z*(-2*s2th*a[10] - 3*s3th*a[14] + z*(-2*s2th*a[11] - 3*s3th*a[15]))) + r*(sth*(-a[20] + z*(-a[21] + z*(-a[22] - z*a[23]))) - 2*s2th*a[24] - 3*s3th*a[28] + z*(-2*s2th*a[25] - 3*s3th*a[29] + z*(-2*s2th*a[26] - 3*s3th*a[30] + z*(-2*s2th*a[27] - 3*s3th*a[31]))) + r*(sth*(-a[36] + z*(-a[37] + z*(-a[38] - z*a[39]))) - 2*s2th*a[40] - 3*s3th*a[44] + z*(-2*s2th*a[41] - 3*s3th*a[45] + z*(-2*s2th*a[42] - 3*s3th*a[46] + z*(-2*s2th*a[43] - 3*s3th*a[47]))) + r*(sth*(-a[52] + z*(-a[53] + z*(-a[54] - z*a[55]))) - 2*s2th*a[56] - 3*s3th*a[60] + z*(-2*s2th*a[57] - 3*s3th*a[61] + z*(-2*s2th*a[58] - 3*s3th*a[62] + z*(-2*s2th*a[59] - 3*s3th*a[63]))))));
+    result[3] = a[1] + cth*(a[5] + z*(2*a[6] + 3*z*a[7])) + c2th*a[9] + c3th*a[13] + z*(2*a[2] + 2*c2th*a[10] + 2*c3th*a[14] + z*(3*a[3] + 3*c2th*a[11] + 3*c3th*a[15])) + r*(a[17] + cth*(a[21] + z*(2*a[22] + 3*z*a[23])) + c2th*a[25] + c3th*a[29] + z*(2*a[18] + 2*c2th*a[26] + 2*c3th*a[30] + z*(3*a[19] + 3*c2th*a[27] + 3*c3th*a[31])) + r*(a[33] + cth*(a[37] + z*(2*a[38] + 3*z*a[39])) + c2th*a[41] + c3th*a[45] + z*(2*a[34] + 2*c2th*a[42] + 2*c3th*a[46] + z*(3*a[35] + 3*c2th*a[43] + 3*c3th*a[47])) + r*(a[49] + cth*(a[53] + z*(2*a[54] + 3*z*a[55])) + c2th*a[57] + c3th*a[61] + z*(2*a[50] + 2*c2th*a[58] + 2*c3th*a[62] + z*(3*a[51] + 3*c2th*a[59] + 3*c3th*a[63])))));
+    result[4] = 2*a[32] + cth*(2*a[36] + z*(2*a[37] + z*(2*a[38] + 2*z*a[39]))) + 2*c2th*a[40] + 2*c3th*a[44] + z*(2*a[33] + 2*c2th*a[41] + 2*c3th*a[45] + z*(2*a[34] + 2*c2th*a[42] + 2*c3th*a[46] + z*(2*a[35] + 2*c2th*a[43] + 2*c3th*a[47]))) + r*(6*a[48] + cth*(6*a[52] + z*(6*a[53] + z*(6*a[54] + 6*z*a[55]))) + 6*c2th*a[56] + 6*c3th*a[60] + z*(6*a[49] + 6*c2th*a[57] + 6*c3th*a[61] + z*(6*a[50] + 6*c2th*a[58] + 6*c3th*a[62] + z*(6*a[51] + 6*c2th*a[59] + 6*c3th*a[63]))));
+    result[5] = sth*(-a[20] + z*(-a[21] + z*(-a[22] - z*a[23]))) - 2*s2th*a[24] - 3*s3th*a[28] + z*(-2*s2th*a[25] - 3*s3th*a[29] + z*(-2*s2th*a[26] - 3*s3th*a[30] + z*(-2*s2th*a[27] - 3*s3th*a[31]))) + r*(sth*(-2*a[36] + z*(-2*a[37] + z*(-2*a[38] - 2*z*a[39]))) - 4*s2th*a[40] - 6*s3th*a[44] + z*(-4*s2th*a[41] - 6*s3th*a[45] + z*(-4*s2th*a[42] - 6*s3th*a[46] + z*(-4*s2th*a[43] - 6*s3th*a[47]))) + r*(sth*(-3*a[52] + z*(-3*a[53] + z*(-3*a[54] - 3*z*a[55]))) - 6*s2th*a[56] - 9*s3th*a[60] + z*(-6*s2th*a[57] - 9*s3th*a[61] + z*(-6*s2th*a[58] - 9*s3th*a[62] + z*(-6*s2th*a[59] - 9*s3th*a[63])))));
+    result[6] = a[17] + cth*(a[21] + z*(2*a[22] + 3*z*a[23])) + c2th*a[25] + c3th*a[29] + z*(2*a[18] + 2*c2th*a[26] + 2*c3th*a[30] + z*(3*a[19] + 3*c2th*a[27] + 3*c3th*a[31])) + r*(2*a[33] + cth*(2*a[37] + z*(4*a[38] + 6*z*a[39])) + 2*c2th*a[41] + 2*c3th*a[45] + z*(4*a[34] + 4*c2th*a[42] + 4*c3th*a[46] + z*(6*a[35] + 6*c2th*a[43] + 6*c3th*a[47])) + r*(3*a[49] + cth*(3*a[53] + z*(6*a[54] + 9*z*a[55])) + 3*c2th*a[57] + 3*c3th*a[61] + z*(6*a[50] + 6*c2th*a[58] + 6*c3th*a[62] + z*(9*a[51] + 9*c2th*a[59] + 9*c3th*a[63]))));
+    result[7] = cth*(-a[4] + z*(-a[5] + z*(-a[6] - z*a[7]))) - 4*c2th*a[8] - 9*c3th*a[12] + z*(-4*c2th*a[9] - 9*c3th*a[13] + z*(-4*c2th*a[10] - 9*c3th*a[14] + z*(-4*c2th*a[11] - 9*c3th*a[15]))) + r*(cth*(-a[20] + z*(-a[21] + z*(-a[22] - z*a[23]))) - 4*c2th*a[24] - 9*c3th*a[28] + z*(-4*c2th*a[25] - 9*c3th*a[29] + z*(-4*c2th*a[26] - 9*c3th*a[30] + z*(-4*c2th*a[27] - 9*c3th*a[31]))) + r*(cth*(-a[36] + z*(-a[37] + z*(-a[38] - z*a[39]))) - 4*c2th*a[40] - 9*c3th*a[44] + z*(-4*c2th*a[41] - 9*c3th*a[45] + z*(-4*c2th*a[42] - 9*c3th*a[46] + z*(-4*c2th*a[43] - 9*c3th*a[47]))) + r*(cth*(-a[52] + z*(-a[53] + z*(-a[54] - z*a[55]))) - 4*c2th*a[56] - 9*c3th*a[60] + z*(-4*c2th*a[57] - 9*c3th*a[61] + z*(-4*c2th*a[58] - 9*c3th*a[62] + z*(-4*c2th*a[59] - 9*c3th*a[63]))))));
+    result[8] = sth*(-a[5] + z*(-2*a[6] - 3*z*a[7])) - 2*s2th*a[9] - 3*s3th*a[13] + z*(-4*s2th*a[10] - 6*s3th*a[14] + z*(-6*s2th*a[11] - 9*s3th*a[15])) + r*(sth*(-a[21] + z*(-2*a[22] - 3*z*a[23])) - 2*s2th*a[25] - 3*s3th*a[29] + z*(-4*s2th*a[26] - 6*s3th*a[30] + z*(-6*s2th*a[27] - 9*s3th*a[31])) + r*(sth*(-a[37] + z*(-2*a[38] - 3*z*a[39])) - 2*s2th*a[41] - 3*s3th*a[45] + z*(-4*s2th*a[42] - 6*s3th*a[46] + z*(-6*s2th*a[43] - 9*s3th*a[47])) + r*(sth*(-a[53] + z*(-2*a[54] - 3*z*a[55])) - 2*s2th*a[57] - 3*s3th*a[61] + z*(-4*s2th*a[58] - 6*s3th*a[62] + z*(-6*s2th*a[59] - 9*s3th*a[63])))));
+    result[9] = 2*a[2] + cth*(2*a[6] + 6*z*a[7]) + 2*c2th*a[10] + 2*c3th*a[14] + z*(6*a[3] + 6*c2th*a[11] + 6*c3th*a[15]) + r*(2*a[18] + cth*(2*a[22] + 6*z*a[23]) + 2*c2th*a[26] + 2*c3th*a[30] + z*(6*a[19] + 6*c2th*a[27] + 6*c3th*a[31]) + r*(2*a[34] + cth*(2*a[38] + 6*z*a[39]) + 2*c2th*a[42] + 2*c3th*a[46] + z*(6*a[35] + 6*c2th*a[43] + 6*c3th*a[47]) + r*(2*a[50] + cth*(2*a[54] + 6*z*a[55]) + 2*c2th*a[58] + 2*c3th*a[62] + z*(6*a[51] + 6*c2th*a[59] + 6*c3th*a[63]))));
 }
 
 
@@ -553,15 +633,15 @@ void ManufacturedSolution::quad_cyl_shell_neumann(
 		valarray<double> &result,
 		const double r, const double th, const double z, ManufacturedSolution* mfs)
 {
-    #ifdef DBC
+    const valarray<double> c=mfs->getc(), a=mfs->geta();
+
+    #ifdef CHECKSIZES
         size_t na=9;
         size_t nc=4;
         AMP_INSIST(c.size()>=nc, "not enough boundary values specified");
         AMP_INSIST(a.size()>=na, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
-
-    const valarray<double> c=mfs->getc(), a=mfs->geta();
 
     const double sth=sin(th), cth=cos(th);
     result[0] = a[0] + cth*(a[1] + cth*a[2]) + sth*(a[3] + cth*(a[4] + cth*a[5]) + sth*(a[6] + cth*(a[7] + cth*a[8]))) + r*(-2*c[0] - c[1] + r*(c[0] + c[1])) + z*(-c[2] + z*(c[2]/2 + c[3]/2));
@@ -577,24 +657,19 @@ void ManufacturedSolution::quad_cyl_shell_neumann(
 }
 
 
-void ManufacturedSolution::quad_cyl_shell_none(valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs)
-{
-}
-
-
 void ManufacturedSolution::quad_cyl_qtr_shell_neumann(
 		valarray<double> &result,
 		const double r, const double th, const double z, ManufacturedSolution* mfs)
 {
-    #ifdef DBC
+    const valarray<double> c=mfs->getc(), a=mfs->geta();
+
+    #ifdef CHECKSIZES
         size_t na=7;
         size_t nc=4;
         AMP_INSIST(c.size()>=nc, "not enough boundary values specified");
         AMP_INSIST(a.size()>=na, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
-
-    const valarray<double> c=mfs->getc(), a=mfs->geta();
 
     const double sth=sin(th), cth=cos(th);
     result[0] = a[0] + cth*(a[1] + cth*a[2]) + sth*(a[3] + cth*(cth*(-a[3] - a[4]) + a[4]) + sth*(a[5] + cth*(-a[1] - a[4] + cth*a[6]))) + r*(-2*c[0] - c[1] + r*(c[0] + c[1])) + z*(-c[2] + z*(c[2]/2 + c[3]/2));
@@ -614,15 +689,15 @@ void ManufacturedSolution::quad_cyl_qtr_shell_dirichlet2(
 		valarray<double> &result,
 		const double r, const double th, const double z, ManufacturedSolution* mfs)
 {
-    #ifdef DBC
+    const valarray<double> c=mfs->getc(), a=mfs->geta();
+
+    #ifdef CHECKSIZES
         size_t na=7;
         size_t nc=4;
         AMP_INSIST(c.size()>=nc, "not enough boundary values specified");
         AMP_INSIST(a.size()>=na, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
-
-    const valarray<double> c=mfs->getc(), a=mfs->geta();
 
     const double sth=sin(th), cth=cos(th);
     result[0] = a[0] + cth*(a[1] + cth*a[2]) + sth*(a[3] + cth*(cth*(-a[3] - a[4]) + a[4]) + sth*(a[5] + cth*(-a[1] - a[4] + cth*a[6]))) + r*(-2*c[0] - c[1] + r*(c[0] + c[1])) + z*(-c[2] + z*(c[2]/2 + c[3]/2));
@@ -638,24 +713,19 @@ void ManufacturedSolution::quad_cyl_qtr_shell_dirichlet2(
 }
 
 
-void ManufacturedSolution::quad_cyl_qtr_shell_none(valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs)
-{
-}
-
-
 void ManufacturedSolution::cubic_cyl_qtr_shell_neumann(
 		valarray<double> &result,
 		const double r, const double th, const double z, ManufacturedSolution* mfs)
 {
-    #ifdef DBC
+    const valarray<double> c=mfs->getc(), a=mfs->geta();
+
+    #ifdef CHECKSIZES
         size_t na=56;
         size_t nc=4;
         AMP_INSIST(c.size()>=nc, "not enough boundary values specified");
         AMP_INSIST(a.size()>=na, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
-
-    const valarray<double> c=mfs->getc(), a=mfs->geta();
 
     const double sth=sin(th), cth=cos(th);
     result[0] = a[0] + cth*(a[2] + z*z*(a[3] - (2*z*a[3])/3) + cth*(a[4] + z*z*(a[5] - (2*z*a[5])/3) + cth*(a[6] + z*z*(a[7] - (2*z*a[7])/3)))) + sth*(a[8] + z*z*(a[9] - (2*z*a[9])/3) + cth*(a[10] + z*z*(a[11] - (2*z*a[11])/3) + cth*(a[12] + cth*(-a[8] - a[10] - a[12] + z*z*(-a[9] - a[11] + z*((2*a[9])/3 + (2*a[11])/3 + (2*a[13])/3) - a[13])) + z*z*(a[13] - (2*z*a[13])/3))) + sth*(a[14] + z*z*(a[15] - (2*z*a[15])/3) + cth*(a[16] + z*z*(a[17] - (2*z*a[17])/3) + cth*(a[18] + z*z*(a[19] - (2*z*a[19])/3) + cth*(a[20] + z*z*(a[21] - (2*z*a[21])/3)))) + sth*(a[22] + z*z*(a[23] - (2*z*a[23])/3) + cth*(-a[2] - a[10] - a[16] + z*z*(-a[3] - a[11] + z*((2*a[3])/3 + (2*a[11])/3 + (2*a[17])/3) - a[17]) + cth*(a[24] + z*z*(a[25] - (2*z*a[25])/3) + cth*(a[26] + z*z*(a[27] - (2*z*a[27])/3))))))) + r*(a[28] + z*z*(a[29] - (2*z*a[29])/3) + cth*(a[30] + z*z*(a[31] - (2*z*a[31])/3) + cth*(a[32] + z*z*(a[33] - (2*z*a[33])/3) + cth*(a[34] + z*z*(a[35] - (2*z*a[35])/3)))) + sth*(a[36] + z*z*(a[37] - (2*z*a[37])/3) + cth*(a[38] + z*z*(a[39] - (2*z*a[39])/3) + cth*(a[40] + cth*(-a[36] - a[38] - a[40] + z*z*(-a[37] - a[39] + z*((2*a[37])/3 + (2*a[39])/3 + (2*a[41])/3) - a[41])) + z*z*(a[41] - (2*z*a[41])/3))) + sth*(a[42] + z*z*(a[43] - (2*z*a[43])/3) + cth*(a[44] + z*z*(a[45] - (2*z*a[45])/3) + cth*(a[46] + z*z*(a[47] - (2*z*a[47])/3) + cth*(a[48] + z*z*(a[49] - (2*z*a[49])/3)))) + sth*(a[50] + z*z*(a[51] - (2*z*a[51])/3) + cth*(-a[30] - a[38] - a[44] + z*z*(-a[31] - a[39] + z*((2*a[31])/3 + (2*a[39])/3 + (2*a[45])/3) - a[45]) + cth*(a[52] + z*z*(a[53] - (2*z*a[53])/3) + cth*(a[54] + z*z*(a[55] - (2*z*a[55])/3))))))) + r*((-3*a[28])/2 + z*z*((-3*a[29])/2 + z*a[29]) + cth*((-3*a[30])/2 + z*z*((-3*a[31])/2 + z*a[31]) + cth*((-3*a[32])/2 + z*z*((-3*a[33])/2 + z*a[33]) + cth*((-3*a[34])/2 + z*z*((-3*a[35])/2 + z*a[35])))) + sth*((-3*a[36])/2 + z*z*((-3*a[37])/2 + z*a[37]) + cth*((-3*a[38])/2 + z*z*((-3*a[39])/2 + z*a[39]) + cth*((-3*a[40])/2 + z*z*((-3*a[41])/2 + z*a[41]) + cth*((3*a[36])/2 + (3*a[38])/2 + (3*a[40])/2 + z*z*((3*a[37])/2 + (3*a[39])/2 + z*(-a[37] - a[39] - a[41]) + (3*a[41])/2)))) + sth*((-3*a[42])/2 + z*z*((-3*a[43])/2 + z*a[43]) + cth*((-3*a[44])/2 + z*z*((-3*a[45])/2 + z*a[45]) + cth*((-3*a[46])/2 + z*z*((-3*a[47])/2 + z*a[47]) + cth*((-3*a[48])/2 + z*z*((-3*a[49])/2 + z*a[49])))) + sth*((-3*a[50])/2 + z*z*((-3*a[51])/2 + z*a[51]) + cth*((3*a[30])/2 + (3*a[38])/2 + (3*a[44])/2 + z*z*((3*a[31])/2 + (3*a[39])/2 + z*(-a[31] - a[39] - a[45]) + (3*a[45])/2) + cth*((-3*a[52])/2 + z*z*((-3*a[53])/2 + z*a[53]) + cth*((-3*a[54])/2 + z*z*((-3*a[55])/2 + z*a[55]))))))) - 2*c[0] + r*((2*a[28])/3 + z*z*((2*a[29])/3 - (4*z*a[29])/9) + cth*((2*a[30])/3 + z*z*((2*a[31])/3 - (4*z*a[31])/9) + cth*((2*a[32])/3 + z*z*((2*a[33])/3 - (4*z*a[33])/9) + cth*((2*a[34])/3 + z*z*((2*a[35])/3 - (4*z*a[35])/9)))) + sth*((2*a[36])/3 + z*z*((2*a[37])/3 - (4*z*a[37])/9) + cth*((2*a[38])/3 + z*z*((2*a[39])/3 - (4*z*a[39])/9) + cth*((2*a[40])/3 + cth*((-2*a[36])/3 - (2*a[38])/3 - (2*a[40])/3 + z*z*((-2*a[37])/3 - (2*a[39])/3 + z*((4*a[37])/9 + (4*a[39])/9 + (4*a[41])/9) - (2*a[41])/3)) + z*z*((2*a[41])/3 - (4*z*a[41])/9))) + sth*((2*a[42])/3 + z*z*((2*a[43])/3 - (4*z*a[43])/9) + cth*((2*a[44])/3 + z*z*((2*a[45])/3 - (4*z*a[45])/9) + cth*((2*a[46])/3 + z*z*((2*a[47])/3 - (4*z*a[47])/9) + cth*((2*a[48])/3 + z*z*((2*a[49])/3 - (4*z*a[49])/9)))) + sth*((2*a[50])/3 + z*z*((2*a[51])/3 - (4*z*a[51])/9) + cth*((-2*a[30])/3 - (2*a[38])/3 - (2*a[44])/3 + z*z*((-2*a[31])/3 - (2*a[39])/3 + z*((4*a[31])/9 + (4*a[39])/9 + (4*a[45])/9) - (2*a[45])/3) + cth*((2*a[52])/3 + z*z*((2*a[53])/3 - (4*z*a[53])/9) + cth*((2*a[54])/3 + z*z*((2*a[55])/3 - (4*z*a[55])/9))))))) + (4*c[0])/3 + (2*c[1])/3) - c[1]/2)) + z*(-c[2] + z*(a[1] + z*((-2*a[1])/3 + c[2]/3 + c[3]/3)));
@@ -668,11 +738,6 @@ void ManufacturedSolution::cubic_cyl_qtr_shell_neumann(
     result[7] = cth*(-a[2] + z*z*(-a[3] + (2*z*a[3])/3) + cth*(-2*a[4] + 2*a[14] + z*z*(-2*a[5] + z*((4*a[5])/3 - (4*a[15])/3) + 2*a[15]) + cth*(-3*a[6] + 2*a[16] + z*z*(-3*a[7] + z*(2*a[7] - (4*a[17])/3) + 2*a[17]) + cth*(2*a[18] + z*z*(2*a[19] - (4*z*a[19])/3) + cth*(2*a[20] + z*z*(2*a[21] - (4*z*a[21])/3)))))) + sth*(-a[8] + z*z*(-a[9] + (2*z*a[9])/3) + cth*(-4*a[10] + z*z*(-4*a[11] + (8*z*a[11])/3) + cth*(-7*a[12] + 6*a[22] + z*z*(-7*a[13] + z*((14*a[13])/3 - 4*a[23]) + 6*a[23]) + cth*(-6*a[2] + 10*a[8] + 4*a[10] + 10*a[12] - 6*a[16] + z*z*(-6*a[3] + 10*a[9] + 4*a[11] + 10*a[13] - 6*a[17] + z*(4*a[3] - (20*a[9])/3 - (8*a[11])/3 - (20*a[13])/3 + 4*a[17])) + cth*(6*a[24] + z*z*(6*a[25] - 4*z*a[25]) + cth*(6*a[26] + z*z*(6*a[27] - 4*z*a[27])))))) + sth*(2*a[4] - 2*a[14] + z*z*(2*a[5] - 2*a[15] + z*((-4*a[5])/3 + (4*a[15])/3)) + cth*(6*a[6] - 7*a[16] + z*z*(6*a[7] - 7*a[17] + z*(-4*a[7] + (14*a[17])/3)) + cth*(-12*a[18] + z*z*(-12*a[19] + 8*z*a[19]) + cth*(-17*a[20] + z*z*(-17*a[21] + (34*z*a[21])/3)))) + sth*(2*a[12] - 3*a[22] + z*z*(2*a[13] - 3*a[23] + z*((-4*a[13])/3 + 2*a[23])) + sth*(2*a[18] + z*z*(2*a[19] - (4*z*a[19])/3) + cth*(6*a[20] + z*z*(6*a[21] - 4*z*a[21])) + sth*(2*a[24] + z*z*(2*a[25] - (4*z*a[25])/3) + cth*(6*a[26] + z*z*(6*a[27] - 4*z*a[27])))) + cth*(10*a[2] - 6*a[8] + 4*a[10] - 6*a[12] + 10*a[16] + z*z*(10*a[3] - 6*a[9] + 4*a[11] - 6*a[13] + z*((-20*a[3])/3 + 4*a[9] - (8*a[11])/3 + 4*a[13] - (20*a[17])/3) + 10*a[17]) + cth*(-17*a[24] + z*z*(-17*a[25] + (34*z*a[25])/3) + cth*(-24*a[26] + z*z*(-24*a[27] + 16*z*a[27]))))))) + r*(cth*(-a[30] + z*z*(-a[31] + (2*z*a[31])/3) + cth*(-2*a[32] + 2*a[42] + z*z*(-2*a[33] + z*((4*a[33])/3 - (4*a[43])/3) + 2*a[43]) + cth*(-3*a[34] + 2*a[44] + z*z*(-3*a[35] + z*(2*a[35] - (4*a[45])/3) + 2*a[45]) + cth*(2*a[46] + z*z*(2*a[47] - (4*z*a[47])/3) + cth*(2*a[48] + z*z*(2*a[49] - (4*z*a[49])/3)))))) + sth*(-a[36] + z*z*(-a[37] + (2*z*a[37])/3) + cth*(-4*a[38] + z*z*(-4*a[39] + (8*z*a[39])/3) + cth*(-7*a[40] + 6*a[50] + z*z*(-7*a[41] + z*((14*a[41])/3 - 4*a[51]) + 6*a[51]) + cth*(-6*a[30] + 10*a[36] + 4*a[38] + 10*a[40] - 6*a[44] + z*z*(-6*a[31] + 10*a[37] + 4*a[39] + 10*a[41] - 6*a[45] + z*(4*a[31] - (20*a[37])/3 - (8*a[39])/3 - (20*a[41])/3 + 4*a[45])) + cth*(6*a[52] + z*z*(6*a[53] - 4*z*a[53]) + cth*(6*a[54] + z*z*(6*a[55] - 4*z*a[55])))))) + sth*(2*a[32] - 2*a[42] + z*z*(2*a[33] - 2*a[43] + z*((-4*a[33])/3 + (4*a[43])/3)) + cth*(6*a[34] - 7*a[44] + z*z*(6*a[35] - 7*a[45] + z*(-4*a[35] + (14*a[45])/3)) + cth*(-12*a[46] + z*z*(-12*a[47] + 8*z*a[47]) + cth*(-17*a[48] + z*z*(-17*a[49] + (34*z*a[49])/3)))) + sth*(2*a[40] - 3*a[50] + z*z*(2*a[41] - 3*a[51] + z*((-4*a[41])/3 + 2*a[51])) + sth*(2*a[46] + z*z*(2*a[47] - (4*z*a[47])/3) + cth*(6*a[48] + z*z*(6*a[49] - 4*z*a[49])) + sth*(2*a[52] + z*z*(2*a[53] - (4*z*a[53])/3) + cth*(6*a[54] + z*z*(6*a[55] - 4*z*a[55])))) + cth*(10*a[30] - 6*a[36] + 4*a[38] - 6*a[40] + 10*a[44] + z*z*(10*a[31] - 6*a[37] + 4*a[39] - 6*a[41] + z*((-20*a[31])/3 + 4*a[37] - (8*a[39])/3 + 4*a[41] - (20*a[45])/3) + 10*a[45]) + cth*(-17*a[52] + z*z*(-17*a[53] + (34*z*a[53])/3) + cth*(-24*a[54] + z*z*(-24*a[55] + 16*z*a[55]))))))) + r*(cth*((3*a[30])/2 + z*z*((3*a[31])/2 - z*a[31]) + cth*(3*a[32] - 3*a[42] + z*z*(3*a[33] - 3*a[43] + z*(-2*a[33] + 2*a[43])) + cth*((9*a[34])/2 - 3*a[44] + z*z*((9*a[35])/2 - 3*a[45] + z*(-3*a[35] + 2*a[45])) + cth*(-3*a[46] + z*z*(-3*a[47] + 2*z*a[47]) + cth*(-3*a[48] + z*z*(-3*a[49] + 2*z*a[49])))))) + sth*((3*a[36])/2 + z*z*((3*a[37])/2 - z*a[37]) + sth*(-3*a[32] + 3*a[42] + z*z*(-3*a[33] + z*(2*a[33] - 2*a[43]) + 3*a[43]) + cth*(-9*a[34] + (21*a[44])/2 + z*z*(-9*a[35] + z*(6*a[35] - 7*a[45]) + (21*a[45])/2) + cth*(18*a[46] + z*z*(18*a[47] - 12*z*a[47]) + cth*((51*a[48])/2 + z*z*((51*a[49])/2 - 17*z*a[49])))) + sth*(-3*a[40] + (9*a[50])/2 + z*z*(-3*a[41] + z*(2*a[41] - 3*a[51]) + (9*a[51])/2) + cth*(-15*a[30] + 9*a[36] - 6*a[38] + 9*a[40] - 15*a[44] + z*z*(-15*a[31] + 9*a[37] - 6*a[39] + 9*a[41] - 15*a[45] + z*(10*a[31] - 6*a[37] + 4*a[39] - 6*a[41] + 10*a[45])) + cth*((51*a[52])/2 + z*z*((51*a[53])/2 - 17*z*a[53]) + cth*(36*a[54] + z*z*(36*a[55] - 24*z*a[55])))) + sth*(-3*a[46] + z*z*(-3*a[47] + 2*z*a[47]) + cth*(-9*a[48] + z*z*(-9*a[49] + 6*z*a[49])) + sth*(-3*a[52] + z*z*(-3*a[53] + 2*z*a[53]) + cth*(-9*a[54] + z*z*(-9*a[55] + 6*z*a[55])))))) + cth*(6*a[38] + z*z*(6*a[39] - 4*z*a[39]) + cth*((21*a[40])/2 - 9*a[50] + z*z*((21*a[41])/2 - 9*a[51] + z*(-7*a[41] + 6*a[51])) + cth*(9*a[30] - 15*a[36] - 6*a[38] - 15*a[40] + 9*a[44] + z*z*(9*a[31] - 15*a[37] - 6*a[39] - 15*a[41] + z*(-6*a[31] + 10*a[37] + 4*a[39] + 10*a[41] - 6*a[45]) + 9*a[45]) + cth*(-9*a[52] + z*z*(-9*a[53] + 6*z*a[53]) + cth*(-9*a[54] + z*z*(-9*a[55] + 6*z*a[55]))))))) + r*(cth*((-2*a[30])/3 + z*z*((-2*a[31])/3 + (4*z*a[31])/9) + cth*((-4*a[32])/3 + (4*a[42])/3 + z*z*((-4*a[33])/3 + z*((8*a[33])/9 - (8*a[43])/9) + (4*a[43])/3) + cth*(-2*a[34] + (4*a[44])/3 + z*z*(-2*a[35] + z*((4*a[35])/3 - (8*a[45])/9) + (4*a[45])/3) + cth*((4*a[46])/3 + z*z*((4*a[47])/3 - (8*z*a[47])/9) + cth*((4*a[48])/3 + z*z*((4*a[49])/3 - (8*z*a[49])/9)))))) + sth*((-2*a[36])/3 + z*z*((-2*a[37])/3 + (4*z*a[37])/9) + cth*((-8*a[38])/3 + z*z*((-8*a[39])/3 + (16*z*a[39])/9) + cth*((-14*a[40])/3 + 4*a[50] + z*z*((-14*a[41])/3 + z*((28*a[41])/9 - (8*a[51])/3) + 4*a[51]) + cth*(-4*a[30] + (20*a[36])/3 + (8*a[38])/3 + (20*a[40])/3 - 4*a[44] + z*z*(-4*a[31] + (20*a[37])/3 + (8*a[39])/3 + (20*a[41])/3 - 4*a[45] + z*((8*a[31])/3 - (40*a[37])/9 - (16*a[39])/9 - (40*a[41])/9 + (8*a[45])/3)) + cth*(4*a[52] + z*z*(4*a[53] - (8*z*a[53])/3) + cth*(4*a[54] + z*z*(4*a[55] - (8*z*a[55])/3)))))) + sth*((4*a[32])/3 - (4*a[42])/3 + z*z*((4*a[33])/3 + z*((-8*a[33])/9 + (8*a[43])/9) - (4*a[43])/3) + cth*(4*a[34] - (14*a[44])/3 + z*z*(4*a[35] - (14*a[45])/3 + z*((-8*a[35])/3 + (28*a[45])/9)) + cth*(-8*a[46] + z*z*(-8*a[47] + (16*z*a[47])/3) + cth*((-34*a[48])/3 + z*z*((-34*a[49])/3 + (68*z*a[49])/9)))) + sth*((4*a[40])/3 - 2*a[50] + z*z*((4*a[41])/3 - 2*a[51] + z*((-8*a[41])/9 + (4*a[51])/3)) + sth*((4*a[46])/3 + z*z*((4*a[47])/3 - (8*z*a[47])/9) + cth*(4*a[48] + z*z*(4*a[49] - (8*z*a[49])/3)) + sth*((4*a[52])/3 + z*z*((4*a[53])/3 - (8*z*a[53])/9) + cth*(4*a[54] + z*z*(4*a[55] - (8*z*a[55])/3)))) + cth*((20*a[30])/3 - 4*a[36] + (8*a[38])/3 - 4*a[40] + (20*a[44])/3 + z*z*((20*a[31])/3 - 4*a[37] + (8*a[39])/3 - 4*a[41] + z*((-40*a[31])/9 + (8*a[37])/3 - (16*a[39])/9 + (8*a[41])/3 - (40*a[45])/9) + (20*a[45])/3) + cth*((-34*a[52])/3 + z*z*((-34*a[53])/3 + (68*z*a[53])/9) + cth*(-16*a[54] + z*z*(-16*a[55] + (32*z*a[55])/3))))))))));
     result[8] = cth*(z*(2*a[9] - 2*z*a[9]) + cth*(z*(2*a[11] - 2*z*a[11]) + cth*(z*(2*a[13] - 2*z*a[13]) + cth*z*(-2*a[9] - 2*a[11] - 2*a[13] + z*(2*a[9] + 2*a[11] + 2*a[13]))))) + sth*(z*(-2*a[3] + 2*z*a[3]) + cth*(z*(-4*a[5] + z*(4*a[5] - 4*a[15]) + 4*a[15]) + cth*(z*(-6*a[7] + z*(6*a[7] - 4*a[17]) + 4*a[17]) + cth*(z*(4*a[19] - 4*z*a[19]) + cth*z*(4*a[21] - 4*z*a[21])))) + sth*(z*(-2*a[11] + 2*z*a[11]) + cth*(z*(-4*a[13] + z*(4*a[13] - 6*a[23]) + 6*a[23]) + cth*(z*(-6*a[3] + 6*a[9] + 6*a[13] - 6*a[17] + z*(6*a[3] - 6*a[9] - 6*a[13] + 6*a[17])) + cth*(z*(6*a[25] - 6*z*a[25]) + cth*z*(6*a[27] - 6*z*a[27])))) + sth*(z*(-2*a[17] + 2*z*a[17]) + cth*(z*(-4*a[19] + 4*z*a[19]) + cth*z*(-6*a[21] + 6*z*a[21])) + sth*(z*(2*a[3] + 2*a[11] + z*(-2*a[3] - 2*a[11] - 2*a[17]) + 2*a[17]) + cth*(z*(-4*a[25] + 4*z*a[25]) + cth*z*(-6*a[27] + 6*z*a[27])))))) + r*(cth*(z*(2*a[37] - 2*z*a[37]) + cth*(z*(2*a[39] - 2*z*a[39]) + cth*(z*(2*a[41] - 2*z*a[41]) + cth*z*(-2*a[37] - 2*a[39] - 2*a[41] + z*(2*a[37] + 2*a[39] + 2*a[41]))))) + sth*(z*(-2*a[31] + 2*z*a[31]) + cth*(z*(-4*a[33] + z*(4*a[33] - 4*a[43]) + 4*a[43]) + cth*(z*(-6*a[35] + z*(6*a[35] - 4*a[45]) + 4*a[45]) + cth*(z*(4*a[47] - 4*z*a[47]) + cth*z*(4*a[49] - 4*z*a[49])))) + sth*(z*(-2*a[39] + 2*z*a[39]) + cth*(z*(-4*a[41] + z*(4*a[41] - 6*a[51]) + 6*a[51]) + cth*(z*(-6*a[31] + 6*a[37] + 6*a[41] - 6*a[45] + z*(6*a[31] - 6*a[37] - 6*a[41] + 6*a[45])) + cth*(z*(6*a[53] - 6*z*a[53]) + cth*z*(6*a[55] - 6*z*a[55])))) + sth*(z*(-2*a[45] + 2*z*a[45]) + cth*(z*(-4*a[47] + 4*z*a[47]) + cth*z*(-6*a[49] + 6*z*a[49])) + sth*(z*(2*a[31] + 2*a[39] + z*(-2*a[31] - 2*a[39] - 2*a[45]) + 2*a[45]) + cth*(z*(-4*a[53] + 4*z*a[53]) + cth*z*(-6*a[55] + 6*z*a[55])))))) + r*(cth*(z*(-3*a[37] + 3*z*a[37]) + cth*(z*(-3*a[39] + 3*z*a[39]) + cth*(cth*z*(3*a[37] + 3*a[39] + z*(-3*a[37] - 3*a[39] - 3*a[41]) + 3*a[41]) + z*(-3*a[41] + 3*z*a[41])))) + sth*(z*(3*a[31] - 3*z*a[31]) + cth*(z*(6*a[33] - 6*a[43] + z*(-6*a[33] + 6*a[43])) + cth*(z*(9*a[35] - 6*a[45] + z*(-9*a[35] + 6*a[45])) + cth*(z*(-6*a[47] + 6*z*a[47]) + cth*z*(-6*a[49] + 6*z*a[49])))) + sth*(z*(3*a[39] - 3*z*a[39]) + sth*(z*(3*a[45] - 3*z*a[45]) + cth*(z*(6*a[47] - 6*z*a[47]) + cth*z*(9*a[49] - 9*z*a[49])) + sth*(z*(-3*a[31] - 3*a[39] - 3*a[45] + z*(3*a[31] + 3*a[39] + 3*a[45])) + cth*(z*(6*a[53] - 6*z*a[53]) + cth*z*(9*a[55] - 9*z*a[55])))) + cth*(z*(6*a[41] - 9*a[51] + z*(-6*a[41] + 9*a[51])) + cth*(z*(9*a[31] - 9*a[37] - 9*a[41] + z*(-9*a[31] + 9*a[37] + 9*a[41] - 9*a[45]) + 9*a[45]) + cth*(z*(-9*a[53] + 9*z*a[53]) + cth*z*(-9*a[55] + 9*z*a[55])))))) + r*(cth*(z*((4*a[37])/3 - (4*z*a[37])/3) + cth*(z*((4*a[39])/3 - (4*z*a[39])/3) + cth*(z*((4*a[41])/3 - (4*z*a[41])/3) + cth*z*((-4*a[37])/3 - (4*a[39])/3 - (4*a[41])/3 + z*((4*a[37])/3 + (4*a[39])/3 + (4*a[41])/3))))) + sth*(z*((-4*a[31])/3 + (4*z*a[31])/3) + cth*(z*((-8*a[33])/3 + z*((8*a[33])/3 - (8*a[43])/3) + (8*a[43])/3) + cth*(z*(-4*a[35] + z*(4*a[35] - (8*a[45])/3) + (8*a[45])/3) + cth*(z*((8*a[47])/3 - (8*z*a[47])/3) + cth*z*((8*a[49])/3 - (8*z*a[49])/3)))) + sth*(z*((-4*a[39])/3 + (4*z*a[39])/3) + cth*(z*((-8*a[41])/3 + z*((8*a[41])/3 - 4*a[51]) + 4*a[51]) + cth*(z*(-4*a[31] + 4*a[37] + 4*a[41] - 4*a[45] + z*(4*a[31] - 4*a[37] - 4*a[41] + 4*a[45])) + cth*(z*(4*a[53] - 4*z*a[53]) + cth*z*(4*a[55] - 4*z*a[55])))) + sth*(z*((-4*a[45])/3 + (4*z*a[45])/3) + cth*(z*((-8*a[47])/3 + (8*z*a[47])/3) + cth*z*(-4*a[49] + 4*z*a[49])) + sth*(z*((4*a[31])/3 + (4*a[39])/3 + z*((-4*a[31])/3 - (4*a[39])/3 - (4*a[45])/3) + (4*a[45])/3) + cth*(z*((-8*a[53])/3 + (8*z*a[53])/3) + cth*z*(-4*a[55] + 4*z*a[55])))))))));
     result[9] = 2*a[1] + cth*(2*a[3] - 4*z*a[3] + cth*(2*a[5] - 4*z*a[5] + cth*(2*a[7] - 4*z*a[7]))) + sth*(2*a[9] - 4*z*a[9] + cth*(2*a[11] - 4*z*a[11] + cth*(2*a[13] - 4*z*a[13] + cth*(-2*a[9] - 2*a[11] - 2*a[13] + z*(4*a[9] + 4*a[11] + 4*a[13])))) + sth*(2*a[15] - 4*z*a[15] + cth*(2*a[17] - 4*z*a[17] + cth*(2*a[19] - 4*z*a[19] + cth*(2*a[21] - 4*z*a[21]))) + sth*(2*a[23] - 4*z*a[23] + cth*(-2*a[3] - 2*a[11] - 2*a[17] + z*(4*a[3] + 4*a[11] + 4*a[17]) + cth*(2*a[25] - 4*z*a[25] + cth*(2*a[27] - 4*z*a[27])))))) + r*(2*a[29] - 4*z*a[29] + cth*(2*a[31] - 4*z*a[31] + cth*(2*a[33] - 4*z*a[33] + cth*(2*a[35] - 4*z*a[35]))) + sth*(2*a[37] - 4*z*a[37] + cth*(2*a[39] - 4*z*a[39] + cth*(2*a[41] - 4*z*a[41] + cth*(-2*a[37] - 2*a[39] - 2*a[41] + z*(4*a[37] + 4*a[39] + 4*a[41])))) + sth*(2*a[43] - 4*z*a[43] + cth*(2*a[45] - 4*z*a[45] + cth*(2*a[47] - 4*z*a[47] + cth*(2*a[49] - 4*z*a[49]))) + sth*(2*a[51] - 4*z*a[51] + cth*(-2*a[31] - 2*a[39] - 2*a[45] + z*(4*a[31] + 4*a[39] + 4*a[45]) + cth*(2*a[53] - 4*z*a[53] + cth*(2*a[55] - 4*z*a[55])))))) + r*(-3*a[29] + 6*z*a[29] + cth*(-3*a[31] + 6*z*a[31] + cth*(-3*a[33] + 6*z*a[33] + cth*(-3*a[35] + 6*z*a[35]))) + sth*(-3*a[37] + 6*z*a[37] + cth*(-3*a[39] + 6*z*a[39] + cth*(-3*a[41] + 6*z*a[41] + cth*(3*a[37] + 3*a[39] + z*(-6*a[37] - 6*a[39] - 6*a[41]) + 3*a[41]))) + sth*(-3*a[43] + 6*z*a[43] + cth*(-3*a[45] + 6*z*a[45] + cth*(-3*a[47] + 6*z*a[47] + cth*(-3*a[49] + 6*z*a[49]))) + sth*(-3*a[51] + 6*z*a[51] + cth*(3*a[31] + 3*a[39] + z*(-6*a[31] - 6*a[39] - 6*a[45]) + 3*a[45] + cth*(-3*a[53] + 6*z*a[53] + cth*(-3*a[55] + 6*z*a[55])))))) + r*((4*a[29])/3 - (8*z*a[29])/3 + cth*((4*a[31])/3 - (8*z*a[31])/3 + cth*((4*a[33])/3 - (8*z*a[33])/3 + cth*((4*a[35])/3 - (8*z*a[35])/3))) + sth*((4*a[37])/3 - (8*z*a[37])/3 + cth*((4*a[39])/3 - (8*z*a[39])/3 + cth*((4*a[41])/3 - (8*z*a[41])/3 + cth*((-4*a[37])/3 - (4*a[39])/3 - (4*a[41])/3 + z*((8*a[37])/3 + (8*a[39])/3 + (8*a[41])/3)))) + sth*((4*a[43])/3 - (8*z*a[43])/3 + cth*((4*a[45])/3 - (8*z*a[45])/3 + cth*((4*a[47])/3 - (8*z*a[47])/3 + cth*((4*a[49])/3 - (8*z*a[49])/3))) + sth*((4*a[51])/3 - (8*z*a[51])/3 + cth*((-4*a[31])/3 - (4*a[39])/3 - (4*a[45])/3 + z*((8*a[31])/3 + (8*a[39])/3 + (8*a[45])/3) + cth*((4*a[53])/3 - (8*z*a[53])/3 + cth*((4*a[55])/3 - (8*z*a[55])/3))))))))) + z*(-4*a[1] + 2*c[2] + 2*c[3]);
-}
-
-
-void ManufacturedSolution::cubic_cyl_qtr_shell_none(valarray<double> &result, const double , const double , const double , ManufacturedSolution* mfs)
-{
 }
 
 void ManufacturedSolution::general_quadratic_exponential(valarray<double> &result, const double x, const double y, const double z, ManufacturedSolution* mfs)

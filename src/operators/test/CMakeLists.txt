@@ -253,7 +253,9 @@ COPY_MESH_FILE ( cube4096.e )
 
 ADD_AMP_TEST_1_2_4 ( testTensorDiffusionManufacturedSolution-1 )
 COPY_TEST_DATA_FILE ( input_TensorDiffusion-Fick-MMS-1 )
+COPY_TEST_DATA_FILE ( input_TensorDiffusion-Fick-MMS-2 )
 COPY_MESH_FILE ( cube4096.e )
+COPY_MESH_FILE ( cylinder4K.e )
 
 ADD_AMP_TEST_1_2_4 ( testLinearColumnOperator-1 )
 COPY_TEST_DATA_FILE ( input_testLinearColumnOperator-1 )
