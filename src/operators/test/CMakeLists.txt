@@ -322,4 +322,8 @@ COPY_MESH_FILE(pellet_coarse.e)
 COPY_MESH_FILE(pellet_1x.e)
 COPY_MESH_FILE(clad_1x_1pellet.e)
 
+# Test map operators
+ADD_AMP_TEST_1_2_4 ( testMapOperator )
+COPY_TEST_DATA_FILE ( input_testMapOperator )
+
 
