@@ -1,7 +1,5 @@
-
 #ifndef included_AMP_Map3Dto1D
 #define included_AMP_Map3Dto1D
-
 
 
 #include "boost/shared_ptr.hpp"
@@ -11,7 +9,6 @@
 #include "operators/map/MapOperatorParameters.h"
 #include "vectors/Vector.h"
 #include "vectors/Variable.h"
-#include "discretization/NodalVariable.h"
 
 #include <string>
 
@@ -98,9 +95,9 @@ protected :
 
     AMP::LinearAlgebra::Vector::shared_ptr outputVec;
 
-    boost::shared_ptr<AMP::Discretization::NodalVariable> d_inpVariable; /**< Nodal Scalar Variable */
+    boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; 
 
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Simple Input Variable */
+    boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
     std::vector<double> d_zLocations;/**< std vector to store 1D z locations. */
 

@@ -25,7 +25,7 @@ Map3Dto1D :: Map3Dto1D(const boost::shared_ptr<OperatorParameters>& params):
 
     AMP_INSIST( myparams->d_db->keyExists("InputVariable"), "key not found" );
     std::string inpVar = myparams->d_db->getString("InputVariable");
-    d_inpVariable.reset(new AMP::Discretization::NodalVariable(1,inpVar) );
+    d_inpVariable.reset(new AMP::LinearAlgebra::Variable(inpVar) );
 
     AMP_INSIST( myparams->d_db->keyExists("OutputVariable"), "key not found" );
     std::string outVar = myparams->d_db->getString("OutputVariable");

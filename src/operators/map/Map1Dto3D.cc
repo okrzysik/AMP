@@ -24,7 +24,7 @@ namespace Operator {
 
     AMP_INSIST( myparams->d_db->keyExists("OutputVariable"), "key not found" );
     std::string outVar = myparams->d_db->getString("OutputVariable");
-    d_outVariable.reset(new AMP::Discretization::NodalVariable(1,outVar));
+    d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar));
 
  }
 
