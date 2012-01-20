@@ -33,9 +33,11 @@ Map3Dto1D :: Map3Dto1D(const boost::shared_ptr<OperatorParameters>& params):
 
  } 
 
+
  void Map3Dto1D :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &u,
      AMP::LinearAlgebra::Vector::shared_ptr  &r, const double , const double )
  { 
+
    AMP_ASSERT(u != NULL);
 
    AMP::LinearAlgebra::Vector::shared_ptr inputVec = u->subsetVectorForVariable(d_inpVariable);
@@ -54,15 +56,12 @@ Map3Dto1D :: Map3Dto1D(const boost::shared_ptr<OperatorParameters>& params):
 
    const unsigned int numPoints = outputVec->getLocalSize();
 
-AMP_ERROR("Not finished");
-/*
-   AMP::Mesh::MeshIterator bnd = d_Mesh->beginSideBoundary( d_boundaryId );
-   AMP::Mesh::MeshIterator end_bnd = bnd.end();
-   //AMP::Mesh::MeshManager::Adapter::BoundarySideIterator bnd = d_MeshAdapter->beginSideBoundary( d_boundaryId );
-   //AMP::Mesh::MeshManager::Adapter::BoundarySideIterator end_bnd = d_MeshAdapter->endSideBoundary( d_boundaryId );
-
-   std::vector<double> mapValues(numPoints,0);
-   std::vector<int> numFaceNodes(numPoints,0);
+    // Get an iterator over the side elements
+    AMP::Mesh::MeshIterator bnd = d_MapMesh->getIDsetIterator( AMP::Mesh::Face, d_boundaryId );
+    AMP::Mesh::MeshIterator end_bnd = bnd.end();
+AMP_ERROR("Not finished converting");
+/*    std::vector<double> mapValues(numPoints,0);
+    std::vector<int> numFaceNodes(numPoints,0);
 
    // Iterator for the solid-clad boundary
    for( ; bnd != end_bnd; ++bnd) {

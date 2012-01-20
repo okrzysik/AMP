@@ -327,5 +327,8 @@ COPY_MESH_FILE(clad_1x_1pellet.e)
 # Test map operators
 ADD_AMP_TEST_1_2_4 ( testMapOperator )
 COPY_TEST_DATA_FILE ( input_testMapOperator )
+COPY_MESH_FILE(halden_1_pellet_9mil.e)
+COPY_MESH_FILE(halden_1_clad.e)
+
 
 
