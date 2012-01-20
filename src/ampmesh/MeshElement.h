@@ -39,6 +39,14 @@ public:
     //! De-constructor for a MeshElement
     virtual ~MeshElement ( );
 
+    // Overload operators
+    inline bool operator== (const MeshElement& rhs ) const { return d_globalID == rhs.d_globalID; }
+    inline bool operator!= (const MeshElement& rhs ) const { return d_globalID != rhs.d_globalID; }
+    inline bool operator<  (const MeshElement& rhs ) const { return d_globalID <  rhs.d_globalID; }
+    inline bool operator>  (const MeshElement& rhs ) const { return d_globalID >  rhs.d_globalID; }
+    inline bool operator<= (const MeshElement& rhs ) const { return d_globalID <= rhs.d_globalID; }
+    inline bool operator>= (const MeshElement& rhs ) const { return d_globalID >= rhs.d_globalID; }
+
     //! Return the element type
     virtual GeomType elementType() const { return d_elementType; }
 
@@ -62,6 +70,9 @@ public:
 
     //! Return the coordinates of the vertex (only applies to verticies)
     virtual std::vector<double> coord() const;
+
+    //! Check if the element is on the surface
+    virtual bool isOnSurface() const;
 
     /**
      * \brief     Check if the current element is on the given boundary

@@ -3,11 +3,16 @@
 
 #include <string.h>
 #include <sstream>
+#include <vector>
 #include <map>
+#include <set>
 
 #ifdef USE_SILO
     #include <silo.h>
 #endif
+
+#include "boost/smart_ptr/shared_ptr.hpp"
+#include "ampmesh/Mesh.h"
 
 #ifdef USE_AMP_VECTORS
     #include "vectors/Vector.h"
@@ -78,7 +83,9 @@ private:
         std::vector<std::string>        varName;    // List of the names of variables associated with each mesh
         std::vector<AMP::Mesh::GeomType> varType;   // List of the types of variables associated with each mesh
         std::vector<int> varSize;                   // Number of unknowns per point
-        std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vec; // List of the vectors associated with each mesh
+        #ifdef USE_AMP_VECTORS
+            std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vec; // List of the vectors associated with each mesh
+        #endif
         // Function to count the number of bytes needed to pack the data (note: some info may be lost)
         size_t size();
         // Function to pack the data to a byte array (note: some info may be lost)

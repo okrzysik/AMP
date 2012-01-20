@@ -89,8 +89,6 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator,
         }
         if ( id.is_local() ) {
             for (int i=0; i<=(int)type; i++) {
-                if ( i!=0 && i!=(int)type )
-                    continue;  // getElements is unfinished for types other than verticies and elements
                 AMP::Mesh::GeomType type2 = (AMP::Mesh::GeomType) i;
                 std::vector<AMP::Mesh::MeshElement> pieces = element.getElements(type2);
                 if ( pieces.empty() )
@@ -201,10 +199,6 @@ void MeshCountTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
     AMP::AMP_MPI comm = mesh->getComm();
     for (int i=0; i<=(int)mesh->getGeomType(); i++) {
         AMP::Mesh::GeomType type = (AMP::Mesh::GeomType) i;
-        if ( type!=AMP::Mesh::Vertex && type!=mesh->getGeomType() ) {
-            ut->expected_failure("Not finished testing all element type in MeshCountTest");
-            continue;
-        }
         size_t N_local = mesh->numLocalElements(type);
         size_t N_global = mesh->numGlobalElements(type);
         size_t N_sum = comm.sumReduce(N_local);
@@ -315,10 +309,6 @@ void VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr m
     for (int gcw=0; gcw<=0; gcw++) {
         for (int type2=0; type2<=(int)mesh->getGeomType(); type2++) {
             AMP::Mesh::GeomType type = (AMP::Mesh::GeomType) type2;
-            if ( type!=AMP::Mesh::Vertex && type!=mesh->getGeomType() ) {
-                // Not all types are currently supported
-                continue;
-            }
             // Get the iterator over the current boundary id
             AMP::Mesh::MeshIterator iterator = mesh->getSurfaceIterator( type, gcw );
             size_t global_size = mesh->getComm().sumReduce(iterator.size());

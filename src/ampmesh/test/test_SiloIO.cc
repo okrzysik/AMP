@@ -12,12 +12,15 @@
 
 #include "ampmesh/Mesh.h"
 #include "ampmesh/SiloIO.h"
+
+#ifdef USE_AMP_VECTORS
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"
+#endif
 
 
 void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
@@ -42,6 +45,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     globalComm.barrier();
     double t2 = AMP::AMP_MPI::time();
 
+#ifdef USE_AMP_VECTORS
     // Create a simple DOFManager
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
     AMP::Discretization::DOFManager::shared_ptr DOF_scalar = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,1,true);
@@ -61,19 +65,23 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     //displacement->getVariable()->setUnits ( "leagues" );
     //gauss_pt2->setToScalar ( 100 );
     globalComm.barrier();
+#endif
     double t3 = AMP::AMP_MPI::time();
 
     // Create the silo writer and register the data
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
     siloWriter->registerMesh( mesh );
+#ifdef USE_AMP_VECTORS
     siloWriter->registerVector( rank_vec, mesh, AMP::Mesh::Vertex, "rank" );
     siloWriter->registerVector( position, mesh, AMP::Mesh::Vertex, "position" );
     //siloWriter->registerVector( gauss_pt );
     //siloWriter->registerVector( gauss_pt2 );
+#endif
     globalComm.barrier();
     double t4 = AMP::AMP_MPI::time();
 
     // Initialize the data
+#ifdef USE_AMP_VECTORS
     rank_vec->setToScalar(globalComm.getRank());
     rank_vec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     std::vector<size_t> dofs;
@@ -85,6 +93,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     }
     position->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     globalComm.barrier();
+#endif
     double t5 = AMP::AMP_MPI::time();
 
     // Write the file

@@ -108,6 +108,12 @@ std::vector<double> MeshElement::coord() const
         AMP_ERROR("coord is not implimented for the base class");
     return element->coord();
 }
+bool MeshElement::isOnSurface() const
+{
+    if ( element==NULL )
+        AMP_ERROR("isOnSurface is not implimented for the base class");
+    return element->isOnSurface();
+}
 bool MeshElement::isOnBoundary(int id) const
 {
     if ( element==NULL )

@@ -50,6 +50,9 @@ public:
     //! Return the coordinates of all verticies composing the element
     virtual std::vector<double> coord() const;
 
+    //! Check if the element is on the surface
+    virtual bool isOnSurface() const;
+
     /**
      * \brief     Check if the current element is on the given boundary
      * \details   Check if the current element is on the boundary specified by the given id
@@ -60,7 +63,7 @@ public:
 
 protected:
 
-    /** Default constructor
+    /** Default constructors
      * \param dim       Spatial dimension
      * \param type      Element type
      * \param element   Underlying libmesh element
@@ -69,22 +72,19 @@ protected:
      * \param meshID    ID of the current mesh
      */
     libMeshElement(int dim, GeomType type, void* element, unsigned int rank, MeshID meshID, libMesh* mesh );
+    libMeshElement(int dim, GeomType type, boost::shared_ptr< ::Elem > element, unsigned int rank, MeshID meshID, libMesh* mesh );
 
     //! Clone the iterator
     virtual MeshElement* clone() const;
 
-    //! The underlying libmesh element
-    int d_dim;
-    void* ptr_element;
-
-    // The rank of the current processor
-    unsigned int d_rank;
-
-    // The ID of the current mesh
-    MeshID d_meshID;
-
-    // The pointer to the current mesh
-    libMesh* d_mesh;
+    // Internal data
+    int d_dim;                  // The dimension of the mesh
+    unsigned int d_rank;        // The rank of the current processor
+    void* ptr_element;          // The underlying libmesh element properties (raw pointer)
+    boost::shared_ptr< ::Elem> ptr2; // Optional smart pointer to the element (to hold a copy)
+    libMesh* d_mesh;            // The pointer to the current mesh
+    MeshID d_meshID;            // The ID of the current mesh
+    bool d_delete_elem;         // Do we need to delete the libMesh element
 
     friend class AMP::Mesh::libMesh;
     friend class AMP::Mesh::libMeshIterator;

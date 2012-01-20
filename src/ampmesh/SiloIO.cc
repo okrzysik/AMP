@@ -214,40 +214,42 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
     for (int i=0; i<dim; i++)
         delete [] coord[i];
     // Write the variables
-    for (size_t i=0; i<data.varName.size(); i++) {
-        AMP::Discretization::DOFManager::shared_ptr DOFs = data.vec[i]->getDOFManager();
-        int nvar = 0;
-        int centering;
-        double *var[10];
-        const char *varnames[] = {"1","2","3"};
-        if ( data.varType[i]==AMP::Mesh::Vertex ) {
-            // We are saving node-centered data
-            centering = DB_NODECENT;
-            nvar = (int) nodelist_ids.size();
-            for (int j=0; j<data.varSize[i]; j++)
-                var[j] = new double[nvar];
-            std::vector<size_t> dofs(data.varSize[i]);
-            std::vector<double> vals(data.varSize[i]);
-            for (int j=0; j<nvar; j++) {
-                DOFs->getDOFs( nodelist_ids[j], dofs );
-                data.vec[i]->getValuesByGlobalID ( data.varSize[i], &dofs[0], &vals[0] );
-                for (int k=0; k<data.varSize[i]; k++)
-                    var[k][j] = vals[k];
+    #ifdef USE_AMP_VECTORS
+        for (size_t i=0; i<data.varName.size(); i++) {
+            AMP::Discretization::DOFManager::shared_ptr DOFs = data.vec[i]->getDOFManager();
+            int nvar = 0;
+            int centering;
+            double *var[10];
+            const char *varnames[] = {"1","2","3"};
+            if ( data.varType[i]==AMP::Mesh::Vertex ) {
+                // We are saving node-centered data
+                centering = DB_NODECENT;
+                nvar = (int) nodelist_ids.size();
+                for (int j=0; j<data.varSize[i]; j++)
+                    var[j] = new double[nvar];
+                std::vector<size_t> dofs(data.varSize[i]);
+                std::vector<double> vals(data.varSize[i]);
+                for (int j=0; j<nvar; j++) {
+                    DOFs->getDOFs( nodelist_ids[j], dofs );
+                    data.vec[i]->getValuesByGlobalID ( data.varSize[i], &dofs[0], &vals[0] );
+                    for (int k=0; k<data.varSize[i]; k++)
+                        var[k][j] = vals[k];
+                }
+            } else if ( data.varType[i]==mesh->getGeomType() ) {
+                // We are saving cell-centered data
+                centering = DB_ZONECENT;
+                AMP_ERROR("Cell-centered data is not programmed yet");
+            } else {
+                // We are storing edge or face data
+                AMP_ERROR("The silo writer currently only supports Vertex and Cell data");
             }
-        } else if ( data.varType[i]==mesh->getGeomType() ) {
-            // We are saving cell-centered data
-            centering = DB_ZONECENT;
-            AMP_ERROR("Cell-centered data is not programmed yet");
-        } else {
-            // We are storing edge or face data
-            AMP_ERROR("The silo writer currently only supports Vertex and Cell data");
+            std::string varNameRank = data.varName[i]+"P"+rank;
+            DBPutUcdvar( FileHandle, varNameRank.c_str(), meshName.c_str(), 
+                data.varSize[i], (char**) varnames, var, nvar, NULL, 0, DB_DOUBLE, centering, NULL);
+            for (int j=0; j<data.varSize[i]; j++)
+                delete [] var[j];
         }
-        std::string varNameRank = data.varName[i]+"P"+rank;
-        DBPutUcdvar( FileHandle, varNameRank.c_str(), meshName.c_str(), 
-            data.varSize[i], (char**) varnames, var, nvar, NULL, 0, DB_DOUBLE, centering, NULL);
-        for (int j=0; j<data.varSize[i]; j++)
-            delete [] var[j];
-    }
+    #endif
     // Change the directory back to root
     DBSetDir( FileHandle, "/" );
 }
@@ -554,7 +556,9 @@ SiloIO::siloBaseMeshData SiloIO::siloBaseMeshData::unpack( char* ptr )
     data.varName.resize(N_var);
     data.varType.resize(N_var);
     data.varSize.resize(N_var);
-    data.vec.resize(N_var);  // Set the vec to NULL
+    #ifdef USE_AMP_VECTORS
+        data.vec.resize(N_var);  // Set the vec to NULL
+    #endif
     for (int i=0; i<N_var; i++) {
         // Store the variable name
         size = *((int*) &ptr[pos]);

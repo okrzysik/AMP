@@ -192,6 +192,10 @@ private:
     std::vector<unsigned int> neighborNodeIDs;
     std::vector< std::vector< ::Node* > > neighborNodes;
 
+    // Data used to elements that libmesh doesn't create
+    std::map< GeomType, boost::shared_ptr<std::vector<MeshElement> > >  d_localElements;
+    std::map< GeomType, boost::shared_ptr<std::vector<MeshElement> > >  d_ghostElements;
+
     // Data used to store the boundary elements
     std::map< std::pair<int,GeomType>, boost::shared_ptr<std::vector<MeshElement> > >  d_boundarySets;
 
