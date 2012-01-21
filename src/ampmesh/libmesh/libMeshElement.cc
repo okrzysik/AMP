@@ -10,6 +10,10 @@ namespace Mesh {
 // Create a unique id for this class
 static unsigned int libMeshElementTypeID = TYPE_HASH(libMeshElement);
 
+// Functions to create new ids by mixing existing ids
+static unsigned int mix2ids(unsigned int, unsigned int);
+static unsigned int mix3ids(unsigned int, unsigned int, unsigned int);
+
 
 /********************************************************
 * Constructors                                          *
@@ -160,57 +164,44 @@ std::vector<MeshElement> libMeshElement::getElements(const GeomType type) const
         children.resize(elem->n_nodes());
         for (unsigned int i=0; i<children.size(); i++)
             children[i] = libMeshElement( d_dim, type, (void*)elem->get_node(i), d_rank, d_meshID, d_mesh );
-    } else if ( ((int) d_elementType - (int) type) == 1 ) {
-        // Return the faces of the current element
-        children.resize(elem->n_faces());
-        std::vector< MeshElement::shared_ptr > neighbors = this->getNeighbors();
+    } else {
+        // Return the children
+        if ( type==Edge )
+            children.resize(elem->n_edges());
+        else if ( type==Face )
+            children.resize(elem->n_faces());
+        else
+            AMP_ERROR("Internal error");
         for (unsigned int i=0; i<children.size(); i++) {
             // We need to build a valid element
-            ::AutoPtr< ::Elem > tmp = elem->build_side(i,false);
+            ::AutoPtr< ::Elem > tmp;
+            if ( type==Edge )
+                tmp = elem->build_edge(i);
+            else if ( type==Face )
+                tmp = elem->build_side(i,false);
+            else
+                AMP_ERROR("Internal error");
             boost::shared_ptr< ::Elem > element( tmp.release() );
-            // Create the id and owning processor for the element
-            MeshElementID global_id = d_globalID;
-            if ( neighbors[i].get() != NULL ) {
-                if ( neighbors[i]->globalID() < global_id )
-                    global_id = neighbors[i]->globalID();
+            // We need to generate a vaild id and owning processor
+            unsigned int n_node_min = ((unsigned int)type) + 1;
+            AMP_ASSERT(element->n_nodes()>=n_node_min);
+            std::vector< ::Node* > nodes(element->n_nodes());
+            std::vector<unsigned int> node_ids(element->n_nodes());
+            for (size_t j=0; j<nodes.size(); j++) {
+                nodes[j] = element->get_node(j);
+                node_ids[j] = nodes[j]->id();
             }
-            AMP_ASSERT(children.size()<32);
-            unsigned int id = (global_id.local_id()<<5) + i;
-            element->set_id() = id;
-            element->processor_id() = global_id.owner_rank();
+            AMP::Utilities::quicksort(node_ids,nodes);
+            element->processor_id() = nodes[0]->processor_id();
+            if ( n_node_min==2 ) 
+                element->set_id() = mix2ids(node_ids[0],node_ids[1]);
+            else if ( n_node_min==3 ) 
+                element->set_id() = mix3ids(node_ids[0],node_ids[1],node_ids[2]);
+            else
+                AMP_ERROR("Internal error");
             // Create the libMeshElement
-            children[i] = libMeshElement( d_dim, type, element, d_rank, d_meshID, d_mesh );
+            children[i] = libMeshElement( d_dim, type, element, d_rank, d_meshID, d_mesh );            
         }
-    } else if  ( ((int) d_elementType - (int) type) == 2 ) {
-        // Return the edges of the current element
-        children.resize(elem->n_edges());
-        for (unsigned int i=0; i<children.size(); i++) {
-            // We need to build a valid element
-            ::AutoPtr< ::Elem > tmp = elem->build_edge(i);
-            boost::shared_ptr< ::Elem > element( tmp.release() );
-            // Create the id and owning processor for the element
-            if ( type == Edge ) {
-                // Use the two nodes to construct the id and owning processor
-                AMP_ASSERT(element->n_nodes()==2);
-                ::Node *node1 = element->get_node(0);
-                ::Node *node2 = element->get_node(1);
-                unsigned int node1_id =  node1->id();
-                unsigned int node2_id =  node2->id();
-                if ( node1_id < node2_id ) {
-                    element->processor_id() = node1->processor_id();
-                    element->set_id() = (node1_id<<15) + node2_id;
-                } else {
-                    element->processor_id() = node2->processor_id();
-                    element->set_id() = (node2_id<<15) + node1_id;
-                }
-            } else {
-                // Not what?
-                AMP_ERROR("Internal error in libMeshElement::getElements");
-            }
-            // Create the libMeshElement
-            children[i] = libMeshElement( d_dim, type, element, d_rank, d_meshID, d_mesh );
-        }
-
     }
     return children;
 }
@@ -272,11 +263,20 @@ std::vector<double> libMeshElement::coord() const
 bool libMeshElement::isOnSurface() const
 {
     MeshElement search = MeshElement(*this);
-    std::vector<MeshElement> &data = *(d_mesh->d_surfaceSets[d_elementType]);
-    size_t index = AMP::Utilities::findfirst( data, search );
-    if ( index < data.size() ) {
-        if ( d_mesh->d_surfaceSets[d_elementType]->operator[](index).globalID() == d_globalID )
-            return true;
+    if ( d_globalID.is_local() ) {
+        std::vector<MeshElement> &data = *(d_mesh->d_localSurfaceElements[d_elementType]);
+        size_t index = AMP::Utilities::findfirst( data, search );
+        if ( index < data.size() ) {
+            if ( d_mesh->d_localSurfaceElements[d_elementType]->operator[](index).globalID() == d_globalID )
+                return true;
+        }
+    } else {
+        std::vector<MeshElement> &data = *(d_mesh->d_ghostSurfaceElements[d_elementType]);
+        size_t index = AMP::Utilities::findfirst( data, search );
+        if ( index < data.size() ) {
+            if ( d_mesh->d_ghostSurfaceElements[d_elementType]->operator[](index).globalID() == d_globalID )
+                return true;
+        }
     }
     return false;
 }
@@ -307,6 +307,31 @@ bool libMeshElement::isOnBoundary(int id) const
     }
     return on_boundary;
 }
+
+
+/****************************************************************
+* Functions to mix ids                                          *
+****************************************************************/
+unsigned int mix2ids(unsigned int a, unsigned int b)
+{
+    return mix3ids(a,b,0);
+    //return (a<<15) + b;
+}
+unsigned int mix3ids(unsigned int a, unsigned int b, unsigned int c)
+{
+    //return (a<<22) + (b<<11)  + c;
+    a=a-b;  a=a-c;  a=a^(c>>13);
+    b=b-c;  b=b-a;  b=b^(a<<8);
+    c=c-a;  c=c-b;  c=c^(b>>13);
+    a=a-b;  a=a-c;  a=a^(c>>12);
+    b=b-c;  b=b-a;  b=b^(a<<16);
+    c=c-a;  c=c-b;  c=c^(b>>5);
+    a=a-b;  a=a-c;  a=a^(c>>3);
+    b=b-c;  b=b-a;  b=b^(a<<10);
+    c=c-a;  c=c-b;  c=c^(b>>15);
+    return c;
+}
+
 
 } // Mesh namespace
 } // AMP namespace

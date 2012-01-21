@@ -200,7 +200,8 @@ private:
     std::map< std::pair<int,GeomType>, boost::shared_ptr<std::vector<MeshElement> > >  d_boundarySets;
 
     // Data used to store the surface elements
-    std::vector< boost::shared_ptr<std::vector<MeshElement> > >  d_surfaceSets;
+    std::vector< boost::shared_ptr<std::vector<MeshElement> > >  d_localSurfaceElements;
+    std::vector< boost::shared_ptr<std::vector<MeshElement> > >  d_ghostSurfaceElements;
 
 };
 

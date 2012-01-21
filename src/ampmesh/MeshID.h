@@ -138,22 +138,22 @@ public:
         return d1<=d2;
     }
     // Access local data
-    inline bool is_local() { 
+    inline bool is_local() const { 
         return data[1]>>63;
     }
-    inline GeomType type() { 
+    inline GeomType type() const { 
         char tmp = (unsigned char) ((data[1]>>32)&0x00FF);
         return (GeomType) tmp; 
     }
-    inline unsigned int local_id() { 
+    inline unsigned int local_id() const { 
         int tmp = (int) (data[1]&0x00000000FFFFFFFF);
         return tmp;
     }
-    inline unsigned int owner_rank() { 
+    inline unsigned int owner_rank() const { 
         unsigned int tmp = (unsigned int) ((data[1]>>40)&0x8FFFFFFF);
         return tmp; 
     }
-    inline MeshID meshID() { 
+    inline MeshID meshID() const { 
         return MeshID(data[0]);
     }
     inline void set_is_local(bool isLocal) { 

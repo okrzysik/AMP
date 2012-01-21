@@ -98,10 +98,10 @@ int main ( int argc , char ** argv )
     testlibMesh( &ut );
 
     // Run tests on the input file
-    testInputMesh( &ut, "input_Mesh" );
+//    testInputMesh( &ut, "input_Mesh" );
 
     // Run the basic tests on all mesh generators
-    testMeshGenerators( &ut );
+//    testMeshGenerators( &ut );
 
 
     // Print the results and return

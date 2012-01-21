@@ -103,7 +103,8 @@ libMesh::~libMesh()
     // First we need to destroy the elements, surface sets, and boundary sets
     d_localElements.clear();
     d_ghostElements.clear();
-    d_surfaceSets.clear();
+    d_localSurfaceElements.clear();
+    d_ghostSurfaceElements.clear();
     d_boundarySets.clear();
     // We need to clear all libmesh objects before libmeshInit
     d_libMeshData.reset();
@@ -233,11 +234,8 @@ void libMesh::initialize()
         if ( type==Vertex || type==GeomDim )
             continue;
         // Get a unique list of all elements of the desired type
-        // Note: we will include ghost elements of the desired type, but only
-        // those elements that are part of an owned element of type GeomDim.
-        // This is required because of the way we create the id of the new element
         std::set<MeshElement> element_list;
-        MeshIterator it = getIterator( GeomDim, 0 );
+        MeshIterator it = getIterator( GeomDim, 1 );
         for (size_t j=0; j<it.size(); j++) {
             std::vector<MeshElement> tmp = it->getElements(type);
             for (size_t k=0; k<tmp.size(); k++)
@@ -274,47 +272,84 @@ void libMesh::initialize()
         std::pair< GeomType, boost::shared_ptr<std::vector<MeshElement> > > ghost_pair( type, ghost_elements );
         d_localElements.insert( local_pair );
         d_ghostElements.insert( ghost_pair );
+        n_local[type] = local_elements->size();
+        n_global[type] = d_comm.sumReduce(n_local[i]);
+        n_ghost[type] = ghost_elements->size();
     }
+    /*for (int i=0; i<=(int)GeomDim; i++) {
+        for (int j=0; j<d_comm.getSize(); j++) {
+            d_comm.barrier();
+            if ( d_comm.getRank()==j )
+                printf("%i, %i, %i, %i\n",i,n_local[i],n_ghost[i],n_global[i]);
+            d_comm.barrier();
+            std::cout << "";
+        }
+    }*/
     // Construct the boundary elements for Node and Elem
-    d_surfaceSets = std::vector< boost::shared_ptr<std::vector<MeshElement> > >((int)GeomDim+1);
-    elem_pos = d_libMesh->local_elements_begin();
-    elem_end = d_libMesh->local_elements_end();
-    std::set< ::Elem* > boundaryElements;
-    std::set< ::Node* > boundaryNodes;
+    d_localSurfaceElements = std::vector< boost::shared_ptr<std::vector<MeshElement> > >((int)GeomDim+1);
+    d_ghostSurfaceElements = std::vector< boost::shared_ptr<std::vector<MeshElement> > >((int)GeomDim+1);
+    elem_pos = d_libMesh->elements_begin();
+    elem_end = d_libMesh->elements_end();
+    std::set< ::Elem* > localBoundaryElements;
+    std::set< ::Elem* > ghostBoundaryElements;
+    std::set< ::Node* > localBoundaryNodes;
+    std::set< ::Node* > ghostBoundaryNodes;
     while ( elem_pos != elem_end ) {
         ::Elem* element = *elem_pos;
         if ( element->on_boundary() ) {
-            boundaryElements.insert(element);
+            if ( (int)element->processor_id() == rank )
+                localBoundaryElements.insert(element);
+            else
+                ghostBoundaryElements.insert(element);
             for (unsigned int i=0; i<element->n_sides(); i++) {
                 if ( element->neighbor(i) == NULL ) {
                     ::AutoPtr< ::Elem > side = element->build_side(i);
-                    for (unsigned int j=0; j<side->n_nodes(); j++)
-                        boundaryNodes.insert(side->get_node(j));
+                    for (unsigned int j=0; j<side->n_nodes(); j++) {
+                        ::Node* node = side->get_node(j);
+                        if ( (int)node->processor_id()==rank )
+                            localBoundaryNodes.insert(node);
+                        else
+                            ghostBoundaryNodes.insert(node);
+                    }
                 }
             }
         }
         elem_pos++;
     }
-    d_surfaceSets[GeomDim] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(boundaryElements.size()) );
-    std::set< ::Elem* >::iterator elem_iterator= boundaryElements.begin();
-    for (size_t i=0; i<boundaryElements.size(); i++) {
-        (*d_surfaceSets[GeomDim])[i] = libMeshElement(PhysicalDim, GeomDim, (void*) *elem_iterator, d_comm.getRank(), d_meshID, this );
+    d_localSurfaceElements[GeomDim] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(localBoundaryElements.size()) );
+    std::set< ::Elem* >::iterator elem_iterator = localBoundaryElements.begin();
+    for (size_t i=0; i<localBoundaryElements.size(); i++) {
+        (*d_localSurfaceElements[GeomDim])[i] = libMeshElement(PhysicalDim, GeomDim, (void*) *elem_iterator, rank, d_meshID, this );
         elem_iterator++;
     }
-    AMP::Utilities::quicksort(*d_surfaceSets[GeomDim]);
-    d_surfaceSets[Vertex] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(boundaryNodes.size()) );
-    std::set< ::Node* >::iterator node_iterator = boundaryNodes.begin();
-    for (size_t i=0; i<boundaryNodes.size(); i++) {
-        (*d_surfaceSets[Vertex])[i] = libMeshElement(PhysicalDim, Vertex, (void*) *node_iterator, d_comm.getRank(), d_meshID, this );
+    AMP::Utilities::quicksort(*d_localSurfaceElements[GeomDim]);
+    d_ghostSurfaceElements[GeomDim] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(ghostBoundaryElements.size()) );
+    elem_iterator = ghostBoundaryElements.begin();
+    for (size_t i=0; i<ghostBoundaryElements.size(); i++) {
+        (*d_ghostSurfaceElements[GeomDim])[i] = libMeshElement(PhysicalDim, GeomDim, (void*) *elem_iterator, rank, d_meshID, this );
+        elem_iterator++;
+    }
+    AMP::Utilities::quicksort(*d_ghostSurfaceElements[GeomDim]);
+    d_localSurfaceElements[Vertex] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(localBoundaryNodes.size()) );
+    std::set< ::Node* >::iterator node_iterator = localBoundaryNodes.begin();
+    for (size_t i=0; i<localBoundaryNodes.size(); i++) {
+        (*d_localSurfaceElements[Vertex])[i] = libMeshElement(PhysicalDim, Vertex, (void*) *node_iterator, rank, d_meshID, this );
         node_iterator++;
     }
-    AMP::Utilities::quicksort(*d_surfaceSets[Vertex]);
+    AMP::Utilities::quicksort(*d_localSurfaceElements[Vertex]);
+    d_ghostSurfaceElements[Vertex] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(ghostBoundaryNodes.size()) );
+    node_iterator = ghostBoundaryNodes.begin();
+    for (size_t i=0; i<ghostBoundaryNodes.size(); i++) {
+        (*d_ghostSurfaceElements[Vertex])[i] = libMeshElement(PhysicalDim, Vertex, (void*) *node_iterator, rank, d_meshID, this );
+        node_iterator++;
+    }
+    AMP::Utilities::quicksort(*d_ghostSurfaceElements[Vertex]);
     // Construct the boundary elements for all other types
     // An face or edge is on the boundary if all of its nodes are on the surface
-    size_t element_surface_global_size = d_comm.sumReduce(d_surfaceSets[GeomDim]->size());
+    size_t element_surface_global_size = d_comm.sumReduce(d_localSurfaceElements[GeomDim]->size());
     for (int type2=1; type2<(int)GeomDim; type2++) {
         GeomType type = (GeomType) type2;
-        std::set<MeshElement> list;
+        std::set<MeshElement> local, ghost;
         MeshIterator it = getIterator( type, 0 );
         for (size_t i=0; i<it.size(); i++) {
             std::vector<MeshElement> nodes = it->getElements(Vertex);
@@ -324,17 +359,37 @@ void libMesh::initialize()
                 if ( !nodes[j].isOnSurface() )
                     on_boundary = false;
             }
-            if ( on_boundary ) 
-                list.insert(*it);
+            if ( on_boundary ) {
+                if ( it->globalID().is_local() )
+                    local.insert(*it);
+                else
+                    ghost.insert(*it);
+            }
             ++it;
         }
-        d_surfaceSets[type2] = boost::shared_ptr<std::vector<MeshElement> >( 
-            new std::vector<MeshElement>(list.begin(),list.end()) );
-        AMP::Utilities::quicksort(*d_surfaceSets[type2]);
-        size_t local_size = d_surfaceSets[type2]->size();
+        d_localSurfaceElements[type2] = boost::shared_ptr<std::vector<MeshElement> >( 
+            new std::vector<MeshElement>(local.begin(),local.end()) );
+        d_ghostSurfaceElements[type2] = boost::shared_ptr<std::vector<MeshElement> >( 
+            new std::vector<MeshElement>(ghost.begin(),ghost.end()) );
+        AMP::Utilities::quicksort(*d_localSurfaceElements[type2]);
+        AMP::Utilities::quicksort(*d_ghostSurfaceElements[type2]);
+        size_t local_size = d_localSurfaceElements[type2]->size();
         size_t global_size = d_comm.sumReduce(local_size);
         AMP_ASSERT(global_size>=element_surface_global_size);
     }
+    /*std::cout << std::endl;
+    for (int i=0; i<=(int)GeomDim; i++) {
+        size_t local_size = d_localSurfaceElements[i]->size();
+        size_t ghost_size = d_ghostSurfaceElements[i]->size();
+        size_t global_size = d_comm.sumReduce(local_size);
+        for (int j=0; j<d_comm.getSize(); j++) {
+            d_comm.barrier();
+            if ( d_comm.getRank()==j )
+                printf("%i, %i, %i, %i\n",i,local_size,ghost_size,global_size);
+            d_comm.barrier();
+            std::cout << "";
+        }
+    }*/
     // Construct the boundary lists
     const std::set<short int> libmesh_bids = d_libMesh->boundary_info->get_boundary_ids();
     std::vector<short int> bids(libmesh_bids.begin(),libmesh_bids.end());
@@ -375,17 +430,6 @@ void libMesh::initialize()
             std::pair< std::pair<int,GeomType>, boost::shared_ptr<std::vector<MeshElement> > > entry(mapid,list);
             d_boundarySets.insert(entry);
         }
-    }
-    // Finish counting the elements 
-    for (int i=0; i<=(int)GeomDim; i++) {
-        GeomType type = (GeomType) i;
-        if ( type==Vertex || type==GeomDim )
-            continue;
-        MeshIterator it = getIterator( type, 0 );
-        n_local[i] = it.size();
-        n_global[i] = d_comm.sumReduce(n_local[i]);
-        it = getIterator( type, 1 );
-        n_ghost[i] = it.size() - n_local[i];
     }
 }
 
@@ -493,12 +537,22 @@ MeshIterator libMesh::getIterator( const GeomType type, const int gcw )
 ********************************************************/
 MeshIterator libMesh::getSurfaceIterator ( const GeomType type, const int gcw )
 {
-    AMP_INSIST(gcw==0,"Iterator over ghost boundary elements is not supported yet");
     AMP_ASSERT( type>=0 && type<=GeomDim );
-    boost::shared_ptr<std::vector<MeshElement> > list = d_surfaceSets[type];
-    if ( list.get() == NULL )
+    boost::shared_ptr<std::vector<MeshElement> > local = d_localSurfaceElements[type];
+    boost::shared_ptr<std::vector<MeshElement> > ghost = d_ghostSurfaceElements[type];
+    if ( local.get()==NULL || ghost.get()==NULL )
         AMP_ERROR("Surface iterator over the given geometry type is not supported");
-    return MultiVectorIterator( list, 0 );
+    if ( gcw == 0 ) {
+        return MultiVectorIterator( local, 0 );
+    } else if ( gcw == 1 ) {
+        std::vector<MeshIterator::shared_ptr> iterators(2);
+        iterators[0] = boost::shared_ptr<MeshIterator>( new MultiVectorIterator( local, 0 ) );
+        iterators[1] = boost::shared_ptr<MeshIterator>( new MultiVectorIterator( ghost, 0 ) );
+        return MultiIterator( iterators, 0 );
+    } else {
+        AMP_ERROR("libmesh has maximum ghost width of 1");
+    }
+    return MeshIterator();
 }
 
 

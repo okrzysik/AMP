@@ -191,6 +191,9 @@ void Utilities::abort(const std::string &message,
         comm.abort();
     } else {
         // Throw and standard exception (allows the use of try, catch)
+        std::stringstream  stream;
+        stream << message << std::endl << "  " << filename << ":  " << line;
+        std::cout << stream.str() << std::endl;
         throw std::logic_error(message);
     }
 }
