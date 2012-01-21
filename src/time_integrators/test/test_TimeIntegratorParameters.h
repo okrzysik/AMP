@@ -28,10 +28,6 @@ public:
             std::cout << "Running " << TEST::get_test_name() << std::endl;
             TimeIntegratorParameterTest test ( ut );
             TEST::run_test ( &test );
-        } catch ( std::runtime_error &e ) {
-            std::stringstream t;
-            t << "Exception thrown: " << e.what();
-            ut->failure ( t.str().c_str() );
         } catch ( ... ) {
             ut->failure ( "Unknown exception" );
         }
