@@ -14,6 +14,8 @@ namespace Operator {
 
       AMP_INSIST( (myparams->d_db)->keyExists("BoundaryId"), "Key ''tflow_id'' is missing!" );
       d_boundaryId = (myparams->d_db)->getInteger("BoundaryId");
+
+      d_MapMesh = myparams->d_MapMesh;
   }
 
 }

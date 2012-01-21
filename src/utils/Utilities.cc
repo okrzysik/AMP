@@ -19,6 +19,15 @@
 #include "utils/AMPManager.h"
 #include <stdexcept>
 
+//#def USE_TRACE
+#ifdef USE_TRACE
+    #include <signal.h>
+    #include <execinfo.h>
+    #include <cxxabi.h>
+    #include <dlfcn.h>
+    #include <stdlib.h>
+#endif
+
 namespace AMP{
 
 /*
@@ -183,6 +192,25 @@ void Utilities::abort(const std::string &message,
 	              const std::string &filename, 
 	              const int line) 
 {
+    #ifdef USE_TRACE
+        void *trace[100];
+        Dl_info dlinfo;
+        int status;
+        const char *symname;
+        char *demangled;
+        int trace_size = backtrace(trace,100);
+        for (int i=0; i<trace_size; ++i) {  
+            if(!dladdr(trace[i], &dlinfo))
+                continue;
+            symname = dlinfo.dli_sname;
+            demangled = abi::__cxa_demangle(symname, NULL, 0, &status);
+            if(status == 0 && demangled)
+                symname = demangled;
+            printf("object: %s, function: %s\n", dlinfo.dli_fname, symname);
+            if (demangled)
+                free(demangled);
+        } 
+    #endif
     if ( AMP::AMPManager::use_MPI_Abort==true) {
         // Log the abort message
         Logger::getInstance() -> logAbort(message, filename, line);

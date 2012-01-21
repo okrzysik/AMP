@@ -64,7 +64,7 @@ void testMap(AMP::UnitTest *ut, std::string exeName )
 
     mapSolution->setToScalar ( 0.0 );
 
-   //-------------------------------------
+    //-------------------------------------
 
     boost::shared_ptr<AMP::InputDatabase> map3dto1d_db1  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapPelletto1D"));
     boost::shared_ptr<AMP::Operator::MapOperatorParameters> map3dto1dParams1 (new AMP::Operator::MapOperatorParameters( map3dto1d_db1 ));
@@ -98,7 +98,7 @@ void testMap(AMP::UnitTest *ut, std::string exeName )
 
     // Set the boundary for the source vector
     unsigned int d_boundaryId = map3dto1d_db1->getInteger("BoundaryId");  
-    AMP::Mesh::MeshIterator  bnd = mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryId, 1 );
+    AMP::Mesh::MeshIterator  bnd = mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryId, 0 );
     AMP::Mesh::MeshIterator  end_bnd = bnd.end();
     AMP::Discretization::DOFManager::shared_ptr dof_map = mapSolutionMaster->getDOFManager();
     std::vector<size_t> ids;
@@ -106,59 +106,54 @@ void testMap(AMP::UnitTest *ut, std::string exeName )
         std::vector<double> x = bnd->coord();
         dof_map->getDOFs( bnd->globalID(), ids );
         AMP_ASSERT(ids.size()==1);
-        mapSolutionMaster->setValueByGlobalID( ids[0], x[3] );
+        mapSolutionMaster->setValueByGlobalID( ids[0], x[2] );
     }
+    mapSolutionMaster->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
-  //-------------------------------------
+    //-------------------------------------
 
-  int cnt=0;
+    int cnt=0;
+    bool testPassed = false;
+    while ( cnt < 20 ) {
+        cnt++;
 
-  bool testPassed = false;
+        map1ToLowDim->setVector(gapVecClad);
+        map1ToHighDim->setVector(mapSolutionSlave);
+        map1ToLowDim->apply(nullVec,mapSolutionMaster,gapVecClad ,1.0, 0.0);
+        map1ToHighDim->apply(nullVec,gapVecClad , mapSolutionSlave ,1.0, 0.0);
+        std::cout << "Master Map Solution " << std::endl;
+        for(size_t i=0; i<gapVecCladSize; i++) {
+            std::cout << " @i : " << i << " is " << gapVecClad->getValueByLocalID(i);
+        }
+        std::cout << std::endl;
+        //------------------------------------------------------------
+        //    mapSolutionSlave->setToScalar(90);
 
-  while ( cnt < 20 )
-  {
-    cnt++;
+        map2ToLowDim->setVector(gapVecPellet);
+        map2ToHighDim->setVector(mapSolutionMaster);
+        map2ToLowDim->apply(nullVec,mapSolutionSlave,gapVecPellet ,1.0, 0.0);
+        map2ToHighDim->apply(nullVec,gapVecPellet , mapSolutionMaster,1.0, 0.0);
 
-    map1ToLowDim->setVector(gapVecClad);
-    map1ToHighDim->setVector(mapSolutionSlave);
-    map1ToLowDim->apply(nullVec,mapSolutionMaster,gapVecClad ,1.0, 0.0);
-    map1ToHighDim->apply(nullVec,gapVecClad , mapSolutionSlave ,1.0, 0.0);
+        std::cout << "Slave Map Solution " << std::endl;
+        for(size_t i=0; i<gapVecPelletSize; i++) {
+            std::cout << " @i : " << i << " is " << gapVecPellet->getValueByLocalID(i);
+        }
+        std::cout << std::endl;
+        //------------------------------------------------------------
 
-      std::cout<<"Master Map Solution " <<std::endl;
-      for(size_t i=0; i<gapVecCladSize; i++) {
-          std::cout<<" @i : "<< i<<" is "<<gapVecClad->getValueByLocalID(i) ;
-      }
-      std::cout<<std::endl;
-    //------------------------------------------------------------
-//    mapSolutionSlave->setToScalar(90);
-
-    map2ToLowDim->setVector(gapVecPellet);
-    map2ToHighDim->setVector(mapSolutionMaster);
-    map2ToLowDim->apply(nullVec,mapSolutionSlave,gapVecPellet ,1.0, 0.0);
-    map2ToHighDim->apply(nullVec,gapVecPellet , mapSolutionMaster,1.0, 0.0);
-
-      std::cout<<"Slave Map Solution " <<std::endl;
-      for(size_t i=0; i<gapVecPelletSize; i++) {
-          std::cout<<" @i : "<< i<<" is "<<gapVecPellet->getValueByLocalID(i) ;
-      }
-      std::cout<<std::endl;
-    //------------------------------------------------------------
-
-    if (1) {
-      testPassed = true;
-      break;
-    } else {
-      std::cout << "Norm of the change in sol for iteration "<<cnt <<"is -->"<<  std::endl;
+        if (1) {
+            testPassed = true;
+            break;
+        } else {
+            std::cout << "Norm of the change in sol for iteration "<<cnt <<"is -->"<<  std::endl;
+        }
+        std::cout<<std::endl;
     }
-
-    std::cout<<std::endl;
-
-  }
 
     #ifdef USE_SILO
-    if( globalComm.getSize() == 1 ) {
-        //manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 0 );
-    }
+        if( globalComm.getSize() == 1 ) {
+            //manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 0 );
+        }
     #endif
 
     if( testPassed )
@@ -171,6 +166,7 @@ void testMap(AMP::UnitTest *ut, std::string exeName )
     ut->passes(exeName);
 
 }
+
 
 int main(int argc, char *argv[])
 {
