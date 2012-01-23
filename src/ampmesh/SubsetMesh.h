@@ -174,6 +174,8 @@ public:
     virtual void displaceMesh ( boost::shared_ptr<const AMP::LinearAlgebra::Vector> x );
 #endif
 
+    // Needed to prevent problems with virtual functions
+    using Mesh::Subset;
 
 protected:
 
