@@ -9,12 +9,12 @@ NumberOfLoadingSteps = 10
 NumberOfMeshes = 1
 
 Mesh_1{
-  Filename = "cube.with.12.boundaries.2.e"
+  Filename = "brick.e"
     MeshName = "brick"
     x_offset = 0
     y_offset = 0
     z_offset = 0
-    NumberOfElements = 1000
+    NumberOfElements = 1088
 }
 
 nonlinearMechanicsBVPOperator {
@@ -55,35 +55,26 @@ DirichletVectorCorrection1 {
     setResidual = FALSE
     valuesType = 1
     isAttachedToVolumeOperator = TRUE
+      
+    number_of_ids = 2
 
-    number_of_ids = 3
-
-    id_0 = 7
-    number_of_dofs_0 = 1
-    dof_0_0 = 2
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
     value_0_0 = 0.0
-
-    id_1 = 14
-    number_of_dofs_1 = 2
+    value_0_1 = 0.0
+    value_0_2 = 0.0
+      
+    id_1 = 1
+    number_of_dofs_1 = 3
     dof_1_0 = 0
     dof_1_1 = 1
+    dof_1_2 = 2
     value_1_0 = 0.0
     value_1_1 = 0.0
-
-    id_2 = 15
-    number_of_dofs_2 = 1
-    dof_2_0 = 1
-    value_2_0 = 0.0
-
-    //number_of_ids = 1
-    //id_0 = 2
-    //number_of_dofs_0 = 3
-    //dof_0_0 = 0
-    //dof_0_1 = 1
-    //dof_0_2 = 2
-    //value_0_0 = 0.0
-    //value_0_1 = 0.0
-    //value_0_2 = 0.0
+    value_1_2 = 0.0
 }
 
 FrapconCladThermalCreepPlasticModel {
@@ -105,7 +96,7 @@ FrapconCladThermalCreepPlasticModel {
     Creep_Delta_Time = 1.0
     Creep_Neutron_Flux = 5.0
     THERMAL_STRAIN_AS_SOURCE_TERM = FALSE
-    THERMAL_EXPANSION_COEFFICIENT = 2.0e-6
+    THERMAL_EXPANSION_COEFFICIENT = 2.0e-5
     Default_Oxygen_Concentration = 0.1
     Default_Temperature = 750.0
     Default_Burnup = 0.0
@@ -143,27 +134,19 @@ DirichletMatrixCorrection2 {
     symmetric_correction = TRUE
     zero_dirichlet_block = FALSE
 
-    number_of_ids = 3
+    number_of_ids = 2
 
-    id_0 = 7
-    number_of_dofs_0 = 1
-    dof_0_0 = 2
-
-    id_1 = 14
-    number_of_dofs_1 = 2
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+      
+    id_1 = 1
+    number_of_dofs_1 = 3
     dof_1_0 = 0
     dof_1_1 = 1
-
-    id_2 = 15
-    number_of_dofs_2 = 1
-    dof_2_0 = 1
-
-    //number_of_ids = 1
-    //id_0          = 2
-    //number_of_dofs_0 =  3
-    //dof_0_0          =  0
-    //dof_0_1          =  1
-    //dof_0_2          =  2
+    dof_1_2 = 2
 }
 
 Load_Boundary {
@@ -178,14 +161,16 @@ Load_Boundary {
     id_0 = 2
     number_of_dofs_0 = 1
     dof_0_0 = 2
-    value_0_0 = 0.1
+    value_0_0 = 0.0
 }
 
 Displacement_Boundary {
   name = "DirichletVectorCorrection"
     print_info_level = 1
     skip_params = FALSE
-    number_of_ids = 1
+      
+    number_of_ids = 2
+
     id_0 = 2
     number_of_dofs_0 = 3
     dof_0_0 = 0
@@ -194,6 +179,15 @@ Displacement_Boundary {
     value_0_0 = 0.0
     value_0_1 = 0.0
     value_0_2 = 0.0
+      
+    id_1 = 1
+    number_of_dofs_1 = 3
+    dof_1_0 = 0
+    dof_1_1 = 1
+    dof_1_2 = 2
+    value_1_0 = 0.0
+    value_1_1 = 0.0
+    value_1_2 = 0.0
 }
 
 NonlinearSolver{
