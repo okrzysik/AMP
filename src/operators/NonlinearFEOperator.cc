@@ -13,8 +13,8 @@ namespace AMP {
 
       AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable( this->getOutputVariable() );
 
-      AMP::Mesh::MeshIterator  el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
-      AMP::Mesh::MeshIterator  end_el = el.end();
+      AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
+      AMP::Mesh::MeshIterator end_el = el.end();
 
       this->preAssembly(u, rInternal);
 

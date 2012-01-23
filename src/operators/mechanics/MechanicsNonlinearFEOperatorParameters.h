@@ -4,6 +4,8 @@
 
 #include "FEOperatorParameters.h"
 #include "MechanicsMaterialModel.h"
+#include "discretization/DOF_Manager.h"
+#include "MechanicsConstants.h"
 
 #include "vectors/Vector.h"
 
@@ -28,6 +30,8 @@ namespace AMP {
           Destructor.
           */
         virtual ~MechanicsNonlinearFEOperatorParameters() { }
+
+        boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[Mechanics::TOTAL_NUMBER_OF_VARIABLES];
 
         boost::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
 
