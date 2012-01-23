@@ -30,7 +30,7 @@ libMeshIterator::libMeshIterator()
     d_size = 0;
     d_rank = 0;
 }
-libMeshIterator::libMeshIterator(int type, AMP::Mesh::libMesh *mesh, int gcw, void *begin, void *end, void *pos, int size)
+libMeshIterator::libMeshIterator(int type, const AMP::Mesh::libMesh *mesh, int gcw, void *begin, void *end, void *pos, int size)
 {
     typeID = libMeshIteratorTypeID;
     iterator = NULL;

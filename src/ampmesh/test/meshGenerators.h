@@ -106,6 +106,23 @@ public:
 };
 
 
+// Surface subset generator
+template <class GENERATOR> 
+class   SurfaceSubsetGenerator : public MeshGenerator
+{
+public:
+    virtual void build_mesh() {
+        boost::shared_ptr<MeshGenerator> generator( new GENERATOR );
+        generator->build_mesh();
+        AMP::Mesh::Mesh::shared_ptr mesh1 = generator->getMesh();
+        AMP::Mesh::GeomType type = mesh1->getGeomType();
+        AMP::Mesh::GeomType type2 = (AMP::Mesh::GeomType) ((int) type - 1);
+        AMP::Mesh::MeshIterator iterator = mesh1->getSurfaceIterator(type2,1);
+        mesh = mesh1->Subset(iterator);
+    }
+};
+
+
 // ThreeElement generator
 /*class   ThreeElementLGenerator : public MeshGenerator
 {

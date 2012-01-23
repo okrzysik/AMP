@@ -121,7 +121,7 @@ public:
      *    matches the meshID of the mesh, and a null pointer otherwise.
      * \param meshID  MeshID of the desired mesh
      */
-    virtual boost::shared_ptr<Mesh>  Subset ( MeshID meshID );
+    virtual boost::shared_ptr<Mesh>  Subset ( MeshID meshID ) const;
 
 
     /**
@@ -135,7 +135,7 @@ public:
      *    It is strongly recommended to use the meshID when possible.
      * \param name  Name of the desired mesh
      */
-    virtual boost::shared_ptr<Mesh>  Subset ( std::string name );
+    virtual boost::shared_ptr<Mesh>  Subset ( std::string name ) const;
 
 
     /**
@@ -144,7 +144,7 @@ public:
      *   This will return a new mesh object.
      * \param iterator  MeshIterator used to subset
      */
-    virtual boost::shared_ptr<Mesh>  Subset ( MeshIterator::shared_ptr &iterator );
+    virtual boost::shared_ptr<Mesh>  Subset ( const MeshIterator &iterator ) const;
 
 
     /**
@@ -152,7 +152,7 @@ public:
      * \details      This function will subset a mesh given another mesh
      * \param mesh   Mesh used to subset
      */
-    virtual boost::shared_ptr<Mesh>  Subset ( Mesh &mesh );
+    virtual boost::shared_ptr<Mesh>  Subset ( Mesh &mesh ) const;
 
 
     /* Return the number of local element of the given type
@@ -180,7 +180,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getIterator ( const GeomType type, const int gcw=0 );
+    virtual MeshIterator getIterator ( const GeomType type, const int gcw=0 ) const;
 
 
     /**
@@ -189,7 +189,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getSurfaceIterator ( const GeomType type, const int gcw=0 );
+    virtual MeshIterator getSurfaceIterator ( const GeomType type, const int gcw=0 ) const;
 
 
     /**
@@ -197,7 +197,7 @@ public:
      * \details  Return the list of all ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getIDSets ( );
+    virtual std::vector<int> getIDSets ( ) const;
 
 
     /**
@@ -207,7 +207,7 @@ public:
      * \param id     id for the elements (example: nodeset id)
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getIDsetIterator ( const GeomType type, const int id, const int gcw=0 );
+    virtual MeshIterator getIDsetIterator ( const GeomType type, const int id, const int gcw=0 ) const;
 
 
     /**
@@ -267,7 +267,7 @@ public:
      *   vector returned contains the box that contains the mesh in the form
      *   [ x_min  x_max  y_min  y_max  z_min  z_max ].
      */
-    virtual std::vector<double> getBoundingBox() { return d_box; }
+    virtual std::vector<double> getBoundingBox() const { return d_box; }
 
 
     /**
@@ -300,7 +300,7 @@ public:
      * \param name   Name of the vector
      * \param gcw    Desired ghost cell width
      */
-    virtual boost::shared_ptr<AMP::LinearAlgebra::Vector>  getPositionVector( std::string name, const int gcw=0 );
+    virtual boost::shared_ptr<AMP::LinearAlgebra::Vector>  getPositionVector( std::string name, const int gcw=0 ) const;
 #endif
 
 

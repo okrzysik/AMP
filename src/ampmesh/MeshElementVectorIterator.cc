@@ -80,6 +80,8 @@ MeshIterator MultiVectorIterator::end() const
 ********************************************************/
 size_t MultiVectorIterator::size() const
 {
+    if ( d_elements.get()==NULL )
+        return 0;
     return d_elements->size();
 }
 

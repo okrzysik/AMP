@@ -20,6 +20,7 @@
 #include "vectors/VectorBuilder.h"
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"
+#include "vectors/VectorSelector.h"
 #endif
 
 
@@ -68,12 +69,25 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
 #endif
     double t3 = AMP::AMP_MPI::time();
 
+    // Create a subset mesh and view of a vector
+    AMP::Mesh::Mesh::shared_ptr submesh = mesh->Subset( mesh->getSurfaceIterator(AMP::Mesh::Face) );
+    #ifdef USE_AMP_VECTORS
+        AMP::LinearAlgebra::VS_MeshIterator meshSelector( "positionSubset", mesh->getSurfaceIterator(AMP::Mesh::Face) );
+        AMP::LinearAlgebra::VS_Stride zSelector("thirds",2,3);
+        AMP::LinearAlgebra::Vector::shared_ptr  vec_meshSubset = position->select( meshSelector, "mesh subset" );
+        AMP_ASSERT(vec_meshSubset.get()!=NULL);
+        AMP::LinearAlgebra::Vector::shared_ptr  z_surface = vec_meshSubset->select( zSelector, "z surface" );
+        AMP_ASSERT(z_surface.get()!=NULL);
+    #endif
+
     // Create the silo writer and register the data
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
     siloWriter->registerMesh( mesh );
+    siloWriter->registerMesh( submesh );
 #ifdef USE_AMP_VECTORS
     siloWriter->registerVector( rank_vec, mesh, AMP::Mesh::Vertex, "rank" );
     siloWriter->registerVector( position, mesh, AMP::Mesh::Vertex, "position" );
+    siloWriter->registerVector( z_surface, submesh, AMP::Mesh::Vertex, "z_surface" );
     //siloWriter->registerVector( gauss_pt );
     //siloWriter->registerVector( gauss_pt2 );
 #endif

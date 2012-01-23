@@ -69,7 +69,7 @@ protected:
      * \param pos       Pointer to iterator with the current position
      * \param size      Number of elements in the iterator
      */
-    libMeshIterator(int type, AMP::Mesh::libMesh *mesh, int gcw, void *begin, void *end, void *pos, int size=-1 );
+    libMeshIterator(int type, const AMP::Mesh::libMesh *mesh, int gcw, void *begin, void *end, void *pos, int size=-1 );
 
     //! Clone the iterator
     virtual MeshIterator* clone() const;
@@ -87,7 +87,7 @@ private:
     void *d_end;
     void *d_pos;
     MeshID d_meshID;
-    AMP::Mesh::libMesh *d_mesh;
+    const AMP::Mesh::libMesh *d_mesh;
     MeshElement d_cur_element;
 };
 

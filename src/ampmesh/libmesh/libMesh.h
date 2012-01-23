@@ -93,7 +93,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator  getIterator ( const GeomType type, const int gcw=0 );
+    virtual MeshIterator  getIterator ( const GeomType type, const int gcw=0 ) const;
 
 
     /**
@@ -102,14 +102,14 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator  getSurfaceIterator ( const GeomType type, const int gcw=0 );
+    virtual MeshIterator  getSurfaceIterator ( const GeomType type, const int gcw=0 ) const;
 
 
     /**
      * \brief    Return the list of all ID sets in the mesh
      * \details  Return the list of all ID sets in the mesh
      */
-    virtual std::vector<int>  getIDSets ( );
+    virtual std::vector<int>  getIDSets ( ) const;
 
 
     /**
@@ -119,7 +119,7 @@ public:
      * \param id     id for the elements (example: nodeset id)
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator  getIDsetIterator ( const GeomType type, const int id, const int gcw=0 );
+    virtual MeshIterator  getIDsetIterator ( const GeomType type, const int id, const int gcw=0 ) const;
 
 
     /**
@@ -147,16 +147,6 @@ public:
      *           is the physical dimension of the mesh.
      */
     virtual void displaceMesh ( boost::shared_ptr<const AMP::LinearAlgebra::Vector> x );
-
-
-    /**
-     * \brief    Get a vector of the coordinates of the nodes
-     * \details  This function will return a const vector containing the coordinates of 
-     *           all the nodes.  
-     * \param name   Name of the vector
-     * \param gcw    Desired ghost cell width
-     */
-    virtual boost::shared_ptr<AMP::LinearAlgebra::Vector>  getPositionVector( std::string name, const int gcw=0 );
 #endif
 
 
@@ -167,7 +157,7 @@ protected:
      *  as those nodes that share an element with the given node.
      *  Note: the nodes returns are returned in unsorted order.
      */
-    std::vector< ::Node* > getNeighborNodes( MeshElementID );
+    std::vector< ::Node* > getNeighborNodes( MeshElementID ) const;
 
     // Friend functions to access protected functions    
     friend class libMeshElement;

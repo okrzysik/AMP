@@ -476,7 +476,7 @@ size_t libMesh::numGhostElements( const GeomType type, int gcw ) const
 /********************************************************
 * Return an iterator over the given geometric type      *
 ********************************************************/
-MeshIterator libMesh::getIterator( const GeomType type, const int gcw )
+MeshIterator libMesh::getIterator( const GeomType type, const int gcw ) const
 {
     libMeshIterator iterator;
     if ( type==PhysicalDim ) {
@@ -507,7 +507,7 @@ MeshIterator libMesh::getIterator( const GeomType type, const int gcw )
         }
     } else {
         // All other types require a pre-constructed list
-        std::map< GeomType, boost::shared_ptr<std::vector<MeshElement> > >::iterator it1, it2;
+        std::map< GeomType, boost::shared_ptr<std::vector<MeshElement> > >::const_iterator it1, it2;
         if ( gcw==0 ) {
             it1 = d_localElements.find( type );
             if ( it1==d_localElements.end() )
@@ -535,7 +535,7 @@ MeshIterator libMesh::getIterator( const GeomType type, const int gcw )
 * Return an iterator over the given boundary ids        *
 * Note: we have not programmed this for ghosts yet      *
 ********************************************************/
-MeshIterator libMesh::getSurfaceIterator ( const GeomType type, const int gcw )
+MeshIterator libMesh::getSurfaceIterator ( const GeomType type, const int gcw ) const
 {
     AMP_ASSERT( type>=0 && type<=GeomDim );
     boost::shared_ptr<std::vector<MeshElement> > local = d_localSurfaceElements[type];
@@ -560,7 +560,7 @@ MeshIterator libMesh::getSurfaceIterator ( const GeomType type, const int gcw )
 * Return an iterator over the given boundary ids        *
 * Note: we have not programmed this for ghosts yet      *
 ********************************************************/
-std::vector<int> libMesh::getIDSets ( )
+std::vector<int> libMesh::getIDSets ( ) const
 {
     const std::set<short int> libmesh_bids = d_libMesh->boundary_info->get_boundary_ids();
     std::vector<int> bids(libmesh_bids.size(),0);
@@ -571,11 +571,11 @@ std::vector<int> libMesh::getIDSets ( )
     }
     return bids;
 }
-MeshIterator libMesh::getIDsetIterator ( const GeomType type, const int id, const int gcw )
+MeshIterator libMesh::getIDsetIterator ( const GeomType type, const int id, const int gcw ) const
 {
     AMP_INSIST(gcw==0,"Iterator over ghost boundary elements is not supported yet");
     std::pair<int,GeomType> mapid = std::pair<int,GeomType>(id,type);
-    std::map< std::pair<int,GeomType>, boost::shared_ptr<std::vector<MeshElement> > >::iterator it;
+    std::map< std::pair<int,GeomType>, boost::shared_ptr<std::vector<MeshElement> > >::const_iterator it;
     boost::shared_ptr<std::vector<MeshElement> > list( new std::vector<MeshElement>() );
     it = d_boundarySets.find(mapid);
     if ( it != d_boundarySets.end() )
@@ -587,7 +587,7 @@ MeshIterator libMesh::getIDsetIterator ( const GeomType type, const int id, cons
 /********************************************************
 * Return pointers to the neighbor nodes give a node id  *
 ********************************************************/
-std::vector< ::Node* > libMesh::getNeighborNodes( MeshElementID id )
+std::vector< ::Node* > libMesh::getNeighborNodes( MeshElementID id ) const
 {
     AMP_INSIST(id.type()==Vertex,"This function is for nodes");
     AMP_INSIST(id.meshID()==d_meshID,"Unknown mesh");
@@ -596,37 +596,6 @@ std::vector< ::Node* > libMesh::getNeighborNodes( MeshElementID id )
     AMP_ASSERT(neighborNodeIDs[i]==id.local_id());
     return neighborNodes[i];
 }
-
-
-/********************************************************
-* Return the position vector                            *
-********************************************************/
-#ifdef USE_AMP_VECTORS
-AMP::LinearAlgebra::Vector::shared_ptr  libMesh::getPositionVector( std::string name, const int gcw )
-{
-    #ifdef USE_AMP_DISCRETIZATION
-        AMP::Discretization::DOFManager::shared_ptr DOFs = 
-            AMP::Discretization::simpleDOFManager::create( 
-            shared_from_this(), AMP::Mesh::Vertex, gcw, PhysicalDim, false );
-        AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::LinearAlgebra::Variable(name) );
-        AMP::LinearAlgebra::Vector::shared_ptr position = AMP::LinearAlgebra::createVector( DOFs, nodalVariable, false );
-        std::vector<size_t> dofs(PhysicalDim);
-        AMP::Mesh::MeshIterator cur = DOFs->getIterator();
-        AMP::Mesh::MeshIterator end = cur.end();
-        while ( cur != end ) {
-            AMP::Mesh::MeshElementID id = cur->globalID();
-            std::vector<double> coord = cur->coord();
-            DOFs->getDOFs( id, dofs );
-            position->setValuesByGlobalID( dofs.size(), &dofs[0], &coord[0] );
-            ++cur;
-        }
-        return position;
-    #else
-        AMP_ERROR("getPositionVector requires DISCRETIZATION");
-        return AMP::LinearAlgebra::Vector::shared_ptr();
-    #endif
-}
-#endif
 
 
 /********************************************************
@@ -700,7 +669,7 @@ void libMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
             ++node_cur;
         }
     #else
-        AMP_ERROR("getPositionVector requires DISCRETIZATION");
+        AMP_ERROR("displaceMesh requires DISCRETIZATION");
     #endif
 }
 #endif

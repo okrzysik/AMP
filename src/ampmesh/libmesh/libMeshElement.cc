@@ -27,7 +27,7 @@ libMeshElement::libMeshElement()
     d_globalID = MeshElementID();
 }
 libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element, 
-    unsigned int rank, MeshID meshID, libMesh* mesh)
+    unsigned int rank, MeshID meshID, const libMesh* mesh)
 {
     AMP_ASSERT(libmesh_element!=NULL);
     typeID = libMeshElementTypeID;
@@ -58,7 +58,7 @@ libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element,
     d_globalID = MeshElementID(is_local,d_elementType,local_id,owner_rank,meshID);
 }
 libMeshElement::libMeshElement(int dim, GeomType type, boost::shared_ptr< ::Elem > libmesh_element, 
-    unsigned int rank, MeshID meshID, libMesh* mesh)
+    unsigned int rank, MeshID meshID, const libMesh* mesh)
 {
     AMP_ASSERT(libmesh_element.get()!=NULL);
     typeID = libMeshElementTypeID;

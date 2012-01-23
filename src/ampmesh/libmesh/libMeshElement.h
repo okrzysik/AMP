@@ -71,8 +71,8 @@ protected:
      * \param rank      Rank of the current processor (must agree with libmesh->processor_id())
      * \param meshID    ID of the current mesh
      */
-    libMeshElement(int dim, GeomType type, void* element, unsigned int rank, MeshID meshID, libMesh* mesh );
-    libMeshElement(int dim, GeomType type, boost::shared_ptr< ::Elem > element, unsigned int rank, MeshID meshID, libMesh* mesh );
+    libMeshElement(int dim, GeomType type, void* element, unsigned int rank, MeshID meshID, const libMesh* mesh );
+    libMeshElement(int dim, GeomType type, boost::shared_ptr< ::Elem > element, unsigned int rank, MeshID meshID, const libMesh* mesh );
 
     //! Clone the iterator
     virtual MeshElement* clone() const;
@@ -82,7 +82,7 @@ protected:
     unsigned int d_rank;        // The rank of the current processor
     void* ptr_element;          // The underlying libmesh element properties (raw pointer)
     boost::shared_ptr< ::Elem> ptr2; // Optional smart pointer to the element (to hold a copy)
-    libMesh* d_mesh;            // The pointer to the current mesh
+    const libMesh* d_mesh;      // The pointer to the current mesh
     MeshID d_meshID;            // The ID of the current mesh
     bool d_delete_elem;         // Do we need to delete the libMesh element
 

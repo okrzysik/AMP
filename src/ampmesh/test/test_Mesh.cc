@@ -82,6 +82,22 @@ void testInputMesh( AMP::UnitTest *ut, std::string filename )
 }
 
 
+void testSubsetMesh( AMP::UnitTest *ut )
+{
+    // Create the mesh
+    boost::shared_ptr<AMP::unit_test::MeshGenerator> generator( 
+        new AMP::unit_test::SurfaceSubsetGenerator<AMP::unit_test::ExodusReaderGenerator> );
+    generator->build_mesh();
+    AMP::Mesh::Mesh::shared_ptr mesh = generator->getMesh();
+
+    // Run the mesh tests
+    MeshTestLoop( ut, mesh );
+    //MeshVectorTestLoop( ut, mesh );
+    //MeshMatrixTestLoop( ut, mesh );
+
+}
+
+
 
 // Main function
 int main ( int argc , char ** argv )
@@ -95,7 +111,7 @@ int main ( int argc , char ** argv )
     testID( &ut );
 
     // Run tests on a libmesh mesh
-    testlibMesh( &ut );
+//    testlibMesh( &ut );
 
     // Run tests on the input file
 //    testInputMesh( &ut, "input_Mesh" );
@@ -103,6 +119,8 @@ int main ( int argc , char ** argv )
     // Run the basic tests on all mesh generators
 //    testMeshGenerators( &ut );
 
+    // Run the tests on the subset meshes
+    testSubsetMesh( &ut );
 
     // Print the results and return
     ut.report ();

@@ -2,6 +2,7 @@
 #include "utils/Utilities.h"
 
 #include "ampmesh/MultiMesh.h"
+#include "ampmesh/SubsetMesh.h"
 #ifdef USE_LIBMESH
     #include "ampmesh/libmesh/libMesh.h"
 #endif
@@ -9,6 +10,12 @@
 
 #ifdef USE_AMP_VECTORS
     #include "vectors/Vector.h"
+    #include "vectors/Variable.h"
+    #include "vectors/VectorBuilder.h"
+#endif
+#ifdef USE_AMP_DISCRETIZATION
+    #include "discretization/DOF_Manager.h"
+    #include "discretization/simpleDOF_Manager.h"
 #endif
 
 namespace AMP {
@@ -158,9 +165,9 @@ std::vector<MeshID> Mesh::getBaseMeshIDs() const
 /********************************************************
 * Function to return the mesh with the given ID         *
 ********************************************************/
-boost::shared_ptr<Mesh>  Mesh::Subset( MeshID meshID ) {
+boost::shared_ptr<Mesh>  Mesh::Subset( MeshID meshID ) const {
     if ( d_meshID==meshID ) 
-        return shared_from_this();
+        return boost::const_pointer_cast<Mesh>( shared_from_this() );
     else
         return boost::shared_ptr<Mesh>();
 }
@@ -169,43 +176,81 @@ boost::shared_ptr<Mesh>  Mesh::Subset( MeshID meshID ) {
 /********************************************************
 * Function to return the mesh with the given name       *
 ********************************************************/
-boost::shared_ptr<Mesh>  Mesh::Subset( std::string name ) {
+boost::shared_ptr<Mesh>  Mesh::Subset( std::string name ) const {
     if ( d_name==name ) 
-        return shared_from_this();
+        return boost::const_pointer_cast<Mesh>( shared_from_this() );
     else
         return boost::shared_ptr<Mesh>();
 }
 
 
 /********************************************************
+* Function to subset a mesh using a mesh iterator       *
+********************************************************/
+boost::shared_ptr<Mesh> Mesh::Subset( const MeshIterator &iterator ) const
+{
+    boost::shared_ptr<const Mesh> this_mesh( shared_from_this() );
+    boost::shared_ptr<SubsetMesh> mesh( new SubsetMesh( this_mesh, iterator ) );
+    return mesh;
+}
+
+
+/********************************************************
+* Return the position vector                            *
+********************************************************/
+#ifdef USE_AMP_VECTORS
+AMP::LinearAlgebra::Vector::shared_ptr  Mesh::getPositionVector( std::string name, const int gcw ) const
+{
+    #ifdef USE_AMP_DISCRETIZATION
+        AMP::Discretization::DOFManager::shared_ptr DOFs = 
+            AMP::Discretization::simpleDOFManager::create( 
+            boost::const_pointer_cast<Mesh>(shared_from_this()), 
+            AMP::Mesh::Vertex, gcw, PhysicalDim, true );
+        AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::LinearAlgebra::Variable(name) );
+        AMP::LinearAlgebra::Vector::shared_ptr position = AMP::LinearAlgebra::createVector( DOFs, nodalVariable, true );
+        std::vector<size_t> dofs(PhysicalDim);
+        AMP::Mesh::MeshIterator cur = DOFs->getIterator();
+        AMP::Mesh::MeshIterator end = cur.end();
+        while ( cur != end ) {
+            AMP::Mesh::MeshElementID id = cur->globalID();
+            std::vector<double> coord = cur->coord();
+            DOFs->getDOFs( id, dofs );
+            position->setValuesByGlobalID( dofs.size(), &dofs[0], &coord[0] );
+            ++cur;
+        }
+        return position;
+    #else
+        AMP_ERROR("getPositionVector requires DISCRETIZATION");
+        return AMP::LinearAlgebra::Vector::shared_ptr();
+    #endif
+}
+#endif
+
+
+/********************************************************
 * Functions that aren't implimented for the base class  *
 ********************************************************/
-boost::shared_ptr<Mesh> Mesh::Subset( MeshIterator::shared_ptr & )
+boost::shared_ptr<Mesh> Mesh::Subset( Mesh & ) const
 {
     AMP_ERROR("Subset is not implimented for the base class");
     return boost::shared_ptr<Mesh>();
 }
-boost::shared_ptr<Mesh> Mesh::Subset( Mesh & )
-{
-    AMP_ERROR("Subset is not implimented for the base class");
-    return boost::shared_ptr<Mesh>();
-}
-MeshIterator Mesh::getIterator( const GeomType, const int )
+MeshIterator Mesh::getIterator( const GeomType, const int ) const
 {
     AMP_ERROR("getIterator is not implimented for the base class");
     return MeshIterator();
 }
-MeshIterator Mesh::getSurfaceIterator( const GeomType, const int ) 
+MeshIterator Mesh::getSurfaceIterator( const GeomType, const int ) const
 {
     AMP_ERROR("getSurfaceIterator is not implimented for the base class");
     return MeshIterator();
 }
-std::vector<int> Mesh::getIDSets ( )
+std::vector<int> Mesh::getIDSets ( ) const
 {
     AMP_ERROR("getIDSets is not implimented for the base class");
     return std::vector<int>();
 }
-MeshIterator Mesh::getIDsetIterator ( const GeomType, const int, const int )
+MeshIterator Mesh::getIDsetIterator ( const GeomType, const int, const int ) const
 {
     AMP_ERROR("getIDsetIterator is not implimented for the base class");
     return MeshIterator();
@@ -233,11 +278,6 @@ void Mesh::displaceMesh( std::vector<double> x )
 void Mesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
 {
     AMP_ERROR("displaceMesh is not implimented for the base class");
-}
-AMP::LinearAlgebra::Vector::shared_ptr  Mesh::getPositionVector( std::string name, const int gcw )
-{
-    AMP_ERROR("getPositionVector is not implimented for the base class");
-    return AMP::LinearAlgebra::Vector::shared_ptr();
 }
 #endif
 

@@ -150,6 +150,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
     int dim = mesh->getDim();
     // Get the zone (element) lists
     AMP::Mesh::MeshIterator elem_iterator = mesh->getIterator(mesh->getGeomType(),0);
+    AMP_ASSERT(elem_iterator.size()>0);
     std::vector<AMP::Mesh::MeshElement> nodes = elem_iterator->getElements(AMP::Mesh::Vertex);
     int shapesize = nodes.size();
     int shapetype;

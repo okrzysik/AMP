@@ -276,7 +276,7 @@ size_t MultiMesh::numGhostElements( const GeomType type, int gcw ) const
 /********************************************************
 * Return mesh iterators                                 *
 ********************************************************/
-MeshIterator MultiMesh::getIterator( const GeomType type, const int gcw )
+MeshIterator MultiMesh::getIterator( const GeomType type, const int gcw ) const
 {
     std::vector<boost::shared_ptr<MeshIterator> > iterators(d_meshes.size());
     for (size_t i=0; i<d_meshes.size(); i++) {
@@ -285,7 +285,7 @@ MeshIterator MultiMesh::getIterator( const GeomType type, const int gcw )
     }
     return MultiIterator(iterators);
 }
-MeshIterator MultiMesh::getSurfaceIterator ( const GeomType type, const int gcw )
+MeshIterator MultiMesh::getSurfaceIterator ( const GeomType type, const int gcw ) const
 {
     std::vector<boost::shared_ptr<MeshIterator> > iterators(d_meshes.size());
     for (size_t i=0; i<d_meshes.size(); i++) {
@@ -294,7 +294,7 @@ MeshIterator MultiMesh::getSurfaceIterator ( const GeomType type, const int gcw 
     }
     return MultiIterator(iterators);
 }
-std::vector<int> MultiMesh::getIDSets( )
+std::vector<int> MultiMesh::getIDSets( ) const
 {
     // Get all local id sets
     std::set<int> ids_set;
@@ -324,7 +324,7 @@ std::vector<int> MultiMesh::getIDSets( )
     // Return the final vector of ids
     return std::vector<int>(ids_set.begin(),ids_set.end());
 }
-MeshIterator MultiMesh::getIDsetIterator( const GeomType type, const int id, const int gcw )
+MeshIterator MultiMesh::getIDsetIterator( const GeomType type, const int id, const int gcw ) const
 {
     std::vector<boost::shared_ptr<MeshIterator> > iterators;
     iterators.reserve(d_meshes.size());
@@ -394,10 +394,10 @@ std::vector<MeshID> MultiMesh::getBaseMeshIDs() const
 /********************************************************
 * Function to return the mesh with the given ID         *
 ********************************************************/
-boost::shared_ptr<Mesh>  MultiMesh::Subset( MeshID meshID ) 
+boost::shared_ptr<Mesh>  MultiMesh::Subset( MeshID meshID ) const
 {
     if ( d_meshID==meshID )
-        return shared_from_this();
+        return boost::const_pointer_cast<Mesh>( shared_from_this() );
     for (size_t i=0; i<d_meshes.size(); i++) {
         boost::shared_ptr<Mesh> mesh = d_meshes[i]->Subset(meshID);
         if ( mesh.get()!=NULL )
@@ -410,9 +410,10 @@ boost::shared_ptr<Mesh>  MultiMesh::Subset( MeshID meshID )
 /********************************************************
 * Function to return the mesh with the given name       *
 ********************************************************/
-boost::shared_ptr<Mesh>  MultiMesh::Subset( std::string name ) {
+boost::shared_ptr<Mesh>  MultiMesh::Subset( std::string name ) const
+{
     if ( d_name==name )
-        return shared_from_this();
+        return boost::const_pointer_cast<Mesh>( shared_from_this() );
     for (size_t i=0; i<d_meshes.size(); i++) {
         boost::shared_ptr<Mesh> mesh = d_meshes[i]->Subset(name);
         if ( mesh.get()!=NULL )
@@ -420,24 +421,6 @@ boost::shared_ptr<Mesh>  MultiMesh::Subset( std::string name ) {
     }
     return boost::shared_ptr<Mesh>();
 }
-
-
-/********************************************************
-* Return the position vector                            *
-********************************************************/
-#ifdef USE_AMP_VECTORS
-AMP::LinearAlgebra::Vector::shared_ptr  MultiMesh::getPositionVector( std::string name, const int gcw )
-{
-    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vectors(d_meshes.size());
-    for (size_t i=0; i<d_meshes.size(); i++)
-        vectors[i] = d_meshes[i]->getPositionVector( name, gcw );
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVector>  multivector = 
-        AMP::LinearAlgebra::MultiVector::create ( name , d_comm );
-    for (size_t i=0; i<d_meshes.size(); i++)
-        multivector->addVector( vectors[i] );
-    return multivector;
-}
-#endif
 
 
 /********************************************************

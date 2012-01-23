@@ -78,7 +78,7 @@ public:
      *    matches the meshID of the mesh, and a null pointer otherwise.
      * \param meshID  MeshID of the desired mesh
      */
-    virtual boost::shared_ptr<Mesh>  Subset( MeshID meshID );
+    virtual boost::shared_ptr<Mesh>  Subset( MeshID meshID ) const;
 
     using Mesh::Subset;
 
@@ -93,7 +93,7 @@ public:
      *    It is strongly recommended to use the meshID when possible.
      * \param name  Name of the desired mesh
      */
-    virtual boost::shared_ptr<Mesh>  Subset ( std::string name );
+    virtual boost::shared_ptr<Mesh>  Subset ( std::string name ) const;
 
 
     /**
@@ -102,7 +102,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getIterator ( const GeomType type, const int gcw=0 );
+    virtual MeshIterator getIterator ( const GeomType type, const int gcw=0 ) const;
 
 
     /**
@@ -111,7 +111,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator  getSurfaceIterator ( const GeomType type, const int gcw=0 );
+    virtual MeshIterator  getSurfaceIterator ( const GeomType type, const int gcw=0 ) const;
 
 
     /**
@@ -121,7 +121,7 @@ public:
      *   To avoid this in the future we would need to cache the value, and register
      *   some type of listener to check if the value changed on any sub meshes.
      */
-    virtual std::vector<int> getIDSets ( );
+    virtual std::vector<int> getIDSets ( ) const;
 
 
     /**
@@ -131,7 +131,7 @@ public:
      * \param id     id for the elements (example: nodeset id)
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getIDsetIterator ( const GeomType type, const int id, const int gcw=0 );
+    virtual MeshIterator getIDsetIterator ( const GeomType type, const int id, const int gcw=0 ) const;
 
 
     /**
@@ -169,16 +169,6 @@ public:
      *           is the physical dimension of the mesh.
      */
     virtual void displaceMesh ( boost::shared_ptr<const AMP::LinearAlgebra::Vector> x );
-
-
-    /**
-     * \brief    Get a vector of the coordinates of the nodes
-     * \details  This function will return a const vector containing the coordinates of 
-     *           all the nodes.  
-     * \param name   Name of the vector
-     * \param gcw    Desired ghost cell width
-     */
-    virtual boost::shared_ptr<AMP::LinearAlgebra::Vector>  getPositionVector( std::string name, const int gcw=0 );
 #endif
 
 

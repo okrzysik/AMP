@@ -19,7 +19,7 @@
 #include "utils/AMPManager.h"
 #include <stdexcept>
 
-//#def USE_TRACE
+#define USE_TRACE
 #ifdef USE_TRACE
     #include <signal.h>
     #include <execinfo.h>
@@ -27,6 +27,34 @@
     #include <dlfcn.h>
     #include <stdlib.h>
 #endif
+
+
+/*#include <libunwind.h>
+static void show_backtrace (void)
+{
+	char name[256];
+	unw_cursor_t cursor; unw_context_t uc;
+	unw_word_t ip, sp, offp;
+
+	unw_getcontext(&uc);
+	unw_init_local(&cursor, &uc);
+
+	while (unw_step(&cursor) > 0)
+	{
+		char file[256];
+		int line = 0;
+
+		name[0] = '\0';
+		unw_get_proc_name(&cursor, name, 256, &offp);
+		unw_get_reg(&cursor, UNW_REG_IP, &ip);
+		unw_get_reg(&cursor, UNW_REG_SP, &sp);
+
+		//printf ("%s ip = %lx, sp = %lx\n", name, (long) ip, (long) sp);
+		getFileAndLine((long)ip, file, 256, &line);
+		printf("%s in file %s line %d\n", name, file, line);
+	}
+}*/
+
 
 namespace AMP{
 
@@ -192,6 +220,7 @@ void Utilities::abort(const std::string &message,
 	              const std::string &filename, 
 	              const int line) 
 {
+//    show_backtrace (void);
     #ifdef USE_TRACE
         void *trace[100];
         Dl_info dlinfo;
@@ -206,7 +235,8 @@ void Utilities::abort(const std::string &message,
             demangled = abi::__cxa_demangle(symname, NULL, 0, &status);
             if(status == 0 && demangled)
                 symname = demangled;
-            printf("object: %s, function: %s\n", dlinfo.dli_fname, symname);
+            printf("object: %s\n", dlinfo.dli_fname);
+            printf("function: %s\n", symname);
             if (demangled)
                 free(demangled);
         } 
