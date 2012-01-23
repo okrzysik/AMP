@@ -129,10 +129,6 @@ public:
     virtual GeomType getGeomType() const { return GeomDim; } 
 
 
-    //! Get the physical dimension of the mesh
-    virtual short int getDim() const { return PhysicalDim; } 
-
-
     //! Get the largest geometric type in the mesh
     virtual AMP_MPI getComm() const { return d_comm; }
 

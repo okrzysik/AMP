@@ -25,13 +25,25 @@ class MultiMesh: public Mesh
 public:
 
     /**
-     * \param params Parameters for constructing a mesh from an input database
-     * \brief Read in mesh files, partition domain, and prepare environment for simulation
-     * \details  For trivial parallelsim, this method reads in the meshes on each processor.  Each
+     * \brief Default constructor
+     * \details  This constructor works with the input parameters to create the mesh.
+     * For trivial parallelsim, this method reads in the meshes on each processor.  Each
      * processor contains a piece of each mesh.  For massive parallelism, each mesh is on its own
      * communicator.  As such, some math libraries must be initialized accordingly.
+     * \param params Parameters for constructing a mesh from an input database
      */
     MultiMesh ( const MeshParameters::shared_ptr &params );
+
+
+    /**
+     * \brief Contructor to create a MultiMesh from existing meshes
+     * \details  This constructor takes a list of meshes and a communicator
+     *    and generates the appropriate multimesh
+     * \param comm      Desired communicator for the multimesh
+     * \param meshes    Meshes to be used as part of the multimesh
+     */
+    MultiMesh ( const AMP_MPI &comm, const std::vector<Mesh::shared_ptr> &meshes );
+
 
     //! Deconstructor
      ~MultiMesh ();
@@ -80,7 +92,15 @@ public:
      */
     virtual boost::shared_ptr<Mesh>  Subset( MeshID meshID ) const;
 
-    using Mesh::Subset;
+
+    /**
+     * \brief    Subset a mesh given a MeshIterator
+     * \details  This function will subset a mesh over a given iterator.
+     *   This will return a new mesh object.
+     * \param iterator  MeshIterator used to subset
+     */
+    virtual boost::shared_ptr<Mesh>  Subset ( const MeshIterator &iterator ) const;
+
 
     /**
      * \brief    Subset a mesh given a mesh name
@@ -171,6 +191,8 @@ public:
     virtual void displaceMesh ( boost::shared_ptr<const AMP::LinearAlgebra::Vector> x );
 #endif
 
+    // Needed to prevent problems with virtual functions
+    using Mesh::Subset;
 
 private:
 

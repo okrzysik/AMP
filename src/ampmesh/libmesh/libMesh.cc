@@ -36,6 +36,7 @@ namespace Mesh {
 libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
     Mesh(params_in)
 {
+    this->d_max_gcw = 1;
     // Check for valid inputs
     AMP_INSIST(params.get(),"Params must not be null");
     AMP_INSIST(d_comm!=AMP_MPI(AMP_COMM_NULL),"Communicator must be set");

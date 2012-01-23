@@ -228,11 +228,15 @@ public:
 
 
     //! Get the physical dimension of the mesh
-    virtual short int getDim() const { return PhysicalDim; } 
+    virtual unsigned char getDim() const { return PhysicalDim; } 
 
 
     //! Get the largest geometric type in the mesh
     virtual AMP_MPI getComm() const { return d_comm; }
+
+
+    //! Get the maximum ghost width
+    virtual unsigned char getMaxGhostWidth() const { return d_max_gcw; }
 
 
     //! Get the mesh ID
@@ -316,7 +320,10 @@ protected:
     GeomType GeomDim;
 
     //! The physical dimension
-    short int PhysicalDim;
+    unsigned char PhysicalDim;
+
+    //! The physical dimension
+    unsigned char d_max_gcw;
 
     //! The communicator over which the mesh is stored
     AMP_MPI d_comm;

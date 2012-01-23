@@ -68,11 +68,11 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
     }
     if ( d_elements[GeomDim].size() == 1 )
         d_elements[GeomDim].push_back( boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement> ) );
+    d_max_gcw = d_elements[GeomDim].size()-1;
     // Create a list of all elements that compose the elements of GeomType
-    int gcw_max = d_elements[GeomDim].size()-1;
     for (int t=0; t<(int)GeomDim; t++) {
-        d_elements[t] = std::vector<boost::shared_ptr<std::vector<MeshElement> > >(gcw_max+1);
-        for (int gcw=0; gcw<=gcw_max; gcw++) {
+        d_elements[t] = std::vector<boost::shared_ptr<std::vector<MeshElement> > >(d_max_gcw+1);
+        for (int gcw=0; gcw<=d_max_gcw; gcw++) {
             std::set<MeshElement> list;
             iterator = this->getIterator(GeomDim,gcw);
             for (size_t it=0; it<iterator.size(); it++) {
@@ -105,7 +105,27 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
     d_comm.sumReduce( &N_global[0], N_global.size() );
     for (int i=0; i<=(int)GeomDim; i++)
         AMP_ASSERT(N_global[i]>0);
-    
+    // Create the bounding box
+    d_box = std::vector<double>(2*PhysicalDim);
+    for (int j=0; j<PhysicalDim; j++) {
+        d_box[2*j+0] = 1e100;
+        d_box[2*j+1] = -1e100;
+    }
+    iterator = getIterator(Vertex,0);
+    for (size_t i=0; i<iterator.size(); i++) {
+        std::vector<double> coord = iterator->coord();
+        for (int j=0; j<PhysicalDim; j++) {
+            if ( coord[j] < d_box[2*j+0] )
+                d_box[2*j+0] = coord[j];
+            if ( coord[j] > d_box[2*j+1] )
+                d_box[2*j+1] = coord[j];
+        }
+        ++iterator;
+    }
+    for (int j=0; j<PhysicalDim; j++) {
+        d_box[2*j+0] = d_comm.minReduce(d_box[2*j+0]);
+        d_box[2*j+1] = d_comm.maxReduce(d_box[2*j+1]);
+    }
 }
 
 
