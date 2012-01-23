@@ -1,4 +1,5 @@
 #include "ampmesh/MultiMesh.h"
+#include "ampmesh/SubsetMesh.h"
 #include "ampmesh/MultiIterator.h"
 #include "ampmesh/MeshElement.h"
 #include "utils/Utilities.h"
@@ -99,12 +100,16 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ):
     // Get the physical dimension and the highest geometric type
     PhysicalDim = d_meshes[0]->getDim();
     GeomDim = d_meshes[0]->getGeomType();
+    d_max_gcw = 0;
     for (size_t i=1; i<d_meshes.size(); i++) {
         AMP_INSIST(PhysicalDim==d_meshes[i]->getDim(),"Physical dimension must match for all meshes in multimesh");
         if ( d_meshes[i]->getGeomType() > GeomDim )
             GeomDim = d_meshes[i]->getGeomType();
+        if ( d_meshes[i]->getMaxGhostWidth() > d_max_gcw )
+            d_max_gcw = d_meshes[i]->getMaxGhostWidth();
     }
     GeomDim = (GeomType) d_comm.maxReduce((int)GeomDim);
+    d_max_gcw = d_comm.maxReduce(d_max_gcw);
     // Compute the bounding box of the multimesh
     d_box = d_meshes[0]->getBoundingBox();
     for (size_t i=1; i<d_meshes.size(); i++) {
@@ -129,6 +134,41 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ):
     }        
     if ( test )
         displaceMesh(displacement);
+}
+MultiMesh::MultiMesh ( const AMP_MPI &comm, const std::vector<Mesh::shared_ptr> &meshes )
+{
+    d_comm = comm;
+    d_meshes = meshes;
+    this->setMeshID();
+    if ( d_comm.sumReduce(meshes.size())==0 ) {
+        AMP_ERROR("Empty multimeshes have not been tested yet");
+    }
+    // Check the comm
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        AMP_ASSERT(d_comm >= d_meshes[i]->getComm() );
+    }
+    // Get the physical dimension and the highest geometric type
+    PhysicalDim = d_meshes[0]->getDim();
+    GeomDim = d_meshes[0]->getGeomType();
+    d_max_gcw = 0;
+    for (size_t i=1; i<d_meshes.size(); i++) {
+        AMP_INSIST(PhysicalDim==d_meshes[i]->getDim(),"Physical dimension must match for all meshes in multimesh");
+        if ( d_meshes[i]->getGeomType() > GeomDim )
+            GeomDim = d_meshes[i]->getGeomType();
+        if ( d_meshes[i]->getMaxGhostWidth() > d_max_gcw )
+            d_max_gcw = d_meshes[i]->getMaxGhostWidth();
+    }
+    GeomDim = (GeomType) d_comm.maxReduce((int)GeomDim);
+    d_max_gcw = d_comm.maxReduce(d_max_gcw);
+    // Compute the bounding box of the multimesh
+    d_box = d_meshes[0]->getBoundingBox();
+    for (size_t i=1; i<d_meshes.size(); i++) {
+        std::vector<double> meshBox = d_meshes[i]->getBoundingBox();
+        for (int j=0; j<PhysicalDim; j++) {
+            if ( meshBox[2*j+0] < d_box[2*j+0] ) { d_box[2*j+0] = meshBox[2*j+0]; }
+            if ( meshBox[2*j+1] > d_box[2*j+1] ) { d_box[2*j+1] = meshBox[2*j+1]; }
+        }
+    }
 }
 
 
@@ -388,6 +428,34 @@ std::vector<MeshID> MultiMesh::getBaseMeshIDs() const
     delete [] send_data;
     delete [] recv_data;
     return std::vector<MeshID>(ids.begin(),ids.end());
+}
+
+
+/********************************************************
+* Function to subset a mesh using a mesh iterator       *
+********************************************************/
+boost::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in ) const
+{
+    if ( iterator_in.size()==0 )
+        return boost::shared_ptr<Mesh>();
+    MeshIterator iterator = iterator_in.begin();
+    GeomType type = iterator->elementType();
+    for (size_t i=0; i<iterator.size(); i++) {
+        AMP_INSIST(iterator->elementType()==type,"Subsetting for a mesh iterator requires an iterator over a single entity type");
+        ++iterator;
+    }
+    std::vector<Mesh::shared_ptr> submeshes;
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        iterator = Mesh::getIterator( Intersection, iterator_in, d_meshes[i]->getIterator(type,d_meshes[i]->getMaxGhostWidth()) );
+        if ( iterator.size() == 0 ) 
+            continue;
+        boost::shared_ptr<Mesh> new_mesh = d_meshes[i]->Subset( iterator );
+        if ( new_mesh.get()!=NULL )
+            submeshes.push_back( new_mesh );
+    }
+    if ( d_comm.sumReduce(submeshes.size()) == 0 )
+        return boost::shared_ptr<Mesh>();
+    return boost::shared_ptr<MultiMesh>( new MultiMesh( d_comm, submeshes ) );
 }
 
 
