@@ -447,8 +447,10 @@ boost::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in ) con
     std::vector<Mesh::shared_ptr> submeshes;
     for (size_t i=0; i<d_meshes.size(); i++) {
         iterator = Mesh::getIterator( Intersection, iterator_in, d_meshes[i]->getIterator(type,d_meshes[i]->getMaxGhostWidth()) );
-        boost::shared_ptr<SubsetMesh> new_mesh( new SubsetMesh( d_meshes[i], iterator ) );
-        if ( new_mesh->numGlobalElements(Vertex) > 0 )
+        if ( iterator.size() == 0 ) 
+            continue;
+        boost::shared_ptr<Mesh> new_mesh = d_meshes[i]->Subset( iterator );
+        if ( new_mesh.get()!=NULL )
             submeshes.push_back( new_mesh );
     }
     if ( d_comm.sumReduce(submeshes.size()) == 0 )
