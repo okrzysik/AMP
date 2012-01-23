@@ -28,10 +28,11 @@ public:
 
     /** \brief Default constructor
      * \details  This is the default constructor for creating a subset DOF manager.  
-     * \param[in]  parentDOFManager  The parent DOF manager
-     * \param[out] dofs     The DOFs that will be part of the subset
+     * \param[in] parentDOFManager  The parent DOF manager
+     * \param[in] dofs      The DOFs that will be part of the subset
+     * \param[in] iterator  The iterator over the subset of elements in the subsetDOFManager
      */
-    subsetDOFManager( DOFManager::shared_ptr parentDOFManager, const std::vector <size_t> &dofs );
+    subsetDOFManager( DOFManager::shared_ptr parentDOFManager, const std::vector <size_t> &dofs, const AMP::Mesh::MeshIterator &iterator );
 
 
     /** \brief Get the entry indices of DOFs given a mesh element
@@ -103,6 +104,8 @@ private:
     std::vector<size_t> d_remoteParentDOFs;
     std::vector<size_t> d_remoteSubsetDOFs;
 
+    //! The iterator for the subset
+    AMP::Mesh::MeshIterator d_iterator;
 };
 
 

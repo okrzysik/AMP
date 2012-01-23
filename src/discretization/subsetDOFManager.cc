@@ -11,10 +11,11 @@ namespace Discretization {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-subsetDOFManager::subsetDOFManager( DOFManager::shared_ptr parentDOFManager, const std::vector <size_t> &dofs )
+subsetDOFManager::subsetDOFManager( DOFManager::shared_ptr parentDOFManager, const std::vector <size_t> &dofs, const AMP::Mesh::MeshIterator &iterator )
 {
     d_parentDOFManager = parentDOFManager;
     d_comm = d_parentDOFManager->getComm();
+    d_iterator = iterator;
     // Copy the local list of DOFs
     d_localDOFs = dofs;
     AMP::Utilities::quicksort(d_localDOFs);
@@ -51,8 +52,8 @@ subsetDOFManager::subsetDOFManager( DOFManager::shared_ptr parentDOFManager, con
     for (size_t i=0; i<remoteDOFs.size(); i++ ) {
         size_t index = AMP::Utilities::findfirst(recv_data,remoteDOFs[i]);
         if ( recv_data[index]==remoteDOFs[i] ) {
-            d_remoteParentDOFs[k] = remoteDOFs[i];
-            d_remoteSubsetDOFs[k] = index;
+            d_remoteParentDOFs.push_back(remoteDOFs[i]);
+            d_remoteSubsetDOFs.push_back(index);
             k++;
         }
     }
@@ -66,15 +67,23 @@ subsetDOFManager::subsetDOFManager( DOFManager::shared_ptr parentDOFManager, con
 ****************************************************************/
 void subsetDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <size_t> &dofs, std::vector<size_t> which ) const
 {
+    // Get the parent DOFs
     std::vector<size_t> parentDOFs;
     d_parentDOFManager->getDOFs( obj, parentDOFs, which );
+    if ( parentDOFs.empty() ) {
+        dofs.resize(0);
+        return;
+    }
+    // Get the subset DOFs
     std::vector<size_t> subsetDOFs = getSubsetDOF( parentDOFs );
+    // Remove any DOFs == -1
     std::vector<size_t>::iterator cur = subsetDOFs.begin();
-    std::vector<size_t>::iterator end = subsetDOFs.end();
-    while ( cur != end ) {
-        if ( *cur >= d_global )
-            subsetDOFs.erase(cur);
-        ++cur;
+    while ( cur != subsetDOFs.end() ) {
+        if ( *cur >= d_global ) {
+            cur = subsetDOFs.erase(cur);
+        } else {
+            ++cur;
+        }
     }
     dofs.resize(subsetDOFs.size());
     for (size_t i=0; i<subsetDOFs.size(); i++)
@@ -82,15 +91,23 @@ void subsetDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <
 }
 void subsetDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <size_t> &dofs ) const
 {
+    // Get the parent DOFs
     std::vector<size_t> parentDOFs;
     d_parentDOFManager->getDOFs( id, parentDOFs );
+    if ( parentDOFs.empty() ) {
+        dofs.resize(0);
+        return;
+    }
+    // Get the subset DOFs
     std::vector<size_t> subsetDOFs = getSubsetDOF( parentDOFs );
+    // Remove any DOFs == -1
     std::vector<size_t>::iterator cur = subsetDOFs.begin();
-    std::vector<size_t>::iterator end = subsetDOFs.end();
-    while ( cur != end ) {
-        if ( *cur >= d_global )
-            subsetDOFs.erase(cur);
-        ++cur;
+    while ( cur != subsetDOFs.end() ) {
+        if ( *cur >= d_global ) {
+            cur = subsetDOFs.erase(cur);
+        } else {
+            ++cur;
+        }
     }
     dofs.resize(subsetDOFs.size());
     for (size_t i=0; i<subsetDOFs.size(); i++)
@@ -105,8 +122,7 @@ void subsetDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector 
 ****************************************************************/
 AMP::Mesh::MeshIterator subsetDOFManager::getIterator( ) const
 {
-    AMP_ERROR("Not programmed yet");
-    return AMP::Mesh::MeshIterator();
+    return d_iterator;
 }
 
 
@@ -160,7 +176,7 @@ std::vector<size_t> subsetDOFManager::getParentDOF( const std::vector<size_t> &s
 }
 std::vector<size_t> subsetDOFManager::getSubsetDOF( const std::vector<size_t> &parentDOFs ) const
 {
-    std::vector<size_t> subsetDOFs(subsetDOFs.size(),(size_t)-1);
+    std::vector<size_t> subsetDOFs(parentDOFs.size(),(size_t)-1);
     for (size_t i=0; i<parentDOFs.size(); i++) {
         size_t DOF = parentDOFs[i];
         AMP_ASSERT(DOF<d_parentGlobal);
@@ -176,7 +192,7 @@ std::vector<size_t> subsetDOFManager::getSubsetDOF( const std::vector<size_t> &p
                 subsetDOFs[i] = d_remoteSubsetDOFs[index];
         }
     }
-    return parentDOFs;
+    return subsetDOFs;
 }
 std::vector<size_t> subsetDOFManager::getLocalParentDOFs( ) const
 {

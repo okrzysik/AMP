@@ -24,7 +24,7 @@ boost::shared_ptr<AMP::Discretization::subsetDOFManager>  StridedVariable::getSu
             i++;
         }
     }
-    boost::shared_ptr<AMP::Discretization::subsetDOFManager>  subsetDOF( new AMP::Discretization::subsetDOFManager( parentDOF, dofs ) );
+    boost::shared_ptr<AMP::Discretization::subsetDOFManager>  subsetDOF( new AMP::Discretization::subsetDOFManager( parentDOF, dofs, parentDOF->getIterator() ) );
     return subsetDOF;
 }
 

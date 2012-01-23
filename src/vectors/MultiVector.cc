@@ -209,12 +209,17 @@ bool MultiVector::containsPointer ( const Vector::shared_ptr p ) const
 
 void MultiVector::selectInto ( const VectorSelector &s , Vector::shared_ptr retVal )
 {
+    // Subset each vector
+    std::vector<Vector::shared_ptr> subvectors;
     vector_iterator  cur = beginVector();
-    while ( cur != endVector() )
-    {
-      (*cur)->selectInto ( s , retVal );
-      cur++;
+    while ( cur != endVector() ) {
+        Vector::shared_ptr  retVal = MultiVector::create ( "tmp_vector", (*cur)->getComm() );
+        (*cur)->selectInto ( s , retVal );
+        subvectors.push_back( retVal );
+        cur++;
     }
+    // Add the subsets to the multivector
+    retVal->castTo<MultiVector>().addVector ( subvectors );
 }
 
 

@@ -1,6 +1,9 @@
+#include "ampmesh/MeshElementVectorIterator.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/subsetDOFManager.h"
 #include "utils/Utilities.h"
+
+#include <set>
 
 
 namespace AMP {
@@ -132,22 +135,28 @@ boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::Mesh::shared
     std::vector<AMP::Mesh::MeshID> meshIDs;
     if ( mesh.get() != NULL )
         meshIDs = mesh->getBaseMeshIDs();
-    std::vector<AMP::Mesh::MeshElementID> element_list;
-    element_list.reserve(iterator.size());
+    std::set<AMP::Mesh::MeshElement> element_list;
     for (size_t i=0; i<iterator.size(); i++) {
-        AMP::Mesh::MeshElementID id = iterator->globalID();
-        AMP::Mesh::MeshID meshID = id.meshID();
+        AMP::Mesh::MeshElement elem = *iterator;
+        AMP::Mesh::MeshID meshID = elem.globalID().meshID();
         for (size_t j=0; j<meshIDs.size(); j++) {
             if ( meshID == meshIDs[j] ) {
-                element_list.push_back(id);
+                element_list.insert(elem);
                 break;
             }
         }
         ++iterator;
     }
+    // Create the element iterator
+    boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( 
+        new std::vector<AMP::Mesh::MeshElement>(element_list.begin(),element_list.end()) );
+    AMP::Mesh::MeshIterator  subsetIterator = AMP::Mesh::MultiVectorIterator( elements, 0 );
     // Get the DOFs
+    std::vector<AMP::Mesh::MeshElementID> id_list(elements->size());
+    for (size_t i=0; i<elements->size(); i++)
+        id_list[i] = elements->operator[](i).globalID();
     std::vector<size_t> dofs;
-    getDOFs( element_list, dofs );
+    getDOFs( id_list, dofs );
     // Sort and check the DOFs for errors
     AMP::Utilities::quicksort(dofs);
     for (size_t i=0; i<dofs.size(); i++) {
@@ -165,7 +174,7 @@ boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::Mesh::shared
     if ( tot_size == d_global )
         return shared_from_this();*/
     boost::shared_ptr<DOFManager> parentDOF = shared_from_this();
-    return boost::shared_ptr<subsetDOFManager>( new subsetDOFManager( parentDOF, dofs ) );
+    return boost::shared_ptr<subsetDOFManager>( new subsetDOFManager( parentDOF, dofs, subsetIterator ) );
 }
 boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::MeshIterator &iterator )
 {
@@ -196,7 +205,7 @@ boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::MeshIterator
         return DOFManager::shared_ptr();
     if ( tot_size == d_global )
         return shared_from_this();*/
-    return boost::shared_ptr<subsetDOFManager>( new subsetDOFManager( shared_from_this(), dofs ) );
+    return boost::shared_ptr<subsetDOFManager>( new subsetDOFManager( shared_from_this(), dofs, intersection ) );
 }
 
 
