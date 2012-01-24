@@ -455,7 +455,9 @@ boost::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in ) con
     }
     if ( d_comm.sumReduce(submeshes.size()) == 0 )
         return boost::shared_ptr<Mesh>();
-    return boost::shared_ptr<MultiMesh>( new MultiMesh( d_comm, submeshes ) );
+    boost::shared_ptr<Mesh> new_mesh( new MultiMesh( d_comm, submeshes ) );
+    new_mesh->setName( d_name+"_subset" );
+    return new_mesh;
 }
 
 

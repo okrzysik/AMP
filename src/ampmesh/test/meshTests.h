@@ -6,6 +6,7 @@
 #include "utils/Utilities.h"
 
 #include "ampmesh/Mesh.h"
+#include "ampmesh/SubsetMesh.h"
 #include "ampmesh/MeshElement.h"
 #include "ampmesh/MeshIterator.h"
 
@@ -312,7 +313,10 @@ void VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr m
             // Get the iterator over the current boundary id
             AMP::Mesh::MeshIterator iterator = mesh->getSurfaceIterator( type, gcw );
             size_t global_size = mesh->getComm().sumReduce(iterator.size());
-            if ( global_size>0 && global_size<mesh->numGlobalElements(type) )
+            bool passes = global_size>0;
+            if ( boost::dynamic_pointer_cast<AMP::Mesh::SubsetMesh>(mesh).get()==NULL )
+                passes = passes && global_size<mesh->numGlobalElements(type);
+            if ( passes )
                 utils->passes("Non-trivial surface iterator created");
             else
                 utils->failure("Non-trivial surface iterator created");

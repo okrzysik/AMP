@@ -22,16 +22,16 @@
 namespace AMP {
 namespace Operator {
 
-  /**
-   * Class MapOperator is the base class for various mapping alogorithms. This
-   * class stores a pointer to the mapAdapter to which the solution has to be 
-   * mapped from Operator's meshAdapter. 
-   */
 
-  class MapOperator : public Operator
-  {
+/**
+  * Class MapOperator is the base class for various mapping alogorithms. This
+  * class stores a pointer to the mapAdapter to which the solution has to be 
+  * mapped from Operator's meshAdapter. 
+  */
 
-    public :
+class MapOperator : public Operator
+{
+public :
 
       /**
         Constructor calls the reset member which reads the information about the boundary.
@@ -91,6 +91,9 @@ namespace Operator {
       unsigned int d_boundaryId;
 
       AMP::Mesh::Mesh::shared_ptr d_MapMesh;
+
+      // Communicator for the Map
+      AMP_MPI d_MapComm;
 
     private :
 

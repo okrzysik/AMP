@@ -176,11 +176,9 @@ namespace Operator {
 
       double d_Pr; /**< Prandtl Number */
 
-      /* Since the map has been taken out the Flow operator 
-         now expects a SimpleVariable for input & output */
-//      boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_inpVariable; /**< Input Variable */
+      boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Input Variable */
 
-//      boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_outVariable; /**< Output Variable */
+      boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output Variable */
       
       boost::shared_ptr<AMP::LinearAlgebra::Variable> d_SimpleVariable; /**< Simple Input Variable */
 

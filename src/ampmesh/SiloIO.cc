@@ -381,7 +381,7 @@ void SiloIO::writeSummary( std::string filename )
             multimeshes.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(id,multimesh) );
     }
     // Add the whole mesh
-    siloMultiMeshData wholemesh;
+    /*siloMultiMeshData wholemesh;
     wholemesh.id = AMP::Mesh::MeshID((unsigned int)-1,0);
     wholemesh.name = "whole_mesh";
     std::map<AMP::Mesh::MeshID,siloBaseMeshData>::iterator iterator2;
@@ -390,7 +390,7 @@ void SiloIO::writeSummary( std::string filename )
         AMP_ASSERT(iterator2->first==data.id);
         wholemesh.meshes.push_back(data);
     }
-    multimeshes.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(wholemesh.id,wholemesh) );
+    multimeshes.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(wholemesh.id,wholemesh) );*/
     // Gather the results
     syncMultiMeshData( multimeshes );
     syncVariableList( d_varNames );
@@ -414,21 +414,22 @@ void SiloIO::writeSummary( std::string filename )
                 meshtypes[i] = DB_UCDMESH;
             }
             //DBPutMultimesh( FileHandle, "all", meshNames.size(), meshnames, meshtypes, NULL );
+            std::string tree_name = data.name+"_tree";
+            DBoptlist *optList = DBMakeOptlist(10);
+            DBAddOption( optList, DBOPT_MRGTREE_NAME, (char*)tree_name.c_str() );
             DBPutMultimesh( FileHandle, data.name.c_str(), meshNames.size(), meshnames, meshtypes, NULL );
             delete [] meshnames;
             delete [] meshtypes;
         }
         //DBSetDir( FileHandle, "/" );
         // Generate the multi-variables
-        //for (it=multimeshes.begin(); it!=multimeshes.end(); it++) {
-        //{ it = multimeshes.begin(); it++;
-        { it = multimeshes.find(AMP::Mesh::MeshID((unsigned int)-1,0));
+        for (it=multimeshes.begin(); it!=multimeshes.end(); it++) {
             siloMultiMeshData data = it->second;
             //std::cout << data.name << std::endl;
             for (std::set<std::string>::iterator var_it=d_varNames.begin(); var_it!=d_varNames.end(); var_it++) {
                 std::string varName = *var_it;
                 bool keep = true;
-                /*for (size_t i=0; i<data.meshes.size(); i++) {
+                for (size_t i=0; i<data.meshes.size(); i++) {
                     bool found = false;
                     for (size_t j=0; j<data.meshes[i].varName.size(); j++) {
                         if ( data.meshes[i].varName[j] == varName )
@@ -436,7 +437,7 @@ void SiloIO::writeSummary( std::string filename )
                     }
                     if ( !found )
                         keep = false;
-                }*/
+                }
                 if ( keep ) {
                     std::vector<std::string> varNames(data.meshes.size());
                     char **varnames = new char*[data.meshes.size()];
@@ -449,12 +450,11 @@ void SiloIO::writeSummary( std::string filename )
                         vartypes[i] = DB_UCDVAR;
                         //std::cout << varNames[i] << std::endl;
                     }
-                    //std::string multiMeshName = "/"+data.name;
                     std::string multiMeshName = data.name;
-                    //std::cout << multiMeshName << std::endl;
+                    std::string visitVarName = multiMeshName+"_"+varName;
                     DBoptlist *opts = DBMakeOptlist(1);
                     DBAddOption( opts, DBOPT_MMESH_NAME, (char*) multiMeshName.c_str() );
-                    DBPutMultivar( FileHandle, (varName).c_str(), varNames.size(), varnames, vartypes, opts );
+                    DBPutMultivar( FileHandle, visitVarName.c_str(), varNames.size(), varnames, vartypes, opts );
                     DBFreeOptlist( opts );
                     delete [] varnames;
                     delete [] vartypes;

@@ -37,9 +37,8 @@ Flow1DSolver::initialize(boost::shared_ptr<SolverStrategyParameters> const param
 
       assert(Operator.get() != NULL);
 
-      AMP_ERROR("Flow1DSolver is not converted yet");
-      //d_inpVariable = Operator->d_inpVariable;
-      //d_outVariable = Operator->d_outVariable;
+      d_inpVariable = Operator->d_inpVariable;
+      d_outVariable = Operator->d_outVariable;
       d_K =  Operator->d_K;
       d_De = Operator->d_De;
       d_G = Operator->d_G;

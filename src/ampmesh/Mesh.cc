@@ -332,6 +332,8 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
     } else if ( OP == Intersection ) {
         // Perform a intersection: A n B
         // Get the intersection using the mesh IDs
+        if ( A.size()==0 || B.size()==0 )
+            return MeshIterator();
         std::vector<MeshElementID> idA(A.size());
         MeshIterator curA = A.begin();
         for (size_t i=0; i<A.size(); i++) {

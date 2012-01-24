@@ -54,7 +54,6 @@ void DOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids, std:
 ****************************************************************/
 AMP::Mesh::MeshIterator DOFManager::getIterator( ) const
 {
-    AMP_ERROR("getIterator is not implimented for the base class");
     return AMP::Mesh::MeshIterator();
 }
 

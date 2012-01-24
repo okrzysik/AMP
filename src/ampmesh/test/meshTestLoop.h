@@ -2,6 +2,7 @@
 #include "meshTests.h"
 #include "utils/UnitTest.h"
 #include "ampmesh/Mesh.h"
+#include "ampmesh/SubsetMesh.h"
 #include "meshTests.h"
 #ifdef USE_AMP_VECTORS
     #include "meshVectorTests.h"
@@ -24,7 +25,10 @@ void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
     VerifyBoundaryIterator( ut, mesh );
     MeshIteratorSetOPTest( ut, mesh );
     // Test displacement
-    DisplaceMesh( ut, mesh );
+    if ( boost::dynamic_pointer_cast<AMP::Mesh::SubsetMesh>(mesh).get()!=NULL )
+        ut->expected_failure("Displace mesh tests are not valid for sub-meshes");
+    else
+        DisplaceMesh( ut, mesh );
 
     //VerifyNodeElemMapIteratorTest::run_test( ut, mesh );
     // Test the elements

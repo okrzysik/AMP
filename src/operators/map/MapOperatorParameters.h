@@ -8,21 +8,18 @@
 namespace AMP {
 namespace Operator {
 
-  class MapOperatorParameters : public OperatorParameters {
-    public :
+class MapOperatorParameters : public OperatorParameters {
+public :
 
       MapOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
-        : OperatorParameters(db) {  }
+        : OperatorParameters(db), d_MapComm(AMP_COMM_NULL) {  }
 
       ~MapOperatorParameters() { }
 
+      AMP_MPI d_MapComm;
       AMP::Mesh::Mesh::shared_ptr d_MapMesh;
 
-    protected :
-
-    private :
-
-  };
+};
 
 }
 }

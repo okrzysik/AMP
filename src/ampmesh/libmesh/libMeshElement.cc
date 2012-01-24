@@ -42,18 +42,18 @@ libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element,
     unsigned int owner_rank = (unsigned int)-1;
     bool is_local=false;
     if ( d_elementType==Vertex ) {
-        d_elementType = Vertex;
         ::Node* node = (::Node*) ptr_element;
         local_id = node->id();
         owner_rank = node->processor_id();
         is_local = owner_rank==d_rank;
-    } else {
-        d_elementType = (GeomType) dim;
+    } else if ( (GeomType) dim ) {
         ::Elem* elem = (::Elem*) ptr_element;
         AMP_ASSERT(elem->n_neighbors()<100);
         local_id = elem->id();
         owner_rank = elem->processor_id();
         is_local = owner_rank==d_rank;
+    } else {
+        AMP_ERROR("Unreconized element");
     }
     d_globalID = MeshElementID(is_local,d_elementType,local_id,owner_rank,meshID);
 }
@@ -222,7 +222,7 @@ std::vector< MeshElement::shared_ptr > libMeshElement::getNeighbors() const
             boost::shared_ptr<libMeshElement> neighbor(new libMeshElement( d_dim, Vertex, (void*)neighbor_nodes[i], d_rank, d_meshID, d_mesh ) );
             neighbors[i] = neighbor;
         }
-    } else {
+    } else if ( (int) d_elementType == d_dim ) {
         // Return the neighbors of the current element
         ::Elem* elem = (::Elem*) ptr_element;
         //if ( elem->n_neighbors()==0 )
@@ -235,6 +235,8 @@ std::vector< MeshElement::shared_ptr > libMeshElement::getNeighbors() const
                 neighbor = boost::shared_ptr<libMeshElement>(new libMeshElement( d_dim, d_elementType, neighbor_elem, d_rank, d_meshID, d_mesh ) );
             neighbors[i] = neighbor;
         }
+    } else {
+        // We constructed a temporary libmesh object and do not have access to the neighbor info
     }
     return neighbors;
 }

@@ -23,6 +23,9 @@ Map3Dto1D :: Map3Dto1D(const boost::shared_ptr<OperatorParameters>& params):
 
     AMP_INSIST( ((myparams.get()) != NULL), "NULL parameter" );
     AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );
+    AMP_INSIST( !myparams->d_MapComm.isNull(), "NULL communicator" );
+    d_MapComm = myparams->d_MapComm;
+    d_MapMesh = myparams->d_MapMesh;
 
     AMP_INSIST( myparams->d_db->keyExists("InputVariable"), "key not found" );
     std::string inpVar = myparams->d_db->getString("InputVariable");
@@ -39,114 +42,116 @@ void Map3Dto1D :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AM
     AMP::LinearAlgebra::Vector::shared_ptr  &r, const double , const double )
 { 
 
-    AMP_ASSERT(u != NULL);
-
-    AMP::LinearAlgebra::Vector::shared_ptr inputVec = u->subsetVectorForVariable(d_inpVariable);
-    inputVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-    AMP_ASSERT( inputVec != NULL);
-
-    AMP::Discretization::DOFManager::shared_ptr dof_map = inputVec->getDOFManager();
-
-    if(d_iDebugPrintInfoLevel>5) {
-        AMP::pout << "The input to Map3Dto1D " << std::endl;
-        AMP::pout << inputVec << std::endl;
-    }
-
-    // AMP::LinearAlgebra::Vector::shared_ptr outputVec =  r->subsetVectorForVariable(d_outVariable);
-
-    AMP_ASSERT(outputVec  != NULL);
-
     const unsigned int numPoints = outputVec->getLocalSize();
-
-    // Get an iterator over the side elements
-    AMP::Mesh::MeshIterator bnd = d_MapMesh->getIDsetIterator( AMP::Mesh::Face, d_boundaryId, 0 );
-    AMP::Mesh::MeshIterator end_bnd = bnd.end();
     std::vector<double> mapValues(numPoints,0);
     std::vector<int> numFaceNodes(numPoints,0);
 
-    // Iterator for the solid-clad boundary
-    for( ; bnd != end_bnd; ++bnd) {
+    // Get the local contributions to the map
+    if ( d_MapMesh != NULL ) {
+        AMP_ASSERT(u != NULL);
+        AMP::LinearAlgebra::Vector::shared_ptr inputVec = u->subsetVectorForVariable(d_inpVariable);
+        inputVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        AMP_ASSERT( inputVec != NULL);
 
-        AMP::Mesh::MeshElement cur_side = *bnd;
-        std::vector<AMP::Mesh::MeshElement> nodes = cur_side.getElements(AMP::Mesh::Vertex);
-        AMP_ASSERT(nodes.size()==4);
+        AMP::Discretization::DOFManager::shared_ptr dof_map = inputVec->getDOFManager();
 
-        std::vector<double> zcoords;
-        for(size_t i=0; i <nodes.size(); i++) {
-            std::vector<double> coord = nodes[i].coord();
-            zcoords.push_back(coord[2]);
+        if(d_iDebugPrintInfoLevel>5) {
+            AMP::pout << "The input to Map3Dto1D " << std::endl;
+            AMP::pout << inputVec << std::endl;
         }
 
-        std::sort(zcoords.begin(),zcoords.end());
+        // AMP::LinearAlgebra::Vector::shared_ptr outputVec =  r->subsetVectorForVariable(d_outVariable);
 
-        std::vector<double> tmpZcoords = zcoords;
-        std::vector<int>   tmpIds(zcoords.size());
+        AMP_ASSERT(outputVec  != NULL);
 
-        for(size_t i=0; i<nodes.size(); i++) {
-            tmpIds[i] = i;
-        }
+        // Get an iterator over the side elements
+        AMP::Mesh::MeshIterator bnd = d_MapMesh->getIDsetIterator( AMP::Mesh::Face, d_boundaryId, 0 );
+        AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
-        std::vector<int> originalNodeOrder(zcoords.size());
+        // Iterator for the solid-clad boundary
+        for( ; bnd != end_bnd; ++bnd) {
 
-        for(size_t i=0; i<nodes.size(); i++) {
-            std::vector<double> coord = nodes[i].coord();
-            double myZ = coord[2];
-            for(unsigned int j=0; j < tmpZcoords.size(); j++ ) {
-                if( fabs(tmpZcoords[j]-myZ) <= 1.e-12 ) {
-                    originalNodeOrder[tmpIds[j]] = i;
-                    tmpZcoords.erase(tmpZcoords.begin() + j);  
-                    tmpIds.erase(tmpIds.begin() + j);
-                    break;
+            AMP::Mesh::MeshElement cur_side = *bnd;
+            std::vector<AMP::Mesh::MeshElement> nodes = cur_side.getElements(AMP::Mesh::Vertex);
+            AMP_ASSERT(nodes.size()==4);
+
+            std::vector<double> zcoords;
+            for(size_t i=0; i <nodes.size(); i++) {
+                std::vector<double> coord = nodes[i].coord();
+                zcoords.push_back(coord[2]);
+            }
+
+            std::sort(zcoords.begin(),zcoords.end());
+
+            std::vector<double> tmpZcoords = zcoords;
+            std::vector<int>   tmpIds(zcoords.size());
+
+            for(size_t i=0; i<nodes.size(); i++) {
+                tmpIds[i] = i;
+            }
+
+            std::vector<int> originalNodeOrder(zcoords.size());
+
+            for(size_t i=0; i<nodes.size(); i++) {
+                std::vector<double> coord = nodes[i].coord();
+                double myZ = coord[2];
+                for(unsigned int j=0; j < tmpZcoords.size(); j++ ) {
+                    if( fabs(tmpZcoords[j]-myZ) <= 1.e-12 ) {
+                        originalNodeOrder[tmpIds[j]] = i;
+                        tmpZcoords.erase(tmpZcoords.begin() + j);  
+                        tmpIds.erase(tmpIds.begin() + j);
+                        break;
+                    }
                 }
             }
-        }
 
-        std::vector<double> z(4,0);
-        std::vector<double> y(4,0);
-        std::vector<double> x(4,0);
-        for (int i=0; i<4; i++) {
-            std::vector<double> coord = nodes[originalNodeOrder[i]].coord();
-            x[i] = coord[0];
-            y[i] = coord[1];
-            z[i] = coord[2];
-        }
-
-        int pickId;
-        if( pow((y[0]-y[3]),2)+pow((x[0]-x[3]),2) < pow((y[0]-y[2]),2)+pow((x[0]-x[2]),2)) {
-            pickId = 3;
-        } else {
-            pickId = 2;
-        }
-
-        // Iterator for the fluid boundary
-        for(unsigned int i = 0 ; i < numPoints; i++) {
-
-            double cur_node  = d_zLocations[i];
-
-            // Section of the Clad boundary map corresponding to the fluid Element 
-            if( cur_node >= z[0] && cur_node <= z[pickId]) {
-                std::vector<size_t> dof1;
-                std::vector<size_t> dof2;
-                std::cout << dof1.size() << ", " << dof2.size() << std::endl;
-                AMP_ASSERT(dof1.size()==1&&dof2.size()==1);
-                dof_map->getDOFs( nodes[originalNodeOrder[0]], dof1 );
-                dof_map->getDOFs( nodes[originalNodeOrder[pickId]], dof2 );
-
-                mapValues[i]  += ((inputVec)->getValueByGlobalID(dof1[0]) * (z[pickId]-cur_node) + (inputVec)->getValueByGlobalID(dof2[0])* (cur_node-z[0]))/(z[pickId]-z[0]);  
-
-                numFaceNodes[i] += 1;
-
+            std::vector<double> z(4,0);
+            std::vector<double> y(4,0);
+            std::vector<double> x(4,0);
+            for (int i=0; i<4; i++) {
+                std::vector<double> coord = nodes[originalNodeOrder[i]].coord();
+                x[i] = coord[0];
+                y[i] = coord[1];
+                z[i] = coord[2];
             }
 
-        }//end for i
-    }//end for bnd
+            int pickId;
+            if( pow((y[0]-y[3]),2)+pow((x[0]-x[3]),2) < pow((y[0]-y[2]),2)+pow((x[0]-x[2]),2)) {
+                pickId = 3;
+            } else {
+                pickId = 2;
+            }
 
+            // Iterator for the fluid boundary
+            for(unsigned int i = 0 ; i < numPoints; i++) {
+
+                double cur_node  = d_zLocations[i];
+
+                // Section of the Clad boundary map corresponding to the fluid Element 
+                if( cur_node >= z[0] && cur_node <= z[pickId]) {
+                    std::vector<size_t> dof1;
+                    std::vector<size_t> dof2;
+                    dof_map->getDOFs( nodes[originalNodeOrder[0]], dof1 );
+                    dof_map->getDOFs( nodes[originalNodeOrder[pickId]], dof2 );
+                    AMP_ASSERT(dof1.size()==1&&dof2.size()==1);
+
+                    mapValues[i]  += ((inputVec)->getValueByGlobalID(dof1[0]) * (z[pickId]-cur_node) + (inputVec)->getValueByGlobalID(dof2[0])* (cur_node-z[0]))/(z[pickId]-z[0]);  
+
+                    numFaceNodes[i] += 1;
+
+                }
+
+            }//end for i
+        }//end for bnd
+    }
+
+    // Gather the results from all processors
     std::vector<double>  aggMapValues ( numPoints );
     std::vector<int>  aggNumFaceNodes ( numPoints );
-    AMP_MPI myComm = d_MapMesh->getComm();
-    myComm.sumReduce( (double*) &(mapValues[0]), (double*) &(aggMapValues[0]), numPoints );
-    myComm.sumReduce( (int*) &(numFaceNodes[0]), (int*) &(aggNumFaceNodes[0]), numPoints );
+    d_MapComm.sumReduce( (double*) &(mapValues[0]), (double*) &(aggMapValues[0]), numPoints );
+    d_MapComm.sumReduce( (int*) &(numFaceNodes[0]), (int*) &(aggNumFaceNodes[0]), numPoints );
 
+    // Store the results
     for(unsigned int i = 0 ; i < numPoints; i++) {
         outputVec->setValueByLocalID ( i , aggMapValues[i]/static_cast<double>(aggNumFaceNodes[i]) );
     }

@@ -6,6 +6,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
+#include <map>
+
 namespace AMP {
 namespace Mesh {
 
@@ -174,6 +176,8 @@ public:
     virtual void displaceMesh ( boost::shared_ptr<const AMP::LinearAlgebra::Vector> x );
 #endif
 
+    // Needed to prevent problems with virtual functions
+    using Mesh::Subset;
 
 protected:
 
@@ -183,6 +187,28 @@ protected:
     // Pointers to store the elements in the subset meshes
     std::vector<size_t> N_global;
     std::vector<std::vector<boost::shared_ptr<std::vector<MeshElement> > > >  d_elements;
+
+    // Pointers to store the elements on the surface
+    std::vector<std::vector<boost::shared_ptr<std::vector<MeshElement> > > >  d_surface;
+
+    // Data to store the id sets
+    struct map_id_struct{ 
+        int id;
+        GeomType type;
+        int gcw; 
+        inline bool operator== (const map_id_struct& rhs ) const { return id==rhs.id && type==rhs.type && gcw==rhs.gcw; }
+        inline bool operator!= (const map_id_struct& rhs ) const { return id!=rhs.id && type!=rhs.type && gcw!=rhs.gcw; }
+        inline bool operator>= (const map_id_struct& rhs ) const { 
+            if ( id != rhs.id ) { return id>rhs.id; }
+            if ( type != rhs.type ) { return type>rhs.type; }
+            return gcw >= rhs.gcw;
+        }
+        inline bool operator> (const map_id_struct& rhs ) const { return operator>(rhs) && operator!=(rhs); }
+        inline bool operator< (const map_id_struct& rhs ) const { return !operator>=(rhs); }
+        inline bool operator<= (const map_id_struct& rhs ) const { return !operator>(rhs); }
+    };
+    std::vector<int> d_idSets;
+    std::map< map_id_struct, boost::shared_ptr<std::vector<MeshElement> > >  d_sets;
 
 };
 
