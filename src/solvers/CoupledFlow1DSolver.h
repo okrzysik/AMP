@@ -5,6 +5,8 @@
 #include "Flow1DSolver.h"
 #include "SolverStrategyParameters.h"
 #include "CoupledFlow1DSolverParameters.h"
+#include "operators/map/MapOperator.h"
+
 
 namespace AMP {
 namespace Solver {
@@ -43,8 +45,8 @@ namespace Solver {
     AMP::LinearAlgebra::Vector::shared_ptr d_flowInput;
     AMP::LinearAlgebra::Vector::shared_ptr d_flowOutput;
     
-    //AMP::Operator::MapOperator::shared_ptr d_flowInternal3to1;
-    //AMP::Operator::MapOperator::shared_ptr d_flowInternal1to3;
+    AMP::Operator::MapOperator::shared_ptr d_flowInternal3to1;
+    AMP::Operator::MapOperator::shared_ptr d_flowInternal1to3;
 
     boost::shared_ptr<AMP::Solver::Flow1DSolver> d_flow1DSolver;
   };
