@@ -1,5 +1,6 @@
 
 #include "MechanicsNonlinearFEOperator.h"
+#include "MechanicsLinearFEOperatorParameters.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 #include "vectors/VectorBuilder.h"
@@ -495,7 +496,6 @@ namespace AMP {
 
     }
 
-    /*
     boost::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator ::
       getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u) {
         if(!d_isInitialized) {
@@ -520,13 +520,6 @@ namespace AMP {
         }
 
         if(d_jacobianReusesRadialReturn == false) {
-          unsigned int numDOFMaps = numberOfDOFMaps();
-          std::vector<AMP::Mesh::DOFMap::shared_ptr> dof_maps(numDOFMaps);
-
-          for(unsigned int i = 0; i < numDOFMaps; i++) {
-            dof_maps[i] = d_MeshAdapter->getDOFMap( getVariableForDOFMap(i) );
-          }
-
           AMP::LinearAlgebra::Vector::shared_ptr dispVector = u->subsetVectorForVariable (
               d_inpVariables->getVariable(Mechanics::DISPLACEMENT) );
           setVector(Mechanics::DISPLACEMENT, dispVector);
@@ -567,14 +560,14 @@ namespace AMP {
 
           d_materialModel->preNonlinearJacobian();
 
-          AMP::Mesh::MeshManager::Adapter::ElementIterator  el = d_MeshAdapter->beginElement();
-          AMP::Mesh::MeshManager::Adapter::ElementIterator  end_el = d_MeshAdapter->endElement();
+          AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
+          AMP::Mesh::MeshIterator end_el = el.end();
 
           for( ; el != end_el; ++el) {
             if(d_useUpdatedLagrangian) {
-              updateMaterialForUpdatedLagrangianElement<MechanicsNonlinearUpdatedLagrangianElement::JACOBIAN>(*el, dof_maps);
+              updateMaterialForUpdatedLagrangianElement<MechanicsNonlinearUpdatedLagrangianElement::JACOBIAN>(*el);
             } else {
-              updateMaterialForElement<MechanicsNonlinearElement::JACOBIAN>(*el, dof_maps);
+              updateMaterialForElement<MechanicsNonlinearElement::JACOBIAN>(*el);
             }
           }//end for el
 
@@ -584,6 +577,7 @@ namespace AMP {
         return outParams;
       }
 
+    /*
        void MechanicsNonlinearFEOperator :: printStressAndStrain(AMP::LinearAlgebra::Vector::shared_ptr u,
        const std::string & fname) {
        if(!d_isInitialized) {
