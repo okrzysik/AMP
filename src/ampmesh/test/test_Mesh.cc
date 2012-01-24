@@ -111,13 +111,13 @@ int main ( int argc , char ** argv )
     testID( &ut );
 
     // Run tests on a libmesh mesh
-//    testlibMesh( &ut );
+    testlibMesh( &ut );
 
     // Run tests on the input file
-//    testInputMesh( &ut, "input_Mesh" );
+    testInputMesh( &ut, "input_Mesh" );
 
     // Run the basic tests on all mesh generators
-//    testMeshGenerators( &ut );
+    testMeshGenerators( &ut );
 
     // Run the tests on the subset meshes
     testSubsetMesh( &ut );
