@@ -35,13 +35,13 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
     if ( type!=null && type2!=(int)type )
         AMP_ERROR("Subset mesh requires all of the elements to be the same type");
     this->GeomDim = (GeomType) type2;
-    std::vector<MeshID> ids = mesh->getBaseMeshIDs();
+    std::vector<MeshID> mesh_ids = mesh->getBaseMeshIDs();
     iterator = iterator_in.begin();
     for (size_t i=0; i<iterator.size(); i++) {
         MeshID id = iterator->globalID().meshID();
         bool found = false;
-        for (size_t j=0; j<ids.size(); j++) {
-            if ( id == ids[j] )
+        for (size_t j=0; j<mesh_ids.size(); j++) {
+            if ( id == mesh_ids[j] )
                 found = true;
         }
         if ( !found )
@@ -126,6 +126,68 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
         d_box[2*j+0] = d_comm.minReduce(d_box[2*j+0]);
         d_box[2*j+1] = d_comm.maxReduce(d_box[2*j+1]);
     }
+    // Create the id sets 
+    std::vector<int> ids = d_parent_mesh->getIDSets();
+    std::set<int> new_ids;
+    for (int t=0; t<(int)GeomDim; t++) {
+        for (size_t i=0; i<ids.size(); i++) {
+            for (int gcw=0; gcw<=d_max_gcw; gcw++) {
+                if ( gcw>0 )
+                    continue; // Iterators over id sets with ghost values is not supported in libmesh yes
+                MeshIterator iterator1 = MultiVectorIterator( d_elements[t][gcw], 0 );
+                MeshIterator iterator2 = d_parent_mesh->getIDsetIterator((GeomType)t,ids[i],gcw);
+                iterator = Mesh::getIterator( Intersection, iterator1, iterator2 );
+                boost::shared_ptr<std::vector<MeshElement> > elements;
+                if ( iterator.size()==0 ) {
+                    elements = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(0) );
+                } else if ( iterator.size() == iterator1.size() ) {
+                    elements = d_elements[t][gcw];
+                } else {
+                    elements = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(iterator.size()) );
+                    for (size_t j=0; j<iterator.size(); j++) {
+                        elements->operator[](j) = *iterator;
+                        ++iterator;
+                    }
+                }
+                if ( gcw==0 ) {
+                    size_t global_size = d_comm.sumReduce(elements->size());
+                    if ( global_size == 0 )
+                        break;
+                }
+                map_id_struct map_id;
+                map_id.id = ids[i];
+                map_id.type = (GeomType)t;
+                map_id.gcw = gcw;
+                std::pair< map_id_struct, boost::shared_ptr<std::vector<MeshElement> > > data( map_id, elements );
+                d_sets.insert( data );
+                new_ids.insert(ids[i]);
+            }
+        }
+    }
+    d_idSets = std::vector<int>(new_ids.begin(),new_ids.end());
+    // Create the surface sets
+    d_surface = std::vector<std::vector<boost::shared_ptr<std::vector<MeshElement> > > >((int)GeomDim+1);
+    for (int t=0; t<=(int)GeomDim; t++) {
+        d_surface[t] = std::vector<boost::shared_ptr<std::vector<MeshElement> > >(d_max_gcw+1);
+        for (int gcw=0; gcw<=d_max_gcw; gcw++) {
+            MeshIterator iterator1 = MultiVectorIterator( d_elements[t][gcw], 0 );
+            MeshIterator iterator2 = d_parent_mesh->getSurfaceIterator((GeomType)t,gcw);
+            iterator = Mesh::getIterator( Intersection, iterator1, iterator2 );
+            boost::shared_ptr<std::vector<MeshElement> > elements;
+            if ( iterator.size()==0 ) {
+                elements = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(0) );
+            } else if ( iterator.size() == iterator1.size() ) {
+                elements = d_elements[t][gcw];
+            } else {
+                elements = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(iterator.size()) );
+                for (size_t j=0; j<iterator.size(); j++) {
+                    elements->operator[](j) = *iterator;
+                    ++iterator;
+                }
+            }
+            d_surface[t][gcw] = elements;
+        }
+    }
 }
 
 
@@ -202,20 +264,39 @@ MeshIterator SubsetMesh::getIterator( const GeomType type, const int gcw ) const
         iterators[i] = boost::shared_ptr<MeshIterator>( new MultiVectorIterator( d_elements[type][i], 0 ) );
     return MultiIterator( iterators, 0 );
 }
-MeshIterator SubsetMesh::getSurfaceIterator( const GeomType, const int gcw ) const
+MeshIterator SubsetMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
-    AMP_ERROR("getSurfaceIterator is not implimented for the subset mesh yet");
-    return MeshIterator();
+    if ( gcw == 0 )
+        return MultiVectorIterator( d_surface[type][0], 0 );
+    if ( gcw >= (int) d_surface[type].size() ) 
+        AMP_ERROR("Maximum ghost width exceeded");
+    std::vector<boost::shared_ptr<MeshIterator> > iterators(gcw+1);
+    for (int i=0; i<=gcw; i++)
+        iterators[i] = boost::shared_ptr<MeshIterator>( new MultiVectorIterator( d_surface[type][i], 0 ) );
+    return MultiIterator( iterators, 0 );
 }
 std::vector<int> SubsetMesh::getIDSets ( ) const
 {
-    AMP_ERROR("getIDSets is not implimented for subset mesh yet");
-    return std::vector<int>();
+    return d_idSets;
 }
-MeshIterator SubsetMesh::getIDsetIterator ( const GeomType, const int id, const int gcw ) const
+MeshIterator SubsetMesh::getIDsetIterator ( const GeomType type, const int id, const int gcw ) const
 {
-    AMP_ERROR("getIDsetIterator is not implimented for subset mesh yet");
-    return MeshIterator();
+    std::vector<boost::shared_ptr<MeshIterator> > iterators(gcw+1);
+    for (int i=0; i<=gcw; i++) {
+        map_id_struct map_id;
+        map_id.id = id;
+        map_id.type = type;
+        map_id.gcw = i;
+        std::map< map_id_struct, boost::shared_ptr<std::vector<MeshElement> > >::const_iterator  map_it = d_sets.find(map_id);
+        if ( map_it == d_sets.end() )
+            AMP_ERROR("Error, id set iterator over the given type, id, and gcw was not found");
+        iterators[i] = boost::shared_ptr<MeshIterator>( new MultiVectorIterator( map_it->second, 0 ) );
+    }
+    if ( iterators.size() == 0 )
+        return MeshIterator();
+    if ( iterators.size() == 1 )
+        return *iterators[0];
+    return MultiIterator( iterators, 0 );
 }
 
 
