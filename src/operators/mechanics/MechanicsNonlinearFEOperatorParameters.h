@@ -47,17 +47,7 @@ namespace AMP {
 
         AMP::LinearAlgebra::Vector::shared_ptr d_ReferenceTemperature; /**< Reference temperature */
 
-        AMP::LinearAlgebra::Vector::shared_ptr d_FrozenTemperature; /**< Frozen temperature. This is used when displacement 
-                                                                      and temperature are solved in an uncoupled fashion. */
-
-        AMP::LinearAlgebra::Vector::shared_ptr d_FrozenBurnup; /**< Frozen burnup. This is used when displacement and burnup
-                                                                 are solved in an uncoupled fashion. */
-
-        AMP::LinearAlgebra::Vector::shared_ptr d_FrozenOxygenConcentration; /**< Frozen oxygen concentration. This is used when
-                                                                              displacement and oxygen concentration
-                                                                              are solved in an uncoupled fashion. */
-
-        AMP::LinearAlgebra::Vector::shared_ptr d_FrozenLHGR; /**< Frozen Linear Heat Generation Rate. This is used when creep is simulated. */
+        AMP::LinearAlgebra::Vector::shared_ptr d_FrozenVec[Mechanics::TOTAL_NUMBER_OF_VARIABLES];
 
       protected :
 

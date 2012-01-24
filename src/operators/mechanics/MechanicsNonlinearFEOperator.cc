@@ -42,22 +42,12 @@ namespace AMP {
           d_inVec_pre.resize(Mechanics::TOTAL_NUMBER_OF_VARIABLES); // storage for variables at the previous config
         }
 
+        for(unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++) {
+          d_dofMap[i] = (params->d_dofMap)[i];
+        }//end for i
+
         AMP_INSIST( params->d_db->keyExists("ActiveInputVariables"), "key not found" );
         boost::shared_ptr<AMP::Database> activeInpVar_db = params->d_db->getDatabase("ActiveInputVariables");
-
-        AMP_INSIST(activeInpVar_db->keyExists("DISPLACEMENT"), "DISPLACEMENT must be active");
-
-        d_isActive[Mechanics::DISPLACEMENT] = true;
-        d_isActive[Mechanics::TEMPERATURE] = activeInpVar_db->keyExists("TEMPERATURE");
-        d_isActive[Mechanics::BURNUP] = activeInpVar_db->keyExists("BURNUP");
-        d_isActive[Mechanics::OXYGEN_CONCENTRATION] = activeInpVar_db->keyExists("OXYGEN_CONCENTRATION");
-        d_isActive[Mechanics::LHGR] = activeInpVar_db->keyExists("LHGR");
-
-        d_isFrozen[Mechanics::DISPLACEMENT] = false;
-        d_isFrozen[Mechanics::TEMPERATURE] = (params->d_db)->getBoolWithDefault("FREEZE_TEMPERATURE", true);
-        d_isFrozen[Mechanics::BURNUP] = (params->d_db)->getBoolWithDefault("FREEZE_BURNUP", true);
-        d_isFrozen[Mechanics::OXYGEN_CONCENTRATION] = (params->d_db)->getBoolWithDefault("FREEZE_OXYGEN_CONCENTRATION", true);
-        d_isFrozen[Mechanics::LHGR] = (params->d_db)->getBoolWithDefault("FREEZE_LHGR", true);
 
         d_inpVariables.reset(new AMP::LinearAlgebra::MultiVariable("myInpVar"));
         for(unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++) {
@@ -65,57 +55,34 @@ namespace AMP {
           d_inpVariables->add(dummyVar);
         }//end for i
 
+        AMP_INSIST(activeInpVar_db->keyExists("DISPLACEMENT"), "DISPLACEMENT must be active");
+
+        std::vector<std::string> keysForVariables(Mechanics::TOTAL_NUMBER_OF_VARIABLES);
+        keysForVariables[Mechanics::DISPLACEMENT] = "DISPLACEMENT";
+        keysForVariables[Mechanics::TEMPERATURE] = "TEMPERATURE";
+        keysForVariables[Mechanics::BURNUP] = "BURNUP";
+        keysForVariables[Mechanics::OXYGEN_CONCENTRATION] = "OXYGEN_CONCENTRATION";
+        keysForVariables[Mechanics::LHGR] = "LHGR";
+
         for(unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++) {
-          d_dofMap[i] = (params->d_dofMap)[i];
+          if(i == Mechanics::DISPLACEMENT) {
+            d_isActive[i] = true;
+            d_isFrozen[i] = false;
+          } else {
+            d_isActive[i] = activeInpVar_db->keyExists(keysForVariables[i]);
+            d_isFrozen[i] = (params->d_db)->getBoolWithDefault("FREEZE_" + keysForVariables[i], true);
+          }
+          if(d_isActive[i]) {
+            std::string varName = activeInpVar_db->getString(keysForVariables[i]);
+            AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::Variable(varName) );
+            d_inpVariables->setVariable(i, dummyVar);
+            if(d_isFrozen[i]) {
+              if( params->d_FrozenVec[i] != NULL ) {
+                setVector(i, params->d_FrozenVec[i]);
+              }
+            }
+          }
         }//end for i
-
-        std::string dispVarName = activeInpVar_db->getString("DISPLACEMENT");
-        AMP::LinearAlgebra::Variable::shared_ptr dispVar(new AMP::LinearAlgebra::Variable(dispVarName) ); 
-        d_inpVariables->setVariable(Mechanics::DISPLACEMENT, dispVar);
-
-        if(d_isActive[Mechanics::TEMPERATURE]) {
-          std::string varName = activeInpVar_db->getString("TEMPERATURE");
-          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::Variable(varName) );
-          d_inpVariables->setVariable(Mechanics::TEMPERATURE, dummyVar);
-          if(d_isFrozen[Mechanics::TEMPERATURE]) {
-            if( params->d_FrozenTemperature != NULL ) {
-              setVector(Mechanics::TEMPERATURE, params->d_FrozenTemperature);
-            }
-          }
-        }
-
-        if(d_isActive[Mechanics::BURNUP]) {
-          std::string varName = activeInpVar_db->getString("BURNUP");
-          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::Variable(varName) );
-          d_inpVariables->setVariable(Mechanics::BURNUP, dummyVar);
-          if(d_isFrozen[Mechanics::BURNUP]) {
-            if( params->d_FrozenBurnup != NULL ) {
-              setVector(Mechanics::BURNUP, params->d_FrozenBurnup);
-            }
-          }
-        }
-
-        if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
-          std::string varName = activeInpVar_db->getString("OXYGEN_CONCENTRATION");
-          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::Variable(varName) );
-          d_inpVariables->setVariable(Mechanics::OXYGEN_CONCENTRATION, dummyVar);
-          if(d_isFrozen[Mechanics::OXYGEN_CONCENTRATION]) {
-            if( params->d_FrozenOxygenConcentration != NULL ) {
-              setVector(Mechanics::OXYGEN_CONCENTRATION, params->d_FrozenOxygenConcentration);
-            }
-          }
-        }
-
-        if(d_isActive[Mechanics::LHGR]) {
-          std::string varName = activeInpVar_db->getString("LHGR");
-          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::Variable(varName) );
-          d_inpVariables->setVariable(Mechanics::LHGR, dummyVar);
-          if(d_isFrozen[Mechanics::LHGR]) {
-            if( params->d_FrozenLHGR != NULL ) {
-              setVector(Mechanics::LHGR, params->d_FrozenLHGR);
-            }
-          }
-        }
 
         //memory for reference coordinates (used in UL formulation)
         // memory for variables in the previous config
@@ -150,41 +117,15 @@ namespace AMP {
         init();
       }
 
-      AMP::LinearAlgebra::Variable::shared_ptr dispVar = d_inpVariables->getVariable(Mechanics::DISPLACEMENT);
-      AMP::LinearAlgebra::Vector::shared_ptr dispVector = u->subsetVectorForVariable(dispVar);
-      setVector(Mechanics::DISPLACEMENT, dispVector);
-
-      if(d_isActive[Mechanics::TEMPERATURE]) {
-        if(!(d_isFrozen[Mechanics::TEMPERATURE])) {
-          AMP::LinearAlgebra::Variable::shared_ptr tempVar = d_inpVariables->getVariable(Mechanics::TEMPERATURE); 
-          AMP::LinearAlgebra::Vector::shared_ptr tempVector = u->subsetVectorForVariable(tempVar);
-          setVector(Mechanics::TEMPERATURE, tempVector);
+      for(unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++) {
+        if(d_isActive[i]) {
+          if(!(d_isFrozen[i])) {
+            AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(i); 
+            AMP::LinearAlgebra::Vector::shared_ptr vector = u->subsetVectorForVariable(var);
+            setVector(i, vector);
+          }
         }
-      }
-
-      if(d_isActive[Mechanics::BURNUP]) {
-        if(!(d_isFrozen[Mechanics::BURNUP])) {
-          AMP::LinearAlgebra::Variable::shared_ptr burnVar = d_inpVariables->getVariable(Mechanics::BURNUP);
-          AMP::LinearAlgebra::Vector::shared_ptr burnVector = u->subsetVectorForVariable(burnVar);
-          setVector(Mechanics::BURNUP, burnVector);
-        }
-      }
-
-      if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
-        if(!(d_isFrozen[Mechanics::OXYGEN_CONCENTRATION])) {
-          AMP::LinearAlgebra::Variable::shared_ptr oxyVar = d_inpVariables->getVariable(Mechanics::OXYGEN_CONCENTRATION); 
-          AMP::LinearAlgebra::Vector::shared_ptr oxyVector = u->subsetVectorForVariable(oxyVar);
-          setVector(Mechanics::OXYGEN_CONCENTRATION, oxyVector);
-        }
-      }
-
-      if(d_isActive[Mechanics::LHGR]) {
-        if(!(d_isFrozen[Mechanics::LHGR])) {
-          AMP::LinearAlgebra::Variable::shared_ptr lhgrVar = d_inpVariables->getVariable(Mechanics::LHGR);
-          AMP::LinearAlgebra::Vector::shared_ptr lhgrVector = u->subsetVectorForVariable(lhgrVar);
-          setVector(Mechanics::LHGR, lhgrVector);
-        }
-      }
+      }//end for i
 
       d_outVec = r->subsetVectorForVariable(d_outVariable);
       d_outVec->zero();
@@ -208,15 +149,14 @@ namespace AMP {
       getDofIndicesForCurrentElement(Mechanics::DISPLACEMENT, d_dofIndices);
 
       std::vector<std::vector<size_t> > auxDofIds;      
-      if(d_isActive[Mechanics::TEMPERATURE]) {
-        getDofIndicesForCurrentElement(Mechanics::TEMPERATURE, auxDofIds);
-      } else if(d_isActive[Mechanics::BURNUP]) {
-        getDofIndicesForCurrentElement(Mechanics::BURNUP, auxDofIds);
-      } else if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
-        getDofIndicesForCurrentElement(Mechanics::OXYGEN_CONCENTRATION, auxDofIds);
-      } else if(d_isActive[Mechanics::LHGR]) {
-        getDofIndicesForCurrentElement(Mechanics::LHGR, auxDofIds);
-      }
+      for(unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++) {
+        if(i != Mechanics::DISPLACEMENT) {
+          if(d_isActive[i]) {
+            getDofIndicesForCurrentElement(i, auxDofIds);
+            break;
+          }
+        }
+      }//end for i
 
       std::vector<std::vector<double> > elementInputVectors(Mechanics::TOTAL_NUMBER_OF_VARIABLES);
       std::vector<std::vector<double> > elementInputVectors_pre(Mechanics::TOTAL_NUMBER_OF_VARIABLES);
@@ -225,30 +165,16 @@ namespace AMP {
       if(d_useUpdatedLagrangian) {
         elementInputVectors_pre[Mechanics::DISPLACEMENT].resize(3*numNodesInCurrElem);
       }
-      if(d_isActive[Mechanics::TEMPERATURE]) {
-        elementInputVectors[Mechanics::TEMPERATURE].resize(numNodesInCurrElem);
-        if(d_useUpdatedLagrangian) {
-          elementInputVectors_pre[Mechanics::TEMPERATURE].resize(numNodesInCurrElem);
+      for(unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++) {
+        if(i != Mechanics::DISPLACEMENT) {
+          if(d_isActive[i]) {
+            elementInputVectors[i].resize(numNodesInCurrElem);
+            if(d_useUpdatedLagrangian) {
+              elementInputVectors_pre[i].resize(numNodesInCurrElem);
+            }
+          }
         }
-      }
-      if(d_isActive[Mechanics::BURNUP]) {
-        elementInputVectors[Mechanics::BURNUP].resize(numNodesInCurrElem);
-        if(d_useUpdatedLagrangian) {
-          elementInputVectors_pre[Mechanics::BURNUP].resize(numNodesInCurrElem);
-        }
-      }
-      if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
-        elementInputVectors[Mechanics::OXYGEN_CONCENTRATION].resize(numNodesInCurrElem);
-        if(d_useUpdatedLagrangian) {
-          elementInputVectors_pre[Mechanics::OXYGEN_CONCENTRATION].resize(numNodesInCurrElem);
-        }
-      }
-      if(d_isActive[Mechanics::LHGR]) {
-        elementInputVectors[Mechanics::LHGR].resize(numNodesInCurrElem);
-        if(d_useUpdatedLagrangian) {
-          elementInputVectors_pre[Mechanics::LHGR].resize(numNodesInCurrElem);
-        }
-      }
+      }//end for i
 
       std::vector<double> elementRefXYZ;
       elementRefXYZ.resize(3*numNodesInCurrElem);
@@ -461,38 +387,15 @@ namespace AMP {
         }
       }
 
-      //
-      if(d_isActive[Mechanics::TEMPERATURE]) {
-        if(d_isFrozen[Mechanics::TEMPERATURE]) {
-          if( myParams->d_FrozenTemperature != NULL ) {
-            setVector(Mechanics::TEMPERATURE, myParams->d_FrozenTemperature);
+      for(unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++) {
+        if(d_isActive[i]) {
+          if(d_isFrozen[i]) {
+            if( myParams->d_FrozenVec[i] != NULL ) {
+              setVector(i, myParams->d_FrozenVec[i]);
+            }
           }
         }
-      }
-
-      if(d_isActive[Mechanics::BURNUP]) {
-        if(d_isFrozen[Mechanics::BURNUP]) {
-          if( myParams->d_FrozenBurnup != NULL ) {
-            setVector(Mechanics::BURNUP, myParams->d_FrozenBurnup);
-          }
-        }
-      }
-
-      if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
-        if(d_isFrozen[Mechanics::OXYGEN_CONCENTRATION]) {
-          if( myParams->d_FrozenOxygenConcentration != NULL ) {
-            setVector(Mechanics::OXYGEN_CONCENTRATION, myParams->d_FrozenOxygenConcentration);
-          }
-        }
-      }
-
-      if(d_isActive[Mechanics::LHGR]) {
-        if(d_isFrozen[Mechanics::LHGR]) {
-          if( myParams->d_FrozenLHGR != NULL ) {
-            setVector(Mechanics::LHGR, myParams->d_FrozenLHGR);
-          }
-        }
-      }
+      }//end for i
 
     }
 
@@ -577,253 +480,224 @@ namespace AMP {
         return outParams;
       }
 
+    void MechanicsNonlinearFEOperator :: printStressAndStrain(AMP::LinearAlgebra::Vector::shared_ptr u,
+        const std::string & fname) {
+      if(!d_isInitialized) {
+        init();
+      }
+
+      AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
+      AMP::Mesh::MeshIterator end_el = el.end();
+
+      FILE* fp = fopen(fname.c_str(), "w");
+
+      AMP::LinearAlgebra::Variable::shared_ptr dispVar = d_inpVariables->getVariable(Mechanics::DISPLACEMENT);
+      AMP::LinearAlgebra::Vector::shared_ptr dispVector = u->subsetVectorForVariable(dispVar);
+      setVector(Mechanics::DISPLACEMENT, dispVector);
+
+      if(d_isActive[Mechanics::TEMPERATURE]) {
+        if(!(d_isFrozen[Mechanics::TEMPERATURE])) {
+          AMP::LinearAlgebra::Variable::shared_ptr tempVar = d_inpVariables->getVariable(Mechanics::TEMPERATURE); 
+          AMP::LinearAlgebra::Vector::shared_ptr tempVector = u->subsetVectorForVariable(tempVar);
+          setVector(Mechanics::TEMPERATURE, tempVector);
+        }
+      }
+
+      if(d_isActive[Mechanics::BURNUP]) {
+        if(!(d_isFrozen[Mechanics::BURNUP])) {
+          AMP::LinearAlgebra::Variable::shared_ptr burnVar = d_inpVariables->getVariable(Mechanics::BURNUP);
+          AMP::LinearAlgebra::Vector::shared_ptr burnVector = u->subsetVectorForVariable(burnVar);
+          setVector(Mechanics::BURNUP, burnVector);
+        }
+      }
+
+      if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
+        if(!(d_isFrozen[Mechanics::OXYGEN_CONCENTRATION])) {
+          AMP::LinearAlgebra::Variable::shared_ptr oxyVar = d_inpVariables->getVariable(Mechanics::OXYGEN_CONCENTRATION); 
+          AMP::LinearAlgebra::Vector::shared_ptr oxyVector = u->subsetVectorForVariable(oxyVar);
+          setVector(Mechanics::OXYGEN_CONCENTRATION, oxyVector);
+        }
+      }
+
+      if(d_isActive[Mechanics::LHGR]) {
+        if(!(d_isFrozen[Mechanics::LHGR])) {
+          AMP::LinearAlgebra::Variable::shared_ptr lhgrVar = d_inpVariables->getVariable(Mechanics::LHGR);
+          AMP::LinearAlgebra::Vector::shared_ptr lhgrVector = u->subsetVectorForVariable(lhgrVar);
+          setVector(Mechanics::LHGR, lhgrVector);
+        }
+      }
+
+      d_materialModel->preNonlinearAssembly();
+
+      for( ; el != end_el; ++el) {
+        d_currNodes = el->getElements(AMP::Mesh::Vertex);
+        unsigned int numNodesInCurrElem = d_currNodes.size();
+
+        getDofIndicesForCurrentElement(Mechanics::DISPLACEMENT, d_dofIndices);
+
+        std::vector<std::vector<size_t> > auxDofIds;      
+        for(unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++) {
+          if(i != Mechanics::DISPLACEMENT) {
+            if(d_isActive[i]) {
+              getDofIndicesForCurrentElement(i, auxDofIds);
+              break;
+            }
+          }
+        }//end for i
+
+        std::vector<std::vector<double> > elementInputVectors(Mechanics::TOTAL_NUMBER_OF_VARIABLES);
+        std::vector<std::vector<double> > elementInputVectors_pre(Mechanics::TOTAL_NUMBER_OF_VARIABLES);
+
+        elementInputVectors[Mechanics::DISPLACEMENT].resize(3*numNodesInCurrElem);
+        if(d_useUpdatedLagrangian) {
+          elementInputVectors_pre[Mechanics::DISPLACEMENT].resize(3*numNodesInCurrElem);
+        }
+        for(unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++) {
+          if(i != Mechanics::DISPLACEMENT) {
+            if(d_isActive[i]) {
+              elementInputVectors[i].resize(numNodesInCurrElem);
+              if(d_useUpdatedLagrangian) {
+                elementInputVectors_pre[i].resize(numNodesInCurrElem);
+              }
+            }
+          }
+        }//end for i
+
+        for(unsigned int r = 0; r < numNodesInCurrElem; r++) {
+          for(unsigned int d = 0; d < 3; d++) {
+            elementInputVectors[Mechanics::DISPLACEMENT][(3*r) + d] = (d_inVec[Mechanics::DISPLACEMENT])->
+              getValueByGlobalID( d_dofIndices[r][d] );
+            if(d_useUpdatedLagrangian) {
+              elementInputVectors_pre[Mechanics::DISPLACEMENT][(3*r) + d] = (d_inVec_pre[Mechanics::DISPLACEMENT])->
+                getValueByGlobalID( d_dofIndices[r][d] );
+            }
+          }//end for d
+          for(unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++) {
+            if(i != Mechanics::DISPLACEMENT) {
+              if(d_isActive[i]) {
+                elementInputVectors[i][r] = (d_inVec[i])->getValueByGlobalID( auxDofIds[r][0] );
+                if(d_useUpdatedLagrangian) {
+                  elementInputVectors_pre[i][r] = (d_inVec_pre[i])->getValueByGlobalID( auxDofIds[r][0] );
+                }
+              }
+            }
+          }//end for i
+        }//end for r
+
+        createCurrentLibMeshElement();
+
+        d_mechNonlinElem->initializeForCurrentElement( d_currElemPtr, d_materialModel );
+
+        d_mechNonlinElem->printStressAndStrain(fp, elementInputVectors);
+
+        destroyCurrentLibMeshElement();
+      }//end for el
+
+      d_materialModel->postNonlinearAssembly();
+
+      fprintf(fp, "\n\n");
+
+      fclose(fp);
+    }
+
     /*
-       void MechanicsNonlinearFEOperator :: printStressAndStrain(AMP::LinearAlgebra::Vector::shared_ptr u,
-       const std::string & fname) {
-       if(!d_isInitialized) {
-       init();
-       }
-
-       AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
-       AMP::Mesh::MeshIterator end_el = el.end();
-
-       FILE* fp = fopen(fname.c_str(), "w");
-
-       AMP::LinearAlgebra::Variable::shared_ptr dispVar = d_inpVariables->getVariable(Mechanics::DISPLACEMENT);
-       AMP::LinearAlgebra::Vector::shared_ptr dispVector = u->subsetVectorForVariable(dispVar);
-       setVector(Mechanics::DISPLACEMENT, dispVector);
-
-       if(d_isActive[Mechanics::TEMPERATURE]) {
-       if(!(d_isFrozen[Mechanics::TEMPERATURE])) {
-       AMP::LinearAlgebra::Variable::shared_ptr tempVar = d_inpVariables->getVariable(Mechanics::TEMPERATURE); 
-       AMP::LinearAlgebra::Vector::shared_ptr tempVector = u->subsetVectorForVariable(tempVar);
-       setVector(Mechanics::TEMPERATURE, tempVector);
-       }
-       }
-
-       if(d_isActive[Mechanics::BURNUP]) {
-       if(!(d_isFrozen[Mechanics::BURNUP])) {
-       AMP::LinearAlgebra::Variable::shared_ptr burnVar = d_inpVariables->getVariable(Mechanics::BURNUP);
-       AMP::LinearAlgebra::Vector::shared_ptr burnVector = u->subsetVectorForVariable(burnVar);
-       setVector(Mechanics::BURNUP, burnVector);
-       }
-       }
-
-       if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
-       if(!(d_isFrozen[Mechanics::OXYGEN_CONCENTRATION])) {
-       AMP::LinearAlgebra::Variable::shared_ptr oxyVar = d_inpVariables->getVariable(Mechanics::OXYGEN_CONCENTRATION); 
-       AMP::LinearAlgebra::Vector::shared_ptr oxyVector = u->subsetVectorForVariable(oxyVar);
-       setVector(Mechanics::OXYGEN_CONCENTRATION, oxyVector);
-       }
-       }
-
-       if(d_isActive[Mechanics::LHGR]) {
-       if(!(d_isFrozen[Mechanics::LHGR])) {
-       AMP::LinearAlgebra::Variable::shared_ptr lhgrVar = d_inpVariables->getVariable(Mechanics::LHGR);
-       AMP::LinearAlgebra::Vector::shared_ptr lhgrVector = u->subsetVectorForVariable(lhgrVar);
-       setVector(Mechanics::LHGR, lhgrVector);
-       }
-       }
-
-       d_materialModel->preNonlinearAssembly();
-
-       for( ; el != end_el; ++el) {
+       void MechanicsNonlinearFEOperator :: updateMaterialForElementCommonFunction(const
+       AMP::Mesh::MeshManager::Adapter::Element & elem, std::vector<std::vector<double> > & elementInputVectors,
+       std::vector<std::vector<double> > & elementInputVectors_pre ) {
        unsigned int num_local_type0Dofs = 0;
        for(unsigned int i = 0; i < 3; i++) {
-       (dof_maps[0])->getDOFs (*el, d_type0DofIndices[i], i);
+       (dof_maps[0])->getDOFs (elem, d_type0DofIndices[i], i);
        num_local_type0Dofs += d_type0DofIndices[i].size();
        }//end for i
 
        unsigned int num_local_type1Dofs = 0;
        if( d_isActive[Mechanics::TEMPERATURE] || d_isActive[Mechanics::BURNUP] ||
        d_isActive[Mechanics::OXYGEN_CONCENTRATION] || d_isActive[Mechanics::LHGR]) {
-       (dof_maps[1])->getDOFs (*el, d_type1DofIndices);
+       (dof_maps[1])->getDOFs (elem, d_type1DofIndices);
        num_local_type1Dofs = d_type1DofIndices.size();
        }
-
-       std::vector<std::vector<double> > elementInputVectors(Mechanics::TOTAL_NUMBER_OF_VARIABLES);
-       std::vector<std::vector<double> > elementInputVectors_pre(Mechanics::TOTAL_NUMBER_OF_VARIABLES);
 
        elementInputVectors[Mechanics::DISPLACEMENT].resize(num_local_type0Dofs);
        if(d_useUpdatedLagrangian) {
        elementInputVectors_pre[Mechanics::DISPLACEMENT].resize(num_local_type0Dofs);
        }
-    if(d_isActive[Mechanics::TEMPERATURE]) {
-      elementInputVectors[Mechanics::TEMPERATURE].resize(num_local_type1Dofs);
-      if(d_useUpdatedLagrangian) {
-        elementInputVectors_pre[Mechanics::TEMPERATURE].resize(num_local_type1Dofs);
-      }
-    }
-    if(d_isActive[Mechanics::BURNUP]) {
-      elementInputVectors[Mechanics::BURNUP].resize(num_local_type1Dofs);
-      if(d_useUpdatedLagrangian) {
-        elementInputVectors_pre[Mechanics::BURNUP].resize(num_local_type1Dofs);
-      }
-    }
-    if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
-      elementInputVectors[Mechanics::OXYGEN_CONCENTRATION].resize(num_local_type1Dofs);
-      if(d_useUpdatedLagrangian) {
-        elementInputVectors_pre[Mechanics::OXYGEN_CONCENTRATION].resize(num_local_type1Dofs);
-      }
-    }
-    if(d_isActive[Mechanics::LHGR]) {
-      elementInputVectors[Mechanics::LHGR].resize(num_local_type1Dofs);
-      if(d_useUpdatedLagrangian) {
-        elementInputVectors_pre[Mechanics::LHGR].resize(num_local_type1Dofs);
-      }
-    }
+       if(d_isActive[Mechanics::TEMPERATURE]) {
+       elementInputVectors[Mechanics::TEMPERATURE].resize(num_local_type1Dofs);
+       if(d_useUpdatedLagrangian) {
+       elementInputVectors_pre[Mechanics::TEMPERATURE].resize(num_local_type1Dofs);
+       }
+       }
+       if(d_isActive[Mechanics::BURNUP]) {
+       elementInputVectors[Mechanics::BURNUP].resize(num_local_type1Dofs);
+       if(d_useUpdatedLagrangian) {
+       elementInputVectors_pre[Mechanics::BURNUP].resize(num_local_type1Dofs);
+       }
+       }
+       if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
+       elementInputVectors[Mechanics::OXYGEN_CONCENTRATION].resize(num_local_type1Dofs);
+       if(d_useUpdatedLagrangian) {
+       elementInputVectors_pre[Mechanics::OXYGEN_CONCENTRATION].resize(num_local_type1Dofs);
+       }
+       }
+       if(d_isActive[Mechanics::LHGR]) {
+       elementInputVectors[Mechanics::LHGR].resize(num_local_type1Dofs);
+       if(d_useUpdatedLagrangian) {
+       elementInputVectors_pre[Mechanics::LHGR].resize(num_local_type1Dofs);
+       }
+       }
 
-    d_numNodesForCurrentElement = el->numNodes(); 
+       d_numNodesForCurrentElement = elem.numNodes(); 
 
-    for(unsigned int r = 0; r < d_numNodesForCurrentElement; r++) {
-      for(unsigned int d = 0; d < 3; d++) {
-        elementInputVectors[Mechanics::DISPLACEMENT][(3*r) + d] = (d_inVec[Mechanics::DISPLACEMENT])->
-          getValueByGlobalID( d_type0DofIndices[d][r] );
-        if(d_useUpdatedLagrangian) {
-          elementInputVectors_pre[Mechanics::DISPLACEMENT][(3*r) + d] = (d_inVec_pre[Mechanics::DISPLACEMENT])->getValueByGlobalID( d_type0DofIndices[d][r] );
-        }
-      }
-      if(d_isActive[Mechanics::TEMPERATURE]) {
-        elementInputVectors[Mechanics::TEMPERATURE][r] = (d_inVec[Mechanics::TEMPERATURE])->
-          getValueByGlobalID( d_type1DofIndices[r] );
-        if(d_useUpdatedLagrangian) {
-          elementInputVectors_pre[Mechanics::TEMPERATURE][r] = (d_inVec_pre[Mechanics::TEMPERATURE])->getValueByGlobalID( d_type1DofIndices[r] );
-        }
-      }
-      if(d_isActive[Mechanics::BURNUP]) {
-        elementInputVectors[Mechanics::BURNUP][r] = (d_inVec[Mechanics::BURNUP])->
-          getValueByGlobalID( d_type1DofIndices[r] );
-        if(d_useUpdatedLagrangian) {
-          elementInputVectors_pre[Mechanics::BURNUP][r] = (d_inVec_pre[Mechanics::BURNUP])->getValueByGlobalID( d_type1DofIndices[r] );
-        }
-      }
-      if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
-        elementInputVectors[Mechanics::OXYGEN_CONCENTRATION][r] = (d_inVec[Mechanics::OXYGEN_CONCENTRATION])->
-          getValueByGlobalID( d_type1DofIndices[r] );
-        if(d_useUpdatedLagrangian) {
-          elementInputVectors_pre[Mechanics::OXYGEN_CONCENTRATION][r] = (d_inVec_pre[Mechanics::OXYGEN_CONCENTRATION])->getValueByGlobalID( d_type1DofIndices[r] );
-        }
-      }
-      if(d_isActive[Mechanics::LHGR]) {
-        elementInputVectors[Mechanics::LHGR][r] = (d_inVec[Mechanics::LHGR])->
-          getValueByGlobalID( d_type1DofIndices[r] );
-        if(d_useUpdatedLagrangian) {
-          elementInputVectors_pre[Mechanics::LHGR][r] = (d_inVec_pre[Mechanics::LHGR])->getValueByGlobalID( d_type1DofIndices[r] );
-        }
-      }
-    }
+       std::vector<double> elementRefXYZ;
+       elementRefXYZ.resize(3 * d_numNodesForCurrentElement);
 
-    const ::Elem* elemPtr = &(el->getElem());
-
-    d_mechNonlinElem->initializeForCurrentElement( elemPtr, d_materialModel );
-
-    d_mechNonlinElem->printStressAndStrain(fp, elementInputVectors);
-}//end for el
-
-d_materialModel->postNonlinearAssembly();
-
-fprintf(fp, "\n\n");
-
-fclose(fp);
+       for(unsigned int r = 0; r < d_numNodesForCurrentElement; r++) {
+       for(unsigned int d = 0; d < 3; d++) {
+       elementInputVectors[Mechanics::DISPLACEMENT][(3*r) + d] = (d_inVec[Mechanics::DISPLACEMENT])->
+       getValueByGlobalID( d_type0DofIndices[d][r] );
+       if(d_useUpdatedLagrangian) {
+       elementInputVectors_pre[Mechanics::DISPLACEMENT][(3*r) + d] = (d_inVec_pre[Mechanics::DISPLACEMENT])->getValueByGlobalID( d_type0DofIndices[d][r] );
+       elementRefXYZ[(3 * r) + d] = d_refXYZ->getValueByGlobalID(d_type0DofIndices[d][r]);
+       }
+       }
+       if(d_isActive[Mechanics::TEMPERATURE]) {
+       elementInputVectors[Mechanics::TEMPERATURE][r] = (d_inVec[Mechanics::TEMPERATURE])->
+       getValueByGlobalID( d_type1DofIndices[r] );
+       if(d_useUpdatedLagrangian) {
+       elementInputVectors_pre[Mechanics::TEMPERATURE][r] = (d_inVec_pre[Mechanics::TEMPERATURE])->getValueByGlobalID( d_type1DofIndices[r] );
+       }
+       }
+       if(d_isActive[Mechanics::BURNUP]) {
+       elementInputVectors[Mechanics::BURNUP][r] = (d_inVec[Mechanics::BURNUP])->
+       getValueByGlobalID( d_type1DofIndices[r] );
+       if(d_useUpdatedLagrangian) {
+    elementInputVectors_pre[Mechanics::BURNUP][r] = (d_inVec_pre[Mechanics::BURNUP])->getValueByGlobalID( d_type1DofIndices[r] );
+}
+}
+if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
+  elementInputVectors[Mechanics::OXYGEN_CONCENTRATION][r] = (d_inVec[Mechanics::OXYGEN_CONCENTRATION])->
+    getValueByGlobalID( d_type1DofIndices[r] );
+  if(d_useUpdatedLagrangian) {
+    elementInputVectors_pre[Mechanics::OXYGEN_CONCENTRATION][r] = (d_inVec_pre[Mechanics::OXYGEN_CONCENTRATION])->getValueByGlobalID( d_type1DofIndices[r] );
+  }
+}
+if(d_isActive[Mechanics::LHGR]) {
+  elementInputVectors[Mechanics::LHGR][r] = (d_inVec[Mechanics::LHGR])->
+    getValueByGlobalID( d_type1DofIndices[r] );
+  if(d_useUpdatedLagrangian) {
+    elementInputVectors_pre[Mechanics::LHGR][r] = (d_inVec_pre[Mechanics::LHGR])->getValueByGlobalID( d_type1DofIndices[r] );
+  }
+}
 }
 
-void MechanicsNonlinearFEOperator :: updateMaterialForElementCommonFunction(const
-    AMP::Mesh::MeshManager::Adapter::Element & elem, std::vector<std::vector<double> > & elementInputVectors,
-    std::vector<std::vector<double> > & elementInputVectors_pre ) {
-  unsigned int num_local_type0Dofs = 0;
-  for(unsigned int i = 0; i < 3; i++) {
-    (dof_maps[0])->getDOFs (elem, d_type0DofIndices[i], i);
-    num_local_type0Dofs += d_type0DofIndices[i].size();
-  }//end for i
+const ::Elem* elemPtr = &(elem.getElem());
 
-  unsigned int num_local_type1Dofs = 0;
-  if( d_isActive[Mechanics::TEMPERATURE] || d_isActive[Mechanics::BURNUP] ||
-      d_isActive[Mechanics::OXYGEN_CONCENTRATION] || d_isActive[Mechanics::LHGR]) {
-    (dof_maps[1])->getDOFs (elem, d_type1DofIndices);
-    num_local_type1Dofs = d_type1DofIndices.size();
-  }
-
-  elementInputVectors[Mechanics::DISPLACEMENT].resize(num_local_type0Dofs);
-  if(d_useUpdatedLagrangian) {
-    elementInputVectors_pre[Mechanics::DISPLACEMENT].resize(num_local_type0Dofs);
-  }
-  if(d_isActive[Mechanics::TEMPERATURE]) {
-    elementInputVectors[Mechanics::TEMPERATURE].resize(num_local_type1Dofs);
-    if(d_useUpdatedLagrangian) {
-      elementInputVectors_pre[Mechanics::TEMPERATURE].resize(num_local_type1Dofs);
-    }
-  }
-  if(d_isActive[Mechanics::BURNUP]) {
-    elementInputVectors[Mechanics::BURNUP].resize(num_local_type1Dofs);
-    if(d_useUpdatedLagrangian) {
-      elementInputVectors_pre[Mechanics::BURNUP].resize(num_local_type1Dofs);
-    }
-  }
-  if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
-    elementInputVectors[Mechanics::OXYGEN_CONCENTRATION].resize(num_local_type1Dofs);
-    if(d_useUpdatedLagrangian) {
-      elementInputVectors_pre[Mechanics::OXYGEN_CONCENTRATION].resize(num_local_type1Dofs);
-    }
-  }
-  if(d_isActive[Mechanics::LHGR]) {
-    elementInputVectors[Mechanics::LHGR].resize(num_local_type1Dofs);
-    if(d_useUpdatedLagrangian) {
-      elementInputVectors_pre[Mechanics::LHGR].resize(num_local_type1Dofs);
-    }
-  }
-
-  d_numNodesForCurrentElement = elem.numNodes(); 
-
-  std::vector<double> elementRefXYZ;
-  elementRefXYZ.resize(3 * d_numNodesForCurrentElement);
-
-  for(unsigned int r = 0; r < d_numNodesForCurrentElement; r++) {
-    for(unsigned int d = 0; d < 3; d++) {
-      elementInputVectors[Mechanics::DISPLACEMENT][(3*r) + d] = (d_inVec[Mechanics::DISPLACEMENT])->
-        getValueByGlobalID( d_type0DofIndices[d][r] );
-      if(d_useUpdatedLagrangian) {
-        elementInputVectors_pre[Mechanics::DISPLACEMENT][(3*r) + d] = (d_inVec_pre[Mechanics::DISPLACEMENT])->getValueByGlobalID( d_type0DofIndices[d][r] );
-        elementRefXYZ[(3 * r) + d] = d_refXYZ->getValueByGlobalID(d_type0DofIndices[d][r]);
-      }
-    }
-    if(d_isActive[Mechanics::TEMPERATURE]) {
-      elementInputVectors[Mechanics::TEMPERATURE][r] = (d_inVec[Mechanics::TEMPERATURE])->
-        getValueByGlobalID( d_type1DofIndices[r] );
-      if(d_useUpdatedLagrangian) {
-        elementInputVectors_pre[Mechanics::TEMPERATURE][r] = (d_inVec_pre[Mechanics::TEMPERATURE])->getValueByGlobalID( d_type1DofIndices[r] );
-      }
-    }
-    if(d_isActive[Mechanics::BURNUP]) {
-      elementInputVectors[Mechanics::BURNUP][r] = (d_inVec[Mechanics::BURNUP])->
-        getValueByGlobalID( d_type1DofIndices[r] );
-      if(d_useUpdatedLagrangian) {
-        elementInputVectors_pre[Mechanics::BURNUP][r] = (d_inVec_pre[Mechanics::BURNUP])->getValueByGlobalID( d_type1DofIndices[r] );
-      }
-    }
-    if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
-      elementInputVectors[Mechanics::OXYGEN_CONCENTRATION][r] = (d_inVec[Mechanics::OXYGEN_CONCENTRATION])->
-        getValueByGlobalID( d_type1DofIndices[r] );
-      if(d_useUpdatedLagrangian) {
-        elementInputVectors_pre[Mechanics::OXYGEN_CONCENTRATION][r] = (d_inVec_pre[Mechanics::OXYGEN_CONCENTRATION])->getValueByGlobalID( d_type1DofIndices[r] );
-      }
-    }
-    if(d_isActive[Mechanics::LHGR]) {
-      elementInputVectors[Mechanics::LHGR][r] = (d_inVec[Mechanics::LHGR])->
-        getValueByGlobalID( d_type1DofIndices[r] );
-      if(d_useUpdatedLagrangian) {
-        elementInputVectors_pre[Mechanics::LHGR][r] = (d_inVec_pre[Mechanics::LHGR])->getValueByGlobalID( d_type1DofIndices[r] );
-      }
-    }
-  }
-
-  const ::Elem* elemPtr = &(elem.getElem());
-
-  if(d_useUpdatedLagrangian) {
-    d_mechNULElem->initializeForCurrentElement( elemPtr, d_materialModel );
-    d_mechNULElem->assignReferenceXYZ(elementRefXYZ);
-  } else {
-    d_mechNonlinElem->initializeForCurrentElement( elemPtr, d_materialModel );
-  }
+if(d_useUpdatedLagrangian) {
+  d_mechNULElem->initializeForCurrentElement( elemPtr, d_materialModel );
+  d_mechNULElem->assignReferenceXYZ(elementRefXYZ);
+} else {
+  d_mechNonlinElem->initializeForCurrentElement( elemPtr, d_materialModel );
+}
 }
 
 */
