@@ -2,7 +2,6 @@
 #define SINGLETON_H
 
 /**
- *	\file 		singleton.h
  *	\brief		Provides a templated Meyer's singleton class
  *	\author		Nathan Barnett
  */

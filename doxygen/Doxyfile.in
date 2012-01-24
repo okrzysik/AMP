@@ -452,7 +452,8 @@ EXCLUDE_SYMLINKS       = NO
 # EXCLUDE_PATTERNS tag to specify one or more wildcard patterns to exclude 
 # certain files from those directories.
 
-EXCLUDE_PATTERNS       = *.inline.h  *.I  */test/*  */new_mesh_factorization/*
+EXCLUDE_PATTERNS       = *.inline.h  */test/*  */new_mesh_factorization/*  
+#EXCLUDE_PATTERNS       = *.inline.h  *.tmpl.h  */test/*  */new_mesh_factorization/*  */utils/*  */vectors/* */operators/mechanics/*
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or 
 # directories that contain example code fragments that are included (see 
@@ -728,7 +729,7 @@ EXTRA_PACKAGES         = amsfonts
 # the first chapter. If it is left blank doxygen will generate a 
 # standard header. Notice: only use this tag if you know what you are doing!
 
-LATEX_HEADER           = 
+LATEX_HEADER           = "@DOXY_LATEX_HEADER_FILE@"
 
 # If the PDF_HYPERLINKS tag is set to YES, the LaTeX that is generated 
 # is prepared for conversion to pdf (using ps2pdf). The pdf file will 
@@ -974,6 +975,7 @@ SKIP_FUNCTION_MACROS   = YES
 
 #---------------------------------------------------------------------------
 # Configuration::additions related to external references   
+
 #---------------------------------------------------------------------------
 
 # The TAGFILES option can be used to specify one or more tagfiles. 

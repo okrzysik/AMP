@@ -14,8 +14,8 @@ public:
   typedef boost::shared_ptr<MMS> shared_ptr;
   /**
    * Default constructor
-   * @param Youngs modulus
-   * @param Poissons ratio
+   * @param YM  Youngs modulus
+   * @param PR  Poissons ratio
    * 
    * Note: Youngs modulus E and Poissons ratio nu are assumed to be constant here but this can be change later.
    * If the need for it arise shout me an email <dalg24@ne.tamu.edu>
