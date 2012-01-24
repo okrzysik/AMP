@@ -34,6 +34,9 @@ void Map1Dto3D :: reset(const boost::shared_ptr<OperatorParameters>& params)
 
     AMP_INSIST( ((myparams.get()) != NULL), "NULL parameter" );
     AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );
+    AMP_INSIST( !myparams->d_MapComm.isNull(), "NULL communicator" );
+    d_MapComm = myparams->d_MapComm;
+    d_MapMesh = myparams->d_MapMesh;
 
     computeZLocations();
 
@@ -50,34 +53,40 @@ void Map1Dto3D :: reset(const boost::shared_ptr<OperatorParameters>& params)
 
 void Map1Dto3D::computeZLocations(){
 
-    // Get an iterator over the nodes on the boundary
-    AMP::Mesh::MeshIterator  bnd = d_MapMesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryId, 0 );
-    AMP::Mesh::MeshIterator  end_bnd = bnd.end();
-
-    double Xx=0;
-    double Yy=0;
+    // Check that the mesh exists on some processors
+    int N_mesh = d_MapComm.sumReduce<int>((d_MapMesh.get()!=NULL?1:0));
+    AMP_ASSERT(N_mesh>0);
+    
+    // Get the local location of nodes on the boundary
     std::vector<double> t_zLocations;
-    if(bnd!=end_bnd) {
-        std::vector<double> x = bnd->coord();
-        AMP_ASSERT(x.size()==3);
-        t_zLocations.push_back(x[2]);
-        Xx = x[0];
-        Yy = x[1];
-        bnd++;
-    }
-    for( ; bnd != end_bnd; ++bnd) {
-        std::vector<double> x = bnd->coord();
-        if( (fabs(Xx-x[0]) <= 1.e-12) && (fabs(Yy-x[1]) <= 1.e-12) ){ 
+    if ( d_MapMesh.get()!=NULL ) {
+        // Get an iterator over the nodes on the boundary
+        AMP::Mesh::MeshIterator  bnd = d_MapMesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryId, 0 );
+        AMP::Mesh::MeshIterator  end_bnd = bnd.end();
+
+        double Xx=0;
+        double Yy=0;
+        if(bnd!=end_bnd) {
+            std::vector<double> x = bnd->coord();
+            AMP_ASSERT(x.size()==3);
             t_zLocations.push_back(x[2]);
+            Xx = x[0];
+            Yy = x[1];
+            bnd++;
+        }
+        for( ; bnd != end_bnd; ++bnd) {
+            std::vector<double> x = bnd->coord();
+            if( (fabs(Xx-x[0]) <= 1.e-12) && (fabs(Yy-x[1]) <= 1.e-12) ){ 
+                t_zLocations.push_back(x[2]);
+            }
         }
     }
 
     // Make Z locations consistent across all processors.
-    AMP_MPI comm = d_MapMesh->getComm();
     size_t myLen = t_zLocations.size();
-    size_t totLen = comm.sumReduce(myLen);
+    size_t totLen = d_MapComm.sumReduce(myLen);
     std::vector<double> zLocations( totLen );
-    comm.allGather ( getPtr(t_zLocations), myLen , getPtr(zLocations) );
+    d_MapComm.allGather ( getPtr(t_zLocations), myLen , getPtr(zLocations) );
 
     // Add the coordinates (internally this will make sure the values are unique and sort)
     setZLocations( zLocations );
@@ -109,6 +118,9 @@ void Map1Dto3D::setZLocations( const std::vector<double> &z )
 void Map1Dto3D::apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &u,
      AMP::LinearAlgebra::Vector::shared_ptr  &r, const double , const double )
 { 
+
+    if ( d_MapMesh.get()==NULL ) 
+        return;
 
     AMP_ASSERT(u != NULL);
     AMP::LinearAlgebra::Vector::shared_ptr inputVec = u->subsetVectorForVariable(d_inpVariable);
