@@ -51,19 +51,7 @@ public:
             AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
 
 
-    AMP::LinearAlgebra::Variable::shared_ptr createInputVariable (const std::string & name, int  = -1)
-    {
-        return d_inpVariable->cloneVariable(name);
-    }
-
-
-    AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable (const std::string & name, int  = -1) 
-    {
-        return d_outVariable->cloneVariable(name);
-    }
-
-
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1) {
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
         return d_inpVariable;
     }
 
