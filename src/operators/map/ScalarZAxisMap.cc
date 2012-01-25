@@ -5,6 +5,8 @@
 namespace AMP {
 namespace Operator {
 
+#if 0
+  //This file has not been converted!
 
 /************************************************************************
 *  Default constructor                                                  *
@@ -119,6 +121,7 @@ void ScalarZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr 
     }
 }
 
+#endif
 
 } // Operator namespace
 } // AMP namespace

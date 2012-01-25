@@ -3,11 +3,11 @@
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 
-#if 0
-//This file has not been converted!
-
 namespace AMP {
   namespace Operator {
+
+#if 0
+    //This file has not been converted!
 
     void DirichletMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>& params)
     {
@@ -23,18 +23,11 @@ namespace AMP {
       AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = myParams->d_inputMatrix;
       AMP_INSIST( ((inputMatrix.get()) != NULL), "NULL matrix" );
 
-      AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap ( d_variable );
-
       unsigned int numIds = d_boundaryIds.size();
 
       for(unsigned int k = 0; k < numIds; k++) {
-        //This has to be a BoundarySharedNodeIterator and can not be a BoundaryOwnNodeIterator since
-        //1) we don't have access to "SharedElements".
-        //2) even we did have access to "SharedElements" and did a
-        //BoundaryOwnNodeIteration we can't avoid the makeConsistent since the dof
-        //of a sharedElement may be neither shared nor owned.
-        AMP::Mesh::MeshManager::Adapter::BoundaryNodeIterator bnd = d_MeshAdapter->beginBoundary( d_boundaryIds[k] );
-        AMP::Mesh::MeshManager::Adapter::BoundaryNodeIterator end_bnd = d_MeshAdapter->endBoundary( d_boundaryIds[k] );
+        AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryIds[k], 0 );
+        AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
         for( ; bnd != end_bnd; ++bnd) {
           AMP::Mesh::MeshManager::Adapter::NodeElementIterator el =  d_MeshAdapter->beginElementForNode ( *bnd );
@@ -190,10 +183,11 @@ namespace AMP {
       }
     }
 
+#endif
+
   }
 }
 
-#endif
 
 
 

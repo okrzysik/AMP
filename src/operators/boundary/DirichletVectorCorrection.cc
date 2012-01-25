@@ -7,6 +7,9 @@
 namespace AMP {
 namespace Operator {
 
+#if 0
+  //This file has not been converted!
+
   void DirichletVectorCorrection :: reset(const boost::shared_ptr<OperatorParameters> & tmpParams)
   {
     boost::shared_ptr<DirichletVectorCorrectionParameters> params = 
@@ -179,6 +182,9 @@ namespace Operator {
 
       return outParams;
     }
+
+#endif
+  
 
 }
 }
