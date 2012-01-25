@@ -23,12 +23,8 @@ DOFManager::DOFManager ( size_t N_local, AMP_MPI comm )
 
 
 /****************************************************************
-* Get the entry indices of DOFs given a mesh element            *
+* Get the DOFs for the element                                  *
 ****************************************************************/
-void DOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector<size_t> &dofs, std::vector<size_t> ) const
-{
-    AMP_ERROR("getDOFs is not implimented for the base class");
-}
 void DOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const
 {
     AMP_ERROR("getDOFs is not implimented for the base class");

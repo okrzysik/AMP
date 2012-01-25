@@ -63,32 +63,8 @@ subsetDOFManager::subsetDOFManager( DOFManager::shared_ptr parentDOFManager, con
 
 
 /****************************************************************
-* Get the entry indices of nodal values given a mesh element    *
+* Get the dofs for the given element                            *
 ****************************************************************/
-void subsetDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <size_t> &dofs, std::vector<size_t> which ) const
-{
-    // Get the parent DOFs
-    std::vector<size_t> parentDOFs;
-    d_parentDOFManager->getDOFs( obj, parentDOFs, which );
-    if ( parentDOFs.empty() ) {
-        dofs.resize(0);
-        return;
-    }
-    // Get the subset DOFs
-    std::vector<size_t> subsetDOFs = getSubsetDOF( parentDOFs );
-    // Remove any DOFs == -1
-    std::vector<size_t>::iterator cur = subsetDOFs.begin();
-    while ( cur != subsetDOFs.end() ) {
-        if ( *cur >= d_global ) {
-            cur = subsetDOFs.erase(cur);
-        } else {
-            ++cur;
-        }
-    }
-    dofs.resize(subsetDOFs.size());
-    for (size_t i=0; i<subsetDOFs.size(); i++)
-        dofs[i] = subsetDOFs[i];
-}
 void subsetDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <size_t> &dofs ) const
 {
     // Get the parent DOFs
