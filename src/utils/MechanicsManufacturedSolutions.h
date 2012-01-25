@@ -121,7 +121,7 @@ public:
   //virtual std::vector<double> getStrainTensor(double x, double y, double z) const = 0; 
   /**
    * This is needed for traction boundary conditions
-   * The function will return the stress tensor @f$ \boldsymbol{\sigma} @f$ under the form of a vector 
+   * The function will return the stress tensor @f$ \sigma @f$ under the form of a vector 
    *   @f$ (\sigma_{xx}, \sigma_{yy}, \sigma_{zz}, \sigma_{yz}, \sigma_{xz}, \sigma_{xy})^T @f$
    */ 
   virtual std::vector<double> getStressTensor(double x, double y, double z) const = 0; 

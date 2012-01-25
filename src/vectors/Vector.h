@@ -72,9 +72,7 @@ namespace LinearAlgebra {
     * implementing math in AMP.
     *
     * Each Vector is associated with a Variable.  This Variable describes
-    * the field this vector represents.  For instance, if you are solving
-    * the equation \f$\mathcal{D}u = 0\f$ for \f$u:\mathbb{R}^3\rightarrow{R}^3\f$,
-    * then the Variable encodes the fact that \f$u\f$ maps onto \f$\mathbb{R}^3\f$.
+    * the field this vector represents.  
     * The problem may be discretized on a domain and linearized to
     * \f$\mathbf{L}\mathbf{\tilde{u}}=\mathbf{f}\f$.  In this case
     * \f$\mathbf{\tilde{u}}\f$ and \f$\mathbf{f}\f$ are Vectors.
