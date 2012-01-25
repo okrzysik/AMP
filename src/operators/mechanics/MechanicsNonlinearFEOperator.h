@@ -221,6 +221,8 @@ namespace AMP {
         updateMaterialForElementCommonFunction(elem, elementInputVectors1, elementInputVectors_pre1);
 
         d_mechNonlinElem->updateMaterialModel<updateType>(elementInputVectors1);
+
+        destroyCurrentLibMeshElement();
       }
 
     template <MechanicsNonlinearUpdatedLagrangianElement::MaterialUpdateType updateType>
@@ -232,6 +234,8 @@ namespace AMP {
         updateMaterialForElementCommonFunction(elem, elementInputVectors2, elementInputVectors_pre2);
 
         d_mechNULElem->updateMaterialModel<updateType>(elementInputVectors2, elementInputVectors_pre2);
+
+        destroyCurrentLibMeshElement();
       }
   }
 }

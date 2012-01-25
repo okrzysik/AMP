@@ -600,133 +600,99 @@ namespace AMP {
       fclose(fp);
     }
 
-    /*
-       void MechanicsNonlinearFEOperator :: updateMaterialForElementCommonFunction(const
-       AMP::Mesh::MeshManager::Adapter::Element & elem, std::vector<std::vector<double> > & elementInputVectors,
-       std::vector<std::vector<double> > & elementInputVectors_pre ) {
-       unsigned int num_local_type0Dofs = 0;
-       for(unsigned int i = 0; i < 3; i++) {
-       (dof_maps[0])->getDOFs (elem, d_type0DofIndices[i], i);
-       num_local_type0Dofs += d_type0DofIndices[i].size();
-       }//end for i
+    void MechanicsNonlinearFEOperator :: updateMaterialForElementCommonFunction(const
+        AMP::Mesh::MeshElement & elem, std::vector<std::vector<double> > & elementInputVectors,
+        std::vector<std::vector<double> > & elementInputVectors_pre ) {
+      d_currNodes = elem.getElements(AMP::Mesh::Vertex);
+      unsigned int numNodesInCurrElem = d_currNodes.size();
 
-       unsigned int num_local_type1Dofs = 0;
-       if( d_isActive[Mechanics::TEMPERATURE] || d_isActive[Mechanics::BURNUP] ||
-       d_isActive[Mechanics::OXYGEN_CONCENTRATION] || d_isActive[Mechanics::LHGR]) {
-       (dof_maps[1])->getDOFs (elem, d_type1DofIndices);
-       num_local_type1Dofs = d_type1DofIndices.size();
-       }
+      getDofIndicesForCurrentElement(Mechanics::DISPLACEMENT, d_dofIndices);
 
-       elementInputVectors[Mechanics::DISPLACEMENT].resize(num_local_type0Dofs);
-       if(d_useUpdatedLagrangian) {
-       elementInputVectors_pre[Mechanics::DISPLACEMENT].resize(num_local_type0Dofs);
-       }
-       if(d_isActive[Mechanics::TEMPERATURE]) {
-       elementInputVectors[Mechanics::TEMPERATURE].resize(num_local_type1Dofs);
-       if(d_useUpdatedLagrangian) {
-       elementInputVectors_pre[Mechanics::TEMPERATURE].resize(num_local_type1Dofs);
-       }
-       }
-       if(d_isActive[Mechanics::BURNUP]) {
-       elementInputVectors[Mechanics::BURNUP].resize(num_local_type1Dofs);
-       if(d_useUpdatedLagrangian) {
-       elementInputVectors_pre[Mechanics::BURNUP].resize(num_local_type1Dofs);
-       }
-       }
-       if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
-       elementInputVectors[Mechanics::OXYGEN_CONCENTRATION].resize(num_local_type1Dofs);
-       if(d_useUpdatedLagrangian) {
-       elementInputVectors_pre[Mechanics::OXYGEN_CONCENTRATION].resize(num_local_type1Dofs);
-       }
-       }
-       if(d_isActive[Mechanics::LHGR]) {
-       elementInputVectors[Mechanics::LHGR].resize(num_local_type1Dofs);
-       if(d_useUpdatedLagrangian) {
-       elementInputVectors_pre[Mechanics::LHGR].resize(num_local_type1Dofs);
-       }
-       }
+      std::vector<std::vector<size_t> > auxDofIds;      
+      for(unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++) {
+        if(i != Mechanics::DISPLACEMENT) {
+          if(d_isActive[i]) {
+            getDofIndicesForCurrentElement(i, auxDofIds);
+            break;
+          }
+        }
+      }//end for i
 
-       d_numNodesForCurrentElement = elem.numNodes(); 
+      elementInputVectors[Mechanics::DISPLACEMENT].resize(3*numNodesInCurrElem);
+      if(d_useUpdatedLagrangian) {
+        elementInputVectors_pre[Mechanics::DISPLACEMENT].resize(3*numNodesInCurrElem);
+      }
+      for(unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++) {
+        if(i != Mechanics::DISPLACEMENT) {
+          if(d_isActive[i]) {
+            elementInputVectors[i].resize(numNodesInCurrElem);
+            if(d_useUpdatedLagrangian) {
+              elementInputVectors_pre[i].resize(numNodesInCurrElem);
+            }
+          }
+        }
+      }//end for i
 
-       std::vector<double> elementRefXYZ;
-       elementRefXYZ.resize(3 * d_numNodesForCurrentElement);
+      std::vector<double> elementRefXYZ;
+      elementRefXYZ.resize(3*numNodesInCurrElem);
 
-       for(unsigned int r = 0; r < d_numNodesForCurrentElement; r++) {
-       for(unsigned int d = 0; d < 3; d++) {
-       elementInputVectors[Mechanics::DISPLACEMENT][(3*r) + d] = (d_inVec[Mechanics::DISPLACEMENT])->
-       getValueByGlobalID( d_type0DofIndices[d][r] );
-       if(d_useUpdatedLagrangian) {
-       elementInputVectors_pre[Mechanics::DISPLACEMENT][(3*r) + d] = (d_inVec_pre[Mechanics::DISPLACEMENT])->getValueByGlobalID( d_type0DofIndices[d][r] );
-       elementRefXYZ[(3 * r) + d] = d_refXYZ->getValueByGlobalID(d_type0DofIndices[d][r]);
-       }
-       }
-       if(d_isActive[Mechanics::TEMPERATURE]) {
-       elementInputVectors[Mechanics::TEMPERATURE][r] = (d_inVec[Mechanics::TEMPERATURE])->
-       getValueByGlobalID( d_type1DofIndices[r] );
-       if(d_useUpdatedLagrangian) {
-       elementInputVectors_pre[Mechanics::TEMPERATURE][r] = (d_inVec_pre[Mechanics::TEMPERATURE])->getValueByGlobalID( d_type1DofIndices[r] );
-       }
-       }
-       if(d_isActive[Mechanics::BURNUP]) {
-       elementInputVectors[Mechanics::BURNUP][r] = (d_inVec[Mechanics::BURNUP])->
-       getValueByGlobalID( d_type1DofIndices[r] );
-       if(d_useUpdatedLagrangian) {
-    elementInputVectors_pre[Mechanics::BURNUP][r] = (d_inVec_pre[Mechanics::BURNUP])->getValueByGlobalID( d_type1DofIndices[r] );
-}
-}
-if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
-  elementInputVectors[Mechanics::OXYGEN_CONCENTRATION][r] = (d_inVec[Mechanics::OXYGEN_CONCENTRATION])->
-    getValueByGlobalID( d_type1DofIndices[r] );
-  if(d_useUpdatedLagrangian) {
-    elementInputVectors_pre[Mechanics::OXYGEN_CONCENTRATION][r] = (d_inVec_pre[Mechanics::OXYGEN_CONCENTRATION])->getValueByGlobalID( d_type1DofIndices[r] );
+      for(unsigned int r = 0; r < numNodesInCurrElem; r++) {
+        for(unsigned int d = 0; d < 3; d++) {
+          elementInputVectors[Mechanics::DISPLACEMENT][(3*r) + d] = (d_inVec[Mechanics::DISPLACEMENT])->
+            getValueByGlobalID(d_dofIndices[r][d]);
+          if(d_useUpdatedLagrangian) {
+            elementInputVectors_pre[Mechanics::DISPLACEMENT][(3*r) + d] = (d_inVec_pre[Mechanics::DISPLACEMENT])->
+              getValueByGlobalID(d_dofIndices[r][d]);
+            elementRefXYZ[(3*r) + d] = d_refXYZ->getValueByGlobalID(d_dofIndices[r][d]);
+          }
+        }//end for d
+        for(unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++) {
+          if(i != Mechanics::DISPLACEMENT) {
+            if(d_isActive[i]) {
+              elementInputVectors[i][r] = (d_inVec[i])->getValueByGlobalID( auxDofIds[r][0] );
+              if(d_useUpdatedLagrangian) {
+                elementInputVectors_pre[i][r] = (d_inVec_pre[i])->getValueByGlobalID( auxDofIds[r][0] );
+              }
+            }
+          }
+        }//end for i
+      }//end for r
+
+      createCurrentLibMeshElement();
+
+      if(d_useUpdatedLagrangian) {
+        d_mechNULElem->initializeForCurrentElement( d_currElemPtr, d_materialModel );
+        d_mechNULElem->assignReferenceXYZ(elementRefXYZ);
+      } else {
+        d_mechNonlinElem->initializeForCurrentElement( d_currElemPtr, d_materialModel );
+      }
+    }
+
+    void MechanicsNonlinearFEOperator :: getDofIndicesForCurrentElement(int varId, std::vector<std::vector<size_t> > & dofIds) {
+      dofIds.resize(d_currNodes.size());
+      for(unsigned int j = 0; j < d_currNodes.size(); j++) {
+        d_dofMap[varId]->getDOFs(d_currNodes[j].globalID(), dofIds[j]);
+      } // end of j
+    }
+
+    void MechanicsNonlinearFEOperator :: createCurrentLibMeshElement() {
+      d_currElemPtr = new ::Hex8;
+      for(unsigned int j = 0; j < d_currNodes.size(); j++) {
+        std::vector<double> pt = d_currNodes[j].coord();
+        d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2]);
+      }//end for j
+    }
+
+    void MechanicsNonlinearFEOperator :: destroyCurrentLibMeshElement() {
+      for(unsigned int j = 0; j < d_currElemPtr->n_nodes(); j++) {
+        delete (d_currElemPtr->get_node(j));
+        d_currElemPtr->set_node(j) = NULL;
+      }//end for j
+      delete d_currElemPtr;
+      d_currElemPtr = NULL;
+    }
+
   }
-}
-if(d_isActive[Mechanics::LHGR]) {
-  elementInputVectors[Mechanics::LHGR][r] = (d_inVec[Mechanics::LHGR])->
-    getValueByGlobalID( d_type1DofIndices[r] );
-  if(d_useUpdatedLagrangian) {
-    elementInputVectors_pre[Mechanics::LHGR][r] = (d_inVec_pre[Mechanics::LHGR])->getValueByGlobalID( d_type1DofIndices[r] );
-  }
-}
-}
-
-const ::Elem* elemPtr = &(elem.getElem());
-
-if(d_useUpdatedLagrangian) {
-  d_mechNULElem->initializeForCurrentElement( elemPtr, d_materialModel );
-  d_mechNULElem->assignReferenceXYZ(elementRefXYZ);
-} else {
-  d_mechNonlinElem->initializeForCurrentElement( elemPtr, d_materialModel );
-}
-}
-
-*/
-
-void MechanicsNonlinearFEOperator :: getDofIndicesForCurrentElement(int varId, std::vector<std::vector<size_t> > & dofIds) {
-  dofIds.resize(d_currNodes.size());
-  for(unsigned int j = 0; j < d_currNodes.size(); j++) {
-    d_dofMap[varId]->getDOFs(d_currNodes[j].globalID(), dofIds[j]);
-  } // end of j
-}
-
-void MechanicsNonlinearFEOperator :: createCurrentLibMeshElement() {
-  d_currElemPtr = new ::Hex8;
-  for(unsigned int j = 0; j < d_currNodes.size(); j++) {
-    std::vector<double> pt = d_currNodes[j].coord();
-    d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2]);
-  }//end for j
-}
-
-void MechanicsNonlinearFEOperator :: destroyCurrentLibMeshElement() {
-  for(unsigned int j = 0; j < d_currElemPtr->n_nodes(); j++) {
-    delete (d_currElemPtr->get_node(j));
-    d_currElemPtr->set_node(j) = NULL;
-  }//end for j
-  delete d_currElemPtr;
-  d_currElemPtr = NULL;
-}
-
-}
 }//end namespace
 
 
