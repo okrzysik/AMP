@@ -3,7 +3,6 @@
 #include "utils/Utilities.h"
 #include <string>
 
-#include "materials/Material.h"
 #include "boost/shared_ptr.hpp"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
@@ -11,17 +10,13 @@
 #include "utils/PIO.h"
 #include "utils/Database.h"
 
-
 #include "vectors/Variable.h"
 #include "vectors/SimpleVector.h"
 #include "vectors/Vector.h"
-#include "vectors/PetscVector.h"
 #include "MultiVector.h"
 
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/MeshAdapter.h"
+#include "ampmesh/Mesh.h"
 #include "ampmesh/SiloIO.h"
-#include "ampmesh/MeshVariable.h"
 
 #include "operators/PowerShape.h"
 
@@ -57,37 +52,41 @@
 #include "operators/CoupledOperatorParameters.h"
 #include "operators/CoupledFlowFrapconOperatorParameters.h"
 
-#include "../TrilinosMLSolver.h"
-#include "../ColumnSolver.h"
-#include "../PetscKrylovSolverParameters.h"
-#include "../PetscKrylovSolver.h"
-#include "../PetscSNESSolverParameters.h"
-#include "../PetscSNESSolver.h"
-#include "../Flow1DSolver.h"
-#include "../CoupledFlow1DSolver.h"
-#include "../CoupledFlow1DSolverParameters.h"
+#include "solvers/TrilinosMLSolver.h"
+#include "solvers/ColumnSolver.h"
+#include "solvers/PetscKrylovSolverParameters.h"
+#include "solvers/PetscKrylovSolver.h"
+#include "solvers/PetscSNESSolverParameters.h"
+#include "solvers/PetscSNESSolver.h"
+#include "solvers/Flow1DSolver.h"
+#include "solvers/CoupledFlow1DSolver.h"
+#include "solvers/CoupledFlow1DSolverParameters.h"
 
 
 
 void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 {
-      std::string input_file = "input_" + exeName;
-      std::string log_file = "output_" + exeName;
-      std::string silo_name = exeName;
+    std::string input_file = "input_" + exeName;
+    std::string log_file = "output_" + exeName;
+    std::string silo_name = exeName;
+    AMP::PIO::logAllNodes(log_file);
+    AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-      AMP::PIO::logAllNodes(log_file);
-      AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
+    // Read the input file
+    boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
+    AMP::InputManager::getManager()->parseInputFile ( input_file , input_db );
+    input_db->printClassData(AMP::plog);
 
-      boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+    // Get the Mesh database and create the mesh parameters
+    AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
+    boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+    boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(database));
+    meshParams->setComm(globalComm);
 
-      AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
-
-      input_db->printClassData(AMP::plog);
-
-      AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-      AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
-      AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter1 = manager->getMesh ( "pellet" );
-      AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter2 = manager->getMesh ( "clad" );
+    // Create the meshes from the input database
+    boost::shared_ptr<AMP::Mesh::Mesh> manager = AMP::Mesh::Mesh::buildMesh(meshParams);
+    AMP::Mesh::Mesh::shared_ptr meshAdapter1 = manager->Subset( "pellet" );
+    AMP::Mesh::Mesh::shared_ptr meshAdapter2 = manager->Subset( "clad" );
 
       //--------------------------------------------------
       // Creating the parameters that will form the right-hand side for the thermal calculation.

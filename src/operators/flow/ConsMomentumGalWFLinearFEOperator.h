@@ -11,15 +11,14 @@
 
 #include <vector>
 
-#if 0
-//This file has not been converted!
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    class ConsMomentumGalWFLinearFEOperator : public LinearFEOperator 
-    {
-      public :
+
+class ConsMomentumGalWFLinearFEOperator : public LinearFEOperator 
+{
+public :
 
         ConsMomentumGalWFLinearFEOperator(const boost::shared_ptr<ConsMomentumGalWFLinearFEOperatorParameters>& params);
 
@@ -29,19 +28,9 @@ namespace AMP {
 
         void postAssembly();
 
-        void preElementOperation(const AMP::Mesh::MeshManager::Adapter::Element &);
+        void preElementOperation(const AMP::Mesh::MeshElement &);
 
         void postElementOperation();
-
-        void setInputVariableName(const std::string & name, int varId = -1) {
-          (void) varId;      
-          d_inpVariable->setName(name);
-        }
-
-        void setOutputVariableName(const std::string & name, int varId = -1) {
-          (void) varId;      
-          d_outVariable->setName(name);
-        }
 
         AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1) {
           return d_inpVariable;
@@ -59,7 +48,7 @@ namespace AMP {
           return d_inpVariable;
         }
 
-      protected :
+protected :
 
         std::vector<unsigned int> d_dofIndices[3]; 
 
@@ -73,18 +62,18 @@ namespace AMP {
 
         unsigned int d_numNodesForCurrentElement; /**< Number of nodes in the current element. */
 
-      private :
+private :
 
-        boost::shared_ptr<AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3> > d_inpVariable; /**< Input variables. */
+        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Input variables. */
 
-        boost::shared_ptr<AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3> > d_outVariable; /**< Output variable. */
+        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output variable. */
 
-    };
+};
 
-  }
+
+}
 }
 
-#endif
 
 #endif
 

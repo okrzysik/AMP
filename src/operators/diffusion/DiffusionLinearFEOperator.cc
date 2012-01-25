@@ -1,14 +1,11 @@
-
 #include "DiffusionLinearFEOperator.h"
 #include "utils/Utilities.h"
 
-#if 0
-//This file has not been converted!
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    AMP::LinearAlgebra::Variable::shared_ptr DiffusionLinearFEOperator::getInputVariable(int varId = -1)
+    AMP::LinearAlgebra::Variable::shared_ptr DiffusionLinearFEOperator::getInputVariable(int varId)
     {
       return d_inpVariable;
     }
@@ -32,10 +29,10 @@ namespace AMP {
         d_useConstantBurnup = params->d_db->getBoolWithDefault("FixedBurnup", false);
 
         std::string inpVar = params->d_db->getString("InputVariable");
-        d_inpVariable.reset(new AMP::Mesh::NodalScalarVariable(inpVar,d_MeshAdapter));
+        d_inpVariable.reset(new AMP::LinearAlgebra::Variable(inpVar));
 
         std::string outVar = params->d_db->getString("OutputVariable");
-        d_outVariable.reset(new AMP::Mesh::NodalScalarVariable(outVar,d_MeshAdapter));
+        d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar));
 
         reset(params);
       }
@@ -119,7 +116,7 @@ namespace AMP {
       }
     }
 
-    void DiffusionLinearFEOperator::preElementOperation(
+  /*  void DiffusionLinearFEOperator::preElementOperation(
         const AMP::Mesh::MeshElement & elem, const std::vector<
         MP::Discretization::DOFManager::shared_ptr> & dof_maps) {
 
@@ -183,7 +180,7 @@ namespace AMP {
       {
         AMP::pout << "DiffusionLinearFEOperator::preElementOperation, leaving" << std::endl;
       }
-    }
+    }*/
 
     void DiffusionLinearFEOperator::postElementOperation() {
 
@@ -209,6 +206,5 @@ namespace AMP {
   }
 }//end namespace
 
-#endif
 
 

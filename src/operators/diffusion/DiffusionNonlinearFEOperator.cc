@@ -1,4 +1,5 @@
 #include "DiffusionNonlinearFEOperator.h"
+#include "DiffusionLinearFEOperatorParameters.h"
 #include "ElementOperationParameters.h"
 #include "DiffusionLinearElement.h"
 #include "DiffusionConstants.h"
@@ -12,27 +13,10 @@
 namespace AMP {
 namespace Operator {
 
-/*
 
 // Functions moved from header
-    void DiffusionNonlinearFEOperator::setInputVariableName(const std::string & name, int varId = -1) {
-        if (varId == -1) {
-            d_inpVariables->setName(name);
-            d_MeshAdapter->appendMeshNameToVariable ( d_inpVariables );
-        } else {
-            (d_inpVariables->getVariable(varId))->setName(name);
-            d_MeshAdapter->appendMeshNameToVariable ( d_inpVariables->getVariable(varId) );
-        }
-    }
 
-    void DiffusionNonlinearFEOperator::setOutputVariableName(const std::string & name, int varId = -1) {
-      (void) varId;
-        d_outVariable->setName(name);
-        d_MeshAdapter->appendMeshNameToVariable ( d_outVariable );
-    }
-
-    AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::createInputVariable(const std::string & name,
-            int varId = -1) {
+    AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::createInputVariable(const std::string & name, int varId) {
         if (varId == -1) {
             return d_inpVariables->cloneVariable(name);
         } else {
@@ -40,17 +24,13 @@ namespace Operator {
         }
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::createOutputVariable(const std::string & name,
-            int varId = -1) { (void) varId;
+    AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::createOutputVariable(const std::string & name, int varId) {
+        (void) varId;
         return d_outVariable->cloneVariable(name);
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::getInputVariable(int varId = -1) {
-            if(varId == -1) {
-                    return d_inpVariables;
-            } else {
-                    return d_inpVariables->getVariable(varId);
-            }
+    AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::getInputVariable() {
+        return d_inpVariables;
     }
 
     AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::getOutputVariable() {
@@ -68,7 +48,7 @@ namespace Operator {
 
     unsigned int DiffusionNonlinearFEOperator::getPrincipalVariableId(){return d_PrincipalVariable;}
 
-    std::vector<unsigned int> getNonPrincipalVariableIds(){
+    std::vector<unsigned int> DiffusionNonlinearFEOperator::getNonPrincipalVariableIds(){
         std::vector<unsigned int> ids;
         for (size_t i=0; i<Diffusion::NUMBER_VARIABLES; i++) {
             if (i != d_PrincipalVariable and d_isActive[i]) ids.push_back(i);
@@ -149,7 +129,7 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
         if (d_isActive[var])
         {
             std::string name = activeVariables_db->getString(Diffusion::names[var]);
-            AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::Mesh::NodalScalarVariable (name, d_MeshAdapter));
+            AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::Variable(name));
             d_inpVariables->setVariable(var,dummyVar);
             if (d_isFrozen[var])
             {
@@ -164,8 +144,7 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
         }
     }
 
-    d_outVariable.reset(new AMP::Mesh::NodalScalarVariable(
-            params->d_db->getString("OutputVariable"),d_MeshAdapter));
+    d_outVariable.reset(new AMP::LinearAlgebra::Variable(params->d_db->getString("OutputVariable")));
 
     init(params);
 }
@@ -228,9 +207,10 @@ void DiffusionNonlinearFEOperator::postAssembly()
 }
 
 void DiffusionNonlinearFEOperator::preElementOperation(
-    const AMP::Mesh::MeshManager::Adapter::Element & elem,
-    const std::vector<AMP::Mesh::DOFMap::shared_ptr> & dof_maps)
+    const AMP::Mesh::MeshElement & elem )
 {
+AMP_ERROR("Not converted yet");
+/*
   if( d_iDebugPrintInfoLevel > 7 )
     {
       AMP::pout << "DiffusionNonlinearFEOperator::preElementOperation, entering" << std::endl;     
@@ -273,6 +253,7 @@ void DiffusionNonlinearFEOperator::preElementOperation(
     {
       AMP::pout << "DiffusionNonlinearFEOperator::preElementOperation, leaving" << std::endl;     
     }
+*/
 }
 
 void DiffusionNonlinearFEOperator::postElementOperation()
@@ -303,16 +284,19 @@ void DiffusionNonlinearFEOperator::init(const boost::shared_ptr<
     }
   
   (void) params;
-  AMP::Mesh::MeshManager::Adapter::ElementIterator el = d_MeshAdapter->beginElement();
-  AMP::Mesh::MeshManager::Adapter::ElementIterator end_el = d_MeshAdapter->endElement();
+  AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume,0);
+  AMP::Mesh::MeshIterator end_el = el.end();
   
+AMP_ERROR("Not converted yet");
+/*
   for (; el != end_el; ++el)
     {
       const ::Elem* elemPtr = &(el->getElem());
       d_diffNonlinElem->initializeForCurrentElement(elemPtr, d_transportModel);
       d_diffNonlinElem->initTransportModel();
     }//end for el
-  
+*/  
+
   if( d_iDebugPrintInfoLevel > 7 )
     {
       AMP::pout << "DiffusionNonlinearFEOperator::init, leaving" << std::endl;
@@ -327,11 +311,11 @@ void DiffusionNonlinearFEOperator::reset(
                                         OperatorParameters>(params);
 
     if (d_PrincipalVariable == Diffusion::TEMPERATURE)
-        d_inVec[d_PrincipalVariable] = dnlparams_sp->d_temperature;
+        d_inVec[d_PrincipalVariable] = dnlparams_sp->d_FrozenTemperature;
     if (d_PrincipalVariable == Diffusion::CONCENTRATION)
-        d_inVec[d_PrincipalVariable] = dnlparams_sp->d_concentration;
+        d_inVec[d_PrincipalVariable] = dnlparams_sp->d_FrozenConcentration;
     if (d_PrincipalVariable == Diffusion::BURNUP)
-        d_inVec[d_PrincipalVariable] = dnlparams_sp->d_burnup;
+        d_inVec[d_PrincipalVariable] = dnlparams_sp->d_FrozenBurnup;
     (d_inVec[d_PrincipalVariable])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
     resetFrozen(dnlparams_sp);
@@ -373,7 +357,7 @@ boost::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianP
     // add miscellaneous to output parameters
     outParams->d_transportModel = d_transportModel;
     outParams->d_elemOp = linearElement;
-    outParams->d_MeshAdapter = d_MeshAdapter;
+    outParams->d_Mesh = d_Mesh;
 
     // add variables to parameters
     if (d_isActive[Diffusion::TEMPERATURE]) {
@@ -468,7 +452,6 @@ bool DiffusionNonlinearFEOperator::isValidInput(AMP::LinearAlgebra::Vector::shar
 
     return result;
 }
-*/
 
 
 }

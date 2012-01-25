@@ -102,7 +102,7 @@ private:
 
     boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables;
 
-    //boost::shared_ptr<AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1> > d_outVariable;
+    boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
     unsigned int d_PrincipalVariable;
 

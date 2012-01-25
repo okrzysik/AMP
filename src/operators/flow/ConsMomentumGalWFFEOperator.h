@@ -11,15 +11,14 @@
 
 #include <vector>
 
-#if 0
-//This file has not been converted!
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    class ConsMomentumGalWFFEOperator : public NonlinearFEOperator 
-    {
-      public :
+
+class ConsMomentumGalWFFEOperator : public NonlinearFEOperator 
+{
+public :
 
         ConsMomentumGalWFFEOperator(const boost::shared_ptr<ConsMomentumGalWFFEOperatorParameters>& params);
 
@@ -29,7 +28,7 @@ namespace AMP {
 
         void postAssembly();
 
-        void preElementOperation(const AMP::Mesh::MeshManager::Adapter::Element &, const std::vector<AMP::Mesh::DOFMap::shared_ptr> &);
+        //void preElementOperation(const AMP::Mesh::MeshManager::Adapter::Element &, const std::vector<AMP::Mesh::DOFMap::shared_ptr> &);
 
         void postElementOperation();
 
@@ -45,28 +44,11 @@ namespace AMP {
           (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
         }
 
-        void setInputVariableName(const std::string & name, int varId = -1) {
-          if(varId == -1) {
-            d_inpVariables->setName(name);
-          } else {
-            (d_inpVariables->getVariable(varId))->setName(name);
-          }
-        }
-
-        void setOutputVariableName(const std::string & name, int varId = -1) {
-          (void) varId;      
-          if(varId == -1) {
-            d_outVariables->setName(name);
-          } else {
-            (d_outVariables->getVariable(varId))->setName(name);
-          }
-        }
-
         static AMP::LinearAlgebra::Variable::shared_ptr createInputVariable(const std::string & name, int varId = -1);
 
         static AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable(const std::string & name, int varId = -1) {
           (void) varId;      
-          AMP::LinearAlgebra::Variable::shared_ptr outVar(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 4>(name) );
+          AMP::LinearAlgebra::Variable::shared_ptr outVar(new AMP::LinearAlgebra::Variable(name) );
           return outVar;
         }
 
@@ -86,7 +68,7 @@ namespace AMP {
 
         AMP::LinearAlgebra::Variable::shared_ptr getVariableForDOFMap(unsigned int id);
 
-      protected :
+protected :
 
         std::vector<unsigned int> d_type0DofIndices[3]; 
         std::vector<unsigned int> d_type1DofIndices; 
@@ -109,20 +91,20 @@ namespace AMP {
 
         std::vector<bool> d_isFrozen;
 
-      private :
+private :
 
         bool d_isInitialized; /**< A flag that is true if init() has been called and false otherwsie. */
 
         boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables; /**< Input variables. */
 
-        boost::shared_ptr<AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3> > d_outVariables; /**< Output variable. */
+        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariables; /**< Output variable. */
 
-    };
+};
 
-  }
+
+}
 }
 
-#endif
 
 #endif
 

@@ -46,20 +46,14 @@ namespace AMP {
           @param [in] u Input vector
           @param [out] r Output vector
           */
-        virtual void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r)
-        {
-          //Implemented in derived classes. 
-        }
+        virtual void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r)=0;
 
         /**
           This function will be called just after looping over all the elements to form the residual vector, so if the
           derived classes need to perform any operations such as freeing any temporary memory allocations they
           can do so by implementing these operations in this function.
           */
-        virtual void postAssembly()
-        {
-          //Implemented in derived classes. 
-        }
+        virtual void postAssembly()=0;
 
         /**
           This function will be called once for each element, just before performing the element operation.
@@ -67,19 +61,13 @@ namespace AMP {
           DOFMap and global vectors and matrices. This function typically extracts the local information from
           these global objects and passes them to the element operation.
           */
-        virtual void preElementOperation(const AMP::Mesh::MeshElement &)
-        {
-          //Implemented in derived classes. 
-        }
+        virtual void preElementOperation(const AMP::Mesh::MeshElement &)=0;
 
         /**
           This function will be called once for each element, just after performing the element operation.
           Typically, the result of the element operation is added to the global output vector in this function.
           */
-        virtual void postElementOperation()
-        {
-          //Implemented in derived classes. 
-        }
+        virtual void postElementOperation()=0;
 
         /**
           The apply function for this operator, A, performs the following operation:
