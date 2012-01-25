@@ -40,16 +40,7 @@ public:
      */
     DOFManager( size_t N_local, AMP_MPI comm );
 
-
-    /** \brief Get the entry indices of DOFs given a mesh element
-     * \details  This will return a vector of pointers into a Vector that are associated with which.
-     * \param[in]  obj      The element to collect nodal objects for.  Note: the mesh element may be any type (include a vertex).
-     * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
-     * \param[in]  which    Which D.O.F. to get.  If not specified, return all D.O.F.s
-     */
-    virtual void getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <size_t> &dofs , std::vector<size_t> which = std::vector<size_t>(0) ) const;
-
-
+    
     /** \brief Get the entry indices of DOFs given a mesh element ID
      * \details  This will return a vector of pointers into a Vector that are associated with which.
      * \param[in]  id       The element ID to collect nodal objects for.  Note: the mesh element may be any type (include a vertex).
