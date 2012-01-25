@@ -110,36 +110,8 @@ void simpleDOFManager::initialize()
 
 
 /****************************************************************
-* Get the entry indices of nodal values given a mesh element    *
+* Get the DOFs for the element                                  *
 ****************************************************************/
-void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <size_t> &dofs, std::vector<size_t> which ) const
-{
-    dofs.resize(0);
-    std::vector<AMP::Mesh::MeshElement> elements;
-    if ( obj.elementType() == d_type )
-        elements = std::vector<AMP::Mesh::MeshElement>(1,obj);
-    else
-        elements = obj.getElements(d_type);
-    std::vector <size_t> dofs2(DOFsPerElement);
-    if ( which.size()==0 ) {
-        // Return all dofs
-        dofs.reserve(elements.size()*DOFsPerElement);
-        for (size_t i=0; i<elements.size(); i++) {
-            getDOFs( elements[i].globalID(), dofs2 );
-            for (size_t j=0; j<dofs2.size(); j++)
-                dofs.push_back(dofs2[j]);
-        }
-    } else {
-        // Return only the desired dof
-        dofs.reserve(which.size()*DOFsPerElement);
-        for (size_t i=0; i<which.size(); i++) {
-            AMP::Mesh::MeshElementID id = elements[which[i]].globalID();
-            getDOFs( id, dofs2 );
-            for (size_t j=0; j<dofs2.size(); j++)
-                dofs.push_back(dofs2[j]);
-        }
-    }
-}
 void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <size_t> &dofs ) const
 {
     dofs.resize(0);
