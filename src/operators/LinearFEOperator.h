@@ -45,10 +45,7 @@ namespace AMP {
           Also, the derived classes can access the parameters passed to the reset
           function by implementing this function.
           */
-        virtual void preAssembly(const boost::shared_ptr<OperatorParameters>& )
-        {
-          //Implemented in derived classes. 
-        }
+        virtual void preAssembly(const boost::shared_ptr<OperatorParameters>& )=0;
 
         /**
           This function will be called just after looping over all the elements to
@@ -56,10 +53,7 @@ namespace AMP {
           operations such as freeing any temporary memory allocations they
           can do so by implementing these operations in this function.
           */
-        virtual void postAssembly()
-        {
-          //Implemented in derived classes. 
-        }
+        virtual void postAssembly()=0;
 
         /**
           This function will be called once for each element, just before performing
@@ -68,19 +62,13 @@ namespace AMP {
           This function typically extracts the local information from
           these global objects and passes them to the element operation.
           */
-        virtual void preElementOperation(const AMP::Mesh::MeshElement &)
-        {
-          //Implemented in derived classes. 
-        }
+        virtual void preElementOperation(const AMP::Mesh::MeshElement &)=0;
 
         /**
           This function will be called once for each element, just after performing the element operation.
           Typically, the element stiffness matrix is added to the global stiffness matrix in this function.
           */
-        virtual void postElementOperation()
-        {
-          //Implemented in derived classes. 
-        }
+        virtual void postElementOperation()=0;
 
         /**
           This function creates the stiffness matrix and uses virtual

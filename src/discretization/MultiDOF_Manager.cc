@@ -57,20 +57,8 @@ multiDOFManager::multiDOFManager ( AMP_MPI globalComm, std::vector<DOFManager::s
 
 
 /****************************************************************
-* Get the entry indices of nodal values given a mesh element    *
+* Get the dofs for the element                                  *
 ****************************************************************/
-void multiDOFManager::getDOFs( const AMP::Mesh::MeshElement &obj, std::vector <size_t> &dofs, std::vector<size_t> which ) const
-{
-    dofs.resize(0);
-    std::vector<size_t> local_dofs;
-    for (size_t i=0; i<d_managers.size(); i++) {
-        d_managers[i]->getDOFs( obj, local_dofs, which );
-        if ( local_dofs.size() > 0 ) {
-            std::vector<size_t> tmp_dofs = getGlobalDOF( d_managers[i], local_dofs );
-            dofs.insert(dofs.end(),tmp_dofs.begin(),tmp_dofs.end());
-        }
-    }
-}
 void multiDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <size_t> &dofs ) const
 {
     dofs.resize(0);

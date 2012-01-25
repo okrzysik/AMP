@@ -2,81 +2,74 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "ampmesh/MeshManager.h"
-#include "materials/Material.h"
+#include "ampmesh/Mesh.h"
 #include "boost/shared_ptr.hpp"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
 #include "utils/PIO.h"
 #include "utils/Database.h"
-#include "ampmesh/MeshAdapter.h"
 #include "vectors/Variable.h"
-
-#include "ampmesh/SiloIO.h"
 #include "vectors/Vector.h"
 #include "vectors/MultiVector.h"
 #include "operators/FlowFrapconOperator.h"
 #include "operators/FlowFrapconJacobian.h"
 #include "operators/ElementPhysicsModelFactory.h"
 #include "operators/ElementOperationFactory.h"
-
+#include "operators/OperatorBuilder.h"
 #include "solvers/ColumnSolver.h"
 #include "solvers/PetscKrylovSolverParameters.h"
 #include "solvers/PetscKrylovSolver.h"
 #include "solvers/PetscSNESSolverParameters.h"
 #include "solvers/PetscSNESSolver.h"
-
 #include "solvers/TrilinosMLSolver.h"
 #include "solvers/Flow1DSolver.h"
-
-#include "operators/OperatorBuilder.h"
 
 
 void flowTest(AMP::UnitTest *ut, std::string exeName )
 {
-  std::string input_file = "input_" + exeName;
-  std::string log_file = "output_" + exeName;
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
-  AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
-  input_db->printClassData(AMP::plog);
+    std::string input_file = "input_" + exeName;
+    std::string log_file = "output_" + exeName;
+    AMP::PIO::logAllNodes(log_file);
+    AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-  AMP::PIO::logAllNodes(log_file);
-  AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
+    // Read the input file
+    boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
+    AMP::InputManager::getManager()->parseInputFile ( input_file , input_db );
 
-  AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  //std::string mesh_file = input_db->getString("Mesh");
+    // Get the Mesh database and create the mesh parameters
+    AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
+    boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+    boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(database));
+    meshParams->setComm(globalComm);
 
-  // Construct a mesh manager which reads in the fuel mesh
-  //  #include "ampmesh/MeshManager.h"
-  AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "bar" );
-  
-  AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+    // Create the meshes from the input database
+    boost::shared_ptr<AMP::Mesh::Mesh> manager = AMP::Mesh::Mesh::buildMesh(meshParams);
+    AMP::Mesh::Mesh::shared_ptr meshAdapter = manager->Subset( "bar" );
 
-//--------------------------------------
-//     CREATE THE FLOW OPERATOR   ------
-//--------------------------------------
 
-  AMP_INSIST(input_db->keyExists("FlowFrapconOperator"), "Key ''FlowFrapconOperator'' is missing!");
+    AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> flowtransportModel;
-  boost::shared_ptr<AMP::InputDatabase> flowDatabase       = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("FlowFrapconOperator"));
-  boost::shared_ptr<AMP::Operator::FlowFrapconOperator> flowOperator = boost::dynamic_pointer_cast<AMP::Operator::FlowFrapconOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-																						      "FlowFrapconOperator",
-																						      input_db,
-																						      flowtransportModel));
+    //--------------------------------------
+    //     CREATE THE FLOW OPERATOR   ------
+    //--------------------------------------
 
-  AMP::LinearAlgebra::Variable::shared_ptr   inputVariable  =  flowOperator->getInputVariable() ;
-  AMP::LinearAlgebra::Variable::shared_ptr   outputVariable =  flowOperator->getOutputVariable() ;
+    AMP_INSIST(input_db->keyExists("FlowFrapconOperator"), "Key ''FlowFrapconOperator'' is missing!");
 
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::SimpleVector::create( 10, outputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr cladVec = AMP::LinearAlgebra::SimpleVector::create( 10, inputVariable );
+    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> flowtransportModel;
+    boost::shared_ptr<AMP::InputDatabase> flowDatabase = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("FlowFrapconOperator"));
+    boost::shared_ptr<AMP::Operator::FlowFrapconOperator> flowOperator = boost::dynamic_pointer_cast<AMP::Operator::FlowFrapconOperator>(
+        AMP::Operator::OperatorBuilder::createOperator( meshAdapter, "FlowFrapconOperator", input_db, flowtransportModel ) );
 
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::SimpleVector::create( 10, outputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::SimpleVector::create( 10, outputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr tmpVec = AMP::LinearAlgebra::SimpleVector::create( 10, inputVariable );
+    AMP::LinearAlgebra::Variable::shared_ptr   inputVariable  =  flowOperator->getInputVariable() ;
+    AMP::LinearAlgebra::Variable::shared_ptr   outputVariable =  flowOperator->getOutputVariable() ;
+
+    AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::SimpleVector::create( 10, outputVariable );
+    AMP::LinearAlgebra::Vector::shared_ptr cladVec = AMP::LinearAlgebra::SimpleVector::create( 10, inputVariable );
+
+    AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::SimpleVector::create( 10, outputVariable );
+    AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::SimpleVector::create( 10, outputVariable );
+    AMP::LinearAlgebra::Vector::shared_ptr tmpVec = AMP::LinearAlgebra::SimpleVector::create( 10, inputVariable );
 
   boost::shared_ptr<AMP::Operator::FlowFrapconJacobian> flowJacobian = boost::dynamic_pointer_cast<AMP::Operator::FlowFrapconJacobian>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 																						      "FlowFrapconJacobian",

@@ -39,7 +39,7 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix(
         AMP::Mesh::MeshElement obj = *cur_elem;
         // Get the result DOFs associated with the given element
         std::vector<size_t> ids;
-        resultDOF->getDOFs(obj,ids);
+        resultDOF->getDOFs(obj.globalID(),ids);
         // Get the operand DOFs associated with the given element
         std::vector<size_t> row = operandDOF->getRowDOFs(obj);
         size_t nnz = row.size();
@@ -75,7 +75,7 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix(
         AMP::Mesh::MeshElement obj = *cur_elem;
         // Get the result DOFs associated with the given element
         std::vector<size_t> ids;
-        resultDOF->getDOFs(obj,ids);
+        resultDOF->getDOFs(obj.globalID(),ids);
         // Get the operand DOFs associated with the given element
         std::vector<size_t> row = operandDOF->getRowDOFs(obj);
         size_t nnz = row.size();

@@ -2,7 +2,7 @@
 #ifndef included_AMP_ConsMassGalWFLinearFEOperatorParameters
 #define included_AMP_ConsMassGalWFLinearFEOperatorParameters
 
-#include "FEOperatorParameters.h"
+#include "LinearFEOperatorParameters.h"
 #include "FlowTransportModel.h"
 
 #include <vector>
@@ -10,10 +10,10 @@
 namespace AMP {
 namespace Operator {
 
-  class ConsMassGalWFLinearFEOperatorParameters : public FEOperatorParameters {
+  class ConsMassGalWFLinearFEOperatorParameters : public LinearFEOperatorParameters {
     public :
 
-      ConsMassGalWFLinearFEOperatorParameters(const boost::shared_ptr<AMP::Database> &db): FEOperatorParameters(db) {
+      ConsMassGalWFLinearFEOperatorParameters(const boost::shared_ptr<AMP::Database> &db): LinearFEOperatorParameters(db) {
           d_frozenVec.resize(NavierStokes::TOTAL_NUMBER_OF_VARIABLES);
       }
 

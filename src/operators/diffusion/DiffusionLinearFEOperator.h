@@ -14,14 +14,13 @@
 
 #include <vector>
 
-#if 0
-//This file has not been converted!
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    class DiffusionLinearFEOperator: public LinearFEOperator {
-      public:
+
+class DiffusionLinearFEOperator: public LinearFEOperator {
+public:
 
         DiffusionLinearFEOperator(const boost::shared_ptr<
             DiffusionLinearFEOperatorParameters>& params);
@@ -41,7 +40,7 @@ namespace AMP {
 
         AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
-      protected:
+protected:
 
         bool d_useConstantTemperature;
 
@@ -63,18 +62,15 @@ namespace AMP {
 
         boost::shared_ptr<DiffusionTransportModel> d_transportModel;
 
-        boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_inpVariable;
+        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
 
-        boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_outVariable;
+        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
-      private:
+};
 
-    };
 
-  }
 }
-
-#endif
+}
 
 #endif
 

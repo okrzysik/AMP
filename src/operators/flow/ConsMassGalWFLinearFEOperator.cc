@@ -1,16 +1,14 @@
-
 #include "ConsMassGalWFLinearFEOperator.h"
 #include "utils/Utilities.h"
 
-#if 0
-//This file has not been converted!
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    ConsMassGalWFLinearFEOperator :: ConsMassGalWFLinearFEOperator (
-        const boost::shared_ptr<ConsMassGalWFLinearFEOperatorParameters> & params)
-      : LinearFEOperator (params) {
+ConsMassGalWFLinearFEOperator :: ConsMassGalWFLinearFEOperator (
+    const boost::shared_ptr<ConsMassGalWFLinearFEOperatorParameters> & params)
+    : LinearFEOperator (params) 
+{
         AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
 
         d_flowGalWFLinElem = boost::dynamic_pointer_cast<ConsMassGalWFLinearElement>(d_elemOp);
@@ -21,10 +19,10 @@ namespace AMP {
         d_transportModel = params->d_transportModel ;
 
         std::string inpVarName = params->d_db->getString("InputVariable");
-        d_inpVariable.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1>(inpVarName, d_MeshAdapter) );
+        d_inpVariable.reset(new AMP::LinearAlgebra::Variable(inpVarName) );
 
         std::string outVarName = params->d_db->getString("OutputVariable");
-        d_outVariable.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(outVarName, d_MeshAdapter) );
+        d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVarName) );
 
         d_inVec.resize(NavierStokes::TOTAL_NUMBER_OF_VARIABLES);
         bool isAttachedToNonlinearOperator = params->d_db->getBoolWithDefault("isAttachedToNonlinearOperator", false);
@@ -34,15 +32,17 @@ namespace AMP {
           if(isNonlinearOperatorInitialized) {
             reset(params);
           } else {
-            d_matrix = d_MeshAdapter->createMatrix ( d_inpVariable, d_outVariable );
+            AMP_ERROR("Not converted, createMatrix has been moved to MatrixBuilder and required the right and left vectors");
+            //d_matrix = d_MeshAdapter->createMatrix ( d_inpVariable, d_outVariable );
           }
         } else {
           reset(params);
         }
-      }
+}
 
-    void ConsMassGalWFLinearFEOperator :: preAssembly(const boost::shared_ptr<OperatorParameters>& oparams) 
-    {
+
+void ConsMassGalWFLinearFEOperator :: preAssembly(const boost::shared_ptr<OperatorParameters>& oparams) 
+{
 
       boost::shared_ptr<ConsMassGalWFLinearFEOperatorParameters> params = boost::dynamic_pointer_cast<ConsMassGalWFLinearFEOperatorParameters>(oparams);
 
@@ -85,15 +85,18 @@ namespace AMP {
 
       d_matrix->zero();
 
-    }
+}
 
-    void ConsMassGalWFLinearFEOperator :: postAssembly()
-    {
 
+void ConsMassGalWFLinearFEOperator :: postAssembly()
+{
       d_matrix->makeConsistent ();
-    }
+}
 
-    void ConsMassGalWFLinearFEOperator :: preElementOperation( const AMP::Mesh::MeshManager::Adapter::Element & elem ) {
+
+void ConsMassGalWFLinearFEOperator :: preElementOperation( const AMP::Mesh::MeshElement & elem ) 
+{
+AMP_ERROR("Not converted yet"); /*
       unsigned int num_local_u_dofs = 0;
       for(unsigned int i = 0; i < 3; i++) {
         (dof_maps[0])->getDOFs (elem, d_dofIndices0[i], i);
@@ -110,11 +113,9 @@ namespace AMP {
 
       d_numNodesForCurrentElement = elem.numNodes();
 
-      /*
-         for(unsigned int r = 0; r < num_local_p_dofs; r++) {
-         elementInputVectors[NavierStokes::PRESSURE][r] = (d_inVec[NavierStokes::PRESSURE])->getValueByGlobalID( d_dofIndices1[r] );
-         }
-         */
+      //   for(unsigned int r = 0; r < num_local_p_dofs; r++) {
+      //   elementInputVectors[NavierStokes::PRESSURE][r] = (d_inVec[NavierStokes::PRESSURE])->getValueByGlobalID( d_dofIndices1[r] );
+      //   }
 
       d_elementStiffnessMatrix.resize(num_local_u_dofs);
       for(unsigned int r = 0; r < num_local_u_dofs; r++) {
@@ -145,12 +146,13 @@ namespace AMP {
         }
       }
 
-    }
+*/
 
-  }
+}
+
+
 }//end namespace
-
-#endif
+}
 
 
 
