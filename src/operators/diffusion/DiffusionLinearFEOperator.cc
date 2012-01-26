@@ -5,7 +5,7 @@
 namespace AMP {
 namespace Operator {
 
-    AMP::LinearAlgebra::Variable::shared_ptr DiffusionLinearFEOperator::getInputVariable(int varId)
+    AMP::LinearAlgebra::Variable::shared_ptr DiffusionLinearFEOperator::getInputVariable()
     {
       return d_inpVariable;
     }
