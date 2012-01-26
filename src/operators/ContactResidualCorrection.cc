@@ -1,9 +1,6 @@
 
 #include "ContactResidualCorrection.h"
 
-#if 0
-//This file has not been converted!
-
 namespace AMP {
   namespace Operator {
 
@@ -12,27 +9,19 @@ namespace AMP {
       AMP::LinearAlgebra::Vector::shared_ptr rMaster = r->subsetVectorForVariable(d_masterVariable);
       AMP::LinearAlgebra::Vector::shared_ptr rSlave = r->subsetVectorForVariable(d_slaveVariable);
 
-      AMP::Mesh::DOFMap::shared_ptr master_dof_map = d_MeshAdapter->getDOFMap(d_masterVariable);
-      AMP::Mesh::DOFMap::shared_ptr slave_dof_map = d_slaveMeshAdapter->getDOFMap(d_slaveVariable);
+      AMP::Discretization::DOFManager::shared_ptr master_dof_map = rMaster->getDOFManager();
+      AMP::Discretization::DOFManager::shared_ptr slave_dof_map = rSlave->getDOFManager();
 
       for(size_t i = 0; i < d_masterNodes.size(); i++) {
-        AMP::Mesh::LibMeshNode masterNd =  d_MeshAdapter->getNode( d_masterNodes[i] );
-        AMP::Mesh::LibMeshNode slaveNd =  d_slaveMeshAdapter->getNode( d_slaveNodes[i] );
-        std::vector<unsigned int> masterGlobalIds;
-        std::vector<unsigned int> slaveGlobalIds;
-        master_dof_map->getDOFs(masterNd, masterGlobalIds, d_dofs[i]);
-        slave_dof_map->getDOFs(slaveNd, slaveGlobalIds, d_dofs[i]);
+        std::vector<size_t> masterGlobalIds;
+        std::vector<size_t> slaveGlobalIds;
+        master_dof_map->getDOFs(d_masterNodes[i], masterGlobalIds);
+        slave_dof_map->getDOFs(d_slaveNodes[i], slaveGlobalIds);
         for(size_t j = 0; j < d_dofs[i].size(); j++) {
-          double slaveVal = rSlave->getLocalValueByGlobalID( slaveGlobalIds[j] );
-          //double masterVal = rMaster->getLocalValueByGlobalID( masterGlobalIds[j] );
-
-          rMaster->addLocalValueByGlobalID(masterGlobalIds[j], slaveVal);
-
-          //masterVal = rMaster->getLocalValueByGlobalID( masterGlobalIds[j] );
-
-          rSlave->setLocalValueByGlobalID(slaveGlobalIds[j], 0.0);
-
-          slaveVal = rSlave->getLocalValueByGlobalID( slaveGlobalIds[j] );
+          double slaveVal = rSlave->getLocalValueByGlobalID( slaveGlobalIds[d_dofs[i][j]] );
+          rMaster->addLocalValueByGlobalID(masterGlobalIds[d_dofs[i][j]], slaveVal);
+          rSlave->setLocalValueByGlobalID(slaveGlobalIds[d_dofs[i][j]], 0.0);
+          slaveVal = rSlave->getLocalValueByGlobalID( slaveGlobalIds[d_dofs[i][j]] );
         }//end for j
       }//end for i
     }
@@ -41,6 +30,5 @@ namespace AMP {
 }
 
 
-#endif
 
 
