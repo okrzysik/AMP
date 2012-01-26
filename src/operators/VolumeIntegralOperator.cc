@@ -7,7 +7,7 @@
 
 namespace AMP {
 namespace Operator {
-/*
+
     VolumeIntegralOperator::VolumeIntegralOperator(
             const boost::shared_ptr<VolumeIntegralOperatorParameters> & params) : NonlinearFEOperator(params)
     {
@@ -53,13 +53,13 @@ namespace Operator {
                 sprintf(key, "ActiveVariable_%d", (int)var);
                 std::string varName = primaryDb->getString(key);
                                 d_activeVariableNames[var] = varName;
-                AMP::LinearAlgebra::Variable::shared_ptr inpVar(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable, 8>(varName, d_MeshAdapter));
+                AMP::LinearAlgebra::Variable::shared_ptr inpVar(new AMP::LinearAlgebra::Variable(varName));
                 d_inpVariables->setVariable(var, inpVar);
             }else if(d_isInputType== "NodalScalar"){
                 sprintf(key, "ActiveVariable_%d", (int)var);
                 std::string varName = primaryDb->getString(key);
                                 d_activeVariableNames[var] = varName;
-                AMP::LinearAlgebra::Variable::shared_ptr inpVar(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1>(varName, d_MeshAdapter));
+                AMP::LinearAlgebra::Variable::shared_ptr inpVar(new AMP::LinearAlgebra::Variable(varName));
                 d_inpVariables->setVariable(var, inpVar);
             }
         }
@@ -68,7 +68,7 @@ namespace Operator {
 //            d_inpVariable.reset(new AMP::Mesh::RunTimeIntegrationPointVariable(inpVar, nPts));
 
         std::string outVar = params->d_db->getString("OutputVariable");
-        d_outVariable.reset(new AMP::Mesh::NodalScalarVariable(outVar, d_MeshAdapter)); 
+        d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar)); 
 
         d_bMatrixAndVectorsCloned=false;
 
@@ -78,20 +78,7 @@ namespace Operator {
     AMP::LinearAlgebra::Variable::shared_ptr VolumeIntegralOperator :: createInputVariable(const std::string & name, int varId) {
 
         AMP::LinearAlgebra::Variable::shared_ptr inpVar;
-        if(d_isInputType == "IntegrationPointScalar"){
-            if(name=="DISPLACEMENT ") {
-                inpVar.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable, 24>(name) );
-            }else{
-                inpVar.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable,  8>(name) );
-            }
-        }else if(d_isInputType== "NodalScalar"){
-            if(name=="DISPLACEMENT ") {
-                inpVar.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(name) );
-            }else{
-                inpVar.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1>(name) );
-            }
-        }
-
+        inpVar.reset(new AMP::LinearAlgebra::Variable(name) );
         return inpVar;
     }
 
@@ -128,9 +115,10 @@ namespace Operator {
     }
 
     void VolumeIntegralOperator::preElementOperation(
-            const AMP::Mesh::MeshManager::Adapter::Element & elem,
-            const std::vector<AMP::Mesh::DOFMap::shared_ptr> & dof_maps )
+            const AMP::Mesh::MeshElement & elem )
     {
+    AMP_ERROR("Not converted yet");
+    /*
         // unsigned int num_local_Dofs = 0;
         dof_maps[0]->getDOFs (elem, d_inpDofIndices);
         // num_local_Dofs = d_inpDofIndices.size();
@@ -187,7 +175,7 @@ namespace Operator {
         d_srcNonlinElem->initializeForCurrentElement(elemPtr,d_sourcePhysicsModel);
 
         d_srcNonlinElem->setElementVectors(elementInputVectors, elementAuxVectors, d_elementOutputVector);
-
+    */
     }
 
     void VolumeIntegralOperator::postElementOperation() 
@@ -200,6 +188,8 @@ namespace Operator {
 
     void VolumeIntegralOperator :: init(const boost::shared_ptr<VolumeIntegralOperatorParameters>& params) 
     {
+    AMP_ERROR("Not converted yet");
+    /*
         (void) params;
         AMP::Mesh::MeshManager::Adapter::ElementIterator  el = d_MeshAdapter->beginElement();
         AMP::Mesh::MeshManager::Adapter::ElementIterator  end_el = d_MeshAdapter->endElement();
@@ -212,11 +202,13 @@ namespace Operator {
             d_srcNonlinElem->initializeForCurrentElement( elemPtr, d_sourcePhysicsModel);
 
         }//end for el
-
+    */
     }
 
     void VolumeIntegralOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
     {
+    AMP_ERROR("Not converted yet");
+    /*
         AMP::Mesh::DOFMap::shared_ptr dof_maps;
 
     //    dof_maps = d_MeshAdapter->getDOFMap( d_inpVariables );
@@ -230,7 +222,7 @@ namespace Operator {
         AMP_INSIST( ((myParams.get()) != NULL), "Null parameter!" );
 
         d_outVec.reset();
-
+    */
     }
 
     boost::shared_ptr<OperatorParameters> VolumeIntegralOperator::getJacobianParameters(
@@ -249,6 +241,8 @@ namespace Operator {
      boost::shared_ptr<AMP::LinearAlgebra::Matrix> VolumeIntegralOperator::getLinearizedVolumeIntegralOperator(
             const boost::shared_ptr<OperatorParameters>& params)            
     {    
+    AMP_ERROR("Not converted yet");
+    /*    
         boost::shared_ptr<VolumeIntegralOperatorParameters> inParams = boost::dynamic_pointer_cast<VolumeIntegralOperatorParameters>(params);
         const boost::shared_ptr<AMP::LinearAlgebra::Vector> u = inParams->d_pVector;
 
@@ -266,9 +260,11 @@ namespace Operator {
         this->apply(d_pNullVector,u,d_pDiagonalVector,1.0,0.0);
          d_pDiagonalMatrix->setDiagonal(d_pDiagonalVector);
 
-        return d_pDiagonalMatrix;        
+        return d_pDiagonalMatrix;  
+    */      
     }
-*/
+
+
 }
 }//end namespace
 
