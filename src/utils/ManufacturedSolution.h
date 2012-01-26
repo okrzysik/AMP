@@ -55,6 +55,7 @@ public:
 
 	void setTricubicParams(const std::valarray<double> &cin, const std::valarray<double> &ain){d_c=cin; d_a=ain;}
 
+	std::string get_name(){return d_Name;}
 private:
 	/**
 	 *	\brief unit cube, quadratic, all Neumann BC's.
@@ -150,13 +151,15 @@ private:
 	double d_MinZ, d_MaxZ, d_ScaleZ;
 	double d_MinR, d_MaxR, d_ScaleR;
 	double d_MinTh, d_MaxTh, d_ScaleTh;
-	double d_MaximumTheta;
-	double d_Pi;
 
 	std::valarray<std::valarray<double> > d_h;
 	std::valarray<std::valarray<double> > d_hs; // symmetrized h
 
+	double d_Pi;
+	double d_MaximumTheta;
 	bool d_CylindricalCoords;
+
+	std::string d_Name;
 };
 
 }

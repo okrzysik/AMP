@@ -45,8 +45,8 @@ NonlinearDiffusionOp{
 
 DiffusionTransportModel{
         name = "DiffusionCylindricalTransportModel"
-        Material = "RadialPolynomial"
-        Property = "FickCoefficient"
+        Material = "CylindricallySymmetric"
+        Property = "ScalarRadialFick"
  		RadiusArgument = "radius"
         Parameters = 1., 1., 1. 
 } 
