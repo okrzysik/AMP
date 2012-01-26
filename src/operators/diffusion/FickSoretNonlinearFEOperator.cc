@@ -1,14 +1,11 @@
-
 #include "utils/Utilities.h"
 #include "FickSoretNonlinearFEOperatorParameters.h"
 #include "FickSoretNonlinearFEOperator.h"
 #include "DiffusionNonlinearFEOperatorParameters.h"
 
-#if 0
-//This file has not been converted!
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
     FickSoretNonlinearFEOperator::FickSoretNonlinearFEOperator(const boost::shared_ptr<OperatorParameters> & params)
     {
@@ -112,9 +109,8 @@ namespace AMP {
       d_FickOperator->apply(f, u, r, a, b);
     }
 
-  }
-}
 
-#endif
+}
+}
 
 

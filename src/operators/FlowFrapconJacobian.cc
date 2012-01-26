@@ -13,32 +13,23 @@
 
 namespace AMP {
 namespace Operator {
-/*
+
+
   FlowFrapconJacobian::FlowFrapconJacobian(const boost::shared_ptr<FlowFrapconJacobianParameters> & params)
     : Operator (params)
   {
         std::string inpVar = params->d_db->getString("InputVariable");
-	d_inpVariable.reset(new AMP::Mesh::NodalScalarVariable(inpVar,d_MeshAdapter));
+	d_inpVariable.reset(new AMP::LinearAlgebra::Variable(inpVar));
 
         std::string outVar = params->d_db->getString("OutputVariable");
-	d_outVariable.reset(new AMP::Mesh::NodalScalarVariable(outVar,d_MeshAdapter));
+	d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar));
 
         d_SimpleVariable.reset(new AMP::LinearAlgebra::Variable("FlowInternal"));
 
         reset(params);
   }
 
-      void FlowFrapconJacobian::setInputVariableName(const std::string & name, int varId) 
-      {
-        (void) varId;      
-        d_inpVariable->setName(name);
-      } 
 
-      void FlowFrapconJacobian::setOutputVariableName(const std::string & name, int varId)
-      {
-        (void) varId;      
-        d_outVariable->setName(name);
-      }
 
       AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::createInputVariable (const std::string & name, int varId)
       {
@@ -52,7 +43,7 @@ namespace Operator {
         return d_outVariable->cloneVariable(name);
       }
 
-      AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::getInputVariable(int varId = -1) {
+      AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::getInputVariable() {
         return d_inpVariable;
       }
 
@@ -106,6 +97,8 @@ namespace Operator {
   void FlowFrapconJacobian :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
       AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a, const double b)
   {
+    AMP_ERROR("Not converted yet");
+    /*
     // AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_inpVariable);
 
     AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
@@ -181,9 +174,10 @@ namespace Operator {
         outputVec->axpby(b, a, fInternal);
       }
     }
-
+    */
   }
-*/
+
+
 }
 }
 
