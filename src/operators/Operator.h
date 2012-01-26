@@ -96,6 +96,10 @@ namespace AMP {
           return emptyPointer;
         }
 
+        virtual AMP::LinearAlgebra::Variable::shared_ptr getPrimaryVariable() {
+          return getOutputVariable();
+        }
+
         virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
           //Implemented in derived classes
           AMP::LinearAlgebra::Variable::shared_ptr emptyPointer;
