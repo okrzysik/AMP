@@ -1,16 +1,12 @@
 
 #include "ConstructLinearMechanicsRHSVector.h"
+#include "cell_hex8.h"
 
-   //This file has not been converted!
-  /*
-void computeTemperatureRhsVector( AMP::Mesh::MeshManager::Adapter::shared_ptr mesh,
-    boost::shared_ptr<AMP::Database> input_db,  
-    AMP::LinearAlgebra::Variable::shared_ptr temperatureVar, 
-    AMP::LinearAlgebra::Variable::shared_ptr displacementVar,
+void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh, boost::shared_ptr<AMP::Database> input_db,  
+    AMP::LinearAlgebra::Variable::shared_ptr temperatureVar, AMP::LinearAlgebra::Variable::shared_ptr displacementVar,
     const boost::shared_ptr<AMP::LinearAlgebra::Vector> &currTemperatureVec,
     const boost::shared_ptr<AMP::LinearAlgebra::Vector> &prevTemperatureVec,
-    boost::shared_ptr<AMP::LinearAlgebra::Vector> &rhsVec) 
-{
+    boost::shared_ptr<AMP::LinearAlgebra::Vector> &rhsVec) {
   currTemperatureVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
   prevTemperatureVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
@@ -20,10 +16,9 @@ void computeTemperatureRhsVector( AMP::Mesh::MeshManager::Adapter::shared_ptr me
   boost::shared_ptr<AMP::Database> elementRhsDatabase = input_db->getDatabase("RhsElements");
   boost::shared_ptr<AMP::Database> materialModelDatabase = input_db->getDatabase("RhsMaterialModel");
 
-  boost::shared_ptr < ::FEType > d_feType;
-  boost::shared_ptr < ::FEBase > d_fe;
-  boost::shared_ptr < ::QBase > d_qrule;
-  ::Elem *d_elem;
+  boost::shared_ptr < ::FEType > feType;
+  boost::shared_ptr < ::FEBase > fe;
+  boost::shared_ptr < ::QBase > qrule;
 
   std::string feTypeOrderName = elementRhsDatabase->getStringWithDefault("FE_ORDER", "FIRST");
   libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>(feTypeOrderName);
@@ -36,39 +31,36 @@ void computeTemperatureRhsVector( AMP::Mesh::MeshManager::Adapter::shared_ptr me
 
   const unsigned int dimension = 3;
 
-  d_feType.reset( new ::FEType(feTypeOrder, feFamily) );
-  d_fe.reset( (::FEBase::build(dimension, (*d_feType))).release() );
+  feType.reset( new ::FEType(feTypeOrder, feFamily) );
+  fe.reset( (::FEBase::build(dimension, (*feType))).release() );
 
   std::string qruleOrderName = elementRhsDatabase->getStringWithDefault("QRULE_ORDER", "DEFAULT");
   libMeshEnums::Order qruleOrder;
   if(qruleOrderName == "DEFAULT") {
-    qruleOrder = d_feType->default_quadrature_order();
+    qruleOrder = feType->default_quadrature_order();
   } else {
     qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(qruleOrderName);
   }
 
-  d_qrule.reset( (::QBase::build(qruleType, dimension, qruleOrder)).release() );
-  d_fe->attach_quadrature_rule( d_qrule.get() );
+  qrule.reset( (::QBase::build(qruleType, dimension, qruleOrder)).release() );
+  fe->attach_quadrature_rule( qrule.get() );
 
-  int d_iDebugPrintInfoLevel = elementRhsDatabase->getIntegerWithDefault("print_info_level",0);
+  const std::vector<Real> & JxW = (fe->get_JxW());
+  const std::vector<std::vector<RealGradient> > & dphi = (fe->get_dphi());
+  const std::vector<std::vector<Real> > & phi = (fe->get_phi());
 
-  const std::vector<Real> & JxW = (d_fe->get_JxW());
-  const std::vector<std::vector<RealGradient> > & dphi = (d_fe->get_dphi());
-  const std::vector<std::vector<Real> > & phi = (d_fe->get_phi());
-
-  boost::shared_ptr<AMP::Materials::Material> d_material;
+  boost::shared_ptr<AMP::Materials::Material> material;
   double youngsModulus = 1.0e10, poissonsRatio = 0.33, thermalExpansionCoefficient = 2.0e-6;
-  //double default_TEMPERATURE, default_BURNUP, default_OXYGEN_CONCENTRATION;
   double default_BURNUP, default_OXYGEN_CONCENTRATION;
 
-  bool d_useMaterialsLibrary = materialModelDatabase->getBoolWithDefault("USE_MATERIALS_LIBRARY",false);
-  if(d_useMaterialsLibrary == true) {
+  bool useMaterialsLibrary = materialModelDatabase->getBoolWithDefault("USE_MATERIALS_LIBRARY",false);
+  if(useMaterialsLibrary == true) {
     AMP_INSIST( (materialModelDatabase->keyExists("Material")), "Key ''Material'' is missing!" );
     std::string matname = materialModelDatabase->getString("Material");
-    d_material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(matname);
+    material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(matname);
   }
 
-  if(d_useMaterialsLibrary == false) {
+  if(useMaterialsLibrary == false) {
     AMP_INSIST( materialModelDatabase->keyExists("THERMAL_EXPANSION_COEFFICIENT"), "Missing key: THERMAL_EXPANSION_COEFFICIENT" );
     AMP_INSIST( materialModelDatabase->keyExists("Youngs_Modulus"), "Missing key: Youngs_Modulus" );
     AMP_INSIST( materialModelDatabase->keyExists("Poissons_Ratio"), "Missing key: Poissons_Ratio" );
@@ -78,69 +70,53 @@ void computeTemperatureRhsVector( AMP::Mesh::MeshManager::Adapter::shared_ptr me
     poissonsRatio = materialModelDatabase->getDouble("Poissons_Ratio");
   }
 
-  //default_TEMPERATURE = materialModelDatabase->getDoubleWithDefault("Default_Temperature",310.0);
   default_BURNUP = materialModelDatabase->getDoubleWithDefault("Default_Burnup",0.0);
   default_OXYGEN_CONCENTRATION = materialModelDatabase->getDoubleWithDefault("Default_Oxygen_Concentration",0.0);
 
-  AMP::Mesh::DOFMap::shared_ptr dof_map_0;
-  dof_map_0 = mesh->getDOFMap( displacementVar );
+  AMP::Discretization::DOFManager::shared_ptr dof_map_0 = rInternal->getDOFManager();
+  AMP::Discretization::DOFManager::shared_ptr dof_map_1 = currTemperatureVec->getDOFManager();
 
-  AMP::Mesh::DOFMap::shared_ptr dof_map_1;
-  dof_map_1 = mesh->getDOFMap( temperatureVar );
-
-  AMP::Mesh::MeshManager::Adapter::ElementIterator  el = mesh->beginElement();
-  AMP::Mesh::MeshManager::Adapter::ElementIterator  end_el = mesh->endElement();
+  AMP::Mesh::MeshIterator el = mesh->getIterator(AMP::Mesh::Volume, 0);
+  AMP::Mesh::MeshIterator end_el = el.end();
 
   for( ; el != end_el; ++el) {
-    AMP::Mesh::MeshManager::Adapter::Element elem = *el;
+    std::vector<AMP::Mesh::MeshElement> currNodes = el->getElements(AMP::Mesh::Vertex);
+    size_t numNodesInCurrElem = currNodes.size();
 
-    unsigned int num_local_type0Dofs = 0;
-    std::vector<unsigned int> d_type0DofIndices[3];
+    std::vector<std::vector<size_t> > type0DofIndices(currNodes.size());
+    std::vector<std::vector<size_t> > type1DofIndices(currNodes.size());
+    for(size_t j = 0; j < currNodes.size(); ++j) {
+      dof_map_0->getDOFs(currNodes[j].globalID(), type0DofIndices[j]);
+      dof_map_1->getDOFs(currNodes[j].globalID(), type1DofIndices[j]);
+    }//end j
 
-    for(unsigned int i = 0; i < 3; i++) {
-      dof_map_0->getDOFs(elem, d_type0DofIndices[i], i);
-      num_local_type0Dofs += d_type0DofIndices[i].size();
-    }
+    std::vector<double> elementForceVector((3*numNodesInCurrElem), 0.0);
+    std::vector<double> currElementTemperatureVector(numNodesInCurrElem);
+    std::vector<double> prevElementTemperatureVector(numNodesInCurrElem);
 
-    std::vector<double> elementForceVector;
-    elementForceVector.resize(num_local_type0Dofs);
-    for(unsigned int i = 0; i < num_local_type0Dofs; i++)
-      elementForceVector[i] = 0.0;
+    for(size_t r = 0; r < numNodesInCurrElem; ++r) {
+      currElementTemperatureVector[r] = currTemperatureVec->getValueByGlobalID( type1DofIndices[r][0] );
+      prevElementTemperatureVector[r] = prevTemperatureVec->getValueByGlobalID( type1DofIndices[r][0] );
+    }//end r
 
-    unsigned int num_local_type1Dofs = 0;
-    std::vector<unsigned int> d_type1DofIndices;
+    ::Elem *elem = new ::Hex8;
+    for(size_t j = 0; j < currNodes.size(); ++j) {
+      std::vector<double> pt = currNodes[j].coord();
+      elem->set_node(j) = new ::Node(pt[0], pt[1], pt[2]);
+    }//end j
 
-    dof_map_1->getDOFs(elem, d_type1DofIndices);
-    num_local_type1Dofs = d_type1DofIndices.size();
+    fe->reinit(elem);
 
-    std::vector<double> currElementTemperatureVector;
-    currElementTemperatureVector.resize(num_local_type1Dofs);
-
-    std::vector<double> prevElementTemperatureVector;
-    prevElementTemperatureVector.resize(num_local_type1Dofs);
-
-    unsigned int d_numNodesForCurrentElement = elem.numNodes();
-    for(unsigned int r = 0; r < d_numNodesForCurrentElement; r++) {
-      currElementTemperatureVector[r] = currTemperatureVec->getValueByGlobalID( d_type1DofIndices[r] );
-      prevElementTemperatureVector[r] = prevTemperatureVec->getValueByGlobalID( d_type1DofIndices[r] );
-    }
-
-    d_elem = &(elem.getElem());
-
-    d_fe->reinit(d_elem);
-
-    const unsigned int num_nodes = d_elem->n_nodes();
-
-    for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) {
+    for(unsigned int qp = 0; qp < qrule->n_points(); ++qp) {
       double Bl_np1[6][24];
 
-      for(int i = 0; i < 6; i++) {
-        for(unsigned int j = 0; j < (3 * num_nodes); j++) {
+      for(int i = 0; i < 6; ++i) {
+        for(size_t j = 0; j < (3*numNodesInCurrElem); ++j) {
           Bl_np1[i][j] = 0.0;
-        }
-      }
+        }//end j
+      }//end i
 
-      for(unsigned int i = 0; i < num_nodes; i++) {
+      for(size_t i = 0; i < numNodesInCurrElem; ++i) {
         Bl_np1[0][(3 * i) + 0] = dphi[i][qp](0);
         Bl_np1[1][(3 * i) + 1] = dphi[i][qp](1);
         Bl_np1[2][(3 * i) + 2] = dphi[i][qp](2);
@@ -150,15 +126,16 @@ void computeTemperatureRhsVector( AMP::Mesh::MeshManager::Adapter::shared_ptr me
         Bl_np1[4][(3 * i) + 2] = dphi[i][qp](0);
         Bl_np1[5][(3 * i) + 0] = dphi[i][qp](1);
         Bl_np1[5][(3 * i) + 1] = dphi[i][qp](0);
-      }
+      }//end i
 
-      double currTemperatureAtGaussPoint = 0.0, prevTemperatureAtGaussPoint = 0.0;
-      for(unsigned int k = 0; k < num_nodes; k++) {
+      double currTemperatureAtGaussPoint = 0.0;
+      double prevTemperatureAtGaussPoint = 0.0;
+      for(unsigned int k = 0; k < numNodesInCurrElem; k++) {
         currTemperatureAtGaussPoint += (currElementTemperatureVector[k] * phi[k][qp]);
         prevTemperatureAtGaussPoint += (prevElementTemperatureVector[k] * phi[k][qp]);
-      }
+      }//end k
 
-      if(d_useMaterialsLibrary == true) {
+      if(useMaterialsLibrary == true) {
         std::map<std::string, boost::shared_ptr<std::vector<double> > > inputMaterialParameters;
 
         std::string temperatureString = "temperature"; // in the future get from input file
@@ -185,9 +162,9 @@ void computeTemperatureRhsVector( AMP::Mesh::MeshManager::Adapter::shared_ptr me
         std::string prString = "PoissonRatio";
         std::string tecString = "ThermalExpansion";
 
-        d_material->property(ymString)->evalv(YM, inputMaterialParameters);
-        d_material->property(prString)->evalv(PR, inputMaterialParameters);
-        d_material->property(tecString)->evalv(TEC, inputMaterialParameters);
+        material->property(ymString)->evalv(YM, inputMaterialParameters);
+        material->property(prString)->evalv(PR, inputMaterialParameters);
+        material->property(tecString)->evalv(TEC, inputMaterialParameters);
 
         youngsModulus = YM[0];
         poissonsRatio = PR[0];
@@ -229,14 +206,7 @@ void computeTemperatureRhsVector( AMP::Mesh::MeshManager::Adapter::shared_ptr me
         }
       }
 
-      if(d_iDebugPrintInfoLevel > 11) {
-        for(unsigned int i = 0; i < 6; i++) {
-          std::cout<<"d_thermalStrain["<<i<<"] = "<<d_thermalStrain[i]<<std::endl;
-          std::cout<<"d_thermalStress["<<i<<"] = "<<d_thermalStress[i]<<std::endl;
-        }
-      }
-
-      for(unsigned int j = 0; j < num_nodes; j++) {
+      for(unsigned int j = 0; j < numNodesInCurrElem; j++) {
         for(unsigned int d = 0; d < 3; d++) {
 
           double tmp = 0;
@@ -245,29 +215,28 @@ void computeTemperatureRhsVector( AMP::Mesh::MeshManager::Adapter::shared_ptr me
           }
 
           elementForceVector[(3*j) + d] += (JxW[qp] * tmp);
-          if(d_iDebugPrintInfoLevel > 8) {
-            AMP::pout<<"Force vector component: "<<elementForceVector[(3*j) + d]<<std::endl;
-          }
-        } // end of d
-      } //end of j
-    } // end of qp
+        }//end d
+      }//end j
+    }//end qp
 
-    for(unsigned int r = 0; r < num_nodes; r++) {
+    for(unsigned int r = 0; r < numNodesInCurrElem; r++) {
       for(unsigned int d = 0; d < 3; d++) {
-        if(d_iDebugPrintInfoLevel > 11) {
-          std::cout<<"d_type0DofIndices["<<d<<"]["<<r<<"] = "<<d_type0DofIndices[d][r]<<" elementForceVector["<<(3*r)+d<<"] = "<<elementForceVector[(3*r)+d]<<std::endl;
-        }
-        rInternal->addValueByGlobalID( d_type0DofIndices[d][r], elementForceVector[(3*r) + d] );
-      }
-    }
+        rInternal->addValueByGlobalID( type0DofIndices[r][d], elementForceVector[(3*r) + d] );
+      }//end d
+    }//end r
 
-  } // end of el
+    for(size_t j = 0; j < elem->n_nodes(); ++j) {
+      delete (elem->get_node(j));
+      elem->set_node(j) = NULL;
+    }//end j
+    delete elem;
+    elem = NULL;
+  }//end el
 
   rInternal->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
 
 }
 
-*/
 
 
 
