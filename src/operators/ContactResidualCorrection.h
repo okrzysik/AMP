@@ -73,14 +73,6 @@ namespace AMP {
           return d_slaveVariable;
         }
 
-        AMP::Mesh::Mesh::shared_ptr getMasterMesh() {
-          return d_Mesh;
-        }
-
-        AMP::Mesh::Mesh::shared_ptr getSlaveMesh() {
-          return d_slaveMesh;
-        }
-
         std::vector<AMP::Mesh::MeshElementID> getMasterNodes() {
           return d_masterNodes;
         }
