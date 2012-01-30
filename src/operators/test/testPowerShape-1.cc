@@ -2,18 +2,19 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "ampmesh/MeshManager.h"
 #include "boost/shared_ptr.hpp"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
 #include "utils/PIO.h"
 #include "utils/Database.h"
-#include "ampmesh/MeshAdapter.h"
+#include "ampmesh/Mesh.h"
 #include "vectors/Variable.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include "ampmesh/SiloIO.h"
 #include "vectors/Vector.h"
+#include "vectors/VectorBuilder.h"
 
 #include "../PowerShape.h"
 
@@ -34,9 +35,10 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
 //--------------------------------------------------
 //   Create the Mesh.
 //--------------------------------------------------
-    AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-    AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
-    AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "fuel" );
+    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 
 //--------------------------------------------------
 //  Construct PowerShape.
@@ -44,15 +46,22 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
     AMP_INSIST(input_db->keyExists("MyPowerShape"), "Key ''MyPowerShape'' is missing!");
     boost::shared_ptr<AMP::Database>  shape_db = input_db->getDatabase("MyPowerShape");
     boost::shared_ptr<AMP::Operator::PowerShapeParameters> shape_params(new AMP::Operator::PowerShapeParameters( shape_db ));
-    shape_params->d_MeshAdapter = meshAdapter;
+    shape_params->d_Mesh = meshAdapter;
     boost::shared_ptr<AMP::Operator::PowerShape> shape(new AMP::Operator::PowerShape( shape_params ));
 
     // Create a shared pointer to a Variable - Power - Output because it will be used in the "residual" location of apply. 
-    AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerShapeVar(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable, 8>("SpecificPowerInWattsPerKg", meshAdapter));
-    
+    AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerShapeVar(new AMP::LinearAlgebra::Variable("SpecificPowerInWattsPerKg"));
+   
+    int DOFsPerNode = 8;
+    int ghostWidth = 0;
+    bool split = true;
+    AMP::Discretization::DOFManager::shared_ptr dof_map = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerNode, split);
+    AMP::LinearAlgebra::Vector::shared_ptr SpecificPowerShapeVec = AMP::LinearAlgebra::createVector( dof_map, SpecificPowerShapeVar, split );
+
+
+ 
     // Create a vector associated with the Variable.
-    AMP::LinearAlgebra::Vector::shared_ptr  SpecificPowerShapeVec     = meshAdapter->createVector( SpecificPowerShapeVar );
-    AMP::LinearAlgebra::Vector::shared_ptr  SpecificPowerMagnitudeVec = SpecificPowerShapeVec->cloneVector( SpecificPowerShapeVar );
+    AMP::LinearAlgebra::Vector::shared_ptr  SpecificPowerMagnitudeVec = SpecificPowerShapeVec->cloneVector();
     SpecificPowerMagnitudeVec->setToScalar(4157.);
     
     // Set the initial value for all nodes of SpecificPowerVec to zero.
@@ -64,13 +73,13 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
         ut->failure("error");
     } 
     
-    meshAdapter->registerVectorAsData ( SpecificPowerShapeVec );
+    //meshAdapter->registerVectorAsData ( SpecificPowerShapeVec );
 
     ut->passes("PowerShape gets past apply with a non-flat power shape.");
     
     #ifdef USE_SILO
     
-    manager->writeFile<AMP::Mesh::SiloIO> ( input_file, 0 );
+    //meshAdapter->writeFile<AMP::Mesh::SiloIO> ( input_file, 0 );
     
     ut->passes("Silo of shape vector written");
     
@@ -79,15 +88,13 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
     AMP::pout << "SpecificPowerShapeVec->max()" << " : " <<  SpecificPowerShapeVec->min() << " : " <<  SpecificPowerShapeVec->max() <<  std::endl; 
     // Check that the data is non-negative
     bool itpasses = 1;
-    AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = meshAdapter->beginElement();
-    AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = meshAdapter->endElement();
+    AMP::Mesh::MeshIterator  elem      = meshAdapter->getIterator(AMP::Mesh::Volume, ghostWidth);
+    AMP::Mesh::MeshIterator  end_elems = elem.end();
 
     for( ; elem != end_elems; ++elem) {
-        for( unsigned int i = 0; i < 8; i++ ) {
-            AMP::Mesh::DOFMap::shared_ptr  dof_map = meshAdapter->getDOFMap ( SpecificPowerShapeVar );
-            std::vector<unsigned int> ndx;
-            std::vector<unsigned int> empty;
-            dof_map->getDOFs ( *elem , ndx , empty );
+        for( unsigned int i = 0; i < DOFsPerNode; i++ ) {
+            std::vector<size_t> ndx;
+            dof_map->getDOFs ( elem->globalID() , ndx);
             int  offset = ndx[i];
             if( SpecificPowerShapeVec->getValueByGlobalID ( offset ) < 0.0 ) {
                 if (!itpasses)

@@ -17,6 +17,7 @@
 #include "PowerShape.h"
 #include "PowerShapeParameters.h"
 #include "vectors/Vector.h"
+#include "cell_hex8.h"
 
 
 #include "utils/InputDatabase.h"
@@ -29,9 +30,6 @@
 
 #include <vector>
 #include <cmath>
-
-#if 0
-//This file has not been converted!
 
 namespace AMP {
   namespace Operator {
@@ -166,10 +164,9 @@ namespace AMP {
 
         }else if(d_type == "gaussian") {
 
-          AMP::Mesh::min_max_struct<AMP::Mesh::simple_point>  min_max_pos;
-          min_max_pos = AMP::Mesh::computeExtremeCoordinates<AMP::Mesh::MeshManager::Adapter> ( d_MeshAdapter );
-          double centerx = 0.5*( min_max_pos.min.x + min_max_pos.max.x );
-          double centery = 0.5*( min_max_pos.min.y + min_max_pos.max.y );
+          std::vector<double> min_max_pos = d_Mesh->getBoundingBox();
+          double centerx = 0.5*( min_max_pos[0] + min_max_pos[1] );
+          double centery = 0.5*( min_max_pos[2] + min_max_pos[3] );
 
           // Read mu and sigma for gaussian distribution.
           d_muX    = db->getDoubleWithDefault("muX",centerx);  
@@ -898,12 +895,15 @@ namespace AMP {
 
          double x, y, radius;
 
-         AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_Mesh->beginElement();
-         AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_Mesh->endElement();
+         int ghostWidth = 0;
+         AMP::Mesh::MeshIterator  elem      = d_Mesh->getIterator(AMP::Mesh::Volume, ghostWidth);
+         AMP::Mesh::MeshIterator  end_elems = elem.end();
 
          for( ; elem != end_elems; ++elem) {
-         d_fe->reinit( &(elem->getElem()) );
-         double elemVolume = elem->getElem().volume();
+           d_currNodes = elem->getElements(AMP::Mesh::Vertex);
+           createCurrentLibMeshElement();
+           d_fe->reinit( d_currElemPtr );
+           double elemVolume = elem->volume();
 
          double elemSum = 0;
       // Loop over all gauss-points on the element.
@@ -922,6 +922,23 @@ namespace AMP {
       integralFr = integralFr/numerator;
 
       return integralFr;
+    }
+
+    void PowerShape :: createCurrentLibMeshElement() {
+      d_currElemPtr = new ::Hex8;
+      for(unsigned int j = 0; j < d_currNodes.size(); j++) {
+        std::vector<double> pt = d_currNodes[j].coord();
+        d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2]);
+      }//end for j
+    }
+
+    void PowerShape :: destroyCurrentLibMeshElement() {
+      for(unsigned int j = 0; j < d_currElemPtr->n_nodes(); j++) {
+        delete (d_currElemPtr->get_node(j));
+        d_currElemPtr->set_node(j) = NULL;
+      }//end for j
+      delete d_currElemPtr;
+      d_currElemPtr = NULL;
     }
 
     /*!
@@ -1131,8 +1148,6 @@ namespace AMP {
 
   }
 } // end namespace AMP
-
-#endif
 
 //---------------------------------------------------------------------------//
 //                 end of PowerShape.cc
