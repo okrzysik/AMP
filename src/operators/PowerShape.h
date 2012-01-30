@@ -200,6 +200,14 @@ class PowerShape : public  Operator {
       boost::shared_ptr < ::QBase >  d_qrule;
 
       AMP::Mesh::Mesh::shared_ptr d_Mesh;
+        void createCurrentLibMeshElement();
+
+        void destroyCurrentLibMeshElement();
+
+        std::vector<AMP::Mesh::MeshElement> d_currNodes;
+
+        ::Elem* d_currElemPtr;
+
     private:
 
   };
