@@ -135,7 +135,9 @@ int main ( int argc , char **argv )
     AMP::UnitTest ut;
 
     #ifdef USE_SILO
-        test_Silo( &ut, "input_SiloIO" );
+        std::string filename = "input_SiloIO";
+        if(argc == 2) filename = argv[1];
+        test_Silo( &ut, filename );
     #else
         ut->expected_failure("AMP was not configured with silo");
     #endif
