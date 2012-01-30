@@ -1,0 +1,78 @@
+// Database for all the meshes
+Mesh{
+    // This is the main multimesh that will contain all meshes
+    MeshName = "MainMesh"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
+    
+    // Heatsink mesh
+    Mesh_1 {
+        MeshName = "heatsink"
+        MeshType = "libMesh"
+        Generator = "cube"
+        dim = 3
+        size = 5, 20, 20
+        xmin = -10, -25, -25
+        xmax = 0, 25, 25
+    }
+
+    // Laser crystal mesh
+    Mesh_2 {
+        MeshName = "laser_crystal"
+        MeshType = "libMesh"
+        Generator = "cube"
+        dim = 3
+        size = 10, 20, 20
+        xmin = 0, -13.5, -13.5
+        xmax = 5, 13.5, 13.5
+    }
+
+    // Absorbing crystal meshes
+    Mesh_3 {
+        MeshName = "absorbing_crystal"
+        MeshType = "Multimesh"
+        MeshDatabasePrefix = "Mesh_"
+        MeshArrayDatabasePrefix = "MeshArray_"
+        Mesh_1 {
+            MeshName = "absorbing_crystal_1"
+            MeshType = "libMesh"
+            Generator = "cube"
+            dim = 3
+            size = 5, 3, 8
+            xmin = 0, -18.5, -13.5
+            xmax = 5, -13.5,  13.5
+        }
+        Mesh_2 {
+            MeshName = "absorbing_crystal_2"
+            MeshType = "libMesh"
+            Generator = "cube"
+            dim = 3
+            size = 5, 3, 8
+            xmin = 0, 13.5, -13.5
+            xmax = 5, 18.5,  13.5
+        }
+        Mesh_3 {
+            MeshName = "absorbing_crystal_3"
+            MeshType = "libMesh"
+            Generator = "cube"
+            dim = 3
+            size = 5, 8, 3
+            xmin = 0, -18.5, -18.5
+            xmax = 5,  18.5, -13.5
+        }
+        Mesh_4 {
+            MeshName = "absorbing_crystal_4"
+            MeshType = "libMesh"
+            Generator = "cube"
+            dim = 3
+            size = 5, 8, 3
+            xmin = 0, -18.5, 13.5
+            xmax = 5,  18.5, 18.5
+        }
+    }
+
+
+}
+
+

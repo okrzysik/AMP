@@ -66,7 +66,13 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
                 AMP_INSIST(d_db->keyExists("size"),"Variable 'size' must be set in the database");
                 std::vector<int> size = d_db->getIntegerArray("size");
                 AMP_INSIST(size.size()==(size_t)PhysicalDim,"Variable 'size' must by an integer array of size dim");
-                MeshTools::Generation::build_cube( *d_libMesh, size[0], size[1], size[2], -1., 1, -1, 1, -1, 1, HEX8 );
+                AMP_INSIST(d_db->keyExists("xmin"),"Variable 'xmin' must be set in the database");
+                std::vector<double> xmin = d_db->getDoubleArray("xmin");
+                AMP_INSIST(size.size()==(size_t)PhysicalDim,"Variable 'xmin' must by an integer array of size dim");
+                AMP_INSIST(d_db->keyExists("xmax"),"Variable 'xmax' must be set in the database");
+                std::vector<double> xmax = d_db->getDoubleArray("xmax");
+                AMP_INSIST(size.size()==(size_t)PhysicalDim,"Variable 'xmax' must by an integer array of size dim");
+                MeshTools::Generation::build_cube( *d_libMesh, size[0], size[1], size[2], xmin[0], xmax[0], xmin[1], xmax[1], xmin[2], xmax[2], HEX8 );
             } else {
                 AMP_ERROR(std::string("Unknown libmesh generator: ")+generator);
             }
@@ -442,8 +448,30 @@ size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
     boost::shared_ptr<AMP::Database> database = params->getDatabase();
     AMP_ASSERT(database.get()!=NULL);
-    AMP_INSIST(database->keyExists("NumberOfElements"),"Key NumberOfElements must exist in database to estimate the mesh size");
-    return (size_t) database->getInteger("NumberOfElements");
+    size_t NumberOfElements;
+    if ( database->keyExists("NumberOfElements") ) {
+        // User specified the number of elements, this should override everything
+        NumberOfElements = (size_t) database->getInteger("NumberOfElements");
+    } else if ( database->keyExists("FileName") ) {
+        // Read an existing mesh
+        AMP_ERROR("Key NumberOfElements must exist in database to estimate the mesh size");
+    } else if ( database->keyExists("Generator") ) {
+        // Generate a new mesh
+        std::string generator = database->getString("Generator");
+        if ( generator.compare("cube")==0 ) {
+            // Generate a cube mesh
+            AMP_INSIST(database->keyExists("size"),"Variable 'size' must be set in the database");
+            std::vector<int> size = database->getIntegerArray("size");
+            NumberOfElements = 1;
+            for (size_t i=0; i<size.size(); i++)
+                NumberOfElements*= size[i];
+        } else {
+            AMP_ERROR(std::string("Unknown libmesh generator: ")+generator);
+        }
+    } else {
+        AMP_ERROR("Unable to construct mesh with given parameters");
+    }
+    return NumberOfElements;
 }
 
 

@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     double t2 = AMP::AMP_MPI::time();
     std::sort(data2.begin(),data2.end());
     double t3 = AMP::AMP_MPI::time();
-    std::sort(&data3[0],&data3[0]+data.size());
+    std::sort(&data3[0],&data3[0]+data3.size());
     double t4 = AMP::AMP_MPI::time();
     std::cout << "quicksort = " << t2-t1 << ", std::sort = " << t3-t2 << ", std::sort(2) = " << t4-t3 << std::endl;
 
