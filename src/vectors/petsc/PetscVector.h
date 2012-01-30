@@ -197,21 +197,8 @@ namespace LinearAlgebra {
       static const Vector::shared_ptr  constView ( const Vector::shared_ptr AmpVector );
 
 
-      /**
-        * \brief  DEPRECATED  use PetscVector::view
-        * \param  AmpVector  a shared pointer to a Vector
-        * \deprecated  createView is a misleading name.  This is now an alias for PetscVector::view 
-        */
-      static  Vector::shared_ptr  createView ( Vector::shared_ptr AmpVector ) ;
-
       virtual void  dataChanged ();
 
-      /**
-        * \brief  DEPRECATED  use PetscVector::constView
-        * \param  AmpVector  a shared pointer to a Vector
-        * \deprecated  createConstView is a misleading name.  This is now an alias for PetscVector::constView 
-        */
-      static  const Vector::shared_ptr  createConstView ( Vector::shared_ptr AmpVector );
   };
 
 }

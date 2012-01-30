@@ -34,20 +34,6 @@ namespace LinearAlgebra {
   }
 
   inline
-  Vector::shared_ptr  PetscVector::createView ( Vector::shared_ptr AmpVector ) 
-  { 
-    DEPRECATED("createView","view");
-    return view ( AmpVector ); 
-  }
-
-  inline
-  const Vector::shared_ptr  PetscVector::createConstView ( Vector::shared_ptr AmpVector ) 
-  { 
-    DEPRECATED("createConstView","constView");
-    return constView ( AmpVector ); 
-  }
-
-  inline
   PetscVector::~PetscVector()
   {
     if ( d_PetscRandom )
