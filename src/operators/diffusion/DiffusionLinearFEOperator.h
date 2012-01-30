@@ -36,7 +36,7 @@ public:
 
         void postElementOperation();
 
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
+        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
 
         AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 

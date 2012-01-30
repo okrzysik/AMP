@@ -6,9 +6,6 @@
 namespace AMP {
   namespace Operator {
 
-#if 0
-    //This file has not been converted!
-
     void DirichletMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>& params)
     {
       boost::shared_ptr<DirichletMatrixCorrectionParameters> myParams = 
@@ -23,35 +20,44 @@ namespace AMP {
       AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = myParams->d_inputMatrix;
       AMP_INSIST( ((inputMatrix.get()) != NULL), "NULL matrix" );
 
-      unsigned int numIds = d_boundaryIds.size();
+      AMP::LinearAlgebra::Vector::shared_ptr inVec = inputMatrix->getRightVector();
+      AMP::Discretization::DOFManager::shared_ptr dof_map = inVec->getDOFManager();
 
-      for(unsigned int k = 0; k < numIds; k++) {
+      for(size_t k = 0; k < d_boundaryIds.size(); ++k) {
         AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryIds[k], 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
         for( ; bnd != end_bnd; ++bnd) {
-          AMP::Mesh::MeshManager::Adapter::NodeElementIterator el =  d_MeshAdapter->beginElementForNode ( *bnd );
-          AMP::Mesh::MeshManager::Adapter::NodeElementIterator end_el = d_MeshAdapter->endElementForNode ( *bnd );
+          std::vector<size_t> bndDofIds;
+          dof_map->getDOFs(bnd->globalID(), bndDofIds);
 
-          std::vector<unsigned int> bndGlobalIds;
-          dof_map->getDOFs(*bnd, bndGlobalIds, d_dofIds[k]);
+          //Get neighbors does not include the calling node (bnd) itself.
+          //Get neighbors also returns remote neighbors  
+          //The calling node (bnd) must be owned locally.
+          std::vector< AMP::Mesh::MeshElement::shared_ptr > neighbors = bnd->getNeighbors();
 
-          for( ; el != end_el; ++el) {
-            std::vector<unsigned int> dofIndices;
-            dof_map->getDOFs(*el, dofIndices);
+          for(size_t n = 0; n < neighbors.size(); ++n) {
+            std::vector<size_t> nhDofIds;
+            dof_map->getDOFs(neighbors[n]->globalID(), nhDofIds);
 
-            for(unsigned int j = 0; j < bndGlobalIds.size(); j++) {
-              for(unsigned int i = 0; i < dofIndices.size(); i++) {
-                if(bndGlobalIds[j] == dofIndices[i]) {
+            for(unsigned int j = 0; j < d_dofIds[k].size(); ++j) {
+              for(unsigned int i = 0; i < nhDofIds.size(); ++i) {
+                inputMatrix->setValueByGlobalID ( bndDofIds[d_dofIds[k][j]], nhDofIds[i], 0.0 );
+                if(d_symmetricCorrection) {
+                  inputMatrix->setValueByGlobalID ( nhDofIds[i], bndDofIds[d_dofIds[k][j]], 0.0 );
+                }
+              }//end for i
+              for(unsigned int i = 0; i < bndDofIds.size(); ++i) {
+                if(d_dofIds[k][j] == i) {
                   if(d_zeroDirichletBlock) {
-                    inputMatrix->setValueByGlobalID ( bndGlobalIds[j], bndGlobalIds[j], 0.0 );
+                    inputMatrix->setValueByGlobalID ( bndDofIds[i], bndDofIds[i], 0.0 );
                   } else {
-                    inputMatrix->setValueByGlobalID ( bndGlobalIds[j], bndGlobalIds[j], 1.0 );
+                    inputMatrix->setValueByGlobalID ( bndDofIds[i], bndDofIds[i], 1.0 );
                   }
                 } else {
-                  inputMatrix->setValueByGlobalID ( bndGlobalIds[j], dofIndices[i] , 0.0 );
+                  inputMatrix->setValueByGlobalID ( bndDofIds[d_dofIds[k][j]], bndDofIds[i], 0.0 );
                   if(d_symmetricCorrection) {
-                    inputMatrix->setValueByGlobalID ( dofIndices[i], bndGlobalIds[j] , 0.0 );
+                    inputMatrix->setValueByGlobalID ( bndDofIds[i], bndDofIds[d_dofIds[k][j]], 0.0 );
                   }
                 }
               }//end for i
@@ -87,7 +93,7 @@ namespace AMP {
         d_dofIds.resize(numIds);
 
         char key[100];
-        for(int j = 0; j < numIds; j++) {
+        for(int j = 0; j < numIds; ++j) {
           sprintf(key, "id_%d", j);
           AMP_INSIST( (params->d_db)->keyExists(key), "Key is missing!" );
           d_boundaryIds[j] = (params->d_db)->getInteger(key);
@@ -97,7 +103,7 @@ namespace AMP {
           int numDofIds = (params->d_db)->getInteger(key);
 
           d_dofIds[j].resize(numDofIds);
-          for(int i = 0; i < numDofIds; i++) {
+          for(int i = 0; i < numDofIds; ++i) {
             sprintf(key, "dof_%d_%d", j, i);
             AMP_INSIST( (params->d_db)->keyExists(key), "Key is missing!" );
             d_dofIds[j][i] = (params->d_db)->getInteger(key);
@@ -106,11 +112,11 @@ namespace AMP {
 
         if(!d_skipRHSsetCorrection) {
           d_dirichletValues.resize(numIds);
-          for(int j = 0; j < numIds; j++) {
+          for(int j = 0; j < numIds; ++j) {
             int numDofIds = d_dofIds[j].size();
             d_dirichletValues[j].resize(numDofIds);
 
-            for(int i = 0; i < numDofIds; i++) {
+            for(int i = 0; i < numDofIds; ++i) {
               sprintf(key, "value_%d_%d", j, i);
               d_dirichletValues[j][i] = (params->d_db)->getDoubleWithDefault(key, 0.0);
             }//end for i
@@ -160,8 +166,11 @@ namespace AMP {
         }
 
         if(!d_skipRHSaddCorrection) {
+          AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = params->d_inputMatrix;
+          AMP_INSIST( ((inputMatrix.get()) != NULL), "NULL matrix" );
+
           if(d_dispVals.get() == NULL) {
-            d_dispVals = d_MeshAdapter->createVector(d_variable);
+            d_dispVals = inputMatrix->getRightVector();
           }
 
           d_dispVals->zero();
@@ -173,9 +182,6 @@ namespace AMP {
             d_rhsCorrectionAdd = d_dispVals->cloneVector();
           }
 
-          AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = params->d_inputMatrix;
-          AMP_INSIST( ((inputMatrix.get()) != NULL), "NULL matrix" );
-
           inputMatrix->mult(d_dispVals, d_rhsCorrectionAdd);
 
           d_rhsCorrectionAdd->scale(-1.0);
@@ -183,7 +189,6 @@ namespace AMP {
       }
     }
 
-#endif
 
   }
 }
