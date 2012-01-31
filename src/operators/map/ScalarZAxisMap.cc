@@ -5,8 +5,6 @@
 namespace AMP {
 namespace Operator {
 
-#if 0
-  //This file has not been converted!
 
 /************************************************************************
 *  Default constructor                                                  *
@@ -50,7 +48,7 @@ std::multimap<double,double>  ScalarZAxisMap::buildMap( const AMP::LinearAlgebra
     AMP::Mesh::MeshIterator end = iterator.end();
     std::vector<size_t> ids;
     while ( cur != end ) {
-        dof->getDOFs( *cur, ids );
+        dof->getDOFs( cur->globalID(), ids );
         AMP_ASSERT(ids.size()==1);
         double val = vec->getValueByGlobalID ( ids[0] );
         std::vector<double> x = cur->coord();
@@ -86,7 +84,7 @@ void ScalarZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr 
         // Check the endpoints
         std::vector<double> x = cur->coord();
         double pos = x[2];
-        dof->getDOFs( *cur, ids );
+        dof->getDOFs( cur->globalID(), ids );
         AMP_ASSERT(ids.size()==1);
         if ( fabs(pos-z0) <= TOL ) {
             // We are within TOL of the first point
@@ -121,7 +119,6 @@ void ScalarZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr 
     }
 }
 
-#endif
 
 } // Operator namespace
 } // AMP namespace
