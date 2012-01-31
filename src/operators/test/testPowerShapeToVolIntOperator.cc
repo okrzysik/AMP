@@ -59,17 +59,19 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Operator::PowerShape> shape(new AMP::Operator::PowerShape( shape_params ));
 
     // Create a DOF manager for a gauss point vector 
-    int DOFsPerNode = 8;
+    int DOFsPerElement = 8;
+    int DOFsPerNode = 1;
     int ghostWidth = 0;
     bool split = true;
-    AMP::Discretization::DOFManager::shared_ptr dof_map = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerNode, split);
+    AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerElement, split);
+    AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, ghostWidth, DOFsPerNode,    split);
 
     // Create a shared pointer to a Variable - Power - Output because it will be used in the "residual" location of apply. 
     AMP::LinearAlgebra::Variable::shared_ptr shapeVar(new AMP::LinearAlgebra::Variable( interfaceVarName ));
   
     // Create input and output vectors associated with the Variable.
-    AMP::LinearAlgebra::Vector::shared_ptr  shapeInpVec = AMP::LinearAlgebra::createVector( dof_map, shapeVar, split );
-    AMP::LinearAlgebra::Vector::shared_ptr  shapeoutVec = shapeInpVec->cloneVector( );
+    AMP::LinearAlgebra::Vector::shared_ptr  shapeInpVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, shapeVar, split );
+    AMP::LinearAlgebra::Vector::shared_ptr  shapeOutVec = shapeInpVec->cloneVector( );
     
     shapeInpVec->setToScalar(1.);
     
@@ -88,9 +90,9 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
 																							input_db,
 																							transportModel));
 
-  AMP::LinearAlgebra::Variable::shared_ptr outputVariable = volumeOp->getOutputVariable();
+  AMP::LinearAlgebra::Variable::shared_ptr outputVariable(new AMP::LinearAlgebra::Variable( "heatsource" ));
 
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( outputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( nodalDofMap, outputVariable, split );
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
   
     try   { shape->apply(nullVec, shapeInpVec, shapeOutVec, 1., 0.); }

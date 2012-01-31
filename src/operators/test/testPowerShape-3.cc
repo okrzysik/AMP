@@ -81,15 +81,13 @@ void test_with_shape(AMP::UnitTest *ut )
 
     // Check that the data is non-negative
     bool itpasses = 1;
-    AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = meshAdapter->beginElement();
-    AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = meshAdapter->endElement();
+    AMP::Mesh::MeshIterator  elem      = meshAdapter->getIterator(AMP::Mesh::Volume, ghostWidth);
+    AMP::Mesh::MeshIterator  end_elems = elem.end();
 
     for( ; elem != end_elems; ++elem) {
-        for( unsigned int i = 0; i < 8; i++ ) {
-            AMP::Mesh::DOFMap::shared_ptr  dof_map = meshAdapter->getDOFMap ( SpecificPowerShapeVar );
-            std::vector<unsigned int> ndx;
-            std::vector<unsigned int> empty;
-            dof_map->getDOFs ( *elem , ndx , empty );
+        for( unsigned int i = 0; i < DOFsPerNode; i++ ) {
+            std::vector<size_t> ndx;
+            dof_map->getDOFs ( elem->globalID() , ndx);
             int  offset = ndx[i];
             if( SpecificPowerShapeVec->getValueByGlobalID ( offset ) < 0.0 ) {
                 if (!itpasses)
