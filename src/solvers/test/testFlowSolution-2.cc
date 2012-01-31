@@ -1,66 +1,33 @@
+#include <string>
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include <string>
-
+#include "ampmesh/Mesh.h"
 #include "boost/shared_ptr.hpp"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
 #include "utils/PIO.h"
 #include "utils/Database.h"
-
 #include "vectors/Variable.h"
-#include "vectors/SimpleVector.h"
 #include "vectors/Vector.h"
-#include "MultiVector.h"
-
-#include "ampmesh/Mesh.h"
-#include "ampmesh/SiloIO.h"
-
-#include "operators/PowerShape.h"
-
-#include "operators/MassLinearElement.h"
-#include "operators/diffusion/DiffusionLinearFEOperator.h"
-#include "operators/diffusion/DiffusionNonlinearFEOperator.h"
-#include "operators/MassLinearFEOperator.h"
-#include "operators/diffusion/DiffusionLinearElement.h"
-#include "operators/diffusion/DiffusionTransportModel.h"
+#include "vectors/MultiVector.h"
+#include "vectors/VectorBuilder.h"
 #include "operators/FlowFrapconOperator.h"
-#include "operators/CoupledFlowFrapconOperator.h"
 #include "operators/FlowFrapconJacobian.h"
 #include "operators/ElementPhysicsModelFactory.h"
 #include "operators/ElementOperationFactory.h"
-
-#include "operators/boundary/ColumnBoundaryOperator.h"
-#include "operators/boundary/DirichletMatrixCorrection.h"
-#include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/boundary/RobinMatrixCorrection.h"
-#include "operators/boundary/RobinVectorCorrection.h"
-#include "operators/boundary/NeumannVectorCorrection.h"
-#include "operators/boundary/NeumannVectorCorrectionParameters.h"
-
-#include "operators/map/MapSurface.h"
-#include "operators/map/MapOperatorParameters.h"
-#include "operators/LinearBVPOperator.h"
-#include "operators/NonlinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
-
-#include "operators/VolumeIntegralOperator.h"
 #include "operators/NeutronicsRhs.h"
-#include "operators/CoupledOperator.h"
-#include "operators/CoupledOperatorParameters.h"
-#include "operators/CoupledFlowFrapconOperatorParameters.h"
-
-#include "solvers/TrilinosMLSolver.h"
+#include "operators/map/Map3Dto1D.h"
+#include "operators/map/Map1Dto3D.h"
 #include "solvers/ColumnSolver.h"
 #include "solvers/PetscKrylovSolverParameters.h"
 #include "solvers/PetscKrylovSolver.h"
 #include "solvers/PetscSNESSolverParameters.h"
 #include "solvers/PetscSNESSolver.h"
+#include "solvers/TrilinosMLSolver.h"
 #include "solvers/Flow1DSolver.h"
-#include "solvers/CoupledFlow1DSolver.h"
-#include "solvers/CoupledFlow1DSolverParameters.h"
 
 
 
@@ -94,7 +61,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       AMP_INSIST(input_db->keyExists("PowerNeutronicsOperator"), "Key ''PowerNeutronicsOperator'' is missing!");
       boost::shared_ptr<AMP::Database>  neutronicsOp_db = input_db->getDatabase("PowerNeutronicsOperator");
       boost::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
-      neutronicsParams->d_MeshAdapter = meshAdapter1;
+      neutronicsParams->d_Mesh = meshAdapter1;
 
 
       //--------------------------------------------------
