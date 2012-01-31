@@ -292,9 +292,6 @@ COPY_MESH_FILE ( cube64.with.boundary.labels.e )
 ADD_AMP_TEST_1_2_4 ( testNeutronicsRhs-2 )
 COPY_TEST_DATA_FILE ( input_testNeutronicsRhs-db )
 
-ADD_AMP_TEST_1_2_4( testMultiVector )
-COPY_TEST_DATA_FILE ( input_testMultiVector )
-
 ADD_AMP_PROVISIONAL_TEST ( testJacobianMap )
 COPY_MESH_FILE ( distortedElementMesh )
 
