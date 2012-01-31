@@ -14,8 +14,6 @@
 
 #include <string>
 
-#if 0
-//This file has not been converted!
 
 namespace AMP {
   namespace Operator {
@@ -55,6 +53,8 @@ namespace AMP {
 
     std::vector<std::vector<std::vector<Point > > > PressureBoundaryVectorCorrection :: getNormals()
     {
+      AMP_ERROR("Not converted yet");
+      /*
       if(!d_isConstantPressure){
         d_variablePressure->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
       }
@@ -128,11 +128,14 @@ namespace AMP {
       }//end for j
 
       return allBoundaryIdsNormals;
+      */
     }
 
 
     void PressureBoundaryVectorCorrection :: computeRHScorrection()
     {
+      AMP_ERROR("Not converted yet");
+      /*
       if(!d_isConstantPressure){
         d_variablePressure->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
       }
@@ -255,6 +258,7 @@ namespace AMP {
 
       d_rhsCorrectionAdd = rInternal->cloneVector();
       d_rhsCorrectionAdd->copyVector(rInternal);
+      */
     }
 
     void PressureBoundaryVectorCorrection :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a , const double b )
@@ -310,7 +314,5 @@ namespace AMP {
 
   }
 }
-
-#endif
 
 

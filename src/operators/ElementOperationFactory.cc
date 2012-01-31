@@ -14,8 +14,6 @@
 #include "operators/mechanics/MechanicsElement.h"
 #include "operators/diffusion/DiffusionElement.h"
 
-#if 0
-//This file has not been converted!
 
 namespace AMP {
   namespace Operator {
@@ -78,8 +76,5 @@ namespace AMP {
   }
 
 }
-
-#endif
-
 
 

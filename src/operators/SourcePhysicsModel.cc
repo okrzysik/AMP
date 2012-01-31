@@ -1,16 +1,15 @@
 
 #include <cstring>
 
-#include "SourcePhysicsModel.h"
-#include "ElementPhysicsModel.h"
-#include "materials/Material.h"
-#include "ElementPhysicsModelParameters.h"
-#include "MassDensityModel.h"
 #include "boost/shared_ptr.hpp"
-
-#include "ManufacturedSourceModel1.h"
-#include "ManufacturedSourceModel2.h"
-
+#include "materials/Material.h"
+#include "operators/SourcePhysicsModel.h"
+#include "operators/ElementPhysicsModel.h"
+#include "operators/ElementPhysicsModelParameters.h"
+#include "operators/MassDensityModel.h"
+#include "operators/ManufacturedSourceModel1.h"
+#include "operators/ManufacturedSourceModel2.h"
+#include "operators/diffusion/DiffusionTransportModel.h"
 
 /* Libmesh files */
 #include "fe_type.h"
@@ -18,11 +17,9 @@
 #include "elem.h"
 #include "quadrature_gauss.h"
 
-#if 0
-//This file has not been converted!
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
 
     SourcePhysicsModel::SourcePhysicsModel (const boost::shared_ptr<SourcePhysicsModelParameters>& params )
@@ -180,8 +177,7 @@ namespace AMP {
     }
 
 
-  }
+}
 }
 
-#endif
 

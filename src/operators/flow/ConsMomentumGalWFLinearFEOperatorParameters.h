@@ -2,7 +2,7 @@
 #ifndef included_AMP_ConsMomentumGalWFLinearFEOperatorParameters
 #define included_AMP_ConsMomentumGalWFLinearFEOperatorParameters
 
-#include "FEOperatorParameters.h"
+#include "LinearFEOperatorParameters.h"
 #include "FlowTransportModel.h"
 
 #include <vector>
@@ -10,11 +10,11 @@
 namespace AMP {
 namespace Operator {
 
-  class ConsMomentumGalWFLinearFEOperatorParameters : public FEOperatorParameters {
+  class ConsMomentumGalWFLinearFEOperatorParameters : public LinearFEOperatorParameters {
     public :
 
       ConsMomentumGalWFLinearFEOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
-        : FEOperatorParameters(db) {  }
+        : LinearFEOperatorParameters(db) {  }
 
       virtual ~ConsMomentumGalWFLinearFEOperatorParameters() { }
 

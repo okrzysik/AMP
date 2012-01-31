@@ -1,9 +1,5 @@
-
 #include "ConsMomentumGalWFLinearFEOperator.h"
 #include "utils/Utilities.h"
-
-#if 0
-//This file has not been converted!
 
 namespace AMP {
   namespace Operator {
@@ -21,10 +17,10 @@ namespace AMP {
         d_transportModel = params->d_transportModel ;
 
         std::string inpVarName = params->d_db->getString("InputVariable");
-        d_inpVariable.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(inpVarName, d_MeshAdapter) );
+        d_inpVariable.reset(new AMP::LinearAlgebra::Variable(inpVarName) );
 
         std::string outVarName = params->d_db->getString("OutputVariable");
-        d_outVariable.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(outVarName, d_MeshAdapter) );
+        d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVarName) );
 
         d_inVec.resize(NavierStokes::TOTAL_NUMBER_OF_VARIABLES);
         bool isAttachedToNonlinearOperator = params->d_db->getBoolWithDefault("isAttachedToNonlinearOperator", false);
@@ -34,7 +30,8 @@ namespace AMP {
           if(isNonlinearOperatorInitialized) {
             reset(params);
           } else {
-            d_matrix = d_MeshAdapter->createMatrix ( d_inpVariable, d_outVariable );
+            AMP_ERROR("Not Converted yet");
+            //d_matrix = d_MeshAdapter->createMatrix ( d_inpVariable, d_outVariable );
           }
         } else {
           reset(params);
@@ -93,7 +90,9 @@ namespace AMP {
       d_matrix->makeConsistent ();
     }
 
-    void ConsMomentumGalWFLinearFEOperator :: preElementOperation( const AMP::Mesh::MeshManager::Adapter::Element & elem ) {
+    void ConsMomentumGalWFLinearFEOperator :: preElementOperation( const AMP::Mesh::MeshElement & elem ) {
+      AMP_ERROR("Not converted yet");
+      /*
       unsigned int num_local_dofs = 0;
       for(unsigned int i = 0; i < 3; i++) {
         (dof_maps[0])->getDOFs (elem, d_dofIndices[i], i);
@@ -125,6 +124,7 @@ namespace AMP {
       d_flowGalWFLinElem->initializeForCurrentElement( elemPtr, d_transportModel );
       d_flowGalWFLinElem->setElementVectors( elementInputVectors );
       d_flowGalWFLinElem->setElementStiffnessMatrix( d_elementStiffnessMatrix );
+      */
     }
 
     void ConsMomentumGalWFLinearFEOperator :: postElementOperation() {
@@ -148,6 +148,5 @@ namespace AMP {
 }//end namespace
 
 
-#endif
 
 

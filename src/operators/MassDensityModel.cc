@@ -5,12 +5,10 @@
  *      Author: gad
  */
 
-#include "MassDensityModel.h"
+#include "operators/MassDensityModel.h"
+#include "operators/diffusion/DiffusionTransportModel.h"
 #include "materials/TensorProperty.h"
 
-
-#if 0
-//This file has not been converted!
 
 namespace AMP {
 namespace Operator {
@@ -300,8 +298,5 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
 
 }
 }
-
-
-#endif
 
 

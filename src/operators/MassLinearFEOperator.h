@@ -66,9 +66,9 @@ namespace AMP {
 
         boost::shared_ptr<MassDensityModel> d_densityModel;
 
-        //boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_inpVariable;
+        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
 
-        //boost::shared_ptr<AMP::Mesh::NodalScalarVariable> d_outVariable;
+        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
       private :
 

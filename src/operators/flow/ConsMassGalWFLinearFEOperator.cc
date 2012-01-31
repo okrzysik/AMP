@@ -130,24 +130,23 @@ AMP_ERROR("Not converted yet"); /*
       d_flowGalWFLinElem->initializeForCurrentElement( elemPtr, d_transportModel );
       d_flowGalWFLinElem->setElementVectors( elementInputVectors );
       d_flowGalWFLinElem->setElementStiffnessMatrix( d_elementStiffnessMatrix );
-    }
+  */
+}
 
-    void ConsMassGalWFLinearFEOperator :: postElementOperation() {
 
-      unsigned int num_local_u_dofs = d_dofIndices0[0].size();
-      unsigned int num_local_p_dofs = d_dofIndices1.size();
+void ConsMassGalWFLinearFEOperator :: postElementOperation() {
 
-      for(unsigned int r = 0; r < num_local_u_dofs; r++) {
+    unsigned int num_local_u_dofs = d_dofIndices0[0].size();
+    unsigned int num_local_p_dofs = d_dofIndices1.size();
+
+    for(unsigned int r = 0; r < num_local_u_dofs; r++) {
         for(unsigned int dr = 0; dr < 3; dr++) {
-          for(unsigned int c = 0; c < num_local_p_dofs; c++) {
-            d_matrix->addValueByGlobalID( d_dofIndices0[dr][r], d_dofIndices1[c], 
-                d_elementStiffnessMatrix[(3*r) + dr][c] );
-          }
+            for(unsigned int c = 0; c < num_local_p_dofs; c++) {
+                d_matrix->addValueByGlobalID( d_dofIndices0[dr][r], d_dofIndices1[c], 
+                    d_elementStiffnessMatrix[(3*r) + dr][c] );
+            }
         }
-      }
-
-*/
-
+    }
 }
 
 

@@ -1,10 +1,7 @@
-
 #include "PelletContactConductanceModel.h"
 #include "utils/Utilities.h"
 #include <cmath>
 
-#if 0
-//This file has not been converted!
 
 namespace AMP {
   namespace Operator {
@@ -81,8 +78,5 @@ namespace AMP {
 
   }
 }
-
-#endif
-
 
 
