@@ -2,19 +2,20 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 #include <string>
-#include "ampmesh/MeshManager.h"
 #include "boost/shared_ptr.hpp"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
 #include "utils/PIO.h"
 #include "utils/Database.h"
-#include "ampmesh/MeshAdapter.h"
 #include "vectors/Variable.h"
 
 #include "ampmesh/SiloIO.h"
 #include "vectors/Vector.h"
 
+#include "ampmesh/Mesh.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 
 #include "../PowerShape.h"
 
@@ -36,9 +37,10 @@ void test_with_shape(AMP::UnitTest *ut )
 //--------------------------------------------------
 //   Create the Mesh.
 //--------------------------------------------------
-    AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-    AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
-    AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "fuel" );
+    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 
 //--------------------------------------------------
 //  Construct PowerShape.
@@ -46,15 +48,21 @@ void test_with_shape(AMP::UnitTest *ut )
     AMP_INSIST(input_db->keyExists("MyPowerShape"), "Key ''MyPowerShape'' is missing!");
     boost::shared_ptr<AMP::Database>  shape_db = input_db->getDatabase("MyPowerShape");
     boost::shared_ptr<AMP::Operator::PowerShapeParameters> shape_params(new AMP::Operator::PowerShapeParameters( shape_db ));
-    shape_params->d_MeshAdapter = meshAdapter;
+    shape_params->d_Mesh = meshAdapter;
     boost::shared_ptr<AMP::Operator::PowerShape> shape(new AMP::Operator::PowerShape( shape_params ));
 
+    // Create a DOF manager for a gauss point vector 
+    int DOFsPerNode = 8;
+    int ghostWidth = 0;
+    bool split = true;
+    AMP::Discretization::DOFManager::shared_ptr dof_map = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerNode, split);
+
     // Create a shared pointer to a Variable - Power - Output because it will be used in the "residual" location of apply. 
-    AMP::Operator::PowerShape::SP_HexGaussPointVariable SpecificPowerShapeVar = shape->createOutputVariable("SpecificPowerShape");
-    
+    AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerShapeVar(new AMP::LinearAlgebra::Variable("SpecificPowerInWattsPerKg"));
+  
     // Create a vector associated with the Variable.
-    AMP::LinearAlgebra::Vector::shared_ptr  SpecificPowerShapeVec     = meshAdapter->createVector( SpecificPowerShapeVar );
-    AMP::LinearAlgebra::Vector::shared_ptr  SpecificPowerMagnitudeVec = SpecificPowerShapeVec->cloneVector( SpecificPowerShapeVar );
+    AMP::LinearAlgebra::Vector::shared_ptr SpecificPowerShapeVec = AMP::LinearAlgebra::createVector( dof_map, SpecificPowerShapeVar, split );
+    AMP::LinearAlgebra::Vector::shared_ptr  SpecificPowerMagnitudeVec = SpecificPowerShapeVec->cloneVector( );
     SpecificPowerMagnitudeVec->setToScalar(0.1);
     
     // Set the initial value for all nodes of SpecificPowerVec to zero.

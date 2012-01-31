@@ -49,18 +49,17 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
     shape_params->d_Mesh = meshAdapter;
     boost::shared_ptr<AMP::Operator::PowerShape> shape(new AMP::Operator::PowerShape( shape_params ));
 
-    // Create a shared pointer to a Variable - Power - Output because it will be used in the "residual" location of apply. 
-    AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerShapeVar(new AMP::LinearAlgebra::Variable("SpecificPowerInWattsPerKg"));
-   
+    // Create a DOF manager for a gauss point vector 
     int DOFsPerNode = 8;
     int ghostWidth = 0;
     bool split = true;
     AMP::Discretization::DOFManager::shared_ptr dof_map = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerNode, split);
-    AMP::LinearAlgebra::Vector::shared_ptr SpecificPowerShapeVec = AMP::LinearAlgebra::createVector( dof_map, SpecificPowerShapeVar, split );
 
-
- 
+    // Create a shared pointer to a Variable - Power - Output because it will be used in the "residual" location of apply. 
+    AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerShapeVar(new AMP::LinearAlgebra::Variable("SpecificPowerInWattsPerKg"));
+  
     // Create a vector associated with the Variable.
+    AMP::LinearAlgebra::Vector::shared_ptr SpecificPowerShapeVec = AMP::LinearAlgebra::createVector( dof_map, SpecificPowerShapeVar, split );
     AMP::LinearAlgebra::Vector::shared_ptr  SpecificPowerMagnitudeVec = SpecificPowerShapeVec->cloneVector();
     SpecificPowerMagnitudeVec->setToScalar(4157.);
     

@@ -1,7 +1,8 @@
-NumberOfMeshes = 1  // Only read the first mesh.  The second mesh is the one we want, but it doesn't work
-Mesh_1{
-  Filename = "brick.e"
+Mesh{
+  MeshType = "libMesh"
+  FileName = "brick.e"
   MeshName = "fuel"
+  dim      = 3
   x_offset = 0.0
   y_offset = 0.0
   z_offset = 0.0
