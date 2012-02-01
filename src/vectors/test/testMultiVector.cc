@@ -40,7 +40,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     // Create the meshes from the input database
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh(params);
 
-    //Construct Variables
+    // Construct Variables
     boost::shared_ptr<AMP::LinearAlgebra::Variable> Variable1 (new AMP::LinearAlgebra::Variable("Var1"));
     boost::shared_ptr<AMP::LinearAlgebra::Variable> Variable2 (new AMP::LinearAlgebra::Variable("Var2"));
     boost::shared_ptr<AMP::LinearAlgebra::Variable> Variable3 (new AMP::LinearAlgebra::Variable("Var3"));

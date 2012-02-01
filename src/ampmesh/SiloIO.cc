@@ -317,6 +317,7 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID,siloMultiMeshData> &d
         meshdata[i] = siloMultiMeshData::unpack(ptr);
         ptr = &ptr[meshdata[i].size()];
     }
+    delete [] recv_buf;
     // Combine the results
     data = std::map<AMP::Mesh::MeshID,siloMultiMeshData>();
     while ( meshdata.size() > 0 ) {
@@ -445,6 +446,7 @@ void SiloIO::writeSummary( std::string filename )
             DBoptlist *optList = DBMakeOptlist(10);
             DBAddOption( optList, DBOPT_MRGTREE_NAME, (char*)tree_name.c_str() );
             DBPutMultimesh( FileHandle, data.name.c_str(), meshNames.size(), meshnames, meshtypes, NULL );
+            DBFreeOptlist( optList );
             delete [] meshnames;
             delete [] meshtypes;
         }
