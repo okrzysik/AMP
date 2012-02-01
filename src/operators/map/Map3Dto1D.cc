@@ -5,9 +5,9 @@
 #include "discretization/DOF_Manager.h"
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-#if 0
+
     //This file has not been converted!
 
     Map3Dto1D :: Map3Dto1D(const boost::shared_ptr<OperatorParameters>& params): 
@@ -134,8 +134,8 @@ namespace AMP {
             if( cur_node >= z[0] && cur_node <= z[pickId]) {
               std::vector<size_t> dof1;
               std::vector<size_t> dof2;
-              dof_map->getDOFs( nodes[originalNodeOrder[0]], dof1 );
-              dof_map->getDOFs( nodes[originalNodeOrder[pickId]], dof2 );
+              dof_map->getDOFs( nodes[originalNodeOrder[0]].globalID(), dof1 );
+              dof_map->getDOFs( nodes[originalNodeOrder[pickId]].globalID(), dof2 );
               AMP_ASSERT(dof1.size()==1&&dof2.size()==1);
 
               mapValues[i]  += ((inputVec)->getValueByGlobalID(dof1[0]) * (z[pickId]-cur_node) + (inputVec)->getValueByGlobalID(dof2[0])* (cur_node-z[0]))/(z[pickId]-z[0]);  
@@ -166,8 +166,7 @@ namespace AMP {
 
     }
 
-#endif
 
-  }
+}
 }
 
