@@ -30,10 +30,10 @@ void testMeshGenerators( AMP::UnitTest *ut )
     generator->build_mesh();
     MeshTestLoop( ut, generator->getMesh() );
     MeshVectorTestLoop( ut, generator->getMesh() );
-    // // Test the ThreeElementLGenerator generator
-    // generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::ThreeElementLGenerator );
-    // generator->build_mesh();
-    // MeshTestLoop( ut, generator->getMesh() );
+    // Test the ThreeElementLGenerator generator
+    generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::libMeshThreeElementGenerator );
+    generator->build_mesh();
+    MeshTestLoop( ut, generator->getMesh() );
 
 }
 

@@ -224,7 +224,7 @@ void MeshBasicTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // test that we can get the mesh ID
     AMP::Mesh::MeshID meshID = mesh->meshID();
-    if ( meshID>0 && meshID<1000 ) 
+    if ( meshID>0 && meshID!=AMP::Mesh::MeshID() ) 
         ut->passes("got meshID");
     else
         ut->failure("got meshID");
@@ -314,8 +314,10 @@ void VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr m
             AMP::Mesh::MeshIterator iterator = mesh->getSurfaceIterator( type, gcw );
             size_t global_size = mesh->getComm().sumReduce(iterator.size());
             bool passes = global_size>0;
-            if ( boost::dynamic_pointer_cast<AMP::Mesh::SubsetMesh>(mesh).get()==NULL )
-                passes = passes && global_size<mesh->numGlobalElements(type);
+            if ( boost::dynamic_pointer_cast<AMP::Mesh::SubsetMesh>(mesh).get()==NULL ) {
+                if ( mesh->numGlobalElements(type) >= 100 )
+                    passes = passes && global_size<mesh->numGlobalElements(type);
+            }
             if ( passes )
                 utils->passes("Non-trivial surface iterator created");
             else

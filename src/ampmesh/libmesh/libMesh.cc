@@ -24,7 +24,7 @@
 #include "mesh_data.h"
 #include "mesh_generation.h"
 #include "boundary_info.h"
-
+#include "parallel.h"
 
 namespace AMP {
 namespace Mesh {
@@ -40,7 +40,7 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
     // Check for valid inputs
     AMP_INSIST(params.get(),"Params must not be null");
     AMP_INSIST(d_comm!=AMP_MPI(AMP_COMM_NULL),"Communicator must be set");
-    // Intialize libMesh (this needs to be moved out of AMPManager)
+    // Intialize libMesh 
     libmeshInit = boost::shared_ptr<initializeLibMesh>(new initializeLibMesh(d_comm));
     // Load the mesh
     if ( d_db.get() ) {
@@ -99,6 +99,21 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
     } else {
         AMP_ERROR("Error: params must contain a database object");
     }
+}
+libMesh::libMesh( boost::shared_ptr< ::Mesh> mesh, std::string name )
+{
+    // Set the base properties
+    d_libMesh = mesh;
+    d_libMeshData = boost::shared_ptr< ::MeshData>( new ::MeshData(*d_libMesh) );
+    this->d_comm = AMP_MPI( (MPI_Comm) ::Parallel::Communicator_World.get() );
+    AMP_ASSERT(d_comm!=AMP_MPI(AMP_COMM_NULL));
+    this->setMeshID();
+    this->d_name = name;
+    this->d_max_gcw = 1;
+    this->PhysicalDim = d_libMesh->mesh_dimension();
+    this->GeomDim = (GeomType) PhysicalDim;
+    // Initialize all of the internal data
+   initialize();
 }
 
 

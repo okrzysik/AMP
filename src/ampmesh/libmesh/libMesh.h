@@ -42,13 +42,24 @@ class libMesh: public Mesh
 public:
 
     /**
-     * \param params Parameters for constructing a mesh from an input database
      * \brief Read in mesh files, partition domain, and prepare environment for simulation
      * \details  For trivial parallelsim, this method reads in the meshes on each processor.  Each
      * processor contains a piece of each mesh.  For massive parallelism, each mesh is on its own
      * communicator.  As such, some math libraries must be initialized accordingly.
+     * \param params Parameters for constructing a mesh from an input database
      */
     libMesh ( const MeshParameters::shared_ptr &params );
+
+    /**
+     * \brief Contructor to create a libMesh object from a libMesh mesh.
+     * \details This constructor allows the user to construct a mesh directly in libmesh
+     * and use it to create the new mesh object.  This function is intended for advanced
+     * users only.  Note: the user is responsible for ensuring that libMesh is properly 
+     * initialized (using initializeLibMesh), and that the mesh is created properly.
+     * \param mesh The mesh in libmesh we want to use to construct the new mesh object
+     * \param name The name of the new mesh object
+     */
+    libMesh ( boost::shared_ptr< ::Mesh> mesh, std::string name );
 
     //! Deconstructor
      ~libMesh ();
