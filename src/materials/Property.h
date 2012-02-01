@@ -10,6 +10,7 @@
 #include <boost/shared_ptr.hpp>
 #include "utils/Utilities.h"
 #include "vectors/MultiVector.h"
+#include <map>
 
 namespace AMP
 {
@@ -247,6 +248,24 @@ public:
 	/// indicator for tensor evaluator
 	virtual bool isTensor(){return false;}
 
+	/// set auxiliary data
+	void setAuxiliaryData(const std::string key, const double val);
+
+	/// set auxiliary data
+	void setAuxiliaryData(const std::string key, const int val);
+
+	/// set auxiliary data
+	void setAuxiliaryData(const std::string key, const std::string val);
+
+	/// get auxiliary data
+	void getAuxiliaryData(const std::string key, double &val);
+
+	/// get auxiliary data
+	void getAuxiliaryData(const std::string key, int &val);
+
+	/// get auxiliary data
+	void getAuxiliaryData(const std::string key, std::string &val);
+
 protected:
 	std::string 						d_name; 			///< should be unique
 	std::string 						d_source; 			///< journal or report reference: from where did model come?
@@ -260,6 +279,10 @@ protected:
 	std::map<std::string, size_t> 		d_argToIndexMap; 	///< connects argument names to their indices
 	std::map<std::string, std::string> 	d_translator; 		///< standard names to multivector names
 	bool								d_variableNumberParameters; ///< can change number of parameters
+
+	std::map<std::string, double>      d_AuxiliaryDataDouble;
+	std::map<std::string, int>         d_AuxiliaryDataInteger;
+	std::map<std::string, std::string> d_AuxiliaryDataString;
 
 ///////////////////// Evaluators /////////////////////
 
