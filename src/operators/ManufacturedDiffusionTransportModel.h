@@ -6,19 +6,15 @@
 #include <vector>
 #include <string>
 
-#include "ampmesh/DOFMap.h"
-
-#include "ElementPhysicsModel.h"
-
 #include "boost/shared_ptr.hpp"
-
+#include "ampmesh/Mesh.h"
+#include "discretization/DOF_Manager.h"
 #include "materials/Material.h"
-
 #include "materials/Property.h"
-
-#include "DiffusionConstants.h"
-
 #include "operators/diffusion/DiffusionTransportModel.h"
+#include "operators/ElementPhysicsModel.h"
+#include "operators/diffusion/DiffusionConstants.h"
+
 
 namespace AMP {
 namespace Operator {

@@ -12,8 +12,6 @@
 
 #include <string>
 
-#if 0
-//This file has not been converted!
 
 namespace AMP {
   namespace Operator {
@@ -56,6 +54,8 @@ namespace AMP {
     void FlowFrapconOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
         AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a, const double b)
     {
+      AMP_ERROR("Not converted yet");
+      /*
       // AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_inpVariable);
 
       AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
@@ -142,6 +142,7 @@ namespace AMP {
           outputVec->axpby(b, a, fInternal);
         }
       }
+      */
     }
 
     boost::shared_ptr<OperatorParameters> FlowFrapconOperator :: 
@@ -167,6 +168,5 @@ namespace AMP {
   }
 }
 
-#endif
 
 

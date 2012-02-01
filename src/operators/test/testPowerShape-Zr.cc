@@ -3,19 +3,20 @@
 #include "utils/Utilities.h"
 #include <string>
 #include "utils/AMPManager.h"
-#include "ampmesh/MeshManager.h"
 #include "boost/shared_ptr.hpp"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
 #include "utils/PIO.h"
 #include "utils/Database.h"
-#include "ampmesh/MeshAdapter.h"
 #include "vectors/Variable.h"
 
 #include "ampmesh/SiloIO.h"
 #include "vectors/Vector.h"
 
+#include "ampmesh/Mesh.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 
 #include "../PowerShape.h"
 
@@ -28,19 +29,20 @@ void test_with_shape(AMP::UnitTest *ut )
 //--------------------------------------------------
 
     boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
-    input_db->putInteger("NumberOfMeshes",1);
-    boost::shared_ptr<AMP::Database> mesh_db = input_db->putDatabase("Mesh_1");
-    mesh_db->putString("Filename","cylinder270.e");
+    boost::shared_ptr<AMP::Database> mesh_db = input_db->putDatabase("Mesh");
+    mesh_db->putString("FileName","cylinder270.e");
+    mesh_db->putString("MeshType","libMesh");
     mesh_db->putString("MeshName","fuel");
+    mesh_db->putInteger("dim",3);
     mesh_db->putDouble("x_offset",0.);
     mesh_db->putDouble("y_offset",0.);
     mesh_db->putDouble("z_offset",0.);
 //--------------------------------------------------
 //   Create the Mesh.
 //--------------------------------------------------
-    AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-    AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
-    AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "fuel" );
+    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 
 //--------------------------------------------------
 //  Construct PowerShape for a radial only term.
@@ -50,10 +52,18 @@ void test_with_shape(AMP::UnitTest *ut )
     shape_db->putString("type","zernikeRadial");
     shape_db->putInteger("print_info_level",10);
     
+    // Create a DOF manager for a gauss point vector 
+    int DOFsPerNode = 8;
+    int ghostWidth = 0;
+    bool split = true;
+    AMP::Discretization::DOFManager::shared_ptr dof_map = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerNode, split);
+
     #ifdef USE_SILO
-      AMP::Operator::PowerShape::SP_HexGaussPointVariable shapeVar( new AMP::Operator::PowerShape::HexGaussPointVariable("PowerShape") );
-      AMP::LinearAlgebra::Vector::shared_ptr shapeVec = meshAdapter->createVector( shapeVar );
-      meshAdapter->registerVectorAsData ( shapeVec );
+      AMP::LinearAlgebra::Variable::shared_ptr shapeVar(new AMP::LinearAlgebra::Variable("PowerShape"));
+      AMP::LinearAlgebra::Vector::shared_ptr shapeVec = AMP::LinearAlgebra::createVector( dof_map, shapeVar, split );
+      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+      siloWriter->registerMesh( meshAdapter );
+      siloWriter->registerVector( shapeVec, meshAdapter, AMP::Mesh::Volume, "PowerShape" );
     #endif
       
     for ( int nMoments = 0; nMoments < 3; nMoments++ ) {
@@ -64,14 +74,15 @@ void test_with_shape(AMP::UnitTest *ut )
         shape_db->putDoubleArray("Moments", moments);
       } 
       boost::shared_ptr<AMP::Operator::PowerShapeParameters> shape_params(new AMP::Operator::PowerShapeParameters( shape_db ));
-      shape_params->d_MeshAdapter = meshAdapter;
+      shape_params->d_Mesh = meshAdapter;
       boost::shared_ptr<AMP::Operator::PowerShape> shape(new AMP::Operator::PowerShape( shape_params ));
-      AMP::Operator::PowerShape::SP_HexGaussPointVariable SpecificPowerShapeVar = 
-                                                         shape->createOutputVariable("SpecificPowerShape");
     
+      // Create a shared pointer to a Variable - Power - Output because it will be used in the "residual" location of apply. 
+      AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerShapeVar(new AMP::LinearAlgebra::Variable("SpecificPowerInWattsPerKg"));
+  
       // Create a vector associated with the Variable.
-      AMP::LinearAlgebra::Vector::shared_ptr  SpecificPowerShapeVec     = meshAdapter->createVector( SpecificPowerShapeVar );
-      AMP::LinearAlgebra::Vector::shared_ptr  SpecificPowerMagnitudeVec = SpecificPowerShapeVec->cloneVector( SpecificPowerShapeVar );
+      AMP::LinearAlgebra::Vector::shared_ptr SpecificPowerShapeVec = AMP::LinearAlgebra::createVector( dof_map, SpecificPowerShapeVar, split );
+      AMP::LinearAlgebra::Vector::shared_ptr  SpecificPowerMagnitudeVec = SpecificPowerShapeVec->cloneVector( );
       SpecificPowerMagnitudeVec->setToScalar(1.0);
     
       // Set the initial value for all nodes of SpecificPowerVec to zero.
@@ -96,7 +107,7 @@ void test_with_shape(AMP::UnitTest *ut )
       #ifdef USE_SILO
         shapeVec->copyVector(SpecificPowerShapeVec);
         // SpecificPowerShapeVec->copyVector(shapeVec);
-        manager->writeFile<AMP::Mesh::SiloIO> ( "PowerShape-Zr", nMoments );
+        siloWriter->writeFile( "PowerShape-Zr" , nMoments );
       #endif
       
     }//end for elements
@@ -119,14 +130,13 @@ void test_with_shape(AMP::UnitTest *ut )
         shape_db->putDoubleArray("Moments", moments);
       } 
       boost::shared_ptr<AMP::Operator::PowerShapeParameters> shape_params(new AMP::Operator::PowerShapeParameters( shape_db ));
-      shape_params->d_MeshAdapter = meshAdapter;
+      shape_params->d_Mesh = meshAdapter;
       boost::shared_ptr<AMP::Operator::PowerShape> shape(new AMP::Operator::PowerShape( shape_params ));
-      AMP::Operator::PowerShape::SP_HexGaussPointVariable SpecificPowerShapeVar = 
-                                                         shape->createOutputVariable("SpecificPowerShape");
+      AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerShapeVar(new AMP::LinearAlgebra::Variable("SpecificPowerShape") );
     
       // Create a vector associated with the Variable.
-      AMP::LinearAlgebra::Vector::shared_ptr  SpecificPowerShapeVec     = meshAdapter->createVector( SpecificPowerShapeVar );
-      AMP::LinearAlgebra::Vector::shared_ptr  SpecificPowerMagnitudeVec = SpecificPowerShapeVec->cloneVector( SpecificPowerShapeVar );
+      AMP::LinearAlgebra::Vector::shared_ptr SpecificPowerShapeVec = AMP::LinearAlgebra::createVector( dof_map, SpecificPowerShapeVar, split );
+      AMP::LinearAlgebra::Vector::shared_ptr  SpecificPowerMagnitudeVec = SpecificPowerShapeVec->cloneVector( );
       SpecificPowerMagnitudeVec->setToScalar(1.0);
     
       // Set the initial value for all nodes of SpecificPowerVec to zero.
@@ -151,7 +161,7 @@ void test_with_shape(AMP::UnitTest *ut )
       #ifdef USE_SILO
         shapeVec->copyVector(SpecificPowerShapeVec);
         // SpecificPowerShapeVec->copyVector(shapeVec);
-        manager->writeFile<AMP::Mesh::SiloIO> ( "PowerShape-Zr", i+3 );
+        siloWriter->writeFile( "PowerShape-Zr" , i+3 );
       #endif
 
       n+=2; 

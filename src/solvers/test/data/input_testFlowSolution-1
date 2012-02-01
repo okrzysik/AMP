@@ -1,10 +1,10 @@
+// Input file for testFlowSolution-1
 
-Mesh = "cube.with.12.boundaries.e"
-
-NumberOfMeshes = 1
-Mesh_1{
-  Filename = "cube.with.12.boundaries.e"
+Mesh {
     MeshName = "bar"
+    MeshType = "libMesh"
+    FileName = "cube.with.12.boundaries.e"
+    dim = 3
     x_offset = 0.0
     y_offset = 0.0
     z_offset = 0.0

@@ -130,23 +130,6 @@ namespace LinearAlgebra {
         */
       static const Vector::shared_ptr  constView ( const Vector::shared_ptr vec );
 
-      /**
-        *  \brief  Obtain a view of a vector with an Epetra_Vector wrapper
-        *  \param[in] vec The vector to get an Epetra_Vector view of.
-        *  \return A Vector::shared_ptr guaranteed to have an Epetra_Vector
-        *   wrapper available through the getEpetra_Vector() interface.
-        *  \deprecated  Use view()
-        */
-      static Vector::shared_ptr  createView ( Vector::shared_ptr vec );
-
-      /**
-        *  \brief  Obtain a view of a vector with an Epetra_Vector wrapper
-        *  \param[in] vec The vector to get an Epetra_Vector view of.
-        *  \return A Vector::shared_ptr guaranteed to have an Epetra_Vector
-        *   wrapper available through the getEpetra_Vector() interface.
-        *  \deprecated  Use constView()
-        */
-      static const Vector::shared_ptr  createConstView ( const Vector::shared_ptr vec );
   };
 
 }

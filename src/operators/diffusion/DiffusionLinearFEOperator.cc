@@ -116,9 +116,10 @@ namespace Operator {
       }
     }
 
-  /*  void DiffusionLinearFEOperator::preElementOperation(
-        const AMP::Mesh::MeshElement & elem, const std::vector<
-        MP::Discretization::DOFManager::shared_ptr> & dof_maps) {
+    void DiffusionLinearFEOperator::preElementOperation(
+        const AMP::Mesh::MeshElement & elem ) {
+      AMP_ERROR("Not converted yet");
+      /*
 
       if( d_iDebugPrintInfoLevel > 7 ) {
         AMP::pout << "DiffusionLinearFEOperator::preElementOperation, entering" << std::endl;
@@ -180,7 +181,8 @@ namespace Operator {
       {
         AMP::pout << "DiffusionLinearFEOperator::preElementOperation, leaving" << std::endl;
       }
-    }*/
+     */
+    }
 
     void DiffusionLinearFEOperator::postElementOperation() {
 

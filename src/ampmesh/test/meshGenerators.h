@@ -40,6 +40,8 @@ public:
         database->putString("MeshName","cube_mesh");
         database->putString("Generator","cube");
         database->putIntegerArray("size",std::vector<int>(3,SIZE));
+        database->putDoubleArray("xmin",std::vector<double>(3,-1.0));
+        database->putDoubleArray("xmax",std::vector<double>(3,1.0));
         boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
         params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
         // Create a libMesh mesh

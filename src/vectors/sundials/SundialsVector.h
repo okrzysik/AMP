@@ -77,7 +77,7 @@ namespace LinearAlgebra {
         double  DoSundialsMin ( Vector::shared_ptr &in )
         {
           double  ans;
-          Vector::shared_ptr  in_sundials_view = SundialsVector::createView ( in );        // Create a Sundials N_Vector if necessary
+          Vector::shared_ptr  in_sundials_view = SundialsVector::view( in );        // Create a Sundials N_Vector if necessary
           N_Vector  in_nvector = in_sundials_view->castTo<SundialsVector>().getNVector();  // Extract the N_Vector
           return N_VMin ( in_nvector );
         }
@@ -137,16 +137,6 @@ namespace LinearAlgebra {
         */
       static const Vector::shared_ptr  constView ( const Vector::shared_ptr AmpVector );
 
-      /**
-        * \brief  DEPRECATED  use SundialsVector::view
-        * \param  AmpVector  a shared pointer to a Vector
-        * \deprecated  createView is a misleading name.  This is now an alias for SundialsVector::view 
-        */
-      static Vector::shared_ptr  createView ( Vector::shared_ptr AmpVector )
-      {
-        DEPRECATED("createView","view");
-        return view ( AmpVector );
-      }
 	};
 	
 }

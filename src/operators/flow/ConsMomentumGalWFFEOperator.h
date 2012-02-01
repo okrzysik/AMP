@@ -28,7 +28,7 @@ public :
 
         void postAssembly();
 
-        //void preElementOperation(const AMP::Mesh::MeshManager::Adapter::Element &, const std::vector<AMP::Mesh::DOFMap::shared_ptr> &);
+        void preElementOperation(const AMP::Mesh::MeshElement &);
 
         void postElementOperation();
 

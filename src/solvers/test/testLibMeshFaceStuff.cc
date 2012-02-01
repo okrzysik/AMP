@@ -1,5 +1,6 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
+#include "ampmesh/libmesh/initializeLibMesh.h"
 #include <iostream>
 #include <cstdlib>
 
@@ -15,14 +16,14 @@
 #include "elem.h"
 #include "boundary_info.h"
 
-#include "LibMeshAdapter.h"
-
 #include "ReadTestMesh.h"
 
 void RunLibMeshFaceStuff() {
+  AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
+  boost::shared_ptr<AMP::Mesh::initializeLibMesh>libmeshInit(new AMP::Mesh::initializeLibMesh(globalComm));
 
   const unsigned int mesh_dim = 3;
-  boost::shared_ptr< Mesh > mesh(new Mesh(mesh_dim));
+  boost::shared_ptr< ::Mesh > mesh(new ::Mesh(mesh_dim));
 
   AMP::readTestMesh("distortedElementMesh", mesh);
 

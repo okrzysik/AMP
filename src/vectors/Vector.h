@@ -105,11 +105,6 @@ public:
       */
     typedef boost::shared_ptr <const Vector>     const_shared_ptr;
 
-    /** \typedef weak_ptr
-      * \brief Shorthand for weak pointer to Vector
-      */
-    typedef boost::weak_ptr <Vector>     weak_ptr;
-
     /** \brief Return the name of the vector
       */
     virtual std::string type () const = 0;
@@ -1104,7 +1099,7 @@ private:
 
     boost::shared_ptr<std::vector<double> >         d_Ghosts;
     boost::shared_ptr<std::vector<double> >         d_AddBuffer;
-    std::vector<weak_ptr>                           d_Views;
+    std::vector<boost::weak_ptr <Vector> >          d_Views;
 
 };
 

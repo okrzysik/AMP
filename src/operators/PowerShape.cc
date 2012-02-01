@@ -18,7 +18,8 @@
 #include "PowerShapeParameters.h"
 #include "vectors/Vector.h"
 #include "cell_hex8.h"
-
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 
 #include "utils/InputDatabase.h"
 #include "ampmesh/Mesh.h"
@@ -120,6 +121,30 @@ namespace AMP {
 
       // Coordinate System
       d_coordinateSystem = db->getStringWithDefault("coordinateSystem","cartesian");
+
+      // Create the cylindrical bounding box
+      std::vector<double> min_max_pos = d_Mesh->getBoundingBox();
+      double centerx = 0.5*( min_max_pos[0] + min_max_pos[1] );
+      double centery = 0.5*( min_max_pos[2] + min_max_pos[3] );
+      double minR=1e100, maxR=-1e100, rx, ry;
+
+      // Create the cylindrical bounding box
+      d_radialBoundingBox = min_max_pos;
+      AMP::Mesh::MeshIterator iterator = d_Mesh->getIterator(AMP::Mesh::Vertex,0);
+      for (size_t i=0; i<iterator.size(); i++) {
+        std::vector<double> coord = iterator->coord();
+        rx = (coord[0] - centerx);
+        ry = (coord[1] - centery);
+        minR = std::min( minR, sqrt(rx*rx+ry*ry) );
+        maxR = std::max( maxR, sqrt(rx*rx+ry*ry) );
+        ++iterator;
+      }
+      d_radialBoundingBox[0] = centerx;
+      d_radialBoundingBox[1] = centery;
+      d_radialBoundingBox[2] = (d_Mesh->getComm()).minReduce(minR);
+      d_radialBoundingBox[3] = (d_Mesh->getComm()).maxReduce(maxR);
+      d_radialBoundingBox[4] = min_max_pos[4];
+      d_radialBoundingBox[5] = min_max_pos[5];
 
       if(d_coordinateSystem == "cartesian") {
 
@@ -316,420 +341,418 @@ namespace AMP {
         SP_Vector & r,
         const double       ,
         const double        ) {
-      /*
-         AMP_INSIST( ((u.get()) != NULL), "NULL Power Vector" );
-         AMP_INSIST( ((r.get()) != NULL), "NULL PowerWithShape Vector" );
 
-         using namespace std;
+      AMP_INSIST( ((u.get()) != NULL), "NULL Power Vector" );
+      AMP_INSIST( ((r.get()) != NULL), "NULL PowerWithShape Vector" );
 
-         const double PI = 4.0*atan(1.0);
-         double x, y, z, radius, theta;
-         double newval, val;
-         double volumeIntegral=0;
-         int countGP =0 ; 
+      using namespace std;
 
-         double xmin, ymin, zmin;
-         double xmax, ymax, zmax, rmax;
+      const double PI = 4.0*atan(1.0);
+      double x, y, z, radius, theta;
+      double newval, val;
+      double volumeIntegral=0;
+      int countGP =0 ; 
+
+      double xmin, ymin, zmin, centerx, centery;
+      double xmax, ymax, zmax, rmax;
 
       // quick exit if the answer is obvious.
       if( (u->max() < 1e-14) && (u->min()>-1e-14) ) {
-      r->setToScalar(0.);
-      return;
+        r->setToScalar(0.);
+        return;
       }
 
-      AMP::Mesh::min_max_struct<AMP::Mesh::simple_point>  min_max_pos;
-      AMP::Mesh::min_max_struct<double>        min_max_rad;
-      min_max_pos = AMP::Mesh::computeExtremeCoordinates<AMP::Mesh::MeshManager::Adapter> ( d_Mesh );
-      min_max_rad = AMP::Mesh::computeExtremeRadii<      AMP::Mesh::MeshManager::Adapter> ( d_Mesh );
+      std::vector<double> min_max_pos = d_Mesh->getBoundingBox();
 
-      xmin = min_max_pos.min.x;
-      xmax = min_max_pos.max.x;
-      ymin = min_max_pos.min.y;
-      ymax = min_max_pos.max.y;
-      zmin = min_max_pos.min.z;
-      zmax = min_max_pos.max.z;
-      rmax = min_max_rad.max;
-      AMP::Mesh::simple_point center;
+      xmin = min_max_pos[0];
+      xmax = min_max_pos[1];
+      ymin = min_max_pos[2];
+      ymax = min_max_pos[3];
+      zmin = d_radialBoundingBox[4];
+      zmax = d_radialBoundingBox[5];
+      rmax = d_radialBoundingBox[3];
+      centerx = d_radialBoundingBox[0];
+      centery = d_radialBoundingBox[1];
 
-      center.x = 0.5*( min_max_pos.min.x + min_max_pos.max.x );
-      center.y = 0.5*( min_max_pos.min.y + min_max_pos.max.y );
-      //center.z = 0.5*( min_max_pos.min.z + min_max_pos.max.z );
+      // Create a DOF manager for a gauss point vector 
+      int DOFsPerElement = 8;
+      int ghostWidth = 0;
+      bool split = true;
+      AMP::Discretization::DOFManager::shared_ptr dof_map = AMP::Discretization::simpleDOFManager::create(d_Mesh, AMP::Mesh::Volume, ghostWidth, DOFsPerElement, split);
 
-      rmax = rmax - sqrt( center.x*center.x + center.y*center.y );
+      // Create a shared pointer to a Variable - Power - Output because it will be used in the "residual" location of apply. 
       r->setToScalar(1.);
+
+      AMP::Mesh::MeshIterator  elem      = d_Mesh->getIterator(AMP::Mesh::Volume, ghostWidth);
+      AMP::Mesh::MeshIterator  end_elems = elem.end();
 
       if(d_coordinateSystem == "cartesian") {
 
-      if(d_type == "legendre") {
+        if(d_type == "legendre") {
 
-      AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_Mesh->beginElement();
-      AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_Mesh->endElement();
+          if(d_iDebugPrintInfoLevel>3)
+            AMP::pout << "Starting Power Shape Loop over Gauss Points." << endl;
 
-      if(d_iDebugPrintInfoLevel>3)
-      AMP::pout << "Starting Power Shape Loop over Gauss Points." << endl;
-      // Loop over all elements on the mesh
-      for( ; elem != end_elems; ++elem) {
-      d_fe->reinit( &(elem->getElem()) );
+          // Loop over all elements on the mesh
+          for( ; elem != end_elems; ++elem) {
+            d_currNodes = elem->getElements(AMP::Mesh::Vertex);
+            createCurrentLibMeshElement();
+            d_fe->reinit( d_currElemPtr );
 
-      // Loop over all gauss-points on the element.
-      for( unsigned int i = 0; i != d_fe->get_xyz().size(); i++ ) {
-      x = d_fe->get_xyz()[i](0);
-      y = d_fe->get_xyz()[i](1);
-      z = d_fe->get_xyz()[i](2);
+            // Loop over all gauss-points on the element.
+            for( unsigned int i = 0; i < DOFsPerElement; i++ ) {
+              x = d_fe->get_xyz()[i](0);
+              y = d_fe->get_xyz()[i](1);
+              z = d_fe->get_xyz()[i](2);
 
-      // X moments
-      x = (2*x-(xmax+xmin))/(xmax-xmin);  // mapping x coordinate to (-1 to 1)
-      newval = 1.;
-      for (unsigned int m = 0; m < d_numXmoments; m++) {
-      newval += d_Xmoments[m] * evalLegendre(m+1, x);
-      }//end for 
-      val = newval;
+              // X moments
+              x = (2*x-(xmax+xmin))/(xmax-xmin);  // mapping x coordinate to (-1 to 1)
+              newval = 1.;
+              for (unsigned int m = 0; m < d_numXmoments; m++) {
+                newval += d_Xmoments[m] * evalLegendre(m+1, x);
+              }//end for 
+              val = newval;
 
-      // Y moments
-      y = (2*y-(ymax+ymin))/(ymax-ymin);  // mapping y coordinate to (-1 to 1)
-      newval = 1.;
-      for (unsigned int m = 0; m < d_numYmoments; m++) {
-        newval += d_Ymoments[m] * evalLegendre(m+1, y);
-      }//end for m
-      val *= newval;
+              // Y moments
+              y = (2*y-(ymax+ymin))/(ymax-ymin);  // mapping y coordinate to (-1 to 1)
+              newval = 1.;
+              for (unsigned int m = 0; m < d_numYmoments; m++) {
+                newval += d_Ymoments[m] * evalLegendre(m+1, y);
+              }//end for m
+              val *= newval;
 
-      // Z moments
-      z = (2*z-(zmax+zmin))/(zmax-zmin);  // mapping z coordinate to (-1 to 1)
-      newval = 1.;
-      for (unsigned int m = 0; m < d_numZmoments; m++) {
-        newval += d_Zmoments[m] * evalLegendre(m+1, z);
-      }//end for m
-      val *= newval;
+              // Z moments
+              z = (2*z-(zmax+zmin))/(zmax-zmin);  // mapping z coordinate to (-1 to 1)
+              newval = 1.;
+              for (unsigned int m = 0; m < d_numZmoments; m++) {
+                newval += d_Zmoments[m] * evalLegendre(m+1, z);
+              }//end for m
+              val *= newval;
 
-      countGP++;
+              countGP++;
 
-      // Set newval to this gauss point on this element of the vector r.
-      AMP::Mesh::DOFMap::shared_ptr  dof_map = d_Mesh->getDOFMap ( d_Variable );
-      std::vector<unsigned int> ndx;
-      std::vector<unsigned int> empty;
-      dof_map->getDOFs ( *elem , ndx , empty );
-      int  offset = ndx[i];
-      val *= u->getValueByGlobalID ( offset );
-      r->setValueByGlobalID ( offset , val );
-      AMP_ASSERT( AMP::Utilities::approx_equal( r->getValueByGlobalID ( offset ), val ) );
-    } //end for gauss-points
-    } //end for elements
-    r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+              // Set newval to this gauss point on this element of the vector r.
+              std::vector<size_t> ndx;
+              dof_map->getDOFs ( elem->globalID() , ndx);
+              int  offset = ndx[i];
+              val *= u->getValueByGlobalID ( offset );
+              r->setValueByGlobalID ( offset , val );
+              AMP_ASSERT( AMP::Utilities::approx_equal( r->getValueByGlobalID ( offset ), val ) );
+            } //end for gauss-points
+            destroyCurrentLibMeshElement();
+          } //end for elements
+          r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
-    if(d_iDebugPrintInfoLevel>3)
-      AMP::pout << "End Power Shape Loop over : " << countGP << " Gauss Points." << endl;
+          if(d_iDebugPrintInfoLevel>3)
+            AMP::pout << "End Power Shape Loop over : " << countGP << " Gauss Points." << endl;
 
-    } else if(d_type == "gaussian") {
+        } else if(d_type == "gaussian") {
 
-      AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_Mesh->beginElement();
-      AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_Mesh->endElement();
+          if(d_iDebugPrintInfoLevel>3)
+            AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
+          // Loop over all elements on the mesh
+          for( ; elem != end_elems; ++elem) {
+            d_currNodes = elem->getElements(AMP::Mesh::Vertex);
+            createCurrentLibMeshElement();
+            d_fe->reinit( d_currElemPtr );
 
-      if(d_iDebugPrintInfoLevel>3)
-        AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
-      // Loop over all elements on the mesh
-      for( ; elem != end_elems; ++elem) {
-        d_fe->reinit( &(elem->getElem()) );
+            // Loop over all gauss-points on the element.
+            for( unsigned int i = 0; i < DOFsPerElement; i++ ) {
+              x = d_fe->get_xyz()[i](0);
+              y = d_fe->get_xyz()[i](1);
+              z = d_fe->get_xyz()[i](2);
 
-        // Loop over all gauss-points on the element.
-        for( unsigned int i = 0; i != d_fe->get_xyz().size(); i++ ) {
-          x = d_fe->get_xyz()[i](0);
-          y = d_fe->get_xyz()[i](1);
-          z = d_fe->get_xyz()[i](2);
+              // 2D Gaussian (Normal) distribution.
+              newval  = (xmax-xmin)*(ymax-ymin)*getGaussianF(x,y);
+              newval  = newval / (( erf(-(xmax-d_muX)/(sqrt(2.)*d_sigmaX))*erf(-(ymax-d_muY)/(sqrt(2.)*d_sigmaY))  +
+                    erf(-(xmin-d_muX)/(sqrt(2.)*d_sigmaX))*erf(-(ymin-d_muY)/(sqrt(2.)*d_sigmaY))  -
+                    erf(-(xmax-d_muX)/(sqrt(2.)*d_sigmaX))*erf(-(ymin-d_muY)/(sqrt(2.)*d_sigmaY))  -
+                    erf(-(xmin-d_muX)/(sqrt(2.)*d_sigmaX))*erf(-(ymax-d_muY)/(sqrt(2.)*d_sigmaY))) *
+                  d_sigmaX * d_sigmaY * PI / 2.0 );
+              val = newval;
 
-          // 2D Gaussian (Normal) distribution.
-          newval  = (xmax-xmin)*(ymax-ymin)*getGaussianF(x,y);
-          newval  = newval / (( erf(-(xmax-d_muX)/(sqrt(2.)*d_sigmaX))*erf(-(ymax-d_muY)/(sqrt(2.)*d_sigmaY))  +
-                erf(-(xmin-d_muX)/(sqrt(2.)*d_sigmaX))*erf(-(ymin-d_muY)/(sqrt(2.)*d_sigmaY))  -
-                erf(-(xmax-d_muX)/(sqrt(2.)*d_sigmaX))*erf(-(ymin-d_muY)/(sqrt(2.)*d_sigmaY))  -
-                erf(-(xmin-d_muX)/(sqrt(2.)*d_sigmaX))*erf(-(ymax-d_muY)/(sqrt(2.)*d_sigmaY))) *
-              d_sigmaX * d_sigmaY * PI / 2.0 );
-          val = newval;
+              // Z moments
+              z = (2*z-(zmax+zmin))/(zmax-zmin);  // Mapping z coordinate to (-1 to 1)
+              newval = 1.;
+              for (unsigned int m = 0; m < d_numZmoments; m++) {
+                newval += d_Zmoments[m] * evalLegendre(m+1, z);
+              }//end for m
+              val *= newval;
 
-          // Z moments
-          z = (2*z-(zmax+zmin))/(zmax-zmin);  // Mapping z coordinate to (-1 to 1)
-          newval = 1.;
-          for (unsigned int m = 0; m < d_numZmoments; m++) {
-            newval += d_Zmoments[m] * evalLegendre(m+1, z);
-          }//end for m
-          val *= newval;
+              countGP++;
 
-          countGP++;
+              // Set newval to this gauss point on this element of the vector r.
+              std::vector<size_t> ndx;
+              dof_map->getDOFs ( elem->globalID() , ndx);
+              int  offset = ndx[i];
+              val *= u->getValueByGlobalID ( offset );
+              r->setValueByGlobalID ( offset , val );
+              AMP_ASSERT( AMP::Utilities::approx_equal( r->getValueByGlobalID ( offset ), val ) );
+            } //end for gauss-points
+            destroyCurrentLibMeshElement();
+          } //end for elements
+          r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
-          // Set newval to this gauss point on this element of the vector r.
-          AMP::Mesh::DOFMap::shared_ptr  dof_map = d_Mesh->getDOFMap ( d_Variable );
-          std::vector<unsigned int> ndx;
-          std::vector<unsigned int> empty;
-          dof_map->getDOFs ( *elem , ndx , empty );
-          int  offset = ndx[i];
-          val *= u->getValueByGlobalID ( offset );
-          r->setValueByGlobalID ( offset , val );
-          AMP_ASSERT( AMP::Utilities::approx_equal( r->getValueByGlobalID ( offset ), val ) );
-        } //end for gauss-points
-      } //end for elements
-      r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+          if(d_iDebugPrintInfoLevel>3)
+            AMP::pout << "Power Shape: Processing GP #: " << countGP << endl;
 
-      if(d_iDebugPrintInfoLevel>3)
-        AMP::pout << "Power Shape: Processing GP #: " << countGP << endl;
-
-    } else {
-      AMP_INSIST(0,"The power shape type used is not valid for cylindrical coordinate systems.");
-    }
-
-    } else if(d_coordinateSystem == "cylindrical") {
-
-      if(d_type == "frapcon") {
-
-        // Note: Dimensions are all in meter (m). 
-
-        // Choose the type of volume integral calculation. 
-        if ( d_frapconVolumeIntegral == "analytical"){
-          volumeIntegral = getVolumeIntegralAnalytical(rmax);
-        }else if(d_frapconVolumeIntegral == "sum"){
-          volumeIntegral = getVolumeIntegralSum(rmax, center.x, center.y);
+        } else {
+          AMP_INSIST(0,"The power shape type used is not valid for cylindrical coordinate systems.");
         }
 
-        AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_Mesh->beginElement();
-        AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_Mesh->endElement();
+      } else if(d_coordinateSystem == "cylindrical") {
 
-        if(d_iDebugPrintInfoLevel>3)
-          AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
-        // Loop over all elements on the mesh
-        for( ; elem != end_elems; elem++) {
-          d_fe->reinit( &(elem->getElem()) );
+        if(d_type == "frapcon") {
 
-          // Loop over all gauss-points on the element.
-          for( unsigned int i = 0; i != d_fe->get_xyz().size(); i++ ) {
-            x = d_fe->get_xyz()[i](0)-center.x;
-            y = d_fe->get_xyz()[i](1)-center.y;
-            z = d_fe->get_xyz()[i](2);
+          // Note: Dimensions are all in meter (m). 
 
-            // r based on Frapcon.
-            radius = sqrt ( x*x + y*y );
-            double Fr = getFrapconFr(radius, rmax);
-            newval = Fr/volumeIntegral; 
-            val = newval;
+          // Choose the type of volume integral calculation. 
+          if ( d_frapconVolumeIntegral == "analytical"){
+            volumeIntegral = getVolumeIntegralAnalytical(rmax);
+          }else if(d_frapconVolumeIntegral == "sum"){
+            volumeIntegral = getVolumeIntegralSum(rmax, centerx, centery);
+          }
 
-            // phi. 
-            theta = atan2(y,x);
-            newval = 1 + d_angularConstant*sin(theta);
-            val *= newval;
+          if(d_iDebugPrintInfoLevel>3)
+            AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
+          // Loop over all elements on the mesh
+          for( ; elem != end_elems; elem++) {
+            d_currNodes = elem->getElements(AMP::Mesh::Vertex);
+            createCurrentLibMeshElement();
+            d_fe->reinit( d_currElemPtr );
 
-            // Z moments.
-            z = (2*z-(zmax+zmin))/(zmax-zmin);  // mapping z coordinate to (-1 to 1)
-            newval = 1.;
-            for (unsigned int m = 0; m < d_numZmoments; m++) {
-              newval += d_Zmoments[m] * evalLegendre(m, z);
-            }//end for m
-            val *= newval;
+            // Loop over all gauss-points on the element.
+            for( unsigned int i = 0; i < DOFsPerElement; i++ ) {
+              x = d_fe->get_xyz()[i](0)-centerx;
+              y = d_fe->get_xyz()[i](1)-centery;
+              z = d_fe->get_xyz()[i](2);
 
-            countGP++;
+              // r based on Frapcon.
+              radius = sqrt ( x*x + y*y );
+              double Fr = getFrapconFr(radius, rmax);
+              newval = Fr/volumeIntegral; 
+              val = newval;
 
-            // Set newval to this gauss point on this element of the vector r.
-            AMP::Mesh::DOFMap::shared_ptr  dof_map = d_Mesh->getDOFMap ( d_Variable );
-            std::vector<unsigned int> ndx;
-            std::vector<unsigned int> empty;
-            dof_map->getDOFs ( *elem , ndx , empty );
-            int  offset = ndx[i];
-            val *= u->getValueByGlobalID ( offset );
-            r->setValueByGlobalID ( offset , val );
-            AMP_ASSERT( AMP::Utilities::approx_equal( r->getValueByGlobalID ( offset ), val ) );
-          } //end for gauss-points
-        } //end for elements
-        r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+              // phi. 
+              theta = atan2(y,x);
+              newval = 1 + d_angularConstant*sin(theta);
+              val *= newval;
 
-        if(d_iDebugPrintInfoLevel>3)
-          AMP::pout << "Power Shape: Processing GP #: " << countGP << endl;
+              // Z moments.
+              z = (2*z-(zmax+zmin))/(zmax-zmin);  // mapping z coordinate to (-1 to 1)
+              newval = 1.;
+              for (unsigned int m = 0; m < d_numZmoments; m++) {
+                newval += d_Zmoments[m] * evalLegendre(m, z);
+              }//end for m
+              val *= newval;
 
-      }  else if (d_type == "diffusion") {
+              countGP++;
 
-        // Infinite cylinder diffusion shape
-        // Note: Dimensions are all in meter (m). 
-        AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_Mesh->beginElement();
-        AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_Mesh->endElement();
-        if(d_iDebugPrintInfoLevel>3)
-          AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
-        // Loop over all elements on the mesh
-        for( ; elem != end_elems; ++elem) {
-          d_fe->reinit( &(elem->getElem()) );
+              // Set newval to this gauss point on this element of the vector r.
+              std::vector<size_t> ndx;
+              dof_map->getDOFs ( elem->globalID() , ndx);
+              int  offset = ndx[i];
+              val *= u->getValueByGlobalID ( offset );
+              r->setValueByGlobalID ( offset , val );
+              AMP_ASSERT( AMP::Utilities::approx_equal( r->getValueByGlobalID ( offset ), val ) );
+            } //end for gauss-points
+            destroyCurrentLibMeshElement();
+          } //end for elements
+          r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
-          // Loop over all gauss-points on the element.
-          for( unsigned int i = 0; i != d_fe->get_xyz().size(); i++ ) {
-            x = d_fe->get_xyz()[i](0)-center.x;
-            y = d_fe->get_xyz()[i](1)-center.y;
-            z = d_fe->get_xyz()[i](2);
-            // r based on Frapcon.
-            double relativeRadius = sqrt ( x*x + y*y )/rmax;
-            double besArg = 2.405*relativeRadius;
-            // Taylor expansion of bessel function
+          if(d_iDebugPrintInfoLevel>3)
+            AMP::pout << "Power Shape: Processing GP #: " << countGP << endl;
 
-            val = 1+(besArg*besArg)/4 + (besArg*besArg*besArg*besArg)/64 + (besArg*besArg*besArg*besArg*besArg*besArg)/2304;
+        }  else if (d_type == "diffusion") {
+
+          // Infinite cylinder diffusion shape
+          // Note: Dimensions are all in meter (m). 
+          if(d_iDebugPrintInfoLevel>3)
+            AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
+          // Loop over all elements on the mesh
+          for( ; elem != end_elems; ++elem) {
+            d_currNodes = elem->getElements(AMP::Mesh::Vertex);
+            createCurrentLibMeshElement();
+            d_fe->reinit( d_currElemPtr );
+
+            // Loop over all gauss-points on the element.
+            for( unsigned int i = 0; i < DOFsPerElement; i++ ) {
+              x = d_fe->get_xyz()[i](0)-centerx;
+              y = d_fe->get_xyz()[i](1)-centery;
+              z = d_fe->get_xyz()[i](2);
+              // r based on Frapcon.
+              double relativeRadius = sqrt ( x*x + y*y )/rmax;
+              double besArg = 2.405*relativeRadius;
+              // Taylor expansion of bessel function
+
+              val = 1+(besArg*besArg)/4 + (besArg*besArg*besArg*besArg)/64 + (besArg*besArg*besArg*besArg*besArg*besArg)/2304;
 
 
-            // Set newval to this gauss point on this element of the vector r.
-            AMP::Mesh::DOFMap::shared_ptr  dof_map = d_Mesh->getDOFMap ( d_Variable );
-            std::vector<unsigned int> ndx;
-            std::vector<unsigned int> empty;
-            dof_map->getDOFs ( *elem , ndx , empty );
-            int  offset = ndx[i];
-            val *= u->getValueByGlobalID ( offset );
-            r->setValueByGlobalID ( offset , val );
-            AMP_ASSERT( AMP::Utilities::approx_equal( r->getValueByGlobalID ( offset ), val ) );
-          } //end for gauss-points
-        } //end for elements
+              // Set newval to this gauss point on this element of the vector r.
+              std::vector<size_t> ndx;
+              dof_map->getDOFs ( elem->globalID() , ndx);
+              int  offset = ndx[i];
+              val *= u->getValueByGlobalID ( offset );
+              r->setValueByGlobalID ( offset , val );
+              AMP_ASSERT( AMP::Utilities::approx_equal( r->getValueByGlobalID ( offset ), val ) );
+            } //end for gauss-points
+            destroyCurrentLibMeshElement();
+          } //end for elements
 
-        AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+          AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-        // this is the volume integral operator that will be used to make the integral of the power density the value the user specified.
-        d_db->putDatabase("VolumeIntegral");
-        boost::shared_ptr<AMP::Database> volume_db = d_db->getDatabase("VolumeIntegral");
-        boost::shared_ptr<AMP::Database> act_db;
+          // this is the volume integral operator that will be used to make the integral of the power density the value the user specified.
+          d_db->putDatabase("VolumeIntegral");
+          boost::shared_ptr<AMP::Database> volume_db = d_db->getDatabase("VolumeIntegral");
+          boost::shared_ptr<AMP::Database> act_db;
 
-        volume_db->putString("name","VolumeIntegralOperator");
+          volume_db->putString("name","VolumeIntegralOperator");
 
-        volume_db->putString("InputVariableType","IntegrationPointScalar");
-        volume_db->putInteger("Number_Active_Variables",1);
-        volume_db->putInteger("Number_Auxillary_Variables",0);
-        volume_db->putBool("Constant_Source",1);
-        volume_db->putString("OutputVariable","Temperature");
-        volume_db->putInteger("print_info_level",1);
-        volume_db->putDatabase("ActiveInputVariables");
-        volume_db->putDatabase("SourceElement");
+          volume_db->putString("InputVariableType","IntegrationPointScalar");
+          volume_db->putInteger("Number_Active_Variables",1);
+          volume_db->putInteger("Number_Auxillary_Variables",0);
+          volume_db->putBool("Constant_Source",1);
+          volume_db->putString("OutputVariable","Temperature");
+          volume_db->putInteger("print_info_level",1);
+          volume_db->putDatabase("ActiveInputVariables");
+          volume_db->putDatabase("SourceElement");
 
-        boost::shared_ptr<AMP::Database> source_db = volume_db->getDatabase("SourceElement");
-        source_db->putString("name", "SourceNonlinearElement");
+          boost::shared_ptr<AMP::Database> source_db = volume_db->getDatabase("SourceElement");
+          source_db->putString("name", "SourceNonlinearElement");
 
-        act_db = volume_db->getDatabase("ActiveInputVariables");
-        act_db->putString("ActiveVariable_0",(u->getVariable())->getName());
-        boost::shared_ptr<AMP::Operator::ElementPhysicsModel> emptyModel;
-        boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeIntegralOperator =
-          boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(d_Mesh, "VolumeIntegral", d_db, emptyModel));
-        AMP::LinearAlgebra::Variable::shared_ptr nodalVariable = volumeIntegralOperator->getOutputVariable();
-        AMP::LinearAlgebra::Vector::shared_ptr   nodalVector = d_Mesh->createVector( nodalVariable );
-        AMP::LinearAlgebra::Vector::shared_ptr  unodalPower = nodalVector->cloneVector();
-        AMP::LinearAlgebra::Vector::shared_ptr  rnodalPower = nodalVector->cloneVector();
+          act_db = volume_db->getDatabase("ActiveInputVariables");
+          act_db->putString("ActiveVariable_0",(u->getVariable())->getName());
+          boost::shared_ptr<AMP::Operator::ElementPhysicsModel> emptyModel;
+          boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeIntegralOperator =
+            boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(d_Mesh, "VolumeIntegral", d_db, emptyModel));
 
-        volumeIntegralOperator->apply(nullVec, u, unodalPower, 1, 0.);
-        volumeIntegralOperator->apply(nullVec, r, rnodalPower, 1, 0.);
+          int DOFsPerNode = 1;
+          AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(d_Mesh, AMP::Mesh::Vertex, ghostWidth, DOFsPerNode,    split);
+          AMP::LinearAlgebra::Variable::shared_ptr nodalVariable(new AMP::LinearAlgebra::Variable("Temperature"));
+          AMP::LinearAlgebra::Vector::shared_ptr nodalVector = AMP::LinearAlgebra::createVector( nodalDofMap, nodalVariable, split );
+          AMP::LinearAlgebra::Vector::shared_ptr  unodalPower = nodalVector->cloneVector();
+          AMP::LinearAlgebra::Vector::shared_ptr  rnodalPower = nodalVector->cloneVector();
 
-        const double denominator = rnodalPower->L1Norm();
-        AMP_INSIST(!AMP::Utilities::approx_equal(denominator,0.), "The denominator is zero - not good." ); 
-        r->scale(unodalPower->L1Norm()/rnodalPower->L1Norm());
+          volumeIntegralOperator->apply(nullVec, u, unodalPower, 1, 0.);
+          volumeIntegralOperator->apply(nullVec, r, rnodalPower, 1, 0.);
 
-        r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-        if(d_iDebugPrintInfoLevel>3)
-          AMP::pout << "Power Shape: Processed GP #: " << countGP << endl;
+          const double denominator = rnodalPower->L1Norm();
+          AMP_INSIST(!AMP::Utilities::approx_equal(denominator,0.), "The denominator is zero - not good." ); 
+          r->scale(unodalPower->L1Norm()/rnodalPower->L1Norm());
 
-      }
+          r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+          if(d_iDebugPrintInfoLevel>3)
+            AMP::pout << "Power Shape: Processed GP #: " << countGP << endl;
 
-      else if (d_type == "zernikeRadial") {
+        }
 
-        // Note: Dimensions are all in meter (m). 
-        AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_Mesh->beginElement();
-        AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_Mesh->endElement();
+        else if (d_type == "zernikeRadial") {
 
-        if(d_iDebugPrintInfoLevel>3)
-          AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
-        // Loop over all elements on the mesh
-        for( ; elem != end_elems; ++elem) {
-          d_fe->reinit( &(elem->getElem()) );
+          // Note: Dimensions are all in meter (m). 
 
-          // Loop over all gauss-points on the element.
-          for( unsigned int i = 0; i != d_fe->get_xyz().size(); i++ ) {
-            x = d_fe->get_xyz()[i](0)-center.x;
-            y = d_fe->get_xyz()[i](1)-center.y;
-            z = d_fe->get_xyz()[i](2);
+          if(d_iDebugPrintInfoLevel>3)
+            AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
+          // Loop over all elements on the mesh
+          for( ; elem != end_elems; ++elem) {
+            d_currNodes = elem->getElements(AMP::Mesh::Vertex);
+            createCurrentLibMeshElement();
+            d_fe->reinit( d_currElemPtr );
 
-            // r based on Frapcon.
-            double relativeRadius = sqrt ( x*x + y*y )/rmax;
-            val = 1+getZernikeRadial(relativeRadius);
+            // Loop over all gauss-points on the element.
+            for( unsigned int i = 0; i < DOFsPerElement; i++ ) {
+              x = d_fe->get_xyz()[i](0)-centerx;
+              y = d_fe->get_xyz()[i](1)-centery;
+              z = d_fe->get_xyz()[i](2);
 
-            // phi. 
-            theta = atan2(y,x);
-            newval = 1 + d_angularConstant*sin(theta);
-            val *= newval;
+              // r based on Frapcon.
+              double relativeRadius = sqrt ( x*x + y*y )/rmax;
+              val = 1+getZernikeRadial(relativeRadius);
 
-            // Z moments.
-            z = (2*z-(zmax+zmin))/(zmax-zmin);  // mapping z coordinate to (-1 to 1)
-            newval = 1.;
-            for (unsigned int m = 0; m < d_numZmoments; m++) {
-              newval += d_Zmoments[m] * evalLegendre(m+1, z);
-            }//end for m
-            val *= newval;
+              // phi. 
+              theta = atan2(y,x);
+              newval = 1 + d_angularConstant*sin(theta);
+              val *= newval;
 
-            countGP++;
+              // Z moments.
+              z = (2*z-(zmax+zmin))/(zmax-zmin);  // mapping z coordinate to (-1 to 1)
+              newval = 1.;
+              for (unsigned int m = 0; m < d_numZmoments; m++) {
+                newval += d_Zmoments[m] * evalLegendre(m+1, z);
+              }//end for m
+              val *= newval;
 
-            // Set newval to this gauss point on this element of the vector r.
-            AMP::Mesh::DOFMap::shared_ptr  dof_map = d_Mesh->getDOFMap ( d_Variable );
-            std::vector<unsigned int> ndx;
-            std::vector<unsigned int> empty;
-            dof_map->getDOFs ( *elem , ndx , empty );
-            int  offset = ndx[i];
-            val *= u->getValueByGlobalID ( offset );
-            r->setValueByGlobalID ( offset , val );
-            AMP_INSIST( AMP::Utilities::approx_equal( r->getValueByGlobalID ( offset ), val ), "getting what was just put" );
-          } //end for gauss-points
-        } //end for elements
-        r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+              countGP++;
 
-        if(d_iDebugPrintInfoLevel>3)
-          AMP::pout << "Power Shape: Processed GP #: " << countGP << endl;
+              // Set newval to this gauss point on this element of the vector r.
+              std::vector<size_t> ndx;
+              dof_map->getDOFs ( elem->globalID() , ndx);
+              int  offset = ndx[i];
+              val *= u->getValueByGlobalID ( offset );
+              r->setValueByGlobalID ( offset , val );
+              AMP_INSIST( AMP::Utilities::approx_equal( r->getValueByGlobalID ( offset ), val ), "getting what was just put" );
+            } //end for gauss-points
+            destroyCurrentLibMeshElement();
+          } //end for elements
+          r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
-      } else if (d_type == "zernike") {
+          if(d_iDebugPrintInfoLevel>3)
+            AMP::pout << "Power Shape: Processed GP #: " << countGP << endl;
 
-        // Note: Dimensions are all in meter (m). 
-        AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_Mesh->beginElement();
-        AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_Mesh->endElement();
+        } else if (d_type == "zernike") {
 
-        if(d_iDebugPrintInfoLevel>3)
-          AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
-        // Loop over all elements on the mesh
-        for( ; elem != end_elems; ++elem) {
-          d_fe->reinit( &(elem->getElem()) );
+          // Note: Dimensions are all in meter (m). 
 
-          // Loop over all gauss-points on the element.
-          for( unsigned int i = 0; i != d_fe->get_xyz().size(); i++ ) {
-            x = d_fe->get_xyz()[i](0)-center.x;
-            y = d_fe->get_xyz()[i](1)-center.y;
-            z = d_fe->get_xyz()[i](2);
+          if(d_iDebugPrintInfoLevel>3)
+            AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
+          // Loop over all elements on the mesh
+          for( ; elem != end_elems; ++elem) {
+            d_currNodes = elem->getElements(AMP::Mesh::Vertex);
+            createCurrentLibMeshElement();
+            d_fe->reinit( d_currElemPtr );
 
-            // r based on Frapcon.
-            double relativeRadius = sqrt ( x*x + y*y )/rmax;
-            double phi = atan2(y,x);
-            val = 1+getZernike(relativeRadius, phi);
+            // Loop over all gauss-points on the element.
+            for( unsigned int i = 0; i < DOFsPerElement; i++ ) {
+              x = d_fe->get_xyz()[i](0)-centerx;
+              y = d_fe->get_xyz()[i](1)-centery;
+              z = d_fe->get_xyz()[i](2);
 
-            // Z moments.
-            z = (2*z-(zmax+zmin))/(zmax-zmin);  // mapping z coordinate to (-1 to 1)
-            newval = 1.;
-            for (unsigned int m = 0; m < d_numZmoments; m++) {
-              newval += d_Zmoments[m] * evalLegendre(m+1, z);
-            }//end for m
-            val *= newval;
+              // r based on Frapcon.
+              double relativeRadius = sqrt ( x*x + y*y )/rmax;
+              double phi = atan2(y,x);
+              val = 1+getZernike(relativeRadius, phi);
 
-            countGP++;
+              // Z moments.
+              z = (2*z-(zmax+zmin))/(zmax-zmin);  // mapping z coordinate to (-1 to 1)
+              newval = 1.;
+              for (unsigned int m = 0; m < d_numZmoments; m++) {
+                newval += d_Zmoments[m] * evalLegendre(m+1, z);
+              }//end for m
+              val *= newval;
 
-            // Set newval to this gauss point on this element of the vector r.
-            AMP::Mesh::DOFMap::shared_ptr  dof_map = d_Mesh->getDOFMap ( d_Variable );
-            std::vector<unsigned int> ndx;
-            std::vector<unsigned int> empty;
-            dof_map->getDOFs ( *elem , ndx , empty );
-            int  offset = ndx[i];
-            val *= u->getValueByGlobalID ( offset );
-            r->setValueByGlobalID ( offset , val );
-            AMP_ASSERT( AMP::Utilities::approx_equal( r->getValueByGlobalID ( offset ), val ) );
-          } //end for gauss-points
-        } //end for elements
-        r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+              countGP++;
 
-        if(d_iDebugPrintInfoLevel>3)
-          AMP::pout << "Power Shape: Processed GP #: " << countGP << endl;
+              // Set newval to this gauss point on this element of the vector r.
+              std::vector<size_t> ndx;
+              dof_map->getDOFs ( elem->globalID() , ndx);
+              int  offset = ndx[i];
+              val *= u->getValueByGlobalID ( offset );
+              r->setValueByGlobalID ( offset , val );
+              AMP_ASSERT( AMP::Utilities::approx_equal( r->getValueByGlobalID ( offset ), val ) );
+            } //end for gauss-points
+            destroyCurrentLibMeshElement();
+          } //end for elements
+          r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
+          if(d_iDebugPrintInfoLevel>3)
+            AMP::pout << "Power Shape: Processed GP #: " << countGP << endl;
+
+        } else {
+          AMP_INSIST(0,"The power shape type used is not valid for cylindrical coordinate systems");
+        }
       } else {
-        AMP_INSIST(0,"The power shape type used is not valid for cylindrical coordinate systems");
+        AMP_INSIST(0,"The coordinate system is not valid.");
       }
-    } else {
-      AMP_INSIST(0,"The coordinate system is not valid.");
-    }
-    */
+
     } 
 
     /*!
@@ -890,33 +913,35 @@ namespace AMP {
      */
     double PowerShape::getVolumeIntegralSum(double rmax, double cx, double cy)
     {
-         double integralFr=0;
-         double numerator=0;
+      double integralFr=0;
+      double numerator=0;
 
-         double x, y, radius;
+      double x, y, radius;
 
-         int ghostWidth = 0;
-         AMP::Mesh::MeshIterator  elem      = d_Mesh->getIterator(AMP::Mesh::Volume, ghostWidth);
-         AMP::Mesh::MeshIterator  end_elems = elem.end();
+      int ghostWidth = 0;
+      AMP::Mesh::MeshIterator  elem      = d_Mesh->getIterator(AMP::Mesh::Volume, ghostWidth);
+      AMP::Mesh::MeshIterator  end_elems = elem.end();
 
-         for( ; elem != end_elems; ++elem) {
-           d_currNodes = elem->getElements(AMP::Mesh::Vertex);
-           createCurrentLibMeshElement();
-           d_fe->reinit( d_currElemPtr );
-           double elemVolume = elem->volume();
+      for( ; elem != end_elems; ++elem) {
+        d_currNodes = elem->getElements(AMP::Mesh::Vertex);
+        createCurrentLibMeshElement();
+        d_fe->reinit( d_currElemPtr );
+        double elemVolume = elem->volume();
 
-         double elemSum = 0;
-      // Loop over all gauss-points on the element.
-      for( unsigned int i = 0; i != d_fe->get_xyz().size(); i++ ) {
-      x = d_fe->get_xyz()[i](0) - cx;
-      y = d_fe->get_xyz()[i](1) - cy;
-      radius = sqrt ( x*x + y*y ) ;
+        double elemSum = 0;
+        // Loop over all gauss-points on the element.
+        int DOFsPerElement = 8;
+        for( unsigned int i = 0; i < DOFsPerElement; i++ ) {
+          x = d_fe->get_xyz()[i](0) - cx;
+          y = d_fe->get_xyz()[i](1) - cy;
+          radius = sqrt ( x*x + y*y ) ;
 
-      elemSum += getFrapconFr(radius, rmax);
+          elemSum += getFrapconFr(radius, rmax);
 
-      } //end for gauss-points
-      integralFr += (elemSum/8.0)*elemVolume;
-      numerator  += elemVolume;
+        } //end for gauss-points
+        integralFr += (elemSum/8.0)*elemVolume;
+        numerator  += elemVolume;
+        destroyCurrentLibMeshElement();
       } //end for elements
 
       integralFr = integralFr/numerator;
@@ -928,7 +953,7 @@ namespace AMP {
       d_currElemPtr = new ::Hex8;
       for(unsigned int j = 0; j < d_currNodes.size(); j++) {
         std::vector<double> pt = d_currNodes[j].coord();
-        d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2]);
+        d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
       }//end for j
     }
 

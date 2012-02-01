@@ -241,10 +241,10 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut)
     AMP::LinearAlgebra::Vector::shared_ptr   ThermalInpVec_ic_temp = meshAdapter->createVector(ThermalOutVar);
     AMP::LinearAlgebra::Vector::shared_ptr   f = meshAdapter->createVector(ThermalInpVar);
     
-    AMP::LinearAlgebra::Vector::shared_ptr ic_vector = AMP::LinearAlgebra::SundialsVector::createView(ThermalInpVec_ic);
+    AMP::LinearAlgebra::Vector::shared_ptr ic_vector = AMP::LinearAlgebra::SundialsVector::view(ThermalInpVec_ic);
     
-    AMP::LinearAlgebra::Vector::shared_ptr ic_vector_prime = AMP::LinearAlgebra::SundialsVector::createView(ThermalInpVec_ic_prime);
-    AMP::LinearAlgebra::Vector::shared_ptr temp_vector = AMP::LinearAlgebra::SundialsVector::createView(ThermalInpVec_ic_temp);
+    AMP::LinearAlgebra::Vector::shared_ptr ic_vector_prime = AMP::LinearAlgebra::SundialsVector::view(ThermalInpVec_ic_prime);
+    AMP::LinearAlgebra::Vector::shared_ptr temp_vector = AMP::LinearAlgebra::SundialsVector::view(ThermalInpVec_ic_temp);
     
     
     

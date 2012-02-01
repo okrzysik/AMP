@@ -263,11 +263,11 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     
     
     //ThermalInpVec->zero();
-    AMP::LinearAlgebra::Vector::shared_ptr ic_vector = AMP::LinearAlgebra::SundialsVector::createView(ThermalInpVec_ic);
+    AMP::LinearAlgebra::Vector::shared_ptr ic_vector = AMP::LinearAlgebra::SundialsVector::view(ThermalInpVec_ic);
     bool isICVecsVarNull = ((ic_vector->getVariable()).get()==0);
     cout << "isICVecsVarNull = " << isICVecsVarNull << endl;
     
-    AMP::LinearAlgebra::Vector::shared_ptr ic_vector_prime = AMP::LinearAlgebra::SundialsVector::createView(ThermalInpVec_ic_prime);
+    AMP::LinearAlgebra::Vector::shared_ptr ic_vector_prime = AMP::LinearAlgebra::SundialsVector::view(ThermalInpVec_ic_prime);
     
     
     

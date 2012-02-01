@@ -27,7 +27,7 @@ void  setBoundary ( int id , AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::Me
 
     std::vector<size_t> ids;
     while ( curBnd != endBnd ) {
-        d1->getDOFs( *curBnd, ids );
+        d1->getDOFs( curBnd->globalID(), ids );
         std::vector<double> x = curBnd->coord();
         v1->setLocalValuesByGlobalID( ids.size(), &ids[0], &x[0] );
         ++curBnd;

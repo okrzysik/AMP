@@ -32,14 +32,10 @@ const Vector::shared_ptr  PetscVector::constView ( const Vector::shared_ptr inVe
         ManagedPetscVectorParameters *newParams = new ManagedPetscVectorParameters;
         newParams->d_Engine = boost::dynamic_pointer_cast<VectorEngine> ( inVector );
         newParams->d_CloneEngine = false;
-        if ( inVector->getCommunicationList().get()!=NULL )
-            newParams->d_CommList = inVector->getCommunicationList();
-        else
-            newParams->d_CommList = CommunicationList::createEmpty ( inVector->getLocalSize(), inVector->getComm() );
-        if ( inVector->getDOFManager().get()!=NULL )
-            newParams->d_DOFManager = inVector->getDOFManager();
-        else
-            newParams->d_DOFManager = AMP::Discretization::DOFManager::shared_ptr( new AMP::Discretization::DOFManager( inVector->getLocalSize(), inVector->getComm() ) );
+        AMP_INSIST(inVector->getCommunicationList().get()!=NULL,"All vectors must have a communication list");
+        newParams->d_CommList = inVector->getCommunicationList();
+        AMP_INSIST(inVector->getDOFManager().get()!=NULL,"All vectors must have a DOFManager list");
+        newParams->d_DOFManager = inVector->getDOFManager();
         ManagedPetscVector *t = new ManagedPetscVector ( VectorParameters::shared_ptr ( newParams ) );
         inVector->castTo<DataChangeFirer>().registerListener( t );
         t->setVariable ( inVector->getVariable() );
@@ -69,14 +65,10 @@ Vector::shared_ptr  PetscVector::view ( Vector::shared_ptr inVector )
         ManagedPetscVectorParameters *newParams = new ManagedPetscVectorParameters;
         newParams->d_Engine = boost::dynamic_pointer_cast<VectorEngine> ( inVector );
         newParams->d_CloneEngine = false;
-        if ( inVector->getCommunicationList().get()!=NULL )
-            newParams->d_CommList = inVector->getCommunicationList();
-        else
-            newParams->d_CommList = CommunicationList::createEmpty ( inVector->getLocalSize(), inVector->getComm() );
-        if ( inVector->getDOFManager().get()!=NULL )
-            newParams->d_DOFManager = inVector->getDOFManager();
-        else
-            newParams->d_DOFManager = AMP::Discretization::DOFManager::shared_ptr( new AMP::Discretization::DOFManager( inVector->getLocalSize(), inVector->getComm() ) );
+        AMP_INSIST(inVector->getCommunicationList().get()!=NULL,"All vectors must have a communication list");
+        newParams->d_CommList = inVector->getCommunicationList();
+        AMP_INSIST(inVector->getDOFManager().get()!=NULL,"All vectors must have a DOFManager list");
+        newParams->d_DOFManager = inVector->getDOFManager();
         ManagedPetscVector *newVector = new ManagedPetscVector ( VectorParameters::shared_ptr ( newParams ) );
         inVector->castTo<DataChangeFirer>().registerListener( newVector );
         newVector->setVariable ( inVector->getVariable() );

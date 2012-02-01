@@ -1,18 +1,18 @@
 #ifndef included_AMP_MassLinearFEOperatorParameters
 #define included_AMP_MassLinearFEOperatorParameters
 
-#include "FEOperatorParameters.h"
+#include "LinearFEOperatorParameters.h"
 
 #include "MassDensityModel.h"
 
 namespace AMP {
 namespace Operator {
     
-    class MassLinearFEOperatorParameters : public FEOperatorParameters {
+    class MassLinearFEOperatorParameters : public LinearFEOperatorParameters {
         public :
         
         MassLinearFEOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
-        : FEOperatorParameters(db) {  }
+        : LinearFEOperatorParameters(db) {  }
         
         virtual ~MassLinearFEOperatorParameters() {}
 

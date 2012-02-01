@@ -4,8 +4,6 @@
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 
-#if 0
-//This file has not been converted!
 
 namespace AMP {
   namespace Operator {
@@ -45,12 +43,12 @@ namespace AMP {
         }//end for i
 
         std::string tempVarName = activeInpVar_db->getString("VELOCITY");
-        AMP::LinearAlgebra::Variable::shared_ptr tempVar(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(tempVarName, d_MeshAdapter) ); 
+        AMP::LinearAlgebra::Variable::shared_ptr tempVar(new AMP::LinearAlgebra::Variable(tempVarName) ); 
         d_inpVariables->setVariable(NavierStokes::VELOCITY, tempVar);
 
         if(d_isActive[NavierStokes::PRESSURE]) {
           std::string varName = activeInpVar_db->getString("PRESSURE");
-          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1>(varName, d_MeshAdapter) );
+          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::Variable(varName) );
           d_inpVariables->setVariable(NavierStokes::PRESSURE, dummyVar);
           if(d_isFrozen[NavierStokes::PRESSURE]) {
             if( params->d_FrozenPressure != NULL ) {
@@ -61,7 +59,7 @@ namespace AMP {
 
         if(d_isActive[NavierStokes::TEMPERATURE]) {
           std::string varName = activeInpVar_db->getString("TEMPERATURE");
-          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1>(varName, d_MeshAdapter) );
+          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::Variable(varName) );
           d_inpVariables->setVariable(NavierStokes::TEMPERATURE, dummyVar);
           if(d_isFrozen[NavierStokes::TEMPERATURE]) {
             if( params->d_FrozenTemperature != NULL ) {
@@ -72,7 +70,7 @@ namespace AMP {
 
         AMP_INSIST( params->d_db->keyExists("OutputVariable"), "key not found" );
         std::string outVar = params->d_db->getString("OutputVariable");
-        d_outVariables.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(outVar, d_MeshAdapter));
+        d_outVariables.reset(new AMP::LinearAlgebra::Variable(outVar));
         d_isInitialized = false;
       }
 
@@ -102,15 +100,15 @@ namespace AMP {
       AMP::LinearAlgebra::Variable::shared_ptr inpVar;
       switch(varId) {
         case NavierStokes::VELOCITY : {
-                                        inpVar.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(name) );
+                                        inpVar.reset(new AMP::LinearAlgebra::Variable(name) );
                                         break;
                                       }
         case NavierStokes::PRESSURE : {
-                                        inpVar.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1>(name) );
+                                        inpVar.reset(new AMP::LinearAlgebra::Variable(name) );
                                         break;
                                       }
         case NavierStokes::TEMPERATURE : {
-                                           inpVar.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1>(name) );
+                                           inpVar.reset(new AMP::LinearAlgebra::Variable(name) );
                                            break;
                                          }
         default: 
@@ -155,9 +153,10 @@ namespace AMP {
       d_outVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
     }
 
-    void ConsMomentumGalWFFEOperator :: preElementOperation( const AMP::Mesh::MeshManager::Adapter::Element & elem, 
-        const std::vector<AMP::Mesh::DOFMap::shared_ptr> & dof_maps )
+    void ConsMomentumGalWFFEOperator :: preElementOperation( const AMP::Mesh::MeshElement & elem )
     {
+      AMP_ERROR("Not converted yet");
+      /*
       unsigned int num_local_type0Dofs = 0;
       for(unsigned int i = 0; i < 3; i++) {
         (dof_maps[0])->getDOFs (elem, d_type0DofIndices[i], i);
@@ -207,6 +206,7 @@ namespace AMP {
 
       d_flowGalWFElem->initializeForCurrentElement( elemPtr, d_transportModel );
       d_flowGalWFElem->setElementVectors( elementInputVectors, d_elementOutputVector );
+      */
     }
 
     void ConsMomentumGalWFFEOperator :: postElementOperation()
@@ -225,6 +225,8 @@ namespace AMP {
 
     void ConsMomentumGalWFFEOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
     {
+      AMP_ERROR("Not converted yet");
+      /*
       if(!d_isInitialized) {
         init();
       }
@@ -259,7 +261,7 @@ namespace AMP {
           }
         }
       }
-
+      */
     }
 
     boost::shared_ptr<OperatorParameters> ConsMomentumGalWFFEOperator ::
@@ -309,7 +311,5 @@ namespace AMP {
 
   }
 }//end namespace
-
-#endif
 
 

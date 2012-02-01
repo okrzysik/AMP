@@ -3,6 +3,7 @@
 #include "VectorBuilder.h"
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/trilinos/EpetraVectorEngine.h"
+#include "vectors/MultiVariable.h"
 #include "discretization/MultiDOF_Manager.h"
 
 #include <iostream>
@@ -24,7 +25,22 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
     boost::shared_ptr<AMP::Discretization::multiDOFManager> multiDOF;
     if ( split )
         multiDOF = boost::dynamic_pointer_cast<AMP::Discretization::multiDOFManager>(DOFs);
-    if (  multiDOF.get() != NULL ) {
+    // Check if we are dealing with a multiVariable
+    boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> multiVariable =
+        boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(variable);
+    if ( multiVariable.get() != NULL ) {
+        // We are dealing with a MultiVariable, create the Vector for each variable, then combine
+        std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vectors;
+        for (AMP::LinearAlgebra::MultiVariable::iterator it=multiVariable->beginVariable(); it!=multiVariable->endVariable(); it++)
+            vectors.push_back( createVector( DOFs, *it, split ) );
+        // Create the multivector
+        AMP_MPI comm = DOFs->getComm();
+        AMP_ASSERT( !comm.isNull() );
+        comm.barrier();
+        boost::shared_ptr<AMP::LinearAlgebra::MultiVector> multiVector = AMP::LinearAlgebra::MultiVector::create( variable, comm );
+        multiVector->addVector(vectors);
+        return multiVector;
+    } else if (  multiDOF.get() != NULL ) {
         // We are dealing with a multiDOFManager and want to split the vector based on the DOF managers
         std::vector<AMP::Discretization::DOFManager::shared_ptr> subDOFs = multiDOF->getDOFManagers();
         // Get the vectors for each DOF manager

@@ -2,11 +2,11 @@
 #include "MassLinearFEOperator.h"
 #include "utils/Utilities.h"
 
-#if 0
-//This file has not been converted!
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
+
+
     AMP::LinearAlgebra::Variable::shared_ptr MassLinearFEOperator :: getInputVariable() {
       return d_inpVariable;
     }
@@ -43,10 +43,10 @@ namespace AMP {
       //d_inpVariable.reset(new AMP::Mesh::NodalScalarVariable("inpVar"));
       //d_outVariable.reset(new AMP::Mesh::NodalScalarVariable("outVar"));
       std::string inpVar = params->d_db->getString("InputVariable");
-      d_inpVariable.reset(new AMP::Mesh::NodalScalarVariable(inpVar, d_MeshAdapter));    
+      d_inpVariable = AMP::LinearAlgebra::Variable::shared_ptr(new AMP::LinearAlgebra::Variable(inpVar));    
 
       std::string outVar = params->d_db->getString("OutputVariable");
-      d_outVariable.reset(new AMP::Mesh::NodalScalarVariable(outVar, d_MeshAdapter));
+      d_outVariable = AMP::LinearAlgebra::Variable::shared_ptr(new AMP::LinearAlgebra::Variable(outVar));
 
       reset(params);
     }
@@ -65,9 +65,10 @@ namespace AMP {
       d_matrix->makeConsistent();
     }
 
-    void MassLinearFEOperator :: preElementOperation( const AMP::Mesh::MeshManager::Adapter::Element & elem,
-        const std::vector<AMP::Mesh::DOFMap::shared_ptr> & dof_maps )
+    void MassLinearFEOperator :: preElementOperation( const AMP::Mesh::MeshElement & elem )
     {
+      AMP_ERROR("Not converted yet");
+      /*
       (dof_maps[0])->getDOFs(elem, d_dofIndices);
       unsigned int num_local_dofs = d_dofIndices.size();
 
@@ -123,6 +124,7 @@ namespace AMP {
       d_massLinElem->setElementMassMatrix(d_elementMassMatrix);
 
       d_massLinElem->setElementVectors(localTemperature, localConcentration, localBurnup);
+      */
     }
 
     void MassLinearFEOperator :: postElementOperation()
@@ -139,11 +141,8 @@ namespace AMP {
 
     }
 
-  }
+
+}
 }//end namespace
-
-#endif
-
-
 
 

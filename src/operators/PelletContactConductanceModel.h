@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "ElementPhysicsModelFactory.h"
-//#include "diffusion/DiffusionTransportModel.h"
+#include "diffusion/DiffusionTransportModel.h"
 #include "RobinPhysicsModel.h"
 #include "boost/shared_ptr.hpp"
 
@@ -28,7 +28,7 @@ class PelletContactConductanceModel  : public RobinPhysicsModel
     protected:
 
       unsigned int d_nTransportModels; /**< Number of Transport Models. */
-      //std::vector< boost::shared_ptr< DiffusionTransportModel > > d_transportModels;
+      std::vector< boost::shared_ptr< DiffusionTransportModel > > d_transportModels;
 
     private:
 

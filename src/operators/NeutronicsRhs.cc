@@ -15,8 +15,6 @@
 #include <vector>
 #include <cmath>
 
-#if 0
-//This file has not been converted!
 
 namespace AMP {
   namespace Operator {
@@ -68,6 +66,8 @@ namespace AMP {
     void 
       NeutronicsRhs::getFromInput(SP_Database db)
       {
+        AMP_ERROR("Not converted yet");
+        /*
         AMP_ASSERT(db);
 
         // define the source type and create the output variable.
@@ -108,6 +108,7 @@ namespace AMP {
             d_fixedValues[0] = 1.;
           }
         }
+        */
       }
 
     /*
@@ -178,6 +179,8 @@ namespace AMP {
           const  double      a,
           const  double      b) {
         (void) f; (void) u;
+        AMP_ERROR("Not converted yet");
+        /*
         // NeutronicsRhs is made to provide a power, so a and b are not optional.
         AMP_ASSERT(AMP::Utilities::approx_equal(a,1.));
         AMP_ASSERT(AMP::Utilities::approx_equal(b,0.));
@@ -209,6 +212,7 @@ namespace AMP {
             }//end for gauss-points
           }//end for elements
         }
+        */
       }
 
 
@@ -230,7 +234,7 @@ namespace AMP {
 
     void NeutronicsRhs::setOutputVariableName(const std::string & name, int varId) {
       (void) varId;      
-      d_outputVariable->setName(name);
+      d_outputVariable = AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable(name) );
     }
 
     AMP::LinearAlgebra::Variable::shared_ptr NeutronicsRhs::getOutputVariable() {
@@ -249,7 +253,6 @@ namespace AMP {
   }
 }
 
-#endif
 
 
 

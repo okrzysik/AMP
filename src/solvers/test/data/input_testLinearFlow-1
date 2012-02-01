@@ -1,22 +1,16 @@
-Mesh = "cube343H27.e"
-
-NumberOfMeshes = 1
-Mesh_1{
-  Filename = "cube343H27.e"
-  MeshName = "cubeH27"
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 343
-}
-
-Mesh_2{
-  Filename = "cube343H8.e"
-  MeshName = "cubeH08"
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 4488
+// Database for all the meshes
+Mesh{
+    MeshType = "libMesh"
+    dim = 3
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
+    MeshName = "cubeH27"
+    FileName = "cube343H27.e"
+    NumberOfElements = 343
+    //MeshName = "cubeH08"
+    //FileName = "cube343H8.e"
+    //NumberOfElements = 4488
 }
 
 ConsMassLinearBVPOperator {

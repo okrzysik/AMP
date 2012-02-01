@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <string>
 
@@ -8,36 +7,52 @@
 #include "utils/Utilities.h"
 #include "utils/ReadTestMesh.h"
 
-#include "ampmesh/MeshVariable.h"
-#include "ampmesh/MeshAdapter.h"
-#include "ampmesh/MeshManager.h"
+#include "ampmesh/Mesh.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/Variable.h"
+#include "vectors/Vector.h"
+#include "vectors/VectorBuilder.h"
+#include "matrices/MatrixBuilder.h"
 
-#include "mesh_communication.h"
 
 void myTest(AMP::UnitTest *ut, std::string input_file) {
-  std::string log_file = "output_testMatCreate";
 
-  AMP::PIO::logOnlyNodeZero(log_file);
+    std::string log_file = "output_testMatCreate";
+    AMP::PIO::logOnlyNodeZero(log_file);
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
-  AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
+    // Read the input file
+    boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
+    AMP::InputManager::getManager()->parseInputFile ( input_file , input_db );
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr meshmgrParams (new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr manager (new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ("cube");
+    // Get the Mesh database and create the mesh parameters
+    boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+    boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+    params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
 
-  AMP::LinearAlgebra::Variable::shared_ptr inVar (new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>("inputVar", meshAdapter));
-  AMP::LinearAlgebra::Variable::shared_ptr outVar (new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1>("outputVar", meshAdapter));
+    // Create the meshes from the input database
+    AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh(params);
 
-  AMP::LinearAlgebra::Matrix::shared_ptr mat1 = meshAdapter->createMatrix(inVar, outVar);
+    // Create the DOF manager
+    AMP::Discretization::DOFManager::shared_ptr scalarDOFs = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,1);
+    AMP::Discretization::DOFManager::shared_ptr vectorDOFs = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,3);
 
-  if(mat1.get()!=NULL){
-    ut->passes("Able to create a non-square matrices");
-  }else{
-    ut->failure("Unable to create a non-square matrices");
-  }
+    // Create the vectors
+    AMP::LinearAlgebra::Variable::shared_ptr inVar (new AMP::LinearAlgebra::Variable("inputVar"));
+    AMP::LinearAlgebra::Variable::shared_ptr outVar (new AMP::LinearAlgebra::Variable("outputVar"));
+    AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector( vectorDOFs, inVar );
+    AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector( scalarDOFs, outVar );
+
+    // Create the matrix
+    AMP::LinearAlgebra::Matrix::shared_ptr mat1 = AMP::LinearAlgebra::createMatrix ( inVec, outVec );
+    if(mat1.get()!=NULL){
+        ut->passes("Able to create a non-square matrices");
+    } else {
+        ut->failure("Unable to create a non-square matrices");
+    }
 
 }
+
 
 int main(int argc, char *argv[])
 {

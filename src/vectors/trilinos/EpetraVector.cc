@@ -64,17 +64,6 @@ namespace LinearAlgebra {
     return retVal;
   }
 
-  Vector::shared_ptr  EpetraVector::createView ( Vector::shared_ptr  inVector )
-  {
-    DEPRECATED("createView","view");
-    return view ( inVector );
-  }
-
-  const Vector::shared_ptr  EpetraVector::createConstView ( const Vector::shared_ptr  inVector )
-  {
-    DEPRECATED("createConstView","constView");
-    return constView ( inVector );
-  }
 
 }
 }

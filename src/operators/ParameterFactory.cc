@@ -1,4 +1,4 @@
-/*#include "ParameterFactory.h"
+#include "ParameterFactory.h"
 #include "DirichletMatrixCorrectionParameters.h"
 #include "MechanicsLinearFEOperatorParameters.h"
 #include "MechanicsNonlinearFEOperatorParameters.h"
@@ -8,7 +8,7 @@ namespace AMP {
 namespace Operator {
 
 boost::shared_ptr<OperatorParameters>
-ParameterFactory::createParameter(boost::shared_ptr<AMP::Database>  input_db, AMP::Mesh::MeshManager::Adapter::shared_ptr  mesh)
+ParameterFactory::createParameter(boost::shared_ptr<AMP::Database>  input_db, AMP::Mesh::Mesh::shared_ptr  mesh)
 {
   boost::shared_ptr<OperatorParameters> retParameters;
   std::string name;
@@ -38,11 +38,11 @@ ParameterFactory::createParameter(boost::shared_ptr<AMP::Database>  input_db, AM
     {
     }
 
-  retParameters->d_MeshAdapter = mesh;
+  retParameters->d_Mesh = mesh;
   
   return retParameters;
 }
   
 }
 }
-*/
+

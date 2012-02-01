@@ -1,0 +1,14 @@
+// Input file for testMultiVector
+
+Mesh {
+    MeshType = "libMesh"
+    MeshName = "brick"
+    FileName = "brick.e"
+    dim = 3
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
+    NumberOfElements = 5226
+}
+
+
