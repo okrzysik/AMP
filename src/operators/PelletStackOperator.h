@@ -4,6 +4,9 @@
 
 #include "operators/PelletStackOperatorParameters.h"
 
+#if 0
+//This file has not been converted! 
+
 namespace AMP {
   namespace Operator {
 
@@ -65,6 +68,8 @@ namespace AMP {
 
   }
 }
+
+#endif
 
 #endif
 
