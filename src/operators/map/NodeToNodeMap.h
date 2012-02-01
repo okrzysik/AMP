@@ -65,7 +65,7 @@ private:
        public:
           AMP::Mesh::MeshElementID id;
           double pos[3];
-          size_t dof[3];
+          size_t dof[8];
           int proc;
           Point ();
           Point ( const Point &rhs );
