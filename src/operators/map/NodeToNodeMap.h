@@ -98,7 +98,6 @@ private:
     std::vector<double>                     d_recvBuffer;
 
     // Other data
-    //AMP::LinearAlgebra::Vector::shared_ptr        d_OutputVector;
     AMP::LinearAlgebra::Variable::shared_ptr      d_inpVariable;
     bool d_callMakeConsistentSet;
 
