@@ -105,6 +105,12 @@ class PowerShape : public  Operator {
     // Moments in the Zernike basis function.
     std::vector<double> d_Moments;
 
+    // Radial Bounding Box
+    // (0,1) = center (x,y)
+    // (2,3) = radius (min, max)
+    // (4,5) = height (min, max)
+    std::vector<double> d_radialBoundingBox;
+
     // Frapcon volume integral type.
     std::string d_frapconVolumeIntegral;
 
