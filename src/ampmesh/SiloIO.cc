@@ -317,6 +317,7 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID,siloMultiMeshData> &d
         meshdata[i] = siloMultiMeshData::unpack(ptr);
         ptr = &ptr[meshdata[i].size()];
     }
+    delete [] send_buf;
     delete [] recv_buf;
     // Combine the results
     data = std::map<AMP::Mesh::MeshID,siloMultiMeshData>();
