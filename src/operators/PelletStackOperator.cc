@@ -3,6 +3,9 @@
 #include "operators/map/NodeToNodeMap.h"
 #include "vectors/VectorSelector.h"
 
+#if 0
+//This file has not been converted!
+
 namespace AMP {
   namespace Operator {
 
@@ -335,5 +338,6 @@ void PelletStackOperator :: applySerial(const AMP::LinearAlgebra::Vector::shared
 }
 }
 
+#endif
 
 

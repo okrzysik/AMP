@@ -37,7 +37,7 @@ NodeToNodeMap::NodeToNodeMap ( const boost::shared_ptr<AMP::Operator::OperatorPa
     dim = d_MapComm.maxReduce(dim);
     AMP_INSIST(dim<=3,"Node to Node map only works up to 3d (see Point)");
     DofsPerObj = Params.d_db->getInteger ( "DOFsPerObject" );
-    AMP_INSIST(DofsPerObj<=3,"Node to Node map only works for <= 3 DOFs per node (see Point)");
+    AMP_INSIST(DofsPerObj<=8,"Node to Node map only works for <= 8 DOFs per node (see Point)");
     d_DOFManager = Params.d_DOFManager;
     d_commTag = Params.d_commTag;
     d_callMakeConsistentSet = Params.callMakeConsistentSet;
@@ -374,7 +374,7 @@ NodeToNodeMap::Point::Point ()
     proc = -1;
     for ( size_t i=0; i!=3; i++)
       pos[i] = 0.0;
-    for ( size_t i=0; i!=3; i++)
+    for ( size_t i=0; i!=8; i++)
       dof[i] = static_cast<unsigned int>(-1);
 }
 NodeToNodeMap::Point::Point ( const Point &rhs )
@@ -383,7 +383,7 @@ NodeToNodeMap::Point::Point ( const Point &rhs )
     proc = rhs.proc;
     for ( size_t i=0; i!=3; i++)
       pos[i] = rhs.pos[i];
-    for ( size_t i=0; i!=3; i++)
+    for ( size_t i=0; i!=8; i++)
       dof[i] = rhs.dof[i];
 }
 

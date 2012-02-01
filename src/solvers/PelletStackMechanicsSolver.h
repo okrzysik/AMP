@@ -7,6 +7,9 @@
 #include "solvers/PelletStackMechanicsSolverParameters.h"
 #include "operators/PelletStackOperator.h"
 
+#if 0
+//This file has not been converted! 
+
 namespace AMP {
   namespace Solver {
 
@@ -33,6 +36,8 @@ namespace AMP {
 
   }
 }
+
+#endif
 
 #endif
 

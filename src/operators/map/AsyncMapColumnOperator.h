@@ -33,6 +33,9 @@ public:
       */
     void  setVector ( AMP::LinearAlgebra::Vector::shared_ptr &p );
 
+    //!  Returns the frozen vector
+    virtual AMP::LinearAlgebra::Vector::shared_ptr getFrozenVector() { return d_OutputVector; }
+
     virtual void append ( boost::shared_ptr < Operator > op );
 
     // Overload the apply operator to include makeConsistent
