@@ -44,9 +44,6 @@ public:
     //! Destructor
     virtual ~NodeToNodeMap ();
 
-    //!  Returns the frozen vector
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getFrozenVector() { return d_OutputVector; }
-
     virtual void applyStart(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
         AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
 
@@ -101,7 +98,7 @@ private:
     std::vector<double>                     d_recvBuffer;
 
     // Other data
-    AMP::LinearAlgebra::Vector::shared_ptr        d_OutputVector;
+    //AMP::LinearAlgebra::Vector::shared_ptr        d_OutputVector;
     AMP::LinearAlgebra::Variable::shared_ptr      d_inpVariable;
     bool d_callMakeConsistentSet;
 

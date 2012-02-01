@@ -4,9 +4,6 @@
 
 #include "operators/PelletStackOperatorParameters.h"
 
-#if 0
-//This file has not been converted! 
-
 namespace AMP {
   namespace Operator {
 
@@ -60,7 +57,7 @@ namespace AMP {
         std::vector<AMP::Mesh::Mesh::shared_ptr> d_meshes;
         std::vector<unsigned int> d_pelletIds;
         AMP::LinearAlgebra::Variable::shared_ptr d_var;
-        std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_frozenVectorForMaps;
+        AMP::LinearAlgebra::Vector::shared_ptr d_frozenVectorForMaps;
         bool d_frozenVectorSet;
         AMP_MPI d_pelletStackComm;
         boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  d_n2nMaps;
@@ -68,8 +65,6 @@ namespace AMP {
 
   }
 }
-
-#endif
 
 #endif
 
