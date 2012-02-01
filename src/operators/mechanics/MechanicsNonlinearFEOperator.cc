@@ -679,7 +679,7 @@ namespace AMP {
       d_currElemPtr = new ::Hex8;
       for(unsigned int j = 0; j < d_currNodes.size(); j++) {
         std::vector<double> pt = d_currNodes[j].coord();
-        d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2]);
+        d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
       }//end for j
     }
 
