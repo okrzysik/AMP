@@ -118,6 +118,9 @@ private:
     bool d_ManufacturedUseTemp;
     bool d_ManufacturedUseConc;
 
+    std::string d_PropertyName;
+    std::vector<double> d_Parameters;
+
 };
 
 }

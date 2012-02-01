@@ -12,14 +12,8 @@ namespace LinearAlgebra {
 
 /** \brief A collection of AMP Vectors that appear as one vector
   * \details
-  *    Given a set of vectors \f$(\mathrm{v}_1 , \mathrm{v}_2 , \ldots , 
-  *    \mathrm{v}_n)\f$, they can be collected into a single \f$\tilde{\mathrm{v}} = 
-  *    \{\mathrm{v}_1  \mathrm{v}_2  \ldots  \mathrm{v}_n\}^T\f$.  This class
+  *    Given a set of vectors, they can be collected into a singlevector.  This class
   *    accomplishes this task.
-  *
-  *    The new vector is numbered such that if \f$\mathrm{v}_i \in \mathbb{R}^{n_i}\f$,
-  *    the first entry in \f$\mathrm{v}_i\f$ relative to the first entry of the multivector
-  *    is \f[\sum_j=0^{i-1} n_i\f].
   */
 class MultiVector : public Vector , public VectorEngine , public DataChangePassThrough
 {

@@ -379,8 +379,9 @@ namespace AMP {
           }
         }
 
-        for(int i = 0; i < 6; i++) { 
+        for(int i = 0; i < 3; i++) { 
           d_constitutiveMatrix[i][i] += (2.0 * G); 
+          d_constitutiveMatrix[i + 3][i + 3] += G; 
         }
 
         for(int i = 0; i < 3; i++) {
@@ -445,8 +446,9 @@ namespace AMP {
         }
       }
 
-      for(int i = 0; i < 6; i++) {
+      for(int i = 0; i < 3; i++) {
         d_constitutiveMatrix[i][i] += term1;
+        d_constitutiveMatrix[i + 3][i + 3] += (0.5 * term1);
       }
 
       for(int i = 0; i < 6; i++) {
@@ -482,8 +484,9 @@ namespace AMP {
 
       double dstra[6];
 
-      for(int i = 0; i < 6; i++) {
+      for(int i = 0; i < 3; i++) {
         dstra[i] = stra_np1[i] - stra_n[i];
+        dstra[i + 3] = 0.5 * (stra_np1[i + 3] - stra_n[i + 3]);
         //std::cout << "dstra[" << i << "]=" << dstra[i] << std::endl;
       }
 

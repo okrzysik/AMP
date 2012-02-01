@@ -18,7 +18,6 @@ namespace AMP
 	namespace voodoo
 	{
 		/**
-		 * \fn getKeys
 		 * \brief	Given a map that is referenced by a key value, takes the keys and
 		 *			shoves them into a vector that is returned
 		 */

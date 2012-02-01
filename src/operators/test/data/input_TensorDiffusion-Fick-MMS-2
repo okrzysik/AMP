@@ -1,11 +1,11 @@
 NumberOfMeshes = 1
 Mesh_1{
-  Filename = "cylinder4K.e"
+  Filename = "shell3150mesh.e"
   MeshName = "Mesh"
   x_offset = 0.0
   y_offset = 0.0
   z_offset = 0.0
-  NumberOfElements = 4096
+  NumberOfElements = 3150
 }
 
 FickNonlinearBVPOperator {
@@ -119,29 +119,32 @@ FickDirichletMatrixCorrection{
 
 DiffusionTransportModel{
         name = "DiffusionCylindricalTransportModel"
-        Material = "RadialPolynomial"
-        Property = "FickCoefficient"
+        Material = "CylindricallySymmetric"
+        Property = "ScalarRadialFick"
  		RadiusArgument = "radius"
- 		// coefficients for the polynomial 1. + 1000 r (1 - r) (r - .2) (r - .52) (r - .63) (r - .8)
-        Parameters =  1., 52.416, -564.016, 2149.2, -3787.6, 3150., -1000.
+ 		// coefficients for the polynomial 1. + 100 r (1 - r) (r - .2) (r - .52) (r - .63) (r - .8)
+        Parameters =  1., 5.2416, -56.4016, 214.92, -378.76, 315.0, -100.
 } 
 	
 MassDensityModel{
         name = "MassDensityModel"
-        Material = "Independent"
 		Equation = "ManufacturedSource"
 		ManufacturedSourceEquation = "Fick"
 		ManufacturedVariable = "Concentration"
-        Property = "TensorFickCoefficient"
+        Material = "CylindricallySymmetric"
+        Property = "TensorFick"
+        Parameters = 7., 1., 5.2416, -56.4016, 214.92, -378.76, 315.0, -100., 0.
 	    print_info_level = 3
      	ManufacturedSolution {
      		Geometry = "CylindricalRodRZ"
      		Order = "Cubic"
      		BoundaryType = "None"
-     		Coefficients = -3.298170124741389, -3.3608066162412227, 2.4361892675032273, -1.8456453120058591, -1.5481742098989426, -2.207065870729561, 3.813255767348492, -1.7669959446433472, 1.4561206341191433, -1.2690771317293819, 3.995237387986208, 1.139269470399439, -2.04866241907197, 3.812693842387503, -2.350545154388764, 1.700897116750693
-     		MinR = 0.
-     		MaxR = 1.1
-     		MinZ = -2.1
-     		MaxZ = 2.1
+      		Coefficients = 14.565519491455166, 14.51316443791129, 17.032171451208203, -8.987124892620383, 0, 0, 0, 0, 12.517794782212528, 6.796432207509762, 5.550731118198651, 6.6139884494310675,
+-4.194714492268008, -19.623908485943932, -13.94646064306552, -0.09865646462251965
+			MinR =  .4999999
+     		MaxR = 1.0000001
+     		MinZ = -.5000001
+     		MaxZ =  .5000001
+     		
      	}
 }  

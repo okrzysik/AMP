@@ -15,8 +15,11 @@ ManufacturedSolution::ManufacturedSolution(boost::shared_ptr<Database> db):
 		d_internalParameters(false), d_c(1), d_a(1),
 		d_h(std::valarray<std::valarray<double> >(std::valarray<double>(3), 3)),
 		d_hs(std::valarray<std::valarray<double> >(std::valarray<double>(3), 3)),
-		d_CylindricalCoords(false), d_Pi(3.1415926535898), d_MaximumTheta(2.*d_Pi)
+		d_CylindricalCoords(false)
 {
+	d_Pi = 3.1415926535898;
+	d_MaximumTheta = 2.*d_Pi;
+
 	std::string name = db->getName();
 	AMP_INSIST(name == "ManufacturedSolution", "incorrect database name");
 
@@ -27,6 +30,7 @@ ManufacturedSolution::ManufacturedSolution(boost::shared_ptr<Database> db):
 		std::string geom = db->getString("Geometry");
 		std::string order = db->getString("Order");
 		std::string bctype = db->getString("BoundaryType");
+		d_Name = geom+order+bctype;
 
 		if (geom == "Brick") d_geom = BRICK;
 		else if (geom == "CylindricalRod") d_geom = CYLROD;
@@ -219,6 +223,7 @@ ManufacturedSolution::ManufacturedSolution(boost::shared_ptr<Database> db):
 			d_h[i][j] = distortion[i*3+j];
 			d_hs[i][j] = .5*(distortion[i*3+j] + distortion[j*3+i]);
 		}
+		d_Name = "QuadraticDistortion"+function;
 
 	} else {
 		AMP_INSIST(false, "unrecognized manufactured solution type or missing keys");
@@ -268,14 +273,7 @@ void ManufacturedSolution::evaluate(std::valarray<double> &result, const double 
 
 		(*d_functionPointer)(result, xs, ys, zs, this);
 	} else {
-		double r, th;
-		std::valarray<double> poly(10);
-		r = sqrt(x*x+y*y);
-		th = 0.;
-		if (r>0.) {
-			th = acos(x/r);
-			if (y<0.) th = 2*d_Pi-th;
-		}
+		double r=x, th=y;
 		AMP_ASSERT(r >=d_MinR  and r <=d_MaxR );
 		AMP_ASSERT(th>=d_MinTh and th<=d_MaxTh);
 		AMP_ASSERT(z >=d_MinZ  and z <=d_MaxZ );

@@ -2,7 +2,6 @@
 #define FACTORY_H
 
 /**
- *	\file 		factory.h
  *	\brief		This provides a templated method of creating self registering factories
  *				Each of these factories must take the same number/type of constrctor args
  *	\author		Nathan Barnett

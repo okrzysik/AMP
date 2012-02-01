@@ -45,7 +45,9 @@
 void myTest(AMP::UnitTest *ut)
 {
   //std::string exeName("testPetscSNESSolver-NonlinearMechanics-2_COMPARISON");
-  std::string exeName("testPetscSNESSolver-NonlinearMechanics-2_COMPARISON-1");
+  //std::string exeName("testPetscSNESSolver-NonlinearMechanics-2_COMPARISON-1");
+  //std::string exeName("testPetscSNESSolver-NonlinearMechanics-2_COMPARISON-2");
+  std::string exeName("testPetscSNESSolver-NonlinearMechanics-2_COMPARISON-3");
   std::string input_file = "input_" + exeName;
   std::string log_file = "output_" + exeName;
 
@@ -80,7 +82,7 @@ void myTest(AMP::UnitTest *ut)
   AMP::LinearAlgebra::Vector::shared_ptr finalTempVec = meshAdapter->createVector( temperatureVariable );
 
   double Temp_0 = 400.0;
-  double Temp_1 = 600.0;
+  double Temp_1 = 2000.0;
   initTempVec->setToScalar(Temp_0);
   initTempVec->abs ( initTempVec );
   double initTempConst = input_db->getDoubleWithDefault("INIT_TEMP_CONST", 1.0);
@@ -92,6 +94,7 @@ void myTest(AMP::UnitTest *ut)
     finalTempVec->copyVector(initTempVec);
   } else {
     double Temp_n = Temp_0 + ((Temp_1 - Temp_0) / ((double)(NumberOfLoadingSteps)));
+    AMP::pout << "Temp_n = " << Temp_n << std::endl;
     finalTempVec->setToScalar(Temp_n);
     double finalTempConst = input_db->getDoubleWithDefault("FINAL_TEMP_CONST", 1.0);
     finalTempVec->scale(finalTempConst);
@@ -198,6 +201,7 @@ void myTest(AMP::UnitTest *ut)
 
     if(step > 0) {
       double Temp_n = Temp_0 + (((double)(step + 1)) * ((Temp_1 - Temp_0) / ((double)(NumberOfLoadingSteps))));
+      AMP::pout << "Temp_n = " << Temp_n << std::endl;
       finalTempVec->setToScalar(Temp_n);
       (boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinBvpOperator->
                                                                       getVolumeOperator()))->setVector(AMP::Operator::Mechanics::TEMPERATURE, finalTempVec);

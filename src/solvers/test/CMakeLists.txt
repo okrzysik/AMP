@@ -447,6 +447,8 @@ COPY_TEST_DATA_FILE ( inputPlasticSolver1 )
 COPY_TEST_DATA_FILE ( plasticSolver1PetscOptions )
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearMechanics-2_COMPARISON )
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearMechanics-2_COMPARISON-1 )
+COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearMechanics-2_COMPARISON-2 )
+COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearMechanics-2_COMPARISON-3 )
 
 COPY_MESH_FILE ( cookMesh0)
 COPY_MESH_FILE ( cookMesh1)

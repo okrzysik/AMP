@@ -7,7 +7,61 @@ namespace Materials {
 // FUNCTIONS
 // ====================================================================================
 
-/// determine if a set of values are all within range or not
+// set auxiliary data
+template<class Number>
+void Property<Number>::setAuxiliaryData(const std::string key, const double val){
+	std::map<std::string, double>::iterator loc=d_AuxiliaryDataDouble.find(key);
+
+	// this guarantees that the host code can not set just any old data value.
+	// the property constructor must set up the database for legitimate use.
+	AMP_ASSERT(loc != d_AuxiliaryDataDouble.end());
+
+	loc->second = val;
+}
+
+// set auxiliary data
+template<class Number>
+void Property<Number>::setAuxiliaryData(const std::string key, const int val){
+	std::map<std::string, int>::iterator loc=d_AuxiliaryDataInteger.find(key);
+
+	// this guarantees that the host code can not set just any old data value.
+	// the property constructor must set up the database for legitimate use.
+	AMP_ASSERT(loc != d_AuxiliaryDataInteger.end());
+
+	loc->second = val;
+}
+
+// set auxiliary data
+template<class Number>
+void Property<Number>::setAuxiliaryData(const std::string key, const std::string val){
+	std::map<std::string, std::string>::iterator loc=d_AuxiliaryDataString.find(key);
+
+	// this guarantees that the host code can not set just any old data value.
+	// the property constructor must set up the database for legitimate use.
+	AMP_ASSERT(loc != d_AuxiliaryDataString.end());
+
+	loc->second = val;
+}
+
+/// get auxiliary data
+template<class Number>
+void Property<Number>::getAuxiliaryData(const std::string key, double &val) {
+	val = *d_AuxiliaryDataDouble.find(key);
+}
+
+/// get auxiliary data
+template<class Number>
+void Property<Number>::getAuxiliaryData(const std::string key, int &val) {
+	val = *d_AuxiliaryDataInteger.find(key);
+}
+
+/// get auxiliary data
+template<class Number>
+void Property<Number>::getAuxiliaryData(const std::string key, std::string &val) {
+	val = *d_AuxiliaryDataString.find(key);
+}
+
+// determine if a set of values are all within range or not
 template<class Number>
 template <class INPUT_VTYPE>
 bool Property<Number>::in_range(const std::string &argname, const INPUT_VTYPE &values)
@@ -24,7 +78,7 @@ bool Property<Number>::in_range(const std::string &argname, const INPUT_VTYPE &v
     return result;
 }
 
-/// determine if a set of sets of values are all within range or not
+// determine if a set of sets of values are all within range or not
 template<class Number>
 template<class INPUT_VTYPE>
 bool Property<Number>::in_range(
