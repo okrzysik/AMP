@@ -77,21 +77,6 @@ namespace AMP {
       return -1;
     }
 
-    void PelletStackOperator :: applyUnscaling(AMP::LinearAlgebra::Vector::shared_ptr f) {
-      AMP::LinearAlgebra::Vector::shared_ptr subF = f->subsetVectorForVariable(d_var);
-      AMP::Discretization::DOFManager::shared_ptr dof_map = subF->getDOFManager();
-      AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator(AMP::Mesh::Vertex, d_slaveId, 0);
-      AMP::Mesh::MeshIterator end_bnd = bnd.end();
-      for( ; bnd != end_bnd; ++bnd) {
-        std::vector<size_t> bndGlobalIds;
-        dof_map->getDOFs(bnd->globalID(), bndGlobalIds);
-        for(unsigned int j = 0; j < bndGlobalIds.size(); j++) {
-          double val = subF->getLocalValueByGlobalID( bndGlobalIds[j] );
-          subF->setLocalValueByGlobalID(bndGlobalIds[j], val/d_scalingFactor);
-        }//end for j
-      }//end for bnd
-    }
-
     void PelletStackOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
         const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
         const double a, const double b) {
@@ -110,20 +95,40 @@ namespace AMP {
       }
     }
 
-    /*
-       void PelletStackOperator :: applyOnlyZcorrection(AMP::LinearAlgebra::Vector::shared_ptr &u) {
-       std::vector<double> finalMaxZdispsList;
-       computeZscan(u, finalMaxZdispsList); 
-       for(size_t i = 0; i < d_pelletIds.size(); i++) {
-       if(d_pelletIds[i] > 0) {
-       AMP::LinearAlgebra::Variable::shared_ptr currVar = d_var[i];
-       AMP::LinearAlgebra::Vector::shared_ptr subU = u->subsetVectorForVariable(currVar);
-       AMP::LinearAlgebra::Vector::shared_ptr zVec = subU->select( AMP::LinearAlgebra::VS_Stride("Z", 2, 3) , "Z" );
-       zVec->addScalar(zVec, finalMaxZdispsList[d_pelletIds[i] - 1]);
-       }
-       }//end for i
-       }
+    void PelletStackOperator :: applyUnscaling(AMP::LinearAlgebra::Vector::shared_ptr f) {
+      AMP::LinearAlgebra::Vector::shared_ptr subF = f->subsetVectorForVariable(d_var);
+      AMP::Discretization::DOFManager::shared_ptr dof_map = subF->getDOFManager();
+      AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator(AMP::Mesh::Vertex, d_slaveId, 0);
+      AMP::Mesh::MeshIterator end_bnd = bnd.end();
+      for( ; bnd != end_bnd; ++bnd) {
+        std::vector<size_t> bndGlobalIds;
+        dof_map->getDOFs(bnd->globalID(), bndGlobalIds);
+        for(size_t j = 0; j < bndGlobalIds.size(); ++j) {
+          double val = subF->getLocalValueByGlobalID( bndGlobalIds[j] );
+          subF->setLocalValueByGlobalID(bndGlobalIds[j], val/d_scalingFactor);
+        }//end for j
+      }//end for bnd
+    }
 
+    void PelletStackOperator :: applyOnlyZcorrection(AMP::LinearAlgebra::Vector::shared_ptr &u) {
+      std::vector<double> finalMaxZdispsList;
+      computeZscan(u, finalMaxZdispsList); 
+      AMP::LinearAlgebra::Vector::shared_ptr subU = u->subsetVectorForVariable(d_var);
+      AMP::Discretization::DOFManager::shared_ptr dof_map = subU->getDOFManager();
+      for(size_t i = 0; i < d_pelletIds.size(); ++i) {
+        if(d_pelletIds[i] > 0) {
+          AMP::Mesh::MeshIterator nd = d_meshes[i]->getIterator(AMP::Mesh::Vertex, 0);
+          AMP::Mesh::MeshIterator end_nd = nd.end();
+          for(; nd != end_nd; ++nd) {
+            std::vector<size_t> dofIds;
+            dof_map->getDOFs(nd->globalID(), dofIds);       
+            subU->addValueByGlobalID(dofIds[2], finalMaxZdispsList[d_pelletIds[i] - 1]);
+          }//end for nd
+        }
+      }//end for i
+    }
+
+    /*
        void PelletStackOperator :: applyXYZcorrection(const AMP::LinearAlgebra::Vector::shared_ptr &f,
        const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r) {
        AMP_ASSERT(d_frozenVectorSet);
@@ -181,19 +186,19 @@ namespace AMP {
        AMP::Mesh::DOFMap::shared_ptr dof_map = d_meshes[i]->getDOFMap(currVar);
        AMP::Mesh::OwnedBoundaryNodeIterator bnd = d_meshes[i]->beginOwnedBoundary( d_masterId );
        AMP::Mesh::OwnedBoundaryNodeIterator end_bnd = d_meshes[i]->endOwnedBoundary( d_masterId );
-std::vector<unsigned int> dofIds(1);
-dofIds[0] = 2; 
-for( ; bnd != end_bnd; ++bnd) {
-  std::vector<unsigned int> bndGlobalIds;
-  dof_map->getDOFs(*bnd, bndGlobalIds, dofIds);
-  for(unsigned int j = 0; j < bndGlobalIds.size(); j++) {
-    double val = subU->getLocalValueByGlobalID( bndGlobalIds[j] );
-    if(fabs(myMaxZdisps[i]) < fabs(val)) {
-      myMaxZdisps[i] = val;
-    }
-  }//end for j
-}//end for bnd
-}//end for i
+       std::vector<unsigned int> dofIds(1);
+       dofIds[0] = 2; 
+       for( ; bnd != end_bnd; ++bnd) {
+       std::vector<unsigned int> bndGlobalIds;
+       dof_map->getDOFs(*bnd, bndGlobalIds, dofIds);
+       for(unsigned int j = 0; j < bndGlobalIds.size(); j++) {
+       double val = subU->getLocalValueByGlobalID( bndGlobalIds[j] );
+       if(fabs(myMaxZdisps[i]) < fabs(val)) {
+       myMaxZdisps[i] = val;
+       }
+       }//end for j
+       }//end for bnd
+       }//end for i
 
 std::vector<int> recvCnts(d_pelletStackComm.getSize()); 
 d_pelletStackComm.allGather<int>(d_pelletIds.size(), &(recvCnts[0]));
