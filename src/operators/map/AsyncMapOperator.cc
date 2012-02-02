@@ -39,6 +39,17 @@ bool AsyncMapOperator::requiresMakeConsistentSet()
     return false;
 }
 
+AMP::Mesh::Mesh::shared_ptr AsyncMapOperator::getMesh(int which) 
+{
+  if(which == 1) {
+    return d_mesh1;
+  } else if(which == 2) {
+    return d_mesh2;
+  } else {
+    AMP_ERROR("Wrong option!");
+    return AMP::Mesh::Mesh::shared_ptr();
+  }
+}
 
 }
 }

@@ -36,6 +36,12 @@ public:
     // Function to determine if a makeConsistentSet is required
     virtual bool requiresMakeConsistentSet();
 
+    /**
+     * Get the meshes this map uses.
+     * \param[in] which 1 for d_mesh1 and 2 for d_mesh2
+     */
+    AMP::Mesh::Mesh::shared_ptr getMesh(int which); 
+
 protected:
 
     // Communicator for the Map
