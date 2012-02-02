@@ -4,6 +4,7 @@
 
 #include "FEOperatorParameters.h"
 #include "SourcePhysicsModel.h"
+#include "discretization/DOF_Manager.h"
 
 namespace AMP {
 namespace Operator {
