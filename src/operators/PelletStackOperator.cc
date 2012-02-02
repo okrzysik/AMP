@@ -77,6 +77,21 @@ namespace AMP {
       return -1;
     }
 
+    void PelletStackOperator :: applyUnscaling(AMP::LinearAlgebra::Vector::shared_ptr f) {
+      AMP::LinearAlgebra::Vector::shared_ptr subF = f->subsetVectorForVariable(d_var);
+      AMP::Discretization::DOFManager::shared_ptr dof_map = subF->getDOFManager();
+      AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator(AMP::Mesh::Vertex, d_slaveId, 0);
+      AMP::Mesh::MeshIterator end_bnd = bnd.end();
+      for( ; bnd != end_bnd; ++bnd) {
+        std::vector<size_t> bndGlobalIds;
+        dof_map->getDOFs(bnd->globalID(), bndGlobalIds);
+        for(size_t j = 0; j < bndGlobalIds.size(); ++j) {
+          double val = subF->getLocalValueByGlobalID( bndGlobalIds[j] );
+          subF->setLocalValueByGlobalID(bndGlobalIds[j], val/d_scalingFactor);
+        }//end for j
+      }//end for bnd
+    }
+
     void PelletStackOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
         const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
         const double a, const double b) {
@@ -84,7 +99,7 @@ namespace AMP {
         applyOnlyZcorrection(r);
       } else {
         if(!d_frozenVectorSet) {
-          d_frozenVectorForMaps = (d_n2nMaps->getFrozenVector())->subsetVectorForVariable(d_var);
+          d_frozenVectorForMaps = d_n2nMaps->getFrozenVector();
           d_frozenVectorSet = true;
         }
         if(d_useSerial) {
@@ -113,117 +128,42 @@ namespace AMP {
       }//end for i
     }
 
-    void PelletStackOperator :: applyUnscaling(AMP::LinearAlgebra::Vector::shared_ptr f) {
-      AMP::LinearAlgebra::Vector::shared_ptr subF = f->subsetVectorForVariable(d_var);
-      AMP::Discretization::DOFManager::shared_ptr dof_map = subF->getDOFManager();
+    void PelletStackOperator :: applyXYZcorrection(const AMP::LinearAlgebra::Vector::shared_ptr &f,
+        const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r) {
+      AMP_ASSERT(d_frozenVectorSet);
+      AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+      r->copyVector(f);
+      d_frozenVectorForMaps->zero();
+      d_n2nMaps->apply(nullVec, u, nullVec, 1.0, 0.0);
+      AMP::LinearAlgebra::Vector::shared_ptr subU = d_frozenVectorForMaps->subsetVectorForVariable(d_var);
+      AMP::LinearAlgebra::Vector::shared_ptr subR = r->subsetVectorForVariable(d_var);
+      AMP::Discretization::DOFManager::shared_ptr dof_map = subR->getDOFManager();
       AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator(AMP::Mesh::Vertex, d_slaveId, 0);
       AMP::Mesh::MeshIterator end_bnd = bnd.end();
       for( ; bnd != end_bnd; ++bnd) {
         std::vector<size_t> bndGlobalIds;
         dof_map->getDOFs(bnd->globalID(), bndGlobalIds);
-        for(size_t j = 0; j < bndGlobalIds.size(); ++j) {
-          double val = subF->getLocalValueByGlobalID( bndGlobalIds[j] );
-          subF->setLocalValueByGlobalID(bndGlobalIds[j], val/d_scalingFactor);
+        for(unsigned int j = 0; j < bndGlobalIds.size(); j++) {
+          double val = subU->getLocalValueByGlobalID( bndGlobalIds[j] );
+          subR->addLocalValueByGlobalID(bndGlobalIds[j], val);
         }//end for j
       }//end for bnd
-    }
-
-    void PelletStackOperator :: computeZscan(const AMP::LinearAlgebra::Vector::shared_ptr &u, 
-        std::vector<double> &finalMaxZdispsList) {
-      AMP::LinearAlgebra::Vector::shared_ptr subU = u->subsetVectorForVariable(d_var);
-      AMP::Discretization::DOFManager::shared_ptr dof_map = subU->getDOFManager();
-      std::vector<double> myMaxZdisps(d_pelletIds.size(), 0.0);
-      for(size_t i = 0; i < d_pelletIds.size(); i++) {
-        AMP::Mesh::MeshIterator bnd = d_meshes[i]->getIDsetIterator(AMP::Mesh::Vertex, d_masterId, 0);
-        AMP::Mesh::MeshIterator end_bnd = bnd.end();
-        for( ; bnd != end_bnd; ++bnd) {
-          std::vector<size_t> bndGlobalIds;
-          dof_map->getDOFs(bnd->globalID(), bndGlobalIds);
-          double val = subU->getLocalValueByGlobalID( bndGlobalIds[2] );
-          if(fabs(myMaxZdisps[i]) < fabs(val)) {
-            myMaxZdisps[i] = val;
-          }
-        }//end for bnd
-      }//end for i
-
-      std::vector<int> recvCnts(d_pelletStackComm.getSize()); 
-      d_pelletStackComm.allGather<int>(d_pelletIds.size(), &(recvCnts[0]));
-
-      std::vector<int> recvDisps(recvCnts.size());
-      recvDisps[0] = 0;
-      for(size_t i = 1; i < recvDisps.size(); i++) {
-        recvDisps[i] = recvDisps[i - 1] + recvCnts[i - 1];
-      }//end for i
-
-      std::vector<unsigned int> allPelletIds((*(recvDisps.end() - 1)) + (*(recvCnts.end() - 1)));
-      d_pelletStackComm.allGather<unsigned int>(&(d_pelletIds[0]), d_pelletIds.size(), &(allPelletIds[0]), 
-          &(recvCnts[0]), &(recvDisps[0]), true);
-
-      std::vector<double> allPelletMaxZdisps(allPelletIds.size());
-      d_pelletStackComm.allGather<double>(&(myMaxZdisps[0]), d_pelletIds.size(), &(allPelletMaxZdisps[0]), 
-          &(recvCnts[0]), &(recvDisps[0]), true);
-
-      finalMaxZdispsList.resize(d_totalNumberOfPellets, 0.0);
-      for(size_t i = 0; i < allPelletIds.size(); i++) {
-        if(fabs(allPelletMaxZdisps[i]) > fabs(finalMaxZdispsList[allPelletIds[i]])) {
-          finalMaxZdispsList[allPelletIds[i]] = allPelletMaxZdisps[i];
+      std::vector<double> finalMaxZdispsList;
+      computeZscan(u, finalMaxZdispsList); 
+      for(size_t i = 0; i < d_pelletIds.size(); ++i) {
+        if(d_pelletIds[i] > 1) {
+          AMP::Mesh::MeshIterator bnd = d_meshes[i]->getIDsetIterator(AMP::Mesh::Vertex, d_slaveId, 0);
+          AMP::Mesh::MeshIterator end_bnd = bnd.end();
+          for( ; bnd != end_bnd; ++bnd) {
+            std::vector<size_t> bndGlobalIds;
+            dof_map->getDOFs(bnd->globalID(), bndGlobalIds);
+            subR->addLocalValueByGlobalID(bndGlobalIds[2], finalMaxZdispsList[d_pelletIds[i] - 2]);
+          }//end for bnd
         }
-      }//end for i
-
-      for(size_t i = 1; i < d_totalNumberOfPellets; i++) {
-        finalMaxZdispsList[i] += finalMaxZdispsList[i - 1];
       }//end for i
     }
 
     /*
-       void PelletStackOperator :: applyXYZcorrection(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-       const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r) {
-       AMP_ASSERT(d_frozenVectorSet);
-       AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-       r->copyVector(f);
-       d_n2nMaps->apply(nullVec, u, nullVec, 1.0, 0.0);
-       for(size_t i = 0; i < d_pelletIds.size(); i++) {
-       if(d_pelletIds[i] > 0) {
-       AMP::LinearAlgebra::Variable::shared_ptr currVar = d_var[i];
-       AMP::LinearAlgebra::Vector::shared_ptr subU = d_frozenVectorForMaps[i];
-       AMP::LinearAlgebra::Vector::shared_ptr subR = r->subsetVectorForVariable(currVar);
-       AMP::Mesh::DOFMap::shared_ptr dof_map = d_meshes[i]->getDOFMap(currVar);
-       AMP::Mesh::OwnedBoundaryNodeIterator bnd = d_meshes[i]->beginOwnedBoundary( d_slaveId );
-       AMP::Mesh::OwnedBoundaryNodeIterator end_bnd = d_meshes[i]->endOwnedBoundary( d_slaveId );
-       std::vector<unsigned int> dofIds(3);
-       dofIds[0] = 0; dofIds[1] = 1; dofIds[2] = 2;
-       for( ; bnd != end_bnd; ++bnd) {
-       std::vector<unsigned int> bndGlobalIds;
-       dof_map->getDOFs(*bnd, bndGlobalIds, dofIds);
-       for(unsigned int j = 0; j < bndGlobalIds.size(); j++) {
-       double val = subU->getLocalValueByGlobalID( bndGlobalIds[j] );
-       subR->addLocalValueByGlobalID(bndGlobalIds[j], val);
-       }//end for j
-       }//end for bnd
-       }
-       }//end for i
-       std::vector<double> finalMaxZdispsList;
-       computeZscan(u, finalMaxZdispsList); 
-       for(size_t i = 0; i < d_pelletIds.size(); i++) {
-       if(d_pelletIds[i] > 1) {
-       AMP::LinearAlgebra::Variable::shared_ptr currVar = d_var[i];
-       AMP::LinearAlgebra::Vector::shared_ptr subR = r->subsetVectorForVariable(currVar);
-       AMP::Mesh::DOFMap::shared_ptr dof_map = d_meshes[i]->getDOFMap(currVar);
-       AMP::Mesh::OwnedBoundaryNodeIterator bnd = d_meshes[i]->beginOwnedBoundary( d_slaveId );
-       AMP::Mesh::OwnedBoundaryNodeIterator end_bnd = d_meshes[i]->endOwnedBoundary( d_slaveId );
-       std::vector<unsigned int> dofIds(1);
-       dofIds[0] = 2;
-       for( ; bnd != end_bnd; ++bnd) {
-       std::vector<unsigned int> bndGlobalIds;
-       dof_map->getDOFs(*bnd, bndGlobalIds, dofIds);
-       for(unsigned int j = 0; j < bndGlobalIds.size(); j++) {
-       subR->addLocalValueByGlobalID(bndGlobalIds[j], finalMaxZdispsList[d_pelletIds[i] - 2]);
-       }//end for j
-       }//end for bnd
-       }
-       }//end for i
-       }
-
        void PelletStackOperator :: applySerial(const AMP::LinearAlgebra::Vector::shared_ptr &f,
        const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r) {
        AMP_ASSERT(d_frozenVectorSet);
@@ -246,71 +186,117 @@ namespace AMP {
        }
        }//end for m
        }
-if(prevPellIdx != -1) {
-  AMP::LinearAlgebra::Variable::shared_ptr currVar = d_var[prevPellIdx];
-  for(int m = 0; m < numMaps; m++) {
-    boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
-      AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
-    AMP::LinearAlgebra::Variable::shared_ptr currMapVar = currMap->getInputVariable();
-    if((*currMapVar) == (*currVar)) {
-      if(currMap->isMaster() == true) {
-        currMap->applyStart(nullVec, u, nullVec, 1.0, 0.0);
-        break;
-      }
-    }
-  }//end for m
+       if(prevPellIdx != -1) {
+       AMP::LinearAlgebra::Variable::shared_ptr currVar = d_var[prevPellIdx];
+       for(int m = 0; m < numMaps; m++) {
+       boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
+       AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
+       AMP::LinearAlgebra::Variable::shared_ptr currMapVar = currMap->getInputVariable();
+       if((*currMapVar) == (*currVar)) {
+       if(currMap->isMaster() == true) {
+       currMap->applyStart(nullVec, u, nullVec, 1.0, 0.0);
+       break;
+       }
+       }
+       }//end for m
+       }
+       if(currPellIdx != -1) {
+       AMP::LinearAlgebra::Variable::shared_ptr currVar = d_var[currPellIdx];
+       for(int m = 0; m < numMaps; m++) {
+       boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
+       AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
+       AMP::LinearAlgebra::Variable::shared_ptr currMapVar = currMap->getInputVariable();
+       if((*currMapVar) == (*currVar)) {
+       if(currMap->isMaster() == false) {
+       currMap->applyFinish(nullVec, u, nullVec, 1.0, 0.0);
+       break;
+       }
+       }
+       }//end for m
+       }
+       if(prevPellIdx != -1) {
+       AMP::LinearAlgebra::Variable::shared_ptr currVar = d_var[prevPellIdx];
+       for(int m = 0; m < numMaps; m++) {
+       boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
+       AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
+       AMP::LinearAlgebra::Variable::shared_ptr currMapVar = currMap->getInputVariable();
+       if((*currMapVar) == (*currVar)) {
+       if(currMap->isMaster() == true) {
+       currMap->applyFinish(nullVec, u, nullVec, 1.0, 0.0);
+       break;
+       }
+       }
+       }//end for m
+       }
+       if(currPellIdx != -1) {
+       AMP::LinearAlgebra::Variable::shared_ptr currVar = d_var[currPellIdx];
+       AMP::LinearAlgebra::Vector::shared_ptr subF = f->subsetVectorForVariable(currVar);
+       AMP::LinearAlgebra::Vector::shared_ptr subR = r->subsetVectorForVariable(currVar);
+       AMP::LinearAlgebra::Vector::shared_ptr subU = d_frozenVectorForMaps[currPellIdx];
+       subR->copyVector(subF);
+AMP::Mesh::DOFMap::shared_ptr dof_map = d_meshes[currPellIdx]->getDOFMap(currVar);
+AMP::Mesh::OwnedBoundaryNodeIterator bnd = d_meshes[currPellIdx]->beginOwnedBoundary( d_slaveId );
+AMP::Mesh::OwnedBoundaryNodeIterator end_bnd = d_meshes[currPellIdx]->endOwnedBoundary( d_slaveId );
+std::vector<unsigned int> dofIds(3);
+dofIds[0] = 0; dofIds[1] = 1; dofIds[2] = 2;
+for( ; bnd != end_bnd; ++bnd) {
+  std::vector<unsigned int> bndGlobalIds;
+  dof_map->getDOFs(*bnd, bndGlobalIds, dofIds);
+  for(unsigned int j = 0; j < bndGlobalIds.size(); j++) {
+    double val = subU->getLocalValueByGlobalID( bndGlobalIds[j] );
+    subR->addLocalValueByGlobalID(bndGlobalIds[j], val);
+  }//end for j
+}//end for bnd
 }
-if(currPellIdx != -1) {
-  AMP::LinearAlgebra::Variable::shared_ptr currVar = d_var[currPellIdx];
-  for(int m = 0; m < numMaps; m++) {
-    boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
-      AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
-    AMP::LinearAlgebra::Variable::shared_ptr currMapVar = currMap->getInputVariable();
-    if((*currMapVar) == (*currVar)) {
-      if(currMap->isMaster() == false) {
-        currMap->applyFinish(nullVec, u, nullVec, 1.0, 0.0);
-        break;
-      }
-    }
-  }//end for m
 }
-if(prevPellIdx != -1) {
-  AMP::LinearAlgebra::Variable::shared_ptr currVar = d_var[prevPellIdx];
-  for(int m = 0; m < numMaps; m++) {
-    boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
-      AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
-    AMP::LinearAlgebra::Variable::shared_ptr currMapVar = currMap->getInputVariable();
-    if((*currMapVar) == (*currVar)) {
-      if(currMap->isMaster() == true) {
-        currMap->applyFinish(nullVec, u, nullVec, 1.0, 0.0);
-        break;
-      }
-    }
-  }//end for m
-}
-if(currPellIdx != -1) {
-  AMP::LinearAlgebra::Variable::shared_ptr currVar = d_var[currPellIdx];
-  AMP::LinearAlgebra::Vector::shared_ptr subF = f->subsetVectorForVariable(currVar);
-  AMP::LinearAlgebra::Vector::shared_ptr subR = r->subsetVectorForVariable(currVar);
-  AMP::LinearAlgebra::Vector::shared_ptr subU = d_frozenVectorForMaps[currPellIdx];
-  subR->copyVector(subF);
-  AMP::Mesh::DOFMap::shared_ptr dof_map = d_meshes[currPellIdx]->getDOFMap(currVar);
-  AMP::Mesh::OwnedBoundaryNodeIterator bnd = d_meshes[currPellIdx]->beginOwnedBoundary( d_slaveId );
-  AMP::Mesh::OwnedBoundaryNodeIterator end_bnd = d_meshes[currPellIdx]->endOwnedBoundary( d_slaveId );
-  std::vector<unsigned int> dofIds(3);
-  dofIds[0] = 0; dofIds[1] = 1; dofIds[2] = 2;
-  for( ; bnd != end_bnd; ++bnd) {
-    std::vector<unsigned int> bndGlobalIds;
-    dof_map->getDOFs(*bnd, bndGlobalIds, dofIds);
-    for(unsigned int j = 0; j < bndGlobalIds.size(); j++) {
-      double val = subU->getLocalValueByGlobalID( bndGlobalIds[j] );
-      subR->addLocalValueByGlobalID(bndGlobalIds[j], val);
-    }//end for j
-  }//end for bnd
-}
-}
-
 */
+
+void PelletStackOperator :: computeZscan(const AMP::LinearAlgebra::Vector::shared_ptr &u, 
+    std::vector<double> &finalMaxZdispsList) {
+  AMP::LinearAlgebra::Vector::shared_ptr subU = u->subsetVectorForVariable(d_var);
+  AMP::Discretization::DOFManager::shared_ptr dof_map = subU->getDOFManager();
+  std::vector<double> myMaxZdisps(d_pelletIds.size(), 0.0);
+  for(size_t i = 0; i < d_pelletIds.size(); i++) {
+    AMP::Mesh::MeshIterator bnd = d_meshes[i]->getIDsetIterator(AMP::Mesh::Vertex, d_masterId, 0);
+    AMP::Mesh::MeshIterator end_bnd = bnd.end();
+    for( ; bnd != end_bnd; ++bnd) {
+      std::vector<size_t> bndGlobalIds;
+      dof_map->getDOFs(bnd->globalID(), bndGlobalIds);
+      double val = subU->getLocalValueByGlobalID( bndGlobalIds[2] );
+      if(fabs(myMaxZdisps[i]) < fabs(val)) {
+        myMaxZdisps[i] = val;
+      }
+    }//end for bnd
+  }//end for i
+
+  std::vector<int> recvCnts(d_pelletStackComm.getSize()); 
+  d_pelletStackComm.allGather<int>(d_pelletIds.size(), &(recvCnts[0]));
+
+  std::vector<int> recvDisps(recvCnts.size());
+  recvDisps[0] = 0;
+  for(size_t i = 1; i < recvDisps.size(); i++) {
+    recvDisps[i] = recvDisps[i - 1] + recvCnts[i - 1];
+  }//end for i
+
+  std::vector<unsigned int> allPelletIds((*(recvDisps.end() - 1)) + (*(recvCnts.end() - 1)));
+  d_pelletStackComm.allGather<unsigned int>(&(d_pelletIds[0]), d_pelletIds.size(), &(allPelletIds[0]), 
+      &(recvCnts[0]), &(recvDisps[0]), true);
+
+  std::vector<double> allPelletMaxZdisps(allPelletIds.size());
+  d_pelletStackComm.allGather<double>(&(myMaxZdisps[0]), d_pelletIds.size(), &(allPelletMaxZdisps[0]), 
+      &(recvCnts[0]), &(recvDisps[0]), true);
+
+  finalMaxZdispsList.resize(d_totalNumberOfPellets, 0.0);
+  for(size_t i = 0; i < allPelletIds.size(); i++) {
+    if(fabs(allPelletMaxZdisps[i]) > fabs(finalMaxZdispsList[allPelletIds[i]])) {
+      finalMaxZdispsList[allPelletIds[i]] = allPelletMaxZdisps[i];
+    }
+  }//end for i
+
+  for(size_t i = 1; i < d_totalNumberOfPellets; i++) {
+    finalMaxZdispsList[i] += finalMaxZdispsList[i - 1];
+  }//end for i
+}
 
 }
 }
