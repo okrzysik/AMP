@@ -330,29 +330,29 @@ namespace AMP {
         AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
         AMP::Mesh::MeshIterator end_el = el.end();
 
-        setVector(Mechanics::DISPLACEMENT, myParams->d_EquilibriumDisplacement);
+        setVector(Mechanics::DISPLACEMENT, myParams->d_EquilibriumVec[Mechanics::DISPLACEMENT]);
 
         if(d_isActive[Mechanics::TEMPERATURE]) {
-          if( myParams->d_EquilibriumTemperature != NULL ) {
-            setVector(Mechanics::TEMPERATURE, myParams->d_EquilibriumTemperature);
+          if( myParams->d_EquilibriumVec[Mechanics::TEMPERATURE] != NULL ) {
+            setVector(Mechanics::TEMPERATURE, myParams->d_EquilibriumVec[Mechanics::TEMPERATURE]);
           }
         }
 
         if(d_isActive[Mechanics::BURNUP]) {
-          if( myParams->d_EquilibriumBurnup != NULL ) {
-            setVector(Mechanics::BURNUP, myParams->d_EquilibriumBurnup);
+          if( myParams->d_EquilibriumVec[Mechanics::BURNUP] != NULL ) {
+            setVector(Mechanics::BURNUP, myParams->d_EquilibriumVec[Mechanics::BURNUP]);
           }
         }
 
         if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
-          if( myParams->d_EquilibriumOxygenConcentration != NULL ) {
-            setVector(Mechanics::OXYGEN_CONCENTRATION, myParams->d_EquilibriumOxygenConcentration);
+          if( myParams->d_EquilibriumVec[Mechanics::OXYGEN_CONCENTRATION] != NULL ) {
+            setVector(Mechanics::OXYGEN_CONCENTRATION, myParams->d_EquilibriumVec[Mechanics::OXYGEN_CONCENTRATION]);
           }
         }
 
         if(d_isActive[Mechanics::LHGR]) {
-          if( myParams->d_EquilibriumLHGR != NULL ) {
-            setVector(Mechanics::LHGR, myParams->d_EquilibriumLHGR);
+          if( myParams->d_EquilibriumVec[Mechanics::LHGR] != NULL ) {
+            setVector(Mechanics::LHGR, myParams->d_EquilibriumVec[Mechanics::LHGR]);
           }
         }
 
