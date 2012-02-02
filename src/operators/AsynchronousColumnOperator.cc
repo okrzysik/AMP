@@ -23,7 +23,7 @@ void AsynchronousColumnOperator::apply(const AMP::LinearAlgebra::Vector::shared_
 void AsynchronousColumnOperator::applyStart(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
       AMP::LinearAlgebra::Vector::shared_ptr &r, const double a , const double b )
 {
-    for ( int i = 0 ; i != getNumberOfOperators() ; i++ )
+    for ( size_t i = 0 ; i != getNumberOfOperators() ; i++ )
         boost::dynamic_pointer_cast<AsynchronousOperator> ( getOperator ( i ) )->applyStart ( f , u , r , a , b );
 }
 
@@ -33,7 +33,7 @@ void AsynchronousColumnOperator::applyStart(const AMP::LinearAlgebra::Vector::sh
 void AsynchronousColumnOperator::applyFinish(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
       AMP::LinearAlgebra::Vector::shared_ptr &r, const double a , const double b )
 {
-    for ( int i = 0 ; i != getNumberOfOperators() ; i++ )
+    for ( size_t i = 0 ; i != getNumberOfOperators() ; i++ )
         boost::dynamic_pointer_cast<AsynchronousOperator> ( getOperator ( i ) )->applyFinish ( f , u , r , a , b );
 }
 

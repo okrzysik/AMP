@@ -188,80 +188,77 @@ namespace Operator {
 
     void VolumeIntegralOperator :: init(const boost::shared_ptr<VolumeIntegralOperatorParameters>& params) 
     {
-    AMP_ERROR("Not converted yet");
-    /*
-        (void) params;
-        AMP::Mesh::MeshManager::Adapter::ElementIterator  el = d_MeshAdapter->beginElement();
-        AMP::Mesh::MeshManager::Adapter::ElementIterator  end_el = d_MeshAdapter->endElement();
+        int ghostWidth = 0;
+        AMP::Mesh::MeshIterator  el     = d_Mesh->getIterator(AMP::Mesh::Volume, ghostWidth);
+        AMP::Mesh::MeshIterator  end_el = el.end();
 
         d_srcNonlinElem->setElementFlags(d_isInputType);
-
         for( ; el != end_el; ++el) {
-            const ::Elem* elemPtr = &(el->getElem());
-
-            d_srcNonlinElem->initializeForCurrentElement( elemPtr, d_sourcePhysicsModel);
-
+/*
+          const ::Elem* elemPtr = &(el->getElem());
+          d_srcNonlinElem->initializeForCurrentElement( elemPtr, d_sourcePhysicsModel);
+*/
         }//end for el
-    */
+        
     }
 
     void VolumeIntegralOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
     {
-    AMP_ERROR("Not converted yet");
-    /*
-        AMP::Mesh::DOFMap::shared_ptr dof_maps;
+      AMP_ERROR("Not converted yet");
+      /*
+         AMP::Mesh::DOFMap::shared_ptr dof_maps;
 
-    //    dof_maps = d_MeshAdapter->getDOFMap( d_inpVariables );
+      //    dof_maps = d_MeshAdapter->getDOFMap( d_inpVariables );
 
-        // AMP::Mesh::MeshManager::Adapter::ElementIterator  el = d_MeshAdapter->beginElement();
-        // AMP::Mesh::MeshManager::Adapter::ElementIterator  end_el = d_MeshAdapter->endElement();
+      // AMP::Mesh::MeshManager::Adapter::ElementIterator  el = d_MeshAdapter->beginElement();
+      // AMP::Mesh::MeshManager::Adapter::ElementIterator  end_el = d_MeshAdapter->endElement();
 
-        boost::shared_ptr<VolumeIntegralOperatorParameters> myParams =
-            boost::dynamic_pointer_cast<VolumeIntegralOperatorParameters>(params); 
+      boost::shared_ptr<VolumeIntegralOperatorParameters> myParams =
+      boost::dynamic_pointer_cast<VolumeIntegralOperatorParameters>(params); 
 
-        AMP_INSIST( ((myParams.get()) != NULL), "Null parameter!" );
+      AMP_INSIST( ((myParams.get()) != NULL), "Null parameter!" );
 
-        d_outVec.reset();
-    */
+      d_outVec.reset();
+      */
     }
 
     boost::shared_ptr<OperatorParameters> VolumeIntegralOperator::getJacobianParameters(
-            const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u) 
+        const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u) 
     {
-        (void) u;
-        boost::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase("Dummy"));
-        tmp_db->putString("name", "VolumeIntegralOperator");
-        boost::shared_ptr<VolumeIntegralOperatorParameters> outParams( new VolumeIntegralOperatorParameters(tmp_db));
+      (void) u;
+      boost::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase("Dummy"));
+      tmp_db->putString("name", "VolumeIntegralOperator");
+      boost::shared_ptr<VolumeIntegralOperatorParameters> outParams( new VolumeIntegralOperatorParameters(tmp_db));
 
-        outParams->d_sourcePhysicsModel= d_sourcePhysicsModel;
-        outParams->d_pVector = u;
-        return outParams;
+      outParams->d_sourcePhysicsModel= d_sourcePhysicsModel;
+      outParams->d_pVector = u;
+      return outParams;
     }
 
-     boost::shared_ptr<AMP::LinearAlgebra::Matrix> VolumeIntegralOperator::getLinearizedVolumeIntegralOperator(
-            const boost::shared_ptr<OperatorParameters>& params)            
+    boost::shared_ptr<AMP::LinearAlgebra::Matrix> VolumeIntegralOperator::getLinearizedVolumeIntegralOperator(
+        const boost::shared_ptr<OperatorParameters>& params)            
     {    
-    AMP_ERROR("Not converted yet");
-    /*    
-        boost::shared_ptr<VolumeIntegralOperatorParameters> inParams = boost::dynamic_pointer_cast<VolumeIntegralOperatorParameters>(params);
-        const boost::shared_ptr<AMP::LinearAlgebra::Vector> u = inParams->d_pVector;
+      AMP_ERROR("Not converted yet");
+      /*    
+            boost::shared_ptr<VolumeIntegralOperatorParameters> inParams = boost::dynamic_pointer_cast<VolumeIntegralOperatorParameters>(params);
+            const boost::shared_ptr<AMP::LinearAlgebra::Vector> u = inParams->d_pVector;
 
-        if (!d_bMatrixAndVectorsCloned)
-        {
+            if (!d_bMatrixAndVectorsCloned)
+            {
             d_pDiagonalMatrix = d_MeshAdapter->createMatrix(this->getInputVariable(0),this->getOutputVariable());
             d_pDiagonalVector = d_MeshAdapter->createVector(this->getOutputVariable());
             d_pNullVector     = d_MeshAdapter->createVector(this->getOutputVariable());
-    
+
             AMP::pout << "in the loop" << std::endl;
             d_bMatrixAndVectorsCloned=true;
-        }
+            }
 
-        AMP::pout << "d_pDiagonalVector.get() = " << d_pDiagonalVector.get() << std::endl;
-        this->apply(d_pNullVector,u,d_pDiagonalVector,1.0,0.0);
-         d_pDiagonalMatrix->setDiagonal(d_pDiagonalVector);
+            AMP::pout << "d_pDiagonalVector.get() = " << d_pDiagonalVector.get() << std::endl;
+            this->apply(d_pNullVector,u,d_pDiagonalVector,1.0,0.0);
+            d_pDiagonalMatrix->setDiagonal(d_pDiagonalVector);
 
-        return d_pDiagonalMatrix;  
-    */      
+            */      
+            return d_pDiagonalMatrix;  
     }
 
 
