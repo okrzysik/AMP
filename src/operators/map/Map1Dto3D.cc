@@ -131,7 +131,7 @@ void Map1Dto3D::apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP:
 
     std::vector<int> numFaceNodes(outputVec->getLocalSize(),0);
 
-    const unsigned int numPoints = inputVec->getLocalSize();
+    //const unsigned int numPoints = inputVec->getLocalSize();
 
     // Loop through the points on the surface
     AMP_ASSERT(d_zLocations.size()>=2);
