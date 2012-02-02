@@ -73,37 +73,12 @@ namespace Operator {
         d_auxVariables = var;
       }
 
-      AMP::LinearAlgebra::Variable::shared_ptr createInputVariable(const std::string & name, int varId = -1);
-
-      AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable(const std::string & name, int varId = -1) {
-    (void) varId;
-          return d_outVariable->cloneVariable(name);
-      }
-
       AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
           return d_inpVariables; 
       }
 
       AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
           return d_outVariable;
-      }
-
-      /**
-        @return The number of different DOFMaps required to assemble this operator. Returns 2 if
-        at least one of Temperature, Burnup and Oxygen concentration is active and 1 otherwise.
-        */
-      unsigned int numberOfDOFMaps() {
-          return 1;
-      }
-
-      /**
-        @param [in] id Identifier for the type of DOFMap required. It is
-        a number between 0 (included) and numberOfDOFMaps (excluded)
-        @return The variable corresponding to the DOFMap specified by id. 
-        @see numberOfDOFMaps
-        */
-      AMP::LinearAlgebra::Variable::shared_ptr getVariableForDOFMap(unsigned int id){
-          return (d_inpVariables->getVariable(id));
       }
 
       boost::shared_ptr<SourcePhysicsModel> getSourcePhysicsModel(){
