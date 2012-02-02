@@ -170,6 +170,8 @@ Epetra_Map  &ManagedEpetraMatrixParameters::getEpetraRowMap ()
     #else
         Epetra_SerialComm  comm;
     #endif
+    AMP_ASSERT(d_DOFManagerLeft.get()!=NULL);
+    AMP_ASSERT(d_DOFManagerRight.get()!=NULL);
     size_t N_row_local = d_DOFManagerLeft->numLocalDOF();
     size_t N_row_global = d_DOFManagerLeft->numGlobalDOF();
     if ( d_eRowMap.get() == 0 )
