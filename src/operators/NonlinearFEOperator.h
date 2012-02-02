@@ -7,6 +7,7 @@
 #include "FEOperatorParameters.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
+#include "elem.h"
 
 #include <vector>
 
@@ -82,6 +83,14 @@ namespace AMP {
             boost::shared_ptr<AMP::LinearAlgebra::Vector> & r, const double a = -1.0, const double b = 1.0);
 
       protected :
+
+        void createCurrentLibMeshElement();
+
+        void destroyCurrentLibMeshElement();
+
+        std::vector<AMP::Mesh::MeshElement> d_currNodes;
+
+        ::Elem* d_currElemPtr;
 
         boost::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
 

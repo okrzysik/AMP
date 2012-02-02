@@ -95,14 +95,6 @@ namespace AMP {
 
         void getDofIndicesForCurrentElement();
 
-        void createCurrentLibMeshElement();
-
-        void destroyCurrentLibMeshElement();
-
-        std::vector<AMP::Mesh::MeshElement> d_currNodes;
-
-        ::Elem* d_currElemPtr;
-
         std::vector<std::vector<size_t> > d_dofIndices; /**< DOF indices */
 
         std::vector<std::vector<double> > d_elementStiffnessMatrix; /**< Element stiffness matrix. */

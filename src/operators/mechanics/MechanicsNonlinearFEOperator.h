@@ -162,10 +162,6 @@ namespace AMP {
 
         void getDofIndicesForCurrentElement(int varId, std::vector<std::vector<size_t> > & dofIds);
 
-        void createCurrentLibMeshElement();
-
-        void destroyCurrentLibMeshElement();
-
         std::vector<double> d_elementOutputVector; /**< Element output vector. */
 
         boost::shared_ptr<MechanicsNonlinearElement> d_mechNonlinElem; /**< Element operation. */
@@ -203,13 +199,9 @@ namespace AMP {
         boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables; /**< Input variables. */
 
         boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output variable */
-        
-        boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[Mechanics::TOTAL_NUMBER_OF_VARIABLES];
-        
-        std::vector<AMP::Mesh::MeshElement> d_currNodes;
 
-        ::Elem* d_currElemPtr;
-        
+        boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[Mechanics::TOTAL_NUMBER_OF_VARIABLES];
+
         std::vector<std::vector<size_t> > d_dofIndices; /**< Primary DOF indices */
     };
 

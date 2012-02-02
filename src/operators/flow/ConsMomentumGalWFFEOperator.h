@@ -44,29 +44,13 @@ public :
           (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
         }
 
-        static AMP::LinearAlgebra::Variable::shared_ptr createInputVariable(const std::string & name, int varId = -1);
-
-        static AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable(const std::string & name, int varId = -1) {
-          (void) varId;      
-          AMP::LinearAlgebra::Variable::shared_ptr outVar(new AMP::LinearAlgebra::Variable(name) );
-          return outVar;
-        }
-
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1) {
-          if(varId == -1) {
+        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
             return d_inpVariables; 
-          } else {
-            return d_inpVariables->getVariable(varId);
-          }
         }
 
         AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
           return d_outVariables;
         }
-
-        unsigned int numberOfDOFMaps();
-
-        AMP::LinearAlgebra::Variable::shared_ptr getVariableForDOFMap(unsigned int id);
 
 protected :
 

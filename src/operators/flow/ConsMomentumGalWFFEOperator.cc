@@ -74,48 +74,6 @@ namespace AMP {
         d_isInitialized = false;
       }
 
-    unsigned int ConsMomentumGalWFFEOperator :: numberOfDOFMaps() {
-      if( d_isActive[NavierStokes::TEMPERATURE] || d_isActive[NavierStokes::PRESSURE]) {
-        return 2;
-      } else {
-        return 1; 
-      }
-    }
-
-    AMP::LinearAlgebra::Variable::shared_ptr ConsMomentumGalWFFEOperator :: getVariableForDOFMap(unsigned int id) {
-      AMP_ASSERT( id < (this->numberOfDOFMaps()) );
-      if(id == 0) {
-        return (d_inpVariables->getVariable(NavierStokes::VELOCITY));
-      } else {
-        if(d_isActive[NavierStokes::PRESSURE]) {
-          return (d_inpVariables->getVariable(NavierStokes::PRESSURE));
-          //} else if(d_isActive[NavierStokes::TEMPERATURE]) {
-      } else {
-        return (d_inpVariables->getVariable(NavierStokes::TEMPERATURE));
-      }    
-      }
-    }
-
-    AMP::LinearAlgebra::Variable::shared_ptr ConsMomentumGalWFFEOperator :: createInputVariable(const std::string & name, int varId) {
-      AMP::LinearAlgebra::Variable::shared_ptr inpVar;
-      switch(varId) {
-        case NavierStokes::VELOCITY : {
-                                        inpVar.reset(new AMP::LinearAlgebra::Variable(name) );
-                                        break;
-                                      }
-        case NavierStokes::PRESSURE : {
-                                        inpVar.reset(new AMP::LinearAlgebra::Variable(name) );
-                                        break;
-                                      }
-        case NavierStokes::TEMPERATURE : {
-                                           inpVar.reset(new AMP::LinearAlgebra::Variable(name) );
-                                           break;
-                                         }
-        default: 
-                                         assert(false);
-      }
-      return inpVar;
-    }
 
     void ConsMomentumGalWFFEOperator :: preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u, 
         boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r) {

@@ -4,8 +4,6 @@
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 #include "vectors/VectorBuilder.h"
-#include "cell_hex8.h"
-#include "node.h"
 
 namespace AMP {
   namespace Operator {
@@ -673,23 +671,6 @@ namespace AMP {
       for(unsigned int j = 0; j < d_currNodes.size(); j++) {
         d_dofMap[varId]->getDOFs(d_currNodes[j].globalID(), dofIds[j]);
       } // end of j
-    }
-
-    void MechanicsNonlinearFEOperator :: createCurrentLibMeshElement() {
-      d_currElemPtr = new ::Hex8;
-      for(unsigned int j = 0; j < d_currNodes.size(); j++) {
-        std::vector<double> pt = d_currNodes[j].coord();
-        d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
-      }//end for j
-    }
-
-    void MechanicsNonlinearFEOperator :: destroyCurrentLibMeshElement() {
-      for(unsigned int j = 0; j < d_currElemPtr->n_nodes(); j++) {
-        delete (d_currElemPtr->get_node(j));
-        d_currElemPtr->set_node(j) = NULL;
-      }//end for j
-      delete d_currElemPtr;
-      d_currElemPtr = NULL;
     }
 
   }
