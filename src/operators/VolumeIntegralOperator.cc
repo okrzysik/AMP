@@ -75,13 +75,6 @@ namespace Operator {
         init(params);
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr VolumeIntegralOperator :: createInputVariable(const std::string & name, int varId) {
-
-        AMP::LinearAlgebra::Variable::shared_ptr inpVar;
-        inpVar.reset(new AMP::LinearAlgebra::Variable(name) );
-        return inpVar;
-    }
-
     void VolumeIntegralOperator::preAssembly(
             const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, boost::shared_ptr<AMP::LinearAlgebra::Vector> &r)
     {
