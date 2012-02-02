@@ -49,7 +49,7 @@ namespace Operator {
         
         resetBoundaryIds(myParams);
         
-        double diagVal = d_bSetIdentityOnDiagonal? 1.0:0.0;
+        //double diagVal = d_bSetIdentityOnDiagonal? 1.0:0.0;
         
         AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = myParams->d_inputMatrix;
         AMP_INSIST( ((inputMatrix.get()) != NULL), "NULL matrix" );
