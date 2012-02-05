@@ -25,6 +25,9 @@ namespace AMP {
         d_sourcePhysicsModel = params->d_sourcePhysicsModel;
       }
 
+      d_elementDofMap = params->d_elementDofMap;
+      d_nodeDofMap = params->d_nodeDofMap;
+
       boost::shared_ptr<AMP::Database> primaryDb = params->d_db->getDatabase("ActiveInputVariables");
 
       int numPrimaryVariables   =  (params->d_db)->getInteger("Number_Active_Variables");
@@ -183,29 +186,29 @@ namespace AMP {
     }
 
     /*
-    boost::shared_ptr<AMP::LinearAlgebra::Matrix> VolumeIntegralOperator::getLinearizedVolumeIntegralOperator(
-        const boost::shared_ptr<OperatorParameters>& params)            
-    {    
-      boost::shared_ptr<VolumeIntegralOperatorParameters> inParams = boost::dynamic_pointer_cast<VolumeIntegralOperatorParameters>(params);
-      const boost::shared_ptr<AMP::LinearAlgebra::Vector> u = inParams->d_pVector;
+       boost::shared_ptr<AMP::LinearAlgebra::Matrix> VolumeIntegralOperator::getLinearizedVolumeIntegralOperator(
+       const boost::shared_ptr<OperatorParameters>& params)            
+       {    
+       boost::shared_ptr<VolumeIntegralOperatorParameters> inParams = boost::dynamic_pointer_cast<VolumeIntegralOperatorParameters>(params);
+       const boost::shared_ptr<AMP::LinearAlgebra::Vector> u = inParams->d_pVector;
 
-      if (!d_bMatrixAndVectorsCloned)
-      {
-        d_pDiagonalMatrix = d_MeshAdapter->createMatrix(this->getInputVariable(0),this->getOutputVariable());
-        d_pDiagonalVector = d_MeshAdapter->createVector(this->getOutputVariable());
-        d_pNullVector     = d_MeshAdapter->createVector(this->getOutputVariable());
+       if (!d_bMatrixAndVectorsCloned)
+       {
+       d_pDiagonalMatrix = d_MeshAdapter->createMatrix(this->getInputVariable(0),this->getOutputVariable());
+       d_pDiagonalVector = d_MeshAdapter->createVector(this->getOutputVariable());
+       d_pNullVector     = d_MeshAdapter->createVector(this->getOutputVariable());
 
-        AMP::pout << "in the loop" << std::endl;
-        d_bMatrixAndVectorsCloned=true;
-      }
+       AMP::pout << "in the loop" << std::endl;
+       d_bMatrixAndVectorsCloned=true;
+       }
 
-      AMP::pout << "d_pDiagonalVector.get() = " << d_pDiagonalVector.get() << std::endl;
-      this->apply(d_pNullVector,u,d_pDiagonalVector,1.0,0.0);
-      d_pDiagonalMatrix->setDiagonal(d_pDiagonalVector);
+       AMP::pout << "d_pDiagonalVector.get() = " << d_pDiagonalVector.get() << std::endl;
+       this->apply(d_pNullVector,u,d_pDiagonalVector,1.0,0.0);
+       d_pDiagonalMatrix->setDiagonal(d_pDiagonalVector);
 
-      return d_pDiagonalMatrix;  
-    }
-    */
+       return d_pDiagonalMatrix;  
+       }
+       */
 
     void VolumeIntegralOperator::getNodeDofIndicesForCurrentElement() {
       d_dofIndices.resize(d_currNodes.size());
