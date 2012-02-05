@@ -3,10 +3,10 @@
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 
-#include <cstring>
+#include "vectors/VectorBuilder.h"
+#include "matrices/MatrixBuilder.h"
 
-#if 0
-//This file has not been converted!
+#include <cstring>
 
 namespace AMP {
   namespace Operator {
@@ -27,66 +27,54 @@ namespace AMP {
 
       boost::shared_ptr<AMP::Database> primaryDb = params->d_db->getDatabase("ActiveInputVariables");
 
-      d_numPrimaryVariables   =  (params->d_db)->getInteger("Number_Active_Variables");
-      d_numAuxillaryVariables =  (params->d_db)->getInteger("Number_Auxillary_Variables");
-
-      d_isInputType = (params->d_db)->getStringWithDefault("InputVariableType", "NodalScalar");
+      int numPrimaryVariables   =  (params->d_db)->getInteger("Number_Active_Variables");
+      int numAuxillaryVariables =  (params->d_db)->getInteger("Number_Auxillary_Variables");
 
       d_inpVariables.reset(new AMP::LinearAlgebra::MultiVariable("myInpVar"));
 
-      for(unsigned int i = 0; i < d_numPrimaryVariables ; i++) {
+      for(unsigned int i = 0; i < numPrimaryVariables ; i++) {
         AMP::LinearAlgebra::Variable::shared_ptr dummyVar;
         d_inpVariables->add(dummyVar);
       }
 
-      d_inVec.resize(d_numPrimaryVariables);
+      d_inVec.resize(numPrimaryVariables);
 
-      if(d_numAuxillaryVariables>0){
-        AMP_INSIST( (((params->d_auxVec).get()) != NULL), "NULL Auxillary Vector!" );}
+      if(numAuxillaryVariables>0){
+        AMP_INSIST( (((params->d_auxVec).get()) != NULL), "NULL Auxillary Vector!" );
+      }
       d_multiAuxPtr = params->d_auxVec;
-      d_auxVec.resize(d_numAuxillaryVariables);
+      d_auxVec.resize(numAuxillaryVariables);
 
-      d_activeVariableNames.resize(d_numPrimaryVariables);
-
-      for (unsigned int var = 0; var < d_numPrimaryVariables  ; var++)
+      for (unsigned int var = 0; var < numPrimaryVariables  ; var++)
       {
         char key[100];
-        if(d_isInputType == "IntegrationPointScalar"){
-          sprintf(key, "ActiveVariable_%d", (int)var);
-          std::string varName = primaryDb->getString(key);
-          d_activeVariableNames[var] = varName;
-          AMP::LinearAlgebra::Variable::shared_ptr inpVar(new AMP::LinearAlgebra::Variable(varName));
-          d_inpVariables->setVariable(var, inpVar);
-        }else if(d_isInputType== "NodalScalar"){
-          sprintf(key, "ActiveVariable_%d", (int)var);
-          std::string varName = primaryDb->getString(key);
-          d_activeVariableNames[var] = varName;
-          AMP::LinearAlgebra::Variable::shared_ptr inpVar(new AMP::LinearAlgebra::Variable(varName));
-          d_inpVariables->setVariable(var, inpVar);
-        }
+        sprintf(key, "ActiveVariable_%d", (int)var);
+        std::string varName = primaryDb->getString(key);
+        AMP::LinearAlgebra::Variable::shared_ptr inpVar(new AMP::LinearAlgebra::Variable(varName));
+        d_inpVariables->setVariable(var, inpVar);
       }
 
       std::string outVar = params->d_db->getString("OutputVariable");
       d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar)); 
 
-      d_bMatrixAndVectorsCloned=false;
+      //d_bMatrixAndVectorsCloned=false;
 
       init(params);
     }
 
-    void VolumeIntegralOperator::preAssembly(
-        const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, boost::shared_ptr<AMP::LinearAlgebra::Vector> &r)
+    void VolumeIntegralOperator::preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, 
+        boost::shared_ptr<AMP::LinearAlgebra::Vector> &r)
     {
       AMP_INSIST( (u != NULL), "NULL Input Vector" );
 
-      for (unsigned int var = 0; var < d_numPrimaryVariables ; var++)
+      for(size_t var = 0; var < d_inpVariables->numVariables(); var++)
       {
         AMP::LinearAlgebra::Variable::shared_ptr primaryVariable = d_inpVariables->getVariable(var);
         d_inVec[var] = u->subsetVectorForVariable( primaryVariable );
         AMP_ASSERT( d_inVec[var] != NULL );
         (d_inVec[var])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
       }
-      for (unsigned int var = 0; var < d_numAuxillaryVariables ; var++)
+      for(size_t var = 0; var < d_auxVariables->numVariables(); var++)
       {
         AMP::LinearAlgebra::Variable::shared_ptr auxillaryVariable = d_auxVariables->getVariable(var);
         d_auxVec[var] = d_multiAuxPtr->subsetVectorForVariable( auxillaryVariable );
@@ -104,67 +92,63 @@ namespace AMP {
     void VolumeIntegralOperator::preElementOperation(
         const AMP::Mesh::MeshElement & elem )
     {
-      dof_maps[0]->getDOFs (elem, d_inpDofIndices);
+      d_currNodes = elem.getElements(AMP::Mesh::Vertex);
 
-      AMP::Mesh::DOFMap::shared_ptr temp_dof_maps;
-      temp_dof_maps = d_MeshAdapter->getDOFMap( d_outVariable );
-      temp_dof_maps->getDOFs (elem, d_outDofIndices);
+      createCurrentLibMeshElement();
 
-      std::vector<std::vector<double> > elementInputVectors(d_numPrimaryVariables);
-      std::vector<std::vector<double> > elementAuxVectors(d_numAuxillaryVariables);
+      std::vector<size_t> elemDofIds;
+      d_elementDofMap->getDOFs(elem.globalID(), elemDofIds);
 
-      d_numNodesForCurrentElement = elem.numNodes();
+      getNodeDofIndicesForCurrentElement(); 
+
+      std::vector<std::vector<double> > elementInputVectors(d_inpVariables->numVariables());
+      std::vector<std::vector<double> > elementAuxVectors(d_auxVariables->numVariables());
 
       if(d_isInputType == "IntegrationPointScalar"){
-        d_numDofsForCurrentElement =  dof_maps[0]->numDOFsPerObject(); 
-        for (unsigned int var = 0; var < d_numPrimaryVariables; var++)
+        for (unsigned int var = 0; var < d_inpVariables->numVariables(); var++)
         {
-          elementInputVectors[var].resize(d_numDofsForCurrentElement);
-          for (unsigned int i = 0; i < d_numDofsForCurrentElement  ; i++) {
-            elementInputVectors[var][i] =  d_inVec[var]->getValueByGlobalID( dof_maps[0]->getGlobalID(elem.globalID(), i) );
+          elementInputVectors[var].resize(elemDofIds.size());
+          for(size_t i = 0; i < elemDofIds.size(); i++) {
+            elementInputVectors[var][i] =  d_inVec[var]->getValueByGlobalID( elemDofIds[i] );
           }
         }
-        for (unsigned int var = 0; var < d_numAuxillaryVariables; var++)
+        for (unsigned int var = 0; var < d_auxVariables->numVariables(); var++)
         {
-          elementAuxVectors[var].resize(d_numDofsForCurrentElement);
-          for (unsigned int i = 0; i < d_numDofsForCurrentElement  ; i++) {
-            elementAuxVectors[var][i] =  d_auxVec[var]->getValueByGlobalID( dof_maps[0]->getGlobalID(elem.globalID(), i) );
+          elementAuxVectors[var].resize(elemDofIds.size());
+          for (size_t i = 0; i < elemDofIds.size(); i++) {
+            elementAuxVectors[var][i] =  d_auxVec[var]->getValueByGlobalID( elemDofIds[i] );
           }
         }
       }else if(d_isInputType== "NodalScalar"){
-        for (unsigned int var = 0; var < d_numPrimaryVariables; var++)
+        for (unsigned int var = 0; var < d_inpVariables->numVariables(); var++)
         {
-          elementInputVectors[var].resize(d_numNodesForCurrentElement);
-          for (unsigned int i = 0; i < d_numNodesForCurrentElement  ; i++) {
-            elementInputVectors[var][i] =  d_inVec[var]->getValueByGlobalID( d_inpDofIndices[i] );
+          elementInputVectors[var].resize(d_dofIndices.size());
+          for (size_t i = 0; i < d_dofIndices.size(); i++) {
+            elementInputVectors[var][i] =  d_inVec[var]->getValueByGlobalID( d_dofIndices[i][0] );
           }
         }
-        for (unsigned int var = 0; var < d_numAuxillaryVariables; var++)
+        for (unsigned int var = 0; var < d_auxVariables->numVariables(); var++)
         {
-          elementAuxVectors[var].resize(d_numNodesForCurrentElement);
-          for (unsigned int i = 0; i < d_numNodesForCurrentElement  ; i++) {
-            elementAuxVectors[var][i] =  d_auxVec[var]->getValueByGlobalID( d_inpDofIndices[i] );
+          elementAuxVectors[var].resize(d_dofIndices.size());
+          for(size_t i = 0; i < d_dofIndices.size(); i++) {
+            elementAuxVectors[var][i] =  d_auxVec[var]->getValueByGlobalID( d_dofIndices[i][0] );
           }
         }
       }
 
-      d_elementOutputVector.resize(d_numNodesForCurrentElement);
-      for(unsigned int i = 0; i < d_numNodesForCurrentElement; i++) {
-        d_elementOutputVector[i] = 0.0;
-      }
+      d_elementOutputVector.resize(d_dofIndices.size(), 0.0);
 
-      const ::Elem* elemPtr = &(elem.getElem());
-
-      d_srcNonlinElem->initializeForCurrentElement(elemPtr,d_sourcePhysicsModel);
+      d_srcNonlinElem->initializeForCurrentElement(d_currElemPtr,d_sourcePhysicsModel);
 
       d_srcNonlinElem->setElementVectors(elementInputVectors, elementAuxVectors, d_elementOutputVector);
     }
 
     void VolumeIntegralOperator::postElementOperation() 
     {
-      for (unsigned int i = 0; i < d_numNodesForCurrentElement ; i++) {
-        d_outVec->addValueByGlobalID(d_outDofIndices[i], d_elementOutputVector[i]);
+      for (size_t i = 0; i < d_dofIndices.size(); i++) {
+        d_outVec->addValueByGlobalID(d_dofIndices[i][0], d_elementOutputVector[i]);
       }
+      destroyCurrentLibMeshElement();
     }
 
     void VolumeIntegralOperator :: init(const boost::shared_ptr<VolumeIntegralOperatorParameters>& params) 
@@ -174,9 +158,9 @@ namespace AMP {
       d_srcNonlinElem->setElementFlags(d_isInputType);
       for( ; el != end_el; ++el) {
         d_currNodes = el->getElements(AMP::Mesh::Vertex);
-        unsigned int numNodesInCurrElem = d_currNodes.size();
         createCurrentLibMeshElement();
         d_srcNonlinElem->initializeForCurrentElement(d_currElemPtr, d_sourcePhysicsModel);
+        destroyCurrentLibMeshElement();
       }//end for el
     }
 
@@ -198,6 +182,7 @@ namespace AMP {
       return outParams;
     }
 
+    /*
     boost::shared_ptr<AMP::LinearAlgebra::Matrix> VolumeIntegralOperator::getLinearizedVolumeIntegralOperator(
         const boost::shared_ptr<OperatorParameters>& params)            
     {    
@@ -220,10 +205,17 @@ namespace AMP {
 
       return d_pDiagonalMatrix;  
     }
+    */
+
+    void VolumeIntegralOperator::getNodeDofIndicesForCurrentElement() {
+      d_dofIndices.resize(d_currNodes.size());
+      for(unsigned int j = 0; j < d_currNodes.size(); j++) {
+        d_nodeDofMap->getDOFs(d_currNodes[j].globalID(), d_dofIndices[j]);
+      }// end of j
+    }
 
   }
 }//end namespace
 
-#endif
 
 

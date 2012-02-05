@@ -41,7 +41,8 @@ namespace AMP {
         /**
           This function is called at the beginning of the FE assembly
           */
-        void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, boost::shared_ptr<AMP::LinearAlgebra::Vector> &r);
+        void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u,
+            boost::shared_ptr<AMP::LinearAlgebra::Vector> &r);
 
         /**
           This function is called at the end of the FE assembly
@@ -89,27 +90,22 @@ namespace AMP {
           return d_srcNonlinElem;
         }
 
-        boost::shared_ptr<AMP::LinearAlgebra::Matrix> getLinearizedVolumeIntegralOperator(const boost::shared_ptr<OperatorParameters>& params);
+        /*
+           boost::shared_ptr<AMP::LinearAlgebra::Matrix> getLinearizedVolumeIntegralOperator(
+           const boost::shared_ptr<OperatorParameters>& params);
+           */
 
       protected :
+
+        void getNodeDofIndicesForCurrentElement();
+
+        void init(const boost::shared_ptr<VolumeIntegralOperatorParameters>& params);
 
         double d_sourceValues;
 
         bool d_csource;
 
         std::string d_isInputType; 
-
-        void init(const boost::shared_ptr<VolumeIntegralOperatorParameters>& params);
-
-        std::vector<unsigned int> d_inpDofIndices; /**< DOF indices for the input variable. */
-
-        std::vector<unsigned int> d_outDofIndices; /**< DOF indices for the output variable. */
-
-        std::vector<std::string> d_activeVariableNames;/**< A list of strings to store Active Variable names. */
-
-        unsigned int d_numPrimaryVariables;/**< Number of Active Variables. */
-
-        unsigned int d_numAuxillaryVariables;/**< Number of Auxillary(Frozen) Variables. */
 
         std::vector<double> d_elementOutputVector;/**< Output vector for the Element Operation. */
 
@@ -125,6 +121,11 @@ namespace AMP {
 
         AMP::LinearAlgebra::Vector::shared_ptr d_outVec; /**< Output vector. */
 
+        std::vector<std::vector<size_t> > d_dofIndices; /**<Node dof Ids */
+
+        AMP::Discretization::DOFManager::shared_ptr d_elementDofMap;
+        AMP::Discretization::DOFManager::shared_ptr d_nodeDofMap;
+
       private :
 
         boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables;/**< Input Active variables. */
@@ -133,11 +134,10 @@ namespace AMP {
 
         boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;/**< Output variables. */
 
-        boost::shared_ptr<AMP::LinearAlgebra::Matrix> d_pDiagonalMatrix;
-        boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pDiagonalVector;
-        boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pNullVector;
-
-        bool d_bMatrixAndVectorsCloned;
+        // boost::shared_ptr<AMP::LinearAlgebra::Matrix> d_pDiagonalMatrix;
+        // boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pDiagonalVector;
+        // boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pNullVector;
+        // bool d_bMatrixAndVectorsCloned;
     };
 
   }
