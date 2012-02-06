@@ -72,9 +72,9 @@ int main ( int argc , char **argv )
 	        testit( &ut, "Brick", "Cubic", "Neumann", 5.,60.,700.);
 	        testit( &ut, "Brick", "Cubic", "Dirichlet-1", 5.,60.,700.);
 	        testit( &ut, "Brick", "Cubic", "Dirichlet-2", 5.,60.,700.);
-	        testit( &ut, "CylindricalRod", "Cubic", "None", 5.,60.,700.);
-	        testit( &ut, "CylindricalRod", "Cubic", "Dirichlet-2-z", 5.,60.,700.);
-	        testit( &ut, "CylindricalShell", "Quadratic", "Neumann", 5.,60.,700.);
+	        testit( &ut, "CylindricalRod", "Cubic", "None", 55.,4.2,700.);
+	        testit( &ut, "CylindricalRod", "Cubic", "Dirichlet-2-z", 55.,4.2,700.);
+	        testit( &ut, "CylindricalShell", "Quadratic", "Neumann", 55.,4.2,700.);
         } catch (std::exception &err) {
             std::cout << "ERROR: While testing " << argv[0] << ", " << err.what() << std::endl;
             ut.failure("Manufactured Solutions");

@@ -121,15 +121,32 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
 	  isCylindrical = (pos < len);
   }
   AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator iterator = meshAdapter->beginOwnedNode();
-  for( ; iterator != meshAdapter->endOwnedNode(); iterator++ ) {
-	double x, y, z;
-	std::valarray<double> poly(10);
-	x = iterator->x();
-	y = iterator->y();
-	z = iterator->z();
-	mfgSolution->evaluate(poly,x,y,z);
-	size_t gid = iterator->globalID();
-	solVec->setValueByGlobalID(gid, poly[0]);
+  std::string mfgName = mfgSolution->get_name();
+  if (mfgName.find("Cylindrical") < mfgName.size()) {
+	  for( ; iterator != meshAdapter->endOwnedNode(); iterator++ ) {
+		double x, y, z, r, th=0.;
+		std::valarray<double> poly(10);
+		x = iterator->x();
+		y = iterator->y();
+		z = iterator->z();
+		r = sqrt(x*x+y*y);
+		double Pi=3.1415926535898;
+		if (r>0) {th = acos(x/r); if (y<0.) th = 2*Pi-th;}
+		mfgSolution->evaluate(poly,r,th,z);
+		size_t gid = iterator->globalID();
+		solVec->setValueByGlobalID(gid, poly[0]);
+	  }
+  } else {
+	  for( ; iterator != meshAdapter->endOwnedNode(); iterator++ ) {
+		double x, y, z;
+		std::valarray<double> poly(10);
+		x = iterator->x();
+		y = iterator->y();
+		z = iterator->z();
+		mfgSolution->evaluate(poly,x,y,z);
+		size_t gid = iterator->globalID();
+		solVec->setValueByGlobalID(gid, poly[0]);
+	  }
   }
 
   // Evaluate manufactured solution as an FE source
@@ -171,7 +188,14 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
         src = sourceVec->getValueByGlobalID(gid);
         err = res/(src+.5*res + std::numeric_limits<double>::epsilon());
         std::valarray<double> poly(10);
-        mfgSolution->evaluate(poly,x,y,z);
+        if (mfgName.find("Cylindrical") < mfgName.size()) {
+    		double r = sqrt(x*x+y*y), th=0.;
+    		double Pi=3.1415926535898;
+    		if (r>0) {th = acos(x/r); if (y<0.) th = 2.*Pi-th;}
+        	mfgSolution->evaluate(poly,r,th,z);
+        } else {
+        	mfgSolution->evaluate(poly,x,y,z);
+        }
         val = poly[0];
         workVec->setValueByGlobalID(gid, err);
 

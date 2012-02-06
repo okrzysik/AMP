@@ -21,6 +21,15 @@ MassDensityModel::MassDensityModel
             "Independent");
     d_material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(matname);
 
+    if (params->d_db->keyExists("Property")) {
+    	d_PropertyName = params->d_db->getString("Property");
+    	if (params->d_db->keyExists("Parameters")) {
+    		d_Parameters = params->d_db->getDoubleArray("Parameters");
+    	}
+    } else {
+    	d_PropertyName = "unspecified";
+    }
+
     AMP_INSIST((params->d_db->keyExists("Equation")),
             "Mass Key ''Equation'' is missing!");
     std::string eqnname = params->d_db->getString("Equation");
@@ -224,24 +233,33 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
     std::valarray<double> soln(10);
     size_t neval = result.size();
 
-    AMP::Materials::PropertyPtr sourceType;
-    AMP::Materials::PropertyPtr dSourceType;
+    AMP::Materials::PropertyPtr sourceProp;
+    AMP::Materials::PropertyPtr dSourceProp;
     bool needD = false;
 
-    if (d_ManufacturedEquation == ThermalSrc) {
-        sourceType = d_material->property("ThermalConductivity");
-        if (d_ManufacturedUseConc) {dSourceType = d_material->property("DxThermalConductivity"); needD=true;}
-        if (d_ManufacturedUseTemp) {dSourceType = d_material->property("DTThermalConductivity"); needD=true;}
-    } else if (d_ManufacturedEquation == FickSrc) {
-        sourceType = d_material->property("FickCoefficient");
-        if (d_ManufacturedUseConc) {dSourceType = d_material->property("DxFickCoefficient"); needD=true;}
-        if (d_ManufacturedUseTemp) {dSourceType = d_material->property("DTFickCoefficient"); needD=true;}
-    } else if (d_ManufacturedEquation == SoretSrc) {
-        sourceType = d_material->property("ThermalDiffusionCoefficient");
-        if (d_ManufacturedUseConc) {dSourceType = d_material->property("DxThermalDiffusionCoefficient"); needD=true;}
-        if (d_ManufacturedUseTemp) {dSourceType = d_material->property("DTThermalDiffusionCoefficient"); needD=true;}
-    } else if (d_ManufacturedEquation == FickSoretSrc) {
-        AMP_INSIST(false, "cannot do Fick-Soret yet");
+    if (d_PropertyName == "unspecified") {
+		if (d_ManufacturedEquation == ThermalSrc) {
+			sourceProp = d_material->property("ThermalConductivity");
+			if (d_ManufacturedUseConc) {dSourceProp = d_material->property("DxThermalConductivity"); needD=true;}
+			if (d_ManufacturedUseTemp) {dSourceProp = d_material->property("DTThermalConductivity"); needD=true;}
+		} else if (d_ManufacturedEquation == FickSrc) {
+			sourceProp = d_material->property("FickCoefficient");
+			if (d_ManufacturedUseConc) {dSourceProp = d_material->property("DxFickCoefficient"); needD=true;}
+			if (d_ManufacturedUseTemp) {dSourceProp = d_material->property("DTFickCoefficient"); needD=true;}
+		} else if (d_ManufacturedEquation == SoretSrc) {
+			sourceProp = d_material->property("ThermalDiffusionCoefficient");
+			if (d_ManufacturedUseConc) {dSourceProp = d_material->property("DxThermalDiffusionCoefficient"); needD=true;}
+			if (d_ManufacturedUseTemp) {dSourceProp = d_material->property("DTThermalDiffusionCoefficient"); needD=true;}
+		} else if (d_ManufacturedEquation == FickSoretSrc) {
+			AMP_INSIST(false, "cannot do Fick-Soret yet");
+		}
+    } else {
+    	sourceProp = d_material->property(d_PropertyName);
+    	if (d_Parameters.size()>0 and sourceProp->variable_number_parameters()) {
+    		sourceProp->set_parameters_and_number(&d_Parameters[0], d_Parameters.size());
+    	} else if (d_Parameters.size()>0) {
+    		sourceProp->set_parameters(&d_Parameters[0], d_Parameters.size());
+    	}
     }
 
     std::map<std::string, boost::shared_ptr<std::vector<double> > > args;
@@ -249,11 +267,11 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
     args.insert(std::make_pair("concentration", boost::shared_ptr<std::vector<double> >(new std::vector<double>(U))));
     args.insert(std::make_pair("burnup", boost::shared_ptr<std::vector<double> >(new std::vector<double>(B))));
 
-    if (sourceType->isScalar()) {
+    if (sourceProp->isScalar()) {
         std::vector<double> coeff(neval), dCoeff(neval,0.);
-		sourceType->evalv(coeff, args);
+		sourceProp->evalv(coeff, args);
 		if (needD) {
-			dSourceType->evalv(dCoeff, args);
+			dSourceProp->evalv(dCoeff, args);
 		}
 
 		for (size_t i = 0; i < neval; i++)
@@ -265,14 +283,19 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
 		}
     }
 
-    if (sourceType->isTensor()) {
-    	boost::shared_ptr<Materials::TensorProperty<double> > sourceTensorType =
-    			boost::dynamic_pointer_cast<Materials::TensorProperty<double> >(sourceType);
-    	std::vector<size_t> dimensions = sourceTensorType->get_dimensions();
+    std::string propname = sourceProp->get_name();
+    std::string solnname = d_ManufacturedSolution->get_name();
+    bool isCylindrical = propname.find("CylindricallySymmetric") < propname.size() and
+    		solnname.find("Cylindrical") < solnname.size();
+
+    if (sourceProp->isTensor() and not isCylindrical) {
+    	boost::shared_ptr<Materials::TensorProperty<double> > sourceTensorProp =
+    			boost::dynamic_pointer_cast<Materials::TensorProperty<double> >(sourceProp);
+    	std::vector<size_t> dimensions = sourceTensorProp->get_dimensions();
     	std::vector<std::vector<boost::shared_ptr<std::vector<double> > > >
     		coeff(dimensions[0], std::vector<boost::shared_ptr<std::vector<double> > >(dimensions[1],
     				boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
-		sourceTensorType->evalv(coeff, args);
+			sourceTensorProp->evalv(coeff, args);
 
 		// 4 + xx xy xz yy yz zz =
 		//      4  5  6  7  8  9 =
@@ -289,6 +312,90 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
 			for (size_t i=0; i<dimensions[0]; i++) for (size_t j=0; j<dimensions[1]; j++) {
 				result[k] +=  (*coeff[i][j])[k] * soln[xlate[i][j]];
 			}
+		}
+
+    } else if (sourceProp->isTensor() and isCylindrical) {
+    	boost::shared_ptr<Materials::TensorProperty<double> > sourceTensorProp =
+    			boost::dynamic_pointer_cast<Materials::TensorProperty<double> >(sourceProp);
+    	std::vector<size_t> dimensions = sourceTensorProp->get_dimensions();
+    	AMP_ASSERT(dimensions[0] == 3 and dimensions[1] == 3);
+    	std::vector<std::vector<boost::shared_ptr<std::vector<double> > > >
+    		coeff(dimensions[0], std::vector<boost::shared_ptr<std::vector<double> > >(dimensions[1],
+    				boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
+    	std::vector<std::vector<boost::shared_ptr<std::vector<double> > > >
+    		coeffr(dimensions[0], std::vector<boost::shared_ptr<std::vector<double> > >(dimensions[1],
+    				boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
+    	std::vector<std::vector<boost::shared_ptr<std::vector<double> > > >
+    		coeffz(dimensions[0], std::vector<boost::shared_ptr<std::vector<double> > >(dimensions[1],
+    				boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
+
+        args.insert(std::make_pair("radius", boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
+        args.insert(std::make_pair("theta", boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
+        args.insert(std::make_pair("zee", boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
+        std::vector<double> &radius = (*args.find("radius")->second);
+        std::vector<double> &theta = (*args.find("theta")->second);
+        std::vector<double> &zee = (*args.find("zee")->second);
+
+		double Pi=3.1415926535898;
+		for (size_t k = 0; k < neval; k++)
+		{
+			double x=xyz[k](0), y=xyz[k](1), z=xyz[k](2);
+			double r=sqrt(x*x+y*y), th=acos(x/r); if (y<0) th = 2*Pi-th;
+			radius[k] = r;
+			theta[k]  = th;
+			zee[k]    = z;
+		}
+
+		sourceTensorProp->setAuxiliaryData("derivative", 0);
+		sourceTensorProp->evalv(coeff, args);
+
+		sourceTensorProp->setAuxiliaryData("derivative", 1);
+		sourceTensorProp->evalv(coeffr, args);
+
+		sourceTensorProp->setAuxiliaryData("derivative", 2);
+		sourceTensorProp->evalv(coeffz, args);
+
+		// compute div (K . grad u) = div K . grad u + K : grad grad u
+		for (size_t k = 0; k < neval; k++)
+		{
+			double x=xyz[k](0), y=xyz[k](1), z=xyz[k](2);
+			double r=sqrt(x*x+y*y), th=acos(x/r); if (y<0) th = 2*Pi-th;
+			// soln is the set of all derivatives wrto r, th, and z of order <= 2
+			d_ManufacturedSolution->evaluate(soln, r, th, z);
+
+			// convert hessian wrto r, th, z to hessian wrto x, y, z
+			double r3 = r*r*r;
+			std::vector<std::vector<double> > hessian(3, std::vector<double>(3, 0.));
+			if (r>0) {
+				hessian[0][0] = (y*y * soln[1] + r * x*x * soln[4])/r3;
+				hessian[0][1] = x*y*(-soln[1]+r*soln[4])/r3;
+				hessian[0][2] = x*soln[5]/r;
+				hessian[1][0] = x*y*(-soln[1]+r*soln[4])/r3;
+				hessian[1][1] = (x*x*soln[1] + r*y*y*soln[4])/r3;
+				hessian[1][2] = y*soln[5]/r;
+				hessian[2][0] = x*soln[5]/r;
+				hessian[2][1] = y*soln[5]/r;
+			}
+			hessian[2][2] = soln[9];
+
+			// compute k : grad grad term
+			result[k] = 0.;
+			for (size_t i=0; i<3; i++) for (size_t j=0; j<3; j++) {
+				result[k] +=  (*coeff[i][j])[k] * hessian[i][j];
+			}
+
+			// compute grad k . grad term
+			std::vector<double> factor(3,0.);
+			std::vector<double> divK(3,0.);
+			if (r>0) {
+				factor[0] = x/r;
+				factor[1] = y/r;
+			}
+			factor[2] = 1.;
+			divK[0] = factor[0]*(*coeffr[0][0])[k] + factor[1]*(*coeffr[1][0])[k] + (*coeffz[2][0])[k];
+			divK[1] = factor[0]*(*coeffr[0][1])[k] + factor[1]*(*coeffr[1][1])[k] + (*coeffz[2][1])[k];
+			divK[2] = factor[0]*(*coeffr[0][2])[k] + factor[1]*(*coeffr[1][2])[k] + (*coeffz[2][2])[k];
+			result[k] += divK[0]*soln[1] + divK[1]*soln[2] + divK[2]*soln[3];
 		}
     }
 

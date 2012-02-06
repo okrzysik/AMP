@@ -646,6 +646,10 @@ MACRO ( SAVE_CMAKE_FLAGS )
     # Add LAPACK and BLAS
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add LAPACK/BLAS\n" )
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS}  ${LAPACK_LIBS} ${BLAS_LIBS} )\n" )
+    # Add LDLIBS
+    IF ( LDLIBS )
+    	file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS}  ${LDLIBS} )\n" )
+    ENDIF()
     # Add coverage
     IF ( ENABLE_GCOV )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add coverage flags\n" )

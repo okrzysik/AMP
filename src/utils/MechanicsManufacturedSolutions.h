@@ -14,8 +14,8 @@ public:
   typedef boost::shared_ptr<MMS> shared_ptr;
   /**
    * Default constructor
-   * @param Youngs modulus
-   * @param Poissons ratio
+   * @param YM  Youngs modulus
+   * @param PR  Poissons ratio
    * 
    * Note: Youngs modulus E and Poissons ratio nu are assumed to be constant here but this can be change later.
    * If the need for it arise shout me an email <dalg24@ne.tamu.edu>
@@ -121,7 +121,7 @@ public:
   //virtual std::vector<double> getStrainTensor(double x, double y, double z) const = 0; 
   /**
    * This is needed for traction boundary conditions
-   * The function will return the stress tensor @f$ \boldsymbol{\sigma} @f$ under the form of a vector 
+   * The function will return the stress tensor @f$ \sigma @f$ under the form of a vector 
    *   @f$ (\sigma_{xx}, \sigma_{yy}, \sigma_{zz}, \sigma_{yz}, \sigma_{xz}, \sigma_{xy})^T @f$
    */ 
   virtual std::vector<double> getStressTensor(double x, double y, double z) const = 0; 
