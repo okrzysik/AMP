@@ -10,6 +10,8 @@
 
 #include "vectors/Variable.h"
 
+#include "vectors/VectorSelector.h"
+
 #include <string>
 
 #ifdef DEBUG_CHECK_ASSERTIONS
@@ -96,14 +98,30 @@ namespace AMP {
           return emptyPointer;
         }
 
-        virtual AMP::LinearAlgebra::Variable::shared_ptr getPrimaryVariable() {
-          return getOutputVariable();
-        }
-
         virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
           //Implemented in derived classes
           AMP::LinearAlgebra::Variable::shared_ptr emptyPointer;
           return emptyPointer;
+        }
+
+        virtual AMP::LinearAlgebra::Vector::shared_ptr subsetOutputVector(AMP::LinearAlgebra::Vector::shared_ptr vec) {
+          AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec = vec->subsetVectorForVariable(getOutputVariable());
+          if(varSubsetVec == NULL) {
+            return varSubsetVec;
+          } else {
+            AMP::LinearAlgebra::VS_Mesh meshSelector("meshSelector", d_Mesh);
+            return varSubsetVec->select(meshSelector, getOutputVariable()->getName());
+          }
+        }
+
+        virtual AMP::LinearAlgebra::Vector::shared_ptr subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec) {
+          AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec = vec->subsetVectorForVariable(getInputVariable());
+          if(varSubsetVec == NULL) {
+            return varSubsetVec;
+          } else {
+            AMP::LinearAlgebra::VS_Mesh meshSelector("meshSelector", d_Mesh);
+            return varSubsetVec->select(meshSelector, getInputVariable()->getName());
+          }
         }
 
         virtual bool isValidInput(boost::shared_ptr<AMP::LinearAlgebra::Vector>&){return true; }
