@@ -28,6 +28,9 @@ namespace AMP {
       d_elementDofMap = params->d_elementDofMap;
       d_nodeDofMap = params->d_nodeDofMap;
 
+      AMP_ASSERT(d_elementDofMap != NULL);
+      AMP_ASSERT(d_nodeDofMap != NULL);
+
       boost::shared_ptr<AMP::Database> primaryDb = params->d_db->getDatabase("ActiveInputVariables");
 
       int numPrimaryVariables   =  (params->d_db)->getInteger("Number_Active_Variables");
