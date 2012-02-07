@@ -130,13 +130,16 @@ int myGetRow(ML_Operator *data, int N_requested_rows, int requested_rows[],
 
 int main(int argc, char *argv[])
 {
+  MPI_Init(&argc, &argv);
+  assert(argc > 1);
   myData.N = atoi(argv[1]);
   createMatrix();
   computeMatrix();
 
   const int numGrids = 10;
   const int numPDEs = 2;
-  const int maxIterations = 30;
+  const int maxIterations = 50;
+  const int coarseSize = 8;
 
   ML_set_random_seed(123456);
   ML* ml_object;
@@ -153,8 +156,8 @@ int main(int argc, char *argv[])
   ML_Aggregate* agg_object;
   ML_Aggregate_Create(&agg_object);
   agg_object->num_PDE_eqns = numPDEs;
-  agg_object->nullspace_dim = 0; 
-  ML_Aggregate_Set_MaxCoarseSize(agg_object, 128);
+  agg_object->nullspace_dim = 1;
+  ML_Aggregate_Set_MaxCoarseSize(agg_object, coarseSize);
   ML_Aggregate_Set_CoarsenScheme_UncoupledMIS(agg_object);
 
   const int nlevels = ML_Gen_MGHierarchy_UsingAggregation(ml_object, 0, ML_INCREASING, agg_object);
@@ -174,7 +177,7 @@ int main(int argc, char *argv[])
     solArr[i] = (static_cast<double>(rand()))/(static_cast<double>(RAND_MAX));
   }//end for i
 
-  myMatVec(NULL, myData.N, solArr, myData.N, rhsArr);
+  myMatVec(NULL, (2*myData.N), solArr, (2*myData.N), rhsArr);
 
   for(int i = 0; i < (2*(myData.N)); i++) {
     solArr[i] = 0.0;
@@ -188,6 +191,7 @@ int main(int argc, char *argv[])
   delete [] solArr;
   delete [] rhsArr;
   freeMatrix();
+  MPI_Finalize();
 }  
 
 
