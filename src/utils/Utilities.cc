@@ -245,13 +245,13 @@ size_t Utilities::getMemoryUsage()
             mem[i] = 32;
     }
     size_t mult = 1;
-    if ( mem.find("kB") ) {
+    if ( mem.find("kB")!=std::string::npos ) {
         mult = 0x400;
         mem.erase(mem.find("kB"),2);
-    } else if ( mem.find("MB") ) {
+    } else if ( mem.find("MB")!=std::string::npos ) {
         mult = 0x100000;
         mem.erase(mem.find("MB"),2);
-    } else if ( mem.find("GB") ) {
+    } else if ( mem.find("GB")!=std::string::npos ) {
         mult = 0x40000000;
         mem.erase(mem.find("GB"),2);
     }
