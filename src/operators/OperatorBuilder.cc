@@ -318,7 +318,6 @@ OperatorBuilder::createLinearConsMassGalWFOperator( AMP::Mesh::Mesh::shared_ptr 
   AMP_INSIST(input_db->keyExists("FlowElement"), "Key ''FlowElement'' is missing!");
   boost::shared_ptr<AMP::Operator::ElementOperation> consMassLinElem = ElementOperationFactory::createElementOperation(input_db->getDatabase("FlowElement"));
   
-  // now create the linear mechanics operator
   boost::shared_ptr<AMP::Database> consMassLinFEOp_db;
   if(input_db->getString("name")=="ConsMassLinearFEOperator")
     {
@@ -362,7 +361,6 @@ OperatorBuilder::createLinearConsMomentumGalWFOperator( AMP::Mesh::Mesh::shared_
   AMP_INSIST(input_db->keyExists("FlowElement"), "Key ''FlowElement'' is missing!");
   boost::shared_ptr<AMP::Operator::ElementOperation> consMomentumLinElem = ElementOperationFactory::createElementOperation(input_db->getDatabase("FlowElement"));
   
-  // now create the linear mechanics operator
   boost::shared_ptr<AMP::Database> consMomentumLinFEOp_db;
   if(input_db->getString("name")=="ConsMomentumLinearFEOperator")
     {
@@ -687,10 +685,13 @@ OperatorBuilder::createLinearMechanicsOperator( AMP::Mesh::Mesh::shared_ptr mesh
   
   AMP_INSIST(mechanicsLinFEOp_db.get()!=NULL, "Error: The database object for MechanicsLinearFEOperator is NULL");
   
-  boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperatorParameters> mechanicsOpParams(new AMP::Operator::MechanicsLinearFEOperatorParameters( mechanicsLinFEOp_db ));
+  boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperatorParameters> mechanicsOpParams(
+      new AMP::Operator::MechanicsLinearFEOperatorParameters( mechanicsLinFEOp_db ));
   mechanicsOpParams->d_materialModel = boost::dynamic_pointer_cast<MechanicsMaterialModel>(elementPhysicsModel);
   mechanicsOpParams->d_elemOp = mechanicsLinElem;
   mechanicsOpParams->d_Mesh = meshAdapter;
+  mechanicsOpParams->d_inDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, 1, 3, true);
+  mechanicsOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, 1, 3, true);
   
   boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechanicsOp (new AMP::Operator::MechanicsLinearFEOperator( mechanicsOpParams ));
   
