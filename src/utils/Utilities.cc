@@ -278,8 +278,6 @@ std::string Utilities::getCallStack()
         char *demangled=NULL;
         int trace_size = backtrace(trace,100);
         for (int i=0; i<trace_size; ++i) {  
-            if ( i==1 ) 
-                continue;   // Skip the current function
             if(!dladdr(trace[i], &dlinfo))
                 continue;
             symname = dlinfo.dli_sname;
@@ -290,16 +288,16 @@ std::string Utilities::getCallStack()
             std::string function = "";
             if ( symname!=NULL )
                 function = std::string(symname);
-            stack += "  " + object + ":   " + function + "\n";
-            //stack += "object: " + object + "\n";
-            //stack += "function: " + function + "\n";
+            if ( i!=0 ) {  // Skip the current function
+                stack += "  " + object + ":   " + function + "\n";
+                //stack += "object: " + object + "\n";
+                //stack += "function: " + function + "\n";
+            }
             if ( demangled==NULL ) {
                 free(demangled);
                 demangled=NULL;
             }
         } 
-    #else
-        stack = "Call stack is not availible\n";
     #endif
     return stack;
 }
