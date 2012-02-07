@@ -13,7 +13,7 @@ namespace AMP {
     {
       AMP_INSIST( (r != NULL), "NULL Residual/Output Vector" );
 
-      AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable( this->getOutputVariable() );
+      AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector(r);
 
       AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
       AMP::Mesh::MeshIterator end_el = el.end();
@@ -30,11 +30,11 @@ namespace AMP {
 
       this->postAssembly();
 
-      if(f.get() == NULL) {
+      if(f == NULL) {
         rInternal->scale(a);
       } else {
-        AMP::LinearAlgebra::Vector::shared_ptr fInternal = f->subsetVectorForVariable( this->getOutputVariable() );
-        if(fInternal.get() == NULL) {
+        AMP::LinearAlgebra::Vector::shared_ptr fInternal = this->subsetOutputVector(f);
+        if(fInternal == NULL) {
           rInternal->scale(a);
         } else {
           rInternal->axpby(b, a, fInternal);
