@@ -10,22 +10,36 @@
 #include "Utilities.h"
 
 #include "utils/AMP_MPI.h"
-#include "Logger.h"
-#include "PIO.h"
+#include "utils/AMPManager.h"
+#include "utils/Logger.h"
+#include "utils/PIO.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <time.h>
-#include "utils/AMPManager.h"
+#include <stdlib.h>
 #include <stdexcept>
 
-#define USE_TRACE
-#ifdef USE_TRACE
+// Detect the OS and include system dependent headers
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+    // Note: windows has not been testeds
+    #define USE_WINDOWS
+    #include "windows.h"
+#elif defined(__APPLE__)
+    #define USE_MAC
     #include <signal.h>
     #include <execinfo.h>
     #include <cxxabi.h>
     #include <dlfcn.h>
-    #include <stdlib.h>
+    #include<mach/mach.h>
+#elif defined(__linux) || defined(__unix) || defined(__posix)
+    #define USE_LINUX
+    #include <signal.h>
+    #include <execinfo.h>
+    #include <cxxabi.h>
+    #include <dlfcn.h>
+#else
+    #error Unknown OS
 #endif
 
 
@@ -197,8 +211,11 @@ void Utilities::abort(const std::string &message,
         // Print the call stack and memory usage
         long long unsigned int N_bytes = getMemoryUsage();
         printf("Bytes used = %llu\n",N_bytes);
-        std::string stack = getCallStack();
-        printf("Stack Trace:\n%s\n",stack.c_str());
+        std::vector<std::string> stack = getCallStack();
+        printf("Stack Trace:\n");
+        for (size_t i=0; i<stack.size(); i++)
+            printf("   %s",stack[i].c_str());
+        printf("\n");
         // Log the abort message
         Logger::getInstance() -> logAbort(message, filename, line);
         // Use MPI_abort (will terminate all processes)
@@ -231,46 +248,59 @@ unsigned int Utilities::hash_char(const char* name)
 // Function to get the memory usage
 size_t Utilities::getMemoryUsage()
 {
-    std::string mem;
-    std::ifstream proc("/proc/self/status");
-    std::string s;
-    while(getline(proc, s), !proc.fail()) {
-        if(s.substr(0, 6) == "VmSize") {
-            mem = s.substr(7);
-            break;
+    size_t N_bytes = 0;
+    #if defined(USE_LINUX)
+        std::string mem;
+        std::ifstream proc("/proc/self/status");
+        std::string s;
+        while(getline(proc, s), !proc.fail()) {
+            if(s.substr(0, 6) == "VmSize") {
+                mem = s.substr(7);
+                break;
+            }
         }
-    }
-    for (size_t i=0; i<mem.size(); i++) {
-        if ( mem[i]==9 || mem[i]==10 || mem[i]==12 || mem[i]==13 )
-            mem[i] = 32;
-    }
-    size_t mult = 1;
-    if ( mem.find("kB")!=std::string::npos ) {
-        mult = 0x400;
-        mem.erase(mem.find("kB"),2);
-    } else if ( mem.find("MB")!=std::string::npos ) {
-        mult = 0x100000;
-        mem.erase(mem.find("MB"),2);
-    } else if ( mem.find("GB")!=std::string::npos ) {
-        mult = 0x40000000;
-        mem.erase(mem.find("GB"),2);
-    }
-    for (size_t i=0; i<mem.size(); i++) {
-        if ( ( mem[i]<48 || mem[i]>57 ) && mem[i]!=32 ) {
-            printf("Unable to get size from string: %s\n",s.c_str());
+        for (size_t i=0; i<mem.size(); i++) {
+            if ( mem[i]==9 || mem[i]==10 || mem[i]==12 || mem[i]==13 )
+                mem[i] = 32;
+        }
+        size_t mult = 1;
+        if ( mem.find("kB")!=std::string::npos ) {
+            mult = 0x400;
+            mem.erase(mem.find("kB"),2);
+        } else if ( mem.find("MB")!=std::string::npos ) {
+            mult = 0x100000;
+            mem.erase(mem.find("MB"),2);
+        } else if ( mem.find("GB")!=std::string::npos ) {
+            mult = 0x40000000;
+            mem.erase(mem.find("GB"),2);
+        }
+        for (size_t i=0; i<mem.size(); i++) {
+            if ( ( mem[i]<48 || mem[i]>57 ) && mem[i]!=32 ) {
+                printf("Unable to get size from string: %s\n",s.c_str());
+                return 0;
+            }
+        }
+        long int N = atol(mem.c_str());
+        N_bytes = ((size_t)N)*mult;
+    #elif defined(USE_MAC)
+        struct task_basic_info t_info;
+        mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
+        if (KERN_SUCCESS != task_info(mach_task_self(),
+                              TASK_BASIC_INFO, (task_info_t)&t_info, 
+                              &t_info_count)) {
             return 0;
         }
-    }
-    long int N = atol(mem.c_str());
-    return ((size_t)N)*mult;
+        N_bytes = t_info.resident_size + t_info.virtual_size;
+    #endif
+    return N_bytes;
 }
 
 
 //! Function to print the current call stack
-std::string Utilities::getCallStack()
+std::vector<std::string>  Utilities::getCallStack()
 {
-    std::string stack;
-    #ifdef USE_TRACE
+    std::vector<std::string>  stack;
+    #if defined(USE_LINUX) || defined(USE_MAC)
         void *trace[100];
         Dl_info dlinfo;
         int status;
@@ -289,9 +319,10 @@ std::string Utilities::getCallStack()
             if ( symname!=NULL )
                 function = std::string(symname);
             if ( i!=0 ) {  // Skip the current function
-                stack += "  " + object + ":   " + function + "\n";
-                //stack += "object: " + object + "\n";
-                //stack += "function: " + function + "\n";
+                std::string stack_item = object + ":   " + function + "\n";
+                //stack_item = "object: " + object + "\n";
+                //stack_item += "function: " + function + "\n";
+                stack.push_back(stack_item);
             }
             if ( demangled==NULL ) {
                 free(demangled);

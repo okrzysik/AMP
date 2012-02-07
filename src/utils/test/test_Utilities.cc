@@ -85,15 +85,13 @@ int main(int argc, char *argv[])
             ut.failure("getMemoryUsage");
 
         // Test getting the current call stack
-        std::string call_stack = AMP::Utilities::getCallStack();
-        if ( globalComm.getRank()==0 )
-            std::cout << "Call stack:\n" << call_stack << std::endl;
-        int N_items = 0;
-        for (size_t i=0; i<call_stack.size(); i++) {
-            if ( call_stack[i]=='\n' )
-                N_items++;
+        std::vector<std::string> call_stack = AMP::Utilities::getCallStack();
+        if ( globalComm.getRank()==0 ) {
+            std::cout << "Call stack:" << std::endl;
+            for (size_t i=0; i<call_stack.size(); i++)
+                std::cout << "   " << call_stack[i];
         }
-        if ( N_items > 0 )
+        if ( call_stack.size() > 0 )
             ut.passes("non empty call stack");
         else
             ut.failure("non empty call stack");
