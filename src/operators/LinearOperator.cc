@@ -18,18 +18,16 @@ namespace AMP {
       d_matrix = in_mat;
     }
 
-    void LinearOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
+    void LinearOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, 
+        const AMP::LinearAlgebra::Vector::shared_ptr &u,
         AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a, const double b)
     {
       AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
       AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
       AMP_INSIST( ((d_matrix.get()) != NULL), "NULL Matrix" );
 
-      AMP::LinearAlgebra::Variable::shared_ptr tmpInpVar = getInputVariable();
-      AMP::LinearAlgebra::Variable::shared_ptr tmpOutVar = getOutputVariable();
-
-      AMP::LinearAlgebra::Vector::shared_ptr uInternal = u->subsetVectorForVariable( tmpInpVar );
-      AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable( tmpOutVar );
+      AMP::LinearAlgebra::Vector::shared_ptr uInternal = subsetInputVector(u);
+      AMP::LinearAlgebra::Vector::shared_ptr rInternal = subsetOutputVector(r);
 
       AMP_INSIST( (uInternal.get() != NULL), "uInternal is NULL" );
       AMP_INSIST( (rInternal.get() != NULL), "rInternal is NULL" );
@@ -39,7 +37,7 @@ namespace AMP {
       if(f.get() == NULL) {
         rInternal->scale(a);
       } else {
-        AMP::LinearAlgebra::Vector::shared_ptr fInternal = f->subsetVectorForVariable( tmpOutVar );
+        AMP::LinearAlgebra::Vector::shared_ptr fInternal = subsetOutputVector(f);
         if(fInternal.get() == NULL) {
           rInternal->scale(a);
         } else {

@@ -85,12 +85,12 @@ namespace AMP {
         //memory for reference coordinates (used in UL formulation)
         // memory for variables in the previous config
         if(d_useUpdatedLagrangian) {
-          d_refXYZ = AMP::LinearAlgebra::createVector(d_dofMap[Mechanics::DISPLACEMENT], d_inpVariables->getVariable(Mechanics::DISPLACEMENT), false);
+          d_refXYZ = AMP::LinearAlgebra::createVector(d_dofMap[Mechanics::DISPLACEMENT], d_inpVariables->getVariable(Mechanics::DISPLACEMENT), true);
           d_refXYZ->zero();
           for(unsigned int i=0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++)
           {
             if(d_isActive[i]) {
-              d_inVec_pre[i] = AMP::LinearAlgebra::createVector(d_dofMap[i], d_inpVariables->getVariable(i), false); 
+              d_inVec_pre[i] = AMP::LinearAlgebra::createVector(d_dofMap[i], d_inpVariables->getVariable(i), true); 
               d_inVec_pre[i]->zero();
             }
           }

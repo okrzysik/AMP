@@ -17,8 +17,8 @@ namespace AMP {
       const bool reuse_matrix = (params->d_db)->getBoolWithDefault("reset_reuses_matrix", true);
 
       if( (d_matrix.get() == NULL) || (!reuse_matrix) ) {
-        AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector(d_inDofMap, getInputVariable(), false);
-        AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector(d_outDofMap, getOutputVariable(), false);
+        AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector(d_inDofMap, getInputVariable(), true);
+        AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector(d_outDofMap, getOutputVariable(), true);
         d_matrix = AMP::LinearAlgebra::createMatrix(inVec, outVec);
       }
 
