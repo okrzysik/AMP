@@ -164,7 +164,8 @@ int main(int argc, char *argv[])
   std::cout<<"Number of actual levels: "<<nlevels<<std::endl;
 
   for(int lev = 0; lev < (nlevels - 1); ++lev) {
-    ML_Gen_Smoother_SymGaussSeidel(ml_object, lev, ML_BOTH, 2, 1.0);
+    //ML_Gen_Smoother_SymGaussSeidel(ml_object, lev, ML_BOTH, 2, 1.0);
+    ML_Gen_Smoother_Jacobi(ml_object, lev, ML_BOTH, 2, 0.8);
   }
   ML_Gen_Smoother_Amesos(ml_object, (nlevels - 1), ML_AMESOS_KLU, -1, 0.0);
 
