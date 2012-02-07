@@ -143,7 +143,7 @@ namespace Utilities
     size_t getMemoryUsage();
 
     //! Function to get the current call stack
-    std::string getCallStack();
+    std::vector<std::string> getCallStack();
 
 }
 
