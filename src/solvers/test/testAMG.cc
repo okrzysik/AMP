@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 
   const int numGrids = 10;
   const int numPDEs = 2;
-  const int maxIterations = 50;
+  const int maxIterations = 1000;
   const int coarseSize = 8;
 
   ML_set_random_seed(123456);
