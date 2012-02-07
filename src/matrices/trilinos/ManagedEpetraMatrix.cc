@@ -19,8 +19,10 @@ namespace LinearAlgebra {
 
 void ManagedEpetraMatrix::multiply ( shared_ptr other_op , shared_ptr &result )
 {
+    if ( this->numColumns() != other_op->numRows() )
+        AMP_ERROR( "Inner matrix dimensions must agree" );
     if ( !other_op->isA<ManagedEpetraMatrix>() )
-      AMP_ERROR( "Incompatible matrix types" );
+        AMP_ERROR( "Incompatible matrix types" );
 
     #ifdef USE_MPI
         MPI_Comm epetraComm = (dynamic_cast<const Epetra_MpiComm *> (&d_epetraMatrix->RowMap().Comm()))->Comm();
@@ -170,6 +172,8 @@ Epetra_Map  &ManagedEpetraMatrixParameters::getEpetraRowMap ()
     #else
         Epetra_SerialComm  comm;
     #endif
+    AMP_ASSERT(d_DOFManagerLeft.get()!=NULL);
+    AMP_ASSERT(d_DOFManagerRight.get()!=NULL);
     size_t N_row_local = d_DOFManagerLeft->numLocalDOF();
     size_t N_row_global = d_DOFManagerLeft->numGlobalDOF();
     if ( d_eRowMap.get() == 0 )

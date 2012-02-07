@@ -4,32 +4,36 @@
 
 #include "FEOperatorParameters.h"
 #include "SourcePhysicsModel.h"
+#include "discretization/DOF_Manager.h"
 
 namespace AMP {
-namespace Operator {
+  namespace Operator {
 
-  class VolumeIntegralOperatorParameters : public FEOperatorParameters {
-    public :
+    class VolumeIntegralOperatorParameters : public FEOperatorParameters {
+      public :
 
-      VolumeIntegralOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
-        : FEOperatorParameters(db) {  }
+        VolumeIntegralOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
+          : FEOperatorParameters(db) {  }
 
-      ~VolumeIntegralOperatorParameters() { }
+        ~VolumeIntegralOperatorParameters() { }
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_auxVec;
+        AMP::LinearAlgebra::Vector::shared_ptr d_auxVec;
 
-      boost::shared_ptr<SourcePhysicsModel> d_sourcePhysicsModel;
+        boost::shared_ptr<SourcePhysicsModel> d_sourcePhysicsModel;
 
-      AMP::LinearAlgebra::Variable::shared_ptr d_variable;
+        AMP::Discretization::DOFManager::shared_ptr d_elementDofMap;
+        AMP::Discretization::DOFManager::shared_ptr d_nodeDofMap;
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_pVector;
-    protected :
+        AMP::LinearAlgebra::Variable::shared_ptr d_variable;
 
-    private :
+        AMP::LinearAlgebra::Vector::shared_ptr d_pVector;
+      protected :
 
-  };
+      private :
 
-}
+    };
+
+  }
 }
 
 #endif

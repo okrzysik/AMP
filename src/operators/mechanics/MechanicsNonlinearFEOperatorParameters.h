@@ -35,17 +35,9 @@ namespace AMP {
 
         boost::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
 
-        AMP::LinearAlgebra::Vector::shared_ptr d_EquilibriumDisplacement; /**< Displacement at equilibrium. */
-
-        AMP::LinearAlgebra::Vector::shared_ptr d_EquilibriumTemperature; /**< Temperature at equilibrium. */
-
-        AMP::LinearAlgebra::Vector::shared_ptr d_EquilibriumBurnup; /**< Burnup at equilibrium. */
-
-        AMP::LinearAlgebra::Vector::shared_ptr d_EquilibriumOxygenConcentration; /**< Oxygen concentration at equilibrium. */
-
-        AMP::LinearAlgebra::Vector::shared_ptr d_EquilibriumLHGR; /**< Linear Heat Generation Rate at equilibrium. */
-
         AMP::LinearAlgebra::Vector::shared_ptr d_ReferenceTemperature; /**< Reference temperature */
+
+        AMP::LinearAlgebra::Vector::shared_ptr d_EquilibriumVec[Mechanics::TOTAL_NUMBER_OF_VARIABLES];
 
         AMP::LinearAlgebra::Vector::shared_ptr d_FrozenVec[Mechanics::TOTAL_NUMBER_OF_VARIABLES];
 

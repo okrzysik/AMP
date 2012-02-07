@@ -3,6 +3,8 @@
 #include "utils/Utilities.h"
 #include "matrices/MatrixBuilder.h"
 #include "vectors/VectorBuilder.h"
+#include "cell_hex8.h"
+#include "node.h"
 
 namespace AMP {
   namespace Operator {
@@ -15,8 +17,8 @@ namespace AMP {
       const bool reuse_matrix = (params->d_db)->getBoolWithDefault("reset_reuses_matrix", true);
 
       if( (d_matrix.get() == NULL) || (!reuse_matrix) ) {
-        AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector(d_inDofMap, getInputVariable(), false);
-        AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector(d_outDofMap, getOutputVariable(), false);
+        AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector(d_inDofMap, getInputVariable(), true);
+        AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector(d_outDofMap, getOutputVariable(), true);
         d_matrix = AMP::LinearAlgebra::createMatrix(inVec, outVec);
       }
 
@@ -36,6 +38,23 @@ namespace AMP {
       }//end for el
 
       this->postAssembly();
+    }
+
+    void LinearFEOperator :: createCurrentLibMeshElement() {
+      d_currElemPtr = new ::Hex8;
+      for(size_t j = 0; j < d_currNodes.size(); j++) {
+        std::vector<double> pt = d_currNodes[j].coord();
+        d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
+      }//end for j
+    }
+
+    void LinearFEOperator :: destroyCurrentLibMeshElement() {
+      for(size_t j = 0; j < d_currElemPtr->n_nodes(); j++) {
+        delete (d_currElemPtr->get_node(j));
+        d_currElemPtr->set_node(j) = NULL;
+      }//end for j
+      delete d_currElemPtr;
+      d_currElemPtr = NULL;
     }
 
   }

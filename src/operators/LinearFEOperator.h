@@ -7,6 +7,7 @@
 #include "LinearFEOperatorParameters.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
+#include "elem.h"
 
 namespace AMP {
   namespace Operator {
@@ -77,6 +78,14 @@ namespace AMP {
         void reset(const boost::shared_ptr<OperatorParameters>& );
 
       protected :
+
+        void createCurrentLibMeshElement();
+
+        void destroyCurrentLibMeshElement();
+
+        std::vector<AMP::Mesh::MeshElement> d_currNodes;
+
+        ::Elem* d_currElemPtr;
 
         boost::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
         boost::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;

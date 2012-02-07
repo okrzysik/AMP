@@ -3,8 +3,6 @@
 #include "utils/Utilities.h"
 #include "vectors/VectorBuilder.h"
 #include "matrices/MatrixBuilder.h"
-#include "cell_hex8.h"
-#include "node.h"
 
 namespace AMP {
   namespace Operator {
@@ -32,7 +30,7 @@ namespace AMP {
         d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVarName) );
 
         if(d_useUpdatedLagrangian) {
-          d_refXYZ = AMP::LinearAlgebra::createVector(d_inDofMap, d_inpVariable, false);
+          d_refXYZ = AMP::LinearAlgebra::createVector(d_inDofMap, d_inpVariable, true);
           d_refXYZ->zero();
 
           AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
@@ -71,8 +69,8 @@ namespace AMP {
           if(isNonlinearOperatorInitialized) {
             reset(params);
           } else {
-            AMP::LinearAlgebra::Vector::shared_ptr tmpInVec = AMP::LinearAlgebra::createVector(d_inDofMap, d_inpVariable, false);
-            AMP::LinearAlgebra::Vector::shared_ptr tmpOutVec = AMP::LinearAlgebra::createVector(d_outDofMap, d_outVariable, false);
+            AMP::LinearAlgebra::Vector::shared_ptr tmpInVec = AMP::LinearAlgebra::createVector(d_inDofMap, d_inpVariable, true);
+            AMP::LinearAlgebra::Vector::shared_ptr tmpOutVec = AMP::LinearAlgebra::createVector(d_outDofMap, d_outVariable, true);
             d_matrix = AMP::LinearAlgebra::createMatrix(tmpInVec, tmpOutVec);
           }
         } else {
@@ -213,23 +211,6 @@ namespace AMP {
       for(unsigned int j = 0; j < d_currNodes.size(); j++) {
         d_inDofMap->getDOFs(d_currNodes[j].globalID(), d_dofIndices[j]);
       } // end of j
-    }
-
-    void MechanicsLinearFEOperator :: createCurrentLibMeshElement() {
-      d_currElemPtr = new ::Hex8;
-      for(unsigned int j = 0; j < d_currNodes.size(); j++) {
-        std::vector<double> pt = d_currNodes[j].coord();
-        d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
-      }//end for j
-    }
-
-    void MechanicsLinearFEOperator :: destroyCurrentLibMeshElement() {
-      for(unsigned int j = 0; j < d_currElemPtr->n_nodes(); j++) {
-        delete (d_currElemPtr->get_node(j));
-        d_currElemPtr->set_node(j) = NULL;
-      }//end for j
-      delete d_currElemPtr;
-      d_currElemPtr = NULL;
     }
 
   }

@@ -133,8 +133,18 @@ namespace Utilities
     //! Create a hash key from a char array
     unsigned int hash_char(const char*);
 
-    //! Function to get the memory usage
+    /*!
+     * Function to get the memory usage.
+     * This function will return the total memory used by the application.
+     * Note: depending on the implimentation, this number may be rounded to
+     * to a multiple of 1024 (2^3n).
+     * If this function fails, it will return 0.
+     */
     size_t getMemoryUsage();
+
+    //! Function to get the current call stack
+    std::string getCallStack();
+
 }
 
 

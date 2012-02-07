@@ -63,23 +63,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Test quicksort performance
-    size_t N = 10000;
-    std::vector<int> data1(N);
-    srand ( time(NULL) );
-    for (size_t i=0; i<N; i++)
-        data1[i] = rand();
-    std::vector<int> data2 = data1;
-    std::vector<int> data3 = data1;
-    double t1 = AMP::AMP_MPI::time();
-    AMP::Utilities::quicksort(data1);
-    double t2 = AMP::AMP_MPI::time();
-    std::sort(data2.begin(),data2.end());
-    double t3 = AMP::AMP_MPI::time();
-    std::sort(&data3[0],&data3[0]+data3.size());
-    double t4 = AMP::AMP_MPI::time();
-    std::cout << "quicksort = " << t2-t1 << ", std::sort = " << t3-t2 << ", std::sort(2) = " << t4-t3 << std::endl;
-
     // Shutdown
     AMP::AMPManager::shutdown();
 

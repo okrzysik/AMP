@@ -4,8 +4,6 @@
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 #include "vectors/VectorBuilder.h"
-#include "cell_hex8.h"
-#include "node.h"
 
 namespace AMP {
   namespace Operator {
@@ -87,12 +85,12 @@ namespace AMP {
         //memory for reference coordinates (used in UL formulation)
         // memory for variables in the previous config
         if(d_useUpdatedLagrangian) {
-          d_refXYZ = AMP::LinearAlgebra::createVector(d_dofMap[Mechanics::DISPLACEMENT], d_inpVariables->getVariable(Mechanics::DISPLACEMENT), false);
+          d_refXYZ = AMP::LinearAlgebra::createVector(d_dofMap[Mechanics::DISPLACEMENT], d_inpVariables->getVariable(Mechanics::DISPLACEMENT), true);
           d_refXYZ->zero();
           for(unsigned int i=0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++)
           {
             if(d_isActive[i]) {
-              d_inVec_pre[i] = AMP::LinearAlgebra::createVector(d_dofMap[i], d_inpVariables->getVariable(i), false); 
+              d_inVec_pre[i] = AMP::LinearAlgebra::createVector(d_dofMap[i], d_inpVariables->getVariable(i), true); 
               d_inVec_pre[i]->zero();
             }
           }
@@ -332,29 +330,29 @@ namespace AMP {
         AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
         AMP::Mesh::MeshIterator end_el = el.end();
 
-        setVector(Mechanics::DISPLACEMENT, myParams->d_EquilibriumDisplacement);
+        setVector(Mechanics::DISPLACEMENT, myParams->d_EquilibriumVec[Mechanics::DISPLACEMENT]);
 
         if(d_isActive[Mechanics::TEMPERATURE]) {
-          if( myParams->d_EquilibriumTemperature != NULL ) {
-            setVector(Mechanics::TEMPERATURE, myParams->d_EquilibriumTemperature);
+          if( myParams->d_EquilibriumVec[Mechanics::TEMPERATURE] != NULL ) {
+            setVector(Mechanics::TEMPERATURE, myParams->d_EquilibriumVec[Mechanics::TEMPERATURE]);
           }
         }
 
         if(d_isActive[Mechanics::BURNUP]) {
-          if( myParams->d_EquilibriumBurnup != NULL ) {
-            setVector(Mechanics::BURNUP, myParams->d_EquilibriumBurnup);
+          if( myParams->d_EquilibriumVec[Mechanics::BURNUP] != NULL ) {
+            setVector(Mechanics::BURNUP, myParams->d_EquilibriumVec[Mechanics::BURNUP]);
           }
         }
 
         if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
-          if( myParams->d_EquilibriumOxygenConcentration != NULL ) {
-            setVector(Mechanics::OXYGEN_CONCENTRATION, myParams->d_EquilibriumOxygenConcentration);
+          if( myParams->d_EquilibriumVec[Mechanics::OXYGEN_CONCENTRATION] != NULL ) {
+            setVector(Mechanics::OXYGEN_CONCENTRATION, myParams->d_EquilibriumVec[Mechanics::OXYGEN_CONCENTRATION]);
           }
         }
 
         if(d_isActive[Mechanics::LHGR]) {
-          if( myParams->d_EquilibriumLHGR != NULL ) {
-            setVector(Mechanics::LHGR, myParams->d_EquilibriumLHGR);
+          if( myParams->d_EquilibriumVec[Mechanics::LHGR] != NULL ) {
+            setVector(Mechanics::LHGR, myParams->d_EquilibriumVec[Mechanics::LHGR]);
           }
         }
 
@@ -673,23 +671,6 @@ namespace AMP {
       for(unsigned int j = 0; j < d_currNodes.size(); j++) {
         d_dofMap[varId]->getDOFs(d_currNodes[j].globalID(), dofIds[j]);
       } // end of j
-    }
-
-    void MechanicsNonlinearFEOperator :: createCurrentLibMeshElement() {
-      d_currElemPtr = new ::Hex8;
-      for(unsigned int j = 0; j < d_currNodes.size(); j++) {
-        std::vector<double> pt = d_currNodes[j].coord();
-        d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
-      }//end for j
-    }
-
-    void MechanicsNonlinearFEOperator :: destroyCurrentLibMeshElement() {
-      for(unsigned int j = 0; j < d_currElemPtr->n_nodes(); j++) {
-        delete (d_currElemPtr->get_node(j));
-        d_currElemPtr->set_node(j) = NULL;
-      }//end for j
-      delete d_currElemPtr;
-      d_currElemPtr = NULL;
     }
 
   }
