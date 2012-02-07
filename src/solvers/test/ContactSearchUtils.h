@@ -2,7 +2,6 @@
 #ifndef included_ContactSearchUtils
 #define included_ContactSearchUtils
 
-#include "ampmesh/MeshAdapter.h"
 #include <vector>
 
 void computeRGboundingBox(const double precision, 

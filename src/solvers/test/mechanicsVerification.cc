@@ -36,9 +36,7 @@
 #include "utils/MechanicsManufacturedSolutions.h"
 #include "utils/ReadTestMesh.h"
 
-#include "ampmesh/MeshManager.h"
 #include "ampmesh/MeshVariable.h"
-#include "ampmesh/MeshAdapter.h"
 #include "ampmesh/SiloIO.h"
 
 #include "materials/Material.h"

@@ -2,7 +2,6 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 #include "ampmesh/MeshVariable.h"
-#include "ampmesh/MeshAdapter.h"
 #include "ampmesh/SiloIO.h"
 
 #include "utils/Database.h"
@@ -84,7 +83,6 @@ void linearRobinTest(AMP::UnitTest *ut, std::string exeName )
   //std::string mesh_file = input_db->getString("Mesh");
 
   // Construct a mesh manager which reads in the fuel mesh
-  //  #include "ampmesh/MeshManager.h"
   AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
   AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
   AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "bar" );

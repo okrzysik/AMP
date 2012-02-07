@@ -37,7 +37,6 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshManager.h"
 #include "ampmesh/MeshVariable.h"
 #include "materials/Material.h"
 

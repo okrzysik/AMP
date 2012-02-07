@@ -2,7 +2,6 @@
 #ifndef included_MPCtestUtils
 #define included_MPCtestUtils
 
-#include "ampmesh/MeshManager.h"
 
 void getMasterAndSlaveNodes(std::vector<unsigned int> & masterNodes, std::vector<unsigned int> & slaveNodes,
     AMP::Mesh::MeshManager::Adapter::shared_ptr masterMeshAdapter,

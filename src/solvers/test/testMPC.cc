@@ -5,9 +5,7 @@
 #include <iostream>
 #include <string>
 
-#include "ampmesh/MeshManager.h"
 #include "ampmesh/MeshVariable.h"
-#include "ampmesh/MeshAdapter.h"
 
 #include "materials/Material.h"
 
