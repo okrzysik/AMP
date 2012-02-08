@@ -18,7 +18,7 @@ namespace AMP {
         void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector> f, boost::shared_ptr<AMP::LinearAlgebra::Vector> u) {
           //Assumption: primaryInputVar = outputVar
           //General solution: To avoid making the above assumption, we can replace 
-          //getInputVariable() with getPrimaryVariable() and use it for the u vector. 
+          //getInputVariable() with getPrimaryInputVariable() and use it for the u vector. 
           AMP::LinearAlgebra::Vector::shared_ptr myU = u->subsetVectorForVariable(d_onePointOp->getOutputVariable());
           if(d_bUseZeroInitialGuess) {
             myU->zero();
