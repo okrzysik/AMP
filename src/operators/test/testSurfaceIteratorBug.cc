@@ -52,16 +52,16 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
   libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
   boost::shared_ptr < ::FEType > feType( new ::FEType(feTypeOrder, feFamily) );
+  boost::shared_ptr < ::FEBase > fe( (::FEBase::build(2, (*feType))).release() );
+
+  //const std::vector<std::vector<Real> > &phi = fe->get_phi();
+  const std::vector<Real> &djxw = fe->get_JxW();
 
   libMeshEnums::QuadratureType qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>("QGAUSS");
   libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
+
   boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, 2, qruleOrder)).release() );
-
-  boost::shared_ptr < ::FEBase > fe( (::FEBase::build(2, (*feType))).release() );
   fe->attach_quadrature_rule( qrule.get() );
-
-  const std::vector<std::vector<Real> > &phi = fe->get_phi();
-  const std::vector<Real> &djxw = fe->get_JxW();
 
   AMP::Mesh::MeshManager::Adapter::BoundarySideIterator bnd = mesh->beginSideBoundary( surfaceId );
   AMP::Mesh::MeshManager::Adapter::BoundarySideIterator end_bnd = mesh->endSideBoundary( surfaceId );
@@ -72,6 +72,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
     assert(bndGlobalIds.size() == 4);
 
+    assert((bnd->getElem()).default_order() == feTypeOrder);
+    assert((bnd->getElem()).dim() == 2);
+
     if(setConstantValue) {
       std::vector<double> vals(bndGlobalIds.size(), 100.0);
       vec->addValuesByGlobalID(bndGlobalIds.size(), (int*)(&(bndGlobalIds[0])), &(vals[0]));
@@ -80,8 +83,17 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       std::vector<double> vals(bndGlobalIds.size(), 0.0);
       for(unsigned int i = 0; i < bndGlobalIds.size(); i++) {
         for(unsigned int qp = 0; qp < qrule->n_points(); qp++) {
-          vals[i] +=  (djxw[qp]*phi[i][qp]*100.0);
+          assert(djxw[qp] >= 0.0);
+          // assert(phi[i][qp] >= 0.0);
+          //vals[i] +=  (djxw[qp]*phi[i][qp]*100.0);
+          vals[i] +=  djxw[qp];
+          //vals[i] += bnd->volume();
         }//end qp
+        if(fabs(vals[i] - bnd->volume()) > ((1.0e-8)*(bnd->volume()))) {
+          std::cout<<"Vals = "<<std::setprecision(15)<<vals[i]<<std::endl;
+          std::cout<<"Volume = "<<std::setprecision(15)<<(bnd->volume())<<std::endl;
+          std::cout<<"Diff = "<<std::setprecision(15)<<(vals[i] - bnd->volume())<<std::endl;
+        }
       }//end i
       vec->addValuesByGlobalID(bndGlobalIds.size(), (int*)(&(bndGlobalIds[0])), &(vals[0]));
     }
