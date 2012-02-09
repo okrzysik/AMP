@@ -61,6 +61,8 @@ LibMeshAdapter::LibMeshAdapter ( const boost::shared_ptr< ::Mesh > &in )
     d_DefaultSorter = AMP::LinearAlgebra::ObjectSorter::shared_ptr ( new DefaultMeshObjectSorter<NodeIterator> ( beginUsedNode() , endUsedNode() ) );
     buildDOFMap ( AMP::LinearAlgebra::Variable::shared_ptr ( new NodalScalarVariable ( "build_comm_list" ) ) );
     buildDOFMap ( AMP::LinearAlgebra::Variable::shared_ptr ( new SingleGaussPointVariable ( "build_comm_list" ) ) );
+    assert(numLocalElements() != 0); 
+    assert(numLocalNodes() != 0); 
 }
 
   LibMeshAdapter::LibMeshAdapter ( boost::shared_ptr<Database>  db )
@@ -79,6 +81,8 @@ LibMeshAdapter::LibMeshAdapter ( const boost::shared_ptr< ::Mesh > &in )
     d_DefaultSorter = AMP::LinearAlgebra::ObjectSorter::shared_ptr ( new DefaultMeshObjectSorter<NodeIterator> ( beginUsedNode() , endUsedNode() ) );
     buildDOFMap ( AMP::LinearAlgebra::Variable::shared_ptr ( new NodalScalarVariable ( "build_comm_list" ) ) );
     buildDOFMap ( AMP::LinearAlgebra::Variable::shared_ptr ( new SingleGaussPointVariable ( "build_comm_list" ) ) );
+    assert(numLocalElements() != 0); 
+    assert(numLocalNodes() != 0); 
   }
 
   void LibMeshAdapter::writeExodusIIFile ( std::string fname )
