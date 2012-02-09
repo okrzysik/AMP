@@ -1,6 +1,7 @@
 
 NumberOfMeshes = 1
 
+SetConstantValue = FALSE
 SurfaceId = 4
 
 Mesh_1{

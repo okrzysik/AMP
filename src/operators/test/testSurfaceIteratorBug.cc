@@ -14,6 +14,17 @@
 #include "ampmesh/MeshAdapter.h"
 #include "ampmesh/MeshVariable.h"
 
+#include "fe_type.h"
+#include "fe_base.h"
+#include "elem.h"
+#include "quadrature.h"
+
+#include "enum_order.h"
+#include "enum_fe_family.h"
+#include "enum_quadrature_type.h"
+#include "auto_ptr.h"
+#include "string_to_enum.h"
+
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
   std::string log_file = "output_" + exeName;
@@ -26,6 +37,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   input_db->printClassData(AMP::plog);
 
   int surfaceId = input_db->getInteger("SurfaceId");
+  bool setConstantValue = input_db->getBool("SetConstantValue");
 
   AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
   AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
@@ -37,6 +49,20 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::LinearAlgebra::Vector::shared_ptr vec = mesh->createVector(var);
   vec->zero();
 
+  libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
+  libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
+  boost::shared_ptr < ::FEType > feType( new ::FEType(feTypeOrder, feFamily) );
+
+  libMeshEnums::QuadratureType qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>("QGAUSS");
+  libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
+  boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, 2, qruleOrder)).release() );
+
+  boost::shared_ptr < ::FEBase > fe( (::FEBase::build(2, (*feType))).release() );
+  fe->attach_quadrature_rule( qrule.get() );
+
+  const std::vector<std::vector<Real> > &phi = fe->get_phi();
+  const std::vector<Real> &djxw = fe->get_JxW();
+
   AMP::Mesh::MeshManager::Adapter::BoundarySideIterator bnd = mesh->beginSideBoundary( surfaceId );
   AMP::Mesh::MeshManager::Adapter::BoundarySideIterator end_bnd = mesh->endSideBoundary( surfaceId );
 
@@ -46,8 +72,19 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
     assert(bndGlobalIds.size() == 4);
 
-    std::vector<double> vals(bndGlobalIds.size(), 10.0);
-    vec->addValuesByGlobalID(bndGlobalIds.size(), (int*)(&(bndGlobalIds[0])), &(vals[0]));
+    if(setConstantValue) {
+      std::vector<double> vals(bndGlobalIds.size(), 100.0);
+      vec->addValuesByGlobalID(bndGlobalIds.size(), (int*)(&(bndGlobalIds[0])), &(vals[0]));
+    } else {
+      fe->reinit ( &(bnd->getElem()) );
+      std::vector<double> vals(bndGlobalIds.size(), 0.0);
+      for(unsigned int i = 0; i < bndGlobalIds.size(); i++) {
+        for(unsigned int qp = 0; qp < qrule->n_points(); qp++) {
+          vals[i] +=  (djxw[qp]*phi[i][qp]*100.0);
+        }//end qp
+      }//end i
+      vec->addValuesByGlobalID(bndGlobalIds.size(), (int*)(&(bndGlobalIds[0])), &(vals[0]));
+    }
   }//end for bnd
 
   vec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
