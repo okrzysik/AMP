@@ -1,0 +1,16 @@
+
+NumberOfMeshes = 1
+
+SurfaceId = 4
+
+Mesh_1{
+  Filename = "pellet_1x.e"
+  MeshName = "pellet"
+  x_offset = 0.0
+  y_offset = 0.0
+  z_offset = 0.0
+  NumberOfElements = 10
+}
+
+
+

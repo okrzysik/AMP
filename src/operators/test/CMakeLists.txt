@@ -39,6 +39,9 @@ INCLUDE (macros)
 #     COPY_MESH_FILE ( mesh_file )
 #
 
+COPY_TEST_DATA_FILE ( input_testSurfaceIteratorBug )
+ADD_AMP_TEST( testSurfaceIteratorBug )
+
 ADD_AMP_TEST( testPolarDecomposition )
 ADD_AMP_TEST( testStiffnessTransformation )
 
