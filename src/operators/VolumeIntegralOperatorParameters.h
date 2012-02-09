@@ -18,14 +18,10 @@ namespace AMP {
         ~VolumeIntegralOperatorParameters() { }
 
         AMP::LinearAlgebra::Vector::shared_ptr d_auxVec;
-
         boost::shared_ptr<SourcePhysicsModel> d_sourcePhysicsModel;
-
         AMP::Discretization::DOFManager::shared_ptr d_elementDofMap;
         AMP::Discretization::DOFManager::shared_ptr d_nodeDofMap;
-
         AMP::LinearAlgebra::Variable::shared_ptr d_variable;
-
         AMP::LinearAlgebra::Vector::shared_ptr d_pVector;
       protected :
 

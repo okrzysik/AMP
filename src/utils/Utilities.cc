@@ -290,7 +290,7 @@ size_t Utilities::getMemoryUsage()
                               &t_info_count)) {
             return 0;
         }
-        N_bytes = t_info.resident_size + t_info.virtual_size;
+        N_bytes = t_info.resident_size;
     #endif
     return N_bytes;
 }
