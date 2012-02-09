@@ -178,6 +178,22 @@ std::vector<DOFManager::shared_ptr>  multiDOFManager::getDOFManagers() const
 }
 
 
+/****************************************************************
+* Subset the DOF manager                                        *
+****************************************************************/
+boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
+{
+    // Call the base class for now, this needs to be specialized
+    return DOFManager::subset( mesh, useMeshComm );
+}
+boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::MeshIterator &iterator, AMP_MPI comm )
+{
+    // Call the base class for now, this needs to be specialized
+    return DOFManager::subset( iterator, comm );
+}
+
+
+
 }
 }
 

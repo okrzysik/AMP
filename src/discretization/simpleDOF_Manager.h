@@ -7,10 +7,12 @@
 #include "ampmesh/MeshElement.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/DOF_ManagerParameters.h"
+#include "discretization/subsetDOFManager.h"
 
 
 namespace AMP {
 namespace Discretization {
+
 
 /**
  * \class simpleDOFManager
@@ -76,6 +78,16 @@ public:
 
     //! Get the row DOFs given a mesh element
     virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const;
+
+
+    /** \brief Subset the DOF Manager for a mesh
+     * \details  This will subset a DOF manager for a particular mesh.  The resulting DOFManager
+     *    can exist on either the comm of the parent DOF manager, or the comm of the mesh (default).
+     * \param[in]  mesh         The mesh to use to subset
+     * \param[in]  useMeshComm  Do we want to use the mesh comm for the new DOFManager.
+     *                          Note: if this is true, any processors that do not contain the mesh will return NULL.
+     */
+    virtual DOFManager::shared_ptr subset( const AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm=true );
 
 
 private:

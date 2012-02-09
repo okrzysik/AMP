@@ -72,7 +72,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     // Create a subset mesh and view of a vector
     AMP::Mesh::Mesh::shared_ptr submesh = mesh->Subset( mesh->getSurfaceIterator(AMP::Mesh::Face) );
     #ifdef USE_AMP_VECTORS
-        AMP::LinearAlgebra::VS_MeshIterator meshSelector( "positionSubset", submesh->getIterator(AMP::Mesh::Vertex,0) );
+        AMP::LinearAlgebra::VS_MeshIterator meshSelector( "positionSubset", submesh->getIterator(AMP::Mesh::Vertex,0), submesh->getComm() );
         AMP::LinearAlgebra::VS_Stride zSelector("thirds",2,3);
         AMP::LinearAlgebra::Vector::shared_ptr  vec_meshSubset = position->select( meshSelector, "mesh subset" );
         AMP_ASSERT(vec_meshSubset.get()!=NULL);

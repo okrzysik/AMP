@@ -12,7 +12,7 @@ StridedVariable::StridedVariable ( const std::string &name, size_t offset, size_
 }
 
 
-boost::shared_ptr<AMP::Discretization::subsetDOFManager>  StridedVariable::getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr parentDOF )
+AMP::Discretization::DOFManager::shared_ptr  StridedVariable::getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr parentDOF )
 { 
     std::vector<size_t> dofs;
     dofs.reserve(parentDOF->numLocalDOF());
@@ -24,7 +24,9 @@ boost::shared_ptr<AMP::Discretization::subsetDOFManager>  StridedVariable::getSu
             i++;
         }
     }
-    boost::shared_ptr<AMP::Discretization::subsetDOFManager>  subsetDOF( new AMP::Discretization::subsetDOFManager( parentDOF, dofs, parentDOF->getIterator() ) );
+    AMP::Mesh::MeshIterator iterator = parentDOF->getIterator();
+    AMP::Discretization::DOFManager::shared_ptr  subsetDOF;
+    subsetDOF = AMP::Discretization::subsetDOFManager::create( parentDOF, dofs, iterator, parentDOF->getComm() );
     return subsetDOF;
 }
 

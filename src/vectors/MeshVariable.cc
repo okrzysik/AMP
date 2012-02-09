@@ -5,29 +5,31 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-MeshVariable::MeshVariable ( const std::string &name, AMP::Mesh::Mesh::shared_ptr mesh ):
+MeshVariable::MeshVariable ( const std::string &name, AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm ):
     SubsetVariable ( name )
 {
+    d_useMeshComm = useMeshComm;
     d_mesh = mesh;
 }
 
 
-boost::shared_ptr<AMP::Discretization::subsetDOFManager>  MeshVariable::getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr parentDOF )
+AMP::Discretization::DOFManager::shared_ptr  MeshVariable::getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr parentDOF )
 {
-    return boost::static_pointer_cast<AMP::Discretization::subsetDOFManager>( parentDOF->subset( d_mesh ) );
+    return parentDOF->subset( d_mesh, d_useMeshComm );
 }
 
 
-MeshIteratorVariable::MeshIteratorVariable ( const std::string &name, const AMP::Mesh::MeshIterator &iterator ):
+MeshIteratorVariable::MeshIteratorVariable ( const std::string &name, const AMP::Mesh::MeshIterator &iterator, const AMP_MPI &comm ):
     SubsetVariable( name ),
-    d_iterator( iterator )
+    d_iterator( iterator ),
+    d_comm( comm )
 {
 }
 
 
-boost::shared_ptr<AMP::Discretization::subsetDOFManager>  MeshIteratorVariable::getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr parentDOF )
+AMP::Discretization::DOFManager::shared_ptr  MeshIteratorVariable::getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr parentDOF )
 {
-    return boost::static_pointer_cast<AMP::Discretization::subsetDOFManager>( parentDOF->subset( d_iterator ) );
+    return parentDOF->subset( d_iterator, d_comm );
 }
 
 

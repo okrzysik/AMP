@@ -146,6 +146,10 @@ public:
     virtual std::vector<MeshID> getAllMeshIDs() const;
 
 
+    //! Is the current mesh a base mesh
+    virtual inline bool isBaseMesh() const { return false; }
+
+
     /**
      *  Get the meshIDs of all the basic meshes that compose the current mesh (excluding multimeshes and subset meshes)
      *  Note: This function may require global communication depending on the implimentation

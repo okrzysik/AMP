@@ -123,18 +123,18 @@ class VS_Mesh : public VectorSelector
 {
 public:
     /** \brief Constructor
-      * \param[in]  name    The name of the new variable
-      * \param[in]  mesh    The desired mesh
+      * \param[in]  name            The name of the new variable
+      * \param[in]  mesh            The desired mesh
+      * \param[in]  useMeshComm     Use the comm of the mesh (otherwise use the comm of the parent DOFManager)
       */
-    VS_Mesh ( const std::string &name, AMP::Mesh::Mesh::shared_ptr mesh );
+    VS_Mesh ( const std::string &name, AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm=true );
 
     virtual  Vector::shared_ptr  subset ( Vector::shared_ptr p ) const;
 
 protected:
-    //  The name of this subset
-    std::string  d_Name;
-    //  Mesh
-    AMP::Mesh::Mesh::shared_ptr  d_mesh;
+    std::string  d_Name;            //  The name of this subset
+    bool d_useMeshComm;             //  Use the comm of the mesh
+    Mesh::Mesh::shared_ptr  d_mesh; //  Mesh
 };
 
 
@@ -148,15 +148,14 @@ public:
       * \param[in]  name        The name of the new variable
       * \param[in]  iterator    The mesh iterator to use
       */
-    VS_MeshIterator ( const std::string &name, const AMP::Mesh::MeshIterator &iterator );
+    VS_MeshIterator ( const std::string &name, const AMP::Mesh::MeshIterator &iterator, const AMP::AMP_MPI &comm );
 
     virtual  Vector::shared_ptr  subset ( Vector::shared_ptr p ) const;
 
 protected:
-    //  The name of this subset
-    std::string  d_Name;
-    //  MeshIterator
-    const AMP::Mesh::MeshIterator  d_iterator;
+    std::string  d_Name;                    //  The name of this subset
+    const AMP_MPI  d_comm;                  // comm for the subset
+    const Mesh::MeshIterator  d_iterator;   //  MeshIterator
 };
 #endif
 

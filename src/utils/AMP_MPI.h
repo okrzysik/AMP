@@ -111,6 +111,19 @@ public:
 
 
     /**
+     * \brief Create a communicator from the intersection of two communicators
+     * \details  This creates a new AMP_MPI object by intersecting two existing communicators.
+     *   Any processors that do not contain the both communicators will recieve a NULL communicator.
+     *   There are 3 possible cases:
+     *      The communicators are disjoint (a null communicator will be returned on all processors).
+     *      One communicator is a sub communicator of another.  This will require communication on 
+     *          the smaller communicator only.
+     *      The communicators partially overlap.  This will require communication on the first communicator.
+     */
+    static AMP_MPI intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 );
+
+
+    /**
      * Check if the current communicator is NULL
      */
     bool isNull() const { return d_isNull; }

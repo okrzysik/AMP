@@ -1047,6 +1047,9 @@ int main(int argc, char *argv[])
                 ut.failure(" >= comm");
         }
 
+        // Test intersection
+        
+
         // Test time and tick
         double end_time = AMP::AMP_MPI::time();
         double time_res = AMP::AMP_MPI::tick();

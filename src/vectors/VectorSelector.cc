@@ -58,14 +58,15 @@ Vector::shared_ptr  VS_Stride::subset ( Vector::shared_ptr p ) const
 * VS_Mesh                                               *
 ********************************************************/
 #ifdef USE_AMP_MESH
-VS_Mesh::VS_Mesh ( const std::string &name, AMP::Mesh::Mesh::shared_ptr mesh )
+VS_Mesh::VS_Mesh ( const std::string &name, AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
 {
     d_Name = name;
     d_mesh = mesh;
+    d_useMeshComm = useMeshComm;
 }
 Vector::shared_ptr  VS_Mesh::subset ( Vector::shared_ptr p ) const
 { 
-    Variable::shared_ptr  variable ( new MeshVariable( d_Name, d_mesh ) );
+    Variable::shared_ptr  variable ( new MeshVariable( d_Name, d_mesh, d_useMeshComm ) );
     Vector::shared_ptr  vector = SubsetVector::view ( p, variable ); 
     return vector;
 }
@@ -76,14 +77,15 @@ Vector::shared_ptr  VS_Mesh::subset ( Vector::shared_ptr p ) const
 * VS_MeshIterator                                       *
 ********************************************************/
 #ifdef USE_AMP_MESH
-VS_MeshIterator::VS_MeshIterator ( const std::string &name, const AMP::Mesh::MeshIterator &iterator ):
-    d_iterator( iterator )
+VS_MeshIterator::VS_MeshIterator ( const std::string &name, const AMP::Mesh::MeshIterator &iterator, const AMP::AMP_MPI &comm ):
+    d_iterator( iterator ),
+    d_comm( comm )
 {
     d_Name = name;
 }
 Vector::shared_ptr  VS_MeshIterator::subset ( Vector::shared_ptr p ) const
 { 
-    Variable::shared_ptr  variable ( new MeshIteratorVariable( d_Name, d_iterator ) );
+    Variable::shared_ptr  variable ( new MeshIteratorVariable( d_Name, d_iterator, d_comm ) );
     Vector::shared_ptr  vector = SubsetVector::view ( p, variable ); 
     return vector;
 }

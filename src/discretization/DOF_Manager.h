@@ -103,12 +103,23 @@ public:
     virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const;
 
 
-    //! Subset the DOF Manager for a mesh (requires global communication)
-    virtual DOFManager::shared_ptr subset( const AMP::Mesh::Mesh::shared_ptr mesh );
+    /** \brief Subset the DOF Manager for a mesh
+     * \details  This will subset a DOF manager for a particular mesh.  The resulting DOFManager
+     *    can exist on either the comm of the parent DOF manager, or the comm of the mesh (default).
+     * \param[in]  mesh         The mesh to use to subset
+     * \param[in]  useMeshComm  Do we want to use the mesh comm for the new DOFManager.
+     *                          Note: if this is true, any processors that do not contain the mesh will return NULL.
+     */
+    virtual DOFManager::shared_ptr subset( const AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm=true );
 
 
-    //! Subset the DOF Manager for a mesh element iterator (requires global communication)
-    virtual DOFManager::shared_ptr subset( const AMP::Mesh::MeshIterator &iterator );
+    /** \brief Subset the DOF Manager for a mesh element iterator
+     * \details  This will subset a DOF manager for a given mesh element iterator.  
+     *    The resulting DOFManager will exist on the privided comm.
+     * \param[in]  mesh     The mesh iterator for the subset
+     * \param[in]  comm     The desired comm
+     */
+    virtual DOFManager::shared_ptr subset( const AMP::Mesh::MeshIterator &iterator, AMP_MPI comm );
 
 protected:
 
