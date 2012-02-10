@@ -129,6 +129,16 @@ namespace LinearAlgebra {
     return d_vVectors.end(); 
   }
 
+  inline 
+    void MultiVector::replaceSubVector(Vector::shared_ptr oldVec, Vector::shared_ptr newVec) 
+    {
+      for(size_t i = 0; i < d_vVectors.size(); ++i) {
+        if(d_vVectors[i] == oldVec) {
+          d_vVectors[i] = newVec;
+          break;
+        }
+      }//end for i
+    }
 
   inline
   const Vector::shared_ptr  &MultiVector::getVector ( const VectorOperations &rhs , size_t which )  const

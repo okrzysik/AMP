@@ -78,6 +78,9 @@ namespace LinearAlgebra {
       virtual void dataChanged ();
 
     public:
+
+      void replaceSubVector(Vector::shared_ptr oldVec, Vector::shared_ptr newVec);
+
       /** Iterator typedef
         */
       typedef std::vector<Vector::shared_ptr>::iterator  vector_iterator;
