@@ -10,7 +10,8 @@ namespace AMP {
 
     class SolverWrapper : public SolverStrategy {
       public:
-        SolverWrapper() { }
+        SolverWrapper(boost::shared_ptr<SolverStrategyParameters> params) 
+          : SolverStrategy(params) { }
 
         virtual ~SolverWrapper() { }
 
