@@ -10,13 +10,13 @@ namespace AMP {
 
     class SolverWrapper : public SolverStrategy {
       public:
-        SolverWrapper(boost::shared_ptr<SolverStrategyParameters> params) 
-          : SolverStrategy(params) { }
+        SolverWrapper() { }
 
         virtual ~SolverWrapper() { }
 
         void setSolver(boost::shared_ptr<SolverStrategy> in) {
           d_solver = in;
+          d_pOperator = in->getOperator();
         }
 
         void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
