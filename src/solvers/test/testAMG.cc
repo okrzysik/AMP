@@ -10,8 +10,8 @@
 
 struct GlobalData {
   int N;
-  std::vector<unsigned int> * nonZeroCols;
-  double** mat;
+  std::vector<std::vector<unsigned int> > nonZeroCols;
+  std::vector<std::vector<double> > mat;
 } myData;
 
 const double phiCoeffs[4][4] = {
@@ -33,17 +33,6 @@ double evalPhiPrime(int dofId, double psi) {
   return (phiCoeffs[dofId][1] + (2.0*phiCoeffs[dofId][2]*psi) + (3.0*phiCoeffs[dofId][3]*psi*psi));
 }
 
-void createMatrix() {
-  typedef double* doublePtr;
-  myData.mat = new doublePtr[2*(myData.N)];
-  for(int i = 0; i < (2*(myData.N)); ++i) {
-    myData.mat[i] = new double[2*(myData.N)];
-    for(int j = 0; j < (2*(myData.N)); ++j) {
-      myData.mat[i][j] = 0.0;
-    }//end for j
-  }//end for i
-}
-
 void computeMatrix() {
   double elementMat[4][4];
   for(int i = 0; i < 2; ++i) {
@@ -60,41 +49,97 @@ void computeMatrix() {
     }//end for c
   }//end for i
 
+  myData.nonZeroCols.resize(2*(myData.N));
+  myData.mat.resize(2*(myData.N));
+
   for(int i = 0; i < (myData.N - 1); ++i) {
     for(int r = 0; r < 4; ++r) {
       for(int c = 0; c < 4; ++c) {
-        myData.mat[(2*i) + r][(2*i) + c] += (elementMat[r][c]);
+        int row = (2*i) + r;
+        int col = (2*i) + c;
+        int idx = -1;
+        for(int k = 0; k < myData.nonZeroCols[row].size(); ++k) {
+          if(myData.nonZeroCols[row][k] == col) {
+            idx = k;
+            break;
+          }
+        }//end for k
+        if(idx == -1) {
+          (myData.nonZeroCols[row]).push_back(col);
+          (myData.mat[row]).push_back(elementMat[r][c]);
+        } else {
+          myData.mat[row][idx] += (elementMat[r][c]);
+        }
       }//end for c
     }//end for r
   }//end for i
 
   for(int i = 0; i < (2*(myData.N)); ++i) {
-    myData.mat[i][0] = 0.0;
-    myData.mat[0][i] = 0.0;
-    myData.mat[i][2*(myData.N - 1)] = 0.0;
-    myData.mat[2*(myData.N - 1)][i] = 0.0;
-  }//end for i
+    int row, col;
 
-  myData.mat[0][0] = 1.0;
-  myData.mat[2*(myData.N - 1)][2*(myData.N - 1)] = 1.0;
-}
-
-void computeNonZeroCols() {
-  myData.nonZeroCols = new std::vector<unsigned int> [2*(myData.N)];
-  for(unsigned int i = 0; i < (2*(myData.N)); ++i) {
-    for(unsigned int j = 0; j < (2*(myData.N)); ++j) {
-      if(fabs(myData.mat[i][j]) > 1.0e-15) {
-        (myData.nonZeroCols[i]).push_back(j);
+    row = i; col = 0;
+    for(int j = 0; j < myData.nonZeroCols[row].size(); ++j) {
+      if(myData.nonZeroCols[row][j] == col) {
+        myData.mat[row][j] = 0.0;
+        break;
       }
     }//end for j
+
+    row = 0; col = i;
+    for(int j = 0; j < myData.nonZeroCols[row].size(); ++j) {
+      if(myData.nonZeroCols[row][j] == col) {
+        myData.mat[row][j] = 0.0;
+        break;
+      }
+    }//end for j
+
+    row = i; col = (2*(myData.N - 1));
+    for(int j = 0; j < myData.nonZeroCols[row].size(); ++j) {
+      if(myData.nonZeroCols[row][j] == col) {
+        myData.mat[row][j] = 0.0;
+        break;
+      }
+    }//end for j
+
+    row = (2*(myData.N - 1)); col = i;
+    for(int j = 0; j < myData.nonZeroCols[row].size(); ++j) {
+      if(myData.nonZeroCols[row][j] == col) {
+        myData.mat[row][j] = 0.0;
+        break;
+      }
+    }//end for j
+
   }//end for i
+
+  {
+    int row = 0;
+    int col = 0;
+    for(int j = 0; j < myData.nonZeroCols[row].size(); ++j) {
+      if(myData.nonZeroCols[row][j] == col) {
+        myData.mat[row][j] = 1.0;
+        break;
+      }
+    }//end for j
+  }
+
+  {
+    int row = (2*(myData.N - 1));
+    int col = (2*(myData.N - 1));
+    for(int j = 0; j < myData.nonZeroCols[row].size(); ++j) {
+      if(myData.nonZeroCols[row][j] == col) {
+        myData.mat[row][j] = 1.0;
+        break;
+      }
+    }//end for j
+  }
+
 }
 
 int myMatVec(ML_Operator *data, int in_length, double in[], int out_length, double out[]) {
   for(int i = 0; i < out_length; ++i) {
     out[i] = 0.0;
     for(int j = 0; j < (myData.nonZeroCols[i]).size(); ++j) {
-      out[i] += ((myData.mat[i][myData.nonZeroCols[i][j]])*in[myData.nonZeroCols[i][j]]);
+      out[i] += ((myData.mat[i][j])*in[myData.nonZeroCols[i][j]]);
     }//end for j
   }//end for i
   return 0;
@@ -107,11 +152,7 @@ int myGetRow(ML_Operator *data, int N_requested_rows, int requested_rows[],
   for(int i = 0; i < N_requested_rows; ++i) {
     int row = requested_rows[i];
     std::vector<unsigned int> cols = myData.nonZeroCols[row];
-    std::vector<double> vals;
-
-    for(int j = 0; j < cols.size(); ++j) {
-      vals.push_back(myData.mat[row][cols[j]]);
-    }//end for j
+    std::vector<double> vals = myData.mat[row];
 
     spaceRequired += cols.size();
     if(allocated_space >= spaceRequired) {
@@ -128,27 +169,18 @@ int myGetRow(ML_Operator *data, int N_requested_rows, int requested_rows[],
   return 1;
 }
 
-void freeMyData() {
-  for(int i = 0; i < (2*(myData.N)); ++i) {
-    delete [] (myData.mat[i]);
-    myData.mat[i] = NULL;
-  }//end for i
-  delete [] (myData.mat);
-  myData.mat = NULL;
-
-  delete [] myData.nonZeroCols;
-  myData.nonZeroCols = NULL;
-}
-
 int main(int argc, char *argv[])
 {
   MPI_Init(&argc, &argv);
   assert(argc > 2);
   const int numGrids = atoi(argv[1]);
   myData.N = atoi(argv[2]);
-  createMatrix();
+
+  double computeMatStartTime = MPI_Wtime();
   computeMatrix();
-  computeNonZeroCols();
+  double computeMatEndTime = MPI_Wtime();
+
+  std::cout<<"Mat create time = "<<(computeMatEndTime - computeMatStartTime)<<std::endl;
 
   const int numPDEs = 2;
   int maxIterations = 1000;
@@ -218,7 +250,6 @@ int main(int argc, char *argv[])
 
   delete [] solArr;
   delete [] rhsArr;
-  freeMyData();
   MPI_Finalize();
 }  
 
