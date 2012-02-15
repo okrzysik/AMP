@@ -31,6 +31,12 @@ namespace AMP {
           d_elemOp = (params->d_elemOp);
           d_inDofMap = (params->d_inDofMap);
           d_outDofMap = (params->d_outDofMap);
+          if(d_inDofMap == NULL) {
+            d_inDofMap = d_outDofMap;
+          }
+          if(d_outDofMap == NULL) {
+            d_outDofMap = d_inDofMap;
+          }
         }
 
         /**
