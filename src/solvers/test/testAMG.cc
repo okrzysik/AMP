@@ -58,7 +58,7 @@ void computeMatrix() {
         int row = (2*i) + r;
         int col = (2*i) + c;
         int idx = -1;
-        for(int k = 0; k < myData.nonZeroCols[row].size(); ++k) {
+        for(size_t k = 0; k < myData.nonZeroCols[row].size(); ++k) {
           if(myData.nonZeroCols[row][k] == col) {
             idx = k;
             break;
@@ -78,7 +78,7 @@ void computeMatrix() {
     int row, col;
 
     row = i; col = 0;
-    for(int j = 0; j < myData.nonZeroCols[row].size(); ++j) {
+    for(size_t j = 0; j < myData.nonZeroCols[row].size(); ++j) {
       if(myData.nonZeroCols[row][j] == col) {
         myData.mat[row][j] = 0.0;
         break;
@@ -86,7 +86,7 @@ void computeMatrix() {
     }//end for j
 
     row = 0; col = i;
-    for(int j = 0; j < myData.nonZeroCols[row].size(); ++j) {
+    for(size_t j = 0; j < myData.nonZeroCols[row].size(); ++j) {
       if(myData.nonZeroCols[row][j] == col) {
         myData.mat[row][j] = 0.0;
         break;
@@ -94,7 +94,7 @@ void computeMatrix() {
     }//end for j
 
     row = i; col = (2*(myData.N - 1));
-    for(int j = 0; j < myData.nonZeroCols[row].size(); ++j) {
+    for(size_t j = 0; j < myData.nonZeroCols[row].size(); ++j) {
       if(myData.nonZeroCols[row][j] == col) {
         myData.mat[row][j] = 0.0;
         break;
@@ -102,7 +102,7 @@ void computeMatrix() {
     }//end for j
 
     row = (2*(myData.N - 1)); col = i;
-    for(int j = 0; j < myData.nonZeroCols[row].size(); ++j) {
+    for(size_t j = 0; j < myData.nonZeroCols[row].size(); ++j) {
       if(myData.nonZeroCols[row][j] == col) {
         myData.mat[row][j] = 0.0;
         break;
@@ -114,7 +114,7 @@ void computeMatrix() {
   {
     int row = 0;
     int col = 0;
-    for(int j = 0; j < myData.nonZeroCols[row].size(); ++j) {
+    for(size_t j = 0; j < myData.nonZeroCols[row].size(); ++j) {
       if(myData.nonZeroCols[row][j] == col) {
         myData.mat[row][j] = 1.0;
         break;
@@ -125,7 +125,7 @@ void computeMatrix() {
   {
     int row = (2*(myData.N - 1));
     int col = (2*(myData.N - 1));
-    for(int j = 0; j < myData.nonZeroCols[row].size(); ++j) {
+    for(size_t j = 0; j < myData.nonZeroCols[row].size(); ++j) {
       if(myData.nonZeroCols[row][j] == col) {
         myData.mat[row][j] = 1.0;
         break;
@@ -138,7 +138,7 @@ void computeMatrix() {
 int myMatVec(ML_Operator *data, int in_length, double in[], int out_length, double out[]) {
   for(int i = 0; i < out_length; ++i) {
     out[i] = 0.0;
-    for(int j = 0; j < (myData.nonZeroCols[i]).size(); ++j) {
+    for(size_t j = 0; j < (myData.nonZeroCols[i]).size(); ++j) {
       out[i] += ((myData.mat[i][j])*in[myData.nonZeroCols[i][j]]);
     }//end for j
   }//end for i
