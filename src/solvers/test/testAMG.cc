@@ -55,8 +55,8 @@ void computeMatrix() {
   for(int i = 0; i < (myData.N - 1); ++i) {
     for(int r = 0; r < 4; ++r) {
       for(int c = 0; c < 4; ++c) {
-        int row = (2*i) + r;
-        int col = (2*i) + c;
+        unsigned int row = (2*i) + r;
+        unsigned int col = (2*i) + c;
         int idx = -1;
         for(size_t k = 0; k < myData.nonZeroCols[row].size(); ++k) {
           if(myData.nonZeroCols[row][k] == col) {
@@ -74,8 +74,8 @@ void computeMatrix() {
     }//end for r
   }//end for i
 
-  for(int i = 0; i < (2*(myData.N)); ++i) {
-    int row, col;
+  for(unsigned int i = 0; i < (2*(myData.N)); ++i) {
+    unsigned int row, col;
 
     row = i; col = 0;
     for(size_t j = 0; j < myData.nonZeroCols[row].size(); ++j) {
@@ -112,8 +112,8 @@ void computeMatrix() {
   }//end for i
 
   {
-    int row = 0;
-    int col = 0;
+    unsigned int row = 0;
+    unsigned int col = 0;
     for(size_t j = 0; j < myData.nonZeroCols[row].size(); ++j) {
       if(myData.nonZeroCols[row][j] == col) {
         myData.mat[row][j] = 1.0;
@@ -123,8 +123,8 @@ void computeMatrix() {
   }
 
   {
-    int row = (2*(myData.N - 1));
-    int col = (2*(myData.N - 1));
+    unsigned int row = (2*(myData.N - 1));
+    unsigned int col = (2*(myData.N - 1));
     for(size_t j = 0; j < myData.nonZeroCols[row].size(); ++j) {
       if(myData.nonZeroCols[row][j] == col) {
         myData.mat[row][j] = 1.0;
