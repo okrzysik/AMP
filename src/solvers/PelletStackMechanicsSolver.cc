@@ -1,9 +1,6 @@
 
 #include "solvers/PelletStackMechanicsSolver.h"
 
-#if 0
-//This file has not been converted!
-
 namespace AMP {
   namespace Solver {
 
@@ -48,10 +45,8 @@ namespace AMP {
       if(locPellIdx != -1) {
         boost::shared_ptr<AMP::Solver::SolverStrategy> currSolver = d_columnSolver->getSolver(locPellIdx);
         boost::shared_ptr<AMP::Operator::Operator> currOp = currSolver->getOperator();
-        AMP::LinearAlgebra::Variable::shared_ptr inputVar = currOp->getInputVariable();
-        AMP::LinearAlgebra::Variable::shared_ptr outputVar = currOp->getOutputVariable();
-        AMP::LinearAlgebra::Vector::shared_ptr subUvec = u->subsetVectorForVariable(inputVar);
-        AMP::LinearAlgebra::Vector::shared_ptr subFvec = f->subsetVectorForVariable(outputVar);
+        AMP::LinearAlgebra::Vector::shared_ptr subUvec = currOp->subsetInputVector(u);
+        AMP::LinearAlgebra::Vector::shared_ptr subFvec = currOp->subsetOutputVector(f);
         currSolver->solve(subFvec, subUvec);
       }
 
@@ -66,10 +61,8 @@ namespace AMP {
         if(locPellIdx != -1) {
           boost::shared_ptr<AMP::Solver::SolverStrategy> currSolver = d_columnSolver->getSolver(locPellIdx);
           boost::shared_ptr<AMP::Operator::Operator> currOp = currSolver->getOperator();
-          AMP::LinearAlgebra::Variable::shared_ptr inputVar = currOp->getInputVariable();
-          AMP::LinearAlgebra::Variable::shared_ptr outputVar = currOp->getOutputVariable();
-          AMP::LinearAlgebra::Vector::shared_ptr subUvec = u->subsetVectorForVariable(inputVar);
-          AMP::LinearAlgebra::Vector::shared_ptr subFvec = d_fbuffer2->subsetVectorForVariable(outputVar);
+          AMP::LinearAlgebra::Vector::shared_ptr subUvec = currOp->subsetInputVector(u);
+          AMP::LinearAlgebra::Vector::shared_ptr subFvec = currOp->subsetOutputVector(d_fbuffer2);
           currSolver->solve(subFvec, subUvec);
         }
       }//end for pellId
@@ -93,8 +86,6 @@ namespace AMP {
 
   }
 }
-
-#endif
 
 
 
