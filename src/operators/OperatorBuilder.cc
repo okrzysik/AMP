@@ -504,8 +504,6 @@ OperatorBuilder::createVolumeIntegralOperator(AMP::Mesh::Mesh::shared_ptr meshAd
   volumeIntegralParameters->d_sourcePhysicsModel = sourcePhysicsModel;
   volumeIntegralParameters->d_elemOp = sourceNonlinearElem;
   volumeIntegralParameters->d_Mesh = meshAdapter;
-  volumeIntegralParameters->d_elementDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, 0, 8, true);  
-  volumeIntegralParameters->d_nodeDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, 1, 1, true); 
   boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> nonlinearSourceOp (new AMP::Operator::VolumeIntegralOperator( volumeIntegralParameters ));
   
   return nonlinearSourceOp;
