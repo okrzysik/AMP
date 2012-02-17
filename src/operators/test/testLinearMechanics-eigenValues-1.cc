@@ -14,9 +14,9 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/Mesh.h"
 
+#include "mesh.h"
 #include "libmesh.h"
 #include "mesh_generation.h"
 
@@ -73,7 +73,7 @@ void myTest(AMP::UnitTest *ut)
       (elemPtr->point(6))(2) += 0.1;
     }
 
-    AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = AMP::Mesh::MeshManager::Adapter::shared_ptr (
+    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::MeshManager::Adapter::shared_ptr (
         new AMP::Mesh::MeshManager::Adapter (mesh) );
 
     AMP_INSIST(input_db->keyExists("Isotropic_Model"), "Key ''Isotropic_Model'' is missing!");
