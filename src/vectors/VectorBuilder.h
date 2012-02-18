@@ -22,7 +22,7 @@ namespace LinearAlgebra {
 AMP::LinearAlgebra::Vector::shared_ptr  createVector( 
     AMP::Discretization::DOFManager::shared_ptr DOFs, 
     AMP::LinearAlgebra::Variable::shared_ptr variable,
-    bool split=false );
+    bool split=true );
 
 
 }

@@ -15,9 +15,8 @@
 #include "utils/PIO.h"
 
 #include "ampmesh/Mesh.h"
+#include "ampmesh/libmesh/libMesh.h"
 
-#include "mesh.h"
-#include "libmesh.h"
 #include "mesh_generation.h"
 
 #include "operators/mechanics/IsotropicElasticModel.h"
@@ -73,8 +72,8 @@ void myTest(AMP::UnitTest *ut)
       (elemPtr->point(6))(2) += 0.1;
     }
 
-    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::MeshManager::Adapter::shared_ptr (
-        new AMP::Mesh::MeshManager::Adapter (mesh) );
+    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::shared_ptr (
+        new AMP::Mesh::libMesh (mesh, "TestMesh") );
 
     AMP_INSIST(input_db->keyExists("Isotropic_Model"), "Key ''Isotropic_Model'' is missing!");
     boost::shared_ptr<AMP::Database> matModel_db = input_db->getDatabase("Isotropic_Model");
@@ -93,8 +92,11 @@ void myTest(AMP::UnitTest *ut)
         AMP::Operator::MechanicsLinearFEOperatorParameters( mechAssembly_db ));
     mechOpParams->d_materialModel = isotropicModel;
     mechOpParams->d_elemOp = mechLinElem;
-    mechOpParams->d_MeshAdapter = meshAdapter;
-    boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechOp (new AMP::Operator::MechanicsLinearFEOperator( mechOpParams ));
+    mechOpParams->d_Mesh = meshAdapter;
+    mechOpParams->d_inDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, 1, 3, true);
+    mechOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, 1, 3, true);
+    boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechOp (
+        new AMP::Operator::MechanicsLinearFEOperator( mechOpParams ));
 
     boost::shared_ptr<AMP::LinearAlgebra::Matrix> mechMat = mechOp->getMatrix();
 
