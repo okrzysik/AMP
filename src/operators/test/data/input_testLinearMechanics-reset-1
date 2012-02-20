@@ -1,59 +1,59 @@
 
 Mesh {
-MeshType = "libMesh"
-dim = 3
-MeshName = "TestMesh"
-FileName = "brick.e"
+  MeshType = "libMesh"
+    dim = 3
+    MeshName = "TestMesh"
+    FileName = "brick.e"
 }
 
 Isotropic_Model {
   Youngs_Modulus = 2.08e11
-  Poissons_Ratio = 0.23
+    Poissons_Ratio = 0.23
 }
 
 Mechanics_Linear_Element_Normal {
   USE_REDUCED_INTEGRATION = FALSE 
-  FE_ORDER = "FIRST"  
-  FE_FAMILY = "LAGRANGE"
-  QRULE_TYPE = "QGAUSS"
-  QRULE_ORDER = "DEFAULT"
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
 }
 
 Mechanics_Linear_Element_Reduced {
   USE_REDUCED_INTEGRATION = TRUE 
-  FE_ORDER = "FIRST"  
-  FE_FAMILY = "LAGRANGE"
-  QRULE_TYPE = "QGAUSS"
-  QRULE_ORDER = "DEFAULT"
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
 }
 
 Mechanics_Assembly {
   print_info_level = 1
-  reset_reuses_matrix = TRUE
-  InputVariable = "disp"
-  OutputVariable = "disp"
+    reset_reuses_matrix = TRUE
+    InputVariable = "disp"
+    OutputVariable = "disp"
 }
 
 Displacement_Boundary {
   print_info_level = 1
-  skip_params = FALSE
-  skip_rhs_correction = TRUE
-  number_of_ids = 1
-  id_0 = 2
-  number_of_dofs_0 = 3
-  dof_0_0 = 0
-  dof_0_1 = 1
-  dof_0_2 = 2
+    skip_params = FALSE
+    skip_rhs_correction = TRUE
+    number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
 }
 
 Load_Boundary {
   print_info_level = 1
-  skip_params = FALSE
-  number_of_ids = 1
-  id_0 = 1
-  number_of_dofs_0 = 1
-  dof_0_0 = 2
-  value_0_0 = 10.0
+    skip_params = FALSE
+    number_of_ids = 1
+    id_0 = 1
+    number_of_dofs_0 = 1
+    dof_0_0 = 2
+    value_0_0 = 10.0
 }
 
 
