@@ -27,6 +27,7 @@ class simpleDOFManager: public DOFManager
 public:
 
     using DOFManager::getDOFs;
+    using DOFManager::subset;
 
 
     /**

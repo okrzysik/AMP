@@ -27,6 +27,7 @@ class multiDOFManager: public DOFManager
 public:
 
     using DOFManager::getDOFs;
+    using DOFManager::subset;
 
     /**
      * \brief Create a new DOF manager object

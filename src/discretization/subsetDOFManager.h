@@ -24,7 +24,7 @@ class subsetDOFManager: public DOFManager
 public:
 
     using DOFManager::getDOFs;
-
+    using DOFManager::subset;
 
     /** \brief Default constructor
      * \details  This is the default constructor for creating a subset DOF manager.  
