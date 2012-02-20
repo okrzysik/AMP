@@ -230,13 +230,18 @@ void sourceTest(AMP::UnitTest *ut , std::string exeName)
 																							      "VolumeIntegralOperator",
 																							      input_db,
 																							      transportModel));
+  AMP::pout << "after sourceOp"<<std::endl;
   AMP::LinearAlgebra::Variable::shared_ptr inputVariable  = sourceOperator->getInputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr outputVariable = sourceOperator->getOutputVariable();
 
-  AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = sourceOperator->getInputDofMap();
-  AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = sourceOperator->getOutputDofMap();
-  
+  // Create a DOF manager for a gauss point vector 
+  int DOFsPerElement = 8;
+  int DOFsPerNode = 1;
+  int ghostWidth = 0;
   bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerElement, split);
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, ghostWidth, DOFsPerNode,    split);
+
   AMP::LinearAlgebra::Vector::shared_ptr solVec  = AMP::LinearAlgebra::createVector( gaussPointDofMap,  inputVariable, split );
   AMP::LinearAlgebra::Vector::shared_ptr rhsVec  = AMP::LinearAlgebra::createVector( nodalDofMap,      outputVariable, split );
   AMP::LinearAlgebra::Vector::shared_ptr resVec  = AMP::LinearAlgebra::createVector( nodalDofMap,      outputVariable, split );

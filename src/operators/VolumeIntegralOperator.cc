@@ -31,6 +31,7 @@ namespace AMP {
       int numAuxillaryVariables =  (params->d_db)->getInteger("Number_Auxillary_Variables");
 
       d_inpVariables.reset(new AMP::LinearAlgebra::MultiVariable("myInpVar"));
+      d_auxVariables.reset(new AMP::LinearAlgebra::MultiVariable("myAuxVar"));
 
       for(unsigned int i = 0; i < numPrimaryVariables ; i++) {
         AMP::LinearAlgebra::Variable::shared_ptr dummyVar;
@@ -39,6 +40,7 @@ namespace AMP {
 
       d_inVec.resize(numPrimaryVariables);
 
+      AMP_INSIST( ( numAuxillaryVariables == 0), "Verify this works before using it; the Interface to SourcePhysicsModel.h does not appear to be complete." );
       if(numAuxillaryVariables>0){
         AMP_INSIST( (((params->d_auxVec).get()) != NULL), "NULL Auxillary Vector!" );
       }
@@ -56,6 +58,8 @@ namespace AMP {
 
       std::string outVar = params->d_db->getString("OutputVariable");
       d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar)); 
+
+      d_isInputType = params->d_db->getStringWithDefault("InputVariableType", "IntegrationPointScalar");
 
       //d_bMatrixAndVectorsCloned=false;
 
@@ -85,12 +89,10 @@ namespace AMP {
       d_outVec = r->subsetVectorForVariable(d_outVariable);
       d_outVec->zero();
 
-      if(d_isInputType == "IntegrationPointScalar") {
-        if(d_inpVariables->numVariables() > 0) {
-          d_elementDofMap = d_inVec[0]->getDOFManager();
-        } else if(d_auxVariables->numVariables() > 0) {
-          d_elementDofMap = d_auxVec[0]->getDOFManager();
-        }
+      if(d_inpVariables->numVariables() > 0) {
+        d_elementDofMap = d_inVec[0]->getDOFManager();
+      } else if(d_auxVariables->numVariables() > 0) {
+        d_elementDofMap = d_auxVec[0]->getDOFManager();
       }
 
       d_nodeDofMap = d_outVec->getDOFManager();
@@ -140,7 +142,7 @@ namespace AMP {
           for(size_t i = 0; i < d_dofIndices.size(); i++) {
             elementAuxVectors[var][i] =  d_auxVec[var]->getValueByGlobalID( d_dofIndices[i][0] );
           }
-        }
+        } 
       }
 
       d_elementOutputVector.resize(d_dofIndices.size(), 0.0);
