@@ -1,5 +1,10 @@
 
-Mesh = "brick.e"
+Mesh {
+MeshType = "libMesh"
+dim = 3
+MeshName = "TestMesh"
+FileName = "brick.e"
+}
 
 Isotropic_Model {
   Youngs_Modulus = 2.08e11
