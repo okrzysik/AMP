@@ -110,6 +110,27 @@ void simpleDOFManager::initialize()
 
 
 /****************************************************************
+* Subset the DOF manager                                        *
+****************************************************************/
+boost::shared_ptr<DOFManager>  simpleDOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
+{
+    boost::shared_ptr<DOFManager> subset;
+    if ( d_mesh->isBaseMesh() && d_mesh->isBaseMesh() ) {
+        // We are dealing with a single mesh for both the internal and desired mesh
+        if ( d_mesh->meshID() == d_mesh->meshID() )
+            return shared_from_this();
+        else
+            return boost::shared_ptr<DOFManager>();
+    } else {
+        // Use the generic base function
+        return DOFManager::subset( mesh, useMeshComm );
+    }
+    AMP_ERROR("ERROR, should not reach this");
+    return boost::shared_ptr<DOFManager>();
+}
+
+
+/****************************************************************
 * Get the DOFs for the element                                  *
 ****************************************************************/
 void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <size_t> &dofs ) const

@@ -25,12 +25,6 @@ namespace AMP {
         d_sourcePhysicsModel = params->d_sourcePhysicsModel;
       }
 
-      d_elementDofMap = params->d_elementDofMap;
-      d_nodeDofMap = params->d_nodeDofMap;
-
-      AMP_ASSERT(d_elementDofMap != NULL);
-      AMP_ASSERT(d_nodeDofMap != NULL);
-
       boost::shared_ptr<AMP::Database> primaryDb = params->d_db->getDatabase("ActiveInputVariables");
 
       int numPrimaryVariables   =  (params->d_db)->getInteger("Number_Active_Variables");
@@ -80,19 +74,26 @@ namespace AMP {
         AMP_ASSERT( d_inVec[var] != NULL );
         (d_inVec[var])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
       }
+
       for(size_t var = 0; var < d_auxVariables->numVariables(); var++)
       {
         AMP::LinearAlgebra::Variable::shared_ptr auxillaryVariable = d_auxVariables->getVariable(var);
         d_auxVec[var] = d_multiAuxPtr->subsetVectorForVariable( auxillaryVariable );
         (d_auxVec[var])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
       }
+
       d_outVec = r->subsetVectorForVariable(d_outVariable);
       d_outVec->zero();
-    }
 
-    void VolumeIntegralOperator::postAssembly()
-    {
-      d_outVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
+      if(d_isInputType == "IntegrationPointScalar") {
+        if(d_inpVariables->numVariables() > 0) {
+          d_elementDofMap = d_inVec[0]->getDOFManager();
+        } else if(d_auxVariables->numVariables() > 0) {
+          d_elementDofMap = d_auxVec[0]->getDOFManager();
+        }
+      }
+
+      d_nodeDofMap = d_outVec->getDOFManager();
     }
 
     void VolumeIntegralOperator::preElementOperation(
@@ -155,6 +156,11 @@ namespace AMP {
         d_outVec->addValueByGlobalID(d_dofIndices[i][0], d_elementOutputVector[i]);
       }
       destroyCurrentLibMeshElement();
+    }
+
+    void VolumeIntegralOperator::postAssembly()
+    {
+      d_outVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
     }
 
     void VolumeIntegralOperator :: init(const boost::shared_ptr<VolumeIntegralOperatorParameters>& params) 

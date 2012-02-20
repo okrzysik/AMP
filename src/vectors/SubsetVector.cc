@@ -3,6 +3,8 @@
 #include "SubsetVector.h"
 #include "SubsetVariable.h"
 #include "VectorBuilder.h"
+#include "VectorBuilder.h"
+#include "discretization/subsetDOFManager.h"
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -16,9 +18,13 @@ Vector::shared_ptr  SubsetVector::view ( Vector::shared_ptr v , Variable::shared
     boost::shared_ptr<SubsetVariable> var = boost::dynamic_pointer_cast<SubsetVariable>( var_in );
     AMP_ASSERT( var.get() != NULL );
     // Subset the DOFManager and create a new communication list
-    boost::shared_ptr<AMP::Discretization::subsetDOFManager> subsetDOF = var->getSubsetDOF( v->getDOFManager() );
-    if ( subsetDOF->numGlobalDOF() == 0 )
+    AMP::Discretization::DOFManager::shared_ptr subsetDOF_ptr = var->getSubsetDOF( v->getDOFManager() );
+    if ( subsetDOF_ptr->numGlobalDOF() == 0 )
         return Vector::shared_ptr();
+    if ( subsetDOF_ptr==v->getDOFManager() )
+        return v;
+    boost::shared_ptr<AMP::Discretization::subsetDOFManager> subsetDOF = boost::static_pointer_cast<AMP::Discretization::subsetDOFManager>( subsetDOF_ptr );
+    AMP_ASSERT(subsetDOF.get()!=NULL);
     std::vector<size_t> remote_DOFs = subsetDOF->getRemoteDOFs();
     bool ghosts = v->getComm().maxReduce<char>(remote_DOFs.size()>0)==1;
     AMP::LinearAlgebra::CommunicationList::shared_ptr commList;

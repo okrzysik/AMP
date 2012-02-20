@@ -165,6 +165,10 @@ public:
     virtual void displaceMesh( std::vector<double> x );
 
 
+    //! Is the current mesh a base mesh
+    virtual inline bool isBaseMesh() const { return false; }
+
+
     /**
      *  Get the meshIDs of all meshes that compose the current mesh (including its self)
      *  Note: This function will require global communication

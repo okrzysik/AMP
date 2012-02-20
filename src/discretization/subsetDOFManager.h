@@ -32,7 +32,8 @@ public:
      * \param[in] dofs      The DOFs that will be part of the subset
      * \param[in] iterator  The iterator over the subset of elements in the subsetDOFManager
      */
-    subsetDOFManager( DOFManager::shared_ptr parentDOFManager, const std::vector <size_t> &dofs, const AMP::Mesh::MeshIterator &iterator );
+    static DOFManager::shared_ptr create( boost::shared_ptr<const DOFManager> parentDOFManager, 
+        const std::vector <size_t> &dofs, const AMP::Mesh::MeshIterator &iterator, AMP_MPI comm );
 
 
     /** \brief Get the entry indices of DOFs given a mesh element ID
@@ -61,11 +62,11 @@ public:
 
 
     //! Function to return the local DOFs on the parent DOF manager
-    std::vector<size_t>  getLocalParentDOFs( ) const;
+    virtual std::vector<size_t>  getLocalParentDOFs( ) const;
 
 
     //! Function to convert DOFs from a subset DOFManager DOF to the parent DOF
-    std::vector<size_t>  getParentDOF( const std::vector<size_t>& ) const;
+    virtual std::vector<size_t>  getParentDOF( const std::vector<size_t>& ) const;
 
 
     /**
@@ -73,17 +74,22 @@ public:
       *  Note: if the parent DOF does not exist in the subset, then -1 will be
       *  returned in it's place
       */
-    std::vector<size_t>  getSubsetDOF( const std::vector<size_t>& ) const;
+    virtual std::vector<size_t>  getSubsetDOF( const std::vector<size_t>& ) const;
 
 
     //! Get the parent DOFManager
-    DOFManager::shared_ptr  getDOFManager() const;
+    virtual boost::shared_ptr<const DOFManager>  getDOFManager() const;
 
+
+protected:
+
+    // The constructor is protected
+    subsetDOFManager() {}
 
 private:
 
     //! The parent DOF Manager
-    DOFManager::shared_ptr d_parentDOFManager;
+    boost::shared_ptr<const DOFManager> d_parentDOFManager;
 
     //! The parent begin, end, and global DOFs
     size_t d_parentBegin, d_parentEnd, d_parentGlobal;

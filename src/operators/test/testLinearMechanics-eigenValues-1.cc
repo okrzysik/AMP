@@ -1,3 +1,4 @@
+
 #include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
 #include "utils/UnitTest.h"
@@ -14,9 +15,11 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/Mesh.h"
+#include "ampmesh/libmesh/libMesh.h"
 
-#include "libmesh.h"
+#include "discretization/simpleDOF_Manager.h"
+
 #include "mesh_generation.h"
 
 #include "operators/mechanics/IsotropicElasticModel.h"
@@ -72,19 +75,24 @@ void myTest(AMP::UnitTest *ut)
       (elemPtr->point(6))(2) += 0.1;
     }
 
-    AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = AMP::Mesh::MeshManager::Adapter::shared_ptr (
-        new AMP::Mesh::MeshManager::Adapter (mesh) );
+    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::shared_ptr (
+        new AMP::Mesh::libMesh (mesh, "TestMesh") );
 
     AMP_INSIST(input_db->keyExists("Isotropic_Model"), "Key ''Isotropic_Model'' is missing!");
     boost::shared_ptr<AMP::Database> matModel_db = input_db->getDatabase("Isotropic_Model");
     boost::shared_ptr<AMP::Operator::MechanicsMaterialModelParameters> matModelParams(new
         AMP::Operator::MechanicsMaterialModelParameters( matModel_db ) );
-    boost::shared_ptr<AMP::Operator::IsotropicElasticModel> isotropicModel (new AMP::Operator::IsotropicElasticModel( matModelParams));
+    boost::shared_ptr<AMP::Operator::IsotropicElasticModel> isotropicModel (
+        new AMP::Operator::IsotropicElasticModel( matModelParams));
 
     AMP_INSIST(input_db->keyExists("Mechanics_Linear_Element"), "Key ''Mechanics_Linear_Element'' is missing!");
     boost::shared_ptr<AMP::Database> elemOp_db = input_db->getDatabase("Mechanics_Linear_Element");
     boost::shared_ptr<AMP::Operator::ElementOperationParameters> elemOpParams (new AMP::Operator::ElementOperationParameters( elemOp_db ));
-    boost::shared_ptr<AMP::Operator::MechanicsLinearElement> mechLinElem (new AMP::Operator::MechanicsLinearElement( elemOpParams ));
+    boost::shared_ptr<AMP::Operator::MechanicsLinearElement> mechLinElem (
+        new AMP::Operator::MechanicsLinearElement( elemOpParams ));
+
+    AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
 
     AMP_INSIST(input_db->keyExists("Mechanics_Assembly"), "Key ''Mechanics_Assembly'' is missing!");
     boost::shared_ptr<AMP::Database> mechAssembly_db = input_db->getDatabase("Mechanics_Assembly");
@@ -92,12 +100,15 @@ void myTest(AMP::UnitTest *ut)
         AMP::Operator::MechanicsLinearFEOperatorParameters( mechAssembly_db ));
     mechOpParams->d_materialModel = isotropicModel;
     mechOpParams->d_elemOp = mechLinElem;
-    mechOpParams->d_MeshAdapter = meshAdapter;
-    boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechOp (new AMP::Operator::MechanicsLinearFEOperator( mechOpParams ));
+    mechOpParams->d_Mesh = meshAdapter;
+    mechOpParams->d_inDofMap = dofMap;
+    mechOpParams->d_outDofMap = dofMap;
+    boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechOp (
+        new AMP::Operator::MechanicsLinearFEOperator( mechOpParams ));
 
     boost::shared_ptr<AMP::LinearAlgebra::Matrix> mechMat = mechOp->getMatrix();
 
-    for(int i = 0; i < 24; i++) {
+    for(int i = 0; i < 24; ++i) {
       std::vector<unsigned int> matCols;
       std::vector<double> matVals;
       mechMat->getRowByGlobalID(i, matCols, matVals);
@@ -106,18 +117,16 @@ void myTest(AMP::UnitTest *ut)
       }//end for j
       fprintf(fp, "\n");
     }//end for i
-   
-    AMP::Mesh::DOFMap::shared_ptr dof_map = meshAdapter->getDOFMap(mechOp->getOutputVariable());
-    std::vector<unsigned int> dofs(3);
-    dofs[0] = 0;
-    dofs[1] = 1;
-    dofs[2] = 2;
-    for(int i = 0 ; i < 8; i++) {
-        AMP::Mesh::LibMeshNode nd = meshAdapter->getNode( i );
-        fprintf(fp, "nd = %d, x = %.15lf, y = %.15lf, z = %.15lf \n", i, nd.x(), nd.y(), nd.z());
-        std::vector<unsigned int> globalIds;
-        dof_map->getDOFs(nd, globalIds, dofs);
-        fprintf(fp, "nd = %d, d0 = %d, d1 = %d, d2 = %d \n", i, (int)globalIds[0], (int)globalIds[1], (int)globalIds[2]);
+
+    AMP::Mesh::MeshIterator nd = meshAdapter->getIterator(AMP::Mesh::Vertex, 0);
+    AMP::Mesh::MeshIterator end_nd = nd.end();
+
+    for(int i = 0; nd != end_nd; ++nd, ++i) {
+      std::vector<double> pt = nd->coord();
+      fprintf(fp, "nd = %d, x = %.15lf, y = %.15lf, z = %.15lf \n", i, pt[0], pt[1], pt[2]);
+      std::vector<size_t> globalIds;
+      dofMap->getDOFs(nd->globalID(), globalIds);
+      fprintf(fp, "nd = %d, d0 = %d, d1 = %d, d2 = %d \n", i, (int)globalIds[0], (int)globalIds[1], (int)globalIds[2]);
     }
 
     fprintf(fp, "format long e; \n\n");
@@ -131,24 +140,24 @@ void myTest(AMP::UnitTest *ut)
 
 int main(int argc, char *argv[])
 {
-    AMP::AMPManager::startup(argc, argv);
-    AMP::UnitTest ut;
+  AMP::AMPManager::startup(argc, argv);
+  AMP::UnitTest ut;
 
-    try {
-        myTest(&ut);
-    } catch (std::exception &err) {
-        std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-        ut.failure("ERROR: While testing");
-    } catch( ... ) {
-        std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-        ut.failure("ERROR: While testing");
-    }
+  try {
+    myTest(&ut);
+  } catch (std::exception &err) {
+    std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+    ut.failure("ERROR: While testing");
+  } catch( ... ) {
+    std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+    ut.failure("ERROR: While testing");
+  }
 
-    ut.report();
+  ut.report();
 
-    int num_failed = ut.NumFailGlobal();
-    AMP::AMPManager::shutdown();
-    return num_failed;
+  int num_failed = ut.NumFailGlobal();
+  AMP::AMPManager::shutdown();
+  return num_failed;
 }   
 
 

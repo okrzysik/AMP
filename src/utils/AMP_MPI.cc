@@ -119,6 +119,37 @@ AMP_MPI::AMP_MPI( const AMP::AMP_MPI& comm ) {
 
 
 /************************************************************************
+*  Intersect two communicators                                          *
+************************************************************************/
+AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 ) {
+    MPI_Group group1, group2, group12;
+    MPI_Comm_group ( comm1.communicator, &group1 );
+    MPI_Comm_group ( comm2.communicator, &group2 );
+    MPI_Group_intersection( group1, group2, &group12 );
+    int compare1, compare2;
+    MPI_Group_compare ( group1, group12, &compare1 );
+    MPI_Group_compare ( group2, group12, &compare2 );
+    AMP_MPI new_comm = AMP_MPI(AMP_COMM_NULL);
+    if ( compare1!=MPI_UNEQUAL ) {
+        new_comm = comm1;
+    } else if ( compare2!=MPI_UNEQUAL ) {
+        new_comm = comm2;
+    } else {
+        MPI_Comm  new_MPI_comm;
+        MPI_Comm_create( comm1.communicator, group12, &new_MPI_comm );
+        int size;
+        MPI_Group_size( group12, &size );
+        if ( size > 0 )
+            new_comm = AMP_MPI( new_MPI_comm );
+    }
+    MPI_Group_free( &group1 );
+    MPI_Group_free( &group2 );
+    MPI_Group_free( &group12 );
+    return new_comm;
+}
+
+
+/************************************************************************
 *  Assignment operator                                                  *
 ************************************************************************/
 AMP_MPI& AMP_MPI::operator=(const AMP::AMP_MPI& comm) {

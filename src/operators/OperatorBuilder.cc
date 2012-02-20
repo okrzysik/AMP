@@ -10,10 +10,10 @@
 #include "ColumnBoundaryOperator.h"
 #include "FlowFrapconOperator.h"
 #include "FlowFrapconJacobian.h"
-#include "MechanicsLinearFEOperator.h"
-#include "MechanicsNonlinearFEOperator.h"
-#include "diffusion/DiffusionLinearFEOperator.h"
-#include "diffusion/DiffusionNonlinearFEOperator.h"
+#include "operators/mechanics/MechanicsLinearFEOperator.h"
+#include "operators/mechanics/MechanicsNonlinearFEOperator.h"
+#include "operators/diffusion/DiffusionLinearFEOperator.h"
+#include "operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "ConsMomentumGalWFLinearFEOperator.h"
 #include "ConsMassGalWFLinearFEOperator.h"
 #include "FickSoretNonlinearFEOperator.h"
@@ -31,6 +31,7 @@
 #include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
 
+#include "operators/mechanics/MechanicsConstants.h"
 
 #include <string>
 
@@ -318,7 +319,6 @@ OperatorBuilder::createLinearConsMassGalWFOperator( AMP::Mesh::Mesh::shared_ptr 
   AMP_INSIST(input_db->keyExists("FlowElement"), "Key ''FlowElement'' is missing!");
   boost::shared_ptr<AMP::Operator::ElementOperation> consMassLinElem = ElementOperationFactory::createElementOperation(input_db->getDatabase("FlowElement"));
   
-  // now create the linear mechanics operator
   boost::shared_ptr<AMP::Database> consMassLinFEOp_db;
   if(input_db->getString("name")=="ConsMassLinearFEOperator")
     {
@@ -362,7 +362,6 @@ OperatorBuilder::createLinearConsMomentumGalWFOperator( AMP::Mesh::Mesh::shared_
   AMP_INSIST(input_db->keyExists("FlowElement"), "Key ''FlowElement'' is missing!");
   boost::shared_ptr<AMP::Operator::ElementOperation> consMomentumLinElem = ElementOperationFactory::createElementOperation(input_db->getDatabase("FlowElement"));
   
-  // now create the linear mechanics operator
   boost::shared_ptr<AMP::Database> consMomentumLinFEOp_db;
   if(input_db->getString("name")=="ConsMomentumLinearFEOperator")
     {
@@ -505,8 +504,6 @@ OperatorBuilder::createVolumeIntegralOperator(AMP::Mesh::Mesh::shared_ptr meshAd
   volumeIntegralParameters->d_sourcePhysicsModel = sourcePhysicsModel;
   volumeIntegralParameters->d_elemOp = sourceNonlinearElem;
   volumeIntegralParameters->d_Mesh = meshAdapter;
-  volumeIntegralParameters->d_elementDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, 0, 8, true);  
-  volumeIntegralParameters->d_nodeDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, 1, 1, true); 
   boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> nonlinearSourceOp (new AMP::Operator::VolumeIntegralOperator( volumeIntegralParameters ));
   
   return nonlinearSourceOp;
@@ -687,10 +684,13 @@ OperatorBuilder::createLinearMechanicsOperator( AMP::Mesh::Mesh::shared_ptr mesh
   
   AMP_INSIST(mechanicsLinFEOp_db.get()!=NULL, "Error: The database object for MechanicsLinearFEOperator is NULL");
   
-  boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperatorParameters> mechanicsOpParams(new AMP::Operator::MechanicsLinearFEOperatorParameters( mechanicsLinFEOp_db ));
+  boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperatorParameters> mechanicsOpParams(
+      new AMP::Operator::MechanicsLinearFEOperatorParameters( mechanicsLinFEOp_db ));
   mechanicsOpParams->d_materialModel = boost::dynamic_pointer_cast<MechanicsMaterialModel>(elementPhysicsModel);
   mechanicsOpParams->d_elemOp = mechanicsLinElem;
   mechanicsOpParams->d_Mesh = meshAdapter;
+  mechanicsOpParams->d_inDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, 1, 3, true);
+  mechanicsOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, 1, 3, true);
   
   boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechanicsOp (new AMP::Operator::MechanicsLinearFEOperator( mechanicsOpParams ));
   
@@ -736,6 +736,16 @@ OperatorBuilder::createNonlinearMechanicsOperator( AMP::Mesh::Mesh::shared_ptr m
   mechanicsOpParams->d_materialModel = boost::dynamic_pointer_cast<MechanicsMaterialModel>(elementPhysicsModel);
   mechanicsOpParams->d_elemOp = mechanicsElem;
   mechanicsOpParams->d_Mesh = meshAdapter;
+  mechanicsOpParams->d_dofMap[Mechanics::DISPLACEMENT] = AMP::Discretization::simpleDOFManager::create(meshAdapter, 
+      AMP::Mesh::Vertex, 1, 3, true);
+  mechanicsOpParams->d_dofMap[Mechanics::TEMPERATURE] = AMP::Discretization::simpleDOFManager::create(meshAdapter, 
+      AMP::Mesh::Vertex, 1, 1, true);
+  mechanicsOpParams->d_dofMap[Mechanics::BURNUP] = AMP::Discretization::simpleDOFManager::create(meshAdapter, 
+      AMP::Mesh::Vertex, 1, 1, true);
+  mechanicsOpParams->d_dofMap[Mechanics::OXYGEN_CONCENTRATION] = AMP::Discretization::simpleDOFManager::create(meshAdapter, 
+      AMP::Mesh::Vertex, 1, 1, true);
+  mechanicsOpParams->d_dofMap[Mechanics::LHGR] = AMP::Discretization::simpleDOFManager::create(meshAdapter, 
+      AMP::Mesh::Vertex, 1, 1, true);
   
   boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsOp (new AMP::Operator::MechanicsNonlinearFEOperator( mechanicsOpParams ));
   

@@ -243,6 +243,10 @@ public:
     virtual inline MeshID meshID() const { return d_meshID; }
 
 
+    //! Is the current mesh a base mesh
+    virtual inline bool isBaseMesh() const { return true; }
+
+
     /**
      *  Get the meshIDs of all meshes that compose the current mesh (including its self)
      *  Note: This function may require global communication depending on the implimentation
