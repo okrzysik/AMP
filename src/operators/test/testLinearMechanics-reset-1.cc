@@ -1,3 +1,4 @@
+
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
@@ -13,8 +14,8 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
-
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 #include "libmesh.h"
 
 #include "operators/mechanics/IsotropicElasticModel.h"
@@ -38,10 +39,10 @@ void myTest(AMP::UnitTest *ut)
   input_db->printClassData(AMP::plog);
 
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  std::string mesh_file = input_db->getString("Mesh");
-
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = AMP::Mesh::MeshManager::Adapter::shared_ptr ( new AMP::Mesh::MeshManager::Adapter () );
-  meshAdapter->readExodusIIFile ( mesh_file.c_str() );
+  boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
+  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+  meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+  AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
   AMP_INSIST(input_db->keyExists("Isotropic_Model"), "Key ''Isotropic_Model'' is missing!");
   boost::shared_ptr<AMP::Database> matModel_db = input_db->getDatabase("Isotropic_Model");
@@ -63,13 +64,18 @@ void myTest(AMP::UnitTest *ut)
     boost::shared_ptr<AMP::Operator::ElementOperationParameters> elemOpParams (new AMP::Operator::ElementOperationParameters( elemOp_db ));
     boost::shared_ptr<AMP::Operator::MechanicsLinearElement> mechLinElem (new AMP::Operator::MechanicsLinearElement( elemOpParams ));
 
+    AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
+
     AMP_INSIST(input_db->keyExists("Mechanics_Assembly"), "Key ''Mechanics_Assembly'' is missing!");
     boost::shared_ptr<AMP::Database> mechAssembly_db = input_db->getDatabase("Mechanics_Assembly");
     boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperatorParameters> mechOpParams(new
         AMP::Operator::MechanicsLinearFEOperatorParameters( mechAssembly_db ));
     mechOpParams->d_materialModel = isotropicModel;
     mechOpParams->d_elemOp = mechLinElem;
-    mechOpParams->d_MeshAdapter = meshAdapter;
+    mechOpParams->d_Mesh = meshAdapter;
+    mechOpParams->d_inDofMap = dofMap;
+    mechOpParams->d_outDofMap = dofMap;
     boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechOp (new AMP::Operator::MechanicsLinearFEOperator( mechOpParams ));
 
     AMP::LinearAlgebra::Variable::shared_ptr mechVariable = mechOp->getOutputVariable();
@@ -82,13 +88,13 @@ void myTest(AMP::UnitTest *ut)
     //This is just the variable used to extract the dof_map.
     //This boundary operator itself has an empty input and output variable
     dirichletOpParams->d_variable = mechVariable;
-    dirichletOpParams->d_MeshAdapter = meshAdapter;
+    dirichletOpParams->d_Mesh = meshAdapter;
     boost::shared_ptr<AMP::Operator::DirichletMatrixCorrection> dirichletMatOp (new 
         AMP::Operator::DirichletMatrixCorrection( dirichletOpParams ) );
 
-    AMP::LinearAlgebra::Vector::shared_ptr mechSolVec = meshAdapter->createVector( mechVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = meshAdapter->createVector( mechVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr mechResVec = meshAdapter->createVector( mechVariable );
+    AMP::LinearAlgebra::Vector::shared_ptr mechSolVec = AMP::LinearAlgebra::createVector(dofMap, mechVariable, true);
+    AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = mechSolVec->cloneVector();
+    AMP::LinearAlgebra::Vector::shared_ptr mechResVec = mechSolVec->cloneVector();
 
     for(int i = 0; i < 3; i++) {
       mechSolVec->setRandomValues();
@@ -107,24 +113,24 @@ void myTest(AMP::UnitTest *ut)
 
 int main(int argc, char *argv[])
 {
-    AMP::AMPManager::startup(argc, argv);
-    AMP::UnitTest ut;
+  AMP::AMPManager::startup(argc, argv);
+  AMP::UnitTest ut;
 
-    try {
-        myTest(&ut);
-    } catch (std::exception &err) {
-        std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-        ut.failure("ERROR: While testing");
-    } catch( ... ) {
-        std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-        ut.failure("ERROR: While testing");
-    }
+  try {
+    myTest(&ut);
+  } catch (std::exception &err) {
+    std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+    ut.failure("ERROR: While testing");
+  } catch( ... ) {
+    std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+    ut.failure("ERROR: While testing");
+  }
 
-    ut.report();
+  ut.report();
 
-    int num_failed = ut.NumFailGlobal();
-    AMP::AMPManager::shutdown();
-    return num_failed;
+  int num_failed = ut.NumFailGlobal();
+  AMP::AMPManager::shutdown();
+  return num_failed;
 }   
 
 
