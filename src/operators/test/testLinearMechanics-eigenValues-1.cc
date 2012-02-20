@@ -141,8 +141,9 @@ void myTest(AMP::UnitTest *ut)
 int main(int argc, char *argv[])
 {
   AMP::AMPManager::startup(argc, argv);
-  AMP::UnitTest ut;
+  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(AMP_COMM_WORLD));
 
+  AMP::UnitTest ut;
   try {
     myTest(&ut);
   } catch (std::exception &err) {
@@ -152,10 +153,10 @@ int main(int argc, char *argv[])
     std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
     ut.failure("ERROR: While testing");
   }
-
   ut.report();
-
   int num_failed = ut.NumFailGlobal();
+
+  libmeshInit.reset();
   AMP::AMPManager::shutdown();
   return num_failed;
 }   
