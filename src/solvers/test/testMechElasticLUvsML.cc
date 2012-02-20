@@ -18,8 +18,6 @@
 #include <algorithm>
 #include <cmath>
 
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/MeshAdapter.h"
 
 #include "operators/OperatorBuilder.h"
 #include "operators/LinearBVPOperator.h"

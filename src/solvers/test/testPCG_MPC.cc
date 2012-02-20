@@ -11,9 +11,7 @@
 #include "utils/ReadTestMesh.h"
 #include "utils/WriteSolutionToFile.h"
 
-#include "ampmesh/MeshManager.h"
 #include "ampmesh/MeshVariable.h"
-#include "ampmesh/MeshAdapter.h"
 
 #include "operators/ColumnOperator.h"
 #include "operators/LinearBVPOperator.h"

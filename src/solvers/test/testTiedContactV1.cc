@@ -10,8 +10,6 @@
 #include <vector>
 #include <algorithm>
 
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/MeshAdapter.h"
 #include "ampmesh/SiloIO.h"
 
 #include "boost/shared_ptr.hpp"

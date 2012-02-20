@@ -16,7 +16,6 @@
 
 #include "vectors/PetscVector.h"
 
-#include "MeshManager.h"
 #include "MeshVariable.h"
 
 #include "libmesh.h"

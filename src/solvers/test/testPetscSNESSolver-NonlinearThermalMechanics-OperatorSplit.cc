@@ -15,7 +15,6 @@
 #include "utils/PIO.h"
 
 
-#include "ampmesh/MeshManager.h"
 #include "ampmesh/MeshVariable.h"
 #include "ampmesh/MeshOperations.h"
 #include "ampmesh/MeshUtils.h"

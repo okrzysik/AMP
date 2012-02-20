@@ -10,8 +10,6 @@
 #include <vector>
 #include <algorithm>
 
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/MeshAdapter.h"
 
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"

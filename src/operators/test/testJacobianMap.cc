@@ -15,7 +15,6 @@
 #include "elem.h"
 #include "boundary_info.h"
 
-#include "LibMeshAdapter.h"
 
 #include "ReadTestMesh.h"
 

@@ -15,8 +15,6 @@
 #include "vectors/SimpleVector.h"
 #include "vectors/Vector.h"
 
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/MeshAdapter.h"
 #include "ampmesh/SiloIO.h"
 #include "ampmesh/MeshVariable.h"
 

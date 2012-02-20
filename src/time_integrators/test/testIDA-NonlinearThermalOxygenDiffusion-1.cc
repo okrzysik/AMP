@@ -3,7 +3,6 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 #include "utils/AMP_MPI.h"
-#include "ampmesh/MeshManager.h"
 #include "materials/Material.h"
 #include "boost/shared_ptr.hpp"
 #include "utils/InputDatabase.h"
@@ -12,7 +11,6 @@
 #include "utils/PIO.h"
 #include "utils/Database.h"
 #include "operators/NeutronicsRhs.h"
-#include "ampmesh/MeshAdapter.h"
 #include "vectors/Variable.h"
 
 #include "ampmesh/SiloIO.h"

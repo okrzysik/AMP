@@ -3,7 +3,6 @@
 #include <fstream>
 #include <limits>
 #include "utils/AMPManager.h"
-#include "ampmesh/MeshManager.h"
 #include "materials/Material.h"
 #include "boost/shared_ptr.hpp"
 #include "utils/InputDatabase.h"
@@ -11,7 +10,6 @@
 #include "utils/InputManager.h"
 #include "utils/PIO.h"
 #include "utils/Database.h"
-#include "ampmesh/MeshAdapter.h"
 #include "vectors/Variable.h"
 
 #include "ampmesh/SiloIO.h"
@@ -63,7 +61,6 @@ void linearThermalTest(AMP::UnitTest *ut )
   //std::string mesh_file = input_db->getString("Mesh");
 
   // Construct a mesh manager which reads in the fuel mesh
-  //  #include "ampmesh/MeshManager.h"
   AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
   AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
   AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "bar" );

@@ -34,9 +34,7 @@
 #include "utils/Utilities.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshManager.h"
 #include "ampmesh/MeshVariable.h"
-#include "ampmesh/MeshAdapter.h"
 #include "materials/Material.h"
 
 #include "operators/LinearBVPOperator.h"

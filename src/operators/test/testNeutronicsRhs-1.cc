@@ -2,7 +2,6 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "ampmesh/MeshManager.h"
 #include "materials/Material.h"
 #include "boost/shared_ptr.hpp"
 #include "utils/InputDatabase.h"
@@ -10,7 +9,6 @@
 #include "utils/InputManager.h"
 #include "utils/PIO.h"
 #include "utils/Database.h"
-#include "ampmesh/MeshAdapter.h"
 #include "vectors/Variable.h"
 
 #include "ampmesh/SiloIO.h"
@@ -23,6 +21,10 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
+
+#include "ampmesh/Mesh.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 
 #include <exception>
 
@@ -43,11 +45,11 @@ void sourceTest(AMP::UnitTest *ut , std::string exeName)
   input_db->printClassData(AMP::plog);
 
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  std::string mesh_file = input_db->getString("Mesh");
+    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = AMP::Mesh::MeshManager::Adapter::shared_ptr ( new AMP::Mesh::MeshManager::Adapter () );
-  meshAdapter->readExodusIIFile ( mesh_file.c_str() );
-  
 //--------------------------------------------------
 //   CREATE THE VOLUME INTEGRAL OPERATOR -----------
 //--------------------------------------------------
