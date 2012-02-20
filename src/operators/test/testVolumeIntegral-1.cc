@@ -32,7 +32,7 @@
 
 void resetTests(AMP::UnitTest *ut,
              std::string msgPrefix,
-             boost::shared_ptr<AMP::Mesh::MeshManager::Adapter> ,
+             boost::shared_ptr<AMP::Mesh::Mesh> ,
              boost::shared_ptr<AMP::Operator::Operator> ,
          boost::shared_ptr<AMP::InputDatabase> )
 //             boost::shared_ptr<AMP::Operator::OperatorParameters> &bcParameters)
@@ -230,13 +230,17 @@ void sourceTest(AMP::UnitTest *ut , std::string exeName)
 																							      "VolumeIntegralOperator",
 																							      input_db,
 																							      transportModel));
-  AMP::LinearAlgebra::Variable::shared_ptr inputVariable  = sourceOperator->getInputVariable(-1);
+  AMP::LinearAlgebra::Variable::shared_ptr inputVariable  = sourceOperator->getInputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr outputVariable = sourceOperator->getOutputVariable();
 
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( inputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector( outputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( outputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr workVec =  meshAdapter->createVector( inputVariable );
+  AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = sourceOperator->getInputDofMap();
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = sourceOperator->getOutputDofMap();
+  
+  bool split = true;
+  AMP::LinearAlgebra::Vector::shared_ptr solVec  = AMP::LinearAlgebra::createVector( gaussPointDofMap,  inputVariable, split );
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec  = AMP::LinearAlgebra::createVector( nodalDofMap,      outputVariable, split );
+  AMP::LinearAlgebra::Vector::shared_ptr resVec  = AMP::LinearAlgebra::createVector( nodalDofMap,      outputVariable, split );
+  AMP::LinearAlgebra::Vector::shared_ptr workVec = AMP::LinearAlgebra::createVector( gaussPointDofMap,  inputVariable, split );
 
   ut->passes(exeName +  " : create");
 
