@@ -56,8 +56,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-    AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
+  AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
+      meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
 
   AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector(dofMap, var, true);
   AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
@@ -86,29 +86,29 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
 int main(int argc, char *argv[])
 {
-    AMP::AMPManager::startup(argc, argv);
-    AMP::UnitTest ut;
+  AMP::AMPManager::startup(argc, argv);
+  AMP::UnitTest ut;
 
-    std::vector<std::string> exeNames;
-    exeNames.push_back("testNonlinearMechanics-apply-1");
+  std::vector<std::string> exeNames;
+  exeNames.push_back("testNonlinearMechanics-apply-1");
 
-    for(unsigned int i = 0; i < exeNames.size(); i++) {
-        try {
-            myTest(&ut, exeNames[i]);
-        } catch (std::exception &err) {
-            std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-            ut.failure("ERROR: While testing");
-        } catch( ... ) {
-            std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-            ut.failure("ERROR: While testing");
-        }
+  for(unsigned int i = 0; i < exeNames.size(); i++) {
+    try {
+      myTest(&ut, exeNames[i]);
+    } catch (std::exception &err) {
+      std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+      ut.failure("ERROR: While testing");
+    } catch( ... ) {
+      std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+      ut.failure("ERROR: While testing");
     }
+  }
 
-    ut.report();
+  ut.report();
 
-    int num_failed = ut.NumFailGlobal();
-    AMP::AMPManager::shutdown();
-    return num_failed;
+  int num_failed = ut.NumFailGlobal();
+  AMP::AMPManager::shutdown();
+  return num_failed;
 
 }   
 

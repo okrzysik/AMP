@@ -1,3 +1,4 @@
+
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
@@ -14,7 +15,8 @@
 #include "utils/PIO.h"
 #include "materials/Material.h"
 
-#include "ampmesh/MeshVariable.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 
 #include "libmesh.h"
 
@@ -45,13 +47,16 @@ void myTest(AMP::UnitTest *ut)
   input_db->printClassData(AMP::plog);
 
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  std::string mesh_file = input_db->getString("Mesh");
+  boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
+  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+  meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+  AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = AMP::Mesh::MeshManager::Adapter::shared_ptr ( new AMP::Mesh::MeshManager::Adapter () );
-  meshAdapter->readExodusIIFile ( mesh_file.c_str() );
+  AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
+      meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
 
-//  AMP_INSIST(input_db->keyExists("NumberOfLoadingSteps"), "Key ''NumberOfLoadingSteps'' is missing!");
-//  int NumberOfLoadingSteps = input_db->getInteger("NumberOfLoadingSteps");
+  //  AMP_INSIST(input_db->keyExists("NumberOfLoadingSteps"), "Key ''NumberOfLoadingSteps'' is missing!");
+  //  int NumberOfLoadingSteps = input_db->getInteger("NumberOfLoadingSteps");
 
   //Material model shared by both the linear and nonlinear operators
   AMP_INSIST(input_db->keyExists("VonMises_Model"), "Key ''VonMises_Model'' is missing!");
@@ -86,12 +91,12 @@ void myTest(AMP::UnitTest *ut)
         AMP::Operator::MechanicsNonlinearFEOperatorParameters( mechNonlinAssembly_db ));
     mechNonlinOpParams->d_materialModel = matModel;
     mechNonlinOpParams->d_elemOp = mechNonlinElem;
-    mechNonlinOpParams->d_MeshAdapter = meshAdapter;
+    mechNonlinOpParams->d_Mesh = meshAdapter;
+    mechNonlinOpParams->d_dofMap[AMP::Operator::Mechanics::DISPLACEMENT] = dofMap;
     boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechNonlinOp (new AMP::Operator::MechanicsNonlinearFEOperator( mechNonlinOpParams ));
     mechNonlinOp->init();
 
-    AMP::LinearAlgebra::Variable::shared_ptr displacementVariable = mechNonlinOp->getInputVariable(AMP::Operator::Mechanics::DISPLACEMENT);
-    AMP::LinearAlgebra::Variable::shared_ptr residualVariable = mechNonlinOp->getOutputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr var = mechNonlinOp->getOutputVariable();
 
     boost::shared_ptr<AMP::Database> linElemOp_db = input_db->getDatabase(mechLinElemDbStr);
     boost::shared_ptr<AMP::Operator::ElementOperationParameters> linElemOpParams (new AMP::Operator::ElementOperationParameters( linElemOp_db ));
@@ -103,8 +108,11 @@ void myTest(AMP::UnitTest *ut)
         AMP::Operator::MechanicsLinearFEOperatorParameters( mechLinAssembly_db ));
     mechLinOpParams->d_materialModel = matModel;
     mechLinOpParams->d_elemOp = mechLinElem;
-    mechLinOpParams->d_MeshAdapter = meshAdapter;
-    boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechLinOp (new AMP::Operator::MechanicsLinearFEOperator( mechLinOpParams ));
+    mechLinOpParams->d_Mesh = meshAdapter;
+    mechLinOpParams->d_inDofMap = dofMap;
+    mechLinOpParams->d_outDofMap = dofMap;
+    boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechLinOp (
+        new AMP::Operator::MechanicsLinearFEOperator( mechLinOpParams ));
 
     AMP_INSIST(input_db->keyExists("Displacement_Boundary"), "Key ''Displacement_Boundary'' is missing!");
     boost::shared_ptr<AMP::Database> disp_db = input_db->getDatabase("Displacement_Boundary");
@@ -113,8 +121,8 @@ void myTest(AMP::UnitTest *ut)
     dirichletOpParams->d_inputMatrix = mechLinOp->getMatrix();
     //This is just the variable used to extract the dof_map.
     //This boundary operator itself has an empty input and output variable
-    dirichletOpParams->d_variable = residualVariable;
-    dirichletOpParams->d_MeshAdapter = meshAdapter;
+    dirichletOpParams->d_variable = var;
+    dirichletOpParams->d_Mesh = meshAdapter;
     boost::shared_ptr<AMP::Operator::DirichletMatrixCorrection> dirichletMatOp (new 
         AMP::Operator::DirichletMatrixCorrection( dirichletOpParams ) );
 
@@ -122,8 +130,8 @@ void myTest(AMP::UnitTest *ut)
         AMP::Operator::DirichletVectorCorrectionParameters(disp_db));
     //This has an in-place apply. So, it has an empty input variable and
     //the output variable is the same as what it is operating on. 
-    dirichletDispInVecParams->d_variable = displacementVariable;
-    dirichletDispInVecParams->d_MeshAdapter = meshAdapter;
+    dirichletDispInVecParams->d_variable = var;
+    dirichletDispInVecParams->d_Mesh = meshAdapter;
     boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletDispInVecOp(new 
         AMP::Operator::DirichletVectorCorrection(dirichletDispInVecParams));
 
@@ -131,8 +139,8 @@ void myTest(AMP::UnitTest *ut)
         AMP::Operator::DirichletVectorCorrectionParameters(disp_db));
     //This has an in-place apply. So, it has an empty input variable and
     //the output variable is the same as what it is operating on. 
-    dirichletDispOutVecParams->d_variable = residualVariable;
-    dirichletDispOutVecParams->d_MeshAdapter = meshAdapter;
+    dirichletDispOutVecParams->d_variable = var;
+    dirichletDispOutVecParams->d_Mesh = meshAdapter;
     boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletDispOutVecOp (new 
         AMP::Operator::DirichletVectorCorrection(dirichletDispOutVecParams));
 
@@ -156,16 +164,16 @@ void myTest(AMP::UnitTest *ut)
         AMP::Operator::DirichletVectorCorrectionParameters(load_db));
     //This has an in-place apply. So, it has an empty input variable and
     //the output variable is the same as what it is operating on. 
-    dirichletLoadVecParams->d_variable = residualVariable;
-    dirichletLoadVecParams->d_MeshAdapter = meshAdapter;
+    dirichletLoadVecParams->d_variable = var;
+    dirichletLoadVecParams->d_Mesh = meshAdapter;
     boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletLoadVecOp (new 
         AMP::Operator::DirichletVectorCorrection(dirichletLoadVecParams));
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-    AMP::LinearAlgebra::Vector::shared_ptr mechNlSolVec = meshAdapter->createVector( displacementVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr mechNlRhsVec = meshAdapter->createVector( residualVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr mechNlResVec = meshAdapter->createVector( residualVariable );
+    AMP::LinearAlgebra::Vector::shared_ptr mechNlSolVec = AMP::LinearAlgebra::createVector(dofMap, var, true);
+    AMP::LinearAlgebra::Vector::shared_ptr mechNlRhsVec = mechNlSolVec->cloneVector();
+    AMP::LinearAlgebra::Vector::shared_ptr mechNlResVec = mechNlSolVec->cloneVector();
 
     mechNlRhsVec->setToScalar(0.0);
     dirichletLoadVecOp->apply(nullVec, nullVec, mechNlRhsVec, 1.0, 0.0);
@@ -189,24 +197,24 @@ void myTest(AMP::UnitTest *ut)
 
 int main(int argc, char *argv[])
 {
-    AMP::AMPManager::startup(argc, argv);
-    AMP::UnitTest ut;
+  AMP::AMPManager::startup(argc, argv);
+  AMP::UnitTest ut;
 
-    try {
-        myTest(&ut);
-    } catch (std::exception &err) {
-        std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-        ut.failure("ERROR: While testing");
-    } catch( ... ) {
-        std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-        ut.failure("ERROR: While testing");
-    }
-   
-    ut.report();
+  try {
+    myTest(&ut);
+  } catch (std::exception &err) {
+    std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+    ut.failure("ERROR: While testing");
+  } catch( ... ) {
+    std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+    ut.failure("ERROR: While testing");
+  }
 
-    int num_failed = ut.NumFailGlobal();
-    AMP::AMPManager::shutdown();
-    return num_failed;
+  ut.report();
+
+  int num_failed = ut.NumFailGlobal();
+  AMP::AMPManager::shutdown();
+  return num_failed;
 }   
 
 
