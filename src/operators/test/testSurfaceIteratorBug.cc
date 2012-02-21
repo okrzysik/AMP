@@ -51,60 +51,75 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
   libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
-  boost::shared_ptr < ::FEType > feType( new ::FEType(feTypeOrder, feFamily) );
-  boost::shared_ptr < ::FEBase > fe( (::FEBase::build(2, (*feType))).release() );
-
-  //const std::vector<std::vector<Real> > &phi = fe->get_phi();
-  const std::vector<Real> &djxw = fe->get_JxW();
-
-  libMeshEnums::QuadratureType qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>("QGAUSS");
-  libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
-
-  boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, 2, qruleOrder)).release() );
-  fe->attach_quadrature_rule( qrule.get() );
 
   AMP::Mesh::MeshManager::Adapter::BoundarySideIterator bnd = mesh->beginSideBoundary( surfaceId );
   AMP::Mesh::MeshManager::Adapter::BoundarySideIterator end_bnd = mesh->endSideBoundary( surfaceId );
 
-  for( ; bnd != end_bnd; ++bnd) {
+  bool volume_passes = true;
+  while ( bnd!=end_bnd ) {
+
     std::vector<unsigned int> bndGlobalIds;
     dof_map->getDOFs(*bnd, bndGlobalIds, 0);
 
+    // Some basic checks
     assert(bndGlobalIds.size() == 4);
-
     assert((bnd->getElem()).default_order() == feTypeOrder);
     assert((bnd->getElem()).dim() == 2);
 
-    if(setConstantValue) {
-      std::vector<double> vals(bndGlobalIds.size(), 100.0);
-      vec->addValuesByGlobalID(bndGlobalIds.size(), (int*)(&(bndGlobalIds[0])), &(vals[0]));
-    } else {
-      fe->reinit ( &(bnd->getElem()) );
-      std::vector<double> vals(bndGlobalIds.size(), 0.0);
-      for(unsigned int i = 0; i < bndGlobalIds.size(); i++) {
-        for(unsigned int qp = 0; qp < qrule->n_points(); qp++) {
-          assert(djxw[qp] >= 0.0);
-          // assert(phi[i][qp] >= 0.0);
-          //vals[i] +=  (djxw[qp]*phi[i][qp]*100.0);
-          vals[i] +=  djxw[qp];
-          //vals[i] += bnd->volume();
-        }//end qp
-        if(fabs(vals[i] - bnd->volume()) > ((1.0e-8)*(bnd->volume()))) {
-          std::cout<<"Vals = "<<std::setprecision(15)<<vals[i]<<std::endl;
-          std::cout<<"Volume = "<<std::setprecision(15)<<(bnd->volume())<<std::endl;
-          std::cout<<"Diff = "<<std::setprecision(15)<<(vals[i] - bnd->volume())<<std::endl;
-        }
-      }//end i
-      vec->addValuesByGlobalID(bndGlobalIds.size(), (int*)(&(bndGlobalIds[0])), &(vals[0]));
+    // Create the libmesh element
+    // Note: This must be done inside the loop because libmesh's reinit function doesn't seem to work properly
+    boost::shared_ptr < ::FEType > feType( new ::FEType(feTypeOrder, feFamily) );
+    boost::shared_ptr < ::FEBase > fe( (::FEBase::build(2, (*feType))).release() );
+    const std::vector<std::vector<Real> > &phi = fe->get_phi();
+    const std::vector<Real> &djxw = fe->get_JxW();
+    libMeshEnums::QuadratureType qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>("QGAUSS");
+    libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
+    boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, 2, qruleOrder)).release() );
+    fe->attach_quadrature_rule( qrule.get() );
+    fe->reinit ( &(bnd->getElem()) );
+
+    // Check the volume
+    double vol1 = 0.0;
+    for(unsigned int qp = 0; qp < qrule->n_points(); qp++)
+        vol1 += djxw[qp];
+    double vol2 = bnd->volume();
+    if( fabs(vol1-vol2) > (1.0e-8*vol2) ) {
+        std::cout<<"Volume 1 = "<<std::setprecision(15)<<vol1<<std::endl;
+        std::cout<<"Volume 2 = "<<std::setprecision(15)<<vol2<<std::endl<<std::endl;
+        volume_passes = false;
     }
+
+    // Fill the surface vector
+    if(setConstantValue) {
+       std::vector<double> vals(bndGlobalIds.size(), 100.0);
+       vec->addValuesByGlobalID(bndGlobalIds.size(), (int*)(&(bndGlobalIds[0])), &(vals[0]));
+    } else {
+       std::vector<double> vals(bndGlobalIds.size(), 0.0);
+       for(unsigned int i = 0; i < bndGlobalIds.size(); i++) {
+         for(unsigned int qp = 0; qp < qrule->n_points(); qp++) {
+           assert(djxw[qp] >= 0.0);
+           assert(phi[i][qp] >= 0.0);
+           vals[i] += (djxw[qp]*phi[i][qp]*100.0);
+         }//end qp
+       }//end i
+       vec->addValuesByGlobalID(bndGlobalIds.size(), (int*)(&(bndGlobalIds[0])), &(vals[0]));
+    }
+    ++bnd;
   }//end for bnd
+  if ( volume_passes == true )
+    ut->passes("Volume passes");
+  else
+    ut->failure("Volume passes");
 
   vec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
 
   double l2Norm = vec->L2Norm();
   std::cout<<"L2 Norm = "<<std::setprecision(15)<<l2Norm<<std::endl;
 
-  ut->passes(exeName);
+  if ( AMP::Utilities::approx_equal(l2Norm,0.00112133307409082) )
+     ut->passes("L2 Norm has expected value");
+  else
+     ut->failure("L2 Norm has expected value");
 }
 
 int main(int argc, char *argv[])
@@ -116,6 +131,7 @@ int main(int argc, char *argv[])
 
   try {
     myTest(&ut, exeName);
+    ut.passes(exeName);
   } catch (std::exception &err) {
     std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
     ut.failure("ERROR: While testing");
@@ -124,7 +140,7 @@ int main(int argc, char *argv[])
     ut.failure("ERROR: While testing");
   }
 
-  //  ut.report();
+  ut.report();
 
   int num_failed = ut.NumFailGlobal();
   AMP::AMPManager::shutdown();
