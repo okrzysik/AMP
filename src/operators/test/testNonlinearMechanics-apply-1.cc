@@ -2,22 +2,17 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include <iostream>
-#include <string>
-
-#include "boost/shared_ptr.hpp"
-
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "utils/AMP_MPI.h"
-#include "utils/AMPManager.h"
 #include "utils/PIO.h"
+
+#include <iostream>
+#include <string>
 
 #include "ampmesh/MeshManager.h"
 #include "ampmesh/MeshVariable.h"
-
-#include "libmesh.h"
 
 #include "materials/Material.h"
 #include "operators/LinearOperator.h"
