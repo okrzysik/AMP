@@ -53,7 +53,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
       std::cout<<"x = "<<(pt.x())<<" : ";
       std::cout<<"y = "<<(pt.y())<<" : ";
       std::cout<<"z = "<<(pt.z())<<" : ";
-      std::cout<<"d0 = "<<(dofIds[i])<<std::endl;
+      //std::cout<<"d0 = "<<(dofIds[i]);
+      std::cout<<std::endl;
     }//end i
     std::cout<<std::endl;
   }//end el
