@@ -10,15 +10,9 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "discretization/simpleDOF_Manager.h"
-#include "vectors/VectorBuilder.h"
-
-#include "materials/Material.h"
-#include "operators/LinearOperator.h"
-#include "operators/OperatorBuilder.h"
-#include "operators/mechanics/MechanicsNonlinearFEOperator.h"
-#include "operators/mechanics/MechanicsLinearFEOperator.h"
 
 void myTest(AMP::UnitTest *ut, std::string exeName)
 {
@@ -37,45 +31,30 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
-  AMP_INSIST( input_db->keyExists("testNonlinearMechanicsOperator"), "key missing!" );
-
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-  boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> testNonlinOperator = 
-    boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-          "testNonlinearMechanicsOperator", input_db, elementPhysicsModel));
-  testNonlinOperator->init();
-
-  AMP::LinearAlgebra::Variable::shared_ptr var = testNonlinOperator->getOutputVariable(); 
-
-  AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-
   AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
       meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
 
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector(dofMap, var, true);
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
+  AMP::Mesh::MeshIterator el = meshAdapter->getIterator(AMP::Mesh::Volume, 0);
+  AMP::Mesh::MeshIterator end_el = el.end();
 
-  solVec->setToScalar(5.0);
-
-  AMP::pout<<"Solution Norm: "<<(solVec->L2Norm())<<std::endl;
-
-  testNonlinOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
-
-  double resNorm1 = resVec->L2Norm();
-
-  AMP::pout<<"resNorm1 = "<<resNorm1<<std::endl;
-
-  testNonlinOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
-
-  double resNorm2 = resVec->L2Norm();
-
-  AMP::pout<<"resNorm2 = "<<resNorm2<<std::endl;
-
-  AMP_ASSERT(resNorm1 == resNorm2);
+  for(int elId = 0; el != end_el; ++el, ++elId) {
+    std::vector<AMP::Mesh::MeshElement> currNodes = el->getElements(AMP::Mesh::Vertex);
+    AMP_ASSERT(currNodes.size() == 8);
+    std::cout<<"e = "<<elId<<" : "<<std::endl;
+    for(int i = 0; i < 8; ++i) {
+      std::vector<size_t> dofIds; 
+      dofMap->getDOFs(currNodes[i].globalID(), dofIds);
+      std::vector<double> pt = (currNodes[i]).coord();
+      std::cout<<"v = "<<i<<" : ";
+      std::cout<<"x = "<<(pt[0])<<" : ";
+      std::cout<<"y = "<<(pt[1])<<" : ";
+      std::cout<<"z = "<<(pt[2])<<" : ";
+      std::cout<<"d0 = "<<(dofIds[0])<<std::endl;
+    }//end i
+    std::cout<<std::endl;
+  }//end el
 
   ut->passes(exeName);
-
 }
 
 int main(int argc, char *argv[])
@@ -84,7 +63,7 @@ int main(int argc, char *argv[])
   AMP::UnitTest ut;
 
   std::vector<std::string> exeNames;
-  exeNames.push_back("testNonlinearMechanics-apply-1");
+  exeNames.push_back("testDofMap");
 
   for(unsigned int i = 0; i < exeNames.size(); i++) {
     try {
