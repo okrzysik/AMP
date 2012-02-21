@@ -85,7 +85,8 @@ namespace AMP {
         //memory for reference coordinates (used in UL formulation)
         // memory for variables in the previous config
         if(d_useUpdatedLagrangian) {
-          d_refXYZ = AMP::LinearAlgebra::createVector(d_dofMap[Mechanics::DISPLACEMENT], d_inpVariables->getVariable(Mechanics::DISPLACEMENT), true);
+          d_refXYZ = AMP::LinearAlgebra::createVector(d_dofMap[Mechanics::DISPLACEMENT],
+              d_inpVariables->getVariable(Mechanics::DISPLACEMENT), true);
           d_refXYZ->zero();
           for(unsigned int i=0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++)
           {
@@ -143,6 +144,8 @@ namespace AMP {
     void MechanicsNonlinearFEOperator :: preElementOperation( const AMP::Mesh::MeshElement & elem ) {
       d_currNodes = elem.getElements(AMP::Mesh::Vertex);
       unsigned int numNodesInCurrElem = d_currNodes.size();
+
+      AMP_ASSERT(numNodesInCurrElem == 8);
 
       getDofIndicesForCurrentElement(Mechanics::DISPLACEMENT, d_dofIndices);
 
@@ -236,6 +239,7 @@ namespace AMP {
     }
 
     void MechanicsNonlinearFEOperator :: postElementOperation() {
+      AMP_ASSERT(d_dofIndices.size() == 8);
       for(unsigned int r = 0; r < d_dofIndices.size(); r++) {
         for(unsigned int d = 0; d < 3; d++) {
           d_outVec->addValueByGlobalID( d_dofIndices[r][d], d_elementOutputVector[(3*r) + d] );
