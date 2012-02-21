@@ -1,3 +1,4 @@
+
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
@@ -48,9 +49,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
   boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> testNonlinOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-															    "testNonlinearMechanicsOperator",
-															    input_db,
-															    elementPhysicsModel));
+          "testNonlinearMechanicsOperator",
+          input_db,
+          elementPhysicsModel));
   testNonlinOperator->init();
 
   AMP::LinearAlgebra::Variable::shared_ptr solVar = testNonlinOperator->getInputVariable(AMP::Operator::Mechanics::DISPLACEMENT); 
@@ -68,11 +69,17 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   testNonlinOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
 
-  AMP::pout<<"resNorm1 = "<<(resVec->L2Norm())<<std::endl;
+  double resNorm1 = resVec->L2Norm();
+
+  AMP::pout<<"resNorm1 = "<<resNorm1<<std::endl;
 
   testNonlinOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
 
-  AMP::pout<<"resNorm2 = "<<(resVec->L2Norm())<<std::endl;
+  double resNorm2 = resVec->L2Norm();
+
+  AMP::pout<<"resNorm2 = "<<resNorm2<<std::endl;
+
+  AMP_ASSERT(resNorm1 == resNorm2);
 
   ut->passes(exeName);
 
@@ -80,29 +87,29 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
 int main(int argc, char *argv[])
 {
-    AMP::AMPManager::startup(argc, argv);
-    AMP::UnitTest ut;
+  AMP::AMPManager::startup(argc, argv);
+  AMP::UnitTest ut;
 
-    std::vector<std::string> exeNames;
-    exeNames.push_back("testNonlinearMechanics-apply-1");
+  std::vector<std::string> exeNames;
+  exeNames.push_back("testNonlinearMechanics-apply-1");
 
-    for(unsigned int i = 0; i < exeNames.size(); i++) {
-        try {
-            myTest(&ut, exeNames[i]);
-        } catch (std::exception &err) {
-            std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-            ut.failure("ERROR: While testing");
-        } catch( ... ) {
-            std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-            ut.failure("ERROR: While testing");
-        }
+  for(unsigned int i = 0; i < exeNames.size(); i++) {
+    try {
+      myTest(&ut, exeNames[i]);
+    } catch (std::exception &err) {
+      std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+      ut.failure("ERROR: While testing");
+    } catch( ... ) {
+      std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+      ut.failure("ERROR: While testing");
     }
+  }
 
-    ut.report();
+  ut.report();
 
-    int num_failed = ut.NumFailGlobal();
-    AMP::AMPManager::shutdown();
-    return num_failed;
+  int num_failed = ut.NumFailGlobal();
+  AMP::AMPManager::shutdown();
+  return num_failed;
 
 }   
 
