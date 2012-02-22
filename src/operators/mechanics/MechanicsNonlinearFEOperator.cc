@@ -189,7 +189,7 @@ namespace AMP {
               getValueByGlobalID( d_dofIndices[r][d] );
             elementRefXYZ[(3 * r) + d] = d_refXYZ->getValueByGlobalID( d_dofIndices[r][d] );
           }
-        }
+        }//end d
         if(d_isActive[Mechanics::TEMPERATURE]) {
           elementInputVectors[Mechanics::TEMPERATURE][r] = (d_inVec[Mechanics::TEMPERATURE])->
             getValueByGlobalID( auxDofIds[r][0] );
@@ -222,7 +222,7 @@ namespace AMP {
               getValueByGlobalID( auxDofIds[r][0] );
           }
         }
-      }
+      }//end r
 
       d_elementOutputVector.resize((3*numNodesInCurrElem), 0.0);
 
@@ -241,6 +241,7 @@ namespace AMP {
     void MechanicsNonlinearFEOperator :: postElementOperation() {
       AMP_ASSERT(d_dofIndices.size() == 8);
       for(unsigned int r = 0; r < d_dofIndices.size(); r++) {
+      AMP_ASSERT(d_dofIndices[r].size() == 3);
         for(unsigned int d = 0; d < 3; d++) {
           d_outVec->addValueByGlobalID( d_dofIndices[r][d], d_elementOutputVector[(3*r) + d] );
         }//end for d

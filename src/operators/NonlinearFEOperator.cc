@@ -15,6 +15,8 @@ namespace AMP {
 
       AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector(r);
 
+      AMP_INSIST( (rInternal != NULL), "NULL Residual/Output Vector" );
+
       AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
       AMP::Mesh::MeshIterator end_el = el.end();
 
