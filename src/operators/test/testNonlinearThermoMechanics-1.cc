@@ -2,23 +2,18 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include <iostream>
-#include <string>
-
-#include "boost/shared_ptr.hpp"
-
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "utils/AMP_MPI.h"
-#include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
+#include <iostream>
+#include <string>
 
-#include "libmesh.h"
-
-#include "materials/Material.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "discretization/MultiDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 
 #include "operators/OperatorBuilder.h"
 #include "operators/ColumnOperator.h"
@@ -45,53 +40,64 @@ void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "cylinder" );
+  AMP_INSIST( input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!" );
+  boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
+  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+  meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+  AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
-  //----------------------------------------------------------------------------------------------------------------------------------------------//
+  //-----------------------------------------------------------------------------//
   // create a nonlinear BVP operator for nonlinear mechanics
   AMP_INSIST( input_db->keyExists("testNonlinearMechanicsOperator"), "key missing!" );
 
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
-								     AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-														    "testNonlinearMechanicsOperator",
-														    input_db,
-														    mechanicsMaterialModel));
+        AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+          "testNonlinearMechanicsOperator", input_db, mechanicsMaterialModel));
 
   boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> nonlinearMechanicsVolumeOperator = boost::dynamic_pointer_cast<
     AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsOperator->getVolumeOperator());
 
-  //----------------------------------------------------------------------------------------------------------------------------------------------//
+  //---------------------------------------------------------------------------//
   // create a nonlinear BVP operator for nonlinear thermal diffusion
   AMP_INSIST( input_db->keyExists("testNonlinearThermalOperator"), "key missing!" );
 
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
-								     AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-														    "testNonlinearThermalOperator",
-														    input_db,
-														    thermalTransportModel));
+        AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+          "testNonlinearThermalOperator", input_db, thermalTransportModel));
 
-  //----------------------------------------------------------------------------------------------------------------------------------------------//
+  //--------------------------------------------------------------------------//
   // create a column operator object for nonlinear thermomechanics
   boost::shared_ptr<AMP::Operator::OperatorParameters> params;
   boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearThermoMechanicsOperator(new AMP::Operator::ColumnOperator(params));
   nonlinearThermoMechanicsOperator->append(nonlinearMechanicsOperator);
   nonlinearThermoMechanicsOperator->append(nonlinearThermalOperator);
 
+  AMP::Discretization::DOFManager::shared_ptr scalarDofMap = AMP::Discretization::simpleDOFManager::create(
+      meshAdapter, AMP::Mesh::Vertex, 1, 1, true); 
+
+  AMP::Discretization::DOFManager::shared_ptr vectorDofMap = AMP::Discretization::simpleDOFManager::create(
+      meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
+
+std::vector<AMP::Discretization::DOFManager::shared_ptr> dofMapList;
+dofMapList.push_back(vectorDofMap);
+dofMapList.push_back(scalarDofMap);
+
+  AMP::Discretization::DOFManager::shared_ptr multiDofMap(
+      new AMP::Discretization::multiDOFManager(meshAdapter->getComm(), dofMapList));
+
   // initialize the output multi-variable
-  AMP::LinearAlgebra::Variable::shared_ptr outputVariable = nonlinearThermoMechanicsOperator->getOutputVariable();
+  AMP::LinearAlgebra::Variable::shared_ptr multiVar = nonlinearThermoMechanicsOperator->getOutputVariable();
 
   // create solution, rhs, and residual vectors
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( outputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector(multiDofMap, multiVar, true);
   AMP::LinearAlgebra::Vector::shared_ptr solVec = resVec->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr rhsVec = resVec->cloneVector();
 
-  //----------------------------------------------------------------------------------------------------------------------------------------------//
+  //-----------------------------------------------------------------------//
   // set up the shift and scale parameters
   double shift[2];
   double scale[2];
@@ -105,39 +111,37 @@ void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)
   AMP::Materials::Material::shared_ptr matTh = transportModel->getMaterial();
   boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermOperator = boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearThermalOperator->getVolumeOperator());
   if ( thermOperator->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE) {
-      std::string property="ThermalConductivity";
-      if( (matTh->property(property))->is_argument("temperature") ) {
-          range = (matTh->property(property))->get_arg_range("temperature");  // Compile error
-          scale[1] = range[1]-range[0];
-          shift[1] = range[0]+0.001*scale[1];
-          scale[1] *= 0.999;
-      }
+    std::string property="ThermalConductivity";
+    if( (matTh->property(property))->is_argument("temperature") ) {
+      range = (matTh->property(property))->get_arg_range("temperature");  // Compile error
+      scale[1] = range[1]-range[0];
+      shift[1] = range[0]+0.001*scale[1];
+      scale[1] *= 0.999;
+    }
   }
 
-  //----------------------------------------------------------------------------------------------------------------------------------------------//
-  AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = meshAdapter->createVector( nonlinearThermalOperator->getOutputVariable() );
+  //----------------------------------------------------------------------------//
+  AMP::LinearAlgebra::Variable::shared_ptr thermVar = nonlinearThermalOperator->getOutputVariable();
+  AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = 
+    AMP::LinearAlgebra::createVector(scalarDofMap, thermVar, true);
   referenceTemperatureVec->setToScalar(300.0);
   nonlinearMechanicsVolumeOperator->setReferenceTemperature(referenceTemperatureVec);
 
-  //----------------------------------------------------------------------------------------------------------------------------------------------//
+  //---------------------------------------------------------------------------//
   // now construct the linear BVP operator for mechanics
   AMP_INSIST( input_db->keyExists("testLinearMechanicsOperator"), "key missing!" );
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearMechanicsOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-														 "testLinearMechanicsOperator",
-														 input_db,
-														 mechanicsMaterialModel));
+          "testLinearMechanicsOperator", input_db, mechanicsMaterialModel));
 
-  //----------------------------------------------------------------------------------------------------------------------------------------------//
+  //--------------------------------------------------------------------------//
   // now construct the linear BVP operator for thermal
   AMP_INSIST( input_db->keyExists("testLinearThermalOperator"), "key missing!" );
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-														 "testLinearThermalOperator",
-														 input_db,
-														 thermalTransportModel));
+          "testLinearThermalOperator", input_db, thermalTransportModel));
 
-  //----------------------------------------------------------------------------------------------------------------------------------------------//
+  //-------------------------------------------------------------------------//
   // create a column operator object for linear thermomechanics
   boost::shared_ptr<AMP::Operator::ColumnOperator> linearThermoMechanicsOperator(new AMP::Operator::ColumnOperator(params));
   linearThermoMechanicsOperator->append(linearMechanicsOperator);
@@ -152,7 +156,8 @@ void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)
 
   ut->passes(msgPrefix);
 
-  boost::shared_ptr<AMP::Operator::OperatorParameters> resetParams = nonlinearThermoMechanicsOperator->getJacobianParameters(solVec);
+  boost::shared_ptr<AMP::Operator::OperatorParameters> resetParams = 
+    nonlinearThermoMechanicsOperator->getJacobianParameters(solVec);
 
   ut->passes(exeName + " : getJacobianParameters");
 
