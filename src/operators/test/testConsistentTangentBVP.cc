@@ -1,22 +1,16 @@
+
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include <iostream>
-#include <string>
-#include <cstdlib>
-
-#include "boost/shared_ptr.hpp"
-
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "utils/AMP_MPI.h"
-#include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "vectors/PetscVector.h"
-
-#include "MeshVariable.h"
+#include <iostream>
+#include <string>
+#include <cstdlib>
 
 #include "libmesh.h"
 #include "mesh_communication.h"
