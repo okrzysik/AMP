@@ -319,7 +319,7 @@ namespace AMP {
             elementInputVectors_pre[Mechanics::DISPLACEMENT][(3*r) + d] = (d_inVec_pre[Mechanics::DISPLACEMENT])->getValueByGlobalID( d_type0DofIndices[d][r] );
             elementRefXYZ[(3 * r) + d] = d_refXYZ->getValueByGlobalID(d_type0DofIndices[d][r]);
           }
-        }
+        }//end d
         if(d_isActive[Mechanics::TEMPERATURE]) {
           elementInputVectors[Mechanics::TEMPERATURE][r] = (d_inVec[Mechanics::TEMPERATURE])->
             getValueByGlobalID( d_type1DofIndices[r] );
@@ -348,9 +348,12 @@ namespace AMP {
             elementInputVectors_pre[Mechanics::LHGR][r] = (d_inVec_pre[Mechanics::LHGR])->getValueByGlobalID( d_type1DofIndices[r] );
           }
         }
-      }
+      }//end r
 
-      d_elementOutputVector.resize(num_local_type0Dofs, 0.0);
+      d_elementOutputVector.resize(num_local_type0Dofs);
+      for(int i = 0; i < d_elementOutputVector.size(); i++) {
+        d_elementOutputVector[i] = 0.0; 
+      }//end i
 
       const ::Elem* elemPtr = &(elem.getElem());
 
@@ -368,14 +371,9 @@ namespace AMP {
     {
       for(unsigned int r = 0; r < d_numNodesForCurrentElement; r++) {
         for(unsigned int d = 0; d < 3; d++) {
-          //std::cout<<"Adding "<<(std::setprecision(12))<<
-          //  (d_elementOutputVector[(3*r) + d])<<" at "
-          //  <<(d_type0DofIndices[d][r])<<std::endl; 
           d_outVec->addValueByGlobalID( d_type0DofIndices[d][r], d_elementOutputVector[(3*r) + d] );
         }
-        //std::cout<<std::endl;
       }
-      //std::cout<<std::endl;
     }
 
     void MechanicsNonlinearFEOperator :: init() 
