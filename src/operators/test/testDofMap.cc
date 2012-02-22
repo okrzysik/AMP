@@ -49,7 +49,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
       std::cout<<"x = "<<(pt[0])<<" : ";
       std::cout<<"y = "<<(pt[1])<<" : ";
       std::cout<<"z = "<<(pt[2])<<" : ";
-      //std::cout<<"d0 = "<<(dofIds[0]);
+      std::cout<<"d0 = "<<(dofIds[0])<<" : ";
+      std::cout<<"d1 = "<<(dofIds[1])<<" : ";
+      std::cout<<"d2 = "<<(dofIds[2])<<" : ";
       std::cout<<std::endl;
     }//end i
     std::cout<<std::endl;
