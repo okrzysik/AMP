@@ -65,8 +65,10 @@ void MeshMatrixTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> m
     // Run the matrix tests
     #ifdef USE_AMP_MATRICIES
         //ut->failure("Matricies are not implimented yet");
-        VerifyGetMatrixTrivialTest<1>( ut, mesh );
-        VerifyGetMatrixTrivialTest<3>( ut, mesh );
+        VerifyGetMatrixTrivialTest<1,false>( ut, mesh );
+        VerifyGetMatrixTrivialTest<3,false>( ut, mesh );
+        VerifyGetMatrixTrivialTest<1,true>( ut, mesh );
+        VerifyGetMatrixTrivialTest<3,true>( ut, mesh );
     #endif
 }
 

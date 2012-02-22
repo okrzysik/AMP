@@ -115,7 +115,7 @@ void NodeToNodeMap::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & 
     // Subset the vector for the variable
     AMP::LinearAlgebra::Vector::shared_ptr   curPhysics = u->subsetVectorForVariable ( d_inpVariable );
     AMP_INSIST( curPhysics , "apply received bogus stuff" );
-    AMP_INSIST( curPhysics->getDOFManager()==d_DOFManager,"The DOF Manager that created the vector must match the one for the map" );
+    //AMP_INSIST( curPhysics->getDOFManager()==d_DOFManager,"The DOF Manager that created the vector must match the one for the map" );
 
     // Get the DOFs to send
     curPhysics->getValuesByGlobalID( d_sendList.size(), getPtr( d_sendList ), getPtr( d_sendBuffer ) );
@@ -162,7 +162,7 @@ void NodeToNodeMap::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr &
     //      copyToOutput = false;
     //      curPhysics = d_OutputVector;
     //    }
-    AMP_INSIST( curPhysics->getDOFManager()==d_DOFManager,"The DOF Manager that created the vector must match the one for the map" );
+    //AMP_INSIST( curPhysics->getDOFManager()==d_DOFManager,"The DOF Manager that created the vector must match the one for the map" );
 
     // Store the DOFs
     curPhysics->setValuesByGlobalID( d_recvList.size(),  getPtr( d_recvList ), getPtr( d_recvBuffer ) );

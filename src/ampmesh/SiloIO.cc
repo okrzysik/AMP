@@ -430,7 +430,6 @@ void SiloIO::writeSummary( std::string filename )
         //DBSetDir( FileHandle, "test" );
         std::map<AMP::Mesh::MeshID,siloMultiMeshData>::iterator it;
         for (it=multimeshes.begin(); it!=multimeshes.end(); it++) {
-        //it=multimeshes.find(wholemesh.id); {
             // Create the multimesh            
             siloMultiMeshData data = it->second;
             std::vector<std::string> meshNames(data.meshes.size());
