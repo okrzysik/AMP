@@ -1,14 +1,10 @@
 
 #include <iostream>
 #include <string>
-
 #include <cassert>
 #include <fstream>
 
 #include <sys/stat.h>
-
-/* Boost files */
-#include "boost/shared_ptr.hpp"
 
 /* libMesh files */
 #include "mesh.h"
@@ -30,8 +26,11 @@
 #include "utils/WriteSolutionToFile.h"
 #include "utils/ReadTestMesh.h"
 
-#include "ampmesh/MeshVariable.h"
-#include "materials/Material.h"
+#include "ampmesh/Mesh.h"
+#include "ampmesh/libmesh/libMesh.h"
+
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
@@ -74,30 +73,34 @@ void linearElasticTest(AMP::UnitTest *ut, int reduced, std::string mesh_file)
     AMP::readTestMesh(mesh_file_db, mesh);
     mesh->prepare_for_use(false);
 
-    AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter ( new AMP::Mesh::MeshManager::Adapter (mesh) );
+    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::shared_ptr (
+        new AMP::Mesh::libMesh (mesh, "TestMesh") );
 
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     boost::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
-      boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-														   "MechanicsBVPOperator",
-														   input_db,
-														   elementPhysicsModel));
+      boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+          AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+            "MechanicsBVPOperator", input_db, elementPhysicsModel));
 
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
     boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletVecOp =
-      boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-															   "Load_Boundary",
-															   input_db,
-															   dummyModel));
+      boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+          AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+            "Load_Boundary", input_db, dummyModel));
+
+    AMP::LinearAlgebra::Variable::shared_ptr var = bvpOperator->getOutputVariable();
+
     //This has an in-place apply. So, it has an empty input variable and
     //the output variable is the same as what it is operating on. 
-    dirichletVecOp->setVariable(bvpOperator->getOutputVariable());
+    dirichletVecOp->setVariable(var);
+
+    AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-
-    AMP::LinearAlgebra::Vector::shared_ptr mechSolVec = meshAdapter->createVector( bvpOperator->getInputVariable() );
-    AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = meshAdapter->createVector( bvpOperator->getOutputVariable() );
-    AMP::LinearAlgebra::Vector::shared_ptr mechResVec = meshAdapter->createVector( bvpOperator->getOutputVariable() );
+    AMP::LinearAlgebra::Vector::shared_ptr mechSolVec = AMP::LinearAlgebra::createVector(dofMap, var, true);
+    AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = mechSolVec->cloneVector();
+    AMP::LinearAlgebra::Vector::shared_ptr mechResVec = mechSolVec->cloneVector();
 
     mechSolVec->setToScalar(0.5);
     mechRhsVec->setToScalar(0.0);
@@ -157,45 +160,47 @@ void linearElasticTest(AMP::UnitTest *ut, int reduced, std::string mesh_file)
 
 int main(int argc, char *argv[])
 {
-    AMP::AMPManager::startup(argc, argv);
-    AMP::UnitTest ut;
- 
+  AMP::AMPManager::startup(argc, argv);
+  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(AMP_COMM_WORLD));
 
-    std::vector<std::string> mesh_files;
+  AMP::UnitTest ut;
 
-    if(argc == 1) {
-        for(int i = 1; i <= 6; i++) {
-            char name[100];
-            sprintf(name, "mesh2elem-%d", i);
-            mesh_files.push_back(name);
-        }//end for i
-    } else {
-        for(int i = 1; i < argc; i++) {
-            char name[100];
-            sprintf(name, "mesh2elem-%d", atoi(argv[i]));
-            mesh_files.push_back(name);
-        }//end for i
-    }
+  std::vector<std::string> mesh_files;
 
-    for(size_t i = 0; i < mesh_files.size(); i++) {
-        for(int reduced = 0; reduced < 2; reduced++) {
-            try {
-                linearElasticTest(&ut, reduced, mesh_files[i]);
-            } catch (std::exception &err) {
-                AMP::pout << "ERROR: " << err.what() << std::endl;
-                ut.failure("ERROR");
-            } catch( ... ) {
-                AMP::pout << "ERROR: " << "An unknown exception was thrown." << std::endl;
-                ut.failure("ERROR");
-            }
-        }//end for reduced
-    } //end for i
+  if(argc == 1) {
+    for(int i = 1; i <= 6; i++) {
+      char name[100];
+      sprintf(name, "mesh2elem-%d", i);
+      mesh_files.push_back(name);
+    }//end for i
+  } else {
+    for(int i = 1; i < argc; i++) {
+      char name[100];
+      sprintf(name, "mesh2elem-%d", atoi(argv[i]));
+      mesh_files.push_back(name);
+    }//end for i
+  }
 
-    ut.report();
+  for(size_t i = 0; i < mesh_files.size(); i++) {
+    for(int reduced = 0; reduced < 2; reduced++) {
+      try {
+        linearElasticTest(&ut, reduced, mesh_files[i]);
+      } catch (std::exception &err) {
+        AMP::pout << "ERROR: " << err.what() << std::endl;
+        ut.failure("ERROR");
+      } catch( ... ) {
+        AMP::pout << "ERROR: " << "An unknown exception was thrown." << std::endl;
+        ut.failure("ERROR");
+      }
+    }//end for reduced
+  } //end for i
 
-    int num_failed = ut.NumFailGlobal();
-    AMP::AMPManager::shutdown();
-    return num_failed;
+  ut.report();
+  int num_failed = ut.NumFailGlobal();
+
+  libmeshInit.reset();
+  AMP::AMPManager::shutdown();
+  return num_failed;
 
 }   
 
