@@ -44,7 +44,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
         AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
           "testNonlinearMechanicsOperator", input_db, elementPhysicsModel));
-  testNonlinOperator->init();
 
   AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
       meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
