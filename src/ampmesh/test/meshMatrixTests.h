@@ -6,7 +6,7 @@
 #include "vectors/VectorBuilder.h"
 #include "matrices/MatrixBuilder.h"
 
-template <int DOF_PER_NODE>
+template <int DOF_PER_NODE, bool SPLIT>
 void VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) 
 {
     // Create the DOF_Manager
@@ -17,8 +17,8 @@ void VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_p
     AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::LinearAlgebra::Variable("test vector") );
 
     // Create the matrix and vectors
-    AMP::LinearAlgebra::Vector::shared_ptr vector1 = AMP::LinearAlgebra::createVector ( DOFs, variable );
-    AMP::LinearAlgebra::Vector::shared_ptr vector2 = AMP::LinearAlgebra::createVector ( DOFs, variable );
+    AMP::LinearAlgebra::Vector::shared_ptr vector1 = AMP::LinearAlgebra::createVector ( DOFs, variable, SPLIT );
+    AMP::LinearAlgebra::Vector::shared_ptr vector2 = AMP::LinearAlgebra::createVector ( DOFs, variable, SPLIT );
     AMP::LinearAlgebra::Matrix::shared_ptr matrixa = AMP::LinearAlgebra::createMatrix ( vector1, vector2 );
 
     // Run some tests

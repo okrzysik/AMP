@@ -33,7 +33,7 @@ namespace LinearAlgebra {
   {
     if ( range )
     {
-      const Epetra_Comm &comm = EpetraVector::view ( range )->castTo<EpetraVector>().getEpetra_Vector().Comm();
+      Epetra_MpiComm  comm = range->getComm().getCommunicator();
       d_RangeMap = boost::shared_ptr<Epetra_Map> ( new Epetra_Map ( range->getGlobalSize() , range->getLocalSize() , 0 , comm ) );
       if ( domain )
       {

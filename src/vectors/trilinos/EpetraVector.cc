@@ -38,22 +38,19 @@ namespace LinearAlgebra {
     return Vector::shared_ptr ();
   }
 
-  Vector::shared_ptr  EpetraVector::view ( Vector::shared_ptr inVector )
-  {
+
+Vector::shared_ptr  EpetraVector::view ( Vector::shared_ptr inVector )
+{
     Vector::shared_ptr  retVal;
 
-    if ( inVector->isA<EpetraVector> () )
-    {
-      retVal = inVector;
-    }
-    else if ( inVector->isA<MultiVector> () )
-    {
-      if ( inVector->numberOfDataBlocks() == 1 )
-        retVal = view ( inVector->castTo<MultiVector>().getVector ( 0 ) );
-    }
-    else if ( inVector->isA<ManagedVector> () )
-    {
-      retVal = Vector::shared_ptr ( new ManagedEpetraVector ( inVector->castTo<ManagedVector>().getRootVector() ) );
+    if ( inVector->isA<EpetraVector> () ) {
+        retVal = inVector;
+    } else if ( inVector->isA<MultiVector> () ) {
+        if ( inVector->numberOfDataBlocks() == 1 )
+            retVal = view ( inVector->castTo<MultiVector>().getVector ( 0 ) );
+    } else if ( inVector->isA<ManagedVector> () ) {
+        boost::shared_ptr<ManagedEpetraVector> managed( new ManagedEpetraVector ( inVector->castTo<ManagedVector>().getRootVector() ) );
+        retVal = managed;
     }
 
     if ( !retVal)
