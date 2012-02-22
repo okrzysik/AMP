@@ -1,43 +1,34 @@
+
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-
-#include <iostream>
-#include <string>
-
-#include "boost/shared_ptr.hpp"
-
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "utils/AMP_MPI.h"
-#include "utils/AMPManager.h"
 #include "utils/PIO.h"
 #include "materials/Material.h"
 
+#include <iostream>
+#include <string>
 
-#include "ampmesh/MeshVariable.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 #include "ampmesh/SiloIO.h"
-
 
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"
-
 #include "operators/boundary/DirichletVectorCorrection.h"
-
 #include "operators/BVPOperatorParameters.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 
-#include "../PetscKrylovSolverParameters.h"
-#include "../PetscKrylovSolver.h"
-#include "../PetscSNESSolverParameters.h"
-#include "../PetscSNESSolver.h"
-
-#include "../TrilinosMLSolver.h"
-
-
+#include "solvers/PetscKrylovSolverParameters.h"
+#include "solvers/PetscKrylovSolver.h"
+#include "solvers/PetscSNESSolverParameters.h"
+#include "solvers/PetscSNESSolver.h"
+#include "solvers/TrilinosMLSolver.h"
 
 void myTest(AMP::UnitTest *ut, std::string exeName)
 {
@@ -51,54 +42,62 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "brick" );
+  AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
+  boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
+  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+  meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+  AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
   AMP_INSIST(input_db->keyExists("NumberOfLoadingSteps"), "Key ''NumberOfLoadingSteps'' is missing!");
   int NumberOfLoadingSteps = input_db->getInteger("NumberOfLoadingSteps");
 
+  std::cout<<"Creating NonlinearBVP Operator"<<std::endl;
+
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinBvpOperator = 
-    boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-														    "nonlinearMechanicsBVPOperator",
-														    input_db,
-														    elementPhysicsModel));
-  (boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinBvpOperator->getVolumeOperator()))->init();
+    boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+          "nonlinearMechanicsBVPOperator", input_db, elementPhysicsModel));
+
+  std::cout<<"Creating LinearBVP Operator"<<std::endl;
 
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linBvpOperator =
-    boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-														 "linearMechanicsBVPOperator",
-														 input_db,
-														 elementPhysicsModel));
+    boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+          "linearMechanicsBVPOperator", input_db, elementPhysicsModel));
 
-  AMP::LinearAlgebra::Variable::shared_ptr displacementVariable = boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
-      nonlinBvpOperator->getVolumeOperator())->getInputVariable(AMP::Operator::Mechanics::DISPLACEMENT); 
-  AMP::LinearAlgebra::Variable::shared_ptr residualVariable = nonlinBvpOperator->getOutputVariable();
+  AMP::LinearAlgebra::Variable::shared_ptr var = nonlinBvpOperator->getOutputVariable();
+
+  std::cout<<"Creating DirichletVecCorrection Operator"<<std::endl;
 
   //For RHS (Point Forces)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletLoadVecOp =
-    boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-															 "Load_Boundary",
-															 input_db,
-															 dummyModel));
-  dirichletLoadVecOp->setVariable(residualVariable);
+    boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+        AMP::Operator::OperatorBuilder::createOperator(meshAdapter, 
+          "Load_Boundary", input_db, dummyModel));
+
+  dirichletLoadVecOp->setVariable(var);
+
+  AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
+      meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-
-  AMP::LinearAlgebra::Vector::shared_ptr mechNlSolVec = meshAdapter->createVector( displacementVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr mechNlRhsVec = meshAdapter->createVector( residualVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr mechNlResVec = meshAdapter->createVector( residualVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr mechNlScaledRhsVec = meshAdapter->createVector( residualVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr mechNlSolVec = AMP::LinearAlgebra::createVector(dofMap, var, true);
+  AMP::LinearAlgebra::Vector::shared_ptr mechNlRhsVec = mechNlSolVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr mechNlResVec = mechNlSolVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr mechNlScaledRhsVec = mechNlSolVec->cloneVector();
 
 #ifdef USE_SILO
-  meshAdapter->registerVectorAsData ( mechNlSolVec, "Solution" );
-  meshAdapter->registerVectorAsData ( mechNlResVec, "Residual" );
+  // Create the silo writer and register the data
+  AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+  siloWriter->registerVector(mechNlSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
+  siloWriter->registerVector(mechNlResVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
 #endif
 
   //Initial guess for NL solver must satisfy the displacement boundary conditions
   mechNlSolVec->setToScalar(0.0);
+  std::cout<<"Modifying initial solution Vec"<<std::endl;
   nonlinBvpOperator->modifyInitialSolutionVector(mechNlSolVec); 
 
   nonlinBvpOperator->apply(nullVec, mechNlSolVec, mechNlResVec, 1.0, 0.0);
@@ -106,6 +105,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   //Point forces
   mechNlRhsVec->setToScalar(0.0);
+
+  std::cout<<"Applying DirichletVec"<<std::endl;
   dirichletLoadVecOp->apply(nullVec, nullVec, mechNlRhsVec, 1.0, 0.0);
 
   boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
@@ -113,7 +114,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   // ---- first initialize the preconditioner
   boost::shared_ptr<AMP::Database> pcSolver_db = linearSolver_db->getDatabase("Preconditioner"); 
-  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> pcSolverParams(new AMP::Solver::SolverStrategyParameters(pcSolver_db));
+  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> pcSolverParams(
+      new AMP::Solver::SolverStrategyParameters(pcSolver_db));
   pcSolverParams->d_pOperator = linBvpOperator;
   boost::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(new AMP::Solver::TrilinosMLSolver(pcSolverParams));
 
@@ -125,12 +127,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   nonlinearSolverParams->d_pOperator = nonlinBvpOperator;
   nonlinearSolverParams->d_pInitialGuess = mechNlSolVec;
 
-  boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
+  boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(
+      new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
 
   boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
 
   linearSolver->setPreconditioner(pcSolver);
-    
+
   nonlinearSolver->setZeroInitialGuess(false);
 
   for (int step=0;step<NumberOfLoadingSteps; step++)
@@ -167,7 +170,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   }
 
 #ifdef USE_SILO
-  manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 1 );
+  siloWriter->writeFile(exeName, 0);
 #endif
 
   ut->passes(exeName);
@@ -176,28 +179,28 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
 int main(int argc, char *argv[])
 {
-    AMP::AMPManager::startup(argc, argv);
-    AMP::UnitTest ut;
+  AMP::AMPManager::startup(argc, argv);
+  AMP::UnitTest ut;
 
-    std::vector<std::string> exeNames;
-    exeNames.push_back("testPetscSNESSolver-JFNK-ML-NonlinearMechanics-1-normal");
+  std::vector<std::string> exeNames;
+  exeNames.push_back("testPetscSNESSolver-JFNK-ML-NonlinearMechanics-1-normal");
 
-    for(size_t i = 0; i < exeNames.size(); i++) {
-        try {
-            myTest(&ut, exeNames[i]);
-        } catch (std::exception &err) {
-            std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-            ut.failure("ERROR: While testing");
-        } catch( ... ) {
-            std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-            ut.failure("ERROR: While testing");
-        }
+  for(size_t i = 0; i < exeNames.size(); i++) {
+    try {
+      myTest(&ut, exeNames[i]);
+    } catch (std::exception &err) {
+      std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+      ut.failure("ERROR: While testing");
+    } catch( ... ) {
+      std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+      ut.failure("ERROR: While testing");
     }
-   
-    ut.report();
+  }
 
-    int num_failed = ut.NumFailGlobal();
-    AMP::AMPManager::shutdown();
-    return num_failed;
+  ut.report();
+
+  int num_failed = ut.NumFailGlobal();
+  AMP::AMPManager::shutdown();
+  return num_failed;
 }   
 

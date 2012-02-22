@@ -1,111 +1,107 @@
 
-NumberOfMeshes = 1
-
-Mesh_1{
-  Filename = "brick.e"
-    MeshName = "brick"
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 1088
+Mesh {
+  MeshType = "libMesh"
+    dim = 3
+    MeshName = "TestMesh"
+    FileName = "brick.e"
 }
 
 NumberOfLoadingSteps = 1
 
 nonlinearMechanicsBVPOperator {
-    name="NonlinearBVPOperator"
+  name="NonlinearBVPOperator"
     print_info_level = 1
     VolumeOperator = "MechanicsNonlinearFEOperator1"
     BoundaryOperator = "DirichletVectorCorrection1"
 }
 
 MechanicsNonlinearFEOperator1 {
-      name = "MechanicsNonlinearFEOperator"
-        print_info_level = 1
-        ActiveInputVariables {
-          DISPLACEMENT = "displacement"
-        }
-      OutputVariable = "displacement"
-        RESET_REUSES_RADIAL_RETURN = TRUE
-        JACOBIAN_REUSES_RADIAL_RETURN = TRUE
+  name = "MechanicsNonlinearFEOperator"
+    print_info_level = 1
+    ActiveInputVariables {
+      DISPLACEMENT = "displacement"
+    }
+  OutputVariable = "displacement"
+    RESET_REUSES_RADIAL_RETURN = TRUE
+    JACOBIAN_REUSES_RADIAL_RETURN = TRUE
 
-        MechanicsElement {
-          name="MechanicsNonlinearElement"
-            USE_REDUCED_INTEGRATION = FALSE 
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }
-
-	LocalModel = "VonMisesElastoPlasticModel"
+    MechanicsElement {
+      name="MechanicsNonlinearElement"
+        USE_REDUCED_INTEGRATION = FALSE 
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
     }
 
+  LocalModel = "VonMisesElastoPlasticModel"
+}
+
 DirichletVectorCorrection1 {
-    name = "DirichletVectorCorrection"
-      print_info_level = 1
-      skip_params = FALSE
-      isAttachedToVolumeOperator = TRUE
-      number_of_ids = 1
-      id_0 = 2
-      number_of_dofs_0 = 3
-      dof_0_0 = 0
-      dof_0_1 = 1
-      dof_0_2 = 2
-      value_0_0 = 0.0
-      value_0_1 = 0.0
-      value_0_2 = 0.0
-  }
+  name = "DirichletVectorCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    isAttachedToVolumeOperator = TRUE
+    number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+    value_0_0 = 0.0
+    value_0_1 = 0.0
+    value_0_2 = 0.0
+}
 
 VonMisesElastoPlasticModel {
-        USE_MATERIALS_LIBRARY = FALSE
-          Material = "UO2_MSRZC_09"
-          name="VonMisesElastoPlasticModel"
-          Youngs_Modulus = 2.08e11
-          Poissons_Ratio = 0.23
-          Linear_Strain_Hardening = 2.10e9
-          Elastic_Yield_Stress = 1.45e8
-          Default_Temperature = 310.0
-          Default_Burnup = 0.0
-          Default_Oxygen_Concentration = .1
-      }
+  USE_MATERIALS_LIBRARY = FALSE
+    Material = "UO2_MSRZC_09"
+    name="VonMisesElastoPlasticModel"
+    Youngs_Modulus = 2.08e11
+    Poissons_Ratio = 0.23
+    Linear_Strain_Hardening = 2.10e9
+    Elastic_Yield_Stress = 1.45e8
+    Default_Temperature = 310.0
+    Default_Burnup = 0.0
+    Default_Oxygen_Concentration = .1
+}
 
 linearMechanicsBVPOperator {
-    name="LinearBVPOperator"
+  name="LinearBVPOperator"
     print_info_level = 1
     VolumeOperator = "MechanicsLinearFEOperator2"
     BoundaryOperator = "DirichletMatrixCorrection2"
 }
 
 MechanicsLinearFEOperator2 {
-      name = "MechanicsLinearFEOperator"
-        print_info_level = 1
-        reset_reuses_matrix = TRUE
-        InputVariable = "displacement"
-        OutputVariable = "displacement"
+  name = "MechanicsLinearFEOperator"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    InputVariable = "displacement"
+    OutputVariable = "displacement"
 
-        MechanicsElement {
-          name="MechanicsLinearElement"
-            USE_REDUCED_INTEGRATION = FALSE 
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }
+    MechanicsElement {
+      name="MechanicsLinearElement"
+        USE_REDUCED_INTEGRATION = FALSE 
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
     }
+}
 
 DirichletMatrixCorrection2 {
-    name = "DirichletMatrixCorrection"
-      print_info_level = 1
-      skip_params = FALSE
-      skip_rhs_correction = TRUE
-      number_of_ids = 1
-      id_0          = 2
-      number_of_dofs_0 =  3
-      dof_0_0          =  0
-      dof_0_1          =  1
-      dof_0_2          =  2
-  }
+  name = "DirichletMatrixCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    skip_rhs_correction = TRUE
+    number_of_ids = 1
+    id_0          = 2
+    number_of_dofs_0 =  3
+    dof_0_0          =  0
+    dof_0_1          =  1
+    dof_0_2          =  2
+}
 
 Load_Boundary {
   name = "DirichletVectorCorrection"

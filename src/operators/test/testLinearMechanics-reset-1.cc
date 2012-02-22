@@ -61,8 +61,10 @@ void myTest(AMP::UnitTest *ut)
       mechElemDbStr = "Mechanics_Linear_Element_Normal";
     }
     boost::shared_ptr<AMP::Database> elemOp_db = input_db->getDatabase(mechElemDbStr);
-    boost::shared_ptr<AMP::Operator::ElementOperationParameters> elemOpParams (new AMP::Operator::ElementOperationParameters( elemOp_db ));
-    boost::shared_ptr<AMP::Operator::MechanicsLinearElement> mechLinElem (new AMP::Operator::MechanicsLinearElement( elemOpParams ));
+    boost::shared_ptr<AMP::Operator::ElementOperationParameters> elemOpParams(
+        new AMP::Operator::ElementOperationParameters( elemOp_db ));
+    boost::shared_ptr<AMP::Operator::MechanicsLinearElement> mechLinElem(
+        new AMP::Operator::MechanicsLinearElement( elemOpParams ));
 
     AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 

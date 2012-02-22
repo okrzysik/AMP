@@ -39,7 +39,7 @@
 #include "vectors/Vector.h"
 #include "ampmesh/SiloIO.h"
 
-#include "../TrilinosMLSolver.h"
+#include "solvers/TrilinosMLSolver.h"
 
 void linearElasticTest(AMP::UnitTest *ut, int reduced, std::string mesh_file)
 {
