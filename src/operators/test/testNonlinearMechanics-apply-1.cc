@@ -46,13 +46,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
           "testNonlinearMechanicsOperator", input_db, elementPhysicsModel));
   testNonlinOperator->init();
 
-  AMP::LinearAlgebra::Variable::shared_ptr var = testNonlinOperator->getOutputVariable(); 
-
-  AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-
   AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
       meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
 
+  AMP::LinearAlgebra::Variable::shared_ptr var = testNonlinOperator->getOutputVariable(); 
+
+  AMP::LinearAlgebra::Vector::shared_ptr nullVec;
   AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector(dofMap, var, true);
   AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
 
