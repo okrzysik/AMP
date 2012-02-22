@@ -106,26 +106,22 @@ namespace AMP {
 
         virtual AMP::LinearAlgebra::Vector::shared_ptr subsetOutputVector(AMP::LinearAlgebra::Vector::shared_ptr vec) {
           AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec = vec->subsetVectorForVariable(getOutputVariable());
-            return varSubsetVec;
-          /*
           if(varSubsetVec == NULL) {
             return varSubsetVec;
           } else {
             AMP::LinearAlgebra::VS_Mesh meshSelector("meshSelector", d_Mesh);
             return varSubsetVec->select(meshSelector, getOutputVariable()->getName());
-          }*/
+          }
         }
 
         virtual AMP::LinearAlgebra::Vector::shared_ptr subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec) {
           AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec = vec->subsetVectorForVariable(getInputVariable());
-            return varSubsetVec;
-          /*
           if(varSubsetVec == NULL) {
             return varSubsetVec;
           } else {
             AMP::LinearAlgebra::VS_Mesh meshSelector("meshSelector", d_Mesh);
             return varSubsetVec->select(meshSelector, getInputVariable()->getName());
-          }*/
+          }
         }
 
         virtual bool isValidInput(boost::shared_ptr<AMP::LinearAlgebra::Vector>&){return true; }

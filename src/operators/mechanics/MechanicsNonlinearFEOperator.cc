@@ -224,7 +224,10 @@ namespace AMP {
         }
       }//end r
 
-      d_elementOutputVector.resize((3*numNodesInCurrElem), 0.0);
+      d_elementOutputVector.resize(3*numNodesInCurrElem);
+      for(int i = 0; i < d_elementOutputVector.size(); ++i) {
+        d_elementOutputVector[i] = 0.0; 
+      }//end i
 
       createCurrentLibMeshElement();
 
