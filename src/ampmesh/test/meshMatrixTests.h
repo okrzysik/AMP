@@ -24,6 +24,7 @@ void VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_p
     // Run some tests
     vector1->setRandomValues ();
     matrixa->makeConsistent ();
+    bool isMultiVector = vector1->isA<AMP::LinearAlgebra::MultiVector>();
     matrixa->mult ( vector1 , vector2 );
     if ( vector2->L1Norm() < 0.00000001 )
         utils->passes ( "obtained 0 matrix from mesh" );
