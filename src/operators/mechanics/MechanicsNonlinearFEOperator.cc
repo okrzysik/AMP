@@ -241,7 +241,7 @@ namespace AMP {
     void MechanicsNonlinearFEOperator :: postElementOperation() {
       AMP_ASSERT(d_dofIndices.size() == 8);
       for(unsigned int r = 0; r < d_dofIndices.size(); r++) {
-      AMP_ASSERT(d_dofIndices[r].size() == 3);
+        AMP_ASSERT(d_dofIndices[r].size() == 3);
         for(unsigned int d = 0; d < 3; d++) {
           d_outVec->addValueByGlobalID( d_dofIndices[r][d], d_elementOutputVector[(3*r) + d] );
         }//end for d
