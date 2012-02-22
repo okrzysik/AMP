@@ -49,14 +49,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
           elementPhysicsModel));
   testNonlinOperator->init();
 
-  AMP::LinearAlgebra::Variable::shared_ptr solVar = testNonlinOperator->getInputVariable(AMP::Operator::Mechanics::DISPLACEMENT); 
-  AMP::LinearAlgebra::Variable::shared_ptr resVar = testNonlinOperator->getOutputVariable();
+  AMP::LinearAlgebra::Variable::shared_ptr var = testNonlinOperator->getOutputVariable(); 
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( solVar );
-  //AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector( resVar );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( resVar );
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( var );
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
 
   solVec->setToScalar(5.0);
 
@@ -69,7 +66,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::pout<<"resNorm1 = "<<resNorm1<<std::endl;
 
   testNonlinOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
-
+  
   double resNorm2 = resVec->L2Norm();
 
   AMP::pout<<"resNorm2 = "<<resNorm2<<std::endl;

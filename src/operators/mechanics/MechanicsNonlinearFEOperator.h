@@ -223,12 +223,6 @@ namespace AMP {
 
       protected :
 
-        void createCurrentLibMeshElement(const ::Elem* elemPtr);
-
-        void destroyCurrentLibMeshElement();
-
-        ::Elem* d_currElemPtr;
-
         template <MechanicsNonlinearElement::MaterialUpdateType updateType>
           void updateMaterialForElement(const AMP::Mesh::MeshManager::Adapter::Element & , 
               const std::vector<AMP::Mesh::DOFMap::shared_ptr> & );

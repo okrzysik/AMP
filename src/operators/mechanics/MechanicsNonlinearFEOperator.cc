@@ -318,7 +318,6 @@ namespace AMP {
           if(d_useUpdatedLagrangian) {
             elementInputVectors_pre[Mechanics::DISPLACEMENT][(3*r) + d] = (d_inVec_pre[Mechanics::DISPLACEMENT])->getValueByGlobalID( d_type0DofIndices[d][r] );
             elementRefXYZ[(3 * r) + d] = d_refXYZ->getValueByGlobalID(d_type0DofIndices[d][r]);
-            //AMP::pout<<"elementRefXYZ["<<(3 * r) + d<<"] = "<<elementRefXYZ[(3 * r) + d]<<std::endl;
           }
         }
         if(d_isActive[Mechanics::TEMPERATURE]) {
@@ -353,9 +352,7 @@ namespace AMP {
 
       d_elementOutputVector.resize(num_local_type0Dofs, 0.0);
 
-      //const ::Elem* elemPtr = &(elem.getElem());
-      createCurrentLibMeshElement(&(elem.getElem()));
-      const ::Elem* elemPtr = d_currElemPtr;
+      const ::Elem* elemPtr = &(elem.getElem());
 
       if(d_useUpdatedLagrangian) {
         d_mechNULElem->initializeForCurrentElement( elemPtr, d_materialModel );
@@ -371,10 +368,14 @@ namespace AMP {
     {
       for(unsigned int r = 0; r < d_numNodesForCurrentElement; r++) {
         for(unsigned int d = 0; d < 3; d++) {
+          //std::cout<<"Adding "<<(std::setprecision(12))<<
+          //  (d_elementOutputVector[(3*r) + d])<<" at "
+          //  <<(d_type0DofIndices[d][r])<<std::endl; 
           d_outVec->addValueByGlobalID( d_type0DofIndices[d][r], d_elementOutputVector[(3*r) + d] );
         }
+        //std::cout<<std::endl;
       }
-      destroyCurrentLibMeshElement();
+      //std::cout<<std::endl;
     }
 
     void MechanicsNonlinearFEOperator :: init() 
@@ -429,9 +430,7 @@ namespace AMP {
           elementRefXYZ.resize(num_dofIndices_disp);
         }
 
-        //const ::Elem* elemPtr = &(el->getElem());
-        createCurrentLibMeshElement(&(el->getElem()));
-        const ::Elem* elemPtr = d_currElemPtr;
+        const ::Elem* elemPtr = &(el->getElem());
 
         if(d_useUpdatedLagrangian) {
           d_mechNULElem->initializeForCurrentElement( elemPtr, d_materialModel );
@@ -445,13 +444,10 @@ namespace AMP {
         if(d_useUpdatedLagrangian) {
           for(unsigned int i = 0; i < 3; i++) {
             for(unsigned int j = 0; j < dofIndices_disp[i].size(); j++) {
-              //AMP::pout<<"elementRefXYZ["<<(3 * j) + i<<"] = "<<elementRefXYZ[(3 * j) + i]<<std::endl;
               d_refXYZ->setValueByGlobalID(dofIndices_disp[i][j], elementRefXYZ[(3 * j) + i]);
             }
           }
         }
-
-        destroyCurrentLibMeshElement();
       }//end for el
 
       if(d_useUpdatedLagrangian) {
@@ -807,15 +803,11 @@ namespace AMP {
           }
         }
 
-        //const ::Elem* elemPtr = &(el->getElem());
-        createCurrentLibMeshElement(&(el->getElem()));
-        const ::Elem* elemPtr = d_currElemPtr;
+        const ::Elem* elemPtr = &(el->getElem());
 
         d_mechNonlinElem->initializeForCurrentElement( elemPtr, d_materialModel );
 
         d_mechNonlinElem->printStressAndStrain(fp, elementInputVectors);
-
-        destroyCurrentLibMeshElement();
       }//end for el
 
       d_materialModel->postNonlinearAssembly();
@@ -980,9 +972,7 @@ namespace AMP {
         std::vector<double> elementStressVector(6*numGaussPts);
         std::vector<double> elementStrainVector(6*numGaussPts);
 
-        //const ::Elem* elemPtr = &(el->getElem());
-        createCurrentLibMeshElement(&(el->getElem()));
-        const ::Elem* elemPtr = d_currElemPtr;
+        const ::Elem* elemPtr = &(el->getElem());
 
         d_mechNonlinElem->initializeForCurrentElement( elemPtr, d_materialModel );
 
@@ -993,7 +983,6 @@ namespace AMP {
           strain->setValueByGlobalID(gaussPtIndices[i], elementStrainVector[i]);
         }//end for i
 
-        destroyCurrentLibMeshElement();
       }//end for el
 
       d_materialModel->postNonlinearAssembly();
@@ -1097,24 +1086,6 @@ namespace AMP {
       } else {
         d_mechNonlinElem->initializeForCurrentElement( elemPtr, d_materialModel );
       }
-    }
-
-    void MechanicsNonlinearFEOperator :: createCurrentLibMeshElement(const ::Elem* elemPtr) {
-      d_currElemPtr = new ::Hex8;
-      AMP_ASSERT(elemPtr->n_nodes() == 8);
-      for(size_t j = 0; j < elemPtr->n_nodes(); j++) {
-        ::Point pt = elemPtr->point(j);
-        d_currElemPtr->set_node(j) = new ::Node(pt(0), pt(1), pt(2), j);
-      }//end for j
-    }
-
-    void MechanicsNonlinearFEOperator :: destroyCurrentLibMeshElement() {
-      for(size_t j = 0; j < d_currElemPtr->n_nodes(); j++) {
-        delete (d_currElemPtr->get_node(j));
-        d_currElemPtr->set_node(j) = NULL;
-      }//end for j
-      delete d_currElemPtr;
-      d_currElemPtr = NULL;
     }
 
 
