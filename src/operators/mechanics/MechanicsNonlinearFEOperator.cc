@@ -2,6 +2,8 @@
 #include "MechanicsNonlinearFEOperator.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
+#include "cell_hex8.h"
+#include "node.h"
 
 namespace AMP {
   namespace Operator {
@@ -354,7 +356,9 @@ namespace AMP {
         d_elementOutputVector[i] = 0.0;
       }
 
-      const ::Elem* elemPtr = &(elem.getElem());
+      //const ::Elem* elemPtr = &(elem.getElem());
+      createCurrentLibMeshElement(&(elem.getElem()));
+      const ::Elem* elemPtr = d_currElemPtr;
 
       if(!d_useUpdatedLagrangian) {
         d_mechNonlinElem->initializeForCurrentElement( elemPtr, d_materialModel );
@@ -373,6 +377,7 @@ namespace AMP {
           d_outVec->addValueByGlobalID( d_type0DofIndices[d][r], d_elementOutputVector[(3*r) + d] );
         }
       }
+      destroyCurrentLibMeshElement();
     }
 
     void MechanicsNonlinearFEOperator :: init() 
@@ -427,7 +432,9 @@ namespace AMP {
           elementRefXYZ.resize(num_dofIndices_disp);
         }
 
-        const ::Elem* elemPtr = &(el->getElem());
+        //const ::Elem* elemPtr = &(el->getElem());
+        createCurrentLibMeshElement(&(el->getElem()));
+        const ::Elem* elemPtr = d_currElemPtr;
 
         if(d_useUpdatedLagrangian) {
           d_mechNULElem->initializeForCurrentElement( elemPtr, d_materialModel );
@@ -447,6 +454,7 @@ namespace AMP {
           }
         }
 
+        destroyCurrentLibMeshElement();
       }//end for el
 
       if(d_useUpdatedLagrangian) {
@@ -802,11 +810,15 @@ namespace AMP {
           }
         }
 
-        const ::Elem* elemPtr = &(el->getElem());
+        //const ::Elem* elemPtr = &(el->getElem());
+        createCurrentLibMeshElement(&(el->getElem()));
+        const ::Elem* elemPtr = d_currElemPtr;
 
         d_mechNonlinElem->initializeForCurrentElement( elemPtr, d_materialModel );
 
         d_mechNonlinElem->printStressAndStrain(fp, elementInputVectors);
+
+        destroyCurrentLibMeshElement();
       }//end for el
 
       d_materialModel->postNonlinearAssembly();
@@ -971,7 +983,9 @@ namespace AMP {
         std::vector<double> elementStressVector(6*numGaussPts);
         std::vector<double> elementStrainVector(6*numGaussPts);
 
-        const ::Elem* elemPtr = &(el->getElem());
+        //const ::Elem* elemPtr = &(el->getElem());
+        createCurrentLibMeshElement(&(el->getElem()));
+        const ::Elem* elemPtr = d_currElemPtr;
 
         d_mechNonlinElem->initializeForCurrentElement( elemPtr, d_materialModel );
 
@@ -981,6 +995,8 @@ namespace AMP {
           stress->setValueByGlobalID(gaussPtIndices[i], elementStressVector[i]);
           strain->setValueByGlobalID(gaussPtIndices[i], elementStrainVector[i]);
         }//end for i
+
+        destroyCurrentLibMeshElement();
       }//end for el
 
       d_materialModel->postNonlinearAssembly();
@@ -1085,6 +1101,25 @@ namespace AMP {
         d_mechNonlinElem->initializeForCurrentElement( elemPtr, d_materialModel );
       }
     }
+
+    void MechanicsNonlinearFEOperator :: createCurrentLibMeshElement(const ::Elem* elemPtr) {
+      d_currElemPtr = new ::Hex8;
+      AMP_ASSERT(elemPtr->n_nodes() == 8);
+      for(size_t j = 0; j < elemPtr->n_nodes(); j++) {
+        ::Point pt = elemPtr->point(j);
+        d_currElemPtr->set_node(j) = new ::Node(pt(0), pt(1), pt(2), j);
+      }//end for j
+    }
+
+    void MechanicsNonlinearFEOperator :: destroyCurrentLibMeshElement() {
+      for(size_t j = 0; j < d_currElemPtr->n_nodes(); j++) {
+        delete (d_currElemPtr->get_node(j));
+        d_currElemPtr->set_node(j) = NULL;
+      }//end for j
+      delete d_currElemPtr;
+      d_currElemPtr = NULL;
+    }
+
 
   }
 }//end namespace
