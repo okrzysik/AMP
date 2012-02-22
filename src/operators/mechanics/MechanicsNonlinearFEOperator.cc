@@ -351,22 +351,19 @@ namespace AMP {
         }
       }
 
-      d_elementOutputVector.resize(num_local_type0Dofs);
-      for(unsigned int i = 0; i < num_local_type0Dofs; i++) {
-        d_elementOutputVector[i] = 0.0;
-      }
+      d_elementOutputVector.resize(num_local_type0Dofs, 0.0);
 
       //const ::Elem* elemPtr = &(elem.getElem());
       createCurrentLibMeshElement(&(elem.getElem()));
       const ::Elem* elemPtr = d_currElemPtr;
 
-      if(!d_useUpdatedLagrangian) {
-        d_mechNonlinElem->initializeForCurrentElement( elemPtr, d_materialModel );
-        d_mechNonlinElem->setElementVectors( elementInputVectors, d_elementOutputVector );
-      } else {
+      if(d_useUpdatedLagrangian) {
         d_mechNULElem->initializeForCurrentElement( elemPtr, d_materialModel );
         d_mechNULElem->setElementVectors( elementInputVectors, elementInputVectors_pre, d_elementOutputVector );
         d_mechNULElem->assignReferenceXYZ(elementRefXYZ);
+      } else {
+        d_mechNonlinElem->initializeForCurrentElement( elemPtr, d_materialModel );
+        d_mechNonlinElem->setElementVectors( elementInputVectors, d_elementOutputVector );
       }
     }
 
