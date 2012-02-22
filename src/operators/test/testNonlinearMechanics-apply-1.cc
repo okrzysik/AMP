@@ -43,11 +43,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
   boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> testNonlinOperator = 
-    boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-          "testNonlinearMechanicsOperator",
-          input_db,
-          elementPhysicsModel));
-  testNonlinOperator->init();
+    boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+          "testNonlinearMechanicsOperator", input_db, elementPhysicsModel));
 
   AMP::LinearAlgebra::Variable::shared_ptr var = testNonlinOperator->getOutputVariable(); 
 
