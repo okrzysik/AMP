@@ -351,7 +351,7 @@ namespace AMP {
       }//end r
 
       d_elementOutputVector.resize(num_local_type0Dofs);
-      for(int i = 0; i < d_elementOutputVector.size(); i++) {
+      for(int i = 0; i < d_elementOutputVector.size(); ++i) {
         d_elementOutputVector[i] = 0.0; 
       }//end i
 
