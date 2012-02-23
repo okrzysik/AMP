@@ -62,9 +62,10 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
     int DOFsPerElement = 8;
     int DOFsPerNode = 1;
     int ghostWidth = 0;
+    int nodalGhostWidth = 1;
     bool split = true;
     AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerElement, split);
-    AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, ghostWidth, DOFsPerNode,    split);
+    AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode,    split);
 
     // Create a shared pointer to a Variable - Power - Output because it will be used in the "residual" location of apply. 
     AMP::LinearAlgebra::Variable::shared_ptr shapeVar(new AMP::LinearAlgebra::Variable( interfaceVarName ));

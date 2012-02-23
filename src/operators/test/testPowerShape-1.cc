@@ -51,7 +51,7 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
 
     // Create a DOF manager for a gauss point vector 
     int DOFsPerNode = 8;
-    int ghostWidth = 0;
+    int ghostWidth = 1;
     bool split = true;
     AMP::Discretization::DOFManager::shared_ptr dof_map = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerNode, split);
 

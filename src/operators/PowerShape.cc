@@ -627,7 +627,8 @@ namespace AMP {
             boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(d_Mesh, "VolumeIntegral", d_db, emptyModel));
 
           int DOFsPerNode = 1;
-          AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(d_Mesh, AMP::Mesh::Vertex, ghostWidth, DOFsPerNode,    split);
+          int nodalGhostWidth= 1;
+          AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(d_Mesh, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode,    split);
           AMP::LinearAlgebra::Variable::shared_ptr nodalVariable(new AMP::LinearAlgebra::Variable("Temperature"));
           AMP::LinearAlgebra::Vector::shared_ptr nodalVector = AMP::LinearAlgebra::createVector( nodalDofMap, nodalVariable, split );
           AMP::LinearAlgebra::Vector::shared_ptr  unodalPower = nodalVector->cloneVector();
