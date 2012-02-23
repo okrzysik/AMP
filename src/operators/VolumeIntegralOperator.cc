@@ -33,7 +33,7 @@ namespace AMP {
       d_inpVariables.reset(new AMP::LinearAlgebra::MultiVariable("myInpVar"));
       d_auxVariables.reset(new AMP::LinearAlgebra::MultiVariable("myAuxVar"));
 
-      for(unsigned int i = 0; i < numPrimaryVariables ; i++) {
+      for(int i = 0; i < numPrimaryVariables ; i++) {
         AMP::LinearAlgebra::Variable::shared_ptr dummyVar;
         d_inpVariables->add(dummyVar);
       }
@@ -47,7 +47,7 @@ namespace AMP {
       d_multiAuxPtr = params->d_auxVec;
       d_auxVec.resize(numAuxillaryVariables);
 
-      for (unsigned int var = 0; var < numPrimaryVariables  ; var++)
+      for (int var = 0; var < numPrimaryVariables  ; var++)
       {
         char key[100];
         sprintf(key, "ActiveVariable_%d", (int)var);
@@ -131,6 +131,9 @@ namespace AMP {
       }else if(d_isInputType== "NodalScalar"){
         for (unsigned int var = 0; var < d_inpVariables->numVariables(); var++)
         {
+          AMP::Mesh::MeshElementID tmp = d_inVec[var]->getDOFManager()->getIterator()->globalID();
+          if ( tmp.type() != AMP::Mesh::Vertex )
+             AMP_ERROR("Input vector isn't really a NodalScalar");
           elementInputVectors[var].resize(d_dofIndices.size());
           for (size_t i = 0; i < d_dofIndices.size(); i++) {
             elementInputVectors[var][i] =  d_inVec[var]->getValueByGlobalID( d_dofIndices[i][0] );
@@ -138,6 +141,9 @@ namespace AMP {
         }
         for (unsigned int var = 0; var < d_auxVariables->numVariables(); var++)
         {
+          AMP::Mesh::MeshElementID tmp = d_auxVec[var]->getDOFManager()->getIterator()->globalID();
+          if ( tmp.type() != AMP::Mesh::Vertex )
+             AMP_ERROR("aux vector isn't really a NodalScalar");
           elementAuxVectors[var].resize(d_dofIndices.size());
           for(size_t i = 0; i < d_dofIndices.size(); i++) {
             elementAuxVectors[var][i] =  d_auxVec[var]->getValueByGlobalID( d_dofIndices[i][0] );
