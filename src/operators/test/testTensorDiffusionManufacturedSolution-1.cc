@@ -113,13 +113,13 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
   std::string sourceModelName = source_db->getString("LocalModel");
   boost::shared_ptr<AMP::Database> sourceModel_db = input_db->getDatabase(sourceModelName);
   boost::shared_ptr<AMP::Database> mfgSolution_db = sourceModel_db->getDatabase("ManufacturedSolution");
-  //bool isCylindrical = false;
+  /*bool isCylindrical = false;
   if (mfgSolution_db->keyExists("Geometry")) {
 	  std::string geom = mfgSolution_db->getString("Geometry");
 	  size_t pos = geom.find("Cylindrical");
 	  size_t len = geom.size();
-	  //isCylindrical = (pos < len);
-  }
+	  isCylindrical = (pos < len);
+  }*/
   AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator iterator = meshAdapter->beginOwnedNode();
   std::string mfgName = mfgSolution->get_name();
   if (mfgName.find("Cylindrical") < mfgName.size()) {
