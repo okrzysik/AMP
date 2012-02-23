@@ -11,7 +11,7 @@ Mesh{
 
 VolumeIntegralOperator{
   name="VolumeIntegralOperator"
-  InputVariableType = "NodalScalar"
+  InputVariableType = "IntegrationPointScalar"
   Number_Active_Variables = 1
   Number_Auxillary_Variables = 0
   ConstantSource   = FALSE
