@@ -51,24 +51,16 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP_INSIST(input_db->keyExists("NumberOfLoadingSteps"), "Key ''NumberOfLoadingSteps'' is missing!");
   int NumberOfLoadingSteps = input_db->getInteger("NumberOfLoadingSteps");
 
-  std::cout<<"Creating NonlinearBVP Operator"<<std::endl;
-
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinBvpOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
           "nonlinearMechanicsBVPOperator", input_db, elementPhysicsModel));
 
-  std::cout<<"Creating LinearBVP Operator"<<std::endl;
-
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linBvpOperator =
     boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
           "linearMechanicsBVPOperator", input_db, elementPhysicsModel));
-
-  AMP::LinearAlgebra::Variable::shared_ptr var = nonlinBvpOperator->getOutputVariable();
-
-  std::cout<<"Creating DirichletVecCorrection Operator"<<std::endl;
 
   //For RHS (Point Forces)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
@@ -76,6 +68,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(meshAdapter, 
           "Load_Boundary", input_db, dummyModel));
+
+  AMP::LinearAlgebra::Variable::shared_ptr var = nonlinBvpOperator->getOutputVariable();
 
   dirichletLoadVecOp->setVariable(var);
 
@@ -97,7 +91,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   //Initial guess for NL solver must satisfy the displacement boundary conditions
   mechNlSolVec->setToScalar(0.0);
-  std::cout<<"Modifying initial solution Vec"<<std::endl;
   nonlinBvpOperator->modifyInitialSolutionVector(mechNlSolVec); 
 
   nonlinBvpOperator->apply(nullVec, mechNlSolVec, mechNlResVec, 1.0, 0.0);
@@ -106,7 +99,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   //Point forces
   mechNlRhsVec->setToScalar(0.0);
 
-  std::cout<<"Applying DirichletVec"<<std::endl;
   dirichletLoadVecOp->apply(nullVec, nullVec, mechNlRhsVec, 1.0, 0.0);
 
   boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
