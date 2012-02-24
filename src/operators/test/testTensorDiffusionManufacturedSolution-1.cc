@@ -109,8 +109,8 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
   rhsVec->setToScalar(0.0);
 
   // Fill in manufactured solution
-  boost::shared_ptr<AMP::Database> source_db = input_db->getDatabase("ManufacturedSourceOperator");
-  std::string sourceModelName = source_db->getString("LocalModel");
+  //boost::shared_ptr<AMP::Database> source_db = input_db->getDatabase("ManufacturedSourceOperator");
+  //std::string sourceModelName = source_db->getString("LocalModel");
   //boost::shared_ptr<AMP::Database> sourceModel_db = input_db->getDatabase(sourceModelName);
   //boost::shared_ptr<AMP::Database> mfgSolution_db = sourceModel_db->getDatabase("ManufacturedSolution");
   /*bool isCylindrical = false;
