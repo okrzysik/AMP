@@ -13,18 +13,21 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
-
-#include "libmesh.h"
-
 #include "materials/Material.h"
-#include "../OperatorBuilder.h"
-#include "../ColumnOperator.h"
-#include "../LinearOperator.h"
-#include "../NonlinearBVPOperator.h"
-#include "../LinearBVPOperator.h"
+#include "operators/OperatorBuilder.h"
+#include "operators/ColumnOperator.h"
+#include "operators/LinearOperator.h"
+#include "operators/NonlinearBVPOperator.h"
+#include "operators/LinearBVPOperator.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
+
+#include "ampmesh/Mesh.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
+#include "vectors/Variable.h"
+#include "vectors/Vector.h"
 
 #include "applyTests.h"
 
@@ -39,9 +42,14 @@ void thermalOxygenDiffusionTest(AMP::UnitTest *ut, std::string exeName)
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "brick" );
+  // Get the Mesh database and create the mesh parameters
+  boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(database));
+  meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+
+  // Create the meshes from the input database
+  AMP::Mesh::Mesh::shared_ptr manager = AMP::Mesh::Mesh::buildMesh(meshParams);
+  AMP::Mesh::Mesh::shared_ptr meshAdapter = manager->Subset( "brick" );
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a nonlinear BVP operator for nonlinear thermal

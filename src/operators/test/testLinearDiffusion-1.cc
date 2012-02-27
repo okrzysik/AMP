@@ -14,9 +14,7 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
-
-#include "libmesh.h"
+#include "ampmesh/Mesh.h"
 
 #include "operators/diffusion/DiffusionTransportModel.h"
 #include "operators/diffusion/DiffusionLinearElement.h"
@@ -24,8 +22,14 @@
 #include "operators/diffusion/DiffusionLinearFEOperatorParameters.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "operators/diffusion/DiffusionConstants.h"
-#include "../OperatorParameters.h"
-#include "../OperatorBuilder.h"
+#include "operators/OperatorParameters.h"
+#include "operators/OperatorBuilder.h"
+
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
+#include "vectors/Variable.h"
+#include "vectors/Vector.h"
 
 
 void linearTest1(AMP::UnitTest *ut, std::string exeName)
@@ -45,9 +49,17 @@ void linearTest1(AMP::UnitTest *ut, std::string exeName)
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
   std::string mesh_file = input_db->getString("Mesh");
 
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter =
-              AMP::Mesh::MeshManager::Adapter::shared_ptr ( new AMP::Mesh::MeshManager::Adapter () );
-  meshAdapter->readExodusIIFile ( mesh_file.c_str() );
+  // Create the mesh parameter object
+  boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+  database->putInteger("dim",3);
+  database->putString("MeshName","mesh");
+  database->putString("MeshType","libMesh");
+  database->putString("FileName",mesh_file);
+  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+
+  // Create the mesh
+  AMP::Mesh::Mesh::shared_ptr  meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
 
   boost::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> diffOp;
   boost::shared_ptr<AMP::InputDatabase> diffLinFEOp_db =
@@ -63,9 +75,13 @@ void linearTest1(AMP::UnitTest *ut, std::string exeName)
   AMP::LinearAlgebra::Variable::shared_ptr diffSolVar = diffOp->getInputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr diffRhsVar = diffOp->getOutputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr diffResVar = diffOp->getOutputVariable();
-  AMP::LinearAlgebra::Vector::shared_ptr diffSolVec = meshAdapter->createVector(diffSolVar);
-  AMP::LinearAlgebra::Vector::shared_ptr diffRhsVec = meshAdapter->createVector(diffRhsVar);
-  AMP::LinearAlgebra::Vector::shared_ptr diffResVec = meshAdapter->createVector(diffResVar);
+
+  AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,1,true);
+
+  AMP::LinearAlgebra::Vector::shared_ptr diffSolVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, diffSolVar, true );
+  AMP::LinearAlgebra::Vector::shared_ptr diffRhsVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, diffRhsVar, true );
+  AMP::LinearAlgebra::Vector::shared_ptr diffResVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, diffResVar, true );
+
 
   ut->passes(exeName);
 

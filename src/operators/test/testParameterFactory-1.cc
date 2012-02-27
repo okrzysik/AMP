@@ -9,11 +9,11 @@
 #include "utils/AMP_MPI.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/Mesh.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 
-#include "libmesh.h"
-
-#include "../ParameterFactory.h"
+#include "operators/ParameterFactory.h"
 #include "operators/boundary/DirichletMatrixCorrectionParameters.h"
 
 
@@ -32,8 +32,17 @@ void ParameterFactoryTest(AMP::UnitTest *ut)
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
   std::string mesh_file = input_db->getString("Mesh");
 
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = AMP::Mesh::MeshManager::Adapter::shared_ptr ( new AMP::Mesh::MeshManager::Adapter () );
-  meshAdapter->readExodusIIFile ( mesh_file.c_str() );
+  // Create the mesh parameter object
+  boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+  database->putInteger("dim",3);
+  database->putString("MeshName","mesh");
+  database->putString("MeshType","libMesh");
+  database->putString("FileName",mesh_file);
+  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+
+  // Create the mesh
+  AMP::Mesh::Mesh::shared_ptr  meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
 
   AMP_INSIST(input_db->keyExists("Parameter"), "Key ''Parameter'' is missing!");
   boost::shared_ptr<AMP::Database> elemOp_db = input_db->getDatabase("Parameter");

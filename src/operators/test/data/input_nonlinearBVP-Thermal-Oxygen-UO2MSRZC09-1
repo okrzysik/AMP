@@ -1,13 +1,14 @@
-
-NumberOfMeshes = 1
-
-Mesh_1{
-  Filename = "brick.e"
-  MeshName = "brick"
-  x_offset = 0
-  y_offset = 0
-  z_offset = 0
-  NumberOfElements = 1088
+// Database for the mesh
+Mesh{
+    // This is the main multimesh that will contain all meshes
+    MeshName = "brick"
+    MeshType = "libMesh"
+    FileName = "brick.e"
+    dim = 3
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
+    NumberOfElements = 80
 }
 
 testNonlinearThermalOperator {

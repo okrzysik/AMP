@@ -16,14 +16,14 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
-
-#include "libmesh.h"
-
 #include "materials/Material.h"
-#include "../LinearOperator.h"
-#include "../ColumnOperator.h"
-#include "../OperatorBuilder.h"
+#include "operators/LinearOperator.h"
+#include "operators/ColumnOperator.h"
+#include "operators/OperatorBuilder.h"
+
+#include "ampmesh/Mesh.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 
 #include "applyTests.h"
 
@@ -45,10 +45,17 @@ void myTest(AMP::UnitTest *ut)
   AMP_INSIST(outerInput_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
   std::string mesh_file = outerInput_db->getString("Mesh");
 
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter =
-    AMP::Mesh::MeshManager::Adapter::shared_ptr(
-        new AMP::Mesh::MeshManager::Adapter());
-  meshAdapter->readExodusIIFile(mesh_file.c_str());
+  // Create the mesh parameter object
+  boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+  database->putInteger("dim",3);
+  database->putString("MeshName","mesh");
+  database->putString("MeshType","libMesh");
+  database->putString("FileName",mesh_file);
+  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+
+  // Create the mesh
+  AMP::Mesh::Mesh::shared_ptr  meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
 
   AMP_INSIST(outerInput_db->keyExists("number_of_tests"), "key missing!");
   int numTests = outerInput_db->getInteger("number_of_tests");
@@ -144,12 +151,11 @@ void myTest(AMP::UnitTest *ut)
       columnOperator->getOutputVariable();
 
     {
-      AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector(
-          columnInputVariable);
-      AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector(
-          columnOutputVariable);
-      AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector(
-          columnOutputVariable);
+      AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,1,true);
+
+      AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, columnInputVariable, true );
+      AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, columnOutputVariable, true );
+      AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, columnOutputVariable, true );
 
       for (size_t i=0; i<nVars; i++) {
         AMP::LinearAlgebra::Variable::shared_ptr opVar = columnInputVariable->getVariable(i);

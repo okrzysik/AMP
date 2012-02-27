@@ -15,18 +15,22 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
-
-#include "libmesh.h"
+#include "ampmesh/Mesh.h"
 
 #include "operators/diffusion/DiffusionTransportModel.h"
 #include "operators/diffusion/DiffusionConstants.h"
 #include "operators/diffusion/DiffusionLinearElement.h"
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/diffusion/DiffusionLinearFEOperatorParameters.h"
-#include "../ElementPhysicsModelParameters.h"
-#include "../ElementPhysicsModelFactory.h"
-#include "../OperatorBuilder.h"
+#include "operators/ElementPhysicsModelParameters.h"
+#include "operators/ElementPhysicsModelFactory.h"
+#include "operators/OperatorBuilder.h"
+
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
+#include "vectors/Variable.h"
+#include "vectors/Vector.h"
 
 #include "materials/Material.h"
 
@@ -57,8 +61,17 @@ void linearTest(AMP::UnitTest *ut, std::string exeName,
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
   std::string mesh_file = input_db->getString("Mesh");
 
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = AMP::Mesh::MeshManager::Adapter::shared_ptr ( new AMP::Mesh::MeshManager::Adapter () );
-  meshAdapter->readExodusIIFile ( mesh_file.c_str() );
+  // Create the mesh parameter object
+  boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+  database->putInteger("dim",3);
+  database->putString("MeshName","mesh");
+  database->putString("MeshType","libMesh");
+  database->putString("FileName",mesh_file);
+  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+
+  // Create the mesh
+  AMP::Mesh::Mesh::shared_ptr  meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
 
   boost::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> diffOp;
   boost::shared_ptr<AMP::InputDatabase> diffFEOp_db =
@@ -87,20 +100,21 @@ void linearTest(AMP::UnitTest *ut, std::string exeName,
           boost::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>(elementPhysicsModel);
 
   // create vectors for parameters
-  AMP::LinearAlgebra::Variable::shared_ptr tempVar(new AMP::Mesh::NodalScalarVariable("testTempVar"));
-  AMP::LinearAlgebra::Variable::shared_ptr concVar(new AMP::Mesh::NodalScalarVariable("testConcVar"));
-  AMP::LinearAlgebra::Variable::shared_ptr burnVar(new AMP::Mesh::NodalScalarVariable("testBurnVar"));
+  AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,1,true);
+  AMP::LinearAlgebra::Variable::shared_ptr tempVar(new AMP::LinearAlgebra::Variable("testTempVar"));
+  AMP::LinearAlgebra::Variable::shared_ptr concVar(new AMP::LinearAlgebra::Variable("testConcVar"));
+  AMP::LinearAlgebra::Variable::shared_ptr burnVar(new AMP::LinearAlgebra::Variable("testBurnVar"));
   AMP::LinearAlgebra::Vector::shared_ptr tempVec, concVec, burnVec;
   if (not diffFEOp_db->getBoolWithDefault("FixedTemperature", false)) {
-      tempVec =  meshAdapter->createVector( tempVar );
+      tempVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, tempVar, true );
       tempVec->setToScalar(defTemp);
   }
   if (not diffFEOp_db->getBoolWithDefault("FixedConcentration", false)) {
-      concVec =  meshAdapter->createVector( concVar );
+      concVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, concVar, true );
       concVec->setToScalar(defConc);
   }
   if (not diffFEOp_db->getBoolWithDefault("FixedBurnup", false)) {
-      burnVec =  meshAdapter->createVector( burnVar );
+      burnVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, burnVar, true );
       burnVec->setToScalar(defBurn);
   }
   diffOpParams->d_transportModel = transportModel;
@@ -115,25 +129,28 @@ void linearTest(AMP::UnitTest *ut, std::string exeName,
   AMP::LinearAlgebra::Variable::shared_ptr diffSolVar = diffOp->getInputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr diffRhsVar = diffOp->getOutputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr diffResVar = diffOp->getOutputVariable();
-  AMP::LinearAlgebra::Variable::shared_ptr workVar(new AMP::Mesh::NodalScalarVariable("work"));
+  AMP::LinearAlgebra::Variable::shared_ptr workVar(new AMP::LinearAlgebra::Variable("work"));
 
   // set up vectors for apply tests
   //std::string msgPrefix=exeName+": apply";
-  AMP::LinearAlgebra::Vector::shared_ptr diffSolVec = meshAdapter->createVector( diffSolVar );
-  AMP::LinearAlgebra::Vector::shared_ptr diffRhsVec = meshAdapter->createVector( diffRhsVar );
-  AMP::LinearAlgebra::Vector::shared_ptr diffResVec = meshAdapter->createVector( diffResVar );
+  AMP::LinearAlgebra::Vector::shared_ptr diffSolVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, diffSolVar, true );
+  AMP::LinearAlgebra::Vector::shared_ptr diffRhsVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, diffRhsVar, true );
+  AMP::LinearAlgebra::Vector::shared_ptr diffResVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, diffResVar, true );
   diffRhsVec->setToScalar(0.0);
 
-  for (AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator curNode =
-              meshAdapter->beginOwnedNode();
-          curNode != meshAdapter->endOwnedNode(); curNode++)
-  {
-      double x = curNode->x();
-      double y = curNode->y();
-      double z = curNode->z();
-      size_t i = curNode->globalID();
+  AMP::Mesh::MeshIterator curNode = meshAdapter->getIterator(AMP::Mesh::Vertex,0);
+  AMP::Mesh::MeshIterator endNode = curNode.end();
+  std::vector<size_t> dofs;
+  while ( curNode != endNode ) {
+      std::vector<double> pos = curNode->coord();
+      double x = pos[0];
+      double y = pos[1];
+      double z = pos[2];
+      NodalScalarDOF->getDOFs(curNode->globalID(),dofs);
+      size_t i = dofs[0];
       double fval = function(x,y,z);
       diffSolVec->setValueByGlobalID(i, fval);
+      ++curNode;
   }
 
   // Compute finite element operator
@@ -143,7 +160,7 @@ void linearTest(AMP::UnitTest *ut, std::string exeName,
   AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);
   int nranks = globalComm.getSize();
   if (nranks == 1) {
-      size_t  nnodes = meshAdapter->numLocalNodes();
+      size_t  nnodes = meshAdapter->numLocalElements(AMP::Mesh::Vertex);
       int proc = globalComm.getRank();
       int nproc = globalComm.getSize();
       std::string filename = "values-"+exeName;
@@ -151,18 +168,20 @@ void linearTest(AMP::UnitTest *ut, std::string exeName,
       if (proc == 0) {
           file << "values={"<<"\n";
       }
+      curNode = meshAdapter->getIterator(AMP::Mesh::Vertex,0);
       for (size_t i=0; i<nnodes; i++)
       {
-          AMP::Mesh::MeshManager::Adapter::Node node = meshAdapter->getNode(i);
-          double x = node.x();
-          double y = node.y();
-          double z = node.z();
+          std::vector<double> pos = curNode->coord();
+          double x = pos[0];
+          double y = pos[1];
+          double z = pos[2];
 
           int ii = i;
           double rval = diffResVec->getValueByLocalID(ii);
           double fval = function(x,y,z);
           file << "{"<<x<<","<<y<<","<<z<<","<<rval<<","<<fval<<"}";
           if (i<nnodes-1) file <<",\n";
+          ++curNode;
       }
       if (proc < nproc-1) {
           file <<",\n";

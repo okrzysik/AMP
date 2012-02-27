@@ -24,6 +24,12 @@
 
 #include "operators/boundary/RobinMatrixCorrection.h"
 
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
+#include "vectors/Variable.h"
+#include "vectors/Vector.h"
+
 
 void bcTests(AMP::UnitTest *ut,
              std::string msgPrefix,
@@ -102,20 +108,27 @@ void linearRobinTest(AMP::UnitTest *ut , std::string exeName)
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
+  // Get the mesh name
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
   std::string mesh_file = input_db->getString("Mesh");
 
- AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = AMP::Mesh::MeshManager::Adapter::shared_ptr ( new AMP::Mesh::MeshManager::Adapter () );
-  meshAdapter->readExodusIIFile ( mesh_file.c_str() );
+  // Create the mesh parameter object
+  boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+  database->putInteger("dim",3);
+  database->putString("MeshName","mesh");
+  database->putString("MeshType","libMesh");
+  database->putString("FileName",mesh_file);
+  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+
+  // Create the mesh
+  AMP::Mesh::Mesh::shared_ptr  meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
   
 /////////////////////////////////////////////////
 //   CREATE THE LINEAR DIFFUSION BVP OPERATOR  //
 /////////////////////////////////////////////////
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> diffusionOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-																						       "DiffusionBVPOperator",
-																						       input_db,
-																						       elementModel));
+  boost::shared_ptr<AMP::Operator::LinearBVPOperator> diffusionOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator( meshAdapter, "DiffusionBVPOperator", input_db, elementModel));
 
   boost::shared_ptr<AMP::InputDatabase> bcDatabase = boost::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase("RobinMatrixCorrection"));
 
@@ -123,7 +136,9 @@ void linearRobinTest(AMP::UnitTest *ut , std::string exeName)
   boundaryOp = diffusionOperator->getBoundaryOperator();
   volumeOp   = diffusionOperator->getVolumeOperator();
 
-  AMP::LinearAlgebra::Vector::shared_ptr bndVec = meshAdapter->createVector( volumeOp->getOutputVariable() );
+  //AMP::LinearAlgebra::Vector::shared_ptr bndVec = meshAdapter->createVector( volumeOp->getOutputVariable() );
+  AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,1,true);
+  AMP::LinearAlgebra::Vector::shared_ptr bndVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, volumeOp->getOutputVariable(), true );
 
   std::string msgPrefix=exeName+"- Boundary Conditions";
   // Test Robin Boundary Conditions
