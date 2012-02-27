@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <cstdio>
 #include <cstring>
@@ -10,20 +9,28 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/MeshAdapter.h"
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/Mesh.h"
+
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/Variable.h"
+#include "vectors/VectorBuilder.h"
+#include "vectors/Variable.h"
+#include "vectors/Vector.h"
+#include "vectors/VectorSelector.h"
 
 #include "fe_type.h"
 #include "fe_base.h"
 #include "elem.h"
 #include "quadrature.h"
+#include "face_quad4.h"
 
 #include "enum_order.h"
 #include "enum_fe_family.h"
 #include "enum_quadrature_type.h"
 #include "auto_ptr.h"
 #include "string_to_enum.h"
+
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
@@ -39,32 +46,42 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   int surfaceId = input_db->getInteger("SurfaceId");
   bool setConstantValue = input_db->getBool("SetConstantValue");
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
-  AMP::Mesh::MeshAdapter::shared_ptr mesh = manager->getMesh("pellet");
+  // Get the Mesh database and create the mesh parameters
+  boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  params->setComm(globalComm);
 
-  AMP::LinearAlgebra::Variable::shared_ptr var(new AMP::Mesh::NodalScalarVariable("myVar", mesh)); 
-  AMP::Mesh::DOFMap::shared_ptr dof_map = mesh->getDOFMap(var);
+  // Create the meshes from the input database
+  boost::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params);
 
-  AMP::LinearAlgebra::Vector::shared_ptr vec = mesh->createVector(var);
+  // Create a nodal scalar vector
+  AMP::LinearAlgebra::Variable::shared_ptr var(new  AMP::LinearAlgebra::Variable("myVar")); 
+  AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,1,true);  
+  AMP::LinearAlgebra::Vector::shared_ptr vec = AMP::LinearAlgebra::createVector( nodalScalarDOF, var, true );
   vec->zero();
 
   libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
   libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
 
-  AMP::Mesh::MeshManager::Adapter::BoundarySideIterator bnd = mesh->beginSideBoundary( surfaceId );
-  AMP::Mesh::MeshManager::Adapter::BoundarySideIterator end_bnd = mesh->endSideBoundary( surfaceId );
+  AMP::Mesh::MeshIterator bnd = mesh->getIDsetIterator( AMP::Mesh::Face, surfaceId, 0 );
+  AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
   bool volume_passes = true;
+  std::vector<size_t> dofs;
   while ( bnd!=end_bnd ) {
 
-    std::vector<unsigned int> bndGlobalIds;
-    dof_map->getDOFs(*bnd, bndGlobalIds, 0);
-
+    std::vector<AMP::Mesh::MeshElement> nodes = bnd->getElements(AMP::Mesh::Vertex);
+    std::vector<size_t> bndGlobalIds;
+    for (size_t i=0; i<nodes.size(); i++) {
+        nodalScalarDOF->getDOFs(nodes[i].globalID(), dofs);
+        for (size_t j=0; j<dofs.size(); j++)
+            bndGlobalIds.push_back(dofs[j]);
+    }
+    
     // Some basic checks
     assert(bndGlobalIds.size() == 4);
-    assert((bnd->getElem()).default_order() == feTypeOrder);
-    assert((bnd->getElem()).dim() == 2);
+    //assert((bnd->getElem()).default_order() == feTypeOrder);
+    assert(bnd->elementType()==AMP::Mesh::Face);
 
     // Create the libmesh element
     // Note: This must be done inside the loop because libmesh's reinit function doesn't seem to work properly
@@ -76,7 +93,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
     boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, 2, qruleOrder)).release() );
     fe->attach_quadrature_rule( qrule.get() );
-    fe->reinit ( &(bnd->getElem()) );
+    ::Elem* currElemPtr = new ::Quad4;
+    for(size_t i=0; i<nodes.size(); i++) {
+        std::vector<double> pt = nodes[i].coord();
+        currElemPtr->set_node(i) = new ::Node(pt[0], pt[1], pt[2], i);
+    }
+    fe->reinit( currElemPtr );
 
     // Check the volume
     double vol1 = 0.0;
@@ -92,7 +114,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     // Fill the surface vector
     if(setConstantValue) {
        std::vector<double> vals(bndGlobalIds.size(), 100.0);
-       vec->addValuesByGlobalID(bndGlobalIds.size(), (int*)(&(bndGlobalIds[0])), &(vals[0]));
+       vec->addValuesByGlobalID(bndGlobalIds.size(), &(bndGlobalIds[0]), &(vals[0]));
     } else {
        std::vector<double> vals(bndGlobalIds.size(), 0.0);
        for(unsigned int i = 0; i < bndGlobalIds.size(); i++) {
@@ -102,10 +124,20 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
            vals[i] += (djxw[qp]*phi[i][qp]*100.0);
          }//end qp
        }//end i
-       vec->addValuesByGlobalID(bndGlobalIds.size(), (int*)(&(bndGlobalIds[0])), &(vals[0]));
+       vec->addValuesByGlobalID(bndGlobalIds.size(), &(bndGlobalIds[0]), &(vals[0]));
     }
+
+    // Destroy the libmesh element
+    for(size_t i=0; i<nodes.size(); i++) {
+        delete (currElemPtr->get_node(i));
+        currElemPtr->set_node(i) = NULL;
+    }//end for j
+    delete currElemPtr;
+    currElemPtr = NULL;
+
     ++bnd;
   }//end for bnd
+
   if ( volume_passes == true )
     ut->passes("Volume passes");
   else
