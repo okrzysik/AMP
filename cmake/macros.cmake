@@ -353,7 +353,7 @@ MACRO ( ADD_AMP_EXE_DEP EXEFILE )
     # Add the amp libraries
     TARGET_LINK_LIBRARIES ( ${EXEFILE} ${AMP_LIBS} )
     # Add external libraries
-    TARGET_LINK_LIBRARIES ( ${EXEFILE} ${LIBMESH_LIBS} ${TRILINOS_LIBS} ${PETSC_LIBS} ${X11_LIBS} ${SILO_LIBS} ${HDF5_LIBS} ${HYPRE_LIBS} )
+    TARGET_LINK_LIBRARIES ( ${EXEFILE} ${LIBMESH_LIBS} ${MOAB_LIBS} ${TRILINOS_LIBS} ${PETSC_LIBS} ${X11_LIBS} ${SILO_LIBS} ${HDF5_LIBS} ${HYPRE_LIBS} )
     IF ( ${USE_SUNDIALS} )
        TARGET_LINK_LIBRARIES ( ${EXEFILE} ${SUNDIALS_LIBS} )
     ENDIF  ()
@@ -576,6 +576,14 @@ MACRO ( SAVE_CMAKE_FLAGS )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -DLIBMESH_ENABLE_PARMESH )\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_LIBMESH 1 ) \n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_LIBMESH ) \n" )
+    ENDIF()
+    # Add MOAB
+    IF ( USE_MOAB )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add MOAB\n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${MOAB_INCLUDE} )\n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${MOAB_LIBS} )\n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_MOAB 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_MOAB ) \n" )
     ENDIF()
     # Add Trilinos
     IF ( USE_TRILINOS )

@@ -4,7 +4,9 @@
 #include "ampmesh/SubsetMesh.h"
 #include "ampmesh/MeshElementVectorIterator.h"
 #include "ampmesh/MultiIterator.h"
-#include "vectors/Vector.h"
+#ifdef USE_AMP_VECTORS
+    #include "vectors/Vector.h"
+#endif
 
 namespace AMP {
 namespace Mesh {

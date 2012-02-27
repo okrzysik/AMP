@@ -1,6 +1,9 @@
 #ifndef included_MeshTests
 #define included_MeshTests
 
+#include <vector>
+#include <set>
+
 #include "utils/AMP_MPI.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"

@@ -3,13 +3,19 @@
 #include "utils/AMP_MPI.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
-#include "ampmesh/libmesh/libMesh.h"
 #include "utils/MemoryDatabase.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "meshTestLoop.h"
 #include "meshTests.h"
 #include "meshGenerators.h"
+
+#ifdef USE_LIBMESH
+    #include "ampmesh/libmesh/libMesh.h"
+#endif
+#ifdef USE_MOAB
+    #include "ampmesh/moab/moabMesh.h"
+#endif
 
 
 // Function to test the creation/destruction of a mesh with the mesh generators
@@ -58,6 +64,35 @@ void testlibMesh( AMP::UnitTest *ut )
     MeshMatrixTestLoop( ut, mesh );
 
 }
+
+
+// Function to test the creation/destruction of a moab mesh
+#ifdef USE_MOAB
+void testMoabMesh( AMP::UnitTest *ut )
+{
+    // Create a generic MeshParameters object
+    boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+    database->putInteger("dim",3);
+    database->putString("MeshName","mesh1");
+    database->putString("FileName","pellet_lo_res.e");
+    boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+    params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+
+    // Create an MOAB mesh
+    try {
+        boost::shared_ptr<AMP::Mesh::moabMesh> mesh(new AMP::Mesh::moabMesh(params));    
+    } catch (...) {
+        ut->expected_failure("MOAB meshes cannot be created yet");
+    }
+
+    // Run the mesh tests
+    ut->expected_failure("Mesh tests not working on a MOAB mesh yet");
+    //MeshTestLoop( ut, mesh );
+    //MeshVectorTestLoop( ut, mesh );
+    //MeshMatrixTestLoop( ut, mesh );
+
+}
+#endif
 
 
 void testInputMesh( AMP::UnitTest *ut, std::string filename )
@@ -112,6 +147,11 @@ int main ( int argc , char ** argv )
 
     // Run tests on a libmesh mesh
     testlibMesh( &ut );
+
+    // Run tests on a moab mesh
+    #ifdef USE_MOAB
+        testMoabMesh( &ut );
+    #endif
 
     // Run tests on the input file
     testInputMesh( &ut, "input_Mesh" );

@@ -6,6 +6,9 @@
 #ifdef USE_LIBMESH
     #include "ampmesh/libmesh/libMesh.h"
 #endif
+#ifdef USE_MOAB
+    #include "ampmesh/moab/moabMesh.h"
+#endif
 #include "ampmesh/MeshElementVectorIterator.h"
 
 #ifdef USE_AMP_VECTORS
@@ -86,6 +89,13 @@ boost::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared
             mesh = boost::shared_ptr<AMP::Mesh::libMesh>(new AMP::Mesh::libMesh(params) );
         #else
             AMP_ERROR("AMP was compiled without support for libMesh");
+        #endif
+    } else if ( MeshType==std::string("moab") || MeshType==std::string("MOAB") ) {
+        // The mesh is a MOAB mesh
+        #ifdef USE_MOAB
+            mesh = boost::shared_ptr<AMP::Mesh::moabMesh>(new AMP::Mesh::moabMesh(params) );
+        #else
+            AMP_ERROR("AMP was compiled without support for MOAB");
         #endif
     } else {
         // Unknown mesh type

@@ -351,6 +351,73 @@ MACRO ( CONFIGURE_LIBMESH )
     ENDIF()
 ENDMACRO ()
 
+
+# Macro to find and configure MOAB
+MACRO ( CONFIGURE_MOAB )
+    # Determine if we want to use MOAB
+    CHECK_ENABLE_FLAG( USE_MOAB 0 )
+    IF ( USE_MOAB )
+        # Check if we specified the MOAB directory
+        IF ( MOAB_DIRECTORY )
+            VERIFY_PATH ( ${MOAB_DIRECTORY} )
+            # Include the MOAB directories
+            SET ( MOAB_INCLUDE ${MOAB_DIRECTORY}/include )
+            # Find the MOAB libaries
+            SET ( MOAB_PATH_LIB ${MOAB_DIRECTORY}/lib )
+            VERIFY_PATH ( ${MOAB_PATH_LIB} )
+            FIND_LIBRARY ( MOAB_MESH_LIB     NAMES MOAB      PATHS ${MOAB_PATH_LIB}          NO_DEFAULT_PATH )
+            IF ( NOT MOAB_MESH_LIB )
+                MESSAGE ( FATAL_ERROR "MOAB library (MOAB) not found in ${MOAB_PATH_LIB}" )
+            ENDIF ()
+        ELSE()
+            MESSAGE ( FATAL_ERROR "Default search for MOAB is not supported.  Use -D MOAB_DIRECTORY=" )
+        ENDIF()
+        # Check if we specified the cgm directory
+        IF ( CGM_DIRECTORY )
+            VERIFY_PATH ( ${CGM_DIRECTORY} )
+            # Include the CGM directories
+            SET ( MOAB_INCLUDE ${MOAB_INCLUDE} ${CGM_DIRECTORY}/include )
+            # Find the CGM libaries
+            SET ( CGM_PATH_LIB ${CGM_DIRECTORY}/lib )
+            VERIFY_PATH ( ${CGM_PATH_LIB} )
+            FIND_LIBRARY ( MOAB_CGM_LIB     NAMES cgm      PATHS ${CGM_PATH_LIB}        NO_DEFAULT_PATH )
+            FIND_LIBRARY ( MOAB_iGEOM_LIB   NAMES iGeom    PATHS ${CGM_PATH_LIB}        NO_DEFAULT_PATH )
+            IF ( (NOT MOAB_CGM_LIB) OR (NOT MOAB_iGEOM_LIB) )
+                MESSAGE ( FATAL_ERROR "CGM librarys not found in ${CGM_PATH_LIB}" )
+            ENDIF ()
+        ELSE()
+            MESSAGE ( FATAL_ERROR "Default search for cgm is not supported.  Use -D CGM_DIRECTORY=" )
+        ENDIF()
+        # Check if we specified the Cubit directory
+        IF ( CUBIT_DIRECTORY )
+            VERIFY_PATH ( ${CUBIT_DIRECTORY} )
+            # Include the CUBIT directories
+            # SET ( MOAB_INCLUDE ${MOAB_INCLUDE} ${CUBIT_DIRECTORY}/include )
+            # Find the CGM libaries
+            SET ( CUBIT_PATH_LIB ${CUBIT_DIRECTORY} )
+            VERIFY_PATH ( ${CGM_PATH_LIB} )
+            FIND_LIBRARY ( MOAB_CUBIT_LIB     NAMES cubiti19      PATHS ${CUBIT_PATH_LIB}        NO_DEFAULT_PATH )
+            IF ( NOT MOAB_CUBIT_LIB )
+                MESSAGE ( FATAL_ERROR "CUBIT librarys not found in ${CUBIT_PATH_LIB}" )
+            ENDIF ()
+        ELSE()
+            MESSAGE ( FATAL_ERROR "Default search for cubit is not supported.  Use -D CUBIT_DIRECTORY=" )
+        ENDIF()
+        # Add the libraries in the appropriate order
+        INCLUDE_DIRECTORIES ( ${MOAB_INCLUDE} )
+        SET ( MOAB_LIBS
+            ${MOAB_MESH_LIB}
+            ${MOAB_CGM_LIB}
+            ${MOAB_iGEOM_LIB}
+            ${MOAB_CUBIT_LIB}
+        )
+        ADD_DEFINITIONS ( "-D USE_MOAB" )  
+        MESSAGE ( "Using MOAB" )
+        MESSAGE ( "   " ${MOAB_LIBS} )
+    ENDIF()
+ENDMACRO ()
+
+
 # Macro to configure the BLAS
 MACRO ( CONFIGURE_BLAS )
     # Determine if we want to use BLAS
