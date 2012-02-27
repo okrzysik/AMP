@@ -45,40 +45,38 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     input_db->printClassData(AMP::plog);
 
     // Get the Mesh database and create the mesh parameters
-    AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
     boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(database));
-    meshParams->setComm(globalComm);
+    boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+    params->setComm(globalComm);
 
     // Create the meshes from the input database
-    boost::shared_ptr<AMP::Mesh::Mesh> manager = AMP::Mesh::Mesh::buildMesh(meshParams);
-    AMP::Mesh::Mesh::shared_ptr meshAdapter1 = manager->Subset( "pellet" );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter2 = manager->Subset( "clad" );
+    AMP::Mesh::Mesh::shared_ptr  manager = AMP::Mesh::Mesh::buildMesh(params);
+    AMP::Mesh::Mesh::shared_ptr  meshAdapter1 = manager->Subset( "pellet" );
+    AMP::Mesh::Mesh::shared_ptr  meshAdapter2 = manager->Subset( "clad" );
 
-      //--------------------------------------------------
-      // Creating the parameters that will form the right-hand side for the thermal calculation.
-      //--------------------------------------------------
-      AMP_INSIST(input_db->keyExists("PowerNeutronicsOperator"), "Key ''PowerNeutronicsOperator'' is missing!");
-      boost::shared_ptr<AMP::Database>  neutronicsOp_db = input_db->getDatabase("PowerNeutronicsOperator");
-      boost::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
-      neutronicsParams->d_Mesh = meshAdapter1;
+    //--------------------------------------------------
+    // Creating the parameters that will form the right-hand side for the thermal calculation.
+    //--------------------------------------------------
+    AMP_INSIST(input_db->keyExists("PowerNeutronicsOperator"), "Key ''PowerNeutronicsOperator'' is missing!");
+    boost::shared_ptr<AMP::Database>  neutronicsOp_db = input_db->getDatabase("PowerNeutronicsOperator");
+    boost::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
+    neutronicsParams->d_Mesh = meshAdapter1;
 
+    //--------------------------------------------------
+    //  Creating a time-steps loop that will be used for the burnup loop.
+    //--------------------------------------------------
+    int numTimeSteps=3;
+    std::vector<double> d_Heff;
+    d_Heff.resize(numTimeSteps);
+    d_Heff=input_db->getDatabase ( "BoundaryConditions" )->getDoubleArray ( "Heff" );
 
-      //--------------------------------------------------
-      //  Creating a time-steps loop that will be used for the burnup loop.
-      //--------------------------------------------------
-      int numTimeSteps=3;
-      std::vector<double> d_Heff;
-      d_Heff.resize(numTimeSteps);
-      d_Heff=input_db->getDatabase ( "BoundaryConditions" )->getDoubleArray ( "Heff" );
+    //----------------------------------------------------------------------------
+    //  Constructing the neutornicsRHS for the Thermal diffusion source (aka specific power).
+    //----------------------------------------------------------------------------
+    boost::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
 
-      //----------------------------------------------------------------------------
-      //  Constructing the neutornicsRHS for the Thermal diffusion source (aka specific power).
-      //----------------------------------------------------------------------------
-      boost::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
-
-      AMP::LinearAlgebra::Variable::shared_ptr specificPowerGpVar   = neutronicsOperator->getOutputVariable();
-      AMP::LinearAlgebra::Vector::shared_ptr   specificPowerGpVec   = meshAdapter1->createVector( specificPowerGpVar );
+    AMP::LinearAlgebra::Variable::shared_ptr specificPowerGpVar   = neutronicsOperator->getOutputVariable();
+    AMP::LinearAlgebra::Vector::shared_ptr   specificPowerGpVec   = meshAdapter1->createVector( specificPowerGpVar );
 
       //----------------------------------------------------------------------------
       //  Create a global temperature variable and an associated mesh specific temperature variable.

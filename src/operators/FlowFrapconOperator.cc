@@ -54,18 +54,19 @@ namespace AMP {
     void FlowFrapconOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
         AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a, const double b)
     {
-      AMP_ERROR("Not converted yet");
-      /*
+
       // AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_inpVariable);
 
       AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
       AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
 
-      AMP::Mesh::min_max_struct<AMP::Mesh::simple_point>  extPoint ;
-      extPoint = AMP::Mesh::computeExtremeCoordinates<AMP::Mesh::MeshManager::Adapter> ( d_MeshAdapter );
+      std::vector<double> box = d_Mesh->getBoundingBox();
+      const double min_z = box[4];
+      const double max_z = box[5];
+      const double del_z = (max_z-min_z)/d_numpoints ; 
 
-      // std::cout << "Extreme Min Point in z = " << extPoint.min.z << std::endl;
-      // std::cout << "Extreme Max Point in z = " << extPoint.max.z << std::endl;
+      // std::cout << "Extreme Min Point in z = " << min_z << std::endl;
+      // std::cout << "Extreme Max Point in z = " << max_z << std::endl;
 
       AMP::LinearAlgebra::Vector::shared_ptr flowInputVec = u->subsetVectorForVariable(d_inpVariable);
 
@@ -88,10 +89,6 @@ namespace AMP {
       // 
       // mapCladto1->setVector(d_localCladVec); 
       // mapCladto1->apply(nullVec, d_cladVec, nullVec);
-
-      const double min_z = extPoint.min.z ;
-      const double max_z = extPoint.max.z ;
-      const double del_z = (max_z-min_z)/d_numpoints ; 
 
       // should never use resize as it is assumed that the vector is created using the right size !! 
       //outputVec->castTo<SimpleVector>().resize (d_numpoints);
@@ -142,7 +139,7 @@ namespace AMP {
           outputVec->axpby(b, a, fInternal);
         }
       }
-      */
+
     }
 
     boost::shared_ptr<OperatorParameters> FlowFrapconOperator :: 

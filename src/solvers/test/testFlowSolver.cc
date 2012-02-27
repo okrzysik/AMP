@@ -45,10 +45,14 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
   //std::string mesh_file = input_db->getString("Mesh");
 
-  // Construct a mesh manager which reads in the fuel mesh
-  AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "bar" );
+  // Get the Mesh database and create the mesh parameters
+  boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  params->setComm(globalComm);
+
+  // Create the meshes from the input database
+  AMP::Mesh::Mesh::shared_ptr  manager = AMP::Mesh::Mesh::buildMesh(params);
+  AMP::Mesh::Mesh::shared_ptr  meshAdapter = manager->Subset( "bar" );
   
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 

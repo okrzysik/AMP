@@ -1,15 +1,16 @@
-
-Mesh = "cube64.with.boundary.labels.e"
-
-NumberOfMeshes = 1
-Mesh_1{
-  Filename = "cube64.with.boundary.labels.e"
-  MeshName = "bar"
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 1088
+// Database for all the meshes
+Mesh{
+    // This is the main multimesh that will contain all meshes
+    MeshName = "bar"
+    MeshType = "libMesh"
+    FileName = "cube64.with.boundary.labels.e"
+    dim = 3
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
+    NumberOfElements = 1088
 }
+
 
 FlowFrapconOperator{
   id = 2
