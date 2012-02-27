@@ -2,25 +2,33 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "ampmesh/Mesh.h"
 #include "boost/shared_ptr.hpp"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
 #include "utils/PIO.h"
 #include "utils/Database.h"
+#include "ampmesh/Mesh.h"
+#include "ampmesh/SiloIO.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/Variable.h"
+#include "vectors/VectorBuilder.h"
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"
-#include "vectors/MultiVector.h"
-#include "vectors/VectorBuilder.h"
+#include "vectors/VectorSelector.h"
 #include "operators/FlowFrapconOperator.h"
 #include "operators/FlowFrapconJacobian.h"
 #include "operators/ElementPhysicsModelFactory.h"
 #include "operators/ElementOperationFactory.h"
 #include "operators/OperatorBuilder.h"
 #include "operators/NeutronicsRhs.h"
+#include "operators/LinearBVPOperator.h"
+#include "operators/NonlinearBVPOperator.h"
+#include "operators/VolumeIntegralOperator.h"
 #include "operators/map/Map3Dto1D.h"
 #include "operators/map/Map1Dto3D.h"
+#include "operators/map/MapSurface.h"
 #include "solvers/ColumnSolver.h"
 #include "solvers/PetscKrylovSolverParameters.h"
 #include "solvers/PetscKrylovSolver.h"
@@ -54,6 +62,18 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     AMP::Mesh::Mesh::shared_ptr  meshAdapter1 = manager->Subset( "pellet" );
     AMP::Mesh::Mesh::shared_ptr  meshAdapter2 = manager->Subset( "clad" );
 
+    // Create a surface mesh on the clad
+    AMP::Mesh::Mesh::shared_ptr surfaceMesh = meshAdapter2->Subset( manager->getIDsetIterator( AMP::Mesh::Face, 4, 1 ) );
+
+    // Create the DOF managers
+    AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = 
+        AMP::Discretization::simpleDOFManager::create(manager,AMP::Mesh::Vertex,1,1,true);
+    AMP::Discretization::DOFManager::shared_ptr flowNodalScalarDOF = 
+        AMP::Discretization::simpleDOFManager::create(surfaceMesh,AMP::Mesh::Vertex,1,1,true);
+    int DOFsPerNode = 8;
+    AMP::Discretization::DOFManager::shared_ptr gaussPointDOF1 = 
+        AMP::Discretization::simpleDOFManager::create(meshAdapter1,AMP::Mesh::Vertex,1,DOFsPerNode,true);
+
     //--------------------------------------------------
     // Creating the parameters that will form the right-hand side for the thermal calculation.
     //--------------------------------------------------
@@ -75,40 +95,35 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     //----------------------------------------------------------------------------
     boost::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
 
-    AMP::LinearAlgebra::Variable::shared_ptr specificPowerGpVar   = neutronicsOperator->getOutputVariable();
-    AMP::LinearAlgebra::Vector::shared_ptr   specificPowerGpVec   = meshAdapter1->createVector( specificPowerGpVar );
+    AMP::LinearAlgebra::Variable::shared_ptr specificPowerGpVar  = neutronicsOperator->getOutputVariable();
+    AMP::LinearAlgebra::Vector::shared_ptr   specificPowerGpVec  = AMP::LinearAlgebra::createVector( gaussPointDOF1, specificPowerGpVar, true );
 
-      //----------------------------------------------------------------------------
-      //  Create a global temperature variable and an associated mesh specific temperature variable.
-      //----------------------------------------------------------------------------
-      //AMP::LinearAlgebra::Variable::shared_ptr GlobalTemperatureVar ( new AMP::Mesh::NodalScalarVariable ( "Temperature" ) );
-      AMP::LinearAlgebra::Variable::shared_ptr inputThermalVar1 ( new AMP::Mesh::NodalScalarVariable ( "Temperature", meshAdapter1 ) );
-      AMP::LinearAlgebra::Variable::shared_ptr inputThermalVar2 ( new AMP::Mesh::NodalScalarVariable ( "Temperature", meshAdapter2 ) );
+    //----------------------------------------------------------------------------
+    //  Create a global temperature variable and an associated mesh specific temperature variable.
+    //----------------------------------------------------------------------------
+    //AMP::LinearAlgebra::Variable::shared_ptr GlobalTemperatureVar ( new AMP::Mesh::NodalScalarVariable ( "Temperature" ) );
+    AMP::LinearAlgebra::Variable::shared_ptr thermalVar ( new AMP::LinearAlgebra::Variable( "Temperature" ) );
 
-      AMP::LinearAlgebra::Variable::shared_ptr outputThermalVar1 ( new AMP::Mesh::NodalScalarVariable ( "Temperature", meshAdapter1 ) );
-      AMP::LinearAlgebra::Variable::shared_ptr outputThermalVar2 ( new AMP::Mesh::NodalScalarVariable ( "Temperature", meshAdapter2 ) );
+    AMP::LinearAlgebra::Vector::shared_ptr  thermalMapVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, thermalVar, true );
 
-      AMP::LinearAlgebra::Variable::shared_ptr thermalMapVar       ( new AMP::Mesh::NodalScalarVariable ( "Temperature" ) );
-      AMP::LinearAlgebra::Variable::shared_ptr inputThermalMapVar1 ( new AMP::Mesh::NodalScalarVariable ( "Temperature", meshAdapter1 ) );
-      AMP::LinearAlgebra::Variable::shared_ptr inputThermalMapVar2 ( new AMP::Mesh::NodalScalarVariable ( "Temperature", meshAdapter2 ) );
+    AMP::LinearAlgebra::VS_Mesh meshSelector1( "Temperature", meshAdapter1 );
+    AMP::LinearAlgebra::VS_Mesh meshSelector2( "Temperature", meshAdapter2 );
+    AMP::LinearAlgebra::Vector::shared_ptr thermalMapCladToPelletVec = thermalMapVec->select( meshSelector1, "Temperature" );
+    AMP::LinearAlgebra::Vector::shared_ptr thermalMapToCladVec        = thermalMapVec->select( meshSelector2, "Temperature" );
 
-      AMP::LinearAlgebra::Vector::shared_ptr thermalMapVec  = manager->createVector ( thermalMapVar );
-      AMP::LinearAlgebra::Vector::shared_ptr thermalMapCladToPelletVec  = thermalMapVec->subsetVectorForVariable ( inputThermalMapVar1  );
-      AMP::LinearAlgebra::Vector::shared_ptr thermalMapToCladVec        = thermalMapVec->subsetVectorForVariable ( inputThermalMapVar2  );
-      //----------------------------------------------------------------------------
-      //  Create a global multivariable with the temperature and displacement on each mesh.
-      //----------------------------------------------------------------------------
-      boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> globalMultiVar(new AMP::LinearAlgebra::MultiVariable("inputVariable"));
-      globalMultiVar->add(inputThermalVar1);
-      globalMultiVar->add(inputThermalVar2);
+    //----------------------------------------------------------------------------
+    //  Create a global multivariable with the temperature and displacement on each mesh.
+    //----------------------------------------------------------------------------
+    boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> globalMultiVar(new AMP::LinearAlgebra::MultiVariable("inputVariable"));
+    globalMultiVar->add(thermalVar);
 
-      //----------------------------------------------------------------------------
-      //  Create a global multivector with the temperature and displacement on each mesh
-      //    for the solution, residual, and right hand side.
-      //----------------------------------------------------------------------------
-      AMP::LinearAlgebra::Vector::shared_ptr globalSolVec = manager->createVector ( globalMultiVar );
-      AMP::LinearAlgebra::Vector::shared_ptr globalRhsVec = manager->createVector ( globalMultiVar );
-      AMP::LinearAlgebra::Vector::shared_ptr globalResVec = manager->createVector ( globalMultiVar );
+    //----------------------------------------------------------------------------
+    //  Create a global multivector with the temperature and displacement on each mesh
+    //    for the solution, residual, and right hand side.
+    //----------------------------------------------------------------------------
+    AMP::LinearAlgebra::Vector::shared_ptr globalSolVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, globalMultiVar, true );
+    AMP::LinearAlgebra::Vector::shared_ptr globalRhsVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, globalMultiVar, true );
+    AMP::LinearAlgebra::Vector::shared_ptr globalResVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, globalMultiVar, true );
 
       //-----------------------------------------------
       //   CREATE THE NONLINEAR THERMAL OPERATOR 1 ----
@@ -121,15 +136,12 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 											    input_db,
 											    thermalTransportModel1));
 
-      AMP::LinearAlgebra::Vector::shared_ptr thermalSolVec1 = globalSolVec->subsetVectorForVariable (  inputThermalVar1 );
-      AMP::LinearAlgebra::Vector::shared_ptr thermalRhsVec1 = globalRhsVec->subsetVectorForVariable ( outputThermalVar1 );
-
       //----------------------------------------------------------------------------
       //  Set the initial guess for the temperature to be 400, or as defined on the input.
       //----------------------------------------------------------------------------
       double intguess = input_db->getDoubleWithDefault("InitialGuess",300);
 
-      thermalSolVec1->setToScalar ( intguess );
+      globalSolVec->setToScalar ( intguess );
 
       //-------------------------------------
       //   CREATE THE LINEAR THERMAL OPERATOR 1 ----
@@ -170,13 +182,6 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 											    input_db,
 											    thermalTransportModel2));
 
-      // initialize the output variable
-      // AMP::LinearAlgebra::Variable::shared_ptr outputThermalVariable2 = thermalVolumeOperator2->getOutputVariable();
-
-      AMP::LinearAlgebra::Vector::shared_ptr thermalSolVec2 = globalSolVec->subsetVectorForVariable ( inputThermalVar2  );
-      AMP::LinearAlgebra::Vector::shared_ptr thermalRhsVec2 = globalRhsVec->subsetVectorForVariable    ( outputThermalVar2 );
-
-      thermalSolVec2->setToScalar ( intguess );
       //--------------------------------------------
 
 
@@ -231,7 +236,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       // CREATE MAP OPERATORS
       //-------------------------------------
       boost::shared_ptr<AMP::InputDatabase> mapCladToPellet_db = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapCladtoPellet"));
-      boost::shared_ptr<AMP::Operator::MapSurface>    mapCladToPellet    = boost::dynamic_pointer_cast<AMP::Operator::MapSurface>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter2, meshAdapter1, mapCladToPellet_db ));
+      boost::shared_ptr<AMP::Operator::MapSurface> mapCladToPellet = boost::dynamic_pointer_cast<AMP::Operator::MapSurface>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter2, meshAdapter1, mapCladToPellet_db ));
 
       boost::shared_ptr<AMP::InputDatabase> mapPelletToClad_db = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapPellettoClad"));
       boost::shared_ptr<AMP::Operator::MapSurface>    mapPelletToClad    = boost::dynamic_pointer_cast<AMP::Operator::MapSurface>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter1, meshAdapter2, mapPelletToClad_db ));
@@ -266,9 +271,9 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 
       AMP::LinearAlgebra::Variable::shared_ptr flowVariable = map1DFlowTo3DFlow1->getOutputVariable() ;
 
-      AMP::LinearAlgebra::Vector::shared_ptr flowSolVec = manager->createVector ( flowVariable );
-      AMP::LinearAlgebra::Vector::shared_ptr flowRhsVec = manager->createVector ( flowVariable );
-      AMP::LinearAlgebra::Vector::shared_ptr flowResVec = manager->createVector ( flowVariable );
+      AMP::LinearAlgebra::Vector::shared_ptr flowSolVec = AMP::LinearAlgebra::createVector( flowNodalScalarDOF, flowVariable, true );
+      AMP::LinearAlgebra::Vector::shared_ptr flowRhsVec = AMP::LinearAlgebra::createVector( flowNodalScalarDOF, flowVariable, true );
+      AMP::LinearAlgebra::Vector::shared_ptr flowResVec = AMP::LinearAlgebra::createVector( flowNodalScalarDOF, flowVariable, true );
 
       flowOperator->setZLocations( map1DFlowTo3DFlow1->getZLocations());
       flowJacobian->setZLocations( map1DFlowTo3DFlow1->getZLocations());
@@ -470,16 +475,14 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       //-------------------------------------
       nonlinearSolver->setZeroInitialGuess(false);
 
-      AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator  b = meshAdapter2->beginOwnedBoundary ( 4 );
-      AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator  e = meshAdapter2->endOwnedBoundary ( 4 );
-      //AMP_ASSERT ( b != e );
-      AMP::LinearAlgebra::Vector::shared_ptr surfaceVector = flowSolVec->select ( AMP::Mesh::VS_ByMeshIteratorTmpl< AMP::Mesh::MeshManager::Adapter , AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator >
-( meshAdapter2 , b , e , 1 ) , "Flow" );
+      // Create a subset mesh and view of a vector
+      AMP::LinearAlgebra::VS_MeshIterator meshSelector( "surfaceVector", surfaceMesh->getIterator(AMP::Mesh::Vertex,0), surfaceMesh->getComm() );
+      AMP::LinearAlgebra::Vector::shared_ptr  surfaceVector = flowSolVec->select( meshSelector, "surfaceVector" );
 
-
-      manager->registerVectorAsData ( thermalSolVec1 , "PelletTemperature");
-      manager->registerVectorAsData ( thermalSolVec2 , "CladTemperature");
-      manager->registerVectorAsData ( surfaceVector ,     "FLowTemperature");
+      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
+      siloWriter->registerVector( globalSolVec, meshAdapter1, AMP::Mesh::Vertex, "PelletTemperature" );
+      siloWriter->registerVector( globalSolVec, meshAdapter2, AMP::Mesh::Vertex, "CladTemperature" );
+      siloWriter->registerVector( surfaceVector, surfaceMesh, AMP::Mesh::Vertex, "FlowTemperature" );
 
       for ( int tstep = 0; tstep < 1; tstep++ ) {
         neutronicsOperator->setTimeStep(tstep);
@@ -514,7 +517,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 
         std::cout<<"Intermediate Flow Solution " <<std::endl;
         mapCladTo1DFlow1->setVector(flowSol1DVec); 
-	mapCladTo1DFlow1->apply(nullVec, thermalMapToCladVec , nullVec, 1, 0);
+	    mapCladTo1DFlow1->apply(nullVec, thermalMapToCladVec , nullVec, 1, 0);
         std::vector<double> expectedSolution(flowVecSize, 0);
         expectedSolution = (input_db->getDatabase("regression"))->getDoubleArray("expectedSolution");
         for(unsigned int i=0; i<flowVecSize ; i++) {

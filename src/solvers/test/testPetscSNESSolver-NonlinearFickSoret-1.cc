@@ -19,10 +19,16 @@
 #include "utils/PIO.h"
 #include "materials/Material.h"
 
-
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/Mesh.h"
 #include "ampmesh/SiloIO.h"
 
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/Variable.h"
+#include "vectors/VectorBuilder.h"
+#include "vectors/Variable.h"
+#include "vectors/Vector.h"
+#include "vectors/VectorSelector.h"
 
 #include "operators/boundary/DirichletVectorCorrection.h"
 
@@ -56,14 +62,14 @@ void fickTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &resul
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  AMP_INSIST(input_db->keyExists("NumberOfMeshes"), "Key does not exist");
-  int numMeshes = input_db->getInteger("NumberOfMeshes");
+  // Get the Mesh database and create the mesh parameters
+  boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  params->setComm(globalComm);
 
-  AMP::pout<<"Num meshes = "<<numMeshes<<std::endl;
-
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "cylinder" );
+  // Create the meshes from the input database
+  AMP::Mesh::Mesh::shared_ptr manager = AMP::Mesh::Mesh::buildMesh(params);
+  AMP::Mesh::Mesh::shared_ptr meshAdapter = manager->Subset( "cylinder" );
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a nonlinear BVP operator for nonlinear fick diffusion
@@ -84,14 +90,16 @@ void fickTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &resul
   boost::shared_ptr<AMP::LinearAlgebra::Variable> fickVariable = fickVolumeOperator->getOutputVariable();
 
   // create solution, rhs, and residual vectors
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( fickVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector( fickVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( fickVariable );
+  AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,1,true);
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fickVariable, true );
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fickVariable, true );
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fickVariable, true );
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // register some variables for plotting
-  manager->registerVectorAsData ( solVec, "Solution" );
-  manager->registerVectorAsData ( resVec, "Residual" );
+  AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+  siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
+  siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // now construct the linear BVP operator for fick
@@ -165,29 +173,28 @@ void fickTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &resul
   resVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
 #ifdef USE_SILO
-  manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 0 );
+  siloWriter->writeFile( exeName , 0 );
 #endif
 
   // store result
   {
-      AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator iterator = meshAdapter->beginOwnedNode();
-      iterator = meshAdapter->beginOwnedNode();
-      size_t numNodes = 0;
-        for(; iterator != meshAdapter->endOwnedNode(); iterator++ ) numNodes++;
-        results.resize(numNodes);
-
-      iterator = meshAdapter->beginOwnedNode();
-      size_t iNode=0;
-        for(; iterator != meshAdapter->endOwnedNode(); iterator++ ) {
-		size_t gid = iterator->globalID();
-		results[iNode] = solVec->getValueByGlobalID(gid);
-		iNode++;
-        }
+      AMP::Mesh::MeshIterator iterator = meshAdapter->getIterator(AMP::Mesh::Vertex,0);
+      size_t numNodes = iterator.size();
+      results.resize(numNodes);
+      std::vector<size_t> dofs;
+      for(size_t iNode=0; iNode<numNodes; iNode++ ) {
+          nodalScalarDOF->getDOFs(iterator->globalID(),dofs);
+          size_t gid = dofs[0];
+		  results[iNode] = solVec->getValueByGlobalID(gid);
+          ++iterator;
+      }
   }
 
   ut->passes(exeName);
 
 }
+
+
 
 void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &results)
 {
@@ -201,14 +208,14 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  AMP_INSIST(input_db->keyExists("NumberOfMeshes"), "Key does not exist");
-  int numMeshes = input_db->getInteger("NumberOfMeshes");
-  
-  AMP::pout<<"Num meshes = "<<numMeshes<<std::endl;
+  // Get the Mesh database and create the mesh parameters
+  boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  params->setComm(globalComm);
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "cylinder" );
+  // Create the meshes from the input database
+  AMP::Mesh::Mesh::shared_ptr manager = AMP::Mesh::Mesh::buildMesh(params);
+  AMP::Mesh::Mesh::shared_ptr meshAdapter = manager->Subset( "cylinder" );
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a nonlinear BVP operator for nonlinear Fick-Soret diffusion
@@ -246,21 +253,22 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // Set up input and output variables
-  AMP::LinearAlgebra::Variable::shared_ptr tVar(fickOp->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
-  AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getInputVariable(AMP::Operator::Diffusion::CONCENTRATION));
+  //AMP::LinearAlgebra::Variable::shared_ptr tVar(fickOp->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
+  //AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getInputVariable(AMP::Operator::Diffusion::CONCENTRATION));
+  AMP::LinearAlgebra::Variable::shared_ptr tVar(fickOp->getInputVariable());
+  AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getInputVariable());
   boost::shared_ptr<AMP::LinearAlgebra::Variable> fsOutVar(nlinBVPOp->getOutputVariable());
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create solution, rhs, and residual vectors
-
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( cVar );
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector( fsOutVar );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( fsOutVar );
+  AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,1,true);
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, cVar, true );
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fsOutVar, true );
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fsOutVar, true );
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create parameters for reset test and reset fick and soret operators
-
-  AMP::LinearAlgebra::Vector::shared_ptr tVec = meshAdapter->createVector( tVar );
+  AMP::LinearAlgebra::Vector::shared_ptr tVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, tVar, true );
   tVec->setToScalar(300.);
 
   fickOp->setVector(0, tVec);
@@ -268,8 +276,10 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // register some variables for plotting
-  manager->registerVectorAsData ( solVec, "Solution" );
-  manager->registerVectorAsData ( resVec, "Residual" );
+  AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+  siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
+  siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
+
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   //Initial guess
@@ -334,28 +344,27 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   resVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
 #ifdef USE_SILO
-  manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 0 );
+  siloWriter->writeFile( exeName , 0 );
 #endif
 
   // store result
   {
-      AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator iterator = meshAdapter->beginOwnedNode();
-      iterator = meshAdapter->beginOwnedNode();
-      size_t numNodes = 0;
-        for(; iterator != meshAdapter->endOwnedNode(); iterator++ ) numNodes++;
-        results.resize(numNodes);
-
-      iterator = meshAdapter->beginOwnedNode();
-      size_t iNode=0;
-        for(; iterator != meshAdapter->endOwnedNode(); iterator++ ) {
-		size_t gid = iterator->globalID();
-		results[iNode] = solVec->getValueByGlobalID(gid);
-		iNode++;
-        }
+      AMP::Mesh::MeshIterator iterator = meshAdapter->getIterator(AMP::Mesh::Vertex,0);
+      size_t numNodes = iterator.size();
+      results.resize(numNodes);
+      std::vector<size_t> dofs;
+      for(size_t iNode=0; iNode<numNodes; iNode++ ) {
+          nodalScalarDOF->getDOFs(iterator->globalID(),dofs);
+          size_t gid = dofs[0];
+		  results[iNode] = solVec->getValueByGlobalID(gid);
+          ++iterator;
+      }
   }
 
   ut->passes(exeName);
 }
+
+
 
 int main(int argc, char *argv[])
 {
