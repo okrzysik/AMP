@@ -108,6 +108,7 @@ namespace AMP {
         }//end for bnd
       }//end for j
 
+      rInternal->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     }
 
     void DirichletVectorCorrection :: applyNonZeroValues(AMP::LinearAlgebra::Vector::shared_ptr r) {
@@ -137,6 +138,7 @@ namespace AMP {
         }//end for bnd
       }//end for j
 
+      rInternal->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     }
 
     void DirichletVectorCorrection :: applyResidual(AMP::LinearAlgebra::Vector::shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r) {
@@ -166,6 +168,7 @@ namespace AMP {
         }//end for bnd
       }//end for j
 
+      r->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     }
 
     boost::shared_ptr<OperatorParameters> DirichletVectorCorrection :: 

@@ -70,6 +70,16 @@ public:
       */
     static boost::shared_ptr<MultiVector>   encapsulate ( Vector::shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
 
+    /** \brief Replace a vector in a MultiVector
+      * \details  This function will replace a given vector in the multivector with a different
+      * vector.  The original and new vectors must share the same DOFManager. 
+      * This is a purly local operation and does not require communication, but should be called 
+      * by all processors that own the vectors.
+      * \param[in] oldVec  The original vector to replace
+      * \param[in] newVec  The new vector to use
+      */
+    virtual void replaceSubVector(Vector::shared_ptr oldVec, Vector::shared_ptr newVec) ;
+
     /** \brief  Add a vector to a MultiVector.
       *   Note: this is a collective operation, vec may be NULL on some processors
       * \param[in]  vec  The Vector to add to the MultiVector

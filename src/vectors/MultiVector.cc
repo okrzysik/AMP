@@ -188,6 +188,21 @@ void  MultiVector::eraseVector ( Vector::shared_ptr  v )
 {
     AMP_ERROR("Needs to be fixed");
 }
+void MultiVector::replaceSubVector(Vector::shared_ptr oldVec, Vector::shared_ptr newVec) 
+{
+    AMP_ASSERT(oldVec.get()!=NULL);
+    AMP_ASSERT(newVec.get()!=NULL);
+    AMP_INSIST(oldVec->getDOFManager()==newVec->getDOFManager(),"oldVec and newVec must chare the same DOFManager");
+    int pos = -1;
+    for(size_t i = 0; i < d_vVectors.size(); ++i) {
+        if(d_vVectors[i] == oldVec) {
+            pos = i;
+            break;
+        }
+    }//end for i
+    AMP_INSIST(pos!=-1,"oldVec was not found");
+    d_vVectors[pos] = newVec;
+}
 
 
 
