@@ -17,6 +17,9 @@
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"
 #include "vectors/VectorSelector.h"
+#include "operators/ColumnOperator.h"
+#include "operators/CoupledOperator.h"
+#include "operators/CoupledFlowFrapconOperator.h"
 #include "operators/FlowFrapconOperator.h"
 #include "operators/FlowFrapconJacobian.h"
 #include "operators/ElementPhysicsModelFactory.h"
@@ -26,6 +29,8 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
 #include "operators/VolumeIntegralOperator.h"
+#include "operators/boundary/RobinVectorCorrection.h"
+#include "operators/boundary/ColumnBoundaryOperator.h"
 #include "operators/map/Map3Dto1D.h"
 #include "operators/map/Map1Dto3D.h"
 #include "operators/map/MapSurface.h"
@@ -36,7 +41,7 @@
 #include "solvers/PetscSNESSolver.h"
 #include "solvers/TrilinosMLSolver.h"
 #include "solvers/Flow1DSolver.h"
-
+#include "solvers/CoupledFlow1DSolver.h"
 
 
 void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
@@ -63,7 +68,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     AMP::Mesh::Mesh::shared_ptr  meshAdapter2 = manager->Subset( "clad" );
 
     // Create a surface mesh on the clad
-    AMP::Mesh::Mesh::shared_ptr surfaceMesh = meshAdapter2->Subset( manager->getIDsetIterator( AMP::Mesh::Face, 4, 1 ) );
+    AMP::Mesh::Mesh::shared_ptr surfaceMesh = meshAdapter2->Subset( meshAdapter2->getIDsetIterator( AMP::Mesh::Face, 4, 0 ) );
 
     // Create the DOF managers
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = 
@@ -125,23 +130,23 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr globalRhsVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, globalMultiVar, true );
     AMP::LinearAlgebra::Vector::shared_ptr globalResVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, globalMultiVar, true );
 
-      //-----------------------------------------------
-      //   CREATE THE NONLINEAR THERMAL OPERATOR 1 ----
-      //-----------------------------------------------
-      AMP_INSIST( input_db->keyExists("NonlinearThermalOperator1"), "key missing!" );
-      boost::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel1;
-      boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> thermalNonlinearOperator1 = boost::dynamic_pointer_cast<
-        AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter1,
-											    "NonlinearThermalOperator1",
-											    input_db,
-											    thermalTransportModel1));
+    //-----------------------------------------------
+    //   CREATE THE NONLINEAR THERMAL OPERATOR 1 ----
+    //-----------------------------------------------
+    AMP_INSIST( input_db->keyExists("NonlinearThermalOperator1"), "key missing!" );
+    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel1;
+    boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> thermalNonlinearOperator1 = 
+        boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( 
+        AMP::Operator::OperatorBuilder::createOperator( meshAdapter1, "NonlinearThermalOperator1", input_db, thermalTransportModel1));
 
-      //----------------------------------------------------------------------------
-      //  Set the initial guess for the temperature to be 400, or as defined on the input.
-      //----------------------------------------------------------------------------
-      double intguess = input_db->getDoubleWithDefault("InitialGuess",300);
+    AMP::LinearAlgebra::Vector::shared_ptr thermalSolVec1 = globalSolVec->select( meshSelector1, "Temperature" );
+    AMP::LinearAlgebra::Vector::shared_ptr thermalRhsVec1 = globalRhsVec->select( meshSelector1, "Temperature" );
 
-      globalSolVec->setToScalar ( intguess );
+    //----------------------------------------------------------------------------
+    //  Set the initial guess for the temperature to be 400, or as defined on the input.
+    //----------------------------------------------------------------------------
+    double intguess = input_db->getDoubleWithDefault("InitialGuess",300);
+    globalSolVec->setToScalar ( intguess );
 
       //-------------------------------------
       //   CREATE THE LINEAR THERMAL OPERATOR 1 ----
@@ -182,8 +187,8 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 											    input_db,
 											    thermalTransportModel2));
 
-      //--------------------------------------------
-
+      AMP::LinearAlgebra::Vector::shared_ptr thermalSolVec2 = globalSolVec->select( meshSelector2, "Temperature" );
+      AMP::LinearAlgebra::Vector::shared_ptr thermalRhsVec2 = globalRhsVec->select( meshSelector2, "Temperature" );
 
       //--------------------------------------------
       //   CREATE THE LINEAR THERMAL OPERATOR 2 ----
@@ -248,13 +253,13 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 
       boost::shared_ptr<AMP::InputDatabase> mapcladflow_db  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapCladto1DFlow"));
       boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapcladflowParams (new AMP::Operator::MapOperatorParameters( mapcladflow_db ));
-      mapcladflowParams->d_MeshAdapter = meshAdapter2;
+      mapcladflowParams->d_Mesh = meshAdapter2;
       boost::shared_ptr<AMP::Operator::Map3Dto1D> mapCladTo1DFlow1 (new AMP::Operator::Map3Dto1D( mapcladflowParams ));
       boost::shared_ptr<AMP::Operator::Map3Dto1D> mapCladTo1DFlow2 (new AMP::Operator::Map3Dto1D( mapcladflowParams ));
 
       boost::shared_ptr<AMP::InputDatabase> mapflowclad_db  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("Map1DFlowto3DFlow"));
       boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowcladParams (new AMP::Operator::MapOperatorParameters( mapflowclad_db ));
-      mapflowcladParams->d_MapAdapter = meshAdapter2;
+      mapflowcladParams->d_Mesh = meshAdapter2;
       boost::shared_ptr<AMP::Operator::Map1Dto3D> map1DFlowTo3DFlow1 (new AMP::Operator::Map1Dto3D( mapflowcladParams ));
       boost::shared_ptr<AMP::Operator::Map1Dto3D> map1DFlowTo3DFlow2 (new AMP::Operator::Map1Dto3D( mapflowcladParams ));
 
@@ -353,7 +358,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       coupledNonlinearParams3->d_Map3to1 = mapCladTo1DFlow1 ;
       coupledNonlinearParams3->d_FlowOperator = flowOperator;
       coupledNonlinearParams3->d_Map1to3 = map1DFlowTo3DFlow1;
-      coupledNonlinearParams3->d_MeshAdapter = meshAdapter2;
+      coupledNonlinearParams3->d_Mesh = meshAdapter2;
       boost::shared_ptr<AMP::Operator::CoupledFlowFrapconOperator>           coupledNonlinearOperator3(new AMP::Operator::CoupledFlowFrapconOperator(coupledNonlinearParams3));
 
       //-------------------------------------
@@ -375,7 +380,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       coupledlinearParams3->d_Map3to1 = mapCladTo1DFlow2 ;
       coupledlinearParams3->d_FlowOperator = flowJacobian;
       coupledlinearParams3->d_Map1to3 = map1DFlowTo3DFlow2;
-      coupledlinearParams3->d_MeshAdapter = meshAdapter2;
+      coupledlinearParams3->d_Mesh = meshAdapter2;
       boost::shared_ptr<AMP::Operator::CoupledFlowFrapconOperator>           coupledlinearOperator3(new AMP::Operator::CoupledFlowFrapconOperator(coupledlinearParams3));
 
       coupledLinearOperator->append(coupledlinearOperator3);
@@ -508,9 +513,9 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 
         columnNonlinearOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
         AMP::pout<<"Final   Residual Norm for Step " << tstep << " is: "<<globalResMultiVector->L2Norm()<<std::endl;
-#ifdef USE_SILO
-        manager->writeFile<AMP::Mesh::SiloIO> ( silo_name , tstep );
-#endif
+        #ifdef USE_SILO
+            siloWriter->writeFile( silo_name , tstep );
+        #endif
 
         std::cout<< "The Fuel/clad Max:Min values - "<<thermalSolVec1->max() << " " <<thermalSolVec2->min() <<std::endl;
         std::cout << "Surface Vector Max:Min values -  " << surfaceVector->max() << " " << surfaceVector->min() <<std::endl;

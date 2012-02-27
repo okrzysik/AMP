@@ -66,8 +66,6 @@ namespace AMP {
     void 
       NeutronicsRhs::getFromInput(SP_Database db)
       {
-        AMP_ERROR("Not converted yet");
-        /*
         AMP_ASSERT(db);
 
         // define the source type and create the output variable.
@@ -75,7 +73,7 @@ namespace AMP {
         d_type = str2id(str);
 
         std::string outVarName = db->getStringWithDefault("OutputVariable", str);
-        d_outputVariable.reset ( new  HexGaussPointVariable (outVarName,d_Mesh) );
+        d_outputVariable.reset ( new AMP::LinearAlgebra::Variable(outVarName) );
 
         // number of time steps
         d_numTimeSteps = db->getIntegerWithDefault("numTimeSteps", 1);
@@ -108,7 +106,7 @@ namespace AMP {
             d_fixedValues[0] = 1.;
           }
         }
-        */
+
       }
 
     /*
