@@ -1,13 +1,9 @@
 
-NumberOfMeshes = 1
-
-Mesh_1{
-  Filename = "PlateWithHole-1.e"
-    MeshName = "brick"
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 270
+Mesh {
+  MeshType = "libMesh"
+    dim = 3
+    MeshName = "TestMesh"
+    FileName = "PlateWithHole-1.e"
 }
 
 NumberOfLoadingSteps = 10
@@ -122,6 +118,7 @@ MechanicsLinearFEOperator2 {
     reset_reuses_matrix = TRUE
     InputVariable = "displacement"
     OutputVariable = "displacement"
+    isAttachedToNonlinearOperator = TRUE
 
     MechanicsElement {
       name="MechanicsLinearElement"
@@ -177,6 +174,7 @@ Displacement_Boundary {
   name = "DirichletVectorCorrection"
     print_info_level = 1
     skip_params = FALSE
+    isAttachedToVolumeOperator = FALSE
 
     number_of_ids = 3
 
