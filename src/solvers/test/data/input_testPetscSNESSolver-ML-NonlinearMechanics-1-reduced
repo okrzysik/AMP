@@ -1,14 +1,11 @@
 
-NumberOfMeshes = 1
-
-Mesh_1{
-  Filename = "brick.e"
-    MeshName = "brick"
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 1088
+Mesh {
+  MeshType = "libMesh"
+    dim = 3
+    MeshName = "TestMesh"
+    FileName = "brick.e"
 }
+
 
 NumberOfLoadingSteps = 1
 
@@ -82,6 +79,7 @@ MechanicsLinearFEOperator2 {
         reset_reuses_matrix = TRUE
         InputVariable = "disp"
         OutputVariable = "disp"
+        isAttachedToNonlinearOperator = TRUE
 
         MechanicsElement {
           name="MechanicsLinearElement"
