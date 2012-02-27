@@ -17,10 +17,7 @@
 #include "utils/PIO.h"
 #include "materials/Material.h"
 
-#include "ampmesh/MeshVariable.h"
 #include "ampmesh/SiloIO.h"
-
-#include "libmesh.h"
 
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
@@ -29,6 +26,13 @@
 #include "operators/NonlinearBVPOperator.h"
 #include "operators/ColumnOperator.h"
 #include "operators/OperatorBuilder.h"
+
+#include "ampmesh/Mesh.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
+#include "vectors/Variable.h"
+#include "vectors/Vector.h"
 
 
 extern "C"{
@@ -70,14 +74,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  AMP_INSIST(input_db->keyExists("NumberOfMeshes"), "Key does not exist");
-  int numMeshes = input_db->getInteger("NumberOfMeshes");
+  // Get the Mesh database and create the mesh parameters
+  boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(database));
+  meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
 
-  AMP::pout<<"Num meshes = "<<numMeshes<<std::endl;
-
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "cylinder" );
+  // Create the meshes from the input database
+  AMP::Mesh::Mesh::shared_ptr manager = AMP::Mesh::Mesh::buildMesh(meshParams);
+  AMP::Mesh::Mesh::shared_ptr meshAdapter = manager->Subset( "cylinder" );
 
   AMP::pout<<"Constructing Nonlinear Thermal Operator..."<<std::endl;
 
@@ -100,17 +104,19 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::LinearAlgebra::Variable> thermalVariable = thermalVolumeOperator->getOutputVariable();
 
   // create solution, rhs, and residual vectors
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( thermalVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector( thermalVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( thermalVariable );
+  AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,1,true);
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, thermalVariable, true );
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, thermalVariable, true );
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, thermalVariable, true );
 
   // create the following shared pointers for ease of use
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
   //-------------------------------------------------------------------------------------------//
-  // register some variables for plotting
-  manager->registerVectorAsData ( solVec, "Solution" );
-  manager->registerVectorAsData ( resVec, "Residual" );
+  // Create the silo writer and register the data
+  AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+  siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
+  siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
 
   AMP::pout<<"Constructing Linear Thermal Operator..."<<std::endl;
 
@@ -129,11 +135,17 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP_INSIST(input_db->keyExists("NeutronicsOperator"), "Key ''NeutronicsOperator'' is missing!");
   boost::shared_ptr<AMP::Database>  neutronicsOp_db = input_db->getDatabase("NeutronicsOperator");
   boost::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
-  neutronicsParams->d_MeshAdapter = meshAdapter;
+  neutronicsParams->d_Mesh = meshAdapter;
   boost::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
 
+  // Create a DOF manager for a gauss point vector 
+  int DOFsPerNode = 8;
+  int ghostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr gauss_dof_map = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerNode, split);
+
   AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
-  AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = meshAdapter->createVector( SpecificPowerVar );
+  AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = AMP::LinearAlgebra::createVector( gauss_dof_map, SpecificPowerVar, split );
 
   neutronicsOperator->apply(nullVec, nullVec, SpecificPowerVec, 1., 0.);
 
@@ -152,7 +164,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   // Create the power (heat source) vector.
   AMP::LinearAlgebra::Variable::shared_ptr PowerInWattsVar = sourceOperator->getOutputVariable();
-  AMP::LinearAlgebra::Vector::shared_ptr   PowerInWattsVec = meshAdapter->createVector( PowerInWattsVar );
+  AMP::LinearAlgebra::Vector::shared_ptr   PowerInWattsVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, PowerInWattsVar, true );
   PowerInWattsVec->zero();
 
   // convert the vector of specific power to power for a given basis.
@@ -199,7 +211,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::pout<<"Initial Residual Norm: "<< initialResidualNorm <<std::endl;
 
 #ifdef USE_SILO
-  manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 0 );
+  siloWriter->writeFile( exeName , 0 );
 #endif
 
   if(initialResidualNorm > 1.0e-08)
@@ -214,7 +226,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   if( globalComm.getSize() == 1 ) {
 #ifdef USE_SILO
-    manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 0 );
+    siloWriter->writeFile( exeName , 0 );
 #endif
   }
 
