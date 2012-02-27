@@ -71,11 +71,16 @@ void sourceTest(AMP::UnitTest *ut , std::string exeName)
     // set the time.
     //ntxRhs->setTimeInSeconds(8000000.);
     //ut.passes( "NeutronicsRhs, constructed stand-alone, set the time in seconds for: " + input_file);
+    // Create a DOF manager for a gauss point vector 
+    int DOFsPerNode = 8;
+    int ghostWidth = 1;
+    bool split = true;
+    AMP::Discretization::DOFManager::shared_ptr dof_map = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerNode, split);
     // create a variable/vector combo.
     AMP::LinearAlgebra::Vector::shared_ptr                      nullVec;
     //AMP::Operator::NeutronicsRhs::SP_HexGaussPointVariable outVar(new AMP::Operator::NeutronicsRhs::HexGaussPointVariable("outpower") );
     AMP::LinearAlgebra::Variable::shared_ptr outVar = ntxRhs->getOutputVariable();
-    AMP::LinearAlgebra::Vector::shared_ptr   outVec = meshAdapter->createVector( outVar );
+    AMP::LinearAlgebra::Vector::shared_ptr   outVec = AMP::LinearAlgebra::createVector( dof_map, outVar, split );
     ntxRhs->apply(nullVec, nullVec, outVec, 1., 0. );
   }
 

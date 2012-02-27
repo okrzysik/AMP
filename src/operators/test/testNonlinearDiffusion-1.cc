@@ -13,9 +13,7 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
-
-#include "libmesh.h"
+#include "ampmesh/Mesh.h"
 
 #include "operators/diffusion/DiffusionTransportModel.h"
 #include "operators/diffusion/DiffusionConstants.h"
@@ -25,9 +23,15 @@
 #include "operators/diffusion/DiffusionNonlinearElement.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperatorParameters.h"
-#include "../ElementPhysicsModelParameters.h"
-#include "../ElementPhysicsModelFactory.h"
-#include "../OperatorBuilder.h"
+#include "operators/ElementPhysicsModelParameters.h"
+#include "operators/ElementPhysicsModelFactory.h"
+#include "operators/OperatorBuilder.h"
+
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
+#include "vectors/Variable.h"
+#include "vectors/Vector.h"
 
 #include "applyTests.h"
 
@@ -50,11 +54,21 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName)
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
+  // Get the mesh name
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
   std::string mesh_file = input_db->getString("Mesh");
 
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = AMP::Mesh::MeshManager::Adapter::shared_ptr ( new AMP::Mesh::MeshManager::Adapter () );
-  meshAdapter->readExodusIIFile ( mesh_file.c_str() );
+  // Create the mesh parameter object
+  boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+  database->putInteger("dim",3);
+  database->putString("MeshName","mesh");
+  database->putString("MeshType","libMesh");
+  database->putString("FileName",mesh_file);
+  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+
+  // Create the mesh
+  AMP::Mesh::Mesh::shared_ptr  meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
 
   // nonlinear operator
   boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> diffOp;
