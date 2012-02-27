@@ -1,22 +1,17 @@
+
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include <iostream>
-#include <string>
-
-#include "boost/shared_ptr.hpp"
-
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "utils/AMP_MPI.h"
-#include "utils/AMPManager.h"
 #include "utils/PIO.h"
-#include "materials/Material.h"
 
-#include "ampmesh/MeshVariable.h"
+#include <iostream>
+#include <string>
+
 #include "ampmesh/SiloIO.h"
-
 
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"
@@ -27,15 +22,14 @@
 #include "operators/NonlinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 
-#include "../PetscKrylovSolverParameters.h"
-#include "../PetscKrylovSolver.h"
-#include "../PetscSNESSolverParameters.h"
-#include "../PetscSNESSolver.h"
+#include "solvers/PetscKrylovSolverParameters.h"
+#include "solvers/PetscKrylovSolver.h"
+#include "solvers/PetscSNESSolverParameters.h"
+#include "solvers/PetscSNESSolver.h"
 
-#include "../TrilinosMLSolver.h"
+#include "solvers/TrilinosMLSolver.h"
 
-
-void deformMesh(AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter,
+void deformMesh(AMP::Mesh::Mesh::shared_ptr meshAdapter,
     AMP::LinearAlgebra::Vector::shared_ptr mechSolVec) {
   AMP::Mesh::DOFMap::shared_ptr dof_map = meshAdapter->getDOFMap(mechSolVec->getVariable());
 
