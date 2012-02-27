@@ -4,6 +4,8 @@
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 #include "vectors/VectorBuilder.h"
+#include "cell_hex8.h"
+#include "node.h"
 
 namespace AMP {
   namespace Operator {

@@ -58,7 +58,6 @@ namespace LinearAlgebra {
     return d_vVectors.end(); 
   }
 
-
   inline
   const Vector::shared_ptr  &MultiVector::getVector ( const VectorOperations &rhs , size_t which )  const
   {
