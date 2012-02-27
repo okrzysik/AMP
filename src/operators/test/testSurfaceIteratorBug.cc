@@ -114,9 +114,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   vec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
 
   double l2Norm = vec->L2Norm();
+  std::cout<<"size = "<<vec->getGlobalSize()<<std::endl;
   std::cout<<"L2 Norm = "<<std::setprecision(15)<<l2Norm<<std::endl;
 
-  if ( AMP::Utilities::approx_equal(l2Norm,0.00112133307409082) )
+  if ( AMP::Utilities::approx_equal(l2Norm,0.00106829009941852) )
      ut->passes("L2 Norm has expected value");
   else
      ut->failure("L2 Norm has expected value");
