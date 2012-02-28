@@ -89,6 +89,7 @@ MechanicsLinearFEOperator2 {
     reset_reuses_matrix = TRUE
     InputVariable = "disp"
     OutputVariable = "disp"
+    isAttachedToNonlinearOperator = TRUE
 
     MechanicsElement {
       name="MechanicsLinearElement"
