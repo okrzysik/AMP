@@ -1,6 +1,4 @@
 
-#include <iostream>
-
 #include "utils/InputManager.h"
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
@@ -10,14 +8,16 @@
 
 #include "mpi.h"
 
-#include "boost/shared_ptr.hpp"
-
+#include <iostream>
 #include <cstdio>
 #include <cstring>
 #include <vector>
 #include <algorithm>
 #include <cmath>
 
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
+#include "ampmesh/libmesh/libMesh.h"
 #include "ampmesh/SiloIO.h"
 
 #include "operators/OperatorBuilder.h"
@@ -41,6 +41,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   AMP::PIO::logOnlyNodeZero(log_file);
 
+#ifdef USE_SILO
+  // Create the silo writer and register the data
+  AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
+#endif
+
   boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
@@ -57,9 +62,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   int caseCnt = 0;
   for(int meshId = 1; meshId <= numMeshes; meshId++) {
-    AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-    AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-
     char meshFileKey[200];
     sprintf(meshFileKey, "mesh%d", meshId);
 
@@ -75,9 +77,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     MeshCommunication().broadcast(*(mesh.get()));
     mesh->prepare_for_use(false);
 
-    AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter ( new AMP::Mesh::MeshManager::Adapter (mesh) );
-
-    manager->addMesh(meshAdapter, "mesh");
+    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::shared_ptr (
+        new AMP::Mesh::libMesh (mesh, "TestMesh") );
 
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
     boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> loadOperator = boost::dynamic_pointer_cast<
@@ -122,9 +123,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
         AMP::LinearAlgebra::Variable::shared_ptr dispVar = nonlinearBVPoperator->getOutputVariable();
 
+        AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
+            meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
+
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-        AMP::LinearAlgebra::Vector::shared_ptr solVec = manager->createVector(dispVar);
-        AMP::LinearAlgebra::Vector::shared_ptr rhsVec = manager->createVector(dispVar);
+        AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector(dofMap, dispVar, true);
+        AMP::LinearAlgebra::Vector::shared_ptr rhsVec = solVec->cloneVector();
 
         loadOperator->setVariable(dispVar);
         rhsVec->zero();
@@ -203,10 +207,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
               kspSolver->setPreconditioner(mlSolver);
 
 #ifdef USE_SILO
-              manager->registerVectorAsData(solVec, "Displacement");
-              char outFileName[200];
+              siloWriter->registerVector(solVec, meshAdapter, AMP::Mesh::Vertex, "Displacement" );
+              char outFileName[256];
               sprintf(outFileName, "%s_case_%d", exeName.c_str(), caseCnt);
-              manager->writeFile<AMP::Mesh::SiloIO>(outFileName, 1);
+              siloWriter->writeFile(outFileName, 0);
 #endif
 
               snesSolver->solve(rhsVec, solVec);
@@ -255,6 +259,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 int main(int argc, char *argv[])
 {
   AMP::AMPManager::startup(argc, argv);
+  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(AMP_COMM_WORLD));
+  
   AMP::UnitTest ut;
 
   std::string exeName = "jfnkPaperDriver";
@@ -270,8 +276,9 @@ int main(int argc, char *argv[])
   }
 
   ut.report();
-
   int num_failed = ut.NumFailGlobal();
+
+  libmeshInit.reset();
   AMP::AMPManager::shutdown();
   return num_failed;
 }  
