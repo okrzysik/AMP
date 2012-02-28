@@ -1,15 +1,10 @@
 
-NumberOfMeshes = 1
-
-Mesh_1{
-  Filename = "tiedContactV1_fusedpelletclad.e"
-    MeshName = "mesh"
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 10
+Mesh {
+  MeshType = "libMesh"
+    dim = 3
+    MeshName = "TestMesh"
+    FileName = "tiedContactV1_fusedpelletclad.e"
 }
-
 
 MechanicsBVPOperator {
   name="LinearBVPOperator"

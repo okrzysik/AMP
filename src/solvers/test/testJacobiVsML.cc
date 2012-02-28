@@ -10,6 +10,8 @@
 #include <vector>
 #include <algorithm>
 
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
@@ -18,8 +20,6 @@
 #include "PetscKrylovSolverParameters.h"
 #include "PetscKrylovSolver.h"
 #include "TrilinosMLSolver.h"
-
-#include "boost/shared_ptr.hpp"
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
@@ -34,34 +34,36 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   input_db->printClassData(AMP::plog);
 
   //Read the mesh
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "mesh" );
+  AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
+  boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
+  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+  meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+  AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
-  std::cout<<"Mesh has "<<(meshAdapter->numLocalNodes())<<" nodes."<<std::endl;
+  std::cout<<"Mesh has "<<(meshAdapter->numLocalElements(AMP::Mesh::Vertex))<<" nodes."<<std::endl;
 
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
     boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-          "MechanicsBVPOperator", 
-          input_db,
-          elementPhysicsModel));
+          "MechanicsBVPOperator", input_db, elementPhysicsModel));
+
+  AMP::LinearAlgebra::Variable::shared_ptr displacementVariable = bvpOperator->getOutputVariable();
 
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletVecOp =
     boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-          "Load_Boundary",
-          input_db,
-          dummyModel));
+          "Load_Boundary", input_db, dummyModel));
   //This has an in-place apply. So, it has an empty input variable and
   //the output variable is the same as what it is operating on. 
-  dirichletVecOp->setVariable(bvpOperator->getOutputVariable());
+  dirichletVecOp->setVariable( displacementVariable );
+
+  AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
+      meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-
-  AMP::LinearAlgebra::Vector::shared_ptr mechSolVec = meshAdapter->createVector( bvpOperator->getOutputVariable() );
-  AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = meshAdapter->createVector( bvpOperator->getOutputVariable() );
-  AMP::LinearAlgebra::Vector::shared_ptr mechResVec = meshAdapter->createVector( bvpOperator->getOutputVariable() );
+  AMP::LinearAlgebra::Vector::shared_ptr mechSolVec = AMP::LinearAlgebra::createVector(dofMap, displacementVariable, true);
+  AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = mechSolVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr mechResVec = mechSolVec->cloneVector();
 
   mechRhsVec->zero();
   mechResVec->zero();
