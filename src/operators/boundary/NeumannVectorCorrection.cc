@@ -122,21 +122,28 @@ NeumannVectorCorrection :: computeRHScorrection(const boost::shared_ptr<NeumannV
           count++;
           
           AMP::Mesh::MeshManager::Adapter::Element cur_side = *bnd;
+
+                    
+          d_feType.reset( new ::FEType(d_feTypeOrder, d_feFamily) );
+          d_fe.reset( (::FEBase::build(2, (*d_feType))).release() );
           
           d_phi = &(d_fe->get_phi());
           d_JxW = &(d_fe->get_JxW());
           
-          d_fe->reinit ( &cur_side.getElem() );
+          d_qrule.reset( (::QBase::build(d_qruleType, 2, d_qruleOrder)).release() );
+          d_fe->attach_quadrature_rule( d_qrule.get() );
           
+          d_fe->reinit ( &cur_side.getElem() );
+
           std::vector<unsigned int> bndGlobalIds;
           dof_map->getDOFs(cur_side, bndGlobalIds, dofId);
-          
+
           std::vector<double> flux(bndGlobalIds.size(), 0.0);
           const std::vector<std::vector<Real> > &phi = *d_phi;
           const std::vector<Real> &djxw = *d_JxW;
-          
+
           for(unsigned int i = 0; i < bndGlobalIds.size(); i++)
-            {
+          {
               for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) 
             {
               std::vector<std::vector<double> > temp(1) ;

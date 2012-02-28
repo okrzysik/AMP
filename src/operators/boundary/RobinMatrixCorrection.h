@@ -114,14 +114,23 @@ namespace Operator {
     AMP::LinearAlgebra::Vector::shared_ptr d_Frozen;
     
     boost::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
-    
+ 
+    std::string         d_feTypeOrderName; 
+    libMeshEnums::Order d_feTypeOrder;
+    std::string         d_feFamilyName;
+    libMeshEnums::FEFamily d_feFamily;
+    std::string         d_qruleTypeName;
+    libMeshEnums::QuadratureType d_qruleType;
+    std::string         d_qruleOrderName; 
+    libMeshEnums::Order d_qruleOrder;
+
   private :
-    
+
     boost::shared_ptr<NeumannVectorCorrection> d_NeumannCorrection; 
     boost::shared_ptr<NeumannVectorCorrectionParameters> d_NeumannParams; 
-    
+
   };
-  
+
 }
 }
 

@@ -20,39 +20,37 @@ namespace Operator {
 RobinMatrixCorrection :: RobinMatrixCorrection(const boost::shared_ptr<RobinMatrixCorrectionParameters> & params)
   : BoundaryOperator (params)
 {
-  std::string feTypeOrderName = (params->d_db)->getStringWithDefault("FE_ORDER", "FIRST");
+  d_feTypeOrderName = (params->d_db)->getStringWithDefault("FE_ORDER", "FIRST");
   
-  libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>(feTypeOrderName);
+  d_feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>(d_feTypeOrderName);
   
-  std::string feFamilyName = (params->d_db)->getStringWithDefault("FE_FAMILY", "LAGRANGE");
+  d_feFamilyName = (params->d_db)->getStringWithDefault("FE_FAMILY", "LAGRANGE");
   
-  libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>(feFamilyName);
+  d_feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>(d_feFamilyName);
   
-  std::string qruleTypeName = (params->d_db)->getStringWithDefault("QRULE_TYPE", "QGAUSS");
+  d_qruleTypeName = (params->d_db)->getStringWithDefault("QRULE_TYPE", "QGAUSS");
   
-  libMeshEnums::QuadratureType qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>(qruleTypeName);
+  d_qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>(d_qruleTypeName);
   
   // This is a boundary integral
   const unsigned int dimension = 2;
   
-  d_feType.reset( new ::FEType(feTypeOrder, feFamily) );
+  d_feType.reset( new ::FEType(d_feTypeOrder, d_feFamily) );
   
   d_fe.reset( (::FEBase::build(dimension, (*d_feType))).release() );
   
-  std::string qruleOrderName = (params->d_db)->getStringWithDefault("QRULE_ORDER", "DEFAULT");
+  d_qruleOrderName = (params->d_db)->getStringWithDefault("QRULE_ORDER", "DEFAULT");
   
-  libMeshEnums::Order qruleOrder;
-  
-  if(qruleOrderName == "DEFAULT")
+  if(d_qruleOrderName == "DEFAULT")
     {
-      qruleOrder = d_feType->default_quadrature_order();
+      d_qruleOrder = d_feType->default_quadrature_order();
     }
   else
     {
-      qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(qruleOrderName);
+      d_qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(d_qruleOrderName);
     }
   
-  d_qrule.reset( (::QBase::build(qruleType, dimension, qruleOrder)).release() );
+  d_qrule.reset( (::QBase::build(d_qruleType, dimension, d_qruleOrder)).release() );
   
   d_fe->attach_quadrature_rule( d_qrule.get() );
   
@@ -168,9 +166,16 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
         {
           
           AMP::Mesh::MeshManager::Adapter::Element cur_side = *bnd1;
+
+          
+          d_feType.reset( new ::FEType(d_feTypeOrder, d_feFamily) );
+          d_fe.reset( (::FEBase::build(2, (*d_feType))).release() );
           
           d_phi = &(d_fe->get_phi());
           d_JxW = &(d_fe->get_JxW());
+          
+          d_qrule.reset( (::QBase::build(d_qruleType, 2, d_qruleOrder)).release() );
+          d_fe->attach_quadrature_rule( d_qrule.get() );
           
           d_fe->reinit ( &cur_side.getElem() );
           
