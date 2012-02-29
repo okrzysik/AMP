@@ -6,6 +6,8 @@
 #include "NeutronicsRhs.h"
 #include "NeutronicsRhsParameters.h"
 #include "vectors/Vector.h"
+#include "ampmesh/Mesh.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include "utils/InputDatabase.h"
 
@@ -177,8 +179,6 @@ namespace AMP {
           const  double      a,
           const  double      b) {
         (void) f; (void) u;
-        AMP_ERROR("Not converted yet");
-        /*
         // NeutronicsRhs is made to provide a power, so a and b are not optional.
         AMP_ASSERT(AMP::Utilities::approx_equal(a,1.));
         AMP_ASSERT(AMP::Utilities::approx_equal(b,0.));
@@ -195,22 +195,25 @@ namespace AMP {
           double value = d_fixedValues[this_step];
           rInternal->setToScalar(value);
         } else {
-          AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_Mesh->beginElement();
-          AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_Mesh->endElement();
+          int ghostWidth = 1;
+          AMP::Mesh::MeshIterator  elem      = d_Mesh->getIterator( AMP::Mesh::Volume, ghostWidth );
+          AMP::Mesh::MeshIterator  end_elems = elem.end();
 
+          unsigned int DOFsPerVolume = 8;
+         
+          bool split = true; 
+          AMP::Discretization::DOFManager::shared_ptr dof_map = AMP::Discretization::simpleDOFManager::create(d_Mesh, AMP::Mesh::Volume, ghostWidth, DOFsPerVolume, split); 
+          
           int gp = 0;
           for( ; elem != end_elems; ++elem) {
-            for( unsigned int i = 0; i < 8; gp++ , i++ ) {
-              AMP::Mesh::DOFMap::shared_ptr  dof_map = d_Mesh->getDOFMap ( d_outputVariable );
-              std::vector<unsigned int> ndx;
-              std::vector<unsigned int> empty;
-              dof_map->getDOFs ( *elem , ndx , empty );
+            for( unsigned int i = 0; i < DOFsPerVolume; gp++ , i++ ) {
+              std::vector<size_t> ndx;
+              dof_map->getDOFs ( elem->globalID(), ndx);
               int  offset = ndx[i];
               rInternal->setValueByGlobalID ( offset, d_values[this_step][gp] );
             }//end for gauss-points
           }//end for elements
         }
-        */
       }
 
 
