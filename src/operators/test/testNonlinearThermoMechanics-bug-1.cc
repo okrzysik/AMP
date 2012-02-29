@@ -15,8 +15,11 @@
 #include "utils/PIO.h"
 #include "materials/Material.h"
 
+#include "ampmesh/Mesh.h"
+#include "vectors/VectorBuilder.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 
-#include "ampmesh/MeshVariable.h"
 #include "ampmesh/SiloIO.h"
 
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
@@ -45,9 +48,20 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "cylinder" );
+//--------------------------------------------------
+//   Create the Mesh.
+//--------------------------------------------------
+  boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+  boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+  mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+  boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+
+//--------------------------------------------------
+//  Old Mesh
+//--------------------------------------------------
+//  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
+//  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
+//  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "cylinder" );
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a nonlinear BVP operator for nonlinear mechanics
@@ -85,22 +99,33 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermalVolumeOperator = boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearThermalOperator->getVolumeOperator());
   
   boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputVariable(new AMP::LinearAlgebra::MultiVariable("inputVariable"));
-  inputVariable->add(mechanicsVolumeOperator->getInputVariable(AMP::Operator::Mechanics::DISPLACEMENT));
-  inputVariable->add(mechanicsVolumeOperator->getInputVariable(AMP::Operator::Mechanics::TEMPERATURE));
+//inputVariable->add(mechanicsVolumeOperator->getInputVariable(AMP::Operator::Mechanics::DISPLACEMENT));
+  inputVariable->add(mechanicsVolumeOperator->getInputVariable());
                     
   // initialize the output multi-variable
   AMP::LinearAlgebra::Variable::shared_ptr outputVariable = nonlinearThermoMechanicsOperator->getOutputVariable();
 
+  // Create a DOF manager for a nodal vector 
+  int DOFsPerNode = 1;
+  int nodalGhostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
+
   // create solution, rhs, and residual vectors
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( inputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( outputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( nodalDofMap, inputVariable  );
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( nodalDofMap, outputVariable );
 
   // create the following shared pointers for ease of use
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // IMPORTANT:: call init before proceeding any further on the nonlinear mechanics operator
-  AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = meshAdapter->createVector( thermalVolumeOperator->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE) );
+//  previous line:
+//  AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = meshAdapter->createVector( thermalVolumeOperator->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE) );
+//  converted line:
+//  AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = AMP::LinearAlgebra::createVector( nodalDofMap, (thermalVolumeOperator->getInputVariable())->getVariable(AMP::Operator::Diffusion::TEMPERATURE) );
+//  placeholder line till diffusion is converted:
+  AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVolumeOperator->getInputVariable() );
   referenceTemperatureVec->setToScalar(300.0);
   mechanicsVolumeOperator->setReferenceTemperature(referenceTemperatureVec);
   mechanicsVolumeOperator->init();

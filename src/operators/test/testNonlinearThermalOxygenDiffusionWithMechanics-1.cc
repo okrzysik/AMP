@@ -13,7 +13,10 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/Mesh.h"
+#include "vectors/VectorBuilder.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include "materials/Material.h"
 
@@ -43,9 +46,13 @@ void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "cylinder" );
+//--------------------------------------------------
+//   Create the Mesh.
+//--------------------------------------------------
+  boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+  boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+  mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+  boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a nonlinear BVP operator for nonlinear mechanics
@@ -95,17 +102,24 @@ void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)
   // initialize the input multi-variable
   boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> volumeOperator = boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsOperator->getVolumeOperator());
   boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputVariable(new AMP::LinearAlgebra::MultiVariable("inputVariable"));
-  inputVariable->add(volumeOperator->getInputVariable(AMP::Operator::Mechanics::DISPLACEMENT));
-  inputVariable->add(volumeOperator->getInputVariable(AMP::Operator::Mechanics::TEMPERATURE));
-  inputVariable->add(volumeOperator->getInputVariable(AMP::Operator::Mechanics::OXYGEN_CONCENTRATION));
+  //inputVariable->add(volumeOperator->getInputVariable(AMP::Operator::Mechanics::DISPLACEMENT));
+  //inputVariable->add(volumeOperator->getInputVariable(AMP::Operator::Mechanics::TEMPERATURE));
+  //inputVariable->add(volumeOperator->getInputVariable(AMP::Operator::Mechanics::OXYGEN_CONCENTRATION));
+  inputVariable->add(volumeOperator->getInputVariable());
 
   // initialize the output multi-variable
   AMP::LinearAlgebra::Variable::shared_ptr outputVariable = nonlinearThermalOxygenDiffusionMechanicsOperator->getOutputVariable();
 
+  // Create a DOF manager for a nodal vector 
+  int DOFsPerNode = 1;
+  int nodalGhostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
+
   // create solution, rhs, and residual vectors
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( inputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector( outputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( outputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( nodalDofMap, inputVariable  );
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( nodalDofMap, outputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( nodalDofMap, outputVariable );
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // set up the frozen variables for each operator
@@ -156,7 +170,12 @@ void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // IMPORTANT:: call init before proceeding any further on the nonlinear mechanics operator
-  AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = meshAdapter->createVector( volumeOperator->getInputVariable(AMP::Operator::Mechanics::TEMPERATURE) );
+//  previous line:
+//  AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = meshAdapter->createVector( volumeOperator->getInputVariable(AMP::Operator::Mechanics::TEMPERATURE) );
+//  converted line:
+//  AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = AMP::LinearAlgebra::createVector( nodalDofMap, (volumeOperator->getInputVariable())->getVariable(AMP::Operator::Mechanics::TEMPERATURE) );
+//  placeholder line till diffusion is converted:
+  AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = AMP::LinearAlgebra::createVector( nodalDofMap, volumeOperator->getInputVariable() );
   referenceTemperatureVec->setToScalar(300.0);
   volumeOperator->setReferenceTemperature(referenceTemperatureVec);
   volumeOperator->init();
