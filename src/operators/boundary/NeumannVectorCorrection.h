@@ -56,7 +56,7 @@ namespace Operator {
         This function computes the surface integral for either constant or varrying flux values
         across the boundary.
         */
-      void computeRHScorrection(const boost::shared_ptr<NeumannVectorCorrectionParameters> & );
+      void computeRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhsCorrection);
 
       /**
         This function reads parameters related to boundary Ids
@@ -66,10 +66,7 @@ namespace Operator {
       /**
         Adds a vector to the RHS vector.
         */
-      void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) {
-          AMP::LinearAlgebra::Vector::shared_ptr myRhs = rhs->subsetVectorForVariable(d_variable);
-          myRhs->add(myRhs, d_rhsCorrectionAdd);
-      }
+      void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs); 
 
       /**
         This function returns a parameter object that can be used to reset the corresponding
@@ -132,8 +129,6 @@ namespace Operator {
 
       boost::shared_ptr < ::QBase > d_qrule;
 
-      const ::Elem *d_elem;
-
       boost::shared_ptr<NeumannVectorCorrectionParameters> d_params;
 
       boost::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
@@ -141,6 +136,20 @@ namespace Operator {
       std::vector<double> d_beta;
 
       std::vector<double> d_gamma;
+
+      void createCurrentLibMeshElement();
+
+      void destroyCurrentLibMeshElement();
+
+      void getDofIndicesForCurrentElement();
+
+      std::vector<AMP::Mesh::MeshElement> d_currNodes;
+
+      ::Elem* d_currElemPtr;
+      
+      std::vector<size_t> d_dofIndices; 
+
+      AMP::Discretization::DOFManager::shared_ptr d_dofManager; 
 
     private :
 
