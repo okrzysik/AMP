@@ -72,7 +72,6 @@ void linearThermalTest(AMP::UnitTest *ut )
     boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 //--------------------------------------------------
 
-
 //--------------------------------------------------
 // Create a DOF manager for a nodal vector 
 //--------------------------------------------------
@@ -131,7 +130,6 @@ void linearThermalTest(AMP::UnitTest *ut )
 
 
   AMP::LinearAlgebra::Vector::shared_ptr TemperatureInKelvinVec = AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getInputVariable()  );
-
   AMP::LinearAlgebra::Vector::shared_ptr RightHandSideVec       = AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
   AMP::LinearAlgebra::Vector::shared_ptr ResidualVec            = AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
 
@@ -208,7 +206,6 @@ void linearThermalTest(AMP::UnitTest *ut )
 
   // Plot the results
   AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);
-  if( globalComm.getSize() == 1 ) {
 #ifdef USE_SILO
      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
      siloWriter->registerMesh( meshAdapter );
@@ -218,7 +215,6 @@ void linearThermalTest(AMP::UnitTest *ut )
  
      siloWriter->writeFile( input_file , 0 );
 #endif
-  }
 
   input_db.reset();
 

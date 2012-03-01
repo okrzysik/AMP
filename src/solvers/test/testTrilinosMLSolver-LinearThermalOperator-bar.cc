@@ -25,6 +25,10 @@
 #include "operators/OperatorBuilder.h"
 
 #include "operators/boundary/DirichletMatrixCorrection.h"
+#include "ampmesh/Mesh.h"
+#include "vectors/VectorBuilder.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include "../TrilinosMLSolver.h"
 
@@ -57,13 +61,27 @@ void linearThermalTest(AMP::UnitTest *ut )
   //   #include "utils/PIO.h"
   AMP::PIO::logAllNodes(log_file);
 
-  AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  //std::string mesh_file = input_db->getString("Mesh");
+//--------------------------------------------------
+//   Create the Mesh.
+//--------------------------------------------------
+    AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
+    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+//--------------------------------------------------
 
-  // Construct a mesh manager which reads in the fuel mesh
-  AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "bar" );
+//--------------------------------------------------
+// Create a DOF manager for a nodal vector 
+//--------------------------------------------------
+  int DOFsPerNode = 1;
+  int DOFsPerElement = 8;
+  int nodalGhostWidth = 1;
+  int gaussPointGhostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth,      DOFsPerNode,    split);
+  AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split);
+//--------------------------------------------------
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
   ////////////////////////////////////
@@ -80,7 +98,7 @@ void linearThermalTest(AMP::UnitTest *ut )
   neutronicsOperator->setTimeStep(0.);
 
   AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
-  AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = meshAdapter->createVector( SpecificPowerVar );
+  AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
 
   neutronicsOperator->apply(nullVec, nullVec, SpecificPowerVec, 1., 0.);
 
@@ -98,7 +116,7 @@ void linearThermalTest(AMP::UnitTest *ut )
 
   // Create the power (heat source) vector.
   AMP::LinearAlgebra::Variable::shared_ptr PowerInWattsVar = sourceOperator->getOutputVariable();
-  AMP::LinearAlgebra::Vector::shared_ptr   PowerInWattsVec = meshAdapter->createVector( PowerInWattsVar );
+  AMP::LinearAlgebra::Vector::shared_ptr   PowerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap, PowerInWattsVar );
 
   // convert the vector of specific power to power for a given basis.
   sourceOperator->apply(nullVec, SpecificPowerVec, PowerInWattsVec, 1., 0.);
@@ -113,9 +131,9 @@ void linearThermalTest(AMP::UnitTest *ut )
 																						       transportModel));
 
 
-  AMP::LinearAlgebra::Vector::shared_ptr TemperatureInKelvinVec = meshAdapter->createVector( diffusionOperator->getInputVariable() );
-  AMP::LinearAlgebra::Vector::shared_ptr RightHandSideVec       = meshAdapter->createVector( diffusionOperator->getOutputVariable() );
-  AMP::LinearAlgebra::Vector::shared_ptr ResidualVec            = meshAdapter->createVector( diffusionOperator->getOutputVariable() );
+  AMP::LinearAlgebra::Vector::shared_ptr TemperatureInKelvinVec = AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getInputVariable()  );
+  AMP::LinearAlgebra::Vector::shared_ptr RightHandSideVec       = AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
+  AMP::LinearAlgebra::Vector::shared_ptr ResidualVec            = AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
 
   RightHandSideVec->copyVector(PowerInWattsVec);
 
@@ -170,8 +188,8 @@ void linearThermalTest(AMP::UnitTest *ut )
   }
 
   // check the solution
-  AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator iterator = meshAdapter->beginOwnedNode(); 
-  AMP::Mesh::DOFMap::shared_ptr dofmap = meshAdapter->getDOFMap( diffusionOperator->getInputVariable() );
+  int zeroGhostWidth = 0;
+  AMP::Mesh::MeshIterator  iterator = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
 
   // The analytical solution is:  T = a + b*z + c*z*z
   //   c = -power/2
@@ -202,21 +220,23 @@ void linearThermalTest(AMP::UnitTest *ut )
       }
       file.precision(14);
 
-      iterator = meshAdapter->beginOwnedNode();
+      iterator = iterator.begin();
       size_t numNodes = 0, iNode=0;
-	  for(; iterator != meshAdapter->endOwnedNode(); iterator++ ) numNodes++;
+	  for(; iterator != iterator.end(); iterator++ ) numNodes++;
 
-      iterator = meshAdapter->beginOwnedNode();
+      iterator = iterator.end();
       double mse = 0.0;
-	  for( ; iterator != meshAdapter->endOwnedNode(); iterator++ ) {
-		cal = TemperatureInKelvinVec->getValueByGlobalID( dofmap->getGlobalID( iterator->globalID(), 0 ) );
-		zee = iterator->z();
+	  for( ; iterator != iterator.end(); iterator++ ) {
+    std::vector<size_t> gid;
+    nodalDofMap->getDOFs ( iterator->globalID() , gid);
+		cal = TemperatureInKelvinVec->getValueByGlobalID( gid[0] );
+    zee = ( iterator->coord() )[2];
 		sol = a + b*zee + c*zee*zee;
 		err = fabs(cal-sol)*2./(cal+sol+std::numeric_limits<double>::epsilon());
 		double x, y, z;
-		x = iterator->x();
-		y = iterator->y();
-		z = iterator->z();
+    x = ( iterator->coord() )[0];
+    y = ( iterator->coord() )[1];
+    z = ( iterator->coord() )[2];
 		mse += (sol - cal)*(sol-cal);
 		file << "{" << x << "," << y << "," << z << "," << sol << "," << cal << "," << err << "}";
 		if (iNode<numNodes-1) file << "," << std::endl;
@@ -240,23 +260,16 @@ void linearThermalTest(AMP::UnitTest *ut )
   if( passes ) ut->passes("The linear thermal solve is verified.");
  
  // Plot the results
-  if( globalComm.getSize() == 1 ) {
 #ifdef USE_SILO
-    AMP::LinearAlgebra::Variable::shared_ptr tmpVar1 = PowerInWattsVec->getVariable();
-    tmpVar1->setName("PowerInWatts");
-    meshAdapter->registerVectorAsData ( PowerInWattsVec );
+     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+     siloWriter->registerMesh( meshAdapter );
 
-    tmpVar1 = TemperatureInKelvinVec->getVariable();
-    tmpVar1->setName("TemperatureInKelvin");
-    meshAdapter->registerVectorAsData ( TemperatureInKelvinVec );
-
-    tmpVar1 = ResidualVec->getVariable();
-    tmpVar1->setName("Residual");
-
-    meshAdapter->registerVectorAsData ( ResidualVec );
-    manager->writeFile<AMP::Mesh::SiloIO> ( exeName, 0 );
+     siloWriter->registerVector( PowerInWattsVec,        meshAdapter, AMP::Mesh::Volume, "PowerInWatts" );
+     siloWriter->registerVector( TemperatureInKelvinVec, meshAdapter, AMP::Mesh::Vertex, "TemperatureInKelvin" );
+     siloWriter->registerVector( ResidualVec,            meshAdapter, AMP::Mesh::Vertex, "Residual" );
+ 
+     siloWriter->writeFile( input_file , 0 );
 #endif
-  }
 
   input_db.reset();
 
