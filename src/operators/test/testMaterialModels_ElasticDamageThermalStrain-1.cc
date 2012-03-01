@@ -14,10 +14,12 @@
 #include "utils/PIO.h"
 #include "materials/Material.h"
 
+#include "ampmesh/Mesh.h"
+#include "vectors/VectorBuilder.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 
-#include "ampmesh/MeshVariable.h"
 #include "ampmesh/SiloIO.h"
-
 
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"

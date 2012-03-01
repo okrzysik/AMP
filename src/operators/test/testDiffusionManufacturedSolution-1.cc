@@ -211,27 +211,15 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
   // Plot the results
   if( globalComm.getSize() == 1 ) {
  #ifdef USE_SILO
-  ut->failure("Converted incorrectly");
-/*     AMP::LinearAlgebra::Variable::shared_ptr tmpVar1;
+     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+     siloWriter->registerMesh( meshAdapter );
 
-     tmpVar1 = workVec->getVariable();
-     tmpVar1->setName("RelativeError");
-     meshAdapter->registerVectorAsData ( workVec );
-
-     tmpVar1 = solVec->getVariable();
-     tmpVar1->setName("Solution");
-     meshAdapter->registerVectorAsData ( solVec );
-
-     tmpVar1 = sourceVec->getVariable();
-     tmpVar1->setName("Source");
-     meshAdapter->registerVectorAsData ( sourceVec );
-
-     tmpVar1 = resVec->getVariable();
-     tmpVar1->setName("Residual");
-     meshAdapter->registerVectorAsData ( resVec );
-
-     manager->writeFile<AMP::Mesh::SiloIO> ( exeName, 0 );
-*/
+     siloWriter->registerVector(  workVec, meshAdapter, AMP::Mesh::Vertex, "RelativeError" );
+     siloWriter->registerVector(   solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
+     siloWriter->registerVector(sourceVec, meshAdapter, AMP::Mesh::Vertex, "Source" );
+     siloWriter->registerVector(   resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
+ 
+     siloWriter->writeFile( input_file , 0 );
  #endif
    }
 
