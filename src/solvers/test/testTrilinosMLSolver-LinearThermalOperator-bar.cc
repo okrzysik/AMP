@@ -264,7 +264,7 @@ void linearThermalTest(AMP::UnitTest *ut )
      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
      siloWriter->registerMesh( meshAdapter );
 
-     siloWriter->registerVector( PowerInWattsVec,        meshAdapter, AMP::Mesh::Volume, "PowerInWatts" );
+     siloWriter->registerVector( PowerInWattsVec,        meshAdapter, AMP::Mesh::Vertex, "PowerInWatts" );
      siloWriter->registerVector( TemperatureInKelvinVec, meshAdapter, AMP::Mesh::Vertex, "TemperatureInKelvin" );
      siloWriter->registerVector( ResidualVec,            meshAdapter, AMP::Mesh::Vertex, "Residual" );
  

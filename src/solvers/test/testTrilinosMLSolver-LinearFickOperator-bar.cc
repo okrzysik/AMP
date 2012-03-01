@@ -27,6 +27,10 @@
 #include "operators/OperatorBuilder.h"
 
 #include "operators/boundary/DirichletMatrixCorrection.h"
+#include "ampmesh/Mesh.h"
+#include "vectors/VectorBuilder.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include "../TrilinosMLSolver.h"
 
@@ -60,13 +64,24 @@ void linearFickTest(AMP::UnitTest *ut )
   //   #include "utils/PIO.h"
   AMP::PIO::logAllNodes(log_file);
 
-  AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  //std::string mesh_file = input_db->getString("Mesh");
+//--------------------------------------------------
+//   Create the Mesh.
+//--------------------------------------------------
+    AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
+    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+//--------------------------------------------------
 
-  // Construct a mesh manager which reads in the fuel mesh
-  AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "bar" );
+//--------------------------------------------------
+// Create a DOF manager for a nodal vector 
+//--------------------------------------------------
+  int DOFsPerNode = 1;
+  int nodalGhostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth,      DOFsPerNode,    split);
+//--------------------------------------------------
 
   ////////////////////////////////////
   //   CREATE THE DIFFUSION OPERATOR  //
@@ -78,9 +93,9 @@ void linearFickTest(AMP::UnitTest *ut )
 																						       input_db,
 																						       transportModel));
 
-  AMP::LinearAlgebra::Vector::shared_ptr SolutionVec = meshAdapter->createVector( diffusionOperator->getInputVariable() );
-  AMP::LinearAlgebra::Vector::shared_ptr RightHandSideVec       = meshAdapter->createVector( diffusionOperator->getOutputVariable() );
-  AMP::LinearAlgebra::Vector::shared_ptr ResidualVec            = meshAdapter->createVector( diffusionOperator->getOutputVariable() );
+  AMP::LinearAlgebra::Vector::shared_ptr SolutionVec            = AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getInputVariable()  );
+  AMP::LinearAlgebra::Vector::shared_ptr RightHandSideVec       = AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
+  AMP::LinearAlgebra::Vector::shared_ptr ResidualVec            = AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
 
   RightHandSideVec->setToScalar(0.);
 
@@ -142,8 +157,8 @@ void linearFickTest(AMP::UnitTest *ut )
   //   CHECK THE SOLUTION  //
   ///////////////////////////
 
-  AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator iterator = meshAdapter->beginOwnedNode(); 
-  AMP::Mesh::DOFMap::shared_ptr dofmap = meshAdapter->getDOFMap( diffusionOperator->getInputVariable() );
+  int zeroGhostWidth = 0;
+  AMP::Mesh::MeshIterator  iterator = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
 
   // The analytical solution is:  T = a + b*z + c*z*z
   //   c = -power/2
@@ -174,20 +189,22 @@ void linearFickTest(AMP::UnitTest *ut )
             }
             file.precision(14);
 
-            iterator = meshAdapter->beginOwnedNode();
+            iterator = iterator.begin();
             size_t numNodes = 0, iNode=0;
-	        for(; iterator != meshAdapter->endOwnedNode(); iterator++ ) numNodes++;
+	        for(; iterator != iterator.end(); iterator++ ) numNodes++;
 
-            iterator = meshAdapter->beginOwnedNode();
-            for( ; iterator != meshAdapter->endOwnedNode(); iterator++ ) {
-		       cal = SolutionVec->getValueByGlobalID( dofmap->getGlobalID( iterator->globalID(), 0 ) );
-		       zee = iterator->z();
+            iterator = iterator.begin();
+            for( ; iterator != iterator.end(); iterator++ ) {
+               std::vector<size_t> gid;
+               nodalDofMap->getDOFs ( iterator->globalID() , gid);
+		           cal = SolutionVec->getValueByGlobalID( gid[0] );
+               zee = ( iterator->coord() )[2];
                sol = a + b*zee + c*zee*zee;
                err = fabs(cal-sol)*2./(cal+sol+std::numeric_limits<double>::epsilon());
                double x, y, z;
-               x = iterator->x();
-               y = iterator->y();
-               z = iterator->z();
+               x = ( iterator->coord() )[0];
+               y = ( iterator->coord() )[1];
+               z = ( iterator->coord() )[2];
                file << "{" << x << "," << y << "," << z << "," << sol << "," << cal << "," << err << "}";
                if (iNode<numNodes-1) file << "," << std::endl;
                if( fabs(cal - sol) > cal*1e-3 ) {
@@ -207,19 +224,15 @@ void linearFickTest(AMP::UnitTest *ut )
   if( passes ) ut->passes("The linear fick solve is verified.");
  
   // Plot the results
-  if( globalComm.getSize() == 1 ) {
 #ifdef USE_SILO
-    AMP::LinearAlgebra::Variable::shared_ptr tmpVar1 = SolutionVec->getVariable();
-    tmpVar1->setName("Concentration");
-    meshAdapter->registerVectorAsData ( SolutionVec );
+     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+     siloWriter->registerMesh( meshAdapter );
 
-    tmpVar1 = ResidualVec->getVariable();
-    tmpVar1->setName("Residual");
-
-    meshAdapter->registerVectorAsData ( ResidualVec );
-    manager->writeFile<AMP::Mesh::SiloIO> ( exeName, 0 );
+     siloWriter->registerVector( SolutionVec, meshAdapter, AMP::Mesh::Vertex, "Concentration" );
+     siloWriter->registerVector( ResidualVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
+ 
+     siloWriter->writeFile( input_file , 0 );
 #endif
-  }
 
   input_db.reset();
 
