@@ -1,26 +1,42 @@
 
 max_iterations = 60
 
-NumberOfMeshes = 2
-
 InitialGuess = 400.00
 
-Mesh_1{
-  Filename = "halden_1_pellet_9mil.e"
-    MeshName = "pellet"
-    x_offset = 0.0
-    y_offset = 0.0
-    z_offset = 0.0
-    NumberOfElements = 5226
-}
+// Database for all the meshes
+Mesh{
+    // This is the main multimesh that will contain all meshes
+    MeshName = "MainMesh"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
+    x_offset = 0.0 
+    y_offset = 0.0 
+    z_offset = 0.0 
+    
+    // This is a multimesh for all pellets
+    Mesh_1 {
+        MeshName = "pellet"
+        MeshType = "libMesh"
+        FileName = "halden_1_pellet_9mil.e"
+        dim = 3 
+        x_offset = 0.0 
+        y_offset = 0.0 
+        z_offset = 0.0
+        NumberOfElements = 5226
+    }   
 
-Mesh_2{
-  Filename = "halden_1_clad.e"
-    MeshName = "clad"
-    x_offset = 0.0
-    y_offset = 0.0
-    z_offset = 0.0
-    NumberOfElements = 4488
+    // The mesh for the clad
+    Mesh_2 {
+        MeshName = "clad"
+        MeshType = "libMesh"
+        FileName = "halden_1_clad.e"
+        dim = 3 
+        x_offset = 0.0 
+        y_offset = 0.0 
+        z_offset = 0.0 
+        NumberOfElements = 4488
+    }   
 }
 
 NeutronicsOperator{
