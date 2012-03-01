@@ -18,7 +18,11 @@
 #include "vectors/Vector.h"
 
 #include "ampmesh/SiloIO.h"
-#include "ampmesh/MeshVariable.h"
+
+#include "ampmesh/Mesh.h"
+#include "vectors/VectorBuilder.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include "operators/MassLinearElement.h"
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
@@ -70,25 +74,43 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   AMP::PIO::logAllNodes(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-//  AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-//  std::string mesh_file = input_db->getString("Mesh");
+//--------------------------------------------------
+//   Create the Mesh.
+//--------------------------------------------------
+    AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
+    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+    boost::shared_ptr<AMP::Mesh::Mesh> manager = AMP::Mesh::Mesh::buildMesh(mgrParams);
+//--------------------------------------------------
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter1 = manager->getMesh ( "pellet" );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter2 = manager->getMesh ( "clad" );
+//--------------------------------------------------
+// Create a DOF manager for a nodal vector 
+//--------------------------------------------------
+  int DOFsPerNode = 1;
+  int DOFsPerElement = 8;
+  int nodalGhostWidth = 1;
+  int gaussPointGhostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(manager,     AMP::Mesh::Vertex, nodalGhostWidth,      DOFsPerNode,    split);
+//--------------------------------------------------
+
+  AMP::Mesh::Mesh::shared_ptr meshAdapter1 = manager->Subset( "pellet" );
+  AMP::Mesh::Mesh::shared_ptr meshAdapter2 = manager->Subset( "clad" );
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap1     = AMP::Discretization::simpleDOFManager::create(meshAdapter1,AMP::Mesh::Vertex, nodalGhostWidth,      DOFsPerNode,    split);
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap2     = AMP::Discretization::simpleDOFManager::create(meshAdapter2,AMP::Mesh::Vertex, nodalGhostWidth,      DOFsPerNode,    split);
+  AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap1= AMP::Discretization::simpleDOFManager::create(meshAdapter1,AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split);
+  AMP::LinearAlgebra::VS_Mesh vectorSelector1( "pellet_mesh", meshAdapter1);
+  AMP::LinearAlgebra::VS_Mesh vectorSelector2( "clad_mesh",   meshAdapter2);
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-  AMP::LinearAlgebra::Variable::shared_ptr TemperatureVar ( new AMP::Mesh::NodalScalarVariable ( "Temperature" ) );
-  AMP::LinearAlgebra::Variable::shared_ptr inputVariable1 ( new AMP::Mesh::NodalScalarVariable ( "Temperature", meshAdapter1  ) );
-  AMP::LinearAlgebra::Variable::shared_ptr inputVariable2 ( new AMP::Mesh::NodalScalarVariable ( "Temperature", meshAdapter2 ) );
+  AMP::LinearAlgebra::Variable::shared_ptr TemperatureVar ( new AMP::LinearAlgebra::Variable ( "Temperature" ) );
 
   double intguess = input_db->getDoubleWithDefault("InitialGuess",400);
 
-  AMP::LinearAlgebra::Vector::shared_ptr TemperatureInKelvin = manager->createVector ( TemperatureVar );
+  AMP::LinearAlgebra::Vector::shared_ptr TemperatureInKelvin = AMP::LinearAlgebra::createVector( nodalDofMap, TemperatureVar );
   TemperatureInKelvin->setToScalar ( intguess );
-  manager->registerVectorAsData ( TemperatureInKelvin , "Temperature" );
 
 
 //-----------------------------------------------
@@ -112,9 +134,9 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   // initialize the output variable
   AMP::LinearAlgebra::Variable::shared_ptr outputVariable1 = thermalVolumeOperator1->getOutputVariable();
 
-  AMP::LinearAlgebra::Vector::shared_ptr TemperatureInKelvinVec1 = TemperatureInKelvin->subsetVectorForVariable ( inputVariable1 );
-  AMP::LinearAlgebra::Vector::shared_ptr RightHandSideVec1       = meshAdapter1->createVector( outputVariable1 );
-  AMP::LinearAlgebra::Vector::shared_ptr ResidualVec1            = meshAdapter1->createVector( outputVariable1 );
+  AMP::LinearAlgebra::Vector::shared_ptr TemperatureInKelvinVec1 = TemperatureInKelvin->select( vectorSelector1, TemperatureVar->getName() );
+  AMP::LinearAlgebra::Vector::shared_ptr RightHandSideVec1       = AMP::LinearAlgebra::createVector( nodalDofMap1, outputVariable1 );
+  AMP::LinearAlgebra::Vector::shared_ptr ResidualVec1            = AMP::LinearAlgebra::createVector( nodalDofMap1, outputVariable1 );
 
 //-------------------------------------
 //   CREATE THE LINEAR THERMAL OPERATOR 1 ----
@@ -132,11 +154,11 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   AMP_INSIST(input_db->keyExists("NeutronicsOperator"), "Key ''NeutronicsOperator'' is missing!");
   boost::shared_ptr<AMP::Database>  neutronicsOp_db = input_db->getDatabase("NeutronicsOperator");
   boost::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
-  neutronicsParams->d_MeshAdapter = meshAdapter1;
+  neutronicsParams->d_Mesh = meshAdapter1;
   boost::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
 
   AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
-  AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = meshAdapter1->createVector( SpecificPowerVar );
+  AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = AMP::LinearAlgebra::createVector( gaussPointDofMap1, SpecificPowerVar );
 
   neutronicsOperator->apply(nullVec, nullVec, SpecificPowerVec, 1., 0.);
 
@@ -154,7 +176,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
 
   // Create the power (heat source) vector.
   AMP::LinearAlgebra::Variable::shared_ptr PowerInWattsVar = sourceOperator->getOutputVariable();
-  AMP::LinearAlgebra::Vector::shared_ptr   PowerInWattsVec = meshAdapter1->createVector( PowerInWattsVar );
+  AMP::LinearAlgebra::Vector::shared_ptr   PowerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap1, PowerInWattsVar );
   PowerInWattsVec->zero();
 
   // convert the vector of specific power to power for a given basis.
@@ -222,9 +244,9 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   // initialize the output variable
   AMP::LinearAlgebra::Variable::shared_ptr outputVariable2 = thermalVolumeOperator2->getOutputVariable();
 
-  AMP::LinearAlgebra::Vector::shared_ptr TemperatureInKelvinVec2 = TemperatureInKelvin->subsetVectorForVariable ( inputVariable2 );
-  AMP::LinearAlgebra::Vector::shared_ptr RightHandSideVec2       = meshAdapter2->createVector( outputVariable2 );
-  AMP::LinearAlgebra::Vector::shared_ptr ResidualVec2            = meshAdapter2->createVector( outputVariable2 );
+  AMP::LinearAlgebra::Vector::shared_ptr TemperatureInKelvinVec2 = TemperatureInKelvin->select( vectorSelector2, TemperatureVar->getName() );
+  AMP::LinearAlgebra::Vector::shared_ptr RightHandSideVec2       = AMP::LinearAlgebra::createVector( nodalDofMap2, outputVariable2 );
+  AMP::LinearAlgebra::Vector::shared_ptr ResidualVec2            = AMP::LinearAlgebra::createVector( nodalDofMap2, outputVariable2 );
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   boost::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams2 (new AMP::Solver::SolverStrategyParameters(linearSolver_db1));
@@ -234,24 +256,24 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
 
 //-------------------------------------
 
-  AMP::LinearAlgebra::Vector::shared_ptr variableFluxVec1 = meshAdapter1->createVector( inputVariable1 );
-  AMP::LinearAlgebra::Vector::shared_ptr scratchTempVec1  = meshAdapter1->createVector( inputVariable1 );
+  AMP::LinearAlgebra::Vector::shared_ptr variableFluxVec1 = AMP::LinearAlgebra::createVector( nodalDofMap1, TemperatureVar );
+  AMP::LinearAlgebra::Vector::shared_ptr scratchTempVec1  = AMP::LinearAlgebra::createVector( nodalDofMap1, TemperatureVar );
   variableFluxVec1->setToScalar(0.0);
 
-  AMP::LinearAlgebra::Vector::shared_ptr variableFluxVec2 = meshAdapter2->createVector( inputVariable2 );
-  AMP::LinearAlgebra::Vector::shared_ptr scratchTempVec2  = meshAdapter2->createVector( inputVariable2 );
+  AMP::LinearAlgebra::Vector::shared_ptr variableFluxVec2 = AMP::LinearAlgebra::createVector( nodalDofMap2, TemperatureVar );
+  AMP::LinearAlgebra::Vector::shared_ptr scratchTempVec2  = AMP::LinearAlgebra::createVector( nodalDofMap2, TemperatureVar );
   variableFluxVec2->setToScalar(0.0);
 
 //-------------------------------------
 
   boost::shared_ptr<AMP::InputDatabase> map3dto1d_db1  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapPelletto1D"));
   boost::shared_ptr<AMP::Operator::MapOperatorParameters> map3dto1dParams1 (new AMP::Operator::MapOperatorParameters( map3dto1d_db1 ));
-  map3dto1dParams1->d_MeshAdapter = meshAdapter1;
+  map3dto1dParams1->d_Mesh = meshAdapter1;
   boost::shared_ptr<AMP::Operator::Map3Dto1D> map1ToLowDim (new AMP::Operator::Map3Dto1D( map3dto1dParams1 ));
 
   boost::shared_ptr<AMP::InputDatabase> map1dto3d_db1  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("Map1DtoClad"));
   boost::shared_ptr<AMP::Operator::MapOperatorParameters> map1dto3dParams1 (new AMP::Operator::MapOperatorParameters( map1dto3d_db1 ));
-  map1dto3dParams1->d_MapAdapter = meshAdapter2;
+  map1dto3dParams1->d_Mesh = meshAdapter2;
   //-------------------------------------
   // This is related to But # 1219 and 1210.
   //  -- It dies in compute_Z_locations of the constructor for mat1dto3d.  
@@ -263,12 +285,12 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
 
   boost::shared_ptr<AMP::InputDatabase> map3dto1d_db2  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapCladto1D"));
   boost::shared_ptr<AMP::Operator::MapOperatorParameters> map3dto1dParams2 (new AMP::Operator::MapOperatorParameters( map3dto1d_db2 ));
-  map3dto1dParams2->d_MeshAdapter = meshAdapter2;
+  map3dto1dParams2->d_Mesh = meshAdapter2;
   boost::shared_ptr<AMP::Operator::Map3Dto1D> map2ToLowDim (new AMP::Operator::Map3Dto1D( map3dto1dParams2 ));
 
   boost::shared_ptr<AMP::InputDatabase> map1dto3d_db2  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("Map1DtoPellet"));
   boost::shared_ptr<AMP::Operator::MapOperatorParameters> map1dto3dParams2 (new AMP::Operator::MapOperatorParameters( map1dto3d_db2 ));
-  map1dto3dParams2->d_MapAdapter = meshAdapter1;
+  map1dto3dParams2->d_Mesh = meshAdapter1;
   boost::shared_ptr<AMP::Operator::Map1Dto3D> map2ToHighDim (new AMP::Operator::Map1Dto3D( map1dto3dParams2 ));
 
   map2ToLowDim->setZLocations( map2ToHighDim->getZLocations());
@@ -318,9 +340,9 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   map1ToLowDim->setVector(gapVecClad );
   
   int cnt=0;
-  AMP::LinearAlgebra::Vector::shared_ptr vecLag1           = meshAdapter1->createVector( outputVariable1 );
+  AMP::LinearAlgebra::Vector::shared_ptr vecLag1 = AMP::LinearAlgebra::createVector( nodalDofMap1, outputVariable1 );
   vecLag1->copyVector(TemperatureInKelvinVec1);
-  AMP::LinearAlgebra::Vector::shared_ptr vecLag2 	    = meshAdapter2->createVector( outputVariable2 );
+  AMP::LinearAlgebra::Vector::shared_ptr vecLag2 = AMP::LinearAlgebra::createVector( nodalDofMap2, outputVariable2 );
   vecLag2->copyVector(TemperatureInKelvinVec2);
 
   bool testPassed = false;
@@ -390,7 +412,11 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
 
 //          if( nodes == 2 ) {
 #ifdef USE_SILO
-            manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 0 );
+     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+
+     siloWriter->registerVector( TemperatureInKelvin, manager, AMP::Mesh::Vertex, "TemperatureInKelvin" );
+ 
+     siloWriter->writeFile( input_file , 0 );
 #endif
 //          }
           if (vecLag2->L2Norm() < 1.e-6 ) {
