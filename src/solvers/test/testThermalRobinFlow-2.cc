@@ -11,6 +11,11 @@
 #include "utils/Database.h"
 #include "vectors/Variable.h"
 
+#include "ampmesh/Mesh.h"
+#include "vectors/VectorBuilder.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+
 #include "ampmesh/SiloIO.h"
 #include "vectors/Vector.h"
 
@@ -68,12 +73,27 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   AMP::PIO::logAllNodes(log_file);
   AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);
 
-  AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  //std::string mesh_file = input_db->getString("Mesh");
+//--------------------------------------------------
+//   Create the Mesh.
+//--------------------------------------------------
+    AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
+    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+//--------------------------------------------------
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "bar" );
+//--------------------------------------------------
+// Create a DOF manager for a nodal vector 
+//--------------------------------------------------
+  int DOFsPerNode = 1;
+  int DOFsPerElement = 8;
+  int nodalGhostWidth = 1;
+  int gaussPointGhostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth,      DOFsPerNode,    split);
+  AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split);
+//--------------------------------------------------
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
@@ -95,13 +115,11 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(thermalNonlinearOperator->getVolumeOperator());
 
 
-  AMP::LinearAlgebra::Vector::shared_ptr globalSolVec = meshAdapter->createVector( thermalVolumeOperator->getOutputVariable() );
-  AMP::LinearAlgebra::Vector::shared_ptr globalRhsVec = meshAdapter->createVector( thermalVolumeOperator->getOutputVariable() );
-  AMP::LinearAlgebra::Vector::shared_ptr globalResVec = meshAdapter->createVector( thermalVolumeOperator->getOutputVariable() );
+  AMP::LinearAlgebra::Vector::shared_ptr globalSolVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVolumeOperator->getOutputVariable() );
+  AMP::LinearAlgebra::Vector::shared_ptr globalRhsVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVolumeOperator->getOutputVariable() );
+  AMP::LinearAlgebra::Vector::shared_ptr globalResVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVolumeOperator->getOutputVariable() );
 
   globalSolVec->setToScalar(intguess); 
-
-  manager->registerVectorAsData ( globalSolVec , "Temperature" );
 
   //-------------------------------------
   //   CREATE THE LINEAR THERMAL OPERATOR ----
@@ -119,11 +137,10 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   AMP_INSIST(input_db->keyExists("NeutronicsOperator"), "Key ''NeutronicsOperator'' is missing!");
   boost::shared_ptr<AMP::Database>  neutronicsOp_db = input_db->getDatabase("NeutronicsOperator");
   boost::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
-  neutronicsParams->d_MeshAdapter = meshAdapter;
   boost::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
 
   AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
-  AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = meshAdapter->createVector( SpecificPowerVar );
+  AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
 
   neutronicsOperator->apply(nullVec, nullVec, SpecificPowerVec, 1., 0.);
 
@@ -142,7 +159,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
   // Create the power (heat source) vector.
   AMP::LinearAlgebra::Variable::shared_ptr PowerInWattsVar = sourceOperator->getOutputVariable();
-  AMP::LinearAlgebra::Vector::shared_ptr   PowerInWattsVec = meshAdapter->createVector( PowerInWattsVar );
+  AMP::LinearAlgebra::Vector::shared_ptr   PowerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap, PowerInWattsVar );
   PowerInWattsVec->zero();
 
   // convert the vector of specific power to power for a given basis.
@@ -236,11 +253,14 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
   //---------------------------------------------------------------------------
 
-  if( globalComm.getSize() == 1 ) {
 #ifdef USE_SILO
-    manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 0 );
+     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+     siloWriter->registerMesh( meshAdapter );
+
+     siloWriter->registerVector( globalSolVec, meshAdapter, AMP::Mesh::Vertex, "Temperature" );
+ 
+     siloWriter->writeFile( input_file , 0 );
 #endif
-  }
 
   if( globalResVec->L2Norm() < 10e-6 ) {
     ut->passes("Seggregated solve of Composite Operator using control loop of Thermal+Robin->Map->Flow->Map .");
