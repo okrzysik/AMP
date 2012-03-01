@@ -132,6 +132,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   nonlinearMechanicsOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
 
+  ut->failure("Kevin converted this blindly, do not remove it until you've checked it.");
   ut->passes(exeName);
 
 }

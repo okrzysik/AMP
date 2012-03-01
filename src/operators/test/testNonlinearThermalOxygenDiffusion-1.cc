@@ -175,6 +175,7 @@ void thermalOxygenDiffusionTest(AMP::UnitTest *ut, std::string exeName)
   linearThermalOxygenOperator->append(linearThermalOperator);
   linearThermalOxygenOperator->append(linearOxygenOperator);
 
+  ut->failure("Kevin converted this blindly, do not remove it until you've checked it.");
   ut->passes(exeName +  " : create");
 
   // test apply

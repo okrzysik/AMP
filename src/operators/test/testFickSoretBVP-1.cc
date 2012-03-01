@@ -13,7 +13,10 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/Mesh.h"
+#include "vectors/VectorBuilder.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include "libmesh.h"
 
@@ -47,12 +50,15 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
+//--------------------------------------------------
+//   Create the Mesh.
+//--------------------------------------------------
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  std::string mesh_file = input_db->getString("Mesh");
-
-  // Mesh
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = AMP::Mesh::MeshManager::Adapter::shared_ptr ( new AMP::Mesh::MeshManager::Adapter () );
-  meshAdapter->readExodusIIFile ( mesh_file.c_str() );
+  boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+  boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+  mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+  boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+//--------------------------------------------------
 
   // Create nonlinear FickSoret BVP operator and access volume nonlinear FickSoret operator
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
@@ -111,16 +117,28 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
   }
 
   // Set up input and output vectors
-  AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getInputVariable(AMP::Operator::Diffusion::CONCENTRATION));
-  AMP::LinearAlgebra::Variable::shared_ptr tVar(soretOp->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
+  //AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getInputVariable(AMP::Operator::Diffusion::CONCENTRATION));
+  //AMP::LinearAlgebra::Variable::shared_ptr tVar(soretOp->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
+  ut->failure("Converted incorrectly");
+  AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getInputVariable());
+  AMP::LinearAlgebra::Variable::shared_ptr tVar(soretOp->getInputVariable());
   boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> fsInpVar(new AMP::LinearAlgebra::MultiVariable("fsInput"));
   fsInpVar->add(cVar);
   fsInpVar->add(tVar);
   boost::shared_ptr<AMP::LinearAlgebra::Variable> fsOutVar(nlinBVPOp->getOutputVariable());
 
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector(fsInpVar);
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector(fsOutVar);
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector(fsOutVar);
+  //----------------------------------------------------------------------------------------------------------------------------------------------//
+  // Create a DOF manager for a nodal vector 
+  int DOFsPerNode = 1;
+  int nodalGhostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
+  //----------------------------------------------------------------------------------------------------------------------------------------------//
+
+  // create solution, rhs, and residual vectors
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( nodalDofMap, fsInpVar );
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
 
   // set default values of input variables
   AMP::LinearAlgebra::Vector::shared_ptr inConcVec = solVec->subsetVectorForVariable(cVar);

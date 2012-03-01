@@ -13,7 +13,10 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/Mesh.h"
+#include "vectors/VectorBuilder.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include "libmesh.h"
 
@@ -53,13 +56,15 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName)
     AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
     input_db->printClassData(AMP::plog);
 
+//--------------------------------------------------
+//   Create the Mesh.
+//--------------------------------------------------
     AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-    std::string mesh_file = input_db->getString("Mesh");
-
-    AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter =
-            AMP::Mesh::MeshManager::Adapter::shared_ptr(
-                    new AMP::Mesh::MeshManager::Adapter());
-    meshAdapter->readExodusIIFile(mesh_file.c_str());
+    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+//--------------------------------------------------
 
     boost::shared_ptr<AMP::Operator::FickSoretNonlinearFEOperator> fsOp;
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
@@ -101,20 +106,33 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName)
     fsOpParams->d_SoretParameters = soretOpParams;
 
     // create vectors for parameters
-    AMP::LinearAlgebra::Variable::shared_ptr tVar(soretOp->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
-    AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getInputVariable(AMP::Operator::Diffusion::CONCENTRATION));
-    AMP::LinearAlgebra::Variable::shared_ptr bVar(new AMP::Mesh::NodalScalarVariable("burnup"));
-    AMP::LinearAlgebra::Vector::shared_ptr tVec = meshAdapter->createVector(tVar);
-    AMP::LinearAlgebra::Vector::shared_ptr cVec = meshAdapter->createVector(cVar);
-    AMP::LinearAlgebra::Vector::shared_ptr bVec = meshAdapter->createVector(bVar);
+    //AMP::LinearAlgebra::Variable::shared_ptr tVar(soretOp->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
+    //AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getInputVariable(AMP::Operator::Diffusion::CONCENTRATION));
+  ut->failure("Converted incorrectly");
+    AMP::LinearAlgebra::Variable::shared_ptr tVar(soretOp->getInputVariable());
+    AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getInputVariable());
+    AMP::LinearAlgebra::Variable::shared_ptr bVar(new AMP::LinearAlgebra::Variable("burnup"));
+
+  //----------------------------------------------------------------------------------------------------------------------------------------------//
+  // Create a DOF manager for a nodal vector 
+  int DOFsPerNode = 1;
+  int nodalGhostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
+  //----------------------------------------------------------------------------------------------------------------------------------------------//
+
+  // create solution, rhs, and residual vectors
+    AMP::LinearAlgebra::Vector::shared_ptr tVec = AMP::LinearAlgebra::createVector( nodalDofMap, tVar );
+    AMP::LinearAlgebra::Vector::shared_ptr cVec = AMP::LinearAlgebra::createVector( nodalDofMap, cVar );
+    AMP::LinearAlgebra::Vector::shared_ptr bVec = AMP::LinearAlgebra::createVector( nodalDofMap, bVar );
 
     // set vectors in parameters
-    fickOpParams->d_temperature = tVec;
-    fickOpParams->d_concentration = cVec;
-    fickOpParams->d_burnup = bVec;
-    soretOpParams->d_temperature = tVec;
-    soretOpParams->d_concentration = cVec;
-    soretOpParams->d_burnup = bVec;
+    fickOpParams->d_FrozenTemperature = tVec;
+    fickOpParams->d_FrozenConcentration = cVec;
+    fickOpParams->d_FrozenBurnup = bVec;
+    soretOpParams->d_FrozenTemperature = tVec;
+    soretOpParams->d_FrozenConcentration = cVec;
+    soretOpParams->d_FrozenBurnup = bVec;
 
     // Test reset
     {
@@ -167,9 +185,9 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName)
     boost::shared_ptr<AMP::LinearAlgebra::Variable> fsOutVar(fickOp->getOutputVariable());
 
     std::string msgPrefix = exeName + ": apply ";
-    AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector(fsInpVar);
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector(fsOutVar);
-    AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector(fsOutVar);
+    AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( nodalDofMap, fsInpVar );
+    AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
+    AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
 
     // set default values of input variables
     AMP::LinearAlgebra::Vector::shared_ptr inTempVec = solVec->subsetVectorForVariable(tVar);

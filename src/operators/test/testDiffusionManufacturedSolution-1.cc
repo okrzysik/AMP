@@ -16,14 +16,14 @@
 #include "utils/PIO.h"
 #include "utils/ManufacturedSolution.h"
 
-
 #include "ampmesh/SiloIO.h"
-#include "ampmesh/MeshVariable.h"
+
+#include "ampmesh/Mesh.h"
+#include "vectors/VectorBuilder.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include "libmesh.h"
-
-#include "vectors/PetscVector.h"
-
 
 #include "operators/diffusion/DiffusionNonlinearElement.h"
 #include "operators/diffusion/DiffusionLinearElement.h"
@@ -58,10 +58,15 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  // Mesh
-  AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "cube" );
+//--------------------------------------------------
+//   Create the Mesh.
+//--------------------------------------------------
+  AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
+  boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+  boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+  mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+  boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+//--------------------------------------------------
 
   // Create nonlinear diffusion BVP operator and access volume nonlinear Diffusion operator
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> nonlinearPhysicsModel;
@@ -100,31 +105,45 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
   boost::shared_ptr<AMP::ManufacturedSolution> mfgSolution = densityModel->getManufacturedSolution();
 
   // Set up input and output vectors
-  AMP::LinearAlgebra::Variable::shared_ptr solVar = nlinOp->getInputVariable(nlinOp->getPrincipalVariableId());
+  //AMP::LinearAlgebra::Variable::shared_ptr solVar = nlinOp->getInputVariable(nlinOp->getPrincipalVariableId());
+  ut->failure("Converted incorrectly");
+  AMP::LinearAlgebra::Variable::shared_ptr solVar = nlinOp->getInputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr rhsVar = nlinOp->getOutputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr resVar = nlinOp->getOutputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr sourceVar = sourceOp->getOutputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr workVar = sourceOp->getOutputVariable();
 
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( solVar );
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector( rhsVar );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( resVar );
-  AMP::LinearAlgebra::Vector::shared_ptr sourceVec = meshAdapter->createVector( sourceVar );
-  AMP::LinearAlgebra::Vector::shared_ptr workVec = meshAdapter->createVector( workVar );
+  //----------------------------------------------------------------------------------------------------------------------------------------------//
+  // Create a DOF manager for a nodal vector 
+  int DOFsPerNode = 1;
+  int nodalGhostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
+  //----------------------------------------------------------------------------------------------------------------------------------------------//
+
+  // create solution, rhs, and residual vectors
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( nodalDofMap, solVar );
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( nodalDofMap, rhsVar );
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( nodalDofMap, resVar );
+  AMP::LinearAlgebra::Vector::shared_ptr sourceVec = AMP::LinearAlgebra::createVector( nodalDofMap, sourceVar );
+  AMP::LinearAlgebra::Vector::shared_ptr workVec = AMP::LinearAlgebra::createVector( nodalDofMap, workVar );
 
   rhsVec->setToScalar(0.0);
 
   // Fill in manufactured solution
-  AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator iterator = meshAdapter->beginOwnedNode();
-  for( ; iterator != meshAdapter->endOwnedNode(); iterator++ ) {
+  int zeroGhostWidth = 0;
+  AMP::Mesh::MeshIterator  iterator = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
+  for( ; iterator != iterator.end(); ++iterator)
+  {
     double x, y, z;
     std::valarray<double> poly(10);
-    x = iterator->x();
-    y = iterator->y();
-    z = iterator->z();
+    x = ( iterator->coord() )[0];
+    y = ( iterator->coord() )[1];
+    z = ( iterator->coord() )[2];
     mfgSolution->evaluate(poly,x,y,z);
-    size_t gid = iterator->globalID();
-    solVec->setValueByGlobalID(gid, poly[0]);
+    std::vector<size_t> i;
+    nodalDofMap->getDOFs ( iterator->globalID() , i);
+    solVec->setValueByGlobalID(i[0], poly[0]);
   }
 
   // Evaluate manufactured solution as an FE source
@@ -147,28 +166,29 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
           file << "results={" << std::endl;
       }
 
-      iterator = meshAdapter->beginOwnedNode();
+      AMP::Mesh::MeshIterator  urIterator = iterator.begin();
       size_t numNodes = 0;
-      for(; iterator != meshAdapter->endOwnedNode(); iterator++ ) numNodes++;
+      for(; urIterator != iterator.end(); urIterator++ ) numNodes++;
 
-      iterator = meshAdapter->beginOwnedNode();
       size_t iNode=0;
       double l2err = 0.;
-      for(; iterator != meshAdapter->endOwnedNode(); iterator++ ) {
+      AMP::Mesh::MeshIterator  myIterator = iterator.begin();
+      for(; myIterator != iterator.end(); myIterator++ ) {
         double x, y, z;
-        x = iterator->x();
-        y = iterator->y();
-        z = iterator->z();
-        size_t gid = iterator->globalID();
+        x = ( myIterator->coord() )[0];
+        y = ( myIterator->coord() )[1];
+        z = ( myIterator->coord() )[2];
+        std::vector<size_t> gid;
+        nodalDofMap->getDOFs ( iterator->globalID() , gid);
         double val, res, sol, src, err;
-        res = resVec->getValueByGlobalID(gid);
-        sol = solVec->getValueByGlobalID(gid);
-        src = sourceVec->getValueByGlobalID(gid);
+        res = resVec->getValueByGlobalID(gid[0]);
+        sol = solVec->getValueByGlobalID(gid[0]);
+        src = sourceVec->getValueByGlobalID(gid[0]);
         err = res/(src+.5*res + std::numeric_limits<double>::epsilon());
         std::valarray<double> poly(10);
         mfgSolution->evaluate(poly,x,y,z);
         val = poly[0];
-        workVec->setValueByGlobalID(gid, err);
+        workVec->setValueByGlobalID(gid[0], err);
 
         file << "{" << x << "," << y << "," << z <<"," << val <<  ","
                 << sol << "," << src << "," << res+src << "," << err << "}";
@@ -191,7 +211,8 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
   // Plot the results
   if( globalComm.getSize() == 1 ) {
  #ifdef USE_SILO
-     AMP::LinearAlgebra::Variable::shared_ptr tmpVar1;
+  ut->failure("Converted incorrectly");
+/*     AMP::LinearAlgebra::Variable::shared_ptr tmpVar1;
 
      tmpVar1 = workVec->getVariable();
      tmpVar1->setName("RelativeError");
@@ -210,6 +231,7 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
      meshAdapter->registerVectorAsData ( resVec );
 
      manager->writeFile<AMP::Mesh::SiloIO> ( exeName, 0 );
+*/
  #endif
    }
 

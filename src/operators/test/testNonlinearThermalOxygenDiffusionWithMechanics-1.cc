@@ -110,11 +110,13 @@ void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)
   // initialize the output multi-variable
   AMP::LinearAlgebra::Variable::shared_ptr outputVariable = nonlinearThermalOxygenDiffusionMechanicsOperator->getOutputVariable();
 
+  //----------------------------------------------------------------------------------------------------------------------------------------------//
   // Create a DOF manager for a nodal vector 
   int DOFsPerNode = 1;
   int nodalGhostWidth = 1;
   bool split = true;
   AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
+  //----------------------------------------------------------------------------------------------------------------------------------------------//
 
   // create solution, rhs, and residual vectors
   AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( nodalDofMap, inputVariable  );
@@ -212,6 +214,7 @@ void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)
   linearThermalOxygenDiffusionMechanicsOperator->append(linearThermalOperator);
   linearThermalOxygenDiffusionMechanicsOperator->append(linearOxygenOperator);
 
+  ut->failure("Kevin converted this blindly, do not remove it until you've checked it.");
   ut->passes(exeName +  " : create");
 
   // test apply

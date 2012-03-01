@@ -15,7 +15,10 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/Mesh.h"
+#include "vectors/VectorBuilder.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include "libmesh.h"
 
@@ -57,11 +60,15 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName,
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
+//--------------------------------------------------
+//   Create the Mesh.
+//--------------------------------------------------
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  std::string mesh_file = input_db->getString("Mesh");
-
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = AMP::Mesh::MeshManager::Adapter::shared_ptr ( new AMP::Mesh::MeshManager::Adapter () );
-  meshAdapter->readExodusIIFile ( mesh_file.c_str() );
+  boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+  boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+  mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+  boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+//----------------------------------------------------------------------------------------------------------------------------------------------//
 
   boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> diffOp;
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
@@ -94,32 +101,43 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName,
   AMP::Operator::DiffusionNonlinearFEOperatorParameters( diffFEOp_db ));
 
   // nullify vectors in parameters
-  diffOpParams->d_temperature .reset();
-  diffOpParams->d_concentration.reset();
-  diffOpParams->d_burnup.reset();
+  diffOpParams->d_FrozenTemperature.reset();
+  diffOpParams->d_FrozenConcentration.reset();
+  diffOpParams->d_FrozenBurnup.reset();
 
   // create vectors for parameters
   boost::shared_ptr<AMP::Database> active_db = diffFEOp_db->getDatabase("ActiveInputVariables");
-  AMP::LinearAlgebra::Variable::shared_ptr tVar(new AMP::Mesh::NodalScalarVariable(
+  AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerShapeVar(new AMP::LinearAlgebra::Variable("SpecificPowerInWattsPerKg"));
+  AMP::LinearAlgebra::Variable::shared_ptr tVar(new AMP::LinearAlgebra::Variable(
           active_db->getStringWithDefault("Temperature","not_specified")));
-  AMP::LinearAlgebra::Variable::shared_ptr cVar(new AMP::Mesh::NodalScalarVariable(
+  AMP::LinearAlgebra::Variable::shared_ptr cVar(new AMP::LinearAlgebra::Variable(
           active_db->getStringWithDefault("Concentration","not_specified")));
-  AMP::LinearAlgebra::Variable::shared_ptr bVar(new AMP::Mesh::NodalScalarVariable(
+  AMP::LinearAlgebra::Variable::shared_ptr bVar(new AMP::LinearAlgebra::Variable(
           active_db->getStringWithDefault("Burnup","not_specified")));
-  AMP::LinearAlgebra::Vector::shared_ptr tVec = meshAdapter->createVector( tVar );
-  AMP::LinearAlgebra::Vector::shared_ptr cVec = meshAdapter->createVector( cVar );
-  AMP::LinearAlgebra::Vector::shared_ptr bVec = meshAdapter->createVector( bVar );
+
+  //----------------------------------------------------------------------------------------------------------------------------------------------//
+  // Create a DOF manager for a nodal vector 
+  int DOFsPerNode = 1;
+  int nodalGhostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
+  //----------------------------------------------------------------------------------------------------------------------------------------------//
+
+  // create solution, rhs, and residual vectors
+  AMP::LinearAlgebra::Vector::shared_ptr tVec = AMP::LinearAlgebra::createVector( nodalDofMap, tVar );
+  AMP::LinearAlgebra::Vector::shared_ptr cVec = AMP::LinearAlgebra::createVector( nodalDofMap, cVar );
+  AMP::LinearAlgebra::Vector::shared_ptr bVec = AMP::LinearAlgebra::createVector( nodalDofMap, bVar );
   tVec->setToScalar(defTemp);
   cVec->setToScalar(defConc);
   bVec->setToScalar(defBurn);
 
   // set principal variable vector
   if (diffOp->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE)
-      diffOpParams->d_temperature = tVec;
+      diffOpParams->d_FrozenTemperature = tVec;
   if (diffOp->getPrincipalVariableId() == AMP::Operator::Diffusion::CONCENTRATION)
-      diffOpParams->d_concentration = cVec;
+      diffOpParams->d_FrozenConcentration = cVec;
   if (diffOp->getPrincipalVariableId() == AMP::Operator::Diffusion::BURNUP)
-      diffOpParams->d_burnup = bVec;
+      diffOpParams->d_FrozenBurnup = bVec;
 
   // set frozen vectors in parameters
   if (diffFEOp_db->getBoolWithDefault("FreezeTemperature",false))
@@ -136,41 +154,50 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName,
   diffOp->reset(diffOpParams);
 
   // set  up variables for apply tests
-  AMP::LinearAlgebra::Variable::shared_ptr diffSolVar = diffOp->getInputVariable(diffOp->getPrincipalVariableId());
+  //AMP::LinearAlgebra::Variable::shared_ptr diffSolVar = diffOp->getInputVariable(diffOp->getPrincipalVariableId());
+  AMP::LinearAlgebra::Variable::shared_ptr diffSolVar = diffOp->getInputVariable();
+  ut->failure("Converted incorrectly");
+
   AMP::LinearAlgebra::Variable::shared_ptr diffRhsVar = diffOp->getOutputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr diffResVar = diffOp->getOutputVariable();
-  AMP::LinearAlgebra::Variable::shared_ptr workVar(new AMP::Mesh::NodalScalarVariable("work"));
+  AMP::LinearAlgebra::Variable::shared_ptr workVar(new AMP::LinearAlgebra::Variable("work"));
   std::vector<unsigned int> nonPrincIds = diffOp->getNonPrincipalVariableIds();
   unsigned int numNonPrincIds = nonPrincIds.size();
   std::vector<AMP::LinearAlgebra::Variable::shared_ptr> nonPrincVars(numNonPrincIds);
   for (size_t i=0; i<numNonPrincIds; i++) {
-      nonPrincVars[i] = diffOp->getInputVariable(nonPrincIds[i]);
+//    nonPrincVars[i] = diffOp->getInputVariable(nonPrincIds[i]);
+      nonPrincVars[i] = diffOp->getInputVariable();
+  ut->failure("Converted incorrectly");
   }
 
   // set up vectors for apply tests
   //std::string msgPrefix=exeName+": apply";
-  AMP::LinearAlgebra::Vector::shared_ptr diffSolVec = meshAdapter->createVector( diffSolVar );
-  AMP::LinearAlgebra::Vector::shared_ptr diffRhsVec = meshAdapter->createVector( diffRhsVar );
-  AMP::LinearAlgebra::Vector::shared_ptr diffResVec = meshAdapter->createVector( diffResVar );
+  AMP::LinearAlgebra::Vector::shared_ptr diffSolVec = AMP::LinearAlgebra::createVector( nodalDofMap, diffSolVar );
+  AMP::LinearAlgebra::Vector::shared_ptr diffRhsVec = AMP::LinearAlgebra::createVector( nodalDofMap, diffRhsVar );
+  AMP::LinearAlgebra::Vector::shared_ptr diffResVec = AMP::LinearAlgebra::createVector( nodalDofMap, diffResVar );
+  
   std::vector<AMP::LinearAlgebra::Vector::shared_ptr> nonPrincVecs(numNonPrincIds);
   for (unsigned int i=0; i<numNonPrincIds; i++) {
-      nonPrincVecs[i] = meshAdapter->createVector( nonPrincVars[i] );
+      nonPrincVecs[i] = AMP::LinearAlgebra::createVector( nodalDofMap, nonPrincVars[i] );
       if (nonPrincIds[i] == AMP::Operator::Diffusion::TEMPERATURE) nonPrincVecs[i]->setToScalar(defTemp);
       if (nonPrincIds[i] == AMP::Operator::Diffusion::CONCENTRATION) nonPrincVecs[i]->setToScalar(defConc);
       if (nonPrincIds[i] == AMP::Operator::Diffusion::BURNUP) nonPrincVecs[i]->setToScalar(defBurn);
   }
   diffRhsVec->setToScalar(0.0);
 
-  for (AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator curNode =
-              meshAdapter->beginOwnedNode();
-          curNode != meshAdapter->endOwnedNode(); curNode++)
+  int zeroGhostWidth = 0;
+  AMP::Mesh::MeshIterator  curNode = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
+
+  for( ; curNode != curNode.end(); ++curNode)
   {
-      double x = curNode->x();
-      double y = curNode->y();
-      double z = curNode->z();
-      size_t i = curNode->globalID();
+      //double x = curNode->x();
+      double x = ( curNode->coord() )[0];
+      double y = ( curNode->coord() )[1];
+      double z = ( curNode->coord() )[2];
+      std::vector<size_t> i;
+      nodalDofMap->getDOFs ( curNode->globalID() , i);
       double fval = function(x,y,z);
-      diffSolVec->setValueByGlobalID(i, fval);
+      diffSolVec->setValueByGlobalID(i[0], fval);
   }
 
   // Compute finite element operator
@@ -178,25 +205,32 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName,
 
   // Check that interior values are zero.
   double totalBnd = 0.;
+  ut->failure("Converted incorrectly");
+/*
   for (size_t face = 1; face<64; face ++) {
+      curNode = curNode.begin();
       for (AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator curNode =
                   meshAdapter->beginOwnedBoundary(face);
               curNode != meshAdapter->endOwnedBoundary(face); curNode++ )
       {
-          size_t i = curNode->globalID();
-          double fval = diffResVec->getValueByGlobalID(i);
+          std::vector<size_t> i;
+          nodalDofMap->getDOFs ( curNode->globalID() , i);
+          double fval = diffResVec->getValueByGlobalID(i[0]);
           totalBnd += fabs(fval);
       }
   }
+*/
+  ut->failure("Converted incorrectly");
   double totalAll = 0.;
-  for (AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator curNode =
-              meshAdapter->beginOwnedNode();
-          curNode != meshAdapter->endOwnedNode(); curNode++)
+  ut->failure("Converted incorrectly");
+/*
+  for( curNode.begin(); curNode != curNode.end(); ++curNode)
   {
       size_t i = curNode->globalID();
       double fval = diffResVec->getValueByGlobalID(i);
       totalAll += fabs(fval);
   }
+*/
   totalBnd = globalComm.sumReduce(totalBnd);
   totalAll = globalComm.sumReduce(totalAll);
   int rank = globalComm.getRank();
@@ -208,7 +242,7 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName,
   // write values in mathematica form
   int nranks = globalComm.getSize();
   if (nranks == 1) {
-      size_t  nnodes = meshAdapter->numLocalNodes();
+      size_t  nnodes = meshAdapter->numLocalElements(AMP::Mesh::Vertex);
       int proc = globalComm.getRank();
       int nproc = globalComm.getSize();
       std::string filename = "values-"+exeName;
@@ -216,14 +250,17 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName,
       if (proc == 0) {
           file << "values={"<<"\n";
       }
-      for (size_t i=0; i<nnodes; i++)
+      AMP::Mesh::MeshIterator  node = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
+      
+      int i=0;
+      for( ; node != node.end(); ++node)
       {
-          AMP::Mesh::MeshManager::Adapter::Node node = meshAdapter->getNode(i);
-          double x = node.x();
-          double y = node.y();
-          double z = node.z();
+          double x = ( node->coord() )[0];
+          double y = ( node->coord() )[1];
+          double z = ( node->coord() )[2];
 
           int ii = i;
+          i+=1;
           double rval = diffResVec->getValueByLocalID(ii);
           double fval = function(x,y,z);
           file << "{"<<x<<","<<y<<","<<z<<","<<rval<<","<<fval<<"}";

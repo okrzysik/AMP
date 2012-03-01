@@ -36,7 +36,7 @@ namespace AMP {
 
         AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() ;
 
-        boost::shared_ptr<MassDensityModel> getDensityModel();
+        boost::shared_ptr<MassDensityModel> getDensityModel() { return d_densityModel; };
 
       protected :
 
