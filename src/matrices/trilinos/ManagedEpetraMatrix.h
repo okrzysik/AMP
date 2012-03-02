@@ -91,7 +91,7 @@ namespace LinearAlgebra {
         * \return  An integer array of the number of entries in each
         * local row
         */
-            int * entryList(); 
+      int * entryList(); 
 
       /** \brief Set the number of non-zeros in a particular row
         * \param[in] row  The row number
