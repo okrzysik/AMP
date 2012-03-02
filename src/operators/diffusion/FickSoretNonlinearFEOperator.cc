@@ -73,7 +73,7 @@ namespace Operator {
       std::string fickOut = fickDb->getString("OutputVariable");
       std::string soretOut = soretDb->getString("OutputVariable");
       AMP_INSIST(fickOut == soretOut, "Fick and Soret output variables must be the same");
-      //d_OutputVariable = AMP::LinearAlgebra::Variable::shared_ptr(new AMP::Mesh::NodalScalarVariable(fickOut , params->d_MeshAdapter));
+      d_OutputVariable = AMP::LinearAlgebra::Variable::shared_ptr(new AMP::LinearAlgebra::Variable(fickOut));
 
       // get the switch to add the Soret term
       d_AddSoretTerm = ficksoretDb->getBoolWithDefault("AddSoretTerm", true);

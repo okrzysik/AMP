@@ -106,20 +106,18 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName)
     fsOpParams->d_SoretParameters = soretOpParams;
 
     // create vectors for parameters
-    //AMP::LinearAlgebra::Variable::shared_ptr tVar(soretOp->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
-    //AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getInputVariable(AMP::Operator::Diffusion::CONCENTRATION));
-  ut->failure("Converted incorrectly");
-    AMP::LinearAlgebra::Variable::shared_ptr tVar(soretOp->getInputVariable());
-    AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getInputVariable());
+    AMP::LinearAlgebra::Variable::shared_ptr tVar(new AMP::LinearAlgebra::Variable("temp"));
+    AMP::LinearAlgebra::Variable::shared_ptr cVar(new AMP::LinearAlgebra::Variable("conc"));
     AMP::LinearAlgebra::Variable::shared_ptr bVar(new AMP::LinearAlgebra::Variable("burnup"));
 
-  //----------------------------------------------------------------------------------------------------------------------------------------------//
-  // Create a DOF manager for a nodal vector 
-  int DOFsPerNode = 1;
-  int nodalGhostWidth = 1;
-  bool split = true;
-  AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
-  //----------------------------------------------------------------------------------------------------------------------------------------------//
+    //--------------------------------------------------------------------------------------------------------------//
+    // Create a DOF manager for a nodal vector 
+    int DOFsPerNode = 1;
+    int nodalGhostWidth = 1;
+    bool split = true;
+    AMP::Discretization::DOFManager::shared_ptr nodalDofMap = 
+        AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
+  //----------------------------------------------------------------------------------------------------------------//
 
   // create solution, rhs, and residual vectors
     AMP::LinearAlgebra::Vector::shared_ptr tVec = AMP::LinearAlgebra::createVector( nodalDofMap, tVar );
@@ -214,15 +212,16 @@ int main(int argc, char *argv[])
     const int NUMFILES = 2;
     std::string files[NUMFILES] = {"FickSoret-TUI-1", "FickSoret-UO2MSRZC09-1"};
 
-    try {
-        for (int i = 0; i < NUMFILES; i++)
+    for (int i = 0; i < NUMFILES; i++) {
+        try {
             nonlinearTest(&ut, files[i]);
-    } catch (std::exception &err) {
-        std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-        ut.failure("ERROR: While testing");
-    } catch( ... ) {
-        std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-        ut.failure("ERROR: While testing");
+        } catch (std::exception &err) {
+            std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+            ut.failure("ERROR: While testing:"+files[i]);
+        } catch( ... ) {
+            std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+            ut.failure("ERROR: While testing:"+files[i]);
+        }
     }
 
     ut.report();

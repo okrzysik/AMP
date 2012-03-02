@@ -43,6 +43,8 @@ void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec, AMP::LinearAlgebra::Vector::shared_ptr solVec,
     AMP::LinearAlgebra::Vector::shared_ptr resVec, const double *shift, const double *scale, const size_t nshift)
 {
+  AMP::LinearAlgebra::Variable::shared_ptr testOperatorVariable = testOperator->getOutputVariable();
+  AMP_ASSERT(testOperatorVariable.get()!=NULL);
   // first test for apply - random values in all three input vectors
   AMP::pout<<"ApplyTest #1"<<std::endl; 
   bool passed = true;
@@ -209,7 +211,7 @@ void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
   adjust(solVec, shift, scale, nshift);
   testOperator->apply(rhsVec, solVec, resVec, 0.0, 1.0);
   rhsVec->subtract(rhsVec, resVec);
-  double norm = rhsVec->subsetVectorForVariable(testOperator->getOutputVariable())->L2Norm();
+  double norm = rhsVec->subsetVectorForVariable(testOperatorVariable)->L2Norm();
   if (AMP::Utilities::approx_equal(norm, 0.0)) {
     ut->passes(msgPrefix + " : apply with random values in the vectors f,u,r, a=0.0, b=1.0");
   } else {
@@ -224,7 +226,7 @@ void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
   adjust(solVec, shift, scale, nshift);
   testOperator->apply(rhsVec, solVec, resVec, 0.0, -1.0);
   rhsVec->add(rhsVec, resVec);
-  norm = rhsVec->subsetVectorForVariable(testOperator->getOutputVariable())->L2Norm();
+  norm = rhsVec->subsetVectorForVariable(testOperatorVariable)->L2Norm();
   if (AMP::Utilities::approx_equal(norm, 0.0)) {
     ut->passes(msgPrefix + " : apply with random values in the vectors f,u,r, a=0.0, b=-1.0 (test scaling of f)");
   } else {

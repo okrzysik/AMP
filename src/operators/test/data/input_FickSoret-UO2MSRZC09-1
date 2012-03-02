@@ -1,5 +1,12 @@
-Mesh = "brick.e"
-  
+// Database for the mesh
+Mesh{
+    MeshName = "mesh"
+    MeshType = "libMesh"
+    FileName = "brick.e"
+    dim = 3
+    NumberOfElements = 100
+}
+
 NonlinearFickSoretOp {
 name = "FickSoretNonlinearFEOperator"
 FickOperator = "FickDiffusionNonlinearFEOperator"
@@ -15,7 +22,7 @@ FickDiffusionNonlinearFEOperator{
          concentration = "conc"
          temperature = "temp"
     }
-    OutputVariable = "woohoo"
+    OutputVariable = "conc"
     PrincipalVariable = 1   
   
     DiffusionElement{
@@ -38,7 +45,7 @@ SoretDiffusionNonlinearFEOperator{
          concentration = "conc"
          temperature = "temp"
     }
-    OutputVariable = "woohoo"
+    OutputVariable = "conc"
     PrincipalVariable = 0 
   
     DiffusionElement{
