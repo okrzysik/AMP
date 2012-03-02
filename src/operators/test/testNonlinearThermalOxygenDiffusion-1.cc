@@ -87,7 +87,12 @@ void thermalOxygenDiffusionTest(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputVariable(new AMP::LinearAlgebra::MultiVariable("inputVariable"));
 //inputVariable->add(volumeOperator->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
 //inputVariable->add(volumeOperator->getInputVariable(AMP::Operator::Diffusion::CONCENTRATION));
-  inputVariable->add(volumeOperator->getInputVariable());
+  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> tmp = 
+    boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( volumeOperator->getInputVariable() );
+  for (size_t i=0; i<tmp->numVariables(); i++) {
+      if ( tmp->getVariable(i).get() != NULL )
+          inputVariable->add(tmp->getVariable(i));
+  }
                     
   // initialize the output multi-variable
   AMP::LinearAlgebra::Variable::shared_ptr outputVariable = nonlinearThermalOxygenOperator->getOutputVariable();
@@ -96,7 +101,8 @@ void thermalOxygenDiffusionTest(AMP::UnitTest *ut, std::string exeName)
   int DOFsPerNode = 1;
   int nodalGhostWidth = 1;
   bool split = true;
-  AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap = 
+    AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
 
   // create solution, rhs, and residual vectors
   AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( nodalDofMap, inputVariable  );
