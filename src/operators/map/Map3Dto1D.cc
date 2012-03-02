@@ -8,8 +8,6 @@ namespace AMP {
 namespace Operator {
 
 
-    //This file has not been converted!
-
     Map3Dto1D :: Map3Dto1D(const boost::shared_ptr<OperatorParameters>& params): 
       MapOperator (params)
     {
