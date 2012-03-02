@@ -17,6 +17,7 @@
 #include <valarray>
 #include <cmath>
 #include <limits>
+#include <iostream>
 
 namespace AMP
 {
@@ -300,10 +301,11 @@ std::vector<std::vector<double> > TensorFickProp::evalTensor(
 	std::vector<double> argr(1,args[0]);
 	std::vector<double> argz(1,args[2]);
 	std::vector<double> Kr = d_radialK.evalVector(argr);
-	std::vector<double> Kz = d_radialK.evalVector(argz);
+	std::vector<double> Kz = d_longitudinalK.evalVector(argz);
 	double cth = cos(args[1]);
 	double sth = sin(args[1]);
-	switch(d_AuxiliaryDataInteger.find("derivative")->second){
+	int deriv = d_AuxiliaryDataInteger.find("derivative")->second;
+	switch(deriv) {
 	case 0:
 	{
 		result[0][0] = cth*cth*Kr[0];
@@ -336,6 +338,12 @@ std::vector<std::vector<double> > TensorFickProp::evalTensor(
 		break;
 	}
 
+#define DEBUGGAD
+#ifdef DEBUGGAD
+	double dbgdata[9];
+	for (int i=0; i<3; i++) for (int j=0; j<3; j++) dbgdata[3*i+j] = result[i][j];
+#endif
+#undef DEBUGGAD
 	return result;
 }
 

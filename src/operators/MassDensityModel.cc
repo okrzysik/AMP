@@ -7,6 +7,8 @@
 
 #include "MassDensityModel.h"
 #include "materials/TensorProperty.h"
+#include <algorithm>
+#include <limits>
 
 namespace AMP {
 namespace Operator {
@@ -315,20 +317,35 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
 		}
 
     } else if (sourceProp->isTensor() and isCylindrical) {
+    	// check dimensions, set up temporary storage
     	boost::shared_ptr<Materials::TensorProperty<double> > sourceTensorProp =
     			boost::dynamic_pointer_cast<Materials::TensorProperty<double> >(sourceProp);
     	std::vector<size_t> dimensions = sourceTensorProp->get_dimensions();
     	AMP_ASSERT(dimensions[0] == 3 and dimensions[1] == 3);
     	std::vector<std::vector<boost::shared_ptr<std::vector<double> > > >
-    		coeff(dimensions[0], std::vector<boost::shared_ptr<std::vector<double> > >(dimensions[1],
-    				boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
+    		coeff(dimensions[0], std::vector<boost::shared_ptr<std::vector<double> > >(dimensions[1]));
     	std::vector<std::vector<boost::shared_ptr<std::vector<double> > > >
-    		coeffr(dimensions[0], std::vector<boost::shared_ptr<std::vector<double> > >(dimensions[1],
-    				boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
+    		coeffr(dimensions[0], std::vector<boost::shared_ptr<std::vector<double> > >(dimensions[1]));
     	std::vector<std::vector<boost::shared_ptr<std::vector<double> > > >
-    		coeffz(dimensions[0], std::vector<boost::shared_ptr<std::vector<double> > >(dimensions[1],
-    				boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
+    		coeffz(dimensions[0], std::vector<boost::shared_ptr<std::vector<double> > >(dimensions[1]));
 
+		for (size_t i=0; i<3; i++) for (size_t j=0; j<3; j++) {
+			std::vector<double> *vd;
+			vd = new std::vector<double>(neval);
+			coeff[i][j].reset(vd);
+				vd = new std::vector<double>(neval);
+			coeffr[i][j].reset(vd);
+				vd = new std::vector<double>(neval);
+			coeffz[i][j].reset(vd);
+		}
+
+    	// check that material property has expected argument names
+    	std::vector<std::string> argnames = sourceTensorProp->get_arguments();
+    	AMP_ASSERT(std::find(argnames.begin(), argnames.end(), "radius") != argnames.end());
+    	AMP_ASSERT(std::find(argnames.begin(), argnames.end(), "theta") != argnames.end());
+    	AMP_ASSERT(std::find(argnames.begin(), argnames.end(), "zee") != argnames.end());
+
+    	// get argument vectors
         args.insert(std::make_pair("radius", boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
         args.insert(std::make_pair("theta", boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
         args.insert(std::make_pair("zee", boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
@@ -336,6 +353,7 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
         std::vector<double> &theta = (*args.find("theta")->second);
         std::vector<double> &zee = (*args.find("zee")->second);
 
+        // fill in cylindrical coordinates
 		double Pi=3.1415926535898;
 		for (size_t k = 0; k < neval; k++)
 		{
@@ -346,8 +364,22 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
 			zee[k]    = z;
 		}
 
+		// evaluate various derivatives of diffusion coefficient tensor
 		sourceTensorProp->setAuxiliaryData("derivative", 0);
 		sourceTensorProp->evalv(coeff, args);
+
+#define DEBUGGAD
+#ifdef DEBUGGAD
+			double test[6][neval];
+			for (int k=0; k<neval;k++){
+			test[0][k] = (*coeff[0][0])[k];
+			test[1][k] = (*coeff[1][1])[k];
+			test[2][k] = (*coeff[2][2])[k];
+			test[3][k] = (*coeffr[0][0])[k];
+			test[4][k] =  (*coeffr[1][1])[k];
+			test[5][k] = (*coeffz[2][2])[k];
+			}
+#endif
 
 		sourceTensorProp->setAuxiliaryData("derivative", 1);
 		sourceTensorProp->evalv(coeffr, args);
@@ -360,42 +392,23 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
 		{
 			double x=xyz[k](0), y=xyz[k](1), z=xyz[k](2);
 			double r=sqrt(x*x+y*y), th=acos(x/r); if (y<0) th = 2*Pi-th;
+			if (r==0.) r = std::numeric_limits<double>::min();
 			// soln is the set of all derivatives wrto r, th, and z of order <= 2
 			d_ManufacturedSolution->evaluate(soln, r, th, z);
 
-			// convert hessian wrto r, th, z to hessian wrto x, y, z
-			double r3 = r*r*r;
-			std::vector<std::vector<double> > hessian(3, std::vector<double>(3, 0.));
-			if (r>0) {
-				hessian[0][0] = (y*y * soln[1] + r * x*x * soln[4])/r3;
-				hessian[0][1] = x*y*(-soln[1]+r*soln[4])/r3;
-				hessian[0][2] = x*soln[5]/r;
-				hessian[1][0] = x*y*(-soln[1]+r*soln[4])/r3;
-				hessian[1][1] = (x*x*soln[1] + r*y*y*soln[4])/r3;
-				hessian[1][2] = y*soln[5]/r;
-				hessian[2][0] = x*soln[5]/r;
-				hessian[2][1] = y*soln[5]/r;
-			}
-			hessian[2][2] = soln[9];
+			std::vector<double> Kr(2), Kz(2);
+			Kr[0] = (*coeff[0][0])[k] + (*coeff[1][1])[k];
+			Kz[0] = (*coeff[2][2])[k];
+			Kr[1] = (*coeffr[0][0])[k] + (*coeffr[1][1])[k];
+			Kz[1] = (*coeffz[2][2])[k];
 
-			// compute k : grad grad term
-			result[k] = 0.;
-			for (size_t i=0; i<3; i++) for (size_t j=0; j<3; j++) {
-				result[k] +=  (*coeff[i][j])[k] * hessian[i][j];
-			}
+			result[k] = Kz[1]*soln[3] + Kz[0]*soln[9] + Kr[0]*soln[1]/r + Kr[1]*soln[1] + Kr[0]*soln[4];
 
-			// compute grad k . grad term
-			std::vector<double> factor(3,0.);
-			std::vector<double> divK(3,0.);
-			if (r>0) {
-				factor[0] = x/r;
-				factor[1] = y/r;
-			}
-			factor[2] = 1.;
-			divK[0] = factor[0]*(*coeffr[0][0])[k] + factor[1]*(*coeffr[1][0])[k] + (*coeffz[2][0])[k];
-			divK[1] = factor[0]*(*coeffr[0][1])[k] + factor[1]*(*coeffr[1][1])[k] + (*coeffz[2][1])[k];
-			divK[2] = factor[0]*(*coeffr[0][2])[k] + factor[1]*(*coeffr[1][2])[k] + (*coeffz[2][2])[k];
-			result[k] += divK[0]*soln[1] + divK[1]*soln[2] + divK[2]*soln[3];
+#ifdef DEBUGGAD
+			double dummy=result[k];
+			double d2=dummy*2.;
+#endif
+#undef DEBUGGAD
 		}
     }
 

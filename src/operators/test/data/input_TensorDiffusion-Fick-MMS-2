@@ -27,7 +27,7 @@ FickLinearBVPOperator {
 
 ManufacturedSourceOperator {
     name = "MassLinearFEOperator"
-    InputVariable = "concentration"
+    InputVariable = "solution"
     OutputVariable = "manufactured"
     print_info_level = 3
     reset_reuses_matrix = TRUE
@@ -73,6 +73,7 @@ FickDirichletVectorCorrection{
    	 name = "DirichletVectorCorrection"
      print_info_level = 3
      skip_params = FALSE
+     valuesType = 2
      number_of_ids = 2
      id_0         =   4
      number_of_dofs_0 =   1
@@ -141,10 +142,9 @@ MassDensityModel{
      		BoundaryType = "None"
       		Coefficients = 14.565519491455166, 14.51316443791129, 17.032171451208203, -8.987124892620383, 0, 0, 0, 0, 12.517794782212528, 6.796432207509762, 5.550731118198651, 6.6139884494310675,
 -4.194714492268008, -19.623908485943932, -13.94646064306552, -0.09865646462251965
-			MinR =  .4999999
-     		MaxR = 1.0000001
-     		MinZ = -.5000001
-     		MaxZ =  .5000001
-     		
-     	}
+			MinR = .49999999999
+     		MaxR = 1.0000000001
+     		MinZ = -.5000000001
+     		MaxZ =  .5000000001
+        }
 }  
