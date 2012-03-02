@@ -1,4 +1,11 @@
-Mesh = "brick.e"
+// Database for the mesh
+Mesh{
+    MeshName = "mesh"
+    MeshType = "libMesh"
+    FileName = "brick.e"
+    dim = 3
+    NumberOfElements = 4096
+}
   
 LinearDiffusionOp{
     name = "DiffusionLinearFEOperator"

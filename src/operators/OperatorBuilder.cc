@@ -24,7 +24,7 @@
 #include "NonlinearBVPOperator.h"
 #include "ParameterFactory.h"
 #include "ElementOperationFactory.h"
-//#include "MapSurface.h"
+#include "map/MapSurface.h"
 
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
@@ -458,6 +458,8 @@ OperatorBuilder::createLinearDiffusionOperator( AMP::Mesh::Mesh::shared_ptr mesh
   diffusionOpParams->d_transportModel = transportModel;
   diffusionOpParams->d_elemOp = diffusionLinElem;
   diffusionOpParams->d_Mesh = meshAdapter;
+  diffusionOpParams->d_inDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, 1, 1, true);
+  diffusionOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, 1, 1, true);
   boost::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> diffusionOp (new AMP::Operator::DiffusionLinearFEOperator( diffusionOpParams ));
   
   return diffusionOp;
@@ -1265,8 +1267,6 @@ boost::shared_ptr<Operator>
 OperatorBuilder::createOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter1,AMP::Mesh::Mesh::shared_ptr meshAdapter2,
 				boost::shared_ptr<AMP::Database> input_db)
 {
-  AMP_ERROR("Not converted yet");
-/*
   boost::shared_ptr<Operator> retOperator;
   
   std::string name = input_db->getString("name");
@@ -1274,12 +1274,11 @@ OperatorBuilder::createOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter1,AMP::Me
     {
       boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapOperatorParameters (new AMP::Operator::MapOperatorParameters( input_db ) );
       
-      mapOperatorParameters->d_MeshAdapter = meshAdapter1;
-      mapOperatorParameters->d_MapAdapter  = meshAdapter2;
+      mapOperatorParameters->d_Mesh = meshAdapter1;
+      mapOperatorParameters->d_MapMesh  = meshAdapter2;
       retOperator.reset(new AMP::Operator::MapSurface(mapOperatorParameters));
     }
   return retOperator;
-*/
 }
 
 

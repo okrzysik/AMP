@@ -1,12 +1,12 @@
-NumberOfMeshes = 1
-Mesh_1{
-  Filename = "cube4096.e"
-  MeshName = "cube"
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 4096
+// Database for the mesh
+Mesh{
+    MeshName = "cube"
+    MeshType = "libMesh"
+    FileName = "cube4096.e"
+    dim = 3
+    NumberOfElements = 4096
 }
+
 
 ThermalNonlinearBVPOperator {
    name="NonlinearBVPOperator"

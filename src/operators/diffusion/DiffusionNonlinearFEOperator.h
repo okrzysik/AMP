@@ -77,10 +77,6 @@ protected:
 
     void init(const boost::shared_ptr<DiffusionNonlinearFEOperatorParameters>& params);
 
-    std::vector<unsigned int> d_DofIndices;
-
-    unsigned int d_numNodesForCurrentElement;
-
     std::vector<double> d_elementOutputVector;
 
     boost::shared_ptr<DiffusionNonlinearElement> d_diffNonlinElem;

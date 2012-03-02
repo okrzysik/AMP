@@ -54,8 +54,6 @@ protected:
 
         AMP::LinearAlgebra::Vector::shared_ptr d_burnup;
 
-        std::vector<unsigned int> d_dofIndices;
-
         std::vector<std::vector<double> > d_elementStiffnessMatrix;
 
         boost::shared_ptr<DiffusionLinearElement> d_diffLinElem;

@@ -41,25 +41,21 @@ void linearTest1(AMP::UnitTest *ut, std::string exeName)
   std::string log_file = "output_" + exeName;
 
   AMP::PIO::logOnlyNodeZero(log_file);
+  AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
+  // Read the input file
   boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  std::string mesh_file = input_db->getString("Mesh");
-
-  // Create the mesh parameter object
-  boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
-  database->putInteger("dim",3);
-  database->putString("MeshName","mesh");
-  database->putString("MeshType","libMesh");
-  database->putString("FileName",mesh_file);
+  // Get the Mesh database and create the mesh parameters
+  boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
   boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
-  params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+  params->setComm(globalComm);
 
-  // Create the mesh
-  AMP::Mesh::Mesh::shared_ptr  meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
+  // Create the meshes from the input database
+  boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
+
 
   boost::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> diffOp;
   boost::shared_ptr<AMP::InputDatabase> diffLinFEOp_db =
@@ -106,7 +102,6 @@ void linearTest1(AMP::UnitTest *ut, std::string exeName)
   // Test eigenvalues (run output through mathematica)
   boost::shared_ptr<AMP::LinearAlgebra::Matrix> diffMat = diffOp->getMatrix();
 
-  AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
   int nranks = globalComm.getSize();
 
   size_t matdim=24;

@@ -215,6 +215,7 @@ inline double Vector::getValueByLocalID ( size_t ndx ) const
   inline
   void Vector::setVariable(const Variable::shared_ptr name)
   {
+    AMP_ASSERT(name.get()!=NULL);
     d_pVariable = name;
   }
 

@@ -1,4 +1,11 @@
-Mesh = "cube64.with.boundary.labels.e"
+// Database for the mesh
+Mesh{
+    MeshName = "cube64.with.boundary.labels.e"
+    MeshType = "libMesh"
+    FileName = "brick.e"
+    dim = 3
+    NumberOfElements = 100
+}
 
 ThermalNonlinearBVPOperator {
    name="NonlinearBVPOperator"

@@ -21,6 +21,8 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
     AMP::LinearAlgebra::Variable::shared_ptr variable,
     bool split )
 {
+    AMP_ASSERT(DOFs.get()!=NULL);
+    AMP_ASSERT(variable.get()!=NULL);
     // Check if we are dealing with a multiDOFManager
     boost::shared_ptr<AMP::Discretization::multiDOFManager> multiDOF;
     if ( split )

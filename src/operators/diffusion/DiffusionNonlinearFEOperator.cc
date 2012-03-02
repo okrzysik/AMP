@@ -16,26 +16,29 @@ namespace Operator {
 
 // Functions moved from header
 
-    AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::createInputVariable(const std::string & name, int varId) {
+AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::createInputVariable(const std::string & name, int varId) {
         if (varId == -1) {
             return d_inpVariables->cloneVariable(name);
         } else {
             return (d_inpVariables->getVariable(varId))->cloneVariable(name);
         }
-    }
+}
 
-    AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::createOutputVariable(const std::string & name, int varId) {
+
+AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::createOutputVariable(const std::string & name, int varId) {
         (void) varId;
         return d_outVariable->cloneVariable(name);
-    }
+}
 
-    AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::getInputVariable() {
-        return d_inpVariables;
-    }
 
-    AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::getOutputVariable() {
+AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::getInputVariable() {
+    return d_inpVariables;
+}
+
+
+AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::getOutputVariable() {
             return d_outVariable;
-    }
+}
 
     unsigned int DiffusionNonlinearFEOperator::numberOfDOFMaps() {
             return 1;
@@ -57,18 +60,18 @@ namespace Operator {
     }
 
     boost::shared_ptr<DiffusionTransportModel> DiffusionNonlinearFEOperator::getTransportModel(){
-        return d_transportModel;
-    }
+    return d_transportModel;
+}
 
-    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> DiffusionNonlinearFEOperator::getFrozen(){return d_Frozen;}
 
-    void DiffusionNonlinearFEOperator::setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec)
-    {
+std::vector<AMP::LinearAlgebra::Vector::shared_ptr> DiffusionNonlinearFEOperator::getFrozen(){return d_Frozen;}
+
+
+void DiffusionNonlinearFEOperator::setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec)
+{
       d_Frozen[id] = frozenVec->subsetVectorForVariable(d_inpVariables->getVariable(id));
       (d_Frozen[id])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-    }
-
-
+}
 
 
 DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
@@ -149,6 +152,7 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
     init(params);
 }
 
+
 void DiffusionNonlinearFEOperator::preAssembly(
         const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, boost::shared_ptr<AMP::LinearAlgebra::Vector> &r)
 {
@@ -190,6 +194,7 @@ void DiffusionNonlinearFEOperator::preAssembly(
   }
 }
 
+
 void DiffusionNonlinearFEOperator::postAssembly()
 {
   if( d_iDebugPrintInfoLevel > 7 )
@@ -206,36 +211,33 @@ void DiffusionNonlinearFEOperator::postAssembly()
   }
 }
 
+
 void DiffusionNonlinearFEOperator::preElementOperation(
     const AMP::Mesh::MeshElement & elem )
 {
-AMP_ERROR("Not converted yet");
-/*
   if( d_iDebugPrintInfoLevel > 7 )
-    {
       AMP::pout << "DiffusionNonlinearFEOperator::preElementOperation, entering" << std::endl;     
-    }
-  unsigned int num_local_Dofs = 0;
-  AMP_ASSERT(dof_maps.size() == 1);
-  (dof_maps[0])->getDOFs(elem, d_DofIndices);
-  num_local_Dofs = d_DofIndices.size();
   
   std::vector<std::vector<double> > elementInputVectors(Diffusion::NUMBER_VARIABLES);
 
-  d_numNodesForCurrentElement = elem.numNodes();
+  d_currNodes = elem.getElements(AMP::Mesh::Vertex);
   
+  size_t num_local_Dofs = d_currNodes.size();
   for (unsigned int var = 0; var < Diffusion::NUMBER_VARIABLES; var++)
-    {
-      if (d_isActive[var])
-    {
-      elementInputVectors[var].resize(num_local_Dofs);
-      for (unsigned int i = 0; i < d_numNodesForCurrentElement; i++)
+  {
+     if (d_isActive[var])
+     {
+        AMP::Discretization::DOFManager::shared_ptr DOF = (d_inVec[var])->getDOFManager();
+        std::vector<size_t> dofs;
+        elementInputVectors[var].resize(num_local_Dofs);
+        for (size_t i = 0; i<d_currNodes.size(); i++)
         {
-          elementInputVectors[var][i]
-        = (d_inVec[var])->getValueByGlobalID(d_DofIndices[i]);
+            DOF->getDOFs(d_currNodes[i].globalID(),dofs);
+            AMP_ASSERT(dofs.size()==1);
+            elementInputVectors[var][i] = (d_inVec[var])->getValueByGlobalID(dofs[0]);
         }
-    }
-    }
+     }
+  }
   
   d_elementOutputVector.resize(num_local_Dofs);
   for (unsigned int i = 0; i < num_local_Dofs; i++)
@@ -246,34 +248,46 @@ AMP_ERROR("Not converted yet");
   d_diffNonlinElem->setElementVectors(elementInputVectors,
                       d_elementOutputVector);
   
-  const ::Elem* elemPtr = &(elem.getElem());
-  d_diffNonlinElem->initializeForCurrentElement(elemPtr, d_transportModel);
+  createCurrentLibMeshElement();
 
   if( d_iDebugPrintInfoLevel > 7 )
     {
       AMP::pout << "DiffusionNonlinearFEOperator::preElementOperation, leaving" << std::endl;     
     }
-*/
 }
+
 
 void DiffusionNonlinearFEOperator::postElementOperation()
 {
-  if( d_iDebugPrintInfoLevel > 7 )
-    {
-      AMP::pout << "DiffusionNonlinearFEOperator::postElementOperation, entering" << std::endl;
-    }
+    if( d_iDebugPrintInfoLevel > 7 )
+        AMP::pout << "DiffusionNonlinearFEOperator::postElementOperation, entering" << std::endl;
   
-  for (unsigned int i = 0; i < d_numNodesForCurrentElement; i++)
-    {
-      d_outVec->addValueByGlobalID(d_DofIndices[i],
-                   d_elementOutputVector[i]);
+    AMP::Discretization::DOFManager::shared_ptr DOF;
+    for (unsigned int var = 0; var < Diffusion::NUMBER_VARIABLES; var++) {
+        if (d_isActive[var]) {
+            AMP::Discretization::DOFManager::shared_ptr DOF = (d_inVec[var])->getDOFManager();
+            break;
+        }
+    }
+    if ( DOF.get() == NULL )
+        AMP_ERROR("Valid DOF manager not found");
+
+    std::vector<size_t> d_dofIndices(d_currNodes.size()), dofs(1);
+    for (size_t i=0; i<d_currNodes.size(); i++) {
+        DOF->getDOFs( d_currNodes[i].globalID(), dofs );
+        AMP_ASSERT(dofs.size()==1);
+        d_dofIndices[i] = dofs[0];
     }
 
-  if( d_iDebugPrintInfoLevel > 7 )
-    {
-      AMP::pout << "DiffusionNonlinearFEOperator::postElementOperation, leaving" << std::endl;
-    }
+    for (size_t i=0; i<d_currNodes.size(); i++)
+        d_outVec->addValueByGlobalID( d_dofIndices[i], d_elementOutputVector[i] );
+
+    destroyCurrentLibMeshElement();
+
+    if( d_iDebugPrintInfoLevel > 7 )
+        AMP::pout << "DiffusionNonlinearFEOperator::postElementOperation, leaving" << std::endl;
 }
+
 
 void DiffusionNonlinearFEOperator::init(const boost::shared_ptr<
         DiffusionNonlinearFEOperatorParameters>& params)
@@ -287,15 +301,14 @@ void DiffusionNonlinearFEOperator::init(const boost::shared_ptr<
   AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume,0);
   AMP::Mesh::MeshIterator end_el = el.end();
   
-AMP_ERROR("Not converted yet");
-/*
   for (; el != end_el; ++el)
     {
-      const ::Elem* elemPtr = &(el->getElem());
-      d_diffNonlinElem->initializeForCurrentElement(elemPtr, d_transportModel);
+      d_currNodes = el->getElements(AMP::Mesh::Vertex);
+      createCurrentLibMeshElement();
+      d_diffNonlinElem->initializeForCurrentElement(d_currElemPtr, d_transportModel);
       d_diffNonlinElem->initTransportModel();
+      destroyCurrentLibMeshElement();
     }//end for el
-*/  
 
   if( d_iDebugPrintInfoLevel > 7 )
     {
