@@ -249,6 +249,7 @@ void DiffusionNonlinearFEOperator::preElementOperation(
                       d_elementOutputVector);
   
   createCurrentLibMeshElement();
+  d_diffNonlinElem->initializeForCurrentElement(d_currElemPtr, d_transportModel);
 
   if( d_iDebugPrintInfoLevel > 7 )
     {
@@ -265,7 +266,7 @@ void DiffusionNonlinearFEOperator::postElementOperation()
     AMP::Discretization::DOFManager::shared_ptr DOF;
     for (unsigned int var = 0; var < Diffusion::NUMBER_VARIABLES; var++) {
         if (d_isActive[var]) {
-            AMP::Discretization::DOFManager::shared_ptr DOF = (d_inVec[var])->getDOFManager();
+            DOF = (d_inVec[var])->getDOFManager();
             break;
         }
     }

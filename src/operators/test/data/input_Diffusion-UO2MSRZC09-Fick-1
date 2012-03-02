@@ -10,7 +10,7 @@ Mesh{
 LinearDiffusionOp{
     name = "DiffusionLinearFEOperator"
     InputVariable = "concentration"
-    OutputVariable = "woohoo"
+    OutputVariable = "concentration"
     print_info_level = 1
     reset_reuses_matrix = TRUE
     FixedTemperature = TRUE
@@ -35,7 +35,7 @@ NonlinearDiffusionOp{
     ActiveInputVariables {
          concentration = "concentration"
     }
-    OutputVariable = "woohoo"
+    OutputVariable = "concentration"
     PrincipalVariable = 1   
   
     DiffusionElement{

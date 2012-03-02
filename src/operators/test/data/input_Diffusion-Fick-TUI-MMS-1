@@ -27,7 +27,7 @@ ThermalLinearBVPOperator {
 ManufacturedSourceOperator {
     name = "MassLinearFEOperator"
     InputVariable = "concentration"
-    OutputVariable = "manufactured"
+    OutputVariable = "concentration"
     print_info_level = 3
     reset_reuses_matrix = TRUE
     FixedConcentration = 0.15
@@ -49,7 +49,7 @@ ManufacturedSourceOperator {
 ThermalDiffusionNonlinearFEOperator{
 	 name="DiffusionNonlinearFEOperator"
 	 InputVariable="concentration"
-	 OutputVariable="divergence"
+	 OutputVariable="concentration"
 	 print_info_level = 1
 	
 	 ActiveInputVariables { 

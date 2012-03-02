@@ -25,7 +25,7 @@ ThermalLinearBVPOperator {
 DiffusionNonlinearFEOperator{
 	 name="DiffusionNonlinearFEOperator"
 	 InputVariable="concentration"
-	 OutputVariable="divergence"
+	 OutputVariable="concentration"
 	 print_info_level = 1
 	
 	 ActiveInputVariables { 
@@ -46,7 +46,7 @@ DiffusionNonlinearFEOperator{
 DiffusionLinearFEOperator{
       name="DiffusionLinearFEOperator"
       InputVariable="concentration"
-      OutputVariable="divergence"
+      OutputVariable="concentration"
       print_info_level = 3
 
      DiffusionElement {

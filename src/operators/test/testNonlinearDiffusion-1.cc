@@ -48,6 +48,7 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName)
   std::string log_file = "output_" + exeName;
 
   AMP::PIO::logOnlyNodeZero(log_file);
+  AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
   std::cout << "testing with input file " << input_file << std::endl;
   std::cout.flush();
@@ -57,21 +58,13 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName)
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  // Get the mesh name
-  AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  std::string mesh_file = input_db->getString("Mesh");
-
-  // Create the mesh parameter object
-  boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
-  database->putInteger("dim",3);
-  database->putString("MeshName","mesh");
-  database->putString("MeshType","libMesh");
-  database->putString("FileName",mesh_file);
+  // Get the Mesh database and create the mesh parameters
+  boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
   boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
-  params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+  params->setComm(globalComm);
 
-  // Create the mesh
-  AMP::Mesh::Mesh::shared_ptr  meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
+  // Create the meshes from the input database
+  boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
 
   // nonlinear operator
   boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> diffOp;
@@ -191,8 +184,7 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName)
 
   // set up variables for apply tests
   //AMP::LinearAlgebra::Variable::shared_ptr diffSolVar = diffOp->getInputVariable(diffOp->getPrincipalVariableId());
-  AMP::LinearAlgebra::Variable::shared_ptr diffSolVar = diffOp->getInputVariable();
-  ut->failure("Converted incorrectly");
+  AMP::LinearAlgebra::Variable::shared_ptr diffSolVar = diffOp->getOutputVariable();
 
   AMP::LinearAlgebra::Variable::shared_ptr diffRhsVar = diffOp->getOutputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr diffResVar = diffOp->getOutputVariable();
@@ -200,10 +192,10 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName)
   std::vector<unsigned int> nonPrincIds = diffOp->getNonPrincipalVariableIds();
   unsigned int numNonPrincIds = nonPrincIds.size();
   std::vector<AMP::LinearAlgebra::Variable::shared_ptr> nonPrincVars(numNonPrincIds);
+  AMP::LinearAlgebra::Variable::shared_ptr inputVar = diffOp->getInputVariable();
   for (size_t i=0; i<numNonPrincIds; i++) {
       //nonPrincVars[i] = diffOp->getInputVariable(nonPrincIds[i]);
-      nonPrincVars[i] = diffOp->getInputVariable();
-  ut->failure("Converted incorrectly");
+      nonPrincVars[i] = boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(inputVar)->getVariable(i);
   }
 
   // Test apply
@@ -302,30 +294,30 @@ int main(int argc, char *argv[])
 
     AMP::UnitTest ut;
 
-  const int NUMFILES=14;
-  std::string files[NUMFILES] = {
-      "Diffusion-CylindricalFick-1", "Diffusion-TUI-Thermal-1",
-      "Diffusion-TUI-Fick-1", "Diffusion-TUI-Soret-1",
-      "Diffusion-UO2MSRZC09-Thermal-1", "Diffusion-UO2MSRZC09-Fick-1", "Diffusion-UO2MSRZC09-Soret-1",
-      "Diffusion-TUI-Thermal-ActiveTemperatureAndConcentration-1",
-      "Diffusion-TUI-Fick-ActiveTemperatureAndConcentration-1",
-      "Diffusion-TUI-Soret-ActiveTemperatureAndConcentration-1",
-      "Diffusion-UO2MSRZC09-Thermal-ActiveTemperatureAndConcentration-1",
-      "Diffusion-UO2MSRZC09-Fick-ActiveTemperatureAndConcentration-1",
-      "Diffusion-UO2MSRZC09-Soret-ActiveTemperatureAndConcentration-1",
-      "Diffusion-TUI-TensorFick-1"
-  };
+    const int NUMFILES=14;
+    std::string files[NUMFILES] = {
+        "Diffusion-CylindricalFick-1", "Diffusion-TUI-Thermal-1",
+        "Diffusion-TUI-Fick-1", "Diffusion-TUI-Soret-1",
+        "Diffusion-UO2MSRZC09-Thermal-1", "Diffusion-UO2MSRZC09-Fick-1", "Diffusion-UO2MSRZC09-Soret-1",
+        "Diffusion-TUI-Thermal-ActiveTemperatureAndConcentration-1",
+        "Diffusion-TUI-Fick-ActiveTemperatureAndConcentration-1",
+        "Diffusion-TUI-Soret-ActiveTemperatureAndConcentration-1",
+        "Diffusion-UO2MSRZC09-Thermal-ActiveTemperatureAndConcentration-1",
+        "Diffusion-UO2MSRZC09-Fick-ActiveTemperatureAndConcentration-1",
+        "Diffusion-UO2MSRZC09-Soret-ActiveTemperatureAndConcentration-1",
+        "Diffusion-TUI-TensorFick-1"
+    };
 
-    try {
     for (int i=0; i<NUMFILES; i++) {
-        nonlinearTest(&ut, files[i]);    }
-
-    } catch (std::exception &err) {
-        std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-        ut.failure("ERROR: While testing");
-    } catch( ... ) {
-        std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-        ut.failure("ERROR: While testing");
+        try {
+            nonlinearTest(&ut, files[i]);    
+        } catch (std::exception &err) {
+            std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+            ut.failure("ERROR: While testing: "+files[i]);
+        } catch( ... ) {
+            std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+            ut.failure("ERROR: While testing: "+files[i]);
+        }
     }
 
     ut.report();

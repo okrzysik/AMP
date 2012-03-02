@@ -60,14 +60,14 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName,
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-//--------------------------------------------------
-//   Create the Mesh.
-//--------------------------------------------------
-  AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
-  boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
-  mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-  boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+  // Get the Mesh database and create the mesh parameters
+  boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  params->setComm(globalComm);
+
+  // Create the meshes from the input database
+  boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
+
 //----------------------------------------------------------------------------------------------------------------------------------------------//
 
   boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> diffOp;
@@ -155,8 +155,7 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName,
 
   // set  up variables for apply tests
   //AMP::LinearAlgebra::Variable::shared_ptr diffSolVar = diffOp->getInputVariable(diffOp->getPrincipalVariableId());
-  AMP::LinearAlgebra::Variable::shared_ptr diffSolVar = diffOp->getInputVariable();
-  ut->failure("Converted incorrectly");
+  AMP::LinearAlgebra::Variable::shared_ptr diffSolVar = diffOp->getOutputVariable();
 
   AMP::LinearAlgebra::Variable::shared_ptr diffRhsVar = diffOp->getOutputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr diffResVar = diffOp->getOutputVariable();
@@ -164,10 +163,10 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName,
   std::vector<unsigned int> nonPrincIds = diffOp->getNonPrincipalVariableIds();
   unsigned int numNonPrincIds = nonPrincIds.size();
   std::vector<AMP::LinearAlgebra::Variable::shared_ptr> nonPrincVars(numNonPrincIds);
+  AMP::LinearAlgebra::Variable::shared_ptr inputVar = diffOp->getInputVariable();
   for (size_t i=0; i<numNonPrincIds; i++) {
-//    nonPrincVars[i] = diffOp->getInputVariable(nonPrincIds[i]);
-      nonPrincVars[i] = diffOp->getInputVariable();
-  ut->failure("Converted incorrectly");
+      //nonPrincVars[i] = diffOp->getInputVariable(nonPrincIds[i]);
+      nonPrincVars[i] = boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(inputVar)->getVariable(i);
   }
 
   // set up vectors for apply tests
@@ -187,17 +186,18 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName,
 
   int zeroGhostWidth = 0;
   AMP::Mesh::MeshIterator  curNode = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
+  AMP::Mesh::MeshIterator  endNode = curNode.end();
 
-  for( ; curNode != curNode.end(); ++curNode)
+  for( curNode=curNode.begin(); curNode!=endNode; ++curNode)
   {
       //double x = curNode->x();
       double x = ( curNode->coord() )[0];
       double y = ( curNode->coord() )[1];
       double z = ( curNode->coord() )[2];
-      std::vector<size_t> i;
-      nodalDofMap->getDOFs ( curNode->globalID() , i);
+      std::vector<size_t> dofs;
+      nodalDofMap->getDOFs ( curNode->globalID(), dofs);
       double fval = function(x,y,z);
-      diffSolVec->setValueByGlobalID(i[0], fval);
+      diffSolVec->setValueByGlobalID(dofs[0], fval);
   }
 
   // Compute finite element operator
@@ -205,32 +205,21 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName,
 
   // Check that interior values are zero.
   double totalBnd = 0.;
-  ut->failure("Converted incorrectly");
-/*
   for (size_t face = 1; face<64; face ++) {
-      curNode = curNode.begin();
-      for (AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator curNode =
-                  meshAdapter->beginOwnedBoundary(face);
-              curNode != meshAdapter->endOwnedBoundary(face); curNode++ )
-      {
-          std::vector<size_t> i;
-          nodalDofMap->getDOFs ( curNode->globalID() , i);
-          double fval = diffResVec->getValueByGlobalID(i[0]);
+      for( curNode=curNode.begin(); curNode!=endNode; ++curNode) {
+          std::vector<size_t> dofs;
+          nodalDofMap->getDOFs ( curNode->globalID(), dofs);
+          double fval = diffResVec->getValueByGlobalID(dofs[0]);
           totalBnd += fabs(fval);
       }
   }
-*/
-  ut->failure("Converted incorrectly");
   double totalAll = 0.;
-  ut->failure("Converted incorrectly");
-/*
-  for( curNode.begin(); curNode != curNode.end(); ++curNode)
-  {
-      size_t i = curNode->globalID();
-      double fval = diffResVec->getValueByGlobalID(i);
+  for( curNode=curNode.begin(); curNode!=endNode; ++curNode) {
+      std::vector<size_t> dofs;
+      nodalDofMap->getDOFs ( curNode->globalID(), dofs);
+      double fval = diffResVec->getValueByGlobalID(dofs[0]);
       totalAll += fabs(fval);
   }
-*/
   totalBnd = globalComm.sumReduce(totalBnd);
   totalAll = globalComm.sumReduce(totalAll);
   int rank = globalComm.getRank();
@@ -264,7 +253,7 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName,
           double rval = diffResVec->getValueByLocalID(ii);
           double fval = function(x,y,z);
           file << "{"<<x<<","<<y<<","<<z<<","<<rval<<","<<fval<<"}";
-          if (i<nnodes-1) file <<",\n";
+          if (i<(int)nnodes-1) file <<",\n";
       }
       if (proc < nproc-1) {
           file <<",\n";
@@ -306,20 +295,21 @@ int main(int argc, char *argv[])
 {
     AMP::AMPManager::startup(argc, argv);
     AMP::UnitTest ut;
-     const int NUMFILES=1;
+    const int NUMFILES=1;
     std::string files[NUMFILES] = {
         "Diffusion-TUI-Thermal-1"
     };
 
-    try {
-        for (int i=0; i<NUMFILES; i++)
+    for (int i=0; i<NUMFILES; i++) {
+        try {
             nonlinearTest(&ut, files[i], x_linear);
-    } catch (std::exception &err) {
-        std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-        ut.failure("ERROR: While testing");
-    } catch( ... ) {
-        std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-        ut.failure("ERROR: While testing");
+        } catch (std::exception &err) {
+            std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+            ut.failure("ERROR: While testing: "+files[i]);
+        } catch( ... ) {
+            std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+            ut.failure("ERROR: While testing: "+files[i]);
+        }
     }
 
     ut.report();
