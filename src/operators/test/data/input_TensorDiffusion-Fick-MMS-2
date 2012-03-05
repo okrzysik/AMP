@@ -1,7 +1,9 @@
-NumberOfMeshes = 1
-Mesh_1{
-  Filename = "shell3150mesh.e"
+
+Mesh{
+  MeshType = "libMesh"
+  FileName = "shell3150mesh.e"
   MeshName = "Mesh"
+  dim      = 3
   x_offset = 0.0
   y_offset = 0.0
   z_offset = 0.0

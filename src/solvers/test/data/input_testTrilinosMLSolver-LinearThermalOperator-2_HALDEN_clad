@@ -1,14 +1,13 @@
 
-Mesh = "halden_1_clad.e"
-
-NumberOfMeshes = 1
-Mesh_1{
-  Filename = "halden_1_clad.e"
-    MeshName = "Pellet"
-    x_offset = 0.0
-    y_offset = 0.0
-    z_offset = 0.0
-    NumberOfElements = 4488
+Mesh{
+    FileName = "halden_1_clad.e"
+    dim = 3
+    MeshType = "libMesh"
+    MeshName = "cylinder"
+    x_offset = 0
+    y_offset = 0
+    z_offset = 0
+    NumberOfElements = 270
 }
 
 NeutronicsOperator{

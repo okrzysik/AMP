@@ -2,16 +2,15 @@ regression{
   expectedSolution = 3.0000000e+02, 3.0102744e+02, 3.0205249e+02, 3.0307539e+02, 3.0409631e+02, 3.0511535e+02, 3.0613258e+02, 3.0714803e+02, 3.0816169e+02, 3.0917349e+02, 3.1018333e+02, 3.1119105e+02, 3.1219645e+02, 3.1319918e+02 
 }
 
-Mesh = "halden_1_pellet_9mil.e"
-
-NumberOfMeshes = 1
-Mesh_1{
-  Filename = "halden_1_pellet_9mil.e"
-  MeshName = "bar"
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 1000
+Mesh{
+    FileName = "halden_1_pellet_9mil.e"
+    MeshType = "libMesh"
+    MeshName = "Pellet"
+    dim      = 3
+    x_offset = 0
+    y_offset = 0
+    z_offset = 0
+    NumberOfElements = 5226
 }
 
 NeutronicsOperator{

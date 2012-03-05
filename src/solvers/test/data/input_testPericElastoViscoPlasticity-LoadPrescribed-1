@@ -1,13 +1,12 @@
 
-NumberOfMeshes = 1
-
-Mesh_1{
-  Filename = "PlateWithHole-1.e"
+Mesh{
+    FileName = "PlateWithHole-1.e"
     MeshName = "brick"
+    MeshType = "libMesh"
+    dim      = 3
     x_offset = 0
     y_offset = 0
     z_offset = 0
-    //NumberOfElements = 4389
     NumberOfElements = 270
 }
 

@@ -1,19 +1,16 @@
 
-//mesh_file = "mesh7elem-1"
-//mesh_file = "oneBrick0"
-
-NumberOfMeshes = 1
-
-NumberOfLoadingSteps = 10
-
-Mesh_1{
-  Filename = "cylinder2K.e"
-    MeshName = "brick"
+Mesh{
+    FileName = "cylinder2K.e"
+    MeshName = "cylinder"
+    MeshType = "libMesh"
+    dim      = 3
     x_offset = 0
     y_offset = 0
     z_offset = 0
-    NumberOfElements = 1088
+    NumberOfElements = 2088
 }
+
+NumberOfLoadingSteps = 10
 
 ExtractStressStrainData = TRUE
 

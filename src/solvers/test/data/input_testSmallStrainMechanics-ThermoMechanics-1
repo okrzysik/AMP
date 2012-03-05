@@ -1,17 +1,14 @@
 
-NumberOfMeshes = 1
-
-//mesh_file = "oneBrick0"
-
-Mesh_1{
-  //Filename = "halden_1_pellet_9mil.e"
-  //MeshName = "pellet"
-  Filename = "cylinder1K.e"
-  MeshName = "cylinder"
-  x_offset = 0
-  y_offset = 0
-  z_offset = 0
-  NumberOfElements = 5226
+Mesh{
+    FileName = "cylinder1K.e"
+    //FileName = "halden_1_pellet_9mil.e"
+    MeshType = "libMesh"
+    MeshName = "cylinder"
+    dim      = 3
+    x_offset = 0
+    y_offset = 0
+    z_offset = 0
+    NumberOfElements = 5226
 }
 
 NumberOfLoadingSteps = 10

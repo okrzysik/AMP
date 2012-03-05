@@ -1,9 +1,13 @@
 
-Mesh {
+Mesh{
   MeshType = "libMesh"
-    dim = 3
-    FileName = "cylinder270.e"
-    MeshName = "cylinder"
+  FileName = "cylinder270.e"
+  MeshName = "cylinder"
+  dim      = 3
+  x_offset = 0.0
+  y_offset = 0.0
+  z_offset = 0.0
+  NumberOfElements = 270
 }
 
 NumberOfLoadingSteps = 1

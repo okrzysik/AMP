@@ -1,14 +1,13 @@
 
-Mesh = "cube4096.e"
-
-NumberOfMeshes = 1
-Mesh_1{
-  Filename = "cube4096.e"
-  MeshName = "bar"
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 4096
+Mesh{
+    FileName = "cube4096.e"
+    MeshName = "bar"
+    MeshType = "libMesh"
+    dim      = 3
+    x_offset = 0
+    y_offset = 0
+    z_offset = 0
+    NumberOfElements = 4096
 }
 
 DiffusionBVPOperator {

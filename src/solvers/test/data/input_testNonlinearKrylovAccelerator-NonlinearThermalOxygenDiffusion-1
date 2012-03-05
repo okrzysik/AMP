@@ -1,12 +1,13 @@
-NumberOfMeshes = 1
 
-Mesh_1{
-  Filename = "cylinder4K.e"
+Mesh{
+    FileName = "cylinder4K.e"
     MeshName = "cylinder"
+    MeshType = "libMesh"
+    dim      = 3
     x_offset = 0
     y_offset = 0
     z_offset = 0
-    NumberOfElements = 540
+    NumberOfElements = 4088
 }
 
 NeutronicsOperator{

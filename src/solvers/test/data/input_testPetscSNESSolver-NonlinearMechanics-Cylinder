@@ -1,13 +1,13 @@
 
-NumberOfMeshes = 1
-
-Mesh_1{
-  Filename = "cylinder1K.e"
+Mesh{
+    FileName = "cylinder1K.e"
     MeshName = "cylinder"
+    MeshType = "libMesh"
+    dim      = 3
     x_offset = 0
     y_offset = 0
     z_offset = 0
-    NumberOfElements = 1080
+    NumberOfElements = 1088
 }
 
 NumberOfLoadingSteps = 1

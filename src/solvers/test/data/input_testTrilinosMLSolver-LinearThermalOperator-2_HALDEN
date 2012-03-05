@@ -1,13 +1,12 @@
 
-Mesh = "halden_1_pellet_9mil.e"
-
-NumberOfMeshes = 1
-Mesh_1{
-  Filename = "halden_1_pellet_9mil.e"
+Mesh{
+    FileName = "halden_1_pellet_9mil.e"
+    MeshType = "libMesh"
     MeshName = "Pellet"
-    x_offset = 0.0
-    y_offset = 0.0
-    z_offset = 0.0
+    dim      = 3
+    x_offset = 0
+    y_offset = 0
+    z_offset = 0
     NumberOfElements = 5226
 }
 
