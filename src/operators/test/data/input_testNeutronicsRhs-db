@@ -1,10 +1,9 @@
 
-Mesh = "cube64.with.boundary.labels.e"
-
-NumberOfMeshes = 1
-Mesh_1{
-  Filename = "cube64.with.boundary.labels.e"
+Mesh{
+  MeshType = "libMesh"
+  FileName = "cube64.with.boundary.labels.e"
   MeshName = "bar"
+  dim      = 3
   x_offset = 0.0
   y_offset = 0.0
   z_offset = 0.0
