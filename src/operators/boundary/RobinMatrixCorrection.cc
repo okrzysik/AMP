@@ -12,6 +12,9 @@
 #include "auto_ptr.h"
 #include "string_to_enum.h"
 
+#include "face_quad4.h"
+#include "node.h"
+
 #include <string>
 
 namespace AMP {
@@ -73,8 +76,7 @@ RobinMatrixCorrection :: RobinMatrixCorrection(const boost::shared_ptr<RobinMatr
   
 void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>& params)
 {
-AMP_ERROR("RobinMatrixCorrection.cc is not fixed yet");
-/*
+
   boost::shared_ptr<RobinMatrixCorrectionParameters> myparams =
     boost::dynamic_pointer_cast<RobinMatrixCorrectionParameters>(params);
   
@@ -148,60 +150,95 @@ AMP_ERROR("RobinMatrixCorrection.cc is not fixed yet");
   
   bool skipMatrixCorrection = (myparams->d_db)->getBoolWithDefault("skip_matrix_correction", false);
   if(!skipMatrixCorrection)
-    {
-      AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = myparams->d_inputMatrix;
-      AMP_INSIST( ((inputMatrix.get()) != NULL), "NULL matrix" );
-      
-      AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_variable);
-      
-      std::vector<std::string> variableNames;
-      if(d_robinPhysicsModel.get() != NULL)
+  {
+    AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = myparams->d_inputMatrix;
+    AMP_INSIST( ((inputMatrix.get()) != NULL), "NULL matrix" );
+
+    std::vector<std::string> variableNames;
+
+    if(d_robinPhysicsModel.get() != NULL)
     {
       variableNames = d_robinPhysicsModel->getVariableName();
     }
-      
-      unsigned int numIds = d_boundaryIds.size();
-      
-      for(unsigned int nid = 0; nid < numIds; nid++)
+
+    unsigned int numIds = d_boundaryIds.size();
+
+    for(unsigned int nid = 0; nid < numIds; nid++)
     {
-      AMP::Mesh::MeshManager::Adapter::BoundarySideIterator bnd1 = d_MeshAdapter->beginSideBoundary( d_boundaryIds[nid] );
-      AMP::Mesh::MeshManager::Adapter::BoundarySideIterator end_bnd1 = d_MeshAdapter->endSideBoundary( d_boundaryIds[nid] );
+      AMP::Mesh::MeshIterator bnd1     = d_Mesh->getIDsetIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
+      AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
       for( ; bnd1 != end_bnd1; ++bnd1)
-        {
-          
-          AMP::Mesh::MeshManager::Adapter::Element cur_side = *bnd1;
-          
-          d_phi = &(d_fe->get_phi());
-          d_JxW = &(d_fe->get_JxW());
-          
-          d_fe->reinit ( &cur_side.getElem() );
-          
-          const std::vector<Real> & JxW = (*d_JxW);
-          const std::vector<std::vector<Real> > & phi = (*d_phi);
-          
-          std::vector<unsigned int> bndGlobalIds;
-          dof_map->getDOFs(cur_side, bndGlobalIds);
-          double temp;
-          
-          for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
+      {
+
+        d_currNodes = bnd1->getElements(AMP::Mesh::Vertex);
+
+        unsigned int numNodesInCurrElem = d_currNodes.size();
+
+        createCurrentLibMeshElement();
+
+        getDofIndicesForCurrentElement();
+
+        d_phi = &(d_fe->get_phi());
+        d_JxW = &(d_fe->get_JxW());
+
+        d_fe->reinit ( d_currElemPtr );
+
+        const std::vector<Real> & JxW = (*d_JxW);
+        const std::vector<std::vector<Real> > & phi = (*d_phi);
+
+        double temp;
+
+        for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
         {
           std::vector<std::vector<double> > inputArgs(1) ;
-          for (unsigned int j=0; j<bndGlobalIds.size(); j++)
-            {
-              for (unsigned int i=0; i<bndGlobalIds.size(); i++)
+          for (unsigned int j=0; j < numNodesInCurrElem ; j++)
+          {
+            for (unsigned int i=0; i < numNodesInCurrElem ; i++)
             {
               temp =  d_beta[0] * ( JxW[qp]*phi[j][qp]*phi[i][qp] ) ;
-              inputMatrix->addValueByGlobalID ( bndGlobalIds[j], bndGlobalIds[i], temp );
+              inputMatrix->addValueByGlobalID ( d_dofIndices[j], d_dofIndices[i], temp );
             }//end for i
-            }//end for j
+          }//end for j
         }//end for qp
-        }//end for bnd
+        
+        destroyCurrentLibMeshElement();
+
+      }//end for bnd
+
     }// end for nid
-      inputMatrix->makeConsistent();
-    }//skip matrix
-*/
-}
+    
+    inputMatrix->makeConsistent();
+
+  }//skip matrix
   
+}
+
+void RobinMatrixCorrection :: createCurrentLibMeshElement() {
+  d_currElemPtr = new ::Quad4;
+  for(size_t j = 0; j < d_currNodes.size(); j++) {
+    std::vector<double> pt = d_currNodes[j].coord();
+    d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
+  }//end for j
+}
+
+void RobinMatrixCorrection :: destroyCurrentLibMeshElement() {
+  for(size_t j = 0; j < d_currElemPtr->n_nodes(); j++) {
+    delete (d_currElemPtr->get_node(j));
+    d_currElemPtr->set_node(j) = NULL;
+  }//end for j
+  delete d_currElemPtr;
+  d_currElemPtr = NULL;
+}
+
+void RobinMatrixCorrection :: getDofIndicesForCurrentElement() {
+  d_dofIndices.resize(d_currNodes.size());
+  std::vector<AMP::Mesh::MeshElementID> globalIDs(d_currNodes.size()); 
+  for(unsigned int j = 0; j < d_currNodes.size(); j++) {
+    globalIDs[j] = d_currNodes[j].globalID();
+  } // end of j
+  d_dofManager->getDOFs(globalIDs, d_dofIndices);
+}
+
 }
 }
 

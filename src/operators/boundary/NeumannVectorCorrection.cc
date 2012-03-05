@@ -212,6 +212,7 @@ namespace Operator {
 
                 rInternal->addValuesByGlobalID((int)d_dofIndices.size() , (size_t *)&(d_dofIndices[0]), &(flux[0]));
 
+                destroyCurrentLibMeshElement();
               }//end for bnd
 
             }//end for k
