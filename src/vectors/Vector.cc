@@ -116,7 +116,7 @@ Vector::shared_ptr Vector::cloneVector ( const std::string &name ) const
     }
     else
     {
-      retVal = cloneVector ();
+      retVal = cloneVector ( Variable::shared_ptr( new Variable(name) ) );
     }
     return retVal;
 }

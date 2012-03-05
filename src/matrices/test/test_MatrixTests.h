@@ -59,13 +59,15 @@ class AmpInterfaceLeftVectorFactory
 
       static AMP::LinearAlgebra::Variable::shared_ptr   getVariable()
       {
-        return AMP::LinearAlgebra::Variable::shared_ptr ();
+        return AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable("left") );
       }
 
       static AMP::LinearAlgebra::Vector::shared_ptr     getVector()
       {
         AMP::LinearAlgebra::Matrix::shared_ptr  matrix = MATRIX_FACTORY::getMatrix();
-        return matrix->getLeftVector ();
+        AMP::LinearAlgebra::Vector::shared_ptr  vector = matrix->getLeftVector();
+        vector->setVariable( getVariable() );
+        return vector;
       }
 };
 
@@ -78,13 +80,16 @@ class AmpInterfaceRightVectorFactory
 
       static AMP::LinearAlgebra::Variable::shared_ptr   getVariable()
       {
-        return AMP::LinearAlgebra::Variable::shared_ptr ();
+        return AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable("right") );
       }
 
       static AMP::LinearAlgebra::Vector::shared_ptr     getVector()
       {
         AMP::LinearAlgebra::Matrix::shared_ptr  matrix = MATRIX_FACTORY::getMatrix ();
-        return matrix->getRightVector ();
+        AMP::LinearAlgebra::Vector::shared_ptr  vector = matrix->getRightVector();
+        vector->setVariable( getVariable() );
+        return vector;
+
       }
 };
 
@@ -97,7 +102,7 @@ class PETScInterfaceLeftVectorFactory
 
       static AMP::LinearAlgebra::Variable::shared_ptr   getVariable()
       {
-        return AMP::LinearAlgebra::Variable::shared_ptr ();
+        return AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable("petsc_left") );
       }
 
       static AMP::LinearAlgebra::Vector::shared_ptr     getVector()
@@ -108,7 +113,9 @@ class PETScInterfaceLeftVectorFactory
         MatGetVecs ( m , &v , 0 );
 
         boost::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> p ( new AMP::LinearAlgebra::NativePetscVectorParameters ( v ) );
-        return AMP::LinearAlgebra::Vector::shared_ptr ( new AMP::LinearAlgebra::NativePetscVector ( p ) );
+        AMP::LinearAlgebra::Vector::shared_ptr  vector( new AMP::LinearAlgebra::NativePetscVector ( p ) );
+        vector->setVariable( getVariable() );
+        return vector;
       }
 
       static AMP::LinearAlgebra::Vector::shared_ptr   getNativeVector()
@@ -132,7 +139,7 @@ class PETScInterfaceRightVectorFactory
 
       static AMP::LinearAlgebra::Variable::shared_ptr   getVariable()
       {
-        return AMP::LinearAlgebra::Variable::shared_ptr ();
+        return AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable("petsc_right") );
       }
 
       static AMP::LinearAlgebra::Vector::shared_ptr     getVector()
@@ -143,7 +150,9 @@ class PETScInterfaceRightVectorFactory
         MatGetVecs ( m , &v , 0 );
 
         boost::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> p ( new AMP::LinearAlgebra::NativePetscVectorParameters ( v ) );
-        return AMP::LinearAlgebra::Vector::shared_ptr ( new AMP::LinearAlgebra::NativePetscVector ( p ) );
+        AMP::LinearAlgebra::Vector::shared_ptr  vector( new AMP::LinearAlgebra::NativePetscVector ( p ) );
+        vector->setVariable( getVariable() );
+        return vector;
       }
 
       static AMP::LinearAlgebra::Vector::shared_ptr   getNativeVector()
