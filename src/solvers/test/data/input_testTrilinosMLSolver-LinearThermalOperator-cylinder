@@ -1,14 +1,13 @@
 
-Mesh = "halden_1_pellet_9mil.e"
-
-NumberOfMeshes = 1
-Mesh_1{
-  Filename = "halden_1_pellet_9mil.e"
-  MeshName = "9mil_pellet"
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 1
+Mesh{
+    FileName = "halden_1_pellet_9mil.e"
+    MeshType = "libMesh"
+    MeshName = "9mil_pellet"
+    dim      = 3
+    x_offset = 0
+    y_offset = 0
+    z_offset = 0
+    NumberOfElements = 270
 }
 
 NeutronicsOperator{
