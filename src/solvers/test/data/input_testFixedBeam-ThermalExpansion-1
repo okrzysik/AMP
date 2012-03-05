@@ -2,13 +2,13 @@
 //mesh_file = "mesh7elem-1"
 //mesh_file = "oneBrick0"
 
-NumberOfMeshes = 1
-
 NumberOfLoadingSteps = 10
 
-Mesh_1{
-  Filename = "brick.e"
+Mesh{
+    FileName = "brick.e"
     MeshName = "brick"
+    MeshType = "libMesh"
+    dim      = 3
     x_offset = 0
     y_offset = 0
     z_offset = 0

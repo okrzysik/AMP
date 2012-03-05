@@ -6,11 +6,11 @@ FINAL_TEMP_CONST = 1.0
 
 NumberOfLoadingSteps = 10
 
-NumberOfMeshes = 1
-
-Mesh_1{
-  Filename = "brick.e"
+Mesh{
+    FileName = "brick.e"
     MeshName = "brick"
+    MeshType = "libMesh"
+    dim      = 3
     x_offset = 0
     y_offset = 0
     z_offset = 0
