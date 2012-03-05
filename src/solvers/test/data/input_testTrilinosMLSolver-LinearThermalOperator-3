@@ -1,14 +1,13 @@
 
-Mesh = "cube27.e"
-
-NumberOfMeshes = 1
-Mesh_1{
-  Filename = "cube27.e"
-  MeshName = "bar"
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 27
+Mesh{
+    FileName = "cube27.e"
+    MeshName = "bar"
+    MeshType = "libMesh"
+    dim      = 3
+    x_offset = 0
+    y_offset = 0
+    z_offset = 0
+    NumberOfElements = 27
 }
 
 Neutronics_Fuel{
