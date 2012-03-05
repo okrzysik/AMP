@@ -1,16 +1,12 @@
 
-NumberOfMeshes = 1
-
-Mesh_1{
-  //Filename = "PlateWithHole-2.e"
-  Filename = "PlateWithHole-SimoExact-1.e"
+Mesh{
+    FileName = "PlateWithHole-SimoExact-1.e"
     MeshName = "brick"
+    MeshType = "libMesh"
+    dim      = 3
     x_offset = 0
     y_offset = 0
     z_offset = 0
-    //NumberOfElements = 270
-    //NumberOfElements = 1208
-    //NumberOfElements = 4389
     NumberOfElements = 1994
 }
 
