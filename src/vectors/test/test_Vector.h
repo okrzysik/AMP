@@ -37,7 +37,7 @@ public:
     typedef AMP::LinearAlgebra::SimpleVector                  vector;
 
     static AMP::LinearAlgebra::Variable::shared_ptr  getVariable() {
-        return AMP::LinearAlgebra::Variable::shared_ptr ();
+        return AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "simple" ) );
     }
 
     static AMP::LinearAlgebra::Vector::shared_ptr getVector() {
@@ -54,7 +54,7 @@ class  SimpleManagedVectorFactory
 
     static AMP::LinearAlgebra::Variable::shared_ptr  getVariable()
     {
-      return AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "..." ));   // no variable.....
+      return AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "..." ));
     }
 
     static boost::shared_ptr<T>  getVector()
