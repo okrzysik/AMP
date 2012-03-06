@@ -12,6 +12,9 @@
 
 #include "ampmesh/Mesh.h"
 #include "ampmesh/SiloIO.h"
+#include "vectors/VectorBuilder.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include "materials/Material.h"
 
@@ -66,6 +69,18 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     // Create the meshes from the input database
     AMP::Mesh::Mesh::shared_ptr manager = AMP::Mesh::Mesh::buildMesh(params);
     AMP::Mesh::Mesh::shared_ptr meshAdapter = manager->Subset( "ida" );
+
+//--------------------------------------------------
+// Create a DOF manager for a nodal vector 
+//--------------------------------------------------
+    int DOFsPerNode = 1;
+    int DOFsPerElement = 8;
+    int nodalGhostWidth = 1;
+    int gaussPointGhostWidth = 1;
+    bool split = true;
+    AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth,      DOFsPerNode,    split);
+    AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split);
+//--------------------------------------------------
   
     // create a linear BVP operator
     boost::shared_ptr<AMP::Operator::LinearBVPOperator> IDARhsOperator;
@@ -92,7 +107,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     boost::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
   
     AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
-    AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = meshAdapter->createVector( SpecificPowerVar );
+    AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
 
     // create the following shared pointers for ease of use
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -110,7 +125,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   
     // Create the power (heat source) vector.
     AMP::LinearAlgebra::Variable::shared_ptr powerInWattsVar = sourceOperator->getOutputVariable();
-    AMP::LinearAlgebra::Vector::shared_ptr   powerInWattsVec = meshAdapter->createVector( powerInWattsVar );
+    AMP::LinearAlgebra::Vector::shared_ptr   powerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap, powerInWattsVar );
     powerInWattsVec->zero();
   
     // convert the vector of specific power to power for a given basis.
@@ -121,38 +136,36 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     AMP::LinearAlgebra::Variable::shared_ptr inputVar = IDARhsOperator->getInputVariable();
     AMP::LinearAlgebra::Variable::shared_ptr outputVar = IDARhsOperator->getOutputVariable();
   
-    AMP::LinearAlgebra::Vector::shared_ptr  initialCondition = meshAdapter->createVector(inputVar);
-    AMP::LinearAlgebra::Vector::shared_ptr  initialConditionPrime = meshAdapter->createVector(inputVar);
-    AMP::LinearAlgebra::Vector::shared_ptr   f = meshAdapter->createVector(outputVar);
+    AMP::LinearAlgebra::Vector::shared_ptr initialCondition      = AMP::LinearAlgebra::createVector( nodalDofMap, inputVar );
+    AMP::LinearAlgebra::Vector::shared_ptr initialConditionPrime = AMP::LinearAlgebra::createVector( nodalDofMap, inputVar );
+    AMP::LinearAlgebra::Vector::shared_ptr   f                   = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // set initial conditions, initialize created vectors
-  AMP::Mesh::MeshManager::Adapter::NodeIterator node = meshAdapter->beginNode();
-  AMP::Mesh::MeshManager::Adapter::NodeIterator end_node = meshAdapter->endNode();
-  
-  AMP::Mesh::DOFMap::shared_ptr dof_map = meshAdapter->getDOFMap(inputVar);
+  int zeroGhostWidth = 0;
+  AMP::Mesh::MeshIterator  node = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
+  ut->failure("converted incorrectly: it appears this shoudl be a surface iterator, not an iterator.");
+  AMP::Mesh::MeshIterator  end_node = node.end();
   
   int counter=0;     
   for( ; node != end_node ; ++node)
     {
       counter+=1;
       
-      std::vector<unsigned int> bndGlobalIds;
-      std::vector<unsigned int> d_dofIds;
-      d_dofIds.resize(0);
-      dof_map->getDOFs(*node, bndGlobalIds, d_dofIds);
+      std::vector<size_t> gid;
+      nodalDofMap->getDOFs ( node->globalID() , gid);
             
-      double px = (*node).x();
-      double py = (*node).y();
-      double pz = (*node).z();
+      double px = ( node->coord() )[0];
+      double py = ( node->coord() )[1];
+      double pz = ( node->coord() )[2];
       
       double val = __INIT_FN__(px, py, pz, 0);
       cout << "val = " << val << endl;
       
-      cout << "counter = " << counter << "bndGlobalIds.size() = " << bndGlobalIds.size() << endl;
-      for(unsigned int i = 0; i < bndGlobalIds.size(); i++)
+      cout << "counter = " << counter << "gid.size() = " << gid.size() << endl;
+      for(unsigned int i = 0; i < gid.size(); i++)
     {
-      initialCondition->setValueByGlobalID(bndGlobalIds[i], val);
+      initialCondition->setValueByGlobalID(gid[i], val);
     }//end for i
     }//end for node
   initialConditionPrime->zero();
