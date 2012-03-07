@@ -337,13 +337,6 @@ std::vector<std::vector<double> > TensorFickProp::evalTensor(
 		AMP_ASSERT(false);
 		break;
 	}
-
-#define DEBUGGAD
-#ifdef DEBUGGAD
-	double dbgdata[9];
-	for (int i=0; i<3; i++) for (int j=0; j<3; j++) dbgdata[3*i+j] = result[i][j];
-#endif
-#undef DEBUGGAD
 	return result;
 }
 

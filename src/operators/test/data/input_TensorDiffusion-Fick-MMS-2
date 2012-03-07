@@ -73,7 +73,6 @@ FickDirichletVectorCorrection{
    	 name = "DirichletVectorCorrection"
      print_info_level = 3
      skip_params = FALSE
-     valuesType = 2
      number_of_ids = 2
      id_0         =   4
      number_of_dofs_0 =   1

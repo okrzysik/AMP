@@ -294,10 +294,13 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
     	boost::shared_ptr<Materials::TensorProperty<double> > sourceTensorProp =
     			boost::dynamic_pointer_cast<Materials::TensorProperty<double> >(sourceProp);
     	std::vector<size_t> dimensions = sourceTensorProp->get_dimensions();
-    	std::vector<std::vector<boost::shared_ptr<std::vector<double> > > >
-    		coeff(dimensions[0], std::vector<boost::shared_ptr<std::vector<double> > >(dimensions[1],
-    				boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
-			sourceTensorProp->evalv(coeff, args);
+    	std::vector<std::vector<boost::shared_ptr<std::vector<double> > > > coeff(dimensions[0],
+    		std::vector<boost::shared_ptr<std::vector<double> > >(dimensions[1]));
+		for (size_t i=0; i<dimensions[0]; i++) for (size_t j=0; j<dimensions[1]; j++) {
+			std::vector<double> *vd = new std::vector<double>(neval);
+			 coeff[i][j].reset(vd);
+		}
+		sourceTensorProp->evalv(coeff, args);
 
 		// 4 + xx xy xz yy yz zz =
 		//      4  5  6  7  8  9 =
@@ -368,19 +371,6 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
 		sourceTensorProp->setAuxiliaryData("derivative", 0);
 		sourceTensorProp->evalv(coeff, args);
 
-#define DEBUGGAD
-#ifdef DEBUGGAD
-			double test[6][neval];
-			for (int k=0; k<neval;k++){
-			test[0][k] = (*coeff[0][0])[k];
-			test[1][k] = (*coeff[1][1])[k];
-			test[2][k] = (*coeff[2][2])[k];
-			test[3][k] = (*coeffr[0][0])[k];
-			test[4][k] =  (*coeffr[1][1])[k];
-			test[5][k] = (*coeffz[2][2])[k];
-			}
-#endif
-
 		sourceTensorProp->setAuxiliaryData("derivative", 1);
 		sourceTensorProp->evalv(coeffr, args);
 
@@ -403,12 +393,6 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
 			Kz[1] = (*coeffz[2][2])[k];
 
 			result[k] = Kz[1]*soln[3] + Kz[0]*soln[9] + Kr[0]*soln[1]/r + Kr[1]*soln[1] + Kr[0]*soln[4];
-
-#ifdef DEBUGGAD
-			double dummy=result[k];
-			double d2=dummy*2.;
-#endif
-#undef DEBUGGAD
 		}
     }
 

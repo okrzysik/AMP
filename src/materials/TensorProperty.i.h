@@ -70,18 +70,8 @@ void TensorProperty<Number>::evalvActual(
 
   for (size_t i=0; i<rdim0; i++) for (size_t j=0; j<rdim1; j++) {
       r_iter[i][j] = r[i][j]->begin();
-#define DEBUGGAD
-#ifdef DEBUGGAD
-      double* addr = &*r[i][j]->begin();
-      double x; x=*addr;
-#endif
   }
   bool goAgain = true;
-#ifdef DEBUGGAD
-	  double dbgdata[24][rdim0*rdim1];
-	  double *rptr[24][rdim0*rdim1];
-	  int dbgcnt=0;
-#endif
   while (goAgain)
   {
 	  // Loop through the list of actually present parameter iterators and assign their values to the vector being sent to eval
@@ -96,14 +86,6 @@ void TensorProperty<Number>::evalvActual(
 	  }
 	  std::vector<std::vector<Number> > evalResult(evalTensor(eval_args));
 	  for (size_t i=0; i<rdim0; i++) for (size_t j=0; j<rdim1; j++) {*r_iter[i][j] = evalResult[i][j];}
-#ifdef DEBUGGAD
-	  if (dbgcnt<24) {
-	    for (size_t i=0; i<rdim0; i++) for (size_t j=0; j<rdim1; j++) dbgdata[dbgcnt][i*rdim1+j] = *r_iter[i][j];
-	    for (size_t i=0; i<rdim0; i++) for (size_t j=0; j<rdim1; j++) {rptr[dbgcnt][i*rdim1+j] = &*r_iter[i][j];}
-	  ++dbgcnt;
-	  }
-#endif 
-#undef DEBUGGAD
 
 	  // update the parameter iterators
 	  for (size_t i=0; i<npresent; i++) {
