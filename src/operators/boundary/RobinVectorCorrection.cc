@@ -122,9 +122,16 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
 
       AMP::Mesh::MeshManager::Adapter::Element cur_side = *bnd1;
 
+      
+      d_feType.reset( new ::FEType(d_feTypeOrder, d_feFamily) );
+      d_fe.reset( (::FEBase::build(2, (*d_feType))).release() );
+      
       d_phi = &(d_fe->get_phi());
       d_JxW = &(d_fe->get_JxW());
-
+      
+      d_qrule.reset( (::QBase::build(d_qruleType, 2, d_qruleOrder)).release() );
+      d_fe->attach_quadrature_rule( d_qrule.get() );
+      
       d_fe->reinit(&cur_side.getElem());
 
       const std::vector<Real> & JxW = (*d_JxW);

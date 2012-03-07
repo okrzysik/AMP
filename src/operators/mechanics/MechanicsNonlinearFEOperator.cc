@@ -2,6 +2,8 @@
 #include "MechanicsNonlinearFEOperator.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
+#include "cell_hex8.h"
+#include "node.h"
 
 namespace AMP {
   namespace Operator {
@@ -316,9 +318,8 @@ namespace AMP {
           if(d_useUpdatedLagrangian) {
             elementInputVectors_pre[Mechanics::DISPLACEMENT][(3*r) + d] = (d_inVec_pre[Mechanics::DISPLACEMENT])->getValueByGlobalID( d_type0DofIndices[d][r] );
             elementRefXYZ[(3 * r) + d] = d_refXYZ->getValueByGlobalID(d_type0DofIndices[d][r]);
-            //AMP::pout<<"elementRefXYZ["<<(3 * r) + d<<"] = "<<elementRefXYZ[(3 * r) + d]<<std::endl;
           }
-        }
+        }//end d
         if(d_isActive[Mechanics::TEMPERATURE]) {
           elementInputVectors[Mechanics::TEMPERATURE][r] = (d_inVec[Mechanics::TEMPERATURE])->
             getValueByGlobalID( d_type1DofIndices[r] );
@@ -347,22 +348,22 @@ namespace AMP {
             elementInputVectors_pre[Mechanics::LHGR][r] = (d_inVec_pre[Mechanics::LHGR])->getValueByGlobalID( d_type1DofIndices[r] );
           }
         }
-      }
+      }//end r
 
       d_elementOutputVector.resize(num_local_type0Dofs);
-      for(unsigned int i = 0; i < num_local_type0Dofs; i++) {
-        d_elementOutputVector[i] = 0.0;
-      }
+      for(unsigned int i = 0; i < d_elementOutputVector.size(); ++i) {
+        d_elementOutputVector[i] = 0.0; 
+      }//end i
 
       const ::Elem* elemPtr = &(elem.getElem());
 
-      if(!d_useUpdatedLagrangian) {
-        d_mechNonlinElem->initializeForCurrentElement( elemPtr, d_materialModel );
-        d_mechNonlinElem->setElementVectors( elementInputVectors, d_elementOutputVector );
-      } else {
+      if(d_useUpdatedLagrangian) {
         d_mechNULElem->initializeForCurrentElement( elemPtr, d_materialModel );
         d_mechNULElem->setElementVectors( elementInputVectors, elementInputVectors_pre, d_elementOutputVector );
         d_mechNULElem->assignReferenceXYZ(elementRefXYZ);
+      } else {
+        d_mechNonlinElem->initializeForCurrentElement( elemPtr, d_materialModel );
+        d_mechNonlinElem->setElementVectors( elementInputVectors, d_elementOutputVector );
       }
     }
 
@@ -441,12 +442,10 @@ namespace AMP {
         if(d_useUpdatedLagrangian) {
           for(unsigned int i = 0; i < 3; i++) {
             for(unsigned int j = 0; j < dofIndices_disp[i].size(); j++) {
-              //AMP::pout<<"elementRefXYZ["<<(3 * j) + i<<"] = "<<elementRefXYZ[(3 * j) + i]<<std::endl;
               d_refXYZ->setValueByGlobalID(dofIndices_disp[i][j], elementRefXYZ[(3 * j) + i]);
             }
           }
         }
-
       }//end for el
 
       if(d_useUpdatedLagrangian) {
@@ -981,6 +980,7 @@ namespace AMP {
           stress->setValueByGlobalID(gaussPtIndices[i], elementStressVector[i]);
           strain->setValueByGlobalID(gaussPtIndices[i], elementStrainVector[i]);
         }//end for i
+
       }//end for el
 
       d_materialModel->postNonlinearAssembly();
@@ -1085,6 +1085,7 @@ namespace AMP {
         d_mechNonlinElem->initializeForCurrentElement( elemPtr, d_materialModel );
       }
     }
+
 
   }
 }//end namespace

@@ -35,7 +35,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   meshAdapter->readExodusIIFile ( mesh_file.c_str() );
 
   AMP::LinearAlgebra::Variable::shared_ptr var(new AMP::LinearAlgebra::VectorVariable<
-      AMP::Mesh::NodalVariable, 1>("temp", meshAdapter)); 
+      AMP::Mesh::NodalVariable, 3>("temp", meshAdapter)); 
 
   AMP::Mesh::DOFMap::shared_ptr dofMap = meshAdapter->getDOFMap(var);
 
@@ -43,9 +43,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::Mesh::MeshManager::Adapter::ElementIterator  end_el = meshAdapter->endElement();
 
   for(int elId = 0; el != end_el; ++el, ++elId) {
-    std::vector<unsigned int> dofIds; 
-    dofMap->getDOFs(*el, dofIds, 0);
-    AMP_ASSERT(dofIds.size() == 8);
+    std::vector<std::vector<unsigned int> > dofIds(3); 
+    for(int d = 0; d < 3; d++) {
+      dofMap->getDOFs(*el, dofIds[d], d);
+      AMP_ASSERT(dofIds[d].size() == 8);
+    }//end d
     std::cout<<"e = "<<elId<<" : "<<std::endl;
     for(int i = 0; i < 8; ++i) {
       AMP::Mesh::LibMeshPoint pt = el->getPoint(i);
@@ -53,7 +55,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
       std::cout<<"x = "<<(pt.x())<<" : ";
       std::cout<<"y = "<<(pt.y())<<" : ";
       std::cout<<"z = "<<(pt.z())<<" : ";
-      //std::cout<<"d0 = "<<(dofIds[i]);
+      std::cout<<"d0 = "<<(dofIds[0][i])<<" : ";
+      std::cout<<"d1 = "<<(dofIds[1][i])<<" : ";
+      std::cout<<"d2 = "<<(dofIds[2][i])<<" : ";
       std::cout<<std::endl;
     }//end i
     std::cout<<std::endl;
