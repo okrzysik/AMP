@@ -38,11 +38,13 @@ SET ( TEST_DEP_LIST ${TEST_DEP_LIST} matrices vectors )
 #
 
 # Copy meshes
+COPY_MESH_FILE ( brick.e )
 COPY_MESH_FILE ( pellet_1x.e )
 COPY_MESH_FILE ( clad_1x_1pellet.e )
 COPY_MESH_FILE ( clad_1x_2pellet.e )
 
 # Add matrix test
+ADD_AMP_PROVISIONAL_TEST ( testGhostWrite )
 ADD_AMP_WEEKLY_TEST ( test_Matrix 1 )
 ADD_AMP_WEEKLY_TEST ( test_Matrix 2 )
 ADD_AMP_TEST_PARALLEL ( test_Matrix 4 )
