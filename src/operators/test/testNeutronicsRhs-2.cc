@@ -41,20 +41,11 @@ void sourceTest(AMP::UnitTest *ut , std::string exeName)
   input_db->printClassData(AMP::plog);
 
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  std::string mesh_file = input_db->getString("Mesh");
+  boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+  boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+  mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+  boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 
-  // Create the mesh parameter object
-  boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
-  database->putInteger("dim",3);
-  database->putString("MeshName","mesh");
-  database->putString("MeshType","libMesh");
-  database->putString("FileName",mesh_file);
-  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
-  params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-
-  // Create the mesh
-  AMP::Mesh::Mesh::shared_ptr  meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
-  
 //--------------------------------------------------
 //   CREATE THE VOLUME INTEGRAL OPERATOR -----------
 //--------------------------------------------------
