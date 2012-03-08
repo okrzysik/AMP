@@ -25,6 +25,7 @@ namespace Operator {
       
       boost::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 
+      AMP::Discretization::DOFManager::shared_ptr d_DofMap; 
   };
 
 }

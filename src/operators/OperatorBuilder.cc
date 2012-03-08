@@ -1139,7 +1139,8 @@ OperatorBuilder::createRobinMatrixCorrection( AMP::Mesh::Mesh::shared_ptr meshAd
   matrixCorrectionParameters->d_variable = linearOperator->getOutputVariable();
   matrixCorrectionParameters->d_inputMatrix = linearOperator->getMatrix();
   matrixCorrectionParameters->d_Mesh = meshAdapter;
-  
+  matrixCorrectionParameters->d_DofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, 1, 1, true);
+
   if(elementPhysicsModel.get()!=NULL )
     {
       

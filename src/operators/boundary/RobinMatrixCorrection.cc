@@ -65,6 +65,8 @@ RobinMatrixCorrection :: RobinMatrixCorrection(const boost::shared_ptr<RobinMatr
   
   d_variable = params->d_variable;
   
+  d_dofManager = (params->d_DofMap);
+
   d_NeumannParams.reset(new AMP::Operator::NeumannVectorCorrectionParameters( params->d_db ));
   d_NeumannParams->d_variable = params->d_variable;
   d_NeumannParams->d_Mesh = params->d_Mesh;
