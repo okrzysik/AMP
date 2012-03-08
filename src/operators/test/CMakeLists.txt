@@ -45,6 +45,8 @@ ADD_AMP_PROVISIONAL_TEST( testDofMap )
 COPY_TEST_DATA_FILE ( input_testSurfaceIteratorBug )
 ADD_AMP_TEST( testSurfaceIteratorBug )
 
+ADD_AMP_PROVISIONAL_TEST( testInverseJacobianBug )
+
 ADD_AMP_TEST( testPolarDecomposition )
 ADD_AMP_TEST( testStiffnessTransformation )
 

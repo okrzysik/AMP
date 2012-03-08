@@ -1,0 +1,175 @@
+
+#include "boost/shared_ptr.hpp"
+
+#include <iostream>
+#include <cstdio>
+#include <cstring>
+#include <cmath>
+
+#include "utils/InputManager.h"
+#include "utils/AMPManager.h"
+#include "utils/UnitTest.h"
+#include "utils/Utilities.h"
+
+#include "ampmesh/MeshManager.h"
+#include "ampmesh/MeshAdapter.h"
+#include "ampmesh/MeshVariable.h"
+
+#include "libmesh.h"
+#include "mesh_generation.h"
+
+#include "fe_type.h"
+#include "fe_base.h"
+#include "elem.h"
+#include "quadrature.h"
+
+#include "enum_order.h"
+#include "enum_fe_family.h"
+#include "enum_quadrature_type.h"
+#include "auto_ptr.h"
+#include "string_to_enum.h"
+
+void myTest(AMP::UnitTest *ut, std::string exeName) {
+  std::string input_file = "input_" + exeName;
+  std::string log_file = "output_" + exeName;
+
+  AMP::PIO::logOnlyNodeZero(log_file);
+  AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
+  
+  boost::shared_ptr< ::Mesh > mesh(new ::Mesh(3));
+  MeshTools::Generation::build_cube((*(mesh.get())), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, HEX8, false);
+
+  ::Elem* elemPtr = mesh->elem(0);
+
+  (elemPtr->point(4))(0) -= 0.4;
+
+  (elemPtr->point(5))(0) -= 0.4;
+
+  (elemPtr->point(6))(0) -= 0.4;
+
+  (elemPtr->point(7))(0) -= 0.4;
+
+  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = AMP::Mesh::MeshManager::Adapter::shared_ptr (
+      new AMP::Mesh::MeshManager::Adapter (mesh) );
+
+  AMP::LinearAlgebra::Variable::shared_ptr myVar(new AMP::Mesh::NodalScalarVariable("myVar", meshAdapter)); 
+  AMP::LinearAlgebra::Vector::shared_ptr T = meshAdapter->createVector(myVar);
+
+  AMP::Mesh::DOFMap::shared_ptr dof_map = meshAdapter->getDOFMap(myVar);
+
+  FILE* fp; 
+  fp = fopen("InverseJacobian.txt", "w");
+  
+  for(int i = 0 ; i < 8; i++) {
+    AMP::Mesh::LibMeshNode nd = meshAdapter->getNode( i );
+    fprintf(fp, "nd = %d, x = %.15lf, y = %.15lf, z = %.15lf \n", i, nd.x(), nd.y(), nd.z());
+  }
+
+  libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
+  libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
+
+  boost::shared_ptr < ::FEType > feType( new ::FEType(feTypeOrder, feFamily) );
+  boost::shared_ptr < ::FEBase > fe( (::FEBase::build(3, (*feType))).release() );
+
+  const std::vector<std::vector<Real> > &phi = fe->get_phi();
+  const std::vector<std::vector<Real> > &dphidxi   = fe->get_dphidxi();
+  const std::vector<std::vector<Real> > &dphideta  = fe->get_dphideta();
+  const std::vector<std::vector<Real> > &dphidzeta = fe->get_dphidzeta();
+  const std::vector<std::vector<Real> > &dphidx = fe->get_dphidx();
+  const std::vector<std::vector<Real> > &dphidy = fe->get_dphidy();
+  const std::vector<std::vector<Real> > &dphidz = fe->get_dphidz();
+  const std::vector<Real> &djxw = fe->get_JxW();
+
+  const std::vector<RealGradient> &dxyzdxi   = fe->get_dxyzdxi();
+  const std::vector<RealGradient> &dxyzdeta  = fe->get_dxyzdeta();
+  const std::vector<RealGradient> &dxyzdzeta = fe->get_dxyzdzeta();
+  
+  libMeshEnums::QuadratureType qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>("QGAUSS");
+  libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
+  boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, 3, qruleOrder)).release() );
+ 
+  fe->attach_quadrature_rule( qrule.get() );
+    
+  AMP::Mesh::MeshManager::Adapter::ElementIterator  el = meshAdapter->beginElement();
+  
+  std::vector<unsigned int> d_dofIndices; 
+  dof_map->getDOFs (*el, d_dofIndices);
+
+  const ::Elem* currElemPtr = &(el->getElem());
+  fe->reinit(currElemPtr);
+
+  unsigned int numNodes = el->numNodes();
+
+  for(unsigned int i = 0; i < d_dofIndices.size(); i++) {
+    T->setValueByGlobalID(d_dofIndices[i], 300*(i+1));
+  }
+
+  fprintf(fp, " dx/dxi = %.15lf, dydxi = %.15lf, dzdxi = %.15lf \n", dxyzdxi[0](0) , dxyzdxi[0](1), dxyzdxi[0](2));
+  fprintf(fp, " dx/deta = %.15lf, dydeta = %.15lf, dzdeta = %.15lf \n", dxyzdeta[0](0) , dxyzdeta[0](1), dxyzdeta[0](2));
+  fprintf(fp, " dx/dzeta = %.15lf, dydzeta = %.15lf, dzdzeta = %.15lf \n", dxyzdzeta[0](0) , dxyzdzeta[0](1), dxyzdzeta[0](2));
+
+  std::vector<Real> Jinv1(3);
+  std::vector<Real> Jinv2(3);
+  std::vector<Real> Jinv3(3);
+  Jinv1[0]=2.;
+  Jinv1[1]=0.;
+  Jinv1[2]=0.;
+
+  Jinv2[0]= 0; 
+  Jinv2[1]= 2;
+  Jinv2[2]= 0;
+
+  Jinv3[0]= 0.8; 
+  Jinv3[1]= 0.; 
+  Jinv3[2]= 2.;
+
+  Real dTdxi = 0, dTdeta = 0, dTdzeta = 0 , dTdx = 0;
+  Real dTdy = 0, dTdz = 0, lib_dTdx = 0, lib_dTdy = 0, lib_dTdz = 0;
+
+  for(unsigned int i = 0; i < d_dofIndices.size(); i++) {
+           dTdxi   += (dphidxi[i][0]*T->getValueByGlobalID(d_dofIndices[i]));
+           dTdeta  += (dphideta[i][0]*T->getValueByGlobalID(d_dofIndices[i]));
+           dTdzeta += (dphidzeta[i][0]*T->getValueByGlobalID(d_dofIndices[i]));
+  }
+
+  dTdx = Jinv1[0]*dTdxi + Jinv1[1]*dTdeta + Jinv1[2]*dTdzeta ; 
+  dTdy = Jinv2[0]*dTdxi + Jinv2[1]*dTdeta + Jinv2[2]*dTdzeta ; 
+  dTdz = Jinv3[0]*dTdxi + Jinv3[1]*dTdeta + Jinv3[2]*dTdzeta ;
+
+  for(unsigned int i = 0; i < d_dofIndices.size(); i++) {
+           lib_dTdx   += (dphidx[i][0]*T->getValueByGlobalID(d_dofIndices[i]));
+           lib_dTdy   += (dphidy[i][0]*T->getValueByGlobalID(d_dofIndices[i]));
+           lib_dTdz   += (dphidz[i][0]*T->getValueByGlobalID(d_dofIndices[i]));
+  }
+
+  fprintf(fp, " dT/dx = %.15lf, dTdy = %.15lf, dTdz = %.15lf \n", dTdx , dTdy , dTdz );
+  fprintf(fp, " lib_dT/dx = %.15lf, lib_dTdy = %.15lf, lib_dTdz = %.15lf \n", lib_dTdx , lib_dTdy , lib_dTdz );
+}
+
+int main(int argc, char *argv[])
+{
+  AMP::AMPManager::startup(argc, argv);
+  AMP::UnitTest ut;
+
+  std::string exeName = "testInverseJacobianBug";
+
+  try {
+    myTest(&ut, exeName);
+    ut.passes(exeName);
+  } catch (std::exception &err) {
+    std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+    ut.failure("ERROR: While testing");
+  } catch( ... ) {
+    std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+    ut.failure("ERROR: While testing");
+  }
+
+  ut.report();
+
+  int num_failed = ut.NumFailGlobal();
+  AMP::AMPManager::shutdown();
+  return num_failed;
+}  
+
+
+

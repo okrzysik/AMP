@@ -272,6 +272,16 @@ void ManufacturedSolution::evaluate(std::valarray<double> &result, const double 
 		zs = (z-d_MinZ)*d_ScaleZ;
 
 		(*d_functionPointer)(result, xs, ys, zs, this);
+
+		result[1] *= d_ScaleX;
+		result[2] *= d_ScaleY;
+		result[3] *= d_ScaleZ;
+		result[4] *= d_ScaleX*d_ScaleX;
+		result[5] *= d_ScaleX*d_ScaleY;
+		result[6] *= d_ScaleX*d_ScaleZ;
+		result[7] *= d_ScaleY*d_ScaleY;
+		result[8] *= d_ScaleY*d_ScaleZ;
+		result[9] *= d_ScaleZ*d_ScaleZ;
 	} else {
 		double r=x, th=y;
 		AMP_ASSERT(r >=d_MinR  and r <=d_MaxR );
@@ -284,6 +294,16 @@ void ManufacturedSolution::evaluate(std::valarray<double> &result, const double 
 			ths = (th-d_MinTh)*d_ScaleTh;
 
 		(*d_functionPointer)(result, rs, ths, zs, this);
+
+		result[1] *= d_ScaleR;
+		result[2] *= d_ScaleTh;
+		result[3] *= d_ScaleZ;
+		result[4] *= d_ScaleR*d_ScaleR;
+		result[5] *= d_ScaleR*d_ScaleTh;
+		result[6] *= d_ScaleR*d_ScaleZ;
+		result[7] *= d_ScaleTh*d_ScaleTh;
+		result[8] *= d_ScaleTh*d_ScaleZ;
+		result[9] *= d_ScaleZ*d_ScaleZ;
 	}
 }
 
