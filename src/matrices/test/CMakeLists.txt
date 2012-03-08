@@ -43,6 +43,8 @@ COPY_MESH_FILE ( pellet_1x.e )
 COPY_MESH_FILE ( clad_1x_1pellet.e )
 COPY_MESH_FILE ( clad_1x_2pellet.e )
 
+COPY_TEST_DATA_FILE ( input_testGhostWrite )
+
 # Add matrix test
 ADD_AMP_PROVISIONAL_TEST ( testGhostWrite )
 ADD_AMP_WEEKLY_TEST ( test_Matrix 1 )

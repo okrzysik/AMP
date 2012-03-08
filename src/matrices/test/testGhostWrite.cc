@@ -36,7 +36,7 @@ void myTest(AMP::UnitTest *ut)
   meshAdapter->readExodusIIFile ( mesh_file.c_str() );
 
   AMP::LinearAlgebra::Variable::shared_ptr var(new AMP::Mesh::NodalScalarVariable("dummy", meshAdapter)); 
-  AMP::LinearAlgebra::Matrix::shared_ptr mat = meshAdapter->getMatrix(var, var); 
+  AMP::LinearAlgebra::Matrix::shared_ptr mat = meshAdapter->createMatrix(var, var); 
 
   AMP::Mesh::DOFMap::shared_ptr dof_map = meshAdapter->getDOFMap ( var );
 
