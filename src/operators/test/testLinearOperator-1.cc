@@ -150,7 +150,8 @@ int main(int argc, char *argv[])
   AMP::UnitTest ut;
 
   try {
-    myTest(&ut);
+        ut.failure("testLinearOperator-1 hangs while the parallel matrix bug exists.");
+//    myTest(&ut);
   } catch (std::exception &err) {
     std::stringstream err_message;
     err_message << "ERROR: Caught standard expection in "<< argv[0] << ": " << err.what();
