@@ -186,8 +186,9 @@ int main(int argc, char *argv[])
   };
 
     try {
-    for (int i=0; i<NUMFILES; i++) {
-        bvpTest1(&ut, files[i]);    }
+        ut.failure("testFickSoretBVP-1 hangs while the parallel matrix bug exists.");
+//    for (int i=0; i<NUMFILES; i++) {
+//        bvpTest1(&ut, files[i]);    }
 
     } catch (std::exception &err) {
         std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
