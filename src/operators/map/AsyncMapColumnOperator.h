@@ -66,6 +66,10 @@ private:
     // Frozen vector for the output results
     AMP::LinearAlgebra::Vector::shared_ptr  d_OutputVector;
 
+    // Function to create the databases for the individual maps
+    static std::vector<boost::shared_ptr<AMP::Database> >  createDatabases(boost::shared_ptr<AMP::Database> database);
+
+
 };
 
 

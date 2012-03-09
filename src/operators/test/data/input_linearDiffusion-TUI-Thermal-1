@@ -1,4 +1,5 @@
-Mesh = "brick.e"
+
+dofsPerNode = 1
   
 testOperator{
     name = "DiffusionLinearFEOperator"
