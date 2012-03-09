@@ -1,4 +1,6 @@
 
+dofsPerNode = 3
+
 testOperator {
    name="LinearBVPOperator"
    print_info_level = 1

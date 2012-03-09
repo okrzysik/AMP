@@ -1,3 +1,4 @@
+
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
@@ -28,7 +29,6 @@
 
 #include "applyTests.h"
 
-
 void myTest(AMP::UnitTest *ut)
 {
   std::string exeName("testLinearOperator-1");
@@ -50,7 +50,6 @@ void myTest(AMP::UnitTest *ut)
   // Create the meshes from the input database
   AMP::Mesh::Mesh::shared_ptr  meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
 
-
   AMP_INSIST( outerInput_db->keyExists("number_of_tests"), "key missing!" );
   int numTests = outerInput_db->getInteger("number_of_tests");
 
@@ -70,9 +69,9 @@ void myTest(AMP::UnitTest *ut)
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     boost::shared_ptr<AMP::Operator::Operator> testOperator = 
       AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-						     "testOperator",
-						     innerInput_db,
-						     elementPhysicsModel);
+          "testOperator",
+          innerInput_db,
+          elementPhysicsModel);
 
     msgPrefix=exeName + " : " + innerInput_file;
 
@@ -82,19 +81,23 @@ void myTest(AMP::UnitTest *ut)
       ut->failure(msgPrefix + " : create");
     }
 
-    boost::shared_ptr<AMP::Operator::LinearOperator> myLinOp = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(testOperator);
+    boost::shared_ptr<AMP::Operator::LinearOperator> myLinOp =
+      boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(testOperator);
 
     AMP_INSIST( myLinOp != NULL, "Is not a linear operator!" );
 
+    AMP_INSIST( innerInput_db->keyExists("dofsPerNode"), "key missing!" );
+    int dofsPerNode = innerInput_db->getInteger("dofsPerNode");
+
     AMP::LinearAlgebra::Variable::shared_ptr myInpVar = myLinOp->getInputVariable();
     AMP::LinearAlgebra::Variable::shared_ptr myOutVar = myLinOp->getOutputVariable();
-    AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,1,true);
-    AMP::LinearAlgebra::Variable::shared_ptr workVar(new AMP::LinearAlgebra::Variable("work"));
+    AMP::Discretization::DOFManager::shared_ptr NodalDOF =
+      AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,dofsPerNode,true);
 
     {
-      AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, myInpVar, true );
-      AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, myOutVar, true );
-      AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, myOutVar, true );
+      AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( NodalDOF, myInpVar, true );
+      AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( NodalDOF, myOutVar, true );
+      AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( NodalDOF, myOutVar, true );
       // test apply with single variable vectors
       applyTests(ut, msgPrefix, testOperator, rhsVec, solVec, resVec);
     }
@@ -102,25 +105,21 @@ void myTest(AMP::UnitTest *ut)
     // now run apply tests with multi-vectors
     AMP::LinearAlgebra::Variable::shared_ptr auxInpVar(new AMP::LinearAlgebra::Variable("testLinearOperator-1-auxInpVar"+i));
     AMP::LinearAlgebra::Variable::shared_ptr auxOutVar(new AMP::LinearAlgebra::Variable("testLinearOperator-1-auxOutVar"+i));
-    AMP::LinearAlgebra::Variable::shared_ptr auxWorkVar(new AMP::LinearAlgebra::Variable("testLinearOperator-1-auxWorkVar"+i));
 
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> myMultiInpVar( new AMP::LinearAlgebra::MultiVariable("MultiInputVariable"));
+    boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> myMultiInpVar( new
+        AMP::LinearAlgebra::MultiVariable("MultiInputVariable"));
     myMultiInpVar->add(myInpVar);
     myMultiInpVar->add(auxInpVar);
 
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> myMultiOutVar( new AMP::LinearAlgebra::MultiVariable("MultiOutputVariable"));
+    boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> myMultiOutVar( new 
+        AMP::LinearAlgebra::MultiVariable("MultiOutputVariable"));
     myMultiOutVar->add(myOutVar);
     myMultiOutVar->add(auxOutVar);
 
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> myMultiWorkVar( new AMP::LinearAlgebra::MultiVariable("MultiWorkVariable"));
-    myMultiWorkVar->add(workVar);
-    myMultiWorkVar->add(auxWorkVar);
-    msgPrefix += " MultiVector case ";
-
     {
-      AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, myMultiInpVar, true );
-      AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, myMultiOutVar, true );
-      AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, myMultiOutVar, true );
+      AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( NodalDOF, myMultiInpVar, true );
+      AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( NodalDOF, myMultiOutVar, true );
+      AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( NodalDOF, myMultiOutVar, true );
 
       // test apply with single multivariable vectors
       applyTests(ut, msgPrefix, testOperator, rhsVec, solVec, resVec);

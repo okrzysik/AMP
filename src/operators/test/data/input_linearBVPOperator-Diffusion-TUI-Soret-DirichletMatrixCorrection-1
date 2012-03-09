@@ -1,4 +1,6 @@
-Mesh = "brick.e"
+
+dofsPerNode = 1
+
 testOperator {
    name="LinearBVPOperator"
    print_info_level = 1
