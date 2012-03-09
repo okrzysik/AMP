@@ -451,6 +451,35 @@ void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
         else
             utils->failure("Found ghost neighbor nodes");
     }
+    // Loop through all elements (including ghosts), for each owned node, check that all other nodes are neighbors
+    bool passed = true;
+    AMP::Mesh::MeshIterator elementIterator = mesh->getIterator(mesh->getGeomType(),1);
+    for (size_t i=0; i<elementIterator.size(); i++) {
+        std::vector<AMP::Mesh::MeshElement> nodes = elementIterator->getElements(AMP::Mesh::Vertex);
+        for (size_t j=0; j<nodes.size(); j++) {
+            if ( !nodes[j].globalID().is_local() )
+                continue;   // Node is not owned, move on
+            std::map< AMP::Mesh::MeshElementID, std::vector<AMP::Mesh::MeshElementID> >::iterator iterator;
+            iterator = neighbor_list.find( nodes[j].globalID() );
+            if ( iterator==neighbor_list.end() ) {
+                passed = false;
+                break;
+            }
+            const std::vector<AMP::Mesh::MeshElementID> &neighbors = iterator->second;
+            for (size_t k=0; k<nodes.size(); k++) {
+                if ( k==j )
+                    continue;
+                size_t index = AMP::Utilities::findfirst( neighbors,nodes[k].globalID() );
+                if ( index==neighbors.size() )
+                    passed = false;
+            }
+        }
+        ++elementIterator;
+    }
+    if ( passed )
+        utils->passes("Node neighbors found all neighbors");
+    else
+        utils->failure("Node neighbors found all neighbors");
 }
 
 

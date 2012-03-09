@@ -220,8 +220,8 @@ void libMesh::initialize()
         i++;
     }
     AMP::Utilities::quicksort(neighborNodeIDs);
-    ::Mesh::element_iterator elem_pos = d_libMesh->local_elements_begin();
-    ::Mesh::element_iterator elem_end = d_libMesh->local_elements_end();
+    ::Mesh::element_iterator elem_pos = d_libMesh->elements_begin();
+    ::Mesh::element_iterator elem_end = d_libMesh->elements_end();
     std::vector< std::set<unsigned int> > tmpNeighborNodes(n_local[0]);
     int rank = d_comm.getRank();
     while ( elem_pos != elem_end ) {
