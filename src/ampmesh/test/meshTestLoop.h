@@ -72,6 +72,10 @@ void MeshMatrixTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> m
         ut->expected_failure("VerifyGetMatrixTrivialTest with split=true"); 
         //VerifyGetMatrixTrivialTest<1,true>( ut, mesh );
         //VerifyGetMatrixTrivialTest<3,true>( ut, mesh );
+        GhostWriteTest<1,false>( ut, mesh );
+        GhostWriteTest<3,false>( ut, mesh );
+        GhostWriteTest<1,true>( ut, mesh );
+        GhostWriteTest<3,true>( ut, mesh );
     #endif
 }
 

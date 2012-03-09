@@ -47,5 +47,52 @@ void VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_p
 }
 
 
+template <int DOF_PER_NODE, bool SPLIT>
+void GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) 
+{
+    // Create the DOF_Manager
+    AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
+    AMP::Discretization::DOFManager::shared_ptr DOFs = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,DOF_PER_NODE);
+
+    // Create a nodal variable 
+    AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::LinearAlgebra::Variable("test vector") );
+
+    // Create the matrix and vectors
+    AMP::LinearAlgebra::Vector::shared_ptr vector1 = AMP::LinearAlgebra::createVector ( DOFs, variable, SPLIT );
+    AMP::LinearAlgebra::Vector::shared_ptr vector2 = AMP::LinearAlgebra::createVector ( DOFs, variable, SPLIT );
+    AMP::LinearAlgebra::Matrix::shared_ptr matrix = AMP::LinearAlgebra::createMatrix ( vector1, vector2 );
+
+    try {
+        // Loop through the owned and ghost nodes
+        AMP::Mesh::MeshIterator el = mesh->getIterator(AMP::Mesh::Volume,0);
+        AMP::Mesh::MeshIterator end_el = el.end();
+        for( ; el != end_el; ++el) {
+            // Get the DOFs for all nodes
+            std::vector<size_t> dofs;
+            std::vector<size_t> dofIndices;
+            std::vector<AMP::Mesh::MeshElement> elements = el->getElements(AMP::Mesh::Vertex);
+            for (size_t i=0; i<elements.size(); i++) {
+                DOFs->getDOFs( elements[i].globalID(), dofs );
+                for (size_t j=0; j<dofs.size(); j++) {
+                    dofIndices.push_back(dofs[j]);
+                }
+            }
+            for (size_t j=0; j<dofIndices.size(); j++) {
+                for (size_t i=0; i<dofIndices.size(); i++) {
+                    matrix->setValueByGlobalID ( dofIndices[j], dofIndices[i], 1.0 );
+                }//end for i
+            }//end for j
+        }//end for el
+
+        // Apply make consistent
+        matrix->makeConsistent();
+
+        utils->passes ( "Able to write to ghost entries in matrix" );
+    } catch (...) {
+        utils->failure ( "Able to write to ghost entries in matrix" );
+    }
+}
+
+
 #endif
 
