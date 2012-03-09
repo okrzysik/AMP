@@ -4,7 +4,7 @@ dofsPerNode = 1
 testOperator{
     name = "DiffusionLinearFEOperator"
     InputVariable = "temperature"
-    OutputVariable = "woohoo"
+    OutputVariable = "temperature"
     print_info_level = 1
     reset_reuses_matrix = TRUE
     FixedConcentration = TRUE

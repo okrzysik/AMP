@@ -39,7 +39,7 @@ MechanicsLinearFEOperator{
 DiffusionLinearFEOperator{
     name = "DiffusionLinearFEOperator"
     InputVariable = "concentration"
-    OutputVariable = "woohoo"
+    OutputVariable = "concentration"
     print_info_level = 1
     reset_reuses_matrix = TRUE
     FixedTemperature = TRUE

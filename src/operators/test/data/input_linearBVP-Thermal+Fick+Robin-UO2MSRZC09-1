@@ -19,7 +19,7 @@ testOperator2 {
 ThermalDiffusionLinearFEOperator{
     name = "DiffusionLinearFEOperator"
     InputVariable = "temperature"
-    OutputVariable = "woohoot"
+    OutputVariable = "temperature"
     print_info_level = 1
     reset_reuses_matrix = TRUE
     FixedConcentration = TRUE
@@ -68,7 +68,7 @@ ThermalDiffusionTransportModel{
 FickDiffusionLinearFEOperator{
     name = "DiffusionLinearFEOperator"
     InputVariable = "concentration"
-    OutputVariable = "woohoo"
+    OutputVariable = "concentration"
     print_info_level = 1
     reset_reuses_matrix = TRUE
     FixedTemperature = TRUE
