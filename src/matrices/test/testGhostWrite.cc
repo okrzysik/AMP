@@ -40,27 +40,19 @@ void myTest(AMP::UnitTest *ut)
 
   AMP::Mesh::DOFMap::shared_ptr dof_map = meshAdapter->getDOFMap ( var );
 
-  AMP::Mesh::MeshManager::Adapter::NodeIterator nd = meshAdapter->beginNode(  );
-  AMP::Mesh::MeshManager::Adapter::NodeIterator end_nd = meshAdapter->endNode(  );
+  AMP::Mesh::MeshManager::Adapter::ElementIterator el = meshAdapter->beginElement(  );
+  AMP::Mesh::MeshManager::Adapter::ElementIterator end_el = meshAdapter->endElement(  );
 
-  for( ; nd != end_nd; ++nd) {
-    AMP::Mesh::MeshManager::Adapter::NodeElementIterator el =  meshAdapter->beginElementForNode ( *nd );
-    AMP::Mesh::MeshManager::Adapter::NodeElementIterator end_el = meshAdapter->endElementForNode ( *nd );
+  for( ; el != end_el; ++el) {
 
-    std::vector<unsigned int> ndGlobalIds;
-    std::vector<unsigned int> emptyVec;
-    dof_map->getDOFs(*nd, ndGlobalIds, emptyVec);
-
-    for( ; el != end_el; ++el) {
-      std::vector<unsigned int> dofIndices;
-      dof_map->getDOFs(*el, dofIndices);
-      for(unsigned int j = 0; j < ndGlobalIds.size(); j++) {
+    std::vector<unsigned int> dofIndices;
+    dof_map->getDOFs(*el, dofIndices);
+      for(unsigned int j = 0; j < dofIndices.size(); j++) {
         for(unsigned int i = 0; i < dofIndices.size(); i++) {
-          mat->setValueByGlobalID ( ndGlobalIds[j], dofIndices[i], 1.0 );
+          mat->setValueByGlobalID ( dofIndices[j], dofIndices[i], 1.0 );
         }//end for i
       }//end for j
-    }//end for el
-  }//end for nd
+  }//end for el
 
   mat->makeConsistent();
 }
