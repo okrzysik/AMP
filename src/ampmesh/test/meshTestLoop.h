@@ -69,9 +69,8 @@ void MeshMatrixTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> m
         //ut->failure("Matricies are not implimented yet");
         VerifyGetMatrixTrivialTest<1,false>( ut, mesh );
         VerifyGetMatrixTrivialTest<3,false>( ut, mesh );
-        ut->expected_failure("VerifyGetMatrixTrivialTest with split=true"); 
-        //VerifyGetMatrixTrivialTest<1,true>( ut, mesh );
-        //VerifyGetMatrixTrivialTest<3,true>( ut, mesh );
+        VerifyGetMatrixTrivialTest<1,true>( ut, mesh );
+        VerifyGetMatrixTrivialTest<3,true>( ut, mesh );
         GhostWriteTest<1,false>( ut, mesh );
         GhostWriteTest<3,false>( ut, mesh );
         GhostWriteTest<1,true>( ut, mesh );

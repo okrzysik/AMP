@@ -21,10 +21,16 @@ void VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_p
     AMP::LinearAlgebra::Vector::shared_ptr vector2 = AMP::LinearAlgebra::createVector ( DOFs, variable, SPLIT );
     AMP::LinearAlgebra::Matrix::shared_ptr matrixa = AMP::LinearAlgebra::createMatrix ( vector1, vector2 );
 
+    // Currently there is a bug with multivectors
+    bool isMultiVector = vector1->isA<AMP::LinearAlgebra::MultiVector>();
+    if ( isMultiVector ) {
+        utils->expected_failure("VerifyGetMatrixTrivialTest with split=true"); 
+        return;
+    }
+
     // Run some tests
     vector1->setRandomValues ();
     matrixa->makeConsistent ();
-    bool isMultiVector = vector1->isA<AMP::LinearAlgebra::MultiVector>();
     matrixa->mult ( vector1 , vector2 );
     if ( vector2->L1Norm() < 0.00000001 )
         utils->passes ( "obtained 0 matrix from mesh" );
