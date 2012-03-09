@@ -181,8 +181,7 @@ int main(int argc, char *argv[])
 
   for(unsigned int i = 0; i < exeNames.size(); i++) {
     try {      
-        ut.failure("testNonlinearThermoMechanics-1 hangs while the parallel matrix bug exists.");
-//      thermoMechanicsTest(&ut, exeNames[i]);    
+      thermoMechanicsTest(&ut, exeNames[i]);    
     } catch (std::exception &err) {
       std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
       ut.failure("ERROR: While testing");

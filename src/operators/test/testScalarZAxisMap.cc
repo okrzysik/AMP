@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
     AMP::UnitTest ut;
 
     AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);
-    int  numNodes = globalComm.getSize();
+    //int  numNodes = globalComm.getSize();
     runTest ( "inputScalarZAxisMap-1" , &ut );
 
     ut.report();

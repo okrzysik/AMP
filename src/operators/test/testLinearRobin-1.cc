@@ -164,9 +164,8 @@ int main(int argc, char *argv[])
   };
 
     try {
-        ut.failure("linearRobin-1 hangs while the parallel matrix bug exists.");
-//        for (int i=0; i<NUMFILES; i++)
-//            linearRobinTest(&ut, files[i]);
+        for (int i=0; i<NUMFILES; i++)
+            linearRobinTest(&ut, files[i]);
     } catch (std::exception &err) {
         std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
         ut.failure("ERROR: While testing");

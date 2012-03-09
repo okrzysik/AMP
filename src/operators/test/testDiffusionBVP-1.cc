@@ -92,9 +92,7 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
   std::cout.flush();
 
   // Set up input and output vectors
-  //AMP::LinearAlgebra::Variable::shared_ptr bvpSolVar = nlinOp->getInputVariable(nlinOp->getPrincipalVariableId());
-  AMP::LinearAlgebra::Variable::shared_ptr bvpSolVar = nlinOp->getInputVariable();
-  ut->failure("Converted incorrectly");
+  AMP::LinearAlgebra::Variable::shared_ptr bvpSolVar = nlinOp->getOutputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr bvpRhsVar = nlinOp->getOutputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr bvpResVar = nlinOp->getOutputVariable();
 

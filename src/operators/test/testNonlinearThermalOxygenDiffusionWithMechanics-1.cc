@@ -102,20 +102,27 @@ void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)
   // initialize the input multi-variable
   boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> volumeOperator = boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsOperator->getVolumeOperator());
   boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputVariable(new AMP::LinearAlgebra::MultiVariable("inputVariable"));
-  //inputVariable->add(volumeOperator->getInputVariable(AMP::Operator::Mechanics::DISPLACEMENT));
-  //inputVariable->add(volumeOperator->getInputVariable(AMP::Operator::Mechanics::TEMPERATURE));
-  //inputVariable->add(volumeOperator->getInputVariable(AMP::Operator::Mechanics::OXYGEN_CONCENTRATION));
-  inputVariable->add(volumeOperator->getInputVariable());
-
+  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputMultiVariable = 
+      boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( volumeOperator->getInputVariable() );
+  for (size_t i=0; i<inputMultiVariable->numVariables(); i++) {
+    if ( inputMultiVariable->getVariable(i).get() != NULL )
+      inputVariable->add(inputMultiVariable->getVariable(i));
+  }
+                          
   // initialize the output multi-variable
   AMP::LinearAlgebra::Variable::shared_ptr outputVariable = nonlinearThermalOxygenDiffusionMechanicsOperator->getOutputVariable();
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // Create a DOF manager for a nodal vector 
   int DOFsPerNode = 1;
+  int displacementDOFsPerNode = 3;
   int nodalGhostWidth = 1;
   bool split = true;
   AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
+  AMP::Discretization::DOFManager::shared_ptr displDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, displacementDOFsPerNode, split);
+  //----------------------------------------------------------------------------------------------------------------------------------------------//
+  ut->failure("vectors must be created appropriately because tehre is a mixture of nodal scalar and nodal vector.");
+  return;
   //----------------------------------------------------------------------------------------------------------------------------------------------//
 
   // create solution, rhs, and residual vectors
@@ -172,12 +179,7 @@ void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // IMPORTANT:: call init before proceeding any further on the nonlinear mechanics operator
-//  previous line:
-//  AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = meshAdapter->createVector( volumeOperator->getInputVariable(AMP::Operator::Mechanics::TEMPERATURE) );
-//  converted line:
-//  AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = AMP::LinearAlgebra::createVector( nodalDofMap, (volumeOperator->getInputVariable())->getVariable(AMP::Operator::Mechanics::TEMPERATURE) );
-//  placeholder line till diffusion is converted:
-  AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = AMP::LinearAlgebra::createVector( nodalDofMap, volumeOperator->getInputVariable() );
+  AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = AMP::LinearAlgebra::createVector( nodalDofMap, inputMultiVariable->getVariable(AMP::Operator::Mechanics::TEMPERATURE) );
   referenceTemperatureVec->setToScalar(300.0);
   volumeOperator->setReferenceTemperature(referenceTemperatureVec);
   volumeOperator->init();
@@ -246,15 +248,15 @@ int main(int argc, char *argv[])
   //  exeNames.push_back("testNonlinearMechanics-1-reduced");
 
   for(unsigned int i = 0; i < exeNames.size(); i++) {
-    try {
+  //  try {
       thermoMechanicsTest(&ut, exeNames[i]);
-    } catch (std::exception &err) {
-      std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-      ut.failure("ERROR: While testing");
-    } catch( ... ) {
-      std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-      ut.failure("ERROR: While testing");
-    }
+    //} catch (std::exception &err) {
+//      std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+//      ut.failure("ERROR: While testing");
+//    } catch( ... ) {
+//      std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+//      ut.failure("ERROR: While testing");
+//    }
   }
 
   ut.report();
