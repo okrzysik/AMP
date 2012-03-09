@@ -39,7 +39,9 @@ SET ( TEST_DEP_LIST ${TEST_DEP_LIST} matrices vectors )
 
 # Copy meshes
 COPY_MESH_FILE ( brick.e )
+COPY_MESH_FILE ( cube8.e )
 COPY_MESH_FILE ( pellet_1x.e )
+COPY_MESH_FILE ( pellet_lo_res.e )
 COPY_MESH_FILE ( clad_1x_1pellet.e )
 COPY_MESH_FILE ( clad_1x_2pellet.e )
 

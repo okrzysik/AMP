@@ -35,6 +35,7 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix(
     AMP::Mesh::MeshIterator cur_elem = resultDOF->getIterator();
     AMP::Mesh::MeshIterator end_elem = cur_elem.end();
     int columns[1000];   // Preallocate for the columns for speed
+    for (size_t i=0 ; i<1000; i++) { columns[i] = 0.0; }
     while ( cur_elem != end_elem) {
         AMP::Mesh::MeshElement obj = *cur_elem;
         // Get the result DOFs associated with the given element
@@ -89,6 +90,7 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix(
         ++cur_elem;
     }
     newMatrix->castTo<AMP::LinearAlgebra::EpetraMatrix>().setEpetraMaps( resultVec, operandVec );
+    newMatrix->zero();
     newMatrix->makeConsistent();
 
     return newMatrix;

@@ -14,56 +14,60 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/Mesh.h"
+
+#include "test_Matrix.h"
 
 void myTest(AMP::UnitTest *ut)
 {
-  std::string exeName("testGhostWrite");
-  std::string input_file = "input_" + exeName;
-  std::string log_file = "output_" + exeName;
+    std::string exeName("testGhostWrite");
+    std::string log_file = "output_" + exeName;
+    AMP::PIO::logOnlyNodeZero(log_file);
 
-  AMP::PIO::logOnlyNodeZero(log_file);
+    // Create the mesh parameter object
+    boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+    database->putString("MeshType","libMesh");
+    database->putString("MeshName","mesh");
+    database->putString("FileName","cube8.e");
+    database->putInteger("dim",3);
+    boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+    params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
-  AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
-  input_db->printClassData(AMP::plog);
+    // Create the mesh
+    AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( params );
 
-  AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  std::string mesh_file = input_db->getString("Mesh");
+    // Create the matrix
+    AMP::Discretization::DOFManager::shared_ptr  DOFs = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,1);
+    AMP::LinearAlgebra::Variable::shared_ptr var1( new AMP::LinearAlgebra::Variable("a") );
+    AMP::LinearAlgebra::Variable::shared_ptr var2( new AMP::LinearAlgebra::Variable("b") );
+    AMP::LinearAlgebra::Vector::shared_ptr  vec1 = AMP::LinearAlgebra::createVector( DOFs, var1 );
+    AMP::LinearAlgebra::Vector::shared_ptr  vec2 = AMP::LinearAlgebra::createVector( DOFs, var2 );
+    AMP::LinearAlgebra::Matrix::shared_ptr  matrix = AMP::LinearAlgebra::createMatrix ( vec1, vec2 );
 
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = AMP::Mesh::MeshManager::Adapter::shared_ptr ( new AMP::Mesh::MeshManager::Adapter () );
-  meshAdapter->readExodusIIFile ( mesh_file.c_str() );
-
-  AMP::LinearAlgebra::Variable::shared_ptr var(new AMP::Mesh::NodalScalarVariable("dummy", meshAdapter)); 
-  AMP::LinearAlgebra::Matrix::shared_ptr mat = meshAdapter->createMatrix(var, var); 
-
-  AMP::Mesh::DOFMap::shared_ptr dof_map = meshAdapter->getDOFMap ( var );
-
-  AMP::Mesh::MeshManager::Adapter::NodeIterator nd = meshAdapter->beginNode(  );
-  AMP::Mesh::MeshManager::Adapter::NodeIterator end_nd = meshAdapter->endNode(  );
-
-  for( ; nd != end_nd; ++nd) {
-    AMP::Mesh::MeshManager::Adapter::NodeElementIterator el =  meshAdapter->beginElementForNode ( *nd );
-    AMP::Mesh::MeshManager::Adapter::NodeElementIterator end_el = meshAdapter->endElementForNode ( *nd );
-
-    std::vector<unsigned int> ndGlobalIds;
-    std::vector<unsigned int> emptyVec;
-    dof_map->getDOFs(*nd, ndGlobalIds, emptyVec);
-
+    // Loop through the owned and ghost nodes
+    AMP::Mesh::MeshIterator el = mesh->getIterator(AMP::Mesh::Volume,0);
+    AMP::Mesh::MeshIterator end_el = el.end();
     for( ; el != end_el; ++el) {
-      std::vector<unsigned int> dofIndices;
-      dof_map->getDOFs(*el, dofIndices);
-      for(unsigned int j = 0; j < ndGlobalIds.size(); j++) {
-        for(unsigned int i = 0; i < dofIndices.size(); i++) {
-          mat->setValueByGlobalID ( ndGlobalIds[j], dofIndices[i], 1.0 );
-        }//end for i
-      }//end for j
+        // Get the DOFs for all nodes
+        std::vector<size_t> dofs;
+        std::vector<size_t> dofIndices;
+        std::vector<AMP::Mesh::MeshElement> elements = el->getElements(AMP::Mesh::Vertex);
+        for (size_t i=0; i<elements.size(); i++) {
+            DOFs->getDOFs( elements[i].globalID(), dofs );
+            for (size_t j=0; j<dofs.size(); j++) {
+                dofIndices.push_back(dofs[j]);
+            }
+        }
+        for (size_t j=0; j<dofIndices.size(); j++) {
+            for (size_t i=0; i<dofIndices.size(); i++) {
+                matrix->setValueByGlobalID ( dofIndices[j], dofIndices[i], 1.0 );
+            }//end for i
+        }//end for j
     }//end for el
-  }//end for nd
 
-  mat->makeConsistent();
+    matrix->makeConsistent();
 }
+
 
 int main(int argc, char *argv[])
 {
