@@ -152,6 +152,10 @@ void myTest(AMP::UnitTest *ut)
 
     {
       AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,1,true);
+  //----------------------------------------------------------------------------------------------------------------------------------------------//
+  ut->failure("vectors must be created appropriately because there is a mixture of nodal scalar and nodal vector.");
+  return;
+  //----------------------------------------------------------------------------------------------------------------------------------------------//
 
       AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, columnInputVariable, true );
       AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, columnOutputVariable, true );

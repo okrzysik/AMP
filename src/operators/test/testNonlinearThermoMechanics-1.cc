@@ -181,7 +181,8 @@ int main(int argc, char *argv[])
 
   for(unsigned int i = 0; i < exeNames.size(); i++) {
     try {      
-      thermoMechanicsTest(&ut, exeNames[i]);    
+      ut.failure("this tests hangs in parallel, so i'm shutting it off for now.");
+      //thermoMechanicsTest(&ut, exeNames[i]);    
     } catch (std::exception &err) {
       std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
       ut.failure("ERROR: While testing");

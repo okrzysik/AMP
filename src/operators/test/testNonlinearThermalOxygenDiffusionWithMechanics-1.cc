@@ -115,10 +115,10 @@ void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // Create a DOF manager for a nodal vector 
   int DOFsPerNode = 1;
-  int displacementDOFsPerNode = 3;
   int nodalGhostWidth = 1;
   bool split = true;
   AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
+  int displacementDOFsPerNode = 3;
   AMP::Discretization::DOFManager::shared_ptr displDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, displacementDOFsPerNode, split);
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   ut->failure("vectors must be created appropriately because tehre is a mixture of nodal scalar and nodal vector.");
