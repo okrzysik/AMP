@@ -390,6 +390,70 @@ void testID( AMP::UnitTest *utils )
 }
 
 
+// Test if we correctly identify the node neighbors
+void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) 
+{
+    std::map< AMP::Mesh::MeshElementID, std::vector<AMP::Mesh::MeshElementID> > neighbor_list;
+    // Get a list of all neighors for each local node
+    AMP::Mesh::MeshIterator nodeIterator = mesh->getIterator(AMP::Mesh::Vertex,0);
+    std::vector<AMP::Mesh::MeshElementID> neighbors(100);
+    for (size_t i=0; i<nodeIterator.size(); i++) {
+        std::vector<AMP::Mesh::MeshElement::shared_ptr> elements = nodeIterator->getNeighbors();
+        neighbors.resize(0);
+        for (size_t j=0; j<elements.size(); j++) {
+            if ( elements[j].get() != NULL )
+                neighbors.push_back(elements[j]->globalID());
+        }
+        std::pair< AMP::Mesh::MeshElementID, std::vector<AMP::Mesh::MeshElementID> > entry;
+        entry.first = nodeIterator->globalID();
+        entry.second = neighbors;
+        neighbor_list.insert( entry );
+        ++nodeIterator;
+    }
+    // First check if the neighbor lists are unique and don't contain self
+    {
+        std::map< AMP::Mesh::MeshElementID, std::vector<AMP::Mesh::MeshElementID> >::iterator iterator;
+        bool contains_self = false;
+        bool contains_duplicate = false;
+        for (iterator=neighbor_list.begin(); iterator!=neighbor_list.end(); iterator++) {
+            std::vector<AMP::Mesh::MeshElementID> neighbors = iterator->second;
+            for (size_t i=0; i<neighbors.size(); i++) {
+                if ( neighbors[i] == iterator->first )
+                    contains_self = true;
+                for (size_t j=0; j<i; j++) {
+                    if ( neighbors[j] == neighbors[i] )
+                        contains_duplicate = true;
+                }
+            }
+        }
+        if ( !contains_self )
+            utils->passes("Neighbor nodes does not contain self");
+        else
+            utils->failure("Neighbor nodes does not contain self");
+        if ( !contains_duplicate )
+            utils->passes("Neighbor nodes does not contain duplicates");
+        else
+            utils->failure("Neighbor nodes does not contain duplicates");
+    }
+    // If there are ghost nodes, then some of them must be neighbors
+    if ( mesh->numGhostElements(AMP::Mesh::Vertex,1) > 0 ) {
+        std::map< AMP::Mesh::MeshElementID, std::vector<AMP::Mesh::MeshElementID> >::iterator iterator;
+        bool ghost_neighbors = false;
+        for (iterator=neighbor_list.begin(); iterator!=neighbor_list.end(); iterator++) {
+            std::vector<AMP::Mesh::MeshElementID> neighbors = iterator->second;
+            for (size_t i=0; i<neighbors.size(); i++) {
+                if ( !neighbors[i].is_local() )
+                    ghost_neighbors = true;
+            }
+        }
+        if ( ghost_neighbors )
+            utils->passes("Found ghost neighbor nodes");
+        else
+            utils->failure("Found ghost neighbor nodes");
+    }
+}
+
+
 // Test the displacement of the mesh
 void DisplaceMesh( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) 
 {

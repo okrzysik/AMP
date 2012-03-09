@@ -192,19 +192,24 @@ std::vector<size_t> simpleDOFManager::getRemoteDOFs( ) const
 std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
 {
     AMP_INSIST(obj.elementType()==d_type,"Mixing types is not tested/supported yet");
+    // Get a list of all element ids that are part of the row
     std::vector< Mesh::MeshElement::shared_ptr > neighbor_elements = obj.getNeighbors();
-    std::vector< const Mesh::MeshElement* > elements(neighbor_elements.size()+1,&obj);
-    for (size_t i=0; i<neighbor_elements.size(); i++)
-        elements[i+1] = neighbor_elements[i].get();
+    std::vector<AMP::Mesh::MeshElementID> ids(neighbor_elements.size()+1,obj.globalID());
+    ids.resize(1);
+    for (size_t i=0; i<neighbor_elements.size(); i++) {
+        if ( neighbor_elements[i].get() != NULL )
+            ids.push_back(neighbor_elements[i]->globalID());
+    }
+    // Get all dofs for each element id
     std::vector<size_t> dofs;
-    dofs.reserve(elements.size()*DOFsPerElement);
+    dofs.reserve(ids.size()*DOFsPerElement);
     std::vector<size_t> dofs2(DOFsPerElement);
-    for (size_t i=0; i<elements.size(); i++) {
-        AMP::Mesh::MeshElementID  id = elements[i]->globalID();
-        getDOFs( id, dofs2 );
+    for (size_t i=0; i<ids.size(); i++) {
+        getDOFs( ids[i], dofs2 );
         for (size_t j=0; j<dofs2.size(); j++)
             dofs.push_back(dofs2[j]);
     }
+    // Sort the row dofs
     AMP::Utilities::quicksort(dofs);
     return dofs;
 }

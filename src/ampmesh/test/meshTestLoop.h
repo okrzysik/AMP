@@ -24,6 +24,8 @@ void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
     VerifyBoundaryIDNodeIterator( ut, mesh );
     VerifyBoundaryIterator( ut, mesh );
     MeshIteratorSetOPTest( ut, mesh );
+    // Test the node neighbors
+    getNodeNeighbors( ut, mesh );
     // Test displacement
     if ( boost::dynamic_pointer_cast<AMP::Mesh::SubsetMesh>(mesh).get()!=NULL )
         ut->expected_failure("Displace mesh tests are not valid for sub-meshes");
