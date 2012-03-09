@@ -62,6 +62,10 @@ namespace LinearAlgebra {
       AMP::Discretization::DOFManager::shared_ptr   d_DOFManagerLeft;
       //!  The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
       AMP::Discretization::DOFManager::shared_ptr   d_DOFManagerRight;
+      //!  The variable for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
+      AMP::LinearAlgebra::Variable::shared_ptr   d_VariableLeft;
+      //!  The variable for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
+      AMP::LinearAlgebra::Variable::shared_ptr   d_VariableRight;
 
       /** \brief Constructor
         * \param[in] local_size  Number of rows on this core

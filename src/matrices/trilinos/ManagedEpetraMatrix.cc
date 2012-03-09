@@ -56,7 +56,8 @@ Vector::shared_ptr ManagedEpetraMatrix::getRightVector ()
     p_params->d_CommList = memp.d_CommListRight;
     p_params->d_DOFManager = memp.d_DOFManagerRight;
     Vector::shared_ptr rtn = Vector::shared_ptr( new ManagedEpetraVector ( VectorParameters::shared_ptr ( p_params ) ) );
-    rtn->setVariable( Variable::shared_ptr( new Variable("right") ) );
+    rtn->setVariable( memp.d_VariableRight );
+    //rtn->setVariable( Variable::shared_ptr( new Variable("right") ) );
     return rtn;
 }
 
@@ -77,7 +78,8 @@ Vector::shared_ptr ManagedEpetraMatrix::getLeftVector ()
     p_params->d_CommList = memp.d_CommListLeft;
     p_params->d_DOFManager = memp.d_DOFManagerLeft;
     Vector::shared_ptr rtn = Vector::shared_ptr( new ManagedEpetraVector ( VectorParameters::shared_ptr ( p_params ) ) );
-    rtn->setVariable( Variable::shared_ptr( new Variable("left") ) );
+    rtn->setVariable( memp.d_VariableLeft );
+    //rtn->setVariable( Variable::shared_ptr( new Variable("left") ) );
     return rtn;
 }
 
