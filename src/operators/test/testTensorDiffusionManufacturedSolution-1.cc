@@ -134,7 +134,7 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
 	  size_t len = geom.size();
 	  isCylindrical = (pos < len);
   }*/
-  int zeroGhostWidth = 0;
+  int zeroGhostWidth = 1;
   AMP::Mesh::MeshIterator  iterator = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
   std::string mfgName = mfgSolution->get_name();
   if (mfgName.find("Cylindrical") < mfgName.size()) {
@@ -165,6 +165,8 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
 		solVec->setValueByGlobalID(gid[0], poly[0]);
 	  }
   }
+
+  solVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
   // Evaluate manufactured solution as an FE source
   sourceOp->apply(rhsVec, solVec, sourceVec, 1., 0.);

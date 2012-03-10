@@ -82,6 +82,12 @@ void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)
   AMP::Discretization::DOFManager::shared_ptr vectorDofMap = AMP::Discretization::simpleDOFManager::create(
       meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
 
+  //----------------------------------------------------------------------------------------------------------------------------------------------//
+  ut->failure("this is an attempt to create vectors appropriately because there is a mixture of nodal scalar and nodal vector, but it did't work.");
+  return;
+  //----------------------------------------------------------------------------------------------------------------------------------------------//
+
+  // create solution, rhs, and residual vectors
 std::vector<AMP::Discretization::DOFManager::shared_ptr> dofMapList;
 dofMapList.push_back(vectorDofMap);
 dofMapList.push_back(scalarDofMap);
@@ -181,8 +187,8 @@ int main(int argc, char *argv[])
 
   for(unsigned int i = 0; i < exeNames.size(); i++) {
     try {      
-      ut.failure("this tests hangs in parallel, so i'm shutting it off for now.");
-      //thermoMechanicsTest(&ut, exeNames[i]);    
+      //ut.failure("this tests hangs in parallel, so i'm shutting it off for now.");
+      thermoMechanicsTest(&ut, exeNames[i]);    
     } catch (std::exception &err) {
       std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
       ut.failure("ERROR: While testing");
