@@ -155,7 +155,8 @@ namespace AMP {
           }//end for i
         }//end for j
 
-        boost::shared_ptr<DirichletVectorCorrectionParameters> setDispOpParams(new DirichletVectorCorrectionParameters(tmp_db));
+        boost::shared_ptr<DirichletVectorCorrectionParameters> setDispOpParams(
+            new DirichletVectorCorrectionParameters(tmp_db));
         setDispOpParams->d_variable = d_variable;
         setDispOpParams->d_Mesh = d_Mesh;
 
@@ -171,6 +172,7 @@ namespace AMP {
 
           if(d_dispVals.get() == NULL) {
             d_dispVals = inputMatrix->getRightVector();
+            AMP_ASSERT(d_dispVals->getVariable() == d_variable);
           }
 
           d_dispVals->zero();
