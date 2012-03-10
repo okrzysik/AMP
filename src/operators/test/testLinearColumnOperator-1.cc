@@ -23,6 +23,7 @@
 
 #include "ampmesh/Mesh.h"
 #include "discretization/simpleDOF_Manager.h"
+#include "discretization/MultiDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
 
 #include "applyTests.h"
@@ -42,19 +43,13 @@ void myTest(AMP::UnitTest *ut)
       outerInput_db);
   outerInput_db->printClassData(AMP::plog);
 
+  // Get the Mesh database and create the mesh parameters
   AMP_INSIST(outerInput_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  std::string mesh_file = outerInput_db->getString("Mesh");
-
-  // Create the mesh parameter object
-  boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
-  database->putInteger("dim",3);
-  database->putString("MeshName","mesh");
-  database->putString("MeshType","libMesh");
-  database->putString("FileName",mesh_file);
+  boost::shared_ptr<AMP::Database> database = outerInput_db->getDatabase( "Mesh" );
   boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
   params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
 
-  // Create the mesh
+  // Create the meshes from the input database
   AMP::Mesh::Mesh::shared_ptr  meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
 
   AMP_INSIST(outerInput_db->keyExists("number_of_tests"), "key missing!");
@@ -82,6 +77,9 @@ void myTest(AMP::UnitTest *ut)
     AMP_INSIST(numberOfOperators >= 1,
         "more than zero operators need to be specified");
 
+    AMP_INSIST(innerInput_db->keyExists("dofsPerNode"), "key missing!");
+    std::vector<int> dofsPerNodeArr = innerInput_db->getIntegerArray("dofsPerNode");
+
     // create a column operator object
     boost::shared_ptr<AMP::Operator::OperatorParameters> params;
     boost::shared_ptr<AMP::Operator::ColumnOperator> columnOperator(
@@ -90,11 +88,16 @@ void myTest(AMP::UnitTest *ut)
     boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> columnInputVariable(
         new AMP::LinearAlgebra::MultiVariable("columnInputVariable"));
 
+    std::vector<AMP::Discretization::DOFManager::shared_ptr> dofMapVec;
+
     double defTemp = -1.0;
     double defConc = -1.0;
     size_t nVars=0;
     for (int opN = 1; opN <= numberOfOperators; opN++)
     {
+      dofMapVec.push_back(AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex,
+            1, dofsPerNodeArr[opN-1], true));
+
       char testOpName[256];
       sprintf(testOpName, "testOperator%d", opN);
       AMP_INSIST(innerInput_db->keyExists(testOpName), "key missing!");
@@ -104,9 +107,7 @@ void myTest(AMP::UnitTest *ut)
         innerInput_db->getDatabase(testOpName);
       boost::shared_ptr<AMP::Operator::Operator> testOperator =
         AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-						       testOpName,
-						       innerInput_db,
-						       elementPhysicsModel);
+            testOpName, innerInput_db, elementPhysicsModel);
 
       boost::shared_ptr<AMP::Operator::LinearOperator> myLinOp =
         boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(
@@ -127,13 +128,13 @@ void myTest(AMP::UnitTest *ut)
       // its transport model has defaults defined
       boost::shared_ptr<AMP::Database> model_db;
       if (testOp_db->keyExists("VolumeOperator"))
-	{
-	  boost::shared_ptr<AMP::Database> volOp_db = innerInput_db->getDatabase(testOp_db->getString("VolumeOperator"));
-	  if ((volOp_db->getName() == "DiffusionNonlinearFEOperator")||(volOp_db->getName() == "DiffusionLinearFEOperator"))
-	    {
-	      model_db = innerInput_db->getDatabase(volOp_db->getString("LocalModel"));
-	    }
+      {
+        boost::shared_ptr<AMP::Database> volOp_db = innerInput_db->getDatabase(testOp_db->getString("VolumeOperator"));
+        if ((volOp_db->getName() == "DiffusionNonlinearFEOperator")||(volOp_db->getName() == "DiffusionLinearFEOperator"))
+        {
+          model_db = innerInput_db->getDatabase(volOp_db->getString("LocalModel"));
         }
+      }
 
       if (model_db) {
         defTemp = model_db->getDouble("Default_Temperature");
@@ -144,22 +145,13 @@ void myTest(AMP::UnitTest *ut)
     msgPrefix = exeName + " : " + innerInput_file;
     ut->passes(msgPrefix + " : create");
 
-    boost::shared_ptr<AMP::Operator::Operator> testOperator =
-      boost::dynamic_pointer_cast<AMP::Operator::Operator>(columnOperator);
-
-    AMP::LinearAlgebra::Variable::shared_ptr columnOutputVariable =
-      columnOperator->getOutputVariable();
+    AMP::Discretization::DOFManager::shared_ptr multiDOF (new
+        AMP::Discretization::multiDOFManager(AMP::AMP_MPI(AMP_COMM_WORLD), dofMapVec));
 
     {
-      AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,1,true);
-  //----------------------------------------------------------------------------------------------------------------------------------------------//
-  ut->failure("vectors must be created appropriately because there is a mixture of nodal scalar and nodal vector.");
-  return;
-  //----------------------------------------------------------------------------------------------------------------------------------------------//
-
-      AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, columnInputVariable, true );
-      AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, columnOutputVariable, true );
-      AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, columnOutputVariable, true );
+      AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( multiDOF, columnInputVariable, true );
+      AMP::LinearAlgebra::Vector::shared_ptr rhsVec = solVec->cloneVector();
+      AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
 
       for (size_t i=0; i<nVars; i++) {
         AMP::LinearAlgebra::Variable::shared_ptr opVar = columnInputVariable->getVariable(i);
@@ -174,9 +166,9 @@ void myTest(AMP::UnitTest *ut)
       }
 
       // test apply with single variable vectors
-      applyTests(ut, msgPrefix, testOperator, rhsVec, solVec, resVec);
-
+      applyTests(ut, msgPrefix, columnOperator, rhsVec, solVec, resVec);
     }
+
 #if 0
     // test getJacobianParameters
     msgPrefix=exeName + " : " + innerInput_file;
@@ -219,4 +211,6 @@ int main(int argc, char *argv[])
   AMP::AMPManager::shutdown();
   return num_failed;
 }
+
+
 

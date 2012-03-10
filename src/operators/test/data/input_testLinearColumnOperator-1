@@ -1,5 +1,12 @@
 
-Mesh = "brick.e"
+// Database for the mesh
+Mesh{
+    MeshName = "mesh"
+    MeshType = "libMesh"
+    FileName = "brick.e"
+    dim = 3
+    NumberOfElements = 1000
+}
 
 number_of_tests = 22
 

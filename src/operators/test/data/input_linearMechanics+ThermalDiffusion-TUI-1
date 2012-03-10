@@ -1,5 +1,6 @@
 
 numberOfOperators=2
+dofsPerNode = 3, 1
 
 testOperator1{
       name = "MechanicsLinearFEOperator"

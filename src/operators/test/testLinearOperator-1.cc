@@ -43,6 +43,7 @@ void myTest(AMP::UnitTest *ut)
   outerInput_db->printClassData(AMP::plog);
 
   // Get the Mesh database and create the mesh parameters
+  AMP_INSIST(outerInput_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
   boost::shared_ptr<AMP::Database> database = outerInput_db->getDatabase( "Mesh" );
   boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
   params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
