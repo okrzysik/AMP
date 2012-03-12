@@ -69,16 +69,12 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName)
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     boost::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
       boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-            "MechanicsBVPOperator",
-            input_db,
-            elementPhysicsModel));
+            "MechanicsBVPOperator", input_db, elementPhysicsModel));
 
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
     boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletVecOp =
       boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-            "Load_Boundary",
-            input_db,
-            dummyModel));
+            "Load_Boundary", input_db, dummyModel));
 
     AMP::LinearAlgebra::Variable::shared_ptr var = bvpOperator->getOutputVariable();
 
