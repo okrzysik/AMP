@@ -1,4 +1,5 @@
 numberOfOperators=2
+dofsPerNode = 1, 1
 
 testOperator1{
     name = "DiffusionLinearFEOperator"
