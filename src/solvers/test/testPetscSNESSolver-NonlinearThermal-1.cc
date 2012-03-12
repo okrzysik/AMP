@@ -167,6 +167,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   double rhsNorm  = rhsVec->L2Norm();
   std::cout << "rhs norm  after apply = " << rhsNorm <<"\n";
+  double expectedVal = 0.688628;
+  if( !AMP::Utilities::approx_equal( expectedVal, rhsNorm, 1e-5) ) { 
+        ut->failure("the rhs norm after apply has changed."); }
 
   //----------------------------------------------------------------------------------------------------------------------------------------------/
 
@@ -201,6 +204,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   double initialResidualNorm  = resVec->L2Norm();
 
   AMP::pout<<"Initial Residual Norm: "<<initialResidualNorm<<std::endl;
+  expectedVal = 40.8663;
+  if( !AMP::Utilities::approx_equal( expectedVal, initialResidualNorm, 1e-5) ) {
+        ut->failure("the Initial Residual Norm has changed."); }
 
   nonlinearSolver->setZeroInitialGuess(false);
 
@@ -211,6 +217,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   double finalResidualNorm  = resVec->L2Norm();
 
   std::cout<<"Final Residual Norm: "<<finalResidualNorm<<std::endl;
+  expectedVal = 1.23751e-10;
+  if( !AMP::Utilities::approx_equal( expectedVal, finalResidualNorm, 1e-5) ) { 
+        ut->failure("the Final Residual Norm has changed."); }
 
   solVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
   resVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
