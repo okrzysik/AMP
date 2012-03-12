@@ -32,6 +32,7 @@
 #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
 
 #include "operators/boundary/NeumannVectorCorrection.h"
+#include "operators/boundary/DirichletVectorCorrection.h"
 
 #include "../BVPOperatorParameters.h"
 #include "../LinearBVPOperator.h"
@@ -43,7 +44,7 @@
 #include "applyTests.h"
 
 
-void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string meshName)
+void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string meshName, bool mathout)
 {
   // Tests diffusion Dirchlet BVP operator for temperature
 
@@ -75,7 +76,7 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
           boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(nlinBVPOperator);
   boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nlinOp =
          boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nlinBVPOp->getVolumeOperator());
-  
+
   // use the linear BVP operator to create a linear diffusion operator with bc's
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> linearPhysicsModel;
 
@@ -89,22 +90,21 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
   boost::shared_ptr<AMP::Operator::MassLinearFEOperator> sourceOp =
          boost::dynamic_pointer_cast<AMP::Operator::MassLinearFEOperator>(sourceOperator);
 
-
   boost::shared_ptr<AMP::Operator::MassDensityModel> densityModel = sourceOp->getDensityModel();
   boost::shared_ptr<AMP::ManufacturedSolution> mfgSolution = densityModel->getManufacturedSolution();
 
   // Set up input and output vectors
   AMP::LinearAlgebra::Variable::shared_ptr solVar = nlinOp->getInputVariable(nlinOp->getPrincipalVariableId());
-  AMP::LinearAlgebra::Variable::shared_ptr rhsVar = nlinOp->getOutputVariable();
+  AMP::LinearAlgebra::Variable::shared_ptr rhsVar = nlinOp->createOutputVariable("zero");
   AMP::LinearAlgebra::Variable::shared_ptr resVar = nlinOp->getOutputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr sourceVar = sourceOp->getOutputVariable();
-  AMP::LinearAlgebra::Variable::shared_ptr workVar = sourceOp->getOutputVariable();
+  AMP::LinearAlgebra::Variable::shared_ptr srcVar = sourceOp->getInputVariable();
 
   AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( solVar );
   AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector( rhsVar );
   AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( resVar );
   AMP::LinearAlgebra::Vector::shared_ptr sourceVec = meshAdapter->createVector( sourceVar );
-  AMP::LinearAlgebra::Vector::shared_ptr workVec = meshAdapter->createVector( workVar );
+  AMP::LinearAlgebra::Vector::shared_ptr srcVec = meshAdapter->createVector( srcVar );
 
   rhsVec->setToScalar(0.0);
 
@@ -135,6 +135,11 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
 		mfgSolution->evaluate(poly,r,th,z);
 		size_t gid = iterator->globalID();
 		solVec->setValueByGlobalID(gid, poly[0]);
+
+		std::vector<double> srcVal(1), dumT(1), dumU(1), dumB(1);
+		std::vector<Point> point(1,Point(x,y,z));
+		densityModel->getDensityManufactured(srcVal, dumT, dumU, dumB, point);
+		srcVec->setValueByGlobalID(gid, srcVal[0]);
 	  }
   } else {
 	  for( ; iterator != meshAdapter->endOwnedNode(); iterator++ ) {
@@ -146,16 +151,21 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
 		mfgSolution->evaluate(poly,x,y,z);
 		size_t gid = iterator->globalID();
 		solVec->setValueByGlobalID(gid, poly[0]);
+
+		std::vector<double> srcVal(1), dumT(1), dumU(1), dumB(1);
+		std::vector<Point> point(1,Point(x,y,z));
+		densityModel->getDensityManufactured(srcVal, dumT, dumU, dumB, point);
+		srcVec->setValueByGlobalID(gid, srcVal[0]);
 	  }
   }
 
   // Evaluate manufactured solution as an FE source
-  sourceOp->apply(rhsVec, solVec, sourceVec, 1., 0.);
+  sourceOp->apply(rhsVec, srcVec, sourceVec, 1., 0.);
 
   // Evaluate action of diffusion operator
   nlinBVPOp->apply(sourceVec, solVec, resVec, 1., -1.);
 
-  // Output Mathematica form (requires serial execution)
+  // Output Mathematica form and total residual
   for (int i=0; i<globalComm.getSize(); i++) {
     if ( globalComm.getRank()==i ) {
       std::string filename="data_"+exeName;
@@ -164,8 +174,8 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
       std::ios_base::openmode omode=std::ios_base::out;
       if (rank>0) omode |= std::ios_base::app;
       std::ofstream file(filename.c_str(),omode);
-      if (rank == 0) {
-          file << "(* x y z solution solution fe-source fe-operator error *)" << std::endl;
+      if (rank == 0 and mathout) {
+          file << "(* x y z solution solution source fe-source residual *)" << std::endl;
           file << "results={" << std::endl;
       }
 
@@ -182,11 +192,11 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
         y = iterator->y();
         z = iterator->z();
         size_t gid = iterator->globalID();
-        double val, res, sol, src, err;
+        double val, res, sol, source, src;
         res = resVec->getValueByGlobalID(gid);
         sol = solVec->getValueByGlobalID(gid);
-        src = sourceVec->getValueByGlobalID(gid);
-        err = res/(src+.5*res + std::numeric_limits<double>::epsilon());
+        source = sourceVec->getValueByGlobalID(gid);
+        src = srcVec->getValueByGlobalID(gid);
         std::valarray<double> poly(10);
         if (mfgName.find("Cylindrical") < mfgName.size()) {
     		double r = sqrt(x*x+y*y), th=0.;
@@ -197,20 +207,41 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
         	mfgSolution->evaluate(poly,x,y,z);
         }
         val = poly[0];
-        workVec->setValueByGlobalID(gid, err);
 
-        file << "{" << x << "," << y << "," << z <<"," << val <<  ","
-                << sol << "," << src << "," << res+src << "," << err << "}";
-        if (iNode<numNodes-1) file << "," << std::endl;
+        if (mathout) {
+        	file << "{" << x << "," << y << "," << z <<"," << val <<  ","
+        			<< sol << "," << src << "," << source << "," << res << "}";
+        	if (iNode<numNodes-1) file << "," << std::endl;
+        }
 
         l2err += (res*res);
         iNode++;
       }
 
-      if (rank == nranks-1) {
-          file << "};" << std::endl;
-          file << "nodes = " << numNodes <<"; l2err = " << l2err << ";" << std::endl;
+      // sum the boundary contribution to residual total
+      double l2errbnd = 0.;
+      int nbnd = 0;
+      for (int j=0; j<=8; j++) {
+    	  AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator beg_bnd = meshAdapter->beginOwnedBoundary( j );
+    	  AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator end_bnd = meshAdapter->endOwnedBoundary( j );
+    	  AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator iter;
+    	  for (iter=beg_bnd; iter!=end_bnd; iter++) {
+    	        double x, y, z;
+    	        x = iter->x();
+    	        y = iter->y();
+    	        z = iter->z();
+    	        size_t gid = iter->globalID();
+    	        double res;
+    	        res = resVec->getValueByGlobalID(gid);
+    	        l2errbnd -= (res*res);
+    	        ++nbnd;
+    	  }
       }
+
+      if (rank == nranks-1 and mathout) {
+          file << "};" << std::endl;
+      }
+      file << "nodes = " << numNodes << "; nbnd = " << nbnd << "; l2err = " << l2err << "; l2errbnd = " << l2errbnd << ";" << std::endl;
 
       file.close();
     }
@@ -218,29 +249,25 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
   }
 
   // Plot the results
-  if( globalComm.getSize() == 1 ) {
  #ifdef USE_SILO
-     AMP::LinearAlgebra::Variable::shared_ptr tmpVar1;
+	{
+		 AMP::LinearAlgebra::Variable::shared_ptr tmpVar1;
 
-     tmpVar1 = workVec->getVariable();
-     tmpVar1->setName("RelativeError");
-     meshAdapter->registerVectorAsData ( workVec );
+		 tmpVar1 = solVec->getVariable();
+		 tmpVar1->setName("Solution");
+		 meshAdapter->registerVectorAsData ( solVec );
 
-     tmpVar1 = solVec->getVariable();
-     tmpVar1->setName("Solution");
-     meshAdapter->registerVectorAsData ( solVec );
+		 tmpVar1 = sourceVec->getVariable();
+		 tmpVar1->setName("Source");
+		 meshAdapter->registerVectorAsData ( sourceVec );
 
-     tmpVar1 = sourceVec->getVariable();
-     tmpVar1->setName("Source");
-     meshAdapter->registerVectorAsData ( sourceVec );
+		 tmpVar1 = resVec->getVariable();
+		 tmpVar1->setName("Residual");
+		 meshAdapter->registerVectorAsData ( resVec );
 
-     tmpVar1 = resVec->getVariable();
-     tmpVar1->setName("Residual");
-     meshAdapter->registerVectorAsData ( resVec );
-
-     manager->writeFile<AMP::Mesh::SiloIO> ( exeName, 0 );
+		 manager->writeFile<AMP::Mesh::SiloIO> ( exeName, 0 );
+	}
  #endif
-   }
 
   ut->passes(exeName);
   std::cout.flush();
@@ -256,9 +283,12 @@ int main(int argc, char *argv[])
     files.push_back("TensorDiffusion-Fick-MMS-2"); meshes.push_back("Mesh");
     //files.push_back("Diffusion-Fick-OxMSRZC09-MMS-1");
 
+    bool mathout=true;
+    if (argc == 2) if (std::string(argv[1]) == std::string("-nomath")) mathout = false;
+
     try {
         for (size_t i=0; i<files.size(); i++)
-            bvpTest1(&ut, files[i], meshes[i]);
+            bvpTest1(&ut, files[i], meshes[i], mathout);
     } catch (std::exception &err) {
         std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
         ut.failure("ERROR: While testing");

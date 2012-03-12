@@ -70,6 +70,13 @@ private:
 	 *	\frac{\partial^2 u}{\partial y^2},  \frac{\partial^2 u}{\partial y \partial z},  \frac{\partial^2 u}{\partial z^2},
 	 *	\f]
 	 *
+	 *	or more succinctly,
+	 *
+	 *	[0, x, y, z, xx, xy, xz, yy, yz, zz]
+	 *	 0  1  2  3   4   5   6   7   8   9
+	 *
+	 *	which is also true for cylindrical coordinates [x,y,z]->[r,th,z]
+	 *
 	 *  \param result output derivatives (length >= 10)
 	 *  \param x x-coordinate
 	 *  \param y y-coordinate

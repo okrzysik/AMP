@@ -68,7 +68,9 @@ void TensorProperty<Number>::evalvActual(
   }
   const size_t npresent = parameter_iter.size();
 
-  for (size_t i=0; i<rdim0; i++) for (size_t j=0; j<rdim1; j++) {r_iter[i][j] = r[i][j]->begin();}
+  for (size_t i=0; i<rdim0; i++) for (size_t j=0; j<rdim1; j++) {
+      r_iter[i][j] = r[i][j]->begin();
+  }
   bool goAgain = true;
   while (goAgain)
   {
@@ -82,8 +84,8 @@ void TensorProperty<Number>::evalvActual(
 			  eval_args[parameter_indices[ipresent]] = *(parameter_iter[ipresent]);
 		  }
 	  }
-	  std::vector<std::vector<Number> > evalResult = evalTensor(eval_args);
-	  for (size_t i=0; i<rdim0; i++) for (size_t j=0; j<rdim1; j++) {*(r_iter[i][j]) = evalResult[i][j];}
+	  std::vector<std::vector<Number> > evalResult(evalTensor(eval_args));
+	  for (size_t i=0; i<rdim0; i++) for (size_t j=0; j<rdim1; j++) {*r_iter[i][j] = evalResult[i][j];}
 
 	  // update the parameter iterators
 	  for (size_t i=0; i<npresent; i++) {
