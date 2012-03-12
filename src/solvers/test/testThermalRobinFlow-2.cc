@@ -236,6 +236,9 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
   globalRhsVec->copyVector(PowerInWattsVec);
   std::cout << "PowerInWattsVec norm  inside loop = " << globalRhsVec->L2Norm() <<"\n";
+  double expectedVal = 0.175811;
+  if( !AMP::Utilities::approx_equal( expectedVal, globalRhsVec->L2Norm(), 1e-5) ) { 
+        ut->failure("the PowerInWattsVec norm has changed."); }
 
   //    robinBoundaryOp->reset(correctionParameters);
 
@@ -244,12 +247,18 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
   thermalNonlinearOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
   AMP::pout<<"Initial Residual Norm for Step is: "<<globalResVec->L2Norm()<<std::endl;
+  expectedVal = 4.84311;
+  if( !AMP::Utilities::approx_equal( expectedVal, globalResVec->L2Norm(), 1e-5) ) { 
+        ut->failure("the Initial Residual Norm has changed."); }
 
   std::cout << " RHS Vec L2 Norm "<< globalRhsVec->L2Norm()<<std::endl;
   nonlinearSolver->solve(globalRhsVec, globalSolVec);
 
   thermalNonlinearOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
   AMP::pout<<"Final   Residual Norm for Step is: "<<globalResVec->L2Norm()<<std::endl;
+  expectedVal = 1.87257e-10;
+  if( !AMP::Utilities::approx_equal( expectedVal, globalResVec->L2Norm(), 1e-5) ) { 
+        ut->failure("the Final Residual Norm has changed."); }
 
   //---------------------------------------------------------------------------
 
