@@ -128,6 +128,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = meshAdapter->createVector( SpecificPowerVar );
 
   neutronicsOperator->apply(nullVec, nullVec, SpecificPowerVec, 1., 0.);
+  AMP::pout<<"L2 Norm of the SpecificPowerVec is: "<<SpecificPowerVec->L2Norm()<<std::endl;
 
   //----------------------------------------------------------
   //  Integrate Nuclear Rhs over Desnity * Volume //
@@ -149,6 +150,8 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
   // convert the vector of specific power to power for a given basis.
   sourceOperator->apply(nullVec, SpecificPowerVec, PowerInWattsVec, 1., 0.);
+  AMP::pout<<"L2 Norm of the PowerInWattsVec is: "<<PowerInWattsVec->L2Norm()<<std::endl;
+  AMP::pout<<"L2 Norm of the SpecificPowerVec is: "<<SpecificPowerVec->L2Norm()<<std::endl;
 
   //--------------------------------------
   AMP_INSIST(input_db->keyExists("NonlinearSolver"),   "Key ''NonlinearSolver'' is missing!");
@@ -239,10 +242,15 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   std::cout << " RHS Vec L2 Norm "<< globalRhsVec->L2Norm()<<std::endl;
   nonlinearSolver->solve(globalRhsVec, globalSolVec);
 
+  std::cout<<"Final Solution Norm: "<<globalSolVec->L2Norm()<<std::endl;
+  expectedVal = 51541;
+  if( !AMP::Utilities::approx_equal( expectedVal, globalSolVec->L2Norm(), 1e-5) ) {
+        ut->failure("the Final Solution Norm has changed."); }
+
   thermalNonlinearOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
   AMP::pout<<"Final   Residual Norm for Step is: "<<globalResVec->L2Norm()<<std::endl;
-  expectedVal = 1.87257e-10;
-  if( !AMP::Utilities::approx_equal( expectedVal, globalResVec->L2Norm(), 1e-5) ) {
+  expectedVal = 1.-10;
+  if( !AMP::Utilities::approx_equal( expectedVal, globalResVec->L2Norm(), 10) ) {
         ut->failure("the Final Residual Norm has changed."); }
 
   //---------------------------------------------------------------------------

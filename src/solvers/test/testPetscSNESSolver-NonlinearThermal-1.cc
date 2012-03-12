@@ -204,13 +204,18 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   nonlinearSolver->solve(rhsVec, solVec);
 
+  std::cout<<"Final Solution Norm: "<<solVec->L2Norm()<<std::endl;
+  expectedVal = 45431.3;
+  if( !AMP::Utilities::approx_equal( expectedVal, solVec->L2Norm(), 1e-5) ) {
+        ut->failure("the Final Solution Norm has changed."); }
+
   nonlinearThermalOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
 
   double finalResidualNorm  = resVec->L2Norm();
 
   std::cout<<"Final Residual Norm: "<<finalResidualNorm<<std::endl;
-  expectedVal = 1.23751e-10;
-  if( !AMP::Utilities::approx_equal( expectedVal, finalResidualNorm, 1e-5) ) {
+  expectedVal = 1.-10;
+  if( !AMP::Utilities::approx_equal( expectedVal, finalResidualNorm, 10) ) {
         ut->failure("the Final Residual Norm has changed."); }
 
   solVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
