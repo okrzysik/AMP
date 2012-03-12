@@ -58,8 +58,6 @@ namespace AMP {
 
         AMP::LinearAlgebra::Vector::shared_ptr d_burnup;
 
-        std::vector<unsigned int> d_dofIndices;
-
         std::vector<std::vector<double> > d_elementMassMatrix;
 
         boost::shared_ptr<MassLinearElement> d_massLinElem;

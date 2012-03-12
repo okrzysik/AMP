@@ -178,7 +178,7 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
         y = ( myIterator->coord() )[1];
         z = ( myIterator->coord() )[2];
         std::vector<size_t> gid;
-        nodalDofMap->getDOFs ( iterator->globalID() , gid);
+        nodalDofMap->getDOFs ( myIterator->globalID() , gid);
         double val, res, sol, src, err;
         res = resVec->getValueByGlobalID(gid[0]);
         sol = solVec->getValueByGlobalID(gid[0]);

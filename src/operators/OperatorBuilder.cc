@@ -798,6 +798,8 @@ OperatorBuilder::createMassLinearFEOperator( AMP::Mesh::Mesh::shared_ptr meshAda
   densityOpParams->d_densityModel = densityModel;
   densityOpParams->d_elemOp = densityLinElem;
   densityOpParams->d_Mesh = meshAdapter;
+  densityOpParams->d_inDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, 1, 1, true);
+  densityOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, 1, 1, true);
   boost::shared_ptr<AMP::Operator::MassLinearFEOperator> densityOp (new AMP::Operator::MassLinearFEOperator( densityOpParams ));
   
   return densityOp;
