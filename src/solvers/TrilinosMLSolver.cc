@@ -110,11 +110,11 @@ namespace AMP {
           if( d_mlOptions->d_aggregationAuxEnable || 
               d_mlOptions->d_nullSpaceType == "from coordinates")
           {
-              computeCoordinates( op );
+              computeCoordinates( d_pOperator );
           }
           if( d_mlOptions->d_nullSpaceType == "pre-computed" )
           {
-              computeNullSpace( op );
+              computeNullSpace( d_pOperator );
           }
         }
 
