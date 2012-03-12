@@ -29,8 +29,8 @@ FickLinearBVPOperator {
 
 ManufacturedSourceOperator {
     name = "MassLinearFEOperator"
-    InputVariable = "solution"
-    OutputVariable = "manufactured"
+    InputVariable = "concentration"
+    OutputVariable = "concentration"
     print_info_level = 3
     reset_reuses_matrix = TRUE
     FixedConcentration = 0.15
@@ -52,7 +52,7 @@ ManufacturedSourceOperator {
 FickDiffusionNonlinearFEOperator{
 	 name="DiffusionNonlinearFEOperator"
 	 InputVariable="concentration"
-	 OutputVariable="divergence"
+	 OutputVariable="concentration"
 	 print_info_level = 1
 	
 	 ActiveInputVariables { 
@@ -89,7 +89,7 @@ FickDirichletVectorCorrection{
 FickDiffusionLinearFEOperator{
       name="DiffusionLinearFEOperator"
       InputVariable="concentration"
-      OutputVariable="divergence"
+      OutputVariable="concentration"
       print_info_level = 3
 
      DiffusionElement {
