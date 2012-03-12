@@ -495,26 +495,6 @@ RobinVectorCorrection{
     value_0_0        =  0.0
 }
 
-DiffusionLinearFEOperator1{
-  name = "DiffusionLinearFEOperator"
-    print_info_level = 1
-    reset_reuses_matrix = TRUE
-    InputVariable = "Temperature"
-    OutputVariable = "Temperature"
-    FixedTemperature = FALSE
-    FixedConcentration = TRUE
-    FixedBurnup = FALSE 
-
-    DiffusionElement {
-      name = "DiffusionLinearElement"
-        TransportAtGaussPoints = TRUE
-        FE_ORDER = "FIRST"  
-        FE_FAMILY = "LAGRANGE"
-        QRULE_TYPE = "QGAUSS"
-        QRULE_ORDER = "DEFAULT"
-    }    
-}
-
 RobinMatrixCorrection{
   name="RobinMatrixCorrection"
     FE_ORDER = "FIRST"  
