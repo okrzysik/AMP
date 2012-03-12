@@ -152,6 +152,7 @@ namespace AMP {
       }
 
       d_elementOutputVector.resize(d_dofIndices.size(), 0.0);
+      for(unsigned int i = 0; i < d_dofIndices.size(); i++) { d_elementOutputVector[i] = 0.0; }
 
       d_srcNonlinElem->initializeForCurrentElement(d_currElemPtr,d_sourcePhysicsModel);
 

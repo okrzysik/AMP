@@ -19,7 +19,10 @@
 #include "ampmesh/SiloIO.h"
 
 #include "ampmesh/Mesh.h"
+#include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
+#include "vectors/Variable.h"
+#include "vectors/MultiVariable.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 
@@ -96,10 +99,14 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
   boost::shared_ptr<AMP::Operator::MassDensityModel> densityModel = sourceOp->getDensityModel();
   boost::shared_ptr<AMP::ManufacturedSolution> mfgSolution = densityModel->getManufacturedSolution();
 
-  // Set up input and output vectors
-  //AMP::LinearAlgebra::Variable::shared_ptr solVar = nlinOp->getInputVariable(nlinOp->getPrincipalVariableId());
-  ut->failure("Converted incorrectly");
-  AMP::LinearAlgebra::Variable::shared_ptr solVar = nlinOp->getInputVariable();
+  // Set up input and output variables
+  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> tmp = 
+      boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( nlinOp->getInputVariable() );
+  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> solVar(new AMP::LinearAlgebra::MultiVariable(tmp->getName()));
+  for (size_t i=0; i<tmp->numVariables(); i++) {
+      if ( tmp->getVariable(i).get() != NULL )
+          solVar->add( tmp->getVariable(i) );
+  }
   AMP::LinearAlgebra::Variable::shared_ptr rhsVar = nlinOp->getOutputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr resVar = nlinOp->getOutputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr sourceVar = sourceOp->getOutputVariable();
