@@ -48,7 +48,7 @@ void AsynchronousColumnOperator::append(boost::shared_ptr< Operator > op)
     else if ( boost::dynamic_pointer_cast<AsynchronousColumnOperator> ( op ) )
     {
       boost::shared_ptr<AsynchronousColumnOperator> aco = boost::dynamic_pointer_cast<AsynchronousColumnOperator> ( op );
-      for ( int i = 0 ; i != aco->getNumberOfOperators() ; i++ )
+      for ( size_t i = 0 ; i != aco->getNumberOfOperators() ; i++ )
       {
         append ( aco->getOperator ( i ) );
       }
