@@ -80,11 +80,44 @@ namespace AMP {
 
         d_MLParameterList.set("coarse: type", d_mlOptions->d_coarseType);
         d_MLParameterList.set("coarse: max size", d_mlOptions->d_coarseMaxSize);
+
+        d_MLParameterList.set("aggregation: aux: enable", d_mlOptions->d_aggregationAuxEnable);
+        d_MLParameterList.set("aggregation: aux: threshold", d_mlOptions->d_aggregationAuxThreshold);
+
+        d_MLParameterList.set("null space: type", d_mlOptions->d_nullSpaceType);
+        d_MLParameterList.set("null space: dimension", d_mlOptions->d_nullSpaceDimension);
+        d_MLParameterList.set("null space: add default vectors", d_mlOptions->d_nullSpaceAddDefaultVectors);
+
+        if( d_mlOptions->d_aggregationAuxEnable || 
+            d_mlOptions->d_nullSpaceType == "from coordinates" )
+        {
+          d_MLParameterList.set("x-coordinates", &d_x_values[0]);
+          d_MLParameterList.set("y-coordinates", &d_y_values[0]);
+          d_MLParameterList.set("z-coordinates", &d_z_values[0]);
+        }
+        if( d_mlOptions->d_nullSpaceType == "pre-computed" )
+        {
+            d_MLParameterList.set("null_space: vectors",&d_null_space[0]);
+        }
       }
 
     void
       TrilinosMLSolver::initialize(boost::shared_ptr<SolverStrategyParameters> const parameters)
       {
+        if(d_pOperator.get() != NULL)
+        {
+          // Compute coordinates to give to ML if requested
+          if( d_mlOptions->d_aggregationAuxEnable || 
+              d_mlOptions->d_nullSpaceType == "from coordinates")
+          {
+              computeCoordinates( op );
+          }
+          if( d_mlOptions->d_nullSpaceType == "pre-computed" )
+          {
+              computeNullSpace( op );
+          }
+        }
+
         getFromInput(parameters->d_db);
 
         if(d_pOperator.get() != NULL)
@@ -288,6 +321,67 @@ namespace AMP {
         }
       }
 
+    void 
+        TrilinosMLSolver::computeCoordinates( const boost::shared_ptr<AMP::Operator::Operator> op )
+        {
+            // Get mesh adapter for this operator
+            AMP::Mesh::MeshManager::Adapter::shared_ptr myMesh = op->getMeshAdapter();
+
+            // Resize vectors to hold node values
+            int numNodes = myMesh->numTotalNodes();
+            d_x_values.resize(numNodes,0.0);
+            d_y_values.resize(numNodes,0.0);
+            d_z_values.resize(numNodes,0.0);
+
+            // Get node iterators
+            AMP::Mesh::MeshManager::Adapter::NodeIterator thisNode = myMesh->beginNode();
+            AMP::Mesh::MeshManager::Adapter::NodeIterator  endNode = myMesh->endNode();
+
+            int nodeCounter = 0;
+            for( ; thisNode != endNode; ++thisNode )
+            {
+                d_x_values[nodeCounter] = (*thisNode).x();
+                d_y_values[nodeCounter] = (*thisNode).y();
+                d_z_values[nodeCounter] = (*thisNode).z();
+                nodeCounter++;
+            }
+        }
+
+    void 
+        TrilinosMLSolver::computeNullSpace( const boost::shared_ptr<AMP::Operator::Operator> op )
+        {
+            // Get mesh adapter for this operator
+            AMP::Mesh::MeshManager::Adapter::shared_ptr myMesh = op->getMeshAdapter();
+
+            // Resize vectors to hold node values
+            int numNodes = myMesh->numTotalNodes();
+            d_null_space.resize(9*numNodes,0.0);
+
+            // Get node iterators
+            AMP::Mesh::MeshManager::Adapter::NodeIterator thisNode = myMesh->beginNode();
+            AMP::Mesh::MeshManager::Adapter::NodeIterator  endNode = myMesh->endNode();
+
+            double thisX;
+            double thisY;
+            double thisZ;
+            int nodeCounter = 0;
+            for( ; thisNode != endNode; ++thisNode )
+            {
+                thisX = (*thisNode).x();
+                thisY = (*thisNode).y();
+                thisZ = (*thisNode).z();
+                d_null_space[3*nodeCounter]                    =  0.0;
+                d_null_space[3*nodeCounter+1]                  = -thisZ;
+                d_null_space[3*nodeCounter+2]                  =  thisY;
+                d_null_space[3*nodeCounter + 3*numNodes]       =  thisZ;
+                d_null_space[3*nodeCounter + 3*numNodes + 1]   =  0.0;
+                d_null_space[3*nodeCounter + 3*numNodes + 2]   = -thisX;
+                d_null_space[3*nodeCounter + 6*numNodes]       = -thisY;
+                d_null_space[3*nodeCounter + 6*numNodes + 1]   =  thisX;
+                d_null_space[3*nodeCounter + 6*numNodes + 2]   =  0.0;
+                nodeCounter++;
+            }
+        }
   }
 }
 
