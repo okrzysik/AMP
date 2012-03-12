@@ -76,32 +76,55 @@ void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)
   nonlinearThermoMechanicsOperator->append(nonlinearMechanicsOperator);
   nonlinearThermoMechanicsOperator->append(nonlinearThermalOperator);
 
-  AMP::Discretization::DOFManager::shared_ptr scalarDofMap = AMP::Discretization::simpleDOFManager::create(
-      meshAdapter, AMP::Mesh::Vertex, 1, 1, true); 
-
-  AMP::Discretization::DOFManager::shared_ptr vectorDofMap = AMP::Discretization::simpleDOFManager::create(
-      meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
-  ut->failure("this is an attempt to create vectors appropriately because there is a mixture of nodal scalar and nodal vector, but it did't work.");
-  return;
+  // Create the relavent DOF managers
+  int DOFsPerNode = 1;
+  int nodalGhostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
+  int displacementDOFsPerNode = 3;
+  AMP::Discretization::DOFManager::shared_ptr displDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, displacementDOFsPerNode, split);
+
   //----------------------------------------------------------------------------------------------------------------------------------------------//
+  // initialize the input multi-variable
+  boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> volumeOperator = boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsOperator->getVolumeOperator());
+  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputMultiVariable = 
+      boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( volumeOperator->getInputVariable() );
+  std::vector<AMP::LinearAlgebra::Variable::shared_ptr> inputVariables;
+  std::vector<AMP::Discretization::DOFManager::shared_ptr> inputDOFs;
+  for (size_t i=0; i<inputMultiVariable->numVariables(); i++) {
+      inputVariables.push_back( inputMultiVariable->getVariable(i) );
+      if ( i==AMP::Operator::Mechanics::DISPLACEMENT ) 
+          inputDOFs.push_back( displDofMap );
+      else if ( i==AMP::Operator::Mechanics::TEMPERATURE ) 
+          inputDOFs.push_back( nodalDofMap );
+      else if ( i==AMP::Operator::Mechanics::BURNUP ) 
+          inputDOFs.push_back( nodalDofMap );
+      else if ( i==AMP::Operator::Mechanics::OXYGEN_CONCENTRATION ) 
+          inputDOFs.push_back( nodalDofMap );
+      else if ( i==AMP::Operator::Mechanics::LHGR ) 
+          inputDOFs.push_back( nodalDofMap );
+      else if ( i==AMP::Operator::Mechanics::TOTAL_NUMBER_OF_VARIABLES ) 
+          inputDOFs.push_back( nodalDofMap );
+      else 
+          AMP_ERROR("Unknown variable");
+  }
+                          
+  // initialize the output variable
+  AMP::LinearAlgebra::Variable::shared_ptr outputVariable = nonlinearThermoMechanicsOperator->getOutputVariable();
 
   // create solution, rhs, and residual vectors
-std::vector<AMP::Discretization::DOFManager::shared_ptr> dofMapList;
-dofMapList.push_back(vectorDofMap);
-dofMapList.push_back(scalarDofMap);
-
-  AMP::Discretization::DOFManager::shared_ptr multiDofMap(
-      new AMP::Discretization::multiDOFManager(meshAdapter->getComm(), dofMapList));
-
-  // initialize the output multi-variable
-  AMP::LinearAlgebra::Variable::shared_ptr multiVar = nonlinearThermoMechanicsOperator->getOutputVariable();
-
-  // create solution, rhs, and residual vectors
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector(multiDofMap, multiVar, true);
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = resVec->cloneVector();
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = resVec->cloneVector();
+  boost::shared_ptr<AMP::LinearAlgebra::MultiVector> solVec = AMP::LinearAlgebra::MultiVector::create ( inputMultiVariable, meshAdapter->getComm() );
+  boost::shared_ptr<AMP::LinearAlgebra::MultiVector> rhsVec = AMP::LinearAlgebra::MultiVector::create ( outputVariable, meshAdapter->getComm() );
+  boost::shared_ptr<AMP::LinearAlgebra::MultiVector> resVec = AMP::LinearAlgebra::MultiVector::create ( outputVariable, meshAdapter->getComm() );
+  for (size_t i=0; i<inputVariables.size(); i++) {
+      if ( inputVariables[i].get() != NULL ) {
+          solVec->addVector( AMP::LinearAlgebra::createVector( inputDOFs[i], inputVariables[i] ) );
+          rhsVec->addVector( AMP::LinearAlgebra::createVector( inputDOFs[i], inputVariables[i] ) );
+          resVec->addVector( AMP::LinearAlgebra::createVector( inputDOFs[i], inputVariables[i] ) );
+      }
+  }
 
   //-----------------------------------------------------------------------//
   // set up the shift and scale parameters
@@ -129,7 +152,7 @@ dofMapList.push_back(scalarDofMap);
   //----------------------------------------------------------------------------//
   AMP::LinearAlgebra::Variable::shared_ptr thermVar = nonlinearThermalOperator->getOutputVariable();
   AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = 
-    AMP::LinearAlgebra::createVector(scalarDofMap, thermVar, true);
+    AMP::LinearAlgebra::createVector(nodalDofMap, thermVar, true);
   referenceTemperatureVec->setToScalar(300.0);
   nonlinearMechanicsVolumeOperator->setReferenceTemperature(referenceTemperatureVec);
 
