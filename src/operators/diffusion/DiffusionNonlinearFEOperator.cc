@@ -263,15 +263,7 @@ void DiffusionNonlinearFEOperator::postElementOperation()
     if( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionNonlinearFEOperator::postElementOperation, entering" << std::endl;
   
-    AMP::Discretization::DOFManager::shared_ptr DOF;
-    for (unsigned int var = 0; var < Diffusion::NUMBER_VARIABLES; var++) {
-        if (d_isActive[var]) {
-            DOF = (d_inVec[var])->getDOFManager();
-            break;
-        }
-    }
-    if ( DOF.get() == NULL )
-        AMP_ERROR("Valid DOF manager not found");
+    AMP::Discretization::DOFManager::shared_ptr DOF = d_outVec->getDOFManager();
 
     std::vector<size_t> d_dofIndices(d_currNodes.size()), dofs(1);
     for (size_t i=0; i<d_currNodes.size(); i++) {

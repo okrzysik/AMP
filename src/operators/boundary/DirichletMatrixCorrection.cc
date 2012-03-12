@@ -172,7 +172,7 @@ namespace AMP {
 
           if(d_dispVals.get() == NULL) {
             d_dispVals = inputMatrix->getRightVector();
-            AMP_ASSERT(d_dispVals->getVariable() == d_variable);
+            AMP_ASSERT(d_dispVals->getVariable()->operator==(*d_variable.get()));
           }
 
           d_dispVals->zero();
