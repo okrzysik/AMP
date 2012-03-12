@@ -50,7 +50,7 @@ void test_with_shape(AMP::UnitTest *ut )
     boost::shared_ptr<AMP::Database> shape_db = input_db->putDatabase("shape_db");
     shape_db->putString("coordinateSystem","cylindrical");
     shape_db->putString("type","zernikeRadial");
-    shape_db->putInteger("print_info_level",10);
+    shape_db->putInteger("print_info_level",1);
     
     // Create a DOF manager for a gauss point vector 
     int DOFsPerNode = 8;
