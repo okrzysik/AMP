@@ -120,8 +120,8 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
   //AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getInputVariable(AMP::Operator::Diffusion::CONCENTRATION));
   //AMP::LinearAlgebra::Variable::shared_ptr tVar(soretOp->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
   ut->failure("Converted incorrectly");
-  AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getInputVariable());
-  AMP::LinearAlgebra::Variable::shared_ptr tVar(soretOp->getInputVariable());
+  AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getOutputVariable());
+  AMP::LinearAlgebra::Variable::shared_ptr tVar(soretOp->getOutputVariable());
   boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> fsInpVar(new AMP::LinearAlgebra::MultiVariable("fsInput"));
   fsInpVar->add(cVar);
   fsInpVar->add(tVar);
@@ -136,7 +136,7 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
   //----------------------------------------------------------------------------------------------------------------------------------------------//
 
   // create solution, rhs, and residual vectors
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( nodalDofMap, fsInpVar );
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
   AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
   AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
 
