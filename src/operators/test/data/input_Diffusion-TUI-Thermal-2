@@ -24,8 +24,8 @@ ThermalLinearBVPOperator {
 
 DiffusionNonlinearFEOperator{
 	 name="DiffusionNonlinearFEOperator"
-	 InputVariable="nDiff"
-	 OutputVariable="nDiff"
+	 InputVariable="temperature"
+	 OutputVariable="temperature"
 	 print_info_level = 1
 	
 	 ActiveInputVariables { 
