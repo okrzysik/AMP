@@ -78,6 +78,13 @@ void myTest(AMP::UnitTest *ut, std::string mesh_file) {
 
     ut->passes("testMatMultiply");
 
+    // Free all data relying on mesh
+    DOFs.reset();
+    vec1.reset();
+    mat1.reset();
+    mat2.reset();
+    mat3.reset();
+
     // Free the mesh in the proper order
     myMeshAdapter.reset();
     myMesh.reset();
