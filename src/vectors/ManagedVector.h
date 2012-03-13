@@ -125,6 +125,7 @@ namespace LinearAlgebra {
 
       virtual bool isAnAliasOf ( Vector &rhs );
       virtual bool isAnAliasOf ( Vector::shared_ptr rhs );
+      using Vector::cloneVector;
       virtual boost::shared_ptr<Vector>  cloneVector ( const Variable::shared_ptr name ) const;
       virtual boost::shared_ptr<ParameterBase>  getParameters () ;
 

@@ -171,23 +171,24 @@ int main(int argc, char *argv[])
 
     AMP::UnitTest ut;
 
-  const int NUMFILES=6;
-  std::string files[NUMFILES] = {
+    const int NUMFILES=6;
+    std::string files[NUMFILES] = {
         "Diffusion-TUI-Thermal-2", "Diffusion-TUI-Fick-2", "Diffusion-TUI-Soret-2",
-      "Diffusion-UO2MSRZC09-Thermal-2", "Diffusion-UO2MSRZC09-Fick-2", "Diffusion-UO2MSRZC09-Soret-2"//,
-      //"Diffusion-TUI-Fick-3", "Diffusion-UO2MSRZC09-Fick-3"
-  };
+        "Diffusion-UO2MSRZC09-Thermal-2", "Diffusion-UO2MSRZC09-Fick-2", "Diffusion-UO2MSRZC09-Soret-2"//,
+        //"Diffusion-TUI-Fick-3", "Diffusion-UO2MSRZC09-Fick-3"
+    };
 
-    try {
     for (int i=0; i<NUMFILES; i++) {
-        bvpTest1(&ut, files[i]);    }
+        try {
+            bvpTest1(&ut, files[i]);
 
-    } catch (std::exception &err) {
-        std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-        ut.failure("ERROR: While testing");
-    } catch( ... ) {
-        std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-        ut.failure("ERROR: While testing");
+        } catch (std::exception &err) {
+            std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+            ut.failure("ERROR: While testing: "+files[i]);
+        } catch( ... ) {
+            std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+            ut.failure("ERROR: While testing: "+files[i]);
+        }
     }
 
     ut.report();
