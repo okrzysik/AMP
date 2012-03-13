@@ -1,14 +1,15 @@
+
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
 #include "ampmesh/SiloIO.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 
 #include "operators/mechanics/ThermalStrainMaterialModel.h"
 #include "operators/mechanics/MechanicsNonlinearElement.h"
@@ -30,12 +31,8 @@
 #include "solvers/PetscSNESSolver.h"
 #include "solvers/TrilinosMLSolver.h"
 
-
 #include <iostream>
 #include <string>
-
-#include "boost/shared_ptr.hpp"
-
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
@@ -51,41 +48,45 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   input_db->printClassData(AMP::plog);
 
   //Read the mesh
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "patchTestMesh" );
+  AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
+  boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
+  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+  meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+  AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
   //Create a nonlinear BVP operator for mechanics
   AMP_INSIST( input_db->keyExists("NonlinearMechanicsOperator"), "key missing!" );
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsBVPoperator = boost::dynamic_pointer_cast<
-  AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-										      "NonlinearMechanicsOperator",
-										      input_db,
-										      mechanicsMaterialModel));
+    AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+          "NonlinearMechanicsOperator", input_db, mechanicsMaterialModel));
 
   //Create a Linear BVP operator for mechanics
   AMP_INSIST( input_db->keyExists("LinearMechanicsOperator"), "key missing!" );
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearMechanicsBVPoperator = boost::dynamic_pointer_cast<
     AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-										     "LinearMechanicsOperator",
-										     input_db,
-										     mechanicsMaterialModel));
+          "LinearMechanicsOperator", input_db, mechanicsMaterialModel));
 
   //Create the variables
   boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsNonlinearVolumeOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
         nonlinearMechanicsBVPoperator->getVolumeOperator());
-  AMP::LinearAlgebra::Variable::shared_ptr dispVar = mechanicsNonlinearVolumeOperator->getInputVariable(AMP::Operator::Mechanics::DISPLACEMENT);
-  AMP::LinearAlgebra::Variable::shared_ptr tempVar = mechanicsNonlinearVolumeOperator->getInputVariable(AMP::Operator::Mechanics::TEMPERATURE);
+  AMP::LinearAlgebra::Variable::shared_ptr dispVar = mechanicsNonlinearVolumeOperator->getOutputVariable();
+  AMP::LinearAlgebra::Variable::shared_ptr tempVar(new AMP::LinearAlgebra::Variable("temp")); 
+
+  AMP::Discretization::DOFManager::shared_ptr tempDofMap = AMP::Discretization::simpleDOFManager::create(
+      meshAdapter, AMP::Mesh::Vertex, 1, 1, true); 
+
+  AMP::Discretization::DOFManager::shared_ptr dispDofMap = AMP::Discretization::simpleDOFManager::create(
+      meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
 
   //Create the vectors
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( dispVar );
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector( dispVar );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( dispVar );
-  AMP::LinearAlgebra::Vector::shared_ptr initTempVec = meshAdapter->createVector(tempVar);
-  AMP::LinearAlgebra::Vector::shared_ptr finalTempVec = meshAdapter->createVector(tempVar);
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector(dispDofMap, dispVar, true);
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = solVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr initTempVec = AMP::LinearAlgebra::createVector(tempDofMap, tempVar, true);
+  AMP::LinearAlgebra::Vector::shared_ptr finalTempVec = initTempVec->cloneVector();
 
   //Set Initial Temperature
   AMP_INSIST(input_db->keyExists("INIT_TEMP_CONST"), "key missing!");
@@ -165,32 +166,32 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
 int main(int argc, char *argv[])
 {
-    AMP::AMPManager::startup(argc, argv);
-    AMP::UnitTest ut;
-    
-    std::vector<std::string> mesh_files;
-    mesh_files.push_back("testElasticThermalPatch-1");
-    mesh_files.push_back("testElasticThermalPatch-2");
-    mesh_files.push_back("testElasticThermalPatch-3");
-    mesh_files.push_back("testElasticThermalPatch-4");
+  AMP::AMPManager::startup(argc, argv);
+  AMP::UnitTest ut;
 
-    for(size_t i = 0; i < mesh_files.size(); i++) {
-        try {
-            myTest(&ut, mesh_files[i]);
-        } catch (std::exception &err) {
-            std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-            ut.failure("ERROR: While testing");
-        } catch( ... ) {
-            std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-            ut.failure("ERROR: While testing");
-        }
+  std::vector<std::string> mesh_files;
+  mesh_files.push_back("testElasticThermalPatch-1");
+  mesh_files.push_back("testElasticThermalPatch-2");
+  mesh_files.push_back("testElasticThermalPatch-3");
+  mesh_files.push_back("testElasticThermalPatch-4");
+
+  for(size_t i = 0; i < mesh_files.size(); i++) {
+    try {
+      myTest(&ut, mesh_files[i]);
+    } catch (std::exception &err) {
+      std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+      ut.failure("ERROR: While testing");
+    } catch( ... ) {
+      std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+      ut.failure("ERROR: While testing");
     }
-   
-    ut.report();
+  }
 
-    int num_failed = ut.NumFailGlobal();
-    AMP::AMPManager::shutdown();
-    return num_failed;
+  ut.report();
+
+  int num_failed = ut.NumFailGlobal();
+  AMP::AMPManager::shutdown();
+  return num_failed;
 }   
 
 
