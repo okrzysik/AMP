@@ -88,36 +88,11 @@ namespace AMP {
         d_MLParameterList.set("null space: dimension", d_mlOptions->d_nullSpaceDimension);
         d_MLParameterList.set("null space: add default vectors", d_mlOptions->d_nullSpaceAddDefaultVectors);
 
-        if( d_mlOptions->d_aggregationAuxEnable || 
-            d_mlOptions->d_nullSpaceType == "from coordinates" )
-        {
-          d_MLParameterList.set("x-coordinates", &d_x_values[0]);
-          d_MLParameterList.set("y-coordinates", &d_y_values[0]);
-          d_MLParameterList.set("z-coordinates", &d_z_values[0]);
-        }
-        if( d_mlOptions->d_nullSpaceType == "pre-computed" )
-        {
-            d_MLParameterList.set("null_space: vectors",&d_null_space[0]);
-        }
       }
 
     void
       TrilinosMLSolver::initialize(boost::shared_ptr<SolverStrategyParameters> const parameters)
       {
-        if(d_pOperator.get() != NULL)
-        {
-          // Compute coordinates to give to ML if requested
-          if( d_mlOptions->d_aggregationAuxEnable || 
-              d_mlOptions->d_nullSpaceType == "from coordinates")
-          {
-              computeCoordinates( d_pOperator );
-          }
-          if( d_mlOptions->d_nullSpaceType == "pre-computed" )
-          {
-              computeNullSpace( d_pOperator );
-          }
-        }
-
         getFromInput(parameters->d_db);
 
         if(d_pOperator.get() != NULL)
@@ -133,6 +108,19 @@ namespace AMP {
         AMP_INSIST(d_pOperator.get()!=NULL,"ERROR: TrilinosMLSolver::initialize() operator cannot be NULL");
 
         if(d_bUseEpetra) {
+          if( d_mlOptions->d_aggregationAuxEnable || 
+              d_mlOptions->d_nullSpaceType == "from coordinates" )
+          {
+            computeCoordinates( op );
+            d_MLParameterList.set("x-coordinates", &d_x_values[0]);
+            d_MLParameterList.set("y-coordinates", &d_y_values[0]);
+            d_MLParameterList.set("z-coordinates", &d_z_values[0]);
+          }
+          if( d_mlOptions->d_nullSpaceType == "pre-computed" )
+          {
+              computeNullSpace( op );
+              d_MLParameterList.set("null_space: vectors",&d_null_space[0]);
+          }
           boost::shared_ptr<AMP::Operator::LinearOperator> linearOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pOperator);
           AMP_INSIST(linearOperator.get() != NULL, "linearOperator cannot be NULL");
 
