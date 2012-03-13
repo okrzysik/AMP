@@ -62,7 +62,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       new AMP::Mesh::libMesh (mesh, "TestMesh") );
 
   AMP_INSIST(input_db->keyExists("NumberOfLoadingSteps"), "Key ''NumberOfLoadingSteps'' is missing!");
-  //int NumberOfLoadingSteps = input_db->getInteger("NumberOfLoadingSteps");
 
   AMP_INSIST(input_db->keyExists("OutputFileName"), "Key ''OutputFileName'' is missing!");
   std::string outFileName = input_db->getString("OutputFileName");

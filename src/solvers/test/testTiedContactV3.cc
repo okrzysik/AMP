@@ -12,12 +12,12 @@
 
 #include "ampmesh/SiloIO.h"
 
-#include "boost/shared_ptr.hpp"
-
 #include "operators/ColumnOperator.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
+
+#if 0
 
 #include "ml_include.h"
 #include "solvers/MLoptions.h"
@@ -354,8 +354,10 @@ void createNonContactNodeList(std::vector<AMP::Mesh::MeshManager::Adapter::share
   }
 }
 
+#endif
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
+#if 0
   std::string input_file = "input_" + exeName;
   std::string log_file = "output_" + exeName;
 
@@ -568,6 +570,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 #ifdef USE_SILO
   manager->registerVectorAsData ( columnSolVec, "Displacement" );
   manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 1 );
+#endif
+
 #endif
 
   ut->passes(exeName);
