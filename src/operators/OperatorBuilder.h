@@ -26,6 +26,7 @@ class OperatorBuilder{
   
   static boost::shared_ptr<Operator>  createOperator( AMP::Mesh::Mesh::shared_ptr  mesh1,
 						      AMP::Mesh::Mesh::shared_ptr  mesh2,
+                              AMP::AMP_MPI comm,
 						      boost::shared_ptr<AMP::Database>  input_db);
   
   static boost::shared_ptr<BoundaryOperator>

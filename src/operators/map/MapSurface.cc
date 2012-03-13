@@ -17,11 +17,15 @@ MapSurface::MapSurface(const boost::shared_ptr<OperatorParameters> & params):
     boost::shared_ptr<AMP::Database> mapMaster_db = myparams->d_db->getDatabase("Map3Dto1D");
     mapMasterParams.reset(new AMP::Operator::MapOperatorParameters(mapMaster_db));
     mapMasterParams->d_Mesh = myparams->d_Mesh;
+    mapMasterParams->d_MapMesh = myparams->d_Mesh;
+    mapMasterParams->d_MapComm = myparams->d_Mesh->getComm();
     mapMaster.reset(new Map3Dto1D (mapMasterParams));
 
     boost::shared_ptr<AMP::Database> mapTarget_db = myparams->d_db->getDatabase("Map1Dto3D");
     mapTargetParams.reset(new AMP::Operator::MapOperatorParameters(mapTarget_db));
+    mapTargetParams->d_Mesh = myparams->d_MapMesh;
     mapTargetParams->d_MapMesh = myparams->d_MapMesh;
+    mapTargetParams->d_MapComm = myparams->d_MapMesh->getComm();
     mapTarget.reset(new Map1Dto3D (mapTargetParams));
 
     mapMaster->setZLocations(mapTarget->getZLocations());
