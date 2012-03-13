@@ -125,7 +125,6 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
   boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> fsInpVar(new AMP::LinearAlgebra::MultiVariable("fsInput"));
   fsInpVar->add(cVar);
   fsInpVar->add(tVar);
-  boost::shared_ptr<AMP::LinearAlgebra::Variable> fsOutVar(nlinBVPOp->getOutputVariable());
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // Create a DOF manager for a nodal vector 
