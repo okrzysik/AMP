@@ -19,6 +19,8 @@ Vector::shared_ptr  SubsetVector::view ( Vector::shared_ptr v , Variable::shared
     AMP_ASSERT( var.get() != NULL );
     // Subset the DOFManager and create a new communication list
     AMP::Discretization::DOFManager::shared_ptr subsetDOF_ptr = var->getSubsetDOF( v->getDOFManager() );
+    if ( subsetDOF_ptr.get() == NULL )
+        return Vector::shared_ptr();
     if ( subsetDOF_ptr->numGlobalDOF() == 0 )
         return Vector::shared_ptr();
     if ( subsetDOF_ptr==v->getDOFManager() )
