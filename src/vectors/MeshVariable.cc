@@ -8,8 +8,9 @@ namespace LinearAlgebra {
 MeshVariable::MeshVariable ( const std::string &name, AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm ):
     SubsetVariable ( name )
 {
-    d_useMeshComm = useMeshComm;
+    AMP_ASSERT(mesh.get()!=NULL);
     d_mesh = mesh;
+    d_useMeshComm = useMeshComm;
 }
 
 

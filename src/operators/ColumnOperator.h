@@ -23,7 +23,7 @@ namespace AMP {
         // the parameter object for the column operator is intentionally meant not to do
         // anything ColumnOperator specific. Please keep that way
         ColumnOperator(const boost::shared_ptr<OperatorParameters>& params)
-          : Operator () { (void) params; }
+          : Operator (params) { }
 
         /** Default empty constructor */
         ColumnOperator() : Operator() { }
