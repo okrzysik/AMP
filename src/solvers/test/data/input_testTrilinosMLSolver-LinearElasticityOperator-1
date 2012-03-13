@@ -1,14 +1,11 @@
 
-Mesh{
+Mesh {
+  MeshType = "libMesh"
+    dim = 3
+    MeshName = "TestMesh"
     FileName = "brick.e"
-    MeshName = "brick"
-    MeshType = "libMesh"
-    dim      = 3
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 1088
 }
+
 
 MechanicsBVPOperator {
   name="LinearBVPOperator"

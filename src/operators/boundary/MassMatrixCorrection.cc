@@ -49,55 +49,48 @@ namespace Operator {
         
         resetBoundaryIds(myParams);
         
-        //double diagVal = d_bSetIdentityOnDiagonal? 1.0:0.0;
+        double diagVal = d_bSetIdentityOnDiagonal? 1.0:0.0;
         
         AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = myParams->d_inputMatrix;
         AMP_INSIST( ((inputMatrix.get()) != NULL), "NULL matrix" );
         
-        AMP_ERROR("This needs to be fixed");
-/*        AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap ( d_variable );
+        AMP::LinearAlgebra::Vector::shared_ptr inVec = inputMatrix->getRightVector();
+        AMP::Discretization::DOFManager::shared_ptr dof_map = inVec->getDOFManager();
         
         unsigned int numIds = d_boundaryIds.size();
         
         for(unsigned int k = 0; k < numIds; k++) {
-            //This has to be a BoundarySharedNodeIterator and can not be a BoundaryOwnNodeIterator since
-            //1) we don't have access to "SharedElements".
-            //2) even we did have access to "SharedElements" and did a
-            //BoundaryOwnNodeIteration we can't avoid the makeConsistent since the dof
-            //of a sharedElement may be neither shared nor owned.
-            AMP::Mesh::MeshManager::Adapter::BoundaryNodeIterator bnd = d_MeshAdapter->beginBoundary( d_boundaryIds[k] );
-            AMP::Mesh::MeshManager::Adapter::BoundaryNodeIterator end_bnd = d_MeshAdapter->endBoundary( d_boundaryIds[k] );
             
+            AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryIds[k], 0 );
+            AMP::Mesh::MeshIterator end_bnd = bnd.end();
+
             for( ; bnd != end_bnd; ++bnd) {
-                AMP::Mesh::MeshManager::Adapter::NodeElementIterator el =  d_MeshAdapter->beginElementForNode ( *bnd );
-                AMP::Mesh::MeshManager::Adapter::NodeElementIterator end_el = d_MeshAdapter->endElementForNode ( *bnd );
+                std::vector<size_t> bndGlobalIds;
+                dof_map->getDOFs(bnd->globalID(), bndGlobalIds);
                 
-                std::vector<unsigned int> bndGlobalIds;
-                dof_map->getDOFs(*bnd, bndGlobalIds, d_dofIds[k]);
-                
-                for( ; el != end_el; ++el) {
-                    std::vector<unsigned int> dofIndices;
-                    dof_map->getDOFs(*el, dofIndices);
-                    
-                    for(unsigned int j = 0; j < bndGlobalIds.size(); j++) {
-                        for(unsigned int i = 0; i < dofIndices.size(); i++) {
-                            if(bndGlobalIds[j] == dofIndices[i]) {
-                                inputMatrix->setValueByGlobalID ( bndGlobalIds[j], bndGlobalIds[j], diagVal );
-                            } else {
-                                inputMatrix->setValueByGlobalID ( bndGlobalIds[j], dofIndices[i] , 0.0 );
-                                inputMatrix->setValueByGlobalID ( dofIndices[i], bndGlobalIds[j] , 0.0 );
-                            }
-                        }//end for i
-                    }//end for j
+                std::vector< AMP::Mesh::MeshElement::shared_ptr > neighbors = bnd->getNeighbors();
+
+                for(size_t n = 0; n < neighbors.size(); ++n) {
+
+                  for(unsigned int j = 0; j < d_dofIds[k].size(); ++j) {
+                    for(unsigned int i = 0; i < bndGlobalIds.size(); ++i) {
+
+                      if(d_dofIds[k][j] == i) {
+                        inputMatrix->setValueByGlobalID ( bndGlobalIds[j], bndGlobalIds[j], diagVal );
+                      } else {
+                        inputMatrix->setValueByGlobalID ( bndGlobalIds[d_dofIds[k][j]], bndGlobalIds[i] , 0.0 );
+                        inputMatrix->setValueByGlobalID ( bndGlobalIds[i], bndGlobalIds[d_dofIds[k][j]] , 0.0 );
+                      }
+                    }//end for i
+                  }//end for j
                 }//end for el
             }//end for bnd
         }//end for k
-*/
 
         //This does consistent for both "Sum-into" and "set".
         inputMatrix->makeConsistent();
     }
-    
+
 }
 }
 

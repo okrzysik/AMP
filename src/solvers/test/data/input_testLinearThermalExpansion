@@ -4,10 +4,6 @@ Mesh{
     MeshType = "libMesh"
     MeshName = "Pellet"
     dim      = 3
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 5226
 }
 
 MechanicsBVPOperator {
