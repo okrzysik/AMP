@@ -29,6 +29,7 @@ namespace AMP {
           : BoundaryOperator (params)
         {
           d_variable = params->d_variable;
+          d_computedAddRHScorrection = false;
           reset(params);
         }
 
@@ -116,6 +117,8 @@ namespace AMP {
         bool d_skipRHSaddCorrection;
 
         bool d_skipRHSsetCorrection;
+
+        bool d_computedAddRHScorrection;
 
       private :
 

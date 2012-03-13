@@ -1,9 +1,8 @@
-Mesh = "brick.e"
-
-NumberOfMeshes = 1
-Mesh_1{
-  Filename = "unitCubeDirichlet.e"
+Mesh{
+  FileName = "unitCubeDirichlet.e"
   MeshName = "ida"
+  MeshType = "libMesh"
+  dim      = 3        
   x_offset = 0.0
   y_offset = 0.0
   z_offset = 0.0
@@ -214,6 +213,7 @@ IDATimeIntegrator{
                              Preconditioner{
                                     print_info_level = 3
                                     max_iterations = 1
+                                    ResetColumnOperator = TRUE
                                     max_error = 1e-10
                                     thermalPreconditioner{
                                              print_info_level = 3

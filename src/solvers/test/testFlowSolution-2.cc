@@ -254,12 +254,14 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       boost::shared_ptr<AMP::InputDatabase> mapcladflow_db  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapCladto1DFlow"));
       boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapcladflowParams (new AMP::Operator::MapOperatorParameters( mapcladflow_db ));
       mapcladflowParams->d_Mesh = meshAdapter2;
+      mapcladflowParams->d_MapComm = surfaceMesh->getComm();  
       boost::shared_ptr<AMP::Operator::Map3Dto1D> mapCladTo1DFlow1 (new AMP::Operator::Map3Dto1D( mapcladflowParams ));
       boost::shared_ptr<AMP::Operator::Map3Dto1D> mapCladTo1DFlow2 (new AMP::Operator::Map3Dto1D( mapcladflowParams ));
 
       boost::shared_ptr<AMP::InputDatabase> mapflowclad_db  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("Map1DFlowto3DFlow"));
       boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowcladParams (new AMP::Operator::MapOperatorParameters( mapflowclad_db ));
       mapflowcladParams->d_Mesh = meshAdapter2;
+      mapflowcladParams->d_MapComm = surfaceMesh->getComm(); 
       boost::shared_ptr<AMP::Operator::Map1Dto3D> map1DFlowTo3DFlow1 (new AMP::Operator::Map1Dto3D( mapflowcladParams ));
       boost::shared_ptr<AMP::Operator::Map1Dto3D> map1DFlowTo3DFlow2 (new AMP::Operator::Map1Dto3D( mapflowcladParams ));
 

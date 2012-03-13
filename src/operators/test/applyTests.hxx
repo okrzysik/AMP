@@ -31,7 +31,7 @@ void adjust(AMP::LinearAlgebra::Vector::shared_ptr vec, const double shift, cons
 }
 
 void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
-    boost::shared_ptr<AMP::Operator::Operator> &testOperator,
+    boost::shared_ptr<AMP::Operator::Operator> testOperator,
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec, AMP::LinearAlgebra::Vector::shared_ptr solVec,
     AMP::LinearAlgebra::Vector::shared_ptr resVec, const double shift, const double scale)
 {
@@ -39,7 +39,7 @@ void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
 }
 
 void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
-    boost::shared_ptr<AMP::Operator::Operator> &testOperator,
+    boost::shared_ptr<AMP::Operator::Operator> testOperator,
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec, AMP::LinearAlgebra::Vector::shared_ptr solVec,
     AMP::LinearAlgebra::Vector::shared_ptr resVec, const double *shift, const double *scale, const size_t nshift)
 {

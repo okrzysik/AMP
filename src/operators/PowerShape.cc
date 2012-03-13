@@ -400,7 +400,7 @@ namespace AMP {
             d_fe->reinit( d_currElemPtr );
 
             // Loop over all gauss-points on the element.
-            for( unsigned int i = 0; i < DOFsPerElement; i++ ) {
+            for( int i = 0; i < DOFsPerElement; i++ ) {
               x = d_fe->get_xyz()[i](0);
               y = d_fe->get_xyz()[i](1);
               z = d_fe->get_xyz()[i](2);
@@ -457,7 +457,7 @@ namespace AMP {
             d_fe->reinit( d_currElemPtr );
 
             // Loop over all gauss-points on the element.
-            for( unsigned int i = 0; i < DOFsPerElement; i++ ) {
+            for( int i = 0; i < DOFsPerElement; i++ ) {
               x = d_fe->get_xyz()[i](0);
               y = d_fe->get_xyz()[i](1);
               z = d_fe->get_xyz()[i](2);
@@ -522,7 +522,7 @@ namespace AMP {
             d_fe->reinit( d_currElemPtr );
 
             // Loop over all gauss-points on the element.
-            for( unsigned int i = 0; i < DOFsPerElement; i++ ) {
+            for( int i = 0; i < DOFsPerElement; i++ ) {
               x = d_fe->get_xyz()[i](0)-centerx;
               y = d_fe->get_xyz()[i](1)-centery;
               z = d_fe->get_xyz()[i](2);
@@ -576,7 +576,7 @@ namespace AMP {
             d_fe->reinit( d_currElemPtr );
 
             // Loop over all gauss-points on the element.
-            for( unsigned int i = 0; i < DOFsPerElement; i++ ) {
+            for( int i = 0; i < DOFsPerElement; i++ ) {
               x = d_fe->get_xyz()[i](0)-centerx;
               y = d_fe->get_xyz()[i](1)-centery;
               z = d_fe->get_xyz()[i](2);
@@ -660,7 +660,7 @@ namespace AMP {
             d_fe->reinit( d_currElemPtr );
 
             // Loop over all gauss-points on the element.
-            for( unsigned int i = 0; i < DOFsPerElement; i++ ) {
+            for( int i = 0; i < DOFsPerElement; i++ ) {
               x = d_fe->get_xyz()[i](0)-centerx;
               y = d_fe->get_xyz()[i](1)-centery;
               z = d_fe->get_xyz()[i](2);
@@ -712,7 +712,7 @@ namespace AMP {
             d_fe->reinit( d_currElemPtr );
 
             // Loop over all gauss-points on the element.
-            for( unsigned int i = 0; i < DOFsPerElement; i++ ) {
+            for( int i = 0; i < DOFsPerElement; i++ ) {
               x = d_fe->get_xyz()[i](0)-centerx;
               y = d_fe->get_xyz()[i](1)-centery;
               z = d_fe->get_xyz()[i](2);
@@ -932,7 +932,7 @@ namespace AMP {
         double elemSum = 0;
         // Loop over all gauss-points on the element.
         int DOFsPerElement = 8;
-        for( unsigned int i = 0; i < DOFsPerElement; i++ ) {
+        for( int i = 0; i < DOFsPerElement; i++ ) {
           x = d_fe->get_xyz()[i](0) - cx;
           y = d_fe->get_xyz()[i](1) - cy;
           radius = sqrt ( x*x + y*y ) ;
