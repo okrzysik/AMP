@@ -382,6 +382,8 @@ int main(int argc, char *argv[])
 
   std::string exeName = "testContactV5";
 
+  AMP_ERROR("Not yet converted!");
+
   try {
     myTest(&ut, exeName);
   } catch (std::exception &err) {

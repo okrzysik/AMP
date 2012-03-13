@@ -12,8 +12,6 @@
 
 #include "ampmesh/SiloIO.h"
 
-#include "boost/shared_ptr.hpp"
-
 #include "operators/ColumnOperator.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
@@ -22,6 +20,7 @@
 #include "ml_include.h"
 #include "solvers/MLoptions.h"
 
+#if 0
 #include "TiedContactUtils.h"
 #include "MPCtestUtils.h"
 
@@ -504,7 +503,10 @@ void pcNoneApply(AMP::LinearAlgebra::Vector::shared_ptr fVec,
   uVec->copyVector(fVec);
 }
 
+#endif
+
 void myTest(AMP::UnitTest *ut, std::string exeName) {
+#if 0
   std::string input_file = "input_" + exeName;
   std::string log_file = "output_" + exeName;
 
@@ -739,6 +741,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 1 );
 #endif
 
+#endif
   ut->passes(exeName);
 }
 
@@ -746,6 +749,8 @@ int main(int argc, char *argv[])
 {
   AMP::AMPManager::startup(argc, argv);
   AMP::UnitTest ut;
+
+  AMP_ERROR("Not yet converted!");
 
   std::string exeName = "testTiedContactV2";
 

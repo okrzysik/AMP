@@ -28,6 +28,8 @@
 #include "solvers/MLoptions.h"
 #include "indexHolder.h"
 
+#if 0
+
 #include "ContactSearchUtils.h"
 
 void deformMesh(AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter,
@@ -633,7 +635,10 @@ void pcNoneApply(AMP::LinearAlgebra::Vector::shared_ptr fVec,
    }
    */
 
+#endif
+
 void myTest(AMP::UnitTest *ut, std::string exeName) {
+#if 0
   std::string input_file = "input_" + exeName;
   std::string log_file = "output_" + exeName;
 
@@ -1039,6 +1044,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   freeMyData();
 
+#endif
   ut->passes(exeName);
 }
 
@@ -1046,6 +1052,8 @@ int main(int argc, char *argv[])
 {
   AMP::AMPManager::startup(argc, argv);
   AMP::UnitTest ut;
+
+  AMP_ERROR("Not yet converted!");
 
   std::string exeName = "testContactV6";
 
