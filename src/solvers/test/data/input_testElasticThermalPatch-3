@@ -2,16 +2,13 @@
 INIT_TEMP_CONST = 117.56
 FINAL_TEMP_CONST = 217.56
 
-NumberOfMeshes = 1
-
-Mesh_1{
-  Filename = "elastic_thermal_patch_test.e"
-    MeshName = "patchTestMesh"
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 7
+Mesh {
+  MeshType = "libMesh"
+    dim = 3
+    MeshName = "TestMesh"
+    FileName = "elastic_thermal_patch_test.e"
 }
+
 
 NonlinearMechanicsOperator {
   name="NonlinearBVPOperator"
