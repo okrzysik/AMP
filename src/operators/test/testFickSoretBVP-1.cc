@@ -14,6 +14,8 @@
 #include "utils/PIO.h"
 
 #include "ampmesh/Mesh.h"
+#include "vectors/Variable.h"
+#include "vectors/MultiVariable.h"
 #include "vectors/VectorBuilder.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
@@ -117,11 +119,9 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
   }
 
   // Set up input and output vectors
-  //AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getInputVariable(AMP::Operator::Diffusion::CONCENTRATION));
-  //AMP::LinearAlgebra::Variable::shared_ptr tVar(soretOp->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
-  ut->failure("Converted incorrectly");
-  AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getOutputVariable());
-  AMP::LinearAlgebra::Variable::shared_ptr tVar(soretOp->getOutputVariable());
+  AMP::LinearAlgebra::Variable::shared_ptr cVar, tVar;
+  cVar = boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(fickOp->getInputVariable())->getVariable(AMP::Operator::Diffusion::CONCENTRATION);
+  tVar = boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(soretOp->getInputVariable())->getVariable(AMP::Operator::Diffusion::TEMPERATURE);
   boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> fsInpVar(new AMP::LinearAlgebra::MultiVariable("fsInput"));
   fsInpVar->add(cVar);
   fsInpVar->add(tVar);
@@ -136,9 +136,12 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
   //----------------------------------------------------------------------------------------------------------------------------------------------//
 
   // create solution, rhs, and residual vectors
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
+  boost::shared_ptr<AMP::LinearAlgebra::MultiVector> multivector = AMP::LinearAlgebra::MultiVector::create ( "mulitvector", meshAdapter->getComm() );
+  multivector->addVector( AMP::LinearAlgebra::createVector( nodalDofMap, cVar ) );
+  multivector->addVector( AMP::LinearAlgebra::createVector( nodalDofMap, tVar ) );
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = multivector;
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = solVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
 
   // set default values of input variables
   AMP::LinearAlgebra::Vector::shared_ptr inConcVec = solVec->subsetVectorForVariable(cVar);
@@ -185,17 +188,9 @@ int main(int argc, char *argv[])
         "FickSoret-BVP-TUI-1", "FickSoret-BVP-UO2MSRZC09-1"
   };
 
-    try {
-    for (int i=0; i<NUMFILES; i++) {
-        bvpTest1(&ut, files[i]);    }
+    for (int i=0; i<NUMFILES; i++) 
+        bvpTest1(&ut, files[i]);
 
-    } catch (std::exception &err) {
-        std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-        ut.failure("ERROR: While testing");
-    } catch( ... ) {
-        std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-        ut.failure("ERROR: While testing");
-    }
 
     ut.report();
 

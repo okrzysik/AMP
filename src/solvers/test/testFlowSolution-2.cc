@@ -75,9 +75,9 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
         AMP::Discretization::simpleDOFManager::create(manager,AMP::Mesh::Vertex,1,1,true);
     AMP::Discretization::DOFManager::shared_ptr flowNodalScalarDOF = 
         AMP::Discretization::simpleDOFManager::create(surfaceMesh,AMP::Mesh::Vertex,1,1,true);
-    int DOFsPerNode = 8;
+    int DOFsPerElement = 8;
     AMP::Discretization::DOFManager::shared_ptr gaussPointDOF1 = 
-        AMP::Discretization::simpleDOFManager::create(meshAdapter1,AMP::Mesh::Vertex,1,DOFsPerNode,true);
+        AMP::Discretization::simpleDOFManager::create(meshAdapter1,AMP::Mesh::Volume,1,DOFsPerElement,true);
 
     //--------------------------------------------------
     // Creating the parameters that will form the right-hand side for the thermal calculation.
@@ -241,10 +241,11 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       // CREATE MAP OPERATORS
       //-------------------------------------
       boost::shared_ptr<AMP::InputDatabase> mapCladToPellet_db = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapCladtoPellet"));
-      boost::shared_ptr<AMP::Operator::MapSurface> mapCladToPellet = boost::dynamic_pointer_cast<AMP::Operator::MapSurface>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter2, meshAdapter1, mapCladToPellet_db ));
+      boost::shared_ptr<AMP::Operator::MapSurface> mapCladToPellet = boost::dynamic_pointer_cast<AMP::Operator::MapSurface>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter2, meshAdapter1, globalComm, mapCladToPellet_db ));
 
       boost::shared_ptr<AMP::InputDatabase> mapPelletToClad_db = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapPellettoClad"));
-      boost::shared_ptr<AMP::Operator::MapSurface>    mapPelletToClad    = boost::dynamic_pointer_cast<AMP::Operator::MapSurface>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter1, meshAdapter2, mapPelletToClad_db ));
+      
+      boost::shared_ptr<AMP::Operator::MapSurface>    mapPelletToClad    = boost::dynamic_pointer_cast<AMP::Operator::MapSurface>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter1, meshAdapter2, globalComm, mapPelletToClad_db ));
 
       //---------------------------------------------------------------------------
       //
@@ -254,12 +255,14 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       boost::shared_ptr<AMP::InputDatabase> mapcladflow_db  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapCladto1DFlow"));
       boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapcladflowParams (new AMP::Operator::MapOperatorParameters( mapcladflow_db ));
       mapcladflowParams->d_Mesh = meshAdapter2;
+      mapcladflowParams->d_MapComm = surfaceMesh->getComm();  
       boost::shared_ptr<AMP::Operator::Map3Dto1D> mapCladTo1DFlow1 (new AMP::Operator::Map3Dto1D( mapcladflowParams ));
       boost::shared_ptr<AMP::Operator::Map3Dto1D> mapCladTo1DFlow2 (new AMP::Operator::Map3Dto1D( mapcladflowParams ));
 
       boost::shared_ptr<AMP::InputDatabase> mapflowclad_db  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("Map1DFlowto3DFlow"));
       boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowcladParams (new AMP::Operator::MapOperatorParameters( mapflowclad_db ));
-      mapflowcladParams->d_Mesh = meshAdapter2;
+      mapflowcladParams->d_MapMesh = meshAdapter2;
+      mapflowcladParams->d_MapComm = surfaceMesh->getComm(); 
       boost::shared_ptr<AMP::Operator::Map1Dto3D> map1DFlowTo3DFlow1 (new AMP::Operator::Map1Dto3D( mapflowcladParams ));
       boost::shared_ptr<AMP::Operator::Map1Dto3D> map1DFlowTo3DFlow2 (new AMP::Operator::Map1Dto3D( mapflowcladParams ));
 
@@ -268,7 +271,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       size_t flowVecSize = map1DFlowTo3DFlow1->getNumZlocations();
 
       boost::shared_ptr<AMP::InputDatabase> mapFlowToClad_db = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapFlowtoClad"));
-      boost::shared_ptr<AMP::Operator::MapSurface>    map3DFlowToClad    = boost::dynamic_pointer_cast<AMP::Operator::MapSurface>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter2, meshAdapter2, mapFlowToClad_db ));
+      boost::shared_ptr<AMP::Operator::MapSurface>    map3DFlowToClad    = boost::dynamic_pointer_cast<AMP::Operator::MapSurface>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter2, meshAdapter2, globalComm, mapFlowToClad_db ));
       //------------------------------------------
 
       AMP::LinearAlgebra::Vector::shared_ptr cladVec = AMP::LinearAlgebra::SimpleVector::create( flowVecSize , mapCladTo1DFlow1->getOutputVariable() );

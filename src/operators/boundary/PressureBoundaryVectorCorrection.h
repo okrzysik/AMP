@@ -36,54 +36,8 @@ namespace Operator {
       /**
         Constructor. This function reads all the parameters required for surface elements.
         */
-      PressureBoundaryVectorCorrection(const boost::shared_ptr<PressureBoundaryVectorCorrectionParameters> & params)
-        : BoundaryOperator (params)
-      {
-              d_params = params;
 
-          std::string feTypeOrderName = (params->d_db)->getStringWithDefault("FE_ORDER", "FIRST");
-
-          libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>(feTypeOrderName);
-
-          std::string feFamilyName = (params->d_db)->getStringWithDefault("FE_FAMILY", "LAGRANGE");
-
-          libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>(feFamilyName);
-
-          std::string qruleTypeName = (params->d_db)->getStringWithDefault("QRULE_TYPE", "QGAUSS");
-
-          libMeshEnums::QuadratureType qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>(qruleTypeName);
-
-              const unsigned int dimension3 = 3;
-
-          d_feType.reset( new ::FEType(feTypeOrder, feFamily) );
-
-          d_fe.reset( (::FEBase::build((dimension3 - 1), (*d_feType))).release() );
-
-          d_fe_3d.reset( (::FEBase::build(dimension3, (*d_feType))).release() );
-
-          std::string qruleOrderName = (params->d_db)->getStringWithDefault("QRULE_ORDER", "DEFAULT");
-
-          libMeshEnums::Order qruleOrder;
-
-          if(qruleOrderName == "DEFAULT") {
-              qruleOrder = d_feType->default_quadrature_order();
-          } else {
-              qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(qruleOrderName);
-          }
-
-          d_qrule.reset( (::QBase::build(qruleType, (dimension3 - 1), qruleOrder)).release() );
-
-          d_fe->attach_quadrature_rule( d_qrule.get() );
-
-          d_fe_3d->attach_quadrature_rule( d_qrule.get() );
-
-          d_JxW = &(d_fe->get_JxW());
-
-          d_variable = params->d_variable;
-
-          reset(params);
-      }
-
+    PressureBoundaryVectorCorrection(const boost::shared_ptr<PressureBoundaryVectorCorrectionParameters> & params);
       /**
         Set the variable for the vector that will be used with this operator.
         */
@@ -105,23 +59,15 @@ namespace Operator {
               AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
 
       /**
-        This function computes the surface integral for either constant pressure values 
-        across the boundary.
-        */
-      void computeRHScorrection();
-
-      /**
         This function reads parameters related to boundary Ids
         */
       virtual void reset(const boost::shared_ptr<OperatorParameters>& params);
 
       /**
-        Adds a vector to the RHS vector. 
+        This function computes the surface integral for either constant pressure values 
+        across the boundary.
         */
-      void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) {
-          AMP::LinearAlgebra::Vector::shared_ptr myRhs = rhs->subsetVectorForVariable(d_variable);
-          myRhs->add(myRhs, d_rhsCorrectionAdd);
-      }
+      void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) ;
 
       /**
         This function returns a parameter object that can be used to reset the corresponding
@@ -137,7 +83,7 @@ namespace Operator {
         d_variablePressure = pressure->subsetVectorForVariable(d_variable);
       }
 
-      std::vector<std::vector<std::vector<Point> > > getNormals();
+//      std::vector<std::vector<std::vector<Point> > > getNormals();
 
     protected :
 
@@ -179,6 +125,27 @@ namespace Operator {
       const ::Elem *e_elem;
 
       boost::shared_ptr<PressureBoundaryVectorCorrectionParameters> d_params;
+
+      void createCurrentLibMeshElement();
+
+      void destroyCurrentLibMeshElement();
+
+      void createCurrentLibMeshSide();
+
+      void destroyCurrentLibMeshSide();
+
+      void getDofIndicesForCurrentSide();
+
+      std::vector<AMP::Mesh::MeshElement> d_currNodes;
+      std::vector<AMP::Mesh::MeshElement> d_currFaces;
+
+      ::Elem* d_currElemPtr;
+      ::Elem* d_currSidePtr;
+      
+      std::vector<size_t> d_dofIndices; 
+
+      AMP::Discretization::DOFManager::shared_ptr d_dofManager; 
+
 
     private :
 

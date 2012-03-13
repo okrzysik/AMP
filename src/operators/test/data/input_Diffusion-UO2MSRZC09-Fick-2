@@ -45,8 +45,8 @@ DiffusionLinearFEOperator{
 
 DiffusionNonlinearFEOperator{
 	 name="DiffusionNonlinearFEOperator"
-	 InputVariable="nDiff"
-	 OutputVariable="nDiff"
+	 InputVariable="concentration"
+	 OutputVariable="concentration"
 	 print_info_level = 1
 	
 	 ActiveInputVariables { 

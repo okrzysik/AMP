@@ -112,6 +112,7 @@ public:
     virtual ~MultiVector();
 
     // Vector functions
+    using Vector::cloneVector;
     virtual void      selectInto ( const VectorSelector & , Vector::shared_ptr );
 
     virtual void      dumpOwnedData ( std::ostream &out , size_t GIDoffset=0 , size_t LIDoffset = 0 ) const;

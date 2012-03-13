@@ -1267,7 +1267,7 @@ OperatorBuilder::createPressureBoundaryVectorCorrection(AMP::Mesh::Mesh::shared_
 }
 
 boost::shared_ptr<Operator>
-OperatorBuilder::createOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter1,AMP::Mesh::Mesh::shared_ptr meshAdapter2,
+OperatorBuilder::createOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter1, AMP::Mesh::Mesh::shared_ptr meshAdapter2, AMP::AMP_MPI comm,
 				boost::shared_ptr<AMP::Database> input_db)
 {
   boost::shared_ptr<Operator> retOperator;
@@ -1278,7 +1278,8 @@ OperatorBuilder::createOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter1,AMP::Me
       boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapOperatorParameters (new AMP::Operator::MapOperatorParameters( input_db ) );
       
       mapOperatorParameters->d_Mesh = meshAdapter1;
-      mapOperatorParameters->d_MapMesh  = meshAdapter2;
+      mapOperatorParameters->d_MapMesh = meshAdapter2;
+      mapOperatorParameters->d_MapComm = comm;
       retOperator.reset(new AMP::Operator::MapSurface(mapOperatorParameters));
     }
   return retOperator;

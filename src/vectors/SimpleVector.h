@@ -60,6 +60,7 @@ namespace LinearAlgebra {
 
 
       virtual boost::shared_ptr<ParameterBase> getParameters ();
+      using Vector::cloneVector;
       virtual Vector::shared_ptr cloneVector(const Variable::shared_ptr name) const;
       virtual size_t  numberOfDataBlocks () const;
       virtual size_t  sizeOfDataBlock ( size_t i = 0 ) const;

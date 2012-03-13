@@ -29,7 +29,8 @@ namespace Operator {
       tmp_db1->putString("InputVariable",flowOutVar );
       tmp_db1->putString("OutputVariable","FlowInternal" );
       boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowInternal3to1Params (new AMP::Operator::MapOperatorParameters( tmp_db1 ));
-      mapflowInternal3to1Params->d_Mesh = (boost::dynamic_pointer_cast<AMP::Operator::Map3Dto1D> (myparams->d_Map3to1) )->getMesh();
+      mapflowInternal3to1Params->d_MapMesh = (boost::dynamic_pointer_cast<AMP::Operator::Map3Dto1D> (myparams->d_Map3to1) )->getMesh();
+      mapflowInternal3to1Params->d_MapComm = mapflowInternal3to1Params->d_MapMesh->getComm();
       d_flowInternal3to1.reset(new AMP::Operator::Map3Dto1D(mapflowInternal3to1Params) );
 
       (boost::dynamic_pointer_cast<AMP::Operator::Map3Dto1D> (d_flowInternal3to1))->setVector(d_flowInput);
@@ -42,7 +43,8 @@ namespace Operator {
       tmp_db2->putString("InputVariable","FlowInternal" );
       tmp_db2->putString("OutputVariable", flowOutVar );
       boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowInternal1to3Params (new AMP::Operator::MapOperatorParameters( tmp_db2 ));
-      mapflowInternal1to3Params->d_Mesh = (boost::dynamic_pointer_cast<AMP::Operator::Map3Dto1D> (myparams->d_Map3to1) )->getMesh();
+      mapflowInternal1to3Params->d_MapMesh = (boost::dynamic_pointer_cast<AMP::Operator::Map3Dto1D> (myparams->d_Map3to1) )->getMesh();
+      mapflowInternal1to3Params->d_MapComm = mapflowInternal1to3Params->d_MapMesh->getComm();
       d_flowInternal1to3.reset(new AMP::Operator::Map1Dto3D(mapflowInternal1to3Params) );
 
       (boost::dynamic_pointer_cast<AMP::Operator::Map3Dto1D> (d_flowInternal3to1) )->setZLocations( (boost::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_flowInternal1to3) )->getZLocations());

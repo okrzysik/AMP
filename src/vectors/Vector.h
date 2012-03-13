@@ -176,7 +176,7 @@ public:
       * \return  A Vector shared pointer
       * It will have the same number of blocks, each with the same engines and same number of entries.  The vector will be associated with the same Variable.
      */
-    Vector::shared_ptr cloneVector () const;
+    virtual Vector::shared_ptr cloneVector () const;
 
     /** \brief Allocate space in the same fashion as <i>this</i>
       * \param[in] name  Name to give the variable associated with this vector
@@ -185,7 +185,7 @@ public:
       * It will have the same number of blocks, each with the same engines and same 
       * number of entries.  The vector will be associated with a clone of the same Variable with the given name
      */
-    Vector::shared_ptr cloneVector ( const std::string &name ) const;
+    virtual Vector::shared_ptr cloneVector ( const std::string &name ) const;
 
     /** \brief Retrieve a sub-vector associated with a particular Variable
       * \param[in] name  Variable by which to retrieve a subvector

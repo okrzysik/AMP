@@ -110,6 +110,7 @@ namespace LinearAlgebra {
       // These are adequately documented in a base class.
     public:
       virtual void  swapVectors ( Vector &other );
+      using Vector::cloneVector;
       virtual Vector::shared_ptr  cloneVector ( const Variable::shared_ptr p ) const;
 
       virtual std::string type() const;
