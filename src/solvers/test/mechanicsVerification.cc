@@ -36,8 +36,9 @@
 #include "utils/MechanicsManufacturedSolutions.h"
 #include "utils/ReadTestMesh.h"
 
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/libmesh/libMesh.h"
 #include "ampmesh/SiloIO.h"
+#include "ampmesh/Mesh.h"
 
 #include "materials/Material.h"
 #include "materials/UO2_MSRZC_09.h"
@@ -62,29 +63,6 @@
 
 extern "C"{
 #include "petsc.h"
-}
-
-/** Post-processing: Move the mesh using the given displacement field */
-void deformMesh(AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter,
-    AMP::LinearAlgebra::Vector::shared_ptr mechSolVec) {
-  AMP::Mesh::DOFMap::shared_ptr dof_map = meshAdapter->getDOFMap( mechSolVec->getVariable() );
-
-  AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator nd = meshAdapter->beginOwnedNode();
-  AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator end_nd = meshAdapter->endOwnedNode();
-
-  std::vector <unsigned int> dofIds(3);
-  dofIds[0] = 0; dofIds[1] = 1; dofIds[2] = 2;
-
-  for( ; nd != end_nd; ++nd) {
-    std::vector<unsigned int> ndGlobalIds;
-    dof_map->getDOFs(*nd, ndGlobalIds, dofIds);
-
-    double xDisp = mechSolVec->getValueByGlobalID(ndGlobalIds[0]);
-    double yDisp = mechSolVec->getValueByGlobalID(ndGlobalIds[1]);
-    double zDisp = mechSolVec->getValueByGlobalID(ndGlobalIds[2]);
-
-    nd->translate(xDisp, yDisp, zDisp);
-  }//end for nd
 }
 
 void computeForcingTerms(AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter,
@@ -196,20 +174,19 @@ void linearElasticTest(AMP::UnitTest *ut,
   AMP::InputManager::getManager()->parseInputFile(inputFile, inputDatabase);
   inputDatabase->printClassData(AMP::plog);
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( inputDatabase ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter;
+  AMP::Mesh::Mesh::shared_ptr meshAdapter;
+  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit;
 
   //Regular grid mesh file
   bool useRegularGridMesh = inputDatabase->getBool("UseRegularGridMesh");
   if(useRegularGridMesh) {
-    std::string mesh_file = inputDatabase->getString("mesh_file");
 
+    libmeshInit = boost::shared_ptr<AMP::Mesh::initializeLibMesh>(new  AMP::Mesh::initializeLibMesh(AMP::AMP_MPI(AMP_COMM_WORLD)));
+    std::string mesh_file = inputDatabase->getString("mesh_file");
     const unsigned int mesh_dim = 3;
     boost::shared_ptr< ::Mesh > myMesh(new ::Mesh(mesh_dim));
 
     bool binaryMeshes = inputDatabase->getBool("BinaryMeshes");
-
     if(binaryMeshes) {
       AMP::readBinaryTestMesh(mesh_file, myMesh);
     } else {
@@ -220,19 +197,28 @@ void linearElasticTest(AMP::UnitTest *ut,
 
     myMesh->prepare_for_use(false);
 
-    meshAdapter.reset( new AMP::Mesh::MeshManager::Adapter (myMesh) );
+    meshAdapter = AMP::Mesh::Mesh::shared_ptr ( new AMP::Mesh::libMesh(myMesh,"myMesh") );
 
-    manager->addMesh(meshAdapter, "myMesh");
   } else {
+//--------------------------------------------------
+//   Create the Mesh.
+//--------------------------------------------------
+    AMP_INSIST(inputDatabase->keyExists("Mesh"), "Key ''Mesh'' is missing!");
+    boost::shared_ptr<AMP::Database>  mesh_db = inputDatabase->getDatabase("Mesh");
+    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+    boost::shared_ptr<AMP::Mesh::Mesh> manager = AMP::Mesh::Mesh::buildMesh(mgrParams);
+//--------------------------------------------------
+
     /** Reading the mesh */
     if (exeName == "mechanicsVerification-Cylinder") {
-      meshAdapter = manager->getMesh("cylinder");
+      meshAdapter = manager->Subset("cylinder");
     } 
     else if (exeName == "mechanicsVerification-HaldenPellet") {
-      meshAdapter = manager->getMesh("pellet");
+      meshAdapter = manager->Subset("pellet");
     }
     else {
-      meshAdapter = manager->getMesh("brick");
+      meshAdapter = manager->Subset("brick");
     }
   }
 
@@ -472,17 +458,20 @@ void linearElasticTest(AMP::UnitTest *ut,
     abort();
   }
 #ifdef USE_SILO
-  manager->registerVectorAsData(exactErrVec , "Exact_Error_Vector");
-  manager->registerVectorAsData(exactSolVec , "Exact_Solution_Vector");
-  manager->registerVectorAsData(solVec , "Solution_Vector");
-  manager->registerVectorAsData(resVec , "Residual_Vector");
+  AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+
+  siloWriter->registerVector( exactErrVec, meshAdapter , AMP::Mesh::Vertex, "Exact_Error_Vector");
+  siloWriter->registerVector( exactSolVec, meshAdapter  , AMP::Mesh::Vertex, "Exact_Solution_Vector");
+  siloWriter->registerVector( solVec, meshAdapter , AMP::Mesh::Vertex, "Solution_Vector");
+  siloWriter->registerVector( resVec, meshAdapter , AMP::Mesh::Vertex, "Residual_Vector");
+
   char outFileName1[256];
   sprintf(outFileName1, "undeformedBeam_%d", exampleNum);
-  manager->writeFile<AMP::Mesh::SiloIO>(outFileName1, 1);
-  deformMesh(meshAdapter, solVec);
+  siloWriter->writeFile( outFileName1, 1 );
+  meshAdapter->displaceMesh( solVec );
   char outFileName2[256];
   sprintf(outFileName2, "deformedBeam_%d", exampleNum);
-  manager->writeFile<AMP::Mesh::SiloIO>(outFileName2, 1);
+  siloWriter->writeFile( outFileName2, 1 );
 #endif
 
 }

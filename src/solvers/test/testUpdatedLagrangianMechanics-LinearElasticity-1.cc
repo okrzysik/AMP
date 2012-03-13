@@ -8,7 +8,6 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
 #include "ampmesh/SiloIO.h"
 
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
