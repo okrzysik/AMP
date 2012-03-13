@@ -11,12 +11,20 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/MeshAdapter.h"
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/Mesh.h"
+#include "ampmesh/libmesh/libMesh.h"
+
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 
 #include "libmesh.h"
+#include "mesh.h"
 #include "mesh_generation.h"
+#include "mesh_communication.h"
+#include "elem.h"
+#include "node.h"
+#include "cell_hex8.h"
+#include "boundary_info.h"
 
 #include "fe_type.h"
 #include "fe_base.h"
@@ -30,7 +38,6 @@
 #include "string_to_enum.h"
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
-  std::string input_file = "input_" + exeName;
   std::string log_file = "output_" + exeName;
 
   AMP::PIO::logOnlyNodeZero(log_file);
@@ -49,20 +56,24 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   (elemPtr->point(7))(0) -= 0.4;
 
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = AMP::Mesh::MeshManager::Adapter::shared_ptr (
-      new AMP::Mesh::MeshManager::Adapter (mesh) );
+  AMP::Mesh::Mesh::shared_ptr ampMesh = AMP::Mesh::Mesh::shared_ptr ( new AMP::Mesh::libMesh (mesh, "TestMesh") );
 
-  AMP::LinearAlgebra::Variable::shared_ptr myVar(new AMP::Mesh::NodalScalarVariable("myVar", meshAdapter)); 
-  AMP::LinearAlgebra::Vector::shared_ptr T = meshAdapter->createVector(myVar);
-
-  AMP::Mesh::DOFMap::shared_ptr dof_map = meshAdapter->getDOFMap(myVar);
+  AMP::LinearAlgebra::Variable::shared_ptr myVar(new AMP::LinearAlgebra::Variable("myVar")); 
+  AMP::Discretization::DOFManager::shared_ptr dof_map = AMP::Discretization::simpleDOFManager::create(ampMesh ,AMP::Mesh::Vertex,1,1,true);  
+  AMP::LinearAlgebra::Vector::shared_ptr T = AMP::LinearAlgebra::createVector( dof_map, myVar, true );
 
   FILE* fp; 
   fp = fopen("InverseJacobian.txt", "w");
   
-  for(int i = 0 ; i < 8; i++) {
-    AMP::Mesh::LibMeshNode nd = meshAdapter->getNode( i );
-    fprintf(fp, "nd = %d, x = %.15lf, y = %.15lf, z = %.15lf \n", i, nd.x(), nd.y(), nd.z());
+  AMP::Mesh::MeshIterator el = ampMesh->getIterator(AMP::Mesh::Volume, 0);
+  AMP::Mesh::MeshIterator end_el = el.end();
+  
+  while ( el!=end_el ) {
+    std::vector<AMP::Mesh::MeshElement> nodes = el->getElements(AMP::Mesh::Vertex);
+    for(int i = 0 ; i < nodes.size() ; i++) {
+      std::vector<double> pt = nodes[i].coord();
+      fprintf(fp, "nd = %d, x = %.15lf, y = %.15lf, z = %.15lf \n", i, pt[0], pt[1], pt[2] );
+    }
   }
 
   libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
@@ -71,14 +82,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   boost::shared_ptr < ::FEType > feType( new ::FEType(feTypeOrder, feFamily) );
   boost::shared_ptr < ::FEBase > fe( (::FEBase::build(3, (*feType))).release() );
 
-  const std::vector<std::vector<Real> > &phi = fe->get_phi();
+//  const std::vector<std::vector<Real> > &phi = fe->get_phi();
   const std::vector<std::vector<Real> > &dphidxi   = fe->get_dphidxi();
   const std::vector<std::vector<Real> > &dphideta  = fe->get_dphideta();
   const std::vector<std::vector<Real> > &dphidzeta = fe->get_dphidzeta();
   const std::vector<std::vector<Real> > &dphidx = fe->get_dphidx();
   const std::vector<std::vector<Real> > &dphidy = fe->get_dphidy();
   const std::vector<std::vector<Real> > &dphidz = fe->get_dphidz();
-  const std::vector<Real> &djxw = fe->get_JxW();
+//  const std::vector<Real> &djxw = fe->get_JxW();
 
   const std::vector<RealGradient> &dxyzdxi   = fe->get_dxyzdxi();
   const std::vector<RealGradient> &dxyzdeta  = fe->get_dxyzdeta();
@@ -90,15 +101,27 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
  
   fe->attach_quadrature_rule( qrule.get() );
     
-  AMP::Mesh::MeshManager::Adapter::ElementIterator  el = meshAdapter->beginElement();
-  
-  std::vector<unsigned int> d_dofIndices; 
-  dof_map->getDOFs (*el, d_dofIndices);
+  std::vector<AMP::Mesh::MeshElement> d_currNodes;
 
-  const ::Elem* currElemPtr = &(el->getElem());
+  std::vector<size_t> d_dofIndices; 
+  el = ampMesh->getIterator(AMP::Mesh::Volume, 0);
+  d_currNodes = el->getElements(AMP::Mesh::Vertex);
+
+  std::vector<AMP::Mesh::MeshElementID> globalIDs(d_currNodes.size()); 
+
+  for(unsigned int j = 0; j < d_currNodes.size(); j++) {
+    globalIDs[j] = d_currNodes[j].globalID();
+  } // end of j
+  dof_map->getDOFs(globalIDs, d_dofIndices);
+
+  ::Elem* currElemPtr ;
+  currElemPtr = new ::Hex8;
+  for(size_t j = 0; j < d_currNodes.size(); j++) {
+    std::vector<double> pt = d_currNodes[j].coord();
+    currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
+  }//end for j
+
   fe->reinit(currElemPtr);
-
-  unsigned int numNodes = el->numNodes();
 
   for(unsigned int i = 0; i < d_dofIndices.size(); i++) {
     T->setValueByGlobalID(d_dofIndices[i], 300*(i+1));
