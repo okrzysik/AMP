@@ -7,8 +7,12 @@
 #include "utils/Utilities.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/Mesh.h"
 #include "ampmesh/SiloIO.h"
+#include "ampmesh/libmesh/libMesh.h"
+#include "vectors/VectorBuilder.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include "operators/mechanics/ThermalStrainMaterialModel.h"
 #include "operators/mechanics/MechanicsNonlinearElement.h"
@@ -54,16 +58,19 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
+//--------------------------------------------------
+//   Create the Mesh.
+//--------------------------------------------------
+  boost::shared_ptr<AMP::Mesh::initializeLibMesh>  libmeshInit(new AMP::Mesh::initializeLibMesh(AMP::AMP_MPI(AMP_COMM_WORLD)));
+
   std::string mesh_file = input_db->getString("mesh_file");
   const unsigned int mesh_dim = 3;
   boost::shared_ptr< ::Mesh > mesh(new ::Mesh(mesh_dim));
   AMP::readTestMesh(mesh_file, mesh);
   MeshCommunication().broadcast(*(mesh.get()));
   mesh->prepare_for_use(false);
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter ( new AMP::Mesh::MeshManager::Adapter (mesh) );
-  manager->addMesh(meshAdapter, "cook");
+  AMP::Mesh::Mesh::shared_ptr meshAdapter ( new AMP::Mesh::libMesh(mesh,"cook") );
+//--------------------------------------------------
 
   AMP_INSIST(input_db->keyExists("NumberOfLoadingSteps"), "Key ''NumberOfLoadingSteps'' is missing!");
   int NumberOfLoadingSteps = input_db->getInteger("NumberOfLoadingSteps");
@@ -95,7 +102,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsNonlinearVolumeOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
         nonlinearMechanicsBVPoperator->getVolumeOperator());
-  AMP::LinearAlgebra::Variable::shared_ptr dispVar = mechanicsNonlinearVolumeOperator->getInputVariable(AMP::Operator::Mechanics::DISPLACEMENT);
+  AMP::LinearAlgebra::Variable::shared_ptr dispVar = mechanicsNonlinearVolumeOperator->getOutputVariable();
 
   //boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechanicsLinearVolumeOperator = 
   //  boost::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
@@ -110,12 +117,21 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 															 dummyModel));
   dirichletLoadVecOp->setVariable(dispVar);
 
+//--------------------------------------------------
+// Create a DOF manager for a nodal vector 
+//--------------------------------------------------
+  int DOFsPerNode = 3;
+  int nodalGhostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth,      DOFsPerNode,    split);
+//--------------------------------------------------
+
   //Create the vectors
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( dispVar );
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector( dispVar );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( dispVar );
-  AMP::LinearAlgebra::Vector::shared_ptr scaledRhsVec = meshAdapter->createVector( dispVar );
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( nodalDofMap, dispVar );
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = solVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr scaledRhsVec = solVec->cloneVector();
 
   //Initial guess
   solVec->zero();

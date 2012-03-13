@@ -1,4 +1,3 @@
-
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
@@ -9,11 +8,11 @@
 #include "utils/PIO.h"
 
 #include "ampmesh/Mesh.h"
-#include "ampmesh/libmesh/libMesh.h"
-
-#include "discretization/simpleDOF_Manager.h"
-#include "vectors/VectorBuilder.h"
 #include "ampmesh/SiloIO.h"
+#include "ampmesh/libmesh/libMesh.h"
+#include "vectors/VectorBuilder.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include "operators/mechanics/ThermalStrainMaterialModel.h"
 #include "operators/mechanics/MechanicsNonlinearElement.h"
@@ -38,8 +37,13 @@
 #include "ReadTestMesh.h"
 #include "mesh_communication.h"
 
+
 #include <iostream>
 #include <string>
+
+#include "boost/shared_ptr.hpp"
+
+
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
@@ -54,15 +58,19 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
+//--------------------------------------------------
+//   Create the Mesh.
+//--------------------------------------------------
+  boost::shared_ptr<AMP::Mesh::initializeLibMesh>  libmeshInit(new AMP::Mesh::initializeLibMesh(AMP::AMP_MPI(AMP_COMM_WORLD)));
+
   std::string mesh_file = input_db->getString("mesh_file");
   const unsigned int mesh_dim = 3;
   boost::shared_ptr< ::Mesh > mesh(new ::Mesh(mesh_dim));
   AMP::readTestMesh(mesh_file, mesh);
   MeshCommunication().broadcast(*(mesh.get()));
   mesh->prepare_for_use(false);
-
-  AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::shared_ptr (
-      new AMP::Mesh::libMesh (mesh, "TestMesh") );
+  AMP::Mesh::Mesh::shared_ptr meshAdapter ( new AMP::Mesh::libMesh(mesh,"cook") );
+//--------------------------------------------------
 
   AMP_INSIST(input_db->keyExists("NumberOfLoadingSteps"), "Key ''NumberOfLoadingSteps'' is missing!");
   int NumberOfLoadingSteps = input_db->getInteger("NumberOfLoadingSteps");
@@ -71,14 +79,19 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP_INSIST( input_db->keyExists("NonlinearMechanicsOperator"), "key missing!" );
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsBVPoperator = boost::dynamic_pointer_cast<
-    AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-          "NonlinearMechanicsOperator", input_db, mechanicsMaterialModel));
+  AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+										      "NonlinearMechanicsOperator",
+										      input_db,
+										      mechanicsMaterialModel));
+  (boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->getVolumeOperator()))->init();
 
   //Create a Linear BVP operator for mechanics
   AMP_INSIST( input_db->keyExists("LinearMechanicsOperator"), "key missing!" );
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearMechanicsBVPoperator = boost::dynamic_pointer_cast<
     AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-          "LinearMechanicsOperator", input_db, mechanicsMaterialModel));
+										     "LinearMechanicsOperator",
+										     input_db,
+										     mechanicsMaterialModel));
 
   //Create the variables
   boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsNonlinearVolumeOperator = 
@@ -86,19 +99,31 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
         nonlinearMechanicsBVPoperator->getVolumeOperator());
   AMP::LinearAlgebra::Variable::shared_ptr dispVar = mechanicsNonlinearVolumeOperator->getOutputVariable();
 
+  //boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechanicsLinearVolumeOperator = 
+  //  boost::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
+  //      linearMechanicsBVPoperator->getVolumeOperator());
+
   //For RHS (Point Forces)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletLoadVecOp =
     boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-          "Load_Boundary", input_db, dummyModel));
+															 "Load_Boundary",
+															 input_db,
+															 dummyModel));
   dirichletLoadVecOp->setVariable(dispVar);
 
-  AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
-      meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
+//--------------------------------------------------
+// Create a DOF manager for a nodal vector 
+//--------------------------------------------------
+  int DOFsPerNode = 3;
+  int nodalGhostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth,      DOFsPerNode,    split);
+//--------------------------------------------------
 
   //Create the vectors
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector(dofMap, dispVar, true);
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( nodalDofMap, dispVar );
   AMP::LinearAlgebra::Vector::shared_ptr rhsVec = solVec->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr scaledRhsVec = solVec->cloneVector();
@@ -203,12 +228,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     sprintf(num1,"%d",step);
     std::string number1 = num1;
     std::string fname = exeName + "_Stress_Strain_" + number1 + ".txt";
-
-    boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->
-        getVolumeOperator())->printStressAndStrain(solVec, fname);
+    
+    boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->getVolumeOperator())->printStressAndStrain(solVec, fname);
   }
 
   AMP::pout<<"epsilon = "<<epsilon<<std::endl;
+
+  //AMP::pout<<solVec<<std::endl;
 
   mechanicsNonlinearVolumeOperator->printStressAndStrain(solVec, output_file);
 
@@ -217,10 +243,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
 int main(int argc, char *argv[])
 {
-  AMP::AMPManager::startup(argc, argv);
-  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(AMP_COMM_WORLD));
-
-  AMP::UnitTest ut;
+    AMP::AMPManager::startup(argc, argv);
+    AMP::UnitTest ut;
 
   std::vector<std::string> exeNames;
   //exeNames.push_back("testElementLevel-IsotropicElasticity");
@@ -229,24 +253,23 @@ int main(int argc, char *argv[])
   //exeNames.push_back("testElementLevel-VonMisesKinematicHardeningPlasticity");
   exeNames.push_back("testElementLevel-VonMisesPlasticity-1");
 
-  for(unsigned int i = 0; i < exeNames.size(); i++) {
-    try {
-      myTest(&ut, exeNames[i]);
-    } catch (std::exception &err) {
-      std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-      ut.failure("ERROR: While testing");
-    } catch( ... ) {
-      std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-      ut.failure("ERROR: While testing");
+    for(unsigned int i = 0; i < exeNames.size(); i++) {
+        try {
+            myTest(&ut, exeNames[i]);
+        } catch (std::exception &err) {
+            std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+            ut.failure("ERROR: While testing");
+        } catch( ... ) {
+            std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+            ut.failure("ERROR: While testing");
+        }
     }
-  }
+   
+    ut.report();
 
-  ut.report();
-  int num_failed = ut.NumFailGlobal();
-
-  libmeshInit.reset();
-  AMP::AMPManager::shutdown();
-  return num_failed;
+    int num_failed = ut.NumFailGlobal();
+    AMP::AMPManager::shutdown();
+    return num_failed;
 }   
 
 
