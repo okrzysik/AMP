@@ -91,8 +91,8 @@ public:
      *   used by any AMP_MPI objects.
      * \param color  Control of subset assignment (nonnegative integer). 
      *               Processes with the same color are in the same new communicator .
-     * \param key    Control of rank assigment (integer).
      *               -1: processor will not be a member of any object (NULL object will be returned)
+     * \param key    Control of rank assigment (integer).
      *               Note that, for a fixed color, the keys need not be unique. The processes will be sorted 
      *               in ascending order according to this key, then all the processes in a given color will 
      *               have the relative rank order as they did in their parent group. (See MPI_Comm_split) 

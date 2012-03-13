@@ -230,7 +230,8 @@ void MultiVector::selectInto ( const VectorSelector &s , Vector::shared_ptr retV
     while ( cur != endVector() ) {
         Vector::shared_ptr  retVal = MultiVector::create ( "tmp_vector", (*cur)->getComm() );
         (*cur)->selectInto ( s , retVal );
-        subvectors.push_back( retVal );
+        if ( retVal->getDOFManager()->numGlobalDOF() > 0 )
+            subvectors.push_back( retVal );
         cur++;
     }
     // Add the subsets to the multivector
@@ -579,33 +580,63 @@ VectorEngine::shared_ptr MultiVector::cloneEngine ( VectorEngine::BufferPtr  ) c
 
 Vector::shared_ptr  MultiVector::subsetVectorForVariable ( const Variable::shared_ptr  &name )
 {
-    Vector::shared_ptr retVal_1;
+    // Subset a multivector for a variable
+    /* A variable used to contain a mesh and a name, now it only contains a name
+     * as a result we need to subset for the variable name (there may be many)
+     * and then create a new multivector if necessary */
+    AMP_ASSERT ( name.get()!=NULL );
 
-    AMP_ASSERT ( name );
-    retVal_1 = Vector::subsetVectorForVariable ( name );
-    if ( !retVal_1 ) {
-        for (size_t i=0; i!=d_vVectors.size(); i++) {
-            retVal_1 = d_vVectors[i]->subsetVectorForVariable ( name );
-            if ( retVal_1 )
-                break;
-        }
+    // Check if the variable matches the variable of the multivector
+    if ( *d_pVariable == *name ) {
+        return shared_from_this ();
     }
-    if ( !retVal_1 ) {
+
+    // Get a list of all sub vectors matching the variable
+    std::vector< Vector::shared_ptr > subvectors;
+    for (size_t i=0; i!=d_vVectors.size(); i++) {
+        Vector::shared_ptr subset = d_vVectors[i]->subsetVectorForVariable( name );
+        if ( subset.get() != NULL )
+            subvectors.push_back( subset );
+    }
+
+    // If no vectors were found, check if the variable is actually a multivariable and subset on it
+    const AMP_MPI &comm = getComm();
+    if ( comm.sumReduce(subvectors.size())==0 ) {
         boost::shared_ptr<MultiVariable> multivariable = boost::dynamic_pointer_cast<MultiVariable>(name);
         if ( multivariable.get() != NULL ) {
-            retVal_1 = create ( name , getComm() );
-            MultiVector  &out_vec = retVal_1->castTo<MultiVector> ();
+            bool all_found = true;
+            std::vector<Vector::shared_ptr> sub_subvectors(multivariable->numVariables());
             for (size_t i=0; i!=multivariable->numVariables(); i++) {
                 Vector::shared_ptr  t = subsetVectorForVariable ( multivariable->getVariable ( i ) );
                 if ( !t ) {
-                    retVal_1.reset ();
+                    all_found = false;
                     break;
                 }
-                out_vec.addVector ( t );
+                sub_subvectors[i] = t;
+            }
+            if ( all_found ) {
+                for (size_t i=0; i!=multivariable->numVariables(); i++)
+                    subvectors.push_back( sub_subvectors[i] );
             }
         }
     }
-    return retVal_1;
+
+    // Create the new vector
+    int N_procs = comm.sumReduce<int>(subvectors.size()>0?1:0);
+    if ( N_procs==0 )
+        return Vector::shared_ptr();
+    boost::shared_ptr<MultiVector> retVal;
+    if ( N_procs == comm.getSize() ) {
+        // All processor have a variable
+        retVal = create ( name, getComm() );
+        retVal->addVector( subvectors );
+    } else {
+        // Only a subset of processors have a variable
+        AMP_MPI new_comm = comm.split( subvectors.size()>0?0:-1, comm.getRank() );
+        retVal = create ( name, new_comm );
+        retVal->addVector( subvectors );
+    }
+    return retVal;
 }
 
 
