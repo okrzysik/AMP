@@ -1,3 +1,4 @@
+
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
@@ -7,6 +8,12 @@
 #include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
+
+#include "ampmesh/Mesh.h"
+#include "ampmesh/libmesh/libMesh.h"
+
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 
 #include "ampmesh/SiloIO.h"
 
@@ -30,16 +37,11 @@
 #include "ReadTestMesh.h"
 #include "mesh_communication.h"
 
-
 #include <iostream>
 #include <string>
 
-#include "boost/shared_ptr.hpp"
-
-
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
-  //std::string output_file = "output_" + exeName + ".txt";
   std::string log_file = "log_" + exeName;
 
   AMP::PIO::logOnlyNodeZero(log_file);
@@ -50,16 +52,15 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
   std::string mesh_file = input_db->getString("mesh_file");
   const unsigned int mesh_dim = 3;
   boost::shared_ptr< ::Mesh > mesh(new ::Mesh(mesh_dim));
   AMP::readTestMesh(mesh_file, mesh);
   MeshCommunication().broadcast(*(mesh.get()));
   mesh->prepare_for_use(false);
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter ( new AMP::Mesh::MeshManager::Adapter (mesh) );
-  manager->addMesh(meshAdapter, "cook");
+
+  AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::shared_ptr (
+      new AMP::Mesh::libMesh (mesh, "TestMesh") );
 
   AMP_INSIST(input_db->keyExists("NumberOfLoadingSteps"), "Key ''NumberOfLoadingSteps'' is missing!");
   int NumberOfLoadingSteps = input_db->getInteger("NumberOfLoadingSteps");
@@ -74,49 +75,39 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   //Create a nonlinear BVP operator for mechanics
   AMP_INSIST( input_db->keyExists("NonlinearMechanicsOperator"), "key missing!" );
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
-  //boost::shared_ptr<AMP::Database> nonlinearMechanicsDatabase = input_db->getDatabase("NonlinearMechanicsOperator");
-  //boost::shared_ptr<AMP::Database> dirichletVectorCorrectionDatabase = nonlinearMechanicsDatabase->getDatabase("BoundaryOperator");
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsBVPoperator = boost::dynamic_pointer_cast<
-  AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-										      "NonlinearMechanicsOperator",
-										      input_db,
-										      mechanicsMaterialModel));
-  (boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->getVolumeOperator()))->init();
+    AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(
+          meshAdapter, "NonlinearMechanicsOperator", input_db, mechanicsMaterialModel));
 
   //Create a Linear BVP operator for mechanics
   AMP_INSIST( input_db->keyExists("LinearMechanicsOperator"), "key missing!" );
   //boost::shared_ptr<AMP::Database> linearMechanicsDatabase = input_db->getDatabase("LinearMechanicsOperator");
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearMechanicsBVPoperator = boost::dynamic_pointer_cast<
-    AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-										     "LinearMechanicsOperator",
-										     input_db,										     
-										     mechanicsMaterialModel));
+    AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(
+          meshAdapter, "LinearMechanicsOperator", input_db, mechanicsMaterialModel));
 
   //Create the variables
   boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsNonlinearVolumeOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
         nonlinearMechanicsBVPoperator->getVolumeOperator());
-  AMP::LinearAlgebra::Variable::shared_ptr dispVar = mechanicsNonlinearVolumeOperator->getInputVariable(AMP::Operator::Mechanics::DISPLACEMENT);
-
-  //boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechanicsLinearVolumeOperator = 
-  //  boost::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
-  //      linearMechanicsBVPoperator->getVolumeOperator());
+  AMP::LinearAlgebra::Variable::shared_ptr dispVar = mechanicsNonlinearVolumeOperator->getOutputVariable();
 
   //For RHS (Point Forces)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
-  //boost::shared_ptr<AMP::Database> load_db = input_db->getDatabase("Load_Boundary");
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletLoadVecOp =
-    boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-															 "Load_Boundary",
-															 input_db, dummyModel));
+    boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+        AMP::Operator::OperatorBuilder::createOperator(meshAdapter, "Load_Boundary", input_db, dummyModel));
   dirichletLoadVecOp->setVariable(dispVar);
+
+  AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
+      meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
 
   //Create the vectors
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( dispVar );
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector( dispVar );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( dispVar );
-  AMP::LinearAlgebra::Vector::shared_ptr scaledRhsVec = meshAdapter->createVector( dispVar );
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector(dofMap, dispVar, true);
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = solVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr scaledRhsVec = solVec->cloneVector();
 
   //Initial guess
   solVec->zero();
@@ -165,10 +156,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   nonlinearSolver.reset(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
 
   nonlinearSolver->setZeroInitialGuess(false);
-/*
-  FILE *fout1;
-  fout1 = fopen("Loading_Loop.txt","w");
-*/
+  /*
+     FILE *fout1;
+     fout1 = fopen("Loading_Loop.txt","w");
+     */
   //double delta_displacement_shear = 0.00006;
   //double delta_displacement_axial = 0.00006;
 
@@ -176,42 +167,42 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   {
     AMP::pout << "########################################" << std::endl;
     AMP::pout << "The current loading step is " << (step+1) << std::endl;
-    
+
     nonlinearMechanicsBVPoperator->modifyInitialSolutionVector(solVec);
 
     double scaleValue;
-/*    double No5 = NumberOfLoadingSteps / 5;
-    double N2o5 = (2 * NumberOfLoadingSteps) / 5;
-    double N3o5 = (3 * NumberOfLoadingSteps) / 5;
-    double N4o5 = (4 * NumberOfLoadingSteps) / 5;
-    double N = NumberOfLoadingSteps;
-    if(step < No5) {
-      scaleValue = ((double)step+1.0) / ((double)No5);
-    }
-    if((step >= No5) && (step < N2o5)) {
-      scaleValue = 1.0 - (((double)step + 1.0 - (double)No5) / ((double)No5));
-    }
-    if((step >= N2o5) && (step < N3o5)) {
-      scaleValue = - (((double)step + 1.0 - (double)N2o5) / ((double)No5));
-    }
-    if((step >= N3o5) && (step < N4o5)) {
-      scaleValue = -1.0 + (((double)step + 1.0 - (double)N3o5) / ((double)No5));
-    }
-    if((step >= N4o5) && (step < N)) {
-      scaleValue = (((double)step + 1.0 - (double)N4o5) / ((double)No5));
-    }
-    fprintf(fout1,"%lf %lf\n",((double)step + 1.0),scaleValue);
-*/
-/*    double No2 = NumberOfLoadingSteps / 2;
-    double N = NumberOfLoadingSteps;
-    if(step < No2) {
-      scaleValue = ((double)step+1.0) / ((double)No2);
-    }
-    if((step >= No2) && (step < N)) {
-      scaleValue = 1.0 - (((double)step + 1.0 - (double)No2) / ((double)No2));
-    }
-    fprintf(fout1,"%lf %lf\n",((double)step + 1.0),scaleValue);
-*/
+    /*    double No5 = NumberOfLoadingSteps / 5;
+          double N2o5 = (2 * NumberOfLoadingSteps) / 5;
+          double N3o5 = (3 * NumberOfLoadingSteps) / 5;
+          double N4o5 = (4 * NumberOfLoadingSteps) / 5;
+          double N = NumberOfLoadingSteps;
+          if(step < No5) {
+          scaleValue = ((double)step+1.0) / ((double)No5);
+          }
+          if((step >= No5) && (step < N2o5)) {
+          scaleValue = 1.0 - (((double)step + 1.0 - (double)No5) / ((double)No5));
+          }
+          if((step >= N2o5) && (step < N3o5)) {
+          scaleValue = - (((double)step + 1.0 - (double)N2o5) / ((double)No5));
+          }
+          if((step >= N3o5) && (step < N4o5)) {
+          scaleValue = -1.0 + (((double)step + 1.0 - (double)N3o5) / ((double)No5));
+          }
+          if((step >= N4o5) && (step < N)) {
+          scaleValue = (((double)step + 1.0 - (double)N4o5) / ((double)No5));
+          }
+          fprintf(fout1,"%lf %lf\n",((double)step + 1.0),scaleValue);
+          */
+    /*    double No2 = NumberOfLoadingSteps / 2;
+          double N = NumberOfLoadingSteps;
+          if(step < No2) {
+          scaleValue = ((double)step+1.0) / ((double)No2);
+          }
+          if((step >= No2) && (step < N)) {
+          scaleValue = 1.0 - (((double)step + 1.0 - (double)No2) / ((double)No2));
+          }
+          fprintf(fout1,"%lf %lf\n",((double)step + 1.0),scaleValue);
+          */
     //double No4 = NumberOfLoadingSteps / 4;
     //double No2 = NumberOfLoadingSteps / 2;
     //double N3o4 = (3 * NumberOfLoadingSteps) / 4;
@@ -258,65 +249,65 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
         AMP::Operator::MechanicsNonlinearFEOperatorParameters(tmp_db));
     (nonlinearMechanicsBVPoperator->getVolumeOperator())->reset(tmpParams);
 
-/*    if(step < (No4 - 1)) {
-      dirichletVectorCorrectionDatabase->putDouble("value_1_0", (((double)(step + 2))*delta_displacement_axial));
-      dirichletVectorCorrectionDatabase->putDouble("value_2_0", 0.0);
-      boost::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new 
+    /*    if(step < (No4 - 1)) {
+          dirichletVectorCorrectionDatabase->putDouble("value_1_0", (((double)(step + 2))*delta_displacement_axial));
+          dirichletVectorCorrectionDatabase->putDouble("value_2_0", 0.0);
+          boost::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new 
           AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
-      (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
-      fprintf(fout1,"%d %le %le\n",step,(((double)(step + 2))*delta_displacement_axial),0.0);
-    }
-    if((step >= (No4 - 1)) && (step < (No2 - 1))) {
-      dirichletVectorCorrectionDatabase->putDouble("value_1_0", 0.6);
-      dirichletVectorCorrectionDatabase->putDouble("value_2_0", (((double)(step + 2 - No4))*delta_displacement_shear));
-      boost::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new 
+          (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
+          fprintf(fout1,"%d %le %le\n",step,(((double)(step + 2))*delta_displacement_axial),0.0);
+          }
+          if((step >= (No4 - 1)) && (step < (No2 - 1))) {
+          dirichletVectorCorrectionDatabase->putDouble("value_1_0", 0.6);
+          dirichletVectorCorrectionDatabase->putDouble("value_2_0", (((double)(step + 2 - No4))*delta_displacement_shear));
+          boost::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new 
           AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
-      (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
-      fprintf(fout1,"%d %le %le\n",step,0.3,(((double)(step + 2 - No4))*delta_displacement_shear));
-    }
-    if((step >= (No2 - 1)) && (step < (N3o4 - 1))) {
-      dirichletVectorCorrectionDatabase->putDouble("value_1_0", (0.6 - (((double)(step + 2 - No2))*delta_displacement_axial)));
-      dirichletVectorCorrectionDatabase->putDouble("value_2_0", 0.6);
-      boost::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new 
+          (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
+          fprintf(fout1,"%d %le %le\n",step,0.3,(((double)(step + 2 - No4))*delta_displacement_shear));
+          }
+          if((step >= (No2 - 1)) && (step < (N3o4 - 1))) {
+          dirichletVectorCorrectionDatabase->putDouble("value_1_0", (0.6 - (((double)(step + 2 - No2))*delta_displacement_axial)));
+          dirichletVectorCorrectionDatabase->putDouble("value_2_0", 0.6);
+          boost::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new 
           AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
-      (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
-      fprintf(fout1,"%d %le %le\n",step,(0.3 - (((double)(step + 2 - No2))*delta_displacement_axial)),0.3);
-    }
-    if((step >= (N3o4 - 1)) && (step < N)) {
-      dirichletVectorCorrectionDatabase->putDouble("value_1_0", 0.0);
-      dirichletVectorCorrectionDatabase->putDouble("value_2_0", (0.6 - (((double)(step + 2 - N3o4))*delta_displacement_shear)));
-      boost::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new 
+          (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
+          fprintf(fout1,"%d %le %le\n",step,(0.3 - (((double)(step + 2 - No2))*delta_displacement_axial)),0.3);
+          }
+          if((step >= (N3o4 - 1)) && (step < N)) {
+          dirichletVectorCorrectionDatabase->putDouble("value_1_0", 0.0);
+          dirichletVectorCorrectionDatabase->putDouble("value_2_0", (0.6 - (((double)(step + 2 - N3o4))*delta_displacement_shear)));
+          boost::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new 
           AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
-      (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
-      fprintf(fout1,"%d %le %le\n",step,0.0,(0.3 - (((double)(step + 2 - N3o4))*delta_displacement_shear)));
-    }
-*/    
-    
-/*    if(step == 0) {
-      dirichletVectorCorrectionDatabase->putDouble("value_1_0", 0.3);
-      dirichletVectorCorrectionDatabase->putDouble("value_2_0", 0.3);
-      boost::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new 
+          (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
+          fprintf(fout1,"%d %le %le\n",step,0.0,(0.3 - (((double)(step + 2 - N3o4))*delta_displacement_shear)));
+          }
+          */    
+
+    /*    if(step == 0) {
+          dirichletVectorCorrectionDatabase->putDouble("value_1_0", 0.3);
+          dirichletVectorCorrectionDatabase->putDouble("value_2_0", 0.3);
+          boost::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new 
           AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
-      (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
-      fprintf(fout1,"%d %le %le\n",step,(((double)(step + 2))*0.003),0.0);
-    }
-    if(step == 1) {
-      dirichletVectorCorrectionDatabase->putDouble("value_1_0", 0.0);
-      dirichletVectorCorrectionDatabase->putDouble("value_2_0", 0.3);
-      boost::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new 
+          (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
+          fprintf(fout1,"%d %le %le\n",step,(((double)(step + 2))*0.003),0.0);
+          }
+          if(step == 1) {
+          dirichletVectorCorrectionDatabase->putDouble("value_1_0", 0.0);
+          dirichletVectorCorrectionDatabase->putDouble("value_2_0", 0.3);
+          boost::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new 
           AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
-      (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
-      fprintf(fout1,"%d %le %le\n",step,0.3,(((double)(step + 2 - No4))*0.003));
-    }
-    if((step == 2) || (step == 3)) {
-      dirichletVectorCorrectionDatabase->putDouble("value_1_0", 0.0);
-      dirichletVectorCorrectionDatabase->putDouble("value_2_0", 0.0);
-      boost::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new 
+          (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
+          fprintf(fout1,"%d %le %le\n",step,0.3,(((double)(step + 2 - No4))*0.003));
+          }
+          if((step == 2) || (step == 3)) {
+          dirichletVectorCorrectionDatabase->putDouble("value_1_0", 0.0);
+          dirichletVectorCorrectionDatabase->putDouble("value_2_0", 0.0);
+          boost::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> bndParams(new 
           AMP::Operator::DirichletVectorCorrectionParameters(dirichletVectorCorrectionDatabase));
-      (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
-      fprintf(fout1,"%d %le %le\n",step,(0.3 - (((double)(step + 2 - No2))*0.003)),0.3);
-    }
-*/    
+          (nonlinearMechanicsBVPoperator->getBoundaryOperator())->reset(bndParams);
+          fprintf(fout1,"%d %le %le\n",step,(0.3 - (((double)(step + 2 - No2))*0.003)),0.3);
+          }
+          */    
     nonlinearSolver->setZeroInitialGuess(false);
 
     //std::cout<<solVec<<std::endl;
@@ -334,12 +325,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     }//end for i
 
     /*char num1[256];
-    sprintf(num1,"%d",step);
-    std::string number1 = num1;
-    std::string fname = exeName + "_Stress_Strain_" + number1 + ".txt";
-    
-    boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->getVolumeOperator())->printStressAndStrain(solVec, fname);
-    */
+      sprintf(num1,"%d",step);
+      std::string number1 = num1;
+      std::string fname = exeName + "_Stress_Strain_" + number1 + ".txt";
+
+      boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->getVolumeOperator())->printStressAndStrain(solVec, fname);
+      */
   }
 
   //fclose(fout1);
@@ -355,8 +346,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
 int main(int argc, char *argv[])
 {
-    AMP::AMPManager::startup(argc, argv);
-    AMP::UnitTest ut;
+  AMP::AMPManager::startup(argc, argv);
+  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(AMP_COMM_WORLD));
+
+  AMP::UnitTest ut;
 
   std::vector<std::string> exeNames;
   //exeNames.push_back("testUpdatedLagrangianMechanics-LinearElasticity-1");
@@ -364,23 +357,24 @@ int main(int argc, char *argv[])
   exeNames.push_back("testUpdatedLagrangianMechanics-LinearElasticity-1b");
   //exeNames.push_back("testUpdatedLagrangianMechanics-LinearElasticity-1c");
 
-    for(size_t i = 0; i < exeNames.size(); i++) {
-        try {
-            myTest(&ut, exeNames[i]);
-        } catch (std::exception &err) {
-            std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-            ut.failure("ERROR: While testing");
-        } catch( ... ) {
-            std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-            ut.failure("ERROR: While testing");
-        }
+  for(size_t i = 0; i < exeNames.size(); i++) {
+    try {
+      myTest(&ut, exeNames[i]);
+    } catch (std::exception &err) {
+      std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+      ut.failure("ERROR: While testing");
+    } catch( ... ) {
+      std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+      ut.failure("ERROR: While testing");
     }
+  }
 
-    ut.report();
+  ut.report();
+  int num_failed = ut.NumFailGlobal();
 
-    int num_failed = ut.NumFailGlobal();
-    AMP::AMPManager::shutdown();
-    return num_failed;
+  libmeshInit.reset();
+  AMP::AMPManager::shutdown();
+  return num_failed;
 }   
 
 
