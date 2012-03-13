@@ -4,8 +4,6 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
-#include "boost/shared_ptr.hpp"
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -22,7 +20,9 @@
 #include "fe_interface.h"
 #include "cell_hex8.h"
 
-#include "ContactSearchUtils.h"
+//#include "ContactSearchUtils.h"
+
+#if 0
 
 void pcNoneApply(AMP::LinearAlgebra::Vector::shared_ptr fVec,
     AMP::LinearAlgebra::Vector::shared_ptr uVec) {
@@ -185,7 +185,10 @@ void slaveToMasterCorrection(AMP::Mesh::MeshManager::Adapter::shared_ptr slaveMe
   vec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
 }
 
+#endif
+
 void myTest(AMP::UnitTest *ut, std::string exeName) {
+#if 0
   std::string input_file = "input_" + exeName;
   std::string log_file = "output_" + exeName;
 
@@ -365,6 +368,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 #ifdef USE_SILO
   manager->registerVectorAsData ( columnSolVec, "Displacement" );
   manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 1 );
+#endif
+
 #endif
 
   ut->passes(exeName);
