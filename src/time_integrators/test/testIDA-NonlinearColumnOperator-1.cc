@@ -328,7 +328,19 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
       cout << "max val of the current solution = " << max << endl;
       cout << "min val of the current solution = " << min << endl;
     }
-  
+
+    if( input_file == "input_testIDA-NonlinearColumnOperator-1" ) {
+      double expectedMax = 892.1023;      // if you change the code in way that intentionally changes the solution, you need to update this number.
+      double expectedMin = 750.;          // if you change the code in way that intentionally changes the solution, you need to update this number.
+      double expectedTim = 1000.;         // if you change the code in way that intentionally changes the solution, you need to update this number.
+      if( !AMP::Utilities::approx_equal( expectedMax, max, 1e-6) ) {
+        ut->failure("the max solution for input file: "+input_file+" has changed."); }
+      if( !AMP::Utilities::approx_equal( expectedMin, min, 1e-6) ) {
+        ut->failure("the min solution for input file: "+input_file+" has changed."); }
+      if( !AMP::Utilities::approx_equal( expectedTim, current_time, 1e-6) ) {
+        ut->failure("the final time   for input file: "+input_file+" has changed."); }
+    }
+ 
 #else
     ut->passes("IDA will not fail a test if there is no IDA.");
 #endif  
