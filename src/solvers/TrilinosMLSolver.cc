@@ -87,7 +87,6 @@ namespace AMP {
         d_MLParameterList.set("null space: type", d_mlOptions->d_nullSpaceType);
         d_MLParameterList.set("null space: dimension", d_mlOptions->d_nullSpaceDimension);
         d_MLParameterList.set("null space: add default vectors", d_mlOptions->d_nullSpaceAddDefaultVectors);
-
       }
 
     void
@@ -99,6 +98,7 @@ namespace AMP {
         {
           registerOperator(d_pOperator);
         }
+
       }
 
     void
@@ -108,19 +108,34 @@ namespace AMP {
         AMP_INSIST(d_pOperator.get()!=NULL,"ERROR: TrilinosMLSolver::initialize() operator cannot be NULL");
 
         if(d_bUseEpetra) {
+          // Compute coordinates to give to ML if requested
           if( d_mlOptions->d_aggregationAuxEnable || 
-              d_mlOptions->d_nullSpaceType == "from coordinates" )
+              d_mlOptions->d_nullSpaceType == "from coordinates")
           {
             computeCoordinates( op );
+            AMP_ASSERT( d_x_values.size() != 0 );
+            AMP_ASSERT( d_y_values.size() != 0 );
+            AMP_ASSERT( d_z_values.size() != 0 );
             d_MLParameterList.set("x-coordinates", &d_x_values[0]);
             d_MLParameterList.set("y-coordinates", &d_y_values[0]);
             d_MLParameterList.set("z-coordinates", &d_z_values[0]);
           }
+
+          // Compute null space manually if requested
           if( d_mlOptions->d_nullSpaceType == "pre-computed" )
           {
-              computeNullSpace( op );
-              d_MLParameterList.set("null_space: vectors",&d_null_space[0]);
+            computeNullSpace( op );
+            AMP_ASSERT( d_null_space.size() != 0 );
+            d_MLParameterList.set("null space: vectors",&d_null_space[0]);
           }
+
+          AMP_INSIST( d_mlOptions->d_nullSpaceType == "from coordinates" ?
+                      d_mlOptions->d_pdeEquations  == 3 : true,
+                      "Null space construction only available for mechanics (PDE_equations=3)");
+          AMP_INSIST( d_mlOptions->d_nullSpaceType == "pre-computed" ?
+                      d_mlOptions->d_pdeEquations  == 3 : true,
+                      "Null space construction only available for mechanics (PDE_equations=3)");
+
           boost::shared_ptr<AMP::Operator::LinearOperator> linearOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pOperator);
           AMP_INSIST(linearOperator.get() != NULL, "linearOperator cannot be NULL");
 
@@ -129,6 +144,8 @@ namespace AMP {
           AMP_INSIST(pMatrix.get()!=NULL, "pMatrix cannot be NULL");
 
           d_mlSolver.reset( new ML_Epetra::MultiLevelPreconditioner(pMatrix->getEpetra_CrsMatrix(), d_MLParameterList, false));
+
+
         } else {
           boost::shared_ptr<AMP::Operator::TrilinosMatrixShellOperator> matShellOperator = boost::dynamic_pointer_cast<
             AMP::Operator::TrilinosMatrixShellOperator>(d_pOperator);
@@ -316,7 +333,7 @@ namespace AMP {
             AMP::Mesh::MeshManager::Adapter::shared_ptr myMesh = op->getMeshAdapter();
 
             // Resize vectors to hold node values
-            int numNodes = myMesh->numTotalNodes();
+            int numNodes = myMesh->numLocalNodes();
             d_x_values.resize(numNodes,0.0);
             d_y_values.resize(numNodes,0.0);
             d_z_values.resize(numNodes,0.0);
@@ -340,10 +357,14 @@ namespace AMP {
         {
             // Get mesh adapter for this operator
             AMP::Mesh::MeshManager::Adapter::shared_ptr myMesh = op->getMeshAdapter();
+            int numPDE = d_mlOptions->d_pdeEquations;
+            int dimNS  = d_mlOptions->d_nullSpaceDimension;
+
 
             // Resize vectors to hold node values
-            int numNodes = myMesh->numTotalNodes();
-            d_null_space.resize(9*numNodes,0.0);
+            int numNodes = myMesh->numLocalNodes();
+            int vecLength = numPDE*numNodes;
+            d_null_space.resize(dimNS*vecLength,0.0);
 
             // Get node iterators
             AMP::Mesh::MeshManager::Adapter::NodeIterator thisNode = myMesh->beginNode();
@@ -353,20 +374,42 @@ namespace AMP {
             double thisY;
             double thisZ;
             int nodeCounter = 0;
+            int offset = 0;
+            int vecOffset = 0;
             for( ; thisNode != endNode; ++thisNode )
             {
                 thisX = (*thisNode).x();
                 thisY = (*thisNode).y();
                 thisZ = (*thisNode).z();
-                d_null_space[3*nodeCounter]                    =  0.0;
-                d_null_space[3*nodeCounter+1]                  = -thisZ;
-                d_null_space[3*nodeCounter+2]                  =  thisY;
-                d_null_space[3*nodeCounter + 3*numNodes]       =  thisZ;
-                d_null_space[3*nodeCounter + 3*numNodes + 1]   =  0.0;
-                d_null_space[3*nodeCounter + 3*numNodes + 2]   = -thisX;
-                d_null_space[3*nodeCounter + 6*numNodes]       = -thisY;
-                d_null_space[3*nodeCounter + 6*numNodes + 1]   =  thisX;
-                d_null_space[3*nodeCounter + 6*numNodes + 2]   =  0.0;
+
+                int dof = numPDE * nodeCounter;
+
+                // Constant vector for each PDE
+                for( int i=0; i<numPDE; ++i )
+                {
+                    vecOffset = i * vecLength;
+                    offset    = vecOffset + dof + i;
+                    d_null_space[offset] = 1.0;
+                }
+
+                // Rotation around X
+                vecOffset = 3*vecLength;
+                offset    = vecOffset + dof;
+                d_null_space[offset + 1] = -thisZ;
+                d_null_space[offset + 2] =  thisY;
+
+                // Rotation around Y
+                vecOffset = 4*vecLength;
+                offset    = vecOffset + dof;
+                d_null_space[offset]     =  thisZ;
+                d_null_space[offset + 2] = -thisX;
+
+                // Rotation around Z
+                vecOffset = 5*vecLength;
+                offset    = vecOffset + dof;
+                d_null_space[offset]     = -thisY;
+                d_null_space[offset + 1] =  thisX;
+
                 nodeCounter++;
             }
         }
