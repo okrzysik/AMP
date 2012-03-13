@@ -51,6 +51,7 @@ public:
 
     virtual std::string  type() const;
 
+    using Vector::cloneVector;
     virtual Vector::shared_ptr  cloneVector ( Variable::shared_ptr ) const;
     virtual size_t   numberOfDataBlocks () const;
     virtual size_t   sizeOfDataBlock ( size_t i ) const;
