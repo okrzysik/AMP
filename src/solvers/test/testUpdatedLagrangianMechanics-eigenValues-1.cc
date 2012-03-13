@@ -8,6 +8,12 @@
 #include "utils/AMP_MPI.h"
 #include "utils/PIO.h"
 
+#include "ampmesh/Mesh.h"
+#include "ampmesh/libmesh/libMesh.h"
+
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
+
 #include "ampmesh/SiloIO.h"
 
 #include "operators/mechanics/ThermalStrainMaterialModel.h"
@@ -89,14 +95,15 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletLoadVecOp =
     boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-          "Load_Boundary",
-          input_db,
-          dummyModel));
+          "Load_Boundary", input_db, dummyModel));
   dirichletLoadVecOp->setVariable(dispVar);
+
+  AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
+      meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
 
   //Create the vectors
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( dispVar );
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector(dofMap, dispVar, true);
   AMP::LinearAlgebra::Vector::shared_ptr rhsVec = solVec->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
   //AMP::LinearAlgebra::Vector::shared_ptr scaledRhsVec = meshAdapter->createVector( dispVar );
@@ -134,6 +141,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 int main(int argc, char *argv[])
 {
   AMP::AMPManager::startup(argc, argv);
+  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(AMP_COMM_WORLD));
+
   AMP::UnitTest ut;
 
   std::vector<std::string> exeNames;
@@ -152,8 +161,9 @@ int main(int argc, char *argv[])
   }
 
   ut.report();
-
   int num_failed = ut.NumFailGlobal();
+
+  libmeshInit.reset();
   AMP::AMPManager::shutdown();
   return num_failed;
 }   
