@@ -146,10 +146,7 @@ namespace Operator {
       std::vector<AMP::Mesh::MeshElement> d_currNodes;
 
       ::Elem* d_currElemPtr;
-      
-      std::vector<size_t> d_dofIndices; 
 
-      AMP::Discretization::DOFManager::shared_ptr d_dofManager; 
 
     private :
 

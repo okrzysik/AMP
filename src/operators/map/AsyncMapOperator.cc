@@ -12,6 +12,9 @@ AsyncMapOperator::AsyncMapOperator ( const boost::shared_ptr <OperatorParameters
     d_MapComm = params->d_MapComm;
     d_mesh1 = params->d_Mesh1;
     d_mesh2 = params->d_Mesh2;
+    AMP_INSIST( !d_MapComm.isNull(), "NULL communicator for map is invalid");
+    AMP_INSIST( d_MapComm.sumReduce<int>(d_mesh1.get()!=NULL?1:0)>0, "Somebody must own mesh 1");
+    AMP_INSIST( d_MapComm.sumReduce<int>(d_mesh2.get()!=NULL?1:0)>0, "Somebody must own mesh 2");
 }
 
 

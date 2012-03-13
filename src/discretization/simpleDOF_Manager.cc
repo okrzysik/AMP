@@ -15,6 +15,8 @@ namespace Discretization {
 ****************************************************************/
 DOFManager::shared_ptr  simpleDOFManager::create( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP::Mesh::GeomType type, int gcw, int DOFsPerObject, bool split )
 {
+    if ( mesh.get()==NULL )
+        return DOFManager::shared_ptr();
     if ( split && boost::dynamic_pointer_cast<AMP::Mesh::MultiMesh>(mesh).get()!=NULL ) {
         // We want to split the DOFs by the mesh
         std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getBaseMeshIDs();
@@ -26,19 +28,17 @@ DOFManager::shared_ptr  simpleDOFManager::create( boost::shared_ptr<AMP::Mesh::M
         }
         boost::shared_ptr<multiDOFManager> rtn( new multiDOFManager( mesh->getComm(), managers ) );
         return rtn;
-    } else {
-        // We are ready to create the simpleDOFManager
-        boost::shared_ptr<simpleDOFManager> rtn( new simpleDOFManager() );
-        rtn->d_mesh = mesh;
-        rtn->d_type = type;
-        rtn->d_comm = mesh->getComm();
-        rtn->DOFsPerElement = DOFsPerObject;
-        rtn->d_localIterator = mesh->getIterator(type,0);
-        rtn->d_ghostIterator = mesh->getIterator(type,gcw);
-        rtn->initialize();
-        return rtn;
-    }
-    return DOFManager::shared_ptr();
+    } 
+    // We are ready to create the simpleDOFManager
+    boost::shared_ptr<simpleDOFManager> rtn( new simpleDOFManager() );
+    rtn->d_mesh = mesh;
+    rtn->d_type = type;
+    rtn->d_comm = mesh->getComm();
+    rtn->DOFsPerElement = DOFsPerObject;
+    rtn->d_localIterator = mesh->getIterator(type,0);
+    rtn->d_ghostIterator = mesh->getIterator(type,gcw);
+    rtn->initialize();
+    return rtn;
 }
 DOFManager::shared_ptr  simpleDOFManager::create( boost::shared_ptr<AMP::Mesh::Mesh> mesh, const AMP::Mesh::MeshIterator it1, const AMP::Mesh::MeshIterator it2, int DOFsPerElement )
 {

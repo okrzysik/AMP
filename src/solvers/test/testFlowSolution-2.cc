@@ -68,7 +68,9 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     AMP::Mesh::Mesh::shared_ptr  meshAdapter2 = manager->Subset( "clad" );
 
     // Create a surface mesh on the clad
-    AMP::Mesh::Mesh::shared_ptr surfaceMesh = meshAdapter2->Subset( meshAdapter2->getIDsetIterator( AMP::Mesh::Face, 4, 0 ) );
+    AMP::Mesh::Mesh::shared_ptr surfaceMesh;
+    if ( meshAdapter2.get() != NULL )
+        surfaceMesh = meshAdapter2->Subset( meshAdapter2->getIDsetIterator( AMP::Mesh::Face, 4, 0 ) );
 
     // Create the DOF managers
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = 
@@ -255,6 +257,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       boost::shared_ptr<AMP::InputDatabase> mapcladflow_db  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapCladto1DFlow"));
       boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapcladflowParams (new AMP::Operator::MapOperatorParameters( mapcladflow_db ));
       mapcladflowParams->d_Mesh = meshAdapter2;
+      mapcladflowParams->d_MapMesh = meshAdapter2;
       mapcladflowParams->d_MapComm = surfaceMesh->getComm();  
       boost::shared_ptr<AMP::Operator::Map3Dto1D> mapCladTo1DFlow1 (new AMP::Operator::Map3Dto1D( mapcladflowParams ));
       boost::shared_ptr<AMP::Operator::Map3Dto1D> mapCladTo1DFlow2 (new AMP::Operator::Map3Dto1D( mapcladflowParams ));
@@ -290,6 +293,8 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       flowJacobian->setVector(cladVec);
 
       flowSolVec->setToScalar(300.0);
+      flowRhsVec->setToScalar(300.0);
+      flowResVec->setToScalar(300.0);
 
       //------------------------------------------
 
@@ -385,7 +390,6 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       coupledlinearParams3->d_Map1to3 = map1DFlowTo3DFlow2;
       coupledlinearParams3->d_Mesh = meshAdapter2;
       boost::shared_ptr<AMP::Operator::CoupledFlowFrapconOperator>           coupledlinearOperator3(new AMP::Operator::CoupledFlowFrapconOperator(coupledlinearParams3));
-
       coupledLinearOperator->append(coupledlinearOperator3);
 
       //----------------------------------------------------------------------------------------------------------------------------------------------//

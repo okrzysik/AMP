@@ -37,6 +37,7 @@ void Map1Dto3D :: reset(const boost::shared_ptr<OperatorParameters>& params)
     AMP_INSIST( !myparams->d_MapComm.isNull(), "NULL communicator" );
     d_MapComm = myparams->d_MapComm;
     d_MapMesh = myparams->d_MapMesh;
+    AMP_INSIST( d_MapComm.sumReduce<int>(d_MapMesh.get()!=NULL?1:0)>0, "Somebody must own the mesh");
 
     computeZLocations();
 

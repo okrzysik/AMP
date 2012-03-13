@@ -27,6 +27,7 @@ namespace Operator {
       AMP_INSIST( !myparams->d_MapComm.isNull(), "NULL communicator" );
       d_MapComm = myparams->d_MapComm;
       d_MapMesh = myparams->d_MapMesh;
+      AMP_INSIST( d_MapComm.sumReduce<int>(d_MapMesh.get()!=NULL?1:0)>0, "Somebody must own the mesh");
 
       AMP_INSIST( myparams->d_db->keyExists("InputVariable"), "key not found" );
       std::string inpVar = myparams->d_db->getString("InputVariable");
