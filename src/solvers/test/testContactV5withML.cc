@@ -4,8 +4,6 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
-#include "boost/shared_ptr.hpp"
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -26,6 +24,7 @@
 #include "solvers/MLoptions.h"
 #include "indexHolder.h"
 
+#if 0
 #include "ContactSearchUtils.h"
 
 ML_Aggregate *agg_object;
@@ -598,7 +597,11 @@ void computeMl2MasterOrSlave() {
   }//end for i
 }
 
+#endif
+
 void myTest(AMP::UnitTest *ut, std::string exeName) {
+
+#if 0
   std::string input_file = "input_" + exeName;
   std::string log_file = "output_" + exeName;
 
@@ -840,6 +843,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 1 );
 #endif
 
+#endif
+
   ut->passes(exeName);
 }
 
@@ -847,6 +852,8 @@ int main(int argc, char *argv[])
 {
   AMP::AMPManager::startup(argc, argv);
   AMP::UnitTest ut;
+
+  AMP_ERROR("Not yet converted!");
 
   std::string exeName = "testContactV5withML";
 

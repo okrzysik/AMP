@@ -18,7 +18,6 @@
 #include "operators/boundary/DirichletVectorCorrection.h"
 
 #if 0
-
 #include "ml_include.h"
 #include "solvers/MLoptions.h"
 
@@ -581,6 +580,8 @@ int main(int argc, char *argv[])
 {
   AMP::AMPManager::startup(argc, argv);
   AMP::UnitTest ut;
+
+  AMP_ERROR("Not yet converted!");
 
   std::string exeName = "testTiedContactV3";
 
