@@ -54,6 +54,8 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable(d_variable);
   AMP::LinearAlgebra::Vector::shared_ptr uInternal = u->subsetVectorForVariable(d_variable);
 
+  AMP::Discretization::DOFManager::shared_ptr dofManager = rInternal->getDOFManager();
+
   AMP::LinearAlgebra::VS_Mesh meshSelector("meshSelector", d_Mesh);
   AMP::LinearAlgebra::Vector::shared_ptr uOnMesh = u->select ( meshSelector , u->getVariable()->getName() );
 
@@ -107,7 +109,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   }
 
   unsigned int numIds = d_boundaryIds.size();
-
+  std::vector<size_t> dofIndices, dofs;
   for (unsigned int nid = 0; nid < numIds; nid++)
   {
 
@@ -118,8 +120,15 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
     {
 
       d_currNodes = bnd1->getElements(AMP::Mesh::Vertex);
-
       unsigned int numNodesInCurrElem = d_currNodes.size();
+
+      dofIndices.resize(numNodesInCurrElem);
+      for(unsigned int i = 0; i < numNodesInCurrElem ; i++) {
+        dofManager->getDOFs(d_currNodes[i].globalID(), dofs);
+        AMP_ASSERT(dofs.size()==1);
+        dofIndices[i] = dofs[0];
+      }
+
 
       createCurrentLibMeshElement();
 
@@ -148,11 +157,11 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
             for(unsigned int m = 0; m < elementInputVec.size(); m++)
             {
               inputArgs[m].resize(1);
-              inputArgs[m][0] = ( elementInputVec[m]->getValueByGlobalID(d_dofIndices[l]) );
+              inputArgs[m][0] = ( elementInputVec[m]->getValueByGlobalID(dofIndices[l]) );
             }
             d_robinPhysicsModel->getConductance(d_beta, d_gamma, inputArgs);
           }
-          phi_val += phi[l][qp] * d_beta[0] * uInternal->getValueByGlobalID(d_dofIndices[l]);
+          phi_val += phi[l][qp] * d_beta[0] * uInternal->getValueByGlobalID(dofIndices[l]);
 #ifdef DEBUG_GAP_PRINT
           if (d_iDebugPrintInfoLevel == 100)
           {
@@ -168,7 +177,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
         for (unsigned int j = 0; j < numNodesInCurrElem ; j++)
         {
           temp = (JxW[qp] * phi[j][qp] * phi_val);
-          rInternal->addValueByGlobalID( d_dofIndices[j], temp);
+          rInternal->addValueByGlobalID( dofIndices[j], temp);
         }//end for j
       }//end for qp
 
@@ -186,19 +195,19 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
             {
               for(unsigned int m = 0; m < elementInputVec.size(); m++)
               {
-                inputArgs[m][0] = ( elementInputVec[m]->getValueByGlobalID(d_dofIndices[l]) );
+                inputArgs[m][0] = ( elementInputVec[m]->getValueByGlobalID(dofIndices[l]) );
               }
               d_robinPhysicsModel->getConductance(d_beta, d_gamma, inputArgs);
             }
 
-            phi_val += phi[l][qp] * d_gamma[0] * d_variableFlux->getValueByGlobalID(d_dofIndices[l]);
+            phi_val += phi[l][qp] * d_gamma[0] * d_variableFlux->getValueByGlobalID(dofIndices[l]);
           }
 
           for (unsigned int j = 0; j < numNodesInCurrElem ; j++)
           {
             temp = (JxW[qp] * phi[j][qp] * phi_val);
             temp = temp * -1;
-            rInternal->addValueByGlobalID( d_dofIndices[j], temp);
+            rInternal->addValueByGlobalID( dofIndices[j], temp);
           }//end for j
         }//end for qp
       }//coupled

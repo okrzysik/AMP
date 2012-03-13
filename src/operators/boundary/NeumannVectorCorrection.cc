@@ -139,13 +139,12 @@ namespace Operator {
           d_gamma[0] = (d_params->d_db)->getDouble("gamma");
         }
 
-        d_dofManager = rhsCorrection->getDOFManager() ;
-
         AMP::LinearAlgebra::Vector::shared_ptr rInternal = myRhs->cloneVector();
+        AMP::Discretization::DOFManager::shared_ptr dofManager = rInternal->getDOFManager();
         rInternal->zero();
 
         unsigned int numIds = d_boundaryIds.size();
-
+        std::vector<size_t> dofIndices, dofs;
         for(unsigned int j = 0; j < numIds; j++)
         {
           if(!d_IsCoupledBoundary[j])
@@ -167,8 +166,14 @@ namespace Operator {
                 count++;
 
                 d_currNodes = bnd->getElements(AMP::Mesh::Vertex);
-
                 unsigned int numNodesInCurrElem = d_currNodes.size();
+
+                dofIndices.resize(numNodesInCurrElem);
+                for(unsigned int i = 0; i < numNodesInCurrElem ; i++) {
+                    dofManager->getDOFs(d_currNodes[i].globalID(), dofs);
+                    AMP_ASSERT(dofs.size()==1);
+                    dofIndices[i] = dofs[0];
+                }
 
                 createCurrentLibMeshElement();
 
@@ -196,7 +201,7 @@ namespace Operator {
                     }
                     else
                     {
-                      temp[0].push_back(d_variableFlux->getValueByGlobalID(d_dofIndices[i]));
+                      temp[0].push_back(d_variableFlux->getValueByGlobalID(dofIndices[i]));
                     }
 
                     if(d_robinPhysicsModel)
@@ -210,7 +215,7 @@ namespace Operator {
 
                 }//end for i
 
-                rInternal->addValuesByGlobalID((int)d_dofIndices.size() , (size_t *)&(d_dofIndices[0]), &(flux[0]));
+                rInternal->addValuesByGlobalID((int)dofIndices.size() , (size_t *)&(dofIndices[0]), &(flux[0]));
 
                 destroyCurrentLibMeshElement();
               }//end for bnd
@@ -288,12 +293,10 @@ namespace Operator {
     }
 
     void NeumannVectorCorrection :: getDofIndicesForCurrentElement() {
-      d_dofIndices.resize(d_currNodes.size());
       std::vector<AMP::Mesh::MeshElementID> globalIDs(d_currNodes.size()); 
       for(unsigned int j = 0; j < d_currNodes.size(); j++) {
         globalIDs[j] = d_currNodes[j].globalID();
       } // end of j
-      d_dofManager->getDOFs(globalIDs, d_dofIndices);
     }
 
 
