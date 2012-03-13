@@ -86,7 +86,8 @@ namespace LinearAlgebra {
     public:
       ManagedSundialsVector  *rawClone () const;
       virtual std::string type() const;
-  		Vector::shared_ptr  cloneVector ( const Variable::shared_ptr var ) const;
+      using Vector::cloneVector;
+      Vector::shared_ptr  cloneVector ( const Variable::shared_ptr var ) const;
 
       typedef ManagedVector::parameters_ptr    parameters_ptr;
   		typedef ManagedSundialsVectorParameters     parameters;
