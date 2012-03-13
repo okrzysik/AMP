@@ -75,9 +75,9 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
         AMP::Discretization::simpleDOFManager::create(manager,AMP::Mesh::Vertex,1,1,true);
     AMP::Discretization::DOFManager::shared_ptr flowNodalScalarDOF = 
         AMP::Discretization::simpleDOFManager::create(surfaceMesh,AMP::Mesh::Vertex,1,1,true);
-    int DOFsPerNode = 8;
+    int DOFsPerElement = 8;
     AMP::Discretization::DOFManager::shared_ptr gaussPointDOF1 = 
-        AMP::Discretization::simpleDOFManager::create(meshAdapter1,AMP::Mesh::Vertex,1,DOFsPerNode,true);
+        AMP::Discretization::simpleDOFManager::create(meshAdapter1,AMP::Mesh::Volume,1,DOFsPerElement,true);
 
     //--------------------------------------------------
     // Creating the parameters that will form the right-hand side for the thermal calculation.
