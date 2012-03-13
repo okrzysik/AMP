@@ -81,6 +81,7 @@ public:
  
       virtual Vector::shared_ptr  getManagedVectorDuplicate ( AMP_MPI  comm );
 
+      using Vector::cloneVector;
       virtual Vector::shared_ptr cloneVector(const Variable::shared_ptr ) const;
       virtual void copyVector(const Vector::const_shared_ptr &vec);
 
