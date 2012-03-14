@@ -148,7 +148,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     //  Set the initial guess for the temperature to be 400, or as defined on the input.
     //----------------------------------------------------------------------------
     double intguess = input_db->getDoubleWithDefault("InitialGuess",300);
-    globalSolVec->setToScalar ( intguess );
+    thermalSolVec1->setToScalar ( intguess );
 
       //-------------------------------------
       //   CREATE THE LINEAR THERMAL OPERATOR 1 ----
@@ -192,6 +192,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       AMP::LinearAlgebra::Vector::shared_ptr thermalSolVec2 = globalSolVec->select( meshSelector2, "Temperature" );
       AMP::LinearAlgebra::Vector::shared_ptr thermalRhsVec2 = globalRhsVec->select( meshSelector2, "Temperature" );
 
+      thermalSolVec2->setToScalar ( intguess );
       //--------------------------------------------
       //   CREATE THE LINEAR THERMAL OPERATOR 2 ----
       //--------------------------------------------
@@ -293,8 +294,8 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       flowJacobian->setVector(cladVec);
 
       flowSolVec->setToScalar(300.0);
-      flowRhsVec->setToScalar(300.0);
-      flowResVec->setToScalar(300.0);
+      //flowRhsVec->setToScalar(300.0);
+      //flowResVec->setToScalar(300.0);
 
       //------------------------------------------
 
@@ -512,6 +513,15 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
         thermalNonlinearOperator1->modifyInitialSolutionVector(thermalSolVec1);
         thermalNonlinearOperator2->modifyRHSvector(thermalRhsVec2);
         thermalNonlinearOperator2->modifyInitialSolutionVector(thermalSolVec2);
+        AMP::pout<<"Initial Guess  Norm for Step " << tstep << " is: "<<globalSolMultiVector->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Guess  Norm12 for Step " << tstep << " is: "<<globalSolVec->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Guess  Flow   for Step " << tstep << " is: "<<flowSolVec->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Source Norm for Step " << tstep << " is: "<<globalRhsMultiVector->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Source Norm1 for Step " << tstep << " is: "<<thermalRhsVec1->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Source Norm2 for Step " << tstep << " is: "<<thermalRhsVec2->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Guess  Norm1 for Step " << tstep << " is: "<<thermalSolVec1->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Guess  Norm2 for Step " << tstep << " is: "<<thermalSolVec2->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Power  Norm1 for Step " << tstep << " is: "<<specificPowerGpVec->L2Norm()<<std::endl;
 
         columnNonlinearOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
         AMP::pout<<"Initial Residual Norm for Step " << tstep << " is: "<<globalResMultiVector->L2Norm()<<std::endl;
