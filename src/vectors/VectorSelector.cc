@@ -60,6 +60,7 @@ Vector::shared_ptr  VS_Stride::subset ( Vector::shared_ptr p ) const
 #ifdef USE_AMP_MESH
 VS_Mesh::VS_Mesh ( const std::string &name, AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
 {
+    AMP_ASSERT(mesh.get()!=NULL);
     d_Name = name;
     d_mesh = mesh;
     d_useMeshComm = useMeshComm;

@@ -29,11 +29,17 @@ void ManagedEpetraMatrix::multiply ( shared_ptr other_op , shared_ptr &result )
     #else
         MPI_Comm epetraComm = AMP_COMM_SELF;
     #endif
+    Vector::shared_ptr leftVec = this->getRightVector();
+    Vector::shared_ptr rightVec = other_op->getRightVector();
     ManagedEpetraMatrixParameters *memp = new ManagedEpetraMatrixParameters ( 
                  d_epetraMatrix->RowMap().NumMyElements() , 
                  d_epetraMatrix->RowMap().NumGlobalElements() , 
                  d_epetraMatrix->RowMap().MinMyGID() , 
                  AMP_MPI(epetraComm) );
+    memp->d_CommListLeft = leftVec->getCommunicationList();
+    memp->d_CommListRight = rightVec->getCommunicationList();
+    memp->d_DOFManagerLeft = leftVec->getDOFManager();
+    memp->d_DOFManagerRight = rightVec->getDOFManager();
     ManagedEpetraMatrix *res = new ManagedEpetraMatrix ( MatrixParameters::shared_ptr ( memp ) );
     EpetraExt::MatrixMatrix::Multiply ( *d_epetraMatrix , false , *(other_op->castTo<ManagedEpetraMatrix> ().d_epetraMatrix) , false , *(res->d_epetraMatrix) , true );
     result = Matrix::shared_ptr ( res );
