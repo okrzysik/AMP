@@ -59,11 +59,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinBvpOperator = 
-    boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+    boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
           "nonlinearMechanicsBVPOperator", input_db, elementPhysicsModel));
 
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linBvpOperator =
-    boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+    boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
           "linearMechanicsBVPOperator", input_db, elementPhysicsModel));
 
   AMP::LinearAlgebra::Variable::shared_ptr displacementVariable = nonlinBvpOperator->getOutputVariable();
@@ -71,13 +73,15 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   //For RHS (Point Forces)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletLoadVecOp =
-    boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+    boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+        AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
           "Load_Boundary", input_db, dummyModel));
   dirichletLoadVecOp->setVariable(displacementVariable);
 
   //For Initial-Guess
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletDispInVecOp =
-    boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+    boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+        AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
           "Displacement_Boundary", input_db, dummyModel));
   dirichletDispInVecOp->setVariable(displacementVariable);
 
