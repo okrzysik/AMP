@@ -65,6 +65,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  Operator::subsetOutputVector(AMP::Linear
     if(varSubsetVec == NULL) {
         return varSubsetVec;
     } else {
+      AMP_ASSERT(d_Mesh != NULL);
         AMP::LinearAlgebra::VS_Mesh meshSelector(varSubset->getName(), d_Mesh);
         return varSubsetVec->select(meshSelector, getOutputVariable()->getName());
     }
@@ -78,6 +79,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  Operator::subsetInputVector(AMP::LinearA
     if(varSubsetVec == NULL) {
         return varSubsetVec;
     } else {
+      AMP_ASSERT(d_Mesh != NULL);
         AMP::LinearAlgebra::VS_Mesh meshSelector(varSubset->getName(), d_Mesh);
         return varSubsetVec->select(meshSelector, getInputVariable()->getName());
     }
