@@ -75,8 +75,10 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     // Create the DOF managers
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = 
         AMP::Discretization::simpleDOFManager::create(manager,AMP::Mesh::Vertex,1,1,true);
+    //AMP::Discretization::DOFManager::shared_ptr flowNodalScalarDOF = 
+    //    AMP::Discretization::simpleDOFManager::create(surfaceMesh,AMP::Mesh::Vertex,1,1,true);
     AMP::Discretization::DOFManager::shared_ptr flowNodalScalarDOF = 
-        AMP::Discretization::simpleDOFManager::create(surfaceMesh,AMP::Mesh::Vertex,1,1,true);
+        AMP::Discretization::simpleDOFManager::create(meshAdapter2,AMP::Mesh::Vertex,1,1,true);
     int DOFsPerElement = 8;
     AMP::Discretization::DOFManager::shared_ptr gaussPointDOF1 = 
         AMP::Discretization::simpleDOFManager::create(meshAdapter1,AMP::Mesh::Volume,1,DOFsPerElement,true);
@@ -259,14 +261,14 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapcladflowParams (new AMP::Operator::MapOperatorParameters( mapcladflow_db ));
       mapcladflowParams->d_Mesh = meshAdapter2;
       mapcladflowParams->d_MapMesh = meshAdapter2;
-      mapcladflowParams->d_MapComm = surfaceMesh->getComm();  
+      mapcladflowParams->d_MapComm = meshAdapter2->getComm();  
       boost::shared_ptr<AMP::Operator::Map3Dto1D> mapCladTo1DFlow1 (new AMP::Operator::Map3Dto1D( mapcladflowParams ));
       boost::shared_ptr<AMP::Operator::Map3Dto1D> mapCladTo1DFlow2 (new AMP::Operator::Map3Dto1D( mapcladflowParams ));
 
       boost::shared_ptr<AMP::InputDatabase> mapflowclad_db  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("Map1DFlowto3DFlow"));
       boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowcladParams (new AMP::Operator::MapOperatorParameters( mapflowclad_db ));
       mapflowcladParams->d_MapMesh = meshAdapter2;
-      mapflowcladParams->d_MapComm = surfaceMesh->getComm(); 
+      mapflowcladParams->d_MapComm = meshAdapter2->getComm(); 
       boost::shared_ptr<AMP::Operator::Map1Dto3D> map1DFlowTo3DFlow1 (new AMP::Operator::Map1Dto3D( mapflowcladParams ));
       boost::shared_ptr<AMP::Operator::Map1Dto3D> map1DFlowTo3DFlow2 (new AMP::Operator::Map1Dto3D( mapflowcladParams ));
 
@@ -488,14 +490,11 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       //-------------------------------------
       nonlinearSolver->setZeroInitialGuess(false);
 
-      // Create a subset mesh and view of a vector
-      AMP::LinearAlgebra::VS_MeshIterator meshSelector( "surfaceVector", surfaceMesh->getIterator(AMP::Mesh::Vertex,0), surfaceMesh->getComm() );
-      AMP::LinearAlgebra::Vector::shared_ptr  surfaceVector = flowSolVec->select( meshSelector, "surfaceVector" );
-
+      // Register the quantities to plot
       AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
       siloWriter->registerVector( globalSolVec, meshAdapter1, AMP::Mesh::Vertex, "PelletTemperature" );
       siloWriter->registerVector( globalSolVec, meshAdapter2, AMP::Mesh::Vertex, "CladTemperature" );
-      siloWriter->registerVector( surfaceVector, surfaceMesh, AMP::Mesh::Vertex, "FlowTemperature" );
+      siloWriter->registerVector( flowSolVec, surfaceMesh, AMP::Mesh::Vertex, "FlowTemperature" );
 
       for ( int tstep = 0; tstep < 1; tstep++ ) {
         neutronicsOperator->setTimeStep(tstep);
@@ -535,7 +534,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
         #endif
 
         std::cout<< "The Fuel/clad Max:Min values - "<<thermalSolVec1->max() << " " <<thermalSolVec2->min() <<std::endl;
-        std::cout << "Surface Vector Max:Min values -  " << surfaceVector->max() << " " << surfaceVector->min() <<std::endl;
+        std::cout << "Flow Max:Min values -  " << flowSolVec->max() << " " << flowSolVec->min() <<std::endl;
 
         std::cout<<"Intermediate Flow Solution " <<std::endl;
         mapCladTo1DFlow1->setVector(flowSol1DVec); 

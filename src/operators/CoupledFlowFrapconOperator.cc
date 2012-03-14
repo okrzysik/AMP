@@ -10,6 +10,7 @@ namespace Operator {
     CoupledFlowFrapconOperator::CoupledFlowFrapconOperator(const boost::shared_ptr<OperatorParameters>& params)
       : ColumnOperator(params)
     {
+      d_Mesh = params->d_Mesh;
       boost::shared_ptr<CoupledFlowFrapconOperatorParameters> myparams = boost::dynamic_pointer_cast<CoupledFlowFrapconOperatorParameters>(params);
       d_Operators.push_back(myparams->d_Map3to1);
 
