@@ -102,7 +102,7 @@ void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh, boost::share
     ::Elem *elem = new ::Hex8;
     for(size_t j = 0; j < currNodes.size(); ++j) {
       std::vector<double> pt = currNodes[j].coord();
-      elem->set_node(j) = new ::Node(pt[0], pt[1], pt[2]);
+      elem->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
     }//end j
 
     fe->reinit(elem);

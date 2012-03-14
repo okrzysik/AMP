@@ -1,15 +1,8 @@
 
 #include <iostream>
 #include <string>
-
 #include <cassert>
 #include <fstream>
-
-#include <sys/stat.h>
-
-
-/* Boost files */
-#include "boost/shared_ptr.hpp"
 
 /* libMesh files */
 #include "mesh.h"
@@ -34,9 +27,6 @@
 #include "utils/Utilities.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
-#include "materials/Material.h"
-
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 
@@ -45,45 +35,18 @@
 
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 
 #include "vectors/Vector.h"
 #include "vectors/VectorSelector.h"
 #include "ampmesh/SiloIO.h"
 
-
-#include "../PetscKrylovSolverParameters.h"
-#include "../PetscKrylovSolver.h"
-#include "../TrilinosMLSolver.h"
+#include "solvers/PetscKrylovSolverParameters.h"
+#include "solvers/PetscKrylovSolver.h"
+#include "solvers/TrilinosMLSolver.h"
 
 #include "ReadTestMesh.h"
-
-extern "C"{
-#include "petsc.h"
-}
-
-
-
-void deformMesh(AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter,
-    AMP::LinearAlgebra::Vector::shared_ptr mechSolVec) {
-  AMP::Mesh::DOFMap::shared_ptr dof_map = meshAdapter->getDOFMap(mechSolVec->getVariable());
-
-  AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator nd  = meshAdapter->beginOwnedNode();
-  AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator end_nd   = meshAdapter->endOwnedNode();
-
-  std::vector <unsigned int> dofIds(3);
-  dofIds[0] = 0; dofIds[1] = 1; dofIds[2] = 2;
-
-  for( ; nd != end_nd; ++nd) {
-    std::vector<unsigned int> ndGlobalIds;
-    dof_map->getDOFs(*nd, ndGlobalIds, dofIds);
-
-    double xDisp = mechSolVec->getValueByGlobalID(ndGlobalIds[0]);
-    double yDisp = mechSolVec->getValueByGlobalID(ndGlobalIds[1]);
-    double zDisp = mechSolVec->getValueByGlobalID(ndGlobalIds[2]);
-
-    nd->translate(xDisp, yDisp, zDisp);
-  }//end for nd
-}
 
 void linearElasticTest(AMP::UnitTest *ut, std::string exeName, 
     int exampleNum) {
@@ -93,56 +56,52 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName,
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
+#ifdef USE_SILO
+  // Create the silo writer and register the data
+  AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
+#endif
+
   boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter;
-  if(exeName == "testLinearMechanics-PressureBoundary-Cylinder") {
-    meshAdapter = manager->getMesh ( "cylinder" );
-  } else {
-    if(exeName == "testLinearMechanics-PressureBoundary-HaldenPellet") {
-      meshAdapter = manager->getMesh ( "pellet" );
-    } else {
-      meshAdapter = manager->getMesh ( "brick" );
-    }
-  }
+  AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
+  boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
+  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+  meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+  AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
     boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-														 "MechanicsBVPOperator",
-														 input_db,
-														 elementPhysicsModel));
+          "MechanicsBVPOperator", input_db, elementPhysicsModel));
+
+  AMP::LinearAlgebra::Variable::shared_ptr dispVar = bvpOperator->getOutputVariable();
 
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletVecOp =
     boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-															 "Load_Boundary",
-															 input_db,
-															 dummyModel));
+          "Load_Boundary", input_db, dummyModel));
   //This has an in-place apply. So, it has an empty input variable and
   //the output variable is the same as what it is operating on. 
-  dirichletVecOp->setVariable(bvpOperator->getOutputVariable());
+  dirichletVecOp->setVariable(dispVar);
 
   //Pressure RHS
   boost::shared_ptr<AMP::Operator::PressureBoundaryVectorCorrection> pressureLoadVecOp =
     boost::dynamic_pointer_cast<AMP::Operator::PressureBoundaryVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-																"Pressure_Boundary",
-																input_db,
-															        dummyModel));
+          "Pressure_Boundary", input_db, dummyModel));
   //This has an in-place apply. So, it has an empty input variable and
   //the output variable is the same as what it is operating on. 
-  pressureLoadVecOp->setVariable(bvpOperator->getOutputVariable());
+  pressureLoadVecOp->setVariable(dispVar);
+
+  AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
+      meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-
-  AMP::LinearAlgebra::Vector::shared_ptr mechSolVec = meshAdapter->createVector( bvpOperator->getInputVariable() );
-  AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = meshAdapter->createVector( bvpOperator->getOutputVariable() );
-  AMP::LinearAlgebra::Vector::shared_ptr mechResVec = meshAdapter->createVector( bvpOperator->getOutputVariable() );
-  AMP::LinearAlgebra::Vector::shared_ptr mechPressureVec = meshAdapter->createVector( bvpOperator->getOutputVariable() );
+  AMP::LinearAlgebra::Vector::shared_ptr mechSolVec = AMP::LinearAlgebra::createVector(dofMap, dispVar, true);
+  AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = mechSolVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr mechResVec = mechSolVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr mechPressureVec = mechSolVec->cloneVector();
 
   mechSolVec->setToScalar(0.0);
   mechRhsVec->setToScalar(0.0);
@@ -195,7 +154,7 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName,
   std::string fname = exeName + "_StressAndStrain.txt";
 
   (boost::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(bvpOperator->
-                                                             getVolumeOperator()))->printStressAndStrain(mechSolVec, fname);
+                                                                         getVolumeOperator()))->printStressAndStrain(mechSolVec, fname);
 
   AMP::LinearAlgebra::Vector::shared_ptr mechUvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride("U", 0, 3) , "U" );
   AMP::LinearAlgebra::Vector::shared_ptr mechVvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride("V", 1, 3) , "V" );
@@ -215,8 +174,6 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName,
 
   AMP::pout<<"Final Residual Norm: "<<finalResidualNorm<<std::endl;
 
-  //std::cout << mechResVec << std::cout;
-
   if(finalResidualNorm > (1e-10*initResidualNorm)) {
     ut->failure(exeName);
   } else {
@@ -226,63 +183,55 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName,
   double epsilon = 1.0e-13*(((bvpOperator->getMatrix())->extractDiagonal())->L1Norm());
   AMP::pout<<"epsilon = "<<epsilon<<std::endl;
 
-/*  FILE* out1;
-  out1 = fopen("LinearOperatorSolutionVector.txt","w");
-  for(int i = 0; i < 4485; i++) {
-    fprintf(out1,"%le\n",mechSolVec->getValueByLocalID(i));
-  }
-  fclose(out1);*/
-
 #ifdef USE_SILO
-  manager->registerVectorAsData ( mechSolVec , "Solution_Vector" );
-  manager->registerVectorAsData ( mechResVec , "Residual_Vector" );
+  siloWriter->registerVector(mechSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
   char outFileName1[256];
   sprintf(outFileName1, "undeformedBeam_%d", exampleNum);
-  manager->writeFile<AMP::Mesh::SiloIO>(outFileName1, 1);
-  deformMesh(meshAdapter, mechSolVec);
+  siloWriter->writeFile(outFileName1, 1);
+  meshAdapter->displaceMesh(mechSolVec);
   char outFileName2[256];
   sprintf(outFileName2, "deformedBeam_%d", exampleNum);
-  manager->writeFile<AMP::Mesh::SiloIO>(outFileName2, 1);
+  siloWriter->writeFile(outFileName2, 1);
 #endif
 
 }
 
 int main(int argc, char *argv[])
 {
-    AMP::AMPManager::startup(argc, argv);
-    AMP::UnitTest ut;
+  AMP::AMPManager::startup(argc, argv);
+  AMP::UnitTest ut;
 
-    std::vector<std::string> exeNames;
+  std::vector<std::string> exeNames;
 
-    if(argc == 1) {
-        exeNames.push_back("testLinearMechanics-PressureBoundary-1");
-        exeNames.push_back("testLinearMechanics-PressureBoundary-Cylinder");
-        exeNames.push_back("testLinearMechanics-PressureBoundary-HaldenPellet");
-        exeNames.push_back("testLinearMechanics-PressureBoundary-Cube");
-    } else {
-        for(int i = 1; i < argc; i++) {
-            char inpName[100];
-            sprintf(inpName, "testLinearMechanics-PressureBoundary-%s", argv[i]);
-            exeNames.push_back(inpName);
-        }//end for i
+  if(argc == 1) {
+    exeNames.push_back("testLinearMechanics-PressureBoundary-1");
+    exeNames.push_back("testLinearMechanics-PressureBoundary-Cylinder");
+    exeNames.push_back("testLinearMechanics-PressureBoundary-HaldenPellet");
+    exeNames.push_back("testLinearMechanics-PressureBoundary-Cube");
+  } else {
+    for(int i = 1; i < argc; i++) {
+      char inpName[100];
+      sprintf(inpName, "testLinearMechanics-PressureBoundary-%s", argv[i]);
+      exeNames.push_back(inpName);
+    }//end for i
+  }
+
+  for(size_t i = 0; i < exeNames.size(); i++) {
+    try {
+      linearElasticTest(&ut, exeNames[i], i);
+    } catch (std::exception &err) {
+      std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+      ut.failure("ERROR: While testing");
+    } catch( ... ) {
+      std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+      ut.failure("ERROR: While testing");
     }
+  }
 
-    for(size_t i = 0; i < exeNames.size(); i++) {
-        try {
-            linearElasticTest(&ut, exeNames[i], i);
-        } catch (std::exception &err) {
-            std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-            ut.failure("ERROR: While testing");
-        } catch( ... ) {
-            std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-            ut.failure("ERROR: While testing");
-        }
-    }
-   
-    ut.report();
+  ut.report();
 
-    int num_failed = ut.NumFailGlobal();
-    AMP::AMPManager::shutdown();
-    return num_failed;
+  int num_failed = ut.NumFailGlobal();
+  AMP::AMPManager::shutdown();
+  return num_failed;
 }  
 

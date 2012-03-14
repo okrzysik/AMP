@@ -4,8 +4,6 @@
 #include <cassert>
 #include <fstream>
 
-#include <sys/stat.h>
-
 /* libMesh files */
 #include "mesh.h"
 #include "mesh_generation.h"
