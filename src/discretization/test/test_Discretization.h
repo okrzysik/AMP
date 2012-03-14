@@ -31,9 +31,10 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
         size_t tot_size = 0;
         for (size_t i=0; i<meshIDs.size(); i++) {
             AMP::Mesh::Mesh::shared_ptr subsetMesh = mesh->Subset(meshIDs[i]);
-            subsetDOF = DOF->subset(subsetMesh);
-            if ( subsetDOF.get() != NULL )
+            if ( subsetMesh.get() != NULL ) {
+                subsetDOF = DOF->subset(subsetMesh);
                 tot_size += subsetDOF->numLocalDOF();
+            }
         }
         tot_size = DOF->getComm().sumReduce(tot_size);
         if ( tot_size == DOF->numGlobalDOF() )
