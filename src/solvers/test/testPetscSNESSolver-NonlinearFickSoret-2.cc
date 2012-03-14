@@ -118,9 +118,8 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   // Set up input and output variables
   //AMP::LinearAlgebra::Variable::shared_ptr tVar(fickOp->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
   //AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getInputVariable(AMP::Operator::Diffusion::CONCENTRATION));
-  ut->failure("Converted incorrectly.");
-  AMP::LinearAlgebra::Variable::shared_ptr tVar(fickOp->getInputVariable() );
-  AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getInputVariable() );
+  AMP::LinearAlgebra::Variable::shared_ptr tVar(new AMP::LinearAlgebra::Variable("temp") );
+  AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getOutputVariable() );
   boost::shared_ptr<AMP::LinearAlgebra::Variable> fsOutVar(nlinBVPOp->getOutputVariable());
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
