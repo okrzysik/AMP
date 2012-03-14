@@ -60,6 +60,8 @@ namespace AMP {
       AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
       AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
 
+      if( !zPoints.empty() ){d_numpoints = zPoints.size();}
+
       std::vector<double> box = d_Mesh->getBoundingBox();
       const double min_z = box[4];
       const double max_z = box[5];
@@ -71,8 +73,6 @@ namespace AMP {
       AMP::LinearAlgebra::Vector::shared_ptr flowInputVec = u->subsetVectorForVariable(d_inpVariable);
 
       AMP::LinearAlgebra::Vector::shared_ptr outputVec =  r->subsetVectorForVariable(d_outVariable);
-
-      if( !zPoints.empty() ){d_numpoints = zPoints.size();}
 
       // AMP::LinearAlgebra::Variable::shared_ptr localVar ( new AMP::LinearAlgebra::Variable(d_cladVec->getVariable()->getName() ) ); 
       // d_localCladVec = AMP::LinearAlgebra::SimpleVector::create( d_numpoints, localVar ); 

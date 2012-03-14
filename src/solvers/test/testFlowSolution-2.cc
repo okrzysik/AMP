@@ -522,8 +522,12 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
         AMP::pout<<"Initial Guess  Norm2 for Step " << tstep << " is: "<<thermalSolVec2->L2Norm()<<std::endl;
         AMP::pout<<"Initial Power  Norm1 for Step " << tstep << " is: "<<specificPowerGpVec->L2Norm()<<std::endl;
 
+        AMP::pout<<"Initial Residual Norm for Step " << tstep << " is: "<<globalResMultiVector->L2Norm()<<std::endl;
+        globalResMultiVector->zero();
         columnNonlinearOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
         AMP::pout<<"Initial Residual Norm for Step " << tstep << " is: "<<globalResMultiVector->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Guess  Norm12 for Step " << tstep << " is: "<<globalResVec->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Guess  Flow   for Step " << tstep << " is: "<<flowResVec->L2Norm()<<std::endl;
 
         nonlinearSolver->solve(globalRhsMultiVectorView, globalSolMultiVectorView);
 
