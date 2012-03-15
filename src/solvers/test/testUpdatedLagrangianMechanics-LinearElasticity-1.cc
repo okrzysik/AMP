@@ -13,6 +13,7 @@
 #include "ampmesh/libmesh/libMesh.h"
 
 #include "discretization/simpleDOF_Manager.h"
+#include "discretization/DOF_Manager.h"
 #include "vectors/VectorBuilder.h"
 
 #include "ampmesh/SiloIO.h"
