@@ -108,9 +108,9 @@ namespace AMP {
         AMP_INSIST(d_pOperator.get()!=NULL,"ERROR: TrilinosMLSolver::initialize() operator cannot be NULL");
 
         if(d_bUseEpetra) {
+
           // Compute coordinates to give to ML if requested
-          if( d_mlOptions->d_aggregationAuxEnable || 
-              d_mlOptions->d_nullSpaceType == "from coordinates")
+          if( d_mlOptions->d_aggregationAuxEnable )
           {
             computeCoordinates( op );
             AMP_ASSERT( d_x_values.size() != 0 );
@@ -129,9 +129,6 @@ namespace AMP {
             d_MLParameterList.set("null space: vectors",&d_null_space[0]);
           }
 
-          AMP_INSIST( d_mlOptions->d_nullSpaceType == "from coordinates" ?
-                      d_mlOptions->d_pdeEquations  == 3 : true,
-                      "Null space construction only available for mechanics (PDE_equations=3)");
           AMP_INSIST( d_mlOptions->d_nullSpaceType == "pre-computed" ?
                       d_mlOptions->d_pdeEquations  == 3 : true,
                       "Null space construction only available for mechanics (PDE_equations=3)");
@@ -360,6 +357,8 @@ namespace AMP {
             int numPDE = d_mlOptions->d_pdeEquations;
             int dimNS  = d_mlOptions->d_nullSpaceDimension;
 
+            AMP_INSIST( d_mlOptions->d_nullSpaceDimension == 6,
+                        "Null space dimension must be 6 to use computed null space." );
 
             // Resize vectors to hold node values
             int numNodes = myMesh->numLocalNodes();
@@ -375,7 +374,6 @@ namespace AMP {
             double thisZ;
             int nodeCounter = 0;
             int offset = 0;
-            int vecOffset = 0;
             for( ; thisNode != endNode; ++thisNode )
             {
                 thisX = (*thisNode).x();
@@ -387,26 +385,22 @@ namespace AMP {
                 // Constant vector for each PDE
                 for( int i=0; i<numPDE; ++i )
                 {
-                    vecOffset = i * vecLength;
-                    offset    = vecOffset + dof + i;
+                    offset    = i*vecLength + dof + i;
                     d_null_space[offset] = 1.0;
                 }
 
                 // Rotation around X
-                vecOffset = 3*vecLength;
-                offset    = vecOffset + dof;
+                offset    = 3*vecLength + dof;
                 d_null_space[offset + 1] = -thisZ;
                 d_null_space[offset + 2] =  thisY;
 
                 // Rotation around Y
-                vecOffset = 4*vecLength;
-                offset    = vecOffset + dof;
+                offset    = 4*vecLength + dof;
                 d_null_space[offset]     =  thisZ;
                 d_null_space[offset + 2] = -thisX;
 
                 // Rotation around Z
-                vecOffset = 5*vecLength;
-                offset    = vecOffset + dof;
+                offset    = 5*vecLength + dof;
                 d_null_space[offset]     = -thisY;
                 d_null_space[offset + 1] =  thisX;
 

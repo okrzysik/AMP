@@ -122,7 +122,7 @@ namespace AMP {
           db->putInteger("null_space_dimension", 3);
         }
         if(!(db->keyExists("null_space_add_default_vectors"))) {
-          db->putBool("null_space_add_default_vectors", true);
+          db->putBool("null_space_add_default_vectors", false);
         }
       } else if(problemType == "NSSA") {
         if(!(db->keyExists("max_levels"))) {
@@ -197,7 +197,7 @@ namespace AMP {
           db->putInteger("null_space_dimension", 3);
         }
         if(!(db->keyExists("null_space_add_default_vectors"))) {
-          db->putBool("null_space_add_default_vectors", true);
+          db->putBool("null_space_add_default_vectors", false);
         }
       } else {
         AMP_ERROR("The option, problem_type = \"" << problemType << "\" , is not supported.");
