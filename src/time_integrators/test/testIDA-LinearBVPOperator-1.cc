@@ -136,8 +136,8 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     AMP::LinearAlgebra::Variable::shared_ptr inputVar = IDARhsOperator->getInputVariable();
     AMP::LinearAlgebra::Variable::shared_ptr outputVar = IDARhsOperator->getOutputVariable();
   
-    AMP::LinearAlgebra::Vector::shared_ptr initialCondition      = AMP::LinearAlgebra::createVector( nodalDofMap, inputVar );
-    AMP::LinearAlgebra::Vector::shared_ptr initialConditionPrime = AMP::LinearAlgebra::createVector( nodalDofMap, inputVar );
+    AMP::LinearAlgebra::Vector::shared_ptr initialCondition      = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
+    AMP::LinearAlgebra::Vector::shared_ptr initialConditionPrime = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
     AMP::LinearAlgebra::Vector::shared_ptr   f                   = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//

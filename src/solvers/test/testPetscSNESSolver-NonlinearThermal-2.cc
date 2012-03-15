@@ -17,8 +17,12 @@
 #include "materials/Material.h"
 
 
-#include "ampmesh/MeshVariable.h"
 #include "ampmesh/SiloIO.h"
+
+#include "ampmesh/Mesh.h"
+#include "vectors/VectorBuilder.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 
 
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
@@ -56,14 +60,27 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  AMP_INSIST(input_db->keyExists("NumberOfMeshes"), "Key does not exist");
-  int numMeshes = input_db->getInteger("NumberOfMeshes");
+//--------------------------------------------------
+//   Create the Mesh.
+//--------------------------------------------------
+    AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
+    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+//--------------------------------------------------
 
-  AMP::pout<<"Num meshes = "<<numMeshes<<std::endl;
-
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "cylinder" );
+//--------------------------------------------------
+// Create a DOF manager for a nodal vector 
+//--------------------------------------------------
+  int DOFsPerNode = 1;
+  int DOFsPerElement = 8;
+  int nodalGhostWidth = 1;
+  int gaussPointGhostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth,      DOFsPerNode,    split);
+  AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split);
+//--------------------------------------------------
 
   AMP::pout<<"Constructing Nonlinear Thermal Operator..."<<std::endl;
 
@@ -86,17 +103,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::LinearAlgebra::Variable> thermalVariable = thermalVolumeOperator->getOutputVariable();
 
   // create solution, rhs, and residual vectors
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( thermalVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector( thermalVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( thermalVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable );
 
   // create the following shared pointers for ease of use
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
   //-------------------------------------------------------------------------------------------//
-  // register some variables for plotting
-  manager->registerVectorAsData ( solVec, "Solution" );
-  manager->registerVectorAsData ( resVec, "Residual" );
 
   AMP::pout<<"Constructing Linear Thermal Operator..."<<std::endl;
 
@@ -115,11 +129,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP_INSIST(input_db->keyExists("NeutronicsOperator"), "Key ''NeutronicsOperator'' is missing!");
   boost::shared_ptr<AMP::Database>  neutronicsOp_db = input_db->getDatabase("NeutronicsOperator");
   boost::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
-  neutronicsParams->d_MeshAdapter = meshAdapter;
   boost::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
 
   AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
-  AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = meshAdapter->createVector( SpecificPowerVar );
+  AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
 
   neutronicsOperator->apply(nullVec, nullVec, SpecificPowerVec, 1., 0.);
 
@@ -138,7 +151,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   // Create the power (heat source) vector.
   AMP::LinearAlgebra::Variable::shared_ptr PowerInWattsVar = sourceOperator->getOutputVariable();
-  AMP::LinearAlgebra::Vector::shared_ptr   PowerInWattsVec = meshAdapter->createVector( PowerInWattsVar );
+  AMP::LinearAlgebra::Vector::shared_ptr   PowerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap, PowerInWattsVar );
   PowerInWattsVec->zero();
 
   // convert the vector of specific power to power for a given basis.
@@ -212,8 +225,17 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   double initialResidualNorm  = resVec->L2Norm();
   AMP::pout<<"Initial Residual Norm: "<< initialResidualNorm <<std::endl;
 
+  double expectedVal =20.7018 ;
+  if( !AMP::Utilities::approx_equal( expectedVal, initialResidualNorm, 1e-5) ) {
+        ut->failure("the Initial Residual Norm has changed."); }
+
   nonlinearSolver->setZeroInitialGuess(false);
   nonlinearSolver->solve(rhsVec, solVec);
+
+  std::cout<<"Final Solution Norm: "<<solVec->L2Norm()<<std::endl;
+  expectedVal = 45612 ;
+  if( !AMP::Utilities::approx_equal( expectedVal, solVec->L2Norm(), 1e-5) ) {
+        ut->failure("the Final Solution Norm has changed."); }
 
   AMP::pout<<" Solution Max: "<< (solVec->max()) <<std::endl;
   AMP::pout<<" Solution Min: "<< (solVec->min()) <<std::endl;
@@ -225,8 +247,19 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   double finalResidualNorm  = resVec->L2Norm();
   AMP::pout<<"Final Residual Norm: "<< finalResidualNorm <<std::endl;
 
+  std::cout<<"Final Residual Norm: "<<finalResidualNorm<<std::endl;
+  expectedVal = 2.51806e-10 ;
+  if( !AMP::Utilities::approx_equal( expectedVal, finalResidualNorm, 10) ) {
+        ut->failure("the Final Residual Norm has changed."); }
+
 #ifdef USE_SILO
-  manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 0 );
+     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+     siloWriter->registerMesh( meshAdapter );
+
+     siloWriter->registerVector( solVec,                 meshAdapter, AMP::Mesh::Vertex, "Solution" );
+     siloWriter->registerVector( resVec,                 meshAdapter, AMP::Mesh::Vertex, "Residual" );
+ 
+     siloWriter->writeFile( exeName , 0 );
 #endif
 
   if(finalResidualNorm > 1.0e-08) {
@@ -236,11 +269,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   }
   ut->passes(exeName);
 
-  if( globalComm.getSize() == 1 ) {
-#ifdef USE_SILO
-    manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 0 );
-#endif
-  }
 
 }
 
