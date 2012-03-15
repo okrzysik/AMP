@@ -128,8 +128,8 @@ void  Map3to1to3::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , 
 {
     // Build the local maps
     AMP::LinearAlgebra::Vector::shared_ptr vec = u->subsetVectorForVariable( getInputVariable() );
-    std::multimap<double,double> map1 = buildMap( vec, d_iterator1 );
-    std::multimap<double,double> map2 = buildMap( vec, d_iterator2 );
+    std::multimap<double,double> map1 = buildMap( vec, d_mesh1, d_iterator1 );
+    std::multimap<double,double> map2 = buildMap( vec, d_mesh2, d_iterator2 );
 
     // Create the send buffers
     d_SendBuf1.resize(2*map1.size());
@@ -210,9 +210,9 @@ void  Map3to1to3::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr & ,
 
     // Build the return vector
     if ( d_mesh1.get() != NULL )
-        buildReturn( d_ResultVector, d_iterator1, map1 );
+        buildReturn( d_ResultVector, d_mesh1, d_iterator1, map1 );
     if ( d_mesh2.get() != NULL )
-        buildReturn( d_ResultVector, d_iterator2, map2 );
+        buildReturn( d_ResultVector, d_mesh2, d_iterator2, map2 );
 
     // Apply make consistent
     d_ResultVector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
@@ -230,14 +230,16 @@ void  Map3to1to3::setVector ( AMP::LinearAlgebra::Vector::shared_ptr &result )
 }
 
 
-std::multimap<double,double>  Map3to1to3::buildMap ( const AMP::LinearAlgebra::Vector::shared_ptr, const AMP::Mesh::MeshIterator& )
+std::multimap<double,double>  Map3to1to3::buildMap ( const AMP::LinearAlgebra::Vector::shared_ptr, 
+    const AMP::Mesh::Mesh::shared_ptr, const AMP::Mesh::MeshIterator& )
 {
     AMP_ERROR("buildMap should never be called for the BaseClass");
     return std::multimap<double,double>();
 }
 
 
-void Map3to1to3::buildReturn ( AMP::LinearAlgebra::Vector::shared_ptr, const AMP::Mesh::MeshIterator&, const std::multimap<double,double>& )
+void Map3to1to3::buildReturn ( AMP::LinearAlgebra::Vector::shared_ptr, const AMP::Mesh::Mesh::shared_ptr, 
+    const AMP::Mesh::MeshIterator&, const std::multimap<double,double>& )
 {
     AMP_ERROR("buildReturn should never be called for the BaseClass");
 }

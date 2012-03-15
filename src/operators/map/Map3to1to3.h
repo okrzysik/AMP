@@ -86,18 +86,22 @@ protected:
      * \details  This function constructs the map from a given vector.
      *    The inherited class must impliment this function
      * \param [in] vec  The vector to be used to construct the map
+     * \param [in] mesh The meshused to construct the map
      * \param [in] it   The iterator over the boundary used for the map
      */
-    virtual std::multimap<double,double>  buildMap( const AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::MeshIterator &it );
+    virtual std::multimap<double,double>  buildMap( const AMP::LinearAlgebra::Vector::shared_ptr vec, 
+        const AMP::Mesh::Mesh::shared_ptr, const AMP::Mesh::MeshIterator &it );
 
     /** \brief  A virtual method to construct a vector from a map
      * \details  This function constructs a vector from the map.
      *    The inherited class must impliment this function
      * \param [out] vec The vector to be used to construct the map
+     * \param [in] mesh The meshused to construct the map
      * \param [in] it   The iterator over the boundary used for the map
      * \param [in] map  The map containing all of the points
      */
-    virtual void buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::MeshIterator &it, const std::multimap<double,double> &map );
+    virtual void buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::Mesh::shared_ptr, 
+        const AMP::Mesh::MeshIterator &it, const std::multimap<double,double> &map );
 
 private:
     //!  Iterators over the nodes on the boundary

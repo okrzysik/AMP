@@ -40,7 +40,8 @@ bool ScalarZAxisMap::validMapType ( const std::string &t )
 *  It loops through all values in "cur", storing the value iv using     *
 *  the z-position as the 1D key.                                        *
 ************************************************************************/
-std::multimap<double,double>  ScalarZAxisMap::buildMap( const AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::MeshIterator &iterator )
+std::multimap<double,double>  ScalarZAxisMap::buildMap( const AMP::LinearAlgebra::Vector::shared_ptr vec, 
+    const AMP::Mesh::Mesh::shared_ptr, const AMP::Mesh::MeshIterator &iterator )
 {
     std::multimap<double,double> map;
     AMP::Discretization::DOFManager::shared_ptr  dof = vec->getDOFManager( );
@@ -62,7 +63,8 @@ std::multimap<double,double>  ScalarZAxisMap::buildMap( const AMP::LinearAlgebra
 /************************************************************************
 *  buildReturn                                                          *
 ************************************************************************/
-void ScalarZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::MeshIterator &iterator, const std::multimap<double,double> &map )
+void ScalarZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::Mesh::shared_ptr,
+    const AMP::Mesh::MeshIterator &iterator, const std::multimap<double,double> &map )
 {
 
     // Get the endpoints of the map

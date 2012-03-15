@@ -220,7 +220,8 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   //------------------------------------
 
 //  if( (tmpVec->L2Norm()-resVec->L2Norm()) > 0.01*tmpVec->L2Norm() )
-  if( resVec->L2Norm() > 0.01 ) {
+  double norm = resVec->L2Norm();
+  if( norm > 0.01 ) {
 	  ut->failure("Manufactured Solution verification test for 1D flow operator.");
   } else {
 	  ut->passes("Manufactured Solution verification test for 1D flow operator.");
