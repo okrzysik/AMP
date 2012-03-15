@@ -214,6 +214,7 @@ IDATimeIntegrator{
                              Preconditioner{
                                     print_info_level = 3
                                     max_iterations = 1
+                                    ResetColumnOperator = TRUE
                                     max_error = 1e-10
                                     thermalPreconditioner{
                                              print_info_level = 3
