@@ -3,7 +3,7 @@
 #define included_AMP_MechanicsLinearFEOperatorParameters
 
 #include "operators/LinearFEOperatorParameters.h"
-#include "MechanicsMaterialModel.h"
+#include "operators/mechanics/MechanicsMaterialModel.h"
 
 #include <vector>
 

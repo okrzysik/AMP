@@ -4,10 +4,10 @@
 
 /* AMP files */
 #include "operators/NonlinearFEOperator.h"
-#include "MechanicsConstants.h"
-#include "MechanicsNonlinearFEOperatorParameters.h"
-#include "MechanicsNonlinearElement.h"
-#include "MechanicsNonlinearUpdatedLagrangianElement.h"
+#include "operators/mechanics/MechanicsConstants.h"
+#include "operators/mechanics/MechanicsNonlinearFEOperatorParameters.h"
+#include "operators/mechanics/MechanicsNonlinearElement.h"
+#include "operators/mechanics/MechanicsNonlinearUpdatedLagrangianElement.h"
 #include "vectors/MultiVariable.h"
 #include "vectors/Variable.h"
 #include "discretization/DOF_Manager.h"
