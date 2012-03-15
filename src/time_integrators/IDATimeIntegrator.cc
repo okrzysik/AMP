@@ -83,6 +83,8 @@ namespace TimeIntegrator{
         idaTimeOp_Params->d_pMassOperator = parameters->d_pMassOperator;
         idaTimeOp_Params->d_pSourceTerm = parameters->d_pSourceTerm;
         idaTimeOp_Params->d_pAlgebraicVariable = parameters->d_pAlgebraicVariable;
+
+        idaTimeOp_Params->d_Mesh = (parameters->d_operator)->getMesh();
           
         // create the time operator
         boost::shared_ptr<AMP::TimeIntegrator::IDATimeOperator> idaTimeOp(new AMP::TimeIntegrator::IDATimeOperator(idaTimeOp_Params));

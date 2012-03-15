@@ -75,6 +75,7 @@ TimeOperator::getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::
 
   boost::shared_ptr<TimeOperatorParameters> timeOperatorParameters(new AMP::TimeIntegrator::TimeOperatorParameters(timeOperator_db));
 
+  timeOperatorParameters->d_Mesh = d_Mesh; 
   // if we have a linear rhs operator then just pass the pointer to the rhs operator instead of the parameter object
   if(d_bLinearRhsOperator)
     {
