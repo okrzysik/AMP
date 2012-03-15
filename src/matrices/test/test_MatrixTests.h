@@ -361,7 +361,7 @@ class VerifyExtractDiagonal
         AMP::LinearAlgebra::Matrix::shared_ptr   matrix = FACTORY::getMatrix();
         AMP::LinearAlgebra::Vector::shared_ptr   vector = matrix->getRightVector();
         size_t  firstRow = vector->getCommunicationList()->getStartGID();
-        size_t  maxCols = matrix->numColumns();
+        size_t  maxCols = matrix->numGlobalColumns();
         for ( size_t i = 0 ; i != vector->getCommunicationList()->numLocalRows() ; i++ )
         {
           int row = static_cast<int> ( i + firstRow );
@@ -373,8 +373,8 @@ class VerifyExtractDiagonal
         }
         AMP::LinearAlgebra::Vector::shared_ptr   diag = matrix->extractDiagonal ();
         double l1norm = diag->L1Norm();
-        double numRows = static_cast<double> ( matrix->numRows() );
-        double numCols = static_cast<double> ( matrix->numColumns() );
+        double numRows = static_cast<double> ( matrix->numGlobalRows() );
+        double numCols = static_cast<double> ( matrix->numGlobalColumns() );
         double compareVal = std::min ( numRows , numCols );
         compareVal = compareVal * (1. + compareVal)/2.;
         if ( fabs ( l1norm - compareVal ) < 0.000001 )

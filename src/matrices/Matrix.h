@@ -9,50 +9,33 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-  /** \class MatrixParameters
-    * \brief  Description of a matrix for construciton
-    */
-  class MatrixParameters : public Castable
-  {
-    public:
-      /** \brief Convenience typedef
-        */
-      typedef boost::shared_ptr<MatrixParameters>     shared_ptr;
-  };
 
-  /** \class Matrix
-    * \brief  An abstract interface for using and manipulating
-    * matrices
-    * \details  There are several different varieties of distributed
-    * memory matrices.  While most operations between the varieties
-    * can be abstracted away from the user, some cannot.  For this
-    * reason, most of the time, this class will suffice as the
-    * way to interact with a matrix.  Matrix creation may require
-    * use of one of the derived classes.
-    */
-  class Matrix : public Castable 
-  {
-    public:
+/** \class MatrixParameters
+  * \brief  Description of a matrix for construciton
+  */
+class MatrixParameters : public Castable
+{
+public:
+    /** \brief Convenience typedef
+      */
+    typedef boost::shared_ptr<MatrixParameters>     shared_ptr;
+};
+
+
+/** \class Matrix
+  * \brief  An abstract interface for using and manipulating matrices
+  * \details  There are several different varieties of distributed
+  * memory matrices.  While most operations between the varieties
+  * can be abstracted away from the user, some cannot.  For this
+  * reason, most of the time, this class will suffice as the
+  * way to interact with a matrix.  Matrix creation may require
+  * use of one of the derived classes.
+  */
+class Matrix : public Castable 
+{
+public:
       //! Convenience typedef
       typedef  boost::shared_ptr<Matrix>      shared_ptr;
-
-    protected:
-      /** \brief Unimplemented constructor
-        */
-      Matrix();
-
-
-      /** \brief Unused copy constructor
-        */
-      Matrix ( const Matrix & );
-
-      /** \brief  Multiply two matrices and store in a third
-        * \param[in]  other_op  The other matrix to multiply
-        * \param[out] result  The matrix to store the result
-        */
-      virtual void multiply ( shared_ptr other_op , shared_ptr &result ) = 0;
-
-    public:
 
       /** \brief Constructor
         * \param[in] params  Description of the matrix
@@ -200,15 +183,25 @@ namespace LinearAlgebra {
         */
       virtual void makeConsistent () = 0;
 
-      /** \brief  Get the number of rows in the matrix
-        * \return  The number of rows
+      /** \brief  Get the number of local rows in the matrix
+        * \return  The number of local rows
         */
-      virtual size_t numRows () = 0;
+      virtual size_t numLocalRows();
 
-      /** \brief  Get the number of columns in the matrix
-        * \return  The number of columns
+      /** \brief  Get the number of global rows in the matrix
+        * \return  The number of global rows
         */
-      virtual size_t numColumns () = 0;
+      virtual size_t numGlobalRows();
+
+      /** \brief  Get the number of local columns in the matrix
+        * \return  The number of local columns
+        */
+      virtual size_t numLocalColumns();
+
+      /** \brief  Get the number of global columns in the matrix
+        * \return  The number of global columns
+        */
+      virtual size_t numGlobalColumns();
 
       /** \brief  Extract the diagonal from a matrix
         * \param[in]  buf  An optional vector to use as a buffer
@@ -226,11 +219,46 @@ namespace LinearAlgebra {
         */
       virtual Vector::shared_ptr  getLeftVector () = 0;
 
+      /** \brief Get the DOFManager associated with a right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$ is a right vector )
+        * \return  The DOFManager associated with a right vector
+        */
+      virtual Discretization::DOFManager::shared_ptr  getRightDOFManager () = 0;
+
+      /** \brief Get the DOFManager associated with a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{y}\f$ is a left vector )
+        * \return  The DOFManager associated with a left vector
+        */
+      virtual Discretization::DOFManager::shared_ptr  getLeftDOFManager () = 0;
+
       /** \brief Compute the maximum column sum
         * \return  The L1 norm of the matrix
         */
       virtual double  L1Norm() const = 0;
-  };
+
+
+protected:
+      /** \brief Unimplemented constructor
+        */
+      Matrix();
+
+
+      /** \brief Unused copy constructor
+        */
+      Matrix ( const Matrix & );
+
+      /** \brief  Multiply two matrices and store in a third
+        * \param[in]  other_op  The other matrix to multiply
+        * \param[out] result  The matrix to store the result
+        */
+      virtual void multiply ( shared_ptr other_op , shared_ptr &result ) = 0;
+
+};
+
+
+//! Stream operator
+std::ostream &operator << ( std::ostream &out , const Matrix::shared_ptr );
+//! Stream operator
+std::ostream &operator << ( std::ostream &out , const Matrix & );
+
 
 }
 }

@@ -154,7 +154,7 @@ namespace AMP {
         if(matOp == NULL) {
           AMP_ERROR("This is not supported.");
         } else {
-          result = ((matOp->getMatrix())->numRows());
+          result = ((matOp->getMatrix())->numGlobalRows());
         }
       } else {
         result = (blockOp->getNumRows());
@@ -170,7 +170,7 @@ namespace AMP {
         if(matOp == NULL) {
           AMP_ERROR("This is not supported.");
         } else {
-          result = ((matOp->getMatrix())->numColumns());
+          result = ((matOp->getMatrix())->numGlobalColumns());
         }
       } else {
         result = (blockOp->getNumColumns());

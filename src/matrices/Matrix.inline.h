@@ -53,6 +53,13 @@ namespace LinearAlgebra {
     setScalar (0.0); 
   }
 
+  inline
+  std::ostream &operator << ( std::ostream &out , const Matrix::shared_ptr p )
+  {
+    return operator << ( out , *p );
+  }
+
+
 }
 }
 
