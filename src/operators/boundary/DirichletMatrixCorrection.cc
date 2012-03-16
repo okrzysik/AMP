@@ -35,6 +35,9 @@ namespace AMP {
           //Get neighbors also returns remote neighbors  
           //The calling node (bnd) must be owned locally.
           std::vector< AMP::Mesh::MeshElement::shared_ptr > neighbors = bnd->getNeighbors();
+          for(unsigned int i = 0; i < neighbors.size(); ++i) {
+            AMP_ASSERT((*(neighbors[i])) != (*bnd));
+          }//end for i
 
           for(unsigned int j = 0; j < d_dofIds[k].size(); ++j) {
             for(unsigned int i = 0; i < bndDofIds.size(); ++i) {

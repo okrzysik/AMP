@@ -68,8 +68,8 @@ void myTest(AMP::UnitTest *ut)
   AMP::plog<<"Rank = "<<rank<<": locSize = "<<locSize<<" globSize = "<<globSize<<std::endl;
   AMP::plog<<"Rank = "<<rank<<": locStartID = "<<locStartId<<std::endl;
 
-  //AMP::Mesh::MeshIterator nd = meshAdapter->getIterator(AMP::Mesh::Vertex, 0);
-  AMP::Mesh::MeshIterator nd = meshAdapter->getIDsetIterator(AMP::Mesh::Vertex, 2, 0 );
+  AMP::Mesh::MeshIterator nd = meshAdapter->getIterator(AMP::Mesh::Vertex, 0);
+  //AMP::Mesh::MeshIterator nd = meshAdapter->getIDsetIterator(AMP::Mesh::Vertex, 2, 0 );
   AMP::Mesh::MeshIterator end_nd = nd.end();
 
   int locNonZeroCnt = 0;
@@ -99,8 +99,8 @@ void myTest(AMP::UnitTest *ut)
       int rowIdx = -1;
       int colIdx = -1;
       if(rank == proc) {
-        //nd = meshAdapter->getIterator(AMP::Mesh::Vertex, 0);
-        nd = meshAdapter->getIDsetIterator(AMP::Mesh::Vertex, 2, 0 );
+        nd = meshAdapter->getIterator(AMP::Mesh::Vertex, 0);
+        //nd = meshAdapter->getIDsetIterator(AMP::Mesh::Vertex, 2, 0 );
         end_nd = nd.end();
         int cnt = 0;
         for( ; nd != end_nd; ++nd) {
@@ -110,13 +110,15 @@ void myTest(AMP::UnitTest *ut)
           for(int r = 0; r < ndDofIds.size(); r++) {
             for(int c = 0; c < ndDofIds.size(); c++) {
               if(cnt == locTestCnt) {
-                mat->setValueByGlobalID(ndDofIds[r], ndDofIds[c], MatVal);
+                //mat->setValueByGlobalID(ndDofIds[r], ndDofIds[c], MatVal);
+                mat->addValueByGlobalID(ndDofIds[r], ndDofIds[c], MatVal);
                 rowIdx = ndDofIds[r];
                 colIdx = ndDofIds[c];
               }
               cnt++;
               if(cnt == locTestCnt) {
-                mat->setValueByGlobalID(ndDofIds[c], ndDofIds[r], MatVal);
+                //mat->setValueByGlobalID(ndDofIds[c], ndDofIds[r], MatVal);
+                mat->addValueByGlobalID(ndDofIds[c], ndDofIds[r], MatVal);
                 rowIdx = ndDofIds[c];
                 colIdx = ndDofIds[r];
               }
@@ -133,13 +135,15 @@ void myTest(AMP::UnitTest *ut)
             for(int r = 0; r < ndDofIds.size(); r++) {
               for(int c = 0; c < nhDofIds.size(); c++) {
                 if(cnt == locTestCnt) {
-                  mat->setValueByGlobalID(ndDofIds[r], nhDofIds[c], MatVal);
+                  //mat->setValueByGlobalID(ndDofIds[r], nhDofIds[c], MatVal);
+                  mat->addValueByGlobalID(ndDofIds[r], nhDofIds[c], MatVal);
                   rowIdx = ndDofIds[r];
                   colIdx = nhDofIds[c];
                 }
                 cnt++;
                 if(cnt == locTestCnt) {
-                  mat->setValueByGlobalID(nhDofIds[c], ndDofIds[r], MatVal);
+                  //mat->setValueByGlobalID(nhDofIds[c], ndDofIds[r], MatVal);
+                  mat->addValueByGlobalID(nhDofIds[c], ndDofIds[r], MatVal);
                   rowIdx = nhDofIds[c];
                   colIdx = ndDofIds[r];
                 }
@@ -157,6 +161,8 @@ void myTest(AMP::UnitTest *ut)
 
       globalComm.bcast<int>(&rowIdx, 1, proc);
       globalComm.bcast<int>(&colIdx, 1, proc);
+
+      std::cout<<"Testing: "<<rowIdx<<" : "<<colIdx<<std::endl;
 
       for(int idx = locStartId; idx < (locStartId + locSize); idx++) {
         if(idx == rowIdx) {
