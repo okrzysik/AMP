@@ -39,6 +39,9 @@ INCLUDE (macros)
 #     COPY_MESH_FILE ( mesh_file )
 #
 
+COPY_TEST_DATA_FILE ( input_testMatSetValues )
+ADD_AMP_PROVISIONAL_TEST( testMatSetValues )
+
 COPY_TEST_DATA_FILE ( input_testDofMap )
 ADD_AMP_PROVISIONAL_TEST( testDofMap )
 
