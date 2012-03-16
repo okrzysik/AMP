@@ -56,14 +56,16 @@ void myTest(AMP::UnitTest *ut)
   size_t globSize = vec->getGlobalSize();
   size_t locStartId = vec->getLocalStartID();
 
-  AMP::LinearAlgebra::Vector::shared_ptr inVec = vec->cloneVector();
-  AMP::LinearAlgebra::Vector::shared_ptr outVec = vec->cloneVector();
+  //  AMP::LinearAlgebra::Vector::shared_ptr inVec = vec->cloneVector();
+  //  AMP::LinearAlgebra::Vector::shared_ptr outVec = vec->cloneVector();
 
   const double MatVal = 123.0;
 
-  for(int idx = locStartId; idx < (locStartId + locSize); idx++) {
-    inVec->setLocalValueByGlobalID(idx, static_cast<double>(idx + 1));
-  }//end idx
+  /*
+     for(int idx = locStartId; idx < (locStartId + locSize); idx++) {
+     inVec->setLocalValueByGlobalID(idx, static_cast<double>(idx + 1));
+     }//end idx
+     */
 
   AMP::plog<<"Rank = "<<rank<<": locSize = "<<locSize<<" globSize = "<<globSize<<std::endl;
   AMP::plog<<"Rank = "<<rank<<": locStartID = "<<locStartId<<std::endl;
@@ -110,15 +112,15 @@ void myTest(AMP::UnitTest *ut)
           for(int r = 0; r < ndDofIds.size(); r++) {
             for(int c = 0; c < ndDofIds.size(); c++) {
               if(cnt == locTestCnt) {
-                //mat->setValueByGlobalID(ndDofIds[r], ndDofIds[c], MatVal);
-                mat->addValueByGlobalID(ndDofIds[r], ndDofIds[c], MatVal);
+                mat->setValueByGlobalID(ndDofIds[r], ndDofIds[c], MatVal);
+                //mat->addValueByGlobalID(ndDofIds[r], ndDofIds[c], MatVal);
                 rowIdx = ndDofIds[r];
                 colIdx = ndDofIds[c];
               }
               cnt++;
               if(cnt == locTestCnt) {
-                //mat->setValueByGlobalID(ndDofIds[c], ndDofIds[r], MatVal);
-                mat->addValueByGlobalID(ndDofIds[c], ndDofIds[r], MatVal);
+                mat->setValueByGlobalID(ndDofIds[c], ndDofIds[r], MatVal);
+                //mat->addValueByGlobalID(ndDofIds[c], ndDofIds[r], MatVal);
                 rowIdx = ndDofIds[c];
                 colIdx = ndDofIds[r];
               }
@@ -135,15 +137,15 @@ void myTest(AMP::UnitTest *ut)
             for(int r = 0; r < ndDofIds.size(); r++) {
               for(int c = 0; c < nhDofIds.size(); c++) {
                 if(cnt == locTestCnt) {
-                  //mat->setValueByGlobalID(ndDofIds[r], nhDofIds[c], MatVal);
-                  mat->addValueByGlobalID(ndDofIds[r], nhDofIds[c], MatVal);
+                  mat->setValueByGlobalID(ndDofIds[r], nhDofIds[c], MatVal);
+                  //mat->addValueByGlobalID(ndDofIds[r], nhDofIds[c], MatVal);
                   rowIdx = ndDofIds[r];
                   colIdx = nhDofIds[c];
                 }
                 cnt++;
                 if(cnt == locTestCnt) {
-                  //mat->setValueByGlobalID(nhDofIds[c], ndDofIds[r], MatVal);
-                  mat->addValueByGlobalID(nhDofIds[c], ndDofIds[r], MatVal);
+                  mat->setValueByGlobalID(nhDofIds[c], ndDofIds[r], MatVal);
+                  //mat->addValueByGlobalID(nhDofIds[c], ndDofIds[r], MatVal);
                   rowIdx = nhDofIds[c];
                   colIdx = ndDofIds[r];
                 }
@@ -156,8 +158,8 @@ void myTest(AMP::UnitTest *ut)
 
       mat->makeConsistent();
 
-      outVec->setRandomValues();
-      mat->mult(inVec, outVec);
+      //     outVec->setRandomValues();
+      //     mat->mult(inVec, outVec);
 
       globalComm.bcast<int>(&rowIdx, 1, proc);
       globalComm.bcast<int>(&colIdx, 1, proc);
@@ -165,12 +167,36 @@ void myTest(AMP::UnitTest *ut)
       std::cout<<"Testing: "<<rowIdx<<" : "<<colIdx<<std::endl;
 
       for(int idx = locStartId; idx < (locStartId + locSize); idx++) {
+        std::vector<unsigned int> cols;
+        std::vector<double> vals;
+        mat->getRowByGlobalID(idx, cols, vals);
         if(idx == rowIdx) {
-          AMP_ASSERT((outVec->getLocalValueByGlobalID(idx)) == (MatVal*(static_cast<double>(colIdx + 1))));
+          bool found = false;
+          for(int i = 0; i < cols.size(); i++) {
+            if(cols[i] == colIdx) {
+              AMP_ASSERT(vals[i] == MatVal);
+              found = true;
+            } else {
+              AMP_ASSERT(vals[i] == 0.0);
+            }
+          }//end i
+          AMP_ASSERT(found);
         } else {
-          AMP_ASSERT((outVec->getLocalValueByGlobalID(idx)) == 0.0);
+          for(int i = 0; i < cols.size(); i++) {
+            AMP_ASSERT(vals[i] == 0.0);
+          }//end i
         }
       }//end idx
+
+      /*
+         for(int idx = locStartId; idx < (locStartId + locSize); idx++) {
+         if(idx == rowIdx) {
+         AMP_ASSERT((outVec->getLocalValueByGlobalID(idx)) == (MatVal*(static_cast<double>(colIdx + 1))));
+         } else {
+         AMP_ASSERT((outVec->getLocalValueByGlobalID(idx)) == 0.0);
+         }
+         }//end idx
+         */
 
     }//end locTestCnt
   }//end proc

@@ -64,12 +64,12 @@ void myTest(AMP::UnitTest *ut )
     std::vector<size_t> ndDofIds;
     dofMap->getDOFs(nd->globalID(), ndDofIds);
     std::vector<double> pt = nd->coord();
-    AMP::plog<<" locNdCnt = "<<cnt<<" Pt: "<<(pt[0])<<" : "<<(pt[1])<<" : "<<(pt[2])<<std::endl;
+    AMP::plog<<std::endl<<" locNdCnt = "<<cnt<<" Pt: "<<(pt[0])<<" : "<<(pt[1])<<" : "<<(pt[2])<<std::endl;
     for(int i = 0; i < ndDofIds.size(); ++i) {
       std::vector<unsigned int> cols;
       std::vector<double> vals;
       mat->getRowByGlobalID(ndDofIds[i], cols, vals);
-      AMP::plog<<" row = "<<(ndDofIds[i])<<" NumCols = "<<(cols.size())<<std::endl;
+      AMP::plog<<std::endl<<" row = "<<(ndDofIds[i])<<" NumCols = "<<(cols.size())<<std::endl;
       for(int j = 0; j < cols.size(); ++j) {
         AMP::plog<<" col("<<j<<") = "<<(cols[j])<<" Val = "<<(vals[j])<<std::endl;
       }//end j
