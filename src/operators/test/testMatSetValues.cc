@@ -171,6 +171,7 @@ void myTest(AMP::UnitTest *ut)
     }//end locTestCnt
   }//end proc
 
+  ut->passes(exeName);
 }
 
 int main(int argc, char *argv[])
