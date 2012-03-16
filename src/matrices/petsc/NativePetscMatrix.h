@@ -55,9 +55,11 @@ namespace LinearAlgebra {
 
       virtual Vector::shared_ptr getRightVector ();
       virtual Vector::shared_ptr getLeftVector ();
+      virtual Discretization::DOFManager::shared_ptr  getRightDOFManager ();
+      virtual Discretization::DOFManager::shared_ptr  getLeftDOFManager ();
 
-      virtual size_t  numRows ();
-      virtual size_t  numColumns ();
+      virtual size_t  numGlobalRows ();
+      virtual size_t  numGlobalColumns ();
 
       virtual void  scale ( double alpha );
       virtual void  axpy ( double alpha , const Matrix &x );

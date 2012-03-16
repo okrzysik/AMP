@@ -19,7 +19,7 @@ namespace LinearAlgebra {
 
 void ManagedEpetraMatrix::multiply ( shared_ptr other_op , shared_ptr &result )
 {
-    if ( this->numColumns() != other_op->numRows() )
+    if ( this->numGlobalColumns() != other_op->numGlobalRows() )
         AMP_ERROR( "Inner matrix dimensions must agree" );
     if ( !other_op->isA<ManagedEpetraMatrix>() )
         AMP_ERROR( "Incompatible matrix types" );
@@ -87,6 +87,20 @@ Vector::shared_ptr ManagedEpetraMatrix::getLeftVector ()
     rtn->setVariable( memp.d_VariableLeft );
     //rtn->setVariable( Variable::shared_ptr( new Variable("left") ) );
     return rtn;
+}
+
+
+Discretization::DOFManager::shared_ptr ManagedEpetraMatrix::getRightDOFManager ()
+{
+    ManagedEpetraMatrixParameters &memp = d_pParameters->castTo<ManagedEpetraMatrixParameters> ();
+    return memp.d_DOFManagerRight;
+}
+
+
+Discretization::DOFManager::shared_ptr ManagedEpetraMatrix::getLeftDOFManager ()
+{
+    ManagedEpetraMatrixParameters &memp = d_pParameters->castTo<ManagedEpetraMatrixParameters> ();
+    return memp.d_DOFManagerLeft;
 }
 
 
@@ -265,8 +279,8 @@ Matrix::shared_ptr  ManagedEpetraMatrix::cloneMatrix () const
 
 void ManagedEpetraMatrix::mult ( const Vector::shared_ptr &in , Vector::shared_ptr &out )
 {
-    AMP_ASSERT ( in->getGlobalSize() == numRows() );
-    AMP_ASSERT ( out->getGlobalSize() == numColumns() );
+    AMP_ASSERT ( in->getGlobalSize() == numGlobalRows() );
+    AMP_ASSERT ( out->getGlobalSize() == numGlobalColumns() );
     Vector::shared_ptr  in_view = EpetraVector::view ( in );
     Vector::shared_ptr  out_view = EpetraVector::view ( out );
     VerifyEpetraReturn ( d_epetraMatrix->Multiply ( false , in_view->castTo<EpetraVector>().getEpetra_Vector() , out_view->castTo<EpetraVector>().getEpetra_Vector() ) , "mult" );

@@ -13,7 +13,7 @@ namespace LinearAlgebra {
   }
 
   inline
-  size_t NativePetscMatrix::numRows ()
+  size_t NativePetscMatrix::numGlobalRows ()
   {
     int rows , cols;
     MatGetSize ( d_Mat , &rows , &cols );
@@ -21,7 +21,7 @@ namespace LinearAlgebra {
   }
 
   inline
-  size_t NativePetscMatrix::numColumns ()
+  size_t NativePetscMatrix::numGlobalColumns ()
   {
     int rows , cols;
     MatGetSize ( d_Mat , &rows , &cols );

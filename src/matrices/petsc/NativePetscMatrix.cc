@@ -60,6 +60,16 @@ namespace LinearAlgebra {
     return Vector::shared_ptr ( new NativePetscVector ( npvParam ) );
   }
 
+  Discretization::DOFManager::shared_ptr NativePetscMatrix::getRightDOFManager ()
+  {
+    return getRightVector()->getDOFManager();
+  }
+
+  Discretization::DOFManager::shared_ptr NativePetscMatrix::getLeftDOFManager ()
+  {
+    return getLeftVector()->getDOFManager();
+  }
+
   void NativePetscMatrix::getRowByGlobalID ( int row , std::vector<unsigned int> &cols , std::vector<double> &values ) const
   {
     int numCols;

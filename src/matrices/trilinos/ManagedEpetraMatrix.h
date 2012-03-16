@@ -221,8 +221,8 @@ namespace LinearAlgebra {
       virtual Vector::shared_ptr  extractDiagonal ( Vector::shared_ptr buf = Vector::shared_ptr() );
       virtual void  scale ( double alpha );
       virtual void  axpy ( double alpha , const Matrix &rhs );
-      virtual size_t  numRows () { return d_epetraMatrix->NumGlobalRows(); }
-      virtual size_t  numColumns () { return d_epetraMatrix->NumGlobalCols(); }
+      virtual size_t  numGlobalRows () { return d_epetraMatrix->NumGlobalRows(); }
+      virtual size_t  numGlobalColumns () { return d_epetraMatrix->NumGlobalCols(); }
       virtual void  addValuesByGlobalID ( int   num_rows ,
                                           int   num_cols ,
                                           int  *rows ,
@@ -246,6 +246,8 @@ namespace LinearAlgebra {
       virtual Matrix::shared_ptr cloneMatrix () const;
       virtual Vector::shared_ptr  getRightVector ();
       virtual Vector::shared_ptr  getLeftVector ();
+      virtual Discretization::DOFManager::shared_ptr  getRightDOFManager ();
+      virtual Discretization::DOFManager::shared_ptr  getLeftDOFManager ();
       virtual void fillComplete();
   };
 
