@@ -2,7 +2,6 @@
 #include <iostream>
 #include <string>
 #include <cassert>
-#include <fstream>
 
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
@@ -12,20 +11,6 @@
 #include "vectors/VectorBuilder.h"
 #include "ampmesh/SiloIO.h"
 
-/* libMesh files */
-#include "mesh.h"
-#include "mesh_generation.h"
-#include "equation_systems.h"
-#include "fe.h"
-#include "quadrature_gauss.h"
-#include "dof_map.h"
-#include "sparse_matrix.h"
-#include "petsc_matrix.h"
-#include "petsc_vector.h"
-#include "dense_matrix.h"
-#include "linear_implicit_system.h"
-#include "elem.h"
-
 /* AMP files */
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -34,10 +19,6 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "operators/mechanics/IsotropicElasticModel.h"
-#include "operators/mechanics/MechanicsLinearElement.h"
-#include "operators/mechanics/MechanicsLinearFEOperator.h"
-#include "operators/boundary/DirichletMatrixCorrection.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"

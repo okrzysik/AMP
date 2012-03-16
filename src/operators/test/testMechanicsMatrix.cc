@@ -8,9 +8,6 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
-#include "discretization/simpleDOF_Manager.h"
-#include "vectors/VectorBuilder.h"
-
 /* AMP files */
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -29,7 +26,6 @@ void myTest(AMP::UnitTest *ut )
 
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
   int npes = globalComm.getSize();
-  int rank = globalComm.getRank();
 
   char outFile[256];
   sprintf(outFile, "outMechMat_%d", npes);
@@ -54,6 +50,8 @@ void myTest(AMP::UnitTest *ut )
   AMP::LinearAlgebra::Matrix::shared_ptr mat = bvpOperator->getMatrix();
   AMP::LinearAlgebra::Vector::shared_ptr vec = mat->getLeftVector();
 
+  AMP::Discretization::DOFManager::shared_ptr dofMap = vec->getDOFManager();
+
   size_t locSize = vec->getLocalSize();
   size_t globSize = vec->getGlobalSize();
   size_t locStartId = vec->getLocalStartID();
@@ -62,8 +60,7 @@ void myTest(AMP::UnitTest *ut )
 
   AMP::Mesh::MeshIterator nd = meshAdapter->getIterator(AMP::Mesh::Vertex, 0);
   AMP::Mesh::MeshIterator end_nd = nd.end();
-  int cnt = 0;
-  for( ; nd != end_nd; ++nd, ++cnt) {
+  for(int cnt = 0; nd != end_nd; ++nd, ++cnt) {
     std::vector<size_t> ndDofIds;
     dofMap->getDOFs(nd->globalID(), ndDofIds);
     std::vector<double> pt = nd->coord();
