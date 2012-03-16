@@ -3,7 +3,8 @@ Mesh {
   MeshType = "libMesh"
     dim = 3
     MeshName = "TestMesh"
-    FileName = "cube8.with.boundary.labels.e"
+    FileName = "brick.e"
+    //FileName = "cube8.with.boundary.labels.e"
 }
 
 

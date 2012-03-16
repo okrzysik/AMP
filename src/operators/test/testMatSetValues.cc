@@ -70,7 +70,8 @@ void myTest(AMP::UnitTest *ut)
   AMP::plog<<"Rank = "<<rank<<": locSize = "<<locSize<<" globSize = "<<globSize<<std::endl;
   AMP::plog<<"Rank = "<<rank<<": locStartID = "<<locStartId<<std::endl;
 
-  AMP::Mesh::MeshIterator nd = meshAdapter->getIterator(AMP::Mesh::Vertex, 0);
+  //AMP::Mesh::MeshIterator nd = meshAdapter->getIterator(AMP::Mesh::Vertex, 0);
+  AMP::Mesh::MeshIterator nd = meshAdapter->getIDsetIterator(AMP::Mesh::Vertex, 2, 0 );
   AMP::Mesh::MeshIterator end_nd = nd.end();
 
   int locNonZeroCnt = 0;
@@ -100,7 +101,8 @@ void myTest(AMP::UnitTest *ut)
       int rowIdx = -1;
       int colIdx = -1;
       if(rank == proc) {
-        nd = meshAdapter->getIterator(AMP::Mesh::Vertex, 0);
+        //nd = meshAdapter->getIterator(AMP::Mesh::Vertex, 0);
+        nd = meshAdapter->getIDsetIterator(AMP::Mesh::Vertex, 2, 0 );
         end_nd = nd.end();
         int cnt = 0;
         for( ; nd != end_nd; ++nd) {
