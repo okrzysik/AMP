@@ -4,6 +4,7 @@ Mesh {
     dim = 3
     MeshName = "TestMesh"
     FileName = "brick.e"
+    //FileName = "cube8.with.boundary.labels.e"
 }
 
 
