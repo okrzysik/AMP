@@ -222,7 +222,23 @@ protected:
       * \param[out] out_vals      The values partitioned according to out_indices
       * \param[out] remap         If not null, this is a list of where in the indices array an entry comes from
       */
-    void  partitionValues ( const int num, 
+    void  partitionGlobalValues ( const int num, 
+                            const size_t *indices, 
+                            const double *vals,
+                            std::vector<std::vector<size_t> >  &out_indices, 
+                            std::vector<std::vector<double> >  &out_vals,
+                            std::vector<std::vector<int> > *remap=NULL ) const;
+
+    /** A method that will translate an array of local ids relative to the multivector
+      * into an array of arrays of local ids relative to the component vectors
+      * \param[in] num            The number of DOFs that need to be mapped
+      * \param[in] indices        The indices of the values relative to the multivector
+      * \param[in] vals           Values associated somehow with the indices
+      * \param[out] out_indices   An array of arrays of mapped indices relative to constituent vectors
+      * \param[out] out_vals      The values partitioned according to out_indices
+      * \param[out] remap         If not null, this is a list of where in the indices array an entry comes from
+      */
+    void  partitionLocalValues ( const int num, 
                             const size_t *indices, 
                             const double *vals,
                             std::vector<std::vector<size_t> >  &out_indices, 

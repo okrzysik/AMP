@@ -662,7 +662,7 @@ void MultiVector::setValuesByLocalID ( int num , size_t *indices , const double 
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
-    partitionValues( num, indices, in_vals, ndxs, vals );
+    partitionLocalValues( num, indices, in_vals, ndxs, vals );
     for ( size_t i = 0 ; i != ndxs.size() ; i++ ) {
         if ( ndxs[i].size() )
             d_vVectors[i]->setValuesByLocalID ( ndxs[i].size() , &(ndxs[i][0]) , &(vals[i][0]) );
@@ -673,7 +673,7 @@ void MultiVector::setLocalValuesByGlobalID ( int num , size_t *indices , const d
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
-    partitionValues( num, indices, in_vals, ndxs, vals );
+    partitionGlobalValues( num, indices, in_vals, ndxs, vals );
     for ( size_t i = 0 ; i != ndxs.size() ; i++ ) {
         if ( ndxs[i].size() )
             d_vVectors[i]->setLocalValuesByGlobalID ( ndxs[i].size() , &(ndxs[i][0]) , &(vals[i][0]) );
@@ -683,7 +683,7 @@ void MultiVector::setLocalValuesByGlobalID ( int num , size_t *indices , const d
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
-    partitionValues( num, indices, in_vals, ndxs, vals );
+    partitionGlobalValues( num, indices, in_vals, ndxs, vals );
     for ( size_t i = 0 ; i != ndxs.size() ; i++ ) {
         if ( ndxs[i].size() )
             d_vVectors[i]->setGhostValuesByGlobalID ( ndxs[i].size() , &(ndxs[i][0]) , &(vals[i][0]) );
@@ -694,7 +694,7 @@ void MultiVector::setValuesByGlobalID ( int num , size_t *indices , const double
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
-    partitionValues( num, indices, in_vals, ndxs, vals );
+    partitionGlobalValues( num, indices, in_vals, ndxs, vals );
     for ( size_t i = 0 ; i != ndxs.size() ; i++ ) {
         if ( ndxs[i].size() )
             d_vVectors[i]->setValuesByGlobalID ( ndxs[i].size() , &(ndxs[i][0]) , &(vals[i][0]) );
@@ -705,7 +705,7 @@ void MultiVector::addValuesByLocalID ( int num , size_t *indices , const double 
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
-    partitionValues( num, indices, in_vals, ndxs, vals );
+    partitionLocalValues( num, indices, in_vals, ndxs, vals );
     for ( size_t i = 0 ; i != ndxs.size() ; i++ ) {
         if ( ndxs[i].size() )
             d_vVectors[i]->addValuesByLocalID ( ndxs[i].size() , &(ndxs[i][0]) , &(vals[i][0]) );
@@ -716,7 +716,7 @@ void MultiVector::addLocalValuesByGlobalID ( int num , size_t *indices , const d
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
-    partitionValues( num, indices, in_vals, ndxs, vals );
+    partitionGlobalValues( num, indices, in_vals, ndxs, vals );
     for ( size_t i = 0 ; i != ndxs.size() ; i++ ) {
         if ( ndxs[i].size() )
             d_vVectors[i]->addLocalValuesByGlobalID ( ndxs[i].size() , &(ndxs[i][0]) , &(vals[i][0]) );
@@ -727,7 +727,7 @@ void MultiVector::addValuesByGlobalID ( int num , size_t *indices , const double
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
-    partitionValues( num, indices, in_vals, ndxs, vals );
+    partitionGlobalValues( num, indices, in_vals, ndxs, vals );
     for ( size_t i = 0 ; i != ndxs.size() ; i++ ) {
         if ( ndxs[i].size() )
             d_vVectors[i]->addValuesByGlobalID ( ndxs[i].size() , &(ndxs[i][0]) , &(vals[i][0]) );
@@ -739,7 +739,7 @@ void MultiVector::getValuesByGlobalID ( int num , size_t *indices , double *out_
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
     std::vector<std::vector<int> >  remap;
-    partitionValues ( num, indices, out_vals, ndxs, vals, &remap );
+    partitionGlobalValues ( num, indices, out_vals, ndxs, vals, &remap );
     for ( size_t i = 0 ; i != ndxs.size() ; i++ ) {
         if ( ndxs[i].size() )
             d_vVectors[i]->getValuesByGlobalID ( ndxs[i].size() , &(ndxs[i][0]) , &(vals[i][0]) );
@@ -755,7 +755,7 @@ void MultiVector::getLocalValuesByGlobalID ( int num , size_t *indices , double 
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
     std::vector<std::vector<int> >  remap;
-    partitionValues ( num, indices, out_vals, ndxs, vals, &remap );
+    partitionGlobalValues ( num, indices, out_vals, ndxs, vals, &remap );
     for ( size_t i = 0 ; i != ndxs.size() ; i++ ) {
         if ( ndxs[i].size() )
             d_vVectors[i]->getLocalValuesByGlobalID ( ndxs[i].size() , &(ndxs[i][0]) , &(vals[i][0]) );
@@ -771,7 +771,7 @@ void MultiVector::getGhostValuesByGlobalID ( int num , size_t *indices , double 
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
     std::vector<std::vector<int> >  remap;
-    partitionValues ( num, indices, out_vals, ndxs, vals, &remap );
+    partitionGlobalValues ( num, indices, out_vals, ndxs, vals, &remap );
     for ( size_t i = 0 ; i != ndxs.size() ; i++ ) {
         if ( ndxs[i].size() )
             d_vVectors[i]->getGhostValuesByGlobalID ( ndxs[i].size() , &(ndxs[i][0]) , &(vals[i][0]) );
@@ -787,7 +787,7 @@ void MultiVector::getValuesByLocalID ( int num , size_t *indices , double *out_v
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
     std::vector<std::vector<int> >  remap;
-    partitionValues ( num, indices, out_vals, ndxs, vals, &remap );
+    partitionLocalValues ( num, indices, out_vals, ndxs, vals, &remap );
     for ( size_t i = 0 ; i != ndxs.size() ; i++ ) {
         if ( ndxs[i].size() )
             d_vVectors[i]->getValuesByLocalID ( ndxs[i].size() , &(ndxs[i][0]) , &(vals[i][0]) );
@@ -800,9 +800,9 @@ void MultiVector::getValuesByLocalID ( int num , size_t *indices , double *out_v
 
 
 /****************************************************************
-* Function to partition the ids by the sub vectors              *
+* Function to partition the global ids by the sub vectors       *
 ****************************************************************/
-void  MultiVector::partitionValues ( const int num, const size_t *indices, const double *vals,
+void  MultiVector::partitionGlobalValues ( const int num, const size_t *indices, const double *vals,
     std::vector<std::vector<size_t> > &out_indices, std::vector<std::vector<double> > &out_vals, std::vector<std::vector<int> > *remap ) const
 {
     const size_t neg_one = ~((size_t)0);
@@ -834,6 +834,40 @@ void  MultiVector::partitionValues ( const int num, const size_t *indices, const
                     remap->operator[](i)[count] = j;
                 count++;
             }
+        }
+    }
+}
+
+
+/****************************************************************
+* Function to partition the local ids by the sub vectors       *
+****************************************************************/
+void  MultiVector::partitionLocalValues ( const int num, const size_t *indices, const double *vals,
+    std::vector<std::vector<size_t> > &out_indices, std::vector<std::vector<double> > &out_vals, std::vector<std::vector<int> > *remap ) const
+{
+    if ( num == 0 )
+        return;
+    // Convert the local ids to global ids
+    size_t begin_DOF = d_DOFManager->beginDOF();
+    size_t end_DOF = d_DOFManager->endDOF();
+    std::vector<size_t> global_indices(num);
+    for (int i=0; i<num; i++) {
+        AMP_INSIST(indices[i]<end_DOF,"Invalid local id");
+        global_indices[i] = indices[i] + begin_DOF;
+    }
+    // Partition based on the global ids
+    partitionGlobalValues( num, &global_indices[0], vals, out_indices, out_vals, remap );
+    // Convert the new global ids back to local ids
+    const size_t neg_one = ~((size_t)0);
+    for (size_t i=0; i<d_vVectors.size(); i++) {
+        if ( out_indices[i].size()==0 )
+            continue;
+        begin_DOF = d_vVectors[i]->getDOFManager()->beginDOF();
+        end_DOF = d_vVectors[i]->getDOFManager()->endDOF();
+        for (size_t j=0; j<out_indices[i].size(); j++) {
+            AMP_ASSERT(out_indices[i][j]!=neg_one);
+            out_indices[i][j] -= begin_DOF;
+            AMP_ASSERT(out_indices[i][j]<end_DOF);
         }
     }
 }
