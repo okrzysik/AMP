@@ -61,10 +61,8 @@ void myTest(AMP::UnitTest *ut)
 
   const double MatVal = 123.0;
 
-  for(int idx = 0; idx < globSize; idx++) {
-    if((idx >= locStartId) && (idx < (locStartId + locSize))) {
-      inVec->setLocalValueByGlobalID(idx, static_cast<double>(idx + 1));
-    }
+  for(int idx = locStartId; idx < (locStartId + locSize); idx++) {
+    inVec->setLocalValueByGlobalID(idx, static_cast<double>(idx + 1));
   }//end idx
 
   AMP::plog<<"Rank = "<<rank<<": locSize = "<<locSize<<" globSize = "<<globSize<<std::endl;
@@ -160,13 +158,11 @@ void myTest(AMP::UnitTest *ut)
       globalComm.bcast<int>(&rowIdx, 1, proc);
       globalComm.bcast<int>(&colIdx, 1, proc);
 
-      for(int idx = 0; idx < globSize; idx++) {
-        if((idx >= locStartId) && (idx < (locStartId + locSize))) {
-          if(idx == rowIdx) {
-            AMP_ASSERT((outVec->getLocalValueByGlobalID(idx)) == (MatVal*(static_cast<double>(colIdx + 1))));
-          } else {
-            AMP_ASSERT((outVec->getLocalValueByGlobalID(idx)) == 0.0);
-          }
+      for(int idx = locStartId; idx < (locStartId + locSize); idx++) {
+        if(idx == rowIdx) {
+          AMP_ASSERT((outVec->getLocalValueByGlobalID(idx)) == (MatVal*(static_cast<double>(colIdx + 1))));
+        } else {
+          AMP_ASSERT((outVec->getLocalValueByGlobalID(idx)) == 0.0);
         }
       }//end idx
 
