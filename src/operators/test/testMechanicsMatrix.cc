@@ -63,12 +63,12 @@ void myTest(AMP::UnitTest *ut )
     std::vector<unsigned int> ndDofIds;
     std::vector<unsigned int> empty;
     dofMap->getDOFs(*nd, ndDofIds, empty);
-    AMP::plog<<" locNdCnt = "<<cnt<<" Pt: "<<(nd->x())<<" : "<<(nd->y())<<" : "<<(nd->z())<<std::endl;
+    AMP::plog<<std::endl<<" locNdCnt = "<<cnt<<" Pt: "<<(nd->x())<<" : "<<(nd->y())<<" : "<<(nd->z())<<std::endl;
     for(int i = 0; i < ndDofIds.size(); ++i) {
       std::vector<unsigned int> cols;
       std::vector<double> vals;
       mat->getRowByGlobalID(ndDofIds[i], cols, vals);
-      AMP::plog<<" row = "<<(ndDofIds[i])<<" NumCols = "<<(cols.size())<<std::endl;
+      AMP::plog<<std::endl<<" row = "<<(ndDofIds[i])<<" NumCols = "<<(cols.size())<<std::endl;
       for(int j = 0; j < cols.size(); ++j) {
         AMP::plog<<" col("<<j<<") = "<<(cols[j])<<" Val = "<<(vals[j])<<std::endl;
       }//end j
