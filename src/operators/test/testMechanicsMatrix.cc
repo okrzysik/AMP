@@ -47,7 +47,7 @@ void myTest(AMP::UnitTest *ut )
 
   AMP::LinearAlgebra::Matrix::shared_ptr mat = bvpOperator->getMatrix();
   AMP::LinearAlgebra::Vector::shared_ptr vec = mat->getLeftVector();
-  AMP::LinearAlgebra::Variable::shared_ptr var = vec->getVariable();
+  AMP::LinearAlgebra::Variable::shared_ptr var = bvpOperator->getOutputVariable();
 
   AMP::Mesh::DOFMap::shared_ptr dofMap = meshAdapter->getDOFMap(var);
 
