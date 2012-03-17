@@ -12,16 +12,16 @@
 #include "operators/map/AsyncMapColumnOperator.h"
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"
 
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/MeshAdapter.h"
-#include "vectors/CommCollectVector.h"
+#include "ampmesh/Mesh.h"
+#include "vectors/VectorBuilder.h"
+#include "matrices/MatrixBuilder.h"
 
 #include "solvers/PetscKrylovSolver.h"
 #include "solvers/ColumnSolver.h"
 #include "solvers/PelletStackMechanicsSolver.h"
 #include "solvers/TrilinosMLSolver.h"
 
-void helperCreateStackOperatorForPelletMechanics(AMP::Mesh::MeshManager::shared_ptr manager,
+void helperCreateStackOperatorForPelletMechanics(AMP::Mesh::Mesh::shared_ptr manager,
     boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps, AMP::AMP_MPI globalComm,
     boost::shared_ptr<AMP::InputDatabase> global_input_db, 
     boost::shared_ptr<AMP::Operator::PelletStackOperator> & pelletStackOp)
@@ -37,7 +37,7 @@ void helperCreateStackOperatorForPelletMechanics(AMP::Mesh::MeshManager::shared_
 }
 
 void helperCreateColumnOperatorsForPelletMechanics(std::vector<unsigned int> localPelletIds, 
-    std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> localMeshes,
+    std::vector<AMP::Mesh::Mesh::shared_ptr> localMeshes,
     boost::shared_ptr<AMP::InputDatabase> global_input_db,
     boost::shared_ptr<AMP::Operator::ColumnOperator> & nonlinearColumnOperator,
     boost::shared_ptr<AMP::Operator::ColumnOperator> & linearColumnOperator) 
@@ -52,7 +52,7 @@ void helperCreateColumnOperatorsForPelletMechanics(std::vector<unsigned int> loc
       prefix = "Bottom";
     }
 
-    AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = localMeshes[id];
+    AMP::Mesh::Mesh::shared_ptr meshAdapter = localMeshes[id];
 
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> mechModel;
     boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinOperator =
@@ -86,9 +86,12 @@ void helperSetFrozenVectorForMapsForPelletMechanics(AMP::Mesh::MeshManager::shar
     boost::dynamic_pointer_cast<AMP::Operator::AsyncMapColumnOperator>(coupledOp->getOperator(1)); 
   boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(coupledOp->getOperator(2));
+
   AMP::LinearAlgebra::Variable::shared_ptr dispVar = nonlinearColumnOperator->getOutputVariable();
+  
   AMP::LinearAlgebra::Vector::shared_ptr dirichletValues =  manager->createVector ( dispVar );
   n2nmaps->setVector(dirichletValues);
+  
   for(int id = 0; id < nonlinearColumnOperator->getNumberOfOperators(); id++) {
     boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletOp =
       boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(

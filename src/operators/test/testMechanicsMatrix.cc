@@ -16,6 +16,12 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/Variable.h"
+#include "vectors/VectorBuilder.h"
+#include "matrices/MatrixBuilder.h"
+
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 
@@ -42,19 +48,56 @@ void myTest(AMP::UnitTest *ut )
   meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
-    boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-          "MechanicsBVPOperator", input_db, elementPhysicsModel));
+  AMP::Discretization::DOFManager::shared_ptr nodal3VectorDOF = AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex, 1, 3,true);  
+  boost::shared_ptr<AMP::LinearAlgebra::Variable> inpVariable (new AMP::LinearAlgebra::Variable("InputVar") );
+  boost::shared_ptr<AMP::LinearAlgebra::Variable> outVariable (new AMP::LinearAlgebra::Variable("OutVar") );
 
-  AMP::LinearAlgebra::Matrix::shared_ptr mat = bvpOperator->getMatrix();
-  AMP::LinearAlgebra::Vector::shared_ptr vec = mat->getLeftVector();
+  AMP::LinearAlgebra::Vector::shared_ptr inVec  = AMP::LinearAlgebra::createVector(nodal3VectorDOF , inpVariable, true);
+  AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector(nodal3VectorDOF , outVariable, true);
 
-  AMP::Discretization::DOFManager::shared_ptr dofMap = vec->getDOFManager();
+  AMP::LinearAlgebra::Matrix::shared_ptr mat = AMP::LinearAlgebra::createMatrix(inVec, outVec);
 
-  size_t locSize = vec->getLocalSize();
-  size_t globSize = vec->getGlobalSize();
-  size_t locStartId = vec->getLocalStartID();
+  mat->setScalar(1);
+
+  //------------------------------
+  //DirichletCorrection-----------
+  //------------------------------
+  
+  AMP::Mesh::MeshIterator bnd = meshAdapter->getIDsetIterator( AMP::Mesh::Vertex, 2, 0 );
+  AMP::Mesh::MeshIterator end_bnd = bnd.end();
+
+  for( ; bnd != end_bnd; ++bnd) {
+    std::vector<size_t> bndDofIds;
+    nodal3VectorDOF->getDOFs(bnd->globalID(), bndDofIds);
+
+    std::vector< AMP::Mesh::MeshElement::shared_ptr > neighbors = bnd->getNeighbors();
+    for(unsigned int i = 0; i < neighbors.size(); ++i) {
+      AMP_ASSERT((*(neighbors[i])) != (*bnd));
+    }//end for i
+
+    for(unsigned int j = 0; j < 3; ++j) {
+      for(unsigned int i = 0; i < bndDofIds.size(); ++i) {
+        if(j == i) {
+          mat->setValueByGlobalID ( bndDofIds[i], bndDofIds[i], 1.0 );
+        } else {
+          mat->setValueByGlobalID ( bndDofIds[j], bndDofIds[i], 0.0 );
+          mat->setValueByGlobalID ( bndDofIds[i], bndDofIds[j], 0.0 );
+        }
+      }//end for i
+      for(size_t n = 0; n < neighbors.size(); ++n) {
+        std::vector<size_t> nhDofIds;
+        nodal3VectorDOF->getDOFs(neighbors[n]->globalID(), nhDofIds);
+        for(unsigned int i = 0; i < nhDofIds.size(); ++i) {
+          mat->setValueByGlobalID ( bndDofIds[j], nhDofIds[i], 0.0 );
+          mat->setValueByGlobalID ( nhDofIds[i], bndDofIds[j], 0.0 );
+        }//end for i
+      }//end for n
+    }//end for j
+  }//end for bnd
+
+  size_t locSize = inVec->getLocalSize();
+  size_t globSize = inVec->getGlobalSize();
+  size_t locStartId = inVec->getLocalStartID();
 
   AMP::plog<<" locStartID = "<<locStartId<<" locSize = "<<locSize<<" globSize = "<<globSize<<std::endl;
 
@@ -62,7 +105,7 @@ void myTest(AMP::UnitTest *ut )
   AMP::Mesh::MeshIterator end_nd = nd.end();
   for(int cnt = 0; nd != end_nd; ++nd, ++cnt) {
     std::vector<size_t> ndDofIds;
-    dofMap->getDOFs(nd->globalID(), ndDofIds);
+    nodal3VectorDOF->getDOFs(nd->globalID(), ndDofIds);
     std::vector<double> pt = nd->coord();
     AMP::plog<<std::endl<<" locNdCnt = "<<cnt<<" Pt: "<<(pt[0])<<" : "<<(pt[1])<<" : "<<(pt[2])<<std::endl;
     for(int i = 0; i < ndDofIds.size(); ++i) {
