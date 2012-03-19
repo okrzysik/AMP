@@ -21,13 +21,13 @@ Mesh{
         dim = 3
         x_offset = 0.0
         y_offset = 0.0
-        z_offset = 0.0
+        z_offset = 6.12
         NumberOfElements = 8
     }
 }
 
 MeshToMeshMaps{
-    MapType = "Thermal"
+    MapType = "ScalarZAxis"
     N_maps = 1
     Mesh1 = "Left"
     Surface1 = 1
@@ -85,7 +85,7 @@ RightNonlinearThermalBoundaryConditions {
 
 RightLinearThermalBoundaryConditions {
       name="ColumnBoundaryOperator"
-      numberOfBoundaryOperators = 2
+      numberOfBoundaryOperators = 1
       boundaryOperators = "RightRobinMatrixCorrection"
 }
 
@@ -129,7 +129,7 @@ DiffusionLinearFEOperator {
 }
 
 LeftRobinVectorCorrection {
-          name = "GapRobinVectorCorrection"
+          name = "RobinVectorCorrection"
           FE_ORDER = "FIRST"
           FE_FAMILY = "LAGRANGE"
           QRULE_TYPE = "QGAUSS"
@@ -150,7 +150,7 @@ LeftRobinVectorCorrection {
 }
 
 LeftRobinMatrixCorrection {
-          name = "GapRobinMatrixCorrection"
+          name = "RobinMatrixCorrection"
           FE_ORDER = "FIRST"
           FE_FAMILY = "LAGRANGE"
           QRULE_TYPE = "QGAUSS"
@@ -169,7 +169,69 @@ LeftRobinMatrixCorrection {
           value_0_0 = 0.0
 }
 
-VolumeIntegralOperator{
+RightRobinVectorCorrection {
+          name = "RobinVectorCorrection"
+          FE_ORDER = "FIRST"
+          FE_FAMILY = "LAGRANGE"
+          QRULE_TYPE = "QGAUSS"
+          QRULE_ORDER = "DEFAULT"
+          fConductivity  = 1.0
+          alpha          = 1.0
+          beta           = 2920.0
+          gamma          = 2920.0
+          print_info_level = 0
+          skip_params = FALSE
+          number_of_ids = 1
+          IsCoupledBoundary_0 = TRUE
+          id_0 = 2
+          number_of_dofs_0 = 1
+          dof_0_0 = 0
+          value_0_0 = 600.0
+
+}
+
+RightRobinMatrixCorrection {
+          name = "RobinMatrixCorrection"
+          FE_ORDER = "FIRST"
+          FE_FAMILY = "LAGRANGE"
+          QRULE_TYPE = "QGAUSS"
+          QRULE_ORDER = "DEFAULT"
+          fConductivity  = 1.0
+          alpha          = 1.0
+          beta           = 2920.0
+          gamma          = 2920.0
+          print_info_level = 0
+          skip_params = FALSE
+          number_of_ids = 1
+          IsCoupledBoundary_0 = TRUE
+          id_0 = 2
+          number_of_dofs_0 = 1
+          dof_0_0 = 0
+          value_0_0 = 0.0
+}
+
+LeftVolumeIntegralOperator{
+    name="VolumeIntegralOperator"
+    InputVariableType = "IntegrationPointScalar"
+    Number_Active_Variables = 1
+    Number_Auxillary_Variables = 0
+    ConstantSource   = FALSE
+    ActiveInputVariables{
+      ActiveVariable_0 = "SpecificPowerInWattsPerGram"
+    }
+    OutputVariable = "Temperature"
+    print_info_level = 1
+    SourceElement {
+      name="SourceNonlinearElement"
+      print_info_level = 0
+      FE_ORDER = "FIRST"
+      FE_FAMILY = "LAGRANGE"
+      QRULE_TYPE = "QGAUSS"
+      QRULE_ORDER = "DEFAULT"
+    }
+}
+
+RightVolumeIntegralOperator{
     name="VolumeIntegralOperator"
     InputVariableType = "IntegrationPointScalar"
     Number_Active_Variables = 1

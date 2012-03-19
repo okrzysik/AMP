@@ -61,8 +61,8 @@
 #include "node.h"
 
 #define _PI_ 3.14159265
-#define __INIT_FN__(x,y) (800+((0.00004-20*pow(x,2)-20*pow(y,2))*pow(10,6))) // Manufactured Solution
-#define __FsnK__() (80000000)
+#define __INIT_FN__(x,y) (800+((pow(x,2)+pow(y,2)))) // Manufactured Solution
+#define __FsnK__() (4)
 
 
 void calculateManufacturedSolution(AMP::Mesh::Mesh::shared_ptr meshAdapter,
@@ -215,8 +215,8 @@ createThermalOperators(boost::shared_ptr<AMP::InputDatabase> global_input_db,
   nonlinearColumnOperator.reset(new AMP::Operator::ColumnOperator(emptyParams));
   linearColumnOperator.reset(new AMP::Operator::ColumnOperator(emptyParams));
 
-  AMP::Mesh::Mesh::shared_ptr  meshAdapter1 = manager->Subset( "LeftMesh" );
-  AMP::Mesh::Mesh::shared_ptr  meshAdapter2 = manager->Subset( "RightMesh" );
+  AMP::Mesh::Mesh::shared_ptr  meshAdapter1 = manager->Subset( "Left" );
+  AMP::Mesh::Mesh::shared_ptr  meshAdapter2 = manager->Subset( "Right" );
   //-----------------------------------------------
   //   CREATE THE NONLINEAR THERMAL OPERATOR 1 ----
   //-----------------------------------------------
@@ -320,21 +320,15 @@ registerMapswithThermalOperator( boost::shared_ptr<AMP::InputDatabase> input_db 
 {
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator>  curBVPop = boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator> ( nonlinearThermalColumnOperator->getOperator ( 0 ) );
   boost::shared_ptr<AMP::Operator::ColumnBoundaryOperator>  curBCcol = boost::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator> ( curBVPop->getBoundaryOperator () );
-  boost::shared_ptr<AMP::Database> operator_db = input_db->getDatabase ( "LeftNonlinearThermalOperator" );
-  boost::shared_ptr<AMP::Database>  curBCdb = input_db->getDatabase(operator_db->getString ( "BoundaryOperator" ));
-  std::vector<std::string>  opNames = curBCdb->getStringArray ( "boundaryOperators" );
   boost::shared_ptr<AMP::Operator::RobinVectorCorrection>  gapBC = boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( 0 ) );
   gapBC->setVariableFlux ( thermalMapVec );
-  gapBC->reset ( gapBC->getParameters() );
+  gapBC->reset ( gapBC->getParameters());
 
-  curBVPop = boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator> ( nonlinearThermalColumnOperator->getOperator ( 0 ) );
+  curBVPop = boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator> ( nonlinearThermalColumnOperator->getOperator ( 1 ) );
   curBCcol = boost::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator> ( curBVPop->getBoundaryOperator () );
-  operator_db = input_db->getDatabase ( "RightNonlinearThermalOperator" );
-  curBCdb = input_db->getDatabase(operator_db->getString ( "BoundaryOperator" ));
-  opNames = curBCdb->getStringArray ( "boundaryOperators" );
   gapBC = boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( 0 ) );
   gapBC->setVariableFlux ( thermalMapVec );
-  gapBC->reset ( gapBC->getParameters() );
+  gapBC->reset ( gapBC->getParameters());
 }
 
 ///////////////////////////////////////////////
@@ -367,7 +361,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP_ASSERT(nonlinearThermalColumnOperator!=NULL);
   AMP_ASSERT(linearThermalColumnOperator!=NULL);
 
-  AMP::LinearAlgebra::Variable::shared_ptr outputVar = nonlinearThermalColumnOperator->getOutputVariable();
+  AMP::LinearAlgebra::Variable::shared_ptr outputVar (new AMP::LinearAlgebra::Variable("Temperature"));
 
   AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = AMP::Discretization::simpleDOFManager::create(manager,AMP::Mesh::Vertex,1,1,true);
   //  create solution, rhs, and  residual vectors
@@ -408,7 +402,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   siloWriter->registerVector( manufacturedSolution , manager, AMP::Mesh::Vertex , "ManufacturedSolution" );
   siloWriter->registerVector( TemperatureVec , manager, AMP::Mesh::Vertex , "ComputedSolution" );
-  siloWriter->registerVector( manufacturedRHS , manager, AMP::Mesh::Vertex ,"ManufacturedRhs");
+  siloWriter->registerVector( manufacturedRHS , manager, AMP::Mesh::Volume,"ManufacturedRhs");
   siloWriter->writeFile( exeName, 0 );
 #endif 
 
@@ -423,8 +417,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   // MANUFACTURED RHS                   //
   //------------------------------------------
 
-  AMP::Mesh::Mesh::shared_ptr  meshAdapter1 = manager->Subset( "LeftMesh" );
-  AMP::Mesh::Mesh::shared_ptr  meshAdapter2 = manager->Subset( "RightMesh" );
+  AMP::Mesh::Mesh::shared_ptr  meshAdapter1 = manager->Subset( "Left" );
+  AMP::Mesh::Mesh::shared_ptr  meshAdapter2 = manager->Subset( "Right" );
 
   boost::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
   boost::shared_ptr<AMP::Operator::OperatorParameters> columnParams (new AMP::Operator::OperatorParameters(tmp_db));
@@ -438,7 +432,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator2 = boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator( meshAdapter2,"RightVolumeIntegralOperator",input_db, sourceModel2));
   volumeIntegralColumnOperator->append(sourceOperator2);
 
-  AMP::LinearAlgebra::Variable::shared_ptr rhsVar = volumeIntegralColumnOperator-> getOutputVariable();
+  AMP::LinearAlgebra::Variable::shared_ptr rhsVar (new AMP::LinearAlgebra::Variable("Temperature"));
   AMP::LinearAlgebra::Vector::shared_ptr integratedRHSVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, rhsVar, true );
   integratedRHSVec->zero();
 
