@@ -37,7 +37,7 @@ Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
     GeomDim = null;
     d_comm = params->comm;
     d_db = params->d_db;
-    AMP_ASSERT(d_comm!=AMP_MPI(AMP_COMM_NULL));
+    AMP_INSIST(d_comm!=AMP_MPI(AMP_COMM_NULL), "Communicator in mesh params must be non NULL ");
     setMeshID();
     d_name = "NULL";
 }

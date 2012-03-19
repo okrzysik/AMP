@@ -337,8 +337,6 @@ registerMapswithThermalOperator( boost::shared_ptr<AMP::InputDatabase> input_db 
   gapBC->reset ( gapBC->getParameters() );
 }
 
-
-
 ///////////////////////////////////////////////
 //       Main Program     //
 ///////////////////////////////////////////////
@@ -352,12 +350,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::InputManager::getManager()->parseInputFile(input_file,input_db);
   input_db->printClassData(AMP::plog);
 
-  AMP_INSIST(input_db->keyExists("NumberOfMeshes"), "Key does not exist");
-  int numMeshes = input_db->getInteger("NumberOfMeshes");
-
-  AMP::pout<<"Num meshes = "<<numMeshes<<std::endl;
-
-  AMP::Mesh::MeshParameters::shared_ptr meshmgrParams (new AMP::Mesh::MeshParameters ( input_db ) );
+  boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+  AMP::Mesh::MeshParameters::shared_ptr meshmgrParams (new AMP::Mesh::MeshParameters ( mesh_db ) );
+  meshmgrParams->setComm(globalComm);
   boost::shared_ptr<AMP::Mesh::Mesh> manager = AMP::Mesh::Mesh::buildMesh(meshmgrParams);
 
   //------------------------------------------
