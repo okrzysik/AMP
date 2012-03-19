@@ -194,6 +194,9 @@ COPY_TEST_DATA_FILE ( input_testMatrixFreeML-1 )
 ADD_AMP_PROVISIONAL_TEST ( testLinearFlow-1 )
 COPY_TEST_DATA_FILE ( input_testLinearFlow-1 )
 
+ADD_AMP_PROVISIONAL_TEST ( testMeshRefinementDiffusion-1 )
+COPY_TEST_DATA_FILE ( input_testMeshRefinementDiffusion-1 )
+
 ADD_AMP_PROVISIONAL_TEST ( testMPC )
 ADD_AMP_PROVISIONAL_TEST ( testCG_MPC )
 ADD_AMP_PROVISIONAL_TEST ( testPCG_MPC )

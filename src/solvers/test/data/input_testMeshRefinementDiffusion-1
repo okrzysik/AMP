@@ -1,0 +1,251 @@
+// Database for all the meshes
+Mesh{
+    MeshName = "MainMesh"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
+    Mesh_1 {
+        MeshName = "Left"
+        MeshType = "libMesh"
+        FileName = "halden_1_pellet_9mil.e"
+        dim = 3
+        x_offset = 0.0
+        y_offset = 0.0
+        z_offset = 0.0
+        NumberOfElements = 8
+    }
+    Mesh_2 {
+        MeshName = "Right"
+        MeshType = "libMesh"
+        FileName = "halden_1_clad.e"
+        dim = 3
+        x_offset = 0.0
+        y_offset = 0.0
+        z_offset = 0.0
+        NumberOfElements = 8
+    }
+}
+
+MeshToMeshMaps{
+    MapType = "Thermal"
+    N_maps = 1
+    Mesh1 = "Left"
+    Surface1 = 1
+    Mesh2 = "Right"
+    Surface2 = 2
+    DOFsPerObject = 1
+    VariableName = "Temperature"
+}
+
+LeftNonlinearThermalOperator {
+    name="NonlinearBVPOperator"
+    print_info_level = 1
+    VolumeOperator = "DiffusionNonlinearFEOperator"
+    BoundaryOperator = "LeftNonlinearThermalBoundaryConditions"
+}
+
+LeftLinearThermalOperator {
+    name = "LinearBVPOperator"
+    print_info_level = 0
+    VolumeOperator = "DiffusionLinearFEOperator"
+    BoundaryOperator = "LeftLinearThermalBoundaryConditions"
+}
+
+LeftNonlinearThermalBoundaryConditions {
+      name="ColumnBoundaryOperator"
+      numberOfBoundaryOperators = 1
+      boundaryOperators =  "LeftRobinVectorCorrection"
+}
+
+LeftLinearThermalBoundaryConditions {
+      name="ColumnBoundaryOperator"
+      numberOfBoundaryOperators = 1
+      boundaryOperators = "LeftRobinMatrixCorrection" 
+}
+
+RightNonlinearThermalOperator {
+    name="NonlinearBVPOperator"
+    print_info_level = 1
+    VolumeOperator = "DiffusionNonlinearFEOperator"
+    BoundaryOperator = "RightNonlinearThermalBoundaryConditions"
+}
+
+RightLinearThermalOperator {
+    name = "LinearBVPOperator"
+    print_info_level = 0
+    VolumeOperator = "DiffusionLinearFEOperator"
+    BoundaryOperator = "RightLinearThermalBoundaryConditions"
+}
+
+RightNonlinearThermalBoundaryConditions {
+      name="ColumnBoundaryOperator"
+      numberOfBoundaryOperators = 1
+      boundaryOperators = "RightRobinVectorCorrection"
+}
+
+RightLinearThermalBoundaryConditions {
+      name="ColumnBoundaryOperator"
+      numberOfBoundaryOperators = 2
+      boundaryOperators = "RightRobinMatrixCorrection"
+}
+
+DiffusionNonlinearFEOperator {
+      name = "DiffusionNonlinearFEOperator"
+      print_info_level = 1
+      ActiveInputVariables {
+        temperature = "Temperature"
+      }
+      OutputVariable = "Temperature"
+      PrincipalVariable = 0
+      DiffusionElement{
+        name = "DiffusionNonlinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+      }
+      LocalModel = "DiffusionTransportModel"
+}
+
+DiffusionLinearFEOperator {
+      name = "DiffusionLinearFEOperator"
+      print_info_level = 1
+      reset_reuses_matrix = TRUE
+      InputVariable = "Temperature"
+      OutputVariable = "Temperature"
+      FixedTemperature = FALSE
+      FixedConcentration = FALSE
+      FixedBurnup = FALSE
+      DiffusionElement {
+          name = "DiffusionLinearElement"
+          TransportAtGaussPoints = TRUE
+          FE_ORDER = "FIRST"
+          FE_FAMILY = "LAGRANGE"
+          QRULE_TYPE = "QGAUSS"
+          QRULE_ORDER = "DEFAULT"
+      }
+      LocalModel = "DiffusionTransportModel"
+}
+
+LeftRobinVectorCorrection {
+          name = "GapRobinVectorCorrection"
+          FE_ORDER = "FIRST"
+          FE_FAMILY = "LAGRANGE"
+          QRULE_TYPE = "QGAUSS"
+          QRULE_ORDER = "DEFAULT"
+          fConductivity  = 1.0
+          alpha          = 1.0
+          beta           = 2920.0
+          gamma          = 2920.0
+          print_info_level = 0
+          skip_params = FALSE
+          number_of_ids = 1
+          IsCoupledBoundary_0 = TRUE
+          id_0 = 1
+          number_of_dofs_0 = 1
+          dof_0_0 = 0
+          value_0_0 = 600.0
+
+}
+
+LeftRobinMatrixCorrection {
+          name = "GapRobinMatrixCorrection"
+          FE_ORDER = "FIRST"
+          FE_FAMILY = "LAGRANGE"
+          QRULE_TYPE = "QGAUSS"
+          QRULE_ORDER = "DEFAULT"
+          fConductivity  = 1.0
+          alpha          = 1.0
+          beta           = 2920.0
+          gamma          = 2920.0
+          print_info_level = 0
+          skip_params = FALSE
+          number_of_ids = 1
+          IsCoupledBoundary_0 = TRUE
+          id_0 = 1
+          number_of_dofs_0 = 1
+          dof_0_0 = 0
+          value_0_0 = 0.0
+}
+
+VolumeIntegralOperator{
+    name="VolumeIntegralOperator"
+    InputVariableType = "IntegrationPointScalar"
+    Number_Active_Variables = 1
+    Number_Auxillary_Variables = 0
+    ConstantSource   = FALSE
+    ActiveInputVariables{
+      ActiveVariable_0 = "SpecificPowerInWattsPerGram"
+    }
+    OutputVariable = "Temperature"
+    print_info_level = 1
+    SourceElement {
+      name="SourceNonlinearElement"
+      print_info_level = 0
+      FE_ORDER = "FIRST"
+      FE_FAMILY = "LAGRANGE"
+      QRULE_TYPE = "QGAUSS"
+      QRULE_ORDER = "DEFAULT"
+    }
+}
+
+DiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "Independent"
+        Property = "ThermalConductivity"
+        Default_Concentration = 0.1
+        Default_Temperature   = 557.0
+        Default_Burnup   = 0.0
+      }
+
+initialThermalGuess = 500.0
+
+NonlinearThermalSolver {
+      print_info_level = 1
+      max_iterations = 500
+      max_error = 1e-5
+
+      absoluteTolerance = 1.0e-12
+      relativeTolerance = 1.0e-10
+      stepTolerance = 1.0e-15
+      maximumFunctionEvals = 10000
+      usesJacobian=FALSE
+      enableLineSearchPreCheck=FALSE
+
+      SNESOptions = "-snes_monitor -snes_type ls -snes_ksp_ew -snes_converged_reason -snes_ls_alpha 1.0e-4"
+
+      LinearSolver{
+          print_info_level = 0
+          max_iterations = 10000
+          max_error = 1e-10
+          absolute_tolerance = 1.0e-16
+          ksp_type = "fgmres"
+          relative_tolerance = 1.0e-13
+          divergence_tolerance = 1.0e03
+          max_krylov_dimension = 40
+          uses_preconditioner=TRUE
+          pc_type = "shell"
+          pc_side = "RIGHT"
+
+          KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 10000 -ksp_rtol 1.0e-1 -ksp_atol 1.0e-13 -ksp_gmres_restart 100"
+
+          Preconditioner {
+            print_info_level = 1
+            max_iterations = 1
+            max_error = 1e-16
+            absolute_tolerance = 1.0e-16
+            relative_tolerance = 1.0e-13
+            divergence_tolerance = 1.0e03
+
+            TrilinosPreconditioner{
+                print_info_level = 0
+                max_iterations = 1
+                max_levels = 10
+                max_error = 1.0e-15
+                coarse_type="Amesos-KLU"
+                PDE_equations = 1
+            }
+          }
+      }
+}
