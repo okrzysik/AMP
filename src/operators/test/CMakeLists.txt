@@ -306,6 +306,9 @@ COPY_TEST_DATA_FILE ( input_testMultiVector )
 ADD_AMP_PROVISIONAL_TEST ( testJacobianMap )
 COPY_MESH_FILE ( distortedElementMesh )
 
+ADD_AMP_PROVISIONAL_TEST ( testMechanicsMatrix )
+COPY_TEST_DATA_FILE (input_testMechanicsMatrix )
+
 ADD_AMP_PROVISIONAL_TEST ( testDiffusionMMSForward )
 ADD_AMP_TEST_1_2_4 ( testMaterialModels_ElasticDamageThermalStrain-1 )
 COPY_TEST_DATA_FILE (input_testMaterialModels_ElasticDamageThermalStrain-1 )

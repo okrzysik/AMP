@@ -11,9 +11,7 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/MeshAdapter.h"
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/Mesh.h"
 
 #include "libmesh.h"
 #include "mesh_generation.h"
@@ -30,6 +28,7 @@
 #include "string_to_enum.h"
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
+
   std::string input_file = "input_" + exeName;
   std::string log_file = "output_" + exeName;
 
@@ -37,29 +36,28 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
   
   boost::shared_ptr< ::Mesh > mesh(new ::Mesh(3));
-  MeshTools::Generation::build_cube((*(mesh.get())), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, HEX8, false);
+  MeshTools::Generation::build_cube((*(mesh.get())), 3, 3, 3, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, HEX8, false);
 
   ::Elem* elemPtr = mesh->elem(0);
 
   (elemPtr->point(4))(0) -= 0.4;
-
   (elemPtr->point(5))(0) -= 0.4;
-
   (elemPtr->point(6))(0) -= 0.4;
-
   (elemPtr->point(7))(0) -= 0.4;
 
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = AMP::Mesh::MeshManager::Adapter::shared_ptr (
-      new AMP::Mesh::MeshManager::Adapter (mesh) );
+  AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::shared_ptr ( new AMP::Mesh::Mesh (mesh) );
 
-  AMP::LinearAlgebra::Variable::shared_ptr myVar(new AMP::Mesh::NodalScalarVariable("myVar", meshAdapter)); 
-  AMP::LinearAlgebra::Vector::shared_ptr T = meshAdapter->createVector(myVar);
-
-  AMP::Mesh::DOFMap::shared_ptr dof_map = meshAdapter->getDOFMap(myVar);
+  AMP::LinearAlgebra::Variable::shared_ptr myVar(new AMP::LinearAlgebra::Variable("myVar")); 
+  AMP::Discretization::DOFManager::shared_ptr dof_map = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,1,true);  
+  AMP::LinearAlgebra::Vector::shared_ptr vec = AMP::LinearAlgebra::createVector( dof_map , var, true );
+  AMP::LinearAlgebra::Vector::shared_ptr T = AMP::LinearAlgebra::createVector( dof_map, myVar, true );
 
   FILE* fp; 
   fp = fopen("InverseJacobian.txt", "w");
   
+  AMP::Mesh::MeshIterator ndIt = mesh->getIterator(AMP::Mesh::Vertex, 0);
+  std::vector<AMP::Mesh::MeshElement> node = ndIt->getElements(AMP::Mesh::Vertex);
+
   for(int i = 0 ; i < 8; i++) {
     AMP::Mesh::LibMeshNode nd = meshAdapter->getNode( i );
     fprintf(fp, "nd = %d, x = %.15lf, y = %.15lf, z = %.15lf \n", i, nd.x(), nd.y(), nd.z());

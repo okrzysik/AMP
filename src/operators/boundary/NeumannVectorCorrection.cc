@@ -66,12 +66,7 @@ namespace Operator {
       }//end for i
     }//end for j
 
-#if 0    
-    if(myparams->d_db->isDatabase("RobinPhysicsModel") ){
-#else
     if(myparams->d_robinPhysicsModel) {
-#endif
-      
       d_robinPhysicsModel = myparams->d_robinPhysicsModel;
     }
     computeRHScorrection(myparams);
