@@ -42,29 +42,32 @@ void myTest(AMP::UnitTest *ut )
   AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
   AMP::Mesh::MeshAdapter::shared_ptr mesh = manager->getMesh("TestMesh");
 
-  AMP::LinearAlgebra::Variable::shared_ptr var (new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>("var", mesh) ) ; 
+  const unsigned int DOFsPerNode = 1;
+  AMP::LinearAlgebra::Variable::shared_ptr var (new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, DOFsPerNode>("var", mesh) ) ; 
   AMP::Mesh::DOFMap::shared_ptr dof_map = mesh->getDOFMap(var);
 
   boost::shared_ptr<AMP::LinearAlgebra::Matrix> mat =  mesh->createMatrix ( var, var );
-  mat->setScalar(1);
+  mat->setScalar(2);
   AMP::LinearAlgebra::Vector::shared_ptr vec = mesh->createVector(var);
   vec->zero();
 
 
   AMP::Mesh::MeshManager::Adapter::BoundaryNodeIterator bnd = mesh->beginBoundary( 2 );
   AMP::Mesh::MeshManager::Adapter::BoundaryNodeIterator end_bnd = mesh->endBoundary( 2 );
-
+  std::vector<size_t> bnd_dofs;
   for( ; bnd != end_bnd; ++bnd) {
-      AMP::Mesh::MeshManager::Adapter::NodeElementIterator el =  mesh->beginElementForNode ( *bnd );
-      AMP::Mesh::MeshManager::Adapter::NodeElementIterator end_el = mesh->endElementForNode ( *bnd );
+    AMP::Mesh::MeshManager::Adapter::NodeElementIterator el =  mesh->beginElementForNode ( *bnd );
+    AMP::Mesh::MeshManager::Adapter::NodeElementIterator end_el = mesh->endElementForNode ( *bnd );
 
-      std::vector<unsigned int> bndGlobalIds;
-      std::vector<unsigned int> d_dofIds;
-      dof_map->getDOFs(*bnd, bndGlobalIds, d_dofIds);
+    std::vector<unsigned int> bndGlobalIds;
+    std::vector<unsigned int> d_dofIds;
+    dof_map->getDOFs(*bnd, bndGlobalIds, d_dofIds);
+    for (size_t i=0; i<bndGlobalIds.size(); i++)
+      bnd_dofs.push_back(bndGlobalIds[i]);
 
-      for( ; el != end_el; ++el) {
-        std::vector<unsigned int> dofIndices;
-        dof_map->getDOFs(*el, dofIndices);
+    for( ; el != end_el; ++el) {
+      std::vector<unsigned int> dofIndices;
+      dof_map->getDOFs(*el, dofIndices);
 
       for(unsigned int j = 0; j < bndGlobalIds.size(); j++) {
         for(unsigned int i = 0; i < dofIndices.size(); i++) {
@@ -81,6 +84,11 @@ void myTest(AMP::UnitTest *ut )
 
   mat->makeConsistent();
   //-------------------------------------------
+
+  AMP::Utilities::quicksort(bnd_dofs);
+  AMP::plog << "Boundry DOFS:" << std::endl;
+  for (size_t i=0; i<bnd_dofs.size(); i++)
+     AMP::plog << "   " << bnd_dofs[i] << std::endl;
 
   size_t locSize = vec->getLocalSize();
   size_t globSize = vec->getGlobalSize();
