@@ -672,20 +672,22 @@ void VerifyVectorMax( AMP::UnitTest *utils )
 template <typename VECTOR_FACTORY>
 void VerifyVectorMaxMin( AMP::UnitTest *utils )
 {
-        AMP::LinearAlgebra::Vector::shared_ptr  vec ( VECTOR_FACTORY::getVector() );
-        for ( size_t i = 0 ; i != 10 ; i++ )
-        {
-          vec->setRandomValues ();
-          vec->addScalar ( vec , -0.5 );
-          vec->scale ( 2.0 );  // vec i.i.d [-1,1);
-          double  max = vec->max ();
-          double  min = vec->min ();
-          double  ans = std::max ( fabs ( max ) , fabs ( min ) );
-          if ( fabs ( ans - vec->maxNorm() ) < 1.e-20 )
-            utils->passes ( "Max and min correctly predict maxNorm()" );
-          else
-            utils->failure ( "Max and min fail to predict maxNorm()" );
-        }
+    AMP::LinearAlgebra::Vector::shared_ptr  vec ( VECTOR_FACTORY::getVector() );
+    bool passes = true;
+    for ( size_t i=0; i!=10; i++) {
+        vec->setRandomValues ();
+        vec->addScalar ( vec , -0.5 );
+        vec->scale ( 2.0 );  // vec i.i.d [-1,1);
+        double  max = vec->max ();
+        double  min = vec->min ();
+        double  ans = std::max ( fabs ( max ) , fabs ( min ) );
+        if ( fabs( ans - vec->maxNorm() ) >= 1.e-20 )
+            passes = false;
+    }
+    if ( passes )
+        utils->passes ( "Max and min correctly predict maxNorm()" );
+    else
+        utils->failure ( "Max and min fail to predict maxNorm()" );
 }
 
 

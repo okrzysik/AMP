@@ -148,12 +148,12 @@ int main ( int argc , char ** argv )
     // Run tests on a libmesh mesh
     testlibMesh( &ut );
 
-    // Run tests on a moab mesh
+/*    // Run tests on a moab mesh
     #ifdef USE_MOAB
         testMoabMesh( &ut );
     #endif
 
-/*    // Run tests on the input file
+    // Run tests on the input file
     testInputMesh( &ut, "input_Mesh" );
 
     // Run the basic tests on all mesh generators
@@ -163,7 +163,7 @@ int main ( int argc , char ** argv )
     testSubsetMesh( &ut );*/
 
     // Print the results and return
-    ut.report ();
+    ut.report();
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();
     return num_failed;

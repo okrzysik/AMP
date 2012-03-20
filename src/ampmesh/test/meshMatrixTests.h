@@ -78,48 +78,61 @@ void GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
             try {
                 double proc = mesh->getComm().getRank();
                 bool passes = true;
-                // Loop through the owned and ghost nodes
-                AMP::Mesh::MeshIterator el = mesh->getIterator(AMP::Mesh::Volume,0);
-                AMP::Mesh::MeshIterator end_el = el.end();
-                for( ; el != end_el; ++el) {
-                    // Get the DOFs for all nodes
-                    std::vector<size_t> dofs;
-                    std::vector<size_t> dofIndices;
-                    std::vector<AMP::Mesh::MeshElement> elements = el->getElements(AMP::Mesh::Vertex);
+                // Loop through the owned nodes
+                AMP::Mesh::MeshIterator iterator = mesh->getIterator(AMP::Mesh::Vertex,0);
+                for(size_t i=0; i<iterator.size(); i++) {
+                    // Get the DOFs for the node and it's neighbors
+                    std::vector<size_t> localDOFs;
+                    DOFs->getDOFs( iterator->globalID(), localDOFs );
+                    std::vector<size_t> neighborDOFs, dofs;
+                    std::vector<AMP::Mesh::MeshElement::shared_ptr> elements = iterator->getNeighbors();
                     for (size_t i=0; i<elements.size(); i++) {
-                        DOFs->getDOFs( elements[i].globalID(), dofs );
+                        DOFs->getDOFs( elements[i]->globalID(), dofs );
                         for (size_t j=0; j<dofs.size(); j++) {
-                            dofIndices.push_back(dofs[j]);
+                            neighborDOFs.push_back(dofs[j]);
                         }
                     }
-                    for (size_t j=0; j<dofIndices.size(); j++) {
-                        for (size_t i=0; i<dofIndices.size(); i++) {
-                            matrix->setValueByGlobalID ( dofIndices[j], dofIndices[i], proc );
+                    // For each local DOF, set all matrix elements involving the current DOF
+                    for (size_t j=0; j<localDOFs.size(); j++) {
+                        for (size_t i=0; i<localDOFs.size(); i++) {
+                            matrix->setValueByGlobalID( localDOFs[i], localDOFs[j], proc );
+                            matrix->setValueByGlobalID( localDOFs[j], localDOFs[i], proc );
+                        }
+                        for (size_t i=0; i<neighborDOFs.size(); i++) {
+                            matrix->setValueByGlobalID( localDOFs[j], neighborDOFs[i], proc );
+                            matrix->setValueByGlobalID( neighborDOFs[i], localDOFs[j], proc );
                         }
                         std::vector<unsigned int> cols;
                         std::vector<double> values;
-                        matrix->getRowByGlobalID( dofIndices[j], cols, values );
-                        for (size_t i1=0; i1<dofIndices.size(); i1++) {
-                            for (size_t i2=0; i2<cols.size(); i2++) {
-                                if ( cols[i2]==dofIndices[i1] ) {
-                                    if ( values[i2] != proc )
+                        matrix->getRowByGlobalID( localDOFs[j], cols, values );
+                        for (size_t i1=0; i1<cols.size(); i1++) {
+                            for (size_t i2=0; i2<localDOFs.size(); i2++) {
+                                if ( cols[i1]==localDOFs[i2] ) {
+                                    if ( values[i1] != proc )
+                                        passes = false;
+                                }
+                            }
+                            for (size_t i2=0; i2<neighborDOFs.size(); i2++) {
+                                if ( cols[i1]==neighborDOFs[i2] ) {
+                                    if ( values[i1] != proc )
                                         passes = false;
                                 }
                             }
                         }
-                    }//end for j
-                }//end for el
+                    }
+                    ++iterator;
+                }
                 if ( passes ) 
                     utils->passes ( "Able to write to ghost entries in matrix" );
                 else
                     utils->failure ( "Able to write to ghost entries in matrix" );
             } catch (...) {
-                utils->failure ( "Able to write to ghost entries in matrix" );
+                utils->failure ( "Able to write to ghost entries in matrix (exception)" );
             }
         }
 
         // Apply make consistent
-        //matrix->makeConsistent();
+        matrix->makeConsistent();
 
         // Test that each matrix entry has the proper value
         bool passes = true;
