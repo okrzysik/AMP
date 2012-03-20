@@ -37,7 +37,6 @@ MeshToMeshMaps{
     Surface2 = 8
     DOFsPerObject = 1
     VariableName = "Temperature"
-    BoundaryId = 0
 }
 
 

@@ -95,6 +95,9 @@ void myTest(AMP::UnitTest *ut )
     }//end for j
   }//end for bnd
 
+  mat->makeConsistent();
+  //-------------------------------------------
+
   size_t locSize = inVec->getLocalSize();
   size_t globSize = inVec->getGlobalSize();
   size_t locStartId = inVec->getLocalStartID();

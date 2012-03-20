@@ -480,6 +480,8 @@ void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
         utils->passes("Node neighbors found all neighbors");
     else
         utils->failure("Node neighbors found all neighbors");
+    // Transfer all neighbor lists to all processors and check that every neighbor node 
+    // also has the current node as a neighbor (not finished)
 }
 
 
@@ -714,6 +716,7 @@ public:
 };
 
 
+// Test bug when subsetting a multivector for a variable
 class Bug_758
 {
 public:
@@ -815,6 +818,7 @@ public:
 
         }
 };
+
 
 
 template <int SIZE>
