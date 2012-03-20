@@ -28,6 +28,8 @@ namespace Operator {
     : OperatorParameters(db){} 
 
 //      boost::shared_ptr<AMP::MeshUtils> d_MeshUtils; 
+      int                                       d_numExtras;
+      std::vector<std::string>                  d_extrasName;
 
   };
 

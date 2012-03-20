@@ -7,6 +7,7 @@
 #include "NeutronicsRhsExtrasParameters.h"
 #include "vectors/Vector.h"
 #include "utils/Utilities.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include "utils/InputDatabase.h"
 
@@ -15,9 +16,6 @@
 
 #include <vector>
 #include <cmath>
-
-#if 0
-//This file has not been converted!
 
 namespace AMP {
   namespace Operator {
@@ -28,22 +26,24 @@ namespace AMP {
      * from the parameters.                                                           *
      ***********************************************************************************
      */
-    NeutronicsRhsExtras :: NeutronicsRhsExtras(SP_Parameters parameters, int numExtras, std::vector<std::string> extrasName)
+    NeutronicsRhsExtras :: NeutronicsRhsExtras(SP_Parameters parameters)
       : Operator(parameters),
-      d_numExtras(numExtras),
-      d_extrasName(extrasName),
       d_timeStep(0),
       d_extrasId(0) 
     {
       AMP_ASSERT(parameters);
-      d_MeshAdapter = parameters->d_MeshAdapter;
+      d_Mesh = parameters->d_Mesh;
+      d_numExtras = parameters->d_numExtras;
+      d_extrasName = parameters->d_extrasName;
       d_timeStepInSeconds = 0.;
       d_secondsPerDay = 86400.;      
       getFromInput(parameters->d_db);
       if( !d_useFixedValue ) { 
         int numValues; 
         numValues = parameters->d_db->getInteger("numValues");
-        d_values.resize( d_numExtras, Vec_Dbl2( d_numTimeSteps, Vec_Dbl1(numValues,0) ) );
+        Vec_Dbl1 tmp1(numValues,0);
+        Vec_Dbl2 tmp2(d_numTimeSteps, tmp1);
+        d_values.resize( d_numExtras, tmp2);
 
         for(int extras = 0 ; extras < d_numExtras ; extras++) {
           for(int t = 0 ; t < d_numTimeSteps ; t++) {
@@ -83,7 +83,7 @@ namespace AMP {
         d_type = str2id(str);
 
         std::string outVarName = db->getStringWithDefault("OutputVariable", str);
-        d_outputVariable.reset ( new  HexGaussPointVariable (outVarName,d_MeshAdapter) );
+        d_outputVariable.reset(new AMP::LinearAlgebra::Variable(outVarName)); 
 
         // number of time steps
         d_numTimeSteps = db->getIntegerWithDefault("numTimeSteps", 1);
@@ -205,18 +205,20 @@ namespace AMP {
           double value = d_fixedValues[this_step];
           rInternal->setToScalar(value);
         } else {
-          AMP::Mesh::MeshManager::Adapter::ElementIterator  elem      = d_MeshAdapter->beginElement();
-          AMP::Mesh::MeshManager::Adapter::ElementIterator  end_elems = d_MeshAdapter->endElement();
+          AMP::Mesh::MeshIterator  elem      = d_Mesh->getIterator(AMP::Mesh::Volume, 1);
+          AMP::Mesh::MeshIterator  end_elems = elem.begin();
+
+          int DOFsPerElement = 8;
+          int ghostWidth = 1;
+          bool split = true;
+          AMP::Discretization::DOFManager::shared_ptr dof_map = AMP::Discretization::simpleDOFManager::create(d_Mesh, AMP::Mesh::Volume, ghostWidth, DOFsPerElement, split);
 
           int gp = 0;
           for( ; elem != end_elems; ++elem) {
-            for( unsigned int i = 0; i < 8; gp++ , i++ ) {
-              AMP::Mesh::DOFMap::shared_ptr  dof_map = d_MeshAdapter->getDOFMap ( d_outputVariable );
-              std::vector<unsigned int> ndx;
-              std::vector<unsigned int> empty;
-              dof_map->getDOFs ( *elem , ndx , empty );
-              int  offset = ndx[i];
-              rInternal->setValueByGlobalID ( offset, d_values[this_extrasId][this_step][gp] );
+            std::vector<size_t> gid;
+            dof_map->getDOFs ( elem->globalID() , gid);
+            for( unsigned int i = 0; i < gid.size(); gp++ , i++ ) {
+              rInternal->setValueByGlobalID ( gid[i], d_values[this_extrasId][this_step][gp] );
             }//end for gauss-points
           }//end for elements
 
@@ -235,24 +237,7 @@ namespace AMP {
       return NUM_SOURCE_TYPES;
     }
 
-
-    /*static SP_HexGaussPointVariable NeutronicsRhsExtras::createOutputVariable (const std::string & name, int varId) 
-      {
-      (void) varId;    
-      SP_HexGaussPointVariable var( new HexGaussPointVariable (name) );
-      return var;
-      }*/
-
-    void NeutronicsRhsExtras::setOutputVariableName(const std::string & name, int varId)
-    {
-      (void) varId;      
-      //d_outputVariable->setName(name);
-    }
-
   }
 }
-
-#endif
-
 
 

@@ -1,6 +1,6 @@
+
 #ifndef included_AMP_NeutronicsRhsExtras
 #define included_AMP_NeutronicsRhsExtras
-
 
 /* AMP files */
 #include "operators/Operator.h"
@@ -8,6 +8,7 @@
 #include "NeutronicsRhsExtrasParameters.h"
 #include "vectors/Variable.h"
 #include "utils/Utilities.h"
+
 #include "utils/InputDatabase.h"
 
 /*Boost files */
@@ -18,37 +19,37 @@
 namespace AMP {
 namespace Operator {
 
-  /**
-    A class for representing the neutronics source operator for extras like Isotopes and Elements.
-    */
+//===========================================================================//
+/*!
+ * \class NeutronicsRhsExtras 
+ * \brief A class for representing the neutronics source operator.
+ */
+//===========================================================================//
+
   class NeutronicsRhsExtras : public  Operator {
+
     public:
-
-      typedef std::vector<double>                           Vec_Dbl1;
-      typedef std::vector<Vec_Dbl1>                         Vec_Dbl2;
-      typedef std::vector<Vec_Dbl2>                         Vec_Dbl3;
-
       //typedef AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable, 8>      HexGaussPointVariable;
       //typedef boost::shared_ptr<HexGaussPointVariable>      SP_HexGaussPointVariable;
       typedef boost::shared_ptr<NeutronicsRhsExtrasParameters>               SP_Parameters;
       typedef boost::shared_ptr<OperatorParameters>            SP_OperatorParameters;
-      typedef boost::shared_ptr<AMP::LinearAlgebra::Vector>                                    SP_Vector; 
+      typedef boost::shared_ptr<AMP::LinearAlgebra::Vector>                SP_Vector; 
       typedef std::vector<double>                                            Vec_Dbl;
       typedef boost::shared_ptr<Vec_Dbl>                                  SP_Vec_Dbl; 
       typedef boost::shared_ptr<AMP::Database>                           SP_Database;
-
+      typedef std::vector<double>                                           Vec_Dbl1;
+      typedef std::vector<Vec_Dbl1>                                         Vec_Dbl2;
+      typedef std::vector<Vec_Dbl2>                                         Vec_Dbl3;
     
       //! Neutronics Input Types
-      enum SourceType{ Isotopes, Elements, NUM_SOURCE_TYPES };
+     enum SourceType{ Isotopes, Elements, NUM_SOURCE_TYPES };
       
     private:
-
-    int d_numExtras;
-    std::vector<std::string> d_extrasName;
+      
 
     public:
 
-      NeutronicsRhsExtras(SP_Parameters parameters, int numExtras, std::vector<std::string> extrasName);
+      NeutronicsRhsExtras(SP_Parameters parameters);
 
       /**
        * Empty destructor for NeutronicsRhsExtras
@@ -86,16 +87,9 @@ namespace Operator {
         */
       void reset(const SP_OperatorParameters & parameters);
 
-      //static SP_HexGaussPointVariable createOutputVariable (const std::string & name, int varId = -1);
-
-      void setOutputVariableName(const std::string & name, int varId = -1);
-
-      //AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
-      //  return d_outputVariable;
-      //}
+      AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
       void   setTimeStep ( int tStep ) { d_timeStep = tStep; }
-      void   setExtrasId ( int extrasId ) { d_extrasId = extrasId; }
       void   setTimeInSeconds ( double seconds );
 
     protected:
@@ -109,19 +103,21 @@ namespace Operator {
        */
       void getFromInput(SP_Database db);
 
-      SP_Database                d_db;
-      bool                       d_useFixedValue;
-      int                        d_numTimeSteps;
-      Vec_Dbl                    d_timeStepsInDays;
-      SourceType                 d_type;      
-      Vec_Dbl                    d_fixedValues;
-      int                        d_timeStep;
-      int                        d_extrasId;
-      double                     d_timeStepInSeconds;
-      //SP_HexGaussPointVariable   d_outputVariable;
-      Vec_Dbl3       d_values;
-      AMP::Mesh::Mesh::shared_ptr d_Mesh;
-      double                     d_secondsPerDay;               
+      SP_Database                               d_db;
+      bool                                      d_useFixedValue;
+      int                                       d_numTimeSteps;
+      Vec_Dbl                                   d_timeStepsInDays;
+      SourceType                                d_type;      
+      Vec_Dbl                                   d_fixedValues;
+      int                                       d_timeStep;
+      int                                       d_extrasId;
+      int                                       d_numExtras;
+      std::vector<std::string>                  d_extrasName;
+      double                                    d_timeStepInSeconds;
+      AMP::LinearAlgebra::Variable::shared_ptr  d_outputVariable;
+      Vec_Dbl3                                  d_values;
+      AMP::Mesh::Mesh::shared_ptr               d_Mesh;
+      double                                    d_secondsPerDay;               
       SourceType str2id(std::string str);
   };
 
