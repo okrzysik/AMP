@@ -150,7 +150,8 @@ public:
         return tmp;
     }
     inline unsigned int owner_rank() const { 
-        unsigned int tmp = (unsigned int) ((data[1]>>40)&0x8FFFFFFF);
+        unsigned int tmp = data[1]>>32;
+        tmp = (tmp>>8)&0x007FFFFF;
         return tmp; 
     }
     inline MeshID meshID() const { 

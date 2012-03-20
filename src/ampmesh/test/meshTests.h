@@ -24,7 +24,7 @@
 // N_local      number of local elements for the iterator
 // N_ghost      number of ghost elements for the iterator
 void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator, 
-    const size_t N_local, const size_t N_ghost, const AMP::Mesh::GeomType type )
+    const size_t N_local, const size_t N_ghost, const AMP::Mesh::GeomType type, const unsigned int rank )
 {
     // Check that we can get the begin and end iterator
     AMP::Mesh::MeshIterator  begin_it = iterator.begin();
@@ -70,12 +70,14 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator,
 
     // Run element tests
     bool id_pass = true;
+    bool rank_pass = true;
     bool type_pass = true;
     bool volume_pass = true;
     bool coord_pass = true;
     bool elements_pass = true;
     bool neighbor_pass = true;
     cur_it = iterator.begin();
+    unsigned int max_rank = AMP::AMP_MPI(AMP_COMM_WORLD).getSize()-1;
     while ( cur_it != end_it ) {
         AMP::Mesh::MeshElement element = *cur_it;
         AMP::Mesh::MeshElementID id = element.globalID();
@@ -101,6 +103,11 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator,
             std::vector< AMP::Mesh::MeshElement::shared_ptr > neighbors = element.getNeighbors();
             if ( neighbors.empty() )
                 neighbor_pass = false;
+            if ( id.owner_rank() != rank )
+                id_pass = false;
+        } else {
+            if ( id.owner_rank()==rank || id.owner_rank()>max_rank )
+                id_pass = false;
         }
         ++cur_it;   // Pre-increment is faster than post-increment
     }
@@ -157,8 +164,9 @@ void MeshIteratorTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mes
                 }
             }
             // Test the regular iterator over local elements
+            unsigned int rank = mesh->getComm().getRank();
             if ( iterator_created )
-                ElementIteratorTest( ut, iterator, N_local, N_ghost, type );
+                ElementIteratorTest( ut, iterator, N_local, N_ghost, type, rank );
             // Add tests with gcw != 0
             // Add const iterator tests
         }

@@ -153,14 +153,14 @@ int main ( int argc , char ** argv )
         testMoabMesh( &ut );
     #endif
 
-    // Run tests on the input file
+/*    // Run tests on the input file
     testInputMesh( &ut, "input_Mesh" );
 
     // Run the basic tests on all mesh generators
     testMeshGenerators( &ut );
 
     // Run the tests on the subset meshes
-    testSubsetMesh( &ut );
+    testSubsetMesh( &ut );*/
 
     // Print the results and return
     ut.report ();
