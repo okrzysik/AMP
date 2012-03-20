@@ -66,7 +66,7 @@ template<class Number>
 template <class INPUT_VTYPE>
 bool Property<Number>::in_range(const std::string &argname, const INPUT_VTYPE &values)
 {
-        if(!is_argument(argname)) return true;
+    if(!is_argument(argname)) return true;
 	std::vector<Number> range = get_arg_range(argname);
 	bool result = true;
     for (typename INPUT_VTYPE::const_iterator i=values.begin(); i!=values.end(); ++i)

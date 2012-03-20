@@ -8,6 +8,7 @@
 #include "ml_include.h"
 #include "MLoptions.h"
 
+
 namespace AMP {
   namespace Solver {
 
@@ -93,6 +94,16 @@ namespace AMP {
 
          21. name: problem_type, type: string, (optional), default value: "SA" 
          acceptable values "SA" for symmetric and "NSSA" for unsymmetric problems
+
+         22. name: aggregation_aux_enable, type: bool, (optional), default_value: false
+
+         23. name: aggregation_aux_threshold, type: double, (optional), default_values: 0.0
+
+         24. name: null_space_type, type: string, (optional), default value: none
+
+         25. name: null_space_dimension, type: integer, (optional), default value: 3
+
+         26. name: null_space_add_default_vectors, type: bool, (optional), default value: true
          */
         TrilinosMLSolver(boost::shared_ptr<TrilinosMLSolverParameters> parameters);
 
@@ -154,6 +165,9 @@ namespace AMP {
 
         void buildML();
 
+        void computeCoordinates(  const boost::shared_ptr<AMP::Operator::Operator> op );
+        void computeNullSpace(    const boost::shared_ptr<AMP::Operator::Operator> op );
+
       private:
 
         bool d_bUseEpetra;
@@ -172,6 +186,11 @@ namespace AMP {
 
         boost::shared_ptr<ML_Epetra::MultiLevelPreconditioner> d_mlSolver;
         Teuchos::ParameterList d_MLParameterList;
+
+        std::vector<double> d_x_values;
+        std::vector<double> d_y_values;
+        std::vector<double> d_z_values;
+        std::vector<double> d_null_space;
     };
 
   }

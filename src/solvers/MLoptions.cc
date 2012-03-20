@@ -36,6 +36,15 @@ namespace AMP {
 
       d_coarseMaxSize = db->getInteger("coarse_maxsize");
       d_coarseType = db->getString("coarse_type");
+
+      // Should we give ML a list of coordinates?
+      d_aggregationAuxEnable = db->getBool("aggregation_aux_enable");
+      d_aggregationAuxThreshold = db->getDouble("aggregation_aux_threshold");
+
+      // Should we add vectors to default ML null space
+      d_nullSpaceType = db->getString("null_space_type");
+      d_nullSpaceDimension = db->getInteger("null_space_dimension");
+      d_nullSpaceAddDefaultVectors = db->getBool("null_space_add_default_vectors");
     }
 
     void MLoptions :: addDefaults(const std::string & problemType, const boost::shared_ptr<AMP::Database> &db) 
@@ -100,6 +109,21 @@ namespace AMP {
         if(!(db->keyExists("coarse_type"))) {
           db->putString("coarse_type", "Amesos-KLU");
         }
+        if(!(db->keyExists("aggregation_aux_enable"))) {
+          db->putBool("aggregation_aux_enable", false);
+        }
+        if(!(db->keyExists("aggregation_aux_threshold"))) {
+          db->putDouble("aggregation_aux_threshold", 0.0);
+        }
+        if(!(db->keyExists("null_space_type"))) {
+          db->putString("null_space_type", "default vectors");
+        }
+        if(!(db->keyExists("null_space_dimension"))) {
+          db->putInteger("null_space_dimension", 3);
+        }
+        if(!(db->keyExists("null_space_add_default_vectors"))) {
+          db->putBool("null_space_add_default_vectors", false);
+        }
       } else if(problemType == "NSSA") {
         if(!(db->keyExists("max_levels"))) {
           db->putInteger("max_levels", 10);
@@ -159,6 +183,21 @@ namespace AMP {
         }
         if(!(db->keyExists("coarse_type"))) {
           db->putString("coarse_type", "Amesos-KLU");
+        }
+        if(!(db->keyExists("aggregation_aux_enable"))) {
+          db->putBool("aggregation_aux_enable", false);
+        }
+        if(!(db->keyExists("aggregation_aux_threshold"))) {
+          db->putDouble("aggregation_aux_threshold", 0.0);
+        }
+        if(!(db->keyExists("null_space_type"))) {
+          db->putString("null_space_type", "default vectors");
+        }
+        if(!(db->keyExists("null_space_dimension"))) {
+          db->putInteger("null_space_dimension", 3);
+        }
+        if(!(db->keyExists("null_space_add_default_vectors"))) {
+          db->putBool("null_space_add_default_vectors", false);
         }
       } else {
         AMP_ERROR("The option, problem_type = \"" << problemType << "\" , is not supported.");

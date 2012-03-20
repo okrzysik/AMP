@@ -351,6 +351,105 @@ MACRO ( CONFIGURE_LIBMESH )
     ENDIF()
 ENDMACRO ()
 
+
+# Macro to find and configure NEK5000
+MACRO ( CONFIGURE_NEK5000 )
+    # Determine if we want to use NEK5000
+    CHECK_ENABLE_FLAG( USE_NEK5000 0 )
+    IF ( USE_NEK5000 )
+        # Check if we specified the NEK5000 directory
+        IF ( NEK5000_DIRECTORY )
+            VERIFY_PATH ( ${NEK5000_DIRECTORY} )
+            # Include the NEK5000 directories
+            SET ( NEK5000_INCLUDE ${NEK5000_DIRECTORY}/include )
+            # Find the NEK5000 libaries
+            SET ( NEK5000_PATH_LIB ${NEK5000_DIRECTORY}/lib )
+            VERIFY_PATH ( ${NEK5000_PATH_LIB} )
+            FIND_LIBRARY ( NEK5000_MESH_LIB     NAMES NEK5000      PATHS ${NEK5000_PATH_LIB}          NO_DEFAULT_PATH )
+            IF ( NOT NEK5000_MESH_LIB )
+                MESSAGE ( FATAL_ERROR "NEK5000 library (NEK5000) not found in ${NEK5000_PATH_LIB}" )
+            ENDIF ()
+        ELSE()
+            MESSAGE ( FATAL_ERROR "Default search for NEK5000 is not supported.  Use -D NEK5000_DIRECTORY=" )
+        ENDIF()
+        # Add the libraries in the appropriate order
+        INCLUDE_DIRECTORIES ( ${NEK5000_INCLUDE} )
+        SET ( NEK5000_LIBS
+            ${NEK5000_MESH_LIB}
+        )
+        ADD_DEFINITIONS ( "-D USE_NEK5000" )  
+        MESSAGE ( "Using NEK5000" )
+        MESSAGE ( "   " ${NEK5000_LIBS} )
+    ENDIF()
+ENDMACRO ()
+
+
+# Macro to find and configure MOAB
+MACRO ( CONFIGURE_MOAB )
+    # Determine if we want to use MOAB
+    CHECK_ENABLE_FLAG( USE_MOAB 0 )
+    IF ( USE_MOAB )
+        # Check if we specified the MOAB directory
+        IF ( MOAB_DIRECTORY )
+            VERIFY_PATH ( ${MOAB_DIRECTORY} )
+            # Include the MOAB directories
+            SET ( MOAB_INCLUDE ${MOAB_DIRECTORY}/include )
+            # Find the MOAB libaries
+            SET ( MOAB_PATH_LIB ${MOAB_DIRECTORY}/lib )
+            VERIFY_PATH ( ${MOAB_PATH_LIB} )
+            FIND_LIBRARY ( MOAB_MESH_LIB     NAMES MOAB      PATHS ${MOAB_PATH_LIB}          NO_DEFAULT_PATH )
+            IF ( NOT MOAB_MESH_LIB )
+                MESSAGE ( FATAL_ERROR "MOAB library (MOAB) not found in ${MOAB_PATH_LIB}" )
+            ENDIF ()
+        ELSE()
+            MESSAGE ( FATAL_ERROR "Default search for MOAB is not supported.  Use -D MOAB_DIRECTORY=" )
+        ENDIF()
+        # Check if we specified the cgm directory
+        IF ( CGM_DIRECTORY )
+            VERIFY_PATH ( ${CGM_DIRECTORY} )
+            # Include the CGM directories
+            SET ( MOAB_INCLUDE ${MOAB_INCLUDE} ${CGM_DIRECTORY}/include )
+            # Find the CGM libaries
+            SET ( CGM_PATH_LIB ${CGM_DIRECTORY}/lib )
+            VERIFY_PATH ( ${CGM_PATH_LIB} )
+            FIND_LIBRARY ( MOAB_CGM_LIB     NAMES cgm      PATHS ${CGM_PATH_LIB}        NO_DEFAULT_PATH )
+            FIND_LIBRARY ( MOAB_iGEOM_LIB   NAMES iGeom    PATHS ${CGM_PATH_LIB}        NO_DEFAULT_PATH )
+            IF ( (NOT MOAB_CGM_LIB) OR (NOT MOAB_iGEOM_LIB) )
+                MESSAGE ( FATAL_ERROR "CGM librarys not found in ${CGM_PATH_LIB}" )
+            ENDIF ()
+        ELSE()
+            MESSAGE ( FATAL_ERROR "Default search for cgm is not supported.  Use -D CGM_DIRECTORY=" )
+        ENDIF()
+        # Check if we specified the Cubit directory
+        IF ( CUBIT_DIRECTORY )
+            VERIFY_PATH ( ${CUBIT_DIRECTORY} )
+            # Include the CUBIT directories
+            # SET ( MOAB_INCLUDE ${MOAB_INCLUDE} ${CUBIT_DIRECTORY}/include )
+            # Find the CGM libaries
+            SET ( CUBIT_PATH_LIB ${CUBIT_DIRECTORY} )
+            VERIFY_PATH ( ${CGM_PATH_LIB} )
+            FIND_LIBRARY ( MOAB_CUBIT_LIB     NAMES cubiti19      PATHS ${CUBIT_PATH_LIB}        NO_DEFAULT_PATH )
+            IF ( NOT MOAB_CUBIT_LIB )
+                MESSAGE ( FATAL_ERROR "CUBIT librarys not found in ${CUBIT_PATH_LIB}" )
+            ENDIF ()
+        ELSE()
+            MESSAGE ( FATAL_ERROR "Default search for cubit is not supported.  Use -D CUBIT_DIRECTORY=" )
+        ENDIF()
+        # Add the libraries in the appropriate order
+        INCLUDE_DIRECTORIES ( ${MOAB_INCLUDE} )
+        SET ( MOAB_LIBS
+            ${MOAB_MESH_LIB}
+            ${MOAB_CGM_LIB}
+            ${MOAB_iGEOM_LIB}
+            ${MOAB_CUBIT_LIB}
+        )
+        ADD_DEFINITIONS ( "-D USE_MOAB" )  
+        MESSAGE ( "Using MOAB" )
+        MESSAGE ( "   " ${MOAB_LIBS} )
+    ENDIF()
+ENDMACRO ()
+
+
 # Macro to configure the BLAS
 MACRO ( CONFIGURE_BLAS )
     # Determine if we want to use BLAS
