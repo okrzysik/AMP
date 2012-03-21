@@ -1,6 +1,6 @@
 #include "discretization/MultiDOF_Manager.h"
 
-#include "ampmesh/MultiIterator.h"
+#include "ampmesh/MeshElementVectorIterator.h"
 #include "utils/Utilities.h"
 
 
@@ -80,10 +80,26 @@ void multiDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <
 ****************************************************************/
 AMP::Mesh::MeshIterator multiDOFManager::getIterator( ) const
 {
+    // Get the iterators for all sub DOFmanagers
     std::vector<boost::shared_ptr<AMP::Mesh::MeshIterator> >  iterators(d_managers.size());
     for (size_t i=0; i<d_managers.size(); i++)
         iterators[i] = boost::shared_ptr<AMP::Mesh::MeshIterator>( new AMP::Mesh::MeshIterator(d_managers[i]->getIterator()) );
-    return AMP::Mesh::MultiIterator( iterators );    
+    // Get the list of unique elements
+    size_t N_tot = 0;
+    for (size_t i=0; i<iterators.size(); i++)
+        N_tot += iterators[i]->size();
+    boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( new std::vector<AMP::Mesh::MeshElement>(0) );
+    elements->reserve( N_tot );
+    for (size_t i=0; i<iterators.size(); i++) {
+        AMP::Mesh::MeshIterator it2 = iterators[i]->begin();
+        for (size_t j=0; j<it2.size(); j++) {
+            elements->push_back( *it2 );
+            ++it2;
+        }
+    }
+    AMP::Utilities::unique( *elements );
+    // Create an iterator over the elements
+    return AMP::Mesh::MultiVectorIterator( elements );
 }
 
 

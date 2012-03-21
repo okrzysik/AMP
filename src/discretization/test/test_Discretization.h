@@ -91,6 +91,29 @@ void testSimpleDOFManager( AMP::UnitTest *ut )
     else
         ut->failure("DOFs agree");
 
+    // Check that the iterator size matches the mesh
+    AMP::Mesh::MeshIterator meshIterator = mesh->getIterator(AMP::Mesh::Vertex,0);
+    AMP::Mesh::MeshIterator DOF1Iterator = DOF1->getIterator();
+    AMP::Mesh::MeshIterator DOF2Iterator = DOF2->getIterator();
+    AMP::Mesh::MeshIterator DOF3Iterator = DOF3->getIterator();
+    AMP::Mesh::MeshIterator DOF4Iterator = DOF4->getIterator();
+    if ( DOF1Iterator.size() == meshIterator.size() )
+        ut->passes("DOF1 has the correct size for the iterator");
+    else
+        ut->failure("DOF1 has the correct size for the iterator");
+    if ( DOF2Iterator.size() == meshIterator.size() )
+        ut->passes("DOF2 has the correct size for the iterator");
+    else
+        ut->failure("DOF2 has the correct size for the iterator");
+    if ( DOF3Iterator.size() == meshIterator.size() )
+        ut->passes("DOF3 has the correct size for the iterator");
+    else
+        ut->failure("DOF3 has the correct size for the iterator");
+    if ( DOF4Iterator.size() == meshIterator.size() )
+        ut->passes("DOF4 has the correct size for the iterator");
+    else
+        ut->failure("DOF4 has the correct size for the iterator");
+
     // Check the iterator based constructor
     DOF1 =  AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1, false );
     DOF2 =  AMP::Discretization::simpleDOFManager::create( mesh, mesh->getIterator(AMP::Mesh::Vertex,1), mesh->getIterator(AMP::Mesh::Vertex,0), 1 );

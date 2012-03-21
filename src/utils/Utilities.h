@@ -136,6 +136,13 @@ namespace Utilities
     void quicksort(std::vector<T1> &x, std::vector<T2> &y);
 
     /*!
+     * Get the unique set on a std::vector
+     * \param x      vector to create the unique set (elements will be returned in sorted order)
+     */
+    template<class T>
+    void unique(std::vector<T> &x);
+
+    /*!
      * Search a std::vector for the first entry >= the given value
      * This routine only works on sorted arrays and does not check if the array is sorted
      * This routine returns the size of the vector if no entries in the vector are >= the desired entry.
@@ -581,6 +588,28 @@ void Utilities::quicksort(std::vector<T1> &x, std::vector<T2> &y)
     }
 }
 
+
+/************************************************************************
+* Subroutine to find the unique elements in a list                      *
+************************************************************************/
+template <class T>
+void Utilities::unique(std::vector<T> &x)
+{
+    if ( x.size()==0 )
+        return;
+    // First perform a quicksort
+    Utilities::quicksort(x);
+    // Next remove duplicate entries
+    size_t pos = 1;
+    for (size_t i=1; i<x.size(); i++) {
+        if ( x[i] != x[pos-1] ) {
+            x[pos] = x[i];
+            pos++;
+        }
+    }
+    if ( pos < x.size() )
+        x.resize(pos);
+}
 
 
 /************************************************************************
