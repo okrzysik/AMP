@@ -193,6 +193,7 @@ NonlinearSolver{
               aggregationtype = "Uncoupled"
               smoothertype = "Chebyshev"
               smoother_sweeps = 3
+              problem_type = "SA"
         }
     }
 }
