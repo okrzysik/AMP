@@ -70,7 +70,6 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator,
 
     // Run element tests
     bool id_pass = true;
-    bool rank_pass = true;
     bool type_pass = true;
     bool volume_pass = true;
     bool coord_pass = true;
