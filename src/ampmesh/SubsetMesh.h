@@ -55,23 +55,6 @@ public:
     virtual boost::shared_ptr<Mesh>  Subset ( std::string name ) const;
 
 
-    /**
-     * \brief    Subset a mesh given a MeshIterator
-     * \details  This function will subset a mesh over a given iterator.
-     *   This will return a new mesh object.
-     * \param iterator  MeshIterator used to subset
-     */
-    virtual boost::shared_ptr<Mesh>  Subset ( MeshIterator::shared_ptr &iterator ) const;
-
-
-    /**
-     * \brief        Subset a mesh given another mesh
-     * \details      This function will subset a mesh given another mesh
-     * \param mesh   Mesh used to subset
-     */
-    virtual boost::shared_ptr<Mesh>  Subset ( Mesh &mesh ) const;
-
-
     /* Return the number of local element of the given type
      * \param type   Geometric type
      */

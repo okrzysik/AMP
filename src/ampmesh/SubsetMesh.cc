@@ -206,11 +206,14 @@ SubsetMesh::~SubsetMesh()
 ********************************************************/
 std::vector<MeshID> SubsetMesh::getAllMeshIDs() const
 {
-    return std::vector<MeshID>(1,d_meshID);
+    std::vector<MeshID> ids = d_parent_mesh->getAllMeshIDs();
+    ids.push_back(d_meshID);
+    AMP::Utilities::quicksort(ids);
+    return ids;
 }
 std::vector<MeshID> SubsetMesh::getBaseMeshIDs() const
 {
-    return std::vector<MeshID>(1,d_meshID);
+    return d_parent_mesh->getBaseMeshIDs();
 }
 
 
@@ -219,7 +222,7 @@ std::vector<MeshID> SubsetMesh::getBaseMeshIDs() const
 ********************************************************/
 boost::shared_ptr<Mesh>  SubsetMesh::Subset( MeshID meshID ) const
 {
-    if ( d_meshID==meshID ) 
+    if ( d_meshID==meshID || d_parent_mesh->meshID()==meshID ) 
         return boost::const_pointer_cast<Mesh>( shared_from_this() );
     else
         return boost::shared_ptr<Mesh>();
@@ -230,25 +233,10 @@ boost::shared_ptr<Mesh>  SubsetMesh::Subset( MeshID meshID ) const
 * Function to return the mesh with the given name       *
 ********************************************************/
 boost::shared_ptr<Mesh>  SubsetMesh::Subset( std::string name ) const {
-    if ( d_name==name ) 
+    if ( d_name==name || d_parent_mesh->getName()==name ) 
         return boost::const_pointer_cast<Mesh>( shared_from_this() );
     else
         return boost::shared_ptr<Mesh>();
-}
-
-
-/********************************************************
-* Subset mesh                                           *
-********************************************************/
-boost::shared_ptr<Mesh> SubsetMesh::Subset( MeshIterator::shared_ptr & ) const
-{
-    AMP_ERROR("Subset is not implimented for the base class");
-    return boost::shared_ptr<Mesh>();
-}
-boost::shared_ptr<Mesh> SubsetMesh::Subset( Mesh & ) const
-{
-    AMP_ERROR("Subset is not implimented for the base class");
-    return boost::shared_ptr<Mesh>();
 }
 
 

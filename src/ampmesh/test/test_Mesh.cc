@@ -148,7 +148,7 @@ int main ( int argc , char ** argv )
     // Run tests on a libmesh mesh
     testlibMesh( &ut );
 
-/*    // Run tests on a moab mesh
+    // Run tests on a moab mesh
     #ifdef USE_MOAB
         testMoabMesh( &ut );
     #endif
@@ -160,7 +160,7 @@ int main ( int argc , char ** argv )
     testMeshGenerators( &ut );
 
     // Run the tests on the subset meshes
-    testSubsetMesh( &ut );*/
+    testSubsetMesh( &ut );
 
     // Print the results and return
     ut.report();

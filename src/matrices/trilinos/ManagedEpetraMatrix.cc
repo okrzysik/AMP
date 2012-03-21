@@ -350,17 +350,13 @@ void  ManagedEpetraMatrix::setValuesByGlobalID ( int  num_rows , int num_cols , 
 
     int MyFirstRow = EpetraParamters.d_DOFManagerLeft->beginDOF();
     int MyEndRow = EpetraParamters.d_DOFManagerLeft->endDOF();
-    for ( int i = 0 ; i != num_rows ; i++ )
-    {
-      VerifyEpetraReturn (d_epetraMatrix->ReplaceGlobalValues ( rows[i] , num_cols , values+num_cols*i , cols ) , "setValuesByGlobalID" );
-      for ( int j = 0 ; j != num_cols ; j++ )
-      {
-        if ( (values[num_cols*i + j] < MyFirstRow ) ||
-             (values[num_cols*i + j] >= MyEndRow ) )
-        {
-          d_OtherData[rows[i]][cols[j]] = values[num_cols*i + j];
+    for ( int i = 0 ; i != num_rows ; i++ ) {
+        VerifyEpetraReturn (d_epetraMatrix->ReplaceGlobalValues ( rows[i] , num_cols , values+num_cols*i , cols ) , "setValuesByGlobalID" );
+        if ( rows[i]<MyFirstRow || rows[i]>=MyEndRow ) {
+            for ( int j = 0 ; j != num_cols ; j++ ) {
+                d_OtherData[rows[i]][cols[j]] = values[num_cols*i + j];
+            }
         }
-      }
     }
 }
 

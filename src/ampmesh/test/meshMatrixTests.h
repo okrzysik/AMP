@@ -6,6 +6,9 @@
 #include "vectors/VectorBuilder.h"
 #include "matrices/MatrixBuilder.h"
 
+#include "meshTests.h"
+
+
 template <int DOF_PER_NODE, bool SPLIT>
 void VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) 
 {
@@ -67,6 +70,9 @@ void GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
     AMP::LinearAlgebra::Vector::shared_ptr vector1 = AMP::LinearAlgebra::createVector ( DOFs, variable, SPLIT );
     AMP::LinearAlgebra::Vector::shared_ptr vector2 = AMP::LinearAlgebra::createVector ( DOFs, variable, SPLIT );
     AMP::LinearAlgebra::Matrix::shared_ptr matrix = AMP::LinearAlgebra::createMatrix ( vector1, vector2 );
+
+    // For each mesh, get a mapping of it's processor id's to the comm of the mesh
+    std::map<AMP::Mesh::MeshID,std::vector<int> > proc_map = createRankMap( mesh );
 
     // For each processor, make sure it can write to all entries
     AMP::AMP_MPI comm = mesh->getComm();
@@ -140,7 +146,10 @@ void GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
         std::set<AMP::Mesh::MeshElementID> nodes_p;
         AMP::Mesh::MeshIterator iterator = mesh->getIterator(AMP::Mesh::Vertex,1);
         for (size_t i=0; i<iterator.size(); i++) {
-            if ( (int) iterator->globalID().owner_rank() == p )
+            AMP::Mesh::MeshElementID id = iterator->globalID();
+            const std::vector<int> &map = proc_map.find(id.meshID())->second;
+            int rank = map[id.owner_rank()];
+            if ( rank == p )
                 nodes_p.insert( iterator->globalID() );
             ++iterator;
         }

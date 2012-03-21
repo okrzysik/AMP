@@ -18,14 +18,40 @@
 #endif
 
 
+// Helper function to create a map from the base mesh communicator rank to the main mesh communicator
+std::map<AMP::Mesh::MeshID,std::vector<int> >  createRankMap( AMP::Mesh::Mesh::shared_ptr mesh )
+{
+    std::map<AMP::Mesh::MeshID,std::vector<int> > proc_map;
+    std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getBaseMeshIDs();
+    std::vector<std::pair<int,int> > tmp(mesh->getComm().getSize());
+    for (size_t i=0; i<meshIDs.size(); i++) {
+        AMP::Mesh::Mesh::shared_ptr mesh2 = mesh->Subset(meshIDs[i]);
+        int N_send = 0;
+        std::pair<int,int> map;
+        if ( mesh2.get() != NULL ) {
+            map = std::pair<int,int>(mesh2->getComm().getRank(),mesh->getComm().getRank());
+            N_send = 1;
+        }
+        int N = mesh->getComm().allGather( &map, N_send, &tmp[0] );
+        std::vector<int> rank(N);
+        for (int j=0; j<N; j++)
+            rank[tmp[j].first] = tmp[j].second;
+        proc_map.insert( std::pair<AMP::Mesh::MeshID,std::vector<int> >( meshIDs[i], rank ) );
+    }
+    return proc_map;
+};
+
+
 // This test checks a single mesh element iterator
 // ut           Unit test class to report the results
 // iterator     local iterator over elements
 // N_local      number of local elements for the iterator
 // N_ghost      number of ghost elements for the iterator
-void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator, 
-    const size_t N_local, const size_t N_ghost, const AMP::Mesh::GeomType type, const unsigned int rank )
+void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, AMP::Mesh::MeshIterator iterator, 
+    const size_t N_local, const size_t N_ghost, const AMP::Mesh::GeomType type )
 {
+    // For each mesh, get a mapping of it's processor id's to the comm of the mesh
+    std::map<AMP::Mesh::MeshID,std::vector<int> > proc_map = createRankMap( mesh );
     // Check that we can get the begin and end iterator
     AMP::Mesh::MeshIterator  begin_it = iterator.begin();
     AMP::Mesh::MeshIterator  end_it = iterator.end();
@@ -76,12 +102,19 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator,
     bool elements_pass = true;
     bool neighbor_pass = true;
     cur_it = iterator.begin();
-    unsigned int max_rank = AMP::AMP_MPI(AMP_COMM_WORLD).getSize()-1;
+    int myRank = mesh->getComm().getRank();
+    int maxRank = mesh->getComm().getSize()-1;
     while ( cur_it != end_it ) {
         AMP::Mesh::MeshElement element = *cur_it;
+        // Get the current id
         AMP::Mesh::MeshElementID id = element.globalID();
         if ( id != cur_it->globalID() )
             id_pass = false;
+        // Get the owner rank
+        AMP::Mesh::MeshID meshID = id.meshID();
+        const std::vector<int> &map = proc_map.find(meshID)->second;
+        int ownerRank = map[id.owner_rank()];
+        // Perform some simple checks
         if ( element.elementType() != type )
             type_pass = false;
         if ( type==AMP::Mesh::Vertex ) {
@@ -102,10 +135,10 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::MeshIterator iterator,
             std::vector< AMP::Mesh::MeshElement::shared_ptr > neighbors = element.getNeighbors();
             if ( neighbors.empty() )
                 neighbor_pass = false;
-            if ( id.owner_rank() != rank )
+            if ( ownerRank!=myRank )
                 id_pass = false;
         } else {
-            if ( id.owner_rank()==rank || id.owner_rank()>max_rank )
+            if ( ownerRank>maxRank || ownerRank<0 || ownerRank==myRank )
                 id_pass = false;
         }
         ++cur_it;   // Pre-increment is faster than post-increment
@@ -163,9 +196,8 @@ void MeshIteratorTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mes
                 }
             }
             // Test the regular iterator over local elements
-            unsigned int rank = mesh->getComm().getRank();
             if ( iterator_created )
-                ElementIteratorTest( ut, iterator, N_local, N_ghost, type, rank );
+                ElementIteratorTest( ut, mesh, iterator, N_local, N_ghost, type );
             // Add tests with gcw != 0
             // Add const iterator tests
         }
