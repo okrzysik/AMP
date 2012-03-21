@@ -307,14 +307,15 @@ int main(int argc, char *argv[])
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    exeNames.push_back("testUpdatedLagrangianMechanics-NonlinearPlasticity-1");
     exeNames.push_back("testUpdatedLagrangianMechanics-NonlinearPlasticity-2");
     exeNames.push_back("testUpdatedLagrangianMechanics-NonlinearPlasticity-1a");
     exeNames.push_back("testUpdatedLagrangianMechanics-NonlinearPlasticity-2a");
+    exeNames.push_back("testUpdatedLagrangianMechanics-NonlinearPlasticity-1");
 
     for(size_t i = 0; i < exeNames.size(); i++) {
         try {
             myTest(&ut, exeNames[i]);
+            AMP::pout<< exeNames[i]<<" has "<<ut.NumFailGlobal()<<" failures."<<std::endl;
         } catch (std::exception &err) {
             std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
             ut.failure("ERROR: While testing");
