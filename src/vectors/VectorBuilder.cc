@@ -32,7 +32,16 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
     boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> multiVariable =
         boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(variable);
     if ( multiVariable.get() != NULL ) {
-        // We are dealing with a MultiVariable, create the Vector for each variable, then combine
+        // We are dealing with a MultiVariable, first check that there are no duplicate or null variables
+        for (size_t i=0; i<multiVariable->numVariables(); i++) {
+            AMP::LinearAlgebra::Variable::shared_ptr var1 = multiVariable->getVariable(i);
+            AMP_INSIST(var1.get()!=NULL,"Error using a MultiVariable in createVector, NULL variables detected");
+            for (size_t j=0; j<i; j++) {
+                AMP::LinearAlgebra::Variable::shared_ptr var2 = multiVariable->getVariable(j);
+                AMP_INSIST(var1!=var2,"Error using a MultiVariable in createVector, duplicate variables detected");
+            }
+        }
+        // Create the Vector for each variable, then combine
         std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vectors;
         for (AMP::LinearAlgebra::MultiVariable::iterator it=multiVariable->beginVariable(); it!=multiVariable->endVariable(); it++)
             vectors.push_back( createVector( DOFs, *it, split ) );
