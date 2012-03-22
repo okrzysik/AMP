@@ -39,7 +39,7 @@ std::map<AMP::Mesh::MeshID,std::vector<int> >  createRankMap( AMP::Mesh::Mesh::s
         proc_map.insert( std::pair<AMP::Mesh::MeshID,std::vector<int> >( meshIDs[i], rank ) );
     }
     return proc_map;
-};
+}
 
 
 // This test checks a single mesh element iterator
