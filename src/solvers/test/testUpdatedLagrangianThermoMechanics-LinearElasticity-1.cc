@@ -66,7 +66,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
         nonlinearMechanicsBVPoperator->getVolumeOperator());
   AMP::LinearAlgebra::Variable::shared_ptr dispVar = mechanicsNonlinearVolumeOperator->getOutputVariable();
-  AMP::LinearAlgebra::Variable::shared_ptr tempVar(new AMP::LinearAlgebra::Variable("temp")); 
+  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputVars = 
+    boost::dynamic_pointer_cast< AMP::LinearAlgebra::MultiVariable > (
+        mechanicsNonlinearVolumeOperator->getInputVariable());
+  AMP::LinearAlgebra::Variable::shared_ptr tempVar = inputVars->getVariable(AMP::Operator::Mechanics::TEMPERATURE);
 
   //For RHS (Point Forces)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
