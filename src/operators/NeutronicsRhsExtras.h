@@ -42,11 +42,10 @@ namespace Operator {
       typedef std::vector<Vec_Dbl2>                                         Vec_Dbl3;
     
       //! Neutronics Input Types
-     enum SourceType{ Isotopes, Elements, NUM_SOURCE_TYPES };
+      enum SourceType{ Isotopes, Elements, NUM_SOURCE_TYPES };
       
     private:
       
-
     public:
 
       NeutronicsRhsExtras(SP_Parameters parameters);
@@ -87,9 +86,10 @@ namespace Operator {
         */
       void reset(const SP_OperatorParameters & parameters);
 
-      AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
+      AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {return d_outputVariable;}
 
       void   setTimeStep ( int tStep ) { d_timeStep = tStep; }
+      void   setExtrasId ( int extrasId ) { d_extrasId = extrasId; }
       void   setTimeInSeconds ( double seconds );
 
     protected:
