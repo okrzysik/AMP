@@ -58,6 +58,7 @@ DOFManager::shared_ptr  subsetDOFManager::create( boost::shared_ptr<const DOFMan
     size_t k = 0;
     for (size_t i=0; i<remoteDOFs.size(); i++ ) {
         size_t index = AMP::Utilities::findfirst(recv_data,remoteDOFs[i]);
+        if ( index==recv_data.size() ) { index--; }
         if ( recv_data[index]==remoteDOFs[i] ) {
             subsetDOF->d_remoteParentDOFs.push_back(remoteDOFs[i]);
             subsetDOF->d_remoteSubsetDOFs.push_back(index);
