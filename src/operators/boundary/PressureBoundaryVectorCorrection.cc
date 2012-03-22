@@ -230,24 +230,22 @@ namespace AMP {
           }
 
           d_currFaces = belem->getElements(AMP::Mesh::Face);
+          d_currNodes = belem->getElements(AMP::Mesh::Vertex);
+          createCurrentLibMeshElement();
 
           for(unsigned int bb=0; bb < d_currFaces.size(); bb++)
           {
-            d_currNodes = (d_currFaces[bb]).getElements(AMP::Mesh::Vertex);
-            createCurrentLibMeshElement();
 
             if(d_currFaces[bb].isOnBoundary(d_boundaryIds[j]))
             {
 
-AMP::pout<<"This is where testLinearMechanics-PressureBoundary crashes."<<std::endl;
-              d_currNodes = d_currFaces[bb].getElements(AMP::Mesh::Vertex);
-AMP::pout<<"That was where testLinearMechanics-PressureBoundary crashes."<<std::endl;
 
               if(d_iDebugPrintInfoLevel>8)
               {
                 AMP::pout << "The side that matched is = " << bb << std::endl;
               }
 
+              d_currNodes = d_currFaces[bb].getElements(AMP::Mesh::Vertex);
               unsigned int numNodesInCurrSide = d_currNodes.size();
 
               createCurrentLibMeshSide();
@@ -306,8 +304,8 @@ AMP::pout<<"That was where testLinearMechanics-PressureBoundary crashes."<<std::
 
               destroyCurrentLibMeshSide();
             }
-            destroyCurrentLibMeshElement();
           }
+          destroyCurrentLibMeshElement();
         }//end for belem
 
       }//end for j
@@ -372,6 +370,7 @@ AMP::pout<<"That was where testLinearMechanics-PressureBoundary crashes."<<std::
 
     void PressureBoundaryVectorCorrection :: createCurrentLibMeshSide() {
       d_currSidePtr = new ::Quad4;
+      AMP_ASSERT(d_currNodes.size()==4);
       for(size_t j = 0; j < d_currNodes.size(); j++) {
         std::vector<double> pt = d_currNodes[j].coord();
         d_currSidePtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
@@ -380,6 +379,7 @@ AMP::pout<<"That was where testLinearMechanics-PressureBoundary crashes."<<std::
 
     void PressureBoundaryVectorCorrection :: createCurrentLibMeshElement() {
       d_currElemPtr = new ::Hex8;
+      AMP_ASSERT(d_currNodes.size()==8);
       for(size_t j = 0; j < d_currNodes.size(); j++) {
         std::vector<double> pt = d_currNodes[j].coord();
         d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
@@ -387,7 +387,7 @@ AMP::pout<<"That was where testLinearMechanics-PressureBoundary crashes."<<std::
     }
 
     void PressureBoundaryVectorCorrection :: destroyCurrentLibMeshSide() {
-      for(size_t j = 0; j < d_currElemPtr->n_nodes(); j++) {
+      for(size_t j = 0; j < d_currSidePtr->n_nodes(); j++) {
         delete (d_currSidePtr->get_node(j));
         d_currSidePtr->set_node(j) = NULL;
       }//end for j
