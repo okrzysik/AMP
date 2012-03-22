@@ -255,6 +255,7 @@ int main(int argc, char *argv[])
     for(size_t i = 0; i < exeNames.size(); i++) {
         try {
             linearElasticTest(&ut, exeNames[i], i);
+            AMP::pout<<exeNames[i]<<" had "<<ut.NumFailGlobal()<<" failures."<<std::endl;
         } catch (std::exception &err) {
             AMP::pout << "ERROR: " << err.what() << std::endl;
         } catch( ... ) {

@@ -29,6 +29,12 @@ namespace AMP {
 
         AMP_INSIST( ((rInternal.get()) != NULL), "NULL Internal Residual Vector" );
 
+        if(d_iDebugPrintInfoLevel>3)
+        {
+          AMP::pout << "L2 Norm of u in NonlinearBVPOperator volumeOperator::apply is : "
+            << u->L2Norm() << std::endl;
+        }
+
         d_volumeOperator->apply(nullRhs, u, r, 1.0, 0.0);
 
         if(d_iDebugPrintInfoLevel>3)

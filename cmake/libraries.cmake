@@ -352,6 +352,38 @@ MACRO ( CONFIGURE_LIBMESH )
 ENDMACRO ()
 
 
+# Macro to find and configure NEK5000
+MACRO ( CONFIGURE_NEK5000 )
+    # Determine if we want to use NEK5000
+    CHECK_ENABLE_FLAG( USE_NEK5000 0 )
+    IF ( USE_NEK5000 )
+        # Check if we specified the NEK5000 directory
+        IF ( NEK5000_DIRECTORY )
+            VERIFY_PATH ( ${NEK5000_DIRECTORY} )
+            # Include the NEK5000 directories
+            SET ( NEK5000_INCLUDE ${NEK5000_DIRECTORY}/include )
+            # Find the NEK5000 libaries
+            SET ( NEK5000_PATH_LIB ${NEK5000_DIRECTORY}/lib )
+            VERIFY_PATH ( ${NEK5000_PATH_LIB} )
+            FIND_LIBRARY ( NEK5000_MESH_LIB     NAMES NEK5000      PATHS ${NEK5000_PATH_LIB}          NO_DEFAULT_PATH )
+            IF ( NOT NEK5000_MESH_LIB )
+                MESSAGE ( FATAL_ERROR "NEK5000 library (NEK5000) not found in ${NEK5000_PATH_LIB}" )
+            ENDIF ()
+        ELSE()
+            MESSAGE ( FATAL_ERROR "Default search for NEK5000 is not supported.  Use -D NEK5000_DIRECTORY=" )
+        ENDIF()
+        # Add the libraries in the appropriate order
+        INCLUDE_DIRECTORIES ( ${NEK5000_INCLUDE} )
+        SET ( NEK5000_LIBS
+            ${NEK5000_MESH_LIB}
+        )
+        ADD_DEFINITIONS ( "-D USE_NEK5000" )  
+        MESSAGE ( "Using NEK5000" )
+        MESSAGE ( "   " ${NEK5000_LIBS} )
+    ENDIF()
+ENDMACRO ()
+
+
 # Macro to find and configure MOAB
 MACRO ( CONFIGURE_MOAB )
     # Determine if we want to use MOAB
