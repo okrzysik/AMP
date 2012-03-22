@@ -108,12 +108,12 @@ void myTest(AMP::UnitTest *ut )
 
     AMP::plog<<std::endl<<" locNdCnt = "<<cnt<<" Pt: "<<((*nd).x())<<" : "<<((*nd).y())<<" : "<<((*nd).z())<<std::endl;
 
-    for(int i = 0; i < ndDofIds.size(); ++i) {
+    for(size_t i = 0; i < ndDofIds.size(); ++i) {
       std::vector<unsigned int> cols;
       std::vector<double> vals;
       mat->getRowByGlobalID(ndDofIds[i], cols, vals);
       AMP::plog<<std::endl<<" row = "<<(ndDofIds[i])<<" NumCols = "<<(cols.size())<<std::endl;
-      for(int j = 0; j < cols.size(); ++j) {
+      for(size_t j = 0; j < cols.size(); ++j) {
         AMP::plog<<" col("<<j<<") = "<<(cols[j])<<" Val = "<<(vals[j])<<std::endl;
       }//end j
     }//end i
