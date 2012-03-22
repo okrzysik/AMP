@@ -226,10 +226,6 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
     	  AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator end_bnd = meshAdapter->endOwnedBoundary( j );
     	  AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator iter;
     	  for (iter=beg_bnd; iter!=end_bnd; iter++) {
-    	        double x, y, z;
-    	        x = iter->x();
-    	        y = iter->y();
-    	        z = iter->z();
     	        size_t gid = iter->globalID();
     	        double res;
     	        res = resVec->getValueByGlobalID(gid);
