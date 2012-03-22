@@ -1,4 +1,3 @@
-
 #include "utils/Utilities.h"
 #include "TrilinosMLSolver.h"
 #include "vectors/trilinos/EpetraVector.h"
@@ -328,24 +327,26 @@ namespace AMP {
         TrilinosMLSolver::computeCoordinates( const boost::shared_ptr<AMP::Operator::Operator> op )
         {
             // Get mesh adapter for this operator
-            AMP::Mesh::MeshManager::Adapter::shared_ptr myMesh = op->getMeshAdapter();
+            AMP::Mesh::Mesh::shared_ptr myMesh = op->getMesh();
 
             // Resize vectors to hold node values
-            int numNodes = myMesh->numLocalNodes();
+            int numNodes = myMesh->numLocalElements(AMP::Mesh::Vertex);
             d_x_values.resize(numNodes,0.0);
             d_y_values.resize(numNodes,0.0);
             d_z_values.resize(numNodes,0.0);
 
             // Get node iterators
-            AMP::Mesh::MeshManager::Adapter::NodeIterator thisNode = myMesh->beginNode();
-            AMP::Mesh::MeshManager::Adapter::NodeIterator  endNode = myMesh->endNode();
+            AMP::Mesh::MeshIterator thisNode = myMesh->getIterator(AMP::Mesh::Vertex,0);
+            AMP::Mesh::MeshIterator  endNode = thisNode.end();
 
             int nodeCounter = 0;
             for( ; thisNode != endNode; ++thisNode )
             {
-                d_x_values[nodeCounter] = (*thisNode).x();
-                d_y_values[nodeCounter] = (*thisNode).y();
-                d_z_values[nodeCounter] = (*thisNode).z();
+                std::vector<double> coord = thisNode->coord();
+                AMP_INSIST(coord.size()==3,"Currently only programmed for 3d");
+                d_x_values[nodeCounter] = coord[0];
+                d_y_values[nodeCounter] = coord[1];
+                d_z_values[nodeCounter] = coord[2];
                 nodeCounter++;
             }
         }
@@ -354,7 +355,7 @@ namespace AMP {
         TrilinosMLSolver::computeNullSpace( const boost::shared_ptr<AMP::Operator::Operator> op )
         {
             // Get mesh adapter for this operator
-            AMP::Mesh::MeshManager::Adapter::shared_ptr myMesh = op->getMeshAdapter();
+            AMP::Mesh::Mesh::shared_ptr myMesh = op->getMesh();
             int numPDE = d_mlOptions->d_pdeEquations;
             int dimNS  = d_mlOptions->d_nullSpaceDimension;
 
@@ -362,13 +363,13 @@ namespace AMP {
                         "Null space dimension must be 6 to use computed null space." );
 
             // Resize vectors to hold node values
-            int numNodes = myMesh->numLocalNodes();
+            int numNodes = myMesh->numLocalElements(AMP::Mesh::Vertex);
             int vecLength = numPDE*numNodes;
             d_null_space.resize(dimNS*vecLength,0.0);
 
             // Get node iterators
-            AMP::Mesh::MeshManager::Adapter::NodeIterator thisNode = myMesh->beginNode();
-            AMP::Mesh::MeshManager::Adapter::NodeIterator  endNode = myMesh->endNode();
+            AMP::Mesh::MeshIterator thisNode = myMesh->getIterator(AMP::Mesh::Vertex,0);
+            AMP::Mesh::MeshIterator  endNode = thisNode.end();
 
             double thisX;
             double thisY;
@@ -377,9 +378,11 @@ namespace AMP {
             int offset = 0;
             for( ; thisNode != endNode; ++thisNode )
             {
-                thisX = (*thisNode).x();
-                thisY = (*thisNode).y();
-                thisZ = (*thisNode).z();
+                std::vector<double> coord = thisNode->coord();
+                AMP_INSIST(coord.size()==3,"Currently only programmed for 3d");
+                thisX = coord[0];
+                thisY = coord[1];
+                thisZ = coord[2];
 
                 int dof = numPDE * nodeCounter;
 
