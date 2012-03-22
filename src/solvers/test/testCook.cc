@@ -33,10 +33,13 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/Mesh.h"
+#include "ampmesh/libmesh/initializeLibMesh.h"
+#include "ampmesh/libmesh/libMesh.h"
 #include "materials/Material.h"
 
 #include "operators/LinearBVPOperator.h"
+#include "operators/ElementPhysicsModel.h"
 #include "operators/OperatorBuilder.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
 
@@ -44,11 +47,14 @@
 #include "vectors/Vector.h"
 #include "vectors/VectorSelector.h"
 #include "ampmesh/SiloIO.h"
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/Variable.h"
+#include "vectors/VectorBuilder.h"
 
-
-#include "../PetscKrylovSolverParameters.h"
-#include "../PetscKrylovSolver.h"
-#include "../TrilinosMLSolver.h"
+#include "solvers/PetscKrylovSolverParameters.h"
+#include "solvers/PetscKrylovSolver.h"
+#include "solvers/TrilinosMLSolver.h"
 
 #include "ReadTestMesh.h"
 
@@ -68,21 +74,19 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  std::string mesh_file = input_db->getString("mesh_file");
+  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(globalComm));
 
   const unsigned int mesh_dim = 3;
   boost::shared_ptr< ::Mesh > mesh(new ::Mesh(mesh_dim));
 
+  std::string mesh_file = input_db->getString("mesh_file");
   if(globalComm.getRank() == 0) {
     AMP::readTestMesh(mesh_file, mesh);
   }//end if root processor
 
   MeshCommunication().broadcast(*(mesh.get()));
   mesh->prepare_for_use(false);
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter ( new AMP::Mesh::MeshManager::Adapter (mesh) );
-  manager->addMesh(meshAdapter, "cook");
+  AMP::Mesh::Mesh::shared_ptr meshAdapter ( new AMP::Mesh::libMesh(mesh,"cook") );
 
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
@@ -103,9 +107,10 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName) {
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-  AMP::LinearAlgebra::Vector::shared_ptr mechSolVec = meshAdapter->createVector( bvpOperator->getInputVariable() );
-  AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = meshAdapter->createVector( bvpOperator->getOutputVariable() );
-  AMP::LinearAlgebra::Vector::shared_ptr mechResVec = meshAdapter->createVector( bvpOperator->getOutputVariable() );
+  AMP::Discretization::DOFManager::shared_ptr DOF_vector = AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,3,true);
+  AMP::LinearAlgebra::Vector::shared_ptr mechSolVec = AMP::LinearAlgebra::createVector( DOF_vector, bvpOperator->getOutputVariable(), true );
+  AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec = AMP::LinearAlgebra::createVector( DOF_vector, bvpOperator->getOutputVariable(), true );
+  AMP::LinearAlgebra::Vector::shared_ptr mechResVec = AMP::LinearAlgebra::createVector( DOF_vector, bvpOperator->getOutputVariable(), true );
 
   mechSolVec->setToScalar(0.5);
   mechRhsVec->setToScalar(0.0);
