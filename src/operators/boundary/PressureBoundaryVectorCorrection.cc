@@ -239,7 +239,9 @@ namespace AMP {
             if(d_currFaces[bb].isOnBoundary(d_boundaryIds[j]))
             {
 
+AMP::pout<<"This is where testLinearMechanics-PressureBoundary crashes."<<std::endl;
               d_currNodes = d_currFaces[bb].getElements(AMP::Mesh::Vertex);
+AMP::pout<<"That was where testLinearMechanics-PressureBoundary crashes."<<std::endl;
 
               if(d_iDebugPrintInfoLevel>8)
               {
