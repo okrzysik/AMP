@@ -12,7 +12,7 @@ ColumnTimeOperator::ColumnTimeOperator(boost::shared_ptr<AMP::Operator::Operator
   
   boost::shared_ptr<TimeOperatorParameters> params = boost::dynamic_pointer_cast<TimeOperatorParameters>(in_params);
   boost::shared_ptr<AMP::Database> column_db = params->d_db;
-  
+  d_Mesh = params->d_Mesh;  
   d_pRhsOperator = boost::dynamic_pointer_cast<ColumnOperator>(params->d_pRhsOperator);
   AMP_INSIST(d_pRhsOperator.get()!=NULL, "Error: ColumnTimeOperator::ColumnTimeOperator() rhs operator must be a non-NULL column operator");
 

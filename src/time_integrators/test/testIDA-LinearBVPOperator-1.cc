@@ -142,9 +142,8 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // set initial conditions, initialize created vectors
-  int zeroGhostWidth = 0;
-  AMP::Mesh::MeshIterator  node = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
-  ut->failure("converted incorrectly: it appears this shoudl be a surface iterator, not an iterator.");
+  int zeroGhostWidth = 1;
+  AMP::Mesh::MeshIterator  node = meshAdapter->getSurfaceIterator(AMP::Mesh::Vertex, zeroGhostWidth);
   AMP::Mesh::MeshIterator  end_node = node.end();
   
   int counter=0;     

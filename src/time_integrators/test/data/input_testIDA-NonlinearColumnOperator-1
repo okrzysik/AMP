@@ -29,7 +29,7 @@ VolumeIntegralOperator{
   ActiveInputVariables{
     ActiveVariable_0 = "SpecificPowerInWattsPerGram" 
   }
-  OutputVariable = "HeatSource"
+  OutputVariable = "temperature"
   print_info_level = 3
   LocalModel = "SourcePhysicsModel"
 
