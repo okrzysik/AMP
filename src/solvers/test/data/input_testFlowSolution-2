@@ -62,7 +62,7 @@ BoundaryConditions{
 
 NonlinearThermalOperator2 {
   name="NonlinearBVPOperator"
-    print_info_level = 1
+    print_info_level = 5
 
     VolumeOperator = "DiffusionNonlinearFEOperator2"
     BoundaryOperator="ColumnBoundaryOperator2"
@@ -70,7 +70,7 @@ NonlinearThermalOperator2 {
 
 LinearThermalOperator2 {
   name = "LinearBVPOperator"
-    print_info_level = 0
+    print_info_level = 5
 
     VolumeOperator = "DiffusionLinearFEOperator2"
     BoundaryOperator="LinearColumnBoundaryOperator2"

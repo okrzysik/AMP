@@ -54,12 +54,12 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable(d_variable);
   AMP::LinearAlgebra::Vector::shared_ptr uInternal = u->subsetVectorForVariable(d_variable);
 
-  AMP::Discretization::DOFManager::shared_ptr dofManager = rInternal->getDOFManager();
-
   AMP::LinearAlgebra::VS_Mesh meshSelector("meshSelector", d_Mesh);
   AMP::LinearAlgebra::Vector::shared_ptr uOnMesh = u->select ( meshSelector , u->getVariable()->getName() );
+  rInternal = rInternal->select ( meshSelector , rInternal->getVariable()->getName() );
 
   uInternal->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+  //rInternal->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
   std::vector<std::string> variableNames;
   size_t numVar = 0 ;
@@ -107,6 +107,8 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
 #endif
 
   }
+
+  AMP::Discretization::DOFManager::shared_ptr dofManager = rInternal->getDOFManager();
 
   unsigned int numIds = d_boundaryIds.size();
   std::vector<size_t> dofIndices, dofs;
@@ -216,6 +218,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   }//end for nid
 
   rInternal->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_ADD);
+  //std::cout << rInternal << std::endl;
 
   if (f.get() == NULL)
   {
