@@ -58,8 +58,10 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   AMP::LinearAlgebra::Vector::shared_ptr uInternal = u->subsetVectorForVariable(d_variable);
 
   AMP::LinearAlgebra::Vector::shared_ptr uOnMesh = u->select ( AMP::Mesh::VS_ByMesh ( d_MeshAdapter ) , u->getVariable()->getName() );
+  rInternal = rInternal->select ( AMP::Mesh::VS_ByMesh ( d_MeshAdapter ) , rInternal->getVariable()->getName() );
 
   uInternal->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+  //rInternal->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
   std::vector<std::string> variableNames;
   size_t numVar = 0 ;
@@ -213,6 +215,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   }//end for nid
 
   rInternal->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_ADD);
+  //std::cout << rInternal << std::endl;
 
   if (f.get() == NULL)
   {
