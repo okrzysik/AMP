@@ -61,8 +61,8 @@
 #include "node.h"
 
 #define _PI_ 3.14159265
-#define __INIT_FN__(x,y) (800+((pow(x,2)+pow(y,2)))) // Manufactured Solution
-#define __FsnK__() (4)
+#define __INIT_FN__(x,y) (800+pow(10,6)*(pow(x,2)+pow(y,2))) // Manufactured Solution
+#define __FsnK__() (4*pow(10,6))
 
 
 void calculateManufacturedSolution(AMP::Mesh::Mesh::shared_ptr meshAdapter,
@@ -402,6 +402,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   siloWriter->registerVector( manufacturedSolution , manager, AMP::Mesh::Vertex , "ManufacturedSolution" );
   siloWriter->registerVector( TemperatureVec , manager, AMP::Mesh::Vertex , "ComputedSolution" );
+  siloWriter->registerVector( ResidualVec , manager, AMP::Mesh::Vertex , "Residual" );
+  siloWriter->registerVector( solutionError, manager, AMP::Mesh::Vertex , "SolutionErro" );
+
   siloWriter->registerVector( manufacturedRHS , manager, AMP::Mesh::Volume,"ManufacturedRhs");
   siloWriter->writeFile( exeName, 0 );
 #endif 
@@ -474,6 +477,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   nonlinearThermalSolver->solve(integratedRHSVec , TemperatureVec );
 
+  nonlinearThermalCoupledOperator->apply(integratedRHSVec, TemperatureVec, ResidualVec, 1.0, -1.0);
   solutionError->subtract(TemperatureVec, manufacturedSolution);
 
   std::cout << "Max of ||U-Uh|| : "<< solutionError->max() << " Min of ||U-Uh|| : "<< solutionError->min()<< std::endl;

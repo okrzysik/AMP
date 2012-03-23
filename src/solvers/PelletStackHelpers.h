@@ -79,7 +79,7 @@ void helperCreateCoupledOperatorForPelletMechanics(boost::shared_ptr<AMP::Operat
   coupledOp.reset(new AMP::Operator::CoupledOperator(coupledOpParams));
 }
 
-void helperSetFrozenVectorForMapsForPelletMechanics(AMP::Mesh::MeshManager::shared_ptr manager, 
+void helperSetFrozenVectorForMapsForPelletMechanics(AMP::Mesh::Mesh::shared_ptr manager, 
     boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp) 
 {
   boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps = 
@@ -87,9 +87,12 @@ void helperSetFrozenVectorForMapsForPelletMechanics(AMP::Mesh::MeshManager::shar
   boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(coupledOp->getOperator(2));
 
-  AMP::LinearAlgebra::Variable::shared_ptr dispVar = nonlinearColumnOperator->getOutputVariable();
-  
-  AMP::LinearAlgebra::Vector::shared_ptr dirichletValues =  manager->createVector ( dispVar );
+  AMP::Discretization::DOFManager::shared_ptr nodal3VectorDOF = AMP::Discretization::simpleDOFManager::create(manager,AMP::Mesh::Vertex,1,3,true);
+  AMP::Operator::Operator::shared_ptr individualOp = boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+      nonlinearColumnOperator->getOperator(0));
+  AMP::LinearAlgebra::Variable individualVar = individualOp->getOutputVariable(); 
+  AMP::LinearAlgebra::Vector::shared_ptr  dirichletValues = AMP::LinearAlgebra::createVector( nodal3VectorDOF , individualVar , true );
+
   n2nmaps->setVector(dirichletValues);
   
   for(int id = 0; id < nonlinearColumnOperator->getNumberOfOperators(); id++) {
@@ -101,7 +104,7 @@ void helperSetFrozenVectorForMapsForPelletMechanics(AMP::Mesh::MeshManager::shar
   }//end for id
 }
 
-void helperCreateAllOperatorsForPelletMechanics(AMP::Mesh::MeshManager::shared_ptr manager,
+void helperCreateAllOperatorsForPelletMechanics(AMP::Mesh::Mesh::shared_ptr manager,
     AMP::AMP_MPI globalComm, boost::shared_ptr<AMP::InputDatabase> global_input_db,
     boost::shared_ptr<AMP::Operator::CoupledOperator> & coupledOp,
     boost::shared_ptr<AMP::Operator::ColumnOperator> & linearColumnOperator, 
@@ -113,7 +116,7 @@ void helperCreateAllOperatorsForPelletMechanics(AMP::Mesh::MeshManager::shared_p
   helperCreateStackOperatorForPelletMechanics(manager, n2nmaps, globalComm, global_input_db, pelletStackOp);
 
   std::vector<unsigned int> localPelletIds = pelletStackOp->getLocalPelletIds();
-  std::vector<AMP::Mesh::MeshManager::Adapter::shared_ptr> localMeshes = pelletStackOp->getLocalMeshes();
+  std::vector<AMP::Mesh::Mesh::shared_ptr> localMeshes = pelletStackOp->getLocalMeshes();
 
   boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator;
   helperCreateColumnOperatorsForPelletMechanics(localPelletIds, localMeshes, global_input_db, nonlinearColumnOperator, linearColumnOperator);
@@ -127,13 +130,18 @@ void helperCreateVectorsForPelletMechanics(AMP::Mesh::MeshManager::shared_ptr ma
     AMP::LinearAlgebra::Vector::shared_ptr & rhsVec,
     AMP::LinearAlgebra::Vector::shared_ptr & scaledRhsVec) 
 {
-  AMP::LinearAlgebra::Variable::shared_ptr dispVar = coupledOp->getOutputVariable();
-  solVec = AMP::LinearAlgebra::CommCollectVector::view (
-      manager->createVector ( dispVar ) , globalComm );
-  rhsVec = AMP::LinearAlgebra::CommCollectVector::view (
-      manager->createVector ( dispVar ) , globalComm );
-  scaledRhsVec = AMP::LinearAlgebra::CommCollectVector::view (
-      manager->createVector ( dispVar ) , globalComm );
+  boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator = 
+    boost::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(coupledOp->getOperator(2));
+  AMP::Operator::Operator::shared_ptr individualOp = boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+      nonlinearColumnOperator->getOperator(0));
+
+  AMP::LinearAlgebra::Variable individualVar = individualOp->getOutputVariable(); 
+  AMP::Discretization::DOFManager::shared_ptr nodal3VectorDOF = AMP::Discretization::simpleDOFManager::create(manager,AMP::Mesh::Vertex,1,3,true);
+  
+  solVec = AMP::LinearAlgebra::createVector( nodal3VectorDOF , individualVar , true );
+  rhsVec = AMP::LinearAlgebra::createVector( nodal3VectorDOF , individualVar , true );
+  scaledRhsVec = AMP::LinearAlgebra::createVector( nodal3VectorDOF , individualVar , true );
+  
 }
 
 void helperBuildPointLoadRHSForPelletMechanics(boost::shared_ptr<AMP::InputDatabase> global_input_db, 
@@ -146,7 +154,7 @@ void helperBuildPointLoadRHSForPelletMechanics(boost::shared_ptr<AMP::InputDatab
   rhsVec->zero();
   for(int id = 0; id < nonlinearColumnOperator->getNumberOfOperators(); id++) {
     AMP::Operator::Operator::shared_ptr currOp = nonlinearColumnOperator->getOperator(id);
-    AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = currOp->getMeshAdapter();
+    AMP::Mesh::Mesh::shared_ptr meshAdapter = currOp->getMeshAdapter();
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
     boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> loadOp = 
       boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
@@ -172,22 +180,24 @@ void helperApplyBoundaryCorrectionsForPelletMechanics(boost::shared_ptr<AMP::Ope
   }//end for id
 }
 
-void helperCreateTemperatureVectorsForPelletMechanics(AMP::Mesh::MeshManager::shared_ptr manager, 
+void helperCreateTemperatureVectorsForPelletMechanics(AMP::Mesh::Mesh::shared_ptr manager, 
     boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp,
     AMP::LinearAlgebra::Vector::shared_ptr & initialTemperatureVec,
     AMP::LinearAlgebra::Vector::shared_ptr & finalTemperatureVec) 
 {
   boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(coupledOp->getOperator(2));
-  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> tempVar( new AMP::LinearAlgebra::MultiVariable("ColumnVariable"));
+  AMP::LinearAlgebra::Variable::shared_ptr tempVar;
   for(int id = 0; id < nonlinearColumnOperator->getNumberOfOperators(); id++) {
     AMP::LinearAlgebra::Variable::shared_ptr opVar = 
       (nonlinearColumnOperator->getOperator(id))->getInputVariable(AMP::Operator::Mechanics::TEMPERATURE);
-    if(opVar.get() != NULL) {
-      tempVar->add(opVar);
+    if(tempVar.get()==NULL && opVar.get() != NULL) {
+      tempVar = opVar;
     }
   }//end for id
-  initialTemperatureVec = manager->createVector(tempVar);
+
+  AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = AMP::Discretization::simpleDOFManager::create(manager,AMP::Mesh::Vertex,1,1,true);
+  initialTemperatureVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, tempVar , true );
   finalTemperatureVec = initialTemperatureVec->cloneVector();
 }
 
