@@ -204,7 +204,7 @@ NonlinearSolver {
                   max_error = 1e-12
                   ksp_type = "fgmres"
                   absolute_tolerance = 1.0e-12
-                  relative_tolerance = 1.0e-11
+                  relative_tolerance = 1.0e-9
                   divergence_tolerance = 1.0e03
                   max_krylov_dimension = 40
                   uses_preconditioner = TRUE
@@ -215,7 +215,7 @@ NonlinearSolver {
 
                   MLSolver {
                     max_iterations = 1
-                      max_error = 1e-11
+                      max_error = 1e-101
                       problem_type = "NSSA"
                       PDE_equations = 3
                       // Optional, but it makes the first iteration converge very tightly, very quickly.
