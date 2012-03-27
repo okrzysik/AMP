@@ -205,12 +205,11 @@ namespace AMP {
           AMP::Discretization::DOFManager::shared_ptr dof_map = AMP::Discretization::simpleDOFManager::create(d_Mesh, AMP::Mesh::Volume, ghostWidth, DOFsPerVolume, split); 
           
           int gp = 0;
+          std::vector<size_t> gid;
           for( ; elem != end_elems; ++elem) {
+            dof_map->getDOFs ( elem->globalID(), gid);
             for( unsigned int i = 0; i < DOFsPerVolume; gp++ , i++ ) {
-              std::vector<size_t> ndx;
-              dof_map->getDOFs ( elem->globalID(), ndx);
-              int  offset = ndx[i];
-              rInternal->setValueByGlobalID ( offset, d_values[this_step][gp] );
+              rInternal->setValueByGlobalID ( gid[i], d_values[this_step][gp] );
             }//end for gauss-points
           }//end for elements
         }
