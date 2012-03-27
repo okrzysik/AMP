@@ -183,7 +183,8 @@ namespace AMP {
         AMP_ASSERT(AMP::Utilities::approx_equal(a,1.));
         AMP_ASSERT(AMP::Utilities::approx_equal(b,0.));
 
-        SP_Vector rInternal = r->subsetVectorForVariable(d_outputVariable);
+        // subsetOutputVector is from Operator.h
+        SP_Vector rInternal = this->subsetOutputVector(r);
 
         AMP_ASSERT(rInternal!=NULL);
 
@@ -195,21 +196,30 @@ namespace AMP {
           double value = d_fixedValues[this_step];
           rInternal->setToScalar(value);
         } else {
+          rInternal->zero();
           int ghostWidth = 1;
           AMP::Mesh::MeshIterator  elem      = d_Mesh->getIterator( AMP::Mesh::Volume, ghostWidth );
           AMP::Mesh::MeshIterator  end_elems = elem.end();
 
           unsigned int DOFsPerVolume = 8;
-         
           bool split = true; 
           AMP::Discretization::DOFManager::shared_ptr dof_map = AMP::Discretization::simpleDOFManager::create(d_Mesh, AMP::Mesh::Volume, ghostWidth, DOFsPerVolume, split); 
           
           int gp = 0;
           std::vector<size_t> gid;
+          AMP::pout<<"The intial value is: "<<rInternal->L2Norm()<<std::endl;
           for( ; elem != end_elems; ++elem) {
             dof_map->getDOFs ( elem->globalID(), gid);
             for( unsigned int i = 0; i < DOFsPerVolume; gp++ , i++ ) {
               rInternal->setValueByGlobalID ( gid[i], d_values[this_step][gp] );
+              if( gp==1) { 
+                if( !AMP::Utilities::approx_equal(rInternal->L2Norm(), rInternal->max(), 1e-8) ) { 
+                  AMP::pout<<"The setValueByGlobalID function set this value twice because it is confused about multiple meshes with the same variable name"<<std::endl;
+                  AMP::pout<<"max value is: "<<rInternal->max()<<std::endl;
+                  AMP::pout<<"L2  value is: "<<rInternal->L2Norm()<<std::endl;
+                  AMP_ERROR("There is a problem in NeutronicsRhs.");
+                }
+              }
             }//end for gauss-points
           }//end for elements
         }

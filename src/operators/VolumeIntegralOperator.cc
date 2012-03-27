@@ -86,7 +86,8 @@ namespace AMP {
         (d_auxVec[var])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
       }
 
-      d_outVec = r->subsetVectorForVariable(d_outVariable);
+      // subsetOutputVector is from Operator.h
+      d_outVec = this->subsetOutputVector(r);
       d_outVec->zero();
 
       if(d_inpVariables->numVariables() > 0) {
