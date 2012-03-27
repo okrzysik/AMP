@@ -212,8 +212,8 @@ namespace AMP {
             dof_map->getDOFs ( elem->globalID(), gid);
             for( unsigned int i = 0; i < DOFsPerVolume; gp++ , i++ ) {
               rInternal->setValueByGlobalID ( gid[i], d_values[this_step][gp] );
-              if( gp==1) { 
-                if( !AMP::Utilities::approx_equal(rInternal->L2Norm(), rInternal->max(), 1e-8) ) { 
+              if( gp==0 ) { 
+                if( (rInternal->max()>0) && (!AMP::Utilities::approx_equal(rInternal->max(), rInternal->L2Norm(), 1e-4)) ) { 
                   AMP::pout<<"The setValueByGlobalID function set this value twice because it is confused about multiple meshes with the same variable name"<<std::endl;
                   AMP::pout<<"max value is: "<<rInternal->max()<<std::endl;
                   AMP::pout<<"L2  value is: "<<rInternal->L2Norm()<<std::endl;
