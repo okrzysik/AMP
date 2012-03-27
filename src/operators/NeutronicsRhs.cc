@@ -197,7 +197,7 @@ namespace AMP {
           rInternal->setToScalar(value);
         } else {
           rInternal->zero();
-          int ghostWidth = 1;
+          int ghostWidth = 0;
           AMP::Mesh::MeshIterator  elem      = d_Mesh->getIterator( AMP::Mesh::Volume, ghostWidth );
           AMP::Mesh::MeshIterator  end_elems = elem.end();
 
@@ -212,14 +212,15 @@ namespace AMP {
             dof_map->getDOFs ( elem->globalID(), gid);
             for( unsigned int i = 0; i < DOFsPerVolume; gp++ , i++ ) {
               rInternal->setValueByGlobalID ( gid[i], d_values[this_step][gp] );
-              if( gp==0 ) { 
+    //          double nrm = rInternal->L2Norm();
+    /*          if( gp==0 ) { 
                 if( (rInternal->max()>0) && (!AMP::Utilities::approx_equal(rInternal->max(), rInternal->L2Norm(), 1e-4)) ) { 
                   AMP::pout<<"The setValueByGlobalID function set this value twice because it is confused about multiple meshes with the same variable name"<<std::endl;
                   AMP::pout<<"max value is: "<<rInternal->max()<<std::endl;
                   AMP::pout<<"L2  value is: "<<rInternal->L2Norm()<<std::endl;
                   AMP_ERROR("There is a problem in NeutronicsRhs.");
                 }
-              }
+              }*/
             }//end for gauss-points
           }//end for elements
         }
