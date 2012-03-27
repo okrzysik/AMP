@@ -175,9 +175,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
         double pz = (*node).z();
         
         double val = __INIT_FN__(px, py, pz, 0);
-        cout << "val = " << val << endl;
         
-        cout << "counter = " << counter << "bndGlobalIds.size() = " << bndGlobalIds.size() << endl;
         for(unsigned int i = 0; i < bndGlobalIds.size(); i++)
         {
           initialCondition->setValueByGlobalID(bndGlobalIds[i], val);
@@ -257,6 +255,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     time_Params->d_object_name = "IDATimeIntegratorParameters";
     
     cout << "Before IDATimeIntegrator" << endl;    
+#ifdef USE_SUNDIALS
     boost::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> pIDATimeIntegrator(new AMP::TimeIntegrator::IDATimeIntegrator(time_Params));
     
     if(pIDATimeIntegrator.get() == NULL) {
@@ -270,10 +269,10 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     int retval=0;
     double current_time=0;
     double max=0;
-    double abs_error=0.0;
+    //double abs_error=0.0;
     double min=0;
-    double rel_error=0.0;
-    double exact_sol=0.0;
+    //double rel_error=0.0;
+    //double exact_sol=0.0;
     int j=1;
     while(pIDATimeIntegrator->getCurrentTime() < pIDATimeIntegrator->getFinalTime())
     {
@@ -296,12 +295,13 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
         cout << "min val of the current solution = " << min << endl;
     }
     
-    
-    AMP::AMPManager::shutdown();
-    
+#else
+    ut->passes("IDA will not fail a test if there is no IDA.");
+#endif  
+  
     if (ut->NumFailLocal() == 0)
     {
-        ut->passes("testIDATimeIntegrator successful");
+      ut->passes("testIDATimeIntegrator successful");
     }
 }
 
@@ -312,10 +312,9 @@ int main(int argc, char *argv[])
 {
     AMP::AMPManager::startup(argc, argv);
     AMP::UnitTest ut;
-
-    try {
-        
-        IDATimeIntegratorTest(&ut);
+    
+    try {        
+        IDATimeIntegratorTest(&ut);        
     } catch (std::exception &err) {
         std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
         ut.failure("ERROR: While testing");
@@ -328,7 +327,8 @@ int main(int argc, char *argv[])
 
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();
-    return num_failed;
+    return num_failed;    
+    
 }   
 
 //---------------------------------------------------------------------------//
