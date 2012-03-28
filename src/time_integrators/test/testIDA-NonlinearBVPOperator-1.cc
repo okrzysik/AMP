@@ -45,7 +45,6 @@
 #include "operators/boundary/DirichletVectorCorrection.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
-#include "operators/MassMatrixCorrection.h"
 
 #include "solvers/TrilinosMLSolver.h"
 #include "time_integrators/IDATimeIntegrator.h"
