@@ -109,17 +109,6 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
   rhsVec->setToScalar(0.0);
 
   // Fill in manufactured solution
-  //boost::shared_ptr<AMP::Database> source_db = input_db->getDatabase("ManufacturedSourceOperator");
-  //std::string sourceModelName = source_db->getString("LocalModel");
-  //boost::shared_ptr<AMP::Database> sourceModel_db = input_db->getDatabase(sourceModelName);
-  //boost::shared_ptr<AMP::Database> mfgSolution_db = sourceModel_db->getDatabase("ManufacturedSolution");
-  /*bool isCylindrical = false;
-  if (mfgSolution_db->keyExists("Geometry")) {
-	  std::string geom = mfgSolution_db->getString("Geometry");
-	  size_t pos = geom.find("Cylindrical");
-	  size_t len = geom.size();
-	  isCylindrical = (pos < len);
-  }*/
   AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator iterator = meshAdapter->beginOwnedNode();
   std::string mfgName = mfgSolution->get_name();
   if (mfgName.find("Cylindrical") < mfgName.size()) {
@@ -260,6 +249,10 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
 		 tmpVar1 = sourceVec->getVariable();
 		 tmpVar1->setName("Source");
 		 meshAdapter->registerVectorAsData ( sourceVec );
+
+		 tmpVar1 = srcVec->getVariable();
+		 tmpVar1->setName("AnalyticSource");
+		 meshAdapter->registerVectorAsData ( srcVec );
 
 		 tmpVar1 = resVec->getVariable();
 		 tmpVar1->setName("Residual");
