@@ -252,6 +252,7 @@ int main(int argc, char *argv[])
     for(size_t i = 0; i < exeNames.size(); i++) {
         try {
             myTest(&ut, exeNames[i]);
+            AMP::pout<<exeNames[i]<<" had "<<ut.NumFailGlobal()<<" failures."<<std::endl;
         } catch (std::exception &err) {
             std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
             ut.failure("ERROR: While testing");

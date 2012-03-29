@@ -101,7 +101,19 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       helperSetFinalTemperatureForPelletMechanics(coupledOp, finalTemperatureVec);
     }
 
+    AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
+    resVec->zero();
+    coupledOp->apply(scaledRhsVec, solVec, resVec);
+AMP::pout<< "initial, rhsVec: "<<scaledRhsVec->L2Norm()<<endl; 
+AMP::pout<< "initial, solVec: "<<solVec->L2Norm()<<endl ; 
+AMP::pout<< "initial, resVec: "<<resVec->L2Norm()<<endl ; 
     nonlinearSolver->solve(scaledRhsVec, solVec);
+AMP::pout<< "solved,  rhsVec: "<<scaledRhsVec->L2Norm()<<endl ; 
+AMP::pout<< "solved,  solVec: "<<solVec->L2Norm()<<endl ; 
+    coupledOp->apply(scaledRhsVec, solVec, resVec);
+AMP::pout<< "final,   rhsVec: "<<scaledRhsVec->L2Norm()<<endl ; 
+AMP::pout<< "final,   solVec: "<<solVec->L2Norm()<<endl ; 
+AMP::pout<< "final,   resVec: "<<resVec->L2Norm()<<endl ; 
 
 #ifdef USE_SILO
     manager->writeFile<AMP::Mesh::SiloIO> ( exeName , step );
@@ -118,8 +130,13 @@ int main(int argc, char *argv[])
   AMP::AMPManager::startup(argc, argv);
   AMP::UnitTest ut;
 
-  //std::string exeName = "testPelletStackMechanicsSolver-1";
-  std::string exeName = "testPelletStackMechanicsSolver-2";
+  int inp = 3;
+  if(argc > 1) {
+    inp = atoi(argv[1]);
+  }
+
+  char exeName[200];
+  sprintf(exeName, "testPelletStackMechanicsSolver-%d", inp);
 
   try {
     myTest(&ut, exeName);

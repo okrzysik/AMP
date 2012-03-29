@@ -30,7 +30,7 @@
 #include "string_to_enum.h"
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
-  std::string input_file = "input_" + exeName;
+  //std::string input_file = "input_" + exeName;
   std::string log_file = "output_" + exeName;
 
   AMP::PIO::logOnlyNodeZero(log_file);
@@ -71,14 +71,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   boost::shared_ptr < ::FEType > feType( new ::FEType(feTypeOrder, feFamily) );
   boost::shared_ptr < ::FEBase > fe( (::FEBase::build(3, (*feType))).release() );
 
-  const std::vector<std::vector<Real> > &phi = fe->get_phi();
+  ///const std::vector<std::vector<Real> > &phi = fe->get_phi();
   const std::vector<std::vector<Real> > &dphidxi   = fe->get_dphidxi();
   const std::vector<std::vector<Real> > &dphideta  = fe->get_dphideta();
   const std::vector<std::vector<Real> > &dphidzeta = fe->get_dphidzeta();
   const std::vector<std::vector<Real> > &dphidx = fe->get_dphidx();
   const std::vector<std::vector<Real> > &dphidy = fe->get_dphidy();
   const std::vector<std::vector<Real> > &dphidz = fe->get_dphidz();
-  const std::vector<Real> &djxw = fe->get_JxW();
+  //const std::vector<Real> &djxw = fe->get_JxW();
 
   const std::vector<RealGradient> &dxyzdxi   = fe->get_dxyzdxi();
   const std::vector<RealGradient> &dxyzdeta  = fe->get_dxyzdeta();
@@ -98,7 +98,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   const ::Elem* currElemPtr = &(el->getElem());
   fe->reinit(currElemPtr);
 
-  unsigned int numNodes = el->numNodes();
+  //unsigned int numNodes = el->numNodes();
 
   for(unsigned int i = 0; i < d_dofIndices.size(); i++) {
     T->setValueByGlobalID(d_dofIndices[i], 300*(i+1));

@@ -77,6 +77,8 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 
       AMP::PIO::logAllNodes(log_file);
       AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
+      globalComm.barrier();
+      double t0 = AMP::AMP_MPI::time();
 
       boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
 
@@ -88,6 +90,9 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
       AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter1 = manager->getMesh ( "pellet" );
       AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter2 = manager->getMesh ( "clad" );
+      globalComm.barrier();
+      double t1 = AMP::AMP_MPI::time();
+      std::cout << "Time to load meshes: " << t1-t0 << std::endl;
 
       //--------------------------------------------------
       // Creating the parameters that will form the right-hand side for the thermal calculation.
@@ -314,6 +319,29 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 
       flowSolVec->setToScalar(300.0);
 
+      //----------------------------------------------------------------------------------------------------------------------------------------------//
+
+      AMP::LinearAlgebra::Vector::shared_ptr globalSolMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector" , globalComm ) ;
+      globalSolMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( globalSolVec );
+      globalSolMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( flowSolVec );
+
+      AMP::LinearAlgebra::Vector::shared_ptr globalSolMultiVectorView = AMP::LinearAlgebra::MultiVector::view( globalSolMultiVector, globalComm );
+      //---------------------------------------------------------------------------------------------------------------------//
+      AMP::LinearAlgebra::Vector::shared_ptr globalRhsMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector" , globalComm ) ;
+      globalRhsMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( globalRhsVec );
+      globalRhsMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( flowRhsVec );
+
+      AMP::LinearAlgebra::Vector::shared_ptr globalRhsMultiVectorView = AMP::LinearAlgebra::MultiVector::view( globalRhsMultiVector, globalComm );
+      //---------------------------------------------------------------------------------------------------------------------//
+      //---------------------------------------------------------------------------------------------------------------------//
+      AMP::LinearAlgebra::Vector::shared_ptr globalResMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector" , globalComm ) ;
+      globalResMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( globalResVec );
+      globalResMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( flowResVec );
+
+//      AMP::LinearAlgebra::Vector::shared_ptr globalResMultiVectorView = AMP::LinearAlgebra::MultiVector::view( globalResMultiVector, globalComm );
+      //---------------------------------------------------------------------------------------------------------------------//
+      //---------------------------------------------------------------------------------------------------------------------//
+
       //------------------------------------------
 
       mapCladToPellet->setVector(thermalMapCladToPelletVec );
@@ -411,28 +439,6 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 
       coupledLinearOperator->append(coupledlinearOperator3);
 
-      //----------------------------------------------------------------------------------------------------------------------------------------------//
-
-      AMP::LinearAlgebra::Vector::shared_ptr globalSolMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector" , globalComm ) ;
-      globalSolMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( globalSolVec );
-      globalSolMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( flowSolVec );
-
-      AMP::LinearAlgebra::Vector::shared_ptr globalSolMultiVectorView = AMP::LinearAlgebra::MultiVector::view( globalSolMultiVector, globalComm );
-      //---------------------------------------------------------------------------------------------------------------------//
-      AMP::LinearAlgebra::Vector::shared_ptr globalRhsMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector" , globalComm ) ;
-      globalRhsMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( globalRhsVec );
-      globalRhsMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( flowRhsVec );
-
-      AMP::LinearAlgebra::Vector::shared_ptr globalRhsMultiVectorView = AMP::LinearAlgebra::MultiVector::view( globalRhsMultiVector, globalComm );
-      //---------------------------------------------------------------------------------------------------------------------//
-      //---------------------------------------------------------------------------------------------------------------------//
-      AMP::LinearAlgebra::Vector::shared_ptr globalResMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector" , globalComm ) ;
-      globalResMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( globalResVec );
-      globalResMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( flowResVec );
-
-//      AMP::LinearAlgebra::Vector::shared_ptr globalResMultiVectorView = AMP::LinearAlgebra::MultiVector::view( globalResMultiVector, globalComm );
-      //---------------------------------------------------------------------------------------------------------------------//
-      //---------------------------------------------------------------------------------------------------------------------//
 
       neutronicsOperator->setTimeStep(0);
       neutronicsOperator->apply(nullVec, nullVec, specificPowerGpVec, 1., 0.);
@@ -447,6 +453,9 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       //apply calls will work:
       coupledLinearOperator->reset(columnNonlinearOperator->getJacobianParameters(globalSolMultiVector));
       columnNonlinearOperator->apply(nullVec, globalSolMultiVector, globalResMultiVector, 1.0, 0.0);
+      AMP::pout<<"Initial Global Residual Norm: "<<std::setprecision(12)<<globalResMultiVector->L2Norm()<<std::endl;
+      AMP::pout<<"Initial Temperatur Residual Norm: "<<std::setprecision(12)<<globalResVec->L2Norm()<<std::endl;
+      AMP::pout<<"Initial Flow Residual Norm: "<<std::setprecision(12)<<flowResVec->L2Norm()<<std::endl;
 
       //------------------------------------------------------------------
       boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver");
@@ -534,8 +543,20 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
         thermalNonlinearOperator2->modifyRHSvector(thermalRhsVec2);
         thermalNonlinearOperator2->modifyInitialSolutionVector(thermalSolVec2);
 
+        AMP::pout<<"Initial Guess  Norm for Step " << tstep << " is: "<<globalSolMultiVector->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Guess  Norm12 for Step " << tstep << " is: "<<globalSolVec->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Guess  Flow   for Step " << tstep << " is: "<<flowSolVec->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Source Norm for Step " << tstep << " is: "<<globalRhsMultiVector->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Source Norm1 for Step " << tstep << " is: "<<thermalRhsVec1->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Source Norm2 for Step " << tstep << " is: "<<thermalRhsVec2->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Guess  Norm1 for Step " << tstep << " is: "<<thermalSolVec1->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Guess  Norm2 for Step " << tstep << " is: "<<thermalSolVec2->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Power  Norm1 for Step " << tstep << " is: "<<specificPowerGpVec->L2Norm()<<std::endl;
+        globalResMultiVector->zero();
         columnNonlinearOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
-        AMP::pout<<"Initial Residual Norm for Step " << tstep << " is: "<<globalResMultiVector->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Global Residual Norm for Step " << tstep << " is: "<<globalResMultiVector->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Temperatur Residual  Norm12 for Step " << tstep << " is: "<<globalResVec->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Flow Residual for Step " << tstep << " is: "<<flowResVec->L2Norm()<<std::endl;
 
         nonlinearSolver->solve(globalRhsMultiVectorView, globalSolMultiVectorView);
 

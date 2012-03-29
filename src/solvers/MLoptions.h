@@ -36,6 +36,11 @@ namespace AMP {
         std::string d_prePost;
         int d_coarseMaxSize;
         std::string d_coarseType;
+        bool d_aggregationAuxEnable;
+        double d_aggregationAuxThreshold;
+        std::string d_nullSpaceType;
+        int d_nullSpaceDimension;
+        bool d_nullSpaceAddDefaultVectors;
 
     };
 
