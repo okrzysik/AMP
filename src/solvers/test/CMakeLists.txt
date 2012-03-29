@@ -396,6 +396,7 @@ COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearThermalOxygenDiffusion-
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearFick-cylinder-1a )
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearFick-cylinder-1b )
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearFick-cylinder-1c )
+COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearFick-cylinder-1d )
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearFick-cylinder-TUI-1 )
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearFick-cylinder-TUI-2 )
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-1 )

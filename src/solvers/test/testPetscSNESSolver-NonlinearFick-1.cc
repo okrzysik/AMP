@@ -185,6 +185,7 @@ int main(int argc, char *argv[])
     exeNames.push_back("testPetscSNESSolver-NonlinearFick-cylinder-1a");
     exeNames.push_back("testPetscSNESSolver-NonlinearFick-cylinder-1b");
     exeNames.push_back("testPetscSNESSolver-NonlinearFick-cylinder-1c");
+    exeNames.push_back("testPetscSNESSolver-NonlinearFick-cylinder-1d");
 
     for(unsigned int i = 0; i < exeNames.size(); i++) {
         try {      
