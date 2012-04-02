@@ -2,6 +2,7 @@ INCLUDE (macros)
 
 ADD_AMP_TEST_1_2_4 ( testTimeIntegratorParameters )
 ADD_AMP_TEST_1_2_4 ( testIDA-LinearBVPOperator-1 )
+ADD_AMP_TEST_1_2_4 ( testIDA-NonlinearBVPOperator-1 )
 ADD_AMP_TEST_1_2_4 ( testIDA-NonlinearColumnOperator-1 )
 
 COPY_TEST_DATA_FILE ( inputIDATimeIntegrator )
