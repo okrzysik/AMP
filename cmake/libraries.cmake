@@ -352,34 +352,45 @@ MACRO ( CONFIGURE_LIBMESH )
 ENDMACRO ()
 
 
-# Macro to find and configure NEK5000
-MACRO ( CONFIGURE_NEK5000 )
-    # Determine if we want to use NEK5000
-    CHECK_ENABLE_FLAG( USE_NEK5000 0 )
-    IF ( USE_NEK5000 )
-        # Check if we specified the NEK5000 directory
-        IF ( NEK5000_DIRECTORY )
-            VERIFY_PATH ( ${NEK5000_DIRECTORY} )
-            # Include the NEK5000 directories
-            SET ( NEK5000_INCLUDE ${NEK5000_DIRECTORY}/include )
-            # Find the NEK5000 libaries
-            SET ( NEK5000_PATH_LIB ${NEK5000_DIRECTORY}/lib )
-            VERIFY_PATH ( ${NEK5000_PATH_LIB} )
-            FIND_LIBRARY ( NEK5000_MESH_LIB     NAMES NEK5000      PATHS ${NEK5000_PATH_LIB}          NO_DEFAULT_PATH )
-            IF ( NOT NEK5000_MESH_LIB )
-                MESSAGE ( FATAL_ERROR "NEK5000 library (NEK5000) not found in ${NEK5000_PATH_LIB}" )
+# Macro to find and configure NEK
+MACRO ( CONFIGURE_NEK )
+    # Determine if we want to use NEK
+    CHECK_ENABLE_FLAG( USE_NEK "false" )
+    IF ( USE_NEK )
+        # Check if we specified the NEK directory
+        IF ( NEK_DIRECTORY )
+            VERIFY_PATH ( ${NEK_DIRECTORY} )
+            # Include the NEK directories
+#            SET ( NEK_INCLUDE ${NEK_DIRECTORY}/include )
+            # Find the NEK libaries
+            SET ( NEK_PATH_LIB ${NEK_DIRECTORY} )
+            VERIFY_PATH ( ${NEK_PATH_LIB} )
+            FIND_LIBRARY ( NEK_LIB     NAMES NEK5000      PATHS ${NEK_PATH_LIB}          NO_DEFAULT_PATH )
+            IF ( NOT NEK_LIB )
+                MESSAGE ( FATAL_ERROR "Nek5000 library (NEK5000) not found in ${NEK_PATH_LIB}" )
             ENDIF ()
         ELSE()
-            MESSAGE ( FATAL_ERROR "Default search for NEK5000 is not supported.  Use -D NEK5000_DIRECTORY=" )
+            MESSAGE ( FATAL_ERROR "Default search for NEK is not supported.  Use -D NEK_DIRECTORY=" )
+        ENDIF()
+        CHECK_ENABLE_FLAG( NOTIMER  0 )
+        CHECK_ENABLE_FLAG( MPITIMER 0 )
+        CHECK_ENABLE_FLAG( MPIIO    0 )
+        CHECK_ENABLE_FLAG( BG       0 )
+        CHECK_ENABLE_FLAG( K10_MXM  0 )
+        CHECK_ENABLE_FLAG( CVODE    0 )
+        CHECK_ENABLE_FLAG( NEKNEK   0 )
+        CHECK_ENABLE_FLAG( MOAB     1 )
+        IF ( NOT USE_MOAB ) 
+            MESSAGE ( FATAL_ERROR "Within AMP, MOAB is required to use Nek5000." )
         ENDIF()
         # Add the libraries in the appropriate order
-        INCLUDE_DIRECTORIES ( ${NEK5000_INCLUDE} )
-        SET ( NEK5000_LIBS
-            ${NEK5000_MESH_LIB}
+#       INCLUDE_DIRECTORIES ( ${NEK_INCLUDE} )
+        SET ( NEK_LIBS
+            ${NEK_LIB}
         )
-        ADD_DEFINITIONS ( "-D USE_NEK5000" )  
-        MESSAGE ( "Using NEK5000" )
-        MESSAGE ( "   " ${NEK5000_LIBS} )
+        ADD_DEFINITIONS ( "-D USE_NEK" )  
+        MESSAGE ( "Using NEK" )
+        MESSAGE ( "   " ${NEK_LIBS} )
     ENDIF()
 ENDMACRO ()
 
