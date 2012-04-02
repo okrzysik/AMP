@@ -41,7 +41,7 @@ namespace TimeIntegrator{
 
 TimeIntegrator::TimeIntegrator( boost::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters)
 {
-   AMP_ASSERT(parameters.get()!=NULL);
+   AMP_INSIST(parameters.get()!=NULL, "Null parameter");
 
    initialize(parameters);   
 }
