@@ -38,7 +38,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
             AMP_INSIST(var1.get()!=NULL,"Error using a MultiVariable in createVector, NULL variables detected");
             for (size_t j=0; j<i; j++) {
                 AMP::LinearAlgebra::Variable::shared_ptr var2 = multiVariable->getVariable(j);
-                AMP_INSIST(var1!=var2,"Error using a MultiVariable in createVector, duplicate variables detected");
+                AMP_INSIST((*var1)!=(*var2),"Error using a MultiVariable in createVector, duplicate variables detected");
             }
         }
         // Create the Vector for each variable, then combine
