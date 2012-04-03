@@ -10,26 +10,64 @@
 #include "Utilities.h"
 
 #include "utils/AMP_MPI.h"
-#include "Logger.h"
-#include "PIO.h"
+#include "utils/AMPManager.h"
+#include "utils/Logger.h"
+#include "utils/PIO.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <time.h>
-#include "utils/AMPManager.h"
+#include <stdlib.h>
 #include <stdexcept>
+
+// Detect the OS and include system dependent headers
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+    // Note: windows has not been testeds
+    #define USE_WINDOWS
+    #include "windows.h"
+#elif defined(__APPLE__)
+    #define USE_MAC
+    #include <signal.h>
+    #include <execinfo.h>
+    #include <cxxabi.h>
+    #include <dlfcn.h>
+    #include<mach/mach.h>
+#elif defined(__linux) || defined(__unix) || defined(__posix)
+    #define USE_LINUX
+    #include <signal.h>
+    #include <execinfo.h>
+    #include <cxxabi.h>
+    #include <dlfcn.h>
+#else
+    #error Unknown OS
+#endif
+
 
 namespace AMP{
 
-/*
- * Routine to rename a file.
- */
-void Utilities::renameFile(const std::string& old_filename,
-                           const std::string& new_filename)
+// Routine to check if a file exists
+bool Utilities::fileExists( const std::string& filename )
+{
+   std::ifstream ifile(filename.c_str());
+   return ifile;
+}
+
+// Routine to rename a file.
+void Utilities::renameFile(const std::string& old_filename, const std::string& new_filename)
 {
    AMP_ASSERT(!old_filename.empty());
    AMP_ASSERT(!new_filename.empty());
    rename(old_filename.c_str(), new_filename.c_str());
+}
+
+// Routine to delete a file.
+void Utilities::deleteFile(const std::string& filename)
+{
+   AMP_ASSERT(!filename.empty());
+   if ( fileExists( filename ) ) {
+      int error = remove(filename.c_str());
+      AMP_INSIST(error==0,"Error deleting file");
+   }
 }
 
 /*
@@ -184,6 +222,14 @@ void Utilities::abort(const std::string &message,
 	              const int line) 
 {
     if ( AMP::AMPManager::use_MPI_Abort==true) {
+        // Print the call stack and memory usage
+        long long unsigned int N_bytes = getMemoryUsage();
+        printf("Bytes used = %llu\n",N_bytes);
+        std::vector<std::string> stack = getCallStack();
+        printf("Stack Trace:\n");
+        for (size_t i=0; i<stack.size(); i++)
+            printf("   %s",stack[i].c_str());
+        printf("\n");
         // Log the abort message
         Logger::getInstance() -> logAbort(message, filename, line);
         // Use MPI_abort (will terminate all processes)
@@ -191,6 +237,9 @@ void Utilities::abort(const std::string &message,
         comm.abort();
     } else {
         // Throw and standard exception (allows the use of try, catch)
+        std::stringstream  stream;
+        stream << message << std::endl << "  " << filename << ":  " << line;
+        std::cout << stream.str() << std::endl;
         throw std::logic_error(message);
     }
 }
@@ -209,6 +258,94 @@ unsigned int Utilities::hash_char(const char* name)
     return hash;
 }
 
+
+// Function to get the memory usage
+size_t Utilities::getMemoryUsage()
+{
+    size_t N_bytes = 0;
+    #if defined(USE_LINUX)
+        std::string mem;
+        std::ifstream proc("/proc/self/status");
+        std::string s;
+        while(getline(proc, s), !proc.fail()) {
+            if(s.substr(0, 6) == "VmSize") {
+                mem = s.substr(7);
+                break;
+            }
+        }
+        for (size_t i=0; i<mem.size(); i++) {
+            if ( mem[i]==9 || mem[i]==10 || mem[i]==12 || mem[i]==13 )
+                mem[i] = 32;
+        }
+        size_t mult = 1;
+        if ( mem.find("kB")!=std::string::npos ) {
+            mult = 0x400;
+            mem.erase(mem.find("kB"),2);
+        } else if ( mem.find("MB")!=std::string::npos ) {
+            mult = 0x100000;
+            mem.erase(mem.find("MB"),2);
+        } else if ( mem.find("GB")!=std::string::npos ) {
+            mult = 0x40000000;
+            mem.erase(mem.find("GB"),2);
+        }
+        for (size_t i=0; i<mem.size(); i++) {
+            if ( ( mem[i]<48 || mem[i]>57 ) && mem[i]!=32 ) {
+                printf("Unable to get size from string: %s\n",s.c_str());
+                return 0;
+            }
+        }
+        long int N = atol(mem.c_str());
+        N_bytes = ((size_t)N)*mult;
+    #elif defined(USE_MAC)
+        struct task_basic_info t_info;
+        mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
+        if (KERN_SUCCESS != task_info(mach_task_self(),
+                              TASK_BASIC_INFO, (task_info_t)&t_info, 
+                              &t_info_count)) {
+            return 0;
+        }
+        N_bytes = t_info.resident_size;
+    #endif
+    return N_bytes;
+}
+
+
+//! Function to print the current call stack
+std::vector<std::string>  Utilities::getCallStack()
+{
+    std::vector<std::string>  stack;
+    #if defined(USE_LINUX) || defined(USE_MAC)
+        void *trace[100];
+        Dl_info dlinfo;
+        int status;
+        const char *symname;
+        char *demangled=NULL;
+        int trace_size = backtrace(trace,100);
+        for (int i=0; i<trace_size; ++i) {  
+            if(!dladdr(trace[i], &dlinfo))
+                continue;
+            symname = dlinfo.dli_sname;
+            demangled = abi::__cxa_demangle(symname, NULL, 0, &status);
+            if(status == 0 && demangled)
+                symname = demangled;
+            std::string object = std::string(dlinfo.dli_fname);
+            std::string function = "";
+            if ( symname!=NULL )
+                function = std::string(symname);
+            if ( i!=0 ) {  // Skip the current function
+                std::string stack_item = object + ":   " + function + "\n";
+                //stack_item = "object: " + object + "\n";
+                //stack_item += "function: " + function + "\n";
+                stack.push_back(stack_item);
+            }
+            if ( demangled==NULL ) {
+                free(demangled);
+                demangled=NULL;
+            }
+        } 
+    #endif
+    return stack;
+}
 
 }
 
