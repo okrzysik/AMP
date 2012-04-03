@@ -53,10 +53,23 @@ namespace Utilities
 			      bool only_node_zero_creates = true);
 
     /*!
+     * Check if a file exists and return true if it does
+     */
+    bool fileExists( const std::string& filename );
+
+
+    /*!
      * Rename a file from old file name to new file name.
      */
     void renameFile(const std::string& old_filename, 
                           const std::string& new_filename);
+
+
+    /*!
+     * Delete a file.  If the file does not exist, nothing will happen.
+     */
+    void deleteFile( const std::string& filename );
+
 
     /*!
      * Convert an integer to a string.
@@ -136,17 +149,37 @@ namespace Utilities
     void quicksort(std::vector<T1> &x, std::vector<T2> &y);
 
     /*!
+     * Get the unique set on a std::vector
+     * \param x      vector to create the unique set (elements will be returned in sorted order)
+     */
+    template<class T>
+    void unique(std::vector<T> &x);
+
+    /*!
      * Search a std::vector for the first entry >= the given value
      * This routine only works on sorted arrays and does not check if the array is sorted
-     * This routine returns -1 if no value in the array is >= the desired value
+     * This routine returns the size of the vector if no entries in the vector are >= the desired entry.
      * \param x      vector to sort
      * \param value  Value to search for
      */
     template<class T>
-    int findfirst(const std::vector<T> &x, const T &value);
+    size_t findfirst(const std::vector<T> &x, const T &value);
 
     //! Create a hash key from a char array
     unsigned int hash_char(const char*);
+
+    /*!
+     * Function to get the memory usage.
+     * This function will return the total memory used by the application.
+     * Note: depending on the implimentation, this number may be rounded to
+     * to a multiple of 1024 (2^3n).
+     * If this function fails, it will return 0.
+     */
+    size_t getMemoryUsage();
+
+    //! Function to get the current call stack
+    std::vector<std::string> getCallStack();
+
 }
 
 
@@ -569,6 +602,27 @@ void Utilities::quicksort(std::vector<T1> &x, std::vector<T2> &y)
 }
 
 
+/************************************************************************
+* Subroutine to find the unique elements in a list                      *
+************************************************************************/
+template <class T>
+void Utilities::unique(std::vector<T> &x)
+{
+    if ( x.size()==0 )
+        return;
+    // First perform a quicksort
+    Utilities::quicksort(x);
+    // Next remove duplicate entries
+    size_t pos = 1;
+    for (size_t i=1; i<x.size(); i++) {
+        if ( x[i] != x[pos-1] ) {
+            x[pos] = x[i];
+            pos++;
+        }
+    }
+    if ( pos < x.size() )
+        x.resize(pos);
+}
 
 /************************************************************************
 * Subroutine to find the first element in X which is greater than Y     *
@@ -577,20 +631,20 @@ void Utilities::quicksort(std::vector<T1> &x, std::vector<T2> &y)
 * Returns -1 if no value is larger.                                     *
 ************************************************************************/
 template<class T>
-int Utilities::findfirst(const std::vector<T> &x_in, const T &value) 
+size_t Utilities::findfirst(const std::vector<T> &x_in, const T &value) 
 {
-    int n = x_in.size();
+    size_t n = x_in.size();
     AMP_INSIST(n>0,"x must not be empty");
     const T *x = &x_in[0];   // Use the pointer for speed
     // Check if value is within the range of x
     if ( value <= x[0] )
         return 0;
     else if ( value > x[n-1] )
-        return -1;
+        return n;
     // Perform the search
-    int lower = 0;
-    int upper = n-1;
-    int index;
+    size_t lower = 0;
+    size_t upper = n-1;
+    size_t index;
     while ( (upper-lower) != 1 ) {
         index = (upper+lower)/2;
         if ( x[index] >= value )
