@@ -53,10 +53,23 @@ namespace Utilities
 			      bool only_node_zero_creates = true);
 
     /*!
+     * Check if a file exists and return true if it does
+     */
+    bool fileExists( const std::string& filename );
+
+
+    /*!
      * Rename a file from old file name to new file name.
      */
     void renameFile(const std::string& old_filename, 
                           const std::string& new_filename);
+
+
+    /*!
+     * Delete a file.  If the file does not exist, nothing will happen.
+     */
+    void deleteFile( const std::string& filename );
+
 
     /*!
      * Convert an integer to a string.

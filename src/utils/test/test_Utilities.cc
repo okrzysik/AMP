@@ -315,6 +315,22 @@ int main(int argc, char *argv[])
         else
             ut.failure("non empty call stack");
 
+        // Test deleting and checking if a file exists
+        if ( globalComm.getRank()==0 ) {
+            FILE *fid = fopen( "testDeleteFile.txt", "w" );
+            fputs("Temporary test",fid);
+            fclose(fid);
+            if ( AMP::Utilities::fileExists("testDeleteFile.txt") )
+                ut.passes("File exists");
+            else
+                ut.failure("File exists");
+            AMP::Utilities::deleteFile("testDeleteFile.txt");
+            if ( !AMP::Utilities::fileExists("testDeleteFile.txt") )
+                ut.passes("File deleted");
+            else
+                ut.failure("File deleted");
+        }
+
 		// Run Kevin's test
         try {
             mytest(&ut);

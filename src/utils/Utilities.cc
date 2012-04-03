@@ -45,15 +45,29 @@
 
 namespace AMP{
 
-/*
- * Routine to rename a file.
- */
-void Utilities::renameFile(const std::string& old_filename,
-                           const std::string& new_filename)
+// Routine to check if a file exists
+bool Utilities::fileExists( const std::string& filename )
+{
+   std::ifstream ifile(filename.c_str());
+   return ifile;
+}
+
+// Routine to rename a file.
+void Utilities::renameFile(const std::string& old_filename, const std::string& new_filename)
 {
    AMP_ASSERT(!old_filename.empty());
    AMP_ASSERT(!new_filename.empty());
    rename(old_filename.c_str(), new_filename.c_str());
+}
+
+// Routine to delete a file.
+void Utilities::deleteFile(const std::string& filename)
+{
+   AMP_ASSERT(!filename.empty());
+   if ( fileExists( filename ) ) {
+      int error = remove(filename.c_str());
+      AMP_INSIST(error==0,"Error deleting file");
+   }
 }
 
 /*
