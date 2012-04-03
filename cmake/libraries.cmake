@@ -361,9 +361,13 @@ MACRO ( CONFIGURE_NEK )
         IF ( NEK_DIRECTORY )
             VERIFY_PATH ( ${NEK_DIRECTORY} )
             # Include the NEK directories
-#            SET ( NEK_INCLUDE ${NEK_DIRECTORY}/include )
+            IF ( NOT NEK_INCLUDE )
+                SET ( NEK_INCLUDE ${NEK_DIRECTORY} )
+            ENDIF()
             # Find the NEK libaries
-            SET ( NEK_PATH_LIB ${NEK_DIRECTORY} )
+            IF ( NOT NEK_PATH_LIB )
+                SET ( NEK_PATH_LIB ${NEK_DIRECTORY} )
+            ENDIF()
             VERIFY_PATH ( ${NEK_PATH_LIB} )
             FIND_LIBRARY ( NEK_LIB     NAMES NEK5000      PATHS ${NEK_PATH_LIB}          NO_DEFAULT_PATH )
             IF ( NOT NEK_LIB )
@@ -384,13 +388,15 @@ MACRO ( CONFIGURE_NEK )
             MESSAGE ( FATAL_ERROR "Within AMP, MOAB is required to use Nek5000." )
         ENDIF()
         # Add the libraries in the appropriate order
-#       INCLUDE_DIRECTORIES ( ${NEK_INCLUDE} )
+        INCLUDE_DIRECTORIES ( ${NEK_INCLUDE} )
         SET ( NEK_LIBS
             ${NEK_LIB}
         )
         ADD_DEFINITIONS ( "-D USE_NEK" )  
         MESSAGE ( "Using NEK" )
         MESSAGE ( "   " ${NEK_LIBS} )
+        SET ( CURPACKAGE "nek" )
+        ADD_EXTERNAL_PACKAGE_SUBDIRECTORY( "nek" ${NEK_DIRECTORY} )
     ENDIF()
 ENDMACRO ()
 
@@ -405,12 +411,17 @@ MACRO ( CONFIGURE_MOAB )
             VERIFY_PATH ( ${MOAB_DIRECTORY} )
             # Include the MOAB directories
             SET ( MOAB_INCLUDE ${MOAB_DIRECTORY}/include )
+            SET ( IMESH_INCLUDE ${MOAB_DIRECTORY}/lib )
             # Find the MOAB libaries
             SET ( MOAB_PATH_LIB ${MOAB_DIRECTORY}/lib )
             VERIFY_PATH ( ${MOAB_PATH_LIB} )
             FIND_LIBRARY ( MOAB_MESH_LIB     NAMES MOAB      PATHS ${MOAB_PATH_LIB}          NO_DEFAULT_PATH )
+            FIND_LIBRARY ( MOAB_iMESH_LIB    NAMES iMesh     PATHS ${MOAB_PATH_LIB}          NO_DEFAULT_PATH )
             IF ( NOT MOAB_MESH_LIB )
                 MESSAGE ( FATAL_ERROR "MOAB library (MOAB) not found in ${MOAB_PATH_LIB}" )
+            ENDIF ()
+            IF ( NOT MOAB_iMESH_LIB )
+                MESSAGE ( FATAL_ERROR "iMesh library ${MOAB_iMESH_LIB}  not found in ${MOAB_PATH_LIB}" )
             ENDIF ()
         ELSE()
             MESSAGE ( FATAL_ERROR "Default search for MOAB is not supported.  Use -D MOAB_DIRECTORY=" )
@@ -425,8 +436,11 @@ MACRO ( CONFIGURE_MOAB )
             VERIFY_PATH ( ${CGM_PATH_LIB} )
             FIND_LIBRARY ( MOAB_CGM_LIB     NAMES cgm      PATHS ${CGM_PATH_LIB}        NO_DEFAULT_PATH )
             FIND_LIBRARY ( MOAB_iGEOM_LIB   NAMES iGeom    PATHS ${CGM_PATH_LIB}        NO_DEFAULT_PATH )
-            IF ( (NOT MOAB_CGM_LIB) OR (NOT MOAB_iGEOM_LIB) )
-                MESSAGE ( FATAL_ERROR "CGM librarys not found in ${CGM_PATH_LIB}" )
+            IF ( NOT MOAB_CGM_LIB )
+                MESSAGE ( FATAL_ERROR "CGM library ${MOAB_CGM_LIB}  not found in ${CGM_PATH_LIB}" )
+            ENDIF ()
+            IF ( NOT MOAB_iGEOM_LIB )
+                MESSAGE ( FATAL_ERROR "iGEOM library ${MOAB_iGEOM_LIB}  not found in ${CGM_PATH_LIB}" )
             ENDIF ()
         ELSE()
             MESSAGE ( FATAL_ERROR "Default search for cgm is not supported.  Use -D CGM_DIRECTORY=" )
@@ -449,6 +463,7 @@ MACRO ( CONFIGURE_MOAB )
         # Add the libraries in the appropriate order
         INCLUDE_DIRECTORIES ( ${MOAB_INCLUDE} )
         SET ( MOAB_LIBS
+            ${MOAB_iMESH_LIB}
             ${MOAB_MESH_LIB}
             ${MOAB_CGM_LIB}
             ${MOAB_iGEOM_LIB}

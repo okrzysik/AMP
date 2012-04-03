@@ -332,4 +332,8 @@ COPY_MESH_FILE(pellet_coarse.e)
 COPY_MESH_FILE(pellet_1x.e)
 COPY_MESH_FILE(clad_1x_1pellet.e)
 
-
+#NEK-5000 tests
+IF( USE_NEK ) 
+  COPY_TEST_DATA_FILE ( SESSION.NAME )
+  ADD_AMP_TEST_1_2_4( testNekPipe )
+ENDIF()
