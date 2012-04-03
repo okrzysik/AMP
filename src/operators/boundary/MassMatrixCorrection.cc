@@ -70,7 +70,9 @@ namespace Operator {
                 
                 std::vector< AMP::Mesh::MeshElement::shared_ptr > neighbors = bnd->getNeighbors();
 
-                for(size_t n = 0; n < neighbors.size(); ++n) {
+                for(size_t i = 0; i < neighbors.size(); ++i) {
+                  AMP_ASSERT((*(neighbors[i])) != (*bnd));
+                }//end for el
 
                   for(unsigned int j = 0; j < d_dofIds[k].size(); ++j) {
                     for(unsigned int i = 0; i < bndGlobalIds.size(); ++i) {
@@ -82,8 +84,15 @@ namespace Operator {
                         inputMatrix->setValueByGlobalID ( bndGlobalIds[i], bndGlobalIds[d_dofIds[k][j]] , 0.0 );
                       }
                     }//end for i
+                    for(size_t n = 0; n < neighbors.size(); ++n) {
+                      std::vector<size_t> nhDofIds;
+                      dof_map->getDOFs(neighbors[n]->globalID(), nhDofIds);
+                      for(unsigned int i = 0; i < nhDofIds.size(); ++i) {
+                        inputMatrix->setValueByGlobalID ( bndGlobalIds[d_dofIds[k][j]], nhDofIds[i], 0.0 );
+                        inputMatrix->setValueByGlobalID ( nhDofIds[i], bndGlobalIds[d_dofIds[k][j]], 0.0 );
+                      }//end for i
+                    }//end for n
                   }//end for j
-                }//end for el
             }//end for bnd
         }//end for k
 

@@ -108,6 +108,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
 											input_db,
 											elementModel));
 
+    AMP::LinearAlgebra::Variable::shared_ptr outputVar = nonlinearOperator->getOutputVariable();
     // ---------------------------------------------------------------------------------------
     // create a linear BVP operator
     boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
@@ -160,7 +161,6 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     
     // ---------------------------------------------------------------------------------------
     // create vectors for initial conditions (IC) and time derivative at IC
-    AMP::LinearAlgebra::Variable::shared_ptr outputVar = nonlinearOperator->getOutputVariable();
     
     AMP::LinearAlgebra::Vector::shared_ptr  initialCondition = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
     AMP::LinearAlgebra::Vector::shared_ptr  initialConditionPrime = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
@@ -186,9 +186,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
         double pz = pt[2];
         
         double val = __INIT_FN__(px, py, pz, 0);
-        cout << "val = " << val << endl;
-        
-        cout << "counter = " << counter << "bndGlobalIds.size() = " << bndGlobalIds.size() << endl;
+
         for(unsigned int i = 0; i < bndGlobalIds.size(); i++)
         {
           initialCondition->setValueByGlobalID(bndGlobalIds[i], val);
@@ -199,7 +197,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
         }//end for i
     }//end for node
     
-    std::cout << "Max initial temp "<< initialCondition->max()<< "Min initial temp "<<initialCondition->min() << std::endl;
+    std::cout << "With Counter "<< counter << " Max initial temp "<< initialCondition->max()<< " Min initial temp "<<initialCondition->min() << std::endl;
 
     // create a copy of the rhs which can be modified at each time step (maybe)
     f->copyVector(powerInWattsVec);
@@ -222,6 +220,18 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     timeOperatorParameters->d_pMassOperator = massOperator;
     //timeOperatorParameters->d_pMassOperator = massLinearOperator;
     boost::shared_ptr<AMP::Operator::Operator> linearTimeOperator( new AMP::TimeIntegrator::LinearTimeOperator(timeOperatorParameters));
+
+    AMP::LinearAlgebra::Vector::shared_ptr  residualVec = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
+    
+    linearOperator->apply(nullVec, initialCondition, residualVec, 1., 0 );
+    std::cout << "Residual Norm of linearTimeOp apply : "<< residualVec->L2Norm()  << std::endl;
+    
+    massOperator->apply(nullVec, initialCondition, residualVec, 1., 0 );
+    std::cout << "Residual Norm of linearTimeOp apply : "<< residualVec->L2Norm()  << std::endl;
+    
+    linearTimeOperator->apply(nullVec, initialCondition, residualVec, 1., 0 );
+    std::cout << "Residual Norm of linearTimeOp apply : "<< residualVec->L2Norm()  << std::endl;
+
     // ---------------------------------------------------------------------------------------
     // create a preconditioner
     
@@ -246,6 +256,15 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
         ut->passes("Testing TrilinosMLSolver's constructor: PASS");
     }
     
+#ifdef USE_SILO
+    AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+    siloWriter->registerMesh( meshAdapter );
+
+    siloWriter->registerVector( initialCondition,                 meshAdapter, AMP::Mesh::Vertex, "InitialSolution" );
+
+    siloWriter->writeFile( input_file , 0 );
+#endif
+
     // ---------------------------------------------------------------------------------------
     // create the IDA time integrator
     boost::shared_ptr<AMP::TimeIntegrator::IDATimeIntegratorParameters> time_Params( new AMP::TimeIntegrator::IDATimeIntegratorParameters(ida_db));
@@ -309,17 +328,17 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     
     
 #ifdef USE_SILO
-     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
-     siloWriter->registerMesh( meshAdapter );
 
     AMP::LinearAlgebra::Vector::shared_ptr pSolution=pIDATimeIntegrator->getCurrentSolution();
     siloWriter->registerVector( pSolution,                 meshAdapter, AMP::Mesh::Vertex, "Solution" );
 
     siloWriter->writeFile( input_file , 1 );
 #endif  
-    AMP::AMPManager::shutdown();
     
-    ut->passes("testIDATimeIntegrator successful");
+    if (ut->NumFailLocal() == 0)
+    {
+      ut->passes("testIDATimeIntegrator successful");
+    }
 }
 
 

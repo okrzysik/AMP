@@ -140,14 +140,14 @@ DiffusionTransportModel{
 DirichletMatrixCorrection{
     name="DirichletMatrixCorrection"
     skip_params = FALSE
-    skip_rhs_correction = TRUE
-    skip_rhs_add_correction = TRUE
+    skip_rhs_correction = FALSE 
+    skip_rhs_add_correction = FALSE 
     print_info_level = 3
     number_of_ids = 1
     id_0             = 10
     number_of_dofs_0 =   1
     dof_0_0          =   0
-    value_0_0        = 0.
+    value_0_0        = 750.
 }
 
 MassLinearOperator {
@@ -196,7 +196,7 @@ MassDensityModel{
 }
 
 MassMatrixCorrection{
-    name="MassMatrixCorrection"
+  name="MassMatrixCorrection"
     skip_params = FALSE
     skip_rhs_correction = TRUE
     skip_rhs_add_correction = TRUE
@@ -206,33 +206,6 @@ MassMatrixCorrection{
     number_of_dofs_0 =   1
     dof_0_0          =   0
     value_0_0        = 0.
-}
-
-MassOperator {
-  name = "MassLinearFEOperator"
-  FixedConcentration = 0.15
-  FixedTemperature   = 750
-  FixedBurnup   = 0.0
-  print_info_level = 3
-  InputVariable = "temperature"
-  OutputVariable = "temperature"
-
-  MassDensityModel {
-    name="MassDensityModel"
-    Material = "UO2_MSRZC_09"
-    Equation = "Thermal"
-    print_info_level = 3  
-    BilogScaleCoefficient = FALSE
-  }
-
-  MassElement {
-    name="MassLinearElement"
-    print_info_level = 3
-    FE_ORDER = "FIRST"  
-    FE_FAMILY = "LAGRANGE"
-    QRULE_TYPE = "QGAUSS"
-    QRULE_ORDER = "DEFAULT"
-  }
 }
 
 IDATimeIntegrator{
@@ -250,7 +223,7 @@ IDATimeIntegrator{
 //              createLinearTimeOperatorInternally=TRUE
                 CallCalcIC                      = TRUE
   Preconditioner{
-        print_info_level = 3
+        print_info_level = 0
         max_iterations = 1
         max_error = 1e-10
    }
