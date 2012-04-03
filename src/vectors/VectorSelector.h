@@ -34,6 +34,14 @@ public:
       */
     virtual  bool  isSelected ( Vector::const_shared_ptr vec ) const;
 
+    /** \brief Returns the communicator for the subset
+      * \param[in]  comm  The Vector to match
+      * \details This function will return the proper communicator given the current vector.
+      *     For most subsetters, this will be the same communicator as the current vector,
+      *     however some subsetters (MeshSelector) may opperate on a different (smaller) comm.
+      */
+    virtual  AMP_MPI  communicator ( Vector::const_shared_ptr vec ) const;
+
     /** \brief Subset the given vector
       * \param[in]  vec  The Vector to subset
       * \details Base class defaults to returning all data in the vector
@@ -103,6 +111,10 @@ public:
       */
     VS_Stride ( const std::string &n , size_t a , size_t b );
 
+    /** \brief Subset the given vector
+      * \param[in]  vec  The Vector to subset
+      * \details Base class defaults to returning all data in the vector
+      */
     virtual  Vector::shared_ptr  subset ( Vector::shared_ptr p ) const;
 
 protected:
@@ -129,6 +141,18 @@ public:
       */
     VS_Mesh ( const std::string &name, AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm=true );
 
+    /** \brief Returns the communicator for the subset
+      * \param[in]  comm  The Vector to match
+      * \details This function will return the proper communicator given the current vector.
+      *     For most subsetters, this will be the same communicator as the current vector,
+      *     however some subsetters (MeshSelector) may opperate on a different (smaller) comm.
+      */
+    virtual  AMP_MPI  communicator ( Vector::const_shared_ptr vec ) const;
+
+    /** \brief Subset the given vector
+      * \param[in]  vec  The Vector to subset
+      * \details Base class defaults to returning all data in the vector
+      */
     virtual  Vector::shared_ptr  subset ( Vector::shared_ptr p ) const;
 
 protected:
@@ -150,6 +174,10 @@ public:
       */
     VS_MeshIterator ( const std::string &name, const AMP::Mesh::MeshIterator &iterator, const AMP::AMP_MPI &comm );
 
+    /** \brief Subset the given vector
+      * \param[in]  vec  The Vector to subset
+      * \details Base class defaults to returning all data in the vector
+      */
     virtual  Vector::shared_ptr  subset ( Vector::shared_ptr p ) const;
 
 protected:

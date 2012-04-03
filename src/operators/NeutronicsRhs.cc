@@ -212,7 +212,6 @@ namespace AMP {
             dof_map->getDOFs ( elem->globalID(), gid);
             for( unsigned int i = 0; i < DOFsPerVolume; gp++ , i++ ) {
               rInternal->setValueByGlobalID ( gid[i], d_values[this_step][gp] );
-    //          double nrm = rInternal->L2Norm();
     /*          if( gp==0 ) { 
                 if( (rInternal->max()>0) && (!AMP::Utilities::approx_equal(rInternal->max(), rInternal->L2Norm(), 1e-4)) ) { 
                   AMP::pout<<"The setValueByGlobalID function set this value twice because it is confused about multiple meshes with the same variable name"<<std::endl;
@@ -223,6 +222,10 @@ namespace AMP {
               }*/
             }//end for gauss-points
           }//end for elements
+          /*double nrm = rInternal->L2Norm();
+          printf("%e\n",nrm);
+          AMP_MPI(AMP_COMM_WORLD).barrier();
+          AMP_ERROR("stop");*/
         }
       }
 

@@ -228,7 +228,10 @@ void MultiVector::selectInto ( const VectorSelector &s , Vector::shared_ptr retV
     std::vector<Vector::shared_ptr> subvectors;
     vector_iterator  cur = beginVector();
     while ( cur != endVector() ) {
-        Vector::shared_ptr  retVal = MultiVector::create ( "tmp_vector", (*cur)->getComm() );
+        // Get the comm to operate on
+        AMP_MPI comm = s.communicator( shared_from_this() );
+        // Subset the individual vector
+        Vector::shared_ptr  retVal = MultiVector::create ( "tmp_vector", comm );
         (*cur)->selectInto ( s , retVal );
         if ( retVal->getDOFManager()->numGlobalDOF() > 0 )
             subvectors.push_back( retVal );

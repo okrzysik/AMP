@@ -78,16 +78,13 @@ void Vector::selectInto ( const VectorSelector &s , Vector::shared_ptr retVal )
 Vector::shared_ptr  Vector::select ( const VectorSelector &s , const std::string &name )
 {
     // Create a new multivector to hold the subset
-    Vector::shared_ptr  retVal = MultiVector::create ( name , getComm() );
+    AMP_MPI comm = s.communicator( shared_from_this() );
+    Vector::shared_ptr  retVal = MultiVector::create( name, comm );
     // Add the subset vector
     selectInto ( s , retVal );
     if ( retVal->numberOfDataBlocks() )
-      return retVal;
-    // Check that the global size of the new vector is <= the current size
-    size_t N1 = this->getGlobalSize();
-    size_t N2 = retVal->getGlobalSize();
-    AMP_ASSERT(N2<=N1);
-    return Vector::shared_ptr ();
+        return retVal;
+    return Vector::shared_ptr();
 }
 void Vector::registerView ( Vector::shared_ptr v )
 {

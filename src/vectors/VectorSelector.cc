@@ -18,10 +18,15 @@ bool  VectorSelector::isSelected ( Vector::const_shared_ptr ) const
 {
     return true;
 }
+AMP_MPI  VectorSelector::communicator ( Vector::const_shared_ptr p ) const
+{
+    return p->getComm();
+}
 Vector::shared_ptr  VectorSelector::subset ( Vector::shared_ptr p ) const
 {
     return p;
 }
+
   
 
 /********************************************************
@@ -64,6 +69,12 @@ VS_Mesh::VS_Mesh ( const std::string &name, AMP::Mesh::Mesh::shared_ptr mesh, bo
     d_Name = name;
     d_mesh = mesh;
     d_useMeshComm = useMeshComm;
+}
+AMP_MPI  VS_Mesh::communicator ( Vector::const_shared_ptr p ) const
+{
+    if ( d_useMeshComm )
+        return AMP_MPI::intersect( p->getComm(), d_mesh->getComm() );
+    return p->getComm();
 }
 Vector::shared_ptr  VS_Mesh::subset ( Vector::shared_ptr p ) const
 { 
