@@ -147,7 +147,7 @@ void testMultiDOFMap( AMP::UnitTest *ut, boost::shared_ptr<AMP::Discretization::
         AMP::AMP_MPI comm = managers[i]->getComm();
         comm.barrier();
         // Convert the global list to a local list
-        std::vector<size_t> tmp = multiDOF->getSubDOF( managers[i], globalDOFList );
+        std::vector<size_t> tmp = multiDOF->getSubDOF( i, globalDOFList );
         std::vector<size_t> localDOFList, localToGlobal;
         localDOFList.reserve(N_global);
         localToGlobal.reserve(N_global);
@@ -225,8 +225,8 @@ void testMultiDOFVector( AMP::UnitTest *ut, AMP::Discretization::DOFManager::sha
     double vec1norm = vec1->L1Norm();
     double vec2norm = vec2->L1Norm();
     double multiVectorNorm = multiVector->L1Norm();
-    double N_tot = (DOF->numGlobalDOF()*DOF->numGlobalDOF())/2;
-    if ( vec1norm==N_tot && vec2norm==2*N_tot && vec1norm==3*N_tot )
+    double N_tot = (DOF->numGlobalDOF()*(DOF->numGlobalDOF()-1))/2;
+    if ( vec1norm==N_tot && vec2norm==2*N_tot && multiVectorNorm==3*N_tot )
         ut->passes("MultiVector with repeated DOFs sets values correctly");
     else
         ut->failure("MultiVector with repeated DOFs sets values correctly");        
@@ -262,6 +262,15 @@ void testMultiDOFManager( AMP::UnitTest *ut )
         ut->expected_failure("Can't test multivector without vectors");
     #endif
 
+    // Create a multiDOFManager with repeated mesh elements and make sure the iterator only iterates once through each element
+    std::vector<AMP::Discretization::DOFManager::shared_ptr> managers(2,DOFs);
+    AMP::Discretization::DOFManager::shared_ptr DOF2( new AMP::Discretization::multiDOFManager( DOFs->getComm(), managers ) );
+    AMP::Mesh::MeshIterator iterator1 = DOFs->getIterator();
+    AMP::Mesh::MeshIterator iterator2 = DOF2->getIterator();
+    if ( iterator1.size()==iterator2.size() )
+        ut->passes("multiDOFManager iterates once through each element");
+    else
+        ut->failure("multiDOFManager iterates once through each element");
 }
 
 

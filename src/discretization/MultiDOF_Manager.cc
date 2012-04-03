@@ -156,24 +156,20 @@ std::vector<size_t> multiDOFManager::getGlobalDOF( const int i, const std::vecto
     }
     return globalDOFs;
 }
-std::vector<size_t> multiDOFManager::getSubDOF( DOFManager::shared_ptr manager, std::vector<size_t> &globalDOFs ) const
+std::vector<size_t> multiDOFManager::getSubDOF( const int i, std::vector<size_t> &globalDOFs ) const
 {
     size_t neg_one = ~((size_t)0);
     std::vector<size_t> subDOFs(globalDOFs.size());
-    for (size_t i=0; i<globalDOFs.size(); i++)
-        subDOFs[i] = neg_one;
-    for (size_t i=0; i<d_managers.size(); i++) {
-        if ( d_managers[i]==manager ) {
-            subDOF_struct search(0,neg_one,neg_one,neg_one);
-            for (size_t j=0; j<globalDOFs.size(); j++) {
-                search.DOF1_begin = globalDOFs[j];
-                size_t index = AMP::Utilities::findfirst(d_globalToSubDOF[i],search);
-                index--;
-                if ( index<d_globalToSubDOF[i].size() ) {
-                    if ( globalDOFs[j]>=d_globalToSubDOF[i][index].DOF1_begin && globalDOFs[j]<d_globalToSubDOF[i][index].DOF1_end )
-                        subDOFs[j] = globalDOFs[j] - d_globalToSubDOF[i][index].DOF1_begin + d_globalToSubDOF[i][index].DOF2_begin;
-                }
-            }
+    for (size_t j=0; j<globalDOFs.size(); j++)
+        subDOFs[j] = neg_one;
+    subDOF_struct search(0,neg_one,neg_one,neg_one);
+    for (size_t j=0; j<globalDOFs.size(); j++) {
+        search.DOF1_begin = globalDOFs[j];
+        size_t index = AMP::Utilities::findfirst(d_globalToSubDOF[i],search);
+        index--;
+        if ( index<d_globalToSubDOF[i].size() ) {
+            if ( globalDOFs[j]>=d_globalToSubDOF[i][index].DOF1_begin && globalDOFs[j]<d_globalToSubDOF[i][index].DOF1_end )
+                subDOFs[j] = globalDOFs[j] - d_globalToSubDOF[i][index].DOF1_begin + d_globalToSubDOF[i][index].DOF2_begin;
         }
     }
     return subDOFs;

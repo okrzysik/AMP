@@ -818,8 +818,11 @@ void  MultiVector::partitionGlobalValues ( const int num, const size_t *indices,
     if ( remap != NULL ) 
         remap->resize( d_vVectors.size() );
     AMP::Discretization::multiDOFManager* manager = (AMP::Discretization::multiDOFManager*) d_DOFManager.get();
+    std::vector<AMP::Discretization::DOFManager::shared_ptr> DOFManagers = manager->getDOFManagers();
+    AMP_ASSERT(DOFManagers.size()==d_vVectors.size());
     for (size_t i=0; i<d_vVectors.size(); i++) {
-        std::vector<size_t> subDOFs = manager->getSubDOF( d_vVectors[i]->getDOFManager(), globalDOFs );
+        AMP_ASSERT(d_vVectors[i]->getDOFManager()==DOFManagers[i]);
+        std::vector<size_t> subDOFs = manager->getSubDOF( i, globalDOFs );
         size_t count = 0; 
         for (size_t j=0; j<subDOFs.size(); j++) {
             if ( subDOFs[j] != neg_one )

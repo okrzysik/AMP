@@ -72,14 +72,25 @@ public:
      * \param[in]  DOFManager       The index to the desired DOFManager (see getDOFManagers)
      * \param[in]  localDOF         The local DOF to convert to global DOF
      */
-    std::vector<size_t>  getGlobalDOF( const int DOFManager, const std::vector<size_t>&localDOF ) const;
+    std::vector<size_t>  getGlobalDOF( const int DOFManager, const std::vector<size_t>& localDOF ) const;
 
 
     /** Function to convert DOFs from the global DOF to a sub-manager DOF
      *  If a given global DOF is not in the given sub-manager, then -1 will
      *  be returned for its value.
      */
-    std::vector<size_t>  getSubDOF(DOFManager::shared_ptr, std::vector<size_t>&) const;
+    /** \brief   Function to convert DOFs from the global DOF to a sub-manager DOF
+     * \details  This function returns the DOF on a a sub-manager given the global DOF.  
+     *      If a given global DOF is not in the given sub-manager, then -1 will
+     *      be returned for its value.  Note that subDOFManager is specified by the 
+     *      index in the std::vector of DOFManagers (see getDOFManagers).
+     *      This is needed since the same DOFManager may be repeated many times so 
+     *      searching is not an option.  For example, consider a multiVector with 
+     *      multiple vectors of the same type.
+     * \param[in]  DOFManager       The index to the desired DOFManager (see getDOFManagers)
+     * \param[in]  globalDOF        The global DOF to convert to a DOF on the sub DOFManager
+     */
+    std::vector<size_t>  getSubDOF( const int DOFManager, std::vector<size_t>& globalDOF ) const;
 
 
     //! Get the DOFManagers that compose the multiDOFManager
