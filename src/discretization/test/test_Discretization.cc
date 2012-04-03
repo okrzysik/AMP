@@ -18,6 +18,7 @@ int main ( int argc , char ** argv )
     testSimpleDOFManager<LibMeshCubeGenerator<5> >( &ut );
     testSimpleDOFManager<ExodusReaderGenerator>( &ut );
     testSimpleDOFManager<MultiMeshGenerator>( &ut );
+    testMultiDOFManager<LibMeshCubeGenerator<5> >( &ut );
     testMultiDOFManager<MultiMeshGenerator>( &ut );
     testSubsetDOFManager<MultiMeshGenerator>( &ut );
 

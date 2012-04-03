@@ -96,6 +96,29 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh )
 
 
 /************************************************************
+* Function to register a mesh with silo                     *
+************************************************************/
+std::vector<AMP::Mesh::MeshID> SiloIO::getMeshIDs( AMP::Mesh::Mesh::shared_ptr mesh )
+{
+    std::vector<AMP::Mesh::MeshID> ids;
+    boost::shared_ptr<AMP::Mesh::MultiMesh> multimesh = boost::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    if ( multimesh.get()==NULL ) {
+        // We are dealing with a single mesh
+        ids = std::vector<AMP::Mesh::MeshID>(1,mesh->meshID());
+    } else {
+        // We are dealining with a multimesh
+        std::vector<AMP::Mesh::Mesh::shared_ptr> meshes = multimesh->getMeshes();
+        for (size_t i=0; i<meshes.size(); i++) {
+            std::vector<AMP::Mesh::MeshID> ids2 = getMeshIDs( meshes[i] );
+            for (size_t j=0; j<ids2.size(); j++)
+                ids.push_back( ids2[j] );
+        }
+    }
+    return ids;
+}
+
+
+/************************************************************
 * Function to register a vector with silo                   *
 ************************************************************/
 #ifdef USE_AMP_VECTORS
@@ -123,7 +146,7 @@ void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
     std::string name = vec->type();
     if ( !name.empty() )
         name = name_in;
-    std::vector<AMP::Mesh::MeshID> ids = mesh->getBaseMeshIDs();
+    std::vector<AMP::Mesh::MeshID> ids = getMeshIDs( mesh );
     for (size_t i=0; i<ids.size(); i++) {
         std::map<AMP::Mesh::MeshID,siloBaseMeshData>::iterator it = d_baseMeshes.find(ids[i]);
         if ( it == d_baseMeshes.end() )
@@ -232,6 +255,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
                 std::vector<double> vals(data.varSize[i]);
                 for (int j=0; j<nvar; j++) {
                     DOFs->getDOFs( nodelist_ids[j], dofs );
+                    AMP_ASSERT((int)dofs.size()==data.varSize[i]);
                     data.vec[i]->getValuesByGlobalID ( data.varSize[i], &dofs[0], &vals[0] );
                     for (int k=0; k<data.varSize[i]; k++)
                         var[k][j] = vals[k];

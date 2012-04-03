@@ -66,7 +66,7 @@ void multiDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <
     for (size_t i=0; i<d_managers.size(); i++) {
         d_managers[i]->getDOFs( id, local_dofs );
         if ( local_dofs.size() > 0 ) {
-            std::vector<size_t> tmp_dofs = getGlobalDOF( d_managers[i], local_dofs );
+            std::vector<size_t> tmp_dofs = getGlobalDOF( i, local_dofs );
             dofs.insert(dofs.end(),tmp_dofs.begin(),tmp_dofs.end());
         }
     }
@@ -112,7 +112,7 @@ std::vector<size_t> multiDOFManager::getRemoteDOFs( ) const
     for (size_t i=0; i<d_managers.size(); i++) {
         std::vector<size_t> local_dofs = d_managers[i]->getRemoteDOFs( );
         if ( local_dofs.size() > 0 ) {
-            std::vector<size_t> tmp_dofs = getGlobalDOF( d_managers[i], local_dofs );
+            std::vector<size_t> tmp_dofs = getGlobalDOF( i, local_dofs );
             global_dofs.insert(global_dofs.end(),tmp_dofs.begin(),tmp_dofs.end());
         }
     }
@@ -130,7 +130,7 @@ std::vector<size_t> multiDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &o
     for (size_t i=0; i<d_managers.size(); i++) {
         std::vector<size_t> local_dofs = d_managers[i]->getRowDOFs( obj );
         if ( local_dofs.size() > 0 ) {
-            std::vector<size_t> tmp_dofs = getGlobalDOF( d_managers[i], local_dofs );
+            std::vector<size_t> tmp_dofs = getGlobalDOF( i, local_dofs );
             global_dofs.insert(global_dofs.end(),tmp_dofs.begin(),tmp_dofs.end());
         }
     }
@@ -142,22 +142,17 @@ std::vector<size_t> multiDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &o
 /****************************************************************
 * Function to convert DOFs                                      *
 ****************************************************************/
-std::vector<size_t> multiDOFManager::getGlobalDOF( DOFManager::shared_ptr manager, std::vector<size_t> &subDOFs ) const
+std::vector<size_t> multiDOFManager::getGlobalDOF( const int i, const std::vector<size_t>& subDOFs ) const
 {
     const size_t neg_one = ~((size_t)0);
-    std::vector<size_t> globalDOFs;
-    for (size_t i=0; i<d_managers.size(); i++) {
-        if ( d_managers[i]==manager ) {
-            globalDOFs = std::vector<size_t>(subDOFs.size(),neg_one);
-            subDOF_struct search(0,neg_one,neg_one,neg_one);
-            for (size_t j=0; j<subDOFs.size(); j++) {
-                search.DOF1_begin = subDOFs[j];
-                size_t index = AMP::Utilities::findfirst(d_subToGlobalDOF[i],search);
-                index--;
-                AMP_ASSERT(index<d_subToGlobalDOF[i].size());
-                globalDOFs[j] = subDOFs[j] - d_subToGlobalDOF[i][index].DOF1_begin + d_subToGlobalDOF[i][index].DOF2_begin; 
-            }
-        }
+    std::vector<size_t> globalDOFs = std::vector<size_t>(subDOFs.size(),neg_one);
+    subDOF_struct search(0,neg_one,neg_one,neg_one);
+    for (size_t j=0; j<subDOFs.size(); j++) {
+        search.DOF1_begin = subDOFs[j];
+        size_t index = AMP::Utilities::findfirst(d_subToGlobalDOF[i],search);
+        index--;
+        AMP_ASSERT(index<d_subToGlobalDOF[i].size());
+        globalDOFs[j] = subDOFs[j] - d_subToGlobalDOF[i][index].DOF1_begin + d_subToGlobalDOF[i][index].DOF2_begin; 
     }
     return globalDOFs;
 }

@@ -227,15 +227,14 @@ void MultiVector::selectInto ( const VectorSelector &s , Vector::shared_ptr retV
     // Subset each vector
     std::vector<Vector::shared_ptr> subvectors;
     vector_iterator  cur = beginVector();
-    while ( cur != endVector() ) {
+    for (size_t i=0; i!=d_vVectors.size(); i++) {
         // Get the comm to operate on
-        AMP_MPI comm = s.communicator( shared_from_this() );
+        AMP_MPI comm = s.communicator( d_vVectors[i] );
         // Subset the individual vector
         Vector::shared_ptr  retVal = MultiVector::create ( "tmp_vector", comm );
-        (*cur)->selectInto ( s , retVal );
+        d_vVectors[i]->selectInto ( s , retVal );
         if ( retVal->getDOFManager()->numGlobalDOF() > 0 )
             subvectors.push_back( retVal );
-        cur++;
     }
     // Add the subsets to the multivector
     retVal->castTo<MultiVector>().addVector ( subvectors );
@@ -491,12 +490,13 @@ void MultiVector::dumpOwnedData ( std::ostream &out , size_t GIDoffset , size_t 
 {
     size_t localOffset = 0;
     AMP::Discretization::multiDOFManager* manager = (AMP::Discretization::multiDOFManager*) d_DOFManager.get();
+    AMP_ASSERT(manager->getDOFManagers().size()==d_vVectors.size());
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ ) {
         if ( d_vVectors[i]->getVariable() )
             out << "[ " << d_vVectors[i]->getVariable()->getName() << " ]\n";
         AMP::Discretization::DOFManager::shared_ptr subManager = d_vVectors[i]->getDOFManager();
         std::vector<size_t> subStartDOF(1,subManager->beginDOF());
-        std::vector<size_t> globalStartDOF = manager->getGlobalDOF(subManager,subStartDOF);
+        std::vector<size_t> globalStartDOF = manager->getGlobalDOF(i,subStartDOF);
         size_t globalOffset = globalStartDOF[0]-subStartDOF[0];
         d_vVectors[i]->dumpOwnedData( out, GIDoffset+globalOffset, LIDoffset+localOffset );
         localOffset += d_vVectors[i]->getLocalSize();
@@ -505,12 +505,13 @@ void MultiVector::dumpOwnedData ( std::ostream &out , size_t GIDoffset , size_t 
 void MultiVector::dumpGhostedData ( std::ostream &out , size_t offset ) const
 {
     AMP::Discretization::multiDOFManager* manager = (AMP::Discretization::multiDOFManager*) d_DOFManager.get();
+    AMP_ASSERT(manager->getDOFManagers().size()==d_vVectors.size());
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ ) {
         if ( d_vVectors[i]->getVariable() )
             out << "[ " << d_vVectors[i]->getVariable()->getName() << " ]\n";
         AMP::Discretization::DOFManager::shared_ptr subManager = d_vVectors[i]->getDOFManager();
         std::vector<size_t> subStartDOF(1,subManager->beginDOF());
-        std::vector<size_t> globalStartDOF = manager->getGlobalDOF(subManager,subStartDOF);
+        std::vector<size_t> globalStartDOF = manager->getGlobalDOF(i,subStartDOF);
         size_t globalOffset = globalStartDOF[0]-subStartDOF[0];
         d_vVectors[i]->dumpGhostedData( out, offset+globalOffset );
     }

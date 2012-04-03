@@ -116,6 +116,9 @@ private:
     // Function to write a single mesh
     void writeMesh( DBfile *file, const siloBaseMeshData &data );
 
+    // Function to determine which base mesh ids to register a vector with
+    std::vector<AMP::Mesh::MeshID> getMeshIDs( AMP::Mesh::Mesh::shared_ptr mesh );
+
     // Function to write the summary file (the file should already be created, ready to reopen)
     // This function requires global communication
     void writeSummary( std::string filename );

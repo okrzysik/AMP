@@ -63,8 +63,16 @@ public:
     virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const;
 
 
-    //! Function to convert DOFs from a sub-manager DOF to the global DOF
-    std::vector<size_t>  getGlobalDOF(DOFManager::shared_ptr, std::vector<size_t>&) const;
+    /** \brief   Function to convert DOFs from a sub-manager DOF to the global DOF
+     * \details  This function returns the global DOF given the local DOF.  Note that
+     *      subDOFManager is specified by the index in the std::vector of DOFManagers
+     *      (see getDOFManagers).  This is needed since the same DOFManager may be
+     *      repeated many times so searching is not an option.  For example, consider
+     *      a multiVector with multiple vectors of the same type.
+     * \param[in]  DOFManager       The index to the desired DOFManager (see getDOFManagers)
+     * \param[in]  localDOF         The local DOF to convert to global DOF
+     */
+    std::vector<size_t>  getGlobalDOF( const int DOFManager, const std::vector<size_t>&localDOF ) const;
 
 
     /** Function to convert DOFs from the global DOF to a sub-manager DOF

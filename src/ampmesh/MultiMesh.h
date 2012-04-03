@@ -183,6 +183,12 @@ public:
     virtual std::vector<MeshID> getBaseMeshIDs() const;
 
 
+    /**
+     *  Get the meshes composing the multimesh
+     */
+    virtual std::vector<Mesh::shared_ptr> getMeshes() const;
+
+
 #ifdef USE_AMP_VECTORS
     /**
      * \brief    Displace the entire mesh

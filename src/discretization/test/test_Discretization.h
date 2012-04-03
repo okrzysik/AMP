@@ -5,6 +5,14 @@
 #include "discretization/MultiDOF_Manager.h"
 #include "../../ampmesh/test/meshGenerators.h"
 
+#ifdef USE_AMP_VECTORS
+    #include "vectors/Variable.h"
+    #include "vectors/Vector.h"
+    #include "vectors/MultiVector.h"
+    #include "vectors/VectorBuilder.h"
+#endif
+
+
 using namespace AMP::unit_test;
 
 
@@ -161,7 +169,7 @@ void testMultiDOFMap( AMP::UnitTest *ut, boost::shared_ptr<AMP::Discretization::
         else
             ut->failure("Conversion from global to sub DOFs in multiDOFManager");
         // Check that we can convert back to the global ids
-        std::vector<size_t> globalDOFList2 = multiDOF->getGlobalDOF( managers[i], localDOFList );
+        std::vector<size_t> globalDOFList2 = multiDOF->getGlobalDOF( i, localDOFList );
         passes = globalDOFList2.size()==localDOFList.size();
         for (size_t j=0; j<globalDOFList2.size(); j++) {
             if ( globalDOFList2[j] != localToGlobal[j] )
@@ -173,6 +181,57 @@ void testMultiDOFMap( AMP::UnitTest *ut, boost::shared_ptr<AMP::Discretization::
             ut->failure("Conversion from sub to global DOFs in multiDOFManager");
     }
 }
+
+
+// Function to test that a multivector with a DOFManager repeated correctly sets the values
+#ifdef USE_AMP_VECTORS
+void testMultiDOFVector( AMP::UnitTest *ut, AMP::Discretization::DOFManager::shared_ptr DOF )
+{
+    // Create the individual vectors
+    AMP::LinearAlgebra::Variable::shared_ptr var1( new AMP::LinearAlgebra::Variable("a") );
+    AMP::LinearAlgebra::Variable::shared_ptr var2( new AMP::LinearAlgebra::Variable("b") );
+    AMP::LinearAlgebra::Variable::shared_ptr var3( new AMP::LinearAlgebra::Variable("c") );
+    AMP::LinearAlgebra::Vector::shared_ptr vec1 = AMP::LinearAlgebra::createVector( DOF, var1, true );
+    AMP::LinearAlgebra::Vector::shared_ptr vec2 = AMP::LinearAlgebra::createVector( DOF, var2, true );
+    // Create the multivector
+    boost::shared_ptr<AMP::LinearAlgebra::MultiVector> multiVector = AMP::LinearAlgebra::MultiVector::create( var3, DOF->getComm() );
+    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vectors(2);
+    vectors[0] = vec1;
+    vectors[1] = vec2;
+    multiVector->addVector(vectors);
+    AMP::Discretization::DOFManager::shared_ptr multiDOF = multiVector->getDOFManager();
+    // Check that we can set each value correctly
+    multiVector->zero();
+    multiVector->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    AMP::Mesh::MeshIterator it = DOF->getIterator();
+    std::vector<size_t> dof1, dof2;
+    bool uniqueMultiDOFs = true;
+    for (size_t i=0; i<it.size(); i++) {
+        DOF->getDOFs( it->globalID(), dof1 );
+        multiDOF->getDOFs( it->globalID(), dof2 );
+        AMP_ASSERT(dof1.size()==1);
+        AMP_ASSERT(dof2.size()==2);
+        if ( dof2[0]==dof2[1] )
+            uniqueMultiDOFs = false;
+        multiVector->setValueByGlobalID( dof2[0], dof1[0] );
+        multiVector->setValueByGlobalID( dof2[1], 2*dof1[0] );
+        ++it;
+    }
+    if ( uniqueMultiDOFs )
+        ut->passes("MultiDOFManger with duplicate subDOFManagers returns unique DOFs");
+    else
+        ut->failure("MultiDOFManger with duplicate subDOFManagers returns unique DOFs");
+    multiVector->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    double vec1norm = vec1->L1Norm();
+    double vec2norm = vec2->L1Norm();
+    double multiVectorNorm = multiVector->L1Norm();
+    double N_tot = (DOF->numGlobalDOF()*DOF->numGlobalDOF())/2;
+    if ( vec1norm==N_tot && vec2norm==2*N_tot && vec1norm==3*N_tot )
+        ut->passes("MultiVector with repeated DOFs sets values correctly");
+    else
+        ut->failure("MultiVector with repeated DOFs sets values correctly");        
+}
+#endif
 
 
 // Function to test the creation/destruction of a multiDOFManager
@@ -196,6 +255,14 @@ void testMultiDOFManager( AMP::UnitTest *ut )
         }
     }
 
+    // Test a multivector that contains multiple vectors with the same DOFManager
+    #ifdef USE_AMP_VECTORS
+        testMultiDOFVector( ut, DOFs );
+    #else
+        ut->expected_failure("Can't test multivector without vectors");
+    #endif
+
 }
+
 
 
