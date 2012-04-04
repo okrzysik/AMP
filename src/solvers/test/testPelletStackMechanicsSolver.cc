@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
   AMP::AMPManager::startup(argc, argv);
   AMP::UnitTest ut;
 
-  int inp = 3;
+  int inp = 1;
   if(argc > 1) {
     inp = atoi(argv[1]);
   }
