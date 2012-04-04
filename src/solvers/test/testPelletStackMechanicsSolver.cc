@@ -26,6 +26,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
+#ifdef USE_SILO
+  // Create the silo writer and register the data
+  AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
+#endif
+
   boost::shared_ptr<AMP::InputDatabase> global_input_db(new AMP::InputDatabase("global_input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, global_input_db);
   global_input_db->printClassData(AMP::plog);
@@ -34,8 +39,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   bool usePointLoad = global_input_db->getBool("USE_POINT_LOAD");
   bool useThermalLoad = global_input_db->getBool("USE_THERMAL_LOAD");
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( global_input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
+  AMP_INSIST(global_input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
+  boost::shared_ptr<AMP::Database> mesh_db = global_input_db->getDatabase("Mesh");
+  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+  meshParams->setComm(globalComm);
+  AMP::Mesh::Mesh::shared_ptr manager = AMP::Mesh::Mesh::buildMesh(meshParams);
 
   boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp;
   boost::shared_ptr<AMP::Operator::ColumnOperator> linearColumnOperator;
@@ -43,7 +51,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   helperCreateAllOperatorsForPelletMechanics(manager, globalComm, global_input_db, coupledOp, linearColumnOperator, pelletStackOp);
 
   AMP::LinearAlgebra::Vector::shared_ptr solVec, rhsVec, scaledRhsVec;
-  helperCreateVectorsForPelletMechanics(manager, coupledOp, globalComm, solVec, rhsVec, scaledRhsVec);
+  helperCreateVectorsForPelletMechanics(manager, coupledOp, solVec, rhsVec, scaledRhsVec);
 
   if(usePointLoad) {
     helperBuildPointLoadRHSForPelletMechanics(global_input_db, coupledOp, rhsVec);
@@ -53,7 +61,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   AMP::LinearAlgebra::Vector::shared_ptr initialTemperatureVec, finalTemperatureVec;
   if(useThermalLoad) {
-    helperCreateTemperatureVectorsForPelletMechanics(manager, coupledOp, initialTemperatureVec, finalTemperatureVec);
+    helperCreateTemperatureVectorsForPelletMechanics(manager, initialTemperatureVec, finalTemperatureVec);
   }
 
   if(useThermalLoad) {
@@ -83,7 +91,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   linearSolver->setPreconditioner(pelletStackSolver);
 
 #ifdef USE_SILO
-  manager->registerVectorAsData ( solVec , "Displacements" );
+  siloWriter->registerVector(solVec, manager, AMP::Mesh::Vertex, "Displacement" );
 #endif
 
   for (unsigned int step = 0; step < NumberOfLoadingSteps; step++) {
@@ -104,19 +112,19 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
     resVec->zero();
     coupledOp->apply(scaledRhsVec, solVec, resVec);
-AMP::pout<< "initial, rhsVec: "<<scaledRhsVec->L2Norm()<<endl; 
-AMP::pout<< "initial, solVec: "<<solVec->L2Norm()<<endl ; 
-AMP::pout<< "initial, resVec: "<<resVec->L2Norm()<<endl ; 
+    AMP::pout<< "initial, rhsVec: "<<scaledRhsVec->L2Norm()<<endl; 
+    AMP::pout<< "initial, solVec: "<<solVec->L2Norm()<<endl ; 
+    AMP::pout<< "initial, resVec: "<<resVec->L2Norm()<<endl ; 
     nonlinearSolver->solve(scaledRhsVec, solVec);
-AMP::pout<< "solved,  rhsVec: "<<scaledRhsVec->L2Norm()<<endl ; 
-AMP::pout<< "solved,  solVec: "<<solVec->L2Norm()<<endl ; 
+    AMP::pout<< "solved,  rhsVec: "<<scaledRhsVec->L2Norm()<<endl ; 
+    AMP::pout<< "solved,  solVec: "<<solVec->L2Norm()<<endl ; 
     coupledOp->apply(scaledRhsVec, solVec, resVec);
-AMP::pout<< "final,   rhsVec: "<<scaledRhsVec->L2Norm()<<endl ; 
-AMP::pout<< "final,   solVec: "<<solVec->L2Norm()<<endl ; 
-AMP::pout<< "final,   resVec: "<<resVec->L2Norm()<<endl ; 
+    AMP::pout<< "final,   rhsVec: "<<scaledRhsVec->L2Norm()<<endl ; 
+    AMP::pout<< "final,   solVec: "<<solVec->L2Norm()<<endl ; 
+    AMP::pout<< "final,   resVec: "<<resVec->L2Norm()<<endl ; 
 
 #ifdef USE_SILO
-    manager->writeFile<AMP::Mesh::SiloIO> ( exeName , step );
+    siloWriter->writeFile(exeName, step);
 #endif
 
     helperResetNonlinearOperatorForPelletMechanics(coupledOp);
