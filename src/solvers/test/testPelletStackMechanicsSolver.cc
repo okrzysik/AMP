@@ -130,12 +130,15 @@ int main(int argc, char *argv[])
   AMP::AMPManager::startup(argc, argv);
   AMP::UnitTest ut;
 
-  //std::string exeName = "testPelletStackMechanicsSolver-1";
-  std::string exeName = "testPelletStackMechanicsSolver-2";
+  int inp = 1;
+  if(argc > 1) {
+    inp = atoi(argv[1]);
+  }
+
+  char exeName[200];
+  sprintf(exeName, "testPelletStackMechanicsSolver-%d", inp);
 
   try {
-    myTest(&ut, exeName);
-    exeName = "testPelletStackMechanicsSolver-3";
     myTest(&ut, exeName);
   } catch (std::exception &err) {
     std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
