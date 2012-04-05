@@ -497,6 +497,7 @@ IF (UNIX)
     DartConfiguration.tcl
     Testing
     install_manifest.txt
+    nek
   )
   ADD_CUSTOM_COMMAND(
     DEPENDS clean
