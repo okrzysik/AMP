@@ -1,3 +1,10 @@
+//----------------------------------*-C++-*----------------------------------//
+/*!
+ * \file   operators/test/testNekPipe.cc
+ * \brief  This tests the header file that accesses Nek-5000; runs Nek exmaple moab/pipe.
+ */
+//---------------------------------------------------------------------------//
+
 #include <iostream>
 #include <fstream>
 #include <string>
