@@ -335,5 +335,7 @@ COPY_MESH_FILE(clad_1x_1pellet.e)
 #NEK-5000 tests
 IF( USE_NEK ) 
   COPY_TEST_DATA_FILE ( SESSION.NAME )
+  COPY_TEST_DATA_FILE ( input.h5m )
+  COPY_TEST_DATA_FILE ( pipe.rea )
   ADD_AMP_TEST_1_2_4( testNekPipe )
 ENDIF()
