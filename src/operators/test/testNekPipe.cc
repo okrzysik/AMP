@@ -17,7 +17,7 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 #include "utils/PIO.h"
-#include "nek/Nek5000_API.h"
+#include "nek/Nek5000_API2.h"
 
 #include "iMesh.h"
 

@@ -30,6 +30,8 @@ ENDIF()
 IF ( USE_NEK )
     BEGIN_PACKAGE_CONFIG( nek )
     ADD_EXTERNAL_PACKAGE_SUBDIRECTORY( nek ${NEK_EXTERNAL} )
+    SET(CMAKE_Fortran_FLAGS " ${CMAKE_Fortran_FLAGS} -x f77-cpp-input -fcray-pointer" )
+    ADD_EXTERNAL_PACKAGE_SUBDIRECTORY( nek/fortran ${NEK_EXTERNAL}/fortran )
     INSTALL_AMP_TARGET ( nek )
 ENDIF()
 
