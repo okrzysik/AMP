@@ -396,7 +396,6 @@ MACRO ( CONFIGURE_NEK )
         MESSAGE ( "Using NEK" )
         MESSAGE ( "   " ${NEK_LIBS} )
         SET ( CURPACKAGE "nek" )
-        ADD_EXTERNAL_PACKAGE_SUBDIRECTORY( "nek" ${NEK_DIRECTORY} )
     ENDIF()
 ENDMACRO ()
 
