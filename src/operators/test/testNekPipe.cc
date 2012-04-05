@@ -11,6 +11,12 @@
 #include "utils/Utilities.h"
 #include "utils/PIO.h"
 #include "nek/Nek5000_API.h"
+
+#include "iMesh.h"
+
+extern "C" {
+    void getMoabMeshData_( void **, void ** );
+}
 //---------------------------------------------------------------------------//
 // TESTS
 //---------------------------------------------------------------------------//
@@ -32,6 +38,28 @@ void nekPipe(AMP::UnitTest *ut)
 	  std::cout<<"NEK Init succeeded"<<std::endl;
     NEK_SOLVE();
     ut->passes("Nek has solved the problem.");
+    
+    void *mesh_ptr;
+    void *tag;
+    getMoabMeshData( &mesh_ptr, &tag );
+
+    iMesh_Instance mesh = (iMesh_Instance) mesh_ptr;
+
+    iMesh_EntityHandle *ents;
+    int ents_alloc = 0, ents_size;
+    int ierr;
+    iMesh_getEntities(mesh, 0, iBase_REGION,
+                      iMesh_ALL_TOPOLOGIES,
+                      &ents, &ents_alloc, 
+                      &ents_size, &ierr);
+
+    AMP::pout << "Mesh size is " << ents_size << std::endl;
+
+
+
+
+
+
     NEK_END();
     ut->passes("Nek has cleaned itself up.");
 #else
