@@ -22,7 +22,7 @@
 #include "iMesh.h"
 
 extern "C" {
-    void getMoabMeshData_( void **, void ** );
+    void getmoabmeshdata_( void **, void ** );
 }
 //---------------------------------------------------------------------------//
 // TESTS
@@ -31,6 +31,7 @@ extern "C" {
 void nekPipe(AMP::UnitTest *ut)
 {
     // this test is based on testSNES-B-TM-4
+
 
     AMP::pout << "Starting to run Nek-500 for the pipe problem"<< std::endl;
 
@@ -44,15 +45,15 @@ void nekPipe(AMP::UnitTest *ut)
     NEK_INIT( &myMpiComm );
 	  std::cout<<"NEK Init succeeded"<<std::endl;
     NEK_SOLVE();
-    ut->passes("Nek has solved the problem.");
+    ut->passes("Nek has created additional problems.");
     
     void *mesh_ptr;
     void *tag;
-    getMoabMeshData( &mesh_ptr, &tag );
+    getmoabmeshdata_( &mesh_ptr, &tag );
 
     iMesh_Instance mesh = (iMesh_Instance) mesh_ptr;
 
-    iMesh_EntityHandle *ents;
+    iBase_EntityHandle *ents;
     int ents_alloc = 0, ents_size;
     int ierr;
     iMesh_getEntities(mesh, 0, iBase_REGION,
@@ -60,8 +61,11 @@ void nekPipe(AMP::UnitTest *ut)
                       &ents, &ents_alloc, 
                       &ents_size, &ierr);
 
-    AMP::pout << "Mesh size is " << ents_size << std::endl;
+    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
+    AMP::pout << "Mesh size is " << ents_size << std::endl;
+    if( ents_size == 5496 && globalComm.getSize()==1 )
+        ut->passes("Mesh is the right size");
 
 
 
