@@ -78,9 +78,7 @@ namespace Operator {
         return d_params;
       }
 
-      void setVariableFlux(const AMP::LinearAlgebra::Vector::shared_ptr &flux){
-        d_variableFlux = flux->subsetVectorForVariable ( d_variable );
-      }
+      void setVariableFlux(const AMP::LinearAlgebra::Vector::shared_ptr &flux);
 
       void setFrozenVector ( AMP::LinearAlgebra::Vector::shared_ptr f );
 
@@ -89,6 +87,10 @@ namespace Operator {
       std::vector<short int> getBoundaryIds() const { return d_boundaryIds; }
 
       std::vector<std::vector<unsigned int> > getDofIds() const { return d_dofIds; }
+
+      AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_variable; }
+
+      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_variable; }
 
     protected :
 

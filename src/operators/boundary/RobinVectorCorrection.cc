@@ -51,12 +51,8 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
   AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
 
-  AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable(d_variable);
-  AMP::LinearAlgebra::Vector::shared_ptr uInternal = u->subsetVectorForVariable(d_variable);
-
-  AMP::LinearAlgebra::VS_Mesh meshSelector("meshSelector", d_Mesh);
-  AMP::LinearAlgebra::Vector::shared_ptr uOnMesh = u->select ( meshSelector , u->getVariable()->getName() );
-  rInternal = rInternal->select ( meshSelector , rInternal->getVariable()->getName() );
+  AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetInputVector(r);
+  AMP::LinearAlgebra::Vector::shared_ptr uInternal = this->subsetInputVector(u);
 
   uInternal->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
   //rInternal->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
@@ -87,12 +83,12 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
         }
         else
         {
-          elementInputVec[i+1] = uOnMesh->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
+          elementInputVec[i+1] = uInternal->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
         }
       }
       else
       {
-        elementInputVec[i+1] = uOnMesh->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
+        elementInputVec[i+1] = uInternal->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
       }
       AMP_INSIST ( elementInputVec[i+1] , "Did not find vector" );
       (elementInputVec[i+1])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
@@ -226,7 +222,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   }
   else
   {
-    AMP::LinearAlgebra::Vector::shared_ptr fInternal = f->subsetVectorForVariable(d_variable);
+    AMP::LinearAlgebra::Vector::shared_ptr fInternal = this->subsetOutputVector(f);
     if (fInternal.get() == NULL)
     {
       rInternal->scale(a);

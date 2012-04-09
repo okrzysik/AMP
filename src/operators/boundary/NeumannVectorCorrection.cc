@@ -316,6 +316,16 @@ namespace Operator {
     }
 
 
+    void NeumannVectorCorrection :: setVariableFlux(const AMP::LinearAlgebra::Vector::shared_ptr &flux) {
+        if(d_Mesh.get() != NULL) {
+            AMP::LinearAlgebra::VS_Mesh meshSelector( d_variable->getName(), d_Mesh);
+            AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = flux->select(meshSelector, d_variable->getName());
+            d_variableFlux = meshSubsetVec->subsetVectorForVariable( d_variable );
+        } else {
+            d_variableFlux = flux->subsetVectorForVariable ( d_variable );
+        }
+    }
+
 
 }
 }

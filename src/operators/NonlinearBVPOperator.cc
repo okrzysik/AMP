@@ -24,8 +24,7 @@ namespace AMP {
 
         AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
 
-        AMP::LinearAlgebra::Variable::shared_ptr outputVariable = this->getOutputVariable();
-        AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable( outputVariable );
+        AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetInputVector(r);
 
         AMP_INSIST( ((rInternal.get()) != NULL), "NULL Internal Residual Vector" );
 
@@ -66,7 +65,7 @@ namespace AMP {
         if(f.get() == NULL) {
           rInternal->scale(a);
         } else {
-          AMP::LinearAlgebra::Vector::shared_ptr fInternal = f->subsetVectorForVariable( this->getOutputVariable() );
+          AMP::LinearAlgebra::Vector::shared_ptr fInternal = this->subsetInputVector(f);
           if(fInternal.get() == NULL) {
             rInternal->scale(a);
           } else {
