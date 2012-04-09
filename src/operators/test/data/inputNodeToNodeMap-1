@@ -31,7 +31,6 @@ NodeToNodeMaps{
     Surface2 = 2
     DOFsPerObject = 3
     VariableName = "displacement"
-    BoundaryId = 0
 }
 
 
