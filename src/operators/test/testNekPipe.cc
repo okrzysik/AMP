@@ -17,8 +17,15 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 #include "utils/PIO.h"
+
+// Nek includes
 #include "nek/Nek5000_API2.h"
 
+// MOAB Includes
+#include "MBInterface.hpp"
+#include "MBParallelComm.hpp"
+#include "MBRange.hpp"
+#include "Coupler.hpp"
 #include "iMesh.h"
 
 extern "C" {
@@ -72,7 +79,31 @@ void nekPipe(AMP::UnitTest *ut)
     else
         ut->failure("Mesh is not the right size");
 
+    // accessing MBInterface
+    MBInterface *moabInterface = reinterpret_cast<MBInterface *> (mesh);
 
+    // create MBParallelComm
+    int moabCommOut = 1234234;
+    MBParallelComm *moabCommunicator 
+                = new MBParallelComm( 
+                                      moabInterface, 
+                                      myMpiComm, 
+                                      //MPI_COMM_WORLD, 
+                                      &moabCommOut );
+
+    // Access the Range on the source mesh.
+    moab::Range moabRange;
+    int problemDimension = 3;
+    moab::ErrorCode moabError = moabCommunicator->get_part_entities( moabRange, problemDimension);
+
+    // create MBCoupler 
+    int moabCouplerID = 0;
+    moab::Coupler moabCoupler( moabInterface, 
+                               moabCommunicator, 
+                               moabRange,
+                               moabCouplerID  );
+
+    // We are done.
     NEK_END();
     ut->passes("Nek has cleaned itself up.");
 #else

@@ -416,11 +416,15 @@ MACRO ( CONFIGURE_MOAB )
             VERIFY_PATH ( ${MOAB_PATH_LIB} )
             FIND_LIBRARY ( MOAB_MESH_LIB     NAMES MOAB      PATHS ${MOAB_PATH_LIB}          NO_DEFAULT_PATH )
             FIND_LIBRARY ( MOAB_iMESH_LIB    NAMES iMesh     PATHS ${MOAB_PATH_LIB}          NO_DEFAULT_PATH )
+            FIND_LIBRARY ( MOAB_COUPLER_LIB  NAMES mbcoupler PATHS ${MOAB_PATH_LIB}          NO_DEFAULT_PATH )
             IF ( NOT MOAB_MESH_LIB )
                 MESSAGE ( FATAL_ERROR "MOAB library (MOAB) not found in ${MOAB_PATH_LIB}" )
             ENDIF ()
             IF ( NOT MOAB_iMESH_LIB )
                 MESSAGE ( FATAL_ERROR "iMesh library ${MOAB_iMESH_LIB}  not found in ${MOAB_PATH_LIB}" )
+            ENDIF ()
+            IF ( NOT MOAB_COUPLER_LIB )
+                MESSAGE ( FATAL_ERROR "MBCoupler library ${MOAB_COUPLER_LIB}  not found in ${MOAB_PATH_LIB}" )
             ENDIF ()
         ELSE()
             MESSAGE ( FATAL_ERROR "Default search for MOAB is not supported.  Use -D MOAB_DIRECTORY=" )
@@ -462,6 +466,7 @@ MACRO ( CONFIGURE_MOAB )
         # Add the libraries in the appropriate order
         INCLUDE_DIRECTORIES ( ${MOAB_INCLUDE} )
         SET ( MOAB_LIBS
+            ${MOAB_COUPLER_LIB}
             ${MOAB_iMESH_LIB}
             ${MOAB_MESH_LIB}
             ${MOAB_CGM_LIB}
