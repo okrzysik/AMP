@@ -63,12 +63,14 @@ void nekPipe(AMP::UnitTest *ut)
 
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-    AMP::pout << "Mesh size is " << ents_size << std::endl;
-    if( ents_size == 5496 && globalComm.getSize()==1 )
+    int totalSize;
+    totalSize = globalComm.sumReduce( ents_size );
+    AMP::pout << "Mesh size is " << totalSize << std::endl;
+
+    if( totalSize == 5496 )
         ut->passes("Mesh is the right size");
-
-
-
+    else
+        ut->failure("Mesh is not the right size");
 
 
     NEK_END();
