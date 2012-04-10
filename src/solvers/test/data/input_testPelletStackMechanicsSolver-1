@@ -1,8 +1,8 @@
 
 DomainDecomposition = 0
-NumberOfPelletMeshes = 12
-NumberOfMeshes = 12
-NumberOfMeshToMeshMaps = 11
+NumberOfPelletMeshes = 2
+NumberOfMeshes = 2
+NumberOfMeshToMeshMaps = 1
 
 NumberOfLoadingSteps = 1
 USE_POINT_LOAD = TRUE
