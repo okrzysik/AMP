@@ -65,7 +65,7 @@ namespace AMP {
         if(f.get() == NULL) {
           rInternal->scale(a);
         } else {
-          AMP::LinearAlgebra::Vector::shared_ptr fInternal = this->subsetInputVector(f);
+          AMP::LinearAlgebra::Vector::shared_ptr fInternal = this->subsetOutputVector(f);
           if(fInternal.get() == NULL) {
             rInternal->scale(a);
           } else {
