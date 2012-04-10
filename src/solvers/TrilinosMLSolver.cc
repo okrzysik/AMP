@@ -229,6 +229,7 @@ namespace AMP {
 
         if(d_bUseEpetra) {
           // These functions throw exceptions if this cannot be performed.
+          AMP_ASSERT(f != NULL); 
           Epetra_Vector &fVec = (AMP::LinearAlgebra::EpetraVector::view ( f ))->castTo<AMP::LinearAlgebra::EpetraVector>().getEpetra_Vector();
           Epetra_Vector &uVec = (AMP::LinearAlgebra::EpetraVector::view ( u ))->castTo<AMP::LinearAlgebra::EpetraVector>().getEpetra_Vector();
 

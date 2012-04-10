@@ -110,8 +110,9 @@ void helperCreateAllOperatorsForPelletMechanics(AMP::Mesh::Mesh::shared_ptr mana
 {
   AMP::Discretization::DOFManager::shared_ptr nodal3VectorDOF = AMP::Discretization::simpleDOFManager::create(
       manager, AMP::Mesh::Vertex, 1, 3, true);
+  boost::shared_ptr<AMP::Database> map_db = global_input_db->getDatabase("MechanicsNodeToNodeMaps");
   boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps =
-    AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap>(manager, nodal3VectorDOF, global_input_db);
+    AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap>(manager, nodal3VectorDOF, map_db);
   helperCreateStackOperatorForPelletMechanics(manager, n2nmaps, globalComm, global_input_db, pelletStackOp);
   std::vector<unsigned int> localPelletIds = pelletStackOp->getLocalPelletIds();
   std::vector<AMP::Mesh::Mesh::shared_ptr> localMeshes = pelletStackOp->getLocalMeshes();

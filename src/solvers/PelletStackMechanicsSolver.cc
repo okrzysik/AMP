@@ -46,7 +46,9 @@ namespace AMP {
         boost::shared_ptr<AMP::Solver::SolverStrategy> currSolver = d_columnSolver->getSolver(locPellIdx);
         boost::shared_ptr<AMP::Operator::Operator> currOp = currSolver->getOperator();
         AMP::LinearAlgebra::Vector::shared_ptr subUvec = currOp->subsetInputVector(u);
+        AMP_ASSERT(subUvec != NULL);
         AMP::LinearAlgebra::Vector::shared_ptr subFvec = currOp->subsetOutputVector(f);
+        AMP_ASSERT(subFvec != NULL);
         currSolver->solve(subFvec, subUvec);
       }
 
@@ -62,7 +64,9 @@ namespace AMP {
           boost::shared_ptr<AMP::Solver::SolverStrategy> currSolver = d_columnSolver->getSolver(locPellIdx);
           boost::shared_ptr<AMP::Operator::Operator> currOp = currSolver->getOperator();
           AMP::LinearAlgebra::Vector::shared_ptr subUvec = currOp->subsetInputVector(u);
+          AMP_ASSERT(subUvec != NULL);
           AMP::LinearAlgebra::Vector::shared_ptr subFvec = currOp->subsetOutputVector(d_fbuffer2);
+          AMP_ASSERT(subFvec != NULL);
           currSolver->solve(subFvec, subUvec);
         }
       }//end for pellId
