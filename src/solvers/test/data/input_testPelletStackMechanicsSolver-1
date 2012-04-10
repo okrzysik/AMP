@@ -1,8 +1,8 @@
 
 DomainDecomposition = 0
-NumberOfPelletMeshes = 3
-NumberOfMeshes = 3
-NumberOfMeshToMeshMaps = 2
+NumberOfPelletMeshes = 2
+NumberOfMeshes = 2
+NumberOfMeshToMeshMaps = 1
 
 NumberOfLoadingSteps = 1
 USE_POINT_LOAD = TRUE
@@ -28,26 +28,26 @@ Mesh{
     MeshDatabasePrefix = "Mesh_"
     MeshArrayDatabasePrefix = "MeshArray_"
     MeshArray_1 {
-      N = 3
+      N = 2
         iterator = "%i"
-        indicies = 1, 2, 3
+        indicies = 1, 2
         MeshName = "pellet_%i"
         MeshType = "libMesh"
         FileName = "simple_pellet_1x.e"
         dim = 3
         x_offset = 0.0
         y_offset = 0.0
-        z_offset = 0.0, 0.0105, 0.021
+        z_offset = 0.0, 0.0105
         NumberOfElements = 1300
     }
 }
 
 MechanicsNodeToNodeMaps{
   MapType = "NodeToNode"
-    N_maps = 2
-    Mesh1 = "pellet_1", "pellet_2"
+    N_maps = 1
+    Mesh1 = "pellet_1"
     Surface1 = 1
-    Mesh2 = "pellet_2", "pellet_3"
+    Mesh2 = "pellet_2"
     Surface2 = 2
     DOFsPerObject = 3
     VariableName = "displacement"
