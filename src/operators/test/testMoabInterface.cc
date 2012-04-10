@@ -46,15 +46,18 @@ void moabInterface(AMP::UnitTest *ut)
     std::string options;
     iMesh_newMesh(options.c_str(), &mesh, &ierr, 0);
 
-    // Get Root Set
-    AMP::pout << "Getting root set" << std::endl;
-    iBase_EntitySetHandle rootSet;
-    iMesh_getRootSet( mesh, &rootSet, &ierr );
-
     // Load mesh from file
     AMP::pout << "Loading mesh file" << std::endl;
     std::string meshFile = "pellet_1x.e";
-    iMesh_load(mesh, rootSet, meshFile.c_str(),options.c_str(),&ierr,meshFile.length(),options.length());
+    iMesh_load(mesh, 0, meshFile.c_str(),options.c_str(),&ierr,meshFile.length(),options.length());
+
+    // Add a temperature tag
+    //iBase_TagHandle tempTagHandle;
+    //std::string tempTagName = "Temperature";
+    //iMesh_createTag(mesh,tempTagName.c_str(),tempTagHandle,1,MB_TYPE_DOUBLE,&tempTagHandle,&ierr,tempTagName.length());
+
+
+    //iMesh_setEntSetDblData( 
 
     iBase_EntityHandle *ents;
     int ents_alloc = 0, ents_size;
@@ -65,22 +68,17 @@ void moabInterface(AMP::UnitTest *ut)
 
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-    int totalSize;
-    totalSize = globalComm.sumReduce( ents_size );
-    AMP::pout << "Mesh size is " << totalSize << std::endl;
+    AMP::pout << "Mesh size is " << ents_size << std::endl;
 
-    if( totalSize == 3705 )
+    // Right now each processor is reading the mesh independently 
+    //  so the mesh size is the same as the global size on all procs
+    if( ents_size == 3705 )
         ut->passes("Mesh is the right size");
     else
         ut->failure("Mesh is not the right size");
 
     // accessing MBInterface
     AMP::pout << "Casting to MBInterface" << std::endl;
-    //moab::Interface * moabInterface = reinterpret_cast<moab::Interface *> (mesh);
-    //
-
-    iMesh_Instance instance = mesh;
-
 
 
     MBiMesh *mbimesh = reinterpret_cast<MBiMesh*>(mesh);
@@ -103,8 +101,8 @@ void moabInterface(AMP::UnitTest *ut)
     // create MBParallelComm
     AMP::pout << "Creating MBParallelComm" << std::endl;
     int moabCommOut = 0;
-/*    MBParallelComm *moabCommunicator = new MBParallelComm( moabInterface, 
-                                                           myMpiComm, 
+    MBParallelComm *moabCommunicator = new MBParallelComm( moabInterface, 
+                                                           globalComm.getCommunicator(),
                                                            &moabCommOut );
 
     // Access the Range on the source mesh.
@@ -121,7 +119,32 @@ void moabInterface(AMP::UnitTest *ut)
                                moabRange,
                                moabCouplerID  );
 
-                               */
+    // Create list of points
+    int numCoords = 3;
+    std::vector<double> myCoords(3*numCoords);
+
+    // First point
+    myCoords[0] = 0.0;
+    myCoords[1] = 0.0;
+    myCoords[2] = 0.0;
+
+    // Second point
+    myCoords[3] = 0.1;
+    myCoords[4] = 0.2;
+    myCoords[5] = 0.3;
+    
+    // Third point
+    myCoords[6] = -0.1;
+    myCoords[7] =  0.2;
+    myCoords[8] = -0.3;
+
+    // Input coords to coupler
+    moabError = moabCoupler.locate_points( &myCoords[0], numCoords );
+
+    // Perform interpolation
+    MBTag tempTag;
+    std::vector<double> interpTemps(numCoords,0.0);
+    moabError = moabCoupler.interpolate( moab::Coupler::LINEAR_FE, tempTag, &interpTemps[0] );
 
 #endif
 

@@ -338,5 +338,9 @@ IF( USE_NEK )
   COPY_TEST_DATA_FILE ( input.h5m )
   COPY_TEST_DATA_FILE ( pipe.rea )
   ADD_AMP_TEST_1_2_4( testNekPipe )
+ENDIF()
+
+#MOAB tests
+IF( USE_MOAB )
   ADD_AMP_TEST_1_2_4( testMoabInterface )
 ENDIF()
