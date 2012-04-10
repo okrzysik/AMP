@@ -24,7 +24,7 @@ namespace AMP {
 
         AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
 
-        AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetInputVector(r);
+        AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector(r);
 
         AMP_INSIST( ((rInternal.get()) != NULL), "NULL Internal Residual Vector" );
 
