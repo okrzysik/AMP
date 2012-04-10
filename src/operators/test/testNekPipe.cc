@@ -100,17 +100,14 @@ void nekPipe(AMP::UnitTest *ut)
 
     AMP::pout << "Getting vertex coordinates" << std::endl;
     std::vector<double> nekMeshCoords;
-    //result = moabInterface->get_vertex_coordinates( nekMeshCoords );
-
+    result = moabInterface->get_vertex_coordinates( nekMeshCoords );
 
     AMP::pout << "Retrieved " << nekMeshCoords.size() << " coordinates" << std::endl;
     
-
-
     // create MBParallelComm
     AMP::pout << "Creating MBParallelComm" << std::endl;
     int moabCommOut = 0;
-/*    MBParallelComm *moabCommunicator = new MBParallelComm( moabInterface, 
+    MBParallelComm *moabCommunicator = new MBParallelComm( moabInterface, 
                                                            myMpiComm, 
                                                            &moabCommOut );
 
@@ -128,8 +125,41 @@ void nekPipe(AMP::UnitTest *ut)
                                moabRange,
                                moabCouplerID  );
 
+    // Create list of points
+    int numCoords = 3;
+    std::vector<double> myCoords(3*numCoords);
+
+    // First point
+    myCoords[0] = 0.0;
+    myCoords[1] = 0.0;
+    myCoords[2] = 0.0;
+
+    // Second point
+    myCoords[3] = 0.1;
+    myCoords[4] = 0.2;
+    myCoords[5] = 0.3;
+    
+    // Third point
+    myCoords[6] = -0.1;
+    myCoords[7] =  0.2;
+    myCoords[8] = -0.3;
+
+    // Input coords to coupler
+    moabError = moabCoupler.locate_points( &myCoords[0], numCoords );
+    AMP::pout<< "we've located the points." << std::endl;
+
+    // Perform interpolation
+    MBTag tempTag = reinterpret_cast<MBTag>( tag );
+    ///AMP::pout<< "the tag name is "<< tempTag << std::endl;
+
+
+    std::vector<double> interpTemps(numCoords,0.0);
+    moabError = moabCoupler.interpolate( moab::Coupler::LINEAR_FE, tempTag, &interpTemps[0] );
+
+    AMP::pout<< "the temperature is " << interpTemps[0] << std::endl;
+
     // We are done.
-*/    NEK_END();
+    NEK_END();
     ut->passes("Nek has cleaned itself up.");
 #else
     ut->passes("Nek was not used.");
@@ -159,9 +189,6 @@ int main(int argc, char *argv[])
 
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();
-#ifdef USE_NEK     
-    //NEK_END();
-#endif
     return num_failed;
 }
 
