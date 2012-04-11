@@ -41,6 +41,10 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
                 AMP_INSIST((*var1)!=(*var2),"Error using a MultiVariable in createVector, duplicate variables detected");
             }
         }
+        // Check that all processors have the same number of variables
+        size_t N_var = multiVariable->numVariables();
+        size_t N_var0 = DOFs->getComm().bcast(N_var,0);
+        AMP_INSIST(N_var==N_var0,"The multivariable has a different number of varaibles on different processors");
         // Create the Vector for each variable, then combine
         std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vectors;
         for (AMP::LinearAlgebra::MultiVariable::iterator it=multiVariable->beginVariable(); it!=multiVariable->endVariable(); it++)

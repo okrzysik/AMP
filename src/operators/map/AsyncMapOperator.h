@@ -42,6 +42,9 @@ public:
      */
     AMP::Mesh::Mesh::shared_ptr getMesh(int which); 
 
+    virtual AMP::LinearAlgebra::Variable::shared_ptr  getInputVariable () { return d_inpVariable; }
+    virtual AMP::LinearAlgebra::Variable::shared_ptr  getOutputVariable () { return d_inpVariable; }
+
 protected:
 
     // Communicator for the Map
@@ -51,6 +54,7 @@ protected:
     AMP::Mesh::Mesh::shared_ptr  d_mesh1;
     AMP::Mesh::Mesh::shared_ptr  d_mesh2;
     AMP::Discretization::DOFManager::shared_ptr  d_DOFManager;
+    AMP::LinearAlgebra::Variable::shared_ptr      d_inpVariable;
 
     // Frozen vector for the output results
     AMP::LinearAlgebra::Vector::shared_ptr  d_OutputVector;

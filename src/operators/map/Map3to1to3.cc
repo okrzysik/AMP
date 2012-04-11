@@ -34,8 +34,6 @@ Map3to1to3::Map3to1to3 ( const boost::shared_ptr<OperatorParameters> & params_in
     if ( d_mesh2.get() != NULL )
         d_iterator2 = d_mesh2->getIDsetIterator( AMP::Mesh::Vertex, params->d_BoundaryID2, 0 );
 
-    d_MapVariable = AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable( params->d_db->getString("VariableName") ) );
-
     // Determine which processors we will be sending/receiving data from
     // 0: No communication, 1: send/recv data
     d_own_mesh1 = std::vector<bool>(d_MapComm.getSize(),false);
@@ -127,7 +125,7 @@ void  Map3to1to3::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , 
                      AMP::LinearAlgebra::Vector::shared_ptr & , const double , const double )
 {
     // Build the local maps
-    AMP::LinearAlgebra::Vector::shared_ptr vec = u->subsetVectorForVariable( getInputVariable() );
+    AMP::LinearAlgebra::Vector::shared_ptr vec = subsetInputVector( u );
     std::multimap<double,double> map1 = buildMap( vec, d_mesh1, d_iterator1 );
     std::multimap<double,double> map2 = buildMap( vec, d_mesh2, d_iterator2 );
 
@@ -226,7 +224,8 @@ void  Map3to1to3::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr & ,
 ********************************************************/
 void  Map3to1to3::setVector ( AMP::LinearAlgebra::Vector::shared_ptr &result )
 {
-    d_ResultVector = result->subsetVectorForVariable ( d_MapVariable );
+    d_ResultVector = subsetInputVector( result );
+    AMP_ASSERT ( d_ResultVector );
 }
 
 

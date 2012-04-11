@@ -60,13 +60,6 @@ public:
         const  AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r,
         const double a = -1.0, const double b = 1.0);
 
-    /** \brief    
-     */
-    virtual AMP::LinearAlgebra::Variable::shared_ptr  getInputVariable() { return d_MapVariable; }
-
-    /** \brief   
-     */
-    virtual AMP::LinearAlgebra::Variable::shared_ptr  getOutputVariable() { return d_MapVariable; }
 
 protected:
     /** \brief  This method will average nearby points in the interpolant
@@ -107,9 +100,6 @@ private:
     //!  Iterators over the nodes on the boundary
     AMP::Mesh::MeshIterator  d_iterator1;
     AMP::Mesh::MeshIterator  d_iterator2;
-
-    //!  The variable of the appropriate vector to store the answer and to subset on the input
-    AMP::LinearAlgebra::Variable::shared_ptr d_MapVariable;
 
     //!  The place to put the mapped values
     AMP::LinearAlgebra::Vector::shared_ptr d_ResultVector;

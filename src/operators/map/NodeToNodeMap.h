@@ -52,9 +52,6 @@ public:
 
     virtual void  setVector ( AMP::LinearAlgebra::Vector::shared_ptr &p );
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr  getInputVariable () { return d_inpVariable; }
-    virtual AMP::LinearAlgebra::Variable::shared_ptr  getOutputVariable () { return d_inpVariable; }
-
 private:
 
     class Point
@@ -98,7 +95,6 @@ private:
     std::vector<double>                     d_recvBuffer;
 
     // Other data
-    AMP::LinearAlgebra::Variable::shared_ptr      d_inpVariable;
     bool d_callMakeConsistentSet;
 
     // Function to compute the pairs of points for each mesh

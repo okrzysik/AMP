@@ -1,5 +1,6 @@
 #include "AsyncMapOperator.h"
 #include "AsyncMapOperatorParameters.h"
+#include "ampmesh/MultiMesh.h"
 
 namespace AMP {
 namespace Operator {
@@ -8,6 +9,7 @@ namespace Operator {
 AsyncMapOperator::AsyncMapOperator ( const boost::shared_ptr <OperatorParameters> &p )
     : AsynchronousOperator ( p )
 {
+    // Fill some basic info
     boost::shared_ptr<AsyncMapOperatorParameters> params = boost::dynamic_pointer_cast<AsyncMapOperatorParameters>(p);
     d_MapComm = params->d_MapComm;
     d_mesh1 = params->d_Mesh1;
@@ -15,6 +17,16 @@ AsyncMapOperator::AsyncMapOperator ( const boost::shared_ptr <OperatorParameters
     AMP_INSIST( !d_MapComm.isNull(), "NULL communicator for map is invalid");
     AMP_INSIST( d_MapComm.sumReduce<int>(d_mesh1.get()!=NULL?1:0)>0, "Somebody must own mesh 1");
     AMP_INSIST( d_MapComm.sumReduce<int>(d_mesh2.get()!=NULL?1:0)>0, "Somebody must own mesh 2");
+    // Create a multimesh to use for the operator base class for subsetting
+    std::vector<AMP::Mesh::Mesh::shared_ptr> meshes;
+    if ( d_mesh1.get() != NULL )
+        meshes.push_back( d_mesh1 );
+    if ( d_mesh2.get() != NULL )
+        meshes.push_back( d_mesh2 );
+    d_Mesh = boost::shared_ptr<AMP::Mesh::MultiMesh>(new AMP::Mesh::MultiMesh(d_MapComm,meshes));
+    // Get the input variable
+    std::string variableName = params->d_db->getString("VariableName");
+    d_inpVariable = AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable(variableName) );
 }
 
 
