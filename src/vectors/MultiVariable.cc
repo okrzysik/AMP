@@ -104,6 +104,34 @@ Variable::shared_ptr  MultiVariable::cloneVariable ( const std::string &name ) c
     return retVal;
 }
 
+
+void MultiVariable::removeDuplicateVariables ()
+{
+    // First remove any NULL pointers
+    std::vector<Variable::shared_ptr>::iterator iterator = d_vVariables.begin();
+    while ( iterator != d_vVariables.end() ) {
+        if ( iterator->get()==NULL )
+            iterator = d_vVariables.erase(iterator);
+        else
+            iterator++;
+    }
+    // Next remove any duplicate entries
+    // Note: while it would be faster to sort, then remove duplicate entires,
+    // this requires the < operator to be overloaded for the base class
+    std::vector<Variable::shared_ptr>  unique_list;
+    unique_list.reserve(d_vVariables.size());
+    for (size_t i=0; i<d_vVariables.size(); i++) {
+        bool found = false;
+        for (size_t j=0; j<unique_list.size(); j++) {
+            if ( d_vVariables[i]->operator==(*(unique_list[j])) )
+                found = true;
+        }
+        if ( !found )
+            unique_list.push_back(d_vVariables[i]);
+    }
+    d_vVariables = unique_list;
+}
+
   
 }
 }
