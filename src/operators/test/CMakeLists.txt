@@ -39,6 +39,8 @@ INCLUDE (macros)
 #     COPY_MESH_FILE ( mesh_file )
 #
 
+ADD_AMP_PROVISIONAL_TEST( testRemDup )
+
 COPY_TEST_DATA_FILE ( input_testMatSetValues )
 ADD_AMP_PROVISIONAL_TEST( testMatSetValues )
 COPY_MESH_FILE ( cube8.with.boundary.labels.e )
