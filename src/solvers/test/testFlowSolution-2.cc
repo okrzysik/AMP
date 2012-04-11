@@ -454,7 +454,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
       coupledLinearOperator->reset(columnNonlinearOperator->getJacobianParameters(globalSolMultiVector));
       columnNonlinearOperator->apply(nullVec, globalSolMultiVector, globalResMultiVector, 1.0, 0.0);
       AMP::pout<<"Initial Global Residual Norm: "<<std::setprecision(12)<<globalResMultiVector->L2Norm()<<std::endl;
-      AMP::pout<<"Initial Temperatur Residual Norm: "<<std::setprecision(12)<<globalResVec->L2Norm()<<std::endl;
+      AMP::pout<<"Initial Temperature Residual Norm: "<<std::setprecision(12)<<globalResVec->L2Norm()<<std::endl;
       AMP::pout<<"Initial Flow Residual Norm: "<<std::setprecision(12)<<flowResVec->L2Norm()<<std::endl;
 
       //------------------------------------------------------------------
@@ -555,7 +555,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
         globalResMultiVector->zero();
         columnNonlinearOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
         AMP::pout<<"Initial Global Residual Norm for Step " << tstep << " is: "<<globalResMultiVector->L2Norm()<<std::endl;
-        AMP::pout<<"Initial Temperatur Residual  Norm12 for Step " << tstep << " is: "<<globalResVec->L2Norm()<<std::endl;
+        AMP::pout<<"Initial Temperature Residual Norm for Step " << tstep << " is: "<<globalResVec->L2Norm()<<std::endl;
         AMP::pout<<"Initial Flow Residual for Step " << tstep << " is: "<<flowResVec->L2Norm()<<std::endl;
 
         nonlinearSolver->solve(globalRhsMultiVectorView, globalSolMultiVectorView);
