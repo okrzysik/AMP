@@ -45,12 +45,18 @@ namespace LinearAlgebra {
     return left->getName() < right->getName();
   }
 
+  inline
+  bool  variableEquals ( const Variable::shared_ptr  &left , 
+                           const Variable::shared_ptr  &right )
+  {
+    return ((*left) == (*right));
+  }
 
   inline
   void MultiVariable::removeDuplicateVariables ()
   {
     std::sort ( beginVariable() , endVariable() , variableLessThan );
-    std::vector<Variable::shared_ptr>::iterator new_end = std::unique ( beginVariable() , endVariable() );
+    std::vector<Variable::shared_ptr>::iterator new_end = std::unique ( beginVariable() , endVariable(), variableEquals );
     d_vVariables.resize ( new_end - beginVariable() );
   }
 
