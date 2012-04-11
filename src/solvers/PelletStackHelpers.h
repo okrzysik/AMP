@@ -88,7 +88,7 @@ void helperSetFrozenVectorForMapsForPelletMechanics(AMP::Mesh::Mesh::shared_ptr 
     boost::dynamic_pointer_cast<AMP::Operator::AsyncMapColumnOperator>(coupledOp->getOperator(1)); 
   boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(coupledOp->getOperator(2));
-  AMP::LinearAlgebra::Variable::shared_ptr dispVar = (nonlinearColumnOperator->getOperator(0))->getOutputVariable(); 
+  AMP::LinearAlgebra::Variable::shared_ptr dispVar = nonlinearColumnOperator->getOutputVariable(); 
   AMP::Discretization::DOFManager::shared_ptr nodal3VectorDOF = AMP::Discretization::simpleDOFManager::create(
       manager, AMP::Mesh::Vertex, 1, 3, true);
   AMP::LinearAlgebra::Vector::shared_ptr  dirichletValues = AMP::LinearAlgebra::createVector(nodal3VectorDOF, dispVar, true);
@@ -130,7 +130,7 @@ void helperCreateVectorsForPelletMechanics(AMP::Mesh::Mesh::shared_ptr manager,
 {
   boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(coupledOp->getOperator(2));
-  AMP::LinearAlgebra::Variable::shared_ptr dispVar = (nonlinearColumnOperator->getOperator(0))->getOutputVariable(); 
+  AMP::LinearAlgebra::Variable::shared_ptr dispVar = nonlinearColumnOperator->getOutputVariable(); 
   AMP::Discretization::DOFManager::shared_ptr nodal3VectorDOF = AMP::Discretization::simpleDOFManager::create(
       manager,AMP::Mesh::Vertex,1,3,true);
   solVec = AMP::LinearAlgebra::createVector(nodal3VectorDOF, dispVar, true);
