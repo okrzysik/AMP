@@ -28,7 +28,7 @@ namespace LinearAlgebra {
     Vector *t = &(d_Engine->castTo<Vector>());
     if ( t->isA<ManagedVector>() )
       return t->castTo<ManagedVector>().getRootVector();
-    return Vector::shared_ptr();
+    return t->shared_from_this();
   }
 
   inline

@@ -53,8 +53,13 @@ Vector::shared_ptr  EpetraVector::view ( Vector::shared_ptr inVector )
             AMP_ERROR("View of multi-block MultiVector is not supported yet");
         }
     } else if ( inVector->isA<ManagedVector> () ) {
-        boost::shared_ptr<ManagedEpetraVector> managed( new ManagedEpetraVector ( inVector->castTo<ManagedVector>().getRootVector() ) );
-        retVal = managed;
+        boost::shared_ptr<Vector> root = inVector->castTo<ManagedVector>().getRootVector();
+        if ( root==inVector ) {
+            boost::shared_ptr<ManagedEpetraVector> managed( new ManagedEpetraVector ( root ) );
+            retVal = managed;
+        } else {
+            retVal = view ( root );
+        }
     }
 
     if ( !retVal)
