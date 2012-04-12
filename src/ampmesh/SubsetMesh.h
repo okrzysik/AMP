@@ -122,6 +122,10 @@ public:
     virtual inline MeshID meshID() const { return d_meshID; }
 
 
+    //! Is the current mesh a base mesh
+    virtual inline bool isBaseMesh() const { return false; }
+
+
     /**
      *  Get the meshIDs of all meshes that compose the current mesh (including its self)
      *  Note: This function may require global communication depending on the implimentation
@@ -129,15 +133,25 @@ public:
     virtual std::vector<MeshID> getAllMeshIDs() const;
 
 
-    //! Is the current mesh a base mesh
-    virtual inline bool isBaseMesh() const { return false; }
-
-
     /**
      *  Get the meshIDs of all the basic meshes that compose the current mesh (excluding multimeshes and subset meshes)
      *  Note: This function may require global communication depending on the implimentation
      */
     virtual std::vector<MeshID> getBaseMeshIDs() const;
+
+
+    /**
+     *  Get the meshIDs of all meshes that compose the current mesh (including its self)
+     *  on the current processor.
+     */
+    virtual std::vector<MeshID> getLocalMeshIDs() const;
+
+
+    /**
+     *  Get the meshIDs of all the basic meshes that compose the current mesh 
+     *  (excluding multimeshes and subset meshes) on the current processor.
+     */
+    virtual std::vector<MeshID> getLocalBaseMeshIDs() const;
 
 
     /**

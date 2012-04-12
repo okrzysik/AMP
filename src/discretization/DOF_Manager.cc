@@ -129,7 +129,7 @@ boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::Mesh::shared
     AMP::Mesh::MeshIterator iterator = getIterator();
     std::vector<AMP::Mesh::MeshID> meshIDs;
     if ( mesh.get() != NULL )
-        meshIDs = mesh->getBaseMeshIDs();
+        meshIDs = mesh->getLocalBaseMeshIDs();
     std::set<AMP::Mesh::MeshElement> element_list;
     for (size_t i=0; i<iterator.size(); i++) {
         AMP::Mesh::MeshElement elem = *iterator;

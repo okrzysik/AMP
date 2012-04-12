@@ -261,6 +261,20 @@ public:
     virtual std::vector<MeshID> getBaseMeshIDs() const;
 
 
+    /**
+     *  Get the meshIDs of all meshes that compose the current mesh (including its self)
+     *  on the current processor.
+     */
+    virtual std::vector<MeshID> getLocalMeshIDs() const;
+
+
+    /**
+     *  Get the meshIDs of all the basic meshes that compose the current mesh 
+     *  (excluding multimeshes and subset meshes) on the current processor.
+     */
+    virtual std::vector<MeshID> getLocalBaseMeshIDs() const;
+
+
     //! Get the mesh name
     virtual inline std::string getName() const { return d_name; }
 

@@ -386,13 +386,8 @@ MeshIterator MultiMesh::getIDsetIterator( const GeomType type, const int id, con
 ********************************************************/
 std::vector<MeshID> MultiMesh::getAllMeshIDs() const
 {
-    std::set<MeshID> ids;
-    ids.insert(d_meshID);
-    for (size_t i=0; i<d_meshes.size(); i++) {
-        std::vector<MeshID> mesh_ids = d_meshes[i]->getAllMeshIDs();
-        for (size_t j=0; j<mesh_ids.size(); j++)
-            ids.insert(mesh_ids[j]);
-    }
+    std::vector<MeshID> tmp = this->getLocalMeshIDs();
+    std::set<MeshID> ids(tmp.begin(),tmp.end());
     int send_cnt = ids.size();
     int recv_cnt = d_comm.sumReduce(send_cnt);
     MeshID *send_data = new MeshID[send_cnt];
@@ -411,12 +406,8 @@ std::vector<MeshID> MultiMesh::getAllMeshIDs() const
 }
 std::vector<MeshID> MultiMesh::getBaseMeshIDs() const
 {
-    std::set<MeshID> ids;
-    for (size_t i=0; i<d_meshes.size(); i++) {
-        std::vector<MeshID> mesh_ids = d_meshes[i]->getBaseMeshIDs();
-        for (size_t j=0; j<mesh_ids.size(); j++)
-            ids.insert(mesh_ids[j]);
-    }
+    std::vector<MeshID> tmp = this->getLocalBaseMeshIDs();
+    std::set<MeshID> ids(tmp.begin(),tmp.end());
     int send_cnt = ids.size();
     int recv_cnt = d_comm.sumReduce(send_cnt);
     MeshID *send_data = new MeshID[send_cnt];
@@ -431,6 +422,27 @@ std::vector<MeshID> MultiMesh::getBaseMeshIDs() const
         ids.insert(recv_data[i]);
     delete [] send_data;
     delete [] recv_data;
+    return std::vector<MeshID>(ids.begin(),ids.end());
+}
+std::vector<MeshID> MultiMesh::getLocalMeshIDs() const
+{
+    std::set<MeshID> ids;
+    ids.insert(d_meshID);
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        std::vector<MeshID> mesh_ids = d_meshes[i]->getAllMeshIDs();
+        for (size_t j=0; j<mesh_ids.size(); j++)
+            ids.insert(mesh_ids[j]);
+    }
+    return std::vector<MeshID>(ids.begin(),ids.end());
+}
+std::vector<MeshID> MultiMesh::getLocalBaseMeshIDs() const
+{
+    std::set<MeshID> ids;
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        std::vector<MeshID> mesh_ids = d_meshes[i]->getBaseMeshIDs();
+        for (size_t j=0; j<mesh_ids.size(); j++)
+            ids.insert(mesh_ids[j]);
+    }
     return std::vector<MeshID>(ids.begin(),ids.end());
 }
 

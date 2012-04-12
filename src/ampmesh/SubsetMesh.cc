@@ -215,6 +215,17 @@ std::vector<MeshID> SubsetMesh::getBaseMeshIDs() const
 {
     return d_parent_mesh->getBaseMeshIDs();
 }
+std::vector<MeshID> SubsetMesh::getLocalMeshIDs() const
+{
+    std::vector<MeshID> ids = d_parent_mesh->getLocalMeshIDs();
+    ids.push_back(d_meshID);
+    AMP::Utilities::quicksort(ids);
+    return ids;
+}
+std::vector<MeshID> SubsetMesh::getLocalBaseMeshIDs() const
+{
+    return d_parent_mesh->getLocalBaseMeshIDs();
+}
 
 
 /********************************************************

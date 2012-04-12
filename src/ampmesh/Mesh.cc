@@ -170,6 +170,14 @@ std::vector<MeshID> Mesh::getBaseMeshIDs() const
 {
     return std::vector<MeshID>(1,d_meshID);
 }
+std::vector<MeshID> Mesh::getLocalMeshIDs() const
+{
+    return std::vector<MeshID>(1,d_meshID);
+}
+std::vector<MeshID> Mesh::getLocalBaseMeshIDs() const
+{
+    return std::vector<MeshID>(1,d_meshID);
+}
 
 
 /********************************************************

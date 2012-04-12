@@ -114,13 +114,30 @@ void simpleDOFManager::initialize()
 ****************************************************************/
 boost::shared_ptr<DOFManager>  simpleDOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
 {
+
+    // Check if we are dealing with a single mesh for both the internal and desired mesh
     if ( mesh->isBaseMesh() && d_mesh->isBaseMesh() ) {
-        // We are dealing with a single mesh for both the internal and desired mesh
         if ( mesh->meshID() == d_mesh->meshID() )
             return shared_from_this();
         else
             return boost::shared_ptr<DOFManager>();
     } 
+    // Check if the desired mesh is a multimesh that contains the current mesh
+    std::vector<AMP::Mesh::MeshID> ids = mesh->getLocalMeshIDs();
+    bool found_local = false;
+    for (size_t i=0; i<ids.size(); i++) {
+        if ( ids[i] == d_mesh->meshID() )
+            found_local = true;
+    }
+    AMP_MPI comm(AMP_COMM_NULL);
+    if ( useMeshComm ) {
+        AMP_MPI comm = AMP_MPI::intersect( d_comm, mesh->getComm() );
+    } else {
+        comm = d_comm;
+    }
+    found_local = comm.allReduce( found_local );
+    if ( found_local ) 
+        return shared_from_this();
     // We were not able to use an efficient subset, use the generic base function
     return DOFManager::subset( mesh, useMeshComm );
 }

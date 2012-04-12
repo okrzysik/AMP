@@ -129,7 +129,7 @@ AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 ) {
     int compare1, compare2;
     MPI_Group_compare ( group1, group12, &compare1 );
     MPI_Group_compare ( group2, group12, &compare2 );
-    AMP_MPI new_comm = AMP_MPI(AMP_COMM_NULL);
+    AMP_MPI new_comm(AMP_COMM_NULL);
     if ( compare1!=MPI_UNEQUAL ) {
         new_comm = comm1;
     } else if ( compare2!=MPI_UNEQUAL ) {

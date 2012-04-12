@@ -184,6 +184,20 @@ public:
 
 
     /**
+     *  Get the meshIDs of all meshes that compose the current mesh (including its self)
+     *  on the current processor.
+     */
+    virtual std::vector<MeshID> getLocalMeshIDs() const;
+
+
+    /**
+     *  Get the meshIDs of all the basic meshes that compose the current mesh 
+     *  (excluding multimeshes and subset meshes) on the current processor.
+     */
+    virtual std::vector<MeshID> getLocalBaseMeshIDs() const;
+
+
+    /**
      *  Get the meshes composing the multimesh
      */
     virtual std::vector<Mesh::shared_ptr> getMeshes() const;
