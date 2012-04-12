@@ -64,7 +64,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     // Test the creation/destruction of ScalarZAxisMap (no apply call)
     try { 
         boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  gapmaps;
-        gapmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarZAxisMap> ( mesh, DOFs, map_db );
+        gapmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarZAxisMap> ( mesh, map_db );
         gapmaps.reset();
         ut->passes("Created / Destroyed ScalarZAxisMap");
     } catch ( ... ) {
@@ -73,7 +73,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     
     // Perform a complete test of ScalarZAxisMap
     boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  gapmaps;
-    gapmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarZAxisMap> ( mesh, DOFs, map_db );
+    gapmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarZAxisMap> ( mesh, map_db );
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr  dummy;

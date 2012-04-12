@@ -56,7 +56,7 @@ public:
       */
     template <typename MAP_TYPE>
     static boost::shared_ptr<AsyncMapColumnOperator>  build ( AMP::Mesh::Mesh::shared_ptr manager, 
-        AMP::Discretization::DOFManager::shared_ptr DOFManager, boost::shared_ptr<Database> database );
+        boost::shared_ptr<AMP::Database> database );
 
     // Function to determine if a makeConsistentSet is required
     virtual bool requiresMakeConsistentSet();

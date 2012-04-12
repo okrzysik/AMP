@@ -13,6 +13,9 @@
 #include "operators/map/AsyncMapColumnOperator.h"
 #include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
+#ifdef USE_SILO
+    #include "ampmesh/SiloIO.h"
+#endif
 
 
 void  setBoundary ( int id , AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::Mesh::Mesh::shared_ptr mesh )
@@ -65,7 +68,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     // Test the creation/destruction of NodeToNodeMap (no apply call)
     try { 
         boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  n2nmaps;
-        n2nmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap> ( mesh, DOFs, map_db  );
+        n2nmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap> ( mesh, map_db  );
         n2nmaps.reset();
         ut->passes("Created / Destroyed NodeToNodeMap ("+fname+")");
     } catch ( ... ) {
@@ -77,7 +80,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  n2nmaps;
 
     // Build the maps
-    n2nmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap> ( mesh, DOFs, map_db  );
+    n2nmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap> ( mesh, map_db  );
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr  dummy;
@@ -127,6 +130,16 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     n2nmaps->apply ( dummy , v1 , v2 );
     globalComm.barrier();
     double end_time = AMP::AMP_MPI::time();
+
+    // Save the results
+    #ifdef USE_SILO
+        AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
+        siloWriter->registerVector( v1, mesh, AMP::Mesh::Vertex, "v1" );
+        siloWriter->registerVector( v2, mesh, AMP::Mesh::Vertex, "v2" );
+        siloWriter->writeFile( "testNodeToNodeMap", 0 );
+    #endif
+
+    // Check the results
     std::cout << v1->maxNorm() << "  " << v2->maxNorm() << std::endl;
     v1->subtract ( v1 , v2 );
     if ( v1->maxNorm() < 1.e-12 ) {

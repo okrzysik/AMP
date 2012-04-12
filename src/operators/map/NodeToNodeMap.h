@@ -59,7 +59,6 @@ private:
        public:
           AMP::Mesh::MeshElementID id;
           double pos[3];
-          size_t dof[8];
           int proc;
           Point ();
           Point ( const Point &rhs );
@@ -76,16 +75,15 @@ private:
     int DofsPerObj;
     AMP::Mesh::MeshIterator  d_iterator1;
     AMP::Mesh::MeshIterator  d_iterator2;
-    AMP::Discretization::DOFManager::shared_ptr   d_DOFManager;
 
     // Store the pairs of points that are aligned for each mesh owned by the current processor
     std::vector< std::pair<Point,Point> >   d_localPairsMesh1;
     std::vector< std::pair<Point,Point> >   d_localPairsMesh2;
 
-    // Lists of DOFs to send/recv for each processor (note: orders must match for each processor)
+    // Lists of MeshElementIDs to send/recv for each processor (note: orders must match for each processor)
     // We want to construct the lists so that we can do a global or pair-wise communication
-    std::vector<size_t>                     d_sendList;
-    std::vector<size_t>                     d_recvList;
+    std::vector<AMP::Mesh::MeshElementID>   d_sendList;
+    std::vector<AMP::Mesh::MeshElementID>   d_recvList;
 
     // Variables for communication
     int                                     d_commTag;
@@ -102,7 +100,7 @@ private:
     void createPairs( bool requireAllPaired=true );
 
     // Function to create the list of owned points from the iterator over the surface nodes
-    std::vector<Point> createOwnedPoints( AMP::Mesh::MeshIterator, AMP::Discretization::DOFManager::shared_ptr );
+    std::vector<Point> createOwnedPoints( AMP::Mesh::MeshIterator );
 
     // Function to create the communication lists
     void  buildSendRecvList( );

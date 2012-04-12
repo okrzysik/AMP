@@ -37,8 +37,6 @@ NodeToNodeMap::NodeToNodeMap ( const boost::shared_ptr<AMP::Operator::OperatorPa
     dim = d_MapComm.maxReduce(dim);
     AMP_INSIST(dim<=3,"Node to Node map only works up to 3d (see Point)");
     DofsPerObj = Params.d_db->getInteger ( "DOFsPerObject" );
-    AMP_INSIST(DofsPerObj<=8,"Node to Node map only works for <= 8 DOFs per node (see Point)");
-    d_DOFManager = Params.d_DOFManager;
     d_commTag = Params.d_commTag;
     d_callMakeConsistentSet = Params.callMakeConsistentSet;
 
@@ -111,23 +109,36 @@ void NodeToNodeMap::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & 
     // Subset the vector for the variable
     AMP::LinearAlgebra::Vector::shared_ptr   curPhysics = subsetInputVector( u );
     AMP_INSIST( curPhysics , "apply received bogus stuff" );
-    //AMP_INSIST( curPhysics->getDOFManager()==d_DOFManager,"The DOF Manager that created the vector must match the one for the map" );
+
 
     // Get the DOFs to send
-    curPhysics->getValuesByGlobalID( d_sendList.size(), getPtr( d_sendList ), getPtr( d_sendBuffer ) );
+    AMP::Discretization::DOFManager::shared_ptr DOF = curPhysics->getDOFManager();
+    std::vector<size_t> dofs(DofsPerObj*d_sendList.size());
+    std::vector<size_t> local_dofs(DofsPerObj);
+    for (size_t i=0; i<d_sendList.size(); i++) {
+        DOF->getDOFs( d_sendList[i], local_dofs );
+        AMP_ASSERT((int)local_dofs.size()==DofsPerObj);
+        for (int j=0; j<DofsPerObj; j++)
+            dofs[j+i*DofsPerObj] = local_dofs[j];
+    }
+
+    // Get the DOFs to send
+    curPhysics->getValuesByGlobalID( dofs.size(), getPtr( dofs ), getPtr( d_sendBuffer ) );
 
     // Start the communication
     std::vector<MPI_Request>::iterator  curReq = beginRequests();
     for (int i=0; i<d_MapComm.getSize(); i++) {
+        int count  = DofsPerObj*d_count[i];
+        int offset = DofsPerObj*d_displ[i];
         if ( i==d_MapComm.getRank() ) {
             // Perform a local copy
-            for (int j=d_displ[i]; j<d_displ[i]+d_count[i]; j++)
+            for (int j=offset; j<offset+count; j++)
                 d_recvBuffer[j] = d_sendBuffer[j];
-        } else if ( d_count[i] > 0 ) {
+        } else if ( count > 0 ) {
             // Start asyncronous communication
-            *curReq = d_MapComm.Isend( &d_sendBuffer[d_displ[i]], d_count[i], i, d_commTag );
+            *curReq = d_MapComm.Isend( &d_sendBuffer[offset], count, i, d_commTag );
             curReq++;
-            *curReq = d_MapComm.Irecv( &d_recvBuffer[d_displ[i]], d_count[i], i, d_commTag );
+            *curReq = d_MapComm.Irecv( &d_recvBuffer[offset], count, i, d_commTag );
             curReq++;
         }
     }
@@ -143,25 +154,25 @@ void NodeToNodeMap::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr &
                               const double ,
                               const double )
 {
-    // Wait to recieve all data
-    waitForAllRequests();
-    // bool  copyToOutput = false;
-
     // Get the vector to store the DOFs
     AMP::LinearAlgebra::Vector::shared_ptr  curPhysics = d_OutputVector;
-    //    if ( r )
-    //    {
-    //      curPhysics = r->subsetVectorForVariable ( d_inpVariable );
-    //    }
-    //    else if ( d_OutputVector )
-    //    {
-    //      copyToOutput = false;
-    //      curPhysics = d_OutputVector;
-    //    }
-    //AMP_INSIST( curPhysics->getDOFManager()==d_DOFManager,"The DOF Manager that created the vector must match the one for the map" );
+
+    // Get the DOFs to recv
+    AMP::Discretization::DOFManager::shared_ptr DOF = curPhysics->getDOFManager();
+    std::vector<size_t> dofs(DofsPerObj*d_recvList.size());
+    std::vector<size_t> local_dofs(DofsPerObj);
+    for (size_t i=0; i<d_recvList.size(); i++) {
+        DOF->getDOFs( d_recvList[i], local_dofs );
+        AMP_ASSERT((int)local_dofs.size()==DofsPerObj);
+        for (int j=0; j<DofsPerObj; j++)
+            dofs[j+i*DofsPerObj] = local_dofs[j];
+    }
+
+    // Wait to recieve all data
+    waitForAllRequests();
 
     // Store the DOFs
-    curPhysics->setValuesByGlobalID( d_recvList.size(),  getPtr( d_recvList ), getPtr( d_recvBuffer ) );
+    curPhysics->setValuesByGlobalID( dofs.size(),  getPtr( dofs ), getPtr( d_recvBuffer ) );
 
     // Update ghost cells
     if ( d_callMakeConsistentSet ) 
@@ -176,62 +187,58 @@ void NodeToNodeMap::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr &
 ****************************************************************/
 void NodeToNodeMap::buildSendRecvList( )
 {
-    // First, count the total number of DOFs to send/recv for each processor
+    // First, count the total number of elemnt IDs to send/recv for each processor
     int commSize = d_MapComm.getSize();
     d_count = std::vector<int>(commSize,0);
     d_displ = std::vector<int>(commSize,0);
     for (size_t i=0; i<d_localPairsMesh1.size(); i++) {
         int rank = d_localPairsMesh1[i].second.proc;
-        d_count[rank]+=DofsPerObj;
+        d_count[rank]++;
     }
     for (size_t i=0; i<d_localPairsMesh2.size(); i++) {
         int rank = d_localPairsMesh2[i].second.proc;
-        d_count[rank]+=DofsPerObj;
+        d_count[rank]++;
     }
     d_displ = std::vector<int>(commSize,0);
     for (int i=1; i<commSize; i++)
         d_displ[i] = d_displ[i-1] + d_count[i-1];
     int N_tot = d_displ[commSize-1] + d_count[commSize-1];
     // Create the send/recv lists and remote DOF lists for each processor
-    std::vector< std::vector<size_t> > send_DOFs(commSize);
-    std::vector< std::vector<size_t> > recv_DOFs(commSize);
-    std::vector< std::vector<size_t> > remote_DOFs(commSize);
+    std::vector< std::vector<AMP::Mesh::MeshElementID> > send_elements(commSize);
+    std::vector< std::vector<AMP::Mesh::MeshElementID> > recv_elements(commSize);
+    std::vector< std::vector<AMP::Mesh::MeshElementID> > remote_elements(commSize);
     for (int i=0; i<commSize; i++) {
-        send_DOFs[i].reserve(d_count[i]);
-        recv_DOFs[i].reserve(d_count[i]);
-        remote_DOFs[i].reserve(d_count[i]);
+        send_elements[i].reserve(d_count[i]);
+        recv_elements[i].reserve(d_count[i]);
+        remote_elements[i].reserve(d_count[i]);
     }
     for (size_t i=0; i<d_localPairsMesh1.size(); i++) {
         int rank = d_localPairsMesh1[i].second.proc;
-        for (int j=0; j<DofsPerObj; j++) {
-            send_DOFs[rank].push_back(d_localPairsMesh1[i].first.dof[j]);
-            recv_DOFs[rank].push_back(d_localPairsMesh1[i].first.dof[j]);
-            remote_DOFs[rank].push_back(d_localPairsMesh1[i].second.dof[j]);
-        }
+        send_elements[rank].push_back(d_localPairsMesh1[i].first.id);
+        recv_elements[rank].push_back(d_localPairsMesh1[i].first.id);
+        remote_elements[rank].push_back(d_localPairsMesh1[i].second.id);
     }
     for (size_t i=0; i<d_localPairsMesh2.size(); i++) {
         int rank = d_localPairsMesh2[i].second.proc;
-        for (int j=0; j<DofsPerObj; j++) {
-            send_DOFs[rank].push_back(d_localPairsMesh2[i].first.dof[j]);
-            recv_DOFs[rank].push_back(d_localPairsMesh2[i].first.dof[j]);
-            remote_DOFs[rank].push_back(d_localPairsMesh2[i].second.dof[j]);
-        }
+        send_elements[rank].push_back(d_localPairsMesh2[i].first.id);
+        recv_elements[rank].push_back(d_localPairsMesh2[i].first.id);
+        remote_elements[rank].push_back(d_localPairsMesh2[i].second.id);
     }
-    // Sort the send/recv lists by the sending processor's DOF
+    // Sort the send/recv lists by the sending processor's MeshElementID
     for (int i=0; i<commSize; i++) {
-        AMP::Utilities::quicksort(send_DOFs[i]);
-        AMP::Utilities::quicksort(remote_DOFs[i],recv_DOFs[i]);
+        AMP::Utilities::quicksort(send_elements[i]);
+        AMP::Utilities::quicksort(remote_elements[i],recv_elements[i]);
     }
     // Create the final lists and allocate space for the send/recv
-    d_sendList = std::vector<size_t>(N_tot,-1);
-    d_recvList = std::vector<size_t>(N_tot,-1);
-    d_sendBuffer = std::vector<double>(N_tot,0);
-    d_recvBuffer = std::vector<double>(N_tot,0);
+    d_sendList = std::vector<AMP::Mesh::MeshElementID>(N_tot);
+    d_recvList = std::vector<AMP::Mesh::MeshElementID>(N_tot);
+    d_sendBuffer = std::vector<double>(N_tot*DofsPerObj,0);
+    d_recvBuffer = std::vector<double>(N_tot*DofsPerObj,0);
     for (int i=0; i<commSize; i++) {
         int k = d_displ[i];
-        for (size_t j=0; j<send_DOFs[i].size(); j++) {
-            d_sendList[k+j] = send_DOFs[i][j];
-            d_recvList[k+j] = recv_DOFs[i][j];
+        for (size_t j=0; j<send_elements[i].size(); j++) {
+            d_sendList[k+j] = send_elements[i][j];
+            d_recvList[k+j] = recv_elements[i][j];
         }
     }
 }
@@ -250,9 +257,9 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
     std::vector<Point>  ownedPointsMesh1;
     std::vector<Point>  ownedPointsMesh2;
     if ( d_mesh1.get() != NULL )
-        ownedPointsMesh1 = createOwnedPoints( d_iterator1, d_DOFManager );
+        ownedPointsMesh1 = createOwnedPoints( d_iterator1 );
     if ( d_mesh2.get() != NULL )
-        ownedPointsMesh2 = createOwnedPoints( d_iterator2, d_DOFManager );
+        ownedPointsMesh2 = createOwnedPoints( d_iterator2 );
 
 
     // Send the list of points on mesh1 to all processors
@@ -328,14 +335,12 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
 * Function to create the list of owned points from the  *
 * iterator over the surface nodes                       *
 ********************************************************/
-std::vector<NodeToNodeMap::Point> NodeToNodeMap::createOwnedPoints( 
-    AMP::Mesh::MeshIterator iterator, AMP::Discretization::DOFManager::shared_ptr DOFManager )
+std::vector<NodeToNodeMap::Point> NodeToNodeMap::createOwnedPoints( AMP::Mesh::MeshIterator iterator )
 {
     // Create the list of points for each node
     std::vector<Point> surfacePts(iterator.size());
     AMP::Mesh::MeshIterator cur = iterator.begin();
     int rank = d_MapComm.getRank();
-    std::vector<size_t> dofs(DofsPerObj,-1);
     for (size_t i=0; i<surfacePts.size(); i++) {
         // Get the properties of the current element
         AMP::Mesh::MeshElementID id = cur->globalID();
@@ -345,12 +350,8 @@ std::vector<NodeToNodeMap::Point> NodeToNodeMap::createOwnedPoints(
         // Create the point
         Point temp;
         temp.id = cur->globalID();
-        DOFManager->getDOFs(temp.id,dofs);
-        AMP_INSIST((int)dofs.size()==DofsPerObj,"The specified number of DOFs per object does not match the DOFManager");
         for (int j=0; j<dim; j++)
             temp.pos[j] = pos[j];
-        for (int j=0; j<DofsPerObj; j++)
-            temp.dof[j] = dofs[j];
         temp.proc = rank;
         surfacePts[i] = temp;
         ++cur;
@@ -370,8 +371,6 @@ NodeToNodeMap::Point::Point ()
     proc = -1;
     for ( size_t i=0; i!=3; i++)
       pos[i] = 0.0;
-    for ( size_t i=0; i!=8; i++)
-      dof[i] = static_cast<unsigned int>(-1);
 }
 NodeToNodeMap::Point::Point ( const Point &rhs )
 {
@@ -379,8 +378,6 @@ NodeToNodeMap::Point::Point ( const Point &rhs )
     proc = rhs.proc;
     for ( size_t i=0; i!=3; i++)
       pos[i] = rhs.pos[i];
-    for ( size_t i=0; i!=8; i++)
-      dof[i] = rhs.dof[i];
 }
 
 

@@ -19,7 +19,6 @@ namespace Operator {
       AMP::Mesh::Mesh::shared_ptr   d_Mesh2;
       int                           d_BoundaryID1;
       int                           d_BoundaryID2;
-      AMP::Discretization::DOFManager::shared_ptr  d_DOFManager;
       int                           d_commTag;
       bool                          callMakeConsistentSet;
 
