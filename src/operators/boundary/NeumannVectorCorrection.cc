@@ -125,7 +125,7 @@ namespace Operator {
       NeumannVectorCorrection :: addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhsCorrection)
       {
 
-        AMP::LinearAlgebra::Vector::shared_ptr myRhs = rhsCorrection->subsetVectorForVariable(d_variable);
+        AMP::LinearAlgebra::Vector::shared_ptr myRhs = subsetInputVector( rhsCorrection );
         d_gamma.resize(1);
         d_gamma[0] = 1.0;
 
