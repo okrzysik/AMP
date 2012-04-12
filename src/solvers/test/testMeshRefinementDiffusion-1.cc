@@ -309,7 +309,7 @@ createThermalMaps( boost::shared_ptr<AMP::InputDatabase> input_db,
 
     AMP::Discretization::DOFManager::shared_ptr dof_map = thermalMapVec->getDOFManager();
 
-    mapsColumn = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarZAxisMap> ( manager, dof_map , map_db );
+    mapsColumn = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarZAxisMap> ( manager, map_db );
     mapsColumn->setVector ( thermalMapVec );
 }
 
