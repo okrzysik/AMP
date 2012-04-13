@@ -100,7 +100,7 @@ Mesh_8 {
 }
 
 Mesh_9 {
-  Filename = butterfly_pellet_1x.e"
+  Filename = "butterfly_pellet_1x.e"
     MeshName = "pellet_9"
     x_offset = 0.0
     y_offset = 0.0

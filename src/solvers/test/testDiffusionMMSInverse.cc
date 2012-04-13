@@ -24,6 +24,8 @@
 #include "vectors/PetscVector.h"
 
 #include "operators/boundary/NeumannVectorCorrection.h"
+#include "operators/boundary/DirichletVectorCorrection.h"
+#include "operators/boundary/DirichletVectorCorrectionParameters.h"
 
 #include "operators/diffusion/DiffusionNonlinearElement.h"
 #include "operators/diffusion/DiffusionLinearElement.h"
@@ -68,7 +70,7 @@ void inverseTest1(AMP::UnitTest *ut, const std::string exeName)
 	  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> nonlinearPhysicsModel;
 	  boost::shared_ptr<AMP::Operator::Operator> nlinBVPOperator =
 	    AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-							   "NonlinearBVPOperator",
+							   "FickNonlinearBVPOperator",
 							   input_db,
 							   nonlinearPhysicsModel);
 	  boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nlinBVPOp =
@@ -76,17 +78,27 @@ void inverseTest1(AMP::UnitTest *ut, const std::string exeName)
 	  boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nlinOp =
 			 boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nlinBVPOp->getVolumeOperator());
 
-	  // use the linear BVP operator to create a linear diffusion operator with bc's
+	  // Acquire Dirichlet boundary operator and parameters
+	  boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletOp =
+			  boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(nlinBVPOp->getBoundaryOperator());
+	  //boost::shared_ptr<AMP::Database> dirichlet_db = input_db->getDatabase("FickDirichletVectorCorrection");
+	  //AMP_INSIST(dirichlet_db->getInteger("valuesType")==2, "DirichletVectorCorrection::valuesType must be 2");
+	  //dirichlet_db->putBool("isAttachedToVolumeOperator",false); // OperatorBuilder forces this to be true for some reason.
+	  //boost::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> dirichletParams(
+	  //	  new AMP::Operator::DirichletVectorCorrectionParameters(dirichlet_db));
+	  //boost::shared_ptr<AMP::Operator::OperatorParameters> dirichletOpParams = boost::dynamic_pointer_cast<AMP::Operator::OperatorParameters>(
+      //	  dirichletParams);
+	  //dirichletOp->reset(dirichletOpParams);
+
+	  // Create linear diffusion BVP operator with bc's
 	  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> linearPhysicsModel;
 	  boost::shared_ptr<AMP::Operator::Operator> linBVPOperator =
 	    AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-							   "LinearBVPOperator",
+							   "FickLinearBVPOperator",
 							   input_db,
 							   linearPhysicsModel);
 	  boost::shared_ptr<AMP::Operator::LinearBVPOperator> linBVPOp =
 			  boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(linBVPOperator);
-	  //boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> linOp =
-	 //		 boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(linBVPOp->getVolumeOperator());
 
 	  // Get source mass operator
 	  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> sourcePhysicsModel;
@@ -102,48 +114,93 @@ void inverseTest1(AMP::UnitTest *ut, const std::string exeName)
 	  boost::shared_ptr<AMP::ManufacturedSolution> mfgSolution = densityModel->getManufacturedSolution();
 
 	  // Set up input and output vectors
-	  AMP::LinearAlgebra::Variable::shared_ptr solVar = nlinOp->getOutputVariable();
+	  AMP::LinearAlgebra::Variable::shared_ptr solVar = nlinOp->getInputVariable(nlinOp->getPrincipalVariableId());
 	  AMP::LinearAlgebra::Variable::shared_ptr rhsVar = nlinOp->getOutputVariable();
 	  AMP::LinearAlgebra::Variable::shared_ptr resVar = nlinOp->getOutputVariable();
+	  AMP::LinearAlgebra::Variable::shared_ptr bndVar = nlinOp->getOutputVariable();
 	  AMP::LinearAlgebra::Variable::shared_ptr inpVar = sourceOp->getInputVariable();
-	  AMP::LinearAlgebra::Variable::shared_ptr sourceVar = sourceOp->getOutputVariable();
-	  AMP::LinearAlgebra::Variable::shared_ptr workVar = sourceOp->getOutputVariable();
+	  AMP::LinearAlgebra::Variable::shared_ptr srcVar = sourceOp->getOutputVariable();
+	  AMP::LinearAlgebra::Variable::shared_ptr workVar = sourceOp->createOutputVariable("work");
 
 	  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( solVar );
 	  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector( rhsVar );
 	  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( resVar );
+	  AMP::LinearAlgebra::Vector::shared_ptr bndVec = meshAdapter->createVector( bndVar );
 	  AMP::LinearAlgebra::Vector::shared_ptr inpVec = meshAdapter->createVector( inpVar );
-	  AMP::LinearAlgebra::Vector::shared_ptr sourceVec = meshAdapter->createVector( sourceVar );
+	  AMP::LinearAlgebra::Vector::shared_ptr srcVec = meshAdapter->createVector( srcVar );
 	  AMP::LinearAlgebra::Vector::shared_ptr workVec = meshAdapter->createVector( workVar );
 
-	  rhsVec->setToScalar(0.0);
+	  srcVec->setToScalar(0.);
 
-	  // Fill in manufactured solution
-	  AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator iterator = meshAdapter->beginOwnedNode();
-	  for( ; iterator != meshAdapter->endOwnedNode(); iterator++ ) {
-		double x, y, z;
-		std::valarray<double> poly(10);
-		x = iterator->x();
-		y = iterator->y();
-		z = iterator->z();
-		mfgSolution->evaluate(poly,x,y,z);
-		size_t gid = iterator->globalID();
-		inpVec->setValueByGlobalID(gid, poly[0]);
+	  // Fill in manufactured solution in mesh interior
+	  AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator iterator =
+			meshAdapter->beginOwnedNode();
+	  std::string mfgName = mfgSolution->get_name();
+	  bool isCylindrical = mfgName.find("Cylindrical") < mfgName.size();
+	  for (; iterator != meshAdapter->endOwnedNode(); iterator++) {
+			double x, y, z, r, th = 0.;
+			std::valarray<double> poly(10);
+			x = iterator->x();
+			y = iterator->y();
+			z = iterator->z();
+			if (isCylindrical) {
+				r = sqrt(x * x + y * y);
+				double Pi = 3.1415926535898;
+				if (r > 0) {
+					th = acos(x / r);
+					if (y < 0.) th = 2 * Pi - th;
+				}
+				mfgSolution->evaluate(poly, r, th, z);
+			}
+			else {
+				mfgSolution->evaluate(poly, x, y, z);
+			}
+			size_t gid = iterator->globalID();
+			std::vector<double> srcVal(1), dumT(1), dumU(1), dumB(1);
+			std::vector<Point> point(1, Point(x, y, z));
+			densityModel->getDensityManufactured(srcVal, dumT, dumU, dumB, point);
+			inpVec->setValueByGlobalID(gid, srcVal[0]);
 	  }
 
+	  // Fill in manufactured solution on mesh boundary
+      for (int j=0; j<=8; j++) {
+    	  AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator beg_bnd = meshAdapter->beginOwnedBoundary( j );
+    	  AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator end_bnd = meshAdapter->endOwnedBoundary( j );
+    	  AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator iter;
+    	  for (iter=beg_bnd; iter!=end_bnd; iter++) {
+  			    std::valarray<double> poly(10);
+    	        double x, y, z, r, th=0.;
+    	        x = iter->x();
+    	        y = iter->y();
+    	        z = iter->z();
+    			if (isCylindrical) {
+    				r = sqrt(x * x + y * y);
+    				double Pi = 3.1415926535898;
+    				if (r > 0) {
+    					th = acos(x / r);
+    					if (y < 0.) th = 2 * Pi - th;
+    				}
+    				mfgSolution->evaluate(poly, r, th, z);
+    			} else {
+    				mfgSolution->evaluate(poly, x, y, z);
+    			}
+    	        size_t gid = iter->globalID();
+    			bndVec->setValueByGlobalID(gid, poly[0]);
+    	  }
+      }
+
+	  // Set boundary values for manufactured solution for sinusoid, gaussian, etc. (non constant BC)
+      dirichletOp->setVariable(bndVar);
+      dirichletOp->setDirichletValues(bndVec);
+
 	  // Evaluate manufactured solution as an FE source
-	  sourceOp->apply(rhsVec, inpVec, sourceVec, 1., 0.);
+	  sourceOp->apply(srcVec, inpVec, rhsVec, 1., 0.);
 
 	  // Reset solution vector to initial value and print out norm
 	  solVec->setToScalar(0.1);
 
-	  // Set boundary values for manufactured solution for sinusoid, gaussian, etc. (non constant BC)
-          // Fill this in later ...
-
 	  // Set up initial guess
 	  nlinBVPOp->modifyInitialSolutionVector(solVec);
-	  rhsVec->setToScalar(0.0);
-	  nlinBVPOp->modifyRHSvector(rhsVec);
 
 	  // Set up solver	
 	  boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver");
@@ -212,7 +269,7 @@ void inverseTest1(AMP::UnitTest *ut, const std::string exeName)
 			double val, res, sol, src, err;
 			res = resVec->getValueByGlobalID(gid);
 			sol = solVec->getValueByGlobalID(gid);
-			src = sourceVec->getValueByGlobalID(gid);
+			src = srcVec->getValueByGlobalID(gid);
 			err = res/(src+.5*res + std::numeric_limits<double>::epsilon());
 			std::valarray<double> poly(10);
 			mfgSolution->evaluate(poly,x,y,z);
@@ -250,9 +307,9 @@ void inverseTest1(AMP::UnitTest *ut, const std::string exeName)
 	     tmpVar1->setName("Solution");
 	     meshAdapter->registerVectorAsData ( solVec );
 
-	     tmpVar1 = sourceVec->getVariable();
+	     tmpVar1 = srcVec->getVariable();
 	     tmpVar1->setName("Source");
-	     meshAdapter->registerVectorAsData ( sourceVec );
+	     meshAdapter->registerVectorAsData ( srcVec );
 
 	     tmpVar1 = resVec->getVariable();
 	     tmpVar1->setName("Residual");

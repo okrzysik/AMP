@@ -270,7 +270,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     ut->passes("IDA will not fail a test if there is no IDA.");
 #endif  
   
-  if (ut->NumFailLocal() == 0)
+    if (ut->NumFailLocal() == 0)
     {
       ut->passes("testIDATimeIntegrator successful");
     }

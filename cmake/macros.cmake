@@ -353,7 +353,7 @@ MACRO ( ADD_AMP_EXE_DEP EXEFILE )
     # Add the amp libraries
     TARGET_LINK_LIBRARIES ( ${EXEFILE} ${AMP_LIBS} )
     # Add external libraries
-    TARGET_LINK_LIBRARIES ( ${EXEFILE} ${LIBMESH_LIBS} ${NEK5000_LIBS} ${MOAB_LIBS} ${TRILINOS_LIBS} ${PETSC_LIBS} ${X11_LIBS} ${SILO_LIBS} ${HDF5_LIBS} ${HYPRE_LIBS} )
+    TARGET_LINK_LIBRARIES ( ${EXEFILE} ${LIBMESH_LIBS} ${NEK_LIBS} ${MOAB_LIBS} ${TRILINOS_LIBS} ${PETSC_LIBS} ${X11_LIBS} ${SILO_LIBS} ${HDF5_LIBS} ${HYPRE_LIBS} )
     IF ( ${USE_SUNDIALS} )
        TARGET_LINK_LIBRARIES ( ${EXEFILE} ${SUNDIALS_LIBS} )
     ENDIF  ()
@@ -472,7 +472,6 @@ MACRO ( CHECK_ENABLE_FLAG FLAG DEFAULT )
         SET ( ${FLAG} 1 )
     ELSE()
         MESSAGE ( "Bad value for ${FLAG}; use true or false" )
-        MESSAGE ( ${USE_ORIGEN} )
     ENDIF ()
 ENDMACRO ()
 
@@ -498,6 +497,7 @@ IF (UNIX)
     DartConfiguration.tcl
     Testing
     install_manifest.txt
+    nek
   )
   ADD_CUSTOM_COMMAND(
     DEPENDS clean
@@ -577,13 +577,13 @@ MACRO ( SAVE_CMAKE_FLAGS )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_LIBMESH 1 ) \n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_LIBMESH ) \n" )
     ENDIF()
-    # Add NEK5000
-    IF ( USE_NEK5000 )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add NEK5000\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${NEK5000_INCLUDE} )\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${NEK5000_LIBS} )\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_NEK5000 1 ) \n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_NEK5000 ) \n" )
+    # Add NEK
+    IF ( USE_NEK )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add NEK\n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${NEK_INCLUDE} )\n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${NEK_LIBS} )\n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_NEK 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_NEK ) \n" )
     ENDIF()
     # Add MOAB
     IF ( USE_MOAB )
@@ -680,6 +680,18 @@ MACRO ( SAVE_CMAKE_FLAGS )
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add misc flags\n" )
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} \"-lz\" )\n" )
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "\n" )
+ENDMACRO ()
+
+
+# Add an external subdirectory
+MACRO ( ADD_EXTERNAL_PACKAGE_SUBDIRECTORY SUBDIR_NAME SUBDIR_PATH )
+  VERIFY_PATH ( ${SUBDIR_PATH} )
+  FIND_FILES_PATH ( ${SUBDIR_PATH} )
+  FILE ( GLOB HFILES RELATIVE ${SUBDIR_PATH} ${SUBDIR_PATH}/*.h ${SUBDIR_PATH}/*.hh ${SUBDIR_PATH}/*.I )
+  FOREACH (HFILE ${HFILES})
+    CONFIGURE_FILE ( ${SUBDIR_PATH}/${HFILE} ${AMP_INSTALL_DIR}/include/${CURPACKAGE}/${HFILE} COPYONLY )
+  ENDFOREACH ()
+  ADD_SUBDIRECTORY ( ${SUBDIR_PATH} ${CMAKE_CURRENT_BINARY_DIR}/${SUBDIR_NAME} )
 ENDMACRO ()
 
 

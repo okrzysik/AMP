@@ -39,6 +39,8 @@ INCLUDE (macros)
 #     COPY_MESH_FILE ( mesh_file )
 #
 
+ADD_AMP_PROVISIONAL_TEST(testRemDup)
+
 ADD_AMP_PROVISIONAL_TEST( testRemDup )
 
 COPY_TEST_DATA_FILE ( input_testMatSetValues )
@@ -343,4 +345,16 @@ COPY_MESH_FILE(halden_1_pellet_9mil.e)
 COPY_MESH_FILE(halden_1_clad.e)
 
 
+#NEK-5000 tests
+IF( USE_NEK ) 
+  COPY_TEST_DATA_FILE ( SESSION.NAME )
+  COPY_TEST_DATA_FILE ( input.h5m )
+  COPY_TEST_DATA_FILE ( pipe.rea )
+  ADD_AMP_TEST_1_2_4( testNekPipe )
+ENDIF()
+
+#MOAB tests
+IF( USE_MOAB )
+  ADD_AMP_TEST_1_2_4( testMoabInterface )
+ENDIF()
 
