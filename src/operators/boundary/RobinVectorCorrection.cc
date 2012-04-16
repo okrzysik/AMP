@@ -125,6 +125,16 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
     for (; bnd1 != end_bnd1; ++bnd1)
     {
 
+      boost::shared_ptr < ::FEType > d_feType ( new ::FEType(d_feTypeOrder, d_feFamily) );
+      boost::shared_ptr < ::FEBase > d_fe( (::FEBase::build(2, (*d_feType))).release() );
+      boost::shared_ptr < ::QBase > d_qrule( (::QBase::build(d_qruleType, 2, d_qruleOrder)).release() );
+
+      if(d_qruleOrderName == "DEFAULT") {
+        d_qruleOrder = d_feType->default_quadrature_order();
+      } else {
+        d_qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(d_qruleOrderName);
+      }
+
       d_currNodes = bnd1->getElements(AMP::Mesh::Vertex);
       unsigned int numNodesInCurrElem = d_currNodes.size();
 
@@ -139,6 +149,8 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
       createCurrentLibMeshElement();
 
       getDofIndicesForCurrentElement();
+
+      d_fe->attach_quadrature_rule( d_qrule.get() );
 
       d_phi = &(d_fe->get_phi());
       d_JxW = &(d_fe->get_JxW());

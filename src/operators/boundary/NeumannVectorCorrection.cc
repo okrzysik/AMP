@@ -28,38 +28,15 @@ namespace Operator {
 	      d_params = params;
 
               std::string feTypeOrderName = (params->d_db)->getStringWithDefault("FE_ORDER", "FIRST");
-
-              libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>(feTypeOrderName);
-
               std::string feFamilyName = (params->d_db)->getStringWithDefault("FE_FAMILY", "LAGRANGE");
-
-              libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>(feFamilyName);
-
               std::string qruleTypeName = (params->d_db)->getStringWithDefault("QRULE_TYPE", "QGAUSS");
+              d_qruleOrderName = (params->d_db)->getStringWithDefault("QRULE_ORDER", "DEFAULT");
 
-              libMeshEnums::QuadratureType qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>(qruleTypeName);
+              d_feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>(feTypeOrderName);
+              d_feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>(feFamilyName);
+              d_qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>(qruleTypeName);
 
-              const unsigned int dimension = 2;
 
-              d_feType.reset( new ::FEType(feTypeOrder, feFamily) );
-
-              d_fe.reset( (::FEBase::build(dimension, (*d_feType))).release() );
-
-              std::string qruleOrderName = (params->d_db)->getStringWithDefault("QRULE_ORDER", "DEFAULT");
-
-              libMeshEnums::Order qruleOrder;
-
-              if(qruleOrderName == "DEFAULT") {
-                qruleOrder = d_feType->default_quadrature_order();
-              } else {
-                qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(qruleOrderName);
-              }
-
-              d_qrule.reset( (::QBase::build(qruleType, dimension, qruleOrder)).release() );
-
-              d_fe->attach_quadrature_rule( d_qrule.get() );
-
-              d_JxW = &(d_fe->get_JxW());
 
               d_variable = params->d_variable;
 
@@ -165,19 +142,33 @@ namespace Operator {
               {
                 count++;
 
+                const unsigned int dimension = 2;
+
+                boost::shared_ptr < ::FEType > d_feType ( new ::FEType(d_feTypeOrder, d_feFamily) );
+                boost::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(dimension, (*d_feType))).release() );
+                boost::shared_ptr < ::QBase > d_qrule( (::QBase::build(d_qruleType, dimension, d_qruleOrder)).release() );
+
+                if(d_qruleOrderName == "DEFAULT") {
+                  d_qruleOrder = d_feType->default_quadrature_order();
+                } else {
+                  d_qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(d_qruleOrderName);
+                }
+
                 d_currNodes = bnd->getElements(AMP::Mesh::Vertex);
                 unsigned int numNodesInCurrElem = d_currNodes.size();
 
                 dofIndices.resize(numNodesInCurrElem);
                 for(unsigned int i = 0; i < numNodesInCurrElem ; i++) {
-                    dofManager->getDOFs(d_currNodes[i].globalID(), dofs);
-                    AMP_ASSERT(dofs.size()==1);
-                    dofIndices[i] = dofs[0];
+                  dofManager->getDOFs(d_currNodes[i].globalID(), dofs);
+                  AMP_ASSERT(dofs.size()==1);
+                  dofIndices[i] = dofs[0];
                 }
 
                 createCurrentLibMeshElement();
 
                 getDofIndicesForCurrentElement();
+
+                d_fe->attach_quadrature_rule( d_qrule.get() );
 
                 d_phi = &(d_fe->get_phi());
                 d_JxW = &(d_fe->get_JxW());

@@ -125,12 +125,6 @@ namespace Operator {
 
       const std::vector<Point> *d_normal;
 
-      boost::shared_ptr < ::FEType > d_feType;
-
-      boost::shared_ptr < ::FEBase > d_fe;
-
-      boost::shared_ptr < ::QBase > d_qrule;
-
       boost::shared_ptr<NeumannVectorCorrectionParameters> d_params;
 
       boost::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
@@ -138,6 +132,13 @@ namespace Operator {
       std::vector<double> d_beta;
 
       std::vector<double> d_gamma;
+
+      std::string         d_qruleOrderName; 
+
+      libMeshEnums::Order d_feTypeOrder;
+      libMeshEnums::FEFamily d_feFamily;
+      libMeshEnums::QuadratureType d_qruleType;
+      libMeshEnums::Order d_qruleOrder;
 
       void createCurrentLibMeshElement();
 
@@ -148,7 +149,6 @@ namespace Operator {
       std::vector<AMP::Mesh::MeshElement> d_currNodes;
 
       ::Elem* d_currElemPtr;
-
 
     private :
 
