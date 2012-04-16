@@ -36,8 +36,6 @@ namespace Operator {
               d_feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>(feFamilyName);
               d_qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>(qruleTypeName);
 
-
-
               d_variable = params->d_variable;
 
               reset(params);
@@ -146,13 +144,14 @@ namespace Operator {
 
                 boost::shared_ptr < ::FEType > d_feType ( new ::FEType(d_feTypeOrder, d_feFamily) );
                 boost::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(dimension, (*d_feType))).release() );
-                boost::shared_ptr < ::QBase > d_qrule( (::QBase::build(d_qruleType, dimension, d_qruleOrder)).release() );
 
                 if(d_qruleOrderName == "DEFAULT") {
                   d_qruleOrder = d_feType->default_quadrature_order();
                 } else {
                   d_qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(d_qruleOrderName);
                 }
+                boost::shared_ptr < ::QBase > d_qrule( (::QBase::build(d_qruleType, dimension, d_qruleOrder)).release() );
+
 
                 d_currNodes = bnd->getElements(AMP::Mesh::Vertex);
                 unsigned int numNodesInCurrElem = d_currNodes.size();

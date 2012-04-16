@@ -127,13 +127,14 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
 
       boost::shared_ptr < ::FEType > d_feType ( new ::FEType(d_feTypeOrder, d_feFamily) );
       boost::shared_ptr < ::FEBase > d_fe( (::FEBase::build(2, (*d_feType))).release() );
-      boost::shared_ptr < ::QBase > d_qrule( (::QBase::build(d_qruleType, 2, d_qruleOrder)).release() );
 
       if(d_qruleOrderName == "DEFAULT") {
         d_qruleOrder = d_feType->default_quadrature_order();
       } else {
         d_qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(d_qruleOrderName);
       }
+      boost::shared_ptr < ::QBase > d_qrule( (::QBase::build(d_qruleType, 2, d_qruleOrder)).release() );
+
 
       d_currNodes = bnd1->getElements(AMP::Mesh::Vertex);
       unsigned int numNodesInCurrElem = d_currNodes.size();
