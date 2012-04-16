@@ -102,10 +102,17 @@ namespace AMP {
           @param [in] refTemp Reference temperature
           */
         void setReferenceTemperature(AMP::LinearAlgebra::Vector::shared_ptr refTemp) {
-          d_referenceTemperature = refTemp->subsetVectorForVariable(d_inpVariables->getVariable(Mechanics::TEMPERATURE));
+          AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(Mechanics::TEMPERATURE);
+          if(d_Mesh.get() != NULL) {
+            AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
+            AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = refTemp->select(meshSelector, var->getName());
+            d_referenceTemperature = meshSubsetVec->subsetVectorForVariable(var);
+          } else {
+            d_referenceTemperature = refTemp->subsetVectorForVariable(var);
+          }
           d_referenceTemperature->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
           if(d_useUpdatedLagrangian) {
-            d_inVec_pre[Mechanics::TEMPERATURE]->copyVector(refTemp);
+            d_inVec_pre[Mechanics::TEMPERATURE]->copyVector(d_referenceTemperature);
             d_inVec_pre[Mechanics::TEMPERATURE]->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
           }
         }
@@ -118,7 +125,14 @@ namespace AMP {
           @see MechanicsConstants.h
           */
         void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
-          d_inVec[id] = frozenVec->subsetVectorForVariable(d_inpVariables->getVariable(id));
+          AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(id);
+          if(d_Mesh.get() != NULL) {
+            AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
+            AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = frozenVec->select(meshSelector, var->getName());
+            d_inVec[id] = meshSubsetVec->subsetVectorForVariable(var);
+          } else {
+            d_inVec[id] = frozenVec->subsetVectorForVariable(var);
+          }
           (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
         }
 

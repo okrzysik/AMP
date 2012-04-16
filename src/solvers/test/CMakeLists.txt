@@ -38,6 +38,8 @@ INCLUDE (macros)
 #     COPY_MESH_FILE ( mesh_file )
 #
 
+ADD_AMP_PROVISIONAL_TEST(testNonlinearKrylovAccelerator-NonlinearMechanics-1 )
+
 ADD_AMP_PROVISIONAL_TEST ( testAMG )
 
 ADD_AMP_PROVISIONAL_TEST ( testPelletStackMechanicsSolver )
