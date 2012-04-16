@@ -1,23 +1,21 @@
+
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
+#include "utils/Database.h"
+#include "utils/InputDatabase.h"
+#include "utils/InputManager.h"
+#include "utils/AMP_MPI.h"
+#include "utils/PIO.h"
+
 #include <iostream>
 #include <string>
 
 #include "boost/shared_ptr.hpp"
 
-#include "utils/Database.h"
-#include "utils/InputDatabase.h"
-#include "utils/InputManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/AMPManager.h"
-#include "utils/PIO.h"
-#include "materials/Material.h"
-
-
-#include "ampmesh/MeshVariable.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 #include "ampmesh/SiloIO.h"
-
 
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"
@@ -33,15 +31,10 @@
 #include "operators/ColumnOperator.h"
 #include "operators/OperatorBuilder.h"
 
-#include "../ColumnSolver.h"
-#include "../PetscKrylovSolverParameters.h"
-#include "../PetscKrylovSolver.h"
-#include "../PetscSNESSolverParameters.h"
-#include "../PetscSNESSolver.h"
-
-#include "../TrilinosMLSolver.h"
-
-
+#include "solvers/ColumnSolver.h"
+#include "solvers/PetscKrylovSolver.h"
+#include "solvers/PetscSNESSolver.h"
+#include "solvers/TrilinosMLSolver.h"
 
 void myTest(AMP::UnitTest *ut, std::string exeName)
 {
@@ -51,15 +44,20 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
+#ifdef USE_SILO
+  // Create the silo writer and register the data
+  AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
+#endif
+
   boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "cylinder" );
-
-  //int NumberOfLoadingSteps = input_db->getIntegerWithDefault("NumberOfLoadingSteps", 1);
+  AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
+  boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
+  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+  meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+  AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a nonlinear BVP operator for nonlinear mechanics
@@ -68,9 +66,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsOperator = boost::dynamic_pointer_cast<
     AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-											"testNonlinearMechanicsOperator",
-											input_db,
-											mechanicsMaterialModel));
+          "testNonlinearMechanicsOperator", input_db, mechanicsMaterialModel));
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a nonlinear BVP operator for nonlinear thermal diffusion
@@ -79,9 +75,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator = boost::dynamic_pointer_cast<
     AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-											"testNonlinearThermalOperator",
-											input_db,
-											thermalTransportModel));
+          "testNonlinearThermalOperator",
+          input_db,
+          thermalTransportModel));
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a column operator object for nonlinear thermomechanics
@@ -121,11 +117,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::LinearAlgebra::Vector::shared_ptr thermalNlResVec = resVec->subsetVectorForVariable( thermalVolumeOperator->getOutputVariable() );
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
-  // register some variables for plotting
-  meshAdapter->registerVectorAsData ( mechNlSolVec , "MechanicsSolution");
-  meshAdapter->registerVectorAsData ( thermalNlSolVec, "ThermalSolution" );
-  meshAdapter->registerVectorAsData ( mechNlResVec, "MechanicsResidual" );
-  meshAdapter->registerVectorAsData ( thermalNlResVec, "ThermalResidual" );
+
+#ifdef USE_SILO
+  siloWriter->registerVector(mechNlSolVec, meshAdapter, AMP::Mesh::Vertex, "MechanicsSolution" );
+  siloWriter->registerVector(thermalNlSolVec, meshAdapter, AMP::Mesh::Vertex, "ThermalSolution" );
+#endif
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // IMPORTANT:: call init before proceeding any further on the nonlinear mechanics operator
@@ -138,19 +134,19 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   // now construct the linear BVP operator for mechanics
   AMP_INSIST( input_db->keyExists("testLinearMechanicsOperator"), "key missing!" );
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearMechanicsOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-																	      AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-																							     "testLinearMechanicsOperator",
-																							     input_db,
-																							     mechanicsMaterialModel));
+      AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+        "testLinearMechanicsOperator",
+        input_db,
+        mechanicsMaterialModel));
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // now construct the linear BVP operator for thermal
   AMP_INSIST( input_db->keyExists("testLinearThermalOperator"), "key missing!" );
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-																	    AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-																							   "testLinearThermalOperator",
-																							   input_db,
-																							   thermalTransportModel));
+      AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+        "testLinearThermalOperator",
+        input_db,
+        thermalTransportModel));
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a column operator object for linear thermomechanics
@@ -163,9 +159,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyMechanicsModel;
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletDispInVecOp =
     boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-															 "MechanicsInitialGuess",
-															 input_db,
-															 dummyMechanicsModel));
+          "MechanicsInitialGuess",
+          input_db,
+          dummyMechanicsModel));
   dirichletDispInVecOp->setVariable(mechanicsVolumeOperator->getInputVariable(AMP::Operator::Mechanics::DISPLACEMENT));
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
@@ -173,9 +169,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyThermalModel;
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletThermalInVecOp =
     boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-															 "ThermalInitialGuess",
-															 input_db,
-															 dummyThermalModel));
+          "ThermalInitialGuess",
+          input_db,
+          dummyThermalModel));
   dirichletThermalInVecOp->setVariable(thermalVolumeOperator->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
@@ -277,7 +273,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::pout<<"Maximum W displacement: "<<finalMaxW<<std::endl;
 
 #ifdef USE_SILO
-  manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 1 );
+  siloWriter->writeFile(exeName, 1);
 #endif
 
   if(finalResidualNorm>initialResidualNorm*1.0e-10+1.0e-05) {
@@ -292,31 +288,31 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
 int main(int argc, char *argv[])
 {
-    AMP::AMPManager::startup(argc, argv);
-    AMP::UnitTest ut;
+  AMP::AMPManager::startup(argc, argv);
+  AMP::UnitTest ut;
 
-    std::vector<std::string> exeNames;
-    exeNames.push_back("testPetscSNESSolver-NonlinearThermoMechanics-1");
-    exeNames.push_back("testPetscSNESSolver-NonlinearThermoMechanics-1a");
-    exeNames.push_back("testPetscSNESSolver-NonlinearThermoMechanics-1b");
-    exeNames.push_back("testPetscSNESSolver-NonlinearThermoMechanics-1c");
+  std::vector<std::string> exeNames;
+  exeNames.push_back("testPetscSNESSolver-NonlinearThermoMechanics-1");
+  exeNames.push_back("testPetscSNESSolver-NonlinearThermoMechanics-1a");
+  exeNames.push_back("testPetscSNESSolver-NonlinearThermoMechanics-1b");
+  exeNames.push_back("testPetscSNESSolver-NonlinearThermoMechanics-1c");
 
-    for(unsigned int i = 0; i < exeNames.size(); i++) {
-        try {
-            myTest(&ut, exeNames[i]);
-        } catch (std::exception &err) {
-            std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-            ut.failure("ERROR: While testing");
-        } catch( ... ) {
-            std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-            ut.failure("ERROR: While testing");
-        }
+  for(unsigned int i = 0; i < exeNames.size(); i++) {
+    try {
+      myTest(&ut, exeNames[i]);
+    } catch (std::exception &err) {
+      std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+      ut.failure("ERROR: While testing");
+    } catch( ... ) {
+      std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+      ut.failure("ERROR: While testing");
     }
-   
-    ut.report();
+  }
 
-    int num_failed = ut.NumFailGlobal();
-    AMP::AMPManager::shutdown();
-    return num_failed;
+  ut.report();
+
+  int num_failed = ut.NumFailGlobal();
+  AMP::AMPManager::shutdown();
+  return num_failed;
 }   
 
