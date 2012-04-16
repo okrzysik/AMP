@@ -75,9 +75,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator = boost::dynamic_pointer_cast<
     AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-          "testNonlinearThermalOperator",
-          input_db,
-          thermalTransportModel));
+          "testNonlinearThermalOperator", input_db, thermalTransportModel));
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a column operator object for nonlinear thermomechanics
@@ -90,63 +88,55 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   // initialize the input multi-variable
   boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsVolumeOperator = boost::dynamic_pointer_cast<
     AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsOperator->getVolumeOperator());
-  boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermalVolumeOperator = boost::dynamic_pointer_cast<
-    AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearThermalOperator->getVolumeOperator());
-
-  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputVariable(new AMP::LinearAlgebra::MultiVariable("inputVariable"));
-  inputVariable->add(mechanicsVolumeOperator->getInputVariable(AMP::Operator::Mechanics::DISPLACEMENT));
-  inputVariable->add(mechanicsVolumeOperator->getInputVariable(AMP::Operator::Mechanics::TEMPERATURE));
 
   // initialize the output multi-variable
-  AMP::LinearAlgebra::Variable::shared_ptr outputVariable = nonlinearThermoMechanicsOperator->getOutputVariable();
+  AMP::LinearAlgebra::Variable::shared_ptr displacementVar = nonlinearMechanicsOperator->getOutputVariable();
+  AMP::LinearAlgebra::Variable::shared_ptr temperatureVar = nonlinearThermalOperator->getOutputVariable();
+
+  AMP::Discretization::DOFManager::shared_ptr vectorDofMap = AMP::Discretization::simpleDOFManager::create(
+      meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
+
+  AMP::Discretization::DOFManager::shared_ptr scalarDofMap = AMP::Discretization::simpleDOFManager::create(
+      meshAdapter, AMP::Mesh::Vertex, 1, 1, true); 
 
   // create solution, rhs, and residual vectors
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( inputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector( outputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( outputVariable );
-
-  // create the following shared pointers for ease of use
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+  AMP::LinearAlgebra::Vector::shared_ptr displacementVec = AMP::LinearAlgebra::createVector(vectorDofMap, displacementVar, true);
+  AMP::LinearAlgebra::Vector::shared_ptr temperatureVec = AMP::LinearAlgebra::createVector(scalarDofMap, temperatureVar, true);
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::MultiVector::create("multiVector", globalComm);
+  boost::shared_ptr<AMP::LinearAlgebra::MultiVector> multiVec = boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(solVec);
+  multiVec->addVector(displacementVec);
+  multiVec->addVector(temperatureVec);
 
-  AMP::LinearAlgebra::Vector::shared_ptr mechNlSolVec = solVec->subsetVectorForVariable( mechanicsVolumeOperator->getInputVariable(AMP::Operator::Mechanics::DISPLACEMENT) );
-  //AMP::LinearAlgebra::Vector::shared_ptr mechNlRhsVec = rhsVec->subsetVectorForVariable( mechanicsVolumeOperator->getOutputVariable() );
-  AMP::LinearAlgebra::Vector::shared_ptr mechNlResVec = resVec->subsetVectorForVariable( mechanicsVolumeOperator->getOutputVariable() );
-
-  AMP::LinearAlgebra::Vector::shared_ptr thermalNlSolVec = solVec->subsetVectorForVariable( thermalVolumeOperator->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE) );
-  //AMP::LinearAlgebra::Vector::shared_ptr thermalNlRhsVec = rhsVec->subsetVectorForVariable( thermalVolumeOperator->getOutputVariable() );
-  AMP::LinearAlgebra::Vector::shared_ptr thermalNlResVec = resVec->subsetVectorForVariable( thermalVolumeOperator->getOutputVariable() );
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = solVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
 
 #ifdef USE_SILO
-  siloWriter->registerVector(mechNlSolVec, meshAdapter, AMP::Mesh::Vertex, "MechanicsSolution" );
-  siloWriter->registerVector(thermalNlSolVec, meshAdapter, AMP::Mesh::Vertex, "ThermalSolution" );
+  siloWriter->registerVector(displacementVec, meshAdapter, AMP::Mesh::Vertex, "MechanicsSolution" );
+  siloWriter->registerVector(temperatureVec, meshAdapter, AMP::Mesh::Vertex, "ThermalSolution" );
 #endif
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // IMPORTANT:: call init before proceeding any further on the nonlinear mechanics operator
-  AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = meshAdapter->createVector( thermalVolumeOperator->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE) );
+  AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = temperatureVec->cloneVector();
   referenceTemperatureVec->setToScalar(300.0);
   mechanicsVolumeOperator->setReferenceTemperature(referenceTemperatureVec);
-  mechanicsVolumeOperator->init();
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // now construct the linear BVP operator for mechanics
   AMP_INSIST( input_db->keyExists("testLinearMechanicsOperator"), "key missing!" );
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearMechanicsOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
       AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-        "testLinearMechanicsOperator",
-        input_db,
-        mechanicsMaterialModel));
+        "testLinearMechanicsOperator", input_db, mechanicsMaterialModel));
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // now construct the linear BVP operator for thermal
   AMP_INSIST( input_db->keyExists("testLinearThermalOperator"), "key missing!" );
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
       AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-        "testLinearThermalOperator",
-        input_db,
-        thermalTransportModel));
+        "testLinearThermalOperator", input_db, thermalTransportModel));
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a column operator object for linear thermomechanics
@@ -159,26 +149,22 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyMechanicsModel;
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletDispInVecOp =
     boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-          "MechanicsInitialGuess",
-          input_db,
-          dummyMechanicsModel));
-  dirichletDispInVecOp->setVariable(mechanicsVolumeOperator->getInputVariable(AMP::Operator::Mechanics::DISPLACEMENT));
+          "MechanicsInitialGuess", input_db, dummyMechanicsModel));
+  dirichletDispInVecOp->setVariable(displacementVar);
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   //Initial-Guess for thermal
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyThermalModel;
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletThermalInVecOp =
     boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-          "ThermalInitialGuess",
-          input_db,
-          dummyThermalModel));
-  dirichletThermalInVecOp->setVariable(thermalVolumeOperator->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
+          "ThermalInitialGuess", input_db, dummyThermalModel));
+  dirichletThermalInVecOp->setVariable(temperatureVar);
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   //Random initial guess
   solVec->setToScalar(0.0);
   const double referenceTemperature=301.0;
-  thermalNlSolVec->addScalar(thermalNlSolVec, referenceTemperature);
+  temperatureVec->addScalar(temperatureVec, referenceTemperature);
 
   //Initial guess for mechanics must satisfy the displacement boundary conditions
   dirichletDispInVecOp->apply(nullVec, nullVec, solVec, 1.0, 0.0);
@@ -260,9 +246,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   std::cout<<"Final Residual Norm: "<<finalResidualNorm<<std::endl;
 
-  AMP::LinearAlgebra::Vector::shared_ptr mechUvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride("U", 0, 3) , "U" );
-  AMP::LinearAlgebra::Vector::shared_ptr mechVvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride("V", 1, 3) , "V" );
-  AMP::LinearAlgebra::Vector::shared_ptr mechWvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride("W", 2, 3) , "W" );
+  AMP::LinearAlgebra::Vector::shared_ptr mechUvec = displacementVec->select( AMP::LinearAlgebra::VS_Stride("U", 0, 3) , "U" );
+  AMP::LinearAlgebra::Vector::shared_ptr mechVvec = displacementVec->select( AMP::LinearAlgebra::VS_Stride("V", 1, 3) , "V" );
+  AMP::LinearAlgebra::Vector::shared_ptr mechWvec = displacementVec->select( AMP::LinearAlgebra::VS_Stride("W", 2, 3) , "W" );
 
   double finalMaxU = mechUvec->maxNorm();
   double finalMaxV = mechVvec->maxNorm();
