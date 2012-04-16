@@ -119,6 +119,35 @@ std::vector<size_t> DOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) 
 }
 
 
+/****************************************************************
+* Compare two DOFManagers                                       *
+****************************************************************/
+bool DOFManager::operator==( const DOFManager &rhs ) const
+{
+    if ( this == &rhs ) {
+        // We are pointing to the same object, it must be ==
+        return true;
+    }    
+    if ( this->d_comm.compare(rhs.d_comm)==0 ) {
+        // The comms do not match, the objects cannot be ==
+        return false;
+    }
+    if ( this->numGlobalDOF()!=rhs.numGlobalDOF() || this->beginDOF()!=rhs.beginDOF() || this->endDOF()!=rhs.endDOF() ) {
+        // The DOFs do not match, the objects cannot be ==
+        return false;
+    }    
+    if ( this->getIterator()!=rhs.getIterator() ) {
+        // The iterators do not match, the objects cannot be ==
+        return false;
+    }
+    return true;
+}
+bool DOFManager::operator!=( const DOFManager &rhs ) const
+{
+    return !(this->operator==(rhs));
+}
+
+
 
 /****************************************************************
 * Subset the DOF manager                                        *

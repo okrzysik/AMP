@@ -40,7 +40,21 @@ public:
      */
     DOFManager( size_t N_local, AMP_MPI comm );
 
-    
+
+    /** \brief  Compares two DOFManager for equality.
+      * \details This operation compares two DOF managers to see if they are equivalent
+      * \param  rhs     DOFManager to compare 
+      */
+    virtual bool operator == ( const DOFManager & rhs ) const;
+
+
+    /** \brief  Inverse of ==
+      * \details This function performs an equality check and negates it.  Hence, it is not virtual
+      * \param  rhs     DOFManager to compare
+      */
+    bool operator != ( const DOFManager & rhs ) const;
+
+
     /** \brief Get the entry indices of DOFs given a mesh element ID
      * \details  This will return a vector of pointers into a Vector that are associated with which.
      * \param[in]  id       The element ID to collect nodal objects for.  Note: the mesh element may be any type (include a vertex).

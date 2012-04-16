@@ -134,7 +134,21 @@ bool MultiVectorIterator::operator==(const MeshIterator& rhs)
         AMP_ERROR("Error, comparing a MultiVectorIterator iterator to an unknown iterator");
     }
     if ( rhs2 != NULL ) {
-        return d_elements.get()==rhs2->d_elements.get() && d_pos==rhs2->d_pos;
+        // Check that we are at the same position
+        if ( d_pos!=rhs2->d_pos )
+            return false;
+        // Check if we both arrays are the same memory address
+        if ( d_elements.get()==rhs2->d_elements.get() )
+            return true;
+        // If we are dealing with different arrays, check that the are the same size and values
+        if ( d_elements->size()!=rhs2->d_elements->size() )
+            return false;
+        bool elements_match = true;
+        for (size_t i=0; i<d_elements->size(); i++) {
+            if ( d_elements->operator[](i) != d_elements->operator[](i) )
+                elements_match = false;
+        }
+        return elements_match;
     }
     return false;
 }

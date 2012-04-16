@@ -105,6 +105,14 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   }
 
   AMP::Discretization::DOFManager::shared_ptr dofManager = rInternal->getDOFManager();
+  if(d_robinPhysicsModel.get() != NULL) {
+    for(unsigned int m = 0; m < elementInputVec.size(); m++)
+      AMP_ASSERT(*dofManager==*(elementInputVec[m]->getDOFManager()));
+  }
+  AMP_ASSERT(*dofManager==*(uInternal->getDOFManager()));
+  AMP_ASSERT(*dofManager==*(rInternal->getDOFManager()));
+  if ( d_variableFlux.get()!=NULL)
+    AMP_ASSERT(*dofManager==*(d_variableFlux->getDOFManager()));
 
   unsigned int numIds = d_boundaryIds.size();
   std::vector<size_t> dofIndices, dofs;
