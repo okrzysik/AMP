@@ -1,13 +1,9 @@
 
 Mesh{
-    FileName = "PlateWithHole-SimoExact-1.e"
-    MeshName = "brick"
     MeshType = "libMesh"
-    dim      = 3
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 1994
+    dim = 3
+    MeshName = "TestMesh"
+    FileName = "PlateWithHole-SimoExact-1.e"
 }
 
 NumberOfLoadingSteps = 50
@@ -214,11 +210,11 @@ NonlinearSolver{
     maximumFunctionEvals = 1000
     usesJacobian=TRUE
 
-    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ls_alpha 0.001"
+    SNESOptions = "-snes_monitor -snes_type ls -snes_ksp_ew -snes_converged_reason -snes_ls_alpha 0.001"
 
     LinearSolver{
       print_info_level = 1
-        max_iterations = 10
+        max_iterations = 100
         max_error = 1e-10
         ksp_type = "fgmres"
         absolute_tolerance = 1.0e-15

@@ -1,13 +1,9 @@
 
 Mesh{
-    FileName = "brick.e"
-    MeshName = "brick"
     MeshType = "libMesh"
-    dim      = 3
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 1088
+    dim = 3
+    MeshName = "TestMesh"
+    FileName = "brick.e"
 }
 
 NumberOfLoadingSteps = 50
@@ -177,7 +173,7 @@ NonlinearSolver{
     maximumFunctionEvals = 1000
     usesJacobian=TRUE
 
-    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ls_alpha 0.001"
+    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ls_alpha 0.001"
 
     LinearSolver{
       print_info_level = 1
