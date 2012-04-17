@@ -57,8 +57,6 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName,
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(globalComm));
-
   const unsigned int mesh_dim = 3;
   boost::shared_ptr< ::Mesh > mesh(new ::Mesh(mesh_dim));
 
@@ -183,6 +181,9 @@ int main(int argc, char *argv[])
   AMP::AMPManager::startup(argc, argv);
   AMP::UnitTest ut;
 
+  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new 
+      AMP::Mesh::initializeLibMesh(AMP::AMP_MPI(AMP_COMM_WORLD)));
+
   std::vector<std::string> exeNames;
 
   if(argc == 1) {
@@ -226,8 +227,10 @@ int main(int argc, char *argv[])
   } //end for i
 
   ut.report();
-
   int num_failed = ut.NumFailGlobal();
+
+  libmeshInit.reset();
+
   AMP::AMPManager::shutdown();
   return num_failed;
 
