@@ -159,15 +159,15 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   rhsVec->copyVector(PowerInWattsVec);
 
-  AMP::pout << "RHS L2 norm before corrections = " << (rhsVec->L2Norm()) <<"\n";
-  AMP::pout << "RHS max before corrections = " << (rhsVec->max()) <<"\n";
-  AMP::pout << "RHS min before corrections = " << (rhsVec->min()) <<"\n";
+  AMP::pout << "RHS L2 norm before corrections = " << std::setprecision(10) << (rhsVec->L2Norm()) <<"\n";
+  AMP::pout << "RHS max before corrections = " << std::setprecision(10)<< (rhsVec->max()) <<"\n";
+  AMP::pout << "RHS min before corrections = " << std::setprecision(10)<< (rhsVec->min()) <<"\n";
 
   nonlinearThermalOperator->modifyRHSvector(rhsVec);
 
-  AMP::pout << "RHS L2 norm after corrections = " << (rhsVec->L2Norm()) <<"\n";
-  AMP::pout << "RHS max after corrections = " << (rhsVec->max()) <<"\n";
-  AMP::pout << "RHS min after corrections = " << (rhsVec->min()) <<"\n";
+  AMP::pout << "RHS L2 norm after corrections = " << std::setprecision(10) << (rhsVec->L2Norm()) <<"\n";
+  AMP::pout << "RHS max after corrections = " << std::setprecision(10) << (rhsVec->max()) <<"\n";
+  AMP::pout << "RHS min after corrections = " << std::setprecision(10) << (rhsVec->min()) <<"\n";
 
   //---------------------------------------------------------------------------------------------//
   //Initial guess
@@ -237,17 +237,17 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   if( !AMP::Utilities::approx_equal( expectedVal, solVec->L2Norm(), 1e-5) ) {
         ut->failure("the Final Solution Norm has changed."); }
 
-  AMP::pout<<" Solution Max: "<< (solVec->max()) <<std::endl;
-  AMP::pout<<" Solution Min: "<< (solVec->min()) <<std::endl;
-  AMP::pout<<" Solution L1 Norm: "<< (solVec->L1Norm()) <<std::endl;
-  AMP::pout<<" Solution L2 Norm: "<< (solVec->L2Norm()) <<std::endl;
+  AMP::pout<<" Solution Max: "<< std::setprecision(10) << (solVec->max()) <<std::endl;
+  AMP::pout<<" Solution Min: "<< std::setprecision(10) <<(solVec->min()) <<std::endl;
+  AMP::pout<<" Solution L1 Norm: "<< std::setprecision(10) <<(solVec->L1Norm()) <<std::endl;
+  AMP::pout<<" Solution L2 Norm: "<< std::setprecision(10) <<(solVec->L2Norm()) <<std::endl;
 
   nonlinearThermalOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
 
   double finalResidualNorm  = resVec->L2Norm();
-  AMP::pout<<"Final Residual Norm: "<< finalResidualNorm <<std::endl;
+  AMP::pout<<"Final Residual Norm: "<< std::setprecision(10) <<finalResidualNorm <<std::endl;
 
-  std::cout<<"Final Residual Norm: "<<finalResidualNorm<<std::endl;
+  std::cout<<"Final Residual Norm: "<< std::setprecision(10) <<finalResidualNorm<<std::endl;
   expectedVal = 2.51806e-10 ;
   if( !AMP::Utilities::approx_equal( expectedVal, finalResidualNorm, 10) ) {
         ut->failure("the Final Residual Norm has changed."); }
