@@ -119,7 +119,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 #endif
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
-  // IMPORTANT:: call init before proceeding any further on the nonlinear mechanics operator
   AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = temperatureVec->cloneVector();
   referenceTemperatureVec->setToScalar(300.0);
   mechanicsVolumeOperator->setReferenceTemperature(referenceTemperatureVec);
