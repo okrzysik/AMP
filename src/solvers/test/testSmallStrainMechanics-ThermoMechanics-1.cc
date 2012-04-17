@@ -1,10 +1,17 @@
+
 #include "utils/AMPManager.h"
-#include "utils/InputManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "ampmesh/MeshVariable.h"
+#include "utils/Database.h"
+#include "utils/InputDatabase.h"
+#include "utils/InputManager.h"
+#include "utils/AMP_MPI.h"
+#include "utils/PIO.h"
+
 #include "vectors/Vector.h"
 #include "vectors/VectorSelector.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 #include "ampmesh/SiloIO.h"
 
 #include "operators/mechanics/ThermalStrainMaterialModel.h"
@@ -28,115 +35,77 @@
 #include "ReadTestMesh.h"
 #include "mesh_communication.h"
 
-
 #include <iostream>
 #include <string>
 
 #include "boost/shared_ptr.hpp"
 
-void deformMesh(AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter,
-    AMP::LinearAlgebra::Vector::shared_ptr mechSolVec) {
-  AMP::Mesh::DOFMap::shared_ptr dof_map = meshAdapter->getDOFMap(mechSolVec->getVariable());
-
-  AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator nd  = meshAdapter->beginOwnedNode();
-  AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator end_nd   = meshAdapter->endOwnedNode();
-
-  std::vector <unsigned int> dofIds(3);
-  dofIds[0] = 0; dofIds[1] = 1; dofIds[2] = 2;
-
-  for( ; nd != end_nd; ++nd) {
-    std::vector<unsigned int> ndGlobalIds;
-    dof_map->getDOFs(*nd, ndGlobalIds, dofIds);
-
-    double xDisp = mechSolVec->getValueByGlobalID(ndGlobalIds[0]);
-    double yDisp = mechSolVec->getValueByGlobalID(ndGlobalIds[1]);
-    double zDisp = mechSolVec->getValueByGlobalID(ndGlobalIds[2]);
-
-    nd->translate(xDisp, yDisp, zDisp);
-  }//end for nd
-}
-
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
-  //std::string output_file = "output_" + exeName + ".txt";
   std::string log_file = "log_" + exeName;
 
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
+
+#ifdef USE_SILO
+  // Create the silo writer and register the data
+  AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
+#endif
 
   //Read the input file
   boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter;
-  meshAdapter = manager->getMesh ( "cylinder" );
-  //meshAdapter = manager->getMesh ( "pellet" );
-  //meshAdapter = manager->getMesh ( "brick" );
-  
-/*  std::string mesh_file = input_db->getString("mesh_file");
-  const unsigned int mesh_dim = 3;
-  boost::shared_ptr< ::Mesh > mesh(new ::Mesh(mesh_dim));
-  AMP::readTestMesh(mesh_file, mesh);
-  MeshCommunication().broadcast(*(mesh.get()));
-  mesh->prepare_for_use(false);
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter ( new AMP::Mesh::MeshManager::Adapter (mesh) );
-  manager->addMesh(meshAdapter, "cook");
-*/
+  AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
+  boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
+  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+  meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+  AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
+
   AMP_INSIST(input_db->keyExists("NumberOfLoadingSteps"), "Key ''NumberOfLoadingSteps'' is missing!");
   int NumberOfLoadingSteps = input_db->getInteger("NumberOfLoadingSteps");
   AMP::pout<<"NumberOfLoadingSteps = "<<NumberOfLoadingSteps<<std::endl;
 
-/*  AMP_INSIST(input_db->keyExists("OutputFileName"), "Key ''OutputFileName'' is missing!");
-  std::string outFileName = input_db->getString("OutputFileName");
-
-  FILE* fp; 
-  fp = fopen(outFileName.c_str(), "w");
-  fprintf(fp, "clc; \n clear; \n A = zeros(24, 24); \n \n");
-*/
   //Create a nonlinear BVP operator for mechanics
   AMP_INSIST( input_db->keyExists("NonlinearMechanicsOperator"), "key missing!" );
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsBVPoperator = boost::dynamic_pointer_cast<
-  AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-										      "NonlinearMechanicsOperator",
-										      input_db,
-										      mechanicsMaterialModel));
-  
-  //(boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->getVolumeOperator()))->init();
-  
-  AMP::pout<<"Created the NonlinearMechanicsOperator."<<std::endl;
+    AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+          "NonlinearMechanicsOperator", input_db, mechanicsMaterialModel));
 
   //Create the variables
   boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsNonlinearVolumeOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
         nonlinearMechanicsBVPoperator->getVolumeOperator());
-  AMP::LinearAlgebra::Variable::shared_ptr dispVar = mechanicsNonlinearVolumeOperator->getInputVariable(AMP::Operator::Mechanics::DISPLACEMENT);
-  AMP::LinearAlgebra::Variable::shared_ptr tempVar = mechanicsNonlinearVolumeOperator->getInputVariable(AMP::Operator::Mechanics::TEMPERATURE);
-  AMP::LinearAlgebra::Variable::shared_ptr burnVar = mechanicsNonlinearVolumeOperator->getInputVariable(AMP::Operator::Mechanics::BURNUP);
-  AMP::LinearAlgebra::Variable::shared_ptr lhgrVar = mechanicsNonlinearVolumeOperator->getInputVariable(AMP::Operator::Mechanics::LHGR);
+  AMP::LinearAlgebra::Variable::shared_ptr dispVar = nonlinearMechanicsBVPoperator->getOutputVariable();
+  AMP::LinearAlgebra::Variable::shared_ptr tempVar(new AMP::LinearAlgebra::Variable("Temperature"));
+  AMP::LinearAlgebra::Variable::shared_ptr burnVar(new AMP::LinearAlgebra::Variable("Burnup"));
+  AMP::LinearAlgebra::Variable::shared_ptr lhgrVar(new AMP::LinearAlgebra::Variable("LHGR"));
 
   //For RHS (Point Forces)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletLoadVecOp =
     boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-															 "Load_Boundary",
-															 input_db,
-															 dummyModel));
+          "Load_Boundary", input_db, dummyModel));
   dirichletLoadVecOp->setVariable(dispVar);
+
+  AMP::Discretization::DOFManager::shared_ptr vectorDofMap = AMP::Discretization::simpleDOFManager::create(
+      meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
+
+  AMP::Discretization::DOFManager::shared_ptr scalarDofMap = AMP::Discretization::simpleDOFManager::create(
+      meshAdapter, AMP::Mesh::Vertex, 1, 1, true); 
 
   //Create the vectors
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( dispVar );
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector( dispVar );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( dispVar );
-  AMP::LinearAlgebra::Vector::shared_ptr scaledRhsVec = meshAdapter->createVector( dispVar );
-  AMP::LinearAlgebra::Vector::shared_ptr tempVecRef = meshAdapter->createVector( tempVar );
-  AMP::LinearAlgebra::Vector::shared_ptr tempVec = meshAdapter->createVector( tempVar );
-  AMP::LinearAlgebra::Vector::shared_ptr burnVec = meshAdapter->createVector( burnVar );
-  AMP::LinearAlgebra::Vector::shared_ptr lhgrVec = meshAdapter->createVector( lhgrVar );
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector(vectorDofMap, dispVar, true);
+  AMP::LinearAlgebra::Vector::shared_ptr tempVec = AMP::LinearAlgebra::createVector(scalarDofMap, tempVar, true);
+  AMP::LinearAlgebra::Vector::shared_ptr burnVec = AMP::LinearAlgebra::createVector(scalarDofMap, burnVar, true);
+  AMP::LinearAlgebra::Vector::shared_ptr lhgrVec = AMP::LinearAlgebra::createVector(scalarDofMap, lhgrVar, true);
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = solVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr scaledRhsVec = solVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr tempVecRef = tempVec->cloneVector();
 
   //Initial guess
   solVec->zero();
@@ -147,12 +116,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   dirichletLoadVecOp->apply(nullVec, nullVec, rhsVec, 1.0, 0.0);
   nonlinearMechanicsBVPoperator->modifyRHSvector(rhsVec);
 
-  //Adding the Temperature and Burnup
   tempVecRef->setToScalar(301.0);
   tempVec->setToScalar(301.0);
-  //burnVec->setToScalar(0.1);
-  //lhgrVec->setToScalar(0.6);
-  
+
   burnVec->setRandomValues();
   burnVec->abs(burnVec);
   double maxBurnVec = burnVec->max();
@@ -173,16 +139,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   mechanicsNonlinearVolumeOperator->setVector(AMP::Operator::Mechanics::TEMPERATURE, tempVec);
   mechanicsNonlinearVolumeOperator->setVector(AMP::Operator::Mechanics::BURNUP, burnVec);
   mechanicsNonlinearVolumeOperator->setVector(AMP::Operator::Mechanics::LHGR, lhgrVec);
-  AMP::pout<<"About to call the init."<<std::endl;
-  mechanicsNonlinearVolumeOperator->init();
 
   //Create a Linear BVP operator for mechanics
   AMP_INSIST( input_db->keyExists("LinearMechanicsOperator"), "key missing!" );
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearMechanicsBVPoperator = boost::dynamic_pointer_cast<
-  AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-										   "LinearMechanicsOperator",
-										   input_db,
-										   mechanicsMaterialModel));
+    AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+          "LinearMechanicsOperator",
+          input_db,
+          mechanicsMaterialModel));
 
   AMP::pout<<"Created the linearMechanicsOperator."<<std::endl;
 
@@ -236,13 +200,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     double finalTemperature = 301.0 + (((double)(step + 1)) * 100.0);
     tempVec->setToScalar(finalTemperature);
 
-    //double finalBurnup = (((double)step) + 1.0) * 1.0;
-    //double finalBurnup = ((double)(step + 1)) * 1.0;
-    //burnVec->setToScalar(finalBurnup);
-
-    //double finalLHGR = 35.5;
-    //lhgrVec->setToScalar(finalLHGR);
-
     double scaleValue  = ((double)step+1.0)/NumberOfLoadingSteps;
     scaledRhsVec->scale(scaleValue, rhsVec);
     AMP::pout << "L2 Norm of RHS at loading step " << (step+1) << " is " << scaledRhsVec->L2Norm() << std::endl;
@@ -285,77 +242,52 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     (nonlinearMechanicsBVPoperator->getVolumeOperator())->reset(tmpParams);
     nonlinearSolver->setZeroInitialGuess(false);
 
-    //std::cout<<solVec<<std::endl;
-
-/*    boost::shared_ptr<AMP::LinearAlgebra::Matrix> mechMat = linearMechanicsBVPoperator->getMatrix();
-
-    for(int i = 0; i < 24; i++) {
-      std::vector<unsigned int> matCols;
-      std::vector<double> matVals;
-      mechMat->getRowByGlobalID(i, matCols, matVals);
-      for(unsigned int j = 0; j < matCols.size(); j++) {
-        fprintf(fp, "A(%d, %d) = %.15lf ; \n", (i + 1), (matCols[j] + 1), matVals[j]);
-      }//end for j
-      fprintf(fp, "\n");
-    }//end for i
-*/
-/*    char num1[256];
-    sprintf(num1,"%d",step);
-    std::string number1 = num1;
-    std::string fname = exeName + "_Stress_Strain_" + number1 + ".txt";
-    
-    boost::dynamic_pointer_cast<AMP::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->getVolumeOperator())->printStressAndStrain(solVec, fname);
-*/    
   }
 
   AMP::pout<<"epsilon = "<<epsilon<<std::endl;
 
-  //mechanicsNonlinearVolumeOperator->printStressAndStrain(solVec, output_file);
+#ifdef USE_SILO
+  siloWriter->registerVector(solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
+  siloWriter->registerVector(burnVec, meshAdapter, AMP::Mesh::Vertex, "InitialDamageThreshold" );
+  siloWriter->registerVector(lhgrVec, meshAdapter, AMP::Mesh::Vertex, "CriticalDamageThreshold");
+  char outFileName1[256];
+  sprintf(outFileName1, "undeformedMesh_SS_3");
+  siloWriter->writeFile(outFileName1, 1);
+  meshAdapter->displaceMesh(solVec);
+  char outFileName2[256];
+  sprintf(outFileName2, "deformedMesh_SS_3");
+  siloWriter->writeFile(outFileName2, 1);
+#endif
 
   ut->passes(exeName);
-
-#ifdef USE_SILO
-  int exampleNum = 3;
-  manager->registerVectorAsData ( solVec , "Solution_Vector" );
-  manager->registerVectorAsData ( resVec , "Residual_Vector" );
-  manager->registerVectorAsData ( burnVec, "InitialDamageThreshold" );
-  manager->registerVectorAsData ( lhgrVec, "CriticalDamageThreshold");
-  char outFileName1[256];
-  sprintf(outFileName1, "undeformedMesh_SS_%d", exampleNum);
-  manager->writeFile<AMP::Mesh::SiloIO>(outFileName1, 1);
-  deformMesh(meshAdapter, solVec);
-  char outFileName2[256];
-  sprintf(outFileName2, "deformedMesh_SS_%d", exampleNum);
-  manager->writeFile<AMP::Mesh::SiloIO>(outFileName2, 1);
-#endif
 
 }
 
 int main(int argc, char *argv[])
 {
-    AMP::AMPManager::startup(argc, argv);
-    AMP::UnitTest ut;
+  AMP::AMPManager::startup(argc, argv);
+  AMP::UnitTest ut;
 
-    std::vector<std::string> exeNames;
-    exeNames.push_back("testSmallStrainMechanics-ThermoMechanics-1");
+  std::vector<std::string> exeNames;
+  exeNames.push_back("testSmallStrainMechanics-ThermoMechanics-1");
 
-    for(size_t i = 0; i < exeNames.size(); i++) {
-        try {
-            myTest(&ut, exeNames[i]);
-        } catch (std::exception &err) {
-            std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-            ut.failure("ERROR: While testing");
-        } catch( ... ) {
-            std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-            ut.failure("ERROR: While testing");
-        }
+  for(size_t i = 0; i < exeNames.size(); i++) {
+    try {
+      myTest(&ut, exeNames[i]);
+    } catch (std::exception &err) {
+      std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+      ut.failure("ERROR: While testing");
+    } catch( ... ) {
+      std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+      ut.failure("ERROR: While testing");
     }
+  }
 
-    ut.report();
+  ut.report();
 
-    int num_failed = ut.NumFailGlobal();
-    AMP::AMPManager::shutdown();
-    return num_failed;
+  int num_failed = ut.NumFailGlobal();
+  AMP::AMPManager::shutdown();
+  return num_failed;
 }   
 
 
