@@ -231,6 +231,8 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
         }//end for qp
       }//coupled
 
+      destroyCurrentLibMeshElement();
+
     }//end for bnd
   }//end for nid
 

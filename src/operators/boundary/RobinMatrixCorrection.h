@@ -109,8 +109,13 @@ namespace Operator {
     
     boost::shared_ptr < ::QBase > d_qrule;
     
-    const ::Elem *d_elem;
-    
+    std::string         d_qruleOrderName; 
+
+    libMeshEnums::Order d_feTypeOrder;
+    libMeshEnums::FEFamily d_feFamily;
+    libMeshEnums::QuadratureType d_qruleType;
+    libMeshEnums::Order d_qruleOrder;
+
     AMP::LinearAlgebra::Vector::shared_ptr d_Frozen;
     
     boost::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
