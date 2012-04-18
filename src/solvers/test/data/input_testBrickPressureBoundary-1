@@ -4,10 +4,6 @@ Mesh{
     MeshName = "brick"
     MeshType = "libMesh"
     dim      = 3
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 1088
 }
 
 NumberOfLoadingSteps = 10
@@ -68,7 +64,7 @@ Pressure_Boundary {
     number_of_ids = 1
     constant_pressure = TRUE
     id_0 = 101
-    value_0 = 2.0e7
+    value_0 = 2.0e5
     //value_0 = 0.0
 }
 
