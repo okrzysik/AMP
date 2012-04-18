@@ -4,10 +4,6 @@ Mesh{
     MeshName = "cylinder"
     MeshType = "libMesh"
     dim      = 3
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 2088
 }
 
 NumberOfLoadingSteps = 10
@@ -57,11 +53,11 @@ NonlinearSolver{
     maximumFunctionEvals = 1000
     usesJacobian=TRUE
 
-    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ls_alpha 0.001"
+    SNESOptions = "-snes_monitor -snes_ksp_ew -snes_type ls -snes_converged_reason -snes_ls_alpha 0.001"
 
     LinearSolver{
-      print_info_level = 10
-        max_iterations = 10
+      print_info_level = 1
+        max_iterations = 100
         max_error = 1e-10
         ksp_type = "fgmres"
         absolute_tolerance = 1.0e-15
@@ -75,7 +71,7 @@ NonlinearSolver{
         KSPOptions = "-ksp_monitor -ksp_converged_reason"
 
         Preconditioner{
-          print_info_level = 10
+          print_info_level = 1
             PDE_equations = 3
             max_iterations = 1
             max_error = 1.0e-15
