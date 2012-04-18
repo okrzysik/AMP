@@ -226,7 +226,7 @@ void MultiVector::selectInto ( const VectorSelector &s , Vector::shared_ptr retV
 {
     // Subset each vector
     std::vector<Vector::shared_ptr> subvectors;
-    vector_iterator  cur = beginVector();
+    //vector_iterator  cur = beginVector();
     for (size_t i=0; i!=d_vVectors.size(); i++) {
         // Get the comm to operate on
         AMP_MPI comm = s.communicator( d_vVectors[i] );
