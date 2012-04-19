@@ -32,7 +32,9 @@ namespace Operator {
 	    {
 	      d_Operators[0]->apply(f,u,r,a,b);
 	    }
-	  d_Operators[1]->apply(f,u,r,a,b);
+          if(d_Operators[1]) {
+            d_Operators[1]->apply(f,u,r,a,b);
+          }
 	  d_Operators[2]->apply(f,u,r,a,b);
 	}
 

@@ -1,0 +1,207 @@
+
+NumberOfLoadingSteps = 1
+USE_POINT_LOAD = TRUE
+USE_THERMAL_LOAD = TRUE
+InitialTemperature = 310.0
+FinalTemperature = 400.0
+
+PelletStackOperator {
+  ONLY_Z_CORRECTION = FALSE
+    USE_SERIAL = TRUE
+    MASTER = 1 
+    SLAVE = 2
+    SCALING_FACTOR = 1.0e10
+    Variable = "displacement"
+    MeshNamePrefix = "pellet"
+}
+
+// Database for all the meshes
+Mesh{
+  // This is the main multimesh that will contain all meshes
+  MeshName = "MainMesh"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
+
+    Mesh_1{
+      MeshName = "PelletMeshes"
+        MeshType = "Multimesh"
+        MeshDatabasePrefix = "Mesh_"
+        MeshArrayDatabasePrefix = "MeshArray_"
+
+        MeshArray_1 {
+          N = 1
+            iterator = "%i"
+            indicies = 1
+            MeshName = "pellet_%i"
+            MeshType = "libMesh"
+            FileName = "simple_pellet_1x.e"
+            dim = 3
+            x_offset = 0.0
+            y_offset = 0.0
+            z_offset = 0.0
+            NumberOfElements = 1300
+        }
+    }
+}
+
+PointLoad {
+  name = "DirichletVectorCorrection"
+    number_of_ids = 1
+    id_0 = 1
+    number_of_dofs_0 = 1
+    dof_0_0 = 2
+    value_0_0 = -1.0e-1
+}
+
+BottomPelletMechanicsNonlinearBVPOperator {
+  name = "NonlinearBVPOperator"
+    VolumeOperator = "PelletMechanicsNonlinearFEOperator"
+    BoundaryOperator = "BottomPelletMechanicsNonlinearBC"
+}
+
+PelletMechanicsNonlinearBVPOperator {
+  name = "NonlinearBVPOperator"
+    VolumeOperator = "PelletMechanicsNonlinearFEOperator"
+    BoundaryOperator = "PelletMechanicsNonlinearBC"
+}
+
+BottomPelletMechanicsLinearBVPOperator {
+  name = "LinearBVPOperator"
+    VolumeOperator = "PelletMechanicsLinearFEOperator"
+    BoundaryOperator = "PelletMechanicsLinearBC"
+}
+
+PelletMechanicsLinearBVPOperator {
+  name = "LinearBVPOperator"
+    VolumeOperator = "PelletMechanicsLinearFEOperator"
+    BoundaryOperator = "PelletMechanicsLinearBC"
+}
+
+PelletMechanicsNonlinearFEOperator {
+  name = "MechanicsNonlinearFEOperator"
+    LocalModel = "PelletMechanicsMaterialModel"
+    MechanicsElement {
+      name="MechanicsNonlinearElement"
+    }
+  ActiveInputVariables {
+    DISPLACEMENT = "displacement"
+      TEMPERATURE = "temperature"
+  }
+  OutputVariable = "displacement"
+}
+
+PelletMechanicsLinearFEOperator {
+  name = "MechanicsLinearFEOperator"
+    MechanicsElement {
+      name="MechanicsLinearElement"
+    }
+  InputVariable = "displacement"
+    OutputVariable = "displacement"
+    isAttachedToNonlinearOperator = TRUE
+}
+
+BottomPelletMechanicsNonlinearBC {
+  name = "DirichletVectorCorrection"
+    isAttachedToVolumeOperator = TRUE
+    number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+}
+
+PelletMechanicsNonlinearBC {
+  name = "DirichletVectorCorrection"
+    SCALING_FACTOR = 1.0e10
+    isAttachedToVolumeOperator = TRUE
+    valuesType = 2
+    setResidual = TRUE
+    number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+}
+
+PelletMechanicsLinearBC {
+  name = "DirichletMatrixCorrection"
+    symmetric_correction = FALSE
+    number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+}
+
+PelletMechanicsMaterialModel {
+  name="ThermalVonMisesMatModel" 
+    Youngs_Modulus = 2.08e11
+    Poissons_Ratio = 0.23  
+    THERMAL_EXPANSION_COEFFICIENT = 2.0e-6
+    Linear_Strain_Hardening = 5.10e10   
+    Elastic_Yield_Stress = 3.45e9  
+}
+
+NonlinearSolver {
+  max_iterations = 50
+    max_error = 1e-12
+    zero_initial_guess = FALSE
+    absoluteTolerance = 1.0e-12
+    relativeTolerance = 1.0e-10
+    stepTolerance = 1.0e-14
+    maximumFunctionEvals = 1000
+    usesJacobian = FALSE
+    SNESOptions = "-snes_monitor -snes_type ls -snes_ksp_ew -snes_converged_reason -snes_ls_alpha 1.0e-4"
+
+    LinearSolver {
+      max_iterations = 100
+        max_error = 1e-12
+        ksp_type = "fgmres"
+        absolute_tolerance = 1.0e-12
+        relative_tolerance = 1.0e-11
+        divergence_tolerance = 1.0e03
+        max_krylov_dimension = 40
+        uses_preconditioner = TRUE
+        pc_type = "shell"
+        pc_side = "RIGHT"
+        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100"
+
+        PelletStackSolver {
+          ColumnSolver {
+            max_iterations = 1
+              max_error = 1e-12
+
+              KrylovSolver {
+                max_iterations = 100
+                  max_error = 1e-12
+                  ksp_type = "fgmres"
+                  absolute_tolerance = 1.0e-12
+                  relative_tolerance = 1.0e-11
+                  divergence_tolerance = 1.0e03
+                  max_krylov_dimension = 40
+                  uses_preconditioner = TRUE
+                  pc_type = "shell"
+                  pc_side = "RIGHT"
+                  KSPAppendOptionsPrefix = "kspPC_"
+                  KSPOptions = "-kspPC_ksp_max_it 100 -kspPC_ksp_converged_reason" 
+
+                  MLSolver {
+                    max_iterations = 1
+                      max_error = 1e-11
+                      problem_type = "NSSA"
+                      PDE_equations = 3
+                  }
+              }
+          }
+        }
+    }
+}
+
+
+
+
+

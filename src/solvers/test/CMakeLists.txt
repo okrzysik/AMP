@@ -42,6 +42,7 @@ ADD_AMP_PROVISIONAL_TEST(testNonlinearKrylovAccelerator-NonlinearMechanics-1 )
 
 ADD_AMP_PROVISIONAL_TEST ( testPelletStackMechanicsSolver )
 COPY_TEST_DATA_FILE ( input_testPelletStackMechanicsSolver-1 )
+COPY_TEST_DATA_FILE ( input_testPelletStackMechanicsSolver-2 )
 COPY_MESH_FILE ( simple_pellet_1x.e )
 COPY_MESH_FILE ( butterfly_pellet_1x.e )
 COPY_MESH_FILE ( tallFuel.e )
