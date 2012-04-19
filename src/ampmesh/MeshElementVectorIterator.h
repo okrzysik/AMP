@@ -47,10 +47,10 @@ public:
     MeshIterator operator--(int);
 
     //! Check if two iterators are equal
-    bool operator==(const MeshIterator& rhs);
+    bool operator==(const MeshIterator& rhs) const;
 
     //! Check if two iterators are not equal
-    bool operator!=(const MeshIterator& rhs);
+    bool operator!=(const MeshIterator& rhs) const;
     
     //! Dereference the iterator
     MeshElement &operator*(void);
@@ -66,6 +66,9 @@ public:
 
     //! Return the number of elements in the iterator
     virtual size_t size() const;
+
+    //! Return the current position (from the beginning) in the iterator
+    virtual size_t position() const;
 
 protected:
 

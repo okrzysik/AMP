@@ -119,13 +119,13 @@ MeshIterator MeshIterator::operator--(int i)
 /********************************************************
 * Functions for incrementing/decrementing               *
 ********************************************************/
-bool MeshIterator::operator==(const MeshIterator& rhs)
+bool MeshIterator::operator==(const MeshIterator& rhs) const
 {
     if ( iterator==NULL )
         return rhs.iterator==NULL;
     return iterator->operator==(rhs);
 }
-bool MeshIterator::operator!=(const MeshIterator& rhs)
+bool MeshIterator::operator!=(const MeshIterator& rhs) const
 {
     if ( iterator==NULL )
         return rhs.iterator!=NULL;
@@ -147,13 +147,19 @@ MeshElement* MeshIterator::operator->()
 
 
 /********************************************************
-* Function to get the size of the iterator              *
+* Function to get the size and position of the iterator *
 ********************************************************/
 size_t MeshIterator::size() const
 {
     if ( iterator==NULL )
         return 0;
     return iterator->size();
+}
+size_t MeshIterator::position() const
+{
+    if ( iterator==NULL )
+        return 0;
+    return iterator->position();
 }
 
 

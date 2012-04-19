@@ -45,10 +45,10 @@ public:
     virtual MeshIterator operator--(int);
 
     //! Check if two iterators are equal
-    virtual bool operator==(const MeshIterator& rhs);
+    virtual bool operator==(const MeshIterator& rhs) const;
 
     //! Check if two iterators are not equal
-    virtual bool operator!=(const MeshIterator& rhs);
+    virtual bool operator!=(const MeshIterator& rhs) const;
     
     //! Dereference the iterator
     virtual MeshElement &operator*(void);
@@ -64,6 +64,9 @@ public:
 
     //! Return the number of elements in the iterator
     virtual size_t size() const;
+
+    //! Return the current position (from the beginning) in the iterator
+    virtual size_t position() const;
 
 protected:
     // A pointer to the derived class

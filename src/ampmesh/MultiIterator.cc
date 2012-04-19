@@ -126,6 +126,10 @@ size_t MultiIterator::size() const
 {
     return d_globalSize;
 }
+size_t MultiIterator::position() const
+{
+    return d_globalPos;
+}
 
 
 /********************************************************
@@ -183,7 +187,7 @@ MeshIterator MultiIterator::operator--(int)
 * Two MultiIterators are the same if both the list of   *
 * iterators and the current position are the same.      *
 ********************************************************/
-bool MultiIterator::operator==(const MeshIterator& rhs)
+bool MultiIterator::operator==(const MeshIterator& rhs) const
 {
     MultiIterator* rhs2 = NULL;
     MultiIterator* tmp = (MultiIterator*) &rhs;     // Convert rhs to a MultiIterator* so we can access the base class members
@@ -209,7 +213,7 @@ bool MultiIterator::operator==(const MeshIterator& rhs)
     }
     return false;
 }
-bool MultiIterator::operator!=(const MeshIterator& rhs)
+bool MultiIterator::operator!=(const MeshIterator& rhs) const
 {
     return !((*this)==rhs);
 }

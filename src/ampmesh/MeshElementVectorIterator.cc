@@ -84,6 +84,10 @@ size_t MultiVectorIterator::size() const
         return 0;
     return d_elements->size();
 }
+size_t MultiVectorIterator::position() const
+{
+    return d_pos;
+}
 
 
 /********************************************************
@@ -120,7 +124,7 @@ MeshIterator MultiVectorIterator::operator--(int)
 /********************************************************
 * Compare two iterators                                 *
 ********************************************************/
-bool MultiVectorIterator::operator==(const MeshIterator& rhs)
+bool MultiVectorIterator::operator==(const MeshIterator& rhs) const
 {
     MultiVectorIterator* rhs2 = NULL;
     MultiVectorIterator* tmp = (MultiVectorIterator*) &rhs;     // Convert rhs to a MultiVectorIterator* so we can access the base class members
@@ -130,9 +134,8 @@ bool MultiVectorIterator::operator==(const MeshIterator& rhs)
         rhs2 = tmp;     // We can safely cast rhs.iterator to a MultiVectorIterator
     } else if ( ((MultiVectorIterator*)tmp->iterator)->typeID==MultiVectorIteratorTypeID ) {
         rhs2 = (MultiVectorIterator*) tmp->iterator;
-    } else {
-        AMP_ERROR("Error, comparing a MultiVectorIterator iterator to an unknown iterator");
     }
+    // Perform direct comparisions if we are dealing with two MultiVectorIterators
     if ( rhs2 != NULL ) {
         // Check that we are at the same position
         if ( d_pos!=rhs2->d_pos )
@@ -149,10 +152,28 @@ bool MultiVectorIterator::operator==(const MeshIterator& rhs)
                 elements_match = false;
         }
         return elements_match;
+    } 
+    /* We are comparing a MultiVectorIterator to an arbitrary iterator
+     * The iterators are the same if they point to the same position and iterate 
+     * over the same elements in the same order
+     */
+    // Check the size
+    if ( this->size() != rhs.size() )
+        return false;
+    // Check the current position
+    if ( this->position() != rhs.position() )
+        return false;
+    // Check that the elements match
+    MeshIterator iterator = rhs.begin();
+    bool elements_match = true;
+    for (size_t i=0; i<d_elements->size(); i++) {
+        if ( iterator->globalID() != (d_elements->operator[](i)).globalID() )
+            elements_match = false;
+        ++iterator;
     }
-    return false;
+    return elements_match;
 }
-bool MultiVectorIterator::operator!=(const MeshIterator& rhs)
+bool MultiVectorIterator::operator!=(const MeshIterator& rhs) const
 {
     return !((*this)==rhs);
 }

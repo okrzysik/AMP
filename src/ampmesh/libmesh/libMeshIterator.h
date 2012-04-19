@@ -39,10 +39,10 @@ public:
     MeshIterator operator--(int);
 
     //! Check if two iterators are equal
-    bool operator==(const MeshIterator& rhs);
+    bool operator==(const MeshIterator& rhs) const;
 
     //! Check if two iterators are not equal
-    bool operator!=(const MeshIterator& rhs);
+    bool operator!=(const MeshIterator& rhs) const;
     
     //! Dereference the iterator
     MeshElement &operator*(void);
@@ -59,6 +59,9 @@ public:
     //! Return the number of elements in the iterator
     virtual size_t size() const;
 
+    //! Return the current position (from the beginning) in the iterator
+    virtual size_t position() const;
+
 protected:
     /** Default constructor
      * \param type      Entity type:  0: node, 1: element
@@ -67,9 +70,10 @@ protected:
      * \param begin     Pointer to iterator with the begining position
      * \param end       Pointer to iterator with the end position
      * \param pos       Pointer to iterator with the current position
-     * \param size      Number of elements in the iterator
+     * \param size      Number of elements in the iterator (-1: unknown)
+     * \param pos2      Index of the current position in the iterator (-1: unknown)
      */
-    libMeshIterator(int type, const AMP::Mesh::libMesh *mesh, int gcw, void *begin, void *end, void *pos, int size=-1 );
+    libMeshIterator(int type, const AMP::Mesh::libMesh *mesh, int gcw, void *begin, void *end, void *pos, int size=-1, int pos2=-1 );
 
     //! Clone the iterator
     virtual MeshIterator* clone() const;
@@ -82,6 +86,7 @@ private:
     int d_dim;
     int d_type;
     int d_size;
+    int d_pos2;
     int d_rank;
     void *d_begin;
     void *d_end;
