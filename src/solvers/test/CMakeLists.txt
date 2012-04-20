@@ -47,8 +47,6 @@ COPY_MESH_FILE ( simple_pellet_1x.e )
 COPY_MESH_FILE ( butterfly_pellet_1x.e )
 COPY_MESH_FILE ( tallFuel.e )
 
-ADD_AMP_PROVISIONAL_TEST ( testMLfailure )
-COPY_TEST_DATA_FILE ( input_testMLfailure )
 COPY_MESH_FILE ( reg3ptBox1 )
 COPY_MESH_FILE ( reg3ptBox2 )
 
@@ -86,7 +84,7 @@ COPY_MESH_FILE ( cube343H8.e )
 ADD_AMP_PROVISIONAL_TEST ( testContactV6 )
 COPY_TEST_DATA_FILE ( input_testContactV6 )
 
-ADD_AMP_PROVISIONAL_TEST ( testBrickPressureBoundary-1 )
+ADD_AMP_WEEKLY_TEST ( testBrickPressureBoundary-1 4 )
 COPY_TEST_DATA_FILE ( input_testBrickPressureBoundary-1 )
 
 ADD_AMP_TEST ( testLinearThermalExpansion )
@@ -117,7 +115,7 @@ COPY_MESH_FILE ( tiedContactV3_clad.e )
 
 ADD_AMP_PROVISIONAL_TEST ( testDiffusionMMSInverse )
 
-ADD_AMP_PROVISIONAL_TEST ( testPetscSNESSolver-NonlinearMechanics-Cylinder-1 )
+ADD_AMP_WEEKLY_TEST ( testPetscSNESSolver-NonlinearMechanics-Cylinder-1 4 )
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearMechanics-Cylinder-1 )
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearMechanics-PlateWithHole-1 )
 COPY_MESH_FILE ( thick_walled_cylinder_ver2.e )
@@ -145,10 +143,10 @@ ADD_AMP_PROVISIONAL_TEST ( testPericElastoViscoPlasticity-LoadPrescribed )
 COPY_TEST_DATA_FILE ( input_testPericElastoViscoPlasticity-LoadPrescribed-1 )
 COPY_TEST_DATA_FILE ( input_testPericElastoViscoPlasticity-LoadPrescribed-2 )
 
-ADD_AMP_PROVISIONAL_TEST ( testElementLevel-PericElastoViscoPlasticity )
+ADD_AMP_TEST ( testElementLevel-PericElastoViscoPlasticity )
 COPY_TEST_DATA_FILE ( input_testElementLevel-PericElastoViscoPlasticity-1 )
 
-ADD_AMP_PROVISIONAL_TEST ( testMaterialModels-PericElastoViscoPlasticity-1 )
+ADD_AMP_TEST ( testMaterialModels-PericElastoViscoPlasticity-1 )
 COPY_TEST_DATA_FILE ( input_testMaterialModels-PericElastoViscoPlasticity-1 )
 
 ADD_AMP_WEEKLY_TEST ( testCook 8 )
@@ -187,7 +185,7 @@ COPY_TEST_DATA_FILE ( input_testSmallStrainMechanics-ThermoMechanics-1 )
 ADD_AMP_TEST ( testUpdatedLagrangianMechanics-FlanaganTaylorElement-1 )
 COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianMechanics-FlanaganTaylorElement-1 )
 
-ADD_AMP_PROVISIONAL_TEST ( testMatrixFreeML )
+ADD_AMP_TEST ( testMatrixFreeML )
 COPY_TEST_DATA_FILE ( input_testMatrixFreeML-1 )
 
 ADD_AMP_PROVISIONAL_TEST ( testLinearFlow-1 )
@@ -252,7 +250,7 @@ COPY_MESH_FILE ( fullMpcMesh-bin-4 )
 COPY_MESH_FILE ( fullMpcMesh-bin-5 )
 
 ADD_AMP_WEEKLY_TEST ( testFixedBeam-ThermalExpansion 1 )
-ADD_AMP_PROVISIONAL_TEST ( testFixedBeam-CreepLoading )
+ADD_AMP_WEEKLY_TEST ( testFixedBeam-CreepLoading 1 )
 ADD_AMP_WEEKLY_TEST ( testPetscSNESSolver-NonlinearMechanics-2_COMPARISON 1 )
 
 ADD_AMP_TEST_1_2_4 ( mechanicsVerification )

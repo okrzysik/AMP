@@ -1,9 +1,9 @@
 
-NumberOfMeshes = 1
-
-Mesh_1{
-  Filename = "thick_walled_cylinder_ver2.e"
+Mesh{
+    FileName = "thick_walled_cylinder_ver2.e"
     MeshName = "cylinder"
+    MeshType = "libMesh"
+    dim      = 3
     x_offset = 0
     y_offset = 0
     z_offset = 0

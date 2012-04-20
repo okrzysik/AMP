@@ -80,6 +80,12 @@ void myTest(AMP::UnitTest *ut)
 														    input_db,
 														    elementPhysicsModel));
 
+  boost::shared_ptr<AMP::Operator::LinearBVPOperator> linBvpOperator =
+    boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(mesh,
+														 "linearMechanicsBVPOperator",
+														 input_db,
+														 elementPhysicsModel));
+  
   boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> multivariable = boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
       nonlinBvpOperator->getVolumeOperator()->getInputVariable()); 
   AMP::LinearAlgebra::Variable::shared_ptr displacementVariable = multivariable->getVariable(AMP::Operator::Mechanics::DISPLACEMENT); 
@@ -118,11 +124,6 @@ void myTest(AMP::UnitTest *ut)
   (boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinBvpOperator->
                                                                   getVolumeOperator()))->init();
 
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> linBvpOperator =
-    boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(mesh,
-														 "linearMechanicsBVPOperator",
-														 input_db,
-														 elementPhysicsModel));
 
   //For RHS (Point Forces)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;

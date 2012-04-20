@@ -27,7 +27,15 @@
 #include "solvers/PetscKrylovSolver.h"
 #include "solvers/TrilinosMLSolver.h"
 
+#include "ampmesh/libmesh/initializeLibMesh.h"
+#include "ampmesh/libmesh/libMesh.h"
 #include "utils/ReadTestMesh.h"
+
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/Vector.h"
+#include "vectors/VectorBuilder.h"
+
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
@@ -41,6 +49,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   input_db->printClassData(AMP::plog);
 
   int numMeshes = input_db->getInteger("NumberOfMeshFiles");
+  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(globalComm));
 
   boost::shared_ptr<AMP::Database> ml_db = input_db->getDatabase("ML_Solver"); 
   boost::shared_ptr<AMP::Database> lu_db = input_db->getDatabase("LU_Solver"); 
@@ -49,8 +58,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   for(int meshId = 1; meshId <= numMeshes; meshId++) {
     std::cout<<"Working on mesh "<<meshId<<std::endl;
-    AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-    AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
 
     char meshFileKey[200];
     sprintf(meshFileKey, "mesh%d", meshId);
@@ -67,9 +74,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     MeshCommunication().broadcast(*(mesh.get()));
     mesh->prepare_for_use(false);
 
-    AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter ( new AMP::Mesh::MeshManager::Adapter (mesh) );
-
-    manager->addMesh(meshAdapter, "mesh");
+    AMP::Mesh::Mesh::shared_ptr meshAdapter( new AMP::Mesh::libMesh( mesh, "mesh" ) );
 
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     boost::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator = boost::dynamic_pointer_cast<
@@ -84,10 +89,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
             "LoadOperator", input_db, dummyModel));
     loadOperator->setVariable(dispVar);
 
+    AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF = 
+        AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,3);
+
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    AMP::LinearAlgebra::Vector::shared_ptr solVec = manager->createVector(dispVar);
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec = manager->createVector(dispVar);
-    AMP::LinearAlgebra::Vector::shared_ptr resVec = manager->createVector(dispVar);
+    AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,dispVar);
+    AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,dispVar);
+    AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,dispVar);
 
     rhsVec->zero();
     loadOperator->apply(nullVec, nullVec, rhsVec, 1.0, 0.0);

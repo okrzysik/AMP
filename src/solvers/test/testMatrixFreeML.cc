@@ -11,7 +11,14 @@
 #include "utils/ReadTestMesh.h"
 #include "utils/WriteSolutionToFile.h"
 
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/libmesh/initializeLibMesh.h"
+#include "ampmesh/libmesh/libMesh.h"
+#include "utils/ReadTestMesh.h"
+
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/Vector.h"
+#include "vectors/VectorBuilder.h"
 
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
@@ -93,6 +100,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int type) {
   boost::shared_ptr<AMP::InputDatabase> mesh_file_db(new AMP::InputDatabase("mesh_file_db"));
   AMP::InputManager::getManager()->parseInputFile(mesh_file, mesh_file_db);
 
+  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(globalComm));
+
   const unsigned int mesh_dim = 3;
   boost::shared_ptr< ::Mesh > fusedMesh(new ::Mesh(mesh_dim));
 
@@ -102,7 +111,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int type) {
 
   fusedMesh->prepare_for_use(false);
 
-  AMP::Mesh::MeshManager::Adapter::shared_ptr fusedMeshAdapter ( new AMP::Mesh::MeshManager::Adapter (fusedMesh) );
+  AMP::Mesh::Mesh::shared_ptr fusedMeshAdapter( new AMP::Mesh::libMesh( fusedMesh, "mesh" ) );
 
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> fusedElementPhysicsModel;
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> fusedOperator = boost::dynamic_pointer_cast<
@@ -119,8 +128,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int type) {
 									  AMP::Operator::OperatorBuilder::createOperator(fusedMeshAdapter, "LoadOperator", input_db, dummyModel));
   loadOperator->setVariable(fusedVar);
 
+  AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF = 
+     AMP::Discretization::simpleDOFManager::create(fusedMeshAdapter,AMP::Mesh::Vertex,1,3);
+
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-  AMP::LinearAlgebra::Vector::shared_ptr fusedSolVec = fusedMeshAdapter->createVector(fusedVar);
+  AMP::LinearAlgebra::Vector::shared_ptr fusedSolVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,fusedVar);
   AMP::LinearAlgebra::Vector::shared_ptr fusedRhsVec = fusedSolVec->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr fusedResVec = fusedSolVec->cloneVector();
 
