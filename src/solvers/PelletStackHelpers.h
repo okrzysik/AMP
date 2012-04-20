@@ -24,17 +24,20 @@
 #include "solvers/TrilinosMLSolver.h"
 
 void helperCreateStackOperatorForPelletMechanics(AMP::Mesh::Mesh::shared_ptr manager,
-    boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps, AMP::AMP_MPI globalComm,
+    boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps, 
     boost::shared_ptr<AMP::InputDatabase> global_input_db, 
     boost::shared_ptr<AMP::Operator::PelletStackOperator> & pelletStackOp)
 {
   boost::shared_ptr<AMP::Database> pelletStackOp_db = global_input_db->getDatabase("PelletStackOperator");
-  pelletStackOp_db->putInteger("TOTAL_NUMBER_OF_PELLETS", global_input_db->getInteger("NumberOfPelletMeshes"));
+  boost::shared_ptr<AMP::Mesh::Mesh> pelletMeshes = manager->Subset("PelletMeshes");
+  std::vector<AMP::Mesh::MeshID> pelletMeshIDs = pelletMeshes->getBaseMeshIDs();
+  unsigned int totalNumPellets = pelletMeshIDs.size();
+  pelletStackOp_db->putInteger("TOTAL_NUMBER_OF_PELLETS", totalNumPellets);
   boost::shared_ptr<AMP::Operator::PelletStackOperatorParameters> pelletStackOpParams(new 
       AMP::Operator::PelletStackOperatorParameters(pelletStackOp_db));
-  pelletStackOpParams->d_pelletStackComm = globalComm;
+  pelletStackOpParams->d_pelletStackComm = pelletMeshes->getComm();
   pelletStackOpParams->d_n2nMaps = n2nmaps;
-  pelletStackOpParams->d_Mesh = manager;
+  pelletStackOpParams->d_Mesh = pelletMeshes;
   pelletStackOp.reset(new AMP::Operator::PelletStackOperator(pelletStackOpParams));
 }
 
@@ -92,7 +95,9 @@ void helperSetFrozenVectorForMapsForPelletMechanics(AMP::Mesh::Mesh::shared_ptr 
   AMP::Discretization::DOFManager::shared_ptr nodal3VectorDOF = AMP::Discretization::simpleDOFManager::create(
       manager, AMP::Mesh::Vertex, 1, 3, true);
   AMP::LinearAlgebra::Vector::shared_ptr  dirichletValues = AMP::LinearAlgebra::createVector(nodal3VectorDOF, dispVar, true);
-  n2nmaps->setVector(dirichletValues);
+  if(n2nmaps) {
+    n2nmaps->setVector(dirichletValues);
+  }
   for(unsigned int id = 0; id < nonlinearColumnOperator->getNumberOfOperators(); id++) {
     boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletOp =
       boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
@@ -108,12 +113,12 @@ void helperCreateAllOperatorsForPelletMechanics(AMP::Mesh::Mesh::shared_ptr mana
     boost::shared_ptr<AMP::Operator::ColumnOperator> & linearColumnOperator, 
     boost::shared_ptr<AMP::Operator::PelletStackOperator> & pelletStackOp)
 {
-  //AMP::Discretization::DOFManager::shared_ptr nodal3VectorDOF = AMP::Discretization::simpleDOFManager::create(
-  //    manager, AMP::Mesh::Vertex, 1, 3, true);
-  boost::shared_ptr<AMP::Database> map_db = global_input_db->getDatabase("MechanicsNodeToNodeMaps");
-  boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps =
-    AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap>(manager, map_db);
-  helperCreateStackOperatorForPelletMechanics(manager, n2nmaps, globalComm, global_input_db, pelletStackOp);
+  boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps;
+  if(global_input_db->keyExists("MechanicsNodeToNodeMaps")) {
+    boost::shared_ptr<AMP::Database> map_db = global_input_db->getDatabase("MechanicsNodeToNodeMaps");
+    n2nmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap>(manager, map_db);
+  }
+  helperCreateStackOperatorForPelletMechanics(manager, n2nmaps, global_input_db, pelletStackOp);
   std::vector<unsigned int> localPelletIds = pelletStackOp->getLocalPelletIds();
   std::vector<AMP::Mesh::Mesh::shared_ptr> localMeshes = pelletStackOp->getLocalMeshes();
   boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator;
