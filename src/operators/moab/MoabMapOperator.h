@@ -23,9 +23,9 @@
 #include "operators/VolumeIntegralOperator.h"
 #include "operators/OperatorBuilder.h"
 
-#include "moab/MoabBasedOperator.h"
-#include "moab/MoabBasedOperatorParameters.h"
-#include "moab/MoabMapOperatorParameters.h"
+#include "operators/moab/MoabBasedOperator.h"
+#include "operators/moab/MoabBasedOperatorParameters.h"
+#include "operators/moab/MoabMapOperatorParameters.h"
 
 // Moab includes
 #include "Coupler.hpp"

@@ -17,7 +17,7 @@
 #include "operators/OperatorParameters.h"
 #include "ampmesh/MeshAdapter.h"
 #include "ampmesh/MeshManager.h"
-#include "moab/MoabBasedOperator.h"
+#include "operators/moab/MoabBasedOperator.h"
 
 namespace AMP {
 namespace Operator {
