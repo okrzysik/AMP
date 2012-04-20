@@ -1,27 +1,33 @@
+#include <string>
+#include "boost/shared_ptr.hpp"
+
 #include "utils/AMPManager.h"
+#include "utils/InputDatabase.h"
+#include "utils/InputManager.h"
+#include "utils/Database.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include <string>
-#include "materials/Material.h"
-#include "boost/shared_ptr.hpp"
-#include "utils/InputDatabase.h"
-#include "utils/Utilities.h"
-#include "utils/InputManager.h"
 #include "utils/PIO.h"
-#include "utils/Database.h"
+
+#include "ampmesh/Mesh.h"
+#include "ampmesh/SiloIO.h"
+
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+
+#include "vectors/Vector.h"
+#include "vectors/MultiVector.h"
+#include "vectors/Variable.h"
+#include "vectors/VectorBuilder.h"
+
 #include "operators/NeutronicsRhs.h"
 #include "vectors/Variable.h"
 #include "operators/VolumeIntegralOperator.h"
+#include "materials/Material.h"
 
-#include "vectors/Vector.h"
-#include "vectors/Variable.h"
-#include "ampmesh/SiloIO.h"
 #include "matrices/Matrix.h"
+#include "matrices/MatrixBuilder.h"
 #include "matrices/trilinos/EpetraMatrix.h"
-//#include <math>
-
-#include "ampmesh/SiloIO.h"
-#include "vectors/Vector.h"
 
 #include "flow/ConsMomentumGalWFLinearElement.h"
 #include "flow/ConsMomentumGalWFLinearFEOperator.h"
@@ -55,58 +61,72 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 {
 
 	std::string input_file = "input_" + exeName;
-        std::string silo_name = exeName;
+    std::string silo_name = exeName;
 
-        boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+    // Read the input file
+    boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
+    AMP::InputManager::getManager()->parseInputFile ( input_file , input_db );
 	AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);
-        AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
-        input_db->printClassData(AMP::plog);
+    input_db->printClassData (AMP::plog);
 
-	AMP_INSIST(input_db->keyExists("NumberOfMeshes"), "Key does not exist");
-	// int numMeshes = input_db->getInteger("NumberOfMeshes");
+    // Get the Mesh database and create the mesh parameters
+    boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+    boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+    params->setComm(globalComm);
 
-	AMP::Mesh::MeshManagerParameters::shared_ptr meshmgrParams (new AMP::Mesh::MeshManagerParameters ( input_db ) );
-	AMP::Mesh::MeshManager::shared_ptr manager (new AMP::Mesh::MeshManager ( meshmgrParams ) );
-	AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapterH27 = manager->getMesh ("cubeH27");
-	AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapterH08 = manager->getMesh ("cubeH08");
+    // Create the meshes from the input database
+    AMP::Mesh::Mesh::shared_ptr manager = AMP::Mesh::Mesh::buildMesh(params);
+	AMP::Mesh::Mesh::shared_ptr meshAdapterH27 = manager->Subset ("cubeH27");
+	AMP::Mesh::Mesh::shared_ptr meshAdapterH08 = manager->Subset ("cubeH08");
 	
-  /////////////////////////////////////////////////
-  //   CREATE THE Conservation of Momentum Operator  //
-  /////////////////////////////////////////////////
+    /////////////////////////////////////////////////
+    //   CREATE THE Conservation of Momentum Operator  //
+    /////////////////////////////////////////////////
 
 	boost::shared_ptr<AMP::Operator::ElementPhysicsModel> FlowTransportModel; 
 	AMP_INSIST ( input_db->keyExists("ConsMomentumLinearFEOperator"),"key missing!");
 	boost::shared_ptr<AMP::Operator::LinearBVPOperator> ConsMomentumOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapterH27, "ConsMomentumLinearBVPOperator", input_db, FlowTransportModel));
 
-  /////////////////////////////////////////////////
-  //   CREATE THE Conservation of Mass Operator  //
-  /////////////////////////////////////////////////
+    /////////////////////////////////////////////////
+    //   CREATE THE Conservation of Mass Operator  //
+    /////////////////////////////////////////////////
 
 	AMP_INSIST ( input_db->keyExists("ConsMassLinearFEOperator"),"key missing!");
 	boost::shared_ptr<AMP::Operator::LinearBVPOperator> ConsMassOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapterH08, "ConsMassLinearBVPOperator", input_db, FlowTransportModel));
 
         AMP::pout << "Finished creating Mass Operator" << std::endl;
 	
-        //ease of use shared pointer
-        AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+    // Create the variables
+    AMP::LinearAlgebra::Variable::shared_ptr velocityVar   = ConsMomentumOperator->getOutputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr pressureVar   = ConsMassOperator->getOutputVariable();
 
-        AMP::LinearAlgebra::Matrix::shared_ptr FMat = ConsMomentumOperator->getMatrix();
-        AMP::LinearAlgebra::Matrix::shared_ptr BMat = ConsMassOperator->getMatrix();
+    // Create the DOF managers
+    AMP::Discretization::DOFManager::shared_ptr DOF_scalar = AMP::Discretization::simpleDOFManager::create(manager,AMP::Mesh::Vertex,1,1,true);
+    AMP::Discretization::DOFManager::shared_ptr DOF_vector = AMP::Discretization::simpleDOFManager::create(manager,AMP::Mesh::Vertex,1,3,true);
 
-        AMP::LinearAlgebra::Matrix::shared_ptr BtMat =  BMat->transpose();
-        AMP::LinearAlgebra::Matrix::shared_ptr zeroMat = meshAdapterH08->createMatrix ( ConsMassOperator->getOutputVariable(), ConsMassOperator->getOutputVariable() ) ; 
-        zeroMat->zero();
+    // Create the vectors
+    boost::shared_ptr<AMP::LinearAlgebra::MultiVector>  globalSolVec =
+        AMP::LinearAlgebra::MultiVector::create( "globalSolVec", manager->getComm() );
+    globalSolVec->addVector( AMP::LinearAlgebra::createVector( DOF_scalar, pressureVar ) );
+    globalSolVec->addVector( AMP::LinearAlgebra::createVector( DOF_vector, velocityVar ) );
+    AMP::LinearAlgebra::Vector::shared_ptr globalRhsVec = globalSolVec->cloneVector("globalRhsVec");
+    // AMP::LinearAlgebra::Vector::shared_ptr globalResVec = globalSolVec->cloneVector("globalResVec");
 
-        AMP::LinearAlgebra::Variable::shared_ptr velocityVar   = ConsMomentumOperator->getOutputVariable();
-        AMP::LinearAlgebra::Variable::shared_ptr pressureVar   = ConsMassOperator->getOutputVariable();
+    // Get the matricies
+    AMP::LinearAlgebra::Matrix::shared_ptr FMat = ConsMomentumOperator->getMatrix();
+    AMP::LinearAlgebra::Matrix::shared_ptr BMat = ConsMassOperator->getMatrix();
 
-        boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> globalMultiVar(new AMP::LinearAlgebra::MultiVariable("inputVariable"));
-        globalMultiVar->add(velocityVar);
-        globalMultiVar->add(pressureVar);
+    AMP::LinearAlgebra::Matrix::shared_ptr BtMat =  BMat->transpose();
 
-        AMP::LinearAlgebra::Vector::shared_ptr globalSolVec = manager->createVector ( globalMultiVar );
-        AMP::LinearAlgebra::Vector::shared_ptr globalRhsVec = manager->createVector ( globalMultiVar );
-//        AMP::LinearAlgebra::Vector::shared_ptr globalResVec = manager->createVector ( globalMultiVar );
+    // Create a zero matrix over meshAdapterH08
+    AMP::Discretization::DOFManager::shared_ptr DOF_H08_scalar = 
+        AMP::Discretization::simpleDOFManager::create(meshAdapterH08,AMP::Mesh::Vertex,1,1,true);
+    AMP::LinearAlgebra::Matrix::shared_ptr zeroMat = AMP::LinearAlgebra::createMatrix( 
+        AMP::LinearAlgebra::createVector( DOF_H08_scalar, pressureVar ),
+        AMP::LinearAlgebra::createVector( DOF_H08_scalar, pressureVar ) );
+    zeroMat->zero();
+
+
 
 	boost::shared_ptr<AMP::Database> dummy_db;
         boost::shared_ptr<AMP::Operator::EpetraMatrixOperatorParameters> dummyParams1(new AMP::Operator::EpetraMatrixOperatorParameters( dummy_db ));

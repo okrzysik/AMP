@@ -16,7 +16,6 @@
 #ifdef USE_AMP_VECTORS
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
-#include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"
