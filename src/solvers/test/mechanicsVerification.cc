@@ -54,8 +54,13 @@
 #include "operators/mechanics/IsotropicElasticModel.h"
 
 #include "vectors/Variable.h"
+#include "vectors/MultiVariable.h"
 #include "vectors/Vector.h"
+#include "vectors/VectorBuilder.h"
 #include "vectors/ManagedPetscVector.h"
+
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include "solvers/PetscKrylovSolverParameters.h"
 #include "solvers/PetscKrylovSolver.h"
@@ -65,18 +70,25 @@ extern "C"{
 #include "petsc.h"
 }
 
-void computeForcingTerms(AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter,
+void computeForcingTerms(AMP::Mesh::Mesh::shared_ptr meshAdapter,
     boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeOp,
     boost::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> manufacturedSolution,
     AMP::LinearAlgebra::Vector::shared_ptr forcingTermsVec,
     bool verbose = false) {
   // Create integration point vectors and compute values
-  AMP::LinearAlgebra::Vector::shared_ptr dummyIntegrationPointVecU = meshAdapter->createVector(volumeOp->getInputVariable(0));
-  AMP::LinearAlgebra::Vector::shared_ptr dummyIntegrationPointVecV = meshAdapter->createVector(volumeOp->getInputVariable(0));
-  AMP::LinearAlgebra::Vector::shared_ptr dummyIntegrationPointVecW = meshAdapter->createVector(volumeOp->getInputVariable(0));
+  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable>  multivariable = 
+     boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( volumeOp->getInputVariable() );
+  AMP::LinearAlgebra::Variable::shared_ptr variable = multivariable->getVariable(0);
+  AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF = 
+     AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,3);
+  AMP::LinearAlgebra::Vector::shared_ptr dummyIntegrationPointVecU = AMP::LinearAlgebra::createVector(NodalVectorDOF,variable);
+  AMP::LinearAlgebra::Vector::shared_ptr dummyIntegrationPointVecV = AMP::LinearAlgebra::createVector(NodalVectorDOF,variable);
+  AMP::LinearAlgebra::Vector::shared_ptr dummyIntegrationPointVecW = AMP::LinearAlgebra::createVector(NodalVectorDOF,variable);
   // Loop over all elements
-  AMP::Mesh::MeshManager::Adapter::ElementIterator el = meshAdapter->beginElement();
-  AMP::Mesh::MeshManager::Adapter::ElementIterator end_el = meshAdapter->endElement();
+AMP_ERROR("Not converted yet");
+/*
+  AMP::Mesh::MeshIterator el = meshAdapter->getIterator(AMP::Mesh::Volume,0);
+  AMP::Mesh::MeshIterator end_el = el.end();
   for( ; el != end_el; ++el) {    
     volumeOp->getSourceElement()->getFEBase()->reinit(&el->getElem());
     std::vector<Point> quadraturePoints = volumeOp->getSourceElement()->getFEBase()->get_xyz();
@@ -130,23 +142,24 @@ void computeForcingTerms(AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter
              <<"------------------------------------------\n"
              <<std::endl; 
   } // end if verbose
+*/
 }
 
 /** Compute exact solution */
-void computeExactSolution(AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter,
+void computeExactSolution(AMP::Mesh::Mesh::shared_ptr meshAdapter,
     boost::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> manufacturedSolution,
     AMP::LinearAlgebra::Vector::shared_ptr exactSolutionsVec,
     bool verbose = false) {
   // Loop over all nodes
-  AMP::Mesh::DOFMap::shared_ptr dofMap = meshAdapter->getDOFMap(exactSolutionsVec->getVariable());
-  AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator nd = meshAdapter->beginOwnedNode();
-  AMP::Mesh::MeshManager::Adapter::OwnedNodeIterator end_nd = meshAdapter->endOwnedNode();
+  AMP::Discretization::DOFManager::shared_ptr dofMap = exactSolutionsVec->getDOFManager();
+  AMP::Mesh::MeshIterator nd = meshAdapter->getIterator(AMP::Mesh::Vertex,0);
+  AMP::Mesh::MeshIterator end_nd = nd.end();
   for( ; nd != end_nd; ++nd) {    
-    std::vector <unsigned int> empty;
-    std::vector<unsigned int> globalIDs;
-    dofMap->getDOFs(*nd, globalIDs, empty);
+    std::vector<size_t> globalIDs;
+    dofMap->getDOFs(nd->globalID(), globalIDs);
     // Compute exact solution from manufactured solution
-    std::vector<double> displacementXYZ = manufacturedSolution->getExactSolutions(nd->x(), nd->y(), nd->z());
+    std::vector<double> coord = nd->coord();
+    std::vector<double> displacementXYZ = manufacturedSolution->getExactSolutions(coord[0], coord[1], coord[2]);
     // Distribute values in the vector object
     for(unsigned int xyz = 0; xyz < 3; ++xyz) {
       exactSolutionsVec->setLocalValueByGlobalID(globalIDs[xyz], displacementXYZ[xyz]); 
@@ -292,9 +305,11 @@ void linearElasticTest(AMP::UnitTest *ut,
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
   /** Vectors: solution, right-hand side, residual */
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector(bvpOperator->getInputVariable());
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector(bvpOperator->getOutputVariable());
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector(bvpOperator->getOutputVariable());
+  AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF = 
+     AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,3);
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,bvpOperator->getInputVariable());
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,bvpOperator->getOutputVariable());
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,bvpOperator->getOutputVariable());
 
   /** Create an operator to get manufactured solution and forcing terms */
   boost::shared_ptr<AMP::Operator::Operator> volumeOp = AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
@@ -307,13 +322,13 @@ void linearElasticTest(AMP::UnitTest *ut,
   boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeIntegralOp = boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(volumeOp);
   computeForcingTerms(meshAdapter, volumeIntegralOp, manufacturedSolution, rhsVec, true);
 
-  AMP::Mesh::DOFMap::shared_ptr dofMap = meshAdapter->getDOFMap(var);
   /** Compute Dirichlet values */
   boost::shared_ptr<AMP::Operator::DirichletMatrixCorrection> dirichletMatOp = boost::dynamic_pointer_cast<
     AMP::Operator::DirichletMatrixCorrection>(bvpOperator->getBoundaryOperator()); 
-
+AMP_ERROR("Not converted yet"); /*
   std::vector<short int> dirichletBoundaryIds =  dirichletMatOp->getBoundaryIds();
   std::vector<std::vector<unsigned int> > dirichletDofIds =  dirichletMatOp->getDofIds();
+  AMP::Mesh::DOFMap::shared_ptr dofMap = meshAdapter->getDOFMap(var);
   for(unsigned int i = 0; i < dirichletBoundaryIds.size(); i++) { 
     AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator bnd = meshAdapter->beginOwnedBoundary(dirichletBoundaryIds[i]);
     AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator end_bnd = meshAdapter->endOwnedBoundary(dirichletBoundaryIds[i]);
@@ -329,7 +344,8 @@ void linearElasticTest(AMP::UnitTest *ut,
     } // end loop over all boundary nodes with current boundary marker
   } // end loop over all boundary markers
 
-  /** Compute Neumann values */
+
+  // Compute Neumann values
   boost::shared_ptr<AMP::Operator::NeumannVectorCorrection> neumannVecOp =
     boost::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrection>(
 									AMP::Operator::OperatorBuilder::createBoundaryOperator(meshAdapter,
@@ -403,7 +419,7 @@ void linearElasticTest(AMP::UnitTest *ut,
 
   double finalResidualNorm = resVec->L2Norm();
   AMP::pout<<"Final Residual Norm: "<<finalResidualNorm<<std::endl;
-
+*/
 /*
   if(finalResidualNorm > (1.0e-10*initResidualNorm)) {
     ut->failure(exeName);
@@ -421,13 +437,13 @@ void linearElasticTest(AMP::UnitTest *ut,
            <<std::endl; 
 
   /** Compute exact solution over the domain to compare with numerical solution */
-  AMP::LinearAlgebra::Vector::shared_ptr exactSolVec = meshAdapter->createVector(bvpOperator->getOutputVariable());
+  AMP::LinearAlgebra::Vector::shared_ptr exactSolVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,bvpOperator->getOutputVariable());
   computeExactSolution(meshAdapter, manufacturedSolution, exactSolVec, true);
 
 
   /** scale L2 norm by a factor h^(d/2) */
   double Lx = 10.0 * scaleMeshFactor, Ly = 10.0 * scaleMeshFactor, Lz = 10.0 * scaleMeshFactor;
-  double nElements = meshAdapter->numTotalElements();
+  double nElements = meshAdapter->numGlobalElements(AMP::Mesh::Volume);
   double scaleFactor = sqrt(Lx*Ly*Lz/nElements);
   AMP::pout<<"number of elements = "<<nElements<<"\n";
   AMP::pout<<"scale factor = "<<scaleFactor<<"\n";
