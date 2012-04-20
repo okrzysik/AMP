@@ -1,9 +1,9 @@
 
-NumberOfMeshes = 1
-
-Mesh_1{
-  Filename = "halden_1_pellet_9mil.e"
-    MeshName = "cylinder"
+Mesh{
+    FileName = "halden_1_pellet_9mil.e"
+    MeshType = "libMesh"
+    MeshName = "Pellet"
+    dim      = 3
     x_offset = 0
     y_offset = 0
     z_offset = 0

@@ -17,9 +17,17 @@
 #include "utils/PIO.h"
 #include "materials/Material.h"
 
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/Mesh.h"
 #include "ampmesh/SiloIO.h"
 
+#include "vectors/Variable.h"
+#include "vectors/MultiVariable.h"
+#include "vectors/Vector.h"
+#include "vectors/VectorBuilder.h"
+#include "vectors/ManagedPetscVector.h"
+
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"
@@ -35,13 +43,13 @@
 #include "operators/ColumnOperator.h"
 #include "operators/OperatorBuilder.h"
 
-#include "../ColumnSolver.h"
-#include "../PetscKrylovSolverParameters.h"
-#include "../PetscKrylovSolver.h"
-#include "../PetscSNESSolverParameters.h"
-#include "../PetscSNESSolver.h"
+#include "solvers/ColumnSolver.h"
+#include "solvers/PetscKrylovSolverParameters.h"
+#include "solvers/PetscKrylovSolver.h"
+#include "solvers/PetscSNESSolverParameters.h"
+#include "solvers/PetscSNESSolver.h"
 
-#include "../TrilinosMLSolver.h"
+#include "solvers/TrilinosMLSolver.h"
 
 
 void myTest(AMP::UnitTest *ut, std::string exeName)
@@ -52,18 +60,21 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
-  AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
-  input_db->printClassData(AMP::plog);
+  // Read the input file
+  boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
+  AMP::InputManager::getManager()->parseInputFile ( input_file , input_db );
+  input_db->printClassData (AMP::plog);
 
-  AMP_INSIST(input_db->keyExists("NumberOfMeshes"), "Key does not exist");
-  int numMeshes = input_db->getInteger("NumberOfMeshes");
-  
-  AMP::pout<<"Num meshes = "<<numMeshes<<std::endl;
+  // Get the Mesh database and create the mesh parameters
+  boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  params->setComm(globalComm);
 
-  AMP::Mesh::MeshManagerParameters::shared_ptr  meshmgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
-  AMP::Mesh::MeshManager::shared_ptr  manager ( new AMP::Mesh::MeshManager ( meshmgrParams ) );
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager->getMesh ( "cylinder" );
+  // Create the meshes from the input database
+  AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
+
+  AMP::Discretization::DOFManager::shared_ptr DOF_scalar = AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,1,true);
+
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a nonlinear BVP operator for nonlinear fick diffusion
@@ -84,14 +95,17 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::LinearAlgebra::Variable> fickVariable = fickVolumeOperator->getOutputVariable();
 
   // create solution, rhs, and residual vectors
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = meshAdapter->createVector( fickVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = meshAdapter->createVector( fickVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = meshAdapter->createVector( fickVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( DOF_scalar, fickVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( DOF_scalar, fickVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( DOF_scalar, fickVariable );
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // register some variables for plotting
-  manager->registerVectorAsData ( solVec, "Solution" );
-  manager->registerVectorAsData ( resVec, "Residual" );
+#ifdef USE_SILO
+  AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+  siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
+  siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
+#endif
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // now construct the linear BVP operator for fick
@@ -165,7 +179,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   resVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
 #ifdef USE_SILO
-  manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 0 );
+  siloWriter->writeFile( exeName, 0 );
 #endif
 
   if(finalResidualNorm>1.0e-08) {
