@@ -29,6 +29,22 @@ MoabMapOperator::MoabMapOperator( const SP_MoabMapParams &params )
 
     // Get Moab Interface
     d_moabInterface = d_moab->getMoabInterface();
+
+    // Interpolate to nodes or Gauss points?
+    AMP::pout << "Interpolate type is " << params->d_db->getString("InterpolateToType") << std::endl;
+    if( params->d_db->getString("InterpolateToType").compare("Vertex")==0 )
+    {
+        AMP::pout << "Interpolation type is nodes" << std::endl;
+        d_interpType = NODES;
+    }
+    else if( params->d_db->getString("InterpolateToType").compare("GaussPoint")==0 )
+    {
+        AMP::pout << "Interpolation type is Gauss points" << std::endl;
+        d_interpType = GAUSS_POINTS;
+    }
+    else
+        AMP_ERROR("InterpolateToType must be Vertex or GaussPoint");
+
 }
 
 //---------------------------------------------------------------------------//
@@ -69,11 +85,26 @@ void MoabMapOperator::apply( const SP_Vector &f,
          currentMesh++ )
     {
         AMP::pout << "Getting coords for mesh" << std::endl;
+        AMP::pout << "Interpolate enum is " << d_interpType << std::endl;
 
-        // Get GP coords for this mesh
         std::vector<double> theseCoords;
-        getGPCoords( *currentMesh, theseCoords );
-
+        switch( d_interpType )
+        {
+            case NODES:
+            {
+                // Get nodes coords
+                AMP::pout << "Getting node coords" << std::endl;
+                getNodeCoords( *currentMesh, theseCoords );
+                break;
+            }
+            case GAUSS_POINTS:
+            {
+                // Get GP coords for this mesh
+                AMP::pout << "Getting GP coords" << std::endl;
+                getGPCoords( *currentMesh, theseCoords );
+                break;
+            }
+        }
         // Add new coordinates to list
         allCoords.insert( allCoords.end(), 
                           theseCoords.begin(), 
@@ -85,7 +116,8 @@ void MoabMapOperator::apply( const SP_Vector &f,
     AMP::plog << "Found " << allCoords.size()/3 << " coordinates on all meshes" << std::endl;
 
     // Gives coordinates to Coupler
-    int numCoords = allCoords.size() / 3;
+    unsigned int numCoords = allCoords.size() / 3;
+    AMP_ASSERT( numCoords == r->getLocalSize() );
     d_coupler->locate_points( &allCoords[0], numCoords );
 
     // Interpolate
@@ -112,19 +144,12 @@ void MoabMapOperator::apply( const SP_Vector &f,
 //---------------------------------------------------------------------------//
 /*!
  *\brief Get vector of Gauss points for single mesh
- *
- * The apply function takes a variable distribution from a previously executed
- * Moab-based calculation (which is stored in a MoabBasedOperator object)
- * and maps it onto the Gauss points of a mesh adapter.  The vectors f and r
- * will be untouched (and can simply be NULL), the vector r will be populated
- * with the variable values, and the constants a and b will not be used.  A mesh
- * adapter must be set in the MoabMapOperatorParameters object prior to
- * calling apply.
  */
 //---------------------------------------------------------------------------//
 void MoabMapOperator::getGPCoords( SP_Mesh &mesh, Vec_Dbl &xyz )
 {
     AMP_INSIST(mesh,"Must have Mesh Adapter"); 
+    AMP_INSIST(d_interpType==GAUSS_POINTS,"Wrong interpolation type");
 
     // Get size of Gauss-point vectors
     // We're explicitly assuming every element has 8 Gauss points
@@ -170,6 +195,41 @@ void MoabMapOperator::getGPCoords( SP_Mesh &mesh, Vec_Dbl &xyz )
             gp_ctr++;
         }
         elem_ctr++;
+    }
+
+}
+
+//---------------------------------------------------------------------------//
+/*!
+ *\brief Get vector of node coordinates for single mesh
+ */
+//---------------------------------------------------------------------------//
+void MoabMapOperator::getNodeCoords( SP_Mesh &mesh, Vec_Dbl &xyz )
+{
+    AMP_INSIST(mesh,"Must have Mesh Adapter"); 
+    AMP_INSIST(d_interpType==NODES,"Wrong interpolation type" );
+
+    // Get size of nodal vectors
+    unsigned int numNodes = mesh->numLocalNodes();
+
+    // Resize vector
+    xyz.resize(3*numNodes,0.0);
+
+    // Create Gauss point variable
+    SP_Variable gpVariable(new HexGPVar("coords", mesh));
+
+    // Convert from distance in m (AMP) to cm (Moab)
+    double m_to_cm = 100.0;
+
+    // Extract coordinates of each node
+    AMP::Mesh::MeshAdapter::NodeIterator node = mesh->beginNode();
+    int node_ctr=0;
+    for( ; node != mesh->endNode(); node++ )
+    {
+        xyz[3*node_ctr]   = node->x() * m_to_cm;
+        xyz[3*node_ctr+1] = node->y() * m_to_cm;
+        xyz[3*node_ctr+2] = node->z() * m_to_cm;
+        node_ctr++;
     }
 
 }

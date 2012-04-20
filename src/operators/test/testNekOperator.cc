@@ -24,6 +24,7 @@
 #include "utils/InputDatabase.h"
 
 #include "ampmesh/MeshManager.h"
+#include "ampmesh/MeshVariable.h"
 #include "ampmesh/SiloIO.h"
 
 #include "operators/moab/MoabMapOperator.h"
@@ -31,14 +32,6 @@
 // Nek includes
 #include "nek/NekMoabOperator.h"
 #include "nek/NekMoabOperatorParameters.h"
-
-// MOAB Includes
-#include "moab/Interface.hpp"
-#include "moab/ParallelComm.hpp"
-#include "moab/Range.hpp"
-#include "Coupler.hpp"
-#include "iMesh.h"
-#include "MBiMesh.hpp"
 
 //---------------------------------------------------------------------------//
 // TESTS
@@ -107,12 +100,13 @@ void nekPipeOperator(AMP::UnitTest *ut)
     typedef boost::shared_ptr< MoabMap>                 SP_MoabMap;
 
     nekDB->putString("MoabMapVariable","VPRESS");
+    nekDB->putString("InterpolateToType","GaussPoint");
     SP_MoabMapParams mapParams( new MoabMapParams( nekDB ) );
     mapParams->setMoabOperator( nekOp );
-    mapParams->setMesh( manager );
+    mapParams->setMeshManager( manager );
 
-    AMP::pout << "Creating Moab Map Operator" << std::endl;
-    SP_MoabMap moabMap( new MoabMap( mapParams ) );
+    AMP::pout << "Creating GP-Based Moab Map Operator" << std::endl;
+    SP_MoabMap moabGPMap( new MoabMap( mapParams ) );
 
     // Create variable to hold pressure data
     typedef AMP::LinearAlgebra::Variable      AMPVar;
@@ -121,7 +115,8 @@ void nekPipeOperator(AMP::UnitTest *ut)
     typedef AMP::LinearAlgebra::MultiVariable AMPMultiVar;
     typedef boost::shared_ptr< AMPMultiVar >  SP_AMPMultiVar;
 
-    SP_AMPMultiVar allPressures( new AMPMultiVar( "AllPressures" ) );
+    SP_AMPMultiVar allGPPressures( new AMPMultiVar( "AllPressures" ) );
+    SP_AMPMultiVar allNodePressures( new AMPMultiVar( "AllPressures" ) );
 
     MeshMgr::MeshIterator currentMesh;
     for( currentMesh  = manager->beginMeshes();
@@ -129,30 +124,40 @@ void nekPipeOperator(AMP::UnitTest *ut)
          currentMesh++ )
     {
         // Make variable on this mesh
-        SP_AMPVar thisVar( new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable, 8>("NekPressure", *currentMesh));
+        SP_AMPVar thisGPVar( new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable, 8>("NekGPPressure", *currentMesh));
+        SP_AMPVar thisNodeVar( new AMP::Mesh::NodalScalarVariable("NekNodePressure", *currentMesh));
 
         // Add variable on this mesh to multivariable
-        allPressures->add( thisVar );
+        allGPPressures->add( thisGPVar );
+        allNodePressures->add( thisNodeVar );
     }
 
     // Have mesh manager create vector over all meshes
-    AMP::LinearAlgebra::Vector::shared_ptr r = manager->createVector( allPressures );
+    AMP::LinearAlgebra::Vector::shared_ptr r_gp = manager->createVector( allGPPressures );
+    AMP::LinearAlgebra::Vector::shared_ptr r_node = manager->createVector( allNodePressures );
 
-    AMP::pout << "MultiVector size: " << r->getGlobalSize() << std::endl; 
+    AMP::pout << "Gauss Point MultiVector size: " << r_gp->getGlobalSize() << std::endl; 
+    AMP::pout << "Nodal MultiVector size: " << r_node->getGlobalSize() << std::endl; 
 
     AMP::pout << "Calling apply" << std::endl;
-    moabMap->apply( nullVec, nullVec, r, 0.0, 0.0 );
+    moabGPMap->apply( nullVec, nullVec, r_gp, 0.0, 0.0 );
+
+    AMP::pout << "Creating Node-Based Moab Map Operator" << std::endl;
+    nekDB->putString("InterpolateToType","Vertex");
+    SP_MoabMap moabNodeMap( new MoabMap( mapParams ) );
+
+    moabNodeMap->apply( nullVec, nullVec, r_node, 0.0, 0.0 );
 
     // Did we actually get data?
     typedef AMP::LinearAlgebra::Vector AMPVec;
     AMPVec::iterator myIter;
     int ctr=0;
     bool nonZero = false;
-    for( myIter  = r->begin();
-         myIter != r->end();
+    for( myIter  = r_gp->begin();
+         myIter != r_gp->end();
          myIter++ )
     {
-        AMP::pout << "Element " << ctr << " is " << *myIter << std::endl;
+        AMP::pout << "GP Vector Element " << ctr << " is " << *myIter << std::endl;
 
         if( *myIter != 0.0 )
             nonZero = true;
@@ -161,14 +166,34 @@ void nekPipeOperator(AMP::UnitTest *ut)
     }
 
     if( nonZero )
-        ut->passes("AMP retrieved some data from Nek");
+        ut->passes("Gauss point vector is not identically zero");
     else
-        ut->failure("AMP got all zero data from Nek");
+        ut->failure("Gauss point vector is identically zero");
+
+    ctr=0;
+    nonZero = false;
+    for( myIter  = r_node->begin();
+         myIter != r_node->end();
+         myIter++ )
+    {
+        AMP::pout << "Nodal Vector Element " << ctr << " is " << *myIter << std::endl;
+
+        if( *myIter != 0.0 )
+            nonZero = true;
+
+        ctr++;
+    }
+
+    if( nonZero )
+        ut->passes("Nodal vector is not identically zero");
+    else
+        ut->failure("Nodal vector is identically zero");
 
     // How about some output?
     
 #ifdef USE_SILO
-    manager->registerVectorAsData( r );
+    manager->registerVectorAsData( r_gp );
+    manager->registerVectorAsData( r_node );
     manager->writeFile<AMP::Mesh::SiloIO>( "Nek_Pressure", 0 );
 #endif
 

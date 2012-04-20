@@ -90,11 +90,17 @@ class MoabMapOperator : public AMP::Operator::Operator
 
     private :
 
+        // Where do we want solution
+        enum {NODES, GAUSS_POINTS};
+
         // Build Moab Coupler
         void buildMoabCoupler();
 
         // Get GP Coordinates on mesh
         void getGPCoords( SP_Mesh &mesh, Vec_Dbl &xyz );
+
+        // Get Node Coordinates on mesh
+        void getNodeCoords( SP_Mesh &mesh, Vec_Dbl &xyz );
 
         // Build Volume integral operator
         void buildVolumeIntOp( SP_VolIntOp &volIntOp,
@@ -102,6 +108,9 @@ class MoabMapOperator : public AMP::Operator::Operator
 
         // Parameters
         SP_MoabMapParams d_params;
+
+        // Interpolation type
+        int d_interpType;
 
         // Moab operator object
         SP_MoabOp d_moab;

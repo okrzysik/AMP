@@ -54,7 +54,7 @@ class MoabMapOperatorParameters : public AMP::Operator::OperatorParameters
 
         // Set functions
         void setMoabOperator( SP_MoabOp  &moabOp)  { d_moabOp = moabOp;  }
-        void setMesh(         SP_MeshMgr &meshMgr) { d_mesh   = meshMgr; }
+        void setMeshManager(  SP_MeshMgr &meshMgr) { d_mesh   = meshMgr; }
 
         // Mesh Manager
         SP_MeshMgr d_mesh;
