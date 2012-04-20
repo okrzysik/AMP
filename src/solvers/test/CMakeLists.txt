@@ -47,8 +47,6 @@ COPY_MESH_FILE ( simple_pellet_1x.e )
 COPY_MESH_FILE ( butterfly_pellet_1x.e )
 COPY_MESH_FILE ( tallFuel.e )
 
-ADD_AMP_PROVISIONAL_TEST ( testMLfailure )
-COPY_TEST_DATA_FILE ( input_testMLfailure )
 COPY_MESH_FILE ( reg3ptBox1 )
 COPY_MESH_FILE ( reg3ptBox2 )
 
@@ -61,7 +59,7 @@ COPY_MESH_FILE ( regPlateWithHole2 )
 COPY_MESH_FILE ( regBox1 )
 COPY_MESH_FILE ( regBox2 )
 
-ADD_AMP_TEST_1_2_4 ( testMechElasticLUvsML )
+ADD_AMP_PROVISIONAL_TEST ( testMechElasticLUvsML )
 COPY_TEST_DATA_FILE ( input_testMechElasticLUvsML )
 
 COPY_MESH_FILE ( lumlmesh1 )
