@@ -117,7 +117,7 @@ COPY_MESH_FILE ( tiedContactV3_clad.e )
 
 ADD_AMP_PROVISIONAL_TEST ( testDiffusionMMSInverse )
 
-ADD_AMP_PROVISIONAL_TEST ( testPetscSNESSolver-NonlinearMechanics-Cylinder-1 )
+ADD_AMP_WEEKLY_TEST ( testPetscSNESSolver-NonlinearMechanics-Cylinder-1 4 )
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearMechanics-Cylinder-1 )
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearMechanics-PlateWithHole-1 )
 COPY_MESH_FILE ( thick_walled_cylinder_ver2.e )
