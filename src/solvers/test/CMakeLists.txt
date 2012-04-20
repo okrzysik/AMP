@@ -252,7 +252,7 @@ COPY_MESH_FILE ( fullMpcMesh-bin-4 )
 COPY_MESH_FILE ( fullMpcMesh-bin-5 )
 
 ADD_AMP_WEEKLY_TEST ( testFixedBeam-ThermalExpansion 1 )
-ADD_AMP_PROVISIONAL_TEST ( testFixedBeam-CreepLoading )
+ADD_AMP_WEEKLY_TEST ( testFixedBeam-CreepLoading 1 )
 ADD_AMP_WEEKLY_TEST ( testPetscSNESSolver-NonlinearMechanics-2_COMPARISON 1 )
 
 ADD_AMP_TEST_1_2_4 ( mechanicsVerification )
