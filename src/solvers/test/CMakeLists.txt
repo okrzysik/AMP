@@ -143,10 +143,10 @@ ADD_AMP_PROVISIONAL_TEST ( testPericElastoViscoPlasticity-LoadPrescribed )
 COPY_TEST_DATA_FILE ( input_testPericElastoViscoPlasticity-LoadPrescribed-1 )
 COPY_TEST_DATA_FILE ( input_testPericElastoViscoPlasticity-LoadPrescribed-2 )
 
-ADD_AMP_PROVISIONAL_TEST ( testElementLevel-PericElastoViscoPlasticity )
+ADD_AMP_TEST ( testElementLevel-PericElastoViscoPlasticity )
 COPY_TEST_DATA_FILE ( input_testElementLevel-PericElastoViscoPlasticity-1 )
 
-ADD_AMP_PROVISIONAL_TEST ( testMaterialModels-PericElastoViscoPlasticity-1 )
+ADD_AMP_TEST ( testMaterialModels-PericElastoViscoPlasticity-1 )
 COPY_TEST_DATA_FILE ( input_testMaterialModels-PericElastoViscoPlasticity-1 )
 
 ADD_AMP_WEEKLY_TEST ( testCook 8 )

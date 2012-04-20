@@ -1,23 +1,22 @@
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
-#include <iostream>
-#include <string>
-
-#include "boost/shared_ptr.hpp"
-
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
+#include "utils/UnitTest.h"
+#include "utils/Utilities.h"
 #include "utils/PIO.h"
 #include "materials/Material.h"
 
 
-#include "ampmesh/MeshVariable.h"
+#include "ampmesh/Mesh.h"
 #include "ampmesh/SiloIO.h"
 
+#include "discretization/DOF_Manager.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/Vector.h"
+#include "vectors/VectorBuilder.h"
+#include "vectors/MultiVariable.h"
 
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"
@@ -33,12 +32,11 @@
 #include "operators/OperatorBuilder.h"
 #include "operators/ElementPhysicsModelFactory.h"
 
-#include "../PetscKrylovSolverParameters.h"
-#include "../PetscKrylovSolver.h"
-#include "../PetscSNESSolverParameters.h"
-#include "../PetscSNESSolver.h"
-
-#include "../TrilinosMLSolver.h"
+#include "solvers/PetscKrylovSolverParameters.h"
+#include "solvers/PetscKrylovSolver.h"
+#include "solvers/PetscSNESSolverParameters.h"
+#include "solvers/PetscSNESSolver.h"
+#include "solvers/TrilinosMLSolver.h"
 
 #define ITFAILS ut.failure(__LINE__);
 #define UNIT_TEST(a) if (!(a)) ut.failure(__LINE__);
