@@ -1,6 +1,3 @@
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
 #include <iostream>
 #include <string>
 
@@ -11,8 +8,9 @@
 #include "utils/InputManager.h"
 #include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
+#include "utils/UnitTest.h"
+#include "utils/Utilities.h"
 #include "utils/PIO.h"
-
 
 #include "ampmesh/Mesh.h"
 #include "ampmesh/SiloIO.h"
@@ -56,7 +54,6 @@ void myTest(AMP::UnitTest *ut)
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-  //std::string exeName("testPetscSNESSolver-NonlinearMechanics-2_COMPARISON");    // Read the input file
   boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
   AMP::InputManager::getManager()->parseInputFile ( input_file , input_db );
   input_db->printClassData(AMP::plog);
