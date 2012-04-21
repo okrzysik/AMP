@@ -69,7 +69,7 @@ void addSlaveToMaster(AMP::LinearAlgebra::Variable::shared_ptr slaveVar, AMP::Li
   for(size_t i = 0; i < slaveNodes.size(); i++) {
     slave_dof_map->getDOFs( slaveNodes[i], slaveGlobalIds );
     master_dof_map->getDOFs( masterNodes[i], masterGlobalIds );
-    for(size_t j = 0; j < slaveNodes.size(); j++) {
+    for(size_t j = 0; j < slaveGlobalIds.size(); j++) {
       double slaveVal = slaveVec->getLocalValueByGlobalID(slaveGlobalIds[j]);
       masterVec->addLocalValueByGlobalID(masterGlobalIds[j], slaveVal);
     }//end for j
@@ -91,7 +91,7 @@ void copyMasterToSlave(AMP::LinearAlgebra::Variable::shared_ptr slaveVar, AMP::L
   for(size_t i = 0; i < slaveNodes.size(); i++) {
     slave_dof_map->getDOFs( slaveNodes[i], slaveGlobalIds );
     master_dof_map->getDOFs( masterNodes[i], masterGlobalIds );
-    for(size_t j = 0; j < slaveNodes.size(); j++) {
+    for(size_t j = 0; j < slaveGlobalIds.size(); j++) {
       double masterVal = masterVec->getLocalValueByGlobalID(masterGlobalIds[j]);
       slaveVec->setLocalValueByGlobalID(slaveGlobalIds[j], masterVal);
     }//end for j

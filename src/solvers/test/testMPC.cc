@@ -121,7 +121,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       boost::shared_ptr<AMP::Operator::ElementPhysicsModel> slaveElementPhysicsModel2;
       boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> slaveOperator2 = boost::dynamic_pointer_cast<
         AMP::Operator::MechanicsLinearFEOperator>(AMP::Operator::OperatorBuilder::createOperator(slaveMeshAdapter,
-											         "VolumeOperator",
+											         "MechanicsLinearFEOperator",
 											         input_db,
 											         slaveElementPhysicsModel2));
 
