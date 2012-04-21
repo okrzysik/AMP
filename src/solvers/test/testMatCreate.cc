@@ -12,6 +12,7 @@
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"
+#include "vectors/MultiVector.h"
 #include "vectors/VectorBuilder.h"
 #include "matrices/MatrixBuilder.h"
 
@@ -49,6 +50,20 @@ void myTest(AMP::UnitTest *ut, std::string input_file) {
         ut->passes("Able to create a non-square matrices");
     } else {
         ut->failure("Unable to create a non-square matrices");
+    }
+
+    AMP::LinearAlgebra::Variable::shared_ptr scalarVar (new AMP::LinearAlgebra::Variable("scalarVar"));
+    AMP::LinearAlgebra::Variable::shared_ptr vectorVar (new AMP::LinearAlgebra::Variable("multiVar"));
+    boost::shared_ptr<AMP::LinearAlgebra::MultiVector>  multiVarVec =  AMP::LinearAlgebra::MultiVector::create( "MultiVec", mesh->getComm() );
+    multiVarVec->addVector( AMP::LinearAlgebra::createVector( vectorDOFs , vectorVar ) );
+    multiVarVec->addVector( AMP::LinearAlgebra::createVector( scalarDOFs , scalarVar ) );
+
+    // Create the matrix
+    AMP::LinearAlgebra::Matrix::shared_ptr mat2 = AMP::LinearAlgebra::createMatrix ( multiVarVec, multiVarVec);
+    if(mat2.get()!=NULL){
+        ut->passes("Able to create a mutli-var matrices");
+    } else {
+        ut->failure("Unable to create a multi-var matrices");
     }
 
 }
