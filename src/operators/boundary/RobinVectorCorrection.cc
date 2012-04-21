@@ -146,7 +146,6 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
         dofIndices[i] = dofs[0];
       }
 
-
       createCurrentLibMeshElement();
 
       getDofIndicesForCurrentElement();
