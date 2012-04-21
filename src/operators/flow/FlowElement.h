@@ -7,8 +7,8 @@
 #include "boost/shared_ptr.hpp"
 
 /* AMP files */
-#include "ElementOperation.h"
-#include "FlowTransportModel.h"
+#include "operators/ElementOperation.h"
+#include "operators/flow/FlowTransportModel.h"
 
 /* Libmesh files */
 #include "elem.h"
