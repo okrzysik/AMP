@@ -1,9 +1,6 @@
 
-#include "NavierStokesGalWFLinearFEOperator.h"
+#include "operators/flow/NavierStokesGalWFLinearFEOperator.h"
 #include "utils/Utilities.h"
-
-#if 0
-//This file has not been converted!
 
 namespace AMP {
   namespace Operator {
@@ -183,7 +180,4 @@ namespace AMP {
 
   }
 }//end namespace
-
-#endif
-
 

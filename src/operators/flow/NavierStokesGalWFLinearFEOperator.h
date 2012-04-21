@@ -3,15 +3,12 @@
 #define included_AMP_NavierStokesGalWFLinearFEOperator
 
 /* AMP files */
-#include "LinearFEOperator.h"
-#include "NavierStokesConstants.h"
-#include "NavierStokesGalWFLinearFEOperatorParameters.h"
-#include "NavierStokesGalWFLinearElement.h"
+#include "operators/LinearFEOperator.h"
+#include "operators/flow/NavierStokesConstants.h"
+#include "operators/flow/NavierStokesGalWFLinearFEOperatorParameters.h"
+#include "operators/flow/NavierStokesGalWFLinearElement.h"
 
 #include <vector>
-
-#if 0
-//This file has not been converted!
 
 namespace AMP {
   namespace Operator {
@@ -32,17 +29,7 @@ namespace AMP {
 
         void postElementOperation();
 
-        void setInputVariableName(const std::string & name, int varId = -1) {
-          (void) varId;      
-          d_inpVariable->setName(name);
-        }
-
-        void setOutputVariableName(const std::string & name, int varId = -1) {
-          (void) varId;      
-          d_outVariable->setName(name);
-        }
-
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1) {
+        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
           return d_inpVariable;
         }
 
@@ -85,7 +72,3 @@ namespace AMP {
 }
 
 #endif
-
-#endif
-
-
