@@ -75,16 +75,11 @@ namespace Operator {
         dwdy += (elementInputVectors[NavierStokes::VELOCITY][(3*k) + 2]*u_dphi[k][qp](1));
         dwdz += (elementInputVectors[NavierStokes::VELOCITY][(3*k) + 2]*u_dphi[k][qp](2));
 
-      } //end for k
-
-
-      for(unsigned int k = 0; k < elementInputVectors[NavierStokes::PRESSURE].size(); k++) {
         dpdx += (elementInputVectors[NavierStokes::PRESSURE][k ]*p_dphi[k][qp](0));
         dpdy += (elementInputVectors[NavierStokes::PRESSURE][k ]*p_dphi[k][qp](1));
         dpdz += (elementInputVectors[NavierStokes::PRESSURE][k ]*p_dphi[k][qp](2));
 
       } //end for k
-
 
       d_density = d_transportModel->getDensity();
       d_fmu = d_transportModel->getViscosity();
