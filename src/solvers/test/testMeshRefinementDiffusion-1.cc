@@ -61,8 +61,9 @@
 #include "node.h"
 
 #define _PI_ 3.14159265
-#define __INIT_FN__(x,y) (800+pow(10,6)*(pow(x,2)+pow(y,2))) // Manufactured Solution
-#define __FsnK__() (4*pow(10,6))
+#define __INIT_FN__(x,y,z) (800+(pow(x,2)+pow(y,2)+pow(z,2))) // Manufactured Solution
+#define __dTdn__(x,y,z) (2*x + 2*y -2*z) // Manufactured Normal Gradient 
+#define __FsnK__() (6)
 
 
 void calculateManufacturedSolution(AMP::Mesh::Mesh::shared_ptr meshAdapter,
@@ -74,26 +75,61 @@ void calculateManufacturedSolution(AMP::Mesh::Mesh::shared_ptr meshAdapter,
                 
     AMP::Discretization::DOFManager::shared_ptr dof_map = manufacturedSolution->getDOFManager();
 
-    AMP::Mesh::MeshIterator el = meshAdapter->getIterator(AMP::Mesh::Volume, 0);
-    AMP::Mesh::MeshIterator end_el = el.end();
+    AMP::Mesh::Mesh::shared_ptr  meshAdapter1 = meshAdapter->Subset( "Left" );
+    AMP::Mesh::Mesh::shared_ptr  meshAdapter2 = meshAdapter->Subset( "Right" );
 
-    for( ; el != end_el; ++el) {
-      std::vector<AMP::Mesh::MeshElement> d_currNodes = el->getElements(AMP::Mesh::Vertex);
+    if( meshAdapter2.get() != NULL ){
+      AMP::Mesh::MeshIterator el = meshAdapter2->getIterator(AMP::Mesh::Volume, 0);
+      AMP::Mesh::MeshIterator end_el = el.end();
 
-      std::vector<AMP::Mesh::MeshElementID> globalIDs(d_currNodes.size()); 
+      for( ; el != end_el; ++el) {
+        std::vector<AMP::Mesh::MeshElement> d_currNodes = el->getElements(AMP::Mesh::Vertex);
 
-      std::vector<size_t> d_dofIndices; 
-      for(unsigned int j = 0; j < d_currNodes.size(); j++) {
-        globalIDs[j] = d_currNodes[j].globalID();
-      }  // end of j
-      dof_map->getDOFs(globalIDs, d_dofIndices);
+        std::vector<AMP::Mesh::MeshElementID> globalIDs(d_currNodes.size()); 
 
-      for(unsigned int j = 0; j < d_currNodes.size(); j++) {
-        std::vector<double> pt = d_currNodes[j].coord();
-        double val1 = __INIT_FN__(pt[0],pt[1]); 
-        manufacturedSolution->setLocalValueByGlobalID(d_dofIndices[j],val1);
-      } //end for node
+        std::vector<size_t> d_dofIndices; 
+        for(unsigned int j = 0; j < d_currNodes.size(); j++) {
+          globalIDs[j] = d_currNodes[j].globalID();
+        }  // end of j
+        dof_map->getDOFs(globalIDs, d_dofIndices);
+
+        for(unsigned int j = 0; j < d_currNodes.size(); j++) {
+          std::vector<double> pt = d_currNodes[j].coord();
+          double val1 = __INIT_FN__(pt[0],pt[1],pt[2]); 
+          manufacturedSolution->setLocalValueByGlobalID(d_dofIndices[j],val1);
+        } //end for node
+      }
+    }else if (meshAdapter1.get() != NULL){
+      AMP::Mesh::MeshIterator el = meshAdapter1->getIterator(AMP::Mesh::Volume, 0);
+      AMP::Mesh::MeshIterator end_el = el.end();
+
+      for( ; el != end_el; ++el) {
+        std::vector<AMP::Mesh::MeshElement> d_currNodes = el->getElements(AMP::Mesh::Vertex);
+
+        std::vector<AMP::Mesh::MeshElementID> globalIDs(d_currNodes.size()); 
+
+        std::vector<size_t> d_dofIndices; 
+        for(unsigned int j = 0; j < d_currNodes.size(); j++) {
+          globalIDs[j] = d_currNodes[j].globalID();
+        }  // end of j
+        dof_map->getDOFs(globalIDs, d_dofIndices);
+
+        for(unsigned int j = 0; j < d_currNodes.size(); j++) {
+          std::vector<double> pt = d_currNodes[j].coord();
+          double val1 = __INIT_FN__(pt[0],pt[1],pt[2]); 
+          double val2 = __INIT_FN__(pt[0],pt[1],pt[2]-20); 
+          double val3 = __dTdn__(pt[0],pt[1],pt[2]); 
+
+          if( el->isOnBoundary(1) ) {
+            manufacturedSolution->setLocalValueByGlobalID(d_dofIndices[j], val2 + (1./2920.)*val3 );
+          }else{
+            manufacturedSolution->setLocalValueByGlobalID(d_dofIndices[j],val1);
+          }
+        } //end for node
+      }
+
     }
+
     manufacturedSolution->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
 }
@@ -194,7 +230,8 @@ void computeL2Norm(AMP::Mesh::Mesh::shared_ptr meshAdapter,
     for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++) {
       double px = coordinates[qp](0);
       double py = coordinates[qp](1);
-      double manufacturedAtGauss = __INIT_FN__(px,py); 
+      double pz = coordinates[qp](2);
+      double manufacturedAtGauss = __INIT_FN__(px,py,pz); 
 
       *discretizationErrorNorm2 += JxW[qp]* pow( (computedAtGauss[qp]
             - manufacturedAtGauss), 2);
@@ -335,15 +372,11 @@ registerMapswithThermalOperator( boost::shared_ptr<AMP::InputDatabase> input_db 
 //       Main Program     //
 ///////////////////////////////////////////////
 
-void myTest(AMP::UnitTest *ut, std::string exeName)
+void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
+    AMP::AMP_MPI globalComm)
 {
-  std::string input_file = "input_" + exeName;
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
-  AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
-  AMP::InputManager::getManager()->parseInputFile(input_file,input_db);
-  input_db->printClassData(AMP::plog);
-
+  std::string silo_file = "testMeshRefinementDiffusion-1";
   boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
   AMP::Mesh::MeshParameters::shared_ptr meshmgrParams (new AMP::Mesh::MeshParameters ( mesh_db ) );
   meshmgrParams->setComm(globalComm);
@@ -370,11 +403,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-  AMP::LinearAlgebra::Vector::shared_ptr manufacturedSolution = AMP::LinearAlgebra::createVector( nodalScalarDOF, outputVar, true );
-  AMP::LinearAlgebra::Vector::shared_ptr thermalConductivity  = AMP::LinearAlgebra::createVector( nodalScalarDOF, outputVar, true );
+  AMP::LinearAlgebra::Vector::shared_ptr manufacturedSolution       = AMP::LinearAlgebra::createVector( nodalScalarDOF, outputVar, true );
+  AMP::LinearAlgebra::Vector::shared_ptr thermalConductivity        = AMP::LinearAlgebra::createVector( nodalScalarDOF, outputVar, true );
   AMP::LinearAlgebra::Vector::shared_ptr manufacturedNormalGradient = AMP::LinearAlgebra::createVector( nodalScalarDOF, outputVar, true );
-  AMP::LinearAlgebra::Vector::shared_ptr solutionError        = AMP::LinearAlgebra::createVector( nodalScalarDOF, outputVar, true );
-  AMP::LinearAlgebra::Vector::shared_ptr thermMapVec          = AMP::LinearAlgebra::createVector( nodalScalarDOF, outputVar, true );
+  AMP::LinearAlgebra::Vector::shared_ptr solutionError              = AMP::LinearAlgebra::createVector( nodalScalarDOF, outputVar, true );
+  AMP::LinearAlgebra::Vector::shared_ptr thermMapVec                = AMP::LinearAlgebra::createVector( nodalScalarDOF, outputVar, true );
 
   boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> mapsColumn;
   createThermalMaps( input_db,  manager, thermMapVec , mapsColumn);
@@ -406,7 +439,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   siloWriter->registerVector( solutionError, manager, AMP::Mesh::Vertex , "SolutionErro" );
 
   siloWriter->registerVector( manufacturedRHS , manager, AMP::Mesh::Volume,"ManufacturedRhs");
-  siloWriter->writeFile( exeName, 0 );
+  siloWriter->writeFile( silo_file , 0 );
 #endif 
 
   TemperatureVec->copyVector(manufacturedSolution);
@@ -503,9 +536,33 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
 
 #ifdef USE_SILO
-  siloWriter->writeFile( exeName, 1 );
+  siloWriter->writeFile( silo_file , 1 );
 #endif
 
+}
+
+void multiMeshLoop(AMP::UnitTest *ut, std::string exeName)
+{
+  std::string input_file = "input_" + exeName;
+
+  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
+  AMP::InputManager::getManager()->parseInputFile(input_file,input_db);
+  input_db->printClassData(AMP::plog);
+
+
+  std::string str1="cube8.with.boundary.labels.e";
+  std::string str2="cube64.with.boundary.labels.e";
+  std::string str3="cube256.with.boundary.labels.e";
+
+  boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+  boost::shared_ptr<AMP::Database> leftMesh_db  = mesh_db->getDatabase( "Mesh_1" );
+  boost::shared_ptr<AMP::Database> rightMesh_db = mesh_db->getDatabase( "Mesh_2" );
+
+  leftMesh_db->putString("FileName",str2);
+  rightMesh_db->putString("FileName",str2);
+
+  myTest(ut , input_db ,globalComm);
 }
 
 int main(int argc, char *argv[])
@@ -519,7 +576,7 @@ int main(int argc, char *argv[])
   {
     try
     {
-      myTest(&ut, exeNames[i]);
+      multiMeshLoop(&ut, exeNames[i]);
     } catch (std::exception &err) {
       std::cout << "ERROR:While testing " << argv[0]<<err.what()<<std::endl;
       ut.failure("ERROR: While testing");
