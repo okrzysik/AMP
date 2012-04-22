@@ -3,8 +3,6 @@
 #include "utils/Utilities.h"
 #include "MassLinearElement.h"
 #include "SourceNonlinearElement.h"
-#include "ConsMomentumGalWFLinearElement.h"
-#include "ConsMassGalWFLinearElement.h"
 #include "MechanicsLinearElement.h"
 #include "MechanicsNonlinearElement.h"
 #include "MechanicsLinearUpdatedLagrangianElement.h"
@@ -53,14 +51,6 @@ namespace AMP {
         else if (name=="DiffusionNonlinearElement")
         {
           retElementOp.reset(new DiffusionNonlinearElement(params));
-        }
-        else if (name=="ConsMomentumGalWFLinearElement")
-        {
-          retElementOp.reset(new ConsMomentumGalWFLinearElement(params));
-        }
-        else if (name=="ConsMassGalWFLinearElement")
-        {
-          retElementOp.reset(new ConsMassGalWFLinearElement(params));
         }
         else if (name=="MassLinearElement")
         {

@@ -25,7 +25,7 @@ namespace AMP {
 
         void postAssembly();
 
-        void preElementOperation(const AMP::Mesh::MeshManager::Adapter::Element &);
+        void preElementOperation(const AMP::Mesh::MeshElement &);
 
         void postElementOperation();
 
@@ -47,8 +47,16 @@ namespace AMP {
 
       protected :
 
-        std::vector<unsigned int> d_dofIndices[3]; 
-        std::vector<unsigned int> d_dofIndices1; 
+        void gettype0DofIndicesForCurrentElement(int varId, std::vector<std::vector<size_t> > & dofIds);
+        void gettype1DofIndicesForCurrentElement(int varId, std::vector<size_t> & dofIds);
+
+        void createHex27LibMeshElement();
+        void destroyHex27LibMeshElement();
+
+        std::vector<std::vector<size_t> > d_type0DofIndices; /**< Primary DOF indices */
+        std::vector<size_t> d_type1DofIndices; 
+
+        boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
 
         std::vector<std::vector<double> > d_elementStiffnessMatrix; 
 

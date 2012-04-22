@@ -32,6 +32,7 @@ namespace Operator {
           else{
             d_density = (params->d_db)->getDoubleWithDefault("DENSITY",1000);
             d_fmu     = (params->d_db)->getDoubleWithDefault("VISCOSITY",8.9e-7);
+            d_Re      = (params->d_db)->getDoubleWithDefault("ReynoldsNumber",100.0);
           }
 
         }
@@ -50,13 +51,15 @@ namespace Operator {
         return d_fmu;
       }
 
+      double getReynoldsNumber(){
+        return d_Re;
+      }
+
     protected :
 
       bool d_useMaterialsLibrary;
 
-      double d_density;
-
-      double d_fmu;
+      double d_density , d_fmu , d_Re ;
 
       AMP::Materials::Material::shared_ptr d_coolant; /**< Shared pointer to the materials object. */
 

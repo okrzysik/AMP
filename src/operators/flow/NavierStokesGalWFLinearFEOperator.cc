@@ -1,6 +1,9 @@
 
 #include "operators/flow/NavierStokesGalWFLinearFEOperator.h"
-#include "utils/Utilities.h"
+#include "matrices/MatrixBuilder.h"
+#include "vectors/VectorBuilder.h"
+#include "cell_hex27.h"
+#include "node.h"
 
 namespace AMP {
   namespace Operator {
@@ -19,7 +22,7 @@ namespace AMP {
 
         d_inpVariable.reset(new AMP::LinearAlgebra::MultiVariable("myInpVar"));
         d_outVariable.reset(new AMP::LinearAlgebra::MultiVariable("myOutVar"));
-        for(unsigned int i = 0; i < NavierStokes::TOTAL_NUMBER_OF_VARIABLES; i++) {
+        for(unsigned int i = 0; i < 2; i++) {
           AMP::LinearAlgebra::Variable::shared_ptr dummyVar;
           d_inpVariable->add(dummyVar);
           d_outVariable->add(dummyVar);
@@ -32,12 +35,12 @@ namespace AMP {
         AMP_INSIST(activeInpVar_db->keyExists("PRESSURE"), "VELOCITY must be active");
 
         std::string tempVarName = activeInpVar_db->getString("VELOCITY");
-        AMP::LinearAlgebra::Variable::shared_ptr tempVar(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(tempVarName, d_MeshAdapter) ); 
+        AMP::LinearAlgebra::Variable::shared_ptr tempVar(new AMP::LinearAlgebra::Variable(tempVarName) ); 
         d_inpVariable->setVariable(NavierStokes::VELOCITY, tempVar);
         d_outVariable->setVariable(NavierStokes::VELOCITY, tempVar);
 
         tempVarName = activeInpVar_db->getString("PRESSURE");
-        AMP::LinearAlgebra::Variable::shared_ptr tempVar2(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1>(tempVarName, d_MeshAdapter) ); 
+        AMP::LinearAlgebra::Variable::shared_ptr tempVar2(new AMP::LinearAlgebra::Variable(tempVarName) ); 
         d_inpVariable->setVariable(NavierStokes::PRESSURE, tempVar2);
         d_outVariable->setVariable(NavierStokes::PRESSURE, tempVar2);
 
@@ -48,7 +51,9 @@ namespace AMP {
           if(isNonlinearOperatorInitialized) {
             reset(params);
           } else {
-            d_matrix = d_MeshAdapter->createMatrix ( d_inpVariable, d_outVariable );
+            AMP::LinearAlgebra::Vector::shared_ptr tmpInVec = AMP::LinearAlgebra::createVector(d_inDofMap, d_inpVariable, true);
+            AMP::LinearAlgebra::Vector::shared_ptr tmpOutVec = AMP::LinearAlgebra::createVector(d_outDofMap, d_outVariable, true);
+            d_matrix = AMP::LinearAlgebra::createMatrix(tmpInVec, tmpOutVec);
           }
         } else {
           reset(params);
@@ -107,40 +112,39 @@ namespace AMP {
       d_matrix->makeConsistent ();
     }
 
-    void NavierStokesGalWFLinearFEOperator :: preElementOperation( const AMP::Mesh::MeshManager::Adapter::Element & elem ) {
-      unsigned int num_local_dofs = 0;
-      for(unsigned int i = 0; i < 3; i++) {
-        (dof_maps[0])->getDOFs (elem, d_dofIndices[i], i);
-        num_local_dofs += d_dofIndices[i].size();
-      }//end for i
+    void NavierStokesGalWFLinearFEOperator :: preElementOperation( const AMP::Mesh::MeshElement & elem ) {
 
-      unsigned int num_local_dofs1 = 0;
-      (dof_maps[1])->getDOFs (elem, d_dofIndices1);
-      num_local_dofs1 += d_dofIndices1.size();
+      d_currNodes = elem.getElements(AMP::Mesh::Vertex);
+      unsigned int numNodesInCurrElem = d_currNodes.size();
+
+      gettype0DofIndicesForCurrentElement(NavierStokes::VELOCITY, d_type0DofIndices);
+      gettype1DofIndicesForCurrentElement(NavierStokes::PRESSURE, d_type1DofIndices);
+
+      createHex27LibMeshElement();
 
       std::vector<std::vector<double> > elementInputVectors(NavierStokes::TOTAL_NUMBER_OF_VARIABLES);
 
-      elementInputVectors[NavierStokes::VELOCITY].resize(num_local_dofs);
-      elementInputVectors[NavierStokes::PRESSURE].resize(num_local_dofs1);
-      if(d_inVec[NavierStokes::TEMPERATURE].get() != NULL) {
-        elementInputVectors[NavierStokes::TEMPERATURE].resize(num_local_dofs1);
-      }
+      elementInputVectors[NavierStokes::VELOCITY].resize(3*numNodesInCurrElem);
+      elementInputVectors[NavierStokes::PRESSURE].resize(numNodesInCurrElem);
 
-      d_numNodesForCurrentElement = elem.numNodes();
+      if(d_inVec[NavierStokes::TEMPERATURE].get() != NULL) {
+        elementInputVectors[NavierStokes::TEMPERATURE].resize(numNodesInCurrElem);
+      }
 
       for(unsigned int r = 0; r < d_numNodesForCurrentElement; r++) {
         for(unsigned int d = 0; d < 3; d++) {
-          elementInputVectors[NavierStokes::VELOCITY][(3*r) + d] = (d_inVec[NavierStokes::VELOCITY])->getValueByGlobalID( d_dofIndices[d][r] );
+          elementInputVectors[NavierStokes::VELOCITY][(3*r) + d] = (d_inVec[NavierStokes::VELOCITY])->getValueByGlobalID( d_type0DofIndices[r][d] );
         }
 
-        elementInputVectors[NavierStokes::PRESSURE][r] = (d_inVec[NavierStokes::PRESSURE])->getValueByGlobalID( d_dofIndices1[r] );
+        elementInputVectors[NavierStokes::PRESSURE][r] = (d_inVec[NavierStokes::PRESSURE])->getValueByGlobalID( d_type1DofIndices[r] );
 
         if(d_inVec[NavierStokes::TEMPERATURE].get() != NULL) {
-          elementInputVectors[NavierStokes::TEMPERATURE][r] = (d_inVec[NavierStokes::TEMPERATURE])->getValueByGlobalID( d_dofIndices1[r] );
+          elementInputVectors[NavierStokes::TEMPERATURE][r] = (d_inVec[NavierStokes::TEMPERATURE])->getValueByGlobalID( d_type1DofIndices[r] );
         }
       }
 
 
+      unsigned int num_local_dofs = 4*numNodesInCurrElem;
       d_elementStiffnessMatrix.resize(num_local_dofs);
       for(unsigned int r = 0; r < num_local_dofs; r++) {
         d_elementStiffnessMatrix[r].resize(num_local_dofs);
@@ -149,33 +153,60 @@ namespace AMP {
         }
       }
 
-      const ::Elem* elemPtr = &(elem.getElem());
-
-      d_flowGalWFLinElem->initializeForCurrentElement( elemPtr, d_transportModel );
+      d_flowGalWFLinElem->initializeForCurrentElement( d_currElemPtr, d_transportModel );
       d_flowGalWFLinElem->setElementVectors( elementInputVectors );
       d_flowGalWFLinElem->setElementStiffnessMatrix( d_elementStiffnessMatrix );
     }
 
     void NavierStokesGalWFLinearFEOperator :: postElementOperation() {
 
-      unsigned int num_local_dofs_per_component = d_dofIndices[0].size();
-
-      for(unsigned int r = 0; r < num_local_dofs_per_component; r++) {
+      for(unsigned int r = 0; r < d_type0DofIndices.size() ; r++) {
         for(unsigned int dr = 0; dr < 4; dr++) {
-          for(unsigned int c = 0; c < num_local_dofs_per_component; c++) {
+          for(unsigned int c = 0; c < d_type0DofIndices.size() ; c++) {
             for(unsigned int dc = 0; dc < 4; dc++) {
               if( dr<3 && dc<3 ){
-                d_matrix->addValueByGlobalID( d_dofIndices[dr][r], d_dofIndices[dc][c], 
+                d_matrix->addValueByGlobalID( d_type0DofIndices[r][dr], d_type0DofIndices[c][dc], 
                     d_elementStiffnessMatrix[(4*r) + dr][(4*c) + dc] );
               }else{
-                d_matrix->addValueByGlobalID( d_dofIndices1[r], d_dofIndices1[c], 
-                    d_elementStiffnessMatrix[(4*r) + dr][(4*c) + dc] );
+                d_matrix->addValueByGlobalID( d_type1DofIndices[r], d_type1DofIndices[r], 
+                    d_elementStiffnessMatrix[(4*r) + 3][(4*c) + 3] );
               }
             }
           }
         }
       }
 
+      destroyHex27LibMeshElement() ;
+    }
+
+    void NavierStokesGalWFLinearFEOperator :: gettype0DofIndicesForCurrentElement(int varId, std::vector<std::vector<size_t> > & dofIds) {
+      dofIds.resize(d_currNodes.size());
+      for(unsigned int j = 0; j < d_currNodes.size(); j++) {
+        d_dofMap[varId]->getDOFs(d_currNodes[j].globalID(), dofIds[j]);
+      } // end of j
+     }
+
+    void NavierStokesGalWFLinearFEOperator :: gettype1DofIndicesForCurrentElement(int varId, std::vector<size_t> & dofIds) {
+      for(unsigned int j = 0; j < d_currNodes.size(); j++) {
+        d_dofMap[varId]->getDOFs(d_currNodes[j].globalID(), dofIds);
+      } // end of j
+     }
+
+    void NavierStokesGalWFLinearFEOperator :: createHex27LibMeshElement() {
+      d_currElemPtr = new ::Hex27;
+      for(size_t j = 0; j < d_currNodes.size(); j++) {
+        std::vector<double> pt = d_currNodes[j].coord();
+        d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
+      }//end for j
+    }
+
+    void NavierStokesGalWFLinearFEOperator :: destroyHex27LibMeshElement() {
+      for(size_t j = 0; j < d_currElemPtr->n_nodes(); j++) {
+        delete (d_currElemPtr->get_node(j));
+        d_currElemPtr->set_node(j) = NULL;
+      }//end for j
+      delete d_currElemPtr;
+      d_currElemPtr = NULL;
     }
 
   }

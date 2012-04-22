@@ -14,8 +14,6 @@
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
-#include "ConsMomentumGalWFLinearFEOperator.h"
-#include "ConsMassGalWFLinearFEOperator.h"
 #include "FickSoretNonlinearFEOperator.h"
 #include "VolumeIntegralOperator.h"
 #include "MassLinearFEOperator.h"
@@ -124,14 +122,6 @@ OperatorBuilder::createOperator(boost::shared_ptr<OperatorParameters>  in_params
     {
       retOperator.reset(new FlowFrapconJacobian(boost::dynamic_pointer_cast<FlowFrapconJacobianParameters>(in_params)));
     }
-  else if(name=="ConsMassGalWFLinearFEOperator")
-    {
-      retOperator.reset(new ConsMassGalWFLinearFEOperator(boost::dynamic_pointer_cast<ConsMassGalWFLinearFEOperatorParameters>(in_params)));
-    }
-  else if(name=="ConsMomentumGalWFLinearFEOperator")
-    {
-      retOperator.reset(new ConsMomentumGalWFLinearFEOperator(boost::dynamic_pointer_cast<ConsMomentumGalWFLinearFEOperatorParameters>(in_params)));
-    }
   else if(name=="NeutronicsRhs")
     {
       retOperator.reset(new NeutronicsRhs(boost::dynamic_pointer_cast<NeutronicsRhsParameters>(in_params)));
@@ -222,14 +212,6 @@ OperatorBuilder::createOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter,
     {
       retOperator = OperatorBuilder::createFlowFrapconJacobian(meshAdapter, operator_db);
     }
-  else if(operatorType=="ConsMomentumLinearFEOperator")
-    {
-      retOperator = OperatorBuilder::createLinearConsMomentumGalWFOperator(meshAdapter, operator_db, elementPhysicsModel);
-    }
-  else if(operatorType=="ConsMassLinearFEOperator")
-    {
-      retOperator = OperatorBuilder::createLinearConsMassGalWFOperator(meshAdapter, operator_db, elementPhysicsModel);
-    }
   else if(operatorType=="NeutronicsRhsOperator")
     {
       retOperator = OperatorBuilder::createNeutronicsRhsOperator(meshAdapter, operator_db);
@@ -297,93 +279,6 @@ OperatorBuilder::createFlowFrapconOperator( AMP::Mesh::Mesh::shared_ptr meshAdap
   
   return flowOp;
 }
-  
-AMP::Operator::Operator::shared_ptr
-OperatorBuilder::createLinearConsMassGalWFOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-						    boost::shared_ptr<AMP::InputDatabase> input_db,
-						    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel)
-{
-  
-  // first create a FlowTransportModel
-  if(elementPhysicsModel.get()==NULL)
-    {
-      AMP_INSIST(input_db->keyExists("FlowTransportModel"), "Key ''FlowTransportModel'' is missing!");
-      
-      boost::shared_ptr<AMP::Database> transportModel_db = input_db->getDatabase("FlowTransportModel");
-      elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
-    }
-  
-  AMP_INSIST(elementPhysicsModel.get()!=NULL,"NULL material model");
-  
-  // next create a ElementOperation object
-  AMP_INSIST(input_db->keyExists("FlowElement"), "Key ''FlowElement'' is missing!");
-  boost::shared_ptr<AMP::Operator::ElementOperation> consMassLinElem = ElementOperationFactory::createElementOperation(input_db->getDatabase("FlowElement"));
-  
-  boost::shared_ptr<AMP::Database> consMassLinFEOp_db;
-  if(input_db->getString("name")=="ConsMassLinearFEOperator")
-    {
-      consMassLinFEOp_db = input_db;
-    }
-  else
-    {
-      AMP_INSIST(input_db->keyExists("name"), "Key ''name'' is missing!");
-    }
-  
-  AMP_INSIST(consMassLinFEOp_db.get()!=NULL, "Error: The database object for ConsMassLinearFEOperator is NULL");
-  
-  boost::shared_ptr<AMP::Operator::ConsMassGalWFLinearFEOperatorParameters> consMassOpParams(new AMP::Operator::ConsMassGalWFLinearFEOperatorParameters( consMassLinFEOp_db ));
-  consMassOpParams->d_transportModel = boost::dynamic_pointer_cast<FlowTransportModel>(elementPhysicsModel);
-  consMassOpParams->d_elemOp = consMassLinElem ;
-  consMassOpParams->d_Mesh = meshAdapter;
-  
-  boost::shared_ptr<AMP::Operator::ConsMassGalWFLinearFEOperator> massLinearOp (new AMP::Operator::ConsMassGalWFLinearFEOperator( consMassOpParams ));
-  
-  return massLinearOp ;
-}
-  
-AMP::Operator::Operator::shared_ptr
-OperatorBuilder::createLinearConsMomentumGalWFOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-							boost::shared_ptr<AMP::InputDatabase> input_db,
-							boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel)
-{
-  
-  // first create a FlowTransportModel
-  if(elementPhysicsModel.get()==NULL)
-    {
-      AMP_INSIST(input_db->keyExists("FlowTransportModel"), "Key ''FlowTransportModel'' is missing!");
-      
-      boost::shared_ptr<AMP::Database> transportModel_db = input_db->getDatabase("FlowTransportModel");
-      elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
-    }
-  
-  AMP_INSIST(elementPhysicsModel.get()!=NULL,"NULL material model");
-  
-  // next create a ElementOperation object
-  AMP_INSIST(input_db->keyExists("FlowElement"), "Key ''FlowElement'' is missing!");
-  boost::shared_ptr<AMP::Operator::ElementOperation> consMomentumLinElem = ElementOperationFactory::createElementOperation(input_db->getDatabase("FlowElement"));
-  
-  boost::shared_ptr<AMP::Database> consMomentumLinFEOp_db;
-  if(input_db->getString("name")=="ConsMomentumLinearFEOperator")
-    {
-      consMomentumLinFEOp_db = input_db;
-    }
-  else
-    {
-      AMP_INSIST(input_db->keyExists("name"), "Key ''name'' is missing!");
-    }
-  
-  AMP_INSIST(consMomentumLinFEOp_db.get()!=NULL, "Error: The database object for ConsMomentumLinearFEOperator is NULL");
-  
-  boost::shared_ptr<AMP::Operator::ConsMomentumGalWFLinearFEOperatorParameters> consMomentumOpParams(new AMP::Operator::ConsMomentumGalWFLinearFEOperatorParameters( consMomentumLinFEOp_db ));
-  consMomentumOpParams->d_transportModel = boost::dynamic_pointer_cast<FlowTransportModel>(elementPhysicsModel);
-  consMomentumOpParams->d_elemOp = consMomentumLinElem ;
-  consMomentumOpParams->d_Mesh = meshAdapter;
-  
-  boost::shared_ptr<AMP::Operator::ConsMomentumGalWFLinearFEOperator> momentumLinearOp (new AMP::Operator::ConsMomentumGalWFLinearFEOperator( consMomentumOpParams ));
-  
-  return momentumLinearOp ;
-}
-  
   
 AMP::Operator::Operator::shared_ptr
 OperatorBuilder::createNeutronicsRhsOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,

@@ -192,7 +192,7 @@ namespace AMP {
           d_outVec->addValueByGlobalID( d_type0DofIndices[r][d], d_elementOutputVector[(4*r) + d] );
         }
       }
-      for(unsigned int r = 0; r < d_type0DofIndices.size() ; r++) {
+      for(unsigned int r = 0; r < d_type1DofIndices.size() ; r++) {
           d_outVec->addValueByGlobalID( d_type1DofIndices[r], d_elementOutputVector[(4*r) + 3] );
       }
       destroyCurrentLibMeshElement();
