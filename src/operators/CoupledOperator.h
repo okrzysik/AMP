@@ -32,7 +32,9 @@ namespace Operator {
 	    {
 	      d_Operators[0]->apply(f,u,r,a,b);
 	    }
-	  d_Operators[1]->apply(f,u,r,a,b);
+          if(d_Operators[1]) {
+            d_Operators[1]->apply(f,u,r,a,b);
+          }
 	  d_Operators[2]->apply(f,u,r,a,b);
 	}
 
@@ -58,14 +60,7 @@ namespace Operator {
 
       bool isValidInput(boost::shared_ptr<AMP::LinearAlgebra::Vector> &u)
       {
-        bool bRetVal=true;
-
-        for(unsigned int i = 1; i < d_Operators.size(); i++)
-        {
-          bRetVal = bRetVal && d_Operators[i]->isValidInput(u);
-        }
-
-        return bRetVal;
+        return d_Operators[2]->isValidInput(u);
       }
 
       virtual ~CoupledOperator() { }
