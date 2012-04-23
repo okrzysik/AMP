@@ -26,7 +26,7 @@ namespace Operator {
         d_Output = out;
       }
 
-      virtual AMP::LinearAlgebra::Variable::shared_ptr  getInputVariable (int varId = -1) { return d_Input; }
+      virtual AMP::LinearAlgebra::Variable::shared_ptr  getInputVariable () { return d_Input; }
       virtual AMP::LinearAlgebra::Variable::shared_ptr  getOutputVariable () { return d_Output; }
 
       virtual ~EpetraMatrixOperator () {}

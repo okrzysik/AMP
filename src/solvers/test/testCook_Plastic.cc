@@ -40,7 +40,7 @@
 
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
-#include "operators/MechanicsNonlinearFEOperator.h"
+#include "operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "operators/ElementPhysicsModel.h"
 #include "operators/OperatorBuilder.h"
 #include "operators/boundary/DirichletVectorCorrection.h"

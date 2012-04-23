@@ -42,13 +42,7 @@
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/MassLinearFEOperator.h"
 
-#include "operators/IsotropicElasticModel.h"
-#include "operators/MechanicsLinearElement.h"
-#include "operators/MechanicsLinearFEOperator.h"
-#include "operators/DirichletMatrixCorrection.h"
-#include "operators/DirichletVectorCorrection.h"
 #include "operators/LinearBVPOperator.h"
-#include "operators/MassMatrixCorrection.h"
 
 #include "solvers/TrilinosMLSolver.h"
 #include "time_integrators/IDATimeIntegrator.h"

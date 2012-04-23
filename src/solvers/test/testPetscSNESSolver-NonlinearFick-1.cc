@@ -24,7 +24,6 @@
 #include "vectors/MultiVariable.h"
 #include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
-#include "vectors/ManagedPetscVector.h"
 
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"

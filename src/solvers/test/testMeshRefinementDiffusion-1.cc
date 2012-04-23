@@ -26,13 +26,11 @@
 #include "operators/BVPOperatorParameters.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
-#include "operators/DiffusionNonlinearFEOperator.h"
 #include "operators/ColumnOperator.h"
 #include "operators/CoupledOperator.h"
 #include "operators/ComputeSurfaceNormal.h"
 #include "operators/OperatorBuilder.h"
-#include "operators/NeumannVectorCorrection.h"
-#include "operators/ColumnBoundaryOperator.h"
+#include "operators/boundary/ColumnBoundaryOperator.h"
 #include "operators/boundary/RobinVectorCorrection.h"
 
 #include "operators/map/ScalarZAxisMap.h"
@@ -343,8 +341,6 @@ createThermalMaps( boost::shared_ptr<AMP::InputDatabase> input_db,
 		   boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> &mapsColumn)
 {
     boost::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "MeshToMeshMaps" );
-
-    AMP::Discretization::DOFManager::shared_ptr dof_map = thermalMapVec->getDOFManager();
 
     mapsColumn = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarZAxisMap> ( manager, map_db );
     mapsColumn->setVector ( thermalMapVec );

@@ -66,8 +66,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::Mesh::Mesh::shared_ptr  mesh = AMP::Mesh::Mesh::buildMesh(params);
 
   // Create the DOFManagers
-  AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,1);
-  AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,3);
+  AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF = 
+    AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,3);
 
   AMP_INSIST(input_db->keyExists("NumberOfLoadingSteps"), "Key ''NumberOfLoadingSteps'' is missing!");
   int NumberOfLoadingSteps = input_db->getInteger("NumberOfLoadingSteps");
