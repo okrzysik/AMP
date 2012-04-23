@@ -70,6 +70,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     helperSetReferenceTemperatureForPelletMechanics(coupledOp, initialTemperatureVec);
   }
 
+  AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+  AMP::LinearAlgebra::Vector::shared_ptr tmpResVec = solVec->cloneVector();
+  solVec->setToScalar(10);
+  coupledOp->apply(nullVec, solVec, tmpResVec);
+  AMP::pout<< "Apply, solVec: "<<std::setprecision(13)<<solVec->L2Norm()<<endl ; 
+  AMP::pout<< "Apply, resVec: "<<std::setprecision(13)<<tmpResVec->L2Norm()<<endl ; 
+
   solVec->zero();
   helperApplyBoundaryCorrectionsForPelletMechanics(coupledOp, solVec, rhsVec);
 
