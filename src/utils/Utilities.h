@@ -108,6 +108,19 @@ namespace Utilities
 
     /*!
      * Soft equal checks if two numbers are within the given precision
+     * \param v1     scalar integer value
+     * \param v2     scalar integer value
+     * \param tol    scalar floating point relative tolerance
+     */
+    inline bool approx_equal(const int &v1, const int &v2, const double tol = 1e-8) {
+        //AMP_ASSERT( tol<1 );
+        //AMP_ASSERT( tol>=0 );
+        double tol2 = tol * (double)std::max( fabs(v1),fabs(v2) );                      // Compute the absolute tolerance
+        return (double)fabs(v1-v2)<=tol2;                    // Check if the two value are less than tolerance
+    }
+
+    /*!
+     * Soft equal checks if two numbers are within the given precision
      * \param v1     scalar floating point value
      * \param v2     scalar floating point value
      * \param tol    relative tolerance
@@ -118,19 +131,6 @@ namespace Utilities
         //AMP_ASSERT( tol>=0 );
         T tol2 = tol*std::max( fabs(v1),fabs(v2) );                      // Compute the absolute tolerance
         return fabs(v1-v2)<=tol2;                    // Check if the two value are less than tolerance
-    }
-
-    /*!
-     * Soft equal checks if two numbers are within the given precision
-     * \param v1     scalar integer value
-     * \param v2     scalar integer value
-     * \param tol    scalar floating point relative tolerance
-     */
-    inline bool approx_equal(const int &v1, const int &v2, const double tol = 1e-8) {
-        //AMP_ASSERT( tol<1 );
-        //AMP_ASSERT( tol>=0 );
-        double tol2 = tol * (double)std::max( fabs(v1),fabs(v2) );                      // Compute the absolute tolerance
-        return (double)fabs(v1-v2)<=tol2;                    // Check if the two value are less than tolerance
     }
 
     /*!
