@@ -103,13 +103,7 @@ namespace AMP {
           */
         void setReferenceTemperature(AMP::LinearAlgebra::Vector::shared_ptr refTemp) {
           AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(Mechanics::TEMPERATURE);
-          if(d_Mesh.get() != NULL) {
-            AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
-            AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = refTemp->select(meshSelector, var->getName());
-            d_referenceTemperature = meshSubsetVec->subsetVectorForVariable(var);
-          } else {
-            d_referenceTemperature = refTemp->subsetVectorForVariable(var);
-          }
+          d_referenceTemperature = mySubsetVector(refTemp, var);
           d_referenceTemperature->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
           if(d_useUpdatedLagrangian) {
             d_inVec_pre[Mechanics::TEMPERATURE]->copyVector(d_referenceTemperature);
@@ -126,13 +120,7 @@ namespace AMP {
           */
         void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
           AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(id);
-          if(d_Mesh.get() != NULL) {
-            AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
-            AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = frozenVec->select(meshSelector, var->getName());
-            d_inVec[id] = meshSubsetVec->subsetVectorForVariable(var);
-          } else {
-            d_inVec[id] = frozenVec->subsetVectorForVariable(var);
-          }
+          d_inVec[id] = mySubsetVector(frozenVec, var);
           (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
         }
 
@@ -164,6 +152,17 @@ namespace AMP {
         boost::shared_ptr<MechanicsMaterialModel> getMaterialModel() { return d_materialModel; }
 
       protected :
+
+        AMP::LinearAlgebra::Vector::shared_ptr mySubsetVector(AMP::LinearAlgebra::Vector::shared_ptr vec, 
+            AMP::LinearAlgebra::Variable::shared_ptr var) {
+          if(d_Mesh.get() != NULL) {
+            AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
+            AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, var->getName());
+            return meshSubsetVec->subsetVectorForVariable(var);
+          } else {
+            return vec->subsetVectorForVariable(var);
+          }
+        }
 
         template <MechanicsNonlinearElement::MaterialUpdateType updateType>
           void updateMaterialForElement(const AMP::Mesh::MeshElement &);

@@ -122,13 +122,13 @@ namespace AMP {
         if(d_isActive[i]) {
           if(!(d_isFrozen[i])) {
             AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(i); 
-            AMP::LinearAlgebra::Vector::shared_ptr vector = u->subsetVectorForVariable(var);
+            AMP::LinearAlgebra::Vector::shared_ptr vector = mySubsetVector(u, var);
             setVector(i, vector);
           }
         }
       }//end for i
 
-      d_outVec = r->subsetVectorForVariable(d_outVariable);
+      d_outVec = mySubsetVector(r, d_outVariable);
       d_outVec->zero();
 
       d_materialModel->preNonlinearAssembly();
@@ -425,36 +425,32 @@ namespace AMP {
 
         // If updated-lagrangian is being used, then displacement and other variable has to be passed to the linear element level.
         if(d_useUpdatedLagrangian) {
-          AMP::LinearAlgebra::Vector::shared_ptr displacementVector = u->subsetVectorForVariable(d_inpVariables->getVariable(Mechanics::DISPLACEMENT));
+          AMP::LinearAlgebra::Vector::shared_ptr displacementVector = mySubsetVector(u, (d_inpVariables->getVariable(Mechanics::DISPLACEMENT)));
           outParams->d_dispVec = displacementVector;
           (outParams->d_dispVec)->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
         }
 
         if(d_jacobianReusesRadialReturn == false) {
-          AMP::LinearAlgebra::Vector::shared_ptr dispVector = u->subsetVectorForVariable (
-              d_inpVariables->getVariable(Mechanics::DISPLACEMENT) );
+          AMP::LinearAlgebra::Vector::shared_ptr dispVector = mySubsetVector(u, (d_inpVariables->getVariable(Mechanics::DISPLACEMENT)));
           setVector(Mechanics::DISPLACEMENT, dispVector);
 
           if(d_isActive[Mechanics::TEMPERATURE]) {
             if(!(d_isFrozen[Mechanics::TEMPERATURE])) {
-              AMP::LinearAlgebra::Vector::shared_ptr tempVector = u->subsetVectorForVariable (
-                  d_inpVariables->getVariable(Mechanics::TEMPERATURE) );
+              AMP::LinearAlgebra::Vector::shared_ptr tempVector = mySubsetVector(u, (d_inpVariables->getVariable(Mechanics::TEMPERATURE)));
               setVector(Mechanics::TEMPERATURE, tempVector);
             }
           }
 
           if(d_isActive[Mechanics::BURNUP]) {
             if(!(d_isFrozen[Mechanics::BURNUP])) {
-              AMP::LinearAlgebra::Vector::shared_ptr burnVector = u->subsetVectorForVariable (
-                  d_inpVariables->getVariable(Mechanics::BURNUP) );
+              AMP::LinearAlgebra::Vector::shared_ptr burnVector = mySubsetVector(u, (d_inpVariables->getVariable(Mechanics::BURNUP)));
               setVector(Mechanics::BURNUP, burnVector);
             }
           }
 
           if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
             if(!(d_isFrozen[Mechanics::OXYGEN_CONCENTRATION])) {
-              AMP::LinearAlgebra::Vector::shared_ptr oxyVector = u->subsetVectorForVariable (
-                  d_inpVariables->getVariable(Mechanics::OXYGEN_CONCENTRATION) );
+              AMP::LinearAlgebra::Vector::shared_ptr oxyVector = mySubsetVector(u, (d_inpVariables->getVariable(Mechanics::OXYGEN_CONCENTRATION)));
               setVector(Mechanics::OXYGEN_CONCENTRATION, oxyVector);
             }
           }
@@ -462,7 +458,7 @@ namespace AMP {
           if(d_isActive[Mechanics::LHGR]) {
             if(!(d_isFrozen[Mechanics::LHGR])) {
               AMP::LinearAlgebra::Variable::shared_ptr lhgrVar = d_inpVariables->getVariable(Mechanics::LHGR);
-              AMP::LinearAlgebra::Vector::shared_ptr lhgrVector = u->subsetVectorForVariable(lhgrVar);
+              AMP::LinearAlgebra::Vector::shared_ptr lhgrVector = mySubsetVector(u, lhgrVar);
               setVector(Mechanics::LHGR, lhgrVector);
             }
           }
@@ -500,13 +496,13 @@ namespace AMP {
       FILE* fp = fopen(fname.c_str(), "w");
 
       AMP::LinearAlgebra::Variable::shared_ptr dispVar = d_inpVariables->getVariable(Mechanics::DISPLACEMENT);
-      AMP::LinearAlgebra::Vector::shared_ptr dispVector = u->subsetVectorForVariable(dispVar);
+      AMP::LinearAlgebra::Vector::shared_ptr dispVector = mySubsetVector(u, dispVar);
       setVector(Mechanics::DISPLACEMENT, dispVector);
 
       if(d_isActive[Mechanics::TEMPERATURE]) {
         if(!(d_isFrozen[Mechanics::TEMPERATURE])) {
           AMP::LinearAlgebra::Variable::shared_ptr tempVar = d_inpVariables->getVariable(Mechanics::TEMPERATURE); 
-          AMP::LinearAlgebra::Vector::shared_ptr tempVector = u->subsetVectorForVariable(tempVar);
+          AMP::LinearAlgebra::Vector::shared_ptr tempVector = mySubsetVector(u, tempVar);
           setVector(Mechanics::TEMPERATURE, tempVector);
         }
       }
@@ -514,7 +510,7 @@ namespace AMP {
       if(d_isActive[Mechanics::BURNUP]) {
         if(!(d_isFrozen[Mechanics::BURNUP])) {
           AMP::LinearAlgebra::Variable::shared_ptr burnVar = d_inpVariables->getVariable(Mechanics::BURNUP);
-          AMP::LinearAlgebra::Vector::shared_ptr burnVector = u->subsetVectorForVariable(burnVar);
+          AMP::LinearAlgebra::Vector::shared_ptr burnVector = mySubsetVector(u, burnVar);
           setVector(Mechanics::BURNUP, burnVector);
         }
       }
@@ -522,7 +518,7 @@ namespace AMP {
       if(d_isActive[Mechanics::OXYGEN_CONCENTRATION]) {
         if(!(d_isFrozen[Mechanics::OXYGEN_CONCENTRATION])) {
           AMP::LinearAlgebra::Variable::shared_ptr oxyVar = d_inpVariables->getVariable(Mechanics::OXYGEN_CONCENTRATION); 
-          AMP::LinearAlgebra::Vector::shared_ptr oxyVector = u->subsetVectorForVariable(oxyVar);
+          AMP::LinearAlgebra::Vector::shared_ptr oxyVector = mySubsetVector(u, oxyVar);
           setVector(Mechanics::OXYGEN_CONCENTRATION, oxyVector);
         }
       }
@@ -530,7 +526,7 @@ namespace AMP {
       if(d_isActive[Mechanics::LHGR]) {
         if(!(d_isFrozen[Mechanics::LHGR])) {
           AMP::LinearAlgebra::Variable::shared_ptr lhgrVar = d_inpVariables->getVariable(Mechanics::LHGR);
-          AMP::LinearAlgebra::Vector::shared_ptr lhgrVector = u->subsetVectorForVariable(lhgrVar);
+          AMP::LinearAlgebra::Vector::shared_ptr lhgrVector = mySubsetVector(u, lhgrVar);
           setVector(Mechanics::LHGR, lhgrVector);
         }
       }
