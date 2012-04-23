@@ -76,7 +76,7 @@ void nekPipeOperator(AMP::UnitTest *ut)
     meshDB->putString("MeshName","fuel");
     meshDB->putDouble("x_offset",0.0);
     meshDB->putDouble("y_offset",0.0);
-    meshDB->putDouble("z_offset",-0.03);
+    meshDB->putDouble("z_offset",0.0);
 
 
     // Create Mesh Manager

@@ -126,6 +126,12 @@ void MoabMapOperator::apply( const SP_Vector &f,
                             d_mapVar, 
                             &outputVar[0] );
 
+    AMP::pout << "Interpolated values" << std::endl;
+    for( unsigned int i=0; i<numCoords; ++i )
+    {
+        AMP::plog << allCoords[3*i] << " " << allCoords[3*i+1] << " " << allCoords[3*i+2] << " " << outputVar[i] << std::endl;
+    }
+
     // Copy values into r
     std::copy( outputVar.begin(), outputVar.end(), r->begin() );
 
