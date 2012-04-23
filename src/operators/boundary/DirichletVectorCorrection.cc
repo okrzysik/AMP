@@ -18,6 +18,7 @@ namespace AMP {
       bool skipParams = (params->d_db)->getBoolWithDefault("skip_params", false);
 
       if(!skipParams) {
+        d_scalingFactor = (params->d_db)->getDoubleWithDefault("SCALING_FACTOR", 1.0);
         d_setResidual = (params->d_db)->getBoolWithDefault("setResidual", false);
         d_isAttachedToVolumeOperator = (params->d_db)->getBoolWithDefault("isAttachedToVolumeOperator", false);
         d_valuesType = (params->d_db)->getIntegerWithDefault("valuesType", 1);
@@ -132,7 +133,7 @@ namespace AMP {
             } else {
               dVal = d_dirichletValues2->getLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]] );
             }
-            rInternal->setLocalValueByGlobalID(bndGlobalIds[d_dofIds[j][i]], dVal);
+            rInternal->setLocalValueByGlobalID(bndGlobalIds[d_dofIds[j][i]], d_scalingFactor*dVal);
           }//end for i
         }//end for bnd
       }//end for j
@@ -162,7 +163,7 @@ namespace AMP {
             } else {
               dVal = d_dirichletValues2->getLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]] );
             }
-            r->setLocalValueByGlobalID(bndGlobalIds[d_dofIds[j][i]], (uVal - dVal));
+            r->setLocalValueByGlobalID(bndGlobalIds[d_dofIds[j][i]], d_scalingFactor*(uVal - dVal));
           }//end for i
         }//end for bnd
       }//end for j

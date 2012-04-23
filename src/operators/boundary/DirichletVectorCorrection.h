@@ -124,6 +124,7 @@ namespace AMP {
 
         int d_valuesType;
 
+        double d_scalingFactor;
       private :
 
     };
