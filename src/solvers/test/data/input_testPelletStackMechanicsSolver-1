@@ -413,7 +413,7 @@ NonlinearSolver {
                   pc_type = "shell"
                   pc_side = "RIGHT"
                   KSPAppendOptionsPrefix = "kspPC_"
-                  KSPOptions = "-kspPC_ksp_max_it 100 -kspPC_ksp_converged_reason" 
+                  KSPOptions = "-kspPC_ksp_max_it 100 -kspPC_ksp_monitor -kspPC_ksp_converged_reason" 
 
                   MLSolver {
                     max_iterations = 1
