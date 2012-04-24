@@ -52,6 +52,8 @@ public:
 
     virtual void  setVector ( AMP::LinearAlgebra::Vector::shared_ptr &p );
 
+    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector ( );
+
 private:
 
     class Point
