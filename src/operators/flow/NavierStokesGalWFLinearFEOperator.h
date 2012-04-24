@@ -3,15 +3,12 @@
 #define included_AMP_NavierStokesGalWFLinearFEOperator
 
 /* AMP files */
-#include "LinearFEOperator.h"
-#include "NavierStokesConstants.h"
-#include "NavierStokesGalWFLinearFEOperatorParameters.h"
-#include "NavierStokesGalWFLinearElement.h"
+#include "operators/LinearFEOperator.h"
+#include "operators/flow/NavierStokesConstants.h"
+#include "operators/flow/NavierStokesGalWFLinearFEOperatorParameters.h"
+#include "operators/flow/NavierStokesGalWFLinearElement.h"
 
 #include <vector>
-
-#if 0
-//This file has not been converted!
 
 namespace AMP {
   namespace Operator {
@@ -28,21 +25,11 @@ namespace AMP {
 
         void postAssembly();
 
-        void preElementOperation(const AMP::Mesh::MeshManager::Adapter::Element &);
+        void preElementOperation(const AMP::Mesh::MeshElement &);
 
         void postElementOperation();
 
-        void setInputVariableName(const std::string & name, int varId = -1) {
-          (void) varId;      
-          d_inpVariable->setName(name);
-        }
-
-        void setOutputVariableName(const std::string & name, int varId = -1) {
-          (void) varId;      
-          d_outVariable->setName(name);
-        }
-
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1) {
+        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
           return d_inpVariable;
         }
 
@@ -60,8 +47,16 @@ namespace AMP {
 
       protected :
 
-        std::vector<unsigned int> d_dofIndices[3]; 
-        std::vector<unsigned int> d_dofIndices1; 
+        void gettype0DofIndicesForCurrentElement(int varId, std::vector<std::vector<size_t> > & dofIds);
+        void gettype1DofIndicesForCurrentElement(int varId, std::vector<size_t> & dofIds);
+
+        void createHex27LibMeshElement();
+        void destroyHex27LibMeshElement();
+
+        std::vector<std::vector<size_t> > d_type0DofIndices; /**< Primary DOF indices */
+        std::vector<size_t> d_type1DofIndices; 
+
+        boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
 
         std::vector<std::vector<double> > d_elementStiffnessMatrix; 
 
@@ -85,7 +80,3 @@ namespace AMP {
 }
 
 #endif
-
-#endif
-
-

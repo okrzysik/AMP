@@ -4,9 +4,6 @@
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 
-#if 0
-//This file has not been converted!
-
 namespace AMP {
   namespace Operator {
 
@@ -40,23 +37,23 @@ namespace AMP {
         d_isFrozen[NavierStokes::TEMPERATURE] = (params->d_db)->getBoolWithDefault("FREEZE_TEMPERATURE", true);
 
         d_inpVariables.reset(new AMP::LinearAlgebra::MultiVariable("myInpVar"));
-        d_outVariables.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 4>("myInpVar", d_MeshAdapter));
+        d_outVariables.reset(new AMP::LinearAlgebra::MultiVariable("myOutVar"));
         for(unsigned int i = 0; i < NavierStokes::TOTAL_NUMBER_OF_VARIABLES; i++) {
           AMP::LinearAlgebra::Variable::shared_ptr dummyVar;
           d_inpVariables->add(dummyVar);
         }//end for i
 
         std::string tempVarName = activeInpVar_db->getString("VELOCITY");
-        AMP::LinearAlgebra::Variable::shared_ptr tempVar(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(tempVarName, d_MeshAdapter) ); 
+        AMP::LinearAlgebra::Variable::shared_ptr tempVar(new AMP::LinearAlgebra::Variable(tempVarName) ); 
         d_inpVariables->setVariable(NavierStokes::VELOCITY, tempVar);
 
         tempVarName = activeInpVar_db->getString("PRESSURE");
-        AMP::LinearAlgebra::Variable::shared_ptr tempVar2(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1>(tempVarName, d_MeshAdapter) ); 
+        AMP::LinearAlgebra::Variable::shared_ptr tempVar2(new AMP::LinearAlgebra::Variable(tempVarName) ); 
         d_inpVariables->setVariable(NavierStokes::PRESSURE, tempVar2);
 
         if(d_isActive[NavierStokes::TEMPERATURE]) {
           std::string varName = activeInpVar_db->getString("TEMPERATURE");
-          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1>(varName, d_MeshAdapter) );
+          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::Variable(varName) );
           d_inpVariables->setVariable(NavierStokes::TEMPERATURE, dummyVar);
           if(d_isFrozen[NavierStokes::TEMPERATURE]) {
             if( params->d_FrozenTemperature != NULL ) {
@@ -90,15 +87,15 @@ namespace AMP {
       AMP::LinearAlgebra::Variable::shared_ptr inpVar;
       switch(varId) {
         case NavierStokes::VELOCITY : {
-                                        inpVar.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 3>(name) );
+                                        inpVar.reset(new AMP::LinearAlgebra::Variable(name) );
                                         break;
                                       }
         case NavierStokes::PRESSURE : {
-                                        inpVar.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1>(name) );
+                                        inpVar.reset(new AMP::LinearAlgebra::Variable(name) );
                                         break;
                                       }
         case NavierStokes::TEMPERATURE : {
-                                           inpVar.reset(new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::NodalVariable, 1>(name) );
+                                           inpVar.reset(new AMP::LinearAlgebra::Variable(name) );
                                            break;
                                          }
         default: 
@@ -113,8 +110,11 @@ namespace AMP {
         init();
       }
 
-      AMP::LinearAlgebra::Variable::shared_ptr tempVar = d_inpVariables->getVariable(NavierStokes::VELOCITY);
-      AMP::LinearAlgebra::Vector::shared_ptr tempVector = u->subsetVectorForVariable(tempVar);
+      AMP::LinearAlgebra::Variable::shared_ptr tempVar; 
+      AMP::LinearAlgebra::Vector::shared_ptr tempVector; 
+      
+      tempVar = d_inpVariables->getVariable(NavierStokes::VELOCITY);
+      tempVector = u->subsetVectorForVariable(tempVar);
       setVector(NavierStokes::VELOCITY, tempVector);
 
       tempVar = d_inpVariables->getVariable(NavierStokes::PRESSURE);
@@ -123,8 +123,8 @@ namespace AMP {
 
       if(d_isActive[NavierStokes::TEMPERATURE]) {
         if(!(d_isFrozen[NavierStokes::TEMPERATURE])) {
-          AMP::LinearAlgebra::Variable::shared_ptr tempVar = d_inpVariables->getVariable(NavierStokes::TEMPERATURE); 
-          AMP::LinearAlgebra::Vector::shared_ptr tempVector = u->subsetVectorForVariable(tempVar);
+          tempVar = d_inpVariables->getVariable(NavierStokes::TEMPERATURE); 
+          tempVector = u->subsetVectorForVariable(tempVar);
           setVector(NavierStokes::TEMPERATURE, tempVector);
         }
       }
@@ -139,34 +139,31 @@ namespace AMP {
       d_outVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
     }
 
-    void NavierStokesGalWFFEOperator :: preElementOperation( const AMP::Mesh::MeshManager::Adapter::Element & elem, 
-        const std::vector<AMP::Mesh::DOFMap::shared_ptr> & dof_maps )
+    // preelement operation for this operator assumes that the pressure and
+    // temperature use same discretization and order of approximation 
+    void NavierStokesGalWFFEOperator :: preElementOperation( const AMP::Mesh::MeshElement & elem) 
     {
-      unsigned int num_local_type0Dofs = 0;
-      for(unsigned int i = 0; i < 3; i++) {
-        (dof_maps[0])->getDOFs (elem, d_type0DofIndices[i], i);
-        num_local_type0Dofs += d_type0DofIndices[i].size();
-      }//end for i
+      d_currNodes = elem.getElements(AMP::Mesh::Vertex);
+      unsigned int numNodesInCurrElem = d_currNodes.size();
 
-      unsigned int num_local_type1Dofs = 0;
-      (dof_maps[1])->getDOFs (elem, d_type1DofIndices);
-      num_local_type1Dofs = d_type1DofIndices.size();
+      gettype0DofIndicesForCurrentElement(NavierStokes::VELOCITY, d_type0DofIndices);
+      gettype1DofIndicesForCurrentElement(NavierStokes::PRESSURE, d_type1DofIndices);
+
+      createCurrentLibMeshElement();
 
       std::vector<std::vector<double> > elementInputVectors(NavierStokes::TOTAL_NUMBER_OF_VARIABLES);
 
-      elementInputVectors[NavierStokes::VELOCITY].resize(num_local_type0Dofs);
-      elementInputVectors[NavierStokes::PRESSURE].resize(num_local_type1Dofs);
+      elementInputVectors[NavierStokes::VELOCITY].resize(3*numNodesInCurrElem);
+      elementInputVectors[NavierStokes::PRESSURE].resize(numNodesInCurrElem);
 
       if(d_isActive[NavierStokes::TEMPERATURE]) {
-        elementInputVectors[NavierStokes::TEMPERATURE].resize(num_local_type1Dofs);
+        elementInputVectors[NavierStokes::TEMPERATURE].resize(numNodesInCurrElem);
       }
 
-      d_numNodesForCurrentElement = elem.numNodes(); 
-
-      for(unsigned int r = 0; r < d_numNodesForCurrentElement; r++) {
+      for(unsigned int r = 0; r < numNodesInCurrElem ; r++) {
         for(unsigned int d = 0; d < 3; d++) {
           elementInputVectors[NavierStokes::VELOCITY][(3*r) + d] = (d_inVec[NavierStokes::VELOCITY])->
-            getValueByGlobalID( d_type0DofIndices[d][r] );
+            getValueByGlobalID( d_type0DofIndices[r][d] );
         }
 
         elementInputVectors[NavierStokes::PRESSURE][r] = (d_inVec[NavierStokes::PRESSURE])->
@@ -178,24 +175,27 @@ namespace AMP {
         }
       }
 
-      d_elementOutputVector.resize(num_local_type0Dofs + num_local_type1Dofs);
-      for(unsigned int i = 0; i < num_local_type0Dofs + num_local_type1Dofs; i++) {
+      d_elementOutputVector.resize(4*numNodesInCurrElem );
+      for(unsigned int i = 0; i < 4*numNodesInCurrElem ; i++) {
         d_elementOutputVector[i] = 0.0;
       }
 
-      const ::Elem* elemPtr = &(elem.getElem());
-
-      d_flowGalWFElem->initializeForCurrentElement( elemPtr, d_transportModel );
+      d_flowGalWFElem->initializeForCurrentElement( d_currElemPtr, d_transportModel );
       d_flowGalWFElem->setElementVectors( elementInputVectors, d_elementOutputVector );
     }
 
     void NavierStokesGalWFFEOperator :: postElementOperation()
     {
-      for(unsigned int r = 0; r < d_numNodesForCurrentElement; r++) {
+      for(unsigned int r = 0; r < d_type0DofIndices.size() ; r++) {
+        AMP_ASSERT(d_type0DofIndices[r].size() == 3);
         for(unsigned int d = 0; d < 3; d++) {
-          d_outVec->addValueByGlobalID( d_type0DofIndices[d][r], d_elementOutputVector[(3*r) + d] );
+          d_outVec->addValueByGlobalID( d_type0DofIndices[r][d], d_elementOutputVector[(4*r) + d] );
         }
       }
+      for(unsigned int r = 0; r < d_type1DofIndices.size() ; r++) {
+          d_outVec->addValueByGlobalID( d_type1DofIndices[r], d_elementOutputVector[(4*r) + 3] );
+      }
+      destroyCurrentLibMeshElement();
     }
 
     void NavierStokesGalWFFEOperator :: init() 
@@ -213,13 +213,6 @@ namespace AMP {
         boost::dynamic_pointer_cast<NavierStokesGalWFFEOperatorParameters>(params); 
 
       AMP_INSIST( ((myParams.get()) != NULL), "Null parameter!" );
-
-      unsigned int numDOFMaps = numberOfDOFMaps();
-      std::vector<AMP::Mesh::DOFMap::shared_ptr> dof_maps(numDOFMaps);
-
-      for(unsigned int i = 0; i < numDOFMaps; i++) {
-        dof_maps[i] = d_MeshAdapter->getDOFMap( getVariableForDOFMap(i) );
-      }
 
       d_outVec.reset();
 
@@ -274,10 +267,17 @@ namespace AMP {
 
       }
 
+     void NavierStokesGalWFFEOperator :: gettype0DofIndicesForCurrentElement(int varId, std::vector<std::vector<size_t> > & dofIds) {
+      dofIds.resize(d_currNodes.size());
+      for(unsigned int j = 0; j < d_currNodes.size(); j++) {
+        d_dofMap[varId]->getDOFs(d_currNodes[j].globalID(), dofIds[j]);
+      } // end of j
+     }
+
+     void NavierStokesGalWFFEOperator :: gettype1DofIndicesForCurrentElement(int varId, std::vector<size_t> & dofIds) {
+      for(unsigned int j = 0; j < d_currNodes.size(); j++) {
+        d_dofMap[varId]->getDOFs(d_currNodes[j].globalID(), dofIds);
+      } // end of j
+     }
   }
 }//end namespace
-
-#endif
-
-
-

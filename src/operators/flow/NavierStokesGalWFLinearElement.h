@@ -7,8 +7,8 @@
 #include "boost/shared_ptr.hpp"
 
 /* AMP files */
-#include "FlowElement.h"
-#include "NavierStokesConstants.h"
+#include "operators/flow/FlowElement.h"
+#include "operators/flow/NavierStokesConstants.h"
 
 namespace AMP {
 namespace Operator {
