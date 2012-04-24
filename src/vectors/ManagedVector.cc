@@ -145,7 +145,8 @@ ManagedVector::ManagedVector ( shared_ptr  alias ):
   {
     INCREMENT_COUNT("Virtual");
     AMP_ASSERT ( *d_UpdateState != ADDING );
-    *d_UpdateState = SETTING;
+    if ( *d_UpdateState == UNCHANGED ) 
+        *d_UpdateState = LOCAL_CHANGED;
     d_Engine->setValuesByLocalID ( i , id , val );
     fireDataChange();
   }
@@ -154,7 +155,8 @@ ManagedVector::ManagedVector ( shared_ptr  alias ):
   {
     INCREMENT_COUNT("Virtual");
     AMP_ASSERT ( *d_UpdateState != ADDING );
-    *d_UpdateState = SETTING;
+    if ( *d_UpdateState == UNCHANGED ) 
+        *d_UpdateState = LOCAL_CHANGED;
     d_Engine->setLocalValuesByGlobalID ( numVals, ndx, vals );
     fireDataChange();
   }
@@ -205,7 +207,8 @@ ManagedVector::ManagedVector ( shared_ptr  alias ):
   {
     INCREMENT_COUNT("Virtual");
     AMP_ASSERT ( *d_UpdateState != SETTING );
-    *d_UpdateState = ADDING;
+    if ( *d_UpdateState == UNCHANGED ) 
+        *d_UpdateState = LOCAL_CHANGED;
     d_Engine->addValuesByLocalID ( i , id , val );
     fireDataChange();
   }
@@ -214,7 +217,8 @@ ManagedVector::ManagedVector ( shared_ptr  alias ):
   {
     INCREMENT_COUNT("Virtual");
     AMP_ASSERT ( *d_UpdateState != SETTING );
-    *d_UpdateState = ADDING;
+    if ( *d_UpdateState == UNCHANGED ) 
+        *d_UpdateState = LOCAL_CHANGED;
     d_Engine->addLocalValuesByGlobalID ( i , id , val );
     fireDataChange();
   }

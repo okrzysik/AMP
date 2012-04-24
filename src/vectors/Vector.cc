@@ -29,7 +29,7 @@ Vector::Vector ()
     d_Ghosts = boost::shared_ptr<std::vector<double> > ( new std::vector<double> );
     d_AddBuffer = boost::shared_ptr<std::vector<double> > ( new std::vector<double> );
     d_UpdateState.reset( new UpdateState );
-    *d_UpdateState = NOT_UPDATING;
+    *d_UpdateState = UNCHANGED;
 }  
 Vector::Vector( const Vector&rhs ): 
     VectorOperations (),
@@ -45,7 +45,7 @@ Vector::Vector( VectorParameters::shared_ptr  parameters)
     AMP_INSIST(parameters->d_DOFManager.get()!=NULL,"d_DOFManager must be set in VectorParameters");
     setCommunicationList ( parameters->d_CommList );
     d_UpdateState.reset( new UpdateState );
-    *d_UpdateState = NOT_UPDATING;
+    *d_UpdateState = UNCHANGED;
     d_DOFManager = parameters->d_DOFManager;
 }
 
@@ -234,7 +234,7 @@ void Vector::zero()
     setToScalar (0.0);
     for ( size_t i = 0 ; i != d_Ghosts->size() ; i++ )
         (*d_Ghosts)[i] = 0.0;
-    (*getUpdateStatus()) = NOT_UPDATING;
+    (*getUpdateStatus()) = UNCHANGED;
 }
 void Vector::setToScalar(double alpha)
 {
@@ -754,7 +754,7 @@ void Vector::makeConsistent ( ScatterType  t )
     d_CommList->packSendBuffer ( send_vec , *this );
     d_CommList->scatter_set ( send_vec , recv_vec );
     d_CommList->unpackReceiveBufferSet ( recv_vec , *this );
-    *d_UpdateState = NOT_UPDATING;
+    *d_UpdateState = UNCHANGED;
 }
 
 

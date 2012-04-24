@@ -88,11 +88,6 @@ public:
       */
     enum ScatterType { CONSISTENT_ADD , CONSISTENT_SET };
 
-    /**\brief The three states a Vector can be in
-      *\see makeConsistent
-      */
-    enum UpdateState { NOT_UPDATING , ADDING , SETTING };
-
     /** \typedef shared_ptr
       * \brief Shorthand for shared pointer to Vector
       */
@@ -961,15 +956,6 @@ public:
       */
     virtual AMP_MPI getComm() const;
 
-    /** \brief  Return the current update state of this Vector
-      */
-    boost::shared_ptr<UpdateState>  getUpdateStatus () const;
-
-    /** \brief  Tie the current update state to another
-      * \param  rhs Pointer to share update state with
-      */
-    void setUpdateStatus ( boost::shared_ptr<UpdateState> rhs );
-
     //@}
 
 
@@ -1017,6 +1003,24 @@ public:
       * an AMP::RNG base class.
       */
     RNG::shared_ptr  getDefaultRNG ();
+
+
+    /**\brief The three states a Vector can be in
+      *\see makeConsistent
+      */
+    enum UpdateState { UNCHANGED, LOCAL_CHANGED, ADDING, SETTING };
+
+
+    /** \brief  Return the current update state of this Vector
+      */
+    boost::shared_ptr<UpdateState>  getUpdateStatus () const;
+
+
+    /** \brief  Tie the current update state to another
+      * \param  rhs Pointer to share update state with
+      */
+    void setUpdateStatus ( boost::shared_ptr<UpdateState> rhs );
+
 
 protected:
 
