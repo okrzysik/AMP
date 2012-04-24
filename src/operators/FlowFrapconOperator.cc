@@ -70,9 +70,9 @@ namespace AMP {
       // std::cout << "Extreme Min Point in z = " << min_z << std::endl;
       // std::cout << "Extreme Max Point in z = " << max_z << std::endl;
 
-      AMP::LinearAlgebra::Vector::shared_ptr flowInputVec = u->subsetVectorForVariable(d_inpVariable);
+      AMP::LinearAlgebra::Vector::shared_ptr flowInputVec = subsetInputVector( u );
 
-      AMP::LinearAlgebra::Vector::shared_ptr outputVec =  r->subsetVectorForVariable(d_outVariable);
+      AMP::LinearAlgebra::Vector::shared_ptr outputVec =  subsetOutputVector( r );
 
       // AMP::LinearAlgebra::Variable::shared_ptr localVar ( new AMP::LinearAlgebra::Variable(d_cladVec->getVariable()->getName() ) ); 
       // d_localCladVec = AMP::LinearAlgebra::SimpleVector::create( d_numpoints, localVar ); 
@@ -132,7 +132,7 @@ namespace AMP {
       if(f.get() == NULL) {
         outputVec->scale(a);
       } else {
-        AMP::LinearAlgebra::Vector::shared_ptr fInternal = f->subsetVectorForVariable( d_inpVariable );
+        AMP::LinearAlgebra::Vector::shared_ptr fInternal = subsetInputVector( f );
         if(fInternal.get() == NULL) {
           outputVec->scale(a);
         } else {
@@ -158,7 +158,7 @@ namespace AMP {
         tmp_db->putDouble("Prandtl",d_Pr);
 
         boost::shared_ptr<FlowFrapconJacobianParameters> outParams(new FlowFrapconJacobianParameters(tmp_db));
-        outParams->d_frozenSolution = u->subsetVectorForVariable(d_inpVariable); 
+        outParams->d_frozenSolution = subsetInputVector(u); 
         return outParams;
       }
 

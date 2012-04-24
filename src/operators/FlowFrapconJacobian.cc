@@ -111,9 +111,10 @@ namespace Operator {
     //    std::cout << "Extreme Min Point in z = " << min_z << std::endl;
     //    std::cout << "Extreme Max Point in z = " << max_z << std::endl;
 
-    AMP::LinearAlgebra::Vector::shared_ptr flowInputVec = u->subsetVectorForVariable(d_inpVariable);
+    
+    AMP::LinearAlgebra::Vector::shared_ptr flowInputVec = subsetInputVector(u);
 
-    AMP::LinearAlgebra::Vector::shared_ptr outputVec =  r->subsetVectorForVariable(d_outVariable);
+    AMP::LinearAlgebra::Vector::shared_ptr outputVec = subsetOutputVector(r);
 
     AMP_INSIST( (d_frozenVec.get() != NULL), "Null Frozen Vector inside Jacobian" );
 
@@ -165,7 +166,7 @@ namespace Operator {
     if(f.get() == NULL) {
       outputVec->scale(a);
     } else {
-      AMP::LinearAlgebra::Vector::shared_ptr fInternal = f->subsetVectorForVariable( d_inpVariable );
+      AMP::LinearAlgebra::Vector::shared_ptr fInternal = subsetInputVector( f );
       if(fInternal.get() == NULL) {
         outputVec->scale(a);
       } else {

@@ -124,8 +124,8 @@ void Map1Dto3D::apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP:
         return;
 
     AMP_ASSERT(u != NULL);
-    AMP::LinearAlgebra::Vector::shared_ptr inputVec = u->subsetVectorForVariable(d_inpVariable);
-    // AMP::LinearAlgebra::Vector::shared_ptr outputVec =  r->subsetVectorForVariable(d_outVariable);
+    AMP::LinearAlgebra::Vector::shared_ptr inputVec = u->subsetVectorForVariable(d_inpVariable);    // Input vector is a simple vector
+    // AMP::LinearAlgebra::Vector::shared_ptr outputVec =  subsetOutputVector( r );
     AMP_ASSERT(inputVec != NULL);
     AMP_ASSERT(outputVec != NULL);
     // outputVec->zero();
