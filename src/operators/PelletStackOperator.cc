@@ -90,7 +90,6 @@ namespace AMP {
           subF->setLocalValueByGlobalID(bndGlobalIds[j], val/d_scalingFactor);
         }//end for j
       }//end for bnd
-      subF->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     }
 
     void PelletStackOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
@@ -208,28 +207,6 @@ namespace AMP {
             AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
           if((currMap->getMesh(1)) == d_meshes[prevPellIdx]) {
             currMap->applyFinish(nullVec, u, nullVec, 1.0, 0.0);
-            break;
-          }
-        }//end for m
-      }
-      if(currPellIdx != -1) {
-        for(size_t m = 0; m < numMaps; m++) {
-          boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
-            AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
-          if((currMap->getMesh(2))==d_meshes[currPellIdx]) {
-            if ( currMap->requiresMakeConsistentSet() )
-                currMap->getVector()->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
-            break;
-          }
-        }//end for m
-      }
-      if(prevPellIdx != -1) {
-        for(size_t m = 0; m < numMaps; m++) {
-          boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
-            AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
-          if((currMap->getMesh(1)) == d_meshes[prevPellIdx]) {
-            if ( currMap->requiresMakeConsistentSet() )
-                currMap->getVector()->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
             break;
           }
         }//end for m
