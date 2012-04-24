@@ -90,6 +90,7 @@ namespace AMP {
           subF->setLocalValueByGlobalID(bndGlobalIds[j], val/d_scalingFactor);
         }//end for j
       }//end for bnd
+      subF->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     }
 
     void PelletStackOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
