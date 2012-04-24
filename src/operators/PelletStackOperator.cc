@@ -122,7 +122,7 @@ namespace AMP {
           for(; nd != end_nd; ++nd) {
             std::vector<size_t> dofIds;
             dof_map->getDOFs(nd->globalID(), dofIds);       
-            subU->addValueByGlobalID(dofIds[2], finalMaxZdispsList[d_pelletIds[i] - 1]);
+            subU->addLocalValueByGlobalID(dofIds[2], finalMaxZdispsList[d_pelletIds[i] - 1]);
           }//end for nd
         }
       }//end for i
