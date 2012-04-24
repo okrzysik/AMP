@@ -62,8 +62,8 @@ namespace Operator {
         AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
 
         AMP::LinearAlgebra::Variable::shared_ptr inpVar = (boost::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_Operators[3]) )->getOutputVariable();
-        AMP::LinearAlgebra::Vector::shared_ptr uInternal = u->subsetVectorForVariable(inpVar);
-        AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable(inpVar);
+        AMP::LinearAlgebra::Vector::shared_ptr uInternal = subsetInputVector( u );
+        AMP::LinearAlgebra::Vector::shared_ptr rInternal = subsetInputVector( r );
         (boost::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_Operators[3]))->setVector(uInternal);
         (boost::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_Operators[4]))->setVector(rInternal);
 

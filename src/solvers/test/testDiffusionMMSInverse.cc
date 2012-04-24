@@ -25,8 +25,6 @@
 #include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
 
-#include "vectors/PetscVector.h"
-
 #include "operators/boundary/NeumannVectorCorrection.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
 #include "operators/boundary/DirichletVectorCorrectionParameters.h"
@@ -131,9 +129,9 @@ void inverseTest1(AMP::UnitTest *ut, const std::string exeName)
       AMP::Discretization::DOFManager::shared_ptr DOF = 
         AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,1,true);
 
-      AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector(DOF,rhsVar);
+      AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector(DOF,solVar);
       AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector(DOF,rhsVar);
-      AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector(DOF,rhsVar);
+      AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector(DOF,resVar);
       AMP::LinearAlgebra::Vector::shared_ptr bndVec = AMP::LinearAlgebra::createVector(DOF,bndVar);
       AMP::LinearAlgebra::Vector::shared_ptr inpVec = AMP::LinearAlgebra::createVector(DOF,inpVar);
       AMP::LinearAlgebra::Vector::shared_ptr srcVec = AMP::LinearAlgebra::createVector(DOF,srcVar);

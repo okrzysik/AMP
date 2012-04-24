@@ -49,7 +49,7 @@ namespace AMP {
          * Function to pass a vector of dirichlet values.
          */
         void setDirichletValues(AMP::LinearAlgebra::Vector::shared_ptr vals) {
-          d_dirichletValues2 = vals->subsetVectorForVariable(d_variable);
+          d_dirichletValues2 = mySubsetVector(vals, d_variable);
         }
 
         /**
@@ -96,6 +96,17 @@ namespace AMP {
 
       protected :
 
+        AMP::LinearAlgebra::Vector::shared_ptr mySubsetVector(AMP::LinearAlgebra::Vector::shared_ptr vec, 
+            AMP::LinearAlgebra::Variable::shared_ptr var) {
+          if(d_Mesh.get() != NULL) {
+            AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
+            AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, var->getName());
+            return meshSubsetVec->subsetVectorForVariable(var);
+          } else {
+            return vec->subsetVectorForVariable(var);
+          }
+        }
+
         std::vector<short int> d_boundaryIds;
 
         std::vector<std::vector<size_t> > d_dofIds;
@@ -113,6 +124,7 @@ namespace AMP {
 
         int d_valuesType;
 
+        double d_scalingFactor;
       private :
 
     };

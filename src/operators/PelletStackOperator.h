@@ -22,6 +22,8 @@ namespace AMP {
 
         std::vector<unsigned int> getLocalPelletIds();
 
+        AMP_MPI getComm() { return d_pelletStackComm; }
+
         bool useSerial();
 
         bool onlyZcorrection();

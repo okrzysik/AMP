@@ -60,14 +60,7 @@ namespace Operator {
 
       bool isValidInput(boost::shared_ptr<AMP::LinearAlgebra::Vector> &u)
       {
-        bool bRetVal=true;
-
-        for(unsigned int i = 1; i < d_Operators.size(); i++)
-        {
-          bRetVal = bRetVal && d_Operators[i]->isValidInput(u);
-        }
-
-        return bRetVal;
+        return d_Operators[2]->isValidInput(u);
       }
 
       virtual ~CoupledOperator() { }

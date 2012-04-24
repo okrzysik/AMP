@@ -46,6 +46,8 @@ COPY_TEST_DATA_FILE ( input_testPelletStackMechanicsSolver-2 )
 COPY_MESH_FILE ( simple_pellet_1x.e )
 COPY_MESH_FILE ( butterfly_pellet_1x.e )
 COPY_MESH_FILE ( tallFuel.e )
+COPY_MESH_FILE ( pellet_lo_res.e )
+COPY_MESH_FILE ( TC1-PELL-COARSE.e )
 
 COPY_MESH_FILE ( reg3ptBox1 )
 COPY_MESH_FILE ( reg3ptBox2 )

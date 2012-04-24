@@ -38,6 +38,10 @@ namespace AMP {
         d_fbuffer2 = f->cloneVector();
       }
 
+      AMP_MPI stackComm = d_pelletStackOp->getComm();
+
+      stackComm.barrier();
+
       unsigned int totalNumberOfPellets = d_pelletStackOp->getTotalNumberOfPellets();
 
       int locPellIdx = d_pelletStackOp->getLocalIndexForPellet(0);
@@ -53,6 +57,7 @@ namespace AMP {
       }
 
       for(unsigned int pellId = 1; pellId < totalNumberOfPellets; pellId++) {
+        stackComm.barrier();
         boost::shared_ptr<AMP::Database> emptyDb;
         boost::shared_ptr<AMP::Operator::PelletStackOperatorParameters> pelletStackOpParams(new 
             AMP::Operator::PelletStackOperatorParameters(emptyDb));
