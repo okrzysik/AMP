@@ -134,6 +134,7 @@ namespace AMP {
       AMP_ASSERT(d_frozenVectorSet);
       AMP::LinearAlgebra::Vector::shared_ptr nullVec;
       r->copyVector(f);
+      r->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
       d_frozenVectorForMaps->zero();
       d_n2nMaps->apply(nullVec, u, nullVec, 1.0, 0.0);
       AMP::LinearAlgebra::Vector::shared_ptr subU = d_frozenVectorForMaps->subsetVectorForVariable(d_var);
@@ -240,6 +241,7 @@ namespace AMP {
       AMP::Discretization::DOFManager::shared_ptr dof_map = subR->getDOFManager();
       if(currPellIdx != -1) {
         subR->copyVector(subF);
+        subR->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
         AMP::Mesh::MeshIterator bnd = d_meshes[currPellIdx]->getIDsetIterator(AMP::Mesh::Vertex, d_slaveId, 0);
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
         for( ; bnd != end_bnd; ++bnd) {
