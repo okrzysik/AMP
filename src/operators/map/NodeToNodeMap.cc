@@ -176,7 +176,7 @@ void NodeToNodeMap::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr &
     waitForAllRequests();
 
     // Store the DOFs
-    curPhysics->setValuesByGlobalID( dofs.size(),  getPtr( dofs ), getPtr( d_recvBuffer ) );
+    curPhysics->setLocalValuesByGlobalID( dofs.size(),  getPtr( dofs ), getPtr( d_recvBuffer ) );
 
     // Update ghost cells
     if ( d_callMakeConsistentSet ) 
