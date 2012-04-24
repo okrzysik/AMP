@@ -18,6 +18,7 @@ namespace AMP {
       bool skipParams = (params->d_db)->getBoolWithDefault("skip_params", false);
 
       if(!skipParams) {
+        d_scalingFactor = (params->d_db)->getDoubleWithDefault("SCALING_FACTOR", 1.0);
         d_setResidual = (params->d_db)->getBoolWithDefault("setResidual", false);
         d_isAttachedToVolumeOperator = (params->d_db)->getBoolWithDefault("isAttachedToVolumeOperator", false);
         d_valuesType = (params->d_db)->getIntegerWithDefault("valuesType", 1);
@@ -65,15 +66,7 @@ namespace AMP {
     //This is an in-place apply
     void DirichletVectorCorrection :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &u,
         AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a, const double ) {
-      AMP::LinearAlgebra::Vector::shared_ptr rInternal;
-      if(d_Mesh.get() != NULL) {
-        AMP::LinearAlgebra::VS_Mesh meshSelector(d_variable->getName(), d_Mesh);
-        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = r->select(meshSelector, d_variable->getName());
-        AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec = meshSubsetVec->subsetVectorForVariable(d_variable);
-        rInternal = varSubsetVec;
-      } else {
-        rInternal = r->subsetVectorForVariable(d_variable);
-      }
+      AMP::LinearAlgebra::Vector::shared_ptr rInternal = mySubsetVector(r, d_variable);
 
       if(d_iDebugPrintInfoLevel>3)
       {
@@ -97,15 +90,7 @@ namespace AMP {
     }
 
     void DirichletVectorCorrection :: applyZeroValues(AMP::LinearAlgebra::Vector::shared_ptr r) {
-      AMP::LinearAlgebra::Vector::shared_ptr rInternal;
-      if(d_Mesh.get() != NULL) {
-        AMP::LinearAlgebra::VS_Mesh meshSelector(d_variable->getName(), d_Mesh);
-        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = r->select(meshSelector, d_variable->getName());
-        AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec = meshSubsetVec->subsetVectorForVariable(d_variable);
-        rInternal = varSubsetVec;
-      } else {
-        rInternal = r->subsetVectorForVariable(d_variable);
-      }
+      AMP::LinearAlgebra::Vector::shared_ptr rInternal = mySubsetVector(r, d_variable);
 
       AMP::Discretization::DOFManager::shared_ptr dof_map = rInternal->getDOFManager();
 
@@ -127,15 +112,7 @@ namespace AMP {
     }
 
     void DirichletVectorCorrection :: applyNonZeroValues(AMP::LinearAlgebra::Vector::shared_ptr r) {
-      AMP::LinearAlgebra::Vector::shared_ptr rInternal;
-      if(d_Mesh.get() != NULL) {
-        AMP::LinearAlgebra::VS_Mesh meshSelector(d_variable->getName(), d_Mesh);
-        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = r->select(meshSelector, d_variable->getName());
-        AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec = meshSubsetVec->subsetVectorForVariable(d_variable);
-        rInternal = varSubsetVec;
-      } else {
-        rInternal = r->subsetVectorForVariable(d_variable);
-      }
+      AMP::LinearAlgebra::Vector::shared_ptr rInternal = mySubsetVector(r, d_variable);
 
       AMP::Discretization::DOFManager::shared_ptr dof_map = rInternal->getDOFManager();
 
@@ -156,7 +133,7 @@ namespace AMP {
             } else {
               dVal = d_dirichletValues2->getLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]] );
             }
-            rInternal->setLocalValueByGlobalID(bndGlobalIds[d_dofIds[j][i]], dVal);
+            rInternal->setLocalValueByGlobalID(bndGlobalIds[d_dofIds[j][i]], d_scalingFactor*dVal);
           }//end for i
         }//end for bnd
       }//end for j
@@ -165,17 +142,9 @@ namespace AMP {
     }
 
     void DirichletVectorCorrection :: applyResidual(AMP::LinearAlgebra::Vector::shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r) {
-      AMP::LinearAlgebra::Vector::shared_ptr uInternal;
-      if(d_Mesh.get() != NULL) {
-        AMP::LinearAlgebra::VS_Mesh meshSelector(d_variable->getName(), d_Mesh);
-        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = u->select(meshSelector, d_variable->getName());
-        AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec = meshSubsetVec->subsetVectorForVariable(d_variable);
-        uInternal = varSubsetVec;
-      } else {
-        uInternal = u->subsetVectorForVariable(d_variable);
-      }
+      AMP::LinearAlgebra::Vector::shared_ptr uInternal = mySubsetVector(u, d_variable);
 
-      AMP::Discretization::DOFManager::shared_ptr dof_map = u->getDOFManager();
+      AMP::Discretization::DOFManager::shared_ptr dof_map = uInternal->getDOFManager();
 
       size_t numIds = d_boundaryIds.size();
 
@@ -194,7 +163,7 @@ namespace AMP {
             } else {
               dVal = d_dirichletValues2->getLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]] );
             }
-            r->setLocalValueByGlobalID(bndGlobalIds[d_dofIds[j][i]], (uVal - dVal));
+            r->setLocalValueByGlobalID(bndGlobalIds[d_dofIds[j][i]], d_scalingFactor*(uVal - dVal));
           }//end for i
         }//end for bnd
       }//end for j
