@@ -1005,7 +1005,7 @@ public:
     RNG::shared_ptr  getDefaultRNG ();
 
 
-    /**\brief The three states a Vector can be in
+    /**\brief The four states a Vector can be in
       *\see makeConsistent
       */
     enum UpdateState { UNCHANGED, LOCAL_CHANGED, ADDING, SETTING };
