@@ -3,10 +3,13 @@
 #define included_AMP_NavierStokesGalWFFEOperator
 
 /* AMP files */
+#include "vectors/Variable.h"
 #include "vectors/MultiVariable.h"
 #include "vectors/Vector.h"
-#include "operators/NonlinearFEOperator.h"
+#include "discretization/DOF_Manager.h"
+#include "ampmesh/MeshElement.h"
 
+#include "operators/NonlinearFEOperator.h"
 #include "operators/NonlinearFEOperator.h"
 #include "operators/flow/NavierStokesConstants.h"
 #include "operators/flow/NavierStokesGalWFFEOperatorParameters.h"
@@ -41,7 +44,17 @@ namespace AMP {
         void init();
 
         void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
-          d_inVec[id] = frozenVec->subsetVectorForVariable(d_inpVariables->getVariable(id));
+
+          AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(id);
+
+          if(d_Mesh.get() != NULL) {
+            AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
+            AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = frozenVec->select(meshSelector, var->getName());
+            d_inVec[id] = meshSubsetVec->subsetVectorForVariable(var);
+          } else {
+            d_inVec[id] = frozenVec->subsetVectorForVariable(var);
+          }
+
           (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
         }
 
@@ -67,8 +80,11 @@ namespace AMP {
 
       protected :
 
-        std::vector<unsigned int> d_type0DofIndices[3]; 
-        std::vector<unsigned int> d_type1DofIndices; 
+        void gettype0DofIndicesForCurrentElement(int varId, std::vector<std::vector<size_t> > & dofIds);
+        void gettype1DofIndicesForCurrentElement(int varId, std::vector<size_t> & dofIds);
+
+        std::vector<std::vector<size_t> > d_type0DofIndices; /**< Primary DOF indices */
+        std::vector<size_t> d_type1DofIndices; 
 
         unsigned int d_numNodesForCurrentElement; 
 
@@ -89,6 +105,8 @@ namespace AMP {
         std::vector<bool> d_isFrozen;
 
         bool d_coupledFormulation;
+
+        boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
 
       private :
 

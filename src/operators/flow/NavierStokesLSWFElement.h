@@ -1,26 +1,26 @@
 
-#ifndef included_AMP_ConsMomentumGalWFElement
-#define included_AMP_ConsMomentumGalWFElement
+#ifndef included_AMP_NavierStokesLSWFElement
+#define included_AMP_NavierStokesLSWFElement
 
 #include <vector>
 
 #include "boost/shared_ptr.hpp"
 
 /* AMP files */
-#include "FlowElement.h"
-#include "NavierStokesConstants.h"
+#include "operators/flow/FlowElement.h"
+#include "operators/flow/NavierStokesConstants.h"
 
 namespace AMP {
 namespace Operator {
 
-  class ConsMomentumGalWFElement : public FlowElement 
+  class NavierStokesLSWFElement : public FlowElement 
   {
     public :
 
       /**
         Constructor.
         */
-      ConsMomentumGalWFElement(const boost::shared_ptr<ElementOperationParameters>& params)
+      NavierStokesLSWFElement(const boost::shared_ptr<ElementOperationParameters>& params)
         : FlowElement(params) 
       { 
         d_JxW = &(d_fe[0]->get_JxW());
@@ -28,6 +28,10 @@ namespace Operator {
         d_u_dphi = &(d_fe[0]->get_dphi());
 
         d_u_phi = &(d_fe[0]->get_phi());
+
+        d_p_dphi = &(d_fe[1]->get_dphi());
+
+        d_p_phi = &(d_fe[1]->get_phi());
 
         d_xyz = &(d_fe[0]->get_xyz());
 
@@ -39,7 +43,7 @@ namespace Operator {
       /**
         Destructor.
         */
-      ~ConsMomentumGalWFElement() {  }
+      ~NavierStokesLSWFElement() {  }
 
       /**
         This function is used by FlowNonlinearFEOperator to pass the address 
@@ -63,9 +67,7 @@ namespace Operator {
 
     protected :
 
-      double d_density;
-
-      double d_fmu;
+      double d_density , d_fmu , d_Re ;
 
       const std::vector<Real> *d_JxW; 
 
@@ -73,14 +75,18 @@ namespace Operator {
 
       const std::vector<std::vector<Real> > *d_u_phi; 
 
+      const std::vector<std::vector<RealGradient> > *d_p_dphi; 
+
+      const std::vector<std::vector<Real> > *d_p_phi; 
+
       const std::vector<Point> *d_xyz; 
 
       std::vector<std::vector<double> > d_elementInputVectors; 
 
       std::vector<double> *d_elementOutputVector; 
    
-      double d_alpha_conv ; 
-      double d_alpha_diff ;
+      bool d_alpha_conv ; 
+      bool d_alpha_diff ;
  
     private :
 

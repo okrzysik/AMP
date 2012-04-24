@@ -60,14 +60,6 @@ class OperatorBuilder{
                                   boost::shared_ptr<AMP::InputDatabase> input_db,
                                   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel);
 
-  static boost::shared_ptr<Operator> createLinearConsMomentumGalWFOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                                    boost::shared_ptr<AMP::InputDatabase> input_db,
-                                    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel);
-  
-  static boost::shared_ptr<Operator> createLinearConsMassGalWFOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                                    boost::shared_ptr<AMP::InputDatabase> input_db,
-                                    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel);
-  
   static boost::shared_ptr<Operator> createMassLinearFEOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                                  boost::shared_ptr<AMP::InputDatabase> input_db,
                                  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel);

@@ -1,23 +1,23 @@
 
-#ifndef included_AMP_ConsMomentumGalWFLinearElement
-#define included_AMP_ConsMomentumGalWFLinearElement
+#ifndef included_AMP_NavierStokesLSWFLinearElement
+#define included_AMP_NavierStokesLSWFLinearElement
 
 #include <vector>
 
 #include "boost/shared_ptr.hpp"
 
 /* AMP files */
-#include "FlowElement.h"
-#include "NavierStokesConstants.h"
+#include "operators/flow/FlowElement.h"
+#include "operators/flow/NavierStokesConstants.h"
 
 namespace AMP {
 namespace Operator {
 
-  class ConsMomentumGalWFLinearElement : public FlowElement 
+  class NavierStokesLSWFLinearElement : public FlowElement 
   {
     public :
 
-      ConsMomentumGalWFLinearElement(const boost::shared_ptr<ElementOperationParameters>& params)
+      NavierStokesLSWFLinearElement(const boost::shared_ptr<ElementOperationParameters>& params)
         : FlowElement(params) {
 
           d_JxW = &(d_fe[0]->get_JxW());
@@ -26,11 +26,15 @@ namespace Operator {
 
           d_u_phi = &(d_fe[0]->get_phi());
 
+          d_p_dphi = &(d_fe[1]->get_dphi());
+
+          d_p_phi = &(d_fe[1]->get_phi());
+
           d_xyz = &(d_fe[0]->get_xyz());
 
         }
 
-      ~ConsMomentumGalWFLinearElement() {  }
+      ~NavierStokesLSWFLinearElement() {  }
 
       void setElementStiffnessMatrix( std::vector<std::vector<double> > & elementStiffnessMatrix )
       {
@@ -56,6 +60,10 @@ namespace Operator {
       const std::vector<std::vector<RealGradient> > *d_u_dphi; 
 
       const std::vector<std::vector<Real> > *d_u_phi; 
+
+      const std::vector<std::vector<RealGradient> > *d_p_dphi; 
+
+      const std::vector<std::vector<Real> > *d_p_phi; 
 
       const std::vector<Point> *d_xyz; 
 

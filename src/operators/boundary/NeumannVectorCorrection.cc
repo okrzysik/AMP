@@ -156,16 +156,20 @@ namespace Operator {
                 d_currNodes = bnd->getElements(AMP::Mesh::Vertex);
                 unsigned int numNodesInCurrElem = d_currNodes.size();
 
-                dofIndices.resize(numNodesInCurrElem);
-                for(unsigned int i = 0; i < numNodesInCurrElem ; i++) {
+               dofIndices.resize(numNodesInCurrElem);
+               for(unsigned int i = 0; i < numNodesInCurrElem ; i++) {
                   dofManager->getDOFs(d_currNodes[i].globalID(), dofs);
                   AMP_ASSERT(dofs.size()==1);
                   dofIndices[i] = dofs[0];
                 }
 
-                createCurrentLibMeshElement();
+//                std::vector<AMP::Mesh::MeshElementID> globalIDs(d_currNodes.size()); 
+//                for(unsigned int j = 0; j < d_currNodes.size(); j++) {
+//                  globalIDs[j] = d_currNodes[j].globalID();
+//                } // end of j
+//                dofManager->getDOFs(globalIDs, dofIndices);
 
-                getDofIndicesForCurrentElement();
+                createCurrentLibMeshElement();
 
                 d_fe->attach_quadrature_rule( d_qrule.get() );
 
@@ -174,11 +178,11 @@ namespace Operator {
 
                 d_fe->reinit ( d_currElemPtr );
 
-                std::vector<double> flux( numNodesInCurrElem , 0.0);
+                std::vector<double> flux( dofIndices.size(), 0.0);
                 const std::vector<std::vector<Real> > &phi = *d_phi;
                 const std::vector<Real> &djxw = *d_JxW;
 
-                for(unsigned int i = 0; i < numNodesInCurrElem ; i++)
+                for(unsigned int i = 0; i < dofIndices.size() ; i++)
                 {
                   for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) 
                   {
@@ -283,10 +287,6 @@ namespace Operator {
     }
 
     void NeumannVectorCorrection :: getDofIndicesForCurrentElement() {
-      std::vector<AMP::Mesh::MeshElementID> globalIDs(d_currNodes.size()); 
-      for(unsigned int j = 0; j < d_currNodes.size(); j++) {
-        globalIDs[j] = d_currNodes[j].globalID();
-      } // end of j
     }
 
 
