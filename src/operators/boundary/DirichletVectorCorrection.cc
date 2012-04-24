@@ -91,9 +91,7 @@ namespace AMP {
 
     void DirichletVectorCorrection :: applyZeroValues(AMP::LinearAlgebra::Vector::shared_ptr r) {
       AMP::LinearAlgebra::Vector::shared_ptr rInternal = mySubsetVector(r, d_variable);
-
       AMP::Discretization::DOFManager::shared_ptr dof_map = rInternal->getDOFManager();
-
       size_t numIds = d_boundaryIds.size();
       for(size_t j = 0; j < numIds; j++) {
         AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
@@ -107,17 +105,12 @@ namespace AMP {
           }//end for i
         }//end for bnd
       }//end for j
-
-      rInternal->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     }
 
     void DirichletVectorCorrection :: applyNonZeroValues(AMP::LinearAlgebra::Vector::shared_ptr r) {
       AMP::LinearAlgebra::Vector::shared_ptr rInternal = mySubsetVector(r, d_variable);
-
       AMP::Discretization::DOFManager::shared_ptr dof_map = rInternal->getDOFManager();
-
       size_t numIds = d_boundaryIds.size();
-
       for(size_t j = 0; j < numIds; j++) {
         AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
@@ -137,17 +130,12 @@ namespace AMP {
           }//end for i
         }//end for bnd
       }//end for j
-
-      rInternal->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     }
 
     void DirichletVectorCorrection :: applyResidual(AMP::LinearAlgebra::Vector::shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r) {
       AMP::LinearAlgebra::Vector::shared_ptr uInternal = mySubsetVector(u, d_variable);
-
       AMP::Discretization::DOFManager::shared_ptr dof_map = uInternal->getDOFManager();
-
       size_t numIds = d_boundaryIds.size();
-
       for(size_t j = 0; j < numIds; j++) {
         AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
@@ -167,8 +155,6 @@ namespace AMP {
           }//end for i
         }//end for bnd
       }//end for j
-
-      r->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     }
 
     boost::shared_ptr<OperatorParameters> DirichletVectorCorrection :: 
@@ -180,8 +166,6 @@ namespace AMP {
 
         return outParams;
       }
-
-
 
   }
 }
