@@ -124,7 +124,12 @@ void Map1Dto3D::apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP:
         return;
 
     AMP_ASSERT(u != NULL);
-    AMP::LinearAlgebra::Vector::shared_ptr inputVec = u->subsetVectorForVariable(d_inpVariable);    // Input vector is a simple vector
+
+    // Subset the input vector, it is a simple vector and we need to subset for the current comm before the variable
+    AMP::LinearAlgebra::VS_Comm commSelector( d_inpVariable->getName(), d_Mesh->getComm() );
+    AMP::LinearAlgebra::Vector::shared_ptr commSubsetVec = u->select(commSelector, d_inpVariable->getName());
+    AMP::LinearAlgebra::Vector::shared_ptr inputVec = commSubsetVec->subsetVectorForVariable(d_inpVariable);
+
     // AMP::LinearAlgebra::Vector::shared_ptr outputVec =  subsetOutputVector( r );
     AMP_ASSERT(inputVec != NULL);
     AMP_ASSERT(outputVec != NULL);

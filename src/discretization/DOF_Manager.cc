@@ -152,6 +152,11 @@ bool DOFManager::operator!=( const DOFManager &rhs ) const
 /****************************************************************
 * Subset the DOF manager                                        *
 ****************************************************************/
+boost::shared_ptr<DOFManager>  DOFManager::subset( AMP_MPI comm )
+{
+    AMP_ERROR("Not impimented yet");
+    return boost::shared_ptr<DOFManager> ();
+}
 boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
 {
     // Get a list of the elements in the mesh

@@ -3,6 +3,7 @@
 #include "vectors/SubsetVector.h"
 #include "vectors/StridedVariable.h"
 #include "vectors/MeshVariable.h"
+#include "vectors/CommVariable.h"
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -54,6 +55,27 @@ VS_Stride::VS_Stride ( const std::string &n , size_t a , size_t b ) :
 Vector::shared_ptr  VS_Stride::subset ( Vector::shared_ptr p ) const
 { 
     Variable::shared_ptr  variable ( new StridedVariable( d_Name , d_Offset , d_Stride ) );
+    Vector::shared_ptr  vector = SubsetVector::view ( p, variable ); 
+    return vector;
+}
+
+
+/********************************************************
+* VS_Comm                                               *
+********************************************************/
+VS_Comm::VS_Comm ( const std::string &name, AMP_MPI comm )
+{
+    d_Name = name;
+    AMP_ASSERT(!comm.isNull());
+    d_comm = comm;
+}
+AMP_MPI  VS_Comm::communicator ( Vector::const_shared_ptr p ) const
+{
+    return AMP_MPI::intersect( d_comm, p->getComm() );
+}
+Vector::shared_ptr  VS_Comm::subset ( Vector::shared_ptr p ) const
+{ 
+    Variable::shared_ptr  variable ( new CommVariable( d_Name, communicator(p) ) );
     Vector::shared_ptr  vector = SubsetVector::view ( p, variable ); 
     return vector;
 }

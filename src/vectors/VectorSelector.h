@@ -127,6 +127,40 @@ protected:
 };
 
 
+/** \brief  Create a subset based on a AMP_MPI comm
+  * \details  This will pick the part of the vector that lies on the given comm
+  *  Any parts of the original vector that were on processor that are not in
+  *  in the new comm will be ignored.  
+  */
+class VS_Comm : public VectorSelector
+{
+public:
+    /** \brief Constructor
+      * \param[in]  name  The name of the new variable
+      * \param[in]  comm  The new comm to use
+      */
+    VS_Comm ( const std::string &name, AMP_MPI comm );
+
+    /** \brief Returns the communicator for the subset
+      * \param[in]  comm  The Vector to match
+      * \details This function will return the proper communicator given the current vector.
+      *     For most subsetters, this will be the same communicator as the current vector,
+      *     however some subsetters (VectorSelector) may opperate on a different (smaller) comm.
+      */
+    virtual  AMP_MPI  communicator ( Vector::const_shared_ptr vec ) const;
+
+    /** \brief Subset the given vector
+      * \param[in]  vec  The Vector to subset
+      * \details Base class defaults to returning all data in the vector
+      */
+    virtual  Vector::shared_ptr  subset ( Vector::shared_ptr p ) const;
+
+protected:
+    std::string d_Name;                 //  The name of this subset
+    AMP_MPI     d_comm;                 // The new desired comm
+};
+
+
 #ifdef USE_AMP_MESH
 /** \brief  Create a subset based on a mesh 
   * \details  This will select the portion of a vector that is on the given mesh
