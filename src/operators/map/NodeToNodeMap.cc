@@ -95,7 +95,7 @@ bool NodeToNodeMap::requiresMakeConsistentSet()
 { 
     return !d_callMakeConsistentSet;
 }
-AMP::LinearAlgebra::Vector::shared_ptr getVector ( )
+AMP::LinearAlgebra::Vector::shared_ptr NodeToNodeMap::getVector ( )
 {
     return d_OutputVector;
 }

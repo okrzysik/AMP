@@ -54,6 +54,10 @@ public:
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector ( );
 
+    // Function to determine if a makeConsistentSet is required
+    virtual bool requiresMakeConsistentSet();
+
+
 private:
 
     class Point
@@ -106,9 +110,6 @@ private:
 
     // Function to create the communication lists
     void  buildSendRecvList( );
-
-    // Function to determine if a makeConsistentSet is required
-    virtual bool requiresMakeConsistentSet();
 
 protected:
 

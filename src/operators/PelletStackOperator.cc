@@ -212,6 +212,28 @@ namespace AMP {
           }
         }//end for m
       }
+      if(currPellIdx != -1) {
+        for(size_t m = 0; m < numMaps; m++) {
+          boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
+            AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
+          if((currMap->getMesh(2))==d_meshes[currPellIdx]) {
+            if ( currMap->requiresMakeConsistentSet() )
+                currMap->getVector()->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+            break;
+          }
+        }//end for m
+      }
+      if(prevPellIdx != -1) {
+        for(size_t m = 0; m < numMaps; m++) {
+          boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
+            AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
+          if((currMap->getMesh(1)) == d_meshes[prevPellIdx]) {
+            if ( currMap->requiresMakeConsistentSet() )
+                currMap->getVector()->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+            break;
+          }
+        }//end for m
+      }
       AMP::LinearAlgebra::Vector::shared_ptr subF = f->subsetVectorForVariable(d_var);
       AMP::LinearAlgebra::Vector::shared_ptr subR = r->subsetVectorForVariable(d_var);
       AMP::LinearAlgebra::Vector::shared_ptr subU = d_frozenVectorForMaps->subsetVectorForVariable(d_var);
