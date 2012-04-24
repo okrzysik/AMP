@@ -50,7 +50,7 @@ void MapSurface :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const 
 {
     AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
 
-    inpVec = u->subsetVectorForVariable(d_inpVariable);
+    inpVec = subsetInputVector( u );
 
     boost::shared_ptr<AMP::LinearAlgebra::Vector> nullVec;
 

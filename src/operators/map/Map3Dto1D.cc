@@ -51,7 +51,7 @@ namespace Operator {
       // Get the local contributions to the map
       if ( d_MapMesh != NULL ) {
         AMP_ASSERT(u != NULL);
-        AMP::LinearAlgebra::Vector::shared_ptr inputVec = u->subsetVectorForVariable(d_inpVariable);
+        AMP::LinearAlgebra::Vector::shared_ptr inputVec = subsetInputVector( u );
         inputVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
         AMP_ASSERT( inputVec != NULL);
 
@@ -62,7 +62,7 @@ namespace Operator {
           AMP::pout << inputVec << std::endl;
         }
 
-        // AMP::LinearAlgebra::Vector::shared_ptr outputVec =  r->subsetVectorForVariable(d_outVariable);
+        // AMP::LinearAlgebra::Vector::shared_ptr outputVec =  u->subsetVectorForVariable(d_outpVariable);    // Output vector is a simple vector
 
         AMP_ASSERT(outputVec  != NULL);
 

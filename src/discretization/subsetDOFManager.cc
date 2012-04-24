@@ -67,6 +67,8 @@ DOFManager::shared_ptr  subsetDOFManager::create( boost::shared_ptr<const DOFMan
     }
     delete [] N_remote;
     delete [] N_disp;
+    if ( subsetDOF->numGlobalDOF() == 0 )
+        return DOFManager::shared_ptr();
     return subsetDOF;
 }
 

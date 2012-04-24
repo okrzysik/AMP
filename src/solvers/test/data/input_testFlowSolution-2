@@ -116,43 +116,16 @@ VolumeIntegralOperator{
     }
 }
 
-MapCladtoPellet{
-  BoundaryId = 0
-    name="MapSurface"
-
-    Map3Dto1D{
-      print_info_level=0
-        BoundaryId = 8
-        InputVariable = "Temperature"
-        OutputVariable = "Gap"
-    }
-
-  Map1Dto3D{
-    print_info_level=0
-      BoundaryId = 4
-      InputVariable = "Gap"
-      OutputVariable = "Temperature"
-  }
-}
-
-
-MapPellettoClad{
-  BoundaryId = 0
-    name="MapSurface"
-
-    Map3Dto1D{
-      print_info_level=0
-        BoundaryId = 4
-        InputVariable = "Temperature"
-        OutputVariable = "Gap"
-    }
-
-  Map1Dto3D{
-    print_info_level=0
-      BoundaryId = 8
-      InputVariable = "Gap"
-      OutputVariable = "Temperature"
-  }
+PelletAndCladMaps{
+    // This performs the pellet to clad and clad to pellet maps
+    MapType = "ScalarZAxis"
+    N_maps = 1
+    Mesh1 = "pellet"
+    Surface1 = 4
+    Mesh2 = "clad"
+    Surface2 = 8
+    DOFsPerObject = 1
+    VariableName = "Temperature"
 }
 
 MapCladto1DFlow{
