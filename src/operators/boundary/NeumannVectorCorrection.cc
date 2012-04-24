@@ -119,7 +119,8 @@ namespace Operator {
         rInternal->zero();
 
         unsigned int numIds = d_boundaryIds.size();
-        std::vector<size_t> dofIndices, dofs;
+        std::vector<size_t> dofs;
+        std::vector<std::vector<size_t> > dofIndices;
         for(unsigned int j = 0; j < numIds; j++)
         {
           if(!d_IsCoupledBoundary[j])
@@ -156,18 +157,10 @@ namespace Operator {
                 d_currNodes = bnd->getElements(AMP::Mesh::Vertex);
                 unsigned int numNodesInCurrElem = d_currNodes.size();
 
-               dofIndices.resize(numNodesInCurrElem);
-               for(unsigned int i = 0; i < numNodesInCurrElem ; i++) {
-                  dofManager->getDOFs(d_currNodes[i].globalID(), dofs);
-                  AMP_ASSERT(dofs.size()==1);
-                  dofIndices[i] = dofs[0];
+                dofIndices.resize(numNodesInCurrElem);
+                for(unsigned int i = 0; i < numNodesInCurrElem ; i++) {
+                   dofManager->getDOFs(d_currNodes[i].globalID(), dofIndices[i]);
                 }
-
-//                std::vector<AMP::Mesh::MeshElementID> globalIDs(d_currNodes.size()); 
-//                for(unsigned int j = 0; j < d_currNodes.size(); j++) {
-//                  globalIDs[j] = d_currNodes[j].globalID();
-//                } // end of j
-//                dofManager->getDOFs(globalIDs, dofIndices);
 
                 createCurrentLibMeshElement();
 
@@ -178,38 +171,42 @@ namespace Operator {
 
                 d_fe->reinit ( d_currElemPtr );
 
-                std::vector<double> flux( dofIndices.size(), 0.0);
                 const std::vector<std::vector<Real> > &phi = *d_phi;
                 const std::vector<Real> &djxw = *d_JxW;
-
-                for(unsigned int i = 0; i < dofIndices.size() ; i++)
-                {
-                  for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) 
-                  {
-                    std::vector<std::vector<double> > temp(1) ;
-
-                    // there must be a better way to write this!!
-                    if(d_isConstantFlux)
+                for(unsigned int m=0; m<dofIndices[0].size(); m++) {    // Loop over DOFs per node
+                    dofs.resize(dofIndices.size());
+                    for(unsigned int i = 0; i < dofIndices.size() ; i++)
+                        dofs[i] = dofIndices[i][m];
+                    std::vector<double> flux( dofIndices.size(), 0.0);
+                    for(unsigned int i = 0; i < dofIndices.size() ; i++)    // Loop over nodes
                     {
-                      temp[0].push_back(d_neumannValues[j][k]);            
-                    }
-                    else
-                    {
-                      temp[0].push_back(d_variableFlux->getValueByGlobalID(dofIndices[i]));
-                    }
+                      for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) 
+                      {
+                        std::vector<std::vector<double> > temp(1) ;
 
-                    if(d_robinPhysicsModel)
-                    {
-                      d_robinPhysicsModel->getConductance(d_gamma, d_gamma, temp); 
-                    }
+                        // there must be a better way to write this!!
+                        if(d_isConstantFlux)
+                        {
+                          temp[0].push_back(d_neumannValues[j][k]);
+                        }
+                        else
+                        {
+                          temp[0].push_back(d_variableFlux->getValueByGlobalID(dofs[i]));
+                        }
 
-                    flux[i] +=  (d_gamma[0])*djxw[qp]*phi[i][qp]*temp[0][0];
+                        if(d_robinPhysicsModel)
+                        {
+                          d_robinPhysicsModel->getConductance(d_gamma, d_gamma, temp); 
+                        }
 
-                  }
+                        flux[i] +=  (d_gamma[0])*djxw[qp]*phi[i][qp]*temp[0][0];
 
-                }//end for i
+                      }
 
-                rInternal->addValuesByGlobalID((int)dofIndices.size() , (size_t *)&(dofIndices[0]), &(flux[0]));
+                    }//end for i
+                    
+                    rInternal->addValuesByGlobalID((int)dofs.size() , (size_t *)&(dofs[0]), &(flux[0]));
+                }
 
                 destroyCurrentLibMeshElement();
               }//end for bnd
