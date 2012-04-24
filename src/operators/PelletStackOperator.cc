@@ -90,7 +90,6 @@ namespace AMP {
           subF->setLocalValueByGlobalID(bndGlobalIds[j], val/d_scalingFactor);
         }//end for j
       }//end for bnd
-      subF->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     }
 
     void PelletStackOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
@@ -134,7 +133,6 @@ namespace AMP {
       AMP_ASSERT(d_frozenVectorSet);
       AMP::LinearAlgebra::Vector::shared_ptr nullVec;
       r->copyVector(f);
-      r->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
       d_frozenVectorForMaps->zero();
       d_n2nMaps->apply(nullVec, u, nullVec, 1.0, 0.0);
       AMP::LinearAlgebra::Vector::shared_ptr subU = d_frozenVectorForMaps->subsetVectorForVariable(d_var);
@@ -213,35 +211,12 @@ namespace AMP {
           }
         }//end for m
       }
-      if(currPellIdx != -1) {
-        for(size_t m = 0; m < numMaps; m++) {
-          boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
-            AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
-          if((currMap->getMesh(2))==d_meshes[currPellIdx]) {
-            if ( currMap->requiresMakeConsistentSet() )
-                currMap->getVector()->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
-            break;
-          }
-        }//end for m
-      }
-      if(prevPellIdx != -1) {
-        for(size_t m = 0; m < numMaps; m++) {
-          boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
-            AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
-          if((currMap->getMesh(1)) == d_meshes[prevPellIdx]) {
-            if ( currMap->requiresMakeConsistentSet() )
-                currMap->getVector()->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
-            break;
-          }
-        }//end for m
-      }
       AMP::LinearAlgebra::Vector::shared_ptr subF = f->subsetVectorForVariable(d_var);
       AMP::LinearAlgebra::Vector::shared_ptr subR = r->subsetVectorForVariable(d_var);
       AMP::LinearAlgebra::Vector::shared_ptr subU = d_frozenVectorForMaps->subsetVectorForVariable(d_var);
       AMP::Discretization::DOFManager::shared_ptr dof_map = subR->getDOFManager();
       if(currPellIdx != -1) {
         subR->copyVector(subF);
-        subR->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
         AMP::Mesh::MeshIterator bnd = d_meshes[currPellIdx]->getIDsetIterator(AMP::Mesh::Vertex, d_slaveId, 0);
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
         for( ; bnd != end_bnd; ++bnd) {
