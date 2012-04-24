@@ -28,6 +28,26 @@ namespace Operator {
       double v = 0;
       double w = 0;
 
+      double txx = 0;
+      double tyy = 0;
+      double tzz = 0;
+      double txy = 0;
+      double tyz = 0;
+      double txz = 0;
+
+      double dtxxdx = 0;
+      double dtyydy = 0;
+      double dtzzdz = 0;
+
+      double dtxydx = 0;
+      double dtxydy = 0;
+
+      double dtyzdy = 0;
+      double dtyzdz = 0;
+
+      double dtxzdx = 0;
+      double dtxzdz = 0;
+
       double dudx = 0;
       double dudy = 0;
       double dudz = 0;
@@ -38,11 +58,17 @@ namespace Operator {
       double dwdy = 0;
       double dwdz = 0;
 
+      double p = 0;
+      double dpdx = 0;
+      double dpdy = 0;
+      double dpdz = 0;
+
       for(unsigned int k = 0; k < num_nodes; k++) {
 
         u += d_elementInputVectors[NavierStokes::VELOCITY][(3*k) + 0]*phi[k][qp]; 
         v += d_elementInputVectors[NavierStokes::VELOCITY][(3*k) + 1]*phi[k][qp]; 
         w += d_elementInputVectors[NavierStokes::VELOCITY][(3*k) + 2]*phi[k][qp];
+        p += d_elementInputVectors[NavierStokes::PRESSURE][k]*p_phi[k][qp];
 
         dudx += (d_elementInputVectors[NavierStokes::VELOCITY][(3*k) + 0]*dphi[k][qp](0));
         dudy += (d_elementInputVectors[NavierStokes::VELOCITY][(3*k) + 0]*dphi[k][qp](1));
@@ -55,6 +81,30 @@ namespace Operator {
         dwdx += (d_elementInputVectors[NavierStokes::VELOCITY][(3*k) + 2]*dphi[k][qp](0));
         dwdy += (d_elementInputVectors[NavierStokes::VELOCITY][(3*k) + 2]*dphi[k][qp](1));
         dwdz += (d_elementInputVectors[NavierStokes::VELOCITY][(3*k) + 2]*dphi[k][qp](2));
+
+        dpdx += (d_elementInputVectors[NavierStokes::PRESSURE][k ]*dphi[k][qp](0));
+        dpdy += (d_elementInputVectors[NavierStokes::PRESSURE][k ]*dphi[k][qp](1));
+        dpdz += (d_elementInputVectors[NavierStokes::PRESSURE][k ]*dphi[k][qp](2));
+
+        txx += d_elementInputVectors[NavierStokes::PRINCIPALSTRESS][(3*k) + 0]*phi[k][qp]; 
+        tyy += d_elementInputVectors[NavierStokes::PRINCIPALSTRESS][(3*k) + 1]*phi[k][qp]; 
+        tzz += d_elementInputVectors[NavierStokes::PRINCIPALSTRESS][(3*k) + 2]*phi[k][qp];
+        
+        dtxxdx += (d_elementInputVectors[NavierStokes::PRINCIPALSTRESS][(3*k) + 0]*dphi[k][qp](0));
+        dtyydy += (d_elementInputVectors[NavierStokes::PRINCIPALSTRESS][(3*k) + 1]*dphi[k][qp](1));
+        dtzzdz += (d_elementInputVectors[NavierStokes::PRINCIPALSTRESS][(3*k) + 2]*dphi[k][qp](2));
+
+        txy += d_elementInputVectors[NavierStokes::SHEARSTRESS][(3*k) + 0]*phi[k][qp]; 
+        tyz += d_elementInputVectors[NavierStokes::SHEARSTRESS][(3*k) + 1]*phi[k][qp]; 
+        txz += d_elementInputVectors[NavierStokes::SHEARSTRESS][(3*k) + 2]*phi[k][qp];
+        
+        dtxydx += (d_elementInputVectors[NavierStokes::SHEARSTRESS][(3*k) + 0]*dphi[k][qp](0));
+        dtyzdy += (d_elementInputVectors[NavierStokes::SHEARSTRESS][(3*k) + 1]*dphi[k][qp](1));
+        dtxzdz += (d_elementInputVectors[NavierStokes::SHEARSTRESS][(3*k) + 2]*dphi[k][qp](2));
+
+        dtxydy += (d_elementInputVectors[NavierStokes::SHEARSTRESS][(3*k) + 0]*dphi[k][qp](1));
+        dtyzdz += (d_elementInputVectors[NavierStokes::SHEARSTRESS][(3*k) + 1]*dphi[k][qp](2));
+        dtxzdx += (d_elementInputVectors[NavierStokes::SHEARSTRESS][(3*k) + 2]*dphi[k][qp](0));
 
       } //end for k
 
