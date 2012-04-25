@@ -765,11 +765,13 @@ void Vector::copyGhostValues ( const boost::shared_ptr<const Vector> &rhs )
         // No ghosts to fill, we don't need to do anything
     } else if ( getGhostSize() == rhs->getGhostSize() ) {
         // The ghosts in the src vector match the current vector
-        // Copy the ghosts assuming that they are consistent in the rhs
+        // Copy the ghosts from the rhs
         std::vector<size_t> ghostIDs = getCommunicationList()->getGhostIDList();
         std::vector<double> values(ghostIDs.size());
         rhs->getGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
         this->setGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
+        // Copy the consistency state from the rhs
+        *d_UpdateState = *(rhs.getUpdateStatus());
     } else {
         // We can't copy the ghosts from the rhs
         // Use makeConsistent to fill the ghosts
