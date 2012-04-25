@@ -45,6 +45,8 @@ COPY_TEST_DATA_FILE ( input_testPelletStackMechanicsSolver-3 )
 COPY_MESH_FILE ( simple_pellet_1x.e )
 COPY_MESH_FILE ( butterfly_pellet_1x.e )
 COPY_MESH_FILE ( tallFuel.e )
+COPY_MESH_FILE ( pellet_lo_res.e )
+COPY_MESH_FILE ( TC1-PELL-COARSE.e )
 
 ADD_AMP_PROVISIONAL_TEST ( testMLfailure )
 COPY_TEST_DATA_FILE ( input_testMLfailure )
