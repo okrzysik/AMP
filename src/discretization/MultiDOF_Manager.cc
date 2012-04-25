@@ -188,15 +188,72 @@ std::vector<DOFManager::shared_ptr>  multiDOFManager::getDOFManagers() const
 /****************************************************************
 * Subset the DOF manager                                        *
 ****************************************************************/
+boost::shared_ptr<DOFManager>  multiDOFManager::subset( AMP_MPI comm_in )
+{
+    // Get the comm for the new DOFManager
+    if ( comm_in == d_comm ) 
+        return shared_from_this();
+    AMP_MPI comm = AMP_MPI::intersect( comm_in, d_comm );
+    // Subset all of the DOFManagers within this DOFManager
+    std::vector<DOFManager::shared_ptr> sub_managers;
+    for (size_t i=0; i<d_managers.size(); i++) {
+        DOFManager::shared_ptr subset = d_managers[i]->subset(comm);
+        if ( subset!=NULL ) 
+            sub_managers.push_back( subset );
+    }
+    // Check that we have a valid DOF manager somewhere
+    bool valid_DOF = sub_managers.size()>0;
+    valid_DOF = comm.anyReduce( valid_DOF );
+    if ( !valid_DOF )
+        return boost::shared_ptr<DOFManager>();
+    // Create the new multiDOFManager
+    return boost::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
+}
 boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
 {
-    // Call the base class for now, this needs to be specialized
-    return DOFManager::subset( mesh, useMeshComm );
+    // Get the comm for the new DOFManager
+    AMP_MPI comm(AMP_COMM_NULL);
+    if ( useMeshComm ) {
+        if ( mesh.get()!=NULL ) 
+            comm = mesh->getComm();
+    } else {
+        comm = d_comm;
+    }
+    if ( comm.isNull() )
+        return boost::shared_ptr<DOFManager>();
+    // Subset all of the DOFManagers within this DOFManager
+    std::vector<DOFManager::shared_ptr> sub_managers;
+    for (size_t i=0; i<d_managers.size(); i++) {
+        DOFManager::shared_ptr subset = d_managers[i]->subset(mesh,useMeshComm);
+        if ( subset!=NULL ) 
+            sub_managers.push_back( subset );
+    }
+    // Check that we have a valid DOF manager somewhere
+    bool valid_DOF = sub_managers.size()>0;
+    valid_DOF = comm.anyReduce( valid_DOF );
+    if ( !valid_DOF )
+        return boost::shared_ptr<DOFManager>();
+    // Create the new multiDOFManager
+    return boost::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
 }
-boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::MeshIterator &iterator, AMP_MPI comm )
+boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::MeshIterator &iterator, AMP_MPI comm_in )
 {
-    // Call the base class for now, this needs to be specialized
-    return DOFManager::subset( iterator, comm );
+    // Get the comm for the new DOFManager
+    AMP_MPI comm = AMP_MPI::intersect( comm_in, d_comm );
+    // Subset all of the DOFManagers within this DOFManager
+    std::vector<DOFManager::shared_ptr> sub_managers;
+    for (size_t i=0; i<d_managers.size(); i++) {
+        DOFManager::shared_ptr subset = d_managers[i]->subset(iterator,comm);
+        if ( subset!=NULL ) 
+            sub_managers.push_back( subset );
+    }
+    // Check that we have a valid DOF manager somewhere
+    bool valid_DOF = sub_managers.size()>0;
+    valid_DOF = comm.anyReduce( valid_DOF );
+    if ( !valid_DOF )
+        return boost::shared_ptr<DOFManager>();
+    // Create the new multiDOFManager
+    return boost::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
 }
 
 

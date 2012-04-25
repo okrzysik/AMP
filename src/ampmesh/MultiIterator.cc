@@ -197,9 +197,8 @@ bool MultiIterator::operator==(const MeshIterator& rhs) const
         rhs2 = tmp;     // We can safely cast rhs.iterator to a MultiIterator
     } else if ( ((MultiIterator*)tmp->iterator)->typeID==MultiIteratorTypeID ) {
         rhs2 = (MultiIterator*) tmp->iterator;
-    } else {
-        AMP_ERROR("Error, comparing a MultiIterator iterator to an unknown iterator");
     }
+    // Perform direct comparisions if we are dealing with two MultiIterator
     if ( rhs2 != NULL ) {
         bool equal = true;
         equal = equal && d_globalSize==rhs2->d_globalSize;
@@ -211,7 +210,27 @@ bool MultiIterator::operator==(const MeshIterator& rhs) const
         }
         return equal;
     }
-    return false;
+    /* We are comparing a MultiIterator to an arbitrary iterator
+     * The iterators are the same if they point to the same position and iterate 
+     * over the same elements in the same order
+     */
+    // Check the size
+    if ( this->size() != rhs.size() )
+        return false;
+    // Check the current position
+    if ( this->position() != rhs.position() )
+        return false;
+    // Check that the elements match
+    MeshIterator iterator1 = this->begin();
+    MeshIterator iterator2 = rhs.begin();
+    bool elements_match = true;
+    for (size_t i=0; i<this->size(); i++) {
+        if ( iterator1->globalID() != iterator2->globalID() )
+            elements_match = false;
+        ++iterator1;
+        ++iterator2;
+    }
+    return elements_match;
 }
 bool MultiIterator::operator!=(const MeshIterator& rhs) const
 {

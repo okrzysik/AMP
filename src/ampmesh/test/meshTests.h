@@ -12,6 +12,7 @@
 #include "ampmesh/SubsetMesh.h"
 #include "ampmesh/MeshElement.h"
 #include "ampmesh/MeshIterator.h"
+#include "ampmesh/MeshElementVectorIterator.h"
 
 #ifdef USE_AMP_VECTORS
     #include "vectors/Vector.h"
@@ -202,6 +203,49 @@ void MeshIteratorTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mes
             // Add const iterator tests
         }
     }    
+}
+
+
+// Test operator operations for iterator
+void MeshIteratorOperationTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
+{
+    // Create some iterators to work with
+    AMP::Mesh::MeshIterator A = mesh->getIterator(AMP::Mesh::Vertex,1);
+    AMP::Mesh::MeshIterator B = mesh->getIterator(mesh->getGeomType(),0);
+    boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( 
+        new std::vector<AMP::Mesh::MeshElement>(A.size()) );
+    AMP::Mesh::MeshIterator tmp = A.begin();
+    for (size_t i=0; i<A.size(); i++) {
+        (*elements)[i] = *tmp;
+        ++tmp;
+    }
+    AMP::Mesh::MeshIterator C = AMP::Mesh::MultiVectorIterator( elements );
+
+    // Check operator== and operator!=
+    if ( A==A && B==B && C==C )
+        ut->passes("Iterator == with same iterator");
+    else
+        ut->failure("Iterator == with same iterator");
+    if ( !(A!=A) && !(B!=B) && !(C!=C) )
+        ut->passes("Iterator != with same iterator");
+    else
+        ut->failure("Iterator != with same iterator");
+    if ( !(A==B) )
+        ut->passes("Iterator == with same type, different iterator");
+    else
+        ut->failure("Iterator == with same type, different iterator");
+    if ( A!=B )
+        ut->passes("Iterator != with same type, different iterator");
+    else
+        ut->failure("Iterator != with same type, different iterator");
+    if ( A==C && C==A && !(B==C) && !(C==B) )
+        ut->passes("Iterator == with different type");
+    else
+        ut->failure("Iterator == with different type");
+    if ( !(A!=C) && !(C!=A) && B!=C && C!=B )
+        ut->passes("Iterator != with different type");
+    else
+        ut->failure("Iterator != with different type");
 }
 
 

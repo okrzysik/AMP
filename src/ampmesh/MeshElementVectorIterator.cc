@@ -148,7 +148,7 @@ bool MultiVectorIterator::operator==(const MeshIterator& rhs) const
             return false;
         bool elements_match = true;
         for (size_t i=0; i<d_elements->size(); i++) {
-            if ( d_elements->operator[](i) != d_elements->operator[](i) )
+            if ( d_elements->operator[](i) != rhs2->d_elements->operator[](i) )
                 elements_match = false;
         }
         return elements_match;

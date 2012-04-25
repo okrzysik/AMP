@@ -3,6 +3,7 @@
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "discretization/MultiDOF_Manager.h"
+#include "utils/AMP_MPI.h"
 #include "../../ampmesh/test/meshGenerators.h"
 
 #ifdef USE_AMP_VECTORS
@@ -17,7 +18,7 @@ using namespace AMP::unit_test;
 
 
 // Function to test subsetting a DOF manager
-template <class GENERATOR>
+template <class GENERATOR, bool SPLIT>
 void testSubsetDOFManager( AMP::UnitTest *ut )
 {
     // Get the mesh
@@ -26,26 +27,47 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
     AMP::Mesh::Mesh::shared_ptr mesh = mesh_generator.getMesh();
 
     // Create a simple DOF manager
-    AMP::Discretization::DOFManager::shared_ptr DOF =  AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 0, 1, false );
+    AMP::Discretization::DOFManager::shared_ptr DOF = 
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 0, 1, SPLIT );
+    AMP::Discretization::DOFManager::shared_ptr subsetDOF;
+
+    // Subset for comms
+    subsetDOF = DOF->subset( AMP::AMP_MPI(AMP_COMM_WORLD) );
+    if ( *DOF == *subsetDOF )
+        ut->passes("Subset DOF for COMM_WORLD");
+    else
+        ut->failure("Subset DOF on COMM_WORLD");
+    subsetDOF = DOF->subset( DOF->getComm() );
+    if ( *DOF == *subsetDOF )
+        ut->passes("Subset DOF for DOF comm");
+    else
+        ut->failure("Subset DOF on DOF comm");
+    subsetDOF = DOF->subset( AMP::AMP_MPI(AMP_COMM_SELF) );
+    if ( subsetDOF->numLocalDOF()==DOF->numLocalDOF() && subsetDOF->numGlobalDOF()==DOF->numLocalDOF() )
+        ut->passes("Subset DOF for COMM_SELF");
+    else
+        ut->failure("Subset DOF on COMM_SELF");
     
     // Subset for each mesh
-    AMP::Discretization::DOFManager::shared_ptr subsetDOF = DOF->subset( mesh );
-    if ( DOF->numGlobalDOF() == subsetDOF->numGlobalDOF() )
+    subsetDOF = DOF->subset( mesh );
+    if ( *DOF == *subsetDOF )
         ut->passes("Subset DOF on full mesh");
     else
         ut->failure("Subset DOF on full mesh");
     std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getBaseMeshIDs();
     if ( meshIDs.size() > 1 ) {
-        size_t tot_size = 0;
+        bool passes = true;
         for (size_t i=0; i<meshIDs.size(); i++) {
             AMP::Mesh::Mesh::shared_ptr subsetMesh = mesh->Subset(meshIDs[i]);
             if ( subsetMesh.get() != NULL ) {
                 subsetDOF = DOF->subset(subsetMesh);
-                tot_size += subsetDOF->numLocalDOF();
+                AMP::Discretization::DOFManager::shared_ptr mesh_DOF = 
+                    AMP::Discretization::simpleDOFManager::create( subsetMesh, AMP::Mesh::Vertex, 0, 1, false );
+                if ( *mesh_DOF != *subsetDOF )
+                    passes = false;
             }
         }
-        tot_size = DOF->getComm().sumReduce(tot_size);
-        if ( tot_size == DOF->numGlobalDOF() )
+        if ( passes )
             ut->passes("Subset DOF for each mesh");
         else
             ut->failure("Subset DOF for each mesh");
@@ -54,13 +76,13 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
     // Subset for iterators
     AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::Vertex, 0 );
     subsetDOF = DOF->subset( iterator, mesh->getComm() );
-    if ( DOF->numGlobalDOF() == subsetDOF->numGlobalDOF() )
+    if ( *DOF == *subsetDOF )
         ut->passes("Subset DOF on full mesh iterator");
     else
         ut->failure("Subset DOF on full mesh iterator");
     iterator = mesh->getSurfaceIterator( AMP::Mesh::Vertex, 0 );
     subsetDOF = DOF->subset( iterator, mesh->getComm() );
-    if ( subsetDOF->numGlobalDOF()<DOF->numGlobalDOF() && subsetDOF->numGlobalDOF()>0 )
+    if ( subsetDOF->numGlobalDOF()<DOF->numGlobalDOF() && subsetDOF->numLocalDOF()==iterator.size() )
         ut->passes("Subset DOF on surface mesh iterator");
     else
         ut->failure("Subset DOF on surface mesh iterator");

@@ -20,7 +20,8 @@ int main ( int argc , char ** argv )
     testSimpleDOFManager<MultiMeshGenerator>( &ut );
     testMultiDOFManager<LibMeshCubeGenerator<5> >( &ut );
     testMultiDOFManager<MultiMeshGenerator>( &ut );
-    testSubsetDOFManager<MultiMeshGenerator>( &ut );
+    testSubsetDOFManager<MultiMeshGenerator,false>( &ut );
+    testSubsetDOFManager<MultiMeshGenerator,true>( &ut );
 
     // Print the results and return
     ut.report ();

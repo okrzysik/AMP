@@ -154,8 +154,12 @@ bool DOFManager::operator!=( const DOFManager &rhs ) const
 ****************************************************************/
 boost::shared_ptr<DOFManager>  DOFManager::subset( AMP_MPI comm )
 {
-    AMP_ERROR("Not impimented yet");
-    return boost::shared_ptr<DOFManager> ();
+    if ( comm == d_comm ) 
+        return shared_from_this();
+    std::vector<size_t> local_dofs(numLocalDOF(),beginDOF());
+    for (size_t i=0; i<numLocalDOF(); i++)
+        local_dofs[i] += i;
+    return subsetDOFManager::create( shared_from_this(), local_dofs, getIterator(), comm );
 }
 boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
 {
@@ -212,6 +216,8 @@ boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::MeshIterator
 {
     // Get the intesection of the current iterator with the given iterator
     AMP::Mesh::MeshIterator intersection = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Intersection, iterator, getIterator() );
+    if ( intersection.size()==getIterator().size() )
+        intersection = getIterator();
     // Get the list of element we want
     std::vector<AMP::Mesh::MeshElementID> element_list(iterator.size());
     for (size_t i=0; i<intersection.size(); i++) {

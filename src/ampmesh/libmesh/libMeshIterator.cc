@@ -80,7 +80,7 @@ libMeshIterator::libMeshIterator(int type, const AMP::Mesh::libMesh *mesh, int g
     if ( pos2 == -1 ) {
         d_pos2 = 0;
         MeshIterator tmp = this->begin();
-        while ( this->operator==(tmp) ) {
+        while ( this->operator!=(tmp) ) {
             d_pos2++;
             ++tmp;
         }
@@ -255,10 +255,13 @@ bool libMeshIterator::operator==(const MeshIterator& rhs) const
         rhs2 = tmp;     // We can safely cast rhs.iterator to a libMeshIterator
     } else if ( ((libMeshIterator*)tmp->iterator)->typeID==libMeshIteratorTypeID ) {
         rhs2 = (libMeshIterator*) tmp->iterator;
-    } else {
-        AMP_ERROR("Error, comparing a libMesh iterator to an unknown iterator");
     }
+    // Perform direct comparisions if we are dealing with two libMeshIterators
     if ( rhs2 != NULL ) {
+        if ( d_type != rhs2->d_type ) {
+            // We are dealing with different types of elements
+            return false;
+        }
         if ( d_type==0 ) {
             // Node iterator
             return (*((::Mesh::node_iterator*)d_pos)) == (*((::Mesh::node_iterator*)rhs2->d_pos));
@@ -269,7 +272,27 @@ bool libMeshIterator::operator==(const MeshIterator& rhs) const
             AMP_ERROR("libMesh does not support iterators over this (unknown) type");
         }
     }
-    return false;
+    /* We are comparing a libMeshIterator to an arbitrary iterator
+     * The iterators are the same if they point to the same position and iterate 
+     * over the same elements in the same order
+     */
+    // Check the size
+    if ( this->size() != rhs.size() )
+        return false;
+    // Check the current position
+    if ( this->position() != rhs.position() )
+        return false;
+    // Check that the elements match
+    MeshIterator iterator1 = this->begin();
+    MeshIterator iterator2 = rhs.begin();
+    bool elements_match = true;
+    for (size_t i=0; i<this->size(); i++) {
+        if ( iterator1->globalID() != iterator2->globalID() )
+            elements_match = false;
+        ++iterator1;
+        ++iterator2;
+    }
+    return elements_match;
 }
 bool libMeshIterator::operator!=(const MeshIterator& rhs) const
 {

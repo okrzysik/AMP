@@ -97,6 +97,13 @@ public:
     std::vector<DOFManager::shared_ptr>  getDOFManagers() const;
 
 
+    /** \brief Subset the DOF Manager for a AMP_MPI communicator
+     * \details  This will subset a DOF manager for a given communicator.
+     * \param[in]  comm         The communicator to use to subset
+     */
+    virtual DOFManager::shared_ptr subset( AMP_MPI comm );
+
+
     /** \brief Subset the DOF Manager for a mesh
      * \details  This will subset a DOF manager for a particular mesh.  The resulting DOFManager
      *    can exist on either the comm of the parent DOF manager, or the comm of the mesh (default).

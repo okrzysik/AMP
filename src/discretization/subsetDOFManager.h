@@ -31,6 +31,7 @@ public:
      * \param[in] parentDOFManager  The parent DOF manager
      * \param[in] dofs      The DOFs that will be part of the subset
      * \param[in] iterator  The iterator over the subset of elements in the subsetDOFManager
+     * \param[in] comm      The new comm for the subset DOF Manager
      */
     static DOFManager::shared_ptr create( boost::shared_ptr<const DOFManager> parentDOFManager, 
         const std::vector <size_t> &dofs, const AMP::Mesh::MeshIterator &iterator, AMP_MPI comm );

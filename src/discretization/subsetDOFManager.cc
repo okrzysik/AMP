@@ -28,8 +28,15 @@ DOFManager::shared_ptr  subsetDOFManager::create( boost::shared_ptr<const DOFMan
     subsetDOF->d_parentEnd = parentDOFManager->endDOF();
     subsetDOF->d_parentGlobal = parentDOFManager->numGlobalDOF();
     // Copy the local list of DOFs
-    subsetDOF->d_localDOFs = dofs;
-    AMP::Utilities::quicksort(subsetDOF->d_localDOFs);
+    subsetDOF->d_localDOFs.reserve(dofs.size());
+    size_t begin_dof = parentDOFManager->beginDOF();
+    size_t end_dof = parentDOFManager->endDOF();
+    for (size_t i=0; i<dofs.size(); i++) {
+        if ( dofs[i]>=begin_dof && dofs[i]< end_dof )
+            subsetDOF->d_localDOFs.push_back(dofs[i]);
+    }
+    AMP::Utilities::unique(subsetDOF->d_localDOFs);
+    // Get the begin and global DOFs for the subset
     size_t N_local = dofs.size();
     subsetDOF->d_comm.sumScan(&N_local,&(subsetDOF->d_end),1);
     subsetDOF->d_begin = subsetDOF->d_end - N_local;
@@ -37,6 +44,9 @@ DOFManager::shared_ptr  subsetDOFManager::create( boost::shared_ptr<const DOFMan
     // Return if the subset DOF is empty
     if ( subsetDOF->d_global==0 )
         return DOFManager::shared_ptr();
+    // Return if the subset DOF == parent DOF
+    if ( subsetDOF->d_global==parentDOFManager->numGlobalDOF() )
+        return boost::const_pointer_cast<DOFManager>(parentDOFManager);
     // Determine which remote DOFs we will need to keep
     size_t *send_data = NULL;
     if ( N_local > 0 )
