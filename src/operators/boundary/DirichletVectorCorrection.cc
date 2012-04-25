@@ -68,11 +68,6 @@ namespace AMP {
         AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a, const double ) {
       AMP::LinearAlgebra::Vector::shared_ptr rInternal = mySubsetVector(r, d_variable);
 
-      AMP_ASSERT( ((*(r->getUpdateStatus())) == AMP::LinearAlgebra::Vector::UNCHANGED) || 
-          ((*(r->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
-      AMP_ASSERT( ((*(rInternal->getUpdateStatus())) == AMP::LinearAlgebra::Vector::UNCHANGED) || 
-          ((*(rInternal->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
-
       if(d_iDebugPrintInfoLevel>3)
       {
         AMP::pout << "L2 Norm of rInternal entering DirichletVectorCorrection::apply is : " << rInternal->L2Norm() << std::endl;
@@ -88,8 +83,6 @@ namespace AMP {
 
       rInternal->scale(a);
 
-      AMP_ASSERT( ((*(r->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
-      AMP_ASSERT( ((*(rInternal->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
       if(d_iDebugPrintInfoLevel>3)
       {
         AMP::pout << "L2 Norm of rInternal leaving DirichletVectorCorrection::apply is : " << rInternal->L2Norm() << std::endl;
@@ -113,11 +106,15 @@ namespace AMP {
           dof_map->getDOFs(bnd->globalID(), bndGlobalIds);
           for(size_t i = 0; i < d_dofIds[j].size(); i++) {
             rInternal->setLocalValueByGlobalID(bndGlobalIds[d_dofIds[j][i]], 0.0);
+            AMP_ASSERT( ((*(rInternal->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+            AMP_ASSERT( ((*(r->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
           }//end for i
         }//end for bnd
       }//end for j
-      AMP_ASSERT( ((*(r->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
-      AMP_ASSERT( ((*(rInternal->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+      AMP_ASSERT( ((*(r->getUpdateStatus())) == AMP::LinearAlgebra::Vector::UNCHANGED) || 
+          ((*(r->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+      AMP_ASSERT( ((*(rInternal->getUpdateStatus())) == AMP::LinearAlgebra::Vector::UNCHANGED) || 
+          ((*(rInternal->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
     }
 
     void DirichletVectorCorrection :: applyNonZeroValues(AMP::LinearAlgebra::Vector::shared_ptr r) {
@@ -144,11 +141,15 @@ namespace AMP {
               dVal = d_dirichletValues2->getLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]] );
             }
             rInternal->setLocalValueByGlobalID(bndGlobalIds[d_dofIds[j][i]], d_scalingFactor*dVal);
+            AMP_ASSERT( ((*(rInternal->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+            AMP_ASSERT( ((*(r->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
           }//end for i
         }//end for bnd
       }//end for j
-      AMP_ASSERT( ((*(rInternal->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
-      AMP_ASSERT( ((*(r->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+      AMP_ASSERT( ((*(r->getUpdateStatus())) == AMP::LinearAlgebra::Vector::UNCHANGED) || 
+          ((*(r->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+      AMP_ASSERT( ((*(rInternal->getUpdateStatus())) == AMP::LinearAlgebra::Vector::UNCHANGED) || 
+          ((*(rInternal->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
     }
 
     void DirichletVectorCorrection :: applyResidual(AMP::LinearAlgebra::Vector::shared_ptr u, 
@@ -174,10 +175,12 @@ namespace AMP {
               dVal = d_dirichletValues2->getLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]] );
             }
             r->setLocalValueByGlobalID(bndGlobalIds[d_dofIds[j][i]], d_scalingFactor*(uVal - dVal));
+            AMP_ASSERT( ((*(r->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
           }//end for i
         }//end for bnd
       }//end for j
-      AMP_ASSERT( ((*(r->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+      AMP_ASSERT( ((*(r->getUpdateStatus())) == AMP::LinearAlgebra::Vector::UNCHANGED) || 
+          ((*(r->getUpdateStatus())) == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
     }
 
     boost::shared_ptr<OperatorParameters> DirichletVectorCorrection :: 
