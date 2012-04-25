@@ -89,8 +89,35 @@ ManagedVector::ManagedVector ( shared_ptr  alias ):
     }
     copyGhostValues ( other );
     // Copy the consistency state from other
-    *d_UpdateState = *(other->getUpdateStatus());
+    *d_UpdateState = *(other->getUpdateStatusPtr());
   }
+
+
+Vector::UpdateState  ManagedVector::getUpdateStatus () const
+{
+    Vector::UpdateState state = *d_UpdateState;
+    boost::shared_ptr<const Vector> vec;
+    if ( d_Engine.get()!=NULL ) {
+        vec = boost::dynamic_pointer_cast<const Vector>( d_Engine );
+    }
+    if ( vec.get()!=NULL ) {
+        Vector::UpdateState  sub_state = vec->getUpdateStatus();
+        if ( sub_state==UNCHANGED ) {
+            state = state;
+        } else if ( sub_state==LOCAL_CHANGED && state==UNCHANGED ) {
+            state = LOCAL_CHANGED;
+        } else if ( sub_state==LOCAL_CHANGED ) {
+            state = state;
+        } else if ( sub_state==ADDING && ( state==UNCHANGED || state==LOCAL_CHANGED || state==ADDING ) ) {
+            state = ADDING;
+        } else if ( sub_state==SETTING && ( state==UNCHANGED || state==LOCAL_CHANGED || state==SETTING ) ) {
+            state = SETTING;
+        } else {
+            state = MIXED;
+        }
+    }
+    return state;
+}
 
 
   void ManagedVector::swapVectors ( Vector &other )

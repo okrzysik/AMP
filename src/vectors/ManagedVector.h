@@ -12,76 +12,43 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-  /**
-     \brief Data necessary to create a managed vector
-   */
-  class ManagedVectorParameters : public VectorParameters
-  {
-    protected:
-      /**\brief  Copy constructor is protected to prevent unintended copies
-         */
-      ManagedVectorParameters ( const ManagedVectorParameters & );
 
-    public:
-      /**\brief Constructor
-         */
-      ManagedVectorParameters ();
+/**
+  \brief Data necessary to create a managed vector
+*/
+class ManagedVectorParameters : public VectorParameters
+{
+protected:
+    //!  Copy constructor is protected to prevent unintended copies
+    ManagedVectorParameters ( const ManagedVectorParameters & );
 
-      /**\brief The VectorEngine to use with the managed vector
-         */
-      VectorEngine::shared_ptr      d_Engine;
-      /**\brief Indicates whether the engine should be used as is or cloned
-         */
-      bool                          d_CloneEngine;
-      /**\brief Buffer to use for the managed vector
-         */
-      VectorEngine::BufferPtr       d_Buffer;
-  };
+public:
+    //! Constructor
+    ManagedVectorParameters ();
 
-  /**
-     \brief Class used to control data and kernels of various vector libraries
-     \details  A ManagedVector will take an engine and create a buffer, if 
-     necessary.  This class should not be used directly.  Rather, a
-     ManagedVector is constructed by a factory.  For instance, the mesh method
-     LibMeshAdapter::createVector may create a ManagedVector and return that.
+    //! The VectorEngine to use with the managed vector
+    VectorEngine::shared_ptr      d_Engine;
 
-     A ManagedVector has two pointers: data and engine.  If the data pointer
-     is null, then the engine is assumed to have the data.
-     */
+    //! Indicates whether the engine should be used as is or cloned
+    bool                          d_CloneEngine;
 
-  class ManagedVector : public Vector
-                      , public DataChangeFirer
-  {
-    public:
-      /**\brief  Convenince typedef for a shared pointer of the parameters
-         */
-      typedef boost::shared_ptr<ManagedVectorParameters>  parameters_ptr;
-
-    private:
-      ManagedVector ();
+    //! Buffer to use for the managed vector
+    VectorEngine::BufferPtr       d_Buffer;
+};
 
 
-    protected:
-      /**\brief  A method that is called whenever data changes.  This fires
-                 triggers that may have been registered with DataChangeFirer
-                 */
-      virtual void dataChanged ();
+/**
+   \brief Class used to control data and kernels of various vector libraries
+   \details  A ManagedVector will take an engine and create a buffer, if 
+   necessary.  
 
-      /**\brief  The buffer used to store data
-         */
-      VectorEngine::BufferPtr        d_vBuffer;
-      /**\brief  The engine to act on the buffer
-         */
-      VectorEngine::shared_ptr       d_Engine;
-      /**\brief  The parameters used to create this vector
-         */
-      parameters_ptr                 d_pParameters;
+   A ManagedVector has two pointers: data and engine.  If the data pointer
+   is null, then the engine is assumed to have the data.
+*/
+class ManagedVector : public Vector, public DataChangeFirer
+{
 
-      /**\brief  Function that returns a pointer to a managed vector
-         */
-      virtual ManagedVector *getNewRawPtr () const = 0;
-
-    public:
+public:
       /** \brief Construct a ManagedVector from a set of parameters
         * \param[in] params  The description of the ManagedVector
         */
@@ -131,7 +98,7 @@ namespace LinearAlgebra {
 
       virtual void  selectInto ( const VectorSelector & , shared_ptr );
 
-      virtual parameters_ptr  getManagedVectorParameters () ;
+      virtual boost::shared_ptr<ManagedVectorParameters>  getManagedVectorParameters () ;
 
       virtual size_t getLocalSize() const;
       virtual size_t getGlobalSize() const;
@@ -169,14 +136,39 @@ namespace LinearAlgebra {
       double maxNorm(void) const;
       using Vector::dot;
       double dot(const VectorOperations &x) const;
+      virtual UpdateState  getUpdateStatus() const;
 
-    protected:
+protected:
+
+      /**\brief  A method that is called whenever data changes.  This fires
+                 triggers that may have been registered with DataChangeFirer
+                 */
+      virtual void dataChanged ();
+
+      /**\brief  The buffer used to store data
+         */
+      VectorEngine::BufferPtr        d_vBuffer;
+      /**\brief  The engine to act on the buffer
+         */
+      VectorEngine::shared_ptr       d_Engine;
+      /**\brief  The parameters used to create this vector
+         */
+       boost::shared_ptr<ManagedVectorParameters>  d_pParameters;
+
+      /**\brief  Function that returns a pointer to a managed vector
+         */
+      virtual ManagedVector *getNewRawPtr () const = 0;
       virtual void *getRawDataBlockAsVoid ( size_t i );
       virtual const void *getRawDataBlockAsVoid ( size_t i ) const;
 
       virtual void addCommunicationListToParameters ( CommunicationList::shared_ptr comm );
 
-  };
+private:
+
+    ManagedVector ();
+
+};
+
 
 }
 }

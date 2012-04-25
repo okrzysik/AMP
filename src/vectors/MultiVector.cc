@@ -528,6 +528,28 @@ void MultiVector::assemble ()
 }
 
 
+Vector::UpdateState  MultiVector::getUpdateStatus () const
+{
+    Vector::UpdateState state = *d_UpdateState;
+    for (size_t i=0; i!=d_vVectors.size(); i++) {
+        Vector::UpdateState  sub_state = d_vVectors[i]->getUpdateStatus();
+        if ( sub_state==UNCHANGED ) {
+            continue;
+        } else if ( sub_state==LOCAL_CHANGED && state==UNCHANGED ) {
+            state = LOCAL_CHANGED;
+        } else if ( sub_state==LOCAL_CHANGED ) {
+            continue;
+        } else if ( sub_state==ADDING && ( state==UNCHANGED || state==LOCAL_CHANGED || state==ADDING ) ) {
+            state = ADDING;
+        } else if ( sub_state==SETTING && ( state==UNCHANGED || state==LOCAL_CHANGED || state==SETTING ) ) {
+            state = SETTING;
+        } else {
+            state = MIXED;
+        }
+    }
+    return state;
+}
+
 
 void MultiVector::copyVector ( const Vector::const_shared_ptr &src )
 {
@@ -536,7 +558,7 @@ void MultiVector::copyVector ( const Vector::const_shared_ptr &src )
     AMP_ASSERT(rhs->d_vVectors.size()==d_vVectors.size());
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
       d_vVectors[i]->copyVector( rhs->d_vVectors[i] );
-    *d_UpdateState = *(rhs->getUpdateStatus());
+    *d_UpdateState = *(rhs->getUpdateStatusPtr());
 }
 
 

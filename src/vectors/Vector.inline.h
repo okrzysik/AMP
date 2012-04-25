@@ -325,13 +325,19 @@ inline double Vector::getValueByLocalID ( size_t ndx ) const
   }
 
   inline
-  boost::shared_ptr<Vector::UpdateState>  Vector::getUpdateStatus () const
+  Vector::UpdateState  Vector::getUpdateStatus () const
+  {
+    return *d_UpdateState;
+  }
+
+  inline
+  boost::shared_ptr<Vector::UpdateState>  Vector::getUpdateStatusPtr () const
   {
     return d_UpdateState;
   }
 
   inline
-  void Vector::setUpdateStatus ( boost::shared_ptr<UpdateState> rhs )
+  void Vector::setUpdateStatusPtr ( boost::shared_ptr<UpdateState> rhs )
   {
     d_UpdateState = rhs;
   }

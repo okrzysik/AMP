@@ -52,13 +52,6 @@ namespace LinearAlgebra {
 
 
     public:
-      /** \brief Convenience typedef
-        */
-      typedef  ManagedVector::parameters_ptr             parameters_ptr;
-
-      /** \brief Convenience typedef
-        */
-      typedef  ManagedPetscVectorParameters              parameters;
 
 
       /** \brief Construct a new ManagedPetscVector given a set of parameters

@@ -158,6 +158,7 @@ public:
     virtual void getGhostValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
     virtual void getValuesByLocalID ( int numVals , size_t *ndx , double *vals ) const;
     virtual void makeConsistent ( ScatterType  t );
+    virtual UpdateState  getUpdateStatus() const;
     virtual void assemble();
     virtual double L1Norm(void) const;
     virtual double L2Norm(void) const;

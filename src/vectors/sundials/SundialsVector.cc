@@ -30,7 +30,7 @@ const Vector::shared_ptr  SundialsVector::constView ( const Vector::shared_ptr i
             new_params->d_DOFManager = AMP::Discretization::DOFManager::shared_ptr( new AMP::Discretization::DOFManager( inVector->getLocalSize(), inVector->getComm() ) );
         ManagedSundialsVector *t = new ManagedSundialsVector ( VectorParameters::shared_ptr ( new_params ) );
         t->setVariable ( inVector->getVariable() );
-        t->setUpdateStatus ( inVector->getUpdateStatus () );
+        t->setUpdateStatusPtr ( inVector->getUpdateStatusPtr () );
         retVal = Vector::shared_ptr ( t );
         inVector->registerView ( retVal );
     } else {
@@ -67,7 +67,7 @@ Vector::shared_ptr  SundialsVector::view ( Vector::shared_ptr inVector )
             new_params->d_DOFManager = AMP::Discretization::DOFManager::shared_ptr( new AMP::Discretization::DOFManager( inVector->getLocalSize(), inVector->getComm() ) );
         ManagedSundialsVector *t = new ManagedSundialsVector ( VectorParameters::shared_ptr ( new_params ) );
         t->setVariable ( inVector->getVariable() );
-        t->setUpdateStatus ( inVector->getUpdateStatus () );
+        t->setUpdateStatusPtr ( inVector->getUpdateStatusPtr () );
         retVal = Vector::shared_ptr ( t );
         inVector->registerView ( retVal );
     } else {

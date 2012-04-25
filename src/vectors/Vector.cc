@@ -234,7 +234,7 @@ void Vector::zero()
     setToScalar (0.0);
     for ( size_t i = 0 ; i != d_Ghosts->size() ; i++ )
         (*d_Ghosts)[i] = 0.0;
-    (*getUpdateStatus()) = UNCHANGED;
+    (*getUpdateStatusPtr()) = UNCHANGED;
 }
 void Vector::setToScalar(double alpha)
 {
@@ -294,7 +294,7 @@ void Vector::copyVector ( const Vector::const_shared_ptr &rhs )
     }
     copyGhostValues ( rhs );
     // Copy the consistency state from the rhs
-    *d_UpdateState = *(rhs->getUpdateStatus());
+    *d_UpdateState = *(rhs->getUpdateStatusPtr());
 }
 void Vector::scale(double alpha)
 {
@@ -773,7 +773,7 @@ void Vector::copyGhostValues ( const boost::shared_ptr<const Vector> &rhs )
         rhs->getGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
         this->setGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
         // Copy the consistency state from the rhs
-        *d_UpdateState = *(rhs->getUpdateStatus());
+        *d_UpdateState = *(rhs->getUpdateStatusPtr());
     } else {
         // We can't copy the ghosts from the rhs
         // Use makeConsistent to fill the ghosts

@@ -137,7 +137,7 @@ namespace LinearAlgebra {
   }
 
   inline
-  ManagedVector::parameters_ptr  ManagedVector::getManagedVectorParameters ()
+   boost::shared_ptr<ManagedVectorParameters>  ManagedVector::getManagedVectorParameters ()
   {
     return d_pParameters;
   }

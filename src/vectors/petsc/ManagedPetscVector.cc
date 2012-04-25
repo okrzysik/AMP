@@ -691,7 +691,8 @@ namespace LinearAlgebra {
 
   void  ManagedPetscVector::copyFromPetscVec ( Vector &dest , Vec source )
   {
-    parameters_ptr params = boost::dynamic_pointer_cast<ManagedVectorParameters> (dest.castTo<ManagedVector>().getParameters());
+    boost::shared_ptr<ManagedVectorParameters> params = 
+        boost::dynamic_pointer_cast<ManagedVectorParameters>(dest.castTo<ManagedVector>().getParameters());
     if ( !params ) throw ( "Incompatible vector types" );
 
     if ( sizeof(PetscInt) < 8 )
@@ -713,7 +714,7 @@ namespace LinearAlgebra {
     VecGetLocalSize ( source , &local_size );
     VecGetSize ( source , &global_size );
     VecGetOwnershipRange ( source , &local_start , &local_end );
-    parameters_ptr t ( new ManagedPetscVectorParameters () );
+    boost::shared_ptr<ManagedVectorParameters> t ( new ManagedPetscVectorParameters () );
     VectorEngineParameters::shared_ptr ve_params ( new EpetraVectorEngineParameters ( local_size , global_size , comm ) );
     t->d_Engine = VectorEngine::shared_ptr( new EpetraVectorEngine ( ve_params , VectorEngine::BufferPtr ( new VectorEngine::Buffer ( local_size ) ) ) );
     ManagedPetscVector *pRetVal_t = new ManagedPetscVector ( boost::dynamic_pointer_cast<VectorParameters> ( t ) );

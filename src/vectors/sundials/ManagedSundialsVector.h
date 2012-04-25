@@ -89,8 +89,6 @@ namespace LinearAlgebra {
       using Vector::cloneVector;
       Vector::shared_ptr  cloneVector ( const Variable::shared_ptr var ) const;
 
-      typedef ManagedVector::parameters_ptr    parameters_ptr;
-  		typedef ManagedSundialsVectorParameters     parameters;
       virtual void assemble ();
 
 

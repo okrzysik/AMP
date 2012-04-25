@@ -11,7 +11,7 @@ namespace LinearAlgebra {
   inline
   ManagedSundialsVector  *ManagedSundialsVector::rawClone () const
   {
-    parameters_ptr p ( new parameters );
+    boost::shared_ptr<ManagedVectorParameters> p ( new ManagedSundialsVectorParameters );
     if ( !d_vBuffer )
     {
       p->d_Engine = d_Engine->cloneEngine ( VectorEngine::BufferPtr () );

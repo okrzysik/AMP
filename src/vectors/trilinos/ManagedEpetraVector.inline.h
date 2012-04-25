@@ -17,7 +17,7 @@ namespace LinearAlgebra {
   inline 
   Vector::shared_ptr  ManagedEpetraVector::cloneVector ( const Variable::shared_ptr var ) const
   {
-    parameters_ptr  p ( new ManagedVectorParameters () );
+     boost::shared_ptr<ManagedVectorParameters>  p ( new ManagedVectorParameters () );
     p->d_Buffer = VectorEngine::BufferPtr ( new VectorEngine::Buffer ( d_vBuffer->size() ) );
     p->d_Engine = d_pParameters->d_Engine->cloneEngine( p->d_Buffer );
     p->d_CommList = getCommunicationList();

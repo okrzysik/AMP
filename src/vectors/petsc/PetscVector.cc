@@ -39,7 +39,7 @@ const Vector::shared_ptr  PetscVector::constView ( const Vector::shared_ptr inVe
         ManagedPetscVector *t = new ManagedPetscVector ( VectorParameters::shared_ptr ( newParams ) );
         inVector->castTo<DataChangeFirer>().registerListener( t );
         t->setVariable ( inVector->getVariable() );
-        t->setUpdateStatus ( inVector->getUpdateStatus () );
+        t->setUpdateStatusPtr ( inVector->getUpdateStatusPtr () );
         retVal = Vector::shared_ptr ( t );
         inVector->registerView ( retVal );
     } else {
@@ -72,7 +72,7 @@ Vector::shared_ptr  PetscVector::view ( Vector::shared_ptr inVector )
         ManagedPetscVector *newVector = new ManagedPetscVector ( VectorParameters::shared_ptr ( newParams ) );
         inVector->castTo<DataChangeFirer>().registerListener( newVector );
         newVector->setVariable ( inVector->getVariable() );
-        newVector->setUpdateStatus ( inVector->getUpdateStatus () );
+        newVector->setUpdateStatusPtr ( inVector->getUpdateStatusPtr () );
         retVal = Vector::shared_ptr ( newVector );
         inVector->registerView ( retVal );
     } else if ( inVector->isA<SimpleVector> () ) {

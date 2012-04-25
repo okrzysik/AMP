@@ -1008,18 +1008,41 @@ public:
     /**\brief The four states a Vector can be in
       *\see makeConsistent
       */
-    enum UpdateState { UNCHANGED, LOCAL_CHANGED, ADDING, SETTING };
+    enum UpdateState { UNCHANGED, LOCAL_CHANGED, ADDING, SETTING, MIXED };
+
+
+    /** \brief  Return the current update state of the Vector
+      * \details  This returns the effective update state of the 
+      *  vector, including any vectors it contains.  The effective 
+      *  state is defined as:
+      *  UNCHANGED - All data and sub vectors are unchanged
+      *  LOCAL_CHANGED - Local data may be modified, sub vectors must either
+      *             be UNCHANGED or LOCAL_CHANGED.
+      *  ADDING - Local and ghost data may be modified through add opperations, 
+      *             sub vectors must be UNCHANGED, LOCAL_CHANGED, or ADDING
+      *  SETTING - Local and ghost data may be modified through set opperations, 
+      *             sub vectors must be UNCHANGED, LOCAL_CHANGED, or SETTING
+      * If different subvectors have incompatible states ADDING and SETTING,
+      * this function will return MIXED
+      */
+    virtual UpdateState  getUpdateStatus() const;
 
 
     /** \brief  Return the current update state of this Vector
+      * \details  This returns the pointer to the update state
+      *  of the current vector only (not vectors it contains).  
+      *  It should NOT be used by users.
       */
-    boost::shared_ptr<UpdateState>  getUpdateStatus () const;
+    boost::shared_ptr<UpdateState>  getUpdateStatusPtr() const;
 
 
     /** \brief  Tie the current update state to another
+      * \details  This sets the pointer to the update state
+      *  of the current vector only (not vectors it contains).  
+      *  It should NOT be used by users.
       * \param  rhs Pointer to share update state with
       */
-    void setUpdateStatus ( boost::shared_ptr<UpdateState> rhs );
+    void setUpdateStatusPtr ( boost::shared_ptr<UpdateState> rhs );
 
 
 protected:

@@ -926,71 +926,80 @@ void VerifyVectorGhostCreate( AMP::UnitTest *utils )
 template <typename VECTOR_FACTORY>
 void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
 {
-        AMP::Discretization::DOFManager::shared_ptr  dofmap = VECTOR_FACTORY::getDOFMap();
-        AMP::LinearAlgebra::Vector::shared_ptr  vector = VECTOR_FACTORY::getVector();
-        AMP::LinearAlgebra::Vector::shared_ptr  vectorb = AMP::LinearAlgebra::PetscVector::view ( vector );
-        if ( !vector || !vectorb )
-            utils->failure ( "verify makeConsistent () for add" );
+    AMP::Discretization::DOFManager::shared_ptr  dofmap = VECTOR_FACTORY::getDOFMap();
+    AMP::LinearAlgebra::Vector::shared_ptr  vector = VECTOR_FACTORY::getVector();
+    AMP::LinearAlgebra::Vector::shared_ptr  vectorb = AMP::LinearAlgebra::PetscVector::view ( vector );
+    if ( !vector || !vectorb )
+        utils->failure ( "verify makeConsistent () for add" );
 
-        for (size_t i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ )
-        {
-          vector->addValueByGlobalID ( i , (double) i );
-        }
+    // Zero the vector
+    vector->zero();
+    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::UNCHANGED )
+        utils->failure ( "zero leaves vector in UNCHANGED state" );
+    
+    // Set and add local values by global id (this should not interfer with the add)
+    for (size_t i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ ) {
+        vector->setLocalValueByGlobalID( i, 0.0 );
+        vector->addLocalValueByGlobalID( i, 0.0 );
+    }
+    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::LOCAL_CHANGED )
+        utils->failure ( "local set/add leaves vector in LOCAL_CHANGED state" );
 
-        double offset = (double) (1 << utils->rank() );
-        for ( size_t i = 0 ; i != vector->getGhostSize() ; i++ )
-        {
-          size_t ndx = vector->getCommunicationList()->getGhostIDList()[i];
-          vector->addValueByGlobalID ( ndx , offset );
-        }
+    // Add values by global id
+    for (size_t i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ )
+        vector->addValueByGlobalID ( i , (double) i );
+    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::ADDING )
+        utils->failure ( "addValueByGlobalID leaves vector in ADDING state" );
 
-        vector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
-        std::map<int,std::set<size_t> >  ghosted_entities;
-        for ( size_t i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ )
-        {
-          double diff_double = fabs ( vector->getValueByGlobalID ( i ) - (double)i );
-          if ( diff_double > 0.00001 )
-          {
+    double offset = (double) (1 << utils->rank() );
+    for ( size_t i = 0 ; i != vector->getGhostSize() ; i++ ) {
+        size_t ndx = vector->getCommunicationList()->getGhostIDList()[i];
+        vector->addValueByGlobalID ( ndx , offset );
+    }
+
+    // Perform a makeConsistent ADD and check the result
+    vector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
+    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::UNCHANGED )
+        utils->failure ( "makeConsistent leaves vector in UNCHANGED state" );
+    std::map<int,std::set<size_t> >  ghosted_entities;
+    for ( size_t i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ ) {
+        double diff_double = fabs ( vector->getValueByGlobalID ( i ) - (double)i );
+        if ( diff_double > 0.00001 ) {
             int ioffset = lround(diff_double);
             int cur_rank = 0;
-            while ( ioffset > 0 )
-            {
-              if ( ioffset & 1 )
-                ghosted_entities[cur_rank].insert ( i );
-              ioffset >>= 1;
-              cur_rank++;
+            while ( ioffset > 0 ) {
+                if ( ioffset & 1 )
+                    ghosted_entities[cur_rank].insert ( i );
+                ioffset >>= 1;
+                cur_rank++;
             }
-          }
         }
-        std::vector<size_t>::const_iterator  cur_replicated = vector->getCommunicationList()->getReplicatedIDList().begin();
-        std::vector<size_t>::const_iterator  end_replicated = vector->getCommunicationList()->getReplicatedIDList().end();
-        while ( cur_replicated != end_replicated )
-        {
-          bool found = false;
-          for ( int i = 0 ; i != utils->size() ; i++ )
-          {
+    }
+    std::vector<size_t>::const_iterator  cur_replicated = vector->getCommunicationList()->getReplicatedIDList().begin();
+    std::vector<size_t>::const_iterator  end_replicated = vector->getCommunicationList()->getReplicatedIDList().end();
+    while ( cur_replicated != end_replicated ) {
+        bool found = false;
+        for ( int i = 0 ; i != utils->size() ; i++ ) {
             std::set<size_t>::iterator  location = ghosted_entities[i].find ( *cur_replicated );
-            if ( location != ghosted_entities[i].end() )
-            {
-              found = true;
-              ghosted_entities[i].erase ( location );
-              break;
+            if ( location != ghosted_entities[i].end() ) {
+               found = true;
+                ghosted_entities[i].erase ( location );
+                break;
             }
-          }
-          if ( !found )
-          {
+        }
+        if ( !found ) {
             utils->failure ( "overly ghosted value" );
             return;
-          }
-          cur_replicated++;
         }
-        size_t last_size = 0;
-        for ( int i = 0 ; i != utils->size() ; i++ )
-          last_size += ghosted_entities[i].size();
-        if ( last_size == 0 )
-          utils->passes ( "all ghosted values accounted for" );
-        else
-          utils->failure ( "some ghosted values not set" );
+        cur_replicated++;
+    }
+    size_t last_size = 0;
+    for ( int i = 0 ; i != utils->size() ; i++ )
+        last_size += ghosted_entities[i].size();
+    if ( last_size == 0 )
+        utils->passes ( "all ghosted values accounted for" );
+    else
+        utils->failure ( "some ghosted values not set" );
 }
 
 
@@ -1002,11 +1011,29 @@ void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr  vectorb = AMP::LinearAlgebra::PetscVector::view ( vector );
     AMP_ASSERT(vector->getGhostSize()==vectorb->getGhostSize());
 
+    // Zero the vector
+    vector->zero();
+    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::UNCHANGED )
+        utils->failure ( "zero leaves vector in UNCHANGED state" );
+    
+    // Set and add local values by global id (this should not interfer with the add)
+    for (size_t i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ ) {
+        vector->setLocalValueByGlobalID( i, 0.0 );
+        vector->addLocalValueByGlobalID( i, 0.0 );
+    }
+    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::LOCAL_CHANGED )
+        utils->failure ( "local set/add leaves vector in LOCAL_CHANGED state" );
+
+    // Set values by global id
     for (size_t i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ )
         vector->setValueByGlobalID ( i , (double) i );
+    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::SETTING )
+        utils->failure ( "local set/add leaves vector in SETTING state" );
 
+    // Perform a makeConsistent SET and check the result
     vector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-
+    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::UNCHANGED )
+        utils->failure ( "makeConsistent leaves vector in UNCHANGED state" );
     if ( vector->getGhostSize() > 0 ) {
         AMP::LinearAlgebra::CommunicationList::shared_ptr comm_list = vector->getCommunicationList();
         std::vector<double> ghostList ( vector->getGhostSize() );
