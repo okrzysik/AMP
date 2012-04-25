@@ -29,10 +29,12 @@
 #include "matrices/MatrixBuilder.h"
 #include "matrices/trilinos/EpetraMatrix.h"
 
+/*
 #include "flow/ConsMomentumGalWFLinearElement.h"
 #include "flow/ConsMomentumGalWFLinearFEOperator.h"
 #include "flow/ConsMassGalWFLinearElement.h"
 #include "flow/ConsMassGalWFLinearFEOperator.h"
+*/
 
 #include "operators/EpetraMatrixOperator.h"
 #include "operators/EpetraMatrixOperatorParameters.h"
