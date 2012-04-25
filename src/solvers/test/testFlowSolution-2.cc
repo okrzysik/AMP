@@ -299,6 +299,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 
         boost::shared_ptr<AMP::InputDatabase> mapflowclad_db  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("Map1DFlowto3DFlow"));
         boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowcladParams (new AMP::Operator::MapOperatorParameters( mapflowclad_db ));
+        mapflowcladParams->d_Mesh = meshAdapter2;
         mapflowcladParams->d_MapMesh = meshAdapter2;
         mapflowcladParams->d_MapComm = meshAdapter2->getComm(); 
         map1DFlowTo3DFlow1 = boost::shared_ptr<AMP::Operator::Map1Dto3D>(new AMP::Operator::Map1Dto3D( mapflowcladParams ));
@@ -466,7 +467,8 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     columnNonlinearOperator->apply(nullVec, globalSolMultiVector, globalResMultiVector, 1.0, 0.0);
     AMP::pout<<"Initial Global Residual Norm: "<<std::setprecision(12)<<globalResMultiVector->L2Norm()<<std::endl;
     AMP::pout<<"Initial Temperature Residual Norm: "<<std::setprecision(12)<<globalResVec->L2Norm()<<std::endl;
-    AMP::pout<<"Initial Flow Residual Norm: "<<std::setprecision(12)<<flowResVec->L2Norm()<<std::endl;
+    if ( flowResVec.get() != NULL )
+        AMP::pout<<"Initial Flow Residual Norm: "<<std::setprecision(12)<<flowResVec->L2Norm()<<std::endl;
 
     //------------------------------------------------------------------
     boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver");
@@ -490,33 +492,35 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Solver::ColumnSolver>             columnPreconditioner(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
 
     //---------------
-    boost::shared_ptr<AMP::Database>                 thermalPreconditioner_db1 = columnPreconditioner_db->getDatabase("pelletThermalPreconditioner");
-    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams1(new AMP::Solver::SolverStrategyParameters(thermalPreconditioner_db1));
-    thermalPreconditionerParams1->d_pOperator = thermalLinearOperator1;
-    boost::shared_ptr<AMP::Solver::TrilinosMLSolver>         thermalPreconditioner1(new AMP::Solver::TrilinosMLSolver(thermalPreconditionerParams1));
+    if ( thermalLinearOperator1.get() != NULL ) {
+        boost::shared_ptr<AMP::Database> thermalPreconditioner_db1 = columnPreconditioner_db->getDatabase("pelletThermalPreconditioner");
+        boost::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams1(new AMP::Solver::SolverStrategyParameters(thermalPreconditioner_db1));
+        thermalPreconditionerParams1->d_pOperator = thermalLinearOperator1;
+        boost::shared_ptr<AMP::Solver::TrilinosMLSolver> thermalPreconditioner1(new AMP::Solver::TrilinosMLSolver(thermalPreconditionerParams1));
+        columnPreconditioner->append(thermalPreconditioner1);
+    }
+    if ( thermalLinearOperator2.get() != NULL ) {
+        boost::shared_ptr<AMP::Database> thermalPreconditioner_db2 = columnPreconditioner_db->getDatabase("cladThermalPreconditioner");
+        boost::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams2(new AMP::Solver::SolverStrategyParameters(thermalPreconditioner_db2));
+        thermalPreconditionerParams2->d_pOperator = thermalLinearOperator2;
+        boost::shared_ptr<AMP::Solver::TrilinosMLSolver> thermalPreconditioner2(new AMP::Solver::TrilinosMLSolver(thermalPreconditionerParams2));
+        columnPreconditioner->append(thermalPreconditioner2);
+    }
+    if ( flowJacobian.get() != NULL ) {
+        boost::shared_ptr<AMP::Database> JacobianSolver_db = input_db->getDatabase("Flow1DSolver"); 
+        boost::shared_ptr<AMP::Solver::SolverStrategyParameters> flowSolverParams (new AMP::Solver::SolverStrategyParameters(JacobianSolver_db));
+        flowSolverParams->d_pOperator = flowJacobian;
+        boost::shared_ptr<AMP::Solver::Flow1DSolver> flowJacobianSolver(new AMP::Solver::Flow1DSolver(flowSolverParams));
 
-    boost::shared_ptr<AMP::Database>                 thermalPreconditioner_db2 = columnPreconditioner_db->getDatabase("cladThermalPreconditioner");
-    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams2(new AMP::Solver::SolverStrategyParameters(thermalPreconditioner_db2));
-    thermalPreconditionerParams2->d_pOperator = thermalLinearOperator2;
-    boost::shared_ptr<AMP::Solver::TrilinosMLSolver>         thermalPreconditioner2(new AMP::Solver::TrilinosMLSolver(thermalPreconditionerParams2));
-    //---------------
-    boost::shared_ptr<AMP::Database> JacobianSolver_db = input_db->getDatabase("Flow1DSolver"); 
-    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> flowSolverParams (new AMP::Solver::SolverStrategyParameters(JacobianSolver_db));
-    flowSolverParams->d_pOperator = flowJacobian;
-    boost::shared_ptr<AMP::Solver::Flow1DSolver>         flowJacobianSolver(new AMP::Solver::Flow1DSolver(flowSolverParams));
-
-    boost::shared_ptr<AMP::InputDatabase> CoupledJacobianSolver_db (new AMP::InputDatabase("Dummy"));
-    CoupledJacobianSolver_db->putInteger("max_iterations",1); 
-    CoupledJacobianSolver_db->putDouble("max_error",1.0e-6); 
-    boost::shared_ptr<AMP::Solver::CoupledFlow1DSolverParameters> coupledFlowSolverParams (new AMP::Solver::CoupledFlow1DSolverParameters(CoupledJacobianSolver_db ));
-    coupledFlowSolverParams->d_flow1DSolver = flowJacobianSolver;
-    coupledFlowSolverParams->d_pOperator = boost::dynamic_pointer_cast< AMP::Operator::Operator>(coupledlinearOperator3);
-    boost::shared_ptr<AMP::Solver::CoupledFlow1DSolver>   CoupledFlowJacobianSolver(new AMP::Solver::CoupledFlow1DSolver(coupledFlowSolverParams));
-    //---------------
-
-    columnPreconditioner->append(thermalPreconditioner1);
-    columnPreconditioner->append(thermalPreconditioner2);
-    columnPreconditioner->append(CoupledFlowJacobianSolver);
+        boost::shared_ptr<AMP::InputDatabase> CoupledJacobianSolver_db (new AMP::InputDatabase("Dummy"));
+        CoupledJacobianSolver_db->putInteger("max_iterations",1); 
+        CoupledJacobianSolver_db->putDouble("max_error",1.0e-6); 
+        boost::shared_ptr<AMP::Solver::CoupledFlow1DSolverParameters> coupledFlowSolverParams (new AMP::Solver::CoupledFlow1DSolverParameters(CoupledJacobianSolver_db ));
+        coupledFlowSolverParams->d_flow1DSolver = flowJacobianSolver;
+        coupledFlowSolverParams->d_pOperator = boost::dynamic_pointer_cast< AMP::Operator::Operator>(coupledlinearOperator3);
+        boost::shared_ptr<AMP::Solver::CoupledFlow1DSolver> CoupledFlowJacobianSolver(new AMP::Solver::CoupledFlow1DSolver(coupledFlowSolverParams));
+        columnPreconditioner->append(CoupledFlowJacobianSolver);
+    }
 
     //--------------------------------------------------------------------//
     // register the preconditioner with the Jacobian free Krylov solver
@@ -537,8 +541,10 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     }
 
     for ( int tstep = 0; tstep < 1; tstep++ ) {
-        neutronicsOperator->setTimeStep(tstep);
-        neutronicsOperator->apply(nullVec, nullVec, specificPowerGpVec, 1., 0.);
+        if ( neutronicsOperator.get()!=NULL ) {
+            neutronicsOperator->setTimeStep(tstep);
+            neutronicsOperator->apply(nullVec, nullVec, specificPowerGpVec, 1., 0.);
+        }
         
         if ( robinBoundaryOp1.get() != NULL )
             robinBoundaryOp1->reset(correctionParameters1);
@@ -547,29 +553,40 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
         if ( robinBoundaryOp3.get() != NULL )
             robinBoundaryOp3->reset(correctionParameters3);
 
-        thermalRhsVec1->zero();
-        // specificPowerGpVec is in Watts/kilogram
-        specificPowerGpVecToPowerDensityNodalVecOperatator->apply(nullVec, specificPowerGpVec, thermalRhsVec1, 1., 0.);
-
-        thermalNonlinearOperator1->modifyRHSvector(thermalRhsVec1);
-        thermalNonlinearOperator1->modifyInitialSolutionVector(thermalSolVec1);
-        thermalNonlinearOperator2->modifyRHSvector(thermalRhsVec2);
-        thermalNonlinearOperator2->modifyInitialSolutionVector(thermalSolVec2);
+        if ( meshAdapter1.get()!=NULL ) {
+            thermalRhsVec1->zero();
+            // specificPowerGpVec is in Watts/kilogram
+            specificPowerGpVecToPowerDensityNodalVecOperatator->apply(nullVec, specificPowerGpVec, thermalRhsVec1, 1., 0.);
+        }
+        if ( thermalNonlinearOperator1.get()!=NULL ) {
+            thermalNonlinearOperator1->modifyRHSvector(thermalRhsVec1);
+            thermalNonlinearOperator1->modifyInitialSolutionVector(thermalSolVec1);
+        }
+        if ( thermalNonlinearOperator2.get()!=NULL ) {
+            thermalNonlinearOperator2->modifyRHSvector(thermalRhsVec2);
+            thermalNonlinearOperator2->modifyInitialSolutionVector(thermalSolVec2);
+        }
 
         AMP::pout<<"Initial Guess  Norm for Step " << tstep << " is: "<<globalSolMultiVector->L2Norm()<<std::endl;
         AMP::pout<<"Initial Guess  Norm12 for Step " << tstep << " is: "<<globalSolVec->L2Norm()<<std::endl;
-        AMP::pout<<"Initial Guess  Flow   for Step " << tstep << " is: "<<flowSolVec->L2Norm()<<std::endl;
+        if ( flowSolVec.get() != NULL )
+            AMP::pout<<"Initial Guess  Flow   for Step " << tstep << " is: "<<flowSolVec->L2Norm()<<std::endl;
         AMP::pout<<"Initial Source Norm for Step " << tstep << " is: "<<globalRhsMultiVector->L2Norm()<<std::endl;
-        AMP::pout<<"Initial Source Norm1 for Step " << tstep << " is: "<<thermalRhsVec1->L2Norm()<<std::endl;
-        AMP::pout<<"Initial Source Norm2 for Step " << tstep << " is: "<<thermalRhsVec2->L2Norm()<<std::endl;
-        AMP::pout<<"Initial Guess  Norm1 for Step " << tstep << " is: "<<thermalSolVec1->L2Norm()<<std::endl;
-        AMP::pout<<"Initial Guess  Norm2 for Step " << tstep << " is: "<<thermalSolVec2->L2Norm()<<std::endl;
-        AMP::pout<<"Initial Power  Norm1 for Step " << tstep << " is: "<<specificPowerGpVec->L2Norm()<<std::endl;
+        if ( thermalRhsVec1.get() != NULL ) {
+            AMP::pout<<"Initial Source Norm1 for Step " << tstep << " is: "<<thermalRhsVec1->L2Norm()<<std::endl;
+            AMP::pout<<"Initial Guess  Norm1 for Step " << tstep << " is: "<<thermalSolVec1->L2Norm()<<std::endl;
+            AMP::pout<<"Initial Power  Norm1 for Step " << tstep << " is: "<<specificPowerGpVec->L2Norm()<<std::endl;
+        }
+        if ( thermalRhsVec2.get() != NULL ) {
+            AMP::pout<<"Initial Source Norm2 for Step " << tstep << " is: "<<thermalRhsVec2->L2Norm()<<std::endl;
+            AMP::pout<<"Initial Guess  Norm2 for Step " << tstep << " is: "<<thermalSolVec2->L2Norm()<<std::endl;
+        }
         globalResMultiVector->zero();
         columnNonlinearOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
         AMP::pout<<"Initial Global Residual Norm for Step " << tstep << " is: "<<globalResMultiVector->L2Norm()<<std::endl;
         AMP::pout<<"Initial Temperature Residual Norm for Step " << tstep << " is: "<<globalResVec->L2Norm()<<std::endl;
-        AMP::pout<<"Initial Flow Residual for Step " << tstep << " is: "<<flowResVec->L2Norm()<<std::endl;
+        if ( flowResVec.get() != NULL )
+            AMP::pout<<"Initial Flow Residual for Step " << tstep << " is: "<<flowResVec->L2Norm()<<std::endl;
 
         nonlinearSolver->solve(globalRhsMultiVectorView, globalSolMultiVectorView);
 
@@ -579,13 +596,17 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
             siloWriter->writeFile( silo_name , tstep );
         #endif
 
-        std::cout<< "The Fuel/clad Max:Min values - "<<thermalSolVec1->max() << " " <<thermalSolVec2->min() <<std::endl;
-        std::cout << "Flow Max:Min values -  " << flowSolVec->max() << " " << flowSolVec->min() <<std::endl;
+        if ( thermalSolVec1.get() != NULL )
+            std::cout<< "The Fuel Max value - " << thermalSolVec1->max() << std::endl;
+        if ( thermalSolVec2.get() != NULL )
+            std::cout<< "The Clad Min value - " << thermalSolVec2->min() << std::endl;
+        if ( flowSolVec.get() != NULL )
+            std::cout << "Flow Max:Min values -  " << flowSolVec->max() << " " << flowSolVec->min() << std::endl;
 
-        std::cout<<"Intermediate Flow Solution " <<std::endl;
-        mapCladTo1DFlow1->setVector(flowSol1DVec); 
-	    mapCladTo1DFlow1->apply(nullVec, thermalMapToCladVec , nullVec, 1, 0);
         if ( meshAdapter2.get()!=NULL ) {
+            std::cout<<"Intermediate Flow Solution " <<std::endl;
+            mapCladTo1DFlow1->setVector(flowSol1DVec); 
+	        mapCladTo1DFlow1->apply(nullVec, thermalMapToCladVec , nullVec, 1, 0);
             size_t flowVecSize = map1DFlowTo3DFlow1->getNumZlocations();
             std::vector<double> expectedSolution(flowVecSize, 0);
             expectedSolution = (input_db->getDatabase("regression"))->getDoubleArray("expectedSolution");

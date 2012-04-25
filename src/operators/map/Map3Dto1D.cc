@@ -25,8 +25,9 @@ namespace Operator {
       AMP_INSIST( ((myparams.get()) != NULL), "NULL parameter" );
       AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );
       AMP_INSIST( !myparams->d_MapComm.isNull(), "NULL communicator" );
-      d_MapComm = myparams->d_MapComm;
+      d_Mesh = myparams->d_Mesh;
       d_MapMesh = myparams->d_MapMesh;
+      d_MapComm = myparams->d_MapComm;
       AMP_INSIST( d_MapComm.sumReduce<int>(d_MapMesh.get()!=NULL?1:0)>0, "Somebody must own the mesh");
 
       AMP_INSIST( myparams->d_db->keyExists("InputVariable"), "key not found" );

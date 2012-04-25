@@ -35,6 +35,7 @@ void Map1Dto3D :: reset(const boost::shared_ptr<OperatorParameters>& params)
     AMP_INSIST( ((myparams.get()) != NULL), "NULL parameter" );
     AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );
     AMP_INSIST( !myparams->d_MapComm.isNull(), "NULL communicator" );
+    d_Mesh = myparams->d_Mesh;
     d_MapComm = myparams->d_MapComm;
     d_MapMesh = myparams->d_MapMesh;
     AMP_INSIST( d_MapComm.sumReduce<int>(d_MapMesh.get()!=NULL?1:0)>0, "Somebody must own the mesh");
@@ -126,7 +127,7 @@ void Map1Dto3D::apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP:
     AMP_ASSERT(u != NULL);
 
     // Subset the input vector, it is a simple vector and we need to subset for the current comm before the variable
-    AMP::LinearAlgebra::VS_Comm commSelector( d_inpVariable->getName(), d_Mesh->getComm() );
+    AMP::LinearAlgebra::VS_Comm commSelector( d_inpVariable->getName(), d_MapComm );
     AMP::LinearAlgebra::Vector::shared_ptr commSubsetVec = u->select(commSelector, d_inpVariable->getName());
     AMP::LinearAlgebra::Vector::shared_ptr inputVec = commSubsetVec->subsetVectorForVariable(d_inpVariable);
 

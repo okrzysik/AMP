@@ -70,9 +70,12 @@ namespace AMP {
       // std::cout << "Extreme Min Point in z = " << min_z << std::endl;
       // std::cout << "Extreme Max Point in z = " << max_z << std::endl;
 
-      AMP::LinearAlgebra::Vector::shared_ptr flowInputVec = subsetInputVector( u );
-
-      AMP::LinearAlgebra::Vector::shared_ptr outputVec =  subsetOutputVector( r );
+      // Subset the vectors, they are simple vectors and we need to subset for the current comm before the variable
+      AMP::LinearAlgebra::VS_Comm commSelector( d_inpVariable->getName(), d_Mesh->getComm() );
+      AMP::LinearAlgebra::Vector::shared_ptr commInputVec = u->select(commSelector, d_inpVariable->getName());
+      AMP::LinearAlgebra::Vector::shared_ptr flowInputVec = commInputVec->subsetVectorForVariable(d_inpVariable);
+      AMP::LinearAlgebra::Vector::shared_ptr commOutputVec = r->select(commSelector, d_outVariable->getName());
+      AMP::LinearAlgebra::Vector::shared_ptr outputVec = commOutputVec->subsetVectorForVariable(d_outVariable);
 
       // AMP::LinearAlgebra::Variable::shared_ptr localVar ( new AMP::LinearAlgebra::Variable(d_cladVec->getVariable()->getName() ) ); 
       // d_localCladVec = AMP::LinearAlgebra::SimpleVector::create( d_numpoints, localVar ); 
