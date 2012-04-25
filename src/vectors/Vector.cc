@@ -771,7 +771,7 @@ void Vector::copyGhostValues ( const boost::shared_ptr<const Vector> &rhs )
         rhs->getGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
         this->setGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
         // Copy the consistency state from the rhs
-        *d_UpdateState = *(rhs.getUpdateStatus());
+        *d_UpdateState = *(rhs->getUpdateStatus());
     } else {
         // We can't copy the ghosts from the rhs
         // Use makeConsistent to fill the ghosts
