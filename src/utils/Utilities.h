@@ -180,6 +180,9 @@ namespace Utilities
     //! Function to get the current call stack
     std::vector<std::string> getCallStack();
 
+    //! Print AMP Banner
+    void printBanner();
+
 }
 
 

@@ -40,6 +40,9 @@
 void nekPipeOperator(AMP::UnitTest *ut)
 {
 #ifdef USE_NEK     
+    // Print Banner
+    AMP::Utilities::printBanner();
+
     // Log all nodes
     AMP::PIO::logAllNodes( "output_testNekOperator" );
 
@@ -176,8 +179,6 @@ void nekPipeOperator(AMP::UnitTest *ut)
          myIter != r_node->end();
          myIter++ )
     {
-        AMP::pout << "Nodal Vector Element " << ctr << " is " << *myIter << std::endl;
-
         if( *myIter != 0.0 )
             nonZero = true;
 

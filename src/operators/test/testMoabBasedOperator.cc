@@ -135,6 +135,9 @@ class MoabDummyOperator : public MoabBasedOp
 void moabInterface(AMP::UnitTest *ut)
 {
 
+    // Print out AMP banner
+    AMP::Utilities::printBanner();
+
     // Log all nodes
     AMP::PIO::logAllNodes( "output_testMoabBasedOperator" );
 
@@ -166,7 +169,13 @@ void moabInterface(AMP::UnitTest *ut)
 
     // Read AMP pellet mesh from file
     moabDB->putInteger("NumberOfMeshes",2);
-    moabDB->putInteger("DomainDecomposition",1);
+
+
+    AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
+    if( globalComm.getSize() == 1 )
+        moabDB->putInteger("DomainDecomposition",0);
+    else
+        moabDB->putInteger("DomainDecomposition",1);
 
     // First mesh
     boost::shared_ptr<AMP::Database> meshDB = moabDB->putDatabase("Mesh_1");

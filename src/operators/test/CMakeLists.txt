@@ -347,6 +347,10 @@ ENDIF()
 
 #MOAB tests
 IF( USE_MOAB )
-  ADD_AMP_TEST_1_2_4( testMoabInterface )
   ADD_AMP_TEST_1_2_4( testMoabBasedOperator )
+  
+  # Can be removed in new mesh design,
+  #  I haven't confirmed that I'm ready to delete 
+  #  it entirely yet.
+  ADD_AMP_PROVISIONAL_TEST( testMoabInterface )
 ENDIF()

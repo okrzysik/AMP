@@ -347,5 +347,37 @@ std::vector<std::string>  Utilities::getCallStack()
     return stack;
 }
 
+// Print AMP Banner
+void Utilities::printBanner()
+{
+    std::ostringstream banner;
+    banner << std::endl;
+    banner << "            _____                    _____                    _____"           << std::endl;
+    banner << "           /\\    \\                  /\\    \\                  /\\    \\ "         << std::endl;
+    banner << "          /::\\    \\                /::\\____\\                /::\\    \\"         << std::endl;        
+    banner << "         /::::\\    \\              /::::|   |               /::::\\    \\"        << std::endl;       
+    banner << "        /::::::\\    \\            /:::::|   |              /::::::\\    \\"       << std::endl;      
+    banner << "       /:::/\\:::\\    \\          /::::::|   |             /:::/\\:::\\    \\"      << std::endl;     
+    banner << "      /:::/__\\:::\\    \\        /:::/|::|   |            /:::/__\\:::\\    \\"     << std::endl;    
+    banner << "     /::::\\   \\:::\\    \\      /:::/ |::|   |           /::::\\   \\:::\\    \\"    << std::endl;   
+    banner << "    /::::::\\   \\:::\\    \\    /:::/  |::|___|______    /::::::\\   \\:::\\    \\"   << std::endl;  
+    banner << "   /:::/\\:::\\   \\:::\\    \\  /:::/   |::::::::\\    \\  /:::/\\:::\\   \\:::\\____\\"  << std::endl; 
+    banner << "  /:::/  \\:::\\   \\:::\\____\\/:::/    |:::::::::\\____\\/:::/  \\:::\\   \\:::|    |" << std::endl;
+    banner << "  \\::/    \\:::\\  /:::/    /\\::/    / ~~~~~/:::/    /\\::/    \\:::\\  /:::|____|" << std::endl;
+    banner << "   \\/____/ \\:::\\/:::/    /  \\/____/      /:::/    /  \\/_____/\\:::\\/:::/    /"  << std::endl; 
+    banner << "            \\::::::/    /               /:::/    /            \\::::::/    /"   << std::endl;  
+    banner << "             \\::::/    /               /:::/    /              \\::::/    /"    << std::endl;   
+    banner << "             /:::/    /               /:::/    /                \\::/____/"     << std::endl;    
+    banner << "            /:::/    /               /:::/    /"                               << std::endl;                            
+    banner << "           /:::/    /               /:::/    /"                                << std::endl;                               
+    banner << "          /:::/    /               /:::/    /"                                 << std::endl;                                
+    banner << "          \\::/    /                \\::/    /"                                  << std::endl;                                 
+    banner << "           \\/____/                  \\/____/"                                   << std::endl;                                  
+    banner << std::endl << std::endl;
+
+    AMP::pout << banner.str();
+
+}
+
 }
 

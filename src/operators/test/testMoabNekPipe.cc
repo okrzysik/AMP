@@ -45,7 +45,10 @@ extern "C" {
 void nekPipe(AMP::UnitTest *ut)
 {
     // this test is based on testSNES-B-TM-4
-    //
+
+    // Print Banner
+    AMP::Utilities::printBanner();
+
     // Log all nodes
     AMP::PIO::logAllNodes( "output_testNekPipe" );
 
