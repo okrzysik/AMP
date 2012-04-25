@@ -200,7 +200,7 @@ void nekPipe(AMP::UnitTest *ut)
     // This last value is different on different processors
     // Report this as an expected failure and be aware if it changes
     if( globalComm.minReduce(interpPress[3]) == globalComm.maxReduce(interpPress[3]) )
-        ut->failure("Fourth pressure value is consistent and should be, but it didn't used to be and should be.  Something has changed.");
+        ut->failure("Fourth pressure value is consistent and should be, but it didn't used to be.  Something has changed.");
         //ut->passes("Fourth pressure value is consistent");
     else
         ut->expected_failure("Fourth pressure value is not consistent across processors");

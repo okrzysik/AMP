@@ -341,11 +341,12 @@ IF( USE_NEK )
   COPY_TEST_DATA_FILE ( pipe.rea )
   ADD_AMP_TEST_PARALLEL( testNekPipe 2 ) # This test doesn't work in serial
   ADD_AMP_TEST_PARALLEL( testNekPipe 4 )
-  ADD_AMP_TEST_PARALLEL( testNekOperator 2 )
+  ADD_AMP_TEST_PARALLEL( testNekOperator 2 ) # By extension, neither does this
   ADD_AMP_TEST_PARALLEL( testNekOperator 4 )
 ENDIF()
 
 #MOAB tests
 IF( USE_MOAB )
   ADD_AMP_TEST_1_2_4( testMoabInterface )
+  ADD_AMP_TEST_1_2_4( testMoabOperator )
 ENDIF()

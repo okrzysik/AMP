@@ -41,7 +41,7 @@ void nekPipeOperator(AMP::UnitTest *ut)
 {
 #ifdef USE_NEK     
     // Log all nodes
-    AMP::PIO::logAllNodes( "output_testNekPipe" );
+    AMP::PIO::logAllNodes( "output_testNekOperator" );
 
     // Build new database
     AMP::pout << "Building Input Database" << std::endl;
