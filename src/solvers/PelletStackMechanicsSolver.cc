@@ -16,6 +16,8 @@ namespace AMP {
 
     void PelletStackMechanicsSolver :: solve(boost::shared_ptr<AMP::LinearAlgebra::Vector> f, 
         boost::shared_ptr<AMP::LinearAlgebra::Vector> u) {
+      AMP_ASSERT( (f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+           (f->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
       boost::shared_ptr<AMP::LinearAlgebra::Vector> fInternal = f;
       if(d_pelletStackOp->useScaling()) {
         if(d_fbuffer1 == NULL) {

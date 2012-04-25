@@ -208,8 +208,20 @@ PetscKrylovSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
   AMP::LinearAlgebra::Vector::shared_ptr  f_thisGetsAroundPETScSharedPtrIssue = fVecView;
   AMP::LinearAlgebra::Vector::shared_ptr  u_thisGetsAroundPETScSharedPtrIssue = uVecView;
 
+  AMP_ASSERT( (f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+      (f->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+
+  AMP_ASSERT( (u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+      (u->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+
   fVecView = AMP::LinearAlgebra::PetscVector::view ( f );
   uVecView = AMP::LinearAlgebra::PetscVector::view ( u );
+
+  AMP_ASSERT( (fVecView->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+      (fVecView->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+
+  AMP_ASSERT( (uVecView->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+      (uVecView->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
 
   if(d_iDebugPrintInfoLevel>1)
     {
@@ -296,6 +308,12 @@ PetscKrylovSolver::applyPreconditioner(void* ctx, Vec r, Vec z)
       AMP_ASSERT(norm==sp_r->L2Norm());
     }  
   
+  AMP_ASSERT( (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+      (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+
+  AMP_ASSERT( (sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+      (sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+
   ((PetscKrylovSolver*)ctx)->getPreconditioner()->solve(sp_r,sp_z);
 
   // not sure why, but the state of sp_z is not updated

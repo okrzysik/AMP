@@ -194,9 +194,23 @@ PetscSNESSolver::apply(SNES ,Vec x,Vec r,void *ctx)
   boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_f;
   boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_r(rvec, AMP::LinearAlgebra::ExternalVectorDeleter ());
 
+  AMP_ASSERT( (sp_x->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+      (sp_x->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+
+  AMP_ASSERT( (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+      (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+
   boost::shared_ptr<AMP::Operator::Operator> op(((PetscSNESSolver *)ctx)->getOperator());
 
   op->apply(sp_f, sp_x, sp_r, 1.0, -1.0);
+
+  AMP_ASSERT( (sp_x->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+      (sp_x->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+
+  AMP_ASSERT( (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+      (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+
+
 /* 
   double a = sp_x->L2Norm();
   a = sp_r->L2Norm();
@@ -449,9 +463,20 @@ PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
 //  AMP::LinearAlgebra::Vector::shared_ptr  f_thisGetsAroundPETScSharedPtrIssue = spRhs ;
 //  AMP::LinearAlgebra::Vector::shared_ptr  u_thisGetsAroundPETScSharedPtrIssue = spSol ;
 
+  AMP_ASSERT( (f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+      (f->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+
+  AMP_ASSERT( (u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+      (u->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
 
   spRhs = AMP::LinearAlgebra::PetscVector::view ( f );
   spSol = AMP::LinearAlgebra::PetscVector::view ( u );
+
+  AMP_ASSERT( (spRhs->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+      (spRhs->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+
+  AMP_ASSERT( (spSol->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+      (spSol->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
 
   if(d_iDebugPrintInfoLevel>2)
     {
