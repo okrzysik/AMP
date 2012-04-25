@@ -348,5 +348,5 @@ ENDIF()
 #MOAB tests
 IF( USE_MOAB )
   ADD_AMP_TEST_1_2_4( testMoabInterface )
-  ADD_AMP_TEST_1_2_4( testMoabOperator )
+  ADD_AMP_TEST_1_2_4( testMoabBasedOperator )
 ENDIF()

@@ -83,6 +83,8 @@ class MoabDummyOperator : public MoabBasedOp
             AMP::plog << "Moab mesh name is " << filename << std::endl;
             moab::ErrorCode result = d_moabInterface->load_file( filename.c_str(), (EntityHandle *) &root, newReadOpts.c_str() );
 
+            AMP_INSIST( result == MB_SUCCESS, "File not loaded correctly" );
+
             // Extract nodes
             iBase_EntityHandle *nodes;
             int nodes_alloc = 0;
@@ -102,7 +104,8 @@ class MoabDummyOperator : public MoabBasedOp
             std::vector<double> myTemps(num_nodes,-1.0);
             for( int i=0; i<num_nodes; ++i )
             {
-                myTemps[i] = myCoords[i];
+                // Set temperature to T = x + z
+                myTemps[i] = myCoords[i] + myCoords[i + 2*num_nodes];
             }
 
             // Add temperature tag
@@ -133,7 +136,7 @@ void moabInterface(AMP::UnitTest *ut)
 {
 
     // Log all nodes
-    AMP::PIO::logAllNodes( "output_testMoabOperator" );
+    AMP::PIO::logAllNodes( "output_testMoabBasedOperator" );
 
     // Build new database
     AMP::pout << "Building Input Database" << std::endl;
@@ -162,13 +165,26 @@ void moabInterface(AMP::UnitTest *ut)
     moabOp->apply( nullVec, nullVec, nullVec, 0.0, 0.0 );
 
     // Read AMP pellet mesh from file
-    moabDB->putInteger("NumberOfMeshes",1);
+    moabDB->putInteger("NumberOfMeshes",2);
+    moabDB->putInteger("DomainDecomposition",1);
+
+    // First mesh
     boost::shared_ptr<AMP::Database> meshDB = moabDB->putDatabase("Mesh_1");
     meshDB->putString("Filename",ampMeshFile);
-    meshDB->putString("MeshName","fuel");
+    meshDB->putString("MeshName","pellet_1");
     meshDB->putDouble("x_offset",0.0);
     meshDB->putDouble("y_offset",0.0);
-    meshDB->putDouble("z_offset",0.0);
+    meshDB->putDouble("z_offset",-0.0105);
+    meshDB->putInteger("NumberOfElements",5000);
+
+    // Second mesh
+    boost::shared_ptr<AMP::Database> meshDB2 = moabDB->putDatabase("Mesh_2");
+    meshDB2->putString("Filename",ampMeshFile);
+    meshDB2->putString("MeshName","pellet_2");
+    meshDB2->putDouble("x_offset",0.0);
+    meshDB2->putDouble("y_offset",0.0);
+    meshDB2->putDouble("z_offset",0.0);
+    meshDB2->putInteger("NumberOfElements",5000);
 
     // Create Mesh Manager
     AMP::pout << "Creating mesh manager" << std::endl;
@@ -259,18 +275,20 @@ void moabInterface(AMP::UnitTest *ut)
         std::string meshCoords = "Mesh_Coords";
         SP_AMPVec thisMeshCoords = (*currentMesh)->getPositionVector( meshCoords );
 
-        for( int i=0; i<(*currentMesh)->numLocalNodes(); ++i )
+        for( unsigned int i=0; i<(*currentMesh)->numLocalNodes(); ++i )
         {
-            double val1 = 100.0 * thisMeshCoords->getValueByLocalID(3*i); // AMP  coordinates are in meters
-            double val2 = r_node->getValueByLocalID(offset+i);            // Moab coordinates are in cm
+            double val1 = 100.0 * ( thisMeshCoords->getValueByLocalID(3*i)
+                                  + thisMeshCoords->getValueByLocalID(3*i+2) ); // AMP  coordinates are in meters
+            double val2 = r_node->getValueByLocalID(offset+i);                  // Moab coordinates are in cm
 
+            // Linear interpolation should be 'exact' because we prescribed a linear function
             // Can't use approx_equal here because it fails for small values
-            if( std::abs(val1-val2) > 1.0e-8 )
+            if( std::abs(val1-val2) > 1.0e-10 )
             {
                 numMismatched++;
 
                 // If value didn't match, print out it's index and the values
-                AMP::pout << "Index " << i << ": " << 100.0*thisMeshCoords->getValueByLocalID(3*i) << " " << r_node->getValueByLocalID(offset+i) << std::endl;
+                AMP::pout << "Mismatch at index " << i << ": " << val1 << " " << val2 << std::endl;
             }
         }
 

@@ -31,15 +31,12 @@ MoabMapOperator::MoabMapOperator( const SP_MoabMapParams &params )
     d_moabInterface = d_moab->getMoabInterface();
 
     // Interpolate to nodes or Gauss points?
-    AMP::pout << "Interpolate type is " << params->d_db->getString("InterpolateToType") << std::endl;
     if( params->d_db->getString("InterpolateToType").compare("Vertex")==0 )
     {
-        AMP::pout << "Interpolation type is nodes" << std::endl;
         d_interpType = NODES;
     }
     else if( params->d_db->getString("InterpolateToType").compare("GaussPoint")==0 )
     {
-        AMP::pout << "Interpolation type is Gauss points" << std::endl;
         d_interpType = GAUSS_POINTS;
     }
     else
