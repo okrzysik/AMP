@@ -75,17 +75,17 @@ void computeForcingTerms(AMP::Mesh::Mesh::shared_ptr meshAdapter,
     AMP::LinearAlgebra::Vector::shared_ptr forcingTermsVec,
     bool verbose = false) {
   // Create integration point vectors and compute values
+AMP_ERROR("Not converted yet"); /*
   boost::shared_ptr<AMP::LinearAlgebra::MultiVariable>  multivariable = 
      boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( volumeOp->getInputVariable() );
   AMP::LinearAlgebra::Variable::shared_ptr variable = multivariable->getVariable(0);
   AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF = 
      AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,3);
+
   AMP::LinearAlgebra::Vector::shared_ptr dummyIntegrationPointVecU = AMP::LinearAlgebra::createVector(NodalVectorDOF,variable);
   AMP::LinearAlgebra::Vector::shared_ptr dummyIntegrationPointVecV = AMP::LinearAlgebra::createVector(NodalVectorDOF,variable);
   AMP::LinearAlgebra::Vector::shared_ptr dummyIntegrationPointVecW = AMP::LinearAlgebra::createVector(NodalVectorDOF,variable);
   // Loop over all elements
-AMP_ERROR("Not converted yet");
-/*
   AMP::Mesh::MeshIterator el = meshAdapter->getIterator(AMP::Mesh::Volume,0);
   AMP::Mesh::MeshIterator end_el = el.end();
   for( ; el != end_el; ++el) {    
@@ -242,7 +242,7 @@ void linearElasticTest(AMP::UnitTest *ut,
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
     boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter, "MechanicsBVPOperator", inputDatabase, elementPhysicsModel));
-  AMP::LinearAlgebra::Variable::shared_ptr var = bvpOperator->getOutputVariable();
+  //AMP::LinearAlgebra::Variable::shared_ptr var = bvpOperator->getOutputVariable();
 
 
   /** Create a manufactured solution */
@@ -322,9 +322,9 @@ void linearElasticTest(AMP::UnitTest *ut,
   computeForcingTerms(meshAdapter, volumeIntegralOp, manufacturedSolution, rhsVec, true);
 
   /** Compute Dirichlet values */
+AMP_ERROR("Not converted yet"); /*
   boost::shared_ptr<AMP::Operator::DirichletMatrixCorrection> dirichletMatOp = boost::dynamic_pointer_cast<
     AMP::Operator::DirichletMatrixCorrection>(bvpOperator->getBoundaryOperator()); 
-AMP_ERROR("Not converted yet"); /*
   std::vector<short int> dirichletBoundaryIds =  dirichletMatOp->getBoundaryIds();
   std::vector<std::vector<unsigned int> > dirichletDofIds =  dirichletMatOp->getDofIds();
   AMP::Mesh::DOFMap::shared_ptr dofMap = meshAdapter->getDOFMap(var);

@@ -356,8 +356,8 @@ public:
     virtual void setToScalar(double alpha);
 
     /**
-      *\brief Set vector to zero
-      *\details This is an alias of setToScalar ( 0.0 );
+      *\brief Set vector entries (including ghosts) to zero
+      *\details This is equivalent (but more efficient) to calling setToScalar ( 0.0 ) followed by a makeConsistent(SET)
       */
     void zero();
 
