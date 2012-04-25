@@ -88,6 +88,8 @@ ManagedVector::ManagedVector ( shared_ptr  alias ):
       ++cur2;
     }
     copyGhostValues ( other );
+    // Copy the consistency state from other
+    *d_UpdateState = *(other->getUpdateStatus());
   }
 
 

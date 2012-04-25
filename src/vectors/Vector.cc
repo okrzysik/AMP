@@ -293,6 +293,8 @@ void Vector::copyVector ( const Vector::const_shared_ptr &rhs )
       castTo<DataChangeFirer>().fireDataChange();
     }
     copyGhostValues ( rhs );
+    // Copy the consistency state from the rhs
+    *d_UpdateState = *(rhs->getUpdateStatus());
 }
 void Vector::scale(double alpha)
 {

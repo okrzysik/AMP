@@ -127,7 +127,7 @@ public:
 
     virtual Vector::shared_ptr  subsetVectorForVariable ( const Variable::shared_ptr &name );
     virtual Vector::shared_ptr cloneVector(const Variable::shared_ptr name) const;
-//    virtual void copyVector(const Vector &src_vec);
+    virtual void copyVector(const Vector::const_shared_ptr &src_vec);
     virtual void swapVectors(Vector &other);
     virtual void aliasVector(Vector &other);
     virtual void setToScalar(double alpha);

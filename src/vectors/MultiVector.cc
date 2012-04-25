@@ -529,18 +529,15 @@ void MultiVector::assemble ()
 
 
 
-
-
-
-
-
-/*
-void MultiVector::copyVector ( const Vector &src )
+void MultiVector::copyVector ( const Vector::const_shared_ptr &src )
 {
+    boost::shared_ptr<const MultiVector> rhs = boost::dynamic_pointer_cast<const MultiVector>(src);
+    AMP_ASSERT(rhs.get()!=NULL);
+    AMP_ASSERT(rhs->d_vVectors.size()==d_vVectors.size());
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
-      d_vVectors[i]->copyVector ( getVector ( src , i ) );
+      d_vVectors[i]->copyVector( rhs->d_vVectors[i] );
+    *d_UpdateState = *(rhs->getUpdateStatus());
 }
-*/
 
 
 void MultiVector::swapVectors(Vector &other)
