@@ -309,18 +309,19 @@ bool libMeshElement::isOnBoundary(int id) const
     }
     return on_boundary;
 }
-bool libMeshElement::isOnBoundary(int id) const
+bool libMeshElement::isInBlock(int id) const
 {
     bool in_block = false;
     if ( d_elementType==Vertex ) {
         // Entity is a libmesh node
-        AMP_ERROR("isOnBoundary is not currently implimented for anything but elements");
+        AMP_ERROR("isInBlock is not currently implimented for anything but elements");
     } else if ( (int)d_elementType==d_dim ) {
         // Entity is a libmesh node
-        in_block = elemPtr->subdomain_id() == id;
+        ::Elem* elem = (::Elem*) ptr_element;
+        in_block = elem->subdomain_id() == id;
     } else  {
         // All other entities are on the boundary iff all of their verticies are on the surface
-        AMP_ERROR("isOnBoundary is not currently implimented for anything but elements");
+        AMP_ERROR("isInBlock is not currently implimented for anything but elements");
     }
     return in_block;
 }
