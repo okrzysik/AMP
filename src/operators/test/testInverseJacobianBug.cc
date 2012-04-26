@@ -70,7 +70,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   
   while ( el!=end_el ) {
     std::vector<AMP::Mesh::MeshElement> nodes = el->getElements(AMP::Mesh::Vertex);
-    for(int i = 0 ; i < nodes.size() ; i++) {
+    for(size_t i = 0 ; i < nodes.size() ; i++) {
       std::vector<double> pt = nodes[i].coord();
       fprintf(fp, "nd = %d, x = %.15lf, y = %.15lf, z = %.15lf \n", i, pt[0], pt[1], pt[2] );
     }

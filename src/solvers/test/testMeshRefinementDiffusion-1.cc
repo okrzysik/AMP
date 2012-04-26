@@ -320,7 +320,7 @@ createThermalSolvers(boost::shared_ptr<AMP::InputDatabase> &global_input_db,
   //-------------------------------------------------------------------------//
 
   boost::shared_ptr<AMP::Database> trilinosPreconditioner_db = columnPreconditioner_db->getDatabase("TrilinosPreconditioner");
-  for(int id = 0; id != linearColumnOperator->getNumberOfOperators(); id++)
+  for(unsigned int id = 0; id != linearColumnOperator->getNumberOfOperators(); id++)
   {
     boost::shared_ptr<AMP::Solver::SolverStrategyParameters> trilinosPreconditionerParams(new AMP::Solver::SolverStrategyParameters(trilinosPreconditioner_db));
     trilinosPreconditionerParams->d_pOperator = linearColumnOperator->getOperator(id);

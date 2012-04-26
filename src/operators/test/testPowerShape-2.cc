@@ -83,7 +83,7 @@ void test_with_shape(AMP::UnitTest *ut )
     AMP::Mesh::MeshIterator  end_elems = elem.end();
 
     for( ; elem != end_elems; ++elem) {
-        for( unsigned int i = 0; i < DOFsPerNode; i++ ) {
+        for( int i = 0; i < DOFsPerNode; i++ ) {
             std::vector<size_t> ndx;
             dof_map->getDOFs ( elem->globalID() , ndx);
             int  offset = ndx[i];
