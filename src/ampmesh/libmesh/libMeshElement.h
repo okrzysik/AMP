@@ -60,6 +60,13 @@ public:
      */
     virtual bool isOnBoundary(int id) const;
 
+    /**
+     * \brief     Check if the current element is in the given block
+     * \details   Check if the current element is in the block specified by the given id
+     * \param id  The block id to check
+     */
+    virtual bool isInBlock(int id) const;
+
 
 protected:
 

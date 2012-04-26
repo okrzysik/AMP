@@ -12,7 +12,7 @@ void getMasterAndSlaveNodes(
   AMP::Mesh::MeshIterator bnd;
   AMP::Mesh::MeshIterator end_bnd;
 
-  bnd = masterMeshAdapter->getIDsetIterator( AMP::Mesh::Vertex, 2, 0 );
+  bnd = masterMeshAdapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 2, 0 );
   end_bnd = bnd.end();
 
   unsigned int numSurfaceNodes = bnd.size();
@@ -24,7 +24,7 @@ void getMasterAndSlaveNodes(
     masterNodes[i] = bnd->globalID();
   }
 
-  bnd = slaveMeshAdapter->getIDsetIterator( AMP::Mesh::Vertex, 1, 0 );
+  bnd = slaveMeshAdapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
   end_bnd = bnd.end();
 
   for(int i = 0; bnd != end_bnd; i++, bnd++) {
