@@ -69,6 +69,10 @@ namespace Operator {
 
       void setOutputVariableName(const std::string & name, int varId = -1);
 
+      virtual AMP::LinearAlgebra::Vector::shared_ptr subsetOutputVector(AMP::LinearAlgebra::Vector::shared_ptr vec);
+
+      virtual AMP::LinearAlgebra::Vector::shared_ptr subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec);
+
       /**
         @param [in] zloc is the location vector in z direction.
         */

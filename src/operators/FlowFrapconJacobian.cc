@@ -15,44 +15,47 @@ namespace AMP {
 namespace Operator {
 
 
-  FlowFrapconJacobian::FlowFrapconJacobian(const boost::shared_ptr<FlowFrapconJacobianParameters> & params)
+FlowFrapconJacobian::FlowFrapconJacobian(const boost::shared_ptr<FlowFrapconJacobianParameters> & params)
     : Operator (params)
-  {
-        std::string inpVar = params->d_db->getString("InputVariable");
-	d_inpVariable.reset(new AMP::LinearAlgebra::Variable(inpVar));
+{
+    std::string inpVar = params->d_db->getString("InputVariable");
+    d_inpVariable.reset(new AMP::LinearAlgebra::Variable(inpVar));
 
-        std::string outVar = params->d_db->getString("OutputVariable");
-	d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar));
+    std::string outVar = params->d_db->getString("OutputVariable");
+    d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar));
 
-        d_SimpleVariable.reset(new AMP::LinearAlgebra::Variable("FlowInternal"));
+    d_SimpleVariable.reset(new AMP::LinearAlgebra::Variable("FlowInternal"));
 
-        reset(params);
-  }
+    reset(params);
+}
 
 
+AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::createInputVariable (const std::string & name, int varId)
+{
+    (void) varId;      
+    return d_inpVariable->cloneVariable(name);
+}
 
-      AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::createInputVariable (const std::string & name, int varId)
-      {
-        (void) varId;      
-        return d_inpVariable->cloneVariable(name);
-      }
 
-      AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::createOutputVariable (const std::string & name, int varId) 
-      {
-        (void) varId;      
-        return d_outVariable->cloneVariable(name);
-      }
+AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::createOutputVariable (const std::string & name, int varId) 
+{
+    (void) varId;      
+    return d_outVariable->cloneVariable(name);
+}
 
-      AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::getInputVariable() {
-        return d_inpVariable;
-      }
 
-      AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::getOutputVariable() {
-        return d_outVariable;
-      }
+AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::getInputVariable() {
+    return d_inpVariable;
+}
 
-  void FlowFrapconJacobian :: reset(const boost::shared_ptr<OperatorParameters>& params)
-  {
+
+AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::getOutputVariable() {
+    return d_outVariable;
+}
+
+
+void FlowFrapconJacobian :: reset(const boost::shared_ptr<OperatorParameters>& params)
+{
     boost::shared_ptr<FlowFrapconJacobianParameters> myparams = 
       boost::dynamic_pointer_cast<FlowFrapconJacobianParameters>(params);
 
@@ -91,12 +94,13 @@ namespace Operator {
       d_frozenVec = myparams->d_frozenSolution;
     }
 
-  }
+}
 
-  //This is an in-place apply
-  void FlowFrapconJacobian :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
+
+// This is an in-place apply
+void FlowFrapconJacobian :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
       AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a, const double b)
-  {
+{
 
     // AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_inpVariable);
 
@@ -174,7 +178,35 @@ namespace Operator {
       }
     }
 
-  }
+}
+
+
+AMP::LinearAlgebra::Vector::shared_ptr  FlowFrapconJacobian::subsetOutputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)
+{
+    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
+    if(d_Mesh.get() != NULL) {
+        AMP::LinearAlgebra::VS_Comm commSelector( var->getName(), d_Mesh->getComm() );
+        AMP::LinearAlgebra::Vector::shared_ptr commVec = vec->select(commSelector, var->getName());
+        return commVec->subsetVectorForVariable(var);
+    } else {
+        return vec->subsetVectorForVariable(var);
+    }
+}
+
+
+AMP::LinearAlgebra::Vector::shared_ptr  FlowFrapconJacobian::subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)
+{
+    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
+    if(d_Mesh.get() != NULL) {
+        AMP::LinearAlgebra::VS_Comm commSelector( var->getName(), d_Mesh->getComm() );
+        AMP::LinearAlgebra::Vector::shared_ptr commVec = vec->select(commSelector, var->getName());
+        return commVec->subsetVectorForVariable(var);
+    } else {
+        return vec->subsetVectorForVariable(var);
+    }
+}
 
 
 }
