@@ -73,6 +73,24 @@ ManagedVector::ManagedVector ( shared_ptr  alias ):
 
   void ManagedVector::copyVector ( const Vector::const_shared_ptr &other )
   {
+    boost::shared_ptr<const ManagedVector> rhs_managed = boost::dynamic_pointer_cast<const ManagedVector>( other );
+    boost::shared_ptr<Vector> vec1;
+    boost::shared_ptr<const Vector> vec2;
+    if ( rhs_managed.get() != NULL ) {
+        // We are dealing with two managed vectors, check if they both have data engines
+        if ( d_Engine.get()!=NULL ) 
+            vec1 = boost::dynamic_pointer_cast<Vector>( d_Engine );
+        if ( rhs_managed->d_Engine.get()!=NULL )
+            vec2 = boost::dynamic_pointer_cast<const Vector>( rhs_managed->d_Engine );
+    }
+    if ( vec1.get()!=NULL && vec2.get()!=NULL ) {
+        // We have two data engines, perform the copy between them
+        vec1->copyVector( vec2 );
+        fireDataChange();
+        *d_UpdateState = *(other->getUpdateStatusPtr());
+        return;
+    }
+    // Default, general case
     if ( other->getLocalSize() != getLocalSize() )
     {  // Another error condition
       AMP_ERROR( "Destination vector and source vector not the same size" );
