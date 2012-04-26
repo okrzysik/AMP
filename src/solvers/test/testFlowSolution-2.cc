@@ -612,7 +612,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
             expectedSolution = (input_db->getDatabase("regression"))->getDoubleArray("expectedSolution");
             for(unsigned int i=0; i<flowVecSize ; i++) {
                 if( !AMP::Utilities::approx_equal(expectedSolution[i], flowSol1DVec->getValueByLocalID(i), 1e-6)) {
-                    if ( meshAdapter2.getComm().getRank() == 0 ){
+                    if ( meshAdapter2->getComm().getRank() == 0 ){
                         printf("solution: %.7e expected: %.7e \n", 
                         flowSol1DVec->getValueByLocalID(i),expectedSolution[i] );
                     
