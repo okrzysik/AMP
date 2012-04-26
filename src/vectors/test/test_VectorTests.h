@@ -1027,8 +1027,9 @@ void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
     // Set values by global id
     for (size_t i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ )
         vector->setValueByGlobalID ( i , (double) i );
-    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::SETTING )
-        utils->failure ( "local set/add leaves vector in SETTING state" );
+    if ( vector->getUpdateStatus()!=AMP::LinearAlgebra::Vector::LOCAL_CHANGED &&
+         vector->getUpdateStatus()!=AMP::LinearAlgebra::Vector::SETTING )
+        utils->failure ( "setValueByGlobalID leaves vector in SETTING or LOCAL_CHANGED state" );
 
     // Perform a makeConsistent SET and check the result
     vector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
