@@ -85,6 +85,11 @@ namespace Operator {
         return d_outVariable;
       }
 
+      virtual AMP::LinearAlgebra::Vector::shared_ptr subsetOutputVector(AMP::LinearAlgebra::Vector::shared_ptr vec);
+
+      virtual AMP::LinearAlgebra::Vector::shared_ptr subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec);
+
+
       /**
         @param [in] zloc is the location vector in z direction.
         */
