@@ -42,9 +42,9 @@ NodeToNodeMap::NodeToNodeMap ( const boost::shared_ptr<AMP::Operator::OperatorPa
 
     // Create the element iterators
     if ( d_mesh1.get() != NULL )
-        d_iterator1 = d_mesh1->getIDsetIterator(AMP::Mesh::Vertex,Params.d_BoundaryID1,0);
+        d_iterator1 = d_mesh1->getBoundaryIDIterator(AMP::Mesh::Vertex,Params.d_BoundaryID1,0);
     if ( d_mesh2.get() != NULL )
-        d_iterator2 = d_mesh2->getIDsetIterator(AMP::Mesh::Vertex,Params.d_BoundaryID2,0);
+        d_iterator2 = d_mesh2->getBoundaryIDIterator(AMP::Mesh::Vertex,Params.d_BoundaryID2,0);
 
     // Create the pairs of points that are aligned
     createPairs();

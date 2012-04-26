@@ -604,7 +604,7 @@ MeshIterator libMesh::getSurfaceIterator ( const GeomType type, const int gcw ) 
 * Return an iterator over the given boundary ids        *
 * Note: we have not programmed this for ghosts yet      *
 ********************************************************/
-std::vector<int> libMesh::getIDSets ( ) const
+std::vector<int> libMesh::getBoundaryIDs ( ) const
 {
     const std::set<short int> libmesh_bids = d_libMesh->boundary_info->get_boundary_ids();
     std::vector<int> bids(libmesh_bids.size(),0);
@@ -615,7 +615,7 @@ std::vector<int> libMesh::getIDSets ( ) const
     }
     return bids;
 }
-MeshIterator libMesh::getIDsetIterator ( const GeomType type, const int id, const int gcw ) const
+MeshIterator libMesh::getBoundaryIDIterator ( const GeomType type, const int id, const int gcw ) const
 {
     AMP_INSIST(gcw==0,"Iterator over ghost boundary elements is not supported yet");
     std::pair<int,GeomType> mapid = std::pair<int,GeomType>(id,type);
@@ -625,6 +625,21 @@ MeshIterator libMesh::getIDsetIterator ( const GeomType type, const int id, cons
     if ( it != d_boundarySets.end() )
         list = it->second;
     return MultiVectorIterator( list, 0 );
+}
+
+
+/********************************************************
+* Return an iterator over the given block ids           *
+********************************************************/
+std::vector<int> libMesh::getBlockIDs ( ) const
+{
+    AMP_ERROR("getBlockIDs is not implimented yet");
+    return std::vector<int>();
+}
+MeshIterator libMesh::getBlockIDIterator ( const GeomType type, const int id, const int gcw ) const
+{
+    AMP_ERROR("getBoundaryIDIterator is not implimented yet");
+    return MeshIterator();
 }
 
 

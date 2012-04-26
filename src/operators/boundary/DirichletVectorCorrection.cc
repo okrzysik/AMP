@@ -94,7 +94,7 @@ namespace AMP {
       AMP::Discretization::DOFManager::shared_ptr dof_map = rInternal->getDOFManager();
       size_t numIds = d_boundaryIds.size();
       for(size_t j = 0; j < numIds; j++) {
-        AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
+        AMP::Mesh::MeshIterator bnd = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
         for( ; bnd != end_bnd; ++bnd) {
@@ -112,7 +112,7 @@ namespace AMP {
       AMP::Discretization::DOFManager::shared_ptr dof_map = rInternal->getDOFManager();
       size_t numIds = d_boundaryIds.size();
       for(size_t j = 0; j < numIds; j++) {
-        AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
+        AMP::Mesh::MeshIterator bnd = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
         for( ; bnd != end_bnd; ++bnd) {
@@ -138,7 +138,7 @@ namespace AMP {
       AMP::Discretization::DOFManager::shared_ptr dof_map = uInternal->getDOFManager();
       size_t numIds = d_boundaryIds.size();
       for(size_t j = 0; j < numIds; j++) {
-        AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
+        AMP::Mesh::MeshIterator bnd = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
         for( ; bnd != end_bnd; ++bnd) {

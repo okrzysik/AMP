@@ -263,14 +263,24 @@ MeshIterator Mesh::getSurfaceIterator( const GeomType, const int ) const
     AMP_ERROR("getSurfaceIterator is not implimented for the base class");
     return MeshIterator();
 }
-std::vector<int> Mesh::getIDSets ( ) const
+std::vector<int> Mesh::getBoundaryIDs ( ) const
 {
-    AMP_ERROR("getIDSets is not implimented for the base class");
+    AMP_ERROR("getBoundaryIDs is not implimented for the base class");
     return std::vector<int>();
 }
-MeshIterator Mesh::getIDsetIterator ( const GeomType, const int, const int ) const
+MeshIterator Mesh::getBoundaryIDIterator ( const GeomType, const int, const int ) const
 {
-    AMP_ERROR("getIDsetIterator is not implimented for the base class");
+    AMP_ERROR("getBoundaryIDIterator is not implimented for the base class");
+    return MeshIterator();
+}
+std::vector<int> Mesh::getBlockIDs ( ) const
+{
+    AMP_ERROR("getBlockIDs is not implimented for the base class");
+    return std::vector<int>();
+}
+MeshIterator Mesh::getBlockIDIterator ( const GeomType, const int, const int ) const
+{
+    AMP_ERROR("getBlockIDIterator is not implimented for the base class");
     return MeshIterator();
 }
 size_t Mesh::numLocalElements( const GeomType type ) const

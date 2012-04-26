@@ -349,12 +349,12 @@ void MeshBasicTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 
 // This tests loops over all boundary ids
 void VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) {
-    const std::vector<int> bids = mesh->getIDSets();
+    const std::vector<int> bids = mesh->getBoundaryIDs();
     for (size_t i=0; i<bids.size(); i++) {
         int bid = bids[i];
         for (int gcw=0; gcw<=0; gcw++) {
             // Get the iterator over the current boundary id
-            AMP::Mesh::MeshIterator curNode = mesh->getIDsetIterator( AMP::Mesh::Vertex, bid, gcw );
+            AMP::Mesh::MeshIterator curNode = mesh->getBoundaryIDIterator( AMP::Mesh::Vertex, bid, gcw );
             AMP::Mesh::MeshIterator endNode = curNode.end();
             // Get the set of all nodes in the iterator
             bool testPassed = true;

@@ -68,7 +68,7 @@ namespace Operator {
         AMP_ASSERT(outputVec  != NULL);
 
         // Get an iterator over the side elements
-        AMP::Mesh::MeshIterator bnd = d_MapMesh->getIDsetIterator( AMP::Mesh::Face, d_boundaryId, 0 );
+        AMP::Mesh::MeshIterator bnd = d_MapMesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryId, 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
         // Iterator for the solid-clad boundary

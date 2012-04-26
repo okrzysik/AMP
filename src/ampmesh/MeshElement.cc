@@ -120,6 +120,12 @@ bool MeshElement::isOnBoundary(int id) const
         AMP_ERROR("isOnBoundary is not implimented for the base class");
     return element->isOnBoundary(id);
 }
+bool MeshElement::isInBlock(int id) const
+{
+    if ( element==NULL )
+        AMP_ERROR("isInBlock is not implimented for the base class");
+    return element->isInBlock(id);
+}
 
 
 } // Mesh namespace

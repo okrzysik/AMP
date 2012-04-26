@@ -22,7 +22,7 @@ void  setBoundary ( int id , AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::Me
 
     AMP::Discretization::DOFManager::shared_ptr  d1 = v1->getDOFManager();
 
-    AMP::Mesh::MeshIterator  curBnd = mesh->getIDsetIterator( AMP::Mesh::Vertex, id, 0 );
+    AMP::Mesh::MeshIterator  curBnd = mesh->getBoundaryIDIterator( AMP::Mesh::Vertex, id, 0 );
     AMP::Mesh::MeshIterator  endBnd = curBnd.end();
 
     std::vector<size_t> ids;

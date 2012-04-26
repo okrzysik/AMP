@@ -30,9 +30,9 @@ Map3to1to3::Map3to1to3 ( const boost::shared_ptr<OperatorParameters> & params_in
 
     // Create the element iterators
     if ( d_mesh1.get() != NULL )
-        d_iterator1 = d_mesh1->getIDsetIterator( AMP::Mesh::Vertex, params->d_BoundaryID1, 0 );
+        d_iterator1 = d_mesh1->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID1, 0 );
     if ( d_mesh2.get() != NULL )
-        d_iterator2 = d_mesh2->getIDsetIterator( AMP::Mesh::Vertex, params->d_BoundaryID2, 0 );
+        d_iterator2 = d_mesh2->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID2, 0 );
 
     // Determine which processors we will be sending/receiving data from
     // 0: No communication, 1: send/recv data

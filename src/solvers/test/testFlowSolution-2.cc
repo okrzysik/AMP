@@ -79,7 +79,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     // Create a surface mesh on the clad
     AMP::Mesh::Mesh::shared_ptr surfaceMesh;
     if ( meshAdapter2.get() != NULL ) {
-        surfaceMesh = meshAdapter2->Subset( meshAdapter2->getIDsetIterator( AMP::Mesh::Face, 4, 0 ) );
+        surfaceMesh = meshAdapter2->Subset( meshAdapter2->getBoundaryIDIterator( AMP::Mesh::Face, 4, 0 ) );
         surfaceMesh->setName( "clad_surface" );
     }
     globalComm.barrier();

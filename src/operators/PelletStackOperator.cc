@@ -80,7 +80,7 @@ namespace AMP {
     void PelletStackOperator :: applyUnscaling(AMP::LinearAlgebra::Vector::shared_ptr f) {
       AMP::LinearAlgebra::Vector::shared_ptr subF = f->subsetVectorForVariable(d_var);
       AMP::Discretization::DOFManager::shared_ptr dof_map = subF->getDOFManager();
-      AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator(AMP::Mesh::Vertex, d_slaveId, 0);
+      AMP::Mesh::MeshIterator bnd = d_Mesh->getBoundaryIDIterator(AMP::Mesh::Vertex, d_slaveId, 0);
       AMP::Mesh::MeshIterator end_bnd = bnd.end();
       for( ; bnd != end_bnd; ++bnd) {
         std::vector<size_t> bndGlobalIds;
@@ -138,7 +138,7 @@ namespace AMP {
       AMP::LinearAlgebra::Vector::shared_ptr subU = d_frozenVectorForMaps->subsetVectorForVariable(d_var);
       AMP::LinearAlgebra::Vector::shared_ptr subR = r->subsetVectorForVariable(d_var);
       AMP::Discretization::DOFManager::shared_ptr dof_map = subR->getDOFManager();
-      AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator(AMP::Mesh::Vertex, d_slaveId, 0);
+      AMP::Mesh::MeshIterator bnd = d_Mesh->getBoundaryIDIterator(AMP::Mesh::Vertex, d_slaveId, 0);
       AMP::Mesh::MeshIterator end_bnd = bnd.end();
       for( ; bnd != end_bnd; ++bnd) {
         std::vector<size_t> bndGlobalIds;
@@ -152,7 +152,7 @@ namespace AMP {
       computeZscan(u, finalMaxZdispsList); 
       for(size_t i = 0; i < d_pelletIds.size(); ++i) {
         if(d_pelletIds[i] > 1) {
-          AMP::Mesh::MeshIterator bnd = d_meshes[i]->getIDsetIterator(AMP::Mesh::Vertex, d_slaveId, 0);
+          AMP::Mesh::MeshIterator bnd = d_meshes[i]->getBoundaryIDIterator(AMP::Mesh::Vertex, d_slaveId, 0);
           AMP::Mesh::MeshIterator end_bnd = bnd.end();
           for( ; bnd != end_bnd; ++bnd) {
             std::vector<size_t> bndGlobalIds;
@@ -217,7 +217,7 @@ namespace AMP {
       AMP::Discretization::DOFManager::shared_ptr dof_map = subR->getDOFManager();
       if(currPellIdx != -1) {
         subR->copyVector(subF);
-        AMP::Mesh::MeshIterator bnd = d_meshes[currPellIdx]->getIDsetIterator(AMP::Mesh::Vertex, d_slaveId, 0);
+        AMP::Mesh::MeshIterator bnd = d_meshes[currPellIdx]->getBoundaryIDIterator(AMP::Mesh::Vertex, d_slaveId, 0);
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
         for( ; bnd != end_bnd; ++bnd) {
           std::vector<size_t> bndGlobalIds;
@@ -236,7 +236,7 @@ namespace AMP {
       AMP::Discretization::DOFManager::shared_ptr dof_map = subU->getDOFManager();
       std::vector<double> myMaxZdisps(d_pelletIds.size(), 0.0);
       for(size_t i = 0; i < d_pelletIds.size(); i++) {
-        AMP::Mesh::MeshIterator bnd = d_meshes[i]->getIDsetIterator(AMP::Mesh::Vertex, d_masterId, 0);
+        AMP::Mesh::MeshIterator bnd = d_meshes[i]->getBoundaryIDIterator(AMP::Mesh::Vertex, d_masterId, 0);
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
         for( ; bnd != end_bnd; ++bnd) {
           std::vector<size_t> bndGlobalIds;

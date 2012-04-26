@@ -111,11 +111,11 @@ MeshIterator moabMesh::getSurfaceIterator ( const GeomType type, const int gcw )
 * Return an iterator over the given boundary ids        *
 * Note: we have not programmed this for ghosts yet      *
 ********************************************************/
-std::vector<int> moabMesh::getIDSets ( ) const
+std::vector<int> moabMesh::getBoundaryIDs ( ) const
 {
     AMP_ERROR("Not finished");
 }
-MeshIterator moabMesh::getIDsetIterator ( const GeomType type, const int id, const int gcw ) const
+MeshIterator moabMesh::getBoundaryIDIterator ( const GeomType type, const int id, const int gcw ) const
 {
     AMP_ERROR("Not finished");
 }

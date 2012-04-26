@@ -97,7 +97,7 @@ public:
      * \details  Return the list of all ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getIDSets ( ) const;
+    virtual std::vector<int> getBoundaryIDs ( ) const;
 
 
     /**
@@ -107,7 +107,7 @@ public:
      * \param id     id for the elements (example: nodeset id)
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getIDsetIterator ( const GeomType type, const int id, const int gcw=0 ) const;
+    virtual MeshIterator getBoundaryIDIterator ( const GeomType type, const int id, const int gcw=0 ) const;
 
 
     //! Get the largest geometric type in the mesh

@@ -63,7 +63,7 @@ void Map1Dto3D::computeZLocations(){
     std::vector<double> t_zLocations;
     if ( d_MapMesh.get()!=NULL ) {
         // Get an iterator over the nodes on the boundary
-        AMP::Mesh::MeshIterator  bnd = d_MapMesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryId, 0 );
+        AMP::Mesh::MeshIterator  bnd = d_MapMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_boundaryId, 0 );
         AMP::Mesh::MeshIterator  end_bnd = bnd.end();
 
         double Xx=0;
@@ -147,7 +147,7 @@ void Map1Dto3D::apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP:
     const double TOL = 1e-12;
     AMP::Discretization::DOFManager::shared_ptr dof_map = outputVec->getDOFManager();
     std::vector<size_t> dofs(1);
-    AMP::Mesh::MeshIterator  bnd = d_MapMesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryId, 0 );
+    AMP::Mesh::MeshIterator  bnd = d_MapMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_boundaryId, 0 );
     const double z1 = d_zLocations[0]-TOL;
     const double z2 = d_zLocations[d_zLocations.size()-1]+TOL;
     for (size_t i=0; i<bnd.size(); i++) {

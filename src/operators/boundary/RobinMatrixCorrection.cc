@@ -136,7 +136,7 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
 
     for(unsigned int nid = 0; nid < numIds; nid++)
     {
-      AMP::Mesh::MeshIterator bnd1     = d_Mesh->getIDsetIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
+      AMP::Mesh::MeshIterator bnd1     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
       AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
       for( ; bnd1 != end_bnd1; ++bnd1)
       {

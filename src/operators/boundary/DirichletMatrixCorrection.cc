@@ -24,7 +24,7 @@ namespace AMP {
       AMP::Discretization::DOFManager::shared_ptr dof_map = inVec->getDOFManager();
 
       for(size_t k = 0; k < d_boundaryIds.size(); ++k) {
-        AMP::Mesh::MeshIterator bnd = d_Mesh->getIDsetIterator( AMP::Mesh::Vertex, d_boundaryIds[k], 0 );
+        AMP::Mesh::MeshIterator bnd = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_boundaryIds[k], 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
         for( ; bnd != end_bnd; ++bnd) {

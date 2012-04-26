@@ -117,20 +117,38 @@ public:
 
 
     /**
-     * \brief    Return the list of all ID sets in the mesh
-     * \details  Return the list of all ID sets in the mesh
+     * \brief    Return the list of all boundary ID sets in the mesh
+     * \details  Return the list of all boundary ID sets in the mesh
+     * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int>  getIDSets ( ) const;
+    virtual std::vector<int> getBoundaryIDs ( ) const;
 
 
     /**
-     * \brief    Return an MeshIterator over the given geometric objects on the given ID set
-     * \details  Return an MeshIterator over the given geometric objects on the given ID set
+     * \brief    Return an MeshIterator over the given geometric objects on the given boundary ID set
+     * \details  Return an MeshIterator over the given geometric objects on the given boundary ID set
      * \param type   Geometric type to iterate over
-     * \param id     id for the elements (example: nodeset id)
+     * \param id     Boundary id for the elements (example: sideset id)
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator  getIDsetIterator ( const GeomType type, const int id, const int gcw=0 ) const;
+    virtual MeshIterator getBoundaryIDIterator ( const GeomType type, const int id, const int gcw=0 ) const;
+
+    /**
+     * \brief    Return the list of all boundary ID sets in the mesh
+     * \details  Return the list of all boundary ID sets in the mesh
+     * Note: depending on the mesh this routine may require global communication across the mesh.
+     */
+    virtual std::vector<int> getBlockIDs ( ) const;
+
+
+    /**
+     * \brief    Return an MeshIterator over the given geometric objects on the given block ID set
+     * \details  Return an MeshIterator over the given geometric objects on the given block ID set
+     * \param type   Geometric type to iterate over
+     * \param id     Block id for the elements (example: block id in cubit, subdomain in libmesh)
+     * \param gcw    Desired ghost cell width
+     */
+    virtual MeshIterator getBlockIDIterator ( const GeomType type, const int id, const int gcw=0 ) const;
 
 
     /**

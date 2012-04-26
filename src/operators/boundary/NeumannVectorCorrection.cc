@@ -130,7 +130,7 @@ namespace Operator {
             for(unsigned int k = 0; k < numDofIds; k++)
             {
 
-              AMP::Mesh::MeshIterator bnd     = d_Mesh->getIDsetIterator( AMP::Mesh::Face, d_boundaryIds[j], 0 );
+              AMP::Mesh::MeshIterator bnd     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[j], 0 );
               AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
               int count =0;

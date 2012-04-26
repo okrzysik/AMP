@@ -63,7 +63,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
   libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
 
-  AMP::Mesh::MeshIterator bnd = mesh->getIDsetIterator( AMP::Mesh::Face, surfaceId, 0 );
+  AMP::Mesh::MeshIterator bnd = mesh->getBoundaryIDIterator( AMP::Mesh::Face, surfaceId, 0 );
   AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
   bool volume_passes = true;

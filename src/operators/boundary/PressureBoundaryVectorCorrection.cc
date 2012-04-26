@@ -128,7 +128,7 @@ namespace AMP {
         }
         std::vector<std::vector<Point> > thisBoundaryIdNormals;
 
-        AMP::Mesh::MeshIterator bnd     = d_Mesh->getIDsetIterator( AMP::Mesh::Face, d_boundaryIds[j], 0 );
+        AMP::Mesh::MeshIterator bnd     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[j], 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
         for( ; bnd != end_bnd; ++bnd) {
@@ -219,7 +219,7 @@ namespace AMP {
           AMP::pout << "Entered the numIds loop. d_boundaryIds[" << j << "] = " << d_boundaryIds[j] << std::endl;
         }
         
-        AMP::Mesh::MeshIterator belem     = d_Mesh->getIDsetIterator( AMP::Mesh::Volume, d_boundaryIds[j], 0 );
+        AMP::Mesh::MeshIterator belem     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Volume, d_boundaryIds[j], 0 );
         AMP::Mesh::MeshIterator end_belem = belem.end();
 
         for( ; belem  != end_belem; ++belem) {

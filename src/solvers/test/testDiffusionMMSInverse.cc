@@ -172,7 +172,7 @@ void inverseTest1(AMP::UnitTest *ut, const std::string exeName)
 
       // Fill in manufactured solution on mesh boundary
       for (int j=0; j<=8; j++) {
-          AMP::Mesh::MeshIterator beg_bnd = meshAdapter->getIDsetIterator( AMP::Mesh::Vertex, j, 0 );
+          AMP::Mesh::MeshIterator beg_bnd = meshAdapter->getBoundaryIDIterator( AMP::Mesh::Vertex, j, 0 );
           AMP::Mesh::MeshIterator end_bnd = beg_bnd.end();
           AMP::Mesh::MeshIterator iter;
           for (iter=beg_bnd; iter!=end_bnd; iter++) {

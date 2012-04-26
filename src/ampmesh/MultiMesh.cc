@@ -338,12 +338,12 @@ MeshIterator MultiMesh::getSurfaceIterator ( const GeomType type, const int gcw 
     }
     return MultiIterator(iterators);
 }
-std::vector<int> MultiMesh::getIDSets( ) const
+std::vector<int> MultiMesh::getBoundaryIDs( ) const
 {
     // Get all local id sets
     std::set<int> ids_set;
     for (size_t i=0; i<d_meshes.size(); i++) {
-        std::vector<int> mesh_idSet = d_meshes[i]->getIDSets();
+        std::vector<int> mesh_idSet = d_meshes[i]->getBoundaryIDs();
         ids_set.insert(mesh_idSet.begin(),mesh_idSet.end());
     }
     std::vector<int> local_ids(ids_set.begin(),ids_set.end());
@@ -368,12 +368,53 @@ std::vector<int> MultiMesh::getIDSets( ) const
     // Return the final vector of ids
     return std::vector<int>(ids_set.begin(),ids_set.end());
 }
-MeshIterator MultiMesh::getIDsetIterator( const GeomType type, const int id, const int gcw ) const
+MeshIterator MultiMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw ) const
 {
     std::vector<boost::shared_ptr<MeshIterator> > iterators;
     iterators.reserve(d_meshes.size());
     for (size_t i=0; i<d_meshes.size(); i++) {
-        MeshIterator it = d_meshes[i]->getIDsetIterator(type,id,gcw);
+        MeshIterator it = d_meshes[i]->getBoundaryIDIterator(type,id,gcw);
+        if ( it.size() > 0 )
+            iterators.push_back( boost::shared_ptr<MeshIterator>( new MeshIterator(it) ) );
+    }
+    return MultiIterator(iterators);
+}
+std::vector<int> MultiMesh::getBlockIDs( ) const
+{
+    // Get all local id sets
+    std::set<int> ids_set;
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        std::vector<int> mesh_idSet = d_meshes[i]->getBlockIDs();
+        ids_set.insert(mesh_idSet.begin(),mesh_idSet.end());
+    }
+    std::vector<int> local_ids(ids_set.begin(),ids_set.end());
+    // Perform a global communication to syncronize the id sets across all processors
+    int N_id_local = (int) local_ids.size();
+    std::vector<int> count(d_comm.getSize(),0);
+    std::vector<int> disp(d_comm.getSize(),0);
+    d_comm.allGather(N_id_local,&count[0]);
+    for (int i=1; i<d_comm.getSize(); i++)
+        disp[i] = disp[i-1] + count[i-1];
+    int N_id_global = disp[d_comm.getSize()-1] + count[d_comm.getSize()-1];
+    if ( N_id_global == 0 )
+        return std::vector<int>();
+    std::vector<int> global_id_list(N_id_global,0);
+    int *ptr = NULL;
+    if ( N_id_local > 0 )
+        ptr = &local_ids[0];
+    d_comm.allGather( ptr, N_id_local, &global_id_list[0], &count[0], &disp[0], true );
+    // Get the unique set
+    for (size_t i=0; i<global_id_list.size(); i++)
+        ids_set.insert(global_id_list[i]);
+    // Return the final vector of ids
+    return std::vector<int>(ids_set.begin(),ids_set.end());
+}
+MeshIterator MultiMesh::getBlockIDIterator( const GeomType type, const int id, const int gcw ) const
+{
+    std::vector<boost::shared_ptr<MeshIterator> > iterators;
+    iterators.reserve(d_meshes.size());
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        MeshIterator it = d_meshes[i]->getBlockIDIterator(type,id,gcw);
         if ( it.size() > 0 )
             iterators.push_back( boost::shared_ptr<MeshIterator>( new MeshIterator(it) ) );
     }
