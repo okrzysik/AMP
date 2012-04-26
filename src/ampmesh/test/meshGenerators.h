@@ -61,6 +61,7 @@ public:
 
 
 // Class to read in a default exodus file
+template<int FILE=1>
 class  ExodusReaderGenerator : public MeshGenerator
 {
 public:
@@ -69,7 +70,13 @@ public:
         boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
         database->putInteger("dim",3);
         database->putString("MeshName","exodus reader mesh");
-        database->putString("FileName","clad_1x_1pellet.e");
+        if ( FILE==1 ) {
+            database->putString("FileName","clad_1x_1pellet.e");
+        } else if ( FILE==2 ) {
+            database->putString("FileName","multiElementMesh.e");
+        } else {
+            AMP_ERROR("Bad file for generator");
+        }
         boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
         params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
         // Create a libMesh mesh

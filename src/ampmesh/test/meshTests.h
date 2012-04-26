@@ -348,7 +348,8 @@ void MeshBasicTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 
 
 // This tests loops over all boundary ids
-void VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) {
+void VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) 
+{
     const std::vector<int> bids = mesh->getBoundaryIDs();
     for (size_t i=0; i<bids.size(); i++) {
         int bid = bids[i];
@@ -392,7 +393,8 @@ void VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared
 
 
 // This tests loops over the boundary
-void VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) {
+void VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) 
+{
     for (int gcw=0; gcw<=0; gcw++) {
         for (int type2=0; type2<=(int)mesh->getGeomType(); type2++) {
             AMP::Mesh::GeomType type = (AMP::Mesh::GeomType) type2;
@@ -410,6 +412,19 @@ void VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr m
                 utils->failure("Non-trivial surface iterator created");
         }
     }
+}
+
+
+// This tests checks the block ids
+void testBlockIDs( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) 
+{
+    const std::vector<int> blockIDs = mesh->getBlockIDs();
+    if ( blockIDs.size() > 0 )
+        utils->passes("Block ids found");
+    else if ( (int)mesh->getGeomType() != mesh->getDim() ) 
+        utils->expected_failure("Block ids need work for surface meshes");
+    else
+        utils->failure("Block ids found");
 }
 
 

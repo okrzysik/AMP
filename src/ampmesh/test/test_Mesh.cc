@@ -28,7 +28,10 @@ void testMeshGenerators( AMP::UnitTest *ut )
     generator->build_mesh();
     MeshTestLoop( ut, generator->getMesh() );
     // Test the libmesh reader generator
-    generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::ExodusReaderGenerator);
+    generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::ExodusReaderGenerator<> );
+    generator->build_mesh();
+    MeshTestLoop( ut, generator->getMesh() );
+    generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::ExodusReaderGenerator<2> );
     generator->build_mesh();
     MeshTestLoop( ut, generator->getMesh() );
     // Test the multimesh generator
@@ -121,7 +124,7 @@ void testSubsetMesh( AMP::UnitTest *ut )
 {
     // Create the mesh
     boost::shared_ptr<AMP::unit_test::MeshGenerator> generator( 
-        new AMP::unit_test::SurfaceSubsetGenerator<AMP::unit_test::ExodusReaderGenerator> );
+        new AMP::unit_test::SurfaceSubsetGenerator< AMP::unit_test::ExodusReaderGenerator<> > );
     generator->build_mesh();
     AMP::Mesh::Mesh::shared_ptr mesh = generator->getMesh();
 

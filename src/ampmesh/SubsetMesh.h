@@ -93,21 +93,40 @@ public:
 
 
     /**
-     * \brief    Return the list of all ID sets in the mesh
-     * \details  Return the list of all ID sets in the mesh
+     * \brief    Return the list of all boundary ID sets in the mesh
+     * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
     virtual std::vector<int> getBoundaryIDs ( ) const;
 
 
     /**
-     * \brief    Return an MeshIterator over the given geometric objects on the given ID set
-     * \details  Return an MeshIterator over the given geometric objects on the given ID set
+     * \brief    Return an MeshIterator over the given geometric objects on the given boundary ID set
+     * \details  Return an MeshIterator over the given geometric objects on the given boundary ID set
      * \param type   Geometric type to iterate over
-     * \param id     id for the elements (example: nodeset id)
+     * \param id     Boundary id for the elements (example: sideset id)
      * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator getBoundaryIDIterator ( const GeomType type, const int id, const int gcw=0 ) const;
+
+
+    /**
+     * \brief    Return the list of all boundary ID sets in the mesh
+     * \details  Return the list of all boundary ID sets in the mesh
+     * Note: depending on the mesh this routine may require global communication across the mesh.
+     */
+    virtual std::vector<int> getBlockIDs ( ) const;
+
+
+    /**
+     * \brief    Return an MeshIterator over the given geometric objects on the given block ID set
+     * \details  Return an MeshIterator over the given geometric objects on the given block ID set
+     * \param type   Geometric type to iterate over
+     * \param id     Block id for the elements (example: block id in cubit, subdomain in libmesh)
+     * \param gcw    Desired ghost cell width
+     */
+    virtual MeshIterator getBlockIDIterator ( const GeomType type, const int id, const int gcw=0 ) const;
+
 
 
     //! Get the largest geometric type in the mesh
@@ -208,8 +227,10 @@ protected:
         inline bool operator< (const map_id_struct& rhs ) const { return !operator>=(rhs); }
         inline bool operator<= (const map_id_struct& rhs ) const { return !operator>(rhs); }
     };
-    std::vector<int> d_idSets;
-    std::map< map_id_struct, boost::shared_ptr<std::vector<MeshElement> > >  d_sets;
+    std::vector<int> d_boundaryIdSets;
+    std::map< map_id_struct, boost::shared_ptr<std::vector<MeshElement> > >  d_boundarySets;
+    std::vector<int> d_blockIdSets;
+    std::map< map_id_struct, boost::shared_ptr<std::vector<MeshElement> > >  d_blockSets;
 
 };
 

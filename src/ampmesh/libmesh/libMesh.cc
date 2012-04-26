@@ -453,6 +453,23 @@ void libMesh::initialize()
             d_boundarySets.insert(entry);
         }
     }
+    // Get a list of all block ids
+    std::set<int> block_ids;
+    elem_pos = d_libMesh->elements_begin();
+    elem_end = d_libMesh->elements_end();
+    while ( elem_pos != elem_end ) {
+        ::Elem* element = *elem_pos;
+        int id = element->subdomain_id();
+        block_ids.insert( id );
+        ++elem_pos;
+    }
+    std::vector<int> send_list(block_ids.begin(),block_ids.end());
+    size_t recv_size = d_comm.sumReduce( send_list.size() );
+    std::vector<int> recv_list(recv_size,0);
+    d_comm.allGather( &send_list[0], send_list.size(), &recv_list[0] );
+    for (size_t i=0; i<recv_list.size(); i++)
+        block_ids.insert( recv_list[i] );
+    d_block_ids = std::vector<int>(block_ids.begin(),block_ids.end());
 }
 
 
@@ -633,8 +650,7 @@ MeshIterator libMesh::getBoundaryIDIterator ( const GeomType type, const int id,
 ********************************************************/
 std::vector<int> libMesh::getBlockIDs ( ) const
 {
-    AMP_ERROR("getBlockIDs is not implimented yet");
-    return std::vector<int>();
+    return d_block_ids;
 }
 MeshIterator libMesh::getBlockIDIterator ( const GeomType type, const int id, const int gcw ) const
 {

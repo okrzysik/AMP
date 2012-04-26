@@ -222,6 +222,9 @@ private:
     std::vector< boost::shared_ptr<std::vector<MeshElement> > >  d_localSurfaceElements;
     std::vector< boost::shared_ptr<std::vector<MeshElement> > >  d_ghostSurfaceElements;
 
+    // Data used to store block info
+    std::vector<int> d_block_ids;
+
 };
 
 } // Mesh namespace
