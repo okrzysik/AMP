@@ -41,11 +41,11 @@ LoadOperator {
 BVPOperator {
     name = "LinearBVPOperator"
     print_info_level = 1
-    VolumeOperator = "MechanicsLinearFEOperator1"
-    BoundaryOperator = "DirichletMatrixCorrection1"
+    VolumeOperator = "MechanicsLinearFEOperator"
+    BoundaryOperator = "DirichletMatrixCorrection"
 }
 
-MechanicsLinearFEOperator1 {
+MechanicsLinearFEOperator {
       name = "MechanicsLinearFEOperator"
         print_info_level = 1
         reset_reuses_matrix = TRUE
@@ -62,10 +62,10 @@ MechanicsLinearFEOperator1 {
             QRULE_ORDER = "DEFAULT"
         }
 
-	LocalModel = "IsotropicElasticModel1"
+	LocalModel = "MechanicsIsotropicElasticModel"
 }
 	
-DirichletMatrixCorrection1 {
+DirichletMatrixCorrection {
     name = "DirichletMatrixCorrection"
       print_info_level = 1
       skip_params = FALSE
@@ -84,7 +84,7 @@ DirichletMatrixCorrection1 {
       value_0_2 = 0.0
   }
 
-MechanicsIsotropicElasticModel1 {
+MechanicsIsotropicElasticModel {
         USE_MATERIALS_LIBRARY = FALSE
           Material = ""
           name="IsotropicElasticModel"
