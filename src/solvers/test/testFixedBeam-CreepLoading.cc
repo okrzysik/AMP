@@ -1,3 +1,4 @@
+
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
@@ -38,13 +39,10 @@
 #include "ReadTestMesh.h"
 #include "mesh_communication.h"
 
-
 #include <iostream>
 #include <string>
 
 #include "boost/shared_ptr.hpp"
-
-
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
@@ -67,10 +65,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   // Create the meshes from the input database
   AMP::Mesh::Mesh::shared_ptr  mesh = AMP::Mesh::Mesh::buildMesh(params);
 
-  // Create the DOFManagers
-  AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF = 
-    AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,3);
-
   AMP_INSIST(input_db->keyExists("NumberOfLoadingSteps"), "Key ''NumberOfLoadingSteps'' is missing!");
   int NumberOfLoadingSteps = input_db->getInteger("NumberOfLoadingSteps");
 
@@ -83,19 +77,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP_INSIST( input_db->keyExists("NonlinearMechanicsOperator"), "key missing!" );
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsBVPoperator = boost::dynamic_pointer_cast<
-  AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(mesh,
-										      "NonlinearMechanicsOperator",
-										      input_db,
-										      mechanicsMaterialModel));
-  //(boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->getVolumeOperator()))->init();
+    AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(mesh,
+          "NonlinearMechanicsOperator", input_db, mechanicsMaterialModel));
 
   //Create a Linear BVP operator for mechanics
   AMP_INSIST( input_db->keyExists("LinearMechanicsOperator"), "key missing!" );
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearMechanicsBVPoperator = boost::dynamic_pointer_cast<
-  AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(mesh,
-										   "LinearMechanicsOperator",
-										   input_db,
-										   mechanicsMaterialModel));
+    AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(mesh,
+          "LinearMechanicsOperator", input_db, mechanicsMaterialModel));
 
   //Create the variables
   boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsNonlinearVolumeOperator = 
@@ -108,18 +97,19 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::LinearAlgebra::Variable::shared_ptr tempVar =  multivariable->getVariable(AMP::Operator::Mechanics::TEMPERATURE); 
   AMP::LinearAlgebra::Variable::shared_ptr burnVar =  multivariable->getVariable(AMP::Operator::Mechanics::BURNUP); 
 
-  //boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechanicsLinearVolumeOperator = 
-  //  boost::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
-  //      linearMechanicsBVPoperator->getVolumeOperator());
-
   //For RHS (Point Forces)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletLoadVecOp =
     boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(mesh,
-															 "Load_Boundary",
-															 input_db,
-															 dummyModel));
+          "Load_Boundary", input_db, dummyModel));
   dirichletLoadVecOp->setVariable(dispVar);
+
+  // Create the DOFManagers
+  AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF = 
+    AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,3);
+
+  AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF = 
+    AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,1);
 
   //Create the vectors
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -127,9 +117,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, dispVar );
   AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, dispVar );
   AMP::LinearAlgebra::Vector::shared_ptr scaledRhsVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, dispVar );
-  AMP::LinearAlgebra::Vector::shared_ptr tempVecRef = AMP::LinearAlgebra::createVector( NodalVectorDOF, tempVar );
-  AMP::LinearAlgebra::Vector::shared_ptr tempVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, tempVar );
-  AMP::LinearAlgebra::Vector::shared_ptr burnVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, burnVar );
+  AMP::LinearAlgebra::Vector::shared_ptr tempVecRef = AMP::LinearAlgebra::createVector( NodalScalarDOF, tempVar );
+  AMP::LinearAlgebra::Vector::shared_ptr tempVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, tempVar );
+  AMP::LinearAlgebra::Vector::shared_ptr burnVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, burnVar );
 
   //Initial guess
   solVec->zero();
@@ -141,11 +131,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   nonlinearMechanicsBVPoperator->modifyRHSvector(rhsVec);
 
   // Create the silo writer and register the data
-  #ifdef USE_SILO
-    AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
-    siloWriter->registerVector( solVec, mesh, AMP::Mesh::Vertex, "Solution_Vector" );
-    siloWriter->registerVector( resVec, mesh, AMP::Mesh::Vertex, "Residual_Vector" );
-  #endif
+#ifdef USE_SILO
+  AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+  siloWriter->registerVector( solVec, mesh, AMP::Mesh::Vertex, "Solution_Vector" );
+  siloWriter->registerVector( resVec, mesh, AMP::Mesh::Vertex, "Residual_Vector" );
+#endif
 
   //Adding the Temperature and Burnup
   tempVecRef->setToScalar(301.0);
@@ -155,22 +145,22 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   mechanicsNonlinearVolumeOperator->setReferenceTemperature(tempVecRef);
   mechanicsNonlinearVolumeOperator->setVector(AMP::Operator::Mechanics::TEMPERATURE, tempVec);
   mechanicsNonlinearVolumeOperator->setVector(AMP::Operator::Mechanics::BURNUP, burnVec);
-  mechanicsNonlinearVolumeOperator->init();
 
   boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> mechanicsNonlinearMaterialModel = 
     boost::dynamic_pointer_cast<AMP::Operator::MechanicsMaterialModel>( 
         mechanicsNonlinearVolumeOperator->getMaterialModel());
 
-  //We need to reset the linear operator before the solve since TrilinosML does
-  //the factorization of the matrix during construction and so the matrix must
-  //be correct before constructing the TrilinosML object.
-  nonlinearMechanicsBVPoperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
-  linearMechanicsBVPoperator->reset(nonlinearMechanicsBVPoperator->getJacobianParameters(solVec));
-
-  double epsilon = 1.0e-13*(((linearMechanicsBVPoperator->getMatrix())->extractDiagonal())->L1Norm());
-
   boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
   boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
+
+  // initialize the nonlinear solver
+  boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new
+      AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
+  nonlinearSolverParams->d_comm = globalComm;
+  nonlinearSolverParams->d_pOperator = nonlinearMechanicsBVPoperator;
+  nonlinearSolverParams->d_pInitialGuess = solVec;
+  boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
+  nonlinearSolver->setZeroInitialGuess(false);
 
   // ---- first initialize the preconditioner
   boost::shared_ptr<AMP::Database> pcSolver_db = linearSolver_db->getDatabase("Preconditioner"); 
@@ -178,28 +168,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   pcSolverParams->d_pOperator = linearMechanicsBVPoperator;
   boost::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(new AMP::Solver::TrilinosMLSolver(pcSolverParams));
 
-  //HACK to prevent a double delete on Petsc Vec
-  boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver;
-
-  // initialize the linear solver
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new
-      AMP::Solver::PetscKrylovSolverParameters(linearSolver_db));
-  linearSolverParams->d_pOperator = linearMechanicsBVPoperator;
-  linearSolverParams->d_comm = globalComm;
-  linearSolverParams->d_pPreconditioner = pcSolver;
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(new AMP::Solver::PetscKrylovSolver(linearSolverParams));
-
-  // initialize the nonlinear solver
-  boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new
-      AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
-  // change the next line to get the correct communicator out
-  nonlinearSolverParams->d_comm = globalComm;
-  nonlinearSolverParams->d_pOperator = nonlinearMechanicsBVPoperator;
-  nonlinearSolverParams->d_pKrylovSolver = linearSolver;
-  nonlinearSolverParams->d_pInitialGuess = solVec;
-  nonlinearSolver.reset(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
-
-  nonlinearSolver->setZeroInitialGuess(false);
+  //initialize the linear solver
+  boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
+  linearSolver->setPreconditioner(pcSolver);
 
   double scaleValue = 1.0;
   scaledRhsVec->scale(scaleValue, rhsVec);
@@ -219,7 +190,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     AMP::pout << "########################################" << std::endl;
     AMP::pout << "The current loading step is " << (step+1) << std::endl;
 
-    //double finalTemperature = 301.0 + (((double)(step + 1)) * 200.0);
     double finalTemperature = 500.0;
     tempVec->setToScalar(finalTemperature);
 
@@ -259,7 +229,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperatorParameters> tmpParams(new
         AMP::Operator::MechanicsNonlinearFEOperatorParameters(tmp_db));
     (nonlinearMechanicsBVPoperator->getVolumeOperator())->reset(tmpParams);
-    
+
     mechanicsNonlinearMaterialModel->updateTime(currTime);
 
     nonlinearSolver->setZeroInitialGuess(false);
@@ -268,8 +238,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     sprintf(num1,"%d",step);
     std::string number1 = num1;
     std::string fname = exeName + "_Stress_Strain_" + number1 + ".txt";
-    
-    boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->getVolumeOperator())->printStressAndStrain(solVec, fname);
+
+    boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->
+        getVolumeOperator())->printStressAndStrain(solVec, fname);
 
     //double prev_stress, prev_strain, slope;
     if(ExtractData) {
@@ -277,13 +248,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     }
   }
 
-  AMP::pout<<"epsilon = "<<epsilon<<std::endl;
-
   mechanicsNonlinearVolumeOperator->printStressAndStrain(solVec, output_file);
 
-  #ifdef USE_SILO
-    siloWriter->writeFile( exeName, 1 );
-  #endif
+#ifdef USE_SILO
+  siloWriter->writeFile( exeName, 1 );
+#endif
 
   ut->passes(exeName);
   fclose(fout123);
@@ -291,29 +260,29 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
 int main(int argc, char *argv[])
 {
-    AMP::AMPManager::startup(argc, argv);
-    AMP::UnitTest ut;
+  AMP::AMPManager::startup(argc, argv);
+  AMP::UnitTest ut;
 
-    std::vector<std::string> exeNames;
-    exeNames.push_back("testFixedBeam-CreepLoading-1");
+  std::vector<std::string> exeNames;
+  exeNames.push_back("testFixedBeam-CreepLoading-1");
 
-    for(size_t i = 0; i < exeNames.size(); i++) {
-        try {
-            myTest(&ut, exeNames[i]);
-        } catch (std::exception &err) {
-            std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-            ut.failure("ERROR: While testing");
-        } catch( ... ) {
-            std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-            ut.failure("ERROR: While testing");
-        }
+  for(size_t i = 0; i < exeNames.size(); i++) {
+    try {
+      myTest(&ut, exeNames[i]);
+    } catch (std::exception &err) {
+      std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+      ut.failure("ERROR: While testing");
+    } catch( ... ) {
+      std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+      ut.failure("ERROR: While testing");
     }
+  }
 
-    ut.report();
+  ut.report();
 
-    int num_failed = ut.NumFailGlobal();
-    AMP::AMPManager::shutdown();
-    return num_failed;
+  int num_failed = ut.NumFailGlobal();
+  AMP::AMPManager::shutdown();
+  return num_failed;
 }   
 
 
