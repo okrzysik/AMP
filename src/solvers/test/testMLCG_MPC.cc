@@ -139,13 +139,18 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 									      AMP::Operator::OperatorBuilder::createOperator(slaveMeshAdapter, "LoadOperator", input_db, dummyModel));
       loadOperator1->setVariable(slaveVar);
 
+      AMP::LinearAlgebra::Variable::shared_ptr displacement( new AMP::LinearAlgebra::Variable("displacement") );
+
       AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-      AMP::LinearAlgebra::Vector::shared_ptr columnSolVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,columnVar);
+      AMP::LinearAlgebra::Vector::shared_ptr columnSolVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,displacement);
       AMP::LinearAlgebra::Vector::shared_ptr columnRhsVec = columnSolVec->cloneVector();
       AMP::LinearAlgebra::Vector::shared_ptr columnResVec = columnSolVec->cloneVector();
 
-      AMP::LinearAlgebra::Vector::shared_ptr masterSolVec = columnSolVec->subsetVectorForVariable(masterVar);
-      AMP::LinearAlgebra::Vector::shared_ptr slaveSolVec = columnSolVec->subsetVectorForVariable(slaveVar);
+      AMP::LinearAlgebra::VS_Mesh masterMeshSelector( displacement->getName(), masterMeshAdapter );
+      AMP::LinearAlgebra::VS_Mesh slaveMeshSelector(  displacement->getName(), slaveMeshAdapter  );
+
+      AMP::LinearAlgebra::Vector::shared_ptr masterSolVec = columnSolVec->select( masterMeshSelector, displacement->getName() );
+      AMP::LinearAlgebra::Vector::shared_ptr slaveSolVec  = columnSolVec->select( slaveMeshSelector, displacement->getName()  );
 
       columnSolVec->zero();
       columnRhsVec->zero();
@@ -170,10 +175,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
         columnResVec->subtract(columnRhsVec, MatOutVec);
 
-        AMP::LinearAlgebra::Vector::shared_ptr zMasterVec = zVec->subsetVectorForVariable(masterVar);
-        AMP::LinearAlgebra::Vector::shared_ptr zSlaveVec = zVec->subsetVectorForVariable(slaveVar);
-        AMP::LinearAlgebra::Vector::shared_ptr resMasterVec = columnResVec->subsetVectorForVariable(masterVar);
-        AMP::LinearAlgebra::Vector::shared_ptr resSlaveVec = columnResVec->subsetVectorForVariable(slaveVar);
+        AMP::LinearAlgebra::Vector::shared_ptr zMasterVec = masterOperator->subsetOutputVector( zVec );
+        AMP::LinearAlgebra::Vector::shared_ptr zSlaveVec = slaveOperator->subsetOutputVector( zVec );
+        AMP::LinearAlgebra::Vector::shared_ptr resMasterVec = masterOperator->subsetOutputVector( columnResVec );
+        AMP::LinearAlgebra::Vector::shared_ptr resSlaveVec = slaveOperator->subsetOutputVector( columnResVec );
         masterPreconditioner->solve(resMasterVec, zMasterVec);
         slavePreconditioner->solve(resSlaveVec, zSlaveVec);
 
@@ -205,10 +210,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
           columnResVec->axpy(-alpha, MatOutVec, resOldVec);
 
-          zMasterVec = zVec->subsetVectorForVariable(masterVar);
-          zSlaveVec = zVec->subsetVectorForVariable(slaveVar);
-          resMasterVec = columnResVec->subsetVectorForVariable(masterVar);
-          resSlaveVec = columnResVec->subsetVectorForVariable(slaveVar);
+          zMasterVec = masterOperator->subsetOutputVector( zVec );
+          zSlaveVec = slaveOperator->subsetOutputVector( zVec );
+          resMasterVec = masterOperator->subsetOutputVector( columnResVec );
+          resSlaveVec = slaveOperator->subsetOutputVector( columnResVec );
           masterPreconditioner->solve(resMasterVec, zMasterVec);
           slavePreconditioner->solve(resSlaveVec, zSlaveVec);
 
