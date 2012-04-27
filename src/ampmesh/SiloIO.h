@@ -71,7 +71,7 @@ public:
 #endif
 
 private:
-    
+
     // Structure used to hold data for the silo meshes
     struct siloBaseMeshData {
         AMP::Mesh::MeshID               id;         // Unique ID to identify the mesh
@@ -114,7 +114,9 @@ private:
     void syncVariableList( std::set<std::string> &data ) const;
 
     // Function to write a single mesh
+#ifdef USE_SILO
     void writeMesh( DBfile *file, const siloBaseMeshData &data );
+#endif
 
     // Function to determine which base mesh ids to register a vector with
     std::vector<AMP::Mesh::MeshID> getMeshIDs( AMP::Mesh::Mesh::shared_ptr mesh );
@@ -132,6 +134,7 @@ private:
 
     // List of all variables
     std::set<std::string>   d_varNames;
+
 };
 
 
