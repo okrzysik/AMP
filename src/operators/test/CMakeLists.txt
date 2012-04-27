@@ -88,6 +88,9 @@ COPY_TEST_DATA_FILE ( input_testConsistentTangentBVP-3-mesh1-normal )
 COPY_TEST_DATA_FILE ( input_testConsistentTangentBVP-4-mesh1-normal )
 COPY_TEST_DATA_FILE ( input_testConsistentTangentBVP-4-mesh1-reduced )
 
+ADD_AMP_TEST_1_2_4 ( testNeumannVectorCorrection )
+COPY_TEST_DATA_FILE ( input_testNeumannVectorCorrection )
+
 ADD_AMP_TEST_1_2_4 ( testLinearOperator-1 )
 COPY_TEST_DATA_FILE ( input_testLinearOperator-1 )
 COPY_TEST_DATA_FILE ( input_linearMechanics-1 )
