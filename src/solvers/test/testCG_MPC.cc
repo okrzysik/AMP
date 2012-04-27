@@ -20,6 +20,7 @@
 
 #include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
+#include "vectors/VectorSelector.h"
 
 #include "operators/ColumnOperator.h"
 #include "operators/LinearBVPOperator.h"
@@ -76,13 +77,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       fusedMesh->prepare_for_use(false);
 
       AMP::Mesh::Mesh::shared_ptr masterMeshAdapter( new AMP::Mesh::libMesh(meshMaster,"master") );
-      AMP::Mesh::Mesh::shared_ptr slaveMeshAdapter( new AMP::Mesh::libMesh(meshMaster,"slave") );
-      AMP::Mesh::Mesh::shared_ptr fusedMeshAdapter( new AMP::Mesh::libMesh(meshMaster,"fused") );
+      AMP::Mesh::Mesh::shared_ptr slaveMeshAdapter( new AMP::Mesh::libMesh(meshSlave,"slave") );
+      AMP::Mesh::Mesh::shared_ptr fusedMeshAdapter( new AMP::Mesh::libMesh(fusedMesh,"fused") );
 
       std::vector<AMP::Mesh::Mesh::shared_ptr> meshes;
       meshes.push_back( masterMeshAdapter );
       meshes.push_back( slaveMeshAdapter );
-      meshes.push_back( fusedMeshAdapter );
       AMP::Mesh::Mesh::shared_ptr manager( new AMP::Mesh::MultiMesh( globalComm, meshes ) );
 
       std::vector<double> offset(3,0.0);
@@ -125,6 +125,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
       AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF = 
         AMP::Discretization::simpleDOFManager::create(manager,AMP::Mesh::Vertex,1,3,true);
+      AMP::Discretization::DOFManager::shared_ptr FusedNodalVectorDOF = 
+        AMP::Discretization::simpleDOFManager::create(fusedMeshAdapter,AMP::Mesh::Vertex,1,3,true);
 
       AMP::LinearAlgebra::Variable::shared_ptr masterVar = masterOperator->getOutputVariable();
       AMP::LinearAlgebra::Variable::shared_ptr slaveVar  = slaveOperator->getOutputVariable();
@@ -142,17 +144,22 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 									      AMP::Operator::OperatorBuilder::createOperator(fusedMeshAdapter, "LoadOperator", input_db, dummyModel));
       loadOperator2->setVariable(fusedVar);
 
+      AMP::LinearAlgebra::Variable::shared_ptr displacement( new AMP::LinearAlgebra::Variable("displacement") );
+
       AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-      AMP::LinearAlgebra::Vector::shared_ptr columnSolVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,columnVar);
+      AMP::LinearAlgebra::Vector::shared_ptr columnSolVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,displacement);
       AMP::LinearAlgebra::Vector::shared_ptr columnRhsVec = columnSolVec->cloneVector();
       AMP::LinearAlgebra::Vector::shared_ptr columnResVec = columnSolVec->cloneVector();
 
-      AMP::LinearAlgebra::Vector::shared_ptr fusedSolVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,fusedVar);
+      AMP::LinearAlgebra::Vector::shared_ptr fusedSolVec = AMP::LinearAlgebra::createVector(FusedNodalVectorDOF,displacement);
       AMP::LinearAlgebra::Vector::shared_ptr fusedRhsVec = fusedSolVec->cloneVector();
       AMP::LinearAlgebra::Vector::shared_ptr fusedResVec = fusedSolVec->cloneVector();
 
-      AMP::LinearAlgebra::Vector::shared_ptr masterSolVec = columnSolVec->subsetVectorForVariable(masterVar);
-      AMP::LinearAlgebra::Vector::shared_ptr slaveSolVec = columnSolVec->subsetVectorForVariable(slaveVar);
+      AMP::LinearAlgebra::VS_Mesh masterMeshSelector( displacement->getName(), masterMeshAdapter );
+      AMP::LinearAlgebra::VS_Mesh slaveMeshSelector(  displacement->getName(), slaveMeshAdapter  );
+
+      AMP::LinearAlgebra::Vector::shared_ptr masterSolVec = columnSolVec->select( masterMeshSelector, displacement->getName() );
+      AMP::LinearAlgebra::Vector::shared_ptr slaveSolVec  = columnSolVec->select( slaveMeshSelector, displacement->getName()  );
 
       columnSolVec->zero();
       columnRhsVec->zero();
