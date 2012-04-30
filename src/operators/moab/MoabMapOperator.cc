@@ -31,15 +31,12 @@ MoabMapOperator::MoabMapOperator( const SP_MoabMapParams &params )
     d_moabInterface = d_moab->getMoabInterface();
 
     // Interpolate to nodes or Gauss points?
-    AMP::pout << "Interpolate type is " << params->d_db->getString("InterpolateToType") << std::endl;
     if( params->d_db->getString("InterpolateToType").compare("Vertex")==0 )
     {
-        AMP::pout << "Interpolation type is nodes" << std::endl;
         d_interpType = NODES;
     }
     else if( params->d_db->getString("InterpolateToType").compare("GaussPoint")==0 )
     {
-        AMP::pout << "Interpolation type is Gauss points" << std::endl;
         d_interpType = GAUSS_POINTS;
     }
     else
@@ -71,9 +68,7 @@ void MoabMapOperator::apply( const SP_Vector &f,
     AMP_INSIST(d_moab,"Must have Moab Operator");
 
     // Build Moab Coupler
-    AMP::pout << "Building Moab Coupler" << std::endl;
     buildMoabCoupler();
-    AMP::pout << "Have Moab Coupler" << std::endl;
 
     // Create vector to hold coordinates
     std::vector<double> allCoords;
@@ -84,23 +79,18 @@ void MoabMapOperator::apply( const SP_Vector &f,
          currentMesh != d_meshMgr->endMeshes();
          currentMesh++ )
     {
-        AMP::pout << "Getting coords for mesh" << std::endl;
-        AMP::pout << "Interpolate enum is " << d_interpType << std::endl;
-
         std::vector<double> theseCoords;
         switch( d_interpType )
         {
             case NODES:
             {
                 // Get nodes coords
-                AMP::pout << "Getting node coords" << std::endl;
                 getNodeCoords( *currentMesh, theseCoords );
                 break;
             }
             case GAUSS_POINTS:
             {
                 // Get GP coords for this mesh
-                AMP::pout << "Getting GP coords" << std::endl;
                 getGPCoords( *currentMesh, theseCoords );
                 break;
             }
@@ -110,10 +100,12 @@ void MoabMapOperator::apply( const SP_Vector &f,
                           theseCoords.begin(), 
                           theseCoords.end() );
 
-        AMP::plog << "Found " << theseCoords.size()/3 << " coordinates on this mesh" << std::endl;
+        AMP::plog << "Found " << theseCoords.size()/3 
+                  << " coordinates on this mesh" << std::endl;
     }
 
-    AMP::plog << "Found " << allCoords.size()/3 << " coordinates on all meshes" << std::endl;
+    AMP::plog << "Found " << allCoords.size()/3 
+              << " coordinates on all meshes" << std::endl;
 
     // Gives coordinates to Coupler
     unsigned int numCoords = allCoords.size() / 3;
@@ -126,18 +118,45 @@ void MoabMapOperator::apply( const SP_Vector &f,
                             d_mapVar, 
                             &outputVar[0] );
 
-    // Copy values into r
-    std::copy( outputVar.begin(), outputVar.end(), r->begin() );
-
+    // This block was here for debugging, not ready to abandon it yet
     /*
-    AMP::Vector::MultiVector::vector_iterator currentVector;
-    for( currentVector  = r->beginVector();
-         currentVector != r->endVector();
-         currentVector++ )
+    double minx= 100.0;
+    double maxx=-100.0;
+    double miny= 100.0;
+    double maxy=-100.0;
+    double minz= 100.0;
+    double maxz=-100.0;
+    double minp= 100.0;
+    double maxp=-100.0;
+    AMP::pout << "Interpolated values" << std::endl;
+    for( unsigned int i=0; i<numCoords; ++i )
     {
+        AMP::plog << allCoords[3*i] << " " << allCoords[3*i+1] << " " << allCoords[3*i+2] << " " << outputVar[i] << std::endl;
+        minx = std::min( minx, allCoords[3*i] );
+        maxx = std::max( maxx, allCoords[3*i] );
+        miny = std::min( miny, allCoords[3*i+1] );
+        maxy = std::max( maxy, allCoords[3*i+1] );
+        minz = std::min( minz, allCoords[3*i+2] );
+        maxz = std::max( maxz, allCoords[3*i+2] );
+        minp = std::min( minp, outputVar[i] );
+        maxp = std::max( maxp, outputVar[i] );
     }
+    AMP::plog << "x Range: " << minx << " " << maxx << std::endl;
+    AMP::plog << "y Range: " << miny << " " << maxy << std::endl;
+    AMP::plog << "z Range: " << minz << " " << maxz << std::endl;
+    AMP::plog << "p Range: " << minp << " " << maxp << std::endl;
     */
 
+    // Copy values into r
+    std::vector<int> myIndices(numCoords);
+    for( unsigned int i=0; i<numCoords; ++i )
+    {
+        myIndices[i] = i;
+    }
+    r->setValuesByLocalID(numCoords,&myIndices[0],&outputVar[0]);
+
+    // Make consistent
+    r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
 }
 
@@ -233,74 +252,6 @@ void MoabMapOperator::getNodeCoords( SP_Mesh &mesh, Vec_Dbl &xyz )
     }
 
 }
-
-//---------------------------------------------------------------------------//
-/*!
- *\brief Get GP coordinates for single mesh
- */
-//---------------------------------------------------------------------------//
-/*
-void MoabMapOperator::getGPCoords( SP_Mesh &mesh, std::vector<double> &xyz )
-{
-    AMP_INSIST(mesh,"Must have mesh adapter");
-
-    // Get size of Gauss-point vectors
-    // We're explicitly assuming every element has 8 Gauss points
-    unsigned int numGauss = 8*mesh->numLocalElements();
-
-    // Create Gauss point variable
-    SP_Variable gpVariable(new HexGPVar("coords", mesh));
-
-    // Build Volume Integral Operator
-    SP_VolIntOp volIntOp;
-    buildVolumeIntOp( volIntOp, mesh );
-    AMP_ASSERT(volIntOp);
-
-    // Get FE Base from volume integral operator
-    SP_FEBase fe_ptr = volIntOp->getSourceElement()->getFEBase();
-
-    // Now copy powers back to AMP vector
-    // If GP Vectors are guaranteed to be stored as
-    //  index = gp + (8 * element) then this could
-    //  be a straight copy, otherwise we have to loop
-    //  over elements and use the DOF Map
-    AMP::Mesh::MeshAdapter::ElementIterator elem = mesh->beginElement();
-    int elem_ctr = 0;
-    int gp_ctr   = 0;
-    for( elem  = mesh->beginElement(); 
-         elem != mesh->endElement();
-         elem++ )
-    {
-        // Get DOF map for this element
-        AMP::Mesh::DOFMap::shared_ptr dof_map = 
-            mesh->getDOFMap( gpVariable );
-
-        AMP_ASSERT( dof_map );
-
-        std::vector<unsigned int> ndx;
-        std::vector<unsigned int> empty;
-        dof_map->getDOFs( *elem, ndx, empty );
-
-        // Initialize FEBase for this object
-        fe_ptr->reinit( &(elem->getElem()) );
-
-        AMP_ASSERT( fe_ptr );
-
-        // Loop over all Gauss-points on the element.
-        for( unsigned int i = 0; i < 8; i++ ) 
-        {
-            int  offset = ndx[i];
-
-            // Assign power
-            r->setValueByGlobalID( offset, powers[gp_ctr] );
-            gp_ctr++;
-        }
-        elem_ctr++;
-    }
-
-}
-*/
-
 
 //---------------------------------------------------------------------------//
 /*!

@@ -139,6 +139,7 @@ void moabInterface(AMP::UnitTest *ut)
     //MBParallelComm *moabCommunicator = new MBParallelComm( moabInterface, 
     //                                                       globalComm.getCommunicator(),
     //                                                       &moabCommOut );
+    moab::ParallelComm *moabCommunicator;
 
     // Access the Range on the source mesh.
     AMP::pout << "Getting MGRange object" << std::endl;

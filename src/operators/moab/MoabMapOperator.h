@@ -14,11 +14,13 @@
 
 // AMP Includes
 #include "utils/Utilities.h"
+#include "utils/Castable.h"
 #include "ampmesh/MeshAdapter.h"
 #include "ampmesh/MeshManager.h"
 #include "ampmesh/MeshUtils.h"
 #include "ampmesh/DOFMap.h"
 #include "vectors/Vector.h"
+#include "vectors/DataChangeFirer.h"
 #include "operators/ElementPhysicsModel.h"
 #include "operators/VolumeIntegralOperator.h"
 #include "operators/OperatorBuilder.h"
