@@ -113,6 +113,7 @@ MechanicsLinearFEOperator2 {
   name = "MechanicsLinearFEOperator"
     print_info_level = 1
     reset_reuses_matrix = TRUE
+    isAttachedToNonlinearOperator = TRUE
     InputVariable = "disp"
     OutputVariable = "disp"
 
@@ -168,6 +169,9 @@ Displacement_Boundary {
   name = "DirichletVectorCorrection"
     print_info_level = 1
     skip_params = FALSE
+    isAttachedToVolumeOperator = FALSE
+    setResidual = FALSE
+    valuesType = 1
       
     number_of_ids = 2
 
@@ -221,7 +225,6 @@ NonlinearSolver{
         Preconditioner{
           print_info_level = 1
             PDE_equations = 3
-            //max_levels = 1
             max_iterations = 1
             max_error = 1.0e-15
         }
