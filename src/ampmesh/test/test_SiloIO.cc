@@ -138,7 +138,7 @@ int main ( int argc , char **argv )
         if(argc == 2) filename = argv[1];
         test_Silo( &ut, filename );
     #else
-        ut->expected_failure("AMP was not configured with silo");
+        ut.expected_failure("AMP was not configured with silo");
     #endif
 
     ut.report();
