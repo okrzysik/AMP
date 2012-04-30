@@ -144,33 +144,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   // ---- first initialize the preconditioner
   boost::shared_ptr<AMP::Database> pcSolver_db = linearSolver_db->getDatabase("Preconditioner"); 
-  bool useEpetra = pcSolver_db->getBool("USE_EPETRA");
   boost::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> pcSolverParams(new AMP::Solver::TrilinosMLSolverParameters(pcSolver_db));
-  if(useEpetra) {
-    pcSolverParams->d_pOperator = linBvpOperator;
-  } else {
-    boost::shared_ptr<AMP::Database> dummyDatabase = input_db->getDatabase("DummyDatabase");
-    boost::shared_ptr<AMP::Operator::OperatorParameters> dummyOpParams (new AMP::Operator::OperatorParameters(dummyDatabase));
-    boost::shared_ptr<AMP::Operator::TrilinosMatrixShellOperator> myMatShellOperator(new AMP::Operator::TrilinosMatrixShellOperator(dummyOpParams));
-    myMatShellOperator->setOperator(linBvpOperator);
-    //myMatShellOperator->setMeshManager(mesh);
-    AMP_ERROR("Code needs fixing");
-    //myMatShellOperator->setGetRow(&myGetRow);  // This is not compatible with the definition in TrilinosMatrixShellOperator, fix!
-    myMatrix = linBvpOperator->getMatrix();
-    pcSolverParams->d_pOperator = myMatShellOperator;
-  }
+  pcSolverParams->d_pOperator = linBvpOperator;
   boost::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(new AMP::Solver::TrilinosMLSolver(pcSolverParams));
-
-  //HACK to prevent a double delete on Petsc Vec
-  boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver;
-
-  // initialize the linear solver
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new
-      AMP::Solver::PetscKrylovSolverParameters(linearSolver_db));
-  linearSolverParams->d_pOperator = linBvpOperator;
-  linearSolverParams->d_comm = globalComm;
-  linearSolverParams->d_pPreconditioner = pcSolver;
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(new AMP::Solver::PetscKrylovSolver(linearSolverParams));
 
   // initialize the nonlinear solver
   boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new
@@ -178,11 +154,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   // change the next line to get the correct communicator out
   nonlinearSolverParams->d_comm = globalComm;
   nonlinearSolverParams->d_pOperator = nonlinBvpOperator;
-  nonlinearSolverParams->d_pKrylovSolver = linearSolver;
   nonlinearSolverParams->d_pInitialGuess = mechNlSolVec;
-  nonlinearSolver.reset(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
-
+  boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
   nonlinearSolver->setZeroInitialGuess(false);
+
+  boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
+  linearSolver->setPreconditioner(pcSolver);
 
   for (int step=0;step<NumberOfLoadingSteps; step++)
   {
