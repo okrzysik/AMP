@@ -51,18 +51,18 @@ namespace Operator {
       AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );
 
       AMP_INSIST( (myparams->d_db)->keyExists("number_of_ids"), "Key ''number_of_ids'' is missing!" );
-      d_numIds = (myparams->d_db)->getInteger("number_of_ids");
+      d_numBndIds = (myparams->d_db)->getInteger("number_of_ids");
 
       d_isConstantFlux = (myparams->d_db)->getBoolWithDefault("constant_flux", true);
 
-      d_boundaryIds.resize(d_numIds);
-      d_dofIds.resize(d_numIds);
-      d_neumannValues.resize(d_numIds);
-      d_IsCoupledBoundary.resize(d_numIds);
-      d_numDofIds.resize(d_numIds);
+      d_boundaryIds.resize(d_numBndIds);
+      d_dofIds.resize(d_numBndIds);
+      d_neumannValues.resize(d_numBndIds);
+      d_IsCoupledBoundary.resize(d_numBndIds);
+      d_numDofIds.resize(d_numBndIds);
 
       char key[100];
-      for(int j = 0; j < d_numIds; j++) {
+      for(int j = 0; j < d_numBndIds; j++) {
         sprintf(key, "id_%d", j);
         AMP_INSIST( (myparams->d_db)->keyExists(key), "Key is missing!" );
         d_boundaryIds[j] = (myparams->d_db)->getInteger(key);
@@ -118,10 +118,11 @@ namespace Operator {
         AMP::Discretization::DOFManager::shared_ptr dofManager = rInternal->getDOFManager();
         rInternal->zero();
 
-        unsigned int numIds = d_boundaryIds.size();
+        unsigned int numBndIds = d_boundaryIds.size();
         std::vector<size_t> dofs;
         std::vector<std::vector<size_t> > dofIndices;
-        for(unsigned int j = 0; j < numIds; j++)
+
+        for(unsigned int j = 0; j < numBndIds ; j++)
         {
           if(!d_IsCoupledBoundary[j])
           {
@@ -170,40 +171,41 @@ namespace Operator {
 
                 const std::vector<std::vector<Real> > &phi = *d_phi;
                 const std::vector<Real> &djxw = *d_JxW;
-                for(unsigned int m=0; m<dofIndices[0].size(); m++) {    // Loop over DOFs per node
-                    dofs.resize(dofIndices.size());
-                    for(unsigned int i = 0; i < dofIndices.size() ; i++)
-                        dofs[i] = dofIndices[i][m];
-                    std::vector<double> flux( dofIndices.size(), 0.0);
-                    for(unsigned int i = 0; i < dofIndices.size() ; i++)    // Loop over nodes
+
+                dofs.resize(dofIndices.size());
+                for(unsigned int i = 0; i < dofIndices.size() ; i++)
+                  dofs[i] = dofIndices[i][k];
+
+                std::vector<double> flux( dofIndices.size(), 0.0);
+
+                for(unsigned int i = 0; i < dofIndices.size() ; i++)    // Loop over nodes
+                {
+                  for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) 
+                  {
+                    std::vector<std::vector<double> > temp(1) ;
+
+                    // there must be a better way to write this!!
+                    if(d_isConstantFlux)
                     {
-                      for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) 
-                      {
-                        std::vector<std::vector<double> > temp(1) ;
+                      temp[0].push_back(d_neumannValues[j][k]);
+                    }
+                    else
+                    {
+                      temp[0].push_back(d_variableFlux->getValueByGlobalID(dofs[i]));
+                    }
 
-                        // there must be a better way to write this!!
-                        if(d_isConstantFlux)
-                        {
-                          temp[0].push_back(d_neumannValues[j][k]);
-                        }
-                        else
-                        {
-                          temp[0].push_back(d_variableFlux->getValueByGlobalID(dofs[i]));
-                        }
+                    if(d_robinPhysicsModel)
+                    {
+                      d_robinPhysicsModel->getConductance(d_gamma, d_gamma, temp); 
+                    }
 
-                        if(d_robinPhysicsModel)
-                        {
-                          d_robinPhysicsModel->getConductance(d_gamma, d_gamma, temp); 
-                        }
+                    flux[i] +=  (d_gamma[0])*djxw[qp]*phi[i][qp]*temp[0][0];
 
-                        flux[i] +=  (d_gamma[0])*djxw[qp]*phi[i][qp]*temp[0][0];
+                  }//end for qp
 
-                      }
+                }//end for i
 
-                    }//end for i
-                    
-                    rInternal->addValuesByGlobalID((int)dofs.size() , (size_t *)&(dofs[0]), &(flux[0]));
-                }
+                rInternal->addValuesByGlobalID((int)dofs.size() , (size_t *)&(dofs[0]), &(flux[0]));
 
                 destroyCurrentLibMeshElement();
               }//end for bnd
@@ -232,11 +234,11 @@ namespace Operator {
         tmp_db->putString("QRULE_TYPE","QGAUSS");
         tmp_db->putInteger("DIMENSION",2);
         tmp_db->putString("QRULE_ORDER","DEFAULT");
-        tmp_db->putInteger("number_of_ids",d_numIds);
+        tmp_db->putInteger("number_of_ids",d_numBndIds);
         tmp_db->putBool("constant_flux", d_isConstantFlux);
 
         char key[100];
-        for(int j = 0; j < d_numIds; j++) {
+        for(int j = 0; j < d_numBndIds; j++) {
           sprintf(key, "id_%d", j);
           tmp_db->putInteger(key,d_boundaryIds[j]);
           sprintf(key, "number_of_dofs_%d", j);
@@ -284,30 +286,30 @@ namespace Operator {
     }
 
 
-     void NeumannVectorCorrection :: setFrozenVector ( AMP::LinearAlgebra::Vector::shared_ptr f ) {
-         if ( d_Frozen )
-         {
-         d_Frozen->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( f );
-         }
-         else
-         {
-         d_Frozen = AMP::LinearAlgebra::MultiVector::view ( f );
-         }
+    void NeumannVectorCorrection :: setFrozenVector ( AMP::LinearAlgebra::Vector::shared_ptr f ) {
+      if ( d_Frozen )
+      {
+        d_Frozen->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( f );
+      }
+      else
+      {
+        d_Frozen = AMP::LinearAlgebra::MultiVector::view ( f );
+      }
 
-         AMP::LinearAlgebra::VS_Mesh meshSelector("meshSelector", d_Mesh);
-         d_Frozen = d_Frozen->select(meshSelector, d_Frozen->getVariable()->getName());
+      AMP::LinearAlgebra::VS_Mesh meshSelector("meshSelector", d_Mesh);
+      d_Frozen = d_Frozen->select(meshSelector, d_Frozen->getVariable()->getName());
 
     }
 
 
     void NeumannVectorCorrection :: setVariableFlux(const AMP::LinearAlgebra::Vector::shared_ptr &flux) {
-        if(d_Mesh.get() != NULL) {
-            AMP::LinearAlgebra::VS_Mesh meshSelector( d_variable->getName(), d_Mesh);
-            AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = flux->select(meshSelector, d_variable->getName());
-            d_variableFlux = meshSubsetVec->subsetVectorForVariable( d_variable );
-        } else {
-            d_variableFlux = flux->subsetVectorForVariable ( d_variable );
-        }
+      if(d_Mesh.get() != NULL) {
+        AMP::LinearAlgebra::VS_Mesh meshSelector( d_variable->getName(), d_Mesh);
+        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = flux->select(meshSelector, d_variable->getName());
+        d_variableFlux = meshSubsetVec->subsetVectorForVariable( d_variable );
+      } else {
+        d_variableFlux = flux->subsetVectorForVariable ( d_variable );
+      }
     }
 
 

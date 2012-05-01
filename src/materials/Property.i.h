@@ -189,7 +189,9 @@ template<class Number>
 void Property<Number>::evalv(std::vector<Number>& r,
 const std::map< std::string, boost::shared_ptr<std::vector<Number> > >& args)
 {
-    AMP_ASSERT(in_range(args));
+    if( !in_range(args) ) {
+      AMP_ERROR("out of range.");
+    }
     evalvActual(r, args);
 }
 

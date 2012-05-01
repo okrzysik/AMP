@@ -142,13 +142,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   
   // ---------------------------------------------------------------------------------------
   // create vectors for initial conditions (IC) and time derivative at IC
-  boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermalVolumeOperator = boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearThermalOperator->getVolumeOperator());
 
-  // note that the input variable for the time integrator and time operator will be a multivariable
-  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputVar(new AMP::LinearAlgebra::MultiVariable("temperature"));
-  ut->failure("converted incorrectly"); // only works because that was temperature.
-  inputVar->add( thermalVolumeOperator->getInputVariable() );
-  
   AMP::LinearAlgebra::Variable::shared_ptr outputVar = columnNonlinearRhsOperator->getOutputVariable();
   
   AMP::LinearAlgebra::Vector::shared_ptr initialCondition      = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
@@ -191,17 +185,12 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // set initial conditions, initialize created vectors
 
-  int zeroGhostWidth = 1;
-  AMP::Mesh::MeshIterator  node = meshAdapter->getSurfaceIterator(AMP::Mesh::Vertex, zeroGhostWidth);
+  int zeroGhostWidth = 0;
+  AMP::Mesh::MeshIterator  node = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
   AMP::Mesh::MeshIterator  end_node = node.end();
   
-  ///AMP::Mesh::DOFMap::shared_ptr dof_map = meshAdapter->getDOFMap(thermalVolumeOperator->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
-
-  //boost::shared_ptr<AMP::LinearAlgebra::Vector> thermalIC = initialCondition->subsetVectorForVariable(thermalVolumeOperator->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
-  ut->failure("converted incorrectly");
-  std::string inputName = ( thermalVolumeOperator->getInputVariable() )->getName();
-  AMP::LinearAlgebra::VS_Mesh vectorSelector( inputName, meshAdapter );
-  AMP::LinearAlgebra::Vector::shared_ptr thermalIC = initialCondition->select( vectorSelector, inputName );
+  AMP::LinearAlgebra::VS_Mesh vectorSelector( outputVar->getName() , meshAdapter );
+  AMP::LinearAlgebra::Vector::shared_ptr thermalIC = initialCondition->select( vectorSelector, outputVar->getName() );
   int counter=0;     
   for( ; node != end_node ; ++node)
     {
@@ -227,11 +216,10 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
       }//end for i
     }//end for node
   
-  //boost::shared_ptr<AMP::LinearAlgebra::Vector> thermalRhs = f->subsetVectorForVariable(thermalVolumeOperator->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
-  ut->failure("converted incorrectly");
-  AMP::LinearAlgebra::Vector::shared_ptr thermalRhs = f->select( vectorSelector, inputName );
   // create a copy of the rhs which can be modified at each time step (maybe)
-  thermalRhs->copyVector(powerInWattsVec);
+  //AMP::LinearAlgebra::Vector::shared_ptr thermalRhs = f->select( vectorSelector, outputVar->getName() );
+  //thermalRhs->copyVector(powerInWattsVec);
+  
   // modify the rhs to take into account boundary conditions
   nonlinearThermalOperator->modifyRHSvector(f);
   nonlinearThermalOperator->modifyInitialSolutionVector(initialCondition);
@@ -329,7 +317,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     }
 
     if( input_file == "input_testIDA-NonlinearColumnOperator-1" ) {
-      double expectedMax = 892.1023;      // if you change the code in way that intentionally changes the solution, you need to update this number.
+      double expectedMax = 891.016;      // if you change the code in way that intentionally changes the solution, you need to update this number.
       double expectedMin = 750.;          // if you change the code in way that intentionally changes the solution, you need to update this number.
       double expectedTim = 1000.;         // if you change the code in way that intentionally changes the solution, you need to update this number.
       if( !AMP::Utilities::approx_equal( expectedMax, max, 1e-6) ) {

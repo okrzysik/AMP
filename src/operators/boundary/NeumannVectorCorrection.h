@@ -113,7 +113,7 @@ namespace Operator {
 
       std::vector<bool> d_IsCoupledBoundary;
 
-      int d_numIds;
+      int d_numBndIds;
 
       std::vector<short int> d_numDofIds;
 

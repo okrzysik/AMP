@@ -107,10 +107,6 @@ COPY_MESH_FILE ( tiedContactV1_fusedpelletclad.e )
 
 COPY_MESH_FILE ( tiedContact_pellet.e )
 
-ADD_AMP_WEEKLY_TEST ( testTiedContactV2 1 )
-COPY_TEST_DATA_FILE ( input_testTiedContactV2 )
-COPY_MESH_FILE ( tiedContactV2_clad.e )
-
 ADD_AMP_TEST ( testTiedContactV3 )
 COPY_TEST_DATA_FILE ( input_testTiedContactV3 )
 COPY_MESH_FILE ( tiedContactV3_clad.e )

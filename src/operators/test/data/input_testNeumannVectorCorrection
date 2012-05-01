@@ -1,0 +1,35 @@
+// Database for the mesh
+Mesh{
+    MeshName = "cube"
+    MeshType = "libMesh"
+    FileName = "cube4096.e"
+    dim = 3
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
+    NumberOfElements = 10
+}
+
+NeumannVectorCorrection1 {
+   name="NeumannVectorCorrection"
+   print_info_level = 3
+   skip_params = FALSE
+   number_of_ids = 1
+   id_0         =   2 
+   number_of_dofs_0 =   1
+   dof_0_0          =   0
+   value_0_0        = 100.
+}
+
+NeumannVectorCorrection2 {
+   name="NeumannVectorCorrection"
+   print_info_level = 3
+   skip_params = FALSE
+   number_of_ids = 1
+   id_0         =   2 
+   number_of_dofs_0 =   2
+   dof_0_0          =   0
+   value_0_0        = 100.
+   dof_0_1          =   1
+   value_0_1        = 100.
+}
