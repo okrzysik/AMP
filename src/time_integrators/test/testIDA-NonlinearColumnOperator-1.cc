@@ -76,7 +76,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   int DOFsPerNode = 1;
   int DOFsPerElement = 8;
   int nodalGhostWidth = 1;
-  int gaussPointGhostWidth = 1;
+  int gaussPointGhostWidth = 0;
   bool split = true;
   AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth,      DOFsPerNode,    split);
   AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split);
@@ -146,15 +146,10 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
 
   // note that the input variable for the time integrator and time operator will be a multivariable
   boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputVar(new AMP::LinearAlgebra::MultiVariable("temperature"));
-  ut->failure("converted incorrectly"); // only works because that was temperature.
   inputVar->add( thermalVolumeOperator->getInputVariable() );
   
   AMP::LinearAlgebra::Variable::shared_ptr outputVar = columnNonlinearRhsOperator->getOutputVariable();
   
-  AMP::LinearAlgebra::Vector::shared_ptr initialCondition      = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
-  AMP::LinearAlgebra::Vector::shared_ptr initialConditionPrime = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
-  AMP::LinearAlgebra::Vector::shared_ptr   f                   = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
-
   // ---------------------------------------------------------------------------------------
   //  create neutronics source
   AMP_INSIST(input_db->keyExists("NeutronicsOperator"), "Key ''NeutronicsOperator'' is missing!");
@@ -188,20 +183,27 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   
   // convert the vector of specific power to power for a given basis.
   sourceOperator->apply(nullVec, SpecificPowerVec, powerInWattsVec, 1., 0.);
+  
   //----------------------------------------------------------------------------------------------------------------------------------------------//
+  AMP::LinearAlgebra::Vector::shared_ptr initialCondition      = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
+  initialCondition->setToScalar(750);
+  AMP::LinearAlgebra::Vector::shared_ptr initialConditionPrime = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
+  //AMP::LinearAlgebra::Vector::shared_ptr f                     = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
+  AMP::LinearAlgebra::Vector::shared_ptr f                     = AMP::LinearAlgebra::createVector( nodalDofMap, powerInWattsVar );
+
+  // ---------------------------------------------------------------------------------------
   // set initial conditions, initialize created vectors
 
-  int zeroGhostWidth = 1;
-  AMP::Mesh::MeshIterator  node = meshAdapter->getSurfaceIterator(AMP::Mesh::Vertex, zeroGhostWidth);
+  int zeroGhostWidth = 0;
+  //AMP::Mesh::MeshIterator  node = meshAdapter->getSurfaceIterator(AMP::Mesh::Vertex, zeroGhostWidth);
+  AMP::Mesh::MeshIterator  node = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
   AMP::Mesh::MeshIterator  end_node = node.end();
   
-  ///AMP::Mesh::DOFMap::shared_ptr dof_map = meshAdapter->getDOFMap(thermalVolumeOperator->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
-
-  //boost::shared_ptr<AMP::LinearAlgebra::Vector> thermalIC = initialCondition->subsetVectorForVariable(thermalVolumeOperator->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
-  ut->failure("converted incorrectly");
-  std::string inputName = ( thermalVolumeOperator->getInputVariable() )->getName();
+  std::string inputName = ( thermalVolumeOperator->getOutputVariable() )->getName();
   AMP::LinearAlgebra::VS_Mesh vectorSelector( inputName, meshAdapter );
   AMP::LinearAlgebra::Vector::shared_ptr thermalIC = initialCondition->select( vectorSelector, inputName );
+  AMP::LinearAlgebra::Vector::shared_ptr thermalICPrime = initialConditionPrime->select( vectorSelector, inputName );
+  
   int counter=0;     
   for( ; node != end_node ; ++node)
     {
@@ -215,23 +217,20 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
       double pz = ( node->coord() )[2];
       
       double val = __INIT_FN__(px, py, pz, 0);
-      //cout << "val = " << val << endl;
+      cout << "val = " << val << endl;
       
-      //cout << "counter = " << counter << "gid.size() = " << gid.size() << endl;
+      cout << "counter = " << counter << "gid.size() = " << gid.size() << endl;
       for(unsigned int i = 0; i < gid.size(); i++)
       {
         thermalIC->setValueByGlobalID(gid[i], val);
         // ** please do not set the time derivative to be non-zero!!
         // ** as this causes trouble with the boundary - BP, 07/16/2010
-        initialConditionPrime->setValueByGlobalID(gid[i], 0.0);
+        thermalICPrime->setValueByGlobalID(gid[i], 0.0);
       }//end for i
     }//end for node
   
-  //boost::shared_ptr<AMP::LinearAlgebra::Vector> thermalRhs = f->subsetVectorForVariable(thermalVolumeOperator->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
-  ut->failure("converted incorrectly");
-  AMP::LinearAlgebra::Vector::shared_ptr thermalRhs = f->select( vectorSelector, inputName );
   // create a copy of the rhs which can be modified at each time step (maybe)
-  thermalRhs->copyVector(powerInWattsVec);
+  f->copyVector( powerInWattsVec );
   // modify the rhs to take into account boundary conditions
   nonlinearThermalOperator->modifyRHSvector(f);
   nonlinearThermalOperator->modifyInitialSolutionVector(initialCondition);
@@ -281,7 +280,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   time_Params->d_operator = columnNonlinearRhsOperator;
   time_Params->d_pPreconditioner = columnPreconditioner;
   
-  time_Params->d_ic_vector = initialCondition;    
+  time_Params->d_ic_vector = initialCondition;
   time_Params->d_ic_vector_prime = initialConditionPrime;
   
   time_Params->d_pSourceTerm = f;
