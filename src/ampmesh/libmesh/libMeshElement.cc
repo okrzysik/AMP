@@ -262,6 +262,17 @@ std::vector<double> libMeshElement::coord() const
         x[i] = (*node)(i);
     return x;
 }
+std::vector<double> libMeshElement::centroid() const
+{
+    if ( d_elementType==Vertex )
+        return coord();
+    ::Elem* elem = (::Elem*) ptr_element;
+    ::Point center = elem->centroid();
+    std::vector<double> x(d_dim,0.0);
+    for (int i=0; i<d_dim; i++)
+        x[i] = center(i);
+    return x;
+}
 bool libMeshElement::isOnSurface() const
 {
     MeshElement search = MeshElement(*this);

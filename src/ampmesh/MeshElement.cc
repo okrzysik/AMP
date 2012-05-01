@@ -82,6 +82,27 @@ MeshElement* MeshElement::clone() const
 
 
 /********************************************************
+* Default function to return the centroid of an element *
+********************************************************/
+std::vector<double> MeshElement::centroid() const
+{
+    if ( d_elementType==Vertex )
+        return coord();
+    std::vector<MeshElement> nodes = getElements(Vertex);
+    AMP_ASSERT(nodes.size()>0);
+    std::vector<double> center = nodes[0].coord();
+    for (size_t i=1; i<nodes.size(); i++) {
+        std::vector<double> coord = nodes[i].coord();
+        for (size_t j=0; j<center.size(); j++)
+            center[j] += coord[j];
+    }
+    for (size_t j=0; j<center.size(); j++)
+        center[j] /= nodes.size();
+    return center;
+}
+
+
+/********************************************************
 * Functions that aren't implimented for the base class  *
 ********************************************************/
 std::vector<MeshElement> MeshElement::getElements(const GeomType type) const

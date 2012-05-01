@@ -50,6 +50,14 @@ public:
     //! Return the coordinates of all verticies composing the element
     virtual std::vector<double> coord() const;
 
+    /**
+     * \brief     Return the centroid of the element
+     * \details   This function returns the centroid of the element.  The
+     *   centroid is defined as the average of the coordinates of the verticies.
+     *   The centroid of a vertex is the vertex and will return the same result as coord().
+     */
+    virtual std::vector<double> centroid() const;
+
     //! Check if the element is on the surface
     virtual bool isOnSurface() const;
 

@@ -111,14 +111,19 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ):
     GeomDim = (GeomType) d_comm.maxReduce((int)GeomDim);
     d_max_gcw = d_comm.maxReduce(d_max_gcw);
     // Compute the bounding box of the multimesh
-    d_box = d_meshes[0]->getBoundingBox();
+    d_box_local = d_meshes[0]->getBoundingBox();
     for (size_t i=1; i<d_meshes.size(); i++) {
         std::vector<double> meshBox = d_meshes[i]->getBoundingBox();
         for (int j=0; j<PhysicalDim; j++) {
-            if ( meshBox[2*j+0] < d_box[2*j+0] ) { d_box[2*j+0] = meshBox[2*j+0]; }
-            if ( meshBox[2*j+1] > d_box[2*j+1] ) { d_box[2*j+1] = meshBox[2*j+1]; }
+            if ( meshBox[2*j+0] < d_box_local[2*j+0] ) { d_box_local[2*j+0] = meshBox[2*j+0]; }
+            if ( meshBox[2*j+1] > d_box_local[2*j+1] ) { d_box_local[2*j+1] = meshBox[2*j+1]; }
         }
     }
+    d_box = std::vector<double>(PhysicalDim*2);
+    for (int i=0; i<PhysicalDim; i++) {
+        d_box[2*i+0] = d_comm.minReduce( d_box_local[2*i+0] );
+        d_box[2*i+1] = d_comm.maxReduce( d_box_local[2*i+1] );
+    } 
     // Displace the meshes
     std::vector<double> displacement(PhysicalDim,0.0);
     if ( d_db->keyExists("x_offset") )
@@ -161,14 +166,19 @@ MultiMesh::MultiMesh ( const AMP_MPI &comm, const std::vector<Mesh::shared_ptr> 
     GeomDim = (GeomType) d_comm.maxReduce((int)GeomDim);
     d_max_gcw = d_comm.maxReduce(d_max_gcw);
     // Compute the bounding box of the multimesh
-    d_box = d_meshes[0]->getBoundingBox();
+    d_box_local = d_meshes[0]->getBoundingBox();
     for (size_t i=1; i<d_meshes.size(); i++) {
         std::vector<double> meshBox = d_meshes[i]->getBoundingBox();
         for (int j=0; j<PhysicalDim; j++) {
-            if ( meshBox[2*j+0] < d_box[2*j+0] ) { d_box[2*j+0] = meshBox[2*j+0]; }
-            if ( meshBox[2*j+1] > d_box[2*j+1] ) { d_box[2*j+1] = meshBox[2*j+1]; }
+            if ( meshBox[2*j+0] < d_box_local[2*j+0] ) { d_box_local[2*j+0] = meshBox[2*j+0]; }
+            if ( meshBox[2*j+1] > d_box_local[2*j+1] ) { d_box_local[2*j+1] = meshBox[2*j+1]; }
         }
     }
+    d_box = std::vector<double>(PhysicalDim*2);
+    for (int i=0; i<PhysicalDim; i++) {
+        d_box[2*i+0] = d_comm.minReduce( d_box_local[2*i+0] );
+        d_box[2*i+1] = d_comm.maxReduce( d_box_local[2*i+1] );
+    } 
 }
 
 
@@ -568,13 +578,30 @@ void MultiMesh::displaceMesh( std::vector<double> x_in )
     for (int i=0; i<PhysicalDim; i++) {
         d_box[2*i+0] += x[i];
         d_box[2*i+1] += x[i];
+        d_box_local[2*i+0] += x[i];
+        d_box_local[2*i+1] += x[i];
     }
 }
 #ifdef USE_AMP_VECTORS
 void MultiMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
 {
+    // Displace the individual meshes
     for (size_t i=0; i<d_meshes.size(); i++)
         d_meshes[i]->displaceMesh(x);
+    // Compute the bounding box of the multimesh
+    d_box_local = d_meshes[0]->getBoundingBox();
+    for (size_t i=1; i<d_meshes.size(); i++) {
+        std::vector<double> meshBox = d_meshes[i]->getBoundingBox();
+        for (int j=0; j<PhysicalDim; j++) {
+            if ( meshBox[2*j+0] < d_box_local[2*j+0] ) { d_box_local[2*j+0] = meshBox[2*j+0]; }
+            if ( meshBox[2*j+1] > d_box_local[2*j+1] ) { d_box_local[2*j+1] = meshBox[2*j+1]; }
+        }
+    }
+    d_box = std::vector<double>(PhysicalDim*2);
+    for (int i=0; i<PhysicalDim; i++) {
+        d_box[2*i+0] = d_comm.minReduce( d_box_local[2*i+0] );
+        d_box[2*i+1] = d_comm.maxReduce( d_box_local[2*i+1] );
+    } 
 }
 #endif
 

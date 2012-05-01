@@ -173,6 +173,7 @@ void libMesh::initialize()
                 ++pos;
             }
             n_ghost[i] = N - n_local[i];
+            AMP_INSIST(n_local[i]>0,"We currently require at least 1 node on each processor");
         } else if ( i == (int) GeomDim ) {
             // We are counting the elements
             n_local[i] = d_libMesh->n_local_elem();
@@ -185,6 +186,7 @@ void libMesh::initialize()
                 ++pos;
             }
             n_ghost[i] = N - n_local[i];
+            AMP_INSIST(n_local[i]>0,"We currently require at least 1 element on each processor");
         } else {
             // We are counting an intermediate element (not finished)
             n_local[i] = static_cast<size_t>(-1);
@@ -193,22 +195,27 @@ void libMesh::initialize()
         }
     }
     // Compute the bounding box of the mesh
-    d_box = std::vector<double>(PhysicalDim*2);
+    d_box_local = std::vector<double>(PhysicalDim*2);
     for (int i=0; i<PhysicalDim; i++) {
-        d_box[2*i+0] = 1e200;
-        d_box[2*i+1] = -1e200;
+        d_box_local[2*i+0] = 1e200;
+        d_box_local[2*i+1] = -1e200;
     }
-    ::Mesh::node_iterator node_pos = d_libMesh->nodes_begin();
-    ::Mesh::node_iterator node_end = d_libMesh->nodes_end();
+    ::Mesh::node_iterator node_pos = d_libMesh->local_nodes_begin();
+    ::Mesh::node_iterator node_end = d_libMesh->local_nodes_end();
     while ( node_pos != node_end ) {
         ::Node* node = *node_pos;
         for (int i=0; i<PhysicalDim; i++) {
             double x = (*node)(i);
-            if ( x < d_box[2*i+0] ) { d_box[2*i+0] = x; }
-            if ( x > d_box[2*i+1] ) { d_box[2*i+1] = x; }
+            if ( x < d_box_local[2*i+0] ) { d_box_local[2*i+0] = x; }
+            if ( x > d_box_local[2*i+1] ) { d_box_local[2*i+1] = x; }
         }
         ++node_pos;
     }
+    d_box = std::vector<double>(PhysicalDim*2);
+    for (int i=0; i<PhysicalDim; i++) {
+        d_box[2*i+0] = d_comm.minReduce( d_box_local[2*i+0] );
+        d_box[2*i+1] = d_comm.maxReduce( d_box_local[2*i+1] );
+    } 
     // Construct the element neighbor information
     d_libMesh->find_neighbors();
     // Construct the node neighbor information
@@ -701,6 +708,8 @@ void libMesh::displaceMesh( std::vector<double> x_in )
     for (int i=0; i<PhysicalDim; i++) {
         d_box[2*i+0] += x[i];
         d_box[2*i+1] += x[i];
+        d_box_local[2*i+0] += x[i];
+        d_box_local[2*i+1] += x[i];
     }
 }
 #ifdef USE_AMP_VECTORS
@@ -747,6 +756,28 @@ void libMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
                 (*node)(i) += data[i];
             ++node_cur;
         }
+        // Compute the bounding box of the mesh
+        d_box_local = std::vector<double>(PhysicalDim*2);
+        for (int i=0; i<PhysicalDim; i++) {
+            d_box_local[2*i+0] = 1e200;
+            d_box_local[2*i+1] = -1e200;
+        }
+        node_cur = d_libMesh->local_nodes_begin();
+        node_end = d_libMesh->local_nodes_end();
+        while ( node_cur != node_end ) {
+            ::Node* node = *node_cur;
+            for (int i=0; i<PhysicalDim; i++) {
+                double x = (*node)(i);
+                if ( x < d_box_local[2*i+0] ) { d_box_local[2*i+0] = x; }
+                if ( x > d_box_local[2*i+1] ) { d_box_local[2*i+1] = x; }
+            }
+            ++node_cur;
+        }
+        d_box = std::vector<double>(PhysicalDim*2);
+        for (int i=0; i<PhysicalDim; i++) {
+            d_box[2*i+0] = d_comm.minReduce( d_box_local[2*i+0] );
+            d_box[2*i+1] = d_comm.maxReduce( d_box_local[2*i+1] );
+        } 
     #else
         AMP_ERROR("displaceMesh requires DISCRETIZATION");
     #endif
