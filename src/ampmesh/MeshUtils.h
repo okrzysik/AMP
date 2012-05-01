@@ -133,7 +133,12 @@ min_max_struct<double>  computeExtremeRadii ( typename ADAPTER::shared_ptr adapt
     min_max_struct<double>  local , retval;
 
     // find the center
-    min_max_struct<simple_point> coord = MeshAccumulate<min_max_point<typename ADAPTER::NodeIterator> > ( adapter->beginNode() , adapter->endNode() );
+    min_max_struct<simple_point> localC= MeshAccumulate<min_max_point<typename ADAPTER::NodeIterator> > ( adapter->beginNode() , adapter->endNode() );
+    min_max_struct<simple_point> coord;
+    adapter->getComm().maxReduce((double*)&localC.max.x ,(double*)&coord.max.x ,1);
+    adapter->getComm().maxReduce((double*)&localC.max.y ,(double*)&coord.max.y ,1);
+    adapter->getComm().minReduce((double*)&localC.min.x ,(double*)&coord.min.x ,1);
+    adapter->getComm().minReduce((double*)&localC.min.y ,(double*)&coord.min.y ,1);
     double centerX = 0.5*( coord.min.x+coord.max.x );
     double centerY = 0.5*( coord.min.y+coord.max.y );
 
