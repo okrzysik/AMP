@@ -162,7 +162,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       columnOperator2->append(slaveOperator2);
       columnOperator2->append(contactOperator);
 
-      AMP::LinearAlgebra::Variable::shared_ptr columnVar = contactOperator->getOutputVariable();
+      //AMP::LinearAlgebra::Variable::shared_ptr columnVar = contactOperator->getOutputVariable();
 
       boost::shared_ptr<AMP::Database> matrixShellDatabase = input_db->getDatabase("MatrixShellOperator");
       boost::shared_ptr<AMP::Operator::OperatorParameters> matrixShellParams(new

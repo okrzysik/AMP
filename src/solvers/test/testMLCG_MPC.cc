@@ -131,7 +131,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
       AMP::LinearAlgebra::Variable::shared_ptr masterVar = masterOperator->getOutputVariable();
       AMP::LinearAlgebra::Variable::shared_ptr slaveVar = slaveOperator->getOutputVariable();
-      AMP::LinearAlgebra::Variable::shared_ptr columnVar = columnOperator->getOutputVariable();
+      //AMP::LinearAlgebra::Variable::shared_ptr columnVar = columnOperator->getOutputVariable();
 
       boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
       boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> loadOperator1 =
