@@ -353,7 +353,7 @@ MACRO ( ADD_AMP_EXE_DEP EXEFILE )
     # Add the amp libraries
     TARGET_LINK_LIBRARIES ( ${EXEFILE} ${AMP_LIBS} )
     # Add external libraries
-    TARGET_LINK_LIBRARIES ( ${EXEFILE} ${LIBMESH_LIBS} ${NEK_LIBS} ${MOAB_LIBS} ${TRILINOS_LIBS} ${PETSC_LIBS} ${X11_LIBS} ${SILO_LIBS} ${HDF5_LIBS} ${HYPRE_LIBS} )
+    TARGET_LINK_LIBRARIES ( ${EXEFILE} ${LIBMESH_LIBS} ${NEK_LIBS} ${MOAB_LIBS} ${DENDRO_LIBS} ${TRILINOS_LIBS} ${PETSC_LIBS} ${X11_LIBS} ${SILO_LIBS} ${HDF5_LIBS} ${HYPRE_LIBS} )
     IF ( ${USE_SUNDIALS} )
        TARGET_LINK_LIBRARIES ( ${EXEFILE} ${SUNDIALS_LIBS} )
     ENDIF  ()
@@ -601,6 +601,14 @@ MACRO ( SAVE_CMAKE_FLAGS )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${MOAB_LIBS} )\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_MOAB 1 ) \n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_MOAB ) \n" )
+    ENDIF()
+    # Add DENDRO
+    IF ( USE_DENDRO )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add DENDRO\n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${DENDRO_INCLUDE} )\n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${DENDRO_LIBS} )\n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_DENDRO 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_DENDRO ) \n" )
     ENDIF()
     # Add Trilinos
     IF ( USE_TRILINOS )
