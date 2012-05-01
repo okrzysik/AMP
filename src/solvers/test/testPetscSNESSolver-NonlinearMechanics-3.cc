@@ -146,28 +146,18 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   pcSolverParams->d_pOperator = linBvpOperator;
   boost::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(new AMP::Solver::TrilinosMLSolver(pcSolverParams));
 
-  //HACK to prevent a double delete on Petsc Vec
-  boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver;
-
-  // initialize the linear solver
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new
-      AMP::Solver::PetscKrylovSolverParameters(linearSolver_db));
-  linearSolverParams->d_pOperator = linBvpOperator;
-  linearSolverParams->d_comm = globalComm;
-  linearSolverParams->d_pPreconditioner = pcSolver;
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(new AMP::Solver::PetscKrylovSolver(linearSolverParams));
-
   // initialize the nonlinear solver
   boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new
       AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
   // change the next line to get the correct communicator out
   nonlinearSolverParams->d_comm = globalComm;
   nonlinearSolverParams->d_pOperator = nonlinBvpOperator;
-  nonlinearSolverParams->d_pKrylovSolver = linearSolver;
   nonlinearSolverParams->d_pInitialGuess = mechNlSolVec;
-  nonlinearSolver.reset(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
-
+  boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
   nonlinearSolver->setZeroInitialGuess(false);
+
+  boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
+  linearSolver->setPreconditioner(pcSolver);
 
   for (int step=0;step<NumberOfLoadingSteps; step++)
   {
@@ -229,7 +219,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     std::string number1 = num1;
     std::string fname = exeName + "_Stress_Strain_" + number1 + ".txt";
 
-    boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinBvpOperator->getVolumeOperator())->printStressAndStrain(mechNlSolVec, fname);
+    boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinBvpOperator->
+        getVolumeOperator())->printStressAndStrain(mechNlSolVec, fname);
   }
 
   //std::cout << mechNlResVec << std::endl;

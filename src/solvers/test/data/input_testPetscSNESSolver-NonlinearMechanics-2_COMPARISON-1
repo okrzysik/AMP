@@ -121,6 +121,7 @@ MechanicsLinearFEOperator2 {
   name = "MechanicsLinearFEOperator"
     print_info_level = 1
     reset_reuses_matrix = TRUE
+    isAttachedToNonlinearOperator = TRUE
     InputVariable = "disp"
     OutputVariable = "disp"
 
@@ -184,6 +185,10 @@ Displacement_Boundary {
   name = "DirichletVectorCorrection"
     print_info_level = 1
     skip_params = FALSE
+    isAttachedToVolumeOperator = FALSE
+    setResidual = FALSE
+    valuesType = 1
+
     number_of_ids = 1
     id_0 = 2
     number_of_dofs_0 = 3

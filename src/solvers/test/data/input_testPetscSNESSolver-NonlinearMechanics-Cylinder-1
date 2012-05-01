@@ -10,7 +10,7 @@ Mesh{
     NumberOfElements = 4320
 }
 
-NumberOfLoadingSteps = 10
+NumberOfLoadingSteps = 3
 
 nonlinearMechanicsBVPOperator {
   name="NonlinearBVPOperator"
@@ -172,7 +172,7 @@ Pressure_Boundary {
     number_of_ids = 1
     constant_pressure = TRUE
     id_0 = 8
-    value_0 = -1.0
+    value_0 = -0.1
 }
 
 DummyDatabase {
@@ -184,31 +184,26 @@ NonlinearSolver{
     max_iterations = 100
     max_error = 1e-10
 
-    absoluteTolerance = 1.0e-9
-    relativeTolerance = 1.0e-9
-    stepTolerance = 1.0e-12
+    absoluteTolerance = 1.0e-12
+    relativeTolerance = 1.0e-12
+    stepTolerance = 1.0e-13
     maximumFunctionEvals = 10000
     usesJacobian=FALSE
 
-    //Change cubic to basic to turn off line search
-    //Add -snes_ksp_ew if you want
-    //-snes_ls_maxstep controls the max 2-norm of the update in the Newton step.
-    SNESOptions = "-snes_monitor -snes_type ls -snes_ls cubic -snes_ls_maxstep 1.0e6 -snes_converged_reason -snes_ls_alpha 1.0e-4"
+    SNESOptions = "-snes_monitor -snes_type ls -snes_ksp_ew -snes_converged_reason -snes_ls_alpha 1.0e-4"
 
     LinearSolver{
       print_info_level = 1
-        max_iterations = 100
-        max_error = 1e-10
-        ksp_type = "cg"
-        absolute_tolerance = 1.0e-10
-        relative_tolerance = 1.0e-10
+        ksp_type = "fgmres"
+        absolute_tolerance = 1.0e-12
+        relative_tolerance = 1.0e-12
         divergence_tolerance = 1.0e03
         max_krylov_dimension = 40
         uses_preconditioner=TRUE
         pc_type = "shell"
-        pc_side = "LEFT"
+        pc_side = "RIGHT"
 
-        KSPOptions = "-ksp_monitor -ksp_converged_reason"
+        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100"
 
         Preconditioner {
           print_info_level = 1

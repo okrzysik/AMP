@@ -40,8 +40,11 @@
 void nekPipeOperator(AMP::UnitTest *ut)
 {
 #ifdef USE_NEK     
+    // Print Banner
+    AMP::Utilities::printBanner();
+
     // Log all nodes
-    AMP::PIO::logAllNodes( "output_testNekPipe" );
+    AMP::PIO::logAllNodes( "output_testNekOperator" );
 
     // Build new database
     AMP::pout << "Building Input Database" << std::endl;
@@ -76,7 +79,7 @@ void nekPipeOperator(AMP::UnitTest *ut)
     meshDB->putString("MeshName","fuel");
     meshDB->putDouble("x_offset",0.0);
     meshDB->putDouble("y_offset",0.0);
-    meshDB->putDouble("z_offset",-0.03);
+    meshDB->putDouble("z_offset",0.0);
 
 
     // Create Mesh Manager
@@ -176,8 +179,6 @@ void nekPipeOperator(AMP::UnitTest *ut)
          myIter != r_node->end();
          myIter++ )
     {
-        AMP::pout << "Nodal Vector Element " << ctr << " is " << *myIter << std::endl;
-
         if( *myIter != 0.0 )
             nonZero = true;
 

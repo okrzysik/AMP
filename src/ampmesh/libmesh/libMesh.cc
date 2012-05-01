@@ -105,8 +105,12 @@ libMesh::libMesh( boost::shared_ptr< ::Mesh> mesh, std::string name )
     // Set the base properties
     d_libMesh = mesh;
     d_libMeshData = boost::shared_ptr< ::MeshData>( new ::MeshData(*d_libMesh) );
-    this->d_comm = AMP_MPI( (MPI_Comm) ::Parallel::Communicator_World.get() );
-    AMP_ASSERT(d_comm!=AMP_MPI(AMP_COMM_NULL));
+    #ifdef USE_MPI
+        this->d_comm = AMP_MPI( (MPI_Comm) ::Parallel::Communicator_World.get() );
+        AMP_ASSERT(d_comm!=AMP_MPI(AMP_COMM_NULL));
+    #else
+        this->d_comm = AMP_MPI( AMP_COMM_SELF );
+    #endif
     this->setMeshID();
     this->d_name = name;
     this->d_max_gcw = 1;

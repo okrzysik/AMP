@@ -351,14 +351,19 @@ IF( USE_NEK )
   COPY_TEST_DATA_FILE ( SESSION.NAME )
   COPY_TEST_DATA_FILE ( input.h5m )
   COPY_TEST_DATA_FILE ( pipe.rea )
-  ADD_AMP_TEST_PARALLEL( testNekPipe 2 ) # This test doesn't work in serial
-  ADD_AMP_TEST_PARALLEL( testNekPipe 4 )
-  ADD_AMP_TEST_PARALLEL( testNekOperator 2 )
-  ADD_AMP_TEST_PARALLEL( testNekOperator 4 )
+  ADD_AMP_TEST_PARALLEL( testMoabNekPipe 2 ) # This test doesn't work in serial
+  ADD_AMP_TEST_PARALLEL( testMoabNekPipe 4 )
+  ADD_AMP_TEST_PARALLEL( testMoabNekOperator 2 ) # By extension, neither does this
+  ADD_AMP_TEST_PARALLEL( testMoabNekOperator 4 )
 ENDIF()
 
 #MOAB tests
 IF( USE_MOAB )
-  ADD_AMP_TEST_1_2_4( testMoabInterface )
+  ADD_AMP_TEST_1_2_4( testMoabBasedOperator )
+  
+  # Can be removed in new mesh design,
+  #  I haven't confirmed that I'm ready to delete 
+  #  it entirely yet.
+  ADD_AMP_PROVISIONAL_TEST( testMoabInterface )
 ENDIF()
 
