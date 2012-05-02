@@ -1,0 +1,11 @@
+
+Mesh {
+  MeshType = "libMesh"
+    dim = 3
+    MeshName = "TestMesh"
+    FileName = "pellet_1x.e"
+}
+
+
+
+
