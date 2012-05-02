@@ -14,7 +14,6 @@
 
 // AMP Includes
 #include "operators/Operator.h"
-#include "operators/moab/MoabBasedOperator.h"
 #include "operators/moab/MoabBasedOperatorParameters.h"
 
 // Moab Includes
