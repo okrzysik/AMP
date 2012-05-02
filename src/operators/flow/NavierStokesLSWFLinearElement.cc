@@ -115,42 +115,21 @@ namespace Operator {
 
           for(unsigned int j = 0; j < num_nodes; j++) {
 
-            elementStiffnessMatrix[4*i    ][4*j     ] += JxW[qp]*( (dphi[i][qp]*dphi[j][qp])  +                                            // diffusion term
-                                                                   (u*dphi[j][qp](0)+ v*dphi[j][qp](1)+w*dphi[j][qp](2))*phi[i][qp] +      // convection term
-                                                                    dudx*phi[i][qp]*phi[j][qp]   );                                        // Newton term
-
-            elementStiffnessMatrix[4*i    ][4*j + 1 ] += JxW[qp]*dudy*phi[i][qp]*phi[j][qp];                                               // Newton term
+            elementStiffnessMatrix[4*i    ][4*j + 1 ] += JxW[qp]*( dphi[i][qp](0)*dphi[j][qp](0) ); 
+            elementStiffnessMatrix[4*i    ][4*j + 2 ] += JxW[qp]*( dphi[i][qp](1)*dphi[j][qp](1) ); 
+            elementStiffnessMatrix[4*i    ][4*j + 3 ] += JxW[qp]*( dphi[i][qp](1)*dphi[j][qp](1) );  
             
-            elementStiffnessMatrix[4*i    ][4*j + 2 ] += JxW[qp]*dudz*phi[i][qp]*phi[j][qp];                                               // Newton term
+            elementStiffnessMatrix[4*i + 1][4*j     ] += JxW[qp]*dvdx*phi[i][qp]*phi[j][qp];        
+            elementStiffnessMatrix[4*i + 1][4*j + 1 ] += JxW[qp];   
+            elementStiffnessMatrix[4*i + 1][4*j + 2 ] += JxW[qp]*dvdz*phi[i][qp]*phi[j][qp];   
 
-            elementStiffnessMatrix[4*i + 1][4*j + 1 ] += JxW[qp]*( (dphi[i][qp]*dphi[j][qp]) +                                             // diffusion term
-                                                                   (u*dphi[j][qp](0)+ v*dphi[j][qp](1)+w*dphi[j][qp](2))*phi[i][qp] +      // convection term
-                                                                    dvdy*phi[i][qp]*phi[j][qp]);                                           // Newton term
+            elementStiffnessMatrix[4*i + 2][4*j     ] += JxW[qp]*dwdx*phi[i][qp]*phi[j][qp];  
+            elementStiffnessMatrix[4*i + 2][4*j + 1 ] += JxW[qp]*dwdy*phi[i][qp]*phi[j][qp]; 
+            elementStiffnessMatrix[4*i + 2][4*j + 2 ] += JxW[qp];  
 
-            elementStiffnessMatrix[4*i + 1][4*j     ] += JxW[qp]*dvdx*phi[i][qp]*phi[j][qp];                                               // Newton term
-            
-            elementStiffnessMatrix[4*i + 1][4*j + 2 ] += JxW[qp]*dvdz*phi[i][qp]*phi[j][qp];                                               // Newton term
-
-            elementStiffnessMatrix[4*i + 2][4*j + 2 ] += JxW[qp]*( (dphi[i][qp]*dphi[j][qp]) +                                             // diffusion term
-                                                                   (u*dphi[j][qp](0)+ v*dphi[j][qp](1)+w*dphi[j][qp](2))*phi[i][qp] +      // convection term
-                                                                    dwdz*phi[i][qp]*phi[j][qp]);                                           // Newton term
-
-            elementStiffnessMatrix[4*i + 2][4*j     ] += JxW[qp]*dwdx*phi[i][qp]*phi[j][qp];                                               // Newton term
-            
-            elementStiffnessMatrix[4*i + 2][4*j + 1 ] += JxW[qp]*dwdy*phi[i][qp]*phi[j][qp];                                               // Newton term
 
           }//end for j
 
-          for(unsigned int k = 0; k < d_elementInputVectors[NavierStokes::PRESSURE].size(); k++) {
-          
-            elementStiffnessMatrix[4*i    ][4*k + 3] += JxW[qp]*(p_phi[k ][qp]*dphi[i][qp](0));
-            
-            elementStiffnessMatrix[4*i + 1][4*k + 3] += JxW[qp]*(p_phi[k ][qp]*dphi[i][qp](1));
-            
-            elementStiffnessMatrix[4*i + 2][4*k + 3] += JxW[qp]*(p_phi[k ][qp]*dphi[i][qp](2));
-          
-          }//end for k
-      
       }//end for i
 
     }//end for qp
