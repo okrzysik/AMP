@@ -23,9 +23,9 @@
 #include "utils/PIO.h"
 #include "utils/InputDatabase.h"
 
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/MeshVariable.h"
 #include "ampmesh/SiloIO.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 
 #include "operators/moab/MoabMapOperator.h"
 
@@ -73,25 +73,28 @@ void nekPipeOperator(AMP::UnitTest *ut)
     nekOp->apply( nullVec, nullVec, nullVec, 0.0, 0.0 );
 
     // Read AMP pellet mesh from file
-    nekDB->putInteger("NumberOfMeshes",1);
-    boost::shared_ptr<AMP::Database> meshDB = nekDB->putDatabase("Mesh_1");
-    meshDB->putString("Filename","pellet_1x.e");
+    boost::shared_ptr<AMP::Database> meshDB = nekDB->putDatabase("Mesh");
+    meshDB->putString("FileName","pellet_1x.e");
     meshDB->putString("MeshName","fuel");
+    meshDB->putString("MeshType","libMesh");
+    meshDB->putInteger("dim",3);
     meshDB->putDouble("x_offset",0.0);
     meshDB->putDouble("y_offset",0.0);
     meshDB->putDouble("z_offset",0.0);
+    meshDB->putInteger("NumberOfElements",300);
 
 
     // Create Mesh Manager
     AMP::pout << "Creating mesh manager" << std::endl;
-    typedef AMP::Mesh::MeshManagerParameters    MeshMgrParams;
+    typedef AMP::Mesh::MeshParameters           MeshMgrParams;
     typedef boost::shared_ptr< MeshMgrParams >  SP_MeshMgrParams;
 
-    typedef AMP::Mesh::MeshManager              MeshMgr;
-    typedef boost::shared_ptr< MeshMgr >        SP_MeshMgr;
+    typedef AMP::Mesh::Mesh                     MeshMgr;
+    typedef AMP::Mesh::Mesh::shared_ptr         SP_MeshMgr;
 
-    SP_MeshMgrParams mgrParams( new MeshMgrParams( nekDB ) );
-    SP_MeshMgr       manager(   new MeshMgr( mgrParams ) );
+    SP_MeshMgrParams mgrParams( new MeshMgrParams( meshDB ) );
+    mgrParams->setComm( AMP::AMP_MPI(AMP_COMM_WORLD) );
+    SP_MeshMgr manager = AMP::Mesh::Mesh::buildMesh( mgrParams );
     
 
     // Create Parameters for Map Operator
@@ -112,32 +115,24 @@ void nekPipeOperator(AMP::UnitTest *ut)
     SP_MoabMap moabGPMap( new MoabMap( mapParams ) );
 
     // Create variable to hold pressure data
-    typedef AMP::LinearAlgebra::Variable      AMPVar;
-    typedef boost::shared_ptr< AMPVar >       SP_AMPVar;
+    typedef AMP::LinearAlgebra::Variable AMPVar;
+    typedef boost::shared_ptr< AMPVar >  SP_AMPVar;
 
-    typedef AMP::LinearAlgebra::MultiVariable AMPMultiVar;
-    typedef boost::shared_ptr< AMPMultiVar >  SP_AMPMultiVar;
+    SP_AMPVar allGPPressures( new AMPVar( "AllGaussPointPressures" ) );
+    SP_AMPVar allNodePressures( new AMPVar( "AllNodalPressures" ) );
 
-    SP_AMPMultiVar allGPPressures( new AMPMultiVar( "AllPressures" ) );
-    SP_AMPMultiVar allNodePressures( new AMPMultiVar( "AllPressures" ) );
-
-    MeshMgr::MeshIterator currentMesh;
-    for( currentMesh  = manager->beginMeshes();
-         currentMesh != manager->endMeshes();
-         currentMesh++ )
-    {
-        // Make variable on this mesh
-        SP_AMPVar thisGPVar( new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable, 8>("NekGPPressure", *currentMesh));
-        SP_AMPVar thisNodeVar( new AMP::Mesh::NodalScalarVariable("NekNodePressure", *currentMesh));
-
-        // Add variable on this mesh to multivariable
-        allGPPressures->add( thisGPVar );
-        allNodePressures->add( thisNodeVar );
-    }
+    // Create DOF managers
+    size_t DOFsPerElement = 8;
+    size_t DOFsPerNode = 1;
+    int gaussPointGhostWidth = 0;
+    int nodalGhostWidth = 0;
+    bool split = true;
+    AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(manager, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split);
+    AMP::Discretization::DOFManager::shared_ptr      nodalDofMap = AMP::Discretization::simpleDOFManager::create(manager, AMP::Mesh::Vertex,      nodalGhostWidth, DOFsPerNode,    split);
 
     // Have mesh manager create vector over all meshes
-    AMP::LinearAlgebra::Vector::shared_ptr r_gp = manager->createVector( allGPPressures );
-    AMP::LinearAlgebra::Vector::shared_ptr r_node = manager->createVector( allNodePressures );
+    AMP::LinearAlgebra::Vector::shared_ptr r_gp   = AMP::LinearAlgebra::createVector( gaussPointDofMap, allGPPressures );
+    AMP::LinearAlgebra::Vector::shared_ptr r_node = AMP::LinearAlgebra::createVector(      nodalDofMap, allNodePressures );
 
     AMP::pout << "Gauss Point MultiVector size: " << r_gp->getGlobalSize() << std::endl; 
     AMP::pout << "Nodal MultiVector size: " << r_node->getGlobalSize() << std::endl; 
@@ -193,9 +188,10 @@ void nekPipeOperator(AMP::UnitTest *ut)
     // How about some output?
     
 #ifdef USE_SILO
-    manager->registerVectorAsData( r_gp );
-    manager->registerVectorAsData( r_node );
-    manager->writeFile<AMP::Mesh::SiloIO>( "Nek_Pressure", 0 );
+     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+     siloWriter->registerVector( r_gp,   manager, AMP::Mesh::Volume, "AllGaussPointPressures" );
+     siloWriter->registerVector( r_node, manager, AMP::Mesh::Vertex, "AllNodalPressures" );
+     siloWriter->writeFile( "Nek_Pressure", 0 );
 #endif
 
 

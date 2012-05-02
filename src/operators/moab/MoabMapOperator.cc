@@ -7,6 +7,9 @@
 //---------------------------------------------------------------------------//
 
 #include "MoabMapOperator.h"
+#include "elem.h"
+#include "cell_hex8.h"
+#include "discretization/simpleDOF_Manager.h"
 
 namespace AMP {
 namespace Operator {
@@ -74,24 +77,26 @@ void MoabMapOperator::apply( const SP_Vector &f,
     std::vector<double> allCoords;
 
     // Loop over meshes
-    AMP::Mesh::MeshManager::MeshIterator currentMesh;
-    for( currentMesh  = d_meshMgr->beginMeshes();
-         currentMesh != d_meshMgr->endMeshes();
-         currentMesh++ )
+    std::vector<AMP::Mesh::MeshID> meshIDs = d_meshMgr->getBaseMeshIDs();
+    for( size_t meshIndex=0; meshIndex<meshIDs.size(); meshIndex++ )
     {
+        // this is an accessor to all the mesh info.
+        AMP::Mesh::Mesh::shared_ptr currentMesh = d_meshMgr->Subset( meshIDs[meshIndex] );
+        if( currentMesh.get() == NULL ) continue;
+
         std::vector<double> theseCoords;
         switch( d_interpType )
         {
             case NODES:
             {
                 // Get nodes coords
-                getNodeCoords( *currentMesh, theseCoords );
+                getNodeCoords( currentMesh, theseCoords );
                 break;
             }
             case GAUSS_POINTS:
             {
                 // Get GP coords for this mesh
-                getGPCoords( *currentMesh, theseCoords );
+                getGPCoords( currentMesh, theseCoords );
                 break;
             }
         }
@@ -148,7 +153,7 @@ void MoabMapOperator::apply( const SP_Vector &f,
     */
 
     // Copy values into r
-    std::vector<int> myIndices(numCoords);
+    std::vector<size_t> myIndices(numCoords);
     for( unsigned int i=0; i<numCoords; ++i )
     {
         myIndices[i] = i;
@@ -165,20 +170,26 @@ void MoabMapOperator::apply( const SP_Vector &f,
  *\brief Get vector of Gauss points for single mesh
  */
 //---------------------------------------------------------------------------//
-void MoabMapOperator::getGPCoords( SP_Mesh &mesh, Vec_Dbl &xyz )
+void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &xyz )
 {
     AMP_INSIST(mesh,"Must have Mesh Adapter"); 
     AMP_INSIST(d_interpType==GAUSS_POINTS,"Wrong interpolation type");
 
+    // Create Gauss point DOF manager
+    size_t DOFsPerElement = 8;
+    int gaussPointGhostWidth = 0;
+    bool split = true;
+    AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(mesh, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split);
+
     // Get size of Gauss-point vectors
     // We're explicitly assuming every element has 8 Gauss points
-    unsigned int numGauss = 8*mesh->numLocalElements();
+    unsigned int numGauss = DOFsPerElement * mesh->numLocalElements(AMP::Mesh::Volume);
 
     // Resize vector
     xyz.resize(3*numGauss,0.0);
 
-    // Create Gauss point variable
-    SP_Variable gpVariable(new HexGPVar("coords", mesh));
+    // Create a variable for the coordinates
+    SP_Variable gpVariable( new AMP::LinearAlgebra::Variable( "coords" ) );
 
     // Convert from distance in m (AMP) to cm (Moab)
     double m_to_cm = 100.0;
@@ -192,20 +203,30 @@ void MoabMapOperator::getGPCoords( SP_Mesh &mesh, Vec_Dbl &xyz )
     SP_FEBase fe_ptr = volIntOp->getSourceElement()->getFEBase();
     
     // Extract coordinates of each Gauss point
-    AMP::Mesh::MeshAdapter::ElementIterator elem = mesh->beginElement();
+    unsigned int zeroGhostWidth = 0;
+    AMP::Mesh::MeshIterator elem = mesh->getIterator(AMP::Mesh::Volume, zeroGhostWidth);
     int elem_ctr=0, gp_ctr=0;
-    for( ; elem != mesh->endElement();
+    for( ; elem != elem.end();
            elem++ )
     {
+      std::vector<AMP::Mesh::MeshElement> currNodes;
+      currNodes = elem->getElements(AMP::Mesh::Vertex);
+      ::Elem* currElemPtr ;
+      currElemPtr = new ::Hex8;
+      for(size_t j = 0; j < currNodes.size(); j++) {
+        std::vector<double> pt = currNodes[j].coord();
+        currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
+      }//end for j
+
         // Initialize FEBase for this object
-        fe_ptr->reinit( &(elem->getElem()) );
+        fe_ptr->reinit( currElemPtr );
 
         AMP_ASSERT( fe_ptr );
 
         std::vector< ::Point > this_xyz = fe_ptr->get_xyz();
 
         // Loop over all Gauss-points on the element.
-        for( unsigned int i = 0; i < 8; i++ ) 
+        for( unsigned int i = 0; i < DOFsPerElement; i++ ) 
         {
             // Assign coordinates
             xyz[3*gp_ctr]   = this_xyz[i](0) * m_to_cm;
@@ -213,6 +234,14 @@ void MoabMapOperator::getGPCoords( SP_Mesh &mesh, Vec_Dbl &xyz )
             xyz[3*gp_ctr+2] = this_xyz[i](2) * m_to_cm;
             gp_ctr++;
         }
+        
+      for(size_t j = 0; j < currElemPtr->n_nodes(); j++) {
+        delete (currElemPtr->get_node(j));
+        currElemPtr->set_node(j) = NULL;
+      }//end for j
+      delete currElemPtr;
+      currElemPtr = NULL;
+  
         elem_ctr++;
     }
 
@@ -223,31 +252,32 @@ void MoabMapOperator::getGPCoords( SP_Mesh &mesh, Vec_Dbl &xyz )
  *\brief Get vector of node coordinates for single mesh
  */
 //---------------------------------------------------------------------------//
-void MoabMapOperator::getNodeCoords( SP_Mesh &mesh, Vec_Dbl &xyz )
+void MoabMapOperator::getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &xyz )
 {
     AMP_INSIST(mesh,"Must have Mesh Adapter"); 
     AMP_INSIST(d_interpType==NODES,"Wrong interpolation type" );
 
     // Get size of nodal vectors
-    unsigned int numNodes = mesh->numLocalNodes();
+    unsigned int numNodes = mesh->numLocalElements( AMP::Mesh::Vertex );
 
     // Resize vector
     xyz.resize(3*numNodes,0.0);
 
     // Create Gauss point variable
-    SP_Variable gpVariable(new HexGPVar("coords", mesh));
+    SP_Variable gpVariable( new AMP::LinearAlgebra::Variable( "coords" ) );
 
     // Convert from distance in m (AMP) to cm (Moab)
     double m_to_cm = 100.0;
 
     // Extract coordinates of each node
-    AMP::Mesh::MeshAdapter::NodeIterator node = mesh->beginNode();
+    unsigned int zeroGhostWidth = 0;
+    AMP::Mesh::MeshIterator node = mesh->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
     int node_ctr=0;
-    for( ; node != mesh->endNode(); node++ )
+    for( ; node != node.end(); node++ )
     {
-        xyz[3*node_ctr]   = node->x() * m_to_cm;
-        xyz[3*node_ctr+1] = node->y() * m_to_cm;
-        xyz[3*node_ctr+2] = node->z() * m_to_cm;
+        xyz[3*node_ctr]   = (node->coord() )[0] * m_to_cm;
+        xyz[3*node_ctr+1] = (node->coord() )[1] * m_to_cm;
+        xyz[3*node_ctr+2] = (node->coord() )[2] * m_to_cm;
         node_ctr++;
     }
 
@@ -259,7 +289,7 @@ void MoabMapOperator::getNodeCoords( SP_Mesh &mesh, Vec_Dbl &xyz )
  */
 //---------------------------------------------------------------------------//
 void MoabMapOperator::buildVolumeIntOp( SP_VolIntOp &volIntOp,
-                                        SP_Mesh     &mesh )
+                                        AMP::Mesh::Mesh::shared_ptr     &mesh )
 {
     using AMP::Operator::OperatorBuilder;
 

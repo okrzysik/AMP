@@ -15,9 +15,7 @@
 // AMP Includes
 #include "utils/Database.h"
 #include "operators/OperatorParameters.h"
-#include "ampmesh/MeshAdapter.h"
-#include "ampmesh/MeshManager.h"
-#include "operators/moab/MoabBasedOperator.h"
+#include "ampmesh/Mesh.h"
 
 namespace AMP {
 namespace Operator {
@@ -35,12 +33,6 @@ class MoabMapOperatorParameters : public AMP::Operator::OperatorParameters
         typedef AMP::Operator::OperatorParameters   Base;
         typedef boost::shared_ptr<AMP::Database>    SP_Database; 
 
-        typedef AMP::Mesh::MeshAdapter              Mesh;
-        typedef boost::shared_ptr<Mesh>             SP_Mesh;
-
-        typedef AMP::Mesh::MeshManager              MeshMgr;
-        typedef boost::shared_ptr<MeshMgr>          SP_MeshMgr;
-
         typedef AMP::Operator::MoabBasedOperator    MoabOp;
         typedef boost::shared_ptr<MoabOp>           SP_MoabOp;
 
@@ -54,10 +46,10 @@ class MoabMapOperatorParameters : public AMP::Operator::OperatorParameters
 
         // Set functions
         void setMoabOperator( SP_MoabOp  &moabOp)  { d_moabOp = moabOp;  }
-        void setMeshManager(  SP_MeshMgr &meshMgr) { d_mesh   = meshMgr; }
+        void setMeshManager(  AMP::Mesh::Mesh::shared_ptr &meshMgr) { d_mesh   = meshMgr; }
 
         // Mesh Manager
-        SP_MeshMgr d_mesh;
+        AMP::Mesh::Mesh::shared_ptr d_mesh;
 };
 
 } // namespace Operator

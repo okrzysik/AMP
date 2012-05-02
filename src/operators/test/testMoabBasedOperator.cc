@@ -17,8 +17,11 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 #include "utils/PIO.h"
+#include "utils/Database.h"
 
 #include "ampmesh/SiloIO.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 
 // AMP Moab Includes
 #include "operators/moab/MoabMapOperator.h"
@@ -177,36 +180,45 @@ void moabInterface(AMP::UnitTest *ut)
     else
         moabDB->putInteger("DomainDecomposition",1);
 
-    // First mesh
-    boost::shared_ptr<AMP::Database> meshDB = moabDB->putDatabase("Mesh_1");
-    meshDB->putString("Filename",ampMeshFile);
-    meshDB->putString("MeshName","pellet_1");
-    meshDB->putDouble("x_offset",0.0);
-    meshDB->putDouble("y_offset",0.0);
-    meshDB->putDouble("z_offset",-0.0105);
-    meshDB->putInteger("NumberOfElements",5000);
-
-    // Second mesh
-    boost::shared_ptr<AMP::Database> meshDB2 = moabDB->putDatabase("Mesh_2");
-    meshDB2->putString("Filename",ampMeshFile);
-    meshDB2->putString("MeshName","pellet_2");
-    meshDB2->putDouble("x_offset",0.0);
-    meshDB2->putDouble("y_offset",0.0);
-    meshDB2->putDouble("z_offset",0.0);
-    meshDB2->putInteger("NumberOfElements",5000);
+    // Create the multimesh database
+    boost::shared_ptr<AMP::Database> meshDB = moabDB->putDatabase("Mesh");
+    meshDB->putString("MeshName","PelletMeshes");
+    meshDB->putString("MeshType","Multimesh");
+    meshDB->putString("MeshDatabasePrefix","Mesh_");
+    meshDB->putString("MeshArrayDatabasePrefix","MeshArray_");
+    // Create the mesh array database
+    boost::shared_ptr<AMP::Database> meshArrayDatabase = meshDB->putDatabase("MeshArray_1");
+    int N_meshes=2;
+    meshArrayDatabase->putInteger("N",N_meshes);
+    meshArrayDatabase->putString("iterator","%i");
+    std::vector<int> indexArray(N_meshes);
+    for (int i=0; i<N_meshes; i++)
+            indexArray[i] = i+1;
+    meshArrayDatabase->putIntegerArray("indicies",indexArray);
+    meshArrayDatabase->putString("MeshName","pellet_%i");
+    meshArrayDatabase->putString("FileName","pellet_1x.e");
+    meshArrayDatabase->putString("MeshType","libMesh");
+    meshArrayDatabase->putInteger("dim",3);
+    meshArrayDatabase->putDouble("x_offset",0.0);
+    meshArrayDatabase->putDouble("y_offset",0.0);
+    std::vector<double> offsetArray(N_meshes);
+    for (int i=0; i<N_meshes; i++)
+            offsetArray[i] = ((double) i)*0.0105;
+    meshArrayDatabase->putDoubleArray("z_offset",offsetArray);
+    meshArrayDatabase->putInteger("NumberOfElements",300);
 
     // Create Mesh Manager
     AMP::pout << "Creating mesh manager" << std::endl;
-    typedef AMP::Mesh::MeshManagerParameters    MeshMgrParams;
+    typedef AMP::Mesh::MeshParameters           MeshMgrParams;
     typedef boost::shared_ptr< MeshMgrParams >  SP_MeshMgrParams;
 
-    typedef AMP::Mesh::MeshManager              MeshMgr;
-    typedef boost::shared_ptr< MeshMgr >        SP_MeshMgr;
+    typedef AMP::Mesh::Mesh                     MeshMgr;
+    typedef AMP::Mesh::Mesh::shared_ptr         SP_MeshMgr;
 
-    SP_MeshMgrParams mgrParams( new MeshMgrParams( moabDB ) );
-    SP_MeshMgr       manager(   new MeshMgr( mgrParams ) );
+    SP_MeshMgrParams mgrParams( new MeshMgrParams( meshDB ) );
+    mgrParams->setComm( AMP::AMP_MPI(AMP_COMM_WORLD) );
+    SP_MeshMgr manager = AMP::Mesh::Mesh::buildMesh( mgrParams );
     
-
     // Create Parameters for Map Operator
     AMP::pout << "Creating map operator" << std::endl;
     typedef AMP::Operator::MoabMapOperatorParameters    MoabMapParams;
@@ -221,29 +233,20 @@ void moabInterface(AMP::UnitTest *ut)
     mapParams->setMeshManager( manager );
 
     // Create variable to hold pressure data
-    typedef AMP::LinearAlgebra::Variable      AMPVar;
-    typedef boost::shared_ptr< AMPVar >       SP_AMPVar;
-
     typedef AMP::LinearAlgebra::MultiVariable AMPMultiVar;
     typedef boost::shared_ptr< AMPMultiVar >  SP_AMPMultiVar;
 
     SP_AMPMultiVar allGPPressures( new AMPMultiVar( "AllPressures" ) );
     SP_AMPMultiVar allNodePressures( new AMPMultiVar( "AllPressures" ) );
 
-    MeshMgr::MeshIterator currentMesh;
-    for( currentMesh  = manager->beginMeshes();
-         currentMesh != manager->endMeshes();
-         currentMesh++ )
-    {
-        // Make variable on this mesh
-        SP_AMPVar thisNodeVar( new AMP::Mesh::NodalScalarVariable("MoabNodeTemperature", *currentMesh));
-
-        // Add variable on this mesh to multivariable
-        allNodePressures->add( thisNodeVar );
-    }
+    // Create DOF manager
+    size_t DOFsPerNode = 1;
+    int nodalGhostWidth = 0;
+    bool split = true;
+    AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(manager, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
 
     // Have mesh manager create vector over all meshes
-    AMP::LinearAlgebra::Vector::shared_ptr r_node = manager->createVector( allNodePressures );
+    AMP::LinearAlgebra::Vector::shared_ptr r_node = AMP::LinearAlgebra::createVector( nodalDofMap, allNodePressures );
     AMP::pout << "Nodal MultiVector size: " << r_node->getGlobalSize() << std::endl; 
 
 
@@ -277,10 +280,16 @@ void moabInterface(AMP::UnitTest *ut)
     // Now let's see if the interpolated values are what we expected (should be equal to x-coordinate)
     int offset = 0;
     int numMismatched=0;
-    for( currentMesh  = manager->beginMeshes();
-         currentMesh != manager->endMeshes();
-         currentMesh++ )
+
+    // loop over all meshes to create the preprocessor database for that mesh
+    std::vector<AMP::Mesh::MeshID> meshIDs = manager->getBaseMeshIDs();
+    
+    for( size_t meshIndex=0; meshIndex<meshIDs.size(); meshIndex++ )
     {
+        // this is an accessor to all the mesh info.
+        AMP::Mesh::Mesh::shared_ptr currentMesh = manager->Subset( meshIDs[meshIndex] );
+        if( currentMesh.get() == NULL ) continue;
+
         std::string meshCoords = "Mesh_Coords";
         SP_AMPVec thisMeshCoords = (*currentMesh)->getPositionVector( meshCoords );
 
@@ -313,8 +322,9 @@ void moabInterface(AMP::UnitTest *ut)
     // Useful for making sure everything looks right
     
 #ifdef USE_SILO
-    manager->registerVectorAsData( r_node );
-    manager->writeFile<AMP::Mesh::SiloIO>( "Moab_Temp", 0 );
+    AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+    siloWriter->registerVector( r_node, manager, AMP::Mesh::Vertex, "Temperatures" );
+    siloWriter->writeFile( "Moab_Temp", 0 );
 #endif
 
     if (ut->NumPassGlobal() == 0) ut->failure("if it doesn't pass, it must have failed.");

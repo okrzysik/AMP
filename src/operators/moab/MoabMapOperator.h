@@ -15,10 +15,7 @@
 // AMP Includes
 #include "utils/Utilities.h"
 #include "utils/Castable.h"
-#include "ampmesh/MeshAdapter.h"
-#include "ampmesh/MeshManager.h"
-#include "ampmesh/MeshUtils.h"
-#include "ampmesh/DOFMap.h"
+#include "ampmesh/Mesh.h"
 #include "vectors/Vector.h"
 #include "vectors/DataChangeFirer.h"
 #include "operators/ElementPhysicsModel.h"
@@ -26,7 +23,6 @@
 #include "operators/OperatorBuilder.h"
 
 #include "operators/moab/MoabBasedOperator.h"
-#include "operators/moab/MoabBasedOperatorParameters.h"
 #include "operators/moab/MoabMapOperatorParameters.h"
 
 // Moab includes
@@ -57,20 +53,15 @@ class MoabMapOperator : public AMP::Operator::Operator
         typedef AMP::Operator::Operator                        Base;
         typedef AMP::Database                                  Database;
         typedef AMP::InputDatabase                             InpDatabase;
-        typedef AMP::Mesh::MeshAdapter                         MeshAdapter;
-        typedef AMP::Mesh::MeshManager                         MeshManager;
+        typedef AMP::Mesh::Mesh                                MeshManager;
         typedef AMP::LinearAlgebra::Variable::shared_ptr       SP_Variable;
         typedef AMP::LinearAlgebra::Vector::shared_ptr         SP_Vector;
-        typedef AMP::Mesh::IntegrationPointVariable            IntPtVar;
-        typedef AMP::LinearAlgebra::VectorVariable<IntPtVar,8> HexGPVar;
         typedef AMP::Operator::ElementPhysicsModel             ElemPhysModel;
         typedef AMP::Operator::VolumeIntegralOperator          VolIntOp;
 
         typedef boost::shared_ptr<Base>                        SP_Base;
         typedef boost::shared_ptr<Database>                    SP_Database;
         typedef boost::shared_ptr<InpDatabase>                 SP_InpDatabase;
-        typedef boost::shared_ptr<MeshAdapter>                 SP_Mesh;
-        typedef boost::shared_ptr<MeshManager>                 SP_MeshMgr;
         typedef boost::shared_ptr<ElemPhysModel>               SP_ElemPhysModel;
         typedef boost::shared_ptr<VolIntOp>                    SP_VolIntOp;
         typedef boost::shared_ptr< ::FEBase >                  SP_FEBase;
@@ -99,14 +90,14 @@ class MoabMapOperator : public AMP::Operator::Operator
         void buildMoabCoupler();
 
         // Get GP Coordinates on mesh
-        void getGPCoords( SP_Mesh &mesh, Vec_Dbl &xyz );
+        void getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &xyz );
 
         // Get Node Coordinates on mesh
-        void getNodeCoords( SP_Mesh &mesh, Vec_Dbl &xyz );
+        void getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &xyz );
 
         // Build Volume integral operator
         void buildVolumeIntOp( SP_VolIntOp &volIntOp,
-                               SP_Mesh     &mesh );
+                               AMP::Mesh::Mesh::shared_ptr     &mesh );
 
         // Parameters
         SP_MoabMapParams d_params;
@@ -118,7 +109,7 @@ class MoabMapOperator : public AMP::Operator::Operator
         SP_MoabOp d_moab;
 
         // Mesh adapter
-        SP_MeshMgr d_meshMgr;
+        AMP::Mesh::Mesh::shared_ptr d_meshMgr;
 
         // Variable name to be mapped
         std::string d_mapVar;
