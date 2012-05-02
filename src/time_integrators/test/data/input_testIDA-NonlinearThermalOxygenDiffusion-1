@@ -1,12 +1,14 @@
-NumberOfMeshes = 1
-Mesh_1{
-  Filename = "unitCubeDirichlet.e"
+Mesh{
+  FileName = "unitCubeDirichlet.e"
   MeshName = "ida"
+  MeshType = "libMesh"
+  dim      = 3        
   x_offset = 0.0
   y_offset = 0.0
   z_offset = 0.0
   NumberOfElements = 1000
 }
+
 NeutronicsOperator{
   name="NeutronicsRhsOperator"
   type               = "Power"
@@ -27,22 +29,13 @@ VolumeIntegralOperator{
   ActiveInputVariables{
     ActiveVariable_0 = "SpecificPowerInWattsPerGram" 
   }
-  OutputVariable = "HeatSource"
+  OutputVariable = "temperature"
   print_info_level = 3
-
-  SourcePhysicsModel {
-    name = "SourcePhysicsModel"
-    Equation="ThermalSource"
-//    Material = "UO2_MSRZC_09"
-    Material = "Independent"
-    USE_ELEMENT_PHYSICS = "MassDensityModel"
-    USE_MATERIALS_LIBRARY = TRUE 
-    BilogScaleCoefficient = FALSE
-  }
+  LocalModel = "SourcePhysicsModel"
 
   SourceElement {
     name="SourceNonlinearElement"
-    print_info_level = 0
+    print_info_level = 3
     FE_ORDER = "FIRST"  
     FE_FAMILY = "LAGRANGE"
     QRULE_TYPE = "QGAUSS"
@@ -50,12 +43,35 @@ VolumeIntegralOperator{
   }
 }
 
+SourcePhysicsModel {
+    name = "SourcePhysicsModel"
+    Material = "Independent"
+    Equation="ThermalSource"
+    USE_ELEMENT_PHYSICS = "MassDensityModel"
+    USE_MATERIALS_LIBRARY = TRUE 
+    BilogScaleCoefficient = FALSE
+}
+
+DiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "UO2_MSRZC_09"
+        Property = "ThermalConductivity"
+        Default_Concentration = .1
+        Default_Temperature   = 750.
+        Default_Burnup   = 0.0
+//        UseBilogScaling = TRUE
+//        BilogVariable = "concentration"
+        BilogScaleCoefficient = FALSE
+} 
 
 NonlinearThermalOperator {
    name="NonlinearBVPOperator"
    print_info_level = 3
-  
-   VolumeOperator {
+   VolumeOperator="DiffusionNonlinearFEOperator"
+   BoundaryOperator="DirichletVectorCorrection"
+}
+
+DiffusionNonlinearFEOperator{
      name = "DiffusionNonlinearFEOperator" 
      print_info_level = 1
      ActiveInputVariables {
@@ -74,20 +90,10 @@ NonlinearThermalOperator {
         QRULE_ORDER = "DEFAULT"
      }    
 
-     DiffusionTransportModel{
-        name = "DiffusionTransportModel"
-        Material = "UO2_MSRZC_09"
-        Property = "ThermalConductivity"
-        Default_Concentration = .1
-        Default_Temperature   = 750.
-        Default_Burnup   = 0.0
-//        UseBilogScaling = TRUE
-//        BilogVariable = "concentration"
-        BilogScaleCoefficient = FALSE
-     } 
-   }
+     LocalModel="DiffusionTransportModel"
+}
 
-   BoundaryOperator {
+DirichletVectorCorrection{
       name = "DirichletVectorCorrection"
       isAttachedToVolumeOperator=TRUE
       print_info_level = 1
@@ -97,14 +103,16 @@ NonlinearThermalOperator {
       number_of_dofs_0 = 1
       dof_0_0 = 0
       value_0_0 = 750.
-   }
 }
 
 LinearThermalOperator {
    name="LinearBVPOperator"
    print_info_level = 1
+   VolumeOperator="DiffusionLinearFEOperator"
+   BoundaryOperator="DirichletMatrixCorrection"
+}
 
-   VolumeOperator{
+DiffusionLinearFEOperator{
     name = "DiffusionLinearFEOperator"
     InputVariable = "temperature"
     OutputVariable = "temperature"
@@ -122,21 +130,10 @@ LinearThermalOperator {
         QRULE_ORDER = "DEFAULT"
     }    
 
-     DiffusionTransportModel{
-        name = "DiffusionTransportModel"
-        Material = "UO2_MSRZC_09"
-        Property = "ThermalConductivity"
-        Default_Concentration = .1
-        Default_Temperature   = 750.
-        Default_Burnup   = 0.0
-//        UseBilogScaling = TRUE
-//        BilogVariable = "concentration"
-       BilogScaleCoefficient = FALSE
-     } 
-  }
+    LocalModel = "DiffusionTransportModel"
+}
 
-
-BoundaryOperator {
+DirichletMatrixCorrection{
     name="DirichletMatrixCorrection"
     skip_params = FALSE
     skip_rhs_correction = TRUE
@@ -147,14 +144,16 @@ BoundaryOperator {
     number_of_dofs_0 =   1
     dof_0_0          =   0
     value_0_0        = 0.
-  }
 }
 
-MassThermalOperator {
+MassOperator {
    name="LinearBVPOperator"
    print_info_level = 1
+   VolumeOperator="MassLinearFEOperator"
+   BoundaryOperator="MassMatrixCorrection"
+}
 
-   VolumeOperator{
+MassLinearFEOperator{
     name = "MassLinearFEOperator"
     InputVariable = "temperature"
     OutputVariable = "temperature"
@@ -163,8 +162,6 @@ MassThermalOperator {
     FixedConcentration = 0.15
     FixedTemperature   = 750
     FixedBurnup   = 0.0
-
-
     MassElement {
         name = "MassLinearElement"
 		print_info_level = 3
@@ -174,8 +171,10 @@ MassThermalOperator {
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }    
+    LocalModel = "MassDensityModel"
+}
 
-     MassDensityModel{
+MassDensityModel{
         name = "MassDensityModel"
         Material = "UO2_MSRZC_09"
 		Equation = "Thermal"
@@ -187,11 +186,9 @@ MassThermalOperator {
 //        BilogVariable = "concentration"
        BilogScaleCoefficient = FALSE
 	   print_info_level = 3
-     } 
-  }
+} 
 
-
-BoundaryOperator {
+MassMatrixCorrection{
     name="MassMatrixCorrection"
     skip_params = FALSE
     skip_rhs_correction = TRUE
@@ -203,14 +200,15 @@ BoundaryOperator {
     dof_0_0          =   0
     value_0_0        = 0.
   }
-}
-
 
 NonlinearOxygenOperator {
    name="NonlinearBVPOperator"
    print_info_level = 3
-  
-   VolumeOperator {
+   VolumeOperator="FickSoretNonlinearFEOperator"
+   BoundaryOperator="OxDirichletVectorCorrection"
+}
+
+FickSoretNonlinearFEOperator {
 	name = "FickSoretNonlinearFEOperator"
 	AddSoretTerm = TRUE
 
@@ -232,18 +230,8 @@ NonlinearOxygenOperator {
             QRULE_TYPE = "QGAUSS"
             QRULE_ORDER = "DEFAULT"
         }    
-
-      DiffusionTransportModel{
-        name = "DiffusionTransportModel"
-          Material = "Ox_MSRZC_09"
-          Property = "FickCoefficient"
-          Default_Concentration = .1
-          Default_Temperature   = 750.
-          Default_Burnup   = 0.0
-//        UseBilogScaling = TRUE
-//        BilogVariable = "concentration"
-        BilogScaleCoefficient = FALSE
-      } 
+       
+        LocalModel="OxygenTransportModel"
     }
     
     SoretOperator {
@@ -265,8 +253,24 @@ NonlinearOxygenOperator {
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
       }    
+      LocalModel="SoretTransportModel"
+ 
+    }
+}
 
-      DiffusionTransportModel{
+OxygenTransportModel{
+        name = "DiffusionTransportModel"
+          Material = "Ox_MSRZC_09"
+          Property = "FickCoefficient"
+          Default_Concentration = .1
+          Default_Temperature   = 750.
+          Default_Burnup   = 0.0
+//        UseBilogScaling = TRUE
+//        BilogVariable = "concentration"
+        BilogScaleCoefficient = FALSE
+}
+
+SoretTransportModel{
         name = "DiffusionTransportModel"
         Material = "Ox_MSRZC_09"
         Property = "ThermalDiffusionCoefficient"
@@ -276,11 +280,9 @@ NonlinearOxygenOperator {
 //        UseBilogScaling = TRUE
 //        BilogVariable = "concentration"
         BilogScaleCoefficient = FALSE
-      } 
-    }
-   }
+}
 
-   BoundaryOperator {
+OxDirichletVectorCorrection{
       name = "DirichletVectorCorrection"
       isAttachedToVolumeOperator=TRUE
       print_info_level = 1
@@ -290,14 +292,16 @@ NonlinearOxygenOperator {
       number_of_dofs_0 = 1
       dof_0_0 = 0
       value_0_0 = 0.01
-   }
 }
 
 LinearOxygenOperator {
    name="LinearBVPOperator"
    print_info_level = 1
+   VolumeOperator="OxygenLinearFEOperator"
+   BoundaryOperator="OxDirichletMatrixCorrection"
+}
 
-   VolumeOperator{
+OxygenLinearFEOperator{
     name = "DiffusionLinearFEOperator"
     InputVariable = "concentration"
     OutputVariable = "concentration"
@@ -315,21 +319,11 @@ LinearOxygenOperator {
         QRULE_ORDER = "DEFAULT"
     }    
 
-     DiffusionTransportModel{
-        name = "DiffusionTransportModel"
-        Material = "Ox_MSRZC_09"
-        Property = "FickCoefficient"
-        Default_Concentration = .1
-        Default_Temperature   = 750.
-        Default_Burnup   = 0.0
-//        UseBilogScaling = TRUE
-//        BilogVariable = "concentration"
-       BilogScaleCoefficient = FALSE
-     } 
-  }
+    LocalModel="OxygenTransportModel"
+}
 
 
-BoundaryOperator {
+OxDirichletMatrixCorrection{
     name="DirichletMatrixCorrection"
     skip_params = FALSE
     skip_rhs_correction = TRUE
@@ -340,14 +334,16 @@ BoundaryOperator {
     number_of_dofs_0 =   1
     dof_0_0          =   0
     value_0_0        = 0.
-  }
 }
 
-MassOxygenOperator {
+OxMassOperator {
    name="LinearBVPOperator"
-   print_info_level = 0
+   print_info_level = 1
+   VolumeOperator="OxMassLinearFEOperator"
+   BoundaryOperator="OxMassBoundaryOperator"
+}
 
-   VolumeOperator{
+OxMassLinearFEOperator{
     name = "MassLinearFEOperator"
     InputVariable = "concentration"
     OutputVariable = "concentration"
@@ -366,8 +362,25 @@ MassOxygenOperator {
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }    
+    LocalModel="OxMassDensityModel"
+      
+}
 
-     MassDensityModel{
+
+OxMassBoundaryOperator {
+    name="MassMatrixCorrection"
+    skip_params = FALSE
+    skip_rhs_correction = TRUE
+    skip_rhs_add_correction = TRUE
+    print_info_level = 3
+    number_of_ids = 1
+    id_0             = 10
+    number_of_dofs_0 =   1
+    dof_0_0          =   0
+    value_0_0        = 0.
+}
+
+OxMassDensityModel{
         name = "MassDensityModel"
         Material = "Ox_MSRZC_09"
 		Equation = "Chemical"
@@ -379,22 +392,6 @@ MassOxygenOperator {
 //        BilogVariable = "concentration"
        BilogScaleCoefficient = FALSE
 	   print_info_level = 3
-     } 
-  }
-
-
-BoundaryOperator {
-    name="MassMatrixCorrection"
-    skip_params = FALSE
-    skip_rhs_correction = TRUE
-    skip_rhs_add_correction = TRUE
-    print_info_level = 3
-    number_of_ids = 1
-    id_0             = 10
-    number_of_dofs_0 =   1
-    dof_0_0          =   0
-    value_0_0        = 0.
-  }
 }
 
 IDATimeIntegrator{
@@ -402,33 +399,30 @@ IDATimeIntegrator{
 		relative_tolerance		= 1.00e-10
 		absolute_tolerance		= 1.00e-16
 		initial_time 			= 0.0
-                             final_time			= 1000.0
+                final_time			= 1000.0
 		max_integrator_steps		= 10000
-                             initial_dt                                            = 0.01
+                initial_dt                                            = 0.01
 		max_dt				= 10.0
 		min_dt				= 1.0e-08
 		bLinearMassOperator             = TRUE
-                             bLinearRhsOperator              = FALSE
-                             CallCalcIC=TRUE
-	               usePreconditioner                 = TRUE
+                bLinearRhsOperator              = FALSE
+                CallCalcIC=TRUE
+	        usePreconditioner                 = TRUE
 
-                             Preconditioner{
-                                    print_info_level = 3
-                                    max_iterations = 1
-                                    max_error = 1e-10
-                                    thermalPreconditioner{
+                Preconditioner{
+                     print_info_level = 3
+                     max_iterations = 1
+                     max_error = 1e-10
+                     thermalPreconditioner{
                                              print_info_level = 3
                                              max_iterations = 1
                                              max_error = 1e-10
-                                   }
-                                    oxygenPreconditioner{
+                     }
+                     oxygenPreconditioner{
                                              print_info_level = 3
                                              max_iterations = 1
                                              max_error = 1e-10
-                                     }
-                             }
+                     }
+                 }
 }
-
-
-
 

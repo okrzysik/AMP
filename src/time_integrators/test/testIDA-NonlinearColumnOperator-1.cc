@@ -143,7 +143,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   // ---------------------------------------------------------------------------------------
   // create vectors for initial conditions (IC) and time derivative at IC
 
-  AMP::LinearAlgebra::Variable::shared_ptr outputVar = columnNonlinearRhsOperator->getOutputVariable();
+  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> outputVar = boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(columnNonlinearRhsOperator->getOutputVariable());
   
   AMP::LinearAlgebra::Vector::shared_ptr initialCondition      = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
   AMP::LinearAlgebra::Vector::shared_ptr initialConditionPrime = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
@@ -217,8 +217,8 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     }//end for node
   
   // create a copy of the rhs which can be modified at each time step (maybe)
-  //AMP::LinearAlgebra::Vector::shared_ptr thermalRhs = f->select( vectorSelector, outputVar->getName() );
-  //thermalRhs->copyVector(powerInWattsVec);
+  AMP::LinearAlgebra::Vector::shared_ptr thermalRhs = f->select( vectorSelector, outputVar->getVariable(0)->getName() );
+  thermalRhs->copyVector(powerInWattsVec);
   
   // modify the rhs to take into account boundary conditions
   nonlinearThermalOperator->modifyRHSvector(f);
