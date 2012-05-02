@@ -209,8 +209,15 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &x
     for( ; elem != elem.end();
            elem++ )
     {
-        ::Elem* currElemPtr ;
-        currElemPtr = new ::Hex8;
+      std::vector<AMP::Mesh::MeshElement> currNodes;
+      currNodes = elem->getElements(AMP::Mesh::Vertex);
+      ::Elem* currElemPtr ;
+      currElemPtr = new ::Hex8;
+      for(size_t j = 0; j < currNodes.size(); j++) {
+        std::vector<double> pt = currNodes[j].coord();
+        currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
+      }//end for j
+
         // Initialize FEBase for this object
         fe_ptr->reinit( currElemPtr );
 
@@ -227,6 +234,14 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &x
             xyz[3*gp_ctr+2] = this_xyz[i](2) * m_to_cm;
             gp_ctr++;
         }
+        
+      for(size_t j = 0; j < currElemPtr->n_nodes(); j++) {
+        delete (currElemPtr->get_node(j));
+        currElemPtr->set_node(j) = NULL;
+      }//end for j
+      delete currElemPtr;
+      currElemPtr = NULL;
+  
         elem_ctr++;
     }
 

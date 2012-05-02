@@ -73,13 +73,15 @@ void nekPipeOperator(AMP::UnitTest *ut)
     nekOp->apply( nullVec, nullVec, nullVec, 0.0, 0.0 );
 
     // Read AMP pellet mesh from file
-    nekDB->putInteger("NumberOfMeshes",1);
-    boost::shared_ptr<AMP::Database> meshDB = nekDB->putDatabase("Mesh_1");
-    meshDB->putString("Filename","pellet_1x.e");
+    boost::shared_ptr<AMP::Database> meshDB = nekDB->putDatabase("Mesh");
+    meshDB->putString("FileName","pellet_1x.e");
     meshDB->putString("MeshName","fuel");
+    meshDB->putString("MeshType","libMesh");
+    meshDB->putInteger("dim",3);
     meshDB->putDouble("x_offset",0.0);
     meshDB->putDouble("y_offset",0.0);
     meshDB->putDouble("z_offset",0.0);
+    meshDB->putInteger("NumberOfElements",300);
 
 
     // Create Mesh Manager
@@ -90,8 +92,9 @@ void nekPipeOperator(AMP::UnitTest *ut)
     typedef AMP::Mesh::Mesh                     MeshMgr;
     typedef AMP::Mesh::Mesh::shared_ptr         SP_MeshMgr;
 
-    SP_MeshMgrParams mgrParams( new MeshMgrParams( nekDB ) );
-    SP_MeshMgr       manager(   new MeshMgr( mgrParams ) );
+    SP_MeshMgrParams mgrParams( new MeshMgrParams( meshDB ) );
+    mgrParams->setComm( AMP::AMP_MPI(AMP_COMM_WORLD) );
+    SP_MeshMgr manager = AMP::Mesh::Mesh::buildMesh( mgrParams );
     
 
     // Create Parameters for Map Operator
@@ -112,16 +115,13 @@ void nekPipeOperator(AMP::UnitTest *ut)
     SP_MoabMap moabGPMap( new MoabMap( mapParams ) );
 
     // Create variable to hold pressure data
-    typedef AMP::LinearAlgebra::Variable             AMPVar;
-    typedef AMP::LinearAlgebra::Variable::shared_ptr SP_AMPVar;
+    typedef AMP::LinearAlgebra::Variable AMPVar;
+    typedef boost::shared_ptr< AMPVar >  SP_AMPVar;
 
-    typedef AMP::LinearAlgebra::MultiVariable AMPMultiVar;
-    typedef boost::shared_ptr< AMPMultiVar >  SP_AMPMultiVar;
+    SP_AMPVar allGPPressures( new AMPVar( "AllGaussPointPressures" ) );
+    SP_AMPVar allNodePressures( new AMPVar( "AllNodalPressures" ) );
 
-    SP_AMPMultiVar allGPPressures( new AMPMultiVar( "AllGaussPointPressures" ) );
-    SP_AMPMultiVar allNodePressures( new AMPMultiVar( "AllNodalPressures" ) );
-
-    // Create Gauss point DOF manager
+    // Create DOF managers
     size_t DOFsPerElement = 8;
     size_t DOFsPerNode = 1;
     int gaussPointGhostWidth = 0;
