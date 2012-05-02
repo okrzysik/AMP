@@ -50,20 +50,16 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
     AMP::Discretization::DOFManager::shared_ptr DOF_scalar = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,1,true);
     AMP::Discretization::DOFManager::shared_ptr DOF_vector = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,3,true);
+    AMP::Discretization::DOFManager::shared_ptr DOF_gauss  = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Volume,1,8,true);
 
     // Create the vectors
     AMP::LinearAlgebra::Variable::shared_ptr rank_var( new AMP::LinearAlgebra::Variable("rank") );
     AMP::LinearAlgebra::Vector::shared_ptr rank_vec = AMP::LinearAlgebra::createVector( DOF_scalar, rank_var, true );
     AMP::LinearAlgebra::Variable::shared_ptr position_var( new AMP::LinearAlgebra::Variable("position") );
     AMP::LinearAlgebra::Vector::shared_ptr position = AMP::LinearAlgebra::createVector( DOF_vector, position_var, true );
-    //AMP::LinearAlgebra::Variable::shared_ptr  gp_var ( new AMP::Mesh::SingleGaussPointVariable ( "gp_var" ) );
-    //AMP::LinearAlgebra::Variable::shared_ptr  gp_var2 ( new AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable , 8> ( "gp_var2" ) );
-    //gp_var->setUnits ( "newton-fathom / acre^2" );
-    //AMP::LinearAlgebra::Vector::shared_ptr  gauss_pt = manager->createVector ( gp_var );
-    //AMP::LinearAlgebra::Vector::shared_ptr  gauss_pt2 = manager->createVector ( gp_var2 );
-    //AMP::LinearAlgebra::Vector::shared_ptr  displacement = manager->createPositionVector ( "displacement" );
-    //displacement->getVariable()->setUnits ( "leagues" );
-    //gauss_pt2->setToScalar ( 100 );
+    AMP::LinearAlgebra::Variable::shared_ptr  gp_var ( new AMP::LinearAlgebra::Variable( "gp_var" ) );
+    AMP::LinearAlgebra::Vector::shared_ptr  gauss_pt = AMP::LinearAlgebra::createVector( DOF_gauss, gp_var, true );
+    gauss_pt->setToScalar ( 100 );
     globalComm.barrier();
 #endif
     double t3 = AMP::AMP_MPI::time();
@@ -87,8 +83,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     siloWriter->registerVector( rank_vec, mesh, AMP::Mesh::Vertex, "rank" );
     siloWriter->registerVector( position, mesh, AMP::Mesh::Vertex, "position" );
     siloWriter->registerVector( z_surface, submesh, AMP::Mesh::Vertex, "z_surface" );
-    //siloWriter->registerVector( gauss_pt );
-    //siloWriter->registerVector( gauss_pt2 );
+    siloWriter->registerVector( gauss_pt, mesh, AMP::Mesh::Volume, "gauss_pnt" );
 #endif
     globalComm.barrier();
     double t4 = AMP::AMP_MPI::time();

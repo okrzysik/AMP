@@ -10,6 +10,7 @@ COPY_MESH_FILE ( clad_lo_res_4pellet.e )
 COPY_MESH_FILE ( multiElementMesh.e )
 COPY_TEST_DATA_FILE ( input_Mesh )
 COPY_TEST_DATA_FILE ( input_SiloIO )
+COPY_TEST_DATA_FILE ( input_SiloIO-2 )
 COPY_TEST_DATA_FILE ( input_Crystal )
 
 # Add tests
