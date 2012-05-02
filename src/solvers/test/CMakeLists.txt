@@ -128,7 +128,7 @@ ADD_AMP_PROVISIONAL_TEST ( testPericElastoViscoPlasticity )
 COPY_TEST_DATA_FILE ( input_testPericElastoViscoPlasticity-1 )
 COPY_TEST_DATA_FILE ( input_testPericElastoViscoPlasticity-2 )
 
-ADD_AMP_WEEKLY_TEST ( testUpdatedLagrangianMechanics-NonlinearPlasticity 1 )
+ADD_AMP_PROVISIONAL_TEST  ( testUpdatedLagrangianMechanics-NonlinearPlasticity 1 )
 COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianMechanics-NonlinearPlasticity-1 )
 COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianMechanics-NonlinearPlasticity-2 )
 COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianMechanics-NonlinearPlasticity-1a )
@@ -168,7 +168,7 @@ ADD_AMP_TEST ( testLinearElasticity-patch-1 )
 ADD_AMP_TEST ( testLinearElasticity-patch-2 )
 
 ADD_AMP_TEST ( testMatMultiply )
-ADD_AMP_TEST ( testMatCreate )
+ADD_AMP_PROVISIONAL_TEST ( testMatCreate )
 
 ADD_AMP_TEST ( testUpdatedLagrangianMechanics-LinearElasticity-1 )
 COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianMechanics-LinearElasticity-1 )

@@ -100,6 +100,7 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
     bool type_pass = true;
     bool volume_pass = true;
     bool coord_pass = true;
+    bool centroid_pass = true;
     bool elements_pass = true;
     bool neighbor_pass = true;
     cur_it = iterator.begin();
@@ -120,11 +121,21 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
             type_pass = false;
         if ( type==AMP::Mesh::Vertex ) {
             std::vector<double> coord = element.coord();
-            if ( coord.size()==0 )
+            if ( coord.size()!=mesh->getDim() )
                 coord_pass = false;
         } else {
             if ( element.volume() <= 0.0 )
                 volume_pass = false;
+        }
+        std::vector<double> centroid = element.centroid();
+        if ( centroid.size()!=mesh->getDim() )
+            centroid_pass = false;
+        if ( type==AMP::Mesh::Vertex ) {
+            std::vector<double> coord = element.coord();
+            for (size_t i=0; i<centroid.size(); i++) {
+                if ( centroid[i]!=coord[i] ) 
+                    centroid_pass = false;
+            }
         }
         if ( id.is_local() ) {
             for (int i=0; i<=(int)type; i++) {
@@ -344,6 +355,19 @@ void MeshBasicTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
         ut->passes("subset on mesh name for garbage");
     else
         ut->failure("subset on mesh name for garbage");
+    // Check that the bounding box matches on all processors
+    std::vector<double> box1 = mesh->getBoundingBox();
+    std::vector<double> box2 = box1;
+    mesh->getComm().bcast( &box2[0], box1.size(), 0 );
+    bool box_match = true;
+    for (size_t i=0; i<box1.size(); i++) {
+        if ( box1[i]!=box2[i] ) 
+            box_match = false;
+    }
+    if ( box_match )
+        ut->passes("mesh->getBoundingBox returns global bounding box");
+    else
+        ut->failure("mesh->getBoundingBox returns global bounding box");
 }
 
 

@@ -28,7 +28,6 @@
 #include "operators/NonlinearBVPOperator.h"
 #include "operators/ColumnOperator.h"
 #include "operators/CoupledOperator.h"
-#include "operators/ComputeSurfaceNormal.h"
 #include "operators/OperatorBuilder.h"
 #include "operators/boundary/ColumnBoundaryOperator.h"
 #include "operators/boundary/RobinVectorCorrection.h"

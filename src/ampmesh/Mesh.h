@@ -302,11 +302,20 @@ public:
 
     /**
      * \brief    Get the bounding box for the mesh
-     * \details  This function will return the bounding box for a mesh.  The
-     *   vector returned contains the box that contains the mesh in the form
+     * \details  This function will return the bounding box for the entire mesh. 
+     *   The vector returned contains the box that contains the mesh in the form
      *   [ x_min  x_max  y_min  y_max  z_min  z_max ].
      */
     virtual std::vector<double> getBoundingBox() const { return d_box; }
+
+
+    /**
+     * \brief    Get the bounding box for the local part of the mesh
+     * \details  This function will return the bounding box for the local part of the mesh. 
+     *   The vector returned contains the box that contains the mesh in the form
+     *   [ x_min  x_max  y_min  y_max  z_min  z_max ].
+     */
+    virtual std::vector<double> getLocalBoundingBox() const { return d_box_local; }
 
 
     /**
@@ -373,7 +382,7 @@ protected:
     std::string d_name;
 
     //! The bounding box for the mesh
-    std::vector<double> d_box;
+    std::vector<double> d_box, d_box_local;
 
     /**
      *  A function to create a unique id for the mesh (requires the comm to be set)
