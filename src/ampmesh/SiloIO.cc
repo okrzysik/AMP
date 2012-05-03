@@ -137,6 +137,8 @@ void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
     std::vector<size_t> dofs;
     DOFs->getDOFs( iterator1->globalID(), dofs );
     int DOFsPerPoint = dofs.size();
+    if ( type==AMP::Mesh::Vertex )
+        iterator1 = mesh->getIterator( type, 1 );
     for (size_t i=0; i<iterator1.size(); i++) {
         DOFs->getDOFs( iterator1->globalID(), dofs );
         AMP_ASSERT((int)dofs.size()==DOFsPerPoint);

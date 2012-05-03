@@ -373,6 +373,74 @@ void MeshBasicTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 }
 
 
+// This tests checks that all ghost elements are owned by "owner processor"
+void VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) 
+{
+    for (int type=0; type<=(int)mesh->getGeomType(); type++) {
+        int gcw = mesh->getMaxGhostWidth();
+        // Build a list of the owned and ghost elements
+        std::vector<AMP::Mesh::MeshElementID> owned, ghost;
+        owned.reserve( mesh->numLocalElements( (AMP::Mesh::GeomType) type ) );
+        ghost.reserve( mesh->numGhostElements( (AMP::Mesh::GeomType) type, gcw ) );
+        AMP::Mesh::MeshIterator iterator = mesh->getIterator( (AMP::Mesh::GeomType) type, gcw );
+        for (size_t i=0; i<iterator.size(); i++) {
+            AMP::Mesh::MeshElementID id = iterator->globalID();
+            if ( id.is_local() )
+                owned.push_back(id);
+            else
+                ghost.push_back(id);
+            ++iterator;
+        }
+        // Broadcast the list of ghost ids to everybody
+        size_t N_ghost_global = mesh->getComm().sumReduce( ghost.size() );
+        if ( N_ghost_global==0 )
+            continue;
+        std::vector<AMP::Mesh::MeshElementID> ghost_global(N_ghost_global);
+        AMP::Mesh::MeshElementID *send_data=NULL;
+        if ( ghost.size() > 0 ) { send_data = &ghost[0]; }
+        AMP::Mesh::MeshElementID *recv_data = &ghost_global[0];
+        mesh->getComm().allGather( send_data, ghost.size(), recv_data );
+        // Check that each ghost appears in the owner's rank's list
+        AMP::Utilities::quicksort( owned );         // Sort for search
+        AMP::Utilities::quicksort( ghost_global );  // Sort for speed
+        std::vector<int> found(ghost_global.size(),0);
+        AMP::Mesh::Mesh::shared_ptr my_mesh = mesh;
+        unsigned int my_rank = my_mesh->getComm().getRank();
+        AMP::Mesh::MeshID my_mesh_id = my_mesh->meshID();
+        for (size_t i=0; i<N_ghost_global; i++) {
+            // Get the current mesh
+            if ( ghost_global[i].meshID() != my_mesh_id ) {
+                my_mesh_id = ghost_global[i].meshID();
+                my_mesh = mesh->Subset( my_mesh_id );
+                if ( my_mesh.get()==NULL) 
+                    continue;
+                my_rank = my_mesh->getComm().getRank();
+            }
+            // Check if we are the owning rank
+            if ( my_mesh.get()==NULL) 
+                continue;
+            if ( ghost_global[i].owner_rank() != my_rank )
+                continue;
+            // Check if we have the element
+            size_t index = AMP::Utilities::findfirst( owned, ghost_global[i] );
+            if ( index == owned.size() ) { index--; }
+            if ( owned[index] == ghost_global[i] )
+                found[i] = 1;
+        }
+        mesh->getComm().maxReduce( &found[0], found.size() );
+        bool all_found = true;
+        for (size_t i=0; i<found.size(); i++) {
+            if ( found[i]==0 )
+                all_found = false;
+        }
+        if ( all_found )
+            utils->passes("All ghosts are owned by somebody");
+        else
+            utils->failure("All ghosts are owned by somebody");
+    }
+}
+
+
 // This tests loops over all boundary ids
 void VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) 
 {

@@ -65,9 +65,9 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     double t3 = AMP::AMP_MPI::time();
 
     // Create a subset mesh and view of a vector
-    AMP::Mesh::Mesh::shared_ptr submesh = mesh->Subset( mesh->getSurfaceIterator(AMP::Mesh::Face) );
+    AMP::Mesh::Mesh::shared_ptr submesh = mesh->Subset( mesh->getSurfaceIterator(AMP::Mesh::Face,1) );
     #ifdef USE_AMP_VECTORS
-        AMP::LinearAlgebra::VS_MeshIterator meshSelector( "positionSubset", submesh->getIterator(AMP::Mesh::Vertex,0), submesh->getComm() );
+        AMP::LinearAlgebra::VS_MeshIterator meshSelector( "positionSubset", submesh->getIterator(AMP::Mesh::Vertex,1), submesh->getComm() );
         AMP::LinearAlgebra::VS_Stride zSelector("thirds",2,3);
         AMP::LinearAlgebra::Vector::shared_ptr  vec_meshSubset = position->select( meshSelector, "mesh subset" );
         AMP_ASSERT(vec_meshSubset.get()!=NULL);
@@ -120,6 +120,8 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
         std::cout << "Write a file: " << t6-t5 << std::endl;
         std::cout << "Total time: " << t6-t1 << std::endl;
     }
+
+    ut->passes("test ran to completion");
 }
 
 

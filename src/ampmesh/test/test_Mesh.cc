@@ -122,17 +122,23 @@ void testInputMesh( AMP::UnitTest *ut, std::string filename )
 
 void testSubsetMesh( AMP::UnitTest *ut )
 {
-    // Create the mesh
-    boost::shared_ptr<AMP::unit_test::MeshGenerator> generator( 
-        new AMP::unit_test::SurfaceSubsetGenerator< AMP::unit_test::ExodusReaderGenerator<> > );
+    // Subset a mesh for a surface without ghost cells and test
+    boost::shared_ptr<AMP::unit_test::MeshGenerator>  generator( 
+        new AMP::unit_test::SurfaceSubsetGenerator< AMP::unit_test::ExodusReaderGenerator<>,0> );
     generator->build_mesh();
     AMP::Mesh::Mesh::shared_ptr mesh = generator->getMesh();
-
-    // Run the mesh tests
     MeshTestLoop( ut, mesh );
     //MeshVectorTestLoop( ut, mesh );
     //MeshMatrixTestLoop( ut, mesh );
 
+    // Subset a mesh for a surface with ghost cells and test
+    generator = boost::shared_ptr<AMP::unit_test::MeshGenerator> ( 
+        new AMP::unit_test::SurfaceSubsetGenerator< AMP::unit_test::ExodusReaderGenerator<3>,1> );
+    generator->build_mesh();
+    mesh = generator->getMesh();
+    MeshTestLoop( ut, mesh );
+    //MeshVectorTestLoop( ut, mesh );
+    //MeshMatrixTestLoop( ut, mesh );
 }
 
 
