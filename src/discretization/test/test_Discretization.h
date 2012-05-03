@@ -80,7 +80,7 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
             AMP::Mesh::Mesh::shared_ptr subsetMesh = mesh->Subset(meshIDs[i]);
             if ( subsetMesh.get() != NULL ) {
                 subsetDOF = DOF->subset(subsetMesh);
-                testGetDOFIterator(  ut, mesh->getIterator(AMP::Mesh::Vertex,1), subsetDOF );
+                testGetDOFIterator(  ut, subsetMesh->getIterator(AMP::Mesh::Vertex,1), subsetDOF );
                 AMP::Discretization::DOFManager::shared_ptr mesh_DOF = 
                     AMP::Discretization::simpleDOFManager::create( subsetMesh, AMP::Mesh::Vertex, 0, 1, false );
                 if ( *mesh_DOF != *subsetDOF )
