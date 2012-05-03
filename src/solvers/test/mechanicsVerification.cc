@@ -308,7 +308,7 @@ void linearElasticTest(AMP::UnitTest *ut,
      AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,3);
   AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,bvpOperator->getInputVariable());
   AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,bvpOperator->getOutputVariable());
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,bvpOperator->getOutputVariable());
+  //AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,bvpOperator->getOutputVariable());
 
   /** Create an operator to get manufactured solution and forcing terms */
   boost::shared_ptr<AMP::Operator::Operator> volumeOp = AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
@@ -478,7 +478,7 @@ AMP_ERROR("Not converted yet"); /*
   siloWriter->registerVector( exactErrVec, meshAdapter , AMP::Mesh::Vertex, "Exact_Error_Vector");
   siloWriter->registerVector( exactSolVec, meshAdapter  , AMP::Mesh::Vertex, "Exact_Solution_Vector");
   siloWriter->registerVector( solVec, meshAdapter , AMP::Mesh::Vertex, "Solution_Vector");
-  siloWriter->registerVector( resVec, meshAdapter , AMP::Mesh::Vertex, "Residual_Vector");
+  //siloWriter->registerVector( resVec, meshAdapter , AMP::Mesh::Vertex, "Residual_Vector");
 
   char outFileName1[256];
   sprintf(outFileName1, "undeformedBeam_%d", exampleNum);

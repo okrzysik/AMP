@@ -223,9 +223,9 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   // evaluate and register material coefficients for graphical output
 
   AMP::LinearAlgebra::Variable::shared_ptr fickCoeffVar(new AMP::LinearAlgebra::Variable("FickCoefficient"));
-  AMP::LinearAlgebra::Variable::shared_ptr soretCoeffVar(new AMP::LinearAlgebra::Variable("SoretCoefficient"));
+  //AMP::LinearAlgebra::Variable::shared_ptr soretCoeffVar(new AMP::LinearAlgebra::Variable("SoretCoefficient"));
   AMP::LinearAlgebra::Vector::shared_ptr fickCoeffVec  = AMP::LinearAlgebra::createVector( nodalDofMap, fickCoeffVar );
-  AMP::LinearAlgebra::Vector::shared_ptr soretCoeffVec = AMP::LinearAlgebra::createVector( nodalDofMap, soretCoeffVar );
+  //AMP::LinearAlgebra::Vector::shared_ptr soretCoeffVec = AMP::LinearAlgebra::createVector( nodalDofMap, soretCoeffVar );
   //boost::shared_ptr<AMP::Operator::DiffusionTransportModel> fickModel = fickOp->getTransportModel();
   //boost::shared_ptr<AMP::Operator::DiffusionTransportModel> soretModel = soretOp->getTransportModel();
 
