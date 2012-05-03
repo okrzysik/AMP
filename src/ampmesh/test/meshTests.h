@@ -166,6 +166,8 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
             ut->failure( "elements failed volume test" );
         if ( !coord_pass )
             ut->failure( "elements failed coord test" );
+        if ( !centroid_pass )
+            ut->failure( "elements failed centroid test" );
         if ( !elements_pass )
             ut->failure( "elements failed getElements test" );
         if ( !neighbor_pass )
