@@ -232,23 +232,15 @@ void moabInterface(AMP::UnitTest *ut)
     mapParams->setMoabOperator( moabOp );
     mapParams->setMeshManager( manager );
 
-    // Create variable to hold pressure data
-    typedef AMP::LinearAlgebra::MultiVariable AMPMultiVar;
-    typedef boost::shared_ptr< AMPMultiVar >  SP_AMPMultiVar;
-
-    SP_AMPMultiVar allGPPressures( new AMPMultiVar( "AllPressures" ) );
-    SP_AMPMultiVar allNodePressures( new AMPMultiVar( "AllPressures" ) );
-
     // Create DOF manager
     size_t DOFsPerNode = 1;
     int nodalGhostWidth = 0;
     bool split = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(manager, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
+    AMP::LinearAlgebra::Variable::shared_ptr nodalVar( new AMP::LinearAlgebra::Variable("nodalPressure") );
+    AMP::LinearAlgebra::Vector::shared_ptr nodalVec = AMP::LinearAlgebra::createVector( nodalDofMap, nodalVar, true);
 
-    // Have mesh manager create vector over all meshes
-    AMP::LinearAlgebra::Vector::shared_ptr r_node = AMP::LinearAlgebra::createVector( nodalDofMap, allNodePressures );
-    AMP::pout << "Nodal MultiVector size: " << r_node->getGlobalSize() << std::endl; 
-
+    AMP::pout << "Nodal Vector size: " << nodalVec->getGlobalSize() << std::endl; 
 
     // Now create Moab map operator
     AMP::pout << "Creating Node-Based Moab Map Operator" << std::endl;
@@ -256,14 +248,14 @@ void moabInterface(AMP::UnitTest *ut)
     SP_MoabMap moabNodeMap( new MoabMap( mapParams ) );
 
     // Do interpolation
-    moabNodeMap->apply( nullVec, nullVec, r_node, 0.0, 0.0 );
+    moabNodeMap->apply( nullVec, nullVec, nodalVec, 0.0, 0.0 );
 
     // Check to make sure we didn't just get a vector of zeros
     AMPVec::iterator myIter;
     int ctr=0;
     bool nonZero = false;
-    for( myIter  = r_node->begin();
-         myIter != r_node->end();
+    for( myIter  = nodalVec->begin();
+         myIter != nodalVec->end();
          myIter++ )
     {
         if( *myIter != 0.0 )
@@ -291,13 +283,13 @@ void moabInterface(AMP::UnitTest *ut)
         if( currentMesh.get() == NULL ) continue;
 
         std::string meshCoords = "Mesh_Coords";
-        SP_AMPVec thisMeshCoords = (*currentMesh)->getPositionVector( meshCoords );
+        SP_AMPVec thisMeshCoords = currentMesh->getPositionVector( meshCoords );
 
-        for( unsigned int i=0; i<(*currentMesh)->numLocalNodes(); ++i )
+        for( unsigned int i=0; i<currentMesh->numLocalElements(AMP::Mesh::Vertex); ++i )
         {
             double val1 = 100.0 * ( thisMeshCoords->getValueByLocalID(3*i)
                                   + thisMeshCoords->getValueByLocalID(3*i+2) ); // AMP  coordinates are in meters
-            double val2 = r_node->getValueByLocalID(offset+i);                  // Moab coordinates are in cm
+            double val2 = nodalVec->getValueByLocalID(offset+i);                // Moab coordinates are in cm
 
             // Linear interpolation should be 'exact' because we prescribed a linear function
             // Can't use approx_equal here because it fails for small values
@@ -310,7 +302,7 @@ void moabInterface(AMP::UnitTest *ut)
             }
         }
 
-        offset += (*currentMesh)->numLocalNodes();
+        offset += currentMesh->numLocalElements(AMP::Mesh::Vertex);
     }
 
     if( numMismatched == 0 )
@@ -323,7 +315,7 @@ void moabInterface(AMP::UnitTest *ut)
     
 #ifdef USE_SILO
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
-    siloWriter->registerVector( r_node, manager, AMP::Mesh::Vertex, "Temperatures" );
+    siloWriter->registerVector( nodalVec, manager, AMP::Mesh::Vertex, "Temperatures" );
     siloWriter->writeFile( "Moab_Temp", 0 );
 #endif
 
