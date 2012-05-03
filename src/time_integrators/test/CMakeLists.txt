@@ -3,7 +3,10 @@ INCLUDE (macros)
 ADD_AMP_TEST_1_2_4 ( testTimeIntegratorParameters )
 ADD_AMP_TEST_1_2_4 ( testIDA-LinearBVPOperator-1 )
 ADD_AMP_TEST_1_2_4 ( testIDA-NonlinearBVPOperator-1 )
-ADD_AMP_TEST_1_2_4 ( testIDA-NonlinearColumnOperator-1 )
+#ADD_AMP_TEST_1_2_4 ( testIDA-NonlinearColumnOperator-1 ) # Move to WEEKLY until it is running
+ADD_AMP_WEEKLY_TEST ( testIDA-NonlinearColumnOperator-1 1 )
+ADD_AMP_WEEKLY_TEST ( testIDA-NonlinearColumnOperator-1 2 )
+ADD_AMP_WEEKLY_TEST ( testIDA-NonlinearColumnOperator-1 4 )
 ADD_AMP_PROVISIONAL_TEST ( testIDA-NonlinearThermalOxygenDiffusion-1 )
 ADD_AMP_PROVISIONAL_TEST ( testBackwardEulerTimeIntegrator )
 

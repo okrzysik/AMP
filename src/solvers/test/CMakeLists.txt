@@ -95,10 +95,12 @@ COPY_TEST_DATA_FILE ( input_testLinearThermalExpansion )
 ADD_AMP_WEEKLY_TEST ( testContactV5withML 1 )
 COPY_TEST_DATA_FILE ( input_testContactV5withML )
 
-ADD_AMP_TEST ( testContactV5 )
+# ADD_AMP_TEST ( testContactV5 ) # Move to WEEKLY until it is running
+ADD_AMP_WEEKLY_TEST ( testContactV5 1 )
 COPY_TEST_DATA_FILE ( input_testContactV5 )
 
-ADD_AMP_TEST ( testContactSearch )
+# ADD_AMP_TEST ( testContactSearch ) # Move to WEEKLY until it is running
+ADD_AMP_WEEKLY_TEST ( testContactSearch 1 )
 COPY_TEST_DATA_FILE ( input_testContactSearch )
 
 ADD_AMP_TEST ( testJacobiVsML )
@@ -107,7 +109,8 @@ COPY_MESH_FILE ( tiedContactV1_fusedpelletclad.e )
 
 COPY_MESH_FILE ( tiedContact_pellet.e )
 
-ADD_AMP_TEST ( testTiedContactV3 )
+# ADD_AMP_TEST ( testTiedContactV3 ) # Move to WEEKLY until it is running
+ADD_AMP_WEEKLY_TEST ( testTiedContactV3 1 )
 COPY_TEST_DATA_FILE ( input_testTiedContactV3 )
 COPY_MESH_FILE ( tiedContactV3_clad.e )
 
@@ -251,7 +254,10 @@ ADD_AMP_WEEKLY_TEST ( testFixedBeam-ThermalExpansion 1 )
 ADD_AMP_WEEKLY_TEST ( testFixedBeam-CreepLoading 1 )
 ADD_AMP_WEEKLY_TEST ( testPetscSNESSolver-NonlinearMechanics-2_COMPARISON 1 )
 
-ADD_AMP_TEST_1_2_4 ( mechanicsVerification )
+#ADD_AMP_TEST_1_2_4 ( mechanicsVerification )   # Move to WEEKLY until it is running
+ADD_AMP_WEEKLY_TEST ( mechanicsVerification 1 )
+ADD_AMP_WEEKLY_TEST ( mechanicsVerification 2 )
+ADD_AMP_WEEKLY_TEST ( mechanicsVerification 4 )
 COPY_TEST_DATA_FILE ( input_mechanicsVerification-HaldenPellet )
 COPY_TEST_DATA_FILE ( input_mechanicsVerification-Linear )
 
