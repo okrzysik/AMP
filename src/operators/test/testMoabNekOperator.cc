@@ -84,17 +84,17 @@ void nekPipeOperator(AMP::UnitTest *ut)
     meshDB->putInteger("NumberOfElements",300);
 
 
-    // Create Mesh Manager
-    AMP::pout << "Creating mesh manager" << std::endl;
-    typedef AMP::Mesh::MeshParameters           MeshMgrParams;
-    typedef boost::shared_ptr< MeshMgrParams >  SP_MeshMgrParams;
+    // Create Mesh
+    AMP::pout << "Creating AMP mesh" << std::endl;
+    typedef AMP::Mesh::MeshParameters        MeshParams;
+    typedef boost::shared_ptr< MeshParams >  SP_MeshParams;
 
-    typedef AMP::Mesh::Mesh                     MeshMgr;
-    typedef AMP::Mesh::Mesh::shared_ptr         SP_MeshMgr;
+    typedef AMP::Mesh::Mesh                     AMPMesh;
+    typedef AMP::Mesh::Mesh::shared_ptr         SP_AMPMesh;
 
-    SP_MeshMgrParams mgrParams( new MeshMgrParams( meshDB ) );
-    mgrParams->setComm( AMP::AMP_MPI(AMP_COMM_WORLD) );
-    SP_MeshMgr manager = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    SP_MeshParams meshParams( new MeshParams( meshDB ) );
+    meshParams->setComm( AMP::AMP_MPI(AMP_COMM_WORLD) );
+    SP_AMPMesh mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
     
 
     // Create Parameters for Map Operator
@@ -109,7 +109,7 @@ void nekPipeOperator(AMP::UnitTest *ut)
     nekDB->putString("InterpolateToType","GaussPoint");
     SP_MoabMapParams mapParams( new MoabMapParams( nekDB ) );
     mapParams->setMoabOperator( nekOp );
-    mapParams->setMeshManager( manager );
+    mapParams->setMesh( mesh);
 
     AMP::pout << "Creating GP-Based Moab Map Operator" << std::endl;
     SP_MoabMap moabGPMap( new MoabMap( mapParams ) );
@@ -127,8 +127,10 @@ void nekPipeOperator(AMP::UnitTest *ut)
     int gaussPointGhostWidth = 0;
     int nodalGhostWidth = 0;
     bool split = true;
-    AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(manager, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split);
-    AMP::Discretization::DOFManager::shared_ptr      nodalDofMap = AMP::Discretization::simpleDOFManager::create(manager, AMP::Mesh::Vertex,      nodalGhostWidth, DOFsPerNode,    split);
+    AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = 
+        AMP::Discretization::simpleDOFManager::create(mesh, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split);
+    AMP::Discretization::DOFManager::shared_ptr      nodalDofMap = 
+        AMP::Discretization::simpleDOFManager::create(mesh, AMP::Mesh::Vertex,      nodalGhostWidth, DOFsPerNode,    split);
 
     // Have mesh manager create vector over all meshes
     AMP::LinearAlgebra::Vector::shared_ptr r_gp   = AMP::LinearAlgebra::createVector( gaussPointDofMap, allGPPressures );
@@ -189,8 +191,8 @@ void nekPipeOperator(AMP::UnitTest *ut)
     
 #ifdef USE_SILO
      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
-     siloWriter->registerVector( r_gp,   manager, AMP::Mesh::Volume, "AllGaussPointPressures" );
-     siloWriter->registerVector( r_node, manager, AMP::Mesh::Vertex, "AllNodalPressures" );
+     siloWriter->registerVector( r_gp,   mesh, AMP::Mesh::Volume, "AllGaussPointPressures" );
+     siloWriter->registerVector( r_node, mesh, AMP::Mesh::Vertex, "AllNodalPressures" );
      siloWriter->writeFile( "Nek_Pressure", 0 );
 #endif
 

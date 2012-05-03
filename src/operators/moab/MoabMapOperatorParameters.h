@@ -46,7 +46,7 @@ class MoabMapOperatorParameters : public AMP::Operator::OperatorParameters
 
         // Set functions
         void setMoabOperator( SP_MoabOp  &moabOp)  { d_moabOp = moabOp;  }
-        void setMeshManager(  AMP::Mesh::Mesh::shared_ptr &meshMgr) { d_mesh   = meshMgr; }
+        void setMesh(  AMP::Mesh::Mesh::shared_ptr &mesh) { d_mesh   = mesh; }
 
         // Mesh Manager
         AMP::Mesh::Mesh::shared_ptr d_mesh;

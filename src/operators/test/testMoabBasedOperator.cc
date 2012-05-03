@@ -207,17 +207,17 @@ void moabInterface(AMP::UnitTest *ut)
     meshArrayDatabase->putDoubleArray("z_offset",offsetArray);
     meshArrayDatabase->putInteger("NumberOfElements",300);
 
-    // Create Mesh Manager
-    AMP::pout << "Creating mesh manager" << std::endl;
-    typedef AMP::Mesh::MeshParameters           MeshMgrParams;
-    typedef boost::shared_ptr< MeshMgrParams >  SP_MeshMgrParams;
+    // Create Mesh 
+    AMP::pout << "Creating mesh" << std::endl;
+    typedef AMP::Mesh::MeshParameters        MeshParams;
+    typedef boost::shared_ptr< MeshParams >  SP_MeshParams;
 
-    typedef AMP::Mesh::Mesh                     MeshMgr;
-    typedef AMP::Mesh::Mesh::shared_ptr         SP_MeshMgr;
+    typedef AMP::Mesh::Mesh                  AMPMesh;
+    typedef AMP::Mesh::Mesh::shared_ptr      SP_AMPMesh;
 
-    SP_MeshMgrParams mgrParams( new MeshMgrParams( meshDB ) );
-    mgrParams->setComm( AMP::AMP_MPI(AMP_COMM_WORLD) );
-    SP_MeshMgr manager = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    SP_MeshParams meshParams( new MeshParams( meshDB ) );
+    meshParams->setComm( AMP::AMP_MPI(AMP_COMM_WORLD) );
+    SP_AMPMesh mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
     
     // Create Parameters for Map Operator
     AMP::pout << "Creating map operator" << std::endl;
@@ -230,13 +230,13 @@ void moabInterface(AMP::UnitTest *ut)
     moabDB->putString("MoabMapVariable","TEMPERATURE");
     SP_MoabMapParams mapParams( new MoabMapParams( moabDB ) );
     mapParams->setMoabOperator( moabOp );
-    mapParams->setMeshManager( manager );
+    mapParams->setMesh( mesh );
 
     // Create DOF manager
     size_t DOFsPerNode = 1;
     int nodalGhostWidth = 0;
     bool split = true;
-    AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(manager, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
+    AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(mesh, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
     AMP::LinearAlgebra::Variable::shared_ptr nodalVar( new AMP::LinearAlgebra::Variable("nodalPressure") );
     AMP::LinearAlgebra::Vector::shared_ptr nodalVec = AMP::LinearAlgebra::createVector( nodalDofMap, nodalVar, true);
 
@@ -274,12 +274,12 @@ void moabInterface(AMP::UnitTest *ut)
     int numMismatched=0;
 
     // loop over all meshes to create the preprocessor database for that mesh
-    std::vector<AMP::Mesh::MeshID> meshIDs = manager->getBaseMeshIDs();
+    std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getBaseMeshIDs();
     
     for( size_t meshIndex=0; meshIndex<meshIDs.size(); meshIndex++ )
     {
         // this is an accessor to all the mesh info.
-        AMP::Mesh::Mesh::shared_ptr currentMesh = manager->Subset( meshIDs[meshIndex] );
+        AMP::Mesh::Mesh::shared_ptr currentMesh = mesh->Subset( meshIDs[meshIndex] );
         if( currentMesh.get() == NULL ) continue;
 
         std::string meshCoords = "Mesh_Coords";
@@ -315,7 +315,7 @@ void moabInterface(AMP::UnitTest *ut)
     
 #ifdef USE_SILO
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
-    siloWriter->registerVector( nodalVec, manager, AMP::Mesh::Vertex, "Temperatures" );
+    siloWriter->registerVector( nodalVec, mesh, AMP::Mesh::Vertex, "Temperatures" );
     siloWriter->writeFile( "Moab_Temp", 0 );
 #endif
 
