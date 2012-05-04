@@ -26,6 +26,7 @@ void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
     VerifyBoundaryIterator( ut, mesh );
     testBlockIDs( ut, mesh );
     MeshIteratorSetOPTest( ut, mesh );
+    VerifyGhostIsOwned( ut, mesh );
     // Test the node neighbors
     getNodeNeighbors( ut, mesh );
     // Test displacement

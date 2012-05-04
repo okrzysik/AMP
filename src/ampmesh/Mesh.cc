@@ -214,6 +214,23 @@ boost::shared_ptr<Mesh> Mesh::Subset( const MeshIterator &iterator ) const
 
 
 /********************************************************
+* Function to return the element given an ID            *
+********************************************************/
+MeshElement Mesh::getElement ( const MeshElementID &elem_id ) const
+{
+    MeshID mesh_id = elem_id.meshID();
+    AMP_INSIST(mesh_id==d_meshID,"mesh id must match the mesh id of the element");
+    MeshIterator iterator = getIterator( elem_id.type() );
+    for (size_t i=0; i<iterator.size(); i++) {
+        if ( iterator->globalID() == elem_id )
+            return *iterator;
+        ++iterator;
+    }
+    return MeshElement();
+}
+
+
+/********************************************************
 * Return the position vector                            *
 ********************************************************/
 #ifdef USE_AMP_VECTORS

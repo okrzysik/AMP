@@ -11,8 +11,9 @@
     #include "vectors/Vector.h"
     #include "vectors/MultiVector.h"
     #include "vectors/VectorBuilder.h"
+    #include "vectors/VectorSelector.h"
+    #include "vectors/MeshVariable.h"
 #endif
-
 
 using namespace AMP::unit_test;
 
@@ -27,6 +28,7 @@ void testGetDOFIterator(  AMP::UnitTest *ut, const AMP::Mesh::MeshIterator &iter
         DOF->getDOFs( cur->globalID(), dofs );
         if ( dofs.empty() )
             passes = false;
+        ++cur;
     }
     if ( passes ) 
         ut->passes("Got the DOFs for every element in iterator");
@@ -46,7 +48,7 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
 
     // Create a simple DOF manager
     AMP::Discretization::DOFManager::shared_ptr DOF = 
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 0, 1, SPLIT );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1, SPLIT );
     testGetDOFIterator(  ut, mesh->getIterator(AMP::Mesh::Vertex,1), DOF );
     AMP::Discretization::DOFManager::shared_ptr subsetDOF;
 
@@ -82,7 +84,7 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
                 subsetDOF = DOF->subset(subsetMesh);
                 testGetDOFIterator(  ut, subsetMesh->getIterator(AMP::Mesh::Vertex,1), subsetDOF );
                 AMP::Discretization::DOFManager::shared_ptr mesh_DOF = 
-                    AMP::Discretization::simpleDOFManager::create( subsetMesh, AMP::Mesh::Vertex, 0, 1, false );
+                    AMP::Discretization::simpleDOFManager::create( subsetMesh, AMP::Mesh::Vertex, 1, 1, false );
                 if ( *mesh_DOF != *subsetDOF )
                     passes = false;
             }
@@ -94,21 +96,29 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
     }
 
     // Subset for iterators
-    AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::Vertex, 0 );
+    AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::Vertex, 1 );
     subsetDOF = DOF->subset( iterator, mesh->getComm() );
     testGetDOFIterator(  ut, mesh->getIterator(AMP::Mesh::Vertex,1), subsetDOF );
     if ( *DOF == *subsetDOF )
         ut->passes("Subset DOF on full mesh iterator");
     else
         ut->failure("Subset DOF on full mesh iterator");
-    iterator = mesh->getSurfaceIterator( AMP::Mesh::Vertex, 0 );
+    iterator = mesh->getSurfaceIterator( AMP::Mesh::Vertex, 1 );
     subsetDOF = DOF->subset( iterator, mesh->getComm() );
     testGetDOFIterator(  ut, mesh->getSurfaceIterator(AMP::Mesh::Vertex,1), subsetDOF );
+    iterator = mesh->getSurfaceIterator( AMP::Mesh::Vertex, 0 );
     if ( subsetDOF->numGlobalDOF()<DOF->numGlobalDOF() && subsetDOF->numLocalDOF()==iterator.size() )
         ut->passes("Subset DOF on surface mesh iterator");
     else
         ut->failure("Subset DOF on surface mesh iterator");
 
+    // Subset using VectorSelector
+    #ifdef USE_AMP_VECTORS
+        AMP::Mesh::Mesh::shared_ptr submesh = mesh->Subset( mesh->getSurfaceIterator(AMP::Mesh::Face,1) );
+        AMP::LinearAlgebra::MeshIteratorVariable meshSubsetVariable( "surfaceSubset", submesh->getIterator(AMP::Mesh::Vertex,1), submesh->getComm() );
+        subsetDOF = meshSubsetVariable.getSubsetDOF( DOF );
+        testGetDOFIterator(  ut, submesh->getIterator(AMP::Mesh::Vertex,1), subsetDOF );
+    #endif
 }
 
 

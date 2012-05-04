@@ -15,13 +15,15 @@ int main ( int argc , char ** argv )
     AMP::UnitTest ut;
 
     // Run the tests
-    testSimpleDOFManager<LibMeshCubeGenerator<5> >( &ut );
-    testSimpleDOFManager<ExodusReaderGenerator<> >( &ut );
+    /*testSimpleDOFManager<LibMeshCubeGenerator<5> >( &ut );
+    testSimpleDOFManager<ExodusReaderGenerator<1> >( &ut );
+    testSimpleDOFManager<ExodusReaderGenerator<3> >( &ut );
     testSimpleDOFManager<MultiMeshGenerator>( &ut );
     testMultiDOFManager<LibMeshCubeGenerator<5> >( &ut );
     testMultiDOFManager<MultiMeshGenerator>( &ut );
     testSubsetDOFManager<MultiMeshGenerator,false>( &ut );
-    testSubsetDOFManager<MultiMeshGenerator,true>( &ut );
+    testSubsetDOFManager<MultiMeshGenerator,true>( &ut );*/
+    testSubsetDOFManager<ExodusReaderGenerator<3>,false>( &ut );
 
     // Print the results and return
     ut.report ();

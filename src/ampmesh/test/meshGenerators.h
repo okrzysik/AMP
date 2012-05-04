@@ -74,6 +74,8 @@ public:
             database->putString("FileName","clad_1x_1pellet.e");
         } else if ( FILE==2 ) {
             database->putString("FileName","multiElementMesh.e");
+        } else if ( FILE==3 ) {
+            database->putString("FileName","pellet_1x.e");
         } else {
             AMP_ERROR("Bad file for generator");
         }
@@ -126,7 +128,7 @@ public:
 
 
 // Surface subset generator
-template <class GENERATOR> 
+template <class GENERATOR,int GCW> 
 class   SurfaceSubsetGenerator : public MeshGenerator
 {
 public:
@@ -136,7 +138,7 @@ public:
         AMP::Mesh::Mesh::shared_ptr mesh1 = generator->getMesh();
         AMP::Mesh::GeomType type = mesh1->getGeomType();
         AMP::Mesh::GeomType type2 = (AMP::Mesh::GeomType) ((int) type - 1);
-        AMP::Mesh::MeshIterator iterator = mesh1->getSurfaceIterator(type2,1);
+        AMP::Mesh::MeshIterator iterator = mesh1->getSurfaceIterator(type2,GCW);
         mesh = mesh1->Subset(iterator);
     }
 };

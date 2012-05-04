@@ -51,14 +51,14 @@ DOFManager::shared_ptr  subsetDOFManager::create( boost::shared_ptr<const DOFMan
     size_t *send_data = NULL;
     if ( N_local > 0 )
         send_data = &(subsetDOF->d_localDOFs[0]);
-    int *N_remote = new int[subsetDOF->d_comm.getSize()];
-    int *N_disp = new int[subsetDOF->d_comm.getSize()];
+    std::vector<int> N_remote(subsetDOF->d_comm.getSize(),0);
+    std::vector<int> N_disp(subsetDOF->d_comm.getSize(),0);
     std::vector<size_t> recv_data(subsetDOF->d_global);
-    subsetDOF->d_comm.allGather( (int) N_local, N_remote );
+    subsetDOF->d_comm.allGather( (int) N_local, &N_remote[0] );
     N_disp[0] = 0;
     for (int i=1; i<subsetDOF->d_comm.getSize(); i++)
         N_disp[i] = N_disp[i-1] + N_remote[i-1];
-    subsetDOF->d_comm.allGather( send_data, (int) N_local, &recv_data[0], N_remote, N_disp, true );
+    subsetDOF->d_comm.allGather( send_data, (int) N_local, &recv_data[0], &N_remote[0], &N_disp[0], true );
     AMP::Utilities::quicksort( recv_data );
     std::vector<size_t> remoteDOFs = subsetDOF->d_parentDOFManager->getRemoteDOFs();
     subsetDOF->d_remoteParentDOFs = std::vector<size_t>();
@@ -75,8 +75,6 @@ DOFManager::shared_ptr  subsetDOFManager::create( boost::shared_ptr<const DOFMan
             k++;
         }
     }
-    delete [] N_remote;
-    delete [] N_disp;
     if ( subsetDOF->numGlobalDOF() == 0 )
         return DOFManager::shared_ptr();
     return subsetDOF;
