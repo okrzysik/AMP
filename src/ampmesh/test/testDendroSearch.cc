@@ -320,8 +320,6 @@ void setupDSforSearch( std::vector<ot::NodeAndRanks>& nodeAndIndexList, std::vec
   }//end i
   swap(mins, tmpMins);
   tmpMins.clear();
-
-
 }
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
