@@ -161,7 +161,62 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   MPI_Allgather( &(firstAndLastList[(2*rank)]), 2, par::Mpi_datatype<ot::TreeNode>::value(), 
       &(firstAndLastList[0]), 2, par::Mpi_datatype<ot::TreeNode>::value(), globalComm.getCommunicator() );
 
-  //TO DO: Parallel Merge.
+  int numToSend = 0;
+  for(int i = (rank + 1); i < npes; ++i) {
+    if( (firstAndLastList[(2*rank) + 1] == firstAndLastList[2*i]) ||
+        (firstAndLastList[(2*rank) + 1].isAncestor(firstAndLastList[2*i])) ) {
+      ++numToSend;
+    } else {
+      break;
+    }
+  }//end i
+
+  int rankOfSending = -1; 
+  for(int i = 0; i < rank; ++i) {
+    if( (firstAndLastList[(2*i) + 1] == firstAndLastList[2*rank]) ||
+        (firstAndLastList[(2*i) + 1].isAncestor(firstAndLastList[2*rank])) ) {
+      rankOfSending = i;
+      break;
+    }
+  }//end i
+
+  //If global max(numToSend) is small then we can use Point2Point can be used instead of the
+  //following All2allv.   
+  //We can do a Reduce on numToSend to see if this is the case.
+
+  int *sendCnts = new int[npes];
+  int *recvCnts = new int[npes];
+  int *sendDisps = new int[npes];
+  int *recvDisps = new int[npes];
+
+  for(int i = 0; i < npes; ++i) {
+    sendCnts[i] = 0;
+    recvCnts[i] = 0;
+  }//end i
+  if(rankOfSending >= 0) {
+    recvCnts[rankOfSending] = 1;
+  }
+  for(int i = 1; i <= numToSend; ++i) {
+    sendCnts[rank + i] = 1;
+  }//end i
+
+  for(int i = 0; i < npes; ++i) {
+    sendDisps[i] = 0;
+    recvDisps[i] = 0;
+  }//end i
+
+  ot::TreeNode remoteElem;
+  MPI_Alltoallv( (&(firstAndLastList[(2*rank) + 1])), sendCnts, sendDisps, par::Mpi_datatype<ot::TreeNode>::value(),
+      (&remoteElem), recvCnts, recvDisps, par::Mpi_datatype<ot::TreeNode>::value(), globalComm.getCommunicator() );
+
+  firstAndLastList.clear();
+
+
+
+  delete [] sendCnts;
+  delete [] recvCnts;
+  delete [] sendDisps;
+  delete [] recvDisps;
 
   //TO DO: Form Mins List (Partition Info) for nodeAndIndexList.
 
