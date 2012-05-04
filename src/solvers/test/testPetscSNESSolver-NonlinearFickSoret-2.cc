@@ -223,11 +223,11 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   // evaluate and register material coefficients for graphical output
 
   AMP::LinearAlgebra::Variable::shared_ptr fickCoeffVar(new AMP::LinearAlgebra::Variable("FickCoefficient"));
-  //AMP::LinearAlgebra::Variable::shared_ptr soretCoeffVar(new AMP::LinearAlgebra::Variable("SoretCoefficient"));
+  AMP::LinearAlgebra::Variable::shared_ptr soretCoeffVar(new AMP::LinearAlgebra::Variable("SoretCoefficient"));
   AMP::LinearAlgebra::Vector::shared_ptr fickCoeffVec  = AMP::LinearAlgebra::createVector( nodalDofMap, fickCoeffVar );
-  //AMP::LinearAlgebra::Vector::shared_ptr soretCoeffVec = AMP::LinearAlgebra::createVector( nodalDofMap, soretCoeffVar );
-  //boost::shared_ptr<AMP::Operator::DiffusionTransportModel> fickModel = fickOp->getTransportModel();
-  //boost::shared_ptr<AMP::Operator::DiffusionTransportModel> soretModel = soretOp->getTransportModel();
+  AMP::LinearAlgebra::Vector::shared_ptr soretCoeffVec = AMP::LinearAlgebra::createVector( nodalDofMap, soretCoeffVar );
+  boost::shared_ptr<AMP::Operator::DiffusionTransportModel> fickModel = fickOp->getTransportModel();
+  boost::shared_ptr<AMP::Operator::DiffusionTransportModel> soretModel = soretOp->getTransportModel();
 
   {
     int zeroGhostWidth = 0;
@@ -245,10 +245,15 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
 	  fickFrozen[AMP::Operator::Diffusion::TEMPERATURE]->getValuesByGlobalID(nnodes, &gids[0], &temp[0]);
 	  solVec->getValuesByGlobalID(nnodes, &gids[0], &conc[0]);
 	  // this is  used to plot the fick and soret coefficnets used.  commenting it out till someone finds out.
-	  //fickModel->getTransport(fickCoeff, temp, conc, burn);  // This generates a compile error
-	  //soretModel->getTransport(soretCoeff, temp, conc, burn);  // This generates a compiler error
-	  //fickCoeffVec->setValuesByGlobalID(nnodes, &gids[0], &fickCoeff[0]);
-	  //soretCoeffVec->setValuesByGlobalID(nnodes, &gids[0], &soretCoeff[0]);
+	  // This is kevin - i found out because the vector wasn't used when silo is not enabled.
+    std::map<std::string,  boost::shared_ptr<std::vector<double> > > args;
+		args.insert(std::make_pair("temperature",   boost::shared_ptr<std::vector<double> >(&temp)));
+		args.insert(std::make_pair("concentration", boost::shared_ptr<std::vector<double> >(&conc)));
+		args.insert(std::make_pair("burnup",        boost::shared_ptr<std::vector<double> >(&burn)));
+	  fickModel->getTransport(fickCoeff, args); 
+	  soretModel->getTransport(soretCoeff, args ); 
+	  fickCoeffVec->setValuesByGlobalID(nnodes, &gids[0], &fickCoeff[0]);
+	  soretCoeffVec->setValuesByGlobalID(nnodes, &gids[0], &soretCoeff[0]);
   }
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
