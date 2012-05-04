@@ -97,8 +97,10 @@ private:
     // Structure used to hold data for the silo multimeshes
     struct siloMultiMeshData {
         AMP::Mesh::MeshID               id;         // Unique ID to identify the mesh
+        AMP::Mesh::Mesh::shared_ptr     mesh;       // Pointer to the mesh
         std::string                     name;       // Name of the multimesh in silo
         std::vector<siloBaseMeshData>   meshes;     // Base mesh info needed to construct the mesh data
+        std::vector<std::string>        varName;    // List of the names of variables associated with each mesh
         // Function to count the number of bytes needed to pack the data
         size_t size();
         // Function to pack the data to a byte array
@@ -126,11 +128,14 @@ private:
     void writeSummary( std::string filename );
 
     // The comm of the writer
-    AMP_MPI d_comm;    
+    AMP_MPI d_comm;
+
+    // The dimension
+    int dim;
 
     // List of all meshes and thier ids
-    std::map<AMP::Mesh::MeshID,siloBaseMeshData>            d_baseMeshes;
-    std::map<AMP::Mesh::MeshID,AMP::Mesh::Mesh::shared_ptr> d_multiMeshes;
+    std::map<AMP::Mesh::MeshID,siloBaseMeshData>  d_baseMeshes;
+    std::map<AMP::Mesh::MeshID,siloMultiMeshData> d_multiMeshes;
 
     // List of all variables
     std::set<std::string>   d_varNames;
