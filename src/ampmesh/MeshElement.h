@@ -46,6 +46,12 @@ public:
     inline bool operator>  (const MeshElement& rhs ) const { return d_globalID >  rhs.d_globalID; }
     inline bool operator<= (const MeshElement& rhs ) const { return d_globalID <= rhs.d_globalID; }
     inline bool operator>= (const MeshElement& rhs ) const { return d_globalID >= rhs.d_globalID; }
+    inline bool operator== (const MeshElementID& rhs ) const { return d_globalID == rhs; }
+    inline bool operator!= (const MeshElementID& rhs ) const { return d_globalID != rhs; }
+    inline bool operator<  (const MeshElementID& rhs ) const { return d_globalID <  rhs; }
+    inline bool operator>  (const MeshElementID& rhs ) const { return d_globalID >  rhs; }
+    inline bool operator<= (const MeshElementID& rhs ) const { return d_globalID <= rhs; }
+    inline bool operator>= (const MeshElementID& rhs ) const { return d_globalID >= rhs; }
 
     //! Return the element type
     virtual GeomType elementType() const { return d_elementType; }

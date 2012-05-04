@@ -101,6 +101,54 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
                 new std::vector<MeshElement>(list.begin(),list.end()) );
         }
     }
+    // For each entity type, we need to check that any ghost elements are owned by somebody
+    for (int t=0; t<(int)GeomDim; t++) {
+        // First get a global list of all ghost elements
+        std::vector<MeshElementID> ghost_local;
+        for (int gcw=0; gcw<=d_max_gcw; gcw++) {
+            ghost_local.reserve(ghost_local.size()+d_elements[t][gcw]->size());
+            for (size_t i=0; i<d_elements[t][gcw]->size(); i++) {
+                MeshElementID id = (*d_elements[t][gcw])[i].globalID();
+                if ( !id.is_local() )
+                    ghost_local.push_back( id );
+            }
+        }
+        size_t N_ghost_local = ghost_local.size();
+        size_t N_ghost_global = d_comm.sumReduce( N_ghost_local );
+        if ( N_ghost_global==0 )
+            continue;
+        std::vector<MeshElementID> ghost_global(N_ghost_global);
+        MeshElementID* send_ptr = NULL;
+        if ( N_ghost_local>0 ) { send_ptr = &ghost_local[0]; }
+        MeshElementID* recv_ptr = &ghost_global[0];
+        d_comm.allGather( send_ptr, N_ghost_local, recv_ptr );
+        AMP::Utilities::unique(ghost_global);
+        // For each ghost, check if we own it, and add it to the list if necessary
+        MeshID my_mesh_id = d_parent_mesh->meshID();
+        unsigned int my_rank = d_parent_mesh->getComm().getRank();
+        bool changed = false;
+        for (size_t i=0; i<ghost_global.size(); i++) {
+            AMP_ASSERT(my_mesh_id==ghost_global[i].meshID());
+            if ( ghost_global[i].owner_rank()==my_rank ) {
+                bool found = false;
+                for (size_t j=0; j<d_elements[t][0]->size(); j++) {
+                    if ( (*d_elements[t][0])[j].globalID()==ghost_global[i] ) {
+                        found = true;
+                        break;
+                    }
+                }
+                if ( !found ) {
+                    MeshElement element = d_parent_mesh->getElement( ghost_global[i] );
+                    AMP_ASSERT(element.globalID()==ghost_global[i]);
+                    d_elements[t][0]->push_back( element );
+                    changed = true;
+                }
+            }
+        }
+        if ( changed )
+            AMP::Utilities::quicksort(*d_elements[t][0]);
+    }
+    // Count the number of elements of each type
     N_global = std::vector<size_t>((int)GeomDim+1);
     for (int i=0; i<=(int)GeomDim; i++)
         N_global[i] = d_elements[i][0]->size();
