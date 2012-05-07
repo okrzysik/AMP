@@ -445,7 +445,6 @@ template <class type>
 inline void AMP_MPI::setGather( std::set<type> &set ) const
 {
     std::vector<type> send(set.begin(),set.end());
-    unsigned int N_recv = sumReduce<unsigned int>( send.size() );
     std::vector<int> recv_cnt(this->comm_size,0);
     this->allGather<int>( send.size(), &recv_cnt[0] );
     std::vector<int> recv_disp(this->comm_size,0);
