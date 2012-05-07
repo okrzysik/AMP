@@ -439,6 +439,34 @@ void AMP_MPI::call_allGather(const type *x_in, int size_in, type *x_out, int *si
 
 
 /************************************************************************
+*  setGather                                                            *
+************************************************************************/
+template <class type>
+inline void AMP_MPI::setGather( std::set<type> &set ) const
+{
+    std::vector<type> send(set.begin(),set.end());
+    std::vector<int> recv_cnt(this->comm_size,0);
+    this->allGather<int>( send.size(), &recv_cnt[0] );
+    std::vector<int> recv_disp(this->comm_size,0);
+    for (int i=1; i<this->comm_size; i++)
+        recv_disp[i] = recv_disp[i-1]+recv_cnt[i-1];
+    size_t N_recv_tot = 0;
+    for (int i=0; i<this->comm_size; i++)
+        N_recv_tot += recv_cnt[i];
+    if ( N_recv_tot==0 )
+        return;
+    std::vector<type> send_buf(set.begin(),set.end());
+    std::vector<type> recv_buf(N_recv_tot);
+    type *send_data = NULL;
+    if ( send.size()>0 ) { send_data = &send_buf[0]; }
+    type *recv_data = &recv_buf[0];
+    this->allGather<type>( send_data, send.size(), recv_data, &recv_cnt[0], &recv_disp[0], true);
+    for (size_t i=0; i<recv_buf.size(); i++)
+        set.insert(recv_buf[i]);
+}
+
+
+/************************************************************************
 *  sumScan                                                              *
 ************************************************************************/
 template <class type>

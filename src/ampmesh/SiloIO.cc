@@ -42,8 +42,6 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
             DBfile *FileHandle;
             if ( d_comm.getRank()==0 ) {
                 FileHandle = DBCreate( fname.c_str(), DB_CLOBBER, DB_LOCAL, NULL, DB_HDF5 );
-                // Create the necessary directories
-                DBMkDir( FileHandle, "All_Meshes" );
             } else {
                 FileHandle = DBOpen ( fname.c_str(), DB_HDF5, DB_APPEND );
             }
@@ -68,7 +66,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
 /************************************************************
 * Function to register a mesh with silo                     *
 ************************************************************/
-void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh )
+void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, std::string path )
 { 
     if ( dim == -1 )
         dim = mesh->getDim();
@@ -85,21 +83,19 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh )
         stream << data.rank;
         std::string rank = stream.str();
         data.meshName = "rank_" + rank;
-        data.path = "All_Meshes/"+mesh->getName();
+        data.path = path + mesh->getName();
         d_baseMeshes.insert( std::pair<AMP::Mesh::MeshID,siloBaseMeshData>(mesh->meshID(),data) );
         siloMultiMeshData data2;
         data2.id = mesh->meshID();
         data2.mesh = mesh;
-        data2.name = mesh->getName();
+        data2.name = path + mesh->getName();
         d_multiMeshes.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(mesh->meshID(),data2) );
     } else {
-        // We are dealining with a multimesh, register the current mesh and all base meshes
-        std::vector<AMP::Mesh::MeshID> ids = mesh->getBaseMeshIDs();
-        for (size_t i=0; i<ids.size(); i++) {
-            AMP::Mesh::Mesh::shared_ptr mesh2 = mesh->Subset(ids[i]);
-            if ( mesh2.get() != NULL )
-                registerMesh( mesh2 );
-        }
+        // We are dealining with a multimesh, register the current mesh and sub meshes
+        std::string new_path = path + mesh->getName() + "_/";
+        std::vector<AMP::Mesh::Mesh::shared_ptr> submeshes = multimesh->getMeshes();
+        for (size_t i=0; i<submeshes.size(); i++)
+            registerMesh( submeshes[i], new_path );
         siloMultiMeshData data;
         data.id = mesh->meshID();
         data.mesh = mesh;
@@ -234,13 +230,30 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
         }
         ++elem_iterator;
     }
-    // Write the elements (connectivity)
-    if ( mesh->getComm().getRank()==0 ) {
-        DBSetDir( FileHandle, "All_Meshes" );
-        DBMkDir( FileHandle, mesh->getName().c_str() );
-        DBSetDir( FileHandle, "/" );
+    // Create the directory for the mesh
+    std::string tmp_path = data.path;
+    while ( tmp_path.size() > 0 ) {
+        if ( tmp_path[0]=='/' ) {
+            tmp_path.erase(0,1);
+            continue;
+        }
+        size_t pos = tmp_path.find_first_of('/');
+        if ( pos==std::string::npos ) { pos = tmp_path.size(); }
+        std::string subdir = tmp_path.substr(0,pos);
+        DBtoc *toc = DBGetToc( FileHandle );
+        bool subdir_found = false;
+        for (int i=0; i<toc->ndir; i++) {
+            if ( subdir.compare(toc->dir_names[i])==0 )
+                subdir_found = true;
+        }
+        if ( !subdir_found )
+            DBMkDir( FileHandle, subdir.c_str() );
+        DBSetDir( FileHandle, subdir.c_str() );
+        tmp_path.erase(0,pos);
     }
+    DBSetDir( FileHandle, "/" );
     DBSetDir( FileHandle, data.path.c_str() );
+    // Write the elements (connectivity)
     std::stringstream  stream;
     stream << data.rank;
     std::string rank = stream.str();
@@ -261,7 +274,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
         for (size_t i=0; i<data.varName.size(); i++) {
             AMP::Discretization::DOFManager::shared_ptr DOFs = data.vec[i]->getDOFManager();
             int nvar = 0;
-            int centering;
+            int centering = 0;
             double **var = new double*[data.varSize[i]];
             const char *varnames[] = {"1","2","3"};
             if ( data.varType[i]==AMP::Mesh::Vertex ) {

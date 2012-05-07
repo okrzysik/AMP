@@ -491,7 +491,7 @@ size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
     boost::shared_ptr<AMP::Database> database = params->getDatabase();
     AMP_ASSERT(database.get()!=NULL);
-    size_t NumberOfElements;
+    size_t NumberOfElements=0;
     if ( database->keyExists("NumberOfElements") ) {
         // User specified the number of elements, this should override everything
         NumberOfElements = (size_t) database->getInteger("NumberOfElements");

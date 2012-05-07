@@ -2,6 +2,7 @@
 #ifndef included_AMP_MPI
 #define included_AMP_MPI
 
+#include <set>
 #include <complex>
 #include "Utilities.h"
 
@@ -596,7 +597,7 @@ public:
 
 
     /*!
-     * Each processor sends every other processor an integer or double.
+     * Each processor sends every other processor a single value.
      * The x_out array should be preallocated to a length equal
      * to the number of processors.
      * @param x_in      Input value for allGather
@@ -632,6 +633,14 @@ public:
     template <class type>
     int allGather(const type *send_data, const int send_cnt, type *recv_data, 
         int *recv_cnt=NULL, int* recv_disp=NULL, bool known_recv=false) const;
+
+
+    /*!
+     * This function combines sets from different processors to create a single master set
+     * @param set       Input/Output std::set for the gather.
+     */
+    template <class type>
+    void setGather( std::set<type> &set ) const;
 
 
     /*!
