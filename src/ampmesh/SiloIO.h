@@ -48,8 +48,14 @@ public:
     //!  Function to write a file
     void  writeFile( const std::string &fname, size_t iteration_count );
 
-    //!  Function to register a mesh (Note: if mesh is a MultiMesh, it will register all sub meshes)
-    void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh );
+    /**
+     * \brief    Function to register a mesh
+     * \details  This function will register a mesh with the silo writer.  
+     *           Note: if mesh is a MultiMesh, it will register all sub meshes.
+     * \param mesh  The mesh to register
+     * \param path  The directory path for the mesh.  Default is an empty string.
+     */
+    void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, std::string path=std::string() );
 
 #ifdef USE_AMP_VECTORS
     /**
@@ -65,7 +71,6 @@ public:
      *              the vector multiple times (one for each entity type).
      * \param name  Optional name for the vector.
      */
-    //!  Function to register a vector
     void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec, AMP::Mesh::Mesh::shared_ptr mesh,
         AMP::Mesh::GeomType type, const std::string &name = "" );
 #endif
