@@ -171,10 +171,10 @@ void setupDSforSearch( std::vector<ot::TreeNode>& nodeList, std::vector<unsigned
   int npes = globalComm.getSize();
 
   std::vector< ot::TreeNode > firstAndLastList(2*npes);
-  firstAndLastList[(2*rank)] = nodeAndIndexList[0].node;
-  firstAndLastList[(2*rank) + 1] = nodeAndIndexList[nodeAndIndexList.size() - 1].node;
-
-  MPI_Allgather( &(firstAndLastList[(2*rank)]), 2, par::Mpi_datatype<ot::TreeNode>::value(), 
+  ot::TreeNode firstAndLastSendBuf[2];
+  firstAndLastSendBuf[0] = nodeAndIndexList[0].node;
+  firstAndLastSendBuf[1] = nodeAndIndexList[nodeAndIndexList.size() - 1].node;
+  MPI_Allgather( firstAndLastSendBuf, 2, par::Mpi_datatype<ot::TreeNode>::value(), 
       &(firstAndLastList[0]), 2, par::Mpi_datatype<ot::TreeNode>::value(), globalComm.getCommunicator() );
 
   int numToSend = 0;
@@ -372,8 +372,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   setupDSforSearch( nodeList, numIndicesList, mins, rankList, elemIdList,
       minCoords, maxCoords, ScalingFactor, meshAdapter, globalComm );
 
+  globalComm.barrier();
+
   int rank = globalComm.getRank();
   int npes = globalComm.getSize();
+
+  if(!rank) {
+    std::cout<<"Finished setting up DS for search!"<<std::endl;
+  }
 
   int numPtsPerProc = input_db->getInteger("NumberOfPointsPerProcessor");
 
@@ -569,6 +575,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     AMP::Mesh::MeshElement el = meshAdapter->getElement( recvElemIdList[i] );
     //results[i] = el.containsPoint(recvPtsList[5*i], recvPtsList[(5*i) + 1], recvPtsList[(5*i) + 2]);
   }//end i
+
+  globalComm.barrier();
+
+  if(!rank) {
+    std::cout<<"Finished search!"<<std::endl;
+  }
 
   ut->passes(exeName);
 }
