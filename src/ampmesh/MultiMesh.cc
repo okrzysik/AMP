@@ -572,7 +572,9 @@ boost::shared_ptr<Mesh>  MultiMesh::Subset( std::string name ) const
     // Create a new multi-mesh to contain the subset
     int color = subset.size()==0 ? -1:0;
     AMP::AMP_MPI new_comm = d_comm.split( color );
-    boost::shared_ptr<MultiMesh> subsetMultiMesh( new MultiMesh ( new_comm, subset ) );
+    if ( new_comm.isNull() )
+        return boost::shared_ptr<Mesh>();
+    boost::shared_ptr<MultiMesh> subsetMultiMesh( new MultiMesh( new_comm, subset ) );
     subsetMultiMesh->setName( name );
     return subsetMultiMesh;
 }
