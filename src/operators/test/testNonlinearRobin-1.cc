@@ -112,11 +112,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   // create the following shared pointers for ease of use
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
+#ifdef USE_SILO
   //-------------------------------------------------------------------------------------------//
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
   siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
   siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
+#endif
 
   AMP::pout<<"Constructing Linear Thermal Operator..."<<std::endl;
 

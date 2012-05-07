@@ -437,7 +437,7 @@ void SiloIO::writeSummary( std::string filename )
     std::map<AMP::Mesh::MeshID,siloMultiMeshData> multiMeshes = d_multiMeshes;
     std::map<AMP::Mesh::MeshID,siloMultiMeshData>::iterator iterator;
     for (iterator=multiMeshes.begin(); iterator!=multiMeshes.end(); iterator++) {
-        AMP::Mesh::MeshID id = iterator->first;
+        //AMP::Mesh::MeshID id = iterator->first;
         AMP::Mesh::Mesh::shared_ptr mesh = iterator->second.mesh;
         std::vector<AMP::Mesh::MeshID> base_ids = getMeshIDs( mesh );
         for (size_t i=0; i<base_ids.size(); i++) {

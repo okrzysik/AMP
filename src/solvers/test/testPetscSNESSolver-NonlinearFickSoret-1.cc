@@ -95,11 +95,13 @@ void fickTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &resul
   AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fickVariable, true );
   AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fickVariable, true );
 
+#ifdef USE_SILO
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // register some variables for plotting
   AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
   siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
   siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
+#endif
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // now construct the linear BVP operator for fick
@@ -274,12 +276,13 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   fickOp->setVector(0, tVec);
   soretOp->setVector(0, tVec);
 
+#ifdef USE_SILO
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // register some variables for plotting
   AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
   siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
   siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
-
+#endif
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   //Initial guess
