@@ -86,10 +86,10 @@ void computeMinAndMaxCoords( double* minCoords, double* maxCoords, double* Scali
   }//end i
 }
 
-void setupDSforSearch( std::vector<ot::NodeAndRanks>& nodeAndIndexList, std::vector<ot::TreeNode>& mins,
-    std::vector<unsigned int>& rankList, std::vector<AMP::Mesh::MeshElementID>& elemIdList,
-    double* minCoords, double* maxCoords, double* ScalingFactor,
-    AMP::Mesh::Mesh::shared_ptr meshAdapter, AMP::AMP_MPI globalComm ) {
+void setupDSforSearch( std::vector<ot::TreeNode>& nodeList, std::vector<unsigned int>& numIndicesList,
+    std::vector<ot::TreeNode>& mins, std::vector<unsigned int>& rankList,
+    std::vector<AMP::Mesh::MeshElementID>& elemIdList, double* minCoords, double* maxCoords,
+    double* ScalingFactor, AMP::Mesh::Mesh::shared_ptr meshAdapter, AMP::AMP_MPI globalComm ) {
   int rank = globalComm.getRank();
 
   computeMinAndMaxCoords(minCoords, maxCoords, ScalingFactor, meshAdapter, globalComm);
@@ -134,6 +134,11 @@ void setupDSforSearch( std::vector<ot::NodeAndRanks>& nodeAndIndexList, std::vec
   tmpList.clear();
 
   AMP_ASSERT(!(nodeAndElemIdList.empty()));
+
+  //TO DO: Performance Improvement.
+  //Instead of storing the node and indices, we could just store the node and
+  //starting index and number of indices since the indices are consecutive.
+  std::vector<ot::NodeAndRanks> nodeAndIndexList;
 
   //Local Merge
   {
@@ -320,6 +325,19 @@ void setupDSforSearch( std::vector<ot::NodeAndRanks>& nodeAndIndexList, std::vec
   }//end i
   swap(mins, tmpMins);
   tmpMins.clear();
+
+  nodeList.resize(nodeAndIndexList.size());
+  numIndicesList.resize(nodeAndIndexList.size());
+  if(!(nodeList.empty())) {
+    nodeList[0] = nodeAndIndexList[0].node;
+    nodeList[0].setWeight(0);
+    numIndicesList[0] = nodeAndIndexList[0].ranks.size();
+  }
+  for(int i = 1; i < nodeAndIndexList.size(); ++i) {
+    nodeList[i] = nodeAndIndexList[i].node;
+    nodeList[i].setWeight((nodeList[i - 1].getWeight()) + numIndicesList[i -1]);
+    numIndicesList[i] = nodeAndIndexList[i].ranks.size();
+  }//end i
 }
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
@@ -345,24 +363,212 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   double maxCoords[3];
   double ScalingFactor[3];
 
-  //TO DO: Performance Improvement.
-  //Instead of storing the node and indices, we could just store the node and
-  //starting index and number of indices since the indices are consecutive.
-  std::vector<ot::NodeAndRanks> nodeAndIndexList;
+  std::vector<ot::TreeNode> nodeList;
+  std::vector<unsigned int> numIndicesList;
   std::vector<unsigned int> rankList;
   std::vector<AMP::Mesh::MeshElementID> elemIdList;
   std::vector<ot::TreeNode> mins;
 
-  setupDSforSearch( nodeAndIndexList, mins, rankList, elemIdList,
+  setupDSforSearch( nodeList, numIndicesList, mins, rankList, elemIdList,
       minCoords, maxCoords, ScalingFactor, meshAdapter, globalComm );
+
+  int rank = globalComm.getRank();
+  int npes = globalComm.getSize();
+
+  int numPtsPerProc = input_db->getInteger("NumberOfPointsPerProcessor");
+
+  //Generate Random points in [min, max]
+  const unsigned int seed = (0x1234567 + (24135*rank));
+  srand48(seed);
+
+  std::vector<double> pts;
+  for(int i = 0; i < numPtsPerProc; ++i) {
+    double x = ((maxCoords[0] - minCoords[0])*drand48()) + minCoords[0];
+    double y = ((maxCoords[1] - minCoords[1])*drand48()) + minCoords[1];
+    double z = ((maxCoords[2] - minCoords[2])*drand48()) + minCoords[2];
+    pts.push_back(x);
+    pts.push_back(y);
+    pts.push_back(z);
+  }//end i
 
   const unsigned int MaxDepth = 30;
   const unsigned int ITPMD = (1u << MaxDepth);
   const double DTPMD = static_cast<double>(ITPMD);
 
-  int rank = globalComm.getRank();
-  int npes = globalComm.getSize();
+  std::vector<ot::NodeAndValues<double, 4> > ptsWrapper;
+  for(int i = 0; i < numPtsPerProc; ++i) {
+    double x = pts[3*i];
+    double y = pts[(3*i) + 1];
+    double z = pts[(3*i) + 2];
+    double scaledX = ((x - minCoords[0])*ScalingFactor[0]);
+    double scaledY = ((y - minCoords[1])*ScalingFactor[1]);
+    double scaledZ = ((z - minCoords[2])*ScalingFactor[2]);
+    unsigned int pX = static_cast<unsigned int>(scaledX*DTPMD);
+    unsigned int pY = static_cast<unsigned int>(scaledY*DTPMD);
+    unsigned int pZ = static_cast<unsigned int>(scaledZ*DTPMD);
 
+    ot::NodeAndValues<double, 4> tmpObj;
+    tmpObj.node =  ot::TreeNode(pX, pY, pZ, MaxDepth, 3, MaxDepth);
+    tmpObj.node.setWeight(rank);
+    tmpObj.values[0] = x;
+    tmpObj.values[1] = y;
+    tmpObj.values[2] = z;
+    tmpObj.values[3] = i;
+
+    ptsWrapper.push_back(tmpObj);
+  }//end i
+
+  //Performance Question: Should PtsWrapper be sorted or not?
+  //If PtsWrapper is sorted (even just a local sort), we can skip the
+  //binary searches and use binning instead.  Binning is amortized constant
+  //time and using binary searches would be logarithmic. This is just a matter
+  //of constants since sorting is also logarithmic.
+
+  int* sendCnts = new int[npes];
+  for(int i = 0; i < npes; ++i) {
+    sendCnts[i] = 0;
+  }//end i
+
+  std::vector<int> part(numPtsPerProc, -1);
+  for(int i = 0; i < numPtsPerProc; ++i) {
+    unsigned int retIdx;
+    bool found = seq::maxLowerBound<ot::TreeNode>(mins, (ptsWrapper[i].node), retIdx, NULL, NULL);
+    if(found) {
+      part[i] = mins[retIdx].getWeight();
+      sendCnts[part[i]]++;
+    }
+  }//end i
+
+  int* recvCnts = new int[npes];
+  MPI_Alltoall(sendCnts, 1, MPI_INT, recvCnts, 1, MPI_INT, (globalComm.getCommunicator()));
+
+  int* sendDisps = new int[npes]; 
+  int* recvDisps = new int[npes]; 
+  sendDisps[0] = 0;
+  recvDisps[0] = 0;
+  for(int i = 1; i < npes; ++i) {
+    sendDisps[i] = sendDisps[i - 1] + sendCnts[i - 1];
+    recvDisps[i] = recvDisps[i - 1] + recvCnts[i - 1];
+  }//end i
+
+  std::vector<ot::NodeAndValues<double, 4> > sendList(sendDisps[npes - 1] + sendCnts[npes - 1]);
+
+  for(int i = 0; i < npes; ++i) {
+    sendCnts[i] = 0;
+  }//end i
+
+  for(int i = 0; i < numPtsPerProc; ++i) {
+    if(part[i] >= 0) {
+      sendList[sendDisps[part[i]] + sendCnts[part[i]]] = ptsWrapper[i];
+      sendCnts[part[i]]++;
+    }
+  }//end i
+
+  std::vector<ot::NodeAndValues<double, 4> > recvList(recvDisps[npes - 1] + recvCnts[npes - 1]);
+  ot::NodeAndValues<double, 4>* sendListPtr = NULL;
+  ot::NodeAndValues<double, 4>* recvListPtr = NULL;
+  if(!(sendList.empty())) {
+    sendListPtr = &(sendList[0]);
+  }
+  if(!(recvList.empty())) {
+    recvListPtr = &(recvList[0]);
+  }
+  MPI_Alltoallv( sendListPtr, sendCnts, sendDisps, par::Mpi_datatype<ot::NodeAndValues<double, 4> >::value(),
+      recvListPtr, recvCnts, recvDisps, par::Mpi_datatype<ot::NodeAndValues<double, 4> >::value(), 
+      (globalComm.getCommunicator()) );
+
+  for(int i = 0; i < npes; ++i) {
+    sendCnts[i] = 0;
+  }//end i
+
+  std::vector<int> ptToOctMap((recvList.size()), -1);
+  for(int i = 0; i < recvList.size(); ++i) {
+    unsigned int retIdx;
+    seq::maxLowerBound<ot::TreeNode>(nodeList, (recvList[i].node), retIdx, NULL, NULL);
+    if( (nodeList[retIdx] == (recvList[i].node)) || 
+        (nodeList[retIdx].isAncestor(recvList[i].node)) ) {
+      ptToOctMap[i] = retIdx;
+      int stIdx = nodeList[retIdx].getWeight();
+      for(int j = 0; j < numIndicesList[retIdx]; ++j) {
+        sendCnts[rankList[stIdx + j]]++;
+      }//end j
+    }
+  }//end i
+
+  MPI_Alltoall(sendCnts, 1, MPI_INT, recvCnts, 1, MPI_INT, (globalComm.getCommunicator()));
+
+  sendDisps[0] = 0;
+  recvDisps[0] = 0;
+  for(int i = 1; i < npes; ++i) {
+    sendDisps[i] = sendDisps[i - 1] + sendCnts[i - 1];
+    recvDisps[i] = recvDisps[i - 1] + recvCnts[i - 1];
+  }//end i
+
+  std::vector<AMP::Mesh::MeshElementID> sendElemIdList(sendDisps[npes - 1] + sendCnts[npes - 1]);
+  std::vector<double> sendPtsList(5*(sendDisps[npes - 1] + sendCnts[npes - 1]));
+
+  for(int i = 0; i < npes; ++i) {
+    sendCnts[i] = 0;
+  }//end i
+
+  for(int i = 0; i < ptToOctMap.size(); ++i) {
+    if(ptToOctMap[i] >= 0) {
+      int stIdx = nodeList[ptToOctMap[i]].getWeight();
+      for(int j = 0; j < numIndicesList[ptToOctMap[i]]; ++j) {
+        sendElemIdList[sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]]] = elemIdList[stIdx + j];
+        sendPtsList[(5*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]]))] = recvList[i].values[0];
+        sendPtsList[(5*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 1] = recvList[i].values[1];
+        sendPtsList[(5*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 2] = recvList[i].values[2];
+        sendPtsList[(5*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 3] = recvList[i].values[3];
+        sendPtsList[(5*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 4] = recvList[i].node.getWeight();
+        sendCnts[rankList[stIdx + j]]++;
+      }//end j
+    }
+  }//end i
+
+  std::vector<AMP::Mesh::MeshElementID> recvElemIdList(recvDisps[npes - 1] + recvCnts[npes - 1]);
+  AMP::Mesh::MeshElementID* sendElemPtr = NULL;
+  AMP::Mesh::MeshElementID* recvElemPtr = NULL;
+  if(!(sendElemIdList.empty())) {
+    sendElemPtr = &(sendElemIdList[0]);
+  }
+  if(!(recvElemIdList.empty())) {
+    recvElemPtr = &(recvElemIdList[0]);
+  }
+  MPI_Alltoallv( sendElemPtr, sendCnts, sendDisps, par::Mpi_datatype<AMP::Mesh::MeshElementID>::value(),
+      recvElemPtr, recvCnts, recvDisps, par::Mpi_datatype<AMP::Mesh::MeshElementID>::value(), 
+      (globalComm.getCommunicator()) );
+
+  for(int i = 0; i < npes; ++i) {
+    sendCnts[i] *= 5;
+    sendDisps[i] *= 5;
+    recvCnts[i] *= 5;
+    recvDisps[i] *= 5;
+  }//end i
+
+  std::vector<double> recvPtsList(recvDisps[npes - 1] + recvCnts[npes - 1]);
+  double* sendPtsPtr = NULL;
+  double* recvPtsPtr = NULL;
+  if(!(sendPtsList.empty())) {
+    sendPtsPtr = &(sendPtsList[0]);
+  }
+  if(!(recvPtsList.empty())) {
+    recvPtsPtr = &(recvPtsList[0]);
+  }
+  MPI_Alltoallv( sendPtsPtr, sendCnts, sendDisps, MPI_DOUBLE,
+      recvPtsPtr, recvCnts, recvDisps, MPI_DOUBLE, (globalComm.getCommunicator()) );
+
+  delete [] sendCnts;
+  delete [] sendDisps;
+  delete [] recvCnts;
+  delete [] recvDisps;
+
+  int numRecvPts = recvElemIdList.size();
+  std::vector<bool> results(numRecvPts, false);
+  for(int i = 0; i < numRecvPts; ++i) {
+    AMP::Mesh::MeshElement el = meshAdapter->getElement( recvElemIdList[i] );
+    //results[i] = el.containsPoint(recvPtsList[5*i], recvPtsList[(5*i) + 1], recvPtsList[(5*i) + 2]);
+  }//end i
 
   ut->passes(exeName);
 }
