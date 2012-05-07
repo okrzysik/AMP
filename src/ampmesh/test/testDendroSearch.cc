@@ -572,7 +572,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   int numRecvPts = recvElemIdList.size();
   std::vector<bool> results(numRecvPts, false);
   for(int i = 0; i < numRecvPts; ++i) {
-    AMP::Mesh::MeshElement el = meshAdapter->getElement( recvElemIdList[i] );
+    //AMP::Mesh::MeshElement el = meshAdapter->getElement( recvElemIdList[i] );
     //results[i] = el.containsPoint(recvPtsList[5*i], recvPtsList[(5*i) + 1], recvPtsList[(5*i) + 2]);
   }//end i
 
