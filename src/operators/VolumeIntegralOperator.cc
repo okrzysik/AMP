@@ -71,18 +71,26 @@ namespace AMP {
     {
       AMP_INSIST( (u != NULL), "NULL Input Vector" );
 
+
+      AMP::LinearAlgebra::VS_Mesh meshSelector("subset", d_Mesh);
+      AMP::LinearAlgebra::Vector::shared_ptr meshSubsetPrimary, meshSubsetAuxillary;
+
+      if ( d_inpVariables->numVariables() > 0 )
+        meshSubsetPrimary = u->select(meshSelector,d_inpVariables->getName());
       for(size_t var = 0; var < d_inpVariables->numVariables(); var++)
       {
         AMP::LinearAlgebra::Variable::shared_ptr primaryVariable = d_inpVariables->getVariable(var);
-        d_inVec[var] = u->subsetVectorForVariable( primaryVariable );
+        d_inVec[var] = meshSubsetPrimary->subsetVectorForVariable( primaryVariable );
         AMP_ASSERT( d_inVec[var] != NULL );
         (d_inVec[var])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
       }
 
+      if ( d_auxVariables->numVariables() > 0 )
+         meshSubsetAuxillary = d_multiAuxPtr->select(meshSelector,d_auxVariables->getName());
       for(size_t var = 0; var < d_auxVariables->numVariables(); var++)
       {
         AMP::LinearAlgebra::Variable::shared_ptr auxillaryVariable = d_auxVariables->getVariable(var);
-        d_auxVec[var] = d_multiAuxPtr->subsetVectorForVariable( auxillaryVariable );
+        d_auxVec[var] = meshSubsetAuxillary->subsetVectorForVariable( auxillaryVariable );
         (d_auxVec[var])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
       }
 
