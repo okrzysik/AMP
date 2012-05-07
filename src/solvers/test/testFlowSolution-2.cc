@@ -530,6 +530,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     //-------------------------------------
     nonlinearSolver->setZeroInitialGuess(false);
 
+#ifdef USE_SILO
     // Register the quantities to plot
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
     if ( meshAdapter1.get()!=NULL ) {
@@ -539,6 +540,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
         siloWriter->registerVector( globalSolVec, meshAdapter2, AMP::Mesh::Vertex, "CladTemperature" );
         siloWriter->registerVector( flowSolVec, surfaceMesh, AMP::Mesh::Vertex, "FlowTemperature" );
     }
+#endif
 
     for ( int tstep = 0; tstep < 1; tstep++ ) {
         if ( neutronicsOperator.get()!=NULL ) {

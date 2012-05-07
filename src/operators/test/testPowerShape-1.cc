@@ -72,15 +72,12 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
         ut->failure("error");
     } 
     
-    //meshAdapter->registerVectorAsData ( SpecificPowerShapeVec );
-    AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
-    siloWriter->registerMesh( meshAdapter );
-    siloWriter->registerVector( SpecificPowerShapeVec, meshAdapter, AMP::Mesh::Volume, "SpecificPowerInWattsPerKg" );
-
     ut->passes("PowerShape gets past apply with a non-flat power shape.");
     
     #ifdef USE_SILO
-    
+    AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+    siloWriter->registerMesh( meshAdapter );
+    siloWriter->registerVector( SpecificPowerShapeVec, meshAdapter, AMP::Mesh::Volume, "SpecificPowerInWattsPerKg" );
     siloWriter->writeFile( input_file , 0 );
     
     ut->passes("Silo of shape vector written");
