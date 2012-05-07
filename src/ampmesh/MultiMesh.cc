@@ -623,7 +623,11 @@ static void copyKey(boost::shared_ptr<AMP::Database> &database1,
             } break;
         case AMP::Database::AMP_DATABASE: {
             // Copy the database
-            AMP_ERROR("Not programmed for databases yet");
+            boost::shared_ptr<AMP::Database> subDatabase1 = database1->getDatabase(key);
+            boost::shared_ptr<AMP::Database> subDatabase2 = database2->putDatabase(key);
+            std::vector<std::string> subKeys = subDatabase1->getAllKeys();
+            for (size_t i=0; i<subKeys.size(); i++)
+                copyKey( subDatabase1, subDatabase2, subKeys[i], 1, 0 );
             } break;
         case AMP::Database::AMP_BOOL: {
             // Copy a bool

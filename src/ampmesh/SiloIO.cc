@@ -261,7 +261,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
         for (size_t i=0; i<data.varName.size(); i++) {
             AMP::Discretization::DOFManager::shared_ptr DOFs = data.vec[i]->getDOFManager();
             int nvar = 0;
-            int centering;
+            int centering = 0;
             double **var = new double*[data.varSize[i]];
             const char *varnames[] = {"1","2","3"};
             if ( data.varType[i]==AMP::Mesh::Vertex ) {
