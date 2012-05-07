@@ -551,12 +551,30 @@ boost::shared_ptr<Mesh>  MultiMesh::Subset( std::string name ) const
 {
     if ( d_name==name )
         return boost::const_pointer_cast<Mesh>( shared_from_this() );
+    // Subset for the name in each submesh
+    std::vector<Mesh::shared_ptr> subset;
+    std::set<MeshID> subsetID;
     for (size_t i=0; i<d_meshes.size(); i++) {
-        boost::shared_ptr<Mesh> mesh = d_meshes[i]->Subset(name);
-        if ( mesh.get()!=NULL )
-            return mesh;
+        Mesh::shared_ptr mesh = d_meshes[i]->Subset(name);
+        if ( mesh.get()!=NULL ) {
+            subset.push_back( mesh ); 
+            subsetID.insert( mesh->meshID() ); 
+        }
     }
-    return boost::shared_ptr<Mesh>();
+    // Count the number of globally unique sub-meshes
+    d_comm.setGather( subsetID ); 
+    if ( subsetID.size() <= 1 ) {
+        if ( subset.size() == 0 )
+            return boost::shared_ptr<Mesh>();
+        else
+            return subset[0];
+    }
+    // Create a new multi-mesh to contain the subset
+    int color = subset.size()==0 ? -1:0;
+    AMP::AMP_MPI new_comm = d_comm.split( color );
+    boost::shared_ptr<MultiMesh> subsetMultiMesh( new MultiMesh ( new_comm, subset ) );
+    subsetMultiMesh->setName( name );
+    return subsetMultiMesh;
 }
 
 
