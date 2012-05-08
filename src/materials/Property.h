@@ -122,12 +122,11 @@ public:
 	}
 
 	/**
-	 * \fn			 	changing number of parameters allowed
+	 * \brief          changing number of parameters allowed
 	 */
 	bool variable_number_parameters(){return d_variableNumberParameters;}
 
 	/**
-	 * \fn			   set_parameters, changing number thereof
 	 * \brief		   set the property parameters
 	 * \param[in]	   params the new parameters
 	 * \param[in]	   nparams the number of new parameters

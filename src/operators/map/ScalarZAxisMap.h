@@ -40,7 +40,7 @@ public:
     /** \brief   Standard constructor
      * \param[in] params  Input parameters
      */
-    ScalarZAxisMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> & );
+    ScalarZAxisMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> &params );
 
     //! Destructor
     virtual ~ScalarZAxisMap ();

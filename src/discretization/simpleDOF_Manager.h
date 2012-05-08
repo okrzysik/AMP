@@ -33,10 +33,11 @@ public:
     /**
      * \brief Create a new DOF manager object
      * \details  This is the standard constructor for creating a new DOF manager object.
-     * \param mesh      Mesh over which we want to construct the DOF map
-     * \param type      The geometric entity type for the DOF map
-     * \param gcw       The desired ghost width
-     * \param split     Do we want to split the DOFManager by the meshes returning a multiDOFManager
+     * \param mesh          Mesh over which we want to construct the DOF map
+     * \param type          The geometric entity type for the DOF map
+     * \param gcw           The desired ghost width
+     * \param DOFsPerElement The desired number of DOFs pere element
+     * \param split         Do we want to split the DOFManager by the meshes returning a multiDOFManager
      */
     static DOFManager::shared_ptr  create( boost::shared_ptr<AMP::Mesh::Mesh> mesh, 
         AMP::Mesh::GeomType type, int gcw, int DOFsPerElement, bool split=true );
@@ -45,9 +46,10 @@ public:
     /**
      * \brief Create a new DOF manager object
      * \details  This is will create a new simpleDOFManager from a mesh iterator
-     * \param mesh      Mesh over which the iterators are defined
-     * \param it1       The iterator over the elements (including ghost cells)
-     * \param it2       The iterator over the elements (excluding ghost cells)
+     * \param mesh          Mesh over which the iterators are defined
+     * \param it1           The iterator over the elements (including ghost cells)
+     * \param it2           The iterator over the elements (excluding ghost cells)
+     * \param DOFsPerElement The desired number of DOFs pere element
      */
     static DOFManager::shared_ptr  create( boost::shared_ptr<AMP::Mesh::Mesh> mesh, 
         const AMP::Mesh::MeshIterator it1, const AMP::Mesh::MeshIterator it2, int DOFsPerElement );
