@@ -14,11 +14,14 @@
 
 #include <iostream>
 #include <string>
+#include <cmath>
+#include <cstdlib>
 
 #include <vector>
 
 #include "sys/sys.h"
 #include "par/parUtils.h"
+#include "binOps/binUtils.h"
 #include "oct/TreeNode.h"
 #include "oct/octUtils.h"
 #include "oct/nodeAndValues.h"
@@ -71,49 +74,80 @@ void createLocalMeshElementArray(std::vector<AMP::Mesh::MeshElement>& localElemA
   }//end el
 }
 
-void setupDSforSearchType(unsigned int BoxLevel, std::vector<ot::TreeNode>& nodeList, std::vector<unsigned int>& numIndicesList,
+void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& nodeList, std::vector<unsigned int>& numIndicesList,
     std::vector<ot::TreeNode>& mins, std::vector<unsigned int>& rankList,
     std::vector<int>& elemIdList, std::vector<AMP::Mesh::MeshElement>& localElemArr,
     double* minCoords, double* maxCoords, double* ScalingFactor, 
     AMP::Mesh::Mesh::shared_ptr meshAdapter, AMP::AMP_MPI globalComm) {
   int rank = globalComm.getRank();
+  int npes = globalComm.getSize();
 
   computeMinAndMaxCoords(minCoords, maxCoords, ScalingFactor, meshAdapter, globalComm);
 
   createLocalMeshElementArray(localElemArr, meshAdapter);
 
   const unsigned int MaxDepth = 30;
+
+  unsigned int totalNumElems = meshAdapter->numGlobalElements(AMP::Mesh::Volume);
+
+  double avgHboxInv = std::pow(totalNumElems, (1.0/3.0));
+  assert(avgHboxInv > 1.0);
+  BoxLevel = binOp::fastLog2(static_cast<unsigned int>(std::ceil(avgHboxInv)));
+  assert(BoxLevel <= MaxDepth);
+
+  if(!rank) {
+    std::cout<<"BoxLevel = "<<BoxLevel<<std::endl;
+  }
+
   const unsigned int ITPMD = (1u << MaxDepth);
   const double DTPMD = static_cast<double>(ITPMD);
+  const double hBox = 1.0/(static_cast<double>(1u<<BoxLevel));
 
   std::vector< ot::NodeAndValues<int, 1> > nodeAndElemIdList;
 
-  AMP::Mesh::MeshIterator el = meshAdapter->getIterator(AMP::Mesh::Volume, 0);
-  AMP::Mesh::MeshIterator end_el = el.end();
-  AMP_ASSERT(el != end_el);
-  for(int eId = 0; el != end_el; ++el, ++eId) {
-    std::vector<AMP::Mesh::MeshElement> currNodes = el->getElements(AMP::Mesh::Vertex);
-    std::vector<ot::TreeNode> ptOcts;
+  assert(!(localElemArr.empty()));
+
+  for(int eId = 0; eId < localElemArr.size(); ++eId) {
+    std::vector<AMP::Mesh::MeshElement> currNodes = localElemArr[eId].getElements(AMP::Mesh::Vertex);
+    int minId[3];
+    int maxId[3];
     for(size_t i = 0; i < currNodes.size(); ++i) {
       std::vector<double> pt = currNodes[i].coord();
-      double scaledX = ((pt[0] - minCoords[0])*ScalingFactor[0]);
-      double scaledY = ((pt[1] - minCoords[1])*ScalingFactor[1]);
-      double scaledZ = ((pt[2] - minCoords[2])*ScalingFactor[2]);
-      unsigned int pX = static_cast<unsigned int>(scaledX*DTPMD);
-      unsigned int pY = static_cast<unsigned int>(scaledY*DTPMD);
-      unsigned int pZ = static_cast<unsigned int>(scaledZ*DTPMD);
-      ptOcts.push_back( ot::TreeNode(pX, pY, pZ, MaxDepth, 3, MaxDepth) );
+      double scaledPt[3];
+      for(int j = 0; j < 3; ++j) {
+        scaledPt[j] = ((pt[j] - minCoords[j])*ScalingFactor[j]);
+        int id = static_cast<int>(scaledPt[j]/hBox);
+        if(i == 0) {
+          minId[j] = id;
+          maxId[j] = id;
+        } else {
+          if(minId[j] > id) {
+            minId[j] = id;
+          }
+          if(maxId[j] < id) {
+            maxId[j] = id;
+          }
+        }
+      }//end j
     }//end i
-    ot::TreeNode nca = ptOcts[0];
-    for(size_t i = 1; i < ptOcts.size(); ++i) {
-      nca = ot::getNCA(nca, ptOcts[i]);
-    }//end i
-    nca.setWeight(rank);
-    ot::NodeAndValues<int, 1> obj;
-    obj.node = nca;
-    obj.values[0] = eId;
-    nodeAndElemIdList.push_back(obj);
-  }//end for el
+    //Performance Improvement: We can skip the boxes that lie
+    //completely outside the element.
+    for(int k = minId[2]; k <= maxId[2]; ++k) {
+      for(int j = minId[1]; j <= maxId[1]; ++j) {
+        for(int i = minId[0]; i <= maxId[0]; ++i) {
+          unsigned int bX = i*(1u<<(MaxDepth - BoxLevel));
+          unsigned int bY = j*(1u<<(MaxDepth - BoxLevel));
+          unsigned int bZ = k*(1u<<(MaxDepth - BoxLevel));
+          ot::TreeNode box(bX, bY, bZ, BoxLevel, 3, MaxDepth);
+          box.setWeight(rank);
+          ot::NodeAndValues<int, 1> obj;
+          obj.node = box;
+          obj.values[0] = eId;
+          nodeAndElemIdList.push_back(obj);
+        }//end i 
+      }//end j 
+    }//end k 
+  }//end eId
 
   std::vector< ot::NodeAndValues<int, 1> > tmpList;
   par::sampleSort< ot::NodeAndValues<int, 1> >(
@@ -121,12 +155,23 @@ void setupDSforSearchType(unsigned int BoxLevel, std::vector<ot::TreeNode>& node
   swap(nodeAndElemIdList, tmpList);
   tmpList.clear();
 
-  AMP_ASSERT(!(nodeAndElemIdList.empty()));
+  int numLocalOcts = nodeAndElemIdList.size();
+  int numGlobalOcts = globalComm.sumReduce<int>(numLocalOcts);
+  if(!rank) {
+    std::cout<<"Total num initial octants = "<<numGlobalOcts <<std::endl;
+  }
 
   //TO DO: Performance Improvement.
   //Instead of storing the node and indices, we could just store the node and
   //starting index and number of indices since the indices are consecutive.
+  //In other words, we can directly work with nodeList and numIndicesList
+  //instead of temporarily working with nodeAndIndexList.
   std::vector<ot::NodeAndRanks> nodeAndIndexList;
+
+  rankList.clear();
+  elemIdList.clear();
+
+  assert(numLocalOcts > 0);
 
   //Local Merge
   {
@@ -141,8 +186,7 @@ void setupDSforSearchType(unsigned int BoxLevel, std::vector<ot::TreeNode>& node
   }
   for(size_t i = 1; i < nodeAndElemIdList.size(); ++i) {
     ot::TreeNode currNode = nodeAndElemIdList[i].node;
-    if( (nodeAndIndexList[nodeAndIndexList.size() - 1].node == currNode) ||
-        (nodeAndIndexList[nodeAndIndexList.size() - 1].node.isAncestor(currNode)) ) {
+    if( nodeAndIndexList[nodeAndIndexList.size() - 1].node == currNode ) {
       nodeAndIndexList[nodeAndIndexList.size() - 1].ranks.push_back(rankList.size());
     } else {
       ot::NodeAndRanks tmpObj;
@@ -156,7 +200,69 @@ void setupDSforSearchType(unsigned int BoxLevel, std::vector<ot::TreeNode>& node
   }//end i
   nodeAndElemIdList.clear();
 
-  int npes = globalComm.getSize();
+  assert(nodeAndIndexList.size() >= 2);
+
+  ot::TreeNode firstNode;
+  if(!(nodeAndIndexList.empty())) {
+    firstNode = nodeAndIndexList[0].node;
+    firstNode.setWeight(rank);
+  }
+  mins.resize(npes);
+  MPI_Allgather(&firstNode, 1, par::Mpi_datatype<ot::TreeNode>::value(), 
+      &(mins[0]), 1, par::Mpi_datatype<ot::TreeNode>::value(), globalComm.getCommunicator() );
+
+  std::vector<ot::TreeNode> tmpMins;
+  for(int i = 0; i < npes; ++i) {
+    if(mins[i].getDim() > 0) {
+      tmpMins.push_back(mins[i]);
+    }
+  }//end i
+  swap(mins, tmpMins);
+  tmpMins.clear();
+
+  nodeList.resize(nodeAndIndexList.size());
+  numIndicesList.resize(nodeAndIndexList.size());
+  if(!(nodeList.empty())) {
+    nodeList[0] = nodeAndIndexList[0].node;
+    nodeList[0].setWeight(0);
+    numIndicesList[0] = nodeAndIndexList[0].ranks.size();
+  }
+  for(int i = 1; i < nodeAndIndexList.size(); ++i) {
+    nodeList[i] = nodeAndIndexList[i].node;
+    nodeList[i].setWeight((nodeList[i - 1].getWeight()) + numIndicesList[i -1]);
+    numIndicesList[i] = nodeAndIndexList[i].ranks.size();
+  }//end i
+
+  int minNumIndices = numIndicesList[0];
+  int maxNumIndices = numIndicesList[0];
+  for(int i = 1; i < numIndicesList.size(); ++i) {
+    if(minNumIndices > numIndicesList[i]) {
+      minNumIndices = numIndicesList[i];
+    }
+    if(maxNumIndices < numIndicesList[i]) {
+      maxNumIndices = numIndicesList[i];
+    }
+  }//end i
+
+  int globalMinNumIndices = globalComm.minReduce<int>(minNumIndices);
+  int globalMaxNumIndices = globalComm.maxReduce<int>(maxNumIndices);
+
+  numLocalOcts = nodeList.size();
+  numGlobalOcts = globalComm.sumReduce<int>(numLocalOcts);
+
+  if(!rank) {
+    std::cout<<"Total num final octants = "<<numGlobalOcts <<std::endl;
+    std::cout<<"Global Min Num Indices = "<<globalMinNumIndices <<std::endl;
+    std::cout<<"Global Max Num Indices = "<<globalMaxNumIndices <<std::endl;
+  }
+}
+
+#if 0 
+void setupDSforSearchType(std::vector<ot::TreeNode>& nodeList, std::vector<unsigned int>& numIndicesList,
+    std::vector<ot::TreeNode>& mins, std::vector<unsigned int>& rankList,
+    std::vector<int>& elemIdList, std::vector<AMP::Mesh::MeshElement>& localElemArr,
+    double* minCoords, double* maxCoords, double* ScalingFactor, 
+    AMP::Mesh::Mesh::shared_ptr meshAdapter, AMP::AMP_MPI globalComm) {
 
   std::vector< ot::TreeNode > firstAndLastList(2*npes);
   ot::TreeNode firstAndLastSendBuf[2];
@@ -294,54 +400,9 @@ void setupDSforSearchType(unsigned int BoxLevel, std::vector<ot::TreeNode>& node
       nodeAndIndexList[i].ranks[j] = nodeAndIndexList[i].ranks[j] - numReturning;
     }//end j
   }//end i
-
-  ot::TreeNode firstNode;
-  if(!(nodeAndIndexList.empty())) {
-    firstNode = nodeAndIndexList[0].node;
-    firstNode.setWeight(rank);
-  }
-  mins.resize(npes);
-  MPI_Allgather(&firstNode, 1, par::Mpi_datatype<ot::TreeNode>::value(), 
-      &(mins[0]), 1, par::Mpi_datatype<ot::TreeNode>::value(), globalComm.getCommunicator() );
-
-  std::vector<ot::TreeNode> tmpMins;
-  for(int i = 0; i < npes; ++i) {
-    if(mins[i].getDim() > 0) {
-      tmpMins.push_back(mins[i]);
-    }
-  }//end i
-  swap(mins, tmpMins);
-  tmpMins.clear();
-
-  nodeList.resize(nodeAndIndexList.size());
-  numIndicesList.resize(nodeAndIndexList.size());
-  if(!(nodeList.empty())) {
-    nodeList[0] = nodeAndIndexList[0].node;
-    nodeList[0].setWeight(0);
-    numIndicesList[0] = nodeAndIndexList[0].ranks.size();
-  }
-  for(int i = 1; i < nodeAndIndexList.size(); ++i) {
-    nodeList[i] = nodeAndIndexList[i].node;
-    nodeList[i].setWeight((nodeList[i - 1].getWeight()) + numIndicesList[i -1]);
-    numIndicesList[i] = nodeAndIndexList[i].ranks.size();
-  }//end i
-
-  int maxNumIndices = 0;
-  for(int i = 0; i < numIndicesList.size(); ++i) {
-    if(maxNumIndices < numIndicesList[i]) {
-      maxNumIndices = numIndicesList[i];
-    }
-  }//end i
-
-  int globalMaxNumIndices = globalComm.maxReduce<int>(maxNumIndices);
-
-  globalComm.barrier();
-
-  if(!rank) {
-    std::cout<<"Num Octants = "<<(nodeList.size()) <<std::endl;
-    std::cout<<"Global Max Num Indices = "<<globalMaxNumIndices <<std::endl;
-  }
 }
+
+#endif
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
@@ -352,9 +413,28 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
+  int rank = globalComm.getRank();
+  int npes = globalComm.getSize();
+
+  globalComm.barrier();
+
+  double inpReadBeginTime = MPI_Wtime();
+
   boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
+
+  globalComm.barrier();
+
+  double inpReadEndTime = MPI_Wtime();
+
+  if(!rank) {
+    std::cout<<"Finished parsing the input file in "<<(inpReadEndTime - inpReadBeginTime)<<" seconds."<<std::endl;
+  }
+
+  globalComm.barrier();
+
+  double meshBeginTime = MPI_Wtime();
 
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
   boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
@@ -362,20 +442,21 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
-  int rank = globalComm.getRank();
-  int npes = globalComm.getSize();
+  globalComm.barrier();
+
+  double meshEndTime = MPI_Wtime();
+
+  if(!rank) {
+    std::cout<<"Finished reading the mesh in "<<(meshEndTime - meshBeginTime)<<" seconds."<<std::endl;
+  }
 
   globalComm.barrier();
 
-  if(!rank) {
-    std::cout<<"Finished reading the mesh!"<<std::endl;
-  }
+  double setupBeginTime = MPI_Wtime();
 
   double minCoords[3];
   double maxCoords[3];
   double ScalingFactor[3];
-
-  unsigned int BoxLevel = input_db->getInteger("BoxLevel");
 
   std::vector<ot::TreeNode> nodeList;
   std::vector<unsigned int> numIndicesList;
@@ -383,17 +464,18 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::vector<int> elemIdList;
   std::vector<AMP::Mesh::MeshElement> localElemArr;
   std::vector<ot::TreeNode> mins;
+  unsigned int BoxLevel;
 
   setupDSforSearchType(BoxLevel, nodeList, numIndicesList, mins, rankList, elemIdList, localElemArr,
       minCoords, maxCoords, ScalingFactor, meshAdapter, globalComm );
 
   globalComm.barrier();
 
-  if(!rank) {
-    std::cout<<"Finished setting up DS for search!"<<std::endl;
-  }
+  double setupEndTime = MPI_Wtime();
 
-#if 0
+  if(!rank) {
+    std::cout<<"Finished setting up DS for search in "<<(setupEndTime - setupBeginTime)<<" seconds."<<std::endl;
+  }
 
   int totalNumPts = input_db->getInteger("TotalNumberOfPoints");
   int avgNumPts = totalNumPts/npes;
@@ -417,6 +499,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     pts.push_back(y);
     pts.push_back(z);
   }//end i
+
+  if(!rank) {
+    std::cout<<"Finished generating random points for search!"<<std::endl;
+  }
+
+  globalComm.barrier();
+
+  double searchBeginTime = MPI_Wtime();
 
   const unsigned int MaxDepth = 30;
   const unsigned int ITPMD = (1u << MaxDepth);
@@ -600,11 +690,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   globalComm.barrier();
 
-  if(!rank) {
-    std::cout<<"Finished search!"<<std::endl;
-  }
+  double searchEndTime = MPI_Wtime();
 
-#endif
+  if(!rank) {
+    std::cout<<"Finished searching "<<totalNumPts<<" points in "<<
+      (searchEndTime - searchBeginTime)<<" seconds using "<<npes<<"processors."<<std::endl;
+  }
 
   ut->passes(exeName);
 }

@@ -1,6 +1,4 @@
 
-BoxLevel = 10
-
 TotalNumberOfPoints = 100
 
 Mesh {
