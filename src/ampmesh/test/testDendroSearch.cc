@@ -338,6 +338,22 @@ void setupDSforSearch( std::vector<ot::TreeNode>& nodeList, std::vector<unsigned
     nodeList[i].setWeight((nodeList[i - 1].getWeight()) + numIndicesList[i -1]);
     numIndicesList[i] = nodeAndIndexList[i].ranks.size();
   }//end i
+
+  int maxNumIndices = 0;
+  for(int i = 0; i < numIndicesList.size(); ++i) {
+    if(maxNumIndices < numIndicesList[i]) {
+      maxNumIndices = numIndicesList[i];
+    }
+  }//end i
+
+  int globalMaxNumIndices = globalComm.maxReduce<int>(maxNumIndices);
+
+  globalComm.barrier();
+
+  if(!rank) {
+    std::cout<<"Num Octants = "<<(nodeList.size()) <<std::endl;
+    std::cout<<"Global Max Num Indices = "<<globalMaxNumIndices <<std::endl;
+  }
 }
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
@@ -359,6 +375,15 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
+  int rank = globalComm.getRank();
+  int npes = globalComm.getSize();
+
+  globalComm.barrier();
+
+  if(!rank) {
+    std::cout<<"Finished reading the mesh!"<<std::endl;
+  }
+
   double minCoords[3];
   double maxCoords[3];
   double ScalingFactor[3];
@@ -373,9 +398,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       minCoords, maxCoords, ScalingFactor, meshAdapter, globalComm );
 
   globalComm.barrier();
-
-  int rank = globalComm.getRank();
-  int npes = globalComm.getSize();
 
   if(!rank) {
     std::cout<<"Finished setting up DS for search!"<<std::endl;
