@@ -1,4 +1,6 @@
 
+TotalNumberOfPoints = 100
+
 Mesh {
   MeshType = "libMesh"
     dim = 3

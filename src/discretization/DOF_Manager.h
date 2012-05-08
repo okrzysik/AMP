@@ -65,7 +65,7 @@ public:
 
     /** \brief Get the entry indices of DOFs given a mesh element ID
      * \details  This will return a vector of pointers into a Vector that are associated with which.
-     * \param[in]  id       The element IDs to collect nodal objects for.  Note: the mesh element may be any type (include a vertex).
+     * \param[in]  ids      The element IDs to collect nodal objects for.  Note: the mesh element may be any type (include a vertex).
      * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
      */
     virtual void getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids, std::vector <size_t> &dofs ) const;
@@ -137,8 +137,8 @@ public:
     /** \brief Subset the DOF Manager for a mesh element iterator
      * \details  This will subset a DOF manager for a given mesh element iterator.  
      *    The resulting DOFManager will exist on the privided comm.
-     * \param[in]  mesh     The mesh iterator for the subset
-     * \param[in]  comm     The desired comm
+     * \param[in]  iterator     The mesh iterator for the subset
+     * \param[in]  comm         The desired comm
      */
     virtual DOFManager::shared_ptr subset( const AMP::Mesh::MeshIterator &iterator, AMP_MPI comm );
 

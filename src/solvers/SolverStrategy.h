@@ -144,7 +144,7 @@ class SolverStrategy
    * @param parameters
    *        SolverStrategyParameters object that is NULL by default
    */
-   virtual void reset(boost::shared_ptr<SolverStrategyParameters> ){ }
+   virtual void reset(boost::shared_ptr<SolverStrategyParameters> parameters){ }
 
    /**
     * Return a shared pointer to the operator registered with the solver.

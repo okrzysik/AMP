@@ -359,6 +359,29 @@ int testAllGather(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
 }
 
 
+// Routine to test setGather
+template <class type>
+int testSetGather(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
+    char message[500];
+    type x1 = (type) comm.getRank();
+    std::set<type> set;
+    set.insert( x1 );
+    comm.setGather( set );
+    bool pass = true;
+    for (int i=0; i<comm.getSize(); i++) {
+        type x2 = i;
+        if ( set.find(x2)==set.end() )
+            pass = false;
+    }
+    sprintf(message,"setGather (%s)",typeid(type).name());
+    if ( pass )
+        ut->passes(message);
+    else
+        ut->failure(message);
+    return 1;   // Return the number of tests
+}
+
+
 // Routine to test allToAll
 template <class type>
 int testAllToAll(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
@@ -671,6 +694,7 @@ struct testCommTimerResults {
     int N_scan;
     int N_bcast;
     int N_allGather;
+    int N_setGather;
     int N_allToAll;
     int N_sendRecv;
     int N_IsendIrecv;
@@ -678,6 +702,7 @@ struct testCommTimerResults {
     double t_scan;
     double t_bcast;
     double t_allGather;
+    double t_setGather;
     double t_allToAll;
     double t_sendRecv;
     double t_IsendIrecv;
@@ -694,6 +719,7 @@ struct testCommTimerResults {
         t_scan = 0.0;
         t_bcast = 0.0;
         t_allGather = 0.0;
+        t_setGather = 0.0;
         t_allToAll = 0.0;
         t_sendRecv = 0.0;
         t_IsendIrecv = 0.0;
@@ -833,6 +859,17 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_allGather += testAllGather< std::complex<double> >(comm,ut);
     timer.N_allGather += testAllGather<mytype>(comm,ut);
     timer.t_allGather = AMP::AMP_MPI::time()-start_time;
+    // Test std::set gather
+    start_time = AMP::AMP_MPI::time();
+    timer.N_setGather += testSetGather<unsigned char>(comm,ut);
+    timer.N_setGather += testSetGather<char>(comm,ut);
+    timer.N_setGather += testSetGather<unsigned int>(comm,ut);
+    timer.N_setGather += testSetGather<int>(comm,ut);
+    timer.N_setGather += testSetGather<unsigned long int>(comm,ut);
+    timer.N_setGather += testSetGather<long int>(comm,ut);
+    timer.N_setGather += testSetGather<float>(comm,ut);
+    timer.N_setGather += testSetGather<double>(comm,ut);
+    timer.t_setGather = AMP::AMP_MPI::time()-start_time;
     // Test allToAlll
     start_time = AMP::AMP_MPI::time();
     timer.N_allToAll += testAllToAll<unsigned char>(comm,ut);

@@ -127,11 +127,11 @@ public:
     /**
      * \brief    Subset a mesh given a mesh name
      * \details  This function will return the mesh with the given name.
-     *    Note: for multimeshes, this will return the mesh with the given name.
      *    For a single mesh this will return a pointer to itself if the mesh name
      *    matches the name of the mesh, and a null pointer otherwise.
      *    Note: The mesh name is not gaurenteed to be unique.  If there are multiple
-     *    meshes with the same name, the first mesh with the given name will be returned.
+     *    meshes with the same name, all meshed with the given name will be returned 
+     *    within a new multimesh.
      *    It is strongly recommended to use the meshID when possible.
      * \param name  Name of the desired mesh
      */

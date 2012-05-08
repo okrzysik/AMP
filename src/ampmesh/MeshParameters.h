@@ -60,6 +60,7 @@ protected:
     //! The maximum ghost cell width for the mesh
     int MAX_GCW_WIDTH;
 
+//! See AMP::Mesh::Mesh for Mesh class
 friend class Mesh;
 
 };
