@@ -19,38 +19,12 @@
 
 #include "sys/sys.h"
 #include "par/parUtils.h"
-#include "par/dtypes.h"
 #include "oct/TreeNode.h"
 #include "oct/octUtils.h"
 #include "oct/nodeAndValues.h"
 #include "oct/nodeAndRanks.h"
 #include "externVars.h"
 #include "dendro.h"
-
-namespace par {
-  //Forward Declaration
-  template <typename T>
-    class Mpi_datatype;
-
-  template <>
-    class Mpi_datatype< AMP::Mesh::MeshElementID > {
-      public:
-        static MPI_Datatype value()
-        {
-          static bool         first = true;
-          static MPI_Datatype datatype;
-
-          if (first)
-          {
-            first = false;
-            MPI_Type_contiguous(sizeof(AMP::Mesh::MeshElementID), MPI_BYTE, &datatype);
-            MPI_Type_commit(&datatype);
-          }
-
-          return datatype;
-        }
-    };
-}//end namespace par
 
 void computeMinAndMaxCoords( double* minCoords, double* maxCoords, double* ScalingFactor, 
     AMP::Mesh::Mesh::shared_ptr meshAdapter, AMP::AMP_MPI globalComm ) {
@@ -86,24 +60,38 @@ void computeMinAndMaxCoords( double* minCoords, double* maxCoords, double* Scali
   }//end i
 }
 
-void setupDSforSearch( std::vector<ot::TreeNode>& nodeList, std::vector<unsigned int>& numIndicesList,
+void createLocalMeshElementArray(std::vector<AMP::Mesh::MeshElement>& localElemArr, 
+    AMP::Mesh::Mesh::shared_ptr meshAdapter) {
+  localElemArr.clear();
+  AMP::Mesh::MeshIterator el = meshAdapter->getIterator(AMP::Mesh::Volume, 0);
+  AMP::Mesh::MeshIterator end_el = el.end();
+  AMP_ASSERT(el != end_el);
+  for(; el != end_el; ++el) {
+    localElemArr.push_back(*el);
+  }//end el
+}
+
+void setupDSforSearchType(unsigned int BoxLevel, std::vector<ot::TreeNode>& nodeList, std::vector<unsigned int>& numIndicesList,
     std::vector<ot::TreeNode>& mins, std::vector<unsigned int>& rankList,
-    std::vector<AMP::Mesh::MeshElementID>& elemIdList, double* minCoords, double* maxCoords,
-    double* ScalingFactor, AMP::Mesh::Mesh::shared_ptr meshAdapter, AMP::AMP_MPI globalComm ) {
+    std::vector<int>& elemIdList, std::vector<AMP::Mesh::MeshElement>& localElemArr,
+    double* minCoords, double* maxCoords, double* ScalingFactor, 
+    AMP::Mesh::Mesh::shared_ptr meshAdapter, AMP::AMP_MPI globalComm) {
   int rank = globalComm.getRank();
 
   computeMinAndMaxCoords(minCoords, maxCoords, ScalingFactor, meshAdapter, globalComm);
+
+  createLocalMeshElementArray(localElemArr, meshAdapter);
 
   const unsigned int MaxDepth = 30;
   const unsigned int ITPMD = (1u << MaxDepth);
   const double DTPMD = static_cast<double>(ITPMD);
 
-  std::vector< ot::NodeAndValues<AMP::Mesh::MeshElementID, 1> > nodeAndElemIdList;
+  std::vector< ot::NodeAndValues<int, 1> > nodeAndElemIdList;
 
   AMP::Mesh::MeshIterator el = meshAdapter->getIterator(AMP::Mesh::Volume, 0);
   AMP::Mesh::MeshIterator end_el = el.end();
   AMP_ASSERT(el != end_el);
-  for( ; el != end_el; ++el) {
+  for(int eId = 0; el != end_el; ++el, ++eId) {
     std::vector<AMP::Mesh::MeshElement> currNodes = el->getElements(AMP::Mesh::Vertex);
     std::vector<ot::TreeNode> ptOcts;
     for(size_t i = 0; i < currNodes.size(); ++i) {
@@ -121,14 +109,14 @@ void setupDSforSearch( std::vector<ot::TreeNode>& nodeList, std::vector<unsigned
       nca = ot::getNCA(nca, ptOcts[i]);
     }//end i
     nca.setWeight(rank);
-    ot::NodeAndValues<AMP::Mesh::MeshElementID, 1> obj;
+    ot::NodeAndValues<int, 1> obj;
     obj.node = nca;
-    obj.values[0] = el->globalID();
+    obj.values[0] = eId;
     nodeAndElemIdList.push_back(obj);
   }//end for el
 
-  std::vector< ot::NodeAndValues<AMP::Mesh::MeshElementID, 1> > tmpList;
-  par::sampleSort< ot::NodeAndValues<AMP::Mesh::MeshElementID, 1> >(
+  std::vector< ot::NodeAndValues<int, 1> > tmpList;
+  par::sampleSort< ot::NodeAndValues<int, 1> >(
       nodeAndElemIdList, tmpList, (globalComm.getCommunicator()));
   swap(nodeAndElemIdList, tmpList);
   tmpList.clear();
@@ -261,17 +249,17 @@ void setupDSforSearch( std::vector<ot::TreeNode>& nodeList, std::vector<unsigned
   numReturnList.clear();
 
   std::vector<unsigned int> recvRankList(sendDisps[rank + numToSend] + sendCnts[rank + numToSend]);
-  std::vector<AMP::Mesh::MeshElementID> recvElemIdList(recvRankList.size());
+  std::vector<int> recvElemIdList(recvRankList.size());
 
   unsigned int* sendBuf1 = NULL;
-  AMP::Mesh::MeshElementID* sendBuf2 = NULL;
+  int* sendBuf2 = NULL;
   if(!(rankList.empty())) {
     sendBuf1 = &(rankList[0]);
     sendBuf2 = &(elemIdList[0]);
   }
 
   unsigned int* recvBuf1 = NULL;
-  AMP::Mesh::MeshElementID* recvBuf2 = NULL;
+  int* recvBuf2 = NULL;
   if(!(recvRankList.empty())) {
     recvBuf1 = &(recvRankList[0]);
     recvBuf2 = &(recvElemIdList[0]);
@@ -279,9 +267,8 @@ void setupDSforSearch( std::vector<ot::TreeNode>& nodeList, std::vector<unsigned
   MPI_Alltoallv( sendBuf1, recvCnts, recvDisps, MPI_UNSIGNED,
       recvBuf1, sendCnts, sendDisps, MPI_UNSIGNED, globalComm.getCommunicator() );
 
-  MPI_Alltoallv( sendBuf2, recvCnts, recvDisps, par::Mpi_datatype<AMP::Mesh::MeshElementID>::value(),
-      recvBuf2, sendCnts, sendDisps, par::Mpi_datatype<AMP::Mesh::MeshElementID>::value(), 
-      globalComm.getCommunicator() );
+  MPI_Alltoallv( sendBuf2, recvCnts, recvDisps, MPI_INT,
+      recvBuf2, sendCnts, sendDisps, MPI_INT, globalComm.getCommunicator() );
 
   delete [] sendCnts;
   delete [] recvCnts;
@@ -388,13 +375,16 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   double maxCoords[3];
   double ScalingFactor[3];
 
+  unsigned int BoxLevel = input_db->getInteger("BoxLevel");
+
   std::vector<ot::TreeNode> nodeList;
   std::vector<unsigned int> numIndicesList;
   std::vector<unsigned int> rankList;
-  std::vector<AMP::Mesh::MeshElementID> elemIdList;
+  std::vector<int> elemIdList;
+  std::vector<AMP::Mesh::MeshElement> localElemArr;
   std::vector<ot::TreeNode> mins;
 
-  setupDSforSearch( nodeList, numIndicesList, mins, rankList, elemIdList,
+  setupDSforSearchType(BoxLevel, nodeList, numIndicesList, mins, rankList, elemIdList, localElemArr,
       minCoords, maxCoords, ScalingFactor, meshAdapter, globalComm );
 
   globalComm.barrier();
@@ -403,14 +393,23 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     std::cout<<"Finished setting up DS for search!"<<std::endl;
   }
 
-  int numPtsPerProc = input_db->getInteger("NumberOfPointsPerProcessor");
+#if 0
+
+  int totalNumPts = input_db->getInteger("TotalNumberOfPoints");
+  int avgNumPts = totalNumPts/npes;
+  int extraNumPts = totalNumPts%npes;
+
+  int numLocalPts = avgNumPts;
+  if(rank < extraNumPts) {
+    numLocalPts++;
+  }
 
   //Generate Random points in [min, max]
   const unsigned int seed = (0x1234567 + (24135*rank));
   srand48(seed);
 
   std::vector<double> pts;
-  for(int i = 0; i < numPtsPerProc; ++i) {
+  for(int i = 0; i < numLocalPts; ++i) {
     double x = ((maxCoords[0] - minCoords[0])*drand48()) + minCoords[0];
     double y = ((maxCoords[1] - minCoords[1])*drand48()) + minCoords[1];
     double z = ((maxCoords[2] - minCoords[2])*drand48()) + minCoords[2];
@@ -424,7 +423,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   const double DTPMD = static_cast<double>(ITPMD);
 
   std::vector<ot::NodeAndValues<double, 4> > ptsWrapper;
-  for(int i = 0; i < numPtsPerProc; ++i) {
+  for(int i = 0; i < numLocalPts; ++i) {
     double x = pts[3*i];
     double y = pts[(3*i) + 1];
     double z = pts[(3*i) + 2];
@@ -457,8 +456,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     sendCnts[i] = 0;
   }//end i
 
-  std::vector<int> part(numPtsPerProc, -1);
-  for(int i = 0; i < numPtsPerProc; ++i) {
+  std::vector<int> part(numLocalPts, -1);
+  for(int i = 0; i < numLocalPts; ++i) {
     unsigned int retIdx;
     bool found = seq::maxLowerBound<ot::TreeNode>(mins, (ptsWrapper[i].node), retIdx, NULL, NULL);
     if(found) {
@@ -485,7 +484,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     sendCnts[i] = 0;
   }//end i
 
-  for(int i = 0; i < numPtsPerProc; ++i) {
+  for(int i = 0; i < numLocalPts; ++i) {
     if(part[i] >= 0) {
       sendList[sendDisps[part[i]] + sendCnts[part[i]]] = ptsWrapper[i];
       sendCnts[part[i]]++;
@@ -532,7 +531,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     recvDisps[i] = recvDisps[i - 1] + recvCnts[i - 1];
   }//end i
 
-  std::vector<AMP::Mesh::MeshElementID> sendElemIdList(sendDisps[npes - 1] + sendCnts[npes - 1]);
+  std::vector<int> sendElemIdList(sendDisps[npes - 1] + sendCnts[npes - 1]);
   std::vector<double> sendPtsList(5*(sendDisps[npes - 1] + sendCnts[npes - 1]));
 
   for(int i = 0; i < npes; ++i) {
@@ -554,18 +553,17 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     }
   }//end i
 
-  std::vector<AMP::Mesh::MeshElementID> recvElemIdList(recvDisps[npes - 1] + recvCnts[npes - 1]);
-  AMP::Mesh::MeshElementID* sendElemPtr = NULL;
-  AMP::Mesh::MeshElementID* recvElemPtr = NULL;
+  std::vector<int> recvElemIdList(recvDisps[npes - 1] + recvCnts[npes - 1]);
+  int* sendElemPtr = NULL;
+  int* recvElemPtr = NULL;
   if(!(sendElemIdList.empty())) {
     sendElemPtr = &(sendElemIdList[0]);
   }
   if(!(recvElemIdList.empty())) {
     recvElemPtr = &(recvElemIdList[0]);
   }
-  MPI_Alltoallv( sendElemPtr, sendCnts, sendDisps, par::Mpi_datatype<AMP::Mesh::MeshElementID>::value(),
-      recvElemPtr, recvCnts, recvDisps, par::Mpi_datatype<AMP::Mesh::MeshElementID>::value(), 
-      (globalComm.getCommunicator()) );
+  MPI_Alltoallv( sendElemPtr, sendCnts, sendDisps, MPI_INT,
+      recvElemPtr, recvCnts, recvDisps, MPI_INT, (globalComm.getCommunicator()) );
 
   for(int i = 0; i < npes; ++i) {
     sendCnts[i] *= 5;
@@ -594,7 +592,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   int numRecvPts = recvElemIdList.size();
   std::vector<bool> results(numRecvPts, false);
   for(int i = 0; i < numRecvPts; ++i) {
-    //AMP::Mesh::MeshElement el = meshAdapter->getElement( recvElemIdList[i] );
+    assert(recvElemIdList[i] >= 0);
+    assert(recvElemIdList[i] < localElemArr.size());
+    AMP::Mesh::MeshElement el = localElemArr[recvElemIdList[i]];
     //results[i] = el.containsPoint(recvPtsList[5*i], recvPtsList[(5*i) + 1], recvPtsList[(5*i) + 2]);
   }//end i
 
@@ -603,6 +603,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   if(!rank) {
     std::cout<<"Finished search!"<<std::endl;
   }
+
+#endif
 
   ut->passes(exeName);
 }
