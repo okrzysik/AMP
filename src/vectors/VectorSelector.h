@@ -35,7 +35,7 @@ public:
     virtual  bool  isSelected ( Vector::const_shared_ptr vec ) const;
 
     /** \brief Returns the communicator for the subset
-      * \param[in]  comm  The Vector to match
+      * \param[in]  vec  The Vector to match
       * \details This function will return the proper communicator given the current vector.
       *     For most subsetters, this will be the same communicator as the current vector,
       *     however some subsetters (MeshSelector) may opperate on a different (smaller) comm.
@@ -46,7 +46,7 @@ public:
       * \param[in]  vec  The Vector to subset
       * \details Base class defaults to returning all data in the vector
       */
-    virtual  Vector::shared_ptr  subset ( Vector::shared_ptr p ) const;
+    virtual  Vector::shared_ptr  subset ( Vector::shared_ptr vec ) const;
 };
 
 
@@ -115,7 +115,7 @@ public:
       * \param[in]  vec  The Vector to subset
       * \details Base class defaults to returning all data in the vector
       */
-    virtual  Vector::shared_ptr  subset ( Vector::shared_ptr p ) const;
+    virtual  Vector::shared_ptr  subset ( Vector::shared_ptr vec ) const;
 
 protected:
     //  Offset to start striding on
@@ -142,7 +142,7 @@ public:
     VS_Comm ( const std::string &name, AMP_MPI comm );
 
     /** \brief Returns the communicator for the subset
-      * \param[in]  comm  The Vector to match
+      * \param[in]  vec  The Vector to match
       * \details This function will return the proper communicator given the current vector.
       *     For most subsetters, this will be the same communicator as the current vector,
       *     however some subsetters (VectorSelector) may opperate on a different (smaller) comm.
@@ -153,7 +153,7 @@ public:
       * \param[in]  vec  The Vector to subset
       * \details Base class defaults to returning all data in the vector
       */
-    virtual  Vector::shared_ptr  subset ( Vector::shared_ptr p ) const;
+    virtual  Vector::shared_ptr  subset ( Vector::shared_ptr vec ) const;
 
 protected:
     std::string d_Name;                 //  The name of this subset
@@ -176,7 +176,7 @@ public:
     VS_Mesh ( const std::string &name, AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm=true );
 
     /** \brief Returns the communicator for the subset
-      * \param[in]  comm  The Vector to match
+      * \param[in]  vec  The Vector to match
       * \details This function will return the proper communicator given the current vector.
       *     For most subsetters, this will be the same communicator as the current vector,
       *     however some subsetters (MeshSelector) may opperate on a different (smaller) comm.
@@ -187,7 +187,7 @@ public:
       * \param[in]  vec  The Vector to subset
       * \details Base class defaults to returning all data in the vector
       */
-    virtual  Vector::shared_ptr  subset ( Vector::shared_ptr p ) const;
+    virtual  Vector::shared_ptr  subset ( Vector::shared_ptr vec ) const;
 
 protected:
     std::string  d_Name;            //  The name of this subset
@@ -212,7 +212,7 @@ public:
       * \param[in]  vec  The Vector to subset
       * \details Base class defaults to returning all data in the vector
       */
-    virtual  Vector::shared_ptr  subset ( Vector::shared_ptr p ) const;
+    virtual  Vector::shared_ptr  subset ( Vector::shared_ptr vec ) const;
 
 protected:
     std::string  d_Name;                    //  The name of this subset

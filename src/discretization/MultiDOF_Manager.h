@@ -117,8 +117,8 @@ public:
     /** \brief Subset the DOF Manager for a mesh element iterator
      * \details  This will subset a DOF manager for a given mesh element iterator.  
      *    The resulting DOFManager will exist on the privided comm.
-     * \param[in]  mesh     The mesh iterator for the subset
-     * \param[in]  comm     The desired comm
+     * \param[in]  iterator     The mesh iterator for the subset
+     * \param[in]  comm         The desired comm
      */
     virtual DOFManager::shared_ptr subset( const AMP::Mesh::MeshIterator &iterator, AMP_MPI comm );
 

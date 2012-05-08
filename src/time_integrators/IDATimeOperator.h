@@ -60,19 +60,19 @@ namespace TimeIntegrator{
 
     /**
      * registers the time derivative vector provided by IDA with this operator
-     @param [in] vec : shared pointer to time derivative computed by IDA
+     @param [in] vec   shared pointer to time derivative computed by IDA
      */
     void registerIDATimeDerivative(boost::shared_ptr<AMP::LinearAlgebra::Vector> vec) {d_pIDATimeDerivative = vec; }
 
     /**
      * registers a source term if any
-     @param [in] shared pointer to vector for source term
+     @param [in] vec   shared pointer to vector for source term
      */
     void registerSourceTerm(boost::shared_ptr<AMP::LinearAlgebra::Vector> vec) {d_pSourceTerm = vec; }
 
     /**
-     * sets the current time
-     @param [in] sets the current time for the operator
+     * sets the current time for the operator
+     @param [in] currentTime   the current time
      */
     void registerCurrentTime( double currentTime ) {d_current_time = currentTime;}        
     
