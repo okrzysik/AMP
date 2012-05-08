@@ -117,7 +117,7 @@ template<class Number>
 void TensorProperty<Number>::evalv(std::vector< std::vector< boost::shared_ptr<std::vector<Number> > > >& r,
 const std::map< std::string, boost::shared_ptr<std::vector<Number> > >& args)
 {
-	AMP_ASSERT(in_range(args));
+	AMP_ASSERT(this->in_range(args));
 	evalvActual(r, args);
 }
 
