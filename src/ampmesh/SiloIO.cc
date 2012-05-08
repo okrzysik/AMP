@@ -35,7 +35,9 @@ void SiloIO::readFile( const std::string &fname )
 ************************************************************/
 void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
 { 
-    std::string fname = fname_in + "." + getExtension();
+    std::stringstream name;
+    name << fname_in << "_" << iteration_count << "." << getExtension();
+    std::string fname = name.str();
     for (int i=0; i<d_comm.getSize(); i++) {
         if ( d_comm.getRank()==i ) {
             // Open the file
@@ -83,7 +85,7 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, std::string path )
         stream << data.rank;
         std::string rank = stream.str();
         data.meshName = "rank_" + rank;
-        data.path = path + mesh->getName();
+        data.path = path + mesh->getName() + "_/";
         d_baseMeshes.insert( std::pair<AMP::Mesh::MeshID,siloBaseMeshData>(mesh->meshID(),data) );
         siloMultiMeshData data2;
         data2.id = mesh->meshID();
