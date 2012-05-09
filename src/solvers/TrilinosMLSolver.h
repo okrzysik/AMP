@@ -127,7 +127,7 @@ namespace AMP {
 
         /**
          * Initialize the solution vector and potentially create internal vectors needed for solution
-         @param [in] parameters The parameters object
+         @parameters [in] parameters The parameters object
          contains a database object. Refer to the documentation for the constructor to see what fields are required.
          This routine assumes that a non-NULL operator of type LinearOperator has been registered with the solver.
          The LinearOperator currently is assumed to contain a pointer to an EpetraMatrix object.
@@ -136,7 +136,7 @@ namespace AMP {
 
         /**
          * Register the operator that the solver will use during solves
-         @param [in] op shared pointer to the linear operator $A$ for equation \f$A u = f\f$ 
+         @op [in] op shared pointer to the linear operator $A$ for equation \f$A u = f\f$ 
          */
         void registerOperator(const boost::shared_ptr<AMP::Operator::Operator> op);
 

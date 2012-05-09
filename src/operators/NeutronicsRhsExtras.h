@@ -72,6 +72,8 @@ namespace Operator {
        * @param f: rhs vector for A(u)=f, this may be a null pointer if f=0. 
        * @param u: multivector of the state.
        * @param r: specific power in Watts per gram 
+       * @param a: constnt multiplier for return vector
+       * @param b: unused option for this operator
        The result of apply is
        * r = b*f+a*A(u)
        */

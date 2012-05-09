@@ -125,7 +125,6 @@ namespace AMP {
         }
 
         /**
-          @param [in] varId Identifier for the component - One of AMP::Mechanics::DISPLACEMENT/TEMPERATURE/BURNUP/OXYGEN_CONCENTRATION/LHGR
           @return The variable for the specified component of the input vector. If varId is equal to -1, it
           returns the multivariable for the entire vector.
           */

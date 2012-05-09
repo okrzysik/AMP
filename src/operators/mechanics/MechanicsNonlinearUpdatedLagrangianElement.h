@@ -53,6 +53,7 @@ namespace Operator {
         This function is used by MechanicsNonlinearFEOperator to pass the address 
         of the element Input and Output vector to this class. 
         @param [in] elementInputVectors Element input vector
+        @param [in] elementInputVectors_pre Element input vector for previous time
         @param [in] elementOutputVector Element residual vector
         */
       void setElementVectors( const std::vector<std::vector<double> > & elementInputVectors, 

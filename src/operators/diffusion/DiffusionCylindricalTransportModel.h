@@ -25,6 +25,7 @@ public:
      * \brief transport model returning a vector of tensors for cylindrical symmetry
      * \param result result[i] is a tensor of diffusion coefficients.
      * \param args args[j][i] is j-th material evalv argument
+     * \param Coordinates vector of points that define the spatial location
      */
     virtual void getTensorTransport(std::vector< std::vector< boost::shared_ptr<std::vector<double> > > >& result,
     		 std::map<std::string, boost::shared_ptr<std::vector<double> > >& args,
