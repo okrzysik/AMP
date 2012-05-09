@@ -1,6 +1,5 @@
 // This file contains the default instantiations for templated operations
 // Note: Intel compilers need definitions before all default instantions to compile correctly
-#include <stdio.h>
 
 
 /************************************************************************

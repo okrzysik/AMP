@@ -142,20 +142,20 @@ namespace AMP {
 
         /**
          * Resets the associated operator internally with new parameters if necessary
-         * \param parameters
+         * \param params
          *        OperatorParameters object that is NULL by default
          */
         void resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params);
 
         /**
          * Resets the solver internally with new parameters if necessary
-         * \param parameters
+         * \param params
          *        SolverStrategyParameters object that is NULL by default
          * Currently every call to reset destroys the ML preconditioner object
          * and recreates it based on the parameters object. See constructor for
          * fields required for parameter object.
          */
-        void reset(boost::shared_ptr<SolverStrategyParameters> );
+        void reset(boost::shared_ptr<SolverStrategyParameters> params);
 
       protected:
 

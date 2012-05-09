@@ -18,18 +18,18 @@ class EpetraVectorEngineParameters : public VectorEngineParameters
 {
 public:
       /** \brief Constructor
-          \param[in] local_size  The number of elements on this core
-          \param[in] global_size  The number of elements in total
-          \param[in] c  Communicator to create the vector on
+          \param[in] local_size     The number of elements on this core
+          \param[in] global_size    The number of elements in total
+          \param[in] comm           Communicator to create the vector on
           \details  This assumes a contiguous allocation of data.  Core 0 has global ids \f$(0,1,\ldots,n-1)\f$, core 1 has global ids \f$(n,n+1,n+2,\ldots,m)\f$, etc.
           */
       EpetraVectorEngineParameters ( size_t local_size , size_t global_size , AMP_MPI comm );
 
       /** \brief Constructor
-        * \param[in]  local_size  The number of elements on this core
-        * \param[in]  global_size  The number of elements in total
-        * \param[in]  emap   An Epetra_Map for the data
-        * \param[in]  ecomm  An Epetra_MpiComm for constructing the vector on
+        * \param[in]  local_size    The number of elements on this core
+        * \param[in]  global_size   The number of elements in total
+        * \param[in]  emap          An Epetra_Map for the data
+        * \param[in]  ecomm         An Epetra_MpiComm for constructing the vector on
         * \details  This allows construction of an EpetraVectorEngine from handy Epetra objects
         */
       EpetraVectorEngineParameters ( size_t local_size , size_t global_size , boost::shared_ptr<Epetra_Map> emap , AMP_MPI ecomm );
