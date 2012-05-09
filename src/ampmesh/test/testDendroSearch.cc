@@ -177,7 +177,6 @@ void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& no
   //Local Merge
   {
     ot::TreeNode currNode = nodeAndElemIdList[0].node;
-    currNode.setWeight(0);
     nodeList.push_back(currNode);
     numIndicesList.push_back(1);
   }
@@ -186,7 +185,6 @@ void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& no
     if( nodeList[nodeList.size() - 1] == currNode ) {
       numIndicesList[nodeList.size() - 1]++;
     } else {
-      currNode.setWeight((nodeList[nodeList.size() - 1].getWeight()) + numIndicesList[nodeList.size() - 1]);
       nodeList.push_back(currNode);
       numIndicesList.push_back(1);
     }
@@ -196,6 +194,13 @@ void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& no
   assert(nodeList.size() >= 2);
 
   //PARALLEL MERGE HERE
+
+  if(!(nodeList.empty())) {
+    nodeList[0].setWeight(0);
+  }
+  for(int i = 1; i < nodeList.size(); ++i) {
+    nodeList[i].setWeight(nodeList[i - 1].getWeight() + numIndicesList[i - 1]);
+  }//end i
 
   ot::TreeNode firstNode;
   if(!(nodeList.empty())) {
