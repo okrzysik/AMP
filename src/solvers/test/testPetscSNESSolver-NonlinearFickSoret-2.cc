@@ -49,6 +49,11 @@
 #include "../TrilinosMLSolver.h"
 
 
+struct null_deleter {
+    void operator()(void const *) const {}
+};
+
+
 void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &results)
 {
   std::string input_file = "input_" + exeName;
@@ -88,17 +93,17 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
   boost::shared_ptr<AMP::Operator::Operator> nlinBVPOperator =
     AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-						   "testNonlinearFickSoretBVPOperator",
-						   input_db,
-						   elementPhysicsModel);
+                           "testNonlinearFickSoretBVPOperator",
+                           input_db,
+                           elementPhysicsModel);
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nlinBVPOp =
-		  boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(nlinBVPOperator);
+          boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(nlinBVPOperator);
   boost::shared_ptr<AMP::Operator::FickSoretNonlinearFEOperator> nlinOp =
-		 boost::dynamic_pointer_cast<AMP::Operator::FickSoretNonlinearFEOperator>(nlinBVPOp->getVolumeOperator());
+         boost::dynamic_pointer_cast<AMP::Operator::FickSoretNonlinearFEOperator>(nlinBVPOp->getVolumeOperator());
   boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> fickOp =
-		 boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nlinOp->getFickOperator());
+         boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nlinOp->getFickOperator());
   boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> soretOp =
-		 boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nlinOp->getSoretOperator());
+         boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nlinOp->getSoretOperator());
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // use the linear BVP operator to create a Fick linear operator with bc's
@@ -106,13 +111,13 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
 
   boost::shared_ptr<AMP::Operator::Operator> linBVPOperator =
     AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-						   "testLinearFickBVPOperator",
-						   input_db,
-						   elementPhysicsModel);
+                           "testLinearFickBVPOperator",
+                           input_db,
+                           elementPhysicsModel);
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linBVPOp =
-		  boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(linBVPOperator);
+          boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(linBVPOperator);
   //boost::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> linOp =
- //		 boost::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(linBVPOp->getVolumeOperator());
+ //         boost::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(linBVPOp->getVolumeOperator());
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // Set up input and output variables
@@ -145,15 +150,15 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   int zeroGhostWidth = 0;
   AMP::Mesh::MeshIterator  iterator = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
   for( ; iterator != iterator.end(); iterator++ ) {
-	double x, y;
-	std::valarray<double> poly(10);
+    double x, y;
+    std::valarray<double> poly(10);
   x = ( iterator->coord() )[0];
   y = ( iterator->coord() )[1];
   std::vector<size_t> gid;
   nodalDofMap->getDOFs ( iterator->globalID() , gid);
-	double value = 300. + 450*(1.-(x*x/lenscale/lenscale+y*y/lenscale/lenscale));
-	fickFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setValueByGlobalID(gid[0], value);
-	soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setValueByGlobalID(gid[0], value);
+    double value = 300. + 450*(1.-(x*x/lenscale/lenscale+y*y/lenscale/lenscale));
+    fickFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setValueByGlobalID(gid[0], value);
+    soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setValueByGlobalID(gid[0], value);
   }
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
@@ -230,30 +235,30 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   boost::shared_ptr<AMP::Operator::DiffusionTransportModel> soretModel = soretOp->getTransportModel();
 
   {
-    int zeroGhostWidth = 0;
-    AMP::Mesh::MeshIterator  iterator = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
-	  size_t nnodes = fickCoeffVec->getLocalSize(), node;
-	  std::vector<size_t> gids(nnodes);
-	  std::vector<double> temp(nnodes), conc(nnodes), fickCoeff(nnodes), soretCoeff(nnodes), burn(nnodes);
-	  for(node=0 ; iterator != iterator.end(); iterator++ ) {
+      int zeroGhostWidth = 0;
+      AMP::Mesh::MeshIterator  iterator = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
+      size_t nnodes = fickCoeffVec->getLocalSize(), node;
+      std::vector<size_t> gids(nnodes);
+      std::vector<double> temp(nnodes), conc(nnodes), fickCoeff(nnodes), soretCoeff(nnodes), burn(nnodes);
+      for(node=0 ; iterator != iterator.end(); iterator++ ) {
       std::vector<size_t> gid;
       nodalDofMap->getDOFs ( iterator->globalID() , gid);
-		  gids[node] = gid[0];
-		  node++;
-	  }
-	  AMP_INSIST(node==nnodes, "invalid count");
-	  fickFrozen[AMP::Operator::Diffusion::TEMPERATURE]->getValuesByGlobalID(nnodes, &gids[0], &temp[0]);
-	  solVec->getValuesByGlobalID(nnodes, &gids[0], &conc[0]);
-	  // this is  used to plot the fick and soret coefficnets used.  commenting it out till someone finds out.
-	  // This is kevin - i found out because the vector wasn't used when silo is not enabled.
-    std::map<std::string,  boost::shared_ptr<std::vector<double> > > args;
-		args.insert(std::make_pair("temperature",   boost::shared_ptr<std::vector<double> >(&temp)));
-		args.insert(std::make_pair("concentration", boost::shared_ptr<std::vector<double> >(&conc)));
-		args.insert(std::make_pair("burnup",        boost::shared_ptr<std::vector<double> >(&burn)));
-	  fickModel->getTransport(fickCoeff, args); 
-	  soretModel->getTransport(soretCoeff, args ); 
-	  fickCoeffVec->setValuesByGlobalID(nnodes, &gids[0], &fickCoeff[0]);
-	  soretCoeffVec->setValuesByGlobalID(nnodes, &gids[0], &soretCoeff[0]);
+          gids[node] = gid[0];
+          node++;
+      }
+      AMP_INSIST(node==nnodes, "invalid count");
+      fickFrozen[AMP::Operator::Diffusion::TEMPERATURE]->getValuesByGlobalID(nnodes, &gids[0], &temp[0]);
+      solVec->getValuesByGlobalID(nnodes, &gids[0], &conc[0]);
+      // this is  used to plot the fick and soret coefficnets used.  commenting it out till someone finds out.
+      // This is kevin - i found out because the vector wasn't used when silo is not enabled.
+      std::map<std::string,  boost::shared_ptr<std::vector<double> > > args;
+      args.insert(std::make_pair("temperature",   boost::shared_ptr<std::vector<double> >(&temp,null_deleter())));
+      args.insert(std::make_pair("concentration", boost::shared_ptr<std::vector<double> >(&conc,null_deleter())));
+      args.insert(std::make_pair("burnup",        boost::shared_ptr<std::vector<double> >(&burn,null_deleter())));
+      fickModel->getTransport(fickCoeff, args); 
+      soretModel->getTransport(soretCoeff, args ); 
+      fickCoeffVec->setValuesByGlobalID(nnodes, &gids[0], &fickCoeff[0]);
+      soretCoeffVec->setValuesByGlobalID(nnodes, &gids[0], &soretCoeff[0]);
   }
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
@@ -279,17 +284,17 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
       AMP::Mesh::MeshIterator  iterator = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
       iterator = iterator.begin();
       size_t numNodes = 0;
-	  for(; iterator != iterator.end(); iterator++ ) numNodes++;
-	  results.resize(numNodes);
+      for(; iterator != iterator.end(); iterator++ ) numNodes++;
+      results.resize(numNodes);
 
       iterator = iterator.begin();
       size_t iNode=0;
-	  for(; iterator != iterator.end(); iterator++ ) {
+      for(; iterator != iterator.end(); iterator++ ) {
       std::vector<size_t> gid;
       nodalDofMap->getDOFs ( iterator->globalID() , gid);
-		results[iNode] = solVec->getValueByGlobalID(gid[0] );
-		iNode++;
-	  }
+        results[iNode] = solVec->getValueByGlobalID(gid[0] );
+        iNode++;
+      }
   }
 
   if(finalResidualNorm>1.0e-08) {
@@ -307,9 +312,9 @@ int main(int argc, char *argv[])
     AMP::UnitTest ut;
 
     try {
-	  std::vector<double>  results;
-	  fickSoretTest(&ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-OxMSRZC09-1", results);
-	  ut.passes("fick-soret quadratic external T");
+      std::vector<double>  results;
+      fickSoretTest(&ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-OxMSRZC09-1", results);
+      ut.passes("fick-soret quadratic external T");
     } catch (std::exception &err) {
         std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
         ut.failure("ERROR: While testing");
