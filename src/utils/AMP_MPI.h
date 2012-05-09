@@ -4,6 +4,7 @@
 
 #include <set>
 #include <complex>
+#include <stdio.h>
 #include "Utilities.h"
 
 //! Define MPI objects

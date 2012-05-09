@@ -21,8 +21,7 @@ public:
 	 * \param args names of arguments
 	 * \param nargs number of arguments
 	 * \param ranges ranges of arguments
-	 * \param dimension0 first dimension of return value tensor
-	 * \param dimension1 second dimension of return value tensor
+	 * \param dimensions the first and second dimensions of return value tensor
 	 */
 	TensorProperty(
 			const std::string name = std::string("NotDefined"),

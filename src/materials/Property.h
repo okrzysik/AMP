@@ -17,7 +17,7 @@ namespace AMP
 namespace Materials
 {
 /**
- * \namespace
+ * \namespace Materials
  * The materials design envisions a material property as a function.
  * These classes encapsulate the notion of functions that may
  * or may not have parameters that are remembered by the function
@@ -110,7 +110,6 @@ public:
 	}
 
 	/**
-	 * \fn			   set_parameters
 	 * \brief		   set the property parameters
 	 * \param[in]	   params the new parameters
 	 * \param[in]	   nparams the number of new parameters

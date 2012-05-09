@@ -31,7 +31,6 @@ public:
     /**
      * \brief  Constructor to create the MeshParamaters from an AMP Database object.
      * \details  Constructor to create the MeshParamaters from an AMP Database object.
-     * \fn          Mesh ( const boost::shared_ptr<AMP::Database>  & db )
      * \param db    Input database for constructing a mesh
      */
     MeshParameters ( const boost::shared_ptr<AMP::Database>  db );

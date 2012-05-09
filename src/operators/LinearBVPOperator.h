@@ -40,8 +40,6 @@ namespace Operator {
 
       /**
        * This function is useful for re-initializing/updating an operator
-       * \param params
-       *        parameter object containing parameters to change
        */
       void reset(const boost::shared_ptr<OperatorParameters>& );
 
