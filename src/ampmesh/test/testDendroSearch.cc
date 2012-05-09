@@ -190,8 +190,6 @@ void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& no
   }//end i
   nodeAndElemIdList.clear();
 
-  //PARALLEL MERGE HERE
-
   int localFlag = 0;
   if( (rank > 0) && (rank < (npes - 1)) && ((nodeList.size()) == 1) ) {
     localFlag = 1;
@@ -204,6 +202,125 @@ void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& no
   int nextRank = rank + 1;
 
   if(globalFlag > 0) {
+    int gatherSendBuf = 0;
+    if( (rank > 0) && (rank < (npes - 1)) && (nodeList.size() == 1) ) {
+      gatherSendBuf = rankList.size();
+    }
+
+    int* gatherList = new int[npes];
+
+    MPI_Allgather((&gatherSendBuf), 1, MPI_INT, gatherList, 1, MPI_INT, (globalComm.getCommunicator()));
+
+    if(rank > 0) {
+      while(gatherList[prevRank] > 0) {
+        --prevRank;
+      }//end while
+    }
+
+    if(rank < (npes - 1)) {
+      while(gatherList[nextRank] > 0) {
+        ++nextRank;
+      }//end while
+    }
+
+    int* sendBoxCnts = new int[npes];
+    int* recvBoxCnts = new int[npes];
+
+    int* sendSourceCnts = new int[npes];
+    int* recvSourceCnts = new int[npes];
+
+    for(int i = 0; i < npes; ++i) {
+      sendBoxCnts[i] = 0;
+      recvBoxCnts[i] = 0;
+      sendSourceCnts[i] = 0;
+      recvSourceCnts[i] = 0;
+    }//end i
+
+    if(gatherSendBuf > 0) {
+      sendBoxCnts[prevRank] = 1;
+      sendSourceCnts[prevRank] = gatherSendBuf;
+    }
+    for(int i = rank + 1; i < nextRank; ++i) {
+      recvBoxCnts[i] = 1;
+      recvSourceCnts[i] = gatherList[i];
+    }//end i
+
+    delete [] gatherList;
+
+    int* sendBoxDisps = new int[npes];
+    int* recvBoxDisps = new int[npes];
+    sendBoxDisps[0] = 0;
+    recvBoxDisps[0] = 0;
+    for(int i = 1; i < npes; ++i) {
+      sendBoxDisps[i] = sendBoxDisps[i - 1] + sendBoxCnts[i - 1];
+      recvBoxDisps[i] = recvBoxDisps[i - 1] + recvBoxCnts[i - 1];
+    }//end i
+
+    std::vector<ot::TreeNode> tmpBoxList(recvBoxDisps[npes - 1] + recvBoxCnts[npes - 1]);
+
+    ot::TreeNode* recvBoxBuf = NULL;
+    if(!(tmpBoxList.empty())) {
+      recvBoxBuf = (&(tmpBoxList[0]));
+    }
+
+    MPI_Alltoallv( (&(nodeList[0])), sendBoxCnts, sendBoxDisps, par::Mpi_datatype<ot::TreeNode>::value(),
+        recvBoxBuf, recvBoxCnts, recvBoxDisps, par::Mpi_datatype<ot::TreeNode>::value(), (globalComm.getCommunicator()));
+
+    if(gatherSendBuf > 0) {
+      nodeList.clear();
+    } else {
+      for(int i = 0; i < tmpBoxList.size(); ++i) {
+        if(tmpBoxList[i] == nodeList[nodeList.size() - 1]) {
+          nodeList[nodeList.size() - 1].addWeight(tmpBoxList[i].getWeight());
+        } else {
+          nodeList.push_back(tmpBoxList[i]);
+        }
+      }//end i
+    }
+
+    delete [] sendBoxCnts;
+    delete [] recvBoxCnts;
+    delete [] sendBoxDisps;
+    delete [] recvBoxDisps;
+
+    int* sendSourceDisps = new int[npes];
+    int* recvSourceDisps = new int[npes];
+    sendSourceDisps[0] = 0;
+    recvSourceDisps[0] = 0;
+    for(int i = 1; i < npes; ++i) {
+      sendSourceDisps[i] = sendSourceDisps[i - 1] + sendSourceCnts[i - 1];
+      recvSourceDisps[i] = recvSourceDisps[i - 1] + recvSourceCnts[i - 1];
+    }//end i
+
+    std::vector<int> tmpRankList(recvSourceDisps[npes - 1] + recvSourceCnts[npes - 1]);
+    std::vector<int> tmpElemIdList(recvSourceDisps[npes - 1] + recvSourceCnts[npes - 1]);
+
+    int* recvRankBuf = NULL;
+    int* recvElemIdBuf = NULL;
+    if(!(tmpRankList.empty())) {
+      recvRankBuf = (&(tmpRankList[0]));
+      recvElemIdBuf = (&(tmpElemIdList[0]));
+    }
+
+    MPI_Alltoallv( (&(rankList[0])), sendSourceCnts, sendSourceDisps, MPI_INT,
+        recvRankBuf, recvSourceCnts, recvSourceDisps, MPI_INT, (globalComm.getCommunicator()));
+    MPI_Alltoallv( (&(elemIdList[0])), sendSourceCnts, sendSourceDisps, MPI_INT,
+        recvElemIdBuf, recvSourceCnts, recvSourceDisps, MPI_INT, (globalComm.getCommunicator()));
+
+    if(gatherSendBuf > 0) {
+      rankList.clear();
+      elemIdList.clear();
+    } else {
+      if(!(tmpRankList.empty())) {
+        rankList.insert(rankList.end(), tmpRankList.begin(), tmpRankList.end());
+        elemIdList.insert(elemIdList.end(), tmpElemIdList.begin(), tmpElemIdList.end());
+      }
+    }
+
+    delete [] sendSourceCnts;
+    delete [] recvSourceCnts;
+    delete [] sendSourceDisps;
+    delete [] recvSourceDisps;
   }
 
   if(!(nodeList.empty())) {
