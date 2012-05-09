@@ -74,8 +74,8 @@ void createLocalMeshElementArray(std::vector<AMP::Mesh::MeshElement>& localElemA
   }//end el
 }
 
-void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& nodeList, std::vector<unsigned int>& numIndicesList,
-    std::vector<ot::TreeNode>& mins, std::vector<unsigned int>& rankList,
+void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& nodeList, std::vector<unsigned int>& stIdxList,
+    std::vector<ot::TreeNode>& mins, std::vector<int>& rankList,
     std::vector<int>& elemIdList, std::vector<AMP::Mesh::MeshElement>& localElemArr,
     double* minCoords, double* maxCoords, double* ScalingFactor, 
     AMP::Mesh::Mesh::shared_ptr meshAdapter, AMP::AMP_MPI globalComm) {
@@ -172,35 +172,239 @@ void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& no
 
   assert(numLocalOcts > 0);
   assert(nodeList.empty());
-  assert(numIndicesList.empty());
 
   //Local Merge
   {
     ot::TreeNode currNode = nodeAndElemIdList[0].node;
+    currNode.setWeight(1);
     nodeList.push_back(currNode);
-    numIndicesList.push_back(1);
   }
   for(size_t i = 1; i < nodeAndElemIdList.size(); ++i) {
     ot::TreeNode currNode = nodeAndElemIdList[i].node;
     if( nodeList[nodeList.size() - 1] == currNode ) {
-      numIndicesList[nodeList.size() - 1]++;
+      nodeList[nodeList.size() - 1].addWeight(1);
     } else {
+      currNode.setWeight(1);
       nodeList.push_back(currNode);
-      numIndicesList.push_back(1);
     }
   }//end i
   nodeAndElemIdList.clear();
 
-  assert(nodeList.size() >= 2);
+  int localFlag = 0;
+  if( (rank > 0) && (rank < (npes - 1)) && ((nodeList.size()) == 1) ) {
+    localFlag = 1;
+  }
 
-  //PARALLEL MERGE HERE
+  int globalFlag;
+  MPI_Allreduce(&localFlag, &globalFlag, 1, MPI_INT, MPI_SUM, (globalComm.getCommunicator()));
+
+  int prevRank = rank - 1;
+  int nextRank = rank + 1;
+
+  if(globalFlag > 0) {
+    int gatherSendBuf = 0;
+    if( (rank > 0) && (rank < (npes - 1)) && (nodeList.size() == 1) ) {
+      gatherSendBuf = rankList.size();
+    }
+
+    int* gatherList = new int[npes];
+
+    MPI_Allgather((&gatherSendBuf), 1, MPI_INT, gatherList, 1, MPI_INT, (globalComm.getCommunicator()));
+
+    if(rank > 0) {
+      while(gatherList[prevRank] > 0) {
+        --prevRank;
+      }//end while
+    }
+
+    if(rank < (npes - 1)) {
+      while(gatherList[nextRank] > 0) {
+        ++nextRank;
+      }//end while
+    }
+
+    int* sendBoxCnts = new int[npes];
+    int* recvBoxCnts = new int[npes];
+
+    int* sendSourceCnts = new int[npes];
+    int* recvSourceCnts = new int[npes];
+
+    for(int i = 0; i < npes; ++i) {
+      sendBoxCnts[i] = 0;
+      recvBoxCnts[i] = 0;
+      sendSourceCnts[i] = 0;
+      recvSourceCnts[i] = 0;
+    }//end i
+
+    if(gatherSendBuf > 0) {
+      sendBoxCnts[prevRank] = 1;
+      sendSourceCnts[prevRank] = gatherSendBuf;
+    }
+    for(int i = rank + 1; i < nextRank; ++i) {
+      recvBoxCnts[i] = 1;
+      recvSourceCnts[i] = gatherList[i];
+    }//end i
+
+    delete [] gatherList;
+
+    int* sendBoxDisps = new int[npes];
+    int* recvBoxDisps = new int[npes];
+    sendBoxDisps[0] = 0;
+    recvBoxDisps[0] = 0;
+    for(int i = 1; i < npes; ++i) {
+      sendBoxDisps[i] = sendBoxDisps[i - 1] + sendBoxCnts[i - 1];
+      recvBoxDisps[i] = recvBoxDisps[i - 1] + recvBoxCnts[i - 1];
+    }//end i
+
+    std::vector<ot::TreeNode> tmpBoxList(recvBoxDisps[npes - 1] + recvBoxCnts[npes - 1]);
+
+    ot::TreeNode* recvBoxBuf = NULL;
+    if(!(tmpBoxList.empty())) {
+      recvBoxBuf = (&(tmpBoxList[0]));
+    }
+
+    MPI_Alltoallv( (&(nodeList[0])), sendBoxCnts, sendBoxDisps, par::Mpi_datatype<ot::TreeNode>::value(),
+        recvBoxBuf, recvBoxCnts, recvBoxDisps, par::Mpi_datatype<ot::TreeNode>::value(), (globalComm.getCommunicator()));
+
+    if(gatherSendBuf > 0) {
+      nodeList.clear();
+    } else {
+      for(int i = 0; i < tmpBoxList.size(); ++i) {
+        if(tmpBoxList[i] == nodeList[nodeList.size() - 1]) {
+          nodeList[nodeList.size() - 1].addWeight(tmpBoxList[i].getWeight());
+        } else {
+          nodeList.push_back(tmpBoxList[i]);
+        }
+      }//end i
+    }
+
+    delete [] sendBoxCnts;
+    delete [] recvBoxCnts;
+    delete [] sendBoxDisps;
+    delete [] recvBoxDisps;
+
+    int* sendSourceDisps = new int[npes];
+    int* recvSourceDisps = new int[npes];
+    sendSourceDisps[0] = 0;
+    recvSourceDisps[0] = 0;
+    for(int i = 1; i < npes; ++i) {
+      sendSourceDisps[i] = sendSourceDisps[i - 1] + sendSourceCnts[i - 1];
+      recvSourceDisps[i] = recvSourceDisps[i - 1] + recvSourceCnts[i - 1];
+    }//end i
+
+    std::vector<int> tmpRankList(recvSourceDisps[npes - 1] + recvSourceCnts[npes - 1]);
+    std::vector<int> tmpElemIdList(recvSourceDisps[npes - 1] + recvSourceCnts[npes - 1]);
+
+    int* recvRankBuf = NULL;
+    int* recvElemIdBuf = NULL;
+    if(!(tmpRankList.empty())) {
+      recvRankBuf = (&(tmpRankList[0]));
+      recvElemIdBuf = (&(tmpElemIdList[0]));
+    }
+
+    MPI_Alltoallv( (&(rankList[0])), sendSourceCnts, sendSourceDisps, MPI_INT,
+        recvRankBuf, recvSourceCnts, recvSourceDisps, MPI_INT, (globalComm.getCommunicator()));
+    MPI_Alltoallv( (&(elemIdList[0])), sendSourceCnts, sendSourceDisps, MPI_INT,
+        recvElemIdBuf, recvSourceCnts, recvSourceDisps, MPI_INT, (globalComm.getCommunicator()));
+
+    if(gatherSendBuf > 0) {
+      rankList.clear();
+      elemIdList.clear();
+    } else {
+      if(!(tmpRankList.empty())) {
+        rankList.insert(rankList.end(), tmpRankList.begin(), tmpRankList.end());
+        elemIdList.insert(elemIdList.end(), tmpElemIdList.begin(), tmpElemIdList.end());
+      }
+    }
+
+    delete [] sendSourceCnts;
+    delete [] recvSourceCnts;
+    delete [] sendSourceDisps;
+    delete [] recvSourceDisps;
+  }
 
   if(!(nodeList.empty())) {
-    nodeList[0].setWeight(0);
+    assert(nodeList.size() >= 2);
+
+    ot::TreeNode prevBox;
+    ot::TreeNode nextBox;
+    ot::TreeNode firstBox = nodeList[0];
+    ot::TreeNode lastBox = nodeList[nodeList.size() - 1];
+    MPI_Request recvPrevReq;
+    MPI_Request recvNextReq;
+    MPI_Request sendFirstReq;
+    MPI_Request sendLastReq;
+    if(rank > 0) {
+      MPI_Irecv(&prevBox, 1, par::Mpi_datatype<ot::TreeNode>::value(),
+          prevRank, 1, (globalComm.getCommunicator()), &recvPrevReq);
+      MPI_Isend(&firstBox, 1, par::Mpi_datatype<ot::TreeNode>::value(),
+          prevRank, 2, (globalComm.getCommunicator()), &sendFirstReq);
+    }
+    if(rank < (npes - 1)) {
+      MPI_Irecv(&nextBox, 1, par::Mpi_datatype<ot::TreeNode>::value(),
+          nextRank, 2, (globalComm.getCommunicator()), &recvNextReq);
+      MPI_Isend(&lastBox, 1, par::Mpi_datatype<ot::TreeNode>::value(),
+          nextRank, 1, (globalComm.getCommunicator()), &sendLastReq);
+    }
+
+    if(rank > 0) {
+      MPI_Status status;
+      MPI_Wait(&recvPrevReq, &status);
+      MPI_Wait(&sendFirstReq, &status);
+    }
+    if(rank < (npes - 1)) {
+      MPI_Status status;
+      MPI_Wait(&recvNextReq, &status);
+      MPI_Wait(&sendLastReq, &status);
+    }
+
+    bool removeFirst = false;
+    bool addToLast = false;
+    if(rank > 0) {
+      if(prevBox == firstBox) {
+        removeFirst = true;
+      }
+    }
+    if(rank < (npes - 1)) {
+      if(nextBox == lastBox) {
+        addToLast = true;
+      }
+    }
+
+    MPI_Request recvRankReq;
+    MPI_Request recvElemIdReq;
+    if(addToLast) {
+      int numPts = rankList.size();
+      rankList.resize(numPts + (nextBox.getWeight()));
+      elemIdList.resize(numPts + (nextBox.getWeight()));
+      nodeList[nodeList.size() - 1].addWeight(nextBox.getWeight());
+      MPI_Irecv((&(rankList[numPts])), ((nextBox.getWeight())), MPI_INT, nextRank,
+          3, (globalComm.getCommunicator()), &recvRankReq);
+      MPI_Irecv((&(elemIdList[numPts])), ((nextBox.getWeight())), MPI_INT, nextRank,
+          4, (globalComm.getCommunicator()), &recvElemIdReq);
+    }
+    if(removeFirst) {
+      MPI_Send((&(rankList[0])), ((firstBox.getWeight())), MPI_INT, prevRank, 3, (globalComm.getCommunicator()));
+      MPI_Send((&(elemIdList[0])), ((firstBox.getWeight())), MPI_INT, prevRank, 4, (globalComm.getCommunicator()));
+      nodeList.erase(nodeList.begin());
+    }
+    if(addToLast) {
+      MPI_Status status;
+      MPI_Wait(&recvRankReq, &status);
+      MPI_Wait(&recvElemIdReq, &status);
+    }
+    if(removeFirst) {
+      rankList.erase(rankList.begin(), rankList.begin() + ((firstBox.getWeight())));
+      elemIdList.erase(elemIdList.begin(), elemIdList.begin() + ((firstBox.getWeight())));
+    }
+
+    stIdxList.resize(nodeList.size());
+
+    stIdxList[0] = 0;
+    for(int i = 1; i < nodeList.size(); ++i) {
+      stIdxList[i] = stIdxList[i - 1] + nodeList[i - 1].getWeight();
+    }//end i
   }
-  for(int i = 1; i < nodeList.size(); ++i) {
-    nodeList[i].setWeight(nodeList[i - 1].getWeight() + numIndicesList[i - 1]);
-  }//end i
 
   ot::TreeNode firstNode;
   if(!(nodeList.empty())) {
@@ -220,27 +424,27 @@ void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& no
   swap(mins, tmpMins);
   tmpMins.clear();
 
-  int minNumIndices = numIndicesList[0];
-  int maxNumIndices = numIndicesList[0];
-  for(int i = 1; i < numIndicesList.size(); ++i) {
-    if(minNumIndices > numIndicesList[i]) {
-      minNumIndices = numIndicesList[i];
+  int minFineListLen = nodeList[0].getWeight();
+  int maxFineListLen = nodeList[0].getWeight();
+  for(int i = 1; i < nodeList.size(); ++i) {
+    if(minFineListLen > nodeList[i].getWeight()) {
+      minFineListLen = nodeList[i].getWeight();
     }
-    if(maxNumIndices < numIndicesList[i]) {
-      maxNumIndices = numIndicesList[i];
+    if(maxFineListLen < nodeList[i].getWeight()) {
+      maxFineListLen = nodeList[i].getWeight();
     }
   }//end i
 
-  int globalMinNumIndices = globalComm.minReduce<int>(minNumIndices);
-  int globalMaxNumIndices = globalComm.maxReduce<int>(maxNumIndices);
+  int globalMinFineListLen = globalComm.minReduce<int>(minFineListLen);
+  int globalMaxFineListLen = globalComm.maxReduce<int>(maxFineListLen);
 
   numLocalOcts = nodeList.size();
   numGlobalOcts = globalComm.sumReduce<int>(numLocalOcts);
 
   if(!rank) {
     std::cout<<"Total num final octants = "<<numGlobalOcts <<std::endl;
-    std::cout<<"Global Min Num Indices = "<<globalMinNumIndices <<std::endl;
-    std::cout<<"Global Max Num Indices = "<<globalMaxNumIndices <<std::endl;
+    std::cout<<"Global Min Fine List Length = "<<globalMinFineListLen <<std::endl;
+    std::cout<<"Global Max Fine List Length = "<<globalMaxFineListLen <<std::endl;
   }
 }
 
@@ -299,14 +503,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   double ScalingFactor[3];
 
   std::vector<ot::TreeNode> nodeList;
-  std::vector<unsigned int> numIndicesList;
-  std::vector<unsigned int> rankList;
+  std::vector<unsigned int> stIdxList;
+  std::vector<int> rankList;
   std::vector<int> elemIdList;
   std::vector<AMP::Mesh::MeshElement> localElemArr;
   std::vector<ot::TreeNode> mins;
   unsigned int BoxLevel;
 
-  setupDSforSearchType(BoxLevel, nodeList, numIndicesList, mins, rankList, elemIdList, localElemArr,
+  setupDSforSearchType(BoxLevel, nodeList, stIdxList, mins, rankList, elemIdList, localElemArr,
       minCoords, maxCoords, ScalingFactor, meshAdapter, globalComm );
 
   globalComm.barrier();
@@ -444,8 +648,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     seq::maxLowerBound<ot::TreeNode>(nodeList, (recvList[i].node), retIdx, NULL, NULL);
     if( nodeList[retIdx].isAncestor(recvList[i].node) ) {
       ptToOctMap[i] = retIdx;
-      int stIdx = nodeList[retIdx].getWeight();
-      for(int j = 0; j < numIndicesList[retIdx]; ++j) {
+      int stIdx = stIdxList[retIdx];
+      for(int j = 0; j < nodeList[retIdx].getWeight(); ++j) {
         sendCnts[rankList[stIdx + j]]++;
       }//end j
     }
@@ -469,8 +673,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   for(int i = 0; i < ptToOctMap.size(); ++i) {
     if(ptToOctMap[i] >= 0) {
-      int stIdx = nodeList[ptToOctMap[i]].getWeight();
-      for(int j = 0; j < numIndicesList[ptToOctMap[i]]; ++j) {
+      int stIdx = stIdxList[ptToOctMap[i]];
+      for(int j = 0; j < nodeList[ptToOctMap[i]].getWeight(); ++j) {
         sendElemIdList[sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]]] = elemIdList[stIdx + j];
         sendPtsList[(5*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]]))] = recvList[i].values[0];
         sendPtsList[(5*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 1] = recvList[i].values[1];
