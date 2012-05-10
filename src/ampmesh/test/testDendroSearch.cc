@@ -621,8 +621,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     recvDisps[i] = recvDisps[i - 1] + recvCnts[i - 1];
   }//end i
 
-  std::vector<int> sendElemIdList(sendDisps[npes - 1] + sendCnts[npes - 1]);
-  std::vector<double> sendPtsList(5*(sendDisps[npes - 1] + sendCnts[npes - 1]));
+  std::vector<double> sendPtsList(6*(sendDisps[npes - 1] + sendCnts[npes - 1]));
 
   for(int i = 0; i < npes; ++i) {
     sendCnts[i] = 0;
@@ -632,34 +631,22 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     if(ptToOctMap[i] >= 0) {
       int stIdx = stIdxList[ptToOctMap[i]];
       for(int j = 0; j < nodeList[ptToOctMap[i]].getWeight(); ++j) {
-        sendElemIdList[sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]]] = elemIdList[stIdx + j];
-        sendPtsList[(5*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]]))] = recvList[i].values[0];
-        sendPtsList[(5*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 1] = recvList[i].values[1];
-        sendPtsList[(5*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 2] = recvList[i].values[2];
-        sendPtsList[(5*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 3] = recvList[i].values[3];
-        sendPtsList[(5*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 4] = recvList[i].node.getWeight();
+        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]]))] = elemIdList[stIdx + j];
+        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 1] = recvList[i].values[0];
+        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 2] = recvList[i].values[1];
+        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 3] = recvList[i].values[2];
+        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 4] = recvList[i].values[3];
+        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 5] = recvList[i].node.getWeight();
         sendCnts[rankList[stIdx + j]]++;
       }//end j
     }
   }//end i
 
-  std::vector<int> recvElemIdList(recvDisps[npes - 1] + recvCnts[npes - 1]);
-  int* sendElemPtr = NULL;
-  int* recvElemPtr = NULL;
-  if(!(sendElemIdList.empty())) {
-    sendElemPtr = &(sendElemIdList[0]);
-  }
-  if(!(recvElemIdList.empty())) {
-    recvElemPtr = &(recvElemIdList[0]);
-  }
-  MPI_Alltoallv( sendElemPtr, sendCnts, sendDisps, MPI_INT,
-      recvElemPtr, recvCnts, recvDisps, MPI_INT, (globalComm.getCommunicator()) );
-
   for(int i = 0; i < npes; ++i) {
-    sendCnts[i] *= 5;
-    sendDisps[i] *= 5;
-    recvCnts[i] *= 5;
-    recvDisps[i] *= 5;
+    sendCnts[i] *= 6;
+    sendDisps[i] *= 6;
+    recvCnts[i] *= 6;
+    recvDisps[i] *= 6;
   }//end i
 
   std::vector<double> recvPtsList(recvDisps[npes - 1] + recvCnts[npes - 1]);
@@ -679,13 +666,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   delete [] recvCnts;
   delete [] recvDisps;
 
-  int numRecvPts = recvElemIdList.size();
+  int numRecvPts = recvPtsList.size()/6;
   std::vector<bool> results(numRecvPts, false);
   for(int i = 0; i < numRecvPts; ++i) {
-    assert(recvElemIdList[i] >= 0);
-    assert(recvElemIdList[i] < localElemArr.size());
-    AMP::Mesh::MeshElement el = localElemArr[recvElemIdList[i]];
-    //results[i] = el.containsPoint(recvPtsList[5*i], recvPtsList[(5*i) + 1], recvPtsList[(5*i) + 2]);
+    int eId = static_cast<int>(recvPtsList[6*i]);
+    assert(eId >= 0);
+    assert(eId < localElemArr.size());
+    AMP::Mesh::MeshElement el = localElemArr[eId];
+    //results[i] = el.containsPoint(recvPtsList[(6*i) + 1], recvPtsList[(6*i) + 2], recvPtsList[(6*i) + 3]);
   }//end i
 
   globalComm.barrier();

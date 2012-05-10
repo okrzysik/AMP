@@ -57,7 +57,7 @@ class NonlinearKrylovAccelerator
     @param [in] parameters The parameters object (must be of type NonlinearKrylovAcceleratorParameters)
     Should contain a pointer to a solution guess vector.
     */
-  void initialize(boost::shared_ptr<SolverStrategyParameters> params);
+  void initialize(boost::shared_ptr<SolverStrategyParameters> parameters);
   
    /**
     * Provide the initial guess for the solver. 
@@ -67,7 +67,7 @@ class NonlinearKrylovAccelerator
 
   /**
    * This routine corrects the acceleration subspace using the vector f
-   @params [in] f shared pointer to vector used to correct acceleration subspace
+   @param [in] f shared pointer to vector used to correct acceleration subspace
    */
   void correction(boost::shared_ptr<AMP::LinearAlgebra::Vector> &f);
 

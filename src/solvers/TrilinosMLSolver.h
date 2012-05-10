@@ -127,7 +127,7 @@ namespace AMP {
 
         /**
          * Initialize the solution vector and potentially create internal vectors needed for solution
-         @parameters [in] parameters The parameters object
+         @param [in] parameters The parameters object
          contains a database object. Refer to the documentation for the constructor to see what fields are required.
          This routine assumes that a non-NULL operator of type LinearOperator has been registered with the solver.
          The LinearOperator currently is assumed to contain a pointer to an EpetraMatrix object.
@@ -136,20 +136,20 @@ namespace AMP {
 
         /**
          * Register the operator that the solver will use during solves
-         @op [in] op shared pointer to the linear operator $A$ for equation \f$A u = f\f$ 
+         @param [in] op shared pointer to the linear operator $A$ for equation \f$A u = f\f$ 
          */
         void registerOperator(const boost::shared_ptr<AMP::Operator::Operator> op);
 
         /**
          * Resets the associated operator internally with new parameters if necessary
-         * \param params
+         * @param [in] params
          *        OperatorParameters object that is NULL by default
          */
         void resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params);
 
         /**
          * Resets the solver internally with new parameters if necessary
-         * \param params
+         * @param [in] params
          *        SolverStrategyParameters object that is NULL by default
          * Currently every call to reset destroys the ML preconditioner object
          * and recreates it based on the parameters object. See constructor for
