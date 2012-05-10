@@ -145,10 +145,10 @@ namespace Solver {
 
    /**
    * Resets the registered operator internally with new parameters if necessary
-   * \param parameters
+   * @param parameters
    *        OperatorParameters object that is NULL by default
    */
-  void resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params);
+  void resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> parameters);
   
   protected:
   
