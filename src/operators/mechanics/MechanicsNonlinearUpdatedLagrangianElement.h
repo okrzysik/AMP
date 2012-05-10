@@ -94,6 +94,8 @@ namespace Operator {
         that of the last call to MechanicsNonlinearFEOperator's apply function.
         @param [in] elementInputVectors Field (Displacement, Temperature, Burnup etc) values at the
         nodes of the current element. 
+        @param [in] elementInputVectors_pre Field (Displacement, Temperature, Burnup etc) values at the
+        nodes of the current element at the previous time-step. 
         */
       template <MaterialUpdateType type>
         void updateMaterialModel( const std::vector<std::vector<double> > & elementInputVectors, 
