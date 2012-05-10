@@ -301,6 +301,8 @@ void libMesh::initialize()
                 N_ghost++;
             }
         }
+        AMP::Utilities::quicksort(*local_elements);  // Make sure the elments are sorted for searching
+        AMP::Utilities::quicksort(*ghost_elements);  // Make sure the elments are sorted for searching
         std::pair< GeomType, boost::shared_ptr<std::vector<MeshElement> > > local_pair( type, local_elements );
         std::pair< GeomType, boost::shared_ptr<std::vector<MeshElement> > > ghost_pair( type, ghost_elements );
         d_localElements.insert( local_pair );
@@ -681,6 +683,53 @@ std::vector< ::Node* > libMesh::getNeighborNodes( MeshElementID id ) const
     int i = AMP::Utilities::findfirst(neighborNodeIDs,id.local_id());
     AMP_ASSERT(neighborNodeIDs[i]==id.local_id());
     return neighborNodes[i];
+}
+
+
+/********************************************************
+* Function to return the element given an ID            *
+********************************************************/
+MeshElement libMesh::getElement ( const MeshElementID &elem_id ) const
+{
+    MeshID mesh_id = elem_id.meshID();
+    AMP_INSIST(mesh_id==d_meshID,"mesh id must match the mesh id of the element");
+    unsigned int rank = d_comm.getRank();
+    if ( elem_id.type()==PhysicalDim ) {
+        // This is a libMesh element
+        ::Elem *element = d_libMesh->elem( elem_id.local_id() );
+        return libMeshElement( PhysicalDim, elem_id.type(), (void*)element, rank, mesh_id, this );
+    } else if ( elem_id.type()==Vertex ) {
+        // This is a libMesh node
+        ::Node *node = d_libMesh->node_ptr( elem_id.local_id() );
+        return libMeshElement( PhysicalDim, elem_id.type(), (void*)  node,  rank, mesh_id, this );
+    }
+    // All other types are stored in sorted lists
+    boost::shared_ptr<std::vector<MeshElement> > list;
+    if ( (int) elem_id.owner_rank() == d_comm.getRank() )
+        list = (d_localElements.find(elem_id.type()))->second;
+    else 
+        list = (d_ghostElements.find(elem_id.type()))->second;
+    size_t n = list->size();
+    AMP_ASSERT(n>0);
+    const MeshElement *x = &(list->operator[](0));   // Use the pointer for speed
+    if ( x[0]==elem_id )
+        return x[0];
+    size_t lower = 0;
+    size_t upper = n-1;
+    size_t index;
+    while ( (upper-lower) != 1 ) {
+        index = (upper+lower)/2;
+        if ( x[index] >= elem_id )
+            upper = index;
+        else
+            lower = index;
+    }
+    index = upper;
+    if ( x[index]==elem_id )
+        return x[index];
+    if ( elem_id.is_local() )
+        AMP_ERROR("Local element not found");
+    return MeshElement();
 }
 
 

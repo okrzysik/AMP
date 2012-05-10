@@ -58,6 +58,16 @@ public:
      */
     virtual std::vector<double> centroid() const;
 
+    /**
+     * \brief     Return true if the element contains the point
+     * \details   This function checks if the given point is inside or 
+     *   within TOL of the given element.  If the current element is a vertex,
+     *   this function checks if the point is with TOL of the vertex.
+     * \param pos   The coordinates of the point to check.
+     * \param TOL   The tolerance to use for the computation.
+     */
+    virtual bool containsPoint( const std::vector<double> &pos, double TOL=1e-12 ) const;
+
     //! Check if the element is on the surface
     virtual bool isOnSurface() const;
 

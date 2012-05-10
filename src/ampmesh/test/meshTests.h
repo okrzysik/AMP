@@ -173,6 +173,21 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
         if ( !neighbor_pass )
             ut->failure( "elements failed getNeighbors test" );
     }
+    // Check that we can get the element from the global id for all elements
+    cur_it = iterator.begin();
+    bool getElem_pass = true;
+    for (size_t i=0; i<cur_it.size(); i++) {
+        AMP::Mesh::MeshElementID id1 = cur_it->globalID();
+        AMP::Mesh::MeshElement elem = mesh->getElement(id1);
+        AMP::Mesh::MeshElementID id2 = elem.globalID();
+        if ( id1 != id2 )
+            getElem_pass = false;
+        ++cur_it;
+    }
+    if ( getElem_pass )
+        ut->passes( "Got elements from element ids" );
+    else
+        ut->failure( "Got elements from element ids" );
 }
 
 
@@ -534,6 +549,10 @@ void testID( AMP::UnitTest *utils )
     AMP::Mesh::MeshElementID id4(true,AMP::Mesh::Vertex,3,1,103);
     AMP::Mesh::MeshElementID id5(true,AMP::Mesh::Vertex,2,4,103);
     AMP::Mesh::MeshElementID id6(true,AMP::Mesh::Vertex,2,1,105);
+    // Test the default values
+    if ( id0.meshID()!=static_cast<size_t>(-1) || id0.is_local() || id0.type()!=AMP::Mesh::null || 
+        id0.owner_rank()!=0 || id0.local_id()!=static_cast<unsigned int>(-1) )
+        utils->failure("MeshElementID test defaults");
     // Test == and != operators
     if ( !(id1==id1) || !(id1==id2) )
         utils->failure("MeshElementID test ==");
@@ -572,9 +591,6 @@ void testID( AMP::UnitTest *utils )
     AMP::Utilities::quicksort(list);
     if ( list[0]!=id1 || list[1]!=id4 || list[2]!=id3 || list[3]!=id5 || list[4]!=id6 || list[5]!=id0 )
         utils->failure("MeshElementID test sort");
-    // Test the default values
-    if ( id0.meshID()!=static_cast<size_t>(-1) || id0.is_local() || id0.type()!=0 || id0.owner_rank()!=0 || id0.local_id()!=static_cast<unsigned int>(-1) )
-        utils->failure("MeshElementID test defaults");
     if ( num_failed0 == utils->NumFailLocal() )
         utils->passes("MeshElementID tests");
     else

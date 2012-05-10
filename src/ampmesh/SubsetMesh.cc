@@ -138,7 +138,10 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
                     }
                 }
                 if ( !found ) {
-                    MeshElement element = d_parent_mesh->getElement( ghost_global[i] );
+                    MeshElementID tmp = ghost_global[i];
+                    tmp.set_is_local(true); // We do own this element
+                    MeshElement element = d_parent_mesh->getElement( tmp );
+                    AMP_ASSERT(element.globalID()!=MeshElementID());
                     AMP_ASSERT(element.globalID()==ghost_global[i]);
                     d_elements[t][0]->push_back( element );
                     changed = true;
@@ -393,6 +396,15 @@ MeshIterator SubsetMesh::getBlockIDIterator ( const GeomType, const int, const i
 {
     AMP_ERROR("getBlockIDIterator is not implimented for SubsetMesh yet");
     return MeshIterator();
+}
+
+
+/********************************************************
+* Function to return the element given an ID            *
+********************************************************/
+MeshElement SubsetMesh::getElement( const MeshElementID &elem_id ) const
+{
+    return d_parent_mesh->getElement(elem_id);
 }
 
 

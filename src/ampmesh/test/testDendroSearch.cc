@@ -29,39 +29,6 @@
 #include "externVars.h"
 #include "dendro.h"
 
-void computeMinAndMaxCoords( double* minCoords, double* maxCoords, double* ScalingFactor, 
-    AMP::Mesh::Mesh::shared_ptr meshAdapter, AMP::AMP_MPI globalComm ) {
-  AMP::Mesh::MeshIterator nd = meshAdapter->getIterator(AMP::Mesh::Vertex, 0);
-  AMP::Mesh::MeshIterator end_nd = nd.end();
-
-  AMP_ASSERT(nd != end_nd);
-  {
-    std::vector<double> pt = nd->coord();
-    for(int i = 0; i < pt.size(); ++i) {
-      minCoords[i] = pt[i];
-      maxCoords[i] = pt[i];
-    }//end i
-    ++nd;
-  }
-  for( ; nd != end_nd; ++nd) {
-    std::vector<double> pt = nd->coord();
-    for(int i = 0; i < pt.size(); ++i) {
-      if(minCoords[i] > pt[i]) {
-        minCoords[i] = pt[i];
-      }
-      if(maxCoords[i] < pt[i]) {
-        maxCoords[i] = pt[i];
-      }
-    }//end i
-  }//end nd
-
-  globalComm.minReduce<double>(minCoords, 3, NULL);
-  globalComm.maxReduce<double>(maxCoords, 3, NULL);
-
-  for(int i = 0; i < 3; ++i) {
-    ScalingFactor[i] = 1.0/(1.0e-10 + maxCoords[i] - minCoords[i]);
-  }//end i
-}
 
 void createLocalMeshElementArray(std::vector<AMP::Mesh::MeshElement>& localElemArr, 
     AMP::Mesh::Mesh::shared_ptr meshAdapter) {
@@ -82,7 +49,12 @@ void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& no
   int rank = globalComm.getRank();
   int npes = globalComm.getSize();
 
-  computeMinAndMaxCoords(minCoords, maxCoords, ScalingFactor, meshAdapter, globalComm);
+  std::vector<double> box = meshAdapter->getBoundingBox();
+  for(int i=0; i<meshAdapter->getDim(); ++i) {
+    minCoords[i] = box[2*i+0];
+    maxCoords[i] = box[2*i+1];
+    ScalingFactor[i] = 1.0/(1.0e-10 + maxCoords[i] - minCoords[i]);
+  }
 
   createLocalMeshElementArray(localElemArr, meshAdapter);
 
@@ -460,48 +432,38 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   int rank = globalComm.getRank();
   int npes = globalComm.getSize();
 
+  // Load the input file
   globalComm.barrier();
-
   double inpReadBeginTime = MPI_Wtime();
-
   boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
-
   globalComm.barrier();
-
   double inpReadEndTime = MPI_Wtime();
-
   if(!rank) {
     std::cout<<"Finished parsing the input file in "<<(inpReadEndTime - inpReadBeginTime)<<" seconds."<<std::endl;
   }
 
+  // Load the mesh
   globalComm.barrier();
-
   double meshBeginTime = MPI_Wtime();
-
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
   boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
   boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
   meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
-
   globalComm.barrier();
-
   double meshEndTime = MPI_Wtime();
-
   if(!rank) {
     std::cout<<"Finished reading the mesh in "<<(meshEndTime - meshBeginTime)<<" seconds."<<std::endl;
   }
 
+  // Setup dendro
   globalComm.barrier();
-
   double setupBeginTime = MPI_Wtime();
-
   double minCoords[3];
   double maxCoords[3];
   double ScalingFactor[3];
-
   std::vector<ot::TreeNode> nodeList;
   std::vector<unsigned int> stIdxList;
   std::vector<int> rankList;
@@ -509,14 +471,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::vector<AMP::Mesh::MeshElement> localElemArr;
   std::vector<ot::TreeNode> mins;
   unsigned int BoxLevel;
-
   setupDSforSearchType(BoxLevel, nodeList, stIdxList, mins, rankList, elemIdList, localElemArr,
       minCoords, maxCoords, ScalingFactor, meshAdapter, globalComm );
-
   globalComm.barrier();
-
   double setupEndTime = MPI_Wtime();
-
   if(!rank) {
     std::cout<<"Finished setting up DS for search in "<<(setupEndTime - setupBeginTime)<<" seconds."<<std::endl;
   }
@@ -530,7 +488,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     numLocalPts++;
   }
 
-  //Generate Random points in [min, max]
+  // Generate Random points in [min, max]
   const unsigned int seed = (0x1234567 + (24135*rank));
   srand48(seed);
 
@@ -543,13 +501,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     pts.push_back(y);
     pts.push_back(z);
   }//end i
-
   if(!rank) {
     std::cout<<"Finished generating random points for search!"<<std::endl;
   }
 
+  // Perform the search
   globalComm.barrier();
-
   double searchBeginTime = MPI_Wtime();
 
   const unsigned int MaxDepth = 30;
@@ -742,6 +699,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   ut->passes(exeName);
 }
+
 
 int main(int argc, char *argv[])
 {

@@ -23,7 +23,6 @@ libMeshElement::libMeshElement()
     typeID = libMeshElementTypeID;
     element = NULL;
     d_dim = -1;
-    d_elementType = null;
     d_globalID = MeshElementID();
 }
 libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element, 
@@ -32,7 +31,6 @@ libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element,
     AMP_ASSERT(libmesh_element!=NULL);
     typeID = libMeshElementTypeID;
     element = NULL;
-    d_elementType = type;
     d_dim = dim;
     d_rank = rank;
     d_mesh = mesh;
@@ -41,12 +39,12 @@ libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element,
     unsigned int local_id = (unsigned int)-1;
     unsigned int owner_rank = (unsigned int)-1;
     bool is_local=false;
-    if ( d_elementType==Vertex ) {
+    if ( type==Vertex ) {
         ::Node* node = (::Node*) ptr_element;
         local_id = node->id();
         owner_rank = node->processor_id();
         is_local = owner_rank==d_rank;
-    } else if ( (GeomType) dim ) {
+    } else if ( type==(GeomType) dim ) {
         ::Elem* elem = (::Elem*) ptr_element;
         AMP_ASSERT(elem->n_neighbors()<100);
         local_id = elem->id();
@@ -55,7 +53,7 @@ libMeshElement::libMeshElement(int dim, GeomType type, void* libmesh_element,
     } else {
         AMP_ERROR("Unreconized element");
     }
-    d_globalID = MeshElementID(is_local,d_elementType,local_id,owner_rank,meshID);
+    d_globalID = MeshElementID(is_local,type,local_id,owner_rank,meshID);
 }
 libMeshElement::libMeshElement(int dim, GeomType type, boost::shared_ptr< ::Elem > libmesh_element, 
     unsigned int rank, MeshID meshID, const libMesh* mesh)
@@ -63,7 +61,6 @@ libMeshElement::libMeshElement(int dim, GeomType type, boost::shared_ptr< ::Elem
     AMP_ASSERT(libmesh_element.get()!=NULL);
     typeID = libMeshElementTypeID;
     element = NULL;
-    d_elementType = type;
     d_dim = dim;
     d_rank = rank;
     d_mesh = mesh;
@@ -73,7 +70,7 @@ libMeshElement::libMeshElement(int dim, GeomType type, boost::shared_ptr< ::Elem
     unsigned int local_id = (unsigned int)-1;
     unsigned int owner_rank = (unsigned int)-1;
     bool is_local=false;
-    if ( d_elementType==Vertex ) {
+    if ( type==Vertex ) {
         ::Node* node = (::Node*) ptr_element;
         local_id = node->id();
         owner_rank = node->processor_id();
@@ -84,13 +81,12 @@ libMeshElement::libMeshElement(int dim, GeomType type, boost::shared_ptr< ::Elem
         owner_rank = elem->processor_id();
         is_local = owner_rank==d_rank;
     }
-    d_globalID = MeshElementID(is_local,d_elementType,local_id,owner_rank,meshID);
+    d_globalID = MeshElementID(is_local,type,local_id,owner_rank,meshID);
 }
 libMeshElement::libMeshElement(const libMeshElement& rhs)
 {
     typeID = libMeshElementTypeID;
     element = NULL;
-    d_elementType = rhs.d_elementType;
     d_globalID = rhs.d_globalID;
     d_dim = rhs.d_dim;
     ptr_element = rhs.ptr_element;
@@ -105,7 +101,6 @@ libMeshElement& libMeshElement::operator=(const libMeshElement& rhs)
         return *this;
     this->typeID = libMeshElementTypeID;
     this->element = NULL;
-    this->d_elementType = rhs.d_elementType;
     this->d_globalID = rhs.d_globalID;
     this->d_dim = rhs.d_dim;
     this->ptr_element = rhs.ptr_element;
@@ -140,16 +135,16 @@ MeshElement* libMeshElement::clone() const
 ****************************************************************/
 std::vector<MeshElement> libMeshElement::getElements(const GeomType type) const
 {
-    AMP_INSIST(type<=d_elementType,"sub-elements must be of a smaller or equivalent type");
+    AMP_INSIST(type<=d_globalID.type(),"sub-elements must be of a smaller or equivalent type");
     std::vector<MeshElement> children(0);
     ::Elem* elem = (::Elem*) ptr_element;
-    if ( d_elementType==Vertex ) {
+    if ( d_globalID.type()==Vertex ) {
         // A vertex does not have children, return itself
         if ( type!=Vertex )
             AMP_ERROR("A vertex is the base element and cannot have and sub-elements");
         children.resize(1);
         children[0] = *this;
-    } else if ( type==d_elementType ) {
+    } else if ( type==d_globalID.type() ) {
         // Return the children of the current element
         if ( elem->has_children() ) {
             children.resize(elem->n_children());
@@ -213,7 +208,7 @@ std::vector<MeshElement> libMeshElement::getElements(const GeomType type) const
 std::vector< MeshElement::shared_ptr > libMeshElement::getNeighbors() const
 {
     std::vector< MeshElement::shared_ptr > neighbors(0);
-    if ( d_elementType==Vertex ) {
+    if ( d_globalID.type()==Vertex ) {
         // Return the neighbors of the current node
         std::vector< ::Node* > neighbor_nodes = d_mesh->getNeighborNodes( d_globalID );
         neighbors.resize(neighbor_nodes.size(),MeshElement::shared_ptr());
@@ -222,7 +217,7 @@ std::vector< MeshElement::shared_ptr > libMeshElement::getNeighbors() const
             boost::shared_ptr<libMeshElement> neighbor(new libMeshElement( d_dim, Vertex, (void*)neighbor_nodes[i], d_rank, d_meshID, d_mesh ) );
             neighbors[i] = neighbor;
         }
-    } else if ( (int) d_elementType == d_dim ) {
+    } else if ( (int) d_globalID.type() == d_dim ) {
         // Return the neighbors of the current element
         ::Elem* elem = (::Elem*) ptr_element;
         //if ( elem->n_neighbors()==0 )
@@ -232,7 +227,7 @@ std::vector< MeshElement::shared_ptr > libMeshElement::getNeighbors() const
             void *neighbor_elem = (void*) elem->neighbor(i);
             boost::shared_ptr<libMeshElement> neighbor;
             if ( neighbor_elem != NULL )
-                neighbor = boost::shared_ptr<libMeshElement>(new libMeshElement( d_dim, d_elementType, neighbor_elem, d_rank, d_meshID, d_mesh ) );
+                neighbor = boost::shared_ptr<libMeshElement>(new libMeshElement( d_dim, d_globalID.type(), neighbor_elem, d_rank, d_meshID, d_mesh ) );
             neighbors[i] = neighbor;
         }
     } else {
@@ -247,14 +242,14 @@ std::vector< MeshElement::shared_ptr > libMeshElement::getNeighbors() const
 ****************************************************************/
 double libMeshElement::volume() const
 {
-    if ( d_elementType == Vertex )
+    if ( d_globalID.type() == Vertex )
         AMP_ERROR("volume is is not defined Nodes");
     ::Elem* elem = (::Elem*) ptr_element;
     return elem->volume();
 }
 std::vector<double> libMeshElement::coord() const
 {
-    if ( d_elementType != Vertex )
+    if ( d_globalID.type() != Vertex )
         AMP_ERROR("coord is only defined for Nodes");
     ::Node* node = (::Node*) ptr_element;
     std::vector<double> x(d_dim,0.0);
@@ -264,7 +259,7 @@ std::vector<double> libMeshElement::coord() const
 }
 std::vector<double> libMeshElement::centroid() const
 {
-    if ( d_elementType==Vertex )
+    if ( d_globalID.type()==Vertex )
         return coord();
     ::Elem* elem = (::Elem*) ptr_element;
     ::Point center = elem->centroid();
@@ -273,21 +268,36 @@ std::vector<double> libMeshElement::centroid() const
         x[i] = center(i);
     return x;
 }
+bool libMeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
+{
+    if ( d_globalID.type()==Vertex ) {
+        double dist = 0.0;
+        std::vector<double> point = this->coord();
+        double dist2 = 0.0;
+        for (size_t i=0; i<point.size(); i++)
+            dist2 += (point[i]-pos[i])*(point[i]-pos[i]);
+        return dist2<=TOL*TOL;
+    }
+    ::Elem* elem = (::Elem*) ptr_element;
+    ::Point point(pos[0],pos[1],pos[2]);
+    return elem->contains_point(point,TOL);
+}
 bool libMeshElement::isOnSurface() const
 {
+    GeomType type = d_globalID.type();
     MeshElement search = MeshElement(*this);
     if ( d_globalID.is_local() ) {
-        std::vector<MeshElement> &data = *(d_mesh->d_localSurfaceElements[d_elementType]);
+        std::vector<MeshElement> &data = *(d_mesh->d_localSurfaceElements[type]);
         size_t index = AMP::Utilities::findfirst( data, search );
         if ( index < data.size() ) {
-            if ( d_mesh->d_localSurfaceElements[d_elementType]->operator[](index).globalID() == d_globalID )
+            if ( d_mesh->d_localSurfaceElements[type]->operator[](index).globalID() == d_globalID )
                 return true;
         }
     } else {
-        std::vector<MeshElement> &data = *(d_mesh->d_ghostSurfaceElements[d_elementType]);
+        std::vector<MeshElement> &data = *(d_mesh->d_ghostSurfaceElements[type]);
         size_t index = AMP::Utilities::findfirst( data, search );
         if ( index < data.size() ) {
-            if ( d_mesh->d_ghostSurfaceElements[d_elementType]->operator[](index).globalID() == d_globalID )
+            if ( d_mesh->d_ghostSurfaceElements[type]->operator[](index).globalID() == d_globalID )
                 return true;
         }
     }
@@ -295,9 +305,10 @@ bool libMeshElement::isOnSurface() const
 }
 bool libMeshElement::isOnBoundary(int id) const
 {
+    GeomType type = d_globalID.type();
     bool on_boundary = false;
     boost::shared_ptr< ::Mesh> d_libMesh = d_mesh->getlibMesh();
-    if ( d_elementType==Vertex ) {
+    if ( type==Vertex ) {
         // Entity is a libmesh node
         ::Node* node = (::Node*) ptr_element;
         std::vector< short int > bids = d_libMesh->boundary_info->boundary_ids(node);
@@ -305,7 +316,7 @@ bool libMeshElement::isOnBoundary(int id) const
             if ( bids[i]==id )
                 on_boundary = true;
         }
-    } else if ( (int)d_elementType==d_dim ) {
+    } else if ( (int)type==d_dim ) {
         // Entity is a libmesh node
         ::Elem* elem = (::Elem*) ptr_element;
         unsigned int side = d_libMesh->boundary_info->side_with_boundary_id(elem,id);
@@ -322,11 +333,12 @@ bool libMeshElement::isOnBoundary(int id) const
 }
 bool libMeshElement::isInBlock(int id) const
 {
-    bool in_block = false;
-    if ( d_elementType==Vertex ) {
+   GeomType type = d_globalID.type();
+   bool in_block = false;
+    if ( type==Vertex ) {
         // Entity is a libmesh node
         AMP_ERROR("isInBlock is not currently implimented for anything but elements");
-    } else if ( (int)d_elementType==d_dim ) {
+    } else if ( (int)type==d_dim ) {
         // Entity is a libmesh node
         ::Elem* elem = (::Elem*) ptr_element;
         in_block = elem->subdomain_id() == id;

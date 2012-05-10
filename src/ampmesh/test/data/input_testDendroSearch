@@ -1,5 +1,5 @@
 
-TotalNumberOfPoints = 100
+TotalNumberOfPoints = 1000
 
 Mesh {
   MeshType = "libMesh"

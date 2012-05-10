@@ -17,7 +17,6 @@ MeshElement::MeshElement():
 {
     typeID = MeshElementTypeID;
     element = NULL;
-    d_elementType = null;
 }
 MeshElement::MeshElement(const MeshElement& rhs):
     d_globalID()
@@ -31,7 +30,6 @@ MeshElement::MeshElement(const MeshElement& rhs):
     } else {
         element = rhs.element->clone();
     }
-    d_elementType = rhs.d_elementType;
     d_globalID = rhs.d_globalID;
 }
 MeshElement& MeshElement::operator=(const MeshElement& rhs)
@@ -51,7 +49,6 @@ MeshElement& MeshElement::operator=(const MeshElement& rhs)
     } else {
         element = rhs.element->clone();
     }
-    d_elementType = rhs.d_elementType;
     d_globalID = rhs.d_globalID;
     return *this;
 }
@@ -82,11 +79,13 @@ MeshElement* MeshElement::clone() const
 
 
 /********************************************************
-* Default function to return the centroid of an element *
+* Function to return the centroid of an element         *
 ********************************************************/
 std::vector<double> MeshElement::centroid() const
 {
-    if ( d_elementType==Vertex )
+    if ( element!=NULL )
+        return element->centroid();
+    if ( d_globalID.type()==Vertex )
         return coord();
     std::vector<MeshElement> nodes = getElements(Vertex);
     AMP_ASSERT(nodes.size()>0);
@@ -99,6 +98,26 @@ std::vector<double> MeshElement::centroid() const
     for (size_t j=0; j<center.size(); j++)
         center[j] /= nodes.size();
     return center;
+}
+
+
+/********************************************************
+* Function to check if a point is within an element     *
+********************************************************/
+bool MeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
+{
+    if ( element!=NULL )
+        return element->containsPoint(pos,TOL);
+    if ( d_globalID.type()==Vertex ) {
+        double dist = 0.0;
+        std::vector<double> point = this->coord();
+        double dist2 = 0.0;
+        for (size_t i=0; i<point.size(); i++)
+            dist2 += (point[i]-pos[i])*(point[i]-pos[i]);
+        return dist2<=TOL*TOL;
+    }
+    AMP_ERROR("containsPoint is not finished for default elements yet");
+    return false;
 }
 
 

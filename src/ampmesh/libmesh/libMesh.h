@@ -152,6 +152,17 @@ public:
 
 
     /**
+     * \brief    Return a mesh element given it's id.
+     * \details  This function queries the mesh to get an element given the mesh id.
+     *    This function is only required to return an element if the id is local.
+     *    This function uses libmesh for elements it owns, and uses an O(ln(N)) for 
+     *    elements that were constructed internally.
+     * \param id    Mesh element id we are requesting.
+     */
+    virtual MeshElement getElement ( const MeshElementID &id ) const;
+
+
+    /**
      * \brief    Displace the entire mesh
      * \details  This function will displace the entire mesh by a scalar value.
      *   This function is a blocking call for the mesh communicator, and requires

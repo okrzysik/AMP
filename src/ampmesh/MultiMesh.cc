@@ -499,6 +499,27 @@ std::vector<MeshID> MultiMesh::getLocalBaseMeshIDs() const
 
 
 /********************************************************
+* Function to return the element given an ID            *
+********************************************************/
+MeshElement MultiMesh::getElement( const MeshElementID &elem_id ) const
+{
+    MeshID mesh_id = elem_id.meshID();
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        std::vector<MeshID> ids = d_meshes[i]->getLocalBaseMeshIDs();
+        bool mesh_found = false;
+        for (size_t j=0; j<ids.size(); j++) {
+            if ( ids[j]==mesh_id )
+                mesh_found = true;
+        }
+        if ( mesh_found )
+            return d_meshes[i]->getElement( elem_id );
+    }
+    AMP_ERROR("A mesh matching the element's mesh id was not found");
+    return MeshElement();
+}
+
+
+/********************************************************
 * Function to subset a mesh using a mesh iterator       *
 ********************************************************/
 boost::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in ) const
