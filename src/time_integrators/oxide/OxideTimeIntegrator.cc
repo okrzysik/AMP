@@ -1,10 +1,13 @@
 #include "OxideTimeIntegrator.h"
+#include "OxideModel.h"
+
 #include "utils/AMP_MPI.h"
 #include "utils/Utilities.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
 #include "vectors/MultiVariable.h"
 #include "vectors/VectorSelector.h"
+
 
 namespace AMP{
 namespace TimeIntegrator{
@@ -45,7 +48,7 @@ void OxideTimeIntegrator::initialize( boost::shared_ptr<TimeIntegratorParameters
     d_temp->getDOFManager()->getDOFs( d_mesh->getIterator(AMP::Mesh::Vertex,0)->globalID(), dofs );
     AMP_INSIST(dofs.size()==1,"Temperature vector must be a nodal scalar vector");
     double total_depth = oxide_parameters->depth;
-    AMP_INSIST(total_depth>0!=NULL,"Surface depth must be > 0");
+    AMP_INSIST(total_depth>0,"Surface depth must be > 0");
 
     // Create the solution vector
     AMP::Discretization::DOFManager::shared_ptr DOF = AMP::Discretization::simpleDOFManager::create(d_mesh,AMP::Mesh::Vertex,1,1,true);
@@ -67,15 +70,61 @@ void OxideTimeIntegrator::initialize( boost::shared_ptr<TimeIntegratorParameters
     int N_total = 0;
     for (size_t i=0; i<N_layer.size(); i++)
         N_total += N_layer[i];
-    AMP::Discretization::DOFManager::shared_ptr DOF_t = AMP::Discretization::simpleDOFManager::create(d_mesh,AMP::Mesh::Vertex,0,N_layer.size(),true);
+    AMP::Discretization::DOFManager::shared_ptr DOF_d = AMP::Discretization::simpleDOFManager::create(d_mesh,AMP::Mesh::Vertex,0,N_layer.size(),true);
     AMP::Discretization::DOFManager::shared_ptr DOF_C = AMP::Discretization::simpleDOFManager::create(d_mesh,AMP::Mesh::Vertex,0,N_total,true);
-    AMP::LinearAlgebra::Variable::shared_ptr t_var( new AMP::LinearAlgebra::Variable("depth") );
+    AMP::LinearAlgebra::Variable::shared_ptr d_var( new AMP::LinearAlgebra::Variable("depth") );
     AMP::LinearAlgebra::Variable::shared_ptr C_var( new AMP::LinearAlgebra::Variable("C") );
-    depth = AMP::LinearAlgebra::createVector( DOF_t, t_var, true );
-    C     = AMP::LinearAlgebra::createVector( DOF_C, C_var, true );
+    depth = AMP::LinearAlgebra::createVector( DOF_d, d_var, true );
+    conc  = AMP::LinearAlgebra::createVector( DOF_C, C_var, true );
 
-    // Create the initial conditions
-    
+    // Create the initial conditions (500K for 1 day)
+    double *C0[10];
+    double *C1[10];
+    C0[0] = new double[N_total];
+    C1[0] = new double[N_total];
+    for (size_t i=1; i<N_layer.size(); i++) {
+        C0[i] = &C0[i-1][N_layer[i-1]];
+        C1[i] = &C1[i-1][N_layer[i-1]];
+    }
+    double D[10], Cb[20], x0[11], x1[11], v1[11], depth2[10];   // Allocate enough space for 10 layers
+    OxideModel::get_equilibrium_concetration( 500, Cb );
+    OxideModel::get_diffusion_coefficients( 500, D );
+    for (size_t i=0; i<N_layer.size(); i++) {
+        x0[i] = i*10.0e-7;        // Set the initial thickness to 10 nm
+        for (int j=0; j<N_layer[i]; j++)
+            C0[i][j] = Cb[2*i+0] + (Cb[2*i+1]-Cb[2*i+0])*(j+0.5)/((double)N_layer[i]);
+    }
+    x0[N_layer.size()] = total_depth;
+    OxideModel::integrateOxide( 86400, N_layer.size(), &N_layer[0], x0, Cb, C0, D, C1, x1, v1 );
+    for (size_t i=0; i<N_layer.size(); i++)
+        depth2[i] = x1[i+1]-x1[i];
+        
+
+    // Copy the initial solution to all points in the mesh
+    AMP::Discretization::DOFManager::shared_ptr DOF_oxide = d_oxide->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr DOF_alpha = d_alpha->getDOFManager();
+    AMP::Mesh::MeshIterator iterator = d_mesh->getIterator(AMP::Mesh::Vertex,0);
+    for (size_t i=0; i<iterator.size(); i++) {
+        AMP::Mesh::MeshElementID id = iterator->globalID();
+        DOF_C->getDOFs( id, dofs );
+        AMP_ASSERT((int)dofs.size()==N_total);
+        conc->setLocalValuesByGlobalID( dofs.size(), &dofs[0], C1[0] );
+        DOF_d->getDOFs( id, dofs );
+        AMP_ASSERT(dofs.size()==N_layer.size());
+        depth->setLocalValuesByGlobalID( dofs.size(), &dofs[0], depth2 );
+        DOF_oxide->getDOFs( id, dofs );
+        AMP_ASSERT(dofs.size()==1);
+        d_oxide->setLocalValueByGlobalID( dofs[0], 1e-2*depth2[0] );
+        DOF_alpha->getDOFs( id, dofs );
+        AMP_ASSERT(dofs.size()==1);
+        d_alpha->setLocalValueByGlobalID( dofs[0], 1e-2*depth2[1] );
+        ++iterator;
+    }
+    d_solution->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+
+    // Free the temporary memory
+    delete [] C0[0];
+    delete [] C1[0];
 }
 
 

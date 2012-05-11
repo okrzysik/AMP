@@ -110,7 +110,7 @@ private:
     // Internal data for calculating the oxide
     std::vector<int> N_layer;
     AMP::LinearAlgebra::Vector::shared_ptr depth;
-    AMP::LinearAlgebra::Vector::shared_ptr C;
+    AMP::LinearAlgebra::Vector::shared_ptr conc;
 
 
 };
