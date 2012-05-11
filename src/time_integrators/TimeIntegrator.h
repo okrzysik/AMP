@@ -42,6 +42,9 @@ namespace TimeIntegrator{
 class TimeIntegrator
 {
 public:
+   //! Convience typedef
+   typedef boost::shared_ptr<AMP::TimeIntegrator::TimeIntegrator>  shared_ptr;
+
    /**
     * The constructor for TimeIntegrator initializes the 
     * default state of the integrator. Data members are 
@@ -242,9 +245,10 @@ protected:
    int d_integrator_step;
    int d_max_integrator_steps;
 
-private:
    // declare the default constructor to be private
-   TimeIntegrator();
+   TimeIntegrator() {};
+
+private:
 
    // The following are not implemented:
    TimeIntegrator(const TimeIntegrator&);

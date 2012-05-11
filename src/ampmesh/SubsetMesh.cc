@@ -70,7 +70,7 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
     }
     if ( d_elements[GeomDim].size() == 1 )
         d_elements[GeomDim].push_back( boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement> ) );
-    d_max_gcw = d_elements[GeomDim].size()-1;
+    d_max_gcw = d_parent_mesh->getMaxGhostWidth();
     // Create a list of all elements that compose the elements of GeomType
     for (int t=0; t<(int)GeomDim; t++) {
         d_elements[t] = std::vector<boost::shared_ptr<std::vector<MeshElement> > >(d_max_gcw+1);
@@ -345,12 +345,13 @@ boost::shared_ptr<Mesh>  SubsetMesh::Subset( std::string name ) const {
 ********************************************************/
 MeshIterator SubsetMesh::getIterator( const GeomType type, const int gcw ) const
 {
-    if ( gcw == 0 )
+    int gcw2 = gcw;
+    if ( gcw2 >= (int) d_elements[type].size() )
+        gcw2 = d_elements[type].size()-1;
+    if ( gcw2 == 0 )
         return MultiVectorIterator( d_elements[type][0], 0 );
-    if ( gcw >= (int) d_elements[type].size() ) 
-        AMP_ERROR("Maximum ghost width exceeded");
-    std::vector<boost::shared_ptr<MeshIterator> > iterators(gcw+1);
-    for (int i=0; i<=gcw; i++)
+    std::vector<boost::shared_ptr<MeshIterator> > iterators(gcw2+1);
+    for (int i=0; i<=gcw2; i++)
         iterators[i] = boost::shared_ptr<MeshIterator>( new MultiVectorIterator( d_elements[type][i], 0 ) );
     return MultiIterator( iterators, 0 );
 }

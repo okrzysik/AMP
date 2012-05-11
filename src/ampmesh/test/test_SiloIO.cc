@@ -41,7 +41,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     params->setComm(globalComm);
 
     // Create the meshes from the input database
-    boost::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params);
+    AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh(params);
     globalComm.barrier();
     double t2 = AMP::AMP_MPI::time();
 

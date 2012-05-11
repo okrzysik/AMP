@@ -1,0 +1,18 @@
+// Input file for oxide time-integrator test
+
+Mesh{
+    MeshName = "clad"
+    MeshType = "libMesh"
+    FileName = "clad_lo_res_4pellet.e"
+    dim = 3
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
+    NumberOfElements = 450
+}
+
+// The times to use in days
+Time = 0.0, 0.1, 1.0, 5.0, 25, 365, 1825
+
+
+
