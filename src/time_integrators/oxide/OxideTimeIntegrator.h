@@ -47,11 +47,9 @@ public:
     virtual void reset(boost::shared_ptr<TimeIntegratorParameters> parameters);
 
     /*!
-     * @brief Integrate through the
-     * specified time increment.
+     * @brief Integrate through the specified time increment in days.
      *
-     * Integrate through the specified time 
-     * increment.  
+     * Integrate through the specified time increment in days.  
      *
      * The boolean first_step argument is true when this is the very
      * first call to the advance function.  Otherwise it is 

@@ -78,15 +78,13 @@ void OxideTimeIntegrator::initialize( boost::shared_ptr<TimeIntegratorParameters
     conc  = AMP::LinearAlgebra::createVector( DOF_C, C_var, true );
 
     // Create the initial conditions (500K for 1 day)
-    double *C0[10];
-    double *C1[10];
+    double *C0[10], *C1[10], D[10], Cb[20], x0[11], x1[11], v1[11], depth2[10];   // Allocate enough space for 10 layers
     C0[0] = new double[N_total];
     C1[0] = new double[N_total];
     for (size_t i=1; i<N_layer.size(); i++) {
         C0[i] = &C0[i-1][N_layer[i-1]];
         C1[i] = &C1[i-1][N_layer[i-1]];
     }
-    double D[10], Cb[20], x0[11], x1[11], v1[11], depth2[10];   // Allocate enough space for 10 layers
     OxideModel::get_equilibrium_concetration( 500, Cb );
     OxideModel::get_diffusion_coefficients( 500, D );
     for (size_t i=0; i<N_layer.size(); i++) {
@@ -99,7 +97,6 @@ void OxideTimeIntegrator::initialize( boost::shared_ptr<TimeIntegratorParameters
     for (size_t i=0; i<N_layer.size(); i++)
         depth2[i] = x1[i+1]-x1[i];
         
-
     // Copy the initial solution to all points in the mesh
     AMP::Discretization::DOFManager::shared_ptr DOF_oxide = d_oxide->getDOFManager();
     AMP::Discretization::DOFManager::shared_ptr DOF_alpha = d_alpha->getDOFManager();
@@ -143,6 +140,69 @@ void OxideTimeIntegrator::reset(boost::shared_ptr<TimeIntegratorParameters> para
 int OxideTimeIntegrator::advanceSolution( const double dt, const bool first_step )
 {
     d_current_time += dt;
+    // Get the relavent DOF Managers
+    AMP::Discretization::DOFManager::shared_ptr DOF_C = conc->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr DOF_d = depth->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr DOF_temp = d_temp->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr DOF_oxide = d_oxide->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr DOF_alpha = d_alpha->getDOFManager();
+    // Allocate memory for the solve
+    int N_total = 0;
+    for (size_t i=0; i<N_layer.size(); i++)
+        N_total += N_layer[i];
+    double *C0[10], *C1[10], D[10], Cb[20], x0[11], x1[11], v1[11], depth2[10];   // Allocate enough space for 10 layers
+    C0[0] = new double[N_total];
+    C1[0] = new double[N_total];
+    for (size_t i=1; i<N_layer.size(); i++) {
+        C0[i] = &C0[i-1][N_layer[i-1]];
+        C1[i] = &C1[i-1][N_layer[i-1]];
+    }
+    std::vector<size_t> dofs;
+    // Loop through the points
+    AMP::Mesh::MeshIterator iterator = d_mesh->getIterator(AMP::Mesh::Vertex,0);
+    for (size_t i=0; i<iterator.size(); i++) {
+        AMP::Mesh::MeshElementID id = iterator->globalID();
+        // Get the current temperature
+        DOF_temp->getDOFs( id, dofs );
+        AMP_ASSERT(dofs.size()==1);
+        double T = d_temp->getValueByGlobalID( dofs[0] );
+        // Get the equilibrium concentrations and diffusion coefficients
+        OxideModel::get_equilibrium_concetration( T, Cb );
+        OxideModel::get_diffusion_coefficients( T, D );
+        // Get the previous solution's concentration
+        DOF_C->getDOFs( id, dofs );
+        AMP_ASSERT((int)dofs.size()==N_total);
+        conc->getValuesByGlobalID( dofs.size(), &dofs[0], C0[0] );
+        // Get the previous solution's coordinates
+        DOF_d->getDOFs( id, dofs );
+        AMP_ASSERT(dofs.size()==N_layer.size());
+        depth->getValuesByGlobalID( dofs.size(), &dofs[0], depth2 );
+        x0[0] = 0.0;
+        for (size_t i=0; i<N_layer.size(); i++)
+            x0[i+1] = x0[i] + depth2[i];
+        // Perform the time integration
+        double dt2 = dt*3600*24;    // Convert from days to seconds
+        OxideModel::integrateOxide( dt2, N_layer.size(), &N_layer[0], x0, Cb, C0, D, C1, x1, v1 );
+        for (size_t i=0; i<N_layer.size(); i++)
+            depth2[i] = x1[i+1]-x1[i];
+        // Save the results
+        DOF_C->getDOFs( id, dofs );
+        AMP_ASSERT((int)dofs.size()==N_total);
+        conc->setLocalValuesByGlobalID( dofs.size(), &dofs[0], C1[0] );
+        DOF_d->getDOFs( id, dofs );
+        AMP_ASSERT(dofs.size()==N_layer.size());
+        depth->setLocalValuesByGlobalID( dofs.size(), &dofs[0], depth2 );
+        DOF_oxide->getDOFs( id, dofs );
+        AMP_ASSERT(dofs.size()==1);
+        d_oxide->setLocalValueByGlobalID( dofs[0], 1e-2*depth2[0] );
+        DOF_alpha->getDOFs( id, dofs );
+        AMP_ASSERT(dofs.size()==1);
+        d_alpha->setLocalValueByGlobalID( dofs[0], 1e-2*depth2[1] );
+        ++iterator;
+    }
+    // Free the temporary memory
+    delete [] C0[0];
+    delete [] C1[0];
     return 0;
 }
 
