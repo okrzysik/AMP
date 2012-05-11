@@ -19,6 +19,7 @@ public:
      * \brief transport model returning a vector of tensors
      * \param result result[i] is a tensor of diffusion coefficients.
      * \param args args[j][i] is j-th material evalv argument
+     * \param Coordinates coordinates on the mesh that may be needed by the model.
      */
     virtual void getTensorTransport(std::vector< std::vector< boost::shared_ptr<std::vector<double> > > >& result,
              std::map<std::string, boost::shared_ptr<std::vector<double> > >& args,

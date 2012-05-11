@@ -631,12 +631,18 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     if(ptToOctMap[i] >= 0) {
       int stIdx = stIdxList[ptToOctMap[i]];
       for(int j = 0; j < nodeList[ptToOctMap[i]].getWeight(); ++j) {
-        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]]))] = elemIdList[stIdx + j];
-        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 1] = recvList[i].values[0];
-        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 2] = recvList[i].values[1];
-        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 3] = recvList[i].values[2];
-        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 4] = recvList[i].values[3];
-        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 5] = recvList[i].node.getWeight();
+        //Local Id of this element on the processor that owns this element
+        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]]))] = elemIdList[stIdx + j]; 
+        //Pt's x coordinate
+        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 1] = recvList[i].values[0]; 
+        //Pt's y coordinate
+        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 2] = recvList[i].values[1]; //y of Pt
+        //Pt's z coordinate
+        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 3] = recvList[i].values[2]; //z of Pt
+        //Local Id of Pt on the processor that owns this Pt
+        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 4] = recvList[i].values[3]; //id of Pt
+        //rank of processor that owns Pt
+        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 5] = recvList[i].node.getWeight(); 
         sendCnts[rankList[stIdx + j]]++;
       }//end j
     }
@@ -673,7 +679,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     assert(eId >= 0);
     assert(eId < localElemArr.size());
     AMP::Mesh::MeshElement el = localElemArr[eId];
-    //results[i] = el.containsPoint(recvPtsList[(6*i) + 1], recvPtsList[(6*i) + 2], recvPtsList[(6*i) + 3]);
+    std::vector<double> pt(3);
+    pt[0] = recvPtsList[(6*i) + 1];
+    pt[1] = recvPtsList[(6*i) + 2];
+    pt[2] = recvPtsList[(6*i) + 3];
+    results[i] = el.containsPoint(pt);
   }//end i
 
   globalComm.barrier();
