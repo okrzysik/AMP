@@ -217,8 +217,8 @@ namespace Operator {
           double effective_stress, double Temp_np1, double G);
 
       /**
-        This function calculates the creep strain increment ($\acute{epsilon}^c$) at each time step using an 
-        implicit scheme. The formula is a general one: $\acute{\epsilon}^c = A\sigma_e^n exp(\frac{-Q}{RT})$.
+        This function calculates the creep strain increment (\f$\acute{epsilon}^c\f$) at each time step using an 
+        implicit scheme. The formula is a general one: \f$\acute{\epsilon}^c = A\sigma_e^n exp(\frac{-Q}{RT})\f$.
         */
       void computeCreepStrain(const double Temp_np1, const double stress_n[6],
           const double creep_strain_prev, double delta_creep_strain[6], double net_stra_np1[6]);
