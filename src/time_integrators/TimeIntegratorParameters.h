@@ -50,6 +50,9 @@ namespace TimeIntegrator{
 class TimeIntegratorParameters: public ParameterBase
 {
 public:
+   //! Convience typedef
+   typedef boost::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters>  shared_ptr;
+
    TimeIntegratorParameters(const boost::shared_ptr<AMP::Database> db);
 
    ~TimeIntegratorParameters();
