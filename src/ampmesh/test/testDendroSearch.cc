@@ -41,7 +41,7 @@ void createLocalMeshElementArray(std::vector<AMP::Mesh::MeshElement>& localElemA
   }//end el
 }
 
-void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& nodeList, std::vector<unsigned int>& stIdxList,
+void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& nodeList, std::vector<int>& stIdxList,
     std::vector<ot::TreeNode>& mins, std::vector<int>& rankList,
     std::vector<int>& elemIdList, std::vector<AMP::Mesh::MeshElement>& localElemArr,
     double* minCoords, double* maxCoords, double* ScalingFactor, 
@@ -465,7 +465,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   double maxCoords[3];
   double ScalingFactor[3];
   std::vector<ot::TreeNode> nodeList;
-  std::vector<unsigned int> stIdxList;
+  std::vector<int> stIdxList;
   std::vector<int> rankList;
   std::vector<int> elemIdList;
   std::vector<AMP::Mesh::MeshElement> localElemArr;
@@ -492,17 +492,17 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   const unsigned int seed = (0x1234567 + (24135*rank));
   srand48(seed);
 
-  std::vector<double> pts;
+  std::vector<double> pts(3*numLocalPts);
   for(int i = 0; i < numLocalPts; ++i) {
     double x = ((maxCoords[0] - minCoords[0])*drand48()) + minCoords[0];
     double y = ((maxCoords[1] - minCoords[1])*drand48()) + minCoords[1];
     double z = ((maxCoords[2] - minCoords[2])*drand48()) + minCoords[2];
-    pts.push_back(x);
-    pts.push_back(y);
-    pts.push_back(z);
+    pts[3*i] = x;
+    pts[(3*i) + 1] = y;
+    pts[(3*i) + 2] = z;
   }//end i
   if(!rank) {
-    std::cout<<"Finished generating random points for search!"<<std::endl;
+    std::cout<<"Finished generating "<<totalNumPts <<" random points for search!"<<std::endl;
   }
 
   // Perform the search
@@ -513,7 +513,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   const unsigned int ITPMD = (1u << MaxDepth);
   const double DTPMD = static_cast<double>(ITPMD);
 
-  std::vector<ot::NodeAndValues<double, 4> > ptsWrapper;
+  std::vector<ot::NodeAndValues<double, 4> > ptsWrapper(numLocalPts);
   for(int i = 0; i < numLocalPts; ++i) {
     double x = pts[3*i];
     double y = pts[(3*i) + 1];
@@ -525,16 +525,19 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     unsigned int pY = static_cast<unsigned int>(scaledY*DTPMD);
     unsigned int pZ = static_cast<unsigned int>(scaledZ*DTPMD);
 
-    ot::NodeAndValues<double, 4> tmpObj;
-    tmpObj.node =  ot::TreeNode(pX, pY, pZ, MaxDepth, 3, MaxDepth);
-    tmpObj.node.setWeight(rank);
-    tmpObj.values[0] = x;
-    tmpObj.values[1] = y;
-    tmpObj.values[2] = z;
-    tmpObj.values[3] = i;
-
-    ptsWrapper.push_back(tmpObj);
+    ptsWrapper[i].node =  ot::TreeNode(pX, pY, pZ, MaxDepth, 3, MaxDepth);
+    ptsWrapper[i].node.setWeight(rank);
+    ptsWrapper[i].values[0] = x;
+    ptsWrapper[i].values[1] = y;
+    ptsWrapper[i].values[2] = z;
+    ptsWrapper[i].values[3] = i;     
   }//end i
+
+  globalComm.barrier();
+  double searchStep1Time = MPI_Wtime();
+  if(!rank) {
+    std::cout<<"Time for step-1 of search: "<<(searchStep1Time - searchBeginTime)<<" seconds."<<std::endl;
+  }
 
   //Performance Question: Should PtsWrapper be sorted or not?
   //If PtsWrapper is sorted (even just a local sort), we can skip the
@@ -557,6 +560,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     }
   }//end i
 
+  globalComm.barrier();
+  double searchStep2Time = MPI_Wtime();
+  if(!rank) {
+    std::cout<<"Time for step-2 of search: "<<(searchStep2Time - searchStep1Time)<<" seconds."<<std::endl;
+  }
+
   int* recvCnts = new int[npes];
   MPI_Alltoall(sendCnts, 1, MPI_INT, recvCnts, 1, MPI_INT, (globalComm.getCommunicator()));
 
@@ -570,6 +579,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   }//end i
 
   std::vector<ot::NodeAndValues<double, 4> > sendList(sendDisps[npes - 1] + sendCnts[npes - 1]);
+  ot::NodeAndValues<double, 4>* sendListPtr = NULL;
+  if(!(sendList.empty())) {
+    sendListPtr = &(sendList[0]);
+  }
 
   for(int i = 0; i < npes; ++i) {
     sendCnts[i] = 0;
@@ -577,40 +590,54 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   for(int i = 0; i < numLocalPts; ++i) {
     if(part[i] >= 0) {
-      sendList[sendDisps[part[i]] + sendCnts[part[i]]] = ptsWrapper[i];
+      sendListPtr[sendDisps[part[i]] + sendCnts[part[i]]] = ptsWrapper[i];
       sendCnts[part[i]]++;
     }
   }//end i
+  ptsWrapper.clear();
 
   std::vector<ot::NodeAndValues<double, 4> > recvList(recvDisps[npes - 1] + recvCnts[npes - 1]);
-  ot::NodeAndValues<double, 4>* sendListPtr = NULL;
   ot::NodeAndValues<double, 4>* recvListPtr = NULL;
-  if(!(sendList.empty())) {
-    sendListPtr = &(sendList[0]);
-  }
   if(!(recvList.empty())) {
     recvListPtr = &(recvList[0]);
   }
   MPI_Alltoallv( sendListPtr, sendCnts, sendDisps, par::Mpi_datatype<ot::NodeAndValues<double, 4> >::value(),
       recvListPtr, recvCnts, recvDisps, par::Mpi_datatype<ot::NodeAndValues<double, 4> >::value(), 
       (globalComm.getCommunicator()) );
+  sendList.clear();
+
+  globalComm.barrier();
+  double searchStep3Time = MPI_Wtime();
+  if(!rank) {
+    std::cout<<"Time for step-3 of search: "<<(searchStep3Time - searchStep2Time)<<" seconds."<<std::endl;
+  }
 
   for(int i = 0; i < npes; ++i) {
     sendCnts[i] = 0;
   }//end i
 
   std::vector<int> ptToOctMap((recvList.size()), -1);
+  int* ptToOctMapPtr = &(ptToOctMap[0]);
+  int* rankListPtr = &(rankList[0]);
+  ot::TreeNode* nodeListPtr = &(nodeList[0]); 
+  int* stIdxListPtr = &(stIdxList[0]);
   for(int i = 0; i < recvList.size(); ++i) {
     unsigned int retIdx;
-    seq::maxLowerBound<ot::TreeNode>(nodeList, (recvList[i].node), retIdx, NULL, NULL);
-    if( nodeList[retIdx].isAncestor(recvList[i].node) ) {
-      ptToOctMap[i] = retIdx;
-      int stIdx = stIdxList[retIdx];
-      for(int j = 0; j < nodeList[retIdx].getWeight(); ++j) {
-        sendCnts[rankList[stIdx + j]]++;
+    seq::maxLowerBound<ot::TreeNode>(nodeList, (recvListPtr[i].node), retIdx, NULL, NULL);
+    if( nodeListPtr[retIdx].isAncestor(recvListPtr[i].node) ) {
+      ptToOctMapPtr[i] = retIdx;
+      int stIdx = stIdxListPtr[retIdx];
+      for(int j = 0; j < nodeListPtr[retIdx].getWeight(); ++j) {
+        sendCnts[rankListPtr[stIdx + j]]++;
       }//end j
     }
   }//end i
+
+  globalComm.barrier();
+  double searchStep4Time = MPI_Wtime();
+  if(!rank) {
+    std::cout<<"Time for step-4 of search: "<<(searchStep4Time - searchStep3Time)<<" seconds."<<std::endl;
+  }
 
   MPI_Alltoall(sendCnts, 1, MPI_INT, recvCnts, 1, MPI_INT, (globalComm.getCommunicator()));
 
@@ -622,31 +649,39 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   }//end i
 
   std::vector<double> sendPtsList(6*(sendDisps[npes - 1] + sendCnts[npes - 1]));
+  double* sendPtsPtr = NULL;
+  if(!(sendPtsList.empty())) {
+    sendPtsPtr = &(sendPtsList[0]);
+  }
 
   for(int i = 0; i < npes; ++i) {
     sendCnts[i] = 0;
   }//end i
 
+  int* elemIdListPtr = &(elemIdList[0]);
   for(int i = 0; i < ptToOctMap.size(); ++i) {
-    if(ptToOctMap[i] >= 0) {
-      int stIdx = stIdxList[ptToOctMap[i]];
-      for(int j = 0; j < nodeList[ptToOctMap[i]].getWeight(); ++j) {
+    if(ptToOctMapPtr[i] >= 0) {
+      int stIdx = stIdxListPtr[ptToOctMapPtr[i]];
+      for(int j = 0; j < nodeListPtr[ptToOctMapPtr[i]].getWeight(); ++j) {
+        int recvRank = rankListPtr[stIdx + j];
+        int currIdx = 6*(sendDisps[recvRank] + sendCnts[recvRank]);
         //Local Id of this element on the processor that owns this element
-        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]]))] = elemIdList[stIdx + j]; 
+        sendPtsPtr[currIdx] = elemIdListPtr[stIdx + j]; 
         //Pt's x coordinate
-        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 1] = recvList[i].values[0]; 
+        sendPtsPtr[currIdx + 1] = recvListPtr[i].values[0]; 
         //Pt's y coordinate
-        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 2] = recvList[i].values[1]; //y of Pt
+        sendPtsPtr[currIdx + 2] = recvListPtr[i].values[1]; 
         //Pt's z coordinate
-        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 3] = recvList[i].values[2]; //z of Pt
+        sendPtsPtr[currIdx + 3] = recvListPtr[i].values[2];
         //Local Id of Pt on the processor that owns this Pt
-        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 4] = recvList[i].values[3]; //id of Pt
+        sendPtsPtr[currIdx + 4] = recvListPtr[i].values[3]; 
         //rank of processor that owns Pt
-        sendPtsList[(6*(sendDisps[rankList[stIdx + j]] + sendCnts[rankList[stIdx + j]])) + 5] = recvList[i].node.getWeight(); 
-        sendCnts[rankList[stIdx + j]]++;
+        sendPtsPtr[currIdx + 5] = recvListPtr[i].node.getWeight(); 
+        sendCnts[recvRank]++;
       }//end j
     }
   }//end i
+  recvList.clear();
 
   for(int i = 0; i < npes; ++i) {
     sendCnts[i] *= 6;
@@ -656,35 +691,46 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   }//end i
 
   std::vector<double> recvPtsList(recvDisps[npes - 1] + recvCnts[npes - 1]);
-  double* sendPtsPtr = NULL;
   double* recvPtsPtr = NULL;
-  if(!(sendPtsList.empty())) {
-    sendPtsPtr = &(sendPtsList[0]);
-  }
   if(!(recvPtsList.empty())) {
     recvPtsPtr = &(recvPtsList[0]);
   }
   MPI_Alltoallv( sendPtsPtr, sendCnts, sendDisps, MPI_DOUBLE,
       recvPtsPtr, recvCnts, recvDisps, MPI_DOUBLE, (globalComm.getCommunicator()) );
+  sendPtsList.clear();
+
+  globalComm.barrier();
+  double searchStep5Time = MPI_Wtime();
+  if(!rank) {
+    std::cout<<"Time for step-5 of search: "<<(searchStep5Time - searchStep4Time)<<" seconds."<<std::endl;
+  }
+
+  int numRecvPts = recvPtsList.size()/6;
+  std::vector<double> tmpPt(3);
+  std::vector<int> results(numRecvPts, 0);
+  int* resultsPtr = &(results[0]);
+  AMP::Mesh::MeshElement* localElemArrPtr = &(localElemArr[0]);
+  double* recvPtsListPtr = &(recvPtsList[0]);
+  for(int i = 0; i < numRecvPts; ++i) {
+    int eId = static_cast<int>(recvPtsListPtr[6*i]);
+    AMP::Mesh::MeshElement* el = &(localElemArrPtr[eId]);
+    tmpPt[0] = recvPtsListPtr[(6*i) + 1];
+    tmpPt[1] = recvPtsListPtr[(6*i) + 2];
+    tmpPt[2] = recvPtsListPtr[(6*i) + 3];
+    // resultsPtr[i] = el->containsPoint(tmpPt);
+  }//end i
+  recvPtsList.clear();
 
   delete [] sendCnts;
   delete [] sendDisps;
   delete [] recvCnts;
   delete [] recvDisps;
 
-  int numRecvPts = recvPtsList.size()/6;
-  std::vector<bool> results(numRecvPts, false);
-  for(int i = 0; i < numRecvPts; ++i) {
-    int eId = static_cast<int>(recvPtsList[6*i]);
-    assert(eId >= 0);
-    assert(eId < localElemArr.size());
-    AMP::Mesh::MeshElement el = localElemArr[eId];
-    std::vector<double> pt(3);
-    pt[0] = recvPtsList[(6*i) + 1];
-    pt[1] = recvPtsList[(6*i) + 2];
-    pt[2] = recvPtsList[(6*i) + 3];
-    results[i] = el.containsPoint(pt);
-  }//end i
+  globalComm.barrier();
+  double searchStep6Time = MPI_Wtime();
+  if(!rank) {
+    std::cout<<"Time for step-6 of search: "<<(searchStep6Time - searchStep5Time)<<" seconds."<<std::endl;
+  }
 
   globalComm.barrier();
 
@@ -692,7 +738,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   if(!rank) {
     std::cout<<"Finished searching "<<totalNumPts<<" points in "<<
-      (searchEndTime - searchBeginTime)<<" seconds using "<<npes<<"processors."<<std::endl;
+      (searchEndTime - searchBeginTime)<<" seconds using "<<npes<<" processors."<<std::endl;
   }
 
   ut->passes(exeName);
