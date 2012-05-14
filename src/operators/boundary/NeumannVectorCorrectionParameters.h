@@ -2,7 +2,7 @@
 #ifndef included_AMP_NeumannVectorCorrectionParameters
 #define included_AMP_NeumannVectorCorrectionParameters
 
-#include "operators/LinearBoundaryOperatorParameters.h"
+#include "operators/boundary/LinearBoundaryOperatorParameters.h"
 #include "operators/OperatorParameters.h"
 #include "RobinPhysicsModel.h"
 
