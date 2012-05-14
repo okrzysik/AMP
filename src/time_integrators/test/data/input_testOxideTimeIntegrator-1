@@ -14,5 +14,11 @@ Mesh{
 // The times to use in days
 Time = 0.0, 0.1, 1.0, 5.0, 25, 365, 1825
 
+// The base temperature
+T0 = 650
+
+// The solution for the given temperature
+oxide = 0.0, 1.278e-7, 4.009e-7, 8.957e-7, 2.003e-6, 7.652e-6, 1.711e-5
+alpha = 0.0, 1.092e-9, 3.427e-9, 7.658e-9, 1.712e-8, 6.542e-8, 1.463e-7
 
 

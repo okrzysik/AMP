@@ -3,6 +3,7 @@
 #include "utils/AMP_MPI.h"
 #include "utils/InputManager.h"
 
+#include "ampmesh/Mesh.h"
 #include "ampmesh/SiloIO.h"
 #include "vectors/Vector.h"
 #include "discretization/simpleDOF_Manager.h"
@@ -39,7 +40,17 @@ void OxideTest( AMP::UnitTest *ut, std::string input_file )
     AMP::Discretization::DOFManager::shared_ptr DOF = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,1,true);
     AMP::LinearAlgebra::Variable::shared_ptr temp_var( new AMP::LinearAlgebra::Variable("temperature") );
     AMP::LinearAlgebra::Vector::shared_ptr temp_vec = AMP::LinearAlgebra::createVector( DOF, temp_var, true );
-    temp_vec->setToScalar(650);
+    AMP::Mesh::MeshIterator iterator = mesh->getIterator(AMP::Mesh::Vertex);
+    double T0 = input_db->getDoubleWithDefault("T0",650);
+    std::vector<size_t> dofs;
+    for (size_t i=0; i<iterator.size(); i++) {
+        std::vector<double> coord = iterator->coord();
+        DOF->getDOFs( iterator->globalID(), dofs );
+        temp_vec->setValueByGlobalID( dofs[0], T0+100*coord[2] );
+        ++iterator;
+    }
+    temp_vec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    AMP_ASSERT(fabs(temp_vec->min()-T0)/T0<1e-9);
 
     // Create the oxide time integrator
     boost::shared_ptr<AMP::TimeIntegrator::OxideTimeIntegratorParameters> parameters( 
@@ -70,7 +81,26 @@ void OxideTest( AMP::UnitTest *ut, std::string input_file )
         #ifdef USE_SILO
             siloWriter->writeFile( input_file, i );
         #endif
+        // Check the solution
+        if ( input_db->keyExists("oxide") && input_db->keyExists("alpha") ) {
+            if ( times[i]==0.0 )
+                continue;
+            std::vector<double> oxide_solution = input_db->getDoubleArray("oxide");
+            std::vector<double> alpha_solution = input_db->getDoubleArray("alpha");
+            double err_oxide = oxide->min()-oxide_solution[i];
+            double err_alpha = alpha->min()-alpha_solution[i];
+            if ( fabs(err_oxide/oxide_solution[i]) < 1e-3  )
+                ut->passes("oxide solution matches");
+            else
+                ut->failure("oxide solution matches");
+            if ( fabs(err_alpha/alpha_solution[i]) < 1e-3  )
+                ut->passes("alpha solution matches");
+            else
+                ut->failure("alpha solution matches");
+        }
     }
+
+    ut->passes("Test runs to completion");
 }
 
 

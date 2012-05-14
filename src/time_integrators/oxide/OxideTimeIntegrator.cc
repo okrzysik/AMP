@@ -92,11 +92,10 @@ void OxideTimeIntegrator::initialize( boost::shared_ptr<TimeIntegratorParameters
         for (int j=0; j<N_layer[i]; j++)
             C0[i][j] = Cb[2*i+0] + (Cb[2*i+1]-Cb[2*i+0])*(j+0.5)/((double)N_layer[i]);
     }
-    x0[N_layer.size()] = total_depth;
+    x0[N_layer.size()] = 1e2*total_depth;   // Convert from m to cm
     OxideModel::integrateOxide( 86400, N_layer.size(), &N_layer[0], x0, Cb, C0, D, C1, x1, v1 );
     for (size_t i=0; i<N_layer.size(); i++)
         depth2[i] = x1[i+1]-x1[i];
-        
     // Copy the initial solution to all points in the mesh
     AMP::Discretization::DOFManager::shared_ptr DOF_oxide = d_oxide->getDOFManager();
     AMP::Discretization::DOFManager::shared_ptr DOF_alpha = d_alpha->getDOFManager();
@@ -111,10 +110,10 @@ void OxideTimeIntegrator::initialize( boost::shared_ptr<TimeIntegratorParameters
         depth->setLocalValuesByGlobalID( dofs.size(), &dofs[0], depth2 );
         DOF_oxide->getDOFs( id, dofs );
         AMP_ASSERT(dofs.size()==1);
-        d_oxide->setLocalValueByGlobalID( dofs[0], 1e-2*depth2[0] );
+        d_oxide->setLocalValueByGlobalID( dofs[0], 1e-2*depth2[0] );   // Convert from cm to m
         DOF_alpha->getDOFs( id, dofs );
         AMP_ASSERT(dofs.size()==1);
-        d_alpha->setLocalValueByGlobalID( dofs[0], 1e-2*depth2[1] );
+        d_alpha->setLocalValueByGlobalID( dofs[0], 1e-2*depth2[1] );   // Convert from cm to m
         ++iterator;
     }
     d_solution->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
@@ -194,10 +193,10 @@ int OxideTimeIntegrator::advanceSolution( const double dt, const bool first_step
         depth->setLocalValuesByGlobalID( dofs.size(), &dofs[0], depth2 );
         DOF_oxide->getDOFs( id, dofs );
         AMP_ASSERT(dofs.size()==1);
-        d_oxide->setLocalValueByGlobalID( dofs[0], 1e-2*depth2[0] );
+        d_oxide->setLocalValueByGlobalID( dofs[0], 1e-2*depth2[0] );    // Convert from cm to m
         DOF_alpha->getDOFs( id, dofs );
         AMP_ASSERT(dofs.size()==1);
-        d_alpha->setLocalValueByGlobalID( dofs[0], 1e-2*depth2[1] );
+        d_alpha->setLocalValueByGlobalID( dofs[0], 1e-2*depth2[1] );    // Convert from cm to m
         ++iterator;
     }
     // Free the temporary memory
