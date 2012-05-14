@@ -37,7 +37,7 @@ public:
      * @brief Function to return the diffusion coefficients in the layers
      *
      * @param T     Temperature to use for the diffusion coefficients (K)
-     * @param C     Returned diffusion coefficients in the layers (cm^2/s).
+     * @param D     Returned diffusion coefficients in the layers (cm^2/s).
      *              The output will be a 1x3 array:
      *              D[0] - The diffusion coefficient in the oxide layer
      *              D[1] - The diffusion coefficient in the alpha layer
@@ -51,7 +51,7 @@ public:
      *  This routine will take the current solution and use an internal
      *  time stepping to advance the solution to the next point in time.
      * @return value is the number of internal timesteps taken.
-     * @param[in] dt    Timestep (s)
+     * @param[in] dT    Timestep (s)
      * @param[in] N     Number of layers
      * @param[in] N2    Number of points in each layer
      * @param[in] x0    Initial boundary position (cm) (N+1)
