@@ -3,7 +3,7 @@
 #define included_AMP_RobinMatrixCorrectionParameters
 
 #include "NeumannVectorCorrectionParameters.h"
-#include "operators/LinearBoundaryOperatorParameters.h"
+#include "operators/boundary/LinearBoundaryOperatorParameters.h"
 #include "RobinPhysicsModel.h"
 
 namespace AMP {

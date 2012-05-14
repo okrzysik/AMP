@@ -157,7 +157,7 @@ int OxideModel::integrateOxide( double dT, int N, const int *N2, const double *x
             AMP_ERROR("Final layer depleted");
         }
         N_it++;
-        if ( N_it > 1e4 ) {
+        if ( N_it > 1e6 ) {
             AMP_ERROR("maximum number of iterations exceeded");
         }
     }
