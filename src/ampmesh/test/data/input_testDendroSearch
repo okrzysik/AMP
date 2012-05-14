@@ -1,5 +1,5 @@
 
-TotalNumberOfPoints = 1000000
+TotalNumberOfPoints = 10000
 
 Mesh{
   MeshName = "MainMesh"
@@ -14,16 +14,16 @@ Mesh{
         MeshArrayDatabasePrefix = "MeshArray_"
 
         MeshArray_1 {
-          N = 4
+          N = 3
             iterator = "%i"
-            indicies = 1, 2, 3, 4
+            indicies = 1, 2, 3 
             MeshName = "pellet_%i"
             MeshType = "libMesh"
             FileName = "pellet_1x.e"
             dim = 3
             x_offset = 0.0
             y_offset = 0.0
-            z_offset = 0.0, 0.0105, 0.021, 0.0315
+            z_offset = 0.0, 0.0105, 0.021
             NumberOfElements = 1300
         }
     }
