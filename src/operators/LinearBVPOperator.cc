@@ -1,7 +1,7 @@
 
-#include "LinearBVPOperator.h"
-#include "LinearBoundaryOperatorParameters.h"
-#include "ColumnBoundaryOperator.h"
+#include "operators/LinearBVPOperator.h"
+#include "operators/boundary/LinearBoundaryOperatorParameters.h"
+#include "operators/boundary/ColumnBoundaryOperator.h"
 #include "utils/Utilities.h"
 
 #include <stdexcept>
