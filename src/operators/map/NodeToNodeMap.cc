@@ -36,15 +36,16 @@ NodeToNodeMap::NodeToNodeMap ( const boost::shared_ptr<AMP::Operator::OperatorPa
         dim = d_mesh1->getDim();
     dim = d_MapComm.maxReduce(dim);
     AMP_INSIST(dim<=3,"Node to Node map only works up to 3d (see Point)");
-    DofsPerObj = Params.d_db->getInteger ( "DOFsPerObject" );
+    DofsPerObj = Params.d_db->getIntegerWithDefault ( "DOFsPerObject", 1);
+    AMP::Mesh::GeomType geomType = static_cast<AMP::Mesh::GeomType>(Params.d_db->getIntegerWithDefault("GeomType", 0));
     d_commTag = Params.d_commTag;
     d_callMakeConsistentSet = Params.callMakeConsistentSet;
 
     // Create the element iterators
     if ( d_mesh1.get() != NULL )
-        d_iterator1 = d_mesh1->getBoundaryIDIterator(AMP::Mesh::Vertex,Params.d_BoundaryID1,0);
+        d_iterator1 = d_mesh1->getBoundaryIDIterator(geomType,Params.d_BoundaryID1,0);
     if ( d_mesh2.get() != NULL )
-        d_iterator2 = d_mesh2->getBoundaryIDIterator(AMP::Mesh::Vertex,Params.d_BoundaryID2,0);
+        d_iterator2 = d_mesh2->getBoundaryIDIterator(geomType,Params.d_BoundaryID2,0);
 
     // Create the pairs of points that are aligned
     createPairs();
@@ -348,7 +349,7 @@ std::vector<NodeToNodeMap::Point> NodeToNodeMap::createOwnedPoints( AMP::Mesh::M
     for (size_t i=0; i<surfacePts.size(); i++) {
         // Get the properties of the current element
         AMP::Mesh::MeshElementID id = cur->globalID();
-        std::vector<double> pos = cur->coord();
+        std::vector<double> pos = cur->centroid();
         if ( !id.is_local() )
             continue;
         // Create the point

@@ -2,7 +2,7 @@
 #ifndef included_AMP_PressureBoundaryVectorCorrectionParameters
 #define included_AMP_PressureBoundaryVectorCorrectionParameters
 
-#include "operators/LinearBoundaryOperatorParameters.h"
+#include "operators/boundary/LinearBoundaryOperatorParameters.h"
 #include "operators/OperatorParameters.h"
 
 namespace AMP {
