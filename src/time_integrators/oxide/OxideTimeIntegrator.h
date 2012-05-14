@@ -101,14 +101,14 @@ private:
     AMP::Mesh::Mesh::shared_ptr d_mesh;
 
     // Some internal vectors
-    AMP::LinearAlgebra::Vector::shared_ptr d_oxide;
-    AMP::LinearAlgebra::Vector::shared_ptr d_alpha;
-    AMP::LinearAlgebra::Vector::shared_ptr d_temp;
+    AMP::LinearAlgebra::Vector::shared_ptr d_oxide; // Oxide depth of each point (m)
+    AMP::LinearAlgebra::Vector::shared_ptr d_alpha; // Alpha depth of each point (m)
+    AMP::LinearAlgebra::Vector::shared_ptr d_temp;  // Temperature of each point (K)
 
     // Internal data for calculating the oxide
     std::vector<int> N_layer;
-    AMP::LinearAlgebra::Vector::shared_ptr depth;
-    AMP::LinearAlgebra::Vector::shared_ptr conc;
+    AMP::LinearAlgebra::Vector::shared_ptr depth;   // Depth of each layer (cm)
+    AMP::LinearAlgebra::Vector::shared_ptr conc;    // Oxygen concentration of each layer (g/cm^3)
 
 
 };

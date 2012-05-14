@@ -9,7 +9,8 @@ ADD_AMP_WEEKLY_TEST ( testIDA-NonlinearColumnOperator-1 2 )
 ADD_AMP_WEEKLY_TEST ( testIDA-NonlinearColumnOperator-1 4 )
 ADD_AMP_PROVISIONAL_TEST ( testIDA-NonlinearThermalOxygenDiffusion-1 )
 ADD_AMP_PROVISIONAL_TEST ( testBackwardEulerTimeIntegrator )
-ADD_AMP_PROVISIONAL_TEST ( testOxideTimeIntegrator )
+
+ADD_AMP_TEST_1_2_4 ( testOxideTimeIntegrator )
 
 
 COPY_TEST_DATA_FILE ( inputIDATimeIntegrator )
