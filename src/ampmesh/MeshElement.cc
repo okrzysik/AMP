@@ -109,7 +109,7 @@ bool MeshElement::containsPoint( const std::vector<double> &pos, double TOL ) co
     if ( element!=NULL )
         return element->containsPoint(pos,TOL);
     if ( d_globalID.type()==Vertex ) {
-        double dist = 0.0;
+        //double dist = 0.0;
         std::vector<double> point = this->coord();
         double dist2 = 0.0;
         for (size_t i=0; i<point.size(); i++)
