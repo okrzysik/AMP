@@ -193,7 +193,7 @@ namespace Operator {
 
       /**
         Given the total strain, this function calculates the stress which is used to compute the internal force. 
-        The formula is as follows, $f_{int} = {int}_{V} B^T \sigma dv$.
+        The formula is as follows, \f$f_{int} = {int}_{V} B^T \sigma dv\f$.
         */
       void radialReturn(const double* stra_np1, double* stre_np1,
           double *ystre_np1, double *eph_bar_plas_np1 );
@@ -217,8 +217,8 @@ namespace Operator {
           double effective_stress, double Temp_np1, double G);
 
       /**
-        This function calculates the creep strain increment (\f$\acute{epsilon}^c\f$) at each time step using an 
-        implicit scheme. The formula is a general one: \f$\acute{\epsilon}^c = A\sigma_e^n exp(\frac{-Q}{RT})\f$.
+        This function calculates the creep strain increment (\f$\dot{epsilon}^c\f$) at each time step using an 
+        implicit scheme. The formula is a general one: \f$\dot{\epsilon}^c = A\sigma_e^n exp(\frac{-Q}{RT})\f$.
         */
       void computeCreepStrain(const double Temp_np1, const double stress_n[6],
           const double creep_strain_prev, double delta_creep_strain[6], double net_stra_np1[6]);
