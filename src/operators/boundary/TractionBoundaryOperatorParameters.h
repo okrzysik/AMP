@@ -15,7 +15,7 @@ namespace AMP {
 
         ~TractionBoundaryOperatorParameters() { }
 
-        AMP::LinearAlgebra::Vector::shared_ptr d_tractionVec;
+        AMP::LinearAlgebra::Vector::shared_ptr d_traction;
 
     };
 
