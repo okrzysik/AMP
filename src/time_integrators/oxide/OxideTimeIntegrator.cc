@@ -32,7 +32,10 @@ OxideTimeIntegrator::~OxideTimeIntegrator()
 * Initialize the time integrator and problem                            *
 ************************************************************************/
 void OxideTimeIntegrator::initialize( boost::shared_ptr<TimeIntegratorParameters> parameters )
-{    
+{   
+    d_current_time = 0.0;
+    d_current_dt = 1.0;
+
     // Get the parameters
     boost::shared_ptr<OxideTimeIntegratorParameters> oxide_parameters = 
         boost::dynamic_pointer_cast<OxideTimeIntegratorParameters>( parameters );
@@ -139,6 +142,7 @@ void OxideTimeIntegrator::reset(boost::shared_ptr<TimeIntegratorParameters> para
 int OxideTimeIntegrator::advanceSolution( const double dt, const bool first_step )
 {
     d_current_time += dt;
+    d_current_dt = dt;
     // Get the relavent DOF Managers
     AMP::Discretization::DOFManager::shared_ptr DOF_C = conc->getDOFManager();
     AMP::Discretization::DOFManager::shared_ptr DOF_d = depth->getDOFManager();
@@ -181,6 +185,7 @@ int OxideTimeIntegrator::advanceSolution( const double dt, const bool first_step
             x0[i+1] = x0[i] + depth2[i];
         // Perform the time integration
         double dt2 = dt*3600*24;    // Convert from days to seconds
+        AMP_ASSERT(dt2>=0.0);
         OxideModel::integrateOxide( dt2, N_layer.size(), &N_layer[0], x0, Cb, C0, D, C1, x1, v1 );
         for (size_t i=0; i<N_layer.size(); i++)
             depth2[i] = x1[i+1]-x1[i];
@@ -199,6 +204,8 @@ int OxideTimeIntegrator::advanceSolution( const double dt, const bool first_step
         d_alpha->setLocalValueByGlobalID( dofs[0], 1e-2*depth2[1] );    // Convert from cm to m
         ++iterator;
     }
+    // Update ghost values for the solution
+    d_solution->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     // Free the temporary memory
     delete [] C0[0];
     delete [] C1[0];
