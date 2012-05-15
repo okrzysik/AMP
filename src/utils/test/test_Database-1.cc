@@ -16,12 +16,13 @@
 #include <fstream>
 
 #include <sys/stat.h>
-#include "../Database.h"
-#include "../InputDatabase.h"
-#include "../InputManager.h"
-#include "../AMP_MPI.h"
-#include "../AMPManager.h"
-#include "../PIO.h"
+#include "utils/Database.h"
+#include "utils/InputDatabase.h"
+#include "utils/MemoryDatabase.h"
+#include "utils/InputManager.h"
+#include "utils/AMP_MPI.h"
+#include "utils/AMPManager.h"
+#include "utils/PIO.h"
 #include "boost/shared_ptr.hpp"
 
 
@@ -30,7 +31,7 @@
 * This tests whether we can create and use an InputManager object       *
 *                                                                       *
 ************************************************************************/
-void mytest(AMP::UnitTest *ut)
+void readInputDatabase(AMP::UnitTest *ut)
 {
     std::string input_file = "input_Database-1";
     std::string log_file = "output_Database-1";
@@ -61,6 +62,56 @@ void mytest(AMP::UnitTest *ut)
 }
 
 
+/************************************************************************
+*                                                                       *
+* This tests whether we can put/get keys with a memory database         *
+*                                                                       *
+************************************************************************/
+void testMemoryDatabase(AMP::UnitTest *ut)
+{
+    boost::shared_ptr<AMP::MemoryDatabase> db ( new AMP::MemoryDatabase("database") );
+
+    db->putScalar("scalar_int",(int)1);
+    db->putScalar("scalar_float",(float)1);
+    db->putScalar("scalar_double",(double)1);
+    db->putScalar("scalar_complex",std::complex<double>(1,0));
+    db->putScalar("scalar_char",(char)1);
+    db->putScalar("scalar_bool",true);
+
+    AMP_ASSERT(db->keyExists("scalar_int"));
+
+    AMP_ASSERT(db->isInteger("scalar_int"));
+    AMP_ASSERT(db->isFloat("scalar_float"));
+    AMP_ASSERT(db->isDouble("scalar_double"));
+    AMP_ASSERT(db->isComplex("scalar_complex"));
+    AMP_ASSERT(db->isChar("scalar_char"));
+    AMP_ASSERT(db->isBool("scalar_bool"));
+
+    AMP_ASSERT(db->getInteger("scalar_int")==1);
+    AMP_ASSERT(db->getFloat("scalar_float")==1.0);
+    AMP_ASSERT(db->getDouble("scalar_double")==1.0);
+    AMP_ASSERT(db->getComplex("scalar_complex")==std::complex<double>(1,0));
+    AMP_ASSERT(db->getChar("scalar_char")==1);
+    AMP_ASSERT(db->getBool("scalar_bool")==true);
+
+    AMP_ASSERT(db->getIntegerWithDefault("scalar_int",0)==1);
+    AMP_ASSERT(db->getFloatWithDefault("scalar_float",0)==1.0);
+    AMP_ASSERT(db->getDoubleWithDefault("scalar_double",0)==1.0);
+    AMP_ASSERT(db->getComplexWithDefault("scalar_complex",std::complex<double>(0,0))==std::complex<double>(1,0));
+    AMP_ASSERT(db->getCharWithDefault("scalar_char",0)==1);
+    AMP_ASSERT(db->getBoolWithDefault("scalar_bool",false)==true);
+
+    AMP_ASSERT(db->getIntegerArray("scalar_int").size()==1);
+    AMP_ASSERT(db->getFloatArray("scalar_float").size()==1);
+    AMP_ASSERT(db->getDoubleArray("scalar_double").size()==1);
+    AMP_ASSERT(db->getComplexArray("scalar_complex").size()==1);
+    AMP_ASSERT(db->getCharArray("scalar_char").size()==1);
+    AMP_ASSERT(db->getBoolArray("scalar_bool").size()==1);
+
+    ut->passes("Memory database works.");
+}
+
+
 //---------------------------------------------------------------------------//
 
 int main(int argc, char *argv[])
@@ -68,15 +119,8 @@ int main(int argc, char *argv[])
     AMP::AMPManager::startup(argc, argv);
     AMP::UnitTest ut;
     
-    try {
-        mytest(&ut);
-    } catch (std::exception &err) {
-        std::cout << "ERROR: While testing test_Database-1, " << err.what() << std::endl;
-        ut.failure("test_Database-1");
-    } catch( ... ) {
-        std::cout << "ERROR: While testing test_InputManager-1, An unknown exception was thrown." << std::endl;
-        ut.failure("test_Database-1");
-    }
+    readInputDatabase(&ut);
+    testMemoryDatabase(&ut);
 
     ut.report();
 
