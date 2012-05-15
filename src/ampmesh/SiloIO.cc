@@ -35,9 +35,19 @@ void SiloIO::readFile( const std::string &fname )
 ************************************************************/
 void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
 { 
+    // Create the file name
     std::stringstream name;
     name << fname_in << "_" << iteration_count << "." << getExtension();
     std::string fname = name.str();
+    // Syncronize all vectors
+    for (size_t i=0; i<d_vectors.size(); i++) {
+        AMP::LinearAlgebra::Vector::UpdateState localState = d_vectors[i]->getUpdateStatus();
+        if ( localState==AMP::LinearAlgebra::Vector::ADDING ) 
+            d_vectors[i]->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
+        else
+            d_vectors[i]->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    }
+    // Write the data for each base mesh
     for (int i=0; i<d_comm.getSize(); i++) {
         if ( d_comm.getRank()==i ) {
             // Open the file
@@ -173,7 +183,9 @@ void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
     std::map<AMP::Mesh::MeshID,siloMultiMeshData>::iterator it = d_multiMeshes.find(mesh->meshID());
     AMP_ASSERT(it!=d_multiMeshes.end());
     it->second.varName.push_back( name );
-    // Add the variable name to the list of meshes
+    // Add the vector to the list of vectors so we can perform makeConsistent
+    d_vectors.push_back(vec);
+    // Add the variable name to the list of variables
     d_varNames.insert(name);
 }
 #endif

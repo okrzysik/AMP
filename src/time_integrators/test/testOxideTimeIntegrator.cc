@@ -74,10 +74,16 @@ void OxideTest( AMP::UnitTest *ut, std::string input_file )
     #endif
     
     // Run the time integration
+    double integration_time = 0.0;
     std::vector<double> times = input_db->getDoubleArray("Time");
     for (size_t i=0; i<times.size(); i++) {
+        // Advance the solution
         double dT = times[i] - timeIntegrator->getCurrentTime();
+        globalComm.barrier();
+        double t0 = AMP::AMP_MPI::time();
         timeIntegrator->advanceSolution( dT, false );
+        globalComm.barrier();
+        integration_time += AMP::AMP_MPI::time() - t0;
         #ifdef USE_SILO
             siloWriter->writeFile( input_file, i );
         #endif
@@ -99,6 +105,7 @@ void OxideTest( AMP::UnitTest *ut, std::string input_file )
                 ut->failure("alpha solution matches");
         }
     }
+    AMP::pout << "Time required for integration: " << integration_time << std::endl;
 
     ut->passes("Test runs to completion");
 }

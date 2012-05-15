@@ -112,7 +112,7 @@ int OxideModel::integrateOxide( double dT, int N, const int *N2, const double *x
     // Allocate some temporary memory
     double x2[2];
     int N2_max = 0;
-    for (int i=0; i<N+1; i++)
+    for (int i=0; i<N; i++)
         N2_max = std::max( N2_max, N2[i] );
     double *C2 = new double[N2_max];
     // Copy the current solution
@@ -196,7 +196,7 @@ double OxideModel::computeDiffustionTimestep( const int N, const double x[2],
 {
     // Limit the timestep to a 20% change in C
     double tol = 0.20;
-    double dt_max = 1e100;
+    double dt = 1e100;
     double h = (x[1]-x[0])/N;
     for (int i=0; i<N; i++) {
         double tmp = 0.0;
@@ -207,9 +207,9 @@ double OxideModel::computeDiffustionTimestep( const int N, const double x[2],
         } else {
             tmp = D/(h*h)*(C[i-1]-2.0*C[i]+C[i+1]);
         }
-        dt_max = std::min( dt_max, 1.0/fabs(tmp) );
+        dt = std::min( dt, tol/fabs(tmp) );
     }
-    return dt_max;
+    return dt;
 }
 
 
@@ -221,12 +221,11 @@ void OxideModel::solveLinearDiffusionLayer( const int N, const double dt, const 
     double *C1, double *x1 )
 {
     // Allocate memory for internal variables
-    double *mem = new double[5*N+1];  // We want a single block for cache access
+    double *mem = new double[4*N+1];  // We want a single block for cache access
     double *diag = &mem[0];
     double *lower = &mem[N];
     double *upper = &mem[2*N];
-    int *IPIV = (int*) &mem[3*N];
-    double *Db = &mem[4*N];
+    double *Db = &mem[3*N];
     double *rhs = C1;
     // Fill the diffusion coefficients at zone boundaries
     for (int i=0; i<N+1; i++)
