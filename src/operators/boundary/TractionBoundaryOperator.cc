@@ -2,6 +2,15 @@
 #include "operators/boundary/TractionBoundaryOperator.h"
 #include "face_quad4.h"
 
+#include "enum_order.h"
+#include "enum_fe_family.h"
+#include "enum_quadrature_type.h"
+#include "string_to_enum.h"
+#include "auto_ptr.h"
+#include "fe_type.h"
+#include "fe_base.h"
+#include "quadrature.h"
+
 namespace AMP {
   namespace Operator {
 
@@ -41,26 +50,50 @@ namespace AMP {
       }
     }
 
-
     void TractionBoundaryOperator :: computeCorrection() {
-      AMP::Discretization::DOFManager::shared_ptr inpDofMap = d_traction->getDOFManager();
-      AMP::Discretization::DOFManager::shared_ptr outDofMap = d_correction->getDOFManager();
-      d_correction->zero();
+      libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
+      libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
+      libMeshEnums::QuadratureType qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>("QGAUSS");
+      boost::shared_ptr < ::FEType > feType ( new ::FEType(feTypeOrder, feFamily) );
+      libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
+      boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, 2, qruleOrder)).release() );
 
       AMP::Mesh::MeshIterator bnd     = d_Mesh->getBoundaryIDIterator(AMP::Mesh::Face, d_boundaryId, 0);
       AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
+      AMP::Discretization::DOFManager::shared_ptr inpDofMap = d_traction->getDOFManager();
+      AMP::Discretization::DOFManager::shared_ptr outDofMap = d_correction->getDOFManager();
+
+      d_correction->zero();
       for( ; bnd != end_bnd; ++bnd) {
         d_currNodes = bnd->getElements(AMP::Mesh::Vertex);
-        unsigned int numNodesInCurrElem = d_currNodes.size();
+        size_t numNodesInCurrElem = d_currNodes.size();
         createCurrentLibMeshElement();
+
+        boost::shared_ptr < ::FEBase > fe( (::FEBase::build(2, (*feType))).release() );
+        fe->attach_quadrature_rule( qrule.get() );
+        fe->reinit( d_currElemPtr );
+
+        const std::vector<std::vector<Real> > &phi = fe->get_phi();
+        const std::vector<Real> &djxw = fe->get_JxW(); 
 
         std::vector<size_t> inpDofIndices;
         inpDofMap->getDOFs(bnd->globalID(), inpDofIndices);
 
         std::vector<std::vector<size_t> > outDofIndices(numNodesInCurrElem);
-        for(unsigned int i = 0; i < numNodesInCurrElem ; ++i) {
+        for(size_t i = 0; i < numNodesInCurrElem; ++i) {
           outDofMap->getDOFs(d_currNodes[i].globalID(), outDofIndices[i]);
+        }//end i
+
+        for(size_t i = 0; i < numNodesInCurrElem; ++i) {
+          for(int d = 0; d < 3; ++d) {
+            double res = 0;
+            for(size_t qp = 0; qp < qrule->n_points(); ++qp) {
+              double val = d_traction->getLocalValueByGlobalID(inpDofIndices[(3*qp) + d]);
+              res +=  djxw[qp]*phi[i][qp]*val;
+            }//end qp
+            d_correction->addValueByGlobalID(outDofIndices[i][d], res);
+          }//end d
         }//end i
 
         destroyCurrentLibMeshElement();
