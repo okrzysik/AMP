@@ -195,7 +195,7 @@ double OxideModel::computeDiffustionTimestep( const int N, const double x[2],
     const double Cb[2], const double *C, const double D )
 {
     // Limit the timestep to a 20% change in C
-    double tol = 0.20;
+    //double tol = 0.20;
     double dt_max = 1e100;
     double h = (x[1]-x[0])/N;
     for (int i=0; i<N; i++) {
@@ -225,7 +225,7 @@ void OxideModel::solveLinearDiffusionLayer( const int N, const double dt, const 
     double *diag = &mem[0];
     double *lower = &mem[N];
     double *upper = &mem[2*N];
-    int *IPIV = (int*) &mem[3*N];
+    //int *IPIV = (int*) &mem[3*N];
     double *Db = &mem[4*N];
     double *rhs = C1;
     // Fill the diffusion coefficients at zone boundaries
