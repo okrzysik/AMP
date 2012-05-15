@@ -145,6 +145,9 @@ private:
     // List of all variables
     std::set<std::string>   d_varNames;
 
+    // List of all vectors that have been registered
+    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_vectors;
+
 };
 
 
