@@ -1,8 +1,7 @@
-
 #include "NonlinearBVPOperator.h"
 
 #include "utils/Utilities.h"
-
+#include "utils/ProfilerApp.h"
 #include <stdexcept>
 
 namespace AMP {
@@ -20,6 +19,7 @@ namespace AMP {
       NonlinearBVPOperator :: apply(const boost::shared_ptr<AMP::LinearAlgebra::Vector> &f, 
           const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, boost::shared_ptr<AMP::LinearAlgebra::Vector>&r, double a, double b)
       {
+        PROFILE_START("apply");
         boost::shared_ptr<AMP::LinearAlgebra::Vector> nullRhs;
 
         AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
@@ -78,10 +78,12 @@ namespace AMP {
           AMP::pout << "L2 Norm of output of NonlinearBVPOperator :: apply is : " 
             << rInternal->L2Norm() << std::endl;
         }
+        PROFILE_STOP("apply");
       }
 
     void NonlinearBVPOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
     {
+      PROFILE_START("reset");
       boost::shared_ptr<BVPOperatorParameters> inParams = 
         boost::dynamic_pointer_cast<BVPOperatorParameters>(params);
 
@@ -89,16 +91,19 @@ namespace AMP {
 
       d_volumeOperator->reset(inParams->d_volumeOperatorParams);
       d_boundaryOperator->reset(inParams->d_boundaryOperatorParams);
+      PROFILE_STOP("reset");
     }
 
     boost::shared_ptr<OperatorParameters> NonlinearBVPOperator :: getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u)
     {
+      PROFILE_START("getJacobianParameters");
       boost::shared_ptr<AMP::Database> db;
       boost::shared_ptr<BVPOperatorParameters> outParams(new BVPOperatorParameters(db));
 
       outParams->d_volumeOperatorParams = d_volumeOperator->getJacobianParameters(u);
       outParams->d_boundaryOperatorParams = d_boundaryOperator->getJacobianParameters(u);
 
+      PROFILE_STOP("getJacobianParameters");
       return outParams;
     }
 

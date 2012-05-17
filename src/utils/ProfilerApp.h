@@ -275,6 +275,7 @@ private:
     #endif
     
     // Misc variables
+    bool enabled;                   // Are the timers enabled (default is true)
     bool store_trace_data;          // Do we want to store trace information
     TIME_TYPE construct_time;       // Store when the constructor was called
     TIME_TYPE frequency;            // Clock frequency (only used for windows)

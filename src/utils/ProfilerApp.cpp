@@ -143,10 +143,11 @@ ProfilerApp::ProfilerApp() {
     #endif
     for (int i=0; i<128; i++)
         thread_head[i] = NULL;
-    store_trace_data = false;
     get_time(&construct_time);
     N_threads = 0;
     N_timers = 0;
+    enabled = true;
+    store_trace_data = false;
 }
 
 
@@ -197,6 +198,8 @@ ProfilerApp::~ProfilerApp() {
 * Function to start profiling a block of code                          *
 ***********************************************************************/
 void ProfilerApp::start( const std::string& message, const std::string& filename, const int line ) {
+    if ( !this->enabled )
+        return;
     // Get the thread data
     thread_info* thread_data = get_thread_data();
     // Get the appropriate timer
@@ -222,6 +225,8 @@ void ProfilerApp::start( const std::string& message, const std::string& filename
 * Function to stop profiling a block of code                           *
 ***********************************************************************/
 void ProfilerApp::stop( const std::string& message, const std::string& filename, const int line ) {
+    if ( !this->enabled )
+        return;
     // Use the current time (minimize the effects of the overhead of the timer)
     TIME_TYPE end_time;
     get_time(&end_time);
