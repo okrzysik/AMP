@@ -1,6 +1,7 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/AMP_MPI.h"
+#include "utils/ProfilerApp.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 #include "utils/MemoryDatabase.h"
@@ -150,6 +151,7 @@ int main ( int argc , char ** argv )
     startup_properties.use_MPI_Abort = false;
     AMP::AMPManager::startup(argc,argv,startup_properties);
     AMP::UnitTest ut;
+    PROFILE_START("Run tests");
 
     // Run the ID test
     testID( &ut );
@@ -170,6 +172,10 @@ int main ( int argc , char ** argv )
 
     // Run the tests on the subset meshes
     testSubsetMesh( &ut );
+
+    // Save the timing results
+    PROFILE_STOP("Run tests");
+    PROFILE_SAVE("test_Mesh");
 
     // Print the results and return
     ut.report();
