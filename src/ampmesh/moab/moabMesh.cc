@@ -67,6 +67,7 @@ void moabMesh::initialize()
 size_t moabMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
     AMP_ERROR("Not finished");
+    return 0;
 }
 
 
@@ -76,14 +77,17 @@ size_t moabMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 size_t moabMesh::numLocalElements( const GeomType type ) const
 {
     AMP_ERROR("Not finished");
+    return 0;
 }
 size_t moabMesh::numGlobalElements( const GeomType type ) const
 {
     AMP_ERROR("Not finished");
+    return 0;
 }
 size_t moabMesh::numGhostElements( const GeomType type, int gcw ) const
 {
     AMP_ERROR("Not finished");
+    return 0;
 }
 
 
@@ -93,6 +97,7 @@ size_t moabMesh::numGhostElements( const GeomType type, int gcw ) const
 MeshIterator moabMesh::getIterator( const GeomType type, const int gcw ) const
 {
     AMP_ERROR("Not finished");
+    return MeshIterator();
 }
 
 
@@ -114,10 +119,12 @@ MeshIterator moabMesh::getSurfaceIterator ( const GeomType type, const int gcw )
 std::vector<int> moabMesh::getBoundaryIDs ( ) const
 {
     AMP_ERROR("Not finished");
+    return std::vector<int>();
 }
 MeshIterator moabMesh::getBoundaryIDIterator ( const GeomType type, const int id, const int gcw ) const
 {
     AMP_ERROR("Not finished");
+    return MeshIterator();
 }
 
 
