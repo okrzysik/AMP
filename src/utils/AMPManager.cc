@@ -3,7 +3,7 @@
 #include "ShutdownRegistry.h"
 #include "Utilities.h"
 #include "RNG.h"
-//#include "materials/Material.h"
+#include "utils/ProfilerApp.h"
 
 #ifdef USE_MPI
     #include "mpi.h"
@@ -87,6 +87,8 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
     argv = argv_in;
     properties = properties_in;
     print_times = properties.print_times;
+    // Initialize the timers (default is disabled)
+    PROFILE_DISABLE();
     // Set the abort method
     AMPManager::use_MPI_Abort = properties.use_MPI_Abort;
     // Initialize PETSc
@@ -124,8 +126,6 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
     PIO::initialize();
     // Initialize the random number generator
     AMP::RNG::initialize(123);
-    // Initialize the Materials interface
-    //AMP::Materials::initialize();
     // Initialization finished
     initialized = 1;
     startup_time = time()-start_time;

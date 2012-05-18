@@ -38,6 +38,8 @@
 #define MAX_TRACE_TRACE 65536                   // The maximum number of stored start and stop times per trace
                                                 // Note: this is only used if store_trace is set, and should be a power of 2
                                                 // Note: the maximum ammount of memory used per trace is 16*MAX_TRACE_TRACE bytes (plus the trace itself)
+#define THREAD_HASH_SIZE 32                     // The size of the hash table to store the threads
+#define TIMER_HASH_SIZE 128                     // The size of the hash table to store the timers
 
 
 /** \class ProfilerApp
@@ -127,8 +129,15 @@ public:
     /* Note: .x.timer will automatically be appended to the filename, where x is the rank+1 of the process.
      * Note: .x.trace will automatically be appended to the filename when detailed traces are used.
      * @param filename      File name for saving the results
+
      */
     void save( const std::string& filename );
+
+    //! Function to enable the timers
+    void enable( );
+
+    //! Function to enable the timers (all current timers will be deleted)
+    void disable( );
 
     //! Function to change if we are storing detailed trace information (must be called before any start)
     /*  Note: Enabling this option will store the starting and ending time for each call.
@@ -221,16 +230,12 @@ private:
     
     // Structure to store thread specific information
     struct thread_info {
-        #ifdef USE_WINDOWS
-            DWORD id;                   // The id of the calling thread
-        #elif defined(USE_LINUX)
-            pthread_t id;               // The id of the calling thread
-        #endif
-        int thread_num;                 // The internal id of the thread
-        unsigned int N_timers;          // The number of timers seed by the current thread
-        volatile thread_info *next;     // Pointer to the next entry in the head list
-        BIT_WORD active[TRACE_SIZE];    // Store the current active traces
-        store_timer *head[64];          // Store the timers in a hash table
+        size_t id;                          // The id of the calling thread
+        int thread_num;                     // The internal id of the thread
+        unsigned int N_timers;              // The number of timers seen by the current thread
+        volatile thread_info *next;         // Pointer to the next entry in the head list
+        BIT_WORD active[TRACE_SIZE];        // Store the current active traces
+        store_timer *head[TIMER_HASH_SIZE]; // Store the timers in a hash table
         // Constructor used to initialize key values
 		thread_info() {
             #ifdef USE_WINDOWS
@@ -249,11 +254,11 @@ private:
     
     // Store thread specific info (use a small hash table to make searching faster)
     volatile int N_threads;
-    volatile thread_info *thread_head[128];
+    volatile thread_info *thread_head[THREAD_HASH_SIZE];
 
     // Store the global timer info in a hash table
     volatile int N_timers;
-    volatile store_timer_info *timer_table[128];
+    volatile store_timer_info *timer_table[TIMER_HASH_SIZE];
 
     // Function to return a pointer to the thread info (or create it if necessary)
     thread_info* get_thread_data( );
@@ -267,6 +272,12 @@ private:
     // Function to return a hopefully unique id based on the active bit array
     unsigned int get_trace_id( int N, BIT_WORD *trace );
 
+    // Function to get the hash index given a timer id
+    unsigned int get_timer_hash( unsigned int id );
+
+    // Function to get the hash index given a thread id
+    unsigned int get_thread_hash( unsigned int id );
+
     // Handle to a mutex lock
     #ifdef USE_WINDOWS
         HANDLE lock;                // Handle to a mutex lock
@@ -275,7 +286,7 @@ private:
     #endif
     
     // Misc variables
-    bool enabled;                   // Are the timers enabled (default is true)
+    bool d_enabled;                 // Are the timers enabled (default is true)
     bool store_trace_data;          // Do we want to store trace information
     TIME_TYPE construct_time;       // Store when the constructor was called
     TIME_TYPE frequency;            // Clock frequency (only used for windows)
@@ -294,5 +305,9 @@ extern ProfilerApp global_profiler;
     global_profiler.save( X );
 #define PROFILE_STORE_TRACE(X)\
     global_profiler.set_store_trace( X );
+#define PROFILE_ENABLE()\
+    global_profiler.enable();
+#define PROFILE_DISABLE()\
+    global_profiler.disable();
 
 #endif

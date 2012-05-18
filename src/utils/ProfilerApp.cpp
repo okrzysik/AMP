@@ -141,12 +141,12 @@ ProfilerApp::ProfilerApp() {
     #elif defined(USE_LINUX)
         pthread_mutex_init (&lock,NULL);
     #endif
-    for (int i=0; i<128; i++)
+    for (int i=0; i<THREAD_HASH_SIZE; i++)
         thread_head[i] = NULL;
     get_time(&construct_time);
     N_threads = 0;
     N_timers = 0;
-    enabled = true;
+    d_enabled = true;
     store_trace_data = false;
 }
 
@@ -156,11 +156,11 @@ ProfilerApp::ProfilerApp() {
 ***********************************************************************/
 ProfilerApp::~ProfilerApp() {
     // Delete the thread structures
-    for (int i=0; i<128; i++) {
+    for (int i=0; i<THREAD_HASH_SIZE; i++) {
         volatile thread_info *thread = thread_head[i];
         while ( thread != NULL ) {
             // Delete the timers in the thread
-            for (int j=0; j<64; j++) {
+            for (int j=0; j<TIMER_HASH_SIZE; j++) {
                 store_timer *timer = thread->head[j];
                 while ( timer != NULL ) {
                     // Delete the trace logs
@@ -182,7 +182,7 @@ ProfilerApp::~ProfilerApp() {
         thread_head[i] = NULL;
     }
     // Delete the global timer info
-    for (int i=0; i<128; i++) {
+    for (int i=0; i<TIMER_HASH_SIZE; i++) {
         volatile store_timer_info *timer = timer_table[i];
         while ( timer != NULL ) {
             volatile store_timer_info *timer_next = timer->next;
@@ -198,7 +198,7 @@ ProfilerApp::~ProfilerApp() {
 * Function to start profiling a block of code                          *
 ***********************************************************************/
 void ProfilerApp::start( const std::string& message, const std::string& filename, const int line ) {
-    if ( !this->enabled )
+    if ( !this->d_enabled )
         return;
     // Get the thread data
     thread_info* thread_data = get_thread_data();
@@ -225,7 +225,7 @@ void ProfilerApp::start( const std::string& message, const std::string& filename
 * Function to stop profiling a block of code                           *
 ***********************************************************************/
 void ProfilerApp::stop( const std::string& message, const std::string& filename, const int line ) {
-    if ( !this->enabled )
+    if ( !this->d_enabled )
         return;
     // Use the current time (minimize the effects of the overhead of the timer)
     TIME_TYPE end_time;
@@ -339,11 +339,55 @@ void ProfilerApp::stop( const std::string& message, const std::string& filename,
 }
 
 
+/***********************************************************************
+* Function to enable/disable the timers                                *
+***********************************************************************/
+void ProfilerApp::enable( )
+{
+    // This is a blocking function so it cannot be called at the same time as disable
+    GET_LOCK(&lock);
+    d_enabled = true;
+    RELEASE_LOCK(&lock);
+}
+void ProfilerApp::disable( )
+{
+    // First, change the status flag
+    GET_LOCK(&lock);
+    d_enabled = false;
+    // Stop ALL timers
+    TIME_TYPE end_time;
+    get_time(&end_time);
+    // Loop through the threads
+    for (int i=0; i<THREAD_HASH_SIZE; i++) {
+        volatile thread_info *thread = thread_head[i];
+        while ( thread != NULL ) {
+            // Disable clear the trace log
+            for (int j=0; j<TRACE_SIZE; j++)
+                thread->active[j] = 0;
+            // Delete the active timers
+            for (int j=0; j<TIMER_HASH_SIZE; j++) {
+                store_timer *timer = thread->head[j];
+                while ( timer != NULL ) {
+                    store_timer *timer2 = timer->next;
+                    delete timer;
+                    timer = timer2;
+                }
+                thread->head[j] = NULL;
+            }
+            volatile thread_info *thread_next = thread->next;
+            thread = thread_next;
+        }
+    }
+    RELEASE_LOCK(&lock);
+}
+
 
 /***********************************************************************
 * Function to save the profiling info                                  *
 ***********************************************************************/
 void ProfilerApp::save( const std::string& filename ) {
+    if ( !this->d_enabled )
+        AMP_ERROR("Timers are not enabled");
     // Get the current time in case we need to "stop" and timers
     TIME_TYPE end_time;
     get_time(&end_time);
@@ -357,7 +401,7 @@ void ProfilerApp::save( const std::string& filename ) {
     thread_info **thread_data = new thread_info*[N_threads2];
     for (int i=0; i<N_threads2; i++)
         thread_data[i] = NULL;
-    for (int i=0; i<128; i++) {
+    for (int i=0; i<THREAD_HASH_SIZE; i++) {
         thread_info *ptr = (thread_info *) thread_head[i];  // It is safe to case to a non-volatile object since we hold the lock
         while ( ptr != NULL ) {
             if ( ptr->thread_num >= N_threads2 )
@@ -378,7 +422,7 @@ void ProfilerApp::save( const std::string& filename ) {
     for (int i=0; i<N_timers; i++)
         total_time[i] = 0.0;
     int k = 0;
-    for (int i=0; i<128; i++) {
+    for (int i=0; i<THREAD_HASH_SIZE; i++) {
         store_timer_info *timer_global = (store_timer_info *) timer_table[i];
         while ( timer_global!=NULL ) {
             id_order[k] = timer_global->id;
@@ -386,9 +430,7 @@ void ProfilerApp::save( const std::string& filename ) {
             for (int thread_id=0; thread_id<N_threads2; thread_id++) {
                 thread_info *head = thread_data[thread_id];
                 // Search for a timer that matches the current id, and save it
-                unsigned int hash = (unsigned int) id_order[k];
-                hash *= 0x9E3779B9;     // 2^32*0.5*(sqrt(5)-1)
-                unsigned int key = (hash&0xFFFFFFFF)>>26;
+                unsigned int key = get_timer_hash( id_order[k] );
                 timer = head->head[key];
                 while ( timer != NULL ) {
                     if ( timer->id == id_order[k] )
@@ -437,12 +479,10 @@ void ProfilerApp::save( const std::string& filename ) {
     fprintf(timerFile,"---------------------------------------------------------------------------------------------------------------------------\n");
     // Loop through the list of timers, storing the most expensive first
     for (int i=N_timers-1; i>=0; i--) {
-        unsigned int id = id_order[i];
-        unsigned int hash = ((unsigned int)id)*0x9E3779B9;  // 2^32*0.5*(sqrt(5)-1)
-        unsigned int key1 = (hash&0xFFFFFFFF)>>25;   // key1 is 0-127
-        unsigned int key2 = (hash&0xFFFFFFFF)>>26;   // key2 is 0-63
+        unsigned int id = id_order[i];              // Get the timer id
+        unsigned int key = get_timer_hash( id );    // Get the timer hash key
         // Search for the global timer info
-        store_timer_info *timer_global = (store_timer_info *) timer_table[key1];
+        store_timer_info *timer_global = (store_timer_info *) timer_table[key];
         while ( timer_global!=NULL ) {
             if ( timer_global->id == id ) 
                 break;
@@ -458,7 +498,7 @@ void ProfilerApp::save( const std::string& filename ) {
         for (int thread_id=0; thread_id<N_threads2; thread_id++) {
             thread_info *head = thread_data[thread_id];
             // Search for a timer that matches the current id
-            store_timer* timer = head->head[key2];
+            store_timer* timer = head->head[key];
             while ( timer != NULL ) {
                 if ( timer->id == id )
                     break;
@@ -500,12 +540,10 @@ void ProfilerApp::save( const std::string& filename ) {
     char id_str[34];
     // Loop through the list of timers, storing the most expensive first
     for (int i=N_timers-1; i>=0; i--) {
-        unsigned int id = id_order[i];
-        unsigned int hash = ((unsigned int)id)*0x9E3779B9;  // 2^32*0.5*(sqrt(5)-1)
-        unsigned int key1 = (hash&0xFFFFFFFF)>>25;   // key1 is 0-127
-        unsigned int key2 = (hash&0xFFFFFFFF)>>26;   // key2 is 0-63
+        unsigned int id = id_order[i];              // Get the timer id
+        unsigned int key = get_timer_hash( id );    // Get the timer hash key
         // Search for the global timer info
-        store_timer_info *timer_global = (store_timer_info *) timer_table[key1];
+        store_timer_info *timer_global = (store_timer_info *) timer_table[key];
         while ( timer_global!=NULL ) {
             if ( timer_global->id == id ) 
                 break;
@@ -521,7 +559,7 @@ void ProfilerApp::save( const std::string& filename ) {
         for (int thread_id=0; thread_id<N_threads2; thread_id++) {
             thread_info *head = thread_data[thread_id];
             // Search for a timer that matches the current id
-            store_timer* timer = head->head[key2];
+            store_timer* timer = head->head[key];
             while ( timer != NULL ) {
                 if ( timer->id == id )
                     break;
@@ -586,7 +624,7 @@ void ProfilerApp::save( const std::string& filename ) {
                         if ( (mask&trace->trace[i])!=0 ) {
                             // The kth timer is active, find the index and write it to the file
                             store_timer* timer_tmp = NULL;
-                            for (int m=0; m<64; m++) {
+                            for (int m=0; m<TIMER_HASH_SIZE; m++) {
                                 timer_tmp = head->head[m];
                                 while ( timer_tmp!=NULL ) {
                                     if ( timer_tmp->trace_index==k )
@@ -629,7 +667,7 @@ void ProfilerApp::save( const std::string& filename ) {
                         if ( (mask&active[i])!=0 ) {
                             // The kth timer is active, find the index and write it to the file
                             store_timer* timer_tmp = NULL;
-                            for (int m=0; m<64; m++) {
+                            for (int m=0; m<TIMER_HASH_SIZE; m++) {
                                 timer_tmp = head->head[m];
                                 while ( timer_tmp!=NULL ) {
                                     if ( timer_tmp->trace_index==k )
@@ -681,19 +719,14 @@ void ProfilerApp::save( const std::string& filename ) {
 ProfilerApp::thread_info* ProfilerApp::get_thread_data( ) {
     // Get the thread id (as an integer)
     #ifdef USE_WINDOWS
-        DWORD thread_id = GetCurrentThreadId();
+        DWORD tmp_thread_id = GetCurrentThreadId();
+        size_t thread_id = (size_t) tmp_thread_id;
     #elif defined(USE_LINUX)
-        pthread_t thread_id = pthread_self();
+        pthread_t tmp_thread_id = pthread_self();
+        size_t thread_id = (size_t) tmp_thread_id;
     #endif
-    // Hash the thread id
-    #ifdef USE_WINDOWS
-        unsigned int hash = (unsigned int) thread_id;
-    #elif defined(USE_LINUX)
-	size_t tmp = (size_t) thread_id;
-        unsigned int hash = (unsigned int) tmp;
-    #endif 
-    hash *= 0x9E3779B9;     // 2^32*0.5*(sqrt(5)-1)
-    unsigned int key = (hash&0xFFFFFFFF)>>25;
+    // Get the hash key for the thread
+    unsigned int key = get_thread_hash( (unsigned int) thread_id );
     // Find the first entry with the given key (creating one if necessary)
     if ( thread_head[key]==NULL ) {
         // The entry in the hash table is empty
@@ -758,9 +791,7 @@ ProfilerApp::store_timer* ProfilerApp::get_block( const std::string& message, co
     // Get the id for the timer
     unsigned int id = get_timer_id(message,filename);
     // Search for the global timer info
-    unsigned int hash = (unsigned int) id;
-    hash *= 0x9E3779B9;     // 2^32*0.5*(sqrt(5)-1)
-    unsigned int key = (hash&0xFFFFFFFF)>>25;   // Get a key 0-127
+    unsigned int key = get_timer_hash( id );    // Get the hash index
     if ( timer_table[key]==NULL ) {
         // The global timer does not exist, create it (requires blocking)
         // Acquire the lock
@@ -848,7 +879,6 @@ ProfilerApp::store_timer* ProfilerApp::get_block( const std::string& message, co
     // Get the thread-specific data block
     thread_info *thread_data = get_thread_data();
     // Search for the thread-specific timer and create it if necessary (does not need blocking)
-    key = (hash&0xFFFFFFFF)>>26;   // Get a key 0-64
     if ( thread_data->head[key]==NULL ) {
         // The timer does not exist, create it
         store_timer *new_timer = new store_timer;
@@ -915,7 +945,8 @@ inline unsigned int ProfilerApp::get_timer_id( const std::string& message, const
 * Function to return a unique id based on the active timer bit array.  *
 * This function works by performing a DJB2 hash on the bit array       *
 ***********************************************************************/
-inline unsigned int ProfilerApp::get_trace_id( int N, BIT_WORD *trace ) {
+inline unsigned int ProfilerApp::get_trace_id( int N, BIT_WORD *trace ) 
+{
     unsigned int hash = 5381;
     unsigned const char *s = (unsigned char*) trace;
     int N_words = (int)N*sizeof(BIT_WORD)/sizeof(char);
@@ -925,6 +956,32 @@ inline unsigned int ProfilerApp::get_trace_id( int N, BIT_WORD *trace ) {
         hash = ((hash << 5) + hash) ^ c;
     }
     return hash;
+}
+
+
+/***********************************************************************
+* Function to return the hash index for a given timer id               *
+***********************************************************************/
+unsigned int ProfilerApp::get_timer_hash( unsigned int id )
+{
+    unsigned int hash = id;
+    hash *= 0x9E3779B9;                         // 2^32*0.5*(sqrt(5)-1)
+    unsigned int key = (hash&0xFFFFFFFF)>>22;   // Get a key 0-1024
+    key = key%TIMER_HASH_SIZE;                  // Convert the key to 0-TIMER_HASH_SIZE
+    return key;
+}
+
+
+/***********************************************************************
+* Function to return the hash index for a given timer id               *
+***********************************************************************/
+unsigned int ProfilerApp::get_thread_hash( unsigned int id )
+{
+    unsigned int hash = id;
+    hash *= 0x9E3779B9;                         // 2^32*0.5*(sqrt(5)-1)
+    unsigned int key = (hash&0xFFFFFFFF)>>22;   // Get a key 0-1024
+    key = key%THREAD_HASH_SIZE;                 // Convert the key to 0-THREAD_HASH_SIZE
+    return key;
 }
 
 
