@@ -151,6 +151,7 @@ int main ( int argc , char ** argv )
     startup_properties.use_MPI_Abort = false;
     AMP::AMPManager::startup(argc,argv,startup_properties);
     AMP::UnitTest ut;
+    PROFILE_ENABLE();
     PROFILE_START("Run tests");
 
     // Run the ID test
