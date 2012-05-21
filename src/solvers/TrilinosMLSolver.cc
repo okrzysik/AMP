@@ -1,5 +1,7 @@
-#include "utils/Utilities.h"
 #include "TrilinosMLSolver.h"
+
+#include "utils/Utilities.h"
+#include "utils/ProfilerApp.h"
 #include "vectors/trilinos/EpetraVector.h"
 #include "vectors/DataChangeFirer.h"
 #include "matrices/Matrix.h"
@@ -166,16 +168,19 @@ namespace AMP {
     void
       TrilinosMLSolver::resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params)
       {
+        PROFILE_START("resetOperator");
         AMP_INSIST((d_pOperator.get() != NULL), "ERROR: TrilinosMLSolver::resetOperator() operator cannot be NULL");
 
         d_pOperator->reset(params);
 
         reset( boost::shared_ptr<SolverStrategyParameters>() );
+        PROFILE_STOP("resetOperator");
       }
 
     void
       TrilinosMLSolver::reset(boost::shared_ptr<SolverStrategyParameters> )
       {
+        PROFILE_START("reset");
         if(!d_bCreationPhase)
         {
           if(d_bUseEpetra) {
@@ -186,12 +191,14 @@ namespace AMP {
           }
         }
         d_bCreationPhase = true;
+        PROFILE_STOP("reset");
       }
 
     void
       TrilinosMLSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
           boost::shared_ptr<AMP::LinearAlgebra::Vector>  u)
       {
+        PROFILE_START("solve");
         // in this case we make the assumption we can access a EpetraMat for now
         AMP_INSIST(d_pOperator.get()!=NULL,"ERROR: TrilinosMLSolver::solve() operator cannot be NULL");
 
@@ -262,7 +269,7 @@ namespace AMP {
           d_pOperator->apply(f,u,r);
           AMP::pout << "TrilinosMLSolver::solve(), L2 norm of residual after solve " <<std::setprecision(15)<< r->L2Norm() << std::endl;    
         }
-
+        PROFILE_STOP("solve");
       }
 
     void 

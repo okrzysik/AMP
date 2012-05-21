@@ -1,6 +1,7 @@
 
 #include "NonlinearFEOperator.h"
 #include "utils/Utilities.h"
+#include "utils/ProfilerApp.h"
 #include "cell_hex8.h"
 #include "node.h"
 
@@ -11,6 +12,7 @@ namespace AMP {
         const boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r,
         const double a,  const double b)
     {
+      PROFILE_START("apply");
       AMP_INSIST( (r != NULL), "NULL Residual/Output Vector" );
 
       AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector(r);
@@ -51,6 +53,7 @@ namespace AMP {
       {
         std::cout << rInternal << std::endl;
       }
+      PROFILE_STOP("apply");
     }
 
     void NonlinearFEOperator :: createCurrentLibMeshElement() {

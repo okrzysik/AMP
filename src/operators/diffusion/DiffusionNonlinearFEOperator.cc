@@ -4,6 +4,7 @@
 #include "DiffusionLinearElement.h"
 #include "DiffusionConstants.h"
 #include "utils/Utilities.h"
+#include "utils/ProfilerApp.h"
 #include "utils/InputDatabase.h"
 #include "materials/Material.h"
 
@@ -158,6 +159,7 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
 void DiffusionNonlinearFEOperator::preAssembly(
         const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, boost::shared_ptr<AMP::LinearAlgebra::Vector> &r)
 {
+  PROFILE_START("preAssembly",2);
   AMP_INSIST( (u != NULL), "NULL Input Vector!" );
   AMP::LinearAlgebra::VS_Mesh meshSelector("u_mesh", d_Mesh);
   AMP::LinearAlgebra::Vector::shared_ptr u_meshVec = u->select(meshSelector, "u_mesh");
@@ -196,6 +198,7 @@ void DiffusionNonlinearFEOperator::preAssembly(
   {
     AMP::pout << "DiffusionNonlinearFEOperator::preAssembly, leaving" << std::endl;
   }
+  PROFILE_STOP("preAssembly",2);
 }
 
 
@@ -219,51 +222,54 @@ void DiffusionNonlinearFEOperator::postAssembly()
 void DiffusionNonlinearFEOperator::preElementOperation(
     const AMP::Mesh::MeshElement & elem )
 {
-  if( d_iDebugPrintInfoLevel > 7 )
-      AMP::pout << "DiffusionNonlinearFEOperator::preElementOperation, entering" << std::endl;     
+    PROFILE_START("preElementOperation",2);
+    if( d_iDebugPrintInfoLevel > 7 )
+        AMP::pout << "DiffusionNonlinearFEOperator::preElementOperation, entering" << std::endl;     
   
-  std::vector<std::vector<double> > elementInputVectors(Diffusion::NUMBER_VARIABLES);
+    std::vector<std::vector<double> > elementInputVectors(Diffusion::NUMBER_VARIABLES);
 
-  d_currNodes = elem.getElements(AMP::Mesh::Vertex);
+    d_currNodes = elem.getElements(AMP::Mesh::Vertex);
   
-  size_t num_local_Dofs = d_currNodes.size();
-  for (unsigned int var = 0; var < Diffusion::NUMBER_VARIABLES; var++)
-  {
-     if (d_isActive[var])
-     {
-        AMP::Discretization::DOFManager::shared_ptr DOF = (d_inVec[var])->getDOFManager();
-        std::vector<size_t> dofs;
-        elementInputVectors[var].resize(num_local_Dofs);
-        for (size_t i = 0; i<d_currNodes.size(); i++)
-        {
-            DOF->getDOFs(d_currNodes[i].globalID(),dofs);
-            AMP_ASSERT(dofs.size()==1);
-            elementInputVectors[var][i] = (d_inVec[var])->getValueByGlobalID(dofs[0]);
-        }
-     }
-  }
-  
-  d_elementOutputVector.resize(num_local_Dofs);
-  for (unsigned int i = 0; i < num_local_Dofs; i++)
+    size_t num_local_Dofs = d_currNodes.size();
+    for (unsigned int var = 0; var < Diffusion::NUMBER_VARIABLES; var++)
     {
-      d_elementOutputVector[i] = 0.0;
+        if (d_isActive[var])
+        {
+            AMP::Discretization::DOFManager::shared_ptr DOF = (d_inVec[var])->getDOFManager();
+            std::vector<size_t> dofs;
+            elementInputVectors[var].resize(num_local_Dofs);
+            for (size_t i = 0; i<d_currNodes.size(); i++)
+            {
+                DOF->getDOFs(d_currNodes[i].globalID(),dofs);
+                AMP_ASSERT(dofs.size()==1);
+                elementInputVectors[var][i] = (d_inVec[var])->getValueByGlobalID(dofs[0]);
+            }
+        }
     }
   
-  d_diffNonlinElem->setElementVectors(elementInputVectors,
+    d_elementOutputVector.resize(num_local_Dofs);
+    for (unsigned int i = 0; i < num_local_Dofs; i++)
+    {
+        d_elementOutputVector[i] = 0.0;
+    }
+  
+        d_diffNonlinElem->setElementVectors(elementInputVectors,
                       d_elementOutputVector);
   
-  createCurrentLibMeshElement();
-  d_diffNonlinElem->initializeForCurrentElement(d_currElemPtr, d_transportModel);
+        createCurrentLibMeshElement();
+        d_diffNonlinElem->initializeForCurrentElement(d_currElemPtr, d_transportModel);
 
-  if( d_iDebugPrintInfoLevel > 7 )
+    if( d_iDebugPrintInfoLevel > 7 )
     {
-      AMP::pout << "DiffusionNonlinearFEOperator::preElementOperation, leaving" << std::endl;     
+        AMP::pout << "DiffusionNonlinearFEOperator::preElementOperation, leaving" << std::endl;     
     }
+    PROFILE_STOP("preElementOperation",2);
 }
 
 
 void DiffusionNonlinearFEOperator::postElementOperation()
 {
+    PROFILE_START("postElementOperation",2);
     if( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionNonlinearFEOperator::postElementOperation, entering" << std::endl;
   
@@ -283,6 +289,7 @@ void DiffusionNonlinearFEOperator::postElementOperation()
 
     if( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionNonlinearFEOperator::postElementOperation, leaving" << std::endl;
+    PROFILE_STOP("postElementOperation",2);
 }
 
 

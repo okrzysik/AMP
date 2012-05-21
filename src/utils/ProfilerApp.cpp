@@ -146,7 +146,7 @@ ProfilerApp::ProfilerApp() {
     get_time(&construct_time);
     N_threads = 0;
     N_timers = 0;
-    d_enabled = true;
+    d_level = 0;
     store_trace_data = false;
 }
 
@@ -197,8 +197,10 @@ ProfilerApp::~ProfilerApp() {
 /***********************************************************************
 * Function to start profiling a block of code                          *
 ***********************************************************************/
-void ProfilerApp::start( const std::string& message, const std::string& filename, const int line ) {
-    if ( !this->d_enabled )
+void ProfilerApp::start( const std::string& message, const std::string& filename, const int line, const int level ) {
+    if ( level<0 || level>=128 )
+        ERROR_MSG("level must be in the range 0-127");
+    if ( this->d_level<level )
         return;
     // Get the thread data
     thread_info* thread_data = get_thread_data();
@@ -224,8 +226,10 @@ void ProfilerApp::start( const std::string& message, const std::string& filename
 /***********************************************************************
 * Function to stop profiling a block of code                           *
 ***********************************************************************/
-void ProfilerApp::stop( const std::string& message, const std::string& filename, const int line ) {
-    if ( !this->d_enabled )
+void ProfilerApp::stop( const std::string& message, const std::string& filename, const int line, const int level ) {
+    if ( level<0 || level>=128 )
+        ERROR_MSG("level must be in the range 0-127");
+    if ( this->d_level<level )
         return;
     // Use the current time (minimize the effects of the overhead of the timer)
     TIME_TYPE end_time;
@@ -342,18 +346,20 @@ void ProfilerApp::stop( const std::string& message, const std::string& filename,
 /***********************************************************************
 * Function to enable/disable the timers                                *
 ***********************************************************************/
-void ProfilerApp::enable( )
+void ProfilerApp::enable( int level )
 {
     // This is a blocking function so it cannot be called at the same time as disable
+    if ( level<0 || level>=128 )
+        ERROR_MSG("level must be in the range 0-127");
     GET_LOCK(&lock);
-    d_enabled = true;
+    d_level = level;
     RELEASE_LOCK(&lock);
 }
 void ProfilerApp::disable( )
 {
     // First, change the status flag
     GET_LOCK(&lock);
-    d_enabled = false;
+    d_level = -1;
     // Stop ALL timers
     TIME_TYPE end_time;
     get_time(&end_time);
@@ -386,8 +392,10 @@ void ProfilerApp::disable( )
 * Function to save the profiling info                                  *
 ***********************************************************************/
 void ProfilerApp::save( const std::string& filename ) {
-    if ( !this->d_enabled )
-        AMP_ERROR("Timers are not enabled");
+    if ( this->d_level<0 ) {
+        printf("Warning: Timers are not enabled, no data will be saved\n");
+        return;
+    }
     AMP::AMP_MPI global_comm(AMP_COMM_WORLD);
     int N_procs = global_comm.getSize();
     int rank = global_comm.getRank();

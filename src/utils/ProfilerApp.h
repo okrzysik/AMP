@@ -66,6 +66,7 @@
   * Note that these commands are global and will create a global profiler.  It is possible
   * for a user to create multiple profilers and this should not create any problems, but the 
   * class interface should be used.
+  * All start/stop and enable support an optional argument level that specifies the level of detail for the timers
   * For repeated calls, the timer adds ~ 25us per call (with full trace info).  
   * Most of this overhead is not in the timer returned by the timer.
   * Note that when a timer is created the cost may be significantly higher, but this only occurs once per timer.  
@@ -110,8 +111,10 @@ public:
      *                      It must be a unique message to all start called within the same file.
      * @param filename      Name of the file containing the code
      * @param line          Line number containing the start command
+     * @param level         Level of detail to include this timer (default is 0)
+     *                      Only timers whos level is <= the level of the specified by enable will be included.
      */
-    void start( const std::string& message, const std::string& filename, const int line );
+    void start( const std::string& message, const std::string& filename, const int line, const int level=0 );
 
     //! Function to stop profiling a block of code
     /*!
@@ -122,8 +125,11 @@ public:
      *                      It must match a start call.
      * @param filename      Name of the file containing the code
      * @param line          Line number containing the stop command
+     * @param level         Level of detail to include this timer (default is 0)
+     *                      Only timers whos level is <= the level of the specified by enable will be included.
+     *                      Note: this must match the level in start
      */
-    void stop( const std::string& message, const std::string& filename, const int line );
+    void stop( const std::string& message, const std::string& filename, const int line, const int level=0 );
 
     //! Function to save the profiling info
     /* Note: .x.timer will automatically be appended to the filename, where x is the rank+1 of the process.
@@ -134,7 +140,13 @@ public:
     void save( const std::string& filename );
 
     //! Function to enable the timers
-    void enable( );
+    /*!
+     * This function will enable the current timer clase.  It supports an optional level argument
+     * that specifies the level of detail to use for the timers. 
+     * @param level         Level of detail to include this timer (default is 0)
+     *                      Only timers whos level is <= the level of the specified by enable will be included.
+     */
+    void enable( int level=0 );
 
     //! Function to enable the timers (all current timers will be deleted)
     void disable( );
@@ -247,7 +259,7 @@ private:
             next = NULL;
             for (int i=0; i<TRACE_SIZE; i++)
                 active[i] = 0;
-            for (int i=0; i<64; i++)
+            for (int i=0; i<TIMER_HASH_SIZE; i++)
                 head[i] = NULL;
 		}
     };
@@ -286,27 +298,27 @@ private:
     #endif
     
     // Misc variables
-    bool d_enabled;                 // Are the timers enabled (default is true)
     bool store_trace_data;          // Do we want to store trace information
+    char d_level;                   // Level of timing to use (default is 0, -1 is disabled)
     TIME_TYPE construct_time;       // Store when the constructor was called
     TIME_TYPE frequency;            // Clock frequency (only used for windows)
 };
 
 extern ProfilerApp global_profiler;
-#define PROFILE_START(X)\
-    global_profiler.start( X, __FILE__, __LINE__ );
-#define PROFILE_STOP(X)\
-    global_profiler.stop( X, __FILE__, __LINE__ );
-#define PROFILE_START2(X)\
-    global_profiler.start( X, __FILE__, -1 );
-#define PROFILE_STOP2(X)\
-    global_profiler.stop( X, __FILE__, -1 );
+#define PROFILE_START(X,...)\
+    global_profiler.start( X, __FILE__, __LINE__, ##__VA_ARGS__ );
+#define PROFILE_STOP(X,...)\
+    global_profiler.stop( X, __FILE__, __LINE__, ##__VA_ARGS__ );
+#define PROFILE_START2(X,...)\
+    global_profiler.start( X, __FILE__, -1, ##__VA_ARGS__ );
+#define PROFILE_STOP2(X,...)\
+    global_profiler.stop( X, __FILE__, -1, ##__VA_ARGS__ );
 #define PROFILE_SAVE(X)\
     global_profiler.save( X );
 #define PROFILE_STORE_TRACE(X)\
     global_profiler.set_store_trace( X );
-#define PROFILE_ENABLE()\
-    global_profiler.enable();
+#define PROFILE_ENABLE(...)\
+    global_profiler.enable(__VA_ARGS__);
 #define PROFILE_DISABLE()\
     global_profiler.disable();
 
