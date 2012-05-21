@@ -388,6 +388,9 @@ void ProfilerApp::disable( )
 void ProfilerApp::save( const std::string& filename ) {
     if ( !this->d_enabled )
         AMP_ERROR("Timers are not enabled");
+    AMP::AMP_MPI global_comm(AMP_COMM_WORLD);
+    int N_procs = global_comm.getSize();
+    int rank = global_comm.getRank();
     // Get the current time in case we need to "stop" and timers
     TIME_TYPE end_time;
     get_time(&end_time);
@@ -456,8 +459,6 @@ void ProfilerApp::save( const std::string& filename ) {
     quicksort2(N_timers,total_time,id_order);
     delete [] total_time;
     // Open the file(s) for writing
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
     char filename_timer[1000], filename_trace[1000];
     sprintf(filename_timer,"%s.%i.timer",filename.c_str(),rank+1);
     sprintf(filename_trace,"%s.%i.trace",filename.c_str(),rank+1);
@@ -533,8 +534,6 @@ void ProfilerApp::save( const std::string& filename ) {
     }
     // Loop through all of the entries, saving the detailed data and the trace logs
     fprintf(timerFile,"\n\n");
-    int N_procs;
-    MPI_Comm_size(MPI_COMM_WORLD,&N_procs);
     fprintf(timerFile,"<N_procs=%i,id=%i>\n",N_procs,rank);
     get_time(&end_time);
     char id_str[34];
