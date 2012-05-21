@@ -422,7 +422,7 @@ void ProfilerApp::save( const std::string& filename ) {
     for (int i=0; i<N_timers; i++)
         total_time[i] = 0.0;
     int k = 0;
-    for (int i=0; i<THREAD_HASH_SIZE; i++) {
+    for (int i=0; i<TIMER_HASH_SIZE; i++) {
         store_timer_info *timer_global = (store_timer_info *) timer_table[i];
         while ( timer_global!=NULL ) {
             id_order[k] = timer_global->id;
