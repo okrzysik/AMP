@@ -112,7 +112,7 @@ namespace AMP {
 
       AMP::LinearAlgebra::Variable::shared_ptr tempVar; 
       AMP::LinearAlgebra::Vector::shared_ptr tempVector; 
-      
+
       tempVar = d_inpVariables->getVariable(NavierStokes::VELOCITY);
       tempVector = u->subsetVectorForVariable(tempVar);
       setVector(NavierStokes::VELOCITY, tempVector);
@@ -149,8 +149,6 @@ namespace AMP {
       gettype0DofIndicesForCurrentElement(NavierStokes::VELOCITY, d_type0DofIndices);
       gettype1DofIndicesForCurrentElement(NavierStokes::PRESSURE, d_type1DofIndices);
 
-      createCurrentLibMeshElement();
-
       std::vector<std::vector<double> > elementInputVectors(NavierStokes::TOTAL_NUMBER_OF_VARIABLES);
 
       elementInputVectors[NavierStokes::VELOCITY].resize(3*numNodesInCurrElem);
@@ -180,7 +178,7 @@ namespace AMP {
         d_elementOutputVector[i] = 0.0;
       }
 
-      d_flowGalWFElem->initializeForCurrentElement( d_currElemPtr, d_transportModel );
+      d_flowGalWFElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx], d_transportModel );
       d_flowGalWFElem->setElementVectors( elementInputVectors, d_elementOutputVector );
     }
 
@@ -193,9 +191,8 @@ namespace AMP {
         }
       }
       for(unsigned int r = 0; r < d_type1DofIndices.size() ; r++) {
-          d_outVec->addValueByGlobalID( d_type1DofIndices[r], d_elementOutputVector[(4*r) + 3] );
+        d_outVec->addValueByGlobalID( d_type1DofIndices[r], d_elementOutputVector[(4*r) + 3] );
       }
-      destroyCurrentLibMeshElement();
     }
 
     void NavierStokesGalWFFEOperator :: init() 
@@ -267,17 +264,17 @@ namespace AMP {
 
       }
 
-     void NavierStokesGalWFFEOperator :: gettype0DofIndicesForCurrentElement(int varId, std::vector<std::vector<size_t> > & dofIds) {
+    void NavierStokesGalWFFEOperator :: gettype0DofIndicesForCurrentElement(int varId, std::vector<std::vector<size_t> > & dofIds) {
       dofIds.resize(d_currNodes.size());
       for(unsigned int j = 0; j < d_currNodes.size(); j++) {
         d_dofMap[varId]->getDOFs(d_currNodes[j].globalID(), dofIds[j]);
       } // end of j
-     }
+    }
 
-     void NavierStokesGalWFFEOperator :: gettype1DofIndicesForCurrentElement(int varId, std::vector<size_t> & dofIds) {
+    void NavierStokesGalWFFEOperator :: gettype1DofIndicesForCurrentElement(int varId, std::vector<size_t> & dofIds) {
       for(unsigned int j = 0; j < d_currNodes.size(); j++) {
         d_dofMap[varId]->getDOFs(d_currNodes[j].globalID(), dofIds);
       } // end of j
-     }
+    }
   }
 }//end namespace

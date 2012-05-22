@@ -86,7 +86,7 @@ namespace AMP {
       }
 
       if ( d_auxVariables->numVariables() > 0 )
-         meshSubsetAuxillary = d_multiAuxPtr->select(meshSelector,d_auxVariables->getName());
+        meshSubsetAuxillary = d_multiAuxPtr->select(meshSelector,d_auxVariables->getName());
       for(size_t var = 0; var < d_auxVariables->numVariables(); var++)
       {
         AMP::LinearAlgebra::Variable::shared_ptr auxillaryVariable = d_auxVariables->getVariable(var);
@@ -111,8 +111,6 @@ namespace AMP {
         const AMP::Mesh::MeshElement & elem )
     {
       d_currNodes = elem.getElements(AMP::Mesh::Vertex);
-
-      createCurrentLibMeshElement();
 
       std::vector<size_t> elemDofIds;
       d_elementDofMap->getDOFs(elem.globalID(), elemDofIds);
@@ -142,7 +140,7 @@ namespace AMP {
         {
           AMP::Mesh::MeshElementID tmp = d_inVec[var]->getDOFManager()->getIterator()->globalID();
           if ( tmp.type() != AMP::Mesh::Vertex )
-             AMP_ERROR("Input vector isn't really a NodalScalar");
+            AMP_ERROR("Input vector isn't really a NodalScalar");
           elementInputVectors[var].resize(d_dofIndices.size());
           for (size_t i = 0; i < d_dofIndices.size(); i++) {
             elementInputVectors[var][i] =  d_inVec[var]->getValueByGlobalID( d_dofIndices[i][0] );
@@ -152,7 +150,7 @@ namespace AMP {
         {
           AMP::Mesh::MeshElementID tmp = d_auxVec[var]->getDOFManager()->getIterator()->globalID();
           if ( tmp.type() != AMP::Mesh::Vertex )
-             AMP_ERROR("aux vector isn't really a NodalScalar");
+            AMP_ERROR("aux vector isn't really a NodalScalar");
           elementAuxVectors[var].resize(d_dofIndices.size());
           for(size_t i = 0; i < d_dofIndices.size(); i++) {
             elementAuxVectors[var][i] =  d_auxVec[var]->getValueByGlobalID( d_dofIndices[i][0] );
@@ -163,9 +161,9 @@ namespace AMP {
       d_elementOutputVector.resize(d_dofIndices.size());
       // Reinitialize the std::vector to zero (resize does not do this)
       for(unsigned int i = 0; i < d_dofIndices.size(); i++) 
-          d_elementOutputVector[i] = 0.0;
+        d_elementOutputVector[i] = 0.0;
 
-      d_srcNonlinElem->initializeForCurrentElement(d_currElemPtr,d_sourcePhysicsModel);
+      d_srcNonlinElem->initializeForCurrentElement(d_currElemPtrs[d_currElemIdx], d_sourcePhysicsModel);
 
       d_srcNonlinElem->setElementVectors(elementInputVectors, elementAuxVectors, d_elementOutputVector);
     }
@@ -175,7 +173,6 @@ namespace AMP {
       for (size_t i = 0; i < d_dofIndices.size(); i++) {
         d_outVec->addValueByGlobalID(d_dofIndices[i][0], d_elementOutputVector[i]);
       }
-      destroyCurrentLibMeshElement();
     }
 
     void VolumeIntegralOperator::postAssembly()
@@ -188,12 +185,11 @@ namespace AMP {
       AMP::Mesh::MeshIterator  el     = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
       AMP::Mesh::MeshIterator  end_el = el.end();
       d_srcNonlinElem->setElementFlags(d_isInputType);
-      for( ; el != end_el; ++el) {
+      for(d_currElemIdx = 0; el != end_el; ++el, ++d_currElemIdx) {
         d_currNodes = el->getElements(AMP::Mesh::Vertex);
-        createCurrentLibMeshElement();
-        d_srcNonlinElem->initializeForCurrentElement(d_currElemPtr, d_sourcePhysicsModel);
-        destroyCurrentLibMeshElement();
+        d_srcNonlinElem->initializeForCurrentElement(d_currElemPtrs[d_currElemIdx], d_sourcePhysicsModel);
       }//end for el
+      d_currElemIdx = static_cast<unsigned int>(-1);
     }
 
     void VolumeIntegralOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)

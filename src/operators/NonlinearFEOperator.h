@@ -31,12 +31,30 @@ namespace AMP {
           : Operator(params)
         {
           d_elemOp = (params->d_elemOp);
+          createLibMeshElementList();
+          d_currElemIdx = static_cast<unsigned int>(-1);
         }
 
         /**
           Destructor
           */
-        virtual ~NonlinearFEOperator() {  }
+        virtual ~NonlinearFEOperator() { 
+          destroyLibMeshElementList();
+        }
+
+        /**
+          The apply function for this operator, A, performs the following operation:
+          r = b*f+a*A(u), if f is not NULL and r = a*A(u), if f is NULL.
+          @param [in] f auxillary/rhs vector. 
+          @param [in] u input vector. 
+          @param [out] r residual/output vector. 
+          @param [in] a first constant used in the expression: r = a*A(u) + b*f. The default value is -1.
+          @param [in] b second constant used in the expression: r = a*A(u) + b*f. The default value is 1.
+          */
+        virtual void apply(const  boost::shared_ptr<AMP::LinearAlgebra::Vector> & f, const  boost::shared_ptr<AMP::LinearAlgebra::Vector> & u,
+            boost::shared_ptr<AMP::LinearAlgebra::Vector> & r, const double a = -1.0, const double b = 1.0);
+
+      protected :
 
         /**
           This function will be called just before looping over the elements to form the residual vector, so if the
@@ -70,27 +88,13 @@ namespace AMP {
           */
         virtual void postElementOperation()=0;
 
-        /**
-          The apply function for this operator, A, performs the following operation:
-          r = b*f+a*A(u), if f is not NULL and r = a*A(u), if f is NULL.
-          @param [in] f auxillary/rhs vector. 
-          @param [in] u input vector. 
-          @param [out] r residual/output vector. 
-          @param [in] a first constant used in the expression: r = a*A(u) + b*f. The default value is -1.
-          @param [in] b second constant used in the expression: r = a*A(u) + b*f. The default value is 1.
-          */
-        virtual void apply(const  boost::shared_ptr<AMP::LinearAlgebra::Vector> & f, const  boost::shared_ptr<AMP::LinearAlgebra::Vector> & u,
-            boost::shared_ptr<AMP::LinearAlgebra::Vector> & r, const double a = -1.0, const double b = 1.0);
+        void createLibMeshElementList();
 
-      protected :
+        void destroyLibMeshElementList();
 
-        void createCurrentLibMeshElement();
+        std::vector< ::Elem* > d_currElemPtrs;
 
-        void destroyCurrentLibMeshElement();
-
-        std::vector<AMP::Mesh::MeshElement> d_currNodes;
-
-        ::Elem* d_currElemPtr;
+        size_t d_currElemIdx;
 
         boost::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
 
