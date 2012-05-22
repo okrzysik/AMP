@@ -157,7 +157,7 @@ void nekPipeOperator(AMP::UnitTest *ut)
          myIter != r_gp->end();
          myIter++ )
     {
-        AMP::pout << "GP Vector Element " << ctr << " is " << *myIter << std::endl;
+        //AMP::pout << "GP Vector Element " << ctr << " is " << *myIter << std::endl;
 
         if( *myIter != 0.0 )
             nonZero = true;
