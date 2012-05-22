@@ -214,6 +214,8 @@ namespace AMP {
 
         boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[Mechanics::TOTAL_NUMBER_OF_VARIABLES];
 
+        std::vector<AMP::Mesh::MeshElement> d_currNodes; 
+
         std::vector<std::vector<size_t> > d_dofIndices; /**< Primary DOF indices */
     };
 
@@ -225,8 +227,6 @@ namespace AMP {
         updateMaterialForElementCommonFunction(elem, elementInputVectors1, elementInputVectors_pre1);
 
         d_mechNonlinElem->updateMaterialModel<updateType>(elementInputVectors1);
-
-        destroyCurrentLibMeshElement();
       }
 
     template <MechanicsNonlinearUpdatedLagrangianElement::MaterialUpdateType updateType>
@@ -238,8 +238,6 @@ namespace AMP {
         updateMaterialForElementCommonFunction(elem, elementInputVectors2, elementInputVectors_pre2);
 
         d_mechNULElem->updateMaterialModel<updateType>(elementInputVectors2, elementInputVectors_pre2);
-
-        destroyCurrentLibMeshElement();
       }
   }
 }

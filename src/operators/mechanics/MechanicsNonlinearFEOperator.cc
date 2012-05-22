@@ -231,14 +231,12 @@ namespace AMP {
         d_elementOutputVector[i] = 0.0; 
       }//end i
 
-      createCurrentLibMeshElement();
-
       if(d_useUpdatedLagrangian) {
-        d_mechNULElem->initializeForCurrentElement( d_currElemPtr, d_materialModel );
+        d_mechNULElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx], d_materialModel );
         d_mechNULElem->setElementVectors( elementInputVectors, elementInputVectors_pre, d_elementOutputVector );
         d_mechNULElem->assignReferenceXYZ(elementRefXYZ);
       } else {
-        d_mechNonlinElem->initializeForCurrentElement( d_currElemPtr, d_materialModel );
+        d_mechNonlinElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx], d_materialModel );
         d_mechNonlinElem->setElementVectors( elementInputVectors, d_elementOutputVector );
       }
     }
@@ -251,7 +249,6 @@ namespace AMP {
           d_outVec->addValueByGlobalID( d_dofIndices[r][d], d_elementOutputVector[(3*r) + d] );
         }//end for d
       }//end for r
-      destroyCurrentLibMeshElement();
     }
 
     void MechanicsNonlinearFEOperator :: init() 
@@ -270,8 +267,6 @@ namespace AMP {
       for( ; el != end_el; ++el) {
         d_currNodes = el->getElements(AMP::Mesh::Vertex);
         unsigned int numNodesInCurrElem = d_currNodes.size();
-
-        createCurrentLibMeshElement();
 
         if(d_useUpdatedLagrangian) {
           getDofIndicesForCurrentElement(Mechanics::DISPLACEMENT, d_dofIndices);
@@ -296,11 +291,11 @@ namespace AMP {
         }
 
         if(d_useUpdatedLagrangian) {
-          d_mechNULElem->initializeForCurrentElement( d_currElemPtr, d_materialModel );
+          d_mechNULElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx], d_materialModel );
           d_mechNULElem->initMaterialModel(localVector);
           d_mechNULElem->initializeReferenceXYZ(elementRefXYZ);
         } else {
-          d_mechNonlinElem->initializeForCurrentElement( d_currElemPtr, d_materialModel );
+          d_mechNonlinElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx], d_materialModel );
           d_mechNonlinElem->initMaterialModel(localVector);
         }
 
@@ -312,7 +307,6 @@ namespace AMP {
           }//end for j
         }
 
-        destroyCurrentLibMeshElement();
       }//end for el
 
       if(d_useUpdatedLagrangian) {
@@ -588,13 +582,10 @@ namespace AMP {
           }//end for i
         }//end for r
 
-        createCurrentLibMeshElement();
-
-        d_mechNonlinElem->initializeForCurrentElement( d_currElemPtr, d_materialModel );
+        d_mechNonlinElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx], d_materialModel );
 
         d_mechNonlinElem->printStressAndStrain(fp, elementInputVectors);
 
-        destroyCurrentLibMeshElement();
       }//end for el
 
       d_materialModel->postNonlinearAssembly();
@@ -662,13 +653,11 @@ namespace AMP {
         }//end for i
       }//end for r
 
-      createCurrentLibMeshElement();
-
       if(d_useUpdatedLagrangian) {
-        d_mechNULElem->initializeForCurrentElement( d_currElemPtr, d_materialModel );
+        d_mechNULElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx], d_materialModel );
         d_mechNULElem->assignReferenceXYZ(elementRefXYZ);
       } else {
-        d_mechNonlinElem->initializeForCurrentElement( d_currElemPtr, d_materialModel );
+        d_mechNonlinElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx], d_materialModel );
       }
     }
 

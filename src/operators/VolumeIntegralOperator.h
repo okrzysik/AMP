@@ -126,6 +126,8 @@ namespace AMP {
         AMP::Discretization::DOFManager::shared_ptr d_elementDofMap;
         AMP::Discretization::DOFManager::shared_ptr d_nodeDofMap;
 
+        std::vector<AMP::Mesh::MeshElement> d_currNodes; 
+
       private :
 
         boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables;/**< Input Active variables. */

@@ -1,3 +1,4 @@
+
 #ifndef included_AMP_DiffusionNonlinearFEOperator
 #define included_AMP_DiffusionNonlinearFEOperator
 
@@ -11,107 +12,109 @@
 #include <vector>
 
 namespace AMP {
-namespace Operator {
+  namespace Operator {
 
-class DiffusionNonlinearFEOperator: public NonlinearFEOperator {
-public:
+    class DiffusionNonlinearFEOperator: public NonlinearFEOperator {
+      public:
 
-    typedef boost::shared_ptr<DiffusionNonlinearFEOperator> shared_ptr;
+        typedef boost::shared_ptr<DiffusionNonlinearFEOperator> shared_ptr;
 
-    DiffusionNonlinearFEOperator(const boost::shared_ptr<DiffusionNonlinearFEOperatorParameters>& params);
+        DiffusionNonlinearFEOperator(const boost::shared_ptr<DiffusionNonlinearFEOperatorParameters>& params);
 
-    ~DiffusionNonlinearFEOperator() {}
+        ~DiffusionNonlinearFEOperator() {}
 
-    void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, boost::shared_ptr<AMP::LinearAlgebra::Vector> &r);
+        void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, boost::shared_ptr<AMP::LinearAlgebra::Vector> &r);
 
-    void postAssembly();
+        void postAssembly();
 
-    void preElementOperation(const AMP::Mesh::MeshElement &);
+        void preElementOperation(const AMP::Mesh::MeshElement &);
 
-    void postElementOperation();
+        void postElementOperation();
 
-    void reset(const boost::shared_ptr<OperatorParameters>&);
+        void reset(const boost::shared_ptr<OperatorParameters>&);
 
-    boost::shared_ptr<OperatorParameters>
-    getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>&);
+        boost::shared_ptr<OperatorParameters>
+          getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>&);
 
-    void setInputVariableName(const std::string & name, int varId = -1);
+        void setInputVariableName(const std::string & name, int varId = -1);
 
-    void setOutputVariableName(const std::string & name, int varId = -1);
+        void setOutputVariableName(const std::string & name, int varId = -1);
 
-    AMP::LinearAlgebra::Variable::shared_ptr createInputVariable(const std::string & name, int varId = -1);
+        AMP::LinearAlgebra::Variable::shared_ptr createInputVariable(const std::string & name, int varId = -1);
 
-    AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable(const std::string & name, int varId = -1);
+        AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable(const std::string & name, int varId = -1);
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
+        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
-    unsigned int numberOfDOFMaps();
+        unsigned int numberOfDOFMaps();
 
-    AMP::LinearAlgebra::Variable::shared_ptr getVariableForDOFMap(unsigned int id);
+        AMP::LinearAlgebra::Variable::shared_ptr getVariableForDOFMap(unsigned int id);
 
-    unsigned int getPrincipalVariableId();
+        unsigned int getPrincipalVariableId();
 
-    std::vector<unsigned int> getNonPrincipalVariableIds();
+        std::vector<unsigned int> getNonPrincipalVariableIds();
 
-    boost::shared_ptr<DiffusionTransportModel> getTransportModel();
+        boost::shared_ptr<DiffusionTransportModel> getTransportModel();
 
-    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> getFrozen();
+        std::vector<AMP::LinearAlgebra::Vector::shared_ptr> getFrozen();
 
-    /**
-       This function is used to set frozen vectors in this operator. This is used when some of the 
-       variables are solved for in an uncoupled manner.
-       @param [in] id Variable Identifier - One of AMP::Diffusion::TEMPERATURE/BURNUP/OXYGEN_CONCENTRATION
-       @param [in] frozenVec Frozen vector
-       @see DiffusionConstants.h
-        */
-    void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec);
-    
-    /**
-     * checks input to apply operator for satisfaction of range conditions
-     */
-    bool isValidInput(AMP::LinearAlgebra::Vector::shared_ptr &u);
+        /**
+          This function is used to set frozen vectors in this operator. This is used when some of the 
+          variables are solved for in an uncoupled manner.
+          @param [in] id Variable Identifier - One of AMP::Diffusion::TEMPERATURE/BURNUP/OXYGEN_CONCENTRATION
+          @param [in] frozenVec Frozen vector
+          @see DiffusionConstants.h
+          */
+        void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec);
 
-protected:
+        /**
+         * checks input to apply operator for satisfaction of range conditions
+         */
+        bool isValidInput(AMP::LinearAlgebra::Vector::shared_ptr &u);
 
-    void init(const boost::shared_ptr<DiffusionNonlinearFEOperatorParameters>& params);
+      protected:
 
-    std::vector<double> d_elementOutputVector;
+        void init(const boost::shared_ptr<DiffusionNonlinearFEOperatorParameters>& params);
 
-    boost::shared_ptr<DiffusionNonlinearElement> d_diffNonlinElem;
+        std::vector<double> d_elementOutputVector;
 
-    boost::shared_ptr<DiffusionTransportModel> d_transportModel;
+        boost::shared_ptr<DiffusionNonlinearElement> d_diffNonlinElem;
 
-    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_inVec;
+        boost::shared_ptr<DiffusionTransportModel> d_transportModel;
 
-    AMP::LinearAlgebra::Vector::shared_ptr d_outVec;
+        std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_inVec;
 
-    boost::shared_ptr<std::vector<double> > d_TransportGauss;
-    AMP::LinearAlgebra::Vector::shared_ptr d_TransportNodal;
+        std::vector<AMP::Mesh::MeshElement> d_currNodes; 
 
-    std::vector<bool> d_isActive;
+        AMP::LinearAlgebra::Vector::shared_ptr d_outVec;
 
-    std::vector<bool> d_isFrozen;
+        boost::shared_ptr<std::vector<double> > d_TransportGauss;
+        AMP::LinearAlgebra::Vector::shared_ptr d_TransportNodal;
 
-private:
+        std::vector<bool> d_isActive;
 
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables;
+        std::vector<bool> d_isFrozen;
 
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
+      private:
 
-    unsigned int d_PrincipalVariable;
+        boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables;
 
-    unsigned int d_numberActive;
+        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
-    unsigned int d_numberFrozen;
+        unsigned int d_PrincipalVariable;
 
-    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_Frozen;
+        unsigned int d_numberActive;
 
-    void resetFrozen(const boost::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params);
-};
+        unsigned int d_numberFrozen;
 
-}
+        std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_Frozen;
+
+        void resetFrozen(const boost::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params);
+    };
+
+  }
 }
 
 #endif
