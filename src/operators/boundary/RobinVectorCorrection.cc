@@ -115,6 +115,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
 
   unsigned int numIds = d_boundaryIds.size();
   std::vector<size_t> dofIndices, dofs;
+  PROFILE_START("integration loop");
   for (unsigned int nid = 0; nid < numIds; nid++)
   {
 
@@ -123,6 +124,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
 
     for (; bnd1 != end_bnd1; ++bnd1)
     {
+      PROFILE_START("prepare element",2);
 
       boost::shared_ptr < ::FEType > d_feType ( new ::FEType(d_feTypeOrder, d_feFamily) );
       boost::shared_ptr < ::FEBase > d_fe( (::FEBase::build(2, (*d_feType))).release() );
@@ -159,37 +161,29 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
 
       const std::vector<Real> & JxW = (*d_JxW);
       const std::vector<std::vector<Real> > & phi = (*d_phi);
+      PROFILE_STOP("prepare element",2);
 
       double temp;
       std::vector<std::vector<double> > inputArgs(d_elementInputVec.size(),std::vector<double>(numNodesInCurrElem));
       std::vector<double> beta(numNodesInCurrElem,d_beta);
       std::vector<double> gamma(numNodesInCurrElem,d_gamma);
+      PROFILE_START("get conductance",2);
       if(d_robinPhysicsModel.get() != NULL) 
       {
-         for(unsigned int m = 0; m < d_elementInputVec.size(); m++)
-            d_elementInputVec[m]->getValuesByGlobalID( dofIndices.size(), &dofIndices[0], &inputArgs[m][0] );
-         d_robinPhysicsModel->getConductance(beta, gamma, inputArgs);
+        for(unsigned int m = 0; m < d_elementInputVec.size(); m++)
+          d_elementInputVec[m]->getValuesByGlobalID( dofIndices.size(), &dofIndices[0], &inputArgs[m][0] );
+        d_robinPhysicsModel->getConductance(beta, gamma, inputArgs);
       }
+      PROFILE_STOP("get conductance",2);
+      PROFILE_START("perform integration",2);
       for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
       {
         temp = 0;
         Real phi_val = 0.0;
 
         for (unsigned int l = 0; l < numNodesInCurrElem ; l++)
-        {
           phi_val += phi[l][qp] * beta[l] * uInternal->getValueByGlobalID(dofIndices[l]);
-#ifdef DEBUG_GAP_PRINT
-          if (d_iDebugPrintInfoLevel == 100)
-          {
-            std::cout << bndGlobalIds[l] << " " << qp << " " << beta[l] << " ";
-            for (unsigned int m = 0; m < d_elementInputVec.size(); m++)
-            {
-              std::cout << inputArgs[m][j] << " ";
-            }
-            std::cout << "\n";
-          }
-#endif
-        }
+
         for (unsigned int j = 0; j < numNodesInCurrElem ; j++)
         {
           temp = (JxW[qp] * phi[j][qp] * phi_val);
@@ -205,10 +199,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
           Real phi_val = 0.0;
 
           for (unsigned int l = 0; l < numNodesInCurrElem ; l++)
-          {
-
             phi_val += phi[l][qp] * gamma[l] * d_variableFlux->getValueByGlobalID(dofIndices[l]);
-          }
 
           for (unsigned int j = 0; j < numNodesInCurrElem ; j++)
           {
@@ -218,9 +209,11 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
           }//end for j
         }//end for qp
       }//coupled
+      PROFILE_STOP("perform integration",2);
 
     }//end for bnd
   }//end for nid
+  PROFILE_STOP("integration loop");
 
   rInternal->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_ADD);
   //std::cout << rInternal << std::endl;
