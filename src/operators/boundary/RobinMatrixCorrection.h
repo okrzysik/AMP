@@ -95,9 +95,9 @@ namespace Operator {
     
     double d_alpha;  // pre-factor solid flux
     
-    std::vector<double> d_beta;
+    double d_beta;
     
-    std::vector<double> d_gamma;
+    double d_gamma;
     
     const std::vector<Real> *d_JxW;
     

@@ -33,15 +33,10 @@ void RobinVectorCorrection::reset(const boost::shared_ptr<OperatorParameters>& p
   d_alpha = (params->d_db)->getDouble("alpha");
   
   AMP_INSIST( (params->d_db)->keyExists("beta"), "Missing key: prefactor beta" );
-  d_beta.resize(1);
-  d_beta[0] = (params->d_db)->getDouble("beta");
+  d_beta = (params->d_db)->getDouble("beta");
   
   AMP_INSIST( (params->d_db)->keyExists("gamma"), "Missing key: total prefactor gamma" );
-  d_gamma.resize(1);
-  d_gamma[0] = (params->d_db)->getDouble("gamma");
-
-  d_beta2 = d_beta[0];
-  d_gamma2 = d_gamma[0];
+  d_gamma = (params->d_db)->getDouble("gamma");
   
 }
   
@@ -55,9 +50,6 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   PROFILE_START("apply");
   AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
   AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
-
-  d_beta[0] = d_beta2;
-  d_gamma[0] = d_gamma2;
 
   AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetInputVector(r);
   AMP::LinearAlgebra::Vector::shared_ptr uInternal = this->subsetInputVector(u);
@@ -169,8 +161,15 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
       const std::vector<std::vector<Real> > & phi = (*d_phi);
 
       double temp;
-      std::vector<std::vector<double> > inputArgs(d_elementInputVec.size()) ;
-
+      std::vector<std::vector<double> > inputArgs(d_elementInputVec.size(),std::vector<double>(numNodesInCurrElem));
+      std::vector<double> beta(numNodesInCurrElem,d_beta);
+      std::vector<double> gamma(numNodesInCurrElem,d_gamma);
+      if(d_robinPhysicsModel.get() != NULL) 
+      {
+         for(unsigned int m = 0; m < d_elementInputVec.size(); m++)
+            d_elementInputVec[m]->getValuesByGlobalID( dofIndices.size(), &dofIndices[0], &inputArgs[m][0] );
+         d_robinPhysicsModel->getConductance(beta, gamma, inputArgs);
+      }
       for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
       {
         temp = 0;
@@ -178,23 +177,14 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
 
         for (unsigned int l = 0; l < numNodesInCurrElem ; l++)
         {
-          if(d_robinPhysicsModel.get() != NULL)
-          {
-            for(unsigned int m = 0; m < d_elementInputVec.size(); m++)
-            {
-              inputArgs[m].resize(1);
-              inputArgs[m][0] = ( d_elementInputVec[m]->getValueByGlobalID(dofIndices[l]) );
-            }
-            d_robinPhysicsModel->getConductance(d_beta, d_gamma, inputArgs);
-          }
-          phi_val += phi[l][qp] * d_beta[0] * uInternal->getValueByGlobalID(dofIndices[l]);
+          phi_val += phi[l][qp] * beta[l] * uInternal->getValueByGlobalID(dofIndices[l]);
 #ifdef DEBUG_GAP_PRINT
           if (d_iDebugPrintInfoLevel == 100)
           {
-            std::cout << bndGlobalIds[l] << " " << qp << " " << d_beta[0] << " ";
+            std::cout << bndGlobalIds[l] << " " << qp << " " << beta[l] << " ";
             for (unsigned int m = 0; m < d_elementInputVec.size(); m++)
             {
-              std::cout << inputArgs[m][0] << " ";
+              std::cout << inputArgs[m][j] << " ";
             }
             std::cout << "\n";
           }
@@ -217,16 +207,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
           for (unsigned int l = 0; l < numNodesInCurrElem ; l++)
           {
 
-            if(d_robinPhysicsModel.get() != NULL)
-            {
-              for(unsigned int m = 0; m < d_elementInputVec.size(); m++)
-              {
-                inputArgs[m][0] = ( d_elementInputVec[m]->getValueByGlobalID(dofIndices[l]) );
-              }
-              d_robinPhysicsModel->getConductance(d_beta, d_gamma, inputArgs);
-            }
-
-            phi_val += phi[l][qp] * d_gamma[0] * d_variableFlux->getValueByGlobalID(dofIndices[l]);
+            phi_val += phi[l][qp] * gamma[l] * d_variableFlux->getValueByGlobalID(dofIndices[l]);
           }
 
           for (unsigned int j = 0; j < numNodesInCurrElem ; j++)
@@ -274,8 +255,8 @@ boost::shared_ptr<OperatorParameters> RobinVectorCorrection::getJacobianParamete
   if (!d_skipParams)
   {
     tmp_db->putDouble("alpha", d_alpha);
-    tmp_db->putDouble("beta", d_beta2);
-    tmp_db->putDouble("gamma", d_gamma2);
+    tmp_db->putDouble("beta", d_beta);
+    tmp_db->putDouble("gamma", d_gamma);
     tmp_db->putDouble("fConductivity", d_hef);
 
     int numIds = d_boundaryIds.size();

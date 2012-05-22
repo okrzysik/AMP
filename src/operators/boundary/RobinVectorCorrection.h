@@ -76,11 +76,9 @@ namespace Operator {
 
       double d_hef;  //Convective Coefficient
 
-      double d_alpha; 
-      std::vector<double> d_beta;
-      std::vector<double> d_gamma;
-      double d_beta2; 
-      double d_gamma2; 
+      double d_alpha;
+      double d_beta;
+      double d_gamma;
 
       bool d_skipParams; 
 

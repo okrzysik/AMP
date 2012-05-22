@@ -64,12 +64,10 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
       AMP_INSIST( d_alpha != 0.0, "prefactor alpha must be != 0.0" );
       
       AMP_INSIST( (myparams->d_db)->keyExists("beta"), "Missing key: prefactor beta" );
-      d_beta.resize(1);
-      d_beta[0]     = (myparams->d_db)->getDouble("beta");
+      d_beta = (myparams->d_db)->getDouble("beta");
       
       AMP_INSIST( (myparams->d_db)->keyExists("gamma"), "Missing key: total prefactor gamma" );
-      d_gamma.resize(1);
-      d_gamma[0]    = (myparams->d_db)->getDouble("gamma");
+      d_gamma = (myparams->d_db)->getDouble("gamma");
       
       AMP_INSIST( (myparams->d_db)->keyExists("fConductivity"), "Missing key: effective convective coefficient" );
       d_hef   = (myparams->d_db)->getDouble("fConductivity");
@@ -113,7 +111,7 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
   (d_NeumannParams->d_db)->putBool("constant_flux",myparams->d_db->getBoolWithDefault("constant_flux",true));
   d_NeumannParams->d_variableFlux = myparams->d_variableFlux;
   d_NeumannParams->d_robinPhysicsModel = myparams->d_robinPhysicsModel ;
-  (d_NeumannParams->d_db)->putDouble("gamma",d_gamma[0]);
+  (d_NeumannParams->d_db)->putDouble("gamma",d_gamma);
   d_NeumannCorrection->reset(d_NeumannParams);
   
   bool skipMatrixCorrection = (myparams->d_db)->getBoolWithDefault("skip_matrix_correction", false);
@@ -139,7 +137,6 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
 
     unsigned int numIds = d_boundaryIds.size();
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> elementInputVec = myparams->d_elementInputVec;
-    std::vector<std::vector<double> > inputArgs(elementInputVec.size());
     for(unsigned int nid = 0; nid < numIds; nid++)
     {
       AMP::Mesh::MeshIterator bnd1     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
@@ -176,24 +173,24 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
         const std::vector<Real> & JxW = (*d_JxW);
         const std::vector<std::vector<Real> > & phi = (*d_phi);
 
-        double temp;
+        std::vector<std::vector<double> > inputArgs(elementInputVec.size(),std::vector<double>(numNodesInCurrElem));
+        std::vector<double> beta(numNodesInCurrElem,d_beta);
+        std::vector<double> gamma(numNodesInCurrElem,d_gamma);
+        if(d_robinPhysicsModel.get() != NULL) 
+        {
+           for(unsigned int m = 0; m < elementInputVec.size(); m++)
+              elementInputVec[m]->getValuesByGlobalID( d_dofIndices.size(), &d_dofIndices[0], &inputArgs[m][0] );
+           d_robinPhysicsModel->getConductance(beta, gamma, inputArgs);
+        }
 
+        double temp;
         for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
         {
           for (unsigned int j=0; j < numNodesInCurrElem ; j++)
           {
             for (unsigned int i=0; i < numNodesInCurrElem ; i++)
             {
-              if(d_robinPhysicsModel.get() != NULL)
-              {
-                for(unsigned int m = 0; m < elementInputVec.size(); m++)
-                {
-                   inputArgs[m].resize(1);
-                   inputArgs[m][0] = ( elementInputVec[m]->getValueByGlobalID(d_dofIndices[i]) );
-                }
-                d_robinPhysicsModel->getConductance(d_beta, d_gamma, inputArgs);
-              }
-              temp =  d_beta[0] * ( JxW[qp]*phi[j][qp]*phi[i][qp] ) ;
+              temp =  beta[i] * ( JxW[qp]*phi[j][qp]*phi[i][qp] ) ;
               inputMatrix->addValueByGlobalID ( d_dofIndices[j], d_dofIndices[i], temp );
             }//end for i
           }//end for j
