@@ -1,6 +1,6 @@
 //----------------------------------*-C++-*----------------------------------//
 /*!
- * \file   operators/test/testMoabOperator.cc
+ * \file   operators/test/testMoabBasedOperator.cc
  * \brief  This tests the Moab iMesh interface with MoabBasedOperator
  */
 //---------------------------------------------------------------------------//
@@ -315,6 +315,7 @@ void moabInterface(AMP::UnitTest *ut)
     
 #ifdef USE_SILO
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+    siloWriter->registerMesh( mesh );
     siloWriter->registerVector( nodalVec, mesh, AMP::Mesh::Vertex, "Temperatures" );
     siloWriter->writeFile( "Moab_Temp", 0 );
 #endif
@@ -347,5 +348,5 @@ int main(int argc, char *argv[])
 }
 
 //---------------------------------------------------------------------------//
-//                 end of testMoabOperator.cc
+//                 end of testMoabBasedOperator.cc
 //---------------------------------------------------------------------------//

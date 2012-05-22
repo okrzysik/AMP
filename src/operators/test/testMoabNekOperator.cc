@@ -191,6 +191,7 @@ void nekPipeOperator(AMP::UnitTest *ut)
     
 #ifdef USE_SILO
      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+     siloWriter->registerMesh( mesh );
      siloWriter->registerVector( r_gp,   mesh, AMP::Mesh::Volume, "AllGaussPointPressures" );
      siloWriter->registerVector( r_node, mesh, AMP::Mesh::Vertex, "AllNodalPressures" );
      siloWriter->writeFile( "Nek_Pressure", 0 );
