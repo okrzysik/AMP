@@ -202,7 +202,6 @@ void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)
   AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = AMP::LinearAlgebra::createVector( nodalDofMap, inputMultiVariable->getVariable(AMP::Operator::Mechanics::TEMPERATURE) );
   referenceTemperatureVec->setToScalar(300.0);
   volumeOperator->setReferenceTemperature(referenceTemperatureVec);
-  volumeOperator->init();
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // now construct the linear BVP operator for mechanics
   AMP_INSIST( input_db->keyExists("testLinearMechanicsOperator"), "key missing!" );

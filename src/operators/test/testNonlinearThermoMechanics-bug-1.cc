@@ -153,7 +153,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = AMP::LinearAlgebra::createVector( nodalDofMap, temperatureVariable );
   referenceTemperatureVec->setToScalar(300.0);
   mechanicsVolumeOperator->setReferenceTemperature(referenceTemperatureVec);
-  mechanicsVolumeOperator->init();
 
   nonlinearMechanicsOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
 

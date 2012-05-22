@@ -111,8 +111,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
                                                                   getVolumeOperator()))->setReferenceTemperature(refTempVec);
   (boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->
                                                                   getVolumeOperator()))->setVector(AMP::Operator::Mechanics::TEMPERATURE, curTempVec); 
-  (boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->
-                                                                  getVolumeOperator()))->init();
 
   //Create a Linear BVP operator for mechanics
   AMP_INSIST( input_db->keyExists("LinearMechanicsOperator"), "key missing!" );

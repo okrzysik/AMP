@@ -87,7 +87,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 										      "NonlinearMechanicsOperator",
 										      input_db,
 										      mechanicsMaterialModel));
-  //(boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->getVolumeOperator()))->init();
 
   //Create a Linear BVP operator for mechanics
   AMP_INSIST( input_db->keyExists("LinearMechanicsOperator"), "key missing!" );
@@ -153,7 +152,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   mechanicsNonlinearVolumeOperator->setReferenceTemperature(tempVecRef);
   mechanicsNonlinearVolumeOperator->setVector(AMP::Operator::Mechanics::TEMPERATURE, tempVec);
   mechanicsNonlinearVolumeOperator->setVector(AMP::Operator::Mechanics::BURNUP, burnVec);
-  mechanicsNonlinearVolumeOperator->init();
 
   //We need to reset the linear operator before the solve since TrilinosML does
   //the factorization of the matrix during construction and so the matrix must

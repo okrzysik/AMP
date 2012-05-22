@@ -72,8 +72,6 @@ boost::shared_ptr<AMP::Solver::PetscSNESSolver>
                                                                   getVolumeOperator()))->setReferenceTemperature(referenceTemperatureVec);
   (boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinBvpOperator->
                                                                   getVolumeOperator()))->setVector(AMP::Operator::Mechanics::TEMPERATURE, temperatureVec); 
-  (boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinBvpOperator->
-                                                                  getVolumeOperator()))->init();
 
   boost::shared_ptr<AMP::Database> linOpDatabase = input_db->getDatabase("linearMechanicsBVPOperator");
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linBvpOperator =
