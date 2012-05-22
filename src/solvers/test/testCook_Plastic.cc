@@ -102,7 +102,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 														    "nonlinearMechanicsBVPOperator",
 														    input_db,
 														    elementPhysicsModel));
-  (boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinBvpOperator->getVolumeOperator()))->init();
 
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linBvpOperator =
     boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
