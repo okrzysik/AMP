@@ -39,27 +39,6 @@ namespace AMP {
         ~VolumeIntegralOperator() { }
 
         /**
-          This function is called at the beginning of the FE assembly
-          */
-        void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u,
-            boost::shared_ptr<AMP::LinearAlgebra::Vector> &r);
-
-        /**
-          This function is called at the end of the FE assembly
-          */
-        void postAssembly();
-
-        /**
-          This function is called at the beginning of the element computation
-          */
-        void preElementOperation(const AMP::Mesh::MeshElement &);
-
-        /**
-          This function is called at the end of the element computation
-          */
-        void postElementOperation();
-
-        /**
           This is used to update the operator between successive solves with the operator. 
           */
         void reset(const boost::shared_ptr<OperatorParameters>&);
@@ -96,6 +75,28 @@ namespace AMP {
            */
 
       protected :
+
+        /**
+          This function is called at the beginning of the FE assembly
+          */
+        void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u,
+            boost::shared_ptr<AMP::LinearAlgebra::Vector> &r);
+
+        /**
+          This function is called at the end of the FE assembly
+          */
+        void postAssembly();
+
+        /**
+          This function is called at the beginning of the element computation
+          */
+        void preElementOperation(const AMP::Mesh::MeshElement &);
+
+        /**
+          This function is called at the end of the element computation
+          */
+        void postElementOperation();
+
 
         void getNodeDofIndicesForCurrentElement();
 

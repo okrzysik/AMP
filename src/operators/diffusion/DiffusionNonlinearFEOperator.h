@@ -23,14 +23,6 @@ namespace AMP {
 
         ~DiffusionNonlinearFEOperator() {}
 
-        void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, boost::shared_ptr<AMP::LinearAlgebra::Vector> &r);
-
-        void postAssembly();
-
-        void preElementOperation(const AMP::Mesh::MeshElement &);
-
-        void postElementOperation();
-
         void reset(const boost::shared_ptr<OperatorParameters>&);
 
         boost::shared_ptr<OperatorParameters>
@@ -75,6 +67,14 @@ namespace AMP {
         bool isValidInput(AMP::LinearAlgebra::Vector::shared_ptr &u);
 
       protected:
+
+        void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, boost::shared_ptr<AMP::LinearAlgebra::Vector> &r);
+
+        void postAssembly();
+
+        void preElementOperation(const AMP::Mesh::MeshElement &);
+
+        void postElementOperation();
 
         void init(const boost::shared_ptr<DiffusionNonlinearFEOperatorParameters>& params);
 

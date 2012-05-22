@@ -54,33 +54,6 @@ namespace AMP {
         ~MechanicsNonlinearFEOperator() { }
 
         /**
-          This function is called at the beginning of the FE assembly. The output vector, r, is set to 0.
-          The values of the input vector, u, on the nodes shared between two or more processors are made consistent.
-          @param [in] u  input vector
-          @param [out] r output vector
-          */
-        void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r);
-
-        /**
-          This function is called at the end of the FE assembly.
-          The values of the output vector on the nodes shared between two or more processors are made consistent.
-          */
-        void postAssembly();
-
-        /**
-          This function is called at the beginning of the element computation. The part of the
-          input vector that is relevant for the computation in the current element is extracted 
-          and passed to MechanicsNonlinearElement.
-          */
-        void preElementOperation(const AMP::Mesh::MeshElement &);
-
-        /**
-          This function is called at the end of the element computation. The entries of the 
-          element output vector are added to the corresponding entries of the global output vector.
-          */
-        void postElementOperation();
-
-        /**
           This is used to update the operator between successive solves with the operator. 
           */
         void reset(const boost::shared_ptr<OperatorParameters>& );
@@ -90,12 +63,6 @@ namespace AMP {
           */
         boost::shared_ptr<OperatorParameters> 
           getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
-
-        /**
-          This performs a dummy loop over the elements and gauss points so that the mechanics material model classes can 
-          allocate memory and/or initialize their data as required.
-          */
-        void init();
 
         /**
           This function is used to set the reference temperature when using temperature dependent material models.
@@ -151,6 +118,39 @@ namespace AMP {
         boost::shared_ptr<MechanicsMaterialModel> getMaterialModel() { return d_materialModel; }
 
       protected :
+
+        /**
+          This performs a dummy loop over the elements and gauss points so that the mechanics material model classes can 
+          allocate memory and/or initialize their data as required.
+          */
+        void init();
+
+        /**
+          This function is called at the beginning of the FE assembly. The output vector, r, is set to 0.
+          The values of the input vector, u, on the nodes shared between two or more processors are made consistent.
+          @param [in] u  input vector
+          @param [out] r output vector
+          */
+        void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r);
+
+        /**
+          This function is called at the end of the FE assembly.
+          The values of the output vector on the nodes shared between two or more processors are made consistent.
+          */
+        void postAssembly();
+
+        /**
+          This function is called at the beginning of the element computation. The part of the
+          input vector that is relevant for the computation in the current element is extracted 
+          and passed to MechanicsNonlinearElement.
+          */
+        void preElementOperation(const AMP::Mesh::MeshElement &);
+
+        /**
+          This function is called at the end of the element computation. The entries of the 
+          element output vector are added to the corresponding entries of the global output vector.
+          */
+        void postElementOperation();
 
         AMP::LinearAlgebra::Vector::shared_ptr mySubsetVector(AMP::LinearAlgebra::Vector::shared_ptr vec, 
             AMP::LinearAlgebra::Variable::shared_ptr var) {
