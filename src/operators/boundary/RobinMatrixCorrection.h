@@ -7,6 +7,8 @@
 #include "NeumannVectorCorrectionParameters.h"
 #include "RobinMatrixCorrectionParameters.h"
 
+#include "discretization/createLibmeshElements.h"
+
 /* Libmesh files */
 #include "fe_type.h"
 #include "fe_base.h"
@@ -79,6 +81,8 @@ namespace Operator {
     
   protected :
     
+    Discretization::createLibmeshElements libmeshElements;
+
     std::vector<short int> d_boundaryIds;
     
     std::vector<std::vector<unsigned int> >d_dofIds;
@@ -119,10 +123,6 @@ namespace Operator {
     AMP::LinearAlgebra::Vector::shared_ptr d_Frozen;
     
     boost::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
-
-    void createCurrentLibMeshElement();
-
-    void destroyCurrentLibMeshElement();
 
     void getDofIndicesForCurrentElement();
 

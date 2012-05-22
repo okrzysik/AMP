@@ -148,7 +148,8 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
         dofIndices[i] = dofs[0];
       }
 
-      createCurrentLibMeshElement();
+      // Get the libmesh element
+      d_currElemPtr = libmeshElements.getElement( bnd1->globalID() );
 
       getDofIndicesForCurrentElement();
 
@@ -231,8 +232,6 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
           }//end for j
         }//end for qp
       }//coupled
-
-      destroyCurrentLibMeshElement();
 
     }//end for bnd
   }//end for nid

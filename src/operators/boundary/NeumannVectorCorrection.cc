@@ -94,6 +94,14 @@ namespace Operator {
       if(myparams->d_robinPhysicsModel) {
         d_robinPhysicsModel = myparams->d_robinPhysicsModel;
       }
+
+      // Create the libmesh elements
+      AMP::Mesh::MeshIterator iterator;
+      for(unsigned int j = 0; j < d_boundaryIds.size() ; j++) {
+        AMP::Mesh::MeshIterator iterator2 = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[j], 0 );
+        iterator = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, iterator, iterator2 );
+      }
+      libmeshElements.reinit( iterator );
     }
 
     void
@@ -160,7 +168,8 @@ namespace Operator {
                    dofManager->getDOFs(d_currNodes[i].globalID(), dofIndices[i]);
                 }
 
-                createCurrentLibMeshElement();
+                // Get the libmesh element
+                d_currElemPtr = libmeshElements.getElement( bnd->globalID() );
 
                 d_fe->attach_quadrature_rule( d_qrule.get() );
 
@@ -207,7 +216,6 @@ namespace Operator {
 
                 rInternal->addValuesByGlobalID((int)dofs.size() , (size_t *)&(dofs[0]), &(flux[0]));
 
-                destroyCurrentLibMeshElement();
               }//end for bnd
 
             }//end for k
@@ -264,23 +272,6 @@ namespace Operator {
 
         return outParams;
       }
-
-    void NeumannVectorCorrection :: createCurrentLibMeshElement() {
-      d_currElemPtr = new ::Quad4;
-      for(size_t j = 0; j < d_currNodes.size(); j++) {
-        std::vector<double> pt = d_currNodes[j].coord();
-        d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
-      }//end for j
-    }
-
-    void NeumannVectorCorrection :: destroyCurrentLibMeshElement() {
-      for(size_t j = 0; j < d_currElemPtr->n_nodes(); j++) {
-        delete (d_currElemPtr->get_node(j));
-        d_currElemPtr->set_node(j) = NULL;
-      }//end for j
-      delete d_currElemPtr;
-      d_currElemPtr = NULL;
-    }
 
     void NeumannVectorCorrection :: getDofIndicesForCurrentElement() {
     }

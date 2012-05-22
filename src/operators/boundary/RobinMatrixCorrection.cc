@@ -122,6 +122,14 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
   bool skipMatrixCorrection = (myparams->d_db)->getBoolWithDefault("skip_matrix_correction", false);
   if(!skipMatrixCorrection)
   {
+    // Create the libmesh elements
+    AMP::Mesh::MeshIterator iterator;
+    for(unsigned int j = 0; j < d_boundaryIds.size() ; j++) {
+       AMP::Mesh::MeshIterator iterator2 = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[j], 0 );
+       iterator = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, iterator, iterator2 );
+    }
+    libmeshElements.reinit( iterator );
+
     AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = myparams->d_inputMatrix;
     AMP_INSIST( ((inputMatrix.get()) != NULL), "NULL matrix" );
 
@@ -155,7 +163,8 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
 
         unsigned int numNodesInCurrElem = d_currNodes.size();
 
-        createCurrentLibMeshElement();
+        // Get the libmesh element
+        d_currElemPtr = libmeshElements.getElement( bnd1->globalID() );
 
         getDofIndicesForCurrentElement();
 
@@ -183,8 +192,6 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
             }//end for i
           }//end for j
         }//end for qp
-        
-        destroyCurrentLibMeshElement();
 
       }//end for bnd
 
@@ -193,25 +200,9 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
     inputMatrix->makeConsistent();
 
   }//skip matrix
-  
+
 }
 
-void RobinMatrixCorrection :: createCurrentLibMeshElement() {
-  d_currElemPtr = new ::Quad4;
-  for(size_t j = 0; j < d_currNodes.size(); j++) {
-    std::vector<double> pt = d_currNodes[j].coord();
-    d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
-  }//end for j
-}
-
-void RobinMatrixCorrection :: destroyCurrentLibMeshElement() {
-  for(size_t j = 0; j < d_currElemPtr->n_nodes(); j++) {
-    delete (d_currElemPtr->get_node(j));
-    d_currElemPtr->set_node(j) = NULL;
-  }//end for j
-  delete d_currElemPtr;
-  d_currElemPtr = NULL;
-}
 
 void RobinMatrixCorrection :: getDofIndicesForCurrentElement() {
   d_dofIndices.resize(d_currNodes.size());
