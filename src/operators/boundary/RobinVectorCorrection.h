@@ -77,9 +77,13 @@ namespace Operator {
       double d_hef;  //Convective Coefficient
 
       double d_alpha; 
+      std::vector<double> d_beta;
+      std::vector<double> d_gamma;
+
       bool d_skipParams; 
 
       std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_elementInputVec;
+
 
     private :
 

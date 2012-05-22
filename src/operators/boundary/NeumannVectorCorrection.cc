@@ -109,8 +109,7 @@ namespace Operator {
       {
 
         AMP::LinearAlgebra::Vector::shared_ptr myRhs = subsetInputVector( rhsCorrection );
-        d_gamma.resize(1);
-        d_gamma[0] = 1.0;
+        std::vector<double> gamma(1,1.0);
 
         if(!d_isConstantFlux)
         {
@@ -119,7 +118,7 @@ namespace Operator {
 
         if((d_params->d_db)->keyExists("gamma"))
         {
-          d_gamma[0] = (d_params->d_db)->getDouble("gamma");
+          gamma[0] = (d_params->d_db)->getDouble("gamma");
         }
 
         AMP::LinearAlgebra::Vector::shared_ptr rInternal = myRhs->cloneVector();
@@ -205,10 +204,10 @@ namespace Operator {
 
                     if(d_robinPhysicsModel)
                     {
-                      d_robinPhysicsModel->getConductance(d_gamma, d_gamma, temp); 
+                      d_robinPhysicsModel->getConductance(gamma, gamma, temp); 
                     }
 
-                    flux[i] +=  (d_gamma[0])*djxw[qp]*phi[i][qp]*temp[0][0];
+                    flux[i] +=  (gamma[0])*djxw[qp]*phi[i][qp]*temp[0][0];
 
                   }//end for qp
 

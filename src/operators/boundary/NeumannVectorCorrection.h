@@ -133,10 +133,6 @@ namespace Operator {
 
       boost::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 
-      std::vector<double> d_beta;
-
-      std::vector<double> d_gamma;
-
       std::string         d_qruleOrderName; 
 
       libMeshEnums::Order d_feTypeOrder;
