@@ -104,6 +104,8 @@ namespace AMP {
 
         std::vector<bool> d_isFrozen;
 
+        std::vector<AMP::Mesh::MeshElement> d_currNodes; 
+
         bool d_coupledFormulation;
 
         boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
