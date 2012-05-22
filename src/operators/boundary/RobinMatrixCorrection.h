@@ -7,6 +7,8 @@
 #include "NeumannVectorCorrectionParameters.h"
 #include "RobinMatrixCorrectionParameters.h"
 
+#include "discretization/createLibmeshElements.h"
+
 /* Libmesh files */
 #include "fe_type.h"
 #include "fe_base.h"
@@ -79,6 +81,8 @@ namespace Operator {
     
   protected :
     
+    Discretization::createLibmeshElements libmeshElements;
+
     std::vector<short int> d_boundaryIds;
     
     std::vector<std::vector<unsigned int> >d_dofIds;
@@ -91,9 +95,9 @@ namespace Operator {
     
     double d_alpha;  // pre-factor solid flux
     
-    std::vector<double> d_beta;
+    double d_beta;
     
-    std::vector<double> d_gamma;
+    double d_gamma;
     
     const std::vector<Real> *d_JxW;
     
@@ -119,10 +123,6 @@ namespace Operator {
     AMP::LinearAlgebra::Vector::shared_ptr d_Frozen;
     
     boost::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
-
-    void createCurrentLibMeshElement();
-
-    void destroyCurrentLibMeshElement();
 
     void getDofIndicesForCurrentElement();
 

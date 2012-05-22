@@ -185,10 +185,11 @@ namespace AMP {
       AMP::Mesh::MeshIterator  el     = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
       AMP::Mesh::MeshIterator  end_el = el.end();
       d_srcNonlinElem->setElementFlags(d_isInputType);
-      for( ; el != end_el; ++el) {
+      for(d_currElemIdx = 0; el != end_el; ++el, ++d_currElemIdx) {
         d_currNodes = el->getElements(AMP::Mesh::Vertex);
         d_srcNonlinElem->initializeForCurrentElement(d_currElemPtrs[d_currElemIdx], d_sourcePhysicsModel);
       }//end for el
+      d_currElemIdx = static_cast<unsigned int>(-1);
     }
 
     void VolumeIntegralOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)

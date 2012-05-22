@@ -64,12 +64,10 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
       AMP_INSIST( d_alpha != 0.0, "prefactor alpha must be != 0.0" );
       
       AMP_INSIST( (myparams->d_db)->keyExists("beta"), "Missing key: prefactor beta" );
-      d_beta.resize(1);
-      d_beta[0]     = (myparams->d_db)->getDouble("beta");
+      d_beta = (myparams->d_db)->getDouble("beta");
       
       AMP_INSIST( (myparams->d_db)->keyExists("gamma"), "Missing key: total prefactor gamma" );
-      d_gamma.resize(1);
-      d_gamma[0]    = (myparams->d_db)->getDouble("gamma");
+      d_gamma = (myparams->d_db)->getDouble("gamma");
       
       AMP_INSIST( (myparams->d_db)->keyExists("fConductivity"), "Missing key: effective convective coefficient" );
       d_hef   = (myparams->d_db)->getDouble("fConductivity");
@@ -106,22 +104,27 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
           d_robinValues[j][i] = (myparams->d_db)->getDouble(key);
         }
     }
-    }
+  }
   
-  if(myparams->d_db->isDatabase("RobinPhysicsModel"))
-    {
-      d_robinPhysicsModel = myparams->d_robinPhysicsModel;
-    }
+  d_robinPhysicsModel = myparams->d_robinPhysicsModel;
   
   (d_NeumannParams->d_db)->putBool("constant_flux",myparams->d_db->getBoolWithDefault("constant_flux",true));
   d_NeumannParams->d_variableFlux = myparams->d_variableFlux;
   d_NeumannParams->d_robinPhysicsModel = myparams->d_robinPhysicsModel ;
-  (d_NeumannParams->d_db)->putDouble("gamma",d_gamma[0]);
+  (d_NeumannParams->d_db)->putDouble("gamma",d_gamma);
   d_NeumannCorrection->reset(d_NeumannParams);
   
   bool skipMatrixCorrection = (myparams->d_db)->getBoolWithDefault("skip_matrix_correction", false);
   if(!skipMatrixCorrection)
   {
+    // Create the libmesh elements
+    AMP::Mesh::MeshIterator iterator;
+    for(unsigned int j = 0; j < d_boundaryIds.size() ; j++) {
+       AMP::Mesh::MeshIterator iterator2 = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[j], 0 );
+       iterator = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, iterator, iterator2 );
+    }
+    libmeshElements.reinit( iterator );
+
     AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = myparams->d_inputMatrix;
     AMP_INSIST( ((inputMatrix.get()) != NULL), "NULL matrix" );
 
@@ -133,7 +136,7 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
     }
 
     unsigned int numIds = d_boundaryIds.size();
-
+    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> elementInputVec = myparams->d_elementInputVec;
     for(unsigned int nid = 0; nid < numIds; nid++)
     {
       AMP::Mesh::MeshIterator bnd1     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
@@ -155,7 +158,8 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
 
         unsigned int numNodesInCurrElem = d_currNodes.size();
 
-        createCurrentLibMeshElement();
+        // Get the libmesh element
+        d_currElemPtr = libmeshElements.getElement( bnd1->globalID() );
 
         getDofIndicesForCurrentElement();
 
@@ -169,22 +173,28 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
         const std::vector<Real> & JxW = (*d_JxW);
         const std::vector<std::vector<Real> > & phi = (*d_phi);
 
-        double temp;
+        std::vector<std::vector<double> > inputArgs(elementInputVec.size(),std::vector<double>(numNodesInCurrElem));
+        std::vector<double> beta(numNodesInCurrElem,d_beta);
+        std::vector<double> gamma(numNodesInCurrElem,d_gamma);
+        if(d_robinPhysicsModel.get() != NULL) 
+        {
+           for(unsigned int m = 0; m < elementInputVec.size(); m++)
+              elementInputVec[m]->getValuesByGlobalID( d_dofIndices.size(), &d_dofIndices[0], &inputArgs[m][0] );
+           d_robinPhysicsModel->getConductance(beta, gamma, inputArgs);
+        }
 
+        double temp;
         for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
         {
-          std::vector<std::vector<double> > inputArgs(1) ;
           for (unsigned int j=0; j < numNodesInCurrElem ; j++)
           {
             for (unsigned int i=0; i < numNodesInCurrElem ; i++)
             {
-              temp =  d_beta[0] * ( JxW[qp]*phi[j][qp]*phi[i][qp] ) ;
+              temp =  beta[i] * ( JxW[qp]*phi[j][qp]*phi[i][qp] ) ;
               inputMatrix->addValueByGlobalID ( d_dofIndices[j], d_dofIndices[i], temp );
             }//end for i
           }//end for j
         }//end for qp
-        
-        destroyCurrentLibMeshElement();
 
       }//end for bnd
 
@@ -193,25 +203,9 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
     inputMatrix->makeConsistent();
 
   }//skip matrix
-  
+
 }
 
-void RobinMatrixCorrection :: createCurrentLibMeshElement() {
-  d_currElemPtr = new ::Quad4;
-  for(size_t j = 0; j < d_currNodes.size(); j++) {
-    std::vector<double> pt = d_currNodes[j].coord();
-    d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
-  }//end for j
-}
-
-void RobinMatrixCorrection :: destroyCurrentLibMeshElement() {
-  for(size_t j = 0; j < d_currElemPtr->n_nodes(); j++) {
-    delete (d_currElemPtr->get_node(j));
-    d_currElemPtr->set_node(j) = NULL;
-  }//end for j
-  delete d_currElemPtr;
-  d_currElemPtr = NULL;
-}
 
 void RobinMatrixCorrection :: getDofIndicesForCurrentElement() {
   d_dofIndices.resize(d_currNodes.size());

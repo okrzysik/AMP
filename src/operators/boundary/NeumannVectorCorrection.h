@@ -6,6 +6,8 @@
 #include "NeumannVectorCorrectionParameters.h"
 #include "RobinPhysicsModel.h"
 
+#include "discretization/createLibmeshElements.h"
+
 /* Libmesh files */
 #include "fe_type.h"
 #include "fe_base.h"
@@ -94,6 +96,8 @@ namespace Operator {
 
     protected :
 
+      Discretization::createLibmeshElements libmeshElements;
+
       std::vector<short int> d_boundaryIds;
 
       std::vector<std::vector<double> > d_neumannValues;
@@ -129,20 +133,12 @@ namespace Operator {
 
       boost::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 
-      std::vector<double> d_beta;
-
-      std::vector<double> d_gamma;
-
       std::string         d_qruleOrderName; 
 
       libMeshEnums::Order d_feTypeOrder;
       libMeshEnums::FEFamily d_feFamily;
       libMeshEnums::QuadratureType d_qruleType;
       libMeshEnums::Order d_qruleOrder;
-
-      void createCurrentLibMeshElement();
-
-      void destroyCurrentLibMeshElement();
 
       void getDofIndicesForCurrentElement();
 

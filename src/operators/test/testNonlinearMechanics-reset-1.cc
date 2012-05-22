@@ -94,7 +94,6 @@ void myTest(AMP::UnitTest *ut)
     mechNonlinOpParams->d_Mesh = meshAdapter;
     mechNonlinOpParams->d_dofMap[AMP::Operator::Mechanics::DISPLACEMENT] = dofMap;
     boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechNonlinOp (new AMP::Operator::MechanicsNonlinearFEOperator( mechNonlinOpParams ));
-    mechNonlinOp->init();
 
     AMP::LinearAlgebra::Variable::shared_ptr var = mechNonlinOp->getOutputVariable();
 
