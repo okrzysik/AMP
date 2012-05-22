@@ -303,7 +303,6 @@ namespace AMP {
       AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume,0);
       AMP::Mesh::MeshIterator end_el = el.end();
 
-      d_currElemIdx = static_cast<unsigned int>(-1);
       for(d_currElemIdx = 0; el != end_el; ++el, ++d_currElemIdx) {
         d_currNodes = el->getElements(AMP::Mesh::Vertex);
         d_diffNonlinElem->initializeForCurrentElement(d_currElemPtrs[d_currElemIdx], d_transportModel);

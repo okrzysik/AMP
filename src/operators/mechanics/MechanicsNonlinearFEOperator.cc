@@ -264,7 +264,7 @@ namespace AMP {
         d_mechNULElem->preNonlinearElementInit();
       }
 
-      for( ; el != end_el; ++el) {
+      for(d_currElemIdx = 0; el != end_el; ++el, ++d_currElemIdx) {
         d_currNodes = el->getElements(AMP::Mesh::Vertex);
         unsigned int numNodesInCurrElem = d_currNodes.size();
 
@@ -308,6 +308,7 @@ namespace AMP {
         }
 
       }//end for el
+      d_currElemIdx = static_cast<unsigned int>(-1);
 
       if(d_useUpdatedLagrangian) {
         d_refXYZ->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
@@ -364,13 +365,14 @@ namespace AMP {
 
         d_materialModel->preNonlinearReset();
 
-        for( ; el != end_el; ++el) {
+        for(d_currElemIdx = 0; el != end_el; ++el, ++d_currElemIdx) {
           if(d_useUpdatedLagrangian) {
             updateMaterialForUpdatedLagrangianElement<MechanicsNonlinearUpdatedLagrangianElement::RESET>(*el);
           } else {
             updateMaterialForElement<MechanicsNonlinearElement::RESET>(*el);
           }
         }//end for el
+        d_currElemIdx = static_cast<unsigned int>(-1);
 
         d_materialModel->postNonlinearReset();
       }
@@ -464,13 +466,14 @@ namespace AMP {
           AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
           AMP::Mesh::MeshIterator end_el = el.end();
 
-          for( ; el != end_el; ++el) {
+          for(d_currElemIdx = 0; el != end_el; ++el, ++d_currElemIdx) {
             if(d_useUpdatedLagrangian) {
               updateMaterialForUpdatedLagrangianElement<MechanicsNonlinearUpdatedLagrangianElement::JACOBIAN>(*el);
             } else {
               updateMaterialForElement<MechanicsNonlinearElement::JACOBIAN>(*el);
             }
           }//end for el
+          d_currElemIdx = static_cast<unsigned int>(-1);
 
           d_materialModel->postNonlinearJacobian();
         }
@@ -527,7 +530,7 @@ namespace AMP {
 
       d_materialModel->preNonlinearAssembly();
 
-      for( ; el != end_el; ++el) {
+      for(d_currElemIdx = 0; el != end_el; ++el, ++d_currElemIdx) {
         d_currNodes = el->getElements(AMP::Mesh::Vertex);
         unsigned int numNodesInCurrElem = d_currNodes.size();
 
@@ -585,8 +588,8 @@ namespace AMP {
         d_mechNonlinElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx], d_materialModel );
 
         d_mechNonlinElem->printStressAndStrain(fp, elementInputVectors);
-
       }//end for el
+      d_currElemIdx = static_cast<unsigned int>(-1);
 
       d_materialModel->postNonlinearAssembly();
 
