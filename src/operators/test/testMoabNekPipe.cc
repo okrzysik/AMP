@@ -161,7 +161,11 @@ void nekPipe(AMP::UnitTest *ut)
 
     // Input coords to coupler
     AMP::pout << "Locating points" << std::endl;
-    moabError = moabCoupler.locate_points( &myCoords[0], numCoords );
+    double relTol=1.0e-10, absTol=1.0e-10;
+    moabError = moabCoupler.locate_points( &myCoords[0], 
+                                            numCoords, 
+                                            relTol,
+                                            absTol );
 
     AMP::pout << "We've located the points, now interpolating" << std::endl;
     // This Nek problem doesn't actually do heat transfer so we look for 
