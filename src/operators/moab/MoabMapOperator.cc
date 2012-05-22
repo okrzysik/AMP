@@ -115,7 +115,9 @@ void MoabMapOperator::apply( const SP_Vector &f,
     // Gives coordinates to Coupler
     unsigned int numCoords = allCoords.size() / 3;
     AMP_ASSERT( numCoords == r->getLocalSize() );
-    d_coupler->locate_points( &allCoords[0], numCoords );
+    double relTol=1.0e-10, absTol=1.0e-10;
+    d_coupler->locate_points( &allCoords[0], numCoords,
+                               relTol,       absTol );
 
     // Interpolate
     Vec_Dbl outputVar(numCoords,0.0);
@@ -172,7 +174,7 @@ void MoabMapOperator::apply( const SP_Vector &f,
 //---------------------------------------------------------------------------//
 void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &xyz )
 {
-    AMP_INSIST(mesh,"Must have Mesh Adapter"); 
+    AMP_INSIST(mesh,"Must have a mesh"); 
     AMP_INSIST(d_interpType==GAUSS_POINTS,"Wrong interpolation type");
 
     // Create Gauss point DOF manager
@@ -192,6 +194,9 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &x
     SP_Variable gpVariable( new AMP::LinearAlgebra::Variable( "coords" ) );
 
     // Convert from distance in m (AMP) to cm (Moab)
+    // This should probably be specified on an input database
+    //  rather than hard-coded here because I would guess that 
+    //  Moab meshes aren't all going to be in cm.
     double m_to_cm = 100.0;
 
     // Build Volume Integral Operator
