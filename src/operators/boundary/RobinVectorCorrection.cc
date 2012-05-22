@@ -39,6 +39,9 @@ void RobinVectorCorrection::reset(const boost::shared_ptr<OperatorParameters>& p
   AMP_INSIST( (params->d_db)->keyExists("gamma"), "Missing key: total prefactor gamma" );
   d_gamma.resize(1);
   d_gamma[0] = (params->d_db)->getDouble("gamma");
+
+  d_beta2 = d_beta[0];
+  d_gamma2 = d_gamma[0];
   
 }
   
@@ -52,6 +55,9 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   PROFILE_START("apply");
   AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
   AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
+
+  d_beta[0] = d_beta2;
+  d_gamma[0] = d_gamma2;
 
   AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetInputVector(r);
   AMP::LinearAlgebra::Vector::shared_ptr uInternal = this->subsetInputVector(u);
@@ -67,9 +73,8 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
     numVar = variableNames.size();
   }
 
-  std::vector<AMP::LinearAlgebra::Vector::shared_ptr> elementInputVec;
-  elementInputVec.resize( numVar + 1);
-  elementInputVec[0] = d_variableFlux;
+  d_elementInputVec.resize( numVar + 1);
+  d_elementInputVec[0] = d_variableFlux;
 
   if(d_robinPhysicsModel.get() != NULL)
   {
@@ -81,19 +86,19 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
       {
         if( d_Frozen->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview ) != NULL )
         {
-          elementInputVec[i+1] = d_Frozen->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
+          d_elementInputVec[i+1] = d_Frozen->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
         }
         else
         {
-          elementInputVec[i+1] = uInternal->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
+          d_elementInputVec[i+1] = uInternal->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
         }
       }
       else
       {
-        elementInputVec[i+1] = uInternal->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
+        d_elementInputVec[i+1] = uInternal->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
       }
-      AMP_INSIST ( elementInputVec[i+1] , "Did not find vector" );
-      (elementInputVec[i+1])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+      AMP_INSIST ( d_elementInputVec[i+1] , "Did not find vector" );
+      (d_elementInputVec[i+1])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     }
 
     //#define DEBUG_GAP_PRINT
@@ -108,8 +113,8 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
 
   AMP::Discretization::DOFManager::shared_ptr dofManager = rInternal->getDOFManager();
   if(d_robinPhysicsModel.get() != NULL) {
-    for(unsigned int m = 0; m < elementInputVec.size(); m++)
-      AMP_ASSERT(*dofManager==*(elementInputVec[m]->getDOFManager()));
+    for(unsigned int m = 0; m < d_elementInputVec.size(); m++)
+      AMP_ASSERT(*dofManager==*(d_elementInputVec[m]->getDOFManager()));
   }
   AMP_ASSERT(*dofManager==*(uInternal->getDOFManager()));
   AMP_ASSERT(*dofManager==*(rInternal->getDOFManager()));
@@ -164,7 +169,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
       const std::vector<std::vector<Real> > & phi = (*d_phi);
 
       double temp;
-      std::vector<std::vector<double> > inputArgs(elementInputVec.size()) ;
+      std::vector<std::vector<double> > inputArgs(d_elementInputVec.size()) ;
 
       for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
       {
@@ -175,10 +180,10 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
         {
           if(d_robinPhysicsModel.get() != NULL)
           {
-            for(unsigned int m = 0; m < elementInputVec.size(); m++)
+            for(unsigned int m = 0; m < d_elementInputVec.size(); m++)
             {
               inputArgs[m].resize(1);
-              inputArgs[m][0] = ( elementInputVec[m]->getValueByGlobalID(dofIndices[l]) );
+              inputArgs[m][0] = ( d_elementInputVec[m]->getValueByGlobalID(dofIndices[l]) );
             }
             d_robinPhysicsModel->getConductance(d_beta, d_gamma, inputArgs);
           }
@@ -187,7 +192,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
           if (d_iDebugPrintInfoLevel == 100)
           {
             std::cout << bndGlobalIds[l] << " " << qp << " " << d_beta[0] << " ";
-            for (unsigned int m = 0; m < elementInputVec.size(); m++)
+            for (unsigned int m = 0; m < d_elementInputVec.size(); m++)
             {
               std::cout << inputArgs[m][0] << " ";
             }
@@ -214,9 +219,9 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
 
             if(d_robinPhysicsModel.get() != NULL)
             {
-              for(unsigned int m = 0; m < elementInputVec.size(); m++)
+              for(unsigned int m = 0; m < d_elementInputVec.size(); m++)
               {
-                inputArgs[m][0] = ( elementInputVec[m]->getValueByGlobalID(dofIndices[l]) );
+                inputArgs[m][0] = ( d_elementInputVec[m]->getValueByGlobalID(dofIndices[l]) );
               }
               d_robinPhysicsModel->getConductance(d_beta, d_gamma, inputArgs);
             }
@@ -269,8 +274,8 @@ boost::shared_ptr<OperatorParameters> RobinVectorCorrection::getJacobianParamete
   if (!d_skipParams)
   {
     tmp_db->putDouble("alpha", d_alpha);
-    tmp_db->putDouble("beta", d_beta[0]);
-    tmp_db->putDouble("gamma", d_gamma[0]);
+    tmp_db->putDouble("beta", d_beta2);
+    tmp_db->putDouble("gamma", d_gamma2);
     tmp_db->putDouble("fConductivity", d_hef);
 
     int numIds = d_boundaryIds.size();

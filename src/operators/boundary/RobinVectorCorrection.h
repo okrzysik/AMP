@@ -79,6 +79,8 @@ namespace Operator {
       double d_alpha; 
       std::vector<double> d_beta;
       std::vector<double> d_gamma;
+      double d_beta2; 
+      double d_gamma2; 
 
       bool d_skipParams; 
 

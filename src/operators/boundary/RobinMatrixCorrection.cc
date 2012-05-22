@@ -106,12 +106,9 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
           d_robinValues[j][i] = (myparams->d_db)->getDouble(key);
         }
     }
-    }
+  }
   
-  if(myparams->d_db->isDatabase("RobinPhysicsModel"))
-    {
-      d_robinPhysicsModel = myparams->d_robinPhysicsModel;
-    }
+  d_robinPhysicsModel = myparams->d_robinPhysicsModel;
   
   (d_NeumannParams->d_db)->putBool("constant_flux",myparams->d_db->getBoolWithDefault("constant_flux",true));
   d_NeumannParams->d_variableFlux = myparams->d_variableFlux;
@@ -141,7 +138,8 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
     }
 
     unsigned int numIds = d_boundaryIds.size();
-
+    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> elementInputVec = myparams->d_elementInputVec;
+    std::vector<std::vector<double> > inputArgs(elementInputVec.size());
     for(unsigned int nid = 0; nid < numIds; nid++)
     {
       AMP::Mesh::MeshIterator bnd1     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
@@ -182,11 +180,19 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
 
         for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
         {
-          std::vector<std::vector<double> > inputArgs(1) ;
           for (unsigned int j=0; j < numNodesInCurrElem ; j++)
           {
             for (unsigned int i=0; i < numNodesInCurrElem ; i++)
             {
+              if(d_robinPhysicsModel.get() != NULL)
+              {
+                for(unsigned int m = 0; m < elementInputVec.size(); m++)
+                {
+                   inputArgs[m].resize(1);
+                   inputArgs[m][0] = ( elementInputVec[m]->getValueByGlobalID(d_dofIndices[i]) );
+                }
+                d_robinPhysicsModel->getConductance(d_beta, d_gamma, inputArgs);
+              }
               temp =  d_beta[0] * ( JxW[qp]*phi[j][qp]*phi[i][qp] ) ;
               inputMatrix->addValueByGlobalID ( d_dofIndices[j], d_dofIndices[i], temp );
             }//end for i
