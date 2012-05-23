@@ -63,6 +63,7 @@ Mechanics_Linear_Assembly {
     reset_reuses_matrix = TRUE
     InputVariable = "disp"
     OutputVariable = "disp"
+    isAttachedToNonlinearOperator = TRUE 
 }
 
 Displacement_Boundary {

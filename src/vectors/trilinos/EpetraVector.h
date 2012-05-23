@@ -3,7 +3,6 @@
 
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
-#include <Epetra_MpiComm.h>
 #include "vectors/Vector.h"
 
 namespace AMP {

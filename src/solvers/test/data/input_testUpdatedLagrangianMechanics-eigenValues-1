@@ -102,6 +102,7 @@ MechanicsLinearFEOperator2 {
     USE_UPDATED_LAGRANGIAN = TRUE
     InputVariable = "displacement"
     OutputVariable = "displacement"
+    isAttachedToNonlinearOperator = TRUE
 
     MechanicsElement {
       name="MechanicsLinearUpdatedLagrangianElement"
