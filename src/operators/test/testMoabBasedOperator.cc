@@ -200,7 +200,7 @@ void moabInterface(AMP::UnitTest *ut)
 
     // Create DOF manager
     size_t DOFsPerNode = 1;
-    int nodalGhostWidth = 0;
+    int nodalGhostWidth = 1;
     bool split = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(mesh, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
     AMP::LinearAlgebra::Variable::shared_ptr nodalVar( new AMP::LinearAlgebra::Variable("nodalPressure") );
