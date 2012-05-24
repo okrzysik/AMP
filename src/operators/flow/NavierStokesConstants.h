@@ -7,9 +7,9 @@ namespace Operator {
   namespace NavierStokes {
     const unsigned int VELOCITY = 0; 
     const unsigned int PRESSURE = 1; 
-    const unsigned int TEMPERATURE = 2; 
-    const unsigned int PRINCIPALSTRESS = 3; 
-    const unsigned int SHEARSTRESS = 4; 
+    const unsigned int PRINCIPALSTRESS = 2; 
+    const unsigned int SHEARSTRESS = 3; 
+    const unsigned int TEMPERATURE = 4; 
     const unsigned int TOTAL_NUMBER_OF_VARIABLES = 5;
   }
 }

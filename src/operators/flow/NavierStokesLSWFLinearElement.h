@@ -20,17 +20,13 @@ namespace Operator {
       NavierStokesLSWFLinearElement(const boost::shared_ptr<ElementOperationParameters>& params)
         : FlowElement(params) {
 
-          d_JxW = &(d_fe[0]->get_JxW());
+          d_JxW = &(d_fe->get_JxW());
 
-          d_u_dphi = &(d_fe[0]->get_dphi());
+          d_dphi = &(d_fe->get_dphi());
 
-          d_u_phi = &(d_fe[0]->get_phi());
+          d_phi = &(d_fe->get_phi());
 
-          d_p_dphi = &(d_fe[1]->get_dphi());
-
-          d_p_phi = &(d_fe[1]->get_phi());
-
-          d_xyz = &(d_fe[0]->get_xyz());
+          d_xyz = &(d_fe->get_xyz());
 
         }
 
@@ -41,7 +37,7 @@ namespace Operator {
         d_elementStiffnessMatrix = &(elementStiffnessMatrix);
       }
 
-      void setElementVectors( const std::vector<std::vector<double> > & elementInputVectors ) 
+      void setElementVectors( const std::vector<double> & elementInputVectors ) 
       {
         d_elementInputVectors = elementInputVectors;
       }
@@ -55,19 +51,17 @@ namespace Operator {
 
       double d_fmu;
 
+      double d_Re;
+
       const std::vector<Real> *d_JxW; 
 
-      const std::vector<std::vector<RealGradient> > *d_u_dphi; 
+      const std::vector<std::vector<RealGradient> > *d_dphi; 
 
-      const std::vector<std::vector<Real> > *d_u_phi; 
-
-      const std::vector<std::vector<RealGradient> > *d_p_dphi; 
-
-      const std::vector<std::vector<Real> > *d_p_phi; 
+      const std::vector<std::vector<Real> > *d_phi; 
 
       const std::vector<Point> *d_xyz; 
 
-      std::vector<std::vector<double> > d_elementInputVectors; 
+      std::vector<double> d_elementInputVectors; 
       
       std::vector<std::vector<double> > *d_elementStiffnessMatrix;
 

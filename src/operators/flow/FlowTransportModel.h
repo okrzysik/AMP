@@ -30,9 +30,9 @@ namespace Operator {
             d_coolant = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(matname);
           }
           else{
-            d_density = (params->d_db)->getDoubleWithDefault("DENSITY",1000);
-            d_fmu     = (params->d_db)->getDoubleWithDefault("VISCOSITY",8.9e-7);
-            d_Re      = (params->d_db)->getDoubleWithDefault("ReynoldsNumber",100.0);
+            d_density = (params->d_db)->getDoubleWithDefault("DENSITY",1);
+            d_fmu     = (params->d_db)->getDoubleWithDefault("VISCOSITY",1.0);
+            d_Re      = (params->d_db)->getDoubleWithDefault("ReynoldsNumber",1.0);
           }
 
         }

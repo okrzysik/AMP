@@ -37,15 +37,15 @@ namespace Operator {
 
     protected :
 
-      std::vector<boost::shared_ptr < ::FEType > > d_feType; /**< Type of polynomial used for the
+      boost::shared_ptr < ::FEType > d_feType; /**< Type of polynomial used for the
                                                                finite element shape functions. This includes
                                                                both the polynomial order: 
                                                                First order/Second order etc. and polynomial family:
                                                                Lagrange/Hierarchic/Hermite etc.  */
 
-      std::vector<boost::shared_ptr < ::FEBase > > d_fe; /**< Finite element shape functions. */
+      boost::shared_ptr < ::FEBase > d_fe; /**< Finite element shape functions. */
 
-      std::vector<boost::shared_ptr < ::QBase > > d_qrule; /**< Quadtrature rule used for numerical integration. */
+      boost::shared_ptr < ::QBase > d_qrule; /**< Quadtrature rule used for numerical integration. */
 
       const ::Elem *d_elem; /**< Pointer to the current element within the finite element assembly. */
 

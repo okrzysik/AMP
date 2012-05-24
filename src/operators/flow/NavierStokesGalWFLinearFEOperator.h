@@ -5,7 +5,7 @@
 /* AMP files */
 #include "operators/LinearFEOperator.h"
 #include "operators/flow/NavierStokesConstants.h"
-#include "operators/flow/NavierStokesGalWFLinearFEOperatorParameters.h"
+#include "operators/flow/NavierStokesLinearFEOperatorParameters.h"
 #include "operators/flow/NavierStokesGalWFLinearElement.h"
 
 #include <vector>
@@ -17,7 +17,7 @@ namespace AMP {
     {
       public :
 
-        NavierStokesGalWFLinearFEOperator(const boost::shared_ptr<NavierStokesGalWFLinearFEOperatorParameters>& params);
+        NavierStokesGalWFLinearFEOperator(const boost::shared_ptr<NavierStokesLinearFEOperatorParameters>& params);
 
         ~NavierStokesGalWFLinearFEOperator() { }
 

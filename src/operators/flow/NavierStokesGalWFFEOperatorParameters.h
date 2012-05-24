@@ -3,17 +3,17 @@
 #define included_AMP_NavierStokesGalWFFEOperatorParameters
 
 #include "FlowTransportModel.h"
-#include "FEOperatorParameters.h"
+#include "LinearFEOperatorParameters.h"
 #include "vectors/Vector.h"
 
 namespace AMP {
 namespace Operator {
 
-  class NavierStokesGalWFFEOperatorParameters : public FEOperatorParameters {
+  class NavierStokesGalWFFEOperatorParameters : public LinearFEOperatorParameters {
     public :
 
       NavierStokesGalWFFEOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
-        : FEOperatorParameters(db) { }
+        : LinearFEOperatorParameters(db) { }
 
       virtual ~NavierStokesGalWFFEOperatorParameters() { }
 

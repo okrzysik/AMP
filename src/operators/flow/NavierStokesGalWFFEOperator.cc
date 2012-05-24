@@ -1,12 +1,12 @@
 
 #include "NavierStokesGalWFFEOperator.h"
-#include "NavierStokesGalWFLinearFEOperatorParameters.h"
+#include "NavierStokesLinearFEOperatorParameters.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 
 namespace AMP {
   namespace Operator {
-
+/*
     NavierStokesGalWFFEOperator :: NavierStokesGalWFFEOperator (
         const boost::shared_ptr<NavierStokesGalWFFEOperatorParameters> & params)
       : NonlinearFEOperator (params) {
@@ -112,7 +112,7 @@ namespace AMP {
 
       AMP::LinearAlgebra::Variable::shared_ptr tempVar; 
       AMP::LinearAlgebra::Vector::shared_ptr tempVector; 
-
+      
       tempVar = d_inpVariables->getVariable(NavierStokes::VELOCITY);
       tempVector = u->subsetVectorForVariable(tempVar);
       setVector(NavierStokes::VELOCITY, tempVector);
@@ -244,8 +244,8 @@ namespace AMP {
         }
 
         // create the linear operator params
-        boost::shared_ptr<NavierStokesGalWFLinearFEOperatorParameters> outParams(new
-            NavierStokesGalWFLinearFEOperatorParameters(tmp_db));
+        boost::shared_ptr<NavierStokesLinearFEOperatorParameters> outParams(new
+            NavierStokesLinearFEOperatorParameters(tmp_db));
 
         (outParams->d_frozenVec).resize(NavierStokes::TOTAL_NUMBER_OF_VARIABLES);
         // add variables to parameters
@@ -264,17 +264,18 @@ namespace AMP {
 
       }
 
-    void NavierStokesGalWFFEOperator :: gettype0DofIndicesForCurrentElement(int varId, std::vector<std::vector<size_t> > & dofIds) {
+     void NavierStokesGalWFFEOperator :: gettype0DofIndicesForCurrentElement(int varId, std::vector<std::vector<size_t> > & dofIds) {
       dofIds.resize(d_currNodes.size());
       for(unsigned int j = 0; j < d_currNodes.size(); j++) {
         d_dofMap[varId]->getDOFs(d_currNodes[j].globalID(), dofIds[j]);
       } // end of j
-    }
+     }
 
-    void NavierStokesGalWFFEOperator :: gettype1DofIndicesForCurrentElement(int varId, std::vector<size_t> & dofIds) {
+     void NavierStokesGalWFFEOperator :: gettype1DofIndicesForCurrentElement(int varId, std::vector<size_t> & dofIds) {
       for(unsigned int j = 0; j < d_currNodes.size(); j++) {
         d_dofMap[varId]->getDOFs(d_currNodes[j].globalID(), dofIds);
       } // end of j
-    }
+     }
+*/
   }
 }//end namespace

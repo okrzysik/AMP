@@ -7,9 +7,9 @@
 
 namespace AMP {
   namespace Operator {
-
+/*
     NavierStokesGalWFLinearFEOperator :: NavierStokesGalWFLinearFEOperator (
-        const boost::shared_ptr<NavierStokesGalWFLinearFEOperatorParameters> & params)
+        const boost::shared_ptr<NavierStokesLinearFEOperatorParameters> & params)
       : LinearFEOperator (params) {
         AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
 
@@ -63,7 +63,7 @@ namespace AMP {
     void NavierStokesGalWFLinearFEOperator :: preAssembly(const boost::shared_ptr<OperatorParameters>& oparams) 
     {
 
-      boost::shared_ptr<NavierStokesGalWFLinearFEOperatorParameters> params = boost::dynamic_pointer_cast<NavierStokesGalWFLinearFEOperatorParameters>(oparams);
+      boost::shared_ptr<NavierStokesLinearFEOperatorParameters> params = boost::dynamic_pointer_cast<NavierStokesLinearFEOperatorParameters>(oparams);
 
       if((d_inVec[NavierStokes::VELOCITY].get() == NULL) and (params->d_frozenVec[NavierStokes::VELOCITY].get() != NULL)) {
         d_inVec[NavierStokes::VELOCITY] = params->d_frozenVec[NavierStokes::VELOCITY]->cloneVector();
@@ -208,7 +208,7 @@ namespace AMP {
       delete d_currElemPtr;
       d_currElemPtr = NULL;
     }
-
+*/
   }
 }//end namespace
 

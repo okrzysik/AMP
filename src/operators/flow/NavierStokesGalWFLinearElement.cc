@@ -9,20 +9,17 @@ namespace Operator {
   {
     const std::vector<Real> & JxW = (*d_JxW);
 
-    const std::vector<std::vector<RealGradient> > & dphi = (*d_u_dphi);
+    const std::vector<std::vector<RealGradient> > & dphi = (*d_dphi);
 
-    const std::vector<std::vector<Real> > & phi = (*d_u_phi);
-
-    const std::vector<std::vector<Real> > & p_phi = (*d_p_phi);
+    const std::vector<std::vector<Real> > & phi = (*d_phi);
 
     std::vector<std::vector<double> > & elementStiffnessMatrix = (*d_elementStiffnessMatrix);
 
-    (d_fe[0])->reinit(d_elem);
-    (d_fe[1])->reinit(d_elem);
+    d_fe->reinit(d_elem);
 
     const unsigned int num_nodes = d_elem->n_nodes();
 
-    for(unsigned int qp = 0; qp < (d_qrule[0])->n_points(); qp++) {
+    for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) {
 
       double u = 0;
       double v = 0;
@@ -93,11 +90,11 @@ namespace Operator {
 
           for(unsigned int k = 0; k < d_elementInputVectors[NavierStokes::PRESSURE].size(); k++) {
           
-            elementStiffnessMatrix[4*i    ][4*k + 3] += JxW[qp]*(p_phi[k ][qp]*dphi[i][qp](0));
+            elementStiffnessMatrix[4*i    ][4*k + 3] += JxW[qp]*(phi[k ][qp]*dphi[i][qp](0));
             
-            elementStiffnessMatrix[4*i + 1][4*k + 3] += JxW[qp]*(p_phi[k ][qp]*dphi[i][qp](1));
+            elementStiffnessMatrix[4*i + 1][4*k + 3] += JxW[qp]*(phi[k ][qp]*dphi[i][qp](1));
             
-            elementStiffnessMatrix[4*i + 2][4*k + 3] += JxW[qp]*(p_phi[k ][qp]*dphi[i][qp](2));
+            elementStiffnessMatrix[4*i + 2][4*k + 3] += JxW[qp]*(phi[k ][qp]*dphi[i][qp](2));
           
           }//end for k
       
