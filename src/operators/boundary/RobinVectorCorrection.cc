@@ -114,7 +114,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
     AMP_ASSERT(*dofManager==*(d_variableFlux->getDOFManager()));
 
   unsigned int numIds = d_boundaryIds.size();
-  std::vector<size_t> dofIndices, dofs;
+  std::vector<size_t> dofs;
   PROFILE_START("integration loop");
   for (unsigned int nid = 0; nid < numIds; nid++)
   {
@@ -136,21 +136,19 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
       }
       boost::shared_ptr < ::QBase > d_qrule( (::QBase::build(d_qruleType, 2, d_qruleOrder)).release() );
 
-
+      // Get the nodes for the current element
       d_currNodes = bnd1->getElements(AMP::Mesh::Vertex);
       unsigned int numNodesInCurrElem = d_currNodes.size();
 
-      dofIndices.resize(numNodesInCurrElem);
-      for(unsigned int i = 0; i < numNodesInCurrElem ; i++) {
-        dofManager->getDOFs(d_currNodes[i].globalID(), dofs);
-        AMP_ASSERT(dofs.size()==1);
-        dofIndices[i] = dofs[0];
-      }
+      // Get the dofs for the vectors
+      std::vector<AMP::Mesh::MeshElementID> ids(d_currNodes.size());
+      for (size_t i=0; i<d_currNodes.size(); i++)
+        ids[i] = d_currNodes[i].globalID();
+      dofManager->getDOFs( ids, dofs );
+      AMP_ASSERT(dofs.size()==numNodesInCurrElem);
 
       // Get the libmesh element
       d_currElemPtr = libmeshElements.getElement( bnd1->globalID() );
-
-      getDofIndicesForCurrentElement();
 
       d_fe->attach_quadrature_rule( d_qrule.get() );
 
@@ -170,14 +168,14 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
       if(d_robinPhysicsModel.get() != NULL) 
       {
         for(unsigned int m = 0; m < d_elementInputVec.size(); m++)
-          d_elementInputVec[m]->getValuesByGlobalID( dofIndices.size(), &dofIndices[0], &inputArgs[m][0] );
+          d_elementInputVec[m]->getValuesByGlobalID( dofs.size(), &dofs[0], &inputArgs[m][0] );
         d_robinPhysicsModel->getConductance(beta, gamma, inputArgs);
       }
       PROFILE_STOP("get conductance",2);
       PROFILE_START("perform integration",2);
-      std::vector<double> values(dofIndices.size(),0.0);
-      std::vector<double> addValues(dofIndices.size(),0.0);
-      uInternal->getValuesByGlobalID( dofIndices.size(), &dofIndices[0], &values[0] );
+      std::vector<double> values(dofs.size(),0.0);
+      std::vector<double> addValues(dofs.size(),0.0);
+      uInternal->getValuesByGlobalID( dofs.size(), &dofs[0], &values[0] );
       for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
       {
         Real phi_val = 0.0;
@@ -188,7 +186,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
       }//end for qp
       if (d_IsCoupledBoundary[nid])
       {
-        d_variableFlux->getValuesByGlobalID( dofIndices.size(), &dofIndices[0], &values[0] );
+        d_variableFlux->getValuesByGlobalID( dofs.size(), &dofs[0], &values[0] );
         for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
         {
           Real phi_val = 0.0;
@@ -198,7 +196,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
             addValues[j] += -1 * (JxW[qp] * phi[j][qp] * phi_val);
         }//end for qp
       }//coupled
-      rInternal->addValuesByGlobalID( dofIndices.size(), &dofIndices[0], &addValues[0] );
+      rInternal->addValuesByGlobalID( dofs.size(), &dofs[0], &addValues[0] );
       PROFILE_STOP("perform integration",2);
 
     }//end for bnd

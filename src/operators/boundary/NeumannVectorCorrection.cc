@@ -272,9 +272,6 @@ namespace Operator {
         return outParams;
       }
 
-    void NeumannVectorCorrection :: getDofIndicesForCurrentElement() {
-    }
-
 
     void NeumannVectorCorrection :: setFrozenVector ( AMP::LinearAlgebra::Vector::shared_ptr f ) {
       if ( d_Frozen )
