@@ -360,7 +360,7 @@ MACRO ( ADD_AMP_EXE_DEP EXEFILE )
     TARGET_LINK_LIBRARIES ( ${EXEFILE} ${MPI_LINK_FLAGS} ${MPI_LIBRARIES})
     TARGET_LINK_LIBRARIES ( ${EXEFILE} ${LAPACK_LIBS} ${BLAS_LIBS} )
     TARGET_LINK_LIBRARIES ( ${EXEFILE} ${COVERAGE_LIBS} ${LDLIBS} )
-    TARGET_LINK_LIBRARIES ( ${EXEFILE} "-lz" )
+    TARGET_LINK_LIBRARIES ( ${EXEFILE} "-lz -ldl" )
 ENDMACRO ()
 
 
@@ -695,7 +695,7 @@ MACRO ( SAVE_CMAKE_FLAGS )
     ENDIF ()
     # Add misc flags
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add misc flags\n" )
-    file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} \"-lz\" )\n" )
+    file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} \"-lz -ldl\" )\n" )
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "\n" )
 ENDMACRO ()
 
