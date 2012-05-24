@@ -853,7 +853,9 @@ OperatorBuilder::createBoundaryOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter
   
   // we create the element physics model if a database entry exists
   // and the incoming element physics model pointer is NULL
-  if( (elementPhysicsModel.get()==NULL) && (operator_db->keyExists("LocalModel" ) ) )
+//  if( (elementPhysicsModel.get()==NULL) && (operator_db->keyExists("LocalModel" ) ) ) 
+//  The above Condition assumes all of the Operators inside column boundary use same Physics Model - SA
+  if( (operator_db->keyExists("LocalModel" ) ) )
     {
       // extract the name of the local model from the operator database
       std::string localModelName = operator_db->getString("LocalModel");
