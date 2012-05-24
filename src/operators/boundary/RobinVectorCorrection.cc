@@ -163,7 +163,6 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
       const std::vector<std::vector<Real> > & phi = (*d_phi);
       PROFILE_STOP("prepare element",2);
 
-      double temp;
       std::vector<std::vector<double> > inputArgs(d_elementInputVec.size(),std::vector<double>(numNodesInCurrElem));
       std::vector<double> beta(numNodesInCurrElem,d_beta);
       std::vector<double> gamma(numNodesInCurrElem,d_gamma);
@@ -176,39 +175,30 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
       }
       PROFILE_STOP("get conductance",2);
       PROFILE_START("perform integration",2);
+      std::vector<double> values(dofIndices.size(),0.0);
+      std::vector<double> addValues(dofIndices.size(),0.0);
+      uInternal->getValuesByGlobalID( dofIndices.size(), &dofIndices[0], &values[0] );
       for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
       {
-        temp = 0;
         Real phi_val = 0.0;
-
         for (unsigned int l = 0; l < numNodesInCurrElem ; l++)
-          phi_val += phi[l][qp] * beta[l] * uInternal->getValueByGlobalID(dofIndices[l]);
-
+          phi_val += phi[l][qp] * beta[l] * values[l];
         for (unsigned int j = 0; j < numNodesInCurrElem ; j++)
-        {
-          temp = (JxW[qp] * phi[j][qp] * phi_val);
-          rInternal->addValueByGlobalID( dofIndices[j], temp);
-        }//end for j
+          addValues[j] += (JxW[qp] * phi[j][qp] * phi_val);
       }//end for qp
-
       if (d_IsCoupledBoundary[nid])
       {
+        d_variableFlux->getValuesByGlobalID( dofIndices.size(), &dofIndices[0], &values[0] );
         for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
         {
-          temp = 0;
           Real phi_val = 0.0;
-
           for (unsigned int l = 0; l < numNodesInCurrElem ; l++)
-            phi_val += phi[l][qp] * gamma[l] * d_variableFlux->getValueByGlobalID(dofIndices[l]);
-
+            phi_val += phi[l][qp] * gamma[l] * values[l];
           for (unsigned int j = 0; j < numNodesInCurrElem ; j++)
-          {
-            temp = (JxW[qp] * phi[j][qp] * phi_val);
-            temp = temp * -1;
-            rInternal->addValueByGlobalID( dofIndices[j], temp);
-          }//end for j
+            addValues[j] += -1 * (JxW[qp] * phi[j][qp] * phi_val);
         }//end for qp
       }//coupled
+      rInternal->addValuesByGlobalID( dofIndices.size(), &dofIndices[0], &addValues[0] );
       PROFILE_STOP("perform integration",2);
 
     }//end for bnd

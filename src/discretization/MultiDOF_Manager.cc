@@ -62,12 +62,19 @@ multiDOFManager::multiDOFManager ( AMP_MPI globalComm, std::vector<DOFManager::s
 void multiDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <size_t> &dofs ) const
 {
     dofs.resize(0);
-    std::vector<size_t> local_dofs;
-    for (size_t i=0; i<d_managers.size(); i++) {
-        d_managers[i]->getDOFs( id, local_dofs );
-        if ( local_dofs.size() > 0 ) {
-            std::vector<size_t> tmp_dofs = getGlobalDOF( i, local_dofs );
-            dofs.insert(dofs.end(),tmp_dofs.begin(),tmp_dofs.end());
+    if ( d_managers.size()==0 )
+        return;
+    if ( d_managers[0]->numGlobalDOF()==this->d_global ) {
+        // We are dealing with a multiDOFManager with only 1 sub DOF (this happens with multivectors)
+        d_managers[0]->getDOFs( id, dofs );
+    } else {
+        std::vector<size_t> local_dofs;
+        for (size_t i=0; i<d_managers.size(); i++) {
+            d_managers[i]->getDOFs( id, local_dofs );
+            if ( local_dofs.size() > 0 ) {
+                std::vector<size_t> tmp_dofs = getGlobalDOF( i, local_dofs );
+                dofs.insert(dofs.end(),tmp_dofs.begin(),tmp_dofs.end());
+            }
         }
     }
 }
@@ -144,6 +151,12 @@ std::vector<size_t> multiDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &o
 ****************************************************************/
 std::vector<size_t> multiDOFManager::getGlobalDOF( const int i, const std::vector<size_t>& subDOFs ) const
 {
+    if ( d_managers.size()==1 ) {
+        if ( d_managers[0]->numGlobalDOF()==this->d_global ) {
+            // Special case where we only have 1 DOFManager
+            return subDOFs;
+        }
+    }
     const size_t neg_one = ~((size_t)0);
     std::vector<size_t> globalDOFs = std::vector<size_t>(subDOFs.size(),neg_one);
     subDOF_struct search(0,neg_one,neg_one,neg_one);
@@ -158,8 +171,14 @@ std::vector<size_t> multiDOFManager::getGlobalDOF( const int i, const std::vecto
 }
 std::vector<size_t> multiDOFManager::getSubDOF( const int i, std::vector<size_t> &globalDOFs ) const
 {
+    if ( d_managers.size()==1 ) {
+        if ( d_managers[0]->numGlobalDOF()==this->d_global ) {
+            // Special case where we only have 1 DOFManager
+            return globalDOFs;
+        }
+    }
     size_t neg_one = ~((size_t)0);
-    std::vector<size_t> subDOFs(globalDOFs.size());
+    std::vector<size_t> subDOFs(globalDOFs.size(),neg_one);
     for (size_t j=0; j<globalDOFs.size(); j++)
         subDOFs[j] = neg_one;
     subDOF_struct search(0,neg_one,neg_one,neg_one);
