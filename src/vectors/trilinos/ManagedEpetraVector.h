@@ -3,7 +3,6 @@
 
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
-#include <Epetra_MpiComm.h>
 #include "EpetraVector.h"
 #include "EpetraVectorEngine.h"
 #include "vectors/ManagedVector.h"

@@ -140,8 +140,6 @@ namespace Operator {
       libMeshEnums::QuadratureType d_qruleType;
       libMeshEnums::Order d_qruleOrder;
 
-      void getDofIndicesForCurrentElement();
-
       std::vector<AMP::Mesh::MeshElement> d_currNodes;
 
       ::Elem* d_currElemPtr;
