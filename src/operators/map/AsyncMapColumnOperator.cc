@@ -1,6 +1,6 @@
 #include "AsyncMapOperator.h"
 #include "AsyncMapColumnOperator.h"
-
+#include "utils/ProfilerApp.h"
 
 namespace AMP {
 namespace Operator {
@@ -49,12 +49,14 @@ void AsyncMapColumnOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr 
         AMP::LinearAlgebra::Vector::shared_ptr  &r,
         const double a, const double b)
 {
+    PROFILE_START("apply");
     this->applyStart  ( f , u , r , a , b );
     this->applyFinish ( f , u , r , a , b );
     if ( requiresMakeConsistentSet() ) {
         AMP_ASSERT(d_OutputVector.get()!=NULL);
         d_OutputVector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     }
+    PROFILE_STOP("apply");
 }
 
 

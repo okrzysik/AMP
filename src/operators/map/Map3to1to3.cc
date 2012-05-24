@@ -1,6 +1,7 @@
 #include "Map3to1to3.h"
 #include "Map3to1to3Parameters.h"
 #include "vectors/Variable.h"
+#include "utils/ProfilerApp.h"
 
 
 namespace AMP {
@@ -124,6 +125,7 @@ void Map3to1to3::addTo1DMap ( std::multimap<double,double> &map, double z , doub
 void  Map3to1to3::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , const AMP::LinearAlgebra::Vector::shared_ptr &u ,
                      AMP::LinearAlgebra::Vector::shared_ptr & , const double , const double )
 {
+    PROFILE_START("applyStart");
     // Build the local maps
     AMP::LinearAlgebra::Vector::shared_ptr vec = subsetInputVector( u );
     std::multimap<double,double> map1 = buildMap( vec, d_mesh1, d_iterator1 );
@@ -163,6 +165,7 @@ void  Map3to1to3::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , 
             }
         }
     }
+    PROFILE_STOP("applyStart");
 }
 
 
@@ -173,6 +176,7 @@ void  Map3to1to3::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , 
 void  Map3to1to3::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr & , const AMP::LinearAlgebra::Vector::shared_ptr & ,
                       AMP::LinearAlgebra::Vector::shared_ptr & , const double , const double )
 {
+    PROFILE_START("applyFinish");
     // Recieve the data and create the maps
     std::multimap<double,double> map1;
     std::multimap<double,double> map2;
@@ -215,6 +219,7 @@ void  Map3to1to3::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr & ,
     // Apply make consistent
     d_ResultVector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     // double a = d_ResultVector->L1Norm();
+    PROFILE_STOP("applyFinish");
 }
 
 

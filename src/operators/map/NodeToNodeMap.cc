@@ -3,6 +3,7 @@
 #include "ampmesh/MeshElement.h"
 #include "vectors/Variable.h"
 #include "discretization/simpleDOF_Manager.h"
+#include "utils/ProfilerApp.h"
 
 #include <set>
 
@@ -111,6 +112,7 @@ void NodeToNodeMap::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & 
                               const double ,
                               const double )
 {
+    PROFILE_START("applyStart");
     // Subset the vector for the variable
     AMP::LinearAlgebra::Vector::shared_ptr   curPhysics = subsetInputVector( u );
     AMP_INSIST( curPhysics , "apply received bogus stuff" );
@@ -147,6 +149,7 @@ void NodeToNodeMap::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & 
             curReq++;
         }
     }
+    PROFILE_STOP("applyStart");
 }
 
 
@@ -159,6 +162,7 @@ void NodeToNodeMap::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr &
                               const double ,
                               const double )
 {
+    PROFILE_START("applyFinish");
     // Get the vector to store the DOFs
     AMP::LinearAlgebra::Vector::shared_ptr  curPhysics = d_OutputVector;
 
@@ -182,6 +186,7 @@ void NodeToNodeMap::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr &
     // Update ghost cells
     if ( d_callMakeConsistentSet ) 
         curPhysics->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    PROFILE_STOP("applyFinish");
 }
 
 
