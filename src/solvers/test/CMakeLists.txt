@@ -150,6 +150,9 @@ COPY_TEST_DATA_FILE ( input_testElementLevel-PericElastoViscoPlasticity-1 )
 ADD_AMP_TEST ( testMaterialModels-PericElastoViscoPlasticity-1 )
 COPY_TEST_DATA_FILE ( input_testMaterialModels-PericElastoViscoPlasticity-1 )
 
+ADD_AMP_PROVISIONAL_TEST ( testIncompressibleFlow )
+
+
 ADD_AMP_WEEKLY_TEST ( testCook 8 )
 ADD_AMP_WEEKLY_TEST ( testCook 1 )
 ADD_AMP_WEEKLY_TEST ( testCook_Plastic 8 )

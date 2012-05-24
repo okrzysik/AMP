@@ -5,9 +5,9 @@ Mesh{
     MeshDatabasePrefix = "Mesh_"
     MeshArrayDatabasePrefix = "MeshArray_"
     Mesh_1 {
-        MeshName = "Left"
+        MeshName = "Bottom"
         MeshType = "libMesh"
-        FileName = "cube64.with.boundary.labels.e"
+        FileName = "butterfly_pellet_1x.e"
         dim = 3
         x_offset = 0.0
         y_offset = 0.0
@@ -15,13 +15,13 @@ Mesh{
         NumberOfElements = 8
     }
     Mesh_2 {
-        MeshName = "Right"
+        MeshName = "Top"
         MeshType = "libMesh"
-        FileName = "cube64.with.boundary.labels.e"
+        FileName = "butterfly_pellet_1x.e"
         dim = 3
         x_offset = 0.0
         y_offset = 0.0
-        z_offset = 6.12
+        z_offset = 0.015
         NumberOfElements = 8
     }
 }
@@ -29,64 +29,64 @@ Mesh{
 MeshToMeshMaps{
     MapType = "ScalarZAxis"
     N_maps = 1
-    Mesh1 = "Left"
+    Mesh1 = "Bottom"
     Surface1 = 1
-    Mesh2 = "Right"
+    Mesh2 = "Top"
     Surface2 = 2
     DOFsPerObject = 1
     VariableName = "Temperature"
 }
 
-LeftNonlinearThermalOperator {
+BottomNonlinearThermalOperator {
     name="NonlinearBVPOperator"
     print_info_level = 1
     VolumeOperator = "DiffusionNonlinearFEOperator"
-    BoundaryOperator = "LeftNonlinearThermalBoundaryConditions"
+    BoundaryOperator = "BottomNonlinearThermalBoundaryConditions"
 }
 
-LeftLinearThermalOperator {
+BottomLinearThermalOperator {
     name = "LinearBVPOperator"
     print_info_level = 0
     VolumeOperator = "DiffusionLinearFEOperator"
-    BoundaryOperator = "LeftLinearThermalBoundaryConditions"
+    BoundaryOperator = "BottomLinearThermalBoundaryConditions"
 }
 
-LeftNonlinearThermalBoundaryConditions {
+BottomNonlinearThermalBoundaryConditions {
       name="ColumnBoundaryOperator"
       numberOfBoundaryOperators = 1
-      boundaryOperators =  "LeftRobinVectorCorrection"
+      boundaryOperators =  "BottomRobinVectorCorrection"
 }
 
-LeftLinearThermalBoundaryConditions {
+BottomLinearThermalBoundaryConditions {
       name="ColumnBoundaryOperator"
       numberOfBoundaryOperators = 1
-      boundaryOperators = "LeftRobinMatrixCorrection" 
+      boundaryOperators = "BottomRobinMatrixCorrection" 
 }
 
-RightNonlinearThermalOperator {
+TopNonlinearThermalOperator {
     name="NonlinearBVPOperator"
     print_info_level = 1
     VolumeOperator = "DiffusionNonlinearFEOperator"
-    BoundaryOperator = "RightNonlinearThermalBoundaryConditions"
+    BoundaryOperator = "TopNonlinearThermalBoundaryConditions"
 }
 
-RightLinearThermalOperator {
+TopLinearThermalOperator {
     name = "LinearBVPOperator"
     print_info_level = 0
     VolumeOperator = "DiffusionLinearFEOperator"
-    BoundaryOperator = "RightLinearThermalBoundaryConditions"
+    BoundaryOperator = "TopLinearThermalBoundaryConditions"
 }
 
-RightNonlinearThermalBoundaryConditions {
+TopNonlinearThermalBoundaryConditions {
       name="ColumnBoundaryOperator"
       numberOfBoundaryOperators = 1
-      boundaryOperators = "RightRobinVectorCorrection"
+      boundaryOperators = "TopRobinVectorCorrection"
 }
 
-RightLinearThermalBoundaryConditions {
+TopLinearThermalBoundaryConditions {
       name="ColumnBoundaryOperator"
       numberOfBoundaryOperators = 1
-      boundaryOperators = "RightRobinMatrixCorrection"
+      boundaryOperators = "TopRobinMatrixCorrection"
 }
 
 DiffusionNonlinearFEOperator {
@@ -128,7 +128,7 @@ DiffusionLinearFEOperator {
       LocalModel = "DiffusionTransportModel"
 }
 
-LeftRobinVectorCorrection {
+BottomRobinVectorCorrection {
           name = "RobinVectorCorrection"
           FE_ORDER = "FIRST"
           FE_FAMILY = "LAGRANGE"
@@ -136,8 +136,8 @@ LeftRobinVectorCorrection {
           QRULE_ORDER = "DEFAULT"
           fConductivity  = 1.0
           alpha          = 1.0
-          beta           = 2920.0
-          gamma          = 2920.0
+          beta           = 20.0
+          gamma          = 20.0
           print_info_level = 0
           skip_params = FALSE
           number_of_ids = 1
@@ -149,7 +149,7 @@ LeftRobinVectorCorrection {
 
 }
 
-LeftRobinMatrixCorrection {
+BottomRobinMatrixCorrection {
           name = "RobinMatrixCorrection"
           FE_ORDER = "FIRST"
           FE_FAMILY = "LAGRANGE"
@@ -157,8 +157,8 @@ LeftRobinMatrixCorrection {
           QRULE_ORDER = "DEFAULT"
           fConductivity  = 1.0
           alpha          = 1.0
-          beta           = 2920.0
-          gamma          = 2920.0
+          beta           = 20.0
+          gamma          = 20.0
           print_info_level = 0
           skip_params = FALSE
           number_of_ids = 1
@@ -169,7 +169,7 @@ LeftRobinMatrixCorrection {
           value_0_0 = 0.0
 }
 
-RightRobinVectorCorrection {
+TopRobinVectorCorrection {
           name = "RobinVectorCorrection"
           FE_ORDER = "FIRST"
           FE_FAMILY = "LAGRANGE"
@@ -177,8 +177,8 @@ RightRobinVectorCorrection {
           QRULE_ORDER = "DEFAULT"
           fConductivity  = 1.0
           alpha          = 1.0
-          beta           = 2920.0
-          gamma          = 2920.0
+          beta           = 20.0
+          gamma          = 20.0
           print_info_level = 0
           skip_params = FALSE
           number_of_ids = 1
@@ -190,7 +190,7 @@ RightRobinVectorCorrection {
 
 }
 
-RightRobinMatrixCorrection {
+TopRobinMatrixCorrection {
           name = "RobinMatrixCorrection"
           FE_ORDER = "FIRST"
           FE_FAMILY = "LAGRANGE"
@@ -198,8 +198,8 @@ RightRobinMatrixCorrection {
           QRULE_ORDER = "DEFAULT"
           fConductivity  = 1.0
           alpha          = 1.0
-          beta           = 2920.0
-          gamma          = 2920.0
+          beta           = 20.0
+          gamma          = 20.0
           print_info_level = 0
           skip_params = FALSE
           number_of_ids = 1
@@ -210,7 +210,7 @@ RightRobinMatrixCorrection {
           value_0_0 = 0.0
 }
 
-LeftVolumeIntegralOperator{
+BottomVolumeIntegralOperator{
     name="VolumeIntegralOperator"
     InputVariableType = "IntegrationPointScalar"
     Number_Active_Variables = 1
@@ -231,7 +231,7 @@ LeftVolumeIntegralOperator{
     }
 }
 
-RightVolumeIntegralOperator{
+TopVolumeIntegralOperator{
     name="VolumeIntegralOperator"
     InputVariableType = "IntegrationPointScalar"
     Number_Active_Variables = 1

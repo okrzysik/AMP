@@ -58,13 +58,13 @@
 #include "node.h"
 
 #define _PI_ 3.14159265
-#define __INIT_FN__(x,y,z) (800+(pow(x,2)+pow(y,2)+pow(z,2))) // Manufactured Solution
-#define __dTdn__(x,y,z) (2*x + 2*y -2*z) // Manufactured Normal Gradient 
-#define __FsnK__() (6)
-
+#define __INIT_FN__(x,y,z) (800+((0.00004-20*pow(x,2)-20*pow(y,2))*pow(10,6))) // Manufactured Solution
+#define __dTdn__(x,y,z,i) (0) 
+#define __FsnK__() (80000000)
 
 void calculateManufacturedSolution(AMP::Mesh::Mesh::shared_ptr meshAdapter,
-    AMP::LinearAlgebra::Vector::shared_ptr manufacturedSolution)
+    AMP::LinearAlgebra::Vector::shared_ptr manufacturedSolution,
+    AMP::LinearAlgebra::Vector::shared_ptr manufacturedNormalGradient)
 {
   //------------------------------------------
   //  CALCULATE THE MANFACTURED SOLUTION //
@@ -72,32 +72,10 @@ void calculateManufacturedSolution(AMP::Mesh::Mesh::shared_ptr meshAdapter,
                 
     AMP::Discretization::DOFManager::shared_ptr dof_map = manufacturedSolution->getDOFManager();
 
-    AMP::Mesh::Mesh::shared_ptr  meshAdapter1 = meshAdapter->Subset( "Left" );
-    AMP::Mesh::Mesh::shared_ptr  meshAdapter2 = meshAdapter->Subset( "Right" );
+    AMP::Mesh::Mesh::shared_ptr  bottomAdapter  = meshAdapter->Subset( "Bottom" );
 
-    if( meshAdapter2.get() != NULL ){
-      AMP::Mesh::MeshIterator el = meshAdapter2->getIterator(AMP::Mesh::Volume, 0);
-      AMP::Mesh::MeshIterator end_el = el.end();
-
-      for( ; el != end_el; ++el) {
-        std::vector<AMP::Mesh::MeshElement> d_currNodes = el->getElements(AMP::Mesh::Vertex);
-
-        std::vector<AMP::Mesh::MeshElementID> globalIDs(d_currNodes.size()); 
-
-        std::vector<size_t> d_dofIndices; 
-        for(unsigned int j = 0; j < d_currNodes.size(); j++) {
-          globalIDs[j] = d_currNodes[j].globalID();
-        }  // end of j
-        dof_map->getDOFs(globalIDs, d_dofIndices);
-
-        for(unsigned int j = 0; j < d_currNodes.size(); j++) {
-          std::vector<double> pt = d_currNodes[j].coord();
-          double val1 = __INIT_FN__(pt[0],pt[1],pt[2]); 
-          manufacturedSolution->setLocalValueByGlobalID(d_dofIndices[j],val1);
-        } //end for node
-      }
-    }else if (meshAdapter1.get() != NULL){
-      AMP::Mesh::MeshIterator el = meshAdapter1->getIterator(AMP::Mesh::Volume, 0);
+    if (bottomAdapter.get() != NULL){
+      AMP::Mesh::MeshIterator el = bottomAdapter->getIterator(AMP::Mesh::Volume, 0);
       AMP::Mesh::MeshIterator end_el = el.end();
 
       for( ; el != end_el; ++el) {
@@ -115,13 +93,10 @@ void calculateManufacturedSolution(AMP::Mesh::Mesh::shared_ptr meshAdapter,
           std::vector<double> pt = d_currNodes[j].coord();
           double val1 = __INIT_FN__(pt[0],pt[1],pt[2]); 
           double val2 = __INIT_FN__(pt[0],pt[1],pt[2]-20); 
-          double val3 = __dTdn__(pt[0],pt[1],pt[2]); 
+          double val3 = __dTdn__(pt[0],pt[1],pt[2],1); 
 
-          if( el->isOnBoundary(1) ) {
-            manufacturedSolution->setLocalValueByGlobalID(d_dofIndices[j], val2 + (1./2920.)*val3 );
-          }else{
-            manufacturedSolution->setLocalValueByGlobalID(d_dofIndices[j],val1);
-          }
+          manufacturedSolution->setLocalValueByGlobalID(d_dofIndices[j],val1);
+          manufacturedNormalGradient->setLocalValueByGlobalID(d_dofIndices[j],val3);
         } //end for node
       }
 
@@ -249,39 +224,22 @@ createThermalOperators(boost::shared_ptr<AMP::InputDatabase> global_input_db,
   nonlinearColumnOperator.reset(new AMP::Operator::ColumnOperator(emptyParams));
   linearColumnOperator.reset(new AMP::Operator::ColumnOperator(emptyParams));
 
-  AMP::Mesh::Mesh::shared_ptr  meshAdapter1 = manager->Subset( "Left" );
-  AMP::Mesh::Mesh::shared_ptr  meshAdapter2 = manager->Subset( "Right" );
+  AMP::Mesh::Mesh::shared_ptr  bottomAdapter  = manager->Subset( "Bottom" );
+  AMP::Mesh::Mesh::shared_ptr  topAdapter = manager->Subset( "Top" );
   //-----------------------------------------------
   //   CREATE THE NONLINEAR THERMAL OPERATOR 1 ----
   //-----------------------------------------------
-  AMP_INSIST( global_input_db->keyExists("LeftNonlinearThermalOperator"), "key missing!" );
+  AMP_INSIST( global_input_db->keyExists("BottomNonlinearThermalOperator"), "key missing!" );
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
-  boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> thermalNonlinearOperator = boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator( meshAdapter1 , "LeftNonlinearThermalOperator", global_input_db,thermalTransportModel));
+  boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> thermalNonlinearOperator = boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator( bottomAdapter  , "BottomNonlinearThermalOperator", global_input_db,thermalTransportModel));
   nonlinearColumnOperator->append(thermalNonlinearOperator);
 
   //-------------------------------------
   //   CREATE THE LINEAR THERMAL OPERATOR 1 ----
   //-------------------------------------
-  AMP_INSIST( global_input_db->keyExists("LeftLinearThermalOperator"), "key missing!" );
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> thermalLinearOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter1 , "LeftLinearThermalOperator",global_input_db, thermalTransportModel));
+  AMP_INSIST( global_input_db->keyExists("BottomLinearThermalOperator"), "key missing!" );
+  boost::shared_ptr<AMP::Operator::LinearBVPOperator> thermalLinearOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator( bottomAdapter , "BottomLinearThermalOperator",global_input_db, thermalTransportModel));
   linearColumnOperator->append(thermalLinearOperator);
-
-  //-----------------------------------------------
-  //   CREATE THE NONLINEAR THERMAL OPERATOR 2 ----
-  //-----------------------------------------------
-  AMP_INSIST( global_input_db->keyExists("LeftNonlinearThermalOperator"), "key missing!" );
-  thermalNonlinearOperator = boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator( meshAdapter2 , "RightNonlinearThermalOperator", global_input_db,thermalTransportModel));
-  nonlinearColumnOperator->append(thermalNonlinearOperator);
-
-  //-------------------------------------
-  //   CREATE THE LINEAR THERMAL OPERATOR 2 ----
-  //-------------------------------------
-  AMP_INSIST( global_input_db->keyExists("LeftLinearThermalOperator"), "key missing!" );
-  thermalLinearOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter2 , "RightLinearThermalOperator",global_input_db, thermalTransportModel));
-  linearColumnOperator->append(thermalLinearOperator);
-
-  AMP_ASSERT(nonlinearColumnOperator!=NULL);
-  AMP_ASSERT(linearColumnOperator!=NULL);
 
   AMP::pout << "Leaving createThermalOperators" << std::endl;
 }
@@ -289,7 +247,7 @@ createThermalOperators(boost::shared_ptr<AMP::InputDatabase> global_input_db,
 void
 createThermalSolvers(boost::shared_ptr<AMP::InputDatabase> &global_input_db,
 		     AMP::LinearAlgebra::Vector::shared_ptr &globalSolVec,
-		     boost::shared_ptr<AMP::Operator::Operator> &nonlinearOperator,
+		     boost::shared_ptr<AMP::Operator::ColumnOperator> &nonlinearOperator,
 		     boost::shared_ptr<AMP::Operator::Operator> &linearOperator,
 		     boost::shared_ptr<AMP::Solver::PetscSNESSolver>  &nonlinearSolver,
 		     boost::shared_ptr<AMP::Solver::PetscKrylovSolver>  &linearSolver)
@@ -355,12 +313,6 @@ registerMapswithThermalOperator( boost::shared_ptr<AMP::InputDatabase> input_db 
   boost::shared_ptr<AMP::Operator::RobinVectorCorrection>  gapBC = boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( 0 ) );
   gapBC->setVariableFlux ( thermalMapVec );
   gapBC->reset ( gapBC->getParameters());
-
-  curBVPop = boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator> ( nonlinearThermalColumnOperator->getOperator ( 1 ) );
-  curBCcol = boost::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator> ( curBVPop->getBoundaryOperator () );
-  gapBC = boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( 0 ) );
-  gapBC->setVariableFlux ( thermalMapVec );
-  gapBC->reset ( gapBC->getParameters());
 }
 
 ///////////////////////////////////////////////
@@ -399,15 +351,9 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
   AMP::LinearAlgebra::Vector::shared_ptr manufacturedSolution       = AMP::LinearAlgebra::createVector( nodalScalarDOF, outputVar, true );
-  AMP::LinearAlgebra::Vector::shared_ptr thermalConductivity        = AMP::LinearAlgebra::createVector( nodalScalarDOF, outputVar, true );
   AMP::LinearAlgebra::Vector::shared_ptr manufacturedNormalGradient = AMP::LinearAlgebra::createVector( nodalScalarDOF, outputVar, true );
   AMP::LinearAlgebra::Vector::shared_ptr solutionError              = AMP::LinearAlgebra::createVector( nodalScalarDOF, outputVar, true );
   AMP::LinearAlgebra::Vector::shared_ptr thermMapVec                = AMP::LinearAlgebra::createVector( nodalScalarDOF, outputVar, true );
-
-  boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> mapsColumn;
-  createThermalMaps( input_db,  manager, thermMapVec , mapsColumn);
-
-  registerMapswithThermalOperator( input_db , nonlinearThermalColumnOperator , thermMapVec );
 
   int DOFsPerElement = 8;
   AMP::Discretization::DOFManager::shared_ptr gaussPointDOF = AMP::Discretization::simpleDOFManager::create(manager,AMP::Mesh::Volume,1,DOFsPerElement,true);
@@ -419,9 +365,18 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
 
   AMP::pout<<"Calculating Manufactured Solution and Sources "<<std::endl;
 
-  calculateManufacturedSolution( manager, manufacturedSolution );
+  calculateManufacturedSolution( manager, manufacturedSolution , manufacturedNormalGradient );
 
   calculateSources( manager , gaussPointDOF , manufacturedRHS );
+
+  boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> mapsColumn;
+//  createThermalMaps( input_db,  manager, thermMapVec , mapsColumn);
+
+  thermMapVec->copyVector(manufacturedNormalGradient);
+  thermMapVec->scale(1/20.);
+  thermMapVec->add( thermMapVec , manufacturedSolution);
+ 
+  registerMapswithThermalOperator( input_db , nonlinearThermalColumnOperator , thermMapVec );
 
   //------------------------------------------
 #ifdef USE_SILO
@@ -438,8 +393,8 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
 #endif 
 
   TemperatureVec->copyVector(manufacturedSolution);
-  std::cout << "Max value of manufactured solution : "<< manufacturedSolution->max() << " thermal conductivity : "<< thermalConductivity->max() << std::endl;
-  std::cout << "Min value of manufactured solution : "<< manufacturedSolution->min() << " thermal conductivity : "<< thermalConductivity->min() << std::endl;
+  std::cout << "Max value of manufactured solution : "<< manufacturedSolution->max() << std::endl;
+  std::cout << "Min value of manufactured solution : "<< manufacturedSolution->min() << std::endl;
   std::cout << "Max value of manufactured RHS : "<< manufacturedRHS->max() << " normal gradient: "<< manufacturedNormalGradient->max() << std::endl;
   std::cout << "Min value of manufactured RHS : "<< manufacturedRHS->min() << " normal gradient: "<< manufacturedNormalGradient->min() << std::endl;
 
@@ -448,20 +403,16 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
   // MANUFACTURED RHS                   //
   //------------------------------------------
 
-  AMP::Mesh::Mesh::shared_ptr  meshAdapter1 = manager->Subset( "Left" );
-  AMP::Mesh::Mesh::shared_ptr  meshAdapter2 = manager->Subset( "Right" );
+  AMP::Mesh::Mesh::shared_ptr  bottomAdapter  = manager->Subset( "Bottom" );
+  //AMP::Mesh::Mesh::shared_ptr  topAdapter = manager->Subset( "Top" );
 
   boost::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
   boost::shared_ptr<AMP::Operator::OperatorParameters> columnParams (new AMP::Operator::OperatorParameters(tmp_db));
   boost::shared_ptr<AMP::Operator::ColumnOperator>     volumeIntegralColumnOperator (new AMP::Operator::ColumnOperator(columnParams));
 
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> sourceModel1;
-  boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator1 = boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator( meshAdapter1,"LeftVolumeIntegralOperator",input_db, sourceModel1));
+  boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator1 = boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator( bottomAdapter  ,"BottomVolumeIntegralOperator",input_db, sourceModel1));
   volumeIntegralColumnOperator->append(sourceOperator1);
-
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> sourceModel2;
-  boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator2 = boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator( meshAdapter2,"RightVolumeIntegralOperator",input_db, sourceModel2));
-  volumeIntegralColumnOperator->append(sourceOperator2);
 
   AMP::LinearAlgebra::Variable::shared_ptr rhsVar (new AMP::LinearAlgebra::Variable("Temperature"));
   AMP::LinearAlgebra::Vector::shared_ptr integratedRHSVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, rhsVar, true );
@@ -477,13 +428,14 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
 
   // modify the RHS to take into account boundary conditions
   //  for(int id = 0; id != boost::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(nonlinearThermalColumnOperator)->getNumberOfOperators(); id++)
-  for(int i=0; i<2; i++)
+  for(int i=0; i< 1; i++)
   {
     AMP::Operator::NonlinearBVPOperator::shared_ptr nonlinearThermalOperator ;
     nonlinearThermalOperator = (boost::dynamic_pointer_cast<AMP::Operator::ColumnOperator> ( nonlinearThermalColumnOperator ) )->getOperator(i);
     (boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator> (nonlinearThermalOperator))->modifyInitialSolutionVector(TemperatureVec);
     (boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator> (nonlinearThermalOperator))->modifyRHSvector(integratedRHSVec);
   }
+ /*
   boost::shared_ptr<AMP::InputDatabase> emptyDb;
   boost::shared_ptr<AMP::Operator::CoupledOperatorParameters> thermalCoupledOpParams(new AMP::Operator::CoupledOperatorParameters(emptyDb));
   thermalCoupledOpParams->d_MapOperator = mapsColumn;
@@ -491,6 +443,8 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
   boost::shared_ptr<AMP::Operator::Operator> nonlinearThermalCoupledOperator(new AMP::Operator::CoupledOperator(thermalCoupledOpParams));
 
   nonlinearThermalCoupledOperator->apply(integratedRHSVec, TemperatureVec, ResidualVec, 1.0, -1.0);
+  */
+  nonlinearThermalColumnOperator->apply(integratedRHSVec, TemperatureVec, ResidualVec, 1.0, -1.0);
   ResidualVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
   double initialResidualNorm  = ResidualVec->L2Norm();
 
@@ -499,13 +453,15 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
   boost::shared_ptr<AMP::Solver::PetscSNESSolver>  nonlinearThermalSolver;
   boost::shared_ptr<AMP::Solver::PetscKrylovSolver>  linearThermalSolver;
   boost::shared_ptr<AMP::Operator::Operator> linearThermalOperator  = boost::dynamic_pointer_cast<AMP::Operator::Operator> ( linearThermalColumnOperator ) ;
-  createThermalSolvers(input_db, TemperatureVec ,  nonlinearThermalCoupledOperator, linearThermalOperator, nonlinearThermalSolver, linearThermalSolver);
+  //createThermalSolvers(input_db, TemperatureVec ,  nonlinearThermalCoupledOperator, linearThermalOperator, nonlinearThermalSolver, linearThermalSolver);
+  createThermalSolvers(input_db, TemperatureVec ,  nonlinearThermalColumnOperator, linearThermalOperator, nonlinearThermalSolver, linearThermalSolver);
 
   nonlinearThermalSolver->setZeroInitialGuess(false);
 
   nonlinearThermalSolver->solve(integratedRHSVec , TemperatureVec );
 
-  nonlinearThermalCoupledOperator->apply(integratedRHSVec, TemperatureVec, ResidualVec, 1.0, -1.0);
+//  nonlinearThermalCoupledOperator->apply(integratedRHSVec, TemperatureVec, ResidualVec, 1.0, -1.0);
+  nonlinearThermalColumnOperator->apply(integratedRHSVec, TemperatureVec, ResidualVec, 1.0, -1.0);
   solutionError->subtract(TemperatureVec, manufacturedSolution);
 
   std::cout << "Max of ||U-Uh|| : "<< solutionError->max() << " Min of ||U-Uh|| : "<< solutionError->min()<< std::endl;
@@ -516,14 +472,16 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
   double TotalNorm2 = 0;
 
   discretizationErrorNorm2 = 0;
-  AMP::LinearAlgebra::VS_Mesh meshSelector1("meshSelector", meshAdapter1 );
-  computeL2Norm( meshAdapter1 , globalComm, TemperatureVec->select(meshSelector1, "Temperature"), &discretizationErrorNorm2 );
+  AMP::LinearAlgebra::VS_Mesh meshSelector1("meshSelector", bottomAdapter );
+  computeL2Norm( bottomAdapter , globalComm, TemperatureVec->select( meshSelector1, "Temperature"), &discretizationErrorNorm2 );
   TotalNorm2 += discretizationErrorNorm2; 
   std::cout << "Discretized error norm ^2 for Mesh  1: "<< discretizationErrorNorm2 << std::endl;
+  /*
   AMP::LinearAlgebra::VS_Mesh meshSelector2("meshSelector", meshAdapter2 );
   computeL2Norm( meshAdapter2 , globalComm, TemperatureVec->select(meshSelector2, "Temperature"), &discretizationErrorNorm2 );
   TotalNorm2 += discretizationErrorNorm2; 
   std::cout << "Discretized error norm ^2 for Mesh  2: "<< discretizationErrorNorm2 << std::endl;
+  */
 
   std::cout << "Discretized error norm for ||U-Uh|| : "<< sqrt(TotalNorm2) << std::endl;
 
@@ -546,16 +504,16 @@ void multiMeshLoop(AMP::UnitTest *ut, std::string exeName)
   input_db->printClassData(AMP::plog);
 
 
-  std::string str1="cube8.with.boundary.labels.e";
-  std::string str2="cube64.with.boundary.labels.e";
-  std::string str3="cube256.with.boundary.labels.e";
+  std::string str1="butterfly_pellet_1x.e";
+//  std::string str2="cube64.with.boundary.labels.e";
+//  std::string str3="cube256.with.boundary.labels.e";
 
   boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-  boost::shared_ptr<AMP::Database> leftMesh_db  = mesh_db->getDatabase( "Mesh_1" );
-  boost::shared_ptr<AMP::Database> rightMesh_db = mesh_db->getDatabase( "Mesh_2" );
+  boost::shared_ptr<AMP::Database> bottomMesh_db  = mesh_db->getDatabase( "Mesh_1" );
+//  boost::shared_ptr<AMP::Database> topMesh_db = mesh_db->getDatabase( "Mesh_2" );
 
-  leftMesh_db->putString("FileName",str2);
-  rightMesh_db->putString("FileName",str2);
+  bottomMesh_db->putString("FileName",str1);
+//  topMesh_db->putString("FileName",str1);
 
   myTest(ut , input_db ,globalComm);
 }
