@@ -1,6 +1,7 @@
 #include "AsyncMapOperator.h"
 #include "AsyncMapOperatorParameters.h"
 #include "ampmesh/MultiMesh.h"
+#include "utils/ProfilerApp.h"
 
 namespace AMP {
 namespace Operator {
@@ -40,12 +41,14 @@ void AsyncMapOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
         AMP::LinearAlgebra::Vector::shared_ptr  &r,
         const double a, const double b)
 {
+    PROFILE_START("apply");
     applyStart  ( f , u , r , a , b );
     applyFinish ( f , u , r , a , b );
     if ( requiresMakeConsistentSet() ) {
         AMP_ASSERT(d_OutputVector.get()!=NULL);
         d_OutputVector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     }
+    PROFILE_STOP("apply");
 }
 
 
