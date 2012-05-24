@@ -14,6 +14,8 @@
 #include <cmath>
 
 #include "utils/AMPManager.h"
+#include "utils/InputManager.h"
+#include "utils/InputDatabase.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 #include "utils/PIO.h"
@@ -137,27 +139,40 @@ class MoabDummyOperator : public MoabBasedOp
 
 void moabInterface(AMP::UnitTest *ut)
 {
-
     // Print out AMP banner
     AMP::Utilities::printBanner();
 
     // Log all nodes
-    AMP::PIO::logAllNodes( "output_testMoabBasedOperator" );
+    std::string exeName = "testMoabBasedOperator";
+    std::string input_file  = "input_"  + exeName;
+    std::string output_file = "output_" + exeName;
+    AMP::PIO::logAllNodes( output_file );
 
-    // Build new database
-    AMP::pout << "Building Input Database" << std::endl;
-    boost::shared_ptr< AMP::InputDatabase > moabDB( new AMP::InputDatabase("Moab_DB") );
+    //--------------------------------------------------
+    //  Read Input File.
+    //--------------------------------------------------
 
-    std::string ampMeshFile = "pellet_1x.e";
+    boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+    AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
+
+    //--------------------------------------------------
+    //   Create the Mesh.
+    //--------------------------------------------------
+    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+    boost::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(mgrParams);
+
+    // Put moab mesh filename onto DB
     std::string moabMeshFile = "input.h5m";
-    moabDB->putString("moabMeshName",moabMeshFile);
+    input_db->putString("moabMeshName",moabMeshFile);
 
     // Build operator params
     typedef AMP::Operator::MoabBasedOperatorParameters MoabOpParams;
     typedef boost::shared_ptr< MoabOpParams >          SP_MoabOpParams;
 
     AMP::pout << "Building Moab Operator Parameters" << std::endl;
-    SP_MoabOpParams moabParams( new MoabOpParams( moabDB ) );
+    SP_MoabOpParams moabParams( new MoabOpParams( input_db ) );
 
     // Build operator
     typedef AMP::Operator::MoabBasedOperator MoabBasedOp;
@@ -169,55 +184,6 @@ void moabInterface(AMP::UnitTest *ut)
     // Call apply
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     moabOp->apply( nullVec, nullVec, nullVec, 0.0, 0.0 );
-
-    // Read AMP pellet mesh from file
-    moabDB->putInteger("NumberOfMeshes",2);
-
-
-    AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
-    if( globalComm.getSize() == 1 )
-        moabDB->putInteger("DomainDecomposition",0);
-    else
-        moabDB->putInteger("DomainDecomposition",1);
-
-    // Create the multimesh database
-    boost::shared_ptr<AMP::Database> meshDB = moabDB->putDatabase("Mesh");
-    meshDB->putString("MeshName","PelletMeshes");
-    meshDB->putString("MeshType","Multimesh");
-    meshDB->putString("MeshDatabasePrefix","Mesh_");
-    meshDB->putString("MeshArrayDatabasePrefix","MeshArray_");
-    // Create the mesh array database
-    boost::shared_ptr<AMP::Database> meshArrayDatabase = meshDB->putDatabase("MeshArray_1");
-    int N_meshes=2;
-    meshArrayDatabase->putInteger("N",N_meshes);
-    meshArrayDatabase->putString("iterator","%i");
-    std::vector<int> indexArray(N_meshes);
-    for (int i=0; i<N_meshes; i++)
-            indexArray[i] = i+1;
-    meshArrayDatabase->putIntegerArray("indicies",indexArray);
-    meshArrayDatabase->putString("MeshName","pellet_%i");
-    meshArrayDatabase->putString("FileName","pellet_1x.e");
-    meshArrayDatabase->putString("MeshType","libMesh");
-    meshArrayDatabase->putInteger("dim",3);
-    meshArrayDatabase->putDouble("x_offset",0.0);
-    meshArrayDatabase->putDouble("y_offset",0.0);
-    std::vector<double> offsetArray(N_meshes);
-    for (int i=0; i<N_meshes; i++)
-            offsetArray[i] = ((double) i)*0.0105;
-    meshArrayDatabase->putDoubleArray("z_offset",offsetArray);
-    meshArrayDatabase->putInteger("NumberOfElements",300);
-
-    // Create Mesh 
-    AMP::pout << "Creating mesh" << std::endl;
-    typedef AMP::Mesh::MeshParameters        MeshParams;
-    typedef boost::shared_ptr< MeshParams >  SP_MeshParams;
-
-    typedef AMP::Mesh::Mesh                  AMPMesh;
-    typedef AMP::Mesh::Mesh::shared_ptr      SP_AMPMesh;
-
-    SP_MeshParams meshParams( new MeshParams( meshDB ) );
-    meshParams->setComm( AMP::AMP_MPI(AMP_COMM_WORLD) );
-    SP_AMPMesh mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
     
     // Create Parameters for Map Operator
     AMP::pout << "Creating map operator" << std::endl;
@@ -227,14 +193,14 @@ void moabInterface(AMP::UnitTest *ut)
     typedef AMP::Operator::MoabMapOperator              MoabMap;
     typedef boost::shared_ptr< MoabMap>                 SP_MoabMap;
 
-    moabDB->putString("MoabMapVariable","TEMPERATURE");
-    SP_MoabMapParams mapParams( new MoabMapParams( moabDB ) );
+    input_db->putString("MoabMapVariable","TEMPERATURE");
+    SP_MoabMapParams mapParams( new MoabMapParams( input_db ) );
     mapParams->setMoabOperator( moabOp );
     mapParams->setMesh( mesh );
 
     // Create DOF manager
     size_t DOFsPerNode = 1;
-    int nodalGhostWidth = 0;
+    int nodalGhostWidth = 1;
     bool split = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(mesh, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
     AMP::LinearAlgebra::Variable::shared_ptr nodalVar( new AMP::LinearAlgebra::Variable("nodalPressure") );
@@ -244,7 +210,7 @@ void moabInterface(AMP::UnitTest *ut)
 
     // Now create Moab map operator
     AMP::pout << "Creating Node-Based Moab Map Operator" << std::endl;
-    moabDB->putString("InterpolateToType","Vertex");
+    input_db->putString("InterpolateToType","Vertex");
     SP_MoabMap moabNodeMap( new MoabMap( mapParams ) );
 
     // Do interpolation
@@ -269,7 +235,7 @@ void moabInterface(AMP::UnitTest *ut)
     else
         ut->failure("Nodal vector is identically zero");
 
-    // Now let's see if the interpolated values are what we expected (should be equal to x-coordinate)
+    // Now let's see if the interpolated values are what we expected (should be equal to sum of x- and z-coordinates)
     int offset = 0;
     int numMismatched=0;
 
@@ -292,7 +258,7 @@ void moabInterface(AMP::UnitTest *ut)
             double val2 = nodalVec->getValueByLocalID(offset+i);                // Moab coordinates are in cm
 
             // Linear interpolation should be 'exact' because we prescribed a linear function
-            // Can't use approx_equal here because it fails for small values
+            // Can't use approx_equal here because it fails for small values (it compares relative rather than absolute difference)
             if( std::abs(val1-val2) > 1.0e-10 )
             {
                 numMismatched++;

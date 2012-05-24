@@ -96,6 +96,7 @@ MechanicsLinearFEOperator2 {
         reset_reuses_matrix = TRUE
         InputVariable = "displacement"
         OutputVariable = "displacement"
+        isAttachedToNonlinearOperator = TRUE
 
         MechanicsElement {
           name="MechanicsLinearElement"

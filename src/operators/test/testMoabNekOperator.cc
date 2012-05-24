@@ -124,8 +124,8 @@ void nekPipeOperator(AMP::UnitTest *ut)
     // Create DOF managers
     size_t DOFsPerElement = 8;
     size_t DOFsPerNode = 1;
-    int gaussPointGhostWidth = 0;
-    int nodalGhostWidth = 0;
+    int gaussPointGhostWidth = 1;
+    int nodalGhostWidth = 1;
     bool split = true;
     AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = 
         AMP::Discretization::simpleDOFManager::create(mesh, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split);

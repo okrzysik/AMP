@@ -20,7 +20,6 @@ LinearMechanicsOperator {
     print_info_level = 1
 
   VolumeOperator = "MechanicsLinearFEOperator"
-
   BoundaryOperator = "DirichletMatrixCorrection"
 }
 
@@ -167,6 +166,7 @@ MechanicsLinearFEOperator{
         reset_reuses_matrix = TRUE
         InputVariable = "displacement"
         OutputVariable = "displacement"
+        isAttachedToNonlinearOperator = TRUE
 
         MechanicsElement {
           name="MechanicsLinearElement"

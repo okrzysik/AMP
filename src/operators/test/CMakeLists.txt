@@ -359,6 +359,7 @@ ENDIF()
 
 #MOAB tests
 IF( USE_MOAB )
+  COPY_TEST_DATA_FILE ( input_testMoabBasedOperator )
   ADD_AMP_TEST_1_2_4( testMoabBasedOperator )
   
   # Can be removed in new mesh design,
