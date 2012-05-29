@@ -104,21 +104,32 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
 #endif
     double t5 = AMP::AMP_MPI::time();
 
-    // Write the file
-    std::stringstream  fname;
-    fname << "2pellet_clad_" << globalComm.getSize() << "proc";
+    // Write a single output file
+    std::stringstream  fname1;
+    fname1 << "2pellet_clad_" << globalComm.getSize() << "proc_single";
     globalComm.barrier();
-    siloWriter->writeFile( fname.str() , 0 );
+    siloWriter->setDecomposition( 0 );
+    siloWriter->writeFile( fname1.str() , 0 );
     globalComm.barrier();
     double t6 = AMP::AMP_MPI::time();
+
+    // Write a seperate output file for each rank
+    std::stringstream  fname2;
+    fname2 << "2pellet_clad_" << globalComm.getSize() << "proc_multiple";
+    globalComm.barrier();
+    siloWriter->setDecomposition( 1 );
+    siloWriter->writeFile( fname2.str() , 0 );
+    globalComm.barrier();
+    double t7 = AMP::AMP_MPI::time();
 
     if ( globalComm.getRank() == 0 ) {
         std::cout << "Read in meshes: " << t2-t1 << std::endl;
         std::cout << "Allocate vectors: " << t3-t2 << std::endl;
         std::cout << "Register data: " << t4-t3 << std::endl;
         std::cout << "Initialize vectors: " << t5-t4 << std::endl;
-        std::cout << "Write a file: " << t6-t5 << std::endl;
-        std::cout << "Total time: " << t6-t1 << std::endl;
+        std::cout << "Write a single file: " << t6-t5 << std::endl;
+        std::cout << "Write multiple files: " << t7-t6 << std::endl;
+        std::cout << "Total time: " << t7-t1 << std::endl;
     }
 
     ut->passes("test ran to completion");

@@ -6,6 +6,10 @@ namespace AMP {
 namespace Mesh {
 
 
+// Some internal functions
+static void createSiloDirectory( DBfile *FileHandle, std::string path );
+
+
 /************************************************************
 * Constructor                                               *
 ************************************************************/
@@ -13,6 +17,21 @@ SiloIO::SiloIO( )
 {
     d_comm = AMP_MPI(AMP_COMM_WORLD);
     dim = -1;
+    decomposition = 0;
+}
+
+
+/************************************************************
+* Some basic functions                                      *
+************************************************************/
+std::string SiloIO::getExtension() 
+{ 
+    return "silo"; 
+}
+void SiloIO::setDecomposition( int d )
+{
+    AMP_INSIST(d>=0&&d<=1,"decomposition must be 0 or 1");
+    decomposition = d;
 }
 
 
@@ -38,9 +57,9 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
 { 
     PROFILE_START("writeFile");
     // Create the file name
-    std::stringstream name;
-    name << fname_in << "_" << iteration_count << "." << getExtension();
-    std::string fname = name.str();
+    std::stringstream tmp;
+    tmp << fname_in << "_" << iteration_count << "." << getExtension();
+    std::string fname = tmp.str();
     // Syncronize all vectors
     for (size_t i=0; i<d_vectors.size(); i++) {
         AMP::LinearAlgebra::Vector::UpdateState localState = d_vectors[i]->getUpdateStatus();
@@ -50,29 +69,57 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
             d_vectors[i]->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     }
     // Write the data for each base mesh
-    for (int i=0; i<d_comm.getSize(); i++) {
-        if ( d_comm.getRank()==i ) {
-            // Open the file
-            DBfile *FileHandle;
-            if ( d_comm.getRank()==0 ) {
-                FileHandle = DBCreate( fname.c_str(), DB_CLOBBER, DB_LOCAL, NULL, DB_HDF5 );
-            } else {
-                FileHandle = DBOpen ( fname.c_str(), DB_HDF5, DB_APPEND );
+    if ( decomposition==0 ) {
+        // Write all mesh data to the main file
+        for (int i=0; i<d_comm.getSize(); i++) {
+            if ( d_comm.getRank()==i ) {
+                // Open the file
+                DBfile *FileHandle;
+                if ( d_comm.getRank()==0 ) {
+                    FileHandle = DBCreate( fname.c_str(), DB_CLOBBER, DB_LOCAL, NULL, DB_HDF5 );
+                } else {
+                    FileHandle = DBOpen ( fname.c_str(), DB_HDF5, DB_APPEND );
+                }
+                // Write the base meshes
+                std::map<AMP::Mesh::MeshID,siloBaseMeshData>::iterator iterator;
+                for (iterator=d_baseMeshes.begin(); iterator!=d_baseMeshes.end(); iterator++) {
+                    siloBaseMeshData &data = iterator->second;
+                    data.file = fname.c_str();
+                    AMP_ASSERT(data.id==iterator->first);
+                    writeMesh( FileHandle, iterator->second );
+                }
+                // Close the file
+                DBClose ( FileHandle );
             }
-            // Write the base meshes
-            std::map<AMP::Mesh::MeshID,siloBaseMeshData>::iterator iterator;
-            for (iterator=d_baseMeshes.begin(); iterator!=d_baseMeshes.end(); iterator++) {
-                siloBaseMeshData &data = iterator->second;
-                data.file = fname;
-                AMP_ASSERT(data.id==iterator->first);
-                writeMesh( FileHandle, iterator->second );
-            }
-            // Close the file
+            d_comm.barrier();
+        }
+    } else if ( decomposition==1 ) {
+        // Every rank will write a seperate file
+        std::stringstream tmp2;
+        tmp2 << fname_in << "_" << iteration_count << "." << d_comm.getRank()+1 << "." << getExtension();
+        std::string fname_rank = tmp2.str();
+        DBfile *FileHandle = DBCreate( fname_rank.c_str(), DB_CLOBBER, DB_LOCAL, NULL, DB_HDF5 );
+        // Write the base meshes
+        std::map<AMP::Mesh::MeshID,siloBaseMeshData>::iterator iterator;
+        for (iterator=d_baseMeshes.begin(); iterator!=d_baseMeshes.end(); iterator++) {
+            siloBaseMeshData &data = iterator->second;
+            data.file = fname_rank.c_str();
+            AMP_ASSERT(data.id==iterator->first);
+            writeMesh( FileHandle, iterator->second );
+        }
+        // Close the file
+        DBClose ( FileHandle );
+    } else {
+        AMP_ERROR("Unknown file decomposition");
+    }
+    // Write the summary results (multimeshes, multivariables, etc.)
+    if ( decomposition!=0 ) {
+        if ( d_comm.getRank()==0 ) {
+            DBfile *FileHandle = DBCreate( fname.c_str(), DB_CLOBBER, DB_LOCAL, NULL, DB_HDF5 );
             DBClose ( FileHandle );
         }
         d_comm.barrier();
     }
-    // Write the summary results (multimeshes, multivariables, etc.)
     writeSummary( fname );
     PROFILE_STOP("writeFile");
 }
@@ -502,12 +549,13 @@ void SiloIO::writeSummary( std::string filename )
     if ( d_comm.getRank()==0 ) {
         DBfile  *FileHandle;
         FileHandle = DBOpen ( filename.c_str(), DB_HDF5, DB_APPEND );
-        DBMkDir ( FileHandle, "test" );
-        //DBSetDir( FileHandle, "test" );
         std::map<AMP::Mesh::MeshID,siloMultiMeshData>::iterator it;
         for (it=multiMeshes.begin(); it!=multiMeshes.end(); it++) {
             // Create the multimesh            
             siloMultiMeshData data = it->second;
+            size_t pos = data.name.find_last_of("/");
+            if ( pos!=std::string::npos )
+                createSiloDirectory( FileHandle, data.name.substr(0,pos) );
             std::vector<std::string> meshNames(data.meshes.size());
             for (size_t i=0; i<data.meshes.size(); i++)
                 meshNames[i] = data.meshes[i].file+":"+data.meshes[i].path+"/"+data.meshes[i].meshName;
@@ -521,6 +569,7 @@ void SiloIO::writeSummary( std::string filename )
             std::string tree_name = data.name+"_tree";
             DBoptlist *optList = DBMakeOptlist(10);
             DBAddOption( optList, DBOPT_MRGTREE_NAME, (char*)tree_name.c_str() );
+            
             DBPutMultimesh( FileHandle, data.name.c_str(), meshNames.size(), meshnames, meshtypes, NULL );
             DBFreeOptlist( optList );
             delete [] meshnames;
@@ -775,6 +824,42 @@ SiloIO::siloMultiMeshData SiloIO::siloMultiMeshData::unpack( char* ptr )
     AMP_ASSERT(pos==data.size());
     return data;
 }
+
+
+/************************************************************
+* Some utilit functions                                     *
+************************************************************/
+void createSiloDirectory( DBfile *FileHandle, std::string path )
+{
+    // Create a subdirectory tree from the current working path if it does not exist
+    char current_dir[256];
+    DBGetDir( FileHandle, current_dir );
+    // Get the list of directories that may need to be created
+    std::vector<std::string> subdirs;
+    std::string path2 = path + "/";
+    while ( !path2.empty() ) {
+        size_t pos = path2.find("/");
+        if ( pos > 0 ) {
+            subdirs.push_back( path2.substr(0,pos) );
+        }
+        path2.erase(0,pos+1);
+    }
+    // Create the directories as necessary
+    for (size_t i=0; i<subdirs.size(); i++) {
+        DBtoc *toc = DBGetToc( FileHandle );
+        bool exists = false;
+        for (int j=0; j<toc->ndir; j++) {
+            if ( subdirs[i].compare(toc->dir_names[j])==0 )
+                exists = true;
+        }
+        if ( !exists )
+            DBMkDir ( FileHandle, subdirs[i].c_str() );
+        DBSetDir( FileHandle, subdirs[i].c_str() );
+    }
+    // Return back to the original working directory
+    DBSetDir( FileHandle, current_dir );
+}
+
 
 
 #else

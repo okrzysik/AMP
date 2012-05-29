@@ -40,7 +40,21 @@ public:
     SiloIO();
 
     //!  Function to return the file extension
-    std::string getExtension() { return "silo"; }
+    std::string getExtension();
+
+    /**
+     * \brief   Function to set the file decomposition
+     * \details This function will set the method used for file IO.  When writing files, 
+     *    there are different decompositions that affect the performance and usability 
+     *    of the output files.  By default, this writer will generate a single file.
+     * \param   method  Decomposition method to use:
+     *             1:  This will write all of the data to a single file.  
+     *                 Note that this requires a serial write and will have the worst performance
+     *             2:  Each processor will write a separate file and a separate 
+     *                 summary file will be written.  Note that this will have better performance
+     *                 at large scale, but will write many files simultaneously.  
+     */
+    void setDecomposition( int decomposition );
 
     //!  Function to read a file
     void  readFile( const std::string &fname );
@@ -137,6 +151,9 @@ private:
 
     // The dimension
     int dim;
+
+    // The dimension
+    int decomposition;
 
     // List of all meshes and thier ids
     std::map<AMP::Mesh::MeshID,siloBaseMeshData>  d_baseMeshes;
