@@ -45,7 +45,7 @@ namespace Operator {
         This function is used by FlowNonlinearFEOperator to pass the address 
         of the element Input and Output vector to this class. 
         @param [in] elementInputVectors Element input vector
-        @param [in] elementOutputVector Element residual vector
+        @param [in] elementOutputVectors Element residual vector
         */
       void setElementVectors( const std::vector<double> & elementInputVectors, 
        std::vector<double> & elementOutputVectors )
