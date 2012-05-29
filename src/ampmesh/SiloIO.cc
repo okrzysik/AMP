@@ -549,6 +549,7 @@ void SiloIO::writeSummary( std::string filename )
     if ( d_comm.getRank()==0 ) {
         DBfile  *FileHandle;
         FileHandle = DBOpen ( filename.c_str(), DB_HDF5, DB_APPEND );
+        PROFILE_START("write multimeshes");
         std::map<AMP::Mesh::MeshID,siloMultiMeshData>::iterator it;
         for (it=multiMeshes.begin(); it!=multiMeshes.end(); it++) {
             // Create the multimesh            
@@ -565,18 +566,17 @@ void SiloIO::writeSummary( std::string filename )
                 meshnames[i] = (char*) meshNames[i].c_str();
                 meshtypes[i] = DB_UCDMESH;
             }
-            //DBPutMultimesh( FileHandle, "all", meshNames.size(), meshnames, meshtypes, NULL );
             std::string tree_name = data.name+"_tree";
             DBoptlist *optList = DBMakeOptlist(10);
             DBAddOption( optList, DBOPT_MRGTREE_NAME, (char*)tree_name.c_str() );
-            
             DBPutMultimesh( FileHandle, data.name.c_str(), meshNames.size(), meshnames, meshtypes, NULL );
             DBFreeOptlist( optList );
             delete [] meshnames;
             delete [] meshtypes;
         }
-        //DBSetDir( FileHandle, "/" );
+        PROFILE_STOP("write multimeshes");
         // Generate the multi-variables
+        PROFILE_START("write multivariables");
         for (it=multiMeshes.begin(); it!=multiMeshes.end(); it++) {
             siloMultiMeshData data = it->second;
             //std::cout << data.name << std::endl;
@@ -627,6 +627,7 @@ void SiloIO::writeSummary( std::string filename )
                 delete [] vartypes;
             }
         }
+        PROFILE_STOP("write multivariables");
         DBClose ( FileHandle );
     }
     PROFILE_STOP("writeSummary");
