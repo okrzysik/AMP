@@ -7,6 +7,7 @@
 #include "utils/MemoryDatabase.h"
 #include "utils/AMPManager.h"
 #include "utils/Utilities.h"
+#include "utils/ProfilerApp.h"
 
 #ifdef USE_AMP_VECTORS
     #include "vectors/Vector.h"
@@ -36,6 +37,7 @@ namespace Mesh {
 libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
     Mesh(params_in)
 {
+    PROFILE_START("constructor");
     this->d_max_gcw = 1;
     // Check for valid inputs
     AMP_INSIST(params.get(),"Params must not be null");
@@ -99,6 +101,7 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
     } else {
         AMP_ERROR("Error: params must contain a database object");
     }
+    PROFILE_STOP("constructor");
 }
 libMesh::libMesh( boost::shared_ptr< ::Mesh> mesh, std::string name )
 {
@@ -153,6 +156,7 @@ Mesh libMesh::copy() const
 ********************************************************/
 void libMesh::initialize()
 {
+    PROFILE_START("initialize");
     // Verify libmesh's rank and size agrees with the rank and size of the comm of the mesh
     AMP_INSIST((int)d_libMesh->processor_id()==d_comm.getRank(),"rank of the mesh does not agree with libmesh");
     AMP_INSIST((int)d_libMesh->n_processors()==d_comm.getSize(),"size of the mesh does not agree with libmesh");
@@ -483,6 +487,7 @@ void libMesh::initialize()
     for (size_t i=0; i<recv_list.size(); i++)
         block_ids.insert( recv_list[i] );
     d_block_ids = std::vector<int>(block_ids.begin(),block_ids.end());
+    PROFILE_STOP("initialize");
 }
 
 

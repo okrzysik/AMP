@@ -1,5 +1,6 @@
 #include "SiloIO.h"
 #include "ampmesh/MultiMesh.h"
+#include "utils/ProfilerApp.h"
 
 namespace AMP { 
 namespace Mesh {
@@ -35,6 +36,7 @@ void SiloIO::readFile( const std::string &fname )
 ************************************************************/
 void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
 { 
+    PROFILE_START("writeFile");
     // Create the file name
     std::stringstream name;
     name << fname_in << "_" << iteration_count << "." << getExtension();
@@ -72,6 +74,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
     }
     // Write the summary results (multimeshes, multivariables, etc.)
     writeSummary( fname );
+    PROFILE_STOP("writeFile");
 }
 
 
@@ -196,6 +199,7 @@ void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
 ************************************************************/
 void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
 { 
+    PROFILE_START("writeMesh");
     AMP::Mesh::Mesh::shared_ptr mesh = data.mesh;
     int dim = mesh->getDim();
     // Get the zone (element) lists
@@ -347,6 +351,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
     #endif
     // Change the directory back to root
     DBSetDir( FileHandle, "/" );
+    PROFILE_STOP("writeMesh");
 }
 
 
@@ -455,6 +460,7 @@ void SiloIO::syncVariableList( std::set<std::string> &data_set ) const
 ************************************************************/
 void SiloIO::writeSummary( std::string filename )
 {
+    PROFILE_START("writeSummary");
     int dim2 = d_comm.bcast(dim,0);
     if ( dim == -1 )
         dim = dim2;
@@ -574,6 +580,7 @@ void SiloIO::writeSummary( std::string filename )
         }
         DBClose ( FileHandle );
     }
+    PROFILE_STOP("writeSummary");
 }
 
 
