@@ -20,7 +20,8 @@ namespace AMP {
     void GaussPointToGaussPointMap :: correctLocalOrdering() {
     }
 
-    void GaussPointToGaussPointMap :: createIdxMap(boost::shared_ptr<AMP::Database> db) {
+    void GaussPointToGaussPointMap :: createIdxMap(boost::shared_ptr<AMP::Operator::OperatorParameters> params) {
+      boost::shared_ptr<AMP::Database> db = params->d_db;
       std::string feTypeOrderName = db->getStringWithDefault("FE_ORDER", "FIRST");
       libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>(feTypeOrderName);
 
@@ -50,7 +51,6 @@ namespace AMP {
       boost::shared_ptr < ::FEBase > fe( (::FEBase::build(dimension, (*feType))).release() ); 
 
       fe->attach_quadrature_rule( qrule.get() );
-
     }
 
   }

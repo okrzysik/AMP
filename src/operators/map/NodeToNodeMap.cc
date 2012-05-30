@@ -360,7 +360,7 @@ std::vector<NodeToNodeMap::Point> NodeToNodeMap::createOwnedPoints( AMP::Mesh::M
         // Create the point
         Point temp;
         temp.id = cur->globalID();
-        for (int j=0; j<dim; j++)
+        for (size_t j = 0; j < pos.size(); ++j)
             temp.pos[j] = pos[j];
         temp.proc = rank;
         surfacePts[i] = temp;
