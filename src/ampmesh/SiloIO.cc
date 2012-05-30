@@ -6,10 +6,6 @@ namespace AMP {
 namespace Mesh {
 
 
-// Some internal functions
-static void createSiloDirectory( DBfile *FileHandle, std::string path );
-
-
 /************************************************************
 * Constructor                                               *
 ************************************************************/
@@ -37,6 +33,10 @@ void SiloIO::setDecomposition( int d )
 
 #ifdef USE_SILO
 
+// Some internal functions
+static void createSiloDirectory( DBfile *FileHandle, std::string path );
+
+
 /************************************************************
 * Function to read a silo file                              *
 ************************************************************/
@@ -60,7 +60,12 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
     std::stringstream tmp;
     tmp << fname_in << "_" << iteration_count << "." << getExtension();
     std::string fname = tmp.str();
+    // Barrier for syncronization (used for better understanding of performance)
+    PROFILE_START("barrier");
+    d_comm.barrier();
+    PROFILE_STOP("barrier");
     // Syncronize all vectors
+    PROFILE_START("makeConsistent");
     for (size_t i=0; i<d_vectors.size(); i++) {
         AMP::LinearAlgebra::Vector::UpdateState localState = d_vectors[i]->getUpdateStatus();
         if ( localState==AMP::LinearAlgebra::Vector::ADDING ) 
@@ -68,6 +73,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
         else
             d_vectors[i]->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     }
+    PROFILE_STOP("makeConsistent");
     // Write the data for each base mesh
     if ( decomposition==0 ) {
         // Write all mesh data to the main file
