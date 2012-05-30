@@ -78,18 +78,12 @@ private:
 
     // Some basic variables
     int dim;
-    int DofsPerObj;
     AMP::Mesh::MeshIterator  d_iterator1;
     AMP::Mesh::MeshIterator  d_iterator2;
 
     // Store the pairs of points that are aligned for each mesh owned by the current processor
     std::vector< std::pair<Point,Point> >   d_localPairsMesh1;
     std::vector< std::pair<Point,Point> >   d_localPairsMesh2;
-
-    // Lists of MeshElementIDs to send/recv for each processor (note: orders must match for each processor)
-    // We want to construct the lists so that we can do a global or pair-wise communication
-    std::vector<AMP::Mesh::MeshElementID>   d_sendList;
-    std::vector<AMP::Mesh::MeshElementID>   d_recvList;
 
     // Variables for communication
     int                                     d_commTag;
@@ -112,7 +106,11 @@ private:
     void  buildSendRecvList( );
 
 protected:
-
+    int DofsPerObj;
+    // Lists of MeshElementIDs to send/recv for each processor (note: orders must match for each processor)
+    // We want to construct the lists so that we can do a global or pair-wise communication
+    std::vector<AMP::Mesh::MeshElementID>   d_sendList;
+    std::vector<AMP::Mesh::MeshElementID>   d_recvList;
 };
 
 

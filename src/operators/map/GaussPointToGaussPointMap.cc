@@ -18,6 +18,22 @@ namespace AMP {
   namespace Operator {
 
     void GaussPointToGaussPointMap :: correctLocalOrdering() {
+      AMP::Discretization::DOFManager::shared_ptr dofMap = d_OutputVector->getDOFManager();
+      std::vector<size_t> localDofs(DofsPerObj);
+      for(size_t i = 0; i < d_recvList.size(); ++i) {
+        dofMap->getDOFs( d_recvList[i], localDofs );
+        std::vector<double> vals(DofsPerObj);
+        for(int j = 0; j < DofsPerObj; ++j) {
+          vals[j] = d_OutputVector->getLocalValueByGlobalID(localDofs[j]);
+        }//end j
+        int DofsPerGaussPt = DofsPerObj/(d_idxMap[i].size());
+        for(size_t j = 0; j < d_idxMap[i].size(); ++j) {
+          for(int k = 0; k < DofsPerGaussPt; ++k) {
+            d_OutputVector->setLocalValueByGlobalID(localDofs[(j*DofsPerGaussPt) + k],
+                vals[((d_idxMap[i][j])*DofsPerGaussPt) + k]);
+          }//end k
+        }//end j
+      }//end i
     }
 
     void GaussPointToGaussPointMap :: createIdxMap(boost::shared_ptr<AMP::Operator::OperatorParameters> params) {
@@ -46,9 +62,10 @@ namespace AMP {
       }
 
       boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, dimension, qruleOrder)).release() ); 
-      const ::Elem *elem; 
+      ::Elem *elem = NULL; 
 
       boost::shared_ptr < ::FEBase > fe( (::FEBase::build(dimension, (*feType))).release() ); 
+      fe->reinit(elem);
 
       fe->attach_quadrature_rule( qrule.get() );
     }
