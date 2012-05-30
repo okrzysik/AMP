@@ -30,10 +30,12 @@ namespace AMP {
         for(unsigned int pellId = 0; pellId < d_totalNumberOfPellets; pellId++) {
           char pellId2Str[256];
           sprintf(pellId2Str, "%u", (pellId + 1));
-          AMP::Mesh::Mesh::shared_ptr currMesh = d_Mesh->Subset(meshNamePrefix + "_" + pellId2Str);
+          std::string meshName = meshNamePrefix + "_" + pellId2Str;
+          AMP::Mesh::Mesh::shared_ptr currMesh = d_Mesh->Subset(meshName);
           if(currMesh == NULL) {
             continue;
           }
+          currMesh->setName(meshName);      // This is needed since subset may change the name and we rely on it later
           d_pelletIds.push_back(pellId);
           d_meshes.push_back(currMesh);
         }//end for pellId

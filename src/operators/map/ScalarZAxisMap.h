@@ -48,10 +48,10 @@ public:
 protected:
     // Implimented buildMap routine
     virtual std::multimap<double,double>  buildMap( const AMP::LinearAlgebra::Vector::shared_ptr, 
-        const AMP::Mesh::MeshIterator& );
+        const AMP::Mesh::Mesh::shared_ptr, const AMP::Mesh::MeshIterator& );
 
     // Implimented buildReturn routine
-    virtual void buildReturn( AMP::LinearAlgebra::Vector::shared_ptr, 
+    virtual void buildReturn( AMP::LinearAlgebra::Vector::shared_ptr, const AMP::Mesh::Mesh::shared_ptr,
         const AMP::Mesh::MeshIterator&, const std::multimap<double,double>& );
 };
 
