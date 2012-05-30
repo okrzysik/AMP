@@ -12,6 +12,18 @@ namespace Operator {
 ScalarZAxisMap::ScalarZAxisMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> &p )
     : Map3to1to3 ( p )
 {
+    boost::shared_ptr <Map3to1to3Parameters>  params = boost::dynamic_pointer_cast<Map3to1to3Parameters> ( p );
+    AMP_ASSERT ( params );
+
+    // Create the element iterators
+    if ( d_mesh1.get() != NULL ) {
+        d_srcIterator1 = d_mesh1->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID1, 0 );
+        d_dstIterator1 = d_mesh1->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID1, 0 );
+    }
+    if ( d_mesh2.get() != NULL ) {
+        d_srcIterator2 = d_mesh2->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID2, 0 );
+        d_dstIterator2 = d_mesh2->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID2, 0 );
+    }
 }
 
 
@@ -41,7 +53,7 @@ bool ScalarZAxisMap::validMapType ( const std::string &t )
 *  the z-position as the 1D key.                                        *
 ************************************************************************/
 std::multimap<double,double>  ScalarZAxisMap::buildMap( const AMP::LinearAlgebra::Vector::shared_ptr vec, 
-    const AMP::Mesh::Mesh::shared_ptr, const AMP::Mesh::MeshIterator &iterator )
+    const AMP::Mesh::MeshIterator &iterator )
 {
     std::multimap<double,double> map;
     AMP::Discretization::DOFManager::shared_ptr  dof = vec->getDOFManager( );
@@ -63,7 +75,7 @@ std::multimap<double,double>  ScalarZAxisMap::buildMap( const AMP::LinearAlgebra
 /************************************************************************
 *  buildReturn                                                          *
 ************************************************************************/
-void ScalarZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::Mesh::shared_ptr,
+void ScalarZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr vec, 
     const AMP::Mesh::MeshIterator &iterator, const std::multimap<double,double> &map )
 {
 
@@ -78,24 +90,30 @@ void ScalarZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr 
 
     // Loop through the points in the output vector
     const double TOL = 1e-8;
-    AMP::Discretization::DOFManager::shared_ptr  dof = vec->getDOFManager( );
+    AMP::Discretization::DOFManager::shared_ptr  DOFs = vec->getDOFManager( );
     AMP::Mesh::MeshIterator cur = iterator.begin();
     AMP::Mesh::MeshIterator end = iterator.end();
     std::vector<size_t> ids;
+    size_t dof;
+    double pos;
     while ( cur != end ) {
-        // Check the endpoints
+
+        // Get the current position and DOF
         std::vector<double> x = cur->coord();
-        double pos = x[2];
-        dof->getDOFs( cur->globalID(), ids );
+        pos = x[2];
+        DOFs->getDOFs( cur->globalID(), ids );
         AMP_ASSERT(ids.size()==1);
+        dof = ids[0];
+
+        // Check the endpoints
         if ( fabs(pos-z0) <= TOL ) {
             // We are within TOL of the first point
-            vec->setValueByGlobalID( ids[0], v0 );
+            vec->setValueByGlobalID( dof, v0 );
             cur++;
             continue;
         } else if ( fabs(pos-z1) <= TOL ) {
             // We are within TOL of the last point
-            vec->setValueByGlobalID( ids[0], v1 );
+            vec->setValueByGlobalID( dof, v1 );
             cur++;
             continue;
         } else if ( pos<z0 || pos>z1 ) {
@@ -115,7 +133,7 @@ void ScalarZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr 
         double hi = ub->first;
         double wt = (pos - lo) / (hi - lo);
         double ans = (1.-wt) * lb->second + wt * ub->second;
-        vec->setValueByGlobalID ( ids[0], ans );
+        vec->setValueByGlobalID ( dof, ans );
 
         cur++;
     }

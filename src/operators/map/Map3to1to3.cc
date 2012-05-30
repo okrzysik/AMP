@@ -29,11 +29,11 @@ Map3to1to3::Map3to1to3 ( const boost::shared_ptr<OperatorParameters> & params_in
     int DofsPerObj = params->d_db->getInteger ( "DOFsPerObject" );
     AMP_INSIST(DofsPerObj==1,"Map3to1to3 is currently only designed for 1 DOF per node");
 
-    // Create the element iterators
-    if ( d_mesh1.get() != NULL )
-        d_iterator1 = d_mesh1->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID1, 0 );
-    if ( d_mesh2.get() != NULL )
-        d_iterator2 = d_mesh2->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID2, 0 );
+    // Create default iterators (must be overwritten by derived class)
+    d_srcIterator1 = AMP::Mesh::MeshIterator();
+    d_srcIterator2 = AMP::Mesh::MeshIterator();
+    d_dstIterator1 = AMP::Mesh::MeshIterator();
+    d_dstIterator2 = AMP::Mesh::MeshIterator();
 
     // Determine which processors we will be sending/receiving data from
     // 0: No communication, 1: send/recv data
@@ -126,10 +126,11 @@ void  Map3to1to3::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , 
                      AMP::LinearAlgebra::Vector::shared_ptr & , const double , const double )
 {
     PROFILE_START("applyStart");
+
     // Build the local maps
     AMP::LinearAlgebra::Vector::shared_ptr vec = subsetInputVector( u );
-    std::multimap<double,double> map1 = buildMap( vec, d_mesh1, d_iterator1 );
-    std::multimap<double,double> map2 = buildMap( vec, d_mesh2, d_iterator2 );
+    std::multimap<double,double> map1 = buildMap( vec, d_srcIterator1 );
+    std::multimap<double,double> map2 = buildMap( vec, d_srcIterator2 );
 
     // Create the send buffers
     d_SendBuf1.resize(2*map1.size());
@@ -212,9 +213,9 @@ void  Map3to1to3::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr & ,
 
     // Build the return vector
     if ( d_mesh1.get() != NULL )
-        buildReturn( d_ResultVector, d_mesh1, d_iterator1, map1 );
+        buildReturn( d_ResultVector, d_dstIterator1, map1 );
     if ( d_mesh2.get() != NULL )
-        buildReturn( d_ResultVector, d_mesh2, d_iterator2, map2 );
+        buildReturn( d_ResultVector, d_dstIterator2, map2 );
 
     // Apply make consistent
     d_ResultVector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
@@ -235,14 +236,14 @@ void  Map3to1to3::setVector ( AMP::LinearAlgebra::Vector::shared_ptr &result )
 
 
 std::multimap<double,double>  Map3to1to3::buildMap ( const AMP::LinearAlgebra::Vector::shared_ptr, 
-    const AMP::Mesh::Mesh::shared_ptr, const AMP::Mesh::MeshIterator& )
+    const AMP::Mesh::MeshIterator& )
 {
     AMP_ERROR("buildMap should never be called for the BaseClass");
     return std::multimap<double,double>();
 }
 
 
-void Map3to1to3::buildReturn ( AMP::LinearAlgebra::Vector::shared_ptr, const AMP::Mesh::Mesh::shared_ptr, 
+void Map3to1to3::buildReturn ( AMP::LinearAlgebra::Vector::shared_ptr, 
     const AMP::Mesh::MeshIterator&, const std::multimap<double,double>& )
 {
     AMP_ERROR("buildReturn should never be called for the BaseClass");
