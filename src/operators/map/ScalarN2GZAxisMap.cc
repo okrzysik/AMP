@@ -25,14 +25,17 @@ ScalarN2GZAxisMap::ScalarN2GZAxisMap ( const boost::shared_ptr<AMP::Operator::Op
     boost::shared_ptr <Map3to1to3Parameters>  params = boost::dynamic_pointer_cast<Map3to1to3Parameters> ( p );
     AMP_ASSERT ( params );
 
+    int DofsPerObj = params->d_db->getInteger ( "DOFsPerObject" );
+    AMP_INSIST(DofsPerObj==4,"ScalarZAxis is currently only designed for 4 Gp per elem");
+
     // Create the element iterators
     if ( d_mesh1.get() != NULL ) {
         d_srcIterator1 = d_mesh1->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID1, 0 );
-        d_dstIterator1 = d_mesh1->getBoundaryIDIterator( AMP::Mesh::Volume, params->d_BoundaryID1, 2 );
+        d_dstIterator1 = d_mesh1->getBoundaryIDIterator( AMP::Mesh::Volume, params->d_BoundaryID1, 0 );
     }
     if ( d_mesh2.get() != NULL ) {
         d_srcIterator2 = d_mesh2->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID2, 0 );
-        d_dstIterator2 = d_mesh2->getBoundaryIDIterator( AMP::Mesh::Volume, params->d_BoundaryID2, 2 );
+        d_dstIterator2 = d_mesh2->getBoundaryIDIterator( AMP::Mesh::Volume, params->d_BoundaryID2, 0 );
     }
    
     createSurfaceFEBase();
@@ -81,7 +84,7 @@ bool ScalarN2GZAxisMap::validMapType ( const std::string &t )
 *  the z-position as the 1D key.                                        *
 ************************************************************************/
 std::multimap<double,double>  ScalarN2GZAxisMap::buildMap( const AMP::LinearAlgebra::Vector::shared_ptr vec, 
-    const AMP::Mesh::MeshIterator &iterator )
+    const AMP::Mesh::Mesh::shared_ptr, const AMP::Mesh::MeshIterator &iterator )
 {
     std::multimap<double,double> map;
     AMP::Discretization::DOFManager::shared_ptr  dof = vec->getDOFManager( );
@@ -103,7 +106,7 @@ std::multimap<double,double>  ScalarN2GZAxisMap::buildMap( const AMP::LinearAlge
 /************************************************************************
 *  buildReturn                                                          *
 ************************************************************************/
-void ScalarN2GZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr vec, 
+void ScalarN2GZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::Mesh::shared_ptr, 
     const AMP::Mesh::MeshIterator &iterator, const std::multimap<double,double> &map )
 {
 
