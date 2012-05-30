@@ -13,7 +13,7 @@ namespace AMP {
       public:
         GaussPointToGaussPointMap(const boost::shared_ptr<AMP::Operator::OperatorParameters> & params)
           : NodeToNodeMap(params) {
-            createIdxMap(params->d_db);
+            createIdxMap(params);
           }
 
         void applyFinish(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
@@ -25,7 +25,7 @@ namespace AMP {
         virtual ~GaussPointToGaussPointMap() { }
 
       protected:
-        void createIdxMap(boost::shared_ptr<AMP::Database> db);
+        void createIdxMap(boost::shared_ptr<AMP::Operator::OperatorParameters> params);
 
         void correctLocalOrdering();
 
