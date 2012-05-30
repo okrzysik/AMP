@@ -15,6 +15,9 @@ ScalarZAxisMap::ScalarZAxisMap ( const boost::shared_ptr<AMP::Operator::Operator
     boost::shared_ptr <Map3to1to3Parameters>  params = boost::dynamic_pointer_cast<Map3to1to3Parameters> ( p );
     AMP_ASSERT ( params );
 
+    int DofsPerObj = params->d_db->getInteger ( "DOFsPerObject" );
+    AMP_INSIST(DofsPerObj==1,"ScalarZAxis is currently only designed for 1 DOF per node");
+
     // Create the element iterators
     if ( d_mesh1.get() != NULL ) {
         d_srcIterator1 = d_mesh1->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID1, 0 );
