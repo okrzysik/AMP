@@ -72,7 +72,7 @@ void  setGpBoundary ( int id , AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::
 
     AMP::Discretization::DOFManager::shared_ptr  d1 = v1->getDOFManager();
 
-    AMP::Mesh::MeshIterator  curBnd = mesh->getBoundaryIDIterator( AMP::Mesh::Volume, id, 0 );
+    AMP::Mesh::MeshIterator  curBnd = mesh->getBoundaryIDIterator( AMP::Mesh::Face, id, 0 );
     AMP::Mesh::MeshIterator  endBnd = curBnd.end();
 
     libmeshElements.reinit( curBnd );

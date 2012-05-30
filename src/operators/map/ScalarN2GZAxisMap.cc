@@ -2,6 +2,12 @@
 #include "discretization/DOF_Manager.h"
 #include "utils/PIO.h"
 
+/* Libmesh files */
+#include "fe_type.h"
+#include "fe_base.h"
+#include "elem.h"
+#include "quadrature.h"
+
 #include "enum_order.h"
 #include "enum_fe_family.h"
 #include "enum_quadrature_type.h"
@@ -31,14 +37,13 @@ ScalarN2GZAxisMap::ScalarN2GZAxisMap ( const boost::shared_ptr<AMP::Operator::Op
     // Create the element iterators
     if ( d_mesh1.get() != NULL ) {
         d_srcIterator1 = d_mesh1->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID1, 0 );
-        d_dstIterator1 = d_mesh1->getBoundaryIDIterator( AMP::Mesh::Volume, params->d_BoundaryID1, 0 );
+        d_dstIterator1 = d_mesh1->getBoundaryIDIterator( AMP::Mesh::Face, params->d_BoundaryID1, 0 );
     }
     if ( d_mesh2.get() != NULL ) {
         d_srcIterator2 = d_mesh2->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID2, 0 );
-        d_dstIterator2 = d_mesh2->getBoundaryIDIterator( AMP::Mesh::Volume, params->d_BoundaryID2, 0 );
+        d_dstIterator2 = d_mesh2->getBoundaryIDIterator( AMP::Mesh::Face, params->d_BoundaryID2, 0 );
     }
    
-    createSurfaceFEBase();
     AMP::Mesh::MeshIterator iterator = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, d_dstIterator1 , d_dstIterator2 );
     libmeshElements.reinit( iterator );
 }
@@ -49,21 +54,6 @@ ScalarN2GZAxisMap::ScalarN2GZAxisMap ( const boost::shared_ptr<AMP::Operator::Op
 ************************************************************************/
 ScalarN2GZAxisMap::~ScalarN2GZAxisMap ()
 {
-}
-
-void
-ScalarN2GZAxisMap::createSurfaceFEBase()
-{
-  libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
-  libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
-
-  boost::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
-  d_fe.reset( (::FEBase::build(2, (*d_feType))).release() );
-
-  libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>("SECOND");
-  boost::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", 2, qruleOrder)).release() );
-
-  d_fe->attach_quadrature_rule( d_qrule.get() );
 }
 
 /************************************************************************
@@ -127,6 +117,17 @@ void ScalarN2GZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_p
     std::vector<size_t> ids;
     double pos;
     while ( cur != end ) {
+
+        libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
+        libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
+
+        boost::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
+        boost::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(2, (*d_feType))).release() );
+
+        libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>("SECOND");
+        boost::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", 2, qruleOrder)).release() );
+
+        d_fe->attach_quadrature_rule( d_qrule.get() );
 
         d_fe->reinit ( libmeshElements.getElement( cur->globalID() ));
 

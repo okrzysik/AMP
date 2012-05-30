@@ -5,11 +5,6 @@
 #include "operators/map/Map3to1to3Parameters.h"
 #include "discretization/createLibmeshElements.h"
 
-/* Libmesh files */
-#include "fe_type.h"
-#include "fe_base.h"
-#include "elem.h"
-#include "quadrature.h"
 
 namespace AMP {
 namespace Operator {
@@ -62,10 +57,8 @@ protected:
 
 private:
 
-    boost::shared_ptr < ::FEBase > d_fe; 
     Discretization::createLibmeshElements libmeshElements;
 
-    void createSurfaceFEBase();
 };
 
 
