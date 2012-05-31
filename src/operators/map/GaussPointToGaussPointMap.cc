@@ -89,8 +89,6 @@ namespace AMP {
       for(size_t i = 0; i < d_sendList.size(); ++i) {
         AMP::Mesh::MeshElement el = multiMesh->getElement(d_sendList[i]);
 
-        dofMap->getDOFs( d_sendList[i], localDofs );
-
         std::vector<AMP::Mesh::MeshElement> currNodes = el.getElements(AMP::Mesh::Vertex);
 
         ::Elem *elem = new ::Quad4; 
@@ -104,6 +102,9 @@ namespace AMP {
         fe->reinit(elem);
 
         const std::vector< ::Point > & xyz = fe->get_xyz();
+
+        dofMap->getDOFs( d_sendList[i], localDofs );
+
         for(size_t j = 0; j < numGaussPtsPerElem; ++j) {
           for(int k = 0; k < dim; ++k) {
             inVec->setLocalValueByGlobalID(localDofs[(j*dim) + k], xyz[j](k));
@@ -126,6 +127,58 @@ namespace AMP {
       AMP::LinearAlgebra::Vector::shared_ptr nullVec;
       n2nMap->apply(nullVec, inVec, nullVec, 1, 0);
 
+      d_idxMap.clear();
+      for(size_t i = 0; i < d_recvList.size(); ++i) {
+        AMP::Mesh::MeshElement el = multiMesh->getElement(d_recvList[i]);
+
+        std::vector<AMP::Mesh::MeshElement> currNodes = el.getElements(AMP::Mesh::Vertex);
+
+        ::Elem *elem = new ::Quad4; 
+        for(size_t j = 0; j < currNodes.size(); ++j) {
+          std::vector<double> pt = currNodes[j].coord();
+          elem->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
+        }//end for j
+
+        boost::shared_ptr < ::FEBase > fe( (::FEBase::build(faceDim, (*feType))).release() ); 
+        fe->attach_quadrature_rule( qrule.get() );
+        fe->reinit(elem);
+
+        const std::vector< ::Point > & xyz = fe->get_xyz();
+
+        dofMap->getDOFs( d_recvList[i], localDofs );
+
+        std::vector<double> vals(dofsPerElem);
+        for(int j = 0; j < dofsPerElem; ++j) {
+          vals[j] = outVec->getLocalValueByGlobalID(localDofs[j]);
+        }//end j
+
+        std::vector<unsigned int> locMap(numGaussPtsPerElem, static_cast<unsigned int>(-1));
+
+        for(int j = 0; j < numGaussPtsPerElem; ++j) {
+          for(int k = 0; k < numGaussPtsPerElem; ++k) {
+            bool found = true;
+            for(int d = 0; d < dim; ++d) {
+              if(fabs(xyz[j](d) - vals[(k*dim) + d]) > 1.0e-11) {
+                found = false;
+                break;
+              }
+            }//end d
+            if(found) {
+              locMap[j] = k;
+              break;
+            }
+          }//end k
+        }//end j
+
+        d_idxMap.push_back(locMap);
+
+        for(size_t j = 0; j < elem->n_nodes(); ++j) {
+          delete (elem->get_node(j));
+          elem->set_node(j) = NULL;
+        }//end for j
+        delete elem;
+        elem = NULL;
+      }//end for i
     }
 
   }
