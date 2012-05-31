@@ -77,7 +77,6 @@ private:
     };
 
     // Some basic variables
-    int dim;
     AMP::Mesh::MeshIterator  d_iterator1;
     AMP::Mesh::MeshIterator  d_iterator2;
 
@@ -106,6 +105,7 @@ private:
     void  buildSendRecvList( );
 
 protected:
+    int dim;
     int DofsPerObj;
     // Lists of MeshElementIDs to send/recv for each processor (note: orders must match for each processor)
     // We want to construct the lists so that we can do a global or pair-wise communication
