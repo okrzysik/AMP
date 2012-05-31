@@ -1,9 +1,13 @@
 
 #include "operators/map/GaussPointToGaussPointMap.h"
+#include "vectors/VectorBuilder.h"
+#include "ampmesh/MultiMesh.h"
+#include "discretization/simpleDOF_Manager.h"
 
 #include "elem.h"
 #include "fe_type.h"
 #include "fe_base.h"
+#include "face_quad4.h"
 #include "quadrature.h"
 
 #include "enum_order.h"
@@ -49,7 +53,7 @@ namespace AMP {
 
       std::string qruleOrderName = db->getStringWithDefault("QRULE_ORDER", "DEFAULT");
 
-      int dimension = db->getIntegerWithDefault("DIMENSION", 2);
+      int faceDim = db->getIntegerWithDefault("DIMENSION", 2);
 
       boost::shared_ptr < ::FEType > feType(new ::FEType(feTypeOrder, feFamily) ); 
 
@@ -61,13 +65,67 @@ namespace AMP {
         qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(qruleOrderName);
       }
 
-      boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, dimension, qruleOrder)).release() ); 
-      ::Elem *elem = NULL; 
+      boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, faceDim, qruleOrder)).release() ); 
 
-      boost::shared_ptr < ::FEBase > fe( (::FEBase::build(dimension, (*feType))).release() ); 
-      fe->reinit(elem);
+      int numGaussPtsPerElem = qrule->n_points();
 
-      fe->attach_quadrature_rule( qrule.get() );
+      int dofsPerElem = (dim*numGaussPtsPerElem);
+
+      AMP::LinearAlgebra::Variable::shared_ptr variable(new AMP::LinearAlgebra::Variable("GaussPoints"));
+
+      std::vector<AMP::Mesh::Mesh::shared_ptr> meshesForMap(2);
+      meshesForMap[0] = d_mesh1;
+      meshesForMap[1] = d_mesh2;
+      AMP::Mesh::Mesh::shared_ptr multiMesh(new AMP::Mesh::MultiMesh(d_MapComm, meshesForMap));
+
+      AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(multiMesh,
+          AMP::Mesh::Face, 0, dofsPerElem);
+
+      AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector(dofMap, variable);
+
+      AMP::LinearAlgebra::Vector::shared_ptr outVec = inVec->cloneVector();
+
+      std::vector<size_t> localDofs(dofsPerElem);
+      for(size_t i = 0; i < d_sendList.size(); ++i) {
+        AMP::Mesh::MeshElement el = multiMesh->getElement(d_sendList[i]);
+
+        dofMap->getDOFs( d_sendList[i], localDofs );
+
+        std::vector<AMP::Mesh::MeshElement> currNodes = el.getElements(AMP::Mesh::Vertex);
+
+        ::Elem *elem = new ::Quad4; 
+        for(size_t j = 0; j < currNodes.size(); ++j) {
+          std::vector<double> pt = currNodes[j].coord();
+          elem->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
+        }//end for j
+
+        boost::shared_ptr < ::FEBase > fe( (::FEBase::build(faceDim, (*feType))).release() ); 
+        fe->attach_quadrature_rule( qrule.get() );
+        fe->reinit(elem);
+
+        const std::vector< ::Point > & xyz = fe->get_xyz();
+        for(size_t j = 0; j < numGaussPtsPerElem; ++j) {
+          for(int k = 0; k < dim; ++k) {
+            inVec->setLocalValueByGlobalID(localDofs[(j*dim) + k], xyz[j](k));
+          }//end for k
+        }//end for j
+
+        for(size_t j = 0; j < elem->n_nodes(); ++j) {
+          delete (elem->get_node(j));
+          elem->set_node(j) = NULL;
+        }//end for j
+        delete elem;
+        elem = NULL;
+      }//end i
+
+      db->putInteger("DOFsPerObject", dofsPerElem);
+      db->putString("VariableName", "GaussPoints");
+      boost::shared_ptr<AMP::Operator::NodeToNodeMap> n2nMap(new AMP::Operator::NodeToNodeMap(params));
+      n2nMap->setVector(outVec);
+
+      AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+      n2nMap->apply(nullVec, inVec, nullVec, 1, 0);
+
     }
 
   }
