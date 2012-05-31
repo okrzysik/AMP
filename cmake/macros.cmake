@@ -263,10 +263,6 @@ MACRO ( SET_WARNINGS )
     SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -Wall")
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wall")
   ENDIF ()
-  SET(CTEST_CUSTOM_WARNING_EXCEPTION ${CTEST_CUSTOM_WARNING_EXCEPTION}
-                                     "ranlib:.*file:.*has no symbols"
-                                     "ranlib: file: .+ has no symbols"
-     )
   
 ENDMACRO ()
 
