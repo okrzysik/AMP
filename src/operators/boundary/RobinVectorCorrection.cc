@@ -110,8 +110,14 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   }
   AMP_ASSERT(*dofManager==*(uInternal->getDOFManager()));
   AMP_ASSERT(*dofManager==*(rInternal->getDOFManager()));
-  if ( d_variableFlux.get()!=NULL)
+  if ( d_variableFlux.get()!=NULL && !d_isFluxGaussPtVector )
     AMP_ASSERT(*dofManager==*(d_variableFlux->getDOFManager()));
+
+  std::vector<size_t> gpDofs;
+  AMP::Discretization::DOFManager::shared_ptr gpDOFManager; 
+  if( !d_isConstantFlux && d_isFluxGaussPtVector){
+    gpDOFManager = d_variableFlux->getDOFManager();
+  }
 
   unsigned int numIds = d_boundaryIds.size();
   std::vector<size_t> dofs;
@@ -147,6 +153,9 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
       dofManager->getDOFs( ids, dofs );
       AMP_ASSERT(dofs.size()==numNodesInCurrElem);
 
+      if( !d_isConstantFlux && d_isFluxGaussPtVector){
+        gpDOFManager->getDOFs (bnd1->globalID(), gpDofs);
+      }
       // Get the libmesh element
       d_currElemPtr = libmeshElements.getElement( bnd1->globalID() );
 
@@ -159,41 +168,63 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
 
       const std::vector<Real> & JxW = (*d_JxW);
       const std::vector<std::vector<Real> > & phi = (*d_phi);
+      unsigned int numGaussPts = d_qrule->n_points(); 
       PROFILE_STOP("prepare element",2);
 
       std::vector<std::vector<double> > inputArgs(d_elementInputVec.size(),std::vector<double>(numNodesInCurrElem));
-      std::vector<double> beta(numNodesInCurrElem,d_beta);
-      std::vector<double> gamma(numNodesInCurrElem,d_gamma);
+      std::vector<std::vector<double> > inputArgsAtGpts(d_elementInputVec.size(),std::vector<double>(numGaussPts));
+      std::vector<double> beta(numGaussPts,d_beta);
+      std::vector<double> gamma(numGaussPts,d_gamma);
       PROFILE_START("get conductance",2);
       if(d_robinPhysicsModel.get() != NULL) 
       {
-        for(unsigned int m = 0; m < d_elementInputVec.size(); m++)
+        unsigned int startIdx = 0;
+        if(d_isFluxGaussPtVector){
+          startIdx = 1;
+        }
+        for(unsigned int m = startIdx; m < d_elementInputVec.size(); m++){
           d_elementInputVec[m]->getValuesByGlobalID( dofs.size(), &dofs[0], &inputArgs[m][0] );
-        d_robinPhysicsModel->getConductance(beta, gamma, inputArgs);
+          for (size_t qp = 0; qp < numGaussPts; qp++){ 
+            for (size_t n = 0; n < numNodesInCurrElem ; n++) {
+              inputArgsAtGpts[m][qp] += phi[n][qp] * inputArgs[m][n];
+            }
+          }
+        }
+        
+        d_robinPhysicsModel->getConductance(beta, gamma, inputArgsAtGpts);
       }
       PROFILE_STOP("get conductance",2);
       PROFILE_START("perform integration",2);
       std::vector<double> values(dofs.size(),0.0);
+      std::vector<double> gpValues(gpDofs.size(),0.0);
       std::vector<double> addValues(dofs.size(),0.0);
       uInternal->getValuesByGlobalID( dofs.size(), &dofs[0], &values[0] );
       for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
       {
         Real phi_val = 0.0;
         for (unsigned int l = 0; l < numNodesInCurrElem ; l++)
-          phi_val += phi[l][qp] * beta[l] * values[l];
+          phi_val += phi[l][qp] * values[l];
         for (unsigned int j = 0; j < numNodesInCurrElem ; j++)
-          addValues[j] += (JxW[qp] * phi[j][qp] * phi_val);
+          addValues[j] += (JxW[qp] * phi[j][qp] * beta[qp] * phi_val);
       }//end for qp
       if (d_IsCoupledBoundary[nid])
       {
-        d_variableFlux->getValuesByGlobalID( dofs.size(), &dofs[0], &values[0] );
+        if(!d_isFluxGaussPtVector){
+          d_variableFlux->getValuesByGlobalID( dofs.size(), &dofs[0], &values[0] );
+        }else{
+          d_variableFlux->getValuesByGlobalID( gpDofs.size(), &gpDofs[0], &gpValues[0] );
+        }
         for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
         {
           Real phi_val = 0.0;
-          for (unsigned int l = 0; l < numNodesInCurrElem ; l++)
-            phi_val += phi[l][qp] * gamma[l] * values[l];
+          if(!d_isFluxGaussPtVector){
+            for (unsigned int l = 0; l < numNodesInCurrElem ; l++)
+              phi_val += phi[l][qp] * values[l];
+          }else{
+            phi_val =  gpValues[qp];
+          }
           for (unsigned int j = 0; j < numNodesInCurrElem ; j++)
-            addValues[j] += -1 * (JxW[qp] * phi[j][qp] * phi_val);
+            addValues[j] += -1 * (JxW[qp] * phi[j][qp] * gamma[qp] * phi_val);
         }//end for qp
       }//coupled
       rInternal->addValuesByGlobalID( dofs.size(), &dofs[0], &addValues[0] );

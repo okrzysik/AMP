@@ -170,7 +170,7 @@ namespace Operator {
                 }
 
                 AMP::Discretization::DOFManager::shared_ptr fluxDOFManager; 
-                if( !d_isConstantFlux && isFluxGaussPtVector){
+                if( !d_isConstantFlux && d_isFluxGaussPtVector){
                   fluxDOFManager = d_variableFlux->getDOFManager();
                   fluxDOFManager->getDOFs (bnd->globalID(), fluxDofs);
                 }
