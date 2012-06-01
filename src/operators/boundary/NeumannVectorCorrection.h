@@ -116,6 +116,7 @@ namespace Operator {
       AMP::LinearAlgebra::Vector::shared_ptr d_variableFlux;
 
       std::vector<bool> d_IsCoupledBoundary;
+      bool d_isFluxGaussPtVector ;
 
       int d_numBndIds;
 

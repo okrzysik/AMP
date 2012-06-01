@@ -54,6 +54,7 @@ namespace Operator {
       d_numBndIds = (myparams->d_db)->getInteger("number_of_ids");
 
       d_isConstantFlux = (myparams->d_db)->getBoolWithDefault("constant_flux", true);
+      d_isFluxGaussPtVector = (myparams->d_db)->getBoolWithDefault("isFluxGaussPtVector",false);
 
       d_boundaryIds.resize(d_numBndIds);
       d_dofIds.resize(d_numBndIds);
@@ -109,16 +110,16 @@ namespace Operator {
       {
 
         AMP::LinearAlgebra::Vector::shared_ptr myRhs = subsetInputVector( rhsCorrection );
-        std::vector<double> gamma(1,1.0);
 
         if(!d_isConstantFlux)
         {
           d_variableFlux->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
         }
 
+        double gammaValue;
         if((d_params->d_db)->keyExists("gamma"))
         {
-          gamma[0] = (d_params->d_db)->getDouble("gamma");
+          gammaValue = (d_params->d_db)->getDouble("gamma");
         }
 
         AMP::LinearAlgebra::Vector::shared_ptr rInternal = myRhs->cloneVector();
@@ -128,6 +129,7 @@ namespace Operator {
         unsigned int numBndIds = d_boundaryIds.size();
         std::vector<size_t> dofs;
         std::vector<std::vector<size_t> > dofIndices;
+        std::vector<size_t> fluxDofs;
 
         for(unsigned int j = 0; j < numBndIds ; j++)
         {
@@ -167,6 +169,12 @@ namespace Operator {
                    dofManager->getDOFs(d_currNodes[i].globalID(), dofIndices[i]);
                 }
 
+                AMP::Discretization::DOFManager::shared_ptr fluxDOFManager; 
+                if( !d_isConstantFlux && isFluxGaussPtVector){
+                  fluxDOFManager = d_variableFlux->getDOFManager();
+                  fluxDOFManager->getDOFs (bnd->globalID(), fluxDofs);
+                }
+
                 // Get the libmesh element
                 d_currElemPtr = libmeshElements.getElement( bnd->globalID() );
 
@@ -180,9 +188,35 @@ namespace Operator {
                 const std::vector<std::vector<Real> > &phi = *d_phi;
                 const std::vector<Real> &djxw = *d_JxW;
 
-                dofs.resize(dofIndices.size());
-                for(unsigned int i = 0; i < dofIndices.size() ; i++)
-                  dofs[i] = dofIndices[i][k];
+                std::vector<std::vector<double> > temp(1) ;
+                std::vector<double> gamma(d_qrule->n_points(), gammaValue);
+
+                dofs.resize(numNodesInCurrElem);
+                for (size_t n = 0; n < dofIndices.size() ; n++)
+                  dofs[n] = dofIndices[n][k];
+
+                for (size_t qp = 0; qp < d_qrule->n_points(); qp++) {
+                  if(d_isConstantFlux)
+                  {
+                    temp[0].push_back(d_neumannValues[j][k]);
+                  }else{
+                    if(d_isFluxGaussPtVector)
+                    {
+                      temp[0].push_back(d_variableFlux->getValueByGlobalID(fluxDofs[qp]));
+                    }else{
+                      Real Tqp = 0.0;
+                      for (size_t n = 0; n < dofIndices.size() ; n++) {
+                        Tqp += phi[n][qp] * d_variableFlux->getValueByGlobalID(dofs[n]);
+                      }
+                      temp[0].push_back(Tqp);
+                    }
+                  }
+                }
+
+                if(d_robinPhysicsModel)
+                {
+                  d_robinPhysicsModel->getConductance(gamma, gamma, temp); 
+                }
 
                 std::vector<double> flux( dofIndices.size(), 0.0);
 
@@ -190,27 +224,8 @@ namespace Operator {
                 {
                   for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) 
                   {
-                    std::vector<std::vector<double> > temp(1) ;
-
-                    // there must be a better way to write this!!
-                    if(d_isConstantFlux)
-                    {
-                      temp[0].push_back(d_neumannValues[j][k]);
-                    }
-                    else
-                    {
-                      temp[0].push_back(d_variableFlux->getValueByGlobalID(dofs[i]));
-                    }
-
-                    if(d_robinPhysicsModel)
-                    {
-                      d_robinPhysicsModel->getConductance(gamma, gamma, temp); 
-                    }
-
-                    flux[i] +=  (gamma[0])*djxw[qp]*phi[i][qp]*temp[0][0];
-
+                    flux[i] +=  (gamma[qp])*djxw[qp]*phi[i][qp]*temp[0][qp];
                   }//end for qp
-
                 }//end for i
 
                 rInternal->addValuesByGlobalID((int)dofs.size() , (size_t *)&(dofs[0]), &(flux[0]));
