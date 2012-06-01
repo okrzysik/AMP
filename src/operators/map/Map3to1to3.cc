@@ -26,8 +26,6 @@ Map3to1to3::Map3to1to3 ( const boost::shared_ptr<OperatorParameters> & params_in
     boost::shared_ptr <Map3to1to3Parameters>  params = boost::dynamic_pointer_cast<Map3to1to3Parameters> ( params_in );
     AMP_ASSERT ( params );
     d_commTag = params->d_commTag;
-    int DofsPerObj = params->d_db->getInteger ( "DOFsPerObject" );
-    AMP_INSIST(DofsPerObj==1,"Map3to1to3 is currently only designed for 1 DOF per node");
 
     // Create default iterators (must be overwritten by derived class)
     d_srcIterator1 = AMP::Mesh::MeshIterator();

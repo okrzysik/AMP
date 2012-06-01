@@ -1,6 +1,22 @@
-#include "operators/map/ScalarZAxisMap.h"
+#include "operators/map/ScalarN2GZAxisMap.h"
 #include "discretization/DOF_Manager.h"
 #include "utils/PIO.h"
+
+/* Libmesh files */
+#include "fe_type.h"
+#include "fe_base.h"
+#include "elem.h"
+#include "quadrature.h"
+
+#include "enum_order.h"
+#include "enum_fe_family.h"
+#include "enum_quadrature_type.h"
+#include "auto_ptr.h"
+#include "string_to_enum.h"
+
+#include "face_quad4.h"
+#include "node.h"
+
 
 namespace AMP {
 namespace Operator {
@@ -9,41 +25,43 @@ namespace Operator {
 /************************************************************************
 *  Default constructor                                                  *
 ************************************************************************/
-ScalarZAxisMap::ScalarZAxisMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> &p )
+ScalarN2GZAxisMap::ScalarN2GZAxisMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> &p )
     : Map3to1to3 ( p )
 {
     boost::shared_ptr <Map3to1to3Parameters>  params = boost::dynamic_pointer_cast<Map3to1to3Parameters> ( p );
     AMP_ASSERT ( params );
 
     int DofsPerObj = params->d_db->getInteger ( "DOFsPerObject" );
-    AMP_INSIST(DofsPerObj==1,"ScalarZAxis is currently only designed for 1 DOF per node");
+    AMP_INSIST(DofsPerObj==4,"ScalarZAxis is currently only designed for 4 Gp per elem");
 
     // Create the element iterators
     if ( d_mesh1.get() != NULL ) {
         d_srcIterator1 = d_mesh1->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID1, 0 );
-        d_dstIterator1 = d_mesh1->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID1, 0 );
+        d_dstIterator1 = d_mesh1->getBoundaryIDIterator( AMP::Mesh::Face, params->d_BoundaryID1, 0 );
     }
     if ( d_mesh2.get() != NULL ) {
         d_srcIterator2 = d_mesh2->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID2, 0 );
-        d_dstIterator2 = d_mesh2->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID2, 0 );
+        d_dstIterator2 = d_mesh2->getBoundaryIDIterator( AMP::Mesh::Face, params->d_BoundaryID2, 0 );
     }
+   
+    AMP::Mesh::MeshIterator iterator = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, d_dstIterator1 , d_dstIterator2 );
+    libmeshElements.reinit( iterator );
 }
 
 
 /************************************************************************
 *  De-constructor                                                       *
 ************************************************************************/
-ScalarZAxisMap::~ScalarZAxisMap ()
+ScalarN2GZAxisMap::~ScalarN2GZAxisMap ()
 {
 }
 
-
 /************************************************************************
-*  Check if the map type is "ScalarZAxis"                               *
+*  Check if the map type is "ScalarN2GZAxis"                               *
 ************************************************************************/
-bool ScalarZAxisMap::validMapType ( const std::string &t )
+bool ScalarN2GZAxisMap::validMapType ( const std::string &t )
 {
-    if ( t == "ScalarZAxis" )
+    if ( t == "ScalarN2GZAxis" )
         return true;
     return false;
 }
@@ -55,7 +73,7 @@ bool ScalarZAxisMap::validMapType ( const std::string &t )
 *  It loops through all values in "cur", storing the value iv using     *
 *  the z-position as the 1D key.                                        *
 ************************************************************************/
-std::multimap<double,double>  ScalarZAxisMap::buildMap( const AMP::LinearAlgebra::Vector::shared_ptr vec, 
+std::multimap<double,double>  ScalarN2GZAxisMap::buildMap( const AMP::LinearAlgebra::Vector::shared_ptr vec, 
     const AMP::Mesh::Mesh::shared_ptr, const AMP::Mesh::MeshIterator &iterator )
 {
     std::multimap<double,double> map;
@@ -78,7 +96,7 @@ std::multimap<double,double>  ScalarZAxisMap::buildMap( const AMP::LinearAlgebra
 /************************************************************************
 *  buildReturn                                                          *
 ************************************************************************/
-void ScalarZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::Mesh::shared_ptr, 
+void ScalarN2GZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::Mesh::shared_ptr, 
     const AMP::Mesh::MeshIterator &iterator, const std::multimap<double,double> &map )
 {
 
@@ -97,47 +115,56 @@ void ScalarZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr 
     AMP::Mesh::MeshIterator cur = iterator.begin();
     AMP::Mesh::MeshIterator end = iterator.end();
     std::vector<size_t> ids;
-    size_t dof;
     double pos;
     while ( cur != end ) {
 
+        libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
+        libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
+
+        boost::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
+        boost::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(2, (*d_feType))).release() );
+
+        libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>("SECOND");
+        boost::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", 2, qruleOrder)).release() );
+
+        d_fe->attach_quadrature_rule( d_qrule.get() );
+
+        d_fe->reinit ( libmeshElements.getElement( cur->globalID() ));
+
         // Get the current position and DOF
-        std::vector<double> x = cur->coord();
-        pos = x[2];
+        std::vector<Point> coordinates = d_fe->get_xyz();
         DOFs->getDOFs( cur->globalID(), ids );
-        AMP_ASSERT(ids.size()==1);
-        dof = ids[0];
 
-        // Check the endpoints
-        if ( fabs(pos-z0) <= TOL ) {
+        for (unsigned int qp = 0; qp < ids.size(); qp++) {
+          pos = coordinates[qp](2);
+          // Check the endpoints
+          if ( fabs(pos-z0) <= TOL ) {
             // We are within TOL of the first point
-            vec->setValueByGlobalID( dof, v0 );
-            cur++;
+            vec->setValueByGlobalID( ids[qp], v0 );
             continue;
-        } else if ( fabs(pos-z1) <= TOL ) {
+          } else if ( fabs(pos-z1) <= TOL ) {
             // We are within TOL of the last point
-            vec->setValueByGlobalID( dof, v1 );
-            cur++;
+            vec->setValueByGlobalID( ids[qp], v1 );
             continue;
-        } else if ( pos<z0 || pos>z1 ) {
+          } else if ( pos<z0 || pos>z1 ) {
             // We are outside the bounds of the map
-            cur++;
             continue;
-        } 
+          } 
 
-        // Find the first point > the current position
-        ub = map.upper_bound( pos );
-        if ( ub == map.end() )
+          // Find the first point > the current position
+          ub = map.upper_bound( pos );
+          if ( ub == map.end() )
             ub--;
-        lb = ub--;
+          lb = ub--;
 
-        // Perform linear interpolation
-        double lo = lb->first;
-        double hi = ub->first;
-        double wt = (pos - lo) / (hi - lo);
-        double ans = (1.-wt) * lb->second + wt * ub->second;
-        vec->setValueByGlobalID ( dof, ans );
+          // Perform linear interpolation
+          double lo = lb->first;
+          double hi = ub->first;
+          double wt = (pos - lo) / (hi - lo);
+          double ans = (1.-wt) * lb->second + wt * ub->second;
+          vec->setValueByGlobalID ( ids[qp], ans );
 
+        }
         cur++;
     }
 }

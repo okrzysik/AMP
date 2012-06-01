@@ -339,6 +339,11 @@ COPY_MESH_FILE(pellet_coarse.e)
 COPY_MESH_FILE(pellet_1x.e)
 COPY_MESH_FILE(clad_1x_1pellet.e)
 
+# Test ScalarN2GZAxis map
+ADD_AMP_TEST_1_2_4 ( testScalarN2GZAxisMap )
+COPY_TEST_DATA_FILE ( inputScalarN2GZAxisMap-1 )
+
+
 # Test map operators
 ADD_AMP_TEST_1_2_4 ( testMapOperator )
 COPY_TEST_DATA_FILE ( input_testMapOperator )
