@@ -67,9 +67,9 @@ namespace AMP {
 
       boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, faceDim, qruleOrder)).release() ); 
 
-      int numGaussPtsPerElem = qrule->n_points();
+      unsigned int numGaussPtsPerElem = qrule->n_points();
 
-      int dofsPerElem = (dim*numGaussPtsPerElem);
+      unsigned int dofsPerElem = (dim*numGaussPtsPerElem);
 
       AMP::LinearAlgebra::Variable::shared_ptr variable(new AMP::LinearAlgebra::Variable("GaussPoints"));
 
@@ -105,13 +105,13 @@ namespace AMP {
 
         dofMap->getDOFs( d_sendList[i], localDofs );
 
-        for(size_t j = 0; j < numGaussPtsPerElem; ++j) {
+        for(unsigned int j = 0; j < numGaussPtsPerElem; ++j) {
           for(int k = 0; k < dim; ++k) {
             inVec->setLocalValueByGlobalID(localDofs[(j*dim) + k], xyz[j](k));
           }//end for k
         }//end for j
 
-        for(size_t j = 0; j < elem->n_nodes(); ++j) {
+        for(unsigned int j = 0; j < elem->n_nodes(); ++j) {
           delete (elem->get_node(j));
           elem->set_node(j) = NULL;
         }//end for j
@@ -148,14 +148,14 @@ namespace AMP {
         dofMap->getDOFs( d_recvList[i], localDofs );
 
         std::vector<double> vals(dofsPerElem);
-        for(int j = 0; j < dofsPerElem; ++j) {
+        for(unsigned int j = 0; j < dofsPerElem; ++j) {
           vals[j] = outVec->getLocalValueByGlobalID(localDofs[j]);
         }//end j
 
         std::vector<unsigned int> locMap(numGaussPtsPerElem, static_cast<unsigned int>(-1));
 
-        for(int j = 0; j < numGaussPtsPerElem; ++j) {
-          for(int k = 0; k < numGaussPtsPerElem; ++k) {
+        for(unsigned int j = 0; j < numGaussPtsPerElem; ++j) {
+          for(unsigned int k = 0; k < numGaussPtsPerElem; ++k) {
             bool found = true;
             for(int d = 0; d < dim; ++d) {
               if(fabs(xyz[j](d) - vals[(k*dim) + d]) > 1.0e-11) {
@@ -172,7 +172,7 @@ namespace AMP {
 
         d_idxMap.push_back(locMap);
 
-        for(size_t j = 0; j < elem->n_nodes(); ++j) {
+        for(unsigned int j = 0; j < elem->n_nodes(); ++j) {
           delete (elem->get_node(j));
           elem->set_node(j) = NULL;
         }//end for j
