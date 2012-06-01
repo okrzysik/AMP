@@ -1,6 +1,7 @@
 INCLUDE (macros)
 
 BEGIN_PACKAGE_CONFIG ( ampmesh )
+ADD_PACKAGE_SUBDIRECTORY ( structured )
 IF ( USE_LIBMESH )
     ADD_PACKAGE_SUBDIRECTORY ( libmesh )
 ENDIF()

@@ -168,6 +168,9 @@ namespace Utilities
     //! Create a hash key from a char array
     unsigned int hash_char(const char*);
 
+    //! Get the prime factors for a number
+    std::vector<int> factor(size_t);
+
     /*!
      * Function to get the memory usage.
      * This function will return the total memory used by the application.

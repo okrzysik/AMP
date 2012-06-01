@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <math.h>
 #include <time.h>
 #include <stdlib.h>
 #include <stdexcept>
@@ -378,6 +379,53 @@ void Utilities::printBanner()
     AMP::pout << banner.str();
 
 }
+
+// Factor a number into it's prime factors
+std::vector<int> Utilities::factor(size_t number)
+{
+    if ( number<=3 ) 
+        return std::vector<int>(1,number);
+    size_t i, n, n_max;
+    int n_factors;
+    bool factor_found;
+    // Initialize n, factors 
+    n = number;
+    std::vector<int> factors;
+    while ( 1 ) {
+        // Check if n is a trivial prime number
+        if ( n==2 || n==3 || n==5 ) {
+            factors.push_back( n );
+            break;
+        } 
+        // Check if n is divisible by 2
+        if ( n%2 == 0 ) {
+            factors.push_back( 2 );
+            n/=2;
+            continue;
+        } 
+        // Check each odd number until a factor is reached
+        n_max = (size_t) floor(sqrt((double) n));
+        factor_found = false;
+        for (i=3; i<=n_max; i+=2) {
+            if ( n%i == 0 ) {
+                factors.push_back( 2 );
+                n/=i;
+                factor_found = true;
+                break;
+            } 
+        }
+        if ( factor_found )
+            continue;
+        // No factors were found, the number must be prime
+        factors.push_back( n );
+        break;
+    }
+    // Sort the factors
+    AMP::Utilities::quicksort(factors);
+    return factors;
+}
+
+
 
 }
 

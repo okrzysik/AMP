@@ -128,6 +128,10 @@ public:
     inline bool operator>= (const MeshElementID& rhs ) const { return d_globalID >= rhs; }
 
 
+    //! Function to get a pointer to the raw mesh element (libMeshElement, structuredMeshElement, etc.)
+    virtual MeshElement* getRawElement();
+
+
 protected:
 
     // Unique (per class) ID for identifing the underlying iterator

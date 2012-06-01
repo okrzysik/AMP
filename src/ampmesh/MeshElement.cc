@@ -79,6 +79,17 @@ MeshElement* MeshElement::clone() const
 
 
 /********************************************************
+* Function to get the raw element                       *
+********************************************************/
+MeshElement* MeshElement::getRawElement()
+{
+    if ( element==NULL )
+        return this;
+    return element->getRawElement();
+}
+
+
+/********************************************************
 * Function to return the centroid of an element         *
 ********************************************************/
 std::vector<double> MeshElement::centroid() const
