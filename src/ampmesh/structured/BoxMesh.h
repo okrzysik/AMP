@@ -16,6 +16,8 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <vector>
+#include <map>
 
 
 namespace AMP {
@@ -263,10 +265,15 @@ protected:
     std::vector<MeshElementIndex> d_index;  // The indicies of the nodes we are storing
     std::vector<double> d_coord[3];         // The coordinates of the nodes
 
-    // Cached data
+    // Basic mesh data
     typedef boost::shared_ptr<std::vector<MeshElementIndex> >   ElementIndexList;
     std::vector<ElementIndexList>   d_elements[4];
     size_t N_global[4];
+
+    // Boundary and id set data
+    std::vector<ElementIndexList>   d_surface_list[4];
+    std::vector<int>                d_ids;
+    std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> >  d_id_list;
 
     // Friend functions to access protected functions    
     friend class structuredMeshElement;

@@ -321,12 +321,17 @@ MeshElement BoxMesh::getElement ( const MeshElementID &elem_id ) const
 {
     std::vector<int> range = getLocalBlock( elem_id.owner_rank() );
     AMP_ASSERT(PhysicalDim<=3);
-    size_t myBoxSize[3]={1,1,1};
-    for (int d=0; d<PhysicalDim; d++) {
-        myBoxSize[d] = range[2*d+1]-range[2*d+0];
-        if ( range[2*d+1]==d_size[d] && !d_isPeriodic[d] && elem_id.type()!=PhysicalDim )
-            myBoxSize[d]++;        // Extend the domain to include nodes, faces at physical boundaries
+    // Increase the index range for the boxes on the boundary for all elements except the current dimension
+    if ( elem_id.type() != PhysicalDim ) {
+        for (int d=0; d<PhysicalDim; d++) {
+            if ( range[2*d+1]==d_size[d] && !d_isPeriodic[d] )
+                range[2*d+1]++;
+        }
     }
+    // Get the 3-index from the local id
+    size_t myBoxSize[3]={1,1,1};
+    for (int d=0; d<PhysicalDim; d++)
+        myBoxSize[d] = range[2*d+1] - range[2*d+0];
     MeshElementIndex index;
     index.type = elem_id.type();
     size_t local_id = elem_id.local_id();
@@ -351,12 +356,15 @@ size_t BoxMesh::numGlobalElements( const GeomType type ) const
 }
 size_t BoxMesh::numGhostElements( const GeomType type, int gcw ) const
 {
-    return d_elements[(int)type][gcw]->size() - d_elements[(int)type][0]->size();
+    size_t N_ghost = 0;
+    for (int i=1; i<=gcw; i++)
+        N_ghost += d_elements[(int)type][gcw]->size();
+    return N_ghost;
 }
 
 
 /****************************************************************
-* Functions to get an iterator                                  *
+* Function to get an iterator                                   *
 ****************************************************************/
 MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
 {
@@ -377,31 +385,50 @@ MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
 
 
 /****************************************************************
+* Function to get an iterator over the surface                  *
+****************************************************************/
+MeshIterator BoxMesh::getSurfaceIterator( const GeomType, const int gcw ) const
+{
+    std::vector<MeshElementIndex> index;
+    
+    AMP_ERROR("Not implimented yet");
+    return MeshIterator();
+}
+
+
+/****************************************************************
 * Functions that aren't implimented yet                         *
 ****************************************************************/
-MeshIterator BoxMesh::getSurfaceIterator( const GeomType, const int ) const
-{
-    AMP_ERROR("Not implimented yet");
-    return MeshIterator();
-}
 std::vector<int> BoxMesh::getBoundaryIDs ( ) const
 {
-    AMP_ERROR("Not implimented yet");
-    return std::vector<int>();
+    return d_ids;
 }
-MeshIterator BoxMesh::getBoundaryIDIterator ( const GeomType, const int, const int ) const
+MeshIterator BoxMesh::getBoundaryIDIterator ( const GeomType type, const int id, const int gcw) const
 {
-    AMP_ERROR("Not implimented yet");
-    return MeshIterator();
+    std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> >::const_iterator it = d_id_list.find( std::pair<int,GeomType>(id,type) );
+    AMP_INSIST(it!=d_id_list.end(),"Boundary elements of the given type and id were not found");
+    boost::shared_ptr<std::vector<MeshElement> >  elements( new std::vector<MeshElement>() );
+    size_t N_elements = 0;
+    for (int i=0; i<=gcw; i++)
+        N_elements += it->second[i]->size();
+    elements->reserve( N_elements );
+    for (int j=0; j<=gcw; j++) {
+        for (size_t k=0; k<d_elements[type][j]->size(); k++) {
+            BoxMesh::MeshElementIndex index = it->second[j]->operator[](k);
+            MeshElement elem = structuredMeshElement( index, this );
+            elements->push_back( elem );
+        }
+    }
+    return MultiVectorIterator( elements, 0 );
 }
 std::vector<int> BoxMesh::getBlockIDs ( ) const
 {
-    AMP_ERROR("Not implimented yet");
-    return std::vector<int>();
+    return std::vector<int>(1,0);
 }
-MeshIterator BoxMesh::getBlockIDIterator ( const GeomType, const int, const int ) const
+MeshIterator BoxMesh::getBlockIDIterator ( const GeomType type, const int id, const int gcw ) const
 {
-    AMP_ERROR("Not implimented yet");
+    if ( id==0 ) 
+        return getIterator( type, gcw );
     return MeshIterator();
 }
 void BoxMesh::displaceMesh( std::vector<double> x )
@@ -472,7 +499,7 @@ std::vector<int> BoxMesh::getOwnerBlock(const MeshElementIndex index, unsigned i
     // Increase the index range for the boxes on the boundary for all elements except the current dimension
     if ( index.type != PhysicalDim ) {
         for (int d=0; d<PhysicalDim; d++) {
-            if ( myBoxIndex[d]==(int)d_localSize[d].size() )
+            if ( range[2*d+1]==d_size[d] && !d_isPeriodic[d] )
                 range[2*d+1]++;
         }
     }

@@ -52,9 +52,10 @@ structuredMeshElement::structuredMeshElement(  BoxMesh::MeshElementIndex index, 
     unsigned int owner_rank;
     std::vector<int> range = d_mesh->getOwnerBlock( d_index, owner_rank );
     for (int d=0; d<d_mesh->PhysicalDim; d++) {
+        AMP_ASSERT(index.index[d]>=0&&index.index[d]<range[2*d+1]);
         myBoxRange[2*d+0] = range[2*d+0];
         myBoxRange[2*d+1] = range[2*d+1];
-        myBoxSize[d] = myBoxRange[2*d+1] - myBoxRange[2*d+0] + 1;   // Add one since some elements may lie on both sides
+        myBoxSize[d] = myBoxRange[2*d+1] - myBoxRange[2*d+0];
     }
     unsigned int local_id = (index.index[0]-myBoxRange[0]) + (index.index[1]-myBoxRange[2])*myBoxSize[0] +
         (index.index[2]-myBoxRange[4])*myBoxSize[0]*myBoxSize[1] + index.side*myBoxSize[0]*myBoxSize[1]*myBoxSize[2];
@@ -149,20 +150,20 @@ std::vector<MeshElement> structuredMeshElement::getElements(const GeomType type)
             index.push_back( index2 );
         } else if ( d_globalID.type()==Face ) {
             if ( d_index.side==0 ) {
-                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0], d_index.index[1],   d_index.index[1]   ) );
-                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0], d_index.index[1]+1, d_index.index[1]   ) );
-                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0], d_index.index[1]+1, d_index.index[1]+1 ) );
-                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0], d_index.index[1],   d_index.index[1]+1 ) );
+                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0], d_index.index[1],   d_index.index[2]   ) );
+                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0], d_index.index[1]+1, d_index.index[2]   ) );
+                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0], d_index.index[1]+1, d_index.index[2]+1 ) );
+                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0], d_index.index[1],   d_index.index[2]+1 ) );
             } else if ( d_index.side==1 ) {
-                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0],   d_index.index[1], d_index.index[1]   ) );
-                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+1, d_index.index[1], d_index.index[1]   ) );
-                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+1, d_index.index[1], d_index.index[1]+1 ) );
-                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0],   d_index.index[1], d_index.index[1]+1 ) );
+                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0],   d_index.index[1], d_index.index[2]   ) );
+                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+1, d_index.index[1], d_index.index[2]   ) );
+                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+1, d_index.index[1], d_index.index[2]+1 ) );
+                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0],   d_index.index[1], d_index.index[2]+1 ) );
             } else if ( d_index.side==2 ) {
-                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0],   d_index.index[1],   d_index.index[1] ) );
-                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+1, d_index.index[1],   d_index.index[1] ) );
-                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+1, d_index.index[1]+1, d_index.index[1] ) );
-                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0],   d_index.index[1]+1, d_index.index[1] ) );
+                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0],   d_index.index[1],   d_index.index[2] ) );
+                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+1, d_index.index[1],   d_index.index[2] ) );
+                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+1, d_index.index[1]+1, d_index.index[2] ) );
+                index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0],   d_index.index[1]+1, d_index.index[2] ) );
             } else {
                 AMP_ERROR("Internal error");
             }
@@ -171,8 +172,64 @@ std::vector<MeshElement> structuredMeshElement::getElements(const GeomType type)
         } else {
             AMP_ERROR("Not finsihed");
         }
+    } else if ( type==Edge ) {
+        if ( d_globalID.type()==Face ) {
+            int side = d_index.side;
+            if ( d_dim==2 )
+                side = 2;
+            if ( d_index.side==0 ) {
+                // We are dealing with an x-face
+                index.push_back( BoxMesh::MeshElementIndex( Edge, 1, d_index.index[0], d_index.index[1],   d_index.index[2]   ) );
+                index.push_back( BoxMesh::MeshElementIndex( Edge, 2, d_index.index[0], d_index.index[1]+1, d_index.index[2]   ) );
+                index.push_back( BoxMesh::MeshElementIndex( Edge, 1, d_index.index[0], d_index.index[1],   d_index.index[2]+1 ) );
+                index.push_back( BoxMesh::MeshElementIndex( Edge, 2, d_index.index[0], d_index.index[1],   d_index.index[2]   ) );
+            } else if ( d_index.side==1 ) {
+                // We are dealing with an y-face
+                index.push_back( BoxMesh::MeshElementIndex( Edge, 0, d_index.index[0],   d_index.index[1], d_index.index[2]   ) );
+                index.push_back( BoxMesh::MeshElementIndex( Edge, 2, d_index.index[0]+1, d_index.index[1], d_index.index[2]   ) );
+                index.push_back( BoxMesh::MeshElementIndex( Edge, 0, d_index.index[0],   d_index.index[1], d_index.index[2]+1 ) );
+                index.push_back( BoxMesh::MeshElementIndex( Edge, 2, d_index.index[0],   d_index.index[1], d_index.index[2]   ) );
+            } else if ( d_index.side==2 ) {
+                // We are dealing with an z-face
+                index.push_back( BoxMesh::MeshElementIndex( Edge, 0, d_index.index[0],   d_index.index[1],   d_index.index[2] ) );
+                index.push_back( BoxMesh::MeshElementIndex( Edge, 1, d_index.index[0]+1, d_index.index[1],   d_index.index[2] ) );
+                index.push_back( BoxMesh::MeshElementIndex( Edge, 0, d_index.index[0],   d_index.index[1]+1, d_index.index[2] ) );
+                index.push_back( BoxMesh::MeshElementIndex( Edge, 1, d_index.index[0],   d_index.index[1],   d_index.index[2] ) );
+            } else {
+                AMP_ERROR("Internal error");
+            }
+        } else if ( d_globalID.type()==Volume ) {
+            AMP_ASSERT(d_index.side==0);
+            index.push_back( BoxMesh::MeshElementIndex( Edge, 0, d_index.index[0],   d_index.index[1],   d_index.index[2]   ) );
+            index.push_back( BoxMesh::MeshElementIndex( Edge, 1, d_index.index[0]+1, d_index.index[1],   d_index.index[2]   ) );
+            index.push_back( BoxMesh::MeshElementIndex( Edge, 0, d_index.index[0],   d_index.index[1]+1, d_index.index[2]   ) );
+            index.push_back( BoxMesh::MeshElementIndex( Edge, 1, d_index.index[0],   d_index.index[1],   d_index.index[2]   ) );
+            index.push_back( BoxMesh::MeshElementIndex( Edge, 2, d_index.index[0],   d_index.index[1],   d_index.index[2]   ) );
+            index.push_back( BoxMesh::MeshElementIndex( Edge, 2, d_index.index[0]+1, d_index.index[1],   d_index.index[2]   ) );
+            index.push_back( BoxMesh::MeshElementIndex( Edge, 2, d_index.index[0]+1, d_index.index[1]+1, d_index.index[2]   ) );
+            index.push_back( BoxMesh::MeshElementIndex( Edge, 2, d_index.index[0],   d_index.index[1],   d_index.index[2]   ) );
+            index.push_back( BoxMesh::MeshElementIndex( Edge, 0, d_index.index[0],   d_index.index[1],   d_index.index[2]+1 ) );
+            index.push_back( BoxMesh::MeshElementIndex( Edge, 1, d_index.index[0]+1, d_index.index[1],   d_index.index[2]+1 ) );
+            index.push_back( BoxMesh::MeshElementIndex( Edge, 0, d_index.index[0],   d_index.index[1]+1, d_index.index[2]+1 ) );
+            index.push_back( BoxMesh::MeshElementIndex( Edge, 1, d_index.index[0],   d_index.index[1],   d_index.index[2]+1 ) );
+        } else {
+            AMP_ERROR("Dimensions > 3 are not supported yet");
+        }
+    } else if ( type==Face ) {
+        if ( d_globalID.type()==Volume ) {
+            index.push_back( BoxMesh::MeshElementIndex( Face, 1, d_index.index[0],   d_index.index[1],   d_index.index[2]   ) );
+            index.push_back( BoxMesh::MeshElementIndex( Face, 0, d_index.index[0]+1, d_index.index[1],   d_index.index[2]   ) );
+            index.push_back( BoxMesh::MeshElementIndex( Face, 1, d_index.index[0],   d_index.index[1]+1, d_index.index[2]   ) );
+            index.push_back( BoxMesh::MeshElementIndex( Face, 0, d_index.index[0],   d_index.index[1],   d_index.index[2]   ) );
+            index.push_back( BoxMesh::MeshElementIndex( Face, 2, d_index.index[0],   d_index.index[1],   d_index.index[2]   ) );
+            index.push_back( BoxMesh::MeshElementIndex( Face, 2, d_index.index[0],   d_index.index[1],   d_index.index[2]+1 ) );
+        } else {
+            AMP_ERROR("Dimensions > 3 are not supported yet");
+        }
+    } else if ( type==Volume ) {
+        AMP_ERROR("Dimensions > 3 are not supported yet");
     } else  {
-        AMP_ERROR("Not finsihed");
+        AMP_ERROR("Not finished");
     }
     // Get the elements
     std::vector<MeshElement> elements(index.size());
