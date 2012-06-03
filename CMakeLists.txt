@@ -15,8 +15,21 @@ ENDIF ()
 
 
 PROJECT (AMP)
-ENABLE_LANGUAGE (Fortran)
 
+# Check if we want to enable fortran
+IF ( NOT DEFINED USE_FORTRAN )
+    SET ( USE_FORTRAN 1 )
+ELSEIF ( ( ${USE_FORTRAN} STREQUAL "false" ) OR ( ${USE_FORTRAN} STREQUAL "0" ) OR ( ${USE_FORTRAN} STREQUAL "OFF" ) )
+    SET ( USE_FORTRAN 0 )
+ELSEIF ( ( ${USE_FORTRAN} STREQUAL "true" ) OR ( ${USE_FORTRAN} STREQUAL "1" ) OR ( ${USE_FORTRAN} STREQUAL "ON" ) )
+    SET (USE_FORTRAN 1 )
+ELSE()
+    MESSAGE ( "Bad value for USE_FORTRAN; use true or false" )
+ENDIF ()
+IF ( USE_FORTRAN )
+	ENABLE_LANGUAGE (Fortran)
+ENDIF()
+	
 # Set testing paramaters
 SET ( DROP_METHOD "http" )
 SET ( DROP_SITE "thyme.ornl.gov" )
@@ -86,13 +99,15 @@ CONFIGURE_AMP ()
 CONFIGURE_TIMERS ()
 CONFIGURE_LINE_COVERAGE ()
 ADD_DEFINITIONS ( -DCMAKE_CONFIGURED )
-INCLUDE (FortranCInterface)
-FORTRANCINTERFACE_HEADER ( ${AMP_INSTALL_DIR}/include/utils/FC.h MACRO_NAMESPACE "FC_" )
-if( (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel") AND (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin") )
-	set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} -fno-common")
-	set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -fno-common")
-	set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-common")
-endif( (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel") AND (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin") )
+IF ( USE_FORTRAN )
+    INCLUDE (FortranCInterface)
+    FORTRANCINTERFACE_HEADER ( ${AMP_INSTALL_DIR}/include/utils/FC.h MACRO_NAMESPACE "FC_" )
+    if( (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel") AND (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin") )
+        set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} -fno-common")
+        set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -fno-common")
+        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-common")
+    endif( (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel") AND (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin") )
+ENDIF()
 
 
 # Create the target for documentation

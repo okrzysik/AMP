@@ -206,8 +206,8 @@ MACRO ( SET_WARNINGS )
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -ldl" )
   ELSEIF ( USING_MICROSOFT )
     # Add Microsoft specifc compiler options
-    SET(CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} /WALL" )
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WALL" )
+    SET(CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} /D _SCL_SECURE_NO_WARNINGS" )
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _SCL_SECURE_NO_WARNINGS" )
   ELSEIF ( USING_ICC )
     # Add Intel specifc compiler options
     #    111: statement is unreachable
@@ -398,6 +398,8 @@ MACRO ( ADD_AMP_PROVISIONAL_TEST EXEFILE )
         ADD_AMP_EXE_DEP( ${EXEFILE} )
     ELSEIF ( ${tmp} STREQUAL "${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE}" )
         # The correct target has already been added
+    ELSEIF ( ${tmp} STREQUAL "${CMAKE_CURRENT_BINARY_DIR}/$(Configuration)/${EXEFILE}.exe" )
+        # The correct target has already been added
     ELSE()
         # We are trying to add 2 different tests with the same name
         MESSAGE ( "Existing test: ${tmp}" )
@@ -471,12 +473,12 @@ ENDMACRO ()
 MACRO ( CHECK_ENABLE_FLAG FLAG DEFAULT )
     IF ( NOT DEFINED ${FLAG} )
         SET ( ${FLAG} ${DEFAULT} )
-    ELSEIF ( ( ${${FLAG}} STREQUAL "false" ) OR ( ${${FLAG}} STREQUAL "0" ) )
+    ELSEIF ( ( ${${FLAG}} STREQUAL "false" ) OR ( ${${FLAG}} STREQUAL "0" ) OR ( ${${FLAG}} STREQUAL "OFF" ) )
         SET ( ${FLAG} 0 )
-    ELSEIF ( ( ${${FLAG}} STREQUAL "true" ) OR ( ${${FLAG}} STREQUAL "1" ) )
+    ELSEIF ( ( ${${FLAG}} STREQUAL "true" ) OR ( ${${FLAG}} STREQUAL "1" ) OR ( ${${FLAG}} STREQUAL "OFF" ) )
         SET ( ${FLAG} 1 )
     ELSE()
-        MESSAGE ( "Bad value for ${FLAG}; use true or false" )
+        MESSAGE ( "Bad value for ${FLAG} (${${FLAG}}); use true or false" )
     ENDIF ()
 ENDMACRO ()
 

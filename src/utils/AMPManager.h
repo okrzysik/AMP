@@ -73,7 +73,7 @@ public:
     /*!
      * Function to check if AMP has been initialized
      */
-    static bool isInitialized() { return initialized; }
+    static bool isInitialized() { return initialized!=0; }
 
     /*!
      * Function to return the number command line arguments that were used to initialize AMP.

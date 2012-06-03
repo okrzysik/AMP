@@ -1,14 +1,10 @@
-//
-// File:        $URL: file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/base/Utilities.h $
-// Package:     AMP toolbox
-// Copyright:   (c) 1997-2008 Lawrence Livermore National Security, LLC
-// Revision:    $LastChangedRevision: 2249 $
-// Modified:    $LastChangedDate: 2008-07-03 08:17:20 -0700 (Thu, 03 Jul 2008) $
-// Description: Utility functions for error reporting, file manipulation, etc.
-//
-
 #ifndef included_AMP_Utilities
 #define included_AMP_Utilities
+
+
+#ifdef _MSC_VER
+    #define _CRT_SECURE_NO_WARNINGS		// Supress depreciated warnings for visual studio
+#endif
 
 
 #include <string>
@@ -23,7 +19,9 @@
 
 namespace AMP {
   
+
 #ifdef _MSC_VER
+    #define _CRT_SECURE_NO_WARNINGS
     #include <sys/types.h>
     #include <sys/stat.h>
     #include <direct.h>
@@ -33,6 +31,7 @@ namespace AMP {
     #define S_IWUSR 0
     #define S_IXUSR 0
 #endif
+
 
 /*!
  * Utilities is a Singleton class containing basic routines for error 
@@ -112,11 +111,10 @@ namespace Utilities
      * \param v2     scalar integer value
      * \param tol    scalar floating point relative tolerance
      */
-    inline bool approx_equal(const int &v1, const int &v2, const double tol = 1e-8) {
+    inline bool approx_equal(const int &v1, const int &v2, const int tol=0) {
         //AMP_ASSERT( tol<1 );
         //AMP_ASSERT( tol>=0 );
-        double tol2 = tol * (double)std::max( fabs(v1),fabs(v2) );                      // Compute the absolute tolerance
-        return (double)fabs(v1-v2)<=tol2;                    // Check if the two value are less than tolerance
+        return abs(v1-v2)<=tol;                    // Check if the two value are less than tolerance
     }
 
     /*!
@@ -126,7 +124,7 @@ namespace Utilities
      * \param tol    relative tolerance
      */
     template<class T>
-    inline bool approx_equal(const T &v1, const T &v2, const T tol = pow( std::numeric_limits<T>::epsilon(), 0.75 )) {
+    inline bool approx_equal(const T &v1, const T &v2, const T tol = pow( std::numeric_limits<T>::epsilon(), (T) 0.75 )) {
         //AMP_ASSERT( tol<1 );
         //AMP_ASSERT( tol>=0 );
         T tol2 = tol*std::max( fabs(v1),fabs(v2) );                      // Compute the absolute tolerance

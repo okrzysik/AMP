@@ -9,11 +9,9 @@
 #endif
 
 
-#include <iostream>
-//using namespace std;
-
 #ifdef USE_WINDOWS
     // Windows
+    #define _CRT_SECURE_NO_WARNINGS		// Supress depreciated warnings for visual studio
     #include <windows.h>
     #include <string>
     #define TIME_TYPE LARGE_INTEGER
@@ -29,6 +27,8 @@
 #else
     #error Unknown OS
 #endif
+
+#include <iostream>
 
 
 #define BIT_WORD size_t                         // A unsigned integer data type (the larger the word size, the better the performance)

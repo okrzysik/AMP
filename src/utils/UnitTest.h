@@ -1,10 +1,11 @@
 #ifndef included_AMPUnitTest
 #define included_AMPUnitTest
 
+#include "utils/AMP_MPI.h"
+
 #include <sstream>
 #include <vector>
 #include <string>
-#include "utils/AMP_MPI.h"
 
 
 namespace AMP {
@@ -58,22 +59,22 @@ public:
     virtual void expected_failure (const std::string &in) { expected_fail_messages.push_back(in); }
 
     //! Return the number of passed tests locally
-    virtual unsigned int NumPassLocal () { return pass_messages.size(); }
+    virtual unsigned int NumPassLocal () { return (unsigned int) pass_messages.size(); }
 
     //! Return the number of failed tests locally
-    virtual unsigned int NumFailLocal () { return fail_messages.size(); }
+    virtual unsigned int NumFailLocal () { return (unsigned int) fail_messages.size(); }
 
     //! Return the number of expected failed tests locally
-    virtual unsigned int NumExpectedFailLocal () { return expected_fail_messages.size(); }
+    virtual unsigned int NumExpectedFailLocal () { return (unsigned int) expected_fail_messages.size(); }
 
     //! Return the number of passed tests locally
-    virtual unsigned int NumPassGlobal () { return comm.sumReduce((int)pass_messages.size()); }
+    virtual unsigned int NumPassGlobal () { return (unsigned int) comm.sumReduce((int)pass_messages.size()); }
 
     //! Return the number of failed tests locally
-    virtual unsigned int NumFailGlobal () { return comm.sumReduce((int)fail_messages.size()); }
+    virtual unsigned int NumFailGlobal () { return (unsigned int) comm.sumReduce((int)fail_messages.size()); }
 
     //! Return the number of expected failed tests locally
-    virtual unsigned int NumExpectedFailGlobal () { return comm.sumReduce((int)expected_fail_messages.size()); }
+    virtual unsigned int NumExpectedFailGlobal () { return (unsigned int) comm.sumReduce((int)expected_fail_messages.size()); }
 
     //! Return the rank of the current processor
     int rank () { return comm.getRank(); }

@@ -420,6 +420,8 @@ template <> void AMP_MPI::call_allGather<unsigned long int>(const unsigned long 
 template <> void AMP_MPI::call_allGather<long int>(const long int*, int, long int*, int*, int*) const;
 template <> void AMP_MPI::call_allGather<float>(const float*, int, float*, int*, int*) const;
 template <> void AMP_MPI::call_allGather<double>(const double*, int, double*, int*, int*) const;
+#else
+template <> void AMP_MPI::call_allGather<char>(const char*, int, char*, int*, int*) const;
 #endif
 // Default instantiations of int call_allGather(const type*, int, type*, int*)
 template <class type>
@@ -663,6 +665,8 @@ template <> void AMP_MPI::call_allToAll<unsigned long int>(const unsigned long i
 template <> void AMP_MPI::call_allToAll<long int>(const long int*, const int*, const int*, long int*, const int*, const int*) const;
 template <> void AMP_MPI::call_allToAll<float>(const float*, const int*, const int*, float*, const int*, const int*) const;
 template <> void AMP_MPI::call_allToAll<double>(const double*, const int*, const int*, double*, const int*, const int*) const;
+#else
+template <> void AMP_MPI::call_allToAll<char>(const char*, const int*, const int*, char*, const int*, const int*) const;
 #endif
 // Default instantiations of call_allToAll(const type*, const int*, const int*, type*, const int*, const int*);
 template <class type>

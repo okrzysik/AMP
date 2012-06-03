@@ -4,10 +4,7 @@
 #include "Utilities.h"
 #include "RNG.h"
 #include "utils/ProfilerApp.h"
-
-#ifdef USE_MPI
-    #include "mpi.h"
-#endif
+#include "utils/AMP_MPI.h"
 
 #ifdef USE_PETSC
     #include "petscsys.h"   
@@ -53,7 +50,7 @@ AMPManagerProperties AMPManager::properties=AMPManagerProperties();
         LARGE_INTEGER end, f;
         QueryPerformanceFrequency(&f);
         QueryPerformanceCounter(&end);       
-        double time = ((double)end.QuadPart)/((double)f.QuadPart));
+        double time = ((double)end.QuadPart)/((double)f.QuadPart);
         return time;
     }
 #else
@@ -120,7 +117,11 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
     #endif
     // Initialize AMP's MPI
     if ( properties.COMM_WORLD == AMP_COMM_WORLD ) 
-        comm_world = AMP_MPI(MPI_COMM_WORLD);
+		#ifdef USE_MPI
+			comm_world = AMP_MPI(MPI_COMM_WORLD);
+		#else
+			comm_world = AMP_MPI(AMP_COMM_WORLD);
+		#endif
     else
         comm_world = AMP_MPI(properties.COMM_WORLD);    // Initialize the parallel IO
     PIO::initialize();
@@ -168,7 +169,9 @@ void AMPManager::shutdown()
     // Shutdown MPI
     if ( called_MPI_Init ) {
         double MPI_start_time = time();
-        MPI_Finalize();
+        #ifdef USE_MPI
+            MPI_Finalize();
+        #endif
         MPI_time = time()-MPI_start_time;
     }
     // Shudown PETSc

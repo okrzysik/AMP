@@ -1,12 +1,3 @@
-//
-// File:        $URL: file:///usr/casc/samrai/repository/SAMRAI/tags/v-2-4-4/source/toolbox/base/Utilities.C $
-// Package:     SAMRAI toolbox
-// Copyright:   (c) 1997-2008 Lawrence Livermore National Security, LLC
-// Revision:    $LastChangedRevision: 2039 $
-// Modified:    $LastChangedDate: 2008-03-11 13:23:52 -0700 (Tue, 11 Mar 2008) $
-// Description: Utility functions for error reporting, file manipulation, etc.
-//
-
 #include "Utilities.h"
 
 #include "utils/AMP_MPI.h"
@@ -25,7 +16,7 @@
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     // Note: windows has not been testeds
     #define USE_WINDOWS
-    #include "windows.h"
+	#include "windows.h"
 #elif defined(__APPLE__)
     #define USE_MAC
     #include <signal.h>
@@ -50,7 +41,7 @@ namespace AMP{
 bool Utilities::fileExists( const std::string& filename )
 {
    std::ifstream ifile(filename.c_str());
-   return ifile;
+   return ifile!=NULL;
 }
 
 // Routine to rename a file.
@@ -82,14 +73,14 @@ void Utilities::recursiveMkdir(
 
 #ifdef _MSC_VER
    const char seperator = '/';
-#define mkdir(path, mode) mkdir(path)
+   #define mkdir(path, mode) _mkdir(path)
 #else
    const char seperator = '/';
 #endif
 
    AMP_MPI comm = AMP_MPI(AMP_COMM_WORLD);
    if ( (!only_node_zero_creates) || (comm.getRank() == 0)) {
-      int length = path.length();
+      int length = (int) path.length();
       char *path_buf= new char[length+1];
       sprintf(path_buf,"%s",path.c_str());
       struct stat status;
@@ -384,9 +375,8 @@ void Utilities::printBanner()
 std::vector<int> Utilities::factor(size_t number)
 {
     if ( number<=3 ) 
-        return std::vector<int>(1,number);
+        return std::vector<int>(1,(int)number);
     size_t i, n, n_max;
-    int n_factors;
     bool factor_found;
     // Initialize n, factors 
     n = number;
@@ -394,7 +384,7 @@ std::vector<int> Utilities::factor(size_t number)
     while ( 1 ) {
         // Check if n is a trivial prime number
         if ( n==2 || n==3 || n==5 ) {
-            factors.push_back( n );
+            factors.push_back( (int) n );
             break;
         } 
         // Check if n is divisible by 2
@@ -417,7 +407,7 @@ std::vector<int> Utilities::factor(size_t number)
         if ( factor_found )
             continue;
         // No factors were found, the number must be prime
-        factors.push_back( n );
+        factors.push_back( (int) n );
         break;
     }
     // Sort the factors
