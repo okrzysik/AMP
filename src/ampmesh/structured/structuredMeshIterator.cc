@@ -119,9 +119,8 @@ MeshIterator structuredMeshIterator::operator++(int)
 MeshIterator& structuredMeshIterator::operator--()
 {
     // Prefix decrement (increment and return this)
-    d_pos--;
-    if ( d_pos < 0 )
-        d_pos = 0;
+    if ( d_pos!=0 )
+        d_pos--;
     return *this;
 }
 MeshIterator structuredMeshIterator::operator--(int)

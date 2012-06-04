@@ -61,7 +61,6 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
         // First, get the prime factors for number of processors and divide the dimensions
         std::vector<int> factors = AMP::Utilities::factor(d_comm.getSize());
         std::vector<int> div(PhysicalDim,1);
-        int block_size[3];
         while ( factors.size() > 0 ) {
             int d = -1;
             int v = -1;

@@ -36,7 +36,7 @@ structuredMeshElement::structuredMeshElement()
 {
     typeID = structuredMeshElementTypeID;
     element = NULL;
-    d_dim = -1;
+    d_dim = 0;
     d_index = BoxMesh::MeshElementIndex();
     d_globalID = MeshElementID();
 }

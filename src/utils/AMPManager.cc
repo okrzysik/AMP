@@ -69,14 +69,17 @@ AMPManagerProperties AMPManager::properties=AMPManagerProperties();
 /****************************************************************************
 *  Function to terminate AMP if an unhandled exception is caught            *
 ****************************************************************************/
+static int tried_throw = 0;
 void term_func() 
 {
     // Try to re-throw the last error to get the last message
     std::string last_message;
     #ifdef USE_LINUX
-        static bool tried_throw = false;
         try {
-            if (!tried_throw++) throw;
+            if ( tried_throw==0 ) { 
+                tried_throw = 1;
+                throw;
+            }
             // No active exception
         } catch (const std::exception &err) {
             // Caught a std::runtime_error
