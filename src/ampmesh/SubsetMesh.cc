@@ -56,7 +56,7 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
     d_elements = std::vector<std::vector<boost::shared_ptr<std::vector<MeshElement> > > >((int)GeomDim+1);
     for (int i=0; i<=GeomDim; i++) {
         d_elements[i] = std::vector<boost::shared_ptr<std::vector<MeshElement> > >( 
-            d_max_gcw+1, boost::shared_ptr<std::vector<MeshElement> >() );
+            d_max_gcw+1, boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>() ) );
     }
     int gcw = 0;
     while ( 1 ) {

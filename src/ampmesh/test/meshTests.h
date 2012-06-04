@@ -102,7 +102,7 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
     bool coord_pass = true;
     bool centroid_pass = true;
     bool elements_pass = true;
-    bool neighbor_pass = true;
+    int neighbor_pass = 1;
     cur_it = iterator.begin();
     int myRank = mesh->getComm().getRank();
     int maxRank = mesh->getComm().getSize()-1;
@@ -145,8 +145,12 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
                     elements_pass = false;
             }
             std::vector< AMP::Mesh::MeshElement::shared_ptr > neighbors = element.getNeighbors();
-            if ( neighbors.empty() )
-                neighbor_pass = false;
+            if ( neighbors.empty() ) {
+                if ( element.elementType()==AMP::Mesh::Vertex || element.elementType()==mesh->getDim() )
+                    neighbor_pass = 0;
+                else if ( neighbor_pass==1 )
+                    neighbor_pass = 2;
+            }
             if ( ownerRank!=myRank )
                 id_pass = false;
         } else {
@@ -155,7 +159,7 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
         }
         ++cur_it;   // Pre-increment is faster than post-increment
     }
-    if ( id_pass && type_pass && volume_pass && coord_pass && elements_pass && neighbor_pass ) {
+    if ( id_pass && type_pass && volume_pass && coord_pass && elements_pass && neighbor_pass==1 ) {
         ut->passes( "elements passed" );
     } else {
         if ( !id_pass )
@@ -170,8 +174,10 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
             ut->failure( "elements failed centroid test" );
         if ( !elements_pass )
             ut->failure( "elements failed getElements test" );
-        if ( !neighbor_pass )
+        if ( neighbor_pass==0 ) 
             ut->failure( "elements failed getNeighbors test" );
+        else if ( neighbor_pass==2 ) 
+            ut->expected_failure( "elements failed getNeighbors test" );
     }
     // Check that we can get the element from the global id for all elements
     cur_it = iterator.begin();

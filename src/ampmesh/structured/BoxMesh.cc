@@ -212,7 +212,7 @@ void BoxMesh::initialize()
             AMP_ASSERT( (int)d_elements[0][0]->size() == d_size[0] );
         else
             AMP_ASSERT( (int)d_elements[0][0]->size() == (d_size[0]+1) );
-        AMP_ASSERT( (int)d_elements[1][0]->size() == d_size[0] );
+        AMP_ASSERT( d_comm.sumReduce((int)d_elements[1][0]->size()) == d_size[0] );
     } else if ( PhysicalDim==2 ) {
         size_t N_faces_global = d_size[0]*d_size[1];
         size_t N_edges_global = 2*d_size[0]*d_size[1];
@@ -227,9 +227,9 @@ void BoxMesh::initialize()
             else
                 N_nodes_global *= d_size[i]+1;
         }
-        AMP_ASSERT( d_elements[0][0]->size() == N_nodes_global );
-        AMP_ASSERT( d_elements[1][0]->size() == N_edges_global );
-        AMP_ASSERT( d_elements[2][0]->size() == N_faces_global );
+        AMP_ASSERT( d_comm.sumReduce(d_elements[0][0]->size()) == N_nodes_global );
+        AMP_ASSERT( d_comm.sumReduce(d_elements[1][0]->size()) == N_edges_global );
+        AMP_ASSERT( d_comm.sumReduce(d_elements[2][0]->size()) == N_faces_global );
     } else if ( PhysicalDim==3 ) {
         size_t N_elements_global = d_size[0]*d_size[1]*d_size[2];
         size_t N_faces_global = 3*d_size[0]*d_size[1]*d_size[2];
@@ -259,10 +259,10 @@ void BoxMesh::initialize()
             else
                 N_nodes_global *= d_size[i]+1;
         }
-        AMP_ASSERT( d_elements[0][0]->size() == N_nodes_global );
-        AMP_ASSERT( d_elements[1][0]->size() == N_edges_global );
-        AMP_ASSERT( d_elements[2][0]->size() == N_faces_global );
-        AMP_ASSERT( d_elements[3][0]->size() == N_elements_global );
+        AMP_ASSERT( d_comm.sumReduce(d_elements[0][0]->size()) == N_nodes_global );
+        AMP_ASSERT( d_comm.sumReduce(d_elements[1][0]->size()) == N_edges_global );
+        AMP_ASSERT( d_comm.sumReduce(d_elements[2][0]->size()) == N_faces_global );
+        AMP_ASSERT( d_comm.sumReduce(d_elements[3][0]->size()) == N_elements_global );
     } else {
         AMP_ERROR("Not programmed for this dimension yet");
     }
