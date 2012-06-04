@@ -66,6 +66,7 @@ namespace AMP {
       }
 
       boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, faceDim, qruleOrder)).release() ); 
+      qrule->init(QUAD4, 0);
 
       unsigned int numGaussPtsPerElem = qrule->n_points();
 
