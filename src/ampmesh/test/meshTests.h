@@ -324,7 +324,7 @@ void MeshCountTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
         size_t N_local = mesh->numLocalElements(type);
         size_t N_global = mesh->numGlobalElements(type);
         size_t N_ghost0 = mesh->numGhostElements(type,0);
-        size_t N_ghost1 = mesh->numGhostElements(type,1);
+        size_t N_ghost1 = comm.sumReduce( mesh->numGhostElements(type,1) );
         size_t N_sum = comm.sumReduce(N_local);
         if ( N_global > 0 )
             ut->passes("Non-trival mesh created");
