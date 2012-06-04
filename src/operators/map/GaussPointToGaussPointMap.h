@@ -22,6 +22,13 @@ namespace AMP {
           correctLocalOrdering();
         }
 
+        static bool  validMapType ( const std::string &t ) {
+          if ( t == "GaussPointToGaussPoint" ) {
+            return true;
+          }
+          return false;
+        }
+
         virtual ~GaussPointToGaussPointMap() { }
 
       protected:
