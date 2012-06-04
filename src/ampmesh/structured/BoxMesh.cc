@@ -26,8 +26,10 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
 {
     PROFILE_START("Constructor");
     for (int d=0; d<3; d++) {
-        d_size[d] = 0;
+        d_size[d] = 1;
         d_isPeriodic[d] = false;
+        d_numBlocks[d] = 1;
+        d_maxLocalSize[d] = 1;
     }
     // Check for valid inputs
     AMP_INSIST(params.get(),"Params must not be null");
@@ -80,10 +82,12 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
     }
     // Initialize the logical mesh
     initialize();
-    // Create the appropriate mesh coordinates
+    // Create the appropriate mesh coordinates (and modify the id sets if necessary)
     if ( generator.compare("cube")==0 ) {
         AMP_INSIST(range.size()==2*PhysicalDim,"Range must be 2*dim for cube generator");
         fillCartesianNodes( PhysicalDim, &d_size[0], &range[0], d_index, d_coord );
+    } else if ( generator.compare("cylinder")==0 ) {
+        AMP_ERROR("Not finished yet");
     } else { 
         AMP_ERROR("Unknown generator");
     }
@@ -399,9 +403,53 @@ void BoxMesh::initialize()
         }
     }
     PROFILE_STOP("create_surface_elements");
-    // Create the boundary info
-    d_ids = std::vector<int>();
-    d_id_list = std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> >();
+    // Create the initial boundary info 
+    for (int side=0; side<2*PhysicalDim; side++) {
+        if ( d_isPeriodic[side/2] )
+            continue;
+        d_ids.push_back( side );
+        int R = 0;
+        if ( side%2==1 )
+            R = d_size[side/2]-1;
+        for (int d=0; d<=PhysicalDim; d++) {
+            std::pair<int,GeomType> id(side,(GeomType)d);
+            std::vector<ElementIndexList> ghost_list(d_max_gcw+1);
+            for (int gcw=0; gcw<=d_max_gcw; gcw++) {
+                std::vector<MeshElementIndex> list;
+                list.reserve( d_elements[d][gcw]->size() );
+                for (size_t i=0; i<d_elements[d][gcw]->size(); i++) {
+                    MeshElementIndex index = d_elements[d][gcw]->operator[](i);
+                    if ( d==PhysicalDim ) {
+                        if ( index.index[side/2]==R )
+                            list.push_back( index );
+                    } else if ( index.type==Vertex ) {
+                        if ( index.index[side/2]==R+1 )
+                            list.push_back( index );
+                    } else if ( index.type==Edge ) {
+                        if ( PhysicalDim==2 ) {
+                            if ( index.side==side/2 && index.index[side/2]==R+1 )
+                                list.push_back( index );
+                        } else {
+                            if ( index.side!=side/2 && index.index[side/2]==R+1 )
+                                list.push_back( index );
+                        }
+                    } else if ( index.type==Face ) {
+                        if ( index.side==side/2 && index.index[side/2]==R+1 )
+                            list.push_back( index );
+                    } else { 
+                        AMP_ERROR("Unknown element type");
+                    }
+                }
+                // Sort for searching later
+                AMP::Utilities::quicksort( list );
+                // Copy the list to reduce final memory usage
+                ghost_list[gcw] = ElementIndexList( new std::vector<MeshElementIndex>() );
+                ghost_list[gcw]->operator=( list );
+            }
+            std::pair<std::pair<int,GeomType>,std::vector<ElementIndexList> >  tmp( id, ghost_list );
+            d_id_list.insert( tmp );
+        }
+    }
     PROFILE_STOP("initialize");
 }
 

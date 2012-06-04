@@ -493,12 +493,24 @@ bool structuredMeshElement::isOnSurface() const
 }
 bool structuredMeshElement::isOnBoundary(int id) const
 {
-    AMP_ERROR("Not finsihed");
+    std::map<std::pair<int,GeomType>,std::vector<BoxMesh::ElementIndexList> >::const_iterator iterator;
+    iterator = d_mesh->d_id_list.find( std::pair<int,GeomType>( id, (GeomType)d_index.type ) );
+    if ( iterator==d_mesh->d_id_list.end() )
+        return false;
+    for (size_t i=0; i<iterator->second.size(); i++) {
+        if ( iterator->second[i]->size()==0 )
+            continue;
+        size_t j = AMP::Utilities::findfirst( *(iterator->second[i]), d_index );
+        if ( j==iterator->second[i]->size() ) { j--; }
+        if ( iterator->second[i]->operator[](j) == d_index )
+            return true;
+    }
     return false;
 }
 bool structuredMeshElement::isInBlock(int id) const
 {
-    AMP_ERROR("Not finsihed");
+    if ( id==0 )
+        return true;
     return false;
 }
 
