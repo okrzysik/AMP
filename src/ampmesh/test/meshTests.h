@@ -338,8 +338,9 @@ void MeshCountTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
             ut->passes("gcw=0 has no ghost elements");
         else
             ut->failure("gcw=0 has no ghost elements");
-        
-        if ( N_local != N_global && boost::dynamic_pointer_cast<AMP::Mesh::MultiMesh>(mesh).get()==NULL ) {
+        std::vector<AMP::Mesh::MeshID> ids = mesh->getBaseMeshIDs();
+        bool is_base_mesh = ids.size()==1 && ids[0]==mesh->meshID();
+        if ( N_local != N_global && is_base_mesh ) {
             if ( N_ghost1 > 0 )
                 ut->passes("gcw=1 has ghost elements");
             else
