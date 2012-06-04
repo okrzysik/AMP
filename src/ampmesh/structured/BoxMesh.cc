@@ -44,6 +44,7 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
     std::vector<int> size = d_db->getIntegerArray("Size");
     std::vector<double> range = d_db->getDoubleArray("Range");
     AMP_INSIST(size.size()==PhysicalDim,"Size of field 'Size' must match dim");
+    d_max_gcw = d_db->getIntegerWithDefault("GCW",1);
     for (int d=0; d<PhysicalDim; d++)
         AMP_INSIST(size[d]>0,"All dimensions must have a size > 0");
     // Create the logical mesh
@@ -79,7 +80,6 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
         }
     }
     // Initialize the logical mesh
-    d_max_gcw = 3;
     initialize();
     // Create the appropriate mesh coordinates
     if ( generator.compare("cube")==0 ) {

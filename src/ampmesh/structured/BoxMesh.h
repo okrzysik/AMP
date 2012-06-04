@@ -43,6 +43,7 @@ class structuredMeshIterator;
  *           cyliner: [ r  z-min  z-max ]
  *           tube: [ r-min  r-max  z-min  z-max ]
  *    Periodic: Are any dimensions periodic (only applies to cubes)
+ *    GCW: The maximum ghost cell width to support (default is 1)
  */
 class BoxMesh: public AMP::Mesh::Mesh
 {

@@ -48,14 +48,11 @@ structuredMeshElement::structuredMeshElement(  BoxMesh::MeshElementIndex index, 
     AMP_ASSERT(d_dim>0&&d_dim<=3);
     d_index = index;
     unsigned int owner_rank;
-    int range[6];
-    d_mesh->getOwnerBlock( d_index, owner_rank, range );
-    size_t myBoxSize[3]  = {1,1,1};
-    size_t myBoxRange[6] = {0,0,0,0,0,0};
+    int myBoxSize[3]  = {1,1,1};
+    int myBoxRange[6] = {0,0,0,0,0,0};
+    d_mesh->getOwnerBlock( d_index, owner_rank, myBoxRange );
     for (int d=0; d<d_mesh->PhysicalDim; d++) {
-        AMP_ASSERT(index.index[d]>=0&&index.index[d]<range[2*d+1]);
-        myBoxRange[2*d+0] = range[2*d+0];
-        myBoxRange[2*d+1] = range[2*d+1];
+        AMP_ASSERT(index.index[d]>=myBoxRange[2*d+0]&&index.index[d]<myBoxRange[2*d+1]);
         myBoxSize[d] = myBoxRange[2*d+1] - myBoxRange[2*d+0];
     }
     unsigned int local_id = (index.index[0]-myBoxRange[0]) + (index.index[1]-myBoxRange[2])*myBoxSize[0] +
