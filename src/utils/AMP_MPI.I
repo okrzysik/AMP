@@ -1,11 +1,6 @@
 // This file contains the default instantiations for templated operations
 // Note: Intel compilers need definitions before all default instantions to compile correctly
 
-#ifdef _MSC_VER
-    #define _CRT_SECURE_NO_WARNINGS		// Supress depreciated warnings for visual studio
-#endif
-#include <stdio.h>
-
 
 /************************************************************************
 *  sumReduce                                                            *

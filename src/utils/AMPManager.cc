@@ -19,14 +19,12 @@
 #include <iostream>
 #include <sstream>
 
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-    // Windows 
-    // Sleep is defined in milliseconds
-#else
-    // Linux
-    // usleep is defined in microseconds, create a Sleep command
-    #define Sleep(x) usleep(x*1000)
+
+#ifdef _MSC_VER
+    #define _CRT_SECURE_NO_WARNINGS		// Supress depreciated warnings for visual studio
 #endif
+
+#include <stdio.h>
 
 
 namespace AMP {

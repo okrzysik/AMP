@@ -75,7 +75,6 @@ public:
 protected:
 
     /** Default constructor
-     * \param type      Element type
      * \param index     Index for the current elements
      * \param mesh      Underlying mesh
      */
