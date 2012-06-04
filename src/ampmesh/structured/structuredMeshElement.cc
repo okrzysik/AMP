@@ -342,7 +342,7 @@ std::vector<MeshElement::shared_ptr> structuredMeshElement::getNeighbors() const
 
 
 /****************************************************************
-* Functions to get basic element properties                     *
+* Functions to get the element volume                           *
 ****************************************************************/
 double structuredMeshElement::volume() const
 {
@@ -436,8 +436,14 @@ double structuredMeshElement::volume() const
     AMP_ERROR("Internal error");
     return 0.0;
 }
+
+
+/****************************************************************
+* Function to get the node coordinates                          *
+****************************************************************/
 std::vector<double> structuredMeshElement::coord() const
 {
+    AMP_ASSERT(d_globalID.type()==Vertex);
     size_t pos = AMP::Utilities::findfirst(d_mesh->d_index,d_index);
     AMP_ASSERT(d_mesh->d_index[pos]==d_index);
     std::vector<double> coord((size_t)d_dim,0.0);
@@ -445,6 +451,11 @@ std::vector<double> structuredMeshElement::coord() const
         coord[i] = d_mesh->d_coord[i][pos];
     return coord;
 }
+
+
+/****************************************************************
+* Misc functions                                                *
+****************************************************************/
 bool structuredMeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
 {
     AMP_ERROR("Not finsihed");
@@ -452,8 +463,32 @@ bool structuredMeshElement::containsPoint( const std::vector<double> &pos, doubl
 }
 bool structuredMeshElement::isOnSurface() const
 {
-    AMP_ERROR("Not finsihed");
-    return false;
+    bool on_surface = false;
+    for (int d=0; d<d_dim; d++) {
+        if ( d_mesh->d_isPeriodic[d] )
+            continue;
+        int size = (int) d_mesh->d_size[d];
+        if ( d_globalID.type()==d_mesh->GeomDim ) {
+            // We are dealing with the highest level geometric entity
+            if ( d_index.index[d]==0 || d_index.index[d]==size-1 )
+                on_surface = true;
+        } else if ( d_globalID.type()==Vertex ) {
+            // We are dealing with a vertex
+            if ( d_index.index[d]==0 || d_index.index[d]==size )
+                on_surface = true;
+        } else if ( d_globalID.type()==Edge ) {
+            // We are dealing with a vertex
+            if ( ( d_index.index[d]==0 || d_index.index[d]==size ) && d_index.side!=d )
+                on_surface = true;
+        } else if ( d_globalID.type()==Face ) {
+            // We are dealing with a vertex
+            if ( ( d_index.index[d]==0 || d_index.index[d]==size ) && d_index.side==d )
+                on_surface = true;
+        } else {
+            AMP_ERROR("Internal error (dim>3?)");
+        }
+    }
+    return on_surface;
 }
 bool structuredMeshElement::isOnBoundary(int id) const
 {

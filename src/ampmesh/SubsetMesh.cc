@@ -52,14 +52,19 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
         ++iterator;
     }
     // Create a list of all elements of the desired type
+    d_max_gcw = d_parent_mesh->getMaxGhostWidth();
     d_elements = std::vector<std::vector<boost::shared_ptr<std::vector<MeshElement> > > >((int)GeomDim+1);
+    for (int i=0; i<=GeomDim; i++) {
+        d_elements[i] = std::vector<boost::shared_ptr<std::vector<MeshElement> > >( 
+            d_max_gcw+1, boost::shared_ptr<std::vector<MeshElement> >() );
+    }
     int gcw = 0;
     while ( 1 ) {
         MeshIterator iterator1 = Mesh::getIterator( Intersection, iterator_in, mesh->getIterator(GeomDim,gcw) );
         MeshIterator iterator2 = iterator1.begin();
         if ( gcw>0 ) 
             iterator2 = Mesh::getIterator( Complement, iterator1, mesh->getIterator(GeomDim,0) );
-        d_elements[GeomDim].push_back( boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(iterator2.size()) ) );
+        d_elements[GeomDim][gcw] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(iterator2.size()) );
         for (size_t i=0; i<iterator2.size(); i++) {
             d_elements[GeomDim][gcw]->operator[](i) = *iterator2;
             ++iterator2;
@@ -69,9 +74,6 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
             break;
         gcw++;
     }
-    if ( d_elements[GeomDim].size() == 1 )
-        d_elements[GeomDim].push_back( boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement> ) );
-    d_max_gcw = d_parent_mesh->getMaxGhostWidth();
     // Create a list of all elements that compose the elements of GeomType
     for (int t=0; t<(int)GeomDim; t++) {
         d_elements[t] = std::vector<boost::shared_ptr<std::vector<MeshElement> > >(d_max_gcw+1);
@@ -89,8 +91,10 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
                         for (int j=0; j<gcw; j++) {
                             size_t index = AMP::Utilities::findfirst( *(d_elements[t][j]), elements[i] );
                             if ( index==d_elements[t][j]->size() ) { index--; }
-                            if ( d_elements[t][j]->operator[](index) == elements[i] )
+                            if ( d_elements[t][j]->operator[](index) == elements[i] ) {
                                 found = true;
+                                break;
+                            }
                         }
                         if ( !found )
                             list.insert(elements[i]);

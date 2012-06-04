@@ -292,13 +292,22 @@ void BoxMesh::initialize()
     AMP::Utilities::quicksort(d_index);
     double range2[6] = {0.0,1.0,0.0,1.0,0.0};
     fillCartesianNodes( PhysicalDim, &d_size[0], range2, d_index, d_coord );
-    // Create the boundary info
+    // Create the list of elements on the surface
     for (int d=0; d<=PhysicalDim; d++) {
         d_surface_list[d] = std::vector<ElementIndexList>(d_max_gcw+1);
-        for (int gcw=0; gcw<=d_max_gcw; gcw++)
+        for (int gcw=0; gcw<=d_max_gcw; gcw++) {
             d_surface_list[d][gcw] = boost::shared_ptr<std::vector<MeshElementIndex> >(
                 new std::vector<MeshElementIndex>() );
+            d_surface_list[d][gcw]->reserve( d_elements[d][gcw]->size() );
+            for (size_t k=0; k<d_elements[d][gcw]->size(); k++) {
+                BoxMesh::MeshElementIndex index = d_elements[d][gcw]->operator[](k);
+                structuredMeshElement elem = structuredMeshElement( index, this );
+                if ( elem.isOnSurface() )
+                    d_surface_list[d][gcw]->push_back( index );
+            }
+        }
     }
+    // Create the boundary info
     d_ids = std::vector<int>();
     d_id_list = std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> >();
 }
@@ -412,14 +421,14 @@ MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
 ****************************************************************/
 MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
-    size_t N_elements = 1;
+    size_t N_elements = 0;
     for (int i=0; i<=gcw; i++)
-        N_elements += d_surface_list[type][gcw]->size();
+        N_elements += d_surface_list[type][i]->size();
     boost::shared_ptr<std::vector<MeshElement> >  elements( new std::vector<MeshElement>() );
     elements->reserve( N_elements );
     for (int i=0; i<=gcw; i++) {
-        for (int j=0; j<d_surface_list[type][gcw]->size(); j++) {
-            BoxMesh::MeshElementIndex index = d_surface_list[type][gcw]->operator[](j);
+        for (size_t j=0; j<d_surface_list[type][i]->size(); j++) {
+            BoxMesh::MeshElementIndex index = d_surface_list[type][i]->operator[](j);
             MeshElement elem = structuredMeshElement( index, this );
             elements->push_back( elem );
         }
@@ -492,7 +501,7 @@ std::vector<int> BoxMesh::getLocalBlock(unsigned int rank) const
     size_t num_blocks = 1;
     for (int d=0; d<PhysicalDim; d++)
         num_blocks *= d_localSize[d].size();
-    AMP_ASSERT((int)rank<num_blocks);
+    AMP_ASSERT((int)rank<(int)num_blocks);
     std::vector<int> range(2*PhysicalDim);
     size_t tmp = 1;
     for (int d=0; d<PhysicalDim; d++) {

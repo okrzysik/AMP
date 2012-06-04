@@ -16,7 +16,8 @@
 
 #include <new>
 #include <string.h>
-
+#include <iostream>
+#include <sstream>
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     // Windows 
@@ -45,6 +46,7 @@ AMPManagerProperties AMPManager::properties=AMPManagerProperties();
 
 // Function to get the current time (preferably using a hi resolution timer
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+    #define USE_WINDOWS
     #include <windows.h>
     double time() { 
         LARGE_INTEGER end, f;
@@ -54,6 +56,7 @@ AMPManagerProperties AMPManager::properties=AMPManagerProperties();
         return time;
     }
 #else
+    #define USE_LINUX
     #include <sys/time.h>
     double time() { 
         timeval current_time;
@@ -68,14 +71,33 @@ AMPManagerProperties AMPManager::properties=AMPManagerProperties();
 ****************************************************************************/
 void term_func() 
 {
-    static bool tried_throw = false;
-    std::cout << "Unhandled exception" << std::endl;
+    // Try to re-throw the last error to get the last message
+    std::string last_message;
+    #ifdef USE_LINUX
+        static bool tried_throw = false;
+        try {
+            if (!tried_throw++) throw;
+            // No active exception
+        } catch (const std::exception &err) {
+            // Caught a std::runtime_error
+            last_message = err.what();
+        } catch (...) {
+            // Caught an unknown exception
+            last_message = "unknown exception occurred.";
+        }
+    #endif
+    std::stringstream msg;
+    char text[100];
+    msg << "Unhandled exception:" << std::endl;
+    msg << "   " << last_message << std::endl;
     long long unsigned int N_bytes = AMP::Utilities::getMemoryUsage();
-    printf("Bytes used = %llu\n",N_bytes);
+    sprintf(text,"Bytes used = %llu\n",N_bytes);
+    msg << text;
     std::vector<std::string> stack = AMP::Utilities::getCallStack();
-    printf("Stack Trace:\n");
+    msg << "Stack Trace:\n";
     for (size_t i=0; i<stack.size(); i++)
-        printf("   %s",stack[i].c_str());
+        msg << "   " << stack[i];
+    std::cerr << msg.str();
     std::cout << "Exiting" << std::endl;
     exit(-1);
 }
@@ -146,7 +168,7 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
     // Initialize the random number generator
     AMP::RNG::initialize(123);
     // Set the terminate routine for runtime errors
-    //std::set_terminate( term_func );
+    std::set_terminate( term_func );
     //std::set_unexpected( term_func );
     // Initialization finished
     initialized = 1;
