@@ -266,11 +266,79 @@ void BoxMesh::initialize()
     } else {
         AMP_ERROR("Not programmed for this dimension yet");
     }
-    // Create the ghost elements
+    // Sort the elements for easy searching
+    for (int d=0; d<PhysicalDim; d++)
+        AMP::Utilities::quicksort( *d_elements[d][0] );
+    // Create the ghost elements of type GeomType == PhysicalDim
     for (int gcw=1; gcw<=d_max_gcw; gcw++) {
-        for (int d=0; d<=PhysicalDim; d++) {    // Loop through the geometric entities
-            d_elements[d][gcw].reset( new std::vector<MeshElementIndex>() );
+        d_elements[PhysicalDim][gcw] = ElementIndexList( new std::vector<MeshElementIndex>() );
+        if ( PhysicalDim==3 ) {
+            for (int k=range[4]-gcw; k<range[5]+gcw; k++) {
+                for (int j=range[2]-gcw; j<range[3]+gcw; j++) {
+                    for (int i=range[0]-gcw; i<range[1]+gcw; i++) {
+                        if ( ( i>range[0]-gcw || i<range[1]+gcw-1 ) &&
+                             ( j>range[2]-gcw || j<range[3]+gcw-1 ) &&
+                             ( k>range[4]-gcw || k<range[5]+gcw-1 ) ) {
+                            // The element was already included by another ghost (or owned) cell
+                            continue;
+                        }
+                        if ( ( (i<0||i>=d_size[0]) && !d_isPeriodic[0] ) ||
+                             ( (j<0||j>=d_size[1]) && !d_isPeriodic[1] ) ||  
+                             ( (k<0||k>=d_size[2]) && !d_isPeriodic[2] ) ) {
+                            // The element is outside the domain
+                            continue;
+                        }
+                        MeshElementIndex index( PhysicalDim, 0, i, j, k );
+                        if ( i<0 ) { index.index[0] += d_size[0]; }
+                        if ( j<0 ) { index.index[1] += d_size[1]; }
+                        if ( k<0 ) { index.index[2] += d_size[2]; }
+                        if ( i>=d_size[0] ) { index.index[0] -= d_size[0]; }
+                        if ( j>=d_size[1] ) { index.index[1] -= d_size[1]; }
+                        if ( k>=d_size[2] ) { index.index[2] -= d_size[2]; }
+                        d_elements[PhysicalDim][gcw]->push_back( index );
+                    }
+                }
+            }
+        } else { 
+            AMP_ERROR("Not programmed for this dimension yet");
         }
+        // Sort the elements for easy searching
+        AMP::Utilities::quicksort( *d_elements[PhysicalDim][gcw] );
+    }
+    // Create the remaining ghost elements
+    for (int gcw=1; gcw<=d_max_gcw; gcw++) {
+        for (int d=0; d<PhysicalDim; d++)
+            d_elements[d][gcw] = ElementIndexList( new std::vector<MeshElementIndex>() );
+        // Get an iterator over all elements of the given gcw
+        AMP::Mesh::MeshIterator iterator = this->getIterator( (GeomType) PhysicalDim, gcw );
+        for (size_t i=0; i<iterator.size(); i++) {
+            for (int d=0; d<PhysicalDim; d++) {
+                // Get the elements of the given type that compose the current element
+                std::vector<MeshElement> elements = iterator->getElements( (GeomType) d );
+                // Loop through the current elements
+                for (size_t j=0; j<elements.size(); j++) {
+                    structuredMeshElement* elem = dynamic_cast<structuredMeshElement*>( elements[j].getRawElement() );
+                    AMP_ASSERT(elem!=NULL); 
+                    MeshElementIndex index = elem->d_index;
+                    // Check if the current element exists in the list of elements so far
+                    bool found = false;
+                    for (int k=0; k<gcw; k++) {
+                        if ( d_elements[d][k]->size()==0 )
+                            continue;
+                        size_t m = AMP::Utilities::findfirst( *d_elements[d][k], index );
+                        if ( m==d_elements[d][k]->size() ) { m--; }
+                        if ( d_elements[d][k]->operator[](m) == index )
+                            found = true;
+                    }
+                    if ( !found )
+                        d_elements[d][gcw]->push_back( index );
+                }
+            }
+            ++iterator;
+        }
+        // Sort the elements for easy searching
+        for (int d=0; d<PhysicalDim; d++)
+            AMP::Utilities::quicksort( *d_elements[d][gcw] );
     }
     // Compute the number of local, global and ghost elements
     for (int d=0; d<=PhysicalDim; d++) 
