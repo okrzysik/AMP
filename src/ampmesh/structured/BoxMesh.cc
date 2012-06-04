@@ -322,11 +322,10 @@ size_t BoxMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     boost::shared_ptr<AMP::Database> db = params->getDatabase( );
     AMP_INSIST(db.get(),"Database must exist");
     // Get mandatory fields from the database
-    AMP_INSIST(db->keyExists("dim"),"Field 'Generator' must exist in database'");
+    AMP_INSIST(db->keyExists("Generator"),"Field 'Generator' must exist in database'");
     AMP_INSIST(db->keyExists("dim"),"Field 'dim' must exist in database'");
     AMP_INSIST(db->keyExists("Size"),"Field 'Size' must exist in database'");
     int dim = db->getInteger("dim");
-    std::string generator = db->getString("Generator");
     std::vector<int> size = db->getIntegerArray("Size");
     AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must match dim");
     for (int d=0; d<dim; d++)
@@ -479,7 +478,7 @@ void BoxMesh::displaceMesh( std::vector<double> x )
 #ifdef USE_AMP_VECTORS
 void BoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
 {
-    std::vector<box_info> d_localBoxList;
+    AMP_ERROR("Not implimented yet");
 }
 #endif
 
