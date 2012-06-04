@@ -90,6 +90,7 @@ protected:
     const AMP::Mesh::BoxMesh* d_mesh;
 
     friend class AMP::Mesh::BoxMesh;
+    friend class AMP::Mesh::structuredMeshIterator;
 
 };
 

@@ -1,4 +1,4 @@
-export VT_FILTER_SPEC=/projects/AMP_mesh/AMP/vampir-filter
+export VT_FILTER_SPEC=/projects/AMP/AMP/vampir-filter
 export VT_BUFFER_SIZE=100M
 export VT_METRICS=PAPI_FP_OPS:PAPI_L2_TCM
 export VT_MAX_FLUSHES=5
