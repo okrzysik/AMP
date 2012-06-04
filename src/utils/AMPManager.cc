@@ -46,6 +46,7 @@ AMPManagerProperties AMPManager::properties=AMPManagerProperties();
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     #define USE_WINDOWS
     #include <windows.h>
+    // Sleep is defined in milliseconds
     double time() { 
         LARGE_INTEGER end, f;
         QueryPerformanceFrequency(&f);
@@ -56,6 +57,8 @@ AMPManagerProperties AMPManager::properties=AMPManagerProperties();
 #else
     #define USE_LINUX
     #include <sys/time.h>
+    // usleep is defined in microseconds, create a Sleep command
+    #define Sleep(x) usleep(x*1000)
     double time() { 
         timeval current_time;
         gettimeofday(&current_time,NULL);
@@ -63,6 +66,7 @@ AMPManagerProperties AMPManager::properties=AMPManagerProperties();
         return time;
     }
 #endif
+
 
 /****************************************************************************
 *  Function to terminate AMP if an unhandled exception is caught            *
