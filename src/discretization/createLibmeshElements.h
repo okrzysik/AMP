@@ -1,5 +1,7 @@
 #ifndef included_AMP_createLibmeshElements
 #define included_AMP_createLibmeshElements
+#ifdef USE_LIBMESH
+
 
 /* AMP files */
 #include "ampmesh/Mesh.h"
@@ -47,4 +49,4 @@ private:
 }
 
 #endif
-
+#endif

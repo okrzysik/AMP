@@ -51,7 +51,7 @@ private:
     // We will store the data as a 64-bit data type
     // We do not want the user to get direct access to the data
     uint64 data;
-friend class MeshElementID;
+    friend struct MeshElementID;
 };
 
 
@@ -139,7 +139,7 @@ public:
     }
     // Access local data
     inline bool is_local() const { 
-        return data[1]>>63;
+        return (data[1]>>63)!=0;
     }
     inline GeomType type() const { 
         unsigned char tmp = (unsigned char) ((data[1]>>32)&0x00FF);

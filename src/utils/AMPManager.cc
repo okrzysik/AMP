@@ -63,6 +63,24 @@ AMPManagerProperties AMPManager::properties=AMPManagerProperties();
     }
 #endif
 
+/****************************************************************************
+*  Function to terminate AMP if an unhandled exception is caught            *
+****************************************************************************/
+void term_func() 
+{
+    static bool tried_throw = false;
+    std::cout << "Unhandled exception" << std::endl;
+    long long unsigned int N_bytes = AMP::Utilities::getMemoryUsage();
+    printf("Bytes used = %llu\n",N_bytes);
+    std::vector<std::string> stack = AMP::Utilities::getCallStack();
+    printf("Stack Trace:\n");
+    for (size_t i=0; i<stack.size(); i++)
+        printf("   %s",stack[i].c_str());
+    std::cout << "Exiting" << std::endl;
+    exit(-1);
+}
+
+
 
 /****************************************************************************
 *									                                        *
@@ -127,6 +145,9 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
     PIO::initialize();
     // Initialize the random number generator
     AMP::RNG::initialize(123);
+    // Set the terminate routine for runtime errors
+    //std::set_terminate( term_func );
+    //std::set_unexpected( term_func );
     // Initialization finished
     initialized = 1;
     startup_time = time()-start_time;

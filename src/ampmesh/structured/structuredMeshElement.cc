@@ -247,24 +247,30 @@ std::vector<MeshElement::shared_ptr> structuredMeshElement::getNeighbors() const
     std::vector<BoxMesh::MeshElementIndex> index;
     if ( d_globalID.type()==Vertex ) {
         // Get the list of neighbor nodex (there are no null neighbors)
-        index.reserve(8);
+        // The node neighbors are the list of nodes that share any element
+        index.reserve(27);
         if ( d_dim==1 ) {
             index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]-1 ) );
             index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+1 ) );
         } else if ( d_dim==2 ) {
             index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]-1, d_index.index[1]-1 ) );
+            index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0],   d_index.index[1]-1 ) );
             index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+1, d_index.index[1]-1 ) );
-            index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+1, d_index.index[1]+1 ) );
+            index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]-1, d_index.index[1]   ) );
+            index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+1, d_index.index[1]   ) );
             index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]-1, d_index.index[1]+1 ) );
+            index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0],   d_index.index[1]+1 ) );
+            index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+1, d_index.index[1]+1 ) );
         } else if ( d_dim==3 ) {
-            index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]-1, d_index.index[1]-1, d_index.index[2]-1 ) );
-            index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+1, d_index.index[1]-1, d_index.index[2]-1 ) );
-            index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+1, d_index.index[1]+1, d_index.index[2]-1 ) );
-            index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]-1, d_index.index[1]+1, d_index.index[2]-1 ) );
-            index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]-1, d_index.index[1]-1, d_index.index[2]+1 ) );
-            index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+1, d_index.index[1]-1, d_index.index[2]+1 ) );
-            index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+1, d_index.index[1]+1, d_index.index[2]+1 ) );
-            index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]-1, d_index.index[1]+1, d_index.index[2]+1 ) );
+            for (int k=-1; k<=1; k++) {
+                for (int j=-1; j<=1; j++) {
+                    for (int i=-1; i<=1; i++) {
+                        if ( i==0 && j==0 && k==0 )
+                            continue;
+                        index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0]+i, d_index.index[1]+j, d_index.index[2]+k ) );
+                    }
+                }
+            }
         } else {
             AMP_ERROR("Dimension not supported yet");
         }
@@ -331,7 +337,7 @@ std::vector<MeshElement::shared_ptr> structuredMeshElement::getNeighbors() const
         else if ( d_globalID.type()!=Vertex ) 
             neighbors.push_back( MeshElement::shared_ptr() );
     }
-    return std::vector<MeshElement::shared_ptr>();
+    return neighbors;
 }
 
 

@@ -271,8 +271,8 @@ protected:
     size_t N_global[4];
 
     // Boundary and id set data
-    std::vector<ElementIndexList>   d_surface_list[4];
-    std::vector<int>                d_ids;
+    std::vector<ElementIndexList>  d_surface_list[4];
+    std::vector<int>               d_ids;
     std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> >  d_id_list;
 
     // Friend functions to access protected functions    

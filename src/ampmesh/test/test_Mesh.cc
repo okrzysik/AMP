@@ -1,3 +1,6 @@
+#ifdef _MSC_VER
+    #define _CRT_SECURE_NO_WARNINGS		// Supress depreciated warnings for visual studio
+#endif
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/AMP_MPI.h"
@@ -54,26 +57,14 @@ void testMeshGenerators( AMP::UnitTest *ut )
 // Function to test the creation/destruction of a native AMP mesh
 void testAMPMesh( AMP::UnitTest *ut )
 {
-    // Set the dimensions of the mesh
-    std::vector<int> size(3,2);
-    std::vector<double> range(6,0.0);
-    range[1] = 1.0;
-    range[3] = 1.0;
-    range[5] = 1.0;
-    // Create a generic MeshParameters object
-    boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
-    database->putInteger("dim",3);
-    database->putString("MeshName","mesh1");
-    database->putString("Generator","cube");
-    database->putIntegerArray("Size",size);
-    database->putDoubleArray("Range",range);
-    boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
-    params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-
-    // Create an AMP mesh
-    boost::shared_ptr<AMP::Mesh::BoxMesh> mesh(new AMP::Mesh::BoxMesh(params));    
+    // Create the AMP mesh
+    boost::shared_ptr<AMP::unit_test::MeshGenerator> generator;
+    generator = boost::shared_ptr<AMP::unit_test::AMPMeshCubeGenerator<5> >( new AMP::unit_test::AMPMeshCubeGenerator<5> );
+    generator->build_mesh();
+    boost::shared_ptr<AMP::Mesh::Mesh> mesh = generator->getMesh();
 
     // Check the basic dimensions
+    std::vector<size_t> size(3,5);
     size_t N_elements_global = size[0]*size[1]*size[2];
     size_t N_faces_global = (size[0]+1)*size[1]*size[2] + size[0]*(size[1]+1)*size[2] + size[0]*size[1]*(size[2]+1);
     size_t N_edges_global = size[0]*(size[1]+1)*(size[2]+1) + (size[0]+1)*size[1]*(size[2]+1) + (size[0]+1)*(size[1]+1)*size[2];
@@ -96,6 +87,10 @@ void testAMPMesh( AMP::UnitTest *ut )
         ut->failure("Simple structured mesh has expected number of elements");
 
     // Check the volumes
+    std::vector<double> range(6,0.0);
+    range[1] = 1.0;
+    range[3] = 1.0;
+    range[5] = 1.0;
     double dx = range[1]/size[0];
     AMP::Mesh::MeshIterator iterator = mesh->getIterator(AMP::Mesh::Edge);
     bool passes = true;
@@ -250,7 +245,7 @@ int main ( int argc , char ** argv )
     testID( &ut );
 
     // Run tests on a native AMP mesh
-    //testAMPMesh( &ut );
+    testAMPMesh( &ut );
 
     // Run tests on a libmesh mesh
     #ifdef USE_LIBMESH
@@ -268,9 +263,7 @@ int main ( int argc , char ** argv )
     #endif
 
     // Run the basic tests on all mesh generators
-    #ifdef USE_LIBMESH
-        testMeshGenerators( &ut );
-    #endif
+    testMeshGenerators( &ut );
 
     // Run the tests on the subset meshes
     #ifdef USE_LIBMESH

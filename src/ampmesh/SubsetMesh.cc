@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS		// Supress depreciated warnings for visual studio
 #include <vector>
 #include <set>
 
@@ -121,7 +122,7 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
         MeshElementID* send_ptr = NULL;
         if ( N_ghost_local>0 ) { send_ptr = &ghost_local[0]; }
         MeshElementID* recv_ptr = &ghost_global[0];
-        d_comm.allGather( send_ptr, N_ghost_local, recv_ptr );
+        d_comm.allGather( send_ptr, (int) N_ghost_local, recv_ptr );
         AMP::Utilities::unique(ghost_global);
         // For each ghost, check if we own it, and add it to the list if necessary
         MeshID my_mesh_id = d_parent_mesh->meshID();
@@ -155,7 +156,7 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
     N_global = std::vector<size_t>((int)GeomDim+1);
     for (int i=0; i<=(int)GeomDim; i++)
         N_global[i] = d_elements[i][0]->size();
-    d_comm.sumReduce( &N_global[0], N_global.size() );
+    d_comm.sumReduce( &N_global[0], (int) N_global.size() );
     for (int i=0; i<=(int)GeomDim; i++)
         AMP_ASSERT(N_global[i]>0);
     // Create the bounding box
@@ -224,7 +225,7 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
     size_t recv_size = d_comm.sumReduce( d_boundaryIdSets.size() );
     if ( recv_size > 0 ) {
         std::vector<int> recv_list(recv_size,0);
-        d_comm.allGather( &send_ptr[0], d_boundaryIdSets.size(), &recv_list[0] );
+        d_comm.allGather( &send_ptr[0], (int) d_boundaryIdSets.size(), &recv_list[0] );
         for (size_t i=0; i<recv_list.size(); i++)
             new_boundary_ids.insert( recv_list[i] );
         d_boundaryIdSets = std::vector<int>(new_boundary_ids.begin(),new_boundary_ids.end());
@@ -272,7 +273,7 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
         recv_size = d_comm.sumReduce( d_blockIdSets.size() );
         if ( recv_size > 0 ) {
             std::vector<int> recv_list(recv_size,0);
-            d_comm.allGather( &send_ptr[0], d_blockIdSets.size(), &recv_list[0] );
+            d_comm.allGather( &send_ptr[0], (int) d_blockIdSets.size(), &recv_list[0] );
             for (size_t i=0; i<recv_list.size(); i++)
                 new_block_ids.insert( recv_list[i] );
             d_blockIdSets = std::vector<int>(new_block_ids.begin(),new_block_ids.end());
@@ -347,7 +348,7 @@ MeshIterator SubsetMesh::getIterator( const GeomType type, const int gcw ) const
 {
     int gcw2 = gcw;
     if ( gcw2 >= (int) d_elements[type].size() )
-        gcw2 = d_elements[type].size()-1;
+        gcw2 = (int) d_elements[type].size()-1;
     if ( gcw2 == 0 )
         return MultiVectorIterator( d_elements[type][0], 0 );
     std::vector<boost::shared_ptr<MeshIterator> > iterators(gcw2+1);

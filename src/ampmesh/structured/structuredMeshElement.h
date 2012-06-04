@@ -1,10 +1,9 @@
 #ifndef included_AMP_structuredMeshElement
 #define included_AMP_structuredMeshElement
 
-#include <vector>
-#include <boost/shared_ptr.hpp>
 #include "ampmesh/Mesh.h"
 #include "ampmesh/structured/BoxMesh.h"
+#include <vector>
 
 namespace AMP {
 namespace Mesh {

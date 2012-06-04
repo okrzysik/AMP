@@ -1,3 +1,4 @@
+#ifdef USE_LIBMESH
 #include "createLibmeshElements.h"
 #include "utils/Utilities.h"
 
@@ -84,3 +85,4 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in )
 }
 
 
+#endif

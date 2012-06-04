@@ -84,7 +84,7 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ):
         if ( !comms[i].isNull() )
             onComm[i] = 1;
     }
-    d_comm.maxReduce(&onComm[0],onComm.size());
+    d_comm.maxReduce(&onComm[0],(int)onComm.size());
     for (size_t i=0; i<onComm.size(); i++)
         AMP_ASSERT(onComm[i]==1);
     // Create the meshes
@@ -439,7 +439,7 @@ std::vector<MeshID> MultiMesh::getAllMeshIDs() const
 {
     std::vector<MeshID> tmp = this->getLocalMeshIDs();
     std::set<MeshID> ids(tmp.begin(),tmp.end());
-    int send_cnt = ids.size();
+    int send_cnt = (int) ids.size();
     int recv_cnt = d_comm.sumReduce(send_cnt);
     MeshID *send_data = new MeshID[send_cnt];
     MeshID *recv_data = new MeshID[recv_cnt];
@@ -459,7 +459,7 @@ std::vector<MeshID> MultiMesh::getBaseMeshIDs() const
 {
     std::vector<MeshID> tmp = this->getLocalBaseMeshIDs();
     std::set<MeshID> ids(tmp.begin(),tmp.end());
-    int send_cnt = ids.size();
+    int send_cnt = (int) ids.size();
     int recv_cnt = d_comm.sumReduce(send_cnt);
     MeshID *send_data = new MeshID[send_cnt];
     MeshID *recv_data = new MeshID[recv_cnt];
@@ -634,7 +634,7 @@ void MultiMesh::displaceMesh( std::vector<double> x_in )
     // Check x
     AMP_INSIST((short int)x_in.size()==PhysicalDim,"Displacement vector size should match PhysicalDim");
     std::vector<double> x = x_in;
-    d_comm.minReduce(&x[0],x.size());
+    d_comm.minReduce(&x[0],(int)x.size());
     for (size_t i=0; i<x.size(); i++)
         AMP_INSIST(fabs(x[i]-x_in[i])<1e-12,"x does not match on all processors");
     // Displace the meshes
@@ -700,7 +700,7 @@ static void copyKey(boost::shared_ptr<AMP::Database> &database1,
             std::vector<unsigned char> data = database1->getBoolArray(key);
             AMP_INSIST((int)data.size()==size,"Array size does not match key size");
             if ( N == size )
-                database2->putBool(key,data[i]);
+                database2->putBool(key,data[i]!=0);
             else
                 database2->putBoolArray(key,data);
             } break;
@@ -847,7 +847,7 @@ std::vector<AMP_MPI> MultiMesh::loadBalancer( std::vector<double> &weights, int 
         cum_N_proc[0] = groups[0].N_procs;
         for (size_t i=1; i<groups.size(); i++)
             cum_N_proc[i] = cum_N_proc[i-1] + groups[i].N_procs;
-        int myid = AMP::Utilities::findfirst(cum_N_proc,d_comm.getRank()+1);
+        int myid = (int) AMP::Utilities::findfirst(cum_N_proc,(int)(d_comm.getRank()+1));
         AMP_MPI myComm = d_comm.split(myid,d_comm.getRank());
         std::vector<AMP_MPI> newComms(weights.size(),AMP_MPI(AMP_COMM_NULL));
         for (size_t i=0; i<groups[myid].ids.size(); i++)
@@ -947,7 +947,7 @@ std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups2(int N_procs, 
     }
     // Recursively add the remaining ids
     if ( ids.size() > 0 ) {
-        std::vector<MultiMesh::comm_groups> groups2 = independentGroups2( N_procs-groups.size(), ids );
+        std::vector<MultiMesh::comm_groups> groups2 = independentGroups2( (int)(N_procs-groups.size()), ids );
         groups.insert( groups.end(), groups2.begin(), groups2.end() );
     }
     return groups;

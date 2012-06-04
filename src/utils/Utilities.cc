@@ -16,7 +16,10 @@
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     // Note: windows has not been testeds
     #define USE_WINDOWS
-	#include "windows.h"
+    #include <windows.h>
+    #include <stdio.h>   
+    #include <tchar.h>
+    //#include <dbghelp.h>
 #elif defined(__APPLE__)
     #define USE_MAC
     #include <signal.h>
@@ -297,6 +300,8 @@ size_t Utilities::getMemoryUsage()
             return 0;
         }
         N_bytes = t_info.resident_size;
+    #elif defined(USE_WINDOWS)
+        
     #endif
     return N_bytes;
 }
@@ -305,7 +310,7 @@ size_t Utilities::getMemoryUsage()
 //! Function to print the current call stack
 std::vector<std::string>  Utilities::getCallStack()
 {
-    std::vector<std::string>  stack;
+    std::vector<std::string>  stack_list;
     #if defined(USE_LINUX) || defined(USE_MAC)
         void *trace[100];
         Dl_info dlinfo;
@@ -328,16 +333,20 @@ std::vector<std::string>  Utilities::getCallStack()
                 std::string stack_item = object + ":   " + function + "\n";
                 //stack_item = "object: " + object + "\n";
                 //stack_item += "function: " + function + "\n";
-                stack.push_back(stack_item);
+                stack_list.push_back(stack_item);
             }
             if ( demangled==NULL ) {
                 free(demangled);
                 demangled=NULL;
             }
         } 
+    #elif defined(USE_WINDOWS)
+
+
     #endif
-    return stack;
+    return stack_list;
 }
+
 
 // Print AMP Banner
 void Utilities::printBanner()

@@ -155,7 +155,7 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
         }
         ++cur_it;   // Pre-increment is faster than post-increment
     }
-    if ( id_pass && type_pass && volume_pass && coord_pass ) {
+    if ( id_pass && type_pass && volume_pass && coord_pass && elements_pass && neighbor_pass ) {
         ut->passes( "elements passed" );
     } else {
         if ( !id_pass )
@@ -375,7 +375,7 @@ void MeshBasicTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
     // Check that the bounding box matches on all processors
     std::vector<double> box1 = mesh->getBoundingBox();
     std::vector<double> box2 = box1;
-    mesh->getComm().bcast( &box2[0], box1.size(), 0 );
+    mesh->getComm().bcast( &box2[0], (int) box1.size(), 0 );
     bool box_match = true;
     for (size_t i=0; i<box1.size(); i++) {
         if ( box1[i]!=box2[i] ) 
@@ -414,7 +414,7 @@ void VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh 
         AMP::Mesh::MeshElementID *send_data=NULL;
         if ( ghost.size() > 0 ) { send_data = &ghost[0]; }
         AMP::Mesh::MeshElementID *recv_data = &ghost_global[0];
-        mesh->getComm().allGather( send_data, ghost.size(), recv_data );
+        mesh->getComm().allGather( send_data, (int) ghost.size(), recv_data );
         // Check that each ghost appears in the owner's rank's list
         AMP::Utilities::quicksort( owned );         // Sort for search
         AMP::Utilities::quicksort( ghost_global );  // Sort for speed
@@ -442,7 +442,7 @@ void VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh 
             if ( owned[index] == ghost_global[i] )
                 found[i] = 1;
         }
-        mesh->getComm().maxReduce( &found[0], found.size() );
+        mesh->getComm().maxReduce( &found[0], (int) found.size() );
         bool all_found = true;
         for (size_t i=0; i<found.size(); i++) {
             if ( found[i]==0 )
@@ -674,10 +674,14 @@ void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
                 break;
             }
             const std::vector<AMP::Mesh::MeshElementID> &neighbors = iterator->second;
+            if ( neighbors.size()==0 ) {
+                passed = false;
+                break;
+            }
             for (size_t k=0; k<nodes.size(); k++) {
                 if ( k==j )
                     continue;
-                size_t index = AMP::Utilities::findfirst( neighbors,nodes[k].globalID() );
+                size_t index = AMP::Utilities::findfirst( neighbors, nodes[k].globalID() );
                 if ( index==neighbors.size() )
                     passed = false;
             }

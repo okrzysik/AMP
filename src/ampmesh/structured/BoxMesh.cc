@@ -90,21 +90,6 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
     } else { 
         AMP_ERROR("Unknown generator");
     }
-    // Displace the mesh
-    std::vector<double> displacement(PhysicalDim,0.0);
-    if ( d_db->keyExists("x_offset") )
-        displacement[0] = d_db->getDouble("x_offset");
-    if ( d_db->keyExists("y_offset") )
-        displacement[1] = d_db->getDouble("y_offset");
-    if ( d_db->keyExists("z_offset") )
-        displacement[2] = d_db->getDouble("z_offset");
-    bool test = false;
-    for (size_t i=0; i<displacement.size(); i++) {
-        if ( displacement[i] != 0.0 )
-           test = true;
-    }        
-    if ( test )
-        displaceMesh(displacement);
     // Fill in the final info for the mesh
     AMP_INSIST(d_db->keyExists("MeshName"),"MeshName must exist in input database");
     d_name = d_db->getString("MeshName");
@@ -124,6 +109,21 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
         d_box[2*i+0] = d_comm.minReduce( d_box_local[2*i+0] );
         d_box[2*i+1] = d_comm.maxReduce( d_box_local[2*i+1] );
     } 
+    // Displace the mesh
+    std::vector<double> displacement(PhysicalDim,0.0);
+    if ( d_db->keyExists("x_offset") )
+        displacement[0] = d_db->getDouble("x_offset");
+    if ( d_db->keyExists("y_offset") )
+        displacement[1] = d_db->getDouble("y_offset");
+    if ( d_db->keyExists("z_offset") )
+        displacement[2] = d_db->getDouble("z_offset");
+    bool test = false;
+    for (size_t i=0; i<displacement.size(); i++) {
+        if ( displacement[i] != 0.0 )
+           test = true;
+    }        
+    if ( test )
+        displaceMesh(displacement);
 }
 
 
@@ -292,7 +292,15 @@ void BoxMesh::initialize()
     AMP::Utilities::quicksort(d_index);
     double range2[6] = {0.0,1.0,0.0,1.0,0.0};
     fillCartesianNodes( PhysicalDim, &d_size[0], range2, d_index, d_coord );
-
+    // Create the boundary info
+    for (int d=0; d<=PhysicalDim; d++) {
+        d_surface_list[d] = std::vector<ElementIndexList>(d_max_gcw+1);
+        for (int gcw=0; gcw<=d_max_gcw; gcw++)
+            d_surface_list[d][gcw] = boost::shared_ptr<std::vector<MeshElementIndex> >(
+                new std::vector<MeshElementIndex>() );
+    }
+    d_ids = std::vector<int>();
+    d_id_list = std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> >();
 }
 
 
@@ -309,8 +317,24 @@ BoxMesh::~BoxMesh()
 ****************************************************************/
 size_t BoxMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
-    AMP_ERROR("Not implimented yet");
-    return 0;
+    // Check for valid inputs
+    AMP_INSIST(params.get(),"Params must not be null");
+    boost::shared_ptr<AMP::Database> db = params->getDatabase( );
+    AMP_INSIST(db.get(),"Database must exist");
+    // Get mandatory fields from the database
+    AMP_INSIST(db->keyExists("dim"),"Field 'Generator' must exist in database'");
+    AMP_INSIST(db->keyExists("dim"),"Field 'dim' must exist in database'");
+    AMP_INSIST(db->keyExists("Size"),"Field 'Size' must exist in database'");
+    int dim = db->getInteger("dim");
+    std::string generator = db->getString("Generator");
+    std::vector<int> size = db->getIntegerArray("Size");
+    AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must match dim");
+    for (int d=0; d<dim; d++)
+        AMP_INSIST(size[d]>0,"All dimensions must have a size > 0");
+    size_t N_elements = 1;
+    for (int d=0; d<dim; d++)
+        N_elements *= size[d];
+    return N_elements;
 }
 
 
@@ -335,9 +359,9 @@ MeshElement BoxMesh::getElement ( const MeshElementID &elem_id ) const
     MeshElementIndex index;
     index.type = elem_id.type();
     size_t local_id = elem_id.local_id();
-    index.index[0] = local_id%myBoxSize[0];
-    index.index[1] = (local_id/myBoxSize[0])%myBoxSize[1];
-    index.index[2] = (local_id/(myBoxSize[0]*myBoxSize[1]))%myBoxSize[2];
+    index.index[0] = (int) local_id%myBoxSize[0];
+    index.index[1] = (int) (local_id/myBoxSize[0])%myBoxSize[1];
+    index.index[2] = (int) (local_id/(myBoxSize[0]*myBoxSize[1]))%myBoxSize[2];
     index.side = (unsigned char) (local_id/(myBoxSize[0]*myBoxSize[1]*myBoxSize[2]));
     return structuredMeshElement( index, this );
 }
@@ -387,12 +411,21 @@ MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
 /****************************************************************
 * Function to get an iterator over the surface                  *
 ****************************************************************/
-MeshIterator BoxMesh::getSurfaceIterator( const GeomType, const int gcw ) const
+MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
-    std::vector<MeshElementIndex> index;
-    
-    AMP_ERROR("Not implimented yet");
-    return MeshIterator();
+    size_t N_elements = 1;
+    for (int i=0; i<=gcw; i++)
+        N_elements += d_surface_list[type][gcw]->size();
+    boost::shared_ptr<std::vector<MeshElement> >  elements( new std::vector<MeshElement>() );
+    elements->reserve( N_elements );
+    for (int i=0; i<=gcw; i++) {
+        for (int j=0; j<d_surface_list[type][gcw]->size(); j++) {
+            BoxMesh::MeshElementIndex index = d_surface_list[type][gcw]->operator[](j);
+            MeshElement elem = structuredMeshElement( index, this );
+            elements->push_back( elem );
+        }
+    }
+    return MultiVectorIterator( elements, 0 );
 }
 
 
@@ -433,7 +466,15 @@ MeshIterator BoxMesh::getBlockIDIterator ( const GeomType type, const int id, co
 }
 void BoxMesh::displaceMesh( std::vector<double> x )
 {
-    AMP_ERROR("Not implimented yet");
+    AMP_ASSERT(x.size()==PhysicalDim);
+    for (int i=0; i<PhysicalDim; i++) {
+        for (size_t j=0; j<d_coord[i].size(); j++)
+            d_coord[i][j] += x[i];
+        d_box[2*i+0] += x[i];
+        d_box[2*i+1] += x[i];
+        d_box_local[2*i+0] += x[i];
+        d_box_local[2*i+1] += x[i];
+    }
 }
 #ifdef USE_AMP_VECTORS
 void BoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
@@ -449,20 +490,20 @@ void BoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
 ****************************************************************/
 std::vector<int> BoxMesh::getLocalBlock(unsigned int rank) const
 {
-    int num_blocks = 1;
+    size_t num_blocks = 1;
     for (int d=0; d<PhysicalDim; d++)
         num_blocks *= d_localSize[d].size();
     AMP_ASSERT((int)rank<num_blocks);
     std::vector<int> range(2*PhysicalDim);
     size_t tmp = 1;
     for (int d=0; d<PhysicalDim; d++) {
-        int i = (rank/tmp)%d_localSize[d].size();
+        int i = (int) ((rank/tmp)%d_localSize[d].size());
         tmp *= d_localSize[d].size();
         size_t i0 = 0;
         for (int j=0; j<i; j++)
             i0 += d_localSize[d][j];
-        range[2*d+0] = i0;
-        range[2*d+1] = i0+d_localSize[d][i];
+        range[2*d+0] = (int) i0;
+        range[2*d+1] = (int) (i0+d_localSize[d][i]);
     }
     return range;
 }
@@ -480,7 +521,7 @@ std::vector<int> BoxMesh::getOwnerBlock(const MeshElementIndex index, unsigned i
         // Check if the element lies on the physical bounadry
         if ( index.index[d]==d_size[d] ) {
             AMP_ASSERT(index.type<PhysicalDim);
-            myBoxIndex[d] = d_localSize[d].size()-1;
+            myBoxIndex[d] = (int) d_localSize[d].size()-1;
             range[2*d+0] = d_size[d]-d_localSize[d][myBoxIndex[d]];
             range[2*d+1] = d_size[d];
             continue;
@@ -503,8 +544,8 @@ std::vector<int> BoxMesh::getOwnerBlock(const MeshElementIndex index, unsigned i
                 range[2*d+1]++;
         }
     }
-    rank = myBoxIndex[0] + myBoxIndex[1]*d_localSize[0].size() + 
-        myBoxIndex[2]*d_localSize[0].size()*d_localSize[1].size();
+    rank = (unsigned int) ( myBoxIndex[0] + myBoxIndex[1]*d_localSize[0].size() + 
+        myBoxIndex[2]*d_localSize[0].size()*d_localSize[1].size() );
     return range;
 }
 

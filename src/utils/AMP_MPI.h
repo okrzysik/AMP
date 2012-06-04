@@ -2,9 +2,12 @@
 #ifndef included_AMP_MPI
 #define included_AMP_MPI
 
+#ifdef _MSC_VER
+    #define _CRT_SECURE_NO_WARNINGS		// Supress depreciated warnings for visual studio
+#endif
+
 #include <set>
 #include <complex>
-#include <stdio.h>
 #include "Utilities.h"
 
 //! Define MPI objects

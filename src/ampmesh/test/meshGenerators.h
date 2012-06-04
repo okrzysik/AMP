@@ -3,6 +3,7 @@
 #define included_AMP_Unit_test_Mesh_Generators_h
 
 #include "ampmesh/Mesh.h"
+#include "ampmesh/structured/BoxMesh.h"
 #include "utils/MemoryDatabase.h"
 
 // LibMesh include
@@ -34,6 +35,34 @@ public:
     }
 protected:
     AMP::Mesh::Mesh::shared_ptr  mesh;
+};
+
+
+// Class to create a cube in Libmesh
+template <int SIZE>
+class  AMPMeshCubeGenerator : public MeshGenerator
+{
+public:
+
+    virtual void build_mesh() {
+        // Set the dimensions of the mesh
+        std::vector<int> size(3,SIZE);
+        std::vector<double> range(6,0.0);
+        range[1] = 1.0;
+        range[3] = 1.0;
+        range[5] = 1.0;
+        // Create a generic MeshParameters object
+        boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+        database->putInteger("dim",3);
+        database->putString("MeshName","mesh1");
+        database->putString("Generator","cube");
+        database->putIntegerArray("Size",size);
+        database->putDoubleArray("Range",range);
+        boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+        params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+        // Create an AMP mesh
+        mesh = boost::shared_ptr<AMP::Mesh::BoxMesh>(new AMP::Mesh::BoxMesh(params));      
+    }
 };
 
 
@@ -111,8 +140,22 @@ public:
             indexArray[i] = i+1;
         meshArrayDatabase->putIntegerArray("indicies",indexArray);
         meshArrayDatabase->putString("MeshName","pellet_%i");
-        meshArrayDatabase->putString("FileName","pellet_lo_res.e");
-        meshArrayDatabase->putString("MeshType","libMesh");
+        #ifdef USE_LIBMESH
+            meshArrayDatabase->putString("FileName","pellet_lo_res.e");
+            meshArrayDatabase->putString("MeshType","libMesh");
+        #else
+            std::vector<int> size(3,10);
+            std::vector<double> range(6,0.0);
+            range[1] = 0.005;
+            range[3] = 0.005;
+            range[5] = 0.005;
+            // Create a generic MeshParameters object
+            boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+            meshArrayDatabase->putString("MeshType","AMP");
+            meshArrayDatabase->putString("Generator","cube");
+            meshArrayDatabase->putIntegerArray("Size",size);
+            meshArrayDatabase->putDoubleArray("Range",range);
+        #endif
         meshArrayDatabase->putInteger("dim",3);
         meshArrayDatabase->putDouble("x_offset",0.0);
         meshArrayDatabase->putDouble("y_offset",0.0);
