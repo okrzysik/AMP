@@ -15,15 +15,25 @@ int main ( int argc , char ** argv )
     AMP::UnitTest ut;
 
     // Run the tests
-    testSimpleDOFManager<LibMeshCubeGenerator<5> >( &ut );
-    testSimpleDOFManager<ExodusReaderGenerator<1> >( &ut );
-    testSimpleDOFManager<ExodusReaderGenerator<3> >( &ut );
+    testSimpleDOFManager<AMPMeshCubeGenerator<10> >( &ut );
+    #ifdef USE_LIBMESH
+        testSimpleDOFManager<LibMeshCubeGenerator<5> >( &ut );
+        testSimpleDOFManager<ExodusReaderGenerator<1> >( &ut );
+        testSimpleDOFManager<ExodusReaderGenerator<3> >( &ut );
+    #endif
     testSimpleDOFManager<MultiMeshGenerator>( &ut );
-    testMultiDOFManager<LibMeshCubeGenerator<5> >( &ut );
+    testMultiDOFManager<AMPMeshCubeGenerator<10> >( &ut );
+    #ifdef USE_LIBMESH
+        testMultiDOFManager<LibMeshCubeGenerator<5> >( &ut );
+    #endif
     testMultiDOFManager<MultiMeshGenerator>( &ut );
     testSubsetDOFManager<MultiMeshGenerator,false>( &ut );
     testSubsetDOFManager<MultiMeshGenerator,true>( &ut );
-    testSubsetDOFManager<ExodusReaderGenerator<3>,false>( &ut );
+    #ifdef USE_LIBMESH
+        testSubsetDOFManager<ExodusReaderGenerator<3>,false>( &ut );
+    #else
+        testSubsetDOFManager<AMPMeshCubeGenerator<10>,false>( &ut );
+    #endif
 
     // Print the results and return
     ut.report ();

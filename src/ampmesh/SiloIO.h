@@ -47,7 +47,7 @@ public:
      * \details This function will set the method used for file IO.  When writing files, 
      *    there are different decompositions that affect the performance and usability 
      *    of the output files.  By default, this writer will generate a single file.
-     * \param   method  Decomposition method to use:
+     * \param decomposition   Decomposition method to use:
      *             1:  This will write all of the data to a single file.  
      *                 Note that this requires a serial write and will have the worst performance
      *             2:  Each processor will write a separate file and a separate 
@@ -163,7 +163,9 @@ private:
     std::set<std::string>   d_varNames;
 
     // List of all vectors that have been registered
+#ifdef USE_AMP_VECTORS
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_vectors;
+#endif
 
 };
 

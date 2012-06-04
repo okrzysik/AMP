@@ -1,12 +1,3 @@
-//
-// File:        $URL: file:///usr/casc/samrai/repository/SAMRAI/tags/v-2-4-4/source/toolbox/base/Utilities.C $
-// Package:     SAMRAI toolbox
-// Copyright:   (c) 1997-2008 Lawrence Livermore National Security, LLC
-// Revision:    $LastChangedRevision: 2039 $
-// Modified:    $LastChangedDate: 2008-03-11 13:23:52 -0700 (Tue, 11 Mar 2008) $
-// Description: Utility functions for error reporting, file manipulation, etc.
-//
-
 #include "Utilities.h"
 
 #include "utils/AMP_MPI.h"
@@ -16,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <math.h>
 #include <time.h>
 #include <stdlib.h>
 #include <stdexcept>
@@ -24,7 +16,10 @@
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     // Note: windows has not been testeds
     #define USE_WINDOWS
-    #include "windows.h"
+    #include <windows.h>
+    #include <stdio.h>   
+    #include <tchar.h>
+    //#include <dbghelp.h>
 #elif defined(__APPLE__)
     #define USE_MAC
     #include <signal.h>
@@ -49,7 +44,7 @@ namespace AMP{
 bool Utilities::fileExists( const std::string& filename )
 {
    std::ifstream ifile(filename.c_str());
-   return ifile;
+   return ifile!=NULL;
 }
 
 // Routine to rename a file.
@@ -81,14 +76,14 @@ void Utilities::recursiveMkdir(
 
 #ifdef _MSC_VER
    const char seperator = '/';
-#define mkdir(path, mode) mkdir(path)
+   #define mkdir(path, mode) _mkdir(path)
 #else
    const char seperator = '/';
 #endif
 
    AMP_MPI comm = AMP_MPI(AMP_COMM_WORLD);
    if ( (!only_node_zero_creates) || (comm.getRank() == 0)) {
-      int length = path.length();
+      int length = (int) path.length();
       char *path_buf= new char[length+1];
       sprintf(path_buf,"%s",path.c_str());
       struct stat status;
@@ -305,6 +300,8 @@ size_t Utilities::getMemoryUsage()
             return 0;
         }
         N_bytes = t_info.resident_size;
+    #elif defined(USE_WINDOWS)
+        
     #endif
     return N_bytes;
 }
@@ -313,7 +310,7 @@ size_t Utilities::getMemoryUsage()
 //! Function to print the current call stack
 std::vector<std::string>  Utilities::getCallStack()
 {
-    std::vector<std::string>  stack;
+    std::vector<std::string>  stack_list;
     #if defined(USE_LINUX) || defined(USE_MAC)
         void *trace[100];
         Dl_info dlinfo;
@@ -336,16 +333,20 @@ std::vector<std::string>  Utilities::getCallStack()
                 std::string stack_item = object + ":   " + function + "\n";
                 //stack_item = "object: " + object + "\n";
                 //stack_item += "function: " + function + "\n";
-                stack.push_back(stack_item);
+                stack_list.push_back(stack_item);
             }
             if ( demangled==NULL ) {
                 free(demangled);
                 demangled=NULL;
             }
         } 
+    #elif defined(USE_WINDOWS)
+
+
     #endif
-    return stack;
+    return stack_list;
 }
+
 
 // Print AMP Banner
 void Utilities::printBanner()
@@ -378,6 +379,52 @@ void Utilities::printBanner()
     AMP::pout << banner.str();
 
 }
+
+// Factor a number into it's prime factors
+std::vector<int> Utilities::factor(size_t number)
+{
+    if ( number<=3 ) 
+        return std::vector<int>(1,(int)number);
+    size_t i, n, n_max;
+    bool factor_found;
+    // Initialize n, factors 
+    n = number;
+    std::vector<int> factors;
+    while ( 1 ) {
+        // Check if n is a trivial prime number
+        if ( n==2 || n==3 || n==5 ) {
+            factors.push_back( (int) n );
+            break;
+        } 
+        // Check if n is divisible by 2
+        if ( n%2 == 0 ) {
+            factors.push_back( 2 );
+            n/=2;
+            continue;
+        } 
+        // Check each odd number until a factor is reached
+        n_max = (size_t) floor(sqrt((double) n));
+        factor_found = false;
+        for (i=3; i<=n_max; i+=2) {
+            if ( n%i == 0 ) {
+                factors.push_back( 2 );
+                n/=i;
+                factor_found = true;
+                break;
+            } 
+        }
+        if ( factor_found )
+            continue;
+        // No factors were found, the number must be prime
+        factors.push_back( (int) n );
+        break;
+    }
+    // Sort the factors
+    AMP::Utilities::quicksort(factors);
+    return factors;
+}
+
+
 
 }
 

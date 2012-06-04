@@ -1,3 +1,6 @@
+#ifdef _MSC_VER
+    #define _CRT_SECURE_NO_WARNINGS		// Supress depreciated warnings for visual studio
+#endif
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/AMP_MPI.h"
@@ -11,6 +14,7 @@
 #include "meshTests.h"
 #include "meshGenerators.h"
 
+#include "ampmesh/structured/BoxMesh.h"
 #ifdef USE_LIBMESH
     #include "ampmesh/libmesh/libMesh.h"
 #endif
@@ -24,31 +28,111 @@
 void testMeshGenerators( AMP::UnitTest *ut )
 {
     boost::shared_ptr<AMP::unit_test::MeshGenerator> generator;
-    // Test the libmesh cube generator
-    generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::LibMeshCubeGenerator<5> );
-    generator->build_mesh();
-    MeshTestLoop( ut, generator->getMesh() );
-    // Test the libmesh reader generator
-    generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::ExodusReaderGenerator<> );
-    generator->build_mesh();
-    MeshTestLoop( ut, generator->getMesh() );
-    generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::ExodusReaderGenerator<2> );
-    generator->build_mesh();
-    MeshTestLoop( ut, generator->getMesh() );
+    // libmesh generators
+    #ifdef USE_LIBMESH
+        // Test the libmesh cube generator
+        generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::LibMeshCubeGenerator<5> );
+        generator->build_mesh();
+        MeshTestLoop( ut, generator->getMesh() );
+        // Test the libmesh reader generator
+        generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::ExodusReaderGenerator<> );
+        generator->build_mesh();
+        MeshTestLoop( ut, generator->getMesh() );
+        generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::ExodusReaderGenerator<2> );
+        generator->build_mesh();
+        MeshTestLoop( ut, generator->getMesh() );
+        // Test the ThreeElementLGenerator generator
+        generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::libMeshThreeElementGenerator );
+        generator->build_mesh();
+        MeshTestLoop( ut, generator->getMesh() );
+    #endif
     // Test the multimesh generator
     generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::MultiMeshGenerator );
     generator->build_mesh();
     MeshTestLoop( ut, generator->getMesh() );
     MeshVectorTestLoop( ut, generator->getMesh() );
-    // Test the ThreeElementLGenerator generator
-    generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::libMeshThreeElementGenerator );
+}
+
+
+// Function to test the creation/destruction of a native AMP mesh
+void testAMPMesh( AMP::UnitTest *ut )
+{
+    // Create the AMP mesh
+    boost::shared_ptr<AMP::unit_test::MeshGenerator> generator;
+    generator = boost::shared_ptr<AMP::unit_test::AMPMeshCubeGenerator<5> >( new AMP::unit_test::AMPMeshCubeGenerator<5> );
     generator->build_mesh();
-    MeshTestLoop( ut, generator->getMesh() );
+    boost::shared_ptr<AMP::Mesh::Mesh> mesh = generator->getMesh();
+
+    // Check the basic dimensions
+    std::vector<size_t> size(3,5);
+    size_t N_elements_global = size[0]*size[1]*size[2];
+    size_t N_faces_global = (size[0]+1)*size[1]*size[2] + size[0]*(size[1]+1)*size[2] + size[0]*size[1]*(size[2]+1);
+    size_t N_edges_global = size[0]*(size[1]+1)*(size[2]+1) + (size[0]+1)*size[1]*(size[2]+1) + (size[0]+1)*(size[1]+1)*size[2];
+    size_t N_nodes_global = (size[0]+1)*(size[1]+1)*(size[2]+1);
+    if ( mesh->numGlobalElements(AMP::Mesh::Vertex) == N_nodes_global )
+        ut->passes("Simple structured mesh has expected number of nodes");
+    else
+        ut->failure("Simple structured mesh has expected number of nodes");
+    if ( mesh->numGlobalElements(AMP::Mesh::Edge) == N_edges_global )
+        ut->passes("Simple structured mesh has expected number of edges");
+    else
+        ut->failure("Simple structured mesh has expected number of edges");
+    if ( mesh->numGlobalElements(AMP::Mesh::Face) == N_faces_global )
+        ut->passes("Simple structured mesh has expected number of faces");
+    else
+        ut->failure("Simple structured mesh has expected number of faces");
+    if ( mesh->numGlobalElements(AMP::Mesh::Volume) == N_elements_global )
+        ut->passes("Simple structured mesh has expected number of elements");
+    else
+        ut->failure("Simple structured mesh has expected number of elements");
+
+    // Check the volumes
+    std::vector<double> range(6,0.0);
+    range[1] = 1.0;
+    range[3] = 1.0;
+    range[5] = 1.0;
+    double dx = range[1]/size[0];
+    AMP::Mesh::MeshIterator iterator = mesh->getIterator(AMP::Mesh::Edge);
+    bool passes = true;
+    for (size_t i=0; i<iterator.size(); i++) {
+        if ( !AMP::Utilities::approx_equal( iterator->volume(), dx, 1e-12 ) )
+            passes = false;
+    }
+    if ( passes )
+        ut->passes("Simple structured mesh has correct edge legth");
+    else
+        ut->failure("Simple structured mesh has correct edge legth");
+    iterator = mesh->getIterator(AMP::Mesh::Face);
+    passes = true;
+    for (size_t i=0; i<iterator.size(); i++) {
+        if ( !AMP::Utilities::approx_equal( iterator->volume(), dx*dx, 1e-12 ) )
+            passes = false;
+    }
+    if ( passes )
+        ut->passes("Simple structured mesh has correct face area");
+    else
+        ut->failure("Simple structured mesh has correct face area");
+    iterator = mesh->getIterator(AMP::Mesh::Volume);
+    passes = true;
+    for (size_t i=0; i<iterator.size(); i++) {
+        if ( !AMP::Utilities::approx_equal( iterator->volume(), dx*dx*dx, 1e-12 ) )
+            passes = false;
+    }
+    if ( passes )
+        ut->passes("Simple structured mesh has correct element volume");
+    else
+        ut->failure("Simple structured mesh has correct element volume");
+
+    // Run the mesh tests
+    MeshTestLoop( ut, mesh );
+    MeshVectorTestLoop( ut, mesh );
+    MeshMatrixTestLoop( ut, mesh );
 
 }
 
 
 // Function to test the creation/destruction of a libmesh mesh
+#ifdef USE_LIBMESH
 void testlibMesh( AMP::UnitTest *ut )
 {
     // Create a generic MeshParameters object
@@ -68,6 +152,7 @@ void testlibMesh( AMP::UnitTest *ut )
     MeshMatrixTestLoop( ut, mesh );
 
 }
+#endif
 
 
 // Function to test the creation/destruction of a moab mesh
@@ -123,6 +208,7 @@ void testInputMesh( AMP::UnitTest *ut, std::string filename )
 
 void testSubsetMesh( AMP::UnitTest *ut )
 {
+    #ifdef USE_LIBMESH
     // Subset a mesh for a surface without ghost cells and test
     boost::shared_ptr<AMP::unit_test::MeshGenerator>  generator( 
         new AMP::unit_test::SurfaceSubsetGenerator< AMP::unit_test::ExodusReaderGenerator<>,0> );
@@ -140,6 +226,7 @@ void testSubsetMesh( AMP::UnitTest *ut )
     MeshTestLoop( ut, mesh );
     //MeshVectorTestLoop( ut, mesh );
     //MeshMatrixTestLoop( ut, mesh );
+    #endif
 }
 
 
@@ -157,8 +244,13 @@ int main ( int argc , char ** argv )
     // Run the ID test
     testID( &ut );
 
+    // Run tests on a native AMP mesh
+    testAMPMesh( &ut );
+
     // Run tests on a libmesh mesh
-    testlibMesh( &ut );
+    #ifdef USE_LIBMESH
+        testlibMesh( &ut );
+    #endif
 
     // Run tests on a moab mesh
     #ifdef USE_MOAB
@@ -166,13 +258,17 @@ int main ( int argc , char ** argv )
     #endif
 
     // Run tests on the input file
-    testInputMesh( &ut, "input_Mesh" );
+    #ifdef USE_LIBMESH
+        testInputMesh( &ut, "input_Mesh" );
+    #endif
 
     // Run the basic tests on all mesh generators
     testMeshGenerators( &ut );
 
     // Run the tests on the subset meshes
-    testSubsetMesh( &ut );
+    #ifdef USE_LIBMESH
+        testSubsetMesh( &ut );
+    #endif
 
     // Save the timing results
     PROFILE_STOP("Run tests");

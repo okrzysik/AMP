@@ -1815,8 +1815,8 @@ void AMP_MPI::call_allToAll<double>(const double *send_data, const int send_cnt[
 #else
 // Default instatiation of unsigned char
 template <>
-void AMP_MPI::call_allToAll<unsigned char>(const unsigned char *send_data, const int send_cnt[], 
-        const int send_disp[], unsigned char *recv_data, const int *recv_cnt, const int *recv_disp) const
+void AMP_MPI::call_allToAll<char>(const char *send_data, const int send_cnt[], 
+        const int send_disp[], char *recv_data, const int *recv_cnt, const int *recv_disp) const
 {
     AMP_ERROR("Should not reach this point");
 }
@@ -2105,13 +2105,13 @@ int AMP_MPI::probe( int source, int tag) const {
             LARGE_INTEGER end, f;
             QueryPerformanceFrequency(&f);
             QueryPerformanceCounter(&end);       
-            double time = ((double)end.QuadPart)/((double)f.QuadPart));
+            double time = ((double)end.QuadPart)/((double)f.QuadPart);
             return time;
         }
         double AMP_MPI::tick() {
             LARGE_INTEGER f;
             QueryPerformanceFrequency(&f);
-            double resolution = ((double)1.0)/((double)f.QuadPart));
+            double resolution = ((double)1.0)/((double)f.QuadPart);
             return resolution;
         }
     #else

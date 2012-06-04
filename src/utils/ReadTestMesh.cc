@@ -1,5 +1,4 @@
-
-#ifdef USE_AMP_MESH
+#if defined(USE_AMP_MESH) && defined(USE_LIBMESH)
 #include "ReadTestMesh.h"
 
 #include "elem.h"

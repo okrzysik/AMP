@@ -96,21 +96,21 @@ void mytest(AMP::UnitTest *ut)
   }
 //---------------------------------------------------------------------------//
   { // float
-    float mine, wrong, close, relDiff, simpleEps=1e-4;
+    float mine, wrong, close, relDiff, simpleEps=(float)1e-4;
 
     // simple.
-    mine=1.e-8;
-    close=1.000000001e-8;
-    wrong=2.e-8;
+    mine=(float)1.e-8;
+    close=(float)1.000000001e-8;
+    wrong=(float)2.e-8;
     
     if(  AMP::Utilities::approx_equal( mine, close, simpleEps ) ) ut->passes("Float precision passes simple check.");
     if( !AMP::Utilities::approx_equal( mine, wrong, simpleEps ) ) ut->passes("Float precision passes simple check.");
     
-    mine=1.e-32;
-    relDiff = pow( std::numeric_limits<float>::epsilon(), 0.75);
+    mine=(float)1.e-32;
+    relDiff = pow( std::numeric_limits<float>::epsilon(), (float) 0.75);
     for (int i=0; i<32; i++) {
-      wrong = ( mine ) / ( 1.-relDiff*( 1.01 ) );
-      close = ( mine ) / ( 1.-relDiff*( 0.99 ) );
+      wrong = (float) ( mine ) / ( 1.-relDiff*( 1.01 ) );
+      close = (float) ( mine ) / ( 1.-relDiff*( 0.99 ) );
       if( !AMP::Utilities::approx_equal( mine, close ) ) { ut->failure("Float precision is checked positively incorrectly for default eps");
       std::cout << i <<"+:"<< mine <<":"<< close <<":"<< wrong <<":"<< relDiff <<std::endl; }
       if(  AMP::Utilities::approx_equal( mine, wrong ) ) { ut->failure("Float precision is checked negatively incorrectly for default eps");
@@ -140,7 +140,7 @@ void mytest(AMP::UnitTest *ut)
     }
 
     mine=-1.e-32;
-    relDiff = pow( std::numeric_limits<float>::epsilon(), 0.75);
+    relDiff = pow( std::numeric_limits<float>::epsilon(), (float) 0.75);
     for (int i=0; i<32; i++) {
       wrong = ( mine ) / ( 1.-relDiff*( 1.01 ) );
       close = ( mine ) / ( 1.-relDiff*( 0.99 ) );

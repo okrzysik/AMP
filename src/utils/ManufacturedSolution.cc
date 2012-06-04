@@ -23,7 +23,7 @@ ManufacturedSolution::ManufacturedSolution(boost::shared_ptr<Database> db):
 	std::string name = db->getName();
 	AMP_INSIST(name == "ManufacturedSolution", "incorrect database name");
 
-	if (db->keyExists("Geometry") and db->keyExists("Order") and db->keyExists("BoundaryType")) {
+	if (db->keyExists("Geometry") && db->keyExists("Order") && db->keyExists("BoundaryType")) {
 
 		d_FunctionType = POLYNOMIAL;
 
@@ -209,7 +209,7 @@ ManufacturedSolution::ManufacturedSolution(boost::shared_ptr<Database> db):
 			for (size_t i=0; i<d_NumberOfInputs; i++) d_c[i] = array[i];
 		}
 
-	} else if (db->keyExists("QuadraticDistortion") and db->keyExists("QuadraticFunction")) {
+	} else if (db->keyExists("QuadraticDistortion") && db->keyExists("QuadraticFunction")) {
 		d_FunctionType = GENERALQUADRATIC;
 		std::string function = db->getString("QuadraticFunction");
 		if (function == "Exponential") d_functionPointer = &general_quadratic_exponential;
@@ -230,7 +230,7 @@ ManufacturedSolution::ManufacturedSolution(boost::shared_ptr<Database> db):
 
 	}
 
-	if (not d_CylindricalCoords) {
+	if ( !d_CylindricalCoords) {
 		d_MinX = db->getDoubleWithDefault("MinX", 0.);
 		d_MinY = db->getDoubleWithDefault("MinY", 0.);
 		d_MinZ = db->getDoubleWithDefault("MinZ", 0.);
@@ -262,10 +262,10 @@ ManufacturedSolution::ManufacturedSolution(boost::shared_ptr<Database> db):
 
 void ManufacturedSolution::evaluate(std::valarray<double> &result, const double x, const double y, const double z)
 {
-	if (not d_CylindricalCoords) {
-		AMP_ASSERT(x>=d_MinX and x<=d_MaxX);
-		AMP_ASSERT(y>=d_MinY and y<=d_MaxY);
-		AMP_ASSERT(z>=d_MinZ and z<=d_MaxZ);
+	if ( !d_CylindricalCoords ) {
+		AMP_ASSERT(x>=d_MinX && x<=d_MaxX);
+		AMP_ASSERT(y>=d_MinY && y<=d_MaxY);
+		AMP_ASSERT(z>=d_MinZ && z<=d_MaxZ);
 		double xs, ys, zs;
 		xs = (x-d_MinX)*d_ScaleX;
 		ys = (y-d_MinY)*d_ScaleY;
@@ -284,9 +284,9 @@ void ManufacturedSolution::evaluate(std::valarray<double> &result, const double 
 		result[9] *= d_ScaleZ*d_ScaleZ;
 	} else {
 		double r=x, th=y;
-		AMP_ASSERT(r >=d_MinR  and r <=d_MaxR );
-		AMP_ASSERT(th>=d_MinTh and th<=d_MaxTh);
-		AMP_ASSERT(z >=d_MinZ  and z <=d_MaxZ );
+		AMP_ASSERT(r >=d_MinR  && r <=d_MaxR );
+		AMP_ASSERT(th>=d_MinTh && th<=d_MaxTh);
+		AMP_ASSERT(z >=d_MinZ  && z <=d_MaxZ );
 		double rs, ths=th, zs;
 		rs  = (r -d_MinR )*d_ScaleR;
 		zs  = (z -d_MinZ )*d_ScaleZ;
@@ -396,7 +396,7 @@ void ManufacturedSolution::quad_none(valarray<double> &result, const double x, c
 
     #ifdef CHECKSIZES
         size_t na=10;
-        AMP_INSIST(a.size()>=na or a.size()==0, "incorrect number of parameters specified");
+        AMP_INSIST(a.size()>=na || a.size()==0, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
 
@@ -500,7 +500,7 @@ void ManufacturedSolution::cubic_none(valarray<double> &result, const double x, 
 
     #ifdef CHECKSIZES
         size_t na=20;
-        AMP_INSIST(a.size()>=na or a.size()==0, "incorrect number of parameters specified");
+        AMP_INSIST(a.size()>=na || a.size()==0, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
 
@@ -525,7 +525,7 @@ void ManufacturedSolution::quad_cyl_rod_none(
 
     #ifdef CHECKSIZES
         size_t na=15;
-        AMP_INSIST(a.size()>=na or a.size()==0, "incorrect number of parameters specified");
+        AMP_INSIST(a.size()>=na || a.size()==0, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
 
@@ -605,7 +605,7 @@ void ManufacturedSolution::cubic_cyl_rod_rz_none(valarray<double> &result, const
 
     #ifdef CHECKSIZES
 		size_t na=16;
-        AMP_INSIST(a.size()>=na or a.size()==0, "incorrect number of parameters specified");
+        AMP_INSIST(a.size()>=na || a.size()==0, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
 
@@ -628,7 +628,7 @@ void ManufacturedSolution::cubic_cyl_rod_none(valarray<double> &result, const do
 
     #ifdef CHECKSIZES
         size_t na=64;
-        AMP_INSIST(a.size()>=na or a.size()==0, "incorrect number of parameters specified");
+        AMP_INSIST(a.size()>=na || a.size()==0, "incorrect number of parameters specified");
         AMP_INSIST(result.size()>=10, "input size of argument result must be at least 10");
     #endif
 

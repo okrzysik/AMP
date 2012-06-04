@@ -207,7 +207,7 @@ void testMultiDOFMap( AMP::UnitTest *ut, boost::shared_ptr<AMP::Discretization::
         AMP::AMP_MPI comm = managers[i]->getComm();
         comm.barrier();
         // Convert the global list to a local list
-        std::vector<size_t> tmp = multiDOF->getSubDOF( i, globalDOFList );
+        std::vector<size_t> tmp = multiDOF->getSubDOF( (int) i, globalDOFList );
         std::vector<size_t> localDOFList, localToGlobal;
         localDOFList.reserve(N_global);
         localToGlobal.reserve(N_global);
@@ -229,7 +229,7 @@ void testMultiDOFMap( AMP::UnitTest *ut, boost::shared_ptr<AMP::Discretization::
         else
             ut->failure("Conversion from global to sub DOFs in multiDOFManager");
         // Check that we can convert back to the global ids
-        std::vector<size_t> globalDOFList2 = multiDOF->getGlobalDOF( i, localDOFList );
+        std::vector<size_t> globalDOFList2 = multiDOF->getGlobalDOF( (int) i, localDOFList );
         passes = globalDOFList2.size()==localDOFList.size();
         for (size_t j=0; j<globalDOFList2.size(); j++) {
             if ( globalDOFList2[j] != localToGlobal[j] )

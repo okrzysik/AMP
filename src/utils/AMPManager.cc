@@ -4,10 +4,7 @@
 #include "Utilities.h"
 #include "RNG.h"
 #include "utils/ProfilerApp.h"
-
-#ifdef USE_MPI
-    #include "mpi.h"
-#endif
+#include "utils/AMP_MPI.h"
 
 #ifdef USE_PETSC
     #include "petscsys.h"   
@@ -53,7 +50,7 @@ AMPManagerProperties AMPManager::properties=AMPManagerProperties();
         LARGE_INTEGER end, f;
         QueryPerformanceFrequency(&f);
         QueryPerformanceCounter(&end);       
-        double time = ((double)end.QuadPart)/((double)f.QuadPart));
+        double time = ((double)end.QuadPart)/((double)f.QuadPart);
         return time;
     }
 #else
@@ -65,6 +62,24 @@ AMPManagerProperties AMPManager::properties=AMPManagerProperties();
         return time;
     }
 #endif
+
+/****************************************************************************
+*  Function to terminate AMP if an unhandled exception is caught            *
+****************************************************************************/
+void term_func() 
+{
+    static bool tried_throw = false;
+    std::cout << "Unhandled exception" << std::endl;
+    long long unsigned int N_bytes = AMP::Utilities::getMemoryUsage();
+    printf("Bytes used = %llu\n",N_bytes);
+    std::vector<std::string> stack = AMP::Utilities::getCallStack();
+    printf("Stack Trace:\n");
+    for (size_t i=0; i<stack.size(); i++)
+        printf("   %s",stack[i].c_str());
+    std::cout << "Exiting" << std::endl;
+    exit(-1);
+}
+
 
 
 /****************************************************************************
@@ -120,12 +135,19 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
     #endif
     // Initialize AMP's MPI
     if ( properties.COMM_WORLD == AMP_COMM_WORLD ) 
-        comm_world = AMP_MPI(MPI_COMM_WORLD);
+		#ifdef USE_MPI
+			comm_world = AMP_MPI(MPI_COMM_WORLD);
+		#else
+			comm_world = AMP_MPI(AMP_COMM_WORLD);
+		#endif
     else
         comm_world = AMP_MPI(properties.COMM_WORLD);    // Initialize the parallel IO
     PIO::initialize();
     // Initialize the random number generator
     AMP::RNG::initialize(123);
+    // Set the terminate routine for runtime errors
+    //std::set_terminate( term_func );
+    //std::set_unexpected( term_func );
     // Initialization finished
     initialized = 1;
     startup_time = time()-start_time;
@@ -168,7 +190,9 @@ void AMPManager::shutdown()
     // Shutdown MPI
     if ( called_MPI_Init ) {
         double MPI_start_time = time();
-        MPI_Finalize();
+        #ifdef USE_MPI
+            MPI_Finalize();
+        #endif
         MPI_time = time()-MPI_start_time;
     }
     // Shudown PETSc

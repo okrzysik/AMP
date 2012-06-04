@@ -1,13 +1,16 @@
-#include <sstream>
-#include <vector>
-#include <string>
 #include "UnitTest.h"
 #include "AMPManager.h"
 
+#include <sstream>
+#include <vector>
+#include <string>
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     // Windows 
     // Sleep is defined in milliseconds
+    #define _CRT_SECURE_NO_WARNINGS		// Supress depreciated warnings for visual studio
+    #include <iostream>
+    #include <windows.h>
 #else
     // Linux
     // usleep is defined in microseconds, create a Sleep command
@@ -46,9 +49,9 @@ void UnitTest::report(const int level0) {
     std::vector<int> N_pass(size,0);
     std::vector<int> N_fail(size,0);
     std::vector<int> N_expected_fail(size,0);
-    comm.allGather<int>(pass_messages.size(),&N_pass[0]);
-    comm.allGather<int>(fail_messages.size(),&N_fail[0]);
-    comm.allGather<int>(expected_fail_messages.size(),&N_expected_fail[0]);
+    comm.allGather<int>((int)pass_messages.size(),&N_pass[0]);
+    comm.allGather<int>((int)fail_messages.size(),&N_fail[0]);
+    comm.allGather<int>((int)expected_fail_messages.size(),&N_expected_fail[0]);
     int N_pass_tot = 0;
     int N_fail_tot = 0;
     int N_expected_fail_tot = 0;
@@ -195,11 +198,11 @@ void UnitTest::report(const int level0) {
 void UnitTest::pack_message_stream(const std::vector<std::string> messages, const int rank, const int tag)
 {
     // Get the size of the messages
-    int N_messages = messages.size();
+    int N_messages =(int) messages.size();
     int *msg_size = new int[N_messages];
     int msg_size_tot = 0;
     for (int i=0; i<N_messages; i++) {
-        msg_size[i] = messages[i].size();
+        msg_size[i] = (int) messages[i].size();
         msg_size_tot += msg_size[i];
     }
     // Allocate space for the message stream

@@ -18,7 +18,7 @@ COPY_TEST_DATA_FILE ( input_Crystal )
 ADD_AMP_TEST_1_2_4 ( test_Mesh )
 ADD_AMP_TEST_1_2_4 ( test_SiloIO )
 
-IF( USE_DENDRO )
+IF( USE_DENDRO AND USE_PETSC )
     ADD_AMP_PROVISIONAL_TEST( testDendroSearch )
     COPY_TEST_DATA_FILE ( input_testDendroSearch )
 ENDIF()

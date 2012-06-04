@@ -1,9 +1,8 @@
 #ifndef included_AMP_MeshParameters
 #define included_AMP_MeshParameters
 
-#include <boost/shared_ptr.hpp>
-#include "utils/Database.h"
 #include "utils/AMP_MPI.h"
+#include "utils/Database.h"
 
 
 namespace AMP { 

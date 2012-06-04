@@ -65,6 +65,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
     d_comm.barrier();
     PROFILE_STOP("barrier");
     // Syncronize all vectors
+    #ifdef USE_AMP_VECTORS
     PROFILE_START("makeConsistent");
     for (size_t i=0; i<d_vectors.size(); i++) {
         AMP::LinearAlgebra::Vector::UpdateState localState = d_vectors[i]->getUpdateStatus();
@@ -74,6 +75,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
             d_vectors[i]->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     }
     PROFILE_STOP("makeConsistent");
+    #endif
     // Write the data for each base mesh
     if ( decomposition==0 ) {
         // Write all mesh data to the main file
