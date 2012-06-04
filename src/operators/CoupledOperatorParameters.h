@@ -26,6 +26,8 @@ namespace Operator {
 
       virtual ~CoupledOperatorParameters() { }
 
+      boost::shared_ptr<Operator> d_NodeToGaussPointOperator;
+
       boost::shared_ptr<Operator> d_CopyOperator;
 
       boost::shared_ptr<Operator> d_MapOperator;

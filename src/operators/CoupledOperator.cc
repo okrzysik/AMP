@@ -12,6 +12,7 @@ CoupledOperator::CoupledOperator(const boost::shared_ptr<OperatorParameters>& pa
     : ColumnOperator(params)
 {
     boost::shared_ptr<CoupledOperatorParameters> myparams = boost::dynamic_pointer_cast<CoupledOperatorParameters>(params);
+    d_Operators.push_back(myparams->d_NodeToGaussPointOperator);
     d_Operators.push_back(myparams->d_CopyOperator);
     d_Operators.push_back(myparams->d_MapOperator);
     d_Operators.push_back(myparams->d_BVPOperator);
@@ -26,12 +27,20 @@ void CoupledOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
 {
     PROFILE_START("apply");
     if(d_Operators[0]) {
-        d_Operators[0]->apply(f,u,r,a,b);
+      AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+        d_Operators[0]->apply(nullVec,u,d_frozenGaussPointVector,1,0);
     }
     if(d_Operators[1]) {
+      if(d_Operators[0]) {
+        d_Operators[1]->apply(f,d_frozenGaussPointVector,r,a,b);
+      } else {
         d_Operators[1]->apply(f,u,r,a,b);
+      }
     }
-    d_Operators[2]->apply(f,u,r,a,b);
+    if(d_Operators[2]) {
+        d_Operators[2]->apply(f,u,r,a,b);
+    }
+    d_Operators[3]->apply(f,u,r,a,b);
     PROFILE_STOP("apply");
 }
 
