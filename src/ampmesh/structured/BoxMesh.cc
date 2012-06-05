@@ -56,6 +56,10 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
         d_maxLocalSize[d] = size[d];
         d_numBlocks[d] = 1;
     }
+    if ( generator.compare("tube")==0 ) {
+        AMP_INSIST(PhysicalDim==3,"tube generator requires a 3d mesh");
+        d_isPeriodic[1] = true;    // We will use the logical mesh (r,theta,z), so theta is periodic
+    } 
     if ( d_comm.getSize()==1 ) {
         // We are dealing with a serial mesh (do nothing to change the local box sizes)
     } else {
@@ -86,8 +90,49 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
     if ( generator.compare("cube")==0 ) {
         AMP_INSIST(range.size()==2*PhysicalDim,"Range must be 2*dim for cube generator");
         fillCartesianNodes( PhysicalDim, &d_size[0], &range[0], d_index, d_coord );
-    } else if ( generator.compare("cylinder")==0 ) {
-        AMP_ERROR("Not finished yet");
+    } else if ( generator.compare("tube")==0 ) {
+        AMP_INSIST(range.size()==4,"Range must be 1x4 for cube generator");
+        // Change the surface ids to match the standard ids
+        // 1 - 8: Inner surface
+        // 2 - 4: Outer surface
+        // 3 - 2: Bottom surface
+        // 4 - 1: Top surface
+        AMP_ASSERT(d_ids.size()==4);
+        d_ids[0] = 1;
+        d_ids[1] = 2;
+        d_ids[2] = 4;
+        d_ids[3] = 8;
+        std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> >::const_iterator it;
+        std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> > new_ids;
+        for (it=d_id_list.begin(); it!=d_id_list.end(); ++it) {
+            std::pair<int,GeomType> id = it->first;
+            std::vector<ElementIndexList> list = it->second;
+            if ( id.first==1 )
+                id.first = 8;
+            else if ( id.first==2 )
+                id.first = 4;
+            else if ( id.first==3 )
+                id.first = 2;
+            else if ( id.first==4 )
+                id.first = 1;
+            else
+                AMP_ERROR("Unexpected id");
+            std::pair<std::pair<int,GeomType>,std::vector<ElementIndexList> > tmp( id, list );
+            new_ids.insert( tmp );
+        }
+        d_id_list = new_ids;
+        // Create the coordinates (currently the points lie in [0,1]
+        double *x = &d_coord[0][0];
+        double *y = &d_coord[1][0];
+        double *z = &d_coord[2][0];
+        const double pi = 3.141592653589793116;
+        for (size_t i=0; i<d_coord[0].size(); i++) {
+            double r = range[0] + x[i]*(range[1]-range[0]);
+            double theta = 2*pi*y[i];
+            x[i] = r*sin(theta);
+            y[i] = r*cos(theta);
+            z[i] = range[0] + z[i]*(range[1]-range[0]);
+        }
     } else { 
         AMP_ERROR("Unknown generator");
     }

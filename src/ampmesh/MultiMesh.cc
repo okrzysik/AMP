@@ -143,9 +143,14 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ):
 MultiMesh::MultiMesh ( const AMP_MPI &comm, const std::vector<Mesh::shared_ptr> &meshes )
 {
     d_comm = comm;
-    d_meshes = meshes;
     this->setMeshID();
-    if ( d_comm.sumReduce(meshes.size())==0 ) {
+    // Get the list of non-null meshes
+    d_meshes = std::vector<Mesh::shared_ptr>();
+    for (size_t i=0; i<meshes.size(); i++) {
+        if ( meshes[i].get()!=NULL )
+            d_meshes.push_back( meshes[i] );
+    }
+    if ( d_comm.sumReduce(d_meshes.size())==0 ) {
         AMP_ERROR("Empty multimeshes have not been tested yet");
     }
     // Check the comm
