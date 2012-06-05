@@ -245,7 +245,7 @@ int main ( int argc , char ** argv )
     testID( &ut );
 
     // Run tests on a native AMP mesh
-    testAMPMesh( &ut );
+    //testAMPMesh( &ut );
 
     // Run tests on a libmesh mesh
     #ifdef USE_LIBMESH

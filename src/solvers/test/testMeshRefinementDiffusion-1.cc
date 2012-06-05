@@ -92,7 +92,7 @@ void calculateManufacturedSolution(AMP::Mesh::Mesh::shared_ptr meshAdapter,
         for(unsigned int j = 0; j < d_currNodes.size(); j++) {
           std::vector<double> pt = d_currNodes[j].coord();
           double val1 = __INIT_FN__(pt[0],pt[1],pt[2]); 
-          double val2 = __INIT_FN__(pt[0],pt[1],pt[2]-20); 
+          //double val2 = __INIT_FN__(pt[0],pt[1],pt[2]-20); // not used. 
           double val3 = __dTdn__(pt[0],pt[1],pt[2],1); 
 
           manufacturedSolution->setLocalValueByGlobalID(d_dofIndices[j],val1);
@@ -202,7 +202,7 @@ void computeL2Norm(AMP::Mesh::Mesh::shared_ptr meshAdapter,
     for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++) {
       double px = coordinates[qp](0);
       double py = coordinates[qp](1);
-      double pz = coordinates[qp](2);
+      //double pz = coordinates[qp](2); // not used
       double manufacturedAtGauss = __INIT_FN__(px,py,pz); 
 
       *discretizationErrorNorm2 += JxW[qp]* pow( (computedAtGauss[qp]
@@ -225,7 +225,7 @@ createThermalOperators(boost::shared_ptr<AMP::InputDatabase> global_input_db,
   linearColumnOperator.reset(new AMP::Operator::ColumnOperator(emptyParams));
 
   AMP::Mesh::Mesh::shared_ptr  bottomAdapter  = manager->Subset( "Bottom" );
-  AMP::Mesh::Mesh::shared_ptr  topAdapter = manager->Subset( "Top" );
+  //AMP::Mesh::Mesh::shared_ptr  topAdapter = manager->Subset( "Top" ); // not used.
   //-----------------------------------------------
   //   CREATE THE NONLINEAR THERMAL OPERATOR 1 ----
   //-----------------------------------------------

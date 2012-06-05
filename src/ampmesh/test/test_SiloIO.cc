@@ -9,6 +9,7 @@
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "utils/PIO.h"
+#include "utils/ProfilerApp.h"
 
 #include "ampmesh/Mesh.h"
 #include "ampmesh/SiloIO.h"
@@ -41,8 +42,10 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     params->setComm(globalComm);
 
     // Create the meshes from the input database
+    PROFILE_START("Load Mesh");
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh(params);
     globalComm.barrier();
+    PROFILE_STOP("Load Mesh");
     double t2 = AMP::AMP_MPI::time();
 
 #ifdef USE_AMP_VECTORS
@@ -140,9 +143,10 @@ int main ( int argc , char **argv )
 {
     AMP::AMPManager::startup(argc, argv);
     AMP::UnitTest ut;
+    PROFILE_ENABLE();
 
     #ifdef USE_SILO
-        std::string filename = "input_SiloIO";
+        std::string filename = "input_SiloIO-1";
         if(argc == 2) filename = argv[1];
         test_Silo( &ut, filename );
     #else
@@ -150,7 +154,8 @@ int main ( int argc , char **argv )
     #endif
 
     ut.report();
-    
+    PROFILE_SAVE("test_Silo");    
+
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();
     return num_failed;

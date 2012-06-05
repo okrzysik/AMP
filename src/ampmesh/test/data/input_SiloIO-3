@@ -1,0 +1,13 @@
+// The mesh to use
+Mesh {
+    MeshName = "pellet"
+    MeshType = "libMesh"
+    FileName = "pellet_1x.e"
+    dim = 3
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
+    NumberOfElements = 1000
+}
+
+

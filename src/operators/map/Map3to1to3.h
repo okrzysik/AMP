@@ -83,7 +83,7 @@ protected:
      * \param [in] it   The iterator over the boundary used for the map
      */
     virtual std::multimap<double,double>  buildMap( const AMP::LinearAlgebra::Vector::shared_ptr vec, 
-        const AMP::Mesh::Mesh::shared_ptr, const AMP::Mesh::MeshIterator &it );
+        const AMP::Mesh::Mesh::shared_ptr mesh, const AMP::Mesh::MeshIterator &it );
 
     /** \brief  A virtual method to construct a vector from a map
      * \details  This function constructs a vector from the map.
@@ -93,7 +93,7 @@ protected:
      * \param [in] it   The iterator over the boundary used for the map
      * \param [in] map  The map containing all of the points
      */
-    virtual void buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::Mesh::shared_ptr, 
+    virtual void buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::Mesh::shared_ptr mesh, 
         const AMP::Mesh::MeshIterator &it, const std::multimap<double,double> &map );
 
     //!  Iterators over the nodes on the boundary
