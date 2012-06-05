@@ -125,6 +125,9 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     if ( MeshType == std::string("Multimesh") ) {
         // The mesh is a multimesh
         meshSize = AMP::Mesh::MultiMesh::estimateMeshSize(params);
+    } else if ( MeshType == std::string("AMP") ) {
+        // The mesh is a AMP mesh
+        meshSize = AMP::Mesh::BoxMesh::estimateMeshSize(params);
     } else if ( MeshType == std::string("libMesh") ) {
         // The mesh is a libmesh mesh
         #ifdef USE_LIBMESH

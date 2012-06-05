@@ -37,8 +37,8 @@ Mesh{
         MeshType = "AMP"
         dim = 3
         Generator = "tube"
-        Size = 10, 10, 30
-        Range = 0.71, 0.8, 0, 3
+        Size = 3, 40, 30
+        Range = 0.8, 1.0, 0, 3
         x_offset = 0.0
         y_offset = 0.0
         z_offset = 0.0

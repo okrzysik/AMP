@@ -93,10 +93,10 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
     } else if ( generator.compare("tube")==0 ) {
         AMP_INSIST(range.size()==4,"Range must be 1x4 for cube generator");
         // Change the surface ids to match the standard ids
-        // 1 - 8: Inner surface
-        // 2 - 4: Outer surface
-        // 3 - 2: Bottom surface
-        // 4 - 1: Top surface
+        // 0 - 8: Inner surface
+        // 1 - 4: Outer surface
+        // 4 - 2: Bottom surface
+        // 5 - 1: Top surface
         AMP_ASSERT(d_ids.size()==4);
         d_ids[0] = 1;
         d_ids[1] = 2;
@@ -107,13 +107,13 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
         for (it=d_id_list.begin(); it!=d_id_list.end(); ++it) {
             std::pair<int,GeomType> id = it->first;
             std::vector<ElementIndexList> list = it->second;
-            if ( id.first==1 )
+            if ( id.first==0 )
                 id.first = 8;
-            else if ( id.first==2 )
+            else if ( id.first==1 )
                 id.first = 4;
-            else if ( id.first==3 )
-                id.first = 2;
             else if ( id.first==4 )
+                id.first = 2;
+            else if ( id.first==5 )
                 id.first = 1;
             else
                 AMP_ERROR("Unexpected id");
@@ -131,7 +131,7 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
             double theta = 2*pi*y[i];
             x[i] = r*sin(theta);
             y[i] = r*cos(theta);
-            z[i] = range[0] + z[i]*(range[1]-range[0]);
+            z[i] = range[2] + z[i]*(range[3]-range[2]);
         }
     } else { 
         AMP_ERROR("Unknown generator");
@@ -429,7 +429,7 @@ void BoxMesh::initialize()
         ++nodeIterator;
     }
     AMP::Utilities::quicksort(d_index);
-    double range2[6] = {0.0,1.0,0.0,1.0,0.0};
+    double range2[6] = { 0.0, 1.0, 0.0, 1.0, 0.0, 1.0 };
     fillCartesianNodes( PhysicalDim, &d_size[0], range2, d_index, d_coord );
     // Create the list of elements on the surface
     PROFILE_START("create_surface_elements");

@@ -232,6 +232,18 @@ std::vector<MeshElement> structuredMeshElement::getElements(const GeomType type)
     } else  {
         AMP_ERROR("Not finished");
     }
+    // Fix any elements that are beyond a periodic boundary
+    for (int d=0; d<d_dim; d++) {
+        if ( d_mesh->d_isPeriodic[d] ) {
+            int size = d_mesh->d_size[d];;
+            for (size_t i=0; i<index.size(); i++) {
+                if ( index[i].index[d]<0 )
+                    index[i].index[d] += size;
+                else if ( index[i].index[d]>=size )
+                    index[i].index[d] -= size;
+            }
+        }
+    }    
     // Get the elements
     std::vector<MeshElement> elements(index.size());
     for (size_t i=0; i<index.size(); i++)
