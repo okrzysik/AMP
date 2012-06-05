@@ -28,10 +28,21 @@ Mesh{
             x_offset = 0.0
             y_offset = 0.0
             z_offset = 0.0, 1.0, 2.0, 3.0
-            NumberOfElements = 3315
         }
     }
 
+    // The mesh for the clad
+    Mesh_2 {
+        MeshName = "clad"
+        MeshType = "AMP"
+        dim = 3
+        Generator = "tube"
+        Size = 10, 10, 30
+        Range = 0.71, 0.8, 0, 3
+        x_offset = 0.0
+        y_offset = 0.0
+        z_offset = 0.0
+    }
 }
 
 
