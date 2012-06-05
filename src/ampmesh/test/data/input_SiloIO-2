@@ -1,13 +1,37 @@
-// The mesh to use
-Mesh {
-    MeshName = "pellet"
-    MeshType = "libMesh"
-    FileName = "pellet_1x.e"
-    dim = 3
+// Database for all the meshes
+Mesh{
+    // This is the main multimesh that will contain all meshes
+    MeshName = "MainMesh"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
     x_offset = 0.0
     y_offset = 0.0
     z_offset = 0.0
-    NumberOfElements = 1000
+    
+    // This is a multimesh for 3 blocks
+    Mesh_1 {
+        MeshName = "PelletMeshes"
+        MeshType = "Multimesh"
+        MeshDatabasePrefix = "Mesh_"
+        MeshArrayDatabasePrefix = "MeshArray_"
+        MeshArray_1 {
+            N = 4
+            iterator = "%i"
+            indicies = 1, 2, 3, 4 
+            MeshName = "pellet_%i"
+            MeshType = "AMP"
+            dim = 3
+            Generator = "cube"
+            Size = 10, 10, 10
+            Range = -0.5, 0.5, -0.5, 0.5, 0, 1
+            x_offset = 0.0
+            y_offset = 0.0
+            z_offset = 0.0, 1.0, 2.0, 3.0
+            NumberOfElements = 3315
+        }
+    }
+
 }
 
 

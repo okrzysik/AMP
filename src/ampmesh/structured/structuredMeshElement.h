@@ -75,7 +75,6 @@ public:
 protected:
 
     /** Default constructor
-     * \param type      Element type
      * \param index     Index for the current elements
      * \param mesh      Underlying mesh
      */
@@ -90,6 +89,7 @@ protected:
     const AMP::Mesh::BoxMesh* d_mesh;
 
     friend class AMP::Mesh::BoxMesh;
+    friend class AMP::Mesh::structuredMeshIterator;
 
 };
 

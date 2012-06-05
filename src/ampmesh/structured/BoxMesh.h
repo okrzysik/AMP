@@ -24,6 +24,7 @@ namespace AMP {
 namespace Mesh {
 
 class structuredMeshElement;
+class structuredMeshIterator;
 
 
 /**
@@ -42,6 +43,7 @@ class structuredMeshElement;
  *           cyliner: [ r  z-min  z-max ]
  *           tube: [ r-min  r-max  z-min  z-max ]
  *    Periodic: Are any dimensions periodic (only applies to cubes)
+ *    GCW: The maximum ghost cell width to support (default is 1)
  */
 class BoxMesh: public AMP::Mesh::Mesh
 {
@@ -252,7 +254,7 @@ protected:
     std::vector<int> getLocalBlock(unsigned int rank) const;
 
     // Helper function to return the block and owning rank of the given MeshElementIndex
-    std::vector<int> getOwnerBlock(const MeshElementIndex index, unsigned int &rank) const;
+    void getOwnerBlock(const MeshElementIndex index, unsigned int &rank, int *range) const;
 
     // Helper function to fill the node data for a uniform cartesian mesh
     static void fillCartesianNodes(int dim, const int* globalSize, const double *range, 
@@ -261,7 +263,8 @@ protected:
     // Internal data
     bool d_isPeriodic[3];                   // Which directions are periodic
     int d_size[3];                          // The size of the logical domain in each direction
-    std::vector<int> d_localSize[3];        // A vector indicating the local sizes for the sub-boxes 
+    int d_numBlocks[3];                     // The number of local boxes in each direction
+    int d_maxLocalSize[3];                  // The maximum size of the local boxes in each direction
     std::vector<MeshElementIndex> d_index;  // The indicies of the nodes we are storing
     std::vector<double> d_coord[3];         // The coordinates of the nodes
 
@@ -277,6 +280,7 @@ protected:
 
     // Friend functions to access protected functions    
     friend class structuredMeshElement;
+    friend class structuredMeshIterator;
 
 };
 

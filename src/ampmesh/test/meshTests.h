@@ -9,6 +9,7 @@
 #include "utils/Utilities.h"
 
 #include "ampmesh/Mesh.h"
+#include "ampmesh/MultiMesh.h"
 #include "ampmesh/SubsetMesh.h"
 #include "ampmesh/MeshElement.h"
 #include "ampmesh/MeshIterator.h"
@@ -102,7 +103,7 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
     bool coord_pass = true;
     bool centroid_pass = true;
     bool elements_pass = true;
-    bool neighbor_pass = true;
+    int neighbor_pass = 1;
     cur_it = iterator.begin();
     int myRank = mesh->getComm().getRank();
     int maxRank = mesh->getComm().getSize()-1;
@@ -145,8 +146,12 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
                     elements_pass = false;
             }
             std::vector< AMP::Mesh::MeshElement::shared_ptr > neighbors = element.getNeighbors();
-            if ( neighbors.empty() )
-                neighbor_pass = false;
+            if ( neighbors.empty() ) {
+                if ( element.elementType()==AMP::Mesh::Vertex || element.elementType()==mesh->getDim() )
+                    neighbor_pass = 0;
+                else if ( neighbor_pass==1 )
+                    neighbor_pass = 2;
+            }
             if ( ownerRank!=myRank )
                 id_pass = false;
         } else {
@@ -155,7 +160,7 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
         }
         ++cur_it;   // Pre-increment is faster than post-increment
     }
-    if ( id_pass && type_pass && volume_pass && coord_pass && elements_pass && neighbor_pass ) {
+    if ( id_pass && type_pass && volume_pass && coord_pass && elements_pass && neighbor_pass==1 ) {
         ut->passes( "elements passed" );
     } else {
         if ( !id_pass )
@@ -170,8 +175,10 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
             ut->failure( "elements failed centroid test" );
         if ( !elements_pass )
             ut->failure( "elements failed getElements test" );
-        if ( !neighbor_pass )
+        if ( neighbor_pass==0 ) 
             ut->failure( "elements failed getNeighbors test" );
+        else if ( neighbor_pass==2 ) 
+            ut->expected_failure( "elements failed getNeighbors test" );
     }
     // Check that we can get the element from the global id for all elements
     cur_it = iterator.begin();
@@ -316,6 +323,8 @@ void MeshCountTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
         AMP::Mesh::GeomType type = (AMP::Mesh::GeomType) i;
         size_t N_local = mesh->numLocalElements(type);
         size_t N_global = mesh->numGlobalElements(type);
+        size_t N_ghost0 = mesh->numGhostElements(type,0);
+        size_t N_ghost1 = comm.sumReduce( mesh->numGhostElements(type,1) );
         size_t N_sum = comm.sumReduce(N_local);
         if ( N_global > 0 )
             ut->passes("Non-trival mesh created");
@@ -325,10 +334,18 @@ void MeshCountTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
             ut->passes("Sum of local mesh counts matches global count");
         else
             ut->failure("Sum of local mesh counts matches global count");
-        if ( mesh->numGhostElements(type,0) == 0 )
+        if ( N_ghost0 == 0 )
             ut->passes("gcw=0 has no ghost elements");
         else
             ut->failure("gcw=0 has no ghost elements");
+        std::vector<AMP::Mesh::MeshID> ids = mesh->getBaseMeshIDs();
+        bool is_base_mesh = ids.size()==1 && ids[0]==mesh->meshID();
+        if ( N_local != N_global && is_base_mesh ) {
+            if ( N_ghost1 > 0 )
+                ut->passes("gcw=1 has ghost elements");
+            else
+                ut->failure("gcw=1 has ghost elements");
+        }
     }
 }
 
