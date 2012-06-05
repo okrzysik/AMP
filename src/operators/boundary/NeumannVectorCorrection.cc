@@ -56,45 +56,50 @@ namespace Operator {
       d_isConstantFlux = (myparams->d_db)->getBoolWithDefault("constant_flux", true);
       d_isFluxGaussPtVector = (myparams->d_db)->getBoolWithDefault("isFluxGaussPtVector",false);
 
-      d_boundaryIds.resize(d_numBndIds);
-      d_dofIds.resize(d_numBndIds);
-      d_neumannValues.resize(d_numBndIds);
-      d_IsCoupledBoundary.resize(d_numBndIds);
-      d_numDofIds.resize(d_numBndIds);
+      bool skipParams = (params->d_db)->getBoolWithDefault("skip_params", false);
 
-      char key[100];
-      for(int j = 0; j < d_numBndIds; j++) {
-        sprintf(key, "id_%d", j);
-        AMP_INSIST( (myparams->d_db)->keyExists(key), "Key is missing!" );
-        d_boundaryIds[j] = (myparams->d_db)->getInteger(key);
+      if(!skipParams){
+        d_boundaryIds.resize(d_numBndIds);
+        d_dofIds.resize(d_numBndIds);
+        d_neumannValues.resize(d_numBndIds);
+        d_IsCoupledBoundary.resize(d_numBndIds);
+        d_numDofIds.resize(d_numBndIds);
 
-        sprintf(key, "number_of_dofs_%d", j);
-        AMP_INSIST( (myparams->d_db)->keyExists(key), "Key is missing!" );
-        d_numDofIds[j] = (myparams->d_db)->getInteger(key);
-
-        sprintf(key, "IsCoupledBoundary_%d", j);
-        d_IsCoupledBoundary[j] = (params->d_db)->getBoolWithDefault(key, false);
-
-        d_dofIds[j].resize(d_numDofIds[j]);
-        d_neumannValues[j].resize(d_numDofIds[j]);
-        for(int i = 0; i < d_numDofIds[j]; i++) {
-          sprintf(key, "dof_%d_%d", j, i);
+        char key[100];
+        for(int j = 0; j < d_numBndIds; j++) {
+          sprintf(key, "id_%d", j);
           AMP_INSIST( (myparams->d_db)->keyExists(key), "Key is missing!" );
-          d_dofIds[j][i] = (myparams->d_db)->getInteger(key);
+          d_boundaryIds[j] = (myparams->d_db)->getInteger(key);
 
-          if(d_isConstantFlux){
-            sprintf(key, "value_%d_%d", j, i);
+          sprintf(key, "number_of_dofs_%d", j);
+          AMP_INSIST( (myparams->d_db)->keyExists(key), "Key is missing!" );
+          d_numDofIds[j] = (myparams->d_db)->getInteger(key);
+
+          sprintf(key, "IsCoupledBoundary_%d", j);
+          d_IsCoupledBoundary[j] = (params->d_db)->getBoolWithDefault(key, false);
+
+          d_dofIds[j].resize(d_numDofIds[j]);
+          d_neumannValues[j].resize(d_numDofIds[j]);
+          for(int i = 0; i < d_numDofIds[j]; i++) {
+            sprintf(key, "dof_%d_%d", j, i);
             AMP_INSIST( (myparams->d_db)->keyExists(key), "Key is missing!" );
-            d_neumannValues[j][i] = (myparams->d_db)->getDouble(key);
-          }else{
-            d_variableFlux = myparams->d_variableFlux;      
-          }
-        }//end for i
-      }//end for j
+            d_dofIds[j][i] = (myparams->d_db)->getInteger(key);
 
-      if(myparams->d_robinPhysicsModel) {
-        d_robinPhysicsModel = myparams->d_robinPhysicsModel;
-      }
+            if(d_isConstantFlux){
+              sprintf(key, "value_%d_%d", j, i);
+              AMP_INSIST( (myparams->d_db)->keyExists(key), "Key is missing!" );
+              d_neumannValues[j][i] = (myparams->d_db)->getDouble(key);
+            }else{
+              d_variableFlux = myparams->d_variableFlux;      
+            }
+          }//end for i
+        }//end for j
+
+        if(myparams->d_robinPhysicsModel) {
+          d_robinPhysicsModel = myparams->d_robinPhysicsModel;
+        }
+
+      }//skip params
 
       // Create the libmesh elements
       AMP::Mesh::MeshIterator iterator;
@@ -110,11 +115,6 @@ namespace Operator {
       {
 
         AMP::LinearAlgebra::Vector::shared_ptr myRhs = subsetInputVector( rhsCorrection );
-
-        if(!d_isConstantFlux)
-        {
-          d_variableFlux->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-        }
 
         double gammaValue;
         if((d_params->d_db)->keyExists("gamma"))
@@ -136,6 +136,11 @@ namespace Operator {
           if(!d_IsCoupledBoundary[j])
           {
             unsigned int numDofIds = d_dofIds[j].size();
+
+            if(!d_isConstantFlux)
+            {
+              d_variableFlux->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+            }
 
             for(unsigned int k = 0; k < numDofIds; k++)
             {
@@ -166,7 +171,7 @@ namespace Operator {
 
                 dofIndices.resize(numNodesInCurrElem);
                 for(unsigned int i = 0; i < numNodesInCurrElem ; i++) {
-                   dofManager->getDOFs(d_currNodes[i].globalID(), dofIndices[i]);
+                  dofManager->getDOFs(d_currNodes[i].globalID(), dofIndices[i]);
                 }
 
                 AMP::Discretization::DOFManager::shared_ptr fluxDOFManager; 

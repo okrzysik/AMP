@@ -1,4 +1,18 @@
 #include "operators/NodeToGaussPointOperator.h"
+/* Libmesh files */
+#include "fe_type.h"
+#include "fe_base.h"
+#include "elem.h"
+#include "quadrature.h"
+
+#include "enum_order.h"
+#include "enum_fe_family.h"
+#include "enum_quadrature_type.h"
+#include "auto_ptr.h"
+#include "string_to_enum.h"
+
+#include "face_quad4.h"
+#include "node.h"
 
 namespace AMP {
 namespace Operator {
@@ -11,7 +25,8 @@ namespace Operator {
       AMP::LinearAlgebra::Vector::shared_ptr nodalVec = u->subsetVectorForVariable(d_NodalVariable);
       AMP::LinearAlgebra::Vector::shared_ptr gaussPtVec = r->subsetVectorForVariable(d_GaussPtVariable);
 
-      AMP::Discretization::DOFManager::shared_ptr gaussPt_dof_maps = gaussPtVec->getDOFManager();
+      AMP::Discretization::DOFManager::shared_ptr dof_map = nodalVec->getDOFManager();
+      AMP::Discretization::DOFManager::shared_ptr gaussPt_dof_map = gaussPtVec->getDOFManager();
 
       libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
       libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
@@ -24,15 +39,14 @@ namespace Operator {
 
       d_fe->attach_quadrature_rule( d_qrule.get() );
 
-      AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
+      AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Face, 0);
       AMP::Mesh::MeshIterator end_el = el.end();
 
-      AMP::Discretization::DOFManager::shared_ptr dof_map = TemperatureVec->getDOFManager();
 
       for( ; el != end_el; ++el) {
         std::vector<AMP::Mesh::MeshElement> d_currNodes = el->getElements(AMP::Mesh::Vertex);  
 
-        ::Elem* d_currElemPtr = new ::Hex8;
+        ::Elem* d_currElemPtr = new ::Quad4;
         for(size_t j = 0; j < d_currNodes.size(); j++) {
           std::vector<double> pt = d_currNodes[j].coord();
           d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
@@ -47,10 +61,9 @@ namespace Operator {
         dof_map->getDOFs(globalIds, bndGlobalIds);
 
         std::vector<size_t> d_gaussPtIndices; 
-        gaussPt_dof_maps->getDOFs (el->globalID(), d_gaussPtIndices);
+        gaussPt_dof_map->getDOFs (el->globalID(), d_gaussPtIndices);
         d_fe->reinit(d_currElemPtr);
 
-        const std::vector<Real> & JxW = d_fe->get_JxW();
         const std::vector<std::vector<Real> > & phi = d_fe->get_phi();
 
         std::vector<double>  computedAtGauss(d_qrule->n_points(), 0.0);
