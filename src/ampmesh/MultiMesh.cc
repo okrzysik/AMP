@@ -485,7 +485,7 @@ std::vector<MeshID> MultiMesh::getLocalMeshIDs() const
     std::set<MeshID> ids;
     ids.insert(d_meshID);
     for (size_t i=0; i<d_meshes.size(); i++) {
-        std::vector<MeshID> mesh_ids = d_meshes[i]->getAllMeshIDs();
+        std::vector<MeshID> mesh_ids = d_meshes[i]->getLocalMeshIDs();
         for (size_t j=0; j<mesh_ids.size(); j++)
             ids.insert(mesh_ids[j]);
     }
