@@ -87,18 +87,20 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
         std::vector<int> div(PhysicalDim,1);
         while ( factors.size() > 0 ) {
             int d = -1;
-            int v = -1;
+            double v = -1;
             for (int i=0; i<PhysicalDim; i++) {
-                if ( (d_maxLocalSize[i]+div[i]-1)/div[i] > v ) {
+                double tmp = ((double)d_maxLocalSize[i])/((double)div[i]);
+                if ( tmp > v ) {
                     d = i;
-                    v = (d_maxLocalSize[i]+div[i]-1)/div[i];
+                    v = tmp;
                 }
             }
             div[d] *= factors[factors.size()-1];
             factors.resize(factors.size()-1);
         }
         for (int d=0; d<PhysicalDim; d++) {
-            d_maxLocalSize[d] /= div[d];
+            double tmp = ((double)d_maxLocalSize[d])/((double)div[d]);
+            d_maxLocalSize[d] = (int) ceil(tmp);
             d_numBlocks[d] = div[d];
         }
     }
@@ -147,8 +149,8 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
         for (size_t i=0; i<d_coord[0].size(); i++) {
             double r = range[0] + x[i]*(range[1]-range[0]);
             double theta = 2*pi*y[i];
-            x[i] = r*sin(theta);
-            y[i] = r*cos(theta);
+            x[i] = r*cos(theta);
+            y[i] = r*sin(theta);
             z[i] = range[2] + z[i]*(range[3]-range[2]);
         }
     } else if ( generator.compare("cylinder")==0 ) {
@@ -626,19 +628,17 @@ size_t BoxMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         AMP_INSIST(size[d]>0,"All values of size must be > 0");
     size_t N_elements = 0;
     if ( generator.compare("cube")==0 ) {
-        AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must match dim");
+        AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must match dimfor cube");
         N_elements = 1;
         for (int d=0; d<dim; d++)
             N_elements *= size[d];
     } else if ( generator.compare("tube")==0 ) {
         AMP_INSIST(dim==3,"tube requires a 3d mesh");
-        AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must match dim");
+        AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must be 1x3 for tube");
         N_elements = size[0]*size[1]*size[2];
-        for (int d=0; d<dim; d++)
-            N_elements *= size[d];
     } else if ( generator.compare("cylinder")==0 ) {
         AMP_INSIST(dim==3,"cylinder requires a 3d mesh");
-        AMP_INSIST((int)size.size()==2,"Size of field 'Size' must be 1x2");
+        AMP_INSIST((int)size.size()==2,"Size of field 'Size' must be 1x2 for cylinder");
         N_elements = (2*size[0])*(2*size[0])*size[1];
     } else {
         AMP_ERROR("Unkown generator");
@@ -736,7 +736,7 @@ MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
 
 
 /****************************************************************
-* Functions that aren't implimented yet                         *
+* Functions to get the boundaries                               *
 ****************************************************************/
 std::vector<int> BoxMesh::getBoundaryIDs ( ) const
 {
@@ -745,8 +745,9 @@ std::vector<int> BoxMesh::getBoundaryIDs ( ) const
 MeshIterator BoxMesh::getBoundaryIDIterator ( const GeomType type, const int id, const int gcw) const
 {
     std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> >::const_iterator it = d_id_list.find( std::pair<int,GeomType>(id,type) );
-
-    AMP_ASSERT(gcw<(int)d_surface_list[type].size());
+    if ( it==d_id_list.end() )
+        return MeshIterator();
+    AMP_ASSERT(gcw<(int)it->second.size());
     // Construct a list of iterators over the elements of interest
     std::vector<boost::shared_ptr<MeshIterator> > iterator_list;
     iterator_list.reserve(gcw+1);
@@ -767,6 +768,11 @@ MeshIterator BoxMesh::getBlockIDIterator ( const GeomType type, const int id, co
         return getIterator( type, gcw );
     return MeshIterator();
 }
+
+
+/****************************************************************
+* Functions to displace the mesh                                *
+****************************************************************/
 void BoxMesh::displaceMesh( std::vector<double> x )
 {
     AMP_ASSERT(x.size()==PhysicalDim);
@@ -782,7 +788,55 @@ void BoxMesh::displaceMesh( std::vector<double> x )
 #ifdef USE_AMP_VECTORS
 void BoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
 {
-    AMP_ERROR("Not implimented yet");
+    // Create the position vector with the necessary ghost nodes
+    AMP::Discretization::DOFManager::shared_ptr DOFs = 
+    AMP::Discretization::simpleDOFManager::create( 
+        shared_from_this(), getIterator(AMP::Mesh::Vertex,d_max_gcw), getIterator(AMP::Mesh::Vertex,0), PhysicalDim );
+    AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::LinearAlgebra::Variable( "tmp_pos" ) );
+    AMP::LinearAlgebra::Vector::shared_ptr displacement = AMP::LinearAlgebra::createVector( DOFs, nodalVariable, false );
+    std::vector<size_t> dofs1(PhysicalDim);
+    std::vector<size_t> dofs2(PhysicalDim);
+    AMP::Mesh::MeshIterator cur = getIterator(AMP::Mesh::Vertex,0);
+    AMP::Mesh::MeshIterator end = cur.end();
+    AMP::Discretization::DOFManager::shared_ptr DOFx = x->getDOFManager();
+    std::vector<double> data(PhysicalDim);
+    while ( cur != end ) {
+        AMP::Mesh::MeshElementID id = cur->globalID();
+        DOFx->getDOFs( id, dofs1 );
+        DOFs->getDOFs( id, dofs2 );
+        x->getValuesByGlobalID( PhysicalDim, &dofs1[0], &data[0] );
+        displacement->setValuesByGlobalID( PhysicalDim, &dofs2[0], &data[0] );
+        ++cur;
+    }
+    displacement->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    // Move all nodes (including the ghost nodes)
+    std::vector<size_t> dofs(PhysicalDim);
+    std::vector<double> disp(PhysicalDim);
+    for (size_t i=0; i<d_coord[0].size(); i++) {
+        MeshElementID id = structuredMeshElement( d_index[i], this ).globalID();
+        DOFs->getDOFs( id, dofs );
+        AMP_ASSERT(dofs.size()==PhysicalDim);
+        displacement->getValuesByGlobalID( (int)PhysicalDim, &dofs[0], &disp[0] );
+        for (int j=0; j<PhysicalDim; j++)
+            d_coord[j][i] += disp[j];
+    }
+    // Compute the new bounding box of the mesh
+    d_box_local = std::vector<double>(2*PhysicalDim);
+    for (int d=0; d<PhysicalDim; d++) {
+        d_box_local[2*d+0] = 1e100;
+        d_box_local[2*d+1] = -1e100;
+        for (size_t i=0; i<d_coord[d].size(); i++) {
+            if ( d_coord[d][i]<d_box_local[2*d+0])
+                d_box_local[2*d+0] = d_coord[d][i];
+            if ( d_coord[d][i]>d_box_local[2*d+1])
+                d_box_local[2*d+1] = d_coord[d][i];
+        }
+    }
+    d_box = std::vector<double>(PhysicalDim*2);
+    for (int i=0; i<PhysicalDim; i++) {
+        d_box[2*i+0] = d_comm.minReduce( d_box_local[2*i+0] );
+        d_box[2*i+1] = d_comm.maxReduce( d_box_local[2*i+1] );
+    } 
 }
 #endif
 

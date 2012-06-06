@@ -6,17 +6,6 @@
 #include "ampmesh/structured/BoxMesh.h"
 #include "utils/MemoryDatabase.h"
 
-// LibMesh include
-#ifdef USE_LIBMESH
-    #include "ampmesh/libmesh/libMesh.h"
-    #include "ampmesh/libmesh/initializeLibMesh.h"
-    #include "mesh.h"
-    #include "mesh_data.h"
-    #include "mesh_generation.h"
-    #include "boundary_info.h"
-    #include "cell_hex8.h"
-#endif
-
 namespace AMP {
 namespace unit_test {
 
@@ -38,12 +27,11 @@ protected:
 };
 
 
-// Class to create a cube in Libmesh
+// Class to create a cube 
 template <int SIZE>
-class  AMPMeshCubeGenerator : public MeshGenerator
+class  AMPCubeGenerator : public MeshGenerator
 {
 public:
-
     virtual void build_mesh() {
         // Set the dimensions of the mesh
         std::vector<int> size(3,SIZE);
@@ -66,110 +54,146 @@ public:
 };
 
 
-// Class to create a cube in Libmesh
-#ifdef USE_LIBMESH
-template <int SIZE>
-class  LibMeshCubeGenerator : public MeshGenerator
-{
-public:
-
-    virtual void build_mesh() {
-        // Create the parameter object
-        boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
-        database->putInteger("dim",3);
-        database->putString("MeshName","cube_mesh");
-        database->putString("Generator","cube");
-        database->putIntegerArray("size",std::vector<int>(3,SIZE));
-        database->putDoubleArray("xmin",std::vector<double>(3,-1.0));
-        database->putDoubleArray("xmax",std::vector<double>(3,1.0));
-        boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
-        params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-        // Create a libMesh mesh
-        mesh = boost::shared_ptr<AMP::Mesh::libMesh> (new AMP::Mesh::libMesh(params));    
-    }
-};
-#endif
-
-// Class to read in a default exodus file
-#ifdef USE_LIBMESH
-template<int FILE=1>
-class  ExodusReaderGenerator : public MeshGenerator
+// Class to create a cylinder 
+class  AMPCylinderGenerator : public MeshGenerator
 {
 public:
     virtual void build_mesh() {
-        // Create the parameter object
+        // Set the dimensions of the mesh
+        std::vector<int> size(2);
+        size[0] = 10;
+        size[1] = 10;
+        std::vector<double> range(3);
+        range[0] = 1.0;
+        range[1] = 0.0;
+        range[2] = 1.0;
+        // Create a generic MeshParameters object
         boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
         database->putInteger("dim",3);
-        database->putString("MeshName","exodus reader mesh");
-        if ( FILE==1 ) {
-            database->putString("FileName","clad_1x_1pellet.e");
-        } else if ( FILE==2 ) {
-            database->putString("FileName","multiElementMesh.e");
-        } else if ( FILE==3 ) {
-            database->putString("FileName","pellet_1x.e");
-        } else {
-            AMP_ERROR("Bad file for generator");
-        }
+        database->putString("MeshName","mesh1");
+        database->putString("Generator","cylinder");
+        database->putIntegerArray("Size",size);
+        database->putDoubleArray("Range",range);
         boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
         params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-        // Create a libMesh mesh
-        mesh = boost::shared_ptr<AMP::Mesh::libMesh>(new AMP::Mesh::libMesh(params));    
+        // Create an AMP mesh
+        mesh = boost::shared_ptr<AMP::Mesh::BoxMesh>(new AMP::Mesh::BoxMesh(params));      
     }
 };
-#endif
+
+
+// Class to create a tube 
+class  AMPTubeGenerator : public MeshGenerator
+{
+public:
+    virtual void build_mesh() {
+        // Set the dimensions of the mesh
+        std::vector<int> size(3);
+        size[0] = 1; //3;
+        size[1] = 12;
+        size[2] = 1; //10
+        std::vector<double> range(4);
+        range[0] = 0.7;
+        range[1] = 1.0;
+        range[2] = 0.0;
+        range[3] = 1.0;
+        // Create a generic MeshParameters object
+        boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+        database->putInteger("dim",3);
+        database->putString("MeshName","mesh1");
+        database->putString("Generator","tube");
+        database->putIntegerArray("Size",size);
+        database->putDoubleArray("Range",range);
+        boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+        params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+        // Create an AMP mesh
+        mesh = boost::shared_ptr<AMP::Mesh::BoxMesh>(new AMP::Mesh::BoxMesh(params));      
+    }
+};
 
 
 // MulitMesh generator
-class   MultiMeshGenerator : public MeshGenerator
+class AMPMultiMeshGenerator : public MeshGenerator
 {
 public:
     virtual void build_mesh() {
-        int N_meshes = 4;
         // Create the multimesh database
         boost::shared_ptr<AMP::MemoryDatabase> meshDatabase(new AMP::MemoryDatabase("Mesh"));
-        meshDatabase->putString("MeshName","PelletMeshes");
+        meshDatabase->putString("MeshName","SinglePin");
         meshDatabase->putString("MeshType","Multimesh");
         meshDatabase->putString("MeshDatabasePrefix","Mesh_");
         meshDatabase->putString("MeshArrayDatabasePrefix","MeshArray_");
-        // Create the mesh array database
-        boost::shared_ptr<Database> meshArrayDatabase = meshDatabase->putDatabase("MeshArray_1");
-        meshArrayDatabase->putInteger("N",N_meshes);
-        meshArrayDatabase->putString("iterator","%i");
-        std::vector<int> indexArray(N_meshes);
-        for (int i=0; i<N_meshes; i++)
-            indexArray[i] = i+1;
-        meshArrayDatabase->putIntegerArray("indicies",indexArray);
-        meshArrayDatabase->putString("MeshName","pellet_%i");
-        #ifdef USE_LIBMESH
-            meshArrayDatabase->putString("FileName","pellet_lo_res.e");
-            meshArrayDatabase->putString("MeshType","libMesh");
-        #else
-            std::vector<int> size(3,10);
-            std::vector<double> range(6,0.0);
-            range[1] = 0.005;
-            range[3] = 0.005;
-            range[5] = 0.005;
-            // Create a generic MeshParameters object
-            boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
-            meshArrayDatabase->putString("MeshType","AMP");
-            meshArrayDatabase->putString("Generator","cube");
-            meshArrayDatabase->putIntegerArray("Size",size);
-            meshArrayDatabase->putDoubleArray("Range",range);
-        #endif
-        meshArrayDatabase->putInteger("dim",3);
-        meshArrayDatabase->putDouble("x_offset",0.0);
-        meshArrayDatabase->putDouble("y_offset",0.0);
-        std::vector<double> offsetArray(N_meshes);
-        for (int i=0; i<N_meshes; i++)
-            offsetArray[i] = ((double) i)*0.0105;
-        meshArrayDatabase->putDoubleArray("z_offset",offsetArray);
-        meshArrayDatabase->putInteger("NumberOfElements",80);
+        // Create the mesh array database (PelletMeshes)
+        boost::shared_ptr<Database> pelletMeshDatabase = meshDatabase->putDatabase("Mesh_1");
+        createPelletMeshDatabase( pelletMeshDatabase );
+        // Create the mesh database (clad)
+        boost::shared_ptr<Database> cladMeshDatabase = meshDatabase->putDatabase("Mesh_2");
+        createCladMeshDatabase( cladMeshDatabase );
         // Create the parameter object
         boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(meshDatabase));
         params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
         // Create the mesh
         mesh = AMP::Mesh::Mesh::buildMesh(params);
     }
+private:
+    void createPelletMeshDatabase( boost::shared_ptr<Database> db ) {
+        int N_pellet = 2;
+        // Create the multimesh database
+        boost::shared_ptr<AMP::MemoryDatabase> meshDatabase(new AMP::MemoryDatabase("Mesh"));
+        db->putString("MeshName","PelletMeshes");
+        db->putString("MeshType","Multimesh");
+        db->putString("MeshDatabasePrefix","Mesh_");
+        db->putString("MeshArrayDatabasePrefix","MeshArray_");
+        // Create the mesh array database (PelletMeshes)
+        boost::shared_ptr<Database> meshArrayDatabase = db->putDatabase("MeshArray_1");
+        meshArrayDatabase->putInteger("N",N_pellet);
+        meshArrayDatabase->putString("iterator","%i");
+        std::vector<int> indexArray(N_pellet);
+        for (int i=0; i<N_pellet; i++)
+            indexArray[i] = i+1;
+        meshArrayDatabase->putIntegerArray("indicies",indexArray);
+        meshArrayDatabase->putString("MeshName","pellet_%i");
+        std::vector<int> size(2);
+        size[0] = 5;
+        size[1] = 8;
+        std::vector<double> range(3);
+        range[0] = 0.004025;
+        range[1] = 0;
+        range[2] = 0.0105;
+        meshArrayDatabase->putString("MeshType","AMP");
+        meshArrayDatabase->putString("Generator","cylinder");
+        meshArrayDatabase->putIntegerArray("Size",size);
+        meshArrayDatabase->putDoubleArray("Range",range);
+        meshArrayDatabase->putInteger("dim",3);
+        meshArrayDatabase->putDouble("x_offset",0.0);
+        meshArrayDatabase->putDouble("y_offset",0.0);
+        std::vector<double> offsetArray(N_pellet);
+        for (int i=0; i<N_pellet; i++)
+            offsetArray[i] = ((double) i)*0.0105;
+        meshArrayDatabase->putDoubleArray("z_offset",offsetArray);
+    }
+
+    void createCladMeshDatabase( boost::shared_ptr<Database> db ) {
+        int N_meshes = 3;
+        std::vector<int> size(3);
+        std::vector<double> range(4);
+        size[0] = 3;
+        size[1] = 36;
+        size[2] = 32;
+        range[0] = 0.00411;
+        range[1] = 0.00475;
+        range[2] = 0;
+        range[3] = 0.042;
+        // Create the multimesh database
+        boost::shared_ptr<AMP::MemoryDatabase> meshDatabase(new AMP::MemoryDatabase("Mesh"));
+        db->putString("MeshName","clad");
+        db->putString("MeshType","AMP");
+        db->putString("Generator","tube");
+        db->putIntegerArray("Size",size);
+        db->putDoubleArray("Range",range);
+        db->putInteger("dim",3);
+    }
+
 };
 
 
@@ -190,122 +214,15 @@ public:
 };
 
 
-// libMeshThreeElement generator
-#ifdef USE_LIBMESH
-    class   libMeshThreeElementGenerator : public MeshGenerator
-    {
-    public:
-
-        static std::vector<unsigned int> getBndDofIndices() {
-            std::vector<unsigned int> bndDofIndices(4);
-            bndDofIndices[0] = 0;
-            bndDofIndices[1] = 3;
-            bndDofIndices[2] = 4;
-            bndDofIndices[3] = 7;
-            return bndDofIndices;
-        }
-
-        static std::vector<std::vector<unsigned int> > getElemNodeMap() {
-            std::vector<std::vector<unsigned int> > elemNodeMap(3);
-
-            elemNodeMap[0].resize(8);
-            elemNodeMap[1].resize(8);
-            elemNodeMap[2].resize(8);
-
-            elemNodeMap[0][0] = 0;
-            elemNodeMap[0][1] = 1;
-            elemNodeMap[0][2] = 2;
-            elemNodeMap[0][3] = 3;
-            elemNodeMap[0][4] = 4;
-            elemNodeMap[0][5] = 5;
-            elemNodeMap[0][6] = 6;
-            elemNodeMap[0][7] = 7;
-
-            elemNodeMap[1][0] = 1;
-            elemNodeMap[1][1] = 8;
-            elemNodeMap[1][2] = 9;
-            elemNodeMap[1][3] = 2;
-            elemNodeMap[1][4] = 5;
-            elemNodeMap[1][5] = 10;
-            elemNodeMap[1][6] = 11;
-            elemNodeMap[1][7] = 6;
-
-            elemNodeMap[2][0] = 2;
-            elemNodeMap[2][1] = 9;
-            elemNodeMap[2][2] = 12;
-            elemNodeMap[2][3] = 13;
-            elemNodeMap[2][4] = 6;
-            elemNodeMap[2][5] = 11;
-            elemNodeMap[2][6] = 14;
-            elemNodeMap[2][7] = 15;
-
-            return elemNodeMap;
-        }
-
-        virtual void build_mesh() {
-
-            // Initialize libmesh
-            AMP::AMP_MPI comm(AMP_COMM_SELF);
-            libmeshInit = boost::shared_ptr<AMP::Mesh::initializeLibMesh>(new AMP::Mesh::initializeLibMesh(comm));
-
-            const unsigned int mesh_dim = 3;
-            const unsigned int num_elem = 3;
-            const unsigned int num_nodes = 16;
-
-            boost::shared_ptr< ::Mesh > local_mesh(new ::Mesh(mesh_dim));
-            local_mesh->reserve_elem(num_elem);
-            local_mesh->reserve_nodes(num_nodes);
-
-            local_mesh->add_point(::Point(0.0, 0.0, 0.0), 0);
-            local_mesh->add_point(::Point(0.5, 0.0, 0.0), 1);
-            local_mesh->add_point(::Point(0.5, 0.5, 0.0), 2);
-            local_mesh->add_point(::Point(0.0, 0.5, 0.0), 3);
-            local_mesh->add_point(::Point(0.0, 0.0, 0.5), 4);
-            local_mesh->add_point(::Point(0.5, 0.0, 0.5), 5);
-            local_mesh->add_point(::Point(0.5, 0.5, 0.5), 6);
-            local_mesh->add_point(::Point(0.0, 0.5, 0.5), 7);
-            local_mesh->add_point(::Point(1.0, 0.0, 0.0), 8);
-            local_mesh->add_point(::Point(1.0, 0.5, 0.0), 9);
-            local_mesh->add_point(::Point(1.0, 0.0, 0.5), 10);
-            local_mesh->add_point(::Point(1.0, 0.5, 0.5), 11);
-            local_mesh->add_point(::Point(1.0, 1.0, 0.0), 12);
-            local_mesh->add_point(::Point(0.5, 1.0, 0.0), 13);
-            local_mesh->add_point(::Point(1.0, 1.0, 0.5), 14);
-            local_mesh->add_point(::Point(0.5, 1.0, 0.5), 15);
-
-            std::vector<std::vector<unsigned int> > elemNodeMap = getElemNodeMap();
-
-            for(size_t i = 0; i < elemNodeMap.size(); i++) {
-                ::Elem* elem = local_mesh->add_elem(new ::Hex8);
-                for(int j = 0; j < 8; j++) {
-                    elem->set_node(j) = local_mesh->node_ptr(elemNodeMap[i][j]);
-                }
-            }
-
-            const short int boundaryId = 1;
-            std::vector<unsigned int> bndDofIndices = getBndDofIndices(); 
-
-            for(size_t i = 0; i < bndDofIndices.size(); i++) {
-                local_mesh->boundary_info->add_node(local_mesh->node_ptr(bndDofIndices[i]), boundaryId);
-            }
-
-            local_mesh->prepare_for_use(true);
-
-            mesh = AMP::Mesh::Mesh::shared_ptr ( new AMP::Mesh::libMesh(local_mesh,"3 Element") );
-        }
-        
-        ~libMeshThreeElementGenerator() {
-            mesh.reset();
-            libmeshInit.reset();
-        }
-
-    protected:
-        boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit;
-    };
-#endif
-
  
 }
 }
+
+
+// Include libmesh generators
+#ifdef USE_LIBMESH
+    #include "libmeshGenerators.h"
+#endif
+
 
 #endif

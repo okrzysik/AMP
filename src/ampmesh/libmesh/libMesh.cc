@@ -791,7 +791,7 @@ void libMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
             ++cur;
         }
         displacement->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-        // Move all nodes (including the ghost nodes
+        // Move all nodes (including the ghost nodes)
         ::Mesh::node_iterator node_cur = d_libMesh->nodes_begin();
         ::Mesh::node_iterator node_end = d_libMesh->nodes_end();
         int rank = d_comm.getRank();

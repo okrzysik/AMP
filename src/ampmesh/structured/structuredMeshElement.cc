@@ -329,20 +329,21 @@ std::vector<MeshElement::shared_ptr> structuredMeshElement::getNeighbors() const
     for (size_t i=0; i<index.size(); i++) {
         bool in_mesh = true;
         for (int d=0; d<d_dim; d++) {
-            if ( index[i].index[d]<0 && periodic[d] )
-                index[i].index[d] = size[d] + index[i].index[d];
-            else if ( index[i].index[d]<0 )
-                in_mesh = false;
-            if ( d_globalID.type()==d_dim ) {
-                if ( index[i].index[d]>size[d] && periodic[d] )
-                    index[i].index[d] = index[i].index[d] - size[d];
-                else if ( index[i].index[d]>=size[d]  )
-                    in_mesh = false;
+            if ( periodic[d] ) {
+                if ( index[i].index[d]<0 )
+                    index[i].index[d] += size[d];
+                if ( index[i].index[d]>=size[d] )
+                    index[i].index[d] -= size[d];
             } else {
-                if ( index[i].index[d]>=size[d] && periodic[d] )
-                    index[i].index[d] = index[i].index[d] - size[d];
-                else if ( index[i].index[d]>size[d]  )
+                if ( index[i].index[d]<0 )
                     in_mesh = false;
+                if ( d_globalID.type()==d_dim ) {
+                    if ( index[i].index[d]>=size[d]  )
+                        in_mesh = false;
+                } else {
+                    if ( index[i].index[d]>size[d]  )
+                        in_mesh = false;
+                }
             }
         }
         if ( in_mesh )

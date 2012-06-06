@@ -267,6 +267,9 @@ std::vector<boost::shared_ptr<AMP::Database> >  MultiMesh::createDatabases(boost
             for (size_t k=0; k<keys.size(); k++) {
                 if ( keys[k].compare("N")==0 || keys[k].compare("iterator")==0 || keys[k].compare("indicies")==0 ) {
                     // These keys are used by the mesh-array and should not be copied
+                } else if ( keys[k].compare("Size")==0 || keys[k].compare("Range")==0 ) {
+                    // These are special keys that should not be divided
+                    copyKey(database1,database2,keys[k],1,0);
                 } else {
                     // We need to copy the key
                     copyKey(database1,database2,keys[k],N,j);
