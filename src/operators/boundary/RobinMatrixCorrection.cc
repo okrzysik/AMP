@@ -34,6 +34,8 @@ RobinMatrixCorrection :: RobinMatrixCorrection(const boost::shared_ptr<RobinMatr
   
   d_variable = params->d_variable;
   
+  d_dofManager = params->d_DofMap;
+
   d_NeumannParams.reset(new AMP::Operator::NeumannVectorCorrectionParameters( params->d_db ));
   d_NeumannParams->d_variable = params->d_variable;
   d_NeumannParams->d_Mesh = params->d_Mesh;
@@ -108,8 +110,6 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
   
   d_robinPhysicsModel = myparams->d_robinPhysicsModel;
   
-  d_dofManager = (myparams->d_DofMap);
-
   (d_NeumannParams->d_db)->putBool("constant_flux",myparams->d_db->getBoolWithDefault("constant_flux",true));
   d_NeumannParams->d_variableFlux = myparams->d_variableFlux;
   d_NeumannParams->d_robinPhysicsModel = myparams->d_robinPhysicsModel ;
