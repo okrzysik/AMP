@@ -81,10 +81,7 @@ public:
     void setZLocations( const std::vector<double> &z );
 
 
-    void setVector (AMP::LinearAlgebra::Vector::shared_ptr vec)
-    {
-        outputVec = vec->subsetVectorForVariable(d_outVariable);
-    }
+    void setVector (AMP::LinearAlgebra::Vector::shared_ptr vec);
 
 
 protected:
