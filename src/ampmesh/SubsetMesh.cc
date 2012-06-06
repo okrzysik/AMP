@@ -187,7 +187,7 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
     // Create the boundary id sets 
     std::vector<int> boundary_ids = d_parent_mesh->getBoundaryIDs();
     std::set<int> new_boundary_ids;
-    for (int t=0; t<(int)GeomDim; t++) {
+    for (int t=0; t<=(int)GeomDim; t++) {
         for (size_t i=0; i<boundary_ids.size(); i++) {
             for (int gcw=0; gcw<=d_max_gcw; gcw++) {
                 if ( gcw>0 )
@@ -377,7 +377,8 @@ std::vector<int> SubsetMesh::getBoundaryIDs ( ) const
 }
 MeshIterator SubsetMesh::getBoundaryIDIterator ( const GeomType type, const int id, const int gcw ) const
 {
-    std::vector<boost::shared_ptr<MeshIterator> > iterators(gcw+1);
+    std::vector<boost::shared_ptr<MeshIterator> > iterators;
+    iterators.reserve( gcw+1 );
     for (int i=0; i<=gcw; i++) {
         map_id_struct map_id;
         map_id.id = id;
@@ -385,8 +386,8 @@ MeshIterator SubsetMesh::getBoundaryIDIterator ( const GeomType type, const int 
         map_id.gcw = i;
         std::map< map_id_struct, boost::shared_ptr<std::vector<MeshElement> > >::const_iterator  map_it = d_boundarySets.find(map_id);
         if ( map_it == d_boundarySets.end() )
-            AMP_ERROR("Error, id set iterator over the given type, id, and gcw was not found");
-        iterators[i] = boost::shared_ptr<MeshIterator>( new MultiVectorIterator( map_it->second, 0 ) );
+            continue;
+        iterators.push_back( boost::shared_ptr<MeshIterator>( new MultiVectorIterator( map_it->second, 0 ) ) );
     }
     if ( iterators.size() == 0 )
         return MeshIterator();

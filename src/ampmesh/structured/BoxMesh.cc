@@ -1,6 +1,7 @@
 #include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/structured/structuredMeshElement.h"
 #include "ampmesh/structured/structuredMeshIterator.h"
+#include "ampmesh/MultiIterator.h"
 
 #include "utils/Utilities.h"
 #ifdef USE_AMP_VECTORS
@@ -108,7 +109,7 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
         AMP_INSIST(range.size()==2*PhysicalDim,"Range must be 2*dim for cube generator");
         fillCartesianNodes( PhysicalDim, &d_size[0], &range[0], d_index, d_coord );
     } else if ( generator.compare("tube")==0 ) {
-        AMP_INSIST(range.size()==4,"Range must be 1x4 for cylinder and tube generators");
+        AMP_INSIST(range.size()==4,"Range must be 1x4 for tube generator");
         // Change the surface ids to match the standard ids
         // 0 - 8: Inner surface
         // 1 - 4: Outer surface
@@ -138,7 +139,7 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
             new_ids.insert( tmp );
         }
         d_id_list = new_ids;
-        // Create the coordinates (currently the points lie in [0,1]
+        // Create the coordinates (currently the points lie in [0,1])
         double *x = &d_coord[0][0];
         double *y = &d_coord[1][0];
         double *z = &d_coord[2][0];
@@ -150,8 +151,82 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
             y[i] = r*cos(theta);
             z[i] = range[2] + z[i]*(range[3]-range[2]);
         }
-    } else if ( generator.compare("cyliner")==0 ) {
-        AMP_ERROR("Unfinished");
+    } else if ( generator.compare("cylinder")==0 ) {
+        AMP_INSIST(range.size()==3,"Range must be 1x3 for cylinder generator");
+        // Change the surface ids to match the standard ids
+        // 0,1,2,3 - 4: Outer surface
+        // 4 - 2: Bottom surface
+        // 5 - 1: Top surface
+        AMP_ASSERT(d_ids.size()==6);
+        d_ids.resize(3);
+        d_ids[0] = 1;
+        d_ids[1] = 2;
+        d_ids[2] = 4;
+        std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> >::const_iterator it1, it2;
+        std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> > new_ids;
+        for (it1=d_id_list.begin(); it1!=d_id_list.end(); ++it1) {
+            std::pair<int,GeomType> id = it1->first;
+            std::vector<ElementIndexList> list = it1->second;
+            if ( id.first==0 || id.first==1 || id.first==2 || id.first==3 )
+                id.first = 4;
+            else if ( id.first==4 )
+                id.first = 2;
+            else if ( id.first==5 )
+                id.first = 1;
+            else
+                AMP_ERROR("Unexpected id");
+            it2 = new_ids.find( id );
+            if ( it2==new_ids.end() ) {
+                std::pair<std::pair<int,GeomType>,std::vector<ElementIndexList> > tmp( id, list );
+                new_ids.insert( tmp );
+            } else {
+                AMP_ASSERT(it2->second.size()==list.size());
+                for (size_t i=0; i<list.size(); i++) {
+                    it2->second[i]->reserve( it2->second[i]->size()+list[i]->size() );
+                    for (size_t j=0; j<list[i]->size(); j++)
+                        it2->second[i]->push_back( list[i]->operator[](j) );
+                    AMP::Utilities::unique( *(it2->second[i]) );
+                }
+            }
+        }
+        d_id_list = new_ids;
+        // Create the coordinates (currently the points lie in [0,1])
+        double r1 = range[0];
+        double *x = &d_coord[0][0];
+        double *y = &d_coord[1][0];
+        double *z = &d_coord[2][0];
+        // Perform the mapping for the circle
+        const double sqrt2 = 1.41421356237;
+        for (size_t i=0; i<d_coord[0].size(); i++) {
+            // map [0,1] x [0,1] to circle of radius r1
+            double xc = 2*(x[i]-0.5);                   // Change domain to [-1,1]
+            double yc = 2*(y[i]-0.5);                   // Change domain to [-1,1]
+            if ( fabs(xc)<1e-12 && fabs(yc)<1e-12 ) {
+                // We are dealing with the center point
+                x[i] = 0.0;
+                y[i] = 0.0;
+                continue;
+            }
+            double d = std::max(fabs(xc),fabs(yc));     // value on diagonal of computational grid
+            double D = r1*d/sqrt2;                      // mapping d to D(d)
+            double R = r1;                              // mapping d to R(d) (alternative is R = r1*d)
+            double center = D - sqrt(R*R-D*D);
+            double xp = D/d*fabs(xc);
+            double yp = D/d*fabs(yc);
+            if ( fabs(yc)>=fabs(xc) )
+                yp = center + sqrt(R*R-xp*xp);
+            if ( fabs(xc)>=fabs(yc) )
+                xp = center + sqrt(R*R-yp*yp);
+            if ( xc<0.0 )
+                xp = -xp;
+            if ( yc<0.0 )
+                yp = -yp;
+            x[i] = xp;
+            y[i] = yp;
+        }
+        // Perform the mapping for z
+        for (size_t i=0; i<d_coord[0].size(); i++)
+            z[i] = range[1] + z[i]*(range[2]-range[1]);
     } else { 
         AMP_ERROR("Unknown generator");
     }
@@ -472,9 +547,12 @@ void BoxMesh::initialize()
         if ( d_isPeriodic[side/2] )
             continue;
         d_ids.push_back( side );
-        int R = 0;
-        if ( side%2==1 )
-            R = d_size[side/2]-1;
+        int R1 = 0;
+        int R2 = 0;
+        if ( side%2==1 ) {
+            R1 = d_size[side/2]-1;
+            R2 = R1+1;
+        }
         for (int d=0; d<=PhysicalDim; d++) {
             std::pair<int,GeomType> id(side,(GeomType)d);
             std::vector<ElementIndexList> ghost_list(d_max_gcw+1);
@@ -484,21 +562,21 @@ void BoxMesh::initialize()
                 for (size_t i=0; i<d_elements[d][gcw]->size(); i++) {
                     MeshElementIndex index = d_elements[d][gcw]->operator[](i);
                     if ( d==PhysicalDim ) {
-                        if ( index.index[side/2]==R )
+                        if ( index.index[side/2]==R1 )
                             list.push_back( index );
                     } else if ( index.type==Vertex ) {
-                        if ( index.index[side/2]==R+1 )
+                        if ( index.index[side/2]==R2 )
                             list.push_back( index );
                     } else if ( index.type==Edge ) {
                         if ( PhysicalDim==2 ) {
-                            if ( index.side==side/2 && index.index[side/2]==R+1 )
+                            if ( index.side==side/2 && index.index[side/2]==R2 )
                                 list.push_back( index );
                         } else {
-                            if ( index.side!=side/2 && index.index[side/2]==R+1 )
+                            if ( index.side!=side/2 && index.index[side/2]==R2 )
                                 list.push_back( index );
                         }
                     } else if ( index.type==Face ) {
-                        if ( index.side==side/2 && index.index[side/2]==R+1 )
+                        if ( index.side==side/2 && index.index[side/2]==R2 )
                             list.push_back( index );
                     } else { 
                         AMP_ERROR("Unknown element type");
@@ -624,16 +702,15 @@ MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
     PROFILE_START("getIterator");
     AMP_ASSERT(type<=3);
     AMP_ASSERT(gcw<(int)d_elements[type].size());
-    size_t N_elements = numLocalElements(type) + numGhostElements(type,gcw);
-    // Construct a list of elements for the local patch of the given type
-    ElementIndexList list( new std::vector<MeshElementIndex>() );
-    list->reserve( N_elements );
+    // Construct a list of iterators over the elements of interest
+    std::vector<boost::shared_ptr<MeshIterator> > iterator_list;
+    iterator_list.reserve(gcw+1);
     for (int i=0; i<=gcw; i++) {
-        for (size_t j=0; j<d_elements[type][i]->size(); j++)
-            list->push_back( d_elements[type][i]->operator[](j) );
+        iterator_list.push_back( boost::shared_ptr<MeshIterator>(
+            new structuredMeshIterator( d_elements[type][i], this, 0 ) ) );
     }
     // Create the iterator
-    structuredMeshIterator iterator( list, this, 0 );
+    MultiIterator iterator(iterator_list, 0 );
     PROFILE_STOP("getIterator");
     return iterator;
 }
@@ -644,19 +721,17 @@ MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
 ****************************************************************/
 MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
-    size_t N_elements = 0;
-    for (int i=0; i<=gcw; i++)
-        N_elements += d_surface_list[type][i]->size();
-    // Construct a list of elements for the local patch of the given type
-    ElementIndexList list( new std::vector<MeshElementIndex>() );
-    list->reserve( N_elements );
+    AMP_ASSERT(type<=3);
+    AMP_ASSERT(gcw<(int)d_surface_list[type].size());
+    // Construct a list of iterators over the elements of interest
+    std::vector<boost::shared_ptr<MeshIterator> > iterator_list;
+    iterator_list.reserve(gcw+1);
     for (int i=0; i<=gcw; i++) {
-        for (size_t j=0; j<d_surface_list[type][i]->size(); j++)
-            list->push_back( d_surface_list[type][i]->operator[](j) );
+        iterator_list.push_back( boost::shared_ptr<MeshIterator>(
+            new structuredMeshIterator( d_surface_list[type][i], this, 0 ) ) );
     }
     // Create the iterator
-    structuredMeshIterator iterator( list, this, 0 );
-    return iterator;
+    return MultiIterator(iterator_list, 0 );
 }
 
 
@@ -670,20 +745,17 @@ std::vector<int> BoxMesh::getBoundaryIDs ( ) const
 MeshIterator BoxMesh::getBoundaryIDIterator ( const GeomType type, const int id, const int gcw) const
 {
     std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> >::const_iterator it = d_id_list.find( std::pair<int,GeomType>(id,type) );
-    AMP_INSIST(it!=d_id_list.end(),"Boundary elements of the given type and id were not found");
-    size_t N_elements = 0;
-    for (int i=0; i<=gcw; i++)
-        N_elements += it->second[i]->size();
-    // Construct a list of elements for the local patch of the given type
-    ElementIndexList list( new std::vector<MeshElementIndex>() );
-    list->reserve( N_elements );
+
+    AMP_ASSERT(gcw<(int)d_surface_list[type].size());
+    // Construct a list of iterators over the elements of interest
+    std::vector<boost::shared_ptr<MeshIterator> > iterator_list;
+    iterator_list.reserve(gcw+1);
     for (int i=0; i<=gcw; i++) {
-        for (size_t j=0; j<it->second[i]->size(); j++)
-            list->push_back( it->second[i]->operator[](j) );
+        iterator_list.push_back( boost::shared_ptr<MeshIterator>(
+            new structuredMeshIterator( it->second[i], this, 0 ) ) );
     }
     // Create the iterator
-    structuredMeshIterator iterator( list, this, 0 );
-    return iterator;
+    return MultiIterator(iterator_list, 0 );
 }
 std::vector<int> BoxMesh::getBlockIDs ( ) const
 {
