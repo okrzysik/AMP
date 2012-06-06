@@ -108,7 +108,7 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
         AMP_INSIST(range.size()==2*PhysicalDim,"Range must be 2*dim for cube generator");
         fillCartesianNodes( PhysicalDim, &d_size[0], &range[0], d_index, d_coord );
     } else if ( generator.compare("tube")==0 ) {
-        AMP_INSIST(range.size()==4,"Range must be 1x4 for cylinder and tube generators");
+        AMP_INSIST(range.size()==4,"Range must be 1x4 for tube generator");
         // Change the surface ids to match the standard ids
         // 0 - 8: Inner surface
         // 1 - 4: Outer surface
@@ -138,7 +138,7 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
             new_ids.insert( tmp );
         }
         d_id_list = new_ids;
-        // Create the coordinates (currently the points lie in [0,1]
+        // Create the coordinates (currently the points lie in [0,1])
         double *x = &d_coord[0][0];
         double *y = &d_coord[1][0];
         double *z = &d_coord[2][0];
@@ -150,8 +150,82 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
             y[i] = r*cos(theta);
             z[i] = range[2] + z[i]*(range[3]-range[2]);
         }
-    } else if ( generator.compare("cyliner")==0 ) {
-        AMP_ERROR("Unfinished");
+    } else if ( generator.compare("cylinder")==0 ) {
+        AMP_INSIST(range.size()==3,"Range must be 1x3 for cylinder generator");
+        // Change the surface ids to match the standard ids
+        // 0,1,2,3 - 4: Outer surface
+        // 4 - 2: Bottom surface
+        // 5 - 1: Top surface
+        AMP_ASSERT(d_ids.size()==6);
+        d_ids.resize(3);
+        d_ids[0] = 1;
+        d_ids[1] = 2;
+        d_ids[2] = 4;
+        std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> >::const_iterator it1, it2;
+        std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> > new_ids;
+        for (it1=d_id_list.begin(); it1!=d_id_list.end(); ++it1) {
+            std::pair<int,GeomType> id = it1->first;
+            std::vector<ElementIndexList> list = it1->second;
+            if ( id.first==0 || id.first==1 || id.first==2 || id.first==3 )
+                id.first = 4;
+            else if ( id.first==4 )
+                id.first = 2;
+            else if ( id.first==5 )
+                id.first = 1;
+            else
+                AMP_ERROR("Unexpected id");
+            it2 = new_ids.find( id );
+            if ( it2==new_ids.end() ) {
+                std::pair<std::pair<int,GeomType>,std::vector<ElementIndexList> > tmp( id, list );
+                new_ids.insert( tmp );
+            } else {
+                AMP_ASSERT(it2->second.size()==list.size());
+                for (size_t i=0; i<list.size(); i++) {
+                    it2->second[i]->reserve( it2->second[i]->size()+list[i]->size() );
+                    for (size_t j=0; j<list[i]->size(); j++)
+                        it2->second[i]->push_back( list[i]->operator[](j) );
+                    AMP::Utilities::unique( *(it2->second[i]) );
+                }
+            }
+        }
+        d_id_list = new_ids;
+        // Create the coordinates (currently the points lie in [0,1])
+        double r1 = range[0];
+        double *x = &d_coord[0][0];
+        double *y = &d_coord[1][0];
+        double *z = &d_coord[2][0];
+        // Perform the mapping for the circle
+        const double sqrt2 = 1.41421356237;
+        for (size_t i=0; i<d_coord[0].size(); i++) {
+            // map [0,1] x [0,1] to circle of radius r1
+            double xc = 2*(x[i]-0.5);                   // Change domain to [-1,1]
+            double yc = 2*(y[i]-0.5);                   // Change domain to [-1,1]
+            if ( fabs(xc)<1e-12 && fabs(yc)<1e-12 ) {
+                // We are dealing with the center point
+                x[i] = 0.0;
+                y[i] = 0.0;
+                continue;
+            }
+            double d = std::max(fabs(xc),fabs(yc));     // value on diagonal of computational grid
+            double D = r1*d/sqrt2;                      // mapping d to D(d)
+            double R = r1;                              // mapping d to R(d) (alternative is R = r1*d)
+            double center = D - sqrt(R*R-D*D);
+            double xp = D/d*fabs(xc);
+            double yp = D/d*fabs(yc);
+            if ( fabs(yc)>=fabs(xc) )
+                yp = center + sqrt(R*R-xp*xp);
+            if ( fabs(xc)>=fabs(yc) )
+                xp = center + sqrt(R*R-yp*yp);
+            if ( xc<0.0 )
+                xp = -xp;
+            if ( yc<0.0 )
+                yp = -yp;
+            x[i] = xp;
+            y[i] = yp;
+        }
+        // Perform the mapping for z
+        for (size_t i=0; i<d_coord[0].size(); i++)
+            z[i] = range[1] + z[i]*(range[2]-range[1]);
     } else { 
         AMP_ERROR("Unknown generator");
     }

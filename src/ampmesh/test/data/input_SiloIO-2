@@ -22,9 +22,9 @@ Mesh{
             MeshName = "pellet_%i"
             MeshType = "AMP"
             dim = 3
-            Generator = "cube"
-            Size = 10, 10, 10
-            Range = -0.5, 0.5, -0.5, 0.5, 0, 1
+            Generator = "cylinder"
+            Size = 6, 10
+            Range = 0.7, 0, 1
             x_offset = 0.0
             y_offset = 0.0
             z_offset = 0.0, 1.0, 2.0, 3.0
