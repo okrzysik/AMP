@@ -1,6 +1,7 @@
 #include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/structured/structuredMeshElement.h"
 #include "ampmesh/structured/structuredMeshIterator.h"
+#include "ampmesh/MultiIterator.h"
 
 #include "utils/Utilities.h"
 #ifdef USE_AMP_VECTORS
@@ -546,9 +547,12 @@ void BoxMesh::initialize()
         if ( d_isPeriodic[side/2] )
             continue;
         d_ids.push_back( side );
-        int R = 0;
-        if ( side%2==1 )
-            R = d_size[side/2]-1;
+        int R1 = 0;
+        int R2 = 0;
+        if ( side%2==1 ) {
+            R1 = d_size[side/2]-1;
+            R2 = R1+1;
+        }
         for (int d=0; d<=PhysicalDim; d++) {
             std::pair<int,GeomType> id(side,(GeomType)d);
             std::vector<ElementIndexList> ghost_list(d_max_gcw+1);
@@ -558,21 +562,21 @@ void BoxMesh::initialize()
                 for (size_t i=0; i<d_elements[d][gcw]->size(); i++) {
                     MeshElementIndex index = d_elements[d][gcw]->operator[](i);
                     if ( d==PhysicalDim ) {
-                        if ( index.index[side/2]==R )
+                        if ( index.index[side/2]==R1 )
                             list.push_back( index );
                     } else if ( index.type==Vertex ) {
-                        if ( index.index[side/2]==R+1 )
+                        if ( index.index[side/2]==R2 )
                             list.push_back( index );
                     } else if ( index.type==Edge ) {
                         if ( PhysicalDim==2 ) {
-                            if ( index.side==side/2 && index.index[side/2]==R+1 )
+                            if ( index.side==side/2 && index.index[side/2]==R2 )
                                 list.push_back( index );
                         } else {
-                            if ( index.side!=side/2 && index.index[side/2]==R+1 )
+                            if ( index.side!=side/2 && index.index[side/2]==R2 )
                                 list.push_back( index );
                         }
                     } else if ( index.type==Face ) {
-                        if ( index.side==side/2 && index.index[side/2]==R+1 )
+                        if ( index.side==side/2 && index.index[side/2]==R2 )
                             list.push_back( index );
                     } else { 
                         AMP_ERROR("Unknown element type");
@@ -698,16 +702,15 @@ MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
     PROFILE_START("getIterator");
     AMP_ASSERT(type<=3);
     AMP_ASSERT(gcw<(int)d_elements[type].size());
-    size_t N_elements = numLocalElements(type) + numGhostElements(type,gcw);
-    // Construct a list of elements for the local patch of the given type
-    ElementIndexList list( new std::vector<MeshElementIndex>() );
-    list->reserve( N_elements );
+    // Construct a list of iterators over the elements of interest
+    std::vector<boost::shared_ptr<MeshIterator> > iterator_list;
+    iterator_list.reserve(gcw+1);
     for (int i=0; i<=gcw; i++) {
-        for (size_t j=0; j<d_elements[type][i]->size(); j++)
-            list->push_back( d_elements[type][i]->operator[](j) );
+        iterator_list.push_back( boost::shared_ptr<MeshIterator>(
+            new structuredMeshIterator( d_elements[type][i], this, 0 ) ) );
     }
     // Create the iterator
-    structuredMeshIterator iterator( list, this, 0 );
+    MultiIterator iterator(iterator_list, 0 );
     PROFILE_STOP("getIterator");
     return iterator;
 }
@@ -718,19 +721,17 @@ MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
 ****************************************************************/
 MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
-    size_t N_elements = 0;
-    for (int i=0; i<=gcw; i++)
-        N_elements += d_surface_list[type][i]->size();
-    // Construct a list of elements for the local patch of the given type
-    ElementIndexList list( new std::vector<MeshElementIndex>() );
-    list->reserve( N_elements );
+    AMP_ASSERT(type<=3);
+    AMP_ASSERT(gcw<(int)d_surface_list[type].size());
+    // Construct a list of iterators over the elements of interest
+    std::vector<boost::shared_ptr<MeshIterator> > iterator_list;
+    iterator_list.reserve(gcw+1);
     for (int i=0; i<=gcw; i++) {
-        for (size_t j=0; j<d_surface_list[type][i]->size(); j++)
-            list->push_back( d_surface_list[type][i]->operator[](j) );
+        iterator_list.push_back( boost::shared_ptr<MeshIterator>(
+            new structuredMeshIterator( d_surface_list[type][i], this, 0 ) ) );
     }
     // Create the iterator
-    structuredMeshIterator iterator( list, this, 0 );
-    return iterator;
+    return MultiIterator(iterator_list, 0 );
 }
 
 
@@ -744,20 +745,17 @@ std::vector<int> BoxMesh::getBoundaryIDs ( ) const
 MeshIterator BoxMesh::getBoundaryIDIterator ( const GeomType type, const int id, const int gcw) const
 {
     std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> >::const_iterator it = d_id_list.find( std::pair<int,GeomType>(id,type) );
-    AMP_INSIST(it!=d_id_list.end(),"Boundary elements of the given type and id were not found");
-    size_t N_elements = 0;
-    for (int i=0; i<=gcw; i++)
-        N_elements += it->second[i]->size();
-    // Construct a list of elements for the local patch of the given type
-    ElementIndexList list( new std::vector<MeshElementIndex>() );
-    list->reserve( N_elements );
+
+    AMP_ASSERT(gcw<(int)d_surface_list[type].size());
+    // Construct a list of iterators over the elements of interest
+    std::vector<boost::shared_ptr<MeshIterator> > iterator_list;
+    iterator_list.reserve(gcw+1);
     for (int i=0; i<=gcw; i++) {
-        for (size_t j=0; j<it->second[i]->size(); j++)
-            list->push_back( it->second[i]->operator[](j) );
+        iterator_list.push_back( boost::shared_ptr<MeshIterator>(
+            new structuredMeshIterator( it->second[i], this, 0 ) ) );
     }
     // Create the iterator
-    structuredMeshIterator iterator( list, this, 0 );
-    return iterator;
+    return MultiIterator(iterator_list, 0 );
 }
 std::vector<int> BoxMesh::getBlockIDs ( ) const
 {
