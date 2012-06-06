@@ -543,6 +543,7 @@ void BoxMesh::initialize()
     }
     PROFILE_STOP("create_surface_elements");
     // Create the initial boundary info 
+    PROFILE_START("create_boundary_elements");
     for (int side=0; side<2*PhysicalDim; side++) {
         if ( d_isPeriodic[side/2] )
             continue;
@@ -592,6 +593,7 @@ void BoxMesh::initialize()
             d_id_list.insert( tmp );
         }
     }
+    PROFILE_STOP("create_boundary_elements");
     PROFILE_STOP("initialize");
 }
 
@@ -699,7 +701,6 @@ size_t BoxMesh::numGhostElements( const GeomType type, int gcw ) const
 ****************************************************************/
 MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
 {
-    PROFILE_START("getIterator");
     AMP_ASSERT(type<=3);
     AMP_ASSERT(gcw<(int)d_elements[type].size());
     // Construct a list of iterators over the elements of interest
@@ -711,7 +712,6 @@ MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
     }
     // Create the iterator
     MultiIterator iterator(iterator_list, 0 );
-    PROFILE_STOP("getIterator");
     return iterator;
 }
 
