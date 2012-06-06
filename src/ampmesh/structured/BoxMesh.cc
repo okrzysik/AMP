@@ -45,21 +45,38 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
     std::string generator = d_db->getString("Generator");
     std::vector<int> size = d_db->getIntegerArray("Size");
     std::vector<double> range = d_db->getDoubleArray("Range");
-    AMP_INSIST(size.size()==PhysicalDim,"Size of field 'Size' must match dim");
     d_max_gcw = d_db->getIntegerWithDefault("GCW",1);
-    for (int d=0; d<PhysicalDim; d++)
+    for (size_t d=0; d<size.size(); d++)
         AMP_INSIST(size[d]>0,"All dimensions must have a size > 0");
     // Create the logical mesh
     AMP_ASSERT(PhysicalDim<=3);
-    for (int d=0; d<PhysicalDim; d++) {
-        d_size[d] = size[d];
-        d_maxLocalSize[d] = size[d];
-        d_numBlocks[d] = 1;
-    }
-    if ( generator.compare("tube")==0 ) {
+    if ( generator.compare("cube")==0 ) {
+        AMP_INSIST(size.size()==PhysicalDim,"Size of field 'Size' must match dim");
+        for (int d=0; d<PhysicalDim; d++)
+            d_size[d] = size[d];
+    } else if ( generator.compare("cylinder")==0 ) {
+        AMP_INSIST(PhysicalDim==3,"cylinder generator requires a 3d mesh");
+        AMP_INSIST(size.size()==2,"Size of field 'Size' must be of size 2");
+        d_size[0] = 2*size[0];
+        d_size[1] = 2*size[0];
+        d_size[2] = size[1];
+    } else if ( generator.compare("tube")==0 ) {
         AMP_INSIST(PhysicalDim==3,"tube generator requires a 3d mesh");
+        AMP_INSIST(size.size()==PhysicalDim,"Size of field 'Size' must match dim");
+        for (int d=0; d<PhysicalDim; d++)
+            d_size[d] = size[d];
         d_isPeriodic[1] = true;    // We will use the logical mesh (r,theta,z), so theta is periodic
+    } else if ( generator.compare("sphere")==0 ) {
+        AMP_INSIST(PhysicalDim==3,"sphere generator requires a 3d mesh");
+        d_isPeriodic[1] = true;    // We will use the logical mesh (r,theta,phi), so theta and phi are periodic
+        d_isPeriodic[2] = true;
+        AMP_ERROR("Not finished");
     } 
+    // Create the load balance
+    for (int d=0; d<PhysicalDim; d++) {
+        d_numBlocks[d] = 1;
+        d_maxLocalSize[d] = d_size[d];
+    }
     if ( d_comm.getSize()==1 ) {
         // We are dealing with a serial mesh (do nothing to change the local box sizes)
     } else {
@@ -91,7 +108,7 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
         AMP_INSIST(range.size()==2*PhysicalDim,"Range must be 2*dim for cube generator");
         fillCartesianNodes( PhysicalDim, &d_size[0], &range[0], d_index, d_coord );
     } else if ( generator.compare("tube")==0 ) {
-        AMP_INSIST(range.size()==4,"Range must be 1x4 for cube generator");
+        AMP_INSIST(range.size()==4,"Range must be 1x4 for cylinder and tube generators");
         // Change the surface ids to match the standard ids
         // 0 - 8: Inner surface
         // 1 - 4: Outer surface
@@ -133,6 +150,8 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
             y[i] = r*cos(theta);
             z[i] = range[2] + z[i]*(range[3]-range[2]);
         }
+    } else if ( generator.compare("cyliner")==0 ) {
+        AMP_ERROR("Unfinished");
     } else { 
         AMP_ERROR("Unknown generator");
     }
@@ -520,14 +539,30 @@ size_t BoxMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     AMP_INSIST(db->keyExists("Generator"),"Field 'Generator' must exist in database'");
     AMP_INSIST(db->keyExists("dim"),"Field 'dim' must exist in database'");
     AMP_INSIST(db->keyExists("Size"),"Field 'Size' must exist in database'");
+    std::string generator = db->getString("Generator");
     int dim = db->getInteger("dim");
     std::vector<int> size = db->getIntegerArray("Size");
-    AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must match dim");
-    for (int d=0; d<dim; d++)
-        AMP_INSIST(size[d]>0,"All dimensions must have a size > 0");
-    size_t N_elements = 1;
-    for (int d=0; d<dim; d++)
-        N_elements *= size[d];
+    for (size_t d=0; d<size.size(); d++)
+        AMP_INSIST(size[d]>0,"All values of size must be > 0");
+    size_t N_elements = 0;
+    if ( generator.compare("cube")==0 ) {
+        AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must match dim");
+        N_elements = 1;
+        for (int d=0; d<dim; d++)
+            N_elements *= size[d];
+    } else if ( generator.compare("tube")==0 ) {
+        AMP_INSIST(dim==3,"tube requires a 3d mesh");
+        AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must match dim");
+        N_elements = size[0]*size[1]*size[2];
+        for (int d=0; d<dim; d++)
+            N_elements *= size[d];
+    } else if ( generator.compare("cylinder")==0 ) {
+        AMP_INSIST(dim==3,"cylinder requires a 3d mesh");
+        AMP_INSIST((int)size.size()==2,"Size of field 'Size' must be 1x2");
+        N_elements = (2*size[0])*(2*size[0])*size[1];
+    } else {
+        AMP_ERROR("Unkown generator");
+    }
     return N_elements;
 }
 

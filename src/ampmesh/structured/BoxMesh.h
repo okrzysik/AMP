@@ -36,7 +36,8 @@ class structuredMeshIterator;
  *    The database may specify some simple options to generate meshes:
  *    Generator - "cube", "sphere", "cyliner", "tube"
  *    Size - ndim array with the number of intervals in each direction.
- *           [nx,ny,nz] for box, [nr,nphi,nz] for cylinder, and [nr,nphi,ntheta] for sphere.
+ *           [nx,ny,nz] for box, [nr,nphi,nz] for tube, [nr,nz] for cylinder, 
+ *           and [nr,nphi,ntheta] for sphere.
  *    Range - Array specifying the physical size of the mesh.
  *           cube: [ x-min  x-max  y-min  y-max  z-min  z-max ]
  *           sphere: [ r ]
