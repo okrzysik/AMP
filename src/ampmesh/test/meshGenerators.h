@@ -89,9 +89,9 @@ public:
     virtual void build_mesh() {
         // Set the dimensions of the mesh
         std::vector<int> size(3);
-        size[0] = 1; //3;
+        size[0] = 3;
         size[1] = 12;
-        size[2] = 1; //10
+        size[2] = 10;
         std::vector<double> range(4);
         range[0] = 0.7;
         range[1] = 1.0;

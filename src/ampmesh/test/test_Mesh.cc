@@ -290,9 +290,7 @@ int main ( int argc , char ** argv )
     testMeshGenerators( &ut );
 
     // Run the tests on the subset meshes
-    #ifdef USE_LIBMESH
-        testSubsetMesh( &ut );
-    #endif
+    testSubsetMesh( &ut );
 
     // Save the timing results
     PROFILE_STOP("Run tests");

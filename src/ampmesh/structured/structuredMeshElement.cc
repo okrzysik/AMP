@@ -235,7 +235,7 @@ std::vector<MeshElement> structuredMeshElement::getElements(const GeomType type)
     // Fix any elements that are beyond a periodic boundary
     for (int d=0; d<d_dim; d++) {
         if ( d_mesh->d_isPeriodic[d] ) {
-            int size = d_mesh->d_size[d];;
+            int size = d_mesh->d_size[d];
             for (size_t i=0; i<index.size(); i++) {
                 if ( index[i].index[d]<0 )
                     index[i].index[d] += size;

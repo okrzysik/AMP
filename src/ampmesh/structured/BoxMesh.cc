@@ -46,7 +46,7 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
     std::string generator = d_db->getString("Generator");
     std::vector<int> size = d_db->getIntegerArray("Size");
     std::vector<double> range = d_db->getDoubleArray("Range");
-    d_max_gcw = d_db->getIntegerWithDefault("GCW",1);
+    d_max_gcw = d_db->getIntegerWithDefault("GCW",2);
     for (size_t d=0; d<size.size(); d++)
         AMP_INSIST(size[d]>0,"All dimensions must have a size > 0");
     // Create the logical mesh
@@ -417,15 +417,16 @@ void BoxMesh::initialize()
         AMP::Utilities::quicksort( *d_elements[d][0] );
     // Create the ghost elements of type GeomType == PhysicalDim
     PROFILE_START("create_ghost_elements: 1");
+    unsigned int myRank = (unsigned int) d_comm.getRank();
     for (int gcw=1; gcw<=d_max_gcw; gcw++) {
         d_elements[PhysicalDim][gcw] = ElementIndexList( new std::vector<MeshElementIndex>() );
         if ( PhysicalDim==3 ) {
             for (int k=range[4]-gcw; k<range[5]+gcw; k++) {
                 for (int j=range[2]-gcw; j<range[3]+gcw; j++) {
                     for (int i=range[0]-gcw; i<range[1]+gcw; i++) {
-                        if ( ( i>range[0]-gcw || i<range[1]+gcw-1 ) &&
-                             ( j>range[2]-gcw || j<range[3]+gcw-1 ) &&
-                             ( k>range[4]-gcw || k<range[5]+gcw-1 ) ) {
+                        if ( ( i>range[0]-gcw && i<range[1]+gcw-1 ) &&
+                             ( j>range[2]-gcw && j<range[3]+gcw-1 ) &&
+                             ( k>range[4]-gcw && k<range[5]+gcw-1 ) ) {
                             // The element was already included by another ghost (or owned) cell
                             continue;
                         }
@@ -435,6 +436,7 @@ void BoxMesh::initialize()
                             // The element is outside the domain
                             continue;
                         }
+                        // Create the index (adjusting for periodic boundaries)
                         MeshElementIndex index( PhysicalDim, 0, i, j, k );
                         if ( i<0 ) { index.index[0] += d_size[0]; }
                         if ( j<0 ) { index.index[1] += d_size[1]; }
@@ -442,15 +444,26 @@ void BoxMesh::initialize()
                         if ( i>=d_size[0] ) { index.index[0] -= d_size[0]; }
                         if ( j>=d_size[1] ) { index.index[1] -= d_size[1]; }
                         if ( k>=d_size[2] ) { index.index[2] -= d_size[2]; }
-                        d_elements[PhysicalDim][gcw]->push_back( index );
+                        // Check if the element is already in one of the lists
+                        bool found = false;
+                        for (int k=0; k<gcw; k++) {
+                            if ( d_elements[PhysicalDim][k]->size()==0 )
+                                continue;
+                            size_t m = AMP::Utilities::findfirst( *d_elements[PhysicalDim][k], index );
+                            if ( m==d_elements[PhysicalDim][k]->size() ) { m--; }
+                            if ( d_elements[PhysicalDim][k]->operator[](m) == index )
+                                found = true;
+                        }
+                        if ( !found )
+                            d_elements[PhysicalDim][gcw]->push_back( index );
                     }
                 }
             }
         } else { 
             AMP_ERROR("Not programmed for this dimension yet");
         }
-        // Sort the elements for easy searching
-        AMP::Utilities::quicksort( *d_elements[PhysicalDim][gcw] );
+        // Sort the elements for easy searching and remove any duplicates
+        AMP::Utilities::unique( *d_elements[PhysicalDim][gcw] );
     }
     PROFILE_STOP("create_ghost_elements: 1");
     // Create the remaining ghost elements
@@ -668,11 +681,14 @@ MeshElement BoxMesh::getElement ( const MeshElementID &elem_id ) const
     MeshElementIndex index;
     index.type = elem_id.type();
     size_t local_id = elem_id.local_id();
-    index.index[0] = (int) local_id%myBoxSize[0];
-    index.index[1] = (int) (local_id/myBoxSize[0])%myBoxSize[1];
-    index.index[2] = (int) (local_id/(myBoxSize[0]*myBoxSize[1]))%myBoxSize[2];
+    index.index[0] = (int) range[0] + local_id%myBoxSize[0];
+    index.index[1] = (int) range[2] + (local_id/myBoxSize[0])%myBoxSize[1];
+    index.index[2] = (int) range[4] + (local_id/(myBoxSize[0]*myBoxSize[1]))%myBoxSize[2];
     index.side = (unsigned char) (local_id/(myBoxSize[0]*myBoxSize[1]*myBoxSize[2]));
-    return structuredMeshElement( index, this );
+    // Create the element
+    structuredMeshElement elem( index, this );
+    AMP_ASSERT(elem.globalID()==elem_id);
+    return elem;
 }
 
 
