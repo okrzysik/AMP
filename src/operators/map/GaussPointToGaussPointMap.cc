@@ -79,8 +79,9 @@ namespace AMP {
       meshesForMap[1] = d_mesh2;
       AMP::Mesh::Mesh::shared_ptr multiMesh(new AMP::Mesh::MultiMesh(d_MapComm, meshesForMap));
 
+      AMP::Mesh::MeshIterator surfIter = multiMesh->getSurfaceIterator(AMP::Mesh::Face, 0); 
       AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(multiMesh,
-          AMP::Mesh::Face, 0, dofsPerElem);
+          surfIter, surfIter, dofsPerElem);
 
       AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector(dofMap, variable);
 
