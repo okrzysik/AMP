@@ -383,7 +383,7 @@ void Utilities::printBanner()
 
 // Factor a number into it's prime factors
 // The factors will automatically be returned in sorted order
-std::vector<int> Utilties::factor(size_t number)
+std::vector<int> Utilities::factor(size_t number)
 {
     if ( number<=3 ) 
         return std::vector<int>(1,(int)number);
