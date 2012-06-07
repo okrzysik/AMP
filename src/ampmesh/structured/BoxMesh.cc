@@ -285,8 +285,10 @@ void BoxMesh::initialize()
     // First get the list of owned elements of each type
     PROFILE_START("create_owned_elements");
     size_t N_localElements = 1;
-    for (int d=0; d<PhysicalDim; d++) 
-        N_localElements *= range[2*d+1] - range[2*d+0];
+    for (int d=0; d<PhysicalDim; d++) {
+        AMP_ASSERT((range[2*d+1]-range[2*d+0]>0)&&(range[2*d+1]-range[2*d+0])<0x80000000);
+        N_localElements *= ( range[2*d+1] - range[2*d+0] );
+    }
     for (int d=0; d<=PhysicalDim; d++) {
         d_elements[d][0].reset( new std::vector<MeshElementIndex>() );
         if ( d==0 || d==PhysicalDim ) {
@@ -419,7 +421,6 @@ void BoxMesh::initialize()
         AMP::Utilities::quicksort( *d_elements[d][0] );
     // Create the ghost elements of type GeomType == PhysicalDim
     PROFILE_START("create_ghost_elements: 1");
-    unsigned int myRank = (unsigned int) d_comm.getRank();
     for (int gcw=1; gcw<=d_max_gcw; gcw++) {
         d_elements[PhysicalDim][gcw] = ElementIndexList( new std::vector<MeshElementIndex>() );
         if ( PhysicalDim==3 ) {
