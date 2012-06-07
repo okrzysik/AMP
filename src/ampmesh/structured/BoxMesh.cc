@@ -104,6 +104,8 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
             d_numBlocks[d] = div[d];
         }
     }
+    AMP_INSIST(d_numBlocks[0]*d_numBlocks[1]*d_numBlocks[2]==d_comm.getSize(),
+        "Error creating proper load balance");
     // Initialize the logical mesh
     initialize();
     // Create the appropriate mesh coordinates (and modify the id sets if necessary)
@@ -469,12 +471,20 @@ void BoxMesh::initialize()
     // Create the remaining ghost elements
     PROFILE_START("create_ghost_elements: 2");
     for (int gcw=1; gcw<=d_max_gcw; gcw++) {
-        for (int d=0; d<PhysicalDim; d++) {
-            d_elements[d][gcw] = ElementIndexList( new std::vector<MeshElementIndex>() );
-            d_elements[d][gcw]->reserve( d_elements[PhysicalDim][gcw]->size() );
-        }
         // Get an iterator over all elements of the given gcw
         AMP::Mesh::MeshIterator iterator = this->getIterator( (GeomType) PhysicalDim, gcw );
+        // Create the vectors that will store the ghost elements
+        size_t N_elem_est = iterator.size() - numLocalElements((GeomType)PhysicalDim) - numGhostElements((GeomType)PhysicalDim,gcw-1);
+        for (int d=0; d<PhysicalDim; d++) {
+            d_elements[d][gcw] = ElementIndexList( new std::vector<MeshElementIndex>() );
+            if ( d==0 )
+                d_elements[d][gcw]->reserve( N_elem_est );
+            else if ( d==1 )
+                d_elements[d][gcw]->reserve( 6*N_elem_est );
+            else if ( d==1 )
+                d_elements[d][gcw]->reserve( 3*N_elem_est );
+        }
+        // Loop through the elements creating the ghosts
         for (size_t i=0; i<iterator.size(); i++) {
             // Skip any cells we know do not have ghost sub-elements
             bool interior_element = true;
