@@ -30,7 +30,6 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
         d_size[d] = 1;
         d_isPeriodic[d] = false;
         d_numBlocks[d] = 1;
-        d_maxLocalSize[d] = 1;
     }
     // Check for valid inputs
     AMP_INSIST(params.get(),"Params must not be null");
@@ -74,10 +73,8 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
         AMP_ERROR("Not finished");
     } 
     // Create the load balance
-    for (int d=0; d<PhysicalDim; d++) {
+    for (int d=0; d<PhysicalDim; d++)
         d_numBlocks[d] = 1;
-        d_maxLocalSize[d] = d_size[d];
-    }
     if ( d_comm.getSize()==1 ) {
         // We are dealing with a serial mesh (do nothing to change the local box sizes)
     } else {
@@ -89,19 +86,14 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
             int d = -1;
             double v = -1;
             for (int i=0; i<PhysicalDim; i++) {
-                double tmp = ((double)d_maxLocalSize[i])/((double)div[i]);
+                double tmp = ((double)d_size[i])/((double)d_numBlocks[i]);
                 if ( tmp > v ) {
                     d = i;
                     v = tmp;
                 }
             }
-            div[d] *= factors[factors.size()-1];
+            d_numBlocks[d] *= factors[factors.size()-1];
             factors.resize(factors.size()-1);
-        }
-        for (int d=0; d<PhysicalDim; d++) {
-            double tmp = ((double)d_maxLocalSize[d])/((double)div[d]);
-            d_maxLocalSize[d] = (int) ceil(tmp);
-            d_numBlocks[d] = div[d];
         }
     }
     AMP_INSIST(d_numBlocks[0]*d_numBlocks[1]*d_numBlocks[2]==d_comm.getSize(),
@@ -286,8 +278,9 @@ void BoxMesh::initialize()
     PROFILE_START("create_owned_elements");
     size_t N_localElements = 1;
     for (int d=0; d<PhysicalDim; d++) {
-        AMP_ASSERT((range[2*d+1]-range[2*d+0]>0)&&(range[2*d+1]-range[2*d+0])<0x80000000);
-        N_localElements *= ( range[2*d+1] - range[2*d+0] );
+        int local_size = range[2*d+1]-range[2*d+0];
+        AMP_ASSERT(local_size>0);
+        N_localElements *= (size_t) local_size;
     }
     for (int d=0; d<=PhysicalDim; d++) {
         d_elements[d][0].reset( new std::vector<MeshElementIndex>() );
@@ -881,10 +874,13 @@ std::vector<int> BoxMesh::getLocalBlock(unsigned int rank) const
     std::vector<int> range(2*PhysicalDim);
     int tmp = 1;
     for (int d=0; d<PhysicalDim; d++) {
-        int i = (int) ((rank/tmp)%d_numBlocks[d]);
+        size_t i = (size_t) ((rank/tmp)%d_numBlocks[d]);
         tmp *= d_numBlocks[d];
-        range[2*d+0] = i*d_maxLocalSize[d];
-        range[2*d+1] = std::min((i+1)*d_maxLocalSize[d],d_size[d]);
+        size_t size = (size_t) d_size[d];
+        size_t N_blocks = (size_t) d_numBlocks[d];
+        range[2*d+0] = (int) ((i*size)/N_blocks);
+        range[2*d+1] = (int) (((i+1)*size)/N_blocks);
+        range[2*d+1] = std::min(range[2*d+1],d_size[d]);
     }
     return range;
 }
@@ -898,18 +894,19 @@ void BoxMesh::getOwnerBlock(const MeshElementIndex index, unsigned int &rank, in
 {
     int myBoxIndex[3]={1,1,1};
     for (int d=0; d<PhysicalDim; d++) {
-        // Check if the element lies on the physical bounadry
+        size_t size = (size_t) d_size[d];
+        size_t N_blocks = (size_t) d_numBlocks[d];
         if ( index.index[d]==d_size[d] ) {
+            // The element lies on the physical bounadry
             AMP_ASSERT(index.type<PhysicalDim);
             myBoxIndex[d] = d_numBlocks[d]-1;
-            range[2*d+0] = myBoxIndex[d]*d_maxLocalSize[d];
-            range[2*d+1] = d_size[d];
-            continue;
+        } else {
+            // Find the owning box
+            myBoxIndex[d] = (int) ((((size_t)index.index[d]+1)*N_blocks-1)/size);
         }
-        // Find the owning box
-        myBoxIndex[d] = index.index[d]/d_maxLocalSize[d];
-        range[2*d+0] = myBoxIndex[d]*d_maxLocalSize[d];
-        range[2*d+1] = std::min(range[2*d+0]+d_maxLocalSize[d],d_size[d]);
+        range[2*d+0] = (int) ((size*((size_t)myBoxIndex[d]))/N_blocks);
+        range[2*d+1] = (int) ((size*((size_t)myBoxIndex[d]+1))/N_blocks);
+        range[2*d+1] = std::min(range[2*d+1],d_size[d]);
     }
     // Increase the index range for the boxes on the boundary for all elements except the current dimension
     if ( index.type != PhysicalDim ) {
