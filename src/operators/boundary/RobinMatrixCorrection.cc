@@ -34,7 +34,7 @@ RobinMatrixCorrection :: RobinMatrixCorrection(const boost::shared_ptr<RobinMatr
   
   d_variable = params->d_variable;
   
-  d_dofManager = (params->d_DofMap);
+  d_dofManager = params->d_DofMap;
 
   d_NeumannParams.reset(new AMP::Operator::NeumannVectorCorrectionParameters( params->d_db ));
   d_NeumannParams->d_variable = params->d_variable;
@@ -56,6 +56,8 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
   
   AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );
   bool skipParams = (myparams->d_db)->getBoolWithDefault("skip_params", true);
+
+  bool d_isFluxGaussPtVector = (myparams->d_db)->getBoolWithDefault("IsFluxGaussPtVector", true);
   
   if(!skipParams)
     {
@@ -172,15 +174,28 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
 
         const std::vector<Real> & JxW = (*d_JxW);
         const std::vector<std::vector<Real> > & phi = (*d_phi);
+        unsigned int numGaussPts = d_qrule->n_points(); 
 
         std::vector<std::vector<double> > inputArgs(elementInputVec.size(),std::vector<double>(numNodesInCurrElem));
-        std::vector<double> beta(numNodesInCurrElem,d_beta);
-        std::vector<double> gamma(numNodesInCurrElem,d_gamma);
+        std::vector<std::vector<double> > inputArgsAtGpts(elementInputVec.size(),std::vector<double>(numGaussPts));
+        std::vector<double> beta(numGaussPts,d_beta);
+        std::vector<double> gamma(numGaussPts,d_gamma);
         if(d_robinPhysicsModel.get() != NULL) 
         {
-           for(unsigned int m = 0; m < elementInputVec.size(); m++)
-              elementInputVec[m]->getValuesByGlobalID( d_dofIndices.size(), &d_dofIndices[0], &inputArgs[m][0] );
-           d_robinPhysicsModel->getConductance(beta, gamma, inputArgs);
+          unsigned int startIdx = 0;
+          if(d_isFluxGaussPtVector){
+            startIdx = 1;
+          }
+
+          for(unsigned int m = startIdx ; m < elementInputVec.size(); m++){
+            elementInputVec[m]->getValuesByGlobalID( d_dofIndices.size(), &d_dofIndices[0], &inputArgs[m][0] );
+            for (size_t qp = 0; qp < numGaussPts; qp++){ 
+              for (size_t n = 0; n < numNodesInCurrElem ; n++) {
+                inputArgsAtGpts[m][qp] += phi[n][qp] * inputArgs[m][n];
+              }
+            }
+          }
+          d_robinPhysicsModel->getConductance(beta, gamma, inputArgsAtGpts);
         }
 
         double temp;
@@ -190,7 +205,7 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
           {
             for (unsigned int i=0; i < numNodesInCurrElem ; i++)
             {
-              temp =  beta[i] * ( JxW[qp]*phi[j][qp]*phi[i][qp] ) ;
+              temp =  beta[qp] * ( JxW[qp]*phi[j][qp]*phi[i][qp] ) ;
               inputMatrix->addValueByGlobalID ( d_dofIndices[j], d_dofIndices[i], temp );
             }//end for i
           }//end for j
@@ -199,7 +214,7 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
       }//end for bnd
 
     }// end for nid
-    
+
     inputMatrix->makeConsistent();
 
   }//skip matrix

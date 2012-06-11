@@ -182,6 +182,7 @@ CommunicationList::shared_ptr  CommunicationList::createEmpty ( size_t local , A
   {
     // Search d_ReceiveDOFList for GID
     // Note: d_ReceiveDOFList must be sorted for this to work
+    AMP_INSIST(d_ReceiveDOFList.size()>0,"Tried to access ghost entry, but vector does not contain ghosts");
     size_t pos = AMP::Utilities::findfirst( d_ReceiveDOFList, (size_t) GID );
     bool found = pos<d_ReceiveDOFList.size();
     if ( found ) { if ( d_ReceiveDOFList[pos]!=GID ) { found = false; } }

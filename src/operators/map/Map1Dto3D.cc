@@ -188,6 +188,12 @@ void Map1Dto3D::apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP:
 }
 
 
+void Map1Dto3D::setVector (AMP::LinearAlgebra::Vector::shared_ptr vec)
+{
+    outputVec = subsetOutputVector( vec );
+}
+
+
 }
 }
 

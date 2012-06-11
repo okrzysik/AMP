@@ -66,6 +66,7 @@ namespace AMP {
       }
 
       boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, faceDim, qruleOrder)).release() ); 
+      qrule->init(QUAD4, 0);
 
       unsigned int numGaussPtsPerElem = qrule->n_points();
 
@@ -78,8 +79,12 @@ namespace AMP {
       meshesForMap[1] = d_mesh2;
       AMP::Mesh::Mesh::shared_ptr multiMesh(new AMP::Mesh::MultiMesh(d_MapComm, meshesForMap));
 
-      AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(multiMesh,
-          AMP::Mesh::Face, 0, dofsPerElem);
+//      AMP::Mesh::MeshIterator surfIter = multiMesh->getSurfaceIterator(AMP::Mesh::Face, 0); 
+//      AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(multiMesh,
+//          surfIter, surfIter, dofsPerElem);
+      AMP::Mesh::Mesh::shared_ptr submesh = multiMesh->Subset( multiMesh->getSurfaceIterator(AMP::Mesh::Face,0) );
+      AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
+          submesh,AMP::Mesh::Face,0,dofsPerElem,true);
 
       AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector(dofMap, variable);
 

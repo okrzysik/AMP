@@ -143,9 +143,14 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ):
 MultiMesh::MultiMesh ( const AMP_MPI &comm, const std::vector<Mesh::shared_ptr> &meshes )
 {
     d_comm = comm;
-    d_meshes = meshes;
     this->setMeshID();
-    if ( d_comm.sumReduce(meshes.size())==0 ) {
+    // Get the list of non-null meshes
+    d_meshes = std::vector<Mesh::shared_ptr>();
+    for (size_t i=0; i<meshes.size(); i++) {
+        if ( meshes[i].get()!=NULL )
+            d_meshes.push_back( meshes[i] );
+    }
+    if ( d_comm.sumReduce(d_meshes.size())==0 ) {
         AMP_ERROR("Empty multimeshes have not been tested yet");
     }
     // Check the comm
@@ -262,6 +267,9 @@ std::vector<boost::shared_ptr<AMP::Database> >  MultiMesh::createDatabases(boost
             for (size_t k=0; k<keys.size(); k++) {
                 if ( keys[k].compare("N")==0 || keys[k].compare("iterator")==0 || keys[k].compare("indicies")==0 ) {
                     // These keys are used by the mesh-array and should not be copied
+                } else if ( keys[k].compare("Size")==0 || keys[k].compare("Range")==0 ) {
+                    // These are special keys that should not be divided
+                    copyKey(database1,database2,keys[k],1,0);
                 } else {
                     // We need to copy the key
                     copyKey(database1,database2,keys[k],N,j);
@@ -480,7 +488,7 @@ std::vector<MeshID> MultiMesh::getLocalMeshIDs() const
     std::set<MeshID> ids;
     ids.insert(d_meshID);
     for (size_t i=0; i<d_meshes.size(); i++) {
-        std::vector<MeshID> mesh_ids = d_meshes[i]->getAllMeshIDs();
+        std::vector<MeshID> mesh_ids = d_meshes[i]->getLocalMeshIDs();
         for (size_t j=0; j<mesh_ids.size(); j++)
             ids.insert(mesh_ids[j]);
     }
@@ -490,7 +498,7 @@ std::vector<MeshID> MultiMesh::getLocalBaseMeshIDs() const
 {
     std::set<MeshID> ids;
     for (size_t i=0; i<d_meshes.size(); i++) {
-        std::vector<MeshID> mesh_ids = d_meshes[i]->getBaseMeshIDs();
+        std::vector<MeshID> mesh_ids = d_meshes[i]->getLocalBaseMeshIDs();
         for (size_t j=0; j<mesh_ids.size(); j++)
             ids.insert(mesh_ids[j]);
     }

@@ -232,6 +232,18 @@ std::vector<MeshElement> structuredMeshElement::getElements(const GeomType type)
     } else  {
         AMP_ERROR("Not finished");
     }
+    // Fix any elements that are beyond a periodic boundary
+    for (int d=0; d<d_dim; d++) {
+        if ( d_mesh->d_isPeriodic[d] ) {
+            int size = d_mesh->d_size[d];
+            for (size_t i=0; i<index.size(); i++) {
+                if ( index[i].index[d]<0 )
+                    index[i].index[d] += size;
+                else if ( index[i].index[d]>=size )
+                    index[i].index[d] -= size;
+            }
+        }
+    }    
     // Get the elements
     std::vector<MeshElement> elements(index.size());
     for (size_t i=0; i<index.size(); i++)
@@ -317,20 +329,21 @@ std::vector<MeshElement::shared_ptr> structuredMeshElement::getNeighbors() const
     for (size_t i=0; i<index.size(); i++) {
         bool in_mesh = true;
         for (int d=0; d<d_dim; d++) {
-            if ( index[i].index[d]<0 && periodic[d] )
-                index[i].index[d] = size[d] + index[i].index[d];
-            else if ( index[i].index[d]<0 )
-                in_mesh = false;
-            if ( d_globalID.type()==d_dim ) {
-                if ( index[i].index[d]>size[d] && periodic[d] )
-                    index[i].index[d] = index[i].index[d] - size[d];
-                else if ( index[i].index[d]>=size[d]  )
-                    in_mesh = false;
+            if ( periodic[d] ) {
+                if ( index[i].index[d]<0 )
+                    index[i].index[d] += size[d];
+                if ( index[i].index[d]>=size[d] )
+                    index[i].index[d] -= size[d];
             } else {
-                if ( index[i].index[d]>=size[d] && periodic[d] )
-                    index[i].index[d] = index[i].index[d] - size[d];
-                else if ( index[i].index[d]>size[d]  )
+                if ( index[i].index[d]<0 )
                     in_mesh = false;
+                if ( d_globalID.type()==d_dim ) {
+                    if ( index[i].index[d]>=size[d]  )
+                        in_mesh = false;
+                } else {
+                    if ( index[i].index[d]>size[d]  )
+                        in_mesh = false;
+                }
             }
         }
         if ( in_mesh )

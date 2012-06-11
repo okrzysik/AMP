@@ -36,7 +36,8 @@ class structuredMeshIterator;
  *    The database may specify some simple options to generate meshes:
  *    Generator - "cube", "sphere", "cyliner", "tube"
  *    Size - ndim array with the number of intervals in each direction.
- *           [nx,ny,nz] for box, [nr,nphi,nz] for cylinder, and [nr,nphi,ntheta] for sphere.
+ *           [nx,ny,nz] for box, [nr,nphi,nz] for tube, [nr,nz] for cylinder, 
+ *           and [nr,nphi,ntheta] for sphere.
  *    Range - Array specifying the physical size of the mesh.
  *           cube: [ x-min  x-max  y-min  y-max  z-min  z-max ]
  *           sphere: [ r ]
@@ -264,7 +265,6 @@ protected:
     bool d_isPeriodic[3];                   // Which directions are periodic
     int d_size[3];                          // The size of the logical domain in each direction
     int d_numBlocks[3];                     // The number of local boxes in each direction
-    int d_maxLocalSize[3];                  // The maximum size of the local boxes in each direction
     std::vector<MeshElementIndex> d_index;  // The indicies of the nodes we are storing
     std::vector<double> d_coord[3];         // The coordinates of the nodes
 

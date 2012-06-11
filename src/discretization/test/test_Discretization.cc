@@ -15,14 +15,14 @@ int main ( int argc , char ** argv )
     AMP::UnitTest ut;
 
     // Run the tests
-    testSimpleDOFManager<AMPMeshCubeGenerator<10> >( &ut );
+    testSimpleDOFManager<AMPCubeGenerator<10> >( &ut );
     #ifdef USE_LIBMESH
         testSimpleDOFManager<LibMeshCubeGenerator<5> >( &ut );
         testSimpleDOFManager<ExodusReaderGenerator<1> >( &ut );
         testSimpleDOFManager<ExodusReaderGenerator<3> >( &ut );
     #endif
     testSimpleDOFManager<MultiMeshGenerator>( &ut );
-    testMultiDOFManager<AMPMeshCubeGenerator<10> >( &ut );
+    testMultiDOFManager<AMPCubeGenerator<10> >( &ut );
     #ifdef USE_LIBMESH
         testMultiDOFManager<LibMeshCubeGenerator<5> >( &ut );
     #endif

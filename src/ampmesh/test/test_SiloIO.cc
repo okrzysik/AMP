@@ -48,12 +48,16 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     PROFILE_STOP("Load Mesh");
     double t2 = AMP::AMP_MPI::time();
 
+    // Create a surface mesh
+    AMP::Mesh::Mesh::shared_ptr submesh = mesh->Subset( mesh->getSurfaceIterator(AMP::Mesh::Face,1) );
+
 #ifdef USE_AMP_VECTORS
     // Create a simple DOFManager
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
     AMP::Discretization::DOFManager::shared_ptr DOF_scalar = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,1,true);
     AMP::Discretization::DOFManager::shared_ptr DOF_vector = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,3,true);
     AMP::Discretization::DOFManager::shared_ptr DOF_gauss  = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Volume,1,8,true);
+    AMP::Discretization::DOFManager::shared_ptr DOF_surface = AMP::Discretization::simpleDOFManager::create(submesh,AMP::Mesh::Face,0,1,true);
 
     // Create the vectors
     AMP::LinearAlgebra::Variable::shared_ptr rank_var( new AMP::LinearAlgebra::Variable("rank") );
@@ -62,13 +66,14 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     AMP::LinearAlgebra::Vector::shared_ptr position = AMP::LinearAlgebra::createVector( DOF_vector, position_var, true );
     AMP::LinearAlgebra::Variable::shared_ptr  gp_var ( new AMP::LinearAlgebra::Variable( "gp_var" ) );
     AMP::LinearAlgebra::Vector::shared_ptr  gauss_pt = AMP::LinearAlgebra::createVector( DOF_gauss, gp_var, true );
+    AMP::LinearAlgebra::Variable::shared_ptr  id_var ( new AMP::LinearAlgebra::Variable( "ids" ) );
+    AMP::LinearAlgebra::Vector::shared_ptr  id_vec = AMP::LinearAlgebra::createVector( DOF_surface, id_var, true );
     gauss_pt->setToScalar ( 100 );
     globalComm.barrier();
 #endif
     double t3 = AMP::AMP_MPI::time();
 
-    // Create a subset mesh and view of a vector
-    AMP::Mesh::Mesh::shared_ptr submesh = mesh->Subset( mesh->getSurfaceIterator(AMP::Mesh::Face,1) );
+    // Create a view of a vector
     #ifdef USE_AMP_VECTORS
         AMP::LinearAlgebra::VS_MeshIterator meshSelector( "positionSubset", submesh->getIterator(AMP::Mesh::Vertex,1), submesh->getComm() );
         AMP::LinearAlgebra::VS_Stride zSelector("thirds",2,3);
@@ -87,6 +92,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     siloWriter->registerVector( position, mesh, AMP::Mesh::Vertex, "position" );
     siloWriter->registerVector( z_surface, submesh, AMP::Mesh::Vertex, "z_surface" );
     siloWriter->registerVector( gauss_pt, mesh, AMP::Mesh::Volume, "gauss_pnt" );
+    siloWriter->registerVector( id_vec, submesh, AMP::Mesh::Face, "surface_ids" );
 #endif
     globalComm.barrier();
     double t4 = AMP::AMP_MPI::time();
@@ -103,6 +109,17 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
         position->setValuesByGlobalID( dofs.size(), &dofs[0], &pos[0] );
     }
     position->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    id_vec->setToScalar(-1);
+    std::vector<int> ids = submesh->getBoundaryIDs();
+    for (size_t i=0; i<ids.size(); i++) {
+        AMP::Mesh::MeshIterator it = submesh->getBoundaryIDIterator( AMP::Mesh::Face, ids[i], 0 );
+        for (size_t j=0; j<it.size(); j++) {
+            DOF_surface->getDOFs( it->globalID(), dofs );
+            AMP_ASSERT(dofs.size()==1);
+            id_vec->setValueByGlobalID( dofs[0], ids[i] );
+            ++it;
+        }
+    }
     globalComm.barrier();
 #endif
     double t5 = AMP::AMP_MPI::time();

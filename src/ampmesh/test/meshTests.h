@@ -624,11 +624,14 @@ void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
     std::vector<AMP::Mesh::MeshElementID> neighbors(100);
     for (size_t i=0; i<nodeIterator.size(); i++) {
         std::vector<AMP::Mesh::MeshElement::shared_ptr> elements = nodeIterator->getNeighbors();
+        // Store the neighbor list
         neighbors.resize(0);
         for (size_t j=0; j<elements.size(); j++) {
             if ( elements[j].get() != NULL )
                 neighbors.push_back(elements[j]->globalID());
         }
+        // Sort the neighbor list for easy searching
+        AMP::Utilities::quicksort(neighbors);
         std::pair< AMP::Mesh::MeshElementID, std::vector<AMP::Mesh::MeshElementID> > entry;
         entry.first = nodeIterator->globalID();
         entry.second = neighbors;

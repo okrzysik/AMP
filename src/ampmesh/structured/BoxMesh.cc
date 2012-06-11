@@ -1,6 +1,7 @@
 #include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/structured/structuredMeshElement.h"
 #include "ampmesh/structured/structuredMeshIterator.h"
+#include "ampmesh/MultiIterator.h"
 
 #include "utils/Utilities.h"
 #ifdef USE_AMP_VECTORS
@@ -29,7 +30,6 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
         d_size[d] = 1;
         d_isPeriodic[d] = false;
         d_numBlocks[d] = 1;
-        d_maxLocalSize[d] = 1;
     }
     // Check for valid inputs
     AMP_INSIST(params.get(),"Params must not be null");
@@ -45,17 +45,36 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
     std::string generator = d_db->getString("Generator");
     std::vector<int> size = d_db->getIntegerArray("Size");
     std::vector<double> range = d_db->getDoubleArray("Range");
-    AMP_INSIST(size.size()==PhysicalDim,"Size of field 'Size' must match dim");
-    d_max_gcw = d_db->getIntegerWithDefault("GCW",1);
-    for (int d=0; d<PhysicalDim; d++)
+    d_max_gcw = d_db->getIntegerWithDefault("GCW",2);
+    for (size_t d=0; d<size.size(); d++)
         AMP_INSIST(size[d]>0,"All dimensions must have a size > 0");
     // Create the logical mesh
     AMP_ASSERT(PhysicalDim<=3);
-    for (int d=0; d<PhysicalDim; d++) {
-        d_size[d] = size[d];
-        d_maxLocalSize[d] = size[d];
+    if ( generator.compare("cube")==0 ) {
+        AMP_INSIST(size.size()==PhysicalDim,"Size of field 'Size' must match dim");
+        for (int d=0; d<PhysicalDim; d++)
+            d_size[d] = size[d];
+    } else if ( generator.compare("cylinder")==0 ) {
+        AMP_INSIST(PhysicalDim==3,"cylinder generator requires a 3d mesh");
+        AMP_INSIST(size.size()==2,"Size of field 'Size' must be of size 2");
+        d_size[0] = 2*size[0];
+        d_size[1] = 2*size[0];
+        d_size[2] = size[1];
+    } else if ( generator.compare("tube")==0 ) {
+        AMP_INSIST(PhysicalDim==3,"tube generator requires a 3d mesh");
+        AMP_INSIST(size.size()==PhysicalDim,"Size of field 'Size' must match dim");
+        for (int d=0; d<PhysicalDim; d++)
+            d_size[d] = size[d];
+        d_isPeriodic[1] = true;    // We will use the logical mesh (r,theta,z), so theta is periodic
+    } else if ( generator.compare("sphere")==0 ) {
+        AMP_INSIST(PhysicalDim==3,"sphere generator requires a 3d mesh");
+        d_isPeriodic[1] = true;    // We will use the logical mesh (r,theta,phi), so theta and phi are periodic
+        d_isPeriodic[2] = true;
+        AMP_ERROR("Not finished");
+    } 
+    // Create the load balance
+    for (int d=0; d<PhysicalDim; d++)
         d_numBlocks[d] = 1;
-    }
     if ( d_comm.getSize()==1 ) {
         // We are dealing with a serial mesh (do nothing to change the local box sizes)
     } else {
@@ -65,29 +84,145 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
         std::vector<int> div(PhysicalDim,1);
         while ( factors.size() > 0 ) {
             int d = -1;
-            int v = -1;
+            double v = -1;
             for (int i=0; i<PhysicalDim; i++) {
-                if ( (d_maxLocalSize[i]+div[i]-1)/div[i] > v ) {
+                double tmp = ((double)d_size[i])/((double)d_numBlocks[i]);
+                if ( tmp > v ) {
                     d = i;
-                    v = (d_maxLocalSize[i]+div[i]-1)/div[i];
+                    v = tmp;
                 }
             }
-            div[d] *= factors[factors.size()-1];
+            d_numBlocks[d] *= factors[factors.size()-1];
             factors.resize(factors.size()-1);
         }
-        for (int d=0; d<PhysicalDim; d++) {
-            d_maxLocalSize[d] /= div[d];
-            d_numBlocks[d] = div[d];
-        }
     }
+    AMP_INSIST(d_numBlocks[0]*d_numBlocks[1]*d_numBlocks[2]==d_comm.getSize(),
+        "Error creating proper load balance");
     // Initialize the logical mesh
     initialize();
     // Create the appropriate mesh coordinates (and modify the id sets if necessary)
     if ( generator.compare("cube")==0 ) {
         AMP_INSIST(range.size()==2*PhysicalDim,"Range must be 2*dim for cube generator");
         fillCartesianNodes( PhysicalDim, &d_size[0], &range[0], d_index, d_coord );
+    } else if ( generator.compare("tube")==0 ) {
+        AMP_INSIST(range.size()==4,"Range must be 1x4 for tube generator");
+        // Change the surface ids to match the standard ids
+        // 0 - 8: Inner surface
+        // 1 - 4: Outer surface
+        // 4 - 2: Bottom surface
+        // 5 - 1: Top surface
+        AMP_ASSERT(d_ids.size()==4);
+        d_ids[0] = 1;
+        d_ids[1] = 2;
+        d_ids[2] = 4;
+        d_ids[3] = 8;
+        std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> >::const_iterator it;
+        std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> > new_ids;
+        for (it=d_id_list.begin(); it!=d_id_list.end(); ++it) {
+            std::pair<int,GeomType> id = it->first;
+            std::vector<ElementIndexList> list = it->second;
+            if ( id.first==0 )
+                id.first = 8;
+            else if ( id.first==1 )
+                id.first = 4;
+            else if ( id.first==4 )
+                id.first = 2;
+            else if ( id.first==5 )
+                id.first = 1;
+            else
+                AMP_ERROR("Unexpected id");
+            std::pair<std::pair<int,GeomType>,std::vector<ElementIndexList> > tmp( id, list );
+            new_ids.insert( tmp );
+        }
+        d_id_list = new_ids;
+        // Create the coordinates (currently the points lie in [0,1])
+        double *x = &d_coord[0][0];
+        double *y = &d_coord[1][0];
+        double *z = &d_coord[2][0];
+        const double pi = 3.141592653589793116;
+        for (size_t i=0; i<d_coord[0].size(); i++) {
+            double r = range[0] + x[i]*(range[1]-range[0]);
+            double theta = 2*pi*y[i];
+            x[i] = r*cos(theta);
+            y[i] = r*sin(theta);
+            z[i] = range[2] + z[i]*(range[3]-range[2]);
+        }
     } else if ( generator.compare("cylinder")==0 ) {
-        AMP_ERROR("Not finished yet");
+        AMP_INSIST(range.size()==3,"Range must be 1x3 for cylinder generator");
+        // Change the surface ids to match the standard ids
+        // 0,1,2,3 - 4: Outer surface
+        // 4 - 2: Bottom surface
+        // 5 - 1: Top surface
+        AMP_ASSERT(d_ids.size()==6);
+        d_ids.resize(3);
+        d_ids[0] = 1;
+        d_ids[1] = 2;
+        d_ids[2] = 4;
+        std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> >::const_iterator it1, it2;
+        std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> > new_ids;
+        for (it1=d_id_list.begin(); it1!=d_id_list.end(); ++it1) {
+            std::pair<int,GeomType> id = it1->first;
+            std::vector<ElementIndexList> list = it1->second;
+            if ( id.first==0 || id.first==1 || id.first==2 || id.first==3 )
+                id.first = 4;
+            else if ( id.first==4 )
+                id.first = 2;
+            else if ( id.first==5 )
+                id.first = 1;
+            else
+                AMP_ERROR("Unexpected id");
+            it2 = new_ids.find( id );
+            if ( it2==new_ids.end() ) {
+                std::pair<std::pair<int,GeomType>,std::vector<ElementIndexList> > tmp( id, list );
+                new_ids.insert( tmp );
+            } else {
+                AMP_ASSERT(it2->second.size()==list.size());
+                for (size_t i=0; i<list.size(); i++) {
+                    it2->second[i]->reserve( it2->second[i]->size()+list[i]->size() );
+                    for (size_t j=0; j<list[i]->size(); j++)
+                        it2->second[i]->push_back( list[i]->operator[](j) );
+                    AMP::Utilities::unique( *(it2->second[i]) );
+                }
+            }
+        }
+        d_id_list = new_ids;
+        // Create the coordinates (currently the points lie in [0,1])
+        double r1 = range[0];
+        double *x = &d_coord[0][0];
+        double *y = &d_coord[1][0];
+        double *z = &d_coord[2][0];
+        // Perform the mapping for the circle
+        const double sqrt2 = 1.41421356237;
+        for (size_t i=0; i<d_coord[0].size(); i++) {
+            // map [0,1] x [0,1] to circle of radius r1
+            double xc = 2*(x[i]-0.5);                   // Change domain to [-1,1]
+            double yc = 2*(y[i]-0.5);                   // Change domain to [-1,1]
+            if ( fabs(xc)<1e-12 && fabs(yc)<1e-12 ) {
+                // We are dealing with the center point
+                x[i] = 0.0;
+                y[i] = 0.0;
+                continue;
+            }
+            double d = std::max(fabs(xc),fabs(yc));     // value on diagonal of computational grid
+            double D = r1*d/sqrt2;                      // mapping d to D(d)
+            double R = r1;                              // mapping d to R(d) (alternative is R = r1*d)
+            double center = D - sqrt(R*R-D*D);
+            double xp = D/d*fabs(xc);
+            double yp = D/d*fabs(yc);
+            if ( fabs(yc)>=fabs(xc) )
+                yp = center + sqrt(R*R-xp*xp);
+            if ( fabs(xc)>=fabs(yc) )
+                xp = center + sqrt(R*R-yp*yp);
+            if ( xc<0.0 )
+                xp = -xp;
+            if ( yc<0.0 )
+                yp = -yp;
+            x[i] = xp;
+            y[i] = yp;
+        }
+        // Perform the mapping for z
+        for (size_t i=0; i<d_coord[0].size(); i++)
+            z[i] = range[1] + z[i]*(range[2]-range[1]);
     } else { 
         AMP_ERROR("Unknown generator");
     }
@@ -142,8 +277,11 @@ void BoxMesh::initialize()
     // First get the list of owned elements of each type
     PROFILE_START("create_owned_elements");
     size_t N_localElements = 1;
-    for (int d=0; d<PhysicalDim; d++) 
-        N_localElements *= range[2*d+1] - range[2*d+0];
+    for (int d=0; d<PhysicalDim; d++) {
+        int local_size = range[2*d+1]-range[2*d+0];
+        AMP_ASSERT(local_size>0);
+        N_localElements *= (size_t) local_size;
+    }
     for (int d=0; d<=PhysicalDim; d++) {
         d_elements[d][0].reset( new std::vector<MeshElementIndex>() );
         if ( d==0 || d==PhysicalDim ) {
@@ -282,9 +420,9 @@ void BoxMesh::initialize()
             for (int k=range[4]-gcw; k<range[5]+gcw; k++) {
                 for (int j=range[2]-gcw; j<range[3]+gcw; j++) {
                     for (int i=range[0]-gcw; i<range[1]+gcw; i++) {
-                        if ( ( i>range[0]-gcw || i<range[1]+gcw-1 ) &&
-                             ( j>range[2]-gcw || j<range[3]+gcw-1 ) &&
-                             ( k>range[4]-gcw || k<range[5]+gcw-1 ) ) {
+                        if ( ( i>range[0]-gcw && i<range[1]+gcw-1 ) &&
+                             ( j>range[2]-gcw && j<range[3]+gcw-1 ) &&
+                             ( k>range[4]-gcw && k<range[5]+gcw-1 ) ) {
                             // The element was already included by another ghost (or owned) cell
                             continue;
                         }
@@ -294,6 +432,7 @@ void BoxMesh::initialize()
                             // The element is outside the domain
                             continue;
                         }
+                        // Create the index (adjusting for periodic boundaries)
                         MeshElementIndex index( PhysicalDim, 0, i, j, k );
                         if ( i<0 ) { index.index[0] += d_size[0]; }
                         if ( j<0 ) { index.index[1] += d_size[1]; }
@@ -301,26 +440,45 @@ void BoxMesh::initialize()
                         if ( i>=d_size[0] ) { index.index[0] -= d_size[0]; }
                         if ( j>=d_size[1] ) { index.index[1] -= d_size[1]; }
                         if ( k>=d_size[2] ) { index.index[2] -= d_size[2]; }
-                        d_elements[PhysicalDim][gcw]->push_back( index );
+                        // Check if the element is already in one of the lists
+                        bool found = false;
+                        for (int k=0; k<gcw; k++) {
+                            if ( d_elements[PhysicalDim][k]->size()==0 )
+                                continue;
+                            size_t m = AMP::Utilities::findfirst( *d_elements[PhysicalDim][k], index );
+                            if ( m==d_elements[PhysicalDim][k]->size() ) { m--; }
+                            if ( d_elements[PhysicalDim][k]->operator[](m) == index )
+                                found = true;
+                        }
+                        if ( !found )
+                            d_elements[PhysicalDim][gcw]->push_back( index );
                     }
                 }
             }
         } else { 
             AMP_ERROR("Not programmed for this dimension yet");
         }
-        // Sort the elements for easy searching
-        AMP::Utilities::quicksort( *d_elements[PhysicalDim][gcw] );
+        // Sort the elements for easy searching and remove any duplicates
+        AMP::Utilities::unique( *d_elements[PhysicalDim][gcw] );
     }
     PROFILE_STOP("create_ghost_elements: 1");
     // Create the remaining ghost elements
     PROFILE_START("create_ghost_elements: 2");
     for (int gcw=1; gcw<=d_max_gcw; gcw++) {
-        for (int d=0; d<PhysicalDim; d++) {
-            d_elements[d][gcw] = ElementIndexList( new std::vector<MeshElementIndex>() );
-            d_elements[d][gcw]->reserve( d_elements[PhysicalDim][gcw]->size() );
-        }
         // Get an iterator over all elements of the given gcw
         AMP::Mesh::MeshIterator iterator = this->getIterator( (GeomType) PhysicalDim, gcw );
+        // Create the vectors that will store the ghost elements
+        size_t N_elem_est = iterator.size() - numLocalElements((GeomType)PhysicalDim) - numGhostElements((GeomType)PhysicalDim,gcw-1);
+        for (int d=0; d<PhysicalDim; d++) {
+            d_elements[d][gcw] = ElementIndexList( new std::vector<MeshElementIndex>() );
+            if ( d==0 )
+                d_elements[d][gcw]->reserve( N_elem_est );
+            else if ( d==1 )
+                d_elements[d][gcw]->reserve( 6*N_elem_est );
+            else if ( d==1 )
+                d_elements[d][gcw]->reserve( 3*N_elem_est );
+        }
+        // Loop through the elements creating the ghosts
         for (size_t i=0; i<iterator.size(); i++) {
             // Skip any cells we know do not have ghost sub-elements
             bool interior_element = true;
@@ -384,7 +542,7 @@ void BoxMesh::initialize()
         ++nodeIterator;
     }
     AMP::Utilities::quicksort(d_index);
-    double range2[6] = {0.0,1.0,0.0,1.0,0.0};
+    double range2[6] = { 0.0, 1.0, 0.0, 1.0, 0.0, 1.0 };
     fillCartesianNodes( PhysicalDim, &d_size[0], range2, d_index, d_coord );
     // Create the list of elements on the surface
     PROFILE_START("create_surface_elements");
@@ -404,13 +562,17 @@ void BoxMesh::initialize()
     }
     PROFILE_STOP("create_surface_elements");
     // Create the initial boundary info 
+    PROFILE_START("create_boundary_elements");
     for (int side=0; side<2*PhysicalDim; side++) {
         if ( d_isPeriodic[side/2] )
             continue;
         d_ids.push_back( side );
-        int R = 0;
-        if ( side%2==1 )
-            R = d_size[side/2]-1;
+        int R1 = 0;
+        int R2 = 0;
+        if ( side%2==1 ) {
+            R1 = d_size[side/2]-1;
+            R2 = R1+1;
+        }
         for (int d=0; d<=PhysicalDim; d++) {
             std::pair<int,GeomType> id(side,(GeomType)d);
             std::vector<ElementIndexList> ghost_list(d_max_gcw+1);
@@ -420,21 +582,21 @@ void BoxMesh::initialize()
                 for (size_t i=0; i<d_elements[d][gcw]->size(); i++) {
                     MeshElementIndex index = d_elements[d][gcw]->operator[](i);
                     if ( d==PhysicalDim ) {
-                        if ( index.index[side/2]==R )
+                        if ( index.index[side/2]==R1 )
                             list.push_back( index );
                     } else if ( index.type==Vertex ) {
-                        if ( index.index[side/2]==R+1 )
+                        if ( index.index[side/2]==R2 )
                             list.push_back( index );
                     } else if ( index.type==Edge ) {
                         if ( PhysicalDim==2 ) {
-                            if ( index.side==side/2 && index.index[side/2]==R+1 )
+                            if ( index.side==side/2 && index.index[side/2]==R2 )
                                 list.push_back( index );
                         } else {
-                            if ( index.side!=side/2 && index.index[side/2]==R+1 )
+                            if ( index.side!=side/2 && index.index[side/2]==R2 )
                                 list.push_back( index );
                         }
                     } else if ( index.type==Face ) {
-                        if ( index.side==side/2 && index.index[side/2]==R+1 )
+                        if ( index.side==side/2 && index.index[side/2]==R2 )
                             list.push_back( index );
                     } else { 
                         AMP_ERROR("Unknown element type");
@@ -450,6 +612,7 @@ void BoxMesh::initialize()
             d_id_list.insert( tmp );
         }
     }
+    PROFILE_STOP("create_boundary_elements");
     PROFILE_STOP("initialize");
 }
 
@@ -475,14 +638,28 @@ size_t BoxMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     AMP_INSIST(db->keyExists("Generator"),"Field 'Generator' must exist in database'");
     AMP_INSIST(db->keyExists("dim"),"Field 'dim' must exist in database'");
     AMP_INSIST(db->keyExists("Size"),"Field 'Size' must exist in database'");
+    std::string generator = db->getString("Generator");
     int dim = db->getInteger("dim");
     std::vector<int> size = db->getIntegerArray("Size");
-    AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must match dim");
-    for (int d=0; d<dim; d++)
-        AMP_INSIST(size[d]>0,"All dimensions must have a size > 0");
-    size_t N_elements = 1;
-    for (int d=0; d<dim; d++)
-        N_elements *= size[d];
+    for (size_t d=0; d<size.size(); d++)
+        AMP_INSIST(size[d]>0,"All values of size must be > 0");
+    size_t N_elements = 0;
+    if ( generator.compare("cube")==0 ) {
+        AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must match dimfor cube");
+        N_elements = 1;
+        for (int d=0; d<dim; d++)
+            N_elements *= size[d];
+    } else if ( generator.compare("tube")==0 ) {
+        AMP_INSIST(dim==3,"tube requires a 3d mesh");
+        AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must be 1x3 for tube");
+        N_elements = size[0]*size[1]*size[2];
+    } else if ( generator.compare("cylinder")==0 ) {
+        AMP_INSIST(dim==3,"cylinder requires a 3d mesh");
+        AMP_INSIST((int)size.size()==2,"Size of field 'Size' must be 1x2 for cylinder");
+        N_elements = (2*size[0])*(2*size[0])*size[1];
+    } else {
+        AMP_ERROR("Unkown generator");
+    }
     return N_elements;
 }
 
@@ -508,11 +685,14 @@ MeshElement BoxMesh::getElement ( const MeshElementID &elem_id ) const
     MeshElementIndex index;
     index.type = elem_id.type();
     size_t local_id = elem_id.local_id();
-    index.index[0] = (int) local_id%myBoxSize[0];
-    index.index[1] = (int) (local_id/myBoxSize[0])%myBoxSize[1];
-    index.index[2] = (int) (local_id/(myBoxSize[0]*myBoxSize[1]))%myBoxSize[2];
+    index.index[0] = (int) range[0] + local_id%myBoxSize[0];
+    index.index[1] = (int) range[2] + (local_id/myBoxSize[0])%myBoxSize[1];
+    index.index[2] = (int) range[4] + (local_id/(myBoxSize[0]*myBoxSize[1]))%myBoxSize[2];
     index.side = (unsigned char) (local_id/(myBoxSize[0]*myBoxSize[1]*myBoxSize[2]));
-    return structuredMeshElement( index, this );
+    // Create the element
+    structuredMeshElement elem( index, this );
+    AMP_ASSERT(elem.globalID()==elem_id);
+    return elem;
 }
 
 
@@ -541,20 +721,17 @@ size_t BoxMesh::numGhostElements( const GeomType type, int gcw ) const
 ****************************************************************/
 MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
 {
-    PROFILE_START("getIterator");
     AMP_ASSERT(type<=3);
     AMP_ASSERT(gcw<(int)d_elements[type].size());
-    size_t N_elements = numLocalElements(type) + numGhostElements(type,gcw);
-    // Construct a list of elements for the local patch of the given type
-    ElementIndexList list( new std::vector<MeshElementIndex>() );
-    list->reserve( N_elements );
+    // Construct a list of iterators over the elements of interest
+    std::vector<boost::shared_ptr<MeshIterator> > iterator_list;
+    iterator_list.reserve(gcw+1);
     for (int i=0; i<=gcw; i++) {
-        for (size_t j=0; j<d_elements[type][i]->size(); j++)
-            list->push_back( d_elements[type][i]->operator[](j) );
+        iterator_list.push_back( boost::shared_ptr<MeshIterator>(
+            new structuredMeshIterator( d_elements[type][i], this, 0 ) ) );
     }
     // Create the iterator
-    structuredMeshIterator iterator( list, this, 0 );
-    PROFILE_STOP("getIterator");
+    MultiIterator iterator(iterator_list, 0 );
     return iterator;
 }
 
@@ -564,24 +741,22 @@ MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
 ****************************************************************/
 MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
-    size_t N_elements = 0;
-    for (int i=0; i<=gcw; i++)
-        N_elements += d_surface_list[type][i]->size();
-    // Construct a list of elements for the local patch of the given type
-    ElementIndexList list( new std::vector<MeshElementIndex>() );
-    list->reserve( N_elements );
+    AMP_ASSERT(type<=3);
+    AMP_ASSERT(gcw<(int)d_surface_list[type].size());
+    // Construct a list of iterators over the elements of interest
+    std::vector<boost::shared_ptr<MeshIterator> > iterator_list;
+    iterator_list.reserve(gcw+1);
     for (int i=0; i<=gcw; i++) {
-        for (size_t j=0; j<d_surface_list[type][i]->size(); j++)
-            list->push_back( d_surface_list[type][i]->operator[](j) );
+        iterator_list.push_back( boost::shared_ptr<MeshIterator>(
+            new structuredMeshIterator( d_surface_list[type][i], this, 0 ) ) );
     }
     // Create the iterator
-    structuredMeshIterator iterator( list, this, 0 );
-    return iterator;
+    return MultiIterator(iterator_list, 0 );
 }
 
 
 /****************************************************************
-* Functions that aren't implimented yet                         *
+* Functions to get the boundaries                               *
 ****************************************************************/
 std::vector<int> BoxMesh::getBoundaryIDs ( ) const
 {
@@ -590,20 +765,18 @@ std::vector<int> BoxMesh::getBoundaryIDs ( ) const
 MeshIterator BoxMesh::getBoundaryIDIterator ( const GeomType type, const int id, const int gcw) const
 {
     std::map<std::pair<int,GeomType>,std::vector<ElementIndexList> >::const_iterator it = d_id_list.find( std::pair<int,GeomType>(id,type) );
-    AMP_INSIST(it!=d_id_list.end(),"Boundary elements of the given type and id were not found");
-    size_t N_elements = 0;
-    for (int i=0; i<=gcw; i++)
-        N_elements += it->second[i]->size();
-    // Construct a list of elements for the local patch of the given type
-    ElementIndexList list( new std::vector<MeshElementIndex>() );
-    list->reserve( N_elements );
+    if ( it==d_id_list.end() )
+        return MeshIterator();
+    AMP_ASSERT(gcw<(int)it->second.size());
+    // Construct a list of iterators over the elements of interest
+    std::vector<boost::shared_ptr<MeshIterator> > iterator_list;
+    iterator_list.reserve(gcw+1);
     for (int i=0; i<=gcw; i++) {
-        for (size_t j=0; j<it->second[i]->size(); j++)
-            list->push_back( it->second[i]->operator[](j) );
+        iterator_list.push_back( boost::shared_ptr<MeshIterator>(
+            new structuredMeshIterator( it->second[i], this, 0 ) ) );
     }
     // Create the iterator
-    structuredMeshIterator iterator( list, this, 0 );
-    return iterator;
+    return MultiIterator(iterator_list, 0 );
 }
 std::vector<int> BoxMesh::getBlockIDs ( ) const
 {
@@ -615,6 +788,11 @@ MeshIterator BoxMesh::getBlockIDIterator ( const GeomType type, const int id, co
         return getIterator( type, gcw );
     return MeshIterator();
 }
+
+
+/****************************************************************
+* Functions to displace the mesh                                *
+****************************************************************/
 void BoxMesh::displaceMesh( std::vector<double> x )
 {
     AMP_ASSERT(x.size()==PhysicalDim);
@@ -630,7 +808,55 @@ void BoxMesh::displaceMesh( std::vector<double> x )
 #ifdef USE_AMP_VECTORS
 void BoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
 {
-    AMP_ERROR("Not implimented yet");
+    // Create the position vector with the necessary ghost nodes
+    AMP::Discretization::DOFManager::shared_ptr DOFs = 
+    AMP::Discretization::simpleDOFManager::create( 
+        shared_from_this(), getIterator(AMP::Mesh::Vertex,d_max_gcw), getIterator(AMP::Mesh::Vertex,0), PhysicalDim );
+    AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::LinearAlgebra::Variable( "tmp_pos" ) );
+    AMP::LinearAlgebra::Vector::shared_ptr displacement = AMP::LinearAlgebra::createVector( DOFs, nodalVariable, false );
+    std::vector<size_t> dofs1(PhysicalDim);
+    std::vector<size_t> dofs2(PhysicalDim);
+    AMP::Mesh::MeshIterator cur = getIterator(AMP::Mesh::Vertex,0);
+    AMP::Mesh::MeshIterator end = cur.end();
+    AMP::Discretization::DOFManager::shared_ptr DOFx = x->getDOFManager();
+    std::vector<double> data(PhysicalDim);
+    while ( cur != end ) {
+        AMP::Mesh::MeshElementID id = cur->globalID();
+        DOFx->getDOFs( id, dofs1 );
+        DOFs->getDOFs( id, dofs2 );
+        x->getValuesByGlobalID( PhysicalDim, &dofs1[0], &data[0] );
+        displacement->setValuesByGlobalID( PhysicalDim, &dofs2[0], &data[0] );
+        ++cur;
+    }
+    displacement->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    // Move all nodes (including the ghost nodes)
+    std::vector<size_t> dofs(PhysicalDim);
+    std::vector<double> disp(PhysicalDim);
+    for (size_t i=0; i<d_coord[0].size(); i++) {
+        MeshElementID id = structuredMeshElement( d_index[i], this ).globalID();
+        DOFs->getDOFs( id, dofs );
+        AMP_ASSERT(dofs.size()==PhysicalDim);
+        displacement->getValuesByGlobalID( (int)PhysicalDim, &dofs[0], &disp[0] );
+        for (int j=0; j<PhysicalDim; j++)
+            d_coord[j][i] += disp[j];
+    }
+    // Compute the new bounding box of the mesh
+    d_box_local = std::vector<double>(2*PhysicalDim);
+    for (int d=0; d<PhysicalDim; d++) {
+        d_box_local[2*d+0] = 1e100;
+        d_box_local[2*d+1] = -1e100;
+        for (size_t i=0; i<d_coord[d].size(); i++) {
+            if ( d_coord[d][i]<d_box_local[2*d+0])
+                d_box_local[2*d+0] = d_coord[d][i];
+            if ( d_coord[d][i]>d_box_local[2*d+1])
+                d_box_local[2*d+1] = d_coord[d][i];
+        }
+    }
+    d_box = std::vector<double>(PhysicalDim*2);
+    for (int i=0; i<PhysicalDim; i++) {
+        d_box[2*i+0] = d_comm.minReduce( d_box_local[2*i+0] );
+        d_box[2*i+1] = d_comm.maxReduce( d_box_local[2*i+1] );
+    } 
 }
 #endif
 
@@ -648,10 +874,13 @@ std::vector<int> BoxMesh::getLocalBlock(unsigned int rank) const
     std::vector<int> range(2*PhysicalDim);
     int tmp = 1;
     for (int d=0; d<PhysicalDim; d++) {
-        int i = (int) ((rank/tmp)%d_numBlocks[d]);
+        size_t i = (size_t) ((rank/tmp)%d_numBlocks[d]);
         tmp *= d_numBlocks[d];
-        range[2*d+0] = i*d_maxLocalSize[d];
-        range[2*d+1] = std::min((i+1)*d_maxLocalSize[d],d_size[d]);
+        size_t size = (size_t) d_size[d];
+        size_t N_blocks = (size_t) d_numBlocks[d];
+        range[2*d+0] = (int) ((i*size)/N_blocks);
+        range[2*d+1] = (int) (((i+1)*size)/N_blocks);
+        range[2*d+1] = std::min(range[2*d+1],d_size[d]);
     }
     return range;
 }
@@ -665,18 +894,19 @@ void BoxMesh::getOwnerBlock(const MeshElementIndex index, unsigned int &rank, in
 {
     int myBoxIndex[3]={1,1,1};
     for (int d=0; d<PhysicalDim; d++) {
-        // Check if the element lies on the physical bounadry
+        size_t size = (size_t) d_size[d];
+        size_t N_blocks = (size_t) d_numBlocks[d];
         if ( index.index[d]==d_size[d] ) {
+            // The element lies on the physical bounadry
             AMP_ASSERT(index.type<PhysicalDim);
             myBoxIndex[d] = d_numBlocks[d]-1;
-            range[2*d+0] = myBoxIndex[d]*d_maxLocalSize[d];
-            range[2*d+1] = d_size[d];
-            continue;
+        } else {
+            // Find the owning box
+            myBoxIndex[d] = (int) ((((size_t)index.index[d]+1)*N_blocks-1)/size);
         }
-        // Find the owning box
-        myBoxIndex[d] = index.index[d]/d_maxLocalSize[d];
-        range[2*d+0] = myBoxIndex[d]*d_maxLocalSize[d];
-        range[2*d+1] = std::min(range[2*d+0]+d_maxLocalSize[d],d_size[d]);
+        range[2*d+0] = (int) ((size*((size_t)myBoxIndex[d]))/N_blocks);
+        range[2*d+1] = (int) ((size*((size_t)myBoxIndex[d]+1))/N_blocks);
+        range[2*d+1] = std::min(range[2*d+1],d_size[d]);
     }
     // Increase the index range for the boxes on the boundary for all elements except the current dimension
     if ( index.type != PhysicalDim ) {

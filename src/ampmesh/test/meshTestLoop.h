@@ -10,11 +10,12 @@
 #ifdef USE_AMP_MATRICIES
     #include "meshMatrixTests.h"
 #endif
-
+#include "utils/ProfilerApp.h"
 
 
 void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
+    PROFILE_START("MeshTestLoop");
     // Run some basic sanity checks
     MeshBasicTest( ut, mesh );
     // Test the number of elements
@@ -50,6 +51,7 @@ void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
     //Bug_761<7>::run_test( ut, mesh );
     //Bug_761<8>::run_test( ut, mesh );
     //MeshAdapterTest<AllPassTest>::run_test( ut, mesh );
+    PROFILE_STOP("MeshTestLoop");
 }
 
 
@@ -57,10 +59,12 @@ void MeshVectorTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> m
 {
     // Run the vector tests
     #ifdef USE_AMP_VECTORS
+        PROFILE_START("MeshVectorTestLoop");
         VerifyGetVectorTest<1,false>( ut, mesh );
         VerifyGetVectorTest<3,false>( ut, mesh );
         VerifyGetVectorTest<1,true>( ut, mesh );
         VerifyGetVectorTest<3,true>( ut, mesh );
+        PROFILE_STOP("MeshVectorTestLoop");
     #endif
 }
 
@@ -69,6 +73,7 @@ void MeshMatrixTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> m
 {
     // Run the matrix tests
     #ifdef USE_AMP_MATRICIES
+        PROFILE_START("MeshMatrixTestLoop");
         //ut->failure("Matricies are not implimented yet");
         VerifyGetMatrixTrivialTest<1,false>( ut, mesh );
         VerifyGetMatrixTrivialTest<3,false>( ut, mesh );
@@ -78,6 +83,7 @@ void MeshMatrixTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> m
         GhostWriteTest<3,false>( ut, mesh );
         GhostWriteTest<1,true>( ut, mesh );
         GhostWriteTest<3,true>( ut, mesh );
+        PROFILE_STOP("MeshMatrixTestLoop");
     #endif
 }
 

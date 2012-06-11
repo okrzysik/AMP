@@ -380,7 +380,9 @@ void Utilities::printBanner()
 
 }
 
+
 // Factor a number into it's prime factors
+// The factors will automatically be returned in sorted order
 std::vector<int> Utilities::factor(size_t number)
 {
     if ( number<=3 ) 
@@ -407,7 +409,7 @@ std::vector<int> Utilities::factor(size_t number)
         factor_found = false;
         for (i=3; i<=n_max; i+=2) {
             if ( n%i == 0 ) {
-                factors.push_back( 2 );
+                factors.push_back( i );
                 n/=i;
                 factor_found = true;
                 break;
@@ -419,8 +421,6 @@ std::vector<int> Utilities::factor(size_t number)
         factors.push_back( (int) n );
         break;
     }
-    // Sort the factors
-    AMP::Utilities::quicksort(factors);
     return factors;
 }
 
