@@ -1,6 +1,8 @@
 #include "operators/map/ScalarZAxisMap.h"
 #include "discretization/DOF_Manager.h"
 #include "utils/PIO.h"
+#include "utils/ProfilerApp.h"
+
 
 namespace AMP {
 namespace Operator {
@@ -58,6 +60,7 @@ bool ScalarZAxisMap::validMapType ( const std::string &t )
 std::multimap<double,double>  ScalarZAxisMap::buildMap( const AMP::LinearAlgebra::Vector::shared_ptr vec, 
     const AMP::Mesh::Mesh::shared_ptr, const AMP::Mesh::MeshIterator &iterator )
 {
+    PROFILE_START("buildMap");
     std::multimap<double,double> map;
     AMP::Discretization::DOFManager::shared_ptr  dof = vec->getDOFManager( );
     AMP::Mesh::MeshIterator cur = iterator.begin();
@@ -71,6 +74,7 @@ std::multimap<double,double>  ScalarZAxisMap::buildMap( const AMP::LinearAlgebra
         addTo1DMap( map, x[2], val );
         cur++;
     }
+    PROFILE_STOP("buildMap");
     return map;
 }
 

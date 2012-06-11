@@ -113,10 +113,15 @@ void NodeToNodeMap::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & 
                               const double )
 {
     PROFILE_START("applyStart");
-    // Subset the vector for the variable
-    AMP::LinearAlgebra::Vector::shared_ptr   curPhysics = subsetInputVector( u );
-    AMP_INSIST( curPhysics , "apply received bogus stuff" );
 
+    // Subset the vector for the variable (we only need the local portion of the vector)
+    PROFILE_START("subset");
+    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    AMP::LinearAlgebra::VS_Comm commSelector(var->getName(), AMP_MPI(AMP_COMM_SELF) );
+    AMP::LinearAlgebra::Vector::shared_ptr  commSubsetVec = u->select(commSelector, var->getName());
+    AMP::LinearAlgebra::Vector::shared_ptr  curPhysics = commSubsetVec->subsetVectorForVariable(var);
+    PROFILE_STOP("subset");
+    AMP_INSIST( curPhysics , "apply received bogus stuff" );
 
     // Get the DOFs to send
     AMP::Discretization::DOFManager::shared_ptr DOF = curPhysics->getDOFManager();
@@ -163,11 +168,9 @@ void NodeToNodeMap::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr &
                               const double )
 {
     PROFILE_START("applyFinish");
-    // Get the vector to store the DOFs
-    AMP::LinearAlgebra::Vector::shared_ptr  curPhysics = d_OutputVector;
 
     // Get the DOFs to recv
-    AMP::Discretization::DOFManager::shared_ptr DOF = curPhysics->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr DOF = d_OutputVector->getDOFManager();
     std::vector<size_t> dofs(DofsPerObj*d_recvList.size());
     std::vector<size_t> local_dofs(DofsPerObj);
     for (size_t i=0; i<d_recvList.size(); i++) {
@@ -181,11 +184,12 @@ void NodeToNodeMap::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr &
     waitForAllRequests();
 
     // Store the DOFs
-    curPhysics->setLocalValuesByGlobalID( dofs.size(),  getPtr( dofs ), getPtr( d_recvBuffer ) );
+    d_OutputVector->setLocalValuesByGlobalID( dofs.size(),  getPtr( dofs ), getPtr( d_recvBuffer ) );
 
-    // Update ghost cells
+    // Update ghost cells (this should be done on the full output vector)
     if ( d_callMakeConsistentSet ) 
-        curPhysics->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        d_OutputVector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+
     PROFILE_STOP("applyFinish");
 }
 
