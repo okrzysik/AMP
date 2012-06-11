@@ -114,7 +114,6 @@ public:
         for (int i=0; i<N_meshes; i++)
             offsetArray[i] = ((double) i)*0.0105;
         meshArrayDatabase->putDoubleArray("z_offset",offsetArray);
-        meshArrayDatabase->putInteger("NumberOfElements",80);
         // Create the parameter object
         boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(meshDatabase));
         params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));

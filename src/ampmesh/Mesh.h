@@ -30,6 +30,15 @@ enum SetOP { Union, Intersection, Complement };
  * \brief A class used to abstract away mesh from an application
  *
  * \details  This class provides routines for reading, accessing and writing meshes.
+ * The database fields control the mesh and will differ for each mesh type.  However,
+ * there are some common fields to all meshes: 
+ *     MeshName - The name to associate with the mesh
+ *     MeshType - The mesh type (libMesh, Multimesh, AMP)
+ *     x_offset - Optional argument specifying the offset in the x-direction
+ *     y_offset - Optional argument specifying the offset in the y-direction
+ *     z_offset - Optional argument specifying the offset in the z-direction
+ *     NumberOfElements - Optional argument indicating the number of elements in the mesh (will override all other calulations)
+ *     Weight - Optional argument indicating the relative weight of the mesh for the domain decomposition (relative to 1.0)
  */
 class Mesh: public boost::enable_shared_from_this<AMP::Mesh::Mesh>
 {
