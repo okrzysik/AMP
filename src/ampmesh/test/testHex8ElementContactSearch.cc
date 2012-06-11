@@ -1,7 +1,17 @@
+#include "utils/AMPManager.h"
+#include "utils/UnitTest.h"
+//#include "utils/Utilities.h"
+//#include "utils/Database.h"
+//#include "utils/InputDatabase.h"
+//#include "utils/InputManager.h"
+//#include "utils/AMP_MPI.h"
+//#include "utils/PIO.h"
+
+//#include "ampmesh/Mesh.h"
+
 #include "hex8_element_t.h"
 
-int main (int argc, char *argv[]) {
-
+void myTest(AMP::UnitTest *ut, std::string exeName) {
   double points[24] = {
     -1.0, -1.0, -1.0, // 0
     +1.0, -1.0, -1.0, // 1
@@ -150,7 +160,32 @@ int main (int argc, char *argv[]) {
     volume_element.do_mapping_verification_test(candidate);
     if (volume_element.project_on_face(candidate).first != 99) { ++count; }
   } // end for i
-  std::cout<<"count="<<count<<"\n";
+//  std::cout<<"count="<<count<<"\n";
+  assert(count != 0);
 
-  return 0;
+  ut->passes(exeName);
 }
+
+int main(int argc, char *argv[])
+{
+  AMP::AMPManager::startup(argc, argv);
+  AMP::UnitTest ut;
+
+  std::string exeName = "testHex8ElementContactSearch";
+
+  try {
+    myTest(&ut, exeName);
+  } catch (std::exception &err) {
+    std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+    ut.failure("ERROR: While testing");
+  } catch( ... ) {
+    std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+    ut.failure("ERROR: While testing");
+  }
+
+  ut.report();
+  int num_failed = ut.NumFailGlobal();
+
+  AMP::AMPManager::shutdown();
+  return num_failed;
+}  
