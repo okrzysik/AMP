@@ -25,6 +25,8 @@ namespace Operator {
       AMP::LinearAlgebra::Vector::shared_ptr nodalVec = u->subsetVectorForVariable(d_NodalVariable);
       AMP::LinearAlgebra::Vector::shared_ptr gaussPtVec = r->subsetVectorForVariable(d_GaussPtVariable);
 
+      nodalVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+
       AMP::Discretization::DOFManager::shared_ptr dof_map = nodalVec->getDOFManager();
       AMP::Discretization::DOFManager::shared_ptr gaussPt_dof_map = gaussPtVec->getDOFManager();
 
@@ -32,18 +34,19 @@ namespace Operator {
       libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
 
       boost::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
-      boost::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(2, (*d_feType))).release() );
 
       libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>("SECOND");
       boost::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", 2, qruleOrder)).release() );
 
-      d_fe->attach_quadrature_rule( d_qrule.get() );
 
       AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Face, 0);
       AMP::Mesh::MeshIterator end_el = el.end();
 
 
       for( ; el != end_el; ++el) {
+        boost::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(2, (*d_feType))).release() );
+        d_fe->attach_quadrature_rule( d_qrule.get() );
+        
         std::vector<AMP::Mesh::MeshElement> d_currNodes = el->getElements(AMP::Mesh::Vertex);  
 
         ::Elem* d_currElemPtr = new ::Quad4;
@@ -75,7 +78,7 @@ namespace Operator {
         }//end for qp
 
         for (unsigned int qp = 0; qp < d_gaussPtIndices.size(); qp++) {
-          gaussPtVec->setValueByGlobalID( d_gaussPtIndices[qp] , computedAtGauss[qp]);
+          gaussPtVec->setLocalValueByGlobalID( d_gaussPtIndices[qp] , computedAtGauss[qp]);
         }
         for(size_t j = 0; j < d_currElemPtr->n_nodes(); j++) {
           delete (d_currElemPtr->get_node(j));

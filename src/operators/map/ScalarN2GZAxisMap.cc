@@ -140,11 +140,11 @@ void ScalarN2GZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_p
           // Check the endpoints
           if ( fabs(pos-z0) <= TOL ) {
             // We are within TOL of the first point
-            vec->setValueByGlobalID( ids[qp], v0 );
+            vec->setLocalValueByGlobalID( ids[qp], v0 );
             continue;
           } else if ( fabs(pos-z1) <= TOL ) {
             // We are within TOL of the last point
-            vec->setValueByGlobalID( ids[qp], v1 );
+            vec->setLocalValueByGlobalID( ids[qp], v1 );
             continue;
           } else if ( pos<z0 || pos>z1 ) {
             // We are outside the bounds of the map
@@ -162,7 +162,7 @@ void ScalarN2GZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_p
           double hi = ub->first;
           double wt = (pos - lo) / (hi - lo);
           double ans = (1.-wt) * lb->second + wt * ub->second;
-          vec->setValueByGlobalID ( ids[qp], ans );
+          vec->setLocalValueByGlobalID ( ids[qp], ans );
 
         }
         cur++;
