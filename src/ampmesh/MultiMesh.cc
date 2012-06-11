@@ -153,9 +153,9 @@ MultiMesh::MultiMesh ( const AMP_MPI &comm, const std::vector<Mesh::shared_ptr> 
     if ( d_comm.sumReduce(d_meshes.size())==0 ) {
         AMP_ERROR("Empty multimeshes have not been tested yet");
     }
-    // Check the comm
+    // Check the comm (note: the order for the comparison matters)
     for (size_t i=0; i<d_meshes.size(); i++) {
-        AMP_ASSERT(d_comm >= d_meshes[i]->getComm() );
+        AMP_ASSERT( d_meshes[i]->getComm() <= d_comm );
     }
     // Get the physical dimension and the highest geometric type
     PhysicalDim = d_meshes[0]->getDim();
