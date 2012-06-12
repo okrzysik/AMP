@@ -56,50 +56,45 @@ namespace Operator {
       d_isConstantFlux = (myparams->d_db)->getBoolWithDefault("constant_flux", true);
       d_isFluxGaussPtVector = (myparams->d_db)->getBoolWithDefault("isFluxGaussPtVector",false);
 
-      bool skipParams = (params->d_db)->getBoolWithDefault("skip_params", false);
+      d_boundaryIds.resize(d_numBndIds);
+      d_dofIds.resize(d_numBndIds);
+      d_neumannValues.resize(d_numBndIds);
+      d_IsCoupledBoundary.resize(d_numBndIds);
+      d_numDofIds.resize(d_numBndIds);
 
-      if(!skipParams){
-        d_boundaryIds.resize(d_numBndIds);
-        d_dofIds.resize(d_numBndIds);
-        d_neumannValues.resize(d_numBndIds);
-        d_IsCoupledBoundary.resize(d_numBndIds);
-        d_numDofIds.resize(d_numBndIds);
+      char key[100];
+      for(int j = 0; j < d_numBndIds; j++) {
+        sprintf(key, "id_%d", j);
+        AMP_INSIST( (myparams->d_db)->keyExists(key), "Key is missing!" );
+        d_boundaryIds[j] = (myparams->d_db)->getInteger(key);
 
-        char key[100];
-        for(int j = 0; j < d_numBndIds; j++) {
-          sprintf(key, "id_%d", j);
+        sprintf(key, "number_of_dofs_%d", j);
+        AMP_INSIST( (myparams->d_db)->keyExists(key), "Key is missing!" );
+        d_numDofIds[j] = (myparams->d_db)->getInteger(key);
+
+        sprintf(key, "IsCoupledBoundary_%d", j);
+        d_IsCoupledBoundary[j] = (params->d_db)->getBoolWithDefault(key, false);
+
+        d_dofIds[j].resize(d_numDofIds[j]);
+        d_neumannValues[j].resize(d_numDofIds[j]);
+        for(int i = 0; i < d_numDofIds[j]; i++) {
+          sprintf(key, "dof_%d_%d", j, i);
           AMP_INSIST( (myparams->d_db)->keyExists(key), "Key is missing!" );
-          d_boundaryIds[j] = (myparams->d_db)->getInteger(key);
+          d_dofIds[j][i] = (myparams->d_db)->getInteger(key);
 
-          sprintf(key, "number_of_dofs_%d", j);
-          AMP_INSIST( (myparams->d_db)->keyExists(key), "Key is missing!" );
-          d_numDofIds[j] = (myparams->d_db)->getInteger(key);
-
-          sprintf(key, "IsCoupledBoundary_%d", j);
-          d_IsCoupledBoundary[j] = (params->d_db)->getBoolWithDefault(key, false);
-
-          d_dofIds[j].resize(d_numDofIds[j]);
-          d_neumannValues[j].resize(d_numDofIds[j]);
-          for(int i = 0; i < d_numDofIds[j]; i++) {
-            sprintf(key, "dof_%d_%d", j, i);
+          if(d_isConstantFlux){
+            sprintf(key, "value_%d_%d", j, i);
             AMP_INSIST( (myparams->d_db)->keyExists(key), "Key is missing!" );
-            d_dofIds[j][i] = (myparams->d_db)->getInteger(key);
+            d_neumannValues[j][i] = (myparams->d_db)->getDouble(key);
+          }else{
+            d_variableFlux = myparams->d_variableFlux;      
+          }
+        }//end for i
+      }//end for j
 
-            if(d_isConstantFlux){
-              sprintf(key, "value_%d_%d", j, i);
-              AMP_INSIST( (myparams->d_db)->keyExists(key), "Key is missing!" );
-              d_neumannValues[j][i] = (myparams->d_db)->getDouble(key);
-            }else{
-              d_variableFlux = myparams->d_variableFlux;      
-            }
-          }//end for i
-        }//end for j
-
-        if(myparams->d_robinPhysicsModel) {
-          d_robinPhysicsModel = myparams->d_robinPhysicsModel;
-        }
-
-      }//skip params
+      if(myparams->d_robinPhysicsModel) {
+        d_robinPhysicsModel = myparams->d_robinPhysicsModel;
+      }
 
       // Create the libmesh elements
       AMP::Mesh::MeshIterator iterator;
