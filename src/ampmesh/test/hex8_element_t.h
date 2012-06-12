@@ -259,7 +259,7 @@ private:
   std::vector<double> compute_inverse_matrix(const std::vector<double> &A) {
     assert(A.size() == 9);
     double determinant = A[0]*(A[4]*A[8]-A[5]*A[7])-A[1]*(A[3]*A[8]-A[5]*A[6])+A[2]*(A[3]*A[7]-A[4]*A[6]);
-    assert(fabs(determinant) > 1.0e-10);
+    assert(fabs(determinant) > 1.0e-15);
     double one_over_determinant = 1.0 / determinant;
     std::vector<double> inverse_of_A(9, 0.0);
     inverse_of_A[0] = one_over_determinant*(A[4]*A[8]-A[5]*A[7]);
