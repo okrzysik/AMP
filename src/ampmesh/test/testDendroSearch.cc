@@ -29,6 +29,8 @@
 #include "externVars.h"
 #include "dendro.h"
 
+#include "hex8_element_t.h"
+
 
 void createLocalMeshElementArray(std::vector<AMP::Mesh::MeshElement>& localElemArr, 
     AMP::Mesh::Mesh::shared_ptr meshAdapter) {
@@ -711,13 +713,22 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   int* resultsPtr = &(results[0]);
   AMP::Mesh::MeshElement* localElemArrPtr = &(localElemArr[0]);
   double* recvPtsListPtr = &(recvPtsList[0]);
+  std::vector<double> dummy(24);
   for(int i = 0; i < numRecvPts; ++i) {
     int eId = static_cast<int>(recvPtsListPtr[6*i]);
     AMP::Mesh::MeshElement* el = &(localElemArrPtr[eId]);
     tmpPt[0] = recvPtsListPtr[(6*i) + 1];
     tmpPt[1] = recvPtsListPtr[(6*i) + 2];
     tmpPt[2] = recvPtsListPtr[(6*i) + 3];
-    // resultsPtr[i] = el->containsPoint(tmpPt);
+    const std::vector<AMP::Mesh::MeshElement> support_points = el->getElements(AMP::Mesh::Vertex);
+    for (unsigned int j = 0; j < 8; ++j) {
+      std::vector<double> point_coord = support_points[j].coord();
+      dummy[3*j+0] = point_coord[0]; 
+      dummy[3*j+1] = point_coord[1]; 
+      dummy[3*j+2] = point_coord[2]; 
+    } // end for j
+    hex8_element_t volume_element(dummy);
+    resultsPtr[i] = (volume_element.project_on_face(tmpPt).first != 99); 
   }//end i
   recvPtsList.clear();
 
