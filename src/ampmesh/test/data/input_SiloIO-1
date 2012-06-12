@@ -26,7 +26,6 @@ Mesh{
             x_offset = 0.0
             y_offset = 0.0
             z_offset = 0.0, 0.0105
-            NumberOfElements = 3315
         }
     }
 
@@ -39,7 +38,6 @@ Mesh{
         x_offset = 0.0
         y_offset = 0.0
         z_offset = 0.0
-        NumberOfElements = 1620
     }
 }
 

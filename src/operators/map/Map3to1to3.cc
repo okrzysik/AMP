@@ -125,8 +125,16 @@ void  Map3to1to3::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , 
 {
     PROFILE_START("applyStart");
 
+    // Subset the vector (we only need to deal with the locally owned portion)
+    PROFILE_START("subset");
+    AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
+    AMP::LinearAlgebra::VS_Comm commSelector(var->getName(), AMP_MPI(AMP_COMM_SELF) );
+    AMP::LinearAlgebra::Vector::shared_ptr  commVec = u->select(commSelector, var->getName());
+    AMP::LinearAlgebra::Vector::shared_ptr  vec = commVec->subsetVectorForVariable(var);
+    PROFILE_STOP("subset");
+
     // Build the local maps
-    AMP::LinearAlgebra::Vector::shared_ptr vec = subsetInputVector( u );
+    PROFILE_START("prepare data");
     std::multimap<double,double> map1 = buildMap( vec, d_mesh1, d_srcIterator1 );
     std::multimap<double,double> map2 = buildMap( vec, d_mesh2, d_srcIterator2 );
 
@@ -145,6 +153,8 @@ void  Map3to1to3::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , 
         d_SendBuf2[2*i+1] = curData->second;
         curData++;
     }
+    PROFILE_STOP("prepare data");
+
 
     // Send the data
     std::vector<MPI_Request>::iterator  curReq = beginRequests();
@@ -216,8 +226,11 @@ void  Map3to1to3::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr & ,
         buildReturn( d_ResultVector, d_mesh2, d_dstIterator2, map2 );
 
     // Apply make consistent
+    PROFILE_START("makeConsistent");
     d_ResultVector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    PROFILE_STOP("makeConsistent");
     // double a = d_ResultVector->L1Norm();
+
     PROFILE_STOP("applyFinish");
 }
 

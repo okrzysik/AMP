@@ -153,9 +153,9 @@ MultiMesh::MultiMesh ( const AMP_MPI &comm, const std::vector<Mesh::shared_ptr> 
     if ( d_comm.sumReduce(d_meshes.size())==0 ) {
         AMP_ERROR("Empty multimeshes have not been tested yet");
     }
-    // Check the comm
+    // Check the comm (note: the order for the comparison matters)
     for (size_t i=0; i<d_meshes.size(); i++) {
-        AMP_ASSERT(d_comm >= d_meshes[i]->getComm() );
+        AMP_ASSERT( d_meshes[i]->getComm() <= d_comm );
     }
     // Get the physical dimension and the highest geometric type
     PhysicalDim = d_meshes[0]->getDim();
@@ -220,7 +220,14 @@ size_t MultiMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(meshDatabases[i]));
         params->setComm(AMP::AMP_MPI(AMP_COMM_SELF));
         meshParameters.push_back(params);
-        totalMeshSize += AMP::Mesh::Mesh::estimateMeshSize(params);
+        size_t localMeshSize = AMP::Mesh::Mesh::estimateMeshSize(params);
+        AMP_ASSERT(localMeshSize>0);
+        totalMeshSize += localMeshSize;
+    }
+    // Adjust the number of elements by a weight if desired
+    if ( database->keyExists("Weight") ) {
+        double weight = database->getDouble("Weight");
+        totalMeshSize = (size_t) ceil(weight*((double)totalMeshSize));
     }
     return totalMeshSize;
 }

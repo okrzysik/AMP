@@ -1,6 +1,8 @@
 #include "operators/map/ScalarN2GZAxisMap.h"
 #include "discretization/DOF_Manager.h"
 #include "utils/PIO.h"
+#include "utils/ProfilerApp.h"
+
 
 /* Libmesh files */
 #include "fe_type.h"
@@ -76,6 +78,7 @@ bool ScalarN2GZAxisMap::validMapType ( const std::string &t )
 std::multimap<double,double>  ScalarN2GZAxisMap::buildMap( const AMP::LinearAlgebra::Vector::shared_ptr vec, 
     const AMP::Mesh::Mesh::shared_ptr, const AMP::Mesh::MeshIterator &iterator )
 {
+    PROFILE_START("buildMap");
     std::multimap<double,double> map;
     AMP::Discretization::DOFManager::shared_ptr  dof = vec->getDOFManager( );
     AMP::Mesh::MeshIterator cur = iterator.begin();
@@ -89,6 +92,7 @@ std::multimap<double,double>  ScalarN2GZAxisMap::buildMap( const AMP::LinearAlge
         addTo1DMap( map, x[2], val );
         cur++;
     }
+    PROFILE_STOP("buildMap");
     return map;
 }
 

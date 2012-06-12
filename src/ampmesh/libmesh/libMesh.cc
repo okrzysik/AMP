@@ -26,6 +26,7 @@
 #include "mesh_generation.h"
 #include "boundary_info.h"
 #include "parallel.h"
+#include "exodusII_io_helper.h"
 
 namespace AMP {
 namespace Mesh {
@@ -504,7 +505,17 @@ size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         NumberOfElements = (size_t) database->getInteger("NumberOfElements");
     } else if ( database->keyExists("FileName") ) {
         // Read an existing mesh
-        AMP_ERROR("Key NumberOfElements must exist in database to estimate the mesh size");
+        std::string fname = database->getString("FileName");
+        if ( fname.rfind(".exd") < fname.size() || fname.rfind(".e") < fname.size() ) {
+            ::ExodusII_IO_Helper exio_helper;
+            exio_helper.open(fname.c_str());        // Open the exodus file, if possible
+            exio_helper.read_header();              // Read the header
+            exio_helper.read_header();              // Close the file
+            NumberOfElements = exio_helper.get_num_elem();
+            AMP_ASSERT(NumberOfElements>0);
+        } else {
+            AMP_ERROR("Unkown mesh type, use key NumberOfElements to specify the mesh size");
+        }
     } else if ( database->keyExists("Generator") ) {
         // Generate a new mesh
         std::string generator = database->getString("Generator");
@@ -520,6 +531,11 @@ size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         }
     } else {
         AMP_ERROR("Unable to construct mesh with given parameters");
+    }
+    // Adjust the number of elements by a weight if desired
+    if ( database->keyExists("Weight") ) {
+        double weight = database->getDouble("Weight");
+        NumberOfElements = (size_t) ceil(weight*((double)NumberOfElements));
     }
     return NumberOfElements;
 }

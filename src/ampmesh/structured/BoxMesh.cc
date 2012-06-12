@@ -634,31 +634,41 @@ size_t BoxMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     AMP_INSIST(params.get(),"Params must not be null");
     boost::shared_ptr<AMP::Database> db = params->getDatabase( );
     AMP_INSIST(db.get(),"Database must exist");
-    // Get mandatory fields from the database
-    AMP_INSIST(db->keyExists("Generator"),"Field 'Generator' must exist in database'");
-    AMP_INSIST(db->keyExists("dim"),"Field 'dim' must exist in database'");
-    AMP_INSIST(db->keyExists("Size"),"Field 'Size' must exist in database'");
-    std::string generator = db->getString("Generator");
-    int dim = db->getInteger("dim");
-    std::vector<int> size = db->getIntegerArray("Size");
-    for (size_t d=0; d<size.size(); d++)
-        AMP_INSIST(size[d]>0,"All values of size must be > 0");
     size_t N_elements = 0;
-    if ( generator.compare("cube")==0 ) {
-        AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must match dimfor cube");
-        N_elements = 1;
-        for (int d=0; d<dim; d++)
-            N_elements *= size[d];
-    } else if ( generator.compare("tube")==0 ) {
-        AMP_INSIST(dim==3,"tube requires a 3d mesh");
-        AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must be 1x3 for tube");
-        N_elements = size[0]*size[1]*size[2];
-    } else if ( generator.compare("cylinder")==0 ) {
-        AMP_INSIST(dim==3,"cylinder requires a 3d mesh");
-        AMP_INSIST((int)size.size()==2,"Size of field 'Size' must be 1x2 for cylinder");
-        N_elements = (2*size[0])*(2*size[0])*size[1];
+    if ( db->keyExists("NumberOfElements") ) {
+        // User specified the number of elements, this should override everything
+        N_elements = (size_t) db->getInteger("NumberOfElements");
     } else {
-        AMP_ERROR("Unkown generator");
+        // Use the generator to determine the number of input elements
+        AMP_INSIST(db->keyExists("Generator"),"Field 'Generator' must exist in database'");
+        AMP_INSIST(db->keyExists("dim"),"Field 'dim' must exist in database'");
+        AMP_INSIST(db->keyExists("Size"),"Field 'Size' must exist in database'");
+        std::string generator = db->getString("Generator");
+        int dim = db->getInteger("dim");
+        std::vector<int> size = db->getIntegerArray("Size");
+        for (size_t d=0; d<size.size(); d++)
+            AMP_INSIST(size[d]>0,"All values of size must be > 0");
+        if ( generator.compare("cube")==0 ) {
+            AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must match dimfor cube");
+            N_elements = 1;
+            for (int d=0; d<dim; d++)
+                N_elements *= size[d];
+        } else if ( generator.compare("tube")==0 ) {
+            AMP_INSIST(dim==3,"tube requires a 3d mesh");
+            AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must be 1x3 for tube");
+            N_elements = size[0]*size[1]*size[2];
+        } else if ( generator.compare("cylinder")==0 ) {
+            AMP_INSIST(dim==3,"cylinder requires a 3d mesh");
+            AMP_INSIST((int)size.size()==2,"Size of field 'Size' must be 1x2 for cylinder");
+            N_elements = (2*size[0])*(2*size[0])*size[1];
+        } else {
+            AMP_ERROR("Unkown generator");
+        }
+    }
+    // Adjust the number of elements by a weight if desired
+    if ( db->keyExists("Weight") ) {
+        double weight = db->getDouble("Weight");
+        N_elements = (size_t) ceil(weight*((double)N_elements));
     }
     return N_elements;
 }
