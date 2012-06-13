@@ -83,11 +83,13 @@ std::multimap<double,double>  ScalarZAxisMap::buildMap( const AMP::LinearAlgebra
 *  buildReturn                                                          *
 ************************************************************************/
 void ScalarZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::Mesh::shared_ptr, 
-    const AMP::Mesh::MeshIterator &iterator, const std::multimap<double,double> &map )
+    const AMP::Mesh::MeshIterator &iterator, const std::map<double,double> &map )
 {
+    PROFILE_START("buildReturn");
 
     // Get the endpoints of the map
-    std::multimap<double,double>::const_iterator lb, ub;
+    AMP_ASSERT(map.size()>1);
+    std::map<double,double>::const_iterator lb, ub;
     lb = map.begin();
     ub = map.end(); ub--;
     double z0 = (*lb).first;
@@ -132,18 +134,23 @@ void ScalarZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr 
         // Find the first point > the current position
         ub = map.upper_bound( pos );
         if ( ub == map.end() )
-            ub--;
-        lb = ub--;
+           ub--;
+        else if ( ub == map.begin() )
+           ub++;
+        lb = ub;
+        lb--;
 
         // Perform linear interpolation
         double lo = lb->first;
         double hi = ub->first;
+        AMP_ASSERT(pos>=lo&&pos<hi);
         double wt = (pos - lo) / (hi - lo);
         double ans = (1.-wt) * lb->second + wt * ub->second;
         vec->setValueByGlobalID ( dof, ans );
 
         cur++;
     }
+    PROFILE_STOP("buildReturn");
 }
 
 
