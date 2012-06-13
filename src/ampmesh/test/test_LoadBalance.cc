@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <math.h>
 
 
 // Function to recursively cound the number of elements per processor
@@ -49,9 +50,27 @@ int main ( int argc , char ** argv )
     // Check the results of the load balance
     std::vector<size_t> N_elements(N_procs,0);
     countElements( mesh, N_elements );
-    std::cout << "Rank   N_elements" << std::endl;
-    for (int i=0; i<N_procs; i++)
-        std::cout << std::setw(4) << i << std::setw(10) << N_elements[i] << std::endl;
+    std::cout << "Rank, N_elements:" << std::endl;
+    int N_line = 16;
+    for (int i=0; i<(N_procs+N_line-1)/N_line; i++) {
+        for (int j=i*N_line; j<std::min((i+1)*N_line,N_procs); j++)
+            std::cout << std::setw(8) << j;
+        std::cout << std::endl;
+        for (int j=i*N_line; j<std::min((i+1)*N_line,N_procs); j++)
+            std::cout << std::setw(8) << N_elements[j];
+        std::cout << std::endl << std::endl;
+    }
+    size_t N_min=0xFFFFFFFF;
+    size_t N_max=0;
+    for (int i=0; i<N_procs; i++) {
+        N_min = std::min(N_min,N_elements[i]);
+        N_max = std::max(N_max,N_elements[i]);
+    }
+    
+    std::cout << std::endl;
+    std::cout << "min = " << N_min << std::endl;
+    std::cout << "max = " << N_max << std::endl;
+    std::cout << "avg = " << ((double)mesh.N_elements)/((double)N_procs) << std::endl;
 
     AMP::AMPManager::shutdown();
     return 0;

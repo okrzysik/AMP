@@ -979,6 +979,15 @@ std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups2(int N_procs, 
         total_weight += ids[i].first;
     double weight_avg = total_weight / ((double) N_procs);
     std::vector<comm_groups> groups;
+    // Handle the special case if the # of processors == the # of ids
+    if ( N_procs == (int)ids_in.size() ) {
+        groups.resize(N_procs);
+        for (int i=0; i<N_procs; i++) {
+            groups[i].N_procs = 1;
+            groups[i].ids = std::vector<int>(1,ids_in[i].second);
+        }
+        return groups;
+    }
     // Remove any ids that require a processor by themselves
     std::vector<std::pair<double,int> >::iterator  iterator = ids.begin();
     while ( iterator != ids.end() ) {
