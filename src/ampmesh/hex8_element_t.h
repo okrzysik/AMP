@@ -34,6 +34,13 @@ public:
     } // end if
   }
 
+  std::vector<double> map_global_to_local(const std::vector<double> &global_coordinates) {
+    assert(global_coordinates.size() == 3); 
+    point_candidate = global_coordinates;
+    std::vector<double> local_coordinates = solve_newton();
+    return local_coordinates;
+  }
+
   std::pair<unsigned int, std::vector<double> > project_on_face(double a, double b, double c) {
     double p[3] = { a, b, c };
     return project_on_face(std::vector<double>(p, p+3));
