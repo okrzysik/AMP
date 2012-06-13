@@ -27,7 +27,7 @@ void RobinVectorCorrection::reset(const boost::shared_ptr<OperatorParameters>& p
   AMP_INSIST( (params->d_db)->keyExists("fConductivity"), "Missing key: effective convective coefficient" );
   d_hef = (params->d_db)->getDouble("fConductivity");
   
-  d_skipParams = (params->d_db)->getBoolWithDefault("skip_params", true);
+  d_skipParams = (params->d_db)->getBoolWithDefault("skip_params", false);
   
   AMP_INSIST( (params->d_db)->keyExists("alpha"), "Missing key: prefactor alpha" );
   d_alpha = (params->d_db)->getDouble("alpha");
@@ -110,12 +110,12 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   }
   AMP_ASSERT(*dofManager==*(uInternal->getDOFManager()));
   AMP_ASSERT(*dofManager==*(rInternal->getDOFManager()));
-  if ( d_variableFlux.get()!=NULL && !d_isFluxGaussPtVector )
+  if ( d_variableFlux.get()!= NULL && !d_isFluxGaussPtVector )
     AMP_ASSERT(*dofManager==*(d_variableFlux->getDOFManager()));
 
   std::vector<size_t> gpDofs;
   AMP::Discretization::DOFManager::shared_ptr gpDOFManager; 
-  if( !d_isConstantFlux && d_isFluxGaussPtVector){
+  if(d_isFluxGaussPtVector){
     gpDOFManager = d_variableFlux->getDOFManager();
   }
 
@@ -153,7 +153,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
       dofManager->getDOFs( ids, dofs );
       AMP_ASSERT(dofs.size()==numNodesInCurrElem);
 
-      if( !d_isConstantFlux && d_isFluxGaussPtVector){
+      if(d_isFluxGaussPtVector){
         gpDOFManager->getDOFs (bnd1->globalID(), gpDofs);
       }
       // Get the libmesh element
@@ -260,48 +260,16 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
 boost::shared_ptr<OperatorParameters> RobinVectorCorrection::getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>&)
 {
   boost::shared_ptr<AMP::InputDatabase> tmp_db(new AMP::InputDatabase("Dummy"));
-  tmp_db->putBool("skip_params", d_skipParams);
+  tmp_db->putBool("skip_params", true);
   tmp_db->putBool("skip_rhs_correction", true);
   tmp_db->putBool("skip_matrix_correction", false);
-
-  if (!d_skipParams)
-  {
-    tmp_db->putDouble("alpha", d_alpha);
-    tmp_db->putDouble("beta", d_beta);
-    tmp_db->putDouble("gamma", d_gamma);
-    tmp_db->putDouble("fConductivity", d_hef);
-
-    int numIds = d_boundaryIds.size();
-    tmp_db->putInteger("number_of_ids", numIds);
-
-    char key[100];
-    for (int j = 0; j < numIds; j++)
-    {
-
-      sprintf(key, "id_%d", j);
-      tmp_db->putInteger(key, d_boundaryIds[j]);
-
-      sprintf(key, "number_of_dofs_%d", j);
-      int numDofIds = d_dofIds[j].size();
-      tmp_db->putInteger(key, numDofIds);
-      
-      for (int i = 0; i < numDofIds; i++)
-        {
-          sprintf(key, "dof_%d_%d", j, i);
-          tmp_db->putInteger(key, d_dofIds[j][i]);
-          
-          sprintf(key, "value_%d_%d", j, i);
-          tmp_db->putDouble(key, d_neumannValues[j][i]);
-        }
-    }
-    }
 
   boost::shared_ptr<RobinMatrixCorrectionParameters> outParams(
       new RobinMatrixCorrectionParameters(tmp_db));
 
   outParams->d_robinPhysicsModel = d_robinPhysicsModel;
   outParams->d_elementInputVec   = d_elementInputVec;
-  
+
   return outParams;
 }
 
