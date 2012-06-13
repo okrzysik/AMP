@@ -120,7 +120,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
 
   DendroSearch dendroSearch(globalComm, meshAdapter);
-  std::vector<double> interpolatedData = dendroSearch.interpolate(dummyVector, numLocalPts, pts);
+  std::vector<double> interpolatedData; 
+  std::vector<bool> mask;
+  dendroSearch.interpolate(dummyVector, pts, interpolatedData, mask);
+
+
   AMP_ASSERT(interpolatedData.size() == numLocalPts);
 
 

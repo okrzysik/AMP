@@ -651,7 +651,7 @@ class DendroSearch {
 
       vectorField->makeConsistent(  AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
-      //dofMap = vectorField->getDOFmap();
+      AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField->getDOFManager();
 
       for(int i = 0; i < npes; ++i) {
         sendCnts[i] = 0;
@@ -668,6 +668,7 @@ class DendroSearch {
         tmpPt[1] = recvPtsList[(6*i) + 2];
         tmpPt[2] = recvPtsList[(6*i) + 3];
         const std::vector<AMP::Mesh::MeshElement> support_points = el->getElements(AMP::Mesh::Vertex);
+        AMP_ASSERT(support_points.size() == 8);
         for (unsigned int j = 0; j < 8; ++j) {
           std::vector<double> point_coord = support_points[j].coord();
           dummy[3*j+0] = point_coord[0];
@@ -677,9 +678,25 @@ class DendroSearch {
         hex8_element_t volume_element(dummy);
         bool found = (volume_element.project_on_face(tmpPt).first != 99);
         if(found) {
+          std::vector<double> x = volume_element.map_global_to_local(tmpPt);
+          double basis_functions_values[8];
+          basis_functions_values[0] = 0.125*(1.0-x[0])*(1.0-x[1])*(1.0-x[2]);
+          basis_functions_values[1] = 0.125*(1.0+x[0])*(1.0-x[1])*(1.0-x[2]);
+          basis_functions_values[2] = 0.125*(1.0+x[0])*(1.0+x[1])*(1.0-x[2]);
+          basis_functions_values[3] = 0.125*(1.0-x[0])*(1.0+x[1])*(1.0-x[2]);
+          basis_functions_values[4] = 0.125*(1.0-x[0])*(1.0-x[1])*(1.0+x[2]);
+          basis_functions_values[5] = 0.125*(1.0+x[0])*(1.0-x[1])*(1.0+x[2]);
+          basis_functions_values[6] = 0.125*(1.0+x[0])*(1.0+x[1])*(1.0+x[2]);
+          basis_functions_values[7] = 0.125*(1.0-x[0])*(1.0+x[1])*(1.0+x[2]);
+          double value = 0.0;
+          for (unsigned int j = 0; j < 8; ++j) {
+            std::vector<size_t> globalID;
+            dofManager->getDOFs(support_points[j].globalID(), globalID);
+            AMP_ASSERT(globalID.size() == 1);
+            value += vectorField->getValueByGlobalID(globalID.front()) * basis_functions_values[j];
+          } // end for j
           //Get DofIds for this element.
           //Interpolate and compute the value
-          double value;
           unsigned int ptLocalId = static_cast<unsigned int>(recvPtsList[(6*i) + 4]);
           unsigned int ptProcId = static_cast<unsigned int>(recvPtsList[(6*i) + 5]);
           sendCnts[ptProcId] += 2;
@@ -726,7 +743,7 @@ class DendroSearch {
       }
 
       MPI_Alltoallv(sendResultsPtr, sendCnts, sendDisps, MPI_DOUBLE, 
-          recvResultsPtr, recvCnts, recvDisps, (globalComm.getCommunicator()));
+          recvResultsPtr, recvCnts, recvDisps, MPI_DOUBLE, (globalComm.getCommunicator()));
       sendResults.clear();
 
       delete [] sendCnts;
@@ -735,10 +752,15 @@ class DendroSearch {
       delete [] recvDisps;
 
       //Points that are not found will have a result = 0. 
-      results.clear();
+//      results.clear();
       results.resize(numLocalPts, 0.0);
-      foundPt.clear();
+//      foundPt.clear();
       foundPt.resize(numLocalPts, false);
+      for (unsigned int i = 0; i < numLocalPts; ++i) {
+        results[i] = 0.0;
+        foundPt[i] = false;
+      } // end for i
+
       for(size_t i = 0; i < recvResults.size(); i+= 2) {
         unsigned int locId = static_cast<unsigned int>(recvResults[i]);
         double val = recvResults[i + 1];
