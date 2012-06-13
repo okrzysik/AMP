@@ -12,10 +12,10 @@
 namespace AMP {
 namespace Operator {
 
-  /** \brief  For problems with a great deal of symmetry, it is possible
-    * to move data from one mesh to another by generating a 1D appoximation
-    * using one mesh and interpolating the results on another
-    */
+/** \brief  For problems with a great deal of symmetry, it is possible
+  * to move data from one mesh to another by generating a 1D appoximation
+  * using one mesh and interpolating the results on another
+  */
 
 
 /**
@@ -62,11 +62,6 @@ public:
 
 
 protected:
-    /** \brief  This method will average nearby points in the interpolant
-     * \param map           The map to smear
-     * \param [in] tolerance  The distance across which values are assumed to be the same
-     */
-    virtual void smear( std::multimap<double,double> &map, double tolerance=1.e-8 );
 
     /** \brief  Add an ordered pair to the set of interpolant values
      * \param map           The map to add the point to
@@ -94,7 +89,7 @@ protected:
      * \param [in] map  The map containing all of the points
      */
     virtual void buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::Mesh::shared_ptr mesh, 
-        const AMP::Mesh::MeshIterator &it, const std::multimap<double,double> &map );
+        const AMP::Mesh::MeshIterator &it, const std::map<double,double> &map );
 
     //!  Iterators over the nodes on the boundary
     AMP::Mesh::MeshIterator  d_srcIterator1;
@@ -110,15 +105,31 @@ private:
     std::vector<bool> d_own_mesh1;
     std::vector<bool> d_own_mesh2;
 
-    //!  The buffer used to perform the asynchronous communication
-    std::vector<double> d_SendBuf1;
-    std::vector<double> d_SendBuf2;
-
     //!  True if the map hasn't been "applied" yet
     bool d_FirstApply;
 
     //!  The tag used for communication
     int d_commTag;
+
+    //! structure used for communication
+    struct comm_data {
+        int N;
+        double z;
+        double sum;
+        comm_data() {
+            N = 0;
+            z = 0.0;
+            sum = 0.0;
+        }
+    };
+
+    //!  The buffer used to perform the asynchronous communication
+    std::vector<comm_data> d_SendBuf1;
+    std::vector<comm_data> d_SendBuf2;
+
+    // Function to unpack the recv buffer
+    static void unpackBuffer( const std::vector<comm_data>&, std::map<double,std::pair<int,double> >& );
+
 
 };
 

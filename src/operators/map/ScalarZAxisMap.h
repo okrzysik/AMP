@@ -52,7 +52,7 @@ protected:
 
     // Implimented buildReturn routine
     virtual void buildReturn( AMP::LinearAlgebra::Vector::shared_ptr, const AMP::Mesh::Mesh::shared_ptr,
-        const AMP::Mesh::MeshIterator&, const std::multimap<double,double>& );
+        const AMP::Mesh::MeshIterator&, const std::map<double,double>& );
 };
 
 

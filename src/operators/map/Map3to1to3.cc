@@ -16,6 +16,7 @@ static T* getPtr( std::vector<T> &x ) {
 }
 
 
+
 /********************************************************
 * Constructor                                           *
 ********************************************************/
@@ -72,43 +73,6 @@ Map3to1to3::~Map3to1to3 ()
 
 
 /********************************************************
-* Function to smear nearby points                       *
-********************************************************/
-void Map3to1to3::smear( std::multimap<double,double> &map, double tolerance )
-{
-    std::multimap<double,double>::iterator  curPtr = map.begin();
-    while ( curPtr != map.end() ) {
-        std::multimap<double,double>::iterator  curLookAhead = curPtr;
-        while ( curLookAhead != map.end() ) {
-            double cp = curPtr->first;
-            double cl = curLookAhead->first;
-            if ( fabs ( cp - cl ) > tolerance )
-              break;
-            curLookAhead++;
-        }
-        if ( curPtr != curLookAhead ) {
-            double total , count;
-            total = count = 0.;
-            std::multimap<double,double>::iterator  temp = curPtr;
-            while ( temp != curLookAhead ) {
-                total += temp->second;
-                count += 1.0;
-                temp++;
-            }
-            curPtr->second = total / count;
-            temp = curPtr;
-            temp++;
-            size_t  s = map.size();
-            map.erase( temp , curLookAhead );
-            s = map.size();
-            s++;
-        }
-        curPtr++;
-    }
-}
-
-
-/********************************************************
 * Function to add points to the map                     *
 ********************************************************/
 void Map3to1to3::addTo1DMap ( std::multimap<double,double> &map, double z , double val )
@@ -123,6 +87,7 @@ void Map3to1to3::addTo1DMap ( std::multimap<double,double> &map, double z , doub
 void  Map3to1to3::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , const AMP::LinearAlgebra::Vector::shared_ptr &u ,
                      AMP::LinearAlgebra::Vector::shared_ptr & , const double , const double )
 {
+    const double tol = 1e-8;
     PROFILE_START("applyStart");
 
     // Subset the vector (we only need to deal with the locally owned portion)
@@ -138,20 +103,65 @@ void  Map3to1to3::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , 
     std::multimap<double,double> map1 = buildMap( vec, d_mesh1, d_srcIterator1 );
     std::multimap<double,double> map2 = buildMap( vec, d_mesh2, d_srcIterator2 );
 
-    // Create the send buffers
-    d_SendBuf1.resize(2*map1.size());
-    std::multimap<double,double>::iterator curData = map1.begin();
-    for (size_t i=0; i<map1.size(); i++) {
-        d_SendBuf1[2*i+0] = curData->first;
-        d_SendBuf1[2*i+1] = curData->second;
-        curData++;
+    // Get the local 1D map coordinates
+    std::multimap<double,double>::const_iterator iterator;
+    double z_last = -1e100;
+    std::vector<double> z1;
+    for (iterator=map1.begin(); iterator!=map1.end(); iterator++) {
+        if ( fabs(iterator->first-z_last) > tol ) {
+            z_last = iterator->first;
+            z1.push_back( z_last );
+        }
     }
-    d_SendBuf2.resize(2*map2.size());
-    curData = map2.begin();
-    for (size_t i=0; i<map2.size(); i++) {
-        d_SendBuf2[2*i+0] = curData->first;
-        d_SendBuf2[2*i+1] = curData->second;
-        curData++;
+    z_last = -1e100;
+    std::vector<double> z2;
+    for (iterator=map2.begin(); iterator!=map2.end(); iterator++) {
+        if ( fabs(iterator->first-z_last) > tol ) {
+            z_last = iterator->first;
+            z2.push_back( z_last );
+        }
+    }
+
+    // Create the send buffers and sum the local data
+    d_SendBuf1.resize(0);   // Reset the entries
+    d_SendBuf1.resize(z1.size());
+    for (iterator=map1.begin(); iterator!=map1.end(); iterator++) {
+        double z = iterator->first;
+        size_t i1 = min(AMP::Utilities::findfirst(z1,z),z1.size()-1);
+        size_t i2 = max(i1,(size_t)1)-1;
+        size_t i3 = min(i1+1,z1.size()-1);
+        size_t i;
+        if ( fabs(z-z1[i1])<tol )
+            i = i1;
+        else if ( fabs(z-z1[i2])<tol )
+            i = i2;
+        else if ( fabs(z-z1[i3])<tol )
+            i = i3;
+        else 
+            AMP_ERROR("Internal error");
+        d_SendBuf1[i].N++;
+        d_SendBuf1[i].z = z1[i];
+        d_SendBuf1[i].sum += iterator->second;
+    }
+    d_SendBuf2.resize(0);   // Reset the entries
+    d_SendBuf2.resize(z2.size());
+    for (iterator=map2.begin(); iterator!=map2.end(); iterator++) {
+        double z = iterator->first;
+        size_t i1 = min(AMP::Utilities::findfirst(z2,z),z2.size()-1);
+        size_t i2 = max(i1,(size_t)1)-1;
+        size_t i3 = min(i1+1,z2.size()-1);
+        size_t i;
+        if ( fabs(z-z2[i1])<tol )
+            i = i1;
+        else if ( fabs(z-z2[i2])<tol )
+            i = i2;
+        else if ( fabs(z-z2[i3])<tol )
+            i = i3;
+        else 
+            AMP_ERROR("Internal error");
+        d_SendBuf2[i].N++;
+        d_SendBuf2[i].z = z2[i];
+        d_SendBuf2[i].sum += iterator->second;
     }
     PROFILE_STOP("prepare data");
 
@@ -186,44 +196,58 @@ void  Map3to1to3::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr & ,
                       AMP::LinearAlgebra::Vector::shared_ptr & , const double , const double )
 {
     PROFILE_START("applyFinish");
+
     // Recieve the data and create the maps
-    std::multimap<double,double> map1;
-    std::multimap<double,double> map2;
-    std::vector<double> recvBuf;
+    std::map<double,std::pair<int,double> > map1;
+    std::map<double,std::pair<int,double> > map2;
+    std::vector<comm_data> recvBuf;
     if ( d_mesh1.get() != NULL ) {
         for (size_t i=0; i<d_own_mesh2.size(); i++ ) {
             if ( d_own_mesh2[i] ) {
-                int inSize = d_MapComm.probe(i,d_commTag+1)/sizeof(double);
+                // Get the recieved data
+                int inSize = d_MapComm.probe(i,d_commTag+1)/sizeof(comm_data);
                 recvBuf.resize( inSize );
                 d_MapComm.recv( getPtr(recvBuf), inSize, i, false, d_commTag+1 );
-                for (int j=0; j<inSize/2; j++)
-                    addTo1DMap( map1, recvBuf[2*j], recvBuf[2*j+1] );
+                // Add it to the map
+                unpackBuffer( recvBuf, map1 );
             }
         }
     }
     if ( d_mesh2.get() != NULL ) {
         for (size_t i=0; i<d_own_mesh1.size(); i++ ) {
             if ( d_own_mesh1[i] ) {
-                int inSize = d_MapComm.probe(i,d_commTag+0)/sizeof(double);
+                // Get the recieved data
+                int inSize = d_MapComm.probe(i,d_commTag+0)/sizeof(comm_data);
                 recvBuf.resize( inSize );
                 d_MapComm.recv( getPtr(recvBuf), inSize, i, false, d_commTag+0 );
-                for (int j=0; j<inSize/2; j++)
-                    addTo1DMap( map2, recvBuf[2*j], recvBuf[2*j+1] );
+                // Add it to the map
+                unpackBuffer( recvBuf, map2 );
             }
         }
     }
 
-    // Smear the data
-    if ( d_mesh1.get() != NULL )
-        smear( map1, 1.e-8 );
-    if ( d_mesh2.get() != NULL )
-        smear( map2, 1.e-8 );
+    // Smear the data to create the final map
+    std::map<double,std::pair<int,double> >::iterator iterator;
+    std::map<double,double> final_map1;
+    for (iterator=map1.begin(); iterator!=map1.end(); iterator++) {
+        double sum = iterator->second.second;
+        double N = iterator->second.first;
+        std::pair<double,double> tmp( iterator->first, sum/N );
+        final_map1.insert( tmp );
+    }
+    std::map<double,double> final_map2;
+    for (iterator=map2.begin(); iterator!=map2.end(); iterator++) {
+        double sum = iterator->second.second;
+        double N = iterator->second.first;
+        std::pair<double,double> tmp( iterator->first, sum/N );
+        final_map2.insert( tmp );
+    }
 
     // Build the return vector
     if ( d_mesh1.get() != NULL )
-        buildReturn( d_ResultVector, d_mesh1, d_dstIterator1, map1 );
+        buildReturn( d_ResultVector, d_mesh1, d_dstIterator1, final_map1 );
     if ( d_mesh2.get() != NULL )
-        buildReturn( d_ResultVector, d_mesh2, d_dstIterator2, map2 );
+        buildReturn( d_ResultVector, d_mesh2, d_dstIterator2, final_map2 );
 
     // Apply make consistent
     PROFILE_START("makeConsistent");
@@ -234,6 +258,43 @@ void  Map3to1to3::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr & ,
     PROFILE_STOP("applyFinish");
 }
 
+
+/********************************************************
+* Function to unpack a recv buffer                      *
+********************************************************/
+void Map3to1to3::unpackBuffer( const std::vector<comm_data>& buffer, std::map<double,std::pair<int,double> >& map )
+{
+    const double tol = 1e-8;
+    std::map<double,std::pair<int,double> >::iterator iterator, it1, it2, it3;
+    for (size_t j=0; j<buffer.size(); j++) {
+        iterator = map.end();
+        if ( map.size() > 0 ) {
+            it1 = map.find( buffer[j].z );
+            if ( it1==map.end() ) { it1--; }
+            it2 = it1;
+            it3 = it1;
+            if ( it1 != map.begin() )
+                it1--;
+            if ( it3 != map.end() )
+                it3++;
+            if ( it3 == map.end() )
+                it3 = it2;
+            if ( fabs(it1->first-buffer[j].z)<tol )
+                iterator = it1;
+            else if ( fabs(it2->first-buffer[j].z)<tol )
+                iterator = it2;
+            else if ( fabs(it3->first-buffer[j].z)<tol )
+                iterator = it3;
+        }
+        if ( iterator==map.end() ) {
+            std::pair<int,double> tmp( buffer[j].N, buffer[j].sum );
+            map.insert( std::pair<double,std::pair<int,double> >( buffer[j].z, tmp ) );
+        } else {
+            iterator->second.first += buffer[j].N;
+            iterator->second.second += buffer[j].sum;
+        }
+    }
+}
 
 
 /********************************************************
@@ -255,7 +316,7 @@ std::multimap<double,double>  Map3to1to3::buildMap ( const AMP::LinearAlgebra::V
 
 
 void Map3to1to3::buildReturn ( AMP::LinearAlgebra::Vector::shared_ptr, const AMP::Mesh::Mesh::shared_ptr, 
-    const AMP::Mesh::MeshIterator&, const std::multimap<double,double>& )
+    const AMP::Mesh::MeshIterator&, const std::map<double,double>& )
 {
     AMP_ERROR("buildReturn should never be called for the BaseClass");
 }
