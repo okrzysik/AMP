@@ -167,9 +167,12 @@ void  Map3to1to3::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , 
 
 
     // Send the data
+    size_t myRank = (size_t) d_MapComm.getRank();
     std::vector<MPI_Request>::iterator  curReq = beginRequests();
     if ( d_mesh1.get() != NULL ) {
         for (size_t i=0; i<d_own_mesh2.size(); i++ ) {
+            if ( i==myRank )
+                continue;   // Don't communicate local data
             if ( d_own_mesh2[i] ) {
                 *curReq = d_MapComm.Isend( getPtr(d_SendBuf1), d_SendBuf1.size(), i, d_commTag+0 );
                 curReq++;
@@ -178,6 +181,8 @@ void  Map3to1to3::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , 
     }
     if ( d_mesh2.get() != NULL ) {
         for (size_t i=0; i<d_own_mesh1.size(); i++ ) {
+            if ( i==myRank )
+                continue;   // Don't communicate local data
             if ( d_own_mesh1[i] ) {
                 *curReq = d_MapComm.Isend( getPtr(d_SendBuf2), d_SendBuf2.size(), i, d_commTag+1 );
                 curReq++;
@@ -198,11 +203,18 @@ void  Map3to1to3::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr & ,
     PROFILE_START("applyFinish");
 
     // Recieve the data and create the maps
+    size_t myRank = (size_t) d_MapComm.getRank();
     std::map<double,std::pair<int,double> > map1;
     std::map<double,std::pair<int,double> > map2;
     std::vector<comm_data> recvBuf;
     if ( d_mesh1.get() != NULL ) {
+        // First get any local data
+        if ( d_own_mesh2[myRank] )
+            unpackBuffer( d_SendBuf2, map1 );
+        // Recieve all remote data
         for (size_t i=0; i<d_own_mesh2.size(); i++ ) {
+            if ( i==myRank )
+                continue;   // We already copied the local data
             if ( d_own_mesh2[i] ) {
                 // Get the recieved data
                 int inSize = d_MapComm.probe(i,d_commTag+1)/sizeof(comm_data);
@@ -214,7 +226,13 @@ void  Map3to1to3::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr & ,
         }
     }
     if ( d_mesh2.get() != NULL ) {
+        // First get any local data
+        if ( d_own_mesh1[myRank] )
+            unpackBuffer( d_SendBuf1, map2 );
+        // Recieve all remote data
         for (size_t i=0; i<d_own_mesh1.size(); i++ ) {
+            if ( i==myRank )
+                continue;   // We already copied the local data
             if ( d_own_mesh1[i] ) {
                 // Get the recieved data
                 int inSize = d_MapComm.probe(i,d_commTag+0)/sizeof(comm_data);
