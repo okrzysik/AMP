@@ -110,7 +110,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   }
   AMP_ASSERT(*dofManager==*(uInternal->getDOFManager()));
   AMP_ASSERT(*dofManager==*(rInternal->getDOFManager()));
-  if ( !d_isFluxGaussPtVector )
+  if ( d_variableFlux.get()!= NULL && !d_isFluxGaussPtVector )
     AMP_ASSERT(*dofManager==*(d_variableFlux->getDOFManager()));
 
   std::vector<size_t> gpDofs;
