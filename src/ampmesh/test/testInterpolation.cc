@@ -81,7 +81,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     std::vector<size_t> globalID;
     DOFs->getDOFs(node->globalID(), globalID); 
     AMP_ASSERT(globalID.size() == 1);
-    dummyVector->setValueByGlobalID(globalID.front(), dummyFunction(node->coord()));
+    dummyVector->setLocalValueByGlobalID(globalID.front(), dummyFunction(node->coord()));
   }
   
   double minCoords[3];
@@ -138,7 +138,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::vector<double> interpolationError(numLocalPts, 0.0);
   for (unsigned int i = 0; i < numLocalPts; ++i) {
     if (interpolationWasDone[i]) {
-      interpolationError[i] = fabs(interpolatedData[i] - dummyFunction(std::vector<double>(&(pts[3*i]), &(pts[3*i+3]))));
+      interpolationError[i] = fabs(interpolatedData[i] - dummyFunction(std::vector<double>(&(pts[3*i]), &(pts[3*i]) + 3)));
     }
   } // end for i
   double localErrorSquaredNorm = std::inner_product(interpolationError.begin(), interpolationError.end(), interpolationError.begin(), 0.0);
