@@ -5,6 +5,54 @@
 #include <cassert>
 #include <cmath>
 
+std::vector<double> get_basis_functions_values(const std::vector<double> &x) {
+  assert(x.size() == 3);
+  std::vector<double> basis_functions_values(8);
+  basis_functions_values[0] = 0.125*(1.0-x[0])*(1.0-x[1])*(1.0-x[2]);
+  basis_functions_values[1] = 0.125*(1.0+x[0])*(1.0-x[1])*(1.0-x[2]);
+  basis_functions_values[2] = 0.125*(1.0+x[0])*(1.0+x[1])*(1.0-x[2]);
+  basis_functions_values[3] = 0.125*(1.0-x[0])*(1.0+x[1])*(1.0-x[2]);
+  basis_functions_values[4] = 0.125*(1.0-x[0])*(1.0-x[1])*(1.0+x[2]);
+  basis_functions_values[5] = 0.125*(1.0+x[0])*(1.0-x[1])*(1.0+x[2]);
+  basis_functions_values[6] = 0.125*(1.0+x[0])*(1.0+x[1])*(1.0+x[2]);
+  basis_functions_values[7] = 0.125*(1.0-x[0])*(1.0+x[1])*(1.0+x[2]);
+
+  return basis_functions_values;
+}
+
+std::vector<double> get_basis_functions_derivatives(const std::vector<double> &x) {
+  assert(x.size() == 3);
+  std::vector<double> basis_functions_derivatives(24);
+  basis_functions_derivatives[ 0] = 0.125*(-1.0)*(1.0-x[1])*(1.0-x[2]);
+  basis_functions_derivatives[ 1] = 0.125*(+1.0)*(1.0-x[1])*(1.0-x[2]);
+  basis_functions_derivatives[ 2] = 0.125*(+1.0)*(1.0+x[1])*(1.0-x[2]);
+  basis_functions_derivatives[ 3] = 0.125*(-1.0)*(1.0+x[1])*(1.0-x[2]);
+  basis_functions_derivatives[ 4] = 0.125*(-1.0)*(1.0-x[1])*(1.0+x[2]);
+  basis_functions_derivatives[ 5] = 0.125*(+1.0)*(1.0-x[1])*(1.0+x[2]);
+  basis_functions_derivatives[ 6] = 0.125*(+1.0)*(1.0+x[1])*(1.0+x[2]);
+  basis_functions_derivatives[ 7] = 0.125*(-1.0)*(1.0+x[1])*(1.0+x[2]);
+
+  basis_functions_derivatives[ 8] = 0.125*(1.0-x[0])*(-1.0)*(1.0-x[2]);
+  basis_functions_derivatives[ 9] = 0.125*(1.0+x[0])*(-1.0)*(1.0-x[2]);
+  basis_functions_derivatives[10] = 0.125*(1.0+x[0])*(+1.0)*(1.0-x[2]);
+  basis_functions_derivatives[11] = 0.125*(1.0-x[0])*(+1.0)*(1.0-x[2]);
+  basis_functions_derivatives[12] = 0.125*(1.0-x[0])*(-1.0)*(1.0+x[2]);
+  basis_functions_derivatives[13] = 0.125*(1.0+x[0])*(-1.0)*(1.0+x[2]);
+  basis_functions_derivatives[14] = 0.125*(1.0+x[0])*(+1.0)*(1.0+x[2]);
+  basis_functions_derivatives[15] = 0.125*(1.0-x[0])*(+1.0)*(1.0+x[2]);
+
+  basis_functions_derivatives[16] = 0.125*(1.0-x[0])*(1.0-x[1])*(-1.0);
+  basis_functions_derivatives[17] = 0.125*(1.0+x[0])*(1.0-x[1])*(-1.0);
+  basis_functions_derivatives[18] = 0.125*(1.0+x[0])*(1.0+x[1])*(-1.0);
+  basis_functions_derivatives[19] = 0.125*(1.0-x[0])*(1.0+x[1])*(-1.0);
+  basis_functions_derivatives[20] = 0.125*(1.0-x[0])*(1.0-x[1])*(+1.0);
+  basis_functions_derivatives[21] = 0.125*(1.0+x[0])*(1.0-x[1])*(+1.0);
+  basis_functions_derivatives[22] = 0.125*(1.0+x[0])*(1.0+x[1])*(+1.0);
+  basis_functions_derivatives[23] = 0.125*(1.0-x[0])*(1.0+x[1])*(+1.0);
+
+  return basis_functions_derivatives;
+}
+
 class hex8_element_t {
 public:
   hex8_element_t(const std::vector<double> &p) { set_support_points(p); }
@@ -211,15 +259,7 @@ private:
     std::vector<double> f(3, 0.0);
 
     // basis functions i is one at node i and zero at node j not i
-    double basis_functions_values[8];
-    basis_functions_values[0] = 0.125*(1.0-x[0])*(1.0-x[1])*(1.0-x[2]);
-    basis_functions_values[1] = 0.125*(1.0+x[0])*(1.0-x[1])*(1.0-x[2]);
-    basis_functions_values[2] = 0.125*(1.0+x[0])*(1.0+x[1])*(1.0-x[2]);
-    basis_functions_values[3] = 0.125*(1.0-x[0])*(1.0+x[1])*(1.0-x[2]);
-    basis_functions_values[4] = 0.125*(1.0-x[0])*(1.0-x[1])*(1.0+x[2]);
-    basis_functions_values[5] = 0.125*(1.0+x[0])*(1.0-x[1])*(1.0+x[2]);
-    basis_functions_values[6] = 0.125*(1.0+x[0])*(1.0+x[1])*(1.0+x[2]);
-    basis_functions_values[7] = 0.125*(1.0-x[0])*(1.0+x[1])*(1.0+x[2]);
+    std::vector<double> basis_functions_values = get_basis_functions_values(x);
 
     for (unsigned int i = 0; i < 3; ++i) {
       f[i] = point_candidate[i]; 
@@ -237,33 +277,7 @@ private:
     std::vector<double> J(9, 0.0);
 
     // derivatives of the basis function i with respect to j stored in i+8*j
-    double basis_functions_derivatives[24];
-    basis_functions_derivatives[ 0] = 0.125*(-1.0)*(1.0-x[1])*(1.0-x[2]);
-    basis_functions_derivatives[ 1] = 0.125*(+1.0)*(1.0-x[1])*(1.0-x[2]);
-    basis_functions_derivatives[ 2] = 0.125*(+1.0)*(1.0+x[1])*(1.0-x[2]);
-    basis_functions_derivatives[ 3] = 0.125*(-1.0)*(1.0+x[1])*(1.0-x[2]);
-    basis_functions_derivatives[ 4] = 0.125*(-1.0)*(1.0-x[1])*(1.0+x[2]);
-    basis_functions_derivatives[ 5] = 0.125*(+1.0)*(1.0-x[1])*(1.0+x[2]);
-    basis_functions_derivatives[ 6] = 0.125*(+1.0)*(1.0+x[1])*(1.0+x[2]);
-    basis_functions_derivatives[ 7] = 0.125*(-1.0)*(1.0+x[1])*(1.0+x[2]);
-
-    basis_functions_derivatives[ 8] = 0.125*(1.0-x[0])*(-1.0)*(1.0-x[2]);
-    basis_functions_derivatives[ 9] = 0.125*(1.0+x[0])*(-1.0)*(1.0-x[2]);
-    basis_functions_derivatives[10] = 0.125*(1.0+x[0])*(+1.0)*(1.0-x[2]);
-    basis_functions_derivatives[11] = 0.125*(1.0-x[0])*(+1.0)*(1.0-x[2]);
-    basis_functions_derivatives[12] = 0.125*(1.0-x[0])*(-1.0)*(1.0+x[2]);
-    basis_functions_derivatives[13] = 0.125*(1.0+x[0])*(-1.0)*(1.0+x[2]);
-    basis_functions_derivatives[14] = 0.125*(1.0+x[0])*(+1.0)*(1.0+x[2]);
-    basis_functions_derivatives[15] = 0.125*(1.0-x[0])*(+1.0)*(1.0+x[2]);
-
-    basis_functions_derivatives[16] = 0.125*(1.0-x[0])*(1.0-x[1])*(-1.0);
-    basis_functions_derivatives[17] = 0.125*(1.0+x[0])*(1.0-x[1])*(-1.0);
-    basis_functions_derivatives[18] = 0.125*(1.0+x[0])*(1.0+x[1])*(-1.0);
-    basis_functions_derivatives[19] = 0.125*(1.0-x[0])*(1.0+x[1])*(-1.0);
-    basis_functions_derivatives[20] = 0.125*(1.0-x[0])*(1.0-x[1])*(+1.0);
-    basis_functions_derivatives[21] = 0.125*(1.0+x[0])*(1.0-x[1])*(+1.0);
-    basis_functions_derivatives[22] = 0.125*(1.0+x[0])*(1.0+x[1])*(+1.0);
-    basis_functions_derivatives[23] = 0.125*(1.0-x[0])*(1.0+x[1])*(+1.0);
+    std::vector<double> basis_functions_derivatives = get_basis_functions_derivatives(x);
 
     for (unsigned int i = 0; i < 3; ++i) {
       for (unsigned int j = 0; j < 3; ++j) { 

@@ -115,8 +115,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     assert(out.second[1] == coordinates[2*i+1]);
   } // end for i
 
-
-  const unsigned int n_random_candidates = 10000;
   srand(0);
   // scaling 
   for (unsigned int i = 0; i < 8; ++i) { 
@@ -153,15 +151,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::vector<double> bounding_box = volume_element.get_bounding_box();
 
   unsigned int count = 0;
+  const unsigned int n_random_candidates = 10000;
   for (unsigned int i = 0; i < n_random_candidates; ++i) {
     std::vector<double> candidate(3);
-//    for (unsigned int j = 0; j < 3; ++j) { candidate[j] = (j==2 ? -10.0 : -5.0) + 10.0*rand()/RAND_MAX; }
+
     for (unsigned int j = 0; j < 3; ++j) { candidate[j] = bounding_box[j+0]+(bounding_box[j+3]-bounding_box[j+0])*rand()/RAND_MAX; }
-    std::vector<double> tmp = volume_element.map_global_to_local(candidate);
-//    for (unsigned int j = 0; j < 3; ++j) { assert(candidate[j] == 0.5*(tmp[j]+1.0)); }
-    std::cout<<i<<"  ";
-    for (unsigned int j = 0; j < 3; ++j) { std::cout<<i<<"  "<<candidate[j]<<"  "<<0.5*(tmp[j]+1.0)<<"\n"; }
-    std::cout<<"\n";
     volume_element.do_mapping_verification_test(candidate);
     if (volume_element.project_on_face(candidate).first != 99) { ++count; }
   } // end for i
@@ -176,7 +170,7 @@ int main(int argc, char *argv[])
   AMP::AMPManager::startup(argc, argv);
   AMP::UnitTest ut;
 
-  std::string exeName = "testHex8ElementContactSearch";
+  std::string exeName = "testHex8ElementMapping";
 
   try {
     myTest(&ut, exeName);
