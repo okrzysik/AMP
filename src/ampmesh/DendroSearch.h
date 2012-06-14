@@ -74,8 +74,6 @@ void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& no
     std::cout<<"BoxLevel = "<<BoxLevel<<std::endl;
   }
 
-  const unsigned int ITPMD = (1u << MaxDepth);
-  const double DTPMD = static_cast<double>(ITPMD);
   const double hBox = 1.0/(static_cast<double>(1u<<BoxLevel));
 
   std::vector< ot::NodeAndValues<int, 1> > nodeAndElemIdList;
@@ -653,6 +651,8 @@ class DendroSearch {
 
       AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField->getDOFManager();
 
+      unsigned int dofsPerNode = 1;
+
       for(int i = 0; i < npes; ++i) {
         sendCnts[i] = 0;
       }//end i
@@ -674,14 +674,12 @@ class DendroSearch {
           dummy[3*j+0] = point_coord[0];
           dummy[3*j+1] = point_coord[1];
           dummy[3*j+2] = point_coord[2];
-        } // end for j
+        } // end j
         hex8_element_t volume_element(dummy);
         std::vector<double> x = volume_element.map_global_to_local(tmpPt);
         bool coordinates_are_local = true;
         bool found = volume_element.contains_point(x, coordinates_are_local);
-//        bool found = (volume_element.project_on_face(tmpPt).first != 99);
         if(found) {
-//          std::vector<double> x = volume_element.map_global_to_local(tmpPt);
           double basis_functions_values[8];
           basis_functions_values[0] = 0.125*(1.0-x[0])*(1.0-x[1])*(1.0-x[2]);
           basis_functions_values[1] = 0.125*(1.0+x[0])*(1.0-x[1])*(1.0-x[2]);
@@ -691,18 +689,23 @@ class DendroSearch {
           basis_functions_values[5] = 0.125*(1.0+x[0])*(1.0-x[1])*(1.0+x[2]);
           basis_functions_values[6] = 0.125*(1.0+x[0])*(1.0+x[1])*(1.0+x[2]);
           basis_functions_values[7] = 0.125*(1.0-x[0])*(1.0+x[1])*(1.0+x[2]);
-          double value = 0.0;
+          std::vector<double> value(dofsPerNode, 0.0);
           for (unsigned int j = 0; j < 8; ++j) {
             std::vector<size_t> globalID;
             dofManager->getDOFs(support_points[j].globalID(), globalID);
-            AMP_ASSERT(globalID.size() == 1);
-            value += vectorField->getValueByGlobalID(globalID.front()) * basis_functions_values[j];
-          } // end for j
+            AMP_ASSERT(globalID.size() == dofsPerNode);
+            for(int d = 0; d < dofsPerNode; ++d) {
+              double vecVal = vectorField->getValueByGlobalID(globalID[d]);
+              value[d] += (vecVal * basis_functions_values[j]);
+            }//end d
+          } // end j
           unsigned int ptLocalId = static_cast<unsigned int>(recvPtsList[(6*i) + 4]);
           unsigned int ptProcId = static_cast<unsigned int>(recvPtsList[(6*i) + 5]);
-          sendCnts[ptProcId] += 2;
+          sendCnts[ptProcId] += (dofsPerNode + 1);
           tmpSendResults[ptProcId].push_back(static_cast<double>(ptLocalId));
-          tmpSendResults[ptProcId].push_back(value);
+          for(int d = 0; d < dofsPerNode; ++d) {
+            tmpSendResults[ptProcId].push_back(value[d]);
+          }//end d
         }
       }//end i
       recvPtsList.clear();
@@ -753,20 +756,22 @@ class DendroSearch {
       delete [] recvDisps;
 
       //Points that are not found will have a result = 0. 
-//      results.clear();
-      results.resize(numLocalPts, 0.0);
-//      foundPt.clear();
-      foundPt.resize(numLocalPts, false);
-      for (unsigned int i = 0; i < numLocalPts; ++i) {
+      results.resize(dofsPerNode*numLocalPts);
+      for (unsigned int i = 0; i < results.size(); ++i) {
         results[i] = 0.0;
+      } // end for i
+
+      foundPt.resize(numLocalPts);
+      for (unsigned int i = 0; i < foundPt.size(); ++i) {
         foundPt[i] = false;
       } // end for i
 
-      for(size_t i = 0; i < recvResults.size(); i+= 2) {
+      for(size_t i = 0; i < recvResults.size(); i += (dofsPerNode + 1)) {
         unsigned int locId = static_cast<unsigned int>(recvResults[i]);
-        double val = recvResults[i + 1];
-        results[locId] = val;
         foundPt[locId] = true;
+        for(int d = 0; d < dofsPerNode; ++d) {
+          results[(locId*dofsPerNode) + d] = recvResults[i + d + 1];
+        }//end d
       }//end i
 
       if(verbose) {

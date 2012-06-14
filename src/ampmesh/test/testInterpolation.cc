@@ -22,11 +22,12 @@
 #include "ampmesh/DendroSearch.h"
 
 
-double dummyFunction(const std::vector<double> &xyz) {
+double dummyFunction(const std::vector<double> &xyz, const int dof) {
   AMP_ASSERT(xyz.size() == 3);
   double x = xyz[0], y = xyz[1], z = xyz[2];
-//  return 7.0;
-  return (1.0 + 6.0 * x) * (2.0 - 5.0 * y) * (3.0 + 4.0 * z);
+  //  return 7.0;
+  //return (1.0 + 6.0 * x) * (2.0 - 5.0 * y) * (3.0 + 4.0 * z);
+  return (1.0 + 6.0 * x) + (2.0 - 5.0 * y) + (3.0 + 4.0 * z);
 }
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
@@ -71,7 +72,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   int DOFsPerNode = 1;
   int nodalGhostWidth = 1;
   bool split = true;
-  AMP::Discretization::DOFManager::shared_ptr DOFs = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
+  AMP::Discretization::DOFManager::shared_ptr DOFs = AMP::Discretization::simpleDOFManager::create(meshAdapter,
+      AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split);
   AMP::LinearAlgebra::Variable::shared_ptr dummyVariable(new AMP::LinearAlgebra::Variable("Dummy"));
   AMP::LinearAlgebra::Vector::shared_ptr dummyVector = createVector(DOFs, dummyVariable, split);
 
@@ -80,14 +82,15 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   for ( ; node != end_node; ++node) {
     std::vector<size_t> globalID;
     DOFs->getDOFs(node->globalID(), globalID); 
-    AMP_ASSERT(globalID.size() == 1);
-    dummyVector->setLocalValueByGlobalID(globalID.front(), dummyFunction(node->coord()));
+    for(int d = 0; d < globalID.size(); ++d) {
+      dummyVector->setLocalValueByGlobalID(globalID[d], dummyFunction(node->coord(), d));
+    }//end d
   }
-  
+
   double minCoords[3];
   double maxCoords[3];
   std::vector<double> box = meshAdapter->getBoundingBox();
-  for(int i=0; i<meshAdapter->getDim(); ++i) {
+  for(int i = 0; i < meshAdapter->getDim(); ++i) {
     minCoords[i] = box[2*i+0];
     maxCoords[i] = box[2*i+1];
   }
@@ -118,48 +121,45 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     std::cout<<"Finished generating "<<totalNumPts <<" random points for search!"<<std::endl;
   }
 
-
-
   DendroSearch dendroSearch(globalComm, meshAdapter);
   std::vector<double> interpolatedData; 
   std::vector<bool> interpolationWasDone;
   dendroSearch.interpolate(dummyVector, pts, interpolatedData, interpolationWasDone);
-  AMP_ASSERT(interpolatedData.size() == numLocalPts);
+  AMP_ASSERT(interpolatedData.size() == (DOFsPerNode*numLocalPts));
   AMP_ASSERT(interpolationWasDone.size() == numLocalPts);
 
-  int localNotFound = static_cast<int>(std::count(interpolationWasDone.begin(), interpolationWasDone.end(), false));
-  int globalNotFound = -1;
+  int localNotFound = 0;
+  if(numLocalPts > 0) {
+    localNotFound = static_cast<int>(std::count(interpolationWasDone.begin(), interpolationWasDone.end(), false));
+  }
+  int globalNotFound;
   MPI_Allreduce(&localNotFound, &globalNotFound, 1, MPI_INT, MPI_SUM, globalComm.getCommunicator());
   if(!rank) {
-    std::cout<<globalNotFound<<" points total weren't found"<<std::endl;
+    std::cout<<globalNotFound<<" points (total) were not found"<<std::endl;
   }
 
-
-  std::vector<double> interpolationError(numLocalPts, 0.0);
-  for (unsigned int i = 0; i < numLocalPts; ++i) {
-    if (interpolationWasDone[i]) {
-      interpolationError[i] = fabs(interpolatedData[i] - dummyFunction(std::vector<double>(&(pts[3*i]), &(pts[3*i]) + 3)));
+  std::vector<double> interpolationError((DOFsPerNode*numLocalPts), 0.0);
+  for(unsigned int i = 0; i < numLocalPts; ++i) {
+    if(interpolationWasDone[i]) {
+      for(int d = 0; d < DOFsPerNode; ++d) {
+        interpolationError[(i*DOFsPerNode) + d] = fabs(interpolatedData[(i*DOFsPerNode) + d] -
+            dummyFunction(std::vector<double>(&(pts[3*i]), &(pts[3*i]) + 3), d));
+      }//end d
     }
   } // end for i
-  double localErrorSquaredNorm = std::inner_product(interpolationError.begin(), interpolationError.end(), interpolationError.begin(), 0.0);
-  double localMaxError = *std::max_element(interpolationError.begin(), interpolationError.end());
+  double localMaxError = 0;
+  if(numLocalPts > 0) {
+    localMaxError = *(std::max_element(interpolationError.begin(), interpolationError.end()));
+  }
   if(!rank) {
     std::cout<<"Finished computing the local squared norm of the interpolation error."<<std::endl;
   }
   globalComm.barrier();
 
-
   double globalMaxError = globalComm.maxReduce<double>(localMaxError);
-  double globalErrorSquaredNorm = -1.0;
-  MPI_Allreduce(&localErrorSquaredNorm, &globalErrorSquaredNorm, 1, MPI_DOUBLE, MPI_SUM, globalComm.getCommunicator());
   if(!rank) {
-    std::cout<<"Global error norm is "<<sqrt(globalErrorSquaredNorm)<<std::endl;
-    std::cout<<"Global max error is "<<globalMaxError<<std::endl;
+    std::cout<<"Global max error is "<<std::setprecision(15)<<globalMaxError<<std::endl;
   }
-
-//  AMP_ASSERT(sqrt(globalErrorSquaredNorm) < 1.0e-15);
-
-
 
   ut->passes(exeName);
 }
