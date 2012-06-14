@@ -720,9 +720,16 @@ class DendroSearch {
 
       sendDisps[0] = 0;
       recvDisps[0] = 0;
+      unsigned int numGhostVals = 0;
+      if(rank != 0) {
+        numGhostVals += recvCnts[0];
+      }
       for(int i = 1; i < npes; ++i) {
         sendDisps[i] = sendDisps[i - 1] + sendCnts[i - 1];
         recvDisps[i] = recvDisps[i - 1] + recvCnts[i - 1];
+        if(i != rank) {
+          numGhostVals += recvCnts[i];
+        }
       }//end i
 
       std::vector<double> sendResults(sendDisps[npes - 1] + sendCnts[npes - 1]);
@@ -734,6 +741,11 @@ class DendroSearch {
       tmpSendResults.clear();
 
       std::vector<double> recvResults(recvDisps[npes - 1] + recvCnts[npes - 1]);
+
+      if(verbose) {
+        std::cout<<"Processor "<<rank<<" received "<<(recvResults.size())
+          <<" values (total) and "<<numGhostVals<<" values (ghosts)."<<std::endl; 
+      }
 
       double* sendResultsPtr;
       if(!(sendResults.empty())) {
