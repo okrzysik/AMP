@@ -150,7 +150,7 @@ private:
     AMP_MPI d_comm;
 
     // The dimension
-    int dim;
+    int d_dim;
 
     // The dimension
     int decomposition;
