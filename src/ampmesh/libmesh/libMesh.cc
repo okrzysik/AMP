@@ -510,7 +510,7 @@ size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
             ::ExodusII_IO_Helper exio_helper;
             exio_helper.open(fname.c_str());        // Open the exodus file, if possible
             exio_helper.read_header();              // Read the header
-            exio_helper.read_header();              // Close the file
+            exio_helper.close();                    // Close the file
             NumberOfElements = exio_helper.get_num_elem();
             AMP_ASSERT(NumberOfElements>0);
         } else {

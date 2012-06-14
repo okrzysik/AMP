@@ -242,6 +242,16 @@ public:
     virtual void displaceMesh ( boost::shared_ptr<const AMP::LinearAlgebra::Vector> x );
 #endif
 
+    
+    /**
+     * \brief    Simulate the mesh build process
+     * \details  This function will simulate the loading and load balancing of the mesh hierarchy
+     * \param params        Parameters to use for the mesh construction
+     * \param comm_ranks    Simulated ranks that are used to create the mesh
+     */
+    static Mesh::simulated_mesh_struct  simulateBuildMesh( const MeshParameters::shared_ptr &params, std::vector<int> &comm_ranks );
+
+
     // Needed to prevent problems with virtual functions
     using Mesh::Subset;
 
@@ -256,11 +266,14 @@ private:
     //! A list of all meshes in the multimesh
     std::vector<AMP::Mesh::Mesh::shared_ptr> d_meshes;
 
+    //! A convienence typedef to hold a list of ranks
+    typedef std::vector<int>  rank_list;    
+
     /**
-     * \brief    A function to compute the comms given a weight
-     * \details  This function computes the sub communicators given the weights 
-     *   for each submesh.  Note that this function requires global communication
-     *   on the current comm.
+     * \brief    A function to compute the comm groups given a weight
+     * \details  This function computes the sub communicator groups given 
+     *   the weights for each submesh.  
+     * \param N_procs   The size of the communicator for the splitting
      * \param weights   Standard vector with the relative weights for each group
      *                  Note: the weights do not need to be normalized, 
      *                  but need to be the same on all processors.
@@ -275,20 +288,26 @@ private:
      *                     communicators, but may combine them to achieve a better load
      *                     balance.  This is not implimented yet.
      */
-    std::vector<AMP_MPI> loadBalancer( std::vector<double> &weights, int method=1 );
+    static std::vector<rank_list> loadBalancer( int N_procs, std::vector<double> &weights, int method=1 );
 
+    /**
+     * \brief    A function to compute the AMP_MPI comms for each mesh
+     * \details  This function computes the AMP_MPI comms for each mesh given the comm groups
+     * \param groups   List of ranks for each communication group
+     */
+    std::vector<AMP_MPI> createComms( const std::vector<rank_list> &groups );
 
     // Structure used to create communication groups
     struct comm_groups{
         int N_procs;                // Number of processor in the group
-        std::vector<int> ids;       // ids in the groups
+        std::vector<int> ids;       // mesh ids in the groups
     };
     
     // Function to distribute N groups with weights onto M processors (M>N) with the greatest number of groups possible (smallest comms)
-    std::vector<comm_groups>  independentGroups1( int N_procs, std::vector<std::pair<double,int> >  &ids);
+    static std::vector<comm_groups>  independentGroups1( int N_procs, std::vector<std::pair<double,int> >  &ids);
 
     // Function to distribute N groups with weights onto M processors (N>M) with the greatest number of groups possible (comm size = 1)
-    std::vector<comm_groups>  independentGroups2( int N_procs, std::vector<std::pair<double,int> >  &ids );
+    static std::vector<comm_groups>  independentGroups2( int N_procs, std::vector<std::pair<double,int> >  &ids );
 
 };
 

@@ -17,6 +17,7 @@ COPY_TEST_DATA_FILE ( input_Crystal )
 
 # Add tests
 ADD_AMP_TEST_1_2_4 ( test_Mesh )
+ADD_AMP_PROVISIONAL_TEST( test_LoadBalance )
 ADD_AMP_TEST( testHex8ElementContactSearch )
 IF ( USE_LIBMESH )
     ADD_AMP_TEST_1_2_4 ( test_SiloIO input_SiloIO-1 )

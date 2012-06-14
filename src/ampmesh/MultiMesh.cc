@@ -77,7 +77,7 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ):
     std::vector<double> weights(meshParameters.size(),0);
     for (size_t i=0; i<meshSizes.size(); i++)
         weights[i] = ((double)meshSizes[i])/((double)totalMeshSize);
-    std::vector<AMP_MPI> comms = loadBalancer( weights, 1 );
+    std::vector<AMP_MPI> comms = createComms( loadBalancer( d_comm.getSize(), weights, 1 ) );
     // Check that every mesh exist on some comm
     std::vector<int> onComm(meshParameters.size(),0);
     for (size_t i=0; i<meshParameters.size(); i++) {
@@ -184,6 +184,49 @@ MultiMesh::MultiMesh ( const AMP_MPI &comm, const std::vector<Mesh::shared_ptr> 
         d_box[2*i+0] = d_comm.minReduce( d_box_local[2*i+0] );
         d_box[2*i+1] = d_comm.maxReduce( d_box_local[2*i+1] );
     } 
+}
+
+
+/********************************************************
+* Function to simulate the mesh building process        *
+********************************************************/
+Mesh::simulated_mesh_struct  MultiMesh::simulateBuildMesh( const MeshParameters::shared_ptr &params, std::vector<int> &comm_ranks ) 
+{
+    // Create a database for each mesh within the multimesh
+    boost::shared_ptr<AMP::Database> database = params->getDatabase();
+    std::vector<boost::shared_ptr<AMP::Database> > meshDatabases = MultiMesh::createDatabases(database);
+    // Create the input parameters and get the approximate number of elements for each mesh
+    std::vector<size_t> meshSizes(meshDatabases.size(),0);
+    std::vector< boost::shared_ptr<AMP::Mesh::MeshParameters> > meshParameters(meshDatabases.size());
+    for (size_t i=0; i<meshDatabases.size(); i++) {
+        boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(meshDatabases[i]));
+        params->setComm(AMP::AMP_MPI(AMP_COMM_SELF));
+        meshParameters[i] = params;
+        meshSizes[i] = AMP::Mesh::Mesh::estimateMeshSize(params);
+    }
+    size_t totalMeshSize = 0;
+    for (size_t i=0; i<meshSizes.size(); i++)
+        totalMeshSize += meshSizes[i];
+    // Determine the load balancing we want to use and create the virtual communicators for each mesh
+    std::vector<double> weights(meshParameters.size(),0);
+    for (size_t i=0; i<meshSizes.size(); i++)
+        weights[i] = ((double)meshSizes[i])/((double)totalMeshSize);
+    std::vector<rank_list> groups = loadBalancer( comm_ranks.size(), weights );
+    for (size_t i=0; i<groups.size(); i++) {
+        for (size_t j=0; j<groups[i].size(); j++)
+            groups[i][j] = comm_ranks[groups[i][j]];
+    }
+    // Create the simulated mesh structure
+    Mesh::simulated_mesh_struct mesh;
+    mesh.name = database->getString("MeshName");
+    mesh.type = database->getString("MeshType");
+    mesh.db = database;
+    mesh.N_elements = totalMeshSize;
+    mesh.ranks = comm_ranks;
+    mesh.submeshes = std::vector<Mesh::simulated_mesh_struct>(groups.size());
+    for (size_t i=0; i<groups.size(); i++)
+        mesh.submeshes[i] = Mesh::simulateBuildMesh( meshParameters[i], groups[i] );
+    return mesh;
 }
 
 
@@ -838,43 +881,61 @@ static void replaceText( boost::shared_ptr<AMP::Database>& database, std::string
 /********************************************************
 * Function to create the sub-communicators              *
 ********************************************************/
-std::vector<AMP_MPI> MultiMesh::loadBalancer( std::vector<double> &weights, int method)
+std::vector<AMP_MPI> MultiMesh::createComms( const std::vector<rank_list> &groups )
+{
+    std::vector<AMP_MPI> comms;
+    comms.reserve(groups.size());
+    int myRank = d_comm.getRank();
+    for (size_t i=0; i<groups.size(); i++) {
+        int color = -1;
+        for (size_t j=0; j<groups[i].size(); j++) {
+            if ( groups[i][j]==myRank )
+                color = 0;
+        }
+        comms[i] = d_comm.split(color,d_comm.getRank());
+        if ( color!=-1 ) 
+            AMP_ASSERT(comms[i].getSize()==(int)groups[i].size());
+    }
+    return comms;
+}
+std::vector<MultiMesh::rank_list> MultiMesh::loadBalancer( int N_procs, std::vector<double> &weights, int method )
 {
     // Deal with the special cases directly
-    if ( weights.size()<=1 || d_comm.getSize()==1 )
-        return std::vector<AMP_MPI>(weights.size(),d_comm);
-    // Choose the appropriate load balancer
-    if ( method == 0 ) {
+    if ( weights.size()<=1 || N_procs==1 || method==0 ) {
         // Everybody is on the same communicator
-        return std::vector<AMP_MPI>(weights.size(),d_comm);
+        std::vector<int> allRanks(N_procs);
+        for (int i=0; i<N_procs; i++)
+            allRanks[i] = i;
+        return std::vector<rank_list>(weights.size(),allRanks);
     } else if ( method == 1 ) {
         // We want to split the meshes onto independent processors
         std::vector<std::pair<double,int> >  ids(weights.size());
         for (size_t i=0; i<weights.size(); i++)
             ids[i] = std::pair<double,int>( weights[i], (int) i );
         std::vector<comm_groups> groups;
-        if ( d_comm.getSize() >= (int)weights.size() )
-            groups = independentGroups1( d_comm.getSize(), ids );
+        if ( N_procs >= (int)ids.size() )
+            groups = independentGroups1( N_procs, ids );
         else
-            groups = independentGroups2( d_comm.getSize(), ids );
+            groups = independentGroups2( N_procs, ids );
         // Split the comm into the appropriate groups
+        std::vector<rank_list> commGroups(weights.size());
         std::vector<int> cum_N_proc(groups.size());
         cum_N_proc[0] = groups[0].N_procs;
         for (size_t i=1; i<groups.size(); i++)
             cum_N_proc[i] = cum_N_proc[i-1] + groups[i].N_procs;
-        int myid = (int) AMP::Utilities::findfirst(cum_N_proc,(int)(d_comm.getRank()+1));
-        AMP_MPI myComm = d_comm.split(myid,d_comm.getRank());
-        std::vector<AMP_MPI> newComms(weights.size(),AMP_MPI(AMP_COMM_NULL));
-        for (size_t i=0; i<groups[myid].ids.size(); i++)
-            newComms[groups[myid].ids[i]] = myComm;
-        return newComms;
+        for (int myRank=0; myRank<N_procs; myRank++) {
+            int myid = (int) AMP::Utilities::findfirst(cum_N_proc,myRank+1);
+            for (size_t i=0; i<groups[myid].ids.size(); i++)
+                commGroups[groups[myid].ids[i]].push_back( myRank );
+        }
+        return commGroups;
     } else if ( method == 2 ) {
         // We want to try to achieve a balanced approach to the load balance
         AMP_ERROR("This load balancer is not implimented yet");
     } else {
         AMP_ERROR("Unknown load balancer");
     }
-    return std::vector<AMP_MPI>(0);
+    return std::vector<rank_list>(0);
 }
 
 
@@ -918,6 +979,15 @@ std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups2(int N_procs, 
         total_weight += ids[i].first;
     double weight_avg = total_weight / ((double) N_procs);
     std::vector<comm_groups> groups;
+    // Handle the special case if the # of processors == the # of ids
+    if ( N_procs == (int)ids_in.size() ) {
+        groups.resize(N_procs);
+        for (int i=0; i<N_procs; i++) {
+            groups[i].N_procs = 1;
+            groups[i].ids = std::vector<int>(1,ids_in[i].second);
+        }
+        return groups;
+    }
     // Remove any ids that require a processor by themselves
     std::vector<std::pair<double,int> >::iterator  iterator = ids.begin();
     while ( iterator != ids.end() ) {
