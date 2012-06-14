@@ -676,9 +676,12 @@ class DendroSearch {
           dummy[3*j+2] = point_coord[2];
         } // end for j
         hex8_element_t volume_element(dummy);
-        bool found = (volume_element.project_on_face(tmpPt).first != 99);
+        std::vector<double> x = volume_element.map_global_to_local(tmpPt);
+        bool coordinates_are_local = true;
+        bool found = volume_element.contains_point(x, coordinates_are_local);
+//        bool found = (volume_element.project_on_face(tmpPt).first != 99);
         if(found) {
-          std::vector<double> x = volume_element.map_global_to_local(tmpPt);
+//          std::vector<double> x = volume_element.map_global_to_local(tmpPt);
           double basis_functions_values[8];
           basis_functions_values[0] = 0.125*(1.0-x[0])*(1.0-x[1])*(1.0-x[2]);
           basis_functions_values[1] = 0.125*(1.0+x[0])*(1.0-x[1])*(1.0-x[2]);
@@ -695,8 +698,6 @@ class DendroSearch {
             AMP_ASSERT(globalID.size() == 1);
             value += vectorField->getValueByGlobalID(globalID.front()) * basis_functions_values[j];
           } // end for j
-          //Get DofIds for this element.
-          //Interpolate and compute the value
           unsigned int ptLocalId = static_cast<unsigned int>(recvPtsList[(6*i) + 4]);
           unsigned int ptProcId = static_cast<unsigned int>(recvPtsList[(6*i) + 5]);
           sendCnts[ptProcId] += 2;

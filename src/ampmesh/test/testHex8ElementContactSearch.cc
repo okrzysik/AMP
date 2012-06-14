@@ -157,6 +157,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     std::vector<double> candidate(3);
 //    for (unsigned int j = 0; j < 3; ++j) { candidate[j] = (j==2 ? -10.0 : -5.0) + 10.0*rand()/RAND_MAX; }
     for (unsigned int j = 0; j < 3; ++j) { candidate[j] = bounding_box[j+0]+(bounding_box[j+3]-bounding_box[j+0])*rand()/RAND_MAX; }
+    std::vector<double> tmp = volume_element.map_global_to_local(candidate);
+//    for (unsigned int j = 0; j < 3; ++j) { assert(candidate[j] == 0.5*(tmp[j]+1.0)); }
+    std::cout<<i<<"  ";
+    for (unsigned int j = 0; j < 3; ++j) { std::cout<<i<<"  "<<candidate[j]<<"  "<<0.5*(tmp[j]+1.0)<<"\n"; }
+    std::cout<<"\n";
     volume_element.do_mapping_verification_test(candidate);
     if (volume_element.project_on_face(candidate).first != 99) { ++count; }
   } // end for i

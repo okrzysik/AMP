@@ -41,6 +41,23 @@ public:
     return local_coordinates;
   }
 
+  bool contains_point(const std::vector<double> &coordinates, bool coordinates_are_local = false) {
+    assert(coordinates.size() == 3); 
+    std::vector<double> local_coordinates;
+    if (!coordinates_are_local) {
+      point_candidate = coordinates;
+      local_coordinates = solve_newton();
+    } else {
+      local_coordinates = coordinates;
+    } // end if
+    for (unsigned int i = 0; i < 3; ++i) {
+      if (fabs(local_coordinates[i]) > 1.0) {
+        return false;
+      } // end if
+    } // end for i
+    return true;
+  }
+
   std::pair<unsigned int, std::vector<double> > project_on_face(double a, double b, double c) {
     double p[3] = { a, b, c };
     return project_on_face(std::vector<double>(p, p+3));
