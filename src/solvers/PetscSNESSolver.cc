@@ -1,6 +1,7 @@
 #include "PetscSNESSolver.h"
 
 #include "utils/Utilities.h"
+#include "utils/ProfilerApp.h"
 
 #include "vectors/Vector.h"
 #include "vectors/petsc/ManagedPetscVector.h"
@@ -61,6 +62,7 @@ PetscSNESSolver::PetscSNESSolver(boost::shared_ptr<PetscSNESSolverParameters> pa
 void
 PetscSNESSolver::initialize(boost::shared_ptr<SolverStrategyParameters> params)
 {
+  PROFILE_START("initialize");
   int ierr = 0;
 
   boost::shared_ptr<PetscSNESSolverParameters> parameters = boost::dynamic_pointer_cast<PetscSNESSolverParameters >(params);
@@ -171,12 +173,14 @@ PetscSNESSolver::initialize(boost::shared_ptr<SolverStrategyParameters> params)
 
   ierr = SNESSetFromOptions(d_SNESSolver);
   AMP_INSIST(ierr==0, "SNESSetFromOptions returned non-zero error code");
-
+  PROFILE_STOP("initialize");
 }
+
 
 PetscErrorCode
 PetscSNESSolver::apply(SNES ,Vec x,Vec r,void *ctx)
 {
+  PROFILE_START("apply");
   int ierr = 0;
 
   /*
@@ -215,7 +219,7 @@ PetscSNESSolver::apply(SNES ,Vec x,Vec r,void *ctx)
   double a = sp_x->L2Norm();
   a = sp_r->L2Norm();
 */
-
+  PROFILE_STOP("apply");
   return  (ierr);
 }
 
@@ -228,6 +232,7 @@ PetscSNESSolver::setJacobian(SNES,
 			     void* ctx)
 
 {
+  PROFILE_START("setJacobian");
   int ierr = 0;
   PetscSNESSolver *pSNESSolver = (PetscSNESSolver *) ctx;
   bool bUsesJacobian = pSNESSolver->getUsesJacobian();
@@ -246,6 +251,7 @@ PetscSNESSolver::setJacobian(SNES,
   boost::shared_ptr<PetscKrylovSolver> pKrylovSolver = pSNESSolver->getKrylovSolver();
   pKrylovSolver->resetOperator(op_parameters);
 
+  PROFILE_STOP("setJacobian");
   return ierr;
 }
 
@@ -445,6 +451,7 @@ void
 PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
 		          boost::shared_ptr<AMP::LinearAlgebra::Vector>  u)
 {
+  PROFILE_START("solve");
   int ierr=0;
 
   if(d_iDebugPrintInfoLevel>2)
@@ -545,6 +552,7 @@ PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
   }
 
   AMP_INSIST(ierr==0, "non-zero PETSc error code");
+  PROFILE_STOP("solve");
 }
 
 

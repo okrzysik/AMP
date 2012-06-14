@@ -62,7 +62,7 @@ PetscErrorCode _AMP_max(Vec a,PetscInt *p,PetscReal *ans)
 {
   if ( ( p != NULL ) && ( p != PETSC_NULL ) )
   {
-    AMP_ERROR( "Cannot find poistion for max" );
+    AMP_ERROR( "Cannot find position for max" );
   }
   PETSC_RECAST(x,a);
   *ans = x->max ();
@@ -73,7 +73,7 @@ PetscErrorCode _AMP_min(Vec a,PetscInt *p,PetscReal *ans)
 {
   if ( ( p != NULL ) && ( p != PETSC_NULL ) )
   {
-    AMP_ERROR( "Cannot find poistion for max" );
+    AMP_ERROR( "Cannot find position for max" );
   }
   PETSC_RECAST(x,a);
   *ans = x->min ();
@@ -271,7 +271,11 @@ PetscErrorCode _AMP_swap(Vec a,Vec b)
 PetscErrorCode _AMP_getsize(Vec a,PetscInt *ans)
 {
   PETSC_RECAST(x,a);
-  *ans = x->getGlobalSize();
+  size_t size = x->getGlobalSize();
+  if ( sizeof(PetscInt)<8 ) {
+    AMP_ASSERT(size<0x80000000);
+  } 
+  *ans = (PetscInt) size;
   return 0;
 }
 
@@ -478,7 +482,7 @@ PetscErrorCode _AMP_getarray(Vec in,PetscScalar** out)
 PetscErrorCode _AMP_getlocalsize(Vec in ,PetscInt* out)
 {
   AMP::LinearAlgebra::ManagedPetscVector *p = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( in->data );
-  *out = p->getLocalSize();
+  *out = (PetscInt) p->getLocalSize();
   return 0;
 }
 
