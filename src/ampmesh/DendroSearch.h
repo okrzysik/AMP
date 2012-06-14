@@ -430,8 +430,8 @@ class DendroSearch {
       setupDendro();
     }
 
-    void interpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const std::vector<double> & pts, 
-        std::vector<double> & results, std::vector<bool> & foundPt) {
+    void interpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
+        const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt) {
       int numLocalPts = (pts.size())/3;
 
       double searchBeginTime, searchStep1Time, searchStep2Time, searchStep3Time, 
@@ -650,8 +650,6 @@ class DendroSearch {
       vectorField->makeConsistent(  AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
       AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField->getDOFManager();
-
-      unsigned int dofsPerNode = 1;
 
       for(int i = 0; i < npes; ++i) {
         sendCnts[i] = 0;
