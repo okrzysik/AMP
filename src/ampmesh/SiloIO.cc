@@ -459,21 +459,10 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID,siloMultiMeshData> &d
     delete [] send_buf;
     delete [] recv_buf;
     // Add the meshes from other processors (keeping the existing meshes)
-    while ( meshdata.size() > 0 ) {
-        siloMultiMeshData current = meshdata[0];
-        std::vector<siloMultiMeshData>::iterator it = meshdata.begin();
-        it = meshdata.erase(it);
-        while ( it != meshdata.end() ) {
-            siloMultiMeshData tmp = *it;
-            if ( tmp.id==current.id ) {
-                for (size_t i=0; i<tmp.meshes.size(); i++)
-                    current.meshes.push_back(tmp.meshes[i]);
-                it = meshdata.erase(it);
-            } else {
-                it++;
-            }
-        }
-        data.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(current.id,current) );
+    for (size_t i=0; i<meshdata.size(); i++) {
+        iterator = data.find( meshdata[i].id );
+        if ( iterator==data.end() )
+            data.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(meshdata[i].id,meshdata[i]) );
     }
     PROFILE_STOP("syncMultiMeshData");
 }
