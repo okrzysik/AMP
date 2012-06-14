@@ -883,9 +883,8 @@ static void replaceText( boost::shared_ptr<AMP::Database>& database, std::string
 ********************************************************/
 std::vector<AMP_MPI> MultiMesh::createComms( const std::vector<rank_list> &groups )
 {
-    std::vector<AMP_MPI> comms;
-    comms.reserve(groups.size());
     int myRank = d_comm.getRank();
+    std::vector<AMP_MPI> comms(groups.size());
     for (size_t i=0; i<groups.size(); i++) {
         int color = -1;
         for (size_t j=0; j<groups[i].size(); j++) {
