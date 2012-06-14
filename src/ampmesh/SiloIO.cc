@@ -175,6 +175,7 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, std::string path )
         data.id = mesh->meshID();
         data.mesh = mesh;
         data.name = mesh->getName();
+        data.ownerRank = mesh->getComm().bcast(d_comm.getRank(),0);
         d_multiMeshes.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(mesh->meshID(),data) );
     }
 }
@@ -420,13 +421,16 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
 void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID,siloMultiMeshData> &data ) const
 {
     PROFILE_START("syncMultiMeshData");
-    // Convert the data to vectors
+    // Convert the data to vectors (only the owning rank will add the mesh)
     std::vector<AMP::Mesh::MeshID> ids;
     std::vector<siloMultiMeshData> meshdata;
     std::map<AMP::Mesh::MeshID,siloMultiMeshData>::iterator iterator;
+    int myRank = d_comm.getRank();
     for (iterator=data.begin(); iterator!=data.end(); iterator++) {
-        ids.push_back( iterator->first );
-        meshdata.push_back( iterator->second );
+        if ( iterator->second.ownerRank==myRank ) {
+            ids.push_back( iterator->first );
+            meshdata.push_back( iterator->second );
+        }
     }
     // Create buffers to store the data
     size_t send_size = 0;
@@ -454,8 +458,7 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID,siloMultiMeshData> &d
     }
     delete [] send_buf;
     delete [] recv_buf;
-    // Combine the results
-    data = std::map<AMP::Mesh::MeshID,siloMultiMeshData>();
+    // Add the meshes from other processors (keeping the existing meshes)
     while ( meshdata.size() > 0 ) {
         siloMultiMeshData current = meshdata[0];
         std::vector<siloMultiMeshData>::iterator it = meshdata.begin();
@@ -551,6 +554,7 @@ void SiloIO::writeSummary( std::string filename )
             AMP_ASSERT(iterator2->first==data.id);
             wholemesh.meshes.push_back(data);
         }
+        wholemesh.owner_rank = 0;
         multimeshes.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(wholemesh.id,wholemesh) );
     }*/
     // Gather the results
@@ -763,6 +767,7 @@ SiloIO::siloBaseMeshData SiloIO::siloBaseMeshData::unpack( char* ptr )
 size_t SiloIO::siloMultiMeshData::size()
 {
     size_t N_bytes = sizeof(AMP::Mesh::MeshID);     // Store the mesh id
+    N_bytes += sizeof(int);                         // Store the owner rank
     N_bytes += sizeof(int)+name.size();             // Store the mesh name
     N_bytes += sizeof(int);                         // Store the number of sub meshes
     for (size_t i=0; i<meshes.size(); i++)
@@ -780,6 +785,9 @@ void SiloIO::siloMultiMeshData::pack( char* ptr )
     // Store the mesh id
     *((AMP::Mesh::MeshID*) &ptr[pos]) = id;
     pos += sizeof(AMP::Mesh::MeshID);
+    // Store the owner rank
+    *((int*) &ptr[pos]) = ownerRank;
+    pos += sizeof(int);
     // Store name
     *((int*) &ptr[pos]) = (int) name.size();
     pos += sizeof(int);
@@ -810,6 +818,9 @@ SiloIO::siloMultiMeshData SiloIO::siloMultiMeshData::unpack( char* ptr )
     // Store the mesh id
     data.id = *((AMP::Mesh::MeshID*) &ptr[pos]);
     pos += sizeof(AMP::Mesh::MeshID);
+    // Store the owner rank
+    data.ownerRank = *((int*) &ptr[pos]);
+    pos += sizeof(int);
     // Store name
     int size = *((int*) &ptr[pos]);
     pos += sizeof(int);
