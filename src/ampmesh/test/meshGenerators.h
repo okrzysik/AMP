@@ -174,7 +174,6 @@ private:
     }
 
     void createCladMeshDatabase( boost::shared_ptr<Database> db ) {
-        int N_meshes = 3;
         std::vector<int> size(3);
         std::vector<double> range(4);
         size[0] = 3;
