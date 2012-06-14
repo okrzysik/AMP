@@ -86,6 +86,7 @@ namespace AMP {
       } else if(d_coordinateSystem == "cylindrical") {
 
         if(d_type == "frapcon") {
+  //      AMP_ASSERT(!(d_type == "frapcon"))
           d_numZmoments = 0;
           d_frapconVolumeIntegral = "analytical";
           d_frapconConstant = 3.45;
@@ -974,7 +975,7 @@ namespace AMP {
      */
     double PowerShape::getFrapconFr(double radius, double rmax)
     {
-      double fR = (1.0 + d_frapconConstant * exp( -3.0*pow(100.0*(rmax-radius),0.45) ) );
+      double fR = (1.0 + d_frapconConstant * exp( -3.0*pow(1000.0*(rmax-radius),0.45) ) );
       return fR;
     }
 
