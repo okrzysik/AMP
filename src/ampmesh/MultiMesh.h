@@ -248,8 +248,11 @@ public:
      * \details  This function will simulate the loading and load balancing of the mesh hierarchy
      * \param params        Parameters to use for the mesh construction
      * \param comm_ranks    Simulated ranks that are used to create the mesh
+     * \param N_elements    Optional argument specifying the number of elements on the mesh
+     *                      Note: for multimeshes this does nothing (the number of elements is the sum of all meshes)
      */
-    static Mesh::simulated_mesh_struct  simulateBuildMesh( const MeshParameters::shared_ptr &params, std::vector<int> &comm_ranks );
+    static Mesh::simulated_mesh_struct  simulateBuildMesh( const MeshParameters::shared_ptr &params, 
+        std::vector<int> &comm_ranks, size_t N_elements=0 );
 
 
     // Needed to prevent problems with virtual functions
@@ -274,9 +277,8 @@ private:
      * \details  This function computes the sub communicator groups given 
      *   the weights for each submesh.  
      * \param N_procs   The size of the communicator for the splitting
-     * \param weights   Standard vector with the relative weights for each group
-     *                  Note: the weights do not need to be normalized, 
-     *                  but need to be the same on all processors.
+     * \param params    Array of mesh parameters used to contruct the submeshes
+     * \param size      Array of the number of elements in each submesh
      * \param method    Method to use for the load balance calculation
      *                  0: All meshes will be on the same communication
      *                  1: Minimize comm size and split the meshes.
@@ -288,7 +290,8 @@ private:
      *                     communicators, but may combine them to achieve a better load
      *                     balance.  This is not implimented yet.
      */
-    static std::vector<rank_list> loadBalancer( int N_procs, std::vector<double> &weights, int method=1 );
+    static std::vector<rank_list> loadBalancer( int N_procs, 
+        const std::vector<MeshParameters::shared_ptr> &params, const std::vector<size_t> &size, int method=1 );
 
     /**
      * \brief    A function to compute the AMP_MPI comms for each mesh
@@ -303,11 +306,15 @@ private:
         std::vector<int> ids;       // mesh ids in the groups
     };
     
-    // Function to distribute N groups with weights onto M processors (M>N) with the greatest number of groups possible (smallest comms)
-    static std::vector<comm_groups>  independentGroups1( int N_procs, std::vector<std::pair<double,int> >  &ids);
+    // Function to distribute N groups with weights onto P processors (P>N) with the greatest number of groups possible (smallest comms)
+    static std::vector<comm_groups>  independentGroups1( int N_procs, const std::vector<MeshParameters::shared_ptr> &params, const std::vector<size_t> &size );
 
-    // Function to distribute N groups with weights onto M processors (N>M) with the greatest number of groups possible (comm size = 1)
+    // Function to distribute N groups with weights onto P processors (N>P) with the greatest number of groups possible (comm size = 1)
     static std::vector<comm_groups>  independentGroups2( int N_procs, std::vector<std::pair<double,int> >  &ids );
+
+    // Function to add a processor to the load balance simulation
+    static void addProcSimulation( Mesh::simulated_mesh_struct &load, int rank );
+
 
 };
 

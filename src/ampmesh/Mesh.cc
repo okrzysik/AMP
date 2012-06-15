@@ -22,6 +22,9 @@
     #include "discretization/simpleDOF_Manager.h"
 #endif
 
+#include <math.h>
+
+
 namespace AMP {
 namespace Mesh {
 
@@ -119,6 +122,16 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     boost::shared_ptr<AMP::Database> database = params->d_db;
     AMP_ASSERT(database!=NULL);
     size_t meshSize = 0;
+    if ( database->keyExists("NumberOfElements") ) {
+        // User specified the number of elements, this should override everything
+        meshSize = (size_t) database->getInteger("NumberOfElements");
+        // Adjust the number of elements by a weight if desired
+        if ( database->keyExists("Weight") ) {
+            double weight = database->getDouble("Weight");
+            meshSize = (size_t) ceil(weight*((double)meshSize));
+        }
+        return meshSize;
+    }
     // This is being called through the base class, call the appropriate function
     AMP_INSIST(database->keyExists("MeshType"),"MeshType must exist in input database");
     std::string MeshType = database->getString("MeshType");
@@ -150,12 +163,26 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 /********************************************************
 * Simulate the mesh build process                       *
 ********************************************************/
+void countElements( const AMP::Mesh::Mesh::simulated_mesh_struct &mesh, std::vector<size_t> &N_elements )
+{
+    if ( mesh.submeshes.empty() ) {
+        for (size_t i=0; i<mesh.ranks.size(); i++)
+            N_elements[mesh.ranks[i]] += mesh.N_elements/mesh.ranks.size();
+    } else {
+        for (size_t i=0; i<mesh.submeshes.size(); i++)
+            countElements( mesh.submeshes[i], N_elements );
+    }
+}
+Mesh::simulated_mesh_struct::simulated_mesh_struct( ) 
+{
+    N_elements = 0;
+}
 Mesh::simulated_mesh_struct::simulated_mesh_struct( const Mesh::simulated_mesh_struct& rhs ) 
 {
     name = rhs.name;
     type = rhs.type;
     N_elements = rhs.N_elements;
-    db = rhs.db;
+    params = rhs.params;
     ranks = rhs.ranks;
     submeshes = rhs.submeshes;
 }
@@ -163,7 +190,36 @@ void Mesh::simulated_mesh_struct::print()
 {
     AMP_ERROR( "Not implimented yet" );
 }
-Mesh::simulated_mesh_struct  Mesh::simulateBuildMesh( const MeshParameters::shared_ptr &params, std::vector<int> &comm_ranks ) 
+size_t Mesh::simulated_mesh_struct::min() 
+{
+    int N_procs = 0;
+    for (size_t i=0; i<ranks.size(); i++)
+        N_procs = std::max(N_procs,ranks[i]+1);
+    std::vector<size_t> N_elements(N_procs,0);
+    countElements( *this, N_elements );
+    size_t N_min = N_elements[0];
+    for (size_t i=1; i<N_elements.size(); i++)
+        N_min = std::min(N_min,N_elements[i]);
+    return N_min;
+}
+size_t Mesh::simulated_mesh_struct::max() 
+{
+    int N_procs = 0;
+    for (size_t i=0; i<ranks.size(); i++)
+        N_procs = std::max(N_procs,ranks[i]+1);
+    std::vector<size_t> N_elements(N_procs,0);
+    countElements( *this, N_elements );
+    size_t N_max = N_elements[0];
+    for (size_t i=1; i<N_elements.size(); i++)
+        N_max = std::max(N_max,N_elements[i]);
+    return N_max;
+}
+size_t Mesh::simulated_mesh_struct::avg() 
+{
+    return (size_t) round(((double)N_elements)/((double)ranks.size()));
+}
+Mesh::simulated_mesh_struct  Mesh::simulateBuildMesh( const MeshParameters::shared_ptr &params, 
+    std::vector<int> &comm_ranks, size_t N_elements ) 
 {
     // Get required values from the parameters
     AMP_ASSERT(comm_ranks.size()>0);
@@ -180,10 +236,13 @@ Mesh::simulated_mesh_struct  Mesh::simulateBuildMesh( const MeshParameters::shar
     } else {
         mesh.name = MeshName;
         mesh.type = MeshType;
-        mesh.db = database;
-        mesh.N_elements = Mesh::estimateMeshSize( params );
+        mesh.params = params;
         mesh.ranks = comm_ranks;
         mesh.submeshes = std::vector<Mesh::simulated_mesh_struct>();
+        if ( N_elements==0 )
+            mesh.N_elements = Mesh::estimateMeshSize( params );
+        else 
+            mesh.N_elements = N_elements;
     }
     return mesh;
 }

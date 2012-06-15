@@ -45,9 +45,11 @@ int main ( int argc , char ** argv )
     std::vector<int> comm_ranks(N_procs);
     for (int i=0; i<N_procs; i++)
         comm_ranks[i] = i;
+    double t0 = AMP::AMP_MPI::time();
     AMP::Mesh::Mesh::simulated_mesh_struct mesh = AMP::Mesh::Mesh::simulateBuildMesh( params, comm_ranks );
+    double t1 = AMP::AMP_MPI::time();
 
-    // Check the results of the load balance
+    // Print the results of the load balance
     std::vector<size_t> N_elements(N_procs,0);
     countElements( mesh, N_elements );
     std::cout << "Rank, N_elements:" << std::endl;
@@ -60,17 +62,11 @@ int main ( int argc , char ** argv )
             std::cout << std::setw(8) << N_elements[j];
         std::cout << std::endl << std::endl;
     }
-    size_t N_min=0xFFFFFFFF;
-    size_t N_max=0;
-    for (int i=0; i<N_procs; i++) {
-        N_min = std::min(N_min,N_elements[i]);
-        N_max = std::max(N_max,N_elements[i]);
-    }
-    
     std::cout << std::endl;
-    std::cout << "min = " << N_min << std::endl;
-    std::cout << "max = " << N_max << std::endl;
-    std::cout << "avg = " << ((double)mesh.N_elements)/((double)N_procs) << std::endl;
+    std::cout << "min = " << mesh.min() << std::endl;
+    std::cout << "max = " << mesh.max() << std::endl;
+    std::cout << "avg = " << mesh.avg() << std::endl;
+    std::cout << "time = " << t1-t0 << std::endl;
 
     AMP::AMPManager::shutdown();
     return 0;

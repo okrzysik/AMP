@@ -1,4 +1,5 @@
 #include "ampmesh/MultiMesh.h"
+#include "ampmesh/MultiMeshParameters.h"
 #include "ampmesh/SubsetMesh.h"
 #include "ampmesh/MultiIterator.h"
 #include "ampmesh/MeshElement.h"
@@ -48,7 +49,7 @@ static inline T vecmax(std::vector<T> x) {
 
 
 // Misc function declerations
-static void copyKey(boost::shared_ptr<AMP::Database>&,boost::shared_ptr<AMP::Database>&,std::string,int,int);
+static void copyKey(boost::shared_ptr<AMP::Database>,boost::shared_ptr<AMP::Database>,std::string,int,int);
 static void replaceText(boost::shared_ptr<AMP::Database>&,std::string,std::string);
 
 
@@ -58,29 +59,27 @@ static void replaceText(boost::shared_ptr<AMP::Database>&,std::string,std::strin
 MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ):
     Mesh(params_in)
 {
-    // Create a database for each mesh within the multimesh
+    // Create an array of MeshParameters for each submesh
     AMP_ASSERT(d_db!=NULL);
-    std::vector<boost::shared_ptr<AMP::Database> > meshDatabases = MultiMesh::createDatabases(d_db);
-    // Create the input parameters and get the approximate number of elements for each mesh
-    std::vector<size_t> meshSizes(meshDatabases.size(),0);
-    std::vector< boost::shared_ptr<AMP::Mesh::MeshParameters> > meshParameters(meshDatabases.size());
-    for (size_t i=0; i<meshDatabases.size(); i++) {
-        boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(meshDatabases[i]));
-        params->setComm(AMP::AMP_MPI(AMP_COMM_SELF));
-        meshParameters[i] = params;
-        meshSizes[i] = AMP::Mesh::Mesh::estimateMeshSize(params);
+    boost::shared_ptr<MultiMeshParameters> params = boost::dynamic_pointer_cast<MultiMeshParameters>(params_in);
+    if ( params.get()==NULL ) {
+        boost::shared_ptr<AMP::Database> database = params_in->getDatabase();
+        // Create a database for each mesh within the multimesh
+        std::vector<boost::shared_ptr<AMP::Database> > meshDatabases = MultiMesh::createDatabases(database);
+        params = boost::shared_ptr<MultiMeshParameters>( new MultiMeshParameters(database) );
+        params->params = std::vector<MeshParameters::shared_ptr>(meshDatabases.size());
+        params->N_elements = std::vector<size_t>(meshDatabases.size());
+        for (size_t i=0; i<meshDatabases.size(); i++) {
+            params->params[i] = AMP::Mesh::MeshParameters::shared_ptr( new AMP::Mesh::MeshParameters(meshDatabases[i]) );
+            params->N_elements[i] = Mesh::estimateMeshSize( params->params[i] );
+        }
+        params->method = 1;
     }
-    size_t totalMeshSize = 0;
-    for (size_t i=0; i<meshSizes.size(); i++)
-        totalMeshSize += meshSizes[i];
     // Determine the load balancing we want to use and create the communicator for the parameters for each mesh
-    std::vector<double> weights(meshParameters.size(),0);
-    for (size_t i=0; i<meshSizes.size(); i++)
-        weights[i] = ((double)meshSizes[i])/((double)totalMeshSize);
-    std::vector<AMP_MPI> comms = createComms( loadBalancer( d_comm.getSize(), weights, 1 ) );
+    std::vector<AMP_MPI> comms = createComms( loadBalancer( d_comm.getSize(), params->params, params->N_elements, params->method ) );
     // Check that every mesh exist on some comm
-    std::vector<int> onComm(meshParameters.size(),0);
-    for (size_t i=0; i<meshParameters.size(); i++) {
+    std::vector<int> onComm(comms.size(),0);
+    for (size_t i=0; i<comms.size(); i++) {
         if ( !comms[i].isNull() )
             onComm[i] = 1;
     }
@@ -89,12 +88,11 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ):
         AMP_ASSERT(onComm[i]==1);
     // Create the meshes
     d_meshes = std::vector<AMP::Mesh::Mesh::shared_ptr>(0);
-    for (size_t i=0; i<meshParameters.size(); i++) {
+    for (size_t i=0; i<comms.size(); i++) {
         if ( comms[i].isNull() )
             continue;
-        AMP::Mesh::MeshParameters::shared_ptr  params = meshParameters[i];
-        params->setComm(comms[i]);
-        AMP::Mesh::Mesh::shared_ptr new_mesh = AMP::Mesh::Mesh::buildMesh(params);
+        params->params[i]->setComm(comms[i]);
+        AMP::Mesh::Mesh::shared_ptr new_mesh = AMP::Mesh::Mesh::buildMesh(params->params[i]);
         d_meshes.push_back(new_mesh);
     }
     // Get the physical dimension and the highest geometric type
@@ -190,42 +188,45 @@ MultiMesh::MultiMesh ( const AMP_MPI &comm, const std::vector<Mesh::shared_ptr> 
 /********************************************************
 * Function to simulate the mesh building process        *
 ********************************************************/
-Mesh::simulated_mesh_struct  MultiMesh::simulateBuildMesh( const MeshParameters::shared_ptr &params, std::vector<int> &comm_ranks ) 
+Mesh::simulated_mesh_struct  MultiMesh::simulateBuildMesh( const MeshParameters::shared_ptr &params, std::vector<int> &comm_ranks, size_t ) 
 {
-    // Create a database for each mesh within the multimesh
-    boost::shared_ptr<AMP::Database> database = params->getDatabase();
-    std::vector<boost::shared_ptr<AMP::Database> > meshDatabases = MultiMesh::createDatabases(database);
-    // Create the input parameters and get the approximate number of elements for each mesh
-    std::vector<size_t> meshSizes(meshDatabases.size(),0);
-    std::vector< boost::shared_ptr<AMP::Mesh::MeshParameters> > meshParameters(meshDatabases.size());
-    for (size_t i=0; i<meshDatabases.size(); i++) {
-        boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(meshDatabases[i]));
-        params->setComm(AMP::AMP_MPI(AMP_COMM_SELF));
-        meshParameters[i] = params;
-        meshSizes[i] = AMP::Mesh::Mesh::estimateMeshSize(params);
+    // Create the multimesh parameters
+    boost::shared_ptr<MultiMeshParameters> multimeshParams = boost::dynamic_pointer_cast<MultiMeshParameters>( params );
+    if ( multimeshParams.get()==NULL ) {
+        boost::shared_ptr<AMP::Database> database = params->getDatabase();
+        multimeshParams = boost::shared_ptr<MultiMeshParameters>( new MultiMeshParameters(database) );
+        // Create a database for each mesh within the multimesh
+        std::vector<boost::shared_ptr<AMP::Database> > meshDatabases = MultiMesh::createDatabases(database);
+        multimeshParams->params = std::vector<MeshParameters::shared_ptr>(meshDatabases.size());
+        multimeshParams->N_elements = std::vector<size_t>(meshDatabases.size());
+        std::vector<int> rank1(1,0);
+        for (size_t i=0; i<meshDatabases.size(); i++)  {
+            AMP::Mesh::MeshParameters::shared_ptr meshParam( new AMP::Mesh::MeshParameters(meshDatabases[i]) );
+            Mesh::simulated_mesh_struct mesh = Mesh::simulateBuildMesh( meshParam, rank1 );
+            multimeshParams->params[i] = mesh.params;
+            multimeshParams->N_elements[i] = Mesh::estimateMeshSize( mesh.params );
+        }
+        multimeshParams->method = 1;
     }
-    size_t totalMeshSize = 0;
-    for (size_t i=0; i<meshSizes.size(); i++)
-        totalMeshSize += meshSizes[i];
     // Determine the load balancing we want to use and create the virtual communicators for each mesh
-    std::vector<double> weights(meshParameters.size(),0);
-    for (size_t i=0; i<meshSizes.size(); i++)
-        weights[i] = ((double)meshSizes[i])/((double)totalMeshSize);
-    std::vector<rank_list> groups = loadBalancer( comm_ranks.size(), weights );
+    std::vector<rank_list> groups = loadBalancer( comm_ranks.size(), multimeshParams->params, multimeshParams->N_elements, multimeshParams->method );
     for (size_t i=0; i<groups.size(); i++) {
         for (size_t j=0; j<groups[i].size(); j++)
             groups[i][j] = comm_ranks[groups[i][j]];
     }
     // Create the simulated mesh structure
     Mesh::simulated_mesh_struct mesh;
-    mesh.name = database->getString("MeshName");
-    mesh.type = database->getString("MeshType");
-    mesh.db = database;
-    mesh.N_elements = totalMeshSize;
+    mesh.name = params->getDatabase()->getString("MeshName");
+    mesh.type = params->getDatabase()->getString("MeshType");
     mesh.ranks = comm_ranks;
     mesh.submeshes = std::vector<Mesh::simulated_mesh_struct>(groups.size());
-    for (size_t i=0; i<groups.size(); i++)
-        mesh.submeshes[i] = Mesh::simulateBuildMesh( meshParameters[i], groups[i] );
+    size_t totalMeshSize = 0;
+    for (size_t i=0; i<groups.size(); i++) {
+        mesh.submeshes[i] = Mesh::simulateBuildMesh( multimeshParams->params[i], groups[i], multimeshParams->N_elements[i] );
+        totalMeshSize += mesh.submeshes[i].N_elements;
+    }
+    mesh.N_elements = totalMeshSize;
+    mesh.params = multimeshParams;
     return mesh;
 }
 
@@ -252,24 +253,27 @@ Mesh MultiMesh::copy() const
 ********************************************************/
 size_t MultiMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
-    // Create a database for each mesh within the multimesh
-    boost::shared_ptr<AMP::Database> database = params->getDatabase();
-    AMP_ASSERT(database.get()!=NULL);
-    std::vector<boost::shared_ptr<AMP::Database> > meshDatabases = MultiMesh::createDatabases(database);
-    // Create the input parameters and get the approximate number of elements for each mesh
+    // Create the multimesh parameters
+    boost::shared_ptr<MultiMeshParameters> multimeshParams = boost::dynamic_pointer_cast<MultiMeshParameters>( params );
+    if ( multimeshParams.get()==NULL ) {
+        boost::shared_ptr<AMP::Database> database = params->getDatabase();
+        multimeshParams = boost::shared_ptr<MultiMeshParameters>( new MultiMeshParameters(database) );
+        // Create a database for each mesh within the multimesh
+        std::vector<boost::shared_ptr<AMP::Database> > meshDatabases = MultiMesh::createDatabases(database);
+        multimeshParams->params = std::vector<MeshParameters::shared_ptr>(meshDatabases.size());
+        for (size_t i=0; i<meshDatabases.size(); i++) 
+            multimeshParams->params[i] = AMP::Mesh::MeshParameters::shared_ptr( new AMP::Mesh::MeshParameters(meshDatabases[i]) );
+    }
+    // Get the approximate number of elements for each mesh
     size_t totalMeshSize = 0;
-    std::vector< boost::shared_ptr<AMP::Mesh::MeshParameters> > meshParameters(meshDatabases.size());
-    for (size_t i=0; i<meshDatabases.size(); i++) {
-        boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(meshDatabases[i]));
-        params->setComm(AMP::AMP_MPI(AMP_COMM_SELF));
-        meshParameters.push_back(params);
-        size_t localMeshSize = AMP::Mesh::Mesh::estimateMeshSize(params);
+    for (size_t i=0; i<multimeshParams->params.size(); i++) {
+        size_t localMeshSize = AMP::Mesh::Mesh::estimateMeshSize(multimeshParams->params[i]);
         AMP_ASSERT(localMeshSize>0);
         totalMeshSize += localMeshSize;
     }
     // Adjust the number of elements by a weight if desired
-    if ( database->keyExists("Weight") ) {
-        double weight = database->getDouble("Weight");
+    if ( params->getDatabase()->keyExists("Weight") ) {
+        double weight = params->getDatabase()->getDouble("Weight");
         totalMeshSize = (size_t) ceil(weight*((double)totalMeshSize));
     }
     return totalMeshSize;
@@ -282,6 +286,15 @@ size_t MultiMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 ********************************************************/
 std::vector<boost::shared_ptr<AMP::Database> >  MultiMesh::createDatabases(boost::shared_ptr<AMP::Database> database)
 {
+    // We might have already created and stored the databases for each mesh
+    if ( database->keyExists("submeshDatabases") ) {
+        std::vector<std::string> databaseNames = database->getStringArray("submeshDatabases");
+        AMP_ASSERT(databaseNames.size()>0);
+        std::vector<boost::shared_ptr<AMP::Database> > meshDatabases(databaseNames.size());
+        for (size_t i=0; i<databaseNames.size(); i++)
+            meshDatabases[i] = database->getDatabase(databaseNames[i]);
+        return meshDatabases;
+    }
     // Find all of the meshes in the database
     AMP_ASSERT(database!=NULL);
     AMP_INSIST(database->keyExists("MeshDatabasePrefix"),"MeshDatabasePrefix must exist in input database");
@@ -735,8 +748,8 @@ void MultiMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr
 * If the key is an array of size N, it will only copy   *
 * the ith value.                                        *
 ********************************************************/
-static void copyKey(boost::shared_ptr<AMP::Database> &database1, 
-    boost::shared_ptr<AMP::Database> &database2, std::string key, int N, int i ) 
+static void copyKey( boost::shared_ptr<AMP::Database> database1, 
+    boost::shared_ptr<AMP::Database> database2, std::string key, int N, int i ) 
 {
     int size = database1->getArraySize(key);
     AMP::Database::DataType type = database1->getArrayType(key);
@@ -897,27 +910,44 @@ std::vector<AMP_MPI> MultiMesh::createComms( const std::vector<rank_list> &group
     }
     return comms;
 }
-std::vector<MultiMesh::rank_list> MultiMesh::loadBalancer( int N_procs, std::vector<double> &weights, int method )
+
+
+/********************************************************
+* Function to perform the load balance                  *
+********************************************************/
+std::vector<MultiMesh::rank_list> MultiMesh::loadBalancer( int N_procs, 
+    const std::vector<MeshParameters::shared_ptr> &meshParams, const std::vector<size_t> &meshSizes, int method )
 {
     // Deal with the special cases directly
-    if ( weights.size()<=1 || N_procs==1 || method==0 ) {
+    if ( meshParams.size()<=1 || N_procs==1 || method==0 ) {
         // Everybody is on the same communicator
         std::vector<int> allRanks(N_procs);
         for (int i=0; i<N_procs; i++)
             allRanks[i] = i;
-        return std::vector<rank_list>(weights.size(),allRanks);
+        return std::vector<rank_list>(meshParams.size(),allRanks);
     } else if ( method == 1 ) {
         // We want to split the meshes onto independent processors
-        std::vector<std::pair<double,int> >  ids(weights.size());
-        for (size_t i=0; i<weights.size(); i++)
-            ids[i] = std::pair<double,int>( weights[i], (int) i );
         std::vector<comm_groups> groups;
-        if ( N_procs >= (int)ids.size() )
-            groups = independentGroups1( N_procs, ids );
-        else
+        if ( N_procs > (int)meshParams.size() ) {
+            // We have more processors than meshes
+            groups = independentGroups1( N_procs, meshParams, meshSizes );
+        } else {
+            // The number of meshes is <= the number of processors
+            // Create the weights
+            size_t totalMeshSize = 0;
+            for (size_t i=0; i<meshSizes.size(); i++)
+                totalMeshSize += meshSizes[i];
+            std::vector<double> weights(meshParams.size(),0);
+            for (size_t i=0; i<meshSizes.size(); i++)
+                weights[i] = ((double)meshSizes[i])/((double)totalMeshSize);
+            // Create the ids and recursively perform the load balance
+            std::vector<std::pair<double,int> >  ids(weights.size());
+            for (size_t i=0; i<weights.size(); i++)
+                ids[i] = std::pair<double,int>( weights[i], (int) i );
             groups = independentGroups2( N_procs, ids );
+        }
         // Split the comm into the appropriate groups
-        std::vector<rank_list> commGroups(weights.size());
+        std::vector<rank_list> commGroups(meshParams.size());
         std::vector<int> cum_N_proc(groups.size());
         cum_N_proc[0] = groups[0].N_procs;
         for (size_t i=1; i<groups.size(); i++)
@@ -929,45 +959,132 @@ std::vector<MultiMesh::rank_list> MultiMesh::loadBalancer( int N_procs, std::vec
         }
         return commGroups;
     } else if ( method == 2 ) {
-        // We want to try to achieve a balanced approach to the load balance
+        // We want to try to achieve a more balanced approach to the load balance
         AMP_ERROR("This load balancer is not implimented yet");
     } else {
         AMP_ERROR("Unknown load balancer");
     }
     return std::vector<rank_list>(0);
 }
+void MultiMesh::addProcSimulation( Mesh::simulated_mesh_struct &mesh, int rank )
+{
+    if ( mesh.submeshes.empty() ) {
+        mesh.ranks.push_back( rank );
+        return;
+    } 
+    AMP_INSIST(mesh.params->getDatabase()->keyExists("MeshType"),"MeshType must exist in input database");
+    std::string MeshType = mesh.params->getDatabase()->getString("MeshType");
+    AMP_ASSERT(MeshType==std::string("Multimesh"));
+    boost::shared_ptr<MultiMeshParameters> multimeshParams = boost::dynamic_pointer_cast<MultiMeshParameters>( mesh.params );
+    if ( multimeshParams.get()==NULL ) {
+        std::vector<int> ranks = mesh.ranks;
+        ranks.push_back( rank );
+        mesh = Mesh::simulateBuildMesh( mesh.params, ranks, mesh.N_elements );
+        return;
+    }
+    if ( multimeshParams->method==1 ) {
+        AMP_ASSERT(mesh.submeshes.size()==multimeshParams->params.size());
+        if ( mesh.ranks.size()<mesh.submeshes.size() ) {
+            // We need to create new group sets
+            int N_procs = (int) mesh.ranks.size() + 1;
+            // Create the weights
+            std::vector<double> weights(mesh.submeshes.size(),0);
+            for (size_t i=0; i<mesh.submeshes.size(); i++)
+                weights[i] = ((double)mesh.submeshes[i].N_elements)/((double)mesh.N_elements);
+            // Create the ids and recursively perform the load balance
+            std::vector<std::pair<double,int> >  ids(weights.size());
+            for (size_t i=0; i<weights.size(); i++)
+                ids[i] = std::pair<double,int>( weights[i], (int) i );
+            std::vector<comm_groups> groups = independentGroups2( N_procs, ids );
+            // Modify the submesh comms
+            AMP_ASSERT((int)groups.size()==N_procs);
+            for (size_t i=0; i<groups.size(); i++) {
+                AMP_ASSERT(groups[i].N_procs==1);
+                for (size_t j=0; j<groups[i].ids.size(); j++)
+                    mesh.submeshes[groups[i].ids[j]].ranks[0] = (int) i;
+            }
+            mesh.ranks.push_back( rank );
+        } else {
+            // We need to add a processor to the mesh with the largest # of elements per processor
+            double max = 0;
+            int i_max = 0;
+            for (size_t i=0; i<mesh.submeshes.size(); i++) {
+                double tmp = ((double)mesh.submeshes[i].N_elements)/((double)mesh.submeshes[i].ranks.size());
+                if ( tmp > max ) {
+                    max = tmp;
+                    i_max = i;
+                }
+            }
+            addProcSimulation( mesh.submeshes[i_max], rank );
+            mesh.ranks.push_back( rank );
+        }
+    } else {
+        AMP_ERROR("Not ready for other load balancers yet");
+    }
+}
+
 
 
 /********************************************************
 * Functions to solve simple load balancing computations *
 ********************************************************/
-std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups1(int N_procs, std::vector<std::pair<double,int> >  &ids_in)
+std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups1(
+    int N_procs, const std::vector<MeshParameters::shared_ptr> &meshParameters, const std::vector<size_t> &size )
 {
     // This will distribute the groups onto the processors such that no groups share any processors
     // Note: this requires the number of processors to be >= the number of ids
-    AMP_ASSERT(N_procs>=(int)ids_in.size());
-    std::vector<std::pair<double,int> > ids = ids_in;
-    AMP::Utilities::quicksort(ids);
-    // Start with the smallest mesh and start assigning processors
-    double weight_remaining = 0.0;
-    for (size_t i=0; i<ids.size(); i++)
-        weight_remaining += ids[i].first;
-    int N_procs_remaining = N_procs;
-    std::vector<comm_groups> groups(ids.size());
-    for (size_t i=0; i<ids.size(); i++) {
-        double N_proc_d = ids[i].first/weight_remaining * ((double) N_procs_remaining);
-        int N_proc = (int) (N_proc_d+0.5);      // Round to the nearest processor count
-        if ( N_proc < 1 ) { N_proc=1; }         // We require at least on processor
-        if ( (N_procs_remaining-N_proc) < (int)(ids.size()-i-1) ) 
-            N_proc--;       // We need at least the 1 processors for each of the remaining meshes
-        groups[i].N_procs = N_proc;
-        groups[i].ids = std::vector<int>(1,ids[i].second);
-        N_procs_remaining -= N_proc;
-        weight_remaining -= ids[i].first;
+    AMP_ASSERT(N_procs>=(int)meshParameters.size());
+    // Start with 1 processor per mesh and get the load balance
+    std::vector<Mesh::simulated_mesh_struct> load_balance(meshParameters.size());
+    std::vector<size_t> max_size(meshParameters.size());
+    std::vector<int> rank1(1,0);
+    for (size_t i=0; i<meshParameters.size(); i++) {
+        load_balance[i] = Mesh::simulateBuildMesh( meshParameters[i], rank1, size[i] );
+        max_size[i] = load_balance[i].max();
+    }
+    int N_procs_remaining = N_procs - meshParameters.size();
+    // While we have processors remaining, try to add them so that we minimize 
+    // the maximum number of elements on any rank
+    while ( N_procs_remaining > 0 ) {
+        // Find the two meshes with the greatest number of elements
+        size_t max1 = 0;
+        size_t max2 = 0;
+        size_t i1 = 0;
+        size_t i2 = 0;
+        for (size_t i=0; i<load_balance.size(); i++) {
+            size_t local_max = max_size[i];
+            if ( local_max > max1 ) {
+                max2 = max1;
+                i2 = i1;
+                max1 = local_max;
+                i1 = i;
+            } else if ( local_max > max2 ) {
+                max2 = local_max;
+                i2 = i;
+            }
+        }
+        if ( max1==max2 )
+            max2--;
+        // Add processors to the mesh pointed to by i1, until max1 is <= max2
+        AMP_ASSERT( max1>max2 && max1>0 );
+        while ( N_procs_remaining>0 && max1>max2 ) {
+            N_procs_remaining--;
+            addProcSimulation( load_balance[i1], (int) load_balance[i1].ranks.size() );
+            max_size[i1] = load_balance[i1].max();
+            max1 = max_size[i1];
+        }
+    }
+    // We have filled all processors, create the groups
+    AMP_ASSERT(N_procs_remaining==0);
+    std::vector<comm_groups> groups(meshParameters.size());
+    for (size_t i=0; i<meshParameters.size(); i++) {
+        groups[i].N_procs = (int) load_balance[i].ranks.size();
+        groups[i].ids = std::vector<int>(1,(int)i);
     }
     return groups;
 }
-std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups2(int N_procs, std::vector<std::pair<double,int> >  &ids_in)
+std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups2(
+    int N_procs, std::vector<std::pair<double,int> >  &ids_in )
 {
     // This will distribute the groups onto the processors such that each group has exactly one processor.  
     // Note: this requires the number of processors to be <= the number of ids
