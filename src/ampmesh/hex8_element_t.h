@@ -67,6 +67,14 @@ public:
 
   std::vector<double> get_bounding_box() const { return bounding_box; }
 
+  bool within_bounding_box(const std::vector<double> &p) {
+    assert(p.size() == 3);
+    for (unsigned int j = 0; j < 3; ++j) {
+      if ((bounding_box[j+0] > p[j]) || (bounding_box[j+3] < p[j])) { return false; }
+    } // end for j
+    return true;
+  }
+
   std::vector<double> map_global_to_local(const std::vector<double> &global_coordinates) {
     assert(global_coordinates.size() == 3); 
     point_candidate = global_coordinates;
@@ -236,14 +244,6 @@ private:
         } // end if
       } // end for j
     } // end for i
-  }
-
-  bool within_bounding_box(const std::vector<double> &p) {
-    assert(p.size() == 3);
-    for (unsigned int j = 0; j < 3; ++j) {
-      if ((bounding_box[j+0] > p[j]) || (bounding_box[j+3] < p[j])) { return false; }
-    } // end for j
-    return true;
   }
 
   // residual vector x = (sum_i x_i b_i, sum_i y_i b_i, sum_i z_i b_i)^t

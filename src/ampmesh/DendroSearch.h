@@ -674,19 +674,15 @@ class DendroSearch {
           dummy[3*j+2] = point_coord[2];
         } // end j
         hex8_element_t volume_element(dummy);
-        std::vector<double> x = volume_element.map_global_to_local(tmpPt);
-        bool coordinates_are_local = true;
-        bool found = volume_element.contains_point(x, coordinates_are_local);
+        bool found = false; 
+        std::vector<double> x(3, 0.0);
+        if (volume_element.within_bounding_box(tmpPt)) {
+          x = volume_element.map_global_to_local(tmpPt);
+          bool coordinates_are_local = true;
+          found = volume_element.contains_point(x, coordinates_are_local);
+        }
         if(found) {
-          double basis_functions_values[8];
-          basis_functions_values[0] = 0.125*(1.0-x[0])*(1.0-x[1])*(1.0-x[2]);
-          basis_functions_values[1] = 0.125*(1.0+x[0])*(1.0-x[1])*(1.0-x[2]);
-          basis_functions_values[2] = 0.125*(1.0+x[0])*(1.0+x[1])*(1.0-x[2]);
-          basis_functions_values[3] = 0.125*(1.0-x[0])*(1.0+x[1])*(1.0-x[2]);
-          basis_functions_values[4] = 0.125*(1.0-x[0])*(1.0-x[1])*(1.0+x[2]);
-          basis_functions_values[5] = 0.125*(1.0+x[0])*(1.0-x[1])*(1.0+x[2]);
-          basis_functions_values[6] = 0.125*(1.0+x[0])*(1.0+x[1])*(1.0+x[2]);
-          basis_functions_values[7] = 0.125*(1.0-x[0])*(1.0+x[1])*(1.0+x[2]);
+          std::vector<double> basis_functions_values = get_basis_functions_values(x);
           std::vector<double> value(dofsPerNode, 0.0);
           for (unsigned int j = 0; j < 8; ++j) {
             std::vector<size_t> globalID;
