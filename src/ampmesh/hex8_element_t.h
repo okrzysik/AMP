@@ -63,24 +63,9 @@ public:
     build_bounding_box();
   }
 
+  std::vector<double> get_support_points() const { return support_points; } 
+
   std::vector<double> get_bounding_box() const { return bounding_box; }
-
-  void do_mapping_verification_test(const std::vector<double> &p) {
-    assert(p.size() == 3);
-    if (within_bounding_box(p)) {
-      point_candidate = std::vector<double>(3, 0.0);
-      std::vector<double> residual = compute_residual_vector(p);
-      for (unsigned int i = 0; i < 3; ++i) { point_candidate[i] = -residual[i]; }
-      std::vector<double> q = solve_newton();
-
-      std::vector<double> error(3);
-      for (unsigned int i = 0; i < 3; ++i) { error[i] = p[i] - q[i]; }
-      double error_norm = sqrt(std::inner_product(error.begin(), error.end(), error.begin(), 0.0));
-      double abs_tol = 1.0e-12, rel_tol = 1.0e-8, p_norm = sqrt(std::inner_product(p.begin(), p.end(), p.begin(), 0.0));
-      double tol = abs_tol + rel_tol * p_norm;
-      assert(error_norm < tol);
-    } // end if
-  }
 
   std::vector<double> map_global_to_local(const std::vector<double> &global_coordinates) {
     assert(global_coordinates.size() == 3); 
@@ -89,11 +74,20 @@ public:
     return local_coordinates;
   }
 
+  std::vector<double> map_local_to_global(const std::vector<double> &local_coordinates) {
+    assert(local_coordinates.size() == 3); 
+    point_candidate = std::vector<double>(3, 0.0);
+    std::vector<double> global_coordinates = compute_residual_vector(local_coordinates);
+    for (unsigned int i = 0; i < 3; ++i) { global_coordinates[i] *= -1.0; }
+    return global_coordinates;
+  }
+
   bool contains_point(const std::vector<double> &coordinates, bool coordinates_are_local = false) {
     assert(coordinates.size() == 3); 
     std::vector<double> local_coordinates;
     if (!coordinates_are_local) {
       point_candidate = coordinates;
+      if (!within_bounding_box(point_candidate)) { return false; }
       local_coordinates = solve_newton();
     } else {
       local_coordinates = coordinates;
@@ -333,7 +327,7 @@ private:
   }
 
   // map the coordinates of the point candidate onto the reference frame of the volume element defined by the support points
-  std::vector<double> solve_newton(double abs_tol = 1.0e-14, double rel_tol = 1.0e-10, unsigned int max_iter = 100, bool verbose = false) {
+  std::vector<double> solve_newton(double abs_tol = 1.0e-14, double rel_tol = 1.0e-14, unsigned int max_iter = 100, bool verbose = false) {
     if (verbose) { std::cout<<"solve newton with line search\n"; }
     std::vector<double> x(3, 0.0);
     std::vector<double> residual_vector = compute_residual_vector(x);
@@ -363,4 +357,49 @@ private:
   }
 };
 
+void scale_points(unsigned int direction, double scaling_factor, unsigned int n_points, double* points) {
+  assert(direction < 3);
+  for (unsigned int i = 0; i < n_points; ++i) { 
+    points[3*i+direction] *= scaling_factor; 
+  } // end for i
+}
+
+void scale_points(const std::vector<double> &scaling_factors, unsigned int n_points, double* points) {
+  assert(scaling_factors.size() == 3);
+  for (unsigned int i = 0; i < 3; ++i) { 
+    scale_points(i, scaling_factors[i], n_points, points);
+  } // end for i
+}
+
+void translate_points(unsigned int direction, double distance, unsigned int n_points, double* points) {
+  assert(direction < 3);
+  for (unsigned int i = 0; i < n_points; ++i) { 
+    points[3*i+direction] += distance; 
+  } // end for i
+}
+
+void translate_points(std::vector<double> translation_vector, unsigned int n_points, double* points) {
+  assert(translation_vector.size() == 3);
+  for (unsigned int i = 0; i < 3; ++i) { 
+   translate_points(i, translation_vector[i], n_points, points); 
+  } // end for i
+}
+
+void rotate_points(unsigned int rotation_axis, double rotation_angle, unsigned int n_points, double* points) {
+  assert(rotation_axis < 3);
+  unsigned int non_fixed_directions[2];
+  unsigned int i = 0;
+  for (unsigned int j = 0; j < 3; ++j) { 
+    if (j != rotation_axis) {
+      non_fixed_directions[i++] = j;
+    } // end if
+  } // end for j
+  double tmp[3];
+  for (unsigned int j = 0; j < n_points; ++j) {
+    tmp[non_fixed_directions[0]] = cos(rotation_angle)*points[3*j+non_fixed_directions[0]]-sin(rotation_angle)*points[3*j+non_fixed_directions[1]];
+    tmp[non_fixed_directions[1]] = sin(rotation_angle)*points[3*j+non_fixed_directions[0]]+cos(rotation_angle)*points[3*j+non_fixed_directions[1]];
+    tmp[rotation_axis] = points[3*j+rotation_axis];
+    std::copy(tmp, tmp+3, points+3*j);
+  } // end for j
+}
 
