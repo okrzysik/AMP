@@ -18,15 +18,12 @@ COPY_TEST_DATA_FILE ( input_Crystal )
 # Add tests
 ADD_AMP_TEST_1_2_4 ( test_Mesh )
 ADD_AMP_PROVISIONAL_TEST( test_LoadBalance )
+ADD_AMP_TEST( testHex8ElementMapping )
+ADD_AMP_TEST( testHex8ElementLinearInterpolation )
 IF ( USE_LIBMESH )
     ADD_AMP_TEST_1_2_4 ( test_SiloIO input_SiloIO-1 )
 ELSE()
     ADD_AMP_TEST_1_2_4 ( test_SiloIO input_SiloIO-2 )
-ENDIF()
-
-# Add search tests
-IF ( USE_LIBMESH )
-    ADD_AMP_TEST( testHex8ElementContactSearch )
 ENDIF()
 IF( USE_DENDRO AND USE_PETSC )
     ADD_AMP_PROVISIONAL_TEST( testInterpolation )
