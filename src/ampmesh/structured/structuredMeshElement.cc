@@ -172,9 +172,6 @@ std::vector<MeshElement> structuredMeshElement::getElements(const GeomType type)
         }
     } else if ( type==Edge ) {
         if ( d_globalID.type()==Face ) {
-            int side = d_index.side;
-            if ( d_dim==2 )
-                side = 2;
             index.resize(4,d_index);
             if ( d_index.side==0 ) {
                 // We are dealing with an x-face
