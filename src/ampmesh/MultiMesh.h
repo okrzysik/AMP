@@ -2,7 +2,7 @@
 #define included_AMP_MultiMesh
 
 #include "ampmesh/Mesh.h"
-
+#include "ampmesh/loadBalance.h"
 
 namespace AMP {
 namespace Mesh {
@@ -242,21 +242,16 @@ public:
     virtual void displaceMesh ( boost::shared_ptr<const AMP::LinearAlgebra::Vector> x );
 #endif
 
-    
-    /**
-     * \brief    Simulate the mesh build process
-     * \details  This function will simulate the loading and load balancing of the mesh hierarchy
-     * \param params        Parameters to use for the mesh construction
-     * \param comm_ranks    Simulated ranks that are used to create the mesh
-     * \param N_elements    Optional argument specifying the number of elements on the mesh
-     *                      Note: for multimeshes this does nothing (the number of elements is the sum of all meshes)
-     */
-    static Mesh::simulated_mesh_struct  simulateBuildMesh( const MeshParameters::shared_ptr &params, 
-        std::vector<int> &comm_ranks, size_t N_elements=0 );
-
 
     // Needed to prevent problems with virtual functions
     using Mesh::Subset;
+
+
+    // Function to simulate loading a multimesh
+    static LoadBalance  simulateBuildMesh( const MeshParameters::shared_ptr params, const std::vector<int> &comm_ranks );
+
+    // Function to add a processor to the load balance simulation
+    static void addProcSimulation( const LoadBalance& mesh, std::vector<LoadBalance> &submeshes, int rank, char &decomp );
 
 private:
 
@@ -311,10 +306,6 @@ private:
 
     // Function to distribute N groups with weights onto P processors (N>P) with the greatest number of groups possible (comm size = 1)
     static std::vector<comm_groups>  independentGroups2( int N_procs, std::vector<std::pair<double,int> >  &ids );
-
-    // Function to add a processor to the load balance simulation
-    static size_t addProcSimulation( Mesh::simulated_mesh_struct &load, int rank );
-
 
 };
 

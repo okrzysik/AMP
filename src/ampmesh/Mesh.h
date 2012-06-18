@@ -373,45 +373,6 @@ public:
 #endif
 
 
-    /**
-     * \class MultiMesh
-     * \brief Structure used to contain simulated mesh load
-     * \details  This structure provides info that can be used to simulate loading 
-     *   a mesh, and checking the resulting load balance
-     */
-    class simulated_mesh_struct {
-      public:
-        std::string name;                               //!< The mesh name
-        std::string type;                               //!< The mesh type
-        size_t N_elements;                              //!< The number of elements in the mesh
-        boost::shared_ptr<MeshParameters> params;       //!< The database used for the mesh
-        std::vector<int> ranks;                         //!< The ranks of the processors that own a piece of the mesh
-        std::vector<Mesh::simulated_mesh_struct> submeshes;   //!< Sub-meshes to the current mesh
-        simulated_mesh_struct();                        //!< Empty constructor
-        simulated_mesh_struct(const simulated_mesh_struct&);  //!< Copy constructor
-        void print();                                   //!< Function to print the mesh hierarchy
-        size_t min();                                   //!< Function to return the minimum number of elements on a processor
-        size_t max();                                   //!< Function to return the maximum number of elements on a processor
-        size_t avg();                                   //!< Function to return the average number of elements per processor
-        void calc_min_max();                            //!< Function to reset the cached values
-      private:
-        size_t size_rank_cache;
-        size_t min_cache;
-        size_t max_cache;
-    };
-
-    
-    /**
-     * \brief    Simulate the mesh build process
-     * \details  This function will simulate the loading and load balancing of the mesh hierarchy
-     * \param params        Parameters to use for the mesh construction
-     * \param comm_ranks    Simulated ranks that are used to create the mesh
-     * \param N_elements    Optional argument specifying the number of elements on the mesh
-     *                      (0: Get the number of elements through a call to estimateMeshSize())
-     */
-    static simulated_mesh_struct  simulateBuildMesh( const MeshParameters::shared_ptr &params, std::vector<int> &comm_ranks, size_t N_elements=0 );
-
-
 protected:
 
     //!  Empty constructor for a mesh
