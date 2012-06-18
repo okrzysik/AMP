@@ -1,13 +1,5 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
-//#include "utils/Utilities.h"
-//#include "utils/Database.h"
-//#include "utils/InputDatabase.h"
-//#include "utils/InputManager.h"
-//#include "utils/AMP_MPI.h"
-//#include "utils/PIO.h"
-
-//#include "ampmesh/Mesh.h"
 
 #include "hex8_element_t.h"
 
@@ -115,52 +107,41 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     assert(out.second[1] == coordinates[2*i+1]);
   } // end for i
 
+
+
+
+
+
+  double scaling_factors[3] = { 4.0, 2.0, 1.0 };
+  scale_points(std::vector<double>(scaling_factors, scaling_factors+3), 8, points);
+
+  double translation_vector[3] = { 3.0, 1.0, 5.0 };
+  translate_points(std::vector<double>(translation_vector, translation_vector+3), 8, points);
+
+  rotate_points(2, M_PI/3.0, 8, points);
+
+  rotate_points(0, 0.75*M_PI, 8, points);
+
   srand(0);
-  // scaling 
-  for (unsigned int i = 0; i < 8; ++i) { 
-    points[3*i+0] *= 4.0; 
-    points[3*i+1] *= 2.0; 
-    points[3*i+2] *= 1.0; 
-  } // end for i
-  // translating and rotating the support points 
-  for (unsigned int i = 0; i < 8; ++i) { 
-    points[3*i+0] += 3.0; 
-    points[3*i+1] += 1.0; 
-    points[3*i+2] += 5.0; 
-  } // end for i
-  double theta = M_PI/3.0;
-  for (unsigned int i = 0; i < 8; ++i) { 
-    double tmp[3];
-    tmp[0] = cos(theta)*points[3*i+0]-sin(theta)*points[3*i+1];
-    tmp[1] = sin(theta)*points[3*i+0]+cos(theta)*points[3*i+1];
-    tmp[2] = points[3*i+2];
-    std::copy(tmp, tmp+3, points+3*i);
-  } // end for i
-  theta = -0.75*M_PI;
-  for (unsigned int i = 0; i < 8; ++i) { 
-    double tmp[3];
-    tmp[0] = points[3*i+0];
-    tmp[1] = cos(theta)*points[3*i+1]-sin(theta)*points[3*i+2];
-    tmp[2] = sin(theta)*points[3*i+1]+cos(theta)*points[3*i+2];
-    std::copy(tmp, tmp+3, points+3*i);
-  } // end for i
-  // moving them around
   for (unsigned int i = 0; i < 24; ++i) { points[i] += -0.1 + 0.2*rand()/RAND_MAX; }
-//  for (unsigned int i = 0; i < 24; ++i) { std::cout<<points[i]<<"  "; if (i%3 == 2) {std::cout<<"\n";} }
   volume_element.set_support_points(std::vector<double>(points, points+24));
-  std::vector<double> bounding_box = volume_element.get_bounding_box();
 
-  unsigned int count = 0;
-  const unsigned int n_random_candidates = 10000;
-  for (unsigned int i = 0; i < n_random_candidates; ++i) {
-    std::vector<double> candidate(3);
 
-    for (unsigned int j = 0; j < 3; ++j) { candidate[j] = bounding_box[j+0]+(bounding_box[j+3]-bounding_box[j+0])*rand()/RAND_MAX; }
-    volume_element.do_mapping_verification_test(candidate);
-    if (volume_element.project_on_face(candidate).first != 99) { ++count; }
+  double abs_tol = 1.0e-13, rel_tol = 1.0e-13;
+  const unsigned int n_random_candidate_points = 10000;
+  for (unsigned int i = 0; i < n_random_candidate_points; ++i) {
+    std::vector<double> random_candidate_point(3);
+    for (unsigned int j = 0; j < 3; ++j) { random_candidate_point[j] = -1.0+2.0*rand()/RAND_MAX; }
+
+    std::vector<double> candidate_point_global_coordinates = volume_element.map_local_to_global(random_candidate_point);
+    std::vector<double> candidate_point_local_coordinates = volume_element.map_global_to_local(candidate_point_global_coordinates);
+
+    std::vector<double> error(3);
+    for (unsigned int i = 0; i < 3; ++i) { error[i] = candidate_point_local_coordinates[i] - random_candidate_point[i]; }
+    double error_norm = sqrt(std::inner_product(error.begin(), error.end(), error.begin(), 0.0));
+    double tolerance = abs_tol + rel_tol * sqrt(std::inner_product(random_candidate_point.begin(), random_candidate_point.end(), random_candidate_point.begin(), 0.0));
+    assert(error_norm < tolerance);
   } // end for i
-//  std::cout<<"count="<<count<<"\n";
-  assert(count != 0);
 
   ut->passes(exeName);
 }
