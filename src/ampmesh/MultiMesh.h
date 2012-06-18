@@ -313,7 +313,7 @@ private:
     static std::vector<comm_groups>  independentGroups2( int N_procs, std::vector<std::pair<double,int> >  &ids );
 
     // Function to add a processor to the load balance simulation
-    static void addProcSimulation( Mesh::simulated_mesh_struct &load, int rank );
+    static size_t addProcSimulation( Mesh::simulated_mesh_struct &load, int rank );
 
 
 };

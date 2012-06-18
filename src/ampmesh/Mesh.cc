@@ -176,6 +176,9 @@ void countElements( const AMP::Mesh::Mesh::simulated_mesh_struct &mesh, std::vec
 Mesh::simulated_mesh_struct::simulated_mesh_struct( ) 
 {
     N_elements = 0;
+    size_rank_cache = 0;
+    min_cache = 0;
+    max_cache = 0;
 }
 Mesh::simulated_mesh_struct::simulated_mesh_struct( const Mesh::simulated_mesh_struct& rhs ) 
 {
@@ -185,34 +188,46 @@ Mesh::simulated_mesh_struct::simulated_mesh_struct( const Mesh::simulated_mesh_s
     params = rhs.params;
     ranks = rhs.ranks;
     submeshes = rhs.submeshes;
+    size_rank_cache = rhs.size_rank_cache;
+    min_cache = rhs.min_cache;
+    max_cache = rhs.max_cache;
 }
 void Mesh::simulated_mesh_struct::print() 
 {
     AMP_ERROR( "Not implimented yet" );
 }
-size_t Mesh::simulated_mesh_struct::min() 
+void Mesh::simulated_mesh_struct::calc_min_max() 
 {
+    if ( submeshes.empty() ) {
+        min_cache = (size_t) round(((double)this->N_elements)/((double)ranks.size()));
+        max_cache = (size_t) round(((double)this->N_elements)/((double)ranks.size()));
+        size_rank_cache = ranks.size();
+        return;
+    }
     int N_procs = 0;
     for (size_t i=0; i<ranks.size(); i++)
         N_procs = std::max(N_procs,ranks[i]+1);
     std::vector<size_t> N_elements(N_procs,0);
     countElements( *this, N_elements );
-    size_t N_min = N_elements[0];
-    for (size_t i=1; i<N_elements.size(); i++)
-        N_min = std::min(N_min,N_elements[i]);
-    return N_min;
+    min_cache = N_elements[0];
+    max_cache = N_elements[0];
+    for (size_t i=1; i<N_elements.size(); i++) {
+        min_cache = std::min(min_cache,N_elements[i]);
+        max_cache = std::max(max_cache,N_elements[i]);
+    }
+    size_rank_cache = ranks.size();
+}
+size_t Mesh::simulated_mesh_struct::min() 
+{
+    if ( size_rank_cache != ranks.size() )
+        calc_min_max();
+    return min_cache;
 }
 size_t Mesh::simulated_mesh_struct::max() 
 {
-    int N_procs = 0;
-    for (size_t i=0; i<ranks.size(); i++)
-        N_procs = std::max(N_procs,ranks[i]+1);
-    std::vector<size_t> N_elements(N_procs,0);
-    countElements( *this, N_elements );
-    size_t N_max = N_elements[0];
-    for (size_t i=1; i<N_elements.size(); i++)
-        N_max = std::max(N_max,N_elements[i]);
-    return N_max;
+    if ( size_rank_cache != ranks.size() )
+        calc_min_max();
+    return max_cache;
 }
 size_t Mesh::simulated_mesh_struct::avg() 
 {

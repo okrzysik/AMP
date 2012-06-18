@@ -211,6 +211,7 @@ Mesh::simulated_mesh_struct  MultiMesh::simulateBuildMesh( const MeshParameters:
     // Determine the load balancing we want to use and create the virtual communicators for each mesh
     std::vector<rank_list> groups = loadBalancer( comm_ranks.size(), multimeshParams->params, multimeshParams->N_elements, multimeshParams->method );
     for (size_t i=0; i<groups.size(); i++) {
+        AMP_ASSERT(groups[i].size()>0);
         for (size_t j=0; j<groups[i].size(); j++)
             groups[i][j] = comm_ranks[groups[i][j]];
     }
@@ -957,6 +958,9 @@ std::vector<MultiMesh::rank_list> MultiMesh::loadBalancer( int N_procs,
             for (size_t i=0; i<groups[myid].ids.size(); i++)
                 commGroups[groups[myid].ids[i]].push_back( myRank );
         }
+        printf("%i %i\n",N_procs,(int)meshParams.size());
+        for (size_t i=0; i<commGroups.size(); i++)
+            AMP_ASSERT(commGroups[i].size()>0);
         return commGroups;
     } else if ( method == 2 ) {
         // We want to try to achieve a more balanced approach to the load balance
@@ -966,11 +970,11 @@ std::vector<MultiMesh::rank_list> MultiMesh::loadBalancer( int N_procs,
     }
     return std::vector<rank_list>(0);
 }
-void MultiMesh::addProcSimulation( Mesh::simulated_mesh_struct &mesh, int rank )
+size_t MultiMesh::addProcSimulation( Mesh::simulated_mesh_struct &mesh, int rank )
 {
     if ( mesh.submeshes.empty() ) {
         mesh.ranks.push_back( rank );
-        return;
+        return (size_t) round(((double)mesh.N_elements)/((double)mesh.ranks.size()));
     } 
     AMP_INSIST(mesh.params->getDatabase()->keyExists("MeshType"),"MeshType must exist in input database");
     std::string MeshType = mesh.params->getDatabase()->getString("MeshType");
@@ -980,7 +984,7 @@ void MultiMesh::addProcSimulation( Mesh::simulated_mesh_struct &mesh, int rank )
         std::vector<int> ranks = mesh.ranks;
         ranks.push_back( rank );
         mesh = Mesh::simulateBuildMesh( mesh.params, ranks, mesh.N_elements );
-        return;
+        return mesh.max();
     }
     if ( multimeshParams->method==1 ) {
         AMP_ASSERT(mesh.submeshes.size()==multimeshParams->params.size());
@@ -998,29 +1002,43 @@ void MultiMesh::addProcSimulation( Mesh::simulated_mesh_struct &mesh, int rank )
             std::vector<comm_groups> groups = independentGroups2( N_procs, ids );
             // Modify the submesh comms
             AMP_ASSERT((int)groups.size()==N_procs);
+            size_t max = 0;
             for (size_t i=0; i<groups.size(); i++) {
                 AMP_ASSERT(groups[i].N_procs==1);
-                for (size_t j=0; j<groups[i].ids.size(); j++)
+                size_t sum = 0;
+                for (size_t j=0; j<groups[i].ids.size(); j++) {
                     mesh.submeshes[groups[i].ids[j]].ranks[0] = (int) i;
+                    sum += mesh.submeshes[i].N_elements;
+                }
+                max = std::max(max,sum);
             }
             mesh.ranks.push_back( rank );
+            return max;
         } else {
             // We need to add a processor to the mesh with the largest # of elements per processor
-            double max = 0;
+            size_t max = 0;
             int i_max = 0;
+            std::vector<size_t> max_list(mesh.submeshes.size(),0);
             for (size_t i=0; i<mesh.submeshes.size(); i++) {
-                double tmp = ((double)mesh.submeshes[i].N_elements)/((double)mesh.submeshes[i].ranks.size());
-                if ( tmp > max ) {
-                    max = tmp;
+                max_list[i] = mesh.submeshes[i].max();
+                if ( max_list[i] > max ) {
+                    max = max_list[i];
                     i_max = i;
                 }
             }
-            addProcSimulation( mesh.submeshes[i_max], rank );
+            max_list[i_max] = addProcSimulation( mesh.submeshes[i_max], rank );
             mesh.ranks.push_back( rank );
+            max = 0;
+            for (size_t i=0; i<mesh.submeshes.size(); i++) {
+                if ( max_list[i] > max )
+                    max = max_list[i];
+            }
+            return max;
         }
     } else {
         AMP_ERROR("Not ready for other load balancers yet");
     }
+    return 0;
 }
 
 
@@ -1034,15 +1052,36 @@ std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups1(
     // This will distribute the groups onto the processors such that no groups share any processors
     // Note: this requires the number of processors to be >= the number of ids
     AMP_ASSERT(N_procs>=(int)meshParameters.size());
-    // Start with 1 processor per mesh and get the load balance
+    AMP_ASSERT(size.size()==meshParameters.size());
+    // Handle the special case if the # of processors == the # of ids
+    if ( N_procs == (int)meshParameters.size() ) {
+        std::vector<comm_groups> groups(meshParameters.size());
+        for (int i=0; i<N_procs; i++) {
+            groups[i].N_procs = 1;
+            groups[i].ids = std::vector<int>(1,i);
+        }
+        return groups;
+    }
+    // Start by using ~80% of the procs
+    size_t N_total = 0;
+    for (size_t i=0; i<meshParameters.size(); i++)
+        N_total += size[i];
     std::vector<Mesh::simulated_mesh_struct> load_balance(meshParameters.size());
     std::vector<size_t> max_size(meshParameters.size());
-    std::vector<int> rank1(1,0);
+    std::vector<int> rank1(N_procs);
+    int N_procs_remaining = N_procs;
     for (size_t i=0; i<meshParameters.size(); i++) {
+        int N_proc_local = floor(0.8*((double)N_procs)*((double)size[i])/((double)N_total))-1;
+        N_proc_local = std::min(N_proc_local,N_procs-(int)size.size());
+        N_proc_local = std::max(N_proc_local,1);
+        N_proc_local = 1;
+        rank1.resize(N_proc_local);
+        for (int j=0; j<N_proc_local; j++)
+            rank1[j] = j;
         load_balance[i] = Mesh::simulateBuildMesh( meshParameters[i], rank1, size[i] );
         max_size[i] = load_balance[i].max();
+        N_procs_remaining -= N_proc_local;
     }
-    int N_procs_remaining = N_procs - meshParameters.size();
     // While we have processors remaining, try to add them so that we minimize 
     // the maximum number of elements on any rank
     while ( N_procs_remaining > 0 ) {
@@ -1069,8 +1108,7 @@ std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups1(
         AMP_ASSERT( max1>max2 && max1>0 );
         while ( N_procs_remaining>0 && max1>max2 ) {
             N_procs_remaining--;
-            addProcSimulation( load_balance[i1], (int) load_balance[i1].ranks.size() );
-            max_size[i1] = load_balance[i1].max();
+            max_size[i1] = addProcSimulation( load_balance[i1], (int) load_balance[i1].ranks.size() );
             max1 = max_size[i1];
         }
     }
@@ -1089,12 +1127,8 @@ std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups2(
     // This will distribute the groups onto the processors such that each group has exactly one processor.  
     // Note: this requires the number of processors to be <= the number of ids
     AMP_ASSERT(N_procs<=(int)ids_in.size());
-    std::vector<std::pair<double,int> > ids = ids_in;
-    double total_weight = 0.0;
-    for (size_t i=0; i<ids.size(); i++)
-        total_weight += ids[i].first;
-    double weight_avg = total_weight / ((double) N_procs);
     std::vector<comm_groups> groups;
+    groups.reserve(N_procs);
     // Handle the special case if the # of processors == the # of ids
     if ( N_procs == (int)ids_in.size() ) {
         groups.resize(N_procs);
@@ -1104,53 +1138,65 @@ std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups2(
         }
         return groups;
     }
+    // Sort by the weights
+    std::vector<std::pair<double,int> > ids = ids_in;
+    AMP::Utilities::quicksort( ids );
+    comm_groups tmp_group;
+    tmp_group.N_procs = 1;
+    tmp_group.ids.reserve(8);
     // Remove any ids that require a processor by themselves
-    std::vector<std::pair<double,int> >::iterator  iterator = ids.begin();
-    while ( iterator != ids.end() ) {
-        if ( iterator->first >= weight_avg ) {
-            comm_groups tmp;
-            tmp.N_procs = 1;
-            tmp.ids = std::vector<int>(1,iterator->second);
-            groups.push_back(tmp);
-            iterator = ids.erase(iterator);
-        } else {
-            ++iterator;
-        }
+    for (size_t i=ids.size()-1; i>=0; i--) {
+        double total_weight = 0.0;
+        for (size_t j=0; j<ids.size(); j++)
+            total_weight += ids[i].first;
+        double weight_avg = total_weight / ((double) N_procs-groups.size());
+        if ( ids[i].first < weight_avg )
+            break;
+        tmp_group.ids.resize(1);
+        tmp_group.ids[0] = ids[i].second;
+        groups.push_back(tmp_group);
+        ids.resize(i);
     }
-    if ( groups.size() == 0 ) {
-        // We did not remove any elements, lets begin grouping them together
-        if ( ( ids[0].first + ids[ids.size()-1].first ) > weight_avg ) {
-            // The first and last elements create a valid bin, add them together
-            comm_groups tmp;
-            tmp.N_procs = 1;
-            tmp.ids = std::vector<int>(2);
-            tmp.ids[0] = ids[0].second;
-            tmp.ids[1] = ids[ids.size()-1].second;
-            ids.erase(ids.begin());     // erase the first element
-            ids.resize(ids.size()-1);   // erase the last element
-            groups.push_back(tmp);      // add the new element
-        } else {
-            // Combine the first set of elements that sum to the desired value
-            int n = 1;
-            double weight_sum = ids[0].first;
-            while ( weight_sum < weight_avg ) {
-                weight_sum += ids[n].first;
-                n++;
+    while ( !ids.empty() ) {
+        // Group meshes until we reach or exceed the average number of elements remaining
+        if ( (ids.size()+groups.size()) == (size_t) N_procs ) {
+            tmp_group.ids.resize(1);
+            for (size_t i=0; i<ids.size(); i++) {
+                tmp_group.ids = std::vector<int>(1,ids_in[i].second);
+                groups.push_back( tmp_group );
             }
-            comm_groups tmp;
-            tmp.N_procs = 1;
-            tmp.ids = std::vector<int>(n);
-            for (int i=0; i<n; i++)
-                tmp.ids[i] = ids[i].second;
-            ids.erase(ids.begin(),ids.begin()+n);
-            groups.push_back(tmp);
+            ids.resize(0);
+            break;
         }
+        double total_weight = 0.0;
+        for (size_t j=0; j<ids.size(); j++)
+            total_weight += ids[j].first;
+        double weight_avg = total_weight / ((double) N_procs-groups.size());
+        tmp_group.ids.resize(0);
+        double weight_sum = 0.0;
+        while ( weight_sum < weight_avg ) {
+            size_t i = ids.size()-1;
+            if ( weight_sum+ids[i].first < weight_avg ) {
+                weight_sum += ids[i].first;
+                tmp_group.ids.push_back( ids[i].second );
+                ids.resize(i);
+            } else {
+                for (size_t j=0; j<=i; j++) {
+                    if ( weight_sum+ids[j].first >= weight_avg ) {
+                        weight_sum += ids[j].first;
+                        tmp_group.ids.push_back( ids[j].second );
+                        for (size_t k=j; k<i; k++)
+                            ids[k] = ids[k+1];
+                        ids.resize(i);
+                        break;
+                    }
+                }
+            }
+        }
+        groups.push_back( tmp_group );
     }
-    // Recursively add the remaining ids
-    if ( ids.size() > 0 ) {
-        std::vector<MultiMesh::comm_groups> groups2 = independentGroups2( (int)(N_procs-groups.size()), ids );
-        groups.insert( groups.end(), groups2.begin(), groups2.end() );
-    }
+    AMP_ASSERT((int)groups.size()==N_procs);
+    AMP_ASSERT(ids.size()==0);
     return groups;
 }
 

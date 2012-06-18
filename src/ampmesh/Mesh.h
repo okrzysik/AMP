@@ -374,12 +374,13 @@ public:
 
 
     /**
-     * \struct MultiMesh
+     * \class MultiMesh
      * \brief Structure used to contain simulated mesh load
      * \details  This structure provides info that can be used to simulate loading 
      *   a mesh, and checking the resulting load balance
      */
-    struct simulated_mesh_struct {
+    class simulated_mesh_struct {
+      public:
         std::string name;                               //!< The mesh name
         std::string type;                               //!< The mesh type
         size_t N_elements;                              //!< The number of elements in the mesh
@@ -392,6 +393,11 @@ public:
         size_t min();                                   //!< Function to return the minimum number of elements on a processor
         size_t max();                                   //!< Function to return the maximum number of elements on a processor
         size_t avg();                                   //!< Function to return the average number of elements per processor
+        void calc_min_max();                            //!< Function to reset the cached values
+      private:
+        size_t size_rank_cache;
+        size_t min_cache;
+        size_t max_cache;
     };
 
     
