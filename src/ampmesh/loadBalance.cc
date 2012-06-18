@@ -164,6 +164,7 @@ void LoadBalance::changeRanks( const std::vector<int> &ranks )
 {
     if ( d_submeshes.empty() ) {
         d_ranks = ranks;
+        updateCache();
     } else {
         AMP_INSIST(ranks.size()==d_ranks.size(),"Cannot change ranks to different size");
         for (size_t i=0; i<ranks.size(); i++)
@@ -194,11 +195,11 @@ void LoadBalance::updateCache()
             N_procs = std::max(N_procs,d_ranks[i]+1);
         std::vector<size_t> N_elements(N_procs,0);
         countElements( *this, N_elements );
-        d_min = N_elements[0];
-        d_max = N_elements[0];
-        for (size_t i=1; i<N_elements.size(); i++) {
-            d_min = std::min(d_min,N_elements[i]);
-            d_max = std::max(d_max,N_elements[i]);
+        d_min = d_N_elements;
+        d_max = 0;
+        for (size_t i=0; i<d_ranks.size(); i++) {
+            d_min = std::min(d_min,N_elements[d_ranks[i]]);
+            d_max = std::max(d_max,N_elements[d_ranks[i]]);
         }
     } else if ( d_decomp==1 ) {
         // Special case where no two submeshes share a processor
@@ -206,9 +207,9 @@ void LoadBalance::updateCache()
         d_max = 0;
         for (size_t i=0; i<d_submeshes.size(); i++) {
             if ( d_submeshes[i].cache_valid ) {
-                if ( d_submeshes[i].d_min )
+                if ( d_submeshes[i].d_min < d_min )
                     d_min = d_submeshes[i].d_min;
-                if ( d_submeshes[i].d_max )
+                if ( d_submeshes[i].d_max > d_max )
                     d_max = d_submeshes[i].d_max;
             } else {
                 d_min = std::min(d_min,d_submeshes[i].min());
