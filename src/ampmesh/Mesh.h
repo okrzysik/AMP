@@ -373,34 +373,6 @@ public:
 #endif
 
 
-    /**
-     * \struct MultiMesh
-     * \brief Structure used to contain simulated mesh load
-     * \details  This structure provides info that can be used to simulate loading 
-     *   a mesh, and checking the resulting load balance
-     */
-    struct simulated_mesh_struct {
-        std::string name;                               //!< The mesh name
-        std::string type;                               //!< The mesh type
-        size_t N_elements;                              //!< The number of elements in the mesh
-        boost::shared_ptr<const Database> db;           //!< The database used for the mesh
-        std::vector<int> ranks;                         //!< The ranks of the processors that own a piece of the mesh
-        std::vector<Mesh::simulated_mesh_struct> submeshes;   //!< Sub-meshes to the current mesh
-        simulated_mesh_struct() {};                     //!< Empty constructor
-        simulated_mesh_struct(const simulated_mesh_struct&);  //!< Copy constructor
-        void print();                                   //!< Function to print the mesh hierarchy
-    };
-
-    
-    /**
-     * \brief    Simulate the mesh build process
-     * \details  This function will simulate the loading and load balancing of the mesh hierarchy
-     * \param params        Parameters to use for the mesh construction
-     * \param comm_ranks    Simulated ranks that are used to create the mesh
-     */
-    static simulated_mesh_struct  simulateBuildMesh( const MeshParameters::shared_ptr &params, std::vector<int> &comm_ranks );
-
-
 protected:
 
     //!  Empty constructor for a mesh

@@ -22,6 +22,9 @@
     #include "discretization/simpleDOF_Manager.h"
 #endif
 
+#include <math.h>
+
+
 namespace AMP {
 namespace Mesh {
 
@@ -119,6 +122,16 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     boost::shared_ptr<AMP::Database> database = params->d_db;
     AMP_ASSERT(database!=NULL);
     size_t meshSize = 0;
+    if ( database->keyExists("NumberOfElements") ) {
+        // User specified the number of elements, this should override everything
+        meshSize = (size_t) database->getInteger("NumberOfElements");
+        // Adjust the number of elements by a weight if desired
+        if ( database->keyExists("Weight") ) {
+            double weight = database->getDouble("Weight");
+            meshSize = (size_t) ceil(weight*((double)meshSize));
+        }
+        return meshSize;
+    }
     // This is being called through the base class, call the appropriate function
     AMP_INSIST(database->keyExists("MeshType"),"MeshType must exist in input database");
     std::string MeshType = database->getString("MeshType");
@@ -144,48 +157,6 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         AMP_ERROR( "Unknown mesh type and NumberOfElements does not exist in database" );
     }
     return meshSize;
-}
-
-
-/********************************************************
-* Simulate the mesh build process                       *
-********************************************************/
-Mesh::simulated_mesh_struct::simulated_mesh_struct( const Mesh::simulated_mesh_struct& rhs ) 
-{
-    name = rhs.name;
-    type = rhs.type;
-    N_elements = rhs.N_elements;
-    db = rhs.db;
-    ranks = rhs.ranks;
-    submeshes = rhs.submeshes;
-}
-void Mesh::simulated_mesh_struct::print() 
-{
-    AMP_ERROR( "Not implimented yet" );
-}
-Mesh::simulated_mesh_struct  Mesh::simulateBuildMesh( const MeshParameters::shared_ptr &params, std::vector<int> &comm_ranks ) 
-{
-    // Get required values from the parameters
-    AMP_ASSERT(comm_ranks.size()>0);
-    boost::shared_ptr<AMP::Database> database = params->d_db;
-    AMP_ASSERT(database!=NULL);
-    AMP_INSIST(database->keyExists("MeshType"),"MeshType must exist in input database");
-    AMP_INSIST(database->keyExists("MeshName"),"MeshName must exist in input database");
-    std::string MeshType = database->getString("MeshType");
-    std::string MeshName = database->getString("MeshName");
-    // Simulate the load process
-    Mesh::simulated_mesh_struct mesh;
-    if ( MeshType == std::string("Multimesh") ) {
-        mesh = MultiMesh::simulateBuildMesh( params, comm_ranks );
-    } else {
-        mesh.name = MeshName;
-        mesh.type = MeshType;
-        mesh.db = database;
-        mesh.N_elements = Mesh::estimateMeshSize( params );
-        mesh.ranks = comm_ranks;
-        mesh.submeshes = std::vector<Mesh::simulated_mesh_struct>();
-    }
-    return mesh;
 }
 
 

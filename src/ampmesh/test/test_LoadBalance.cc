@@ -1,6 +1,7 @@
 // This program simulates the load balance with a given input file on a given number of processors
 
 #include "ampmesh/Mesh.h"
+#include "ampmesh/loadBalance.h"
 #include "utils/AMPManager.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
@@ -9,18 +10,6 @@
 #include <iomanip>
 #include <math.h>
 
-
-// Function to recursively cound the number of elements per processor
-void countElements( const AMP::Mesh::Mesh::simulated_mesh_struct &mesh, std::vector<size_t> &N_elements )
-{
-    if ( mesh.submeshes.empty() ) {
-        for (size_t i=0; i<mesh.ranks.size(); i++)
-            N_elements[mesh.ranks[i]] += mesh.N_elements/mesh.ranks.size();
-    } else {
-        for (size_t i=0; i<mesh.submeshes.size(); i++)
-            countElements( mesh.submeshes[i], N_elements );
-    }
-}
 
 
 // Main function
@@ -45,33 +34,32 @@ int main ( int argc , char ** argv )
     std::vector<int> comm_ranks(N_procs);
     for (int i=0; i<N_procs; i++)
         comm_ranks[i] = i;
-    AMP::Mesh::Mesh::simulated_mesh_struct mesh = AMP::Mesh::Mesh::simulateBuildMesh( params, comm_ranks );
+    double t0 = AMP::AMP_MPI::time();
+    AMP::Mesh::LoadBalance mesh( params, comm_ranks );
+    double t1 = AMP::AMP_MPI::time();
 
-    // Check the results of the load balance
-    std::vector<size_t> N_elements(N_procs,0);
-    countElements( mesh, N_elements );
-    std::cout << "Rank, N_elements:" << std::endl;
-    int N_line = 16;
-    for (int i=0; i<(N_procs+N_line-1)/N_line; i++) {
-        for (int j=i*N_line; j<std::min((i+1)*N_line,N_procs); j++)
-            std::cout << std::setw(8) << j;
+    // Print the results of the load balance
+    if ( N_procs < 10000 ) {
+        mesh.print();
         std::cout << std::endl;
-        for (int j=i*N_line; j<std::min((i+1)*N_line,N_procs); j++)
-            std::cout << std::setw(8) << N_elements[j];
-        std::cout << std::endl << std::endl;
     }
-    size_t N_min=0xFFFFFFFF;
-    size_t N_max=0;
-    for (int i=0; i<N_procs; i++) {
-        N_min = std::min(N_min,N_elements[i]);
-        N_max = std::max(N_max,N_elements[i]);
-    }
-    
-    std::cout << std::endl;
-    std::cout << "min = " << N_min << std::endl;
-    std::cout << "max = " << N_max << std::endl;
-    std::cout << "avg = " << ((double)mesh.N_elements)/((double)N_procs) << std::endl;
+    std::cout << "min = " << mesh.min() << std::endl;
+    std::cout << "max = " << mesh.max() << std::endl;
+    std::cout << "avg = " << mesh.avg() << std::endl;
+    std::cout << "time = " << t1-t0 << std::endl;
 
+    // Shutdown AMP
     AMP::AMPManager::shutdown();
-    return 0;
+
+    // Print the errors and return
+    int N_errors = 0;
+    if ( t1-t0 > 10 ) {
+        N_errors++;
+        std::cout << "load balance failed run time limits" << std::endl;
+    }
+    if ( ((double)mesh.max()) > 2.0*((double)mesh.avg()) ) {
+        N_errors++;
+        std::cout << "load balance failed quality limits" << std::endl;
+    }
+    return N_errors;
 }

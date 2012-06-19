@@ -111,11 +111,7 @@ namespace Operator {
 
         AMP::LinearAlgebra::Vector::shared_ptr myRhs = subsetInputVector( rhsCorrection );
 
-        double gammaValue;
-        if((d_params->d_db)->keyExists("gamma"))
-        {
-          gammaValue = (d_params->d_db)->getDouble("gamma");
-        }
+        double gammaValue = (d_params->d_db)->getDoubleWithDefault("gamma", -1.);
 
         AMP::LinearAlgebra::Vector::shared_ptr rInternal = myRhs->cloneVector();
         AMP::Discretization::DOFManager::shared_ptr dofManager = rInternal->getDOFManager();
