@@ -1173,7 +1173,7 @@ std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups2(
         return groups;
     }
     // Remove any ids that require a processor by themselves
-    for (size_t i=ids.size()-1; i>=0; i--) {
+    for (int i=(int)ids.size()-1; i>=0; i--) {
         double total_weight = 0.0;
         for (size_t j=0; j<ids.size(); j++)
             total_weight += ids[i].first;
