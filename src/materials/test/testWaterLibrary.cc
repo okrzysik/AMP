@@ -54,8 +54,8 @@ int main ( int argc , char **argv )
 	   {
 			//(*enthalpyValue)[i]=1 + (double) i; 
       //(*pressureValue)[i]=1e5 (1 + (double) i);
-			(*enthalpyValue)[i]=1;
-      (*pressureValue)[i]=1e2;
+			(*enthalpyValue)[i]=1;    // enthalpy 
+      (*pressureValue)[i]=1e2;  // pressure
 	   }
 	   
 	   // Block for temporary variables
@@ -77,26 +77,31 @@ int main ( int argc , char **argv )
 	   }
 
 	   // test material accessors, one argument present
+	   // This sets the default values for enthalpy and temperature so that if it is not on the argMap, it uses the default.
 	   std::vector<double> defaults(2);
-	   defaults[0] = 563.4;
-     defaults[1] = 0.05;
+	   defaults[0] = 563.4;  // enthalpy
+     defaults[1] = 0.05;   // pressure
 	   prop->set_defaults(defaults);
 	   
 	   // Block for temporary variables
 	   {
+		   // known solution is 1 + 2*H + 3*P
+		   double knownSolution = 1 + 2* (*enthalpyValue)[0] + 3*defaults[1];
 		   std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
 		   argMap.insert( std::make_pair( "enthalpy", enthalpyValue ) );
 		   std::vector<double> temperatureValue_def(temperatureValue);
 		   prop->evalv(temperatureValue_def, argMap);
-		   for (size_t i=0; i<n; i++) {good = good and AMP::Utilities::approx_equal(temperatureValue[i], temperatureValue_def[i]);}
+		   for (size_t i=0; i<n; i++) {good = good and AMP::Utilities::approx_equal(temperatureValue_def[i], knownSolution);}
 	   }
 
 	   // test material accessors, no arguments present
 	   {
+		   // known solution is 1 + 2*H + 3*P
+		   double knownSolution = 1 + 2* defaults[0] + 3*defaults[1];
 		   std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
 		   std::vector<double> temperatureValue_def(temperatureValue);
 		   prop->evalv(temperatureValue_def, argMap);
-		   for (size_t i=0; i<n; i++) {good = good and AMP::Utilities::approx_equal(temperatureValue[i], temperatureValue_def[i]);}
+		   for (size_t i=0; i<n; i++) {good = good and AMP::Utilities::approx_equal(temperatureValue_def[i], knownSolution);}
 	   }
 
 	   if (good) ut.passes("basic tests of Material");
