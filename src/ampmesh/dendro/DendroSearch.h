@@ -676,7 +676,7 @@ class DendroSearch {
         hex8_element_t volume_element(dummy);
         bool found = false; 
         std::vector<double> x(3, 0.0);
-        if (volume_element.within_bounding_box(tmpPt)) {
+        if (volume_element.within_bounding_box(tmpPt) && quick_contains_point(volume_element, tmpPt)) {
           x = volume_element.map_global_to_local(tmpPt);
           bool coordinates_are_local = true;
           found = volume_element.contains_point(x, coordinates_are_local);

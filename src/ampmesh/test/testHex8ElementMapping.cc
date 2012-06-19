@@ -127,14 +127,17 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   volume_element.set_support_points(std::vector<double>(points, points+24));
 
 
-  double abs_tol = 1.0e-13, rel_tol = 1.0e-13;
+  double abs_tol = 1.0e-12, rel_tol = 1.0e-12;
   const unsigned int n_random_candidate_points = 10000;
   for (unsigned int i = 0; i < n_random_candidate_points; ++i) {
     std::vector<double> random_candidate_point(3);
     for (unsigned int j = 0; j < 3; ++j) { random_candidate_point[j] = -1.0+2.0*rand()/RAND_MAX; }
-
     std::vector<double> candidate_point_global_coordinates = volume_element.map_local_to_global(random_candidate_point);
     std::vector<double> candidate_point_local_coordinates = volume_element.map_global_to_local(candidate_point_global_coordinates);
+
+    if(!(volume_element.contains_point(candidate_point_global_coordinates) == volume_element.contained_by_triangles_on_faces(candidate_point_global_coordinates))) {
+      for (unsigned int i = 0; i < 3; ++i) { std::cout<<candidate_point_local_coordinates[i]<<"  "; } std::cout<<"\n";
+    }
 
     std::vector<double> error(3);
     for (unsigned int i = 0; i < 3; ++i) { error[i] = candidate_point_local_coordinates[i] - random_candidate_point[i]; }
@@ -142,6 +145,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     double tolerance = abs_tol + rel_tol * sqrt(std::inner_product(random_candidate_point.begin(), random_candidate_point.end(), random_candidate_point.begin(), 0.0));
     assert(error_norm < tolerance);
   } // end for i
+
 
   ut->passes(exeName);
 }

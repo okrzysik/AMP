@@ -1,9 +1,14 @@
+#ifndef HEX8_ELEMENT_T
+#define HEX8_ELEMENT_T
+
 #include <iostream>
 #include <vector>
 #include <numeric>
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+
+#include "triangle_t.h"
 
 std::vector<double> get_basis_functions_values(const std::vector<double> &x) {
   assert(x.size() == 3);
@@ -65,6 +70,11 @@ public:
 
   std::vector<double> get_support_points() const { return support_points; } 
 
+  std::vector<double> get_support_point(unsigned int i) const { 
+    assert(i < 8);
+    return std::vector<double>(&support_points[3*i], &support_points[3*i]+3);
+  } 
+
   std::vector<double> get_bounding_box() const { return bounding_box; }
 
   bool within_bounding_box(const std::vector<double> &p) {
@@ -72,6 +82,80 @@ public:
     for (unsigned int j = 0; j < 3; ++j) {
       if ((bounding_box[j+0] > p[j]) || (bounding_box[j+3] < p[j])) { return false; }
     } // end for j
+    return true;
+  }
+
+  bool contained_by_triangles_on_faces(const std::vector<double> &p) {
+    unsigned int faces[24] = {
+      0, 3, 2, 1, 
+      0, 1, 5, 4, 
+      1, 2, 6, 5, 
+      2, 3, 7, 6, 
+      3, 0, 4, 7, 
+      4, 5, 6, 7
+    };
+    std::vector<triangle_t> triangles(4);
+    for (unsigned int i = 0; i < 6; ++i) {
+      // first configuration when splitting face into two triangles
+      //   3          2    
+      //    o--------o    
+      //    | .      |
+      //    |   .    |   
+      //    |     .  |  
+      //    |       .| 
+      //    o--------o
+      //   0          1
+      //
+      //   3        
+      //    o
+      //    | .
+      //    |   .
+      //    |     .
+      //    |       .
+      //    o--------o
+      //   0          1
+      triangles[0].set_support_points(get_support_point(faces[4*i+0]), get_support_point(faces[4*i+1]), get_support_point(faces[4*i+3])); 
+      //   3          2    
+      //    o--------o    
+      //      .      |
+      //        .    |   
+      //          .  |  
+      //            .| 
+      //             o
+      //              1
+      triangles[1].set_support_points(get_support_point(faces[4*i+2]), get_support_point(faces[4*i+3]), get_support_point(faces[4*i+1])); 
+
+      // second configuration
+      //   3          2    
+      //    o--------o    
+      //    |      . |
+      //    |    .   |   
+      //    |  .     |  
+      //    |.       | 
+      //    o--------o
+      //   0          1
+      //
+      //              2    
+      //             o    
+      //           . |
+      //         .   |   
+      //       .     |  
+      //     .       | 
+      //    o--------o
+      //   0          1
+      triangles[2].set_support_points(get_support_point(faces[4*i+1]), get_support_point(faces[4*i+2]), get_support_point(faces[4*i+0])); 
+      //   3          2    
+      //    o--------o    
+      //    |      .  
+      //    |    .       
+      //    |  .        
+      //    |.         
+      //    o         
+      //   0           
+      triangles[3].set_support_points(get_support_point(faces[4*i+3]), get_support_point(faces[4*i+0]), get_support_point(faces[4*i+2])); 
+
+      if (((!triangles[0].above_point(p)) || (!triangles[1].above_point(p))) && ((!triangles[2].above_point(p)) || (!triangles[3].above_point(p)))) { return false; }
+    } // end for i
     return true;
   }
 
@@ -84,9 +168,11 @@ public:
 
   std::vector<double> map_local_to_global(const std::vector<double> &local_coordinates) {
     assert(local_coordinates.size() == 3); 
+    std::vector<double> tmp = point_candidate;
     point_candidate = std::vector<double>(3, 0.0);
     std::vector<double> global_coordinates = compute_residual_vector(local_coordinates);
     for (unsigned int i = 0; i < 3; ++i) { global_coordinates[i] *= -1.0; }
+    point_candidate = tmp; 
     return global_coordinates;
   }
 
@@ -96,12 +182,13 @@ public:
     if (!coordinates_are_local) {
       point_candidate = coordinates;
       if (!within_bounding_box(point_candidate)) { return false; }
+      if (!contained_by_triangles_on_faces(point_candidate)) { return false; }
       local_coordinates = solve_newton();
     } else {
       local_coordinates = coordinates;
     } // end if
     for (unsigned int i = 0; i < 3; ++i) {
-      if (fabs(local_coordinates[i]) > 1.0) {
+      if (fabs(local_coordinates[i]) > 1.0 + epsilon) {
         return false;
       } // end if
     } // end for i
@@ -116,6 +203,7 @@ public:
   std::pair<unsigned int, std::vector<double> > project_on_face(const std::vector<double> &p) {
     assert(p.size() == 3); 
     if (!within_bounding_box(p)) { return std::pair<unsigned int, std::vector<double> >(99, std::vector<double>(2, 0.0)); }
+    if (!contained_by_triangles_on_faces(p)) { return std::pair<unsigned int, std::vector<double> >(99, std::vector<double>(2, 0.0)); }
     point_candidate = p;
 
     // compute the coordinates of the point candidate in the frame of the volume element
@@ -291,7 +379,15 @@ private:
   std::vector<double> compute_inverse_matrix(const std::vector<double> &A) {
     assert(A.size() == 9);
     double determinant = A[0]*(A[4]*A[8]-A[5]*A[7])-A[1]*(A[3]*A[8]-A[5]*A[6])+A[2]*(A[3]*A[7]-A[4]*A[6]);
-    assert(fabs(determinant) > 1.0e-15);
+    if (fabs(determinant) < 1.0e-16) {
+      std::cerr<<"determinant="<<determinant<<"\n";
+      std::cerr<<"matrix=\n";
+      for (unsigned int i = 0; i < 9; ++i) {
+        std::cerr<<A[i]<<((i%3 == 2) ? "\n" : "  ");  
+      } // end for i
+      for (unsigned int i = 0; i < 1000; ++i) { std::cerr<<std::flush; }
+    } // end if
+    assert(fabs(determinant) > 1.0e-16);
     double one_over_determinant = 1.0 / determinant;
     std::vector<double> inverse_of_A(9, 0.0);
     inverse_of_A[0] = one_over_determinant*(A[4]*A[8]-A[5]*A[7]);
@@ -326,80 +422,221 @@ private:
     return compute_matrix_times_vector(compute_inverse_matrix(J), f);
   }
 
+  std::vector<double> compute_initial_guess() {
+    // matlab code
+    // M=[-1 1 1 -1 -1 1 1 -1; -1 -1 1 1 -1 -1 1 1; -1 -1 -1 -1 1 1 1 1; 1 1 1 1 1 1 1 1]
+    // K=transpose(M)*inv(M*transpose(M))
+    // Y=[...]
+    // KA=K(:,1:3)
+    // Kb=K(:,4)
+    // A=Y*KA
+    // b=Y*Kb
+    // p=[...]
+    // inv(A)*(p-b)
+    double KA[24] = {
+      -0.125, -0.125, -0.125, 
+       0.125, -0.125, -0.125, 
+       0.125,  0.125, -0.125, 
+      -0.125,  0.125, -0.125, 
+      -0.125, -0.125,  0.125, 
+       0.125, -0.125,  0.125, 
+       0.125,  0.125,  0.125, 
+      -0.125,  0.125,  0.125, 
+    };
+
+    double Kb[8] = {
+      0.125,
+      0.125,
+      0.125,
+      0.125,
+      0.125,
+      0.125,
+      0.125,
+      0.125,
+    };
+
+    double Y[24];
+    for (unsigned int i = 0; i < 8; ++i) {
+      for (unsigned int j = 0; j < 3; ++j) {
+        Y[j*8+i] = support_points[i*3+j];
+      } // end for j
+    } // end for i
+
+
+    std::vector<double> A(9, 0.0);
+    for (unsigned int i = 0; i < 3; ++i) {
+      for (unsigned int j = 0; j < 3; ++j) {
+        A[3*i+j] = 0.0;
+        for (unsigned int k = 0; k < 8; ++k) {
+          A[3*i+j] += Y[8*i+k] * KA[3*k+j];
+        } // end for k
+      } // end for j
+    } // end for i
+
+    std::vector<double> b(3, 0.0);
+    for (unsigned int i = 0; i < 3; ++i) {
+      b[i] = 0.0;
+      for (unsigned int j = 0; j < 8; ++j) {
+        b[i] += Y[8*i+j] * Kb[j];
+      } // end for j
+      b[i] = point_candidate[i] - b[i];
+    } // end for i
+
+    return compute_matrix_times_vector(compute_inverse_matrix(A), b);
+  }
+
   // map the coordinates of the point candidate onto the reference frame of the volume element defined by the support points
   std::vector<double> solve_newton(double abs_tol = 1.0e-14, double rel_tol = 1.0e-14, unsigned int max_iter = 100, bool verbose = false) {
     if (verbose) { std::cout<<"solve newton with line search\n"; }
     std::vector<double> x(3, 0.0);
+    x = compute_initial_guess();
+//    std::cout<<"initial guess=\n";
+//    for (unsigned int i = 0; i < 3; ++i) { std::cout<<x[i]<<"\n"; }
     std::vector<double> residual_vector = compute_residual_vector(x);
-    double residual_norm = sqrt(inner_product(residual_vector.begin(), residual_vector.end(), residual_vector.begin(), 0.0));
+    double residual_norm = sqrt(std::inner_product(residual_vector.begin(), residual_vector.end(), residual_vector.begin(), 0.0));
     double tol = abs_tol + rel_tol * residual_norm; 
     for (unsigned int iter = 0; iter < max_iter; ++iter) {
-      std::vector<double> inverse_jacobian_matrix_times_residual_vector = compute_inverse_jacobian_times_residual(compute_jacobian_matrix(x), residual_vector);
-      for (double alpha = 1.0; alpha > 1.0e-4; alpha /= 1.1) {
-        std::vector<double> tmp(3);
-        for (unsigned int i = 0; i < 3; ++i) { tmp[i] = x[i] - alpha * inverse_jacobian_matrix_times_residual_vector[i]; };
-        residual_vector = compute_residual_vector(tmp);
-        double tmp_residual_norm = sqrt(inner_product(residual_vector.begin(), residual_vector.end(), residual_vector.begin(), 0.0));
-        if (tmp_residual_norm < residual_norm) {
-          x = tmp;
-          residual_norm = tmp_residual_norm;
-          break;
-        } // end if
-      } // end for
       if (verbose) { std::cout<<iter<<"  "<<residual_norm<<std::endl; }
       if (residual_norm < tol) { 
         if (verbose) { std::cout<<"converged at iteration "<<iter<<" with residual norm "<<residual_norm<<"\n"; }
         return x; 
       } // end if
+      std::vector<double> inverse_jacobian_matrix_times_residual_vector = compute_inverse_jacobian_times_residual(compute_jacobian_matrix(x), residual_vector);
+      bool line_search_passed = false;
+      for (double alpha = 1.0; alpha > 1.0e-14; alpha /= 2.0) {
+        std::vector<double> tmp(3);
+        for (unsigned int i = 0; i < 3; ++i) { tmp[i] = x[i] - alpha * inverse_jacobian_matrix_times_residual_vector[i]; };
+        residual_vector = compute_residual_vector(tmp);
+        double tmp_residual_norm = sqrt(std::inner_product(residual_vector.begin(), residual_vector.end(), residual_vector.begin(), 0.0));
+        if (tmp_residual_norm < residual_norm) {
+          x = tmp;
+          residual_norm = tmp_residual_norm;
+          line_search_passed = true;
+          break;
+        } // end if
+      } // end for
+      assert(line_search_passed);
     } // end for
     std::cerr<<"failed to converge with tolerance "<<tol<<" after "<<max_iter-1<<" iterations (residual norm was "<<residual_norm<<")"<<std::endl;
+    std::cerr<<"support_points=\n";
+    for (unsigned int i = 0; i < 8; ++i) {
+      std::cerr<<i<<"  ["<<support_points[3*i]<<", "<<support_points[3*i+1]<<", "<<support_points[3*i+2]<<"]\n";  
+    } // end for i
+    std::cerr<<"bounding_box=\n";
+    for (unsigned int i = 0; i < 3; ++i) { std::cerr<<bounding_box[i]<<"  "<<bounding_box[i+3]<<"\n"; }
+    std::cerr<<"point_candidate=["<<point_candidate[0]<<", "<<point_candidate[1]<<", "<<point_candidate[2]<<"]\n";
+    for (unsigned int i = 0; i < 1000; ++i) { std::cerr<<std::flush; }
     abort(); 
   }
 };
 
-void scale_points(unsigned int direction, double scaling_factor, unsigned int n_points, double* points) {
-  assert(direction < 3);
-  for (unsigned int i = 0; i < n_points; ++i) { 
-    points[3*i+direction] *= scaling_factor; 
+void test_inverted_element(const std::vector<double> &support_points) {
+  assert(support_points.size() == 24);
+  unsigned int faces[24] = {
+    0, 3, 2, 1, 
+    0, 1, 5, 4, 
+    1, 2, 6, 5, 
+    2, 3, 7, 6, 
+    3, 0, 4, 7, 
+    4, 5, 6, 7
+  };
+  double scalar_product = 0.0;
+  for (unsigned int i = 0; i < 6; ++i) {
+    scalar_product = 0.0;
+    for (unsigned int j = 0; j < 3; ++j) {
+      scalar_product += (support_points[3*faces[4*i+0]+j] - support_points[3*faces[4*i+1]+j]) *
+        (support_points[3*faces[4*i+3]+j] - support_points[3*faces[4*i+2]+j]);
+    } // end for j
+    assert(scalar_product > 0.0);
+    scalar_product = 0.0;
+    for (unsigned int j = 0; j < 3; ++j) {
+      scalar_product += (support_points[3*faces[4*i+1]+j] - support_points[3*faces[4*i+2]+j]) *
+        (support_points[3*faces[4*i+0]+j] - support_points[3*faces[4*i+3]+j]);
+    } // end for j
+    assert(scalar_product > 0.0);
   } // end for i
 }
 
-void scale_points(const std::vector<double> &scaling_factors, unsigned int n_points, double* points) {
-  assert(scaling_factors.size() == 3);
-  for (unsigned int i = 0; i < 3; ++i) { 
-    scale_points(i, scaling_factors[i], n_points, points);
+bool quick_contains_point(const hex8_element_t &ve, const std::vector<double> &point_candidate) {
+  unsigned int faces[24] = {
+    0, 3, 2, 1, 
+    0, 1, 5, 4, 
+    1, 2, 6, 5, 
+    2, 3, 7, 6, 
+    3, 0, 4, 7, 
+    4, 5, 6, 7
+  };
+  triangle_t triangle;
+  for (unsigned int i = 0; i < 6; ++i) {
+    bool first_configuration_passed = true;
+    // first configuration when splitting face into two triangles
+    //   3          2    
+    //    o--------o    
+    //    | .      |
+    //    |   .    |   
+    //    |     .  |  
+    //    |       .| 
+    //    o--------o
+    //   0          1
+    //
+    //   3        
+    //    o
+    //    | .
+    //    |   .
+    //    |     .
+    //    |       .
+    //    o--------o
+    //   0          1
+    triangle.set_support_points(ve.get_support_point(faces[4*i+0]), ve.get_support_point(faces[4*i+1]), ve.get_support_point(faces[4*i+3])); 
+    if (!triangle.above_point(point_candidate)) { first_configuration_passed = false; }
+    //   3          2    
+    //    o--------o    
+    //      .      |
+    //        .    |   
+    //          .  |  
+    //            .| 
+    //             o
+    //              1
+    triangle.set_support_points(ve.get_support_point(faces[4*i+2]), ve.get_support_point(faces[4*i+3]), ve.get_support_point(faces[4*i+1])); 
+    if (!triangle.above_point(point_candidate)) { first_configuration_passed = false; }
+
+
+    bool second_configuration_passed = true;
+    // second configuration
+    //   3          2    
+    //    o--------o    
+    //    |      . |
+    //    |    .   |   
+    //    |  .     |  
+    //    |.       | 
+    //    o--------o
+    //   0          1
+    //
+    //              2    
+    //             o    
+    //           . |
+    //         .   |   
+    //       .     |  
+    //     .       | 
+    //    o--------o
+    //   0          1
+    triangle.set_support_points(ve.get_support_point(faces[4*i+1]), ve.get_support_point(faces[4*i+2]), ve.get_support_point(faces[4*i+0])); 
+    if (!triangle.above_point(point_candidate)) { second_configuration_passed = false; }
+    //   3          2    
+    //    o--------o    
+    //    |      .  
+    //    |    .       
+    //    |  .        
+    //    |.         
+    //    o         
+    //   0           
+    triangle.set_support_points(ve.get_support_point(faces[4*i+3]), ve.get_support_point(faces[4*i+0]), ve.get_support_point(faces[4*i+2])); 
+    if (!triangle.above_point(point_candidate)) { second_configuration_passed = false; }
+
+
+    if ((!first_configuration_passed) && (!second_configuration_passed)) { return false; }
   } // end for i
+  return true;
 }
 
-void translate_points(unsigned int direction, double distance, unsigned int n_points, double* points) {
-  assert(direction < 3);
-  for (unsigned int i = 0; i < n_points; ++i) { 
-    points[3*i+direction] += distance; 
-  } // end for i
-}
-
-void translate_points(std::vector<double> translation_vector, unsigned int n_points, double* points) {
-  assert(translation_vector.size() == 3);
-  for (unsigned int i = 0; i < 3; ++i) { 
-   translate_points(i, translation_vector[i], n_points, points); 
-  } // end for i
-}
-
-void rotate_points(unsigned int rotation_axis, double rotation_angle, unsigned int n_points, double* points) {
-  assert(rotation_axis < 3);
-  unsigned int non_fixed_directions[2];
-  unsigned int i = 0;
-  for (unsigned int j = 0; j < 3; ++j) { 
-    if (j != rotation_axis) {
-      non_fixed_directions[i++] = j;
-    } // end if
-  } // end for j
-  double tmp[3];
-  for (unsigned int j = 0; j < n_points; ++j) {
-    tmp[non_fixed_directions[0]] = cos(rotation_angle)*points[3*j+non_fixed_directions[0]]-sin(rotation_angle)*points[3*j+non_fixed_directions[1]];
-    tmp[non_fixed_directions[1]] = sin(rotation_angle)*points[3*j+non_fixed_directions[0]]+cos(rotation_angle)*points[3*j+non_fixed_directions[1]];
-    tmp[rotation_axis] = points[3*j+rotation_axis];
-    std::copy(tmp, tmp+3, points+3*j);
-  } // end for j
-}
-
+#endif // HEX8_ELEMENT_T

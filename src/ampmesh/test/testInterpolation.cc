@@ -19,7 +19,7 @@
 //#include <algorithm>
 
 #include "ampmesh/Mesh.h"
-#include "ampmesh/DendroSearch.h"
+#include "ampmesh/dendro/DendroSearch.h"
 
 
 double dummyFunction(const std::vector<double> &xyz, const int dof) {
