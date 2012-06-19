@@ -327,10 +327,9 @@ std::vector<boost::shared_ptr<AMP::Database> >  MultiMesh::createDatabases(boost
         std::string iterator;
         std::vector<std::string> index(N);
         if ( database1->keyExists("iterator") ) {
-            std::string iterator = database1->getString("iterator");
+            iterator = database1->getString("iterator");
             AMP_ASSERT(database1->keyExists("indicies"));
             AMP::Database::DataType dataType = database1->getArrayType("indicies");
-            std::vector<std::string> index(N);
             if ( dataType==AMP::Database::AMP_INT ) {
                 std::vector<int> array = database1->getIntegerArray("indicies");
                 AMP_ASSERT((int)array.size()==N);
