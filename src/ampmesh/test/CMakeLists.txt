@@ -32,9 +32,8 @@ ELSE()
     ADD_AMP_TEST_1_2_4 ( test_SiloIO input_SiloIO-2 )
 ENDIF()
 IF( USE_DENDRO AND USE_PETSC )
-    ADD_AMP_PROVISIONAL_TEST( testInterpolation )
-    ADD_AMP_PROVISIONAL_TEST( testDendroSearch )
-    COPY_TEST_DATA_FILE ( input_testDendroSearch )
+    ADD_AMP_PROVISIONAL_TEST( testDendroInterpolation )
+    COPY_TEST_DATA_FILE ( input_testDendroInterpolation  )
 ENDIF()
 
 
