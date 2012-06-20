@@ -96,6 +96,7 @@ private:
         AMP::Mesh::MeshID               id;         // Unique ID to identify the mesh
         AMP::Mesh::Mesh::shared_ptr     mesh;       // Pointer to the mesh
         int                             rank;       // Rank of the current processor on the mesh (used for name mangling)
+        int                             ownerRank;  // Global rank of the processor that "owns" the mesh (usually rank 0 on the mesh comm)
         std::string                     meshName;   // Name of the mesh in silo
         std::string                     path;       // Path to the mesh in silo
         std::string                     file;       // File that will contain the mesh
@@ -115,9 +116,9 @@ private:
 
     // Structure used to hold data for the silo multimeshes
     struct siloMultiMeshData {
-        int                             ownerRank;  // Global rank of the processor that "owns" the mesh (usually rank 0 on the mesh comm)
         AMP::Mesh::MeshID               id;         // Unique ID to identify the mesh
         AMP::Mesh::Mesh::shared_ptr     mesh;       // Pointer to the mesh
+        int                             ownerRank;  // Global rank of the processor that "owns" the mesh (usually rank 0 on the mesh comm)
         std::string                     name;       // Name of the multimesh in silo
         std::vector<siloBaseMeshData>   meshes;     // Base mesh info needed to construct the mesh data
         std::vector<std::string>        varName;    // List of the names of variables associated with each mesh

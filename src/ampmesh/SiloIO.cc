@@ -157,6 +157,7 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, std::string path )
         std::stringstream stream;
         stream << data.rank;
         std::string rank = stream.str();
+        data.ownerRank = mesh->getComm().bcast(d_comm.getRank(),0);
         data.meshName = "rank_" + rank;
         data.path = path + mesh->getName() + "_/";
         d_baseMeshes.insert( std::pair<AMP::Mesh::MeshID,siloBaseMeshData>(mesh->meshID(),data) );
@@ -164,6 +165,7 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, std::string path )
         data2.id = mesh->meshID();
         data2.mesh = mesh;
         data2.name = path + mesh->getName();
+        data.ownerRank = data.ownerRank;
         d_multiMeshes.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(mesh->meshID(),data2) );
     } else {
         // We are dealining with a multimesh, register the current mesh and sub meshes
@@ -421,13 +423,24 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
 void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID,siloMultiMeshData> &data ) const
 {
     PROFILE_START("syncMultiMeshData");
-    // Convert the data to vectors (only the owning rank will add the mesh)
+    // Convert the data to vectors
     std::vector<AMP::Mesh::MeshID> ids;
     std::vector<siloMultiMeshData> meshdata;
     std::map<AMP::Mesh::MeshID,siloMultiMeshData>::iterator iterator;
     int myRank = d_comm.getRank();
     for (iterator=data.begin(); iterator!=data.end(); iterator++) {
-        if ( iterator->second.ownerRank==myRank ) {
+        // Only send the base meshes that I own
+        siloMultiMeshData tmp = iterator->second;
+        tmp.meshes.resize(0);
+        for (size_t i=0; i<iterator->second.meshes.size(); i++) {
+            if ( iterator->second.meshes[i].ownerRank==myRank )
+                tmp.meshes.push_back( iterator->second.meshes[i] );
+        }
+        // Only the owner rank will send the variable list
+        if ( tmp.ownerRank != myRank )
+            tmp.varName.resize(0);
+        // Only send the multimesh if there are base meshes that need to be sent or I own the mesh
+        if ( tmp.meshes.size()>0 || tmp.ownerRank==myRank ) {
             ids.push_back( iterator->first );
             meshdata.push_back( iterator->second );
         }
@@ -461,8 +474,27 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID,siloMultiMeshData> &d
     // Add the meshes from other processors (keeping the existing meshes)
     for (size_t i=0; i<meshdata.size(); i++) {
         iterator = data.find( meshdata[i].id );
-        if ( iterator==data.end() )
+        if ( iterator==data.end() ) {
+            // Add the multimesh
             data.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(meshdata[i].id,meshdata[i]) );
+        } else {
+            // Add the submeshes
+            for (size_t j=0; j<meshdata[i].meshes.size(); j++) {
+                bool found = false;
+                for (size_t k=0; k<iterator->second.meshes.size(); k++) {
+                    if ( meshdata[i].meshes[j].id==iterator->second.meshes[k].id )
+                        found = true;
+                }
+                if ( !found )
+                    iterator->second.meshes.push_back( meshdata[i].meshes[j] );
+            }
+            // Add the variables if we don't have them yet
+            if ( meshdata[i].varName.size() > 0 ) {
+                if ( !iterator->second.varName.empty() )
+                    AMP_ASSERT(iterator->second.varName.size()==meshdata[i].varName.size());
+                iterator->second.varName = meshdata[i].varName;
+            }
+        }
     }
     PROFILE_STOP("syncMultiMeshData");
 }
@@ -645,6 +677,7 @@ size_t SiloIO::siloBaseMeshData::size()
 {
     size_t N_bytes = sizeof(AMP::Mesh::MeshID);     // Store the mesh id
     N_bytes += sizeof(int);                         // Store the processor rank
+    N_bytes += sizeof(int);                         // Store the owner rank
     N_bytes += sizeof(int)+meshName.size();         // Store the mesh name
     N_bytes += sizeof(int)+path.size();             // Store the mesh path
     N_bytes += sizeof(int)+file.size();             // Store the mesh file
@@ -664,6 +697,9 @@ void SiloIO::siloBaseMeshData::pack( char* ptr )
     pos += sizeof(AMP::Mesh::MeshID);
     // Store the mesh rank
     *((int*) &ptr[pos]) = rank;
+    pos += sizeof(int);
+    // Store the owner rank
+    *((int*) &ptr[pos]) = ownerRank;
     pos += sizeof(int);
     // Store the mesh name
     *((int*) &ptr[pos]) = (int) meshName.size();
@@ -707,6 +743,9 @@ SiloIO::siloBaseMeshData SiloIO::siloBaseMeshData::unpack( char* ptr )
     pos += sizeof(AMP::Mesh::MeshID);
     // Store the mesh rank
     data.rank = *((int*) &ptr[pos]);
+    pos += sizeof(int);
+    // Store the owner rank
+    data.ownerRank = *((int*) &ptr[pos]);
     pos += sizeof(int);
     // Store the mesh name
     int size = *((int*) &ptr[pos]);
