@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
   AMP::AMPManager::startup(argc, argv);
   AMP::UnitTest ut;
 
-  std::string exeName = "testDendroSearch";
+  std::string exeName = "testDendroInterpolation";
 
   try {
     myTest(&ut, exeName);
