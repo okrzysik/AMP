@@ -88,6 +88,7 @@ private:
   std::vector<double> compute_matrix_times_vector(const std::vector<double> &A, const std::vector<double> &x) const;
   std::vector<double> compute_inverse_jacobian_times_residual(const std::vector<double> &J, const std::vector<double> &f) const;
   std::vector<double> compute_initial_guess() const;
+  std::vector<double> compute_initial_guess2();
   // map the coordinates of the point candidate onto the reference frame of the volume element defined by the support points
   std::vector<double> solve_newton(double abs_tol = 1.0e-14, double rel_tol = 1.0e-14, unsigned int max_iter = 100, bool verbose = false);
 };

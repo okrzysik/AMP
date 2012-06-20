@@ -676,11 +676,13 @@ class DendroSearch {
         hex8_element_t volume_element(dummy);
         bool found = false; 
         std::vector<double> x(3, 0.0);
-        if (volume_element.within_bounding_box(tmpPt) && quick_contains_point(volume_element, tmpPt)) {
-          x = volume_element.map_global_to_local(tmpPt);
-          bool coordinates_are_local = true;
-          found = volume_element.contains_point(x, coordinates_are_local);
-        }
+        if (volume_element.within_bounding_box(tmpPt)) {
+          if (volume_element.contained_by_triangles_on_faces(tmpPt)) {
+            x = volume_element.map_global_to_local(tmpPt);
+            bool coordinates_are_local = true;
+            found = volume_element.contains_point(x, coordinates_are_local);
+          } // end if
+        } // end if
         if(found) {
           std::vector<double> basis_functions_values = get_basis_functions_values(x);
           std::vector<double> value(dofsPerNode, 0.0);

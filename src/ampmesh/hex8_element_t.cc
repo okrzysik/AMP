@@ -423,16 +423,21 @@ std::vector<double> hex8_element_t::compute_initial_guess() const {
   return compute_matrix_times_vector(compute_inverse_matrix(A), b);
 }
 
+std::vector<double> hex8_element_t::compute_initial_guess2() {
+  return compute_matrix_times_vector(compute_inverse_matrix(compute_jacobian_matrix(std::vector<double>(3, 0.0))), make_vector_from_two_points(point_candidate, map_local_to_global(std::vector<double>(3, 0.0)))); 
+}
+
 // map the coordinates of the point candidate onto the reference frame of the volume element defined by the support points
 std::vector<double> hex8_element_t::solve_newton(double abs_tol, double rel_tol, unsigned int max_iter, bool verbose) {
   if (verbose) { std::cout<<"solve newton with line search\n"; }
   std::vector<double> x(3, 0.0);
-  x = compute_initial_guess();
-//  std::cout<<"initial guess=\n";
-//  for (unsigned int i = 0; i < 3; ++i) { std::cout<<x[i]<<"\n"; }
+//  x = compute_initial_guess();
+  x = compute_initial_guess2();
+
   std::vector<double> residual_vector = compute_residual_vector(x);
   double residual_norm = sqrt(std::inner_product(residual_vector.begin(), residual_vector.end(), residual_vector.begin(), 0.0));
   double tol = abs_tol + rel_tol * residual_norm; 
+
   for (unsigned int iter = 0; iter < max_iter; ++iter) {
     if (verbose) { std::cout<<iter<<"  "<<residual_norm<<std::endl; }
     if (residual_norm < tol) { 
