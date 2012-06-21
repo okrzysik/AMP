@@ -1,5 +1,5 @@
 
-TotalNumberOfPoints = 10000000
+TotalNumberOfPoints = 100000
 
 Mesh{
   MeshName = "MainMesh"
