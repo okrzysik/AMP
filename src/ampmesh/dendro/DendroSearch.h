@@ -655,32 +655,50 @@ class DendroSearch {
         sendCnts[i] = 0;
       }//end i
 
+      std::vector<int> elemTestCnt1 (localElemArr.size(), 0);
+      std::vector<int> elemTestCnt2 (localElemArr.size(), 0);
+      std::vector<int> elemTestCnt3 (localElemArr.size(), 0);
+
+      unsigned int n_volume_elements = localElemArr.size();
+      std::vector<hex8_element_t> volume_elements;
+      volume_elements.reserve(n_volume_elements);
+      for (unsigned int i = 0; i < n_volume_elements; ++i) {
+        AMP::Mesh::MeshElement* amp_element = &(localElemArr[i]);
+        std::vector<AMP::Mesh::MeshElement> amp_vector_support_points = amp_element->getElements(AMP::Mesh::Vertex);
+        AMP_ASSERT(amp_vector_support_points.size() == 8);
+        std::vector<double> support_points(24);
+        for (unsigned int j = 0; j < 8; ++j) {
+          std::vector<double> point_coord = amp_vector_support_points[j].coord();
+          support_points[3*j+0] = point_coord[0];
+          support_points[3*j+1] = point_coord[1];
+          support_points[3*j+2] = point_coord[2];
+        } // end j
+        volume_elements.push_back(support_points);
+      } // end for i
+
       std::vector<std::vector<double> > tmpSendResults(npes);
       int numRecvPts = recvPtsList.size()/6;
       std::vector<double> tmpPt(3);
       std::vector<double> dummy(24);
       for(int i = 0; i < numRecvPts; ++i) {
         int eId = static_cast<int>(recvPtsList[6*i]);
-        AMP::Mesh::MeshElement* el = &(localElemArr[eId]);
+        AMP::Mesh::MeshElement* amp_element = &(localElemArr[eId]);
         tmpPt[0] = recvPtsList[(6*i) + 1];
         tmpPt[1] = recvPtsList[(6*i) + 2];
         tmpPt[2] = recvPtsList[(6*i) + 3];
-        const std::vector<AMP::Mesh::MeshElement> support_points = el->getElements(AMP::Mesh::Vertex);
-        AMP_ASSERT(support_points.size() == 8);
-        for (unsigned int j = 0; j < 8; ++j) {
-          std::vector<double> point_coord = support_points[j].coord();
-          dummy[3*j+0] = point_coord[0];
-          dummy[3*j+1] = point_coord[1];
-          dummy[3*j+2] = point_coord[2];
-        } // end j
-        hex8_element_t volume_element(dummy);
+
+        std::vector<AMP::Mesh::MeshElement> amp_vector_support_points = amp_element->getElements(AMP::Mesh::Vertex);
+elemTestCnt1[eId]++;
+
         bool found = false; 
         std::vector<double> x(3, 0.0);
-        if (volume_element.within_bounding_box(tmpPt)) {
-          if (volume_element.contained_by_triangles_on_faces(tmpPt)) {
-            x = volume_element.map_global_to_local(tmpPt);
+        if (volume_elements[eId].within_bounding_box(tmpPt)) {
+elemTestCnt2[eId]++;
+          if (volume_elements[eId].within_bounding_polyhedron(tmpPt)) {
+elemTestCnt3[eId]++;
+            x = volume_elements[eId].map_global_to_local(tmpPt);
             bool coordinates_are_local = true;
-            found = volume_element.contains_point(x, coordinates_are_local);
+            found = volume_elements[eId].contains_point(x, coordinates_are_local);
           } // end if
         } // end if
         if(found) {
@@ -688,7 +706,7 @@ class DendroSearch {
           std::vector<double> value(dofsPerNode, 0.0);
           for (unsigned int j = 0; j < 8; ++j) {
             std::vector<size_t> globalID;
-            dofManager->getDOFs(support_points[j].globalID(), globalID);
+            dofManager->getDOFs(amp_vector_support_points[j].globalID(), globalID);
             AMP_ASSERT(globalID.size() == dofsPerNode);
             for(int d = 0; d < dofsPerNode; ++d) {
               double vecVal = vectorField->getValueByGlobalID(globalID[d]);
@@ -710,6 +728,15 @@ class DendroSearch {
         globalComm.barrier();
         searchStep6Time = MPI_Wtime();
         if(!rank) {
+          std::cout<<"Cnt1  "
+            <<"max="<<*std::max_element(elemTestCnt1.begin(), elemTestCnt1.end())<<"  "
+            <<"min="<<*std::min_element(elemTestCnt1.begin(), elemTestCnt1.end())<<"\n";
+          std::cout<<"Cnt2  "
+            <<"max="<<*std::max_element(elemTestCnt2.begin(), elemTestCnt2.end())<<"  "
+            <<"min="<<*std::min_element(elemTestCnt2.begin(), elemTestCnt2.end())<<"\n";
+          std::cout<<"Cnt3  "
+            <<"max="<<*std::max_element(elemTestCnt3.begin(), elemTestCnt3.end())<<"  "
+            <<"min="<<*std::min_element(elemTestCnt3.begin(), elemTestCnt3.end())<<"\n";
           std::cout<<"Time for step-6 of search: "<<(searchStep6Time - searchStep5Time)<<" seconds."<<std::endl;
         }
       }

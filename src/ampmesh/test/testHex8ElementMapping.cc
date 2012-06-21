@@ -135,10 +135,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     std::vector<double> candidate_point_global_coordinates = volume_element.map_local_to_global(random_candidate_point);
     std::vector<double> candidate_point_local_coordinates = volume_element.map_global_to_local(candidate_point_global_coordinates);
 
-    if(!(volume_element.contains_point(candidate_point_global_coordinates) == volume_element.contained_by_triangles_on_faces(candidate_point_global_coordinates))) {
-      for (unsigned int i = 0; i < 3; ++i) { std::cout<<candidate_point_local_coordinates[i]<<"  "; } std::cout<<"\n";
-    }
-
     std::vector<double> error(3);
     for (unsigned int i = 0; i < 3; ++i) { error[i] = candidate_point_local_coordinates[i] - random_candidate_point[i]; }
     double error_norm = sqrt(std::inner_product(error.begin(), error.end(), error.begin(), 0.0));

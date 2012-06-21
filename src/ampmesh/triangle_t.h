@@ -22,7 +22,7 @@ public:
   triangle_t();
   triangle_t(const std::vector<double> &A, const std::vector<double> &B, const std::vector<double> &C);
   void set_support_points(const std::vector<double> &A, const std::vector<double> &B, const std::vector<double> &C);
-  bool above_point(const std::vector<double> &p);
+  bool above_point(const std::vector<double> &p) const;
 
 private:
   std::vector<double> _A, _B, _C, _n_ABC;

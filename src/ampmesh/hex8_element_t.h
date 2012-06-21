@@ -19,9 +19,11 @@ public:
   void set_support_points(const std::vector<double> &p);
   std::vector<double> get_support_points() const;
   std::vector<double> get_support_point(unsigned int i) const;
-  std::vector<double> get_bounding_box() const;
-  bool within_bounding_box(const std::vector<double> &p) const;
-  bool contained_by_triangles_on_faces(const std::vector<double> &p) const;
+  std::vector<double> get_bounding_box();
+  bool within_bounding_box(const std::vector<double> &p);
+  bool within_bounding_polyhedron(const std::vector<double> &p);
+  // this the user responsability to call first within_bounding_box(...) and within_bounding_polyhedron(...)
+  // before trying to map a point so that newton won't fail
   std::vector<double> map_global_to_local(const std::vector<double> &global_coordinates);
   std::vector<double> map_local_to_global(const std::vector<double> &local_coordinates);
   bool contains_point(const std::vector<double> &coordinates, bool coordinates_are_local = false);
@@ -69,8 +71,15 @@ private:
   //      4       x=-1                    3047 
   //      5       z=+1                    4567 
   //
-  std::vector<double> support_points, point_candidate, bounding_box;
+  std::vector<double> support_points, point_candidate;
+  bool bounding_box_updated, bounding_polyhedron_updated;
+  std::vector<double> bounding_box;
+  std::vector<triangle_t> bounding_polyhedron;
+  bool center_of_element_data_updated;
+  std::vector<double> center_of_element, inverse_jacobian_matrix_at_center_of_element;
+  void compute_center_of_element_data();
   void build_bounding_box();
+  void build_bounding_polyhedron();
   // residual vector x = (sum_i x_i b_i, sum_i y_i b_i, sum_i z_i b_i)^t
   // where the x_i y_i z_i, i=0...7, are the coordinates of the support points and the b_i are basis functions
   std::vector<double> compute_residual_vector(const std::vector<double> &x) const;
@@ -87,8 +96,7 @@ private:
   // A[6] A[7] A[8]   x[2]   b[2]
   std::vector<double> compute_matrix_times_vector(const std::vector<double> &A, const std::vector<double> &x) const;
   std::vector<double> compute_inverse_jacobian_times_residual(const std::vector<double> &J, const std::vector<double> &f) const;
-  std::vector<double> compute_initial_guess() const;
-  std::vector<double> compute_initial_guess2();
+  std::vector<double> compute_initial_guess();
   // map the coordinates of the point candidate onto the reference frame of the volume element defined by the support points
   std::vector<double> solve_newton(double abs_tol = 1.0e-14, double rel_tol = 1.0e-14, unsigned int max_iter = 100, bool verbose = false);
 };
