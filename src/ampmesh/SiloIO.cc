@@ -419,8 +419,9 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
 
 /************************************************************
 * Function to syncronize the multimesh data                 *
+* If root==-1, the data will be synced across all procs     *
 ************************************************************/
-void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID,siloMultiMeshData> &data ) const
+void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID,siloMultiMeshData> &data, int root ) const
 {
     PROFILE_START("syncMultiMeshData");
     // Convert the data to vectors
@@ -457,20 +458,52 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID,siloMultiMeshData> &d
         meshdata[i].pack(ptr);
         ptr = &ptr[meshdata[i].size()];
     }
-    // Send the data
+    // Send the data and unpack the buffer to a vector
     size_t tot_num = d_comm.sumReduce(meshdata.size());
-    size_t tot_size = d_comm.sumReduce(send_size);
-    char *recv_buf = new char[tot_size];
-    d_comm.allGather( send_buf, send_size, recv_buf );
-    // Unpack the buffer to a vector
-    meshdata = std::vector<siloMultiMeshData>(tot_num);
-    ptr = recv_buf;
-    for (size_t i=0; i<tot_num; i++) {
-        meshdata[i] = siloMultiMeshData::unpack(ptr);
-        ptr = &ptr[meshdata[i].size()];
+    if ( root==-1 ) {
+        // Everybody gets a copy
+        size_t tot_size = d_comm.sumReduce(send_size);
+        char *recv_buf = new char[tot_size];
+        meshdata.resize(tot_num);
+        d_comm.allGather( send_buf, send_size, recv_buf );
+        ptr = recv_buf;
+        for (size_t i=0; i<tot_num; i++) {
+            meshdata[i] = siloMultiMeshData::unpack(ptr);
+            ptr = &ptr[meshdata[i].size()];
+        }
+        delete [] recv_buf;
+    } else {
+        AMP_ASSERT(root>=0&&root<d_comm.getSize());
+        // Only the root gets a copy
+        // Note: the root already has his own data
+        size_t max_size = d_comm.maxReduce(send_size);
+        std::vector<int> recv_num(d_comm.getSize());
+        d_comm.allGather((int)meshdata.size(),&recv_num[0]);
+        if ( root == d_comm.getRank() ) {
+            // Recieve all data
+            meshdata.resize(0);
+            meshdata.reserve(tot_num);
+            char *recv_buf = new char[max_size];
+            for (int i=0; i<d_comm.getSize(); i++) {
+                if ( i==root )
+                    continue;
+                int recv_size = d_comm.probe( i, 24987);
+                AMP_ASSERT(recv_size<=(int)max_size);
+                d_comm.recv( recv_buf, recv_size, i, false, 24987 );
+                char *ptr = recv_buf;
+                for (int i=0; i<recv_num[i]; i++) {
+                    siloMultiMeshData tmp = siloMultiMeshData::unpack(ptr);
+                    ptr = &ptr[tmp.size()];
+                    meshdata.push_back( tmp );
+                }
+            }
+            delete [] recv_buf;
+        } else {
+            // Send my data
+            d_comm.send( send_buf, send_size, root, false, 24987 );
+        }
     }
     delete [] send_buf;
-    delete [] recv_buf;
     // Add the meshes from other processors (keeping the existing meshes)
     for (size_t i=0; i<meshdata.size(); i++) {
         iterator = data.find( meshdata[i].id );
@@ -505,8 +538,9 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID,siloMultiMeshData> &d
 
 /************************************************************
 * Function to syncronize a variable list                    *
+* If root==-1, the data will be synced across all procs     *
 ************************************************************/
-void SiloIO::syncVariableList( std::set<std::string> &data_set ) const
+void SiloIO::syncVariableList( std::set<std::string> &data_set, int root ) const
 {
     PROFILE_START("syncVariableList");
     std::vector<std::string> data(data_set.begin(),data_set.end());
@@ -530,12 +564,44 @@ void SiloIO::syncVariableList( std::set<std::string> &data_set ) const
         data[i].copy( &send_buf[k], data[i].size(), 0 );
         k += size_local[i];
     }
-    d_comm.allGather( send_buf, tot_size_local, recv_buf );
-    k = 0;
-    for (size_t i=0; i<N_global; i++) {
-        std::string tmp( &recv_buf[k], size_global[i] );
-        data_set.insert(tmp);
-        k += size_global[i];
+    if ( root==-1 ) {
+        // Everybody gets a copy
+        d_comm.allGather( send_buf, tot_size_local, recv_buf );
+        k = 0;
+        for (size_t i=0; i<N_global; i++) {
+            std::string tmp( &recv_buf[k], size_global[i] );
+            data_set.insert(tmp);
+            k += size_global[i];
+        }
+    } else {
+        // Only the root gets a copy
+        // Note: the root already has his own data
+        AMP_ASSERT(root>=0&&root<d_comm.getSize());
+        std::vector<int> recv_num(d_comm.getSize());
+        d_comm.allGather((int)N_local,&recv_num[0]);
+        if ( root == d_comm.getRank() ) {
+            // Recieve all data
+            int index = 0;
+            for (int i=0; i<d_comm.getSize(); i++) {
+                if ( i==root ) {
+                    index += recv_num[i];
+                    continue;
+                }
+                int recv_size = d_comm.probe( i, 24987);
+                d_comm.recv( recv_buf, recv_size, i, false, 24987 );
+                k = 0;
+                for (int i=0; i<recv_num[i]; i++) {
+                    std::string tmp( &recv_buf[k], size_global[index] );
+                    data_set.insert(tmp);
+                    k += size_global[index];
+                    index++;
+                }
+                AMP_ASSERT((int)k==recv_size);
+            }
+        } else {
+            // Send my data
+            d_comm.send( send_buf, tot_size_local, root, false, 24987 );
+        }
     }
     delete [] send_buf;
     delete [] recv_buf;
@@ -582,8 +648,9 @@ void SiloIO::writeSummary( std::string filename )
         multimeshes.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(wholemesh.id,wholemesh) );
     }*/
     // Gather the results
-    syncMultiMeshData( multiMeshes );
-    syncVariableList( d_varNames );
+    // Note: we only need to guarantee that rank 0 has all the data
+    syncMultiMeshData( multiMeshes, 0 );
+    syncVariableList( d_varNames, 0 );
     // Write the multimeshes
     if ( d_comm.getRank()==0 ) {
         DBfile  *FileHandle;
