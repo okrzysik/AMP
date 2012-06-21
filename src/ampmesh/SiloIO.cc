@@ -157,7 +157,7 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, std::string path )
         std::stringstream stream;
         stream << data.rank;
         std::string rank = stream.str();
-        data.ownerRank = mesh->getComm().bcast(d_comm.getRank(),0);
+        data.ownerRank = d_comm.getRank(); // Everybody owns the mesh because every rank is an independent mesh
         data.meshName = "rank_" + rank;
         data.path = path + mesh->getName() + "_/";
         d_baseMeshes.insert( std::pair<AMP::Mesh::MeshID,siloBaseMeshData>(mesh->meshID(),data) );
@@ -165,7 +165,7 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, std::string path )
         data2.id = mesh->meshID();
         data2.mesh = mesh;
         data2.name = path + mesh->getName();
-        data.ownerRank = data.ownerRank;
+        data.ownerRank = mesh->getComm().bcast(d_comm.getRank(),0);
         d_multiMeshes.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(mesh->meshID(),data2) );
     } else {
         // We are dealining with a multimesh, register the current mesh and sub meshes
@@ -482,7 +482,10 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID,siloMultiMeshData> &d
             for (size_t j=0; j<meshdata[i].meshes.size(); j++) {
                 bool found = false;
                 for (size_t k=0; k<iterator->second.meshes.size(); k++) {
-                    if ( meshdata[i].meshes[j].id==iterator->second.meshes[k].id )
+                    if ( meshdata[i].meshes[j].id==iterator->second.meshes[k].id &&
+                         meshdata[i].meshes[j].meshName==iterator->second.meshes[k].meshName &&
+                         meshdata[i].meshes[j].path==iterator->second.meshes[k].path &&
+                         meshdata[i].meshes[j].path==iterator->second.meshes[k].file )
                         found = true;
                 }
                 if ( !found )
