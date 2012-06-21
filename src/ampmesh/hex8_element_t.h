@@ -10,8 +10,12 @@
 
 #include <ampmesh/triangle_t.h>
 
+// deprecated
 std::vector<double> get_basis_functions_values(const std::vector<double> &x);
 std::vector<double> get_basis_functions_derivatives(const std::vector<double> &x);
+//
+void get_basis_functions_values(double const * const x, double * const basis_functions_values);
+void get_basis_functions_derivatives( double const * const x, double * const basis_functions_derivatives);
 
 class hex8_element_t {
 public:
@@ -26,6 +30,8 @@ public:
   // before trying to map a point so that newton won't fail
   std::vector<double> map_global_to_local(const std::vector<double> &global_coordinates);
   std::vector<double> map_local_to_global(const std::vector<double> &local_coordinates);
+  void map_global_to_local(double const * const global_coordinates, double * const local_coordinates);
+  void map_local_to_global(double const * const local_coordinates, double * const global_coordinates);
   bool contains_point(const std::vector<double> &coordinates, bool coordinates_are_local = false);
   std::pair<unsigned int, std::vector<double> > project_on_face(double a, double b, double c);
   std::pair<unsigned int, std::vector<double> > project_on_face(const std::vector<double> &p);
