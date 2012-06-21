@@ -1,11 +1,24 @@
 #include <ampmesh/hex8_element_t.h>
 
-hex8_element_t::hex8_element_t(const std::vector<double> &p) { set_support_points(p); }
+hex8_element_t::hex8_element_t(const std::vector<double> &p) {
+  bounding_box.resize(6, 0.0);
+  bounding_polyhedron.reserve(24);
+  set_support_points(p); 
+}
 
 void hex8_element_t::set_support_points(const std::vector<double> &p) { 
   assert(p.size() == 24); 
   support_points = p; 
-  build_bounding_box();
+  bounding_box_updated = false;
+  bounding_polyhedron_updated = false;
+  center_of_element_data_updated = false;
+}
+
+void hex8_element_t::compute_center_of_element_data() {
+  assert(!center_of_element_data_updated);
+  inverse_jacobian_matrix_at_center_of_element = compute_inverse_matrix(compute_jacobian_matrix(std::vector<double>(3, 0.0)));
+  center_of_element = map_local_to_global(std::vector<double>(3, 0.0));
+  center_of_element_data_updated = true;
 }
 
 std::vector<double> hex8_element_t::get_support_points() const { return support_points; } 
@@ -15,17 +28,24 @@ std::vector<double> hex8_element_t::get_support_point(unsigned int i) const {
   return std::vector<double>(&support_points[3*i], &support_points[3*i]+3);
 } 
 
-std::vector<double> hex8_element_t::get_bounding_box() const { return bounding_box; }
+std::vector<double> hex8_element_t::get_bounding_box() { 
+  if (!bounding_box_updated) { build_bounding_box(); };
+  return bounding_box; 
+}
 
-bool hex8_element_t::within_bounding_box(const std::vector<double> &p) const {
+bool hex8_element_t::within_bounding_box(const std::vector<double> &p) {
   assert(p.size() == 3);
+  if (!bounding_box_updated) { build_bounding_box(); };
   for (unsigned int j = 0; j < 3; ++j) {
     if ((bounding_box[j+0] > p[j]) || (bounding_box[j+3] < p[j])) { return false; }
   } // end for j
   return true;
 }
 
-bool hex8_element_t::contained_by_triangles_on_faces(const std::vector<double> &p) const {
+void hex8_element_t::build_bounding_polyhedron() {
+  assert(!bounding_polyhedron_updated);
+  bounding_polyhedron.clear();
+//  assert(bounding_polyhedron.capacity() == 24);
   unsigned int faces[24] = {
     0, 3, 2, 1, 
     0, 1, 5, 4, 
@@ -34,7 +54,51 @@ bool hex8_element_t::contained_by_triangles_on_faces(const std::vector<double> &
     3, 0, 4, 7, 
     4, 5, 6, 7
   };
-  std::vector<triangle_t> triangles(4);
+  for (unsigned int i = 0; i < 6; ++i) {
+    //   3        
+    //    o
+    //    | .
+    //    |   .
+    //    |     .
+    //    |       .
+    //    o--------o
+    //   0          1
+    bounding_polyhedron.push_back(triangle_t(get_support_point(faces[4*i+0]), get_support_point(faces[4*i+1]), get_support_point(faces[4*i+3]))); 
+    //   3          2    
+    //    o--------o    
+    //      .      |
+    //        .    |   
+    //          .  |  
+    //            .| 
+    //             o
+    //              1
+    bounding_polyhedron.push_back(triangle_t(get_support_point(faces[4*i+2]), get_support_point(faces[4*i+3]), get_support_point(faces[4*i+1]))); 
+    //              2    
+    //             o    
+    //           . |
+    //         .   |   
+    //       .     |  
+    //     .       | 
+    //    o--------o
+    //   0          1
+    bounding_polyhedron.push_back(triangle_t(get_support_point(faces[4*i+1]), get_support_point(faces[4*i+2]), get_support_point(faces[4*i+0]))); 
+    //   3          2    
+    //    o--------o    
+    //    |      .  
+    //    |    .       
+    //    |  .        
+    //    |.         
+    //    o         
+    //   0           
+    bounding_polyhedron.push_back(triangle_t(get_support_point(faces[4*i+3]), get_support_point(faces[4*i+0]), get_support_point(faces[4*i+2]))); 
+  } // end for i
+  bounding_polyhedron_updated = true;
+}
+
+
+bool hex8_element_t::within_bounding_polyhedron(const std::vector<double> &p) {
+  assert(p.size() == 3);
+  if (!bounding_polyhedron_updated) { build_bounding_polyhedron(); }
   for (unsigned int i = 0; i < 6; ++i) {
     // first configuration when splitting face into two triangles
     //   3          2    
@@ -45,26 +109,7 @@ bool hex8_element_t::contained_by_triangles_on_faces(const std::vector<double> &
     //    |       .| 
     //    o--------o
     //   0          1
-    //
-    //   3        
-    //    o
-    //    | .
-    //    |   .
-    //    |     .
-    //    |       .
-    //    o--------o
-    //   0          1
-    triangles[0].set_support_points(get_support_point(faces[4*i+0]), get_support_point(faces[4*i+1]), get_support_point(faces[4*i+3])); 
-    //   3          2    
-    //    o--------o    
-    //      .      |
-    //        .    |   
-    //          .  |  
-    //            .| 
-    //             o
-    //              1
-    triangles[1].set_support_points(get_support_point(faces[4*i+2]), get_support_point(faces[4*i+3]), get_support_point(faces[4*i+1])); 
-
+    if (((!bounding_polyhedron[4*i+0].above_point(p)) || (!bounding_polyhedron[4*i+1].above_point(p))) 
     // second configuration
     //   3          2    
     //    o--------o    
@@ -74,27 +119,7 @@ bool hex8_element_t::contained_by_triangles_on_faces(const std::vector<double> &
     //    |.       | 
     //    o--------o
     //   0          1
-    //
-    //              2    
-    //             o    
-    //           . |
-    //         .   |   
-    //       .     |  
-    //     .       | 
-    //    o--------o
-    //   0          1
-    triangles[2].set_support_points(get_support_point(faces[4*i+1]), get_support_point(faces[4*i+2]), get_support_point(faces[4*i+0])); 
-    //   3          2    
-    //    o--------o    
-    //    |      .  
-    //    |    .       
-    //    |  .        
-    //    |.         
-    //    o         
-    //   0           
-    triangles[3].set_support_points(get_support_point(faces[4*i+3]), get_support_point(faces[4*i+0]), get_support_point(faces[4*i+2])); 
-
-    if (((!triangles[0].above_point(p)) || (!triangles[1].above_point(p))) && ((!triangles[2].above_point(p)) || (!triangles[3].above_point(p)))) { return false; }
+      && ((!bounding_polyhedron[4*i+2].above_point(p)) || (!bounding_polyhedron[4*i+3].above_point(p)))) { return false; }
   } // end for i
   return true;
 }
@@ -122,7 +147,7 @@ bool hex8_element_t::contains_point(const std::vector<double> &coordinates, bool
   if (!coordinates_are_local) {
     point_candidate = coordinates;
     if (!within_bounding_box(point_candidate)) { return false; }
-    if (!contained_by_triangles_on_faces(point_candidate)) { return false; }
+    if (!within_bounding_polyhedron(point_candidate)) { return false; }
     local_coordinates = solve_newton();
   } else {
     local_coordinates = coordinates;
@@ -143,7 +168,7 @@ std::pair<unsigned int, std::vector<double> > hex8_element_t::project_on_face(do
 std::pair<unsigned int, std::vector<double> > hex8_element_t::project_on_face(const std::vector<double> &p) {
   assert(p.size() == 3); 
   if (!within_bounding_box(p)) { return std::pair<unsigned int, std::vector<double> >(99, std::vector<double>(2, 0.0)); }
-  if (!contained_by_triangles_on_faces(p)) { return std::pair<unsigned int, std::vector<double> >(99, std::vector<double>(2, 0.0)); }
+  if (!within_bounding_polyhedron(p)) { return std::pair<unsigned int, std::vector<double> >(99, std::vector<double>(2, 0.0)); }
   point_candidate = p;
 
   // compute the coordinates of the point candidate in the frame of the volume element
@@ -255,7 +280,7 @@ std::pair<unsigned int, std::vector<double> > hex8_element_t::project_on_face(co
 //
 
 void hex8_element_t::build_bounding_box() {
-  bounding_box = std::vector<double>(6, 0.0);
+  assert(!bounding_box_updated); 
   for (unsigned int j = 0; j < 3; ++j) {
     bounding_box[j+0] = support_points[3*0+j];
     bounding_box[j+3] = support_points[3*0+j];
@@ -270,6 +295,7 @@ void hex8_element_t::build_bounding_box() {
       } // end if
     } // end for j
   } // end for i
+  bounding_box_updated = true;
 }
 
 // residual vector x = (sum_i x_i b_i, sum_i y_i b_i, sum_i z_i b_i)^t
@@ -360,79 +386,16 @@ std::vector<double> hex8_element_t::compute_inverse_jacobian_times_residual(cons
   return compute_matrix_times_vector(compute_inverse_matrix(J), f);
 }
 
-std::vector<double> hex8_element_t::compute_initial_guess() const {
-  // matlab code
-  // M=[-1 1 1 -1 -1 1 1 -1; -1 -1 1 1 -1 -1 1 1; -1 -1 -1 -1 1 1 1 1; 1 1 1 1 1 1 1 1]
-  // K=transpose(M)*inv(M*transpose(M))
-  // Y=[...]
-  // KA=K(:,1:3)
-  // Kb=K(:,4)
-  // A=Y*KA
-  // b=Y*Kb
-  // p=[...]
-  // inv(A)*(p-b)
-  double KA[24] = {
-    -0.125, -0.125, -0.125, 
-     0.125, -0.125, -0.125, 
-     0.125,  0.125, -0.125, 
-    -0.125,  0.125, -0.125, 
-    -0.125, -0.125,  0.125, 
-     0.125, -0.125,  0.125, 
-     0.125,  0.125,  0.125, 
-    -0.125,  0.125,  0.125, 
-  };
-
-  double Kb[8] = {
-    0.125,
-    0.125,
-    0.125,
-    0.125,
-    0.125,
-    0.125,
-    0.125,
-    0.125,
-  };
-
-  double Y[24];
-  for (unsigned int i = 0; i < 8; ++i) {
-    for (unsigned int j = 0; j < 3; ++j) {
-      Y[j*8+i] = support_points[i*3+j];
-    } // end for j
-  } // end for i
-
-
-  std::vector<double> A(9, 0.0);
-  for (unsigned int i = 0; i < 3; ++i) {
-    for (unsigned int j = 0; j < 3; ++j) {
-      A[3*i+j] = 0.0;
-      for (unsigned int k = 0; k < 8; ++k) {
-        A[3*i+j] += Y[8*i+k] * KA[3*k+j];
-      } // end for k
-    } // end for j
-  } // end for i
-
-  std::vector<double> b(3, 0.0);
-  for (unsigned int i = 0; i < 3; ++i) {
-    b[i] = 0.0;
-    for (unsigned int j = 0; j < 8; ++j) {
-      b[i] += Y[8*i+j] * Kb[j];
-    } // end for j
-    b[i] = point_candidate[i] - b[i];
-  } // end for i
-
-  return compute_matrix_times_vector(compute_inverse_matrix(A), b);
-}
-
-std::vector<double> hex8_element_t::compute_initial_guess2() {
-  return compute_matrix_times_vector(compute_inverse_matrix(compute_jacobian_matrix(std::vector<double>(3, 0.0))), make_vector_from_two_points(point_candidate, map_local_to_global(std::vector<double>(3, 0.0)))); 
+std::vector<double> hex8_element_t::compute_initial_guess() {
+  if (!center_of_element_data_updated) { compute_center_of_element_data(); }
+  return compute_matrix_times_vector(inverse_jacobian_matrix_at_center_of_element, make_vector_from_two_points(point_candidate, center_of_element)); 
 }
 
 // map the coordinates of the point candidate onto the reference frame of the volume element defined by the support points
 std::vector<double> hex8_element_t::solve_newton(double abs_tol, double rel_tol, unsigned int max_iter, bool verbose) {
   if (verbose) { std::cout<<"solve newton with line search\n"; }
   std::vector<double> x(3, 0.0);
-//  x = compute_initial_guess();
-  x = compute_initial_guess2();
+  x = compute_initial_guess();
 
   std::vector<double> residual_vector = compute_residual_vector(x);
   double residual_norm = sqrt(std::inner_product(residual_vector.begin(), residual_vector.end(), residual_vector.begin(), 0.0));

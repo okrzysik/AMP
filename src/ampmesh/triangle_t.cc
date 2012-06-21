@@ -22,7 +22,7 @@ void triangle_t::set_support_points(const std::vector<double> &A, const std::vec
 }
 
 // check whether plane supported by the triangle ABC is above the point with respect to the normal
-bool triangle_t::above_point(const std::vector<double> &p) {
+bool triangle_t::above_point(const std::vector<double> &p) const {
   assert(p.size() == 3);
   std::vector<double> A_p = make_vector_from_two_points(_A, p);
   std::vector<double> B_p = make_vector_from_two_points(_B, p);
