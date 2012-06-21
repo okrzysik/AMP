@@ -19,11 +19,14 @@ COPY_TEST_DATA_FILE ( 17x17_denovo_thermal_1x )
 
 # Add tests
 ADD_AMP_TEST_1_2_4 ( test_Mesh )
-ADD_AMP_TEST( test_LoadBalance 1 input_Mesh )
-ADD_AMP_TEST( test_LoadBalance 4 input_Mesh )
+IF ( USE_LIBMESH )
+    ADD_AMP_TEST( test_LoadBalance 1 input_Mesh )
+    ADD_AMP_TEST( test_LoadBalance 4 input_Mesh )
+ENDIF()
 ADD_AMP_TEST( test_LoadBalance 512 inputMultiPellet348 )
 ADD_AMP_TEST( test_LoadBalance 64000 inputMultiPellet348 )
 #ADD_AMP_TEST( test_LoadBalance 64000 17x17_denovo_thermal_1x )
+
 ADD_AMP_TEST( testHex8ElementMapping )
 ADD_AMP_TEST( testHex8ElementLinearInterpolation )
 IF ( USE_LIBMESH )
