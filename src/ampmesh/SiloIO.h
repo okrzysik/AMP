@@ -130,11 +130,11 @@ private:
         static siloMultiMeshData unpack( char* );
     };
     
-    // Function to syncronize multimesh data across all processors
-    void syncMultiMeshData( std::map<AMP::Mesh::MeshID,siloMultiMeshData> &data ) const;
+    // Function to syncronize multimesh data
+    void syncMultiMeshData( std::map<AMP::Mesh::MeshID,siloMultiMeshData> &data, int root=-1 ) const;
 
-    // Function to syncronize variable lists across all processors
-    void syncVariableList( std::set<std::string> &data ) const;
+    // Function to syncronize variable lists
+    void syncVariableList( std::set<std::string> &data, int root=-1 ) const;
 
     // Function to write a single mesh
 #ifdef USE_SILO

@@ -14,25 +14,31 @@ int main ( int argc , char ** argv )
     AMP::AMPManager::startup(argc,argv,startup_properties);
     AMP::UnitTest ut;
 
-    // Run the tests
+    // Run the simpleDOFManager tests
     testSimpleDOFManager<AMPCubeGenerator<10> >( &ut );
+    testSimpleDOFManager<AMPMultiMeshGenerator>( &ut );
     #ifdef USE_LIBMESH
         testSimpleDOFManager<LibMeshCubeGenerator<5> >( &ut );
         testSimpleDOFManager<ExodusReaderGenerator<1> >( &ut );
         testSimpleDOFManager<ExodusReaderGenerator<3> >( &ut );
+        testSimpleDOFManager<MultiMeshGenerator>( &ut );
     #endif
-    testSimpleDOFManager<MultiMeshGenerator>( &ut );
+
+    // Run the multiDOFManager tests
     testMultiDOFManager<AMPCubeGenerator<10> >( &ut );
     #ifdef USE_LIBMESH
         testMultiDOFManager<LibMeshCubeGenerator<5> >( &ut );
+        testMultiDOFManager<MultiMeshGenerator>( &ut );
     #endif
-    testMultiDOFManager<MultiMeshGenerator>( &ut );
-    testSubsetDOFManager<MultiMeshGenerator,false>( &ut );
-    testSubsetDOFManager<MultiMeshGenerator,true>( &ut );
+
+    // Run the subsetDOFManager tests
+    testSubsetDOFManager<AMPCubeGenerator<10>,false>( &ut );
+    testSubsetDOFManager<AMPMultiMeshGenerator,false>( &ut );
+    testSubsetDOFManager<AMPMultiMeshGenerator,true>( &ut );
     #ifdef USE_LIBMESH
         testSubsetDOFManager<ExodusReaderGenerator<3>,false>( &ut );
-    #else
-        testSubsetDOFManager<AMPMeshCubeGenerator<10>,false>( &ut );
+        testSubsetDOFManager<MultiMeshGenerator,false>( &ut );
+        testSubsetDOFManager<MultiMeshGenerator,true>( &ut );
     #endif
 
     // Print the results and return
@@ -42,3 +48,5 @@ int main ( int argc , char ** argv )
     return num_failed;
 
 }
+
+
