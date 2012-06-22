@@ -432,7 +432,13 @@ class DendroSearch {
 
     void interpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
         const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt) {
-      int numLocalPts = (pts.size())/3;
+      search(pts);
+      interpolate(vectorField, dofsPerNode, results, foundPt); 
+    }
+
+    void search(const std::vector<double> & pts) {
+//      int numLocalPts = (pts.size())/3;
+      numLocalPts = (pts.size())/3;
 
       double searchBeginTime, searchStep1Time, searchStep2Time, searchStep3Time, 
              searchStep4Time, searchStep5Time, searchStep6Time, searchStep7Time;
@@ -441,6 +447,7 @@ class DendroSearch {
         searchBeginTime = MPI_Wtime();
       }
 
+//buildPtsWrapper(std::vector<ot::NodeAndValues<double, 4> > &ptsWrapper)
       const unsigned int MaxDepth = 30;
       const unsigned int ITPMD = (1u << MaxDepth);
       const double DTPMD = static_cast<double>(ITPMD);
@@ -479,12 +486,10 @@ class DendroSearch {
       //time and using binary searches would be logarithmic. This is just a matter
       //of constants since sorting is also logarithmic.
 
-      int* sendCnts = new int[npes];
-      for(int i = 0; i < npes; ++i) {
-        sendCnts[i] = 0;
-      }//end i
-
+      std::vector<int> sendCnts(npes, 0);
       std::vector<int> part(numLocalPts, -1);
+
+//identifyWhatProcOwnsPts(std::vector<int> &sendCnts, std::vector<int> &part)
       for(int i = 0; i < numLocalPts; ++i) {
         unsigned int retIdx;
         bool found = seq::maxLowerBound<ot::TreeNode>(mins, (ptsWrapper[i].node), retIdx, NULL, NULL);
@@ -502,11 +507,12 @@ class DendroSearch {
         }
       }
 
-      int* recvCnts = new int[npes];
-      MPI_Alltoall(sendCnts, 1, MPI_INT, recvCnts, 1, MPI_INT, (globalComm.getCommunicator()));
+      std::vector<int> recvCnts(npes);
+      par::Mpi_Alltoall(&(sendCnts[0]), &(recvCnts[0]), 1, globalComm.getCommunicator());
 
-      int* sendDisps = new int[npes];
-      int* recvDisps = new int[npes];
+      std::vector<int> sendDisps(npes);
+      std::vector<int> recvDisps(npes);
+//distributePtsToProcs(std::vector<int> &sendDisps, std::vector<int> &recvDips, std::vector<ot::NodeAndValues<double, 4> > &recvList)
       sendDisps[0] = 0;
       recvDisps[0] = 0;
       for(int i = 1; i < npes; ++i) {
@@ -515,31 +521,20 @@ class DendroSearch {
       }//end i
 
       std::vector<ot::NodeAndValues<double, 4> > sendList(sendDisps[npes - 1] + sendCnts[npes - 1]);
-      ot::NodeAndValues<double, 4>* sendListPtr = NULL;
-      if(!(sendList.empty())) {
-        sendListPtr = &(sendList[0]);
-      }
 
-      for(int i = 0; i < npes; ++i) {
-        sendCnts[i] = 0;
-      }//end i
+      std::fill(sendCnts.begin(), sendCnts.end(), 0);
 
       for(int i = 0; i < numLocalPts; ++i) {
         if(part[i] >= 0) {
-          sendListPtr[sendDisps[part[i]] + sendCnts[part[i]]] = ptsWrapper[i];
+          sendList[sendDisps[part[i]] + sendCnts[part[i]]] = ptsWrapper[i];
           sendCnts[part[i]]++;
         }
       }//end i
       ptsWrapper.clear();
 
       std::vector<ot::NodeAndValues<double, 4> > recvList(recvDisps[npes - 1] + recvCnts[npes - 1]);
-      ot::NodeAndValues<double, 4>* recvListPtr = NULL;
-      if(!(recvList.empty())) {
-        recvListPtr = &(recvList[0]);
-      }
-      MPI_Alltoallv( sendListPtr, sendCnts, sendDisps, par::Mpi_datatype<ot::NodeAndValues<double, 4> >::value(),
-          recvListPtr, recvCnts, recvDisps, par::Mpi_datatype<ot::NodeAndValues<double, 4> >::value(),
-          (globalComm.getCommunicator()) );
+      par::Mpi_Alltoallv_sparse((!(sendList.empty()) ? &(sendList[0]) : NULL), &(sendCnts[0]), &(sendDisps[0]),
+        (!(recvList.empty()) ? &(recvList[0]) : NULL), &(recvCnts[0]), &(recvDisps[0]), globalComm.getCommunicator());
       sendList.clear();
 
       if(verbose) {
@@ -550,23 +545,18 @@ class DendroSearch {
         }
       }
 
-      for(int i = 0; i < npes; ++i) {
-        sendCnts[i] = 0;
-      }//end i
+      std::fill(sendCnts.begin(), sendCnts.end(), 0);
 
       std::vector<int> ptToOctMap((recvList.size()), -1);
-      int* ptToOctMapPtr = &(ptToOctMap[0]);
-      int* rankListPtr = &(rankList[0]);
-      ot::TreeNode* nodeListPtr = &(nodeList[0]);
-      int* stIdxListPtr = &(stIdxList[0]);
+//associatePtsToOctrees(std::vector<int> &ptToOctMap)
       for(int i = 0; i < recvList.size(); ++i) {
         unsigned int retIdx;
-        seq::maxLowerBound<ot::TreeNode>(nodeList, (recvListPtr[i].node), retIdx, NULL, NULL);
-        if( nodeListPtr[retIdx].isAncestor(recvListPtr[i].node) ) {
-          ptToOctMapPtr[i] = retIdx;
-          int stIdx = stIdxListPtr[retIdx];
-          for(int j = 0; j < nodeListPtr[retIdx].getWeight(); ++j) {
-            sendCnts[rankListPtr[stIdx + j]]++;
+        seq::maxLowerBound<ot::TreeNode>(nodeList, (recvList[i].node), retIdx, NULL, NULL);
+        if( nodeList[retIdx].isAncestor(recvList[i].node) ) {
+          ptToOctMap[i] = retIdx;
+          int stIdx = stIdxList[retIdx];
+          for(int j = 0; j < nodeList[retIdx].getWeight(); ++j) {
+            sendCnts[rankList[stIdx + j]]++;
           }//end j
         }
       }//end i
@@ -579,7 +569,8 @@ class DendroSearch {
         }
       }
 
-      MPI_Alltoall(sendCnts, 1, MPI_INT, recvCnts, 1, MPI_INT, (globalComm.getCommunicator()));
+//sendAndReceivePts(std::vector<double> &sendPtsList, std::vector<double> &recvPtsList)
+      par::Mpi_Alltoall(&(sendCnts[0]), &(recvCnts[0]), 1, globalComm.getCommunicator());
 
       sendDisps[0] = 0;
       recvDisps[0] = 0;
@@ -589,34 +580,27 @@ class DendroSearch {
       }//end i
 
       std::vector<double> sendPtsList(6*(sendDisps[npes - 1] + sendCnts[npes - 1]));
-      double* sendPtsPtr = NULL;
-      if(!(sendPtsList.empty())) {
-        sendPtsPtr = &(sendPtsList[0]);
-      }
 
-      for(int i = 0; i < npes; ++i) {
-        sendCnts[i] = 0;
-      }//end i
+      std::fill(sendCnts.begin(), sendCnts.end(), 0);
 
-      int* elemIdListPtr = &(elemIdList[0]);
       for(int i = 0; i < ptToOctMap.size(); ++i) {
-        if(ptToOctMapPtr[i] >= 0) {
-          int stIdx = stIdxListPtr[ptToOctMapPtr[i]];
-          for(int j = 0; j < nodeListPtr[ptToOctMapPtr[i]].getWeight(); ++j) {
-            int recvRank = rankListPtr[stIdx + j];
+        if(ptToOctMap[i] >= 0) {
+          int stIdx = stIdxList[ptToOctMap[i]];
+          for(int j = 0; j < nodeList[ptToOctMap[i]].getWeight(); ++j) {
+            int recvRank = rankList[stIdx + j];
             int currIdx = 6*(sendDisps[recvRank] + sendCnts[recvRank]);
             //Local Id of this element on the processor that owns this element
-            sendPtsPtr[currIdx] = elemIdListPtr[stIdx + j];
+            sendPtsList[currIdx] = elemIdList[stIdx + j];
             //Pt's x coordinate
-            sendPtsPtr[currIdx + 1] = recvListPtr[i].values[0];
+            sendPtsList[currIdx + 1] = recvList[i].values[0];
             //Pt's y coordinate
-            sendPtsPtr[currIdx + 2] = recvListPtr[i].values[1];
+            sendPtsList[currIdx + 2] = recvList[i].values[1];
             //Pt's z coordinate
-            sendPtsPtr[currIdx + 3] = recvListPtr[i].values[2];
+            sendPtsList[currIdx + 3] = recvList[i].values[2];
             //Local Id of Pt on the processor that owns this Pt
-            sendPtsPtr[currIdx + 4] = recvListPtr[i].values[3];
+            sendPtsList[currIdx + 4] = recvList[i].values[3];
             //rank of processor that owns Pt
-            sendPtsPtr[currIdx + 5] = recvListPtr[i].node.getWeight();
+            sendPtsList[currIdx + 5] = recvList[i].node.getWeight();
             sendCnts[recvRank]++;
           }//end j
         }
@@ -631,12 +615,8 @@ class DendroSearch {
       }//end i
 
       std::vector<double> recvPtsList(recvDisps[npes - 1] + recvCnts[npes - 1]);
-      double* recvPtsPtr = NULL;
-      if(!(recvPtsList.empty())) {
-        recvPtsPtr = &(recvPtsList[0]);
-      }
-      MPI_Alltoallv( sendPtsPtr, sendCnts, sendDisps, MPI_DOUBLE,
-          recvPtsPtr, recvCnts, recvDisps, MPI_DOUBLE, (globalComm.getCommunicator()) );
+      par::Mpi_Alltoallv_sparse((!(sendPtsList.empty()) ? &(sendPtsList[0]) : NULL), &(sendCnts[0]), &(sendDisps[0]), 
+        (!(recvPtsList.empty()) ? &(recvPtsList[0]) : NULL), &(recvCnts[0]), &(recvDisps[0]), globalComm.getCommunicator());
       sendPtsList.clear();
 
       if(verbose) {
@@ -647,18 +627,10 @@ class DendroSearch {
         }
       }
 
-      vectorField->makeConsistent(  AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
-      AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField->getDOFManager();
+      std::fill(sendCnts.begin(), sendCnts.end(), 0);
 
-      for(int i = 0; i < npes; ++i) {
-        sendCnts[i] = 0;
-      }//end i
-
-      std::vector<int> elemTestCnt1 (localElemArr.size(), 0);
-      std::vector<int> elemTestCnt2 (localElemArr.size(), 0);
-      std::vector<int> elemTestCnt3 (localElemArr.size(), 0);
-
+//checkElemContainPts()
       unsigned int n_volume_elements = localElemArr.size();
       std::vector<hex8_element_t> volume_elements;
       volume_elements.reserve(n_volume_elements);
@@ -673,54 +645,32 @@ class DendroSearch {
           support_points[3*j+1] = point_coord[1];
           support_points[3*j+2] = point_coord[2];
         } // end j
-        volume_elements.push_back(support_points);
+        volume_elements.push_back(hex8_element_t(support_points));
       } // end for i
 
-      std::vector<std::vector<double> > tmpSendResults(npes);
+ 
       int numRecvPts = recvPtsList.size()/6;
       std::vector<double> tmpPt(3);
-      std::vector<double> dummy(24);
+
+      foundPts.reserve(6*numRecvPts);
+      unsigned int numFoundPts = 0;
       for(int i = 0; i < numRecvPts; ++i) {
-        int eId = static_cast<int>(recvPtsList[6*i]);
-        AMP::Mesh::MeshElement* amp_element = &(localElemArr[eId]);
-        tmpPt[0] = recvPtsList[(6*i) + 1];
-        tmpPt[1] = recvPtsList[(6*i) + 2];
-        tmpPt[2] = recvPtsList[(6*i) + 3];
+        std::copy(&(recvPtsList[6*i])+1, &(recvPtsList[6*i])+4, tmpPt.begin());
+        unsigned int eId = static_cast<unsigned int>(recvPtsList[6*i]);
 
-        std::vector<AMP::Mesh::MeshElement> amp_vector_support_points = amp_element->getElements(AMP::Mesh::Vertex);
-elemTestCnt1[eId]++;
-
-        bool found = false; 
-        std::vector<double> x(3, 0.0);
         if (volume_elements[eId].within_bounding_box(tmpPt)) {
-elemTestCnt2[eId]++;
           if (volume_elements[eId].within_bounding_polyhedron(tmpPt)) {
-elemTestCnt3[eId]++;
-            x = volume_elements[eId].map_global_to_local(tmpPt);
+            std::vector<double> x = volume_elements[eId].map_global_to_local(tmpPt);
             bool coordinates_are_local = true;
-            found = volume_elements[eId].contains_point(x, coordinates_are_local);
+            if (volume_elements[eId].contains_point(x, coordinates_are_local)) {
+              foundPts.push_back(static_cast<double>(recvPtsList[6*i]));
+              for (unsigned int d = 0; d < 3; ++d) { foundPts.push_back(x[d]); }
+              foundPts.push_back(static_cast<double>(recvPtsList[6*i+4]));
+              foundPts.push_back(static_cast<double>(recvPtsList[6*i+5]));
+              ++numFoundPts;
+            } // end if
           } // end if
         } // end if
-        if(found) {
-          std::vector<double> basis_functions_values = get_basis_functions_values(x);
-          std::vector<double> value(dofsPerNode, 0.0);
-          for (unsigned int j = 0; j < 8; ++j) {
-            std::vector<size_t> globalID;
-            dofManager->getDOFs(amp_vector_support_points[j].globalID(), globalID);
-            AMP_ASSERT(globalID.size() == dofsPerNode);
-            for(int d = 0; d < dofsPerNode; ++d) {
-              double vecVal = vectorField->getValueByGlobalID(globalID[d]);
-              value[d] += (vecVal * basis_functions_values[j]);
-            }//end d
-          } // end j
-          unsigned int ptLocalId = static_cast<unsigned int>(recvPtsList[(6*i) + 4]);
-          unsigned int ptProcId = static_cast<unsigned int>(recvPtsList[(6*i) + 5]);
-          sendCnts[ptProcId] += (dofsPerNode + 1);
-          tmpSendResults[ptProcId].push_back(static_cast<double>(ptLocalId));
-          for(int d = 0; d < dofsPerNode; ++d) {
-            tmpSendResults[ptProcId].push_back(value[d]);
-          }//end d
-        }
       }//end i
       recvPtsList.clear();
 
@@ -728,20 +678,68 @@ elemTestCnt3[eId]++;
         globalComm.barrier();
         searchStep6Time = MPI_Wtime();
         if(!rank) {
-          std::cout<<"Cnt1  "
-            <<"max="<<*std::max_element(elemTestCnt1.begin(), elemTestCnt1.end())<<"  "
-            <<"min="<<*std::min_element(elemTestCnt1.begin(), elemTestCnt1.end())<<"\n";
-          std::cout<<"Cnt2  "
-            <<"max="<<*std::max_element(elemTestCnt2.begin(), elemTestCnt2.end())<<"  "
-            <<"min="<<*std::min_element(elemTestCnt2.begin(), elemTestCnt2.end())<<"\n";
-          std::cout<<"Cnt3  "
-            <<"max="<<*std::max_element(elemTestCnt3.begin(), elemTestCnt3.end())<<"  "
-            <<"min="<<*std::min_element(elemTestCnt3.begin(), elemTestCnt3.end())<<"\n";
           std::cout<<"Time for step-6 of search: "<<(searchStep6Time - searchStep5Time)<<" seconds."<<std::endl;
         }
       }
+    }
 
-      MPI_Alltoall(sendCnts, 1, MPI_INT, recvCnts, 1, MPI_INT, (globalComm.getCommunicator()));
+//interpolateFieldAtPts()
+    void interpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
+        std::vector<double> & results, std::vector<bool> & foundPt) {
+      double interpolateBeginTime, interpolateStep1Time, interpolateStep2Time;
+      if(verbose) {
+        globalComm.barrier();
+        interpolateBeginTime = MPI_Wtime();
+      }
+
+
+      std::vector<int> sendCnts(npes, 0);
+      std::vector<int> sendDisps(npes);
+      std::vector<int> recvCnts(npes);
+      std::vector<int> recvDisps(npes);
+
+      vectorField->makeConsistent(  AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+      AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField->getDOFManager();
+
+      std::vector<std::vector<double> > tmpSendResults(npes);
+      unsigned int numFoundPts = foundPts.size()/6;
+      std::vector<double> basis_functions_values(8);
+      for(int i = 0; i < numFoundPts; ++i) {
+        AMP::Mesh::MeshElement* amp_element = &(localElemArr[static_cast<unsigned int>(foundPts[6*i])]);
+        std::vector<AMP::Mesh::MeshElement> amp_vector_support_points = amp_element->getElements(AMP::Mesh::Vertex);
+        get_basis_functions_values(&(foundPts[6*i])+1, &(basis_functions_values[0]));
+
+        std::vector<double> value(dofsPerNode, 0.0);
+        for (unsigned int j = 0; j < 8; ++j) {
+          std::vector<size_t> globalID;
+          dofManager->getDOFs(amp_vector_support_points[j].globalID(), globalID);
+          AMP_ASSERT(globalID.size() == dofsPerNode);
+          for(int d = 0; d < dofsPerNode; ++d) {
+            double vecVal = vectorField->getValueByGlobalID(globalID[d]);
+            value[d] += (vecVal * basis_functions_values[j]);
+          }//end d
+        } // end j
+//        unsigned int ptLocalId = static_cast<unsigned int>(foundPts[6*i+4]);
+        unsigned int ptProcId = static_cast<unsigned int>(foundPts[6*i+5]);
+        sendCnts[ptProcId] += (dofsPerNode + 1);
+        tmpSendResults[ptProcId].push_back(foundPts[6*i+4]);
+        for(int d = 0; d < dofsPerNode; ++d) {
+          tmpSendResults[ptProcId].push_back(value[d]);
+        }//end d
+        
+      }//end i
+
+      if(verbose) {
+        globalComm.barrier();
+        interpolateStep1Time = MPI_Wtime();
+        if(!rank) {
+          std::cout<<"Time for step-1 of interpolate: "<<(interpolateStep1Time - interpolateBeginTime)<<" seconds."<<std::endl;
+        }
+      }
+
+
+//sendInterpolatedValuesBack()
+      par::Mpi_Alltoall(&(sendCnts[0]), &(recvCnts[0]), 1, globalComm.getCommunicator());
 
       sendDisps[0] = 0;
       recvDisps[0] = 0;
@@ -772,23 +770,9 @@ elemTestCnt3[eId]++;
           <<" values (total) and "<<numGhostVals<<" values (ghosts)."<<std::endl; 
       }
 
-      double* sendResultsPtr;
-      if(!(sendResults.empty())) {
-        sendResultsPtr = &(sendResults[0]);
-      }
-      double* recvResultsPtr;
-      if(!(recvResults.empty())) {
-        recvResultsPtr = &(recvResults[0]);
-      }
-
-      MPI_Alltoallv(sendResultsPtr, sendCnts, sendDisps, MPI_DOUBLE, 
-          recvResultsPtr, recvCnts, recvDisps, MPI_DOUBLE, (globalComm.getCommunicator()));
+      par::Mpi_Alltoallv_sparse((!(sendResults.empty()) ? &(sendResults[0]) : NULL), &(sendCnts[0]), &(sendDisps[0]),
+          (!(recvResults.empty()) ? &(recvResults[0]) : NULL), &(recvCnts[0]), &(recvDisps[0]), globalComm.getCommunicator());
       sendResults.clear();
-
-      delete [] sendCnts;
-      delete [] sendDisps;
-      delete [] recvCnts;
-      delete [] recvDisps;
 
       //Points that are not found will have a result = 0. 
       results.resize(dofsPerNode*numLocalPts);
@@ -811,9 +795,9 @@ elemTestCnt3[eId]++;
 
       if(verbose) {
         globalComm.barrier();
-        searchStep7Time = MPI_Wtime();
+        interpolateStep2Time = MPI_Wtime();
         if(!rank) {
-          std::cout<<"Time for step-7 of search: "<<(searchStep7Time - searchStep6Time)<<" seconds."<<std::endl;
+          std::cout<<"Time for step-2 of interpolate: "<<(interpolateStep2Time - interpolateStep1Time)<<" seconds."<<std::endl;
         }
       }
     }
@@ -833,6 +817,9 @@ elemTestCnt3[eId]++;
     std::vector<AMP::Mesh::MeshElement> localElemArr;
     std::vector<ot::TreeNode> mins;
     unsigned int BoxLevel;
+
+    int numLocalPts;
+    std::vector<double> foundPts;
 
     void setupDendro() {
       double setupBeginTime, setupEndTime;
