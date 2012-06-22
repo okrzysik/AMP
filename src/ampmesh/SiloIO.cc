@@ -491,7 +491,7 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID,siloMultiMeshData> &d
                 AMP_ASSERT(recv_size<=(int)max_size);
                 d_comm.recv( recv_buf, recv_size, i, false, 24987 );
                 char *ptr = recv_buf;
-                for (int i=0; i<recv_num[i]; i++) {
+                for (int j=0; j<recv_num[i]; j++) {
                     siloMultiMeshData tmp = siloMultiMeshData::unpack(ptr);
                     ptr = &ptr[tmp.size()];
                     meshdata.push_back( tmp );
@@ -590,7 +590,7 @@ void SiloIO::syncVariableList( std::set<std::string> &data_set, int root ) const
                 int recv_size = d_comm.probe( i, 24987);
                 d_comm.recv( recv_buf, recv_size, i, false, 24987 );
                 k = 0;
-                for (int i=0; i<recv_num[i]; i++) {
+                for (int j=0; j<recv_num[i]; j++) {
                     std::string tmp( &recv_buf[k], size_global[index] );
                     data_set.insert(tmp);
                     k += size_global[index];
