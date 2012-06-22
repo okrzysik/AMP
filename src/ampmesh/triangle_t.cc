@@ -1,42 +1,46 @@
 #include <ampmesh/triangle_t.h> 
 
-triangle_t::triangle_t() {
-  double A[3] = { 0.0, 0.0, 0.0 };
-  double B[3] = { 1.0, 0.0, 0.0 };
-  double C[3] = { 0.0, 1.0, 0.0 };
-  set_support_points(std::vector<double>(A, A+3), std::vector<double>(B, B+3), std::vector<double>(C, C+3)); 
+triangle_t::triangle_t(double const * A, double const * B, double const * C) {
+  memory_allocated = false;
+  set_support_points(A, B, C);
 }
 
-triangle_t::triangle_t(const std::vector<double> &A, const std::vector<double> &B, const std::vector<double> &C) {
-  set_support_points(A, B, C); 
-}
-
-void triangle_t::set_support_points(const std::vector<double> &A, const std::vector<double> &B, const std::vector<double> &C) { 
-  assert(A.size() == 3);
-  assert(B.size() == 3);
-  assert(C.size() == 3);
+void triangle_t::set_support_points(double const * A, double const * B, double const * C) {
   _A = A;
   _B = B;
   _C = C;
-  compute_n_ABC();
+  _n_ABC_updated = false;
 }
 
 // check whether plane supported by the triangle ABC is above the point with respect to the normal
-bool triangle_t::above_point(const std::vector<double> &p) const {
-  assert(p.size() == 3);
-  std::vector<double> A_p = make_vector_from_two_points(_A, p);
-  std::vector<double> B_p = make_vector_from_two_points(_B, p);
-  std::vector<double> C_p = make_vector_from_two_points(_C, p);
-  std::vector<double> ABC_p(3);
-  for (unsigned int i = 0; i < 3; ++i) { ABC_p[i] = A_p[i] + B_p[i] + C_p[i]; }
-  return (compute_scalar_product(ABC_p, _n_ABC) < epsilon);
+bool triangle_t::above_point(double const * p, double tolerance) {
+  if (!memory_allocated) {
+    _AB.resize(3);
+    _AC.resize(3);
+    _n_ABC.resize(3);
+    _Ap.resize(3);
+    _Bp.resize(3);
+    _Cp.resize(3);
+    _ABCp.resize(3);
+  } // end if
+  if (!_n_ABC_updated) { 
+    compute_n_ABC();
+    _n_ABC_updated = true;
+  } // end if
+  make_vector_from_two_points(_A, p, &(_Ap[0]));
+  make_vector_from_two_points(_B, p, &(_Bp[0]));
+  make_vector_from_two_points(_C, p, &(_Cp[0]));
+  for (unsigned int i = 0; i < 3; ++i) { _ABCp[i] = (_Ap[i] + _Bp[i] + _Cp[i]) / 3.0; }
+  return (compute_scalar_product(_ABCp, _n_ABC) < tolerance);
 }
 
 void triangle_t::compute_n_ABC() {
-  _n_ABC = compute_cross_product(make_vector_from_two_points(_A, _B), make_vector_from_two_points(_A, _C));
-  double normalizing_factor = sqrt(std::inner_product(_n_ABC.begin(), _n_ABC.end(), _n_ABC.begin(), 0.0));
-  assert(normalizing_factor > 1.0e-12);
-  scale_points(std::vector<double>(3, 1.0/normalizing_factor), 1, &(_n_ABC[0]));
+  make_vector_from_two_points(_A, _B, &(_AB[0]));
+  make_vector_from_two_points(_A, _C, &(_AC[0]));
+  compute_cross_product(&(_AB[0]), &(_AC[0]), &(_n_ABC[0]));
+  double normalizing_factor = 1.0 / sqrt(std::inner_product(&(_n_ABC[0]), &(_n_ABC[0])+3, &(_n_ABC[0]), 0.0));
+  assert(normalizing_factor < 1.0e12);
+  for (unsigned int i = 0; i < 3; ++i) { scale_points(i, normalizing_factor, 1, &(_n_ABC[0])); }
 }
 
 
@@ -90,23 +94,34 @@ std::vector<double> compute_cross_product(const std::vector<double> &u, const st
   assert(u.size() == 3);
   assert(v.size() == 3);
   std::vector<double> w(3);
+  compute_cross_product(&(u[0]), &(v[0]), &(w[0]));
+  return w;
+}
+
+void compute_cross_product(double const * u, double const * v, double * w) {
   w[0] = u[1]*v[2]-u[2]*v[1];
   w[1] = u[2]*v[0]-u[0]*v[2];
   w[2] = u[0]*v[1]-u[1]*v[0];
-  return w;
+}
+
+double compute_scalar_product(double const * u, double const * v) {
+  return std::inner_product(&(u[0]), &(u[0])+3, &(v[0]), 0.0);
 }
 
 double compute_scalar_product(const std::vector<double> &u, const std::vector<double> &v) {
   assert(u.size() == 3);
   assert(v.size() == 3);
-  return std::inner_product(u.begin(), u.end(), v.begin(), 0.0);
+  return compute_scalar_product(&(u[0]), &(v[0]));
 }
 
 std::vector<double> make_vector_from_two_points(const std::vector<double> &start_point, const std::vector<double> &end_point) {
   assert(start_point.size() == 3);
   assert(end_point.size() == 3);
   std::vector<double> vector(3);
-  for (unsigned int i = 0; i < 3; ++i) { vector[i] = end_point[i] - start_point[i]; }
+  make_vector_from_two_points(&(start_point[0]), &(end_point[0]), &(vector[0]));
   return vector;
 }
 
+void make_vector_from_two_points(double const * start_point, double const * end_point, double * vector) {
+  for (unsigned int i = 0; i < 3; ++i) { vector[i] = end_point[i] - start_point[i]; }
+}

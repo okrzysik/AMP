@@ -29,7 +29,8 @@ unsigned int perform_battery_of_tests(hex8_element_t &volume_element, double (*m
     std::vector<double> candidate_point_local_coordinates(3);
     for (unsigned int j = 0; j < 3; ++j) { candidate_point_local_coordinates[j] = -1.0+2.0*rand()/RAND_MAX; }
 
-    std::vector<double> basis_functions_values = get_basis_functions_values(candidate_point_local_coordinates);
+    std::vector<double> basis_functions_values(8);
+    get_basis_functions_values(&(candidate_point_local_coordinates[0]), &(basis_functions_values[0]));
     double interpolated_value = 0.0;
     for (unsigned int j = 0; j < 8; ++j) {
       interpolated_value += my_function_at_support_points[j] * basis_functions_values[j];
