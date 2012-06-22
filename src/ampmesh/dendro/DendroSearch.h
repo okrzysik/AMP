@@ -168,8 +168,8 @@ void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& no
     localFlag = 1;
   }
 
-  int globalFlag;
-  MPI_Allreduce(&localFlag, &globalFlag, 1, MPI_INT, MPI_SUM, (globalComm.getCommunicator()));
+  int globalFlag = globalComm.sumReduce(localFlag);
+//  MPI_Allreduce(&localFlag, &globalFlag, 1, MPI_INT, MPI_SUM, (globalComm.getCommunicator()));
 
   int prevRank = rank - 1;
   int nextRank = rank + 1;
@@ -182,7 +182,8 @@ void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& no
 
     int* gatherList = new int[npes];
 
-    MPI_Allgather((&gatherSendBuf), 1, MPI_INT, gatherList, 1, MPI_INT, (globalComm.getCommunicator()));
+    globalComm.allGather(gatherSendBuf, gatherList);
+//    MPI_Allgather((&gatherSendBuf), 1, MPI_INT, gatherList, 1, MPI_INT, (globalComm.getCommunicator()));
 
     if(rank > 0) {
       while(gatherList[prevRank] > 0) {
@@ -236,8 +237,9 @@ void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& no
       recvBoxBuf = (&(tmpBoxList[0]));
     }
 
-    MPI_Alltoallv( (&(nodeList[0])), sendBoxCnts, sendBoxDisps, par::Mpi_datatype<ot::TreeNode>::value(),
-        recvBoxBuf, recvBoxCnts, recvBoxDisps, par::Mpi_datatype<ot::TreeNode>::value(), (globalComm.getCommunicator()));
+    globalComm.allToAll( (&(nodeList[0])), sendBoxCnts, sendBoxDisps, recvBoxBuf, recvBoxCnts, recvBoxDisps, true);
+//    MPI_Alltoallv( (&(nodeList[0])), sendBoxCnts, sendBoxDisps, par::Mpi_datatype<ot::TreeNode>::value(),
+//        recvBoxBuf, recvBoxCnts, recvBoxDisps, par::Mpi_datatype<ot::TreeNode>::value(), (globalComm.getCommunicator()));
 
     if(gatherSendBuf > 0) {
       nodeList.clear();
@@ -275,10 +277,12 @@ void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& no
       recvElemIdBuf = (&(tmpElemIdList[0]));
     }
 
-    MPI_Alltoallv( (&(rankList[0])), sendSourceCnts, sendSourceDisps, MPI_INT,
-        recvRankBuf, recvSourceCnts, recvSourceDisps, MPI_INT, (globalComm.getCommunicator()));
-    MPI_Alltoallv( (&(elemIdList[0])), sendSourceCnts, sendSourceDisps, MPI_INT,
-        recvElemIdBuf, recvSourceCnts, recvSourceDisps, MPI_INT, (globalComm.getCommunicator()));
+    globalComm.allToAll( (&(rankList[0])), sendSourceCnts, sendSourceDisps, recvRankBuf, recvSourceCnts, recvSourceDisps, true);
+    globalComm.allToAll( (&(elemIdList[0])), sendSourceCnts, sendSourceDisps, recvElemIdBuf, recvSourceCnts, recvSourceDisps, true);
+//    MPI_Alltoallv( (&(rankList[0])), sendSourceCnts, sendSourceDisps, MPI_INT,
+//        recvRankBuf, recvSourceCnts, recvSourceDisps, MPI_INT, (globalComm.getCommunicator()));
+//    MPI_Alltoallv( (&(elemIdList[0])), sendSourceCnts, sendSourceDisps, MPI_INT,
+//        recvElemIdBuf, recvSourceCnts, recvSourceDisps, MPI_INT, (globalComm.getCommunicator()));
 
     if(gatherSendBuf > 0) {
       rankList.clear();
@@ -385,8 +389,9 @@ void setupDSforSearchType(unsigned int & BoxLevel, std::vector<ot::TreeNode>& no
     firstNode.setWeight(rank);
   }
   mins.resize(npes);
-  MPI_Allgather(&firstNode, 1, par::Mpi_datatype<ot::TreeNode>::value(), 
-      &(mins[0]), 1, par::Mpi_datatype<ot::TreeNode>::value(), globalComm.getCommunicator() );
+  globalComm.allGather(firstNode, &(mins[0]));
+//  MPI_Allgather(&firstNode, 1, par::Mpi_datatype<ot::TreeNode>::value(), 
+//      &(mins[0]), 1, par::Mpi_datatype<ot::TreeNode>::value(), globalComm.getCommunicator() );
 
   std::vector<ot::TreeNode> tmpMins;
   for(int i = 0; i < npes; ++i) {
@@ -505,7 +510,8 @@ class DendroSearch {
       }
 
       std::vector<int> recvCnts(npes);
-      par::Mpi_Alltoall(&(sendCnts[0]), &(recvCnts[0]), 1, globalComm.getCommunicator());
+      globalComm.allToAll(1, &(sendCnts[0]), &(recvCnts[0]));
+//      par::Mpi_Alltoall(&(sendCnts[0]), &(recvCnts[0]), 1, globalComm.getCommunicator());
 
       std::vector<int> sendDisps(npes);
       std::vector<int> recvDisps(npes);
@@ -529,8 +535,10 @@ class DendroSearch {
       ptsWrapper.clear();
 
       std::vector<ot::NodeAndValues<double, 4> > recvList(recvDisps[npes - 1] + recvCnts[npes - 1]);
-      par::Mpi_Alltoallv_sparse((!(sendList.empty()) ? &(sendList[0]) : NULL), &(sendCnts[0]), &(sendDisps[0]),
-        (!(recvList.empty()) ? &(recvList[0]) : NULL), &(recvCnts[0]), &(recvDisps[0]), globalComm.getCommunicator());
+      globalComm.allToAll((!(sendList.empty()) ? &(sendList[0]) : NULL), &(sendCnts[0]), &(sendDisps[0]),
+        (!(recvList.empty()) ? &(recvList[0]) : NULL), &(recvCnts[0]), &(recvDisps[0]), true);
+//      par::Mpi_Alltoallv_sparse((!(sendList.empty()) ? &(sendList[0]) : NULL), &(sendCnts[0]), &(sendDisps[0]),
+//        (!(recvList.empty()) ? &(recvList[0]) : NULL), &(recvCnts[0]), &(recvDisps[0]), globalComm.getCommunicator());
       sendList.clear();
 
       if(verbose) {
@@ -564,7 +572,8 @@ class DendroSearch {
         }
       }
 
-      par::Mpi_Alltoall(&(sendCnts[0]), &(recvCnts[0]), 1, globalComm.getCommunicator());
+      globalComm.allToAll(1, &(sendCnts[0]), &(recvCnts[0]));
+//      par::Mpi_Alltoall(&(sendCnts[0]), &(recvCnts[0]), 1, globalComm.getCommunicator());
 
       sendDisps[0] = 0;
       recvDisps[0] = 0;
@@ -609,8 +618,10 @@ class DendroSearch {
       }//end i
 
       std::vector<double> recvPtsList(recvDisps[npes - 1] + recvCnts[npes - 1]);
-      par::Mpi_Alltoallv_sparse((!(sendPtsList.empty()) ? &(sendPtsList[0]) : NULL), &(sendCnts[0]), &(sendDisps[0]), 
-        (!(recvPtsList.empty()) ? &(recvPtsList[0]) : NULL), &(recvCnts[0]), &(recvDisps[0]), globalComm.getCommunicator());
+      globalComm.allToAll((!(sendPtsList.empty()) ? &(sendPtsList[0]) : NULL), &(sendCnts[0]), &(sendDisps[0]), 
+        (!(recvPtsList.empty()) ? &(recvPtsList[0]) : NULL), &(recvCnts[0]), &(recvDisps[0]), true);
+//      par::Mpi_Alltoallv_sparse((!(sendPtsList.empty()) ? &(sendPtsList[0]) : NULL), &(sendCnts[0]), &(sendDisps[0]), 
+//        (!(recvPtsList.empty()) ? &(recvPtsList[0]) : NULL), &(recvCnts[0]), &(recvDisps[0]), globalComm.getCommunicator());
       sendPtsList.clear();
 
       if(verbose) {
@@ -728,9 +739,8 @@ class DendroSearch {
         }
       }
 
-
-//sendInterpolatedValuesBack()
-      par::Mpi_Alltoall(&(sendCnts[0]), &(recvCnts[0]), 1, globalComm.getCommunicator());
+      globalComm.allToAll(1, &(sendCnts[0]), &(recvCnts[0]));
+//      par::Mpi_Alltoall(&(sendCnts[0]), &(recvCnts[0]), 1, globalComm.getCommunicator());
 
       sendDisps[0] = 0;
       recvDisps[0] = 0;
@@ -761,8 +771,10 @@ class DendroSearch {
           <<" values (total) and "<<numGhostVals<<" values (ghosts)."<<std::endl; 
       }
 
-      par::Mpi_Alltoallv_sparse((!(sendResults.empty()) ? &(sendResults[0]) : NULL), &(sendCnts[0]), &(sendDisps[0]),
-          (!(recvResults.empty()) ? &(recvResults[0]) : NULL), &(recvCnts[0]), &(recvDisps[0]), globalComm.getCommunicator());
+      globalComm.allToAll((!(sendResults.empty()) ? &(sendResults[0]) : NULL), &(sendCnts[0]), &(sendDisps[0]),
+          (!(recvResults.empty()) ? &(recvResults[0]) : NULL), &(recvCnts[0]), &(recvDisps[0]), true);
+//      par::Mpi_Alltoallv_sparse((!(sendResults.empty()) ? &(sendResults[0]) : NULL), &(sendCnts[0]), &(sendDisps[0]),
+//          (!(recvResults.empty()) ? &(recvResults[0]) : NULL), &(recvCnts[0]), &(recvDisps[0]), globalComm.getCommunicator());
       sendResults.clear();
 
       //Points that are not found will have a result = 0. 
