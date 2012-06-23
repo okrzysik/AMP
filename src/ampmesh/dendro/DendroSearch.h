@@ -489,7 +489,14 @@ class DendroSearch {
       //time and using binary searches would be logarithmic. This is just a matter
       //of constants since sorting is also logarithmic.
 
-      std::vector<int> sendCnts(npes, 0);
+//      std::vector<int> sendCnts(npes, 0);
+      if (sendCnts.size() == 0) {
+        sendCnts.resize(npes);
+        recvCnts.resize(npes);
+        sendDisps.resize(npes);
+        recvDisps.resize(npes);
+      } // end if
+      std::fill(sendCnts.begin(), sendCnts.end(), 0);
       std::vector<int> part(numLocalPts, -1);
 
       for(int i = 0; i < numLocalPts; ++i) {
@@ -509,12 +516,12 @@ class DendroSearch {
         }
       }
 
-      std::vector<int> recvCnts(npes);
+//      std::vector<int> recvCnts(npes);
       globalComm.allToAll(1, &(sendCnts[0]), &(recvCnts[0]));
 //      par::Mpi_Alltoall(&(sendCnts[0]), &(recvCnts[0]), 1, globalComm.getCommunicator());
 
-      std::vector<int> sendDisps(npes);
-      std::vector<int> recvDisps(npes);
+//      std::vector<int> sendDisps(npes);
+//      std::vector<int> recvDisps(npes);
       sendDisps[0] = 0;
       recvDisps[0] = 0;
       for(int i = 1; i < npes; ++i) {
@@ -632,8 +639,6 @@ class DendroSearch {
         }
       }
 
-      std::fill(sendCnts.begin(), sendCnts.end(), 0);
-
       unsigned int n_volume_elements = localElemArr.size();
       std::vector<hex8_element_t> volume_elements;
       volume_elements.reserve(n_volume_elements);
@@ -652,6 +657,8 @@ class DendroSearch {
       } // end for i
 
  
+      std::fill(sendCnts.begin(), sendCnts.end(), 0);
+
       int numRecvPts = recvPtsList.size()/6;
       std::vector<double> tmpPtLocalCoord(3);
 
@@ -661,21 +668,25 @@ class DendroSearch {
       for(int i = 0; i < numRecvPts; ++i) {
         double const * tmpPtGlobalCoordPtr = &(recvPtsList[6*i])+1;
         unsigned int eId = static_cast<unsigned int>(recvPtsList[6*i]);
+        unsigned int procId = static_cast<unsigned int>(recvPtsList[6*i+5]);
 
         if (volume_elements[eId].within_bounding_box(tmpPtGlobalCoordPtr)) {
           if (volume_elements[eId].within_bounding_polyhedron(tmpPtGlobalCoordPtr)) {
             volume_elements[eId].map_global_to_local(tmpPtGlobalCoordPtr, &(tmpPtLocalCoord[0]));
             if (volume_elements[eId].contains_point(&(tmpPtLocalCoord[0]), coordinates_are_local)) {
-              foundPts.push_back(static_cast<double>(recvPtsList[6*i]));
+              foundPts.push_back(recvPtsList[6*i]);
               for (unsigned int d = 0; d < 3; ++d) { foundPts.push_back(tmpPtLocalCoord[d]); }
-              foundPts.push_back(static_cast<double>(recvPtsList[6*i+4]));
-              foundPts.push_back(static_cast<double>(recvPtsList[6*i+5]));
+              foundPts.push_back(recvPtsList[6*i+4]);
+              foundPts.push_back(recvPtsList[6*i+5]);
               ++numFoundPts;
+              ++sendCnts[procId];
             } // end if
           } // end if
         } // end if
       }//end i
       recvPtsList.clear();
+
+      globalComm.allToAll(1, &(sendCnts[0]), &(recvCnts[0]));
 
       if(verbose) {
         globalComm.barrier();
@@ -695,10 +706,10 @@ class DendroSearch {
       }
 
 
-      std::vector<int> sendCnts(npes, 0);
+/*      std::vector<int> sendCnts(npes, 0);
       std::vector<int> sendDisps(npes);
       std::vector<int> recvCnts(npes);
-      std::vector<int> recvDisps(npes);
+      std::vector<int> recvDisps(npes);*/
 
       vectorField->makeConsistent(  AMP::LinearAlgebra::Vector::CONSISTENT_SET );
       AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField->getDOFManager();
@@ -723,7 +734,7 @@ class DendroSearch {
         } // end j
 //        unsigned int ptLocalId = static_cast<unsigned int>(foundPts[6*i+4]);
         unsigned int ptProcId = static_cast<unsigned int>(foundPts[6*i+5]);
-        sendCnts[ptProcId] += (dofsPerNode + 1);
+//        sendCnts[ptProcId] += (dofsPerNode + 1);
         tmpSendResults[ptProcId].push_back(foundPts[6*i+4]);
         for(int d = 0; d < dofsPerNode; ++d) {
           tmpSendResults[ptProcId].push_back(value[d]);
@@ -739,7 +750,11 @@ class DendroSearch {
         }
       }
 
-      globalComm.allToAll(1, &(sendCnts[0]), &(recvCnts[0]));
+      for (unsigned int i = 0; i < npes; ++i) {
+        sendCnts[i] *= (dofsPerNode + 1);
+        recvCnts[i] *= (dofsPerNode + 1);
+      } // end for i
+//      globalComm.allToAll(1, &(sendCnts[0]), &(recvCnts[0]));
 //      par::Mpi_Alltoall(&(sendCnts[0]), &(recvCnts[0]), 1, globalComm.getCommunicator());
 
       sendDisps[0] = 0;
@@ -796,6 +811,11 @@ class DendroSearch {
         }//end d
       }//end i
 
+      for (unsigned int i = 0; i < npes; ++i) {
+        sendCnts[i] /= (dofsPerNode + 1);
+        recvCnts[i] /= (dofsPerNode + 1);
+      } // end for i
+
       if(verbose) {
         globalComm.barrier();
         interpolateStep2Time = MPI_Wtime();
@@ -823,6 +843,7 @@ class DendroSearch {
 
     int numLocalPts;
     std::vector<double> foundPts;
+    std::vector<int> sendCnts, sendDisps, recvCnts, recvDisps;
 
     void setupDendro() {
       double setupBeginTime, setupEndTime;

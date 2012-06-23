@@ -35,17 +35,18 @@ std::vector<double> hex8_element_t::get_bounding_box() {
   return bounding_box; 
 }
 
-bool hex8_element_t::within_bounding_box(double const *p) {
+bool hex8_element_t::within_bounding_box(double const *p, double tolerance) {
   if (!bounding_box_updated) { build_bounding_box(); };
   for (unsigned int j = 0; j < 3; ++j) {
-    if ((bounding_box[j+0] > p[j]) || (bounding_box[j+3] < p[j])) { return false; }
+// sould we scale the tolerance?
+    if ((bounding_box[j+0] - tolerance > p[j]) || (bounding_box[j+3] + tolerance < p[j])) { return false; }
   } // end for j
   return true;
 }
 
-bool hex8_element_t::within_bounding_box(const std::vector<double> &p) {
+bool hex8_element_t::within_bounding_box(const std::vector<double> &p, double tolerance) {
   assert(p.size() == 3);
-  return within_bounding_box(&(p[0]));
+  return within_bounding_box(&(p[0]), tolerance);
 }
 
 void hex8_element_t::build_bounding_polyhedron() {
@@ -102,12 +103,12 @@ void hex8_element_t::build_bounding_polyhedron() {
 }
 
 
-bool hex8_element_t::within_bounding_polyhedron(const std::vector<double> &p) {
+bool hex8_element_t::within_bounding_polyhedron(const std::vector<double> &p, double tolerance) {
   assert(p.size() == 3);
-  return within_bounding_polyhedron(&(p[0]));
+  return within_bounding_polyhedron(&(p[0]), tolerance);
 }
 
-bool hex8_element_t::within_bounding_polyhedron(double const *p) {
+bool hex8_element_t::within_bounding_polyhedron(double const *p, double tolerance) {
   if (!bounding_polyhedron_updated) { build_bounding_polyhedron(); }
   for (unsigned int i = 0; i < 6; ++i) {
     // first configuration when splitting face into two triangles
@@ -119,7 +120,7 @@ bool hex8_element_t::within_bounding_polyhedron(double const *p) {
     //    |       .| 
     //    o--------o
     //   0          1
-    if (((!bounding_polyhedron[4*i+0].above_point(p)) || (!bounding_polyhedron[4*i+1].above_point(p))) 
+    if (((!bounding_polyhedron[4*i+0].above_point(p, tolerance)) || (!bounding_polyhedron[4*i+1].above_point(p, tolerance))) 
     // second configuration
     //   3          2    
     //    o--------o    
@@ -129,7 +130,7 @@ bool hex8_element_t::within_bounding_polyhedron(double const *p) {
     //    |.       | 
     //    o--------o
     //   0          1
-      && ((!bounding_polyhedron[4*i+2].above_point(p)) || (!bounding_polyhedron[4*i+3].above_point(p)))) { return false; }
+      && ((!bounding_polyhedron[4*i+2].above_point(p, tolerance)) || (!bounding_polyhedron[4*i+3].above_point(p, tolerance)))) { return false; }
   } // end for i
   return true;
 }
@@ -163,14 +164,14 @@ void hex8_element_t::map_local_to_global(double const *local_coordinates, double
 
 bool hex8_element_t::contains_point(const std::vector<double> &coordinates, bool coordinates_are_local, double tolerance) {
   assert(coordinates.size() == 3); 
-  return contains_point(&(coordinates[0]), coordinates_are_local);
+  return contains_point(&(coordinates[0]), coordinates_are_local, tolerance);
 }
 
 bool hex8_element_t::contains_point(double const *coordinates, bool coordinates_are_local, double tolerance) {
   std::vector<double> local_coordinates(3);
   if (!coordinates_are_local) {
-    if (!within_bounding_box(coordinates)) { return false; }
-    if (!within_bounding_polyhedron(coordinates)) { return false; }
+    if (!within_bounding_box(coordinates, tolerance)) { return false; }
+    if (!within_bounding_polyhedron(coordinates, tolerance)) { return false; }
     std::copy(&(coordinates[0]), &(coordinates[0])+3, &(point_candidate[0]));
     solve_newton(&(local_coordinates[0]));
   } else {
