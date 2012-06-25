@@ -4,12 +4,17 @@ hex8_element_t::hex8_element_t(const std::vector<double> &p) : memory_allocated_
   point_candidate.resize(3);
   bounding_box.resize(6, 0.0);
   bounding_polyhedron.reserve(24);
+  support_points.resize(24);
   set_support_points(p); 
 }
 
 void hex8_element_t::set_support_points(const std::vector<double> &p) { 
   assert(p.size() == 24); 
-  support_points = p; 
+  set_support_points(&(p[0]));
+}
+
+void hex8_element_t::set_support_points(double const *p) { 
+  std::copy(p, p+24, &(support_points[0])); 
   bounding_box_updated = false;
   bounding_polyhedron_updated = false;
   center_of_element_data_updated = false;
@@ -30,6 +35,11 @@ double const * hex8_element_t::get_support_point(unsigned int i) const {
   return &(support_points[3*i]);
 } 
 
+unsigned int const * hex8_element_t::get_face(unsigned int i) const { 
+  assert(i < 6);
+  return &(faces[4*i]);
+} 
+
 std::vector<double> hex8_element_t::get_bounding_box() { 
   if (!bounding_box_updated) { build_bounding_box(); };
   return bounding_box; 
@@ -39,7 +49,7 @@ bool hex8_element_t::within_bounding_box(double const *p, double tolerance) {
   if (!bounding_box_updated) { build_bounding_box(); };
   for (unsigned int j = 0; j < 3; ++j) {
 // sould we scale the tolerance?
-    if ((bounding_box[j+0] - tolerance > p[j]) || (bounding_box[j+3] + tolerance < p[j])) { return false; }
+    if ((bounding_box[j+0] - tolerance*(bounding_box[j+3]-bounding_box[j+0]) > p[j]) || (bounding_box[j+3] + tolerance*(bounding_box[j+3]-bounding_box[j+0]) < p[j])) { return false; }
   } // end for j
   return true;
 }
@@ -49,18 +59,27 @@ bool hex8_element_t::within_bounding_box(const std::vector<double> &p, double to
   return within_bounding_box(&(p[0]), tolerance);
 }
 
+unsigned int hex8_element_t::faces[24] = {
+  0, 3, 2, 1, 
+  0, 1, 5, 4, 
+  1, 2, 6, 5, 
+  2, 3, 7, 6, 
+  3, 0, 4, 7, 
+  4, 5, 6, 7
+};
+
 void hex8_element_t::build_bounding_polyhedron() {
   assert(!bounding_polyhedron_updated);
   bounding_polyhedron.clear();
 //  assert(bounding_polyhedron.capacity() == 24);
-  unsigned int faces[24] = {
+/*  unsigned int faces[24] = {
     0, 3, 2, 1, 
     0, 1, 5, 4, 
     1, 2, 6, 5, 
     2, 3, 7, 6, 
     3, 0, 4, 7, 
     4, 5, 6, 7
-  };
+  };*/
   for (unsigned int i = 0; i < 6; ++i) {
     //   3        
     //    o

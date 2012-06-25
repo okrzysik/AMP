@@ -28,7 +28,9 @@ bool contains_point(const std::vector<double> &coordinates, bool coordinates_are
   void set_support_points(const std::vector<double> &p);
   std::vector<double> get_support_points() const;
 
+  void set_support_points(double const * p);
   double const * get_support_point(unsigned int i) const;
+  unsigned int const * get_face(unsigned int i) const;
   std::vector<double> get_bounding_box();
   bool within_bounding_box(double const *p, double tolerance = 1.0e-12);
   bool within_bounding_polyhedron(double const *p, double tolerance = 1.0e-12);
@@ -82,6 +84,8 @@ private:
   //      5       z=+1                    4567 
   //
   std::vector<double> support_points, point_candidate;
+
+  static unsigned int faces[];
 
   bool bounding_box_updated, bounding_polyhedron_updated;
   void build_bounding_box();

@@ -11,8 +11,8 @@
 
 #include "vectors/Vector.h"
 
-
 #include "ampmesh/Mesh.h"
+#include "ampmesh/hex8_element_t.h"
 
 #include <iostream>
 #include <string>
@@ -31,7 +31,6 @@
 #include "externVars.h"
 #include "dendro.h"
 
-#include "hex8_element_t.h"
 
 void createLocalMeshElementArray(std::vector<AMP::Mesh::MeshElement>& localElemArr, 
     AMP::Mesh::Mesh::shared_ptr meshAdapter) {

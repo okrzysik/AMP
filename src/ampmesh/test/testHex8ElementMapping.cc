@@ -3,7 +3,7 @@
 
 #include "hex8_element_t.h"
 
-void myTest(AMP::UnitTest *ut, std::string exeName) {
+void old_test_project_on_face() {
   double points[24] = {
     -1.0, -1.0, -1.0, // 0
     +1.0, -1.0, -1.0, // 1
@@ -102,15 +102,47 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   for (unsigned int i = 0; i < n_candidates; ++i) {
     std::pair<unsigned int, std::vector<double> > out = volume_element.project_on_face(candidates[3*i+0], candidates[3*i+1], candidates[3*i+2]);
-    assert(out.first == face[i]);
-    assert(out.second[0] == coordinates[2*i+0]);
-    assert(out.second[1] == coordinates[2*i+1]);
+    AMP_ASSERT(out.first == face[i]);
+    AMP_ASSERT(out.second[0] == coordinates[2*i+0]);
+    AMP_ASSERT(out.second[1] == coordinates[2*i+1]);
+  } // end for i
+}
+
+void test_mapping(hex8_element_t *volume_element, unsigned int n_random_candidate_points = 10000, double abs_tol = 1.0e-12, double rel_tol = 1.0e-12) {
+//  const double abs_tol = 1.0e-12, rel_tol = 1.0e-12;
+//  const unsigned int n_random_candidate_points = 10000;
+  std::vector<double> random_candidate_point(3), candidate_point_global_coordinates(3), candidate_point_local_coordinates(3), error(3);
+  double error_norm, tol;
+  for (unsigned int i = 0; i < n_random_candidate_points; ++i) {
+    for (unsigned int j = 0; j < 3; ++j) { random_candidate_point[j] = -1.0+2.0*rand()/RAND_MAX; }
+    volume_element->map_local_to_global(&(random_candidate_point[0]), &(candidate_point_global_coordinates[0]));
+    volume_element->map_global_to_local(&(candidate_point_global_coordinates[0]), &(candidate_point_local_coordinates[0]));
+
+    for (unsigned int i = 0; i < 3; ++i) { error[i] = candidate_point_local_coordinates[i] - random_candidate_point[i]; }
+    error_norm = sqrt(std::inner_product(error.begin(), error.end(), error.begin(), 0.0));
+    tol= abs_tol + rel_tol * sqrt(std::inner_product(random_candidate_point.begin(), random_candidate_point.end(), random_candidate_point.begin(), 0.0));
+    AMP_ASSERT(error_norm < tol);
   } // end for i
 
+}
 
+void myTest(AMP::UnitTest *ut, std::string exeName) {
+  old_test_project_on_face();
 
+  double points[24] = {
+    -1.0, -1.0, -1.0, // 0
+    +1.0, -1.0, -1.0, // 1
+    +1.0, +1.0, -1.0, // 2
+    -1.0, +1.0, -1.0, // 3
+    -1.0, -1.0, +1.0, // 4
+    +1.0, -1.0, +1.0, // 5
+    +1.0, +1.0, +1.0, // 6
+    -1.0, +1.0, +1.0  // 7
+  }; 
+  // shifting the points from [-1, 1]^3 to [0, 1]^3
+  for (unsigned int i = 0; i < 24; ++i) { points[i] = 0.5*(points[i]+1.0); }
 
-
+  hex8_element_t volume_element(std::vector<double>(points, points+24));
 
   double scaling_factors[3] = { 4.0, 2.0, 1.0 };
   scale_points(std::vector<double>(scaling_factors, scaling_factors+3), 8, points);
@@ -124,23 +156,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   srand(0);
   for (unsigned int i = 0; i < 24; ++i) { points[i] += -0.1 + 0.2*rand()/RAND_MAX; }
+
   volume_element.set_support_points(std::vector<double>(points, points+24));
 
-
-  double abs_tol = 1.0e-12, rel_tol = 1.0e-12;
-  const unsigned int n_random_candidate_points = 10000;
-  for (unsigned int i = 0; i < n_random_candidate_points; ++i) {
-    std::vector<double> random_candidate_point(3);
-    for (unsigned int j = 0; j < 3; ++j) { random_candidate_point[j] = -1.0+2.0*rand()/RAND_MAX; }
-    std::vector<double> candidate_point_global_coordinates = volume_element.map_local_to_global(random_candidate_point);
-    std::vector<double> candidate_point_local_coordinates = volume_element.map_global_to_local(candidate_point_global_coordinates);
-
-    std::vector<double> error(3);
-    for (unsigned int i = 0; i < 3; ++i) { error[i] = candidate_point_local_coordinates[i] - random_candidate_point[i]; }
-    double error_norm = sqrt(std::inner_product(error.begin(), error.end(), error.begin(), 0.0));
-    double tolerance = abs_tol + rel_tol * sqrt(std::inner_product(random_candidate_point.begin(), random_candidate_point.end(), random_candidate_point.begin(), 0.0));
-    assert(error_norm < tolerance);
-  } // end for i
+  test_mapping(&volume_element);
 
 
   ut->passes(exeName);
