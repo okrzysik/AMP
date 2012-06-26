@@ -18,6 +18,8 @@ void compute_n_by_n_matrix_times_vector(unsigned int n, double const *mat, doubl
 class hex8_element_t {
 public:
 // deprecated
+  std::pair<unsigned int, std::vector<double> > project_on_face(double a, double b, double c);
+  std::pair<unsigned int, std::vector<double> > project_on_face(const std::vector<double> &p);
 bool within_bounding_box(const std::vector<double> &p, double tolerance = 1.0e-12);
 bool within_bounding_polyhedron(const std::vector<double> &p, double tolerance = 1.0e-12);
 std::vector<double> map_global_to_local(const std::vector<double> &global_coordinates);
@@ -26,12 +28,15 @@ bool contains_point(const std::vector<double> &coordinates, bool coordinates_are
 //
   hex8_element_t(const std::vector<double> &p);
   void set_support_points(const std::vector<double> &p);
-  std::vector<double> get_support_points() const;
 
-  void set_support_points(double const * p);
+  hex8_element_t(double const *p);
+  void set_support_points(double const *p);
   double const * get_support_point(unsigned int i) const;
+  double const * get_support_points() const;
   unsigned int const * get_face(unsigned int i) const;
-  std::vector<double> get_bounding_box();
+  unsigned int const * get_faces() const;
+  double const * get_bounding_box();
+  triangle_t const * get_bounding_polyhedron();
   bool within_bounding_box(double const *p, double tolerance = 1.0e-12);
   bool within_bounding_polyhedron(double const *p, double tolerance = 1.0e-12);
   // this the user responsability to call first within_bounding_box(...) and within_bounding_polyhedron(...)
@@ -39,8 +44,6 @@ bool contains_point(const std::vector<double> &coordinates, bool coordinates_are
   void map_global_to_local(double const *global_coordinates, double *local_coordinates);
   void map_local_to_global(double const *local_coordinates, double *global_coordinates);
   bool contains_point(double const *coordinates, bool coordinates_are_local = false, double tolerance = 1.0e-12);
-  std::pair<unsigned int, std::vector<double> > project_on_face(double a, double b, double c);
-  std::pair<unsigned int, std::vector<double> > project_on_face(const std::vector<double> &p);
 private:
   // numbering of the 8 support points (or nodes) follows libmesh hex8 convention which is as follows
   //
@@ -92,7 +95,7 @@ private:
   void build_bounding_polyhedron();
 
   std::vector<double> bounding_box;
-  std::vector<triangle_t> bounding_polyhedron;
+  std::vector<triangle_t> bounding_polyhedron, tmp_triangles;
 
   bool center_of_element_data_updated;
   std::vector<double> center_of_element_local_coordinates, center_of_element_global_coordinates, jacobian_matrix_at_center_of_element, inverse_jacobian_matrix_at_center_of_element;

@@ -3,7 +3,6 @@
 hex8_element_t::hex8_element_t(const std::vector<double> &p) : memory_allocated_for_newton(false) {
   point_candidate.resize(3);
   bounding_box.resize(6, 0.0);
-  bounding_polyhedron.reserve(24);
   support_points.resize(24);
   set_support_points(p); 
 }
@@ -11,6 +10,13 @@ hex8_element_t::hex8_element_t(const std::vector<double> &p) : memory_allocated_
 void hex8_element_t::set_support_points(const std::vector<double> &p) { 
   assert(p.size() == 24); 
   set_support_points(&(p[0]));
+}
+
+hex8_element_t::hex8_element_t(double const *p) : memory_allocated_for_newton(false) {
+  point_candidate.resize(3);
+  bounding_box.resize(6, 0.0);
+  support_points.resize(24);
+  set_support_points(p); 
 }
 
 void hex8_element_t::set_support_points(double const *p) { 
@@ -28,21 +34,31 @@ void hex8_element_t::compute_center_of_element_data() {
   center_of_element_data_updated = true;
 }
 
-std::vector<double> hex8_element_t::get_support_points() const { return support_points; } 
-
 double const * hex8_element_t::get_support_point(unsigned int i) const { 
   assert(i < 8);
   return &(support_points[3*i]);
+} 
+
+double const * hex8_element_t::get_support_points() const { 
+  return &(support_points[0]);
 } 
 
 unsigned int const * hex8_element_t::get_face(unsigned int i) const { 
   assert(i < 6);
   return &(faces[4*i]);
 } 
+unsigned int const * hex8_element_t::get_faces() const { 
+  return &(faces[0]);
+} 
 
-std::vector<double> hex8_element_t::get_bounding_box() { 
+double const * hex8_element_t::get_bounding_box() { 
   if (!bounding_box_updated) { build_bounding_box(); };
-  return bounding_box; 
+  return &(bounding_box[0]); 
+}
+
+triangle_t const * hex8_element_t::get_bounding_polyhedron() { 
+  if (!bounding_polyhedron_updated) { build_bounding_polyhedron(); };
+  return &(bounding_polyhedron[0]); 
 }
 
 bool hex8_element_t::within_bounding_box(double const *p, double tolerance) {
@@ -69,18 +85,11 @@ unsigned int hex8_element_t::faces[24] = {
 };
 
 void hex8_element_t::build_bounding_polyhedron() {
+  if (bounding_polyhedron.size() == 0) { bounding_polyhedron.reserve(12); tmp_triangles.reserve(4); }
   assert(!bounding_polyhedron_updated);
   bounding_polyhedron.clear();
-//  assert(bounding_polyhedron.capacity() == 24);
-/*  unsigned int faces[24] = {
-    0, 3, 2, 1, 
-    0, 1, 5, 4, 
-    1, 2, 6, 5, 
-    2, 3, 7, 6, 
-    3, 0, 4, 7, 
-    4, 5, 6, 7
-  };*/
   for (unsigned int i = 0; i < 6; ++i) {
+    tmp_triangles.clear();
     //   3        
     //    o
     //    | .
@@ -89,7 +98,7 @@ void hex8_element_t::build_bounding_polyhedron() {
     //    |       .
     //    o--------o
     //   0          1
-    bounding_polyhedron.push_back(triangle_t(get_support_point(faces[4*i+0]), get_support_point(faces[4*i+1]), get_support_point(faces[4*i+3]))); 
+    tmp_triangles.push_back(triangle_t(get_support_point(faces[4*i+0]), get_support_point(faces[4*i+1]), get_support_point(faces[4*i+3]))); 
     //   3          2    
     //    o--------o    
     //      .      |
@@ -98,7 +107,7 @@ void hex8_element_t::build_bounding_polyhedron() {
     //            .| 
     //             o
     //              1
-    bounding_polyhedron.push_back(triangle_t(get_support_point(faces[4*i+2]), get_support_point(faces[4*i+3]), get_support_point(faces[4*i+1]))); 
+    tmp_triangles.push_back(triangle_t(get_support_point(faces[4*i+2]), get_support_point(faces[4*i+3]), get_support_point(faces[4*i+1]))); 
     //              2    
     //             o    
     //           . |
@@ -107,7 +116,7 @@ void hex8_element_t::build_bounding_polyhedron() {
     //     .       | 
     //    o--------o
     //   0          1
-    bounding_polyhedron.push_back(triangle_t(get_support_point(faces[4*i+1]), get_support_point(faces[4*i+2]), get_support_point(faces[4*i+0]))); 
+    tmp_triangles.push_back(triangle_t(get_support_point(faces[4*i+1]), get_support_point(faces[4*i+2]), get_support_point(faces[4*i+0]))); 
     //   3          2    
     //    o--------o    
     //    |      .  
@@ -116,7 +125,31 @@ void hex8_element_t::build_bounding_polyhedron() {
     //    |.         
     //    o         
     //   0           
-    bounding_polyhedron.push_back(triangle_t(get_support_point(faces[4*i+3]), get_support_point(faces[4*i+0]), get_support_point(faces[4*i+2]))); 
+    tmp_triangles.push_back(triangle_t(get_support_point(faces[4*i+3]), get_support_point(faces[4*i+0]), get_support_point(faces[4*i+2]))); 
+
+    if (tmp_triangles[0].above_point(tmp_triangles[2].get_centroid())) {
+      assert(tmp_triangles[0].above_point(tmp_triangles[3].get_centroid()));
+      assert(tmp_triangles[1].above_point(tmp_triangles[2].get_centroid()));
+      assert(tmp_triangles[1].above_point(tmp_triangles[3].get_centroid()));
+// will fail if the four points are coplanar 
+/*      assert(!tmp_triangles[2].above_point(tmp_triangles[0].get_centroid()));
+      assert(!tmp_triangles[2].above_point(tmp_triangles[1].get_centroid()));
+      assert(!tmp_triangles[3].above_point(tmp_triangles[0].get_centroid()));
+      assert(!tmp_triangles[3].above_point(tmp_triangles[1].get_centroid()));*/
+      bounding_polyhedron.push_back(tmp_triangles[0]);
+      bounding_polyhedron.push_back(tmp_triangles[1]);
+    } else {
+/*
+      assert(!tmp_triangles[0].above_point(tmp_triangles[3].get_centroid()));
+      assert(!tmp_triangles[1].above_point(tmp_triangles[2].get_centroid()));
+      assert(!tmp_triangles[1].above_point(tmp_triangles[3].get_centroid()));*/
+      assert(tmp_triangles[2].above_point(tmp_triangles[0].get_centroid()));
+      assert(tmp_triangles[2].above_point(tmp_triangles[1].get_centroid()));
+      assert(tmp_triangles[3].above_point(tmp_triangles[0].get_centroid()));
+      assert(tmp_triangles[3].above_point(tmp_triangles[1].get_centroid()));
+      bounding_polyhedron.push_back(tmp_triangles[2]);
+      bounding_polyhedron.push_back(tmp_triangles[3]);
+    } // end if
   } // end for i
   bounding_polyhedron_updated = true;
 }
@@ -130,26 +163,8 @@ bool hex8_element_t::within_bounding_polyhedron(const std::vector<double> &p, do
 bool hex8_element_t::within_bounding_polyhedron(double const *p, double tolerance) {
   if (!bounding_polyhedron_updated) { build_bounding_polyhedron(); }
   for (unsigned int i = 0; i < 6; ++i) {
-    // first configuration when splitting face into two triangles
-    //   3          2    
-    //    o--------o    
-    //    | .      |
-    //    |   .    |   
-    //    |     .  |  
-    //    |       .| 
-    //    o--------o
-    //   0          1
-    if (((!bounding_polyhedron[4*i+0].above_point(p, tolerance)) || (!bounding_polyhedron[4*i+1].above_point(p, tolerance))) 
-    // second configuration
-    //   3          2    
-    //    o--------o    
-    //    |      . |
-    //    |    .   |   
-    //    |  .     |  
-    //    |.       | 
-    //    o--------o
-    //   0          1
-      && ((!bounding_polyhedron[4*i+2].above_point(p, tolerance)) || (!bounding_polyhedron[4*i+3].above_point(p, tolerance)))) { return false; }
+    if ((!bounding_polyhedron[2*i+0].above_point(p, tolerance)) 
+      || (!bounding_polyhedron[2*i+1].above_point(p, tolerance))) { return false; }
   } // end for i
   return true;
 }
@@ -283,6 +298,7 @@ std::pair<unsigned int, std::vector<double> > hex8_element_t::project_on_face(co
 }
   
 void hex8_element_t::build_bounding_box() {
+  if (bounding_box.size() == 0) { bounding_box.resize(6); }
   assert(!bounding_box_updated); 
   for (unsigned int j = 0; j < 3; ++j) {
     bounding_box[j+0] = support_points[3*0+j];
