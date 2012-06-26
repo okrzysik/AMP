@@ -36,7 +36,7 @@ bool contains_point(const std::vector<double> &coordinates, bool coordinates_are
   unsigned int const * get_face(unsigned int i) const;
   unsigned int const * get_faces() const;
   double const * get_bounding_box();
-  triangle_t const * get_bounding_polyhedron();
+  triangle_t * get_bounding_polyhedron();
   bool within_bounding_box(double const *p, double tolerance = 1.0e-12);
   bool within_bounding_polyhedron(double const *p, double tolerance = 1.0e-12);
   // this the user responsability to call first within_bounding_box(...) and within_bounding_polyhedron(...)

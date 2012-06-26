@@ -56,7 +56,7 @@ double const * hex8_element_t::get_bounding_box() {
   return &(bounding_box[0]); 
 }
 
-triangle_t const * hex8_element_t::get_bounding_polyhedron() { 
+triangle_t * hex8_element_t::get_bounding_polyhedron() { 
   if (!bounding_polyhedron_updated) { build_bounding_polyhedron(); };
   return &(bounding_polyhedron[0]); 
 }
