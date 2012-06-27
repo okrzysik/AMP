@@ -11,6 +11,7 @@ void triangle_t::set_support_points(double const * A, double const * B, double c
   support_points_ptr[2] = C; 
   normal_updated = false;
   centroid_updated = false;
+  edges_updated = false;
 }
 
 void triangle_t::set_support_points(double const * * ptr) {
@@ -21,10 +22,6 @@ double const * triangle_t::get_support_point_ptr(unsigned int i) const {
   assert(i < 3);
   return support_points_ptr[i];
 }
-
-/*double const * * triangle_t::get_support_points_ptr() const {
-  return &(support_points_ptr[0]);
-}*/
 
 double const * triangle_t::get_normal() {
   if (!normal_updated) { compute_normal(); }
@@ -55,9 +52,7 @@ void triangle_t::compute_normal() {
   make_vector_from_two_points(support_points_ptr[0], support_points_ptr[1], &(tmp[0])+0);
   make_vector_from_two_points(support_points_ptr[0], support_points_ptr[2], &(tmp[0])+3);
   compute_cross_product(&(tmp[0])+0, &(tmp[0])+3, &(normal[0]));
-  double normalizing_factor = 1.0 / sqrt(std::inner_product(&(normal[0]), &(normal[0])+3, &(normal[0]), 0.0));
-  assert(normalizing_factor < 1.0e12);
-  for (unsigned int i = 0; i < 3; ++i) { normal[i] *= normalizing_factor; }
+  normalize_vector(&(normal[0]));
   normal_updated= true;
 }
 
@@ -154,3 +149,10 @@ std::vector<double> make_vector_from_two_points(const std::vector<double> &start
 void make_vector_from_two_points(double const * start_point, double const * end_point, double * vector) {
   for (unsigned int i = 0; i < 3; ++i) { vector[i] = end_point[i] - start_point[i]; }
 }
+
+void normalize_vector(double * vector) {
+  double normalizing_factor = 1.0 / sqrt(std::inner_product(&(vector[0]), &(vector[0])+3, &(vector[0]), 0.0));
+  assert(normalizing_factor < 1.0e12);
+  for (unsigned int i = 0; i < 3; ++i) { vector[i] *= normalizing_factor; }
+}
+
