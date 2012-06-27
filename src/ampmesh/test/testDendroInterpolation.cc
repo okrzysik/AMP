@@ -161,6 +161,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     std::cout<<"Global max error is "<<std::setprecision(15)<<globalMaxError<<std::endl;
   }
 
+  AMP_ASSERT(globalMaxError < 1.0e-12);
+
   ut->passes(exeName);
 }
 

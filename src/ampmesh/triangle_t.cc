@@ -1,44 +1,77 @@
 #include <ampmesh/triangle_t.h> 
 
-triangle_t::triangle_t() {
-  double A[3] = { 0.0, 0.0, 0.0 };
-  double B[3] = { 1.0, 0.0, 0.0 };
-  double C[3] = { 0.0, 1.0, 0.0 };
-  set_support_points(std::vector<double>(A, A+3), std::vector<double>(B, B+3), std::vector<double>(C, C+3)); 
+triangle_t::triangle_t(double const * A, double const * B, double const * C) {
+  set_support_points(A, B, C);
 }
 
-triangle_t::triangle_t(const std::vector<double> &A, const std::vector<double> &B, const std::vector<double> &C) {
-  set_support_points(A, B, C); 
+void triangle_t::set_support_points(double const * A, double const * B, double const * C) {
+  if (support_points_ptr.size() == 0) { support_points_ptr.resize(3); }
+  support_points_ptr[0] = A; 
+  support_points_ptr[1] = B; 
+  support_points_ptr[2] = C; 
+  normal_updated = false;
+  centroid_updated = false;
 }
 
-void triangle_t::set_support_points(const std::vector<double> &A, const std::vector<double> &B, const std::vector<double> &C) { 
-  assert(A.size() == 3);
-  assert(B.size() == 3);
-  assert(C.size() == 3);
-  _A = A;
-  _B = B;
-  _C = C;
-  compute_n_ABC();
+void triangle_t::set_support_points(double const * * ptr) {
+  set_support_points(ptr[0], ptr[1], ptr[2]);
+}
+
+double const * triangle_t::get_support_point_ptr(unsigned int i) const {
+  assert(i < 3);
+  return support_points_ptr[i];
+}
+
+/*double const * * triangle_t::get_support_points_ptr() const {
+  return &(support_points_ptr[0]);
+}*/
+
+double const * triangle_t::get_normal() {
+  if (!normal_updated) { compute_normal(); }
+  return &(normal[0]);
+}
+
+double const * triangle_t::get_centroid() {
+  if (!centroid_updated) { compute_centroid(); }
+  return &(centroid[0]);
+}
+
+void triangle_t::compute_centroid() {
+  if (centroid.size() == 0) { centroid.resize(3); }
+  assert(!centroid_updated);
+  for (unsigned int i = 0; i < 3; ++i) {
+    centroid[i] = 0.0;
+    for (unsigned int j = 0; j < 3; ++j) {
+      centroid[i] += support_points_ptr[j][i];
+    } // end for j
+    centroid[i] /= 3.0;
+  } // end for i
+  centroid_updated = true;
+}
+
+void triangle_t::compute_normal() {
+  if (normal.size() == 0) { normal.resize(3); tmp.resize(6); }
+  assert(!normal_updated);
+  make_vector_from_two_points(support_points_ptr[0], support_points_ptr[1], &(tmp[0])+0);
+  make_vector_from_two_points(support_points_ptr[0], support_points_ptr[2], &(tmp[0])+3);
+  compute_cross_product(&(tmp[0])+0, &(tmp[0])+3, &(normal[0]));
+  double normalizing_factor = 1.0 / sqrt(std::inner_product(&(normal[0]), &(normal[0])+3, &(normal[0]), 0.0));
+  assert(normalizing_factor < 1.0e12);
+  for (unsigned int i = 0; i < 3; ++i) { normal[i] *= normalizing_factor; }
+  normal_updated= true;
 }
 
 // check whether plane supported by the triangle ABC is above the point with respect to the normal
-bool triangle_t::above_point(const std::vector<double> &p) const {
-  assert(p.size() == 3);
-  std::vector<double> A_p = make_vector_from_two_points(_A, p);
-  std::vector<double> B_p = make_vector_from_two_points(_B, p);
-  std::vector<double> C_p = make_vector_from_two_points(_C, p);
-  std::vector<double> ABC_p(3);
-  for (unsigned int i = 0; i < 3; ++i) { ABC_p[i] = A_p[i] + B_p[i] + C_p[i]; }
-  return (compute_scalar_product(ABC_p, _n_ABC) < epsilon);
+bool triangle_t::above_point(double const * p, double tolerance) {
+  if (!normal_updated) { 
+    compute_normal();
+  } // end if
+  if (!centroid_updated) { 
+    compute_centroid();
+  } // end if
+  make_vector_from_two_points(&(centroid[0]), p, &(tmp[0]));
+  return (compute_scalar_product(&(tmp[0]), &(normal[0])) < tolerance);
 }
-
-void triangle_t::compute_n_ABC() {
-  _n_ABC = compute_cross_product(make_vector_from_two_points(_A, _B), make_vector_from_two_points(_A, _C));
-  double normalizing_factor = sqrt(std::inner_product(_n_ABC.begin(), _n_ABC.end(), _n_ABC.begin(), 0.0));
-  assert(normalizing_factor > 1.0e-12);
-  scale_points(std::vector<double>(3, 1.0/normalizing_factor), 1, &(_n_ABC[0]));
-}
-
 
 void scale_points(unsigned int direction, double scaling_factor, unsigned int n_points, double* points) {
   assert(direction < 3);
@@ -90,23 +123,34 @@ std::vector<double> compute_cross_product(const std::vector<double> &u, const st
   assert(u.size() == 3);
   assert(v.size() == 3);
   std::vector<double> w(3);
+  compute_cross_product(&(u[0]), &(v[0]), &(w[0]));
+  return w;
+}
+
+void compute_cross_product(double const * u, double const * v, double * w) {
   w[0] = u[1]*v[2]-u[2]*v[1];
   w[1] = u[2]*v[0]-u[0]*v[2];
   w[2] = u[0]*v[1]-u[1]*v[0];
-  return w;
+}
+
+double compute_scalar_product(double const * u, double const * v) {
+  return std::inner_product(&(u[0]), &(u[0])+3, &(v[0]), 0.0);
 }
 
 double compute_scalar_product(const std::vector<double> &u, const std::vector<double> &v) {
   assert(u.size() == 3);
   assert(v.size() == 3);
-  return std::inner_product(u.begin(), u.end(), v.begin(), 0.0);
+  return compute_scalar_product(&(u[0]), &(v[0]));
 }
 
 std::vector<double> make_vector_from_two_points(const std::vector<double> &start_point, const std::vector<double> &end_point) {
   assert(start_point.size() == 3);
   assert(end_point.size() == 3);
   std::vector<double> vector(3);
-  for (unsigned int i = 0; i < 3; ++i) { vector[i] = end_point[i] - start_point[i]; }
+  make_vector_from_two_points(&(start_point[0]), &(end_point[0]), &(vector[0]));
   return vector;
 }
 
+void make_vector_from_two_points(double const * start_point, double const * end_point, double * vector) {
+  for (unsigned int i = 0; i < 3; ++i) { vector[i] = end_point[i] - start_point[i]; }
+}
