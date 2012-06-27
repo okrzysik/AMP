@@ -632,18 +632,10 @@ int AMP_MPI::allToAll(const type *send_data, const int send_cnt[], const int sen
         if ( recv_disp==NULL ) 
             recv_disp2 = new int[comm_size];
         // Communicate the size we will be recieving from each processor
-        int *tmp_cnt = new int[comm_size];
-        int *tmp_disp = new int[comm_size];
-        for (int i=0; i<comm_size; i++) {
-            tmp_cnt[i] = 1;
-            tmp_disp[i] = i;
-        }
-        call_allToAll(send_cnt,tmp_cnt,tmp_disp,recv_cnt2,tmp_cnt,tmp_disp);
+        allToAll<int>( 1, send_cnt, recv_cnt2 );
         recv_disp2[0] = 0;
         for (int i=1; i<comm_size; i++)
             recv_disp2[i] = recv_disp2[i-1]+recv_cnt2[i-1];
-        delete [] tmp_cnt;
-        delete [] tmp_disp;
         // Send the data
         call_allToAll(send_data,send_cnt,send_disp,recv_data,recv_cnt2,recv_disp2);
         for (int i=0; i<comm_size; i++)
