@@ -1,5 +1,4 @@
 
-#include "mpi.h"
 
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
@@ -16,7 +15,7 @@
 #include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
 
-//#include <algorithm>
+#include "externVars.h"
 
 #include "ampmesh/Mesh.h"
 #include "ampmesh/dendro/DendroSearch.h"

@@ -106,6 +106,7 @@ void old_test_project_on_face() {
     AMP_ASSERT(out.second[0] == coordinates[2*i+0]);
     AMP_ASSERT(out.second[1] == coordinates[2*i+1]);
   } // end for i
+//  std::cout<<"[old test] newton count = "<<volume_element.newton_count<<"\n";
 }
 
 void test_mapping(hex8_element_t *volume_element, unsigned int n_random_candidate_points = 10000, double abs_tol = 1.0e-12, double rel_tol = 1.0e-12) {
@@ -204,7 +205,8 @@ void draw_bounding_polyhedron(hex8_element_t * e, double const * point_of_view, 
   for (unsigned int f = 0; f < 6; ++f) { 
     for (unsigned int t = 0; t < 2; ++t) {
       if (compute_scalar_product(point_of_view, (t_ptr+2*f+t)->get_normal()) > 0.0) {
-        options[2*f+t] += "fill=" + rubiks_cube_color_arrangement[f];
+//        options[2*f+t] += "fill=" + rubiks_cube_color_arrangement[f];
+        options[2*f+t] += "fill=none";
       } else {
         options[2*f+t] += "fill=none,dotted";
       } // end if
@@ -220,6 +222,7 @@ void draw_hex8_element(hex8_element_t * e, double const * point_of_view, std::os
   for (unsigned int f = 0; f < 6; ++f) { 
     if (compute_scalar_product(point_of_view, (t_ptr+2*f)->get_normal()) > 0.0) {
       options[f] += "fill=" + rubiks_cube_color_arrangement[f];
+//      options[f] += "fill=none";
     } else {
       options[f] += "fill=none,dotted";
     } // end if
@@ -268,10 +271,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   volume_element.set_support_points(points);
 
+//  test_mapping(&volume_element, 1000000);
   test_mapping(&volume_element);
+//  std::cout<<"[test mapping] newton count = "<<volume_element.newton_count<<"\n";
 
-  translate_points(1, 5.0, 8, points);
   translate_points(0, 2.0, 8, points);
+  translate_points(1, 9.0, 8, points);
+  translate_points(2, 2.0, 8, points);
   volume_element.set_support_points(points);
 
   double point_of_view[3] = { 1.0, 1.0, 1.0 };

@@ -28,6 +28,7 @@ bool contains_point(const std::vector<double> &coordinates, bool coordinates_are
 //
   hex8_element_t(const std::vector<double> &p);
   void set_support_points(const std::vector<double> &p);
+//  unsigned int newton_count;
 
   hex8_element_t(double const *p);
   void set_support_points(double const *p);

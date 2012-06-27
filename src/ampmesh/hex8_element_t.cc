@@ -1,6 +1,7 @@
 #include <ampmesh/hex8_element_t.h>
 
 hex8_element_t::hex8_element_t(const std::vector<double> &p) : memory_allocated_for_newton(false) {
+//  newton_count = 0;
   point_candidate.resize(3);
   bounding_box.resize(6, 0.0);
   support_points.resize(24);
@@ -370,6 +371,7 @@ void hex8_element_t::compute_initial_guess(double *initial_guess) {
   compute_n_by_n_matrix_times_vector(3, &(inverse_jacobian_matrix_at_center_of_element[0]), &(tmp[0]), initial_guess);
 }
 
+
 double hex8_element_t::solve_newton(double *x, double abs_tol, double rel_tol, unsigned int max_iter, bool verbose) {
   if (!memory_allocated_for_newton) {
     residual_vector.resize(3);
@@ -395,6 +397,7 @@ double hex8_element_t::solve_newton(double *x, double abs_tol, double rel_tol, u
   double tol = abs_tol + rel_tol * residual_norm; 
 
   for (unsigned int iter = 0; iter < max_iter; ++iter) {
+//    ++newton_count;
     if (verbose) { std::cout<<iter<<"  "<<residual_norm<<std::endl; }
     if (residual_norm < tol) { 
       if (verbose) { std::cout<<"converged at iteration "<<iter<<" with residual norm "<<residual_norm<<"\n"; }
