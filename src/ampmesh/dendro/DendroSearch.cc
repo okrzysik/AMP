@@ -48,9 +48,9 @@ void DendroSearch::setupDSforSearch() {
   AMP_ASSERT(d_boxLevel < MaxDepth);
 
   if(d_verbose) {
-  if(!d_rank) {
-    std::cout<<"BoxLevel = "<<d_boxLevel<<std::endl;
-  }
+    if(!d_rank) {
+      std::cout<<"BoxLevel = "<<d_boxLevel<<std::endl;
+    }
   }
 
   const double hBox = 1.0/(static_cast<double>(1u << d_boxLevel));
