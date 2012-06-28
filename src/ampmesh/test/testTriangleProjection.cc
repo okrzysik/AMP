@@ -1,7 +1,8 @@
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
+#include <utils/AMPManager.h>
+#include <utils/UnitTest.h>
 
-#include "triangle_t.h"
+#include <triangle_t.h>
+#include <euclidean_geometry_tools.h>
 
 void test_above_point(triangle_t * t_ptr, unsigned int n_random_candidate_points = 10000) {
   double const * centroid = t_ptr->get_centroid();
@@ -70,10 +71,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   }; 
 
 
-/*
   double scaling_factors[3] = { 4.0, 2.0, 1.0 };
-  scale_points(std::vector<double>(scaling_factors, scaling_factors+3), 8, points);
-*/
+  scale_points(std::vector<double>(scaling_factors, scaling_factors+3), 3, points);
 
   double translation_vector[3] = { 3.0, 1.0, 5.0 };
   translate_points(std::vector<double>(translation_vector, translation_vector+3), 3, points);

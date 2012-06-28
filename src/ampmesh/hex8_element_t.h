@@ -9,6 +9,7 @@
 #include <cmath>
 
 #include <ampmesh/triangle_t.h>
+#include <ampmesh/euclidean_geometry_tools.h>
 
 void get_basis_functions_values(double const *x, double *basis_functions_values);
 void get_basis_functions_derivatives( double const *x, double *basis_functions_derivatives);
