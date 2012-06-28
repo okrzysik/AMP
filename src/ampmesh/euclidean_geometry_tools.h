@@ -12,9 +12,11 @@ void rotate_points(unsigned int rotation_axis, double rotation_angle, unsigned i
 std::vector<double> compute_cross_product(const std::vector<double> &u, const std::vector<double> &v);
 double compute_scalar_product(const std::vector<double> &u, const std::vector<double> &v);
 std::vector<double> make_vector_from_two_points(const std::vector<double> &start_point, const std::vector<double> &end_point);
+
 void compute_cross_product(double const * u, double const * v, double * w);
 double compute_scalar_product(double const * u, double const * const v);
 void make_vector_from_two_points(double const * start_point, double const * end_point, double * vector);
+double compute_vector_norm(double const * vector);
 void normalize_vector(double * vector);
 
 #endif // EUCLIDEAN_GEOMETRY_TOOLS

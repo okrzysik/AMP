@@ -7,57 +7,74 @@
 void test_above_point(triangle_t * t_ptr, unsigned int n_random_candidate_points = 10000) {
   double const * centroid = t_ptr->get_centroid();
   double const * normal = t_ptr->get_normal();
-  double tmp[9];
-  make_vector_from_two_points(t_ptr->get_support_point_ptr(0), t_ptr->get_support_point_ptr(1), tmp+0);
-  make_vector_from_two_points(t_ptr->get_support_point_ptr(1), t_ptr->get_support_point_ptr(2), tmp+3);
-  make_vector_from_two_points(t_ptr->get_support_point_ptr(2), t_ptr->get_support_point_ptr(0), tmp+6);
-  double random_candidate_point[3], random_motion[4]; 
+  double edges[9];
+  make_vector_from_two_points(t_ptr->get_support_point_ptr(0), t_ptr->get_support_point_ptr(1), edges+0);
+  make_vector_from_two_points(t_ptr->get_support_point_ptr(1), t_ptr->get_support_point_ptr(2), edges+3);
+  make_vector_from_two_points(t_ptr->get_support_point_ptr(2), t_ptr->get_support_point_ptr(0), edges+6);
+  double random_candidate_point[3], random_motion_along_edges[3]; 
+  double random_motion_along_normal; 
   bool triangle_above_random_candidate_point;
   double tolerance = 1.0e-12;
   for (unsigned int i = 0; i < n_random_candidate_points; ++i) {
-    for (unsigned int j = 0; j < 4; ++j) { random_motion[j] = -1.0+2.0*rand()/RAND_MAX; }
-    triangle_above_random_candidate_point = (random_motion[0] < -tolerance);
-    for (unsigned int j = 0; j < 3; ++j) { random_candidate_point[j] = centroid[j] + random_motion[0]*normal[j] + random_motion[1]*tmp[0+j] + random_motion[2]*tmp[3+j] + random_motion[3]*tmp[6+j]; }
+    for (unsigned int j = 0; j < 3; ++j) { random_motion_along_edges[j] = -1.0+2.0*rand()/RAND_MAX; }
+    random_motion_along_normal = -1.0+2.0*rand()/RAND_MAX;
+    triangle_above_random_candidate_point = !(random_motion_along_normal > tolerance);
+    for (unsigned int j = 0; j < 3; ++j) { random_candidate_point[j] = centroid[j] + random_motion_along_normal*normal[j] + random_motion_along_edges[0]*edges[0+j] + random_motion_along_edges[1]*edges[3+j] + random_motion_along_edges[2]*edges[6+j]; }
     AMP_ASSERT(t_ptr->above_point(random_candidate_point, tolerance) == triangle_above_random_candidate_point);
   } // end for i
 }
 
-void test_contains_point(triangle_t * t_ptr, unsigned int n_random_candidate_points = 10000) {
+void test_project_point(triangle_t * t_ptr, unsigned int n_random_candidate_points = 10000) {
   double const * triangle_centroid = t_ptr->get_centroid();
   double const * triangle_normal = t_ptr->get_normal();
+  double projection[3], projection_error[3];
+  double random_candidate_point[3], random_motion_along_normal, random_motion_along_line;
+  bool triangle_contains_random_candidate_point;
+  double tolerance = 1.0e-12;
   for (unsigned int i = 0; i < 3; ++i) {
     edge_t * e_ptr = t_ptr->get_edge(i);
-    double tmp[3];
-    make_vector_from_two_points(e_ptr->get_support_point_ptr(0), e_ptr->get_support_point_ptr(1), tmp);
     double const * edge_normal = e_ptr->get_normal();
     double const * edge_center = e_ptr->get_center();
-    AMP_ASSERT(fabs(compute_scalar_product(tmp, edge_normal)) < 1.0e-14);
+    double const * edge_direction = e_ptr->get_direction();
+    AMP_ASSERT(fabs(compute_scalar_product(edge_direction, edge_normal)) < 1.0e-14);
     AMP_ASSERT(fabs(compute_scalar_product(triangle_normal, edge_normal)) < 1.0e-14);
-    make_vector_from_two_points(triangle_centroid, edge_center, tmp);
-    double random_candidate_point[3], random_motion[2];
-    bool triangle_contains_random_candidate_point;
-    double tolerance = 1.0e-12;
+    AMP_ASSERT(fabs(compute_scalar_product(triangle_normal, edge_direction)) < 1.0e-14);
     for (unsigned int j = 0; j < n_random_candidate_points; ++j) {
-      for (unsigned int k = 0; k < 2; ++k) { random_motion[k] = -1.0+2.0*rand()/RAND_MAX; }
-      for (unsigned int k = 0; k < 3; ++k) { random_candidate_point[k] = edge_center[k] + random_motion[0] * tmp[k] + random_motion[1] * triangle_normal[k]; }
-      triangle_contains_random_candidate_point = (random_motion[0] < tolerance);
+      random_motion_along_normal = -1.0+2.0*rand()/RAND_MAX; 
+      random_motion_along_line = -1.0+2.0*rand()/RAND_MAX; 
+      for (unsigned int k = 0; k < 3; ++k) { random_candidate_point[k] = edge_center[k] + random_motion_along_line * edge_normal[k] + random_motion_along_normal * triangle_normal[k]; }
+      triangle_contains_random_candidate_point = (random_motion_along_line < tolerance);
       AMP_ASSERT(e_ptr->above_point(random_candidate_point, tolerance) == triangle_contains_random_candidate_point);
-      AMP_ASSERT(t_ptr->contains_point(random_candidate_point, tolerance) == triangle_contains_random_candidate_point);
+//      AMP_ASSERT(t_ptr->contains_point(random_candidate_point, tolerance) == triangle_contains_random_candidate_point);
+//      AMP_ASSERT(t_ptr->project_point(random_candidate_point, projection, tolerance) == triangle_contains_random_candidate_point);
+      if (!triangle_contains_random_candidate_point) {
+        for (unsigned int k = 0; k < 3; ++k) { projection_error[k] = projection[k] - edge_center[k]; }
+      } else {
+        for (unsigned int k = 0; k < 3; ++k) { projection_error[k] = projection[k] - edge_center[k] - random_motion_along_line * edge_normal[k]; }
+      } // end for if
+//      std::cout<<compute_vector_norm(projection_error)<<"  "<<triangle_contains_random_candidate_point<<"\n";
+//      AMP_ASSERT(compute_vector_norm(projection_error) < 1.0e-14);
     } // end for j
   } // end for i
 
   for (unsigned int i = 0; i < 3; ++i) {
-    double tmp[3];
+    double triangle_centroid_to_support_point_line[3];
     double const * triangle_support_point = t_ptr->get_support_point_ptr(i);
-    make_vector_from_two_points(triangle_centroid, triangle_support_point, tmp);
-    double random_candidate_point[3], random_motion[2];
-    bool triangle_contains_random_candidate_point;
-    double tolerance = 1.0e-12;
+    make_vector_from_two_points(triangle_centroid, triangle_support_point, triangle_centroid_to_support_point_line);
     for (unsigned int j = 0; j < n_random_candidate_points; ++j) {
-      for (unsigned int k = 0; k < 2; ++k) { random_motion[k] = -1.0+2.0*rand()/RAND_MAX; }
-      for (unsigned int k = 0; k < 3; ++k) { random_candidate_point[k] = triangle_support_point[k] + random_motion[0] * tmp[k] + random_motion[1] * triangle_normal[k]; }
-      triangle_contains_random_candidate_point = (random_motion[0] < tolerance);
+      random_motion_along_normal = -1.0+2.0*rand()/RAND_MAX; 
+      random_motion_along_line = -1.0+2.0*rand()/RAND_MAX; 
+      for (unsigned int k = 0; k < 3; ++k) { random_candidate_point[k] = triangle_support_point[k] + random_motion_along_line * triangle_centroid_to_support_point_line[k] + random_motion_along_normal * triangle_normal[k]; }
+      triangle_contains_random_candidate_point = (random_motion_along_line < tolerance);
       AMP_ASSERT(t_ptr->contains_point(random_candidate_point, tolerance) == triangle_contains_random_candidate_point);
+      AMP_ASSERT(t_ptr->project_point(random_candidate_point, projection, tolerance) == triangle_contains_random_candidate_point);
+      if (!triangle_contains_random_candidate_point) {
+        for (unsigned int k = 0; k < 3; ++k) { projection_error[k] = projection[k] - triangle_support_point[k]; }
+      } else {
+        for (unsigned int k = 0; k < 3; ++k) { projection_error[k] = projection[k] - triangle_support_point[k] - random_motion_along_line * triangle_centroid_to_support_point_line[k]; }
+      } // end for if
+//      std::cout<<triangle_contains_random_candidate_point<<"  "<<compute_vector_norm(projection_error)<<"\n";
+      AMP_ASSERT(compute_vector_norm(projection_error) < 1.0e-14);
     } // end for j
   } // end for i
 }
@@ -88,7 +105,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   test_above_point(&triangle);
 
-  test_contains_point(&triangle);
+  test_project_point(&triangle);
 
   ut->passes(exeName);
 }

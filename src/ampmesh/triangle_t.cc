@@ -50,7 +50,8 @@ void triangle_t::compute_centroid() {
 }
 
 void triangle_t::compute_normal() {
-  if (normal.size() == 0) { normal.resize(3); tmp.resize(6); }
+  if (normal.size() == 0) { normal.resize(3); }
+  if (tmp.size() == 0) { tmp.resize(6); }
   assert(!normal_updated);
   make_vector_from_two_points(support_points_ptr[0], support_points_ptr[1], &(tmp[0])+0);
   make_vector_from_two_points(support_points_ptr[0], support_points_ptr[2], &(tmp[0])+3);
@@ -59,31 +60,26 @@ void triangle_t::compute_normal() {
   normal_updated= true;
 }
 
+double triangle_t::compute_distance_to_containing_plane(double const * point) {
+  if (tmp.size()==0) { tmp.resize(6); }
+  if (!normal_updated) { compute_normal(); }
+  if (!centroid_updated) { compute_centroid(); }
+  // vector from triangle centroid to point
+  make_vector_from_two_points(&(centroid[0]), point, &(tmp[0]));
+  // scalar product with normal to the triangle
+  return compute_scalar_product(&(tmp[0]), &(normal[0]));
+}
+
 // check whether plane supported by the triangle ABC is above the point with respect to the normal
-bool triangle_t::above_point(double const * p, double tolerance) {
-  if (!normal_updated) { 
-    compute_normal();
-  } // end if
-  if (!centroid_updated) { 
-    compute_centroid();
-  } // end if
-  make_vector_from_two_points(&(centroid[0]), p, &(tmp[0]));
-  return (compute_scalar_product(&(tmp[0]), &(normal[0])) < tolerance);
+bool triangle_t::above_point(double const * point, double tolerance) {
+  double distance_to_containing_plane = compute_distance_to_containing_plane(point);
+  return (distance_to_containing_plane < tolerance);
 }
 
 edge_t * triangle_t::get_edge(unsigned int i) {
   assert(i < 3);
   if (!edges_updated) { build_edges(); }
   return &(edges[i]);
-}
-bool triangle_t::contains_point(double const * p, double tolerance) {
-  if (!edges_updated) { build_edges(); }
-  for (unsigned int i = 0; i < 3; ++i) {
-    if (!edges[i].above_point(p, tolerance)) { 
-      return false;
-    } // end if
-  } // end for i
-  return true; 
 }
 
 void triangle_t::build_edges() {
@@ -95,4 +91,28 @@ void triangle_t::build_edges() {
   edges.push_back(edge_t(support_points_ptr[1], support_points_ptr[2], &(normal[0])));
   edges.push_back(edge_t(support_points_ptr[2], support_points_ptr[0], &(normal[0])));
   edges_updated = true;
+}
+
+bool triangle_t::contains_point(double const * point, double tolerance) {
+  if (!edges_updated) { build_edges(); }
+  for (unsigned int i = 0; i < 3; ++i) {
+    if (!edges[i].above_point(point, tolerance)) { 
+      return false;
+    } // end if
+  } // end for i
+  return true; 
+}
+
+bool triangle_t::project_point(double const * point, double * projection, double tolerance) {
+  if (tmp.size()==0) { tmp.resize(6); }
+  double distance_to_containing_plane = compute_distance_to_containing_plane(point);
+  for (unsigned int i = 0; i < 3; ++i) { tmp[i] = point[i] - distance_to_containing_plane * normal[i]; }
+  if (!edges_updated) { build_edges(); }
+  for (unsigned int i = 0; i < 3; ++i) {
+    if (edges[i].project_point(&(tmp[0]), projection, tolerance)) {
+      return false;
+    } // end if
+  } // end for i
+
+  return true;
 }

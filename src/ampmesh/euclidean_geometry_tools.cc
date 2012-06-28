@@ -87,8 +87,13 @@ void make_vector_from_two_points(double const * start_point, double const * end_
   for (unsigned int i = 0; i < 3; ++i) { vector[i] = end_point[i] - start_point[i]; }
 }
 
+double compute_vector_norm(double const * vector) {
+  return sqrt(std::inner_product(&(vector[0]), &(vector[0])+3, &(vector[0]), 0.0));
+}
+
 void normalize_vector(double * vector) {
-  double normalizing_factor = 1.0 / sqrt(std::inner_product(&(vector[0]), &(vector[0])+3, &(vector[0]), 0.0));
+  double vector_norm = compute_vector_norm(vector);
+  double normalizing_factor = 1.0 / vector_norm;
   assert(normalizing_factor < 1.0e12);
   for (unsigned int i = 0; i < 3; ++i) { vector[i] *= normalizing_factor; }
 }
