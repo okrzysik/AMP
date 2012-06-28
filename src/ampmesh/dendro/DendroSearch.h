@@ -1,3 +1,4 @@
+
 #ifndef DENDRO_SEARCH
 #define DENDRO_SEARCH
 
@@ -28,38 +29,38 @@
 
 
 class DendroSearch {
-public:
-  DendroSearch(AMP::AMP_MPI comm, AMP::Mesh::Mesh::shared_ptr mesh);
+  public:
+    DendroSearch(AMP::AMP_MPI comm, AMP::Mesh::Mesh::shared_ptr mesh);
 
-  void interpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
-      const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt);
+    void interpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
+        const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt);
 
-  void search(const std::vector<double> & pts);
+    void search(const std::vector<double> & pts);
 
-  void interpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
-      std::vector<double> & results, std::vector<bool> & foundPt);
+    void interpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
+        std::vector<double> & results, std::vector<bool> & foundPt);
 
-private:
-  bool verbose;
-  AMP::AMP_MPI globalComm;
-  AMP::Mesh::Mesh::shared_ptr meshAdapter;
-  int rank, npes;
-  double minCoords[3];
-  double maxCoords[3];
-  double ScalingFactor[3];
-  std::vector<ot::TreeNode> nodeList;
-  std::vector<int> stIdxList;
-  std::vector<int> rankList;
-  std::vector<int> elemIdList;
-  std::vector<AMP::Mesh::MeshElement> localElemArr;
-  std::vector<ot::TreeNode> mins;
-  unsigned int BoxLevel;
+  private:
+    bool verbose;
+    AMP::AMP_MPI globalComm;
+    AMP::Mesh::Mesh::shared_ptr meshAdapter;
+    int rank, npes;
+    double minCoords[3];
+    double maxCoords[3];
+    double ScalingFactor[3];
+    std::vector<ot::TreeNode> nodeList;
+    std::vector<int> stIdxList;
+    std::vector<int> rankList;
+    std::vector<int> elemIdList;
+    std::vector<AMP::Mesh::MeshElement> localElemArr;
+    std::vector<ot::TreeNode> mins;
+    unsigned int BoxLevel;
 
-  int numLocalPts;
-  std::vector<double> foundPts;
-  std::vector<int> sendCnts, sendDisps, recvCnts, recvDisps;
+    int numLocalPts;
+    std::vector<double> foundPts;
+    std::vector<int> sendCnts, sendDisps, recvCnts, recvDisps;
 
-  void setupDendro();
+    void setupDendro();
 };
 
 #endif // DENDRO_SEARCH
