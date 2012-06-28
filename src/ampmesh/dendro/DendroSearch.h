@@ -41,23 +41,27 @@ class DendroSearch {
         std::vector<double> & results, std::vector<bool> & foundPt);
 
   private:
-    bool d_verbose;
     AMP::AMP_MPI d_globalComm;
     AMP::Mesh::Mesh::shared_ptr d_meshAdapter;
-    int d_rank, d_npes;
-    double d_minCoords[3];
-    double d_maxCoords[3];
-    double d_scalingFactor[3];
+    std::vector<AMP::Mesh::MeshElement> d_localElemArr;
     std::vector<ot::TreeNode> d_nodeList;
+    std::vector<ot::TreeNode> d_mins;
+    std::vector<double> d_minCoords;
+    std::vector<double> d_maxCoords;
+    std::vector<double> d_scalingFactor;
+    std::vector<double> d_foundPts;
     std::vector<int> d_stIdxList;
     std::vector<int> d_rankList;
     std::vector<int> d_elemIdList;
-    std::vector<AMP::Mesh::MeshElement> d_localElemArr;
-    std::vector<ot::TreeNode> d_mins;
+    std::vector<int> d_sendCnts;
+    std::vector<int> d_sendDisps;
+    std::vector<int> d_recvCnts;
+    std::vector<int> d_recvDisps;
     unsigned int d_boxLevel;
     int d_numLocalPts;
-    std::vector<double> d_foundPts;
-    std::vector<int> d_sendCnts, d_sendDisps, d_recvCnts, d_recvDisps;
+    int d_rank;
+    int d_npes;
+    bool d_verbose;
 
     void setupDendro();
     void setupDSforSearch();

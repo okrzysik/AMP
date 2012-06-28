@@ -2,11 +2,13 @@
 #include "ampmesh/dendro/DendroSearch.h"
 
 DendroSearch::DendroSearch(AMP::AMP_MPI comm, AMP::Mesh::Mesh::shared_ptr mesh) 
-  : d_globalComm(comm), 
-  d_meshAdapter(mesh) {
+  : d_globalComm(comm), d_meshAdapter(mesh) {
     d_verbose = true;
     d_rank = d_globalComm.getRank();
     d_npes = d_globalComm.getSize();
+    d_minCoords.resize(3);
+    d_maxCoords.resize(3);
+    d_scalingFactor.resize(3);
     setupDendro();
   }
 
