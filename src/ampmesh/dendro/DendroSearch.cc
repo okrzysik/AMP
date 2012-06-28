@@ -10,6 +10,12 @@ DendroSearch::DendroSearch(AMP::AMP_MPI comm, AMP::Mesh::Mesh::shared_ptr mesh)
     setupDendro();
   }
 
+void DendroSearch::interpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
+    const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt) {
+  search(pts);
+  interpolate(vectorField, dofsPerNode, results, foundPt); 
+}
+
 void DendroSearch::setupDendro() {
   double setupBeginTime, setupEndTime;
   if(d_verbose) {
@@ -399,12 +405,6 @@ void DendroSearch::setupDSforSearch() {
       std::cout<<"Global Max Fine List Length = "<<globalMaxFineListLen <<std::endl;
     }
   }
-}
-
-void DendroSearch::interpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
-    const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt) {
-  search(pts);
-  interpolate(vectorField, dofsPerNode, results, foundPt); 
 }
 
 void DendroSearch::search(const std::vector<double> & pts) {
