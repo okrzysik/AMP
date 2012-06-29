@@ -1,15 +1,9 @@
 #ifndef HEX8_ELEMENT_T
 #define HEX8_ELEMENT_T
 
-#include <iostream>
-#include <vector>
-#include <numeric>
-#include <algorithm>
-#include <cassert>
-#include <cmath>
-
 #include <ampmesh/triangle_t.h>
-#include <ampmesh/euclidean_geometry_tools.h>
+#include <vector>
+
 
 void get_basis_functions_values(double const *x, double *basis_functions_values);
 void get_basis_functions_derivatives( double const *x, double *basis_functions_derivatives);
@@ -18,19 +12,6 @@ void compute_n_by_n_matrix_times_vector(unsigned int n, double const *mat, doubl
 
 class hex8_element_t {
 public:
-// deprecated
-  std::pair<unsigned int, std::vector<double> > project_on_face(double a, double b, double c);
-  std::pair<unsigned int, std::vector<double> > project_on_face(const std::vector<double> &p);
-bool within_bounding_box(const std::vector<double> &p, double tolerance = 1.0e-12);
-bool within_bounding_polyhedron(const std::vector<double> &p, double tolerance = 1.0e-12);
-std::vector<double> map_global_to_local(const std::vector<double> &global_coordinates);
-std::vector<double> map_local_to_global(const std::vector<double> &local_coordinates);
-bool contains_point(const std::vector<double> &coordinates, bool coordinates_are_local = false, double tolerance = 1.0e-12);
-//
-  hex8_element_t(const std::vector<double> &p);
-  void set_support_points(const std::vector<double> &p);
-//  unsigned int newton_count;
-
   hex8_element_t(double const *p);
   void set_support_points(double const *p);
   double const * get_support_point(unsigned int i) const;
@@ -90,6 +71,24 @@ private:
   //
   std::vector<double> support_points, point_candidate;
 
+  // faces are oriented and defined by their 4 support nodes
+  //   3          2    
+  //    o--------o    
+  //    |        |
+  //    |        |   
+  //    |        |  
+  //    |        | 
+  //    o--------o
+  //   0          1
+  //
+  // coordinates on the face are given in the following xy reference frame
+  // 
+  //    y
+  //    |
+  //    |
+  //    |
+  //    o------ x
+  //
   static unsigned int faces[];
 
   bool bounding_box_updated, bounding_polyhedron_updated;

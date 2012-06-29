@@ -2,6 +2,7 @@
 #include <utils/UnitTest.h>
 
 #include <ampmesh/hex8_element_t.h>
+#include <ampmesh/euclidean_geometry_tools.h>
 
 double my_function(double const *xyz) {
   double x = xyz[0], y = xyz[1], z = xyz[2];

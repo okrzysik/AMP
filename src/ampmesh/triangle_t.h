@@ -9,7 +9,6 @@ class triangle_t {
 public:
   triangle_t(double const * A, double const * B, double const * C);
   void set_support_points(double const * A, double const * B, double const * C);
-  void set_support_points(double const * * ptr);
   double const * get_support_point_ptr(unsigned int i) const;
   double const * get_normal();
   double const * get_centroid();

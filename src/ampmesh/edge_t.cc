@@ -1,9 +1,10 @@
+#include <ampmesh/euclidean_geometry_tools.h>
+#include <ampmesh/edge_t.h>
+
 #include <vector>
 #include <cassert>
 #include <cmath>
 
-#include "ampmesh/euclidean_geometry_tools.h"
-#include "ampmesh/edge_t.h"
 
 edge_t::edge_t(double const * A, double const * B, double const * ABC) {
   set_support_points(A, B);
@@ -45,8 +46,8 @@ double const * edge_t::get_center() {
 }
 
 void edge_t::compute_normal() {
-  if (normal.size() == 0) { normal.resize(3); }
   assert(!normal_updated);
+  if (normal.size() == 0) { normal.resize(3); }
   if (!direction_updated) { compute_direction(); }
   compute_cross_product(&(direction[0]), containing_plane_ptr, &(normal[0]));
   assert(fabs(compute_vector_norm(&(normal[0])) - 1.0) < 1.0e-14);
@@ -55,16 +56,16 @@ void edge_t::compute_normal() {
 }
 
 void edge_t::compute_direction() {
-  if (direction.size() == 0) { direction.resize(3); }
   assert(!direction_updated);
+  if (direction.size() == 0) { direction.resize(3); }
   make_vector_from_two_points(support_points_ptr[0], support_points_ptr[1], &(direction[0])); 
   normalize_vector(&(direction[0]));
   direction_updated = true;
 }
 
 void edge_t::compute_center() {
-  if (center.size() == 0) { center.resize(3); }
   assert(!center_updated);
+  if (center.size() == 0) { center.resize(3); }
   for (unsigned int i = 0; i < 3; ++i) {
     center[i] = 0.0;
     for (unsigned int j = 0; j < 2; ++j) {

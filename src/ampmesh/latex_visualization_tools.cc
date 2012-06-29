@@ -1,7 +1,10 @@
 #include <ampmesh/latex_visualization_tools.h>
+#include <ampmesh/euclidean_geometry_tools.h>
 
 #include <vector>
 #include <string>
+#include <cassert>
+#include <iostream>
 
 std::string rubiks_cube_color_arrangement[6] = { "orange", "green", "white", "blue", "yellow", "red" };
 

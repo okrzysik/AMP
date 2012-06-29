@@ -609,7 +609,7 @@ void DendroSearch::search(const std::vector<double> & pts) {
       support_points[3*j+1] = point_coord[1];
       support_points[3*j+2] = point_coord[2];
     } // end j
-    volume_elements.push_back(hex8_element_t(support_points));
+    volume_elements.push_back(hex8_element_t(&(support_points[0])));
   } // end for i
 
   std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);

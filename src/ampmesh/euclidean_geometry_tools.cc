@@ -51,14 +51,6 @@ void rotate_points(unsigned int rotation_axis, double rotation_angle, unsigned i
   } // end for j
 }
 
-std::vector<double> compute_cross_product(const std::vector<double> &u, const std::vector<double> &v) {
-  assert(u.size() == 3);
-  assert(v.size() == 3);
-  std::vector<double> w(3);
-  compute_cross_product(&(u[0]), &(v[0]), &(w[0]));
-  return w;
-}
-
 void compute_cross_product(double const * u, double const * v, double * w) {
   w[0] = u[1]*v[2]-u[2]*v[1];
   w[1] = u[2]*v[0]-u[0]*v[2];
@@ -67,20 +59,6 @@ void compute_cross_product(double const * u, double const * v, double * w) {
 
 double compute_scalar_product(double const * u, double const * v) {
   return std::inner_product(&(u[0]), &(u[0])+3, &(v[0]), 0.0);
-}
-
-double compute_scalar_product(const std::vector<double> &u, const std::vector<double> &v) {
-  assert(u.size() == 3);
-  assert(v.size() == 3);
-  return compute_scalar_product(&(u[0]), &(v[0]));
-}
-
-std::vector<double> make_vector_from_two_points(const std::vector<double> &start_point, const std::vector<double> &end_point) {
-  assert(start_point.size() == 3);
-  assert(end_point.size() == 3);
-  std::vector<double> vector(3);
-  make_vector_from_two_points(&(start_point[0]), &(end_point[0]), &(vector[0]));
-  return vector;
 }
 
 void make_vector_from_two_points(double const * start_point, double const * end_point, double * vector) {

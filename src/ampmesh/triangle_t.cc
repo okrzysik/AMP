@@ -18,10 +18,6 @@ void triangle_t::set_support_points(double const * A, double const * B, double c
   edges_updated = false;
 }
 
-void triangle_t::set_support_points(double const * * ptr) {
-  set_support_points(ptr[0], ptr[1], ptr[2]);
-}
-
 double const * triangle_t::get_support_point_ptr(unsigned int i) const {
   assert(i < 3);
   return support_points_ptr[i];
@@ -38,8 +34,8 @@ double const * triangle_t::get_centroid() {
 }
 
 void triangle_t::compute_centroid() {
-  if (centroid.size() == 0) { centroid.resize(3); }
   assert(!centroid_updated);
+  if (centroid.size() == 0) { centroid.resize(3); }
   for (unsigned int i = 0; i < 3; ++i) {
     centroid[i] = 0.0;
     for (unsigned int j = 0; j < 3; ++j) {
@@ -51,9 +47,9 @@ void triangle_t::compute_centroid() {
 }
 
 void triangle_t::compute_normal() {
+  assert(!normal_updated);
   if (normal.size() == 0) { normal.resize(3); }
   if (tmp.size() == 0) { tmp.resize(6); }
-  assert(!normal_updated);
   make_vector_from_two_points(support_points_ptr[0], support_points_ptr[1], &(tmp[0])+0);
   make_vector_from_two_points(support_points_ptr[0], support_points_ptr[2], &(tmp[0])+3);
   compute_cross_product(&(tmp[0])+0, &(tmp[0])+3, &(normal[0]));
@@ -62,7 +58,7 @@ void triangle_t::compute_normal() {
 }
 
 double triangle_t::compute_distance_to_containing_plane(double const * point) {
-  if (tmp.size()==0) { tmp.resize(6); }
+  if (tmp.size() == 0) { tmp.resize(6); }
   if (!normal_updated) { compute_normal(); }
   if (!centroid_updated) { compute_centroid(); }
   // vector from triangle centroid to point
@@ -84,8 +80,8 @@ edge_t * triangle_t::get_edge(unsigned int i) {
 }
 
 void triangle_t::build_edges() {
-  if (edges.size() == 0) { edges.reserve(3); }
   assert(!edges_updated);
+  if (edges.size() == 0) { edges.reserve(3); }
   edges.clear();
   if (!normal_updated) { compute_normal(); }
   edges.push_back(edge_t(support_points_ptr[0], support_points_ptr[1], &(normal[0])));

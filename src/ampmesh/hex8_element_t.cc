@@ -1,19 +1,15 @@
 #include <ampmesh/hex8_element_t.h>
+#include <ampmesh/euclidean_geometry_tools.h>
 
-hex8_element_t::hex8_element_t(const std::vector<double> &p) : memory_allocated_for_newton(false) {
-//  newton_count = 0;
-  point_candidate.resize(3);
-  bounding_box.resize(6, 0.0);
-  support_points.resize(24);
-  set_support_points(p); 
-}
+#include <iostream>
+#include <numeric>
+#include <algorithm>
+#include <cassert>
+#include <cmath>
 
-void hex8_element_t::set_support_points(const std::vector<double> &p) { 
-  assert(p.size() == 24); 
-  set_support_points(&(p[0]));
-}
 
 hex8_element_t::hex8_element_t(double const *p) : memory_allocated_for_newton(false) {
+//  newton_count = 0;
   point_candidate.resize(3);
   bounding_box.resize(6, 0.0);
   support_points.resize(24);
@@ -69,11 +65,6 @@ bool hex8_element_t::within_bounding_box(double const *p, double tolerance) {
     if ((bounding_box[j+0] - tolerance*(bounding_box[j+3]-bounding_box[j+0]) > p[j]) || (bounding_box[j+3] + tolerance*(bounding_box[j+3]-bounding_box[j+0]) < p[j])) { return false; }
   } // end for j
   return true;
-}
-
-bool hex8_element_t::within_bounding_box(const std::vector<double> &p, double tolerance) {
-  assert(p.size() == 3);
-  return within_bounding_box(&(p[0]), tolerance);
 }
 
 unsigned int hex8_element_t::faces[24] = {
@@ -156,10 +147,10 @@ void hex8_element_t::build_bounding_polyhedron() {
 }
 
 
-bool hex8_element_t::within_bounding_polyhedron(const std::vector<double> &p, double tolerance) {
+/*bool hex8_element_t::within_bounding_polyhedron(const std::vector<double> &p, double tolerance) {
   assert(p.size() == 3);
   return within_bounding_polyhedron(&(p[0]), tolerance);
-}
+}*/
 
 bool hex8_element_t::within_bounding_polyhedron(double const *p, double tolerance) {
   if (!bounding_polyhedron_updated) { build_bounding_polyhedron(); }
@@ -168,20 +159,6 @@ bool hex8_element_t::within_bounding_polyhedron(double const *p, double toleranc
       || (!bounding_polyhedron[2*i+1].above_point(p, tolerance))) { return false; }
   } // end for i
   return true;
-}
-
-std::vector<double> hex8_element_t::map_global_to_local(const std::vector<double> &global_coordinates) {
-  assert(global_coordinates.size() == 3); 
-  std::vector<double> local_coordinates(3);
-  map_global_to_local(&(global_coordinates[0]), &(local_coordinates[0]));
-  return local_coordinates;
-}
-
-std::vector<double> hex8_element_t::map_local_to_global(const std::vector<double> &local_coordinates) {
-  assert(local_coordinates.size() == 3); 
-  std::vector<double> global_coordinates(3);
-  map_local_to_global(&(local_coordinates[0]), &(global_coordinates[0]));
-  return global_coordinates;
 }
 
 void hex8_element_t::map_global_to_local(double const *global_coordinates, double *local_coordinates) {
@@ -195,11 +172,6 @@ void hex8_element_t::map_local_to_global(double const *local_coordinates, double
   compute_residual_vector(&(local_coordinates[0]), &(global_coordinates[0]));
   std::copy(&(tmp[0]), &(tmp[0])+3, &(point_candidate[0]));
 
-}
-
-bool hex8_element_t::contains_point(const std::vector<double> &coordinates, bool coordinates_are_local, double tolerance) {
-  assert(coordinates.size() == 3); 
-  return contains_point(&(coordinates[0]), coordinates_are_local, tolerance);
 }
 
 bool hex8_element_t::contains_point(double const *coordinates, bool coordinates_are_local, double tolerance) {
@@ -218,84 +190,6 @@ bool hex8_element_t::contains_point(double const *coordinates, bool coordinates_
     } // end if
   } // end for i
   return true;
-}
-
-std::pair<unsigned int, std::vector<double> > hex8_element_t::project_on_face(double a, double b, double c) {
-  double p[3] = { a, b, c };
-  return project_on_face(std::vector<double>(p, p+3));
-}
-
-std::pair<unsigned int, std::vector<double> > hex8_element_t::project_on_face(const std::vector<double> &p) {
-  assert(p.size() == 3); 
-  if (!within_bounding_box(p)) { return std::pair<unsigned int, std::vector<double> >(99, std::vector<double>(2, 0.0)); }
-  if (!within_bounding_polyhedron(p)) { return std::pair<unsigned int, std::vector<double> >(99, std::vector<double>(2, 0.0)); }
-  point_candidate = p;
-
-  // compute the coordinates of the point candidate in the frame of the volume element
-  std::vector<double> x(3);
-  solve_newton(&(x[0]));
-
-  double distance_to_face[6];
-  distance_to_face[0] = 1.0 + x[2]; 
-  distance_to_face[1] = 1.0 + x[1]; 
-  distance_to_face[2] = 1.0 - x[0]; 
-  distance_to_face[3] = 1.0 - x[1]; 
-  distance_to_face[4] = 1.0 + x[0]; 
-  distance_to_face[5] = 1.0 - x[2]; 
-
-  double min_distance = 1.0;
-  unsigned int closest_face = 33;
-  for (unsigned int i = 0; i < 6; ++i) {
-    if (distance_to_face[i] < 0.0) {
-      closest_face = 99;
-      break;
-    } else if (distance_to_face[i] < min_distance) {
-      min_distance = distance_to_face[i];
-      closest_face = i;
-    } // end if
-  } // end for i
-
-  // faces are oriented and defined by their 4 support nodes
-  //   3          2    
-  //    o--------o    
-  //    |        |
-  //    |        |   
-  //    |        |  
-  //    |        | 
-  //    o--------o
-  //   0          1
-  //
-  // coordinates on the face are given in the following xy reference frame
-  // 
-  //    y
-  //    |
-  //    |
-  //    |
-  //    o------ x
-  //
-  std::vector<double> coordinates_on_face(2, 0.0);
-  if (closest_face == 0) {
-    coordinates_on_face[0] = x[1];
-    coordinates_on_face[1] = x[0];
-  } else if (closest_face == 1) {
-    coordinates_on_face[0] = x[0];
-    coordinates_on_face[1] = x[2];
-  } else if (closest_face == 2) {
-    coordinates_on_face[0] = x[1];
-    coordinates_on_face[1] = x[2];
-  } else if (closest_face == 3) {
-    coordinates_on_face[0] = -x[0];
-    coordinates_on_face[1] = x[2];
-  } else if (closest_face == 4) {
-    coordinates_on_face[0] = -x[1];
-    coordinates_on_face[1] = x[2];
-  } else if (closest_face == 5) {
-    coordinates_on_face[0] = x[0];
-    coordinates_on_face[1] = x[1];
-  } // end if
-
-  assert(closest_face != 33);
-  return std::pair<unsigned int, std::vector<double> >(closest_face, coordinates_on_face);
 }
   
 void hex8_element_t::build_bounding_box() {
@@ -367,7 +261,8 @@ void compute_n_by_n_matrix_times_vector(unsigned int n, double const *A, double 
 
 void hex8_element_t::compute_initial_guess(double *initial_guess) {
   if (!center_of_element_data_updated) { compute_center_of_element_data(); }
-  std::vector<double> tmp = make_vector_from_two_points(center_of_element_global_coordinates, point_candidate);
+  std::vector<double> tmp(3); 
+  make_vector_from_two_points(&(center_of_element_global_coordinates[0]), &(point_candidate[0]), &(tmp[0]));
   compute_n_by_n_matrix_times_vector(3, &(inverse_jacobian_matrix_at_center_of_element[0]), &(tmp[0]), initial_guess);
 }
 
