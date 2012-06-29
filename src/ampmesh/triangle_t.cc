@@ -2,6 +2,7 @@
 #include <ampmesh/euclidean_geometry_tools.h>
 
 #include <cassert>
+#include <iostream>
 
 triangle_t::triangle_t(double const * A, double const * B, double const * C) {
   set_support_points(A, B, C);
@@ -108,9 +109,30 @@ bool triangle_t::project_point(double const * point, double * projection, double
   double distance_to_containing_plane = compute_distance_to_containing_plane(point);
   for (unsigned int i = 0; i < 3; ++i) { tmp[i] = point[i] - distance_to_containing_plane * normal[i]; }
   if (!edges_updated) { build_edges(); }
-  for (unsigned int i = 0; i < 3; ++i) {
-    if (edges[i].project_point(&(tmp[0]), projection, tolerance)) {
+  for (unsigned int i = 0; i < 3; ) {
+    int status = edges[i].project_point(&(tmp[0]), projection, tolerance);
+    // -1 -> edge is above the point, we cannot conclude and go to the next edge
+    if (status == -1) {
+      ++i;
+    // 2 -> projection onto the edge is normal, we have found the closest point on the triangle  
+    } else if (status == 2) {
       return false;
+    // 0 -> point was projected onto the first support point
+    //      if we are on edge 0 we need to check edge 2
+    //      otherwise we are done
+    } else if (status == 0) {
+      if (i == 0) { i = 2; continue; }
+      return false;
+    // 1 -> point was projected onto the second support point
+    //      if we are on edge 2 we are done
+    //      otherwise we check the next edge
+    } else if (status == 1) {
+      if (i == 2) { return false; }
+      ++i;
+    // just making sure nothing unexpected happened
+    } else {
+      std::cerr<<"how did you end up here in the first place?"<<std::endl;
+      assert(false);
     } // end if
   } // end for i
 

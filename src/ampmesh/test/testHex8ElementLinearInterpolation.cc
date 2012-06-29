@@ -1,7 +1,7 @@
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
+#include <utils/AMPManager.h>
+#include <utils/UnitTest.h>
 
-#include "hex8_element_t.h"
+#include <ampmesh/hex8_element_t.h>
 
 double my_function(double const *xyz) {
   double x = xyz[0], y = xyz[1], z = xyz[2];

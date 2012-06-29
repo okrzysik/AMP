@@ -1,8 +1,11 @@
 #include <utils/AMPManager.h>
 #include <utils/UnitTest.h>
 
-#include <triangle_t.h>
-#include <euclidean_geometry_tools.h>
+#include <ampmesh/triangle_t.h>
+#include <ampmesh/euclidean_geometry_tools.h>
+#include <iostream>
+#include <cmath>
+#include <cstdlib>
 
 void test_above_point(triangle_t * t_ptr, unsigned int n_random_candidate_points = 10000) {
   double const * centroid = t_ptr->get_centroid();
@@ -39,24 +42,29 @@ void test_project_point(triangle_t * t_ptr, unsigned int n_random_candidate_poin
     AMP_ASSERT(fabs(compute_scalar_product(edge_direction, edge_normal)) < 1.0e-14);
     AMP_ASSERT(fabs(compute_scalar_product(triangle_normal, edge_normal)) < 1.0e-14);
     AMP_ASSERT(fabs(compute_scalar_product(triangle_normal, edge_direction)) < 1.0e-14);
+    double triangle_centroid_to_edge_center_line[3];
+    make_vector_from_two_points(triangle_centroid, edge_center, triangle_centroid_to_edge_center_line);
+    // bravo!
+    double line_length = compute_scalar_product(triangle_centroid_to_edge_center_line, edge_normal);
+    for (unsigned int k = 0; k < 3; ++k) { triangle_centroid_to_edge_center_line[k] = line_length * edge_normal[k]; } 
     for (unsigned int j = 0; j < n_random_candidate_points; ++j) {
       random_motion_along_normal = -1.0+2.0*rand()/RAND_MAX; 
       random_motion_along_line = -1.0+2.0*rand()/RAND_MAX; 
-      for (unsigned int k = 0; k < 3; ++k) { random_candidate_point[k] = edge_center[k] + random_motion_along_line * edge_normal[k] + random_motion_along_normal * triangle_normal[k]; }
+      for (unsigned int k = 0; k < 3; ++k) { random_candidate_point[k] = edge_center[k] + random_motion_along_line * triangle_centroid_to_edge_center_line[k] + random_motion_along_normal * triangle_normal[k]; }
       triangle_contains_random_candidate_point = (random_motion_along_line < tolerance);
       AMP_ASSERT(e_ptr->above_point(random_candidate_point, tolerance) == triangle_contains_random_candidate_point);
-//      AMP_ASSERT(t_ptr->contains_point(random_candidate_point, tolerance) == triangle_contains_random_candidate_point);
-//      AMP_ASSERT(t_ptr->project_point(random_candidate_point, projection, tolerance) == triangle_contains_random_candidate_point);
+      AMP_ASSERT(t_ptr->contains_point(random_candidate_point, tolerance) == triangle_contains_random_candidate_point);
+      AMP_ASSERT(t_ptr->project_point(random_candidate_point, projection, tolerance) == triangle_contains_random_candidate_point);
       if (!triangle_contains_random_candidate_point) {
         for (unsigned int k = 0; k < 3; ++k) { projection_error[k] = projection[k] - edge_center[k]; }
       } else {
-        for (unsigned int k = 0; k < 3; ++k) { projection_error[k] = projection[k] - edge_center[k] - random_motion_along_line * edge_normal[k]; }
+        for (unsigned int k = 0; k < 3; ++k) { projection_error[k] = projection[k] - edge_center[k] - random_motion_along_line * triangle_centroid_to_edge_center_line[k]; }
       } // end for if
-//      std::cout<<compute_vector_norm(projection_error)<<"  "<<triangle_contains_random_candidate_point<<"\n";
-//      AMP_ASSERT(compute_vector_norm(projection_error) < 1.0e-14);
+      AMP_ASSERT(compute_vector_norm(projection_error) < 1.0e-14);
     } // end for j
   } // end for i
 
+  // this might fail for very obtus triangles...
   for (unsigned int i = 0; i < 3; ++i) {
     double triangle_centroid_to_support_point_line[3];
     double const * triangle_support_point = t_ptr->get_support_point_ptr(i);
@@ -73,11 +81,11 @@ void test_project_point(triangle_t * t_ptr, unsigned int n_random_candidate_poin
       } else {
         for (unsigned int k = 0; k < 3; ++k) { projection_error[k] = projection[k] - triangle_support_point[k] - random_motion_along_line * triangle_centroid_to_support_point_line[k]; }
       } // end for if
-//      std::cout<<triangle_contains_random_candidate_point<<"  "<<compute_vector_norm(projection_error)<<"\n";
       AMP_ASSERT(compute_vector_norm(projection_error) < 1.0e-14);
     } // end for j
   } // end for i
 }
+
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
 

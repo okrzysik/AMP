@@ -13,7 +13,7 @@ public:
   double const * get_direction();
   double const * get_center();
   bool above_point(double const * p, double tolerance = 1.0e-12);
-  bool project_point(double const * point_in_containing_plane, double * projectioni, double tolerance = 1.0e-12);
+  int project_point(double const * point_in_containing_plane, double * projection, double tolerance = 1.0e-12);
 
 private:
   std::vector<double const *> support_points_ptr;

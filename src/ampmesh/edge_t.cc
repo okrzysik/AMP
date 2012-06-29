@@ -90,7 +90,7 @@ bool edge_t::above_point(double const * point, double tolerance) {
   return (distance_to_containing_line < tolerance);
 }
 
-bool edge_t::project_point(double const * point_in_containing_plane, double * projection, double tolerance) {
+int edge_t::project_point(double const * point_in_containing_plane, double * projection, double tolerance) {
   if (tmp.size() == 0) { tmp.resize(3); }
   double distance_to_containing_line = compute_distance_to_containing_line(point_in_containing_plane);
 
@@ -109,12 +109,14 @@ bool edge_t::project_point(double const * point_in_containing_plane, double * pr
     position_on_containing_line /= compute_vector_norm(&(tmp[0]));
     if (position_on_containing_line < 0.0 - tolerance) {
       for (unsigned int i = 0; i < 3; ++i) { projection[i] = support_points_ptr[0][i]; }
+      return 0;
     } else if (position_on_containing_line > 1.0 + tolerance) {
       for (unsigned int i = 0; i < 3; ++i) { projection[i] = support_points_ptr[1][i]; }
+      return 1;
     } // end if
-    return true;
+    return 2;
   } // end if
 
   for (unsigned int i = 0; i < 3; ++i) { projection[i] = point_in_containing_plane[i]; }
-  return false;
+  return -1;
 }
