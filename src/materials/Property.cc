@@ -56,5 +56,42 @@ const boost::shared_ptr<AMP::LinearAlgebra::MultiVector>& args)
 	evalv(r, mapargs);
 }
 
+template<>
+double Property<double>::NewtonSolve(double guess, double param1, double param2)
+{
+	double x_new = guess;
+	double x_old = guess;
+	bool converged = false;
+	for (unsigned int iter=1; iter<=Newton_maxIter; ++iter){
+		x_old = x_new;
+		double perturbation = 1.0e-6;
+		// numerical Jacobian with forward perturbation
+		double J = (Residual(x_old+perturbation,param1,param2) - Residual(x_old,param1,param2))/perturbation;
+		double dx = -1.0*Residual(x_old,param1,param2)/J;
+		x_new = x_old + dx;
+		// check convergence
+		double abs_err = std::abs(x_new - x_old); // absolute error
+		double rel_err = 0.0; // relative error
+		if (x_old != 0.0){ // test to ensure no division by zero
+			rel_err = std::abs((x_new - x_old)/x_old);
+		}
+		if ((abs_err < Newton_atol) and (rel_err < Newton_rtol)){
+			converged = true;
+			break;
+		}
+	}
+	if (!converged){
+		AMP_ERROR("Newton solve failed to converge for property function evaluation.");
+	}
+	return x_new;
+}
+
+template<>
+double Property<double>::Residual(double arg1, double arg2, double arg3)
+{
+	AMP_ERROR("The function ``Property::Residual'' is virtual and expected to be overridden");
+	return 0.0;
+}
+
 }
 }
