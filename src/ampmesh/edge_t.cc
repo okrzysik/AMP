@@ -99,7 +99,7 @@ int edge_t::project_point(double const * point_in_containing_plane, double * pro
   make_vector_from_two_points(&(center[0]), point_in_containing_plane, &(tmp[0]));
   assert(compute_scalar_product(&(tmp[0]), containing_plane_ptr) < tolerance);
 
-  if (distance_to_containing_line > tolerance) {
+  if (distance_to_containing_line + tolerance > 0.0) {
     for (unsigned int i = 0; i < 3; ++i) {
       projection[i] = point_in_containing_plane[i] - distance_to_containing_line * normal[i];
     } // end for i
@@ -108,10 +108,10 @@ int edge_t::project_point(double const * point_in_containing_plane, double * pro
     double position_on_containing_line = compute_scalar_product(&(tmp[0]), &(direction[0]));
     make_vector_from_two_points(support_points_ptr[0], support_points_ptr[1], &(tmp[0]));
     position_on_containing_line /= compute_vector_norm(&(tmp[0]));
-    if (position_on_containing_line < 0.0 - tolerance) {
+    if (position_on_containing_line < 0.0 + tolerance) {
       for (unsigned int i = 0; i < 3; ++i) { projection[i] = support_points_ptr[0][i]; }
       return 0;
-    } else if (position_on_containing_line > 1.0 + tolerance) {
+    } else if (position_on_containing_line > 1.0 - tolerance) {
       for (unsigned int i = 0; i < 3; ++i) { projection[i] = support_points_ptr[1][i]; }
       return 1;
     } // end if

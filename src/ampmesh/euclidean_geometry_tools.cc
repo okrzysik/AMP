@@ -76,3 +76,8 @@ void normalize_vector(double * vector) {
   for (unsigned int i = 0; i < 3; ++i) { vector[i] *= normalizing_factor; }
 }
 
+double compute_distance_between_two_points(double const * start_point, double const * end_point) {
+  double tmp[3];
+  make_vector_from_two_points(start_point, end_point, tmp);
+  return compute_vector_norm(tmp);
+}

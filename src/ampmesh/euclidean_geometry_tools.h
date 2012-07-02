@@ -14,5 +14,6 @@ double compute_scalar_product(double const * u, double const * const v);
 void make_vector_from_two_points(double const * start_point, double const * end_point, double * vector);
 double compute_vector_norm(double const * vector);
 void normalize_vector(double * vector);
+double compute_distance_between_two_points(double const * start_point, double const * end_point);
 
 #endif // EUCLIDEAN_GEOMETRY_TOOLS
