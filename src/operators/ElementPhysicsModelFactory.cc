@@ -35,6 +35,9 @@
 // manufactured diffusion transport model
 #include "ManufacturedDiffusionTransportModel.h"
 
+// subchannel physics model
+#include "SubchannelPhysicsModel.h"
+
 namespace AMP {
   namespace Operator {
 
@@ -113,6 +116,10 @@ namespace AMP {
         else if(name=="ManufacturedDiffusionTransportModel")
         {
           retElementPhysicsModel.reset(new ManufacturedDiffusionTransportModel(params));
+        } 
+        else if(name=="SubchannelPhysicsModel")
+        {
+          retElementPhysicsModel.reset(new SubchannelPhysicsModel(params));
         } 
         else
         {
