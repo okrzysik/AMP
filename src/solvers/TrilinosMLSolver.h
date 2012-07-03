@@ -177,6 +177,7 @@ namespace AMP {
         AMP_MPI d_comm;
 
         bool d_bCreationPhase; /**< set to true if the PC is not ready and false otherwise. */
+        bool d_bUseRobustMode;
 
         double d_dRelativeTolerance;
         double d_dAbsoluteTolerance;
