@@ -54,7 +54,7 @@ void test_project_point(triangle_t * t_ptr, unsigned int n_random_candidate_poin
       triangle_contains_random_candidate_point = (random_motion_along_line < tolerance);
       AMP_ASSERT(e_ptr->above_point(random_candidate_point, tolerance) == triangle_contains_random_candidate_point);
       AMP_ASSERT(t_ptr->contains_point(random_candidate_point, tolerance) == triangle_contains_random_candidate_point);
-      AMP_ASSERT(t_ptr->project_point(random_candidate_point, projection, tolerance) == triangle_contains_random_candidate_point);
+      AMP_ASSERT((t_ptr->project_point(random_candidate_point, projection, tolerance) == -1) == triangle_contains_random_candidate_point);
       if (!triangle_contains_random_candidate_point) {
         for (unsigned int k = 0; k < 3; ++k) { projection_error[k] = projection[k] - edge_center[k]; }
       } else {
@@ -75,7 +75,7 @@ void test_project_point(triangle_t * t_ptr, unsigned int n_random_candidate_poin
       for (unsigned int k = 0; k < 3; ++k) { random_candidate_point[k] = triangle_support_point[k] + random_motion_along_line * triangle_centroid_to_support_point_line[k] + random_motion_along_normal * triangle_normal[k]; }
       triangle_contains_random_candidate_point = (random_motion_along_line < tolerance);
       AMP_ASSERT(t_ptr->contains_point(random_candidate_point, tolerance) == triangle_contains_random_candidate_point);
-      AMP_ASSERT(t_ptr->project_point(random_candidate_point, projection, tolerance) == triangle_contains_random_candidate_point);
+      AMP_ASSERT((t_ptr->project_point(random_candidate_point, projection, tolerance) == -1) == triangle_contains_random_candidate_point);
       if (!triangle_contains_random_candidate_point) {
         for (unsigned int k = 0; k < 3; ++k) { projection_error[k] = projection[k] - triangle_support_point[k]; }
       } else {
@@ -86,6 +86,39 @@ void test_project_point(triangle_t * t_ptr, unsigned int n_random_candidate_poin
   } // end for i
 }
 
+void test_return_status(triangle_t * t_ptr) {
+  int status;
+  double projection[3]; 
+  double tolerance = 1.0e-12;
+
+  for (unsigned int i = 0; i < 3; ++i) {
+    edge_t * e_ptr = t_ptr->get_edge(i);
+    double const * edge_center = e_ptr->get_center();
+    status = e_ptr->project_point(edge_center, projection, tolerance);
+    AMP_ASSERT(status == 2);
+    for (unsigned int j = 0; j < 2; ++j) {
+      double const * edge_support_point = e_ptr->get_support_point_ptr(j);
+      status = e_ptr->project_point(edge_support_point, projection, tolerance);
+      AMP_ASSERT(status == j);
+    } // end for j
+  } // end for i
+
+  double const * triangle_centroid = t_ptr->get_centroid();
+  status = t_ptr->project_point(triangle_centroid, projection, tolerance);
+  AMP_ASSERT(status == -1);
+  for (unsigned int i = 0; i < 3; ++i) {
+    edge_t * e_ptr = t_ptr->get_edge(i);
+    double const * edge_center = e_ptr->get_center();
+    status = t_ptr->project_point(edge_center, projection, tolerance);
+    AMP_ASSERT(status == 3+i);
+  } // end for i
+  for (unsigned int i = 0; i < 3; ++i) {
+    double const * triangle_support_point = t_ptr->get_support_point_ptr(i);
+    status = t_ptr->project_point(triangle_support_point, projection, tolerance);
+    AMP_ASSERT(status == i);  
+  } // end for i
+
+}
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
 
@@ -94,7 +127,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     1.0, 0.0, 0.0, // 1
     0.0, 1.0, 0.0, // 2
   }; 
-
 
   double scaling_factors[3] = { 4.0, 2.0, 1.0 };
   scale_points(std::vector<double>(scaling_factors, scaling_factors+3), 3, points);
@@ -114,6 +146,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   test_above_point(&triangle);
 
   test_project_point(&triangle);
+ 
+  test_return_status(&triangle);
 
   ut->passes(exeName);
 }

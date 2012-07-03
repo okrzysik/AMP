@@ -100,7 +100,7 @@ bool triangle_t::contains_point(double const * point, double tolerance) {
   return true; 
 }
 
-bool triangle_t::project_point(double const * point, double * projection, double tolerance) {
+int triangle_t::project_point(double const * point, double * projection, double tolerance) {
   if (tmp.size()==0) { tmp.resize(6); }
   double distance_to_containing_plane = compute_distance_to_containing_plane(point);
   for (unsigned int i = 0; i < 3; ++i) { tmp[i] = point[i] - distance_to_containing_plane * normal[i]; }
@@ -112,18 +112,18 @@ bool triangle_t::project_point(double const * point, double * projection, double
       ++i;
     // 2 -> projection onto the edge is normal, we have found the closest point on the triangle  
     } else if (status == 2) {
-      return false;
+      return 3+i;
     // 0 -> point was projected onto the first support point
     //      if we are on edge 0 we need to check edge 2
     //      otherwise we are done
     } else if (status == 0) {
       if (i == 0) { i = 2; continue; }
-      return false;
+      return i;
     // 1 -> point was projected onto the second support point
     //      if we are on edge 2 we are done
     //      otherwise we check the next edge
     } else if (status == 1) {
-      if (i == 2) { return false; }
+      if (i == 2) { return 0; }
       ++i;
     // just making sure nothing unexpected happened
     } else {
@@ -132,5 +132,26 @@ bool triangle_t::project_point(double const * point, double * projection, double
     } // end if
   } // end for i
 
-  return true;
+  return -1;
+}
+
+
+int project_point_onto_collection_of_triangles(unsigned int n_triangles, triangle_t **triangles_ptr, double const *point, double *projection, unsigned int &position, double &distance, double tolerance) {
+  int status, tmp_status;
+  double tmp_distance, tmp_projection[3];
+  status = triangles_ptr[0]->project_point(point, projection, tolerance);
+  position = 0;
+  distance = compute_distance_between_two_points(point, projection);
+  for (unsigned int i = 1; i < n_triangles; ++i) {
+    if (distance < tolerance) { break; }
+    tmp_status = triangles_ptr[i]->project_point(point, tmp_projection, tolerance); 
+    tmp_distance = compute_distance_between_two_points(point, tmp_projection);
+    if (tmp_distance < distance) {
+      distance = tmp_distance;
+      position = i;
+      status = tmp_status;
+      std::copy(tmp_projection, tmp_projection+3, projection);
+    } // end if
+  } // end for i
+  return status;
 }
