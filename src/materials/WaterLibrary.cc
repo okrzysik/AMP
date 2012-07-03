@@ -79,7 +79,7 @@ September 1998");
 	static const double       CondParams[CondNumParams] = {};
 	static const std::string  CondArgs[CondNumArgs] = {"temperature", "density"};
 	static const double       CondTminVal = 0.0;		// minimum temperature [K]
-	static const double       CondTmaxVal = 1.0e6;		// maximum temperature [K] (arbitrary "very high" temperature)
+	static const double       CondTmaxVal = 1.0e3;		// maximum temperature [K] (arbitrary "very high" temperature)
 	static const double       CondRhominVal = 0;		// minimum density [kg/m3] 
 	static const double       CondRhomaxVal = 2000.;	// maximum density [kg/m3] (arbitrary "very high" density)
 	static const double       CondRanges[2][2]={{CondTminVal, CondTmaxVal}, {CondRhominVal, CondRhomaxVal}};
@@ -95,7 +95,7 @@ September 1998");
 								-0.0270448,-0.0253093,-0.0267758,-0.0822904,0.0602253,-0.0202595};
 	static const std::string  ViscArgs[ViscNumArgs] = {"temperature", "density"};
 	static const double       ViscTminVal = 0.0;		// minimum temperature [K]
-	static const double       ViscTmaxVal = 1.0e6;		// maximum temperature [K] (arbitrary "very high" temperature)
+	static const double       ViscTmaxVal = 1.0e3;		// maximum temperature [K] (arbitrary "very high" temperature)
 	static const double       ViscRhominVal = 0;		// minimum density [kg/m3] 
 	static const double       ViscRhomaxVal = 2000.;	// maximum density [kg/m3] (arbitrary "very high" density)
 	static const double       ViscRanges[2][2]={{ViscTminVal, ViscTmaxVal}, {ViscRhominVal, ViscRhomaxVal}};
@@ -107,7 +107,7 @@ September 1998");
 									-0.00106377488,0.0000006177396046};
 	static const std::string  EnthalpyArgs[EnthalpyNumArgs] = {"temperature", "pressure"};
 	static const double       EnthalpyTminVal = 0.0;		// minimum temperature [K]
-	static const double       EnthalpyTmaxVal = 1.0e6;		// maximum temperature [K] (arbitrary "very high" temperature)
+	static const double       EnthalpyTmaxVal = 1.0e3;		// maximum temperature [K] (arbitrary "very high" temperature)
 	static const double       EnthalpyPminVal = 689.4757;		// minimum pressure [Pa] 
 	static const double       EnthalpyPmaxVal = 22119759.4074;	// critical pressure; maximum pressure [Pa]
 	static const double       EnthalpyRanges[2][2]={{EnthalpyTminVal, EnthalpyTmaxVal}, {EnthalpyPminVal, EnthalpyPmaxVal}};
