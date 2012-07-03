@@ -32,10 +32,13 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
 	if (formulation == std::string("OneEqnForwardSubstitution")){
 		AMP_ERROR("The formulation ''OneEqnForwardSubstitution'' has not yet been implemented");
 	} else if (formulation == std::string("TwoEqnPicardIteration")){
-		AMP_ERROR("The formulation ''TwoEqnPicardIteration'' has not yet been implemented");
+		properties.push_back("Enthalpy");
 	} else if (formulation == std::string("TwoEqnJFNKPressure")){
-		AMP_ERROR("The formulation ''TwoEqnJFNKPressure'' has not yet been implemented");
+		properties.push_back("Enthalpy");
+		properties.push_back("SpecificVolume");
 	} else if (formulation == std::string("TwoEqnJFNKDensity")){
+		properties.push_back("Enthalpy");
+		properties.push_back("Pressure");
 		AMP_ERROR("The formulation ''TwoEqnJFNKDensity'' has not yet been implemented");
 	} else if (formulation == std::string("FunctionsTesting")){
 		properties.push_back("Temperature");
