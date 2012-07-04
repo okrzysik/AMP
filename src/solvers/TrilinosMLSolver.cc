@@ -39,7 +39,7 @@ namespace AMP {
     }
 
     void TrilinosMLSolver :: getFromInput(const boost::shared_ptr<AMP::Database> &db) {
-      d_bUseRobustMode = db->getBoolWithDefault("ROBUST_MODE", false);
+      d_bRobustMode = db->getBoolWithDefault("ROBUST_MODE", false);
       d_bUseEpetra = db->getBoolWithDefault("USE_EPETRA", true);
       d_mlOptions.reset(new MLoptions(db));
       if(d_bUseEpetra) {
@@ -171,8 +171,8 @@ namespace AMP {
       PROFILE_STOP("reset");
     }
 
-    void TrilinosMLSolver :: solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
-        boost::shared_ptr<AMP::LinearAlgebra::Vector>  u) {
+    void TrilinosMLSolver :: solve(boost::shared_ptr<AMP::LinearAlgebra::Vector> f,
+        boost::shared_ptr<AMP::LinearAlgebra::Vector> u) {
       PROFILE_START("solve");
       // in this case we make the assumption we can access a EpetraMat for now
       AMP_INSIST(d_pOperator.get()!=NULL,"ERROR: TrilinosMLSolver::solve() operator cannot be NULL");
@@ -197,7 +197,7 @@ namespace AMP {
       boost::shared_ptr <AMP::LinearAlgebra::Vector> r;
 
       bool computeResidual = false;
-      if( d_bUseRobustMode || (d_iDebugPrintInfoLevel > 1) ) {
+      if( d_bRobustMode || (d_iDebugPrintInfoLevel > 1) ) {
         computeResidual = true;
       }
 
@@ -259,7 +259,22 @@ namespace AMP {
         AMP::pout << "TrilinosMLSolver::solve(), L2 norm of residual after solve "
           <<std::setprecision(15)<< finalResNorm << std::endl;    
       }
+
+      if(d_bRobustMode) {
+        if(finalResNorm > initialResNorm) {
+          AMP::pout << "Warning: ML was not able to reduce the residual!" << std::endl;
+          reSolveWithLU(f, u);
+        }
+      }
+
       PROFILE_STOP("solve");
+    }
+
+    void TrilinosMLSolver :: reSolveWithLU(boost::shared_ptr<AMP::LinearAlgebra::Vector> f,
+        boost::shared_ptr<AMP::LinearAlgebra::Vector> u) {
+      PROFILE_START("reSolveWithLU");
+
+      PROFILE_STOP("reSolveWithLU");
     }
 
     void TrilinosMLSolver :: buildML() {

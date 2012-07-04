@@ -99,13 +99,13 @@ namespace AMP {
 
          23. name: aggregation_aux_threshold, type: double, (optional), default_values: 0.0
 
-         24. name: null_space_type, type: string, (optional), default value: none
+        24. name: null_space_type, type: string, (optional), default value: none
 
-         25. name: null_space_dimension, type: integer, (optional), default value: 3
+          25. name: null_space_dimension, type: integer, (optional), default value: 3
 
-         26. name: null_space_add_default_vectors, type: bool, (optional), default value: true
-         */
-        TrilinosMLSolver(boost::shared_ptr<TrilinosMLSolverParameters> parameters);
+          26. name: null_space_add_default_vectors, type: bool, (optional), default value: true
+          */
+          TrilinosMLSolver(boost::shared_ptr<TrilinosMLSolverParameters> parameters);
 
         /**
          * Default destructor
@@ -117,8 +117,11 @@ namespace AMP {
          @param [in] f : shared pointer to right hand side vector
          @param [out] u : shared pointer to approximate computed solution 
          */
-        void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
-            boost::shared_ptr<AMP::LinearAlgebra::Vector>  u);
+        void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector> f,
+            boost::shared_ptr<AMP::LinearAlgebra::Vector> u);
+
+        void reSolveWithLU(boost::shared_ptr<AMP::LinearAlgebra::Vector> f,
+            boost::shared_ptr<AMP::LinearAlgebra::Vector> u);
 
         /**
          * Return a shared pointer to the ML_Epetra::MultiLevelPreconditioner object
@@ -177,7 +180,7 @@ namespace AMP {
         AMP_MPI d_comm;
 
         bool d_bCreationPhase; /**< set to true if the PC is not ready and false otherwise. */
-        bool d_bUseRobustMode;
+        bool d_bRobustMode;
 
         double d_dRelativeTolerance;
         double d_dAbsoluteTolerance;
