@@ -120,9 +120,6 @@ namespace AMP {
         void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector> f,
             boost::shared_ptr<AMP::LinearAlgebra::Vector> u);
 
-        void reSolveWithLU(boost::shared_ptr<AMP::LinearAlgebra::Vector> f,
-            boost::shared_ptr<AMP::LinearAlgebra::Vector> u);
-
         /**
          * Return a shared pointer to the ML_Epetra::MultiLevelPreconditioner object
          */
@@ -161,6 +158,9 @@ namespace AMP {
         void reset(boost::shared_ptr<SolverStrategyParameters> params);
 
       protected:
+
+        void reSolveWithLU(boost::shared_ptr<AMP::LinearAlgebra::Vector> f,
+            boost::shared_ptr<AMP::LinearAlgebra::Vector> u);
 
         void getFromInput(const boost::shared_ptr<AMP::Database>& db);
 
