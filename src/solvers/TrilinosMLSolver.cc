@@ -38,6 +38,13 @@ namespace AMP {
       }
     }
 
+    void TrilinosMLSolver :: initialize(boost::shared_ptr<SolverStrategyParameters> const parameters) {
+      getFromInput(parameters->d_db);
+      if(d_pOperator.get() != NULL) {
+        registerOperator(d_pOperator);
+      }
+    }
+
     void TrilinosMLSolver :: getFromInput(const boost::shared_ptr<AMP::Database> &db) {
       d_bRobustMode = db->getBoolWithDefault("ROBUST_MODE", false);
       d_bUseEpetra = db->getBoolWithDefault("USE_EPETRA", true);
@@ -83,13 +90,6 @@ namespace AMP {
       d_MLParameterList.set("null space: type", d_mlOptions->d_nullSpaceType);
       d_MLParameterList.set("null space: dimension", d_mlOptions->d_nullSpaceDimension);
       d_MLParameterList.set("null space: add default vectors", d_mlOptions->d_nullSpaceAddDefaultVectors);
-    }
-
-    void TrilinosMLSolver :: initialize(boost::shared_ptr<SolverStrategyParameters> const parameters) {
-      getFromInput(parameters->d_db);
-      if(d_pOperator.get() != NULL) {
-        registerOperator(d_pOperator);
-      }
     }
 
     void TrilinosMLSolver :: registerOperator(const boost::shared_ptr<AMP::Operator::Operator> op) {
@@ -262,7 +262,7 @@ namespace AMP {
 
       if(d_bRobustMode) {
         if(finalResNorm > initialResNorm) {
-          AMP::pout << "Warning: ML was not able to reduce the residual!" << std::endl;
+          AMP::pout << "Warning: ML was not able to reduce the residual. Using LU instead." << std::endl;
           reSolveWithLU(f, u);
         }
       }
@@ -273,7 +273,15 @@ namespace AMP {
     void TrilinosMLSolver :: reSolveWithLU(boost::shared_ptr<AMP::LinearAlgebra::Vector> f,
         boost::shared_ptr<AMP::LinearAlgebra::Vector> u) {
       PROFILE_START("reSolveWithLU");
-
+      if(d_bUseEpetra) {
+        d_mlSolver->DestroyPreconditioner();
+        d_mlSolver.reset();
+      } else {
+        ML_Aggregate_Destroy(&d_mlAggregate);
+        d_mlAggregate = NULL;
+        ML_Destroy(&d_ml);
+        d_ml = NULL;
+      }
       PROFILE_STOP("reSolveWithLU");
     }
 
