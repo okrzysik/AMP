@@ -273,15 +273,35 @@ namespace AMP {
     void TrilinosMLSolver :: reSolveWithLU(boost::shared_ptr<AMP::LinearAlgebra::Vector> f,
         boost::shared_ptr<AMP::LinearAlgebra::Vector> u) {
       PROFILE_START("reSolveWithLU");
-      if(d_bUseEpetra) {
-        d_mlSolver->DestroyPreconditioner();
-        d_mlSolver.reset();
-      } else {
-        ML_Aggregate_Destroy(&d_mlAggregate);
-        d_mlAggregate = NULL;
-        ML_Destroy(&d_ml);
-        d_ml = NULL;
+
+      if(!d_bUseEpetra) {
+        AMP_ERROR("Robust mode can only be used with Epetra matrices.");
       }
+
+      boost::shared_ptr<AMP::Operator::LinearOperator> linearOperator = 
+        boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pOperator);
+      AMP_INSIST(linearOperator.get() != NULL, "linearOperator cannot be NULL");
+
+      boost::shared_ptr<AMP::LinearAlgebra::EpetraMatrix> pMatrix = boost::dynamic_pointer_cast<
+        AMP::LinearAlgebra::EpetraMatrix>(linearOperator->getMatrix());
+      AMP_INSIST(pMatrix.get() != NULL, "pMatrix cannot be NULL");
+
+      Teuchos::ParameterList tmpMLParameterList;
+      tmpMLParameterList.set("ML output", d_iDebugPrintInfoLevel);
+      tmpMLParameterList.set("max levels", 1);
+      tmpMLParameterList.set("PDE equations", d_mlOptions->d_pdeEquations);
+      tmpMLParameterList.set("coarse: type", d_mlOptions->d_coarseType);
+
+      d_mlSolver.reset( new ML_Epetra::MultiLevelPreconditioner(pMatrix->getEpetra_CrsMatrix(),
+            tmpMLParameterList, false));
+      d_bCreationPhase = true;
+
+      solve(f, u);
+
+      d_mlSolver.reset( new ML_Epetra::MultiLevelPreconditioner(pMatrix->getEpetra_CrsMatrix(),
+            d_MLParameterList, false));
+      d_bCreationPhase = true;
+
       PROFILE_STOP("reSolveWithLU");
     }
 
