@@ -340,15 +340,6 @@ public:
 	evalv(boost::shared_ptr<AMP::LinearAlgebra::Vector>& r,
 		const boost::shared_ptr<AMP::LinearAlgebra::MultiVector>& args);
 
-	/** Newton solve function for evaluation of implicitly defined thermodynamic relations
- 	*/
-	double NewtonSolve(double,double,double);
-
-private:	
-	static const double Newton_atol = 1.0e-7; // absolute tolerance for Newton solve
-	static const double Newton_rtol = 1.0e-7; // relative tolerance for Newton solve
-	static const unsigned int Newton_maxIter = 1000; // maximum number of iterations for Newton solve
-	virtual double Residual(double,double,double); // nonlinear residual function for Newton solve, to be defined by child class
 };
 
 template<>
