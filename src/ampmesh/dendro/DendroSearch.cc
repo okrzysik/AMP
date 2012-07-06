@@ -40,6 +40,8 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID,// std::vector<Proje
 
   std::vector<int> tmpSendCnts(d_npes, 0);
 
+  //Performance Improvement: We can send MeshElementIDs for the nodes instead
+  //of GlobalDOFIds. 
   for (unsigned int i = 0; i < d_foundPts.size(); i += 6) {
     unsigned int ptProcId = static_cast<unsigned int>(d_foundPts[i + 5]);
     AMP::Mesh::MeshElement* amp_element = &(d_localElemArr[static_cast<unsigned int>(d_foundPts[i])]);
