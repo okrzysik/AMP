@@ -66,6 +66,9 @@ namespace AMP {
         virtual void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
             AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
 
+        virtual void applyTranspose(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
+            AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
+
       protected :
 
       private :
@@ -82,9 +85,14 @@ namespace AMP {
         std::vector<int> d_SendDisps;
         std::vector<int> d_RecvCnts;
         std::vector<int> d_RecvDisps;
+        std::vector<int> d_TransposeSendCnts;
+        std::vector<int> d_TransposeSendDisps;
+        std::vector<int> d_TransposeRecvCnts;
+        std::vector<int> d_TransposeRecvDisps;
 
         std::vector<size_t> d_SlaveGlobalIDs;
         std::vector<size_t> d_RecvMasterGlobalIDs;
+        std::vector<size_t> d_MasterVerticesOwnerRanks;
         std::vector<double> d_MasterShapeFunctionsValues;
     };
 

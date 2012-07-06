@@ -58,8 +58,8 @@ void NodeToSegmentConstraintsOperator::reset(const boost::shared_ptr<OperatorPar
   std::vector<size_t> masterNodeIDs, masterNodeOwnerRanks;
   std::vector<int> flags;
 
-  dendroSearchOnMaster.projectOnBoundaryID(d_MasterBoundaryID, dofsPerNode, d_DOFmanager,
-      masterNodeOwnerRanks, masterNodeIDs, slaveVerticesProjLocalCoord, flags);
+//  dendroSearchOnMaster.projectOnBoundaryID(d_MasterBoundaryID, dofsPerNode, d_DOFmanager,
+//      masterNodeOwnerRanks, masterNodeIDs, slaveVerticesProjLocalCoord, flags);
 
   AMP_ASSERT( nSlaveVertices == flags.size() );
   AMP_ASSERT( nSlaveVertices == slaveNodeIDs.size() / dofsPerNode );
@@ -167,12 +167,19 @@ void NodeToSegmentConstraintsOperator::reset(const boost::shared_ptr<OperatorPar
   } // end for i
   d_RecvMasterGlobalIDs.resize(d_RecvDisps[npes-1]+d_RecvCnts[npes-1]);
   comm.allToAll((!(sendBuff.empty()) ? &(sendBuff[0]) : NULL), &(d_SendCnts[0]), &(d_SendDisps[0]),
-      (!(d_RecvMasterGlobalIDs.empty()) ? &(d_RecvMasterGlobalIDs[0]) : NULL), &(d_RecvCnts[0]), &(d_RecvCnts[0]), true);
+      (!(d_RecvMasterGlobalIDs.empty()) ? &(d_RecvMasterGlobalIDs[0]) : NULL), &(d_RecvCnts[0]), &(d_RecvDisps[0]), true);
 
+  for (size_t i = 0; i < npes; ++i) {
+    d_TransposeSendCnts[i] = (d_SendCnts[i] / 5) * 6;
+    d_TransposeSendDisps[i] = (d_SendDisps[i] / 5) * 6;
+    d_TransposeRecvCnts[i] = (d_RecvCnts[i] / 5) * 6;
+    d_TransposeRecvDisps[i] = (d_RecvDisps[i] / 5) * 6;
+  } // end for i
   std::swap_ranges(d_RecvCnts.begin(), d_RecvCnts.end(), d_SendCnts.begin());
   std::swap_ranges(d_RecvDisps.begin(), d_RecvDisps.end(), d_SendDisps.begin());
 
 }
+
 void NodeToSegmentConstraintsOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
     AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double b) {
 
@@ -192,7 +199,7 @@ void NodeToSegmentConstraintsOperator::apply(const AMP::LinearAlgebra::Vector::s
 
   std::vector<double> recvMasterValues(d_RecvDisps[npes-1]+d_RecvCnts[npes-1]);
   comm.allToAll((!(sendMasterValues.empty()) ? &(sendMasterValues[0]) : NULL), &(d_SendCnts[0]), &(d_SendDisps[0]),
-      (!(recvMasterValues.empty()) ? &(recvMasterValues[0]) : NULL), &(d_RecvCnts[0]), &(d_RecvCnts[0]), true);
+      (!(recvMasterValues.empty()) ? &(recvMasterValues[0]) : NULL), &(d_RecvCnts[0]), &(d_RecvDisps[0]), true);
 
   /** compute slave values */
   for (size_t i = 0; i < npes; ++i) {
@@ -208,6 +215,26 @@ void NodeToSegmentConstraintsOperator::apply(const AMP::LinearAlgebra::Vector::s
     } // end for j
   } // end for i
 
+}
+
+void NodeToSegmentConstraintsOperator::applyTranspose(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
+    AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a, const double b) {
+
+  /** send and receive the slave values */
+  AMP::AMP_MPI comm = u->getComm();
+  size_t npes = comm.getSize();
+
+/*
+
+  std::vector<double> sendSlaveValueAndShapeFunctionsValues(d_TransposeSendDisps[npes-1]+d_TransposeSendCnts[npes-1]);
+  for (size_t i = 0; i < npes; ++i) {
+    for (size_t j = 0; j < d_TransposeSendCnts[i]; j += 6) {
+      size_t k = d_TransposeSendDisps[i] + j;
+      sendSlaveValueAndShapeFunctionsValues[k] = static_cast<double>(d_RecvMasterGlobalIDs[k]);
+      u->getValueByGlobalID(&(d_SlaveGlobalIDs[k+1]), &(sendMasterValues[k+1]));
+    } // end for j
+  } // end for i
+  */
 }
 
   } // end namespace Operator

@@ -14,9 +14,11 @@ DendroSearch::DendroSearch(AMP::AMP_MPI comm, AMP::Mesh::Mesh::shared_ptr mesh)
     setupDendro();
   }
 
-void DendroSearch::projectOnBoundaryID(const int boundaryID,// std::vector<ProjectOnBoundaryStatus> & projectOnBoundaryStatuses) {
-    const unsigned int dofsPerNode, AMP::Discretization::DOFManager::shared_ptr dofManager,
-    std::vector<size_t> & nodeIDs, std::vector<size_t> & nodeOwnerRanks, std::vector<double> & localCoords, std::vector<int> & flags) {
+//void DendroSearch::projectOnBoundaryID(const int boundaryID,// std::vector<ProjectOnBoundaryStatus> & projectOnBoundaryStatuses) {
+//    const unsigned int dofsPerNode, AMP::Discretization::DOFManager::shared_ptr dofManager,
+//    std::vector<size_t> & nodeIDs, std::vector<size_t> & nodeOwnerRanks, std::vector<double> & localCoords, std::vector<int> & flags) {
+void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
+    std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags) {
 
   double projectBeginTime, projectStep1Time, projectStep2Time;
   if(d_verbose) {
@@ -24,74 +26,42 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID,// std::vector<Proje
     projectBeginTime = MPI_Wtime();
   }
 
-  // point local ID on proc that owns it 
-  // + 4 nodes per face times number of dofs per node 
-  // + 2 local coordinates on face 
-  // + flag search status
-  const unsigned int nDataPerFoundPt = 1 + (4 * dofsPerNode) + 2 + 1;
-  for(unsigned int i = 0; i < d_npes; ++i) {
-    d_sendCnts[i] *= nDataPerFoundPt;
-    d_recvCnts[i] *= nDataPerFoundPt;
-    d_sendDisps[i] *= nDataPerFoundPt;
-    d_recvDisps[i] *= nDataPerFoundPt;
-  } // end for i
-
-  std::vector<double> sendResults(d_sendDisps[d_npes - 1] + d_sendCnts[d_npes - 1]);
+  std::vector<ProjectOnBoundaryData> sendData(d_sendDisps[d_npes-1] + d_sendCnts[d_npes-1]);
 
   std::vector<int> tmpSendCnts(d_npes, 0);
 
-  //Performance Improvement: We can send MeshElementIDs for the nodes instead
-  //of GlobalDOFIds. 
   for (unsigned int i = 0; i < d_foundPts.size(); i += 6) {
-    unsigned int ptProcId = static_cast<unsigned int>(d_foundPts[i + 5]);
-    AMP::Mesh::MeshElement* amp_element = &(d_localElemArr[static_cast<unsigned int>(d_foundPts[i])]);
-    sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = d_foundPts[i + 4];
-    ++(tmpSendCnts[ptProcId]);
-    if (amp_element->isOnBoundary(boundaryID)) { // point was found and element is on boundary
-      std::vector<AMP::Mesh::MeshElement> amp_element_faces = amp_element->getElements(AMP::Mesh::Face);
-      bool debugCheck = false;
-      AMP_ASSERT(amp_element_faces.size() == 6);
-      for (unsigned int f = 0; f < 6; ++f) {
-        if (amp_element_faces[f].isOnBoundary(boundaryID)) {
-          std::vector<AMP::Mesh::MeshElement> amp_vertices = amp_element_faces[f].getElements(AMP::Mesh::Vertex);
-          AMP_ASSERT(amp_vertices.size() == 4);
-          for (unsigned int k = 0; k < 4; ++k) {
-            std::vector<size_t> globalID;
-            dofManager->getDOFs(amp_vertices[k].globalID(), globalID);
-            AMP_ASSERT(globalID.size() == dofsPerNode);
-            for (unsigned int l = 0; l < dofsPerNode; ++l) {
-              sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = static_cast<double>(globalID[l]);
-              ++(tmpSendCnts[ptProcId]);
-            } // end for l
-          } // end for k
-          double localCoordOnFace[2];
-          hex8_element_t::project_on_face(f, &(d_foundPts[i+1]), localCoordOnFace);
-          for (unsigned int d = 0; d < 2; ++d) {
-            sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = localCoordOnFace[d];
-            ++(tmpSendCnts[ptProcId]);
-          } // end for d
-          sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = static_cast<double>(FoundOnBoundary);
-          ++(tmpSendCnts[ptProcId]);
-          debugCheck = true;
+    ProjectOnBoundaryData tmpData;
+    const double * pointLocalCoords_ptr = &(d_foundPts[i+1]);
+    const size_t pointLocalID = static_cast<size_t>(d_foundPts[i+4]);
+    const size_t pointOwnerRank = static_cast<size_t>(d_foundPts[i+5]);
+    const size_t elementLocalID = static_cast<size_t>(d_foundPts[i]);
+    tmpData.d_PointLocalID = pointLocalID;
+    AMP::Mesh::MeshElement* meshElement = &(d_localElemArr[elementLocalID]);
+    if (meshElement->isOnBoundary(boundaryID)) { // point was found and element is on boundary
+      std::vector<AMP::Mesh::MeshElement> meshElementFaces = meshElement->getElements(AMP::Mesh::Face);
+      AMP_ASSERT( meshElementFaces.size() == 6 );
+      for (size_t f = 0; f < 6; ++f) {
+        if (meshElementFaces[f].isOnBoundary(boundaryID)) {
+          tmpData.d_SearchStatus = FoundOnBoundary;
+          std::vector<AMP::Mesh::MeshElement> faceVertices = meshElementFaces[f].getElements(AMP::Mesh::Vertex);
+          AMP_ASSERT( faceVertices.size() == 4 );
+          for (size_t v = 0; v < 4; ++v) {
+            tmpData.d_FaceVerticesIDs[v] = faceVertices[v].globalID();
+          } // end for v
+//          hex8_element_t::project_on_face(f, pointLocalCoords_ptr, &(tmpData.d_ProjectionLocalCoordsOnFace[0]));
+          d_volume_elements[elementLocalID].project_on_face(f, pointLocalCoords_ptr, &(tmpData.d_ProjectionLocalCoordsOnFace[0]), &(tmpData.d_ShiftGlobalCoords[0]));
+
           break; // we assume only one face will be on the boundary
         } // end if
       } // end for f
-      AMP_ASSERT(debugCheck);
     } else { // point was found but element is not on boundary
-      for (unsigned int k = 0; k < 4; ++k) {
-        for (unsigned int l = 0; l < dofsPerNode; ++l) {
-          sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = static_cast<double>(-1);
-          ++(tmpSendCnts[ptProcId]);
-        } // end for l
-      } // end for k
-      for (unsigned int d = 0; d < 2; ++d) {
-        sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = 0.0;
-        ++(tmpSendCnts[ptProcId]);
-      } // end for d
-      sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = static_cast<double>(FoundNotOnBoundary);
-      ++(tmpSendCnts[ptProcId]);
+      tmpData.d_SearchStatus = FoundNotOnBoundary;
     } // end if
+    sendData[d_sendDisps[pointOwnerRank] + tmpSendCnts[pointOwnerRank]] = tmpData;
+    ++tmpSendCnts[pointOwnerRank];
   } //end i
+  AMP_ASSERT( std::equal(tmpSendCnts.begin(), tmpSendCnts.end(), d_sendCnts.begin()) );
   tmpSendCnts.clear();
 
   if(d_verbose) {
@@ -102,47 +72,44 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID,// std::vector<Proje
     }
   }
 
-  std::vector<double> recvResults(d_recvDisps[d_npes - 1] + d_recvCnts[d_npes - 1]);
+  std::vector<ProjectOnBoundaryData> recvData(d_recvDisps[d_npes-1] + d_recvCnts[d_npes-1]);
 
-  d_globalComm.allToAll((!(sendResults.empty()) ? &(sendResults[0]) : NULL), &(d_sendCnts[0]), &(d_sendDisps[0]),
-      (!(recvResults.empty()) ? &(recvResults[0]) : NULL), &(d_recvCnts[0]), &(d_recvDisps[0]), true);
-  sendResults.clear();
+  d_globalComm.allToAll((!(sendData.empty()) ? &(sendData[0]) : NULL), &(d_sendCnts[0]), &(d_sendDisps[0]),
+      (!(recvData.empty()) ? &(recvData[0]) : NULL), &(d_recvCnts[0]), &(d_recvDisps[0]), true);
+  sendData.clear();
 
-  nodeOwnerRanks.resize(d_numLocalPts);
-  std::fill(nodeOwnerRanks.begin(), nodeOwnerRanks.end(), d_npes);
+  faceVerticesGlobalIDs.resize(4*d_numLocalPts);
+  std::fill(faceVerticesGlobalIDs.begin(), faceVerticesGlobalIDs.end(), AMP::Mesh::MeshElementID());
 
-  nodeIDs.resize(4*dofsPerNode*d_numLocalPts);
-  std::fill(nodeIDs.begin(), nodeIDs.end(), std::numeric_limits<size_t>::max());
+  projectionLocalCoordsOnFace.resize(2*d_numLocalPts);
+  std::fill(projectionLocalCoordsOnFace.begin(), projectionLocalCoordsOnFace.end(), 0.0);
 
-  localCoords.resize(2*d_numLocalPts);
-  std::fill(localCoords.begin(), localCoords.end(), 0.0);
+  shiftGlobalCoords.resize(3*d_numLocalPts);
+  std::fill(shiftGlobalCoords.begin(), shiftGlobalCoords.end(), 0.0);
 
   flags.resize(d_numLocalPts);
   std::fill(flags.begin(), flags.end(), NotFound);
 
-  for(int i = 0; i < d_npes; ++i) {
-    for(int j = 0; j < d_recvCnts[i]; j += nDataPerFoundPt) {
-      unsigned int stIdx = d_recvDisps[i] + j;
-      unsigned int locId = static_cast<unsigned int>(recvResults[stIdx]);
-
-      for (unsigned int n = 0, k = 0; n < 4; ++n) {
-        for (unsigned int d = 0; d < dofsPerNode; ++d, ++k) {
-          nodeIDs[(4*dofsPerNode*locId) + k] = static_cast<size_t>(recvResults[stIdx + 1 + k]);
+  for (size_t i = 0; i < d_npes; ++i) {
+    for (size_t j = 0; j < d_recvCnts[i]; ++j) {
+      const ProjectOnBoundaryData tmpData = recvData[d_recvDisps[i] + j];
+      const size_t pointLocalID = tmpData.d_PointLocalID;
+      flags[pointLocalID] = tmpData.d_SearchStatus;
+      if (flags[pointLocalID] == FoundOnBoundary) {
+        for (size_t d = 0; d < 2; ++d) {
+          projectionLocalCoordsOnFace[2*pointLocalID+d] = tmpData.d_ProjectionLocalCoordsOnFace[d];
         } // end for d
-      } // end for n  
-      for (unsigned int d = 0; d < 2; ++d) {
-        localCoords[(2*locId) +d] = recvResults[stIdx + 1 + (4*dofsPerNode) + d];
-      } // end for d
-      flags[locId] = static_cast<int>(recvResults[stIdx + 3 + (4*dofsPerNode)]);
-    }//end j
-  }//end i
-
-  for(unsigned int i = 0; i < d_npes; ++i) {
-    d_sendCnts[i] /= nDataPerFoundPt;
-    d_recvCnts[i] /= nDataPerFoundPt;
-    d_sendDisps[i] /= nDataPerFoundPt;
-    d_recvDisps[i] /= nDataPerFoundPt;
+        for (size_t d = 0; d < 3; ++d) {
+          shiftGlobalCoords[2*pointLocalID+d] = tmpData.d_ShiftGlobalCoords[d];
+        } // end for d
+        for (size_t v = 0; v < 4; ++v) {
+          faceVerticesGlobalIDs[4*pointLocalID+v] = tmpData.d_FaceVerticesIDs[v]; 
+        } // end for v 
+      } // end if
+    } // end for j
   } // end for i
+
+recvData.clear();
 
   if(d_verbose) {
     d_globalComm.barrier();

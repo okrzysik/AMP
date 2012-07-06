@@ -31,7 +31,7 @@
 
 class DendroSearch {
   public:
-    struct ProjectOnBoundaryStatus; 
+    struct ProjectOnBoundaryData; 
 
     enum SearchStatus { NotFound = 0, Found, FoundOnBoundary, FoundNotOnBoundary };
 
@@ -45,9 +45,12 @@ class DendroSearch {
     void interpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
         std::vector<double> & results, std::vector<bool> & foundPt);
 
-    void projectOnBoundaryID(const int boundaryID, //std::vector<ProjectOnBoundaryStatus> & projectOnBoundaryStatuses);
-        const unsigned int dofsPerNode, AMP::Discretization::DOFManager::shared_ptr dofManager,
-        std::vector<size_t> & nodeIDs, std::vector<size_t> & nodeOwnerRanks, std::vector<double> & localCoords, std::vector<int> & flags);
+//    void projectOnBoundaryID(const int boundaryID, //std::vector<ProjectOnBoundaryStatus> & projectOnBoundaryStatuses);
+//        const unsigned int dofsPerNode, AMP::Discretization::DOFManager::shared_ptr dofManager,
+//        std::vector<size_t> & nodeIDs, std::vector<size_t> & nodeOwnerRanks, std::vector<double> & localCoords, std::vector<int> & flags);
+
+    void projectOnBoundaryID(const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
+        std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags);
 
   private:
     AMP::AMP_MPI d_globalComm;
@@ -79,18 +82,12 @@ class DendroSearch {
     void createLocalMeshElementArray();
 };
 
-struct DendroSearch::ProjectOnBoundaryStatus {
-  ProjectOnBoundaryStatus(SearchStatus searchStatus, std::vector<AMP::Mesh::MeshElementID> faceVerticesIDs = std::vector<AMP::Mesh::MeshElementID>(),
-      std::vector<double> projectionLocalCoordOnFace = std::vector<double>(), std::vector<double> shiftGlobalCoordinates = std::vector<double>())
-      : d_SearchStatus(searchStatus),
-        d_FaceVerticesIDs(faceVerticesIDs),
-        d_ProjectionLocalCoordOnFace(projectionLocalCoordOnFace),
-        d_ShiftGlobalCoordinates(shiftGlobalCoordinates) { }
-
+struct DendroSearch::ProjectOnBoundaryData {
+  size_t d_PointLocalID;
   SearchStatus d_SearchStatus;
-  std::vector<AMP::Mesh::MeshElementID> d_FaceVerticesIDs;
-  std::vector<double> d_ProjectionLocalCoordOnFace; 
-  std::vector<double> d_ShiftGlobalCoordinates;
+  AMP::Mesh::MeshElementID d_FaceVerticesIDs[4];
+  double d_ProjectionLocalCoordsOnFace[2]; 
+  double d_ShiftGlobalCoords[3];
 
 };
 

@@ -22,6 +22,7 @@ public:
   void map_global_to_local(double const *global_coordinates, double *local_coordinates);
   void map_local_to_global(double const *local_coordinates, double *global_coordinates);
   bool contains_point(double const *coordinates, bool coordinates_are_local = false, double tolerance = 1.0e-12);
+  void project_on_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face, double *shift_global_coordinates);
 
   static void project_on_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face);
   static void get_basis_functions_values(double const *x, double *basis_functions_values);
