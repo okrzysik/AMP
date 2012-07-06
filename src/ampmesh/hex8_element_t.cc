@@ -40,11 +40,11 @@ double const * hex8_element_t::get_support_points() const {
   return &(support_points[0]);
 } 
 
-unsigned int const * hex8_element_t::get_face(unsigned int i) const { 
+unsigned int const * hex8_element_t::get_face(unsigned int i) { 
   assert(i < 6);
   return &(faces[4*i]);
 } 
-unsigned int const * hex8_element_t::get_faces() const { 
+unsigned int const * hex8_element_t::get_faces() { 
   return &(faces[0]);
 } 
 
@@ -330,7 +330,7 @@ assert(fabs(
   abort(); 
 }
 
-void get_basis_functions_values(double const * const x, double * const basis_functions_values) {
+void hex8_element_t::get_basis_functions_values(double const *x, double *basis_functions_values) {
   basis_functions_values[0] = 0.125*(1.0-x[0])*(1.0-x[1])*(1.0-x[2]);
   basis_functions_values[1] = 0.125*(1.0+x[0])*(1.0-x[1])*(1.0-x[2]);
   basis_functions_values[2] = 0.125*(1.0+x[0])*(1.0+x[1])*(1.0-x[2]);
@@ -341,7 +341,7 @@ void get_basis_functions_values(double const * const x, double * const basis_fun
   basis_functions_values[7] = 0.125*(1.0-x[0])*(1.0+x[1])*(1.0+x[2]);
 }
 
-void get_basis_functions_derivatives(double const * const x, double * const basis_functions_derivatives) {
+void hex8_element_t::get_basis_functions_derivatives(double const *x, double *basis_functions_derivatives) {
   basis_functions_derivatives[ 0] = 0.125*(-1.0)*(1.0-x[1])*(1.0-x[2]);
   basis_functions_derivatives[ 1] = 0.125*(+1.0)*(1.0-x[1])*(1.0-x[2]);
   basis_functions_derivatives[ 2] = 0.125*(+1.0)*(1.0+x[1])*(1.0-x[2]);
@@ -368,4 +368,37 @@ void get_basis_functions_derivatives(double const * const x, double * const basi
   basis_functions_derivatives[21] = 0.125*(1.0+x[0])*(1.0-x[1])*(+1.0);
   basis_functions_derivatives[22] = 0.125*(1.0+x[0])*(1.0+x[1])*(+1.0);
   basis_functions_derivatives[23] = 0.125*(1.0-x[0])*(1.0+x[1])*(+1.0);
+}
+
+void hex8_element_t::project_on_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face) {
+  assert(f < 6);
+  if (f == 0) {
+    local_coordinates_on_face[0] = local_coordinates[1];
+    local_coordinates_on_face[1] = local_coordinates[0];
+  } else if (f == 1) {
+    local_coordinates_on_face[0] = local_coordinates[0];
+    local_coordinates_on_face[1] = local_coordinates[2];
+  } else if (f == 2) {
+    local_coordinates_on_face[0] = local_coordinates[1];
+    local_coordinates_on_face[1] = local_coordinates[2];
+  } else if (f == 3) {
+    local_coordinates_on_face[0] = - local_coordinates[0];
+    local_coordinates_on_face[1] = local_coordinates[2];
+  } else if (f == 4) {
+    local_coordinates_on_face[0] = - local_coordinates[1];
+    local_coordinates_on_face[1] = local_coordinates[2];
+  } else if (f == 5) {
+    local_coordinates_on_face[0] = local_coordinates[0];
+    local_coordinates_on_face[1] = local_coordinates[1];
+  } else {
+    std::cerr<<"comment en es-tu arrive la tres cher?"<<std::endl;
+    assert(false);
+  } // end if
+}
+
+void hex8_element_t::get_basis_functions_values_on_face(double const * x, double * basis_functions_values) {
+  basis_functions_values[0] = 0.25*(1.0-x[0])*(1.0-x[1]);
+  basis_functions_values[1] = 0.25*(1.0+x[0])*(1.0-x[1]);
+  basis_functions_values[2] = 0.25*(1.0+x[0])*(1.0+x[1]);
+  basis_functions_values[3] = 0.25*(1.0-x[0])*(1.0+x[1]);
 }

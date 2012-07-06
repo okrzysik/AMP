@@ -1,5 +1,4 @@
 
-
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
@@ -123,7 +122,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   DendroSearch dendroSearch(globalComm, meshAdapter);
   std::vector<double> interpolatedData; 
   std::vector<bool> interpolationWasDone;
-  dendroSearch.interpolate(dummyVector, DOFsPerNode, pts, interpolatedData, interpolationWasDone);
+  dendroSearch.searchAndInterpolate(dummyVector, DOFsPerNode, pts, interpolatedData, interpolationWasDone);
   AMP_ASSERT(interpolatedData.size() == (DOFsPerNode*numLocalPts));
   AMP_ASSERT(interpolationWasDone.size() == numLocalPts);
 
@@ -161,6 +160,23 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   }
 
   AMP_ASSERT(globalMaxError < 1.0e-12);
+
+  std::vector<size_t> nodeOwnerRanks, nodeIDs;
+  std::vector<double> localCoords;
+  std::vector<int> flags;
+  dendroSearch.projectOnBoundaryID(4, DOFsPerNode, DOFs, nodeOwnerRanks, nodeIDs, localCoords, flags);
+  unsigned int localPtsNotFound = std::count(flags.begin(), flags.end(), DendroSearch::NotFound);
+  unsigned int localPtsFoundNotOnBoundary = std::count(flags.begin(), flags.end(), DendroSearch::FoundNotOnBoundary);
+  unsigned int localPtsFoundOnBoundary = std::count(flags.begin(), flags.end(), DendroSearch::FoundOnBoundary);
+  unsigned int globalPtsNotFound = globalComm.sumReduce(localPtsNotFound);
+  unsigned int globalPtsFoundNotOnBoundary = globalComm.sumReduce(localPtsFoundNotOnBoundary);
+  unsigned int globalPtsFoundOnBoundary = globalComm.sumReduce(localPtsFoundOnBoundary);
+  if(!rank) {
+    std::cout<<"Global number of points not found is "<<globalPtsNotFound<<std::endl;
+    std::cout<<"Global number of points found not on boundary is "<<globalPtsFoundNotOnBoundary<<std::endl;
+    std::cout<<"Global number of points found on boundary is "<<globalPtsFoundOnBoundary<<std::endl;
+    std::cout<<"Total number of points is "<<globalPtsNotFound+globalPtsFoundNotOnBoundary+globalPtsFoundOnBoundary<<std::endl;
+  }
 
   ut->passes(exeName);
 }

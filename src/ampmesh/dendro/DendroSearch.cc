@@ -1,6 +1,8 @@
 
 #include "ampmesh/dendro/DendroSearch.h"
 
+#include <numeric>
+
 DendroSearch::DendroSearch(AMP::AMP_MPI comm, AMP::Mesh::Mesh::shared_ptr mesh) 
   : d_globalComm(comm), d_meshAdapter(mesh) {
     d_verbose = true;
@@ -12,7 +14,144 @@ DendroSearch::DendroSearch(AMP::AMP_MPI comm, AMP::Mesh::Mesh::shared_ptr mesh)
     setupDendro();
   }
 
-void DendroSearch::interpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
+void DendroSearch::projectOnBoundaryID(const int boundaryID,// std::vector<ProjectOnBoundaryStatus> & projectOnBoundaryStatuses) {
+    const unsigned int dofsPerNode, AMP::Discretization::DOFManager::shared_ptr dofManager,
+    std::vector<size_t> & nodeIDs, std::vector<size_t> & nodeOwnerRanks, std::vector<double> & localCoords, std::vector<int> & flags) {
+
+  double projectBeginTime, projectStep1Time, projectStep2Time;
+  if(d_verbose) {
+    d_globalComm.barrier();
+    projectBeginTime = MPI_Wtime();
+  }
+
+  // point local ID on proc that owns it 
+  // + 4 nodes per face times number of dofs per node 
+  // + 2 local coordinates on face 
+  // + flag search status
+  const unsigned int nDataPerFoundPt = 1 + (4 * dofsPerNode) + 2 + 1;
+  for(unsigned int i = 0; i < d_npes; ++i) {
+    d_sendCnts[i] *= nDataPerFoundPt;
+    d_recvCnts[i] *= nDataPerFoundPt;
+    d_sendDisps[i] *= nDataPerFoundPt;
+    d_recvDisps[i] *= nDataPerFoundPt;
+  } // end for i
+
+  std::vector<double> sendResults(d_sendDisps[d_npes - 1] + d_sendCnts[d_npes - 1]);
+
+  std::vector<int> tmpSendCnts(d_npes, 0);
+
+  for (unsigned int i = 0; i < d_foundPts.size(); i += 6) {
+    unsigned int ptProcId = static_cast<unsigned int>(d_foundPts[i + 5]);
+    AMP::Mesh::MeshElement* amp_element = &(d_localElemArr[static_cast<unsigned int>(d_foundPts[i])]);
+    sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = d_foundPts[i + 4];
+    ++(tmpSendCnts[ptProcId]);
+    if (amp_element->isOnBoundary(boundaryID)) { // point was found and element is on boundary
+      std::vector<AMP::Mesh::MeshElement> amp_element_faces = amp_element->getElements(AMP::Mesh::Face);
+      bool debugCheck = false;
+      AMP_ASSERT(amp_element_faces.size() == 6);
+      for (unsigned int f = 0; f < 6; ++f) {
+        if (amp_element_faces[f].isOnBoundary(boundaryID)) {
+          std::vector<AMP::Mesh::MeshElement> amp_vertices = amp_element_faces[f].getElements(AMP::Mesh::Vertex);
+          AMP_ASSERT(amp_vertices.size() == 4);
+          for (unsigned int k = 0; k < 4; ++k) {
+            std::vector<size_t> globalID;
+            dofManager->getDOFs(amp_vertices[k].globalID(), globalID);
+            AMP_ASSERT(globalID.size() == dofsPerNode);
+            for (unsigned int l = 0; l < dofsPerNode; ++l) {
+              sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = static_cast<double>(globalID[l]);
+              ++(tmpSendCnts[ptProcId]);
+            } // end for l
+          } // end for k
+          double localCoordOnFace[2];
+          hex8_element_t::project_on_face(f, &(d_foundPts[i+1]), localCoordOnFace);
+          for (unsigned int d = 0; d < 2; ++d) {
+            sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = localCoordOnFace[d];
+            ++(tmpSendCnts[ptProcId]);
+          } // end for d
+          sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = static_cast<double>(FoundOnBoundary);
+          ++(tmpSendCnts[ptProcId]);
+          debugCheck = true;
+          break; // we assume only one face will be on the boundary
+        } // end if
+      } // end for f
+      AMP_ASSERT(debugCheck);
+    } else { // point was found but element is not on boundary
+      for (unsigned int k = 0; k < 4; ++k) {
+        for (unsigned int l = 0; l < dofsPerNode; ++l) {
+          sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = static_cast<double>(-1);
+          ++(tmpSendCnts[ptProcId]);
+        } // end for l
+      } // end for k
+      for (unsigned int d = 0; d < 2; ++d) {
+        sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = 0.0;
+        ++(tmpSendCnts[ptProcId]);
+      } // end for d
+      sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = static_cast<double>(FoundNotOnBoundary);
+      ++(tmpSendCnts[ptProcId]);
+    } // end if
+  } //end i
+  tmpSendCnts.clear();
+
+  if(d_verbose) {
+    d_globalComm.barrier();
+    projectStep1Time = MPI_Wtime();
+    if(!d_rank) {
+      std::cout<<"Time for step-1 of project on boundary: "<<(projectStep1Time - projectBeginTime)<<" seconds."<<std::endl;
+    }
+  }
+
+  std::vector<double> recvResults(d_recvDisps[d_npes - 1] + d_recvCnts[d_npes - 1]);
+
+  d_globalComm.allToAll((!(sendResults.empty()) ? &(sendResults[0]) : NULL), &(d_sendCnts[0]), &(d_sendDisps[0]),
+      (!(recvResults.empty()) ? &(recvResults[0]) : NULL), &(d_recvCnts[0]), &(d_recvDisps[0]), true);
+  sendResults.clear();
+
+  nodeOwnerRanks.resize(d_numLocalPts);
+  std::fill(nodeOwnerRanks.begin(), nodeOwnerRanks.end(), d_npes);
+
+  nodeIDs.resize(4*dofsPerNode*d_numLocalPts);
+  std::fill(nodeIDs.begin(), nodeIDs.end(), std::numeric_limits<size_t>::max());
+
+  localCoords.resize(2*d_numLocalPts);
+  std::fill(localCoords.begin(), localCoords.end(), 0.0);
+
+  flags.resize(d_numLocalPts);
+  std::fill(flags.begin(), flags.end(), NotFound);
+
+  for(int i = 0; i < d_npes; ++i) {
+    for(int j = 0; j < d_recvCnts[i]; j += nDataPerFoundPt) {
+      unsigned int stIdx = d_recvDisps[i] + j;
+      unsigned int locId = static_cast<unsigned int>(recvResults[stIdx]);
+
+      for (unsigned int n = 0, k = 0; n < 4; ++n) {
+        for (unsigned int d = 0; d < dofsPerNode; ++d, ++k) {
+          nodeIDs[(4*dofsPerNode*locId) + k] = static_cast<size_t>(recvResults[stIdx + 1 + k]);
+        } // end for d
+      } // end for n  
+      for (unsigned int d = 0; d < 2; ++d) {
+        localCoords[(2*locId) +d] = recvResults[stIdx + 1 + (4*dofsPerNode) + d];
+      } // end for d
+      flags[locId] = static_cast<int>(recvResults[stIdx + 3 + (4*dofsPerNode)]);
+    }//end j
+  }//end i
+
+  for(unsigned int i = 0; i < d_npes; ++i) {
+    d_sendCnts[i] /= nDataPerFoundPt;
+    d_recvCnts[i] /= nDataPerFoundPt;
+    d_sendDisps[i] /= nDataPerFoundPt;
+    d_recvDisps[i] /= nDataPerFoundPt;
+  } // end for i
+
+  if(d_verbose) {
+    d_globalComm.barrier();
+    projectStep2Time = MPI_Wtime();
+    if(!d_rank) {
+      std::cout<<"Time for step-2 of project on boundary: "<<(projectStep2Time - projectStep1Time)<<" seconds."<<std::endl;
+    }
+  }
+}
+
+void DendroSearch::searchAndInterpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
     const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt) {
   search(pts);
   interpolate(vectorField, dofsPerNode, results, foundPt); 
@@ -596,8 +735,8 @@ void DendroSearch::search(const std::vector<double> & pts) {
   }
 
   unsigned int n_volume_elements = d_localElemArr.size();
-  std::vector<hex8_element_t> volume_elements;
-  volume_elements.reserve(n_volume_elements);
+  d_volume_elements.clear();
+  d_volume_elements.reserve(n_volume_elements);
   for (unsigned int i = 0; i < n_volume_elements; ++i) {
     AMP::Mesh::MeshElement* amp_element = &(d_localElemArr[i]);
     std::vector<AMP::Mesh::MeshElement> amp_vector_support_points = amp_element->getElements(AMP::Mesh::Vertex);
@@ -609,7 +748,7 @@ void DendroSearch::search(const std::vector<double> & pts) {
       support_points[3*j+1] = point_coord[1];
       support_points[3*j+2] = point_coord[2];
     } // end j
-    volume_elements.push_back(hex8_element_t(&(support_points[0])));
+    d_volume_elements.push_back(hex8_element_t(&(support_points[0])));
   } // end for i
 
   std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);
@@ -625,10 +764,10 @@ void DendroSearch::search(const std::vector<double> & pts) {
     unsigned int eId = static_cast<unsigned int>(recvPtsList[6*i]);
     unsigned int procId = static_cast<unsigned int>(recvPtsList[6*i+5]);
 
-    if (volume_elements[eId].within_bounding_box(tmpPtGlobalCoordPtr)) {
-      if (volume_elements[eId].within_bounding_polyhedron(tmpPtGlobalCoordPtr)) {
-        volume_elements[eId].map_global_to_local(tmpPtGlobalCoordPtr, &(tmpPtLocalCoord[0]));
-        if (volume_elements[eId].contains_point(&(tmpPtLocalCoord[0]), coordinates_are_local)) {
+    if (d_volume_elements[eId].within_bounding_box(tmpPtGlobalCoordPtr)) {
+      if (d_volume_elements[eId].within_bounding_polyhedron(tmpPtGlobalCoordPtr)) {
+        d_volume_elements[eId].map_global_to_local(tmpPtGlobalCoordPtr, &(tmpPtLocalCoord[0]));
+        if (d_volume_elements[eId].contains_point(&(tmpPtLocalCoord[0]), coordinates_are_local)) {
           d_foundPts.push_back(recvPtsList[6*i]);
           for (unsigned int d = 0; d < 3; ++d) { d_foundPts.push_back(tmpPtLocalCoord[d]); }
           d_foundPts.push_back(recvPtsList[6*i+4]);
@@ -685,7 +824,7 @@ void DendroSearch::interpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorFiel
   for(int i = 0; i < d_foundPts.size(); i += 6) {
     AMP::Mesh::MeshElement* amp_element = &(d_localElemArr[static_cast<unsigned int>(d_foundPts[i])]);
     std::vector<AMP::Mesh::MeshElement> amp_vector_support_points = amp_element->getElements(AMP::Mesh::Vertex);
-    get_basis_functions_values(&(d_foundPts[i + 1]), &(basis_functions_values[0]));
+    hex8_element_t::get_basis_functions_values(&(d_foundPts[i + 1]), &(basis_functions_values[0]));
 
     std::vector<double> value(dofsPerNode, 0.0);
     for (unsigned int j = 0; j < 8; ++j) {
@@ -729,12 +868,12 @@ void DendroSearch::interpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorFiel
 
   foundPt.resize(d_numLocalPts);
   for (unsigned int i = 0; i < foundPt.size(); ++i) {
-    foundPt[i] = false;
+    foundPt[i] = static_cast<bool>(NotFound);
   } // end for i
 
   for(size_t i = 0; i < recvResults.size(); i += (dofsPerNode + 1)) {
     unsigned int locId = static_cast<unsigned int>(recvResults[i]);
-    foundPt[locId] = true;
+    foundPt[locId] = static_cast<bool>(Found);
     for(int d = 0; d < dofsPerNode; ++d) {
       results[(locId*dofsPerNode) + d] = recvResults[i + d + 1];
     }//end d
