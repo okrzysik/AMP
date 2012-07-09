@@ -366,24 +366,31 @@ September 1998");
 				for (size_t j=2; j<5; j++)
 				{
 					size_t jj = j-2;
-					V = V + a[i][j]*pow(P,i)*pow((250-H),jj);
+					V = V + a[i][jj]*pow(P,i)*pow((250-H),j);
 				}
 			}
 			double ExpSum = 0;
 			for (size_t i=0; i<3; i++)
+			{
 				for (size_t j=0; j<5; j++)
+			  {
 					ExpSum = ExpSum + b[i][j]*pow(P,i)*pow(H,j); 
+				}
+			}
 			V = V + exp(ExpSum);
 		}
 		else if (InLiquidRegion2 or InCriticalRegion) // liquid region 2 or critical region
 		{
 			double ExpSum = 0;
 			for (size_t i=0; i<3; i++)
+			{
 				for (size_t j=0; j<5; j++)
+			  {
 					ExpSum = ExpSum + b[i][j]*pow(P,i)*pow(H,j); 
+				}
+			}
 			V = V + exp(ExpSum);
 		}
-
 		// convert result to SI units
 		V = V*6.24279605761446e-2; // [ft3/lbm] to [m3/kg]
 
