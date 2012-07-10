@@ -202,6 +202,7 @@ September 1998");
 		static const double Newton_atol = 1.0e-7; // absolute tolerance for Newton solve
 		static const double Newton_rtol = 1.0e-7; // relative tolerance for Newton solve
 		static const unsigned int Newton_maxIter = 1000; // maximum number of iterations for Newton solve
+                static const double machinePrecision = 1.0e-15; // machine precision; used in perturbation for numerical Jacobian
 	};
 
 //=================== Functions =====================================================
@@ -529,7 +530,8 @@ September 1998");
 		bool converged = false;
 		for (unsigned int iter=1; iter<=Newton_maxIter; ++iter){
 			x_old = x_new;
-			double perturbation = 1.0e-6;
+                        double b_perturb = sqrt(machinePrecision);
+			double perturbation = (1.0+x_new)*b_perturb;
 			// numerical Jacobian with forward perturbation
 			double J = (Residual(x_old+perturbation,param1,param2) - Residual(x_old,param1,param2))/perturbation;
 			double dx = -1.0*Residual(x_old,param1,param2)/J;
