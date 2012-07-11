@@ -141,12 +141,13 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
 /************************************************************
 * Function to register a mesh with silo                     *
 ************************************************************/
-void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, std::string path )
+void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::string path )
 { 
     if ( d_dim == -1 )
         d_dim = mesh->getDim();
     else
         AMP_INSIST(d_dim==mesh->getDim(),"All meshes must have the same number of physical dimensions");
+    AMP_INSIST(level>=0&&level<=3,"Invalid value for level");
     boost::shared_ptr<AMP::Mesh::MultiMesh> multimesh = boost::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
     if ( multimesh.get()==NULL ) {
         // We are dealing with a single mesh
@@ -161,24 +162,44 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, std::string path )
         data.meshName = "rank_" + rank;
         data.path = path + mesh->getName() + "_/";
         d_baseMeshes.insert( std::pair<AMP::Mesh::MeshID,siloBaseMeshData>(mesh->meshID(),data) );
-        siloMultiMeshData data2;
-        data2.id = mesh->meshID();
-        data2.mesh = mesh;
-        data2.name = path + mesh->getName();
-        data.ownerRank = mesh->getComm().bcast(d_comm.getRank(),0);
-        d_multiMeshes.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(mesh->meshID(),data2) );
+        // Create and register a multimesh for the current mesh
+        if ( level>0 ) {
+            siloMultiMeshData data2;
+            data2.id = mesh->meshID();
+            data2.mesh = mesh;
+            data2.name = path + mesh->getName();
+            data.ownerRank = mesh->getComm().bcast(d_comm.getRank(),0);
+            d_multiMeshes.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(data2.id,data2) );
+        }
+        // Create and register a multimesh for the rank
+        if ( level==3 ) {
+            // Create a unique id for each rank
+            AMP::Mesh::uint64 tmp_id = mesh->meshID().getData();
+            AMP::Mesh::uint64 root2 = d_comm.getRank()+1;
+            tmp_id = (root2<<48) + tmp_id;
+            siloMultiMeshData data2;
+            data2.id = AMP::Mesh::MeshID(tmp_id);
+            data2.mesh = mesh;
+            data2.name = path + mesh->getName() + "_/rank_" + rank;
+            data.ownerRank = d_comm.getRank();
+            d_multiMeshes.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(data2.id,data2) );
+        }
     } else {
         // We are dealining with a multimesh, register the current mesh and sub meshes
+        int level2 = level;
+        if ( level == 1 ) { level2 = 0; }
         std::string new_path = path + mesh->getName() + "_/";
         std::vector<AMP::Mesh::Mesh::shared_ptr> submeshes = multimesh->getMeshes();
         for (size_t i=0; i<submeshes.size(); i++)
-            registerMesh( submeshes[i], new_path );
-        siloMultiMeshData data;
-        data.id = mesh->meshID();
-        data.mesh = mesh;
-        data.name = mesh->getName();
-        data.ownerRank = mesh->getComm().bcast(d_comm.getRank(),0);
-        d_multiMeshes.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(mesh->meshID(),data) );
+            registerMesh( submeshes[i], level2, new_path );
+        if ( level > 0 ) {
+            siloMultiMeshData data;
+            data.id = mesh->meshID();
+            data.mesh = mesh;
+            data.name = path + mesh->getName();
+            data.ownerRank = mesh->getComm().bcast(d_comm.getRank(),0);
+            d_multiMeshes.insert( std::pair<AMP::Mesh::MeshID,siloMultiMeshData>(mesh->meshID(),data) );
+        }
     }
 }
 
