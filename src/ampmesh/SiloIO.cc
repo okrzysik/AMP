@@ -655,14 +655,23 @@ void SiloIO::writeSummary( std::string filename )
     if ( d_comm.getRank()==0 ) {
         DBfile  *FileHandle;
         FileHandle = DBOpen ( filename.c_str(), DB_HDF5, DB_APPEND );
-        PROFILE_START("write multimeshes");
         std::map<AMP::Mesh::MeshID,siloMultiMeshData>::iterator it;
+        // Create the subdirectories
+        PROFILE_START("create directories");
+        std::set<std::string> subdirs;
         for (it=multiMeshes.begin(); it!=multiMeshes.end(); it++) {
-            // Create the multimesh            
             siloMultiMeshData data = it->second;
             size_t pos = data.name.find_last_of("/");
             if ( pos!=std::string::npos )
-                createSiloDirectory( FileHandle, data.name.substr(0,pos) );
+                subdirs.insert( data.name.substr(0,pos) );
+        }
+        for (std::set<std::string>::iterator it2=subdirs.begin(); it2!=subdirs.end(); it2++)
+            createSiloDirectory( FileHandle, *it2 );
+        PROFILE_STOP("create directories");
+        // Create the multimeshes
+        PROFILE_START("write multimeshes");
+        for (it=multiMeshes.begin(); it!=multiMeshes.end(); it++) {
+            siloMultiMeshData data = it->second;
             std::vector<std::string> meshNames(data.meshes.size());
             for (size_t i=0; i<data.meshes.size(); i++)
                 meshNames[i] = data.meshes[i].file+":"+data.meshes[i].path+"/"+data.meshes[i].meshName;
