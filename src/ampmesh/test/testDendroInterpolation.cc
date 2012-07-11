@@ -1,6 +1,4 @@
 
-#include "mpi.h"
-
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
@@ -16,7 +14,7 @@
 #include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
 
-//#include <algorithm>
+#include "externVars.h"
 
 #include "ampmesh/Mesh.h"
 #include "ampmesh/dendro/DendroSearch.h"
@@ -124,7 +122,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   DendroSearch dendroSearch(globalComm, meshAdapter);
   std::vector<double> interpolatedData; 
   std::vector<bool> interpolationWasDone;
-  dendroSearch.interpolate(dummyVector, DOFsPerNode, pts, interpolatedData, interpolationWasDone);
+  dendroSearch.searchAndInterpolate(dummyVector, DOFsPerNode, pts, interpolatedData, interpolationWasDone);
   AMP_ASSERT(interpolatedData.size() == (DOFsPerNode*numLocalPts));
   AMP_ASSERT(interpolationWasDone.size() == numLocalPts);
 
@@ -162,6 +160,29 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   }
 
   AMP_ASSERT(globalMaxError < 1.0e-12);
+
+  std::vector<AMP::Mesh::MeshElementID> faceVerticesGlobalIDs;
+  std::vector<double> shiftGlobalCoords, projectionLocalCoordsOnFace;
+  std::vector<int> flags;
+  dendroSearch.projectOnBoundaryID(4, faceVerticesGlobalIDs, shiftGlobalCoords, projectionLocalCoordsOnFace, flags);
+  globalComm.barrier();
+  if(!rank) {
+    std::cout<<"PAR ICI"<<std::endl;
+    for (size_t i = 0; i < 100; ++i) { std::cout<<std::flush; }
+  }
+  globalComm.barrier();
+  unsigned int localPtsNotFound = std::count(flags.begin(), flags.end(), DendroSearch::NotFound);
+  unsigned int localPtsFoundNotOnBoundary = std::count(flags.begin(), flags.end(), DendroSearch::FoundNotOnBoundary);
+  unsigned int localPtsFoundOnBoundary = std::count(flags.begin(), flags.end(), DendroSearch::FoundOnBoundary);
+  unsigned int globalPtsNotFound = globalComm.sumReduce(localPtsNotFound);
+  unsigned int globalPtsFoundNotOnBoundary = globalComm.sumReduce(localPtsFoundNotOnBoundary);
+  unsigned int globalPtsFoundOnBoundary = globalComm.sumReduce(localPtsFoundOnBoundary);
+  if(!rank) {
+    std::cout<<"Global number of points not found is "<<globalPtsNotFound<<std::endl;
+    std::cout<<"Global number of points found not on boundary is "<<globalPtsFoundNotOnBoundary<<std::endl;
+    std::cout<<"Global number of points found on boundary is "<<globalPtsFoundOnBoundary<<std::endl;
+    std::cout<<"Total number of points is "<<globalPtsNotFound+globalPtsFoundNotOnBoundary+globalPtsFoundOnBoundary<<std::endl;
+  }
 
   ut->passes(exeName);
 }

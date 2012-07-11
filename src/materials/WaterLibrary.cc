@@ -79,7 +79,7 @@ September 1998");
 	static const double       CondParams[CondNumParams] = {};
 	static const std::string  CondArgs[CondNumArgs] = {"temperature", "density"};
 	static const double       CondTminVal = 0.0;		// minimum temperature [K]
-	static const double       CondTmaxVal = 1.0e6;		// maximum temperature [K] (arbitrary "very high" temperature)
+	static const double       CondTmaxVal = 1.0e3;		// maximum temperature [K] (arbitrary "very high" temperature)
 	static const double       CondRhominVal = 0;		// minimum density [kg/m3] 
 	static const double       CondRhomaxVal = 2000.;	// maximum density [kg/m3] (arbitrary "very high" density)
 	static const double       CondRanges[2][2]={{CondTminVal, CondTmaxVal}, {CondRhominVal, CondRhomaxVal}};
@@ -95,10 +95,22 @@ September 1998");
 								-0.0270448,-0.0253093,-0.0267758,-0.0822904,0.0602253,-0.0202595};
 	static const std::string  ViscArgs[ViscNumArgs] = {"temperature", "density"};
 	static const double       ViscTminVal = 0.0;		// minimum temperature [K]
-	static const double       ViscTmaxVal = 1.0e6;		// maximum temperature [K] (arbitrary "very high" temperature)
+	static const double       ViscTmaxVal = 1.0e3;		// maximum temperature [K] (arbitrary "very high" temperature)
 	static const double       ViscRhominVal = 0;		// minimum density [kg/m3] 
 	static const double       ViscRhomaxVal = 2000.;	// maximum density [kg/m3] (arbitrary "very high" density)
 	static const double       ViscRanges[2][2]={{ViscTminVal, ViscTmaxVal}, {ViscRhominVal, ViscRhomaxVal}};
+
+  	// enthalpy as a function of temperature and pressure
+	static const unsigned int EnthalpyNumArgs   = 2;
+	static const unsigned int EnthalpyNumParams = 6;
+	static const double       EnthalpyParams[EnthalpyNumParams] = {-256638.942,-203.118982,0.760349801,-3848757.66,
+									-0.00106377488,0.0000006177396046};
+	static const std::string  EnthalpyArgs[EnthalpyNumArgs] = {"temperature", "pressure"};
+	static const double       EnthalpyTminVal = 0.0;		// minimum temperature [K]
+	static const double       EnthalpyTmaxVal = 1.0e3;		// maximum temperature [K] (arbitrary "very high" temperature)
+	static const double       EnthalpyPminVal = 689.4757;		// minimum pressure [Pa] 
+	static const double       EnthalpyPmaxVal = 22119759.4074;	// critical pressure; maximum pressure [Pa]
+	static const double       EnthalpyRanges[2][2]={{EnthalpyTminVal, EnthalpyTmaxVal}, {EnthalpyPminVal, EnthalpyPmaxVal}};
 
 //=================== Classes =======================================================
 
@@ -170,6 +182,27 @@ September 1998");
 				ViscRanges ){}	// Range of variables
 
 		virtual double eval( std::vector<double>& args );
+	};
+
+	class EnthalpyProp : public Property<double>{
+	public:
+		EnthalpyProp() :
+			Property<double> (	name_base + "_" + "Enthalpy",	// Name string
+				source,			// Reference source
+				EnthalpyParams,		// Property parameters
+				EnthalpyNumParams,	// Number of parameters
+				EnthalpyArgs,  		// Names of arguments to the eval function
+				EnthalpyNumArgs,	// Number of arguments
+				EnthalpyRanges ){}	// Range of variables
+
+		virtual double eval( std::vector<double>& args );
+		double NewtonSolve(double,double,double);
+	private:
+		double Residual(double,double,double);
+		static const double Newton_atol = 1.0e-7; // absolute tolerance for Newton solve
+		static const double Newton_rtol = 1.0e-7; // relative tolerance for Newton solve
+		static const unsigned int Newton_maxIter = 1000; // maximum number of iterations for Newton solve
+                static const double machinePrecision = 1.0e-15; // machine precision; used in perturbation for numerical Jacobian
 	};
 
 //=================== Functions =====================================================
@@ -334,24 +367,31 @@ September 1998");
 				for (size_t j=2; j<5; j++)
 				{
 					size_t jj = j-2;
-					V = V + a[i][j]*pow(P,i)*pow((250-H),jj);
+					V = V + a[i][jj]*pow(P,i)*pow((250-H),j);
 				}
 			}
 			double ExpSum = 0;
 			for (size_t i=0; i<3; i++)
+			{
 				for (size_t j=0; j<5; j++)
+			  {
 					ExpSum = ExpSum + b[i][j]*pow(P,i)*pow(H,j); 
+				}
+			}
 			V = V + exp(ExpSum);
 		}
 		else if (InLiquidRegion2 or InCriticalRegion) // liquid region 2 or critical region
 		{
 			double ExpSum = 0;
 			for (size_t i=0; i<3; i++)
+			{
 				for (size_t j=0; j<5; j++)
+			  {
 					ExpSum = ExpSum + b[i][j]*pow(P,i)*pow(H,j); 
+				}
+			}
 			V = V + exp(ExpSum);
 		}
-
 		// convert result to SI units
 		V = V*6.24279605761446e-2; // [ft3/lbm] to [m3/kg]
 
@@ -446,6 +486,72 @@ September 1998");
 		return u;
 	}
 
+	inline double EnthalpyProp::eval( std::vector<double>& args ){
+	    	double T            = args[0];  // local temperature in Kelvin
+	    	double P            = args[1];  // local pressure in Pa
+	    	double h;                       // specific enthalpy in J/kg
+
+		// convert SI units to units used in correlation
+		double P_brit = P*1.45037738e-4;	// [Pa] to [psi]
+		double P_crit = 3208.2; // critical pressure [psi]
+		double h_guess = 0.0; // enthalpy guess for Newton solve
+		if (P_brit < P_crit){
+			// guess some h < hf and > 0
+			// get hf
+			SaturatedLiquidEnthalpyProp liquidEnthalpyProperty;
+			std::vector<double> liqEnthalpyArgs;
+			liqEnthalpyArgs.push_back(P);
+			double hf = liquidEnthalpyProperty.eval(liqEnthalpyArgs);
+			// pick h_guess such that: 0 < h_guess < hf
+			h_guess = hf/2.0;
+		} else { // P_brit >= P_crit
+			// guess some h <= h_crit
+			h_guess = 700.0/4.29922614e-4; // h_crit = 906 Btu/lb -> choose 700 Btu/lb and convert to SI
+		}
+		   
+		h = NewtonSolve(h_guess, T, P);
+		return h;
+	}
+
+	inline double EnthalpyProp::Residual(double h, double T, double P){
+		TemperatureProp temperatureProperty;
+                std::vector<double> tempArgs;
+		tempArgs.push_back(h);
+		tempArgs.push_back(P);
+                double tempResult = temperatureProperty.eval(tempArgs);
+
+		return (T - tempResult);
+	}
+
+	inline double EnthalpyProp::NewtonSolve(double guess, double param1, double param2)
+	{
+		double x_new = guess;
+		double x_old = guess;
+		bool converged = false;
+		for (unsigned int iter=1; iter<=Newton_maxIter; ++iter){
+			x_old = x_new;
+                        double b_perturb = sqrt(machinePrecision);
+			double perturbation = (1.0+x_new)*b_perturb;
+			// numerical Jacobian with forward perturbation
+			double J = (Residual(x_old+perturbation,param1,param2) - Residual(x_old,param1,param2))/perturbation;
+			double dx = -1.0*Residual(x_old,param1,param2)/J;
+			x_new = x_old + dx;
+			// check convergence
+			double abs_err = std::abs(x_new - x_old); // absolute error
+			double rel_err = 0.0; // relative error
+			if (x_old != 0.0){ // test to ensure no division by zero
+				rel_err = std::abs((x_new - x_old)/x_old);
+			}
+			if ((abs_err < Newton_atol) and (rel_err < Newton_rtol)){
+				converged = true;
+				break;
+			}
+		}
+		if (!converged){
+			AMP_ERROR("Newton solve failed to converge for property function evaluation.");
+		}
+		return x_new;
+	}
 }
 //=================== Materials =====================================================
 
@@ -457,10 +563,9 @@ WaterLibrary::WaterLibrary()
 		INSERT_PROPERTY_IN_MAP(SpecificVolume, WaterLibrary_NS);
 		INSERT_PROPERTY_IN_MAP(ThermalConductivity, WaterLibrary_NS);
 		INSERT_PROPERTY_IN_MAP(DynamicViscosity, WaterLibrary_NS);
+		INSERT_PROPERTY_IN_MAP(Enthalpy, WaterLibrary_NS);
 }
 
 
 } 
 }
-
-

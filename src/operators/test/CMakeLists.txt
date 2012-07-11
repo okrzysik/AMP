@@ -41,6 +41,9 @@ INCLUDE (macros)
 
 ADD_AMP_PROVISIONAL_TEST(testRemDup)
 
+ADD_AMP_PROVISIONAL_TEST(testSubchannelPhysicsModel)
+COPY_TEST_DATA_FILE ( input_testSubchannelPhysicsModel)
+
 ADD_AMP_PROVISIONAL_TEST( testRemDup )
 
 COPY_MESH_FILE ( cube8.with.boundary.labels.e )
@@ -373,3 +376,7 @@ IF( USE_MOAB )
   ADD_AMP_PROVISIONAL_TEST( testMoabInterface )
 ENDIF()
 
+IF( USE_DENDRO AND USE_PETSC )
+    ADD_AMP_PROVISIONAL_TEST( testNodeToSegmentConstraintsOperator )
+    COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator )
+ENDIF()

@@ -31,6 +31,7 @@ ADD_AMP_TEST( test_LoadBalance 64000 inputMultiPellet348 )
 
 ADD_AMP_TEST( testHex8ElementMapping )
 ADD_AMP_TEST( testHex8ElementLinearInterpolation )
+ADD_AMP_TEST( testTriangleProjection )
 IF ( USE_LIBMESH )
     ADD_AMP_TEST_1_2_4 ( test_SiloIO input_SiloIO-1 )
 ELSE()

@@ -1,40 +1,18 @@
 #ifndef HEX8_ELEMENT_T
 #define HEX8_ELEMENT_T
 
-#include <iostream>
-#include <vector>
-#include <numeric>
-#include <algorithm>
-#include <cassert>
-#include <cmath>
-
 #include <ampmesh/triangle_t.h>
+#include <vector>
 
-void get_basis_functions_values(double const *x, double *basis_functions_values);
-void get_basis_functions_derivatives( double const *x, double *basis_functions_derivatives);
 double compute_inverse_3_by_3_matrix(double const *mat, double *inv);
 void compute_n_by_n_matrix_times_vector(unsigned int n, double const *mat, double const *vec, double *res);
 
 class hex8_element_t {
 public:
-// deprecated
-  std::pair<unsigned int, std::vector<double> > project_on_face(double a, double b, double c);
-  std::pair<unsigned int, std::vector<double> > project_on_face(const std::vector<double> &p);
-bool within_bounding_box(const std::vector<double> &p, double tolerance = 1.0e-12);
-bool within_bounding_polyhedron(const std::vector<double> &p, double tolerance = 1.0e-12);
-std::vector<double> map_global_to_local(const std::vector<double> &global_coordinates);
-std::vector<double> map_local_to_global(const std::vector<double> &local_coordinates);
-bool contains_point(const std::vector<double> &coordinates, bool coordinates_are_local = false, double tolerance = 1.0e-12);
-//
-  hex8_element_t(const std::vector<double> &p);
-  void set_support_points(const std::vector<double> &p);
-
   hex8_element_t(double const *p);
   void set_support_points(double const *p);
   double const * get_support_point(unsigned int i) const;
   double const * get_support_points() const;
-  unsigned int const * get_face(unsigned int i) const;
-  unsigned int const * get_faces() const;
   double const * get_bounding_box();
   triangle_t * get_bounding_polyhedron();
   bool within_bounding_box(double const *p, double tolerance = 1.0e-12);
@@ -44,6 +22,15 @@ bool contains_point(const std::vector<double> &coordinates, bool coordinates_are
   void map_global_to_local(double const *global_coordinates, double *local_coordinates);
   void map_local_to_global(double const *local_coordinates, double *global_coordinates);
   bool contains_point(double const *coordinates, bool coordinates_are_local = false, double tolerance = 1.0e-12);
+  void project_on_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face, double *shift_global_coordinates);
+
+  static void project_on_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face);
+  static void get_basis_functions_values(double const *x, double *basis_functions_values);
+  static void get_basis_functions_derivatives( double const *x, double *basis_functions_derivatives);
+  static void get_basis_functions_values_on_face(double const *x, double *basis_functions_values);
+  static unsigned int const * get_face(unsigned int i);
+  static unsigned int const * get_faces();
+
 private:
   // numbering of the 8 support points (or nodes) follows libmesh hex8 convention which is as follows
   //
@@ -88,6 +75,24 @@ private:
   //
   std::vector<double> support_points, point_candidate;
 
+  // faces are oriented and defined by their 4 support nodes
+  //   3          2    
+  //    o--------o    
+  //    |        |
+  //    |        |   
+  //    |        |  
+  //    |        | 
+  //    o--------o
+  //   0          1
+  //
+  // coordinates on the face are given in the following xy reference frame
+  // 
+  //    y
+  //    |
+  //    |
+  //    |
+  //    o------ x
+  //
   static unsigned int faces[];
 
   bool bounding_box_updated, bounding_polyhedron_updated;

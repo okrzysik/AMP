@@ -339,6 +339,7 @@ public:
 	void virtual
 	evalv(boost::shared_ptr<AMP::LinearAlgebra::Vector>& r,
 		const boost::shared_ptr<AMP::LinearAlgebra::MultiVector>& args);
+
 };
 
 template<>

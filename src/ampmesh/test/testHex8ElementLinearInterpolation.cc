@@ -1,7 +1,8 @@
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
+#include <utils/AMPManager.h>
+#include <utils/UnitTest.h>
 
-#include "hex8_element_t.h"
+#include <ampmesh/hex8_element_t.h>
+#include <ampmesh/euclidean_geometry_tools.h>
 
 double my_function(double const *xyz) {
   double x = xyz[0], y = xyz[1], z = xyz[2];
@@ -26,7 +27,7 @@ unsigned int perform_battery_of_tests(hex8_element_t *volume_element, double (*m
   for (unsigned int i = 0; i < n_random_candidate_points; ++i) {
     for (unsigned int j = 0; j < 3; ++j) { candidate_point_local_coordinates[j] = -1.0+2.0*rand()/RAND_MAX; }
 
-    get_basis_functions_values(&(candidate_point_local_coordinates[0]), &(basis_functions_values[0]));
+    hex8_element_t::get_basis_functions_values(&(candidate_point_local_coordinates[0]), &(basis_functions_values[0]));
     interpolated_value = 0.0;
     for (unsigned int j = 0; j < 8; ++j) {
       interpolated_value += my_function_at_support_points[j] * basis_functions_values[j];

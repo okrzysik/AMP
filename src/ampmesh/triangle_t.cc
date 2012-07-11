@@ -1,4 +1,8 @@
-#include <ampmesh/triangle_t.h> 
+#include <ampmesh/triangle_t.h>
+#include <ampmesh/euclidean_geometry_tools.h>
+
+#include <cassert>
+#include <iostream>
 
 triangle_t::triangle_t(double const * A, double const * B, double const * C) {
   set_support_points(A, B, C);
@@ -11,20 +15,13 @@ void triangle_t::set_support_points(double const * A, double const * B, double c
   support_points_ptr[2] = C; 
   normal_updated = false;
   centroid_updated = false;
-}
-
-void triangle_t::set_support_points(double const * * ptr) {
-  set_support_points(ptr[0], ptr[1], ptr[2]);
+  edges_updated = false;
 }
 
 double const * triangle_t::get_support_point_ptr(unsigned int i) const {
   assert(i < 3);
   return support_points_ptr[i];
 }
-
-/*double const * * triangle_t::get_support_points_ptr() const {
-  return &(support_points_ptr[0]);
-}*/
 
 double const * triangle_t::get_normal() {
   if (!normal_updated) { compute_normal(); }
@@ -37,8 +34,8 @@ double const * triangle_t::get_centroid() {
 }
 
 void triangle_t::compute_centroid() {
-  if (centroid.size() == 0) { centroid.resize(3); }
   assert(!centroid_updated);
+  if (centroid.size() == 0) { centroid.resize(3); }
   for (unsigned int i = 0; i < 3; ++i) {
     centroid[i] = 0.0;
     for (unsigned int j = 0; j < 3; ++j) {
@@ -50,107 +47,111 @@ void triangle_t::compute_centroid() {
 }
 
 void triangle_t::compute_normal() {
-  if (normal.size() == 0) { normal.resize(3); tmp.resize(6); }
   assert(!normal_updated);
+  if (normal.size() == 0) { normal.resize(3); }
+  if (tmp.size() == 0) { tmp.resize(6); }
   make_vector_from_two_points(support_points_ptr[0], support_points_ptr[1], &(tmp[0])+0);
   make_vector_from_two_points(support_points_ptr[0], support_points_ptr[2], &(tmp[0])+3);
   compute_cross_product(&(tmp[0])+0, &(tmp[0])+3, &(normal[0]));
-  double normalizing_factor = 1.0 / sqrt(std::inner_product(&(normal[0]), &(normal[0])+3, &(normal[0]), 0.0));
-  assert(normalizing_factor < 1.0e12);
-  for (unsigned int i = 0; i < 3; ++i) { normal[i] *= normalizing_factor; }
+  normalize_vector(&(normal[0]));
   normal_updated= true;
 }
 
+double triangle_t::compute_distance_to_containing_plane(double const * point) {
+  if (tmp.size() == 0) { tmp.resize(6); }
+  if (!normal_updated) { compute_normal(); }
+  if (!centroid_updated) { compute_centroid(); }
+  // vector from triangle centroid to point
+  make_vector_from_two_points(&(centroid[0]), point, &(tmp[0]));
+  // scalar product with normal to the triangle
+  return compute_scalar_product(&(tmp[0]), &(normal[0]));
+}
+
 // check whether plane supported by the triangle ABC is above the point with respect to the normal
-bool triangle_t::above_point(double const * p, double tolerance) {
-  if (!normal_updated) { 
-    compute_normal();
-  } // end if
-  if (!centroid_updated) { 
-    compute_centroid();
-  } // end if
-  make_vector_from_two_points(&(centroid[0]), p, &(tmp[0]));
-  return (compute_scalar_product(&(tmp[0]), &(normal[0])) < tolerance);
+bool triangle_t::above_point(double const * point, double tolerance) {
+  double distance_to_containing_plane = compute_distance_to_containing_plane(point);
+  return (distance_to_containing_plane < tolerance);
 }
 
-void scale_points(unsigned int direction, double scaling_factor, unsigned int n_points, double* points) {
-  assert(direction < 3);
-  for (unsigned int i = 0; i < n_points; ++i) { 
-    points[3*i+direction] *= scaling_factor; 
-  } // end for i
+edge_t * triangle_t::get_edge(unsigned int i) {
+  assert(i < 3);
+  if (!edges_updated) { build_edges(); }
+  return &(edges[i]);
 }
 
-void scale_points(const std::vector<double> &scaling_factors, unsigned int n_points, double* points) {
-  assert(scaling_factors.size() == 3);
-  for (unsigned int i = 0; i < 3; ++i) { 
-    scale_points(i, scaling_factors[i], n_points, points);
-  } // end for i
+void triangle_t::build_edges() {
+  assert(!edges_updated);
+  if (edges.size() == 0) { edges.reserve(3); }
+  edges.clear();
+  if (!normal_updated) { compute_normal(); }
+  edges.push_back(edge_t(support_points_ptr[0], support_points_ptr[1], &(normal[0])));
+  edges.push_back(edge_t(support_points_ptr[1], support_points_ptr[2], &(normal[0])));
+  edges.push_back(edge_t(support_points_ptr[2], support_points_ptr[0], &(normal[0])));
+  edges_updated = true;
 }
 
-void translate_points(unsigned int direction, double distance, unsigned int n_points, double* points) {
-  assert(direction < 3);
-  for (unsigned int i = 0; i < n_points; ++i) { 
-    points[3*i+direction] += distance; 
-  } // end for i
-}
-
-void translate_points(std::vector<double> translation_vector, unsigned int n_points, double* points) {
-  assert(translation_vector.size() == 3);
-  for (unsigned int i = 0; i < 3; ++i) { 
-   translate_points(i, translation_vector[i], n_points, points); 
-  } // end for i
-}
-
-void rotate_points(unsigned int rotation_axis, double rotation_angle, unsigned int n_points, double* points) {
-  assert(rotation_axis < 3);
-  unsigned int non_fixed_directions[2];
-  unsigned int i = 0;
-  for (unsigned int j = 0; j < 3; ++j) { 
-    if (j != rotation_axis) {
-      non_fixed_directions[i++] = j;
+bool triangle_t::contains_point(double const * point, double tolerance) {
+  if (!edges_updated) { build_edges(); }
+  for (unsigned int i = 0; i < 3; ++i) {
+    if (!edges[i].above_point(point, tolerance)) { 
+      return false;
     } // end if
-  } // end for j
-  double tmp[3];
-  for (unsigned int j = 0; j < n_points; ++j) {
-    tmp[non_fixed_directions[0]] = cos(rotation_angle)*points[3*j+non_fixed_directions[0]]-sin(rotation_angle)*points[3*j+non_fixed_directions[1]];
-    tmp[non_fixed_directions[1]] = sin(rotation_angle)*points[3*j+non_fixed_directions[0]]+cos(rotation_angle)*points[3*j+non_fixed_directions[1]];
-    tmp[rotation_axis] = points[3*j+rotation_axis];
-    std::copy(tmp, tmp+3, points+3*j);
-  } // end for j
+  } // end for i
+  return true; 
 }
 
-std::vector<double> compute_cross_product(const std::vector<double> &u, const std::vector<double> &v) {
-  assert(u.size() == 3);
-  assert(v.size() == 3);
-  std::vector<double> w(3);
-  compute_cross_product(&(u[0]), &(v[0]), &(w[0]));
-  return w;
+int triangle_t::project_point(double const * point, double * projection, double tolerance) {
+  if (tmp.size()==0) { tmp.resize(6); }
+  double distance_to_containing_plane = compute_distance_to_containing_plane(point);
+  for (unsigned int i = 0; i < 3; ++i) { tmp[i] = point[i] - distance_to_containing_plane * normal[i]; }
+  if (!edges_updated) { build_edges(); }
+  for (unsigned int i = 0; i < 3; ) {
+    int status = edges[i].project_point(&(tmp[0]), projection, tolerance);
+    // -1 -> edge is above the point, we cannot conclude and go to the next edge
+    if (status == -1) {
+      ++i;
+    // 2 -> projection onto the edge is normal, we have found the closest point on the triangle  
+    } else if (status == 2) {
+      return 3+i;
+    // 0 -> point was projected onto the first support point
+    //      if we are on edge 0 we need to check edge 2
+    //      otherwise we are done
+    } else if (status == 0) {
+      if (i == 0) { i = 2; continue; }
+      return i;
+    // 1 -> point was projected onto the second support point
+    //      if we are on edge 2 we are done
+    //      otherwise we check the next edge
+    } else if (status == 1) {
+      if (i == 2) { return 0; }
+      ++i;
+    // just making sure nothing unexpected happened
+    } else {
+      std::cerr<<"how did you end up here in the first place?"<<std::endl;
+      assert(false);
+    } // end if
+  } // end for i
+
+  return -1;
 }
 
-void compute_cross_product(double const * u, double const * v, double * w) {
-  w[0] = u[1]*v[2]-u[2]*v[1];
-  w[1] = u[2]*v[0]-u[0]*v[2];
-  w[2] = u[0]*v[1]-u[1]*v[0];
-}
 
-double compute_scalar_product(double const * u, double const * v) {
-  return std::inner_product(&(u[0]), &(u[0])+3, &(v[0]), 0.0);
-}
-
-double compute_scalar_product(const std::vector<double> &u, const std::vector<double> &v) {
-  assert(u.size() == 3);
-  assert(v.size() == 3);
-  return compute_scalar_product(&(u[0]), &(v[0]));
-}
-
-std::vector<double> make_vector_from_two_points(const std::vector<double> &start_point, const std::vector<double> &end_point) {
-  assert(start_point.size() == 3);
-  assert(end_point.size() == 3);
-  std::vector<double> vector(3);
-  make_vector_from_two_points(&(start_point[0]), &(end_point[0]), &(vector[0]));
-  return vector;
-}
-
-void make_vector_from_two_points(double const * start_point, double const * end_point, double * vector) {
-  for (unsigned int i = 0; i < 3; ++i) { vector[i] = end_point[i] - start_point[i]; }
+int project_point_onto_collection_of_triangles(unsigned int n_triangles, triangle_t **triangles_ptr, double const *point, double *projection, unsigned int &position, double &distance, double tolerance) {
+  int status, tmp_status;
+  double tmp_distance, tmp_projection[3];
+  status = triangles_ptr[0]->project_point(point, projection, tolerance);
+  position = 0;
+  distance = compute_distance_between_two_points(point, projection);
+  for (unsigned int i = 1; i < n_triangles; ++i) {
+    if (distance < tolerance) { break; }
+    tmp_status = triangles_ptr[i]->project_point(point, tmp_projection, tolerance); 
+    tmp_distance = compute_distance_between_two_points(point, tmp_projection);
+    if (tmp_distance < distance) {
+      distance = tmp_distance;
+      position = i;
+      status = tmp_status;
+      std::copy(tmp_projection, tmp_projection+3, projection);
+    } // end if
+  } // end for i
+  return status;
 }
