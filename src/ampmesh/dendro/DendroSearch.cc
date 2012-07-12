@@ -2,6 +2,8 @@
 #include "ampmesh/dendro/DendroSearch.h"
 
 #include <numeric>
+#include <fstream>
+#include <boost/lexical_cast.hpp>
 
 DendroSearch::DendroSearch(AMP::AMP_MPI comm, AMP::Mesh::Mesh::shared_ptr mesh) 
   : d_globalComm(comm), d_meshAdapter(mesh) {
@@ -14,11 +16,12 @@ DendroSearch::DendroSearch(AMP::AMP_MPI comm, AMP::Mesh::Mesh::shared_ptr mesh)
     setupDendro();
   }
 
-//void DendroSearch::projectOnBoundaryID(const int boundaryID,// std::vector<ProjectOnBoundaryStatus> & projectOnBoundaryStatuses) {
-//    const unsigned int dofsPerNode, AMP::Discretization::DOFManager::shared_ptr dofManager,
-//    std::vector<size_t> & nodeIDs, std::vector<size_t> & nodeOwnerRanks, std::vector<double> & localCoords, std::vector<int> & flags) {
 void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
     std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags) {
+
+  std::fstream fout;
+  std::string fileName = "debug_dendro_" + boost::lexical_cast<std::string>(d_rank);
+  fout.open(fileName.c_str(), std::fstream::out);
 
   double projectBeginTime, projectStep1Time, projectStep2Time;
   if(d_verbose) {
@@ -38,7 +41,8 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
     const size_t elementLocalID = static_cast<size_t>(d_foundPts[i]);
     tmpData.d_PointLocalID = pointLocalID;
     AMP::Mesh::MeshElement* meshElement = &(d_localElemArr[elementLocalID]);
-    if (meshElement->isOnBoundary(boundaryID)) { // point was found and element is on boundary
+    if (meshElement->isOnBoundary(boundaryID)) { // point was found and element is on boundary if the considered mesh
+//    if (meshElement->isOnBoundary(boundaryID)) {
       std::vector<AMP::Mesh::MeshElement> meshElementFaces = meshElement->getElements(AMP::Mesh::Face);
       AMP_ASSERT( meshElementFaces.size() == 6 );
       for (size_t f = 0; f < 6; ++f) {
@@ -118,6 +122,8 @@ recvData.clear();
       std::cout<<"Time for step-2 of project on boundary: "<<(projectStep2Time - projectStep1Time)<<" seconds."<<std::endl;
     }
   }
+
+  fout.close();
 }
 
 void DendroSearch::searchAndInterpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,

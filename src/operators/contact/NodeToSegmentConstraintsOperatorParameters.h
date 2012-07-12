@@ -16,10 +16,13 @@ namespace AMP {
 
         virtual ~NodeToSegmentConstraintsOperatorParameters () { }
 
-        AMP::Discretization::DOFManager::shared_ptr d_DOFmanager;
+        AMP::AMP_MPI d_GlobalComm;
 
-        unsigned int d_MasterMeshID;
-        unsigned int d_SlaveMeshID;
+        size_t d_DOFsPerNode;
+        AMP::Discretization::DOFManager::shared_ptr d_DOFManager;
+
+        AMP::Mesh::MeshID d_MasterMeshID;
+        AMP::Mesh::MeshID d_SlaveMeshID;
 
         int d_MasterBoundaryID;
         int d_SlaveBoundaryID;

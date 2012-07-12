@@ -33,7 +33,9 @@ namespace AMP {
           : Operator(params)
         {
 
-          d_DOFmanager = (params->d_DOFmanager);
+          d_GlobalComm = (params->d_GlobalComm);
+          d_DOFsPerNode = (params->d_DOFsPerNode);
+          d_DOFManager = (params->d_DOFManager);
 
           d_MasterMeshID = (params->d_MasterMeshID);
           d_SlaveMeshID = (params->d_SlaveMeshID);
@@ -64,19 +66,23 @@ namespace AMP {
           @param [in] b second constant used in the expression: r = a*A(u) + b*f. The default value is 1.
           */
         virtual void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-            AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
+            AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
 
         virtual void applyTranspose(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-            AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
+            AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
 
       protected :
 
       private :
+        void getVectorIndicesFromGlobalIDs(const std::vector<AMP::Mesh::MeshElementID> & globalIDs, 
+            std::vector<size_t> & vectorIndices);
 
-        AMP::Discretization::DOFManager::shared_ptr d_DOFmanager;
+        AMP::AMP_MPI d_GlobalComm;
+        AMP::Discretization::DOFManager::shared_ptr d_DOFManager;
+        size_t d_DOFsPerNode;
 
-        unsigned int d_MasterMeshID;
-        unsigned int d_SlaveMeshID;
+        AMP::Mesh::MeshID d_MasterMeshID;
+        AMP::Mesh::MeshID d_SlaveMeshID;
 
         int d_MasterBoundaryID;
         int d_SlaveBoundaryID;
@@ -90,10 +96,14 @@ namespace AMP {
         std::vector<int> d_TransposeRecvCnts;
         std::vector<int> d_TransposeRecvDisps;
 
-        std::vector<size_t> d_SlaveGlobalIDs;
-        std::vector<size_t> d_RecvMasterGlobalIDs;
+        std::vector<AMP::Mesh::MeshElementID> d_SlaveVerticesGlobalIDs;
+        std::vector<AMP::Mesh::MeshElementID> d_RecvMasterVerticesGlobalIDs;
+        std::vector<size_t> d_SlaveIndices;
+        std::vector<size_t> d_RecvMasterIndices;
+        std::vector<size_t> d_MasterVerticesMap;
         std::vector<size_t> d_MasterVerticesOwnerRanks;
         std::vector<double> d_MasterShapeFunctionsValues;
+        std::vector<double> d_SlaveVerticesShift;
     };
 
   }
