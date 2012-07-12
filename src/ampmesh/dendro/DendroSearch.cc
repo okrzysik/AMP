@@ -14,22 +14,25 @@ DendroSearch::DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh)
     setupDSforSearch();
   }
 
-void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
+void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
     std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags) {
 
+  const int rank = comm.getRank();
+  const int npes = comm.getSize();
+
   std::fstream fout;
-  std::string fileName = "debug_dendro_" + boost::lexical_cast<std::string>(d_rank);
+  std::string fileName = "debug_dendro_" + boost::lexical_cast<std::string>(rank);
   fout.open(fileName.c_str(), std::fstream::out);
 
   double projectBeginTime, projectStep1Time, projectStep2Time;
   if(d_verbose) {
-    d_globalComm.barrier();
+    comm.barrier();
     projectBeginTime = MPI_Wtime();
   }
 
-  std::vector<ProjectOnBoundaryData> sendData(d_sendDisps[d_npes-1] + d_sendCnts[d_npes-1]);
+  std::vector<ProjectOnBoundaryData> sendData(d_sendDisps[npes-1] + d_sendCnts[npes-1]);
 
-  std::vector<int> tmpSendCnts(d_npes, 0);
+  std::vector<int> tmpSendCnts(npes, 0);
 
   for (unsigned int i = 0; i < d_foundPts.size(); i += 6) {
     ProjectOnBoundaryData tmpData;
@@ -68,16 +71,16 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
     tmpSendCnts.clear();
 
     if(d_verbose) {
-      d_globalComm.barrier();
+      comm.barrier();
       projectStep1Time = MPI_Wtime();
-      if(!d_rank) {
+      if(!rank) {
         std::cout<<"Time for step-1 of project on boundary: "<<(projectStep1Time - projectBeginTime)<<" seconds."<<std::endl;
       }
     }
 
-    std::vector<ProjectOnBoundaryData> recvData(d_recvDisps[d_npes-1] + d_recvCnts[d_npes-1]);
+    std::vector<ProjectOnBoundaryData> recvData(d_recvDisps[npes-1] + d_recvCnts[npes-1]);
 
-    d_globalComm.allToAll((!(sendData.empty()) ? &(sendData[0]) : NULL), &(d_sendCnts[0]), &(d_sendDisps[0]),
+    comm.allToAll((!(sendData.empty()) ? &(sendData[0]) : NULL), &(d_sendCnts[0]), &(d_sendDisps[0]),
         (!(recvData.empty()) ? &(recvData[0]) : NULL), &(d_recvCnts[0]), &(d_recvDisps[0]), true);
     sendData.clear();
 
@@ -93,7 +96,7 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
     flags.resize(d_numLocalPts);
     std::fill(flags.begin(), flags.end(), NotFound);
 
-    for (size_t i = 0; i < d_npes; ++i) {
+    for (size_t i = 0; i < npes; ++i) {
       for (size_t j = 0; j < d_recvCnts[i]; ++j) {
         const ProjectOnBoundaryData tmpData = recvData[d_recvDisps[i] + j];
         const size_t pointLocalID = tmpData.d_PointLocalID;
@@ -115,9 +118,9 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
     recvData.clear();
 
     if(d_verbose) {
-      d_globalComm.barrier();
+      comm.barrier();
       projectStep2Time = MPI_Wtime();
-      if(!d_rank) {
+      if(!rank) {
         std::cout<<"Time for step-2 of project on boundary: "<<(projectStep2Time - projectStep1Time)<<" seconds."<<std::endl;
       }
     }
@@ -125,10 +128,10 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
     fout.close();
   }
 
-  void DendroSearch::searchAndInterpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
+  void DendroSearch::searchAndInterpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
       const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt) {
-    search(pts);
-    interpolate(vectorField, dofsPerNode, results, foundPt); 
+    search(comm, pts);
+    interpolate(comm, vectorField, dofsPerNode, results, foundPt); 
   }
 
   void DendroSearch::setupDSforSearch() {
@@ -137,8 +140,8 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
     }
 
     AMP::AMP_MPI meshComm = d_meshAdapter->getComm();
-    int rank = meshComm.getRank();
-    int npes = meshComm.getSize();
+    const int rank = meshComm.getRank();
+    const int npes = meshComm.getSize();
 
     double setupBeginTime, setupEndTime;
     if(d_verbose) {
@@ -207,7 +210,7 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
             unsigned int bY = j*(1u << (MaxDepth - d_boxLevel));
             unsigned int bZ = k*(1u << (MaxDepth - d_boxLevel));
             ot::TreeNode box(bX, bY, bZ, d_boxLevel, 3, MaxDepth);
-            box.setWeight(d_rank);
+            box.setWeight(rank);
             ot::NodeAndValues<int, 1> obj;
             obj.node = box;
             obj.values[0] = eId;
@@ -279,27 +282,27 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
 
       int* gatherList = new int[npes];
 
-      d_globalComm.allGather(gatherSendBuf, gatherList);
+      meshComm.allGather(gatherSendBuf, gatherList);
 
-      if(d_rank > 0) {
+      if(rank > 0) {
         while(gatherList[prevRank] > 0) {
           --prevRank;
         }//end while
       }
 
-      if(d_rank < (d_npes - 1)) {
+      if(rank < (npes - 1)) {
         while(gatherList[nextRank] > 0) {
           ++nextRank;
         }//end while
       }
 
-      int* sendBoxCnts = new int[d_npes];
-      int* recvBoxCnts = new int[d_npes];
+      int* sendBoxCnts = new int[npes];
+      int* recvBoxCnts = new int[npes];
 
-      int* sendSourceCnts = new int[d_npes];
-      int* recvSourceCnts = new int[d_npes];
+      int* sendSourceCnts = new int[npes];
+      int* recvSourceCnts = new int[npes];
 
-      for(int i = 0; i < d_npes; ++i) {
+      for(int i = 0; i < npes; ++i) {
         sendBoxCnts[i] = 0;
         recvBoxCnts[i] = 0;
         sendSourceCnts[i] = 0;
@@ -310,30 +313,30 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
         sendBoxCnts[prevRank] = 1;
         sendSourceCnts[prevRank] = gatherSendBuf;
       }
-      for(int i = d_rank + 1; i < nextRank; ++i) {
+      for(int i = rank + 1; i < nextRank; ++i) {
         recvBoxCnts[i] = 1;
         recvSourceCnts[i] = gatherList[i];
       }//end i
 
       delete [] gatherList;
 
-      int* sendBoxDisps = new int[d_npes];
-      int* recvBoxDisps = new int[d_npes];
+      int* sendBoxDisps = new int[npes];
+      int* recvBoxDisps = new int[npes];
       sendBoxDisps[0] = 0;
       recvBoxDisps[0] = 0;
-      for(int i = 1; i < d_npes; ++i) {
+      for(int i = 1; i < npes; ++i) {
         sendBoxDisps[i] = sendBoxDisps[i - 1] + sendBoxCnts[i - 1];
         recvBoxDisps[i] = recvBoxDisps[i - 1] + recvBoxCnts[i - 1];
       }//end i
 
-      std::vector<ot::TreeNode> tmpBoxList(recvBoxDisps[d_npes - 1] + recvBoxCnts[d_npes - 1]);
+      std::vector<ot::TreeNode> tmpBoxList(recvBoxDisps[npes - 1] + recvBoxCnts[npes - 1]);
 
       ot::TreeNode* recvBoxBuf = NULL;
       if(!(tmpBoxList.empty())) {
         recvBoxBuf = (&(tmpBoxList[0]));
       }
 
-      d_globalComm.allToAll( (&(d_nodeList[0])), sendBoxCnts, sendBoxDisps, recvBoxBuf, recvBoxCnts, recvBoxDisps, true);
+      meshComm.allToAll( (&(d_nodeList[0])), sendBoxCnts, sendBoxDisps, recvBoxBuf, recvBoxCnts, recvBoxDisps, true);
 
       if(gatherSendBuf > 0) {
         d_nodeList.clear();
@@ -352,17 +355,17 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
       delete [] sendBoxDisps;
       delete [] recvBoxDisps;
 
-      int* sendSourceDisps = new int[d_npes];
-      int* recvSourceDisps = new int[d_npes];
+      int* sendSourceDisps = new int[npes];
+      int* recvSourceDisps = new int[npes];
       sendSourceDisps[0] = 0;
       recvSourceDisps[0] = 0;
-      for(int i = 1; i < d_npes; ++i) {
+      for(int i = 1; i < npes; ++i) {
         sendSourceDisps[i] = sendSourceDisps[i - 1] + sendSourceCnts[i - 1];
         recvSourceDisps[i] = recvSourceDisps[i - 1] + recvSourceCnts[i - 1];
       }//end i
 
-      std::vector<int> tmpRankList(recvSourceDisps[d_npes - 1] + recvSourceCnts[d_npes - 1]);
-      std::vector<int> tmpElemIdList(recvSourceDisps[d_npes - 1] + recvSourceCnts[d_npes - 1]);
+      std::vector<int> tmpRankList(recvSourceDisps[npes - 1] + recvSourceCnts[npes - 1]);
+      std::vector<int> tmpElemIdList(recvSourceDisps[npes - 1] + recvSourceCnts[npes - 1]);
 
       int* recvRankBuf = NULL;
       int* recvElemIdBuf = NULL;
@@ -371,8 +374,8 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
         recvElemIdBuf = (&(tmpElemIdList[0]));
       }
 
-      d_globalComm.allToAll( (&(d_rankList[0])), sendSourceCnts, sendSourceDisps, recvRankBuf, recvSourceCnts, recvSourceDisps, true);
-      d_globalComm.allToAll( (&(d_elemIdList[0])), sendSourceCnts, sendSourceDisps, recvElemIdBuf, recvSourceCnts, recvSourceDisps, true);
+      meshComm.allToAll( (&(d_rankList[0])), sendSourceCnts, sendSourceDisps, recvRankBuf, recvSourceCnts, recvSourceDisps, true);
+      meshComm.allToAll( (&(d_elemIdList[0])), sendSourceCnts, sendSourceDisps, recvElemIdBuf, recvSourceCnts, recvSourceDisps, true);
 
       if(gatherSendBuf > 0) {
         d_rankList.clear();
@@ -401,25 +404,25 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
       MPI_Request recvNextReq;
       MPI_Request sendFirstReq;
       MPI_Request sendLastReq;
-      if(d_rank > 0) {
+      if(rank > 0) {
         MPI_Irecv(&prevBox, 1, par::Mpi_datatype<ot::TreeNode>::value(),
-            prevRank, 1, (d_globalComm.getCommunicator()), &recvPrevReq);
+            prevRank, 1, (meshComm.getCommunicator()), &recvPrevReq);
         MPI_Isend(&firstBox, 1, par::Mpi_datatype<ot::TreeNode>::value(),
-            prevRank, 2, (d_globalComm.getCommunicator()), &sendFirstReq);
+            prevRank, 2, (meshComm.getCommunicator()), &sendFirstReq);
       }
-      if(d_rank < (d_npes - 1)) {
+      if(rank < (npes - 1)) {
         MPI_Irecv(&nextBox, 1, par::Mpi_datatype<ot::TreeNode>::value(),
-            nextRank, 2, (d_globalComm.getCommunicator()), &recvNextReq);
+            nextRank, 2, (meshComm.getCommunicator()), &recvNextReq);
         MPI_Isend(&lastBox, 1, par::Mpi_datatype<ot::TreeNode>::value(),
-            nextRank, 1, (d_globalComm.getCommunicator()), &sendLastReq);
+            nextRank, 1, (meshComm.getCommunicator()), &sendLastReq);
       }
 
-      if(d_rank > 0) {
+      if(rank > 0) {
         MPI_Status status;
         MPI_Wait(&recvPrevReq, &status);
         MPI_Wait(&sendFirstReq, &status);
       }
-      if(d_rank < (d_npes - 1)) {
+      if(rank < (npes - 1)) {
         MPI_Status status;
         MPI_Wait(&recvNextReq, &status);
         MPI_Wait(&sendLastReq, &status);
@@ -427,12 +430,12 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
 
       bool removeFirst = false;
       bool addToLast = false;
-      if(d_rank > 0) {
+      if(rank > 0) {
         if(prevBox == firstBox) {
           removeFirst = true;
         }
       }
-      if(d_rank < (d_npes - 1)) {
+      if(rank < (npes - 1)) {
         if(nextBox == lastBox) {
           addToLast = true;
         }
@@ -446,13 +449,13 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
         d_elemIdList.resize(numPts + (nextBox.getWeight()));
         d_nodeList[d_nodeList.size() - 1].addWeight(nextBox.getWeight());
         MPI_Irecv((&(d_rankList[numPts])), ((nextBox.getWeight())), MPI_INT, nextRank,
-            3, (d_globalComm.getCommunicator()), &recvRankReq);
+            3, (meshComm.getCommunicator()), &recvRankReq);
         MPI_Irecv((&(d_elemIdList[numPts])), ((nextBox.getWeight())), MPI_INT, nextRank,
-            4, (d_globalComm.getCommunicator()), &recvElemIdReq);
+            4, (meshComm.getCommunicator()), &recvElemIdReq);
       }
       if(removeFirst) {
-        MPI_Send((&(d_rankList[0])), ((firstBox.getWeight())), MPI_INT, prevRank, 3, (d_globalComm.getCommunicator()));
-        MPI_Send((&(d_elemIdList[0])), ((firstBox.getWeight())), MPI_INT, prevRank, 4, (d_globalComm.getCommunicator()));
+        MPI_Send((&(d_rankList[0])), ((firstBox.getWeight())), MPI_INT, prevRank, 3, (meshComm.getCommunicator()));
+        MPI_Send((&(d_elemIdList[0])), ((firstBox.getWeight())), MPI_INT, prevRank, 4, (meshComm.getCommunicator()));
         d_nodeList.erase(d_nodeList.begin());
       }
       if(addToLast) {
@@ -476,13 +479,13 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
     ot::TreeNode firstNode;
     if(!(d_nodeList.empty())) {
       firstNode = d_nodeList[0];
-      firstNode.setWeight(d_rank);
+      firstNode.setWeight(rank);
     }
-    d_mins.resize(d_npes);
-    d_globalComm.allGather(firstNode, &(d_mins[0]));
+    d_mins.resize(npes);
+    meshComm.allGather(firstNode, &(d_mins[0]));
 
     std::vector<ot::TreeNode> tmpMins;
-    for(int i = 0; i < d_npes; ++i) {
+    for(int i = 0; i < npes; ++i) {
       if(d_mins[i].getDim() > 0) {
         tmpMins.push_back(d_mins[i]);
       }
@@ -502,14 +505,14 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
         }
       }//end i
 
-      int globalMinFineListLen = d_globalComm.minReduce(minFineListLen);
-      int globalMaxFineListLen = d_globalComm.maxReduce(maxFineListLen);
+      int globalMinFineListLen = meshComm.minReduce(minFineListLen);
+      int globalMaxFineListLen = meshComm.maxReduce(maxFineListLen);
 
       numLocalOcts = d_nodeList.size();
 
-      int numGlobalOcts = d_globalComm.sumReduce(numLocalOcts);
+      int numGlobalOcts = meshComm.sumReduce(numLocalOcts);
 
-      if(!d_rank) {
+      if(!rank) {
         std::cout<<"Total num final octants = "<<numGlobalOcts <<std::endl;
         std::cout<<"Global Min Fine List Length = "<<globalMinFineListLen <<std::endl;
         std::cout<<"Global Max Fine List Length = "<<globalMaxFineListLen <<std::endl;
@@ -525,12 +528,15 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
     }
   }
 
-  void DendroSearch::search(const std::vector<double> & pts) {
+  void DendroSearch::search(AMP::AMP_MPI comm, const std::vector<double> & pts) {
+    const int rank = comm.getRank();
+    const int npes = comm.getSize();
+
     d_numLocalPts = (pts.size())/3;
 
     double searchBeginTime, searchStep1Time, searchStep2Time, searchStep3Time, searchStep4Time, searchStep5Time, searchStep6Time;
     if(d_verbose) {
-      d_globalComm.barrier();
+      comm.barrier();
       searchBeginTime = MPI_Wtime();
     }
 
@@ -551,7 +557,7 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
       unsigned int pZ = static_cast<unsigned int>(scaledZ*DTPMD);
 
       ptsWrapper[i].node =  ot::TreeNode(pX, pY, pZ, MaxDepth, 3, MaxDepth);
-      ptsWrapper[i].node.setWeight(d_rank);
+      ptsWrapper[i].node.setWeight(rank);
       ptsWrapper[i].values[0] = x;
       ptsWrapper[i].values[1] = y;
       ptsWrapper[i].values[2] = z;
@@ -559,9 +565,9 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
     }//end i
 
     if(d_verbose) {
-      d_globalComm.barrier();
+      comm.barrier();
       searchStep1Time = MPI_Wtime();
-      if(!d_rank) {
+      if(!rank) {
         std::cout<<"Time for step-1 of search: "<<(searchStep1Time - searchBeginTime)<<" seconds."<<std::endl;
       }
     }
@@ -572,10 +578,10 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
     //time and using binary searches would be logarithmic. This is just a matter
     //of constants since sorting is also logarithmic.
 
-    d_sendCnts.resize(d_npes);
-    d_recvCnts.resize(d_npes);
-    d_sendDisps.resize(d_npes);
-    d_recvDisps.resize(d_npes);
+    d_sendCnts.resize(npes);
+    d_recvCnts.resize(npes);
+    d_sendDisps.resize(npes);
+    d_recvDisps.resize(npes);
     std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);
 
     std::vector<int> part(d_numLocalPts, -1);
@@ -590,23 +596,23 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
     }//end i
 
     if(d_verbose) {
-      d_globalComm.barrier();
+      comm.barrier();
       searchStep2Time = MPI_Wtime();
-      if(!d_rank) {
+      if(!rank) {
         std::cout<<"Time for step-2 of search: "<<(searchStep2Time - searchStep1Time)<<" seconds."<<std::endl;
       }
     }
 
-    d_globalComm.allToAll(1, &(d_sendCnts[0]), &(d_recvCnts[0]));
+    comm.allToAll(1, &(d_sendCnts[0]), &(d_recvCnts[0]));
 
     d_sendDisps[0] = 0;
     d_recvDisps[0] = 0;
-    for(int i = 1; i < d_npes; ++i) {
+    for(int i = 1; i < npes; ++i) {
       d_sendDisps[i] = d_sendDisps[i - 1] + d_sendCnts[i - 1];
       d_recvDisps[i] = d_recvDisps[i - 1] + d_recvCnts[i - 1];
     }//end i
 
-    std::vector<ot::NodeAndValues<double, 4> > sendList(d_sendDisps[d_npes - 1] + d_sendCnts[d_npes - 1]);
+    std::vector<ot::NodeAndValues<double, 4> > sendList(d_sendDisps[npes - 1] + d_sendCnts[npes - 1]);
 
     std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);
 
@@ -618,15 +624,15 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
     }//end i
     ptsWrapper.clear();
 
-    std::vector<ot::NodeAndValues<double, 4> > recvList(d_recvDisps[d_npes - 1] + d_recvCnts[d_npes - 1]);
-    d_globalComm.allToAll((!(sendList.empty()) ? &(sendList[0]) : NULL), &(d_sendCnts[0]), &(d_sendDisps[0]),
+    std::vector<ot::NodeAndValues<double, 4> > recvList(d_recvDisps[npes - 1] + d_recvCnts[npes - 1]);
+    comm.allToAll((!(sendList.empty()) ? &(sendList[0]) : NULL), &(d_sendCnts[0]), &(d_sendDisps[0]),
         (!(recvList.empty()) ? &(recvList[0]) : NULL), &(d_recvCnts[0]), &(d_recvDisps[0]), true);
     sendList.clear();
 
     if(d_verbose) {
-      d_globalComm.barrier();
+      comm.barrier();
       searchStep3Time = MPI_Wtime();
-      if(!d_rank) {
+      if(!rank) {
         std::cout<<"Time for step-3 of search: "<<(searchStep3Time - searchStep2Time)<<" seconds."<<std::endl;
       }
     }
@@ -647,23 +653,23 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
     }//end i
 
     if(d_verbose) {
-      d_globalComm.barrier();
+      comm.barrier();
       searchStep4Time = MPI_Wtime();
-      if(!d_rank) {
+      if(!rank) {
         std::cout<<"Time for step-4 of search: "<<(searchStep4Time - searchStep3Time)<<" seconds."<<std::endl;
       }
     }
 
-    d_globalComm.allToAll(1, &(d_sendCnts[0]), &(d_recvCnts[0]));
+    comm.allToAll(1, &(d_sendCnts[0]), &(d_recvCnts[0]));
 
     d_sendDisps[0] = 0;
     d_recvDisps[0] = 0;
-    for(int i = 1; i < d_npes; ++i) {
+    for(int i = 1; i < npes; ++i) {
       d_sendDisps[i] = d_sendDisps[i - 1] + d_sendCnts[i - 1];
       d_recvDisps[i] = d_recvDisps[i - 1] + d_recvCnts[i - 1];
     }//end i
 
-    std::vector<double> sendPtsList(6*(d_sendDisps[d_npes - 1] + d_sendCnts[d_npes - 1]));
+    std::vector<double> sendPtsList(6*(d_sendDisps[npes - 1] + d_sendCnts[npes - 1]));
 
     std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);
 
@@ -691,22 +697,22 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
     }//end i
     recvList.clear();
 
-    for(int i = 0; i < d_npes; ++i) {
+    for(int i = 0; i < npes; ++i) {
       d_sendCnts[i] *= 6;
       d_sendDisps[i] *= 6;
       d_recvCnts[i] *= 6;
       d_recvDisps[i] *= 6;
     }//end i
 
-    std::vector<double> recvPtsList(d_recvDisps[d_npes - 1] + d_recvCnts[d_npes - 1]);
-    d_globalComm.allToAll((!(sendPtsList.empty()) ? &(sendPtsList[0]) : NULL), &(d_sendCnts[0]), &(d_sendDisps[0]), 
+    std::vector<double> recvPtsList(d_recvDisps[npes - 1] + d_recvCnts[npes - 1]);
+    comm.allToAll((!(sendPtsList.empty()) ? &(sendPtsList[0]) : NULL), &(d_sendCnts[0]), &(d_sendDisps[0]), 
         (!(recvPtsList.empty()) ? &(recvPtsList[0]) : NULL), &(d_recvCnts[0]), &(d_recvDisps[0]), true);
     sendPtsList.clear();
 
     if(d_verbose) {
-      d_globalComm.barrier();
+      comm.barrier();
       searchStep5Time = MPI_Wtime();
-      if(!d_rank) {
+      if(!rank) {
         std::cout<<"Time for step-5 of search: "<<(searchStep5Time - searchStep4Time)<<" seconds."<<std::endl;
       }
     }
@@ -757,45 +763,48 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
     }//end i
     recvPtsList.clear();
 
-    d_globalComm.allToAll(1, &(d_sendCnts[0]), &(d_recvCnts[0]));
+    comm.allToAll(1, &(d_sendCnts[0]), &(d_recvCnts[0]));
 
     d_sendDisps[0] = 0;
     d_recvDisps[0] = 0;
-    for(int i = 1; i < d_npes; ++i) {
+    for(int i = 1; i < npes; ++i) {
       d_sendDisps[i] = d_sendDisps[i - 1] + d_sendCnts[i - 1];
       d_recvDisps[i] = d_recvDisps[i - 1] + d_recvCnts[i - 1];
     }//end i
 
     if(d_verbose) {
-      d_globalComm.barrier();
+      comm.barrier();
       searchStep6Time = MPI_Wtime();
-      if(!d_rank) {
+      if(!rank) {
         std::cout<<"Time for step-6 of search: "<<(searchStep6Time - searchStep5Time)<<" seconds."<<std::endl;
       }
     }
   }
 
-  void DendroSearch::interpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
+  void DendroSearch::interpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
       std::vector<double> & results, std::vector<bool> & foundPt) {
+    const int rank = comm.getRank();
+    const int npes = comm.getSize();
+
     double interpolateBeginTime, interpolateStep1Time, interpolateStep2Time;
     if(d_verbose) {
-      d_globalComm.barrier();
+      comm.barrier();
       interpolateBeginTime = MPI_Wtime();
     }
 
     vectorField->makeConsistent(  AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField->getDOFManager();
 
-    for(unsigned int i = 0; i < d_npes; ++i) {
+    for(unsigned int i = 0; i < npes; ++i) {
       d_sendCnts[i] *= (dofsPerNode + 1);
       d_recvCnts[i] *= (dofsPerNode + 1);
       d_sendDisps[i] *= (dofsPerNode + 1);
       d_recvDisps[i] *= (dofsPerNode + 1);
     }// end for i
 
-    std::vector<double> sendResults(d_sendDisps[d_npes - 1] + d_sendCnts[d_npes - 1]);
+    std::vector<double> sendResults(d_sendDisps[npes - 1] + d_sendCnts[npes - 1]);
 
-    std::vector<int> tmpSendCnts(d_npes, 0);
+    std::vector<int> tmpSendCnts(npes, 0);
 
     std::vector<double> basis_functions_values(8);
     for(int i = 0; i < d_foundPts.size(); i += 6) {
@@ -824,16 +833,16 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
     tmpSendCnts.clear();
 
     if(d_verbose) {
-      d_globalComm.barrier();
+      comm.barrier();
       interpolateStep1Time = MPI_Wtime();
-      if(!d_rank) {
+      if(!rank) {
         std::cout<<"Time for step-1 of interpolate: "<<(interpolateStep1Time - interpolateBeginTime)<<" seconds."<<std::endl;
       }
     }
 
-    std::vector<double> recvResults(d_recvDisps[d_npes - 1] + d_recvCnts[d_npes - 1]);
+    std::vector<double> recvResults(d_recvDisps[npes - 1] + d_recvCnts[npes - 1]);
 
-    d_globalComm.allToAll((!(sendResults.empty()) ? &(sendResults[0]) : NULL), &(d_sendCnts[0]), &(d_sendDisps[0]),
+    comm.allToAll((!(sendResults.empty()) ? &(sendResults[0]) : NULL), &(d_sendCnts[0]), &(d_sendDisps[0]),
         (!(recvResults.empty()) ? &(recvResults[0]) : NULL), &(d_recvCnts[0]), &(d_recvDisps[0]), true);
     sendResults.clear();
 
@@ -856,7 +865,7 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
       }//end d
     }//end i
 
-    for(unsigned int i = 0; i < d_npes; ++i) {
+    for(unsigned int i = 0; i < npes; ++i) {
       d_sendCnts[i] /= (dofsPerNode + 1);
       d_recvCnts[i] /= (dofsPerNode + 1);
       d_sendDisps[i] /= (dofsPerNode + 1);
@@ -864,9 +873,9 @@ void DendroSearch::projectOnBoundaryID(const int boundaryID, std::vector<AMP::Me
     } // end for i
 
     if(d_verbose) {
-      d_globalComm.barrier();
+      comm.barrier();
       interpolateStep2Time = MPI_Wtime();
-      if(!d_rank) {
+      if(!rank) {
         std::cout<<"Time for step-2 of interpolate: "<<(interpolateStep2Time - interpolateStep1Time)<<" seconds."<<std::endl;
       }
     }

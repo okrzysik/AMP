@@ -50,14 +50,14 @@ void NodeToSegmentConstraintsOperator::reset(const boost::shared_ptr<OperatorPar
 
   /** do a dendro search for the boundary slave vertices on the master mesh */
   AMP::Mesh::Mesh::shared_ptr masterMesh = mesh->Subset(d_MasterMeshID);
-  DendroSearch dendroSearchOnMaster(comm, masterMesh);
-  dendroSearchOnMaster.search(tmpSlaveVerticesCoord);
+  DendroSearch dendroSearchOnMaster(masterMesh);
+  dendroSearchOnMaster.search(comm, tmpSlaveVerticesCoord);
 
   std::vector<AMP::Mesh::MeshElementID> tmpMasterVerticesGlobalIDs;
   std::vector<double> tmpSlaveVerticesShift, tmpSlaveVerticesLocalCoordOnFace;
   std::vector<int> flags;
 
-  dendroSearchOnMaster.projectOnBoundaryID(d_MasterBoundaryID,
+  dendroSearchOnMaster.projectOnBoundaryID(comm, d_MasterBoundaryID,
       tmpMasterVerticesGlobalIDs, tmpSlaveVerticesShift, tmpSlaveVerticesLocalCoordOnFace, flags);
 
   AMP_ASSERT( nSlaveVertices == tmpMasterVerticesGlobalIDs.size() / 4 );
