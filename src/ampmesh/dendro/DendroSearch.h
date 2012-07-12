@@ -35,25 +35,20 @@ class DendroSearch {
 
     enum SearchStatus { NotFound = 0, Found, FoundOnBoundary, FoundNotOnBoundary };
 
-    DendroSearch(AMP::AMP_MPI comm, AMP::Mesh::Mesh::shared_ptr mesh);
+    DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh);
 
-    void searchAndInterpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
+    void searchAndInterpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
         const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt);
 
-    void search(const std::vector<double> & pts);
+    void search(AMP::AMP_MPI comm, const std::vector<double> & pts);
 
-    void interpolate(AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
+    void interpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
         std::vector<double> & results, std::vector<bool> & foundPt);
 
-//    void projectOnBoundaryID(const int boundaryID, //std::vector<ProjectOnBoundaryStatus> & projectOnBoundaryStatuses);
-//        const unsigned int dofsPerNode, AMP::Discretization::DOFManager::shared_ptr dofManager,
-//        std::vector<size_t> & nodeIDs, std::vector<size_t> & nodeOwnerRanks, std::vector<double> & localCoords, std::vector<int> & flags);
-
-    void projectOnBoundaryID(const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
+    void projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
         std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags);
 
   private:
-    AMP::AMP_MPI d_globalComm;
     AMP::Mesh::Mesh::shared_ptr d_meshAdapter;
     std::vector<AMP::Mesh::MeshElement> d_localElemArr;
     std::vector<ot::TreeNode> d_nodeList;
@@ -71,13 +66,10 @@ class DendroSearch {
     std::vector<int> d_recvDisps;
     unsigned int d_boxLevel;
     int d_numLocalPts;
-    int d_rank;
-    int d_npes;
     bool d_verbose;
   
     std::vector<hex8_element_t> d_volume_elements;
 
-    void setupDendro();
     void setupDSforSearch();
     void createLocalMeshElementArray();
 };
@@ -88,7 +80,6 @@ struct DendroSearch::ProjectOnBoundaryData {
   AMP::Mesh::MeshElementID d_FaceVerticesIDs[4];
   double d_ProjectionLocalCoordsOnFace[2]; 
   double d_ShiftGlobalCoords[3];
-
 };
 
 #endif // DENDRO_SEARCH
