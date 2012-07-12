@@ -382,6 +382,8 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
             int nvar = 0;
             int centering = 0;
             double **var = new double*[data.varSize[i]];
+            for (int j=0; j<data.varSize[i]; j++)
+                var[j] = NULL;
             const char *varnames[] = {"1","2","3"};
             if ( data.varType[i]==AMP::Mesh::Vertex ) {
                 // We are saving node-centered data
@@ -432,8 +434,10 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
                         1, (char**) varnames, &var[j], nvar, NULL, 0, DB_DOUBLE, centering, NULL);
                 }
             }
-            for (int j=0; j<data.varSize[i]; j++)
-                delete [] var[j];
+            for (int j=0; j<data.varSize[i]; j++) {
+                if ( var[j] != NULL )
+                    delete [] var[j];
+            }
             delete [] var;
         }
     #endif

@@ -1,6 +1,9 @@
 #ifndef included_ProfilerApp
 #define included_ProfilerApp
 
+#include <stdio.h>
+#include <stdlib.h>
+
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     #define USE_WINDOWS
@@ -173,6 +176,7 @@ private:
         double total_time;          // Store the total time spent in the given block (seconds)
         double *start_time;         // Store when start was called for the given trace (seconds from constructor call)
         double *end_time;           // Store when stop was called for the given trace (seconds from constructor call)
+        // Constructor used to delete key values
         store_trace() {
             N_calls = 0;
             min_time = 0.0;
@@ -182,7 +186,11 @@ private:
             start_time = NULL;
             end_time = NULL;
         }
-        // De-constructor used to delete key values
+        // Copy constuctor
+        store_trace(const store_trace& rhs) {
+            abort();
+        }
+        // De-constructor
 		~store_trace() {
             if ( start_time == NULL )
                 delete [] start_time;
