@@ -54,7 +54,6 @@ class DendroSearch {
     std::vector<ot::TreeNode> d_nodeList;
     std::vector<ot::TreeNode> d_mins;
     std::vector<double> d_minCoords;
-    std::vector<double> d_maxCoords;
     std::vector<double> d_scalingFactor;
     std::vector<double> d_foundPts;
     std::vector<int> d_stIdxList;

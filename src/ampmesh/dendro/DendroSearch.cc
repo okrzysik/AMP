@@ -9,7 +9,6 @@ DendroSearch::DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh)
   : d_meshAdapter(mesh) {
     d_verbose = true;
     d_minCoords.resize(3);
-    d_maxCoords.resize(3);
     d_scalingFactor.resize(3);
     setupDSforSearch();
   }
@@ -152,8 +151,8 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
     std::vector<double> box = d_meshAdapter->getBoundingBox();
     for(int i = 0; i < d_meshAdapter->getDim(); ++i) {
       d_minCoords[i] = box[2*i+0];
-      d_maxCoords[i] = box[2*i+1];
-      d_scalingFactor[i] = 1.0/(1.0e-10 + d_maxCoords[i] - d_minCoords[i]);
+      double maxCoord = box[2*i+1];
+      d_scalingFactor[i] = 1.0/(1.0e-10 + maxCoord - d_minCoords[i]);
     }//end i
 
     createLocalMeshElementArray();
@@ -518,7 +517,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
         std::cout<<"Global Max Fine List Length = "<<globalMaxFineListLen <<std::endl;
       }
     }
-    
+
     if(d_verbose) {
       meshComm.barrier();
       setupEndTime = MPI_Wtime();
@@ -531,6 +530,38 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
   void DendroSearch::search(AMP::AMP_MPI comm, const std::vector<double> & pts) {
     const int rank = comm.getRank();
     const int npes = comm.getSize();
+
+    std::vector<int> rankMap(npes);
+
+    int myRank = -1;
+    if(d_meshAdapter != NULL) {
+      AMP::AMP_MPI meshComm = d_meshAdapter->getComm();
+      myRank = meshComm.getRank();
+    }
+
+    MPI_Allgather(&myRank, 1, MPI_INT, &(rankMap[0]), 1, MPI_INT, comm.getCommunicator());
+
+    std::vector<int> invRankMap(npes, -1);
+    for(int i = 0; i < npes; ++i) {
+      if(rankMap[i] >= 0) {
+        invRankMap[rankMap[i]] = i;
+      }
+    }//end i
+
+    int minsSize;
+    if(myRank == 0) {
+      minsSize = d_mins.size();
+    }
+
+    MPI_Bcast(minsSize, 1, MPI_INT, invRankMap[0], comm.getCommunicator());
+
+    d_mins.resize(minsSize);
+    MPI_Bcast(&(d_mins[0]), minsSize, par::Mpi_datatype<ot::TreeNode>::value(),
+        invRankMap[0], comm.getCommunicator());
+
+    MPI_Bcast(d_minCoords, 3, MPI_DOUBLE, invRankMap[0], comm.getCommunicator());
+
+    MPI_Bcast(d_scalingFactor, 3, MPI_DOUBLE, invRankMap[0], comm.getCommunicator());
 
     d_numLocalPts = (pts.size())/3;
 
@@ -590,7 +621,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
       unsigned int retIdx;
       bool found = seq::maxLowerBound<ot::TreeNode>(d_mins, (ptsWrapper[i].node), retIdx, NULL, NULL);
       if(found) {
-        part[i] = d_mins[retIdx].getWeight();
+        part[i] = invRankMap[d_mins[retIdx].getWeight()];
         ++(d_sendCnts[part[i]]);
       }
     }//end i
