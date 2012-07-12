@@ -260,14 +260,14 @@ namespace AMP {
           <<std::setprecision(15)<< finalResNorm << std::endl;    
       }
 
+      PROFILE_STOP("solve");
+      
       if(d_bRobustMode) {
         if(finalResNorm > initialResNorm) {
           AMP::pout << "Warning: ML was not able to reduce the residual. Using LU instead." << std::endl;
           reSolveWithLU(f, u);
         }
       }
-
-      PROFILE_STOP("solve");
     }
 
     void TrilinosMLSolver :: reSolveWithLU(boost::shared_ptr<AMP::LinearAlgebra::Vector> f,
