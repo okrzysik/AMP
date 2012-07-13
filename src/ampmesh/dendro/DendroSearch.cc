@@ -404,27 +404,21 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
       MPI_Request sendFirstReq;
       MPI_Request sendLastReq;
       if(rank > 0) {
-        MPI_Irecv(&prevBox, 1, par::Mpi_datatype<ot::TreeNode>::value(),
-            prevRank, 1, (meshComm.getCommunicator()), &recvPrevReq);
-        MPI_Isend(&firstBox, 1, par::Mpi_datatype<ot::TreeNode>::value(),
-            prevRank, 2, (meshComm.getCommunicator()), &sendFirstReq);
+        recvPrevReq = meshComm.Irecv(&prevBox, 1, prevRank, 1);
+        sendFirstReq = meshComm.Isend(&firstBox, 1, prevRank, 2);
       }
       if(rank < (npes - 1)) {
-        MPI_Irecv(&nextBox, 1, par::Mpi_datatype<ot::TreeNode>::value(),
-            nextRank, 2, (meshComm.getCommunicator()), &recvNextReq);
-        MPI_Isend(&lastBox, 1, par::Mpi_datatype<ot::TreeNode>::value(),
-            nextRank, 1, (meshComm.getCommunicator()), &sendLastReq);
+        recvNextReq = meshComm.Irecv(&nextBox, 1, nextRank, 2);
+        sendLastReq = meshComm.Isend(&lastBox, 1, nextRank, 1);
       }
 
       if(rank > 0) {
-        MPI_Status status;
-        MPI_Wait(&recvPrevReq, &status);
-        MPI_Wait(&sendFirstReq, &status);
+        meshComm.wait(recvPrevReq);
+        meshComm.wait(sendFirstReq);
       }
       if(rank < (npes - 1)) {
-        MPI_Status status;
-        MPI_Wait(&recvNextReq, &status);
-        MPI_Wait(&sendLastReq, &status);
+        meshComm.wait(recvNextReq);
+        meshComm.wait(sendLastReq);
       }
 
       bool removeFirst = false;
@@ -447,20 +441,17 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
         d_rankList.resize(numPts + (nextBox.getWeight()));
         d_elemIdList.resize(numPts + (nextBox.getWeight()));
         d_nodeList[d_nodeList.size() - 1].addWeight(nextBox.getWeight());
-        MPI_Irecv((&(d_rankList[numPts])), ((nextBox.getWeight())), MPI_INT, nextRank,
-            3, (meshComm.getCommunicator()), &recvRankReq);
-        MPI_Irecv((&(d_elemIdList[numPts])), ((nextBox.getWeight())), MPI_INT, nextRank,
-            4, (meshComm.getCommunicator()), &recvElemIdReq);
+        recvRankReq = meshComm.Irecv((&(d_rankList[numPts])), ((nextBox.getWeight())), nextRank, 3);
+        recvElemIdReq = meshComm.Irecv((&(d_elemIdList[numPts])), ((nextBox.getWeight())), nextRank, 4);
       }
       if(removeFirst) {
-        MPI_Send((&(d_rankList[0])), ((firstBox.getWeight())), MPI_INT, prevRank, 3, (meshComm.getCommunicator()));
-        MPI_Send((&(d_elemIdList[0])), ((firstBox.getWeight())), MPI_INT, prevRank, 4, (meshComm.getCommunicator()));
+        meshComm.send((&(d_rankList[0])), ((firstBox.getWeight())), prevRank, 3);
+        meshComm.send((&(d_elemIdList[0])), ((firstBox.getWeight())), prevRank, 4);
         d_nodeList.erase(d_nodeList.begin());
       }
       if(addToLast) {
-        MPI_Status status;
-        MPI_Wait(&recvRankReq, &status);
-        MPI_Wait(&recvElemIdReq, &status);
+        meshComm.wait(recvRankReq);
+        meshComm.wait(recvElemIdReq);
       }
       if(removeFirst) {
         d_rankList.erase(d_rankList.begin(), d_rankList.begin() + ((firstBox.getWeight())));
