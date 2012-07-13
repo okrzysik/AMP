@@ -65,50 +65,15 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     std::cout<<"Finished reading the mesh in "<<(meshEndTime - meshBeginTime)<<" seconds."<<std::endl;
   }
 
+  // build the contact operator
   boost::shared_ptr<AMP::Operator::NodeToSegmentConstraintsOperatorParameters> 
       nodeToSegmentConstraintsOperatorParams( new AMP::Operator::NodeToSegmentConstraintsOperatorParameters(mesh_db) );
 
-  
-  std::fstream fout;
-  std::string fileName = "debug_out_" + boost::lexical_cast<std::string>(rank);
-  fout.open(fileName.c_str(), std::fstream::out);
-
-  fout<<"rank="<<rank<<"  npes="<<npes<<"\n";
-  std::vector<AMP::Mesh::MeshID> meshIDs = meshAdapter->getBaseMeshIDs(); 
-  std::vector<AMP::Mesh::MeshID>::const_iterator meshIDsIterator = meshIDs.begin(), meshIDsIterator_end = meshIDs.end();
-  for ( ; meshIDsIterator != meshIDsIterator_end; ++meshIDsIterator) {
-    AMP::Mesh::Mesh::shared_ptr tmpMesh = meshAdapter->Subset(*meshIDsIterator);
-    if (tmpMesh != NULL) {
-      fout<<"mesh="<<tmpMesh->getName()<<"\n";
-      std::vector<int> boundaryIDs = tmpMesh->getBoundaryIDs();
-      fout<<"boundaryIDs = ";
-      for (size_t i = 0; i < boundaryIDs.size(); ++i) fout<<boundaryIDs[i]<<"  ";
-      fout<<"\n";
-      std::vector<int>::const_iterator boundaryIDsIterator = boundaryIDs.begin(), boundaryIDsIterator_end = boundaryIDs.end();
-      for ( ; boundaryIDsIterator != boundaryIDsIterator_end; ++boundaryIDsIterator) {
-        fout<<"boundaryID="<<*boundaryIDsIterator<<"\n";
-        AMP::Mesh::MeshIterator boundaryIDMeshIterator = tmpMesh->getBoundaryIDIterator(AMP::Mesh::Vertex, *boundaryIDsIterator);
-        fout<<"sizeMeshIterator="<<boundaryIDMeshIterator.size()<<"\n";
-        AMP::Mesh::MeshIterator meshIterator = boundaryIDMeshIterator.begin(), meshIterator_end = boundaryIDMeshIterator.end();
-        std::vector<double> vertexCoord;
-        for ( ; meshIterator != meshIterator_end; ++meshIterator) {
-          vertexCoord = meshIterator->coord();
-          fout<<"  ( "<<vertexCoord[0]<<", "<<vertexCoord[1]<<", "<<vertexCoord[2]<<" )  "
-              <<"local_id="<<meshIterator->globalID().local_id()<<"\n";
-        }
-      }
-    }
-  }
-
-  fout.close();
-
-
+  std::vector<AMP::Mesh::MeshID> meshIDs = meshAdapter->getBaseMeshIDs();
   nodeToSegmentConstraintsOperatorParams->d_MasterMeshID = meshIDs[0];
   nodeToSegmentConstraintsOperatorParams->d_SlaveMeshID = meshIDs[1];
-
   nodeToSegmentConstraintsOperatorParams->d_MasterBoundaryID = 1;
   nodeToSegmentConstraintsOperatorParams->d_SlaveBoundaryID = 2;
-
   
   int dofsPerNode = 3;
   int nodalGhostWidth = 1;
@@ -119,20 +84,21 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   nodeToSegmentConstraintsOperatorParams->d_DOFManager = dofManager;
 
   nodeToSegmentConstraintsOperatorParams->d_GlobalComm = globalComm;
-
-  if(!rank) {
-    std::cout<<"Finished building operator parameter"<<std::endl;
-  }
+  nodeToSegmentConstraintsOperatorParams->d_Mesh = meshAdapter;
 
   boost::shared_ptr<AMP::Operator::NodeToSegmentConstraintsOperator> 
       nodeToSegmentConstraintsOperator( new AMP::Operator::NodeToSegmentConstraintsOperator(nodeToSegmentConstraintsOperatorParams) );
 
-  if(!rank) {
-    std::cout<<"Finished creating operator"<<std::endl;
-  }
-
-  nodeToSegmentConstraintsOperatorParams->d_Mesh = meshAdapter;
   nodeToSegmentConstraintsOperator->reset(nodeToSegmentConstraintsOperatorParams);
+
+  AMP::LinearAlgebra::Variable::shared_ptr dummyVariable(new AMP::LinearAlgebra::Variable("Dummy"));
+  AMP::LinearAlgebra::Vector::shared_ptr dummyInVector = createVector(dofManager, dummyVariable, split);
+  AMP::LinearAlgebra::Vector::shared_ptr dummyOutVector = createVector(dofManager, dummyVariable, split);
+
+  nodeToSegmentConstraintsOperator->apply(dummyInVector, dummyInVector, dummyOutVector);
+  nodeToSegmentConstraintsOperator->applyTranspose(dummyInVector, dummyInVector, dummyOutVector);
+
+  
 
 #ifdef USE_SILO
 //  AMP::Linear

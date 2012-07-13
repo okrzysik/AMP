@@ -279,7 +279,8 @@ void NodeToSegmentConstraintsOperator::applyTranspose(const AMP::LinearAlgebra::
     AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double b) {
 
   /** send and receive the slave values and the shape functions values */
-  AMP::AMP_MPI comm = u->getComm();
+  AMP::AMP_MPI comm = d_GlobalComm;
+//  AMP::AMP_MPI comm = u->getComm();
   size_t npes = comm.getSize();
 
   std::vector<double> sendSlaveValueAndShapeFunctionsValues(d_TransposeSendDisps[npes-1]+d_TransposeSendCnts[npes-1]);
@@ -291,8 +292,8 @@ void NodeToSegmentConstraintsOperator::applyTranspose(const AMP::LinearAlgebra::
   } // end for i
 
   std::vector<double> recvSlaveValueAndShapeFunctionsValues(d_TransposeRecvDisps[npes-1]+d_TransposeRecvCnts[npes-1]);
-  comm.allToAll((!(sendSlaveValueAndShapeFunctionsValues.empty()) ? &(sendSlaveValueAndShapeFunctionsValues[0]) : NULL), &(d_SendCnts[0]), &(d_SendDisps[0]),
-      (!(recvSlaveValueAndShapeFunctionsValues.empty()) ? &(recvSlaveValueAndShapeFunctionsValues[0]) : NULL), &(d_RecvCnts[0]), &(d_RecvDisps[0]), true);
+  comm.allToAll((!(sendSlaveValueAndShapeFunctionsValues.empty()) ? &(sendSlaveValueAndShapeFunctionsValues[0]) : NULL), &(d_TransposeSendCnts[0]), &(d_TransposeSendDisps[0]),
+      (!(recvSlaveValueAndShapeFunctionsValues.empty()) ? &(recvSlaveValueAndShapeFunctionsValues[0]) : NULL), &(d_TransposeRecvCnts[0]), &(d_TransposeRecvDisps[0]), true);
   sendSlaveValueAndShapeFunctionsValues.clear();
 
   /** compute added values to master values and set slave values to zero */
