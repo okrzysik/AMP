@@ -26,7 +26,7 @@
 
 void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
 
-    AMP::PIO::logOnlyNodeZero ( "outputMeshManagerTest1" );
+    AMP::PIO::logOnlyNodeZero ( "output_test_SiloIO" );
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
     globalComm.barrier();
     double t1 = AMP::AMP_MPI::time();
@@ -85,8 +85,9 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
 
     // Create the silo writer and register the data
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
-    siloWriter->registerMesh( mesh );
-    siloWriter->registerMesh( submesh );
+    int level = 1;  // How much detail do we want to register
+    siloWriter->registerMesh( mesh, level );
+    siloWriter->registerMesh( submesh, level );
 #ifdef USE_AMP_VECTORS
     siloWriter->registerVector( rank_vec, mesh, AMP::Mesh::Vertex, "rank" );
     siloWriter->registerVector( position, mesh, AMP::Mesh::Vertex, "position" );
@@ -125,17 +126,19 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     double t5 = AMP::AMP_MPI::time();
 
     // Write a single output file
-    std::stringstream  fname1;
-    fname1 << "2pellet_clad_" << globalComm.getSize() << "proc_single";
-    globalComm.barrier();
-    siloWriter->setDecomposition( 0 );
-    siloWriter->writeFile( fname1.str() , 0 );
-    globalComm.barrier();
+    if ( globalComm.getSize() <= 20 ) {
+        std::stringstream  fname1;
+        fname1 << input_file << "_" << globalComm.getSize() << "proc_single";
+        globalComm.barrier();
+        siloWriter->setDecomposition( 0 );
+        siloWriter->writeFile( fname1.str() , 0 );
+        globalComm.barrier();
+    }
     double t6 = AMP::AMP_MPI::time();
 
     // Write a seperate output file for each rank
     std::stringstream  fname2;
-    fname2 << "2pellet_clad_" << globalComm.getSize() << "proc_multiple";
+    fname2 << input_file << "_" << globalComm.getSize() << "proc_multiple";
     globalComm.barrier();
     siloWriter->setDecomposition( 1 );
     siloWriter->writeFile( fname2.str() , 0 );
@@ -147,7 +150,8 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
         std::cout << "Allocate vectors: " << t3-t2 << std::endl;
         std::cout << "Register data: " << t4-t3 << std::endl;
         std::cout << "Initialize vectors: " << t5-t4 << std::endl;
-        std::cout << "Write a single file: " << t6-t5 << std::endl;
+        if ( globalComm.getSize() <= 20 )
+            std::cout << "Write a single file: " << t6-t5 << std::endl;
         std::cout << "Write multiple files: " << t7-t6 << std::endl;
         std::cout << "Total time: " << t7-t1 << std::endl;
     }

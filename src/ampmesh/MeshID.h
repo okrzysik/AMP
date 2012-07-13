@@ -40,6 +40,9 @@ public:
 	MeshID(uint64 id) {
         data = id;
     }
+	uint64 getData() {
+        return data;
+    }
     // Overload key operators
     inline bool operator==(const MeshID& rhs ) const { return data==rhs.data; }
     inline bool operator!=(const MeshID& rhs ) const { return data!=rhs.data; }

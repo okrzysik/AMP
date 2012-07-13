@@ -111,7 +111,7 @@ namespace Operator {
 
         AMP::LinearAlgebra::Vector::shared_ptr myRhs = subsetInputVector( rhsCorrection );
 
-        double gammaValue = (d_params->d_db)->getDoubleWithDefault("gamma", -1.);
+        double gammaValue = (d_params->d_db)->getDoubleWithDefault("gamma",1.0);
 
         AMP::LinearAlgebra::Vector::shared_ptr rInternal = myRhs->cloneVector();
         AMP::Discretization::DOFManager::shared_ptr dofManager = rInternal->getDOFManager();
@@ -189,7 +189,7 @@ namespace Operator {
 
                 dofs.resize(numNodesInCurrElem);
                 for (size_t n = 0; n < dofIndices.size() ; n++)
-                  dofs[n] = dofIndices[n][k];
+                  dofs[n] = dofIndices[n][d_dofIds[j][k]];
 
                 for (size_t qp = 0; qp < d_qrule->n_points(); qp++) {
                   if(d_isConstantFlux)

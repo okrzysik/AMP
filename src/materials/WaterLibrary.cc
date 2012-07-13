@@ -202,6 +202,7 @@ September 1998");
 		static const double Newton_atol = 1.0e-7; // absolute tolerance for Newton solve
 		static const double Newton_rtol = 1.0e-7; // relative tolerance for Newton solve
 		static const unsigned int Newton_maxIter = 1000; // maximum number of iterations for Newton solve
+                static const double machinePrecision = 1.0e-15; // machine precision; used in perturbation for numerical Jacobian
 	};
 
 //=================== Functions =====================================================
@@ -366,24 +367,31 @@ September 1998");
 				for (size_t j=2; j<5; j++)
 				{
 					size_t jj = j-2;
-					V = V + a[i][j]*pow(P,i)*pow((250-H),jj);
+					V = V + a[i][jj]*pow(P,i)*pow((250-H),j);
 				}
 			}
 			double ExpSum = 0;
 			for (size_t i=0; i<3; i++)
+			{
 				for (size_t j=0; j<5; j++)
+			  {
 					ExpSum = ExpSum + b[i][j]*pow(P,i)*pow(H,j); 
+				}
+			}
 			V = V + exp(ExpSum);
 		}
 		else if (InLiquidRegion2 or InCriticalRegion) // liquid region 2 or critical region
 		{
 			double ExpSum = 0;
 			for (size_t i=0; i<3; i++)
+			{
 				for (size_t j=0; j<5; j++)
+			  {
 					ExpSum = ExpSum + b[i][j]*pow(P,i)*pow(H,j); 
+				}
+			}
 			V = V + exp(ExpSum);
 		}
-
 		// convert result to SI units
 		V = V*6.24279605761446e-2; // [ft3/lbm] to [m3/kg]
 
@@ -522,7 +530,8 @@ September 1998");
 		bool converged = false;
 		for (unsigned int iter=1; iter<=Newton_maxIter; ++iter){
 			x_old = x_new;
-			double perturbation = 1.0e-6;
+                        double b_perturb = sqrt(machinePrecision);
+			double perturbation = (1.0+x_new)*b_perturb;
 			// numerical Jacobian with forward perturbation
 			double J = (Residual(x_old+perturbation,param1,param2) - Residual(x_old,param1,param2))/perturbation;
 			double dx = -1.0*Residual(x_old,param1,param2)/J;

@@ -67,9 +67,15 @@ public:
      * \details  This function will register a mesh with the silo writer.  
      *           Note: if mesh is a MultiMesh, it will register all sub meshes.
      * \param mesh  The mesh to register
+     * \param level How many sub meshes do we want?
+     *              0: Only register the local base meshes (advanced users only)
+     *              1: Register current mesh only (default)
+     *              2: Register all meshes (do not seperate for the ranks)
+     *              3: Register all mesh pieces including the individual ranks
+
      * \param path  The directory path for the mesh.  Default is an empty string.
      */
-    void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, std::string path=std::string() );
+    void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level=1, std::string path=std::string() );
 
 #ifdef USE_AMP_VECTORS
     /**
