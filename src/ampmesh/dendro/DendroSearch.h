@@ -33,7 +33,7 @@ class DendroSearch {
   public:
     struct ProjectOnBoundaryData; 
 
-    enum SearchStatus { NotFound = 0, Found, FoundOnBoundary, FoundNotOnBoundary };
+    enum SearchStatus { NotFound = 0, Found, FoundNotOnBoundary, FoundOnBoundary };
 
     DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh);
 

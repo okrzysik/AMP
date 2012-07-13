@@ -4,6 +4,7 @@
 #include <numeric>
 #include <fstream>
 #include <boost/lexical_cast.hpp>
+#include <set>
 
 DendroSearch::DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh) 
   : d_meshAdapter(mesh) {
@@ -18,10 +19,6 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
 
   const int rank = comm.getRank();
   const int npes = comm.getSize();
-
-  std::fstream fout;
-  std::string fileName = "debug_dendro_" + boost::lexical_cast<std::string>(rank);
-  fout.open(fileName.c_str(), std::fstream::out);
 
   double projectBeginTime, projectStep1Time, projectStep2Time;
   if(d_verbose) {
@@ -42,7 +39,6 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
     tmpData.d_PointLocalID = pointLocalID;
     AMP::Mesh::MeshElement* meshElement = &(d_localElemArr[elementLocalID]);
     if (meshElement->isOnBoundary(boundaryID)) { // point was found and element is on boundary if the considered mesh
-      //    if (meshElement->isOnBoundary(boundaryID)) {
       std::vector<AMP::Mesh::MeshElement> meshElementFaces = meshElement->getElements(AMP::Mesh::Face);
       AMP_ASSERT( meshElementFaces.size() == 6 );
       for (size_t f = 0; f < 6; ++f) {
@@ -53,7 +49,6 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
           for (size_t v = 0; v < 4; ++v) {
             tmpData.d_FaceVerticesIDs[v] = faceVertices[v].globalID();
           } // end for v
-          //          hex8_element_t::project_on_face(f, pointLocalCoords_ptr, &(tmpData.d_ProjectionLocalCoordsOnFace[0]));
           d_volume_elements[elementLocalID].project_on_face(f, pointLocalCoords_ptr,
               &(tmpData.d_ProjectionLocalCoordsOnFace[0]), &(tmpData.d_ShiftGlobalCoords[0]));
 
@@ -99,17 +94,19 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
       for (size_t j = 0; j < d_recvCnts[i]; ++j) {
         const ProjectOnBoundaryData tmpData = recvData[d_recvDisps[i] + j];
         const size_t pointLocalID = tmpData.d_PointLocalID;
-        flags[pointLocalID] = tmpData.d_SearchStatus;
-        if (flags[pointLocalID] == FoundOnBoundary) {
-          for (size_t d = 0; d < 2; ++d) {
-            projectionLocalCoordsOnFace[2*pointLocalID+d] = tmpData.d_ProjectionLocalCoordsOnFace[d];
-          } // end for d
-          for (size_t d = 0; d < 3; ++d) {
-            shiftGlobalCoords[2*pointLocalID+d] = tmpData.d_ShiftGlobalCoords[d];
-          } // end for d
-          for (size_t v = 0; v < 4; ++v) {
-            faceVerticesGlobalIDs[4*pointLocalID+v] = tmpData.d_FaceVerticesIDs[v]; 
-          } // end for v 
+        if (tmpData.d_SearchStatus > flags[pointLocalID]) { // FoundOnBoundary overwrites FoundNotOnBoundary 
+          flags[pointLocalID] = tmpData.d_SearchStatus;
+          if (flags[pointLocalID] == FoundOnBoundary) {
+            for (size_t d = 0; d < 2; ++d) {
+              projectionLocalCoordsOnFace[2*pointLocalID+d] = tmpData.d_ProjectionLocalCoordsOnFace[d];
+            } // end for d
+            for (size_t d = 0; d < 3; ++d) {
+              shiftGlobalCoords[2*pointLocalID+d] = tmpData.d_ShiftGlobalCoords[d];
+            } // end for d
+            for (size_t v = 0; v < 4; ++v) {
+              faceVerticesGlobalIDs[4*pointLocalID+v] = tmpData.d_FaceVerticesIDs[v]; 
+            } // end for v 
+          } // end if
         } // end if
       } // end for j
     } // end for i
@@ -123,8 +120,6 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
         std::cout<<"Time for step-2 of project on boundary: "<<(projectStep2Time - projectStep1Time)<<" seconds."<<std::endl;
       }
     }
-
-    fout.close();
   }
 
   void DendroSearch::searchAndInterpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,

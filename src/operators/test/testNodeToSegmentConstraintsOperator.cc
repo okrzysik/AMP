@@ -32,6 +32,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
+#ifdef USE_SILO
+//  AMP::Mesh::SiloIO::shared_ptr siloWriter(new AMP::Mesh::SiloIO);
+#endif
+
   int npes = globalComm.getSize();
   int rank = globalComm.getRank();
 
@@ -129,6 +133,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   nodeToSegmentConstraintsOperatorParams->d_Mesh = meshAdapter;
   nodeToSegmentConstraintsOperator->reset(nodeToSegmentConstraintsOperatorParams);
+
+#ifdef USE_SILO
+//  AMP::Linear
+//  siloWriter->registerVector(mechNlSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution");
+//  char outFileName[256];
+//  sprintf(outFileName, "LoadPrescribed-DeformedPlateWithHole-LinearElasticity_%d", step);
+//  siloWriter->writeFile(outFileName, 0);
+#endif
 
   ut->passes(exeName);
 }
