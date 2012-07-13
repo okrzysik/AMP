@@ -539,7 +539,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
       myRank = meshComm.getRank();
     }
 
-    MPI_Allgather(&myRank, 1, MPI_INT, &(rankMap[0]), 1, MPI_INT, comm.getCommunicator());
+    comm.allGather(myRank, &(rankMap[0]));
 
     std::vector<int> invRankMap(npes, -1);
     for(int i = 0; i < npes; ++i) {
@@ -548,20 +548,25 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
       }
     }//end i
 
-    int minsSize;
+    std::vector<double> bcastBuff(7);
     if(myRank == 0) {
-      minsSize = d_mins.size();
+      bcastBuff[0] = static_cast<double>(d_mins.size());
+      std::copy(d_minCoords.begin(), d_minCoords.end(), &(bcastBuff[1])); 
+      std::copy(d_scalingFactor.begin(), d_scalingFactor.end(), &(bcastBuff[4])); 
     }
 
-    MPI_Bcast(minsSize, 1, MPI_INT, invRankMap[0], comm.getCommunicator());
+    comm.bcast(&(bcastBuff[0]), 7, invRankMap[0]);
+
+    int minsSize = static_cast<int>(bcastBuff[0]);
+    std::copy(&(bcastBuff[1]), &(bcastBuff[1])+3, d_minCoords.begin());
+    std::copy(&(bcastBuff[4]), &(bcastBuff[4])+3, d_scalingFactor.begin());
+    bcastBuff.clear();
 
     d_mins.resize(minsSize);
-    MPI_Bcast(&(d_mins[0]), minsSize, par::Mpi_datatype<ot::TreeNode>::value(),
-        invRankMap[0], comm.getCommunicator());
+    comm.bcast(&(d_mins[0]), minsSize, invRankMap[0]);
+//    MPI_Bcast(&(d_mins[0]), minsSize, par::Mpi_datatype<ot::TreeNode>::value(),
+//        invRankMap[0], comm.getCommunicator());
 
-    MPI_Bcast(d_minCoords, 3, MPI_DOUBLE, invRankMap[0], comm.getCommunicator());
-
-    MPI_Bcast(d_scalingFactor, 3, MPI_DOUBLE, invRankMap[0], comm.getCommunicator());
 
     d_numLocalPts = (pts.size())/3;
 
