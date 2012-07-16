@@ -2,6 +2,9 @@
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MultiMesh.h"
 
+#include <cmath>
+inline double round(double x) { return (floor(x+0.5)); }
+
 namespace AMP {
 namespace Mesh {
 

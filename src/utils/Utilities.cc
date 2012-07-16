@@ -19,7 +19,9 @@
     #include <windows.h>
     #include <stdio.h>   
     #include <tchar.h>
-    //#include <dbghelp.h>
+    #include <psapi.h>
+    //#pragma comment(lib, “psapi.lib”) //added
+    //#pragma comment(linker, “/DEFAULTLIB:psapi.lib”)
 #elif defined(__APPLE__)
     #define USE_MAC
     #include <signal.h>
@@ -301,7 +303,9 @@ size_t Utilities::getMemoryUsage()
         }
         N_bytes = t_info.resident_size;
     #elif defined(USE_WINDOWS)
-        
+        PROCESS_MEMORY_COUNTERS memCounter;
+        GetProcessMemoryInfo( GetCurrentProcess(), &memCounter, sizeof(memCounter) );
+        N_bytes = memCounter.WorkingSetSize;
     #endif
     return N_bytes;
 }
@@ -380,18 +384,21 @@ void Utilities::printBanner()
 
 }
 
-
 // Factor a number into it's prime factors
-// The factors will automatically be returned in sorted order
 std::vector<int> Utilities::factor(size_t number)
 {
     if ( number<=3 ) 
         return std::vector<int>(1,(int)number);
     size_t i, n, n_max;
     bool factor_found;
+    // Compute the maximum number of factors
+    int N_primes_max = 1;
+    n = number;
+    while (n >>= 1) ++N_primes_max;
     // Initialize n, factors 
     n = number;
     std::vector<int> factors;
+    factors.reserve(N_primes_max);
     while ( 1 ) {
         // Check if n is a trivial prime number
         if ( n==2 || n==3 || n==5 ) {
@@ -421,6 +428,8 @@ std::vector<int> Utilities::factor(size_t number)
         factors.push_back( (int) n );
         break;
     }
+    // Sort the factors
+    AMP::Utilities::quicksort(factors);
     return factors;
 }
 

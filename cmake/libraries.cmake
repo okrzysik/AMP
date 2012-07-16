@@ -793,6 +793,18 @@ MACRO ( CONFIGURE_PETSC_LIBRARIES )
 ENDMACRO ()
 
 
+# Macro to configure system-specific libraries
+MACRO ( CONFIGURE_SYSTEM_LIBS )
+    IF ( USING_MICROSOFT )
+        #FIND_LIBRARY ( SYSTEM_LIBS           NAMES "psapi"        PATHS C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/  )
+        #C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/psapi
+        SET( SYSTEM_LIBS "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/Psapi.lib" )
+    ELSE()
+        SET( SYSTEM_LIBS "-lz -ldl" )
+    ENDIF()
+ENDMACRO ()
+
+
 # Macro to configure AMP-specific options
 MACRO ( CONFIGURE_AMP )
     # Add the AMP install directory

@@ -15,6 +15,7 @@
 #ifdef USE_WINDOWS
     // Windows
     #define _CRT_SECURE_NO_WARNINGS		// Supress depreciated warnings for visual studio
+    #define NOMINMAX                    // Supress min max from being defined
     #include <windows.h>
     #include <string>
     #define TIME_TYPE LARGE_INTEGER

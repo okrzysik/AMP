@@ -1025,7 +1025,7 @@ void createSiloDirectory( DBfile *FileHandle, std::string path )
 #else
 void SiloIO::readFile( const std::string& ) { AMP_ERROR("SILO not configured"); }
 void SiloIO::writeFile( const std::string&, size_t ) { AMP_ERROR("SILO not configured"); }
-void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr, std::string ) { AMP_ERROR("SILO not configured"); }
+void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, std::string ) { AMP_ERROR("SILO not configured"); }
 #ifdef USE_AMP_VECTORS
 void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec, AMP::Mesh::Mesh::shared_ptr,
     AMP::Mesh::GeomType, const std::string& ) { AMP_ERROR("SILO not configured"); }
