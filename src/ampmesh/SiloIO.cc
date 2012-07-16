@@ -161,12 +161,8 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::str
         data.ownerRank = d_comm.getRank(); // Everybody owns the mesh because every rank is an independent mesh
         data.meshName = "rank_" + rank;
         data.path = path + mesh->getName() + "_/";
-        if ( d_baseMeshes.find(mesh->meshID()) != d_baseMeshes.end() ) {
-            std::string path2 = d_baseMeshes.find(mesh->meshID())->second.path;
-            if ( data.path != path2 )
-                AMP_ERROR("Mesh was previously registered with a different path");
-        }
-        d_baseMeshes.insert( std::pair<AMP::Mesh::MeshID,siloBaseMeshData>(mesh->meshID(),data) );
+        if ( d_baseMeshes.find(mesh->meshID()) == d_baseMeshes.end() )
+            d_baseMeshes.insert( std::pair<AMP::Mesh::MeshID,siloBaseMeshData>(mesh->meshID(),data) );
         // Create and register a multimesh for the current mesh
         if ( level>0 ) {
             siloMultiMeshData data2;
