@@ -119,10 +119,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     std::cout<<"Finished generating "<<totalNumPts <<" random points for search!"<<std::endl;
   }
 
-  DendroSearch dendroSearch(globalComm, meshAdapter);
+  DendroSearch dendroSearch(meshAdapter);
   std::vector<double> interpolatedData; 
   std::vector<bool> interpolationWasDone;
-  dendroSearch.searchAndInterpolate(dummyVector, DOFsPerNode, pts, interpolatedData, interpolationWasDone);
+  dendroSearch.searchAndInterpolate(globalComm, dummyVector, DOFsPerNode, pts, interpolatedData, interpolationWasDone);
   AMP_ASSERT(interpolatedData.size() == (DOFsPerNode*numLocalPts));
   AMP_ASSERT(interpolationWasDone.size() == numLocalPts);
 
@@ -131,7 +131,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     localNotFound = static_cast<int>(std::count(interpolationWasDone.begin(), interpolationWasDone.end(), false));
   }
   int globalNotFound;
-  MPI_Allreduce(&localNotFound, &globalNotFound, 1, MPI_INT, MPI_SUM, globalComm.getCommunicator());
+  globalNotFound = globalComm.sumReduce(localNotFound);
   if(!rank) {
     std::cout<<globalNotFound<<" points (total) were not found"<<std::endl;
   }
@@ -164,7 +164,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::vector<AMP::Mesh::MeshElementID> faceVerticesGlobalIDs;
   std::vector<double> shiftGlobalCoords, projectionLocalCoordsOnFace;
   std::vector<int> flags;
-  dendroSearch.projectOnBoundaryID(4, faceVerticesGlobalIDs, shiftGlobalCoords, projectionLocalCoordsOnFace, flags);
+  dendroSearch.projectOnBoundaryID(globalComm, 4, faceVerticesGlobalIDs, shiftGlobalCoords, projectionLocalCoordsOnFace, flags);
   globalComm.barrier();
   if(!rank) {
     std::cout<<"PAR ICI"<<std::endl;

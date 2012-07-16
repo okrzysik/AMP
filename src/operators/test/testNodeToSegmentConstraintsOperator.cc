@@ -21,6 +21,9 @@
 
 #include "operators/contact/NodeToSegmentConstraintsOperator.h"
 
+#include <fstream>
+#include <boost/lexical_cast.hpp>
+
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
@@ -29,8 +32,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-  int rank = globalComm.getRank();
+#ifdef USE_SILO
+//  AMP::Mesh::SiloIO::shared_ptr siloWriter(new AMP::Mesh::SiloIO);
+#endif
+
   int npes = globalComm.getSize();
+  int rank = globalComm.getRank();
 
   // Load the input file
   globalComm.barrier();
@@ -50,19 +57,56 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
   boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
   boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
-  meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-  AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh(meshParams);
+  meshParams->setComm(globalComm);
+  AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
   globalComm.barrier();
   double meshEndTime = MPI_Wtime();
   if(!rank) {
     std::cout<<"Finished reading the mesh in "<<(meshEndTime - meshBeginTime)<<" seconds."<<std::endl;
   }
 
-
+  // build the contact operator
   boost::shared_ptr<AMP::Operator::NodeToSegmentConstraintsOperatorParameters> 
       nodeToSegmentConstraintsOperatorParams( new AMP::Operator::NodeToSegmentConstraintsOperatorParameters(mesh_db) );
+
+  std::vector<AMP::Mesh::MeshID> meshIDs = meshAdapter->getBaseMeshIDs();
+  nodeToSegmentConstraintsOperatorParams->d_MasterMeshID = meshIDs[0];
+  nodeToSegmentConstraintsOperatorParams->d_SlaveMeshID = meshIDs[1];
+  nodeToSegmentConstraintsOperatorParams->d_MasterBoundaryID = 1;
+  nodeToSegmentConstraintsOperatorParams->d_SlaveBoundaryID = 2;
+  
+  int dofsPerNode = 3;
+  int nodalGhostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr dofManager = AMP::Discretization::simpleDOFManager::create(meshAdapter,
+      AMP::Mesh::Vertex, nodalGhostWidth, dofsPerNode, split);
+  nodeToSegmentConstraintsOperatorParams->d_DOFsPerNode = dofsPerNode;
+  nodeToSegmentConstraintsOperatorParams->d_DOFManager = dofManager;
+
+  nodeToSegmentConstraintsOperatorParams->d_GlobalComm = globalComm;
+  nodeToSegmentConstraintsOperatorParams->d_Mesh = meshAdapter;
+
   boost::shared_ptr<AMP::Operator::NodeToSegmentConstraintsOperator> 
       nodeToSegmentConstraintsOperator( new AMP::Operator::NodeToSegmentConstraintsOperator(nodeToSegmentConstraintsOperatorParams) );
+
+  nodeToSegmentConstraintsOperator->reset(nodeToSegmentConstraintsOperatorParams);
+
+  AMP::LinearAlgebra::Variable::shared_ptr dummyVariable(new AMP::LinearAlgebra::Variable("Dummy"));
+  AMP::LinearAlgebra::Vector::shared_ptr dummyInVector = createVector(dofManager, dummyVariable, split);
+  AMP::LinearAlgebra::Vector::shared_ptr dummyOutVector = createVector(dofManager, dummyVariable, split);
+
+  nodeToSegmentConstraintsOperator->apply(dummyInVector, dummyInVector, dummyOutVector);
+  nodeToSegmentConstraintsOperator->applyTranspose(dummyInVector, dummyInVector, dummyOutVector);
+
+  
+
+#ifdef USE_SILO
+//  AMP::Linear
+//  siloWriter->registerVector(mechNlSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution");
+//  char outFileName[256];
+//  sprintf(outFileName, "LoadPrescribed-DeformedPlateWithHole-LinearElasticity_%d", step);
+//  siloWriter->writeFile(outFileName, 0);
+#endif
 
   ut->passes(exeName);
 }

@@ -5,6 +5,9 @@
 #include <limits>
 #include <algorithm>
 #include <vector>
+#include <fstream>
+#include <boost/lexical_cast.hpp>
+
 
 namespace AMP {
   namespace Operator {
@@ -15,148 +18,167 @@ void NodeToSegmentConstraintsOperator::reset(const boost::shared_ptr<OperatorPar
   AMP_INSIST( ((params->d_db) != NULL), "NULL database" );
 
   AMP::Mesh::Mesh::shared_ptr mesh = params->d_Mesh;
-  AMP::AMP_MPI comm = mesh->getComm(); 
+//  AMP::AMP_MPI comm = mesh->getComm(); 
+  AMP::AMP_MPI comm = d_GlobalComm;
 
-  AMP::Mesh::Mesh::shared_ptr masterMesh = mesh->Subset(AMP::Mesh::MeshID(d_MasterMeshID));
-  AMP::Mesh::Mesh::shared_ptr slaveMesh = mesh->Subset(AMP::Mesh::MeshID(d_SlaveMeshID));
-
-  /** get the boundary slave vertices coordinates */
-  AMP::Mesh::MeshIterator slaveMeshIterator = slaveMesh->getBoundaryIDIterator(AMP::Mesh::Vertex, d_SlaveBoundaryID);
-  AMP::Mesh::MeshIterator slaveMeshIterator_begin = slaveMeshIterator.begin(), 
-      slaveMeshIterator_end = slaveMeshIterator.end();
-
-  size_t nSlaveVertices = slaveMeshIterator.size();
-
-  const unsigned int dofsPerNode = 3;
-  std::vector<size_t> tmpSlaveNodeIDs(dofsPerNode);
-  std::vector<size_t> slaveNodeIDs(dofsPerNode*nSlaveVertices);
-  std::vector<size_t>::iterator slaveNodeIDsIterator = slaveNodeIDs.begin();
-
-  std::vector<double> tmpSlaveVertexCoord(3);
-  std::vector<double> slaveVerticesCoord(3*nSlaveVertices);
-  std::vector<double>::iterator slaveVerticesCoordIterator = slaveVerticesCoord.begin();
-
-  for (slaveMeshIterator = slaveMeshIterator_begin; slaveMeshIterator != slaveMeshIterator_end; ++slaveMeshIterator) {
-    d_DOFmanager->getDOFs(slaveMeshIterator->globalID(), tmpSlaveNodeIDs);
-    AMP_ASSERT( tmpSlaveNodeIDs.size() == dofsPerNode );
-    std::copy(tmpSlaveNodeIDs.begin(), tmpSlaveNodeIDs.end(), slaveNodeIDsIterator);
-    for (size_t i = 0; i < dofsPerNode; ++i) { ++slaveNodeIDsIterator; }
-    tmpSlaveVertexCoord = slaveMeshIterator->coord();
-    AMP_ASSERT( tmpSlaveVertexCoord.size() == 3 );
-    std::copy(tmpSlaveVertexCoord.begin(), tmpSlaveVertexCoord.end(), slaveVerticesCoordIterator);
-    for (size_t i = 0; i < 3; ++i) { ++slaveVerticesCoordIterator; }
-  } // end loop over the slave vertices on boundary
-
-  AMP_ASSERT( slaveNodeIDsIterator == slaveNodeIDs.end() );
-  AMP_ASSERT( slaveVerticesCoordIterator == slaveVerticesCoord.end() );
+  /** get the boundary slave vertices coordinates and global IDs */
+  size_t nSlaveVertices = 0;
+  std::vector<double> tmpSlaveVerticesCoord;
+  std::vector<AMP::Mesh::MeshElementID> tmpSlaveVerticesGlobalIDs;
+  AMP::Mesh::Mesh::shared_ptr slaveMesh = mesh->Subset(d_SlaveMeshID);
+  if (slaveMesh != NULL) {
+    AMP::Mesh::MeshIterator slaveMeshIterator = slaveMesh->getBoundaryIDIterator(AMP::Mesh::Vertex, d_SlaveBoundaryID);
+    AMP::Mesh::MeshIterator slaveMeshIterator_begin = slaveMeshIterator.begin(), 
+        slaveMeshIterator_end = slaveMeshIterator.end();
+    nSlaveVertices = slaveMeshIterator.size();
+    tmpSlaveVerticesCoord.resize(3*nSlaveVertices);
+    tmpSlaveVerticesGlobalIDs.resize(nSlaveVertices);
+    std::vector<AMP::Mesh::MeshElementID>::iterator tmpSlaveVerticesGlobalIDsIterator = tmpSlaveVerticesGlobalIDs.begin();
+    std::vector<double> tmpCoord(3);
+    std::vector<double>::iterator tmpSlaveVerticesCoordIterator = tmpSlaveVerticesCoord.begin();
+    for (slaveMeshIterator = slaveMeshIterator_begin; slaveMeshIterator != slaveMeshIterator_end; ++slaveMeshIterator) {
+      *tmpSlaveVerticesGlobalIDsIterator = slaveMeshIterator->globalID();
+      ++tmpSlaveVerticesGlobalIDsIterator;
+      tmpCoord = slaveMeshIterator->coord();
+      AMP_ASSERT( tmpCoord.size() == 3 );
+      std::copy(tmpCoord.begin(), tmpCoord.end(), tmpSlaveVerticesCoordIterator);
+      for (size_t i = 0; i < 3; ++i) { ++tmpSlaveVerticesCoordIterator; }
+    } // end loop over the slave vertices on boundary
+    AMP_ASSERT( tmpSlaveVerticesGlobalIDsIterator == tmpSlaveVerticesGlobalIDs.end() );
+    AMP_ASSERT( tmpSlaveVerticesCoordIterator == tmpSlaveVerticesCoord.end() );
+  } //end if
 
   /** do a dendro search for the boundary slave vertices on the master mesh */
-  DendroSearch dendroSearchOnMaster(comm, masterMesh);
-  dendroSearchOnMaster.search(slaveVerticesCoord);
+  AMP::Mesh::Mesh::shared_ptr masterMesh = mesh->Subset(d_MasterMeshID);
+  DendroSearch dendroSearchOnMaster(masterMesh);
+  dendroSearchOnMaster.search(comm, tmpSlaveVerticesCoord);
 
-  std::vector<double> slaveVerticesProjLocalCoord;
-  std::vector<size_t> masterNodeIDs, masterNodeOwnerRanks;
+  std::vector<AMP::Mesh::MeshElementID> tmpMasterVerticesGlobalIDs;
+  std::vector<double> tmpSlaveVerticesShift, tmpSlaveVerticesLocalCoordOnFace;
   std::vector<int> flags;
 
-//  dendroSearchOnMaster.projectOnBoundaryID(d_MasterBoundaryID, dofsPerNode, d_DOFmanager,
-//      masterNodeOwnerRanks, masterNodeIDs, slaveVerticesProjLocalCoord, flags);
+  dendroSearchOnMaster.projectOnBoundaryID(comm, d_MasterBoundaryID,
+      tmpMasterVerticesGlobalIDs, tmpSlaveVerticesShift, tmpSlaveVerticesLocalCoordOnFace, flags);
 
+  AMP_ASSERT( nSlaveVertices == tmpMasterVerticesGlobalIDs.size() / 4 );
+  AMP_ASSERT( nSlaveVertices == tmpSlaveVerticesShift.size() / 3 );
+  AMP_ASSERT( nSlaveVertices == tmpSlaveVerticesLocalCoordOnFace.size() / 2 );
   AMP_ASSERT( nSlaveVertices == flags.size() );
-  AMP_ASSERT( nSlaveVertices == slaveNodeIDs.size() / dofsPerNode );
-  AMP_ASSERT( nSlaveVertices == masterNodeIDs.size() / (4 * dofsPerNode) );
-  AMP_ASSERT( nSlaveVertices == masterNodeOwnerRanks.size() );
-  AMP_ASSERT( nSlaveVertices == slaveVerticesProjLocalCoord.size() / 2 );
 
   /** build the constraints */
   const unsigned int nConstraints = std::count(flags.begin(), flags.end(), DendroSearch::FoundOnBoundary);
-  AMP_ASSERT( std::count(flags.begin(), flags.end(), DendroSearch::FoundNotOnBoundary) == 0 ); // DendroSearch::FoundNotOnBoundary is not acceptable
 
-  size_t npes = comm.getSize();
-  std::vector<size_t> row, col, ranks;
-  std::vector<double> val;
-  ranks.resize(nConstraints);
-  std::fill(ranks.begin(), ranks.end(), npes);
-  row.resize(4*nConstraints);
-  std::fill(row.begin(), row.end(), std::numeric_limits<unsigned int>::max());
-  col.resize(4*nConstraints);
-  std::fill(col.begin(), col.end(), std::numeric_limits<unsigned int>::max());
-  val.resize(4*nConstraints);
-  std::fill(val.begin(), val.end(), 0.0);
+  size_t rank = comm.getRank();
+  comm.barrier();
+  std::fstream fout;
+  std::string fileName = "debug_operator_" + boost::lexical_cast<std::string>(rank);
+  fout.open(fileName.c_str(), std::fstream::out);
+  unsigned int localPtsNotFound = std::count(flags.begin(), flags.end(), DendroSearch::NotFound);
+  unsigned int localPtsFoundNotOnBoundary = std::count(flags.begin(), flags.end(), DendroSearch::FoundNotOnBoundary);
+  unsigned int localPtsFoundOnBoundary = std::count(flags.begin(), flags.end(), DendroSearch::FoundOnBoundary);
+  unsigned int globalPtsNotFound = comm.sumReduce(localPtsNotFound);
+  unsigned int globalPtsFoundNotOnBoundary = comm.sumReduce(localPtsFoundNotOnBoundary);
+  unsigned int globalPtsFoundOnBoundary = comm.sumReduce(localPtsFoundOnBoundary);
+  fout<<"Global number of points not found is "<<globalPtsNotFound<<" (local was "<<localPtsNotFound<<")"<<std::endl;
+  fout<<"Global number of points found not on boundary is "<<globalPtsFoundNotOnBoundary<<" (local was "<<localPtsFoundNotOnBoundary<<")"<<std::endl;
+  fout<<"Global number of points found on boundary is "<<globalPtsFoundOnBoundary<<" (local was "<<localPtsFoundOnBoundary<<")"<<std::endl;
+  fout<<"Total number of points is "<<globalPtsNotFound+globalPtsFoundNotOnBoundary+globalPtsFoundOnBoundary<<std::endl;
+  fout.close();
 
-  slaveNodeIDsIterator = slaveNodeIDs.begin();
-  std::vector<size_t>::const_iterator masterNodeIDsIterator = masterNodeIDs.begin();
-  std::vector<size_t>::iterator rowIterator = row.begin(), colIterator = col.begin();
-  std::vector<double>::iterator valIterator = val.begin();
-  double const * slaveVerticesProjLocalCoord_ptr = &(slaveVerticesProjLocalCoord[0]);
-  double basis_functions_values_on_face[4];
+//  AMP_ASSERT( std::count(flags.begin(), flags.end(), DendroSearch::FoundNotOnBoundary) == 0 ); // DendroSearch::FoundNotOnBoundary is not acceptable
+
+  d_SlaveVerticesGlobalIDs.resize(nConstraints);
+  std::fill(d_SlaveVerticesGlobalIDs.begin(), d_SlaveVerticesGlobalIDs.end(), AMP::Mesh::MeshElementID());
+  std::vector<AMP::Mesh::MeshElementID> masterVerticesGlobalIDs(4*nConstraints);
+  std::fill(masterVerticesGlobalIDs.begin(), masterVerticesGlobalIDs.end(), AMP::Mesh::MeshElementID());
+  d_MasterVerticesOwnerRanks.resize(4*nConstraints);
+  std::fill(d_MasterVerticesOwnerRanks.begin(), d_MasterVerticesOwnerRanks.end(), comm.getSize());
+  d_MasterShapeFunctionsValues.resize(4*nConstraints);
+  std::fill(d_MasterShapeFunctionsValues.begin(), d_MasterShapeFunctionsValues.end(), 0.0);
+  d_SlaveVerticesShift.resize(3*nConstraints);
+  std::fill(d_SlaveVerticesShift.begin(), d_SlaveVerticesShift.end(), 0.0);
+
+  std::vector<AMP::Mesh::MeshElementID>::const_iterator tmpSlaveVerticesGlobalIDsConstIterator = tmpSlaveVerticesGlobalIDs.begin();
+  std::vector<AMP::Mesh::MeshElementID>::const_iterator tmpMasterVerticesGlobalIDsConstIterator = tmpMasterVerticesGlobalIDs.begin();
+  double const * tmpSlaveVerticesLocalCoordOnFacePointerToConst = &(tmpSlaveVerticesLocalCoordOnFace[0]);
+  std::vector<double>::const_iterator tmpSlaveVerticesShiftConstIterator = tmpSlaveVerticesShift.begin();
+  double * masterShapeFunctionsValuesPointer = &(d_MasterShapeFunctionsValues[0]);
+  std::vector<double>::iterator slaveVerticesShiftIterator = d_SlaveVerticesShift.begin();
+  std::vector<AMP::Mesh::MeshElementID>::iterator slaveVerticesGlobalIDsIterator = d_SlaveVerticesGlobalIDs.begin();
+  std::vector<AMP::Mesh::MeshElementID>::iterator masterVerticesGlobalIDsIterator = masterVerticesGlobalIDs.begin();
+  std::vector<size_t>::iterator masterVerticesOwnerRanksIterator = d_MasterVerticesOwnerRanks.begin();
+
+//  double basis_functions_values_on_face[4];
   std::vector<int>::const_iterator flagsIterator = flags.begin(),
       flagsIterator_end = flags.end();
   for ( ; flagsIterator != flagsIterator_end; ++flagsIterator) {
-    AMP_ASSERT( (*flagsIterator == DendroSearch::NotFound) || (*flagsIterator == DendroSearch::FoundOnBoundary) );
+//    AMP_ASSERT( (*flagsIterator == DendroSearch::NotFound) || (*flagsIterator == DendroSearch::FoundOnBoundary) );
     if (*flagsIterator == DendroSearch::FoundOnBoundary) {
-      hex8_element_t::get_basis_functions_values_on_face(slaveVerticesProjLocalCoord_ptr, basis_functions_values_on_face);
-      for (size_t i = 0; i < 2; ++i) { ++slaveVerticesProjLocalCoord_ptr; }
-      for (unsigned int n = 0; n < dofsPerNode; ++n) {
-        for (size_t i = 0; i < 4; ++i) {
-          *rowIterator = *slaveNodeIDsIterator;
-          *colIterator = *masterNodeIDsIterator;
-          *valIterator = basis_functions_values_on_face[i];
-          ++rowIterator;
-          ++colIterator;
-          ++valIterator;
-          ++masterNodeIDsIterator;
-        } // end for i
-        ++slaveNodeIDsIterator;
-      } // end for n
+      hex8_element_t::get_basis_functions_values_on_face(tmpSlaveVerticesLocalCoordOnFacePointerToConst, masterShapeFunctionsValuesPointer);
+      for (size_t d = 0; d < 2; ++d) { ++tmpSlaveVerticesLocalCoordOnFacePointerToConst; }
+      for (size_t v = 0; v < 4; ++v) { ++masterShapeFunctionsValuesPointer; }
+      *slaveVerticesGlobalIDsIterator = *tmpSlaveVerticesGlobalIDsConstIterator;
+      ++slaveVerticesGlobalIDsIterator;
+      ++tmpSlaveVerticesGlobalIDsConstIterator;
+      for (size_t d = 0; d < 3; ++d) { 
+        *slaveVerticesShiftIterator = *tmpSlaveVerticesShiftConstIterator;
+        ++slaveVerticesShiftIterator;
+        ++tmpSlaveVerticesShiftConstIterator;
+      } // end for d
+      for (size_t v = 0; v < 4; ++v) {
+        *masterVerticesGlobalIDsIterator = *tmpMasterVerticesGlobalIDsConstIterator;
+        *masterVerticesOwnerRanksIterator = masterVerticesGlobalIDsIterator->owner_rank();
+        ++masterVerticesGlobalIDsIterator;
+        ++tmpMasterVerticesGlobalIDsConstIterator;
+        ++masterVerticesOwnerRanksIterator;
+      } // end for v
     } else {
-      for (size_t i = 0; i < 2; ++i) { ++slaveVerticesProjLocalCoord_ptr; }
-      for (unsigned int n = 0; n < dofsPerNode; ++n) {
-        for (size_t i = 0; i < 4; ++i) {
-          ++rowIterator;
-          ++colIterator;
-          ++valIterator;
-          ++masterNodeIDsIterator;
-        } // end for i
-        ++slaveNodeIDsIterator;
-      } // end for n
+      for (size_t d = 0; d < 2; ++d) { ++tmpSlaveVerticesLocalCoordOnFacePointerToConst; }
+      ++tmpSlaveVerticesGlobalIDsConstIterator;
+      for (size_t d = 0; d < 3; ++d) { ++tmpSlaveVerticesShiftConstIterator; }
+      for (size_t v = 0; v < 4; ++v) { ++tmpMasterVerticesGlobalIDsConstIterator; }
     } // end if
   } // end for
-  AMP_ASSERT( slaveVerticesProjLocalCoord_ptr == &(slaveVerticesProjLocalCoord[0])+2*nSlaveVertices );
-  AMP_ASSERT( masterNodeIDsIterator == masterNodeIDs.end() );
-  AMP_ASSERT( slaveNodeIDsIterator == slaveNodeIDs.end() );
-  AMP_ASSERT( rowIterator == row.end() );
-  AMP_ASSERT( colIterator == col.end() );
-  AMP_ASSERT( valIterator == val.end() );
+  AMP_ASSERT( tmpSlaveVerticesLocalCoordOnFacePointerToConst == &(tmpSlaveVerticesLocalCoordOnFace[0])+2*nSlaveVertices );
+  AMP_ASSERT( tmpSlaveVerticesShiftConstIterator == tmpSlaveVerticesShift.end() );
+  AMP_ASSERT( tmpSlaveVerticesGlobalIDsConstIterator == tmpSlaveVerticesGlobalIDs.end() );
+  AMP_ASSERT( tmpMasterVerticesGlobalIDsConstIterator == tmpMasterVerticesGlobalIDs.end() );
+  AMP_ASSERT( slaveVerticesShiftIterator == d_SlaveVerticesShift.end() );
+  AMP_ASSERT( slaveVerticesGlobalIDsIterator == d_SlaveVerticesGlobalIDs.end() );
+  AMP_ASSERT( masterShapeFunctionsValuesPointer == &(d_MasterShapeFunctionsValues[0])+4*nConstraints );
+  AMP_ASSERT( masterVerticesGlobalIDsIterator == masterVerticesGlobalIDs.end() );
+  AMP_ASSERT( masterVerticesOwnerRanksIterator == d_MasterVerticesOwnerRanks.end() );
+  tmpSlaveVerticesGlobalIDs.clear();
+  tmpMasterVerticesGlobalIDs.clear();
+  tmpSlaveVerticesShift.clear();
+  tmpSlaveVerticesLocalCoordOnFace.clear();
+  flags.clear();
 
   /** setup for apply */
+  size_t npes = comm.getSize();
   d_SendCnts.resize(npes);
   std::fill(d_SendCnts.begin(), d_SendCnts.end(), 0);
-  for (size_t i = 0; i < nConstraints; ++i) {
-    ++d_SendCnts[ranks[i]]; 
+  for (size_t i = 0; i < 4*nConstraints; ++i) {
+    ++d_SendCnts[d_MasterVerticesOwnerRanks[i]]; 
   } // end for i
-  for (size_t i = 0; i < npes; ++i) {
-    d_SendCnts[i] *= 5; 
-  } // end for i
-
   d_SendDisps.resize(npes);
   d_SendDisps[0] = 0;
   for (size_t i = 1; i < npes; ++i) {
     d_SendDisps[i] = d_SendDisps[i-1] + d_SendCnts[i-1]; 
   } // end for i
-  AMP_ASSERT( d_SendDisps[npes-1] == 5*nConstraints );
+  AMP_ASSERT( d_SendDisps[npes-1] + d_SendCnts[npes-1] == 4*nConstraints );
 
   std::vector<int> tmpSendCnts(npes, 0);
-  std::vector<size_t> sendBuff(d_SendDisps[npes-1]+d_SendCnts[npes-1], 0.0);
-  for (size_t i = 0; i < nConstraints; ++i) {
-    size_t sendToRank = ranks[i];
-    sendBuff[d_SendDisps[sendToRank] + tmpSendCnts[sendToRank]] = i;
+  d_MasterVerticesMap.resize(4*nConstraints, nConstraints);
+  std::vector<AMP::Mesh::MeshElementID> sendMasterVerticesGlobalIDs(d_SendDisps[npes-1]+d_SendCnts[npes-1], AMP::Mesh::MeshElementID());
+  for (size_t i = 0; i < 4*nConstraints; ++i) {
+    size_t sendToRank = d_MasterVerticesOwnerRanks[i];
+    d_MasterVerticesMap[i] = d_SendDisps[sendToRank] + tmpSendCnts[sendToRank];
+    sendMasterVerticesGlobalIDs[d_MasterVerticesMap[i]] = masterVerticesGlobalIDs[i];
     ++tmpSendCnts[sendToRank];
-    for (size_t j = 0; j < 4; ++j) {
-      sendBuff[d_SendDisps[sendToRank] + tmpSendCnts[sendToRank]] = col[4*i+j];
-      ++tmpSendCnts[sendToRank];
-    } // end for j
   } // end for i 
-  AMP_ASSERT( std::equal(tmpSendCnts.begin(), tmpSendCnts.end(), d_SendCnts.end()) ); 
+  AMP_ASSERT( std::equal(tmpSendCnts.begin(), tmpSendCnts.end(), d_SendCnts.begin()) );
+  tmpSendCnts.clear();
 
   d_RecvCnts.resize(npes);
   comm.allToAll(1, &(d_SendCnts[0]), &(d_RecvCnts[0]));
@@ -165,76 +187,126 @@ void NodeToSegmentConstraintsOperator::reset(const boost::shared_ptr<OperatorPar
   for (size_t i = 1; i < npes; ++i) {
     d_RecvDisps[i] = d_RecvDisps[i-1] + d_RecvCnts[i-1];
   } // end for i
-  d_RecvMasterGlobalIDs.resize(d_RecvDisps[npes-1]+d_RecvCnts[npes-1]);
-  comm.allToAll((!(sendBuff.empty()) ? &(sendBuff[0]) : NULL), &(d_SendCnts[0]), &(d_SendDisps[0]),
-      (!(d_RecvMasterGlobalIDs.empty()) ? &(d_RecvMasterGlobalIDs[0]) : NULL), &(d_RecvCnts[0]), &(d_RecvDisps[0]), true);
+  d_RecvMasterVerticesGlobalIDs.resize(d_RecvDisps[npes-1]+d_RecvCnts[npes-1]);
+  comm.allToAll((!(sendMasterVerticesGlobalIDs.empty()) ? &(sendMasterVerticesGlobalIDs[0]) : NULL), &(d_SendCnts[0]), &(d_SendDisps[0]),
+      (!(d_RecvMasterVerticesGlobalIDs.empty()) ? &(d_RecvMasterVerticesGlobalIDs[0]) : NULL), &(d_RecvCnts[0]), &(d_RecvDisps[0]), true);
 
-  for (size_t i = 0; i < npes; ++i) {
-    d_TransposeSendCnts[i] = (d_SendCnts[i] / 5) * 6;
-    d_TransposeSendDisps[i] = (d_SendDisps[i] / 5) * 6;
-    d_TransposeRecvCnts[i] = (d_RecvCnts[i] / 5) * 6;
-    d_TransposeRecvDisps[i] = (d_RecvDisps[i] / 5) * 6;
-  } // end for i
+  d_TransposeSendCnts.resize(npes);
+  d_TransposeSendDisps.resize(npes);
+  d_TransposeRecvCnts.resize(npes);
+  d_TransposeRecvDisps.resize(npes); 
+  std::copy(d_SendCnts.begin(), d_SendCnts.end(), d_TransposeSendCnts.begin());
+  std::copy(d_SendDisps.begin(), d_SendDisps.end(), d_TransposeSendDisps.begin());
+  std::copy(d_RecvCnts.begin(), d_RecvCnts.end(), d_TransposeRecvCnts.begin());
+  std::copy(d_RecvDisps.begin(), d_RecvDisps.end(), d_TransposeRecvDisps.begin());
+
   std::swap_ranges(d_RecvCnts.begin(), d_RecvCnts.end(), d_SendCnts.begin());
   std::swap_ranges(d_RecvDisps.begin(), d_RecvDisps.end(), d_SendDisps.begin());
 
+  getVectorIndicesFromGlobalIDs(d_SlaveVerticesGlobalIDs, d_SlaveIndices);
+  getVectorIndicesFromGlobalIDs(d_RecvMasterVerticesGlobalIDs, d_RecvMasterIndices);
+
+  for (size_t i = 0; i < npes; ++i) {
+    d_SendCnts[i] *= d_DOFsPerNode; 
+    d_SendDisps[i] *= d_DOFsPerNode; 
+    d_RecvCnts[i] *= d_DOFsPerNode; 
+    d_RecvDisps[i] *= d_DOFsPerNode; 
+    d_TransposeSendCnts[i] *= (d_DOFsPerNode + 1); 
+    d_TransposeSendDisps[i] *= (d_DOFsPerNode + 1); 
+    d_TransposeRecvCnts[i] *= (d_DOFsPerNode + 1); 
+    d_TransposeRecvDisps[i] *= (d_DOFsPerNode + 1); 
+  } // end for i
+
 }
+
+
+void NodeToSegmentConstraintsOperator::getVectorIndicesFromGlobalIDs(const std::vector<AMP::Mesh::MeshElementID> & globalIDs, 
+    std::vector<size_t> & vectorIndices) {
+  std::vector<size_t> tmpIndices;
+  std::vector<AMP::Mesh::MeshElementID>::const_iterator globalIDsConstIterator = globalIDs.begin(), 
+    globalIDsConstIterator_end = globalIDs.end();
+  vectorIndices.resize(globalIDs.size()*d_DOFsPerNode);
+  std::vector<size_t>::iterator vectorIndicesIterator = vectorIndices.begin();
+  for ( ; globalIDsConstIterator != globalIDsConstIterator_end; ++globalIDsConstIterator) {
+    d_DOFManager->getDOFs(*globalIDsConstIterator, tmpIndices);
+    AMP_ASSERT( *globalIDsConstIterator != AMP::Mesh::MeshElementID() );
+    AMP_ASSERT( tmpIndices.size() == d_DOFsPerNode );
+    std::copy(tmpIndices.begin(), tmpIndices.end(), vectorIndicesIterator);
+    for (size_t i = 0; i < d_DOFsPerNode; ++i) { ++vectorIndicesIterator; }
+  } // end for
+  AMP_ASSERT( vectorIndicesIterator == vectorIndices.end() );
+}
+
 
 void NodeToSegmentConstraintsOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
     AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double b) {
 
   /** send and receive the master values */
-  AMP::AMP_MPI comm = u->getComm();
+  AMP::AMP_MPI comm = d_GlobalComm;
+//  AMP::AMP_MPI comm = u->getComm();
+
   size_t npes = comm.getSize();
 //  size_t rank = comm.getRank();
 
   std::vector<double> sendMasterValues(d_SendDisps[npes-1]+d_SendCnts[npes-1]);
   for (size_t i = 0; i < npes; ++i) {
-    for (size_t j = 0; j < d_SendCnts[i]; j += 5) {
+    for (size_t j = 0; j < d_SendCnts[i]; j += d_DOFsPerNode) {
       size_t k = d_SendDisps[i] + j;
-      sendMasterValues[k] = static_cast<double>(d_RecvMasterGlobalIDs[k]);
-      u->getValuesByGlobalID(4, &(d_RecvMasterGlobalIDs[k+1]), &(sendMasterValues[k+1]));
+      u->getValuesByGlobalID(d_DOFsPerNode, &(d_RecvMasterIndices[k]), &(sendMasterValues[k]));
     } // end for j
   } // end for i
 
   std::vector<double> recvMasterValues(d_RecvDisps[npes-1]+d_RecvCnts[npes-1]);
   comm.allToAll((!(sendMasterValues.empty()) ? &(sendMasterValues[0]) : NULL), &(d_SendCnts[0]), &(d_SendDisps[0]),
       (!(recvMasterValues.empty()) ? &(recvMasterValues[0]) : NULL), &(d_RecvCnts[0]), &(d_RecvDisps[0]), true);
+  sendMasterValues.clear();
 
   /** compute slave values */
-  for (size_t i = 0; i < npes; ++i) {
-    for (size_t j = 0; j < d_RecvCnts[i]; j += 5) {
-      size_t k = d_RecvDisps[i] + j;
-      size_t constraintsLocalIndex = static_cast<size_t>(recvMasterValues[k]);
-      size_t slaveGlobalID = d_SlaveGlobalIDs[constraintsLocalIndex];
-      double value = 0.0;
-      for (size_t l = 0; l < 4; ++l) {
-        value += d_MasterShapeFunctionsValues[4*constraintsLocalIndex+l] * recvMasterValues[k+1+l]; 
-      } // end for j
-      u->setValueByGlobalID(slaveGlobalID, value);
+  std::vector<double> slaveValues(d_SlaveIndices.size(), 0.0);
+
+  for (size_t i = 0; i < d_SlaveVerticesGlobalIDs.size(); ++i) {
+    for (size_t j = 0; j < 4; ++j) {
+      for (size_t k = 0; k < d_DOFsPerNode; ++k) {
+        slaveValues[d_DOFsPerNode*i+k] += d_MasterShapeFunctionsValues[4*i+j] * recvMasterValues[d_DOFsPerNode*d_MasterVerticesMap[4*i+j]+k];
+      } // end for k
     } // end for j
   } // end for i
 
+ u->setValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(slaveValues[0]));
 }
 
 void NodeToSegmentConstraintsOperator::applyTranspose(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-    AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a, const double b) {
+    AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double b) {
 
-  /** send and receive the slave values */
-  AMP::AMP_MPI comm = u->getComm();
+  /** send and receive the slave values and the shape functions values */
+  AMP::AMP_MPI comm = d_GlobalComm;
+//  AMP::AMP_MPI comm = u->getComm();
   size_t npes = comm.getSize();
 
-/*
-
   std::vector<double> sendSlaveValueAndShapeFunctionsValues(d_TransposeSendDisps[npes-1]+d_TransposeSendCnts[npes-1]);
-  for (size_t i = 0; i < npes; ++i) {
-    for (size_t j = 0; j < d_TransposeSendCnts[i]; j += 6) {
-      size_t k = d_TransposeSendDisps[i] + j;
-      sendSlaveValueAndShapeFunctionsValues[k] = static_cast<double>(d_RecvMasterGlobalIDs[k]);
-      u->getValueByGlobalID(&(d_SlaveGlobalIDs[k+1]), &(sendMasterValues[k+1]));
+  for (size_t i = 0; i < d_SlaveVerticesGlobalIDs.size(); ++i) {
+    for (size_t j = 0; j < 4; ++j) {
+      u->getValuesByGlobalID(d_DOFsPerNode, &(d_SlaveIndices[d_DOFsPerNode*i]), &(sendSlaveValueAndShapeFunctionsValues[(d_DOFsPerNode+1)*d_MasterVerticesMap[4*i+j]])); 
+      sendSlaveValueAndShapeFunctionsValues[(d_DOFsPerNode+1)*d_MasterVerticesMap[4*i+j]+d_DOFsPerNode] = d_MasterShapeFunctionsValues[4*i+j];
     } // end for j
   } // end for i
-  */
+
+  std::vector<double> recvSlaveValueAndShapeFunctionsValues(d_TransposeRecvDisps[npes-1]+d_TransposeRecvCnts[npes-1]);
+  comm.allToAll((!(sendSlaveValueAndShapeFunctionsValues.empty()) ? &(sendSlaveValueAndShapeFunctionsValues[0]) : NULL), &(d_TransposeSendCnts[0]), &(d_TransposeSendDisps[0]),
+      (!(recvSlaveValueAndShapeFunctionsValues.empty()) ? &(recvSlaveValueAndShapeFunctionsValues[0]) : NULL), &(d_TransposeRecvCnts[0]), &(d_TransposeRecvDisps[0]), true);
+  sendSlaveValueAndShapeFunctionsValues.clear();
+
+  /** compute added values to master values and set slave values to zero */
+  std::vector<double> addToMasterValues(d_RecvMasterIndices.size(), 0.0);
+  for (size_t i = 0; i < d_RecvMasterVerticesGlobalIDs.size(); ++i) {
+    for (size_t j = 0; j < d_DOFsPerNode; ++j) {
+      addToMasterValues[d_DOFsPerNode*i+j] = recvSlaveValueAndShapeFunctionsValues[(d_DOFsPerNode+1)*i+j] * recvSlaveValueAndShapeFunctionsValues[(d_DOFsPerNode+1)*i+d_DOFsPerNode];
+    } // end for j
+  } // end for i
+
+  u->addValuesByGlobalID(d_RecvMasterIndices.size(), &(d_RecvMasterIndices[0]), &(addToMasterValues[0]));
+  std::vector<double> zeroSlaveValues(d_SlaveIndices.size(), 0.0);
+  u->setValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(zeroSlaveValues[0]));
 }
 
   } // end namespace Operator
