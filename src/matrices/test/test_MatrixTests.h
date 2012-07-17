@@ -1,15 +1,20 @@
 #ifndef included_test_MatrixTests
 #define included_test_MatrixTests
 
-#include "matrices/petsc/PetscMatrix.h"
 #include "utils/UnitTest.h"
 #include "discretization/DOF_Manager.h"
 
 #include "../../vectors/test/test_VectorLoops.h"
 
+#ifdef USE_PETSC
+    #include "matrices/petsc/PetscMatrix.h"
+#endif
+
+
 namespace AMP {
 namespace unit_test {
 
+#if defined(USE_PETSC) && defined(USE_PETSC)
 
 template <class MATRIX_FACTORY>
 void  fillWithPseudoLaplacian ( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
@@ -384,6 +389,7 @@ class VerifyExtractDiagonal
       }
 };
 
+#endif
 
 }
 }
