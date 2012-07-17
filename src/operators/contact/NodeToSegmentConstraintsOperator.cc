@@ -4,9 +4,6 @@
 
 #include <limits>
 #include <algorithm>
-#include <vector>
-#include <fstream>
-#include <boost/lexical_cast.hpp>
 
 
 namespace AMP {
@@ -68,22 +65,17 @@ void NodeToSegmentConstraintsOperator::reset(const boost::shared_ptr<OperatorPar
   /** build the constraints */
   const unsigned int nConstraints = std::count(flags.begin(), flags.end(), DendroSearch::FoundOnBoundary);
 
-  size_t rank = comm.getRank();
   comm.barrier();
-  std::fstream fout;
-  std::string fileName = "debug_operator_" + boost::lexical_cast<std::string>(rank);
-  fout.open(fileName.c_str(), std::fstream::out);
   unsigned int localPtsNotFound = std::count(flags.begin(), flags.end(), DendroSearch::NotFound);
   unsigned int localPtsFoundNotOnBoundary = std::count(flags.begin(), flags.end(), DendroSearch::FoundNotOnBoundary);
   unsigned int localPtsFoundOnBoundary = std::count(flags.begin(), flags.end(), DendroSearch::FoundOnBoundary);
   unsigned int globalPtsNotFound = comm.sumReduce(localPtsNotFound);
   unsigned int globalPtsFoundNotOnBoundary = comm.sumReduce(localPtsFoundNotOnBoundary);
   unsigned int globalPtsFoundOnBoundary = comm.sumReduce(localPtsFoundOnBoundary);
-  fout<<"Global number of points not found is "<<globalPtsNotFound<<" (local was "<<localPtsNotFound<<")"<<std::endl;
-  fout<<"Global number of points found not on boundary is "<<globalPtsFoundNotOnBoundary<<" (local was "<<localPtsFoundNotOnBoundary<<")"<<std::endl;
-  fout<<"Global number of points found on boundary is "<<globalPtsFoundOnBoundary<<" (local was "<<localPtsFoundOnBoundary<<")"<<std::endl;
-  fout<<"Total number of points is "<<globalPtsNotFound+globalPtsFoundNotOnBoundary+globalPtsFoundOnBoundary<<std::endl;
-  fout.close();
+  d_fout<<"Global number of points not found is "<<globalPtsNotFound<<" (local was "<<localPtsNotFound<<")"<<std::endl;
+  d_fout<<"Global number of points found not on boundary is "<<globalPtsFoundNotOnBoundary<<" (local was "<<localPtsFoundNotOnBoundary<<")"<<std::endl;
+  d_fout<<"Global number of points found on boundary is "<<globalPtsFoundOnBoundary<<" (local was "<<localPtsFoundOnBoundary<<")"<<std::endl;
+  d_fout<<"Total number of points is "<<globalPtsNotFound+globalPtsFoundNotOnBoundary+globalPtsFoundOnBoundary<<std::endl;
 
 //  AMP_ASSERT( std::count(flags.begin(), flags.end(), DendroSearch::FoundNotOnBoundary) == 0 ); // DendroSearch::FoundNotOnBoundary is not acceptable
 
@@ -240,7 +232,11 @@ void NodeToSegmentConstraintsOperator::getVectorIndicesFromGlobalIDs(const std::
 
 void NodeToSegmentConstraintsOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
     AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double b) {
+  applyResidualCorrection(r);
+}
 
+
+void NodeToSegmentConstraintsOperator::applySolutionConstraints(AMP::LinearAlgebra::Vector::shared_ptr u) {
   /** send and receive the master values */
   AMP::AMP_MPI comm = d_GlobalComm;
 //  AMP::AMP_MPI comm = u->getComm();
@@ -275,28 +271,28 @@ void NodeToSegmentConstraintsOperator::apply(const AMP::LinearAlgebra::Vector::s
  u->setValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(slaveValues[0]));
 }
 
-void NodeToSegmentConstraintsOperator::applyTranspose(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-    AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double b) {
-
+void NodeToSegmentConstraintsOperator::applyResidualCorrection(AMP::LinearAlgebra::Vector::shared_ptr r) {
   /** send and receive the slave values and the shape functions values */
   AMP::AMP_MPI comm = d_GlobalComm;
-//  AMP::AMP_MPI comm = u->getComm();
+//  AMP::AMP_MPI comm = r->getComm();
   size_t npes = comm.getSize();
 
   std::vector<double> sendSlaveValueAndShapeFunctionsValues(d_TransposeSendDisps[npes-1]+d_TransposeSendCnts[npes-1]);
   for (size_t i = 0; i < d_SlaveVerticesGlobalIDs.size(); ++i) {
     for (size_t j = 0; j < 4; ++j) {
-      u->getValuesByGlobalID(d_DOFsPerNode, &(d_SlaveIndices[d_DOFsPerNode*i]), &(sendSlaveValueAndShapeFunctionsValues[(d_DOFsPerNode+1)*d_MasterVerticesMap[4*i+j]])); 
+      r->getValuesByGlobalID(d_DOFsPerNode, &(d_SlaveIndices[d_DOFsPerNode*i]), &(sendSlaveValueAndShapeFunctionsValues[(d_DOFsPerNode+1)*d_MasterVerticesMap[4*i+j]])); 
       sendSlaveValueAndShapeFunctionsValues[(d_DOFsPerNode+1)*d_MasterVerticesMap[4*i+j]+d_DOFsPerNode] = d_MasterShapeFunctionsValues[4*i+j];
     } // end for j
   } // end for i
 
   std::vector<double> recvSlaveValueAndShapeFunctionsValues(d_TransposeRecvDisps[npes-1]+d_TransposeRecvCnts[npes-1]);
+  comm.barrier();
   comm.allToAll((!(sendSlaveValueAndShapeFunctionsValues.empty()) ? &(sendSlaveValueAndShapeFunctionsValues[0]) : NULL), &(d_TransposeSendCnts[0]), &(d_TransposeSendDisps[0]),
       (!(recvSlaveValueAndShapeFunctionsValues.empty()) ? &(recvSlaveValueAndShapeFunctionsValues[0]) : NULL), &(d_TransposeRecvCnts[0]), &(d_TransposeRecvDisps[0]), true);
   sendSlaveValueAndShapeFunctionsValues.clear();
 
   /** compute added values to master values and set slave values to zero */
+  comm.barrier();
   std::vector<double> addToMasterValues(d_RecvMasterIndices.size(), 0.0);
   for (size_t i = 0; i < d_RecvMasterVerticesGlobalIDs.size(); ++i) {
     for (size_t j = 0; j < d_DOFsPerNode; ++j) {
@@ -304,9 +300,20 @@ void NodeToSegmentConstraintsOperator::applyTranspose(const AMP::LinearAlgebra::
     } // end for j
   } // end for i
 
-  u->addValuesByGlobalID(d_RecvMasterIndices.size(), &(d_RecvMasterIndices[0]), &(addToMasterValues[0]));
+  r->addValuesByGlobalID(d_RecvMasterIndices.size(), &(d_RecvMasterIndices[0]), &(addToMasterValues[0]));
   std::vector<double> zeroSlaveValues(d_SlaveIndices.size(), 0.0);
-  u->setValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(zeroSlaveValues[0]));
+  r->setValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(zeroSlaveValues[0]));
+  
+}
+
+void NodeToSegmentConstraintsOperator::getShift(AMP::LinearAlgebra::Vector::shared_ptr d) {
+  // Need to be more careful when handling multiphysics problem where number dofs per node wont be 3
+  d->zero();
+  AMP_ASSERT( d_SlaveVerticesShift.size() == d_SlaveIndices.size() );
+  for (size_t i = 0; i < d_SlaveIndices.size(); ++i) {
+    d->setValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(d_SlaveVerticesShift[0])); 
+  } // end for i
+
 }
 
   } // end namespace Operator
