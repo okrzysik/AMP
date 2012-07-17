@@ -185,6 +185,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   columnRhsVec->zero();
   if (slaveLoadOperator != NULL) { slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0); }
+//  contactOperator->applyResidualCorrection(columnRhsVec);
+  contactOperator->applySolutionConstraints(columnSolVec);
 
   boost::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase("LinearSolver"); 
 

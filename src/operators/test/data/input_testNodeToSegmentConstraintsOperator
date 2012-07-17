@@ -115,7 +115,7 @@ LinearSolver {
     absolute_tolerance = 1.0e-16
     relative_tolerance = 1.0e-10
     divergence_tolerance = 1.0e03
-    uses_preconditioner = FALSE
+    uses_preconditioner = TRUE
 
     KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 200"
 
