@@ -567,8 +567,8 @@ void testID( AMP::UnitTest *utils )
     AMP::Mesh::MeshElementID id5(true,AMP::Mesh::Vertex,2,4,103);
     AMP::Mesh::MeshElementID id6(true,AMP::Mesh::Vertex,2,1,105);
     // Test the default values
-    if ( id0.meshID()!=static_cast<size_t>(-1) || id0.is_local() || id0.type()!=AMP::Mesh::null || 
-        id0.owner_rank()!=0 || id0.local_id()!=static_cast<unsigned int>(-1) )
+    if ( id0.meshID()!=0xFFFFFFFFFFFFFFFF || id0.is_local() || id0.type()!=AMP::Mesh::null || 
+        id0.owner_rank()!=0 || id0.local_id()!=0xFFFFFFFF )
         utils->failure("MeshElementID test defaults");
     // Test == and != operators
     if ( !(id1==id1) || !(id1==id2) )

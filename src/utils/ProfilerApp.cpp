@@ -424,8 +424,11 @@ void ProfilerApp::save( const std::string& filename ) {
         }
     }
     for (int i=0; i<N_threads2; i++) {
-        if ( thread_data[i] == NULL )
+        if ( thread_data[i] == NULL ) {
+            delete [] thread_data;
+            RELEASE_LOCK(&lock);
             ERROR_MSG("Internal error (3)");
+        }
     }
     // Get the timer ids and sort the ids by the total time (maximum value for each thread) to create a global order to save the results
     unsigned int *id_order = new unsigned int[N_timers];
@@ -473,6 +476,9 @@ void ProfilerApp::save( const std::string& filename ) {
     FILE *timerFile = fopen(filename_timer,"wb");
     if ( timerFile == NULL ) {
         printf("Error opening file for writing (timer)");
+        delete [] thread_data;
+        delete [] id_order;
+        RELEASE_LOCK(&lock);
         return;
     }
     FILE *traceFile = NULL;
@@ -480,6 +486,10 @@ void ProfilerApp::save( const std::string& filename ) {
         traceFile = fopen(filename_trace,"wb");
         if ( traceFile == NULL ) {
             printf("Error opening file for writing (trace)");
+            delete [] thread_data;
+            delete [] id_order;
+            fclose(timerFile);
+            RELEASE_LOCK(&lock);
             return;
         }
     }
@@ -497,8 +507,15 @@ void ProfilerApp::save( const std::string& filename ) {
                 break;
             timer_global = (store_timer_info *) timer_global->next;
         }
-        if ( timer_global==NULL )
+        if ( timer_global==NULL ) {
+            delete [] thread_data;
+            delete [] id_order;
+            fclose(timerFile);
+            if ( traceFile!=NULL)
+                fclose(traceFile);
+            RELEASE_LOCK(&lock);
             ERROR_MSG("Internal error");
+        }
         const char* filename2 = timer_global->filename.c_str();
         const char* message = timer_global->message.c_str();
         int start_line = timer_global->start_line;
@@ -556,8 +573,15 @@ void ProfilerApp::save( const std::string& filename ) {
                 break;
             timer_global = (store_timer_info *) timer_global->next;
         }
-        if ( timer_global==NULL )
+        if ( timer_global==NULL ) {
+            delete [] thread_data;
+            delete [] id_order;
+            fclose(timerFile);
+            if ( traceFile!=NULL)
+                fclose(traceFile);
+            RELEASE_LOCK(&lock);
             ERROR_MSG("Internal error");
+        }
         const char* filename2 = timer_global->filename.c_str();
         const char* message = timer_global->message.c_str();
         int start_line = timer_global->start_line;
@@ -641,8 +665,15 @@ void ProfilerApp::save( const std::string& filename ) {
                                 if ( timer_tmp!=NULL )
                                     break;
                             }
-                            if ( timer_tmp==NULL )
+                            if ( timer_tmp==NULL ) {
+                                delete [] thread_data;
+                                delete [] id_order;
+                                fclose(timerFile);
+                                if ( traceFile!=NULL)
+                                    fclose(traceFile);
+                                RELEASE_LOCK(&lock);
                                 ERROR_MSG("Internal Error");
+                            }
                             convert_timer_id(timer_tmp->id,id_str);
                             fprintf(timerFile,"%s ",id_str);
                         }
@@ -684,8 +715,15 @@ void ProfilerApp::save( const std::string& filename ) {
                                 if ( timer_tmp!=NULL )
                                     break;
                             }
-                            if ( timer_tmp==NULL )
+                            if ( timer_tmp==NULL ) {
+                                delete [] thread_data;
+                                delete [] id_order;
+                                fclose(timerFile);
+                                if ( traceFile!=NULL)
+                                    fclose(traceFile);
+                                RELEASE_LOCK(&lock);
                                 ERROR_MSG("Internal Error");
+                            }
                             convert_timer_id(timer_tmp->id,id_str);
                             fprintf(timerFile,"%s ",id_str);
                         }

@@ -74,6 +74,7 @@ ENDIF()
 
 
 # Configure external libraries
+CONFIGURE_SYSTEM_LIBS ()
 CONFIGURE_MPI ()   # MPI must be before other libraries
 CONFIGURE_TRILINOS_LIBRARIES ()
 CONFIGURE_SUNDIALS_LIBRARIES ()

@@ -43,6 +43,7 @@ unsigned int perform_battery_of_tests(hex8_element_t *volume_element, double (*m
 }
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
+  const double pi = 3.141592653589793;
   double points[24] = {
     -1.0, -1.0, -1.0, // 0
     +1.0, -1.0, -1.0, // 1
@@ -71,17 +72,17 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP_ASSERT(perform_battery_of_tests(&volume_element, my_function) == 0);
   AMP_ASSERT(perform_battery_of_tests(&volume_element, my_function_no_cross_terms) == 0);
 
-  rotate_points(2, M_PI/2.0, 8, points);
+  rotate_points(2, pi/2.0, 8, points);
   volume_element.set_support_points(points);
   AMP_ASSERT(perform_battery_of_tests(&volume_element, my_function) == 0);
   AMP_ASSERT(perform_battery_of_tests(&volume_element, my_function_no_cross_terms) == 0);
 
-  rotate_points(0, -0.75*M_PI, 8, points);
+  rotate_points(0, -0.75*pi, 8, points);
   volume_element.set_support_points(points);
   AMP_ASSERT(perform_battery_of_tests(&volume_element, my_function) > 0);
   AMP_ASSERT(perform_battery_of_tests(&volume_element, my_function_no_cross_terms) == 0);
 
-  rotate_points(0, 0.75*M_PI, 8, points);
+  rotate_points(0, 0.75*pi, 8, points);
   volume_element.set_support_points(points);
   AMP_ASSERT(perform_battery_of_tests(&volume_element, my_function) == 0);
   AMP_ASSERT(perform_battery_of_tests(&volume_element, my_function_no_cross_terms) == 0);

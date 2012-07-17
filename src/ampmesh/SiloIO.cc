@@ -161,12 +161,8 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::str
         data.ownerRank = d_comm.getRank(); // Everybody owns the mesh because every rank is an independent mesh
         data.meshName = "rank_" + rank;
         data.path = path + mesh->getName() + "_/";
-        if ( d_baseMeshes.find(mesh->meshID()) != d_baseMeshes.end() ) {
-            std::string path2 = d_baseMeshes.find(mesh->meshID())->second.path;
-            if ( data.path != path2 )
-                AMP_ERROR("Mesh was previously registered with a different path");
-        }
-        d_baseMeshes.insert( std::pair<AMP::Mesh::MeshID,siloBaseMeshData>(mesh->meshID(),data) );
+        if ( d_baseMeshes.find(mesh->meshID()) == d_baseMeshes.end() )
+            d_baseMeshes.insert( std::pair<AMP::Mesh::MeshID,siloBaseMeshData>(mesh->meshID(),data) );
         // Create and register a multimesh for the current mesh
         if ( level>0 ) {
             siloMultiMeshData data2;
@@ -382,6 +378,8 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
             int nvar = 0;
             int centering = 0;
             double **var = new double*[data.varSize[i]];
+            for (int j=0; j<data.varSize[i]; j++)
+                var[j] = NULL;
             const char *varnames[] = {"1","2","3"};
             if ( data.varType[i]==AMP::Mesh::Vertex ) {
                 // We are saving node-centered data
@@ -432,8 +430,10 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
                         1, (char**) varnames, &var[j], nvar, NULL, 0, DB_DOUBLE, centering, NULL);
                 }
             }
-            for (int j=0; j<data.varSize[i]; j++)
-                delete [] var[j];
+            for (int j=0; j<data.varSize[i]; j++) {
+                if ( var[j] != NULL )
+                    delete [] var[j];
+            }
             delete [] var;
         }
     #endif
@@ -1021,7 +1021,7 @@ void createSiloDirectory( DBfile *FileHandle, std::string path )
 #else
 void SiloIO::readFile( const std::string& ) { AMP_ERROR("SILO not configured"); }
 void SiloIO::writeFile( const std::string&, size_t ) { AMP_ERROR("SILO not configured"); }
-void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr, std::string ) { AMP_ERROR("SILO not configured"); }
+void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, std::string ) { AMP_ERROR("SILO not configured"); }
 #ifdef USE_AMP_VECTORS
 void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec, AMP::Mesh::Mesh::shared_ptr,
     AMP::Mesh::GeomType, const std::string& ) { AMP_ERROR("SILO not configured"); }

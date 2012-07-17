@@ -21,6 +21,7 @@ void test_mapping(hex8_element_t *volume_element, unsigned int n_random_candidat
 }
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
+  const double pi = 3.141592653589793;
   double points[24] = {
     -1.0, -1.0, -1.0, // 0
     +1.0, -1.0, -1.0, // 1
@@ -44,9 +45,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   double translation_vector[3] = { 3.0, 1.0, 5.0 };
   translate_points(std::vector<double>(translation_vector, translation_vector+3), 8, points);
 
-  rotate_points(2, M_PI/3.0, 8, points);
+  rotate_points(2, pi/3.0, 8, points);
 
-  rotate_points(0, 0.75*M_PI, 8, points);
+  rotate_points(0, 0.75*pi, 8, points);
 
   srand(0);
   for (unsigned int i = 0; i < 24; ++i) { points[i] += -0.1 + 0.2*rand()/RAND_MAX; }

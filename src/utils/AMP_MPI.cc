@@ -161,6 +161,8 @@ AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 ) {
 *  Assignment operator                                                  *
 ************************************************************************/
 AMP_MPI& AMP_MPI::operator=(const AMP::AMP_MPI& comm) {
+    if (this == &comm) // protect against invalid self-assignment
+        return *this;
     // Initialize the data members to the existing AMP_MPI object
     this->communicator = comm.communicator;
     this->comm_rank = comm.comm_rank;

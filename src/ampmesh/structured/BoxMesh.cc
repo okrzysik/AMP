@@ -15,6 +15,9 @@
 #endif
 #include "utils/ProfilerApp.h"
 
+#include <iostream>
+#include <algorithm>
+
 namespace AMP {
 namespace Mesh {
 
@@ -695,9 +698,9 @@ MeshElement BoxMesh::getElement ( const MeshElementID &elem_id ) const
     MeshElementIndex index;
     index.type = elem_id.type();
     size_t local_id = elem_id.local_id();
-    index.index[0] = (int) range[0] + local_id%myBoxSize[0];
-    index.index[1] = (int) range[2] + (local_id/myBoxSize[0])%myBoxSize[1];
-    index.index[2] = (int) range[4] + (local_id/(myBoxSize[0]*myBoxSize[1]))%myBoxSize[2];
+    index.index[0] = range[0] + (int) local_id%myBoxSize[0];
+    index.index[1] = range[2] + (int) (local_id/myBoxSize[0])%myBoxSize[1];
+    index.index[2] = range[4] + (int) (local_id/(myBoxSize[0]*myBoxSize[1]))%myBoxSize[2];
     index.side = (unsigned char) (local_id/(myBoxSize[0]*myBoxSize[1]*myBoxSize[2]));
     // Create the element
     structuredMeshElement elem( index, this );
