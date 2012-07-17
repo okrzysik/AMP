@@ -10,6 +10,8 @@
 
 #include "ampmesh/dendro/DendroSearch.h"
 #include <vector>
+#include <fstream>
+#include <boost/lexical_cast.hpp>
 
 namespace AMP {
   namespace Operator {
@@ -41,12 +43,16 @@ namespace AMP {
           d_SlaveMeshID = (params->d_SlaveMeshID);
           d_MasterBoundaryID = (params->d_MasterBoundaryID);
           d_SlaveBoundaryID = (params->d_SlaveBoundaryID);
+  
+          size_t rank = d_GlobalComm.getRank();
+          std::string fileName = "debug_operator_" + boost::lexical_cast<std::string>(rank);
+          d_fout.open(fileName.c_str(), std::fstream::out);
         }
 
         /**
           Destructor
           */
-        virtual ~NodeToSegmentConstraintsOperator() { }
+        virtual ~NodeToSegmentConstraintsOperator() { d_fout.close(); }
 
         /**
          * This function is useful for re-initializing/updating an operator
@@ -68,8 +74,9 @@ namespace AMP {
         virtual void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
             AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
 
-        virtual void applyTranspose(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-            AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
+        virtual void applyResidualCorrection(AMP::LinearAlgebra::Vector::shared_ptr r);
+
+        virtual void applySolutionConstraints(AMP::LinearAlgebra::Vector::shared_ptr u);
 
       protected :
 
@@ -104,6 +111,8 @@ namespace AMP {
         std::vector<size_t> d_MasterVerticesOwnerRanks;
         std::vector<double> d_MasterShapeFunctionsValues;
         std::vector<double> d_SlaveVerticesShift;
+
+        std::fstream d_fout;
     };
 
   }

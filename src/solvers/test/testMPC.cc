@@ -37,7 +37,7 @@
 #include "solvers/PetscKrylovSolverParameters.h"
 #include "solvers/PetscKrylovSolver.h"
 #include "solvers/TrilinosMLSolver.h"
-#include "solvers/ContactSolver.h"
+#include "solvers/MPCSolver.h"
 
 #include "mesh_communication.h"
 
