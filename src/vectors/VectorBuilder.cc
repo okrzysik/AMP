@@ -1,10 +1,16 @@
 #ifdef USE_AMP_DISCRETIZATION
 
 #include "VectorBuilder.h"
-#include "vectors/petsc/ManagedPetscVector.h"
-#include "vectors/trilinos/EpetraVectorEngine.h"
 #include "vectors/MultiVariable.h"
+#include "vectors/MultiVector.h"
+#include "vectors/SimpleVector.h"
 #include "discretization/MultiDOF_Manager.h"
+#ifdef USE_PETSC
+    #include "vectors/petsc/ManagedPetscVector.h"
+#endif
+#ifdef USE_TRILINOS
+    #include "vectors/trilinos/EpetraVectorEngine.h"
+#endif
 
 #include <iostream>
 
@@ -92,23 +98,28 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
         }
         comm.barrier();
         // Create the vector parameters
-        boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscVectorParameters> mvparams(
-            new AMP::LinearAlgebra::ManagedPetscVectorParameters() );
-        boost::shared_ptr<AMP::LinearAlgebra::EpetraVectorEngineParameters> eveparams(
-            new AMP::LinearAlgebra::EpetraVectorEngineParameters( DOFs->numLocalDOF(), DOFs->numGlobalDOF(), DOFs->getComm() ) );
-        comm.barrier();
-        AMP::LinearAlgebra::VectorEngine::BufferPtr t_buffer ( new AMP::LinearAlgebra::VectorEngine::Buffer( DOFs->numLocalDOF() ) );
-        AMP::LinearAlgebra::VectorEngine::shared_ptr epetra_engine( new AMP::LinearAlgebra::EpetraVectorEngine( eveparams, t_buffer ) );
-        mvparams->d_Engine = epetra_engine;
-        mvparams->d_Buffer = t_buffer;
-        mvparams->d_CommList = comm_list;
-        mvparams->d_DOFManager = DOFs;
-        // Create the vector
-        comm.barrier();
-        AMP::LinearAlgebra::Vector::shared_ptr vector = AMP::LinearAlgebra::Vector::shared_ptr( new AMP::LinearAlgebra::ManagedPetscVector(mvparams) );
-        vector->setVariable(variable);
-        comm.barrier();
-        return vector;
+        #if defined(USE_PETSC) && defined(USE_TRILINOS)
+            boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscVectorParameters> mvparams(
+                new AMP::LinearAlgebra::ManagedPetscVectorParameters() );
+            boost::shared_ptr<AMP::LinearAlgebra::EpetraVectorEngineParameters> eveparams(
+                new AMP::LinearAlgebra::EpetraVectorEngineParameters( DOFs->numLocalDOF(), DOFs->numGlobalDOF(), DOFs->getComm() ) );
+            comm.barrier();
+            AMP::LinearAlgebra::VectorEngine::BufferPtr t_buffer ( new AMP::LinearAlgebra::VectorEngine::Buffer( DOFs->numLocalDOF() ) );
+            AMP::LinearAlgebra::VectorEngine::shared_ptr epetra_engine( new AMP::LinearAlgebra::EpetraVectorEngine( eveparams, t_buffer ) );
+            mvparams->d_Engine = epetra_engine;
+            mvparams->d_Buffer = t_buffer;
+            mvparams->d_CommList = comm_list;
+            mvparams->d_DOFManager = DOFs;
+            // Create the vector
+            comm.barrier();
+            AMP::LinearAlgebra::Vector::shared_ptr vector = AMP::LinearAlgebra::Vector::shared_ptr( new AMP::LinearAlgebra::ManagedPetscVector(mvparams) );
+            vector->setVariable(variable);
+            comm.barrier();
+            return vector;
+        #else
+            AMP::LinearAlgebra::Vector::shared_ptr vector = AMP::LinearAlgebra::SimpleVector::create( variable, DOFs, comm_list );
+            return vector;
+        #endif
     } 
     return AMP::LinearAlgebra::Vector::shared_ptr();
 }

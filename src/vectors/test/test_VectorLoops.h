@@ -3,24 +3,21 @@
 
 #include "utils/UnitTest.h"
 
+#include "test_Vector.h"
+#include "test_VectorTests.h"
 #ifdef USE_SUNDIALS
     #include "test_SundialsVectorTests.h"
-    #include "vectors/sundials/ManagedSundialsVector.h"
-    #include "vectors/sundials/SundialsVector.h"
 #endif
 #ifdef USE_PETSC
     #include "test_PetscVector.h"
-    #include "vectors/petsc/ManagedPetscVector.h"
-    #include "vectors/petsc/PetscVector.h"
 #endif
-#include "vectors/MultiVector.h"
-#include "test_Vector.h"
 
 /// \cond UNDOCUMENTED
 
 using namespace AMP::unit_test;
 
 
+#ifdef USE_PETSC
 template <class FACTORY>
 void  test_petsc_bottom ( AMP::UnitTest *ut )
 {
@@ -51,17 +48,20 @@ void  test_petsc_bottom ( AMP::UnitTest *ut )
     VerifyAYPXPetscVector<FACTORY>::run_test( ut );
     VerifyAXPBYPCZPetscVector<FACTORY>::run_test( ut );
 }
+#endif
 
 
 template <class FACTORY>
 void test_managed_vectors_bottom ( AMP::UnitTest *ut )
 {
+  #ifdef USE_PETSC
     DeepCloneOfView<FACTORY,AMP::LinearAlgebra::PetscVector>( ut );
-#ifdef USE_SUNDIALS
-    DeepCloneOfView<FACTORY,AMP::LinearAlgebra::SundialsVector>( ut );
-#endif
-    VectorIteratorLengthTest<FACTORY>( ut );
     Bug_491<FACTORY>( ut );
+  #endif
+  #ifdef USE_SUNDIALS
+    DeepCloneOfView<FACTORY,AMP::LinearAlgebra::SundialsVector>( ut );
+  #endif
+    VectorIteratorLengthTest<FACTORY>( ut );
     Bug_728<FACTORY>( ut );
     InstantiateVector<FACTORY>( ut );
     SetToScalarVector<FACTORY>( ut );
@@ -115,16 +115,18 @@ void test_managed_vectors_loop ( AMP::UnitTest *ut )
 {
   test_managed_vectors_bottom<FACTORY> ( ut );
 
-  typedef SimplePetscVectorFactory<FACTORY>   PETSC_FACTORY;
-  test_petsc_bottom<PetscViewFactory<PETSC_FACTORY> > ( ut );
-  test_petsc_bottom<PetscCloneFactory<PetscViewFactory<PETSC_FACTORY> > > ( ut );
+  #ifdef USE_PETSC
+    typedef SimplePetscVectorFactory<FACTORY>   PETSC_FACTORY;
+    test_petsc_bottom<PetscViewFactory<PETSC_FACTORY> > ( ut );
+    test_petsc_bottom<PetscCloneFactory<PetscViewFactory<PETSC_FACTORY> > > ( ut );
+  #endif
 
-#ifdef USE_SUNDIALS
-  test_managed_vectors_bottom<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> >( ut );
-  test_managed_vectors_bottom<CloneFactory<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> > > ( ut );
-  test_sundials_bottom<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> >( ut );
-  test_sundials_bottom<CloneFactory<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> > > ( ut );
-#endif
+  #ifdef USE_SUNDIALS
+    test_managed_vectors_bottom<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> >( ut );
+    test_managed_vectors_bottom<CloneFactory<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> > > ( ut );
+    test_sundials_bottom<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> >( ut );
+    test_sundials_bottom<CloneFactory<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> > > ( ut );
+  #endif
 
 }
 

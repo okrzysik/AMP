@@ -7,18 +7,15 @@ Mesh{
 
     // This is a multimesh for a pin
     MeshArray_1{
-        N = 16
+        N = 9
         iterator = "%p"
-        //indicies = 1, 2, 3, 4 
-        indicies = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
+        indicies = 1, 2, 3, 4, 5, 6, 7, 8, 9
         MeshName = "pin_%p"
         MeshType = "Multimesh"
         MeshDatabasePrefix = "Mesh_"
         MeshArrayDatabasePrefix = "MeshArray_"
-        //x_offset = -2.0, -2.0, 2.0, 2.0
-        //y_offset = -2.0, 2.0, -2.0, 2.0
-        x_offset = -3, -3, -3, -3, -1, -1, -1, -1,  1,  1,  1,  1,  3,  3,  3,  3
-        y_offset = -3, -1,  1,  3, -3, -1,  1,  3, -3, -1,  1,  3, -3, -1,  1,  3
+        x_offset = -2, -2, -2, 0, 0, 0, 2, 2, 2
+        y_offset = -2, 0, 2, -2, 0, 2, -2, 0, 2
         z_offset = 0.0
 
         // This is a multimesh for 3 pellets
