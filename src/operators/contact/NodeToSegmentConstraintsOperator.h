@@ -74,9 +74,9 @@ namespace AMP {
         virtual void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
             AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
 
-        virtual void applyResidualCorrection(AMP::LinearAlgebra::Vector::shared_ptr r);
-
-        virtual void applySolutionConstraints(AMP::LinearAlgebra::Vector::shared_ptr u);
+        void applyResidualCorrection(AMP::LinearAlgebra::Vector::shared_ptr r);
+        void applySolutionConstraints(AMP::LinearAlgebra::Vector::shared_ptr u);
+        void getShift(AMP::LinearAlgebra::Vector::shared_ptr d);
 
       protected :
 

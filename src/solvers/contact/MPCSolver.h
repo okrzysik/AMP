@@ -1,8 +1,8 @@
 
-#ifndef included_MPCSolver
-#define included_MPCSolver
+#ifndef included_contact_MPCSolver
+#define included_contact_MPCSolver
 
-#include "SolverStrategy.h"
+#include <solvers/SolverStrategy.h>
 
 namespace AMP {
   namespace Solver {
@@ -11,7 +11,7 @@ namespace AMP {
 
     class MPCSolver : public SolverStrategy {
       public:
-        MPCSolver(boost::shared_ptr<MPCSolverParameters> params) 
+        MPCSolver(boost::shared_ptr<MPCSolverParameters> params)
           : SolverStrategy(params) { }
 
         void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector> f, boost::shared_ptr<AMP::LinearAlgebra::Vector> u);

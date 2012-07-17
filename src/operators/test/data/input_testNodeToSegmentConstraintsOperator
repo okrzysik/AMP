@@ -116,6 +116,8 @@ LinearSolver {
     relative_tolerance = 1.0e-10
     divergence_tolerance = 1.0e03
     uses_preconditioner = TRUE
+    pc_type = "shell"
+    pc_side = "LEFT"
 
     KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 200"
 
@@ -126,6 +128,24 @@ LinearSolver {
         absolute_tolerance = 1.0e-16
         relative_tolerance = 1.0e-10
         divergence_tolerance = 1.0e03
+
+        MasterSolver {
+          print_info_level = 10
+            max_iterations = 1
+            max_error = 1.0e-16
+            uses_preconditioner = TRUE
+            pc_type = "jacobi"
+            ksp_type = "preonly"
+        }
+
+      SlaveSolver {
+        print_info_level = 10
+          max_iterations = 1
+          max_error = 1.0e-16
+          uses_preconditioner = TRUE
+          pc_type = "jacobi"
+          ksp_type = "preonly"
+      }
 
       ContactPreconditioner {
         print_info_level = 10

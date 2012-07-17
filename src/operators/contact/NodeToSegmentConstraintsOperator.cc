@@ -301,12 +301,19 @@ void NodeToSegmentConstraintsOperator::applyResidualCorrection(AMP::LinearAlgebr
   } // end for i
 
   r->addValuesByGlobalID(d_RecvMasterIndices.size(), &(d_RecvMasterIndices[0]), &(addToMasterValues[0]));
-  // QUESTION TO RAHUL
-  // DO I REALLY NEED THIS MAKE CONSISTENT??
-  r->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_ADD);
   std::vector<double> zeroSlaveValues(d_SlaveIndices.size(), 0.0);
   r->setValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(zeroSlaveValues[0]));
   
+}
+
+void NodeToSegmentConstraintsOperator::getShift(AMP::LinearAlgebra::Vector::shared_ptr d) {
+  // Need to be more careful when handling multiphysics problem where number dofs per node wont be 3
+  d->zero();
+  AMP_ASSERT( d_SlaveVerticesShift.size() == d_SlaveIndices.size() );
+  for (size_t i = 0; i < d_SlaveIndices.size(); ++i) {
+    d->setValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(d_SlaveVerticesShift[0])); 
+  } // end for i
+
 }
 
   } // end namespace Operator
