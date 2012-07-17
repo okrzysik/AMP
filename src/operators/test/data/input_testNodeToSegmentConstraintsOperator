@@ -134,7 +134,7 @@ LinearSolver {
             max_iterations = 1
             max_error = 1.0e-16
             uses_preconditioner = TRUE
-            pc_type = "jacobi"
+            pc_type = "none"
             ksp_type = "preonly"
         }
 
@@ -143,7 +143,7 @@ LinearSolver {
           max_iterations = 1
           max_error = 1.0e-16
           uses_preconditioner = TRUE
-          pc_type = "jacobi"
+          pc_type = "none"
           ksp_type = "preonly"
       }
 

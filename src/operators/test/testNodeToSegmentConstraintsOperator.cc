@@ -241,7 +241,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(new AMP::Solver::PetscKrylovSolver(linearSolverParams));
   linearSolver->setZeroInitialGuess(true);
 
-//  linearSolver->solve(columnRhsVec, columnSolVec);
+  linearSolver->solve(columnRhsVec, columnSolVec);
 
 
 #ifdef USE_SILO
