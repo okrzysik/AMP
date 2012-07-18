@@ -61,15 +61,30 @@ ADD_DISTCLEAN ()
 
 
 # Check the compile mode and compile flags
+SET_STATIC_FLAGS ()
 VERIFY_VARIABLE ( "COMPILE_MODE" )
 IF ( ${COMPILE_MODE} STREQUAL "debug" )
   SET_DEBUG_MACROS()
-ELSE ()
-  IF ( ${COMPILE_MODE} STREQUAL "optimized" )
+ELSEIF ( ${COMPILE_MODE} STREQUAL "optimized" )
     SET_OPTIMIZED_MACROS()
-  ELSE ()
+ELSE ()
     MESSAGE ( FATAL_ERROR "COMPILE_MODE must be either debug or optimized" )
-  ENDIF()
+ENDIF()
+
+
+# Create the target for documentation
+CHECK_ENABLE_FLAG(USE_DOXYGEN 1 )
+IF ( USE_DOXYGEN )
+    SET ( DOXYFILE_IN ${AMP_SOURCE_DIR}/doxygen/Doxyfile.in)
+    SET ( DOXY_HEADER_FILE ${AMP_SOURCE_DIR}/doxygen/html/header.html )
+    SET ( DOXY_FOOTER_FILE ${AMP_SOURCE_DIR}/doxygen/html/footer.html )
+    SET ( DOXY_LATEX_HEADER_FILE ${AMP_SOURCE_DIR}/doxygen/header.tex )
+    SET ( DOXYFILE_OUTPUT_DIR ${AMP_INSTALL_DIR}/doc/ )
+    SET ( DOXYFILE_SRC_HTML_DIR ${AMP_SOURCE_DIR}/doxygen/html )
+    SET ( DOXYFILE_SOURCE_DIR ${AMP_SOURCE_DIR}/src )
+    SET ( REL_PACKAGE_HTML "" )
+    SET ( DOXYGEN_MACROS "USE_SUNDIALS:=1" )
+    INCLUDE (UseDoxygen)
 ENDIF()
 
 
@@ -110,18 +125,6 @@ IF ( USE_FORTRAN )
     endif( (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel") AND (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin") )
 ENDIF()
 
-
-# Create the target for documentation
-SET ( DOXYFILE_IN ${AMP_SOURCE_DIR}/doxygen/Doxyfile.in)
-SET ( DOXY_HEADER_FILE ${AMP_SOURCE_DIR}/doxygen/html/header.html )
-SET ( DOXY_FOOTER_FILE ${AMP_SOURCE_DIR}/doxygen/html/footer.html )
-SET ( DOXY_LATEX_HEADER_FILE ${AMP_SOURCE_DIR}/doxygen/header.tex )
-SET ( DOXYFILE_OUTPUT_DIR ${AMP_INSTALL_DIR}/doc/ )
-SET ( DOXYFILE_SRC_HTML_DIR ${AMP_SOURCE_DIR}/doxygen/html )
-SET ( DOXYFILE_SOURCE_DIR ${AMP_SOURCE_DIR}/src )
-SET ( REL_PACKAGE_HTML "" )
-SET ( DOXYGEN_MACROS "USE_SUNDIALS:=1" )
-INCLUDE (UseDoxygen)
 
 
 # Add the src directory

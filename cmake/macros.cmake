@@ -156,6 +156,23 @@ IF ( NOT EXISTS ${PATH_NAME} )
 ENDIF ()
 ENDMACRO ()
 
+# Macro to tell cmake to use static libraries
+MACRO ( SET_STATIC_FLAGS )
+    # Remove extra library links
+    set(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)       # remove -Wl,-Bdynamic
+    set(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS)
+    set(CMAKE_SHARED_LIBRARY_C_FLAGS)         # remove -fPIC
+    set(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
+    set(CMAKE_SHARED_LINKER_FLAGS)
+    set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # remove -rdynamic
+    set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
+    # Add the static flag if necessary
+    CHECK_ENABLE_FLAG( USE_STATIC 0 )
+    IF ( USE_STATIC )
+        SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static")    # Add static flag
+        SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static")  # Add static flag
+    ENDIF()
+ENDMACRO()
 
 # Macro to identify the compiler
 MACRO ( SET_COMPILER )
@@ -169,6 +186,9 @@ MACRO ( SET_COMPILER )
   ELSEIF ( (${CMAKE_C_COMPILER_ID} MATCHES "Intel") OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel") ) 
     SET(USING_ICC TRUE)
     MESSAGE("Using icc")
+  ELSEIF ( ${CMAKE_C_COMPILER_ID} MATCHES "PGI")
+    SET(USING_PGCC TRUE)
+    MESSAGE("Using pgCC")    
   ELSE ()
     SET(USING_DEFAULT TRUE)
     MESSAGE("${CMAKE_C_COMPILER_ID}")
@@ -182,6 +202,9 @@ MACRO ( SET_COMPILER )
     ELSEIF ( (${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel") ) 
       SET(USING_IFORT TRUE)
       MESSAGE("Using ifort")
+    ELSEIF ( ${CMAKE_Fortran_COMPILER_ID} MATCHES "PGI")
+      SET(USING_PGF90 TRUE)
+      MESSAGE("Using pgf90")
     ELSE ()
       SET(USING_DEFAULT TRUE)
       MESSAGE("${CMAKE_Fortran_COMPILER_ID}")
@@ -340,30 +363,30 @@ ENDMACRO()
 
 
 # Macro to add the dependencies and libraries to an executable
-MACRO ( ADD_AMP_EXE_DEP EXEFILE )
+MACRO ( ADD_AMP_EXE_DEP EXE )
     # Add the package dependencies
     IF ( AMP_TEST_LIB_EXISTS )
-        ADD_DEPENDENCIES ( ${EXEFILE} ${PACKAGE_TEST_LIB} )
-        TARGET_LINK_LIBRARIES ( ${EXEFILE} ${PACKAGE_TEST_LIB} )
+        ADD_DEPENDENCIES ( ${EXE} ${PACKAGE_TEST_LIB} )
+        TARGET_LINK_LIBRARIES ( ${EXE} ${PACKAGE_TEST_LIB} )
     ENDIF ()
     # Add the executable to the dependencies of check and build-test
-    ADD_DEPENDENCIES ( check ${EXEFILE} )
-    ADD_DEPENDENCIES ( build-test ${EXEFILE} )
+    ADD_DEPENDENCIES ( check ${EXE} )
+    ADD_DEPENDENCIES ( build-test ${EXE} )
     # Add test dependencies
     #IF ( TEST_DEP_LIST )
-    #    TARGET_LINK_LIBRARIES ( ${EXEFILE} ${TEST_DEP_LIST} )
+    #    TARGET_LINK_LIBRARIES ( ${EXE} ${TEST_DEP_LIST} )
     #ENDIF()
     # Add the amp libraries
-    TARGET_LINK_LIBRARIES ( ${EXEFILE} ${AMP_LIBS} )
+    TARGET_LINK_LIBRARIES ( ${EXE} ${AMP_LIBS} )
     # Add external libraries
-    TARGET_LINK_LIBRARIES ( ${EXEFILE} ${LIBMESH_LIBS} ${NEK_LIBS} ${MOAB_LIBS} ${DENDRO_LIBS} ${TRILINOS_LIBS} ${PETSC_LIBS} ${X11_LIBS} ${SILO_LIBS} ${HDF5_LIBS} ${HYPRE_LIBS} )
+    TARGET_LINK_LIBRARIES ( ${EXE} ${LIBMESH_LIBS} ${NEK_LIBS} ${MOAB_LIBS} ${DENDRO_LIBS} ${TRILINOS_LIBS} ${PETSC_LIBS} ${X11_LIBS} ${SILO_LIBS} ${HDF5_LIBS} ${HYPRE_LIBS} )
     IF ( ${USE_SUNDIALS} )
-       TARGET_LINK_LIBRARIES ( ${EXEFILE} ${SUNDIALS_LIBS} )
+        TARGET_LINK_LIBRARIES ( ${EXE} ${SUNDIALS_LIBS} )
     ENDIF  ()
-    TARGET_LINK_LIBRARIES ( ${EXEFILE} ${MPI_LINK_FLAGS} ${MPI_LIBRARIES})
-    TARGET_LINK_LIBRARIES ( ${EXEFILE} ${LAPACK_LIBS} ${BLAS_LIBS} )
-    TARGET_LINK_LIBRARIES ( ${EXEFILE} ${COVERAGE_LIBS} ${LDLIBS} )
-    TARGET_LINK_LIBRARIES ( ${EXEFILE} "${SYSTEM_LIBS}" )
+    TARGET_LINK_LIBRARIES ( ${EXE} ${MPI_LINK_FLAGS} ${MPI_LIBRARIES} )
+    TARGET_LINK_LIBRARIES ( ${EXE} ${LAPACK_LIBS} ${BLAS_LIBS} )
+    TARGET_LINK_LIBRARIES ( ${EXE} ${COVERAGE_LIBS} ${LDLIBS} )
+    TARGET_LINK_LIBRARIES ( ${EXE} "${SYSTEM_LIBS}" )
 ENDMACRO ()
 
 
@@ -528,6 +551,15 @@ MACRO ( SAVE_CMAKE_FLAGS )
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_C_FLAGS \"${CMAKE_C_FLAGS}\")\n" )
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS}\")\n" )
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_Fortran_FLAGS \"${CMAKE_Fortran_FLAGS}\")\n" )
+    file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(LDFLAGS \"${LDFLAGS}\")\n" )
+    file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(COMPILE_MODE ${COMPILE_MODE})\n" )
+    file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS \"${CMAKE_EXE_LINK_DYNAMIC_C_FLAGS}\")\n" )
+    file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS \"${CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS}\")\n" )
+    file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_SHARED_LIBRARY_C_FLAGS \"${CMAKE_SHARED_LIBRARY_C_FLAGS}\")\n" )
+    file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_SHARED_LIBRARY_CXX_FLAGS \"${CMAKE_SHARED_LIBRARY_CXX_FLAGS}\")\n" )
+    file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_SHARED_LINKER_FLAGS \"${CMAKE_SHARED_LINKER_FLAGS}\")\n" )
+    file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS \"${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS}\")\n" )
+    file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS \"${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS}\")\n" )
     # Write the AMP_DATA and AMP_SOURCE paths
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Set the AMP data and source directories\n" )
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(AMP_DATA ${AMP_DATA})\n" )
@@ -700,7 +732,7 @@ MACRO ( SAVE_CMAKE_FLAGS )
     ENDIF ()
     # Add misc flags
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add misc flags\n" )
-    file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} \"-lz -ldl\" )\n" )
+    file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${SYSTEM_LIBS} )\n" )
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "\n" )
 ENDMACRO ()
 
