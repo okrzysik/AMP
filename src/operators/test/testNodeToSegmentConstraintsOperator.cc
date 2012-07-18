@@ -229,7 +229,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   columnSolVec->zero();
   columnRhsVec->zero();
   if (slaveLoadOperator != NULL) { slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0); }
+  double rhsNormBefore = columnRhsVec->L2Norm();
   contactOperator->applyResidualCorrection(columnRhsVec);
+  double rhsNormAfter = columnRhsVec->L2Norm();
+
+  std::cout<<"rhsNormBefore = "<<std::setprecision(15)<<rhsNormBefore
+    <<" rhsNormAfter = "<<std::setprecision(15)<<rhsNormAfter<<std::endl;
 
 //  contactOperator->applyResidualCorrection(columnResVec);
 //  contactOperator->applySolutionConstraints(columnResVec);
@@ -375,6 +380,8 @@ void myTest2(AMP::UnitTest *ut, std::string exeName) {
   columnSolVec->zero();
   columnRhsVec->zero();
   slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0);
+  double fusedRhsNorm = columnRhsVec->L2Norm();
+  std::cout<<"FusedRhsNorm = "<<std::setprecision(15)<<fusedRhsNorm<<std::endl;
 
   boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new
       AMP::Solver::PetscKrylovSolverParameters(linearSolver_db));
@@ -398,14 +405,11 @@ void myTest2(AMP::UnitTest *ut, std::string exeName) {
   ut->passes(exeName);
 }
 
-
-
-
 int main(int argc, char *argv[])
 {
   AMP::AMPManager::startup(argc, argv);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
-   boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit( new AMP::Mesh::initializeLibMesh(globalComm) );
+  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit( new AMP::Mesh::initializeLibMesh(globalComm) );
   AMP::UnitTest ut;
 
   std::string exeName = "testNodeToSegmentConstraintsOperator";
@@ -424,6 +428,7 @@ int main(int argc, char *argv[])
   ut.report();
   int num_failed = ut.NumFailGlobal();
 
+  libmeshInit.reset();
   AMP::AMPManager::shutdown();
   return num_failed;
 }  
