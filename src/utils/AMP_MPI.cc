@@ -86,9 +86,11 @@ AMP_MPI::~AMP_MPI() {
         #ifdef USE_MPI
             *count = 0;
             delete count;
+            count = NULL;
             int err = MPI_Comm_free(&communicator);
             if ( err != MPI_SUCCESS )
                 AMP_ERROR("Problem free'ing MPI_Comm object");
+            communicator = AMP_COMM_NULL;
         #else
             AMP_ERROR("Internal Error (why do we have a count in serial)");
         #endif
@@ -96,7 +98,11 @@ AMP_MPI::~AMP_MPI() {
         // The count is invalid
         AMP_ERROR("Invalid count");
     }
-    count = NULL;
+    comm_rank = 0;
+    comm_size = 1;
+    d_maxTag = 0x7FFFFFFF;
+    d_isNull = true;
+    call_abort_in_serial_instead_of_exit = true;
 }
 
 
@@ -163,6 +169,8 @@ AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 ) {
 AMP_MPI& AMP_MPI::operator=(const AMP::AMP_MPI& comm) {
     if (this == &comm) // protect against invalid self-assignment
         return *this;
+    // Destroy a previous AMP_MPI object
+    this->~AMP_MPI();
     // Initialize the data members to the existing AMP_MPI object
     this->communicator = comm.communicator;
     this->comm_rank = comm.comm_rank;
@@ -244,7 +252,7 @@ AMP_MPI AMP_MPI::split( int color, int key ) const {
         }
     #endif
     // Create the AMP_MPI object
-    AMP_MPI new_comm = AMP_MPI(new_MPI_comm);
+    AMP_MPI new_comm(new_MPI_comm);
     #ifdef USE_MPI
         new_comm.d_isNull = new_comm.communicator==MPI_COMM_NULL;
     #else
@@ -256,10 +264,10 @@ AMP_MPI AMP_MPI::split( int color, int key ) const {
         if ( new_comm.communicator != MPI_COMM_NULL ) {
             new_comm.count = new int;
             *(new_comm.count) = 1;
-            N_MPI_Comm_created++;
+            ++N_MPI_Comm_created;
         }
     #endif
-    return AMP_MPI(new_comm);
+    return new_comm;
 }
 
 
@@ -269,14 +277,14 @@ AMP_MPI AMP_MPI::split( int color, int key ) const {
 AMP_MPI AMP_MPI::dup( ) const {
     MPI_Comm  new_MPI_comm;
     #ifdef USE_MPI
-        // USE MPI to split the communicator
+        // USE MPI to duplicate the communicator
         MPI_Comm_dup(communicator,&new_MPI_comm);
     #else
         new_MPI_comm = uniqueGlobalComm;
         uniqueGlobalComm++;
     #endif
     // Create the AMP_MPI comm
-    AMP_MPI new_comm = AMP_MPI(new_MPI_comm);
+    AMP_MPI new_comm(new_MPI_comm);
     new_comm.d_isNull = d_isNull;
     new_comm.call_abort_in_serial_instead_of_exit = call_abort_in_serial_instead_of_exit;
     // Create the count
@@ -284,10 +292,10 @@ AMP_MPI AMP_MPI::dup( ) const {
         if ( new_comm.communicator != MPI_COMM_NULL ) {
             new_comm.count = new int;
             *(new_comm.count) = 1;
-            N_MPI_Comm_created++;
+            ++N_MPI_Comm_created;
         }
     #endif
-    return AMP_MPI(new_comm);
+    return new_comm;
 }
 
 

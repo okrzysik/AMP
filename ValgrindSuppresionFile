@@ -1,7 +1,9 @@
 # To run valgrind:
 # valgrind --leak-check=yes --show-reachable=yes --track-origins=yes --suppressions=../../../../../../AMP/ValgrindSuppresionFile --log-file=memory.log ./test_AMPManager
 # valgrind --leak-check=yes --show-reachable=yes --track-origins=yes --suppressions=../../../../../../AMP/ValgrindSuppresionFile --gen-suppressions=all --log-file=memory.log ./test_AMPManager
-
+#
+# For slightly better performance:
+# valgrind --leak-check=yes --show-reachable=yes --suppressions=../../../../../../AMP/ValgrindSuppresionFile --log-file=memory.log ./test_AMPManager
 
 #### Supress std::ios_base::sync_with_stdio memory errors
 {
