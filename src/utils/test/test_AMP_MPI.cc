@@ -1080,7 +1080,7 @@ int main(int argc, char *argv[])
                 ut.passes(" <= comm");
             else
                 ut.failure(" <= comm");
-            if ( globalComm>splitComms[0] && globalComm>splitComms[2] && !(globalComm>globalComm) && !(splitComms[0]>globalComm) ) 
+            if ( globalComm>splitComms[0] && globalComm>splitComms[1] && !(globalComm>globalComm) && !(splitComms[0]>globalComm) ) 
                 ut.passes(" > comm");
             else
                 ut.failure(" > comm");

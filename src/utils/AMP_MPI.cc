@@ -319,6 +319,7 @@ bool AMP_MPI::operator!=(const AMP_MPI &comm) const {
 *  Overload operator <                                                  *
 ************************************************************************/
 bool AMP_MPI::operator<(const AMP_MPI &comm) const {
+    AMP_ASSERT( !this->d_isNull && !comm.d_isNull );
     bool flag = true;
     // First check if either communicator is NULL
     #ifdef USE_MPI
@@ -359,6 +360,7 @@ bool AMP_MPI::operator<(const AMP_MPI &comm) const {
 *  Overload operator <=                                                 *
 ************************************************************************/
 bool AMP_MPI::operator<=(const AMP_MPI &comm) const {
+    AMP_ASSERT( !this->d_isNull && !comm.d_isNull );
     bool flag = true;
     // First check if either communicator is NULL
     #ifdef USE_MPI
