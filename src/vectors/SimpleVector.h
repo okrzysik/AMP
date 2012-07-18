@@ -13,18 +13,32 @@ namespace LinearAlgebra {
   {
     private:
       std::vector<double>  d_Data;
+      size_t d_startIndex;
+      size_t d_globalSize;
+      AMP_MPI d_comm;
 
       SimpleVector ();
       SimpleVector ( const SimpleVector & );
 
     public:
       /** \brief    Create a SimpleVector
-        * \param    localSize  The number of elements in the vector on this processor
-        * \param    var The variable associated with the new vector
         * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
         * to be used in the code
+        * \param    localSize  The number of elements in the vector on this processor
+        * \param    var The variable associated with the new vector
         */
-      static Vector::shared_ptr  create ( size_t localSize , Variable::shared_ptr var );
+      static Vector::shared_ptr  create ( size_t localSize, Variable::shared_ptr var );
+
+      /** \brief    Create a SimpleVector
+        * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
+        * to be used in the code that spans a comm and contains ghost values.
+        * \param    var The variable associated with the new vector
+        * \param    DOFs The DOFManager
+        * \param    commlist The communication list
+        */
+      static Vector::shared_ptr  create (  Variable::shared_ptr var,
+        AMP::Discretization::DOFManager::shared_ptr DOFs, 
+        AMP::LinearAlgebra::CommunicationList::shared_ptr commlist );
 
       /** \brief  Destructor
         */
@@ -48,7 +62,6 @@ namespace LinearAlgebra {
       virtual double min(void) const;
 
       virtual double max(void) const;
-      virtual void setRandomValues(void);
 
       virtual double L1Norm(void) const;
 

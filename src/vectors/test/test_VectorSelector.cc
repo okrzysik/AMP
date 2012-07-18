@@ -75,8 +75,6 @@ public:
 };
 
 
-typedef SimpleManagedVectorFactory<AMP::LinearAlgebra::ManagedEpetraVector>         SMEVFactory;
-
 template <typename T>
 class StridedVectorFactory
 {
@@ -100,13 +98,22 @@ public:
 };
 
 
+#ifdef USE_TRILINOS
+typedef SimpleManagedVectorFactory<AMP::LinearAlgebra::ManagedEpetraVector>         SMEVFactory;
+#endif
+
+
 int main ( int argc , char **argv )
 {
     AMP::AMPManager::startup(argc, argv);
     AMP::UnitTest ut;
 
-    SelectTester<SMEVFactory>::run_test ( &ut );
-    test_managed_vectors_loop<StridedVectorFactory<SMEVFactory> > ( &ut );
+    #ifdef USE_TRILINOS
+        SelectTester<SMEVFactory>::run_test ( &ut );
+        test_managed_vectors_loop<StridedVectorFactory<SMEVFactory> > ( &ut );
+    #else
+        ut.expected_failure("Compiled without trilinos");
+    #endif
 
     ut.report();
 

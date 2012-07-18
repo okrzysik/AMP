@@ -10,7 +10,8 @@
 #include <string>
 #include <math.h>
 #include <vector>
-#include "IOStream.h"
+#include <stdio.h>
+#include <sstream>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "Logger.h"

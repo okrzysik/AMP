@@ -2,10 +2,15 @@
 #define included_test_Vector
 
 #include <vectors/Variable.h>
-#include <vectors/petsc/NativePetscVector.h>
 #include "vectors/SimpleVector.h"
 #include "test_VectorTests.h"
 #include "utils/AMP_MPI.h"
+#ifdef USE_PETSC
+    #include <vectors/petsc/NativePetscVector.h>
+#endif
+#ifdef USE_TRILINOS
+    #include <vectors/trilinos/EpetraVectorEngine.h>
+#endif
 
 /// \cond UNDOCUMENTED
 
@@ -46,6 +51,7 @@ public:
 };
 
 
+#ifdef USE_TRILINOS
 template <typename T>
 class  SimpleManagedVectorFactory
 {
@@ -73,7 +79,10 @@ class  SimpleManagedVectorFactory
       return retval;
     }
 };
+#endif
 
+
+#ifdef USE_PETSC
 template <typename T>
 class  PetscManagedVectorFactory
 {
@@ -104,6 +113,7 @@ class  PetscManagedVectorFactory
       return retval;
     }
 };
+#endif
 
 template <typename TYPE1 , typename FACTORY2>
 class  ViewFactory

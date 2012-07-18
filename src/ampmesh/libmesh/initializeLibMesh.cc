@@ -64,7 +64,7 @@ initializeLibMesh::initializeLibMesh( AMP_MPI comm )
             AMP_ERROR("Internal error");
         // Use a barrier to ensure all processors are at the same point
         N_copies = 1;
-        d_comm = comm;
+        d_comm = comm.dup();    // Create a seperate duplicate comm for libmesh
         d_comm.barrier();        
         // Reinitialize LibMesh with the new communicator
         int argc_libmesh=0;

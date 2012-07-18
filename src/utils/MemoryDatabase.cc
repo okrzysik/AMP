@@ -10,7 +10,12 @@
 #include "MemoryDatabase.h"
 
 #include "Utilities.h"
-#include "IOStream.h"
+
+#include <stdio.h>
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <fstream>
 
 #include <stdlib.h>
 #include <complex>

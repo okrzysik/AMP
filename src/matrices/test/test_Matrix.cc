@@ -1,4 +1,3 @@
-#include "vectors/trilinos/EpetraVectorEngine.h"
 #include "test_Matrix.h"
 #include "test_MatrixTests.h"
 #include "utils/Utilities.h"
@@ -16,13 +15,17 @@ void  test_matrix_loop ( AMP::UnitTest *ut )
 {
     FACTORY factory;
     factory.initMesh();
-    InstantiateMatrix<FACTORY>::run_test ( ut );
-    VerifyGetSetValuesMatrix<FACTORY>::run_test ( ut );
-    VerifyAXPYMatrix<FACTORY>::run_test ( ut );
-    VerifyScaleMatrix<FACTORY>::run_test ( ut );
-    VerifyMultMatrix<FACTORY>::run_test ( ut );
-    VerifyGetLeftRightVector<FACTORY>::run_test ( ut );
-    VerifyExtractDiagonal<FACTORY>::run_test ( ut );
+    #if defined(USE_PETSC) && defined(USE_PETSC)
+        InstantiateMatrix<FACTORY>::run_test ( ut );
+        VerifyGetSetValuesMatrix<FACTORY>::run_test ( ut );
+        VerifyAXPYMatrix<FACTORY>::run_test ( ut );
+        VerifyScaleMatrix<FACTORY>::run_test ( ut );
+        VerifyMultMatrix<FACTORY>::run_test ( ut );
+        VerifyGetLeftRightVector<FACTORY>::run_test ( ut );
+        VerifyExtractDiagonal<FACTORY>::run_test ( ut );
+    #else
+        ut->failure("Tests require petsc and trilinos");
+    #endif
     factory.endMesh();
 }
 
@@ -41,7 +44,11 @@ int main ( int argc , char **argv )
 
     test_matrix_loop<SimpleMatrixFactory> ( &ut );
 
-    test_matrix_loop<DOFMatrixTestFactory<3,3,ExodusReaderGenerator<> > > ( &ut );
+    #ifdef USE_LIBMESH
+        test_matrix_loop<DOFMatrixTestFactory<3,3,ExodusReaderGenerator<> > > ( &ut );
+    #else
+        test_matrix_loop<DOFMatrixTestFactory<3,3,AMPCubeGenerator<5> > > ( &ut );
+    #endif
 
     ut.report();
 

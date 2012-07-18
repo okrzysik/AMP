@@ -1039,46 +1039,52 @@ int main(int argc, char *argv[])
             color = 1;
         else 
             color = 2+(globalComm.getRank()-2)/4;
-        AMP::AMP_MPI splitComm1 = globalComm.split( color );
-        AMP::AMP_MPI splitComm2 = globalComm.split( color, globalComm.getRank() );
-        if ( splitComm1.getCommunicator()!=globalComm.getCommunicator() && 
-             splitComm2.getCommunicator()!=globalComm.getCommunicator() && 
-             splitComm1.getCommunicator()!=splitComm2.getCommunicator() )
+        std::vector<AMP::AMP_MPI> splitComms(4);
+        splitComms[0] = globalComm.split( color );
+        splitComms[1] = globalComm.split( color, globalComm.getRank() );
+        if ( splitComms[0].getCommunicator()!=globalComm.getCommunicator() && 
+             splitComms[1].getCommunicator()!=globalComm.getCommunicator() && 
+             splitComms[0].getCommunicator()!=splitComms[1].getCommunicator() )
             ut.passes("split comm has different communicator");
         else
             ut.failure("split comm has different communicator");
         if ( globalComm.getSize()>1 ) {
-            if ( splitComm1.getSize()<globalComm.getSize() )
+            if ( splitComms[0].getSize()<globalComm.getSize() )
                 ut.passes("split comm is smaller");
             else
                 ut.failure("split comm is smaller");
         }
-        if ( splitComm1.getRank()==splitComm2.getRank() )
+        if ( splitComms[0].getRank()==splitComms[1].getRank() )
             ut.passes("split sort by rank");
         else
             ut.failure("split sort by rank");
-        testComm(splitComm1,&ut);
-        AMP::AMP_MPI splitComm3 = globalComm.split( -1 );
-        if ( splitComm3.isNull() )
+        testComm(splitComms[0],&ut);
+        splitComms[2] = globalComm.split( -1 );
+        if ( splitComms[2].isNull() )
             ut.passes("split with color=-1 returns NULL communicator");
         else
             ut.failure("split with color=-1 returns NULL communicator");
+        if ( globalComm.getRank()==0 )
+            color = -1;
+        splitComms[3] = splitComms[0];  // Make a copy to ensure there are no memory leaks
+        splitComms[3] = splitComms[2];  // Perform assignement to check memory leaks
+        AMP_ASSERT(splitComms[3]==splitComms[2]);
 
         // Test  <  <=  >  >=
         if ( globalComm.getSize()>1 ) {
-            if ( splitComm1<globalComm && splitComm2<globalComm && !(globalComm<globalComm) && !(globalComm<splitComm1) ) 
+            if ( splitComms[0]<globalComm && splitComms[1]<globalComm && !(globalComm<globalComm) && !(globalComm<splitComms[0]) ) 
                 ut.passes(" < comm");
             else
                 ut.failure(" < comm");
-            if ( splitComm1<=globalComm && splitComm2<=globalComm && globalComm<=globalComm && !(globalComm<=splitComm1) ) 
+            if ( splitComms[0]<=globalComm && splitComms[1]<=globalComm && globalComm<=globalComm && !(globalComm<=splitComms[0]) ) 
                 ut.passes(" <= comm");
             else
                 ut.failure(" <= comm");
-            if ( globalComm>splitComm1 && globalComm>splitComm2 && !(globalComm>globalComm) && !(splitComm1>globalComm) ) 
+            if ( globalComm>splitComms[0] && globalComm>splitComms[1] && !(globalComm>globalComm) && !(splitComms[0]>globalComm) ) 
                 ut.passes(" > comm");
             else
                 ut.failure(" > comm");
-            if ( globalComm>=splitComm1 && globalComm>=splitComm2 && globalComm>=globalComm && !(splitComm1>=globalComm) ) 
+            if ( globalComm>=splitComms[0] && globalComm>=splitComms[1] && globalComm>=globalComm && !(splitComms[0]>=globalComm) ) 
                 ut.passes(" >= comm");
             else
                 ut.failure(" >= comm");

@@ -4,7 +4,11 @@
 #include "utils/AMPManager.h"
 #include "utils/Logger.h"
 #include "utils/PIO.h"
-#include <stdio.h>
+
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <fstream>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <math.h>

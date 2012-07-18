@@ -16,49 +16,73 @@ SimpleVector::SimpleVector () : Vector ()
 Vector::shared_ptr  SimpleVector::create ( size_t localSize , Variable::shared_ptr var )
 {
     boost::shared_ptr<SimpleVector> retVal( new SimpleVector );
+    retVal->d_startIndex = 0;
     retVal->setVariable ( var );
     retVal->d_Data.resize ( localSize );
     AMP_MPI comm(AMP_COMM_SELF);
     AMP::Discretization::DOFManager::shared_ptr DOFs( new AMP::Discretization::DOFManager( localSize, comm ) );
     retVal->d_DOFManager = DOFs;
     retVal->setCommunicationList( AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
+    retVal->d_comm = comm;
+    retVal->d_globalSize = localSize;
+    return retVal;
+}
+Vector::shared_ptr  SimpleVector::create ( Variable::shared_ptr var,
+    AMP::Discretization::DOFManager::shared_ptr DOFs, 
+    AMP::LinearAlgebra::CommunicationList::shared_ptr commlist )
+{
+    boost::shared_ptr<SimpleVector> retVal( new SimpleVector );
+    retVal->d_startIndex = DOFs->beginDOF();
+    retVal->setVariable ( var );
+    retVal->d_Data.resize (  DOFs->numLocalDOF() );
+    retVal->d_DOFManager = DOFs;
+    retVal->setCommunicationList( commlist );
+    retVal->d_comm = DOFs->getComm();
+    retVal->d_globalSize = DOFs->numGlobalDOF();
     return retVal;
 }
 
+        
 
-
-  double SimpleVector::L1Norm(void) const
-  {
+/****************************************************************
+* Compute min, max, norms, and dot product                      *
+****************************************************************/
+double SimpleVector::min(void) const
+{
+    double local_min = *std::min_element ( d_Data.begin() , d_Data.end() );
+    return d_comm.minReduce(local_min);
+}
+double SimpleVector::max(void) const
+{
+    double local_max =*std::max_element ( d_Data.begin() , d_Data.end() );
+    return d_comm.maxReduce(local_max);
+}
+double SimpleVector::L1Norm(void) const
+{
     double ans = 0.0;
     for ( const_iterator cur = begin() ; cur != end() ; cur++ )
-    {
-      ans += fabs (*cur);
-    }
+        ans += fabs (*cur);
+    ans = d_comm.sumReduce(ans);
     return ans;
-  }
-
-  double SimpleVector::L2Norm(void) const
-  {
+}
+double SimpleVector::L2Norm(void) const
+{
     double ans = 0.0;
     for ( const_iterator cur = begin() ; cur != end() ; cur++ )
-    {
-      ans += (*cur) * (*cur);
-    }
+        ans += (*cur) * (*cur);
+    ans = d_comm.sumReduce(ans);
     return sqrt ( ans );
-  }
-
-  double SimpleVector::maxNorm(void) const
-  {
+}
+double SimpleVector::maxNorm(void) const
+{
     double ans = 0.0;
     for ( const_iterator cur = begin() ; cur != end() ; cur++ )
-    {
-      ans = std::max ( ans , fabs (*cur) );
-    }
+        ans = std::max ( ans , fabs (*cur) );
+    ans = d_comm.maxReduce(ans);
     return ans;
-  }
-
-  double SimpleVector::dot(const VectorOperations &rhs ) const
-  {
+}
+double SimpleVector::dot(const VectorOperations &rhs ) const
+{
     AMP_ASSERT ( getLocalSize() > 0 );
     AMP_ASSERT ( getLocalSize() == rhs.castTo<Vector>().getLocalSize() );
     const_iterator a = begin();
@@ -72,19 +96,23 @@ Vector::shared_ptr  SimpleVector::create ( size_t localSize , Variable::shared_p
       b++;
       a++;
     }
+    ans = d_comm.sumReduce(ans);
     return ans;
-  }
+}
 
-  void SimpleVector::setToScalar(double alpha)
-  {
+
+/****************************************************************
+* Scale the vector and set to scalar                            *
+****************************************************************/
+void SimpleVector::setToScalar(double alpha)
+{
     for ( iterator cur = begin() ; cur != end() ; cur++ )
     {
-      (*cur) = alpha;
+        (*cur) = alpha;
     }
-  }
-
-  void SimpleVector::scale(double alpha, const VectorOperations &x)
-  {
+}
+void SimpleVector::scale(double alpha, const VectorOperations &x)
+{
     iterator cur = begin();
     const_iterator curx = x.castTo<Vector>().begin();
     while ( cur != end() )
@@ -93,27 +121,16 @@ Vector::shared_ptr  SimpleVector::create ( size_t localSize , Variable::shared_p
       cur++;
       curx++;
     }
-  }
-
-  void SimpleVector::setRandomValues(void)
-  {
-    srand ( time ( NULL ) );
-    for ( iterator cur = begin() ; cur != end() ; cur++ )
-    {
-      (*cur) = (double)(rand() & 10000);
-      if (*cur == 0.0 )
-        *cur = 4.5;
-      (*cur) /= 10000.0;
-    }
-  }
-
-  void SimpleVector::scale(double alpha)
-  {
+}
+void SimpleVector::scale(double alpha)
+{
     for ( iterator cur = begin() ; cur != end() ; cur++ )
     {
       (*cur) *= alpha;
     }
-  }
+}
+
+
 
   void SimpleVector::add(const VectorOperations &x, const VectorOperations &y)
   {

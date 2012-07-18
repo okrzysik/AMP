@@ -7,6 +7,15 @@
 #include "utils/UnitTest.h"
 #include "discretization/DOF_Manager.h"
 #include "vectors/Vector.h"
+#include "vectors/MultiVector.h"
+#ifdef USE_SUNDIALS
+    #include "vectors/sundials/ManagedSundialsVector.h"
+    #include "vectors/sundials/SundialsVector.h"
+#endif
+#ifdef USE_PETSC
+    #include "vectors/petsc/ManagedPetscVector.h"
+    #include "vectors/petsc/PetscVector.h"
+#endif
 
 
 /// \cond UNDOCUMENTED
@@ -318,75 +327,74 @@ void ScaleVector( AMP::UnitTest *utils )
 }
 
 
+#ifdef USE_PETSC
 template <typename VECTOR_FACTORY>
 void Bug_491( AMP::UnitTest *utils )
 {
-        AMP::LinearAlgebra::Vector::shared_ptr  vector1 ( VECTOR_FACTORY::getVector() );
-        vector1->setRandomValues ();
-        AMP::LinearAlgebra::Vector::shared_ptr  managed_petsc = AMP::LinearAlgebra::PetscVector::view ( vector1 );
-        Vec managed_vec = managed_petsc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    AMP::LinearAlgebra::Vector::shared_ptr  vector1 ( VECTOR_FACTORY::getVector() );
+    vector1->setRandomValues ();
+    AMP::LinearAlgebra::Vector::shared_ptr  managed_petsc = AMP::LinearAlgebra::PetscVector::view ( vector1 );
+    Vec managed_vec = managed_petsc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
 
-        double n1, n2, ninf;
-        double sp_n1 , sp_n2 , sp_inf;
+    double n1, n2, ninf;
+    double sp_n1 , sp_n2 , sp_inf;
 
-        // This sets the petsc cache
-        VecNormBegin ( managed_vec , NORM_1 , &n1 );
-        VecNormBegin ( managed_vec , NORM_2 , &n2 );
-        VecNormBegin  ( managed_vec , NORM_INFINITY , &ninf );
-        VecNormEnd ( managed_vec , NORM_1 , &n1 );
-        VecNormEnd ( managed_vec , NORM_2 , &n2 );
-        VecNormEnd ( managed_vec , NORM_INFINITY , &ninf );
-        VecNorm ( managed_vec , NORM_1 , &n1 );
-        VecNorm ( managed_vec , NORM_2 , &n2 );
-        VecNorm ( managed_vec , NORM_INFINITY , &ninf );
+    // This sets the petsc cache
+    VecNormBegin ( managed_vec , NORM_1 , &n1 );
+    VecNormBegin ( managed_vec , NORM_2 , &n2 );
+    VecNormBegin  ( managed_vec , NORM_INFINITY , &ninf );
+    VecNormEnd ( managed_vec , NORM_1 , &n1 );
+    VecNormEnd ( managed_vec , NORM_2 , &n2 );
+    VecNormEnd ( managed_vec , NORM_INFINITY , &ninf );
+    VecNorm ( managed_vec , NORM_1 , &n1 );
+    VecNorm ( managed_vec , NORM_2 , &n2 );
+    VecNorm ( managed_vec , NORM_INFINITY , &ninf );
 
-        // Now, we perform some math on vector1
-        vector1->scale ( 100000 );
-        sp_n1 = vector1->L1Norm();
-        sp_n2 = vector1->L2Norm();
-        sp_inf = vector1->maxNorm();
+    // Now, we perform some math on vector1
+    vector1->scale ( 100000 );
+    sp_n1 = vector1->L1Norm();
+    sp_n2 = vector1->L2Norm();
+    sp_inf = vector1->maxNorm();
 
-        // Check to see if petsc cache has been invalidated
-        VecNormBegin ( managed_vec , NORM_1 , &n1 );
-        VecNormBegin ( managed_vec , NORM_2 , &n2 );
-        VecNormBegin  ( managed_vec , NORM_INFINITY , &ninf );
-        VecNormEnd ( managed_vec , NORM_1 , &n1 );
-        VecNormEnd ( managed_vec , NORM_2 , &n2 );
-        VecNormEnd ( managed_vec , NORM_INFINITY ,&ninf );
+    // Check to see if petsc cache has been invalidated
+    VecNormBegin ( managed_vec , NORM_1 , &n1 );
+    VecNormBegin ( managed_vec , NORM_2 , &n2 );
+    VecNormBegin  ( managed_vec , NORM_INFINITY , &ninf );
+    VecNormEnd ( managed_vec , NORM_1 , &n1 );
+    VecNormEnd ( managed_vec , NORM_2 , &n2 );
+    VecNormEnd ( managed_vec , NORM_INFINITY ,&ninf );
 
+    if ( fabs ( n1 - sp_n1 ) < 0.00000001*n1 )
+        utils->passes ( "L1 norm -- Petsc interface begin/end" );
+    else
+        utils->failure ( "l1 norm -- Petsc interface begin/end" );
+    if ( fabs ( n2 - sp_n2 ) < 0.00000001*n1 )
+        utils->passes ( "L2 norm -- Petsc interface begin/end" );
+    else
+        utils->failure ( "l2 norm -- Petsc interface begin/end" );
+    if ( fabs ( ninf - sp_inf ) < 0.00000001*n1 )
+        utils->passes ( "Linf norm -- Petsc interface begin/end" );
+    else
+        utils->failure ( "Linf norm -- Petsc interface begin/end" );
 
+    VecNorm ( managed_vec , NORM_1 , &n1 );
+    VecNorm ( managed_vec , NORM_2 , &n2 );
+    VecNorm ( managed_vec , NORM_INFINITY , &ninf );
 
-        if ( fabs ( n1 - sp_n1 ) < 0.00000001*n1 )
-          utils->passes ( "L1 norm -- Petsc interface begin/end" );
-        else
-          utils->failure ( "l1 norm -- Petsc interface begin/end" );
-        if ( fabs ( n2 - sp_n2 ) < 0.00000001*n1 )
-          utils->passes ( "L2 norm -- Petsc interface begin/end" );
-        else
-          utils->failure ( "l2 norm -- Petsc interface begin/end" );
-        if ( fabs ( ninf - sp_inf ) < 0.00000001*n1 )
-          utils->passes ( "Linf norm -- Petsc interface begin/end" );
-        else
-          utils->failure ( "Linf norm -- Petsc interface begin/end" );
-
-        VecNorm ( managed_vec , NORM_1 , &n1 );
-        VecNorm ( managed_vec , NORM_2 , &n2 );
-        VecNorm ( managed_vec , NORM_INFINITY , &ninf );
-
-
-        if ( fabs ( n1 - vector1->L1Norm() ) < 0.00000001*n1 )
-          utils->passes ( "L1 norm -- Petsc interface begin/end" );
-        else
-          utils->failure ( "l1 norm -- Petsc interface begin/end" );
-        if ( fabs ( n2 - vector1->L2Norm() ) < 0.00000001*n1 )
-          utils->passes ( "L2 norm -- Petsc interface begin/end" );
-        else
-          utils->failure ( "l2 norm -- Petsc interface begin/end" );
-        if ( fabs ( ninf - vector1->maxNorm() ) < 0.00000001*n1 )
-          utils->passes ( "inf norm -- Petsc interface begin/end" );
-        else
-          utils->failure ( "inf norm -- Petsc interface begin/end" );
+    if ( fabs ( n1 - vector1->L1Norm() ) < 0.00000001*n1 )
+        utils->passes ( "L1 norm -- Petsc interface begin/end" );
+    else
+        utils->failure ( "l1 norm -- Petsc interface begin/end" );
+    if ( fabs ( n2 - vector1->L2Norm() ) < 0.00000001*n1 )
+        utils->passes ( "L2 norm -- Petsc interface begin/end" );
+    else
+        utils->failure ( "l2 norm -- Petsc interface begin/end" );
+    if ( fabs ( ninf - vector1->maxNorm() ) < 0.00000001*n1 )
+        utils->passes ( "inf norm -- Petsc interface begin/end" );
+    else
+        utils->failure ( "inf norm -- Petsc interface begin/end" );
 }
+#endif
 
 
 template <typename VECTOR_FACTORY>
@@ -928,8 +936,7 @@ void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
 {
     AMP::Discretization::DOFManager::shared_ptr  dofmap = VECTOR_FACTORY::getDOFMap();
     AMP::LinearAlgebra::Vector::shared_ptr  vector = VECTOR_FACTORY::getVector();
-    AMP::LinearAlgebra::Vector::shared_ptr  vectorb = AMP::LinearAlgebra::PetscVector::view ( vector );
-    if ( !vector || !vectorb )
+    if ( !vector )
         utils->failure ( "verify makeConsistent () for add" );
 
     // Zero the vector
@@ -1008,8 +1015,6 @@ void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
 {
     AMP::Discretization::DOFManager::shared_ptr  dofmap = VECTOR_FACTORY::getDOFMap();
     AMP::LinearAlgebra::Vector::shared_ptr  vector = VECTOR_FACTORY::getVector();
-    AMP::LinearAlgebra::Vector::shared_ptr  vectorb = AMP::LinearAlgebra::PetscVector::view ( vector );
-    AMP_ASSERT(vector->getGhostSize()==vectorb->getGhostSize());
 
     // Zero the vector
     vector->zero();
@@ -1050,13 +1055,13 @@ void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
         else
             utils->failure ( "ghost not set correctly in vector" );
     }
-    if ( vectorb->getGhostSize() > 0 ) {
+    if ( vector->getGhostSize() > 0 ) {
         AMP::LinearAlgebra::CommunicationList::shared_ptr comm_list = vector->getCommunicationList();
         std::vector<size_t> ghostIDList = comm_list->getGhostIDList();
         bool testPassed = true;
-        for ( size_t i = 0 ; i != vectorb->getGhostSize() ; i++ ) {
+        for ( size_t i = 0 ; i != vector->getGhostSize() ; i++ ) {
             size_t  ghostNdx = ghostIDList[i];
-            double  ghostVal = vectorb->getValueByGlobalID ( ghostNdx );
+            double  ghostVal = vector->getValueByGlobalID ( ghostNdx );
             if ( fabs ( ghostVal - (double)ghostNdx ) > 0.0000001 )
                 testPassed = false;
         }
@@ -1066,7 +1071,6 @@ void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
             utils->failure ( "ghost set correctly in alias" );
     }
 }
-
 
 
 }

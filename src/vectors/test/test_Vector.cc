@@ -1,7 +1,4 @@
 #include <iostream>
-#include "vectors/petsc/ManagedPetscVector.h"
-#include "vectors/sundials/ManagedSundialsVector.h"
-#include "vectors/trilinos/ManagedEpetraVector.h"
 #include "vectors/MultiVector.h"
 #include "vectors/MultiVariable.h"
 #include "utils/AMPManager.h"
@@ -9,15 +6,18 @@
 
 #include "test_VectorLoops.h"
 
+#ifdef USE_PETSC
+    typedef AMP::unit_test::SimplePetscNativeFactory<AMP::LinearAlgebra::NativePetscVector>         SNPVFactory;
+#endif
+#ifdef USE_TRILINOS
+    typedef AMP::unit_test::SimpleManagedVectorFactory<AMP::LinearAlgebra::ManagedEpetraVector>     SMEVFactory;
+    typedef AMP::unit_test::MultiVectorFactory<SMEVFactory,1,SNPVFactory,1>                         MVFactory1;
+    typedef AMP::unit_test::MultiVectorFactory<SMEVFactory,3,SNPVFactory,2>                         MVFactory2;
+    typedef AMP::unit_test::MultiVectorFactory<MVFactory1,2,MVFactory2,2>                           MVFactory3;
+#endif
+
+
 using namespace AMP::unit_test;
-
-typedef SimpleManagedVectorFactory<AMP::LinearAlgebra::ManagedEpetraVector>     SMEVFactory;
-typedef SimplePetscNativeFactory<AMP::LinearAlgebra::NativePetscVector>         SNPVFactory;
-typedef MultiVectorFactory<SMEVFactory,1,SNPVFactory,1>                         MVFactory1;
-typedef MultiVectorFactory<SMEVFactory,3,SNPVFactory,2>                         MVFactory2;
-typedef MultiVectorFactory<MVFactory1,2,MVFactory2,2>                           MVFactory3;
-
-
 
 
 int main ( int argc , char **argv )
@@ -26,24 +26,29 @@ int main ( int argc , char **argv )
     AMP::UnitTest ut;
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
     
-    std::cout << "Testing Iterator" << std::endl;
-    VectorIteratorTests<MVFactory1> ( &ut );
-    std::cout << std::endl;
-    globalComm.barrier();
-
     std::cout << "Testing SimpleVector" << std::endl;
     testSimpleVector<15> ( &ut );
     testSimpleVector<45> ( &ut );
     std::cout << std::endl;
     globalComm.barrier();
 
-    std::cout << "Testing ManagedEpetraVector" << std::endl;
-    test_managed_vectors_loop<SMEVFactory> ( &ut );
+#ifdef USE_PETSC
+    std::cout << "Testing NativePetscVector" << std::endl;
+    test_managed_vectors_loop<SNPVFactory> ( &ut );
+    std::cout << std::endl;
+    globalComm.barrier();
+#else
+    ut.expected_failure("Compiled without petsc");
+#endif
+
+#ifdef USE_TRILINOS
+    std::cout << "Testing Iterator" << std::endl;
+    VectorIteratorTests<MVFactory1> ( &ut );
     std::cout << std::endl;
     globalComm.barrier();
 
-    std::cout << "Testing NativePetscVector" << std::endl;
-    test_managed_vectors_loop<SNPVFactory> ( &ut );
+    std::cout << "Testing ManagedEpetraVector" << std::endl;
+    test_managed_vectors_loop<SMEVFactory> ( &ut );
     std::cout << std::endl;
     globalComm.barrier();
 
@@ -61,6 +66,9 @@ int main ( int argc , char **argv )
     test_managed_vectors_loop<MVFactory3> ( &ut );
     std::cout << std::endl;
     globalComm.barrier();
+#else
+    ut.expected_failure("Compiled without epetra");
+#endif
 
     ut.report();
 
