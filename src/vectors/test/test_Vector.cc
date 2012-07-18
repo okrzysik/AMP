@@ -4,22 +4,18 @@
 #include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
 
+#include "test_VectorLoops.h"
+
 #ifdef USE_PETSC
-    #include "vectors/petsc/ManagedPetscVector.h"
-    typedef SimplePetscNativeFactory<AMP::LinearAlgebra::NativePetscVector>         SNPVFactory;
+    typedef AMP::unit_test::SimplePetscNativeFactory<AMP::LinearAlgebra::NativePetscVector>         SNPVFactory;
 #endif
 #ifdef USE_TRILINOS
-    #include "vectors/trilinos/ManagedEpetraVector.h"
-    typedef SimpleManagedVectorFactory<AMP::LinearAlgebra::ManagedEpetraVector>     SMEVFactory;
-    typedef MultiVectorFactory<SMEVFactory,1,SNPVFactory,1>                         MVFactory1;
-    typedef MultiVectorFactory<SMEVFactory,3,SNPVFactory,2>                         MVFactory2;
-    typedef MultiVectorFactory<MVFactory1,2,MVFactory2,2>                           MVFactory3;
-#endif
-#ifdef USE_SUNDIALS
-    #include "vectors/sundials/ManagedSundialsVector.h"
+    typedef AMP::unit_test::SimpleManagedVectorFactory<AMP::LinearAlgebra::ManagedEpetraVector>     SMEVFactory;
+    typedef AMP::unit_test::MultiVectorFactory<SMEVFactory,1,SNPVFactory,1>                         MVFactory1;
+    typedef AMP::unit_test::MultiVectorFactory<SMEVFactory,3,SNPVFactory,2>                         MVFactory2;
+    typedef AMP::unit_test::MultiVectorFactory<MVFactory1,2,MVFactory2,2>                           MVFactory3;
 #endif
 
-#include "test_VectorLoops.h"
 
 using namespace AMP::unit_test;
 
