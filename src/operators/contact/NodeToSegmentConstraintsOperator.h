@@ -2,16 +2,17 @@
 #ifndef included_AMP_NoteToSegmentConstraintsOperator
 #define included_AMP_NoteToSegmentConstraintsOperator
 
-#include "boost/shared_ptr.hpp"
-#include "matrices/Matrix.h"
-#include "operators/Operator.h"
-#include "operators/contact/NodeToSegmentConstraintsOperatorParameters.h"
-#include "vectors/Vector.h"
 
-#include "ampmesh/dendro/DendroSearch.h"
 #include <vector>
 #include <fstream>
 #include <boost/lexical_cast.hpp>
+#include <boost/shared_ptr.hpp>
+#include <ampmesh/dendro/DendroSearch.h>
+#include <operators/Operator.h>
+#include <operators/contact/NodeToSegmentConstraintsOperatorParameters.h>
+#include <matrices/Matrix.h>
+#include <vectors/Vector.h>
+#include <vectors/Variable.h>
 
 namespace AMP {
   namespace Operator {
@@ -34,6 +35,13 @@ namespace AMP {
         NodeToSegmentConstraintsOperator (const boost::shared_ptr<NodeToSegmentConstraintsOperatorParameters> & params)
           : Operator(params)
         {
+          AMP_INSIST( params->d_db->keyExists("InputVariable"), "key not found" );
+          std::string inpVarName = params->d_db->getString("InputVariable");
+          d_InputVariable.reset(new AMP::LinearAlgebra::Variable(inpVarName) );
+
+          AMP_INSIST( params->d_db->keyExists("OutputVariable"), "key not found" );
+          std::string outVarName = params->d_db->getString("OutputVariable");
+          d_OutputVariable.reset(new AMP::LinearAlgebra::Variable(outVarName) );
 
           d_GlobalComm = (params->d_GlobalComm);
           d_DOFsPerNode = (params->d_DOFsPerNode);
@@ -74,6 +82,16 @@ namespace AMP {
         virtual void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
             AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
 
+        /**
+          @return The variable for the input vector. 
+          */
+        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+
+        /**
+          @return The variable for the output vector
+          */
+        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
+
         void applyResidualCorrection(AMP::LinearAlgebra::Vector::shared_ptr r);
         void applySolutionConstraints(AMP::LinearAlgebra::Vector::shared_ptr u);
         void getShift(AMP::LinearAlgebra::Vector::shared_ptr d);
@@ -111,6 +129,10 @@ namespace AMP {
         std::vector<size_t> d_MasterVerticesOwnerRanks;
         std::vector<double> d_MasterShapeFunctionsValues;
         std::vector<double> d_SlaveVerticesShift;
+
+        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable; /**< Input variable */
+        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
+
 
         std::fstream d_fout;
     };

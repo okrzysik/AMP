@@ -2,9 +2,10 @@
 #include "ampmesh/dendro/DendroSearch.h"
 #include "ampmesh/MeshID.h"
 
-#include <limits>
 #include <algorithm>
+#include <cmath>
 
+bool compare_absolute_values(const double &first, const double &second) { return (abs(first) < abs(second)); }
 
 namespace AMP {
   namespace Operator {
@@ -146,6 +147,9 @@ void NodeToSegmentConstraintsOperator::reset(const boost::shared_ptr<OperatorPar
   tmpSlaveVerticesLocalCoordOnFace.clear();
   flags.clear();
 
+  // TODO: remove this line
+  if (!d_MasterShapeFunctionsValues.empty()) { AMP_ASSERT( *std::max_element(d_MasterShapeFunctionsValues.begin(), d_MasterShapeFunctionsValues.end(), compare_absolute_values) > 0.0 ); }
+
   /** setup for apply */
   size_t npes = comm.getSize();
   d_SendCnts.resize(npes);
@@ -229,6 +233,13 @@ void NodeToSegmentConstraintsOperator::getVectorIndicesFromGlobalIDs(const std::
   AMP_ASSERT( vectorIndicesIterator == vectorIndices.end() );
 }
 
+AMP::LinearAlgebra::Variable::shared_ptr NodeToSegmentConstraintsOperator::getInputVariable() {
+  return d_InputVariable;
+}
+
+AMP::LinearAlgebra::Variable::shared_ptr NodeToSegmentConstraintsOperator::getOutputVariable() {
+  return d_OutputVariable;
+}
 
 void NodeToSegmentConstraintsOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
     AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double b) {
@@ -268,7 +279,8 @@ void NodeToSegmentConstraintsOperator::applySolutionConstraints(AMP::LinearAlgeb
     } // end for j
   } // end for i
 
- u->setValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(slaveValues[0]));
+  u->setLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(slaveValues[0]));
+  if (!slaveValues.empty()) { d_fout<<"max solution slave value "<<*std::max_element(slaveValues.begin(), slaveValues.end(), compare_absolute_values)<<std::endl; }
 }
 
 void NodeToSegmentConstraintsOperator::applyResidualCorrection(AMP::LinearAlgebra::Vector::shared_ptr r) {
@@ -286,13 +298,13 @@ void NodeToSegmentConstraintsOperator::applyResidualCorrection(AMP::LinearAlgebr
   } // end for i
 
   std::vector<double> recvSlaveValueAndShapeFunctionsValues(d_TransposeRecvDisps[npes-1]+d_TransposeRecvCnts[npes-1]);
-  comm.barrier();
   comm.allToAll((!(sendSlaveValueAndShapeFunctionsValues.empty()) ? &(sendSlaveValueAndShapeFunctionsValues[0]) : NULL), &(d_TransposeSendCnts[0]), &(d_TransposeSendDisps[0]),
       (!(recvSlaveValueAndShapeFunctionsValues.empty()) ? &(recvSlaveValueAndShapeFunctionsValues[0]) : NULL), &(d_TransposeRecvCnts[0]), &(d_TransposeRecvDisps[0]), true);
   sendSlaveValueAndShapeFunctionsValues.clear();
 
-  /** compute added values to master values and set slave values to zero */
   comm.barrier();
+
+  /** compute added values to master values and set slave values to zero */
   std::vector<double> addToMasterValues(d_RecvMasterIndices.size(), 0.0);
   for (size_t i = 0; i < d_RecvMasterVerticesGlobalIDs.size(); ++i) {
     for (size_t j = 0; j < d_DOFsPerNode; ++j) {
@@ -300,9 +312,10 @@ void NodeToSegmentConstraintsOperator::applyResidualCorrection(AMP::LinearAlgebr
     } // end for j
   } // end for i
 
-  r->addValuesByGlobalID(d_RecvMasterIndices.size(), &(d_RecvMasterIndices[0]), &(addToMasterValues[0]));
+  if (!addToMasterValues.empty()) { d_fout<<"max residual added to master value "<<*std::max_element(addToMasterValues.begin(), addToMasterValues.end(), compare_absolute_values)<<std::endl; }
+  r->addLocalValuesByGlobalID(d_RecvMasterIndices.size(), &(d_RecvMasterIndices[0]), &(addToMasterValues[0]));
   std::vector<double> zeroSlaveValues(d_SlaveIndices.size(), 0.0);
-  r->setValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(zeroSlaveValues[0]));
+  r->setLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(zeroSlaveValues[0]));
   
 }
 

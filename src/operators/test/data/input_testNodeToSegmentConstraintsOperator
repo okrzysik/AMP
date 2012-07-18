@@ -1,8 +1,19 @@
+FusedMesh{
+      MeshName = "FusedMesh"
+        MeshType = "libMesh"
+        FileName = "Fused2Pellets_1x.e"
+        dim = 3
+}
 
-MasterMeshIndex = 0
-SlaveMeshIndex = 1
-MasterBoundaryID = 1
-SlaveBoundaryID = 2
+ContactOperator {
+  name = "NodeToSegmentConstraints"
+    MasterMeshIndex = 0
+    SlaveMeshIndex = 1
+    MasterBoundaryID = 1
+    SlaveBoundaryID = 2
+    InputVariable = "displacement"
+    OutputVariable = "displacement"
+}
 
 Mesh{
   MeshName = "MainMesh"
@@ -24,8 +35,8 @@ Mesh{
             MeshType = "libMesh"
             FileName = "pellet_1x.e"
             dim = 3
-            x_offset = 0.0, 0.0 
-            y_offset = 0.0, 0.0
+            x_offset = 0.0, 0.001
+            y_offset = 0.0, 0.003
             z_offset = 0.0, 0.0105
         }
     }
@@ -74,7 +85,7 @@ SlaveLoadOperator {
     id_0 = 1
     number_of_dofs_0 = 1
     dof_0_0 = 2
-    value_0_0 = -1.0e-3
+    value_0_0 = -5.0e-3
 }
 
 MechanicsLinearFEOperator{
@@ -109,7 +120,7 @@ MechanicsMaterialModel {
 
 LinearSolver {
   print_info_level = 10
-    max_iterations = 200
+    max_iterations = 9
     max_error = 1.0e-16
     ksp_type = "cg"
     absolute_tolerance = 1.0e-16
@@ -119,10 +130,10 @@ LinearSolver {
     pc_type = "shell"
     pc_side = "LEFT"
 
-    KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 200"
+    KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason"
 
     Preconditioner {
-      print_info_level = 10
+      print_info_level = 1
         max_iterations = 1
         max_error = 1.0e-16
         absolute_tolerance = 1.0e-16
@@ -130,7 +141,7 @@ LinearSolver {
         divergence_tolerance = 1.0e03
 
         MasterSolver {
-          print_info_level = 10
+          print_info_level = 1
             max_iterations = 1
             max_error = 1.0e-16
             uses_preconditioner = TRUE
@@ -139,7 +150,7 @@ LinearSolver {
         }
 
       SlaveSolver {
-        print_info_level = 10
+        print_info_level = 1
           max_iterations = 1
           max_error = 1.0e-16
           uses_preconditioner = TRUE
@@ -148,7 +159,7 @@ LinearSolver {
       }
 
       ContactPreconditioner {
-        print_info_level = 10
+        print_info_level = 1
           max_iterations = 1
           max_error = 1.0e-16
       }
