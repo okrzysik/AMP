@@ -18,6 +18,7 @@
 #else
     typedef int MPI_Comm;
     typedef int MPI_Request;
+    typedef void* MPI_Errhandler;
 #endif
 #define AMP_COMM_WORLD ((MPI_Comm)0xF4000010)
 #define AMP_COMM_SELF  ((MPI_Comm)0xF4000001)

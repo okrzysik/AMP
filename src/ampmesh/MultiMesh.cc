@@ -1102,17 +1102,14 @@ std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups1(
         size_t max1 = 0;
         size_t max2 = 0;
         size_t i1 = 0;
-        size_t i2 = 0;
         for (size_t i=0; i<load_balance.size(); i++) {
             size_t local_max = max_size[i];
             if ( local_max > max1 ) {
                 max2 = max1;
-                i2 = i1;
                 max1 = local_max;
                 i1 = i;
             } else if ( local_max > max2 ) {
                 max2 = local_max;
-                i2 = i;
             }
         }
         if ( max1==max2 )
