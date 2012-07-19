@@ -1,8 +1,20 @@
 
-MasterMeshIndex = 0
-SlaveMeshIndex = 1
-MasterBoundaryID = 1
-SlaveBoundaryID = 2
+FusedMesh{
+  MeshName = "FusedMesh"
+    MeshType = "libMesh"
+    FileName = "Fused2Pellets_1x.e"
+    dim = 3
+}
+
+ContactOperator {
+  name = "NodeToSegmentConstraints"
+    MasterMeshIndex = 0
+    SlaveMeshIndex = 1
+    MasterBoundaryID = 1
+    SlaveBoundaryID = 2
+    InputVariable = "displacement"
+    OutputVariable = "displacement"
+}
 
 Mesh{
   MeshName = "MainMesh"
@@ -24,7 +36,7 @@ Mesh{
             MeshType = "libMesh"
             FileName = "pellet_1x.e"
             dim = 3
-            x_offset = 0.0, 0.0 
+            x_offset = 0.0, 0.0
             y_offset = 0.0, 0.0
             z_offset = 0.0, 0.0105
         }
@@ -50,7 +62,7 @@ MasterDirichletMatrixCorrection{
     skip_params = FALSE
     symmetric_correction = TRUE
     zero_dirichlet_block = FALSE
-    skip_rhs_correction = FALSE
+    skip_rhs_correction = TRUE
     skip_add_rhs_correction = TRUE
     number_of_ids = 1
     id_0 = 2
@@ -74,7 +86,7 @@ SlaveLoadOperator {
     id_0 = 1
     number_of_dofs_0 = 1
     dof_0_0 = 2
-    value_0_0 = -1.0e-3
+    value_0_0 = -5.0e-3
 }
 
 MechanicsLinearFEOperator{
@@ -101,7 +113,7 @@ MechanicsMaterialModel {
     Material = ""
     name="IsotropicElasticModel"
     Youngs_Modulus = 1.0e6
-    Poissons_Ratio = 0.0
+    Poissons_Ratio = 0.3
     Default_Temperature = 0.0
     Default_Burnup = 0.0
     Default_Oxygen_Concentration = 0.0
@@ -109,7 +121,7 @@ MechanicsMaterialModel {
 
 LinearSolver {
   print_info_level = 10
-    max_iterations = 200
+    max_iterations = 2
     max_error = 1.0e-16
     ksp_type = "cg"
     absolute_tolerance = 1.0e-16
@@ -119,10 +131,10 @@ LinearSolver {
     pc_type = "shell"
     pc_side = "LEFT"
 
-    KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason -ksp_max_it 200"
+    KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason"
 
     Preconditioner {
-      print_info_level = 10
+      print_info_level = 1
         max_iterations = 1
         max_error = 1.0e-16
         absolute_tolerance = 1.0e-16
@@ -130,7 +142,7 @@ LinearSolver {
         divergence_tolerance = 1.0e03
 
         MasterSolver {
-          print_info_level = 10
+          print_info_level = 1
             max_iterations = 1
             max_error = 1.0e-16
             uses_preconditioner = TRUE
@@ -139,7 +151,7 @@ LinearSolver {
         }
 
       SlaveSolver {
-        print_info_level = 10
+        print_info_level = 1
           max_iterations = 1
           max_error = 1.0e-16
           uses_preconditioner = TRUE
@@ -148,9 +160,11 @@ LinearSolver {
       }
 
       ContactPreconditioner {
-        print_info_level = 10
+        print_info_level = 1
           max_iterations = 1
           max_error = 1.0e-16
       }
     }
 }
+
+
