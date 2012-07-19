@@ -7,6 +7,7 @@
 #endif
 
 #include <set>
+#include <map>
 #include <complex>
 #include "Utilities.h"
 
@@ -646,6 +647,15 @@ public:
      */
     template <class type>
     void setGather( std::set<type> &set ) const;
+
+
+    /*!
+     * This function combines std::maps from different processors to create a single master std::map
+     * If two or more ranks share the same key, the lowest rank will be used
+     * @param map       Input/Output std::map for the gather.
+     */
+    template <class KEY, class DATA>
+    void mapGather( std::map<KEY,DATA> &map ) const;
 
 
     /*!

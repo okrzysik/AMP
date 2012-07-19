@@ -382,6 +382,33 @@ int testSetGather(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
 }
 
 
+// Routine to test mapGather
+template <class type>
+int testMapGather(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
+    char message[500];
+    type x1 = (type) comm.getRank();
+    std::map<int,type> map;
+    map.insert( std::pair<int,type>( comm.getRank(), x1 ) );
+    comm.mapGather( map );
+    bool pass = true;
+    for (int i=0; i<comm.getSize(); i++) {
+        type x2 = i;
+        typename std::map<int,type>::iterator it;
+        it = map.find(i);
+        if ( it==map.end() )
+            pass = false;
+        else if ( it->second != x2 )
+            pass = false;
+    }
+    sprintf(message,"mapGather (%s)",typeid(type).name());
+    if ( pass )
+        ut->passes(message);
+    else
+        ut->failure(message);
+    return 1;   // Return the number of tests
+}
+
+
 // Routine to test allToAll
 template <class type>
 int testAllToAll(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
@@ -695,6 +722,7 @@ struct testCommTimerResults {
     int N_bcast;
     int N_allGather;
     int N_setGather;
+    int N_mapGather;
     int N_allToAll;
     int N_sendRecv;
     int N_IsendIrecv;
@@ -703,6 +731,7 @@ struct testCommTimerResults {
     double t_bcast;
     double t_allGather;
     double t_setGather;
+    double t_mapGather;
     double t_allToAll;
     double t_sendRecv;
     double t_IsendIrecv;
@@ -712,6 +741,8 @@ struct testCommTimerResults {
         N_scan = 0;
         N_bcast = 0;
         N_allGather = 0;
+        N_setGather = 0;
+        N_mapGather = 0;
         N_allToAll = 0;
         N_sendRecv = 0;
         N_IsendIrecv = 0;
@@ -720,6 +751,7 @@ struct testCommTimerResults {
         t_bcast = 0.0;
         t_allGather = 0.0;
         t_setGather = 0.0;
+        t_mapGather = 0.0;
         t_allToAll = 0.0;
         t_sendRecv = 0.0;
         t_IsendIrecv = 0.0;
@@ -733,6 +765,8 @@ struct testCommTimerResults {
         printf("   allToAll:    N = %5i, t_tot = %0.5e, t_avg = %6.1f us\n",N_allToAll,t_allToAll,1e6*t_allToAll/N_allToAll);
         printf("   send-recv:   N = %5i, t_tot = %0.5e, t_avg = %6.1f us\n",N_sendRecv,t_sendRecv,1e6*t_sendRecv/N_sendRecv);
         printf("   Isend-Irecv: N = %5i, t_tot = %0.5e, t_avg = %6.1f us\n",N_IsendIrecv,t_IsendIrecv,1e6*t_IsendIrecv/N_IsendIrecv);
+        printf("   setGather:   N = %5i, t_tot = %0.5e, t_avg = %6.1f us\n",N_setGather,t_setGather,1e6*t_setGather/N_setGather);
+        printf("   mapGather:   N = %5i, t_tot = %0.5e, t_avg = %6.1f us\n",N_mapGather,t_mapGather,1e6*t_mapGather/N_mapGather);
     }
 };
 
@@ -870,6 +904,17 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_setGather += testSetGather<float>(comm,ut);
     timer.N_setGather += testSetGather<double>(comm,ut);
     timer.t_setGather = AMP::AMP_MPI::time()-start_time;
+    // Test std::map gather
+    start_time = AMP::AMP_MPI::time();
+    timer.N_mapGather += testMapGather<unsigned char>(comm,ut);
+    timer.N_mapGather += testMapGather<char>(comm,ut);
+    timer.N_mapGather += testMapGather<unsigned int>(comm,ut);
+    timer.N_mapGather += testMapGather<int>(comm,ut);
+    timer.N_mapGather += testMapGather<unsigned long int>(comm,ut);
+    timer.N_mapGather += testMapGather<long int>(comm,ut);
+    timer.N_mapGather += testMapGather<float>(comm,ut);
+    timer.N_mapGather += testMapGather<double>(comm,ut);
+    timer.t_mapGather = AMP::AMP_MPI::time()-start_time;
     // Test allToAlll
     start_time = AMP::AMP_MPI::time();
     timer.N_allToAll += testAllToAll<unsigned char>(comm,ut);

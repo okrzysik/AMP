@@ -445,9 +445,9 @@ void AMP_MPI::call_allGather(const type *x_in, int size_in, type *x_out, int *si
 template <class type>
 inline void AMP_MPI::setGather( std::set<type> &set ) const
 {
-    std::vector<type> send(set.begin(),set.end());
+    std::vector<type> send_buf(set.begin(),set.end());
     std::vector<int> recv_cnt(this->comm_size,0);
-    this->allGather<int>( (int)send.size(), &recv_cnt[0] );
+    this->allGather<int>( (int)send_buf.size(), &recv_cnt[0] );
     std::vector<int> recv_disp(this->comm_size,0);
     for (int i=1; i<this->comm_size; i++)
         recv_disp[i] = recv_disp[i-1]+recv_cnt[i-1];
@@ -456,14 +456,56 @@ inline void AMP_MPI::setGather( std::set<type> &set ) const
         N_recv_tot += recv_cnt[i];
     if ( N_recv_tot==0 )
         return;
-    std::vector<type> send_buf(set.begin(),set.end());
     std::vector<type> recv_buf(N_recv_tot);
     type *send_data = NULL;
-    if ( send.size()>0 ) { send_data = &send_buf[0]; }
+    if ( send_buf.size()>0 ) { send_data = &send_buf[0]; }
     type *recv_data = &recv_buf[0];
-    this->allGather<type>( send_data, (int)send.size(), recv_data, &recv_cnt[0], &recv_disp[0], true);
+    this->allGather<type>( send_data, (int)send_buf.size(), recv_data, &recv_cnt[0], &recv_disp[0], true);
     for (size_t i=0; i<recv_buf.size(); i++)
         set.insert(recv_buf[i]);
+}
+
+
+/************************************************************************
+*  mapGather                                                            *
+************************************************************************/
+template <class KEY, class DATA>
+inline void AMP_MPI::mapGather( std::map<KEY,DATA> &map ) const
+{
+    std::vector<KEY> send_id;
+    std::vector<DATA> send_data;
+    send_id.reserve(map.size());
+    send_data.reserve(map.size());
+    std::map<KEY,DATA> map2;
+    typename std::map<KEY,DATA>::iterator it;
+    for (it=map.begin(); it!=map.end(); ++it) {
+        send_id.push_back(it->first);
+        send_data.push_back(it->second);
+    }
+    int send_size = (int)send_id.size();
+    std::vector<int> recv_cnt(this->comm_size,0);
+    this->allGather<int>( send_size, &recv_cnt[0] );
+    std::vector<int> recv_disp(this->comm_size,0);
+    for (int i=1; i<this->comm_size; i++)
+        recv_disp[i] = recv_disp[i-1]+recv_cnt[i-1];
+    size_t N_recv_tot = 0;
+    for (int i=0; i<this->comm_size; i++)
+        N_recv_tot += recv_cnt[i];
+    if ( N_recv_tot==0 )
+        return;
+    std::vector<KEY> recv_id(N_recv_tot);
+    std::vector<DATA> recv_data(N_recv_tot);
+    KEY *send_data1 = NULL;
+    DATA *send_data2 = NULL;
+    if ( send_id.size()>0 ) { 
+        send_data1 = &send_id[0]; 
+        send_data2 = &send_data[0]; 
+    }
+    this->allGather<KEY>(   send_data1, send_size, &recv_id[0],   &recv_cnt[0], &recv_disp[0], true);
+    this->allGather<DATA>( send_data2, send_size, &recv_data[0], &recv_cnt[0], &recv_disp[0], true);
+    map = std::map<KEY,DATA>();
+    for (size_t i=0; i<N_recv_tot; i++)
+        map.insert( std::pair<KEY,DATA>(recv_id[i],recv_data[i]) );
 }
 
 
