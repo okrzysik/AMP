@@ -38,12 +38,7 @@
 #include "time_integrators/IDATimeIntegrator.h"
 #include "time_integrators/IDATimeOperator.h"
 
-#define ITFAILS ut.failure(__LINE__);
-#define UNIT_TEST(a) if (!(a)) ut.failure(__LINE__);
 
-//---------------------------------------------------------------------------//
-// TESTS
-//---------------------------------------------------------------------------//
 
 #define __PI__ 3.14159265
 
