@@ -75,7 +75,7 @@ AMP_MPI::AMP_MPI() {
 *  Empty deconstructor                                                  *
 ************************************************************************/
 AMP_MPI::~AMP_MPI() {
-    #ifdef USE_MPI
+    /*#ifdef USE_MPI
         // Temporary solution until memory bugs are sorted, remove!!
         if ( count == NULL ) {
         } else if ( *count == 1 ) {
@@ -86,7 +86,7 @@ AMP_MPI::~AMP_MPI() {
                 return;
             }
         }
-    #endif
+    #endif*/
     // Check if the count is == 1
     if ( count == NULL ) {
         // We are not keeping a count, no need to free anything

@@ -46,8 +46,7 @@ namespace LinearAlgebra {
   {
     Vec a;
     MatGetVecs ( d_Mat , &a , PETSC_NULL );
-    boost::shared_ptr<NativePetscVectorParameters> npvParam ( new NativePetscVectorParameters ( a ) );
-    npvParam->d_Deleteable = true;
+    boost::shared_ptr<NativePetscVectorParameters> npvParam ( new NativePetscVectorParameters( a, true ) );
     return Vector::shared_ptr ( new NativePetscVector ( npvParam ) );
   }
 
@@ -55,8 +54,7 @@ namespace LinearAlgebra {
   {
     Vec a;
     MatGetVecs ( d_Mat , PETSC_NULL , &a );
-    boost::shared_ptr<NativePetscVectorParameters> npvParam ( new NativePetscVectorParameters ( a ) );
-    npvParam->d_Deleteable = true;
+    boost::shared_ptr<NativePetscVectorParameters> npvParam ( new NativePetscVectorParameters( a, true ) );
     return Vector::shared_ptr ( new NativePetscVector ( npvParam ) );
   }
 

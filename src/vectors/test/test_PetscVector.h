@@ -70,7 +70,8 @@ class  SimplePetscVectorFactory
       VecCreate ( globalComm.getCommunicator(), &ans );
       VecSetSizes ( ans , t->getLocalSize() , PETSC_DECIDE );
       VecSetFromOptions ( ans );
-      boost::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams ( new AMP::LinearAlgebra::NativePetscVectorParameters ( ans ) );
+      boost::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams( 
+        new AMP::LinearAlgebra::NativePetscVectorParameters( ans, true ) );
       npvParams->d_Deleteable = true;
       AMP::LinearAlgebra::Vector::shared_ptr retVal ( new AMP::LinearAlgebra::NativePetscVector ( npvParams ) );
       retVal->setVariable ( AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "petsc vector" ) ) );
