@@ -40,7 +40,7 @@ IDATimeIntegrator::~IDATimeIntegrator()
     IDAFree(&d_ida_mem);
     // Note: There is a memory leak in sundials-2.4.0 in ida_spgmr.c,
     // we need to add "N_VDestroy(yptemp);" to IDASpgmrFree.
-    AMP::pout << "Possible memory leak in IDA:" << std::endl;
+    //AMP::pout << "Possible memory leak in IDA:" << std::endl;
 }
 
   
