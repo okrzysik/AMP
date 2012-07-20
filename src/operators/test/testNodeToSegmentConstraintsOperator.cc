@@ -37,6 +37,13 @@
 #include <fstream>
 #include <boost/lexical_cast.hpp>
 
+double dummyFunction(const std::vector<double> &xyz, const int dof) {
+  AMP_ASSERT(xyz.size() == 3);
+  double x = xyz[0], y = xyz[1], z = xyz[2];
+  return (1.0 + 6.0 * x) + (2.0 - 5.0 * y) + (3.0 + 4.0 * z);
+}
+  
+
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
   std::string log_file = "output_" + exeName; 
@@ -48,7 +55,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::Mesh::SiloIO::shared_ptr siloWriter(new AMP::Mesh::SiloIO);
 #endif
 
-//  int npes = globalComm.getSize();
+  int npes = globalComm.getSize();
   int rank = globalComm.getRank();
   std::fstream fout;
   std::string fileName = "debug_driver_" + boost::lexical_cast<std::string>(rank);
@@ -107,8 +114,98 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   boost::shared_ptr<AMP::Operator::NodeToSegmentConstraintsOperator> 
       contactOperator( new AMP::Operator::NodeToSegmentConstraintsOperator(contactOperatorParams) );
+
+if (npes==1) {
+  AMP::LinearAlgebra::Variable::shared_ptr dummyVariable(new AMP::LinearAlgebra::Variable("Dummy"));
+  AMP::LinearAlgebra::Vector::shared_ptr dummyXVector = createVector(dofManager, dummyVariable, split);
+  AMP::LinearAlgebra::Vector::shared_ptr dummyYVector = createVector(dofManager, dummyVariable, split);
+  dummyXVector->setToScalar(1.0);
+  dummyYVector->setToScalar(1.0);
+
+  size_t slaveDOFs = dofManager->numGlobalDOF() / 4;
+  std::vector<size_t> slaveIndices(slaveDOFs, slaveDOFs), masterIndices(slaveDOFs * 4, slaveDOFs * 4);
+  std::vector<double> coefficients(slaveDOFs * 4 / dofsPerNode, 0.0);
+  for (size_t i = 0; i < slaveIndices.size()/dofsPerNode; ++i) {
+    for (size_t j = 0; j < 4; ++j) {
+      coefficients[4*i+j] = static_cast<double>(j);
+    } // end for j
+    for (size_t k = 0; k < dofsPerNode; ++k) {
+      slaveIndices[dofsPerNode*i+k] = dofsPerNode*i+k;
+      double slaveValue = 0.0;
+      for (size_t j = 0; j < 4; ++j) {
+        masterIndices[dofsPerNode*(4*i+j)+k] = slaveDOFs+dofsPerNode*(i+j)+k;
+        slaveValue += coefficients[4*i+j] * dummyXVector->getLocalValueByGlobalID(masterIndices[dofsPerNode*(4*i+j)+k]);
+      } // end for j
+      dummyYVector->setLocalValueByGlobalID(slaveIndices[dofsPerNode*i+k], slaveValue);
+    } // end for k
+  } // end for i
+  contactOperator->debugSet(slaveIndices, masterIndices, coefficients);
+  contactOperator->applySolutionCorrection(dummyXVector);
+  dummyXVector->subtract(dummyXVector, dummyYVector);
+  std::cout<<"DEBUG SET >> APPLY >> MAX OF X-Y IS "<<dummyXVector->max()<<"  L2NORM OF X IS "<<dummyYVector->L2Norm()<<std::endl;
+
+  dummyXVector->setToScalar(1.0);
+  dummyYVector->setToScalar(1.0);
+  for (size_t i = 0; i < slaveIndices.size()/dofsPerNode; ++i) {
+    for (size_t k = 0; k < dofsPerNode; ++k) {
+      double slaveValue = dummyXVector->getLocalValueByGlobalID(slaveIndices[dofsPerNode*4+k]);
+      for (size_t j = 0; j < 4; ++j) {
+        double addToMasterValue = coefficients[4*i+j] * slaveValue;
+        dummyYVector->addLocalValueByGlobalID(masterIndices[dofsPerNode*(4*i+j)+k], addToMasterValue);
+      } // end for j
+      dummyYVector->setLocalValueByGlobalID(slaveIndices[dofsPerNode*4+k], 0.0);
+    } // end for k
+  } // end for i
+  contactOperator->applyResidualCorrection(dummyXVector);
+  dummyXVector->subtract(dummyXVector, dummyYVector);
+  std::cout<<"DEBUG SET >> TRANSPOSE >> MAX OF X-Y IS "<<dummyXVector->max()<<"  L2NORM OF X IS "<<dummyYVector->L2Norm()<<std::endl;;
+
+}
+
   // TODO: RESET IN CONSTRUCTOR?
   contactOperator->reset(contactOperatorParams);
+
+if (npes==1) {
+  std::vector<size_t> slaveIndices, masterIndices;
+  std::vector<double> coefficients;
+  contactOperator->debugGet(slaveIndices, masterIndices, coefficients);
+  AMP_ASSERT( masterIndices.size() == 4 * slaveIndices.size() );
+  AMP_ASSERT( masterIndices.size() == dofsPerNode * coefficients.size() );
+  AMP::LinearAlgebra::Variable::shared_ptr dummyVariable(new AMP::LinearAlgebra::Variable("Dummy"));
+  AMP::LinearAlgebra::Vector::shared_ptr dummyXVector = createVector(dofManager, dummyVariable, split);
+  AMP::LinearAlgebra::Vector::shared_ptr dummyYVector = createVector(dofManager, dummyVariable, split);
+  dummyXVector->setToScalar(1.0);
+  dummyYVector->setToScalar(1.0);
+  // CHECK APPLY CONSTRAINT MATRIX
+  for (size_t i = 0; i < slaveIndices.size()/dofsPerNode; ++i) {
+    for (size_t k = 0; k < dofsPerNode; ++k) {
+      double slaveValue = 0.0;
+      for (size_t j = 0; j < 4; ++j) {
+        slaveValue += coefficients[4*i+j] * dummyXVector->getLocalValueByGlobalID(masterIndices[dofsPerNode*(4*i+j)+k]);
+      } // end for j
+      dummyYVector->setLocalValueByGlobalID(slaveIndices[dofsPerNode*i+k], slaveValue);
+    } // end for k
+  } // end for i
+  contactOperator->applySolutionCorrection(dummyXVector);
+  dummyXVector->subtract(dummyXVector, dummyYVector);
+  std::cout<<"DEBUG GET >> APPLY >> MAX OF X-Y IS "<<dummyXVector->max()<<"  L2NORM OF X IS "<<dummyYVector->L2Norm()<<std::endl;
+  // CHECK APPLY TRANSPOSE
+  dummyXVector->setToScalar(1.0);
+  dummyYVector->setToScalar(1.0);
+  for (size_t i = 0; i < slaveIndices.size()/dofsPerNode; ++i) {
+    for (size_t k = 0; k < dofsPerNode; ++k) {
+      double slaveValue = dummyXVector->getLocalValueByGlobalID(slaveIndices[dofsPerNode*4+k]);
+      for (size_t j = 0; j < 4; ++j) {
+        double addToMasterValue = coefficients[4*i+j] * slaveValue;
+        dummyYVector->addLocalValueByGlobalID(masterIndices[dofsPerNode*(4*i+j)+k], addToMasterValue);
+      } // end for j
+      dummyYVector->setLocalValueByGlobalID(slaveIndices[dofsPerNode*4+k], 0.0);
+    } // end for k
+  } // end for i
+  contactOperator->applyResidualCorrection(dummyXVector);
+  dummyXVector->subtract(dummyXVector, dummyYVector);
+  std::cout<<"DEBUG GET >> TRANSPOSE >> MAX OF X-Y IS "<<dummyXVector->max()<<"  L2NORM OF X IS "<<dummyYVector->L2Norm()<<std::endl;
+} 
 
 /*  nodeToSegmentConstraintsOperator->reset(nodeToSegmentConstraintsOperatorParams);
 
@@ -141,6 +238,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
                                                                                          input_db,
                                                                                          masterElementPhysicsModel));
     columnOperator->append(masterOperator);
+
 
     boost::shared_ptr<AMP::Database> masterSolver_db = columnPreconditioner_db->getDatabase("MasterSolver"); 
     boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> masterSolverParams(new
@@ -224,7 +322,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
   AMP::LinearAlgebra::Vector::shared_ptr columnSolVec = createVector(dofManager, columnVar, split);
   AMP::LinearAlgebra::Vector::shared_ptr columnRhsVec = createVector(dofManager, columnVar, split);
-//  AMP::LinearAlgebra::Vector::shared_ptr columnResVec = createVector(dofManager, columnVar, split);
+  AMP::LinearAlgebra::Vector::shared_ptr columnResVec = createVector(dofManager, columnVar, split);
 
   columnSolVec->zero();
   columnRhsVec->zero();
@@ -235,6 +333,50 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   std::cout<<"rhsNormBefore = "<<std::setprecision(15)<<rhsNormBefore
     <<" rhsNormAfter = "<<std::setprecision(15)<<rhsNormAfter<<std::endl;
+
+
+  columnSolVec->setToScalar(1.0);
+  contactOperator->debugSetSlaveToZero(columnSolVec);
+  std::cout<<"ZEROING SLAVE USING CONTACT OP PRIOR APPLY SOL L2NORM IS "<<columnSolVec->L2Norm()<<std::endl;
+  columnSolVec->setToScalar(1.0);
+  if (slaveMeshAdapter != NULL) {
+    AMP::Mesh::MeshIterator slaveBoundaryIDIterator = slaveMeshAdapter->getBoundaryIDIterator(AMP::Mesh::Vertex, contactOperatorParams->d_SlaveBoundaryID);
+    AMP::Mesh::MeshIterator boundaryIterator = slaveBoundaryIDIterator.begin(),
+        boundaryIterator_end = slaveBoundaryIDIterator.end();
+    for ( ; boundaryIterator != boundaryIterator_end; ++boundaryIterator) {
+      std::vector<size_t> dofs;
+      dofManager->getDOFs(boundaryIterator->globalID(), dofs);
+      AMP_ASSERT( dofs.size() == dofsPerNode );
+      std::vector<double> zeros(dofsPerNode, 0.0);
+      columnSolVec->setLocalValuesByGlobalID(dofsPerNode, &(dofs[0]), &(zeros[0]));
+    } // end for
+  } // end if
+  std::cout<<"ZEROING SLAVE USING MESH ITERATOR PRIOR APPLY SOL L2NORM IS "<<columnSolVec->L2Norm()<<std::endl;
+  columnSolVec->setToScalar(1.0);
+  columnOperator->apply(columnRhsVec, columnSolVec, columnResVec, -1.0, 1.0);
+  std::cout<<"APPLY COLUMN OP RES L2NORM IS "<<columnResVec->L2Norm()<<std::endl;
+  std::cout<<"MESH GLOBAL NUMBER OF VERTICES IS "<<meshAdapter->numGlobalElements(AMP::Mesh::Vertex)<<std::endl;
+  std::cout<<"MESH GLOBAL NUMBER OF ELEMENTS IS "<<meshAdapter->numGlobalElements(AMP::Mesh::Volume)<<std::endl;
+
+  AMP::Mesh::MeshIterator meshIterator = meshAdapter->getIterator(AMP::Mesh::Vertex);
+  for (meshIterator = meshIterator.begin(); meshIterator != meshIterator.end(); ++meshIterator) {
+    std::vector<size_t> dofs;
+    dofManager->getDOFs(meshIterator->globalID(), dofs);
+    AMP_ASSERT( dofs.size() == dofsPerNode );
+    std::vector<double> nodeCoordinates = meshIterator->coord();
+    std::vector<double> dummyValues(dofsPerNode);
+    for (size_t i = 0; i < dofsPerNode; ++i) {
+      dummyValues[i] = dummyFunction(nodeCoordinates, i); 
+    } // end for i
+    columnSolVec->setLocalValuesByGlobalID(dofsPerNode, &(dofs[0]), &(dummyValues[0]));
+  } // end for
+  columnRhsVec->copy(columnSolVec);
+  contactOperator->applySolutionCorrection(columnRhsVec);
+  columnRhsVec->subtract(columnRhsVec, columnSolVec);
+  std::cout<<"TESTING APPLY SOLUTION CORRECTION MAX INTERPOLATION ERROR IS "<<columnRhsVec->max()<<std::endl;
+
+  columnSolVec->zero();
+  columnRhsVec->zero();
 
 //  contactOperator->applyResidualCorrection(columnResVec);
 //  contactOperator->applySolutionConstraints(columnResVec);
@@ -375,13 +517,22 @@ void myTest2(AMP::UnitTest *ut, std::string exeName) {
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
   AMP::LinearAlgebra::Vector::shared_ptr columnSolVec = createVector(dofManager, columnVar, split);
   AMP::LinearAlgebra::Vector::shared_ptr columnRhsVec = createVector(dofManager, columnVar, split);
-//  AMP::LinearAlgebra::Vector::shared_ptr columnResVec = createVector(dofManager, columnVar, split);
+  AMP::LinearAlgebra::Vector::shared_ptr columnResVec = createVector(dofManager, columnVar, split);
 
   columnSolVec->zero();
   columnRhsVec->zero();
   slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0);
   double fusedRhsNorm = columnRhsVec->L2Norm();
   std::cout<<"FusedRhsNorm = "<<std::setprecision(15)<<fusedRhsNorm<<std::endl;
+
+
+  columnSolVec->setToScalar(1.0);
+  std::cout<<"PRIOR APPLY SOL L2NORM IS "<<columnSolVec->L2Norm()<<std::endl;
+  columnOperator->apply(columnRhsVec, columnSolVec, columnResVec, -1.0, 1.0);
+  std::cout<<"APPLY COLUMN OP RES L2NORM IS "<<columnResVec->L2Norm()<<std::endl;
+  columnSolVec->zero();
+  std::cout<<"MESH GLOBAL NUMBER OF VERTICES IS "<<meshAdapter->numGlobalElements(AMP::Mesh::Vertex)<<std::endl;
+  std::cout<<"MESH GLOBAL NUMBER OF ELEMENTS IS "<<meshAdapter->numGlobalElements(AMP::Mesh::Volume)<<std::endl;
 
   boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new
       AMP::Solver::PetscKrylovSolverParameters(linearSolver_db));
@@ -409,7 +560,7 @@ int main(int argc, char *argv[])
 {
   AMP::AMPManager::startup(argc, argv);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
-  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit( new AMP::Mesh::initializeLibMesh(globalComm) );
+//  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit( new AMP::Mesh::initializeLibMesh(globalComm) );
   AMP::UnitTest ut;
 
   std::string exeName = "testNodeToSegmentConstraintsOperator";
@@ -428,7 +579,7 @@ int main(int argc, char *argv[])
   ut.report();
   int num_failed = ut.NumFailGlobal();
 
-  libmeshInit.reset();
+//  libmeshInit.reset();
   AMP::AMPManager::shutdown();
   return num_failed;
 }  

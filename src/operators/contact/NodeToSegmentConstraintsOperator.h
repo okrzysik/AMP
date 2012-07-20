@@ -93,8 +93,42 @@ namespace AMP {
         AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
         void applyResidualCorrection(AMP::LinearAlgebra::Vector::shared_ptr r);
-        void applySolutionConstraints(AMP::LinearAlgebra::Vector::shared_ptr u);
+        void applySolutionCorrection(AMP::LinearAlgebra::Vector::shared_ptr u);
         void getShift(AMP::LinearAlgebra::Vector::shared_ptr d);
+
+        void debugGet(std::vector<size_t> &slaveIndices,// std::vector<double> &slaveValues,
+            std::vector<size_t> &masterIndices,// std::vector<double> &masterValues,
+            std::vector<double> &coefficients) {
+          AMP_ASSERT( d_GlobalComm.getSize() == 1 );
+          slaveIndices = d_SlaveIndices;
+          masterIndices = d_RecvMasterIndices;
+          coefficients = d_MasterShapeFunctionsValues;
+        }
+        void debugSet(const std::vector<size_t> &slaveIndices,
+            const std::vector<size_t> &masterIndices,
+            const std::vector<double> &coefficients) {
+          AMP_ASSERT( d_GlobalComm.getSize() == 1 );
+          AMP_ASSERT( masterIndices.size() == 4 * slaveIndices.size() );
+          AMP_ASSERT( masterIndices.size() == d_DOFsPerNode * coefficients.size() );
+          d_SlaveIndices = slaveIndices;
+          d_RecvMasterIndices = masterIndices;
+          d_MasterShapeFunctionsValues = coefficients;
+          d_MasterVerticesMap = std::vector<size_t>(coefficients.size(), d_GlobalComm.getRank());
+          d_SendCnts = std::vector<int>(1, masterIndices.size());
+          d_SendDisps = std::vector<int>(1, masterIndices.size());
+          d_RecvCnts = std::vector<int>(1, masterIndices.size());
+          d_RecvDisps = std::vector<int>(1, masterIndices.size());
+          d_TransposeSendCnts = std::vector<int>(1, masterIndices.size());
+          d_TransposeSendDisps = std::vector<int>(1, masterIndices.size());
+          d_TransposeRecvCnts = std::vector<int>(1, masterIndices.size());
+          d_TransposeRecvDisps = std::vector<int>(1, masterIndices.size());
+        }
+        void debugSetSlaveToZero(AMP::LinearAlgebra::Vector::shared_ptr u) {
+          if (!d_SlaveIndices.empty()) {
+            std::vector<double> zeroSlaveValues(d_SlaveIndices.size(), 0.0);
+            u->setLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(zeroSlaveValues[0]));
+          } // end if
+        }
 
       protected :
 
@@ -121,8 +155,10 @@ namespace AMP {
         std::vector<int> d_TransposeRecvCnts;
         std::vector<int> d_TransposeRecvDisps;
 
+        // actually we don't need to store the meshelementids but maybe useful later to check whether the active set has changed
         std::vector<AMP::Mesh::MeshElementID> d_SlaveVerticesGlobalIDs;
         std::vector<AMP::Mesh::MeshElementID> d_RecvMasterVerticesGlobalIDs;
+
         std::vector<size_t> d_SlaveIndices;
         std::vector<size_t> d_RecvMasterIndices;
         std::vector<size_t> d_MasterVerticesMap;
@@ -132,7 +168,6 @@ namespace AMP {
 
         boost::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable; /**< Input variable */
         boost::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
-
 
         std::fstream d_fout;
     };

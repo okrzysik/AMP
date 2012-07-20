@@ -48,6 +48,8 @@ class DendroSearch {
     void projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
         std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags);
 
+    void setTolerance(double tolerance);
+
   private:
     AMP::Mesh::Mesh::shared_ptr d_meshAdapter;
     std::vector<AMP::Mesh::MeshElement> d_localElemArr;
@@ -68,6 +70,7 @@ class DendroSearch {
     bool d_verbose;
   
     std::vector<hex8_element_t> d_volume_elements;
+    double d_tolerance;
 
     void setupDSforSearch();
     void createLocalMeshElementArray();

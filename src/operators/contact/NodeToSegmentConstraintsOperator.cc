@@ -50,6 +50,7 @@ namespace AMP {
       /** do a dendro search for the boundary slave vertices on the master mesh */
       AMP::Mesh::Mesh::shared_ptr masterMesh = mesh->Subset(d_MasterMeshID);
       DendroSearch dendroSearchOnMaster(masterMesh);
+      dendroSearchOnMaster.setTolerance(1.0e-10);
       dendroSearchOnMaster.search(comm, tmpSlaveVerticesCoord);
 
       std::vector<AMP::Mesh::MeshElementID> tmpMasterVerticesGlobalIDs;
@@ -78,7 +79,7 @@ namespace AMP {
       d_fout<<"Global number of points found on boundary is "<<globalPtsFoundOnBoundary<<" (local was "<<localPtsFoundOnBoundary<<")"<<std::endl;
       d_fout<<"Total number of points is "<<globalPtsNotFound+globalPtsFoundNotOnBoundary+globalPtsFoundOnBoundary<<std::endl;
 
-      //  AMP_ASSERT( std::count(flags.begin(), flags.end(), DendroSearch::FoundNotOnBoundary) == 0 ); // DendroSearch::FoundNotOnBoundary is not acceptable
+      AMP_ASSERT( std::count(flags.begin(), flags.end(), DendroSearch::FoundNotOnBoundary) == 0 ); // DendroSearch::FoundNotOnBoundary is not acceptable
 
       d_SlaveVerticesGlobalIDs.resize(nConstraints);
       std::fill(d_SlaveVerticesGlobalIDs.begin(), d_SlaveVerticesGlobalIDs.end(), AMP::Mesh::MeshElementID());
@@ -105,6 +106,13 @@ namespace AMP {
       std::vector<int>::const_iterator flagsIterator = flags.begin(),
         flagsIterator_end = flags.end();
       for ( ; flagsIterator != flagsIterator_end; ++flagsIterator) {
+        if (*flagsIterator == DendroSearch::NotFound) {
+          std::vector<double> blackSheepCoord = (mesh->getElement(*tmpSlaveVerticesGlobalIDsConstIterator)).coord();
+          d_fout<<blackSheepCoord[0]<<"  "
+              <<blackSheepCoord[1]<<"  "
+              <<blackSheepCoord[2]<<"\n";
+
+        }
         //    AMP_ASSERT( (*flagsIterator == DendroSearch::NotFound) || (*flagsIterator == DendroSearch::FoundOnBoundary) );
         if (*flagsIterator == DendroSearch::FoundOnBoundary) {
           hex8_element_t::get_basis_functions_values_on_face(tmpSlaveVerticesLocalCoordOnFacePointerToConst, masterShapeFunctionsValuesPointer);
@@ -146,12 +154,6 @@ namespace AMP {
       tmpSlaveVerticesShift.clear();
       tmpSlaveVerticesLocalCoordOnFace.clear();
       flags.clear();
-
-      // TODO: remove this line
-      if (!d_MasterShapeFunctionsValues.empty()) {
-        AMP_ASSERT( *std::max_element(d_MasterShapeFunctionsValues.begin(), 
-              d_MasterShapeFunctionsValues.end(), compare_absolute_values) > 0.0 ); 
-      }
 
       /** setup for apply */
       size_t npes = comm.getSize();
@@ -210,10 +212,25 @@ namespace AMP {
         d_SendDisps[i] *= d_DOFsPerNode; 
         d_RecvCnts[i] *= d_DOFsPerNode; 
         d_RecvDisps[i] *= d_DOFsPerNode; 
-        d_TransposeSendCnts[i] *= (d_DOFsPerNode + 1); 
-        d_TransposeSendDisps[i] *= (d_DOFsPerNode + 1); 
-        d_TransposeRecvCnts[i] *= (d_DOFsPerNode + 1); 
-        d_TransposeRecvDisps[i] *= (d_DOFsPerNode + 1); 
+        d_TransposeSendCnts[i] *= d_DOFsPerNode; 
+        d_TransposeSendDisps[i] *= d_DOFsPerNode; 
+        d_TransposeRecvCnts[i] *= d_DOFsPerNode; 
+        d_TransposeRecvDisps[i] *= d_DOFsPerNode; 
+      } // end for i
+
+      for (size_t i = 0; i < d_SlaveVerticesGlobalIDs.size(); ++i) {
+        for (size_t j = 0; j < 4; ++j) {
+          d_fout<<"i="<<i<<"  "
+            <<"j="<<j<<"  "
+            <<"4*i+j="<<4*i+j<<"  "
+            <<"d_MasterShapeFunctionsValues[4*i+j]="<<d_MasterShapeFunctionsValues[4*i+j]<<"\n";
+        } // end for j
+        for (size_t k = 0; k < d_DOFsPerNode; ++k) {
+          d_fout<<"i="<<i<<"  "
+            <<"k="<<k<<"  "
+            <<"d_DOFsPerNode*i+k="<<d_DOFsPerNode*i+k<<"  "
+            <<"d_SlaveIndices[d_DOFsPerNode*i+k]="<<d_SlaveIndices[d_DOFsPerNode*i+k]<<"\n";     
+        } // end for k
       } // end for i
 
     }
@@ -250,7 +267,7 @@ namespace AMP {
     }
 
 
-    void NodeToSegmentConstraintsOperator::applySolutionConstraints(AMP::LinearAlgebra::Vector::shared_ptr u) {
+    void NodeToSegmentConstraintsOperator::applySolutionCorrection(AMP::LinearAlgebra::Vector::shared_ptr u) {
       /** send and receive the master values */
       AMP::AMP_MPI comm = d_GlobalComm;
       //  AMP::AMP_MPI comm = u->getComm();
@@ -282,58 +299,38 @@ namespace AMP {
         } // end for j
       } // end for i
 
-      u->setLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(slaveValues[0]));
-      if (!slaveValues.empty()) { d_fout<<"max solution slave value "<<*std::max_element(slaveValues.begin(), slaveValues.end(), compare_absolute_values)<<std::endl; }
+      if (!slaveValues.empty()) { 
+        u->setLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(slaveValues[0]));
+      } // end if
     }
 
     void NodeToSegmentConstraintsOperator::applyResidualCorrection(AMP::LinearAlgebra::Vector::shared_ptr r) {
-      /** send and receive the slave values and the shape functions values */
+      /** send and receive slave value times shape functions values */
       AMP::AMP_MPI comm = d_GlobalComm;
       //  AMP::AMP_MPI comm = r->getComm();
       size_t npes = comm.getSize();
 
-      std::vector<double> sendSlaveValueAndShapeFunctionsValues(d_TransposeSendDisps[npes-1]+d_TransposeSendCnts[npes-1]);
+      std::vector<double> sendAddToMasterValues(d_TransposeSendDisps[npes-1]+d_TransposeSendCnts[npes-1]);
       for (size_t i = 0; i < d_SlaveVerticesGlobalIDs.size(); ++i) {
         for (size_t j = 0; j < 4; ++j) {
-          r->getLocalValuesByGlobalID(d_DOFsPerNode, &(d_SlaveIndices[d_DOFsPerNode*i]),
-              &(sendSlaveValueAndShapeFunctionsValues[(d_DOFsPerNode+1)*d_MasterVerticesMap[4*i+j]])); 
-          sendSlaveValueAndShapeFunctionsValues[(d_DOFsPerNode+1)*d_MasterVerticesMap[4*i+j]+d_DOFsPerNode] = d_MasterShapeFunctionsValues[4*i+j];
+          r->getLocalValuesByGlobalID(d_DOFsPerNode, &(d_SlaveIndices[d_DOFsPerNode*i]), &(sendAddToMasterValues[d_DOFsPerNode*d_MasterVerticesMap[4*i+j]])); 
+          for (size_t k = 0; k < d_DOFsPerNode; ++k) {
+            sendAddToMasterValues[d_DOFsPerNode*d_MasterVerticesMap[4*i+j]+k] *= d_MasterShapeFunctionsValues[4*i+j];
+          } // end for k
         } // end for j
       } // end for i
 
-      std::vector<double> recvSlaveValueAndShapeFunctionsValues(d_TransposeRecvDisps[npes-1]+d_TransposeRecvCnts[npes-1]);
-      comm.allToAll((!(sendSlaveValueAndShapeFunctionsValues.empty()) ? &(sendSlaveValueAndShapeFunctionsValues[0]) : NULL), &(d_TransposeSendCnts[0]), &(d_TransposeSendDisps[0]),
-          (!(recvSlaveValueAndShapeFunctionsValues.empty()) ? &(recvSlaveValueAndShapeFunctionsValues[0]) : NULL), &(d_TransposeRecvCnts[0]), &(d_TransposeRecvDisps[0]), true);
-      sendSlaveValueAndShapeFunctionsValues.clear();
+      std::vector<double> recvAddToMasterValues(d_TransposeRecvDisps[npes-1]+d_TransposeRecvCnts[npes-1]);
+      comm.allToAll((!(sendAddToMasterValues.empty()) ? &(sendAddToMasterValues[0]) : NULL), &(d_TransposeSendCnts[0]), &(d_TransposeSendDisps[0]),
+          (!(recvAddToMasterValues.empty()) ? &(recvAddToMasterValues[0]) : NULL), &(d_TransposeRecvCnts[0]), &(d_TransposeRecvDisps[0]), true);
+      sendAddToMasterValues.clear();
 
-      /** compute added values to master values and set slave values to zero */
-      std::vector<double> addToMasterValues(d_RecvMasterIndices.size(), 0.0);
-
-      /*
-      std::vector<size_t> chkMasterIds = d_RecvMasterIndices;
-      std::sort(chkMasterIds.begin(), chkMasterIds.end());
-      for(int i = 1; i < chkMasterIds.size(); ++i) {
-        assert(chkMasterIds[i] > chkMasterIds[i - 1]);
-      }//end i 
-      */
-
-      std::vector<size_t> chkSlaveIds = d_SlaveIndices;
-      std::sort(chkSlaveIds.begin(), chkSlaveIds.end());
-      for(int i = 1; i < chkSlaveIds.size(); ++i) {
-        assert(chkSlaveIds[i] > chkSlaveIds[i - 1]);
-      }//end i 
-
-      for (size_t i = 0; i < d_RecvMasterVerticesGlobalIDs.size(); ++i) {
-        for (size_t j = 0; j < d_DOFsPerNode; ++j) {
-          addToMasterValues[d_DOFsPerNode*i+j] = recvSlaveValueAndShapeFunctionsValues[(d_DOFsPerNode+1)*i+j] * recvSlaveValueAndShapeFunctionsValues[(d_DOFsPerNode+1)*i+d_DOFsPerNode];
-        } // end for j
-      } // end for i
-
-      if (!addToMasterValues.empty()) { d_fout<<"max residual added to master value "<<*std::max_element(addToMasterValues.begin(), addToMasterValues.end(), compare_absolute_values)<<std::endl; }
-      r->addLocalValuesByGlobalID(d_RecvMasterIndices.size(), &(d_RecvMasterIndices[0]), &(addToMasterValues[0]));
-      std::vector<double> zeroSlaveValues(d_SlaveIndices.size(), 0.0);
-      r->setLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(zeroSlaveValues[0]));
-
+      /** add slave value times shape functions values to master values and set slave values to zero */
+      if (!recvAddToMasterValues.empty()) {
+        r->addLocalValuesByGlobalID(d_RecvMasterIndices.size(), &(d_RecvMasterIndices[0]), &(recvAddToMasterValues[0]));
+        std::vector<double> zeroSlaveValues(d_SlaveIndices.size(), 0.0);
+        r->setLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(zeroSlaveValues[0]));
+      } // end if
     }
 
     void NodeToSegmentConstraintsOperator::getShift(AMP::LinearAlgebra::Vector::shared_ptr d) {
