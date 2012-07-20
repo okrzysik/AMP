@@ -40,8 +40,8 @@ public:
 
     static void endMesh() 
     {
-        mesh.reset();
         DOFs.reset();
+        mesh.reset();
     }
 
     static AMP::LinearAlgebra::Vector::shared_ptr  getVector()

@@ -75,6 +75,18 @@ AMP_MPI::AMP_MPI() {
 *  Empty deconstructor                                                  *
 ************************************************************************/
 AMP_MPI::~AMP_MPI() {
+    #ifdef USE_MPI
+        // Temporary solution until memory bugs are sorted, remove!!
+        if ( count == NULL ) {
+        } else if ( *count == 1 ) {
+            int flag;
+            MPI_Finalized( &flag );
+            if ( flag ) {
+                printf("Warning: still destroying objects after MPI_Finialize\n");
+                return;
+            }
+        }
+    #endif
     // Check if the count is == 1
     if ( count == NULL ) {
         // We are not keeping a count, no need to free anything
@@ -121,6 +133,56 @@ AMP_MPI::AMP_MPI( const AMP::AMP_MPI& comm ) {
     count = comm.count;
     if ( count != NULL )
         (*count)++;
+}
+
+
+/************************************************************************
+*  Constructor from existing MPI communicator                           *
+************************************************************************/
+AMP_MPI::AMP_MPI( MPI_Comm comm ) {
+    #ifdef USE_MPI
+        // We are using MPI, use the MPI communicator to initialize the data
+        if ( comm==AMP_COMM_WORLD ) {
+            communicator = AMP::AMPManager::comm_world.communicator;
+        } else if ( comm==AMP_COMM_SELF ) {
+            communicator = MPI_COMM_SELF;
+        } else if ( comm==AMP_COMM_NULL ) {
+            communicator = MPI_COMM_NULL;
+        } else {
+            communicator = comm;
+        }
+        if ( communicator!=MPI_COMM_NULL) {
+            // Attach the error handler
+            MPI_Comm_set_errhandler( communicator, AMP::AMPManager::mpierr );
+            // Get the communicator properties
+            MPI_Comm_rank(communicator, &comm_rank);
+            MPI_Comm_size(communicator, &comm_size);
+            int flag, *val;
+            int ierr = MPI_Comm_get_attr(communicator,MPI_TAG_UB,&val,&flag);
+            AMP_ASSERT(ierr==MPI_SUCCESS);
+            if ( flag==0 ) { 
+                d_maxTag = 0x7FFFFFFF;     // The tag is not a valid attribute (set to 2^31-1)
+            } else {
+                d_maxTag = *val;
+                if ( d_maxTag<0 ) { d_maxTag = 0x7FFFFFFF; }    // The maximum tag is > a signed int (set to 2^31-1)
+                AMP_INSIST(d_maxTag>=0x7FFF,"maximum tag size is < MPI standard");
+            }
+        } else {
+            comm_rank = 1;
+            comm_size = 1;
+            d_maxTag = 0x7FFFFFFF;
+        }
+        d_isNull = communicator==MPI_COMM_NULL;
+    #else
+        // We are not using MPI, intialize based on the communicator
+        communicator = comm;
+        comm_rank = 0;
+        comm_size = 1;
+        d_isNull = communicator==AMP_COMM_NULL;
+    #endif
+    call_abort_in_serial_instead_of_exit = true;
+    // We are creating a AMP_MPI comm from an MPI_Comm, the user is responsible for freeing the MPI_Comm object
+    count = NULL;
 }
 
 
@@ -183,52 +245,6 @@ AMP_MPI& AMP_MPI::operator=(const AMP::AMP_MPI& comm) {
     if ( this->count != NULL )
         (*(this->count))++;
     return *this;
-}
-
-
-/************************************************************************
-*  Constructor from existing MPI communicator                           *
-************************************************************************/
-AMP_MPI::AMP_MPI( MPI_Comm comm ) {
-    #ifdef USE_MPI
-        // We are using MPI, use the MPI communicator to initialize the data
-        if ( comm==AMP_COMM_WORLD ) {
-            communicator = AMP::AMPManager::comm_world.communicator;
-        } else if ( comm==AMP_COMM_SELF ) {
-            communicator = MPI_COMM_SELF;
-        } else if ( comm==AMP_COMM_NULL ) {
-            communicator = MPI_COMM_NULL;
-        } else {
-            communicator = comm;
-        }
-        if ( communicator!=MPI_COMM_NULL) {
-            MPI_Comm_rank(communicator, &comm_rank);
-            MPI_Comm_size(communicator, &comm_size);
-            int flag, *val;
-            MPI_Comm_get_attr(communicator,MPI_TAG_UB,&val,&flag);
-            if ( flag==0 ) { 
-                d_maxTag = 0x7FFFFFFF;     // The tag is not a valid attribute (set to 2^31-1)
-            } else {
-                d_maxTag = *val;
-                if ( d_maxTag<0 ) { d_maxTag = 0x7FFFFFFF; }    // The maximum tag is > a signed int (set to 2^31-1)
-                AMP_INSIST(d_maxTag>=0x7FFF,"maximum tag size is < MPI standard");
-            }
-        } else {
-            comm_rank = 1;
-            comm_size = 1;
-            d_maxTag = 0x7FFFFFFF;
-        }
-        d_isNull = communicator==MPI_COMM_NULL;
-    #else
-        // We are not using MPI, intialize based on the communicator
-        communicator = comm;
-        comm_rank = 0;
-        comm_size = 1;
-        d_isNull = communicator==AMP_COMM_NULL;
-    #endif
-    call_abort_in_serial_instead_of_exit = true;
-    // We are creating a AMP_MPI comm from an MPI_Comm, the user is responsible for freeing the MPI_Comm object
-    count = NULL;
 }
 
 

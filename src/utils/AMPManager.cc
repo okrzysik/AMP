@@ -108,6 +108,23 @@ void term_func()
 }
 
 
+/****************************************************************************
+*  Function to handle MPI errors                                            *
+****************************************************************************/
+#ifdef USE_MPI
+MPI_Errhandler AMPManager::mpierr;
+static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
+{
+    int msg_len=0;
+    char message[1000];
+    MPI_Error_string( *err, message, &msg_len );
+    if ( msg_len <= 0 )
+        AMP_ERROR("Unkown error in MPI");
+    std::string error_msg = "Error calling MPI routine:\n" + std::string(message);
+    AMP_ERROR(error_msg);
+}
+#endif
+
 
 /****************************************************************************
 *									                                        *
@@ -159,6 +176,7 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
             called_MPI_Init = true;
             MPI_time = time()-MPI_start_time;
         }
+        MPI_Comm_create_errhandler( MPI_error_handler_fun, &mpierr );
     #endif
     // Initialize AMP's MPI
     if ( properties.COMM_WORLD == AMP_COMM_WORLD ) 
@@ -215,6 +233,12 @@ void AMPManager::shutdown()
         }
     #endif*/
     // Shutdown MPI
+    comm_world = AMP_MPI(AMP_COMM_NULL);    // Delete comm world
+    #ifdef USE_MPI
+        MPI_Errhandler_free( &mpierr );    // Delete the error handler
+        MPI_Comm_set_errhandler( MPI_COMM_SELF, MPI_ERRORS_ARE_FATAL );
+        MPI_Comm_set_errhandler( MPI_COMM_SELF, MPI_ERRORS_ARE_FATAL );
+    #endif
     if ( called_MPI_Init ) {
         double MPI_start_time = time();
         #ifdef USE_MPI
