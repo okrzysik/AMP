@@ -53,6 +53,12 @@ class OperatorBuilder{
   static boost::shared_ptr<Operator> createFlowFrapconJacobian( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                                 boost::shared_ptr<AMP::InputDatabase> input_db);
   
+  static boost::shared_ptr<Operator> createSubchannelTwoEqLinearOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+                                boost::shared_ptr<AMP::InputDatabase> input_db);
+
+  static boost::shared_ptr<Operator> createSubchannelTwoEqNonlinearOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+                                boost::shared_ptr<AMP::InputDatabase> input_db);
+
   static boost::shared_ptr<Operator> createNeutronicsRhsOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                                       boost::shared_ptr<AMP::InputDatabase> input_db);
   
