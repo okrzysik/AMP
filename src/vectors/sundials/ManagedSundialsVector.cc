@@ -10,108 +10,121 @@ extern "C"{
 namespace AMP {
 namespace LinearAlgebra {
 
-    /**
-     * This macro extracts the content field of an N_Vector and casts it as a pointer to a SundialsVector.
-     */
+/**
+ * This macro extracts the content field of an N_Vector and casts it as a pointer to a SundialsVector.
+ */
     
 //#define AMPVEC_CAST(v) (static_cast<ManagedSundialsVector*>(v->content))    
     
-    ManagedSundialsVector::ManagedSundialsVector ( VectorParameters::shared_ptr params ) : ManagedVector ( params )
-                                                                         , SundialsVector ()
-    {
-        /**
-         * Create N_Vector
-         */
-        d_n_vector = (N_Vector) malloc (sizeof *d_n_vector );
-        assert ( d_n_vector != NULL );
-        
-        /**
-         * Attach the content and the ops fields
-         */
-        
-        d_n_vector -> content = this;
-        d_n_vector -> ops = ManagedSundialsVector::createNVectorOps();
-        
-    }
-    
-    ManagedSundialsVector::ManagedSundialsVector ( shared_ptr alias ) : ManagedVector ( alias )
-                                                                    , SundialsVector ( )
-    {
-        /**
-         * Create N_Vector
-         */
-        d_n_vector = (N_Vector) malloc (sizeof *d_n_vector );
-        assert ( d_n_vector != NULL );
-        
-        /**
-         * Attach the content and the ops fields
-         */
-        
-        d_n_vector -> content = this;
-        d_n_vector -> ops = ManagedSundialsVector::createNVectorOps();
-        
-    }
-    
-    /**
-     * Destructor for SundialsVector
-     * Frees the memory allocated for the member N_Vector and its ops field
-     */
-    ManagedSundialsVector::~ManagedSundialsVector()
-    {
-        if (d_n_vector)
-        {
-            if (d_n_vector->ops)
-            {
-                free(d_n_vector->ops);
-                d_n_vector->ops = NULL;
-            }
-            free(d_n_vector);
-            d_n_vector = NULL;        
+
+/****************************************************************
+* Constructors                                                  *
+****************************************************************/
+ManagedSundialsVector::ManagedSundialsVector( VectorParameters::shared_ptr params ) :
+    ManagedVector ( params ),
+    SundialsVector ()
+{
+    // Create N_Vector
+    d_n_vector = (N_Vector) malloc (sizeof *d_n_vector );
+    assert ( d_n_vector != NULL );
+    // Attach the content and the ops fields
+    d_n_vector->content = this;
+    d_n_vector->ops = ManagedSundialsVector::createNVectorOps();
+}
+ManagedSundialsVector::ManagedSundialsVector( shared_ptr alias ) :
+    ManagedVector ( alias ),
+    SundialsVector ( )
+{
+    // Create N_Vector
+    d_n_vector = (N_Vector) malloc (sizeof *d_n_vector );
+    assert ( d_n_vector != NULL );
+    // Attach the content and the ops fields
+    d_n_vector->content = this;
+    d_n_vector->ops = ManagedSundialsVector::createNVectorOps();
+}
+
+
+/************************************************************************
+* Destructor for SundialsVector                                         *
+* Frees the memory allocated for the member N_Vector and its ops field  *
+************************************************************************/
+ManagedSundialsVector::~ManagedSundialsVector()
+{
+    if ( d_n_vector ) {
+        if ( d_n_vector->ops ) {
+            free(d_n_vector->ops);
+            d_n_vector->ops = NULL;
         }
+        free(d_n_vector);
+        d_n_vector = NULL;        
     }
+}
+
     
-    
-    /**
-     * Creates ops, the structure of vector operations which gets attached to the member N_Vector
-     * Functions with no_impl in their names are not implemented at the moment
-     */
-    
-    N_Vector_Ops ManagedSundialsVector::createNVectorOps()
-    {
-        N_Vector_Ops ops;
-        ops = (N_Vector_Ops) malloc(sizeof(struct _generic_N_Vector_Ops));
-        
-        ops->nvclone           = cloneVector_AMP;
-        ops->nvcloneempty      = cloneempty_no_impl;
-        ops->nvdestroy         = freeVectorComponents_AMP;
-        //ops->nvspace         = space_no_impl;
-        ops->nvspace            = NULL;
-        ops->nvgetarraypointer = getarraypointer_no_impl;
-        ops->nvsetarraypointer = setarraypointer_no_impl; 
-        ops->nvlinearsum       = linearSum_AMP;
-        ops->nvconst           = setToScalar_AMP;
-        ops->nvprod            = multiply_AMP;
-        ops->nvdiv             = divide_AMP;
-        ops->nvscale           = scale_AMP;
-        ops->nvabs             = abs_AMP;
-        ops->nvinv             = reciprocal_AMP;
-        ops->nvaddconst        = addScalar_AMP;
-        ops->nvdotprod         = dot_AMP;
-        ops->nvmaxnorm         = maxNorm_AMP;
-        ops->nvwrmsnorm        = WRMSNorm_AMP;            
-        ops->nvwrmsnormmask    = WRMSNormMask_AMP;
-        ops->nvmin             = min_AMP;
-        ops->nvwl2norm         = wl2norm_no_impl;
-        ops->nvl1norm          = L1Norm_AMP;
-        ops->nvcompare         = compare_no_impl;
-        ops->nvinvtest         = invtest_no_impl;
-        ops->nvconstrmask      = constrmask_no_impl;
-        ops->nvminquotient     = minquotient_AMP;
-        return ops;
+/************************************************************************
+* Clone the vector                                                      *
+************************************************************************/
+Vector::shared_ptr  ManagedSundialsVector::cloneVector ( const Variable::shared_ptr var ) const
+{
+    Vector::shared_ptr  retVal ( rawClone() );
+    retVal->setVariable ( var );
+    return retVal;
+}
+ManagedSundialsVector  *ManagedSundialsVector::rawClone () const
+{
+    boost::shared_ptr<ManagedVectorParameters> p ( new ManagedSundialsVectorParameters );
+    if ( !d_vBuffer ) {
+        p->d_Engine = d_Engine->cloneEngine ( VectorEngine::BufferPtr () );
+    } else {
+        p->d_Buffer = VectorEngine::BufferPtr ( new VectorEngine::Buffer ( d_vBuffer->size() ) );
+        p->d_Engine = d_Engine->cloneEngine ( p->d_Buffer );
     }
-    
-    
-    
+    p->d_CommList = getCommunicationList();
+    p->d_DOFManager = getDOFManager();
+    ManagedSundialsVector *retVal = new ManagedSundialsVector ( boost::dynamic_pointer_cast<VectorParameters> ( p ) );
+    return retVal;
+}
+
+
+
+/**
+ * Creates ops, the structure of vector operations which gets attached to the member N_Vector
+ * Functions with no_impl in their names are not implemented at the moment
+ */
+N_Vector_Ops ManagedSundialsVector::createNVectorOps()
+{
+    N_Vector_Ops ops;
+    ops = (N_Vector_Ops) malloc(sizeof(struct _generic_N_Vector_Ops));
+    ops->nvclone           = cloneVector_AMP;
+    ops->nvcloneempty      = cloneempty_no_impl;
+    ops->nvdestroy         = freeVectorComponents_AMP;
+    //ops->nvspace         = space_no_impl;
+    ops->nvspace           = NULL;
+    ops->nvgetarraypointer = getarraypointer_no_impl;
+    ops->nvsetarraypointer = setarraypointer_no_impl; 
+    ops->nvlinearsum       = linearSum_AMP;
+    ops->nvconst           = setToScalar_AMP;
+    ops->nvprod            = multiply_AMP;
+    ops->nvdiv             = divide_AMP;
+    ops->nvscale           = scale_AMP;
+    ops->nvabs             = abs_AMP;
+    ops->nvinv             = reciprocal_AMP;
+    ops->nvaddconst        = addScalar_AMP;
+    ops->nvdotprod         = dot_AMP;
+    ops->nvmaxnorm         = maxNorm_AMP;
+    ops->nvwrmsnorm        = WRMSNorm_AMP;            
+    ops->nvwrmsnormmask    = WRMSNormMask_AMP;
+    ops->nvmin             = min_AMP;
+    ops->nvwl2norm         = wl2norm_no_impl;
+    ops->nvl1norm          = L1Norm_AMP;
+    ops->nvcompare         = compare_no_impl;
+    ops->nvinvtest         = invtest_no_impl;
+    ops->nvconstrmask      = constrmask_no_impl;
+    ops->nvminquotient     = minquotient_AMP;
+    return ops;
+}
+
+
     N_Vector ManagedSundialsVector::cloneVector_AMP(N_Vector n_vector)
     {
         /**

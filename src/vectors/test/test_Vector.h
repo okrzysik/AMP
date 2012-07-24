@@ -100,8 +100,8 @@ class  PetscManagedVectorFactory
       AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
       VecCreate ( globalComm.getCommunicator(), &v );
       VecSetSizes ( v , 15 , PETSC_DECIDE );
-      boost::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams ( new AMP::LinearAlgebra::NativePetscVectorParameters ( v ) );
-      npvParams->d_Deleteable = true;
+      boost::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams( 
+        new AMP::LinearAlgebra::NativePetscVectorParameters( v, true ) );
       AMP::LinearAlgebra::NativePetscVector *newVec = new AMP::LinearAlgebra::NativePetscVector ( npvParams );
       VecSetFromOptions ( v );
       newVec->assemble();

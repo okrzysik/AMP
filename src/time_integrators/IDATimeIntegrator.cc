@@ -2,23 +2,16 @@
 #include "LinearTimeOperator.h"
 
 #include "utils/Utilities.h"
-
-#ifndef included_TimeIntegratorParameters
-#include "TimeIntegratorParameters.h"
-#endif
-
-#ifndef included_IDATimeIntegrator
-#include "IDATimeIntegrator.h"
-#endif
-
-#ifndef included_AMP_OperatorBuilder
 #include "operators/OperatorBuilder.h"
-#endif
+#include "TimeIntegratorParameters.h"
+#include "IDATimeIntegrator.h"
 
 #ifdef USE_SUNDIALS
-extern "C"{
-#include "ida/ida_impl.h"
+    extern "C"{
+    #include "ida/ida_impl.h"
+    #include "ida/ida_spils.h"
 }
+
 
 namespace AMP{
 namespace TimeIntegrator{
@@ -26,283 +19,247 @@ namespace TimeIntegrator{
     
 #define AMPVEC_CAST(v) (static_cast<ManagedSundialsVector*>(v->content))    
     
-    /*
-     ************************************************************************
-     *                                                                      *
-     *  Constructor.                                                        *
-     *                                                                      *
-     ************************************************************************
-     */
-    IDATimeIntegrator::IDATimeIntegrator( boost::shared_ptr< TimeIntegratorParameters > parameters ):TimeIntegrator(parameters)
-    {
-      initialize( parameters );
-    }
+
+/************************************************************************
+*  Constructor.                                                         *
+************************************************************************/
+IDATimeIntegrator::IDATimeIntegrator( boost::shared_ptr< TimeIntegratorParameters > parameters ):TimeIntegrator(parameters)
+{
+    initialize( parameters );
+}
+
     
-    /*
-     ************************************************************************
-     *                                                                      *
-     *  Destructor.                                                         *
-     *                                                                      *
-     ************************************************************************
-     */
-    IDATimeIntegrator::~IDATimeIntegrator()
-    {
-    }
-    
-    /*
-     ************************************************************************
-     *                                                                      *
-     * Initialize.                                                          *
-     *                                                                      *
-     ************************************************************************
-     */
-    void
-    IDATimeIntegrator::initialize( boost::shared_ptr< TimeIntegratorParameters> parameters )
-    {
-#ifdef DEBUG_CHECK_ASSERTIONS
+/************************************************************************
+*  Destructor.                                                          *
+************************************************************************/
+IDATimeIntegrator::~IDATimeIntegrator()
+{
+    // Delete the time operator
+    d_pIDATimeOperator.reset();
+    // Call SUNDIALS memory deleter
+    IDAFree(&d_ida_mem);
+    // Note: There is a memory leak in sundials-2.4.0 in ida_spgmr.c,
+    // we need to add "N_VDestroy(yptemp);" to IDASpgmrFree.
+    //AMP::pout << "Possible memory leak in IDA:" << std::endl;
+}
+
+  
+/************************************************************************
+* Initialize.                                                           *
+************************************************************************/
+void IDATimeIntegrator::initialize( boost::shared_ptr< TimeIntegratorParameters> parameters )
+{
+    #ifdef DEBUG_CHECK_ASSERTIONS
         assert(parameters.get() != NULL);
-#endif
-        getFromInput( parameters->d_db );
+    #endif
+    getFromInput( parameters->d_db );
         
-        boost::shared_ptr< IDATimeIntegratorParameters > params = boost::dynamic_pointer_cast< IDATimeIntegratorParameters > (parameters);
-        d_solution_prime = (params->d_ic_vector_prime)->cloneVector();
-        d_solution_prime->copyVector(params->d_ic_vector_prime);
+    boost::shared_ptr< IDATimeIntegratorParameters > params = boost::dynamic_pointer_cast< IDATimeIntegratorParameters > (parameters);
+    d_solution_prime = (params->d_ic_vector_prime)->cloneVector();
+    d_solution_prime->copyVector(params->d_ic_vector_prime);
         
-        d_pPreconditioner = params->d_pPreconditioner;
+    d_pPreconditioner = params->d_pPreconditioner;
 
-        // reuse the time integrator database, and put additional fields in
-        boost::shared_ptr<AMP::Database> timeOperator_db = params->d_db;
-        timeOperator_db->putDouble("CurrentDt", d_current_dt);
-        timeOperator_db->putDouble("CurrentTime", d_current_time);
-        timeOperator_db->putString("name", "TimeOperator");
+    // reuse the time integrator database, and put additional fields in
+    boost::shared_ptr<AMP::Database> timeOperator_db = params->d_db;
+    timeOperator_db->putDouble("CurrentDt", d_current_dt);
+    timeOperator_db->putDouble("CurrentTime", d_current_time);
+    timeOperator_db->putString("name", "TimeOperator");
 
-        // setup the parameter object for the IDATimeOperator
-        boost::shared_ptr<AMP::TimeIntegrator::IDATimeOperatorParameters> idaTimeOp_Params ( new AMP::TimeIntegrator::IDATimeOperatorParameters(params->d_db));
+    // setup the parameter object for the IDATimeOperator
+    boost::shared_ptr<AMP::TimeIntegrator::IDATimeOperatorParameters> idaTimeOp_Params ( new AMP::TimeIntegrator::IDATimeOperatorParameters(params->d_db));
         
-        idaTimeOp_Params->d_pRhsOperator = parameters->d_operator;
-        idaTimeOp_Params->d_pMassOperator = parameters->d_pMassOperator;
-        idaTimeOp_Params->d_pSourceTerm = parameters->d_pSourceTerm;
-        idaTimeOp_Params->d_pAlgebraicVariable = parameters->d_pAlgebraicVariable;
-
-        idaTimeOp_Params->d_Mesh = (parameters->d_operator)->getMesh();
+    idaTimeOp_Params->d_pRhsOperator = parameters->d_operator;
+    idaTimeOp_Params->d_pMassOperator = parameters->d_pMassOperator;
+    idaTimeOp_Params->d_pSourceTerm = parameters->d_pSourceTerm;
+    idaTimeOp_Params->d_pAlgebraicVariable = parameters->d_pAlgebraicVariable;
+    idaTimeOp_Params->d_Mesh = (parameters->d_operator)->getMesh();
           
-        // create the time operator
-        boost::shared_ptr<AMP::TimeIntegrator::IDATimeOperator> idaTimeOp(new AMP::TimeIntegrator::IDATimeOperator(idaTimeOp_Params));
-        d_pIDATimeOperator = idaTimeOp;
+    // create the time operator
+    boost::shared_ptr<AMP::TimeIntegrator::IDATimeOperator> idaTimeOp(new AMP::TimeIntegrator::IDATimeOperator(idaTimeOp_Params));
+    d_pIDATimeOperator = idaTimeOp;
         
-        // if we want to create the LinearTimeOperator internally
-        if(d_createLinearOperatorInternally)
-          {
-            if(d_bLinearRhsOperator && d_bLinearMassOperator)
-              {
+    // if we want to create the LinearTimeOperator internally
+    if(d_createLinearOperatorInternally) {
+        if(d_bLinearRhsOperator && d_bLinearMassOperator) {
             boost::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> linearTimeOperatorParams = boost::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperatorParameters>(idaTimeOp->getJacobianParameters(d_solution));
-                        boost::shared_ptr<AMP::Database> timeOperator_db = linearTimeOperatorParams->d_db;
-                        timeOperator_db->putDouble("CurrentDt", d_current_dt);
-                        timeOperator_db->putDouble("CurrentTime", d_current_time);
-                        timeOperator_db->putString("name", "TimeOperator");
+            boost::shared_ptr<AMP::Database> timeOperator_db = linearTimeOperatorParams->d_db;
+            timeOperator_db->putDouble("CurrentDt", d_current_dt);
+            timeOperator_db->putDouble("CurrentTime", d_current_time);
+            timeOperator_db->putString("name", "TimeOperator");
 
             d_pLinearTimeOperator.reset(new LinearTimeOperator(linearTimeOperatorParams));
-              }
-            else
-              {
+        } else {
             AMP::pout << "ERROR: IDATimeIntegrator::initialize(): creation of linear time operators internally is only currently supported for linear mass and rhs operators" << std::endl;
-              }
+        }
             
-            AMP_INSIST(d_pPreconditioner.get()!=NULL, "ERROR: IDATimeIntegrator::initialize(): creation of linear time operators internally is only currently supported with a valid non NULL preconditioner ");
+        AMP_INSIST(d_pPreconditioner.get()!=NULL, "ERROR: IDATimeIntegrator::initialize(): creation of linear time operators internally is only currently supported with a valid non NULL preconditioner ");
     
-            d_pPreconditioner->registerOperator(d_pLinearTimeOperator);
-            AMP::pout << " linear op being created internally" << std::endl;            
-          }
-        /*
-         * Initialize data members from input.
-         */
-        
-        setupVectors();    
-        initializeIDA();
-        
+        d_pPreconditioner->registerOperator(d_pLinearTimeOperator);
+        AMP::pout << " linear op being created internally" << std::endl;            
     }
+
+    // Initialize data members from input.
+    setupVectors();    
+    initializeIDA();
+        
+}
     
-    void IDATimeIntegrator::initializeIDA()
-    {
-        N_Vector id=NULL;
+
+void IDATimeIntegrator::initializeIDA()
+{
+    N_Vector id=NULL;
         
-        AMP::LinearAlgebra::Vector::shared_ptr  pSundials_sol = AMP::LinearAlgebra::SundialsVector::view ( d_solution );
-        AMP::LinearAlgebra::Vector::shared_ptr  pSundials_sol_prime = AMP::LinearAlgebra::SundialsVector::view ( d_solution_prime );
+    AMP::LinearAlgebra::Vector::shared_ptr  pSundials_sol = AMP::LinearAlgebra::SundialsVector::view ( d_solution );
+    AMP::LinearAlgebra::Vector::shared_ptr  pSundials_sol_prime = AMP::LinearAlgebra::SundialsVector::view ( d_solution_prime );
         
+    id = N_VClone(pSundials_sol->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector());
         
-        id = N_VClone(pSundials_sol->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector());
+    d_ida_mem = IDACreate();
+    assert(d_ida_mem!=0);    
         
-        d_ida_mem = IDACreate();
-        assert(d_ida_mem!=0);    
+    int ierr = IDASetUserData(d_ida_mem, this);
+    assert(ierr==IDA_SUCCESS);
         
-        int ierr = IDASetUserData(d_ida_mem, this);
-        assert(ierr==IDA_SUCCESS);
+    N_VConst(1.0, id);
+    ierr = IDASetId(d_ida_mem, id);
+    assert(ierr==IDA_SUCCESS);
         
-        N_VConst(1.0, id);
-        ierr = IDASetId(d_ida_mem, id);
-        assert(ierr==IDA_SUCCESS);
-        
-        // boost::shared_ptr<AMP::LinearAlgebra::SundialsVector> pSun_nvec =  boost::dynamic_pointer_cast<AMP::LinearAlgebra::SundialsVector>(pSundials_sol);
+    // boost::shared_ptr<AMP::LinearAlgebra::SundialsVector> pSun_nvec =  boost::dynamic_pointer_cast<AMP::LinearAlgebra::SundialsVector>(pSundials_sol);
                 
-        ierr = IDAInit(d_ida_mem, IDAResTrial, d_initial_time, pSundials_sol->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector(), pSundials_sol_prime->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector());
-        assert(ierr==IDA_SUCCESS);        
+    ierr = IDAInit(d_ida_mem, IDAResTrial, d_initial_time, pSundials_sol->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector(), pSundials_sol_prime->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector());
+    assert(ierr==IDA_SUCCESS);        
         
-        ierr = IDASStolerances(d_ida_mem, d_relative_tolerance, d_absolute_tolerance);
-        assert(ierr==IDA_SUCCESS);
+    ierr = IDASStolerances(d_ida_mem, d_relative_tolerance, d_absolute_tolerance);
+    assert(ierr==IDA_SUCCESS);
                 
-        N_VDestroy(id);
-        
-        // set the initial step size
-        ierr = IDASetInitStep(d_ida_mem, d_initial_dt);
-        assert(ierr==IDA_SUCCESS);
+    N_VDestroy(id);
+    // set the initial step size
+    ierr = IDASetInitStep(d_ida_mem, d_initial_dt);
+    assert(ierr==IDA_SUCCESS);
 
-        // set the max step size
-        ierr = IDASetMaxStep(d_ida_mem, d_max_dt);
-        assert(ierr==IDA_SUCCESS);
+    // set the max step size
+    ierr = IDASetMaxStep(d_ida_mem, d_max_dt);
+    assert(ierr==IDA_SUCCESS);
 
-        // set final time
-        ierr = IDASetStopTime(d_ida_mem, d_final_time);
-        assert(ierr==IDA_SUCCESS);
+    // set final time
+    ierr = IDASetStopTime(d_ida_mem, d_final_time);
+    assert(ierr==IDA_SUCCESS);
         
-        // ideally, the linear solver type needs to be determined by the user input
-        ierr = IDASpgmr(d_ida_mem, 0);
-        assert(ierr==IDA_SUCCESS);
 
-        if(d_bUsePreconditioner)
-          {
-            ierr = IDASpilsSetPreconditioner(d_ida_mem, IDAPrecSetup, IDAPrecSolve);
-            assert(ierr==IDASPILS_SUCCESS);
-          }
-        
-        //ierr = IDASpilsSetMaxRestarts(d_ida_mem, 15);
-        ierr = IDASpilsSetMaxRestarts(d_ida_mem, 100);
-        assert(ierr==IDA_SUCCESS);
-
-
-                
-
-        // if we want IDA to calculate consistent IC's
-        
-        if(d_bCallCalcIC)
-
-          {
-            double tout1 = d_initial_time+d_current_dt;
-            // choice of the last argument...?
-            ierr = IDACalcIC(d_ida_mem, IDA_YA_YDP_INIT, tout1);    
-            assert(ierr==IDA_SUCCESS);
-            ierr = IDAGetConsistentIC(d_ida_mem, pSundials_sol->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector(), pSundials_sol_prime->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector());
-            assert(ierr==IDA_SUCCESS);
-        
-          }
-        
-        // For now, just use BDF2
-        //ierr = IDASetMaxOrd(d_ida_mem, 2);
-        //assert(ierr==IDA_SUCCESS);
-
-        
-        //d_init_step_size = 0.1;
-        //ierr = IDASetInitStep(d_ida_mem, d_init_step_size);
-        //assert(ierr==IDA_SUCCESS);
-        
+    // ideally, the linear solver type needs to be determined by the user input
+    ierr = IDASpgmr(d_ida_mem, 0);
+    assert(ierr==IDA_SUCCESS);
+    if (d_bUsePreconditioner) {
+        ierr = IDASpilsSetPreconditioner(d_ida_mem, IDAPrecSetup, IDAPrecSolve);
+        assert(ierr==IDASPILS_SUCCESS);
     }
+        
+    //ierr = IDASpilsSetMaxRestarts(d_ida_mem, 15);
+    ierr = IDASpilsSetMaxRestarts(d_ida_mem, 100);
+    assert(ierr==IDA_SUCCESS);
+
+    // if we want IDA to calculate consistent IC's
+    if (d_bCallCalcIC) {
+        double tout1 = d_initial_time+d_current_dt;
+        // choice of the last argument...?
+        ierr = IDACalcIC(d_ida_mem, IDA_YA_YDP_INIT, tout1);    
+        assert(ierr==IDA_SUCCESS);
+        ierr = IDAGetConsistentIC(d_ida_mem, pSundials_sol->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector(), pSundials_sol_prime->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector());
+        assert(ierr==IDA_SUCCESS);
+    }
+        
+    // For now, just use BDF2
+    //ierr = IDASetMaxOrd(d_ida_mem, 2);
+    //assert(ierr==IDA_SUCCESS);
+
+    //d_init_step_size = 0.1;
+    //ierr = IDASetInitStep(d_ida_mem, d_init_step_size);
+    //assert(ierr==IDA_SUCCESS);
+
+}
     
-    void
-    IDATimeIntegrator::reset( boost::shared_ptr< TimeIntegratorParameters > parameters )
-    {
-#ifdef DEBUG_CHECK_ASSERTIONS
+
+void IDATimeIntegrator::reset( boost::shared_ptr< TimeIntegratorParameters > parameters )
+{
+    #ifdef DEBUG_CHECK_ASSERTIONS
         assert(parameters.get() != NULL);
-#endif
+    #endif
         
-        abort();
-    }
+    abort();
+}
     
-    void IDATimeIntegrator::setupVectors( void )
-    {
-        
-        // clone vectors so they have the same data layout as d_solution 
-        d_residual   = d_solution->cloneVector();
-        /*
-         * Set initial value of vectors to 0.
-         */
-        d_residual->setToScalar((double) 0.0);
-        
-    }
-    
-    /*
-     ************************************************************************
-     *                                                                      *
-     *  Update internal state to reflect time advanced solution.            *
-     *                                                                      *
-     ************************************************************************
-     */
-    void
-    IDATimeIntegrator::updateSolution( void )
-    {
-        /*
-         int retval = IDA_SUCCESS;
-         realtype hlast;
-         
-         retval = IDAGetLastStep(d_ida_mem, &hlast);
-         assert(retval==IDA_SUCCESS);
-         
-         d_current_time += hlast;
-         //d_solution->add( d_predictor, d_corrector );
-         */
-    }
-    
-    
-    /*
-     ************************************************************************
-     *                                                                      *
-     * Read input from database.                                            *
-     *                                                                      *
-     ************************************************************************
-     */
-    void
-    IDATimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db )
-    {
-        if ( input_db->keyExists("bLinearMassOperator") ) {
-            d_bLinearMassOperator = input_db->getBool("bLinearMassOperator");
-        } else {
-            AMP_ERROR(d_object_name << " -- Key data `bLinearMassOperator'"
-                       << " missing in input.");
-        }
-        
-        if ( input_db->keyExists("bLinearRhsOperator") ) {
-            d_bLinearRhsOperator = input_db->getBool("bLinearRhsOperator");
-        } else {
-            AMP_ERROR(d_object_name << " -- Key data `bLinearRhsOperator'"
-                       << " missing in input.");
-        }
-        
-        if ( input_db->keyExists("linear_solver_type") ) {
-            d_linear_solver_type = input_db->getInteger("linear_solver_type");
-        } else {
-            AMP_ERROR(d_object_name << " -- Key data `linear_solver_type'"
-                       << " missing in input.");
-        }
-        
-        if ( input_db->keyExists("relative_tolerance") ) {
-            d_relative_tolerance = input_db->getDouble("relative_tolerance");
-        } else {
-            AMP_ERROR(d_object_name << " -- Key data `relative_tolerance'"
-                       << " missing in input.");
-        }
-        
-        if ( input_db->keyExists("absolute_tolerance") ) {
-            d_absolute_tolerance = input_db->getDouble("absolute_tolerance");
-        } else {
-            AMP_ERROR(d_object_name << " -- Key data `absolute_tolerance'"
-                       << " missing in input.");
-        }
 
-        d_bCallCalcIC = input_db->getBoolWithDefault("CallCalcIC", true);
-        d_bUsePreconditioner = input_db->getBoolWithDefault("usePreconditioner", true);
-        
-        d_createLinearOperatorInternally = input_db->getBoolWithDefault("createLinearTimeOperatorInternally", false);
-        d_bManufacturedProblem = input_db->getBoolWithDefault("bManufacturedProblem", false);
-    }
+void IDATimeIntegrator::setupVectors( void )
+{
+    // clone vectors so they have the same data layout as d_solution 
+    d_residual   = d_solution->cloneVector();
+    // Set initial value of vectors to 0.
+    d_residual->setToScalar((double) 0.0);
+}
     
+
+/************************************************************************
+*  Update internal state to reflect time advanced solution.             *
+************************************************************************/
+void IDATimeIntegrator::updateSolution( void )
+{
+    /*
+    int retval = IDA_SUCCESS;
+    realtype hlast;
+         
+    retval = IDAGetLastStep(d_ida_mem, &hlast);
+    assert(retval==IDA_SUCCESS);
+         
+    d_current_time += hlast;
+    //d_solution->add( d_predictor, d_corrector );
+    */
+}
+    
+    
+/************************************************************************
+* Read input from database.                                             *
+************************************************************************/
+void IDATimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db )
+{
+    if ( input_db->keyExists("bLinearMassOperator") ) {
+        d_bLinearMassOperator = input_db->getBool("bLinearMassOperator");
+    } else {
+        AMP_ERROR(d_object_name << " -- Key data `bLinearMassOperator' missing in input.");
+    }
+        
+    if ( input_db->keyExists("bLinearRhsOperator") ) {
+        d_bLinearRhsOperator = input_db->getBool("bLinearRhsOperator");
+    } else {
+        AMP_ERROR(d_object_name << " -- Key data `bLinearRhsOperator' missing in input.");
+    }
+        
+    if ( input_db->keyExists("linear_solver_type") ) {
+        d_linear_solver_type = input_db->getInteger("linear_solver_type");
+    } else {
+        AMP_ERROR(d_object_name << " -- Key data `linear_solver_type' missing in input.");
+    }
+        
+    if ( input_db->keyExists("relative_tolerance") ) {
+        d_relative_tolerance = input_db->getDouble("relative_tolerance");
+    } else {
+        AMP_ERROR(d_object_name << " -- Key data `relative_tolerance' missing in input.");
+    }
+        
+    if ( input_db->keyExists("absolute_tolerance") ) {
+        d_absolute_tolerance = input_db->getDouble("absolute_tolerance");
+    } else {
+        AMP_ERROR(d_object_name << " -- Key data `absolute_tolerance' missing in input.");
+    }
+
+    d_bCallCalcIC = input_db->getBoolWithDefault("CallCalcIC", true);
+    d_bUsePreconditioner = input_db->getBoolWithDefault("usePreconditioner", true);
+        
+    d_createLinearOperatorInternally = input_db->getBoolWithDefault("createLinearTimeOperatorInternally", false);
+    d_bManufacturedProblem = input_db->getBoolWithDefault("bManufacturedProblem", false);
+}
+   
+ 
     double 
     IDATimeIntegrator::getNextDt(const bool good_solution)
     {

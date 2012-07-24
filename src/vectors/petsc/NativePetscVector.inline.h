@@ -9,7 +9,7 @@ namespace AMP {
 namespace LinearAlgebra {
   
 
-inline NativePetscVectorParameters::NativePetscVectorParameters ( Vec v )
+inline NativePetscVectorParameters::NativePetscVectorParameters ( Vec v, bool deleteable )
 {
     // Get the communicator from the PETSc vector
     d_InVec = v;
@@ -17,7 +17,7 @@ inline NativePetscVectorParameters::NativePetscVectorParameters ( Vec v )
     PetscObjectGetComm ( reinterpret_cast<PetscObject> (v) , &comm );
     if ( comm!=d_Comm.getCommunicator() )
         d_Comm = AMP_MPI(comm);
-    d_Deleteable = false;
+    d_Deleteable = deleteable;
     int lsize;
     VecGetLocalSize ( v, &lsize );
     d_localsize = (size_t) lsize;
