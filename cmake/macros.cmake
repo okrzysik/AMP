@@ -346,6 +346,9 @@ MACRO (COPY_MESH_FILE MESHNAME)
     FILE ( GLOB MESHPATH ${CMAKE_CURRENT_SOURCE_DIR}/data/${MESHNAME} )
     # Check the AMP_DATA/meshes directory
     IF ( NOT MESHPATH )
+        FILE ( GLOB MESHPATH ${AMP_DATA}/meshes/TestMeshes/${MESHNAME} )
+    ENDIF ()
+    IF ( NOT MESHPATH )
         FILE ( GLOB_RECURSE MESHPATH ${AMP_DATA}/meshes/*/${MESHNAME} )
     ENDIF ()
     # Check the AMP_DATA/vvu directory

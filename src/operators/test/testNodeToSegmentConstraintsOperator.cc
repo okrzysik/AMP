@@ -80,12 +80,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   meshParams->setComm(globalComm);
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
-  AMP_INSIST(input_db->keyExists("FusedMesh"), "Key ''FusedMesh'' is missing!");
-  boost::shared_ptr<AMP::Database> fusedMesh_db = input_db->getDatabase("FusedMesh");
-  boost::shared_ptr<AMP::Mesh::MeshParameters> fusedMeshParams(new AMP::Mesh::MeshParameters(fusedMesh_db));
-  fusedMeshParams->setComm(globalComm);
-  AMP::Mesh::Mesh::shared_ptr fusedMeshAdapter = AMP::Mesh::Mesh::buildMesh(fusedMeshParams);
-
   globalComm.barrier();
   double meshEndTime = MPI_Wtime();
   if(!rank) {
@@ -126,19 +120,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   // TODO: RESET IN CONSTRUCTOR?
   contactOperator->reset(contactOperatorParams);
-
-  AMP::Discretization::DOFManager::shared_ptr fusedMeshDOFManager = AMP::Discretization::simpleDOFManager::create(fusedMeshAdapter,
-      AMP::Mesh::Vertex, nodalGhostWidth, dofsPerNode, split);
-
-/*  nodeToSegmentConstraintsOperator->reset(nodeToSegmentConstraintsOperatorParams);
-
-  AMP::LinearAlgebra::Variable::shared_ptr dummyVariable(new AMP::LinearAlgebra::Variable("Dummy"));
-  AMP::LinearAlgebra::Vector::shared_ptr dummyInVector = createVector(dofManager, dummyVariable, split);
-  AMP::LinearAlgebra::Vector::shared_ptr dummyOutVector = createVector(dofManager, dummyVariable, split);
-
-  nodeToSegmentConstraintsOperator->apply(dummyInVector, dummyInVector, dummyOutVector);
-  nodeToSegmentConstraintsOperator->applyTranspose(dummyInVector, dummyInVector, dummyOutVector);*/
-
 
   // build a column operator and a column preconditioner
   boost::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
@@ -202,7 +183,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     slaveLoadOperator->setVariable(slaveVar);
   } // end if
 
-//  columnOperator->append(contactOperator);
+  columnOperator->append(contactOperator);
 
   boost::shared_ptr<AMP::Database> contactPreconditioner_db = columnPreconditioner_db->getDatabase("ContactPreconditioner"); 
   boost::shared_ptr<AMP::Solver::MPCSolverParameters> contactPreconditionerParams(new 
@@ -210,20 +191,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   contactPreconditionerParams->d_pOperator = contactOperator;
   boost::shared_ptr<AMP::Solver::MPCSolver> contactPreconditioner(new AMP::Solver::MPCSolver(contactPreconditionerParams));
   columnPreconditioner->append(contactPreconditioner);
-
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> fusedMeshElementPhysicsModel;
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> fusedMeshOperator = boost::dynamic_pointer_cast<
-      AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(fusedMeshAdapter,
-                                                                                       "MasterBVPOperator",
-                                                                                       input_db,
-                                                                                       fusedMeshElementPhysicsModel));
-  boost::shared_ptr<AMP::Operator::DirichletVectorCorrection>  fusedMeshLoadOperator = boost::dynamic_pointer_cast<
-      AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(fusedMeshAdapter, 
-                                                                                               "SlaveLoadOperator", 
-                                                                                               input_db, 
-                                                                                               fusedMeshElementPhysicsModel));
-  AMP::LinearAlgebra::Variable::shared_ptr fusedMeshVar = fusedMeshOperator->getOutputVariable();
-  fusedMeshLoadOperator->setVariable(fusedMeshVar);
 
   // Build a matrix shell operator to use the column operator with the petsc krylov solvers
   boost::shared_ptr<AMP::Database> matrixShellDatabase = input_db->getDatabase("MatrixShellOperator");
@@ -248,23 +215,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   matrixShellOperator->setMatLocalColumnSize(matLocalSize);
   matrixShellOperator->setOperator(columnOperator); 
 
-
-  int fusedMeshMatLocalSize = dofsPerNode * fusedMeshAdapter->numLocalElements(AMP::Mesh::Vertex);
-  AMP_ASSERT( fusedMeshMatLocalSize == fusedMeshDOFManager->numLocalDOF() );
-  boost::shared_ptr<AMP::Operator::PetscMatrixShellOperator> fusedMeshMatrixShellOperator(new
-      AMP::Operator::PetscMatrixShellOperator(matrixShellParams));
-  fusedMeshMatrixShellOperator->setComm(globalComm);
-  fusedMeshMatrixShellOperator->setMatLocalRowSize(fusedMeshMatLocalSize);
-  fusedMeshMatrixShellOperator->setMatLocalColumnSize(fusedMeshMatLocalSize);
-  fusedMeshMatrixShellOperator->setOperator(fusedMeshOperator);
-
-  std::cout<<"MPC > NUMBER OF VERTICES IS "<<meshAdapter->numGlobalElements(AMP::Mesh::Vertex)<<std::endl;
-  std::cout<<"MPC > NUMBER OF ELEMENTS IS "<<meshAdapter->numGlobalElements(AMP::Mesh::Volume)<<std::endl;
-  std::cout<<"MPC > NUMBER OF CONSTRAINTS IS "<<contactOperator->numGlobalConstraints()<<std::endl;
-  std::cout<<"FUSED > NUMBER OF VERTICES IS "<<fusedMeshAdapter->numGlobalElements(AMP::Mesh::Vertex)<<std::endl;
-  std::cout<<"FUSED > NUMBER OF ELEMENTS IS "<<fusedMeshAdapter->numGlobalElements(AMP::Mesh::Volume)<<std::endl;
-
-
   AMP::LinearAlgebra::Variable::shared_ptr columnVar = columnOperator->getOutputVariable();
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -274,51 +224,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   columnSolVec->zero();
   columnRhsVec->zero();
 
-  AMP::LinearAlgebra::Vector::shared_ptr fusedMeshSolVec = createVector(fusedMeshDOFManager, fusedMeshVar, split);
-  AMP::LinearAlgebra::Vector::shared_ptr fusedMeshRhsVec = createVector(fusedMeshDOFManager, fusedMeshVar, split);
-  AMP::LinearAlgebra::Vector::shared_ptr fusedMeshResVec = createVector(fusedMeshDOFManager, fusedMeshVar, split);
-  fusedMeshSolVec->zero();
-  fusedMeshRhsVec->zero();
-
   if (slaveLoadOperator != NULL) { slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0); }
 
-  fusedMeshLoadOperator->apply(nullVec, nullVec, fusedMeshRhsVec, 1.0, 0.0);
-
-  std::cout<<std::setprecision(15);
-  std::cout<<"MPC > RHS NORM = "<<columnRhsVec->L2Norm()<<std::endl;
-  std::cout<<"FUSED > RHS NORM = "<<fusedMeshRhsVec->L2Norm()<<std::endl;
-
-/*  columnSolVec->setToScalar(1.0);
-  contactOperator->debugSetSlaveToZero(columnSolVec);
-  std::cout<<"MPC > ZEROING SLAVE USING CONTACT OP PRIOR APPLY SOL L2NORM IS "<<columnSolVec->L2Norm()<<std::endl;
-  columnSolVec->setToScalar(1.0);
-  if (slaveMeshAdapter != NULL) {
-    AMP::Mesh::MeshIterator slaveBoundaryIDIterator = slaveMeshAdapter->getBoundaryIDIterator(AMP::Mesh::Vertex, contactOperatorParams->d_SlaveBoundaryID);
-    AMP::Mesh::MeshIterator boundaryIterator = slaveBoundaryIDIterator.begin(),
-        boundaryIterator_end = slaveBoundaryIDIterator.end();
-    for ( ; boundaryIterator != boundaryIterator_end; ++boundaryIterator) {
-      std::vector<size_t> dofs;
-      dofManager->getDOFs(boundaryIterator->globalID(), dofs);
-      AMP_ASSERT( dofs.size() == dofsPerNode );
-      std::vector<double> zeros(dofsPerNode, 0.0);
-      columnSolVec->setLocalValuesByGlobalID(dofsPerNode, &(dofs[0]), &(zeros[0]));
-    } // end for
-  } // end if
-  std::cout<<"MPC > ZEROING SLAVE USING MESH ITERATOR PRIOR APPLY SOL L2NORM IS "<<columnSolVec->L2Norm()<<std::endl;
-  fusedMeshSolVec->setToScalar(1.0);
-  std::cout<<"FUSED > PRIOR APPLY SOL L2NORM IS "<<fusedMeshSolVec->L2Norm()<<std::endl;*/
-
-  AMP::LinearAlgebra::Vector::shared_ptr oldSolVec = columnSolVec->cloneVector();
-  AMP::LinearAlgebra::Vector::shared_ptr oldResVec = columnSolVec->cloneVector();
-  AMP::LinearAlgebra::Vector::shared_ptr dirVec = columnSolVec->cloneVector();
-  AMP::LinearAlgebra::Vector::shared_ptr oldDirVec = columnSolVec->cloneVector();
-  AMP::LinearAlgebra::Vector::shared_ptr matVec = columnSolVec->cloneVector();
-
-  AMP::LinearAlgebra::Vector::shared_ptr fusedMeshOldSolVec = fusedMeshSolVec->cloneVector();
-  AMP::LinearAlgebra::Vector::shared_ptr fusedMeshOldResVec = fusedMeshSolVec->cloneVector();
-  AMP::LinearAlgebra::Vector::shared_ptr fusedMeshDirVec = fusedMeshSolVec->cloneVector();
-  AMP::LinearAlgebra::Vector::shared_ptr fusedMeshOldDirVec = fusedMeshSolVec->cloneVector();
-  AMP::LinearAlgebra::Vector::shared_ptr fusedMeshMatVec = fusedMeshSolVec->cloneVector();
 
   columnSolVec->setToScalar(1.0);
   columnOperator->apply(nullVec, columnSolVec, columnResVec, 1.0, 0.0);
@@ -326,71 +233,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   contactOperator->setSlaveToZero(columnResVec);
   columnResVec->subtract(columnRhsVec, columnResVec);
 
-  fusedMeshSolVec->setToScalar(1.0);
-  fusedMeshOperator->apply(nullVec, fusedMeshSolVec, fusedMeshResVec, 1.0, 0.0);
-  fusedMeshResVec->subtract(fusedMeshRhsVec, fusedMeshResVec);
 
-  oldDirVec->copyVector(columnResVec);
-  fusedMeshOldDirVec->copyVector(fusedMeshResVec);
-
-  int maxIters = input_db->getInteger("maxIters");
-  for (int iter = 0; iter < maxIters; ++iter) {
-    double resNorm = columnResVec->L2Norm();
-    contactOperator->setSlaveToZero(columnSolVec);
-    double solNorm = columnSolVec->L2Norm();
-    contactOperator->copyMasterToSlave(columnSolVec);
-    double fusedMeshResNorm = fusedMeshResVec->L2Norm();
-    double fusedMeshSolNorm = fusedMeshSolVec->L2Norm();
-    std::cout<<"Iter = "<<iter<<"  "
-        <<"resNorm = "<<resNorm<<"  solNorm = "<<solNorm<<"\n"
-        <<"fusedMeshResNorm = "<<fusedMeshResNorm<<"  fusedMeshSolNorm = "<<fusedMeshSolNorm<<"\n";
-
-    contactOperator->copyMasterToSlave(oldDirVec);
-
-    oldResVec->copyVector(columnResVec);
-    oldSolVec->copyVector(columnSolVec);
-    fusedMeshOldResVec->copyVector(fusedMeshResVec);
-    fusedMeshOldSolVec->copyVector(fusedMeshSolVec);
-
-    double alphaNumerator = oldResVec->dot(oldResVec);
-    double fusedMeshAlphaNumerator = fusedMeshOldResVec->dot(fusedMeshOldResVec);
-
-    columnOperator->apply(nullVec, oldDirVec, matVec, 1.0, 0.0);
-    contactOperator->addSlaveToMaster(matVec);
-    contactOperator->setSlaveToZero(matVec);
-    fusedMeshOperator->apply(nullVec, fusedMeshOldDirVec, fusedMeshMatVec, 1.0, 0.0);
-
-    double matVecNorm = matVec->L2Norm();
-    double fusedMeshMatVecNorm = fusedMeshMatVec->L2Norm();
-    std::cout<<"  matVecNorm = "<<matVecNorm<<"  "
-      "fusedMeshMatVecNorm = "<<fusedMeshMatVecNorm<<"\n";
-
-    double alphaDenominator = matVec->dot(oldDirVec);
-    double fusedMeshAlphaDenominator = fusedMeshMatVec->dot(fusedMeshOldDirVec);
-
-    double alpha = alphaNumerator / alphaDenominator;
-    double fusedMeshAlpha = fusedMeshAlphaNumerator / fusedMeshAlphaDenominator;
-
-    columnSolVec->axpy(alpha, oldDirVec, oldSolVec);
-    columnResVec->axpy(-alpha, matVec, oldResVec);
-    fusedMeshSolVec->axpy(fusedMeshAlpha, fusedMeshOldDirVec, fusedMeshOldSolVec);
-    fusedMeshResVec->axpy(-fusedMeshAlpha, fusedMeshMatVec, fusedMeshOldResVec);
-
-    double betaNumerator = columnResVec->dot(columnResVec);
-    double fusedMeshBetaNumerator = fusedMeshResVec->dot(fusedMeshResVec);
-    double beta = betaNumerator / alphaNumerator;
-    double fusedMeshBeta = fusedMeshBetaNumerator / fusedMeshAlphaNumerator;
-    std::cout<<"  beta = "<<beta<<"  "
-        <<"fusedMeshBeta = "<<fusedMeshBeta<<"\n";
-
-    dirVec->axpy(beta, oldDirVec, columnResVec);
-    fusedMeshDirVec->axpy(fusedMeshBeta, fusedMeshOldDirVec, fusedMeshResVec);
-
-    oldDirVec->copyVector(dirVec);
-    fusedMeshOldDirVec->copyVector(fusedMeshDirVec);
-  } // end for
-
-/*
   boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new
       AMP::Solver::PetscKrylovSolverParameters(linearSolver_db));
   linearSolverParams->d_pOperator = matrixShellOperator;
@@ -399,16 +242,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(new AMP::Solver::PetscKrylovSolver(linearSolverParams));
   linearSolver->setZeroInitialGuess(true);
 
-  std::cout<<"MPC > "<<std::endl;
   linearSolver->solve(columnRhsVec, columnSolVec);
 
 
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolver> fusedMeshLinearSolver(new AMP::Solver::PetscKrylovSolver(linearSolverParams));
-  fusedMeshLinearSolver->setZeroInitialGuess(true);
-
-  std::cout<<"FUSED > "<<std::endl;
-  fusedMeshLinearSolver->solve(fusedMeshRhsVec, fusedMeshSolVec);
-*/
 #ifdef USE_SILO
   siloWriter->registerVector(columnSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution");
   char outFileName[256];
@@ -429,12 +265,11 @@ int main(int argc, char *argv[])
 {
   AMP::AMPManager::startup(argc, argv);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
-//  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit( new AMP::Mesh::initializeLibMesh(globalComm) );
   AMP::UnitTest ut;
 
   std::vector<std::string> exeNames; 
-  exeNames.push_back("testNodeToSegmentConstraintsOperator-cube");
-  exeNames.push_back("testNodeToSegmentConstraintsOperator-cylinder");
+//  exeNames.push_back("testNodeToSegmentConstraintsOperator-cube");
+//  exeNames.push_back("testNodeToSegmentConstraintsOperator-cylinder");
   exeNames.push_back("testNodeToSegmentConstraintsOperator-pellet");
 
   try {
@@ -450,7 +285,6 @@ int main(int argc, char *argv[])
   ut.report();
   int num_failed = ut.NumFailGlobal();
 
-//  libmeshInit.reset();
   AMP::AMPManager::shutdown();
   return num_failed;
 }  

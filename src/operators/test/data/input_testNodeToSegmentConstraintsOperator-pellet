@@ -115,7 +115,7 @@ MechanicsMaterialModel {
 
 LinearSolver {
   print_info_level = 10
-    max_iterations = 2
+    max_iterations = 10
     max_error = 1.0e-16
     ksp_type = "cg"
     absolute_tolerance = 1.0e-16
