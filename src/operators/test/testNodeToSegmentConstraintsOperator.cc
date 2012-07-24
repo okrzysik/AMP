@@ -433,12 +433,12 @@ int main(int argc, char *argv[])
   AMP::UnitTest ut;
 
   std::vector<std::string> exeNames; 
-  exeNames.push_back("testNodeToSegmentConstraintsOperator_cube");
-  exeNames.push_back("testNodeToSegmentConstraintsOperator_cylinder");
-  exeNames.push_back("testNodeToSegmentConstraintsOperator_pellet");
+  exeNames.push_back("testNodeToSegmentConstraintsOperator-cube");
+  exeNames.push_back("testNodeToSegmentConstraintsOperator-cylinder");
+  exeNames.push_back("testNodeToSegmentConstraintsOperator-pellet");
 
   try {
-    myTest(&ut, exeName);
+    for (size_t i = 0; i < exeNames.size(); ++i) { myTest(&ut, exeNames[i]); }
   } catch (std::exception &err) {
     std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
     ut.failure("ERROR: While testing");

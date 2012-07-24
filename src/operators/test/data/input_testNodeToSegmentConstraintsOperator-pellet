@@ -23,7 +23,7 @@ Mesh{
 FusedMesh{
   MeshName = "FusedMesh"
     MeshType = "libMesh"
-    FileName = "simple_2pellet_1x.e"
+    FileName = "two_fused_simple_pellets_1x.e"
     dim = 3
 }
 
