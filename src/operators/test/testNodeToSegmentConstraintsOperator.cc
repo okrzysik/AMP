@@ -86,31 +86,20 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     std::cout<<"Finished reading the mesh in "<<(meshEndTime - meshBeginTime)<<" seconds."<<std::endl;
   }
 
-  // Build the contact operator
-  AMP_INSIST(input_db->keyExists("ContactOperator"), "Key ''ContactOperator'' is missing!");
-  boost::shared_ptr<AMP::Database> contact_db = input_db->getDatabase("ContactOperator");
-  std::vector<AMP::Mesh::MeshID> meshIDs = meshAdapter->getBaseMeshIDs();
-  boost::shared_ptr<AMP::Operator::NodeToSegmentConstraintsOperatorParameters> 
-      contactOperatorParams( new AMP::Operator::NodeToSegmentConstraintsOperatorParameters(contact_db) );
-  AMP_INSIST(contact_db->keyExists("MasterMeshIndex"), "Key ''MasterMeshIndex'' is missing!");
-  AMP_INSIST(contact_db->keyExists("SlaveMeshIndex"), "Key ''SlaveMeshIndex'' is missing!");
-  AMP::Mesh::MeshID masterMeshID = meshIDs[contact_db->getInteger("MasterMeshIndex")];
-  AMP::Mesh::MeshID slaveMeshID = meshIDs[contact_db->getInteger("SlaveMeshIndex")];
-  contactOperatorParams->d_MasterMeshID = masterMeshID;
-  contactOperatorParams->d_SlaveMeshID = slaveMeshID;
-  AMP_INSIST(contact_db->keyExists("MasterBoundaryID"), "Key ''MasterBoundaryID'' is missing!");
-  AMP_INSIST(contact_db->keyExists("SlaveBoundaryID"), "Key ''SlaveBoundaryID'' is missing!");
-  contactOperatorParams->d_MasterBoundaryID = contact_db->getInteger("MasterBoundaryID");
-  contactOperatorParams->d_SlaveBoundaryID = contact_db->getInteger("SlaveBoundaryID");
-  
+  // Create a DOF manager
   int dofsPerNode = 3;
   int nodalGhostWidth = 1;
   bool split = true;
   AMP::Discretization::DOFManager::shared_ptr dofManager = AMP::Discretization::simpleDOFManager::create(meshAdapter,
       AMP::Mesh::Vertex, nodalGhostWidth, dofsPerNode, split);
+
+  // Build the contact operator
+  AMP_INSIST(input_db->keyExists("ContactOperator"), "Key ''ContactOperator'' is missing!");
+  boost::shared_ptr<AMP::Database> contact_db = input_db->getDatabase("ContactOperator");
+  boost::shared_ptr<AMP::Operator::NodeToSegmentConstraintsOperatorParameters> 
+      contactOperatorParams( new AMP::Operator::NodeToSegmentConstraintsOperatorParameters(contact_db) );
   contactOperatorParams->d_DOFsPerNode = dofsPerNode;
   contactOperatorParams->d_DOFManager = dofManager;
-
   contactOperatorParams->d_GlobalComm = globalComm;
   contactOperatorParams->d_Mesh = meshAdapter;
 
@@ -132,6 +121,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   boost::shared_ptr<AMP::Solver::ColumnSolver> columnPreconditioner(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
 
   // build the master and slave operators
+  AMP::Mesh::MeshID masterMeshID = contactOperator->getMasterMeshID();
   AMP::Mesh::Mesh::shared_ptr masterMeshAdapter = meshAdapter->Subset(masterMeshID);
   if (masterMeshAdapter != NULL) {
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> masterElementPhysicsModel;
@@ -153,6 +143,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   } // end if
 
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> slaveLoadOperator;
+  AMP::Mesh::MeshID slaveMeshID = contactOperator->getSlaveMeshID();
   AMP::Mesh::Mesh::shared_ptr slaveMeshAdapter = meshAdapter->Subset(slaveMeshID);
   if (slaveMeshAdapter != NULL) {
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> slaveElementPhysicsModel;
@@ -203,11 +194,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   if (slaveMeshAdapter != NULL) { numSlaveLocalNodes = slaveMeshAdapter->numLocalElements(AMP::Mesh::Vertex); }
   int matLocalSize = dofsPerNode * (numMasterLocalNodes + numSlaveLocalNodes);
   AMP_ASSERT( matLocalSize == dofManager->numLocalDOF() );
-  if(!rank) {
-    std::cout<<"numMasterNodes = "<<numMasterLocalNodes<<std::endl;
-    std::cout<<"numSlaveNodes = "<<numSlaveLocalNodes<<std::endl;
-    std::cout<<"matLocalSize = "<<matLocalSize<<std::endl;
-  }
   matrixShellOperator->setComm(globalComm);
   matrixShellOperator->setMatLocalRowSize(matLocalSize);
   matrixShellOperator->setMatLocalColumnSize(matLocalSize);
@@ -223,13 +209,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   columnRhsVec->zero();
 
   if (slaveLoadOperator != NULL) { slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0); }
-
-
-  columnSolVec->setToScalar(1.0);
-  columnOperator->apply(nullVec, columnSolVec, columnResVec, 1.0, 0.0);
-  contactOperator->addSlaveToMaster(columnResVec);
-  contactOperator->setSlaveToZero(columnResVec);
-  columnResVec->subtract(columnRhsVec, columnResVec);
 
   boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new
       AMP::Solver::PetscKrylovSolverParameters(linearSolver_db));

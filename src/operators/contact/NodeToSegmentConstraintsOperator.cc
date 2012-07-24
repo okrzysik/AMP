@@ -355,9 +355,12 @@ namespace AMP {
       } // end for i
     }
 
+    size_t NodeToSegmentConstraintsOperator::numLocalConstraints() {
+      return d_SlaveVerticesGlobalIDs.size();
+    }
+
     size_t NodeToSegmentConstraintsOperator::numGlobalConstraints() {
-      size_t numLocalConstraints = d_SlaveVerticesGlobalIDs.size();
-      return d_GlobalComm.sumReduce(numLocalConstraints);
+      return d_GlobalComm.sumReduce(d_SlaveVerticesGlobalIDs.size());
     }
 
   } // end namespace Operator

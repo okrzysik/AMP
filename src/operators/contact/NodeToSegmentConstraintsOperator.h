@@ -47,11 +47,17 @@ namespace AMP {
           d_DOFsPerNode = (params->d_DOFsPerNode);
           d_DOFManager = (params->d_DOFManager);
 
-          d_MasterMeshID = (params->d_MasterMeshID);
-          d_SlaveMeshID = (params->d_SlaveMeshID);
-          d_MasterBoundaryID = (params->d_MasterBoundaryID);
-          d_SlaveBoundaryID = (params->d_SlaveBoundaryID);
-  
+          std::vector<AMP::Mesh::MeshID> meshIDs = params->d_Mesh->getBaseMeshIDs();
+          AMP_INSIST(params->d_db->keyExists("MasterMeshIndex"), "key not found");
+          d_MasterMeshID = meshIDs[params->d_db->getInteger("MasterMeshIndex")];
+          AMP_INSIST(params->d_db->keyExists("SlaveMeshIndex"), "key not found");
+          d_SlaveMeshID = meshIDs[params->d_db->getInteger("SlaveMeshIndex")];
+
+          AMP_INSIST(params->d_db->keyExists("MasterBoundaryID"), "key not found");
+          d_MasterBoundaryID = params->d_db->getInteger("MasterBoundaryID");
+          AMP_INSIST(params->d_db->keyExists("SlaveBoundaryID"), "key not found");
+          d_SlaveBoundaryID = params->d_db->getInteger("SlaveBoundaryID");
+
           size_t rank = d_GlobalComm.getRank();
           std::string fileName = "debug_operator_" + boost::lexical_cast<std::string>(rank);
           d_fout.open(fileName.c_str(), std::fstream::out);
@@ -96,37 +102,14 @@ namespace AMP {
         void applySolutionCorrection(AMP::LinearAlgebra::Vector::shared_ptr u);
         void getShift(AMP::LinearAlgebra::Vector::shared_ptr d);
 
-        void debugGet(std::vector<size_t> &slaveIndices,// std::vector<double> &slaveValues,
-            std::vector<size_t> &masterIndices,// std::vector<double> &masterValues,
-            std::vector<double> &coefficients) {
-          AMP_ASSERT( d_GlobalComm.getSize() == 1 );
-          slaveIndices = d_SlaveIndices;
-          masterIndices = d_RecvMasterIndices;
-          coefficients = d_MasterShapeFunctionsValues;
-        }
-        void debugSet(const std::vector<size_t> &slaveIndices,
-            const std::vector<size_t> &masterIndices,
-            const std::vector<double> &coefficients) {
-          AMP_ASSERT( d_GlobalComm.getSize() == 1 );
-          AMP_ASSERT( masterIndices.size() == 4 * slaveIndices.size() );
-          AMP_ASSERT( masterIndices.size() == d_DOFsPerNode * coefficients.size() );
-          d_SlaveIndices = slaveIndices;
-          d_RecvMasterIndices = masterIndices;
-          d_MasterShapeFunctionsValues = coefficients;
-          d_MasterVerticesMap = std::vector<size_t>(coefficients.size(), d_GlobalComm.getRank());
-          d_SendCnts = std::vector<int>(1, masterIndices.size());
-          d_SendDisps = std::vector<int>(1, masterIndices.size());
-          d_RecvCnts = std::vector<int>(1, masterIndices.size());
-          d_RecvDisps = std::vector<int>(1, masterIndices.size());
-          d_TransposeSendCnts = std::vector<int>(1, masterIndices.size());
-          d_TransposeSendDisps = std::vector<int>(1, masterIndices.size());
-          d_TransposeRecvCnts = std::vector<int>(1, masterIndices.size());
-          d_TransposeRecvDisps = std::vector<int>(1, masterIndices.size());
-        }
+        size_t numLocalConstraints();
         size_t numGlobalConstraints();
         void setSlaveToZero(AMP::LinearAlgebra::Vector::shared_ptr u);
         void addSlaveToMaster(AMP::LinearAlgebra::Vector::shared_ptr u);
         void copyMasterToSlave(AMP::LinearAlgebra::Vector::shared_ptr u); 
+
+        AMP::Mesh::MeshID getMasterMeshID() const { return d_MasterMeshID; }
+        AMP::Mesh::MeshID getSlaveMeshID() const { return d_SlaveMeshID; }
 
       protected :
 
