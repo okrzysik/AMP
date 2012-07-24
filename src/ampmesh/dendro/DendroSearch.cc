@@ -7,12 +7,17 @@
 #include <set>
 
 DendroSearch::DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh) 
-  : d_meshAdapter(mesh) {
-    d_verbose = true;
+  : d_meshAdapter(mesh),
+    d_verbose(true),
+    d_tolerance(1.0e-12) {
     d_minCoords.resize(3);
     d_scalingFactor.resize(3);
     setupDSforSearch();
   }
+
+void DendroSearch::setTolerance(double tolerance) {
+  d_tolerance = tolerance;
+}
 
 void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
     std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags) {
@@ -768,11 +773,10 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
       double const * tmpPtGlobalCoordPtr = &(recvPtsList[6*i])+1;
       unsigned int eId = static_cast<unsigned int>(recvPtsList[6*i]);
       unsigned int procId = static_cast<unsigned int>(recvPtsList[6*i+5]);
-
-      if (d_volume_elements[eId].within_bounding_box(tmpPtGlobalCoordPtr)) {
-        if (d_volume_elements[eId].within_bounding_polyhedron(tmpPtGlobalCoordPtr)) {
+      if (d_volume_elements[eId].within_bounding_box(tmpPtGlobalCoordPtr, d_tolerance)) {
+        if (d_volume_elements[eId].within_bounding_polyhedron(tmpPtGlobalCoordPtr, d_tolerance)) {
           d_volume_elements[eId].map_global_to_local(tmpPtGlobalCoordPtr, &(tmpPtLocalCoord[0]));
-          if (d_volume_elements[eId].contains_point(&(tmpPtLocalCoord[0]), coordinates_are_local)) {
+          if (d_volume_elements[eId].contains_point(&(tmpPtLocalCoord[0]), coordinates_are_local, d_tolerance)) {
             d_foundPts.push_back(recvPtsList[6*i]);
             for (unsigned int d = 0; d < 3; ++d) { d_foundPts.push_back(tmpPtLocalCoord[d]); }
             d_foundPts.push_back(recvPtsList[6*i+4]);
