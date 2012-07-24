@@ -106,13 +106,13 @@ namespace AMP {
       std::vector<int>::const_iterator flagsIterator = flags.begin(),
         flagsIterator_end = flags.end();
       for ( ; flagsIterator != flagsIterator_end; ++flagsIterator) {
+        // TODO: the following if statement is debug only
         if (*flagsIterator == DendroSearch::NotFound) {
           std::vector<double> blackSheepCoord = (mesh->getElement(*tmpSlaveVerticesGlobalIDsConstIterator)).coord();
           d_fout<<blackSheepCoord[0]<<"  "
               <<blackSheepCoord[1]<<"  "
               <<blackSheepCoord[2]<<"\n";
-
-        }
+        } // end if
         //    AMP_ASSERT( (*flagsIterator == DendroSearch::NotFound) || (*flagsIterator == DendroSearch::FoundOnBoundary) );
         if (*flagsIterator == DendroSearch::FoundOnBoundary) {
           hex8_element_t::get_basis_functions_values_on_face(tmpSlaveVerticesLocalCoordOnFacePointerToConst, masterShapeFunctionsValuesPointer);
@@ -235,7 +235,6 @@ namespace AMP {
 
     }
 
-
     void NodeToSegmentConstraintsOperator::getVectorIndicesFromGlobalIDs(const std::vector<AMP::Mesh::MeshElementID> & globalIDs, 
         std::vector<size_t> & vectorIndices) {
       std::vector<size_t> tmpIndices;
@@ -266,12 +265,14 @@ namespace AMP {
       applyResidualCorrection(r);
     }
 
-
     void NodeToSegmentConstraintsOperator::applySolutionCorrection(AMP::LinearAlgebra::Vector::shared_ptr u) {
+      copyMasterToSlave(u);
+    }
+
+    void NodeToSegmentConstraintsOperator::copyMasterToSlave(AMP::LinearAlgebra::Vector::shared_ptr u) {
       /** send and receive the master values */
       AMP::AMP_MPI comm = d_GlobalComm;
       //  AMP::AMP_MPI comm = u->getComm();
-
       size_t npes = comm.getSize();
       //  size_t rank = comm.getRank();
 
@@ -299,12 +300,17 @@ namespace AMP {
         } // end for j
       } // end for i
 
-      if (!slaveValues.empty()) { 
+      if (!d_SlaveVerticesGlobalIDs.empty()) { 
         u->setLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(slaveValues[0]));
       } // end if
     }
 
     void NodeToSegmentConstraintsOperator::applyResidualCorrection(AMP::LinearAlgebra::Vector::shared_ptr r) {
+      addSlaveToMaster(r);
+      setSlaveToZero(r);
+    }
+
+    void NodeToSegmentConstraintsOperator::addSlaveToMaster(AMP::LinearAlgebra::Vector::shared_ptr u) {
       /** send and receive slave value times shape functions values */
       AMP::AMP_MPI comm = d_GlobalComm;
       //  AMP::AMP_MPI comm = r->getComm();
@@ -313,7 +319,7 @@ namespace AMP {
       std::vector<double> sendAddToMasterValues(d_TransposeSendDisps[npes-1]+d_TransposeSendCnts[npes-1]);
       for (size_t i = 0; i < d_SlaveVerticesGlobalIDs.size(); ++i) {
         for (size_t j = 0; j < 4; ++j) {
-          r->getLocalValuesByGlobalID(d_DOFsPerNode, &(d_SlaveIndices[d_DOFsPerNode*i]), &(sendAddToMasterValues[d_DOFsPerNode*d_MasterVerticesMap[4*i+j]])); 
+          u->getLocalValuesByGlobalID(d_DOFsPerNode, &(d_SlaveIndices[d_DOFsPerNode*i]), &(sendAddToMasterValues[d_DOFsPerNode*d_MasterVerticesMap[4*i+j]])); 
           for (size_t k = 0; k < d_DOFsPerNode; ++k) {
             sendAddToMasterValues[d_DOFsPerNode*d_MasterVerticesMap[4*i+j]+k] *= d_MasterShapeFunctionsValues[4*i+j];
           } // end for k
@@ -326,10 +332,15 @@ namespace AMP {
       sendAddToMasterValues.clear();
 
       /** add slave value times shape functions values to master values and set slave values to zero */
-      if (!recvAddToMasterValues.empty()) {
-        r->addLocalValuesByGlobalID(d_RecvMasterIndices.size(), &(d_RecvMasterIndices[0]), &(recvAddToMasterValues[0]));
+      if (!d_RecvMasterVerticesGlobalIDs.empty()) {
+        u->addLocalValuesByGlobalID(d_RecvMasterIndices.size(), &(d_RecvMasterIndices[0]), &(recvAddToMasterValues[0]));
+      } // end if
+    }
+
+    void NodeToSegmentConstraintsOperator::setSlaveToZero(AMP::LinearAlgebra::Vector::shared_ptr u) {
+      if (!d_SlaveVerticesGlobalIDs.empty()) {
         std::vector<double> zeroSlaveValues(d_SlaveIndices.size(), 0.0);
-        r->setLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(zeroSlaveValues[0]));
+        u->setLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(zeroSlaveValues[0]));
       } // end if
     }
 
@@ -340,7 +351,11 @@ namespace AMP {
       for (size_t i = 0; i < d_SlaveIndices.size(); ++i) {
         d->setLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(d_SlaveVerticesShift[0])); 
       } // end for i
+    }
 
+    size_t NodeToSegmentConstraintsOperator::numGlobalConstraints() {
+      size_t numLocalConstraints = d_SlaveVerticesGlobalIDs.size();
+      return d_GlobalComm.sumReduce(numLocalConstraints);
     }
 
   } // end namespace Operator

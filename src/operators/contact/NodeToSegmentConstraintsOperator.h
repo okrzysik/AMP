@@ -123,12 +123,10 @@ namespace AMP {
           d_TransposeRecvCnts = std::vector<int>(1, masterIndices.size());
           d_TransposeRecvDisps = std::vector<int>(1, masterIndices.size());
         }
-        void debugSetSlaveToZero(AMP::LinearAlgebra::Vector::shared_ptr u) {
-          if (!d_SlaveIndices.empty()) {
-            std::vector<double> zeroSlaveValues(d_SlaveIndices.size(), 0.0);
-            u->setLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(zeroSlaveValues[0]));
-          } // end if
-        }
+        size_t numGlobalConstraints();
+        void setSlaveToZero(AMP::LinearAlgebra::Vector::shared_ptr u);
+        void addSlaveToMaster(AMP::LinearAlgebra::Vector::shared_ptr u);
+        void copyMasterToSlave(AMP::LinearAlgebra::Vector::shared_ptr u); 
 
       protected :
 
@@ -162,6 +160,7 @@ namespace AMP {
         std::vector<size_t> d_SlaveIndices;
         std::vector<size_t> d_RecvMasterIndices;
         std::vector<size_t> d_MasterVerticesMap;
+        std::vector<size_t> d_MasterVerticesInverseMap;
         std::vector<size_t> d_MasterVerticesOwnerRanks;
         std::vector<double> d_MasterShapeFunctionsValues;
         std::vector<double> d_SlaveVerticesShift;
