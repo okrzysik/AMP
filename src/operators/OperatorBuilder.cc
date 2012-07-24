@@ -10,6 +10,8 @@
 #include "ColumnBoundaryOperator.h"
 #include "FlowFrapconOperator.h"
 #include "FlowFrapconJacobian.h"
+#include "SubchannelTwoEqLinearOperator.h"
+#include "SubchannelTwoEqNonlinearOperator.h"
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
@@ -212,6 +214,14 @@ OperatorBuilder::createOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter,
     {
       retOperator = OperatorBuilder::createFlowFrapconJacobian(meshAdapter, operator_db);
     }
+  else if(operatorType=="SubchannelTwoEqLinearOperator")
+    {
+        retOperator = OperatorBuilder::createSubchannelTwoEqLinearOperator(meshAdapter, operator_db);
+    }
+  else if(operatorType=="SubchannelTwoEqNonlinearOperator")
+    {
+        retOperator = OperatorBuilder::createSubchannelTwoEqNonlinearOperator(meshAdapter, operator_db);
+    }
   else if(operatorType=="NeutronicsRhsOperator")
     {
       retOperator = OperatorBuilder::createNeutronicsRhsOperator(meshAdapter, operator_db);
@@ -278,6 +288,54 @@ OperatorBuilder::createFlowFrapconOperator( AMP::Mesh::Mesh::shared_ptr meshAdap
   boost::shared_ptr<AMP::Operator::FlowFrapconOperator> flowOp (new AMP::Operator::FlowFrapconOperator( flowOpParams ));
   
   return flowOp;
+}
+
+AMP::Operator::Operator::shared_ptr
+OperatorBuilder::createSubchannelTwoEqLinearOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+					    boost::shared_ptr<AMP::InputDatabase> input_db)
+{
+  // create the operator
+  boost::shared_ptr<AMP::Database> subchannel_db;
+  if(input_db->getString("name")=="SubchannelTwoEqLinearOperator")
+    {
+      subchannel_db = input_db;
+    }
+  else
+    {
+      AMP_INSIST(input_db->keyExists("name"), "Key ''name'' is missing!");
+    }
+  
+  AMP_INSIST(subchannel_db.get()!=NULL, "Error: The database object for SubchannelTwoEqLinearOperator is NULL");
+  
+  boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelParams(new AMP::Operator::SubchannelOperatorParameters( subchannel_db ));
+  subchannelParams->d_Mesh = meshAdapter;
+  boost::shared_ptr<AMP::Operator::SubchannelTwoEqLinearOperator> subchannelOp (new AMP::Operator::SubchannelTwoEqLinearOperator( subchannelParams ));
+  
+  return subchannelOp;
+}
+
+AMP::Operator::Operator::shared_ptr
+OperatorBuilder::createSubchannelTwoEqNonlinearOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+					    boost::shared_ptr<AMP::InputDatabase> input_db)
+{
+  // create the operator
+  boost::shared_ptr<AMP::Database> subchannel_db;
+  if(input_db->getString("name")=="SubchannelTwoEqNonlinearOperator")
+    {
+      subchannel_db = input_db;
+    }
+  else
+    {
+      AMP_INSIST(input_db->keyExists("name"), "Key ''name'' is missing!");
+    }
+  
+  AMP_INSIST(subchannel_db.get()!=NULL, "Error: The database object for SubchannelTwoEqNonlinearOperator is NULL");
+  
+  boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelParams(new AMP::Operator::SubchannelOperatorParameters( subchannel_db ));
+  subchannelParams->d_Mesh = meshAdapter;
+  boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> subchannelOp (new AMP::Operator::SubchannelTwoEqNonlinearOperator( subchannelParams ));
+  
+  return subchannelOp;
 }
   
 AMP::Operator::Operator::shared_ptr
