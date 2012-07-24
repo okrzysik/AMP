@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iomanip>
 
 bool compare_absolute_values(const double &first, const double &second) { return (abs(first) < abs(second)); }
 
@@ -218,6 +219,7 @@ namespace AMP {
         d_TransposeRecvDisps[i] *= d_DOFsPerNode; 
       } // end for i
 
+      d_fout<<std::setprecision(15);
       for (size_t i = 0; i < d_SlaveVerticesGlobalIDs.size(); ++i) {
         for (size_t j = 0; j < 4; ++j) {
           d_fout<<"i="<<i<<"  "

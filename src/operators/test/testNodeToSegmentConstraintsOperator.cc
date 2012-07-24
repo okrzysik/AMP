@@ -432,7 +432,10 @@ int main(int argc, char *argv[])
 //  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit( new AMP::Mesh::initializeLibMesh(globalComm) );
   AMP::UnitTest ut;
 
-  std::string exeName = "testNodeToSegmentConstraintsOperator";
+  std::vector<std::string> exeNames; 
+  exeNames.push_back("testNodeToSegmentConstraintsOperator_cube");
+  exeNames.push_back("testNodeToSegmentConstraintsOperator_cylinder");
+  exeNames.push_back("testNodeToSegmentConstraintsOperator_pellet");
 
   try {
     myTest(&ut, exeName);
