@@ -103,7 +103,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   contactOperatorParams->d_MasterBoundaryID = contact_db->getInteger("MasterBoundaryID");
   contactOperatorParams->d_SlaveBoundaryID = contact_db->getInteger("SlaveBoundaryID");
   
-
   int dofsPerNode = 3;
   int nodalGhostWidth = 1;
   bool split = true;
@@ -162,7 +161,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
                                                                                                  "MechanicsLinearFEOperator",
                                                                                                  input_db,
                                                                                                  slaveElementPhysicsModel));
-
     columnOperator->append(slaveOperator);
 
     boost::shared_ptr<AMP::Database> slaveSolver_db = columnPreconditioner_db->getDatabase("SlaveSolver"); 
@@ -233,7 +231,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   contactOperator->setSlaveToZero(columnResVec);
   columnResVec->subtract(columnRhsVec, columnResVec);
 
-
   boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new
       AMP::Solver::PetscKrylovSolverParameters(linearSolver_db));
   linearSolverParams->d_pOperator = matrixShellOperator;
@@ -256,6 +253,129 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   ut->passes(exeName);
 }
 
+void myTest2(AMP::UnitTest *ut, std::string exeName) {
+  std::string input_file = "input_" + exeName;
+  std::string log_file = "output_" + exeName; 
+
+  AMP::PIO::logOnlyNodeZero(log_file);
+  AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
+
+//  int npes = globalComm.getSize();
+  int rank = globalComm.getRank();
+
+  // Load the input file
+  globalComm.barrier();
+  double inpReadBeginTime = MPI_Wtime();
+
+  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
+  input_db->printClassData(AMP::plog);
+
+  globalComm.barrier();
+  double inpReadEndTime = MPI_Wtime();
+  if(!rank) {
+    std::cout<<"Finished parsing the input file in "<<(inpReadEndTime - inpReadBeginTime)<<" seconds."<<std::endl;
+  }
+
+  // Load the meshes
+  globalComm.barrier();
+  double meshBeginTime = MPI_Wtime();
+
+  AMP_INSIST(input_db->keyExists("FusedMesh"), "Key ''Mesh'' is missing!");
+  boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("FusedMesh");
+  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+  meshParams->setComm(globalComm);
+  AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
+
+  globalComm.barrier();
+  double meshEndTime = MPI_Wtime();
+  if(!rank) {
+    std::cout<<"Finished reading the mesh in "<<(meshEndTime - meshBeginTime)<<" seconds."<<std::endl;
+  }
+
+  
+  int dofsPerNode = 3;
+  int nodalGhostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr dofManager = AMP::Discretization::simpleDOFManager::create(meshAdapter,
+      AMP::Mesh::Vertex, nodalGhostWidth, dofsPerNode, split);
+
+
+  // build a column operator and a column preconditioner
+  boost::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
+  boost::shared_ptr<AMP::Operator::ColumnOperator> columnOperator(new AMP::Operator::ColumnOperator(emptyParams));
+
+  boost::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase("LinearSolver"); 
+  boost::shared_ptr<AMP::Database> columnPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
+  boost::shared_ptr<AMP::Solver::ColumnSolverParameters> columnPreconditionerParams(new
+      AMP::Solver::ColumnSolverParameters(columnPreconditioner_db));
+  columnPreconditionerParams->d_pOperator = columnOperator;
+  boost::shared_ptr<AMP::Solver::ColumnSolver> columnPreconditioner(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
+
+  // build the master and slave operators
+    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> masterElementPhysicsModel;
+    boost::shared_ptr<AMP::Operator::LinearBVPOperator> masterOperator = boost::dynamic_pointer_cast<
+        AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+                                                                                         "MasterBVPOperator",
+                                                                                         input_db,
+                                                                                         masterElementPhysicsModel));
+    columnOperator->append(masterOperator);
+
+    boost::shared_ptr<AMP::Database> masterSolver_db = columnPreconditioner_db->getDatabase("MasterSolver"); 
+    boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> masterSolverParams(new
+        AMP::Solver::PetscKrylovSolverParameters(masterSolver_db));
+    masterSolverParams->d_pOperator = masterOperator;
+    masterSolverParams->d_comm = globalComm;
+    boost::shared_ptr<AMP::Solver::PetscKrylovSolver> masterSolver(new AMP::Solver::PetscKrylovSolver(masterSolverParams));
+    columnPreconditioner->append(masterSolver);
+
+    boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> slaveLoadOperator = boost::dynamic_pointer_cast<
+        AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter, 
+                                                                                                 "SlaveLoadOperator", 
+                                                                                                 input_db, 
+                                                                                                 masterElementPhysicsModel));
+    AMP::LinearAlgebra::Variable::shared_ptr slaveVar = masterOperator->getOutputVariable();
+    slaveLoadOperator->setVariable(slaveVar);
+
+
+  // Build a matrix shell operator to use the column operator with the petsc krylov solvers
+  boost::shared_ptr<AMP::Database> matrixShellDatabase = input_db->getDatabase("MatrixShellOperator");
+  boost::shared_ptr<AMP::Operator::OperatorParameters> matrixShellParams(new
+      AMP::Operator::OperatorParameters(matrixShellDatabase));
+  boost::shared_ptr<AMP::Operator::PetscMatrixShellOperator> matrixShellOperator(new
+      AMP::Operator::PetscMatrixShellOperator(matrixShellParams));
+
+  int matLocalSize = dofsPerNode * meshAdapter->numLocalElements(AMP::Mesh::Vertex); 
+  AMP_ASSERT( matLocalSize == dofManager->numLocalDOF() );
+  matrixShellOperator->setComm(globalComm);
+  matrixShellOperator->setMatLocalRowSize(matLocalSize);
+  matrixShellOperator->setMatLocalColumnSize(matLocalSize);
+  matrixShellOperator->setOperator(columnOperator); 
+
+  AMP::LinearAlgebra::Variable::shared_ptr columnVar = columnOperator->getOutputVariable();
+
+  AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+  AMP::LinearAlgebra::Vector::shared_ptr columnSolVec = createVector(dofManager, columnVar, split);
+  AMP::LinearAlgebra::Vector::shared_ptr columnRhsVec = createVector(dofManager, columnVar, split);
+  columnSolVec->zero();
+  columnRhsVec->zero();
+
+  slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0);
+
+  boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new
+      AMP::Solver::PetscKrylovSolverParameters(linearSolver_db));
+  linearSolverParams->d_pOperator = matrixShellOperator;
+  linearSolverParams->d_comm = globalComm;
+  linearSolverParams->d_pPreconditioner = columnPreconditioner;
+  boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(new AMP::Solver::PetscKrylovSolver(linearSolverParams));
+  linearSolver->setZeroInitialGuess(true);
+
+  linearSolver->solve(columnRhsVec, columnSolVec);
+
+
+  ut->passes(exeName);
+}
+
 
 
 
@@ -268,12 +388,12 @@ int main(int argc, char *argv[])
   AMP::UnitTest ut;
 
   std::vector<std::string> exeNames; 
-//  exeNames.push_back("testNodeToSegmentConstraintsOperator-cube");
+  exeNames.push_back("testNodeToSegmentConstraintsOperator-cube");
 //  exeNames.push_back("testNodeToSegmentConstraintsOperator-cylinder");
-  exeNames.push_back("testNodeToSegmentConstraintsOperator-pellet");
+//  exeNames.push_back("testNodeToSegmentConstraintsOperator-pellet");
 
   try {
-    for (size_t i = 0; i < exeNames.size(); ++i) { myTest(&ut, exeNames[i]); }
+    for (size_t i = 0; i < exeNames.size(); ++i) { myTest(&ut, exeNames[i]); myTest2(&ut, exeNames[i]); }
   } catch (std::exception &err) {
     std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
     ut.failure("ERROR: While testing");
