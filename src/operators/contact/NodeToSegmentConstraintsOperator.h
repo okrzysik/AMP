@@ -100,7 +100,7 @@ namespace AMP {
 
         void applyResidualCorrection(AMP::LinearAlgebra::Vector::shared_ptr r);
         void applySolutionCorrection(AMP::LinearAlgebra::Vector::shared_ptr u);
-        void getShift(AMP::LinearAlgebra::Vector::shared_ptr d);
+        void getRhsCorrection(AMP::LinearAlgebra::Vector::shared_ptr d);
 
         size_t numLocalConstraints();
         size_t numGlobalConstraints();

@@ -231,7 +231,8 @@ namespace AMP {
           d_fout<<"i="<<i<<"  "
             <<"k="<<k<<"  "
             <<"d_DOFsPerNode*i+k="<<d_DOFsPerNode*i+k<<"  "
-            <<"d_SlaveIndices[d_DOFsPerNode*i+k]="<<d_SlaveIndices[d_DOFsPerNode*i+k]<<"\n";     
+            <<"d_SlaveIndices[d_DOFsPerNode*i+k]="<<d_SlaveIndices[d_DOFsPerNode*i+k]<<"  "
+            <<"d_SlaveVerticesShift[d_DOFsPerNode*i+k]="<<d_SlaveVerticesShift[d_DOFsPerNode*i+k]<<"\n";     
         } // end for k
       } // end for i
 
@@ -346,13 +347,12 @@ namespace AMP {
       } // end if
     }
 
-    void NodeToSegmentConstraintsOperator::getShift(AMP::LinearAlgebra::Vector::shared_ptr d) {
+    void NodeToSegmentConstraintsOperator::getRhsCorrection(AMP::LinearAlgebra::Vector::shared_ptr d) {
       // Need to be more careful when handling multiphysics problem where number dofs per node wont be 3
       d->zero();
+      AMP_ASSERT( d_DOFsPerNode == 3 );
       AMP_ASSERT( d_SlaveVerticesShift.size() == d_SlaveIndices.size() );
-      for (size_t i = 0; i < d_SlaveIndices.size(); ++i) {
-        d->setLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(d_SlaveVerticesShift[0])); 
-      } // end for i
+      d->setLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(d_SlaveVerticesShift[0])); 
     }
 
     size_t NodeToSegmentConstraintsOperator::numLocalConstraints() {

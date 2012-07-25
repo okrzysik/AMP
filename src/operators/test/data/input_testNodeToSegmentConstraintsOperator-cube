@@ -1,4 +1,4 @@
-maxIters = 10
+useSlaveBVPOperator = TRUE
 
 Mesh{
   MeshName = "MainMesh"
@@ -74,6 +74,33 @@ MasterDirichletMatrixCorrection{
     value_0_0 = 0.0
     value_0_1 = 0.0
     value_0_2 = 0.0
+}
+
+SlaveBVPOperator {
+  name = "LinearBVPOperator"
+    print_info_level = 1
+
+    VolumeOperator = "MechanicsLinearFEOperator"
+    BoundaryOperator = "SlaveDirichletMatrixCorrection"
+}
+
+SlaveDirichletMatrixCorrection{
+  name = "DirichletMatrixCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    symmetric_correction = TRUE
+    zero_dirichlet_block = FALSE
+    skip_rhs_correction = FALSE
+    skip_add_rhs_correction = FALSE
+    number_of_ids = 1
+    id_0 = 5
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+    value_0_0 = 0.0
+    value_0_1 = 0.0
+    value_0_2 = -0.1
 }
 
 SlaveLoadOperator {
