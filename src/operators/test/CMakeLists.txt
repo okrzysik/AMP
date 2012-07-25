@@ -41,9 +41,6 @@ INCLUDE (macros)
 
 ADD_AMP_PROVISIONAL_TEST(testRemDup)
 
-ADD_AMP_TEST_1_2_4 (testSubchannelSolution)
-COPY_TEST_DATA_FILE ( input_testSubchannelSolution)
-
 ADD_AMP_TEST_1_2_4 (testSubchannelPhysicsModel)
 COPY_TEST_DATA_FILE ( input_testSubchannelPhysicsModel)
 
