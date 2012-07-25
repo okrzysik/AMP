@@ -97,8 +97,8 @@ void SubchannelTwoEqLinearOperator :: apply(const AMP::LinearAlgebra::Vector::sh
       AMP_INSIST( (d_frozenVec.get() != NULL), "Null Frozen Vector inside Jacobian" );
 
       // get solution sizes
-      const int numCells = inputVec->getLocalSize() - 2;
-      const int numFaces = numCells + 1;
+      const size_t numCells = inputVec->getLocalSize() - 2;
+      const size_t numFaces = numCells + 1;
       d_solutionSize = numFaces + 1;
 
       // create Jacobian matrix if requested
@@ -123,7 +123,7 @@ void SubchannelTwoEqLinearOperator :: apply(const AMP::LinearAlgebra::Vector::sh
       // compute element heights
       std::vector<double> del_z(numCells);
       // assuming uniform mesh
-      for (int j=0; j<numCells; j++) {
+      for (size_t j=0; j<numCells; j++) {
         del_z[j] = height/numCells; 
       }
 
@@ -143,7 +143,7 @@ void SubchannelTwoEqLinearOperator :: apply(const AMP::LinearAlgebra::Vector::sh
           AMP_ERROR("Heat source type 'averageHeatFlux' not yet implemented.");
       } else if (d_source == "totalHeatGeneration") {
           // assuming cosine power shape
-          for (int j=0; j<numCells; j++){
+          for (size_t j=0; j<numCells; j++){
               double flux = d_Q/(2.0*pi*d_diameter*del_z[j]) * (std::cos(pi*z[j]/height) - std::cos(pi*z[j+1]/height));
               double lin = d_Q/(2.0*del_z[j])                * (std::cos(pi*z[j]/height) - std::cos(pi*z[j+1]/height));
               double flux_sum = 4.0*pi*d_diameter*1.0/4.0*flux;
