@@ -106,7 +106,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
               projectionLocalCoordsOnFace[2*pointLocalID+d] = tmpData.d_ProjectionLocalCoordsOnFace[d];
             } // end for d
             for (size_t d = 0; d < 3; ++d) {
-              shiftGlobalCoords[2*pointLocalID+d] = tmpData.d_ShiftGlobalCoords[d];
+              shiftGlobalCoords[3*pointLocalID+d] = tmpData.d_ShiftGlobalCoords[d];
             } // end for d
             for (size_t v = 0; v < 4; ++v) {
               faceVerticesGlobalIDs[4*pointLocalID+v] = tmpData.d_FaceVerticesIDs[v]; 
