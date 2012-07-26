@@ -70,10 +70,6 @@ namespace AMP {
         void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) {
           if(!d_skipRHSaddCorrection) {
             AMP::LinearAlgebra::Vector::shared_ptr myRhs = rhs->subsetVectorForVariable(d_variable);
-            size_t rhsSize = rhs->getGlobalSize();
-            size_t myRhsSize = myRhs->getGlobalSize();
-            std::cout<<"rhsSize="<<rhsSize<<"  "
-                <<"myRhsSize="<<myRhsSize<<"\n";
             myRhs->add(myRhs, d_rhsCorrectionAdd);
           }
         }
