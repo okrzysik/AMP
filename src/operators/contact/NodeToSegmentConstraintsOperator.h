@@ -98,12 +98,15 @@ namespace AMP {
           */
         AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
+        // deprecated
         void applyResidualCorrection(AMP::LinearAlgebra::Vector::shared_ptr r);
         void applySolutionCorrection(AMP::LinearAlgebra::Vector::shared_ptr u);
         void getRhsCorrection(AMP::LinearAlgebra::Vector::shared_ptr d);
-
+        void addShiftToSlave(AMP::LinearAlgebra::Vector::shared_ptr u); 
+        //
         size_t numLocalConstraints();
         size_t numGlobalConstraints();
+
         void setSlaveToZero(AMP::LinearAlgebra::Vector::shared_ptr u);
         void addSlaveToMaster(AMP::LinearAlgebra::Vector::shared_ptr u);
         void copyMasterToSlave(AMP::LinearAlgebra::Vector::shared_ptr u); 

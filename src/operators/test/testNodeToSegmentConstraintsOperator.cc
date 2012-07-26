@@ -39,6 +39,49 @@
 #include <fstream>
 #include <boost/lexical_cast.hpp>
 
+void myPCG(AMP::LinearAlgebra::Vector::shared_ptr rhs, AMP::LinearAlgebra::Vector::shared_ptr sol, 
+    AMP::Operator::Operator::shared_ptr op, boost::shared_ptr<AMP::Solver::SolverStrategy> pre,
+    size_t maxIters, double tol, bool verbose = false, std::ostream &os = std::cout) {
+  AMP::LinearAlgebra::Vector::shared_ptr res = sol->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr dir = sol->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr ext = sol->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr oldSol = sol->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr oldRes = sol->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr oldDir = sol->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr matVec = sol->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+
+  op->apply(nullVec, sol, matVec, 1.0, 0.0);
+  oldRes->subtract(rhs, matVec);
+  pre->solve(oldRes, ext);
+  oldDir->copyVector(ext);
+  oldSol->copyVector(sol);
+  double initialResNorm = oldRes->L2Norm();
+  if (verbose) { os<<std::setprecision(15)<<"  iter=0  itialResNorm="<<initialResNorm<<"\n"; }
+  for (size_t iter = 0; iter < maxIters; ++iter) {
+    if (verbose) { os<<"  iter="<<iter+1<<"  "; }
+    op->apply(nullVec, oldDir, matVec, 1.0, 0.0);
+    double extDOToldRes = ext->dot(oldRes);
+    double oldDirDOTmatVec = oldDir->dot(matVec);
+    double alpha = extDOToldRes / oldDirDOTmatVec;
+    if (verbose) { os<<"alpha="<<alpha<<"  "; }
+    if (verbose) { os<<"oldDirDOTmatVec="<<oldDirDOTmatVec<<"  "; }
+    sol->axpy(alpha, oldDir, oldSol);
+    res->axpy(-alpha, matVec, oldRes);
+    double resNorm = res->L2Norm();
+    if (verbose) { os<<"resNorm="<<resNorm<<"  "; }
+    pre->solve(res, ext);
+    double extDOTres = ext->dot(res);
+    double beta = extDOTres / extDOToldRes;
+    if (verbose) { os<<"beta="<<beta<<"\n"; }
+    dir->axpy(beta, oldDir, ext);
+    oldSol->copyVector(sol);
+    oldRes->copyVector(res);
+    oldDir->copyVector(dir);
+  } // end for
+}
+
+
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
   std::string log_file = "output_" + exeName; 
@@ -193,9 +236,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::LinearAlgebra::Variable::shared_ptr columnVar = columnOperator->getOutputVariable();
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+  // get d
   AMP::LinearAlgebra::Vector::shared_ptr tmpVec = createVector(dofManager, columnVar, split);
+  tmpVec->zero();
+  contactOperator->addShiftToSlave(tmpVec);
   AMP::LinearAlgebra::Vector::shared_ptr rhsCorrectionVec = createVector(dofManager, columnVar, split);
-  contactOperator->getRhsCorrection(tmpVec);
+  // compute - Kd
   columnOperator->apply(nullVec, tmpVec, rhsCorrectionVec, -1.0, 0.0);
   double rhsCorrectionNorm = rhsCorrectionVec->maxNorm();
   if (!rank) { std::cout<<"contact RHS correction norm is "<<rhsCorrectionNorm<<std::endl; }
@@ -209,6 +255,34 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   boost::shared_ptr<AMP::Solver::MPCSolver> contactPreconditioner(new AMP::Solver::MPCSolver(contactPreconditionerParams));
   columnPreconditioner->append(contactPreconditioner);
 
+  AMP::LinearAlgebra::Vector::shared_ptr columnSolVec = createVector(dofManager, columnVar, split);
+  AMP::LinearAlgebra::Vector::shared_ptr columnRhsVec = createVector(dofManager, columnVar, split);
+  columnSolVec->zero();
+  columnRhsVec->zero();
+
+  // compute f
+  if (slaveLoadOperator != NULL) { slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0); }
+  if (slaveBVPOperator != NULL) {
+    AMP::LinearAlgebra::Vector::shared_ptr subsetVec = slaveBVPOperator->subsetOutputVector(columnRhsVec);    
+    size_t subsetVecSize = subsetVec->getGlobalSize();
+    size_t columnVecSize = columnRhsVec->getGlobalSize();
+    std::cout<<"subsetVecSize="<<subsetVecSize<<"  "
+      <<"columnVecSize="<<columnVecSize<<"\n";
+    AMP::Discretization::DOFManager::shared_ptr slaveDOFManager = AMP::Discretization::simpleDOFManager::create(slaveMeshAdapter,
+        AMP::Mesh::Vertex, nodalGhostWidth, dofsPerNode, split);
+    
+    AMP::LinearAlgebra::Vector::shared_ptr dummyVec = createVector(slaveDOFManager, columnVar, split);
+    slaveBVPOperator->modifyRHSvector(dummyVec);
+//    slaveBVPOperator->modifyRHSvector(subsetVec);
+  } // end if
+
+  // do f <- f - Kd
+  columnRhsVec->add(columnRhsVec, rhsCorrectionVec);
+  contactOperator->addSlaveToMaster(columnRhsVec);
+  contactOperator->setSlaveToZero(columnRhsVec);
+
+  bool usePetscKrylovSolver = input_db->getBool("usePetscKrylovSolver");
+  if (usePetscKrylovSolver) {
   // Build a matrix shell operator to use the column operator with the petsc krylov solvers
   boost::shared_ptr<AMP::Database> matrixShellDatabase = input_db->getDatabase("MatrixShellOperator");
   boost::shared_ptr<AMP::Operator::OperatorParameters> matrixShellParams(new
@@ -227,17 +301,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   matrixShellOperator->setMatLocalColumnSize(matLocalSize);
   matrixShellOperator->setOperator(columnOperator); 
 
-  AMP::LinearAlgebra::Vector::shared_ptr columnSolVec = createVector(dofManager, columnVar, split);
-  AMP::LinearAlgebra::Vector::shared_ptr columnRhsVec = createVector(dofManager, columnVar, split);
-  columnSolVec->zero();
-  columnRhsVec->zero();
-
-  if (slaveLoadOperator != NULL) { slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0); }
-  if (slaveBVPOperator != NULL) {
- slaveBVPOperator->modifyRHSvector(columnRhsVec);
- }
-//  columnRhsVec->add(columnRhsVec, rhsCorrectionVec);
-
   boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new
       AMP::Solver::PetscKrylovSolverParameters(linearSolver_db));
   linearSolverParams->d_pOperator = matrixShellOperator;
@@ -247,6 +310,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   linearSolver->setZeroInitialGuess(true);
 
   linearSolver->solve(columnRhsVec, columnSolVec);
+
+  } else {
+    size_t myPCGmaxIters = input_db->getInteger("myPCGmaxIters");
+    myPCG(columnRhsVec, columnSolVec, columnOperator, columnPreconditioner, myPCGmaxIters, -99.0, true); 
+  }
+  // u^s = C u^m + d
+  contactOperator->copyMasterToSlave(columnSolVec);
+  contactOperator->addShiftToSlave(columnSolVec);
 
   meshAdapter->displaceMesh(columnSolVec);
 
@@ -347,6 +418,18 @@ void myTest2(AMP::UnitTest *ut, std::string exeName) {
     slaveLoadOperator->setVariable(slaveVar);
 
 
+  AMP::LinearAlgebra::Variable::shared_ptr columnVar = columnOperator->getOutputVariable();
+
+  AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+  AMP::LinearAlgebra::Vector::shared_ptr columnSolVec = createVector(dofManager, columnVar, split);
+  AMP::LinearAlgebra::Vector::shared_ptr columnRhsVec = createVector(dofManager, columnVar, split);
+  columnSolVec->zero();
+  columnRhsVec->zero();
+
+  slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0);
+
+  bool usePetscKrylovSolver = input_db->getBool("usePetscKrylovSolver");
+  if (usePetscKrylovSolver) {
   // Build a matrix shell operator to use the column operator with the petsc krylov solvers
   boost::shared_ptr<AMP::Database> matrixShellDatabase = input_db->getDatabase("MatrixShellOperator");
   boost::shared_ptr<AMP::Operator::OperatorParameters> matrixShellParams(new
@@ -361,16 +444,6 @@ void myTest2(AMP::UnitTest *ut, std::string exeName) {
   matrixShellOperator->setMatLocalColumnSize(matLocalSize);
   matrixShellOperator->setOperator(columnOperator); 
 
-  AMP::LinearAlgebra::Variable::shared_ptr columnVar = columnOperator->getOutputVariable();
-
-  AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-  AMP::LinearAlgebra::Vector::shared_ptr columnSolVec = createVector(dofManager, columnVar, split);
-  AMP::LinearAlgebra::Vector::shared_ptr columnRhsVec = createVector(dofManager, columnVar, split);
-  columnSolVec->zero();
-  columnRhsVec->zero();
-
-  slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0);
-
   boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new
       AMP::Solver::PetscKrylovSolverParameters(linearSolver_db));
   linearSolverParams->d_pOperator = matrixShellOperator;
@@ -381,6 +454,10 @@ void myTest2(AMP::UnitTest *ut, std::string exeName) {
 
   linearSolver->solve(columnRhsVec, columnSolVec);
 
+  } else {
+    size_t myPCGmaxIters = input_db->getInteger("myPCGmaxIters");
+    myPCG(columnRhsVec, columnSolVec, columnOperator, columnPreconditioner, myPCGmaxIters, -99.0, true); 
+  }
 
   ut->passes(exeName);
 }
