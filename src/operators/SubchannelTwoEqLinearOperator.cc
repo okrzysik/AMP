@@ -131,7 +131,7 @@ void SubchannelTwoEqLinearOperator :: apply(const AMP::LinearAlgebra::Vector::sh
       // axial positions are only used if some rod power shape is assumed
       std::vector<double> z(numFaces);
       z[0] = 0.0;
-      for( int j=1; j<numFaces; j++) {
+      for( size_t j=1; j<numFaces; j++) {
         z[j] = z[j-1] + del_z[j-1];
       } 
 
@@ -180,7 +180,7 @@ void SubchannelTwoEqLinearOperator :: apply(const AMP::LinearAlgebra::Vector::sh
       double h_in = d_frozenVec->getValueByLocalID(0);
       double h_minus = h_in;
       double h_plus = h_in;
-      for( int j=1; j <= numFaces-1; j++) {
+      for( size_t j=1; j <= numFaces-1; j++) {
           h_minus = h_plus;             // enthalpy evaluated at lower face
           h_plus  = h_minus + dh[j-1];  // enthalpy evaluated at upper face
 
