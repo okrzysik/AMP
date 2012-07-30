@@ -39,20 +39,29 @@ ManagedVector::ManagedVector ( shared_ptr  alias ):
 }
 
 
-
-  Vector::shared_ptr  ManagedVector::subsetVectorForVariable ( const Variable::shared_ptr &name )
-  {
+/********************************************************
+* Subset                                                *
+********************************************************/
+Vector::shared_ptr  ManagedVector::subsetVectorForVariable ( const Variable::shared_ptr &name )
+{
     Vector::shared_ptr  retVal;
     if ( !d_vBuffer )
-    {
-      retVal = d_Engine->castTo<Vector>().subsetVectorForVariable ( name );
-    }
+        retVal = d_Engine->castTo<Vector>().subsetVectorForVariable ( name );
     if ( !retVal )
-    {
-      retVal = Vector::subsetVectorForVariable ( name );
-    }
+        retVal = Vector::subsetVectorForVariable ( name );
     return retVal;
-  }
+}
+Vector::const_shared_ptr  ManagedVector::constSubsetVectorForVariable ( const Variable::shared_ptr &name ) const
+{
+    Vector::const_shared_ptr  retVal;
+    if ( !d_vBuffer )
+        retVal = d_Engine->castTo<const Vector>().constSubsetVectorForVariable ( name );
+    if ( !retVal )
+        retVal = Vector::constSubsetVectorForVariable ( name );
+    return retVal;
+}
+
+
 
   bool ManagedVector::isAnAliasOf ( Vector &rhs )
   {

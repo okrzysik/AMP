@@ -90,6 +90,18 @@ Vector::shared_ptr  Vector::select ( const VectorSelector &s , const std::string
         return retVal;
     return Vector::shared_ptr();
 }
+Vector::const_shared_ptr  Vector::constSelect ( const VectorSelector &s , const std::string &name ) const
+{
+    // Create a new multivector to hold the subset
+    AMP_MPI comm = s.communicator( shared_from_this() );
+    Vector::shared_ptr  retVal = MultiVector::create( name, comm );
+    // Add the subset vector
+    AMP_ERROR("Not ready for const selectInto");
+    //selectInto ( s , retVal );
+    if ( retVal->numberOfDataBlocks() )
+        return retVal;
+    return Vector::shared_ptr();
+}
 void Vector::registerView ( Vector::shared_ptr v ) const
 {
     for ( size_t i = 0 ; i != d_Views->size() ; i++ )
@@ -100,12 +112,18 @@ void Vector::registerView ( Vector::shared_ptr v ) const
 Vector::shared_ptr  Vector::subsetVectorForVariable ( const Variable::shared_ptr  &name )
 {
     Vector::shared_ptr retVal;
-    if ( d_pVariable )  // If there is a variable...
-    {
-      if ( *d_pVariable == *name )
-      {
-        retVal = shared_from_this ();
-      }
+    if ( d_pVariable ) {    // If there is a variable...
+        if ( *d_pVariable == *name )
+            retVal = shared_from_this();
+    }
+    return retVal;
+}
+Vector::const_shared_ptr  Vector::constSubsetVectorForVariable ( const Variable::shared_ptr  &name ) const
+{
+    Vector::const_shared_ptr retVal;
+    if ( d_pVariable ) {    // If there is a variable...
+        if ( *d_pVariable == *name )
+            retVal = shared_from_this();
     }
     return retVal;
 }
