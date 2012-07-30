@@ -46,7 +46,7 @@ public:
       @param [in]  b second constant used in the expression: r = a*A(u) + b*f. The default value is 1.
      */
     void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-        AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
+        AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
 
     AMP::LinearAlgebra::Variable::shared_ptr createInputVariable (const std::string & name, int  = -1)
     {

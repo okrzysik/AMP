@@ -22,7 +22,7 @@ namespace AMP {
 
     void NodeToGaussPointOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &,
         const AMP::LinearAlgebra::Vector::shared_ptr &u,
-        AMP::LinearAlgebra::Vector::shared_ptr  &r, const double , const double ) { 
+        AMP::LinearAlgebra::Vector::shared_ptr &r, const double , const double ) { 
 
       AMP::LinearAlgebra::Vector::shared_ptr nodalVec = u->subsetVectorForVariable(d_NodalVariable);
       AMP::LinearAlgebra::Vector::shared_ptr gaussPtVec = r->subsetVectorForVariable(d_GaussPtVariable);

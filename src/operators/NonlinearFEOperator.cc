@@ -8,8 +8,8 @@
 namespace AMP {
 namespace Operator {
 
-void NonlinearFEOperator :: apply(const boost::shared_ptr<AMP::LinearAlgebra::Vector>  &f, 
-    const boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r,
+void NonlinearFEOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, 
+    const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
     const double a,  const double b)
 {
     PROFILE_START("apply");

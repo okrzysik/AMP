@@ -99,7 +99,7 @@ void FlowFrapconJacobian :: reset(const boost::shared_ptr<OperatorParameters>& p
 
 // This is an in-place apply
 void FlowFrapconJacobian :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-      AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a, const double b)
+      AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double b)
 {
 
     // AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_inpVariable);

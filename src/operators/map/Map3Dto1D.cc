@@ -42,7 +42,7 @@ namespace Operator {
 
 
     void Map3Dto1D :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-        AMP::LinearAlgebra::Vector::shared_ptr  &r, const double , const double )
+        AMP::LinearAlgebra::Vector::shared_ptr &r, const double , const double )
     { 
 
       const unsigned int numPoints = outputVec->getLocalSize();

@@ -66,7 +66,7 @@ namespace Operator {
         d_paramsize = paramSz;
       }
       virtual void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-          const  AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r,
+          const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
           const double a = -1.0, const double b = 1.0);
 
       virtual boost::shared_ptr<OperatorParameters>

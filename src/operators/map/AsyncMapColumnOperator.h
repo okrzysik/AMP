@@ -40,7 +40,7 @@ public:
 
     // Overload the apply operator to include makeConsistent
     virtual void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-             const  AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r,
+             const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
              const double a = -1.0, const double b = 1.0);    
 
     /** \brief  A factory method.

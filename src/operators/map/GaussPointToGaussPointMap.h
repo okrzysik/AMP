@@ -18,7 +18,7 @@ namespace AMP {
           }
 
         void applyStart(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-            AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0) {
+            AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0) {
           AMP::LinearAlgebra::Vector::shared_ptr uInternal = u;
           if(d_useFrozenInputVec) {
             uInternal = d_frozenInputVec;

@@ -115,7 +115,7 @@ namespace AMP {
           @param [in] u  input vector
           @param [out] r output vector
           */
-        void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r);
+        void preAssembly(const AMP::LinearAlgebra::Vector::shared_ptr &u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r);
 
         /**
           This function is called at the end of the FE assembly.

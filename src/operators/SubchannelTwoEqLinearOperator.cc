@@ -75,7 +75,7 @@ std::string SubchannelTwoEqLinearOperator::getStringParameter(	boost::shared_ptr
 
 // apply
 void SubchannelTwoEqLinearOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-    AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a, const double b)
+    AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double b)
 {
 
       // ensure that solution and residual vectors aren't NULL
