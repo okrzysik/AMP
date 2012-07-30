@@ -41,8 +41,14 @@ INCLUDE (macros)
 
 ADD_AMP_PROVISIONAL_TEST(testRemDup)
 
-ADD_AMP_PROVISIONAL_TEST(testSubchannelPhysicsModel)
+ADD_AMP_TEST_1_2_4 (testSubchannelPhysicsModel)
 COPY_TEST_DATA_FILE ( input_testSubchannelPhysicsModel)
+
+ADD_AMP_TEST_1_2_4 (testSubchannelTwoEqNonlinearOperator)
+COPY_TEST_DATA_FILE ( input_testSubchannelTwoEqNonlinearOperator)
+
+ADD_AMP_TEST_1_2_4 (testSubchannelTwoEqLinearOperator)
+COPY_TEST_DATA_FILE ( input_testSubchannelTwoEqLinearOperator)
 
 ADD_AMP_PROVISIONAL_TEST( testRemDup )
 
@@ -378,6 +384,12 @@ ENDIF()
 
 IF( USE_DENDRO AND USE_PETSC )
     ADD_AMP_PROVISIONAL_TEST( testNodeToSegmentConstraintsOperator )
-    COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator )
-    COPY_MESH_FILE( Fused2Pellets_1x.e )
+    COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator-cube )
+    COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator-cylinder )
+    COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator-pellet )
+    COPY_MESH_FILE( simple_pellet_1x.e )
+    COPY_MESH_FILE( two_fused_simple_pellets_1x.e )
 ENDIF()
+
+ADD_AMP_PROVISIONAL_TEST( debugMePlease )
+COPY_TEST_DATA_FILE ( input_debugMePlease )

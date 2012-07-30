@@ -1,4 +1,6 @@
-maxIters = 1000
+useSlaveBVPOperator = FALSE
+usePetscKrylovSolver = TRUE
+myPCGmaxIters = 20
 
 Mesh{
   MeshName = "MainMesh"
@@ -10,15 +12,15 @@ Mesh{
         N = 2
         iterator = "%p"
         indicies = 1, 2
-        MeshName = "cube_%p"
+        MeshName = "cylinder_%p"
         MeshType = "AMP"
         dim = 3
-        x_offset = 0.0, 0.0
+        x_offset = 0.0, 0.1
         y_offset = 0.0, 0.0
-        z_offset = 0.0, 1.0
-        Generator = "cube"
-        Size = 8, 8, 8
-        Range = 0.0, 1.0, 0.0, 1.0, 0.0, 1.0
+        z_offset = 0.0, 0.95
+        Generator = "cylinder"
+        Size = 5, 4
+        Range = 0.5, 0.0, 1.0
     }
 }
 
@@ -29,17 +31,17 @@ FusedMesh{
     x_offset = 0.0
     y_offset = 0.0
     z_offset = 0.0
-    Generator = "cube"
-    Size = 8, 8, 16
-    Range = 0.0, 1.0, 0.0, 1.0, 0.0, 2.0
+    Generator = "cylinder"
+    Size = 5, 8
+    Range = 0.5, 0.0, 2.0
 }
 
 ContactOperator {
   name = "NodeToSegmentConstraints"
     MasterMeshIndex = 0
     SlaveMeshIndex = 1
-    MasterBoundaryID = 5
-    SlaveBoundaryID = 4
+    MasterBoundaryID = 1
+    SlaveBoundaryID = 2
     InputVariable = "displacement"
     OutputVariable = "displacement"
 }
@@ -66,7 +68,7 @@ MasterDirichletMatrixCorrection{
     skip_rhs_correction = FALSE
     skip_add_rhs_correction = TRUE
     number_of_ids = 1
-    id_0 = 4
+    id_0 = 2
     number_of_dofs_0 = 3
     dof_0_0 = 0
     dof_0_1 = 1
@@ -84,7 +86,7 @@ SlaveLoadOperator {
     setResidual = FALSE
     valuesType = 1
     number_of_ids = 1
-    id_0 = 5
+    id_0 = 1
     number_of_dofs_0 = 1
     dof_0_0 = 2
     value_0_0 = -5.0e-3
@@ -122,7 +124,7 @@ MechanicsMaterialModel {
 
 LinearSolver {
   print_info_level = 10
-    max_iterations = 2
+    max_iterations = 500
     max_error = 1.0e-16
     ksp_type = "cg"
     absolute_tolerance = 1.0e-16

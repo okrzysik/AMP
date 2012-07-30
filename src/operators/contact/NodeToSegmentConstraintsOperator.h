@@ -47,11 +47,17 @@ namespace AMP {
           d_DOFsPerNode = (params->d_DOFsPerNode);
           d_DOFManager = (params->d_DOFManager);
 
-          d_MasterMeshID = (params->d_MasterMeshID);
-          d_SlaveMeshID = (params->d_SlaveMeshID);
-          d_MasterBoundaryID = (params->d_MasterBoundaryID);
-          d_SlaveBoundaryID = (params->d_SlaveBoundaryID);
-  
+          std::vector<AMP::Mesh::MeshID> meshIDs = params->d_Mesh->getBaseMeshIDs();
+          AMP_INSIST(params->d_db->keyExists("MasterMeshIndex"), "key not found");
+          d_MasterMeshID = meshIDs[params->d_db->getInteger("MasterMeshIndex")];
+          AMP_INSIST(params->d_db->keyExists("SlaveMeshIndex"), "key not found");
+          d_SlaveMeshID = meshIDs[params->d_db->getInteger("SlaveMeshIndex")];
+
+          AMP_INSIST(params->d_db->keyExists("MasterBoundaryID"), "key not found");
+          d_MasterBoundaryID = params->d_db->getInteger("MasterBoundaryID");
+          AMP_INSIST(params->d_db->keyExists("SlaveBoundaryID"), "key not found");
+          d_SlaveBoundaryID = params->d_db->getInteger("SlaveBoundaryID");
+
           size_t rank = d_GlobalComm.getRank();
           std::string fileName = "debug_operator_" + boost::lexical_cast<std::string>(rank);
           d_fout.open(fileName.c_str(), std::fstream::out);
@@ -92,9 +98,21 @@ namespace AMP {
           */
         AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
+        // deprecated
         void applyResidualCorrection(AMP::LinearAlgebra::Vector::shared_ptr r);
-        void applySolutionConstraints(AMP::LinearAlgebra::Vector::shared_ptr u);
-        void getShift(AMP::LinearAlgebra::Vector::shared_ptr d);
+        void applySolutionCorrection(AMP::LinearAlgebra::Vector::shared_ptr u);
+        void getRhsCorrection(AMP::LinearAlgebra::Vector::shared_ptr d);
+        void addShiftToSlave(AMP::LinearAlgebra::Vector::shared_ptr u); 
+        //
+        size_t numLocalConstraints();
+        size_t numGlobalConstraints();
+
+        void setSlaveToZero(AMP::LinearAlgebra::Vector::shared_ptr u);
+        void addSlaveToMaster(AMP::LinearAlgebra::Vector::shared_ptr u);
+        void copyMasterToSlave(AMP::LinearAlgebra::Vector::shared_ptr u); 
+
+        AMP::Mesh::MeshID getMasterMeshID() const { return d_MasterMeshID; }
+        AMP::Mesh::MeshID getSlaveMeshID() const { return d_SlaveMeshID; }
 
       protected :
 
@@ -121,18 +139,20 @@ namespace AMP {
         std::vector<int> d_TransposeRecvCnts;
         std::vector<int> d_TransposeRecvDisps;
 
+        // actually we don't need to store the meshelementids but maybe useful later to check whether the active set has changed
         std::vector<AMP::Mesh::MeshElementID> d_SlaveVerticesGlobalIDs;
         std::vector<AMP::Mesh::MeshElementID> d_RecvMasterVerticesGlobalIDs;
+
         std::vector<size_t> d_SlaveIndices;
         std::vector<size_t> d_RecvMasterIndices;
         std::vector<size_t> d_MasterVerticesMap;
+        std::vector<size_t> d_MasterVerticesInverseMap;
         std::vector<size_t> d_MasterVerticesOwnerRanks;
         std::vector<double> d_MasterShapeFunctionsValues;
         std::vector<double> d_SlaveVerticesShift;
 
         boost::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable; /**< Input variable */
         boost::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
-
 
         std::fstream d_fout;
     };
