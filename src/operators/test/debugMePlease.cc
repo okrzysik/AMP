@@ -14,12 +14,9 @@
 #include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
 
-#include "externVars.h"
-
 #include "ampmesh/libmesh/libMesh.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/SiloIO.h"
-#include "ampmesh/dendro/DendroSearch.h"
 
 #include "operators/OperatorBuilder.h"
 #include "operators/LinearBVPOperator.h"
@@ -27,12 +24,10 @@
 #include "operators/PetscMatrixShellOperator.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
-#include "operators/contact/NodeToSegmentConstraintsOperator.h"
 
 #include "solvers/ColumnSolver.h"
 #include "solvers/PetscKrylovSolverParameters.h"
 #include "solvers/PetscKrylovSolver.h"
-#include "solvers/contact/MPCSolver.h"
 
 #include "utils/ReadTestMesh.h"
 
@@ -62,22 +57,22 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   meshParams->setComm(globalComm);
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
-  // Create a DOF manager
-  int dofsPerNode = 3;
-  int nodalGhostWidth = 1;
-  bool split = true;
-  AMP::Discretization::DOFManager::shared_ptr dofManager = AMP::Discretization::simpleDOFManager::create(meshAdapter,
-      AMP::Mesh::Vertex, nodalGhostWidth, dofsPerNode, split);
-
-  // build a column operator
-  boost::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
-  boost::shared_ptr<AMP::Operator::ColumnOperator> columnOperator(new AMP::Operator::ColumnOperator(emptyParams));
-
   std::vector<AMP::Mesh::MeshID> meshIDs = meshAdapter->getBaseMeshIDs();
   AMP::Mesh::MeshID masterMeshID = meshIDs[0];
   AMP::Mesh::Mesh::shared_ptr masterMeshAdapter = meshAdapter->Subset(masterMeshID);
   AMP::Mesh::MeshID slaveMeshID = meshIDs[1];
   AMP::Mesh::Mesh::shared_ptr slaveMeshAdapter = meshAdapter->Subset(slaveMeshID);
+
+  // Create a DOF manager
+  int dofsPerNode = 3;
+  int nodalGhostWidth = 1;
+  bool split = true;
+  AMP::Discretization::DOFManager::shared_ptr dofManager = AMP::Discretization::simpleDOFManager::create(slaveMeshAdapter,
+      AMP::Mesh::Vertex, nodalGhostWidth, dofsPerNode, split);
+
+  // build a column operator
+  boost::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
+  boost::shared_ptr<AMP::Operator::ColumnOperator> columnOperator(new AMP::Operator::ColumnOperator(emptyParams));
 
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> slaveBVPOperator;
   if (slaveMeshAdapter != NULL) {
@@ -92,13 +87,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   } // end if
 
 
-  AMP::LinearAlgebra::Variable::shared_ptr dummyVar = columnOperator->getOutputVariable();
+  AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::Variable("displacement"));
   AMP::LinearAlgebra::Vector::shared_ptr dummyVec = createVector(dofManager, dummyVar, split);
   dummyVec->zero();
 
   if (slaveBVPOperator != NULL) {
-    AMP::LinearAlgebra::Vector::shared_ptr subsetVec = slaveBVPOperator->subsetOutputVector(dummyVec);    
-    slaveBVPOperator->modifyRHSvector(subsetVec);
+    slaveBVPOperator->modifyRHSvector(dummyVec);
   } // end if
 
   ut->passes(exeName);
