@@ -1,4 +1,6 @@
-useSlaveBVPOperator = TRUE
+useSlaveBVPOperator = FALSE
+usePetscKrylovSolver = TRUE
+myPCGmaxIters = 20
 
 Mesh{
   MeshName = "MainMesh"
@@ -13,9 +15,9 @@ Mesh{
         MeshName = "cube_%p"
         MeshType = "AMP"
         dim = 3
-        x_offset = 0.0, 0.0
-        y_offset = 0.0, 0.0
-        z_offset = 0.0, 1.0
+        x_offset = 0.0, 0.2
+        y_offset = 0.0, 0.1
+        z_offset = 0.0, 0.95
         Generator = "cube"
         Size = 8, 8, 8
         Range = 0.0, 1.0, 0.0, 1.0, 0.0, 1.0
@@ -149,7 +151,7 @@ MechanicsMaterialModel {
 
 LinearSolver {
   print_info_level = 10
-    max_iterations = 10
+    max_iterations = 500
     max_error = 1.0e-16
     ksp_type = "cg"
     absolute_tolerance = 1.0e-16

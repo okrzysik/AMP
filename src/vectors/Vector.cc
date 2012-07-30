@@ -30,6 +30,8 @@ Vector::Vector ()
     d_AddBuffer = boost::shared_ptr<std::vector<double> > ( new std::vector<double> );
     d_UpdateState.reset( new UpdateState );
     *d_UpdateState = UNCHANGED;
+    d_Views = boost::shared_ptr<std::vector<boost::weak_ptr <Vector> > >( 
+        new std::vector<boost::weak_ptr <Vector> >() );
 }  
 Vector::Vector( const Vector&rhs ): 
     VectorOperations (),
@@ -47,6 +49,8 @@ Vector::Vector( VectorParameters::shared_ptr  parameters)
     d_UpdateState.reset( new UpdateState );
     *d_UpdateState = UNCHANGED;
     d_DOFManager = parameters->d_DOFManager;
+    d_Views = boost::shared_ptr<std::vector<boost::weak_ptr <Vector> > >( 
+        new std::vector<boost::weak_ptr <Vector> >() );
 }
 
 
@@ -86,13 +90,12 @@ Vector::shared_ptr  Vector::select ( const VectorSelector &s , const std::string
         return retVal;
     return Vector::shared_ptr();
 }
-void Vector::registerView ( Vector::shared_ptr v )
+void Vector::registerView ( Vector::shared_ptr v ) const
 {
-    for ( size_t i = 0 ; i != d_Views.size() ; i++ )
-      if ( d_Views[i].lock() == v )
+    for ( size_t i = 0 ; i != d_Views->size() ; i++ )
+      if ( (*d_Views)[i].lock() == v )
         return;
-
-    d_Views.push_back ( v );
+    (*d_Views).push_back( v );
 }
 Vector::shared_ptr  Vector::subsetVectorForVariable ( const Variable::shared_ptr  &name )
 {

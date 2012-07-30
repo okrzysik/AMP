@@ -19,6 +19,7 @@
 #include "ampmesh/Mesh.h"
 #include "ampmesh/dendro/DendroSearch.h"
 
+#include <iomanip>
 
 double dummyFunction(const std::vector<double> &xyz, const int dof) {
   AMP_ASSERT(xyz.size() == 3);

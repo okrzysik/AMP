@@ -3,8 +3,10 @@
 
 #include <numeric>
 #include <fstream>
+#include <iomanip>
 #include <boost/lexical_cast.hpp>
 #include <set>
+#include "ampmesh/latex_visualization_tools.h"
 
 DendroSearch::DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh) 
   : d_meshAdapter(mesh),
@@ -24,6 +26,11 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
 
   const int rank = comm.getRank();
   const int npes = comm.getSize();
+std::fstream d_fout;
+std::string fileName = "tmp_dendro_" + boost::lexical_cast<std::string>(rank);
+d_fout.open(fileName.c_str(), std::fstream::out);
+d_fout<<std::setprecision(6)<<std::fixed;
+double point_of_view[] = { 0.725866, -0.334606, 0.600964 };
 
   double projectBeginTime, projectStep1Time, projectStep2Time;
   if(d_verbose) {
@@ -43,7 +50,14 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
     const size_t elementLocalID = static_cast<size_t>(d_foundPts[i]);
     tmpData.d_PointLocalID = pointLocalID;
     AMP::Mesh::MeshElement* meshElement = &(d_localElemArr[elementLocalID]);
-    if (meshElement->isOnBoundary(boundaryID)) { // point was found and element is on boundary if the considered mesh
+    if (meshElement->isOnBoundary(boundaryID)) { // point was found and element is on boundary
+d_fout<<"% elementLocalID="<<elementLocalID<<"\n";
+draw_hex8_element(&(d_volume_elements[elementLocalID]), point_of_view, d_fout);
+double globalCoords[3];
+d_volume_elements[elementLocalID].map_local_to_global(pointLocalCoords_ptr, globalCoords);
+d_fout<<"% pointLocalID="<<pointLocalID<<"\n";
+draw_point(globalCoords, "", d_fout); 
+d_fout<<"\n";
       std::vector<AMP::Mesh::MeshElement> meshElementFaces = meshElement->getElements(AMP::Mesh::Face);
       AMP_ASSERT( meshElementFaces.size() == 6 );
       for (size_t f = 0; f < 6; ++f) {
@@ -56,7 +70,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
           } // end for v
           d_volume_elements[elementLocalID].project_on_face(f, pointLocalCoords_ptr,
               &(tmpData.d_ProjectionLocalCoordsOnFace[0]), &(tmpData.d_ShiftGlobalCoords[0]));
-
+//draw_shift(...)
           break; // we assume only one face will be on the boundary
         } // end if
       } // end for f
@@ -125,6 +139,8 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
         std::cout<<"Time for step-2 of project on boundary: "<<(projectStep2Time - projectStep1Time)<<" seconds."<<std::endl;
       }
     }
+
+          d_fout.close();
   }
 
   void DendroSearch::searchAndInterpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
@@ -522,6 +538,12 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
     const int rank = comm.getRank();
     const int npes = comm.getSize();
 
+std::fstream d_fout;
+std::string fileName = "tmp_cascade_" + boost::lexical_cast<std::string>(rank);
+d_fout.open(fileName.c_str(), std::fstream::out);
+d_fout<<std::setprecision(6)<<std::fixed;
+double point_of_view[] = { 0.725866, -0.334606, 0.600964 };
+
     std::vector<int> rankMap(npes);
 
     int myRank = -1;
@@ -769,10 +791,24 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
     d_foundPts.reserve(6*numRecvPts);
     unsigned int numFoundPts = 0;
     bool coordinates_are_local = true;
+std::vector<double> firstComeFirstServed;
     for(int i = 0; i < numRecvPts; ++i) {
       double const * tmpPtGlobalCoordPtr = &(recvPtsList[6*i])+1;
       unsigned int eId = static_cast<unsigned int>(recvPtsList[6*i]);
       unsigned int procId = static_cast<unsigned int>(recvPtsList[6*i+5]);
+if (firstComeFirstServed.empty()) { 
+  firstComeFirstServed.resize(3);
+  std::copy(tmpPtGlobalCoordPtr, tmpPtGlobalCoordPtr+3, firstComeFirstServed.begin());
+  d_fout<<"% first point was \n";
+  draw_point(tmpPtGlobalCoordPtr, "", d_fout);
+  d_fout<<"\n";
+} // end if
+if (std::equal(tmpPtGlobalCoordPtr, tmpPtGlobalCoordPtr+3, firstComeFirstServed.begin())) {
+  d_fout<<"% elementLocalID="<<eId<<"\n";
+  draw_hex8_element(&(d_volume_elements[eId]), point_of_view, d_fout);
+  d_fout<<"\n";
+} // end if
+
       if (d_volume_elements[eId].within_bounding_box(tmpPtGlobalCoordPtr, d_tolerance)) {
         if (d_volume_elements[eId].within_bounding_polyhedron(tmpPtGlobalCoordPtr, d_tolerance)) {
           d_volume_elements[eId].map_global_to_local(tmpPtGlobalCoordPtr, &(tmpPtLocalCoord[0]));

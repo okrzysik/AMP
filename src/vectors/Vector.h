@@ -973,24 +973,24 @@ public:
       * \return True if a view of this type has been created.  False, otherwise.
       */
     template <typename VIEW_TYPE>
-    bool            hasView () const;
+    bool  hasView () const;
 
     /** \brief Add a view of this vector to an internal queue.
       * \param[in] v The view to add
       */
-    void            registerView ( Vector::shared_ptr v );
+    void  registerView ( Vector::shared_ptr v ) const;
 
     /** \brief Write owned data to an std::ostream
       * \param[in] out  The output stream to write to.
       * \param[in] GIDoffset  A number to add to the global ID when writing information
       * \param[in] LIDoffset  A number to add to the local ID when writing information
       */
-    virtual void      dumpOwnedData ( std::ostream &out , size_t GIDoffset=0 , size_t LIDoffset = 0 ) const;
+    virtual void  dumpOwnedData ( std::ostream &out , size_t GIDoffset=0 , size_t LIDoffset = 0 ) const;
     /** \brief Write data owned by other processors to an std::ostream
       * \param[in] out  The output stream to write to.
       * \param[in] offset  A number to add to the global ID when writing information
       */
-    virtual void      dumpGhostedData ( std::ostream &out , size_t offset=0 ) const;
+    virtual void  dumpGhostedData ( std::ostream &out , size_t offset=0 ) const;
 
     /** \brief Set the default RNG of this vector
       * \param[in] rng  The generator to set
@@ -1124,7 +1124,7 @@ private:
 
     boost::shared_ptr<std::vector<double> >         d_Ghosts;
     boost::shared_ptr<std::vector<double> >         d_AddBuffer;
-    std::vector<boost::weak_ptr <Vector> >          d_Views;
+    boost::shared_ptr<std::vector<boost::weak_ptr<Vector> > >  d_Views;
 
 };
 

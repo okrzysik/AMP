@@ -268,10 +268,6 @@ namespace AMP {
       applyResidualCorrection(r);
     }
 
-    void NodeToSegmentConstraintsOperator::applySolutionCorrection(AMP::LinearAlgebra::Vector::shared_ptr u) {
-      copyMasterToSlave(u);
-    }
-
     void NodeToSegmentConstraintsOperator::copyMasterToSlave(AMP::LinearAlgebra::Vector::shared_ptr u) {
       /** send and receive the master values */
       AMP::AMP_MPI comm = d_GlobalComm;
@@ -308,11 +304,6 @@ namespace AMP {
       } // end if
     }
 
-    void NodeToSegmentConstraintsOperator::applyResidualCorrection(AMP::LinearAlgebra::Vector::shared_ptr r) {
-      addSlaveToMaster(r);
-      setSlaveToZero(r);
-    }
-
     void NodeToSegmentConstraintsOperator::addSlaveToMaster(AMP::LinearAlgebra::Vector::shared_ptr u) {
       /** send and receive slave value times shape functions values */
       AMP::AMP_MPI comm = d_GlobalComm;
@@ -345,6 +336,21 @@ namespace AMP {
         std::vector<double> zeroSlaveValues(d_SlaveIndices.size(), 0.0);
         u->setLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(zeroSlaveValues[0]));
       } // end if
+    }
+
+    void NodeToSegmentConstraintsOperator::addShiftToSlave(AMP::LinearAlgebra::Vector::shared_ptr u) {
+      AMP_ASSERT( d_SlaveVerticesShift.size() == d_SlaveIndices.size() );
+      u->addLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(d_SlaveVerticesShift[0])); 
+    }
+
+    void NodeToSegmentConstraintsOperator::applyResidualCorrection(AMP::LinearAlgebra::Vector::shared_ptr r) {
+      addSlaveToMaster(r);
+      setSlaveToZero(r);
+    }
+
+    void NodeToSegmentConstraintsOperator::applySolutionCorrection(AMP::LinearAlgebra::Vector::shared_ptr u) {
+      copyMasterToSlave(u);
+//      addShiftToSlave(u);
     }
 
     void NodeToSegmentConstraintsOperator::getRhsCorrection(AMP::LinearAlgebra::Vector::shared_ptr d) {

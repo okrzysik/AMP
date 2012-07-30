@@ -16,13 +16,13 @@ namespace LinearAlgebra {
   template <typename VIEW_TYPE>
   Vector::shared_ptr  Vector::getView () const
   {
-    for ( size_t i = 0 ; i != d_Views.size() ; i++ )
+    for ( size_t i = 0 ; i != d_Views->size() ; i++ )
     {
-      if ( d_Views[i].lock() )
+      if ( (*d_Views)[i].lock() )
       {
-        if ( d_Views[i].lock()->isA<VIEW_TYPE>() )
+        if ( (*d_Views)[i].lock()->isA<VIEW_TYPE>() )
         {
-          return Vector::shared_ptr ( d_Views[i] );
+          return Vector::shared_ptr ( (*d_Views)[i] );
         }
       }
     }
@@ -32,11 +32,11 @@ namespace LinearAlgebra {
   template <typename VIEW_TYPE>
   bool  Vector::hasView () const
   {
-    for ( size_t i = 0 ; i != d_Views.size() ; i++ )
+    for ( size_t i = 0 ; i != d_Views->size() ; i++ )
     {
-      if ( d_Views[i].lock() )
+      if ( (*d_Views)[i].lock() )
       {
-        if ( d_Views[i].lock()->isA<VIEW_TYPE>() )
+        if ( (*d_Views)[i].lock()->isA<VIEW_TYPE>() )
         {
           return true;
         }

@@ -88,7 +88,7 @@ void draw_bounding_polyhedron(hex8_element_t * e_ptr, double const * point_of_vi
       } else {
         options[2*f+t] += "fill=none,dotted";
       } // end if
-      draw_triangle(t_ptr+2*f+t, options[2*f+t]);
+      draw_triangle(t_ptr+2*f+t, options[2*f+t], os);
     } // end for t
   } // end for f
 }
@@ -104,7 +104,7 @@ void draw_hex8_element(hex8_element_t * e_ptr, double const * point_of_view, std
     } else {
       options[f] += "fill=none,dotted";
     } // end if
-    draw_face(e_ptr, f, options[f]); 
+    draw_face(e_ptr, f, options[f], os); 
   } 
 }
 
