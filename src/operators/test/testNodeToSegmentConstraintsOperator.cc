@@ -38,6 +38,37 @@
 
 #include <fstream>
 #include <boost/lexical_cast.hpp>
+#include "ampmesh/latex_visualization_tools.h"
+#include "ampmesh/euclidean_geometry_tools.h"
+
+void drawBoundaryID(AMP::Mesh::Mesh::shared_ptr meshAdapter, int boundaryID, std::ostream &os, double const * point_of_view) {
+  AMP::Mesh::MeshIterator boundaryIterator = meshAdapter->getBoundaryIDIterator(AMP::Mesh::Face, boundaryID);
+  AMP::Mesh::MeshIterator boundaryIterator_begin = boundaryIterator.begin(), 
+      boundaryIterator_end = boundaryIterator.end();
+  std::vector<AMP::Mesh::MeshElement> faceVertices;
+  std::vector<double> faceVertexCoordinates;
+  double faceData[12];
+  double const * faceDataPtr[4] = { faceData, faceData+3, faceData+6, faceData+9 };
+
+  os<<std::setprecision(6)<<std::fixed;
+
+  for (boundaryIterator = boundaryIterator_begin; boundaryIterator != boundaryIterator_end; ++boundaryIterator) {
+    faceVertices = boundaryIterator->getElements(AMP::Mesh::Vertex);
+    AMP_ASSERT( faceVertices.size() == 4 );
+    for (size_t i = 0; i < 4; ++i) {
+      faceVertexCoordinates = faceVertices[i].coord();
+      AMP_ASSERT( faceVertexCoordinates.size() == 3 );
+      std::copy(faceVertexCoordinates.begin(), faceVertexCoordinates.end(), faceData+3*i);
+    } // end for i
+    triangle_t t(faceDataPtr[0], faceDataPtr[1], faceDataPtr[2]);
+
+    std::string option = "";
+    if (compute_scalar_product(point_of_view, t.get_normal()) > 0.0) {
+      os<<"\\draw["<<option<<"]\n";
+      write_face(faceDataPtr, os);
+    } // end if
+  } // end for
+}
 
 void myPCG(AMP::LinearAlgebra::Vector::shared_ptr rhs, AMP::LinearAlgebra::Vector::shared_ptr sol, 
     AMP::Operator::Operator::shared_ptr op, boost::shared_ptr<AMP::Solver::SolverStrategy> pre,
@@ -183,6 +214,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 //    masterSolverParams->d_comm = globalComm;
     boost::shared_ptr<AMP::Solver::PetscKrylovSolver> masterSolver(new AMP::Solver::PetscKrylovSolver(masterSolverParams));
     columnPreconditioner->append(masterSolver);
+double point_of_view[3] = { 1.0, 1.0, 1.0 };
+drawBoundaryID(masterMeshAdapter, 1, fout, point_of_view);
+drawBoundaryID(masterMeshAdapter, 4, fout, point_of_view);
   } // end if
 
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> slaveLoadOperator;
@@ -264,20 +298,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   if (slaveLoadOperator != NULL) { slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0); }
   if (slaveBVPOperator != NULL) {
     AMP::LinearAlgebra::Vector::shared_ptr subsetVec = slaveBVPOperator->subsetOutputVector(columnRhsVec);    
-    size_t subsetVecSize = subsetVec->getGlobalSize();
-    size_t columnVecSize = columnRhsVec->getGlobalSize();
-    std::cout<<"subsetVecSize="<<subsetVecSize<<"  "
-      <<"columnVecSize="<<columnVecSize<<"\n";
-    AMP::Discretization::DOFManager::shared_ptr slaveDOFManager = AMP::Discretization::simpleDOFManager::create(slaveMeshAdapter,
-        AMP::Mesh::Vertex, nodalGhostWidth, dofsPerNode, split);
-    
-    AMP::LinearAlgebra::Vector::shared_ptr dummyVec = createVector(slaveDOFManager, columnVar, split);
-    slaveBVPOperator->modifyRHSvector(dummyVec);
-//    slaveBVPOperator->modifyRHSvector(subsetVec);
+    slaveBVPOperator->modifyRHSvector(subsetVec);
   } // end if
 
-  // do f <- f - Kd
+  // f = f - Kd
   columnRhsVec->add(columnRhsVec, rhsCorrectionVec);
+  // f^m = f^m + C^T f^s
+  // f^s = 0
   contactOperator->addSlaveToMaster(columnRhsVec);
   contactOperator->setSlaveToZero(columnRhsVec);
 
@@ -474,12 +501,15 @@ int main(int argc, char *argv[])
   AMP::UnitTest ut;
 
   std::vector<std::string> exeNames; 
-  exeNames.push_back("testNodeToSegmentConstraintsOperator-cube");
+//  exeNames.push_back("testNodeToSegmentConstraintsOperator-cube");
 //  exeNames.push_back("testNodeToSegmentConstraintsOperator-cylinder");
-//  exeNames.push_back("testNodeToSegmentConstraintsOperator-pellet");
+  exeNames.push_back("testNodeToSegmentConstraintsOperator-pellet");
 
   try {
-    for (size_t i = 0; i < exeNames.size(); ++i) { myTest(&ut, exeNames[i]); myTest2(&ut, exeNames[i]); }
+    for (size_t i = 0; i < exeNames.size(); ++i) { 
+      myTest(&ut, exeNames[i]); 
+//      myTest2(&ut, exeNames[i]); 
+    } // end for
   } catch (std::exception &err) {
     std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
     ut.failure("ERROR: While testing");
