@@ -24,8 +24,8 @@
     #include <stdio.h>   
     #include <tchar.h>
     #include <psapi.h>
-    //#pragma comment(lib, “psapi.lib”) //added
-    //#pragma comment(linker, “/DEFAULTLIB:psapi.lib”)
+    //#pragma comment(lib, psapi.lib) //added
+    //#pragma comment(linker, /DEFAULTLIB:psapi.lib)
 #elif defined(__APPLE__)
     #define USE_MAC
     #include <signal.h>
