@@ -4,7 +4,7 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-const Vector::shared_ptr  SundialsVector::constView ( const Vector::shared_ptr inVector )
+Vector::const_shared_ptr  SundialsVector::constView ( Vector::const_shared_ptr inVector )
 {
     Vector::shared_ptr  retVal;
 
@@ -14,11 +14,13 @@ const Vector::shared_ptr  SundialsVector::constView ( const Vector::shared_ptr i
         return inVector->getView<SundialsVector>();
 
     if ( inVector->isA<ManagedVector> () ) {
-        retVal = Vector::shared_ptr ( new ManagedSundialsVector ( inVector ) );
+        Vector::shared_ptr inVector2 = boost::const_pointer_cast<Vector>( inVector );
+        retVal = Vector::shared_ptr ( new ManagedSundialsVector ( inVector2 ) );
         inVector->registerView ( retVal );
     } else if ( inVector->isA<VectorEngine> () ) {
+        Vector::shared_ptr inVector2 = boost::const_pointer_cast<Vector>( inVector );
         ManagedSundialsVectorParameters *new_params = new ManagedSundialsVectorParameters;
-        new_params->d_Engine = boost::dynamic_pointer_cast<VectorEngine> ( inVector );
+        new_params->d_Engine = boost::dynamic_pointer_cast<VectorEngine> ( inVector2 );
         new_params->d_CloneEngine = false;
         if ( inVector->getCommunicationList().get()!=NULL )
             new_params->d_CommList = inVector->getCommunicationList();

@@ -15,7 +15,7 @@ void PetscVector::dataChanged ()
 }
 
 
-const Vector::shared_ptr  PetscVector::constView ( const Vector::shared_ptr inVector )
+Vector::const_shared_ptr  PetscVector::constView ( Vector::const_shared_ptr inVector )
 {
     Vector::shared_ptr  retVal;
 
@@ -25,19 +25,21 @@ const Vector::shared_ptr  PetscVector::constView ( const Vector::shared_ptr inVe
         return inVector->getView<PetscVector>();
   
     if ( inVector->isA<ManagedVector> () ) {
-        retVal = Vector::shared_ptr ( new ManagedPetscVector ( inVector ) );
+        Vector::shared_ptr inVector2 = boost::const_pointer_cast<Vector>( inVector );
+        retVal = Vector::shared_ptr ( new ManagedPetscVector( inVector2 ) );
         retVal->setVariable ( inVector->getVariable() );
         inVector->registerView ( retVal );
     } else if ( inVector->isA<VectorEngine> () ) {
+        Vector::shared_ptr inVector2 = boost::const_pointer_cast<Vector>( inVector );
         ManagedPetscVectorParameters *newParams = new ManagedPetscVectorParameters;
-        newParams->d_Engine = boost::dynamic_pointer_cast<VectorEngine> ( inVector );
+        newParams->d_Engine = boost::dynamic_pointer_cast<VectorEngine>( inVector2 );
         newParams->d_CloneEngine = false;
         AMP_INSIST(inVector->getCommunicationList().get()!=NULL,"All vectors must have a communication list");
         newParams->d_CommList = inVector->getCommunicationList();
         AMP_INSIST(inVector->getDOFManager().get()!=NULL,"All vectors must have a DOFManager list");
         newParams->d_DOFManager = inVector->getDOFManager();
         ManagedPetscVector *t = new ManagedPetscVector ( VectorParameters::shared_ptr ( newParams ) );
-        inVector->castTo<DataChangeFirer>().registerListener( t );
+        inVector2->castTo<DataChangeFirer>().registerListener( t );
         t->setVariable ( inVector->getVariable() );
         t->setUpdateStatusPtr ( inVector->getUpdateStatusPtr () );
         retVal = Vector::shared_ptr ( t );
