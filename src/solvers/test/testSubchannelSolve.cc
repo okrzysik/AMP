@@ -1,7 +1,6 @@
 #include <string>
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
-#include "utils/Utilities.h"
 
 #include "boost/shared_ptr.hpp"
 
@@ -11,7 +10,6 @@
 #include "utils/PIO.h"
 #include "utils/Database.h"
 
-#include "ampmesh/Mesh.h"
 #include "ampmesh/SiloIO.h"
 
 #include "discretization/DOF_Manager.h"
@@ -32,6 +30,8 @@
 #include "solvers/PetscSNESSolver.h"
 #include "solvers/TrilinosMLSolver.h"
 
+#include "SubchannelHelpers.h"
+
 void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
 {
     std::string input_file = "input_" + exeName;
@@ -40,7 +40,6 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::PIO::logAllNodes(log_file);
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
     globalComm.barrier();
-    double t0 = AMP::AMP_MPI::time();
 
     // Read the input file
     boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
@@ -56,18 +55,20 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::Mesh::Mesh::shared_ptr  subchannelMesh = AMP::Mesh::Mesh::buildMesh(params);
 
     AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
-    xyFaceMesh = subchannelMesh->Subset( getFaceIterator( manager ) );
+    xyFaceMesh = subchannelMesh->Subset( getFaceIterator( subchannelMesh , 1 ) );
 
     int DofsPerFace =  1;
-    AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create(xyFaceMesh,AMP::Mesh::Face,1,DofsPerFace,true);
+    AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create(subchannelMesh,getFaceIterator( subchannelMesh , 1 ),getFaceIterator( subchannelMesh , 0 ),DofsPerFace);
+    AMP::LinearAlgebra::Variable::shared_ptr flowVariable (new AMP::LinearAlgebra::Variable("Flow"));
     AMP::LinearAlgebra::Vector::shared_ptr flowSolVec = AMP::LinearAlgebra::createVector( faceDOFManager , flowVariable, true );
 
 #ifdef USE_SILO
     // Register the quantities to plot
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
-    siloWriter->registerVector( flowSolVec, surfaceMesh, AMP::Mesh::Face, "SubchannelFlowPressure" );
-    siloWriter->writeFile( silo_name , tstep );
+    siloWriter->registerVector( flowSolVec, xyFaceMesh, AMP::Mesh::Face, "SubchannelFlowPressure" );
+    siloWriter->writeFile( silo_name , 0 );
 #endif
+
 
 }
 
