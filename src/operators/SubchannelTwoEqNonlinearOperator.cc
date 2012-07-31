@@ -87,6 +87,13 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
       AMP::LinearAlgebra::Vector::shared_ptr inputVec = subsetInputVector( u );
       AMP::LinearAlgebra::Vector::shared_ptr outputVec = subsetOutputVector( r );
 
+      AMP::Discretization::DOFManager::shared_ptr dof_manager = inputVec->getDOFManager();
+
+      // get the Iterators for the subchannel mesh
+      AMP::Mesh::MeshIterator face     = d_Mesh->getIterator(AMP::Mesh::Face, 0);
+      AMP::Mesh::MeshIterator end_face = face.end();
+      AMP::Mesh::MeshIterator lastbutone_face = --en_face;
+
       /**
         get boundary values: u has ordering:
         \f[ \vec{u}=\left[\begin{array}{c}
@@ -96,10 +103,31 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
                           p_{J^+}\\
                           \end{array}\right] \f]
         */
-      const int numCells = inputVec->getLocalSize() - 2;
-      const int numFaces = numCells + 1;
-      double h_in  = inputVec->getValueByLocalID(0);
-      double P_in  = inputVec->getValueByLocalID(1);    
+      const int numCells = face.size() - 1;
+      const int numFaces = face.size() ;
+
+      std::vector<size_t> dofs;
+      dof_manager->getDOFs( face->globalID(), dofs );
+
+      double h_in  = inputVec->getValueByGlobalID(dofs[0]);
+      double P_in  = inputVec->getValueByGlobalID(dofs[1]);    
+
+      // evaluate enthalpy at inlet
+      std::map<std::string, boost::shared_ptr<std::vector<double> > > enthalpyArgMap;
+      enthalpyArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,d_Tin)));
+      enthalpyArgMap.insert(std::make_pair("pressure",   new std::vector<double>(1,P_in)));
+      std::vector<double> enthalpyResult(1);
+      d_subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap); 
+      double h_eval = enthalpyResult[0];
+
+      /**
+        evaluate first residual entry, corresponding to inlet enthalpy:
+        \f[ R_0 = h_{in} - h(T_{in},p_{1-})\f]
+        */
+      double R_b = h_in - h_eval;
+
+      // put first residual value into residual vector
+      outputVec->setValueByGlobalID(dofs[0], R_b);
 
       // get interval lengths from mesh
       std::vector<double> box = d_Mesh->getBoundingBox();
@@ -142,36 +170,27 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
       }
 
       // strongly impose outlet pressure boundary condition
-      inputVec->setValueByLocalID(numFaces, d_Pout);
-      outputVec->setValueByLocalID(numFaces, 0.0);
+      dof_manager->getDOFs( end_face->globalID(), dofs );
+      inputVec->setValueByGlobalID(dofs[1], d_Pout);
+      outputVec->setValueByGlobalID(dofs[1], 0.0);
 
-      // evaluate enthalpy at inlet
-      std::map<std::string, boost::shared_ptr<std::vector<double> > > enthalpyArgMap;
-      enthalpyArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,d_Tin)));
-      enthalpyArgMap.insert(std::make_pair("pressure",   new std::vector<double>(1,P_in)));
-      std::vector<double> enthalpyResult(1);
-      d_subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap); 
-      double h_eval = enthalpyResult[0];
-
-      /**
-        evaluate first residual entry, corresponding to inlet enthalpy:
-        \f[ R_0 = h_{in} - h(T_{in},p_{1-})\f]
-        */
-      double R_b = h_in - h_eval;
-
-      // put first residual value into residual vector
-      outputVec->setValueByLocalID(0, R_b);
  
       // calculate residual for axial momentum equations
       double h_minus = h_in;
       double h_plus = h_in;
-      for( int j=1; j<numFaces; j++) {
+      int j = 1;
+      for( ; face != end_face; ++j){
           h_minus = h_plus;                            // enthalpy evaluated at lower face
           h_plus  = h_minus + dh[j-1];                 // enthalpy evaluated at upper face
           double h_avg   = 1.0/2.0*(h_minus + h_plus); // enthalpy evaluated at cell center
 
-          double p_plus  = inputVec->getValueByLocalID(j+1); // pressure evaluated at upper face
-          double p_minus = inputVec->getValueByLocalID(j);   // pressure evaluated at lower face
+          dof_manager->getDOFs( face->globalID(), dofs );
+          double p_minus = inputVec->getValueByGlobalID(dofs[1]);   // pressure evaluated at lower face
+
+          ++face;
+          dof_manager->getDOFs( face->globalID(), dofs );
+          double p_plus  = inputVec->getValueByGlobalID(dofs[1]); // pressure evaluated at upper face
+
           double p_avg   = 1.0/2.0*(p_minus + p_plus);       // pressure evaluated at cell center
 
           // evaluate density at upper face
@@ -208,7 +227,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
               + p_plus - p_minus;
 
           // put residual value in residual vector
-          outputVec->setValueByLocalID(j, R_b);
+          outputVec->setValueByGlobalID(dofs[1], R_b);
       }
 
       if(f.get() == NULL) {
