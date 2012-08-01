@@ -197,7 +197,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   // build the master and slave operators
   AMP::Mesh::MeshID masterMeshID = contactOperator->getMasterMeshID();
   AMP::Mesh::Mesh::shared_ptr masterMeshAdapter = meshAdapter->Subset(masterMeshID);
-  if (masterMeshAdapter != NULL) {
+  if (masterMeshAdapter.get() != NULL) {
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> masterElementPhysicsModel;
     boost::shared_ptr<AMP::Operator::LinearBVPOperator> masterOperator = boost::dynamic_pointer_cast<
         AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(masterMeshAdapter,
@@ -224,7 +224,7 @@ drawBoundaryID(masterMeshAdapter, 4, fout, point_of_view);
 
   AMP::Mesh::MeshID slaveMeshID = contactOperator->getSlaveMeshID();
   AMP::Mesh::Mesh::shared_ptr slaveMeshAdapter = meshAdapter->Subset(slaveMeshID);
-  if (slaveMeshAdapter != NULL) {
+  if (slaveMeshAdapter.get() != NULL) {
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> slaveElementPhysicsModel;
 
     boost::shared_ptr<AMP::Database> slaveSolver_db = columnPreconditioner_db->getDatabase("SlaveSolver"); 
@@ -281,7 +281,7 @@ drawBoundaryID(masterMeshAdapter, 4, fout, point_of_view);
   columnRhsVec->zero();
 
   // compute f
-  if (slaveLoadOperator != NULL) { 
+  if (slaveLoadOperator.get() != NULL) { 
     slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0);
   } // end if
 
@@ -308,7 +308,7 @@ drawBoundaryID(masterMeshAdapter, 4, fout, point_of_view);
   contactOperator->setSlaveToZero(columnRhsVec);
 
   // apply dirichlet rhs correction
-  if (slaveBVPOperator != NULL) {
+  if (slaveBVPOperator.get() != NULL) {
     slaveBVPOperator->modifyRHSvector(columnRhsVec);
   } // end if
 
@@ -324,8 +324,8 @@ drawBoundaryID(masterMeshAdapter, 4, fout, point_of_view);
 
   int numMasterLocalNodes = 0;
   int numSlaveLocalNodes = 0;
-  if (masterMeshAdapter != NULL) { numMasterLocalNodes = masterMeshAdapter->numLocalElements(AMP::Mesh::Vertex); }
-  if (slaveMeshAdapter != NULL) { numSlaveLocalNodes = slaveMeshAdapter->numLocalElements(AMP::Mesh::Vertex); }
+  if (masterMeshAdapter.get() != NULL) { numMasterLocalNodes = masterMeshAdapter->numLocalElements(AMP::Mesh::Vertex); }
+  if (slaveMeshAdapter.get() != NULL) { numSlaveLocalNodes = slaveMeshAdapter->numLocalElements(AMP::Mesh::Vertex); }
   int matLocalSize = dofsPerNode * (numMasterLocalNodes + numSlaveLocalNodes);
   AMP_ASSERT( matLocalSize == dofManager->numLocalDOF() );
   matrixShellOperator->setComm(globalComm);
@@ -512,7 +512,7 @@ int main(int argc, char *argv[])
   try {
     for (size_t i = 0; i < exeNames.size(); ++i) { 
       myTest(&ut, exeNames[i]); 
-      myTest2(&ut, exeNames[i]); 
+//      myTest2(&ut, exeNames[i]); 
     } // end for
   } catch (std::exception &err) {
     std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
