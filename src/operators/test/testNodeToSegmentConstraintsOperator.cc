@@ -124,7 +124,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::Mesh::SiloIO::shared_ptr siloWriter(new AMP::Mesh::SiloIO);
 #endif
 
-  int npes = globalComm.getSize();
+//  int npes = globalComm.getSize();
   int rank = globalComm.getRank();
   std::fstream fout;
   std::string fileName = "debug_driver_" + boost::lexical_cast<std::string>(rank);
@@ -266,22 +266,6 @@ drawBoundaryID(masterMeshAdapter, 4, fout, point_of_view);
 
   } // end if
 
-
-  AMP::LinearAlgebra::Variable::shared_ptr columnVar = columnOperator->getOutputVariable();
-
-  AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-  // get d
-  AMP::LinearAlgebra::Vector::shared_ptr tmpVec = createVector(dofManager, columnVar, split);
-  tmpVec->zero();
-  contactOperator->addShiftToSlave(tmpVec);
-  AMP::LinearAlgebra::Vector::shared_ptr rhsCorrectionVec = createVector(dofManager, columnVar, split);
-  // compute - Kd
-  columnOperator->apply(nullVec, tmpVec, rhsCorrectionVec, -1.0, 0.0);
-  double rhsCorrectionNorm = rhsCorrectionVec->maxNorm();
-  if (!rank) { std::cout<<"contact RHS correction norm is "<<rhsCorrectionNorm<<std::endl; }
-
-  columnOperator->append(contactOperator);
-
   boost::shared_ptr<AMP::Database> contactPreconditioner_db = columnPreconditioner_db->getDatabase("ContactPreconditioner"); 
   boost::shared_ptr<AMP::Solver::MPCSolverParameters> contactPreconditionerParams(new 
       AMP::Solver::MPCSolverParameters(contactPreconditioner_db));
@@ -289,24 +273,45 @@ drawBoundaryID(masterMeshAdapter, 4, fout, point_of_view);
   boost::shared_ptr<AMP::Solver::MPCSolver> contactPreconditioner(new AMP::Solver::MPCSolver(contactPreconditionerParams));
   columnPreconditioner->append(contactPreconditioner);
 
+  AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+  AMP::LinearAlgebra::Variable::shared_ptr columnVar = columnOperator->getOutputVariable();
   AMP::LinearAlgebra::Vector::shared_ptr columnSolVec = createVector(dofManager, columnVar, split);
   AMP::LinearAlgebra::Vector::shared_ptr columnRhsVec = createVector(dofManager, columnVar, split);
   columnSolVec->zero();
   columnRhsVec->zero();
 
   // compute f
-  if (slaveLoadOperator != NULL) { slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0); }
-  if (slaveBVPOperator != NULL) {
-    AMP::LinearAlgebra::Vector::shared_ptr subsetVec = slaveBVPOperator->subsetOutputVector(columnRhsVec);    
-    slaveBVPOperator->modifyRHSvector(subsetVec);
+  if (slaveLoadOperator != NULL) { 
+    slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0);
   } // end if
+
+  // get d
+  AMP::LinearAlgebra::Vector::shared_ptr tmpVec = createVector(dofManager, columnVar, split);
+  tmpVec->zero();
+  contactOperator->addShiftToSlave(tmpVec);
+  double tmpVecRes = tmpVec->L2Norm();
+  if(!rank) std::cout<<"tmpVecRes="<<tmpVecRes<<"\n";
+
+  // compute - Kd
+  AMP::LinearAlgebra::Vector::shared_ptr rhsCorrectionVec = createVector(dofManager, columnVar, split);
+  columnOperator->apply(nullVec, tmpVec, rhsCorrectionVec, -1.0, 0.0);
+  columnOperator->append(contactOperator);
+  double rhsCorrectionVecNorm = rhsCorrectionVec->L2Norm();
+  if(!rank) std::cout<<"rhsCorrectionVecNorm="<<rhsCorrectionVecNorm<<"\n";
 
   // f = f - Kd
   columnRhsVec->add(columnRhsVec, rhsCorrectionVec);
+
   // f^m = f^m + C^T f^s
   // f^s = 0
   contactOperator->addSlaveToMaster(columnRhsVec);
   contactOperator->setSlaveToZero(columnRhsVec);
+
+  // apply dirichlet rhs correction
+  if (slaveBVPOperator != NULL) {
+    slaveBVPOperator->modifyRHSvector(columnRhsVec);
+  } // end if
+
 
   bool usePetscKrylovSolver = input_db->getBool("usePetscKrylovSolver");
   if (usePetscKrylovSolver) {
@@ -419,7 +424,6 @@ void myTest2(AMP::UnitTest *ut, std::string exeName) {
   columnPreconditionerParams->d_pOperator = columnOperator;
   boost::shared_ptr<AMP::Solver::ColumnSolver> columnPreconditioner(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
 
-  // build the master and slave operators
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> masterElementPhysicsModel;
     boost::shared_ptr<AMP::Operator::LinearBVPOperator> masterOperator = boost::dynamic_pointer_cast<
         AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
@@ -501,14 +505,14 @@ int main(int argc, char *argv[])
   AMP::UnitTest ut;
 
   std::vector<std::string> exeNames; 
-//  exeNames.push_back("testNodeToSegmentConstraintsOperator-cube");
+  exeNames.push_back("testNodeToSegmentConstraintsOperator-cube");
 //  exeNames.push_back("testNodeToSegmentConstraintsOperator-cylinder");
-  exeNames.push_back("testNodeToSegmentConstraintsOperator-pellet");
+//  exeNames.push_back("testNodeToSegmentConstraintsOperator-pellet");
 
   try {
     for (size_t i = 0; i < exeNames.size(); ++i) { 
       myTest(&ut, exeNames[i]); 
-//      myTest2(&ut, exeNames[i]); 
+      myTest2(&ut, exeNames[i]); 
     } // end for
   } catch (std::exception &err) {
     std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
