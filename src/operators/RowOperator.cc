@@ -5,7 +5,7 @@ namespace Operator {
 
 
 void RowOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-	const  AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r,
+	const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
 	const double a, const double b)
 {
   

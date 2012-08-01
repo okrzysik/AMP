@@ -68,15 +68,7 @@ namespace AMP {
           This function is used to set the reference temperature when using temperature dependent material models.
           @param [in] refTemp Reference temperature
           */
-        void setReferenceTemperature(AMP::LinearAlgebra::Vector::shared_ptr refTemp) {
-          AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(Mechanics::TEMPERATURE);
-          d_referenceTemperature = mySubsetVector(refTemp, var);
-          d_referenceTemperature->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-          if(d_useUpdatedLagrangian) {
-            d_inVec_pre[Mechanics::TEMPERATURE]->copyVector(d_referenceTemperature);
-            d_inVec_pre[Mechanics::TEMPERATURE]->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-          }
-        }
+        void setReferenceTemperature(AMP::LinearAlgebra::Vector::shared_ptr refTemp);
 
         /**
           This function is used to set frozen vectors in this operator. This is used when some of the 
@@ -85,26 +77,18 @@ namespace AMP {
           @param [in] frozenVec Frozen vector
           @see MechanicsConstants.h
           */
-        void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
-          AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(id);
-          d_inVec[id] = mySubsetVector(frozenVec, var);
-          (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-        }
+        void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec);
 
         /**
           @return The variable for the specified component of the input vector. If varId is equal to -1, it
           returns the multivariable for the entire vector.
           */
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
-          return d_inpVariables; 
-        }
+        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_inpVariables; }
 
         /**
           @return The variable for the output vector
           */
-        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
-          return d_outVariable;
-        }
+        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_outVariable; }
 
         /**
           Writes the stress and strain at each Gauss point to a file.
@@ -131,7 +115,7 @@ namespace AMP {
           @param [in] u  input vector
           @param [out] r output vector
           */
-        void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r);
+        void preAssembly(const AMP::LinearAlgebra::Vector::shared_ptr &u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r);
 
         /**
           This function is called at the end of the FE assembly.
@@ -153,15 +137,7 @@ namespace AMP {
         void postElementOperation();
 
         AMP::LinearAlgebra::Vector::shared_ptr mySubsetVector(AMP::LinearAlgebra::Vector::shared_ptr vec, 
-            AMP::LinearAlgebra::Variable::shared_ptr var) {
-          if(d_Mesh.get() != NULL) {
-            AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
-            AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, var->getName());
-            return meshSubsetVec->subsetVectorForVariable(var);
-          } else {
-            return vec->subsetVectorForVariable(var);
-          }
-        }
+            AMP::LinearAlgebra::Variable::shared_ptr var);
 
         template <MechanicsNonlinearElement::MaterialUpdateType updateType>
           void updateMaterialForElement(const AMP::Mesh::MeshElement &);

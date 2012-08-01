@@ -46,7 +46,7 @@ MapSurface::MapSurface(const boost::shared_ptr<OperatorParameters> & params):
 
 
 
-void MapSurface :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a , const double b )
+void MapSurface :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r, const double a , const double b )
 {
     AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
 

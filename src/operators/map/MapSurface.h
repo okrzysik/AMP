@@ -29,7 +29,7 @@ public :
     virtual ~MapSurface() { }
 
     virtual void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-            AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
+            AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
 
     boost::shared_ptr<AMP::LinearAlgebra::Vector> getBoundaryVector(const AMP::LinearAlgebra::Vector::shared_ptr &u) {
         return (u->subsetVectorForVariable(d_outVariable)) ;

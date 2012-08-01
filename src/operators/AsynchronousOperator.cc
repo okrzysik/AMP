@@ -70,7 +70,7 @@ MPI_Request &AsynchronousOperator::getRequest ( size_t i )
 }
 
 void AsynchronousOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-         const  AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r,
+         const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
          const double a , const double b )
 {
     applyStart ( f , u , r , a , b );

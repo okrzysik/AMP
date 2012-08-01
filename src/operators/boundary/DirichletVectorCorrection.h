@@ -57,7 +57,7 @@ namespace AMP {
           the remaining values in that vector. f, u and b are not used.
           */
         void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-            AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
+            AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
 
         void applyZeroValues(AMP::LinearAlgebra::Vector::shared_ptr r);
 

@@ -189,6 +189,13 @@ public:
      */
     virtual Vector::shared_ptr subsetVectorForVariable ( const Variable::shared_ptr &name );
 
+    /** \brief Retrieve a sub-vector associated with a particular Variable
+      * \param[in] name  Variable by which to retrieve a subvector
+      * \return  A Vector shared pointer
+      * \see MultiVector
+     */
+    virtual Vector::const_shared_ptr constSubsetVectorForVariable ( const Variable::shared_ptr &name ) const;
+
     /** \brief Obtain a particular contiguous block of data cast to RETURN_TYPE
       * \tparam RETURN_TYPE  The pointer type of the return
       * \param[in] i  Which block
@@ -285,6 +292,21 @@ public:
       */
     virtual void       selectInto ( const VectorSelector &criterion , Vector::shared_ptr vector );
 
+    /** \brief  Selects a portion of this vector and creates a view.
+      * \param[in]  criterion  The method for deciding inclusion in the view
+      * \param[in]  variable_name  The name of the vector to be created
+      * \details To use, we recommend the following pattern
+      \code
+      // Vector to be "view"ed
+      Vector::shared_ptr   data;
+
+      // .. set up all the data storage in data
+
+      // Get a view on the data tagged displacement
+      Vector::shared_ptr  displacement = data->select ( VS_ByVariableName ( "displacement" ) , "displacement view" );
+      \endcode
+      */
+    virtual const_shared_ptr   constSelect ( const VectorSelector &criterion , const std::string &variable_name ) const;
 
     /**  \brief  Make <i>this</i> be an alias of another vector
       *  \param[in]  other  Vector to be aliased
@@ -375,7 +397,7 @@ public:
      * \param[in]  x  a vector
      * For Vectors, \f$\mathit{this}_i = \alpha x_i\f$.
      */
-    void scale ( double alpha , const Vector::shared_ptr &x );
+    void scale ( double alpha , Vector::const_shared_ptr x );
 
     /**
       * \brief set vector to \f$x + \alpha \bar{1}\f$.
@@ -383,7 +405,7 @@ public:
       * \param[in] alpha a scalar
       * \details  for vectors, \f$\mathit{this}_i = x_i + \alpha\f$.
       */
-    void addScalar ( const Vector::shared_ptr &x , double alpha );
+    void addScalar ( Vector::const_shared_ptr x , double alpha );
 
     /**
      * \brief  Adds two vectors.
@@ -391,7 +413,7 @@ public:
      * \param[in]  y  a vector
      * For Vectors, \f$\mathit{this}_i = x_i + y_i\f$.
      */
-    void add ( const Vector::shared_ptr &x , const Vector::shared_ptr &y );
+    void add ( Vector::const_shared_ptr x , Vector::const_shared_ptr y );
 
     /**
       * \brief Subtracts one vector from another.
@@ -399,7 +421,7 @@ public:
       * \param[in] y  a vector
       * For Vectors, \f$\mathit{this}_i = x_i - y_i\f$
      */
-    void subtract ( const Vector::shared_ptr &x , const Vector::shared_ptr &y );
+    void subtract ( Vector::const_shared_ptr x , Vector::const_shared_ptr y );
 
     /**
       * \brief Component-wise multiply one vector with another.
@@ -407,7 +429,7 @@ public:
       * \param[in] y  a vector
       * For Vectors, \f$\mathit{this}_i = x_i  y_i\f$
      */
-    void multiply ( const Vector::shared_ptr &x , const Vector::shared_ptr &y );
+    void multiply ( Vector::const_shared_ptr x , Vector::const_shared_ptr y );
 
     /**
       * \brief Component-wise divide one vector by another.
@@ -415,13 +437,13 @@ public:
       * \param[in] y  a vector
       * For Vectors, \f$\mathit{this}_i = x_i / y_i\f$
      */
-    void divide ( const Vector::shared_ptr &x , const Vector::shared_ptr &y );
+    void divide ( Vector::const_shared_ptr x , Vector::const_shared_ptr y );
 
     /**
       * \brief Set this to the component-wise reciprocal of a vector.  \f$\mathit{this}_i = 1/x_i\f$.
       * \param[in] x  a vector
      */
-    void reciprocal ( const Vector::shared_ptr &x );
+    void reciprocal ( Vector::const_shared_ptr x );
 
     /**
      * \param[in] alpha a scalar
@@ -431,7 +453,7 @@ public:
      * \brief Set a vector to be a linear combination of two vectors.
      *  \f$\mathit{this}_i = \alpha x_i + \beta y_i\f$.
      */
-    void linearSum ( double alpha , const Vector::shared_ptr &x , double beta , const Vector::shared_ptr &y );
+    void linearSum ( double alpha , Vector::const_shared_ptr x , double beta , Vector::const_shared_ptr y );
 
     /**
       * \param[in] alpha a scalar
@@ -439,7 +461,7 @@ public:
       * \param[in] y a vector
       * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
      */
-    void axpy ( double alpha , const Vector::shared_ptr &x , const Vector::shared_ptr &y );
+    void axpy ( double alpha , Vector::const_shared_ptr x , Vector::const_shared_ptr y );
     /**
       * \param[in] alpha a scalar
       * \param[in] beta a scalar
@@ -447,14 +469,14 @@ public:
       * \brief Set this vector alpha * x + this.
       * \f$\mathit{this}_i = \alpha x_i + \beta \mathit{this}_i \f$
       */
-    void axpby( double alpha , double beta , const Vector::shared_ptr &x );
+    void axpby( double alpha , double beta , Vector::const_shared_ptr x );
 
     /**
       * \param[in] x a vector
       * \brief Set this to the component-wise absolute value of a vector.
       * \f$\mathit{this}_i = |x_i|\f$.
      */
-    void abs ( const Vector::shared_ptr &x );
+    void abs ( Vector::const_shared_ptr x );
 
     /**
      * \brief Set data in this vector to random values on [0,1).
@@ -501,7 +523,7 @@ public:
       * \brief Return the dot product of this vector with the argument vector.
       * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
      */
-    virtual double dot ( const Vector::shared_ptr &x );
+    virtual double dot ( Vector::const_shared_ptr x );
 
     /**
       * \brief Return the local minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
@@ -906,7 +928,7 @@ public:
       * \param[in] y a vector
       * \return \f[\min_{i,y_i\neq0} x_i/y_i\f]
       */
-    static double minQuotient(const Vector::shared_ptr &x, const Vector::shared_ptr &y);
+    static double minQuotient(Vector::const_shared_ptr x, Vector::const_shared_ptr y);
 
     /**
       * \brief Return a weighted norm of a vector
@@ -914,7 +936,7 @@ public:
       * \param[in] y a vector
       * \details Returns \f[\sqrt{\frac{\displaystyle \sum_i x^2_iy^2_i}{n}}\f]
       */
-    static double wrmsNorm(const Vector::shared_ptr &x, const Vector::shared_ptr &y);
+    static double wrmsNorm(Vector::const_shared_ptr x, Vector::const_shared_ptr y);
 
 
     //@}

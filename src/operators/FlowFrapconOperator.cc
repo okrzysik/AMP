@@ -53,7 +53,7 @@ void FlowFrapconOperator :: reset(const boost::shared_ptr<OperatorParameters>& p
 
 // This is an in-place apply
 void FlowFrapconOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-    AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a, const double b)
+    AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double b)
 {
 
       // AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_inpVariable);
@@ -189,6 +189,34 @@ AMP::LinearAlgebra::Vector::shared_ptr  FlowFrapconOperator::subsetInputVector(A
         return commVec->subsetVectorForVariable(var);
     } else {
         return vec->subsetVectorForVariable(var);
+    }
+}
+
+
+AMP::LinearAlgebra::Vector::const_shared_ptr  FlowFrapconOperator::subsetOutputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
+{
+    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
+    if(d_Mesh.get() != NULL) {
+        AMP::LinearAlgebra::VS_Comm commSelector( var->getName(), d_Mesh->getComm() );
+        AMP::LinearAlgebra::Vector::const_shared_ptr commVec = vec->constSelect(commSelector, var->getName());
+        return commVec->constSubsetVectorForVariable(var);
+    } else {
+        return vec->constSubsetVectorForVariable(var);
+    }
+}
+
+
+AMP::LinearAlgebra::Vector::const_shared_ptr  FlowFrapconOperator::subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
+{
+    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
+    if(d_Mesh.get() != NULL) {
+        AMP::LinearAlgebra::VS_Comm commSelector( var->getName(), d_Mesh->getComm() );
+        AMP::LinearAlgebra::Vector::const_shared_ptr commVec = vec->constSelect(commSelector, var->getName());
+        return commVec->constSubsetVectorForVariable(var);
+    } else {
+        return vec->constSubsetVectorForVariable(var);
     }
 }
 

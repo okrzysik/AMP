@@ -45,8 +45,8 @@ void  AsyncMapColumnOperator::append ( boost::shared_ptr < Operator > op )
 
 
 void AsyncMapColumnOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-        const  AMP::LinearAlgebra::Vector::shared_ptr &u, 
-        AMP::LinearAlgebra::Vector::shared_ptr  &r,
+        const AMP::LinearAlgebra::Vector::shared_ptr &u, 
+        AMP::LinearAlgebra::Vector::shared_ptr &r,
         const double a, const double b)
 {
     PROFILE_START("apply");

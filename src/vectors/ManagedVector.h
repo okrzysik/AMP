@@ -84,6 +84,7 @@ public:
       virtual Vector::iterator end();
 
       virtual Vector::shared_ptr  subsetVectorForVariable ( const Variable::shared_ptr &name );
+      virtual Vector::const_shared_ptr  constSubsetVectorForVariable ( const Variable::shared_ptr &name ) const;
       virtual size_t  numberOfDataBlocks () const;
       virtual size_t  sizeOfDataBlock ( size_t i ) const;
       virtual void copyVector ( const Vector::const_shared_ptr &src_vec  );
