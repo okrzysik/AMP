@@ -149,6 +149,7 @@ MeshElement& MeshIterator::operator[](int i)
     if ( iterator!=NULL )
         return iterator->operator[](i);
     AMP_ERROR("Dereferencing iterator with offset is not supported by default");
+    return this->operator*();   // This line never executes and would return the wrong object
 }
 
 
@@ -194,22 +195,30 @@ MeshIterator MeshIterator::operator-(const MeshIterator& it) const
 }
 MeshIterator& MeshIterator::operator+=(int n)
 {
+    if ( iterator!=NULL ) 
+        return iterator->operator+=(n);
     for (int i=0; i<n; i++)
         this->operator++();
     return *this;
 }
 MeshIterator& MeshIterator::operator+=(const MeshIterator& it)
 {
+    if ( iterator!=NULL )
+        return iterator->operator+=((int)it.position());
     return this->operator+=((int)it.position());
 }
 MeshIterator& MeshIterator::operator-=(int n)
 {
+    if ( iterator!=NULL )
+        return iterator->operator-=(n);
     for (int i=0; i<n; i++)
         this->operator--();
     return *this;
 }
 MeshIterator& MeshIterator::operator-=(const MeshIterator& it)
 {
+    if ( iterator!=NULL )
+        return iterator->operator-=((int)it.position());
     return this->operator-=((int)it.position());
 }
 
