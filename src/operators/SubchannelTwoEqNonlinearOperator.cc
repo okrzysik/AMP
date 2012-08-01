@@ -92,7 +92,6 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
       // get the Iterators for the subchannel mesh
       AMP::Mesh::MeshIterator face     = d_Mesh->getIterator(AMP::Mesh::Face, 0);
       AMP::Mesh::MeshIterator end_face = face.end();
-      AMP::Mesh::MeshIterator lastbutone_face = --en_face;
 
       /**
         get boundary values: u has ordering:
@@ -228,6 +227,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
 
           // put residual value in residual vector
           outputVec->setValueByGlobalID(dofs[1], R_b);
+          ++face;
       }
 
       if(f.get() == NULL) {
@@ -267,6 +267,19 @@ AMP::LinearAlgebra::Vector::shared_ptr  SubchannelTwoEqNonlinearOperator::subset
     }
 }
 
+AMP::LinearAlgebra::Vector::const_shared_ptr  SubchannelTwoEqNonlinearOperator::subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
+{
+    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
+    if(d_Mesh.get() != NULL) {
+        AMP::LinearAlgebra::VS_Comm commSelector( var->getName(), d_Mesh->getComm() );
+        AMP::LinearAlgebra::Vector::const_shared_ptr commVec = vec->constSelect(commSelector, var->getName());
+        return commVec->constSubsetVectorForVariable(var);
+    } else {
+        return vec->constSubsetVectorForVariable(var);
+    }
+}
+
 AMP::LinearAlgebra::Vector::shared_ptr  SubchannelTwoEqNonlinearOperator::subsetOutputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)
 {
     AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
@@ -277,6 +290,19 @@ AMP::LinearAlgebra::Vector::shared_ptr  SubchannelTwoEqNonlinearOperator::subset
         return commVec->subsetVectorForVariable(var);
     } else {
         return vec->subsetVectorForVariable(var);
+    }
+}
+
+AMP::LinearAlgebra::Vector::const_shared_ptr  SubchannelTwoEqNonlinearOperator::subsetOutputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
+{
+    AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
+    // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
+    if(d_Mesh.get() != NULL) {
+        AMP::LinearAlgebra::VS_Comm commSelector( var->getName(), d_Mesh->getComm() );
+        AMP::LinearAlgebra::Vector::const_shared_ptr commVec = vec->constSelect(commSelector, var->getName());
+        return commVec->constSubsetVectorForVariable(var);
+    } else {
+        return vec->constSubsetVectorForVariable(var);
     }
 }
 

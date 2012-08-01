@@ -60,7 +60,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
     xyFaceMesh = subchannelMesh->Subset( getFaceIterator( subchannelMesh , 1 ) );
 
-    int DofsPerFace =  1;
+    int DofsPerFace =  2;
 //    AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( xyFaceMesh, AMP::Mesh::Face, 1, DofsPerFace, true);
     AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, getFaceIterator( subchannelMesh , 1 ), getFaceIterator( subchannelMesh , 0 ), DofsPerFace);
     AMP::LinearAlgebra::Variable::shared_ptr flowVariable (new AMP::LinearAlgebra::Variable("Flow"));
