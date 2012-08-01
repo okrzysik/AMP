@@ -135,7 +135,7 @@ namespace LinearAlgebra {
         *    is created and returned.
         *  Otherwise, this function will throw an error.
         */
-      static const Vector::shared_ptr  constView ( const Vector::shared_ptr AmpVector );
+      static Vector::const_shared_ptr  constView ( Vector::const_shared_ptr AmpVector );
 
 	};
 	

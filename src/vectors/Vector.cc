@@ -30,6 +30,8 @@ Vector::Vector ()
     d_AddBuffer = boost::shared_ptr<std::vector<double> > ( new std::vector<double> );
     d_UpdateState.reset( new UpdateState );
     *d_UpdateState = UNCHANGED;
+    d_Views = boost::shared_ptr<std::vector<boost::weak_ptr <Vector> > >( 
+        new std::vector<boost::weak_ptr <Vector> >() );
 }  
 Vector::Vector( const Vector&rhs ): 
     VectorOperations (),
@@ -47,6 +49,8 @@ Vector::Vector( VectorParameters::shared_ptr  parameters)
     d_UpdateState.reset( new UpdateState );
     *d_UpdateState = UNCHANGED;
     d_DOFManager = parameters->d_DOFManager;
+    d_Views = boost::shared_ptr<std::vector<boost::weak_ptr <Vector> > >( 
+        new std::vector<boost::weak_ptr <Vector> >() );
 }
 
 
@@ -86,23 +90,40 @@ Vector::shared_ptr  Vector::select ( const VectorSelector &s , const std::string
         return retVal;
     return Vector::shared_ptr();
 }
-void Vector::registerView ( Vector::shared_ptr v )
+Vector::const_shared_ptr  Vector::constSelect ( const VectorSelector &s , const std::string &name ) const
 {
-    for ( size_t i = 0 ; i != d_Views.size() ; i++ )
-      if ( d_Views[i].lock() == v )
+    // Create a new multivector to hold the subset
+    AMP_MPI comm = s.communicator( shared_from_this() );
+    Vector::shared_ptr  retVal = MultiVector::create( name, comm );
+    // Add the subset vector
+    AMP_ERROR("Not ready for const selectInto");
+    //selectInto ( s , retVal );
+    if ( retVal->numberOfDataBlocks() )
+        return retVal;
+    return Vector::shared_ptr();
+}
+void Vector::registerView ( Vector::shared_ptr v ) const
+{
+    for ( size_t i = 0 ; i != d_Views->size() ; i++ )
+      if ( (*d_Views)[i].lock() == v )
         return;
-
-    d_Views.push_back ( v );
+    (*d_Views).push_back( v );
 }
 Vector::shared_ptr  Vector::subsetVectorForVariable ( const Variable::shared_ptr  &name )
 {
     Vector::shared_ptr retVal;
-    if ( d_pVariable )  // If there is a variable...
-    {
-      if ( *d_pVariable == *name )
-      {
-        retVal = shared_from_this ();
-      }
+    if ( d_pVariable ) {    // If there is a variable...
+        if ( *d_pVariable == *name )
+            retVal = shared_from_this();
+    }
+    return retVal;
+}
+Vector::const_shared_ptr  Vector::constSubsetVectorForVariable ( const Variable::shared_ptr  &name ) const
+{
+    Vector::const_shared_ptr retVal;
+    if ( d_pVariable ) {    // If there is a variable...
+        if ( *d_pVariable == *name )
+            retVal = shared_from_this();
     }
     return retVal;
 }

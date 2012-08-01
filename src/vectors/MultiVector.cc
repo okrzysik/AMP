@@ -246,41 +246,57 @@ void MultiVector::selectInto ( const VectorSelector &s , Vector::shared_ptr retV
 ****************************************************************/
 void MultiVector::subtract ( const VectorOperations &x , const VectorOperations &y )
 {
+    if ( !x.isA<MultiVector>() || !y.isA<MultiVector>() )
+        AMP_ERROR("x or y is not a multivector and this is");
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
         d_vVectors[i]->subtract ( getVector ( x , i ) , getVector ( y , i ) );
 }
 void MultiVector::multiply ( const VectorOperations &x , const VectorOperations &y )
 {
+    if ( !x.isA<MultiVector>() || !y.isA<MultiVector>() )
+        AMP_ERROR("x or y is not a multivector and this is");
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
         d_vVectors[i]->multiply ( getVector ( x , i ) , getVector ( y , i ) );
 }
 void MultiVector::divide ( const VectorOperations &x , const VectorOperations &y )
 {
+    if ( !x.isA<MultiVector>() || !y.isA<MultiVector>() )
+        AMP_ERROR("x or y is not a multivector and this is");
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
         d_vVectors[i]->divide ( getVector ( x , i ) , getVector ( y , i ) );
 }
 void MultiVector::reciprocal ( const VectorOperations &x )
 {
+    if ( !x.isA<MultiVector>() )
+        AMP_ERROR("x is not a multivector and this is");
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
         d_vVectors[i]->reciprocal ( getVector ( x , i ) );
 }
 void MultiVector::linearSum(double alpha, const VectorOperations &x, double beta, const VectorOperations &y)
 {
+    if ( !x.isA<MultiVector>() || !y.isA<MultiVector>() )
+        AMP_ERROR("x or y is not a multivector and this is");
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
         d_vVectors[i]->linearSum ( alpha , getVector ( x , i ) , beta , getVector ( y , i ) );
 }
 void MultiVector::axpy(double alpha, const VectorOperations &x, const VectorOperations &y)
 {
+    if ( !x.isA<MultiVector>() || !y.isA<MultiVector>() )
+        AMP_ERROR("x or y is not a multivector and this is");
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
         d_vVectors[i]->axpy ( alpha , getVector ( x , i ) , getVector ( y , i ) );
 }
 void MultiVector::axpby(double alpha, double beta, const VectorOperations &x)
 {
+    if ( !x.isA<MultiVector>() )
+        AMP_ERROR("x is not a multivector and this is");
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
         d_vVectors[i]->axpby ( alpha , beta , getVector ( x , i ) );
 }
 void MultiVector::abs ( const VectorOperations &x )
 {
+    if ( !x.isA<MultiVector>() )
+        AMP_ERROR("x is not a multivector and this is");
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
         d_vVectors[i]->abs ( getVector ( x , i ) );
 }
@@ -296,6 +312,8 @@ void MultiVector::setToScalar ( double alpha )
 }
 void MultiVector::scale ( double alpha , const VectorOperations &x )
 {
+    if ( !x.isA<MultiVector>() )
+        AMP_ERROR("x is not a multivector and this is");
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
       d_vVectors[i]->scale ( alpha , getVector ( x , i ) );
 }
@@ -306,6 +324,8 @@ void MultiVector::scale ( double alpha )
 }
 void MultiVector::add ( const VectorOperations &x , const VectorOperations &y )
 {
+    if ( !x.isA<MultiVector>() || !y.isA<MultiVector>() )
+        AMP_ERROR("x or y is not a multivector and this is");
     for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
       d_vVectors[i]->add ( getVector ( x , i ) , getVector ( y , i ) );
 }
@@ -357,11 +377,13 @@ double MultiVector::maxNorm () const
     ans = getComm().maxReduce(ans);
     return ans;
 }
-double MultiVector::dot ( const VectorOperations &rhs ) const
+double MultiVector::dot ( const VectorOperations &x ) const
 {
+    if ( !x.isA<MultiVector>() )
+        AMP_ERROR("x is not a multivector and this is");
     double ans = 0.0;
     for (size_t i=0; i<d_vVectors.size(); i++)
-        ans += d_vVectors[i]->localDot( getVector( rhs, i ) );
+        ans += d_vVectors[i]->localDot( getVector( x, i ) );
     ans = getComm().sumReduce(ans);
     return ans;
 }
@@ -519,6 +541,75 @@ void MultiVector::dumpGhostedData ( std::ostream &out , size_t offset ) const
 
 
 /****************************************************************
+* Subset                                                        *
+****************************************************************/
+Vector::shared_ptr  MultiVector::subsetVectorForVariable ( const Variable::shared_ptr  &name )
+{
+    // Subset a multivector for a variable
+    /* A variable used to contain a mesh and a name, now it only contains a name
+     * as a result we need to subset for the variable name (there may be many)
+     * and then create a new multivector if necessary */
+    AMP_ASSERT ( name.get()!=NULL );
+
+    // Check if the variable matches the variable of the multivector
+    if ( *d_pVariable == *name ) {
+        return shared_from_this ();
+    }
+
+    // Get a list of all sub vectors matching the variable
+    std::vector< Vector::shared_ptr > subvectors;
+    for (size_t i=0; i!=d_vVectors.size(); i++) {
+        Vector::shared_ptr subset = d_vVectors[i]->subsetVectorForVariable( name );
+        if ( subset.get() != NULL )
+            subvectors.push_back( subset );
+    }
+
+    // If no vectors were found, check if the variable is actually a multivariable and subset on it
+    const AMP_MPI &comm = getComm();
+    if ( comm.sumReduce(subvectors.size())==0 ) {
+        boost::shared_ptr<MultiVariable> multivariable = boost::dynamic_pointer_cast<MultiVariable>(name);
+        if ( multivariable.get() != NULL ) {
+            bool all_found = true;
+            std::vector<Vector::shared_ptr> sub_subvectors(multivariable->numVariables());
+            for (size_t i=0; i!=multivariable->numVariables(); i++) {
+                Vector::shared_ptr  t = subsetVectorForVariable ( multivariable->getVariable ( i ) );
+                if ( !t ) {
+                    all_found = false;
+                    break;
+                }
+                sub_subvectors[i] = t;
+            }
+            if ( all_found ) {
+                for (size_t i=0; i!=multivariable->numVariables(); i++)
+                    subvectors.push_back( sub_subvectors[i] );
+            }
+        }
+    }
+
+    // Create the new vector
+    int N_procs = comm.sumReduce<int>(subvectors.size()>0?1:0);
+    if ( N_procs==0 )
+        return Vector::shared_ptr();
+    boost::shared_ptr<MultiVector> retVal;
+    if ( N_procs == comm.getSize() ) {
+        // All processor have a variable
+        retVal = create ( name, getComm() );
+        retVal->addVector( subvectors );
+    } else {
+        // Only a subset of processors have a variable
+        AMP_MPI new_comm = comm.split( subvectors.size()>0?0:-1, comm.getRank() );
+        retVal = create ( name, new_comm );
+        retVal->addVector( subvectors );
+    }
+    return retVal;
+}
+Vector::const_shared_ptr  MultiVector::constSubsetVectorForVariable ( const Variable::shared_ptr  &name ) const
+{
+    AMP_ERROR("Not implimented yet");
+}
+
+
+/****************************************************************
 * Misc functions                                                *
 ****************************************************************/
 void MultiVector::assemble ()
@@ -600,67 +691,6 @@ VectorEngine::shared_ptr MultiVector::cloneEngine ( VectorEngine::BufferPtr  ) c
     return boost::dynamic_pointer_cast<VectorEngine> ( Vector::cloneVector ( "engine_clone" ) );
 }
 
-
-Vector::shared_ptr  MultiVector::subsetVectorForVariable ( const Variable::shared_ptr  &name )
-{
-    // Subset a multivector for a variable
-    /* A variable used to contain a mesh and a name, now it only contains a name
-     * as a result we need to subset for the variable name (there may be many)
-     * and then create a new multivector if necessary */
-    AMP_ASSERT ( name.get()!=NULL );
-
-    // Check if the variable matches the variable of the multivector
-    if ( *d_pVariable == *name ) {
-        return shared_from_this ();
-    }
-
-    // Get a list of all sub vectors matching the variable
-    std::vector< Vector::shared_ptr > subvectors;
-    for (size_t i=0; i!=d_vVectors.size(); i++) {
-        Vector::shared_ptr subset = d_vVectors[i]->subsetVectorForVariable( name );
-        if ( subset.get() != NULL )
-            subvectors.push_back( subset );
-    }
-
-    // If no vectors were found, check if the variable is actually a multivariable and subset on it
-    const AMP_MPI &comm = getComm();
-    if ( comm.sumReduce(subvectors.size())==0 ) {
-        boost::shared_ptr<MultiVariable> multivariable = boost::dynamic_pointer_cast<MultiVariable>(name);
-        if ( multivariable.get() != NULL ) {
-            bool all_found = true;
-            std::vector<Vector::shared_ptr> sub_subvectors(multivariable->numVariables());
-            for (size_t i=0; i!=multivariable->numVariables(); i++) {
-                Vector::shared_ptr  t = subsetVectorForVariable ( multivariable->getVariable ( i ) );
-                if ( !t ) {
-                    all_found = false;
-                    break;
-                }
-                sub_subvectors[i] = t;
-            }
-            if ( all_found ) {
-                for (size_t i=0; i!=multivariable->numVariables(); i++)
-                    subvectors.push_back( sub_subvectors[i] );
-            }
-        }
-    }
-
-    // Create the new vector
-    int N_procs = comm.sumReduce<int>(subvectors.size()>0?1:0);
-    if ( N_procs==0 )
-        return Vector::shared_ptr();
-    boost::shared_ptr<MultiVector> retVal;
-    if ( N_procs == comm.getSize() ) {
-        // All processor have a variable
-        retVal = create ( name, getComm() );
-        retVal->addVector( subvectors );
-    } else {
-        // Only a subset of processors have a variable
-        AMP_MPI new_comm = comm.split( subvectors.size()>0?0:-1, comm.getRank() );
-        retVal = create ( name, new_comm );
-        retVal->addVector( subvectors );
-    }
-    return retVal;
-}
 
 
 Vector::shared_ptr MultiVector::cloneVector(const Variable::shared_ptr name) const

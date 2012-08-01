@@ -118,7 +118,7 @@ void Map1Dto3D::setZLocations( const std::vector<double> &z )
 
 
 void Map1Dto3D::apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-     AMP::LinearAlgebra::Vector::shared_ptr  &r, const double , const double )
+     AMP::LinearAlgebra::Vector::shared_ptr &r, const double , const double )
 { 
 
     if ( d_MapMesh.get()==NULL ) 
