@@ -1,6 +1,8 @@
 
 #include "operators/SubchannelTwoEqLinearOperator.h"
 #include "operators/SubchannelOperatorParameters.h"
+#include "vectors/VectorBuilder.h"
+#include "matrices/MatrixBuilder.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 
@@ -43,44 +45,12 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
 
       // get option of printing Jacobian
       if ((myparams->d_db)->keyExists("Print_Jacobian")) d_printJacobian = (myparams->d_db)->getBoolWithDefault("Print_Jacobian",false);
-}
 
-// function used in reset to get double parameter or set default if missing
-double SubchannelTwoEqLinearOperator::getDoubleParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
-								std::string paramString,
-                                                                double defaultValue)
-{
-    bool keyExists = (myparams->d_db)->keyExists(paramString);
-    if (keyExists) {
-       return (myparams->d_db)->getDouble(paramString);
-    } else {
-       AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
-       return defaultValue;
-    }
-}
-
-// function used in reset to get string parameter or set default if missing
-std::string SubchannelTwoEqLinearOperator::getStringParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
-									std::string paramString,
-                                                                	std::string defaultValue)
-{
-    bool keyExists = (myparams->d_db)->keyExists(paramString);
-    if (keyExists) {
-       return (myparams->d_db)->getString(paramString);
-    } else {
-       AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
-       return defaultValue;
-    }
-}
-
-// apply
-void SubchannelTwoEqLinearOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-    AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double b)
-{
-
-      // ensure that solution and residual vectors aren't NULL
-      AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
-      AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
+      if( d_matrix.get() == NULL ) {
+        AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector(d_dofMap, getInputVariable(), true);
+        AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector(d_dofMap, getOutputVariable(), true);
+        d_matrix = AMP::LinearAlgebra::createMatrix(inVec, outVec);
+      }
 
       // calculate extra parameters
       const double pi = 4.0*atan(1.0); // pi
@@ -90,29 +60,15 @@ void SubchannelTwoEqLinearOperator :: apply(const AMP::LinearAlgebra::Vector::sh
       const double A = std::pow(d_pitch,2) - pi*std::pow(d_diameter,2)/4.0; // flow area
       const double D = 4.0*A/perimeter;                                     // hydraulic diameter
 
-      // Subset the vectors
-      AMP::LinearAlgebra::Vector::shared_ptr inputVec = subsetInputVector( u );
-      AMP::LinearAlgebra::Vector::shared_ptr outputVec = subsetOutputVector( r );
-
       AMP_INSIST( (d_frozenVec.get() != NULL), "Null Frozen Vector inside Jacobian" );
 
-      // get solution sizes
-      const size_t numCells = inputVec->getLocalSize() - 2;
-      const size_t numFaces = numCells + 1;
-      d_solutionSize = numFaces + 1;
+      // get the Iterators for the subchannel mesh
+      AMP::Mesh::MeshIterator face     = d_Mesh->getIterator(AMP::Mesh::Face, 0);
+      AMP::Mesh::MeshIterator end_face = face.end();
 
-      // create Jacobian matrix if requested
-      if (d_printJacobian){
-         // allocate memory for matrix
-         d_Jacobian = new double*[numFaces+1];
-         for (size_t i = 0; i <= numFaces; i++)
-            d_Jacobian[i] = new double[numFaces+1];
-         // initialize entries to zero
-         for (size_t i = 0; i <= numFaces; i++){
-            for (size_t j = 0; j <= numFaces; j++)
-               d_Jacobian[i][j] = 0.0;
-         }
-      }
+      // get solution sizes
+      const size_t numCells = face.size() - 1;
+      const size_t numFaces = face.size() ;
 
       // get interval lengths from mesh
       std::vector<double> box = d_Mesh->getBoundingBox();
@@ -154,38 +110,35 @@ void SubchannelTwoEqLinearOperator :: apply(const AMP::LinearAlgebra::Vector::sh
           AMP_ERROR("Heat source type '"+d_source+"' is invalid");
       }
 
+      std::vector<size_t> dofs;
       // strongly impose outlet pressure boundary condition
-      outputVec->setValueByLocalID(numFaces, 0.0);
+      AMP::Mesh::MeshIterator lastbutone_face = end_face - 1;
+      d_dofMap->getDOFs( lastbutone_face->globalID(), dofs );
+      d_matrix->setValueByGlobalID(dofs[1], dofs[1], 1.0);
 
       // compute Jacobian entry J[0][0]
-      double J_0_0 = 1.0;
-      if (d_printJacobian) d_Jacobian[0][0] = J_0_0;
-
-      // compute Jacobian entry J[0][1]
       double p_in = d_frozenVec->getValueByLocalID(1);
-      double J_0_1 = -1.0*dhdp(d_Tin,p_in);
-      if (d_printJacobian) d_Jacobian[0][1] = J_0_1;
-
-      // get delta solution variables
-      double du_0 = inputVec->getValueByLocalID(0); // du[0]
-      double du_1 = inputVec->getValueByLocalID(1); // du[1]
-
-      // compute entry 0 of Jacobian matrix-vector product J*du
-      double R_0 = J_0_0*du_0 + J_0_1*du_1;
-
-      // put residual value in residual vector
-      outputVec->setValueByLocalID(0, R_0);
+      std::vector<size_t> dofs_0;
+      d_dofMap->getDOFs( face->globalID(), dofs_0 );
+      d_matrix->setValueByGlobalID(dofs_0[0], dofs_0[0], 1.0);
+      d_matrix->setValueByGlobalID(dofs_0[0], dofs_0[1], -1.0*dhdp(d_Tin,p_in));
 
       // calculate residual for axial momentum equations
-      double h_in = d_frozenVec->getValueByLocalID(0);
+      double h_in = d_frozenVec->getValueByGlobalID(dofs_0[0]);
       double h_minus = h_in;
       double h_plus = h_in;
-      for( size_t j=1; j <= numFaces-1; j++) {
+      int j = 1;
+      for( ; face != end_face; ++j){
           h_minus = h_plus;             // enthalpy evaluated at lower face
           h_plus  = h_minus + dh[j-1];  // enthalpy evaluated at upper face
 
-          double p_plus  = d_frozenVec->getValueByLocalID(j+1); // pressure evaluated at upper face
-          double p_minus = d_frozenVec->getValueByLocalID(j);   // pressure evaluated at lower face
+          d_dofMap->getDOFs( face->globalID(), dofs );
+          double p_minus = d_frozenVec->getValueByGlobalID(dofs[1]);   // pressure evaluated at lower face
+
+          ++face;
+          std::vector<size_t> dofs_plus;
+          d_dofMap->getDOFs( face->globalID(), dofs_plus );
+          double p_plus  = d_frozenVec->getValueByGlobalID(dofs_plus[1]); // pressure evaluated at upper face
 
           // evaluate specific volume at upper face
           std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
@@ -213,43 +166,58 @@ void SubchannelTwoEqLinearOperator :: apply(const AMP::LinearAlgebra::Vector::sh
           double J_j_0 = std::pow(d_m/A,2)*(dvdh_plus - dvdh_minus) - 2.0*g*del_z[j-1]*std::cos(d_theta)*
              (dvdh_plus + dvdh_minus)/std::pow(v_plus+v_minus,2)+
              1.0/4.0*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + d_K)*(dvdh_plus + dvdh_minus);
-          if (d_printJacobian) d_Jacobian[j][0] = J_j_0;
 
           // compute Jacobian entry J[j][j]
           double J_j_j = -1.0*std::pow(d_m/A,2)*dvdp_minus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
              dvdp_minus/std::pow(v_plus+v_minus,2)+
              1.0/4.0*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + d_K)*dvdp_minus - 1.0;
-          if (d_printJacobian) d_Jacobian[j][j] = J_j_j;
 
           // compute Jacobian entry J[j][j+1]
           double J_j_jp1 = std::pow(d_m/A,2)*dvdp_plus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
              dvdp_plus/std::pow(v_plus+v_minus,2)+
              1.0/4.0*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + d_K)*dvdp_plus + 1.0;
-          if (d_printJacobian) d_Jacobian[j][j+1] = J_j_jp1;
         
-          // get delta solution variables
-          double du_j   = inputVec->getValueByLocalID(j);   // du[j]
-          double du_jp1 = inputVec->getValueByLocalID(j+1); // du[j+1]
 
-          // compute entry j of Jacobian matrix-vector product J*du
-          double R_j = J_j_0*du_0 + J_j_j*du_j + J_j_jp1*du_jp1;
+          d_matrix->setValueByGlobalID(dofs_0[1], dofs[1]     , J_j_0 );
+          d_matrix->setValueByGlobalID(dofs[1]  , dofs[1]     , J_j_j );
+          d_matrix->setValueByGlobalID(dofs[1]  , dofs_plus[1], J_j_jp1 );
 
-          // put residual value in residual vector
-          outputVec->setValueByLocalID(j, R_j);
+          d_matrix->setValueByGlobalID(dofs[0]  , dofs[0]     , 1.0 );
       }
 
-      if(f.get() == NULL) {
-	      outputVec->scale(a);
-      } else {
-	      AMP::LinearAlgebra::Vector::shared_ptr fInternal = subsetInputVector( f );
-	      if(fInternal.get() == NULL) {
-                outputVec->scale(a);
-              } else {
-                outputVec->axpby(b, a, fInternal);
-              }
-      }
+      d_matrix->makeConsistent();
 
 }
+
+// function used in reset to get double parameter or set default if missing
+double SubchannelTwoEqLinearOperator::getDoubleParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+								std::string paramString,
+                                                                double defaultValue)
+{
+    bool keyExists = (myparams->d_db)->keyExists(paramString);
+    if (keyExists) {
+       return (myparams->d_db)->getDouble(paramString);
+    } else {
+       AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
+       return defaultValue;
+    }
+}
+
+// function used in reset to get string parameter or set default if missing
+std::string SubchannelTwoEqLinearOperator::getStringParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+									std::string paramString,
+                                                                	std::string defaultValue)
+{
+    bool keyExists = (myparams->d_db)->keyExists(paramString);
+    if (keyExists) {
+       return (myparams->d_db)->getString(paramString);
+    } else {
+       AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
+       return defaultValue;
+    }
+}
+
+
 
 // derivative of enthalpy with respect to pressure
 double SubchannelTwoEqLinearOperator::dhdp(double T, double p){
@@ -342,7 +310,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  SubchannelTwoEqLinearOperator::subsetInp
     }
 }
 
-AMP::LinearAlgebra::Vector::const_shared_ptr  SubchannelTwoEqNonlinearOperator::subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
+AMP::LinearAlgebra::Vector::const_shared_ptr  SubchannelTwoEqLinearOperator::subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
 {
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
@@ -368,7 +336,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  SubchannelTwoEqLinearOperator::subsetOut
     }
 }
 
-AMP::LinearAlgebra::Vector::const_shared_ptr  SubchannelTwoEqNonlinearOperator::subsetOutputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
+AMP::LinearAlgebra::Vector::const_shared_ptr  SubchannelTwoEqLinearOperator::subsetOutputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
 {
     AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh

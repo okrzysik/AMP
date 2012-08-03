@@ -169,7 +169,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
       }
 
       // strongly impose outlet pressure boundary condition
-      dof_manager->getDOFs( end_face->globalID(), dofs );
+      AMP::Mesh::MeshIterator lastbutone_face = end_face - 1;
+      dof_manager->getDOFs( lastbutone_face->globalID(), dofs );
       inputVec->setValueByGlobalID(dofs[1], d_Pout);
       outputVec->setValueByGlobalID(dofs[1], 0.0);
 

@@ -2,7 +2,7 @@
 #ifndef included_AMP_SubchannelTwoEqLinearOperator
 #define included_AMP_SubchannelTwoEqLinearOperator
 
-#include "operators/Operator.h"
+#include "operators/LinearOperator.h"
 #include "SubchannelOperatorParameters.h"
 
 namespace AMP {
@@ -12,7 +12,7 @@ namespace Operator {
     Linear operator class for the 2-equation {enthalpy, pressure} formulation of the subchannel equations:
     see /AMPFuel-Docs/technicalInfo/flow/SubchannelFlow.pdf for details
     */
-  class SubchannelTwoEqLinearOperator : public Operator
+  class SubchannelTwoEqLinearOperator : public LinearOperator
   {
     public :
 
@@ -20,7 +20,7 @@ namespace Operator {
         Constructor
         */
       SubchannelTwoEqLinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params)
-        : Operator (params)
+        : LinearOperator (params)
       {
         AMP_INSIST( params->d_db->keyExists("InputVariable"), "Key 'InputVariable' does not exist");
         std::string inpVar = params->d_db->getString("InputVariable");
@@ -30,6 +30,8 @@ namespace Operator {
         std::string outVar = params->d_db->getString("OutputVariable");
         d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar));
 
+        d_dofMap = (params->d_dofMap);
+          
         reset(params);
       }
 
@@ -38,28 +40,7 @@ namespace Operator {
         */
       ~SubchannelTwoEqLinearOperator() { }
 
-      /**
-        For this operator we have an in-place apply.
-        @param [in]  f auxillary/rhs vector. 
-        @param [in]  u input vector. 
-        @param [out] r residual/output vector. 
-        @param [in]  a first constant used in the expression: r = a*A(u) + b*f. The default value is -1.
-        @param [in]  b second constant used in the expression: r = a*A(u) + b*f. The default value is 1.
-        */
-      void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-          AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
-
       void reset(const boost::shared_ptr<OperatorParameters>& params);
-
-      AMP::LinearAlgebra::Variable::shared_ptr createInputVariable(const std::string & name, int varId = -1) {
-          (void) varId;
-          return d_inpVariable->cloneVariable(name);
-      }
-
-      AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable(const std::string & name, int varId = -1) {
-          (void) varId;
-          return d_outVariable->cloneVariable(name);
-      }
 
       AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
         return d_inpVariable;
@@ -85,9 +66,9 @@ namespace Operator {
       // frozen vector
       AMP::LinearAlgebra::Vector::shared_ptr d_frozenVec;
 
-      double **d_Jacobian; // Jacobian matrix for printing
-
     protected:
+
+      boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap;
 
       // subchannel physics model
       boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
