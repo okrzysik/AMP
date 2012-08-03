@@ -11,7 +11,7 @@
 #include "ampmesh/MeshElementVectorIterator.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
-//#include "operators/map/testCladToSubChannelMap.h"
+#include "operators/map/CladToSubchannelMap.h"
 #include "operators/map/AsyncMapColumnOperator.h"
 #include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
@@ -71,7 +71,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     AMP::Mesh::Mesh::shared_ptr subchannel_face = subchannel_mesh->Subset(getZFaceIterator(subchannel_mesh,1));
 
     // Get the database for the map
-    //boost::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "MeshToMeshMaps" );
+    boost::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "MeshToMeshMaps" );
 
     // Create the DOFManagers and the vectors
     //int DOFsPerNode = map_db->getInteger("DOFsPerObject");
@@ -100,19 +100,19 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
         ++it;
     }
 
-    /*// Test the creation/destruction of ScalarZAxisMap (no apply call)
+    // Test the creation/destruction of CladToSubchannelMap (no apply call)
     try { 
         boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  gapmaps;
-        gapmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarZAxisMap> ( mesh, map_db );
+        gapmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap> ( manager, map_db );
         gapmaps.reset();
-        ut->passes("Created / Destroyed ScalarZAxisMap");
+        ut->passes("Created / Destroyed CladToSubchannelMap");
     } catch ( ... ) {
-        ut->failure("Created / Destroyed ScalarZAxisMap");
+        ut->failure("Created / Destroyed CladToSubchannelMap");
     }
 
-    // Perform a complete test of ScalarZAxisMap
+    /*// Perform a complete test of CladToSubchannelMap
     boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  gapmaps;
-    gapmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarZAxisMap> ( mesh, map_db );
+    gapmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap> ( manager, map_db );
     gapmaps->setVector ( v2 );
     
     // Initialize the vectors

@@ -8,7 +8,7 @@ namespace AMP {
 namespace Operator {
 
 
-typedef AMP::Operator::Map3to1to3Parameters  CladToSubchannelMapParameters;
+typedef AsyncMapOperatorParameters  CladToSubchannelMapParameters;
 
 
 /**
@@ -31,7 +31,7 @@ public:
 
     /** \brief  Typedef to identify the parameters class of this operator
      */
-    typedef  CladToSubchannelMapParametersParameters   Parameters;
+    typedef  CladToSubchannelMapParameters   Parameters;
 
     //!  The base tag used in communication.
     enum { CommTagBase = 25000 };
@@ -42,7 +42,7 @@ public:
     CladToSubchannelMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> &params );
 
     //! Destructor
-    virtual ~CladToSubchannelMapParameters ();
+    ~CladToSubchannelMap();
 
     /** \brief   Set a frozen vector for results of the apply operation. 
      * \details  Set a frozen vector for results of the apply operation. 
@@ -67,9 +67,14 @@ public:
 
 protected:
 
-    // Implimented buildReturn routine
-    virtual void buildReturn( AMP::LinearAlgebra::Vector::shared_ptr, const AMP::Mesh::Mesh::shared_ptr,
-        const AMP::Mesh::MeshIterator&, const std::map<double,double>& );
+
+private:
+
+    // The grid of the subchannel mesh
+    void fillSubchannelGrid();
+    std::vector<double> d_x, d_y, d_z;
+
+
 };
 
 
