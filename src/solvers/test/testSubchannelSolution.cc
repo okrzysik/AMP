@@ -21,6 +21,7 @@
 #include "solvers/PetscSNESSolver.h"
 #include "solvers/TrilinosMLSolver.h"
 
+#include "ampmesh/SiloIO.h"
 #include "vectors/VectorBuilder.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "SubchannelHelpers.h"
@@ -29,6 +30,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 {
   std::string input_file = "input_" + exeName;
   std::string log_file = "output_" + exeName;
+    std::string silo_name = exeName;
   AMP::PIO::logAllNodes(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
@@ -114,12 +116,13 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
   std::cout<<"Manufactured Solution:"<< std::endl;
   std::vector<size_t> dofs;
-  int j = 1.1;
-  for( ; face != end_face; ++face,j=j-0.1){
+  faceDOFManager->getDOFs( face->globalID(), dofs );
+  manufacturedVec->setValueByGlobalID(dofs[0], 1000);
+  solVec->setValueByGlobalID(dofs[0], hin);
+  double j = 1.1;
+  for( ; face != end_face; ++face,j=j-0.01){
     faceDOFManager->getDOFs( face->globalID(), dofs );
     manufacturedVec->setValueByGlobalID(dofs[1], j*15.3e6);
-    manufacturedVec->setValueByGlobalID(dofs[0], 1000);
-    solVec->setValueByGlobalID(dofs[0], hin);
     solVec->setValueByGlobalID(dofs[1], Pout);
   }
   manufacturedVec->setValueByGlobalID(dofs[1], Pout);
@@ -188,8 +191,8 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   j=1;
   for( ; face != end_face; ++face,++j){
     faceDOFManager->getDOFs( face->globalID(), dofs );
-     std::cout<<"Final_Solution["<<j<<"] = "<<solVec->getValueByGlobalID(dofs[1]);
-     std::cout<<" Manufactured_Solution["<<j<<"] = "<<manufacturedVec->getValueByGlobalID(dofs[1]);
+     std::cout<<"Computed Pressure["<<j<<"] = "<<solVec->getValueByGlobalID(dofs[1]) ;
+     std::cout<<" Manufactured Pressure["<<j<<"] = "<<manufacturedVec->getValueByGlobalID(dofs[1]) ;
      std::cout<<std::endl;
   }
   // print manufactured solution
@@ -238,6 +241,15 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   }
 
   input_db.reset();
+
+#ifdef USE_SILO
+    // Register the quantities to plot
+    AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
+    siloWriter->registerVector( manufacturedVec, xyFaceMesh, AMP::Mesh::Face, "ManufacturedSolution" );
+    siloWriter->registerVector( solVec, xyFaceMesh, AMP::Mesh::Face, "ComputedSolution" );
+    siloWriter->writeFile( silo_name , 0 );
+#endif
+
 
 }
 

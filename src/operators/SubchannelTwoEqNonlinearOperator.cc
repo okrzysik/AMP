@@ -119,14 +119,6 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
       d_subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap); 
       double h_eval = enthalpyResult[0];
 
-      /**
-        evaluate first residual entry, corresponding to inlet enthalpy:
-        \f[ R_0 = h_{in} - h(T_{in},p_{1-})\f]
-        */
-      double R_b = h_in - h_eval;
-
-      // put first residual value into residual vector
-      outputVec->setValueByGlobalID(dofs[0], R_b);
 
       // get interval lengths from mesh
       std::vector<double> box = d_Mesh->getBoundingBox();
@@ -168,14 +160,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
           AMP_ERROR("Heat source type '"+d_source+"' is invalid");
       }
 
-      // strongly impose outlet pressure boundary condition
-      AMP::Mesh::MeshIterator lastbutone_face = end_face - 1;
-      dof_manager->getDOFs( lastbutone_face->globalID(), dofs );
-      inputVec->setValueByGlobalID(dofs[1], d_Pout);
-      outputVec->setValueByGlobalID(dofs[1], 0.0);
-
- 
       // calculate residual for axial momentum equations
+      double R_b; 
       double h_minus = h_in;
       double h_plus = h_in;
       int j = 1;
@@ -228,8 +214,27 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
 
           // put residual value in residual vector
           outputVec->setValueByGlobalID(dofs[1], R_b);
+          outputVec->setValueByGlobalID(dofs[0], 0);
           ++face;
       }
+
+      /**
+        evaluate first residual entry, corresponding to inlet enthalpy:
+        \f[ R_0 = h_{in} - h(T_{in},p_{1-})\f]
+        */
+      R_b = h_in - h_eval;
+
+      // put first residual value into residual vector
+      face = d_Mesh->getIterator(AMP::Mesh::Face, 0);
+      dof_manager->getDOFs( face->globalID(), dofs );
+      outputVec->setValueByGlobalID(dofs[0], R_b);
+
+      // strongly impose outlet pressure boundary condition
+      end_face-- ;
+      dof_manager->getDOFs( end_face->globalID(), dofs );
+      outputVec->setValueByGlobalID(dofs[1], 0.0);
+      outputVec->setValueByGlobalID(dofs[0], 0.0);
+
 
       if(f.get() == NULL) {
 	      outputVec->scale(a);
