@@ -1,5 +1,5 @@
 useSlaveBVPOperator = FALSE
-usePetscKrylovSolver = TRUE
+usePetscKrylovSolver = FALSE
 myPCGmaxIters = 20
 
 Mesh{
@@ -15,9 +15,9 @@ Mesh{
         MeshName = "cylinder_%p"
         MeshType = "AMP"
         dim = 3
-        x_offset = 0.0, 0.1
+        x_offset = 0.0, 0.0
         y_offset = 0.0, 0.0
-        z_offset = 0.0, 0.95
+        z_offset = 0.0, 1.0
         Generator = "cylinder"
         Size = 5, 4
         Range = 0.5, 0.0, 1.0
@@ -66,7 +66,7 @@ MasterDirichletMatrixCorrection{
     symmetric_correction = TRUE
     zero_dirichlet_block = FALSE
     skip_rhs_correction = FALSE
-    skip_add_rhs_correction = TRUE
+    skip_rhs_add_correction = TRUE
     number_of_ids = 1
     id_0 = 2
     number_of_dofs_0 = 3

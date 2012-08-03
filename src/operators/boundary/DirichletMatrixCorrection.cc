@@ -15,12 +15,22 @@ namespace AMP {
 
       parseParams(myParams);
 
-      computeRHScorrection(myParams);
+      d_inputMatrix = myParams->d_inputMatrix;
+      AMP_INSIST( ((d_inputMatrix.get()) != NULL), "NULL matrix" );
 
-      AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = myParams->d_inputMatrix;
-      AMP_INSIST( ((inputMatrix.get()) != NULL), "NULL matrix" );
+      if(d_skipRHSsetCorrection) { AMP_ASSERT(d_skipRHSaddCorrection); }
+      if(!d_skipRHSaddCorrection) { AMP_ASSERT(!d_skipRHSsetCorrection); }
 
-      AMP::LinearAlgebra::Vector::shared_ptr inVec = inputMatrix->getRightVector();
+      initRhsCorrectionSet();
+
+      if(d_skipRHSaddCorrection) {
+        applyMatrixCorrection();
+      }//end if
+    }
+
+    void DirichletMatrixCorrection :: applyMatrixCorrection() 
+    {
+      AMP::LinearAlgebra::Vector::shared_ptr inVec = d_inputMatrix->getRightVector();
       AMP::Discretization::DOFManager::shared_ptr dof_map = inVec->getDOFManager();
 
       for(size_t k = 0; k < d_boundaryIds.size(); ++k) {
@@ -43,14 +53,14 @@ namespace AMP {
             for(unsigned int i = 0; i < bndDofIds.size(); ++i) {
               if(d_dofIds[k][j] == i) {
                 if(d_zeroDirichletBlock) {
-                  inputMatrix->setValueByGlobalID ( bndDofIds[i], bndDofIds[i], 0.0 );
+                  d_inputMatrix->setValueByGlobalID ( bndDofIds[i], bndDofIds[i], 0.0 );
                 } else {
-                  inputMatrix->setValueByGlobalID ( bndDofIds[i], bndDofIds[i], 1.0 );
+                  d_inputMatrix->setValueByGlobalID ( bndDofIds[i], bndDofIds[i], 1.0 );
                 }
               } else {
-                inputMatrix->setValueByGlobalID ( bndDofIds[d_dofIds[k][j]], bndDofIds[i], 0.0 );
+                d_inputMatrix->setValueByGlobalID ( bndDofIds[d_dofIds[k][j]], bndDofIds[i], 0.0 );
                 if(d_symmetricCorrection) {
-                  inputMatrix->setValueByGlobalID ( bndDofIds[i], bndDofIds[d_dofIds[k][j]], 0.0 );
+                  d_inputMatrix->setValueByGlobalID ( bndDofIds[i], bndDofIds[d_dofIds[k][j]], 0.0 );
                 }
               }
             }//end for i
@@ -58,9 +68,9 @@ namespace AMP {
               std::vector<size_t> nhDofIds;
               dof_map->getDOFs(neighbors[n]->globalID(), nhDofIds);
               for(unsigned int i = 0; i < nhDofIds.size(); ++i) {
-                inputMatrix->setValueByGlobalID ( bndDofIds[d_dofIds[k][j]], nhDofIds[i], 0.0 );
+                d_inputMatrix->setValueByGlobalID ( bndDofIds[d_dofIds[k][j]], nhDofIds[i], 0.0 );
                 if(d_symmetricCorrection) {
-                  inputMatrix->setValueByGlobalID ( nhDofIds[i], bndDofIds[d_dofIds[k][j]], 0.0 );
+                  d_inputMatrix->setValueByGlobalID ( nhDofIds[i], bndDofIds[d_dofIds[k][j]], 0.0 );
                 }
               }//end for i
             }//end for n
@@ -69,7 +79,7 @@ namespace AMP {
       }//end for k
 
       //This does consistent for both "Sum-into" and "set".
-      inputMatrix->makeConsistent();
+      d_inputMatrix->makeConsistent();
     }
 
     void DirichletMatrixCorrection :: parseParams(const boost::shared_ptr<DirichletMatrixCorrectionParameters> & params)
@@ -127,10 +137,8 @@ namespace AMP {
       }
     }
 
-    void DirichletMatrixCorrection :: computeRHScorrection(const boost::shared_ptr<DirichletMatrixCorrectionParameters> & params)
+    void DirichletMatrixCorrection :: initRhsCorrectionSet() 
     {
-      AMP_INSIST( (((params->d_db).get()) != NULL), "NULL database" );
-
       if(!d_skipRHSsetCorrection) {
         int numIds = d_dofIds.size();
         char key[100];
@@ -167,13 +175,16 @@ namespace AMP {
         } else {
           d_rhsCorrectionSet->reset(setDispOpParams);
         }
+      }
+    }
 
+    void DirichletMatrixCorrection :: initRhsCorrectionAdd(AMP::LinearAlgebra::Vector::shared_ptr rhs)
+    {
+      if(!d_skipRHSsetCorrection) {
         if(!d_skipRHSaddCorrection) {
-          AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = params->d_inputMatrix;
-          AMP_INSIST( ((inputMatrix.get()) != NULL), "NULL matrix" );
-
           if(d_dispVals.get() == NULL) {
-            d_dispVals = inputMatrix->getRightVector();
+            d_dispVals = subsetOutputVector(rhs);
+//            d_dispVals = d_inputMatrix->getRightVector();
             AMP_ASSERT((*(d_dispVals->getVariable())) == (*d_variable));
           }
 
@@ -186,7 +197,7 @@ namespace AMP {
             d_rhsCorrectionAdd = d_dispVals->cloneVector();
           }
 
-          inputMatrix->mult(d_dispVals, d_rhsCorrectionAdd);
+          d_inputMatrix->mult(d_dispVals, d_rhsCorrectionAdd);
 
           d_rhsCorrectionAdd->scale(-1.0);
         }

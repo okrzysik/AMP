@@ -17,9 +17,9 @@ Mesh{
         MeshType = "libMesh"
         FileName = "simple_pellet_1x.e"
         dim = 3
-        x_offset = 0.0, 0.001
-        y_offset = 0.0, 0.002
-        z_offset = 0.0, 0.0103
+        x_offset = 0.0, 0.0
+        y_offset = 0.0, 0.0
+        z_offset = 0.0, 0.0105
     }
 }
 
@@ -60,7 +60,7 @@ MasterDirichletMatrixCorrection{
     symmetric_correction = TRUE
     zero_dirichlet_block = FALSE
     skip_rhs_correction = FALSE
-    skip_add_rhs_correction = TRUE
+    skip_rhs_add_correction = TRUE
     number_of_ids = 1
     id_0 = 2
     number_of_dofs_0 = 3
@@ -70,6 +70,33 @@ MasterDirichletMatrixCorrection{
     value_0_0 = 0.0
     value_0_1 = 0.0
     value_0_2 = 0.0
+}
+
+SlaveBVPOperator {
+  name = "LinearBVPOperator"
+    print_info_level = 1
+
+    VolumeOperator = "MechanicsLinearFEOperator"
+    BoundaryOperator = "SlaveDirichletMatrixCorrection"
+}
+
+SlaveDirichletMatrixCorrection{
+  name = "DirichletMatrixCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    symmetric_correction = TRUE
+    zero_dirichlet_block = FALSE
+    skip_rhs_correction = FALSE
+    skip_rhs_add_correction = FALSE
+    number_of_ids = 1
+    id_0 = 1
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+    value_0_0 = 0.0
+    value_0_1 = 0.0
+    value_0_2 = -0.0005
 }
 
 SlaveLoadOperator {
