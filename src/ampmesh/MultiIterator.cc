@@ -139,7 +139,7 @@ MeshIterator& MultiIterator::operator++()
 {
     // Prefix increment (increment and return this)
     if ( d_globalPos == d_globalSize )
-        AMP_ERROR("Iterating more than ont past the last element");
+        AMP_ERROR("Iterating more than one past the last element");
     if ( d_globalPos+1 == d_globalSize ) {
         // We have moved to one past the last element
         d_globalPos = d_globalSize;
@@ -170,7 +170,28 @@ MeshIterator MultiIterator::operator++(int)
 MeshIterator& MultiIterator::operator--()
 {
     // Prefix decrement (increment and return this)
-    AMP_ERROR("Decrementing MultiMesh iterators is not implimented yet");
+    if ( d_globalPos == 0 )
+        AMP_ERROR("Iterating before the first element");
+    if ( d_globalPos == d_globalSize ) {
+        // We are starting at the end
+        d_globalPos = d_globalSize+1;
+        d_iteratorNum = d_iterators.size()-1;
+        d_localPos = d_iteratorSize[d_iteratorNum]-1;
+        cur_iterator = d_iterators[d_iteratorNum]->end();
+        --cur_iterator;
+    } else if ( d_localPos == 0 ) {
+        // We need to change the internal iterator
+        d_globalPos--;
+        d_iteratorNum--;
+        d_localPos = d_iteratorSize[d_iteratorNum]-1;
+        cur_iterator = d_iterators[d_iteratorNum]->end();
+        --cur_iterator;
+    } else {
+        // We are within the same iterator
+        d_localPos--;
+        d_globalPos--;
+        --cur_iterator;     // predecrement for consistency and speed
+    }
     return *this;
 }
 MeshIterator MultiIterator::operator--(int)

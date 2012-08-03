@@ -45,6 +45,10 @@ namespace AMP {
           d_variable = var;
         }
 
+        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_variable; }
+
+        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_variable; }
+
         void apply(const AMP::LinearAlgebra::Vector::shared_ptr &,
             const AMP::LinearAlgebra::Vector::shared_ptr &, AMP::LinearAlgebra::Vector::shared_ptr &,
             const double, const double)
@@ -53,8 +57,6 @@ namespace AMP {
         }
 
         void parseParams(const boost::shared_ptr<DirichletMatrixCorrectionParameters> & );
-
-        void computeRHScorrection(const boost::shared_ptr<DirichletMatrixCorrectionParameters> & );
 
         /**
           This function modifies the entries of the matrix formed by the volume operator
@@ -69,7 +71,10 @@ namespace AMP {
           */
         void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) {
           if(!d_skipRHSaddCorrection) {
-            AMP::LinearAlgebra::Vector::shared_ptr myRhs = rhs->subsetVectorForVariable(d_variable);
+            initRhsCorrectionAdd(rhs);
+            applyMatrixCorrection();
+            AMP::LinearAlgebra::Vector::shared_ptr myRhs = subsetOutputVector(rhs);
+//            AMP::LinearAlgebra::Vector::shared_ptr myRhs = rhs->subsetVectorForVariable(d_variable);
             myRhs->add(myRhs, d_rhsCorrectionAdd);
           }
         }
@@ -119,6 +124,14 @@ namespace AMP {
         bool d_skipRHSsetCorrection;
 
         bool d_computedAddRHScorrection;
+
+        void initRhsCorrectionSet();
+
+        void initRhsCorrectionAdd(AMP::LinearAlgebra::Vector::shared_ptr rhs);
+
+        void applyMatrixCorrection();
+
+        AMP::LinearAlgebra::Matrix::shared_ptr d_inputMatrix;
 
       private :
 

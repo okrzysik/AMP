@@ -96,6 +96,30 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
     else
         ut->failure("regular iterator uniqueness");
 
+    // Check that we can increment and decrement properly
+    if ( iterator.size()>=2 ) {
+        bool pass = true;
+        AMP::Mesh::MeshIterator it1 = iterator.begin();
+        AMP::Mesh::MeshIterator it2 = iterator.begin();
+        AMP::Mesh::MeshIterator it3 = iterator.begin();
+        it1++;
+        ++it1;
+        it2 = it2+2;
+        it3+=2;
+        if ( it1!=it2 || it1!=it3 )
+            pass = false;
+        /*it1--;
+        --it1;
+        it2 = it2-2;
+        it3-=2;
+        if ( it1!=iterator.begin() || it2!=iterator.begin() || it3!=iterator.begin() )
+            pass = false;*/
+        if ( pass )
+            ut->passes("regular iterator increments/decrements");
+        else
+            ut->failure("regular iterator increments/decrements");
+    }
+
     // Run element tests
     bool id_pass = true;
     bool type_pass = true;

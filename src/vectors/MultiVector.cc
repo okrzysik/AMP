@@ -606,6 +606,7 @@ Vector::shared_ptr  MultiVector::subsetVectorForVariable ( const Variable::share
 Vector::const_shared_ptr  MultiVector::constSubsetVectorForVariable ( const Variable::shared_ptr  &name ) const
 {
     AMP_ERROR("Not implimented yet");
+    return Vector::const_shared_ptr();
 }
 
 

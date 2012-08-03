@@ -390,6 +390,3 @@ IF( USE_DENDRO AND USE_PETSC )
     COPY_MESH_FILE( simple_pellet_1x.e )
     COPY_MESH_FILE( two_fused_simple_pellets_1x.e )
 ENDIF()
-
-ADD_AMP_PROVISIONAL_TEST( debugMePlease )
-COPY_TEST_DATA_FILE ( input_debugMePlease )

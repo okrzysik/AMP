@@ -236,7 +236,7 @@ MeshIterator& libMeshIterator::operator--()
 MeshIterator libMeshIterator::operator--(int)
 {
     // Postfix decrement (increment and return temporary object)
-    libMeshIterator tmp(*this);      // Create a temporary variable
+    libMeshIterator tmp(*this);     // Create a temporary variable
     --(*this);                      // apply operator
     return tmp;                     // return temporary result
 }
