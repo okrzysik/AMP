@@ -2,7 +2,7 @@
 #define included_AMP_CladToSubchannelMap
 
 #include "operators/map/ScalarZAxisMap.h"
-
+#include "ampmesh/MeshElementVectorIterator.h"
 
 namespace AMP {
 namespace Operator {
@@ -34,7 +34,7 @@ public:
     typedef  CladToSubchannelMapParameters   Parameters;
 
     //!  The base tag used in communication.
-    enum { CommTagBase = 25000 };
+    enum { CommTagBase = 2100 };
 
     /** \brief   Standard constructor
      * \param[in] params  Input parameters
@@ -71,9 +71,19 @@ protected:
 private:
 
     // The grid of the subchannel mesh
-    void fillSubchannelGrid();
-    std::vector<double> d_x, d_y, d_z;
+    void fillSubchannelGrid();                          // Function to fill the subchannel data for all processors
+    size_t N_subchannels;                               // The total number of subchannels
+    std::vector<double> d_x, d_y, d_z;                  // The x, y, z grid for the subchannel
+    std::vector<std::vector<int> > d_subchannelRanks;   // The processors that need each x-y point to fill the result vec
+    std::vector<std::vector<int> > d_subchannelSend;    // The processors that are sending data to fill each subchannel
 
+    // Iterators over the mesh elemens of interest
+    AMP::Mesh::MeshIterator getSubchannelIterator();
+    AMP::Mesh::MeshIterator d_iterator1;
+    AMP::Mesh::MeshIterator d_iterator2;
+
+    // The list of local MeshElements in each subchannel
+    std::vector<std::vector<AMP::Mesh::MeshElementID> >   d_elem;
 
 };
 

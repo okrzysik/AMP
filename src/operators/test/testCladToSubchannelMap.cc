@@ -64,11 +64,17 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     // Create the meshes from the input database
     AMP::Mesh::Mesh::shared_ptr manager = AMP::Mesh::Mesh::buildMesh(params);
     AMP::Mesh::Mesh::shared_ptr pin_mesh = manager->Subset("MultiPin");
-    pin_mesh->setName("MultiPin");
+    AMP::Mesh::Mesh::shared_ptr clad_mesh;
+    if ( pin_mesh.get()!=NULL ) {
+        pin_mesh->setName("MultiPin");
+        clad_mesh = pin_mesh->Subset("clad");
+    }
     AMP::Mesh::Mesh::shared_ptr subchannel_mesh = manager->Subset("subchannel");
-    subchannel_mesh->setName("subchannel");
-    AMP::Mesh::Mesh::shared_ptr clad_mesh = pin_mesh->Subset("clad");
-    AMP::Mesh::Mesh::shared_ptr subchannel_face = subchannel_mesh->Subset(getZFaceIterator(subchannel_mesh,1));
+    AMP::Mesh::Mesh::shared_ptr subchannel_face;
+    if ( subchannel_mesh.get()!=NULL ) {
+        subchannel_mesh->setName("subchannel");
+        subchannel_face = subchannel_mesh->Subset(getZFaceIterator(subchannel_mesh,1));
+    }
 
     // Get the database for the map
     boost::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "MeshToMeshMaps" );
@@ -79,93 +85,61 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     int DOFsPerNode = 1;
     std::string varName = "Temperature";
     AMP::LinearAlgebra::Variable::shared_ptr temperature( new AMP::LinearAlgebra::Variable(varName) );
-    AMP::Discretization::DOFManager::shared_ptr  pin_DOFs = 
-        AMP::Discretization::simpleDOFManager::create(pin_mesh,AMP::Mesh::Vertex,1,DOFsPerNode);
-    AMP::Discretization::DOFManager::shared_ptr  subchannel_DOFs = 
-        AMP::Discretization::simpleDOFManager::create(subchannel_face,AMP::Mesh::Face,1,DOFsPerNode);
-
-    // Create the vectors
-    AMP::LinearAlgebra::Vector::shared_ptr  dummy;
-    AMP::LinearAlgebra::Vector::shared_ptr T1 = AMP::LinearAlgebra::createVector( pin_DOFs, temperature );
-    AMP::LinearAlgebra::Vector::shared_ptr T2 = AMP::LinearAlgebra::createVector( subchannel_DOFs, temperature );
-    T1->setToScalar(0.0);
-    T2->setToScalar(0.0);
+    AMP::Discretization::DOFManager::shared_ptr  pin_DOFs;
+    AMP::Discretization::DOFManager::shared_ptr  subchannel_DOFs;
+    AMP::LinearAlgebra::Vector::shared_ptr T1;
+    AMP::LinearAlgebra::Vector::shared_ptr T2;
+    AMP::LinearAlgebra::Vector::shared_ptr dummy;
+    if ( pin_mesh.get()!=NULL ) {
+        pin_DOFs = AMP::Discretization::simpleDOFManager::create(pin_mesh,AMP::Mesh::Vertex,1,DOFsPerNode);
+        T1 = AMP::LinearAlgebra::createVector( pin_DOFs, temperature );
+        T1->setToScalar(0.0);
+    }
+    if ( subchannel_face.get()!=NULL ) {
+        subchannel_DOFs = AMP::Discretization::simpleDOFManager::create(subchannel_face,AMP::Mesh::Face,1,DOFsPerNode);
+        T2 = AMP::LinearAlgebra::createVector( subchannel_DOFs, temperature );
+        T2->setToScalar(0.0);
+    }
 
     // Initialize the pin temperatures
-    AMP::Mesh::MeshIterator it = pin_mesh->getIterator(AMP::Mesh::Vertex,0);
-    std::vector<size_t> dofs;
-    for (size_t i=0; i<it.size(); i++) {
-        pin_DOFs->getDOFs(it->globalID(),dofs);
-        T1->setValueByGlobalID(dofs[0],getTemp(it->coord()));
-        ++it;
+    if ( pin_mesh.get()!=NULL ) {
+        AMP::Mesh::MeshIterator it = pin_mesh->getIterator(AMP::Mesh::Vertex,0);
+        std::vector<size_t> dofs;
+        for (size_t i=0; i<it.size(); i++) {
+            pin_DOFs->getDOFs(it->globalID(),dofs);
+            T1->setValueByGlobalID(dofs[0],getTemp(it->coord()));
+            ++it;
+        }
     }
 
     // Test the creation/destruction of CladToSubchannelMap (no apply call)
     try { 
-        boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  gapmaps;
-        gapmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap> ( manager, map_db );
-        gapmaps.reset();
+        boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  map;
+        map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap>( manager, map_db );
+        map.reset();
         ut->passes("Created / Destroyed CladToSubchannelMap");
     } catch ( ... ) {
         ut->failure("Created / Destroyed CladToSubchannelMap");
     }
 
-    /*// Perform a complete test of CladToSubchannelMap
-    boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  gapmaps;
-    gapmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap> ( manager, map_db );
-    gapmaps->setVector ( v2 );
+    // Perform a complete test of CladToSubchannelMap
+    boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  map;
+    map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap>( manager, map_db );
+    map->setVector( T2 );
     
-    // Initialize the vectors
-    v1->setToScalar(0.0);
-    v2->setToScalar(0.0);
-    size_t N_maps = (size_t) map_db->getInteger("N_maps");
-    std::vector<std::string> mesh1 = map_db->getStringArray("Mesh1");
-    std::vector<std::string> mesh2 = map_db->getStringArray("Mesh2");
-    std::vector<int> surface1 = map_db->getIntegerArray("Surface1");
-    std::vector<int> surface2 = map_db->getIntegerArray("Surface2");
-    AMP_ASSERT(mesh1.size()==N_maps||mesh1.size()==1);
-    AMP_ASSERT(mesh2.size()==N_maps||mesh2.size()==1);
-    AMP_ASSERT(surface1.size()==N_maps||surface1.size()==1);
-    AMP_ASSERT(surface2.size()==N_maps||surface2.size()==1);
-    for (size_t i=0; i<N_maps; i++) {
-        std::string meshname1,  meshname2;
-        if ( mesh1.size() == N_maps ) {
-            meshname1 = mesh1[i];
-            meshname2 = mesh2[i];
-        } else {
-            meshname1 = mesh1[0];
-            meshname2 = mesh2[0];
-        }
-        int surface_id1, surface_id2;
-        if ( surface1.size() == N_maps ) {
-            surface_id1 = surface1[i];
-            surface_id2 = surface2[i];
-        } else {
-            surface_id1 = surface1[0];
-            surface_id2 = surface2[0];
-        }
-        AMP::Mesh::Mesh::shared_ptr curMesh = mesh->Subset( meshname1 );
-        setBoundary( surface_id1, v1, curMesh );
-        curMesh = mesh->Subset( meshname2 );
-        setBoundary( surface_id2, v1, curMesh );
-    }
-
-    // Apply the maps
+    // Apply the map
     globalComm.barrier();
-    gapmaps->apply ( dummy , v1 , v2 );
-    v1->subtract ( v1 , v2 );
-    if ( v1->maxNorm() < 1.e-12 )
-        ut->passes ( "Node to node map test" );
-    else
-        ut->failure ( "Node to node map test" );
+    map->apply( dummy, T1, T2 );
 
-*/
+    // Check the results
 
     // Write the results
     #ifdef USE_SILO
         AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
-        siloWriter->registerVector( T1, pin_mesh, AMP::Mesh::Vertex, "Temperature" );
-        siloWriter->registerVector( T2, subchannel_face, AMP::Mesh::Face, "Temperature" );
+        if ( T1.get()!=NULL )
+            siloWriter->registerVector( T1, pin_mesh, AMP::Mesh::Vertex, "Temperature" );
+        if ( T2.get()!=NULL )
+            siloWriter->registerVector( T2, subchannel_face, AMP::Mesh::Face, "Temperature" );
         siloWriter->setDecomposition( 0 );
         siloWriter->writeFile( fname, 0 );
     #endif
