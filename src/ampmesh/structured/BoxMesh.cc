@@ -42,12 +42,10 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
     AMP_INSIST(d_db->keyExists("dim"),"Field 'dim' must exist in database'");
     AMP_INSIST(d_db->keyExists("Generator"),"Field 'Generator' must exist in database'");
     AMP_INSIST(d_db->keyExists("Size"),"Field 'Size' must exist in database'");
-    AMP_INSIST(d_db->keyExists("Range"),"Field 'Range' must exist in database'");
     PhysicalDim = d_db->getInteger("dim");
     GeomDim = (GeomType) PhysicalDim;
     std::string generator = d_db->getString("Generator");
     std::vector<int> size = d_db->getIntegerArray("Size");
-    std::vector<double> range = d_db->getDoubleArray("Range");
     d_max_gcw = d_db->getIntegerWithDefault("GCW",2);
     for (size_t d=0; d<size.size(); d++)
         AMP_INSIST(size[d]>0,"All dimensions must have a size > 0");
@@ -105,9 +103,36 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
     initialize();
     // Create the appropriate mesh coordinates (and modify the id sets if necessary)
     if ( generator.compare("cube")==0 ) {
-        AMP_INSIST(range.size()==2*PhysicalDim,"Range must be 2*dim for cube generator");
-        fillCartesianNodes( PhysicalDim, &d_size[0], &range[0], d_index, d_coord );
+        if ( d_db->keyExists("Range") ) {
+            std::vector<double> range = d_db->getDoubleArray("Range");
+            AMP_INSIST(range.size()==2*PhysicalDim,"Range must be 2*dim for cube generator");
+            fillCartesianNodes( PhysicalDim, &d_size[0], &range[0], d_index, d_coord );
+        } else if ( d_db->keyExists("x_grid") ) {
+            for (int d=0; d<PhysicalDim; d++) {
+                std::vector<double> grid;
+                if ( d==0 ) {
+                    grid = d_db->getDoubleArray("x_grid");
+                } else if ( d==1 ) {
+                    AMP_INSIST(d_db->keyExists("y_grid"),"Field 'y_grid' must exist in database'");
+                    grid = d_db->getDoubleArray("y_grid");
+                } else if ( d==2 ) {
+                    AMP_INSIST(d_db->keyExists("z_grid"),"Field 'z_grid' must exist in database'");
+                    grid = d_db->getDoubleArray("z_grid");
+                } else {
+                    AMP_ERROR("Physical Dimensions > 3 are not supported yet");
+                }
+                AMP_ASSERT((int)grid.size()==d_size[d]+1);
+                for (size_t i=0; i<d_coord[d].size(); i++) {
+                    int j = (int) round(((double)d_size[d])*((double)d_coord[d][i]));
+                    AMP_ASSERT(Utilities::approx_equal(d_coord[d][i],((double)j)/((double)d_size[d])));
+                    AMP_ASSERT(j>=0&&j<=d_size[d]);
+                    d_coord[d][i] = grid[j];
+                }
+            }
+        }
     } else if ( generator.compare("tube")==0 ) {
+        AMP_INSIST(d_db->keyExists("Range"),"Field 'Range' must exist in database'");
+        std::vector<double> range = d_db->getDoubleArray("Range");
         AMP_INSIST(range.size()==4,"Range must be 1x4 for tube generator");
         // Change the surface ids to match the standard ids
         // 0 - 8: Inner surface
@@ -151,6 +176,8 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
             z[i] = range[2] + z[i]*(range[3]-range[2]);
         }
     } else if ( generator.compare("cylinder")==0 ) {
+        AMP_INSIST(d_db->keyExists("Range"),"Field 'Range' must exist in database'");
+        std::vector<double> range = d_db->getDoubleArray("Range");
         AMP_INSIST(range.size()==3,"Range must be 1x3 for cylinder generator");
         // Change the surface ids to match the standard ids
         // 0,1,2,3 - 4: Outer surface

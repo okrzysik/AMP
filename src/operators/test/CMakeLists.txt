@@ -352,6 +352,10 @@ COPY_MESH_FILE(clad_1x_1pellet.e)
 ADD_AMP_TEST_1_2_4 ( testScalarN2GZAxisMap )
 COPY_TEST_DATA_FILE ( inputScalarN2GZAxisMap-1 )
 
+# Test CladToSubchannel map
+ADD_AMP_PROVISIONAL_TEST ( testCladToSubchannelMap )
+COPY_TEST_DATA_FILE ( inputCladToSubchannelMap-1 )
+
 
 # Test map operators
 ADD_AMP_TEST_1_2_4 ( testMapOperator )
