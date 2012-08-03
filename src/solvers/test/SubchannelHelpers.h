@@ -5,7 +5,7 @@
 AMP::Mesh::MeshIterator getFaceIterator(AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth)
 {
 
-  std::map<double,AMP::Mesh::MeshElement> xyFace;
+  std::multimap<double,AMP::Mesh::MeshElement> xyFace;
 
   AMP::Mesh::MeshIterator iterator = subChannel->getIterator( AMP::Mesh::Face, ghostWidth );
 
@@ -28,7 +28,7 @@ AMP::Mesh::MeshIterator getFaceIterator(AMP::Mesh::Mesh::shared_ptr subChannel, 
   boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( 
     new std::vector<AMP::Mesh::MeshElement>() );
   elements->reserve(xyFace.size());
-  for (std::map<double,AMP::Mesh::MeshElement>::iterator it=xyFace.begin(); it!=xyFace.end(); ++it)
+  for (std::multimap<double,AMP::Mesh::MeshElement>::iterator it=xyFace.begin(); it!=xyFace.end(); ++it)
     elements->push_back( it->second );
 
   return AMP::Mesh::MultiVectorIterator( elements );

@@ -8,6 +8,7 @@
 #include "utils/PIO.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/SiloIO.h"
+#include "ampmesh/MeshElementVectorIterator.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 //#include "operators/map/testCladToSubChannelMap.h"
@@ -18,6 +19,32 @@
 
 double getTemp(const std::vector<double> &x) {
     return 500 + x[0]*100 + x[1]*100 + x[2]*100;
+}
+
+
+AMP::Mesh::MeshIterator getZFaceIterator(AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth)
+{
+    std::multimap<double,AMP::Mesh::MeshElement> xyFace;
+    AMP::Mesh::MeshIterator iterator = subChannel->getIterator( AMP::Mesh::Face, ghostWidth );
+    for(size_t i=0; i<iterator.size(); ++i ) {
+        std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements(AMP::Mesh::Vertex);
+        std::vector<double> center = iterator->centroid();
+        bool is_valid = true;
+        for (size_t j=0; j<nodes.size(); ++j) {
+            std::vector<double> coord = nodes[j].coord();
+            if ( !AMP::Utilities::approx_equal(coord[2],center[2], 1e-6) )
+                is_valid = false;
+        }
+        if ( is_valid ) {
+            xyFace.insert(std::pair<double,AMP::Mesh::MeshElement>(center[2],*iterator));
+        }
+        ++iterator;
+    }
+    boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( new std::vector<AMP::Mesh::MeshElement>() );
+    elements->reserve(xyFace.size());
+    for (std::multimap<double,AMP::Mesh::MeshElement>::iterator it=xyFace.begin(); it!=xyFace.end(); ++it)
+        elements->push_back( it->second );
+    return AMP::Mesh::MultiVectorIterator( elements );
 }
 
 
@@ -37,9 +64,11 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     // Create the meshes from the input database
     AMP::Mesh::Mesh::shared_ptr manager = AMP::Mesh::Mesh::buildMesh(params);
     AMP::Mesh::Mesh::shared_ptr pin_mesh = manager->Subset("MultiPin");
+    pin_mesh->setName("MultiPin");
     AMP::Mesh::Mesh::shared_ptr subchannel_mesh = manager->Subset("subchannel");
+    subchannel_mesh->setName("subchannel");
     AMP::Mesh::Mesh::shared_ptr clad_mesh = pin_mesh->Subset("clad");
-    AMP::Mesh::Mesh::shared_ptr subchannel_face = subchannel_mesh;
+    AMP::Mesh::Mesh::shared_ptr subchannel_face = subchannel_mesh->Subset(getZFaceIterator(subchannel_mesh,1));
 
     // Get the database for the map
     //boost::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "MeshToMeshMaps" );
