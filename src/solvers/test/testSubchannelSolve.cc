@@ -33,7 +33,7 @@
 #include "solvers/PetscSNESSolver.h"
 #include "solvers/TrilinosMLSolver.h"
 
-#include "ampmesh/StructuredMeshHelpers.h"
+#include "ampmesh/StructuredMeshHelper.h"
 
 void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
 {
@@ -62,7 +62,8 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
 
     int DofsPerFace =  2;
 //    AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( xyFaceMesh, AMP::Mesh::Face, 1, DofsPerFace, true);
-    AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, getFaceIterator( subchannelMesh , 1 ), getFaceIterator( subchannelMesh , 0 ), DofsPerFace);
+    AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
+        AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerFace);
     AMP::LinearAlgebra::Variable::shared_ptr flowVariable (new AMP::LinearAlgebra::Variable("Flow"));
     AMP::LinearAlgebra::Vector::shared_ptr flowSolVec = AMP::LinearAlgebra::createVector( faceDOFManager , flowVariable, true );
 
