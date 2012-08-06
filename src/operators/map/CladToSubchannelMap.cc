@@ -212,7 +212,7 @@ void CladToSubchannelMap::applyStart(const AMP::LinearAlgebra::Vector::shared_pt
         AMP::Discretization::DOFManager::shared_ptr  DOF = u->getDOFManager( );
         std::vector<size_t> dofs;
         for (size_t i=0; i<N_subchannels; i++) {
-            if ( d_subchannelSend[i].empty() )
+            if ( d_elem[i].empty() )
                 continue;
             for (size_t j=0; j<d_z.size(); j++)
                 d_sendBuffer[i][j] = std::pair<double,double>(0.0,0.0);
@@ -248,28 +248,33 @@ void CladToSubchannelMap::applyFinish(const AMP::LinearAlgebra::Vector::shared_p
     const AMP::LinearAlgebra::Vector::shared_ptr &, AMP::LinearAlgebra::Vector::shared_ptr &,
     const double, const double)
 {
+    if ( d_mesh2.get() == NULL ) {
+        // We don't have an output vector to fill, wait for communication to finish and return
+        if ( d_currRequests.size() > 0 )
+            AMP::AMP_MPI::waitAll( (int)d_currRequests.size(), &d_currRequests[0] );
+        d_currRequests.resize(0);
+        return;
+    }
     // Recieve the data
     std::vector<std::vector<double> >  x(N_subchannels);
     std::vector<std::vector<double> >  f(N_subchannels);
-    if ( d_mesh2.get() != NULL ) {
-        std::vector<std::pair<double,double> >  mapData;
-        std::pair<double,double> *tmp_data = new std::pair<double,double>[d_sendMaxBufferSize];
-        for (size_t i=0; i<N_subchannels; i++) {
-            if ( d_ownSubChannel[i] ) {
-                int tag = (int) i;  // We have an independent comm
-                mapData.resize(0);
-                for (size_t j=0; j<d_subchannelSend[i].size(); j++) {
-                    int length = d_sendMaxBufferSize;
-                    d_MapComm.recv( tmp_data, length, d_subchannelSend[i][j], true, tag );
-                    mapData.reserve(mapData.size()+length);
-                    for (int k=0; k<length; k++)
-                        mapData.push_back( tmp_data[k] );
-                }
-                create_map( mapData, x[i], f[i] );
+    std::vector<std::pair<double,double> >  mapData;
+    std::pair<double,double> *tmp_data = new std::pair<double,double>[d_sendMaxBufferSize];
+    for (size_t i=0; i<N_subchannels; i++) {
+        if ( d_ownSubChannel[i] ) {
+            int tag = (int) i;  // We have an independent comm
+            mapData.resize(0);
+            for (size_t j=0; j<d_subchannelSend[i].size(); j++) {
+                int length = d_sendMaxBufferSize;
+                d_MapComm.recv( tmp_data, length, d_subchannelSend[i][j], true, tag );
+                mapData.reserve(mapData.size()+length);
+                for (int k=0; k<length; k++)
+                    mapData.push_back( tmp_data[k] );
             }
+            create_map( mapData, x[i], f[i] );
         }
-        delete [] tmp_data;
     }
+    delete [] tmp_data;
     // Fill the output vector
     AMP::Discretization::DOFManager::shared_ptr  DOF = d_OutputVector->getDOFManager( );
     AMP::Mesh::MeshIterator it = d_iterator2.begin();
