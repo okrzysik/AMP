@@ -161,7 +161,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
       }
 
       // calculate residual for axial momentum equations
-      double R_b; 
+      double R_a, R_b; 
       double h_minus = h_in;
       double h_plus = h_in;
       int j = 1;
@@ -206,6 +206,9 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
           double u_plus  = d_m / (A*rho_plus);  // velocity evaluated at upper face
           double u_minus = d_m / (A*rho_minus); // velocity evaluated at lower face
 
+          // evaluate residual: energy equation
+          R_a = inputVec->getValueByGlobalID(dofs[0])- h_minus;
+
           // evaluate residual: axial momentum equation
           R_b = (d_m/A)*(u_plus - u_minus)
               + g * del_z[j-1] * rho_avg * std::cos(d_theta) + 
@@ -213,8 +216,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
               + p_plus - p_minus;
 
           // put residual value in residual vector
+          outputVec->setValueByGlobalID(dofs[0], R_a);
           outputVec->setValueByGlobalID(dofs[1], R_b);
-          outputVec->setValueByGlobalID(dofs[0], 0);
           ++face;
       }
 
