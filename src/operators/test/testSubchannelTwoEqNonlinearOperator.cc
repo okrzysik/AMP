@@ -23,7 +23,7 @@
 #include "../OperatorBuilder.h"
 #include "discretization/simpleDOF_Manager.h"
 
-#include "SubchannelHelpers.h"
+#include "ampmesh/StructuredMeshHelper.h"
 
 void Test(AMP::UnitTest *ut, const std::string exeName)
 {
@@ -44,7 +44,7 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
   boost::shared_ptr<AMP::Mesh::Mesh> subchannelMesh = AMP::Mesh::Mesh::buildMesh(meshParams);
   AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
-  xyFaceMesh = subchannelMesh->Subset( getFaceIterator( subchannelMesh , 1 ) );
+  xyFaceMesh = subchannelMesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh , 1 ) );
 
   // create subchannel physics model
   boost::shared_ptr<AMP::Database> subchannelPhysics_db = input_db->getDatabase("SubchannelPhysicsModel");

@@ -24,7 +24,7 @@
 #include "ampmesh/SiloIO.h"
 #include "vectors/VectorBuilder.h"
 #include "discretization/simpleDOF_Manager.h"
-#include "SubchannelHelpers.h"
+#include "ampmesh/StructuredMeshHelper.h"
 
 void flowTest(AMP::UnitTest *ut, std::string exeName )
 {
@@ -47,7 +47,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   // Create the meshes from the input database
   boost::shared_ptr<AMP::Mesh::Mesh> subchannelMesh = AMP::Mesh::Mesh::buildMesh(meshParams);
   AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
-  xyFaceMesh = subchannelMesh->Subset( getFaceIterator( subchannelMesh , 1 ) );
+  xyFaceMesh = subchannelMesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh , 1 ) );
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
