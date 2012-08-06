@@ -1,14 +1,14 @@
 // Input file for testSubchannelTwoEqNonlinearOperator
-
-Mesh{
-   MeshName = "bar"
-   MeshType = "libMesh"
-   FileName = "cube64.with.boundary.labels.e"
-   dim = 3
-   x_offset = 0.0
-   y_offset = 0.0
-   z_offset = 0.0
-   NumberOfElements = 1088
+Mesh {
+     MeshName = "clad"
+     MeshType = "AMP"
+     dim = 3
+     Generator = "cube"
+     Size = 1, 1, 15
+     Range = 0.0, 1.0, 0.0, 1.0, 0.0, 10.0
+     x_offset = 0.0
+     y_offset = 0.0
+     z_offset = 0.0
 }
 
 SubchannelTwoEqNonlinearOperator{

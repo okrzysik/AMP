@@ -90,7 +90,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
       AMP::Discretization::DOFManager::shared_ptr dof_manager = inputVec->getDOFManager();
 
       // get the Iterators for the subchannel mesh
-      AMP::Mesh::MeshIterator face     = d_Mesh->getIterator(AMP::Mesh::Face, 0);
+      AMP::Mesh::MeshIterator face     = getFaceIterator(d_Mesh, 1);
       AMP::Mesh::MeshIterator end_face = face.end();
 
       /**
@@ -258,6 +258,39 @@ boost::shared_ptr<OperatorParameters> SubchannelTwoEqNonlinearOperator ::
 
         boost::shared_ptr<SubchannelOperatorParameters> outParams(new SubchannelOperatorParameters(tmp_db));
         return outParams;
+}
+
+AMP::Mesh::MeshIterator SubchannelTwoEqNonlinearOperator :: getFaceIterator(AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth)
+{
+
+  std::multimap<double,AMP::Mesh::MeshElement> xyFace;
+
+  AMP::Mesh::MeshIterator iterator = subChannel->getIterator( AMP::Mesh::Face, ghostWidth );
+
+  for(size_t i=0; i<iterator.size(); ++i )
+  {
+       std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements(AMP::Mesh::Vertex);
+       std::vector<double> center = iterator->centroid();
+       bool is_valid = true;
+       for (size_t j=0; j<nodes.size(); ++j) {
+            std::vector<double> coord = nodes[j].coord();
+            if ( !AMP::Utilities::approx_equal(coord[2],center[2], 1e-6) )
+                is_valid = false;
+       }
+       if ( is_valid ) {
+            xyFace.insert(std::pair<double,AMP::Mesh::MeshElement>(center[2],*iterator));
+       }
+       ++iterator;
+  }
+
+  boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( 
+    new std::vector<AMP::Mesh::MeshElement>() );
+  elements->reserve(xyFace.size());
+  for (std::multimap<double,AMP::Mesh::MeshElement>::iterator it=xyFace.begin(); it!=xyFace.end(); ++it)
+    elements->push_back( it->second );
+
+  return AMP::Mesh::MultiVectorIterator( elements );
+
 }
 
 AMP::LinearAlgebra::Vector::shared_ptr  SubchannelTwoEqNonlinearOperator::subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)
