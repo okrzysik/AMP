@@ -23,6 +23,8 @@
 #include "../OperatorBuilder.h"
 #include "discretization/simpleDOF_Manager.h"
 
+#include "SubchannelHelpers.h"
+
 void Test(AMP::UnitTest *ut, const std::string exeName)
 {
   // create input and output file names
@@ -40,7 +42,9 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
   boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
   meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-  boost::shared_ptr<AMP::Mesh::Mesh> xyFaceMesh = AMP::Mesh::Mesh::buildMesh(meshParams);
+  boost::shared_ptr<AMP::Mesh::Mesh> subchannelMesh = AMP::Mesh::Mesh::buildMesh(meshParams);
+  AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
+  xyFaceMesh = subchannelMesh->Subset( getFaceIterator( subchannelMesh , 1 ) );
 
   // create subchannel physics model
   boost::shared_ptr<AMP::Database> subchannelPhysics_db = input_db->getDatabase("SubchannelPhysicsModel");
@@ -93,7 +97,7 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
     }
     subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
     bool passedKnownTest = true;
-    double known[5] = {-1.3166e6,2.4471e5,2.4563e5,7.602e5,0.0};
+    double known[8] = {-1.3166e6,2.4471e5, 0.0,2.4563e5, 0.0,7.602e5, 0.0,0.0};
     face     = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     int i=0;
     for( ; face != end_face; ++face,++i){
@@ -117,7 +121,7 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
     } 
     subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
     bool passedKnownTest = true;
-    double known[5] = {-8.15720e5,4.62164e5,4.66929e5,-1.31480e6,0.0};
+    double known[8] = {-8.15720e5,4.62164e5, 0.0,4.66929e5, 0.0,-1.31480e6, 0.0,0.0};
     face     = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     int i=0;
     for( ; face != end_face; ++face,++i){
@@ -141,7 +145,7 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
     } 
     subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
     bool passedKnownTest = true;
-    double known[5] = {-3.161889e5,3.04554e5,3.13654e5,-3.63256e5,0.0};
+    double known[8] = {-3.161889e5,3.04554e5, 0.0,3.13654e5, 0.0,-3.63256e5, 0.0,0.0};
     face     = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     int i=0;
     for( ; face != end_face; ++face,++i){
