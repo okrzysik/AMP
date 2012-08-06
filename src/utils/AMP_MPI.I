@@ -306,8 +306,10 @@ inline void AMP_MPI::recv(type *buf, int &length, const int send_proc_number, co
 {
     int size = length*sizeof(type);
     recv<char>((char*)buf,size,send_proc_number,get_length,tag);
-    if ( get_length )
+    if ( get_length ) {
+        AMP_ASSERT(size%sizeof(type)==0);
         length = size/sizeof(type);
+    }
 }
 
 

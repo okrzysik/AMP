@@ -132,6 +132,24 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     map->apply( dummy, T1, T2 );
 
     // Check the results
+    /*if ( subchannel_face.get()!=NULL ) {
+        bool passes = true;
+        AMP::Mesh::MeshIterator it = subchannel_face->getIterator(AMP::Mesh::Face,1);
+        std::vector<size_t> dofs;
+        for (size_t i=0; i<it.size(); i++) {
+            subchannel_DOFs->getDOFs(it->globalID(),dofs);
+            AMP_ASSERT(dofs.size()==1);
+            std::vector<double> pos = it->centroid();
+            double v1 = T2->getValueByGlobalID(dofs[0]);
+            double v2 = getTemp(pos);
+            if ( !AMP::Utilities::approx_equal(v1,v2) )
+                passes = false;
+        }
+        if ( passes )
+            ut->passes("correctly mapped temperature");
+        else
+            ut->failure("correctly mapped temperature");
+    }*/
 
     // Write the results
     #ifdef USE_SILO

@@ -552,7 +552,7 @@ public:
     *                   by the tag of the incoming message. Default tag is 0.
     */
     template <class type>
-    void recv(type *buf, int &length, const int send, const bool get_length=true, int tag=0) const;
+    void recv(type *buf, int &length, const int send, const bool get_length=false, int tag=0) const;
 
 
     /*!

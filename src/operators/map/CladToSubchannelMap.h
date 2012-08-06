@@ -84,7 +84,10 @@ private:
 
     // Buffers to send/recv the data
     std::vector<MPI_Request> d_currRequests;
-    std::vector<std::vector<std::pair<double,int> > > d_sendBuffer;
+    std::vector<std::vector<std::pair<double,double> > > d_sendBuffer;
+    size_t d_sendMaxBufferSize;
+
+    int getSubchannelIndex( double x, double y );
 };
 
 
