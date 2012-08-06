@@ -167,7 +167,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::Discretization::DOFManager::shared_ptr dofManager = AMP::Discretization::simpleDOFManager::create(meshAdapter,
       AMP::Mesh::Vertex, nodalGhostWidth, dofsPerNode, split);
 
-  // build a column operator and a column preconditioner
+  // Build a column operator and a column preconditioner
   boost::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
   boost::shared_ptr<AMP::Operator::ColumnOperator> columnOperator(new AMP::Operator::ColumnOperator(emptyParams));
 
@@ -194,7 +194,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   // TODO: RESET IN CONSTRUCTOR?
   contactOperator->reset(contactOperatorParams);
 
-  // build the master and slave operators
+  // Build the master and slave operators
   AMP::Mesh::MeshID masterMeshID = contactOperator->getMasterMeshID();
   AMP::Mesh::Mesh::shared_ptr masterMeshAdapter = meshAdapter->Subset(masterMeshID);
   if (masterMeshAdapter.get() != NULL) {
@@ -286,18 +286,12 @@ drawBoundaryID(masterMeshAdapter, 4, fout, point_of_view);
   } // end if
 
   // get d
-  AMP::LinearAlgebra::Vector::shared_ptr tmpVec = createVector(dofManager, columnVar, split);
-  tmpVec->zero();
-  contactOperator->addShiftToSlave(tmpVec);
-  double tmpVecRes = tmpVec->L2Norm();
-  if(!rank) std::cout<<"tmpVecRes="<<tmpVecRes<<"\n";
+  contactOperator->addShiftToSlave(columnSolVec);
 
   // compute - Kd
   AMP::LinearAlgebra::Vector::shared_ptr rhsCorrectionVec = createVector(dofManager, columnVar, split);
-  columnOperator->apply(nullVec, tmpVec, rhsCorrectionVec, -1.0, 0.0);
+  columnOperator->apply(nullVec, columnSolVec, rhsCorrectionVec, -1.0, 0.0);
   columnOperator->append(contactOperator);
-  double rhsCorrectionVecNorm = rhsCorrectionVec->L2Norm();
-  if(!rank) std::cout<<"rhsCorrectionVecNorm="<<rhsCorrectionVecNorm<<"\n";
 
   // f = f - Kd
   columnRhsVec->add(columnRhsVec, rhsCorrectionVec);
@@ -339,7 +333,8 @@ drawBoundaryID(masterMeshAdapter, 4, fout, point_of_view);
   linearSolverParams->d_comm = globalComm;
   linearSolverParams->d_pPreconditioner = columnPreconditioner;
   boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(new AMP::Solver::PetscKrylovSolver(linearSolverParams));
-  linearSolver->setZeroInitialGuess(true);
+//  linearSolver->setZeroInitialGuess(true);
+  linearSolver->setInitialGuess(columnSolVec);
 
   linearSolver->solve(columnRhsVec, columnSolVec);
 

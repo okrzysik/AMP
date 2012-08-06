@@ -17,7 +17,7 @@ Mesh{
         dim = 3
         x_offset = 0.0, 0.0
         y_offset = 0.0, 0.0
-        z_offset = 0.0, 0.9
+        z_offset = 0.0, 0.95
         Generator = "cube"
         Size = 8, 8, 8
         Range = 0.0, 1.0, 0.0, 1.0, 0.0, 1.0
