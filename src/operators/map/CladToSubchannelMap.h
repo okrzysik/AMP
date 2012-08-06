@@ -33,9 +33,6 @@ public:
      */
     typedef  CladToSubchannelMapParameters   Parameters;
 
-    //!  The base tag used in communication.
-    enum { CommTagBase = 2100 };
-
     /** \brief   Standard constructor
      * \param[in] params  Input parameters
      */
@@ -64,7 +61,6 @@ public:
         const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
         const double a = -1.0, const double b = 1.0);
 
-
 protected:
 
 
@@ -74,6 +70,7 @@ private:
     void fillSubchannelGrid();                          // Function to fill the subchannel data for all processors
     size_t N_subchannels;                               // The total number of subchannels
     std::vector<double> d_x, d_y, d_z;                  // The x, y, z grid for the subchannel
+    std::vector<bool> d_ownSubChannel;                  // Which subchannels do I own (multple procs my own a subchannel)
     std::vector<std::vector<int> > d_subchannelRanks;   // The processors that need each x-y point to fill the result vec
     std::vector<std::vector<int> > d_subchannelSend;    // The processors that are sending data to fill each subchannel
 
@@ -85,6 +82,9 @@ private:
     // The list of local MeshElements in each subchannel
     std::vector<std::vector<AMP::Mesh::MeshElementID> >   d_elem;
 
+    // Buffers to send/recv the data
+    std::vector<MPI_Request> d_currRequests;
+    std::vector<std::vector<std::pair<double,int> > > d_sendBuffer;
 };
 
 
