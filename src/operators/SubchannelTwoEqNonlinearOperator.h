@@ -71,8 +71,6 @@ namespace Operator {
         return d_outVariable;
       }
 
-      AMP::Mesh::MeshIterator getFaceIterator(AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth);
-
       virtual AMP::LinearAlgebra::Vector::shared_ptr subsetOutputVector(AMP::LinearAlgebra::Vector::shared_ptr vec);
       virtual AMP::LinearAlgebra::Vector::const_shared_ptr subsetOutputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec);
 
@@ -115,6 +113,7 @@ namespace Operator {
       double d_K;        // form loss coefficient
       double d_Q;        // rod power
       std::string d_source; // heat source type
+      std::string d_heatShape; // heat shape used if heat source type is "totalHeatGeneration"
 
   };
 
