@@ -309,6 +309,7 @@ OperatorBuilder::createSubchannelTwoEqLinearOperator( AMP::Mesh::Mesh::shared_pt
   
   boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelParams(new AMP::Operator::SubchannelOperatorParameters( subchannel_db ));
   subchannelParams->d_Mesh = meshAdapter;
+  subchannelParams->d_dofMap = AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Face, 1, 2, true);
   boost::shared_ptr<AMP::Operator::SubchannelTwoEqLinearOperator> subchannelOp (new AMP::Operator::SubchannelTwoEqLinearOperator( subchannelParams ));
   
   return subchannelOp;

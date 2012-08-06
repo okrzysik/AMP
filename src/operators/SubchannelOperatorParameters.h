@@ -4,6 +4,7 @@
 
 #include "operators/OperatorParameters.h"
 #include "operators/SubchannelPhysicsModel.h"
+#include "discretization/DOF_Manager.h"
 
 namespace AMP {
 namespace Operator {
@@ -30,6 +31,7 @@ namespace Operator {
 
       AMP::LinearAlgebra::Vector::shared_ptr d_frozenSolution;
 
+      boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap;
   };
 
 }

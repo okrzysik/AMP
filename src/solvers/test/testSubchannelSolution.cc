@@ -21,11 +21,16 @@
 #include "solvers/PetscSNESSolver.h"
 #include "solvers/TrilinosMLSolver.h"
 
+#include "ampmesh/SiloIO.h"
+#include "vectors/VectorBuilder.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "SubchannelHelpers.h"
 
 void flowTest(AMP::UnitTest *ut, std::string exeName )
 {
   std::string input_file = "input_" + exeName;
   std::string log_file = "output_" + exeName;
+    std::string silo_name = exeName;
   AMP::PIO::logAllNodes(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
@@ -40,8 +45,9 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   meshParams->setComm(globalComm);
 
   // Create the meshes from the input database
-  boost::shared_ptr<AMP::Mesh::Mesh> manager = AMP::Mesh::Mesh::buildMesh(meshParams);
-  AMP::Mesh::Mesh::shared_ptr meshAdapter = manager->Subset( "bar" );
+  boost::shared_ptr<AMP::Mesh::Mesh> subchannelMesh = AMP::Mesh::Mesh::buildMesh(meshParams);
+  AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
+  xyFaceMesh = subchannelMesh->Subset( getFaceIterator( subchannelMesh , 1 ) );
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
@@ -55,7 +61,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   // create parameters
   boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( nonlinearOperator_db ));
   // put mesh into parameters
-  subchannelOpParams->d_Mesh = meshAdapter;
+  subchannelOpParams->d_Mesh = xyFaceMesh ;
   // put subchannel physics model into parameters
   subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
 
@@ -63,7 +69,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
   boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> nonlinearOperator =
       boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
-      meshAdapter,"SubchannelTwoEqNonlinearOperator",input_db,elementModel ));
+      xyFaceMesh ,"SubchannelTwoEqNonlinearOperator",input_db,elementModel ));
   
 /*
   // create linear operator
@@ -80,40 +86,18 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   AMP::LinearAlgebra::Variable::shared_ptr inputVariable  = nonlinearOperator->getInputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr outputVariable = nonlinearOperator->getOutputVariable();
 
+  int DofsPerFace =  2;
+  AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( xyFaceMesh, AMP::Mesh::Face, 1, DofsPerFace, true);
+
+
   // create solution, rhs, and residual vectors
-  AMP::LinearAlgebra::Vector::shared_ptr manufacturedVec = AMP::LinearAlgebra::SimpleVector::create( 5, inputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::SimpleVector::create( 5, inputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::SimpleVector::create( 5, outputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::SimpleVector::create( 5, outputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr manufacturedVec = AMP::LinearAlgebra::createVector( faceDOFManager , inputVariable  , true );
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( faceDOFManager , inputVariable  , true );
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( faceDOFManager , outputVariable  , true );
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( faceDOFManager , outputVariable  , true );
 
   // get exit pressure
   double Pout = nonlinearOperator_db->getDouble("Exit_Pressure");
-  // set manufactured solution
-  std::cout<<"Manufactured Solution:"<< std::endl;
-  manufacturedVec->setValueByLocalID(0, 1000.0);
-  manufacturedVec->setValueByLocalID(1, 15.3e6);
-  manufacturedVec->setValueByLocalID(2, 15.2e6);
-  manufacturedVec->setValueByLocalID(3, 15.1e6);
-  manufacturedVec->setValueByLocalID(4, Pout);
-
-  // get nonlinear solver database
-  boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
-/*
-  // get linear solver database
-  boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
-*/
-
-  // put manufactured RHS into resVec
-  nonlinearOperator->reset(subchannelOpParams);
-  nonlinearOperator->apply(rhsVec, manufacturedVec, resVec, 1.0, 0.0);
-/*
-  linearOperator->reset(nonlinearOperator->getJacobianParameters(mv_view_solVec));
-  linearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
-*/
-  
-  // create nonlinear solver parameters
-  boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
-
   // calculate initial guess
   // get inlet temperature
   double Tin = nonlinearOperator_db->getDouble("Inlet_Temperature");
@@ -124,12 +108,43 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   std::vector<double> enthalpyResult(1);
   subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap); 
   double hin = enthalpyResult[0];
-  // set initial guesses
-  solVec->setValueByLocalID(0, hin);
-  solVec->setValueByLocalID(1, Pout);
-  solVec->setValueByLocalID(2, Pout);
-  solVec->setValueByLocalID(3, Pout);
-  solVec->setValueByLocalID(4, Pout);
+
+  // set manufactured solution
+  // get the Iterators for the subchannel mesh
+  AMP::Mesh::MeshIterator face     = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
+  AMP::Mesh::MeshIterator end_face = face.end();
+
+  std::cout<<"Manufactured Solution:"<< std::endl;
+  std::vector<size_t> dofs;
+  faceDOFManager->getDOFs( face->globalID(), dofs );
+  manufacturedVec->setValueByGlobalID(dofs[0], 1000);
+  solVec->setValueByGlobalID(dofs[0], hin);
+  double j = 1.1;
+  for( ; face != end_face; ++face,j=j-0.01){
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    manufacturedVec->setValueByGlobalID(dofs[1], j*15.3e6);
+    solVec->setValueByGlobalID(dofs[1], Pout);
+  }
+  manufacturedVec->setValueByGlobalID(dofs[1], Pout);
+
+  // get nonlinear solver database
+  boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
+  /*
+  // get linear solver database
+  boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
+  */
+
+  // put manufactured RHS into resVec
+  nonlinearOperator->reset(subchannelOpParams);
+  nonlinearOperator->apply(rhsVec, manufacturedVec, resVec, 1.0, 0.0);
+  /*
+     linearOperator->reset(nonlinearOperator->getJacobianParameters(mv_view_solVec));
+  linearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+*/
+  
+  // create nonlinear solver parameters
+  boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
+
 
   // change the next line to get the correct communicator out
   nonlinearSolverParams->d_comm = globalComm;
@@ -172,37 +187,47 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   nonlinearSolver->solve(resVec, solVec);
 
   // print final solution
-  for( int i=0; i<5; i++) {
-     std::cout<<"Final_Solution["<<i<<"] = "<<solVec->getValueByLocalID(i);
+  face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
+  j=1;
+  for( ; face != end_face; ++face,++j){
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+     std::cout<<"Computed Pressure["<<j<<"] = "<<solVec->getValueByGlobalID(dofs[1]) ;
+     std::cout<<" Manufactured Pressure["<<j<<"] = "<<manufacturedVec->getValueByGlobalID(dofs[1]) ;
      std::cout<<std::endl;
   }
   // print manufactured solution
   for( int i=0; i<5; i++) {
-     std::cout<<"Manufactured_Solution["<<i<<"] = "<<manufacturedVec->getValueByLocalID(i);
      std::cout<<std::endl;
   }
 
   // print absolute error between manufactured solution and final solution
-  AMP::LinearAlgebra::Vector::shared_ptr absErrorVec = AMP::LinearAlgebra::SimpleVector::create( 5, inputVariable );
-  for( int i=0; i<5; i++) {
-     absErrorVec->setValueByLocalID(i, manufacturedVec->getValueByLocalID(i) - solVec->getValueByLocalID(i));
-     std::cout<<"Absolute_Error["<<i<<"] = "<<absErrorVec->getValueByLocalID(i);
-     std::cout<<std::endl;
+  AMP::LinearAlgebra::Vector::shared_ptr absErrorVec = AMP::LinearAlgebra::createVector( faceDOFManager , inputVariable  , true );
+  face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
+  j=1;
+  for( ; face != end_face; ++face,++j){
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    absErrorVec->setValueByGlobalID(dofs[1], manufacturedVec->getValueByGlobalID(dofs[1]) - solVec->getValueByGlobalID(dofs[1]));
+    absErrorVec->setValueByGlobalID(dofs[0], manufacturedVec->getValueByGlobalID(dofs[0]) - solVec->getValueByGlobalID(dofs[0]));
+    std::cout<<"Absolute_Error["<<j<<"] = "<<absErrorVec->getValueByGlobalID(dofs[1]);
+    std::cout<<std::endl;
   }
   double absErrorNorm = absErrorVec->L2Norm();
   std::cout<<"L2 Norm of Absolute Error: "<<absErrorNorm<<std::endl;
   
   // print relative error between manufactured solution and final solution
-  AMP::LinearAlgebra::Vector::shared_ptr relErrorVec = AMP::LinearAlgebra::SimpleVector::create( 5, inputVariable );
-  for( int i=0; i<5; i++) {
+  AMP::LinearAlgebra::Vector::shared_ptr relErrorVec = AMP::LinearAlgebra::createVector( faceDOFManager , inputVariable  , true );
+  face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
+  j=1;
+  for( ; face != end_face; ++face,++j){
+    faceDOFManager->getDOFs( face->globalID(), dofs );
      double relError;
-     if (std::abs(manufacturedVec->getValueByLocalID(i)) < 1.0e-15){
+     if (std::abs(manufacturedVec->getValueByGlobalID(dofs[1])) < 1.0e-15){
         relError = 0.0;
      } else {
-        relError = absErrorVec->getValueByLocalID(i)/manufacturedVec->getValueByLocalID(i);
+        relError = absErrorVec->getValueByGlobalID(dofs[1])/manufacturedVec->getValueByGlobalID(dofs[1]);
      }
-     relErrorVec->setValueByLocalID(i, relError);
-     std::cout<<"Relative_Error["<<i<<"] = "<<relErrorVec->getValueByLocalID(i);
+     relErrorVec->setValueByGlobalID(dofs[1], relError);
+     std::cout<<"Relative_Error["<<j<<"] = "<<relError;
      std::cout<<std::endl;
   }
   double relErrorNorm = relErrorVec->L2Norm();
@@ -216,6 +241,15 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   }
 
   input_db.reset();
+
+#ifdef USE_SILO
+    // Register the quantities to plot
+    AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
+    siloWriter->registerVector( manufacturedVec, xyFaceMesh, AMP::Mesh::Face, "ManufacturedSolution" );
+    siloWriter->registerVector( solVec, xyFaceMesh, AMP::Mesh::Face, "ComputedSolution" );
+    siloWriter->writeFile( silo_name , 0 );
+#endif
+
 
 }
 

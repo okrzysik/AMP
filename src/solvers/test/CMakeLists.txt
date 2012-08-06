@@ -40,7 +40,9 @@ INCLUDE (macros)
 
 ADD_AMP_PROVISIONAL_TEST(testNonlinearKrylovAccelerator-NonlinearMechanics-1 )
 
-ADD_AMP_TEST_1_2_4 (testSubchannelSolution)
+ADD_AMP_PROVISIONAL_TEST(testSubchannelSolve)
+
+ADD_AMP_PROVISIONAL_TEST(testSubchannelSolution)
 COPY_TEST_DATA_FILE ( input_testSubchannelSolution)
 
 ADD_AMP_PROVISIONAL_TEST ( testPelletStackMechanicsSolver )
