@@ -113,6 +113,7 @@ namespace Operator {
       double d_K;        // form loss coefficient
       double d_Q;        // rod power
       std::string d_source; // heat source type
+      std::string d_heatShape; // heat shape used if heat source type is "totalHeatGeneration"
 
   };
 
