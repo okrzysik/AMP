@@ -251,20 +251,20 @@ void AMP_MPI::call_bcast(type *x, const int n, const int root) const {
 /************************************************************************
 *  send                                                                 *
 ************************************************************************/
-// Define specializations of send(const type*, const int, const int, const bool, int)
+// Define specializations of send(const type*, const int, const int, int)
 #ifdef USE_MPI
-template <> void AMP_MPI::send<char>(const char*, const int, const int, const bool, int) const;
-template <> void AMP_MPI::send<int>(const int*, int, const int, const bool, int) const;
-template <> void AMP_MPI::send<float>(const float*, const int, const int, const bool, int) const;
-template <> void AMP_MPI::send<double>(const double*, const int, const int, const bool, int) const;
+template <> void AMP_MPI::send<char>(const char*, const int, const int, int) const;
+template <> void AMP_MPI::send<int>(const int*, int, const int, int) const;
+template <> void AMP_MPI::send<float>(const float*, const int, const int, int) const;
+template <> void AMP_MPI::send<double>(const double*, const int, const int, int) const;
 #else
-template <> void AMP_MPI::send<char>(const char*, const int, const int, const bool, int) const;
+template <> void AMP_MPI::send<char>(const char*, const int, const int, int) const;
 #endif
-// Default instantiations of send(const type*, const int, const int, const bool, int)
+// Default instantiations of send(const type*, const int, const int, int)
 template <class type>
-inline void AMP_MPI::send(const type *buf, const int length, const int recv_proc_number, const bool send_length, int tag) const
+inline void AMP_MPI::send(const type *buf, const int length, const int recv_proc_number, int tag) const
 {
-    send<char>((const char*)buf,length*sizeof(type),recv_proc_number,send_length,tag);
+    send<char>((const char*)buf,length*sizeof(type),recv_proc_number,tag);
 }
 
 
@@ -306,7 +306,8 @@ inline void AMP_MPI::recv(type *buf, int &length, const int send_proc_number, co
 {
     int size = length*sizeof(type);
     recv<char>((char*)buf,size,send_proc_number,get_length,tag);
-    length = size/sizeof(type);
+    if ( get_length )
+        length = size/sizeof(type);
 }
 
 

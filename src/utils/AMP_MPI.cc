@@ -1330,64 +1330,44 @@ void AMP_MPI::barrier()
 // char
 template <>
 void AMP_MPI::send<char>(const char *buf, const int length, 
-    const int recv_proc_number, const bool send_length, int tag) const
+    const int recv_proc_number, int tag) const
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
     AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    // Send the recieve length if necessary
-    if (send_length) {
-        int size = length;
-        MPI_Send(&size, 1, MPI_INT, recv_proc_number, tag, communicator);
-    }
     // Send the data 
     MPI_Send((void*)buf, length, MPI_CHAR, recv_proc_number, tag, communicator);
 }
 // int
 template <>
 void AMP_MPI::send<int>(const int *buf, const int length, 
-    const int recv_proc_number, const bool send_length, int tag) const
+    const int recv_proc_number, int tag) const
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
     AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    // Send the recieve length if necessary
-    if (send_length) {
-        int size = length;
-        MPI_Send(&size, 1, MPI_INT, recv_proc_number, tag, communicator);
-    }
     // Send the data 
     MPI_Send((void*)buf, length, MPI_INT, recv_proc_number, tag, communicator);
 }
 // float
 template <>
 void AMP_MPI::send<float>(const float *buf, const int length, 
-    const int recv_proc_number, const bool send_length, int tag) const
+    const int recv_proc_number, int tag) const
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
     AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    // Send the recieve length if necessary
-    if (send_length) {
-        int size = length;
-        MPI_Send(&size, 1, MPI_INT, recv_proc_number, tag, communicator);
-    }
     // Send the data 
     MPI_Send((void*)buf, length, MPI_FLOAT, recv_proc_number, tag, communicator);
 }
 // double
 template <>
 void AMP_MPI::send<double>(const double *buf, const int length, 
-    const int recv_proc_number, const bool send_length, int tag) const
+    const int recv_proc_number, int tag) const
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
     AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    // Send the recieve length if necessary
-    if (send_length) {
-        int size = length;
-        MPI_Send(&size, 1, MPI_INT, recv_proc_number, tag, communicator);
-    }
     // Send the data 
     MPI_Send((void*)buf, length, MPI_DOUBLE, recv_proc_number, tag, communicator);
 }
@@ -1395,7 +1375,7 @@ void AMP_MPI::send<double>(const double *buf, const int length,
 // We need a concrete instantiation of send for USE_MPI=false
 template <>
 void AMP_MPI::send<char>(const char *buf, const int length, 
-    const int recv_proc_number, const bool send_length, int tag) const
+    const int recv_proc_number, int tag) const
 {
     AMP_ERROR("AMP_MPI.send is not written for serial (no MPI)");
 }
@@ -1466,7 +1446,7 @@ void AMP_MPI::sendBytes(const void *buf, const int number_bytes,
 {
     AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     AMP_INSIST(tag>=0,"tag must be >= 0");
-    send<char>((const char*)buf,number_bytes,recv_proc_number,false,tag);
+    send<char>((const char*)buf,number_bytes,recv_proc_number,tag);
 }
 
 
@@ -1495,16 +1475,16 @@ void AMP_MPI::recv<char>(char *buf, int &length,
     tag = (tag >= 0) ? tag : 0;
     AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Get the recieve length if necessary
-    int size = length;
     if (get_length) {
         MPI_Status status;
-        MPI_Recv(&size, 1, MPI_INT, send_proc_number, tag, communicator, &status);
-        if ( size > length ) 
-            AMP_ERROR("Recived length is larger than allocated array");
+        int bytes = this->probe( send_proc_number, tag );
+        int recv_length = bytes/sizeof(char);
+        AMP_INSIST(length>=recv_length,"Recived length is larger than allocated array");
+        length = recv_length;
     }
     // Send the data 
     MPI_Status status;
-    MPI_Recv((void*)buf, size, MPI_CHAR, send_proc_number, tag, communicator, &status);
+    MPI_Recv((void*)buf, length, MPI_CHAR, send_proc_number, tag, communicator, &status);
 }
 // int
 template <>
@@ -1515,16 +1495,16 @@ void AMP_MPI::recv<int>(int *buf, int &length,
     tag = (tag >= 0) ? tag : 0;
     AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Get the recieve length if necessary
-    int size = length;
     if (get_length) {
         MPI_Status status;
-        MPI_Recv(&size, 1, MPI_INT, send_proc_number, tag, communicator, &status);
-        if ( size > length ) 
-            AMP_ERROR("Recived length is larger than allocated array");
+        int bytes = this->probe( send_proc_number, tag );
+        int recv_length = bytes/sizeof(int);
+        AMP_INSIST(length>=recv_length,"Recived length is larger than allocated array");
+        length = recv_length;
     }
     // Send the data 
     MPI_Status status;
-    MPI_Recv((void*)buf, size, MPI_INT, send_proc_number, tag, communicator, &status);
+    MPI_Recv((void*)buf, length, MPI_INT, send_proc_number, tag, communicator, &status);
 }
 // float
 template <>
@@ -1535,16 +1515,16 @@ void AMP_MPI::recv<float>(float *buf, int &length,
     tag = (tag >= 0) ? tag : 0;
     AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Get the recieve length if necessary
-    int size = length;
     if (get_length) {
         MPI_Status status;
-        MPI_Recv(&size, 1, MPI_INT, send_proc_number, tag, communicator, &status);
-        if ( size > length ) 
-            AMP_ERROR("Recived length is larger than allocated array");
+        int bytes = this->probe( send_proc_number, tag );
+        int recv_length = bytes/sizeof(float);
+        AMP_INSIST(length>=recv_length,"Recived length is larger than allocated array");
+        length = recv_length;
     }
     // Send the data 
     MPI_Status status;
-    MPI_Recv((void*)buf, size, MPI_FLOAT, send_proc_number, tag, communicator, &status);
+    MPI_Recv((void*)buf, length, MPI_FLOAT, send_proc_number, tag, communicator, &status);
 }
 // double
 template <>
@@ -1555,16 +1535,16 @@ void AMP_MPI::recv<double>(double *buf, int &length,
     tag = (tag >= 0) ? tag : 0;
     AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Get the recieve length if necessary
-    int size = length;
     if (get_length) {
         MPI_Status status;
-        MPI_Recv(&size, 1, MPI_INT, send_proc_number, tag, communicator, &status);
-        if ( size > length ) 
-            AMP_ERROR("Recived length is larger than allocated array");
+        int bytes = this->probe( send_proc_number, tag );
+        int recv_length = bytes/sizeof(double);
+        AMP_INSIST(length>=recv_length,"Recived length is larger than allocated array");
+        length = recv_length;
     }
     // Send the data 
     MPI_Status status;
-    MPI_Recv((void*)buf, size, MPI_DOUBLE, send_proc_number, tag, communicator, &status);
+    MPI_Recv((void*)buf, length, MPI_DOUBLE, send_proc_number, tag, communicator, &status);
 }
 #else
 // We need a concrete instantiation of send for USE_MPI=false
