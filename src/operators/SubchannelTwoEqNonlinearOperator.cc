@@ -90,7 +90,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
       AMP::Discretization::DOFManager::shared_ptr dof_manager = inputVec->getDOFManager();
 
       // get the Iterators for the subchannel mesh
-      AMP::Mesh::MeshIterator face     = d_Mesh->getIterator(AMP::Mesh::Face, 0);
+      AMP::Mesh::MeshIterator face     = getFaceIterator(d_Mesh, 1);
       AMP::Mesh::MeshIterator end_face = face.end();
 
       /**
@@ -161,7 +161,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
       }
 
       // calculate residual for axial momentum equations
-      double R_b; 
+      double R_a, R_b; 
       double h_minus = h_in;
       double h_plus = h_in;
       int j = 1;
@@ -206,6 +206,9 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
           double u_plus  = d_m / (A*rho_plus);  // velocity evaluated at upper face
           double u_minus = d_m / (A*rho_minus); // velocity evaluated at lower face
 
+          // evaluate residual: energy equation
+          R_a = inputVec->getValueByGlobalID(dofs[0])- h_minus;
+
           // evaluate residual: axial momentum equation
           R_b = (d_m/A)*(u_plus - u_minus)
               + g * del_z[j-1] * rho_avg * std::cos(d_theta) + 
@@ -213,8 +216,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
               + p_plus - p_minus;
 
           // put residual value in residual vector
+          outputVec->setValueByGlobalID(dofs[0], R_a);
           outputVec->setValueByGlobalID(dofs[1], R_b);
-          outputVec->setValueByGlobalID(dofs[0], 0);
           ++face;
       }
 
@@ -258,6 +261,39 @@ boost::shared_ptr<OperatorParameters> SubchannelTwoEqNonlinearOperator ::
 
         boost::shared_ptr<SubchannelOperatorParameters> outParams(new SubchannelOperatorParameters(tmp_db));
         return outParams;
+}
+
+AMP::Mesh::MeshIterator SubchannelTwoEqNonlinearOperator :: getFaceIterator(AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth)
+{
+
+  std::multimap<double,AMP::Mesh::MeshElement> xyFace;
+
+  AMP::Mesh::MeshIterator iterator = subChannel->getIterator( AMP::Mesh::Face, ghostWidth );
+
+  for(size_t i=0; i<iterator.size(); ++i )
+  {
+       std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements(AMP::Mesh::Vertex);
+       std::vector<double> center = iterator->centroid();
+       bool is_valid = true;
+       for (size_t j=0; j<nodes.size(); ++j) {
+            std::vector<double> coord = nodes[j].coord();
+            if ( !AMP::Utilities::approx_equal(coord[2],center[2], 1e-6) )
+                is_valid = false;
+       }
+       if ( is_valid ) {
+            xyFace.insert(std::pair<double,AMP::Mesh::MeshElement>(center[2],*iterator));
+       }
+       ++iterator;
+  }
+
+  boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( 
+    new std::vector<AMP::Mesh::MeshElement>() );
+  elements->reserve(xyFace.size());
+  for (std::multimap<double,AMP::Mesh::MeshElement>::iterator it=xyFace.begin(); it!=xyFace.end(); ++it)
+    elements->push_back( it->second );
+
+  return AMP::Mesh::MultiVectorIterator( elements );
+
 }
 
 AMP::LinearAlgebra::Vector::shared_ptr  SubchannelTwoEqNonlinearOperator::subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)

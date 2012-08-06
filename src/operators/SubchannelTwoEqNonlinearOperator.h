@@ -5,6 +5,8 @@
 #include "operators/Operator.h"
 #include "SubchannelOperatorParameters.h"
 
+#include "ampmesh/MeshElementVectorIterator.h"
+
 namespace AMP {
 namespace Operator {
 
@@ -68,6 +70,8 @@ namespace Operator {
       AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
         return d_outVariable;
       }
+
+      AMP::Mesh::MeshIterator getFaceIterator(AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth);
 
       virtual AMP::LinearAlgebra::Vector::shared_ptr subsetOutputVector(AMP::LinearAlgebra::Vector::shared_ptr vec);
       virtual AMP::LinearAlgebra::Vector::const_shared_ptr subsetOutputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec);
