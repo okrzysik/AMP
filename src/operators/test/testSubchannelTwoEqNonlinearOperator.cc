@@ -91,24 +91,67 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
     face = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     faceDOFManager->getDOFs( face->globalID(), dofs );
     SolVec->setValueByGlobalID(dofs[0], 1000.0e3 );
-    double k = 10.0;
-    double j = 16.4;
-    for( ; face != end_face; ++face, j = j-0.1, k = k-1.0){
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      SolVec->setValueByGlobalID(dofs[0], k*1.e5);
-      SolVec->setValueByGlobalID(dofs[1], j*1.e6);
-    }
+    SolVec->setValueByGlobalID(dofs[1], 16.4e6 );
+    ++face;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    SolVec->setValueByGlobalID(dofs[0], 900.0e3 );
+    SolVec->setValueByGlobalID(dofs[1], 16.3e6 );
+    ++face;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    SolVec->setValueByGlobalID(dofs[0], 800.0e3 );
+    SolVec->setValueByGlobalID(dofs[1], 16.2e6 );
+    ++face;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    SolVec->setValueByGlobalID(dofs[0], 700.0e3 );
+    SolVec->setValueByGlobalID(dofs[1], 16.1e6 );
+    ++face;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    SolVec->setValueByGlobalID(dofs[0], 300.0e3 );
+    SolVec->setValueByGlobalID(dofs[1], 13.5e6 );
+    ++face;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    SolVec->setValueByGlobalID(dofs[0], 450.0e3 );
+    SolVec->setValueByGlobalID(dofs[1], 9.0e6 );
+    ++face;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    SolVec->setValueByGlobalID(dofs[0], 570.0e3 );
+    SolVec->setValueByGlobalID(dofs[1], 12.0e5 );
+    ++face;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    SolVec->setValueByGlobalID(dofs[0], 230.0e2 );
+    SolVec->setValueByGlobalID(dofs[1], 4.0e6 );
+    ++face;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    SolVec->setValueByGlobalID(dofs[0], 999.9e3 );
+    SolVec->setValueByGlobalID(dofs[1], 14.0e6 );
+    ++face;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    SolVec->setValueByGlobalID(dofs[0], 235.6e3 );
+    SolVec->setValueByGlobalID(dofs[1], 12.5e6 );
+
     subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
     bool passedKnownTest = true;
-    double known[8] = {
+    double known[20] = {
        -316282.816245409,
-       48038.9385840241,
-       -147423.339011925,
-       44515.6919998378,
-       -194846.67802385,
-       41390.8375866283,
-       -147423.339011925,
-       586800
+       -49816.4072925864,
+       -105719.954578781,
+       -50981.1590877952,
+       -116469.952796604,
+       -52019.8509439426,
+       -125233.43163654,
+       -2555060.31658177,
+       -430953.386215321,
+       -4454165.84966422,
+       117060.094406793,
+       -7752956.92558845,
+       89046.6137846786,
+       2843912.28207917,
+       -572233.43163654,
+       10049463.6715359,
+       960430.047203396,
+       -1455636.07309586,
+       -770019.954578781,
+       -3013200
     };
     face     = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     int i=0;
@@ -147,18 +190,54 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
     faceDOFManager->getDOFs( face->globalID(), dofs );
     SolVec->setValueByGlobalID(dofs[0], 500.0e3 );
     SolVec->setValueByGlobalID(dofs[1], 15.26e6 );
+    ++face;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    SolVec->setValueByGlobalID(dofs[0], 324.6e3 );
+    SolVec->setValueByGlobalID(dofs[1], 11.0e5 );
+    ++face;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    SolVec->setValueByGlobalID(dofs[0], 457.7e3 );
+    SolVec->setValueByGlobalID(dofs[1], 12.5e5 );
+    ++face;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    SolVec->setValueByGlobalID(dofs[0], 134.6e2 );
+    SolVec->setValueByGlobalID(dofs[1], 34.5e5 );
+    ++face;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    SolVec->setValueByGlobalID(dofs[0], 457.6e3 );
+    SolVec->setValueByGlobalID(dofs[1], 12.0e6 );
+    ++face;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    SolVec->setValueByGlobalID(dofs[0], 325.7e3 );
+    SolVec->setValueByGlobalID(dofs[1], 11.5e6 );
+    ++face;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    SolVec->setValueByGlobalID(dofs[0], 898.6e3 );
+    SolVec->setValueByGlobalID(dofs[1], 15.7e6 );
 
     subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
     bool passedKnownTest = true;
-    double known[8] = {
+    double known[20] = {
        -367603.556722071,
-       246371.994992077,
-       -147423.339011925,
-       292021.286966963,
-       -244846.67802385,
-       146982.197373965,
-       -247423.339011925,
-       -253200
+       149631.268567802,
+       -105719.954578781,
+       198039.001082933,
+       -166469.952796604,
+       56265.1563678032,
+       -225233.43163654,
+       -14114645.1297306,
+       -206353.386215321,
+       196109.460143209,
+       100160.094406793,
+       2244037.06984132,
+       -475193.386215321,
+       8595470.36966505,
+       418906.56836346,
+       -454851.582252684,
+       -148369.952796604,
+       4249245.34387701,
+       567180.045421219,
+       186800
     };
     face     = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     int i=0;
@@ -183,32 +262,69 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
     // Test apply with known residual evaluation
     face = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 700.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 12.4e6 );
     ++face;
+    SolVec->setValueByGlobalID(dofs[0],700.0e3);
+    SolVec->setValueByGlobalID(dofs[1], 12.4e6);;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 900.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 12.3e6 );
     ++face;
+    SolVec->setValueByGlobalID(dofs[0],900.0e3);
+    SolVec->setValueByGlobalID(dofs[1], 12.3e6);;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 800.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 16.2e6 );
     ++face;
+    SolVec->setValueByGlobalID(dofs[0],800.0e3);
+    SolVec->setValueByGlobalID(dofs[1], 16.2e6);;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 650.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 14.1e5 );
+    ++face;
+    SolVec->setValueByGlobalID(dofs[0],650.0e3);
+    SolVec->setValueByGlobalID(dofs[1], 14.1e5);;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    ++face;
+    SolVec->setValueByGlobalID(dofs[0],367.4e3);
+    SolVec->setValueByGlobalID(dofs[1], 31.5e5);;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    ++face;
+    SolVec->setValueByGlobalID(dofs[0],657.2e3);
+    SolVec->setValueByGlobalID(dofs[1], 12.5e6);;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    ++face;
+    SolVec->setValueByGlobalID(dofs[0],788.5e3);
+    SolVec->setValueByGlobalID(dofs[1], 12.7e6);;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    ++face;
+    SolVec->setValueByGlobalID(dofs[0],235.7e2);
+    SolVec->setValueByGlobalID(dofs[1], 17.8e6);;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    ++face;
+    SolVec->setValueByGlobalID(dofs[0],673.1e3);
+    SolVec->setValueByGlobalID(dofs[1], 13.6e6);;
+    faceDOFManager->getDOFs( face->globalID(), dofs );
+    ++face;
+    SolVec->setValueByGlobalID(dofs[0],385.2e3);
+    SolVec->setValueByGlobalID(dofs[1], 16.3e6);
 
     subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
     bool passedKnownTest = true;
-    double known[8] = {
+    double known[20] = {
        -620085.843930095,
-       44727.2351558046,
-       152576.660988075,
-       4044682.60608771,
-       -194846.67802385,
-       -14648547.7970646,
-       -197423.339011925,
-       -14103200
+       -49986.4688121105,
+       194280.045421219,
+       3949028.44119528,
+       -116469.952796604,
+       -14741988.3976949,
+       -175233.43163654,
+       1785589.98266971,
+       -313553.386215321,
+       9397345.85264865,
+       256860.094406793,
+       248813.913712698,
+       100346.613784679,
+       5143446.55072186,
+       -790163.43163654,
+       -4153289.69480504,
+       633060.047203396,
+       2745414.89283861,
+       -293619.954578781,
+       786800
     };
     face     = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     int i=0;
