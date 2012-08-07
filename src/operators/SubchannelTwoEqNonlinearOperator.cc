@@ -168,17 +168,10 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
 
       // calculate residual for axial momentum equations
       double R_h, R_p; 
-      double h_minus = h_in;
-      double h_plus  = h_in;
       int j = 1;
 //      for(AMP::Mesh::MeshIterator face = begin_face ; face != end_face; ++j){
       AMP::Mesh::MeshIterator face = begin_face;
       for(size_t iface = 0; iface < begin_face.size(); ++iface, ++j){
-          std::cout<<"Inside Apply "<< j <<std::endl;
-          h_minus = h_plus;                                // enthalpy evaluated at lower face
-          dof_manager->getDOFs( face->globalID(), dofs );
-                 h_plus  = inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at upper face
-          double p_minus = inputVec->getValueByGlobalID(dofs[1]); // pressure evaluated at lower face
 
           // ======================================================
           // energy residual
@@ -190,23 +183,35 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
               */
              R_h = h_in - h_eval;
           } else {
+             // residual at face corresponds to cell below
+             dof_manager->getDOFs( face->globalID(), dofs );
+             double h_plus   = inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
+             --face;
+             dof_manager->getDOFs( face->globalID(), dofs );
+             double h_minus  = inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
+             ++face;
+
              R_h = h_plus - h_minus - dh[j-2];
           }
 
           // ======================================================
           // axial momentum residual
           // ======================================================
+          // residual at face corresponds to cell above
+          dof_manager->getDOFs( face->globalID(), dofs );
+          double h_minus = inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
+          double p_minus = inputVec->getValueByGlobalID(dofs[1]); // pressure evaluated at lower face
           if (face == end_face - 1){
              R_p = p_minus - d_Pout;
           } else {
              ++face;
              dof_manager->getDOFs( face->globalID(), dofs );
+             double h_plus  = inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at upper face
              double p_plus  = inputVec->getValueByGlobalID(dofs[1]); // pressure evaluated at upper face
              --face;
    
              double h_avg   = (1.0/2.0)*(h_minus + h_plus); // enthalpy evaluated at cell center
              double p_avg   = (1.0/2.0)*(p_minus + p_plus);       // pressure evaluated at cell center
-             std::cout << "h  "<< h_avg << "p "  << p_avg << std::endl;
    
              // evaluate density at upper face
              std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
@@ -235,10 +240,9 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
              double u_plus  = d_m / (A*rho_plus);  // velocity evaluated at upper face
              double u_minus = d_m / (A*rho_minus); // velocity evaluated at lower face
   
-             std::cout << "u plus "<< u_plus << " u minus " << u_minus << std::endl;
              // evaluate residual: axial momentum equation
              R_p = (d_m/A)*(u_plus - u_minus)
-                 + g * del_z[j-1] * rho_avg * std::cos(d_theta) + 
+                 + g * del_z[j-1] * rho_avg * std::cos(d_theta)
                  + (1.0/2.0)*(del_z[j-1] * d_friction/D + d_K)* std::abs(d_m/(A*rho_avg))*(d_m/A)
                  + p_plus - p_minus;
           }
