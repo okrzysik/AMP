@@ -1476,7 +1476,6 @@ void AMP_MPI::recv<char>(char *buf, int &length,
     AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Get the recieve length if necessary
     if (get_length) {
-        MPI_Status status;
         int bytes = this->probe( send_proc_number, tag );
         int recv_length = bytes/sizeof(char);
         AMP_INSIST(length>=recv_length,"Recived length is larger than allocated array");
@@ -1496,7 +1495,6 @@ void AMP_MPI::recv<int>(int *buf, int &length,
     AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Get the recieve length if necessary
     if (get_length) {
-        MPI_Status status;
         int bytes = this->probe( send_proc_number, tag );
         int recv_length = bytes/sizeof(int);
         AMP_INSIST(length>=recv_length,"Recived length is larger than allocated array");
@@ -1516,7 +1514,6 @@ void AMP_MPI::recv<float>(float *buf, int &length,
     AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Get the recieve length if necessary
     if (get_length) {
-        MPI_Status status;
         int bytes = this->probe( send_proc_number, tag );
         int recv_length = bytes/sizeof(float);
         AMP_INSIST(length>=recv_length,"Recived length is larger than allocated array");
@@ -1536,7 +1533,6 @@ void AMP_MPI::recv<double>(double *buf, int &length,
     AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Get the recieve length if necessary
     if (get_length) {
-        MPI_Status status;
         int bytes = this->probe( send_proc_number, tag );
         int recv_length = bytes/sizeof(double);
         AMP_INSIST(length>=recv_length,"Recived length is larger than allocated array");
