@@ -808,7 +808,7 @@ MACRO ( CONFIGURE_SYSTEM_LIBS )
     ELSE()
         SET( SYSTEM_LIBS "-lz -ldl" )
         if ( NOT USE_STATIC )
-            SET( SYSTEM_LIBS "${SYSTEM_LIBS} -rdynamic" )
+            SET( SYSTEM_LIBS "${SYSTEM_LIBS} -rdynamic" )   # Needed for backtrace to print function names
         ENDIF()
     ENDIF()
 ENDMACRO ()
