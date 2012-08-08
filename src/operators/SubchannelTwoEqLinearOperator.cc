@@ -127,6 +127,8 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
 
       // calculate residual for axial momentum equations
       double h_in = d_frozenVec->getValueByGlobalID(dofs_0[0]);
+      AMP::pout<<" The h_in, "<<h_in<<", is never used."<<std::endl;
+      
       int j = 1;
       AMP::Mesh::MeshIterator face = begin_face;
       for(size_t iface = 0; iface < begin_face.size(); ++iface, ++j){
@@ -158,6 +160,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
    
              double h_avg   = (1.0/2.0)*(h_minus + h_plus); // enthalpy evaluated at cell center
              double p_avg   = (1.0/2.0)*(p_minus + p_plus);       // pressure evaluated at cell center
+             AMP::pout<<" The h_avg, "<<h_avg<<", and p_avg, "<<p_avg<<", are never used."<<std::endl;
 
              // evaluate specific volume at upper face
              std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
