@@ -531,10 +531,19 @@ void AMP_MPI::setCallAbortInSerialInsteadOfExit(bool flag)
 void AMP_MPI::abort() const
 {
     #ifdef USE_MPI
-        if ( comm_size > 1 ) {
-            MPI_Abort(communicator, -1);
+        int initialized=0, finalized=0;
+        MPI_Initialized(&initialized);
+        MPI_Finalized(&finalized);
+        MPI_Comm comm = communicator;
+        if ( comm == MPI_COMM_NULL )
+            comm = MPI_COMM_WORLD;
+        if ( initialized==0 || finalized!=0 ) {
+            // MPI is not availible
+            exit(-1);
+        } else if ( comm_size > 1 ) {
+            MPI_Abort(comm, -1);
         } else if ( call_abort_in_serial_instead_of_exit ) {
-            MPI_Abort(communicator, -1);
+            MPI_Abort(comm, -1);
         } else {
             exit(-1);
         }
