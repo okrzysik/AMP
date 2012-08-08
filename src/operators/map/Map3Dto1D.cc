@@ -67,7 +67,7 @@ namespace Operator {
         AMP::LinearAlgebra::Vector::shared_ptr &r, const double , const double )
     {
       AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
-      double a, b;
+      double a = 1.0,  b=0.0;
 
       if(d_useGaussVec) {
         apply_Gauss(nullVec, u, r, a, b);
