@@ -169,10 +169,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
       // calculate residual for axial momentum equations
       double R_h, R_p; 
       int j = 1;
-//      for(AMP::Mesh::MeshIterator face = begin_face ; face != end_face; ++j){
       AMP::Mesh::MeshIterator face = begin_face;
       for(size_t iface = 0; iface < begin_face.size(); ++iface, ++j){
-
           // ======================================================
           // energy residual
           // ======================================================

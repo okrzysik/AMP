@@ -4,8 +4,8 @@ Mesh {
      MeshType = "AMP"
      dim = 3
      Generator = "cube"
-     Size = 1, 1, 3
-     Range = 0.0, 1.0, 0.0, 1.0, 0.0, 3.81
+     Size = 1, 1, 9
+     Range = 0.0, 1.0, 0.0, 1.0, 0.0, 3.81 
      x_offset = 0.0
      y_offset = 0.0
      z_offset = 0.0
