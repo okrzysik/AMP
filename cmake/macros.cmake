@@ -227,8 +227,8 @@ MACRO ( SET_WARNINGS )
     SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -Wno-unused-variable" )
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wno-unused-variable" )
     # Add gcc specific flags
-    SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -ldl" )
-    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -ldl" )
+    SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS}" )
+    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS}" )
   ELSEIF ( USING_MICROSOFT )
     # Add Microsoft specifc compiler options
     SET(CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} /D _SCL_SECURE_NO_WARNINGS" )

@@ -230,6 +230,11 @@ void mytest(AMP::UnitTest *ut)
 }
 
 
+std::vector<std::string> get_call_stack()
+{
+    return AMP::Utilities::getCallStack();
+}
+
 
 //  This test will start and shutdown AMP
 int main(int argc, char *argv[])
@@ -304,7 +309,7 @@ int main(int argc, char *argv[])
             ut.failure("getMemoryUsage");
 
         // Test getting the current call stack
-        std::vector<std::string> call_stack = AMP::Utilities::getCallStack();
+        std::vector<std::string> call_stack = get_call_stack();
         if ( globalComm.getRank()==0 ) {
             std::cout << "Call stack:" << std::endl;
             for (size_t i=0; i<call_stack.size(); i++)
