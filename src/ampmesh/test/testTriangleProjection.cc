@@ -99,7 +99,7 @@ void test_return_status(triangle_t * t_ptr) {
     for (unsigned int j = 0; j < 2; ++j) {
       double const * edge_support_point = e_ptr->get_support_point_ptr(j);
       status = e_ptr->project_point(edge_support_point, projection, tolerance);
-      AMP_ASSERT(status == static_cast<int>(j));
+      AMP_ASSERT(status ==  static_cast<signed int>(j));
     } // end for j
   } // end for i
 
@@ -110,12 +110,12 @@ void test_return_status(triangle_t * t_ptr) {
     edge_t * e_ptr = t_ptr->get_edge(i);
     double const * edge_center = e_ptr->get_center();
     status = t_ptr->project_point(edge_center, projection, tolerance);
-    AMP_ASSERT(status == static_cast<int>(3+i));
+    AMP_ASSERT(status == static_cast<signed int>(3+i));
   } // end for i
   for (unsigned int i = 0; i < 3; ++i) {
     double const * triangle_support_point = t_ptr->get_support_point_ptr(i);
     status = t_ptr->project_point(triangle_support_point, projection, tolerance);
-    AMP_ASSERT(status == static_cast<int>(i));  
+    AMP_ASSERT(status == static_cast<signed int>(i));  
   } // end for i
 
 }

@@ -35,7 +35,7 @@ public:
     size_t      d_localsize;
 
     /** \brief Constructor
-      * \detailed  This will create NativePetscVectorParameters that can be used
+      * \details  This will create NativePetscVectorParameters that can be used
       *   to construct a NativePetscVector around the given ::Vec.  Note that the
       *   existing vector must be destroyed once through a call to VecDestroy.
       *   This can be done be the user or the NativePetscVector based on the deleteable
