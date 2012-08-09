@@ -204,21 +204,41 @@ std::vector<size_t> simpleDOFManager::getRemoteDOFs( ) const
 ****************************************************************/
 std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
 {
-    AMP_INSIST(obj.elementType()==d_type,"Mixing types is not tested/supported yet");
     // Get a list of all element ids that are part of the row
+    AMP::Mesh::GeomType meshType = d_mesh->getGeomType();
+    AMP::Mesh::GeomType objType = obj.elementType();
     std::vector<AMP::Mesh::MeshElementID> ids;
-    if ( obj.elementType()==AMP::Mesh::Vertex || obj.elementType()==d_mesh->getGeomType() ) {
+    if ( objType==d_type && ( objType==AMP::Mesh::Vertex || objType==meshType ) ) {
         // Use the getNeighbors function to get the neighbors of the current element
-        std::vector< Mesh::MeshElement::shared_ptr > neighbor_elements = obj.getNeighbors();
+        std::vector<Mesh::MeshElement::shared_ptr> neighbor_elements = obj.getNeighbors();
         ids.reserve(neighbor_elements.size()+1);
         ids.push_back(obj.globalID());
         for (size_t i=0; i<neighbor_elements.size(); i++) {
             if ( neighbor_elements[i].get() != NULL )
                 ids.push_back(neighbor_elements[i]->globalID());
         }
+    } else if ( objType==d_type ) {
+        // We need to use the mesh to get the connectivity of the elements of the same type
+        std::vector<AMP::Mesh::MeshElement> parents = d_mesh->getElementParents(obj,meshType);
+        for (size_t i=0; i<parents.size(); i++) {
+            std::vector<AMP::Mesh::MeshElement> children = parents[i].getElements(objType);
+            ids.reserve(ids.size()+children.size());
+            for (size_t j=0; j<children.size(); j++)
+                ids.push_back(children[j].globalID());
+        }
+        AMP::Utilities::unique(ids);
+    } else if ( objType>d_type ) {
+        // The desired element type is < the current element type, use getElements
+        std::vector<AMP::Mesh::MeshElement> children = obj.getElements(d_type);
+        for (size_t i=0; i<children.size(); i++)
+            ids.push_back(children[i].globalID());
+    } else if ( objType<d_type ) {
+        // The desired element type is < the current element type, use getElementParents
+        std::vector<AMP::Mesh::MeshElement> parents = d_mesh->getElementParents(obj,meshType);
+        for (size_t i=0; i<parents.size(); i++)
+            ids.push_back(parents[i].globalID());
     } else {
-        // We need to use the mesh to get the connectivity of the elements
-        AMP_ERROR("Not implimented yet");
+        AMP_ERROR("Internal error");
     }
     // Get all dofs for each element id
     std::vector<size_t> dofs;
