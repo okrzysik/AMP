@@ -60,12 +60,12 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
 
         // Create a DOF manager for a nodal vector 
         int DOFsPerNode = 1;
-        int DOFsPerElement = 8;
+        //int DOFsPerElement = 8;
         int nodalGhostWidth = 1;
-        int gaussPointGhostWidth = 1;
+        //int gaussPointGhostWidth = 1;
         bool split = true;
         AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(mesh, AMP::Mesh::Vertex, nodalGhostWidth,      DOFsPerNode,    split);
-        AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(mesh, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split);
+        //AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(mesh, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split);
         
         // create a linear BVP operator
         boost::shared_ptr<AMP::Operator::LinearBVPOperator> IDARhsOperator;

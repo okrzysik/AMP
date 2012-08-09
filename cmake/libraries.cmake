@@ -807,6 +807,9 @@ MACRO ( CONFIGURE_SYSTEM_LIBS )
         SET( SYSTEM_LIBS "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/Psapi.lib" )
     ELSE()
         SET( SYSTEM_LIBS "-lz -ldl" )
+        if ( NOT USE_STATIC )
+            SET( SYSTEM_LIBS "${SYSTEM_LIBS} -rdynamic" )   # Needed for backtrace to print function names
+        ENDIF()
     ENDIF()
 ENDMACRO ()
 

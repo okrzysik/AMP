@@ -164,13 +164,11 @@ MACRO ( SET_STATIC_FLAGS )
     set(CMAKE_SHARED_LIBRARY_C_FLAGS)         # remove -fPIC
     set(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
     set(CMAKE_SHARED_LINKER_FLAGS)
-    set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # remove -rdynamic
-    set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
     # Add the static flag if necessary
     CHECK_ENABLE_FLAG( USE_STATIC 0 )
     IF ( USE_STATIC )
-        SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static")    # Add static flag
-        SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static")  # Add static flag
+        SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static")    # Remove -rdynamic and add static flag
+        SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static")  # Remove -rdynamic and add static flag
     ENDIF()
 ENDMACRO()
 
@@ -227,8 +225,8 @@ MACRO ( SET_WARNINGS )
     SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -Wno-unused-variable" )
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wno-unused-variable" )
     # Add gcc specific flags
-    SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -ldl" )
-    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -ldl" )
+    SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS}" )
+    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS}" )
   ELSEIF ( USING_MICROSOFT )
     # Add Microsoft specifc compiler options
     SET(CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} /D _SCL_SECURE_NO_WARNINGS" )

@@ -129,6 +129,12 @@ static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
     for (size_t i=0; i<stack.size(); i++)
         msg << "   " << stack[i];
     std::cerr << msg.str();
+    if ( *err == MPI_ERR_COMM ) {
+        // Special error handling for an invalid communicator
+        if ( *comm != MPI_COMM_WORLD )
+            MPI_Abort(MPI_COMM_WORLD, -1);
+        exit(-1);
+    }
     AMP_MPI(AMP_COMM_WORLD).abort();
 }
 #endif
