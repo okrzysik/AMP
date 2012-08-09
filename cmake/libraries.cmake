@@ -48,6 +48,7 @@ MACRO ( CONFIGURE_TRILINOS_LIBRARIES )
             SET ( TRILINOS_INCLUDE ${TRILINOS_DIRECTORY}/include )
             FIND_LIBRARY ( TRILINOS_EPETRA_LIB    NAMES epetra    PATHS ${TRILINOS_DIRECTORY}/lib  NO_DEFAULT_PATH )
             FIND_LIBRARY ( TRILINOS_EPETRAEXT_LIB NAMES epetraext PATHS ${TRILINOS_DIRECTORY}/lib  NO_DEFAULT_PATH )
+            FIND_LIBRARY ( TRILINOS_TRIUTILIT_LIB NAMES triutils    PATHS ${TRILINOS_DIRECTORY}/lib  NO_DEFAULT_PATH )
             FIND_LIBRARY ( TRILINOS_AZTECOO_LIB   NAMES aztecoo   PATHS ${TRILINOS_DIRECTORY}/lib  NO_DEFAULT_PATH )
             FIND_LIBRARY ( TRILINOS_GALERI_LIB    NAMES galeri    PATHS ${TRILINOS_DIRECTORY}/lib  NO_DEFAULT_PATH )
             FIND_LIBRARY ( TRILINOS_ML_LIB        NAMES ml        PATHS ${TRILINOS_DIRECTORY}/lib  NO_DEFAULT_PATH )
@@ -66,6 +67,7 @@ MACRO ( CONFIGURE_TRILINOS_LIBRARIES )
                  (NOT TRILINOS_KOKKOS_LIB) )
                 MESSAGE ( ${TRILINOS_EPETRA_LIB} )
                 MESSAGE ( ${TRILINOS_EPETRAEXT_LIB} )
+                MESSAGE ( ${TRILINOS_TRIUTILIT_LIB} )
                 MESSAGE ( ${TRILINOS_TPETRA_LIB} )
                 MESSAGE ( ${TRILINOS_AZTECOO_LIB} )
                 MESSAGE ( ${TRILINOS_ML_LIB} )
@@ -87,6 +89,7 @@ MACRO ( CONFIGURE_TRILINOS_LIBRARIES )
         SET ( TRILINOS_LIBS
             ${TRILINOS_ML_LIB}
             ${TRILINOS_GALERI_LIB}
+            ${TRILINOS_TRIUTILIT_LIB}
             ${TRILINOS_IFPACK_LIB}
             ${TRILINOS_AZTECOO_LIB}
             ${TRILINOS_AMESOS_LIB}
@@ -796,14 +799,34 @@ MACRO ( CONFIGURE_PETSC_LIBRARIES )
 ENDMACRO ()
 
 
-# Macro to configure system-specific libraries
-MACRO ( CONFIGURE_SYSTEM_LIBS )
+# Macro to configure system-specific libraries and flags
+MACRO ( CONFIGURE_SYSTEM )
+    # Remove extra library links
+    set(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)       # remove -Wl,-Bdynamic
+    set(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS)
+    set(CMAKE_SHARED_LIBRARY_C_FLAGS)         # remove -fPIC
+    set(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
+    set(CMAKE_SHARED_LINKER_FLAGS)
+    SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # Remove -rdynamic
+    SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)  # Remove -rdynamic
+    # Add the static flag if necessary
+    CHECK_ENABLE_FLAG( USE_STATIC 0 )
+    IF ( USE_STATIC )
+        SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static")    # Add static flag
+        SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static")  # Add static flag
+    ENDIF()
+    # Add system dependent flags
     IF ( USING_MICROSOFT )
         #FIND_LIBRARY ( SYSTEM_LIBS           NAMES "psapi"        PATHS C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/  )
         #C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/psapi
         SET( SYSTEM_LIBS "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/Psapi.lib" )
     ELSE()
-        SET( SYSTEM_LIBS "-lz -ldl" )
+        CHECK_C_COMPILER_FLAG("-rdynamic" RESULT)
+        IF(RESULT)
+            SET( SYSTEM_LIBS "-lz -ldl -rdynamic" )
+        ELSE()
+            SET( SYSTEM_LIBS "-lz -ldl" )
+        ENDIF()
     ENDIF()
 ENDMACRO ()
 

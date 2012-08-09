@@ -258,7 +258,17 @@ public:
      *    uses mesh iterators and requires O(N) time on the number of elements in the mesh.
      * \param id    Mesh element id we are requesting.
      */
-    virtual MeshElement getElement ( const MeshElementID &id ) const;
+    virtual MeshElement getElement ( const MeshElementID &id ) const; 
+
+
+    /**
+     * \brief    Return the parent elements of the given mesh element
+     * \details  This function queries the mesh to get an element given the mesh id,
+     *    then returns the parent elements that have the element as a child
+     * \param id    Mesh element of interest
+     * \param type  Element type of the parents requested
+     */
+    virtual std::vector<MeshElement> getElementParents ( const MeshElement elem, const GeomType type ) const;
  
 
     //! Get the largest geometric type in the mesh

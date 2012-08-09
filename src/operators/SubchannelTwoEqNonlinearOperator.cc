@@ -1,6 +1,7 @@
 
 #include "operators/SubchannelTwoEqNonlinearOperator.h"
 #include "operators/SubchannelOperatorParameters.h"
+#include "ampmesh/StructuredMeshHelper.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 
@@ -33,6 +34,7 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
       // get additional parameters based on heat source type
       if (d_source == "totalHeatGeneration") {
           d_Q    = getDoubleParameter(myparams,"Rod_Power",66.81e3);  
+          d_heatShape = getStringParameter(myparams,"Heat_Shape","Sinusoidal");
       }
 
       d_subchannelPhysicsModel = myparams->d_subchannelPhysicsModel;  
@@ -90,23 +92,24 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
       AMP::Discretization::DOFManager::shared_ptr dof_manager = inputVec->getDOFManager();
 
       // get the Iterators for the subchannel mesh
-      AMP::Mesh::MeshIterator face     = getFaceIterator(d_Mesh, 1);
-      AMP::Mesh::MeshIterator end_face = face.end();
+      AMP::Mesh::MeshIterator begin_face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(d_Mesh, 0);
+      AMP::Mesh::MeshIterator end_face   = begin_face.end();
 
       /**
         get boundary values: u has ordering:
         \f[ \vec{u}=\left[\begin{array}{c}
-                          h_{in}\\
-                          p_{1^-}\\
+                          h_{0^+}\\
+                          p_{0^+}\\
                           \vdots\\
+                          h_{J^+}\\
                           p_{J^+}\\
                           \end{array}\right] \f]
         */
-      const int numCells = face.size() - 1;
-      const int numFaces = face.size() ;
+      const int numFaces = begin_face.size() ;
+      const int numCells = numFaces - 1;
 
       std::vector<size_t> dofs;
-      dof_manager->getDOFs( face->globalID(), dofs );
+      dof_manager->getDOFs( begin_face->globalID(), dofs );
 
       double h_in  = inputVec->getValueByGlobalID(dofs[0]);
       double P_in  = inputVec->getValueByGlobalID(dofs[1]);    
@@ -118,7 +121,6 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
       std::vector<double> enthalpyResult(1);
       d_subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap); 
       double h_eval = enthalpyResult[0];
-
 
       // get interval lengths from mesh
       std::vector<double> box = d_Mesh->getBoundingBox();
@@ -148,96 +150,107 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
       } else if (d_source == "averageHeatFlux") {
           AMP_ERROR("Heat source type 'averageHeatFlux' not yet implemented.");
       } else if (d_source == "totalHeatGeneration") {
-          // assuming cosine power shape
-          for (int j=0; j<numCells; j++){
-              double flux = d_Q/(2.0*pi*d_diameter*del_z[j]) * (std::cos(pi*z[j]/height) - std::cos(pi*z[j+1]/height));
-              double lin = d_Q/(2.0*del_z[j])                * (std::cos(pi*z[j]/height) - std::cos(pi*z[j+1]/height));
-              double flux_sum = 4.0*pi*d_diameter*1.0/4.0*flux;
-              double lin_sum = 4.0*d_gamma*1.0/4.0*lin;
-              dh[j] = del_z[j] / d_m * (flux_sum + lin_sum);
+          if (d_heatShape == "Sinusoidal") {
+             // sinusoidal
+             for (int j=0; j<numCells; j++){
+                 double flux = d_Q/(2.0*pi*d_diameter*del_z[j]) * (std::cos(pi*z[j]/height) - std::cos(pi*z[j+1]/height));
+                 double lin = d_Q/(2.0*del_z[j])                * (std::cos(pi*z[j]/height) - std::cos(pi*z[j+1]/height));
+                 double flux_sum = 4.0*pi*d_diameter*1.0/4.0*flux;
+                 double lin_sum = 4.0*d_gamma*1.0/4.0*lin;
+                 dh[j] = del_z[j] / d_m * (flux_sum + lin_sum);
+             }
+          } else {
+             AMP_ERROR("Heat shape '"+d_heatShape+" is invalid");
           }
       } else {
           AMP_ERROR("Heat source type '"+d_source+"' is invalid");
       }
 
       // calculate residual for axial momentum equations
-      double R_a, R_b; 
-      double h_minus = h_in;
-      double h_plus = h_in;
+      double R_h, R_p; 
       int j = 1;
-      for( ; face != end_face; ++j){
-          h_minus = h_plus;                            // enthalpy evaluated at lower face
-          h_plus  = h_minus + dh[j-1];                 // enthalpy evaluated at upper face
-          double h_avg   = 1.0/2.0*(h_minus + h_plus); // enthalpy evaluated at cell center
+      AMP::Mesh::MeshIterator face = begin_face;
+      for(size_t iface = 0; iface < begin_face.size(); ++iface, ++j){
+          // ======================================================
+          // energy residual
+          // ======================================================
+          if (face == begin_face){
+            /**
+              evaluate first residual entry, corresponding to inlet enthalpy:
+              \f[ R_0 = h_{in} - h(T_{in},p_{1-})\f]
+              */
+             R_h = h_in - h_eval;
+          } else {
+             // residual at face corresponds to cell below
+             dof_manager->getDOFs( face->globalID(), dofs );
+             double h_plus   = inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
+             --face;
+             dof_manager->getDOFs( face->globalID(), dofs );
+             double h_minus  = inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
+             ++face;
 
+             R_h = h_plus - h_minus - dh[j-2];
+          }
+
+          // ======================================================
+          // axial momentum residual
+          // ======================================================
+          // residual at face corresponds to cell above
           dof_manager->getDOFs( face->globalID(), dofs );
-          double p_minus = inputVec->getValueByGlobalID(dofs[1]);   // pressure evaluated at lower face
-
-          ++face;
-          dof_manager->getDOFs( face->globalID(), dofs );
-          double p_plus  = inputVec->getValueByGlobalID(dofs[1]); // pressure evaluated at upper face
-
-          double p_avg   = 1.0/2.0*(p_minus + p_plus);       // pressure evaluated at cell center
-
-          // evaluate density at upper face
-          std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
-          volumeArgMap_plus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_plus)));
-          volumeArgMap_plus.insert(std::make_pair("pressure",new std::vector<double>(1,p_plus)));
-          std::vector<double> volumeResult_plus(1);
-          d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_plus,volumeArgMap_plus); 
-          double rho_plus = 1.0/volumeResult_plus[0];
-
-          // evaluate density at lower face
-          std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_minus;
-          volumeArgMap_minus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_minus)));
-          volumeArgMap_minus.insert(std::make_pair("pressure",new std::vector<double>(1,p_minus)));
-          std::vector<double> volumeResult_minus(1);
-          d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_minus,volumeArgMap_minus); 
-          double rho_minus = 1.0/volumeResult_minus[0];
-
-          // evaluate density at cell center
-          std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_avg;
-          volumeArgMap_avg.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_avg)));
-          volumeArgMap_avg.insert(std::make_pair("pressure",new std::vector<double>(1,p_avg)));
-          std::vector<double> volumeResult_avg(1);
-	  d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_avg,volumeArgMap_avg);
-          double rho_avg = 1.0/volumeResult_avg[0];
-
-          double u_plus  = d_m / (A*rho_plus);  // velocity evaluated at upper face
-          double u_minus = d_m / (A*rho_minus); // velocity evaluated at lower face
-
-          // evaluate residual: energy equation
-          R_a = inputVec->getValueByGlobalID(dofs[0])- h_minus;
-
-          // evaluate residual: axial momentum equation
-          R_b = (d_m/A)*(u_plus - u_minus)
-              + g * del_z[j-1] * rho_avg * std::cos(d_theta) + 
-              + 1.0/2.0*(del_z[j-1] * d_friction/D + d_K)* std::abs(d_m/(A*rho_avg))*(d_m/A)
-              + p_plus - p_minus;
+          double h_minus = inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
+          double p_minus = inputVec->getValueByGlobalID(dofs[1]); // pressure evaluated at lower face
+          if (face == end_face - 1){
+             R_p = p_minus - d_Pout;
+          } else {
+             ++face;
+             dof_manager->getDOFs( face->globalID(), dofs );
+             double h_plus  = inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at upper face
+             double p_plus  = inputVec->getValueByGlobalID(dofs[1]); // pressure evaluated at upper face
+             --face;
+   
+             double h_avg   = (1.0/2.0)*(h_minus + h_plus); // enthalpy evaluated at cell center
+             double p_avg   = (1.0/2.0)*(p_minus + p_plus);       // pressure evaluated at cell center
+   
+             // evaluate density at upper face
+             std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
+             volumeArgMap_plus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_plus)));
+             volumeArgMap_plus.insert(std::make_pair("pressure",new std::vector<double>(1,p_plus)));
+             std::vector<double> volumeResult_plus(1);
+             d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_plus,volumeArgMap_plus); 
+             double rho_plus = 1.0/volumeResult_plus[0];
+   
+             // evaluate density at lower face
+             std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_minus;
+             volumeArgMap_minus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_minus)));
+             volumeArgMap_minus.insert(std::make_pair("pressure",new std::vector<double>(1,p_minus)));
+             std::vector<double> volumeResult_minus(1);
+             d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_minus,volumeArgMap_minus); 
+             double rho_minus = 1.0/volumeResult_minus[0];
+   
+             // evaluate density at cell center
+             std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_avg;
+             volumeArgMap_avg.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_avg)));
+             volumeArgMap_avg.insert(std::make_pair("pressure",new std::vector<double>(1,p_avg)));
+             std::vector<double> volumeResult_avg(1);
+             d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_avg,volumeArgMap_avg);
+             double rho_avg = 1.0/volumeResult_avg[0];
+   
+             double u_plus  = d_m / (A*rho_plus);  // velocity evaluated at upper face
+             double u_minus = d_m / (A*rho_minus); // velocity evaluated at lower face
+  
+             // evaluate residual: axial momentum equation
+             R_p = (d_m/A)*(u_plus - u_minus)
+                 + g * del_z[j-1] * rho_avg * std::cos(d_theta)
+                 + (1.0/2.0)*(del_z[j-1] * d_friction/D + d_K)* std::abs(d_m/(A*rho_avg))*(d_m/A)
+                 + p_plus - p_minus;
+          }
 
           // put residual value in residual vector
-          outputVec->setValueByGlobalID(dofs[0], R_a);
-          outputVec->setValueByGlobalID(dofs[1], R_b);
+          dof_manager->getDOFs( face->globalID(), dofs );
+          outputVec->setValueByGlobalID(dofs[0], R_h);
+          outputVec->setValueByGlobalID(dofs[1], R_p);
           ++face;
       }
-
-      /**
-        evaluate first residual entry, corresponding to inlet enthalpy:
-        \f[ R_0 = h_{in} - h(T_{in},p_{1-})\f]
-        */
-      R_b = h_in - h_eval;
-
-      // put first residual value into residual vector
-      face = d_Mesh->getIterator(AMP::Mesh::Face, 0);
-      dof_manager->getDOFs( face->globalID(), dofs );
-      outputVec->setValueByGlobalID(dofs[0], R_b);
-
-      // strongly impose outlet pressure boundary condition
-      end_face-- ;
-      dof_manager->getDOFs( end_face->globalID(), dofs );
-      outputVec->setValueByGlobalID(dofs[1], 0.0);
-      outputVec->setValueByGlobalID(dofs[0], 0.0);
-
 
       if(f.get() == NULL) {
 	      outputVec->scale(a);
@@ -261,39 +274,6 @@ boost::shared_ptr<OperatorParameters> SubchannelTwoEqNonlinearOperator ::
 
         boost::shared_ptr<SubchannelOperatorParameters> outParams(new SubchannelOperatorParameters(tmp_db));
         return outParams;
-}
-
-AMP::Mesh::MeshIterator SubchannelTwoEqNonlinearOperator :: getFaceIterator(AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth)
-{
-
-  std::multimap<double,AMP::Mesh::MeshElement> xyFace;
-
-  AMP::Mesh::MeshIterator iterator = subChannel->getIterator( AMP::Mesh::Face, ghostWidth );
-
-  for(size_t i=0; i<iterator.size(); ++i )
-  {
-       std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements(AMP::Mesh::Vertex);
-       std::vector<double> center = iterator->centroid();
-       bool is_valid = true;
-       for (size_t j=0; j<nodes.size(); ++j) {
-            std::vector<double> coord = nodes[j].coord();
-            if ( !AMP::Utilities::approx_equal(coord[2],center[2], 1e-6) )
-                is_valid = false;
-       }
-       if ( is_valid ) {
-            xyFace.insert(std::pair<double,AMP::Mesh::MeshElement>(center[2],*iterator));
-       }
-       ++iterator;
-  }
-
-  boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( 
-    new std::vector<AMP::Mesh::MeshElement>() );
-  elements->reserve(xyFace.size());
-  for (std::multimap<double,AMP::Mesh::MeshElement>::iterator it=xyFace.begin(); it!=xyFace.end(); ++it)
-    elements->push_back( it->second );
-
-  return AMP::Mesh::MultiVectorIterator( elements );
-
 }
 
 AMP::LinearAlgebra::Vector::shared_ptr  SubchannelTwoEqNonlinearOperator::subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)

@@ -4,8 +4,8 @@ Mesh {
      MeshType = "AMP"
      dim = 3
      Generator = "cube"
-     Size = 1, 1, 5
-     Range = 0.0, 1.0, 0.0, 1.0, 0.0, 10.0
+     Size = 1, 1, 9
+     Range = 0.0, 1.0, 0.0, 1.0, 0.0, 3.81 
      x_offset = 0.0
      y_offset = 0.0
      z_offset = 0.0
@@ -27,6 +27,7 @@ SubchannelTwoEqNonlinearOperator{
     Form_Loss_Coefficient = 0.2
     Rod_Power = 66.81e3
     Heat_Source_Type = "totalHeatGeneration"
+    Heat_Shape = "Sinusoidal"
 }
 
 SubchannelPhysicsModel{

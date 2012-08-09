@@ -103,8 +103,7 @@ void term_func()
     for (size_t i=0; i<stack.size(); i++)
         msg << "   " << stack[i];
     std::cerr << msg.str();
-    std::cout << "Exiting" << std::endl;
-    exit(-1);
+    AMP_MPI(AMP_COMM_WORLD).abort();
 }
 
 
@@ -116,12 +115,27 @@ MPI_Errhandler AMPManager::mpierr;
 static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
 {
     int msg_len=0;
-    char message[1000];
+    std::stringstream msg;    
+    char text[100], message[1000];
     MPI_Error_string( *err, message, &msg_len );
     if ( msg_len <= 0 )
         AMP_ERROR("Unkown error in MPI");
-    std::string error_msg = "Error calling MPI routine:\n" + std::string(message);
-    AMP_ERROR(error_msg);
+    msg << "Error calling MPI routine:\n" + std::string(message) << std::endl;
+    long long unsigned int N_bytes = AMP::Utilities::getMemoryUsage();
+    sprintf(text,"Bytes used = %llu\n",N_bytes);
+    msg << text;
+    std::vector<std::string> stack = AMP::Utilities::getCallStack();
+    msg << "Stack Trace:\n";
+    for (size_t i=0; i<stack.size(); i++)
+        msg << "   " << stack[i];
+    std::cerr << msg.str();
+    if ( *err == MPI_ERR_COMM ) {
+        // Special error handling for an invalid communicator
+        if ( *comm != MPI_COMM_WORLD )
+            MPI_Abort(MPI_COMM_WORLD, -1);
+        exit(-1);
+    }
+    AMP_MPI(AMP_COMM_WORLD).abort();
 }
 #endif
 

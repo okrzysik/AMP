@@ -585,7 +585,7 @@ int testSendRecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
             } else if ( i==comm.getRank() ) {
                 // We are sending
                 x = v2;
-                comm.send(&x,1,j,false,tag);
+                comm.send(&x,1,j,tag);
             } else if ( j==comm.getRank() ) {
                 // We are recieving
                 int size=1;
@@ -609,7 +609,7 @@ int testSendRecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
             } else if ( i==comm.getRank() ) {
                 // We are sending
                 x = v2;
-                comm.send(&x,1,j,true,tag);
+                comm.send(&x,1,j,tag);
             } else if ( j==comm.getRank() ) {
                 // We are recieving
                 int size=1;
@@ -633,7 +633,7 @@ int testSendRecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
             } else if ( i==comm.getRank() ) {
                 // We are sending
                 x = v2;
-                comm.send(&x,0,j,false,tag);
+                comm.send(&x,0,j,tag);
             } else if ( j==comm.getRank() ) {
                 // We are recieving
                 int size = comm.probe(i,tag);

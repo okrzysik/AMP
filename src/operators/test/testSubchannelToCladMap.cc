@@ -11,7 +11,7 @@
 #include "ampmesh/MeshElementVectorIterator.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
-#include "operators/map/CladToSubchannelMap.h"
+#include "operators/map/SubchannelToCladMap.h"
 #include "operators/map/AsyncMapColumnOperator.h"
 #include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
@@ -93,7 +93,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     if ( pin_mesh.get()!=NULL ) {
         pin_DOFs = AMP::Discretization::simpleDOFManager::create(pin_mesh,AMP::Mesh::Vertex,1,DOFsPerNode);
         T1 = AMP::LinearAlgebra::createVector( pin_DOFs, temperature );
-        T1->setToScalar(0.0);
+        T1->setToScalar(500);
     }
     if ( subchannel_face.get()!=NULL ) {
         subchannel_DOFs = AMP::Discretization::simpleDOFManager::create(subchannel_face,AMP::Mesh::Face,1,DOFsPerNode);
@@ -101,35 +101,35 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
         T2->setToScalar(0.0);
     }
 
-    // Initialize the pin temperatures
-    if ( pin_mesh.get()!=NULL ) {
-        AMP::Mesh::MeshIterator it = pin_mesh->getIterator(AMP::Mesh::Vertex,0);
+    // Initialize the subchannel temperatures
+    if ( subchannel_face.get()!=NULL ) {
+        AMP::Mesh::MeshIterator it = subchannel_face->getIterator(AMP::Mesh::Face,0);
         std::vector<size_t> dofs;
         for (size_t i=0; i<it.size(); i++) {
-            pin_DOFs->getDOFs(it->globalID(),dofs);
-            T1->setValueByGlobalID(dofs[0],getTemp(it->coord()));
+            subchannel_DOFs->getDOFs(it->globalID(),dofs);
+            T2->setValueByGlobalID(dofs[0],getTemp(it->centroid()));
             ++it;
         }
     }
 
-    // Test the creation/destruction of CladToSubchannelMap (no apply call)
+    // Test the creation/destruction of SubchannelToCladMap (no apply call)
     try { 
         boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  map;
-        map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap>( manager, map_db );
+        map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, map_db );
         map.reset();
-        ut->passes("Created / Destroyed CladToSubchannelMap");
+        ut->passes("Created / Destroyed SubchannelToCladMap");
     } catch ( ... ) {
-        ut->failure("Created / Destroyed CladToSubchannelMap");
+        ut->failure("Created / Destroyed SubchannelToCladMap");
     }
 
-    // Perform a complete test of CladToSubchannelMap
+    // Perform a complete test of SubchannelToCladMap
     boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  map;
-    map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap>( manager, map_db );
-    map->setVector( T2 );
+    map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, map_db );
+    map->setVector( T1 );
     
     // Apply the map
     globalComm.barrier();
-    map->apply( dummy, T1, T2 );
+    map->apply( dummy, T2, dummy );
 
     // Check the results
     /*if ( subchannel_face.get()!=NULL ) {
@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
     AMP::UnitTest ut;
 
     AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);
-    runTest ( "inputCladToSubchannelMap-1" , &ut );
+    runTest ( "inputSubchannelToCladMap-1" , &ut );
 
     ut.report();
 

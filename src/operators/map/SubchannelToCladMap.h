@@ -1,5 +1,5 @@
-//#ifndef included_AMP_CladToSubchannelMap
-#define included_AMP_CladToSubchannelMap
+//#ifndef included_AMP_SubchannelToCladMap
+#define included_AMP_SubchannelToCladMap
 
 #include "operators/map/ScalarZAxisMap.h"
 #include "ampmesh/MeshElementVectorIterator.h"
@@ -8,38 +8,38 @@ namespace AMP {
 namespace Operator {
 
 
-typedef AsyncMapOperatorParameters  CladToSubchannelMapParameters;
+typedef AsyncMapOperatorParameters  SubchannelToCladMapParameters;
 
 
 /**
- * \class  CladToSubchannelMap
+ * \class  SubchannelToCladMap
  * \brief  A class used to map temperature from the clad meshes to the subchannel mesh
  * \details  This class maps a scalar quantity (eg. Temperature) from the outer surface
  *    of the clad meshes of a fuel assembly to a subchannel mesh.
  *    mesh1 - clad meshes
  *    mesh2 - subchannel mesh
  */
-class CladToSubchannelMap : public AMP::Operator::AsyncMapOperator
+class SubchannelToCladMap : public AMP::Operator::AsyncMapOperator
 {
 public:
 
-    /** \brief  Returns true if MapType = "CladToSubchannelMapParameters"
+    /** \brief  Returns true if MapType = "SubchannelToCladMapParameters"
      * \param[in] s  A string extracted from the MapType line in a MeshToMeshMap db
-     * \return  True iff s == "CladToSubchannelMapParameters"
+     * \return  True iff s == "SubchannelToCladMapParameters"
      */
     static bool validMapType ( const std::string &s );
 
     /** \brief  Typedef to identify the parameters class of this operator
      */
-    typedef  CladToSubchannelMapParameters   Parameters;
+    typedef  SubchannelToCladMapParameters   Parameters;
 
     /** \brief   Standard constructor
      * \param[in] params  Input parameters
      */
-    CladToSubchannelMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> &params );
+    SubchannelToCladMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> &params );
 
     //! Destructor
-    ~CladToSubchannelMap();
+    ~SubchannelToCladMap();
 
     /** \brief   Set a frozen vector for results of the apply operation. 
      * \details  Set a frozen vector for results of the apply operation. 
@@ -71,8 +71,8 @@ private:
     size_t N_subchannels;                                   // The total number of subchannels
     std::vector<double> d_x, d_y, d_z;                      // The x, y, z grid for the subchannel
     std::vector<bool> d_ownSubChannel;                      // Which subchannels do I own (multple procs my own a subchannel)
-    std::vector<std::vector<int> > d_subchannelRanks;       // The processors that need each x-y point to fill the result vec
-    std::vector<std::vector<int> > d_subchannelSend;        // The processors that are sending data to fill each subchannel
+    std::vector<std::vector<int> > d_subchannelRanks;       // The processors that own each x-y point in the subchannel
+    std::vector<std::vector<int> > d_subchannelRecv;        // The processors that are recieving data from each subchannel
 
     // Iterators over the mesh elemens of interest
     static AMP::Mesh::MeshIterator getSubchannelIterator(AMP::Mesh::Mesh::shared_ptr);
@@ -84,8 +84,7 @@ private:
 
     // Buffers to send/recv the data
     std::vector<MPI_Request> d_currRequests;
-    std::vector<std::vector<std::pair<double,double> > > d_sendBuffer;
-    size_t d_sendMaxBufferSize;
+    std::vector<std::vector<double> > d_sendBuffer;
 
     int getSubchannelIndex( double x, double y );
 };

@@ -144,6 +144,7 @@ void testAMPMesh( AMP::UnitTest *ut )
 
     // Run the mesh tests
     MeshTestLoop( ut, mesh );
+    getParents( ut, mesh );
     MeshVectorTestLoop( ut, mesh );
     MeshMatrixTestLoop( ut, mesh );
     PROFILE_STOP("testAMPMesh");

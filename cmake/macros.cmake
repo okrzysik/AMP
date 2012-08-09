@@ -1,3 +1,6 @@
+INCLUDE(CheckCSourceCompiles)
+
+
 # Macro to convert a m4 file
 # This command converts a file of the format "global_path/file.fm4"
 # and convertes it to file.f90.  It also requires the path.  
@@ -156,23 +159,6 @@ IF ( NOT EXISTS ${PATH_NAME} )
 ENDIF ()
 ENDMACRO ()
 
-# Macro to tell cmake to use static libraries
-MACRO ( SET_STATIC_FLAGS )
-    # Remove extra library links
-    set(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)       # remove -Wl,-Bdynamic
-    set(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS)
-    set(CMAKE_SHARED_LIBRARY_C_FLAGS)         # remove -fPIC
-    set(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
-    set(CMAKE_SHARED_LINKER_FLAGS)
-    set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # remove -rdynamic
-    set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
-    # Add the static flag if necessary
-    CHECK_ENABLE_FLAG( USE_STATIC 0 )
-    IF ( USE_STATIC )
-        SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static")    # Add static flag
-        SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static")  # Add static flag
-    ENDIF()
-ENDMACRO()
 
 # Macro to identify the compiler
 MACRO ( SET_COMPILER )
@@ -227,8 +213,8 @@ MACRO ( SET_WARNINGS )
     SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -Wno-unused-variable" )
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wno-unused-variable" )
     # Add gcc specific flags
-    SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -ldl" )
-    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -ldl" )
+    SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS}" )
+    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS}" )
   ELSEIF ( USING_MICROSOFT )
     # Add Microsoft specifc compiler options
     SET(CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} /D _SCL_SECURE_NO_WARNINGS" )
@@ -505,6 +491,27 @@ MACRO ( CHECK_ENABLE_FLAG FLAG DEFAULT )
         MESSAGE ( "Bad value for ${FLAG} (${${FLAG}}); use true or false" )
     ENDIF ()
 ENDMACRO ()
+
+
+# Macro to check if a compiler flag is valid
+MACRO (CHECK_C_COMPILER_FLAG _FLAG _RESULT)
+   SET(SAFE_CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS}")
+   SET(CMAKE_REQUIRED_DEFINITIONS "${_FLAG}")
+   CHECK_C_SOURCE_COMPILES("int main() { return 0;}" ${_RESULT}
+     # Some compilers do not fail with a bad flag
+     FAIL_REGEX "error: bad value (.*) for .* switch"       # GNU
+     FAIL_REGEX "argument unused during compilation"        # clang
+     FAIL_REGEX "is valid for .* but not for C"             # GNU
+     FAIL_REGEX "unrecognized .*option"                     # GNU
+     FAIL_REGEX "ignoring unknown option"                   # MSVC
+     FAIL_REGEX "[Uu]nknown option"                         # HP
+     FAIL_REGEX "[Ww]arning: [Oo]ption"                     # SunPro
+     FAIL_REGEX "command option .* is not recognized"       # XL
+     FAIL_REGEX "WARNING: unknown flag:"                    # Open64
+     FAIL_REGEX " #10159: "                                 # ICC
+     )
+   SET (CMAKE_REQUIRED_DEFINITIONS "${SAFE_CMAKE_REQUIRED_DEFINITIONS}")
+ENDMACRO (CHECK_C_COMPILER_FLAG)
 
 
 # add custom target distclean

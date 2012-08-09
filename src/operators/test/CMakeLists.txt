@@ -353,8 +353,10 @@ ADD_AMP_TEST_1_2_4 ( testScalarN2GZAxisMap )
 COPY_TEST_DATA_FILE ( inputScalarN2GZAxisMap-1 )
 
 # Test CladToSubchannel map
-ADD_AMP_PROVISIONAL_TEST ( testCladToSubchannelMap )
+ADD_AMP_TEST_1_2_4 ( testCladToSubchannelMap )
+ADD_AMP_TEST_1_2_4 ( testSubchannelToCladMap )
 COPY_TEST_DATA_FILE ( inputCladToSubchannelMap-1 )
+COPY_TEST_DATA_FILE ( inputSubchannelToCladMap-1 )
 
 
 # Test map operators

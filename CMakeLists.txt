@@ -61,7 +61,7 @@ ADD_DISTCLEAN ()
 
 
 # Check the compile mode and compile flags
-SET_STATIC_FLAGS ()
+CONFIGURE_SYSTEM()
 VERIFY_VARIABLE ( "COMPILE_MODE" )
 IF ( ${COMPILE_MODE} STREQUAL "debug" )
   SET_DEBUG_MACROS()
@@ -89,7 +89,6 @@ ENDIF()
 
 
 # Configure external libraries
-CONFIGURE_SYSTEM_LIBS ()
 CONFIGURE_MPI ()   # MPI must be before other libraries
 CONFIGURE_TRILINOS_LIBRARIES ()
 CONFIGURE_SUNDIALS_LIBRARIES ()

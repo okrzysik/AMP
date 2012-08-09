@@ -811,6 +811,47 @@ void DisplaceMesh( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 }
 
 
+// Test getting parent elements for each mesh element
+void getParents( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) 
+{
+    bool pass = true;
+    int gcw = mesh->getMaxGhostWidth();
+    for (int type1=0; type1<=(int)mesh->getGeomType(); type1++) {
+        AMP::Mesh::MeshIterator it = mesh->getIterator((AMP::Mesh::GeomType)type1,gcw);
+        for (size_t k=0; k<it.size(); k++) {
+            for (int type2=0; type2<type1; type2++) {
+                std::vector<AMP::Mesh::MeshElement> elements = it->getElements((AMP::Mesh::GeomType)type2);
+                for (size_t i=0; i<elements.size(); i++) {
+                    if ( !elements[i].globalID().is_local() )
+                        continue;
+                    std::vector<AMP::Mesh::MeshElement> parents = mesh->getElementParents(elements[i],(AMP::Mesh::GeomType)type1);
+                    // Check that the current parent was found (find all parents)
+                    bool found = false;
+                    for (size_t j=0; j<parents.size(); j++) {
+                        if ( parents[j]==*it )
+                            found = true;
+                    }
+                    if ( !found )
+                        pass = false;
+                    // Check that all parents do have the current element as a child (no extra parents found)
+                    for (size_t j=0; j<parents.size(); j++) {
+                        std::vector<AMP::Mesh::MeshElement> children = parents[j].getElements((AMP::Mesh::GeomType)type2);
+                        found = false;
+                        for (size_t m=0; m<children.size(); m++) {
+                            if ( children[m]==elements[i] )
+                                found = true;
+                        }
+                        if ( !found )
+                            pass = false;
+                    }
+                }
+            }
+            ++it;
+        }
+    }
+}
+
+
 
 /*
 
