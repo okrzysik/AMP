@@ -799,16 +799,33 @@ MACRO ( CONFIGURE_PETSC_LIBRARIES )
 ENDMACRO ()
 
 
-# Macro to configure system-specific libraries
-MACRO ( CONFIGURE_SYSTEM_LIBS )
+# Macro to configure system-specific libraries and flags
+MACRO ( CONFIGURE_SYSTEM )
+    # Remove extra library links
+    set(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)       # remove -Wl,-Bdynamic
+    set(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS)
+    set(CMAKE_SHARED_LIBRARY_C_FLAGS)         # remove -fPIC
+    set(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
+    set(CMAKE_SHARED_LINKER_FLAGS)
+    SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # Remove -rdynamic
+    SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)  # Remove -rdynamic
+    # Add the static flag if necessary
+    CHECK_ENABLE_FLAG( USE_STATIC 0 )
+    IF ( USE_STATIC )
+        SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static")    # Add static flag
+        SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static")  # Add static flag
+    ENDIF()
+    # Add system dependent flags
     IF ( USING_MICROSOFT )
         #FIND_LIBRARY ( SYSTEM_LIBS           NAMES "psapi"        PATHS C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/  )
         #C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/psapi
         SET( SYSTEM_LIBS "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/Psapi.lib" )
     ELSE()
-        SET( SYSTEM_LIBS "-lz -ldl" )
-        if ( NOT USE_STATIC )
-            SET( SYSTEM_LIBS "${SYSTEM_LIBS} -rdynamic" )   # Needed for backtrace to print function names
+        CHECK_C_COMPILER_FLAG("-rdynamic" RESULT)
+        IF(RESULT)
+            SET( SYSTEM_LIBS "-lz -ldl -rdynamic" )
+        ELSE()
+            SET( SYSTEM_LIBS "-lz -ldl" )
         ENDIF()
     ENDIF()
 ENDMACRO ()
