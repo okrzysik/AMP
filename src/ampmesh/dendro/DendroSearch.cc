@@ -56,7 +56,7 @@ draw_hex8_element(&(d_volume_elements[elementLocalID]), point_of_view, d_fout);
 double globalCoords[3];
 d_volume_elements[elementLocalID].map_local_to_global(pointLocalCoords_ptr, globalCoords);
 d_fout<<"% pointLocalID="<<pointLocalID<<"\n";
-draw_point(globalCoords, "", d_fout); 
+draw_point(globalCoords, "red", d_fout); 
 d_fout<<"\n";
       std::vector<AMP::Mesh::MeshElement> meshElementFaces = meshElement->getElements(AMP::Mesh::Face);
       AMP_ASSERT( meshElementFaces.size() == 6 );
@@ -800,7 +800,7 @@ if (firstComeFirstServed.empty()) {
   firstComeFirstServed.resize(3);
   std::copy(tmpPtGlobalCoordPtr, tmpPtGlobalCoordPtr+3, firstComeFirstServed.begin());
   d_fout<<"% first point was \n";
-  draw_point(tmpPtGlobalCoordPtr, "", d_fout);
+  draw_point(tmpPtGlobalCoordPtr, "red", d_fout);
   d_fout<<"\n";
 } // end if
 if (std::equal(tmpPtGlobalCoordPtr, tmpPtGlobalCoordPtr+3, firstComeFirstServed.begin())) {

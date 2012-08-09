@@ -41,7 +41,22 @@
 #include "ampmesh/latex_visualization_tools.h"
 #include "ampmesh/euclidean_geometry_tools.h"
 
-void drawBoundaryID(AMP::Mesh::Mesh::shared_ptr meshAdapter, int boundaryID, std::ostream &os, double const * point_of_view) {
+void drawVerticesOnBoundaryID(AMP::Mesh::Mesh::shared_ptr meshAdapter, int boundaryID, std::ostream &os, double const * point_of_view, const std::string & option = "") {
+  AMP::Mesh::MeshIterator boundaryIterator = meshAdapter->getBoundaryIDIterator(AMP::Mesh::Vertex, boundaryID);
+  AMP::Mesh::MeshIterator boundaryIterator_begin = boundaryIterator.begin(), 
+      boundaryIterator_end = boundaryIterator.end();
+  std::vector<double> vertexCoordinates;
+
+  os<<std::setprecision(6)<<std::fixed;
+
+  for (boundaryIterator = boundaryIterator_begin; boundaryIterator != boundaryIterator_end; ++boundaryIterator) {
+    vertexCoordinates = boundaryIterator->coord();
+    AMP_ASSERT( vertexCoordinates.size() == 3 );
+    draw_point(&(vertexCoordinates[0]), option, os);
+  } // end for
+}
+
+void drawFacesOnBoundaryID(AMP::Mesh::Mesh::shared_ptr meshAdapter, int boundaryID, std::ostream &os, double const * point_of_view, const std::string & option = "") {
   AMP::Mesh::MeshIterator boundaryIterator = meshAdapter->getBoundaryIDIterator(AMP::Mesh::Face, boundaryID);
   AMP::Mesh::MeshIterator boundaryIterator_begin = boundaryIterator.begin(), 
       boundaryIterator_end = boundaryIterator.end();
@@ -62,7 +77,6 @@ void drawBoundaryID(AMP::Mesh::Mesh::shared_ptr meshAdapter, int boundaryID, std
     } // end for i
     triangle_t t(faceDataPtr[0], faceDataPtr[1], faceDataPtr[2]);
 
-    std::string option = "";
     if (compute_scalar_product(point_of_view, t.get_normal()) > 0.0) {
       os<<"\\draw["<<option<<"]\n";
       write_face(faceDataPtr, os);
@@ -214,9 +228,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 //    masterSolverParams->d_comm = globalComm;
     boost::shared_ptr<AMP::Solver::PetscKrylovSolver> masterSolver(new AMP::Solver::PetscKrylovSolver(masterSolverParams));
     columnPreconditioner->append(masterSolver);
+std::fstream masterFout;
+masterFout.open("master_pellet", std::fstream::out);
 double point_of_view[3] = { 1.0, 1.0, 1.0 };
-drawBoundaryID(masterMeshAdapter, 1, fout, point_of_view);
-drawBoundaryID(masterMeshAdapter, 4, fout, point_of_view);
+drawFacesOnBoundaryID(masterMeshAdapter, 1, masterFout, point_of_view);
+drawFacesOnBoundaryID(masterMeshAdapter, 4, masterFout, point_of_view);
+masterFout.close();
   } // end if
 
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> slaveLoadOperator;
@@ -264,6 +281,13 @@ drawBoundaryID(masterMeshAdapter, 4, fout, point_of_view);
     boost::shared_ptr<AMP::Solver::PetscKrylovSolver> slaveSolver(new AMP::Solver::PetscKrylovSolver(slaveSolverParams));
     columnPreconditioner->append(slaveSolver);
 
+std::fstream slaveFout;
+slaveFout.open("slave_pellet", std::fstream::out);
+double point_of_view[3] = { 1.0, 1.0, 1.0 };
+drawFacesOnBoundaryID(slaveMeshAdapter, 1, slaveFout, point_of_view, "dashed");
+drawFacesOnBoundaryID(slaveMeshAdapter, 4, slaveFout, point_of_view, "dashed");
+drawVerticesOnBoundaryID(slaveMeshAdapter, 2, slaveFout, point_of_view, "red");
+slaveFout.close();
   } // end if
 
   boost::shared_ptr<AMP::Database> contactPreconditioner_db = columnPreconditioner_db->getDatabase("ContactPreconditioner"); 
@@ -306,6 +330,8 @@ drawBoundaryID(masterMeshAdapter, 4, fout, point_of_view);
     slaveBVPOperator->modifyRHSvector(columnRhsVec);
   } // end if
 
+  // u_s = C u_m
+  contactOperator->copyMasterToSlave(columnSolVec);
 
   bool usePetscKrylovSolver = input_db->getBool("usePetscKrylovSolver");
   if (usePetscKrylovSolver) {
@@ -347,6 +373,24 @@ drawBoundaryID(masterMeshAdapter, 4, fout, point_of_view);
   contactOperator->addShiftToSlave(columnSolVec);
 
   meshAdapter->displaceMesh(columnSolVec);
+
+if (masterMeshAdapter.get() != NULL) {
+std::fstream masterFout;
+masterFout.open("master_pellet_displaced_mesh", std::fstream::out);
+double point_of_view[3] = { 1.0, 1.0, 1.0 };
+drawFacesOnBoundaryID(masterMeshAdapter, 1, masterFout, point_of_view, "");
+drawFacesOnBoundaryID(masterMeshAdapter, 4, masterFout, point_of_view, "");
+masterFout.close();
+} // end if
+if (slaveMeshAdapter.get() != NULL) {
+std::fstream slaveFout;
+slaveFout.open("slave_pellet_displaced_mesh", std::fstream::out);
+double point_of_view[3] = { 1.0, 1.0, 1.0 };
+drawFacesOnBoundaryID(slaveMeshAdapter, 1, slaveFout, point_of_view, "dashed");
+drawFacesOnBoundaryID(slaveMeshAdapter, 4, slaveFout, point_of_view, "dashed");
+//drawVerticesOnBoundaryID(slaveMeshAdapter, 2, slaveFout, point_of_view, "red");
+slaveFout.close();
+} // end if
 
 #ifdef USE_SILO
   siloWriter->registerVector(columnSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution");
@@ -500,9 +544,9 @@ int main(int argc, char *argv[])
   AMP::UnitTest ut;
 
   std::vector<std::string> exeNames; 
-  exeNames.push_back("testNodeToSegmentConstraintsOperator-cube");
+//  exeNames.push_back("testNodeToSegmentConstraintsOperator-cube");
 //  exeNames.push_back("testNodeToSegmentConstraintsOperator-cylinder");
-//  exeNames.push_back("testNodeToSegmentConstraintsOperator-pellet");
+  exeNames.push_back("testNodeToSegmentConstraintsOperator-pellet");
 
   try {
     for (size_t i = 0; i < exeNames.size(); ++i) { 
