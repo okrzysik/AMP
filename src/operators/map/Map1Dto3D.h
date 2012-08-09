@@ -7,6 +7,7 @@
 #include "operators/OperatorParameters.h"
 #include "operators/map/MapOperator.h"
 #include "operators/map/MapOperatorParameters.h"
+#include "discretization/createLibmeshElements.h"
 #include "vectors/Vector.h"
 #include "vectors/Variable.h"
 
@@ -50,6 +51,13 @@ public:
     void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
             AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
 
+    void apply_Gauss(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
+        AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
+
+    void apply_Nodal(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
+        AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
+
+
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
         return d_inpVariable;
@@ -62,7 +70,8 @@ public:
 
 
     //!  This function is used to compute 1D locations from the output vector.
-    void computeZLocations();
+    void computeZNodeLocations();
+    void computeZGaussLocations();
 
 
     //!  This function returns the number of 1D locations.
@@ -93,6 +102,12 @@ protected:
     boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; 
 
     std::vector<double> d_zLocations; /**< std vector to store 1D z locations. */
+
+    bool d_useGaussVec;
+
+private :
+
+    Discretization::createLibmeshElements libmeshElements;
 
 
 };
