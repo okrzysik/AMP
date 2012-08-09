@@ -72,6 +72,13 @@ public:
     virtual bool isInBlock(int id) const;
 
 
+    /**
+     * \brief     Get the parents of the given element
+     * \details   This function will get the parent elements of the current element
+     * \param type  The desired type of the parents to get
+     */
+    virtual std::vector<MeshElement> getParents(GeomType type) const;
+
 protected:
 
     /** Default constructor

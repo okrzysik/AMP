@@ -206,12 +206,19 @@ std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
 {
     AMP_INSIST(obj.elementType()==d_type,"Mixing types is not tested/supported yet");
     // Get a list of all element ids that are part of the row
-    std::vector< Mesh::MeshElement::shared_ptr > neighbor_elements = obj.getNeighbors();
-    std::vector<AMP::Mesh::MeshElementID> ids(neighbor_elements.size()+1,obj.globalID());
-    ids.resize(1);
-    for (size_t i=0; i<neighbor_elements.size(); i++) {
-        if ( neighbor_elements[i].get() != NULL )
-            ids.push_back(neighbor_elements[i]->globalID());
+    std::vector<AMP::Mesh::MeshElementID> ids;
+    if ( obj.elementType()==AMP::Mesh::Vertex || obj.elementType()==d_mesh->getGeomType() ) {
+        // Use the getNeighbors function to get the neighbors of the current element
+        std::vector< Mesh::MeshElement::shared_ptr > neighbor_elements = obj.getNeighbors();
+        ids.reserve(neighbor_elements.size()+1);
+        ids.push_back(obj.globalID());
+        for (size_t i=0; i<neighbor_elements.size(); i++) {
+            if ( neighbor_elements[i].get() != NULL )
+                ids.push_back(neighbor_elements[i]->globalID());
+        }
+    } else {
+        // We need to use the mesh to get the connectivity of the elements
+        AMP_ERROR("Not implimented yet");
     }
     // Get all dofs for each element id
     std::vector<size_t> dofs;
