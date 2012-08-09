@@ -1,6 +1,6 @@
 
-#ifndef included_AMP_SubchannelTwoEqNonlinearOperator
-#define included_AMP_SubchannelTwoEqNonlinearOperator
+#ifndef included_AMP_SubchannelFourEqNonlinearOperator
+#define included_AMP_SubchannelFourEqNonlinearOperator
 
 #include "operators/Operator.h"
 #include "SubchannelOperatorParameters.h"
@@ -14,14 +14,14 @@ namespace Operator {
     Nonlinear operator class for the 2-equation {enthalpy, pressure} formulation of the subchannel equations:
     see /AMPFuel-Docs/technicalInfo/flow/SubchannelFlow.pdf for details
     */
-  class SubchannelTwoEqNonlinearOperator : public Operator
+  class SubchannelFourEqNonlinearOperator : public Operator
   {
     public :
 
       /**
         Constructor
         */
-      SubchannelTwoEqNonlinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params)
+      SubchannelFourEqNonlinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params)
         : Operator (params)
       {
         AMP_INSIST( params->d_db->keyExists("InputVariable"), "Key 'InputVariable' does not exist");
@@ -38,7 +38,7 @@ namespace Operator {
       /**
         Destructor
         */
-      ~SubchannelTwoEqNonlinearOperator() { }
+      ~SubchannelFourEqNonlinearOperator() { }
 
       /**
         For this operator we have an in-place apply.
@@ -94,7 +94,8 @@ namespace Operator {
 
       double d_Pout;     // exit pressure [Pa]
       double d_Tin;      // inlet temperature [K]
-      double d_m;        // inlet mass flow rate [kg/s]
+      double d_min;      // inlet mass flow rate [kg/s]
+      double d_win;      // inlet mass flow rate [kg/s]
       double d_gamma;    // fission heating coefficient
       double d_theta;    // channel angle [rad]
       double d_friction; // friction factor

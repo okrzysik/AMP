@@ -36,5 +36,11 @@ namespace Mesh {
     return AMP::Mesh::MultiVectorIterator( elements );
   }
 
+  AMP::Mesh::MeshIterator 
+  StructuredMeshHelper::getGapFaceIterator(AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth)
+  {
+
+  }
+
 }
 }
