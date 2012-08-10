@@ -96,6 +96,7 @@ namespace Operator {
       double d_Tin;      // inlet temperature [K]
       double d_min;      // inlet mass flow rate [kg/s]
       double d_win;      // inlet mass flow rate [kg/s]
+      std::vector<double> d_area; // subchannel cross section area
       double d_gamma;    // fission heating coefficient
       double d_theta;    // channel angle [rad]
       double d_friction; // friction factor

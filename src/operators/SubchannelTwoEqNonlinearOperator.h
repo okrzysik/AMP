@@ -105,6 +105,11 @@ namespace Operator {
       std::string d_source; // heat source type
       std::string d_heatShape; // heat shape used if heat source type is "totalHeatGeneration"
 
+      std::vector<double> d_x, d_y, d_z;
+      std::vector<bool> d_ownSubChannel;                      // Which subchannels do I own (multple procs my own a subchannel)
+      int getSubchannelIndex( double x, double y );
+      void fillSubchannelGrid(AMP::Mesh::Mesh::shared_ptr);   // Function to fill the subchannel data for all processors
+      int d_numSubchannels; 
   };
 
 }

@@ -55,14 +55,14 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   boost::shared_ptr<AMP::Database> subchannelOperator_db = input_db->getDatabase("SubchannelTwoEqNonlinearOperator");
   // set operator parameters
   boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
-  subchannelOpParams->d_Mesh = xyFaceMesh ;
+  subchannelOpParams->d_Mesh = subchannelMesh ;
   subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
 
   // create nonlinear operator
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
   boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> subchannelOperator =
       boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
-      xyFaceMesh ,"SubchannelTwoEqNonlinearOperator",input_db,elementModel ));
+      subchannelMesh ,"SubchannelTwoEqNonlinearOperator",input_db,elementModel ));
   
   // report successful creation
   ut->passes(exeName+": creation");
