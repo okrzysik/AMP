@@ -249,7 +249,7 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   boost::shared_ptr<AMP::Database> subchannelOperator_db = input_db->getDatabase("SubchannelTwoEqLinearOperator");
   // set operator parameters
   boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
-  subchannelOpParams->d_Mesh = xyFaceMesh;
+  subchannelOpParams->d_Mesh = subchannelMesh ;
   subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
   subchannelOpParams->d_frozenSolution = FrozenVec ;
   subchannelOpParams->d_dofMap = faceDOFManager ;
