@@ -475,15 +475,11 @@ std::vector<MeshElement> structuredMeshElement::getParents(GeomType type) const
         for (int d=0; d<meshGeomDim; d++) {
             if ( periodic[d] )
                 continue;
-            if ( index_list[i].index[d]<0 )
+            int i_max = index_list[i].index[d]>size[d];
+            if ( type==Vertex || ( (int)type<meshGeomDim && index_list[i].side!=d ) )
+                i_max++;
+            if ( index_list[i].index[d]<0 || index_list[i].index[d]>=i_max )
                 erase = true;
-            if ( (int)type==meshGeomDim ) {
-                if ( index_list[i].index[d]>=size[d] )
-                    erase = true;
-            } else {
-                if ( index_list[i].index[d]>size[d] )
-                    erase = true;
-            }
         }
         if ( !erase ) {
             index_list[k] = index_list[i];
