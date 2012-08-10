@@ -36,6 +36,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
       // get additional parameters based on heat source type
       if (d_source == "totalHeatGeneration") {
           d_Q    = getDoubleParameter(myparams,"Rod_Power",66.81e3);  
+          d_heatShape = getStringParameter(myparams,"Heat_Shape","Sinusoidal");
       }
 
       // get subchannel physics model
@@ -44,11 +45,8 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
       // get frozen solution
       if ((myparams->d_frozenSolution.get()) != NULL) d_frozenVec = myparams->d_frozenSolution;
 
-      // get option of printing Jacobian
-      if ((myparams->d_db)->keyExists("Print_Jacobian")) d_printJacobian = (myparams->d_db)->getBoolWithDefault("Print_Jacobian",false);
-
       if( d_matrix.get() == NULL ) {
-        AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector(d_dofMap, getInputVariable(), true);
+        AMP::LinearAlgebra::Vector::shared_ptr inVec  = AMP::LinearAlgebra::createVector(d_dofMap, getInputVariable(),  true);
         AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector(d_dofMap, getOutputVariable(), true);
         d_matrix = AMP::LinearAlgebra::createMatrix(inVec, outVec);
       }
@@ -61,14 +59,15 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
       const double A = std::pow(d_pitch,2) - pi*std::pow(d_diameter,2)/4.0; // flow area
       const double D = 4.0*A/perimeter;                                     // hydraulic diameter
 
+      // check to ensure frozen vector isn't null
       AMP_INSIST( (d_frozenVec.get() != NULL), "Null Frozen Vector inside Jacobian" );
 
       // get the Iterators for the subchannel mesh
-      AMP::Mesh::MeshIterator begin_face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(d_Mesh, 0);
-      AMP::Mesh::MeshIterator end_face = begin_face.end();
+      AMP::Mesh::MeshIterator face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(d_Mesh, 0);
+      AMP::Mesh::MeshIterator end_face = face.end();
 
       // get solution sizes
-      const size_t numFaces = begin_face.size() ;
+      const size_t numFaces = face.size() ;
       const size_t numCells = numFaces - 1;
 
       // get interval lengths from mesh
@@ -111,35 +110,28 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
           AMP_ERROR("Heat source type '"+d_source+"' is invalid");
       }
 
+      std::vector<size_t> dofs_minus;
       std::vector<size_t> dofs;
       std::vector<size_t> dofs_plus;
-      // strongly impose outlet pressure boundary condition
-      AMP::Mesh::MeshIterator lastbutone_face = end_face - 1;
-      d_dofMap->getDOFs( lastbutone_face->globalID(), dofs );
-      d_matrix->setValueByGlobalID(dofs[1], dofs[1], 1.0);
-
-      // compute Jacobian entry J[0][0]
-      double p_in = d_frozenVec->getValueByLocalID(1);
-      std::vector<size_t> dofs_0;
-      d_dofMap->getDOFs( begin_face->globalID(), dofs_0 );
-      d_matrix->setValueByGlobalID(dofs_0[0], dofs_0[0], 1.0);
-      d_matrix->setValueByGlobalID(dofs_0[0], dofs_0[1], -1.0*dhdp(d_Tin,p_in));
 
       // calculate residual for axial momentum equations
-      double h_in = d_frozenVec->getValueByGlobalID(dofs_0[0]);
-      AMP::pout<<" The h_in, "<<h_in<<", is never used."<<std::endl;
-      
       int j = 1;
-      AMP::Mesh::MeshIterator face = begin_face;
-      for(size_t iface = 0; iface < begin_face.size(); ++iface, ++j){
+      for(size_t iface = 0; iface < face.size(); ++iface, ++j){
+          d_dofMap->getDOFs( face->globalID(), dofs );
           // ======================================================
           // energy residual
           // ======================================================
-          if (face == begin_face){
-             //double J =
+          if (face == face.begin()){
+             double p_in = d_frozenVec->getValueByGlobalID(dofs[1]);
+             d_matrix->setValueByGlobalID(dofs[0], dofs[0], 1.0);
+             d_matrix->setValueByGlobalID(dofs[0], dofs[1], -1.0*dhdp(d_Tin,p_in));
           } else {
              // residual at face corresponds to cell below
-             //J =
+             --face;
+             d_dofMap->getDOFs( face->globalID(), dofs_minus );
+             ++face;
+             d_matrix->setValueByGlobalID(dofs[0], dofs_minus[0], -1.0);
+             d_matrix->setValueByGlobalID(dofs[0], dofs[0],        1.0);
           }
 
           // ======================================================
@@ -150,18 +142,15 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
           double h_minus = d_frozenVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
           double p_minus = d_frozenVec->getValueByGlobalID(dofs[1]); // pressure evaluated at lower face
           if (face == end_face - 1){
-             //J =
+             d_dofMap->getDOFs( face->globalID(), dofs );
+             d_matrix->setValueByGlobalID(dofs[1], dofs[1], 1.0);
           } else {
              ++face;
              d_dofMap->getDOFs( face->globalID(), dofs_plus );
+             --face;
              double h_plus  = d_frozenVec->getValueByGlobalID(dofs_plus[0]); // enthalpy evaluated at upper face
              double p_plus  = d_frozenVec->getValueByGlobalID(dofs_plus[1]); // pressure evaluated at upper face
-             --face;
    
-             double h_avg   = (1.0/2.0)*(h_minus + h_plus); // enthalpy evaluated at cell center
-             double p_avg   = (1.0/2.0)*(p_minus + p_plus);       // pressure evaluated at cell center
-             AMP::pout<<" The h_avg, "<<h_avg<<", and p_avg, "<<p_avg<<", are never used."<<std::endl;
-
              // evaluate specific volume at upper face
              std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
              volumeArgMap_plus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_plus)));
@@ -184,32 +173,28 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
              double dvdp_plus  = dvdp(h_plus, p_plus);
              double dvdp_minus = dvdp(h_minus,p_minus);
       
-          // compute Jacobian entry J[j][0]
-          double J_j_0 = std::pow(d_m/A,2)*(dvdh_plus - dvdh_minus) - 2.0*g*del_z[j-1]*std::cos(d_theta)*
-             (dvdh_plus + dvdh_minus)/std::pow(v_plus+v_minus,2)+
-             1.0/4.0*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + d_K)*(dvdh_plus + dvdh_minus);
+             // compute Jacobian entry
+             double A_j = -1.0*std::pow(d_m/A,2)*dvdh_minus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
+                dvdh_minus/std::pow(v_plus+v_minus,2)+
+                (1.0/4.0)*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + d_K)*dvdh_minus;
+             double B_j = -1.0*std::pow(d_m/A,2)*dvdp_minus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
+                dvdp_minus/std::pow(v_plus+v_minus,2)+
+                (1.0/4.0)*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + d_K)*dvdp_minus - 1;
+             double C_j = std::pow(d_m/A,2)*dvdh_plus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
+                dvdh_plus/std::pow(v_plus+v_minus,2)+
+                (1.0/4.0)*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + d_K)*dvdh_plus;
+             double D_j = std::pow(d_m/A,2)*dvdp_plus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
+                dvdp_plus/std::pow(v_plus+v_minus,2)+
+                (1.0/4.0)*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + d_K)*dvdp_plus + 1;
 
-          // compute Jacobian entry J[j][j]
-          double J_j_j = -1.0*std::pow(d_m/A,2)*dvdp_minus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
-             dvdp_minus/std::pow(v_plus+v_minus,2)+
-             1.0/4.0*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + d_K)*dvdp_minus - 1.0;
-
-          // compute Jacobian entry J[j][j+1]
-          double J_j_jp1 = std::pow(d_m/A,2)*dvdp_plus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
-             dvdp_plus/std::pow(v_plus+v_minus,2)+
-             1.0/4.0*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + d_K)*dvdp_plus + 1.0;
-        
-
-          d_matrix->setValueByGlobalID(dofs_0[1], dofs[1]     , J_j_0 );
-          d_matrix->setValueByGlobalID(dofs[1]  , dofs[1]     , J_j_j );
-          d_matrix->setValueByGlobalID(dofs[1]  , dofs_plus[1], J_j_jp1 );
-
-          d_matrix->setValueByGlobalID(dofs[0]  , dofs[0]     , 1.0 );
-      }
+             d_matrix->setValueByGlobalID(dofs[1] , dofs[0]       , A_j );
+             d_matrix->setValueByGlobalID(dofs[1] , dofs[1]       , B_j );
+             d_matrix->setValueByGlobalID(dofs[1] , dofs_plus[0]  , C_j );
+             d_matrix->setValueByGlobalID(dofs[1] , dofs_plus[1]  , D_j );
+         }
+         face++;
    }
-
-      d_matrix->makeConsistent();
-
+   d_matrix->makeConsistent();
 }
 
 // function used in reset to get double parameter or set default if missing

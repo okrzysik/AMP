@@ -13,17 +13,15 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-//#include "ampmesh/Mesh.h"
 #include "vectors/VectorBuilder.h"
-#include "vectors/SimpleVector.h"
 
-#include "SubchannelPhysicsModel.h"
-#include "SubchannelOperatorParameters.h"
-#include "SubchannelTwoEqNonlinearOperator.h"
-#include "../OperatorBuilder.h"
-#include "discretization/simpleDOF_Manager.h"
+#include "operators/SubchannelPhysicsModel.h"
+#include "operators/SubchannelOperatorParameters.h"
+#include "operators/SubchannelTwoEqNonlinearOperator.h"
+#include "operators/OperatorBuilder.h"
 
 #include "ampmesh/StructuredMeshHelper.h"
+#include "discretization/simpleDOF_Manager.h"
 
 void Test(AMP::UnitTest *ut, const std::string exeName)
 {
