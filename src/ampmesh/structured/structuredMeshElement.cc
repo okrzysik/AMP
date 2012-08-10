@@ -367,7 +367,7 @@ std::vector<MeshElement> structuredMeshElement::getParents(GeomType type) const
         // We have an entity that is the geometric type-1 and we want to get the parents of the geometric type of the mesh
         BoxMesh::MeshElementIndex index( type, 0, d_index.index[0], d_index.index[1], d_index.index[2] );
         index_list.push_back( index );
-        index.index[index.side]--;
+        index.index[d_index.side]--;
         index_list.push_back( index );
     } else if ( d_index.type==Vertex ) {
         // We want to get the parents of a vertex
@@ -475,7 +475,7 @@ std::vector<MeshElement> structuredMeshElement::getParents(GeomType type) const
         for (int d=0; d<meshGeomDim; d++) {
             if ( periodic[d] )
                 continue;
-            int i_max = index_list[i].index[d]>size[d];
+            int i_max = size[d];
             if ( type==Vertex || ( (int)type<meshGeomDim && index_list[i].side!=d ) )
                 i_max++;
             if ( index_list[i].index[d]<0 || index_list[i].index[d]>=i_max )
