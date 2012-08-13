@@ -20,6 +20,8 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
       AMP_INSIST( ((myparams.get()) != NULL), "NULL parameters" );
       AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );
 
+      d_params = myparams;
+
       d_Pout = getDoubleParameter(myparams,"Exit_Pressure",15.5132e6);
       d_Tin  = getDoubleParameter(myparams,"Inlet_Temperature",569.26);  
       d_m    = getDoubleParameter(myparams,"Mass_Flow_Rate",0.3522);  
@@ -355,9 +357,14 @@ getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u)
 {
   boost::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
 
-  tmp_db->putString("name","SubchannelTwoEqNonlinearOperator");
+  tmp_db->putString("name","SubchannelTwoEqLinearOperator");
 
   boost::shared_ptr<SubchannelOperatorParameters> outParams(new SubchannelOperatorParameters(tmp_db));
+  outParams->d_db = d_params->d_db; 
+  outParams->d_dofMap = d_params->d_dofMap; 
+  outParams->d_frozenSolution =  subsetInputVector( u );
+  outParams->d_subchannelPhysicsModel =  d_subchannelPhysicsModel;
+
   return outParams;
 }
 

@@ -74,6 +74,8 @@ namespace Operator {
 
     protected:
 
+      boost::shared_ptr<SubchannelOperatorParameters> d_params;
+
       boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 
     private :
