@@ -32,6 +32,7 @@
 #include "vectors/VectorBuilder.h"
 
 #include "operators/mechanics/MechanicsConstants.h"
+#include "ampmesh/StructuredMeshHelper.h"
 
 #include <string>
 
@@ -309,7 +310,9 @@ OperatorBuilder::createSubchannelTwoEqLinearOperator( AMP::Mesh::Mesh::shared_pt
   
   boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelParams(new AMP::Operator::SubchannelOperatorParameters( subchannel_db ));
   subchannelParams->d_Mesh = meshAdapter;
-  subchannelParams->d_dofMap = AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Face, 1, 2, true);
+  
+  subchannelParams->d_dofMap = AMP::Discretization::simpleDOFManager::create( meshAdapter, 
+      AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(meshAdapter,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(meshAdapter,0), 2);
   boost::shared_ptr<AMP::Operator::SubchannelTwoEqLinearOperator> subchannelOp (new AMP::Operator::SubchannelTwoEqLinearOperator( subchannelParams ));
   
   return subchannelOp;

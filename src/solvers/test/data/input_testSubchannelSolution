@@ -27,6 +27,26 @@ SubchannelTwoEqNonlinearOperator{
     Form_Loss_Coefficient = 0.2
     Rod_Power = 66.81e3
     Heat_Source_Type = "totalHeatGeneration"
+    Heat_Shape = "Sinusoidal"
+}
+
+SubchannelTwoEqLinearOperator{
+    name = "SubchannelTwoEqLinearOperator"
+    InputVariable = "flow"
+    OutputVariable = "flow"
+    numpoints = 10
+    Exit_Pressure = 15.5132e6
+    Inlet_Temperature = 569.26
+    Mass_Flow_Rate = 0.3522
+    Fission_Heating_Coefficient = 0.0
+    Channel_Angle = 0.0
+    Friction_Factor = 0.1
+    Lattice_Pitch = 0.0128016
+    Rod_Diameter = 0.0097028
+    Form_Loss_Coefficient = 0.2
+    Rod_Power = 66.81e3
+    Heat_Source_Type = "totalHeatGeneration"
+    Heat_Shape = "Sinusoidal"
 }
 
 SubchannelPhysicsModel{
