@@ -197,8 +197,8 @@ AMP::Mesh::MeshIterator SubchannelToCladMap::getSubchannelIterator(AMP::Mesh::Me
 /************************************************************************
 *  Start the communication                                              *
 ************************************************************************/
-void SubchannelToCladMap::applyStart(const AMP::LinearAlgebra::Vector::shared_ptr &,
-    const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &,
+void SubchannelToCladMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr,
+    AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr,
     const double, const double)
 {
     // Fill the send buffer
@@ -249,8 +249,8 @@ void SubchannelToCladMap::applyStart(const AMP::LinearAlgebra::Vector::shared_pt
 /************************************************************************
 *  Finish the communication                                             *
 ************************************************************************/
-void SubchannelToCladMap::applyFinish(const AMP::LinearAlgebra::Vector::shared_ptr &,
-    const AMP::LinearAlgebra::Vector::shared_ptr &, AMP::LinearAlgebra::Vector::shared_ptr &,
+void SubchannelToCladMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
+    AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::shared_ptr,
     const double, const double)
 {
     if ( d_mesh2.get() == NULL ) {

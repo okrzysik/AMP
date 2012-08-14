@@ -51,8 +51,8 @@ namespace AMP {
           @param [in] a first constant used in the expression: r = a*A(u) + b*f. The default value is -1.
           @param [in] b second constant used in the expression: r = a*A(u) + b*f. The default value is 1.
           */
-        virtual void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-            AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
+        virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
       protected :
 
@@ -65,7 +65,7 @@ namespace AMP {
           @param [in] u Input vector
           @param [out] r Output vector
           */
-        virtual void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r)=0;
+        virtual void preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r)=0;
 
         /**
           This function will be called just after looping over all the elements to form the residual vector, so if the

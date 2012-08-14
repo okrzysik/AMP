@@ -69,7 +69,7 @@ namespace AMP {
 */
       }
 
-    void NavierStokesLSWFFEOperator :: preAssembly(const AMP::LinearAlgebra::Vector::shared_ptr &u, 
+    void NavierStokesLSWFFEOperator :: preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, 
         boost::shared_ptr< AMP::LinearAlgebra::Vector >  &r) {
       AMP_INSIST( (u != NULL), "NULL Input Vector" );
 /*
@@ -221,6 +221,30 @@ namespace AMP {
 //        d_dofMap[varId]->getDOFs(d_currNodes[j].globalID(), dofIds[j]);
         d_dofMap->getDOFs(d_currNodes[j].globalID(), dofIds[j]);
       } // end of j
+    }
+
+    AMP::LinearAlgebra::Vector::shared_ptr NavierStokesLSWFFEOperator :: mySubsetVector( 
+      AMP::LinearAlgebra::Vector::shared_ptr vec, 
+      AMP::LinearAlgebra::Variable::shared_ptr var) {
+      if(d_Mesh.get() != NULL) {
+      AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
+      AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, var->getName());
+        return meshSubsetVec->subsetVectorForVariable(var);
+      } else {
+        return vec->subsetVectorForVariable(var);
+      }
+    }
+
+    AMP::LinearAlgebra::Vector::const_shared_ptr NavierStokesLSWFFEOperator :: mySubsetVector( 
+      AMP::LinearAlgebra::Vector::const_shared_ptr vec, 
+      AMP::LinearAlgebra::Variable::shared_ptr var) {
+      if(d_Mesh.get() != NULL) {
+      AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
+      AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec = vec->constSelect(meshSelector, var->getName());
+        return meshSubsetVec->constSubsetVectorForVariable(var);
+      } else {
+        return vec->constSubsetVectorForVariable(var);
+      }
     }
 
   }

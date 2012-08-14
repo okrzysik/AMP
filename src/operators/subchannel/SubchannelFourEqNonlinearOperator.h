@@ -48,8 +48,8 @@ namespace Operator {
         @param [in]  a first constant used in the expression: r = a*A(u) + b*f. The default value is -1.
         @param [in]  b second constant used in the expression: r = a*A(u) + b*f. The default value is 1.
         */
-      void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-          AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
+      void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+          AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
       void reset(const boost::shared_ptr<OperatorParameters>& params);
 

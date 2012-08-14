@@ -56,8 +56,8 @@ namespace Operator {
     */
     ~RobinMatrixCorrection() { }
     
-    void apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &,
-           AMP::LinearAlgebra::Vector::shared_ptr  &, const double = -1.0, const double = 1.0)
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr,
+           AMP::LinearAlgebra::Vector::shared_ptr, const double = -1.0, const double = 1.0)
     {
       //Do Nothing
     }

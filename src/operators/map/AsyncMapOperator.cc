@@ -36,9 +36,9 @@ AsyncMapOperator::~AsyncMapOperator ()
 }
 
 
-void AsyncMapOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-        const AMP::LinearAlgebra::Vector::shared_ptr &u, 
-        AMP::LinearAlgebra::Vector::shared_ptr &r,
+void AsyncMapOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+        AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+        AMP::LinearAlgebra::Vector::shared_ptr r,
         const double a, const double b)
 {
     PROFILE_START("apply");

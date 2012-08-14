@@ -39,7 +39,7 @@ namespace AMP {
     }
 
     void TractionBoundaryOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &,
-        AMP::LinearAlgebra::Vector::shared_ptr &r, const double, const double) {
+        AMP::LinearAlgebra::Vector::shared_ptr r, const double, const double) {
       if(d_residualMode) {
         AMP::LinearAlgebra::Vector::shared_ptr rInternal = mySubsetVector(r, d_outputVar);
         if(d_correction == NULL) {

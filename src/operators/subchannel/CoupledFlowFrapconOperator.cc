@@ -57,22 +57,22 @@ namespace Operator {
     }
 
     void
-      CoupledFlowFrapconOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr & f,
-          const AMP::LinearAlgebra::Vector::shared_ptr & u, AMP::LinearAlgebra::Vector::shared_ptr & r,
+      CoupledFlowFrapconOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
+          AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
           const double a, const double b)
       {
         AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
 
         //AMP::LinearAlgebra::Variable::shared_ptr inpVar = (boost::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_Operators[3]) )->getOutputVariable();
-        AMP::LinearAlgebra::Vector::shared_ptr uInternal = subsetInputVector( u );
+        AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = subsetInputVector( u );
         AMP::LinearAlgebra::Vector::shared_ptr rInternal = subsetInputVector( r );
-        (boost::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_Operators[3]))->setVector(uInternal);
+        //(boost::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_Operators[3]))->setVector(uInternal);  // Is this necessary
         (boost::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_Operators[4]))->setVector(rInternal);
 
         d_Operators[0]->apply(nullVec, u, nullVec, a, b);
         d_Operators[1]->apply(nullVec, u, nullVec, a, b);
         d_Operators[2]->apply(nullVec, d_flowInput, d_flowOutput, a, b);
-        d_Operators[3]->apply(nullVec, d_flowInput, nullVec, a, b);
+        //d_Operators[3]->apply(nullVec, d_flowInput, nullVec, a, b);  // Is this necessary
         d_Operators[4]->apply(nullVec, d_flowOutput, nullVec, a, b);
       }
 

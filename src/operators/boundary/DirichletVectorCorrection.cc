@@ -64,8 +64,8 @@ namespace AMP {
     }
 
     //This is an in-place apply
-    void DirichletVectorCorrection :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-        AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double ) {
+    void DirichletVectorCorrection :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+        AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double ) {
       AMP::LinearAlgebra::Vector::shared_ptr rInternal = mySubsetVector(r, d_variable);
 
       if(d_iDebugPrintInfoLevel>3)
@@ -132,9 +132,9 @@ namespace AMP {
       }//end for j
     }
 
-    void DirichletVectorCorrection :: applyResidual(AMP::LinearAlgebra::Vector::shared_ptr u, 
+    void DirichletVectorCorrection :: applyResidual(AMP::LinearAlgebra::Vector::const_shared_ptr u, 
         AMP::LinearAlgebra::Vector::shared_ptr r) {
-      AMP::LinearAlgebra::Vector::shared_ptr uInternal = mySubsetVector(u, d_variable);
+      AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = mySubsetVector(u, d_variable);
       AMP::Discretization::DOFManager::shared_ptr dof_map = uInternal->getDOFManager();
       size_t numIds = d_boundaryIds.size();
       for(size_t j = 0; j < numIds; j++) {
@@ -167,6 +167,30 @@ namespace AMP {
 
         return outParams;
       }
+
+    AMP::LinearAlgebra::Vector::shared_ptr DirichletVectorCorrection :: mySubsetVector(
+      AMP::LinearAlgebra::Vector::shared_ptr vec, 
+      AMP::LinearAlgebra::Variable::shared_ptr var) {
+      if(d_Mesh.get() != NULL) {
+        AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
+        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, var->getName());
+        return meshSubsetVec->subsetVectorForVariable(var);
+      } else {
+        return vec->subsetVectorForVariable(var);
+      }
+    }
+
+    AMP::LinearAlgebra::Vector::const_shared_ptr DirichletVectorCorrection :: mySubsetVector(
+      AMP::LinearAlgebra::Vector::const_shared_ptr vec, 
+      AMP::LinearAlgebra::Variable::shared_ptr var) {
+      if(d_Mesh.get() != NULL) {
+        AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
+        AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec = vec->constSelect(meshSelector, var->getName());
+        return meshSubsetVec->constSubsetVectorForVariable(var);
+      } else {
+        return vec->constSubsetVectorForVariable(var);
+      }
+    }
 
   }
 }

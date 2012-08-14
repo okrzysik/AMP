@@ -128,8 +128,8 @@ int SubchannelTwoEqNonlinearOperator::getSubchannelIndex( double x, double y )
 }
 
 // apply
-void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-    AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double b)
+void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+    AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b)
 {
 
       // ensure that solution and residual vectors aren't NULL
@@ -145,7 +145,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
       const double D = 4.0*A/perimeter;                                     // hydraulic diameter
 
       // Subset the vectors
-      AMP::LinearAlgebra::Vector::shared_ptr inputVec = subsetInputVector( u );
+      AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = subsetInputVector( u );
       AMP::LinearAlgebra::Vector::shared_ptr outputVec = subsetOutputVector( r );
 
       AMP::Discretization::DOFManager::shared_ptr dof_manager = inputVec->getDOFManager();
@@ -167,7 +167,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
         }
       }//end for el
 
-      for(size_t isub =0; isub<d_numSubchannels; ++isub){
+      for(int isub =0; isub<d_numSubchannels; ++isub){
         if(d_ownSubChannel[isub]){
           boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > subchannelElements( new std::vector<AMP::Mesh::MeshElement>() );
           subchannelElements->reserve(d_numSubchannels);
@@ -342,7 +342,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector:
       if(f.get() == NULL) {
         outputVec->scale(a);
       } else {
-        AMP::LinearAlgebra::Vector::shared_ptr fInternal = subsetInputVector( f );
+        AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = subsetInputVector( f );
         if(fInternal.get() == NULL) {
           outputVec->scale(a);
         } else {

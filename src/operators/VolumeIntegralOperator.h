@@ -79,8 +79,8 @@ namespace AMP {
         /**
           This function is called at the beginning of the FE assembly
           */
-        void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u,
-            boost::shared_ptr<AMP::LinearAlgebra::Vector> &r);
+        void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u,
+            AMP::LinearAlgebra::Vector::shared_ptr r);
 
         /**
           This function is called at the end of the FE assembly
@@ -114,9 +114,9 @@ namespace AMP {
 
         boost::shared_ptr<SourcePhysicsModel> d_sourcePhysicsModel;/**< Source Physics Model. */
 
-        std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_inVec;/**< Input vector for active variables. */
+        std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> d_inVec;/**< Input vector for active variables. */
 
-        std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_auxVec;/**< Input vector for auxillary variables. */
+        std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> d_auxVec;/**< Input vector for auxillary variables. */
 
         AMP::LinearAlgebra::Vector::shared_ptr d_multiAuxPtr;
 

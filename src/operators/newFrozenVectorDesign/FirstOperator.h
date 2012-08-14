@@ -14,8 +14,8 @@ namespace AMP {
           d_var.reset(new AMP::LinearAlgebra::Variable(params->d_db->getString("Variable")));
         }
 
-        void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-            AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0) {
+        void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0) {
           AMP::LinearAlgebra::Vector::shared_ptr in = u->subsetVectorForVariable(d_var);
           AMP::LinearAlgebra::Vector::shared_ptr out = r->subsetVectorForVariable(d_var);
           out->scale((d_constant*a), in);

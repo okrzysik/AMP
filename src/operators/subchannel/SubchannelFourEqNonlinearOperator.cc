@@ -71,8 +71,8 @@ std::string SubchannelFourEqNonlinearOperator::getStringParameter(	boost::shared
 }
 
 // apply
-void SubchannelFourEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-    AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double b)
+void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+    AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b)
 {
 
       // ensure that solution and residual vectors aren't NULL
@@ -88,7 +88,7 @@ void SubchannelFourEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector
       const double D = 4.0*A/perimeter;                                     // hydraulic diameter
 
       // Subset the vectors
-      AMP::LinearAlgebra::Vector::shared_ptr inputVec = subsetInputVector( u );
+      AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = subsetInputVector( u );
       AMP::LinearAlgebra::Vector::shared_ptr outputVec = subsetOutputVector( r );
 
       AMP::Discretization::DOFManager::shared_ptr dof_manager = inputVec->getDOFManager();
@@ -236,8 +236,8 @@ void SubchannelFourEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector
 
 /*
 // apply
-void SubchannelFourEqNonlinearOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double b)
+void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b)
 {
 
 // ensure that solution and residual vectors aren't NULL
