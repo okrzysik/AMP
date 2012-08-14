@@ -14,11 +14,11 @@
 
 #include "ampmesh/SiloIO.h"
 #include "vectors/Vector.h"
-#include "../FlowFrapconOperator.h"
+#include "operators/subchannel/FlowFrapconOperator.h"
 
 #include "vectors/SimpleVector.h"
-#include "../LinearBVPOperator.h"
-#include "../OperatorBuilder.h"
+#include "operators/LinearBVPOperator.h"
+#include "operators/OperatorBuilder.h"
 
 #define ITFAILS ut.failure(__LINE__);
 #define UNIT_TEST(a) if (!(a)) ut.failure(__LINE__);
