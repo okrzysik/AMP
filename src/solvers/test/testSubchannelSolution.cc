@@ -128,10 +128,10 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
   // get nonlinear solver database
   boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
-  /*
+  
   // get linear solver database
   boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
-  */
+ 
 
   // put manufactured RHS into resVec
   nonlinearOperator->reset(subchannelOpParams);
@@ -152,12 +152,12 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
 
   // create linear solver parameters
-  boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> linearSolverParams(new AMP::Solver::SolverStrategyParameters(linearSolver_db));
+  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> linearSolverParams(new AMP::Solver::SolverStrategyParameters(linearSolver_db));
 
   // change the next line to get the correct communicator out
-  linearSolverParams->d_comm = globalComm;
+//  linearSolverParams->d_comm = globalComm;
   linearSolverParams->d_pOperator = linearOperator;
-  linearSolverParams->d_pInitialGuess = solVec;
+//  linearSolverParams->d_pInitialGuess = solVec;
 
   // create Jacobian solver
   boost::shared_ptr<AMP::Solver::TrilinosMLSolver> JacobianSolver(new AMP::Solver::TrilinosMLSolver(linearSolverParams));
