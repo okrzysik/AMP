@@ -31,7 +31,10 @@ namespace Operator {
         d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar));
 
         d_dofMap = (params->d_dofMap);
-          
+
+        d_atConstruction = true ;  
+        d_nullFrozenvector = true; 
+        
         reset(params);
       }
 
@@ -75,6 +78,7 @@ namespace Operator {
 
     private :
 
+      bool d_atConstruction, d_nullFrozenvector; 
       /**
         Function used in reset to get double parameter or use default if missing
         */

@@ -13,6 +13,7 @@
 #include "vectors/Vector.h"
 #include "vectors/SimpleVector.h"
 #include "operators/SubchannelTwoEqNonlinearOperator.h"
+#include "operators/SubchannelTwoEqLinearOperator.h"
 #include "operators/OperatorBuilder.h"
 #include "solvers/ColumnSolver.h"
 #include "solvers/PetscKrylovSolverParameters.h"
@@ -69,14 +70,14 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
   boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> nonlinearOperator =
       boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
-      xyFaceMesh ,"SubchannelTwoEqNonlinearOperator",input_db,elementModel ));
+      subchannelMesh ,"SubchannelTwoEqNonlinearOperator",input_db,elementModel ));
   
-/*
+
   // create linear operator
   boost::shared_ptr<AMP::Operator::SubchannelTwoEqLinearOperator> linearOperator =
       boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqLinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
-      meshAdapter,"SubchannelTwoEqLinearOperator",input_db,elementModel ));
-*/
+      subchannelMesh ,"SubchannelTwoEqLinearOperator",input_db,elementModel ));
+
   
   // pass creation test
   ut->passes(exeName+": creation");
@@ -87,8 +88,9 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   AMP::LinearAlgebra::Variable::shared_ptr outputVariable = nonlinearOperator->getOutputVariable();
 
   int DofsPerFace =  2;
-  AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( xyFaceMesh, AMP::Mesh::Face, 1, DofsPerFace, true);
-
+  AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
+      AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerFace );
+//  AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( xyFaceMesh, AMP::Mesh::Face, 1, DofsPerFace, true);
 
   // create solution, rhs, and residual vectors
   AMP::LinearAlgebra::Vector::shared_ptr manufacturedVec = AMP::LinearAlgebra::createVector( faceDOFManager , inputVariable  , true );
@@ -108,39 +110,36 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   std::vector<double> enthalpyResult(1);
   subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap); 
   double hin = enthalpyResult[0];
+  std::cout<< "Enthalpy Solution:"<< hin <<std::endl;
 
   // set manufactured solution
   // get the Iterators for the subchannel mesh
   AMP::Mesh::MeshIterator face     = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
   AMP::Mesh::MeshIterator end_face = face.end();
 
-  std::cout<<"Manufactured Solution:"<< std::endl;
   std::vector<size_t> dofs;
-  faceDOFManager->getDOFs( face->globalID(), dofs );
-  manufacturedVec->setValueByGlobalID(dofs[0], 1000);
-  solVec->setValueByGlobalID(dofs[0], hin);
-  double j = 1.1;
-  for( ; face != end_face; ++face,j=j-0.01){
+
+  //initial guess
+  for( ; face != end_face; ++face){
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    manufacturedVec->setValueByGlobalID(dofs[1], j*15.3e6);
+    solVec->setValueByGlobalID(dofs[0], 1000);
     solVec->setValueByGlobalID(dofs[1], Pout);
   }
-  manufacturedVec->setValueByGlobalID(dofs[1], Pout);
 
   // get nonlinear solver database
   boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
-  /*
+  
   // get linear solver database
   boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
-  */
+ 
 
   // put manufactured RHS into resVec
   nonlinearOperator->reset(subchannelOpParams);
-  nonlinearOperator->apply(rhsVec, manufacturedVec, resVec, 1.0, 0.0);
-  /*
-     linearOperator->reset(nonlinearOperator->getJacobianParameters(mv_view_solVec));
+//  nonlinearOperator->apply(rhsVec, manufacturedVec, resVec, 1.0, 0.0);
+  
+  linearOperator->reset(nonlinearOperator->getJacobianParameters(solVec));
   linearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
-*/
+
   
   // create nonlinear solver parameters
   boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
@@ -151,18 +150,18 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   nonlinearSolverParams->d_pOperator = nonlinearOperator;
   nonlinearSolverParams->d_pInitialGuess = solVec;
 
-/*
+
   // create linear solver parameters
-  boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> linearSolverParams(new AMP::Solver::PetscSNESSolverParameters(linearSolver_db));
+  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> linearSolverParams(new AMP::Solver::SolverStrategyParameters(linearSolver_db));
 
   // change the next line to get the correct communicator out
-  linearSolverParams->d_comm = globalComm;
+//  linearSolverParams->d_comm = globalComm;
   linearSolverParams->d_pOperator = linearOperator;
-  linearSolverParams->d_pInitialGuess = solVec;
+//  linearSolverParams->d_pInitialGuess = solVec;
 
   // create Jacobian solver
-  boost::shared_ptr<AMP::Solver::PetscSNESSolver> JacobianSolver(new AMP::Solver::PetscSNESSolver(linearSolverParams));
-*/
+  boost::shared_ptr<AMP::Solver::TrilinosMLSolver> JacobianSolver(new AMP::Solver::TrilinosMLSolver(linearSolverParams));
+
 
   // create nonlinear solver
   boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
@@ -184,14 +183,40 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   nonlinearSolver->setZeroInitialGuess(false);
 
   // solve
-  nonlinearSolver->solve(resVec, solVec);
+  nonlinearSolver->solve(rhsVec, solVec);
+
+  face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
+  faceDOFManager->getDOFs( face->globalID(), dofs );
+  std::cout<< "Inlet Computed Enthalpy = "<<solVec->getValueByGlobalID(dofs[0]) << " Computed Pressure = "<<solVec->getValueByGlobalID(dofs[1]) ;
+  // compute inlet temperature 
+  std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
+  temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,solVec->getValueByGlobalID(dofs[0]))));
+  temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,solVec->getValueByGlobalID(dofs[1]))));
+  std::vector<double> temperatureResult(1);
+  subchannelPhysicsModel->getProperty("Temperature", temperatureResult, temperatureArgMap); 
+  double compTin = temperatureResult[0];
+  std::cout<< "Temperature Inlet :"<< compTin <<std::endl;
+
+  face = --end_face;
+  faceDOFManager->getDOFs( face->globalID(), dofs );
+  std::cout<< "Outlet Computed Enthalpy = "<<solVec->getValueByGlobalID(dofs[0]) << " Computed Pressure = "<<solVec->getValueByGlobalID(dofs[1]) ;
+  std::map<std::string, boost::shared_ptr<std::vector<double> > > outTemperatureArgMap;
+  outTemperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,solVec->getValueByGlobalID(dofs[0]))));
+  outTemperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,solVec->getValueByGlobalID(dofs[1]))));
+  std::vector<double> outTemperatureResult(1);
+  subchannelPhysicsModel->getProperty("Temperature", outTemperatureResult, outTemperatureArgMap); 
+  compTin = outTemperatureResult[0];
+  std::cout<< "Temperature Outlet:"<< compTin <<std::endl;
+
 
   // print final solution
+  int j=1;
   face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
-  j=1;
+  ++end_face;
+
   for( ; face != end_face; ++face,++j){
     faceDOFManager->getDOFs( face->globalID(), dofs );
-     std::cout<<"Computed Pressure["<<j<<"] = "<<solVec->getValueByGlobalID(dofs[1]) ;
+     std::cout<< "Computed Enthalpy["<<j<<"] = "<<solVec->getValueByGlobalID(dofs[0]) << "Computed Pressure["<<j<<"] = "<<solVec->getValueByGlobalID(dofs[1]) ;
      std::cout<<" Manufactured Pressure["<<j<<"] = "<<manufacturedVec->getValueByGlobalID(dofs[1]) ;
      std::cout<<std::endl;
   }
