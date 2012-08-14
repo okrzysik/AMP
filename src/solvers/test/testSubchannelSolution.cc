@@ -151,22 +151,10 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   nonlinearSolverParams->d_pInitialGuess = solVec;
 
 
-  // create linear solver parameters
-  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> linearSolverParams(new AMP::Solver::SolverStrategyParameters(linearSolver_db));
-
-  // change the next line to get the correct communicator out
-//  linearSolverParams->d_comm = globalComm;
-  linearSolverParams->d_pOperator = linearOperator;
-//  linearSolverParams->d_pInitialGuess = solVec;
-
-  // create Jacobian solver
-  boost::shared_ptr<AMP::Solver::TrilinosMLSolver> JacobianSolver(new AMP::Solver::TrilinosMLSolver(linearSolverParams));
-
-
   // create nonlinear solver
   boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
 
-/*
+
   // create linear solver
   boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
 
@@ -174,10 +162,10 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   boost::shared_ptr<AMP::Database> Preconditioner_db =  linearSolver_db->getDatabase("Preconditioner");
   boost::shared_ptr<AMP::Solver::SolverStrategyParameters> PreconditionerParams(new AMP::Solver::SolverStrategyParameters(Preconditioner_db));
   PreconditionerParams->d_pOperator = linearOperator;
-  boost::shared_ptr<AMP::Solver::Flow1DSolver> linearFlowPreconditioner(new AMP::Solver::Flow1DSolver(PreconditionerParams));
+  boost::shared_ptr<AMP::Solver::TrilinosMLSolver> linearFlowPreconditioner(new AMP::Solver::TrilinosMLSolver(PreconditionerParams));
   // set preconditioner
-  linearSolver->setPreconditioner(JacobianSolver);
-*/
+  linearSolver->setPreconditioner(linearFlowPreconditioner);
+
 
   // don't use zero initial guess
   nonlinearSolver->setZeroInitialGuess(false);
