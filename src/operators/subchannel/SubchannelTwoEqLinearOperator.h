@@ -3,7 +3,7 @@
 #define included_AMP_SubchannelTwoEqLinearOperator
 
 #include "operators/LinearOperator.h"
-#include "SubchannelOperatorParameters.h"
+#include "operators/subchannel/SubchannelOperatorParameters.h"
 
 namespace AMP {
 namespace Operator {

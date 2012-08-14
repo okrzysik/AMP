@@ -15,9 +15,9 @@
 
 #include "vectors/VectorBuilder.h"
 
-#include "operators/SubchannelPhysicsModel.h"
-#include "operators/SubchannelOperatorParameters.h"
-#include "operators/SubchannelTwoEqLinearOperator.h"
+#include "operators/subchannel/SubchannelPhysicsModel.h"
+#include "operators/subchannel/SubchannelOperatorParameters.h"
+#include "operators/subchannel/SubchannelTwoEqLinearOperator.h"
 #include "operators/OperatorBuilder.h"
 
 #include "ampmesh/StructuredMeshHelper.h"

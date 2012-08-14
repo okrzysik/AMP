@@ -1,6 +1,6 @@
 
-#include "operators/SubchannelTwoEqLinearOperator.h"
-#include "operators/SubchannelOperatorParameters.h"
+#include "operators/subchannel/SubchannelTwoEqLinearOperator.h"
+#include "operators/subchannel/SubchannelOperatorParameters.h"
 #include "ampmesh/StructuredMeshHelper.h"
 #include "vectors/VectorBuilder.h"
 #include "matrices/MatrixBuilder.h"

@@ -3,7 +3,7 @@
 #define included_AMP_SubchannelFourEqNonlinearOperator
 
 #include "operators/Operator.h"
-#include "SubchannelOperatorParameters.h"
+#include "operators/subchannel/SubchannelOperatorParameters.h"
 
 #include "ampmesh/MeshElementVectorIterator.h"
 

@@ -1,6 +1,6 @@
 
-#include "operators/SubchannelFourEqNonlinearOperator.h"
-#include "operators/SubchannelOperatorParameters.h"
+#include "SubchannelFourEqNonlinearOperator.h"
+#include "SubchannelOperatorParameters.h"
 #include "ampmesh/StructuredMeshHelper.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"

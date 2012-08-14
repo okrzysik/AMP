@@ -3,7 +3,7 @@
 #define included_AMP_SubchannelParameters
 
 #include "operators/OperatorParameters.h"
-#include "operators/SubchannelPhysicsModel.h"
+#include "operators/subchannel/SubchannelPhysicsModel.h"
 #include "discretization/DOF_Manager.h"
 
 namespace AMP {
