@@ -599,6 +599,7 @@ namespace AMP {
             } //end for gauss-points
             destroyCurrentLibMeshElement();
           } //end for elements
+          r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
           AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
