@@ -28,6 +28,7 @@ AsyncMapOperator::AsyncMapOperator ( const boost::shared_ptr <OperatorParameters
     // Get the input variable
     std::string variableName = params->d_db->getString("VariableName");
     d_inpVariable = AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable(variableName) );
+    d_outVariable = AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable(variableName) );
 }
 
 
@@ -36,9 +37,9 @@ AsyncMapOperator::~AsyncMapOperator ()
 }
 
 
-void AsyncMapOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-        const AMP::LinearAlgebra::Vector::shared_ptr &u, 
-        AMP::LinearAlgebra::Vector::shared_ptr &r,
+void AsyncMapOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+        AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+        AMP::LinearAlgebra::Vector::shared_ptr r,
         const double a, const double b)
 {
     PROFILE_START("apply");

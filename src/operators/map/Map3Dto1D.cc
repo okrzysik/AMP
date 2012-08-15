@@ -63,8 +63,8 @@ namespace Operator {
 
     } 
 
-    void Map3Dto1D :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-        AMP::LinearAlgebra::Vector::shared_ptr &r, const double , const double )
+    void Map3Dto1D :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+        AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double )
     {
       AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
       double a = 1.0,  b=0.0;
@@ -77,8 +77,8 @@ namespace Operator {
 
     }
 
-    void Map3Dto1D :: apply_Gauss(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-        AMP::LinearAlgebra::Vector::shared_ptr &r, const double , const double )
+    void Map3Dto1D :: apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+        AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double )
     {
       const unsigned int numPoints = outputVec->getLocalSize();
       std::vector<double> mapValues(numPoints,0);
@@ -87,9 +87,9 @@ namespace Operator {
       // Get the local contributions to the map
       if ( d_MapMesh != NULL ) {
         AMP_ASSERT(u != NULL);
-        AMP::LinearAlgebra::Vector::shared_ptr inputVec = subsetInputVector( u );
-        inputVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = subsetInputVector( u );
         AMP_ASSERT( inputVec != NULL);
+        AMP_ASSERT(inputVec->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
 
         AMP::Discretization::DOFManager::shared_ptr dof_map = inputVec->getDOFManager();
 
@@ -205,8 +205,8 @@ namespace Operator {
 
     }
 
-    void Map3Dto1D :: apply_Nodal(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-        AMP::LinearAlgebra::Vector::shared_ptr &r, const double , const double )
+    void Map3Dto1D :: apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+        AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double )
     { 
 
       const unsigned int numPoints = outputVec->getLocalSize();
@@ -216,9 +216,9 @@ namespace Operator {
       // Get the local contributions to the map
       if ( d_MapMesh != NULL ) {
         AMP_ASSERT(u != NULL);
-        AMP::LinearAlgebra::Vector::shared_ptr inputVec = subsetInputVector( u );
-        inputVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = subsetInputVector( u );
         AMP_ASSERT( inputVec != NULL);
+        AMP_ASSERT(inputVec->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
 
         AMP::Discretization::DOFManager::shared_ptr dof_map = inputVec->getDOFManager();
 

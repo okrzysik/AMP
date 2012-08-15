@@ -79,6 +79,22 @@ void Vector::selectInto ( const VectorSelector &s , Vector::shared_ptr retVal )
         AMP_ASSERT(N2<=N1);
     }
 }
+void Vector::constSelectInto ( const VectorSelector &s , Vector::shared_ptr retVal ) const
+{
+    if ( s.isSelected ( shared_from_this () ) ) {
+        // Subset the vector
+        Vector::const_shared_ptr subvector = s.subset( shared_from_this() );
+        if ( subvector.get() == NULL )
+            return;
+        // Cast away the const (this is a temporary workaround)
+        Vector::shared_ptr subvector2 = boost::const_pointer_cast<Vector>( subvector );
+        retVal->castTo<MultiVector>().addVector ( subvector2 );
+        // Check the global size of the new vector to make sure it is <= the current size
+        size_t N1 = this->getGlobalSize();
+        size_t N2 = subvector->getGlobalSize();
+        AMP_ASSERT(N2<=N1);
+    }
+}
 Vector::shared_ptr  Vector::select ( const VectorSelector &s , const std::string &name )
 {
     // Create a new multivector to hold the subset
@@ -96,8 +112,7 @@ Vector::const_shared_ptr  Vector::constSelect ( const VectorSelector &s , const 
     AMP_MPI comm = s.communicator( shared_from_this() );
     Vector::shared_ptr  retVal = MultiVector::create( name, comm );
     // Add the subset vector
-    AMP_ERROR("Not ready for const selectInto");
-    //selectInto ( s , retVal );
+    constSelectInto ( s , retVal );
     if ( retVal->numberOfDataBlocks() )
         return retVal;
     return Vector::shared_ptr();
@@ -255,7 +270,6 @@ void Vector::zero()
     setToScalar (0.0);
     for ( size_t i = 0 ; i != d_Ghosts->size() ; i++ )
         (*d_Ghosts)[i] = 0.0;
-    (*getUpdateStatusPtr()) = UNCHANGED;
 }
 void Vector::setToScalar(double alpha)
 {
@@ -266,6 +280,7 @@ void Vector::setToScalar(double alpha)
       curMe++;
     }
     dataChanged();
+    (*getUpdateStatusPtr()) = UNCHANGED;
 }
 void  Vector::setRandomValues ()
 {
@@ -278,6 +293,7 @@ void  Vector::setRandomValues ()
       curMe++;
     }
     dataChanged ();
+    this->makeConsistent(CONSISTENT_SET);
 }
 void  Vector::setRandomValues ( RNG::shared_ptr rng )
 {
@@ -289,6 +305,7 @@ void  Vector::setRandomValues ( RNG::shared_ptr rng )
       curMe++;
     }
     dataChanged ();
+    this->makeConsistent(CONSISTENT_SET);
 }
 
 

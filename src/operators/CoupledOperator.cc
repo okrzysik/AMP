@@ -19,9 +19,9 @@ CoupledOperator::CoupledOperator(const boost::shared_ptr<OperatorParameters>& pa
 }
 
 
-void CoupledOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-		   const AMP::LinearAlgebra::Vector::shared_ptr &u,
-		   AMP::LinearAlgebra::Vector::shared_ptr &r,
+void CoupledOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+		   AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		   AMP::LinearAlgebra::Vector::shared_ptr r,
 		   const double a,
 		   const double b)
 {

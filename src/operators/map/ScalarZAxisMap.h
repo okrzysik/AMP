@@ -47,7 +47,7 @@ public:
 
 protected:
     // Implimented buildMap routine
-    virtual std::multimap<double,double>  buildMap( const AMP::LinearAlgebra::Vector::shared_ptr, 
+    virtual std::multimap<double,double>  buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr, 
         const AMP::Mesh::Mesh::shared_ptr, const AMP::Mesh::MeshIterator& );
 
     // Implimented buildReturn routine

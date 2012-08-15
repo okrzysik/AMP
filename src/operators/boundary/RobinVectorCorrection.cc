@@ -41,9 +41,9 @@ void RobinVectorCorrection::reset(const boost::shared_ptr<OperatorParameters>& p
 }
   
 void
-RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-                 const AMP::LinearAlgebra::Vector::shared_ptr &u,
-                 AMP::LinearAlgebra::Vector::shared_ptr &r,
+RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+                 AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                 AMP::LinearAlgebra::Vector::shared_ptr r,
                  const double a,
                  const double b)
 {
@@ -52,9 +52,9 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
 
   AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetInputVector(r);
-  AMP::LinearAlgebra::Vector::shared_ptr uInternal = this->subsetInputVector(u);
+  AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = this->subsetInputVector(u);
 
-  uInternal->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+  AMP_ASSERT(uInternal->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
   //rInternal->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
   std::vector<std::string> variableNames;
@@ -78,19 +78,19 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
       {
         if( d_Frozen->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview ) != NULL )
         {
-          d_elementInputVec[i+1] = d_Frozen->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
+          d_elementInputVec[i+1] = d_Frozen->constSelect ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
         }
         else
         {
-          d_elementInputVec[i+1] = uInternal->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
+          d_elementInputVec[i+1] = uInternal->constSelect ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
         }
       }
       else
       {
-        d_elementInputVec[i+1] = uInternal->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
+        d_elementInputVec[i+1] = uInternal->constSelect ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
       }
       AMP_INSIST ( d_elementInputVec[i+1] , "Did not find vector" );
-      (d_elementInputVec[i+1])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+      AMP_ASSERT(d_elementInputVec[i+1]->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
     }
 
     //#define DEBUG_GAP_PRINT
@@ -243,7 +243,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   }
   else
   {
-    AMP::LinearAlgebra::Vector::shared_ptr fInternal = this->subsetOutputVector(f);
+    AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = this->subsetOutputVector(f);
     if (fInternal.get() == NULL)
     {
       rInternal->scale(a);

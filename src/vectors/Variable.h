@@ -36,7 +36,8 @@ class Variable: public boost::enable_shared_from_this<Variable>
 public:
 
     //!  Shared pointer name
-    typedef boost::shared_ptr<Variable>    shared_ptr;
+    typedef boost::shared_ptr<Variable>         shared_ptr;
+    typedef boost::shared_ptr<const Variable>   const_shared_ptr;
 
 
     /** \brief  Construct a variable with a name

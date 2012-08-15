@@ -277,19 +277,19 @@ Matrix::shared_ptr  ManagedEpetraMatrix::cloneMatrix () const
 */
 
 
-void ManagedEpetraMatrix::mult ( const Vector::shared_ptr &in , Vector::shared_ptr &out )
+void ManagedEpetraMatrix::mult ( Vector::const_shared_ptr in , Vector::shared_ptr out )
 {
     AMP_ASSERT ( in->getGlobalSize() == numGlobalRows() );
     AMP_ASSERT ( out->getGlobalSize() == numGlobalColumns() );
-    Vector::shared_ptr  in_view = EpetraVector::view ( in );
+    Vector::const_shared_ptr  in_view = EpetraVector::constView ( in );
     Vector::shared_ptr  out_view = EpetraVector::view ( out );
     VerifyEpetraReturn ( d_epetraMatrix->Multiply ( false , in_view->castTo<EpetraVector>().getEpetra_Vector() , out_view->castTo<EpetraVector>().getEpetra_Vector() ) , "mult" );
 }
 
 
-void ManagedEpetraMatrix::multTranspose ( const Vector::shared_ptr &in , Vector::shared_ptr &out )
+void ManagedEpetraMatrix::multTranspose ( Vector::const_shared_ptr in , Vector::shared_ptr out )
 {
-    Vector::shared_ptr  in_view = EpetraVector::view ( in );
+    Vector::const_shared_ptr  in_view = EpetraVector::constView ( in );
     Vector::shared_ptr  out_view = EpetraVector::view ( out );
     VerifyEpetraReturn ( d_epetraMatrix->Multiply ( true , in_view->castTo<EpetraVector>().getEpetra_Vector() , out_view->castTo<EpetraVector>().getEpetra_Vector() ) , "mult" );
 }

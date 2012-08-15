@@ -63,15 +63,15 @@ namespace LinearAlgebra {
   }
 
   inline
-  void  NativePetscMatrix::mult ( const Vector::shared_ptr &in , Vector::shared_ptr &out )
+  void  NativePetscMatrix::mult ( Vector::const_shared_ptr in , Vector::shared_ptr out )
   {
-    MatMult ( d_Mat , in->castTo<NativePetscVector>().getVec() , out->castTo<NativePetscVector>().getVec() );
+    MatMult ( d_Mat , in->castTo<const NativePetscVector>().getVec() , out->castTo<NativePetscVector>().getVec() );
   }
 
   inline
-  void  NativePetscMatrix::multTranspose ( const Vector::shared_ptr &in , Vector::shared_ptr &out )
+  void  NativePetscMatrix::multTranspose ( Vector::const_shared_ptr in , Vector::shared_ptr out )
   {
-    MatMultTranspose ( d_Mat , in->castTo<NativePetscVector>().getVec() , out->castTo<NativePetscVector>().getVec() );
+    MatMultTranspose ( d_Mat , in->castTo<const NativePetscVector>().getVec() , out->castTo<NativePetscVector>().getVec() );
   }
 
   inline

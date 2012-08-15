@@ -358,6 +358,7 @@ namespace LinearAlgebra {
   {
     d_Engine->setRandomValues ();
     fireDataChange();
+    this->makeConsistent(CONSISTENT_SET);
   }
 
   inline

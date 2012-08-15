@@ -337,9 +337,9 @@ namespace AMP {
      * power by keeping the total power the same over the problem domain.   *  
      *************************************************************************
      */
-    void PowerShape :: apply(const SP_Vector &  , 
-        const SP_Vector & u, 
-        SP_Vector & r,
+    void PowerShape :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr, 
+        AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+        AMP::LinearAlgebra::Vector::shared_ptr r,
         const double       ,
         const double        ) {
 
@@ -599,6 +599,7 @@ namespace AMP {
             } //end for gauss-points
             destroyCurrentLibMeshElement();
           } //end for elements
+          r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
           AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 

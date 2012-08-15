@@ -20,8 +20,8 @@ namespace AMP {
           d_traction = mySubsetVector(vec, d_inputVar);
         }
 
-        void apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &,
-            AMP::LinearAlgebra::Vector::shared_ptr &r, const double, const double);
+        void apply( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr,
+            AMP::LinearAlgebra::Vector::shared_ptr r, const double, const double);
 
         void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs);
 

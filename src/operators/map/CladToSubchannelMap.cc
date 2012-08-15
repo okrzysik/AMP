@@ -203,49 +203,56 @@ AMP::Mesh::MeshIterator CladToSubchannelMap::getSubchannelIterator(AMP::Mesh::Me
 /************************************************************************
 *  Start the communication                                              *
 ************************************************************************/
-void CladToSubchannelMap::applyStart(const AMP::LinearAlgebra::Vector::shared_ptr &,
-    const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &,
+void CladToSubchannelMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr,
+    AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr,
     const double, const double)
 {
+    // Check if we have any data to send
+    if ( d_mesh1.get() == NULL )
+        return;
+
+    // Subset the vector for the variable (we only need the local portion of the vector)
+    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    AMP::LinearAlgebra::VS_Comm commSelector(var->getName(), AMP_MPI(AMP_COMM_SELF) );
+    AMP::LinearAlgebra::Vector::const_shared_ptr  commSubsetVec = u->constSelect(commSelector, var->getName());
+    AMP::LinearAlgebra::Vector::const_shared_ptr  curPhysics = commSubsetVec->constSubsetVectorForVariable(var);
+    AMP_ASSERT(curPhysics);
+
     // Fill the send buffer
-    if ( d_mesh1.get() != NULL ) {
-        AMP::Discretization::DOFManager::shared_ptr  DOF = u->getDOFManager( );
-        std::vector<size_t> dofs;
-        for (size_t i=0; i<N_subchannels; i++) {
-            if ( d_elem[i].empty() )
-                continue;
-            for (size_t j=0; j<d_z.size(); j++)
-                d_sendBuffer[i][j] = std::pair<double,double>(0.0,0.0);
-            for (size_t j=0; j<d_elem[i].size(); j++) {
-                DOF->getDOFs(d_elem[i][j],dofs);
-                AMP_ASSERT(dofs.size()==1);
-                std::vector<double> pos = d_mesh1->getElement(d_elem[i][j]).centroid();
-                double val = u->getLocalValueByGlobalID(dofs[0]);
-                d_sendBuffer[i][j].first = pos[2];
-                d_sendBuffer[i][j].second = val;
-            }
+    AMP::Discretization::DOFManager::shared_ptr  DOF = curPhysics->getDOFManager( );
+    std::vector<size_t> dofs;
+    for (size_t i=0; i<N_subchannels; i++) {
+        if ( d_elem[i].empty() )
+            continue;
+        for (size_t j=0; j<d_z.size(); j++)
+            d_sendBuffer[i][j] = std::pair<double,double>(0.0,0.0);
+        for (size_t j=0; j<d_elem[i].size(); j++) {
+            DOF->getDOFs(d_elem[i][j],dofs);
+            AMP_ASSERT(dofs.size()==1);
+            std::vector<double> pos = d_mesh1->getElement(d_elem[i][j]).centroid();
+            double val = curPhysics->getLocalValueByGlobalID(dofs[0]);
+            d_sendBuffer[i][j].first = pos[2];
+            d_sendBuffer[i][j].second = val;
         }
     }
     // Send the data
-    if ( d_mesh1.get() != NULL ) {
-        for (size_t i=0; i<N_subchannels; i++) {
-            if ( d_elem[i].empty() )
-                continue;
-            int tag = (int) i;  // We have an independent comm
-            for (size_t j=0; j<d_subchannelRanks[i].size(); j++) {
-                int rank = d_subchannelRanks[i][j];
-                d_currRequests.push_back( d_MapComm.Isend( &d_sendBuffer[i][0], d_sendBuffer[i].size(), rank, tag ) );
-            }
+    for (size_t i=0; i<N_subchannels; i++) {
+        if ( d_elem[i].empty() )
+            continue;
+        int tag = (int) i;  // We have an independent comm
+        for (size_t j=0; j<d_subchannelRanks[i].size(); j++) {
+            int rank = d_subchannelRanks[i][j];
+            d_currRequests.push_back( d_MapComm.Isend( &d_sendBuffer[i][0], d_sendBuffer[i].size(), rank, tag ) );
         }
-    }    
+    }
 }
 
 
 /************************************************************************
 *  Finish the communication                                             *
 ************************************************************************/
-void CladToSubchannelMap::applyFinish(const AMP::LinearAlgebra::Vector::shared_ptr &,
-    const AMP::LinearAlgebra::Vector::shared_ptr &, AMP::LinearAlgebra::Vector::shared_ptr &,
+void CladToSubchannelMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
+    AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::shared_ptr,
     const double, const double)
 {
     if ( d_mesh2.get() == NULL ) {

@@ -32,19 +32,19 @@ namespace AMP {
 
         void applyUnscaling(AMP::LinearAlgebra::Vector::shared_ptr f);
 
-        void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-            AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
+        void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
       protected:
-        void applySerial(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
+        void applySerial(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
             AMP::LinearAlgebra::Vector::shared_ptr &r);
 
         void applyOnlyZcorrection(AMP::LinearAlgebra::Vector::shared_ptr &u);
 
-        void applyXYZcorrection(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
+        void applyXYZcorrection(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
             AMP::LinearAlgebra::Vector::shared_ptr &r);
 
-        void computeZscan(const AMP::LinearAlgebra::Vector::shared_ptr &u, std::vector<double> &finalMaxZdispsList);
+        void computeZscan(AMP::LinearAlgebra::Vector::const_shared_ptr u, std::vector<double> &finalMaxZdispsList);
 
         unsigned int d_totalNumberOfPellets;
         unsigned int d_currentPellet;

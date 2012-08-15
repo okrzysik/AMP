@@ -98,8 +98,8 @@ void FlowFrapconJacobian :: reset(const boost::shared_ptr<OperatorParameters>& p
 
 
 // This is an in-place apply
-void FlowFrapconJacobian :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-      AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double b)
+void FlowFrapconJacobian :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+      AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b)
 {
 
     // AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_inpVariable);
@@ -116,7 +116,7 @@ void FlowFrapconJacobian :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &
     //    std::cout << "Extreme Max Point in z = " << max_z << std::endl;
 
     
-    AMP::LinearAlgebra::Vector::shared_ptr flowInputVec = subsetInputVector(u);
+    AMP::LinearAlgebra::Vector::const_shared_ptr flowInputVec = subsetInputVector(u);
 
     AMP::LinearAlgebra::Vector::shared_ptr outputVec = subsetOutputVector(r);
 
@@ -170,7 +170,7 @@ void FlowFrapconJacobian :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &
     if(f.get() == NULL) {
       outputVec->scale(a);
     } else {
-      AMP::LinearAlgebra::Vector::shared_ptr fInternal = subsetInputVector( f );
+      AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = subsetInputVector( f );
       if(fInternal.get() == NULL) {
         outputVec->scale(a);
       } else {

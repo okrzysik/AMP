@@ -21,7 +21,7 @@ namespace Operator {
 
       AMP::LinearAlgebra::Vector::shared_ptr d_variableFlux;
       
-      std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_elementInputVec;
+      std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> d_elementInputVec;
       
       boost::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 

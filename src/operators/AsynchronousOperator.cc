@@ -69,8 +69,8 @@ MPI_Request &AsynchronousOperator::getRequest ( size_t i )
     return d_RequestList[i];
 }
 
-void AsynchronousOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-         const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
+void AsynchronousOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+         AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
          const double a , const double b )
 {
     applyStart ( f , u , r , a , b );
