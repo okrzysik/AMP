@@ -28,6 +28,7 @@ AsyncMapOperator::AsyncMapOperator ( const boost::shared_ptr <OperatorParameters
     // Get the input variable
     std::string variableName = params->d_db->getString("VariableName");
     d_inpVariable = AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable(variableName) );
+    d_outVariable = AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable(variableName) );
 }
 
 

@@ -172,6 +172,7 @@ void DiffusionNonlinearFEOperator::preAssembly(
     for (unsigned int var = 0; var < Diffusion::NUMBER_VARIABLES; var++) {
         if (d_isActive[var]) {
             if(d_isFrozen[var]) {
+                d_Frozen[var]->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
                 d_inVec[var] = d_Frozen[var];
             } else {
                 AMP::LinearAlgebra::Variable::shared_ptr tvar = d_inpVariables->getVariable(var);

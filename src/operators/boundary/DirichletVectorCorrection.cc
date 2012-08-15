@@ -105,6 +105,7 @@ namespace AMP {
           }//end for i
         }//end for bnd
       }//end for j
+      rInternal->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     }
 
     void DirichletVectorCorrection :: applyNonZeroValues(AMP::LinearAlgebra::Vector::shared_ptr r) {
