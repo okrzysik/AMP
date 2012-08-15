@@ -130,6 +130,8 @@ inline double Vector::getValueByLocalID ( size_t ndx ) const
   inline
   void  Vector::dataChanged()
   {
+     if ( *d_UpdateState == UNCHANGED ) 
+        *d_UpdateState = LOCAL_CHANGED;
   }
 
 

@@ -280,6 +280,8 @@ void Vector::setToScalar(double alpha)
       curMe++;
     }
     dataChanged();
+    for ( size_t i = 0 ; i != d_Ghosts->size() ; i++ )
+        (*d_Ghosts)[i] = alpha;
     (*getUpdateStatusPtr()) = UNCHANGED;
 }
 void  Vector::setRandomValues ()
