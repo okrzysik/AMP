@@ -70,7 +70,7 @@ namespace AMP {
       }
 
     void NavierStokesLSWFFEOperator :: preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-        boost::shared_ptr< AMP::LinearAlgebra::Vector >  &r) {
+        AMP::LinearAlgebra::Vector::shared_ptr r) {
       AMP_INSIST( (u != NULL), "NULL Input Vector" );
 /*
       for(unsigned int i = 0; i < NavierStokes::TOTAL_NUMBER_OF_VARIABLES; i++) {

@@ -25,7 +25,7 @@ namespace AMP {
 
         ~NavierStokesLSWFFEOperator() { }
 
-        void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r);
+        void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  r);
 
         void postAssembly();
 
