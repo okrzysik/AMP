@@ -48,6 +48,7 @@ class  SubsetVector : public Vector
 
 public:
     static Vector::shared_ptr   view ( Vector::shared_ptr , Variable::shared_ptr );
+    static Vector::const_shared_ptr   view ( Vector::const_shared_ptr , Variable::shared_ptr );
 
     virtual std::string  type() const;
 

@@ -16,11 +16,11 @@ namespace AMP {
 
         void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
             AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0) {
-          AMP::LinearAlgebra::Vector::shared_ptr in = u->subsetVectorForVariable(d_var);
+          AMP::LinearAlgebra::Vector::const_shared_ptr in = u->constSubsetVectorForVariable(d_var);
           AMP::LinearAlgebra::Vector::shared_ptr out = r->subsetVectorForVariable(d_var);
           out->scale((d_constant*a), in);
           if(f != NULL) {
-            AMP::LinearAlgebra::Vector::shared_ptr rhs = f->subsetVectorForVariable(d_var);
+            AMP::LinearAlgebra::Vector::const_shared_ptr rhs = f->constSubsetVectorForVariable(d_var);
             if(rhs != NULL) {
               out->axpy(b, rhs, out);
             }

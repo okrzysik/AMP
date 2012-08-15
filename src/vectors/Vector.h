@@ -1137,6 +1137,11 @@ protected:
 
 private:
 
+    // This is the const version of selectInto.  Currently this is a private function because
+    // we do not have a concept of a const multivector yet and this results in destryoing 
+    // const correctness.  Use this function with caution.  
+    virtual void       constSelectInto ( const VectorSelector &criterion , Vector::shared_ptr vector ) const;
+
     // The following are not implemented
     Vector(const Vector&);
     void operator=(const Vector&);

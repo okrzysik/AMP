@@ -18,7 +18,7 @@
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"
 #include "vectors/VectorSelector.h"
-#include "NeumannVectorCorrection.h"
+#include "operators/boundary/NeumannVectorCorrection.h"
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
