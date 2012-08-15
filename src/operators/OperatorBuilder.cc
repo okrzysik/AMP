@@ -141,12 +141,12 @@ boost::shared_ptr<Operator>
 OperatorBuilder::createOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter,
 				std::string operatorName,
 				boost::shared_ptr<AMP::Database> tmp_input_db,
-				boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel,
-				boost::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory	)
+                                boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel,
+                                boost::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory	)
 {
-  
+
   boost::shared_ptr<Operator> retOperator;
-  
+
   boost::shared_ptr<AMP::InputDatabase> input_db = boost::dynamic_pointer_cast<AMP::InputDatabase>(tmp_input_db);
 
   boost::shared_ptr<AMP::InputDatabase> operator_db = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase(operatorName));
@@ -156,11 +156,11 @@ OperatorBuilder::createOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter,
   // we create the element physics model if a database entry exists
   // and the incoming element physics model pointer is NULL
   if( (elementPhysicsModel.get()==NULL) && (operator_db->keyExists("LocalModel" ) ) )
-    {
-      // extract the name of the local model from the operator database
-      std::string localModelName = operator_db->getString("LocalModel");
-      // check whether a database exists in the global database
-      // (NOTE: not the operator database) with the given name
+  {
+    // extract the name of the local model from the operator database
+    std::string localModelName = operator_db->getString("LocalModel");
+    // check whether a database exists in the global database
+    // (NOTE: not the operator database) with the given name
       AMP_INSIST(input_db->keyExists(localModelName), "Error:: OperatorBuilder::createOperator(): No local model database entry with given name exists in input database");
 
       boost::shared_ptr<AMP::Database> localModel_db = input_db->getDatabase(localModelName);
@@ -217,11 +217,11 @@ OperatorBuilder::createOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter,
     }
   else if(operatorType=="SubchannelTwoEqLinearOperator")
     {
-        retOperator = OperatorBuilder::createSubchannelTwoEqLinearOperator(meshAdapter, operator_db);
+        retOperator = OperatorBuilder::createSubchannelTwoEqLinearOperator(meshAdapter, operator_db, elementPhysicsModel);
     }
   else if(operatorType=="SubchannelTwoEqNonlinearOperator")
     {
-        retOperator = OperatorBuilder::createSubchannelTwoEqNonlinearOperator(meshAdapter, operator_db);
+        retOperator = OperatorBuilder::createSubchannelTwoEqNonlinearOperator(meshAdapter, operator_db, elementPhysicsModel);
     }
   else if(operatorType=="NeutronicsRhsOperator")
     {
@@ -293,124 +293,170 @@ OperatorBuilder::createFlowFrapconOperator( AMP::Mesh::Mesh::shared_ptr meshAdap
 
 AMP::Operator::Operator::shared_ptr
 OperatorBuilder::createSubchannelTwoEqLinearOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-					    boost::shared_ptr<AMP::InputDatabase> input_db)
+					    boost::shared_ptr<AMP::InputDatabase> input_db,
+						boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel)
 {
-  // create the operator
-  boost::shared_ptr<AMP::Database> subchannel_db;
-  if(input_db->getString("name")=="SubchannelTwoEqLinearOperator")
+    // first create a SubchannelPhysicsModel
+    boost::shared_ptr<AMP::Operator::SubchannelPhysicsModel> transportModel;
+
+    if(elementPhysicsModel.get()!=NULL)
+    {
+      transportModel = boost::dynamic_pointer_cast<AMP::Operator::SubchannelPhysicsModel>(elementPhysicsModel);
+    }
+    else
+    {
+      boost::shared_ptr<AMP::Database> transportModel_db;
+      if (input_db->keyExists("SubchannelPhysicsModel")) {
+        transportModel_db = input_db->getDatabase("SubchannelPhysicsModel");
+      } else {
+        AMP_INSIST(false, "Key ''SubchannelPhysicsModel'' is missing!");
+      }
+      elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
+      transportModel = boost::dynamic_pointer_cast<SubchannelPhysicsModel>(elementPhysicsModel);
+    }
+
+    AMP_INSIST(transportModel.get()!=NULL,"NULL transport model");
+    // create the operator
+    boost::shared_ptr<AMP::Database> subchannel_db;
+    if(input_db->getString("name")=="SubchannelTwoEqLinearOperator")
     {
       subchannel_db = input_db;
     }
-  else
+    else
     {
       AMP_INSIST(input_db->keyExists("name"), "Key ''name'' is missing!");
     }
-  
-  AMP_INSIST(subchannel_db.get()!=NULL, "Error: The database object for SubchannelTwoEqLinearOperator is NULL");
-  
-  boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelParams(new AMP::Operator::SubchannelOperatorParameters( subchannel_db ));
-  subchannelParams->d_Mesh = meshAdapter;
-  
-  subchannelParams->d_dofMap = AMP::Discretization::simpleDOFManager::create( meshAdapter, 
-      AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(meshAdapter,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(meshAdapter,0), 2);
-  boost::shared_ptr<AMP::Operator::SubchannelTwoEqLinearOperator> subchannelOp (new AMP::Operator::SubchannelTwoEqLinearOperator( subchannelParams ));
-  
-  return subchannelOp;
+
+    AMP_INSIST(subchannel_db.get()!=NULL, "Error: The database object for SubchannelTwoEqLinearOperator is NULL");
+
+    boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelParams(new AMP::Operator::SubchannelOperatorParameters( subchannel_db ));
+    subchannelParams->d_Mesh = meshAdapter;
+    subchannelParams->d_subchannelPhysicsModel = transportModel ;
+
+    subchannelParams->d_dofMap = AMP::Discretization::simpleDOFManager::create( meshAdapter, 
+        AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(meshAdapter,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(meshAdapter,0), 2);
+    boost::shared_ptr<AMP::Operator::SubchannelTwoEqLinearOperator> subchannelOp (new AMP::Operator::SubchannelTwoEqLinearOperator( subchannelParams ));
+
+    return subchannelOp;
 }
 
-AMP::Operator::Operator::shared_ptr
+  AMP::Operator::Operator::shared_ptr
 OperatorBuilder::createSubchannelTwoEqNonlinearOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-					    boost::shared_ptr<AMP::InputDatabase> input_db)
+    boost::shared_ptr<AMP::InputDatabase> input_db,
+    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel)
 {
+
+  // first create a SubchannelPhysicsModel
+  boost::shared_ptr<AMP::Operator::SubchannelPhysicsModel> transportModel;
+
+  if(elementPhysicsModel.get()!=NULL)
+  {
+    transportModel = boost::dynamic_pointer_cast<AMP::Operator::SubchannelPhysicsModel>(elementPhysicsModel);
+  }
+  else
+  {
+    boost::shared_ptr<AMP::Database> transportModel_db;
+    if (input_db->keyExists("SubchannelPhysicsModel")) {
+      transportModel_db = input_db->getDatabase("SubchannelPhysicsModel");
+    } else {
+      AMP_INSIST(false, "Key ''SubchannelPhysicsModel'' is missing!");
+    }
+    elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
+    transportModel = boost::dynamic_pointer_cast<SubchannelPhysicsModel>(elementPhysicsModel);
+  }
+
+  AMP_INSIST(transportModel.get()!=NULL,"NULL transport model");
+
   // create the operator
   boost::shared_ptr<AMP::Database> subchannel_db;
   if(input_db->getString("name")=="SubchannelTwoEqNonlinearOperator")
-    {
-      subchannel_db = input_db;
-    }
+  {
+    subchannel_db = input_db;
+  }
   else
-    {
-      AMP_INSIST(input_db->keyExists("name"), "Key ''name'' is missing!");
-    }
-  
+  {
+    AMP_INSIST(input_db->keyExists("name"), "Key ''name'' is missing!");
+  }
+
   AMP_INSIST(subchannel_db.get()!=NULL, "Error: The database object for SubchannelTwoEqNonlinearOperator is NULL");
-  
+
   boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelParams(new AMP::Operator::SubchannelOperatorParameters( subchannel_db ));
   subchannelParams->d_Mesh = meshAdapter;
+  subchannelParams->d_subchannelPhysicsModel = transportModel ;
   boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> subchannelOp (new AMP::Operator::SubchannelTwoEqNonlinearOperator( subchannelParams ));
-  
+
   return subchannelOp;
 }
-  
-AMP::Operator::Operator::shared_ptr
+
+  AMP::Operator::Operator::shared_ptr
 OperatorBuilder::createNeutronicsRhsOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-					      boost::shared_ptr<AMP::InputDatabase> input_db)
+    boost::shared_ptr<AMP::InputDatabase> input_db)
 {
-  
+
   // now create the Neutronics operator
   boost::shared_ptr<AMP::Database> NeutronicsOp_db;
   if(input_db->getString("name")=="NeutronicsRhsOperator")
-    {
-      NeutronicsOp_db = input_db;
-    }
+  {
+    NeutronicsOp_db = input_db;
+  }
   else
-    {
-      AMP_INSIST(input_db->keyExists("name"), "Key ''name'' is missing!");
-    }
-  
+  {
+    AMP_INSIST(input_db->keyExists("name"), "Key ''name'' is missing!");
+  }
+
   AMP_INSIST(NeutronicsOp_db.get()!=NULL, "Error: The database object for Neutronics Source Operator is NULL");
-  
+
   boost::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsOpParams(new AMP::Operator::NeutronicsRhsParameters( NeutronicsOp_db ));
   neutronicsOpParams->d_Mesh = meshAdapter;
   boost::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOp (new AMP::Operator::NeutronicsRhs( neutronicsOpParams ));
-  
+
   return neutronicsOp;
 }
-  
-AMP::Operator::Operator::shared_ptr
+
+  AMP::Operator::Operator::shared_ptr
 OperatorBuilder::createLinearDiffusionOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-						boost::shared_ptr<AMP::InputDatabase> input_db,
-						boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel)
+    boost::shared_ptr<AMP::InputDatabase> input_db,
+    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel)
 {
-  
+
   // first create a DiffusionTransportModel
   boost::shared_ptr<AMP::Operator::DiffusionTransportModel> transportModel;
-  
+
   if(elementPhysicsModel.get()!=NULL)
-    {
-      transportModel = boost::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>(elementPhysicsModel);
-    }
+  {
+    transportModel = boost::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>(elementPhysicsModel);
+  }
   else
-    {
-	  boost::shared_ptr<AMP::Database> transportModel_db;
-      if (input_db->keyExists("DiffusionTransportModel")) {
-    	  transportModel_db = input_db->getDatabase("DiffusionTransportModel");
-      } else {
-    	  AMP_INSIST(false, "Key ''DiffusionTransportModel'' is missing!");
-      }
-      elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
-      transportModel = boost::dynamic_pointer_cast<DiffusionTransportModel>(elementPhysicsModel);
+  {
+    boost::shared_ptr<AMP::Database> transportModel_db;
+    if (input_db->keyExists("DiffusionTransportModel")) {
+      transportModel_db = input_db->getDatabase("DiffusionTransportModel");
+    } else {
+      AMP_INSIST(false, "Key ''DiffusionTransportModel'' is missing!");
     }
-  
+    elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
+    transportModel = boost::dynamic_pointer_cast<DiffusionTransportModel>(elementPhysicsModel);
+  }
+
   AMP_INSIST(transportModel.get()!=NULL,"NULL transport model");
-  
+
   // next create a ElementOperation object
   AMP_INSIST(input_db->keyExists("DiffusionElement"), "Key ''DiffusionElement'' is missing!");
   boost::shared_ptr<AMP::Operator::ElementOperation> diffusionLinElem = ElementOperationFactory::createElementOperation(input_db->getDatabase("DiffusionElement"));
-  
+
   // now create the linear diffusion operator
   boost::shared_ptr<AMP::Database> diffusionLinFEOp_db;
   if(input_db->getString("name")=="DiffusionLinearFEOperator")
-    {
-      diffusionLinFEOp_db = input_db;
-    }
+  {
+    diffusionLinFEOp_db = input_db;
+  }
   else
-    {
-      AMP_INSIST(input_db->keyExists("name"), "Key ''name'' is missing!");
-    }
-  
+  {
+    AMP_INSIST(input_db->keyExists("name"), "Key ''name'' is missing!");
+  }
+
   AMP_INSIST(diffusionLinFEOp_db.get()!=NULL, "Error: The database object for DiffusionLinearFEOperator is NULL");
-  
+
   boost::shared_ptr<AMP::Operator::DiffusionLinearFEOperatorParameters> diffusionOpParams(new AMP::Operator::DiffusionLinearFEOperatorParameters( diffusionLinFEOp_db ));
   diffusionOpParams->d_transportModel = transportModel;
   diffusionOpParams->d_elemOp = diffusionLinElem;
@@ -418,69 +464,69 @@ OperatorBuilder::createLinearDiffusionOperator( AMP::Mesh::Mesh::shared_ptr mesh
   diffusionOpParams->d_inDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, 1, 1, true);
   diffusionOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, 1, 1, true);
   boost::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> diffusionOp (new AMP::Operator::DiffusionLinearFEOperator( diffusionOpParams ));
-  
+
   return diffusionOp;
 }
 
-AMP::Operator::Operator::shared_ptr
+  AMP::Operator::Operator::shared_ptr
 OperatorBuilder::createVolumeIntegralOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter,
-					      boost::shared_ptr<AMP::InputDatabase> input_db,
-					      boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel)
+    boost::shared_ptr<AMP::InputDatabase> input_db,
+    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel)
 {
   boost::shared_ptr<AMP::Operator::SourcePhysicsModel> sourcePhysicsModel;
-  
+
   if(elementPhysicsModel.get()!=NULL)
-    {
-      sourcePhysicsModel = boost::dynamic_pointer_cast<AMP::Operator::SourcePhysicsModel>(elementPhysicsModel);
-    }
+  {
+    sourcePhysicsModel = boost::dynamic_pointer_cast<AMP::Operator::SourcePhysicsModel>(elementPhysicsModel);
+  }
   else
+  {
+    if(input_db->keyExists("SourcePhysicsModel"))
     {
-      if(input_db->keyExists("SourcePhysicsModel"))
-        {
-          boost::shared_ptr<AMP::Database> sourceModel_db = input_db->getDatabase("SourcePhysicsModel");
-          elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(sourceModel_db);
-          sourcePhysicsModel = boost::dynamic_pointer_cast<SourcePhysicsModel>(elementPhysicsModel);
-        }
+      boost::shared_ptr<AMP::Database> sourceModel_db = input_db->getDatabase("SourcePhysicsModel");
+      elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(sourceModel_db);
+      sourcePhysicsModel = boost::dynamic_pointer_cast<SourcePhysicsModel>(elementPhysicsModel);
     }
-  
+  }
+
   // next create a ElementOperation object
   AMP_INSIST(input_db->keyExists("SourceElement"), "Key ''SourceElement'' is missing!");
   boost::shared_ptr<AMP::Operator::ElementOperation> sourceNonlinearElem = ElementOperationFactory::createElementOperation(input_db->getDatabase("SourceElement"));
-  
+
   // now create the nonlinear source operator
   boost::shared_ptr<AMP::Database> sourceNLinFEOp_db;
   if(input_db->getString("name")=="VolumeIntegralOperator")
-    {
-      sourceNLinFEOp_db = input_db;
-    }
+  {
+    sourceNLinFEOp_db = input_db;
+  }
   else
-    {
-      AMP_INSIST(input_db->keyExists("name"), "Key ''name'' is missing!");
-    }
-  
+  {
+    AMP_INSIST(input_db->keyExists("name"), "Key ''name'' is missing!");
+  }
+
   boost::shared_ptr<AMP::Operator::VolumeIntegralOperatorParameters> volumeIntegralParameters (
       new AMP::Operator::VolumeIntegralOperatorParameters( input_db ) );
   volumeIntegralParameters->d_sourcePhysicsModel = sourcePhysicsModel;
   volumeIntegralParameters->d_elemOp = sourceNonlinearElem;
   volumeIntegralParameters->d_Mesh = meshAdapter;
   boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> nonlinearSourceOp (new AMP::Operator::VolumeIntegralOperator( volumeIntegralParameters ));
-  
+
   return nonlinearSourceOp;
 }
 
-AMP::Operator::Operator::shared_ptr
+  AMP::Operator::Operator::shared_ptr
 OperatorBuilder::createNonlinearDiffusionOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-						   boost::shared_ptr<AMP::InputDatabase> input_db,
-						   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel)
+    boost::shared_ptr<AMP::InputDatabase> input_db,
+    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel)
 {
-  
+
   // first create a DiffusionTransportModel
   boost::shared_ptr<AMP::Operator::DiffusionTransportModel> transportModel;
-  
+
   if(elementPhysicsModel.get()!=NULL)
-    {
-      transportModel = boost::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>(elementPhysicsModel);
-    }
+  {
+    transportModel = boost::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>(elementPhysicsModel);
+  }
   else
     {
 	  boost::shared_ptr<AMP::Database> transportModel_db;

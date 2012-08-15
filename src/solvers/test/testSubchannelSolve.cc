@@ -52,9 +52,9 @@
 #include "operators/ElementPhysicsModelFactory.h"
 #include "operators/ElementOperationFactory.h"
 #include "operators/OperatorBuilder.h"
-#include "operators/SubchannelTwoEqNonlinearOperator.h"
-#include "operators/SubchannelTwoEqLinearOperator.h"
-#include "operators/SubchannelPhysicsModel.h"
+#include "operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
+#include "operators/subchannel/SubchannelTwoEqLinearOperator.h"
+#include "operators/subchannel/SubchannelPhysicsModel.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
 
@@ -181,26 +181,17 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
       std::string meshName = adapter->getName();
       if ( meshName.compare("subchannel")==0 ){
 
-        // get nonlinear operator database
-        boost::shared_ptr<AMP::Database> nonlinearOperator_db = global_input_db->getDatabase("SubchannelTwoEqNonlinearOperator");
-        // create parameters
-        boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( nonlinearOperator_db ));
-        // put mesh into parameters
-        subchannelOpParams->d_Mesh = xyFaceMesh ;
-        // put subchannel physics model into parameters
-        subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
-
       //-----------------------------------------------
       //   CREATE THE NONLINEAR THERMAL OPERATOR 1 ----
       //-----------------------------------------------
         boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
         subchannelNonlinearOperator = boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
-                                                                                  subchannelMesh ,"SubchannelTwoEqNonlinearOperator",global_input_db,elementModel ));
+                                                                                  adapter ,"SubchannelTwoEqNonlinearOperator",global_input_db,elementModel ));
 
 
         // create linear operator
         subchannelLinearOperator = boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqLinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
-                                                                                  subchannelMesh ,"SubchannelTwoEqLinearOperator",global_input_db,elementModel ));
+                                                                                  adapter ,"SubchannelTwoEqLinearOperator",global_input_db,elementModel ));
 
 
         // pass creation test
@@ -224,9 +215,9 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
       boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap>( pins[i], global_input_db->getDatabase("ThermalNodeToNodeMaps") );
       for (size_t j=0; j<map->getNumberOfOperators(); j++)
         n2nColumn->append( map->getOperator(j) );
-       boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> sza = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarZAxisMap> ( pins[i],  global_input_db->getDatabase("ThermalScalarZAxisMaps") );
-       for (size_t j=0; j<sza->getNumberOfOperators(); j++)
-         szaColumn->append( sza->getOperator(j) );
+      boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> sza = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarZAxisMap> ( pins[i],  global_input_db->getDatabase("ThermalScalarZAxisMaps") );
+      for (size_t j=0; j<sza->getNumberOfOperators(); j++)
+        szaColumn->append( sza->getOperator(j) );
     }
     if ( n2nColumn->getNumberOfOperators() > 0 )
       mapsColumn->append( n2nColumn );
@@ -312,28 +303,21 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
         AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerFace );
 
-    AMP::LinearAlgebra::Vector::shared_ptr subchannelFuelTemp = AMP::LinearAlgebra::createVector( faceDOFManager , flowVariable );
+    AMP::Discretization::DOFManager::shared_ptr scalarFaceDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
+        AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), 1);
+
+    AMP::LinearAlgebra::Vector::shared_ptr subchannelFuelTemp = AMP::LinearAlgebra::createVector( scalarFaceDOFManager , thermalVariable );
     boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  cladToSubchannelMap, subchannelToCladMap; 
     
-    for( size_t meshIndex=0; meshIndex<meshIDs.size(); meshIndex++ )
-    {
-      AMP::Mesh::Mesh::shared_ptr adapter =  manager->Subset( meshIDs[meshIndex] );
-      if( adapter.get() == NULL ) continue;
+    boost::shared_ptr<AMP::Database> cladToSubchannelDb = global_input_db->getDatabase( "CladToSubchannelMaps" );
+    cladToSubchannelMap = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap>( manager, cladToSubchannelDb );
+    cladToSubchannelMap->setVector( subchannelFuelTemp );
+    mapsColumn->append( cladToSubchannelMap );
 
-      std::string meshName = adapter->getName();
-      if ( meshName.compare("subchannel")==0 ){
-
-        boost::shared_ptr<AMP::Database> cladToSubchannelDb = global_input_db->getDatabase( "CladToSubchannelMaps" );
-        cladToSubchannelMap = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap>( manager, cladToSubchannelDb );
-        cladToSubchannelMap->setVector( subchannelFuelTemp );
-        mapsColumn->append( cladToSubchannelMap );
-
-        boost::shared_ptr<AMP::Database> subchannelToCladDb = global_input_db->getDatabase( "SubchannelToCladMaps" );
-        subchannelToCladMap = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap>( manager, subchannelToCladDb );
-        subchannelToCladMap->setVector( thermalMapVec );
-        mapsColumn->append( subchannelToCladMap );
-      }
-    }
+    boost::shared_ptr<AMP::Database> subchannelToCladDb = global_input_db->getDatabase( "SubchannelToCladMaps" );
+    subchannelToCladMap = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, subchannelToCladDb );
+    subchannelToCladMap->setVector( thermalMapVec );
+    mapsColumn->append( subchannelToCladMap );
 
     boost::shared_ptr<AMP::InputDatabase> copyOp_db = boost::dynamic_pointer_cast<AMP::InputDatabase>(global_input_db->getDatabase("CopyOperator"));
     boost::shared_ptr<AMP::Operator::VectorCopyOperatorParameters> vecCopyOperatorParams(new AMP::Operator::VectorCopyOperatorParameters( copyOp_db ));
