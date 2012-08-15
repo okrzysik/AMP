@@ -448,6 +448,8 @@ inline void *NativePetscVector::getRawDataBlockAsVoid ( size_t i )
 inline void NativePetscVector::getLocalValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const
 {
     INCREMENT_COUNT("Virtual");
+    if ( numVals==0 )
+        return;
     if ( sizeof(size_t) == sizeof(PetscInt) ) {
         VecGetValues ( d_petscVec , numVals , (PetscInt*) ndx , vals );
     } else {

@@ -732,6 +732,8 @@ Vector::shared_ptr MultiVector::cloneVector(const Variable::shared_ptr name) con
 ****************************************************************/
 void MultiVector::setValuesByLocalID ( int num , size_t *indices , const double *in_vals )
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -743,6 +745,8 @@ void MultiVector::setValuesByLocalID ( int num , size_t *indices , const double 
 }
 void MultiVector::setLocalValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -751,8 +755,11 @@ void MultiVector::setLocalValuesByGlobalID ( int num , size_t *indices , const d
         if ( ndxs[i].size() )
             d_vVectors[i]->setLocalValuesByGlobalID ( ndxs[i].size() , &(ndxs[i][0]) , &(vals[i][0]) );
     }
-}void MultiVector::setGhostValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
+}
+void MultiVector::setGhostValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -764,6 +771,8 @@ void MultiVector::setLocalValuesByGlobalID ( int num , size_t *indices , const d
 }
 void MultiVector::setValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -775,6 +784,8 @@ void MultiVector::setValuesByGlobalID ( int num , size_t *indices , const double
 }
 void MultiVector::addValuesByLocalID ( int num , size_t *indices , const double *in_vals )
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -786,6 +797,8 @@ void MultiVector::addValuesByLocalID ( int num , size_t *indices , const double 
 }
 void MultiVector::addLocalValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -797,6 +810,8 @@ void MultiVector::addLocalValuesByGlobalID ( int num , size_t *indices , const d
 }
 void MultiVector::addValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -808,6 +823,8 @@ void MultiVector::addValuesByGlobalID ( int num , size_t *indices , const double
 }
 void MultiVector::getValuesByGlobalID ( int num , size_t *indices , double *out_vals ) const
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -824,6 +841,8 @@ void MultiVector::getValuesByGlobalID ( int num , size_t *indices , double *out_
 }
 void MultiVector::getLocalValuesByGlobalID ( int num , size_t *indices , double *out_vals ) const
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -840,6 +859,8 @@ void MultiVector::getLocalValuesByGlobalID ( int num , size_t *indices , double 
 }
 void MultiVector::getGhostValuesByGlobalID ( int num , size_t *indices , double *out_vals ) const
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -856,6 +877,8 @@ void MultiVector::getGhostValuesByGlobalID ( int num , size_t *indices , double 
 }
 void MultiVector::getValuesByLocalID ( int num , size_t *indices , double *out_vals ) const
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
