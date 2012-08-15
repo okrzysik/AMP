@@ -21,7 +21,7 @@ VectorCopyOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
 			  const double a,
 			  const double b)
 {
-  AMP::LinearAlgebra::Vector::const_shared_ptr vecToCopy = u->constSubsetVectorForVariable( this->getOutputVariable() );
+  AMP::LinearAlgebra::Vector::const_shared_ptr vecToCopy = subsetOutputVector ( u ) ;
   d_copyVector->copyVector(vecToCopy);
   
 }

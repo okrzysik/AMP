@@ -225,7 +225,10 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
       mapsColumn->append( szaColumn );
 
     AMP::LinearAlgebra::Variable::shared_ptr thermalVariable (new AMP::LinearAlgebra::Variable("Temperature"));
-    AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = AMP::Discretization::simpleDOFManager::create( manager,AMP::Mesh::Vertex,1,1,true);
+    AMP::LinearAlgebra::Variable::shared_ptr flowVariable (new AMP::LinearAlgebra::Variable("Flow"));
+
+    AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = AMP::Discretization::simpleDOFManager::create( pinMesh ,AMP::Mesh::Vertex,1,1,true);
+
     AMP::LinearAlgebra::Vector::shared_ptr thermalMapVec = AMP::LinearAlgebra::createVector(nodalScalarDOF, thermalVariable , true);
     n2nColumn->setVector ( thermalMapVec );
     szaColumn->setVector ( thermalMapVec );
@@ -298,7 +301,6 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
       curOperator++;
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr flowVariable (new AMP::LinearAlgebra::Variable("Flow"));
     int DofsPerFace =  2;
     AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
         AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerFace );
@@ -323,6 +325,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Operator::VectorCopyOperatorParameters> vecCopyOperatorParams(new AMP::Operator::VectorCopyOperatorParameters( copyOp_db ));
     vecCopyOperatorParams->d_copyVariable = thermalVariable;
     vecCopyOperatorParams->d_copyVector = thermalMapVec;
+    vecCopyOperatorParams->d_Mesh = pinMesh ;
     boost::shared_ptr<AMP::Operator::Operator> thermalCopyOperator(new AMP::Operator::VectorCopyOperator(vecCopyOperatorParams));
 
     boost::shared_ptr<AMP::InputDatabase> emptyDb;

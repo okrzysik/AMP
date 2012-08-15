@@ -115,7 +115,7 @@ SubchannelToCladMaps{
     Mesh2 = "clad"
     Surface2 = 4
     DOFsPerObject = 1
-    VariableName = "Temperature"
+    VariableName = "Flow"
 }
 
 CopyOperator{
