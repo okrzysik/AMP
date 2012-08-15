@@ -270,7 +270,6 @@ void Vector::zero()
     setToScalar (0.0);
     for ( size_t i = 0 ; i != d_Ghosts->size() ; i++ )
         (*d_Ghosts)[i] = 0.0;
-    (*getUpdateStatusPtr()) = UNCHANGED;
 }
 void Vector::setToScalar(double alpha)
 {
@@ -281,6 +280,7 @@ void Vector::setToScalar(double alpha)
       curMe++;
     }
     dataChanged();
+    (*getUpdateStatusPtr()) = UNCHANGED;
 }
 void  Vector::setRandomValues ()
 {
