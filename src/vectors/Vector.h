@@ -1135,12 +1135,12 @@ protected:
     //! The DOF_Manager
     AMP::Discretization::DOFManager::shared_ptr  d_DOFManager;
 
-private:
-
-    // This is the const version of selectInto.  Currently this is a private function because
+    // This is the const version of selectInto.  Currently this is a protected function because
     // we do not have a concept of a const multivector yet and this results in destryoing 
     // const correctness.  Use this function with caution.  
     virtual void       constSelectInto ( const VectorSelector &criterion , Vector::shared_ptr vector ) const;
+
+private:
 
     // The following are not implemented
     Vector(const Vector&);

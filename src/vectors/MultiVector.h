@@ -183,6 +183,12 @@ public:
 
 
 protected:
+
+    // This is the const version of selectInto.  Currently this is a protected function because
+    // we do not have a concept of a const multivector yet and this results in destryoing 
+    // const correctness.  Use this function with caution.  
+    virtual void       constSelectInto ( const VectorSelector &criterion , Vector::shared_ptr vector ) const;
+
     //! The communicator this multivector is on
     AMP_MPI                    d_Comm;
     //! Indicates if the multivector created the communicator

@@ -199,6 +199,7 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName,
       double fval = function(x,y,z);
       diffSolVec->setValueByGlobalID(dofs[0], fval);
   }
+  diffSolVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
   // Compute finite element operator
   diffOp->apply(diffRhsVec, diffSolVec, diffResVec, 1.,0.);

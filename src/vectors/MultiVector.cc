@@ -205,23 +205,9 @@ void MultiVector::replaceSubVector(Vector::shared_ptr oldVec, Vector::shared_ptr
 }
 
 
-
 /****************************************************************
-* Other functions                                               *
+* Select into the vector                                        *
 ****************************************************************/
-bool MultiVector::containsPointer ( const Vector::shared_ptr p ) const
-{
-    for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
-    {
-      if ( d_vVectors[i].get() == p.get() )
-      {
-        return true;
-      }
-    }
-    return false;
-}
-
-
 void MultiVector::selectInto ( const VectorSelector &s , Vector::shared_ptr retVal )
 {
     // Subset each vector
@@ -238,6 +224,39 @@ void MultiVector::selectInto ( const VectorSelector &s , Vector::shared_ptr retV
     }
     // Add the subsets to the multivector
     retVal->castTo<MultiVector>().addVector ( subvectors );
+}
+void MultiVector::constSelectInto ( const VectorSelector &s , Vector::shared_ptr retVal ) const
+{
+    // Subset each vector
+    std::vector<Vector::shared_ptr> subvectors;
+    //vector_iterator  cur = beginVector();
+    for (size_t i=0; i!=d_vVectors.size(); i++) {
+        // Get the comm to operate on
+        AMP_MPI comm = s.communicator( d_vVectors[i] );
+        // Subset the individual vector
+        Vector::shared_ptr  retVal = MultiVector::create ( "tmp_vector", comm );
+        d_vVectors[i]->selectInto ( s , retVal );
+        if ( retVal->getDOFManager()->numGlobalDOF() > 0 )
+            subvectors.push_back( retVal );
+    }
+    // Add the subsets to the multivector
+    retVal->castTo<MultiVector>().addVector ( subvectors );
+}
+
+
+/****************************************************************
+* Other functions                                               *
+****************************************************************/
+bool MultiVector::containsPointer ( const Vector::shared_ptr p ) const
+{
+    for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
+    {
+      if ( d_vVectors[i].get() == p.get() )
+      {
+        return true;
+      }
+    }
+    return false;
 }
 
 

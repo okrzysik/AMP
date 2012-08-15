@@ -15,6 +15,7 @@ void NonlinearFEOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
     PROFILE_START("apply");
     AMP_INSIST( (r != NULL), "NULL Residual/Output Vector" );
 
+    AMP_ASSERT(u->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector(r);
 
     AMP_INSIST( (rInternal != NULL), "NULL Residual/Output Vector" );
