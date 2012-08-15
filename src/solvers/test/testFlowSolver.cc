@@ -14,8 +14,8 @@
 #include "ampmesh/SiloIO.h"
 #include "vectors/Vector.h"
 #include "vectors/MultiVector.h"
-#include "operators/FlowFrapconOperator.h"
-#include "operators/FlowFrapconJacobian.h"
+#include "operators/subchannel/FlowFrapconOperator.h"
+#include "operators/subchannel/FlowFrapconJacobian.h"
 #include "operators/ElementPhysicsModelFactory.h"
 #include "operators/ElementOperationFactory.h"
 
