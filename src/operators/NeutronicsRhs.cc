@@ -227,6 +227,7 @@ namespace AMP {
           AMP_MPI(AMP_COMM_WORLD).barrier();
           AMP_ERROR("stop");*/
         }
+        rInternal->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
       }
 
 

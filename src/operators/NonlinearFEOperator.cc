@@ -13,10 +13,14 @@ void NonlinearFEOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
     const double a,  const double b)
 {
     PROFILE_START("apply");
-    AMP_INSIST( (r != NULL), "NULL Residual/Output Vector" );
 
-    AMP_ASSERT(u->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
+    AMP_INSIST( (r != NULL), "NULL Residual/Output Vector" );
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector(r);
+
+    if ( f.get()!=NULL)
+        AMP_ASSERT(f->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
+    if ( u.get()!=NULL)
+        AMP_ASSERT(u->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
 
     AMP_INSIST( (rInternal != NULL), "NULL Residual/Output Vector" );
 

@@ -293,6 +293,7 @@ void  Vector::setRandomValues ()
       curMe++;
     }
     dataChanged ();
+    this->makeConsistent(CONSISTENT_SET);
 }
 void  Vector::setRandomValues ( RNG::shared_ptr rng )
 {
@@ -304,6 +305,7 @@ void  Vector::setRandomValues ( RNG::shared_ptr rng )
       curMe++;
     }
     dataChanged ();
+    this->makeConsistent(CONSISTENT_SET);
 }
 
 
