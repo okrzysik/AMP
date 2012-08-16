@@ -33,7 +33,7 @@ namespace Operator {
           d_material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(matname);
         } else {
           // Read constant value for the associated property.
-          d_constantProperty = params->d_db->getDoubleWithDefault("CONSTANT", 1.0);
+          d_constantProperty = params->d_db->getDoubleWithDefault("CONSTANT_VALUE", 1.0);
         }
 
         elementPhysicsParams.reset(new AMP::Operator::ElementPhysicsModelParameters( params->d_db ));
@@ -95,18 +95,18 @@ namespace Operator {
       }
       else if (d_physicsName=="MassDensityModel")
       {
-        elementPhysicsModel.reset(new AMP::Operator::MassDensityModel(boost::dynamic_pointer_cast<MassDensityModelParameters>(elementPhysicsParams) )); 
-        boost::shared_ptr<MassDensityModel> tmp = boost::dynamic_pointer_cast<MassDensityModel>(elementPhysicsModel);  
-
-        std::string eqnname = elementPhysicsParams->d_db->getString("Equation");
-        AMP_INSIST((eqnname == "ThermalSource"), "SourcePhysicsModel should be implemented by User for this Equation"); 
-
         if ( d_useMaterialsLibrary != true ) {
           for (size_t i=0; i<result.size(); i++) { 
-            result[i] = d_constantProperty;
+            result[i] = d_constantProperty * InputVec[0][i];
           }
         } else {
         
+          elementPhysicsModel.reset(new AMP::Operator::MassDensityModel(boost::dynamic_pointer_cast<MassDensityModelParameters>(elementPhysicsParams) )); 
+          boost::shared_ptr<MassDensityModel> tmp = boost::dynamic_pointer_cast<MassDensityModel>(elementPhysicsModel);  
+
+          std::string eqnname = elementPhysicsParams->d_db->getString("Equation");
+          AMP_INSIST((eqnname == "ThermalSource"), "SourcePhysicsModel should be implemented by User for this Equation"); 
+
           int switchId = InputVec.size();  
 
           switch(switchId) {
@@ -125,20 +125,11 @@ namespace Operator {
                      } 
                      break;
                    }
-            case 2 : {
-                     std::vector<double> DefaultVec(result.size());
-                     for (size_t i=0; i<result.size(); i++) {DefaultVec[i]=d_defaults[2];}
-                     tmp->getDensityMechanics(result, InputVec[0], InputVec[1], DefaultVec);
-                     break;
-                   }
-            case 3 : {
-                     tmp->getDensityMechanics(result, InputVec[0], InputVec[1], InputVec[2]);
-                     break;
-                   }
             default:
                    assert(false);
           }
         }
+        //AMP::pout<<" Power [W/m^3]: "<< result[0] << " Specific Power[W/kg]: "<<InputVec[0][0] <<" Density [kg/m^3]: " << result[0]/InputVec[0][0] <<std::endl;
         
       }
       else if (d_physicsName=="ManufacturedSourceModel1")
