@@ -213,6 +213,7 @@ void DiffusionNonlinearFEOperator::postAssembly()
 
 
 void DiffusionNonlinearFEOperator::preElementOperation(
+
         const AMP::Mesh::MeshElement & elem )
 {
     //PROFILE_START("preElementOperation",2);

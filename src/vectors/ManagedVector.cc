@@ -147,6 +147,17 @@ Vector::UpdateState  ManagedVector::getUpdateStatus () const
 }
 
 
+void  ManagedVector::setUpdateStatus ( UpdateState state )
+{
+    *d_UpdateState =  state;
+    boost::shared_ptr<Vector> vec;
+    if ( d_Engine.get()!=NULL )
+        vec = boost::dynamic_pointer_cast<Vector>( d_Engine );
+    if ( vec.get()!=NULL )
+        vec->setUpdateStatus( state );
+}
+
+
   void ManagedVector::swapVectors ( Vector &other )
   {
     ManagedVector &in = other.castTo<ManagedVector> ();

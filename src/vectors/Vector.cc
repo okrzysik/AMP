@@ -280,6 +280,8 @@ void Vector::setToScalar(double alpha)
       curMe++;
     }
     dataChanged();
+    for ( size_t i = 0 ; i != d_Ghosts->size() ; i++ )
+        (*d_Ghosts)[i] = alpha;
     (*getUpdateStatusPtr()) = UNCHANGED;
 }
 void  Vector::setRandomValues ()
@@ -795,6 +797,7 @@ void Vector::makeConsistent ( ScatterType  t )
     d_CommList->scatter_set ( send_vec , recv_vec );
     d_CommList->unpackReceiveBufferSet ( recv_vec , *this );
     *d_UpdateState = UNCHANGED;
+    this->setUpdateStatus(UNCHANGED);
 }
 
 

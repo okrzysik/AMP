@@ -662,6 +662,15 @@ Vector::UpdateState  MultiVector::getUpdateStatus () const
 }
 
 
+
+void MultiVector::setUpdateStatus ( UpdateState state ) 
+{
+    *d_UpdateState = state;
+    for (size_t i=0; i!=d_vVectors.size(); i++)
+        d_vVectors[i]->setUpdateStatus(state);
+}
+
+
 void MultiVector::copyVector ( const Vector::const_shared_ptr &src )
 {
     boost::shared_ptr<const MultiVector> rhs = boost::dynamic_pointer_cast<const MultiVector>(src);

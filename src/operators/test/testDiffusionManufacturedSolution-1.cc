@@ -144,6 +144,7 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
     nodalDofMap->getDOFs ( iterator->globalID() , i);
     solVec->setValueByGlobalID(i[0], poly[0]);
   }
+  solVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
   // Evaluate manufactured solution as an FE source
   sourceOp->apply(rhsVec, solVec, sourceVec, 1., 0.);

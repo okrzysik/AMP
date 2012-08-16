@@ -18,7 +18,7 @@ Mesh{
         FileName = "simple_pellet_1x.e"
         dim = 3
         x_offset = 0.0, 0.0
-        y_offset = 0.0, 0.0
+        y_offset = 0.0, 0.002
         z_offset = 0.0, 0.0105
     }
 }
@@ -96,7 +96,7 @@ SlaveDirichletMatrixCorrection{
     dof_0_2 = 2
     value_0_0 = 0.0
     value_0_1 = 0.0
-    value_0_2 = -0.0005
+    value_0_2 = -0.003
 }
 
 SlaveLoadOperator {
@@ -110,7 +110,7 @@ SlaveLoadOperator {
     id_0 = 1
     number_of_dofs_0 = 1
     dof_0_0 = 2
-    value_0_0 = -5.0e-3
+    value_0_0 = -1.0e-2
 }
 
 MechanicsLinearFEOperator{
@@ -145,7 +145,7 @@ MechanicsMaterialModel {
 
 LinearSolver {
   print_info_level = 10
-    max_iterations = 5
+    max_iterations = 750
     max_error = 1.0e-16
     ksp_type = "cg"
     absolute_tolerance = 1.0e-16

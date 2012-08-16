@@ -83,8 +83,8 @@ void draw_bounding_polyhedron(hex8_element_t * e_ptr, double const * point_of_vi
   for (unsigned int f = 0; f < 6; ++f) { 
     for (unsigned int t = 0; t < 2; ++t) {
       if (compute_scalar_product(point_of_view, (t_ptr+2*f+t)->get_normal()) > 0.0) {
-//        options[2*f+t] += "fill=" + rubiks_cube_color_arrangement[f];
-        options[2*f+t] += "fill=none";
+        options[2*f+t] += "fill=" + rubiks_cube_color_arrangement[f];
+//        options[2*f+t] += "fill=none";
       } else {
         options[2*f+t] += "fill=none,dotted";
       } // end if
@@ -108,9 +108,9 @@ void draw_hex8_element(hex8_element_t * e_ptr, double const * point_of_view, std
   } 
 }
 
-void draw_point(double const * p, std::string option, std::ostream & os) {
+void draw_point(double const * p, const std::string & option, std::ostream & os) {
   os<<"\\node["<<option<<"] at ";
   write_point(p, os);
-  os<<" {+} ;\n";
+  os<<" {.} ;\n";
 }
 

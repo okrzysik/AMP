@@ -365,6 +365,8 @@ void IDATimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db 
         AMP::LinearAlgebra::Vector * pyp = static_cast<AMP::LinearAlgebra::ManagedSundialsVector*>(yp->content);
         boost::shared_ptr<AMP::LinearAlgebra::Vector> amp_yy (pyy, d);
         boost::shared_ptr<AMP::LinearAlgebra::Vector> amp_yp (pyp, d);
+        amp_yy->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+        amp_yp->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
         
         ((IDATimeIntegrator*)user_data)->getIDATimeOperator()->registerIDATimeDerivative(amp_yp);
         
