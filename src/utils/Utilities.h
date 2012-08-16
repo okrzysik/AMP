@@ -113,23 +113,32 @@ namespace Utilities
      * \param tol    scalar floating point relative tolerance
      */
     inline bool approx_equal(const int &v1, const int &v2, const int tol=0) {
-        //AMP_ASSERT( tol<1 );
-        //AMP_ASSERT( tol>=0 );
         return abs(v1-v2)<=tol;                    // Check if the two value are less than tolerance
     }
 
     /*!
      * Soft equal checks if two numbers are within the given precision
+     * True iff abs(v1-v2)/v1 < tol
      * \param v1     scalar floating point value
      * \param v2     scalar floating point value
      * \param tol    relative tolerance
      */
     template<class T>
     inline bool approx_equal(const T &v1, const T &v2, const T tol = pow( std::numeric_limits<T>::epsilon(), (T) 0.75 )) {
-        //AMP_ASSERT( tol<1 );
-        //AMP_ASSERT( tol>=0 );
         T tol2 = tol*std::max( fabs(v1),fabs(v2) );                      // Compute the absolute tolerance
         return fabs(v1-v2)<=tol2;                    // Check if the two value are less than tolerance
+    }
+
+    /*!
+     * Soft equal checks if two numbers are equivalent within the given precision
+     * True iff abs(v1-v2) < tol
+     * \param v1     scalar floating point value
+     * \param v2     scalar floating point value
+     * \param tol    relative tolerance
+     */
+    template<class T>
+    inline bool approx_equal_abs(const T &v1, const T &v2, const T tol = pow( std::numeric_limits<T>::epsilon(), (T) 0.75 )) {
+        return fabs(v1-v2)<=tol;                    // Check if the two value are less than tolerance
     }
 
     /*!
