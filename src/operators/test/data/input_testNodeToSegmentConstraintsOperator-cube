@@ -1,6 +1,6 @@
 useSlaveBVPOperator = TRUE
 usePetscKrylovSolver = TRUE
-myPCGmaxIters = 20
+myPCGmaxIters = 30
 
 Mesh{
   MeshName = "MainMesh"
@@ -102,7 +102,7 @@ SlaveDirichletMatrixCorrection{
     dof_0_2 = 2
     value_0_0 = 0.0
     value_0_1 = 0.0
-    value_0_2 = 0.0
+    value_0_2 = -0.2
 }
 
 SlaveLoadOperator {
@@ -116,7 +116,7 @@ SlaveLoadOperator {
     id_0 = 5
     number_of_dofs_0 = 1
     dof_0_0 = 2
-    value_0_0 = -1.0e3
+    value_0_0 = -4.0e3
 }
 
 MechanicsLinearFEOperator{

@@ -63,6 +63,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   translate_points(2, 2.0, 8, points);
   volume_element.set_support_points(points);
 
+  for (unsigned int i = 0; i < 8; ++i) { draw_point(volume_element.get_support_point(i), "red"); }
   double point_of_view[3] = { 1.0, 1.0, 1.0 };
 
   std::cout<<"% volume element\n";
