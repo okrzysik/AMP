@@ -11,7 +11,6 @@
 hex8_element_t::hex8_element_t(double const *p) : memory_allocated_for_newton(false) {
 //  newton_count = 0;
   point_candidate.resize(3);
-  bounding_box.resize(6, 0.0);
   support_points.resize(24);
   set_support_points(p); 
 }
@@ -21,6 +20,38 @@ void hex8_element_t::set_support_points(double const *p) {
   bounding_box_updated = false;
   bounding_polyhedron_updated = false;
   center_of_element_data_updated = false;
+  scaling_factors_updated = false;
+  support_points_scaled = false;
+}
+
+void hex8_element_t::scale_support_points() {
+  assert(!support_points_scaled);
+  if (!scaling_factors_updated) { compute_scaling_factors(); }
+  scale_points(&(scaling_factors[0]), 8, &(support_points[0])); 
+  support_points_scaled = true;
+}
+
+void hex8_element_t::unscale_support_points() {
+ assert(support_points_scaled);
+ for (unsigned int i = 0; i < 3; ++i) {
+   scale_points(i, 1.0/scaling_factors[i], 8, &(support_points[0])); 
+ } // end for i
+ support_points_scaled = false;
+}
+
+void hex8_element_t::compute_scaling_factors() {
+  assert(!scaling_factors_updated);
+  if (!bounding_box_updated) { build_bounding_box(); };
+  if (scaling_factors.size() == 0) { scaling_factors.resize(3); }
+  for (unsigned int i = 0; i < 3; ++i) {
+    scaling_factors[i] = bounding_box[i+3] - bounding_box[i+0];
+  } // end for i
+  scaling_factors_updated = true;
+}
+
+double const * hex8_element_t::get_scaling_factors() {
+  if (!scaling_factors_updated) { compute_scaling_factors(); }
+  return &(scaling_factors[0]);
 }
 
 void hex8_element_t::compute_center_of_element_data() {
@@ -61,7 +92,7 @@ triangle_t * hex8_element_t::get_bounding_polyhedron() {
 bool hex8_element_t::within_bounding_box(double const *p, double tolerance) {
   if (!bounding_box_updated) { build_bounding_box(); };
   for (unsigned int j = 0; j < 3; ++j) {
-// sould we scale the tolerance?
+// should we scale the tolerance?
     if ((bounding_box[j+0] - tolerance*(bounding_box[j+3]-bounding_box[j+0]) > p[j]) || (bounding_box[j+3] + tolerance*(bounding_box[j+3]-bounding_box[j+0]) < p[j])) { return false; }
   } // end for j
   return true;
@@ -145,12 +176,6 @@ void hex8_element_t::build_bounding_polyhedron() {
   } // end for i
   bounding_polyhedron_updated = true;
 }
-
-
-/*bool hex8_element_t::within_bounding_polyhedron(const std::vector<double> &p, double tolerance) {
-  assert(p.size() == 3);
-  return within_bounding_polyhedron(&(p[0]), tolerance);
-}*/
 
 bool hex8_element_t::within_bounding_polyhedron(double const *p, double tolerance) {
   if (!bounding_polyhedron_updated) { build_bounding_polyhedron(); }
@@ -284,6 +309,7 @@ double hex8_element_t::solve_newton(double *x, double abs_tol, double rel_tol, u
 
     memory_allocated_for_newton = true;
   }
+
 //  std::fill(&(x[0]), &(x[0])+3, 0.0);
   compute_initial_guess(&(x[0]));
 

@@ -194,11 +194,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   int rank = globalComm.getRank();
   int npes = globalComm.getSize();
 
-  size_t n_k = 2;
+  size_t n_k = 3;
   std::string meshFileNames[] = { "pellet_1x.e", "pellet_2x.e", "pellet_4x.e" };
   size_t meshNumElements[] = { 3705, 26146, 183210 };
 
-  size_t n_j = 3;
+  size_t n_j = 1;
   size_t numRandomPts[] = { 10000, 20000, 40000, 80000, 160000 };
   
   size_t n_i = 1;

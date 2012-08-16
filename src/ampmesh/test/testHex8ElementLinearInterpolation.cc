@@ -61,13 +61,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   srand(0);
 
   double scaling_factors[3] = { 4.0, 2.0, 1.0 };
-  scale_points(std::vector<double>(scaling_factors, scaling_factors+3), 8, points);
+  scale_points(scaling_factors, 8, points);
   volume_element.set_support_points(points);
   AMP_ASSERT(perform_battery_of_tests(&volume_element, my_function) == 0);
   AMP_ASSERT(perform_battery_of_tests(&volume_element, my_function_no_cross_terms) == 0);
 
   double translation_vector[3] = { 3.0, 1.0, 5.0 };
-  translate_points(std::vector<double>(translation_vector, translation_vector+3), 8, points);
+  translate_points(translation_vector, 8, points);
   volume_element.set_support_points(points);
   AMP_ASSERT(perform_battery_of_tests(&volume_element, my_function) == 0);
   AMP_ASSERT(perform_battery_of_tests(&volume_element, my_function_no_cross_terms) == 0);

@@ -129,10 +129,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   }; 
 
   double scaling_factors[3] = { 4.0, 2.0, 1.0 };
-  scale_points(std::vector<double>(scaling_factors, scaling_factors+3), 3, points);
+  scale_points(scaling_factors, 3, points);
 
   double translation_vector[3] = { 3.0, 1.0, 5.0 };
-  translate_points(std::vector<double>(translation_vector, translation_vector+3), 3, points);
+  translate_points(translation_vector, 3, points);
 
   rotate_points(2, pi/3.0, 3, points);
 
