@@ -305,7 +305,8 @@ PetscKrylovSolver::applyPreconditioner(void* ctx, Vec r, Vec z)
   if(((PetscKrylovSolver*)ctx)->getDebugPrintInfoLevel()>5)
     {
       VecNorm(r, NORM_2,&norm);
-      AMP_ASSERT(norm==sp_r->L2Norm());
+      double sp_r_norm = sp_r->L2Norm();
+      AMP_ASSERT(AMP::Utilities::approx_equal(norm, sp_r_norm));
     }  
   
   AMP_ASSERT( (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
