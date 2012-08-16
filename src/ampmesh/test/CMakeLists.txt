@@ -40,6 +40,7 @@ ENDIF()
 IF( USE_DENDRO AND USE_PETSC )
     ADD_AMP_PROVISIONAL_TEST( testDendroInterpolation )
     COPY_TEST_DATA_FILE ( input_testDendroInterpolation  )
+    ADD_AMP_PROVISIONAL_TEST( testDendroSearch )
 ENDIF()
 
 
