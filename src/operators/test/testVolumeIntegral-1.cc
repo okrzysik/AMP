@@ -50,6 +50,7 @@ void adjust(const AMP::LinearAlgebra::Vector::shared_ptr vec,
   AMP::LinearAlgebra::Vector &x = *vec;
   AMP::LinearAlgebra::Vector &y = *work;
   vec->add(x,y);
+  vec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 }
 
 void applyTest(AMP::UnitTest *ut, std::string msgPrefix,
