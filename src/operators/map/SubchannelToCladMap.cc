@@ -310,7 +310,7 @@ void SubchannelToCladMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
 void  SubchannelToCladMap::setVector( AMP::LinearAlgebra::Vector::shared_ptr &result )
 {
     if ( result.get() != NULL )
-        d_OutputVector = subsetInputVector( result );
+        d_OutputVector = subsetOutputVector( result );
     else
         d_OutputVector = AMP::LinearAlgebra::Vector::shared_ptr();
     if ( d_mesh2.get() != NULL )

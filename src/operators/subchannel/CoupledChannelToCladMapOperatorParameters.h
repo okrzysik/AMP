@@ -4,6 +4,7 @@
 
 /*AMP files */
 #include "operators/OperatorParameters.h"
+#include "operators/subchannel/SubchannelPhysicsModel.h"
 #include "operators/Operator.h"
 /*Boost files */
 #include "boost/shared_ptr.hpp"
@@ -30,7 +31,7 @@ namespace Operator {
       boost::shared_ptr<AMP::LinearAlgebra::Variable> d_variable ; 
       boost::shared_ptr<AMP::Mesh::Mesh> d_subchannelMesh ; 
       boost::shared_ptr<AMP::LinearAlgebra::Vector> d_vector ; 
-      boost::shared_ptr<AMP::Operator::ElementPhysicsModel> d_subchannelPhysicsModel; 
+      boost::shared_ptr<AMP::Operator::SubchannelPhysicsModel> d_subchannelPhysicsModel; 
 
   };
 

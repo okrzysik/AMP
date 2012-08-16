@@ -2,7 +2,6 @@
 #define included_AMP_CoupledChannelToCladMapOperator
 
 #include "operators/Operator.h"
-#include "operators/map/SubchannelToCladMap.h"
 #include "operators/subchannel/SubchannelPhysicsModel.h"
 #include "operators/subchannel/CoupledChannelToCladMapOperatorParameters.h"
 #include "vectors/Vector.h"
@@ -15,14 +14,14 @@ namespace Operator {
   class CoupledChannelToCladMapOperator : public Operator
   {
     public :
-      CoupledChannelToCladMapOperator(const boost::shared_ptr<OperatorParameters>& params);
+      CoupledChannelToCladMapOperator(const boost::shared_ptr<CoupledChannelToCladMapOperatorParameters>& params);
 
       virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
         return d_flowVariable;
       }
 
       virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
-        return d_MapOperator->getOutputVariable();
+        return d_mapOperator->getOutputVariable();
       }
 
       void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
@@ -38,7 +37,7 @@ namespace Operator {
 
       AMP::LinearAlgebra::Vector::shared_ptr d_subchannelTemperature;
 
-      boost::shared_ptr< AMP::Operator::SubchannelToCladMap > d_MapOperator;
+      boost::shared_ptr< AMP::Operator::Operator> d_mapOperator;
 
       boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 

@@ -55,7 +55,7 @@
 #include "operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
 #include "operators/subchannel/SubchannelTwoEqLinearOperator.h"
 #include "operators/subchannel/SubchannelPhysicsModel.h"
-#include "operators/subchannel/CoupledChannelToCladMapOperator"
+#include "operators/subchannel/CoupledChannelToCladMapOperator.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
 
@@ -310,6 +310,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), 1);
 
     AMP::LinearAlgebra::Vector::shared_ptr subchannelFuelTemp = AMP::LinearAlgebra::createVector( scalarFaceDOFManager , thermalVariable );
+    AMP::LinearAlgebra::Vector::shared_ptr subchannelFlowTemp = AMP::LinearAlgebra::createVector( scalarFaceDOFManager , flowVariable );
     boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  cladToSubchannelMap, subchannelToCladMap; 
     
     boost::shared_ptr<AMP::Database> cladToSubchannelDb = global_input_db->getDatabase( "CladToSubchannelMaps" );
@@ -321,9 +322,11 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     subchannelToCladMap = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, subchannelToCladDb );
     subchannelToCladMap->setVector( thermalMapVec );
     //
-    boost::shared_ptr<AMP::InputDatabase> emptyDb;
+    boost::shared_ptr<AMP::InputDatabase> emptyDb (new AMP::InputDatabase("empty"));
+    emptyDb->putInteger("print_info_level",0); 
     boost::shared_ptr<AMP::Operator::CoupledChannelToCladMapOperatorParameters> coupledChannelMapOperatorParams(new AMP::Operator::CoupledChannelToCladMapOperatorParameters( emptyDb ));
     coupledChannelMapOperatorParams->d_variable       = flowVariable;
+    coupledChannelMapOperatorParams->d_vector         = subchannelFlowTemp;
     coupledChannelMapOperatorParams->d_mapOperator    = subchannelToCladMap;
     coupledChannelMapOperatorParams->d_subchannelMesh = subchannelMesh;
     coupledChannelMapOperatorParams->d_subchannelPhysicsModel = subchannelPhysicsModel ;

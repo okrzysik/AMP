@@ -1,25 +1,25 @@
 #include "CoupledChannelToCladMapOperator.h"
 #include "CoupledChannelToCladMapOperatorParameters.h"
 #include "utils/Utilities.h"
+#include "ampmesh/StructuredMeshHelper.h"
 
 
 namespace AMP {
 namespace Operator {
 
-    CoupledChannelToCladMapOperator::CoupledChannelToCladMapOperator(const boost::shared_ptr<OperatorParameters>& params)
+    CoupledChannelToCladMapOperator::CoupledChannelToCladMapOperator(const boost::shared_ptr<CoupledChannelToCladMapOperatorParameters>& params)
       : Operator(params)
     {
 
-      boost::shared_ptr<CoupledChannelToCladMapOperatorParameters> myparams = boost::dynamic_pointer_cast<CoupledChannelToCladMapOperatorParameters>(params);
-      // do nothing
-      d_mapOperator            = myparams->d_mapOperator ; 
-      d_flowVariable           = myparams->d_variable ; 
-      d_Mesh                   = myparams->d_subchannelMesh ; 
-      d_subchannelTemperature  = myparams->d_vector ; 
-      d_subchannelPhysicsModel = myparams->d_subchannelPhysicsModel; 
+      d_mapOperator            = params->d_mapOperator; 
+      d_flowVariable           = params->d_variable ; 
+      d_Mesh                   = params->d_subchannelMesh ; 
+      d_subchannelPhysicsModel = params->d_subchannelPhysicsModel; 
 
-      AMP::LinearAlgebra::VS_Mesh meshSelector("meshSelector", d_Mesh);
-      d_subchannelTemperature = u->select(meshSelector, d_MapOperator->getOutputVariable()->getName());
+      d_subchannelTemperature = params->d_vector ; 
+//      AMP::LinearAlgebra::Vector::shared_ptr temperature  = params->d_vector ; 
+//      AMP::LinearAlgebra::VS_Mesh meshSelector("meshSelector", d_Mesh);
+//      d_subchannelTemperature = temperature->select(meshSelector, d_mapOperator->getOutputVariable()->getName());
 
     }
 
@@ -32,8 +32,8 @@ namespace Operator {
 
         AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = subsetInputVector( u );
 
-        AMP::Discretization::DOFManager::shared_ptr faceDOFManager = uInternal->getDofManager(); 
-        AMP::Discretization::DOFManager::shared_ptr scalarFaceDOFManager = d_subchannelTemperature->getDofManager(); 
+        AMP::Discretization::DOFManager::shared_ptr faceDOFManager = uInternal->getDOFManager(); 
+        AMP::Discretization::DOFManager::shared_ptr scalarFaceDOFManager = d_subchannelTemperature->getDOFManager(); 
 
         AMP::Mesh::MeshIterator face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(d_Mesh, 0);
         AMP::Mesh::MeshIterator end_face   = face.end();
@@ -48,12 +48,12 @@ namespace Operator {
           temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,uInternal->getValueByGlobalID(dofs[1]))));
           std::vector<double> temperatureResult(1);
           d_subchannelPhysicsModel->getProperty("Temperature", temperatureResult, temperatureArgMap); 
-          double compTin = temperatureResult[0];
-          d_subchannelTemperature->setValueByGlobalID(dofs[1], temperatureResult[0])
+          d_subchannelTemperature->setValueByGlobalID(scalarDofs[0], temperatureResult[0]);
         }
         
         d_subchannelTemperature->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-        d_MapOperator->apply(nullVec, d_subchannelTemperature, nullVec, a, b);
+        
+        d_mapOperator->apply(nullVec, d_subchannelTemperature, nullVec, a, b);
 
       }
 

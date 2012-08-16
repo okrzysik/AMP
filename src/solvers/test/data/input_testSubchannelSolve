@@ -104,8 +104,7 @@ CladToSubchannelMaps{
     Mesh2 = "subchannel"
     Surface2 = 4
     DOFsPerObject = 1
-    VariableName1 = "Temperature"
-    VariableName2 = "Temperature"
+    VariableName = "Temperature"
 }
 
 SubchannelToCladMaps{
@@ -117,6 +116,7 @@ SubchannelToCladMaps{
     Surface2 = 4
     DOFsPerObject = 1
     VariableName1 = "Flow"
+    VariableName2 = "Temperature"
 }
 
 CopyOperator{
@@ -337,9 +337,7 @@ PelletDiffusionNonlinearFEOperator {
     print_info_level = 1
     ActiveInputVariables {
       temperature = "Temperature"
-        burnup = "Burnup"
     }
-  Freezeburnup = TRUE
     OutputVariable = "Temperature"
     PrincipalVariable = 0
     DiffusionElement{
@@ -361,7 +359,7 @@ PelletDiffusionLinearFEOperator {
     OutputVariable = "Temperature"
     FixedTemperature = FALSE
     FixedConcentration = TRUE
-    FixedBurnup = FALSE
+    FixedBurnup = TRUE
     DiffusionElement {
       name = "DiffusionLinearElement"
         TransportAtGaussPoints = TRUE
