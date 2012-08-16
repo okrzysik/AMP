@@ -55,6 +55,7 @@
 #include "operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
 #include "operators/subchannel/SubchannelTwoEqLinearOperator.h"
 #include "operators/subchannel/SubchannelPhysicsModel.h"
+#include "operators/subchannel/CoupledChannelToCladMapOperator"
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
 
@@ -319,7 +320,16 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Database> subchannelToCladDb = global_input_db->getDatabase( "SubchannelToCladMaps" );
     subchannelToCladMap = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, subchannelToCladDb );
     subchannelToCladMap->setVector( thermalMapVec );
-    mapsColumn->append( subchannelToCladMap );
+    //
+    boost::shared_ptr<AMP::InputDatabase> emptyDb;
+    boost::shared_ptr<AMP::Operator::CoupledChannelToCladMapOperatorParameters> coupledChannelMapOperatorParams(new AMP::Operator::CoupledChannelToCladMapOperatorParameters( emptyDb ));
+    coupledChannelMapOperatorParams->d_variable       = flowVariable;
+    coupledChannelMapOperatorParams->d_mapOperator    = subchannelToCladMap;
+    coupledChannelMapOperatorParams->d_subchannelMesh = subchannelMesh;
+    coupledChannelMapOperatorParams->d_subchannelPhysicsModel = subchannelPhysicsModel ;
+    boost::shared_ptr<AMP::Operator::Operator> coupledChannelMapOperator (new AMP::Operator::CoupledChannelToCladMapOperator(coupledChannelMapOperatorParams));
+        
+    mapsColumn->append( coupledChannelMapOperator );
 
     boost::shared_ptr<AMP::InputDatabase> copyOp_db = boost::dynamic_pointer_cast<AMP::InputDatabase>(global_input_db->getDatabase("CopyOperator"));
     boost::shared_ptr<AMP::Operator::VectorCopyOperatorParameters> vecCopyOperatorParams(new AMP::Operator::VectorCopyOperatorParameters( copyOp_db ));
@@ -328,7 +338,6 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     vecCopyOperatorParams->d_Mesh = pinMesh ;
     boost::shared_ptr<AMP::Operator::Operator> thermalCopyOperator(new AMP::Operator::VectorCopyOperator(vecCopyOperatorParams));
 
-    boost::shared_ptr<AMP::InputDatabase> emptyDb;
     boost::shared_ptr<AMP::Operator::CoupledOperatorParameters> CoupledOpParams(new AMP::Operator::CoupledOperatorParameters(emptyDb));
     CoupledOpParams->d_CopyOperator = thermalCopyOperator;
     CoupledOpParams->d_MapOperator = mapsColumn;
