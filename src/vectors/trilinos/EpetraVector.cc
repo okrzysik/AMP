@@ -15,7 +15,7 @@ namespace LinearAlgebra {
   {
   }
 
-  const Vector::shared_ptr  EpetraVector::constView ( const Vector::shared_ptr inVector )
+  Vector::const_shared_ptr  EpetraVector::constView ( Vector::const_shared_ptr inVector )
   {
     if ( inVector->isA<EpetraVector> () )
     {
@@ -23,15 +23,16 @@ namespace LinearAlgebra {
     }
     else if ( inVector->isA<ManagedVector> () )
     {
-      Vector::shared_ptr retVal;
-      retVal = Vector::shared_ptr ( new ManagedEpetraVector ( inVector ) );
+      Vector::const_shared_ptr retVal;
+      retVal = Vector::shared_ptr ( new ManagedEpetraVector ( boost::const_pointer_cast<Vector>(inVector) ) );
       return retVal;
     }
     else if ( inVector->isA<MultiVector> () )
     {
       if ( inVector->numberOfDataBlocks() == 1 )
       {
-        return constView ( inVector->castTo<MultiVector>().getVector ( 0 ) );
+        boost::shared_ptr<MultiVector> multivector = boost::dynamic_pointer_cast<MultiVector>(boost::const_pointer_cast<Vector>(inVector) );
+        return constView ( multivector->getVector ( 0 ) );
       }
     }
     AMP_ERROR( "Cannot create view!" );

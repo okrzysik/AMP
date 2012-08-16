@@ -197,50 +197,57 @@ AMP::Mesh::MeshIterator SubchannelToCladMap::getSubchannelIterator(AMP::Mesh::Me
 /************************************************************************
 *  Start the communication                                              *
 ************************************************************************/
-void SubchannelToCladMap::applyStart(const AMP::LinearAlgebra::Vector::shared_ptr &,
-    const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &,
+void SubchannelToCladMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr,
+    AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr,
     const double, const double)
 {
-    // Fill the send buffer
-    if ( d_mesh1.get() != NULL ) {
-        // Zero out the send buffers
-        for (size_t i=0; i<N_subchannels; i++) {
-            if ( !d_ownSubChannel[i] )
-                continue;
-            for (size_t j=0; j<d_z.size(); j++)
-                d_sendBuffer[i][j] = 0.0;
-        }
-        // Fill the faces I own
-        AMP::Discretization::DOFManager::shared_ptr  DOF = u->getDOFManager( );
-        std::vector<size_t> dofs;
-        AMP::Mesh::MeshIterator it = d_iterator1.begin();
-        for (size_t i=0; i<it.size(); i++) {
-            AMP::Mesh::MeshElementID id = it->globalID();
-            if ( !id.is_local() )
-                continue;
-            DOF->getDOFs(id,dofs);
-            AMP_ASSERT(dofs.size()==1);
-            double val = u->getLocalValueByGlobalID(dofs[0]);
-            std::vector<double> pos = it->centroid();
-            int index = getSubchannelIndex(pos[0],pos[1]);
-            AMP_ASSERT(index>=0);
-            AMP_ASSERT(d_ownSubChannel[index]);
-            int index2 = Utilities::findfirst(d_z,pos[2]-1e-12);
-            AMP_ASSERT(Utilities::approx_equal(pos[2],d_z[index2]));
-            d_sendBuffer[index][index2] = val;
-            ++it;
-        }
+    // Check if we have any data to send
+    if ( d_mesh1.get() == NULL )
+        return;
+
+    // Subset the vector for the variable (we only need the local portion of the vector)
+    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    AMP::LinearAlgebra::VS_Comm commSelector(var->getName(), AMP_MPI(AMP_COMM_SELF) );
+    AMP::LinearAlgebra::Vector::const_shared_ptr  commSubsetVec = u->constSelect(commSelector, var->getName());
+    AMP::LinearAlgebra::Vector::const_shared_ptr  curPhysics = commSubsetVec->constSubsetVectorForVariable(var);
+    AMP_ASSERT(curPhysics);
+
+    // Zero out the send buffers
+    for (size_t i=0; i<N_subchannels; i++) {
+        if ( !d_ownSubChannel[i] )
+            continue;
+        for (size_t j=0; j<d_z.size(); j++)
+            d_sendBuffer[i][j] = 0.0;
     }
+    // Fill the faces I own
+    AMP::Discretization::DOFManager::shared_ptr  DOF = curPhysics->getDOFManager( );
+    std::vector<size_t> dofs;
+    AMP::Mesh::MeshIterator it = d_iterator1.begin();
+    for (size_t i=0; i<it.size(); i++) {
+        AMP::Mesh::MeshElementID id = it->globalID();
+        if ( !id.is_local() )
+            continue;
+        DOF->getDOFs(id,dofs);
+        AMP_ASSERT(dofs.size()==1);
+        double val = curPhysics->getLocalValueByGlobalID(dofs[0]);
+        std::vector<double> pos = it->centroid();
+        int index = getSubchannelIndex(pos[0],pos[1]);
+        AMP_ASSERT(index>=0);
+        AMP_ASSERT(d_ownSubChannel[index]);
+        int index2 = Utilities::findfirst(d_z,pos[2]-1e-12);
+        AMP_ASSERT(Utilities::approx_equal(pos[2],d_z[index2]));
+        d_sendBuffer[index][index2] = val;
+        ++it;
+    }
+
     // Send the data
-    if ( d_mesh1.get() != NULL ) {
-        for (size_t i=0; i<N_subchannels; i++) {
-            if ( !d_ownSubChannel[i] )
-                continue;
-            int tag = (int) i;  // We have an independent comm
-            for (size_t j=0; j<d_subchannelRecv[i].size(); j++) {
-                int rank = d_subchannelRecv[i][j];
-                d_currRequests.push_back( d_MapComm.Isend<double>( &d_sendBuffer[i][0], d_sendBuffer[i].size(), rank, tag ) );
-            }
+    for (size_t i=0; i<N_subchannels; i++) {
+        if ( !d_ownSubChannel[i] )
+            continue;
+        int tag = (int) i;  // We have an independent comm
+        for (size_t j=0; j<d_subchannelRecv[i].size(); j++) {
+            int rank = d_subchannelRecv[i][j];
+            d_currRequests.push_back( d_MapComm.Isend<double>( &d_sendBuffer[i][0], d_sendBuffer[i].size(), rank, tag ) );
         }
     }    
 }
@@ -249,8 +256,8 @@ void SubchannelToCladMap::applyStart(const AMP::LinearAlgebra::Vector::shared_pt
 /************************************************************************
 *  Finish the communication                                             *
 ************************************************************************/
-void SubchannelToCladMap::applyFinish(const AMP::LinearAlgebra::Vector::shared_ptr &,
-    const AMP::LinearAlgebra::Vector::shared_ptr &, AMP::LinearAlgebra::Vector::shared_ptr &,
+void SubchannelToCladMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
+    AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::shared_ptr,
     const double, const double)
 {
     if ( d_mesh2.get() == NULL ) {

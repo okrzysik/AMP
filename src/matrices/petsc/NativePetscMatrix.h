@@ -47,8 +47,8 @@ namespace LinearAlgebra {
         */
       void                        copyFromMat ( Mat m );
 
-      virtual void mult ( const Vector::shared_ptr &in , Vector::shared_ptr &out );
-      virtual void multTranspose ( const Vector::shared_ptr &in , Vector::shared_ptr &out );
+      virtual void mult ( Vector::const_shared_ptr in , Vector::shared_ptr out );
+      virtual void multTranspose ( Vector::const_shared_ptr in , Vector::shared_ptr out );
 
       virtual shared_ptr  cloneMatrix () const;
 

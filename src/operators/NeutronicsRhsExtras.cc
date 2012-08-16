@@ -183,9 +183,9 @@ namespace AMP {
      *************************************************************************
      */
     void 
-      NeutronicsRhsExtras :: apply(const  SP_Vector & f, 
-          const  SP_Vector & u, 
-          SP_Vector & r,
+      NeutronicsRhsExtras :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+          AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+          AMP::LinearAlgebra::Vector::shared_ptr r,
           const  double      a,
           const  double      b) {
         (void) f; (void) u;
@@ -193,7 +193,7 @@ namespace AMP {
         AMP_ASSERT(AMP::Utilities::approx_equal(a,1.));
         AMP_ASSERT(AMP::Utilities::approx_equal(b,0.));
 
-        SP_Vector rInternal = r->subsetVectorForVariable(d_outputVariable);
+        AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable(d_outputVariable);
 
         // determine the present time and extras
         int this_step = d_timeStep;

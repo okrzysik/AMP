@@ -28,8 +28,8 @@
 #include "operators/diffusion/DiffusionTransportModel.h"
 
 #include "operators/VolumeIntegralOperator.h"
-#include "operators/FlowFrapconOperator.h"
-#include "operators/FlowFrapconJacobian.h"
+#include "operators/subchannel/FlowFrapconOperator.h"
+#include "operators/subchannel/FlowFrapconJacobian.h"
 #include "operators/NeutronicsRhs.h"
 
 #include "operators/ElementPhysicsModelFactory.h"

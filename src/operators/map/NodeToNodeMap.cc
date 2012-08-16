@@ -106,9 +106,9 @@ AMP::LinearAlgebra::Vector::shared_ptr NodeToNodeMap::getVector ( )
 /********************************************************
 * Start the communication                               *
 ********************************************************/
-void NodeToNodeMap::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr &  ,
-                              const AMP::LinearAlgebra::Vector::shared_ptr &u ,
-                                    AMP::LinearAlgebra::Vector::shared_ptr & ,
+void NodeToNodeMap::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr,
+                                 AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                                 AMP::LinearAlgebra::Vector::shared_ptr,
                               const double ,
                               const double )
 {
@@ -118,8 +118,8 @@ void NodeToNodeMap::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & 
     PROFILE_START("subset");
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     AMP::LinearAlgebra::VS_Comm commSelector(var->getName(), AMP_MPI(AMP_COMM_SELF) );
-    AMP::LinearAlgebra::Vector::shared_ptr  commSubsetVec = u->select(commSelector, var->getName());
-    AMP::LinearAlgebra::Vector::shared_ptr  curPhysics = commSubsetVec->subsetVectorForVariable(var);
+    AMP::LinearAlgebra::Vector::const_shared_ptr  commSubsetVec = u->constSelect(commSelector, var->getName());
+    AMP::LinearAlgebra::Vector::const_shared_ptr  curPhysics = commSubsetVec->constSubsetVectorForVariable(var);
     PROFILE_STOP("subset");
     AMP_INSIST( curPhysics , "apply received bogus stuff" );
 
@@ -161,9 +161,9 @@ void NodeToNodeMap::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & 
 /********************************************************
 * Finish the communication and fill the vector          *
 ********************************************************/
-void NodeToNodeMap::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr &  ,
-                              const AMP::LinearAlgebra::Vector::shared_ptr &   ,
-                                    AMP::LinearAlgebra::Vector::shared_ptr &r  ,
+void NodeToNodeMap::applyFinish ( AMP::LinearAlgebra::Vector::const_shared_ptr,
+                                  AMP::LinearAlgebra::Vector::const_shared_ptr,
+                                  AMP::LinearAlgebra::Vector::shared_ptr r,
                               const double ,
                               const double )
 {

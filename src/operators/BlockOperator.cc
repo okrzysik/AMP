@@ -88,8 +88,8 @@ namespace AMP {
       return true;
     }
 
-    void BlockOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-        AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double b) {
+    void BlockOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+        AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b) {
 
       AMP::LinearAlgebra::Variable::shared_ptr tmpOutVar = getOutputVariable();
 
@@ -108,7 +108,7 @@ namespace AMP {
       if(f.get() == NULL) {
         rInternal->scale(a);
       } else {
-        AMP::LinearAlgebra::Vector::shared_ptr fInternal = f->subsetVectorForVariable( tmpOutVar );
+        AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = f->constSubsetVectorForVariable( tmpOutVar );
         if(fInternal.get() == NULL) {
           rInternal->scale(a);
         } else {

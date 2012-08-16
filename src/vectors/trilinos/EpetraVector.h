@@ -127,7 +127,7 @@ namespace LinearAlgebra {
         *  Epetra_Vector wrapper around the Vector.  If it fails, an
         *  exception is thrown.
         */
-      static const Vector::shared_ptr  constView ( const Vector::shared_ptr vec );
+      static Vector::const_shared_ptr  constView ( Vector::const_shared_ptr vec );
 
   };
 

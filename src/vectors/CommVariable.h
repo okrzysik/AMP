@@ -21,7 +21,7 @@ public:
       */
     CommVariable ( const std::string &name, AMP_MPI comm );
 
-    virtual AMP::Discretization::DOFManager::shared_ptr  getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr );
+    virtual AMP::Discretization::DOFManager::shared_ptr  getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr ) const;
 
 private:
     CommVariable ();

@@ -147,7 +147,6 @@ void SetToScalarVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::iterator curVal = vector->begin();
     while ( curVal != endVec ) {
         if ( *curVal != 5. ) {
-            utils->failure ( "Failed to set scalar to 5" );
             fail = true;
             break;
         }
@@ -155,6 +154,18 @@ void SetToScalarVector( AMP::UnitTest *utils )
     }
     if ( !fail )
       utils->passes ( "Set data to 5" );
+    else 
+      utils->failure ( "Failed to set scalar to 5" );
+    std::vector<size_t> remoteDofs = vector->getDOFManager()->getRemoteDOFs();
+    fail = false;
+    for (size_t i=0; i<remoteDofs.size(); i++) {
+        if ( vector->getValueByGlobalID(remoteDofs[i])!=5. )
+            fail = true;
+    }
+    if ( !fail )
+      utils->passes ( "Set ghost data to 5" );
+    else 
+      utils->failure ( "Failed to set ghost scalar values to 5" );
 }
 
 

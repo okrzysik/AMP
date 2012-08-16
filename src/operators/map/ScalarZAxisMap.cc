@@ -57,7 +57,7 @@ bool ScalarZAxisMap::validMapType ( const std::string &t )
 *  It loops through all values in "cur", storing the value iv using     *
 *  the z-position as the 1D key.                                        *
 ************************************************************************/
-std::multimap<double,double>  ScalarZAxisMap::buildMap( const AMP::LinearAlgebra::Vector::shared_ptr vec, 
+std::multimap<double,double>  ScalarZAxisMap::buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec, 
     const AMP::Mesh::Mesh::shared_ptr, const AMP::Mesh::MeshIterator &iterator )
 {
     PROFILE_START("buildMap");

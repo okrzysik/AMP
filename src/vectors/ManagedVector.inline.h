@@ -70,8 +70,10 @@ namespace LinearAlgebra {
   inline
   void ManagedVector::dataChanged ()
   {
-    fireDataChange ();
+     if ( *d_UpdateState == UNCHANGED ) 
+        *d_UpdateState = LOCAL_CHANGED;
   }
+
 
   inline
   void ManagedVector::selectInto ( const VectorSelector &s , Vector::shared_ptr retVal )
@@ -170,7 +172,8 @@ namespace LinearAlgebra {
   void ManagedVector::setToScalar(double alpha)
   {
     d_Engine->setToScalar ( alpha );
-    fireDataChange();
+    dataChanged();
+    this->makeConsistent(CONSISTENT_SET);
   }
 
   inline
@@ -211,14 +214,14 @@ namespace LinearAlgebra {
     {
       Vector::scale ( alpha , x );
     }
-    fireDataChange();
+    dataChanged();
   }
 
   inline
   void ManagedVector::scale(double alpha)
   {
     d_Engine->scale ( alpha );
-    fireDataChange();
+    dataChanged();
   }
 
   inline
@@ -232,7 +235,7 @@ namespace LinearAlgebra {
     {
       Vector::add ( x , y );
     }
-    fireDataChange();
+    dataChanged();
   }
 
   inline
@@ -246,7 +249,7 @@ namespace LinearAlgebra {
     {
       Vector::subtract ( x , y );
     }
-    fireDataChange();
+    dataChanged();
   }
 
   inline
@@ -260,7 +263,7 @@ namespace LinearAlgebra {
     {
       Vector::multiply ( x , y );
     }
-    fireDataChange();
+    dataChanged();
   }
 
   inline
@@ -274,14 +277,14 @@ namespace LinearAlgebra {
     {
       Vector::divide ( x , y );
     }
-    fireDataChange();
+    dataChanged();
   }
 
   inline
   void ManagedVector::reciprocal(const VectorOperations &x)
   {
     d_Engine->reciprocal ( *x.castTo<ManagedVector>().d_Engine );
-    fireDataChange();
+    dataChanged();
   }
 
   inline
@@ -296,7 +299,7 @@ namespace LinearAlgebra {
     {
       Vector::linearSum ( alpha , x , beta , y );
     }
-    fireDataChange();
+    dataChanged();
   }
 
   inline
@@ -310,7 +313,7 @@ namespace LinearAlgebra {
     {
       Vector::axpy ( alpha , x , y );
     }
-    fireDataChange();
+    dataChanged();
   }
 
   inline
@@ -324,7 +327,7 @@ namespace LinearAlgebra {
     {
       Vector::axpby ( alpha , beta , x );
     }
-    fireDataChange();
+    dataChanged();
   }
 
   inline
@@ -338,7 +341,7 @@ namespace LinearAlgebra {
     {
       Vector::abs ( x );
     }
-    fireDataChange();
+    dataChanged();
   }
 
   inline
@@ -357,7 +360,8 @@ namespace LinearAlgebra {
   void ManagedVector::setRandomValues(void)
   {
     d_Engine->setRandomValues ();
-    fireDataChange();
+    dataChanged();
+    this->makeConsistent(CONSISTENT_SET);
   }
 
   inline

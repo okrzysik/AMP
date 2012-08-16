@@ -33,7 +33,6 @@ namespace Operator {
       //typedef boost::shared_ptr<HexGaussPointVariable>      SP_HexGaussPointVariable;
       typedef boost::shared_ptr<NeutronicsRhsParameters>               SP_Parameters;
       typedef boost::shared_ptr<OperatorParameters>            SP_OperatorParameters;
-      typedef boost::shared_ptr<AMP::LinearAlgebra::Vector>                SP_Vector; 
       typedef std::vector<double>                                            Vec_Dbl;
       typedef boost::shared_ptr<Vec_Dbl>                                  SP_Vec_Dbl; 
       typedef boost::shared_ptr<AMP::Database>                           SP_Database;
@@ -75,11 +74,11 @@ namespace Operator {
        The result of apply is
        * r = b*f+a*A(u)
        */
-      void apply(const  SP_Vector & f, 
-                 const  SP_Vector & u, 
-                        SP_Vector & r,
-                 const  double      a = 1.0,
-                 const  double      b = 0.0);
+      void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+                  AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+                  AMP::LinearAlgebra::Vector::shared_ptr r,
+                  const  double      a = 1.0,
+                  const  double      b = 0.0);
 
       /**
         A function to reinitialize this object.

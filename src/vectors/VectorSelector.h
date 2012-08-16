@@ -47,6 +47,12 @@ public:
       * \details Base class defaults to returning all data in the vector
       */
     virtual  Vector::shared_ptr  subset ( Vector::shared_ptr vec ) const;
+
+    /** \brief Subset the given vector
+      * \param[in]  vec  The Vector to subset
+      * \details Base class defaults to returning all data in the vector
+      */
+    virtual  Vector::const_shared_ptr  subset ( Vector::const_shared_ptr vec ) const;
 };
 
 
@@ -117,6 +123,12 @@ public:
       */
     virtual  Vector::shared_ptr  subset ( Vector::shared_ptr vec ) const;
 
+    /** \brief Subset the given vector
+      * \param[in]  vec  The Vector to subset
+      * \details Base class defaults to returning all data in the vector
+      */
+    virtual  Vector::const_shared_ptr  subset ( Vector::const_shared_ptr vec ) const;
+
 protected:
     //  Offset to start striding on
     size_t  d_Offset; 
@@ -155,6 +167,12 @@ public:
       */
     virtual  Vector::shared_ptr  subset ( Vector::shared_ptr vec ) const;
 
+    /** \brief Subset the given vector
+      * \param[in]  vec  The Vector to subset
+      * \details Base class defaults to returning all data in the vector
+      */
+    virtual  Vector::const_shared_ptr  subset ( Vector::const_shared_ptr vec ) const;
+
 protected:
     std::string d_Name;                 //  The name of this subset
     AMP_MPI     d_comm;                 // The new desired comm
@@ -189,6 +207,12 @@ public:
       */
     virtual  Vector::shared_ptr  subset ( Vector::shared_ptr vec ) const;
 
+    /** \brief Subset the given vector
+      * \param[in]  vec  The Vector to subset
+      * \details Base class defaults to returning all data in the vector
+      */
+    virtual  Vector::const_shared_ptr  subset ( Vector::const_shared_ptr vec ) const;
+
 protected:
     std::string  d_Name;            //  The name of this subset
     bool d_useMeshComm;             //  Use the comm of the mesh
@@ -213,6 +237,12 @@ public:
       * \details Base class defaults to returning all data in the vector
       */
     virtual  Vector::shared_ptr  subset ( Vector::shared_ptr vec ) const;
+
+    /** \brief Subset the given vector
+      * \param[in]  vec  The Vector to subset
+      * \details Base class defaults to returning all data in the vector
+      */
+    virtual  Vector::const_shared_ptr  subset ( Vector::const_shared_ptr vec ) const;
 
 protected:
     std::string  d_Name;                    //  The name of this subset

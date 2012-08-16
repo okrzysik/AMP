@@ -110,8 +110,8 @@ namespace AMP {
         d_isInitialized = false;
       }
 
-    void MechanicsNonlinearFEOperator :: preAssembly(const AMP::LinearAlgebra::Vector::shared_ptr &u, 
-        boost::shared_ptr< AMP::LinearAlgebra::Vector >  &r) {
+    void MechanicsNonlinearFEOperator :: preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+        boost::shared_ptr< AMP::LinearAlgebra::Vector > r) {
       AMP_INSIST( (u != NULL), "NULL Input Vector" );
 
       if(!d_isInitialized) {
@@ -122,7 +122,7 @@ namespace AMP {
         if(d_isActive[i]) {
           if(!(d_isFrozen[i])) {
             AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(i); 
-            AMP::LinearAlgebra::Vector::shared_ptr vector = mySubsetVector(u, var);
+            AMP::LinearAlgebra::Vector::const_shared_ptr vector = mySubsetVector(u, var);
             setVector(i, vector);
           }
         }
@@ -671,16 +671,16 @@ namespace AMP {
       } // end of j
     }
 
-    void MechanicsNonlinearFEOperator :: setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
+    void MechanicsNonlinearFEOperator :: setVector(unsigned int id, AMP::LinearAlgebra::Vector::const_shared_ptr frozenVec) {
       AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(id);
       d_inVec[id] = mySubsetVector(frozenVec, var);
-      (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+      AMP_ASSERT(d_inVec[id]->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
     }
 
-    void MechanicsNonlinearFEOperator :: setReferenceTemperature(AMP::LinearAlgebra::Vector::shared_ptr refTemp) {
+    void MechanicsNonlinearFEOperator :: setReferenceTemperature(AMP::LinearAlgebra::Vector::const_shared_ptr refTemp) {
       AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(Mechanics::TEMPERATURE);
       d_referenceTemperature = mySubsetVector(refTemp, var);
-      d_referenceTemperature->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+      AMP_ASSERT(d_referenceTemperature->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
       if(d_useUpdatedLagrangian) {
         d_inVec_pre[Mechanics::TEMPERATURE]->copyVector(d_referenceTemperature);
         d_inVec_pre[Mechanics::TEMPERATURE]->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
@@ -695,6 +695,17 @@ namespace AMP {
         return meshSubsetVec->subsetVectorForVariable(var);
       } else {
         return vec->subsetVectorForVariable(var);
+      }
+    }
+
+    AMP::LinearAlgebra::Vector::const_shared_ptr MechanicsNonlinearFEOperator :: mySubsetVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec, 
+        AMP::LinearAlgebra::Variable::shared_ptr var) {
+      if(d_Mesh.get() != NULL) {
+        AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
+        AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec = vec->constSelect(meshSelector, var->getName());
+        return meshSubsetVec->constSubsetVectorForVariable(var);
+      } else {
+        return vec->constSubsetVectorForVariable(var);
       }
     }
 

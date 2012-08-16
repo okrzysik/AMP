@@ -23,6 +23,7 @@ void adjust(AMP::LinearAlgebra::Vector::shared_ptr vec, const double *shift, con
       subvec->addScalar(subvec, shift[i]);
     }
   }
+  vec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 }
 
 void adjust(AMP::LinearAlgebra::Vector::shared_ptr vec, const double shift, const double scale)

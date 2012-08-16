@@ -107,9 +107,8 @@ double SimpleVector::dot(const VectorOperations &rhs ) const
 void SimpleVector::setToScalar(double alpha)
 {
     for ( iterator cur = begin() ; cur != end() ; cur++ )
-    {
         (*cur) = alpha;
-    }
+    this->makeConsistent(CONSISTENT_SET);
 }
 void SimpleVector::scale(double alpha, const VectorOperations &x)
 {

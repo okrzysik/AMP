@@ -237,7 +237,7 @@ namespace Operator {
 
       }
 
-    void NeumannVectorCorrection :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r, const double a , const double b )
+    void NeumannVectorCorrection :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r, const double a , const double b )
     {
       (void) f; (void) u; (void) r; (void) a; (void) b; 
       //Do Nothing

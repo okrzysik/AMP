@@ -18,10 +18,10 @@ namespace AMP {
       return d_var;
     }
 
-    void MoveMeshOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, 
-        const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
+    void MoveMeshOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+        AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
         const double a, const double b)  {
-      AMP::LinearAlgebra::Vector::shared_ptr dispVec = u->subsetVectorForVariable(d_var);
+      AMP::LinearAlgebra::Vector::const_shared_ptr dispVec = u->constSubsetVectorForVariable(d_var);
 
       if(d_prevDisp == NULL) {
         d_prevDisp = dispVec->cloneVector();

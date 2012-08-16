@@ -148,15 +148,19 @@ CommunicationList::shared_ptr  CommunicationList::createEmpty ( size_t local , A
     return CommunicationList::shared_ptr  ( retVal );
   }
 
-  void  CommunicationList::packReceiveBuffer ( std::vector<double> &send , const Vector &vec ) const
+  void  CommunicationList::packReceiveBuffer ( std::vector<double> &recv , const Vector &vec ) const
   {
-    AMP_ASSERT ( send.size() == d_ReceiveDOFList.size() );
-    vec.getGhostAddValuesByGlobalID ( (int) send.size(), getPtr(d_ReceiveDOFList),  getPtr(send) );
+    AMP_ASSERT ( recv.size() == d_ReceiveDOFList.size() );
+    if ( recv.size()==0 )
+        return;
+    vec.getGhostAddValuesByGlobalID ( (int) recv.size(), getPtr(d_ReceiveDOFList),  getPtr(recv) );
   }
 
   void  CommunicationList::packSendBuffer ( std::vector<double> &send , const Vector &vec ) const
   {
     AMP_ASSERT ( send.size() == d_SendDOFList.size() );
+    if ( send.size()==0 )
+        return;
     vec.getLocalValuesByGlobalID ( (int) send.size(), getPtr(d_SendDOFList),  getPtr(send) );
   }
 

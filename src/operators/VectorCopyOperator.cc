@@ -15,13 +15,13 @@ VectorCopyOperator::VectorCopyOperator(const boost::shared_ptr<VectorCopyOperato
 }
 
 void
-VectorCopyOperator::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-			  const AMP::LinearAlgebra::Vector::shared_ptr &u,
-			  AMP::LinearAlgebra::Vector::shared_ptr &r,
+VectorCopyOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+			  AMP::LinearAlgebra::Vector::const_shared_ptr u,
+			  AMP::LinearAlgebra::Vector::shared_ptr r,
 			  const double a,
 			  const double b)
 {
-  AMP::LinearAlgebra::Vector::shared_ptr vecToCopy = u->subsetVectorForVariable( this->getOutputVariable() );
+  AMP::LinearAlgebra::Vector::const_shared_ptr vecToCopy = u->constSubsetVectorForVariable( this->getOutputVariable() );
   d_copyVector->copyVector(vecToCopy);
   
 }

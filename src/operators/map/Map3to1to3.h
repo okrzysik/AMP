@@ -49,15 +49,15 @@ public:
     /** \brief   Start a communicative apply operation. 
      * \details  Start a communicative apply operation. 
      */
-    virtual void applyStart(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-        const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
+    virtual void applyStart(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+        AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
         const double a = -1.0, const double b = 1.0);
 
     /** \brief   Finish a communicative apply operation. 
      * \details  Finish a communicative apply operation. 
      */
-    virtual void applyFinish(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-        const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
+    virtual void applyFinish(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+        AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
         const double a = -1.0, const double b = 1.0);
 
 
@@ -77,7 +77,7 @@ protected:
      * \param [in] mesh The meshused to construct the map
      * \param [in] it   The iterator over the boundary used for the map
      */
-    virtual std::multimap<double,double>  buildMap( const AMP::LinearAlgebra::Vector::shared_ptr vec, 
+    virtual std::multimap<double,double>  buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec, 
         const AMP::Mesh::Mesh::shared_ptr mesh, const AMP::Mesh::MeshIterator &it );
 
     /** \brief  A virtual method to construct a vector from a map

@@ -137,7 +137,7 @@ static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
     }
     int msg_len=0;
     std::stringstream msg;    
-    char text[100], message[1000];
+    char message[1000];
     MPI_Error_string( *err, message, &msg_len );
     if ( msg_len <= 0 )
         AMP_ERROR("Unkown error in MPI");

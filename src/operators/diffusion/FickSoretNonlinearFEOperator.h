@@ -34,8 +34,8 @@ namespace Operator {
         d_SoretOperator->reset(fsParams->d_SoretParameters);
     }
 
-    virtual void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-            const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
+    virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+            AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
             const double a = -1.0, const double b = 1.0);
 
     virtual boost::shared_ptr<OperatorParameters>

@@ -51,16 +51,16 @@ public:
         * \param[out] out The resulting vectory
         * \details  Compute \f$\mathbf{Ain} = \mathbf{out}\f$.
         */
-      virtual void mult(const boost::shared_ptr<Vector> & in, 
-          boost::shared_ptr<Vector> & out) = 0;
+      virtual void mult( AMP::LinearAlgebra::Vector::const_shared_ptr in, 
+          AMP::LinearAlgebra::Vector::shared_ptr out) = 0;
 
       /** \brief  Matrix transpose-vector multiplication
         * \param[in]  in  The vector to multiply
         * \param[out] out The resulting vectory
         * \details  Compute \f$\mathbf{A}^T\mathbf{in} = \mathbf{out}\f$.
         */
-      virtual void multTranspose(const boost::shared_ptr<Vector> & in, 
-          boost::shared_ptr<Vector> & out) = 0;
+      virtual void multTranspose( AMP::LinearAlgebra::Vector::const_shared_ptr in, 
+          AMP::LinearAlgebra::Vector::shared_ptr out) = 0;
 
 
       /** \brief  Return a new matrix that is the transpose of this one

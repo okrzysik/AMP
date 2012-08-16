@@ -205,23 +205,9 @@ void MultiVector::replaceSubVector(Vector::shared_ptr oldVec, Vector::shared_ptr
 }
 
 
-
 /****************************************************************
-* Other functions                                               *
+* Select into the vector                                        *
 ****************************************************************/
-bool MultiVector::containsPointer ( const Vector::shared_ptr p ) const
-{
-    for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
-    {
-      if ( d_vVectors[i].get() == p.get() )
-      {
-        return true;
-      }
-    }
-    return false;
-}
-
-
 void MultiVector::selectInto ( const VectorSelector &s , Vector::shared_ptr retVal )
 {
     // Subset each vector
@@ -238,6 +224,39 @@ void MultiVector::selectInto ( const VectorSelector &s , Vector::shared_ptr retV
     }
     // Add the subsets to the multivector
     retVal->castTo<MultiVector>().addVector ( subvectors );
+}
+void MultiVector::constSelectInto ( const VectorSelector &s , Vector::shared_ptr retVal ) const
+{
+    // Subset each vector
+    std::vector<Vector::shared_ptr> subvectors;
+    //vector_iterator  cur = beginVector();
+    for (size_t i=0; i!=d_vVectors.size(); i++) {
+        // Get the comm to operate on
+        AMP_MPI comm = s.communicator( d_vVectors[i] );
+        // Subset the individual vector
+        Vector::shared_ptr  retVal = MultiVector::create ( "tmp_vector", comm );
+        d_vVectors[i]->selectInto ( s , retVal );
+        if ( retVal->getDOFManager()->numGlobalDOF() > 0 )
+            subvectors.push_back( retVal );
+    }
+    // Add the subsets to the multivector
+    retVal->castTo<MultiVector>().addVector ( subvectors );
+}
+
+
+/****************************************************************
+* Other functions                                               *
+****************************************************************/
+bool MultiVector::containsPointer ( const Vector::shared_ptr p ) const
+{
+    for ( size_t i = 0 ; i != d_vVectors.size() ; i++ )
+    {
+      if ( d_vVectors[i].get() == p.get() )
+      {
+        return true;
+      }
+    }
+    return false;
 }
 
 
@@ -605,8 +624,8 @@ Vector::shared_ptr  MultiVector::subsetVectorForVariable ( const Variable::share
 }
 Vector::const_shared_ptr  MultiVector::constSubsetVectorForVariable ( const Variable::shared_ptr  &name ) const
 {
-    AMP_ERROR("Not implimented yet");
-    return Vector::const_shared_ptr();
+    MultiVector *tmp = (MultiVector*) this;
+    return tmp->subsetVectorForVariable(name);
 }
 
 
@@ -713,6 +732,8 @@ Vector::shared_ptr MultiVector::cloneVector(const Variable::shared_ptr name) con
 ****************************************************************/
 void MultiVector::setValuesByLocalID ( int num , size_t *indices , const double *in_vals )
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -724,6 +745,8 @@ void MultiVector::setValuesByLocalID ( int num , size_t *indices , const double 
 }
 void MultiVector::setLocalValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -732,8 +755,11 @@ void MultiVector::setLocalValuesByGlobalID ( int num , size_t *indices , const d
         if ( ndxs[i].size() )
             d_vVectors[i]->setLocalValuesByGlobalID ( ndxs[i].size() , &(ndxs[i][0]) , &(vals[i][0]) );
     }
-}void MultiVector::setGhostValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
+}
+void MultiVector::setGhostValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -745,6 +771,8 @@ void MultiVector::setLocalValuesByGlobalID ( int num , size_t *indices , const d
 }
 void MultiVector::setValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -756,6 +784,8 @@ void MultiVector::setValuesByGlobalID ( int num , size_t *indices , const double
 }
 void MultiVector::addValuesByLocalID ( int num , size_t *indices , const double *in_vals )
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -767,6 +797,8 @@ void MultiVector::addValuesByLocalID ( int num , size_t *indices , const double 
 }
 void MultiVector::addLocalValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -778,6 +810,8 @@ void MultiVector::addLocalValuesByGlobalID ( int num , size_t *indices , const d
 }
 void MultiVector::addValuesByGlobalID ( int num , size_t *indices , const double *in_vals )
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -789,6 +823,8 @@ void MultiVector::addValuesByGlobalID ( int num , size_t *indices , const double
 }
 void MultiVector::getValuesByGlobalID ( int num , size_t *indices , double *out_vals ) const
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -805,6 +841,8 @@ void MultiVector::getValuesByGlobalID ( int num , size_t *indices , double *out_
 }
 void MultiVector::getLocalValuesByGlobalID ( int num , size_t *indices , double *out_vals ) const
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -821,6 +859,8 @@ void MultiVector::getLocalValuesByGlobalID ( int num , size_t *indices , double 
 }
 void MultiVector::getGhostValuesByGlobalID ( int num , size_t *indices , double *out_vals ) const
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;
@@ -837,6 +877,8 @@ void MultiVector::getGhostValuesByGlobalID ( int num , size_t *indices , double 
 }
 void MultiVector::getValuesByLocalID ( int num , size_t *indices , double *out_vals ) const
 {
+    if ( num==0 )
+        return;
     INCREMENT_COUNT("Virtual");
     std::vector<std::vector<size_t> >  ndxs;
     std::vector<std::vector<double> >  vals;

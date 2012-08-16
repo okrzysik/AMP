@@ -104,7 +104,7 @@ namespace AMP {
       return inpVar;
     }
 
-    void NavierStokesGalWFFEOperator :: preAssembly(const AMP::LinearAlgebra::Vector::shared_ptr &u, 
+    void NavierStokesGalWFFEOperator :: preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, 
         boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r) {
       if(!d_isInitialized) {
         init();
