@@ -97,8 +97,6 @@ public:
       virtual boost::shared_ptr<Vector>  cloneVector ( const Variable::shared_ptr name ) const;
       virtual boost::shared_ptr<ParameterBase>  getParameters () ;
 
-      virtual void  selectInto ( const VectorSelector & , shared_ptr );
-
       virtual boost::shared_ptr<ManagedVectorParameters>  getManagedVectorParameters () ;
 
       virtual size_t getLocalSize() const;
@@ -138,8 +136,13 @@ public:
       using Vector::dot;
       double dot(const VectorOperations &x) const;
       virtual UpdateState  getUpdateStatus() const;
+      virtual void  setUpdateStatus( UpdateState state );
 
 protected:
+
+      virtual void  selectInto ( const VectorSelector & , shared_ptr );
+      virtual void  constSelectInto ( const VectorSelector &criterion , Vector::shared_ptr vector ) const;
+
 
       /**\brief  A method that is called whenever data changes.  This fires
                  triggers that may have been registered with DataChangeFirer

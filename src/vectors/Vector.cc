@@ -797,6 +797,7 @@ void Vector::makeConsistent ( ScatterType  t )
     d_CommList->scatter_set ( send_vec , recv_vec );
     d_CommList->unpackReceiveBufferSet ( recv_vec , *this );
     *d_UpdateState = UNCHANGED;
+    this->setUpdateStatus(UNCHANGED);
 }
 
 

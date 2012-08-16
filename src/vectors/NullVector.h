@@ -35,7 +35,6 @@ namespace LinearAlgebra {
 
       virtual ~NullVector();
 
-      virtual void  selectInto ( const VectorSelector & , Vector::shared_ptr ) {}
       virtual std::string type() const { return "Null Vector"; }
       virtual boost::shared_ptr<ParameterBase> getParameters ();
 
@@ -94,6 +93,9 @@ namespace LinearAlgebra {
       virtual size_t sizeOfDataBlock ( size_t ) const;
 
     protected:
+
+      virtual void  selectInto ( const VectorSelector & , Vector::shared_ptr ) {}
+      virtual void  const_selectInto ( const VectorSelector & , Vector::shared_ptr ) const {}
 
       virtual void *getRawDataBlockAsVoid ( size_t );
       virtual const void *getRawDataBlockAsVoid ( size_t ) const;

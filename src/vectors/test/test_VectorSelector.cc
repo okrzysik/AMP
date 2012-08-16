@@ -60,16 +60,6 @@ public:
             return;
         }
 
-        vec2->selectInto ( AMP::LinearAlgebra::VectorSelector () , selection1 );
-        if ( selection1 ) {
-            if ( selection1->castTo<AMP::LinearAlgebra::MultiVector>().getVector(2).get() != vec2.get() )
-                utils->failure ( "Could not find vector" );
-            else
-                utils->passes ( "Found vector" );
-        } else {
-            utils->failure ( "Did not find a vector" );
-            return;
-        }
     }
 
 };
