@@ -4,6 +4,7 @@
 
 #include "operators/OperatorParameters.h"
 #include "operators/subchannel/SubchannelPhysicsModel.h"
+#include "operators/boundary/RobinPhysicsModel.h"
 #include "discretization/DOF_Manager.h"
 
 namespace AMP {
@@ -28,6 +29,8 @@ namespace Operator {
 
       // pointer to subchannel physics model
       boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
+
+      boost::shared_ptr<RobinPhysicsModel> d_dittusBoelterCoefficient;
 
       AMP::LinearAlgebra::Vector::shared_ptr d_frozenSolution;
 

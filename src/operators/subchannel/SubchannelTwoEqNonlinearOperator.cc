@@ -37,9 +37,13 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
       if (d_source == "totalHeatGeneration") {
           d_Q    = getDoubleParameter(myparams,"Rod_Power",66.81e3);  
           d_heatShape = getStringParameter(myparams,"Heat_Shape","Sinusoidal");
+      }else if (d_source == "averageCladdingTemperature"){
+        d_dittusBoelterCoefficient = myparams->d_dittusBoelterCoefficient;  
+        AMP_INSIST( ((d_dittusBoelterCoefficient.get()) != NULL), "Empty Dittus-Boelter Model " );
+        d_channelFractions = (myparams->d_db)->getDoubleArray("ChannelFractions");
       }
 
-      d_subchannelPhysicsModel = myparams->d_subchannelPhysicsModel;  
+      d_subchannelPhysicsModel   = myparams->d_subchannelPhysicsModel;  
 }
 
 // function used in reset to get double parameter or set default if missing
@@ -149,6 +153,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
       AMP::LinearAlgebra::Vector::shared_ptr outputVec = subsetOutputVector( r );
 
       AMP::Discretization::DOFManager::shared_ptr dof_manager = inputVec->getDOFManager();
+      AMP::Discretization::DOFManager::shared_ptr cladDofManager = d_cladTemperature->getDOFManager();
 
       fillSubchannelGrid(d_Mesh);
 
@@ -194,7 +199,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
           const int numFaces = begin_face.size() ;
           const int numCells = numFaces - 1;
 
-          std::vector<size_t> dofs;
+          std::vector<size_t> dofs, scalarDofs;
           dof_manager->getDOFs( begin_face->globalID(), dofs );
 
           double h_in  = inputVec->getValueByGlobalID(dofs[0]);
@@ -232,7 +237,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
           // compute the enthalpy change in each interval
           std::vector<double> dh(numCells);
           if (d_source == "averageCladdingTemperature") {
-            AMP_ERROR("Heat source type 'averageCladdingTemperature' not yet implemented.");
+            //Implemented inside the face iterator loop
           } else if (d_source == "averageHeatFlux") {
             AMP_ERROR("Heat source type 'averageHeatFlux' not yet implemented.");
           } else if (d_source == "totalHeatGeneration") {
@@ -257,6 +262,42 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
           int j = 1;
           AMP::Mesh::MeshIterator face = begin_face;
           for(size_t iface = 0; iface < begin_face.size(); ++iface, ++j){
+
+            if (d_source == "averageCladdingTemperature") {
+                std::vector<double> heff(1); 
+                std::vector<std::vector<double> > heffArgs(1);
+                heffArgs[0].resize(1);
+                d_dittusBoelterCoefficient->getConductance(heff, heff, heffArgs); 
+
+                //evalute flow average temperature 
+                dof_manager->getDOFs( face->globalID(), dofs );
+                cladDofManager->getDOFs( face->globalID(), scalarDofs );
+                double cladMinus = d_cladTemperature->getValueByGlobalID(scalarDofs[0]);
+                std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
+                temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[0]))));
+                temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[1]))));
+                std::vector<double> flowMinus(1);
+                d_subchannelPhysicsModel->getProperty("Temperature", flowMinus, temperatureArgMap);
+
+                face++;
+                dof_manager->getDOFs( face->globalID(), dofs );
+                cladDofManager->getDOFs( face->globalID(), scalarDofs );
+                double cladPlus = d_cladTemperature->getValueByGlobalID(scalarDofs[0]);;
+                temperatureArgMap.clear();
+                temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[0]))));
+                temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[1]))));
+                std::vector<double> flowPlus(1);
+                d_subchannelPhysicsModel->getProperty("Temperature", flowPlus, temperatureArgMap); 
+                face--;
+
+                double cladAvgTemp = (cladMinus + cladPlus)/2.0;
+                double flowTemp    = (flowMinus[0] + flowPlus[0])/2.0;
+                double flux = heff[0]*(cladAvgTemp - flowTemp) ;
+                double lin  = flux*pi*d_diameter*d_channelFractions[isub] ;
+                double flux_sum = 4.0*pi*d_diameter*1.0/4.0*flux;
+                double lin_sum = 4.0*d_gamma*1.0/4.0*lin;
+                dh[j-1] = del_z[j-1] / d_m * (flux_sum + lin_sum);
+            }
             // ======================================================
             // energy residual
             // ======================================================

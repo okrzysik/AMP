@@ -37,6 +37,10 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
       if (d_source == "totalHeatGeneration") {
           d_Q    = getDoubleParameter(myparams,"Rod_Power",66.81e3);  
           d_heatShape = getStringParameter(myparams,"Heat_Shape","Sinusoidal");
+      }else if (d_source == "averageCladdingTemperature"){
+        d_dittusBoelterCoefficient = myparams->d_dittusBoelterCoefficient;  
+        AMP_INSIST( ((d_dittusBoelterCoefficient.get()) != NULL), "Empty Dittus-Boelter Model " );
+        d_channelFractions = (myparams->d_db)->getDoubleArray("ChannelFractions");
       }
 
       // get subchannel physics model

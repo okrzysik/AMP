@@ -33,6 +33,7 @@
 
 #include "operators/VectorCopyOperator.h"
 
+#include "operators/VolumeIntegralOperator.h"
 #include "operators/CoupledOperator.h"
 #include "operators/CoupledOperatorParameters.h"
 #include "operators/NodeToGaussPointOperator.h"
@@ -92,7 +93,9 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr globalThermalSolutionVec;
     AMP::LinearAlgebra::Vector::shared_ptr globalThermalRhsVec;
     AMP::LinearAlgebra::Vector::shared_ptr globalThermalResidualVec;
-  
+
+    AMP::LinearAlgebra::Vector::shared_ptr  specificPowerGpVec;
+
     AMP::LinearAlgebra::Vector::shared_ptr flowSolVec;
     AMP::LinearAlgebra::Vector::shared_ptr flowRhsVec;
     AMP::LinearAlgebra::Vector::shared_ptr flowResVec;
@@ -116,6 +119,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
     boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator (new AMP::Operator::ColumnOperator(emptyParams));
     boost::shared_ptr<AMP::Operator::ColumnOperator> linearColumnOperator (new AMP::Operator::ColumnOperator(emptyParams));
+    boost::shared_ptr<AMP::Operator::ColumnOperator> volumeIntegralColumnOperator(new AMP::Operator::ColumnOperator(emptyParams));
 
     std::vector<AMP::Mesh::MeshID> meshIDs = manager->getBaseMeshIDs();
 
@@ -163,6 +167,16 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
             global_input_db,
             thermalTransportModel));
       linearColumnOperator->append(thermalLinearOperator);
+
+      AMP_INSIST( global_input_db->keyExists(prefix+"VolumeIntegralOperator"), "key missing!" );
+      boost::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
+      boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> specificPowerGpVecToPowerDensityNodalVecOperator =
+        boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator( adapter,
+              prefix+"VolumeIntegralOperator",
+              global_input_db,
+              stransportModel));
+      volumeIntegralColumnOperator->append(specificPowerGpVecToPowerDensityNodalVecOperator);
+
 
     }
 
@@ -405,7 +419,6 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     nonlinearSolverParams->d_pInitialGuess = globalSolMultiVector;
     boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
 
-
     // create preconditioner
     boost::shared_ptr<AMP::Database> columnPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
     boost::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(new AMP::Solver::SolverStrategyParameters(columnPreconditioner_db));
@@ -429,6 +442,38 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     // don't use zero initial guess
     nonlinearSolver->setZeroInitialGuess(false);
 
+    AMP::Discretization::DOFManager::shared_ptr  gaussPtDOFManager;
+    if ( pinMesh.get()!=NULL ) {
+        gaussPtDOFManager = AMP::Discretization::simpleDOFManager::create(pinMesh,AMP::Mesh::Volume,1,8);
+        specificPowerGpVec= AMP::LinearAlgebra::createVector( gaussPtDOFManager , thermalVariable );
+        specificPowerGpVec->setToScalar(0.0);
+    }
+
+    // Initialize the pin temperatures
+    if ( pinMesh.get()!=NULL ) {
+        AMP::Mesh::MeshIterator it = pinMesh->getIterator(AMP::Mesh::Volume,0);
+        std::vector<size_t> dofs;
+        for (size_t i=0; i<it.size(); i++) {
+            gaussPtDOFManager->getDOFs(it->globalID(),dofs);
+            specificPowerGpVec->setValueByGlobalID(dofs[0],getTemp(it->coord()));
+            ++it;
+        }
+    }
+
+
+    volumeIntegralColumnOperator->apply(nullVec, specificPowerGpVec, globalThermalRhsVec , 1., 0.);
+    int totalOp;
+    if(subchannelMesh != NULL ){
+      totalOp = nonlinearColumnOperator->getNumberOfOperators()-1;
+    }else{
+      totalOp = nonlinearColumnOperator->getNumberOfOperators();
+    }
+    for( size_t id = 0; id != totalOp; id++)
+    {
+      boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator = boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nonlinearColumnOperator->getOperator(id));
+      nonlinearThermalOperator->modifyInitialSolutionVector(globalThermalSolutionVec);
+      nonlinearThermalOperator->modifyRHSvector(globalThermalRhsVec);
+    }
     // solve
     nonlinearSolver->solve(globalRhsMultiVector, globalSolMultiVector);
 

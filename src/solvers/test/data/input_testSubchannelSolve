@@ -657,7 +657,8 @@ SubchannelTwoEqNonlinearOperator{
     Rod_Diameter = 0.0097028
     Form_Loss_Coefficient = 0.2
     Rod_Power = 66.81e3
-    Heat_Source_Type = "totalHeatGeneration"
+    Heat_Source_Type = "averageCladdingTemperature"
+    ChannelFractions = 0.25, 0.5, 0.5, 0.25, 0.5 , 0.75, 0.75 , 0.5,0.5 , 0.75, 0.75 , 0.5, 0.25, 0.5, 0.5, 0.25 
     Heat_Shape = "Sinusoidal"
     LocalModel = "SubchannelPhysicsModel"
 }
@@ -677,7 +678,8 @@ SubchannelTwoEqLinearOperator{
     Rod_Diameter = 0.0097028
     Form_Loss_Coefficient = 0.2
     Rod_Power = 66.81e3
-    Heat_Source_Type = "totalHeatGeneration"
+    Heat_Source_Type = "averageCladdingTemperature"
+    ChannelFractions = 0.25, 0.5, 0.5, 0.25, 0.5 , 0.75, 0.75 , 0.5,0.5 , 0.75, 0.75 , 0.5, 0.25, 0.5, 0.5, 0.25 
     Heat_Shape = "Sinusoidal"
     LocalModel = "SubchannelPhysicsModel"
 }

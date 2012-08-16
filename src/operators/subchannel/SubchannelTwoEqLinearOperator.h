@@ -76,6 +76,8 @@ namespace Operator {
       // subchannel physics model
       boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 
+      boost::shared_ptr<RobinPhysicsModel> d_dittusBoelterCoefficient;
+
     private :
 
       bool d_atConstruction, d_nullFrozenvector; 
@@ -92,6 +94,8 @@ namespace Operator {
       boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
 
       boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
+
+      std::vector<double> d_channelFractions;     // channel fraction to calculate effective radius 
 
       double d_Pout;     // exit pressure [Pa]
       double d_Tin;      // inlet temperature [K]
