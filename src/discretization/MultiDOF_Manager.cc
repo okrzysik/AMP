@@ -223,10 +223,12 @@ boost::shared_ptr<DOFManager>  multiDOFManager::subset( AMP_MPI comm_in )
         if ( subset!=NULL ) 
             sub_managers.push_back( subset );
     }
-    // Check if the DOF manager changed
-    changed = comm.anyReduce( changed );
-    if ( !changed ) 
-        return shared_from_this();
+    // Check if the DOF manager changed and the comms are compatible
+    if ( comm.compare(d_comm)!=0 ) {
+        changed = comm.anyReduce( changed );
+        if ( !changed ) 
+            return shared_from_this();
+    }
     // Check that we have a valid DOF manager somewhere
     bool valid_DOF = sub_managers.size()>0;
     valid_DOF = comm.anyReduce( valid_DOF );
@@ -257,10 +259,12 @@ boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::Mesh::s
         if ( subset!=NULL ) 
             sub_managers.push_back( subset );
     }
-    // Check if the DOF manager changed
-    changed = comm.anyReduce( changed );
-    if ( !changed ) 
-        return shared_from_this();
+    // Check if the DOF manager changed and the comms are compatible
+    if ( comm.compare(d_comm)!=0 ) {
+        changed = comm.anyReduce( changed );
+        if ( !changed ) 
+            return shared_from_this();
+    }
     // Check that we have a valid DOF manager somewhere
     bool valid_DOF = sub_managers.size()>0;
     valid_DOF = comm.anyReduce( valid_DOF );
@@ -283,10 +287,12 @@ boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::MeshIte
         if ( subset!=NULL ) 
             sub_managers.push_back( subset );
     }
-    // Check if the DOF manager changed
-    changed = comm.anyReduce( changed );
-    if ( !changed ) 
-        return shared_from_this();
+    // Check if the DOF manager changed and the comms are compatible
+    if ( comm.compare(d_comm)!=0 ) {
+        changed = comm.anyReduce( changed );
+        if ( !changed ) 
+            return shared_from_this();
+    }
     // Check that we have a valid DOF manager somewhere
     bool valid_DOF = sub_managers.size()>0;
     valid_DOF = comm.anyReduce( valid_DOF );
