@@ -8,9 +8,11 @@
 #include <set>
 #include "ampmesh/latex_visualization_tools.h"
 
-DendroSearch::DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh) 
+DendroSearch::DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh, bool verbose, std::ostream & oStream)
   : d_meshAdapter(mesh),
-    d_verbose(true),
+    d_verbose(verbose),
+    d_oStream(oStream),
+    d_timingMeasurements(std::vector<double>(numTimingTypes, -1.0)),
     d_tolerance(1.0e-12) {
     d_minCoords.resize(3);
     d_scalingFactor.resize(3);
@@ -26,17 +28,17 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
 
   const int rank = comm.getRank();
   const int npes = comm.getSize();
-std::fstream d_fout;
-std::string fileName = "tmp_dendro_" + boost::lexical_cast<std::string>(rank);
-d_fout.open(fileName.c_str(), std::fstream::out);
-d_fout<<std::setprecision(6)<<std::fixed;
-double point_of_view[] = { 0.725866, -0.334606, 0.600964 };
+//std::fstream d_fout;
+//std::string fileName = "tmp_dendro_" + boost::lexical_cast<std::string>(rank);
+//d_fout.open(fileName.c_str(), std::fstream::out);
+//d_fout<<std::setprecision(6)<<std::fixed;
+//double point_of_view[] = { 0.725866, -0.334606, 0.600964 };
 
   double projectBeginTime, projectStep1Time, projectStep2Time;
   if(d_verbose) {
     comm.barrier();
-    projectBeginTime = MPI_Wtime();
   }
+  projectBeginTime = MPI_Wtime();
 
   std::vector<ProjectOnBoundaryData> sendData(d_sendDisps[npes-1] + d_sendCnts[npes-1]);
 
@@ -51,13 +53,13 @@ double point_of_view[] = { 0.725866, -0.334606, 0.600964 };
     tmpData.d_PointLocalID = pointLocalID;
     AMP::Mesh::MeshElement* meshElement = &(d_localElemArr[elementLocalID]);
     if (meshElement->isOnBoundary(boundaryID)) { // point was found and element is on boundary
-d_fout<<"% elementLocalID="<<elementLocalID<<"\n";
-draw_hex8_element(&(d_volume_elements[elementLocalID]), point_of_view, d_fout);
-double globalCoords[3];
-d_volume_elements[elementLocalID].map_local_to_global(pointLocalCoords_ptr, globalCoords);
-d_fout<<"% pointLocalID="<<pointLocalID<<"\n";
-draw_point(globalCoords, "red", d_fout); 
-d_fout<<"\n";
+//d_fout<<"% elementLocalID="<<elementLocalID<<"\n";
+//draw_hex8_element(&(d_volume_elements[elementLocalID]), point_of_view, d_fout);
+//double globalCoords[3];
+//d_volume_elements[elementLocalID].map_local_to_global(pointLocalCoords_ptr, globalCoords);
+//d_fout<<"% pointLocalID="<<pointLocalID<<"\n";
+//draw_point(globalCoords, "red", d_fout); 
+//d_fout<<"\n";
       std::vector<AMP::Mesh::MeshElement> meshElementFaces = meshElement->getElements(AMP::Mesh::Face);
       AMP_ASSERT( meshElementFaces.size() == 6 );
       for (size_t f = 0; f < 6; ++f) {
@@ -134,13 +136,16 @@ d_fout<<"\n";
 
     if(d_verbose) {
       comm.barrier();
-      projectStep2Time = MPI_Wtime();
+    }
+    projectStep2Time = MPI_Wtime();
+    d_timingMeasurements[ProjectionOnBoundaryID] = projectStep2Time - projectBeginTime;
+    if(d_verbose) {
       if(!rank) {
         std::cout<<"Time for step-2 of project on boundary: "<<(projectStep2Time - projectStep1Time)<<" seconds."<<std::endl;
       }
     }
 
-          d_fout.close();
+//d_fout.close();
   }
 
   void DendroSearch::searchAndInterpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
@@ -161,8 +166,8 @@ d_fout<<"\n";
     double setupBeginTime, setupEndTime;
     if(d_verbose) {
       meshComm.barrier();
-      setupBeginTime = MPI_Wtime();
     }
+    setupBeginTime = MPI_Wtime();
 
     std::vector<double> box = d_meshAdapter->getBoundingBox();
     for(int i = 0; i < d_meshAdapter->getDim(); ++i) {
@@ -183,7 +188,7 @@ d_fout<<"\n";
 
     if(d_verbose) {
       if(!rank) {
-        std::cout<<"BoxLevel = "<<d_boxLevel<<std::endl;
+        d_oStream<<"BoxLevel = "<<d_boxLevel<<std::endl;
       }
     }
 
@@ -246,7 +251,7 @@ d_fout<<"\n";
     if(d_verbose) {
       int numGlobalOcts = meshComm.sumReduce<int>(numLocalOcts);
       if(!rank) {
-        std::cout<<"Total num initial octants = "<<numGlobalOcts <<std::endl;
+        d_oStream<<"Total num initial octants = "<<numGlobalOcts <<std::endl;
       }
     }
 
@@ -519,17 +524,22 @@ d_fout<<"\n";
       int numGlobalOcts = meshComm.sumReduce(numLocalOcts);
 
       if(!rank) {
-        std::cout<<"Total num final octants = "<<numGlobalOcts <<std::endl;
-        std::cout<<"Global Min Fine List Length = "<<globalMinFineListLen <<std::endl;
-        std::cout<<"Global Max Fine List Length = "<<globalMaxFineListLen <<std::endl;
+        d_oStream<<"Total num final octants = "<<numGlobalOcts <<std::endl;
+        d_oStream<<"Global Min Fine List Length = "<<globalMinFineListLen <<std::endl;
+        d_oStream<<"Global Max Fine List Length = "<<globalMaxFineListLen <<std::endl;
       }
     }
 
     if(d_verbose) {
       meshComm.barrier();
-      setupEndTime = MPI_Wtime();
+    }
+
+    setupEndTime = MPI_Wtime();
+    d_timingMeasurements[Setup] = setupEndTime - setupBeginTime;
+
+    if(d_verbose) {
       if(!rank) {
-        std::cout<<"Finished setting up DS for search in "<<(setupEndTime - setupBeginTime)<<" seconds."<<std::endl;
+        d_oStream<<"Finished setting up DS for search in "<<(setupEndTime - setupBeginTime)<<" seconds."<<std::endl;
       }
     }
   }
@@ -538,11 +548,13 @@ d_fout<<"\n";
     const int rank = comm.getRank();
     const int npes = comm.getSize();
 
-std::fstream d_fout;
-std::string fileName = "tmp_cascade_" + boost::lexical_cast<std::string>(rank);
-d_fout.open(fileName.c_str(), std::fstream::out);
-d_fout<<std::setprecision(6)<<std::fixed;
-double point_of_view[] = { 0.725866, -0.334606, 0.600964 };
+//std::fstream d_fout;
+//std::string fileName = "tmp_cascade_" + boost::lexical_cast<std::string>(rank);
+//d_fout.open(fileName.c_str(), std::fstream::out);
+//d_fout<<std::setprecision(6)<<std::fixed;
+//double point_of_view[] = { 0.725866, -0.334606, 0.600964 };
+    double coarseSearchBeginTime, coarseSearchEndTime, fineSearchBeginTime, fineSearchEndTime;
+    coarseSearchBeginTime = MPI_Wtime();
 
     std::vector<int> rankMap(npes);
 
@@ -766,6 +778,10 @@ double point_of_view[] = { 0.725866, -0.334606, 0.600964 };
       }
     }
 
+    coarseSearchEndTime = MPI_Wtime();
+    d_timingMeasurements[CoarseSearch] = coarseSearchEndTime - coarseSearchBeginTime;
+    fineSearchBeginTime = MPI_Wtime();
+
     unsigned int n_volume_elements = d_localElemArr.size();
     d_volume_elements.clear();
     d_volume_elements.reserve(n_volume_elements);
@@ -791,23 +807,23 @@ double point_of_view[] = { 0.725866, -0.334606, 0.600964 };
     d_foundPts.reserve(6*numRecvPts);
     unsigned int numFoundPts = 0;
     bool coordinates_are_local = true;
-std::vector<double> firstComeFirstServed;
+//std::vector<double> firstComeFirstServed;
     for(int i = 0; i < numRecvPts; ++i) {
       double const * tmpPtGlobalCoordPtr = &(recvPtsList[6*i])+1;
       unsigned int eId = static_cast<unsigned int>(recvPtsList[6*i]);
       unsigned int procId = static_cast<unsigned int>(recvPtsList[6*i+5]);
-if (firstComeFirstServed.empty()) { 
-  firstComeFirstServed.resize(3);
-  std::copy(tmpPtGlobalCoordPtr, tmpPtGlobalCoordPtr+3, firstComeFirstServed.begin());
-  d_fout<<"% first point was \n";
-  draw_point(tmpPtGlobalCoordPtr, "red", d_fout);
-  d_fout<<"\n";
-} // end if
-if (std::equal(tmpPtGlobalCoordPtr, tmpPtGlobalCoordPtr+3, firstComeFirstServed.begin())) {
-  d_fout<<"% elementLocalID="<<eId<<"\n";
-  draw_hex8_element(&(d_volume_elements[eId]), point_of_view, d_fout);
-  d_fout<<"\n";
-} // end if
+//if (firstComeFirstServed.empty()) { 
+//  firstComeFirstServed.resize(3);
+//  std::copy(tmpPtGlobalCoordPtr, tmpPtGlobalCoordPtr+3, firstComeFirstServed.begin());
+//  d_fout<<"% first point was \n";
+//  draw_point(tmpPtGlobalCoordPtr, "red", d_fout);
+//  d_fout<<"\n";
+//} // end if
+//if (std::equal(tmpPtGlobalCoordPtr, tmpPtGlobalCoordPtr+3, firstComeFirstServed.begin())) {
+//  d_fout<<"% elementLocalID="<<eId<<"\n";
+//  draw_hex8_element(&(d_volume_elements[eId]), point_of_view, d_fout);
+//  d_fout<<"\n";
+//} // end if
 
       if (d_volume_elements[eId].within_bounding_box(tmpPtGlobalCoordPtr, d_tolerance)) {
         if (d_volume_elements[eId].within_bounding_polyhedron(tmpPtGlobalCoordPtr, d_tolerance)) {
@@ -841,6 +857,9 @@ if (std::equal(tmpPtGlobalCoordPtr, tmpPtGlobalCoordPtr+3, firstComeFirstServed.
         std::cout<<"Time for step-6 of search: "<<(searchStep6Time - searchStep5Time)<<" seconds."<<std::endl;
       }
     }
+
+    fineSearchEndTime = MPI_Wtime();
+    d_timingMeasurements[FineSearch] = fineSearchEndTime - fineSearchBeginTime;
   }
 
   void DendroSearch::interpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
@@ -851,8 +870,8 @@ if (std::equal(tmpPtGlobalCoordPtr, tmpPtGlobalCoordPtr+3, firstComeFirstServed.
     double interpolateBeginTime, interpolateStep1Time, interpolateStep2Time;
     if(d_verbose) {
       comm.barrier();
-      interpolateBeginTime = MPI_Wtime();
     }
+    interpolateBeginTime = MPI_Wtime();
 
     vectorField->makeConsistent(  AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField->getDOFManager();
@@ -936,7 +955,10 @@ if (std::equal(tmpPtGlobalCoordPtr, tmpPtGlobalCoordPtr+3, firstComeFirstServed.
 
     if(d_verbose) {
       comm.barrier();
-      interpolateStep2Time = MPI_Wtime();
+    }
+    interpolateStep2Time = MPI_Wtime();
+    d_timingMeasurements[Interpolation] = interpolateStep2Time - interpolateBeginTime;
+    if(d_verbose) {
       if(!rank) {
         std::cout<<"Time for step-2 of interpolate: "<<(interpolateStep2Time - interpolateStep1Time)<<" seconds."<<std::endl;
       }
@@ -954,4 +976,10 @@ if (std::equal(tmpPtGlobalCoordPtr, tmpPtGlobalCoordPtr+3, firstComeFirstServed.
   }
 
 
+  void DendroSearch::reportTiming(size_t n, TimingType const * timingTypes, double * timingMeasurements) {
+    AMP_INSIST(!d_verbose, "verbose mode in DendroSearch implies calls to MPI_Barrier so timing measurements are bads");
+    for (size_t i = 0; i < n; ++i) {
+      timingMeasurements[i] = d_timingMeasurements[timingTypes[i]];
+    } // end for i
+  }
 
