@@ -21,6 +21,8 @@ namespace AMP {
       if(d_skipRHSsetCorrection) { AMP_ASSERT(d_skipRHSaddCorrection); }
       if(!d_skipRHSaddCorrection) { AMP_ASSERT(!d_skipRHSsetCorrection); }
 
+      d_applyMatrixCorrectionWasCalled = false;
+
       initRhsCorrectionSet();
 
       if(d_skipRHSaddCorrection) {
@@ -30,6 +32,9 @@ namespace AMP {
 
     void DirichletMatrixCorrection :: applyMatrixCorrection() 
     {
+      AMP_ASSERT(!d_applyMatrixCorrectionWasCalled);
+      d_applyMatrixCorrectionWasCalled = true;
+
       AMP::LinearAlgebra::Vector::shared_ptr inVec = d_inputMatrix->getRightVector();
       AMP::Discretization::DOFManager::shared_ptr dof_map = inVec->getDOFManager();
 
@@ -180,6 +185,8 @@ namespace AMP {
 
     void DirichletMatrixCorrection :: initRhsCorrectionAdd(AMP::LinearAlgebra::Vector::shared_ptr rhs)
     {
+      AMP_ASSERT(!d_applyMatrixCorrectionWasCalled);
+
       if(!d_skipRHSsetCorrection) {
         if(!d_skipRHSaddCorrection) {
           if(d_dispVals.get() == NULL) {

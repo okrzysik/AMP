@@ -71,8 +71,10 @@ namespace AMP {
           */
         void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) {
           if(!d_skipRHSaddCorrection) {
-            initRhsCorrectionAdd(rhs);
-            applyMatrixCorrection();
+            if (!d_applyMatrixCorrectionWasCalled) {
+              initRhsCorrectionAdd(rhs);
+              applyMatrixCorrection();
+            } // end if
             AMP::LinearAlgebra::Vector::shared_ptr myRhs = subsetOutputVector(rhs);
 //            AMP::LinearAlgebra::Vector::shared_ptr myRhs = rhs->subsetVectorForVariable(d_variable);
             myRhs->add(myRhs, d_rhsCorrectionAdd);
@@ -130,6 +132,8 @@ namespace AMP {
         void initRhsCorrectionAdd(AMP::LinearAlgebra::Vector::shared_ptr rhs);
 
         void applyMatrixCorrection();
+
+        bool d_applyMatrixCorrectionWasCalled;
 
         AMP::LinearAlgebra::Matrix::shared_ptr d_inputMatrix;
 

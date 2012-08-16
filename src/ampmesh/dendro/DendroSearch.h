@@ -35,7 +35,9 @@ class DendroSearch {
 
     enum SearchStatus { NotFound = 0, Found, FoundNotOnBoundary, FoundOnBoundary };
 
-    DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh);
+    enum TimingType { Setup = 0, CoarseSearch, FineSearch, Interpolation, ProjectionOnBoundaryID, numTimingTypes };
+
+    DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh, bool verbose = true, std::ostream & oStream = std::cout);
 
     void searchAndInterpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
         const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt);
@@ -49,6 +51,8 @@ class DendroSearch {
         std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags);
 
     void setTolerance(double tolerance);
+
+    void reportTiming(size_t n, TimingType const * timingTypes, double * timingMeasurements);
 
   private:
     AMP::Mesh::Mesh::shared_ptr d_meshAdapter;
@@ -67,7 +71,10 @@ class DendroSearch {
     std::vector<int> d_recvDisps;
     unsigned int d_boxLevel;
     int d_numLocalPts;
+
     bool d_verbose;
+    std::ostream & d_oStream;
+    std::vector<double> d_timingMeasurements;
   
     std::vector<hex8_element_t> d_volume_elements;
     double d_tolerance;

@@ -88,6 +88,19 @@ namespace LinearAlgebra {
     }
   }
 
+  inline
+  void ManagedVector::constSelectInto ( const VectorSelector &s , Vector::shared_ptr retVal ) const
+  {
+    if ( d_vBuffer )
+    {
+      Vector::constSelectInto ( s , retVal );
+    }
+    else
+    {
+      d_Engine->castTo<Vector>().constSelectInto ( s , retVal );
+    }
+  }
+
 
   inline
   ManagedVectorParameters::ManagedVectorParameters ()
