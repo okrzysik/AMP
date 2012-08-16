@@ -31,6 +31,9 @@ namespace Operator {
           AMP_INSIST( (params->d_db->keyExists("Material")), "Key ''Material'' is missing!" );
           std::string matname = params->d_db->getString("Material");
           d_material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(matname);
+        } else {
+          // Read constant value for the associated property.
+          d_constantProperty = params->d_db->getDoubleWithDefault("CONSTANT", 1.0);
         }
 
         elementPhysicsParams.reset(new AMP::Operator::ElementPhysicsModelParameters( params->d_db ));
@@ -98,10 +101,16 @@ namespace Operator {
         std::string eqnname = elementPhysicsParams->d_db->getString("Equation");
         AMP_INSIST((eqnname == "ThermalSource"), "SourcePhysicsModel should be implemented by User for this Equation"); 
 
-        int switchId = InputVec.size();  
+        if ( d_useMaterialsLibrary != true ) {
+          for (size_t i=0; i<result.size(); i++) { 
+            result[i] = d_constantProperty;
+          }
+        } else {
+        
+          int switchId = InputVec.size();  
 
-        switch(switchId) {
-          case 1 : {
+          switch(switchId) {
+            case 1 : {
                      std::vector<double> DefaultVec0(result.size());
                      std::vector<double> DefaultVec1(result.size());
                      std::vector<double> DefaultVec2(result.size());
@@ -116,19 +125,21 @@ namespace Operator {
                      } 
                      break;
                    }
-          case 2 : {
+            case 2 : {
                      std::vector<double> DefaultVec(result.size());
                      for (size_t i=0; i<result.size(); i++) {DefaultVec[i]=d_defaults[2];}
                      tmp->getDensityMechanics(result, InputVec[0], InputVec[1], DefaultVec);
                      break;
                    }
-          case 3 : {
+            case 3 : {
                      tmp->getDensityMechanics(result, InputVec[0], InputVec[1], InputVec[2]);
                      break;
                    }
-          default:
+            default:
                    assert(false);
+          }
         }
+        
       }
       else if (d_physicsName=="ManufacturedSourceModel1")
       {
