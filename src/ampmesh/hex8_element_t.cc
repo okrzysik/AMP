@@ -150,6 +150,7 @@ void hex8_element_t::build_bounding_polyhedron() {
     //   0           
     tmp_triangles.push_back(triangle_t(get_support_point(faces[4*i+3]), get_support_point(faces[4*i+0]), get_support_point(faces[4*i+2]))); 
 
+//this might need scaling
     if (tmp_triangles[0].above_point(tmp_triangles[2].get_centroid())) {
       assert(tmp_triangles[0].above_point(tmp_triangles[3].get_centroid()));
       assert(tmp_triangles[1].above_point(tmp_triangles[2].get_centroid()));
