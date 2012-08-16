@@ -138,7 +138,7 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
     }
 
     unsigned int numIds = d_boundaryIds.size();
-    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> elementInputVec = myparams->d_elementInputVec;
+    std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> elementInputVec = myparams->d_elementInputVec;
     for(unsigned int nid = 0; nid < numIds; nid++)
     {
       AMP::Mesh::MeshIterator bnd1     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );

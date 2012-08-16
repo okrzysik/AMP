@@ -27,6 +27,10 @@ Vector::shared_ptr  VectorSelector::subset ( Vector::shared_ptr p ) const
 {
     return p;
 }
+Vector::const_shared_ptr  VectorSelector::subset ( Vector::const_shared_ptr p ) const
+{
+    return p;
+}
 
   
 
@@ -58,6 +62,12 @@ Vector::shared_ptr  VS_Stride::subset ( Vector::shared_ptr p ) const
     Vector::shared_ptr  vector = SubsetVector::view ( p, variable ); 
     return vector;
 }
+Vector::const_shared_ptr  VS_Stride::subset ( Vector::const_shared_ptr p ) const
+{ 
+    Variable::shared_ptr  variable ( new StridedVariable( d_Name , d_Offset , d_Stride ) );
+    Vector::const_shared_ptr  vector = SubsetVector::view ( p, variable ); 
+    return vector;
+}
 
 
 /********************************************************
@@ -77,6 +87,12 @@ Vector::shared_ptr  VS_Comm::subset ( Vector::shared_ptr p ) const
 { 
     Variable::shared_ptr  variable ( new CommVariable( d_Name, communicator(p) ) );
     Vector::shared_ptr  vector = SubsetVector::view ( p, variable ); 
+    return vector;
+}
+Vector::const_shared_ptr  VS_Comm::subset ( Vector::const_shared_ptr p ) const
+{ 
+    Variable::shared_ptr  variable ( new CommVariable( d_Name, communicator(p) ) );
+    Vector::const_shared_ptr  vector = SubsetVector::view ( p, variable ); 
     return vector;
 }
 
@@ -104,6 +120,12 @@ Vector::shared_ptr  VS_Mesh::subset ( Vector::shared_ptr p ) const
     Vector::shared_ptr  vector = SubsetVector::view ( p, variable ); 
     return vector;
 }
+Vector::const_shared_ptr  VS_Mesh::subset ( Vector::const_shared_ptr p ) const
+{ 
+    Variable::shared_ptr  variable ( new MeshVariable( d_Name, d_mesh, d_useMeshComm ) );
+    Vector::const_shared_ptr  vector = SubsetVector::view ( p, variable ); 
+    return vector;
+}
 #endif
 
 
@@ -121,6 +143,12 @@ Vector::shared_ptr  VS_MeshIterator::subset ( Vector::shared_ptr p ) const
 { 
     Variable::shared_ptr  variable ( new MeshIteratorVariable( d_Name, d_iterator, d_comm ) );
     Vector::shared_ptr  vector = SubsetVector::view ( p, variable ); 
+    return vector;
+}
+Vector::const_shared_ptr  VS_MeshIterator::subset ( Vector::const_shared_ptr p ) const
+{ 
+    Variable::shared_ptr  variable ( new MeshIteratorVariable( d_Name, d_iterator, d_comm ) );
+    Vector::const_shared_ptr  vector = SubsetVector::view ( p, variable ); 
     return vector;
 }
 #endif

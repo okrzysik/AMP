@@ -154,9 +154,11 @@ void Map1Dto3D::computeZGaussLocations(){
           // Get the current position and DOF
           std::vector<Point> coordinates = d_fe->get_xyz();
 
-          t_zLocations.push_back(coordinates[0](2));
-          Xx = coordinates[0](0);
-          Yy = coordinates[0](1);
+          for (unsigned int qp = 0; qp < coordinates.size(); qp++) {
+            t_zLocations.push_back(coordinates[qp](2));
+            Xx = coordinates[qp](0);
+            Yy = coordinates[qp](1);
+          }
           bnd++;
         }
 
@@ -168,9 +170,11 @@ void Map1Dto3D::computeZGaussLocations(){
           d_fe->reinit ( libmeshElements.getElement( bnd->globalID() ));
 
           std::vector<Point> x = d_fe->get_xyz();
-          if( (fabs(Xx-x[0](0)) <= 1.e-12) && (fabs(Yy-x[0](1)) <= 1.e-12) ){ 
-                t_zLocations.push_back(x[0](2));
+          for (unsigned int qp = 0; qp < x.size(); qp++) {
+            if( (fabs(Xx-x[qp](0)) <= 1.e-12) && (fabs(Yy-x[qp](1)) <= 1.e-12) ){ 
+              t_zLocations.push_back(x[qp](2));
             }
+          }
         }
     }
 
@@ -207,8 +211,8 @@ void Map1Dto3D::setZLocations( const std::vector<double> &z )
 }
 
 
-void Map1Dto3D :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-    AMP::LinearAlgebra::Vector::shared_ptr &r, const double , const double )
+void Map1Dto3D :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+    AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double )
 {
   AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
   double a = 1.0,  b=0.0;
@@ -221,8 +225,8 @@ void Map1Dto3D :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AM
 
 }
 
-void Map1Dto3D::apply_Gauss(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-    AMP::LinearAlgebra::Vector::shared_ptr &r, const double , const double )
+void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+    AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double )
 { 
 
     if ( d_MapMesh.get()==NULL ) 
@@ -232,8 +236,8 @@ void Map1Dto3D::apply_Gauss(const AMP::LinearAlgebra::Vector::shared_ptr &, cons
 
     // Subset the input vector, it is a simple vector and we need to subset for the current comm before the variable
     AMP::LinearAlgebra::VS_Comm commSelector( d_inpVariable->getName(), d_MapComm );
-    AMP::LinearAlgebra::Vector::shared_ptr commSubsetVec = u->select(commSelector, d_inpVariable->getName());
-    AMP::LinearAlgebra::Vector::shared_ptr inputVec = commSubsetVec->subsetVectorForVariable(d_inpVariable);
+    AMP::LinearAlgebra::Vector::const_shared_ptr commSubsetVec = u->constSelect(commSelector, d_inpVariable->getName());
+    AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = commSubsetVec->constSubsetVectorForVariable(d_inpVariable);
 
     // AMP::LinearAlgebra::Vector::shared_ptr outputVec =  subsetOutputVector( r );
     AMP_ASSERT(inputVec != NULL);
@@ -306,8 +310,8 @@ void Map1Dto3D::apply_Gauss(const AMP::LinearAlgebra::Vector::shared_ptr &, cons
 
 }
 
-void Map1Dto3D::apply_Nodal(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-    AMP::LinearAlgebra::Vector::shared_ptr &r, const double , const double )
+void Map1Dto3D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+    AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double )
 { 
 
   if ( d_MapMesh.get()==NULL ) 
@@ -315,10 +319,10 @@ void Map1Dto3D::apply_Nodal(const AMP::LinearAlgebra::Vector::shared_ptr &, cons
 
   AMP_ASSERT(u != NULL);
 
-  // Subset the input vector, it is a simple vector and we need to subset for the current comm before the variable
-  AMP::LinearAlgebra::VS_Comm commSelector( d_inpVariable->getName(), d_MapComm );
-  AMP::LinearAlgebra::Vector::shared_ptr commSubsetVec = u->select(commSelector, d_inpVariable->getName());
-    AMP::LinearAlgebra::Vector::shared_ptr inputVec = commSubsetVec->subsetVectorForVariable(d_inpVariable);
+    // Subset the input vector, it is a simple vector and we need to subset for the current comm before the variable
+    AMP::LinearAlgebra::VS_Comm commSelector( d_inpVariable->getName(), d_MapComm );
+    AMP::LinearAlgebra::Vector::const_shared_ptr commSubsetVec = u->constSelect(commSelector, d_inpVariable->getName());
+    AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = commSubsetVec->constSubsetVectorForVariable(d_inpVariable);
 
     // AMP::LinearAlgebra::Vector::shared_ptr outputVec =  subsetOutputVector( r );
     AMP_ASSERT(inputVec != NULL);

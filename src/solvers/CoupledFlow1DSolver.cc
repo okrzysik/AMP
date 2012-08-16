@@ -1,5 +1,5 @@
 #include "utils/Utilities.h"
-#include "FlowFrapconJacobian.h"
+#include "operators/subchannel/FlowFrapconJacobian.h"
 #include "CoupledFlow1DSolver.h"
 #include "Flow1DSolver.h"
 #include "MultiVector.h"
@@ -87,18 +87,19 @@ CoupledFlow1DSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
 {
 	AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
   
-        d_inpVariable = d_flow1DSolver->getOperator()->getInputVariable();
-        d_outVariable = d_flowInternal1to3->getOutputVariable();
+    d_inpVariable = d_flow1DSolver->getOperator()->getInputVariable();
+    d_outVariable = d_flowInternal1to3->getOutputVariable();
 
-        d_Sol = u->subsetVectorForVariable(d_outVariable);
-        d_Rhs = f->subsetVectorForVariable(d_outVariable);
+    d_Sol = u->subsetVectorForVariable(d_outVariable);
+    d_Rhs = f->subsetVectorForVariable(d_outVariable);
+    d_Rhs->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
-        (boost::dynamic_pointer_cast<AMP::Operator::Map3Dto1D> (d_flowInternal3to1))->setVector(d_flowInput);
-        (boost::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_flowInternal1to3))->setVector(d_Sol );
+    (boost::dynamic_pointer_cast<AMP::Operator::Map3Dto1D> (d_flowInternal3to1))->setVector(d_flowInput);
+    (boost::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_flowInternal1to3))->setVector(d_Sol );
 
-        d_flowInternal3to1->apply(nullVec, d_Rhs, nullVec, -1, 1);
-        d_flow1DSolver->solve(d_flowInput, d_flowOutput);
-        d_flowInternal1to3->apply(nullVec, d_flowOutput , nullVec, -1, 1);
+    d_flowInternal3to1->apply(nullVec, d_Rhs, nullVec, -1, 1);
+    d_flow1DSolver->solve(d_flowInput, d_flowOutput);
+    d_flowInternal1to3->apply(nullVec, d_flowOutput , nullVec, -1, 1);
 }
 
 }

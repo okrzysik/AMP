@@ -1,11 +1,11 @@
 #ifndef included_AMP_CoupledFlowFrapconOperator
 #define included_AMP_CoupledFlowFrapconOperator
 
-#include "ColumnOperator.h"
-#include "CoupledFlowFrapconOperatorParameters.h"
+#include "operators/ColumnOperator.h"
+#include "operators/subchannel/CoupledFlowFrapconOperatorParameters.h"
 #include "operators/map/Map3Dto1D.h"
 #include "operators/map/Map1Dto3D.h"
-#include "FlowFrapconOperator.h"
+#include "operators/subchannel/FlowFrapconOperator.h"
 #include "vectors/Vector.h"
 #include "utils/Utilities.h"
 #include <vector>
@@ -36,8 +36,8 @@ namespace Operator {
         return d_Operators[4]->getOutputVariable();
       }
 
-      void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-          AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
+      void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+          AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
       virtual void append(boost::shared_ptr< Operator > op) {
         AMP_ASSERT(d_Operators.size() < 3);

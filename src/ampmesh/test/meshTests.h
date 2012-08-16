@@ -167,7 +167,12 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
                 AMP::Mesh::GeomType type2 = (AMP::Mesh::GeomType) i;
                 std::vector<AMP::Mesh::MeshElement> pieces = element.getElements(type2);
                 if ( pieces.empty() )
-                    elements_pass = false;
+                    elements_pass = false;  // Did not return anything
+                AMP::Utilities::quicksort(pieces);
+                for (size_t j=1; j<pieces.size(); j++) {
+                    if ( pieces[j]==pieces[j-1] )
+                        elements_pass = false;  // Repeated elements
+                }
             }
             std::vector< AMP::Mesh::MeshElement::shared_ptr > neighbors = element.getNeighbors();
             if ( neighbors.empty() ) {
@@ -849,6 +854,10 @@ void getParents( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
             ++it;
         }
     }
+    if ( pass )
+        utils->passes("getParents passed");
+    else
+        utils->failure("getParents passed");    
 }
 
 

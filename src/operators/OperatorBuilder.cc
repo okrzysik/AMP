@@ -1,30 +1,31 @@
 #include "OperatorBuilder.h"
 #include "utils/Utilities.h"
-#include "DirichletMatrixCorrection.h"
-#include "DirichletVectorCorrection.h"
-#include "MassMatrixCorrection.h"
-#include "NeumannVectorCorrection.h"
-#include "PressureBoundaryVectorCorrection.h"
-#include "RobinMatrixCorrection.h"
-#include "RobinVectorCorrection.h"
-#include "ColumnBoundaryOperator.h"
-#include "FlowFrapconOperator.h"
-#include "FlowFrapconJacobian.h"
-#include "SubchannelTwoEqLinearOperator.h"
-#include "SubchannelTwoEqNonlinearOperator.h"
+
+#include "operators/VolumeIntegralOperator.h"
+#include "operators/MassLinearFEOperator.h"
+#include "operators/NeutronicsRhs.h"
+#include "operators/LinearBVPOperator.h"
+#include "operators/NonlinearBVPOperator.h"
+#include "operators/ParameterFactory.h"
+#include "operators/ElementOperationFactory.h"
+#include "operators/boundary/ColumnBoundaryOperator.h"
+#include "operators/boundary/DirichletMatrixCorrection.h"
+#include "operators/boundary/DirichletVectorCorrection.h"
+#include "operators/boundary/NeumannVectorCorrection.h"
+#include "operators/boundary/PressureBoundaryVectorCorrection.h"
+#include "operators/boundary/RobinMatrixCorrection.h"
+#include "operators/boundary/RobinVectorCorrection.h"
+#include "operators/boundary/MassMatrixCorrection.h"
+#include "operators/subchannel/FlowFrapconOperator.h"
+#include "operators/subchannel/FlowFrapconJacobian.h"
+#include "operators/subchannel/SubchannelTwoEqLinearOperator.h"
+#include "operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
-#include "FickSoretNonlinearFEOperator.h"
-#include "VolumeIntegralOperator.h"
-#include "MassLinearFEOperator.h"
-#include "NeutronicsRhs.h"
-#include "LinearBVPOperator.h"
-#include "NonlinearBVPOperator.h"
-#include "ParameterFactory.h"
-#include "ElementOperationFactory.h"
-#include "map/MapSurface.h"
+#include "operators/diffusion/FickSoretNonlinearFEOperator.h"
+#include "operators/map/MapSurface.h"
 
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
@@ -32,6 +33,7 @@
 #include "vectors/VectorBuilder.h"
 
 #include "operators/mechanics/MechanicsConstants.h"
+#include "ampmesh/StructuredMeshHelper.h"
 
 #include <string>
 
@@ -309,7 +311,9 @@ OperatorBuilder::createSubchannelTwoEqLinearOperator( AMP::Mesh::Mesh::shared_pt
   
   boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelParams(new AMP::Operator::SubchannelOperatorParameters( subchannel_db ));
   subchannelParams->d_Mesh = meshAdapter;
-  subchannelParams->d_dofMap = AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Face, 1, 2, true);
+  
+  subchannelParams->d_dofMap = AMP::Discretization::simpleDOFManager::create( meshAdapter, 
+      AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(meshAdapter,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(meshAdapter,0), 2);
   boost::shared_ptr<AMP::Operator::SubchannelTwoEqLinearOperator> subchannelOp (new AMP::Operator::SubchannelTwoEqLinearOperator( subchannelParams ));
   
   return subchannelOp;

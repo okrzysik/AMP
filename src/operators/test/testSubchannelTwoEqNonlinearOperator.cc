@@ -13,17 +13,15 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-//#include "ampmesh/Mesh.h"
 #include "vectors/VectorBuilder.h"
-#include "vectors/SimpleVector.h"
 
-#include "SubchannelPhysicsModel.h"
-#include "SubchannelOperatorParameters.h"
-#include "SubchannelTwoEqNonlinearOperator.h"
-#include "../OperatorBuilder.h"
-#include "discretization/simpleDOF_Manager.h"
+#include "operators/subchannel/SubchannelPhysicsModel.h"
+#include "operators/subchannel/SubchannelOperatorParameters.h"
+#include "operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
+#include "operators/OperatorBuilder.h"
 
 #include "ampmesh/StructuredMeshHelper.h"
+#include "discretization/simpleDOF_Manager.h"
 
 void Test(AMP::UnitTest *ut, const std::string exeName)
 {
@@ -55,14 +53,14 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   boost::shared_ptr<AMP::Database> subchannelOperator_db = input_db->getDatabase("SubchannelTwoEqNonlinearOperator");
   // set operator parameters
   boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
-  subchannelOpParams->d_Mesh = xyFaceMesh ;
+  subchannelOpParams->d_Mesh = subchannelMesh ;
   subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
 
   // create nonlinear operator
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
   boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> subchannelOperator =
       boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
-      xyFaceMesh ,"SubchannelTwoEqNonlinearOperator",input_db,elementModel ));
+      subchannelMesh ,"SubchannelTwoEqNonlinearOperator",input_db,elementModel ));
   
   // report successful creation
   ut->passes(exeName+": creation");

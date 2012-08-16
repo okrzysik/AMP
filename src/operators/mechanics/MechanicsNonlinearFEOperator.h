@@ -68,7 +68,7 @@ namespace AMP {
           This function is used to set the reference temperature when using temperature dependent material models.
           @param [in] refTemp Reference temperature
           */
-        void setReferenceTemperature(AMP::LinearAlgebra::Vector::shared_ptr refTemp);
+        void setReferenceTemperature(AMP::LinearAlgebra::Vector::const_shared_ptr refTemp);
 
         /**
           This function is used to set frozen vectors in this operator. This is used when some of the 
@@ -77,7 +77,7 @@ namespace AMP {
           @param [in] frozenVec Frozen vector
           @see MechanicsConstants.h
           */
-        void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec);
+        void setVector(unsigned int id, AMP::LinearAlgebra::Vector::const_shared_ptr frozenVec);
 
         /**
           @return The variable for the specified component of the input vector. If varId is equal to -1, it
@@ -115,7 +115,7 @@ namespace AMP {
           @param [in] u  input vector
           @param [out] r output vector
           */
-        void preAssembly(const AMP::LinearAlgebra::Vector::shared_ptr &u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r);
+        void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, boost::shared_ptr<AMP::LinearAlgebra::Vector> r);
 
         /**
           This function is called at the end of the FE assembly.
@@ -139,6 +139,9 @@ namespace AMP {
         AMP::LinearAlgebra::Vector::shared_ptr mySubsetVector(AMP::LinearAlgebra::Vector::shared_ptr vec, 
             AMP::LinearAlgebra::Variable::shared_ptr var);
 
+        AMP::LinearAlgebra::Vector::const_shared_ptr mySubsetVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec, 
+            AMP::LinearAlgebra::Variable::shared_ptr var);
+
         template <MechanicsNonlinearElement::MaterialUpdateType updateType>
           void updateMaterialForElement(const AMP::Mesh::MeshElement &);
 
@@ -158,13 +161,13 @@ namespace AMP {
 
         boost::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
 
-        std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_inVec; /**< Input vector. */
+        std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> d_inVec; /**< Input vector. */
 
         std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_inVec_pre; /**< Input vector. at nth (previous) configuration */
 
         AMP::LinearAlgebra::Vector::shared_ptr d_refXYZ; /**< Reference x, y and z coordinates. */
 
-        AMP::LinearAlgebra::Vector::shared_ptr d_referenceTemperature; /**< Reference temperature. */
+        AMP::LinearAlgebra::Vector::const_shared_ptr d_referenceTemperature; /**< Reference temperature. */
 
         AMP::LinearAlgebra::Vector::shared_ptr d_outVec; /**< Output vector. */
 

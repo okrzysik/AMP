@@ -52,8 +52,8 @@ void FlowFrapconOperator :: reset(const boost::shared_ptr<OperatorParameters>& p
 
 
 // This is an in-place apply
-void FlowFrapconOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-    AMP::LinearAlgebra::Vector::shared_ptr &r, const double a, const double b)
+void FlowFrapconOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+    AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b)
 {
 
       // AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_inpVariable);
@@ -72,7 +72,7 @@ void FlowFrapconOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &
       // std::cout << "Extreme Max Point in z = " << max_z << std::endl;
 
       // Subset the vectors
-      AMP::LinearAlgebra::Vector::shared_ptr flowInputVec = subsetInputVector( u );
+      AMP::LinearAlgebra::Vector::const_shared_ptr flowInputVec = subsetInputVector( u );
       AMP::LinearAlgebra::Vector::shared_ptr outputVec = subsetOutputVector( r );
 
       // AMP::LinearAlgebra::Variable::shared_ptr localVar ( new AMP::LinearAlgebra::Variable(d_cladVec->getVariable()->getName() ) ); 
@@ -97,8 +97,8 @@ void FlowFrapconOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &
       zPoints.resize(d_numpoints);
 
       // set the inlet flow temperature value
-      flowInputVec->setValueByLocalID(0, d_Tin);
-      outputVec->setValueByLocalID(0, 0.0);
+      double T1 = flowInputVec->getValueByLocalID(0);
+      outputVec->setValueByLocalID(0, d_Tin-T1);
 
       zPoints[0] = min_z;
       for( int j=1; j<d_numpoints; j++) {
@@ -133,7 +133,7 @@ void FlowFrapconOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &
       if(f.get() == NULL) {
         outputVec->scale(a);
       } else {
-        AMP::LinearAlgebra::Vector::shared_ptr fInternal = subsetInputVector( f );
+        AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = subsetInputVector( f );
         if(fInternal.get() == NULL) {
           outputVec->scale(a);
         } else {

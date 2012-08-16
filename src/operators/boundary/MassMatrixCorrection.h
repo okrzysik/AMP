@@ -41,8 +41,8 @@ namespace Operator {
           d_variable = var;
       }
       
-      void apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &, AMP::LinearAlgebra::Vector::shared_ptr &,
-               const double, const double)
+      void apply( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr,
+          AMP::LinearAlgebra::Vector::shared_ptr, const double, const double)
       {
           //Do Nothing
       }

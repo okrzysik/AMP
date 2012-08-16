@@ -94,8 +94,8 @@ namespace AMP {
       }//end for bnd
     }
 
-    void PelletStackOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-        const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
+    void PelletStackOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+        AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
         const double a, const double b) {
       if(d_onlyZcorrection) {
         applyOnlyZcorrection(r);
@@ -130,8 +130,8 @@ namespace AMP {
       }//end for i
     }
 
-    void PelletStackOperator :: applyXYZcorrection(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-        const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r) {
+    void PelletStackOperator :: applyXYZcorrection(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+        AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr  &r) {
       AMP_ASSERT(d_frozenVectorSet);
       AMP::LinearAlgebra::Vector::shared_ptr nullVec;
       r->copyVector(f);
@@ -165,8 +165,8 @@ namespace AMP {
       }//end for i
     }
 
-    void PelletStackOperator :: applySerial(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-        const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r) {
+    void PelletStackOperator :: applySerial(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+        AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr &r) {
       AMP_ASSERT(d_frozenVectorSet);
       AMP_ASSERT(d_currentPellet > 0);
       AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -213,7 +213,7 @@ namespace AMP {
           }
         }//end for m
       }
-      AMP::LinearAlgebra::Vector::shared_ptr subF = f->subsetVectorForVariable(d_var);
+      AMP::LinearAlgebra::Vector::const_shared_ptr subF = f->constSubsetVectorForVariable(d_var);
       AMP::LinearAlgebra::Vector::shared_ptr subR = r->subsetVectorForVariable(d_var);
       AMP::LinearAlgebra::Vector::shared_ptr subU = d_frozenVectorForMaps->subsetVectorForVariable(d_var);
       AMP::Discretization::DOFManager::shared_ptr dof_map = subR->getDOFManager();
@@ -232,9 +232,9 @@ namespace AMP {
       }
     }
 
-    void PelletStackOperator :: computeZscan(const AMP::LinearAlgebra::Vector::shared_ptr &u, 
+    void PelletStackOperator :: computeZscan(AMP::LinearAlgebra::Vector::const_shared_ptr u, 
         std::vector<double> &finalMaxZdispsList) {
-      AMP::LinearAlgebra::Vector::shared_ptr subU = u->subsetVectorForVariable(d_var);
+      AMP::LinearAlgebra::Vector::const_shared_ptr subU = u->constSubsetVectorForVariable(d_var);
       AMP::Discretization::DOFManager::shared_ptr dof_map = subU->getDOFManager();
       std::vector<double> myMaxZdisps(d_pelletIds.size(), 0.0);
       for(size_t i = 0; i < d_pelletIds.size(); i++) {

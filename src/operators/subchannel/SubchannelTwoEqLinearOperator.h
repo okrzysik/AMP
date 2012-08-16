@@ -1,28 +1,26 @@
 
-#ifndef included_AMP_SubchannelTwoEqNonlinearOperator
-#define included_AMP_SubchannelTwoEqNonlinearOperator
+#ifndef included_AMP_SubchannelTwoEqLinearOperator
+#define included_AMP_SubchannelTwoEqLinearOperator
 
-#include "operators/Operator.h"
-#include "SubchannelOperatorParameters.h"
-
-#include "ampmesh/MeshElementVectorIterator.h"
+#include "operators/LinearOperator.h"
+#include "operators/subchannel/SubchannelOperatorParameters.h"
 
 namespace AMP {
 namespace Operator {
 
   /**
-    Nonlinear operator class for the 2-equation {enthalpy, pressure} formulation of the subchannel equations:
+    Linear operator class for the 2-equation {enthalpy, pressure} formulation of the subchannel equations:
     see /AMPFuel-Docs/technicalInfo/flow/SubchannelFlow.pdf for details
     */
-  class SubchannelTwoEqNonlinearOperator : public Operator
+  class SubchannelTwoEqLinearOperator : public LinearOperator
   {
     public :
 
       /**
         Constructor
         */
-      SubchannelTwoEqNonlinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params)
-        : Operator (params)
+      SubchannelTwoEqLinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params)
+        : LinearOperator (params)
       {
         AMP_INSIST( params->d_db->keyExists("InputVariable"), "Key 'InputVariable' does not exist");
         std::string inpVar = params->d_db->getString("InputVariable");
@@ -32,36 +30,20 @@ namespace Operator {
         std::string outVar = params->d_db->getString("OutputVariable");
         d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar));
 
+        d_dofMap = (params->d_dofMap);
+
+        d_atConstruction = true ;  
+        d_nullFrozenvector = true; 
+        
         reset(params);
       }
 
       /**
         Destructor
         */
-      ~SubchannelTwoEqNonlinearOperator() { }
-
-      /**
-        For this operator we have an in-place apply.
-        @param [in]  f auxillary/rhs vector. 
-        @param [in]  u input vector. 
-        @param [out] r residual/output vector. 
-        @param [in]  a first constant used in the expression: r = a*A(u) + b*f. The default value is -1.
-        @param [in]  b second constant used in the expression: r = a*A(u) + b*f. The default value is 1.
-        */
-      void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-          AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
+      ~SubchannelTwoEqLinearOperator() { }
 
       void reset(const boost::shared_ptr<OperatorParameters>& params);
-
-      AMP::LinearAlgebra::Variable::shared_ptr createInputVariable(const std::string & name, int varId = -1) {
-          (void) varId;
-          return d_inpVariable->cloneVariable(name);
-      }
-
-      AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable(const std::string & name, int varId = -1) {
-          (void) varId;
-          return d_outVariable->cloneVariable(name);
-      }
 
       AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
         return d_inpVariable;
@@ -78,16 +60,25 @@ namespace Operator {
       virtual AMP::LinearAlgebra::Vector::const_shared_ptr subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec);
 
       /**
-        Gets parameters from nonlinear operator for use in linear operator
+        Sets frozen vector
         */
-      boost::shared_ptr<OperatorParameters> getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
+      void setFrozenVector(AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
+        d_frozenVec = frozenVec;
+      }
+
+      // frozen vector
+      AMP::LinearAlgebra::Vector::shared_ptr d_frozenVec;
 
     protected:
 
+      boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap;
+
+      // subchannel physics model
       boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 
     private :
 
+      bool d_atConstruction, d_nullFrozenvector; 
       /**
         Function used in reset to get double parameter or use default if missing
         */
@@ -114,6 +105,25 @@ namespace Operator {
       double d_Q;        // rod power
       std::string d_source; // heat source type
       std::string d_heatShape; // heat shape used if heat source type is "totalHeatGeneration"
+
+      unsigned int d_solutionSize; // size of solution vector
+
+      static const double d_machinePrecision = 1.0e-15; // machine precision; used in perturbation for derivatives
+
+      /**
+        Derivative of enthalpy with respect to pressure
+        */
+      double dhdp(double,double);
+
+      /**
+        Derivative of specific volume with respect to enthalpy
+        */
+      double dvdh(double,double);
+
+      /**
+        Derivative of specific volume with respect to pressure
+        */
+      double dvdp(double,double);
 
   };
 

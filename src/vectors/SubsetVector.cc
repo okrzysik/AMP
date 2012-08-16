@@ -25,7 +25,7 @@ Vector::shared_ptr  SubsetVector::view ( Vector::shared_ptr v , Variable::shared
         return Vector::shared_ptr();
     if ( subsetDOF_ptr==v->getDOFManager() )
         return v;
-    boost::shared_ptr<AMP::Discretization::subsetDOFManager> subsetDOF = boost::static_pointer_cast<AMP::Discretization::subsetDOFManager>( subsetDOF_ptr );
+    boost::shared_ptr<AMP::Discretization::subsetDOFManager> subsetDOF = boost::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( subsetDOF_ptr );
     AMP_ASSERT(subsetDOF.get()!=NULL);
     std::vector<size_t> remote_DOFs = subsetDOF->getRemoteDOFs();
     bool ghosts = v->getComm().maxReduce<char>(remote_DOFs.size()>0)==1;
@@ -62,6 +62,55 @@ Vector::shared_ptr  SubsetVector::view ( Vector::shared_ptr v , Variable::shared
     retVal->d_dataBlockSize = std::vector<size_t>(data_ptr.size(),1);
     return retVal;
 }
+Vector::const_shared_ptr  SubsetVector::view ( Vector::const_shared_ptr v , Variable::shared_ptr var_in )
+{
+    boost::shared_ptr<SubsetVariable> var = boost::dynamic_pointer_cast<SubsetVariable>( var_in );
+    AMP_ASSERT( var.get() != NULL );
+    // Subset the DOFManager and create a new communication list
+    AMP::Discretization::DOFManager::shared_ptr subsetDOF_ptr = var->getSubsetDOF( v->getDOFManager() );
+    if ( subsetDOF_ptr.get() == NULL )
+        return Vector::shared_ptr();
+    if ( subsetDOF_ptr->numGlobalDOF() == 0 )
+        return Vector::shared_ptr();
+    if ( subsetDOF_ptr==v->getDOFManager() )
+        return v;
+    boost::shared_ptr<AMP::Discretization::subsetDOFManager> subsetDOF = boost::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( subsetDOF_ptr );
+    AMP_ASSERT(subsetDOF.get()!=NULL);
+    std::vector<size_t> remote_DOFs = subsetDOF->getRemoteDOFs();
+    bool ghosts = v->getComm().maxReduce<char>(remote_DOFs.size()>0)==1;
+    AMP::LinearAlgebra::CommunicationList::shared_ptr commList;
+    if ( !ghosts ) {
+        commList = AMP::LinearAlgebra::CommunicationList::createEmpty( subsetDOF->numLocalDOF(), subsetDOF->getComm() );
+    } else {
+        // Construct the communication list
+        AMP::LinearAlgebra::CommunicationListParameters::shared_ptr params( new AMP::LinearAlgebra::CommunicationListParameters );
+        params->d_comm = subsetDOF->getComm();
+        params->d_localsize = subsetDOF->numLocalDOF();
+        params->d_remote_DOFs = remote_DOFs;
+        commList = AMP::LinearAlgebra::CommunicationList::shared_ptr( new AMP::LinearAlgebra::CommunicationList(params) );
+    }
+    // Create the new subset vector
+    boost::shared_ptr<SubsetVector> retVal( new SubsetVector() );
+    retVal->setVariable( var );
+    retVal->d_ViewVector = boost::const_pointer_cast<Vector>( v );
+    retVal->d_DOFManager = subsetDOF;
+    retVal->setCommunicationList( commList );
+    retVal->d_SubsetLocalIDToViewGlobalID = subsetDOF->getLocalParentDOFs();
+    // Get a pointer to every value in the subset
+    std::vector<double*> data_ptr(retVal->d_SubsetLocalIDToViewGlobalID.size(),NULL);
+    VectorDataIterator iterator = retVal->d_ViewVector->begin();
+    size_t last_pos = retVal->d_ViewVector->getCommunicationList()->getStartGID();
+    for (size_t i=0; i<data_ptr.size(); i++) {
+        iterator += (int) (retVal->d_SubsetLocalIDToViewGlobalID[i]-last_pos);
+        last_pos = retVal->d_SubsetLocalIDToViewGlobalID[i];
+        data_ptr[i] = &(*iterator);
+    }
+    // Create the data blocks 
+    // For now use one datablock for each value, this needs to be changed
+    retVal->d_dataBlockPtr = data_ptr;
+    retVal->d_dataBlockSize = std::vector<size_t>(data_ptr.size(),1);
+    return retVal;
+}
 Vector::shared_ptr  SubsetVector::cloneVector ( Variable::shared_ptr var ) const
 {
     // Ideally this function should create a new dense vector of the same type as d_ViewVector
@@ -69,7 +118,6 @@ Vector::shared_ptr  SubsetVector::cloneVector ( Variable::shared_ptr var ) const
     Vector::shared_ptr vec = createVector( d_DOFManager, var );
     return vec;
 }
-
 
 /****************************************************************
 * Functions to access the raw data blocks                       *

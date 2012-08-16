@@ -15,6 +15,7 @@ namespace Mesh{
 
       static AMP::Mesh::MeshIterator getXYFaceIterator(AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth);
 
+      static AMP::Mesh::MeshIterator getGapFaceIterator(AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth);
   };
 
 }

@@ -1,12 +1,10 @@
 
-#ifndef included_AMP_FlowFrapconJacobian
-#define included_AMP_FlowFrapconJacobian
+#ifndef included_AMP_FlowFrapconOperator
+#define included_AMP_FlowFrapconOperator
 
 #include "operators/Operator.h"
 #include "vectors/SimpleVector.h"
-#include "FlowFrapconJacobianParameters.h"
-//#include "operators/map/Map3Dto1D.h"
-//#include "operators/map/Map1Dto3D.h"
+#include "operators/subchannel/FlowFrapconOperatorParameters.h"
 
 /* Libmesh files */
 #include "fe_type.h"
@@ -20,7 +18,7 @@ namespace Operator {
     A class to represent Frapcon Flow operator. This operator acts as a heat sink and 
     should be used to compute the 1D flow temperature in the axial direction of the pellet/clad. 
     */
-  class FlowFrapconJacobian : public Operator
+  class FlowFrapconOperator : public Operator
   {
     public :
 
@@ -28,12 +26,22 @@ namespace Operator {
         Constructor creates a simpleVariables for Input and Output. The reset is called to 
         read the flow parameters.
         */
-      FlowFrapconJacobian(const boost::shared_ptr<FlowFrapconJacobianParameters> & params);
+      FlowFrapconOperator(const boost::shared_ptr<FlowFrapconOperatorParameters> & params)
+        : Operator (params)
+      {
+        std::string inpVar = params->d_db->getString("InputVariable");
+        d_inpVariable.reset(new AMP::LinearAlgebra::Variable(inpVar));
+
+        std::string outVar = params->d_db->getString("OutputVariable");
+        d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar));
+
+        reset(params);
+      }
 
       /**
         Destructor
         */
-      ~FlowFrapconJacobian() { }
+      ~FlowFrapconOperator() { }
 
       /**
         For this operator we have an in-place apply.
@@ -43,8 +51,8 @@ namespace Operator {
         @param [in]  a first constant used in the expression: r = a*A(u) + b*f. The default value is -1.
         @param [in]  b second constant used in the expression: r = a*A(u) + b*f. The default value is 1.
         */
-      void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-          AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0);
+      void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+          AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
       /**
         This function reads the entries of the database for the flow operator
@@ -57,17 +65,25 @@ namespace Operator {
         return (*one)(2) < (*two)(2);
       }
 */
-      AMP::LinearAlgebra::Variable::shared_ptr createInputVariable (const std::string & name, int varId = -1);
+      AMP::LinearAlgebra::Variable::shared_ptr createInputVariable (const std::string & name, int varId = -1)
+      {
+        (void) varId;      
+        return d_inpVariable->cloneVariable(name);
+      }
 
-      AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable (const std::string & name, int varId = -1) ;
+      AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable (const std::string & name, int varId = -1) 
+      {
+        (void) varId;      
+        return d_outVariable->cloneVariable(name);
+      }
 
-      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
+        return d_inpVariable;
+      }
 
-      AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
-
-      void setInputVariableName(const std::string & name, int varId = -1);
-
-      void setOutputVariableName(const std::string & name, int varId = -1);
+      AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
+        return d_outVariable;
+      }
 
       virtual AMP::LinearAlgebra::Vector::shared_ptr subsetOutputVector(AMP::LinearAlgebra::Vector::shared_ptr vec);
 
@@ -77,6 +93,7 @@ namespace Operator {
 
       virtual AMP::LinearAlgebra::Vector::const_shared_ptr subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec);
 
+
       /**
         @param [in] zloc is the location vector in z direction.
         */
@@ -85,27 +102,20 @@ namespace Operator {
         zPoints = zloc;
       }
 
-      std::vector<double> getZLocations()
-      {
-        return zPoints ;
-      }
-
-      double getCp()
-      {
-        return Cp ;
-      }
-
-      double getdCp()
-      {
-        return dCp ;
-      }
-
       void setVector(AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
         d_cladVec = frozenVec;
       }
-
-      void setFrozenVector(AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
-        d_frozenVec = frozenVec;
+      
+      AMP::LinearAlgebra::Vector::shared_ptr getVector() {
+        return d_cladVec ;
+      }
+      
+      /**
+        This member function returns the 1D locations stl vector.
+        */
+      std::vector<double> getZLocations()
+      {
+        return zPoints ;
       }
 
       double getHeatCapacity(double T_b)
@@ -129,38 +139,14 @@ namespace Operator {
         return cp;
       }
 
-      double getHeatCapacityGradient(double T_b)
-      {
-        double dcp;
+      /**
+        This function returns a parameter object that can be used to reset the corresponding
+        FlowFrapconOperator operator.
+        */
+      boost::shared_ptr<OperatorParameters> getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
 
-        if(T_b < 544){
 
-          dcp = 0.0;
-
-        }else if (544 <= T_b && T_b < 588){
-
-          dcp = 2.4e5 * ( 2.9e-3 * 1.8*T_b );
-
-        }else if (T_b >= 588){
-
-          dcp = 2.4e5 * ( 2.9e-3 * 1.8*T_b );
-
-        }
-
-        return dcp;
-      }
-
-      /*
-         boost::shared_ptr< std::vector<double>  > getFlowSolution() {
-         return flowSolutionVector;
-         }
-         */
-      
-      AMP::LinearAlgebra::Vector::shared_ptr d_cladVec;
-      AMP::LinearAlgebra::Vector::shared_ptr d_frozenVec;
-
-      AMP::LinearAlgebra::Vector::shared_ptr d_localCladVec;
-      AMP::LinearAlgebra::Vector::shared_ptr d_localFrozenVec;
+      short int d_boundaryId;
 
       int d_numpoints; /**< Number of points in z direction */
 
@@ -168,11 +154,11 @@ namespace Operator {
 
       std::vector<double> zPoints; /**< vector to hold z locations */
 
+      AMP::LinearAlgebra::Vector::shared_ptr d_cladVec;
+
       double d_De; /**< Channel Diameter */
 
       double Cp; /**< Heat Capacity of Coolant */
-
-      double dCp; /**< Gradient of Heat Capacity */
 
       double d_G;  /**< Coolant Mass Flux */
 
@@ -184,19 +170,11 @@ namespace Operator {
 
       double d_Pr; /**< Prandtl Number */
 
-      boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Input Variable */
+      /* Since the map has been taken out the Flow operator 
+         now expects a SimpleVariable for input & output */
+      boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Simple Input Variable */
 
-      boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output Variable */
-      
-      boost::shared_ptr<AMP::LinearAlgebra::Variable> d_SimpleVariable; /**< Simple Input Variable */
-
-//      boost::shared_ptr<AMP::Operator::Map3Dto1D> d_Map3to1;
-      AMP::LinearAlgebra::Vector::shared_ptr   flowInput; 
-
-//      boost::shared_ptr<AMP::Operator::Map1Dto3D> d_Map1to3;
-      AMP::LinearAlgebra::Vector::shared_ptr   flowOutput; 
-
-    protected :
+      boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Simple Output Variable */
 
     private :
 

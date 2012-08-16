@@ -113,7 +113,6 @@ public:
 
     // Vector functions
     using Vector::cloneVector;
-    virtual void      selectInto ( const VectorSelector & , Vector::shared_ptr );
 
     virtual void      dumpOwnedData ( std::ostream &out , size_t GIDoffset=0 , size_t LIDoffset = 0 ) const;
     virtual void      dumpGhostedData ( std::ostream &out , size_t offset=0 ) const;
@@ -160,6 +159,7 @@ public:
     virtual void getValuesByLocalID ( int numVals , size_t *ndx , double *vals ) const;
     virtual void makeConsistent ( ScatterType  t );
     virtual UpdateState  getUpdateStatus() const;
+    virtual void  setUpdateStatus( UpdateState state );
     virtual void assemble();
     virtual double L1Norm(void) const;
     virtual double L2Norm(void) const;
@@ -183,6 +183,10 @@ public:
 
 
 protected:
+
+    virtual void selectInto ( const VectorSelector & , Vector::shared_ptr );
+    virtual void constSelectInto ( const VectorSelector &criterion , Vector::shared_ptr vector ) const;
+
     //! The communicator this multivector is on
     AMP_MPI                    d_Comm;
     //! Indicates if the multivector created the communicator

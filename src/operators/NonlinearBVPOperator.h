@@ -45,8 +45,8 @@ namespace AMP {
           r = a*A(u), if f is NULL
           Here, A represents the action of the composite volume and boundary operator 
           */
-        void apply(const boost::shared_ptr<AMP::LinearAlgebra::Vector>&, const boost::shared_ptr<AMP::LinearAlgebra::Vector>&, 
-            boost::shared_ptr<AMP::LinearAlgebra::Vector>&, double a = -1.0, double b=1.0);
+        void apply(AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr, 
+            AMP::LinearAlgebra::Vector::shared_ptr, double a = -1.0, double b=1.0);
 
         /**
          * This function is useful for re-initializing/updating an operator

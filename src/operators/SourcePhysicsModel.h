@@ -49,6 +49,7 @@ protected :
      bool d_useMaterialsLibrary;
 
      std::string d_physicsName;
+     double      d_constantProperty;  // Constant value of property if the material is not used.
 
      AMP::Materials::Material::shared_ptr d_material;
 

@@ -1,5 +1,5 @@
 #include "utils/Utilities.h"
-#include "FlowFrapconJacobian.h"
+#include "operators/subchannel/FlowFrapconJacobian.h"
 #include "Flow1DSolver.h"
 #include "MultiVector.h"
 

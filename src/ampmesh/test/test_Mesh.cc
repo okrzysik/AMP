@@ -271,7 +271,7 @@ int main ( int argc , char ** argv )
 
     // Run tests on a native AMP mesh
     testAMPMesh( &ut );
-
+/*
     // Run tests on a libmesh mesh
     #ifdef USE_LIBMESH
         testlibMesh( &ut );
@@ -292,7 +292,7 @@ int main ( int argc , char ** argv )
 
     // Run the tests on the subset meshes
     testSubsetMesh( &ut );
-
+*/
     // Save the timing results
     PROFILE_STOP("Run tests");
     PROFILE_SAVE("test_Mesh");

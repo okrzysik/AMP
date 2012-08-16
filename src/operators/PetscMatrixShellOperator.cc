@@ -24,8 +24,8 @@ namespace AMP {
       d_iMatLocalColumnSize = val;
     }
 
-    void PetscMatrixShellOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-        const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr &r,
+    void PetscMatrixShellOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+        AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
         const double a, const double b) {
       d_operator->apply(f, u, r, a, b);
     }

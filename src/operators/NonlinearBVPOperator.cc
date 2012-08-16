@@ -16,8 +16,8 @@ namespace AMP {
     }
 
     void
-      NonlinearBVPOperator :: apply(const boost::shared_ptr<AMP::LinearAlgebra::Vector> &f, 
-          const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, boost::shared_ptr<AMP::LinearAlgebra::Vector>&r, double a, double b)
+      NonlinearBVPOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+          AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r, double a, double b)
       {
         PROFILE_START("apply");
         boost::shared_ptr<AMP::LinearAlgebra::Vector> nullRhs;
@@ -65,7 +65,7 @@ namespace AMP {
         if(f.get() == NULL) {
           rInternal->scale(a);
         } else {
-          AMP::LinearAlgebra::Vector::shared_ptr fInternal = this->subsetOutputVector(f);
+          AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = this->subsetOutputVector(f);
           if(fInternal.get() == NULL) {
             rInternal->scale(a);
           } else {

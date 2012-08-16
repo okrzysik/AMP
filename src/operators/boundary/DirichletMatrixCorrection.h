@@ -49,8 +49,8 @@ namespace AMP {
 
         AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_variable; }
 
-        void apply(const AMP::LinearAlgebra::Vector::shared_ptr &,
-            const AMP::LinearAlgebra::Vector::shared_ptr &, AMP::LinearAlgebra::Vector::shared_ptr &,
+        virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr, 
+            AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::shared_ptr,
             const double, const double)
         {
           //Do Nothing

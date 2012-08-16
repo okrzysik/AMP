@@ -35,7 +35,7 @@
 
 #include "operators/boundary/ColumnBoundaryOperator.h"
 
-#include "operators/FlowFrapconOperator.h"
+#include "operators/subchannel/FlowFrapconOperator.h"
 
 #include "operators/map/Map3Dto1D.h"
 #include "operators/map/Map1Dto3D.h"

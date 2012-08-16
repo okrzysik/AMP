@@ -54,7 +54,8 @@ public:
 class VectorDataIterator;
 class ConstVectorDataIterator;
 class VectorSelector;
-
+class MultiVector;
+class ManagedVector;
 
 /** \brief Abstraction of a discrete Vector in a linear simulation
   * \details  This class encapsulates many BLAS level 1 operations
@@ -283,14 +284,6 @@ public:
       \endcode
       */
     virtual shared_ptr   select ( const VectorSelector &criterion , const std::string &variable_name );
-
-    /** \brief  Selects a portion of this vector and puts a view into a vector
-      * \param[in]  criterion  The method for deciding inclusion in the view
-      * \param[in,out]  vector  The vector to add the view to
-      * \details  vector must be a MultiVector.  The easiest way to ensure this is to
-      * create it with the select method.
-      */
-    virtual void       selectInto ( const VectorSelector &criterion , Vector::shared_ptr vector );
 
     /** \brief  Selects a portion of this vector and creates a view.
       * \param[in]  criterion  The method for deciding inclusion in the view
@@ -1050,6 +1043,14 @@ public:
     virtual UpdateState  getUpdateStatus() const;
 
 
+    /** \brief  Sets the current update state of the Vector
+      * \details  This sets the update status of the vector.  
+      * This function should only be called by advanced users
+      * \param[in] state  State of the vector to set
+      */
+    virtual void  setUpdateStatus( UpdateState state );
+
+
     /** \brief  Return the current update state of this Vector
       * \details  This returns the pointer to the update state
       *  of the current vector only (not vectors it contains).  
@@ -1068,6 +1069,19 @@ public:
 
 
 protected:
+
+    /** \brief  Selects a portion of this vector and puts a view into a vector
+      * \param[in]  criterion  The method for deciding inclusion in the view
+      * \param[in,out]  vector  The vector to add the view to
+      * \details  vector must be a MultiVector.  The easiest way to ensure this is to
+      * create it with the select method.
+      */
+    virtual void       selectInto ( const VectorSelector &criterion , Vector::shared_ptr vector );
+
+    // This is the const version of selectInto.  Currently this is a protected function because
+    // we do not have a concept of a const multivector yet and this results in destryoing 
+    // const correctness.  Use this function with caution.  
+    virtual void       constSelectInto ( const VectorSelector &criterion , Vector::shared_ptr vector ) const;
 
     /** \brief  A default RNG to use when one is not specified
       */
@@ -1134,6 +1148,9 @@ protected:
 
     //! The DOF_Manager
     AMP::Discretization::DOFManager::shared_ptr  d_DOFManager;
+
+    friend class ManagedVector;
+    friend class MultiVector;
 
 private:
 

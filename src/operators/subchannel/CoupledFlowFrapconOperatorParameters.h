@@ -3,7 +3,7 @@
 #define included_AMP_CoupledFlowFrapconOperatorParameters
 
 /*AMP files */
-#include "ColumnOperatorParameters.h"
+#include "operators/ColumnOperatorParameters.h"
 #include "operators/Operator.h"
 /*Boost files */
 #include "boost/shared_ptr.hpp"
