@@ -262,7 +262,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   thermalNonlinearOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
   AMP::pout<<"Final   Residual Norm for Step is: "<<globalResVec->L2Norm()<<std::endl;
   expectedVal = 1.-10;
-  if( !AMP::Utilities::approx_equal( expectedVal, globalResVec->L2Norm(), 10) ) {
+  if( !AMP::Utilities::approx_equal( expectedVal, globalResVec->L2Norm(), 10.0) ) {
         ut->failure("the Final Residual Norm has changed."); }
 
   //---------------------------------------------------------------------------
