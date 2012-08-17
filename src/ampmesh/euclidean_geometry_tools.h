@@ -1,13 +1,11 @@
 #ifndef EUCLIDEAN_GEOMETRY_TOOLS
 #define EUCLIDEAN_GEOMETRY_TOOLS
 
-#include <vector>
-
-void scale_points(unsigned int direction, double scaling_factor, unsigned int n_points, double* points);
-void scale_points(const std::vector<double> &scaling_factors, unsigned int n_points, double* points);
-void translate_points(unsigned int direction, double distance, unsigned int n_points, double* points);
-void translate_points(std::vector<double> translation_vector, unsigned int n_points, double* points);
-void rotate_points(unsigned int rotation_axis, double rotation_angle, unsigned int n_points, double* points);
+void scale_points(unsigned int direction, double scaling_factor, unsigned int n_points, double * points);
+void scale_points(double const * scaling_factors, unsigned int n_points, double * points);
+void translate_points(unsigned int direction, double distance, unsigned int n_points, double * points);
+void translate_points(double const * translation_vector, unsigned int n_points, double * points);
+void rotate_points(unsigned int rotation_axis, double rotation_angle, unsigned int n_points, double * points);
 
 void compute_cross_product(double const * u, double const * v, double * w);
 double compute_scalar_product(double const * u, double const * const v);

@@ -34,11 +34,23 @@ namespace AMP {
 #endif
 
 
+// \cond HIDDEN_SYMBOLS
+template<class T>  inline T type_default_tol();
+template<>  inline int type_default_tol<int>() { return 0; }
+template<>  inline unsigned int type_default_tol<unsigned int>() { return 0; }
+template<>  inline size_t type_default_tol<size_t>() { return 0; }
+template<>  inline double type_default_tol<double>() { return 1e-12; }
+template<class T>  inline T type_default_tol() { return pow(std::numeric_limits<T>::epsilon(),(T)0.77); }
+// \endcond
+
+
+
+
+
 /*!
  * Utilities is a Singleton class containing basic routines for error 
  * reporting, file manipulations, etc.
  */
-
 namespace Utilities
 {
     /*!
@@ -108,28 +120,27 @@ namespace Utilities
 
     /*!
      * Soft equal checks if two numbers are within the given precision
-     * \param v1     scalar integer value
-     * \param v2     scalar integer value
-     * \param tol    scalar floating point relative tolerance
-     */
-    inline bool approx_equal(const int &v1, const int &v2, const int tol=0) {
-        //AMP_ASSERT( tol<1 );
-        //AMP_ASSERT( tol>=0 );
-        return abs(v1-v2)<=tol;                    // Check if the two value are less than tolerance
-    }
-
-    /*!
-     * Soft equal checks if two numbers are within the given precision
+     * True iff abs(v1-v2)/v1 < tol
      * \param v1     scalar floating point value
      * \param v2     scalar floating point value
      * \param tol    relative tolerance
      */
     template<class T>
-    inline bool approx_equal(const T &v1, const T &v2, const T tol = pow( std::numeric_limits<T>::epsilon(), (T) 0.75 )) {
-        //AMP_ASSERT( tol<1 );
-        //AMP_ASSERT( tol>=0 );
-        T tol2 = tol*std::max( fabs(v1),fabs(v2) );                      // Compute the absolute tolerance
-        return fabs(v1-v2)<=tol2;                    // Check if the two value are less than tolerance
+    inline bool approx_equal(const T &v1, const T &v2, const T tol = type_default_tol<T>() ) {
+        T tol2 = tol*std::max( fabs(v1), fabs(v2) );    // Compute the absolute tolerance
+        return fabs(v1-v2)<=tol2;                       // Check if the two value are less than tolerance
+    }
+
+    /*!
+     * Soft equal checks if two numbers are equivalent within the given precision
+     * True iff abs(v1-v2) < tol
+     * \param v1     scalar floating point value
+     * \param v2     scalar floating point value
+     * \param tol    relative tolerance
+     */
+    template<class T>
+    inline bool approx_equal_abs(const T &v1, const T &v2, const T tol = type_default_tol<T>() ) {
+        return fabs(v1-v2)<=tol;                    // Check if the two value are less than tolerance
     }
 
     /*!

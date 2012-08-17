@@ -12,224 +12,73 @@
 #include "utils/Utilities.h"
 
 
-/************************************************************************
-*                                                                       *
-* This tests whether we can create and use an InputManager object       *
-*                                                                       *
-************************************************************************/
-void mytest(AMP::UnitTest *ut)
+// This checks approx_equal
+template <class T>
+void testApproxEqualInt( AMP::UnitTest *ut )
 {
-
-  // Approx_Equal
-  { // double
-    double mine, wrong, close, relDiff, simpleEps=1e-4;
-
-    // simple.
-    mine=1.e-8;
-    close=1.000000001e-8;
-    wrong=2.e-8;
-    if(  AMP::Utilities::approx_equal( mine, close, simpleEps ) ) ut->passes("Double precision passes simple check.");
-    if( !AMP::Utilities::approx_equal( mine, wrong, simpleEps ) ) ut->passes("Double precision passes simple check.");
+    std::string type_name(typeid(T).name());
+    if(  AMP::Utilities::approx_equal<T>( 100000, 100000 ) &&
+         AMP::Utilities::approx_equal_abs<T>( 100000, 100000 ) && 
+         !AMP::Utilities::approx_equal<T>( 100000, 100001 ) &&
+         !AMP::Utilities::approx_equal_abs<T>( 100000, 100001 ) ) 
+        ut->passes("Integer (" + type_name + ") passes simple check.");
+    else
+        ut->failure("Integer (" + type_name + ") passes simple check.");
     
-    mine=1.e-32;
-    relDiff = pow( std::numeric_limits<double>::epsilon(), 0.75);
-    for (int i=0; i<32; i++) {
-      wrong = ( mine ) / ( 1.-relDiff*( 1.01 ) );
-      close = ( mine ) / ( 1.-relDiff*( 0.99 ) );
-      if( !AMP::Utilities::approx_equal( mine, close ) ) { ut->failure("Double precision is checked positively incorrectly for default eps");
-      std::cout << i <<"+:"<< mine <<":"<< close <<":"<< wrong <<":"<< relDiff <<std::endl; }
-      if(  AMP::Utilities::approx_equal( mine, wrong ) ) { ut->failure("Double precision is checked negatively incorrectly for default eps");
-      std::cout << i <<"-:"<< mine <<":"<< close <<":"<< wrong <<":"<< relDiff <<std::endl; }
-      mine *=10.;
-    }
+    if(  AMP::Utilities::approx_equal_abs<T>( 100001, 100000, 1 ) && 
+         !AMP::Utilities::approx_equal_abs<T>( 100002, 100000, 1 ) ) 
+        ut->passes("Integer (" + type_name + ") passes close simple check.");
+    else
+        ut->failure("Integer (" + type_name + ") passes close simple check.");
+}
+template <class T>
+void testApproxEqual( AMP::UnitTest *ut )
+{
+    std::string type_name(typeid(T).name());
 
-    mine=1.e-32;
-    relDiff=1e-6;
-    for (int i=0; i<32; i++) {
-      wrong = ( mine ) / ( 1.-relDiff*( 1.01 ) );
-      close = ( mine ) / ( 1.-relDiff*( 0.99 ) );
-      if( !AMP::Utilities::approx_equal( mine, close, relDiff ) ) ut->failure("Double precision is checked positively incorrectly for eps = 1e-6");
-      if(  AMP::Utilities::approx_equal( mine, wrong, relDiff ) ) ut->failure("Double precision is checked negatively incorrectly for eps = 1e-6");
-      mine *=10.;
-    }
+    T mine = 1.0;
+    T close_rel = mine * (1.0+pow(std::numeric_limits<T>::epsilon(),(T)0.8));
+    T wrong_rel = mine * (1.0+pow(std::numeric_limits<T>::epsilon(),(T)0.7));
+    T close_abs = mine + pow(std::numeric_limits<T>::epsilon(),(T)0.8);
+    T wrong_abs = mine + pow(std::numeric_limits<T>::epsilon(),(T)0.7);
+    if( AMP::Utilities::approx_equal( mine, close_rel ) && 
+        AMP::Utilities::approx_equal_abs( mine, close_abs ) &&
+        !AMP::Utilities::approx_equal( mine, wrong_rel ) && 
+        !AMP::Utilities::approx_equal_abs( mine, wrong_abs ) )
+        ut->passes(type_name+" passes simple check near 1");
+    else
+        ut->failure(type_name+" passes simple check near 1");
 
-    mine=1.e-32;
-    relDiff=1e-14;
-    for (int i=0; i<32; i++) {
-      wrong = ( mine ) / ( 1.-relDiff*( 1.01 ) );
-      close = ( mine ) / ( 1.-relDiff*( 0.99 ) );
-      if( !AMP::Utilities::approx_equal( mine, close, relDiff ) ) { ut->failure("Double precision is checked positively incorrectly for eps = 1e-14");
-      std::cout << i <<"+:"<< mine <<":"<< close <<":"<< wrong <<":"<< relDiff <<std::endl; }
-      if(  AMP::Utilities::approx_equal( mine, wrong, relDiff ) ) ut->failure("Double precision is checked negatively incorrectly for eps = 1e-14");
-      mine *=10.;
-    }
+    mine = 1e-6;
+    close_rel = mine * (1.0+pow(std::numeric_limits<T>::epsilon(),(T)0.8));
+    wrong_rel = mine * (1.0+pow(std::numeric_limits<T>::epsilon(),(T)0.7));
+    close_abs = mine + pow(std::numeric_limits<T>::epsilon(),(T)0.8);
+    wrong_abs = mine + pow(std::numeric_limits<T>::epsilon(),(T)0.7);
+    if( AMP::Utilities::approx_equal( mine, close_rel ) && 
+        AMP::Utilities::approx_equal_abs( mine, close_abs ) &&
+        !AMP::Utilities::approx_equal( mine, wrong_rel ) && 
+        !AMP::Utilities::approx_equal_abs( mine, wrong_abs ) )
+        ut->passes(type_name+" passes simple check near 1e-6");
+    else
+        ut->failure(type_name+" passes simple check near 1e-6");
 
-    mine=-1.e-32;
-    relDiff = pow( std::numeric_limits<double>::epsilon(), 0.75);
-    for (int i=0; i<32; i++) {
-      wrong = ( mine ) / ( 1.-relDiff*( 1.01 ) );
-      close = ( mine ) / ( 1.-relDiff*( 0.99 ) );
-      if( !AMP::Utilities::approx_equal( mine, close ) ) ut->failure("Negative double precision is checked positively incorrectly for default eps");
-      if(  AMP::Utilities::approx_equal( mine, wrong ) ) ut->failure("Negative double precision is checked negatively incorrectly for default eps");
-      mine *=10.;
-    }
+    mine = -1e-32;
+    close_rel = mine * (1.0+pow(std::numeric_limits<T>::epsilon(),(T)0.8));
+    wrong_rel = mine * (1.0+pow(std::numeric_limits<T>::epsilon(),(T)0.7));
+    close_abs = mine + pow(std::numeric_limits<T>::epsilon(),(T)0.8);
+    wrong_abs = mine + pow(std::numeric_limits<T>::epsilon(),(T)0.7);
+    if( AMP::Utilities::approx_equal( mine, close_rel ) && 
+        AMP::Utilities::approx_equal_abs( mine, close_abs ) &&
+        !AMP::Utilities::approx_equal( mine, wrong_rel ) && 
+        !AMP::Utilities::approx_equal_abs( mine, wrong_abs ) )
+        ut->passes(type_name+" passes simple check near -1e-32");
+    else
+        ut->failure(type_name+" passes simple check near -1e-32");
 
-    mine=-1.e-32;
-    relDiff=1e-6;
-    for (int i=0; i<32; i++) {
-      wrong = ( mine ) / ( 1.-relDiff*( 1.01 ) );
-      close = ( mine ) / ( 1.-relDiff*( 0.99 ) );
-      if( !AMP::Utilities::approx_equal( mine, close, relDiff ) ) ut->failure("Negative double precision is checked positively incorrectly for eps = 1e-6");
-      if(  AMP::Utilities::approx_equal( mine, wrong, relDiff ) ) ut->failure("Negative double precision is checked negatively incorrectly for eps = 1e-6");
-      mine *=10.;
-    }
-
-    mine=-1.e-32;
-    relDiff=1e-14;
-    for (int i=0; i<32; i++) {
-      wrong = ( mine ) / ( 1.-relDiff*( 1.01 ) );
-      close = ( mine ) / ( 1.-relDiff*( 0.99 ) );
-      if( !AMP::Utilities::approx_equal( mine, close, relDiff ) ) ut->failure("Negative double precision is checked positively incorrectly for eps = 1e-14");
-      if(  AMP::Utilities::approx_equal( mine, wrong, relDiff ) ) ut->failure("Negative double precision is checked negatively incorrectly for eps = 1e-14");
-      mine *=10.;
-    }
-  }
-//---------------------------------------------------------------------------//
-  { // float
-    float mine, wrong, close, relDiff, simpleEps=(float)1e-4;
-
-    // simple.
-    mine=(float)1.e-8;
-    close=(float)1.000000001e-8;
-    wrong=(float)2.e-8;
-    
-    if(  AMP::Utilities::approx_equal( mine, close, simpleEps ) ) ut->passes("Float precision passes simple check.");
-    if( !AMP::Utilities::approx_equal( mine, wrong, simpleEps ) ) ut->passes("Float precision passes simple check.");
-    
-    mine=(float)1.e-32;
-    relDiff = pow( std::numeric_limits<float>::epsilon(), (float) 0.75);
-    for (int i=0; i<32; i++) {
-      wrong = (float) ( mine / ( 1.-relDiff*( 1.01 ) ) );
-      close = (float) ( mine / ( 1.-relDiff*( 0.99 ) ) );
-      if( !AMP::Utilities::approx_equal( mine, close ) ) { ut->failure("Float precision is checked positively incorrectly for default eps");
-      std::cout << i <<"+:"<< mine <<":"<< close <<":"<< wrong <<":"<< relDiff <<std::endl; }
-      if(  AMP::Utilities::approx_equal( mine, wrong ) ) { ut->failure("Float precision is checked negatively incorrectly for default eps");
-      std::cout << i <<"-:"<< mine <<":"<< close <<":"<< wrong <<":"<< relDiff <<std::endl; }
-      mine *=10.;
-    }
-
-    mine=(float) 1.e-32;
-    relDiff=(float) 1e-5;
-    for (int i=0; i<32; i++) {
-      wrong = (float) ( mine / ( 1.-relDiff*( 1.01 ) ) );
-      close = (float) ( mine / ( 1.-relDiff*( 0.99 ) ) );
-      if( !AMP::Utilities::approx_equal( mine, close, relDiff ) ) ut->failure("Float precision is checked positively incorrectly for eps = 1e-5");
-      if(  AMP::Utilities::approx_equal( mine, wrong, relDiff ) ) ut->failure("Float precision is checked negatively incorrectly for eps = 1e-5");
-      mine *=10.;
-    }
-
-    mine=(float) 1.e-32;
-    relDiff=(float) 1e-3;
-    for (int i=0; i<32; i++) {
-      wrong = (float) ( mine / ( 1.-relDiff*( 1.01 ) ) );
-      close = (float) ( mine / ( 1.-relDiff*( 0.99 ) ) );
-      if( !AMP::Utilities::approx_equal( mine, close, relDiff ) ) { ut->failure("Float precision is checked positively incorrectly for eps = 1e-3");
-      std::cout << i <<"+:"<< mine <<":"<< close <<":"<< wrong <<":"<< relDiff <<std::endl; }
-      if(  AMP::Utilities::approx_equal( mine, wrong, relDiff ) ) ut->failure("Float precision is checked negatively incorrectly for eps = 1e-3");
-      mine *=10.;
-    }
-
-    mine=(float) -1.e-32;
-    relDiff = pow( std::numeric_limits<float>::epsilon(), (float) 0.75);
-    for (int i=0; i<32; i++) {
-      wrong = (float) ( mine / ( 1.-relDiff*( 1.01 ) ) );
-      close = (float) ( mine / ( 1.-relDiff*( 0.99 ) ) );
-      if( !AMP::Utilities::approx_equal( mine, close ) ) ut->failure("Negative float precision is checked positively incorrectly for default eps");
-      if(  AMP::Utilities::approx_equal( mine, wrong ) ) ut->failure("Negative float precision is checked negatively incorrectly for default eps");
-      mine *=10.;
-    }
-
-    mine=(float) -1.e-32;
-    relDiff=(float) 1e-5;
-    for (int i=0; i<32; i++) {
-      wrong = (float) ( mine / ( 1.-relDiff*( 1.01 ) ) );
-      close = (float) ( mine / ( 1.-relDiff*( 0.99 ) ) );
-      if( !AMP::Utilities::approx_equal( mine, close, relDiff ) ) ut->failure("Negative float precision is checked positively incorrectly for eps = 1e-5");
-      if(  AMP::Utilities::approx_equal( mine, wrong, relDiff ) ) ut->failure("Negative float precision is checked negatively incorrectly for eps = 1e-5");
-      mine *=10.;
-    }
-
-    mine=(float) -1.e-32;
-    relDiff=(float) 1e-3;
-    for (int i=0; i<32; i++) {
-      wrong = (float) ( mine / ( 1.-relDiff*( 1.01 ) ) );
-      close = (float) ( mine / ( 1.-relDiff*( 0.99 ) ) );
-      if( !AMP::Utilities::approx_equal( mine, close, relDiff ) ) ut->failure("Negative float precision is checked positively incorrectly for eps = 1e-3");
-      if(  AMP::Utilities::approx_equal( mine, wrong, relDiff ) ) ut->failure("Negative float precision is checked negatively incorrectly for eps = 1e-3");
-      mine *=10.;
-    }
-  }
-//---------------------------------------------------------------------------//
-  { // integer
-    int mine, wrong, close;
-    int simpleEps=0;
-
-    // simple.
-    mine =100000;
-    close=100001;
-    wrong=1;
-    if(  AMP::Utilities::approx_equal( mine, close, simpleEps ) ) ut->passes("Integer passes close simple check.");
-    if( !AMP::Utilities::approx_equal( mine, wrong, simpleEps ) ) ut->passes("Integer passes wrong simple check.");
-    
-    // zeros
-    mine=0;
-    close=0;
-    wrong=10;
-    if( !AMP::Utilities::approx_equal( mine, close, simpleEps ) ) ut->failure("Integer fails double zero check.");
-    if(  AMP::Utilities::approx_equal( mine, wrong, simpleEps ) ) ut->failure("Integer fails wrong zero check.");
-    
-    // their zero
-    mine=1;
-    wrong=0;
-    if(  AMP::Utilities::approx_equal( mine, wrong, simpleEps ) ) ut->failure("Integer fails wrong 2nd zero check.");
-    
-    // same
-    mine=1;
-    close=1;
-    wrong=-1;
-    if( !AMP::Utilities::approx_equal( mine, close ) ) ut->failure("Integer fails close 2nd simple check.");
-    if(  AMP::Utilities::approx_equal( mine, wrong ) ) ut->failure("Integer fails wrong 2nd simple check.");
-
-    // simple.
-    mine =-100000;
-    close=-100001;
-    wrong= 100000;
-    if(  AMP::Utilities::approx_equal( mine, close, simpleEps ) ) ut->passes("Integer passes close simple check.");
-    if( !AMP::Utilities::approx_equal( mine, wrong, simpleEps ) ) ut->passes("Integer passes wrong simple check.");
-    
-    // zeros
-    mine=0;
-    close=0;
-    wrong=-10;
-    if( !AMP::Utilities::approx_equal( mine, close, simpleEps ) ) ut->failure("Integer fails double zero check.");
-    if(  AMP::Utilities::approx_equal( mine, wrong, simpleEps ) ) ut->failure("Integer fails wrong zero check.");
-    
-    // their zero
-    mine=-1;
-    wrong=0;
-    if(  AMP::Utilities::approx_equal( mine, wrong, simpleEps ) ) ut->failure("Integer fails wrong 2nd zero check.");
-    
-    // same
-    mine=-1;
-    close=-1;
-    wrong= 1;
-    if( !AMP::Utilities::approx_equal( mine, close ) ) ut->failure("Integer fails close 2nd simple check.");
-    if(  AMP::Utilities::approx_equal( mine, wrong ) ) ut->failure("Integer fails wrong 2nd simple check.");
- }   
- ut->passes("It reached the end of the test.");
 }
 
 
+// Function to return the call stack
 std::vector<std::string> get_call_stack()
 {
     return AMP::Utilities::getCallStack();
@@ -261,10 +110,11 @@ int main(int argc, char *argv[])
             ut.failure("Convert int to string");
 
         // Test approx_equal
-        if ( AMP::Utilities::approx_equal(1.0,1.0+1e-13) && !AMP::Utilities::approx_equal(1.0,1.0+1e-11) )
-            ut.passes("approx_equal");
-        else
-            ut.failure("approx_equal");
+        testApproxEqualInt<int>( &ut );
+        testApproxEqualInt<unsigned int>( &ut );
+        testApproxEqualInt<size_t>( &ut );
+        testApproxEqual<float>( &ut );
+        testApproxEqual<double>( &ut );
 
         // Test quicksort performance
         size_t N = 10000;
@@ -334,17 +184,6 @@ int main(int argc, char *argv[])
                 ut.passes("File deleted");
             else
                 ut.failure("File deleted");
-        }
-
-		// Run Kevin's test
-        try {
-            mytest(&ut);
-        } catch (std::exception &err) {
-            std::cout << "ERROR: While testing test_Utilities, " << err.what() << std::endl;
-            ut.failure("test_Utilities");
-        } catch( ... ) {
-            std::cout << "ERROR: While testing test_Utilities, An unknown exception was thrown." << std::endl;
-            ut.failure("test_Utilities");
         }
 
         // Finished testing, report the results

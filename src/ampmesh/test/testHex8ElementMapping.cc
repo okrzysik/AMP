@@ -43,7 +43,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 */
 
   double translation_vector[3] = { 3.0, 1.0, 5.0 };
-  translate_points(std::vector<double>(translation_vector, translation_vector+3), 8, points);
+  translate_points(translation_vector, 8, points);
 
   rotate_points(2, pi/3.0, 8, points);
 

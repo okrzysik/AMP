@@ -178,6 +178,23 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
 
     createLocalMeshElementArray();
 
+    unsigned int n_volume_elements = d_localElemArr.size();
+    d_volume_elements.clear();
+    d_volume_elements.reserve(n_volume_elements);
+    for (unsigned int i = 0; i < n_volume_elements; ++i) {
+      AMP::Mesh::MeshElement* amp_element = &(d_localElemArr[i]);
+      std::vector<AMP::Mesh::MeshElement> amp_vector_support_points = amp_element->getElements(AMP::Mesh::Vertex);
+      AMP_ASSERT(amp_vector_support_points.size() == 8);
+      std::vector<double> support_points(24);
+      for (unsigned int j = 0; j < 8; ++j) {
+        std::vector<double> point_coord = amp_vector_support_points[j].coord();
+        support_points[3*j+0] = point_coord[0];
+        support_points[3*j+1] = point_coord[1];
+        support_points[3*j+2] = point_coord[2];
+      } // end j
+      d_volume_elements.push_back(hex8_element_t(&(support_points[0])));
+    } // end for i
+
     const unsigned int MaxDepth = 30;
 
     unsigned int totalNumElems = d_meshAdapter->numGlobalElements(AMP::Mesh::Volume);
@@ -782,7 +799,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
     d_timingMeasurements[CoarseSearch] = coarseSearchEndTime - coarseSearchBeginTime;
     fineSearchBeginTime = MPI_Wtime();
 
-    unsigned int n_volume_elements = d_localElemArr.size();
+/*    unsigned int n_volume_elements = d_localElemArr.size();
     d_volume_elements.clear();
     d_volume_elements.reserve(n_volume_elements);
     for (unsigned int i = 0; i < n_volume_elements; ++i) {
@@ -797,7 +814,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
         support_points[3*j+2] = point_coord[2];
       } // end j
       d_volume_elements.push_back(hex8_element_t(&(support_points[0])));
-    } // end for i
+    } // end for i*/
 
     std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);
 

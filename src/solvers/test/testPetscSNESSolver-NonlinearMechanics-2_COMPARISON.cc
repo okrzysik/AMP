@@ -92,6 +92,7 @@ void myTest(AMP::UnitTest *ut)
   initTempVec->abs ( initTempVec );
   double initTempConst = input_db->getDoubleWithDefault("INIT_TEMP_CONST", 1.0);
   initTempVec->scale(initTempConst);
+  initTempVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
   bool setFinalTempEqualsInitialTemp = input_db->getBoolWithDefault("SET_FINAL_TEMP_EQUALS_INIT_TEMP", false);
 
@@ -104,6 +105,7 @@ void myTest(AMP::UnitTest *ut)
     double finalTempConst = input_db->getDoubleWithDefault("FINAL_TEMP_CONST", 1.0);
     finalTempVec->scale(finalTempConst);
   }
+  finalTempVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
   (boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinBvpOperator->
                                                                             getVolumeOperator()))->setReferenceTemperature(initTempVec);
@@ -140,6 +142,7 @@ void myTest(AMP::UnitTest *ut)
   //Initial guess for NL solver must satisfy the displacement boundary conditions
   mechNlSolVec->setToScalar(0.0);
   dirichletDispInVecOp->apply(nullVec, nullVec, mechNlSolVec, 1.0, 0.0);
+  mechNlSolVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
   mechNlRhsVec->setToScalar(0.0);
   dirichletLoadVecOp->apply(nullVec, nullVec, mechNlRhsVec, 1.0, 0.0);
@@ -198,6 +201,7 @@ void myTest(AMP::UnitTest *ut)
 
     double scaleValue  = ((double)step+1.0)/NumberOfLoadingSteps;
     mechNlScaledRhsVec->scale(scaleValue, mechNlRhsVec);
+    mechNlScaledRhsVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     AMP::pout << "L2 Norm at loading step " << (step+1) << " is " << mechNlScaledRhsVec->L2Norm() << std::endl;
 
     nonlinBvpOperator->apply(mechNlScaledRhsVec, mechNlSolVec, mechNlResVec, 1.0, -1.0);
