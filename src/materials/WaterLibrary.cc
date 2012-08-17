@@ -88,8 +88,8 @@ September 1998");
         // Diameter, Reynolds Number and Prandtl Number 
 	static const unsigned int ConvNumArgs   = 5;
 	static const unsigned int ConvNumParams = 0;
-	static const double       ConvParams[CondNumParams] = {};
-	static const std::string  ConvArgs[CondNumArgs] = {"temperature", "density","conductivity", "diameter", "reynolds", "prandtl"};
+	static const double       ConvParams[ConvNumParams] = {};
+	static const std::string  ConvArgs[ConvNumArgs] = {"temperature", "density", "diameter", "reynolds", "prandtl"};
 	static const double       ConvTminVal = 0.0;		// minimum temperature [K]
 	static const double       ConvTmaxVal = 1.0e3;		// maximum temperature [K] (arbitrary "very high" temperature)
 	static const double       ConvRhominVal = 0;		// minimum density [kg/m3] 
@@ -100,7 +100,7 @@ September 1998");
 	static const double       ConvReymaxVal = 1.e6;  	// maximum reynolds # []
 	static const double       ConvPrtminVal = 0.87;		// minimum Prandtl # [] 
 	static const double       ConvPrtmaxVal = 14.;  	// maximum Prandtl # [] 
-	static const double       ConvRanges[5][2]={ {CondTminVal, CondTmaxVal}, {CondRhominVal, CondRhomaxVal}, {ConvDminVal ,ConvDmaxVal }, {ConvReyminVal,ConvReymaxVal}, {ConvPrtminVal,ConvPrtmaxVal}};
+	static const double       ConvRanges[5][2]={ {ConvTminVal, ConvTmaxVal}, {ConvRhominVal, ConvRhomaxVal}, {ConvDminVal ,ConvDmaxVal }, {ConvReyminVal,ConvReymaxVal}, {ConvPrtminVal,ConvPrtmaxVal}};
 
 
   	// dynamic viscosity as a function of temperature and density
@@ -622,7 +622,7 @@ WaterLibrary::WaterLibrary()
 		INSERT_PROPERTY_IN_MAP(ThermalConductivity, WaterLibrary_NS);
 		INSERT_PROPERTY_IN_MAP(DynamicViscosity, WaterLibrary_NS);
 		INSERT_PROPERTY_IN_MAP(Enthalpy, WaterLibrary_NS);
-		INSERT_PROPERTY_IN_MAP(ConvectiveHeatCoefficient, WaterLibrary_NS);
+		INSERT_PROPERTY_IN_MAP(ConvectiveHeat, WaterLibrary_NS);
 }
 
 

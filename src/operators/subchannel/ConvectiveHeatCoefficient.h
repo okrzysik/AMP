@@ -1,5 +1,5 @@
-#ifndef included_AMP_ConvctiveHeatCoefficient
-#define included_AMP_ConvctiveHeatCoefficient
+#ifndef included_AMP_ConvectiveHeatCoefficient
+#define included_AMP_ConvectiveHeatCoefficient
 
 #include <iostream>
 #include <string>
@@ -12,13 +12,13 @@
 namespace AMP {
 namespace Operator {
 
-class ConvctiveHeatCoefficient  : public RobinPhysicsModel
+class ConvectiveHeatCoefficient  : public RobinPhysicsModel
  {
     public :
       
-      ConvctiveHeatCoefficient(const boost::shared_ptr<RobinPhysicsModelParameters>& params);
+      ConvectiveHeatCoefficient(const boost::shared_ptr<RobinPhysicsModelParameters>& params);
 
-      virtual ~ConvctiveHeatCoefficient() {}
+      virtual ~ConvectiveHeatCoefficient() {}
 
       void getConductance(std::vector<double> & beta,
           std::vector<double> & gamma, 

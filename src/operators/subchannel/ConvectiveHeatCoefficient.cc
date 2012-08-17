@@ -1,4 +1,4 @@
-#include "ConvctiveHeatCoefficient.h"
+#include "ConvectiveHeatCoefficient.h"
 #include "utils/Utilities.h"
 #include <cmath>
 
@@ -7,7 +7,7 @@ namespace AMP {
   namespace Operator {
 
 
-    ConvctiveHeatCoefficient :: ConvctiveHeatCoefficient(const
+    ConvectiveHeatCoefficient :: ConvectiveHeatCoefficient(const
         boost::shared_ptr<RobinPhysicsModelParameters>& params) : RobinPhysicsModel (params) {
 
       AMP_INSIST( (params->d_db->keyExists("Material")), "Convective Heat  Coefficient Key ''Material'' is missing!" );
@@ -31,34 +31,33 @@ namespace AMP {
         d_argNames = d_property-> get_arguments();
         for (std::vector<std::string>::iterator key= defaultkeys.begin(); key!=defaultkeys.end(); ++key)
         {
-          std::vector<std::string>::iterator hit = std::find(argnames.begin(), argnames.end(), *key);
-          AMP_INSIST(hit!=argnames.end(), std::string("Argument name ")+*key+std::string(" is invalid"));
+          std::vector<std::string>::iterator hit = std::find(d_argNames.begin(), d_argNames.end(), *key);
+          AMP_INSIST(hit!=d_argNames.end(), std::string("Argument name ")+*key+std::string(" is invalid"));
         }
 
         // load defaults into the material property, checking range validity
-        for (size_t i=0; i<argnames.size(); ++i) {
-          d_defaults[i] = defaults_db->getDouble(argnames[i]);
-          AMP_INSIST(d_property->in_range(argnames[i], d_defaults[i]),
-              std::string("Default for argument ")+argnames[i]+std::string(" is out of range"));
+        for (size_t i=0; i<d_argNames.size(); ++i) {
+          d_defaults[i] = defaults_db->getDouble(d_argNames[i]);
+          AMP_INSIST(d_property->in_range(d_argNames[i], d_defaults[i]),
+              std::string("Default for argument ")+d_argNames[i]+std::string(" is out of range"));
         }
       }
       d_property->set_defaults(d_defaults);
 
     }
 
-    void ConvctiveHeatCoefficient :: getConductance(std::vector<double> & beta,
+    void ConvectiveHeatCoefficient :: getConductance(std::vector<double> & beta,
         std::vector<double> & gamma, const std::vector<std::vector <double> > & inputVectors)
     {
       size_t numArgs = inputVectors.size();
-      size_t argSize = inputVectors[0].size();
       
       std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
-      for (size_t i=0; i<argSize; i++) {
+      for (size_t i=0; i<numArgs; i++) {
         argMap.insert(std::make_pair(d_argNames[i],new std::vector<double>(inputVectors[i].begin(), inputVectors[i].end())));
       }
 
-      d_property->evalv(beta, args);
-      d_property->evalv(gamma, args);
+      d_property->evalv(beta, argMap);
+      d_property->evalv(gamma, argMap);
 
     }
 

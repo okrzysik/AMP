@@ -78,8 +78,6 @@ namespace Operator {
 
       boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 
-      boost::shared_ptr<RobinPhysicsModel> d_dittusBoelterCoefficient;
-
     private :
 
       /**
@@ -110,6 +108,11 @@ namespace Operator {
       double d_diameter; // fuel rod diameter [m]
       double d_K;        // form loss coefficient
       double d_Q;        // rod power
+
+      double d_channelDia;
+      double d_reynolds  ;
+      double d_prandtl   ;
+
       std::string d_source; // heat source type
       std::string d_heatShape; // heat shape used if heat source type is "totalHeatGeneration"
 

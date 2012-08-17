@@ -673,6 +673,9 @@ SubchannelTwoEqLinearOperator{
     Mass_Flow_Rate = 0.3522
     Fission_Heating_Coefficient = 0.0
     Channel_Angle = 0.0
+    Channel_Diameter = 0.01178  // Todreas, p.455
+    Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
+    Prandtl          = 7.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
     Friction_Factor = 0.1
     Lattice_Pitch = 0.0128016
     Rod_Diameter = 0.0097028
@@ -685,7 +688,7 @@ SubchannelTwoEqLinearOperator{
 }
 
 DittusBoelterCoefficient {
-    name = "DittusBoelterCoefficient"
+    name = "ConvectiveHeatCoefficient"
     Channel_Diameter = 0.01178  // Todreas, p.455
     Conductivity     = 0.50     // Todreas, p.455   
     Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter

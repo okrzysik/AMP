@@ -27,7 +27,7 @@
 #include "PelletContactConductanceModel.h"
 
 // Convective Heat Coefficient model
-#include "ConvctiveHeatCoefficient.h"
+#include "ConvectiveHeatCoefficient.h"
 
 // source physics model
 #include "SourcePhysicsModel.h"
@@ -108,9 +108,9 @@ namespace AMP {
         {
           retElementPhysicsModel.reset(new PelletContactConductanceModel(params));
         }
-        else if(name=="ConvctiveHeatCoefficient")
+        else if(name=="ConvectiveHeatCoefficient")
         {
-          retElementPhysicsModel.reset(new ConvctiveHeatCoefficient(params));
+          retElementPhysicsModel.reset(new ConvectiveHeatCoefficient(params));
         }
         else if(name=="SourcePhysicsModel")
         {

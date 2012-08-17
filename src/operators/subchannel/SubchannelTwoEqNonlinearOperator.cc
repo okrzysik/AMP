@@ -27,6 +27,9 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
       d_m    = getDoubleParameter(myparams,"Mass_Flow_Rate",0.3522);  
       d_gamma     = getDoubleParameter(myparams,"Fission_Heating_Coefficient",0.0);  
       d_theta     = getDoubleParameter(myparams,"Channel_Angle",0.0);  
+      d_channelDia= getDoubleParameter(myparams,"Channel_Diameter",0.0);  
+      d_reynolds  = getDoubleParameter(myparams,"Reynolds",0.0);  
+      d_prandtl   = getDoubleParameter(myparams,"Prandtl",0.0);  
       d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.1);  
       d_pitch     = getDoubleParameter(myparams,"Lattice_Pitch",0.0128016);  
       d_diameter  = getDoubleParameter(myparams,"Rod_Diameter",0.0097028);  
@@ -38,8 +41,6 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
           d_Q    = getDoubleParameter(myparams,"Rod_Power",66.81e3);  
           d_heatShape = getStringParameter(myparams,"Heat_Shape","Sinusoidal");
       }else if (d_source == "averageCladdingTemperature"){
-        d_dittusBoelterCoefficient = myparams->d_dittusBoelterCoefficient;  
-        AMP_INSIST( ((d_dittusBoelterCoefficient.get()) != NULL), "Empty Dittus-Boelter Model " );
         d_channelFractions = (myparams->d_db)->getDoubleArray("ChannelFractions");
       }
 
@@ -264,11 +265,6 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
           for(size_t iface = 0; iface < begin_face.size(); ++iface, ++j){
 
             if (d_source == "averageCladdingTemperature") {
-                std::vector<double> heff(1); 
-                std::vector<std::vector<double> > heffArgs(1);
-                heffArgs[0].resize(1);
-                d_dittusBoelterCoefficient->getConductance(heff, heff, heffArgs); 
-
                 //evalute flow average temperature 
                 dof_manager->getDOFs( face->globalID(), dofs );
                 cladDofManager->getDOFs( face->globalID(), scalarDofs );
@@ -276,8 +272,9 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
                 std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
                 temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[0]))));
                 temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[1]))));
-                std::vector<double> flowMinus(1);
+                std::vector<double> flowMinus(1), specificVolMinus(1);
                 d_subchannelPhysicsModel->getProperty("Temperature", flowMinus, temperatureArgMap);
+                d_subchannelPhysicsModel->getProperty("SpecificVolume", specificVolMinus, temperatureArgMap);
 
                 face++;
                 dof_manager->getDOFs( face->globalID(), dofs );
@@ -286,13 +283,26 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
                 temperatureArgMap.clear();
                 temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[0]))));
                 temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[1]))));
-                std::vector<double> flowPlus(1);
+                std::vector<double> flowPlus(1), specificVolPlus(1);
                 d_subchannelPhysicsModel->getProperty("Temperature", flowPlus, temperatureArgMap); 
+                d_subchannelPhysicsModel->getProperty("SpecificVolume", specificVolPlus, temperatureArgMap);
+                
                 face--;
 
                 double cladAvgTemp = (cladMinus + cladPlus)/2.0;
-                double flowTemp    = (flowMinus[0] + flowPlus[0])/2.0;
-                double flux = heff[0]*(cladAvgTemp - flowTemp) ;
+                std::vector<double> flowTemp(1, (flowMinus[0] + flowPlus[0])/2.0);
+                std::vector<double> flowDens(1, ((1./specificVolMinus[0]) + (1./specificVolPlus[0]))/2.0);
+
+                std::map<std::string, boost::shared_ptr<std::vector<double> > > convectiveHeatArgMap;
+                convectiveHeatArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,flowTemp[0])));
+                convectiveHeatArgMap.insert(std::make_pair("density",new std::vector<double>(1,flowDens[0])));
+                convectiveHeatArgMap.insert(std::make_pair("diameter",new std::vector<double>(1,d_channelDia)));
+                convectiveHeatArgMap.insert(std::make_pair("reynolds",new std::vector<double>(1,d_reynolds)));
+                convectiveHeatArgMap.insert(std::make_pair("prandtl",new std::vector<double>(1,d_prandtl)));
+                std::vector<double> heff(1); 
+                d_subchannelPhysicsModel->getProperty("ConvectiveHeat", heff, convectiveHeatArgMap); 
+
+                double flux = heff[0]*(cladAvgTemp - flowTemp[0]) ;
                 double lin  = flux*pi*d_diameter*d_channelFractions[isub] ;
                 double flux_sum = 4.0*pi*d_diameter*1.0/4.0*flux;
                 double lin_sum = 4.0*d_gamma*1.0/4.0*lin;

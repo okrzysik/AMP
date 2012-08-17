@@ -76,8 +76,6 @@ namespace Operator {
       // subchannel physics model
       boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 
-      boost::shared_ptr<RobinPhysicsModel> d_dittusBoelterCoefficient;
-
     private :
 
       bool d_atConstruction, d_nullFrozenvector; 
