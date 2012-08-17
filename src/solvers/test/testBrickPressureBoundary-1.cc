@@ -124,6 +124,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   //Initial guess for NL solver must satisfy the displacement boundary conditions
   mechNlSolVec->setToScalar(0.0);
   dirichletDispInVecOp->apply(nullVec, nullVec, mechNlSolVec, 1.0, 0.0);
+  mechNlSolVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
   nonlinBvpOperator->apply(nullVec, mechNlSolVec, mechNlResVec, 1.0, 0.0);
   linBvpOperator->reset(nonlinBvpOperator->getJacobianParameters(mechNlSolVec));
@@ -175,6 +176,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
     double scaleValue  = ((double)step+1.0)/NumberOfLoadingSteps;
     mechNlScaledRhsVec->scale(scaleValue, mechNlRhsVec);
+    mechNlScaledRhsVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     AMP::pout << "L2 Norm of RHS at loading step " << (step+1) << " is " << mechNlScaledRhsVec->L2Norm() << std::endl;
 
     nonlinBvpOperator->apply(mechNlScaledRhsVec, mechNlSolVec, mechNlResVec, 1.0, -1.0);
