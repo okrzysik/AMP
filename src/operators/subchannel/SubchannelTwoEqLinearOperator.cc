@@ -128,7 +128,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
             // compute the enthalpy change in each interval
             std::vector<double> dh(numCells);
             if (d_source == "averageCladdingTemperature") {
-              AMP_ERROR("Heat source type 'averageCladdingTemperature' not yet implemented.");
+              // Do we need to Implement this at all
             } else if (d_source == "averageHeatFlux") {
               AMP_ERROR("Heat source type 'averageHeatFlux' not yet implemented.");
             } else if (d_source == "totalHeatGeneration") {

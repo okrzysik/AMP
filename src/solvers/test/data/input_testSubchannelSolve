@@ -577,6 +577,7 @@ C2WBoundaryVectorCorrection {
     number_of_dofs_0 = 1
     dof_0_0 = 0
     value_0_0 = 573.15
+    LocalModel = "ConvectiveHeatCoefficient"
 }
 
 C2WBoundaryMatrixCorrection {
@@ -687,10 +688,14 @@ SubchannelTwoEqLinearOperator{
     LocalModel = "SubchannelPhysicsModel"
 }
 
-DittusBoelterCoefficient {
+ConvectiveHeatCoefficient{
     name = "ConvectiveHeatCoefficient"
+    Material = "WaterLibrary"
+    Property = "ConvectiveHeat"
     Channel_Diameter = 0.01178  // Todreas, p.455
     Conductivity     = 0.50     // Todreas, p.455   
+    Temperature      = 360.0    // K
+    Density          = 704      // Density of water ????
     Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
     Prandtl          = 7.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
 }
