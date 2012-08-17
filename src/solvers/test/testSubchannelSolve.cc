@@ -67,6 +67,10 @@
 
 #include "ampmesh/StructuredMeshHelper.h"
 
+double getPower(const std::vector<double> &x) {
+    return 0.5 + x[0]*0.1 + x[1]*0.1 + x[2]*0.1;
+}
+
 void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
 {
     std::string input_file = "input_" + exeName;
@@ -131,16 +135,20 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
       if( adapter.get() == NULL ) continue;
 
       std::string meshName = adapter->getName();
-      std::string prefix;
+      std::string prefix, prefixPower;
 
       if( meshName.compare("clad")==0 ) {
         prefix="Clad";
+        prefixPower="Clad";
       } else if ( meshName.compare("pellet_1")==0 ) {
         prefix="BottomPellet";
+        prefixPower="Pellet";
       } else if ( meshName.compare("pellet_3")==0 ) {
         prefix="TopPellet";
+        prefixPower="Pellet";
       } else if ( meshName.compare(0,7,"pellet_")==0 ) {
         prefix="MiddlePellet";
+        prefixPower="Pellet";
       } else if ( meshName.compare("subchannel")==0 ){
         continue;
       } else {
@@ -168,11 +176,11 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
             thermalTransportModel));
       linearColumnOperator->append(thermalLinearOperator);
 
-      AMP_INSIST( global_input_db->keyExists(prefix+"VolumeIntegralOperator"), "key missing!" );
+      AMP_INSIST( global_input_db->keyExists(prefixPower+"VolumeIntegralOperator"), "key missing!" );
       boost::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
       boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> specificPowerGpVecToPowerDensityNodalVecOperator =
         boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator( adapter,
-              prefix+"VolumeIntegralOperator",
+              prefixPower+"VolumeIntegralOperator",
               global_input_db,
               stransportModel));
       volumeIntegralColumnOperator->append(specificPowerGpVecToPowerDensityNodalVecOperator);
@@ -455,7 +463,9 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         std::vector<size_t> dofs;
         for (size_t i=0; i<it.size(); i++) {
             gaussPtDOFManager->getDOFs(it->globalID(),dofs);
-            specificPowerGpVec->setValueByGlobalID(dofs[0],getTemp(it->coord()));
+            for (size_t j=0; j<dofs.size(); j++) {
+              specificPowerGpVec->setValueByGlobalID(dofs[j],getPower(it->centroid()));
+            }
             ++it;
         }
     }

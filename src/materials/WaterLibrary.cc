@@ -84,6 +84,25 @@ September 1998");
 	static const double       CondRhomaxVal = 2000.;	// maximum density [kg/m3] (arbitrary "very high" density)
 	static const double       CondRanges[2][2]={{CondTminVal, CondTmaxVal}, {CondRhominVal, CondRhomaxVal}};
 
+  	// Convective Heat Coefficient as a function of thermal Conductivity,
+        // Diameter, Reynolds Number and Prandtl Number 
+	static const unsigned int ConvNumArgs   = 5;
+	static const unsigned int ConvNumParams = 0;
+	static const double       ConvParams[CondNumParams] = {};
+	static const std::string  ConvArgs[CondNumArgs] = {"temperature", "density","conductivity", "diameter", "reynolds", "prandtl"};
+	static const double       ConvTminVal = 0.0;		// minimum temperature [K]
+	static const double       ConvTmaxVal = 1.0e3;		// maximum temperature [K] (arbitrary "very high" temperature)
+	static const double       ConvRhominVal = 0;		// minimum density [kg/m3] 
+	static const double       ConvRhomaxVal = 2000.;	// maximum density [kg/m3] (arbitrary "very high" density)
+	static const double       ConvDminVal   = 0.0;		// minimum diameter [m]
+	static const double       ConvDmaxVal   = 1.0;		// maximum diameter [m] (arbitrary "very high" temperature)
+	static const double       ConvReyminVal = 1;		// minimum reynolds # [] 
+	static const double       ConvReymaxVal = 1.e6;  	// maximum reynolds # []
+	static const double       ConvPrtminVal = 0.87;		// minimum Prandtl # [] 
+	static const double       ConvPrtmaxVal = 14.;  	// maximum Prandtl # [] 
+	static const double       ConvRanges[5][2]={ {CondTminVal, CondTmaxVal}, {CondRhominVal, CondRhomaxVal}, {ConvDminVal ,ConvDmaxVal }, {ConvReyminVal,ConvReymaxVal}, {ConvPrtminVal,ConvPrtmaxVal}};
+
+
   	// dynamic viscosity as a function of temperature and density
 	static const unsigned int ViscNumArgs   = 2;
 	static const unsigned int ViscNumParams = 4 + 5*6;
@@ -166,6 +185,20 @@ September 1998");
 				CondArgs,  	// Names of arguments to the eval function
 				CondNumArgs,	// Number of arguments
 				CondRanges ){}	// Range of variables
+
+		virtual double eval( std::vector<double>& args );
+	};
+
+        class ConvectiveHeatProp : public Property<double>{
+	public:
+		ConvectiveHeatProp() :
+			Property<double> (	name_base + "_" + "ConvectiveHeat",	// Name string
+				source,		// Reference source
+				ConvParams,	// Property parameters
+				ConvNumParams,	// Number of parameters
+				ConvArgs,  	// Names of arguments to the eval function
+				ConvNumArgs,	// Number of arguments
+				ConvRanges ){}	// Range of variables
 
 		virtual double eval( std::vector<double>& args );
 	};
@@ -451,6 +484,31 @@ September 1998");
 		return k;
 	}
 
+	inline double ConvectiveHeatProp::eval( std::vector<double>& args ){
+	    	double T            = args[0];  // local temperature in Kelvin
+	    	double rho          = args[1];  // local density in kg/m3
+	    	double D            = args[2];  // diameter in m
+	    	double rey          = args[3];  // reynolds number 
+	    	double prt          = args[4];  // prandtl numner 
+	    	double k;                       // thermal conductivity in W/(K-m)
+	    	double h;                       // Convective heat transfer Coefficient in W/(K-m2)
+	    
+		// check bounds of inputs
+		if (rho <= 0) AMP_ERROR("Thermal ocnductivity called with density <= 0 kg/m3.");
+		if (T <= 0) AMP_ERROR("Thermal conductivity called with temperature <= 0 K.");
+	
+                // get thermal conductivity  
+		ThermalConductivityProp tCond;
+                std::vector<double> largs(2);
+                largs[0]= T;
+                largs[1]= rho;
+                k = tCond.eval(largs);
+
+                h  =  (0.023*k/D) * pow(rey, 0.8) * pow(prt, 0.4);
+
+		return h;
+	}
+
 	inline double DynamicViscosityProp::eval( std::vector<double>& args ){
 	    	double T            = args[0];  // local temperature in Kelvin
 	    	double rho          = args[1];  // local density in kg/m3
@@ -564,6 +622,7 @@ WaterLibrary::WaterLibrary()
 		INSERT_PROPERTY_IN_MAP(ThermalConductivity, WaterLibrary_NS);
 		INSERT_PROPERTY_IN_MAP(DynamicViscosity, WaterLibrary_NS);
 		INSERT_PROPERTY_IN_MAP(Enthalpy, WaterLibrary_NS);
+		INSERT_PROPERTY_IN_MAP(ConvectiveHeatCoefficient, WaterLibrary_NS);
 }
 
 
