@@ -37,7 +37,7 @@ namespace LinearAlgebra {
   inline
   const Epetra_Vector &ManagedEpetraVector::getEpetra_Vector () const 
   { 
-    return d_Engine->castTo<EpetraVectorEngine>().getEpetra_Vector(); 
+    return d_Engine->castTo<const EpetraVectorEngine>().getEpetra_Vector(); 
   }
 
   inline 

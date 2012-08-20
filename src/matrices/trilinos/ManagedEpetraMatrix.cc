@@ -281,17 +281,23 @@ void ManagedEpetraMatrix::mult ( Vector::const_shared_ptr in , Vector::shared_pt
 {
     AMP_ASSERT ( in->getGlobalSize() == numGlobalRows() );
     AMP_ASSERT ( out->getGlobalSize() == numGlobalColumns() );
-    Vector::const_shared_ptr  in_view = EpetraVector::constView ( in );
-    Vector::shared_ptr  out_view = EpetraVector::view ( out );
-    VerifyEpetraReturn ( d_epetraMatrix->Multiply ( false , in_view->castTo<EpetraVector>().getEpetra_Vector() , out_view->castTo<EpetraVector>().getEpetra_Vector() ) , "mult" );
+    boost::shared_ptr<const EpetraVector>  in_view = boost::dynamic_pointer_cast<const EpetraVector>( EpetraVector::constView( in ) );
+    boost::shared_ptr<EpetraVector>  out_view = boost::dynamic_pointer_cast<EpetraVector>( EpetraVector::view( out ) );
+    const Epetra_Vector &in_vec = in_view->getEpetra_Vector();
+    Epetra_Vector &out_vec = out_view->getEpetra_Vector();
+    int err = d_epetraMatrix->Multiply( false, in_vec, out_vec );
+    VerifyEpetraReturn( err, "mult" );
 }
 
 
 void ManagedEpetraMatrix::multTranspose ( Vector::const_shared_ptr in , Vector::shared_ptr out )
 {
-    Vector::const_shared_ptr  in_view = EpetraVector::constView ( in );
-    Vector::shared_ptr  out_view = EpetraVector::view ( out );
-    VerifyEpetraReturn ( d_epetraMatrix->Multiply ( true , in_view->castTo<EpetraVector>().getEpetra_Vector() , out_view->castTo<EpetraVector>().getEpetra_Vector() ) , "mult" );
+    AMP_ASSERT ( in->getGlobalSize() == numGlobalColumns() );
+    AMP_ASSERT ( out->getGlobalSize() == numGlobalRows() );
+    boost::shared_ptr<const EpetraVector>  in_view = boost::dynamic_pointer_cast<const EpetraVector>( EpetraVector::constView( in ) );
+    boost::shared_ptr<EpetraVector>  out_view = boost::dynamic_pointer_cast<EpetraVector>( EpetraVector::view( out ) );
+    int err = d_epetraMatrix->Multiply( true, in_view->getEpetra_Vector(), out_view->getEpetra_Vector() );
+    VerifyEpetraReturn( err, "mult" );
 }
 
 
