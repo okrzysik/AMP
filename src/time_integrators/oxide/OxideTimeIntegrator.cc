@@ -3,6 +3,7 @@
 
 #include "utils/AMP_MPI.h"
 #include "utils/Utilities.h"
+#include "utils/ProfilerApp.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
 #include "vectors/MultiVariable.h"
@@ -33,6 +34,7 @@ OxideTimeIntegrator::~OxideTimeIntegrator()
 ************************************************************************/
 void OxideTimeIntegrator::initialize( boost::shared_ptr<TimeIntegratorParameters> parameters )
 {   
+    PROFILE_START("initialize");
     d_current_time = 0.0;
     d_current_dt = 1.0;
 
@@ -124,6 +126,7 @@ void OxideTimeIntegrator::initialize( boost::shared_ptr<TimeIntegratorParameters
     // Free the temporary memory
     delete [] C0[0];
     delete [] C1[0];
+    PROFILE_STOP("initialize");
 }
 
 
@@ -141,6 +144,7 @@ void OxideTimeIntegrator::reset(boost::shared_ptr<TimeIntegratorParameters> para
 ************************************************************************/
 int OxideTimeIntegrator::advanceSolution( const double dt, const bool first_step )
 {
+    PROFILE_START("advanceSolution");
     d_current_time += dt;
     d_current_dt = dt;
     // Get the relavent DOF Managers
@@ -209,6 +213,7 @@ int OxideTimeIntegrator::advanceSolution( const double dt, const bool first_step
     // Free the temporary memory
     delete [] C0[0];
     delete [] C1[0];
+    PROFILE_STOP("advanceSolution");
     return 0;
 }
 
