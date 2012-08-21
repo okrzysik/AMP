@@ -652,8 +652,6 @@ int testSendRecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
 // Routine to test Isend/Irecv
 template <class type>
 int testIsendIrecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
-    if ( comm.getSize() == 1 )
-        return 0;
     char message[500];
     std::vector<MPI_Request> sendRequest;
     std::vector<MPI_Request> recvRequest;
@@ -663,9 +661,6 @@ int testIsendIrecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
         if ( i!=comm.getRank() )
             continue;
         for (int j=0; j<comm.getSize(); j++) {
-            // We are not allowed to send/recieve from the same processor
-            if ( i==j )
-                continue;
             // Start a non-blocking send
             int tag = i+j*comm.getSize();
             MPI_Request request = comm.Isend(&v1,1,j,tag);
@@ -682,9 +677,6 @@ int testIsendIrecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
         if ( j!=comm.getRank() )
             continue;
         for (int i=0; i<comm.getSize(); i++) {
-            // We are not allowed to send/recieve from the same processor
-            if ( i==j )
-                continue;
             // Start a non-blocking recv
             int tag = i+j*comm.getSize();
             MPI_Request request = comm.Irecv(&recv_buffer[i],1,i,tag);
