@@ -28,6 +28,7 @@ SubchannelTwoEqNonlinearOperator{
     Rod_Power = 66.81e3
     Heat_Source_Type = "totalHeatGeneration"
     Heat_Shape = "Sinusoidal"
+    LocalModel = "SubchannelPhysicsModel"
 }
 
 SubchannelTwoEqLinearOperator{
@@ -47,6 +48,7 @@ SubchannelTwoEqLinearOperator{
     Rod_Power = 66.81e3
     Heat_Source_Type = "totalHeatGeneration"
     Heat_Shape = "Sinusoidal"
+    LocalModel = "SubchannelPhysicsModel"
 }
 
 SubchannelPhysicsModel{

@@ -154,7 +154,10 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
       AMP::LinearAlgebra::Vector::shared_ptr outputVec = subsetOutputVector( r );
 
       AMP::Discretization::DOFManager::shared_ptr dof_manager = inputVec->getDOFManager();
-      AMP::Discretization::DOFManager::shared_ptr cladDofManager = d_cladTemperature->getDOFManager();
+      AMP::Discretization::DOFManager::shared_ptr cladDofManager;
+      if (d_source == "averageCladdingTemperature"){
+        cladDofManager = d_cladTemperature->getDOFManager();
+      }
 
       fillSubchannelGrid(d_Mesh);
 
