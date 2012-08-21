@@ -503,22 +503,22 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     // solve
     nonlinearSolver->solve(globalRhsMultiVector, globalSolMultiVector);
 
-    AMP::LinearAlgebra::Vector::shared_ptr flowDenVec = flowSolVec->cloneVector(); 
-    AMP::LinearAlgebra::Vector::shared_ptr flowTempVec = flowSolVec->cloneVector(); 
+    AMP::LinearAlgebra::Vector::shared_ptr flowDenVec  = subchannelFuelTemp->cloneVector(); 
+    AMP::LinearAlgebra::Vector::shared_ptr flowTempVec = subchannelFuelTemp->cloneVector(); 
 
     AMP::Mesh::MeshIterator face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     AMP::Mesh::MeshIterator end_face = face.end();
     std::vector<size_t> dofs;
-    std::vector<size_t> iscalarDofs;
-    for( ; face != end_face; ++face,++j){
+    std::vector<size_t> scalarDofs;
+    for( ; face != end_face; ++face){
       faceDOFManager->getDOFs( face->globalID(), dofs );
       scalarFaceDOFManager->getDOFs( face->globalID(), scalarDofs );
       std::map<std::string, boost::shared_ptr<std::vector<double> > > outTemperatureArgMap;
-      outTemperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,solVec->getValueByGlobalID(dofs[0]))));
-      outTemperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,solVec->getValueByGlobalID(dofs[1]))));
+      outTemperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,flowSolVec->getValueByGlobalID(dofs[0]))));
+      outTemperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,flowSolVec->getValueByGlobalID(dofs[1]))));
       std::vector<double> outTemperatureResult(1);
       subchannelPhysicsModel->getProperty("Temperature", outTemperatureResult, outTemperatureArgMap); 
-      flowTempVec->setValueByGlobalID(scalarDofs[0] ,outTemperatureArgMap[0]); 
+      flowTempVec->setValueByGlobalID(scalarDofs[0] ,outTemperatureResult[0]); 
      } 
 
 #ifdef USE_SILO
@@ -527,6 +527,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     siloWriter->registerVector( flowSolVec, xyFaceMesh, AMP::Mesh::Face, "SubchannelFlow" );
     siloWriter->registerVector( flowTempVec, xyFaceMesh, AMP::Mesh::Face, "FlowTemp" );
     siloWriter->registerVector( globalThermalSolutionVec ,  pinMesh , AMP::Mesh::Vertex, "Temperature" );
+    siloWriter->registerVector( specificPowerGpVec,  pinMesh , AMP::Mesh::Volume, "Power" );
     siloWriter->writeFile( silo_name , 0 );
 #endif
 
