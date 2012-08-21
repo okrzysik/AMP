@@ -494,8 +494,10 @@ September 1998");
 	    	double h;                       // Convective heat transfer Coefficient in W/(K-m2)
 	    
 		// check bounds of inputs
-		if (rho <= 0) AMP_ERROR("Thermal ocnductivity called with density <= 0 kg/m3.");
-		if (T <= 0) AMP_ERROR("Thermal conductivity called with temperature <= 0 K.");
+		if (rho <= 0) AMP_ERROR("Convective Heat called with density <= 0 kg/m3.");
+		if (T <= 0) AMP_ERROR("Convective Heat called with temperature <= 0 K.");
+		if (D <= 0) AMP_ERROR("Convective Heat called with diameter <= 0 m.");
+		if (rey <= 0) AMP_ERROR("Convective Heat called with reynolds # <= 0.");
 	
                 // get thermal conductivity  
 		ThermalConductivityProp tCond;

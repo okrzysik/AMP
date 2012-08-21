@@ -237,8 +237,50 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
 
           // compute the enthalpy change in each interval
           std::vector<double> dh(numCells);
+          AMP::Mesh::MeshIterator face = begin_face;
           if (d_source == "averageCladdingTemperature") {
-            //Implemented inside the face iterator loop
+            for (int j=0; j<numCells; j++){
+              //evalute flow average temperature 
+              dof_manager->getDOFs( face->globalID(), dofs );
+              cladDofManager->getDOFs( face->globalID(), scalarDofs );
+              double cladMinus = d_cladTemperature->getValueByGlobalID(scalarDofs[0]);
+              std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
+              temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[0]))));
+              temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[1]))));
+              std::vector<double> flowMinus(1), specificVolMinus(1);
+              d_subchannelPhysicsModel->getProperty("Temperature", flowMinus, temperatureArgMap);
+              d_subchannelPhysicsModel->getProperty("SpecificVolume", specificVolMinus, temperatureArgMap);
+
+              face++;
+              dof_manager->getDOFs( face->globalID(), dofs );
+              cladDofManager->getDOFs( face->globalID(), scalarDofs );
+              double cladPlus = d_cladTemperature->getValueByGlobalID(scalarDofs[0]);;
+              temperatureArgMap.clear();
+              temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[0]))));
+              temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[1]))));
+              std::vector<double> flowPlus(1), specificVolPlus(1);
+              d_subchannelPhysicsModel->getProperty("Temperature", flowPlus, temperatureArgMap); 
+              d_subchannelPhysicsModel->getProperty("SpecificVolume", specificVolPlus, temperatureArgMap);
+
+              double cladAvgTemp = (cladMinus + cladPlus)/2.0;
+              std::vector<double> flowTemp(1, (flowMinus[0] + flowPlus[0])/2.0);
+              std::vector<double> flowDens(1, ((1./specificVolMinus[0]) + (1./specificVolPlus[0]))/2.0);
+
+              std::map<std::string, boost::shared_ptr<std::vector<double> > > convectiveHeatArgMap;
+              convectiveHeatArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,flowTemp[0])));
+              convectiveHeatArgMap.insert(std::make_pair("density",new std::vector<double>(1,flowDens[0])));
+              convectiveHeatArgMap.insert(std::make_pair("diameter",new std::vector<double>(1,d_channelDia)));
+              convectiveHeatArgMap.insert(std::make_pair("reynolds",new std::vector<double>(1,d_reynolds)));
+              convectiveHeatArgMap.insert(std::make_pair("prandtl",new std::vector<double>(1,d_prandtl)));
+              std::vector<double> heff(1); 
+              d_subchannelPhysicsModel->getProperty("ConvectiveHeat", heff, convectiveHeatArgMap); 
+
+              double flux = heff[0]*(cladAvgTemp - flowTemp[0]) ;
+              double lin  = flux*pi*d_diameter*d_channelFractions[isub] ;
+              double flux_sum = 4.0*pi*d_diameter*1.0/4.0*flux;
+              double lin_sum = 4.0*d_gamma*1.0/4.0*lin;
+              dh[j] = del_z[j] / d_m * (flux_sum + lin_sum);
+            }
           } else if (d_source == "averageHeatFlux") {
             AMP_ERROR("Heat source type 'averageHeatFlux' not yet implemented.");
           } else if (d_source == "totalHeatGeneration") {
@@ -261,53 +303,9 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
           // calculate residual for axial momentum equations
           double R_h, R_p; 
           int j = 1;
-          AMP::Mesh::MeshIterator face = begin_face;
+          face = begin_face;
           for(size_t iface = 0; iface < begin_face.size(); ++iface, ++j){
 
-            if (d_source == "averageCladdingTemperature") {
-                //evalute flow average temperature 
-                dof_manager->getDOFs( face->globalID(), dofs );
-                cladDofManager->getDOFs( face->globalID(), scalarDofs );
-                double cladMinus = d_cladTemperature->getValueByGlobalID(scalarDofs[0]);
-                std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
-                temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[0]))));
-                temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[1]))));
-                std::vector<double> flowMinus(1), specificVolMinus(1);
-                d_subchannelPhysicsModel->getProperty("Temperature", flowMinus, temperatureArgMap);
-                d_subchannelPhysicsModel->getProperty("SpecificVolume", specificVolMinus, temperatureArgMap);
-
-                face++;
-                dof_manager->getDOFs( face->globalID(), dofs );
-                cladDofManager->getDOFs( face->globalID(), scalarDofs );
-                double cladPlus = d_cladTemperature->getValueByGlobalID(scalarDofs[0]);;
-                temperatureArgMap.clear();
-                temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[0]))));
-                temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[1]))));
-                std::vector<double> flowPlus(1), specificVolPlus(1);
-                d_subchannelPhysicsModel->getProperty("Temperature", flowPlus, temperatureArgMap); 
-                d_subchannelPhysicsModel->getProperty("SpecificVolume", specificVolPlus, temperatureArgMap);
-                
-                face--;
-
-                double cladAvgTemp = (cladMinus + cladPlus)/2.0;
-                std::vector<double> flowTemp(1, (flowMinus[0] + flowPlus[0])/2.0);
-                std::vector<double> flowDens(1, ((1./specificVolMinus[0]) + (1./specificVolPlus[0]))/2.0);
-
-                std::map<std::string, boost::shared_ptr<std::vector<double> > > convectiveHeatArgMap;
-                convectiveHeatArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,flowTemp[0])));
-                convectiveHeatArgMap.insert(std::make_pair("density",new std::vector<double>(1,flowDens[0])));
-                convectiveHeatArgMap.insert(std::make_pair("diameter",new std::vector<double>(1,d_channelDia)));
-                convectiveHeatArgMap.insert(std::make_pair("reynolds",new std::vector<double>(1,d_reynolds)));
-                convectiveHeatArgMap.insert(std::make_pair("prandtl",new std::vector<double>(1,d_prandtl)));
-                std::vector<double> heff(1); 
-                d_subchannelPhysicsModel->getProperty("ConvectiveHeat", heff, convectiveHeatArgMap); 
-
-                double flux = heff[0]*(cladAvgTemp - flowTemp[0]) ;
-                double lin  = flux*pi*d_diameter*d_channelFractions[isub] ;
-                double flux_sum = 4.0*pi*d_diameter*1.0/4.0*flux;
-                double lin_sum = 4.0*d_gamma*1.0/4.0*lin;
-                dh[j-1] = del_z[j-1] / d_m * (flux_sum + lin_sum);
-            }
             // ======================================================
             // energy residual
             // ======================================================

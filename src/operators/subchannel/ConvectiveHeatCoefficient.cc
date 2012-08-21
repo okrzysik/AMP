@@ -49,11 +49,11 @@ namespace AMP {
     void ConvectiveHeatCoefficient :: getConductance(std::vector<double> & beta,
         std::vector<double> & gamma, const std::vector<std::vector <double> > & inputVectors)
     {
-      size_t numArgs = inputVectors.size();
+      size_t numArgs = inputVectors.size()-1;
       
       std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
       for (size_t i=0; i<numArgs; i++) {
-        argMap.insert(std::make_pair(d_argNames[i],new std::vector<double>(inputVectors[i].begin(), inputVectors[i].end())));
+        argMap.insert(std::make_pair("temperature",new std::vector<double>(inputVectors[i+1].begin(), inputVectors[i+1].end())));
       }
 
       d_property->evalv(beta, argMap);

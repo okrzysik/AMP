@@ -659,6 +659,9 @@ SubchannelTwoEqNonlinearOperator{
     Form_Loss_Coefficient = 0.2
     Rod_Power = 66.81e3
     Heat_Source_Type = "averageCladdingTemperature"
+    Channel_Diameter = 0.01178  // Todreas, p.455
+    Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
+    Prandtl          = 7.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
     ChannelFractions = 0.25, 0.5, 0.5, 0.25, 0.5 , 0.75, 0.75 , 0.5,0.5 , 0.75, 0.75 , 0.5, 0.25, 0.5, 0.5, 0.25 
     Heat_Shape = "Sinusoidal"
     LocalModel = "SubchannelPhysicsModel"
@@ -692,18 +695,25 @@ ConvectiveHeatCoefficient{
     name = "ConvectiveHeatCoefficient"
     Material = "WaterLibrary"
     Property = "ConvectiveHeat"
-    Channel_Diameter = 0.01178  // Todreas, p.455
-    Conductivity     = 0.50     // Todreas, p.455   
-    Temperature      = 360.0    // K
-    Density          = 704      // Density of water ????
-    Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
-    Prandtl          = 7.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
+    ActiveInputVariables{
+      ActiveVariable_0 = "Temperature"
+    }
+    ActiveParameters{
+      FUEL_TEMPERATURE = "Temperature"
+    }
+    Defaults{
+      diameter         = 0.01178  // Todreas, p.455
+      temperature      = 400.0    // K
+      density          = 704      // Density of water ????
+      reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
+      prandtl          = 7.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
+    }
 }
 
 SubchannelPhysicsModel{
-	name = "SubchannelPhysicsModel"
-	Material = "WaterLibrary"
-	Formulation = "FunctionsTesting"
+  name = "SubchannelPhysicsModel"
+    Material = "WaterLibrary"
+    Formulation = "FunctionsTesting"
 	Defaults{
 		enthalpy = 200.0e3
 		pressure = 0.5e6

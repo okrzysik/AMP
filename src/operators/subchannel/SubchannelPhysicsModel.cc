@@ -45,6 +45,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
 		properties.push_back("SaturatedLiquidEnthalpy");
 		properties.push_back("SpecificVolume");
 		properties.push_back("ThermalConductivity");
+		properties.push_back("ConvectiveHeat");
 		properties.push_back("DynamicViscosity");
 		properties.push_back("Enthalpy");
 	} else {

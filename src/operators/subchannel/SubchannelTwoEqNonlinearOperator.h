@@ -67,6 +67,10 @@ namespace Operator {
       virtual AMP::LinearAlgebra::Vector::shared_ptr subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec);
       virtual AMP::LinearAlgebra::Vector::const_shared_ptr subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec);
 
+      void setVector(AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
+        d_cladTemperature = frozenVec;
+      }
+      
       /**
         Gets parameters from nonlinear operator for use in linear operator
         */

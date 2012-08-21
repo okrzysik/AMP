@@ -195,6 +195,7 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
               }
             }
           }
+
           d_robinPhysicsModel->getConductance(beta, gamma, inputArgsAtGpts);
         }
 

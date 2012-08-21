@@ -120,6 +120,25 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
     xyFaceMesh = subchannelMesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh , 0 ) );
 
+    AMP::LinearAlgebra::Variable::shared_ptr thermalVariable (new AMP::LinearAlgebra::Variable("Temperature"));
+    AMP::LinearAlgebra::Variable::shared_ptr flowVariable (new AMP::LinearAlgebra::Variable("Flow"));
+    AMP::LinearAlgebra::Variable::shared_ptr powerVariable (new AMP::LinearAlgebra::Variable("SpecificPowerInWattsPerGram"));
+
+    int DofsPerFace =  2;
+    AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
+        AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerFace );
+
+    AMP::Discretization::DOFManager::shared_ptr scalarFaceDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
+        AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), 1);
+
+    AMP::LinearAlgebra::Vector::shared_ptr subchannelFuelTemp = AMP::LinearAlgebra::createVector( scalarFaceDOFManager , thermalVariable );
+    AMP::LinearAlgebra::Vector::shared_ptr subchannelFlowTemp = AMP::LinearAlgebra::createVector( scalarFaceDOFManager , flowVariable );
+
+   
+    AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = AMP::Discretization::simpleDOFManager::create( pinMesh ,AMP::Mesh::Vertex,1,1,true);
+
+    AMP::LinearAlgebra::Vector::shared_ptr thermalMapVec = AMP::LinearAlgebra::createVector(nodalScalarDOF, thermalVariable , true);
+
     boost::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
     boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator (new AMP::Operator::ColumnOperator(emptyParams));
     boost::shared_ptr<AMP::Operator::ColumnOperator> linearColumnOperator (new AMP::Operator::ColumnOperator(emptyParams));
@@ -217,6 +236,8 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
                                                                                   adapter ,"SubchannelTwoEqLinearOperator",global_input_db,elementModel ));
 
 
+        subchannelNonlinearOperator->setVector(subchannelFuelTemp); 
+
         // pass creation test
         ut->passes(exeName+": creation");
         std::cout.flush();
@@ -247,12 +268,6 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     if ( szaColumn->getNumberOfOperators() > 0 )
       mapsColumn->append( szaColumn );
 
-    AMP::LinearAlgebra::Variable::shared_ptr thermalVariable (new AMP::LinearAlgebra::Variable("Temperature"));
-    AMP::LinearAlgebra::Variable::shared_ptr flowVariable (new AMP::LinearAlgebra::Variable("Flow"));
-
-    AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = AMP::Discretization::simpleDOFManager::create( pinMesh ,AMP::Mesh::Vertex,1,1,true);
-
-    AMP::LinearAlgebra::Vector::shared_ptr thermalMapVec = AMP::LinearAlgebra::createVector(nodalScalarDOF, thermalVariable , true);
     n2nColumn->setVector ( thermalMapVec );
     szaColumn->setVector ( thermalMapVec );
 
@@ -324,15 +339,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
       curOperator++;
     }
 
-    int DofsPerFace =  2;
-    AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
-        AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerFace );
 
-    AMP::Discretization::DOFManager::shared_ptr scalarFaceDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
-        AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), 1);
-
-    AMP::LinearAlgebra::Vector::shared_ptr subchannelFuelTemp = AMP::LinearAlgebra::createVector( scalarFaceDOFManager , thermalVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr subchannelFlowTemp = AMP::LinearAlgebra::createVector( scalarFaceDOFManager , flowVariable );
     boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  cladToSubchannelMap, subchannelToCladMap; 
     
     boost::shared_ptr<AMP::Database> cladToSubchannelDb = global_input_db->getDatabase( "CladToSubchannelMaps" );
@@ -414,6 +421,8 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     subchannelLinearOperator->reset(subchannelNonlinearOperator->getJacobianParameters(flowSolVec));
     subchannelLinearOperator->apply( flowRhsVec, flowSolVec, flowResVec, 1.0, -1.0);
 
+    thermalMapVec->setToScalar(400.);
+    globalThermalSolutionVec->setToScalar(400.);
     nonlinearCoupledOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
 
     // get nonlinear solver database
@@ -453,7 +462,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::Discretization::DOFManager::shared_ptr  gaussPtDOFManager;
     if ( pinMesh.get()!=NULL ) {
         gaussPtDOFManager = AMP::Discretization::simpleDOFManager::create(pinMesh,AMP::Mesh::Volume,1,8);
-        specificPowerGpVec= AMP::LinearAlgebra::createVector( gaussPtDOFManager , thermalVariable );
+        specificPowerGpVec= AMP::LinearAlgebra::createVector( gaussPtDOFManager , powerVariable );
         specificPowerGpVec->setToScalar(0.0);
     }
 
@@ -470,6 +479,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         }
     }
 
+    specificPowerGpVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
     volumeIntegralColumnOperator->apply(nullVec, specificPowerGpVec, globalThermalRhsVec , 1., 0.);
     int totalOp;
@@ -492,7 +502,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     // Register the quantities to plot
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
     siloWriter->registerVector( flowSolVec, xyFaceMesh, AMP::Mesh::Face, "SubchannelFlow" );
-    siloWriter->registerVector( globalThermalSolutionVec ,  manager , AMP::Mesh::Vertex, "Temperature" );
+    siloWriter->registerVector( globalThermalSolutionVec ,  pinMesh , AMP::Mesh::Vertex, "Temperature" );
     siloWriter->writeFile( silo_name , 0 );
 #endif
 
