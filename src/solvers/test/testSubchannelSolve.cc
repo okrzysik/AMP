@@ -68,7 +68,8 @@
 #include "ampmesh/StructuredMeshHelper.h"
 
 double getPower(const std::vector<double> &x) {
-    return 0.5 + x[0]*0.1 + x[1]*0.1 + x[2]*0.1;
+    return 1e6 *( 1.0 + x[0]*10 + x[1]*50 + sin(3.14159/0.0315*x[2]) *10 );
+
 }
 
 void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
@@ -120,14 +121,16 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
     xyFaceMesh = subchannelMesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh , 0 ) );
 
-    AMP::LinearAlgebra::Variable::shared_ptr thermalVariable (new AMP::LinearAlgebra::Variable("Temperature"));
-    AMP::LinearAlgebra::Variable::shared_ptr flowVariable (new AMP::LinearAlgebra::Variable("Flow"));
-    AMP::LinearAlgebra::Variable::shared_ptr powerVariable (new AMP::LinearAlgebra::Variable("SpecificPowerInWattsPerGram"));
+    AMP::LinearAlgebra::Variable::shared_ptr thermalVariable (new AMP::LinearAlgebra::Variable("Temperature"));    // temperature on pellets and cladding
+    AMP::LinearAlgebra::Variable::shared_ptr flowVariable (new AMP::LinearAlgebra::Variable("Flow"));              // enthalpy and pressure on z-faces
+    AMP::LinearAlgebra::Variable::shared_ptr powerVariable (new AMP::LinearAlgebra::Variable("SpecificPowerInWattsPerGram")); // specific power on gauss points
 
+    // Dof manager for subchannel with flow variable
     int DofsPerFace =  2;
     AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
         AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerFace );
 
+    // dof manager for the scalar quanties on the z faces - for mapped temperature clad temp onto subchannel discretization
     AMP::Discretization::DOFManager::shared_ptr scalarFaceDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
         AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), 1);
 
@@ -137,6 +140,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
    
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = AMP::Discretization::simpleDOFManager::create( pinMesh ,AMP::Mesh::Vertex,1,1,true);
 
+    // flow temperature on clad outer surfaces and pellet temperature on clad innner surfaces, and clad inner surface temp on pellet outer surfaces
     AMP::LinearAlgebra::Vector::shared_ptr thermalMapVec = AMP::LinearAlgebra::createVector(nodalScalarDOF, thermalVariable , true);
 
     boost::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
@@ -209,6 +213,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     // get subchannel physics model
+    // for post processing - need water library to convert enthalpy to temperature...
     boost::shared_ptr<AMP::Database> subchannelPhysics_db = global_input_db->getDatabase("SubchannelPhysicsModel");
     boost::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params( new AMP::Operator::ElementPhysicsModelParameters(subchannelPhysics_db));
     boost::shared_ptr<AMP::Operator::SubchannelPhysicsModel>  subchannelPhysicsModel (new AMP::Operator::SubchannelPhysicsModel(params));
@@ -347,6 +352,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     cladToSubchannelMap->setVector( subchannelFuelTemp );
     mapsColumn->append( cladToSubchannelMap );
 
+    // unusual map - take flow variable (enthalpy and pressure) on subchannel mesh and convert to temperature then map to clad surface
     boost::shared_ptr<AMP::Database> subchannelToCladDb = global_input_db->getDatabase( "SubchannelToCladMaps" );
     subchannelToCladMap = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, subchannelToCladDb );
     subchannelToCladMap->setVector( thermalMapVec );
@@ -497,11 +503,29 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     // solve
     nonlinearSolver->solve(globalRhsMultiVector, globalSolMultiVector);
 
+    AMP::LinearAlgebra::Vector::shared_ptr flowDenVec = flowSolVec->cloneVector(); 
+    AMP::LinearAlgebra::Vector::shared_ptr flowTempVec = flowSolVec->cloneVector(); 
+
+    AMP::Mesh::MeshIterator face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
+    AMP::Mesh::MeshIterator end_face = face.end();
+    std::vector<size_t> dofs;
+    std::vector<size_t> iscalarDofs;
+    for( ; face != end_face; ++face,++j){
+      faceDOFManager->getDOFs( face->globalID(), dofs );
+      scalarFaceDOFManager->getDOFs( face->globalID(), scalarDofs );
+      std::map<std::string, boost::shared_ptr<std::vector<double> > > outTemperatureArgMap;
+      outTemperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,solVec->getValueByGlobalID(dofs[0]))));
+      outTemperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,solVec->getValueByGlobalID(dofs[1]))));
+      std::vector<double> outTemperatureResult(1);
+      subchannelPhysicsModel->getProperty("Temperature", outTemperatureResult, outTemperatureArgMap); 
+      flowTempVec->setValueByGlobalID(scalarDofs[0] ,outTemperatureArgMap[0]); 
+     } 
 
 #ifdef USE_SILO
     // Register the quantities to plot
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
     siloWriter->registerVector( flowSolVec, xyFaceMesh, AMP::Mesh::Face, "SubchannelFlow" );
+    siloWriter->registerVector( flowTempVec, xyFaceMesh, AMP::Mesh::Face, "FlowTemp" );
     siloWriter->registerVector( globalThermalSolutionVec ,  pinMesh , AMP::Mesh::Vertex, "Temperature" );
     siloWriter->writeFile( silo_name , 0 );
 #endif
