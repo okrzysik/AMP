@@ -60,9 +60,9 @@ MoabMapOperator::MoabMapOperator( const SP_MoabMapParams &params )
  * calling apply.
  */
 //---------------------------------------------------------------------------//
-void MoabMapOperator::apply( const SP_Vector &f,
-                             const SP_Vector &u,
-                                   SP_Vector &r,
+void MoabMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
+                             AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                             AMP::LinearAlgebra::Vector::shared_ptr r,
                                    double     a,
                                    double     b )
 {

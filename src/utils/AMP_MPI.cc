@@ -11,6 +11,8 @@
 
 // Include all other headers
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include "Utilities.h"
 
 // Include timers (if MPI is not used)
@@ -51,6 +53,30 @@ namespace AMP{
 // Initialized the static member variables
 volatile unsigned int AMP_MPI::N_MPI_Comm_created=0;
 
+// Static data for asyncronous communication without MPI
+#ifndef USE_MPI
+static const int mpi_max_tag = 0x003FFFFF;
+struct Isendrecv_struct {
+    const char *data;   // Pointer to data
+    int status;         // Status: 1-sending, 2-recieving
+};
+std::map<MPI_Request,Isendrecv_struct>  global_isendrecv_list;
+static MPI_Request getRequest( MPI_Comm comm, int tag )
+{
+    AMP_ASSERT(tag>=0&&tag<=mpi_max_tag);
+    MPI_Request request = 0;
+    if ( sizeof(MPI_Request)==4 && sizeof(MPI_Comm)==4 ) {
+        // Create a hash key for the comm and the tag
+        unsigned int hash = comm*0x9E3779B9;        // 2^32*0.5*(sqrt(5)-1)
+        unsigned int key  = (hash&0xFFFFFFFF)>>22;  // Get a key 0-1024
+        request = tag + (key<<22);
+    } else {
+        AMP_ERROR("Not Programmed");
+    }
+    return request;
+}
+#endif
+
 
 /************************************************************************
 *  Empty constructor                                                    *
@@ -59,13 +85,14 @@ AMP_MPI::AMP_MPI() {
     // Initialize the data members to a defaul communicator of self
     #ifdef USE_MPI
         communicator = MPI_COMM_NULL;
+        d_maxTag = 0x7FFFFFFF;
     #else
         communicator = AMP_COMM_NULL;
+        d_maxTag = mpi_max_tag;
     #endif
     count = NULL;
     comm_rank = 0;
     comm_size = 1;
-    d_maxTag = 0x7FFFFFFF;
     d_isNull = true;
     call_abort_in_serial_instead_of_exit = true;
 }
@@ -112,7 +139,7 @@ AMP_MPI::~AMP_MPI() {
     }
     comm_rank = 0;
     comm_size = 1;
-    d_maxTag = 0x7FFFFFFF;
+    d_maxTag = 0;
     d_isNull = true;
     call_abort_in_serial_instead_of_exit = true;
 }
@@ -178,6 +205,7 @@ AMP_MPI::AMP_MPI( MPI_Comm comm ) {
         communicator = comm;
         comm_rank = 0;
         comm_size = 1;
+        d_maxTag = mpi_max_tag;
         d_isNull = communicator==AMP_COMM_NULL;
     #endif
     call_abort_in_serial_instead_of_exit = true;
@@ -1441,8 +1469,23 @@ MPI_Request AMP_MPI::Isend<double>(const double *buf, const int length, const in
 template <>
 MPI_Request AMP_MPI::Isend<char>(const char *buf, const int length, const int recv_proc, const int tag) const
 {
-    AMP_ERROR("AMP_MPI.Isend is not written for serial (no MPI)");
-    return 0;
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_Request id = getRequest( communicator, tag );
+    std::map<MPI_Request,Isendrecv_struct>::iterator it = global_isendrecv_list.find(id);
+    if ( it==global_isendrecv_list.end() ) {
+        // We are calling isend first
+        Isendrecv_struct data;
+        data.data = buf;
+        data.status = 1;
+        global_isendrecv_list.insert( std::pair<MPI_Request,Isendrecv_struct>(id,data) );
+    } else {
+        // We called irecv first
+        AMP_ASSERT(it->second.status==2);
+        memcpy((char*)it->second.data,buf,length);
+        global_isendrecv_list.erase( it );
+    }
+    return id;
 }
 #endif
 
@@ -1612,8 +1655,23 @@ MPI_Request AMP_MPI::Irecv<double>(double *buf, const int length, const int send
 template <>
 MPI_Request AMP_MPI::Irecv<char>(char *buf, const int length, const int send_proc, const int tag) const
 {
-    AMP_ERROR("AMP_MPI.Irecv is not written for serial (no MPI)");
-    return 0;
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_Request id = getRequest( communicator, tag );
+    std::map<MPI_Request,Isendrecv_struct>::iterator it = global_isendrecv_list.find(id);
+    if ( it==global_isendrecv_list.end() ) {
+        // We are calling Irecv first
+        Isendrecv_struct data;
+        data.data = buf;
+        data.status = 2;
+        global_isendrecv_list.insert( std::pair<MPI_Request,Isendrecv_struct>(id,data) );
+    } else {
+        // We called Isend first
+        AMP_ASSERT(it->second.status==1);
+        memcpy(buf,it->second.data,length);
+        global_isendrecv_list.erase( it );
+    }
+    return id;
 }
 #endif
 
@@ -2046,18 +2104,45 @@ void AMP_MPI::waitAll( int count, MPI_Request *request) {
 }
 #else
 void AMP_MPI::wait( MPI_Request request) {
-    AMP_ERROR("Not implimented for serial codes (wait)");
+    while ( 1 ) {
+        // Check if the request is in our list
+        if ( global_isendrecv_list.find(request)==global_isendrecv_list.end() )
+            break;
+        // Put the current thread to sleep to allow other threads to run
+        sched_yield();
+    }
 }
 int AMP_MPI::waitAny( int count, MPI_Request *request) {
-    if ( count==0 ) 
-        return -1;
-    AMP_ERROR("Not implimented for serial codes (waitAny)");
-    return -1;
+    int index = 0;
+    while ( 1 ) {
+        // Check if the request is in our list
+        bool found_any = false;
+        for (int i=0; i<count; i++) {
+            if ( global_isendrecv_list.find(request[i])==global_isendrecv_list.end() ) {
+                found_any = true;
+                index = i;
+            }
+        }
+        if ( found_any )
+            break;
+        // Put the current thread to sleep to allow other threads to run
+        sched_yield();
+    }
+    return index;
 }
 void AMP_MPI::waitAll( int count, MPI_Request *request) {
-    if ( count==0 ) 
-        return;
-    AMP_ERROR("Not implimented for serial codes (waitAll)");
+    while ( 1 ) {
+        // Check if the request is in our list
+        bool found_all = true;
+        for (int i=0; i<count; i++) {
+            if ( global_isendrecv_list.find(request[i])!=global_isendrecv_list.end() )
+                found_all = false;
+        }
+        if ( found_all )
+            break;
+        // Put the current thread to sleep to allow other threads to run
+        sched_yield();
+    }
 }
 #endif
 

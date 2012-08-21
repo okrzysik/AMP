@@ -123,7 +123,9 @@ class MoabDummyOperator : public MoabBasedOp
 
         }
 
-        void apply( const SP_AMPVec &f, const SP_AMPVec &u, SP_AMPVec &r, double a, double b )
+        void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+                    AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+                    AMP::LinearAlgebra::Vector::shared_ptr r, double a, double b )
         {
             /* Don't need an apply for this operator */
         }
