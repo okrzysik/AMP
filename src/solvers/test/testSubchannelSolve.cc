@@ -68,7 +68,7 @@
 #include "ampmesh/StructuredMeshHelper.h"
 
 double getPower(const std::vector<double> &x) {
-    return 1e6 *( 1.0 + x[0]*10 + x[1]*50 + sin(3.14159/0.0315*x[2]) *10 );
+    return 5e6 *( 1.0 + x[0]*50 + x[1]*100 + x[2] *500 );
 
 }
 
@@ -135,13 +135,34 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), 1);
 
     AMP::LinearAlgebra::Vector::shared_ptr subchannelFuelTemp = AMP::LinearAlgebra::createVector( scalarFaceDOFManager , thermalVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr subchannelFlowTemp = AMP::LinearAlgebra::createVector( scalarFaceDOFManager , flowVariable );
-
+    AMP::LinearAlgebra::Vector::shared_ptr subchannelFlowTemp = AMP::LinearAlgebra::createVector( scalarFaceDOFManager , thermalVariable );
    
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = AMP::Discretization::simpleDOFManager::create( pinMesh ,AMP::Mesh::Vertex,1,1,true);
 
     // flow temperature on clad outer surfaces and pellet temperature on clad innner surfaces, and clad inner surface temp on pellet outer surfaces
     AMP::LinearAlgebra::Vector::shared_ptr thermalMapVec = AMP::LinearAlgebra::createVector(nodalScalarDOF, thermalVariable , true);
+
+    // create solution, rhs, and residual vectors
+    flowSolVec = AMP::LinearAlgebra::createVector( faceDOFManager , flowVariable , true );
+    flowRhsVec = AMP::LinearAlgebra::createVector( faceDOFManager , flowVariable , true );
+    flowResVec = AMP::LinearAlgebra::createVector( faceDOFManager , flowVariable , true );
+
+    globalThermalSolutionVec =  AMP::LinearAlgebra::createVector( nodalScalarDOF , thermalVariable )  ;
+    globalThermalRhsVec      =  AMP::LinearAlgebra::createVector( nodalScalarDOF , thermalVariable )  ;
+    globalThermalResidualVec =  AMP::LinearAlgebra::createVector( nodalScalarDOF , thermalVariable )  ;
+
+    globalSolMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector" , globalComm ) ;
+    globalSolMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( globalThermalSolutionVec );
+    globalSolMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( flowSolVec );
+
+    globalRhsMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector" , globalComm ) ;
+    globalRhsMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( globalThermalRhsVec );
+    globalRhsMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( flowRhsVec );
+
+    globalResMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector" , globalComm ) ;
+    globalResMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( globalThermalResidualVec );
+    globalResMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( flowResVec );
+
 
     boost::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
     boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator (new AMP::Operator::ColumnOperator(emptyParams));
@@ -344,7 +365,6 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
       curOperator++;
     }
 
-
     boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  cladToSubchannelMap, subchannelToCladMap; 
     
     boost::shared_ptr<AMP::Database> cladToSubchannelDb = global_input_db->getDatabase( "CladToSubchannelMaps" );
@@ -381,27 +401,6 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     CoupledOpParams->d_MapOperator = mapsColumn;
     CoupledOpParams->d_BVPOperator = nonlinearColumnOperator;
     boost::shared_ptr<AMP::Operator::Operator> nonlinearCoupledOperator(new AMP::Operator::CoupledOperator(CoupledOpParams));
-
-    // create solution, rhs, and residual vectors
-    flowSolVec = AMP::LinearAlgebra::createVector( faceDOFManager , flowVariable , true );
-    flowRhsVec = AMP::LinearAlgebra::createVector( faceDOFManager , flowVariable , true );
-    flowResVec = AMP::LinearAlgebra::createVector( faceDOFManager , flowVariable , true );
-
-    globalThermalSolutionVec =  AMP::LinearAlgebra::createVector( nodalScalarDOF , thermalVariable )  ;
-    globalThermalRhsVec      =  AMP::LinearAlgebra::createVector( nodalScalarDOF , thermalVariable )  ;
-    globalThermalResidualVec =  AMP::LinearAlgebra::createVector( nodalScalarDOF , thermalVariable )  ;
-
-    globalSolMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector" , globalComm ) ;
-    globalSolMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( globalThermalSolutionVec );
-    globalSolMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( flowSolVec );
-
-    globalRhsMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector" , globalComm ) ;
-    globalRhsMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( globalThermalRhsVec );
-    globalRhsMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( flowRhsVec );
-
-    globalResMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector" , globalComm ) ;
-    globalResMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( globalThermalResidualVec );
-    globalResMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( flowResVec );
 
     // get exit pressure
     double Pout = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )->getDouble("Exit_Pressure");
@@ -530,7 +529,6 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     siloWriter->registerVector( specificPowerGpVec,  pinMesh , AMP::Mesh::Volume, "Power" );
     siloWriter->writeFile( silo_name , 0 );
 #endif
-
 
 }
 

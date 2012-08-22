@@ -52,9 +52,7 @@ namespace AMP {
       size_t numArgs = inputVectors.size()-1;
       
       std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
-      for (size_t i=0; i<numArgs; i++) {
-        argMap.insert(std::make_pair("temperature",new std::vector<double>(inputVectors[i+1].begin(), inputVectors[i+1].end())));
-      }
+      argMap.insert(std::make_pair("temperature",new std::vector<double>(inputVectors[0].begin(), inputVectors[0].end())));
 
       d_property->evalv(beta, argMap);
       d_property->evalv(gamma, argMap);

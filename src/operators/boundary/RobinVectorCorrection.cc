@@ -180,6 +180,7 @@ RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
       {
         unsigned int startIdx = 0;
         if(d_isFluxGaussPtVector){
+          d_variableFlux->getValuesByGlobalID( gpDofs.size(), &gpDofs[0], &inputArgsAtGpts[0][0] );
           startIdx = 1;
         }
         for(unsigned int m = startIdx; m < d_elementInputVec.size(); m++){
@@ -263,12 +264,13 @@ boost::shared_ptr<OperatorParameters> RobinVectorCorrection::getJacobianParamete
   tmp_db->putBool("skip_params", true);
   tmp_db->putBool("skip_rhs_correction", true);
   tmp_db->putBool("skip_matrix_correction", false);
-
+  tmp_db->putBool("IsFluxGaussPtVector", d_isFluxGaussPtVector );
   boost::shared_ptr<RobinMatrixCorrectionParameters> outParams(
       new RobinMatrixCorrectionParameters(tmp_db));
 
   outParams->d_robinPhysicsModel = d_robinPhysicsModel;
   outParams->d_elementInputVec   = d_elementInputVec;
+  outParams->d_variableFlux      = d_variableFlux;
 
   return outParams;
 }
