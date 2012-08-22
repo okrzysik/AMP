@@ -68,7 +68,7 @@
 #include "ampmesh/StructuredMeshHelper.h"
 
 double getPower(const std::vector<double> &x) {
-    return 5e6 *( 1.0 + x[0]*50 + x[1]*100 + x[2] *500 );
+    return 2e6 *( 1.0 + x[0]*50 + x[1]*100 + x[2] *500 );
 
 }
 
@@ -484,6 +484,9 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         }
     }
 
+    AMP::LinearAlgebra::VS_Mesh meshSelector("SpecificPowerInWattsPerGram", cladMesh);
+    AMP::LinearAlgebra::Vector::shared_ptr cladPower = specificPowerGpVec->select(meshSelector, "SpecificPowerInWattsPerGram");
+    cladPower->zero(); 
     specificPowerGpVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
     volumeIntegralColumnOperator->apply(nullVec, specificPowerGpVec, globalThermalRhsVec , 1., 0.);
