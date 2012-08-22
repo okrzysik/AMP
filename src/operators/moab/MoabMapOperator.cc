@@ -191,7 +191,7 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &x
     xyz.resize(3*numGauss,0.0);
 
     // Create a variable for the coordinates
-    SP_Variable gpVariable( new AMP::LinearAlgebra::Variable( "coords" ) );
+    AMP::LinearAlgebra::Variable::shared_ptr gpVariable( new AMP::LinearAlgebra::Variable( "coords" ) );
 
     // Convert from distance in m (AMP) to cm (Moab)
     // This should probably be specified on an input database
@@ -269,7 +269,7 @@ void MoabMapOperator::getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl 
     xyz.resize(3*numNodes,0.0);
 
     // Create Gauss point variable
-    SP_Variable gpVariable( new AMP::LinearAlgebra::Variable( "coords" ) );
+    AMP::LinearAlgebra::Variable::shared_ptr gpVariable( new AMP::LinearAlgebra::Variable( "coords" ) );
 
     // Convert from distance in m (AMP) to cm (Moab)
     double m_to_cm = 100.0;
