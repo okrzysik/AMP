@@ -54,7 +54,7 @@ namespace Operator {
       d_numBndIds = (myparams->d_db)->getInteger("number_of_ids");
 
       d_isConstantFlux = (myparams->d_db)->getBoolWithDefault("constant_flux", true);
-      d_isFluxGaussPtVector = (myparams->d_db)->getBoolWithDefault("isFluxGaussPtVector",false);
+      d_isFluxGaussPtVector = (myparams->d_db)->getBoolWithDefault("IsFluxGaussPtVector", true);
 
       d_boundaryIds.resize(d_numBndIds);
       d_dofIds.resize(d_numBndIds);
