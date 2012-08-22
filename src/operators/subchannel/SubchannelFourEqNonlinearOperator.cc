@@ -228,7 +228,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
           + (1.0/(2.0*d_area[subChannel]))*(del_z[j-1] * (d_friction/D) + d_K)* std::abs(m_avg)*(m_avg/rho_avg)
           + d_area[subChannel] * (PAxial[1]- PAxial[0]);
 
-
+        AMP::pout<<"R_pa is:"<<R_pa<<std::endl;
 
       }//end for cell
 

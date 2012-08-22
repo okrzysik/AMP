@@ -131,7 +131,7 @@ namespace Operator {
       std::vector<bool> d_ownSubChannel;                      // Which subchannels do I own (multple procs my own a subchannel)
       int getSubchannelIndex( double x, double y );
       void fillSubchannelGrid(AMP::Mesh::Mesh::shared_ptr);   // Function to fill the subchannel data for all processors
-      int d_numSubchannels; 
+      size_t d_numSubchannels; 
 
   };
 

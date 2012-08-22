@@ -488,7 +488,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     specificPowerGpVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
     volumeIntegralColumnOperator->apply(nullVec, specificPowerGpVec, globalThermalRhsVec , 1., 0.);
-    int totalOp;
+    size_t totalOp;
     if(subchannelMesh != NULL ){
       totalOp = nonlinearColumnOperator->getNumberOfOperators()-1;
     }else{
