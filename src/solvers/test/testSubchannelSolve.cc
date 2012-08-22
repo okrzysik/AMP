@@ -400,15 +400,16 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     subchannelToCladMap = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, subchannelToCladDb );
     subchannelToCladMap->setVector( thermalMapVec );
     //
-    boost::shared_ptr<AMP::Operator::CoupledChannelToCladMapOperatorParameters> coupledChannelMapOperatorParams(new AMP::Operator::CoupledChannelToCladMapOperatorParameters( emptyDb ));
-    coupledChannelMapOperatorParams->d_variable       = flowVariable;
-    coupledChannelMapOperatorParams->d_vector         = subchannelFlowTemp;
-    coupledChannelMapOperatorParams->d_mapOperator    = subchannelToCladMap;
-    coupledChannelMapOperatorParams->d_subchannelMesh = subchannelMesh;
-    coupledChannelMapOperatorParams->d_subchannelPhysicsModel = subchannelPhysicsModel ;
-    boost::shared_ptr<AMP::Operator::Operator> coupledChannelMapOperator (new AMP::Operator::CoupledChannelToCladMapOperator(coupledChannelMapOperatorParams));
-
-    mapsColumn->append( coupledChannelMapOperator );
+    if ( subchannelMesh.get()!=NULL ) {
+      boost::shared_ptr<AMP::Operator::CoupledChannelToCladMapOperatorParameters> coupledChannelMapOperatorParams(new AMP::Operator::CoupledChannelToCladMapOperatorParameters( emptyDb ));
+      coupledChannelMapOperatorParams->d_variable       = flowVariable;
+      coupledChannelMapOperatorParams->d_vector         = subchannelFlowTemp;
+      coupledChannelMapOperatorParams->d_mapOperator    = subchannelToCladMap;
+      coupledChannelMapOperatorParams->d_subchannelMesh = subchannelMesh;
+      coupledChannelMapOperatorParams->d_subchannelPhysicsModel = subchannelPhysicsModel ;
+      boost::shared_ptr<AMP::Operator::Operator> coupledChannelMapOperator (new AMP::Operator::CoupledChannelToCladMapOperator(coupledChannelMapOperatorParams));
+      mapsColumn->append( coupledChannelMapOperator );
+    }
 
     if ( pinMesh.get()!=NULL ) {
       boost::shared_ptr<AMP::InputDatabase> copyOp_db = boost::dynamic_pointer_cast<AMP::InputDatabase>(global_input_db->getDatabase("CopyOperator"));
@@ -417,6 +418,9 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
       vecCopyOperatorParams->d_copyVector = thermalMapVec;
       vecCopyOperatorParams->d_Mesh = pinMesh ;
       thermalCopyOperator.reset(new AMP::Operator::VectorCopyOperator(vecCopyOperatorParams));
+
+      thermalMapVec->setToScalar(400.);
+      globalThermalSolutionVec->setToScalar(400.);
     }
 
     boost::shared_ptr<AMP::Operator::CoupledOperatorParameters> CoupledOpParams(new AMP::Operator::CoupledOperatorParameters(emptyDb));
@@ -451,8 +455,6 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
       subchannelLinearOperator->apply( flowRhsVec, flowSolVec, flowResVec, 1.0, -1.0);
     }
 
-    thermalMapVec->setToScalar(400.);
-    globalThermalSolutionVec->setToScalar(400.);
     nonlinearCoupledOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
 
     // get nonlinear solver database
@@ -549,6 +551,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         subchannelPhysicsModel->getProperty("Temperature", outTemperatureResult, outTemperatureArgMap); 
         flowTempVec->setValueByGlobalID(scalarDofs[0] ,outTemperatureResult[0]); 
       } 
+      flowTempVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     }
     std::cout << "Subchannel Flow Temp Max : " << flowTempVec->max() << " Min : "<< flowTempVec->min() << std::endl;
 #ifdef USE_SILO
