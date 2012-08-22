@@ -103,6 +103,9 @@ int main(int argc, char *argv[])
         // Create the unit test
         AMP::UnitTest ut;
 
+        // Print the banner
+        AMP::Utilities::printBanner();
+
         // Try converting an int to a string
         if ( AMP::Utilities::intToString(37,0)=="37" && AMP::Utilities::intToString(37,3)=="037" )
             ut.passes("Convert int to string");
@@ -149,6 +152,13 @@ int main(int argc, char *argv[])
         else
             ut.failure("Got the expected hash key");
 
+        // Test the factor function
+        std::vector<int> factors = AMP::Utilities::factor(13958);
+        if ( factors.size()==3 && factors[0]==2 && factors[1]==7 && factors[2]==997 )
+            ut.passes("Correctly factored 13958");
+        else
+            ut.failure("Correctly factored 13958");
+
         // Test the memory usage
         size_t n_bytes = AMP::Utilities::getMemoryUsage();
         if ( globalComm.getRank()==0 )
@@ -185,6 +195,9 @@ int main(int argc, char *argv[])
             else
                 ut.failure("File deleted");
         }
+        
+        // Test creating an empty directory
+        AMP::Utilities::recursiveMkdir(".");
 
         // Finished testing, report the results
         ut.report();

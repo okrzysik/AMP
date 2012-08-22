@@ -17,6 +17,12 @@
 
 namespace AMP {
 
+
+Database::Database()
+{
+}
+
+
 Database::~Database()
 {
 }
