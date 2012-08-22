@@ -69,7 +69,7 @@ static MPI_Request getRequest( MPI_Comm comm, int tag )
         // Create a hash key for the comm and the tag
         unsigned int hash = comm*0x9E3779B9;        // 2^32*0.5*(sqrt(5)-1)
         unsigned int key  = (hash&0xFFFFFFFF)>>22;  // Get a key 0-1024
-        request = tag + (key<<22);
+        request = (MPI_Request) tag + (key<<22);
     } else {
         AMP_ERROR("Not Programmed");
     }
