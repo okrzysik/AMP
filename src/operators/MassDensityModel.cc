@@ -143,23 +143,24 @@ MassDensityModel::MassDensityModel
         // check for correct names
         boost::shared_ptr<Database> defaults_db = params->d_db->getDatabase("Defaults");
         std::vector<std::string> defaultkeys = defaults_db->getAllKeys();
-        AMP_INSIST(defaultkeys.size() == property->get_number_arguments(),
-            "Incorrect number of defaults supplied.");
-        std::vector<std::string> argnames = property-> get_arguments();
-        for (std::vector<std::string>::iterator key= defaultkeys.begin(); key!=defaultkeys.end(); ++key)
-        {
-          std::vector<std::string>::iterator hit = std::find(argnames.begin(), argnames.end(), *key);
-          AMP_INSIST(hit!=argnames.end(), std::string("Argument name ")+*key+std::string(" is invalid"));
-        }
+        // if the defaults block is the right size, use it, else ignor it.
+        if(defaultkeys.size() == property->get_number_arguments() ) {
+          std::vector<std::string> argnames = property-> get_arguments();
+          for (std::vector<std::string>::iterator key= defaultkeys.begin(); key!=defaultkeys.end(); ++key)
+          {
+            std::vector<std::string>::iterator hit = std::find(argnames.begin(), argnames.end(), *key);
+            AMP_INSIST(hit!=argnames.end(), std::string("Argument name ")+*key+std::string(" is invalid"));
+          }
 
-        // load defaults into the material property, checking range validity
-        for (size_t i=0; i<argnames.size(); ++i) {
-          defaults[i] = defaults_db->getDouble(argnames[i]);
-          AMP_INSIST(property->in_range(argnames[i], defaults[i]),
-          std::string("Default for argument ")+argnames[i]+std::string(" is out of range"));
+          // load defaults into the material property, checking range validity
+          for (size_t i=0; i<argnames.size(); ++i) {
+            defaults[i] = defaults_db->getDouble(argnames[i]);
+            AMP_INSIST(property->in_range(argnames[i], defaults[i]),
+            std::string("Default for argument ")+argnames[i]+std::string(" is out of range"));
+          }
         }
-      property->set_defaults(defaults);
       }
+      property->set_defaults(defaults);
     }
 }
 
