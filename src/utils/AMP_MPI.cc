@@ -66,12 +66,27 @@ static MPI_Request getRequest( MPI_Comm comm, int tag )
     AMP_ASSERT(tag>=0&&tag<=mpi_max_tag);
     MPI_Request request = 0;
     if ( sizeof(MPI_Request)==4 && sizeof(MPI_Comm)==4 ) {
-        // Create a hash key for the comm and the tag
-        unsigned int hash = comm*0x9E3779B9;        // 2^32*0.5*(sqrt(5)-1)
-        unsigned int key  = (hash&0xFFFFFFFF)>>22;  // Get a key 0-1024
+        AMP_ASSERT(sizeof(unsigned int)==4);
+        unsigned int hash = comm*0x9E3779B9;                        // 2^32*0.5*(sqrt(5)-1)
+        unsigned int key  = (hash&0xFFFFFFFF)>>22;                  // Get a key 0-1024
         request = (MPI_Request) tag + (key<<22);
+    } else if ( sizeof(MPI_Request)==8 && sizeof(MPI_Comm)==4 ) {
+        AMP_ASSERT(sizeof(unsigned long int)==8);
+        request = (MPI_Request) ((unsigned long)tag + (((unsigned long)comm)<<32));
+    } else if ( sizeof(MPI_Request)==4 && sizeof(MPI_Comm)==8 ) {
+        AMP_ASSERT(sizeof(unsigned long int)==8);
+        unsigned long int hash = comm*0x9E3779B97F4A7C15;           // 2^64*0.5*(sqrt(5)-1)
+        unsigned long int key  = (hash&0xFFFFFFFF)>>22;             // Get a key 0-1024
+        request = (MPI_Request) ((unsigned int)tag + (key<<32));
+    } else if ( sizeof(MPI_Request)==8 && sizeof(MPI_Comm)==8 ) {
+        AMP_ASSERT(sizeof(unsigned long int)==8);
+        unsigned long int hash = comm*0x9E3779B97F4A7C15;           // 2^64*0.5*(sqrt(5)-1)
+        unsigned long int key  = (hash&0xFFFFFFFF);                 // Get a key 0-2^32-1
+        request = (MPI_Request) ((unsigned int)tag + (key<<32));
     } else {
-        AMP_ERROR("Not Programmed");
+        char text[50];
+        sprintf(text,"Not Programmed (%i,%i)",(int)sizeof(MPI_Request),(int)sizeof(MPI_Comm));
+        AMP_ERROR(std::string(text));
     }
     return request;
 }
