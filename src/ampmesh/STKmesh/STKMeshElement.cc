@@ -368,7 +368,7 @@ bool STKMeshElement::isOnBoundary(int) const
 }
 bool STKMeshElement::isInBlock(int id) const
 {
-    AMP_ERROR("STKMeshElement::isInBlock is is not defined");
+   AMP_ERROR("STKMeshElement::isInBlock is is not defined");
    GeomType type = d_globalID.type();
    bool in_block = false;
     if ( type==Vertex ) {

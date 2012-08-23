@@ -111,9 +111,6 @@ protected:
     friend class AMP::Mesh::STKMeshIterator;
 
 };
-
-
-
 }
 }
 
