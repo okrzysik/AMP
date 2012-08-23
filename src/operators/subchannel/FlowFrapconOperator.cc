@@ -98,7 +98,7 @@ void FlowFrapconOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
 
       // set the inlet flow temperature value
       double T1 = flowInputVec->getValueByLocalID(0);
-      outputVec->setValueByLocalID(0, d_Tin-T1);
+      outputVec->setValueByLocalID(0, T1-d_Tin);
 
       zPoints[0] = min_z;
       for( int j=1; j<d_numpoints; j++) {
