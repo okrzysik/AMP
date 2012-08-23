@@ -157,7 +157,6 @@ void testAMPMesh( AMP::UnitTest *ut )
 #ifdef USE_STKMESH
 void testSTKMesh( AMP::UnitTest *ut )
 {
-std::cout<<__FILE__<<":"<<__LINE__ <<" testing testSTKMesh beginning of test with pellet_lo_res.e " <<std::endl;
     PROFILE_START("testSTKMesh");
     // Create a generic MeshParameters object
     boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
@@ -175,7 +174,6 @@ std::cout<<__FILE__<<":"<<__LINE__ <<" testing testSTKMesh beginning of test wit
     MeshVectorTestLoop( ut, mesh );
     MeshMatrixTestLoop( ut, mesh );
     PROFILE_STOP("testSTKMesh");
-std::cout<<__FILE__<<":"<<__LINE__ <<" testing testSTKMesh end of test with pellet_lo_res.e " <<std::endl;
 }
 #endif
 
