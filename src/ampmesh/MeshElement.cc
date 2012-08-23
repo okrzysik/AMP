@@ -181,4 +181,3 @@ bool MeshElement::isInBlock(int id) const
 
 } // Mesh namespace
 } // AMP namespace
-

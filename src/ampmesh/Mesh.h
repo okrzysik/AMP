@@ -372,6 +372,7 @@ public:
     virtual boost::shared_ptr<AMP::LinearAlgebra::Vector>  getPositionVector( std::string name, const int gcw=0 ) const;
 #endif
 
+    const boost::shared_ptr<AMP::Database> &DB() const { return d_db; }
 
 protected:
 

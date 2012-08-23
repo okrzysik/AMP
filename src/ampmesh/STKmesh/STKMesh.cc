@@ -27,7 +27,9 @@
 #include "stk_mesh/base/GetEntities.hpp"
 #include "stk_mesh/base/FieldData.hpp"
 #include "stk_mesh/fem/SkinMesh.hpp"
-#include "Ioex_DatabaseIO.h"
+
+#include "Ionit_Initializer.h"
+#include "Ioss_SubSystem.h"
 
 namespace AMP {
 namespace Mesh {
@@ -63,15 +65,19 @@ STKMesh::STKMesh( const MeshParameters::shared_ptr &params_in ):
             d_STKIOFixture = boost::shared_ptr<stk::io::util::IO_Fixture>
                 (new  stk::io::util::IO_Fixture(d_comm.getCommunicator()));
             d_STKIOFixture->initialize_meta_data(d_db->getString("FileName"));
+            stk::mesh::fem::FEMMetaData & meta_data = d_STKIOFixture->meta_data();
+            stk::mesh::Part & skin_part = meta_data.declare_part("skin_part");
+            meta_data.commit();
             d_STKIOFixture->initialize_bulk_data();
-            d_STKMeshData.reset(&d_STKIOFixture->meta_data(), NullDeleter());
-            d_STKMesh    .reset(&d_STKIOFixture->bulk_data(), NullDeleter());
+            d_STKMeshMeta.reset(&d_STKIOFixture->meta_data(), NullDeleter());
+            d_STKMeshBulk.reset(&d_STKIOFixture->bulk_data(), NullDeleter());
+            d_STKIORegion = d_STKIOFixture->input_ioss_region();
         } else if ( d_db->keyExists("Generator") ) {
             std::string generator = d_db->getString("Generator");
             d_STKGMeshFixture = boost::shared_ptr<stk::io::util::Gmesh_STKmesh_Fixture>
                 (new  stk::io::util::Gmesh_STKmesh_Fixture(d_comm.getCommunicator(),generator));
-            d_STKMeshData.reset(&d_STKGMeshFixture->getFEMMetaData(), NullDeleter());
-            d_STKMesh    .reset(&d_STKGMeshFixture->getBulkData(),    NullDeleter());
+            d_STKMeshMeta.reset(&d_STKGMeshFixture->getFEMMetaData(), NullDeleter());
+            d_STKMeshBulk.reset(&d_STKGMeshFixture->getBulkData(),    NullDeleter());
         } else {
             AMP_ERROR("Unable to construct mesh with given parameters");
         }
@@ -94,13 +100,13 @@ STKMesh::STKMesh( const MeshParameters::shared_ptr &params_in ):
 STKMesh::STKMesh( boost::shared_ptr<stk::mesh::BulkData> mesh, std::string name )
 {
     // Set the base properties
-    d_STKMesh .reset(mesh.get(), NullDeleter());
     const stk::mesh::MetaData *meta_data = &mesh->mesh_meta_data();
     stk::mesh::fem::FEMMetaData *fem_meta_data = &stk::mesh::fem::FEMMetaData::get(*meta_data);
     AMP_INSIST(fem_meta_data,"STKMesh::STKMesh not called with a FEM meta data.");
-    d_STKMeshData.reset(fem_meta_data, NullDeleter());
+    d_STKMeshMeta.reset(fem_meta_data, NullDeleter());
+    d_STKMeshBulk.reset(mesh.get(), NullDeleter());
 #ifdef USE_MPI
-    this->d_comm = AMP_MPI( d_STKMesh->parallel() );
+    this->d_comm = AMP_MPI( d_STKMeshBulk->parallel() );
     AMP_ASSERT(d_comm!=AMP_MPI(AMP_COMM_NULL));
 #else
     this->d_comm = AMP_MPI( AMP_COMM_SELF );
@@ -108,7 +114,7 @@ STKMesh::STKMesh( boost::shared_ptr<stk::mesh::BulkData> mesh, std::string name 
     this->setMeshID();
     this->d_name = name;
     this->d_max_gcw = 1;
-    this->PhysicalDim = d_STKMeshData->spatial_dimension();
+    this->PhysicalDim = d_STKMeshMeta->spatial_dimension();
     this->GeomDim = (GeomType) PhysicalDim;
     // Initialize all of the internal data
    initialize();
@@ -147,21 +153,22 @@ void STKMesh::initialize()
 {
     PROFILE_START("initialize");
     // Verify STKmesh's rank and size agrees with the rank and size of the comm of the mesh
-    AMP_INSIST(stk::parallel_machine_rank(d_STKMesh->parallel())==(unsigned)d_comm.getRank(),"rank of the mesh does not agree with STKmesh");
-    AMP_INSIST(stk::parallel_machine_size(d_STKMesh->parallel())==(unsigned)d_comm.getSize(),"size of the mesh does not agree with STKmesh");
+    AMP_INSIST(stk::parallel_machine_rank(d_STKMeshBulk->parallel())==(unsigned)d_comm.getRank(),"rank of the mesh does not agree with STKmesh");
+    AMP_INSIST(stk::parallel_machine_size(d_STKMeshBulk->parallel())==(unsigned)d_comm.getSize(),"size of the mesh does not agree with STKmesh");
     // Count the elements
-    n_local  = std::vector<unsigned>(PhysicalDim+1,0);
-    n_global = std::vector<unsigned>(PhysicalDim+1,0);
-    n_ghost  = std::vector<unsigned>(PhysicalDim+1,0);
-    stk::mesh::count_entities(d_STKMeshData->locally_owned_part(), *d_STKMesh, n_local);
-    stk::mesh::count_entities(!stk::mesh::Selector(),             *d_STKMesh, n_global);
-    for (int i=0; i<=(int)GeomDim; i++) n_ghost[i] = n_global[i] - n_local[i];
+    const unsigned NDim = PhysicalDim+1;
+    n_local  = std::vector<unsigned>(NDim,0);
+    n_global = std::vector<unsigned>(NDim,0);
+    n_ghost  = std::vector<unsigned>(NDim,0);
+    stk::mesh::count_entities(d_STKMeshMeta->locally_owned_part(), *d_STKMeshBulk, n_local);
+    stk::mesh::count_entities(!stk::mesh::Selector(),              *d_STKMeshBulk, n_global);
+    for (unsigned i=0; i<NDim; i++) n_ghost[i] = n_global[i] - n_local[i];
     std::vector<size_t> global;
-    stk::mesh::fem::comm_mesh_counts( *d_STKMesh, global);
+    stk::mesh::fem::comm_mesh_counts( *d_STKMeshBulk, global);
     n_global.assign(global.begin(), global.end());;
 
-    for (int i=0; i<=(int)GeomDim; i++)
-        AMP_INSIST(n_local[i]>0,"We currently require at least 1 node on each processor");
+    AMP_INSIST(n_local[0]>0,     "We currently require at least 1 node on each processor");
+    AMP_INSIST(n_local[NDim-1]>0,"We currently require at least 1 element on each processor");
 
     // Compute the bounding box of the mesh
     d_box_local = std::vector<double>(PhysicalDim*2);
@@ -171,12 +178,13 @@ void STKMesh::initialize()
     }
 
     stk::mesh::Field<double,stk::mesh::Cartesian> *coordinates =
-      d_STKMeshData->get_field< stk::mesh::Field<double,stk::mesh::Cartesian> >("coordinates");
+      d_STKMeshMeta->get_field< stk::mesh::Field<double,stk::mesh::Cartesian> >("coordinates");
+    AMP_INSIST(coordinates,"Can not find 'coordinates' in STKMesh file.");
     std::vector<stk::mesh::Entity*> nodes;
-    stk::mesh::get_entities(*d_STKMesh, d_STKMeshData->node_rank(), nodes);
+    stk::mesh::get_entities(*d_STKMeshBulk, d_STKMeshMeta->node_rank(), nodes);
 
     for ( unsigned n=0; n<nodes.size(); ++n ) {
-        double *x =  (double*)stk::mesh::field_data(*coordinates, *nodes[n]);
+        double *x =  stk::mesh::field_data(*coordinates, *nodes[n]);
         AMP_INSIST(x,"Null coordinate field found.");
         for (int i=0; i<PhysicalDim; i++) {
             if ( x[i] < d_box_local[2*i+0] ) { d_box_local[2*i+0] = x[i]; }
@@ -200,7 +208,7 @@ void STKMesh::initialize()
     AMP::Utilities::quicksort(neighborNodeIDs);
     std::vector< std::set<stk::mesh::EntityKey> > tmpNeighborNodes(n_local[0]);
     std::vector<stk::mesh::Entity*> elements;
-    stk::mesh::get_entities(*d_STKMesh, d_STKMeshData->element_rank(), elements);
+    stk::mesh::get_entities(*d_STKMeshBulk, d_STKMeshMeta->element_rank(), elements);
     for ( size_t e=0; e<elements.size(); ++e ) {
         const stk::mesh::Entity *elem = elements[e];
         stk::mesh::PairIterRelation elem_nodes = elem->node_relations();
@@ -220,19 +228,19 @@ void STKMesh::initialize()
         int j = 0;
         for (std::set<stk::mesh::EntityKey>::iterator it=tmpNeighborNodes[n].begin();
              it!=tmpNeighborNodes[n].end(); it++) {
-            neighborNodes[n][j++] = d_STKMesh->get_entity(*it);
+            neighborNodes[n][j++] = d_STKMeshBulk->get_entity(*it);
         }
     }
     // Construct the list of elements of type side or edge
     for (int i=0; i<=(int)GeomDim; i++) {
         GeomType type = (GeomType) i;
-        if ( type==Vertex || type==GeomDim )
-            continue;
+        if ( type==Vertex || type==GeomDim ) continue;
         // Get a unique list of all elements of the desired type
         std::set<MeshElement> element_list;
         MeshIterator it = getIterator( GeomDim, 1 );
         for (size_t j=0; j<it.size(); j++) {
-            std::vector<MeshElement> tmp = it->getElements(type);
+            const MeshElement &e = *it;
+            std::vector<MeshElement> tmp = e.getElements(type);
             for (size_t k=0; k<tmp.size(); k++)
                 element_list.insert(tmp[k]);
             ++it;
@@ -248,7 +256,7 @@ void STKMesh::initialize()
                 N_ghost++;
         }
         size_t N_global = d_comm.sumReduce(N_local);
-        AMP_ASSERT(N_global>=n_global[GeomDim]);
+        AMP_ASSERT(N_global>=n_global[i]);
         boost::shared_ptr<std::vector<MeshElement> >  local_elements( new std::vector<MeshElement>(N_local) );
         boost::shared_ptr<std::vector<MeshElement> >  ghost_elements( new std::vector<MeshElement>(N_ghost) );
         N_local = 0;
@@ -281,22 +289,24 @@ void STKMesh::initialize()
     std::set< stk::mesh::Entity* > localBoundaryNodes;
     std::set< stk::mesh::Entity* > ghostBoundaryNodes;
 
-    stk::mesh::Part & skin_part = d_STKMeshData->declare_part("skin_part");
-    stk::mesh::skin_mesh(*d_STKMesh, d_STKMeshData->element_rank(), &skin_part);
+    stk::mesh::Part & skin_part = *d_STKMeshMeta->get_part("skin_part", "Skin part should be defined in constructor.");
+    stk::mesh::skin_mesh(*d_STKMeshBulk, d_STKMeshMeta->element_rank(), &skin_part);
 
-    stk::mesh::Selector select_skin = skin_part;
+//    stk::mesh::Selector select_skin = skin_part;
+    stk::mesh::Selector select_skin = stk::mesh::Selector(d_STKMeshMeta->locally_owned_part());
+
     std::vector< stk::mesh::Entity * >  sides;
-    const std::vector< stk::mesh::Bucket * > & input_buckets = d_STKMesh->buckets(d_STKMeshData->side_rank());
+    const std::vector< stk::mesh::Bucket * > & input_buckets = d_STKMeshBulk->buckets(d_STKMeshMeta->side_rank());
     stk::mesh::get_selected_entities(select_skin, input_buckets, sides);
     for ( size_t s=0; s<sides.size(); ++s ) {
         const stk::mesh::Entity *side = sides[s];
-        stk::mesh::PairIterRelation side_elem = side->relations( d_STKMeshData->element_rank() );
+        stk::mesh::PairIterRelation side_elem = side->relations( d_STKMeshMeta->element_rank() );
         for (stk::mesh::PairIterRelation::iterator i=side_elem.begin(); i!=side_elem.end(); ++i) {
             stk::mesh::Entity *elem = i->entity();
             if ( elem->owner_rank()==rank ) localBoundaryElements.insert(elem);
             else                            ghostBoundaryElements.insert(elem);
         }
-        stk::mesh::PairIterRelation side_node = side->relations( d_STKMeshData->node_rank() );
+        stk::mesh::PairIterRelation side_node = side->relations( d_STKMeshMeta->node_rank() );
         for (stk::mesh::PairIterRelation::iterator i=side_node.begin(); i!=side_node.end(); ++i) {
             stk::mesh::Entity *node = i->entity();
             if ( node->owner_rank()==rank ) localBoundaryNodes.insert(node);
@@ -311,6 +321,8 @@ void STKMesh::initialize()
         elem_iterator++;
     }
     AMP::Utilities::quicksort(*d_localSurfaceElements[GeomDim]);
+
+
     d_ghostSurfaceElements[GeomDim] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(ghostBoundaryElements.size()) );
     elem_iterator = ghostBoundaryElements.begin();
     for (size_t i=0; i<ghostBoundaryElements.size(); i++) {
@@ -318,6 +330,8 @@ void STKMesh::initialize()
         elem_iterator++;
     }
     AMP::Utilities::quicksort(*d_ghostSurfaceElements[GeomDim]);
+
+
     d_localSurfaceElements[Vertex] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(localBoundaryNodes.size()) );
     std::set< stk::mesh::Entity* >::iterator node_iterator = localBoundaryNodes.begin();
     for (size_t i=0; i<localBoundaryNodes.size(); i++) {
@@ -325,6 +339,8 @@ void STKMesh::initialize()
         node_iterator++;
     }
     AMP::Utilities::quicksort(*d_localSurfaceElements[Vertex]);
+
+
     d_ghostSurfaceElements[Vertex] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(ghostBoundaryNodes.size()) );
     node_iterator = ghostBoundaryNodes.begin();
     for (size_t i=0; i<ghostBoundaryNodes.size(); i++) {
@@ -334,7 +350,7 @@ void STKMesh::initialize()
     AMP::Utilities::quicksort(*d_ghostSurfaceElements[Vertex]);
     // Construct the boundary elements for all other types
     // An face or edge is on the boundary if all of its nodes are on the surface
-    size_t element_surface_global_size = d_comm.sumReduce(d_localSurfaceElements[GeomDim]->size());
+//    size_t element_surface_global_size = d_comm.sumReduce(d_localSurfaceElements[GeomDim]->size());
     for (int type2=1; type2<(int)GeomDim; type2++) {
         GeomType type = (GeomType) type2;
         std::set<MeshElement> local, ghost;
@@ -361,9 +377,9 @@ void STKMesh::initialize()
             new std::vector<MeshElement>(ghost.begin(),ghost.end()) );
         AMP::Utilities::quicksort(*d_localSurfaceElements[type2]);
         AMP::Utilities::quicksort(*d_ghostSurfaceElements[type2]);
-        size_t local_size = d_localSurfaceElements[type2]->size();
-        size_t global_size = d_comm.sumReduce(local_size);
-        AMP_ASSERT(global_size>=element_surface_global_size);
+//        size_t local_size = d_localSurfaceElements[type2]->size();
+//        size_t global_size = d_comm.sumReduce(local_size);
+//        AMP_ASSERT(global_size>=element_surface_global_size);
     }
     // Construct the boundary lists
     std::vector<int> side_ids;
@@ -447,9 +463,16 @@ size_t STKMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         std::string fname = database->getString("FileName");
         if ( fname.rfind(".exd") < fname.size() || fname.rfind(".e") < fname.size() ) {
             AMP_MPI comm(AMP_COMM_SELF);
-            Ioss::Region ioregion;
-            Ioex::DatabaseIO dbio (&ioregion, fname, Ioss::READ_MODEL, comm.getCommunicator());
-            NumberOfElements = dbio.element_count();
+            Ioss::Init::Initializer init_db;
+            const std::string dbtype("exodusII");
+            Ioss::DatabaseIO* ioss = Ioss::IOFactory::create(dbtype, fname, Ioss::READ_MODEL, comm.getCommunicator());
+            if (ioss == NULL || !ioss->ok()) {
+                std::cerr  << "ERROR: Could not open database '" << fname << "' of type '" << dbtype << "'\n";
+                AMP_ERROR("STKMesh::estimateMeshSize: could not open file");
+            }   
+            Ioss::Region region(ioss, "input_model"); 
+            Ioss::Property p = region.get_implicit_property("element_count");
+            NumberOfElements = p.get_int();
             AMP_ASSERT(NumberOfElements>0);
         } else {
             AMP_ERROR("Unkown mesh type, use key NumberOfElements to specify the mesh size");
@@ -513,18 +536,18 @@ MeshIterator STKMesh::getIterator( const GeomType type, const int gcw ) const
 {
     stk::mesh::EntityRank entity_rank=0xFF;
     switch (type) {
-      case Volume : entity_rank = d_STKMeshData->element_rank(); break;
-      case Vertex : entity_rank = d_STKMeshData->node_rank   (); break;
-      case Edge   : entity_rank = d_STKMeshData->edge_rank   (); break;
-      case Face   : entity_rank = d_STKMeshData->face_rank   (); break;
+      case Volume : entity_rank = d_STKMeshMeta->element_rank(); break;
+      case Vertex : entity_rank = d_STKMeshMeta->node_rank   (); break;
+      case Edge   : entity_rank = d_STKMeshMeta->edge_rank   (); break;
+      case Face   : entity_rank = d_STKMeshMeta->face_rank   (); break;
       default     : AMP_ERROR("Unsupported element type");
     }
     std::vector< stk::mesh::Entity*> entities;
     if ( gcw!=0 && gcw!= 1) AMP_ERROR("Unsupported ghost cell width");
     if ( gcw==0 ) {
-        const std::vector< stk::mesh::Bucket * > & input_buckets = d_STKMesh->buckets(entity_rank);
-        stk::mesh::get_selected_entities(d_STKMeshData->locally_owned_part(), input_buckets, entities);
-    } else       stk::mesh::get_entities( *d_STKMesh, entity_rank, entities);
+        const std::vector< stk::mesh::Bucket * > & input_buckets = d_STKMeshBulk->buckets(entity_rank);
+        stk::mesh::get_selected_entities(d_STKMeshMeta->locally_owned_part(), input_buckets, entities);
+    } else       stk::mesh::get_entities( *d_STKMeshBulk, entity_rank, entities);
     MeshIterator test = STKMeshIterator( this, gcw, entities );
     return test;
 }
@@ -594,7 +617,7 @@ std::vector<int> STKMesh::getBlockIDs ( ) const
 }
 MeshIterator STKMesh::getBlockIDIterator ( const GeomType type, const int id, const int gcw ) const
 {
-    AMP_ERROR("getBoundaryIDIterator is not implimented yet");
+    AMP_ERROR("getBlockIDIterator is not implimented yet");
     return MeshIterator();
 }
 
@@ -623,11 +646,11 @@ MeshElement STKMesh::getElement ( const MeshElementID &elem_id ) const
     unsigned int rank = d_comm.getRank();
     if ( elem_id.type()==PhysicalDim ) {
         // This is a STKMesh element
-        stk::mesh::Entity *element = d_STKMesh->get_entity( d_STKMeshData->element_rank(), elem_id.local_id() );
+        stk::mesh::Entity *element = d_STKMeshBulk->get_entity( d_STKMeshMeta->element_rank(), elem_id.local_id() );
         return STKMeshElement( (int)PhysicalDim, element, rank, mesh_id, this );
     } else if ( elem_id.type()==Vertex ) {
         // This is a STKMesh node
-        stk::mesh::Entity *node    = d_STKMesh->get_entity( d_STKMeshData->node_rank(), elem_id.local_id() );
+        stk::mesh::Entity *node    = d_STKMeshBulk->get_entity( d_STKMeshMeta->node_rank(), elem_id.local_id() );
         return STKMeshElement( (int)PhysicalDim,  node,  rank, mesh_id, this );
     }
     // All other types are stored in sorted lists
@@ -673,10 +696,10 @@ void STKMesh::displaceMesh( std::vector<double> x_in )
         AMP_INSIST(fabs(x[i]-x_in[i])<1e-12,"x does not match on all processors");
     // Move the mesh
     std::vector<stk::mesh::Entity*> nodes;
-    stk::mesh::get_entities(*d_STKMesh, d_STKMeshData->node_rank(), nodes);
+    stk::mesh::get_entities(*d_STKMeshBulk, d_STKMeshMeta->node_rank(), nodes);
     std::vector<stk::mesh::Entity*>::const_iterator cur = nodes.begin();
     std::vector<stk::mesh::Entity*>::const_iterator end = nodes.end();
-    CartesianField *coordinates = d_STKMeshData->get_field<CartesianField>("coordinates");
+    CartesianField *coordinates = d_STKMeshMeta->get_field<CartesianField>("coordinates");
     while ( cur != end ) {
         double *X =  (double*)stk::mesh::field_data(*coordinates, **cur);
         AMP_INSIST(X,"Null coordinate field found.");
@@ -719,8 +742,8 @@ void STKMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
         // Move all nodes (including the ghost nodes)
         const unsigned rank = d_comm.getRank();
         std::vector<stk::mesh::Entity*> nodes;
-        stk::mesh::get_entities(*d_STKMesh, d_STKMeshData->node_rank(), nodes);
-        CartesianField *coordinates = d_STKMeshData->get_field<CartesianField>("coordinates");
+        stk::mesh::get_entities(*d_STKMeshBulk, d_STKMeshMeta->node_rank(), nodes);
+        CartesianField *coordinates = d_STKMeshMeta->get_field<CartesianField>("coordinates");
         for ( size_t e=0; e<nodes.size(); ++e ) {
             stk::mesh::Entity *node = nodes[e];
             // Create the element id
@@ -742,8 +765,8 @@ void STKMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
             d_box_local[2*i+1] = -1e200;
         }
         nodes.clear();
-        const std::vector< stk::mesh::Bucket * > & input_buckets = d_STKMesh->buckets(d_STKMeshData->node_rank());
-        stk::mesh::get_selected_entities(d_STKMeshData->locally_owned_part(), input_buckets, nodes);
+        const std::vector< stk::mesh::Bucket * > & input_buckets = d_STKMeshBulk->buckets(d_STKMeshMeta->node_rank());
+        stk::mesh::get_selected_entities(d_STKMeshMeta->locally_owned_part(), input_buckets, nodes);
         for ( size_t e=0; e<nodes.size(); ++e ) {
             stk::mesh::Entity *node = nodes[e];
             const double *x =  (double*) stk::mesh::field_data(*coordinates, *node);

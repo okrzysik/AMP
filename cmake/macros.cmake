@@ -379,7 +379,7 @@ MACRO ( ADD_AMP_EXE_DEP EXE )
     # Add the amp libraries
     TARGET_LINK_LIBRARIES ( ${EXE} ${AMP_LIBS} )
     # Add external libraries
-    TARGET_LINK_LIBRARIES ( ${EXE} ${LIBMESH_LIBS} ${NEK_LIBS} ${MOAB_LIBS} ${DENDRO_LIBS} ${TRILINOS_LIBS} ${PETSC_LIBS} ${X11_LIBS} ${SILO_LIBS} ${HDF5_LIBS} ${HYPRE_LIBS} )
+    TARGET_LINK_LIBRARIES ( ${EXE} ${LIBMESH_LIBS} ${NEK_LIBS} ${MOAB_LIBS} ${DENDRO_LIBS} ${TRILINOS_LIBS} ${NETCDF_LIBS} ${PETSC_LIBS} ${X11_LIBS} ${SILO_LIBS} ${HDF5_LIBS} ${HYPRE_LIBS} )
     IF ( ${USE_SUNDIALS} )
         TARGET_LINK_LIBRARIES ( ${EXE} ${SUNDIALS_LIBS} )
     ENDIF  ()
@@ -646,6 +646,14 @@ MACRO ( SAVE_CMAKE_FLAGS )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${DENDRO_LIBS} )\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_DENDRO 1 ) \n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_DENDRO ) \n" )
+    ENDIF()
+    # Add Netcdf
+    IF ( USE_NETCDF )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add Netcdf\n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${NETCDF_INCLUDE} )\n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${NETCDF_LIBS} )\n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_NETCDF 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_NETCDF ) \n" )
     ENDIF()
     # Add Trilinos
     IF ( USE_TRILINOS )

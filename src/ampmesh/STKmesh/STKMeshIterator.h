@@ -12,11 +12,13 @@ namespace Mesh {
 class STKMeshIterator: public MeshIterator {
 public:
 
+    typedef boost::shared_ptr<std::vector<stk::mesh::Entity*> > MeshPtr ;
+
     //! Empty MeshIterator constructor
     STKMeshIterator();
 
     //! Deconstructor
-    ~STKMeshIterator ();
+    virtual ~STKMeshIterator ();
 
     //! Copy constructor
     STKMeshIterator(const STKMeshIterator&);
@@ -25,34 +27,34 @@ public:
     STKMeshIterator& operator=(const STKMeshIterator&);
 
     //! Increment
-    MeshIterator& operator++();
+    virtual MeshIterator& operator++();
 
     //! Increment
-    MeshIterator operator++(int);
+    virtual MeshIterator operator++(int);
 
     //! Decrement
-    MeshIterator& operator--();
+    virtual MeshIterator& operator--();
 
     //! Decrement
-    MeshIterator operator--(int);
+    virtual MeshIterator operator--(int);
 
     //! Check if two iterators are equal
-    bool operator==(const MeshIterator& rhs) const;
+    virtual bool operator==(const MeshIterator& rhs) const;
 
     //! Check if two iterators are not equal
-    bool operator!=(const MeshIterator& rhs) const;
+    virtual bool operator!=(const MeshIterator& rhs) const;
 
     //! Dereference the iterator
-    MeshElement &operator*(void);
+    virtual MeshElement &operator*(void);
 
     //! Dereference the iterator
-    MeshElement *operator->(void);
+    virtual MeshElement *operator->(void);
 
     //! Return an iterator to the begining
-    MeshIterator begin() const; 
+    virtual MeshIterator begin() const; 
 
     //! Return an iterator to the begining
-    MeshIterator end() const ;
+    virtual MeshIterator end() const ;
 
     //! Return the number of elements in the iterator
     virtual size_t size() const;
@@ -72,6 +74,7 @@ protected:
      * \param pos2      Index of the current position in the iterator (-1: unknown)
      */
     STKMeshIterator(const AMP::Mesh::STKMesh *mesh, int gcw, std::vector< stk::mesh::Entity*> &entities );
+    STKMeshIterator(const AMP::Mesh::STKMesh *mesh, int gcw, MeshPtr entities );
 
     //! Clone the iterator
     virtual MeshIterator* clone() const;
@@ -85,7 +88,7 @@ private:
     int    d_rank;
     MeshID d_meshID;
     const AMP::Mesh::STKMesh *d_mesh;
-    std::vector<stk::mesh::Entity*> d_entries;
+    MeshPtr d_entries;
     std::vector<stk::mesh::Entity*>::iterator d_pos;
     MeshElement  d_cur_element;
 };

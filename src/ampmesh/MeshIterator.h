@@ -68,6 +68,8 @@ public:
     //! Return the current position (from the beginning) in the iterator
     virtual size_t position() const;
 
+    unsigned int type_id() const {return typeID;}
+
 protected:
     // A pointer to the derived class
     MeshIterator *iterator;

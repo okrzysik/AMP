@@ -29,33 +29,15 @@ namespace {
 }
 
 /************************************************************
-* Function to alter the command line arguments for STKmesh  *
-************************************************************/
-static int add_STKmesh_cmdline ( const int argc , const char **argv, char ***argv_new )
-{
-    const int N_add = 0;    // Number of additional arguments we want to add
-    // Copy the existing command-line arguments (shifting by the number of additional arguments)
-    *argv_new = new char*[argc+N_add];
-    for ( int i = 0 ; i != argc ; i++ ) {
-        (*argv_new)[i] = new char [ strlen ( argv[i] ) + 1 ];
-        strcpy ( (*argv_new)[i] , argv[i] );
-    }
-    return argc+N_add;
-}
-
-
-/************************************************************
 * Constructor initilize STKmesh on the given comm           *
 ************************************************************/
 initializeSTKMesh::initializeSTKMesh( AMP_MPI comm )
 {
     if ( N_copies() ) {
         // STKmesh is already initialized, check if it is compatible with the current comm
-        bool test = canBeInitialized( comm );
-        if ( test ) {
+        if ( canBeInitialized( comm ) ) {
             // Add 1 to the count and return
             N_copies(1);
-            return;
         } else {
             // We can't initialize STKmesh
             AMP_ERROR("STKmesh was previously initialized with a different (incompatible) comm");
@@ -66,16 +48,8 @@ initializeSTKMesh::initializeSTKMesh( AMP_MPI comm )
         N_copies(1);
         d_comm  (comm);
         d_comm().barrier();
-        // Reinitialize STKMesh with the new communicator
-        int argc_STKmesh=0;
-        char **argv_STKmesh=NULL;
-        const int argc = AMPManager::get_argc();
-        const char ** argv = (const char**) AMPManager::get_argv();
-        argc_STKmesh = add_STKmesh_cmdline( argc, argv, &argv_STKmesh );
-        for (int i=0; i<argc_STKmesh; i++)
-            delete [] argv_STKmesh[i];
-        delete [] argv_STKmesh;
     }
+    return;
 }
 
 

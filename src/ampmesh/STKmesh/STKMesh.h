@@ -2,6 +2,7 @@
 #define included_AMP_STKMesh
 
 #include "ampmesh/Mesh.h"
+#include "ampmesh/MeshIterator.h"
 #include "ampmesh/STKmesh/initializeSTKMesh.h"
 
 #include "Teuchos_RCP.hpp"
@@ -175,8 +176,8 @@ public:
 
 
     //! Return the underlying STKMesh object
-    inline boost::shared_ptr< stk::mesh::BulkData> getSTKMesh()     const { return d_STKMesh; }
-    inline boost::shared_ptr< stk::mesh::fem::FEMMetaData> getSTKMeshData() const { return d_STKMeshData; }
+    inline boost::shared_ptr< stk::mesh::BulkData> getSTKMeshBulk()         const { return d_STKMeshBulk; }
+    inline boost::shared_ptr< stk::mesh::fem::FEMMetaData> getSTKMeshMeta() const { return d_STKMeshMeta; }
 
 
 #ifdef USE_AMP_VECTORS
@@ -213,8 +214,8 @@ private:
     void initialize( );
 
     // STKMesh objects
-    boost::shared_ptr<stk::mesh::BulkData>             d_STKMesh;
-    boost::shared_ptr<stk::mesh::fem::FEMMetaData>     d_STKMeshData;
+    boost::shared_ptr<stk::mesh::BulkData>             d_STKMeshBulk;
+    boost::shared_ptr<stk::mesh::fem::FEMMetaData>     d_STKMeshMeta;
     Teuchos::RCP<Ioss::Region>                         d_STKIORegion;
     boost::shared_ptr<stk::io::util::IO_Fixture>       d_STKIOFixture;
     boost::shared_ptr<stk::io::util::Gmesh_STKmesh_Fixture> d_STKGMeshFixture;

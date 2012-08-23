@@ -20,58 +20,79 @@ namespace {
 // unused global variable to prevent compiler warning
 static MeshElement nullElement;
 
-
 /********************************************************
 * Constructors                                          *
 ********************************************************/
 STKMeshIterator::STKMeshIterator() :
+    MeshIterator(),
     d_gcw    (0),
     d_dim    (0),
     d_rank   (0),
     d_meshID (),
     d_mesh   (0),
+    d_entries(),
     d_pos    (),
     d_cur_element()
- {
-   typeID = STKMeshIteratorTypeID();
- }
+{
+  iterator = NULL;
+  typeID = STKMeshIteratorTypeID();
+}
 
-STKMeshIterator::STKMeshIterator(const AMP::Mesh::STKMesh *mesh, int gcw, std::vector< stk::mesh::Entity*> &entries) :
+STKMeshIterator::STKMeshIterator(const AMP::Mesh::STKMesh *mesh, int gcw, std::vector<stk::mesh::Entity*> &entries) :
+    MeshIterator(),
     d_gcw    (gcw),
-    d_dim    (mesh->getSTKMeshData()->spatial_dimension()),
+    d_dim    (mesh->getSTKMeshMeta()->spatial_dimension()),
+    d_rank   (mesh->getComm().getRank()),
+    d_meshID (mesh->meshID()),
+    d_mesh   (mesh),
+    d_entries(new std::vector<stk::mesh::Entity*>(entries)),
+    d_pos    (d_entries->begin()),
+    d_cur_element()
+{
+  iterator = NULL;
+  typeID  = STKMeshIteratorTypeID();
+}
+STKMeshIterator::STKMeshIterator(const AMP::Mesh::STKMesh *mesh, int gcw, MeshPtr entries) :
+    MeshIterator(),
+    d_gcw    (gcw),
+    d_dim    (mesh->getSTKMeshMeta()->spatial_dimension()),
     d_rank   (mesh->getComm().getRank()),
     d_meshID (mesh->meshID()),
     d_mesh   (mesh),
     d_entries(entries),
-    d_pos    (entries.begin()),
+    d_pos    (d_entries->begin()),
     d_cur_element()
 {
+  iterator = NULL;
   typeID  = STKMeshIteratorTypeID();
 }
 STKMeshIterator::STKMeshIterator(const STKMeshIterator& rhs) :
+    MeshIterator(),
     d_gcw    (rhs.d_gcw),
     d_dim    (rhs.d_dim),
     d_rank   (rhs.d_rank),
     d_meshID (rhs.d_meshID),
     d_mesh   (rhs.d_mesh),
     d_entries(rhs.d_entries),
-    d_pos    (rhs.d_pos),
+    d_pos    (d_entries->begin() + rhs.position()),
     d_cur_element(rhs.d_cur_element)
 {
+  iterator = NULL;
   typeID = STKMeshIteratorTypeID();
 }
 STKMeshIterator& STKMeshIterator::operator=(const STKMeshIterator& rhs)
 {
+    this->iterator = NULL;
     if (this == &rhs) // protect against invalid self-assignment
         return *this;
-    this->typeID = STKMeshIteratorTypeID();
-    this->d_gcw  = rhs.d_gcw;
-    this->d_dim  = rhs.d_dim;
-    this->d_rank = rhs.d_rank;
+    this->typeID   = STKMeshIteratorTypeID();
+    this->d_gcw    = rhs.d_gcw;
+    this->d_dim    = rhs.d_dim;
+    this->d_rank   = rhs.d_rank;
     this->d_meshID = rhs.d_meshID;
-    this->d_mesh = rhs.d_mesh;
+    this->d_mesh   = rhs.d_mesh;
     this->d_entries= rhs.d_entries;
-    this->d_pos  = rhs.d_pos;
+    this->d_pos    = this->d_entries->begin() + rhs.position();
     this->d_cur_element = rhs.d_cur_element;
     return *this;
 }
@@ -98,18 +119,13 @@ STKMeshIterator::~STKMeshIterator()
 ********************************************************/
 MeshIterator STKMeshIterator::begin() const
 {
-    const AMP::Mesh::STKMesh *mesh = d_mesh;
-    int                  gcw = d_gcw;
-    std::vector< stk::mesh::Entity*> entries = d_entries;
-    return STKMeshIterator( mesh, gcw, entries );
+    STKMeshIterator e( d_mesh, d_gcw, d_entries );
+    return e;
 }
 MeshIterator STKMeshIterator::end() const
 {
-    const AMP::Mesh::STKMesh *mesh = d_mesh;
-    int                  gcw = d_gcw;
-    std::vector< stk::mesh::Entity*> entries = d_entries;
-    STKMeshIterator e( mesh, gcw, entries );
-    e.d_pos = entries.end();
+    STKMeshIterator e( d_mesh, d_gcw, d_entries );
+    e.d_pos = d_entries->end();
     return e;
 }
 
@@ -119,11 +135,12 @@ MeshIterator STKMeshIterator::end() const
 ********************************************************/
 size_t STKMeshIterator::size() const
 {
-    return d_entries.size();
+    return d_entries->size();
 }
 size_t STKMeshIterator::position() const
 {
-    return d_pos - d_entries.begin();
+    const int size = d_pos - d_entries->begin();
+    return size;
 }
 
 
@@ -163,17 +180,17 @@ MeshIterator STKMeshIterator::operator--(int)
 ********************************************************/
 bool STKMeshIterator::operator==(const MeshIterator& rhs) const
 {
-    STKMeshIterator* rhs2 = NULL;
-    STKMeshIterator* tmp = (STKMeshIterator*) &rhs;     // Convert rhs to a STKMeshIterator* so we can access the base class members
+    const STKMeshIterator* rhs2 = NULL;
+    const STKMeshIterator* tmp = static_cast<const STKMeshIterator*>(&rhs);
     if ( typeid(rhs)==typeid(STKMeshIterator) ) {
-        rhs2 = tmp;     // We can safely cast rhs to a STKMeshIterator
+        rhs2 = dynamic_cast<const STKMeshIterator*>(&rhs);     // We can safely cast rhs to a STKMeshIterator
     } else if ( tmp->typeID==STKMeshIteratorTypeID() ) {
-        rhs2 = tmp;     // We can safely cast rhs.iterator to a STKMeshIterator
-    } else if ( ((STKMeshIterator*)tmp->iterator)->typeID==STKMeshIteratorTypeID() ) {
-        rhs2 = (STKMeshIterator*) tmp->iterator;
+        rhs2 = static_cast<const STKMeshIterator*>(&rhs);     // We can safely cast rhs.iterator to a STKMeshIterator
+    } else if ( tmp->iterator->type_id()==STKMeshIteratorTypeID() ) {
+        rhs2 = static_cast<const STKMeshIterator*>(tmp->iterator);
     }
     // Perform direct comparisions if we are dealing with two STKMeshIterators
-    if ( rhs2 != NULL ) return (*d_pos == *rhs2->d_pos);
+    if ( rhs2 != NULL ) return (d_pos == rhs2->d_pos);
 
     /* We are comparing a STKMeshIterator to an arbitrary iterator
      * The iterators are the same if they point to the same position and iterate

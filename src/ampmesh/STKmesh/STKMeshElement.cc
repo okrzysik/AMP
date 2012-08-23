@@ -2,6 +2,18 @@
 #include "utils/Utilities.h"
 
 #include "stk_mesh/fem/FEMHelpers.hpp"
+#include "stk_mesh/base/FieldData.hpp"
+#include "stk_mesh/fem/CellTopology.hpp"
+#include "Teuchos_RCP.hpp"
+
+#include "Intrepid_Types.hpp"
+#include "Intrepid_Cubature.hpp"
+#include "Intrepid_CellTools.hpp"
+#include "Intrepid_FieldContainer.hpp"
+#include "Intrepid_FunctionSpaceTools.hpp"
+#include "Intrepid_DefaultCubatureFactory.hpp"
+
+
 namespace AMP {
 namespace Mesh {
 
@@ -22,6 +34,8 @@ AMP::Mesh::GeomType geom_type(const stk::mesh::EntityRank rank) {
     return Vertex;
 }
 }
+
+typedef stk::mesh::Field<double,stk::mesh::Cartesian>            CartesianField ;
 
 
 /********************************************************
@@ -152,9 +166,9 @@ std::vector<MeshElement> STKMeshElement::getElements(const GeomType type) const
         // Return the children
         stk::mesh::PairIterRelation r;
         if ( type==Edge )
-            r = elem->relations(d_mesh->d_STKMeshData->edge_rank());
+            r = elem->relations(d_mesh->d_STKMeshMeta->edge_rank());
         else if ( type==Face )
-            r = elem->relations(d_mesh->d_STKMeshData->face_rank());
+            r = elem->relations(d_mesh->d_STKMeshMeta->face_rank());
         else
             AMP_ERROR("Internal error");
         children.resize(r.second-r.first);
@@ -226,36 +240,90 @@ std::vector< MeshElement::shared_ptr > STKMeshElement::getNeighbors() const
 ****************************************************************/
 double STKMeshElement::volume() const
 {
-
-    AMP_ERROR("STKMeshElement::volume is is not defined");
+    const unsigned numCells = 1;
     if ( d_globalID.type() == Vertex )
-        AMP_ERROR("volume is is not defined Nodes");
-    stk::mesh::Entity* elem = (stk::mesh::Entity*) ptr_element;
-    return 0; //elem->volume();
+        AMP_ERROR("STKMeshElement::volume:volume is is not defined on Nodes");
+    if ( d_globalID.type() == Edge ) {
+        AMP_WARNING("STKMeshElement::volume:volume is is not defined on Edges");
+        return 1;
+    }
+    if ( d_globalID.type() == Face ) {
+        AMP_WARNING("STKMeshElement::volume:volume is is not defined on Faces");
+        return 1;
+    }
+    const stk::mesh::Entity* elem = (stk::mesh::Entity*) ptr_element;
 
+    const CartesianField *coordinates = d_mesh->d_STKMeshMeta->get_field<CartesianField>("coordinates");
+    const stk::mesh::PairIterRelation elem_nodes = elem->node_relations();
+    const unsigned numNodes = elem_nodes.end() - elem_nodes.begin();
 
+    const stk::mesh::fem::CellTopology cell_topo = stk::mesh::fem::get_cell_topology(*elem); 
+
+    Teuchos::RCP<Intrepid::Cubature<double> > myCub;
+    try {
+        const unsigned cubDegree = 4; 
+        Intrepid::DefaultCubatureFactory<double> cubFactory;
+        myCub = cubFactory.create(cell_topo, cubDegree);
+    }
+    catch (...) {
+        AMP_ERROR("STKMeshElement::volume mesh contains elements that Intrepid doesn't support for quadrature.");
+    }
+
+    const unsigned numCubPoints = myCub->getNumPoints(); 
+    Intrepid::FieldContainer<double> volume         (numCells);
+    Intrepid::FieldContainer<double> onesLeft       (numCells, numCubPoints);
+    Intrepid::FieldContainer<double> weightedMeasure(numCells, numCubPoints);
+    Intrepid::FieldContainer<double> jacobian_det   (numCells, numCubPoints);
+    Intrepid::FieldContainer<double> jacobian       (numCells, numCubPoints, d_dim, d_dim);
+
+    Intrepid::FieldContainer<double> cub_points               (numCubPoints, d_dim);
+    Intrepid::FieldContainer<double> cub_weights              (numCubPoints);
+    Intrepid::FieldContainer<double> cellNodes      (numCells, numNodes, d_dim);
+
+    for (unsigned i=0; i!=numNodes; ++i) {
+        const stk::mesh::Entity *node = elem_nodes[i].entity();
+        const double *X =  (const double*)stk::mesh::field_data(*coordinates, *node);
+        for (int j=0; j<d_dim; j++) 
+            cellNodes(0,i,j) = X[j];
+    }
+
+    myCub->getCubature(cub_points, cub_weights); 
+    Intrepid::CellTools<double>::setJacobian   (jacobian,     cub_points, cellNodes, cell_topo);
+    Intrepid::CellTools<double>::setJacobianDet(jacobian_det, jacobian);
+
+    onesLeft.initialize(1.0);
+    Intrepid::FunctionSpaceTools::computeCellMeasure<double>(weightedMeasure, jacobian_det, cub_weights);
+    Intrepid::FunctionSpaceTools::integrate<double>(volume, onesLeft, weightedMeasure,  Intrepid::COMP_BLAS);
+    const double v = volume(0);
+    return v;
 }
 std::vector<double> STKMeshElement::coord() const
 {
-    AMP_ERROR("STKMeshElement::coord is is not defined");
     if ( d_globalID.type() != Vertex )
         AMP_ERROR("coord is only defined for Nodes");
     stk::mesh::Entity* node = (stk::mesh::Entity*) ptr_element;
-    std::vector<double> x(d_dim,0.0);
-    for (int i=0; i<d_dim; i++)
-        x[i] = 0;//(*node)(i);
+
+    CartesianField *coordinates = d_mesh->d_STKMeshMeta->get_field<CartesianField>("coordinates");
+    double *X =  (double*)stk::mesh::field_data(*coordinates, *node);
+
+    const std::vector<double> x(X, &X[d_dim]);
     return x;
 }
 std::vector<double> STKMeshElement::centroid() const
 {
-    AMP_ERROR("STKMeshElement::centroid is is not defined");
-    if ( d_globalID.type()==Vertex )
-        return coord();
+    if ( d_globalID.type()==Vertex ) return coord();
     stk::mesh::Entity* elem = (stk::mesh::Entity*) ptr_element;
-    std::vector<double> center;// = elem->centroid();
+
     std::vector<double> x(d_dim,0.0);
-    for (int i=0; i<d_dim; i++)
-        x[i] = 0;//center(i);
+    CartesianField *coordinates = d_mesh->d_STKMeshMeta->get_field<CartesianField>("coordinates");
+    stk::mesh::PairIterRelation elem_nodes = elem->node_relations();
+    for (stk::mesh::PairIterRelation::iterator i=elem_nodes.begin(); i!=elem_nodes.end(); ++i) {
+        const stk::mesh::Entity *node = i->entity();
+        const double *X =  (double*)stk::mesh::field_data(*coordinates, *node);
+        for (int j=0; j<d_dim; j++) x[j] += X[j];
+    }
+    const unsigned len = elem_nodes.end()-elem_nodes.begin(); 
+    for (int i=0; i<d_dim; i++) x[i] /= len;
     return x;
 }
 bool STKMeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
@@ -275,7 +343,6 @@ bool STKMeshElement::containsPoint( const std::vector<double> &pos, double TOL )
 }
 bool STKMeshElement::isOnSurface() const
 {
-    AMP_ERROR("STKMeshElement::isOnSurface is is not defined");
     GeomType type = d_globalID.type();
     MeshElement search = MeshElement(*this);
     if ( d_globalID.is_local() ) {
@@ -295,34 +362,9 @@ bool STKMeshElement::isOnSurface() const
     }
     return false;
 }
-bool STKMeshElement::isOnBoundary(int id) const
+bool STKMeshElement::isOnBoundary(int) const
 {
-    AMP_ERROR("STKMeshElement::isOnBoundary is is not defined");
-    GeomType type = d_globalID.type();
-    bool on_boundary = false;
-    boost::shared_ptr<stk::mesh::BulkData> d_STKMesh = d_mesh->getSTKMesh();
-    if ( type==Vertex ) {
-        // Entity is a libmesh node
-        stk::mesh::Entity* node = (stk::mesh::Entity*) ptr_element;
-        std::vector< short int > bids;// = d_STKMesh->boundary_info->boundary_ids(node);
-        for (size_t i=0; i<bids.size(); i++) {
-            if ( bids[i]==id )
-                on_boundary = true;
-        }
-    } else if ( (int)type==d_dim ) {
-        // Entity is a libmesh node
-        stk::mesh::Entity* elem = (stk::mesh::Entity*) ptr_element;
-        unsigned int side = 0;//d_STKMesh->boundary_info->side_with_boundary_id(elem,id);
-        if ( side != static_cast<unsigned int>(-1) )
-            on_boundary = true;
-    } else  {
-        // All other entities are on the boundary iff all of their verticies are on the surface
-        std::vector<MeshElement> nodes = this->getElements(Vertex);
-        on_boundary = true;
-        for (size_t i=0; i<nodes.size(); i++)
-            on_boundary = on_boundary && nodes[i].isOnBoundary(id);
-    }
-    return on_boundary;
+    return isOnSurface();
 }
 bool STKMeshElement::isInBlock(int id) const
 {
