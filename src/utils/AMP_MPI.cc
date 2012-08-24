@@ -1429,7 +1429,14 @@ template <>
 void AMP_MPI::send<char>(const char *buf, const int length, 
     const int recv_proc_number, int tag) const
 {
-    AMP_ERROR("AMP_MPI.send is not written for serial (no MPI)");
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_Request id = getRequest( communicator, tag );
+    std::map<MPI_Request,Isendrecv_struct>::iterator it = global_isendrecv_list.find(id);
+    AMP_INSIST(it==global_isendrecv_list.end(),"send must be paired with a previous call to irecv in serial");
+    AMP_ASSERT(it->second.status==2);
+    memcpy((char*)it->second.data,buf,length);
+    global_isendrecv_list.erase( it );
 }
 #endif
 
@@ -1615,7 +1622,14 @@ template <>
 void AMP_MPI::recv<char>(char *buf, int &length, 
     const int send_proc_number, const bool get_length, int tag) const
 {
-    AMP_ERROR("AMP_MPI.recv is not written for serial (no MPI)");
+    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_Request id = getRequest( communicator, tag );
+    std::map<MPI_Request,Isendrecv_struct>::iterator it = global_isendrecv_list.find(id);
+    AMP_INSIST(it!=global_isendrecv_list.end(),"recv must be paired with a previous call to isend in serial");
+    AMP_ASSERT(it->second.status==1);
+    memcpy(buf,it->second.data,length);
+    global_isendrecv_list.erase( it );
 }
 #endif
 
