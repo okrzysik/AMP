@@ -57,9 +57,6 @@ ADD_AMP_PROVISIONAL_TEST( testRemDup )
 
 COPY_MESH_FILE ( cube8.with.boundary.labels.e )
 
-COPY_TEST_DATA_FILE ( input_testDofMap )
-ADD_AMP_PROVISIONAL_TEST( testDofMap )
-
 COPY_TEST_DATA_FILE ( input_testSurfaceIteratorBug )
 ADD_AMP_TEST( testSurfaceIteratorBug )
 
