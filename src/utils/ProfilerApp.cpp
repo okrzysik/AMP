@@ -9,7 +9,7 @@
 #define ERROR_MSG AMP_ERROR
 
 
-ProfilerApp global_profiler = ProfilerApp();
+AMP::ProfilerApp global_profiler = AMP::ProfilerApp();
 
 extern "C" {
     #include "assert.h"
@@ -27,6 +27,7 @@ extern "C" {
     #error Unknown OS
 #endif
 
+namespace AMP {
 
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
@@ -1140,4 +1141,6 @@ static inline void quicksort2(int n, type_a *arr, type_b *brr)
     }
 }
 
+
+}
 

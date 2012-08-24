@@ -34,6 +34,8 @@
 
 #include <iostream>
 
+namespace AMP {
+
 
 #define BIT_WORD size_t                         // A unsigned integer data type (the larger the word size, the better the performance)
 #define TRACE_SIZE 100                          // The maximum number of timers that will be checked for the trace logs
@@ -313,7 +315,10 @@ private:
     TIME_TYPE frequency;            // Clock frequency (only used for windows)
 };
 
-extern ProfilerApp global_profiler;
+
+}
+
+extern AMP::ProfilerApp global_profiler;
 #define PROFILE_START(X,...)\
     global_profiler.start( X, __FILE__, __LINE__, ##__VA_ARGS__ );
 #define PROFILE_STOP(X,...)\
