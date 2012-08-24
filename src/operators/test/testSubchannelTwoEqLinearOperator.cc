@@ -127,67 +127,6 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
      SolVec->setValueByGlobalID(dofs[0],1.0);
      SolVec->setValueByGlobalID(dofs[1],1.0);
   }
-/*
-  faceDOFManager->getDOFs( face->globalID(), dofs );
-  FrozenVec->setValueByGlobalID(dofs[0],700.0e3);
-  FrozenVec->setValueByGlobalID(dofs[1], 12.4e6);;
-  SolVec->setValueByGlobalID(dofs[0],1.0);
-  SolVec->setValueByGlobalID(dofs[1],1.0);
-  ++face;
-  faceDOFManager->getDOFs( face->globalID(), dofs );
-  FrozenVec->setValueByGlobalID(dofs[0],900.0e3);
-  FrozenVec->setValueByGlobalID(dofs[1], 12.3e6);;
-  SolVec->setValueByGlobalID(dofs[0],1.0);
-  SolVec->setValueByGlobalID(dofs[1],1.0);
-  ++face;
-  faceDOFManager->getDOFs( face->globalID(), dofs );
-  FrozenVec->setValueByGlobalID(dofs[0],800.0e3);
-  FrozenVec->setValueByGlobalID(dofs[1], 16.2e6);;
-  SolVec->setValueByGlobalID(dofs[0],1.0);
-  SolVec->setValueByGlobalID(dofs[1],1.0);
-  ++face;
-  faceDOFManager->getDOFs( face->globalID(), dofs );
-  FrozenVec->setValueByGlobalID(dofs[0],650.0e3);
-  FrozenVec->setValueByGlobalID(dofs[1], 14.1e5);;
-  SolVec->setValueByGlobalID(dofs[0],1.0);
-  SolVec->setValueByGlobalID(dofs[1],1.0);
-  ++face;
-  faceDOFManager->getDOFs( face->globalID(), dofs );
-  FrozenVec->setValueByGlobalID(dofs[0],367.4e3);
-  FrozenVec->setValueByGlobalID(dofs[1], 31.5e5);;
-  SolVec->setValueByGlobalID(dofs[0],1.0);
-  SolVec->setValueByGlobalID(dofs[1],1.0);
-  ++face;
-  faceDOFManager->getDOFs( face->globalID(), dofs );
-  FrozenVec->setValueByGlobalID(dofs[0],657.2e3);
-  FrozenVec->setValueByGlobalID(dofs[1], 12.5e6);;
-  SolVec->setValueByGlobalID(dofs[0],1.0);
-  SolVec->setValueByGlobalID(dofs[1],1.0);
-  ++face;
-  faceDOFManager->getDOFs( face->globalID(), dofs );
-  FrozenVec->setValueByGlobalID(dofs[0],788.5e3);
-  FrozenVec->setValueByGlobalID(dofs[1], 12.7e6);;
-  SolVec->setValueByGlobalID(dofs[0],1.0);
-  SolVec->setValueByGlobalID(dofs[1],1.0);
-  ++face;
-  faceDOFManager->getDOFs( face->globalID(), dofs );
-  FrozenVec->setValueByGlobalID(dofs[0],235.7e2);
-  FrozenVec->setValueByGlobalID(dofs[1], 17.8e6);;
-  SolVec->setValueByGlobalID(dofs[0],1.0);
-  SolVec->setValueByGlobalID(dofs[1],1.0);
-  ++face;
-  faceDOFManager->getDOFs( face->globalID(), dofs );
-  FrozenVec->setValueByGlobalID(dofs[0],673.1e3);
-  FrozenVec->setValueByGlobalID(dofs[1], 13.6e6);;
-  SolVec->setValueByGlobalID(dofs[0],1.0);
-  SolVec->setValueByGlobalID(dofs[1],1.0);
-  ++face;
-  faceDOFManager->getDOFs( face->globalID(), dofs );
-  FrozenVec->setValueByGlobalID(dofs[0],385.2e3);
-  FrozenVec->setValueByGlobalID(dofs[1], 16.3e6);
-  SolVec->setValueByGlobalID(dofs[0],1.0);
-  SolVec->setValueByGlobalID(dofs[1],1.0);
-*/
 
   // create subchannel physics model
   boost::shared_ptr<AMP::Database> subchannelPhysics_db = input_db->getDatabase("SubchannelPhysicsModel");
@@ -210,7 +149,7 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   ut->passes(exeName+": creation");
   std::cout.flush();
 
-  // reset the nonlinear operator
+  // reset the linear operator
   subchannelOperator->reset(subchannelOpParams);
 
    {//test block #1

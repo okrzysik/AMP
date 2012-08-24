@@ -44,6 +44,20 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
   xyFaceMesh = subchannelMesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh , 0 ) );
 
+  // get dof manager
+  int DofsPerFace =  2;
+  AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh,
+     AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerFace);
+
+  // get input and output variables
+  AMP::LinearAlgebra::Variable::shared_ptr inputVariable  (new AMP::LinearAlgebra::Variable("flow"));
+  AMP::LinearAlgebra::Variable::shared_ptr outputVariable (new AMP::LinearAlgebra::Variable("flow"));
+
+  // create solution, rhs, and residual vectors
+  AMP::LinearAlgebra::Vector::shared_ptr SolVec = AMP::LinearAlgebra::createVector( faceDOFManager , inputVariable , true );
+  AMP::LinearAlgebra::Vector::shared_ptr RhsVec = AMP::LinearAlgebra::createVector( faceDOFManager , outputVariable, true );
+  AMP::LinearAlgebra::Vector::shared_ptr ResVec = AMP::LinearAlgebra::createVector( faceDOFManager , outputVariable, true );
+
   // create subchannel physics model
   boost::shared_ptr<AMP::Database> subchannelPhysics_db = input_db->getDatabase("SubchannelPhysicsModel");
   boost::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params( new AMP::Operator::ElementPhysicsModelParameters(subchannelPhysics_db));
@@ -55,28 +69,25 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
   subchannelOpParams->d_Mesh = subchannelMesh ;
   subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
+  subchannelOpParams->d_dofMap = faceDOFManager ;
+
+  boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> subchannelOperator (new AMP::Operator::SubchannelTwoEqNonlinearOperator(subchannelOpParams));
+/*
+  // set operator parameters
+  boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
+  subchannelOpParams->d_Mesh = subchannelMesh ;
+  subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
 
   // create nonlinear operator
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
   boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> subchannelOperator =
       boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
       subchannelMesh ,"SubchannelTwoEqNonlinearOperator",input_db,elementModel ));
-  
+*/
+
   // report successful creation
   ut->passes(exeName+": creation");
   std::cout.flush();
-
-  int DofsPerFace =  2;
-  AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( xyFaceMesh, AMP::Mesh::Face, 1, DofsPerFace, true);
-
-  // get input and output variables
-  AMP::LinearAlgebra::Variable::shared_ptr inputVariable  = subchannelOperator->getInputVariable();
-  AMP::LinearAlgebra::Variable::shared_ptr outputVariable = subchannelOperator->getOutputVariable();
-
-  // create solution, rhs, and residual vectors
-  AMP::LinearAlgebra::Vector::shared_ptr SolVec = AMP::LinearAlgebra::createVector( faceDOFManager , inputVariable , true );
-  AMP::LinearAlgebra::Vector::shared_ptr RhsVec = AMP::LinearAlgebra::createVector( faceDOFManager , outputVariable, true );
-  AMP::LinearAlgebra::Vector::shared_ptr ResVec = AMP::LinearAlgebra::createVector( faceDOFManager , outputVariable, true );
 
   // reset the nonlinear operator
   subchannelOperator->reset(subchannelOpParams);
