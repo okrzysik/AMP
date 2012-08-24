@@ -86,7 +86,7 @@ std::multimap<double,double>  ScalarN2GZAxisMap::buildMap( AMP::LinearAlgebra::V
     std::vector<size_t> ids;
     while ( cur != end ) {
         dof->getDOFs( cur->globalID(), ids );
-        AMP_ASSERT(ids.size()==1);
+        //AMP_ASSERT(ids.size()==1);
         double val = vec->getValueByGlobalID ( ids[0] );
         std::vector<double> x = cur->coord();
         addTo1DMap( map, x[2], val );
