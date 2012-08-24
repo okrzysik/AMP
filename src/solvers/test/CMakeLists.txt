@@ -102,7 +102,7 @@ ADD_AMP_PROVISIONAL_TEST ( testContactV5withML 1 )
 COPY_TEST_DATA_FILE ( input_testContactV5withML )
 
 # ADD_AMP_TEST ( testContactV5 ) # Move to WEEKLY until it is running
-ADD_AMP_WEEKLY_TEST ( testContactV5 1 )
+ADD_AMP_PROVISIONAL_TEST ( testContactV5 1 )
 COPY_TEST_DATA_FILE ( input_testContactV5 )
 
 # ADD_AMP_TEST ( testContactSearch ) # Move to WEEKLY until it is running
@@ -187,7 +187,7 @@ COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianMechanics-LinearElasticity-1c )
 ADD_AMP_PROVISIONAL_TEST ( testUpdatedLagrangianMechanics-LinearElasticity-2 1 )
 COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianMechanics-LinearElasticity-2 )
 COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianMechanics-LinearElasticity-3 )
-ADD_AMP_WEEKLY_TEST ( testSmallStrainMechanics-ThermoMechanics-1 1 )
+ADD_AMP_PROVISIONAL_TEST ( testSmallStrainMechanics-ThermoMechanics-1 1 )
 COPY_TEST_DATA_FILE ( input_testSmallStrainMechanics-ThermoMechanics-1 )
 ADD_AMP_TEST ( testUpdatedLagrangianMechanics-FlanaganTaylorElement-1 )
 COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianMechanics-FlanaganTaylorElement-1 )
