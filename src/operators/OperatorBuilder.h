@@ -61,6 +61,10 @@ class OperatorBuilder{
                                 boost::shared_ptr<AMP::InputDatabase> input_db,
                                     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel);
 
+  static boost::shared_ptr<Operator> createSubchannelFourEqNonlinearOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+                                boost::shared_ptr<AMP::InputDatabase> input_db,
+                                    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel);
+
   static boost::shared_ptr<Operator> createNeutronicsRhsOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                                       boost::shared_ptr<AMP::InputDatabase> input_db);
   

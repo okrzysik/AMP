@@ -72,6 +72,11 @@ namespace Operator {
         */
       boost::shared_ptr<OperatorParameters> getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
 
+      /**
+        Makes map of lateral gaps to their centroids
+        */
+      std::map<std::vector<double>,AMP::Mesh::MeshElement> getLateralFaces(AMP::Mesh::Mesh::shared_ptr);
+
     protected:
 
       boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
@@ -104,8 +109,15 @@ namespace Operator {
       double d_diameter; // fuel rod diameter [m]
       double d_K;        // form loss coefficient
       double d_Q;        // rod power
+
       std::string d_source; // heat source type
       std::string d_heatShape; // heat shape used if heat source type is "totalHeatGeneration"
+
+      std::vector<double> d_x, d_y, d_z;
+      std::vector<bool> d_ownSubchannel; // does this processor own this subchannel (multiple processors may own a subchannel)?
+      int getSubchannelIndex( double x, double y ); // function to give unique index for each subchannel
+      void fillSubchannelGrid(AMP::Mesh::Mesh::shared_ptr); // function to fill the subchannel data for all processors
+      int d_numSubchannels; // number of subchannels
 
   };
 

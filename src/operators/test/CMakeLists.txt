@@ -50,6 +50,9 @@ COPY_TEST_DATA_FILE ( input_testSubchannelTwoEqNonlinearOperator)
 ADD_AMP_PROVISIONAL_TEST(testSubchannelTwoEqLinearOperator)
 COPY_TEST_DATA_FILE ( input_testSubchannelTwoEqLinearOperator)
 
+ADD_AMP_PROVISIONAL_TEST(testSubchannelFourEqNonlinearOperator)
+COPY_TEST_DATA_FILE ( input_testSubchannelFourEqNonlinearOperator)
+
 ADD_AMP_PROVISIONAL_TEST( testRemDup )
 
 COPY_MESH_FILE ( cube8.with.boundary.labels.e )

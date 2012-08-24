@@ -20,6 +20,7 @@
 #include "operators/subchannel/FlowFrapconJacobian.h"
 #include "operators/subchannel/SubchannelTwoEqLinearOperator.h"
 #include "operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
+#include "operators/subchannel/SubchannelFourEqNonlinearOperator.h"
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
@@ -224,6 +225,10 @@ OperatorBuilder::createOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter,
     {
         retOperator = OperatorBuilder::createSubchannelTwoEqNonlinearOperator(meshAdapter, operator_db, elementPhysicsModel);
     }
+  else if(operatorType=="SubchannelFourEqNonlinearOperator")
+    {
+        retOperator = OperatorBuilder::createSubchannelFourEqNonlinearOperator(meshAdapter, operator_db, elementPhysicsModel);
+    }
   else if(operatorType=="NeutronicsRhsOperator")
     {
       retOperator = OperatorBuilder::createNeutronicsRhsOperator(meshAdapter, operator_db);
@@ -385,6 +390,54 @@ OperatorBuilder::createSubchannelTwoEqNonlinearOperator( AMP::Mesh::Mesh::shared
   subchannelParams->d_Mesh = meshAdapter;
   subchannelParams->d_subchannelPhysicsModel = transportModel ;
   boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> subchannelOp (new AMP::Operator::SubchannelTwoEqNonlinearOperator( subchannelParams ));
+
+  return subchannelOp;
+}
+
+  AMP::Operator::Operator::shared_ptr
+OperatorBuilder::createSubchannelFourEqNonlinearOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    boost::shared_ptr<AMP::InputDatabase> input_db,
+    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel)
+{
+
+  // first create a SubchannelPhysicsModel
+  boost::shared_ptr<AMP::Operator::SubchannelPhysicsModel> transportModel;
+
+  if(elementPhysicsModel.get()!=NULL)
+  {
+    transportModel = boost::dynamic_pointer_cast<AMP::Operator::SubchannelPhysicsModel>(elementPhysicsModel);
+  }
+  else
+  {
+    boost::shared_ptr<AMP::Database> transportModel_db;
+    if (input_db->keyExists("SubchannelPhysicsModel")) {
+      transportModel_db = input_db->getDatabase("SubchannelPhysicsModel");
+    } else {
+      AMP_INSIST(false, "Key ''SubchannelPhysicsModel'' is missing!");
+    }
+    elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
+    transportModel = boost::dynamic_pointer_cast<SubchannelPhysicsModel>(elementPhysicsModel);
+  }
+
+  AMP_INSIST(transportModel.get()!=NULL,"NULL transport model");
+
+  // create the operator
+  boost::shared_ptr<AMP::Database> subchannel_db;
+  if(input_db->getString("name")=="SubchannelFourEqNonlinearOperator")
+  {
+    subchannel_db = input_db;
+  }
+  else
+  {
+    AMP_INSIST(input_db->keyExists("name"), "Key ''name'' is missing!");
+  }
+
+  AMP_INSIST(subchannel_db.get()!=NULL, "Error: The database object for SubchannelFourEqNonlinearOperator is NULL");
+
+  boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelParams(new AMP::Operator::SubchannelOperatorParameters( subchannel_db ));
+  subchannelParams->d_Mesh = meshAdapter;
+  subchannelParams->d_subchannelPhysicsModel = transportModel ;
+  boost::shared_ptr<AMP::Operator::SubchannelFourEqNonlinearOperator> subchannelOp (new AMP::Operator::SubchannelFourEqNonlinearOperator( subchannelParams ));
 
   return subchannelOp;
 }
