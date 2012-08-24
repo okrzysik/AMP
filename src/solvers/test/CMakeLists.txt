@@ -176,8 +176,8 @@ ADD_AMP_TEST ( testLinearElasticity-2-element )
 ADD_AMP_TEST ( testLinearElasticity-patch-1 )
 ADD_AMP_TEST ( testLinearElasticity-patch-2 )
 
-ADD_AMP_TEST ( testMatMultiply )
-ADD_AMP_PROVISIONAL_TEST ( testMatCreate )
+ADD_AMP_TEST_1_2_4 ( testMatMultiply )
+ADD_AMP_TEST_1_2_4 ( testMatCreate )
 
 ADD_AMP_TEST ( testUpdatedLagrangianMechanics-LinearElasticity-1 )
 COPY_TEST_DATA_FILE ( input_testUpdatedLagrangianMechanics-LinearElasticity-1 )
