@@ -2,7 +2,7 @@ INCLUDE (macros)
 
 BEGIN_PACKAGE_CONFIG ( solvers )
 ADD_PACKAGE_SUBDIRECTORY ( newFrozenVectorDesign )
-IF( USE_DENDRO )
+IF( USES_DENDRO )
     ADD_PACKAGE_SUBDIRECTORY ( contact )
 ENDIF()
 INSTALL_AMP_TARGET ( solvers )

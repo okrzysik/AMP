@@ -384,7 +384,7 @@ IF( USES_MOAB )
   ADD_AMP_PROVISIONAL_TEST( testMoabInterface )
 ENDIF()
 
-IF( USE_DENDRO AND USES_PETSC )
+IF( USES_DENDRO AND USES_PETSC )
     ADD_AMP_PROVISIONAL_TEST( testNodeToSegmentConstraintsOperator )
     COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator-cube )
     COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator-cylinder )
