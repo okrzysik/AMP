@@ -281,7 +281,7 @@ void moabInterface(AMP::UnitTest *ut)
     // How about some output?
     // Useful for making sure everything looks right
     
-#ifdef USE_SILO
+#ifdef USES_SILO
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
     siloWriter->registerMesh( mesh );
     siloWriter->registerVector( nodalVec, mesh, AMP::Mesh::Vertex, "Temperatures" );

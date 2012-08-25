@@ -177,7 +177,7 @@ int main ( int argc , char **argv )
     AMP::UnitTest ut;
     PROFILE_ENABLE();
 
-    #ifdef USE_SILO
+    #ifdef USES_SILO
         std::string filename = "input_SiloIO-1";
         if(argc == 2) filename = argv[1];
         test_Silo( &ut, filename );

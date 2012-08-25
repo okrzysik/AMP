@@ -224,7 +224,7 @@ void linearFickTest(AMP::UnitTest *ut )
   if( passes ) ut->passes("The linear fick solve is verified.");
  
   // Plot the results
-#ifdef USE_SILO
+#ifdef USES_SILO
      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
      siloWriter->registerMesh( meshAdapter );
 

@@ -7,7 +7,7 @@
 #include <map>
 #include <set>
 
-#ifdef USE_SILO
+#ifdef USES_SILO
     #include <silo.h>
 #endif
 
@@ -143,7 +143,7 @@ private:
     void syncVariableList( std::set<std::string> &data, int root=-1 ) const;
 
     // Function to write a single mesh
-#ifdef USE_SILO
+#ifdef USES_SILO
     void writeMesh( DBfile *file, const siloBaseMeshData &data );
 #endif
 

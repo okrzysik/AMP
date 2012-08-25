@@ -139,7 +139,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   nonlinearMechanicsBVPoperator->modifyRHSvector(rhsVec);
 
   // Create the silo writer and register the data
-  #ifdef USE_SILO
+  #ifdef USES_SILO
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
     siloWriter->registerVector( solVec, mesh, AMP::Mesh::Vertex, "Solution_Vector" );
   #endif
@@ -263,7 +263,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   mechanicsNonlinearVolumeOperator->printStressAndStrain(solVec, output_file);
 
-#ifdef USE_SILO
+#ifdef USES_SILO
     
     siloWriter->writeFile(exeName, 1);
 #endif

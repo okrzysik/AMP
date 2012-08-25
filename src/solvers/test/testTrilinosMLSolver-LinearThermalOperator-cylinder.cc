@@ -241,7 +241,7 @@ void linearThermalTest(AMP::UnitTest *ut )
 */ 
 
  // Plot the results
-#ifdef USE_SILO
+#ifdef USES_SILO
      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
      siloWriter->registerMesh( meshAdapter );
 

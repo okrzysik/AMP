@@ -126,7 +126,7 @@ void term_func()
 /****************************************************************************
 *  Function to handle MPI errors                                            *
 ****************************************************************************/
-#ifdef USE_MPI
+#ifdef USES_MPI
 MPI_Errhandler AMPManager::mpierr;
 static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
 {
@@ -201,7 +201,7 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
         petsc_time = time()-petsc_start_time;
     #endif
     // Initialize MPI
-    #ifdef USE_MPI
+    #ifdef USES_MPI
         int flag;
         MPI_Initialized(&flag);
         if ( flag ) {
@@ -219,7 +219,7 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
     #endif
     // Initialize AMP's MPI
     if ( properties.COMM_WORLD == AMP_COMM_WORLD ) 
-		#ifdef USE_MPI
+		#ifdef USES_MPI
 			comm_world = AMP_MPI(MPI_COMM_WORLD);
 		#else
 			comm_world = AMP_MPI(AMP_COMM_WORLD);
@@ -275,14 +275,14 @@ void AMPManager::shutdown()
     #endif*/
     // Shutdown MPI
     comm_world = AMP_MPI(AMP_COMM_NULL);    // Delete comm world
-    #ifdef USE_MPI
+    #ifdef USES_MPI
         MPI_Errhandler_free( &mpierr );    // Delete the error handler
         MPI_Comm_set_errhandler( MPI_COMM_SELF, MPI_ERRORS_ARE_FATAL );
         MPI_Comm_set_errhandler( MPI_COMM_SELF, MPI_ERRORS_ARE_FATAL );
     #endif
     if ( called_MPI_Init ) {
         double MPI_start_time = time();
-        #ifdef USE_MPI
+        #ifdef USES_MPI
             MPI_Finalize();
         #endif
         MPI_time = time()-MPI_start_time;

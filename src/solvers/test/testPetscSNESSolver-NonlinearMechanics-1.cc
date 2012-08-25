@@ -39,7 +39,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-#ifdef USE_SILO
+#ifdef USES_SILO
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
 #endif
@@ -189,7 +189,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
     meshAdapter->displaceMesh(mechNlSolVec);
 
-#ifdef USE_SILO
+#ifdef USES_SILO
     siloWriter->registerVector(mechNlSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
     char outFileName[256];
     sprintf(outFileName, "LoadPrescribed-DeformedPlateWithHole-LinearElasticity_%d", step);

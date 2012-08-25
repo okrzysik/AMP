@@ -74,7 +74,7 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
     
     ut->passes("PowerShape gets past apply with a non-flat power shape.");
     
-    #ifdef USE_SILO
+    #ifdef USES_SILO
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector( SpecificPowerShapeVec, meshAdapter, AMP::Mesh::Volume, "SpecificPowerInWattsPerKg" );

@@ -153,7 +153,7 @@ void testMap(AMP::UnitTest *ut, std::string exeName )
         std::cout<<std::endl;
     }
 
-    #ifdef USE_SILO
+    #ifdef USES_SILO
         if( globalComm.getSize() == 1 ) {
             //manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 0 );
         }

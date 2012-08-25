@@ -46,7 +46,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-#ifdef USE_SILO
+#ifdef USES_SILO
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
 #endif
@@ -218,7 +218,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     (nonlinBvpOperator->getVolumeOperator())->reset(tmpParams);
     nonlinearSolver->setZeroInitialGuess(false);
 
-#ifdef USE_SILO
+#ifdef USES_SILO
     siloWriter->registerVector ( mechNlSolVec , meshAdapter, AMP::Mesh::Vertex, "Solution_Vector" );
     meshAdapter->displaceMesh(mechNlSolVec);
     char outFileName2[256];
@@ -231,7 +231,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   double finalSolNorm = mechNlSolVec->L2Norm();
   AMP::pout<<"Final Solution Norm: "<<finalSolNorm<<std::endl;
 
-#ifdef USE_SILO
+#ifdef USES_SILO
     siloWriter->writeFile(exeName, 1);
 #endif
 

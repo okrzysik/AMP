@@ -211,7 +211,7 @@ void linearThermalTest(AMP::UnitTest *ut )
 
  // Plot the results
   if( AMP::AMP_MPI::getNodes() == 1 ) {
-#ifdef USE_SILO
+#ifdef USES_SILO
     AMP::LinearAlgebra::Variable::shared_ptr tmpVar1 = PowerInWattsVec->getVariable();
     tmpVar1->setName("PowerInWatts");
     meshAdapter->registerVectorAsData ( PowerInWattsVec );

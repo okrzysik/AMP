@@ -134,7 +134,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-#ifdef USE_SILO
+#ifdef USES_SILO
   AMP::Mesh::SiloIO::shared_ptr siloWriter(new AMP::Mesh::SiloIO);
 #endif
 
@@ -392,7 +392,7 @@ drawFacesOnBoundaryID(slaveMeshAdapter, 4, slaveFout, point_of_view, "dashed");
 slaveFout.close();
 } // end if
 
-#ifdef USE_SILO
+#ifdef USES_SILO
   siloWriter->registerVector(columnSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution");
   char outFileName[256];
   sprintf(outFileName, "MPC_%d", 0);

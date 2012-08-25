@@ -39,7 +39,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-#ifdef USE_SILO
+#ifdef USES_SILO
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
 #endif
@@ -208,7 +208,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       nonlinearSolver->setZeroInitialGuess(false);
     }//end subset
 
-#ifdef USE_SILO
+#ifdef USES_SILO
     siloWriter->registerVector(solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
     meshAdapter->displaceMesh(solVec);
     char outFileName[256];

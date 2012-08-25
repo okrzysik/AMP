@@ -152,7 +152,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     }*/
 
     // Write the results
-    #ifdef USE_SILO
+    #ifdef USES_SILO
         AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
         if ( T1.get()!=NULL )
             siloWriter->registerVector( T1, pin_mesh, AMP::Mesh::Vertex, "Temperature" );

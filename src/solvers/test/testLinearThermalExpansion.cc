@@ -36,7 +36,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-#ifdef USE_SILO
+#ifdef USES_SILO
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
 #endif
@@ -97,11 +97,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   linearSolver->solve(mechRhsVec, mechSolVec);
 
-#ifdef USE_SILO
+#ifdef USES_SILO
   siloWriter->registerVector(mechSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
 #endif
 
-#ifdef USE_SILO
+#ifdef USES_SILO
   siloWriter->writeFile(exeName, 1);
   meshAdapter->displaceMesh(mechSolVec);
   siloWriter->writeFile(exeName, 2);

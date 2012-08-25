@@ -472,7 +472,7 @@ AMP_ERROR("Not converted yet"); /*
     // need to define test requirements for new mms
     abort();
   }
-#ifdef USE_SILO
+#ifdef USES_SILO
   AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
 
   siloWriter->registerVector( exactErrVec, meshAdapter , AMP::Mesh::Vertex, "Exact_Error_Vector");

@@ -72,7 +72,7 @@ initializeLibMesh::initializeLibMesh( AMP_MPI comm )
         const int argc = AMPManager::get_argc();
         const char ** argv = (const char**) AMPManager::get_argv();
         argc_libmesh = add_libmesh_cmdline( argc, argv, &argv_libmesh );
-        #ifdef USE_MPI
+        #ifdef USES_MPI
             #ifdef USE_PETSC
                 MPI_Comm petsc_comm = PETSC_COMM_WORLD;
             #endif

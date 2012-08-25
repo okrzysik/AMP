@@ -100,7 +100,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // register some variables for plotting
-#ifdef USE_SILO
+#ifdef USES_SILO
   AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
   siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
   siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
@@ -177,7 +177,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   solVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
   resVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
-#ifdef USE_SILO
+#ifdef USES_SILO
   siloWriter->writeFile( exeName, 0 );
 #endif
 

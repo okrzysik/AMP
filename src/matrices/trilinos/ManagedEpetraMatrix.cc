@@ -8,7 +8,7 @@
 #include "utils/AMP_MPI.h"
 
 #include "EpetraExt_MatrixMatrix.h"
-#ifdef USE_MPI
+#ifdef USES_MPI
     #include <Epetra_MpiComm.h>
 #else
     #include <Epetra_SerialComm.h>
@@ -24,7 +24,7 @@ void ManagedEpetraMatrix::multiply ( shared_ptr other_op , shared_ptr &result )
     if ( !other_op->isA<ManagedEpetraMatrix>() )
         AMP_ERROR( "Incompatible matrix types" );
 
-    #ifdef USE_MPI
+    #ifdef USES_MPI
         MPI_Comm epetraComm = (dynamic_cast<const Epetra_MpiComm *> (&d_epetraMatrix->RowMap().Comm()))->Comm();
     #else
         MPI_Comm epetraComm = AMP_COMM_SELF;
@@ -193,7 +193,7 @@ ManagedEpetraMatrixParameters::ManagedEpetraMatrixParameters ( int local_size , 
 
 Epetra_Map  &ManagedEpetraMatrixParameters::getEpetraRowMap ()
 {
-    #ifdef USE_MPI
+    #ifdef USES_MPI
         Epetra_MpiComm  comm = d_comm.getCommunicator();
     #else
         Epetra_SerialComm  comm;
@@ -210,7 +210,7 @@ Epetra_Map  &ManagedEpetraMatrixParameters::getEpetraRowMap ()
 
 Epetra_Map  *ManagedEpetraMatrixParameters::getEpetraColMap ()
 {
-    #ifdef USE_MPI
+    #ifdef USES_MPI
         Epetra_MpiComm  comm = d_comm.getCommunicator();
     #else
         Epetra_SerialComm  comm;

@@ -45,7 +45,7 @@ void myTest(AMP::UnitTest *ut)
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-#ifdef USE_SILO
+#ifdef USES_SILO
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
 #endif
@@ -179,7 +179,7 @@ void myTest(AMP::UnitTest *ut)
 
   nonlinearSolver->setZeroInitialGuess(false);
 
-#ifdef USE_SILO
+#ifdef USES_SILO
   siloWriter->registerVector(mechNlSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
 #endif
 
@@ -220,7 +220,7 @@ void myTest(AMP::UnitTest *ut)
     (nonlinBvpOperator->getVolumeOperator())->reset(tmpParams);
     nonlinearSolver->setZeroInitialGuess(false);
 
-#ifdef USE_SILO
+#ifdef USES_SILO
     siloWriter->writeFile("FrozenTemp_NonlinearMechExample", step);
 #endif
   }

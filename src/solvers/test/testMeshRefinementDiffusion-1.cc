@@ -379,7 +379,7 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
   registerMapswithThermalOperator( input_db , nonlinearThermalColumnOperator , thermMapVec );
 
   //------------------------------------------
-#ifdef USE_SILO
+#ifdef USES_SILO
   AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
   siloWriter->registerMesh(manager);
 
@@ -422,7 +422,7 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
 
   integratedRHSVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
-#ifdef USE_SILO
+#ifdef USES_SILO
   siloWriter->registerVector( integratedRHSVec, manager, AMP::Mesh::Vertex ,"Source");
 #endif
 
@@ -488,7 +488,7 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
   std::cout << "Max of U : "<< TemperatureVec->max() << " Min of U : "<< TemperatureVec->min()<< std::endl;
 
 
-#ifdef USE_SILO
+#ifdef USES_SILO
   siloWriter->writeFile( silo_file , 1 );
 #endif
 

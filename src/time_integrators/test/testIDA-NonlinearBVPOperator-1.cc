@@ -252,7 +252,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
         ut->passes("Testing TrilinosMLSolver's constructor: PASS");
     }
     
-#ifdef USE_SILO
+#ifdef USES_SILO
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
     siloWriter->registerMesh( meshAdapter );
 
@@ -320,7 +320,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     }
     
     
-#ifdef USE_SILO
+#ifdef USES_SILO
 
     AMP::LinearAlgebra::Vector::shared_ptr pSolution=pIDATimeIntegrator->getCurrentSolution();
     siloWriter->registerVector( pSolution,                 meshAdapter, AMP::Mesh::Vertex, "Solution" );

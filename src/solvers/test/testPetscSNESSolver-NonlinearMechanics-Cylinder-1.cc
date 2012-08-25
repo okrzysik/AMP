@@ -118,7 +118,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::LinearAlgebra::Vector::shared_ptr mechNlScaledRhsVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, displacementVariable );
 
   // Create the silo writer and register the data
-  #ifdef USE_SILO
+  #ifdef USES_SILO
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
     siloWriter->registerVector( mechNlSolVec, mesh, AMP::Mesh::Vertex, "Solution_Vector" );
     siloWriter->registerVector( mechNlResVec, mesh, AMP::Mesh::Vertex, "Residual_Vector" );
@@ -213,7 +213,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   double finalSolNorm = mechNlSolVec->L2Norm();
   AMP::pout<<"Final Solution Norm: "<<finalSolNorm<<std::endl;
 
-  #ifdef USE_SILO
+  #ifdef USES_SILO
     siloWriter->writeFile( exeName, 1 );
   #endif
 

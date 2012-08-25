@@ -186,7 +186,7 @@ void forwardTest1(AMP::UnitTest *ut, const std::string exeName)
   }
 
   // Plot the results
- #ifdef USE_SILO
+ #ifdef USES_SILO
      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
      siloWriter->registerMesh( meshAdapter );
 

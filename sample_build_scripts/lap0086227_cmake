@@ -26,7 +26,7 @@ rm -rf CMake*
          -D BLAS_LIB:STRING=blas_LINUX.a                        \
       -D USE_LAPACK=1                                           \
          -D LAPACK_DIRECTORY:PATH=${BLAS_DIR}                   \
-      -D USE_SILO=1                                             \
+      -D USES_SILO=1                                            \
          -D SILO_DIRECTORY:PATH=${SILO}                         \
       -D USES_HDF5=1                                            \
          -D HDF5_DIRECTORY:PATH=${HDF5}                         \
@@ -34,8 +34,8 @@ rm -rf CMake*
          -D HYPRE_DIRECTORY:PATH=/packages/hypre-2.2.0b/src     \
       -D USE_X11=1                                              \
          -D X11_DIRECTORY:PATH=/usr/                            \
-      -D USE_MPI=1                                              \
-         -D USE_MPI_FOR_SERIAL_TESTS=0                          \
+      -D USES_MPI=1                                              \
+         -D USES_MPI_FOR_SERIAL_TESTS=0                          \
          -D MPIEXEC_NUMPROC_FLAG:STRING="-np"                   \
          -D MPI_DIRECTORY=/usr                                  \
       -Wdev                                                     \

@@ -44,7 +44,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-#ifdef USE_SILO
+#ifdef USES_SILO
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
 #endif
@@ -113,7 +113,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
 
-#ifdef USE_SILO
+#ifdef USES_SILO
   siloWriter->registerVector(displacementVec, meshAdapter, AMP::Mesh::Vertex, "MechanicsSolution" );
   siloWriter->registerVector(temperatureVec, meshAdapter, AMP::Mesh::Vertex, "ThermalSolution" );
 #endif
@@ -257,7 +257,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::pout<<"Maximum V displacement: "<<finalMaxV<<std::endl;
   AMP::pout<<"Maximum W displacement: "<<finalMaxW<<std::endl;
 
-#ifdef USE_SILO
+#ifdef USES_SILO
   siloWriter->writeFile(exeName, 1);
 #endif
 
