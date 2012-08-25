@@ -14,7 +14,7 @@
 //! Define MPI objects
 #ifdef USES_MPI
     #include "mpi.h"    // include mpi.h
-#elif defined(USE_TRILINOS)
+#elif defined(USES_TRILINOS)
     #include "mpi.h"    // trilinos serial builds include mpi.h
 #else
     typedef int MPI_Comm;

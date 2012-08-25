@@ -88,7 +88,7 @@ public:
 };
 
 
-#ifdef USE_TRILINOS
+#ifdef USES_TRILINOS
 typedef SimpleManagedVectorFactory<AMP::LinearAlgebra::ManagedEpetraVector>         SMEVFactory;
 #endif
 
@@ -98,7 +98,7 @@ int main ( int argc , char **argv )
     AMP::AMPManager::startup(argc, argv);
     AMP::UnitTest ut;
 
-    #ifdef USE_TRILINOS
+    #ifdef USES_TRILINOS
         SelectTester<SMEVFactory>::run_test ( &ut );
         test_managed_vectors_loop<StridedVectorFactory<SMEVFactory> > ( &ut );
     #else

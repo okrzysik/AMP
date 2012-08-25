@@ -8,7 +8,7 @@
 #ifdef USES_PETSC
     #include <vectors/petsc/NativePetscVector.h>
 #endif
-#ifdef USE_TRILINOS
+#ifdef USES_TRILINOS
     #include <vectors/trilinos/EpetraVectorEngine.h>
 #endif
 
@@ -51,7 +51,7 @@ public:
 };
 
 
-#ifdef USE_TRILINOS
+#ifdef USES_TRILINOS
 template <typename T>
 class  SimpleManagedVectorFactory
 {

@@ -9,7 +9,7 @@
 #ifdef USES_PETSC
     typedef AMP::unit_test::SimplePetscNativeFactory<AMP::LinearAlgebra::NativePetscVector>         SNPVFactory;
 #endif
-#ifdef USE_TRILINOS
+#ifdef USES_TRILINOS
     typedef AMP::unit_test::SimpleManagedVectorFactory<AMP::LinearAlgebra::ManagedEpetraVector>     SMEVFactory;
     typedef AMP::unit_test::MultiVectorFactory<SMEVFactory,1,SNPVFactory,1>                         MVFactory1;
     typedef AMP::unit_test::MultiVectorFactory<SMEVFactory,3,SNPVFactory,2>                         MVFactory2;
@@ -41,7 +41,7 @@ int main ( int argc , char **argv )
     ut.expected_failure("Compiled without petsc");
 #endif
 
-#ifdef USE_TRILINOS
+#ifdef USES_TRILINOS
     std::cout << "Testing Iterator" << std::endl;
     VectorIteratorTests<MVFactory1> ( &ut );
     std::cout << std::endl;
