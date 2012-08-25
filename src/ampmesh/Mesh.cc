@@ -4,7 +4,7 @@
 #include "ampmesh/MultiMesh.h"
 #include "ampmesh/SubsetMesh.h"
 #include "ampmesh/structured/BoxMesh.h"
-#ifdef USE_LIBMESH
+#ifdef USES_LIBMESH
     #include "ampmesh/libmesh/libMesh.h"
 #endif
 #ifdef USE_MOAB
@@ -93,7 +93,7 @@ boost::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared
         mesh = boost::shared_ptr<AMP::Mesh::BoxMesh>(new AMP::Mesh::BoxMesh(params) );
     } else if ( MeshType == std::string("libMesh") ) {
         // The mesh is a libmesh mesh
-        #ifdef USE_LIBMESH
+        #ifdef USES_LIBMESH
             mesh = boost::shared_ptr<AMP::Mesh::libMesh>(new AMP::Mesh::libMesh(params) );
         #else
             AMP_ERROR("AMP was compiled without support for libMesh");
@@ -144,7 +144,7 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         meshSize = AMP::Mesh::BoxMesh::estimateMeshSize(params);
     } else if ( MeshType == std::string("libMesh") ) {
         // The mesh is a libmesh mesh
-        #ifdef USE_LIBMESH
+        #ifdef USES_LIBMESH
             meshSize = AMP::Mesh::libMesh::estimateMeshSize(params);
         #else
             AMP_ERROR("AMP was compiled without support for libMesh");

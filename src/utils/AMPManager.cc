@@ -12,7 +12,7 @@
     #include "petscerror.h"
 #endif
 
-//#ifdef USE_LIBMESH
+//#ifdef USES_LIBMESH
 //    #include "ampmesh/libmesh/initializeLibMesh.h"
 //#endif
 
@@ -268,7 +268,7 @@ void AMPManager::shutdown()
     // Shutdown the parallel IO
     PIO::finalize();
     // Shutdown LibMesh
-    /*#ifdef USE_LIBMESH
+    /*#ifdef USES_LIBMESH
         if ( AMP::Mesh::initializeLibMesh::isInitialized() ) {
             AMP_ERROR("Libmesh should be finalized before shutting down");
         }

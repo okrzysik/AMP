@@ -1,4 +1,4 @@
-#ifdef USE_LIBMESH
+#ifdef USES_LIBMESH
 #include "createLibmeshElements.h"
 #include "utils/Utilities.h"
 

@@ -44,7 +44,7 @@ int main ( int argc , char **argv )
 
     test_matrix_loop<SimpleMatrixFactory> ( &ut );
 
-    #ifdef USE_LIBMESH
+    #ifdef USES_LIBMESH
         test_matrix_loop<DOFMatrixTestFactory<3,3,ExodusReaderGenerator<> > > ( &ut );
     #else
         test_matrix_loop<DOFMatrixTestFactory<3,3,AMPCubeGenerator<5> > > ( &ut );
