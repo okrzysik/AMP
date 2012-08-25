@@ -28,7 +28,7 @@ rm -rf CMake*
          -D LAPACK_DIRECTORY:PATH=${BLAS_DIR}                   \
       -D USE_SILO=1                                             \
          -D SILO_DIRECTORY:PATH=${SILO}                         \
-      -D USE_HDF5=1                                             \
+      -D USES_HDF5=1                                            \
          -D HDF5_DIRECTORY:PATH=${HDF5}                         \
       -D USE_HYPRE=0                                            \
          -D HYPRE_DIRECTORY:PATH=/packages/hypre-2.2.0b/src     \

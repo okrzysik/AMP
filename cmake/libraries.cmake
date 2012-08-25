@@ -140,8 +140,8 @@ ENDMACRO ()
 # Macro to find and configure the hdf5 libraries
 MACRO ( CONFIGURE_HDF5 )
     # Determine if we want to use hdf5
-    CHECK_ENABLE_FLAG(USE_HDF5 1 )
-    IF ( USE_HDF5 )
+    CHECK_ENABLE_FLAG(USES_HDF5 1 )
+    IF ( USES_HDF5 )
         # Check if we specified the silo directory
         IF ( HDF5_DIRECTORY )
             VERIFY_PATH ( ${HDF5_DIRECTORY} )
@@ -156,7 +156,7 @@ MACRO ( CONFIGURE_HDF5 )
             ${HDF5_HL_LIB}
             ${HDF5_LIB}
         )
-        ADD_DEFINITIONS ( "-D USE_HDF5" )  
+        ADD_DEFINITIONS ( "-D USES_HDF5" )  
         MESSAGE ( "Using hdf5" )
     ENDIF()
 ENDMACRO ()
