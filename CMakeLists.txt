@@ -73,8 +73,8 @@ ENDIF()
 
 
 # Create the target for documentation
-CHECK_ENABLE_FLAG(USE_DOXYGEN 1 )
-IF ( USE_DOXYGEN )
+CHECK_ENABLE_FLAG(USES_DOXYGEN 1 )
+IF ( USES_DOXYGEN )
     SET ( DOXYFILE_IN ${AMP_SOURCE_DIR}/doxygen/Doxyfile.in)
     SET ( DOXY_HEADER_FILE ${AMP_SOURCE_DIR}/doxygen/html/header.html )
     SET ( DOXY_FOOTER_FILE ${AMP_SOURCE_DIR}/doxygen/html/footer.html )

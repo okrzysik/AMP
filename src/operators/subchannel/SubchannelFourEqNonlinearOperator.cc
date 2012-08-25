@@ -376,7 +376,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                    std::vector<double> subchannelCentroid2 = adjacentCells[1].centroid();
                    size_t subchannelIndex1 = getSubchannelIndex(subchannelCentroid1[0],subchannelCentroid1[1]);
                    size_t subchannelIndex2 = getSubchannelIndex(subchannelCentroid2[0],subchannelCentroid2[1]);
-                   size_t neighborSubchannelIndex;
+                   size_t neighborSubchannelIndex = 0;
                    AMP::Mesh::MeshElement neighborCell;
                    if (subchannelIndex1 == currentSubchannelIndex) {
                       AMP_INSIST(subchannelIndex2 != currentSubchannelIndex,"Adjacent cells have the same subchannel index.");
@@ -389,7 +389,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                       AMP_ERROR("Neither of adjacent cells had the same index as the current subchannel.");
                    }
                    // determine sign of crossflow term
-                   double crossflowSign;
+                   double crossflowSign =0.;
                    if (currentSubchannelIndex < neighborSubchannelIndex) {
                       crossflowSign = 1.0;
                    } else if (currentSubchannelIndex > neighborSubchannelIndex) {
