@@ -538,8 +538,8 @@ ENDMACRO ()
 # Macro to configure the BLAS
 MACRO ( CONFIGURE_BLAS )
     # Determine if we want to use BLAS
-    CHECK_ENABLE_FLAG(USE_BLAS 1 )
-    IF ( USE_BLAS )
+    CHECK_ENABLE_FLAG(USES_BLAS 1 )
+    IF ( USES_BLAS )
         IF ( BLAS_LIBRARIES )
             # The user is specifying the blas command directly
         ELSEIF ( BLAS_DIRECTORY )
@@ -580,8 +580,8 @@ ENDMACRO ()
 # Macro to configure the LAPACK
 MACRO ( CONFIGURE_LAPACK )
     # Determine if we want to use LAPACK
-    CHECK_ENABLE_FLAG(USE_LAPACK 1 )
-    IF ( USE_LAPACK )
+    CHECK_ENABLE_FLAG(USES_LAPACK 1 )
+    IF ( USES_LAPACK )
         IF ( LAPACK_LIBRARIES )
             # The user is specifying the lapack command directly
         ELSEIF ( LAPACK_DIRECTORY )
@@ -810,8 +810,8 @@ MACRO ( CONFIGURE_SYSTEM )
     SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # Remove -rdynamic
     SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)  # Remove -rdynamic
     # Add the static flag if necessary
-    CHECK_ENABLE_FLAG( USE_STATIC 0 )
-    IF ( USE_STATIC )
+    CHECK_ENABLE_FLAG( USES_STATIC 0 )
+    IF ( USES_STATIC )
         SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static")    # Add static flag
         SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static")  # Add static flag
     ENDIF()

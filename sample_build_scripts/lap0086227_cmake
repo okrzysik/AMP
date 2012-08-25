@@ -21,10 +21,10 @@ rm -rf CMake*
       -D COMPILE_MODE:STRING=debug                              \
       -D USES_SUNDIALS=1                                         \
          -D SUNDIALS_DIRECTORY:PATH=${SUNDIALS_DIR}             \
-      -D USE_BLAS=1                                             \
+      -D USES_BLAS=1                                             \
          -D BLAS_DIRECTORY:PATH=${BLAS_DIR}                     \
          -D BLAS_LIB:STRING=blas_LINUX.a                        \
-      -D USE_LAPACK=1                                           \
+      -D USES_LAPACK=1                                           \
          -D LAPACK_DIRECTORY:PATH=${BLAS_DIR}                   \
       -D USES_SILO=1                                            \
          -D SILO_DIRECTORY:PATH=${SILO}                         \

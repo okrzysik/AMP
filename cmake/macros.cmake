@@ -181,7 +181,7 @@ MACRO ( SET_COMPILER )
     MESSAGE("Unknown C/C++ compiler, default flags will be used")
   ENDIF()
   # SET the Fortran++ compiler
-  IF ( USE_FORTRAN )
+  IF ( USES_FORTRAN )
     IF ( CMAKE_COMPILE_IS_GFORTRAN OR (${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU") )
       SET( USING_GFORTRAN TRUE )
       MESSAGE("Using gfortran")
