@@ -37,7 +37,7 @@ extern "C" {
 void moabInterface(AMP::UnitTest *ut)
 {
 
-#ifdef USE_MOAB
+#ifdef USES_MOAB
     
     // Create new iMesh instance
     AMP::pout << "Creating iMesh instance" << std::endl;

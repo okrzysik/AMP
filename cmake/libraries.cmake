@@ -386,7 +386,7 @@ MACRO ( CONFIGURE_NEK )
         CHECK_ENABLE_FLAG( CVODE    0 )
         CHECK_ENABLE_FLAG( NEKNEK   0 )
         CHECK_ENABLE_FLAG( MOAB     1 )
-        IF ( NOT USE_MOAB ) 
+        IF ( NOT USES_MOAB ) 
             MESSAGE ( FATAL_ERROR "Within AMP, MOAB is required to use Nek5000." )
         ENDIF()
         # Add the libraries in the appropriate order
@@ -458,8 +458,8 @@ ENDMACRO()
 # Macro to find and configure MOAB
 MACRO ( CONFIGURE_MOAB )
     # Determine if we want to use MOAB
-    CHECK_ENABLE_FLAG( USE_MOAB 0 )
-    IF ( USE_MOAB )
+    CHECK_ENABLE_FLAG( USES_MOAB 0 )
+    IF ( USES_MOAB )
         # Check if we specified the MOAB directory
         IF ( MOAB_DIRECTORY )
             VERIFY_PATH ( ${MOAB_DIRECTORY} )
@@ -528,7 +528,7 @@ MACRO ( CONFIGURE_MOAB )
             ${MOAB_iGEOM_LIB}
             ${MOAB_CUBIT_LIB}
         )
-        ADD_DEFINITIONS ( "-D USE_MOAB" )  
+        ADD_DEFINITIONS ( "-D USES_MOAB" )  
         MESSAGE ( "Using MOAB" )
         MESSAGE ( "   " ${MOAB_LIBS} )
     ENDIF()

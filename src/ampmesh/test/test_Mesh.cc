@@ -18,7 +18,7 @@
 #ifdef USES_LIBMESH
     #include "ampmesh/libmesh/libMesh.h"
 #endif
-#ifdef USE_MOAB
+#ifdef USES_MOAB
     #include "ampmesh/moab/moabMesh.h"
 #endif
 
@@ -177,7 +177,7 @@ void testlibMesh( AMP::UnitTest *ut )
 
 
 // Function to test the creation/destruction of a moab mesh
-#ifdef USE_MOAB
+#ifdef USES_MOAB
 void testMoabMesh( AMP::UnitTest *ut )
 {
     PROFILE_START("testMoabMesh");
@@ -278,7 +278,7 @@ int main ( int argc , char ** argv )
     #endif
 
     // Run tests on a moab mesh
-    #ifdef USE_MOAB
+    #ifdef USES_MOAB
         testMoabMesh( &ut );
     #endif
 

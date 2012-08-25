@@ -374,7 +374,7 @@ IF( USES_NEK )
 ENDIF()
 
 #MOAB tests
-IF( USE_MOAB )
+IF( USES_MOAB )
   COPY_TEST_DATA_FILE ( input_testMoabBasedOperator )
   ADD_AMP_TEST_1_2_4( testMoabBasedOperator )
   
