@@ -618,11 +618,11 @@ MACRO ( SAVE_CMAKE_FLAGS )
     # Create the external libraries and include paths in the order they are linked in AMP
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS )\n" )
     # Add boost
-    IF ( USE_BOOST )
+    IF ( USES_BOOST )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add boost\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${BOOST_INCLUDE} )\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_BOOST 1 ) \n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_BOOST ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USES_BOOST 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USES_BOOST ) \n" )
     ENDIF()
     # Add Libmesh
     IF ( USE_LIBMESH )

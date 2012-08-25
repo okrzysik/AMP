@@ -7,7 +7,7 @@ rm -rf CMake*
       -D CMAKE_Fortran_COMPILER:PATH=${F90}                     \
          -D CFLAGS=${CFLAGS}                                    \
          -D CXXFLAGS=${CXXFLAGS}                                \
-      -D USE_BOOST=1                                            \
+      -D USES_BOOST=1                                            \
          -D BOOST_DIRECTORY:PATH=/packages/boost_1_47_0         \
       -D USES_TRILINOS=1                                         \
          -D TRILINOS_DIRECTORY:PATH=${TRILINOS_DIR}             \
