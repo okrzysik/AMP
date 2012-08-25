@@ -5,7 +5,7 @@
 #include "vectors/SimpleVector.h"
 #include "test_VectorTests.h"
 #include "utils/AMP_MPI.h"
-#ifdef USE_PETSC
+#ifdef USES_PETSC
     #include <vectors/petsc/NativePetscVector.h>
 #endif
 #ifdef USE_TRILINOS
@@ -82,7 +82,7 @@ class  SimpleManagedVectorFactory
 #endif
 
 
-#ifdef USE_PETSC
+#ifdef USES_PETSC
 template <typename T>
 class  PetscManagedVectorFactory
 {

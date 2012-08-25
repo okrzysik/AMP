@@ -11,7 +11,7 @@ rm -rf CMake*
          -D BOOST_DIRECTORY:PATH=/packages/boost_1_47_0         \
       -D USE_TRILINOS=1                                         \
          -D TRILINOS_DIRECTORY:PATH=${TRILINOS_DIR}             \
-      -D USE_PETSC=1                                            \
+      -D USES_PETSC=1                                            \
          -D PETSC_DIRECTORY:PATH=${PETSC_DIR}                   \
          -D PETSC_ARCH:STRING=${PETSC_ARCH}                     \
       -D USE_LIBMESH=1                                          \

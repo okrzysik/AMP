@@ -6,7 +6,7 @@
 
 #include "test_VectorLoops.h"
 
-#ifdef USE_PETSC
+#ifdef USES_PETSC
     typedef AMP::unit_test::SimplePetscNativeFactory<AMP::LinearAlgebra::NativePetscVector>         SNPVFactory;
 #endif
 #ifdef USE_TRILINOS
@@ -32,7 +32,7 @@ int main ( int argc , char **argv )
     std::cout << std::endl;
     globalComm.barrier();
 
-#ifdef USE_PETSC
+#ifdef USES_PETSC
     std::cout << "Testing NativePetscVector" << std::endl;
     test_managed_vectors_loop<SNPVFactory> ( &ut );
     std::cout << std::endl;

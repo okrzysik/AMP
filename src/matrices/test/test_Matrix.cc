@@ -15,7 +15,7 @@ void  test_matrix_loop ( AMP::UnitTest *ut )
 {
     FACTORY factory;
     factory.initMesh();
-    #if defined(USE_PETSC) && defined(USE_PETSC)
+    #if defined(USES_PETSC) && defined(USES_PETSC)
         InstantiateMatrix<FACTORY>::run_test ( ut );
         VerifyGetSetValuesMatrix<FACTORY>::run_test ( ut );
         VerifyAXPYMatrix<FACTORY>::run_test ( ut );

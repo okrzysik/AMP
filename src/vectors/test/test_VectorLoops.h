@@ -8,7 +8,7 @@
 #ifdef USE_SUNDIALS
     #include "test_SundialsVectorTests.h"
 #endif
-#ifdef USE_PETSC
+#ifdef USES_PETSC
     #include "test_PetscVector.h"
 #endif
 
@@ -17,7 +17,7 @@
 using namespace AMP::unit_test;
 
 
-#ifdef USE_PETSC
+#ifdef USES_PETSC
 template <class FACTORY>
 void  test_petsc_bottom ( AMP::UnitTest *ut )
 {
@@ -54,7 +54,7 @@ void  test_petsc_bottom ( AMP::UnitTest *ut )
 template <class FACTORY>
 void test_managed_vectors_bottom ( AMP::UnitTest *ut )
 {
-  #ifdef USE_PETSC
+  #ifdef USES_PETSC
     DeepCloneOfView<FACTORY,AMP::LinearAlgebra::PetscVector>( ut );
     Bug_491<FACTORY>( ut );
   #endif
@@ -115,7 +115,7 @@ void test_managed_vectors_loop ( AMP::UnitTest *ut )
 {
   test_managed_vectors_bottom<FACTORY> ( ut );
 
-  #ifdef USE_PETSC
+  #ifdef USES_PETSC
     typedef SimplePetscVectorFactory<FACTORY>   PETSC_FACTORY;
     test_petsc_bottom<PetscViewFactory<PETSC_FACTORY> > ( ut );
     test_petsc_bottom<PetscCloneFactory<PetscViewFactory<PETSC_FACTORY> > > ( ut );

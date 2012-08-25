@@ -6,7 +6,7 @@
 #include "utils/ProfilerApp.h"
 #include "utils/AMP_MPI.h"
 
-#ifdef USE_PETSC
+#ifdef USES_PETSC
     #include "petsc.h"
     #include "petscsys.h"
     #include "petscerror.h"
@@ -150,7 +150,7 @@ static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
 /****************************************************************************
 *  Function to PETSc errors                                                 *
 ****************************************************************************/
-#ifdef USE_PETSC
+#ifdef USES_PETSC
 //PetscErrorCode petsc_err_handler(MPI_Comm,int,const char *,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*)
 PetscErrorCode petsc_err_handler(int, const char*, const char*, const char*, PetscErrorCode, int, const char*, void*)
 {
@@ -187,7 +187,7 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
     // Set the abort method
     AMPManager::use_MPI_Abort = properties.use_MPI_Abort;
     // Initialize PETSc
-    #ifdef USE_PETSC
+    #ifdef USES_PETSC
         double petsc_start_time = time();
         if ( PetscInitializeCalled ) {
             called_PetscInitialize = false;
@@ -288,7 +288,7 @@ void AMPManager::shutdown()
         MPI_time = time()-MPI_start_time;
     }
     // Shudown PETSc
-    #ifdef USE_PETSC
+    #ifdef USES_PETSC
         if ( called_PetscInitialize ) {
             double petsc_start_time = time();
             PetscFinalize();

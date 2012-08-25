@@ -4,7 +4,7 @@
 #include "test_VectorLoops.h"
 #include "utils/AMPManager.h"
 
-#ifdef USE_PETSC
+#ifdef USES_PETSC
     #include "vectors/petsc/ManagedPetscVector.h"
 #endif
 #ifdef USE_TRILINOS
@@ -14,7 +14,7 @@
     #include "vectors/sundials/ManagedSundialsVector.h"
 #endif
 
-#if defined(USE_PETSC) && defined(USE_TRILINOS)
+#if defined(USES_PETSC) && defined(USE_TRILINOS)
     typedef ViewFactory < AMP::LinearAlgebra::PetscVector , SimpleManagedVectorFactory<AMP::LinearAlgebra::ManagedEpetraVector> >        SMEVFactory;
     typedef ViewFactory < AMP::LinearAlgebra::PetscVector , SimplePetscNativeFactory<AMP::LinearAlgebra::NativePetscVector> >            SNPVFactory;
     typedef ViewFactory < AMP::LinearAlgebra::PetscVector , MultiVectorFactory<SMEVFactory,1,SNPVFactory,1> >             MVFactory1;
@@ -36,7 +36,7 @@ int main ( int argc , char **argv )
     std::cout << std::endl;
     globalComm.barrier();
 
-#if defined(USE_PETSC) && defined(USE_TRILINOS)
+#if defined(USES_PETSC) && defined(USE_TRILINOS)
     std::cout << "Testing Iterator" << std::endl;
     VectorIteratorTests<MVFactory1> ( &ut );
     std::cout << std::endl;

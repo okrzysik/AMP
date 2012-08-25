@@ -12,7 +12,7 @@
     #include "vectors/sundials/ManagedSundialsVector.h"
     #include "vectors/sundials/SundialsVector.h"
 #endif
-#ifdef USE_PETSC
+#ifdef USES_PETSC
     #include "vectors/petsc/ManagedPetscVector.h"
     #include "vectors/petsc/PetscVector.h"
 #endif
@@ -338,7 +338,7 @@ void ScaleVector( AMP::UnitTest *utils )
 }
 
 
-#ifdef USE_PETSC
+#ifdef USES_PETSC
 template <typename VECTOR_FACTORY>
 void Bug_491( AMP::UnitTest *utils )
 {

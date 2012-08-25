@@ -9,7 +9,7 @@
 #include "mesh.h"
 
 // Petsc include (needed to fix PETSC_COMM_WORLD problem with libmesh)
-#ifdef USE_PETSC
+#ifdef USES_PETSC
     #include "petscsys.h"   
 #endif
 
@@ -73,11 +73,11 @@ initializeLibMesh::initializeLibMesh( AMP_MPI comm )
         const char ** argv = (const char**) AMPManager::get_argv();
         argc_libmesh = add_libmesh_cmdline( argc, argv, &argv_libmesh );
         #ifdef USES_MPI
-            #ifdef USE_PETSC
+            #ifdef USES_PETSC
                 MPI_Comm petsc_comm = PETSC_COMM_WORLD;
             #endif
             lminit = new LibMeshInit ( argc_libmesh, argv_libmesh, d_comm.getCommunicator() );
-            #ifdef USE_PETSC
+            #ifdef USES_PETSC
                 PETSC_COMM_WORLD = petsc_comm;
             #endif
         #else
