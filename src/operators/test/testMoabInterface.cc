@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
 
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();
-#ifdef USE_NEK     
+#ifdef USES_NEK     
     //NEK_END();
 #endif
     return num_failed;

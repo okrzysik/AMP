@@ -363,7 +363,7 @@ COPY_MESH_FILE(halden_1_clad.e)
 
 
 #NEK-5000 tests
-IF( USE_NEK ) 
+IF( USES_NEK ) 
   COPY_TEST_DATA_FILE ( SESSION.NAME )
   COPY_TEST_DATA_FILE ( input.h5m )
   COPY_TEST_DATA_FILE ( pipe.rea )
