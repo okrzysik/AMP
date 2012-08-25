@@ -6,7 +6,7 @@
 #include "TimeIntegratorParameters.h"
 #include "IDATimeIntegrator.h"
 
-#ifdef USE_SUNDIALS
+#ifdef USES_SUNDIALS
     extern "C"{
     #include "ida/ida_impl.h"
     #include "ida/ida_spils.h"

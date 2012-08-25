@@ -8,7 +8,7 @@
 #include "discretization/DOF_Manager.h"
 #include "vectors/Vector.h"
 #include "vectors/MultiVector.h"
-#ifdef USE_SUNDIALS
+#ifdef USES_SUNDIALS
     #include "vectors/sundials/ManagedSundialsVector.h"
     #include "vectors/sundials/SundialsVector.h"
 #endif

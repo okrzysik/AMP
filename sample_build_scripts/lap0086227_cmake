@@ -19,7 +19,7 @@ rm -rf CMake*
          -D LIBMESH_HOSTTYPE:STRING=${LIBMESH_ARCH}             \
          -D LIBMESH_COMPILE_TYPE:STRING=dbg                     \
       -D COMPILE_MODE:STRING=debug                              \
-      -D USE_SUNDIALS=1                                         \
+      -D USES_SUNDIALS=1                                         \
          -D SUNDIALS_DIRECTORY:PATH=${SUNDIALS_DIR}             \
       -D USE_BLAS=1                                             \
          -D BLAS_DIRECTORY:PATH=${BLAS_DIR}                     \

@@ -10,7 +10,7 @@
 #ifdef USE_TRILINOS
     #include "vectors/trilinos/ManagedEpetraVector.h"
 #endif
-#ifdef USE_SUNDIALS
+#ifdef USES_SUNDIALS
     #include "vectors/sundials/ManagedSundialsVector.h"
 #endif
 

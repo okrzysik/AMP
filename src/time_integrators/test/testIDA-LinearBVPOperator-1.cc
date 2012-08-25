@@ -208,7 +208,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     time_Params->d_object_name = "IDATimeIntegratorParameters";
     
     cout << "Before IDATimeIntegrator" << endl;    
-#ifdef USE_SUNDIALS
+#ifdef USES_SUNDIALS
     boost::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> pIDATimeIntegrator(new AMP::TimeIntegrator::IDATimeIntegrator(time_Params));
 
     if(pIDATimeIntegrator.get() == NULL) {
