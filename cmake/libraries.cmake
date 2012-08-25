@@ -673,8 +673,8 @@ ENDMACRO ()
 # Macro to find and configure the hypre libraries
 MACRO ( CONFIGURE_HYPRE_LIBRARIES )
     # Determine if we want to use silo
-    CHECK_ENABLE_FLAG(USE_HYPRE 1 )
-    IF ( USE_HYPRE )
+    CHECK_ENABLE_FLAG(USES_HYPRE 1 )
+    IF ( USES_HYPRE )
         # Check if we specified the hypre directory
         IF ( HYPRE_DIRECTORY )
             VERIFY_PATH ( ${HYPRE_DIRECTORY} )
@@ -723,7 +723,7 @@ MACRO ( CONFIGURE_HYPRE_LIBRARIES )
             ${HYPRE_UTIL_LIB}
             ${HYPRE_LIB}
         )
-        ADD_DEFINITIONS ( "-D USE_HYPRE" )  
+        ADD_DEFINITIONS ( "-D USES_HYPRE" )  
         MESSAGE ( "Using hypre" )
     ENDIF()
 ENDMACRO ()
