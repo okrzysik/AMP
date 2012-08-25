@@ -103,7 +103,7 @@ MACRO ( CONFIGURE_TRILINOS_LIBRARIES )
             ${TRILINOS_TEUCHOS_LIB}
             ${TRILINOS_MOERTEL_LIB}
         )
-        IF ( USE_GCOV )
+        IF ( USES_GCOV )
             SET ( TRILINOS_LIBS ${TRILINOS_LIBS} -lgcov )
         ENDIF ()
         ADD_DEFINITIONS ( "-D USES_TRILINOS" )
@@ -165,8 +165,8 @@ ENDMACRO ()
 # Macro to find and configure the X11 libraries
 MACRO ( CONFIGURE_X11_LIBRARIES )
     # Determine if we want to use X11
-    CHECK_ENABLE_FLAG(USE_X11 1 )
-    IF ( USE_X11 )
+    CHECK_ENABLE_FLAG(USES_X11 1 )
+    IF ( USES_X11 )
         # Check if we specified the silo directory
         IF ( X11_DIRECTORY )
             VERIFY_PATH ( ${X11_DIRECTORY} )
@@ -183,7 +183,7 @@ MACRO ( CONFIGURE_X11_LIBRARIES )
             ${X11_ICE_LIB}
             ${X11_X11_LIB} 
         )
-        ADD_DEFINITIONS ( "-D USE_X11" )  
+        ADD_DEFINITIONS ( "-D USES_X11" )  
         MESSAGE ( "Using X11" )
     ENDIF()
 ENDMACRO ()

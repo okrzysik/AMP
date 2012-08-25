@@ -32,7 +32,7 @@ rm -rf CMake*
          -D HDF5_DIRECTORY:PATH=${HDF5}                         \
       -D USES_HYPRE=0                                            \
          -D HYPRE_DIRECTORY:PATH=/packages/hypre-2.2.0b/src     \
-      -D USE_X11=1                                              \
+      -D USES_X11=1                                              \
          -D X11_DIRECTORY:PATH=/usr/                            \
       -D USES_MPI=1                                              \
          -D USES_MPI_FOR_SERIAL_TESTS=0                          \
