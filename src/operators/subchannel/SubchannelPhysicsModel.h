@@ -38,7 +38,7 @@ public :
        Function to evaluate property functions
        @param [in]  property property identifier string
        @param [out] result   output vector
-       @param [in]  map of input argument strings and input vectors
+       @param [in]  args of input argument strings and input vectors
        */
      void getProperty(    std::string property,
                           std::vector<double>                & result, 
