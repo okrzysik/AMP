@@ -15,10 +15,10 @@
 #include "meshGenerators.h"
 
 #include "ampmesh/structured/BoxMesh.h"
-#ifdef USES_LIBMESH
+#ifdef USE_EXT_LIBMESH
     #include "ampmesh/libmesh/libMesh.h"
 #endif
-#ifdef USES_MOAB
+#ifdef USE_EXT_MOAB
     #include "ampmesh/moab/moabMesh.h"
 #endif
 
@@ -46,7 +46,7 @@ void testMeshGenerators( AMP::UnitTest *ut )
     generator->build_mesh();
     MeshTestLoop( ut, generator->getMesh() );
     // libmesh generators
-    #ifdef USES_LIBMESH
+    #ifdef USE_EXT_LIBMESH
         // Test the libmesh cube generator
         generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::LibMeshCubeGenerator<5> );
         generator->build_mesh();
@@ -152,7 +152,7 @@ void testAMPMesh( AMP::UnitTest *ut )
 
 
 // Function to test the creation/destruction of a libmesh mesh
-#ifdef USES_LIBMESH
+#ifdef USE_EXT_LIBMESH
 void testlibMesh( AMP::UnitTest *ut )
 {
     PROFILE_START("testlibMesh");
@@ -177,7 +177,7 @@ void testlibMesh( AMP::UnitTest *ut )
 
 
 // Function to test the creation/destruction of a moab mesh
-#ifdef USES_MOAB
+#ifdef USE_EXT_MOAB
 void testMoabMesh( AMP::UnitTest *ut )
 {
     PROFILE_START("testMoabMesh");
@@ -232,7 +232,7 @@ void testInputMesh( AMP::UnitTest *ut, std::string filename )
 void testSubsetMesh( AMP::UnitTest *ut )
 {
     PROFILE_START("testSubsetMesh");
-    #ifdef USES_LIBMESH
+    #ifdef USE_EXT_LIBMESH
     // Subset a mesh for a surface without ghost cells and test
     boost::shared_ptr<AMP::unit_test::MeshGenerator>  generator( 
         new AMP::unit_test::SurfaceSubsetGenerator< AMP::unit_test::ExodusReaderGenerator<>,0> );
@@ -273,17 +273,17 @@ int main ( int argc , char ** argv )
     testAMPMesh( &ut );
 
     // Run tests on a libmesh mesh
-    #ifdef USES_LIBMESH
+    #ifdef USE_EXT_LIBMESH
         testlibMesh( &ut );
     #endif
 
     // Run tests on a moab mesh
-    #ifdef USES_MOAB
+    #ifdef USE_EXT_MOAB
         testMoabMesh( &ut );
     #endif
 
     // Run tests on the input file
-    #ifdef USES_LIBMESH
+    #ifdef USE_EXT_LIBMESH
         testInputMesh( &ut, "input_Mesh" );
     #endif
 

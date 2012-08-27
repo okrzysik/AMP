@@ -1,4 +1,4 @@
-#if defined(USE_AMP_MESH) && defined(USES_LIBMESH)
+#if defined(USE_AMP_MESH) && defined(USE_EXT_LIBMESH)
 #ifndef included_AMP_ReadTestMesh
 #define included_AMP_ReadTestMesh
 

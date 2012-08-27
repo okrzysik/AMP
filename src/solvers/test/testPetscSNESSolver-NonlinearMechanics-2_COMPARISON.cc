@@ -134,7 +134,7 @@ void myTest(AMP::UnitTest *ut)
   AMP::LinearAlgebra::Vector::shared_ptr mechNlScaledRhsVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, displacementVariable );
 
   // Create the silo writer and register the data
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
   siloWriter->registerVector( mechNlSolVec, mesh, AMP::Mesh::Vertex, "MechanicsSolution" );
 #endif
@@ -249,7 +249,7 @@ void myTest(AMP::UnitTest *ut)
   AMP::pout<<"Final Solution Norm: "<<finalSolNorm<<std::endl;
   AMP::pout<<"Maxx value in the final sol: "<<mechNlSolVec->max()<<std::endl;
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   siloWriter->writeFile( exeName, 1 );
 #endif
 

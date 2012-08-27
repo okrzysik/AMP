@@ -119,7 +119,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::LinearAlgebra::Vector::shared_ptr mechNlPressureVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, displacementVariable );
 
   // Create the silo writer and register the data
-  #ifdef USES_SILO
+  #ifdef USE_EXT_SILO
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
     siloWriter->registerVector( mechNlResVec, mesh, AMP::Mesh::Vertex, "Solution_Vector" );
   #endif
@@ -238,7 +238,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
       }
       fclose(out1);*/
 
-  #ifdef USES_SILO
+  #ifdef USE_EXT_SILO
     siloWriter->writeFile( exeName, 1 );
   #endif
 

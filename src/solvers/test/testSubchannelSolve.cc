@@ -554,7 +554,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
       flowTempVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     }
     std::cout << "Subchannel Flow Temp Max : " << flowTempVec->max() << " Min : "<< flowTempVec->min() << std::endl;
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
     // Register the quantities to plot
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
     siloWriter->registerVector( flowSolVec, xyFaceMesh, AMP::Mesh::Face, "SubchannelFlow" );

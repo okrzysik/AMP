@@ -66,7 +66,7 @@ void OxideTest( AMP::UnitTest *ut, std::string input_file )
     AMP::LinearAlgebra::Vector::shared_ptr alpha = solution->subsetVectorForVariable( alpha_var );
     
     // Register the data with the silo writer
-    #ifdef USES_SILO
+    #ifdef USE_EXT_SILO
         AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
         siloWriter->registerVector( temp_vec, mesh, AMP::Mesh::Vertex, "temperature" );
         siloWriter->registerVector( oxide, surface, AMP::Mesh::Vertex, "oxide_thickness" );
@@ -84,7 +84,7 @@ void OxideTest( AMP::UnitTest *ut, std::string input_file )
         timeIntegrator->advanceSolution( dT, false );
         globalComm.barrier();
         integration_time += AMP::AMP_MPI::time() - t0;
-        #ifdef USES_SILO
+        #ifdef USE_EXT_SILO
             siloWriter->writeFile( input_file, i );
         #endif
         // Check the solution

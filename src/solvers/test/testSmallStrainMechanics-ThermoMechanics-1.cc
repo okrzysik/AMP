@@ -47,7 +47,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
 #endif
@@ -246,7 +246,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   AMP::pout<<"epsilon = "<<epsilon<<std::endl;
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   siloWriter->registerVector(solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
   siloWriter->registerVector(burnVec, meshAdapter, AMP::Mesh::Vertex, "InitialDamageThreshold" );
   siloWriter->registerVector(lhgrVec, meshAdapter, AMP::Mesh::Vertex, "CriticalDamageThreshold");

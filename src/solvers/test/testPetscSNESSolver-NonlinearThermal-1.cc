@@ -229,7 +229,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   solVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
   resVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
      siloWriter->registerMesh( meshAdapter );
 

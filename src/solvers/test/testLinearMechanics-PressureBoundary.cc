@@ -56,7 +56,7 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName,
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
 #endif
@@ -183,7 +183,7 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName,
   double epsilon = 1.0e-13*(((bvpOperator->getMatrix())->extractDiagonal())->L1Norm());
   AMP::pout<<"epsilon = "<<epsilon<<std::endl;
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   siloWriter->registerVector(mechSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
   char outFileName1[256];
   sprintf(outFileName1, "undeformedBeam_%d", exampleNum);

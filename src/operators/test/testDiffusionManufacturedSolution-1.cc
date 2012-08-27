@@ -210,7 +210,7 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
 
   // Plot the results
   if( globalComm.getSize() == 1 ) {
- #ifdef USES_SILO
+ #ifdef USE_EXT_SILO
      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
      siloWriter->registerMesh( meshAdapter );
 

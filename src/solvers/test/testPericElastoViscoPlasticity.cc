@@ -52,7 +52,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
 #endif
@@ -263,7 +263,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     
     boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->getVolumeOperator())->printStressAndStrain(solVec, fname);
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
     siloWriter->registerVector ( solVec , meshAdapter, AMP::Mesh::Vertex, "Solution_Vector" );
     meshAdapter->displaceMesh(solVec);
     char outFileName2[256];

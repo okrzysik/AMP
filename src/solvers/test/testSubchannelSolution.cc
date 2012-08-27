@@ -255,7 +255,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
   input_db.reset();
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
     // Register the quantities to plot
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
     siloWriter->registerVector( manufacturedVec, xyFaceMesh, AMP::Mesh::Face, "ManufacturedSolution" );

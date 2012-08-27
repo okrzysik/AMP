@@ -6,7 +6,7 @@
 
 #include "../../vectors/test/test_VectorLoops.h"
 
-#ifdef USES_PETSC
+#ifdef USE_EXT_PETSC
     #include "matrices/petsc/PetscMatrix.h"
 #endif
 
@@ -14,7 +14,7 @@
 namespace AMP {
 namespace unit_test {
 
-#if defined(USES_PETSC) && defined(USES_PETSC)
+#if defined(USE_EXT_PETSC) && defined(USE_EXT_PETSC)
 
 template <class MATRIX_FACTORY>
 void  fillWithPseudoLaplacian ( AMP::LinearAlgebra::Matrix::shared_ptr matrix )

@@ -518,7 +518,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
           vecLag2->subtract(TemperatureInKelvinVec2,vecLag2);
 
 //          if( nodes == 2 ) {
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
 
      siloWriter->registerVector( TemperatureInKelvin, manager, AMP::Mesh::Vertex, "TemperatureInKelvin" );

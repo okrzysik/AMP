@@ -365,7 +365,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   setDirichletVals(masterMeshAdapter, bndIds, bndDofIds, 
       bndDofVals, masterVar, columnSolVec);
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   manager->registerVectorAsData ( columnSolVec, "Displacement" );
   manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 1 );
 #endif

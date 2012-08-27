@@ -530,7 +530,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     //-------------------------------------
     nonlinearSolver->setZeroInitialGuess(false);
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
     // Register the quantities to plot
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
     if ( meshAdapter1.get()!=NULL ) {
@@ -594,7 +594,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 
         columnNonlinearOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
         AMP::pout<<"Final   Residual Norm for Step " << tstep << " is: "<<globalResMultiVector->L2Norm()<<std::endl;
-        #ifdef USES_SILO
+        #ifdef USE_EXT_SILO
             siloWriter->writeFile( silo_name , tstep );
         #endif
 

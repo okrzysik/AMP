@@ -31,7 +31,7 @@ void SiloIO::setDecomposition( int d )
 }
 
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
 
 // Some internal functions
 static void createSiloDirectory( DBfile *FileHandle, std::string path );

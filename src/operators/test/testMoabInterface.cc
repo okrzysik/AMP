@@ -37,7 +37,7 @@ extern "C" {
 void moabInterface(AMP::UnitTest *ut)
 {
 
-#ifdef USES_MOAB
+#ifdef USE_EXT_MOAB
     
     // Create new iMesh instance
     AMP::pout << "Creating iMesh instance" << std::endl;
@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
 
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();
-#ifdef USES_NEK     
+#ifdef USE_EXT_NEK     
     //NEK_END();
 #endif
     return num_failed;

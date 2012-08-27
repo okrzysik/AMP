@@ -41,7 +41,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   AMP::PIO::logOnlyNodeZero(log_file);
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
 #endif
@@ -206,7 +206,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
               kspSolver->setPreconditioner(mlSolver);
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
               siloWriter->registerVector(solVec, meshAdapter, AMP::Mesh::Vertex, "Displacement" );
               char outFileName[256];
               sprintf(outFileName, "%s_case_%d", exeName.c_str(), caseCnt);
