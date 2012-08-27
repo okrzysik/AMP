@@ -207,7 +207,7 @@ void SubchannelToCladMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
 
     // Subset the vector for the variable (we only need the local portion of the vector)
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
-    AMP::LinearAlgebra::VS_Comm commSelector(var->getName(), AMP_MPI(AMP_COMM_SELF) );
+    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI(AMP_COMM_SELF) );
     AMP::LinearAlgebra::Vector::const_shared_ptr  commSubsetVec = u->constSelect(commSelector, var->getName());
     AMP::LinearAlgebra::Vector::const_shared_ptr  curPhysics = commSubsetVec->constSubsetVectorForVariable(var);
     AMP_ASSERT(curPhysics);

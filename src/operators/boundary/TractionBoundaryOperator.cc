@@ -106,7 +106,7 @@ namespace AMP {
         AMP::LinearAlgebra::Variable::shared_ptr var) {
       if(vec != NULL) {
         if(d_Mesh.get() != NULL) {
-          AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
+          AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
           AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, var->getName());
           return meshSubsetVec->subsetVectorForVariable(var);
         } else {

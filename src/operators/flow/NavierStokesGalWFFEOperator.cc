@@ -276,6 +276,21 @@ namespace AMP {
         d_dofMap[varId]->getDOFs(d_currNodes[j].globalID(), dofIds);
       } // end of j
      }
+
+        void  NavierStokesGalWFFEOperator :: setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
+
+          AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(id);
+
+          if(d_Mesh.get() != NULL) {
+            AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
+            AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = frozenVec->select(meshSelector, var->getName());
+            d_inVec[id] = meshSubsetVec->subsetVectorForVariable(var);
+          } else {
+            d_inVec[id] = frozenVec->subsetVectorForVariable(var);
+          }
+
+          (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        }
 */
   }
 }//end namespace

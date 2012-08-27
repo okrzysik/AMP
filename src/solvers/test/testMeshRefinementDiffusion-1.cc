@@ -472,7 +472,7 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
   double TotalNorm2 = 0;
 
   discretizationErrorNorm2 = 0;
-  AMP::LinearAlgebra::VS_Mesh meshSelector1("meshSelector", bottomAdapter );
+  AMP::LinearAlgebra::VS_Mesh meshSelector1(bottomAdapter );
   computeL2Norm( bottomAdapter , globalComm, TemperatureVec->select( meshSelector1, "Temperature"), &discretizationErrorNorm2 );
   TotalNorm2 += discretizationErrorNorm2; 
   std::cout << "Discretized error norm ^2 for Mesh  1: "<< discretizationErrorNorm2 << std::endl;

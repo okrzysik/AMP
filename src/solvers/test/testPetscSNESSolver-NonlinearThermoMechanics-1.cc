@@ -245,9 +245,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   std::cout<<"Final Residual Norm: "<<finalResidualNorm<<std::endl;
 
-  AMP::LinearAlgebra::Vector::shared_ptr mechUvec = displacementVec->select( AMP::LinearAlgebra::VS_Stride("U", 0, 3) , "U" );
-  AMP::LinearAlgebra::Vector::shared_ptr mechVvec = displacementVec->select( AMP::LinearAlgebra::VS_Stride("V", 1, 3) , "V" );
-  AMP::LinearAlgebra::Vector::shared_ptr mechWvec = displacementVec->select( AMP::LinearAlgebra::VS_Stride("W", 2, 3) , "W" );
+  AMP::LinearAlgebra::Vector::shared_ptr mechUvec = displacementVec->select( AMP::LinearAlgebra::VS_Stride(0,3), "U" );
+  AMP::LinearAlgebra::Vector::shared_ptr mechVvec = displacementVec->select( AMP::LinearAlgebra::VS_Stride(1,3), "V" );
+  AMP::LinearAlgebra::Vector::shared_ptr mechWvec = displacementVec->select( AMP::LinearAlgebra::VS_Stride(2,3), "W" );
 
   double finalMaxU = mechUvec->maxNorm();
   double finalMaxV = mechVvec->maxNorm();

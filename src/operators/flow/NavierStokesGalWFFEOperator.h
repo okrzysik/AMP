@@ -43,20 +43,7 @@ namespace AMP {
 
         void init();
 
-        void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
-
-          AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(id);
-
-          if(d_Mesh.get() != NULL) {
-            AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
-            AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = frozenVec->select(meshSelector, var->getName());
-            d_inVec[id] = meshSubsetVec->subsetVectorForVariable(var);
-          } else {
-            d_inVec[id] = frozenVec->subsetVectorForVariable(var);
-          }
-
-          (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-        }
+        void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec);
 
         static AMP::LinearAlgebra::Variable::shared_ptr createInputVariable(const std::string & name, int varId = -1);
 

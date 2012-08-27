@@ -62,8 +62,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   neumannBndOp.reset(new AMP::Operator::NeumannVectorCorrection(vectorCorrectionParameters));
 
   neumannBndOp->addRHScorrection(vectorVec);
-  //AMP::LinearAlgebra::Vector::shared_ptr vectorVec1 = vectorVec->select( AMP::LinearAlgebra::VS_Stride("U", 0, 2) , "V1" );
-  AMP::LinearAlgebra::Vector::shared_ptr vectorVec2 = vectorVec->select( AMP::LinearAlgebra::VS_Stride("V", 1, 2) , "V2" );
+  //AMP::LinearAlgebra::Vector::shared_ptr vectorVec1 = vectorVec->select( AMP::LinearAlgebra::VS_Stride(0,2), "V1" );
+  AMP::LinearAlgebra::Vector::shared_ptr vectorVec2 = vectorVec->select( AMP::LinearAlgebra::VS_Stride(1,2), "V2" );
 
   AMP::pout << vectorVec2 << std::endl;
 

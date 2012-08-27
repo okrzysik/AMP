@@ -165,7 +165,18 @@ namespace AMP {
 //        d_dofMap[varId]->getDOFs(d_currNodes[j].globalID(), dofIds[j]);
         d_inDofMap->getDOFs(d_currNodes[j].globalID(), dofIds[j]);
       } // end of j
-     }
+    }
+
+    AMP::LinearAlgebra::Vector::shared_ptr NavierStokesLSWFLinearFEOperator :: mySubsetVector(
+      AMP::LinearAlgebra::Vector::shared_ptr vec, AMP::LinearAlgebra::Variable::shared_ptr var) {
+      if(d_Mesh.get() != NULL) {
+        AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
+        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, var->getName());
+        return meshSubsetVec->subsetVectorForVariable(var);
+      } else {
+        return vec->subsetVectorForVariable(var);
+      }
+    }
 
   }
 }//end namespace

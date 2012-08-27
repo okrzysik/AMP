@@ -139,9 +139,9 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName,
 
   AMP::pout<<"Final Solution Norm: "<<finalSolNorm<<std::endl;
 
-  AMP::LinearAlgebra::Vector::shared_ptr mechUvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride("U", 0, 3) , "U" );
-  AMP::LinearAlgebra::Vector::shared_ptr mechVvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride("V", 1, 3) , "V" );
-  AMP::LinearAlgebra::Vector::shared_ptr mechWvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride("W", 2, 3) , "W" );
+  AMP::LinearAlgebra::Vector::shared_ptr mechUvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride(0,3), "U" );
+  AMP::LinearAlgebra::Vector::shared_ptr mechVvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride(1,3), "V" );
+  AMP::LinearAlgebra::Vector::shared_ptr mechWvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride(2,3), "W" );
 
   double finalMaxU = mechUvec->maxNorm();
   double finalMaxV = mechVvec->maxNorm();

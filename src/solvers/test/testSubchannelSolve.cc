@@ -444,8 +444,8 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
       double hin = enthalpyResult[0];
       std::cout<< "Enthalpy Solution:"<< hin <<std::endl;
 
-      AMP::LinearAlgebra::Vector::shared_ptr subchannelEnthalpy = flowSolVec->select( AMP::LinearAlgebra::VS_Stride("H", 0, 2) , "H" );
-      AMP::LinearAlgebra::Vector::shared_ptr subchannelPressure = flowSolVec->select( AMP::LinearAlgebra::VS_Stride("P", 1, 2) , "P" );
+      AMP::LinearAlgebra::Vector::shared_ptr subchannelEnthalpy = flowSolVec->select( AMP::LinearAlgebra::VS_Stride(0,2), "H" );
+      AMP::LinearAlgebra::Vector::shared_ptr subchannelPressure = flowSolVec->select( AMP::LinearAlgebra::VS_Stride(1,2), "P" );
 
       subchannelEnthalpy->setToScalar(hin); 
       subchannelPressure->setToScalar(Pout); 
@@ -510,7 +510,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         ++it;
       }
 
-      AMP::LinearAlgebra::VS_Mesh meshSelector("SpecificPowerInWattsPerGram", cladMesh);
+      AMP::LinearAlgebra::VS_Mesh meshSelector(cladMesh);
       AMP::LinearAlgebra::Vector::shared_ptr cladPower = specificPowerGpVec->select(meshSelector, "SpecificPowerInWattsPerGram");
       cladPower->zero(); 
       specificPowerGpVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);

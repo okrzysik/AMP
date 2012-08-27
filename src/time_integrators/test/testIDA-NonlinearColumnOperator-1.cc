@@ -189,7 +189,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   AMP::Mesh::MeshIterator  node = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
   AMP::Mesh::MeshIterator  end_node = node.end();
   
-  AMP::LinearAlgebra::VS_Mesh vectorSelector( outputVar->getName() , meshAdapter );
+  AMP::LinearAlgebra::VS_Mesh vectorSelector( meshAdapter );
   AMP::LinearAlgebra::Vector::shared_ptr thermalIC = initialCondition->select( vectorSelector, outputVar->getName() );
   int counter=0;     
   for( ; node != end_node ; ++node)
