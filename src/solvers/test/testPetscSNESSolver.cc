@@ -1,51 +1,19 @@
-#include "utils/AMPManager.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
+// This tests checks the creation of a PetscSNESSolver
+// Note: the comm used should NOT be comm_world as there are cleanup issues for other comms when using the monitor option
 #include <iostream>
 #include <string>
-
-#include "boost/shared_ptr.hpp"
-
-#include "operators/VolumeIntegralOperator.h"
-#include "operators/NeutronicsRhs.h"
-
-#include "utils/Database.h"
+#include "utils/UnitTest.h"
+#include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
-#include "materials/Material.h"
-
-#include "ampmesh/SiloIO.h"
 
 #include "ampmesh/Mesh.h"
 #include "vectors/NullVector.h"
-#include "vectors/VectorBuilder.h"
-#include "discretization/DOF_Manager.h"
-#include "discretization/simpleDOF_Manager.h"
+#include "solvers/PetscSNESSolver.h"
 
-#include "operators/mechanics/MechanicsLinearFEOperator.h"
-#include "operators/mechanics/MechanicsNonlinearFEOperator.h"
-
-#include "operators/diffusion/DiffusionLinearFEOperator.h"
-#include "operators/diffusion/DiffusionNonlinearFEOperator.h"
-
-#include "operators/boundary/DirichletVectorCorrection.h"
-
-#include "operators/BVPOperatorParameters.h"
-#include "operators/LinearBVPOperator.h"
-#include "operators/NonlinearBVPOperator.h"
-#include "operators/ColumnOperator.h"
-#include "operators/OperatorBuilder.h"
-
-#include "../ColumnSolver.h"
-#include "../PetscKrylovSolverParameters.h"
-#include "../PetscKrylovSolver.h"
-#include "../PetscSNESSolverParameters.h"
-#include "../PetscSNESSolver.h"
-
-#include "../TrilinosMLSolver.h"
 
 
 void myTest(AMP::UnitTest *ut, std::string exeName)
@@ -72,7 +40,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new
        AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
     nonlinearSolverParams->d_comm = solverComm;
-    //nonlinearSolverParams->d_pOperator = nonlinearThermalOperator;
     nonlinearSolverParams->d_pInitialGuess = nullVec;
 
     // Create the nonlinear solver
@@ -88,21 +55,7 @@ int main(int argc, char *argv[])
     AMP::AMPManager::startup(argc, argv);
     AMP::UnitTest ut;
 
-    std::vector<std::string> exeNames;
-    //  exeNames.push_back("testPetscSNESSolver-NonlinearThermal-cylinder_kIsOne");
-    exeNames.push_back("testPetscSNESSolver-NonlinearThermal-cylinder_MATPRO");
-
-    for(unsigned int i = 0; i < exeNames.size(); i++) {
-        try {
-            myTest(&ut, exeNames[i]);
-        } catch (std::exception &err) {
-            std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-            ut.failure("ERROR: While testing");
-        } catch( ... ) {
-            std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-            ut.failure("ERROR: While testing");
-        }
-    }
+    myTest( &ut, "testPetscSNESSolver" );
    
     ut.report();
 
