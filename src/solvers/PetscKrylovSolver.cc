@@ -16,35 +16,41 @@ namespace Solver {
 // Default Constructor
 PetscKrylovSolver::PetscKrylovSolver()
 {
-  d_bKSPCreatedInternally = false;
+    d_bKSPCreatedInternally = false;
+    d_KrylovSolver = NULL;
 }
 
 
 // Parameter based constructor
 PetscKrylovSolver::PetscKrylovSolver(boost::shared_ptr<PetscKrylovSolverParameters> parameters):SolverStrategy(parameters)
 {
-  assert(parameters.get()!=NULL);
+    assert(parameters.get()!=NULL);
+    d_comm = parameters->d_comm;
+    assert( !d_comm.isNull() );
 
-  d_comm = parameters->d_comm;
+    // Create a default KrylovSolver
+    d_bKSPCreatedInternally = true;
+    KSPCreate(d_comm.getCommunicator(), &d_KrylovSolver);
 
-  assert( !d_comm.isNull() );
-
-  KSPCreate(d_comm.getCommunicator(), &d_KrylovSolver);
-
-  // we should think about this more and see where it should be set
-  d_bKSPCreatedInternally = true;
-
-  initialize(parameters);
+    // Initialize
+    initialize(parameters);
 }
 
+// De-constructor
 PetscKrylovSolver::~PetscKrylovSolver()
 {
-  if(d_bKSPCreatedInternally)
-    {
-      KSPDestroy(d_KrylovSolver);
-    }
+    if(d_bKSPCreatedInternally)
+        KSPDestroy(d_KrylovSolver);
 }
 
+// Function to set the KrylovSolver
+void PetscKrylovSolver::setKrylovSolver(KSP *ksp)
+{
+    if(d_bKSPCreatedInternally)
+        KSPDestroy(d_KrylovSolver);
+    d_bKSPCreatedInternally = false;
+    d_KrylovSolver = *ksp;
+}
 
 // Function to get values from input
 void PetscKrylovSolver::getFromInput(const boost::shared_ptr<AMP::Database> &db)
@@ -165,8 +171,10 @@ PetscKrylovSolver::initialize(boost::shared_ptr<SolverStrategyParameters> const 
 
   ierr = KSPSetTolerances(d_KrylovSolver, d_dRelativeTolerance, d_dAbsoluteTolerance, d_dDivergenceTolerance, d_iMaxIterations);
   AMP_INSIST(ierr==0, "Petsc returned non-zero error code");
-  ierr = KSPSetFromOptions(d_KrylovSolver);
-  AMP_INSIST(ierr==0, "Petsc returned non-zero error code");
+  if(d_bKSPCreatedInternally){
+    ierr = KSPSetFromOptions(d_KrylovSolver);
+    AMP_INSIST(ierr==0, "Petsc returned non-zero error code");
+  }
   // in this case we make the assumption we can access a PetscMat for now
   if(d_pOperator.get()!=NULL)
   {

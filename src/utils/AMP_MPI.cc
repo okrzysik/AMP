@@ -251,8 +251,9 @@ AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 ) {
         MPI_Comm_create( comm1.communicator, group12, &new_MPI_comm );
         int size;
         MPI_Group_size( group12, &size );
-        if ( size > 0 )
+        if ( size > 0 ) {
             new_comm = AMP_MPI( new_MPI_comm );
+        }
     }
     MPI_Group_free( &group1 );
     MPI_Group_free( &group2 );
@@ -298,10 +299,11 @@ AMP_MPI AMP_MPI::split( int color, int key ) const {
     MPI_Comm  new_MPI_comm;
     #ifdef USE_EXT_MPI
         // USE MPI to split the communicator
-        if ( color==-1 )
+        if ( color==-1 ) {
             MPI_Comm_split(communicator,MPI_UNDEFINED,key,&new_MPI_comm);
-        else
+        } else {
             MPI_Comm_split(communicator,color,key,&new_MPI_comm);
+        }
     #else
         if ( color==-1 ) {
             new_MPI_comm = AMP_COMM_NULL;

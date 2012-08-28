@@ -2,6 +2,7 @@
 #define included_test_Vector
 
 #include <vectors/Variable.h>
+#include "vectors/NullVector.h"
 #include "vectors/SimpleVector.h"
 #include "test_VectorTests.h"
 #include "utils/AMP_MPI.h"
@@ -31,6 +32,21 @@ public:
     static AMP::LinearAlgebra::Vector::shared_ptr getVector() {
         AMP::LinearAlgebra::Vector::shared_ptr vec = T::getVector();
         return vec->cloneVector();
+    }
+};
+
+
+class  NullVectorFactory
+{
+public:
+    typedef AMP::LinearAlgebra::NullVector                  vector;
+
+    static AMP::LinearAlgebra::Variable::shared_ptr  getVariable() {
+        return AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "null" ) );
+    }
+
+    static AMP::LinearAlgebra::Vector::shared_ptr getVector() {
+        return AMP::LinearAlgebra::NullVector::create( "null" );
     }
 };
 

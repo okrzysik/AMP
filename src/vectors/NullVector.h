@@ -66,11 +66,11 @@ namespace LinearAlgebra {
       virtual double min(void) const;
       virtual double max(void) const;
       virtual void setRandomValues(void);
-      virtual void setValuesByLocalID ( int , int * , const double * );
-      virtual void setLocalValuesByGlobalID ( int , int * , const double * );
-      virtual void addValuesByLocalID ( int , int * , const double * );
-      virtual void addLocalValuesByGlobalID ( int , int * , const double * );
-      virtual void getLocalValuesByGlobalID ( int , int * , double * ) const;
+      virtual void setValuesByLocalID ( int , size_t * , const double * );
+      virtual void setLocalValuesByGlobalID ( int , size_t * , const double * );
+      virtual void addValuesByLocalID ( int , size_t * , const double * );
+      virtual void addLocalValuesByGlobalID ( int , size_t * , const double * );
+      virtual void getLocalValuesByGlobalID ( int , size_t * , double * ) const;
 
 
       virtual void makeConsistent ( ScatterType  );
