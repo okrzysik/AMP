@@ -294,7 +294,7 @@ namespace Operator {
         d_Frozen = AMP::LinearAlgebra::MultiVector::view ( f );
       }
 
-      AMP::LinearAlgebra::VS_Mesh meshSelector("meshSelector", d_Mesh);
+      AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
       d_Frozen = d_Frozen->select(meshSelector, d_Frozen->getVariable()->getName());
 
     }
@@ -302,7 +302,7 @@ namespace Operator {
 
     void NeumannVectorCorrection :: setVariableFlux(const AMP::LinearAlgebra::Vector::shared_ptr &flux) {
       if(d_Mesh.get() != NULL) {
-        AMP::LinearAlgebra::VS_Mesh meshSelector( d_variable->getName(), d_Mesh);
+        AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = flux->select(meshSelector, d_variable->getName());
         d_variableFlux = meshSubsetVec->subsetVectorForVariable( d_variable );
       } else {

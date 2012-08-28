@@ -1,7 +1,7 @@
 // This file impliments a wrapper class for MPI functions
 
 // Include mpi.h if used
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
     #include "mpi.h"
 #endif
 
@@ -16,7 +16,7 @@
 #include "Utilities.h"
 
 // Include timers (if MPI is not used)
-#ifndef USES_MPI
+#ifndef USE_EXT_MPI
     #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
         // We are using windows without mpi, we need windows timers
         #include <windows.h>
@@ -54,7 +54,7 @@ namespace AMP{
 volatile unsigned int AMP_MPI::N_MPI_Comm_created=0;
 
 // Static data for asyncronous communication without MPI
-#ifndef USES_MPI
+#ifndef USE_EXT_MPI
 static const int mpi_max_tag = 0x003FFFFF;
 struct Isendrecv_struct {
     const char *data;   // Pointer to data
@@ -98,7 +98,7 @@ static MPI_Request getRequest( MPI_Comm comm, int tag )
 ************************************************************************/
 AMP_MPI::AMP_MPI() {
     // Initialize the data members to a defaul communicator of self
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         communicator = MPI_COMM_NULL;
         d_maxTag = 0x7FFFFFFF;
     #else
@@ -117,7 +117,7 @@ AMP_MPI::AMP_MPI() {
 *  Empty deconstructor                                                  *
 ************************************************************************/
 AMP_MPI::~AMP_MPI() {
-    /*#ifdef USES_MPI
+    /*#ifdef USE_EXT_MPI
         // Temporary solution until memory bugs are sorted, remove!!
         if ( count == NULL ) {
         } else if ( *count == 1 ) {
@@ -137,7 +137,7 @@ AMP_MPI::~AMP_MPI() {
         (*count)--;
     } else if ( *count == 1 ) {
         // We are holding that last reference to the MPI_Comm object, we need to free it
-        #ifdef USES_MPI
+        #ifdef USE_EXT_MPI
             *count = 0;
             delete count;
             count = NULL;
@@ -182,7 +182,7 @@ AMP_MPI::AMP_MPI( const AMP::AMP_MPI& comm ) {
 *  Constructor from existing MPI communicator                           *
 ************************************************************************/
 AMP_MPI::AMP_MPI( MPI_Comm comm ) {
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         // We are using MPI, use the MPI communicator to initialize the data
         if ( comm==AMP_COMM_WORLD ) {
             communicator = AMP::AMPManager::comm_world.communicator;
@@ -232,7 +232,7 @@ AMP_MPI::AMP_MPI( MPI_Comm comm ) {
 /************************************************************************
 *  Intersect two communicators                                          *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 ) {
     MPI_Group group1, group2, group12;
     MPI_Comm_group ( comm1.communicator, &group1 );
@@ -296,7 +296,7 @@ AMP_MPI& AMP_MPI::operator=(const AMP::AMP_MPI& comm) {
 ************************************************************************/
 AMP_MPI AMP_MPI::split( int color, int key ) const {
     MPI_Comm  new_MPI_comm;
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         // USE MPI to split the communicator
         if ( color==-1 )
             MPI_Comm_split(communicator,MPI_UNDEFINED,key,&new_MPI_comm);
@@ -312,14 +312,14 @@ AMP_MPI AMP_MPI::split( int color, int key ) const {
     #endif
     // Create the AMP_MPI object
     AMP_MPI new_comm(new_MPI_comm);
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         new_comm.d_isNull = new_comm.communicator==MPI_COMM_NULL;
     #else
         new_comm.d_isNull = new_comm.communicator==AMP_COMM_NULL;
     #endif
     new_comm.call_abort_in_serial_instead_of_exit = call_abort_in_serial_instead_of_exit;
     // Create the count
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         if ( new_comm.communicator != MPI_COMM_NULL ) {
             new_comm.count = new int;
             *(new_comm.count) = 1;
@@ -335,7 +335,7 @@ AMP_MPI AMP_MPI::split( int color, int key ) const {
 ************************************************************************/
 AMP_MPI AMP_MPI::dup( ) const {
     MPI_Comm  new_MPI_comm;
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         // USE MPI to duplicate the communicator
         MPI_Comm_dup(communicator,&new_MPI_comm);
     #else
@@ -347,7 +347,7 @@ AMP_MPI AMP_MPI::dup( ) const {
     new_comm.d_isNull = d_isNull;
     new_comm.call_abort_in_serial_instead_of_exit = call_abort_in_serial_instead_of_exit;
     // Create the count
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         if ( new_comm.communicator != MPI_COMM_NULL ) {
             new_comm.count = new int;
             *(new_comm.count) = 1;
@@ -381,7 +381,7 @@ bool AMP_MPI::operator<(const AMP_MPI &comm) const {
     AMP_ASSERT( !this->d_isNull && !comm.d_isNull );
     bool flag = true;
     // First check if either communicator is NULL
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         if ( communicator==MPI_COMM_NULL )
             return false;
         if ( comm.communicator==MPI_COMM_NULL )
@@ -397,7 +397,7 @@ bool AMP_MPI::operator<(const AMP_MPI &comm) const {
         flag = false;
     // Check the union of the communicator groups
     // this is < comm iff this group is a subgroup of comm's group
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         MPI_Group group1, group2, group12;
         MPI_Comm_group ( communicator, &group1 );
         MPI_Comm_group ( comm.communicator, &group2 );
@@ -422,7 +422,7 @@ bool AMP_MPI::operator<=(const AMP_MPI &comm) const {
     AMP_ASSERT( !this->d_isNull && !comm.d_isNull );
     bool flag = true;
     // First check if either communicator is NULL
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         if ( communicator==MPI_COMM_NULL )
             return false;
         if ( comm.communicator==MPI_COMM_NULL )
@@ -438,7 +438,7 @@ bool AMP_MPI::operator<=(const AMP_MPI &comm) const {
     if ( comm_size > comm.comm_size )
         flag = false;
     // Check the unnion of the communicator groups
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         MPI_Group group1, group2, group12;
         MPI_Comm_group ( communicator, &group1 );
         MPI_Comm_group ( comm.communicator, &group2 );
@@ -462,7 +462,7 @@ bool AMP_MPI::operator<=(const AMP_MPI &comm) const {
 bool AMP_MPI::operator>(const AMP_MPI &comm) const {
     bool flag = true;
     // First check if either communicator is NULL
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         if ( communicator==MPI_COMM_NULL )
             return false;
         if ( comm.communicator==MPI_COMM_NULL )
@@ -478,7 +478,7 @@ bool AMP_MPI::operator>(const AMP_MPI &comm) const {
         flag = false;
     // Check the unnion of the communicator groups
     // this is > comm iff comm's group is a subgroup of this group
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         MPI_Group group1, group2, group12;
         MPI_Comm_group ( communicator, &group1 );
         MPI_Comm_group ( comm.communicator, &group2 );
@@ -502,7 +502,7 @@ bool AMP_MPI::operator>(const AMP_MPI &comm) const {
 bool AMP_MPI::operator>=(const AMP_MPI &comm) const {
     bool flag = true;
     // First check if either communicator is NULL
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         if ( communicator==MPI_COMM_NULL )
             return false;
         if ( comm.communicator==MPI_COMM_NULL )
@@ -518,7 +518,7 @@ bool AMP_MPI::operator>=(const AMP_MPI &comm) const {
         flag = false;
     // Check the unnion of the communicator groups
     // this is >= comm iff comm's group is a subgroup of this group
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         MPI_Group group1, group2, group12;
         MPI_Comm_group ( communicator, &group1 );
         MPI_Comm_group ( comm.communicator, &group2 );
@@ -542,7 +542,7 @@ bool AMP_MPI::operator>=(const AMP_MPI &comm) const {
 int AMP_MPI::compare(const AMP_MPI &comm) const {
     if ( communicator==comm.communicator )
         return 1;
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         int result;
         MPI_Comm_compare( communicator, comm.communicator, &result );
         if ( result==MPI_IDENT )
@@ -573,7 +573,7 @@ void AMP_MPI::setCallAbortInSerialInsteadOfExit(bool flag)
 }
 void AMP_MPI::abort() const
 {
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         int initialized=0, finalized=0;
         MPI_Initialized(&initialized);
         MPI_Finalized(&finalized);
@@ -602,7 +602,7 @@ void AMP_MPI::abort() const
 bool AMP_MPI::allReduce(const bool value) const {
     bool ret = value;
     if ( comm_size > 1 ) {
-        #ifdef USES_MPI
+        #ifdef USE_EXT_MPI
             MPI_Allreduce( (void*) &value, (void*) &ret, 1, MPI_UNSIGNED_CHAR, MPI_MIN, communicator);
         #else
             AMP_ERROR("This shouldn't be possible");
@@ -618,7 +618,7 @@ bool AMP_MPI::allReduce(const bool value) const {
 bool AMP_MPI::anyReduce(const bool value) const {
     bool ret = value;
     if ( comm_size > 1 ) {
-        #ifdef USES_MPI
+        #ifdef USE_EXT_MPI
             MPI_Allreduce( (void*) &value, (void*) &ret, 1, MPI_UNSIGNED_CHAR, MPI_MAX, communicator);
         #else
             AMP_ERROR("This shouldn't be possible");
@@ -632,7 +632,7 @@ bool AMP_MPI::anyReduce(const bool value) const {
 *  call_sumReduce                                                       *
 *  Note: these specializations are only called when using MPI.          *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 // unsigned char
 template <>
 void AMP_MPI::call_sumReduce<unsigned char>(const unsigned char *send, unsigned char *recv, const int n) const {
@@ -781,7 +781,7 @@ void AMP_MPI::call_sumReduce< std::complex<double> >(std::complex<double> *x, co
 *  call_minReduce                                                       *
 *  Note: these specializations are only called when using MPI.          *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 // unsigned char
 template <>
 void AMP_MPI::call_minReduce<unsigned char>(const unsigned char *send, unsigned char *recv, const int n, int *comm_rank_of_min) const {
@@ -1058,7 +1058,7 @@ void AMP_MPI::call_minReduce<double>(double *x, const int n, int *comm_rank_of_m
 *  call_maxReduce                                                    *
 *  Note: these specializations are only called when using MPI.          *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 // unsigned char
 template <>
 void AMP_MPI::call_maxReduce<unsigned char>(const unsigned char *send, unsigned char *recv, const int n, int *comm_rank_of_min) const {
@@ -1333,7 +1333,7 @@ void AMP_MPI::call_maxReduce<double>(double *x, const int n, int *comm_rank_of_m
 *  bcast                                                                *
 *  Note: these specializations are only called when using MPI.          *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 // char
 template <>
 void AMP_MPI::call_bcast<char>(char *x, const int n, const int root) const {
@@ -1368,7 +1368,7 @@ void AMP_MPI::call_bcast<char>(char *x, const int n, const int root) const {
 ************************************************************************/
 void AMP_MPI::barrier()
 {
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         MPI_Barrier(communicator);
     #endif
 }
@@ -1378,7 +1378,7 @@ void AMP_MPI::barrier()
 *  Send data array to another processor.                                *
 *  Note: these specializations are only called when using MPI.          *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 // char
 template <>
 void AMP_MPI::send<char>(const char *buf, const int length, 
@@ -1424,7 +1424,7 @@ void AMP_MPI::send<double>(const double *buf, const int length,
     MPI_Send((void*)buf, length, MPI_DOUBLE, recv_proc_number, tag, communicator);
 }
 #else
-// We need a concrete instantiation of send for USES_MPI=false
+// We need a concrete instantiation of send for USE_EXT_MPI=false
 template <>
 void AMP_MPI::send<char>(const char *buf, const int length, 
     const int recv_proc_number, int tag) const
@@ -1445,7 +1445,7 @@ void AMP_MPI::send<char>(const char *buf, const int length,
 *  Non-blocking send data array to another processor.                   *
 *  Note: these specializations are only called when using MPI.          *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 // char
 template <>
 MPI_Request AMP_MPI::Isend<char>(const char *buf, const int length, const int recv_proc, const int tag) const
@@ -1487,7 +1487,7 @@ MPI_Request AMP_MPI::Isend<double>(const double *buf, const int length, const in
     return request;
 }
 #else
-// We need a concrete instantiation of send for USES_MPI=false
+// We need a concrete instantiation of send for USE_EXT_MPI=false
 template <>
 MPI_Request AMP_MPI::Isend<char>(const char *buf, const int length, const int recv_proc, const int tag) const
 {
@@ -1539,7 +1539,7 @@ MPI_Request AMP_MPI::IsendBytes(const void *buf, const int number_bytes, const i
 *  Recieve data array to another processor.                             *
 *  Note: these specializations are only called when using MPI.          *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 // char
 template <>
 void AMP_MPI::recv<char>(char *buf, int &length, 
@@ -1617,7 +1617,7 @@ void AMP_MPI::recv<double>(double *buf, int &length,
     MPI_Recv((void*)buf, length, MPI_DOUBLE, send_proc_number, tag, communicator, &status);
 }
 #else
-// We need a concrete instantiation of send for USES_MPI=false
+// We need a concrete instantiation of send for USE_EXT_MPI=false
 template <>
 void AMP_MPI::recv<char>(char *buf, int &length, 
     const int send_proc_number, const bool get_length, int tag) const
@@ -1638,7 +1638,7 @@ void AMP_MPI::recv<char>(char *buf, int &length,
 *  Non-blocking recieve data array to another processor.                *
 *  Note: these specializations are only called when using MPI.          *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 // char
 template <>
 MPI_Request AMP_MPI::Irecv<char>(char *buf, const int length, const int send_proc, const int tag) const
@@ -1680,7 +1680,7 @@ MPI_Request AMP_MPI::Irecv<double>(double *buf, const int length, const int send
     return request;
 }
 #else
-// We need a concrete instantiation of send for USES_MPI=false
+// We need a concrete instantiation of send for USE_EXT_MPI=false
 template <>
 MPI_Request AMP_MPI::Irecv<char>(char *buf, const int length, const int send_proc, const int tag) const
 {
@@ -1729,7 +1729,7 @@ MPI_Request AMP_MPI::IrecvBytes(void *buf, const int number_bytes, const int sen
 *  allGather                                                            *
 *  Note: these specializations are only called when using MPI.          *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 // unsigned char
 template <>
 void AMP_MPI::call_allGather<unsigned char>(const unsigned char x_in, unsigned char *x_out) const {
@@ -1815,7 +1815,7 @@ void AMP_MPI::call_allGather<char>(const char *x_in, int size_in, char *x_out, i
 *  allToAll                                                             *
 *  Note: these specializations are only called when using MPI.          *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> void AMP_MPI::allToAll<unsigned char>(const int n, const unsigned char *send, unsigned char *recv ) const {
     MPI_Alltoall( (void*) send, n, MPI_UNSIGNED_CHAR, (void*) recv, n, MPI_UNSIGNED_CHAR, communicator);
 }
@@ -1847,7 +1847,7 @@ template <> void AMP_MPI::allToAll<double>(const int n, const double *send, doub
 *  call_allToAll                                                        *
 *  Note: these specializations are only called when using MPI.          *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 // unsigned char
 template <>
 void AMP_MPI::call_allToAll<unsigned char>(const unsigned char *send_data, const int send_cnt[], 
@@ -1927,7 +1927,7 @@ void AMP_MPI::call_allToAll<char>(const char *send_data, const int send_cnt[],
 *  call_sumScan                                                         *
 *  Note: these specializations are only called when using MPI.          *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 // unsigned char
 template <>
 void AMP_MPI::call_sumScan<unsigned char>(const unsigned char *send, unsigned char *recv, int n) const {
@@ -1990,7 +1990,7 @@ void AMP_MPI::call_sumScan< std::complex<double> >(const std::complex<double> *x
 *  call_minScan                                                         *
 *  Note: these specializations are only called when using MPI.          *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 // unsigned char
 template <>
 void AMP_MPI::call_minScan<unsigned char>(const unsigned char *send, unsigned char *recv, int n) const {
@@ -2038,7 +2038,7 @@ void AMP_MPI::call_minScan<double>(const double *send, double *recv, int n) cons
 *  call_maxScan                                                         *
 *  Note: these specializations are only called when using MPI.          *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 // unsigned char
 template <>
 void AMP_MPI::call_maxScan<unsigned char>(const unsigned char *send, unsigned char *recv, int n) const {
@@ -2085,7 +2085,7 @@ void AMP_MPI::call_maxScan<double>(const double *send, double *recv, int n) cons
 /************************************************************************
 *  Wait functions                                                       *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 void AMP_MPI::wait( MPI_Request request) {
     MPI_Status  status;
     int flag = 0;
@@ -2179,7 +2179,7 @@ void AMP_MPI::waitAll( int count, MPI_Request *request) {
 /************************************************************************
 *  Probe functions                                                      *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 int AMP_MPI::Iprobe( int source, int tag) const {
     AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     AMP_INSIST(tag>=0,"tag must be >= 0");
@@ -2219,7 +2219,7 @@ int AMP_MPI::probe( int source, int tag) const {
 /************************************************************************
 *  Timer functions                                                      *
 ************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
     double AMP_MPI::time() { 
         return MPI_Wtime();
     }

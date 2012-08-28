@@ -968,7 +968,7 @@ int main(int argc, char *argv[])
 
         // Print the global size (if we are using MPI)
         int global_size = 0;
-        #ifdef USES_MPI
+        #ifdef USE_EXT_MPI
             MPI_Comm_size(MPI_COMM_WORLD,&global_size);
         #else
             global_size = 1;
@@ -988,7 +988,7 @@ int main(int argc, char *argv[])
             std::cout << "MPI_COMM_WORLD = " << global_size << " processors" << std::endl;
             std::cout << "   Largest tag value = " << globalComm.maxTag() << std::endl << std::endl;
         }
-        #ifdef USES_MPI
+        #ifdef USE_EXT_MPI
             if ( globalComm.getCommunicator() == MPI_COMM_WORLD )
                 ut.passes("Communicator == MPI_COMM_WORLD");
             else
@@ -1007,7 +1007,7 @@ int main(int argc, char *argv[])
             ut.passes("Self communicator created");
         else
             ut.failure("Self communicator created");
-        #ifdef USES_MPI
+        #ifdef USE_EXT_MPI
             if ( selfComm.getCommunicator() == MPI_COMM_SELF )
                 ut.passes("Communicator == MPI_COMM_SELF");
             else
@@ -1031,7 +1031,7 @@ int main(int argc, char *argv[])
             ut.passes("Null communicator created");
         else
             ut.failure("Null communicator created");
-        #ifdef USES_MPI
+        #ifdef USE_EXT_MPI
             if ( nullComm.getCommunicator() == MPI_COMM_NULL )
                 ut.passes("Communicator == MPI_COMM_NULL");
             else

@@ -72,7 +72,7 @@ std::vector<AMP::LinearAlgebra::Vector::shared_ptr> DiffusionNonlinearFEOperator
 
 void DiffusionNonlinearFEOperator::setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec)
 {
-    AMP::LinearAlgebra::VS_Mesh meshSelector(d_inpVariables->getVariable(id)->getName(), d_Mesh);
+    AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
     AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = frozenVec->select(meshSelector, d_inpVariables->getVariable(id)->getName());
     d_Frozen[id] = meshSubsetVec->subsetVectorForVariable(d_inpVariables->getVariable(id));
     (d_Frozen[id])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
@@ -163,7 +163,7 @@ void DiffusionNonlinearFEOperator::preAssembly(
 {
     //PROFILE_START("preAssembly",2);
     AMP_INSIST( (u != NULL), "NULL Input Vector!" );
-    AMP::LinearAlgebra::VS_Mesh meshSelector("u_mesh", d_Mesh);
+    AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
     AMP::LinearAlgebra::Vector::const_shared_ptr u_meshVec = u->constSelect(meshSelector, "u_mesh");
 
     if( d_iDebugPrintInfoLevel > 7 )
@@ -213,6 +213,7 @@ void DiffusionNonlinearFEOperator::postAssembly()
 
 
 void DiffusionNonlinearFEOperator::preElementOperation(
+
 
         const AMP::Mesh::MeshElement & elem )
 {
@@ -329,7 +330,7 @@ boost::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianP
         const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u)
 {
     boost::shared_ptr<AMP::InputDatabase> tmp_db(new AMP::InputDatabase("Dummy"));
-    AMP::LinearAlgebra::VS_Mesh meshSelector("u_mesh", d_Mesh);
+    AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
     AMP::LinearAlgebra::Vector::shared_ptr u_meshVec = u->select(meshSelector, "u_mesh");
 
     // set up a database for the linear operator params
@@ -434,7 +435,7 @@ bool DiffusionNonlinearFEOperator::isValidInput(AMP::LinearAlgebra::Vector::shar
     }
 
     bool result = true;
-    AMP::LinearAlgebra::VS_Mesh meshSelector("u_mesh", d_Mesh);
+    AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
     AMP::LinearAlgebra::Vector::shared_ptr u_meshVec = u->select(meshSelector, "u_mesh");
     if (found) {
         AMP::LinearAlgebra::Vector::shared_ptr uinp = u_meshVec->subsetVectorForVariable(d_inpVariables->getVariable(d_PrincipalVariable));

@@ -260,7 +260,7 @@ void linearThermalTest(AMP::UnitTest *ut )
   if( passes ) ut->passes("The linear thermal solve is verified.");
  
  // Plot the results
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
      siloWriter->registerMesh( meshAdapter );
 

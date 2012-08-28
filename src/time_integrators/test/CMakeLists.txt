@@ -3,7 +3,7 @@ INCLUDE (macros)
 ADD_AMP_TEST_1_2_4 ( testTimeIntegratorParameters )
 
 # Sundials tests
-IF ( USES_SUNDIALS )
+IF ( USE_EXT_SUNDIALS )
     ADD_AMP_TEST ( testIDATimeIntegrator )
     ADD_AMP_TEST_1_2_4 ( testIDA-LinearBVPOperator-1 )
     ADD_AMP_TEST_1_2_4 ( testIDA-NonlinearBVPOperator-1 )

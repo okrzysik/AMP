@@ -33,7 +33,7 @@ void linearElasticTest(AMP::UnitTest *ut )
 
   AMP::PIO::logOnlyNodeZero(log_file);
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
 #endif
@@ -104,7 +104,7 @@ void linearElasticTest(AMP::UnitTest *ut )
 
   mlSolver->solve(mechRhsVec, mechSolVec);
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   siloWriter->registerVector(mechSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
   siloWriter->writeFile(exeName, 0);
 #endif

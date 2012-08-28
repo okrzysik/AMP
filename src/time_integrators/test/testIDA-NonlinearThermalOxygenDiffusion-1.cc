@@ -214,8 +214,8 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   AMP::Mesh::MeshIterator  node = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
   AMP::Mesh::MeshIterator  end_node = node.end();
   
-  AMP::LinearAlgebra::VS_Mesh vectorSelector1( (outputVar->getVariable(0))->getName() , meshAdapter );
-  AMP::LinearAlgebra::VS_Mesh vectorSelector2( (outputVar->getVariable(1))->getName() , meshAdapter );
+  AMP::LinearAlgebra::VS_Mesh vectorSelector1( meshAdapter );
+  AMP::LinearAlgebra::VS_Mesh vectorSelector2( meshAdapter );
 
   boost::shared_ptr<AMP::LinearAlgebra::Vector> thermalIC = initialCondition->select( vectorSelector1, (outputVar->getVariable(0))->getName() );
   boost::shared_ptr<AMP::LinearAlgebra::Vector> oxygenIC = initialCondition->select( vectorSelector2, (outputVar->getVariable(1))->getName() );

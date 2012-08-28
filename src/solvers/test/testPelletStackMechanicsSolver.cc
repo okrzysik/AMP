@@ -26,7 +26,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
 #endif
@@ -90,7 +90,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
   linearSolver->setPreconditioner(pelletStackSolver);
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   siloWriter->registerVector(solVec, manager, AMP::Mesh::Vertex, "Displacement" );
 #endif
 
@@ -123,7 +123,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     AMP::pout<< "final,   solVec: "<<solVec->L2Norm()<<endl ; 
     AMP::pout<< "final,   resVec: "<<resVec->L2Norm()<<endl ; 
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
     siloWriter->writeFile(exeName, step);
 #endif
 

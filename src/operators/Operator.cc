@@ -62,8 +62,8 @@ AMP::LinearAlgebra::Vector::shared_ptr  Operator::subsetOutputVector(AMP::Linear
 {
     AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
     if(d_Mesh.get() != NULL) {
-        AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
-        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, var->getName());
+        AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
+        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, vec->getVariable()->getName());
         AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec = meshSubsetVec->subsetVectorForVariable(var);
         return varSubsetVec;
     } else {
@@ -76,8 +76,8 @@ AMP::LinearAlgebra::Vector::shared_ptr  Operator::subsetInputVector(AMP::LinearA
 {
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     if(d_Mesh.get() != NULL) {
-        AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
-        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, var->getName());
+        AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
+        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, vec->getVariable()->getName());
         AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec = meshSubsetVec->subsetVectorForVariable(var);
         return varSubsetVec;
     } else {
@@ -90,8 +90,8 @@ AMP::LinearAlgebra::Vector::const_shared_ptr  Operator::subsetOutputVector(AMP::
 {
     AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
     if(d_Mesh.get() != NULL) {
-        AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
-        AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec = vec->constSelect(meshSelector, var->getName());
+        AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
+        AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec = vec->constSelect(meshSelector, vec->getVariable()->getName());
         AMP::LinearAlgebra::Vector::const_shared_ptr varSubsetVec = meshSubsetVec->constSubsetVectorForVariable(var);
         return varSubsetVec;
     } else {
@@ -104,8 +104,8 @@ AMP::LinearAlgebra::Vector::const_shared_ptr  Operator::subsetInputVector(AMP::L
 {
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     if(d_Mesh.get() != NULL) {
-        AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
-        AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec = vec->constSelect(meshSelector, var->getName());
+        AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
+        AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec = vec->constSelect(meshSelector, vec->getVariable()->getName());
         AMP::LinearAlgebra::Vector::const_shared_ptr varSubsetVec = meshSubsetVec->constSubsetVectorForVariable(var);
         return varSubsetVec;
     } else {

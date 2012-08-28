@@ -119,7 +119,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::LinearAlgebra::Vector::shared_ptr mechNlPressureVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, displacementVariable );
 
   // Create the silo writer and register the data
-  #ifdef USES_SILO
+  #ifdef USE_EXT_SILO
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
     siloWriter->registerVector( mechNlResVec, mesh, AMP::Mesh::Vertex, "Solution_Vector" );
   #endif
@@ -195,9 +195,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
       (nonlinBvpOperator->getVolumeOperator())->reset(tmpParams);
       nonlinearSolver->setZeroInitialGuess(false);
 
-      AMP::LinearAlgebra::Vector::shared_ptr mechUvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride("U", 0, 3) , "U" );
-      AMP::LinearAlgebra::Vector::shared_ptr mechVvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride("V", 1, 3) , "V" );
-      AMP::LinearAlgebra::Vector::shared_ptr mechWvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride("W", 2, 3) , "W" );
+      AMP::LinearAlgebra::Vector::shared_ptr mechUvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride(0,3), "U" );
+      AMP::LinearAlgebra::Vector::shared_ptr mechVvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride(1,3), "V" );
+      AMP::LinearAlgebra::Vector::shared_ptr mechWvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride(2,3), "W" );
 
       double finalMaxU = mechUvec->maxNorm();
       double finalMaxV = mechVvec->maxNorm();
@@ -238,7 +238,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
       }
       fclose(out1);*/
 
-  #ifdef USES_SILO
+  #ifdef USE_EXT_SILO
     siloWriter->writeFile( exeName, 1 );
   #endif
 

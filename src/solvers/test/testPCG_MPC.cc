@@ -126,8 +126,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     AMP::LinearAlgebra::Vector::shared_ptr columnRhsVec = columnSolVec->cloneVector();
     AMP::LinearAlgebra::Vector::shared_ptr columnResVec = columnSolVec->cloneVector();
 
-    AMP::LinearAlgebra::VS_Mesh masterMeshSelector( displacement->getName(), masterMeshAdapter );
-    AMP::LinearAlgebra::VS_Mesh slaveMeshSelector(  displacement->getName(), slaveMeshAdapter  );
+    AMP::LinearAlgebra::VS_Mesh masterMeshSelector( masterMeshAdapter );
+    AMP::LinearAlgebra::VS_Mesh slaveMeshSelector(  slaveMeshAdapter  );
 
     AMP::LinearAlgebra::Vector::shared_ptr masterSolVec = columnSolVec->select( masterMeshSelector, displacement->getName() );
     AMP::LinearAlgebra::Vector::shared_ptr slaveSolVec  = columnSolVec->select( slaveMeshSelector, displacement->getName()  );

@@ -13,7 +13,7 @@
 #include "operators/map/AsyncMapColumnOperator.h"
 #include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
     #include "ampmesh/SiloIO.h"
 #endif
 
@@ -132,7 +132,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     double end_time = AMP::AMP_MPI::time();
 
     // Save the results
-    #ifdef USES_SILO
+    #ifdef USE_EXT_SILO
         AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
         siloWriter->registerVector( v1, mesh, AMP::Mesh::Vertex, "v1" );
         siloWriter->registerVector( v2, mesh, AMP::Mesh::Vertex, "v2" );

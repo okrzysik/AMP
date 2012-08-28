@@ -5,10 +5,10 @@
 #include "vectors/SimpleVector.h"
 #include "test_VectorTests.h"
 #include "utils/AMP_MPI.h"
-#ifdef USES_PETSC
+#ifdef USE_EXT_PETSC
     #include <vectors/petsc/NativePetscVector.h>
 #endif
-#ifdef USES_TRILINOS
+#ifdef USE_EXT_TRILINOS
     #include <vectors/trilinos/EpetraVectorEngine.h>
 #endif
 
@@ -51,7 +51,7 @@ public:
 };
 
 
-#ifdef USES_TRILINOS
+#ifdef USE_EXT_TRILINOS
 template <typename T>
 class  SimpleManagedVectorFactory
 {
@@ -82,7 +82,7 @@ class  SimpleManagedVectorFactory
 #endif
 
 
-#ifdef USES_PETSC
+#ifdef USE_EXT_PETSC
 template <typename T>
 class  PetscManagedVectorFactory
 {

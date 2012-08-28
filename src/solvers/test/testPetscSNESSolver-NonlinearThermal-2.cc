@@ -252,7 +252,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   if( !AMP::Utilities::approx_equal( expectedVal, finalResidualNorm, 10.0) ) {
         ut->failure("the Final Residual Norm has changed."); }
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
      siloWriter->registerMesh( meshAdapter );
 

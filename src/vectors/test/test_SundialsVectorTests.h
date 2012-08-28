@@ -5,7 +5,7 @@
 
 /// \cond UNDOCUMENTED
 
-#ifdef USES_SUNDIALS
+#ifdef USE_EXT_SUNDIALS
 
 #include "vectors/Vector.h"
 #include "vectors/sundials/ManagedSundialsVector.h"

@@ -8,11 +8,11 @@
 #include "discretization/DOF_Manager.h"
 #include "vectors/Vector.h"
 #include "vectors/MultiVector.h"
-#ifdef USES_SUNDIALS
+#ifdef USE_EXT_SUNDIALS
     #include "vectors/sundials/ManagedSundialsVector.h"
     #include "vectors/sundials/SundialsVector.h"
 #endif
-#ifdef USES_PETSC
+#ifdef USE_EXT_PETSC
     #include "vectors/petsc/ManagedPetscVector.h"
     #include "vectors/petsc/PetscVector.h"
 #endif
@@ -338,7 +338,7 @@ void ScaleVector( AMP::UnitTest *utils )
 }
 
 
-#ifdef USES_PETSC
+#ifdef USE_EXT_PETSC
 template <typename VECTOR_FACTORY>
 void Bug_491( AMP::UnitTest *utils )
 {

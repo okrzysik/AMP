@@ -58,7 +58,7 @@ void test_with_shape(AMP::UnitTest *ut )
     bool split = true;
     AMP::Discretization::DOFManager::shared_ptr dof_map = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerNode, split);
 
-    #ifdef USES_SILO
+    #ifdef USE_EXT_SILO
       AMP::LinearAlgebra::Variable::shared_ptr shapeVar(new AMP::LinearAlgebra::Variable("PowerShape"));
       AMP::LinearAlgebra::Vector::shared_ptr shapeVec = AMP::LinearAlgebra::createVector( dof_map, shapeVar, split );
       AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
@@ -104,7 +104,7 @@ void test_with_shape(AMP::UnitTest *ut )
         }
       }
       
-      #ifdef USES_SILO
+      #ifdef USE_EXT_SILO
         shapeVec->copyVector(SpecificPowerShapeVec);
         // SpecificPowerShapeVec->copyVector(shapeVec);
         siloWriter->writeFile( "PowerShape-Zr" , nMoments );
@@ -158,7 +158,7 @@ void test_with_shape(AMP::UnitTest *ut )
         }
       }
       
-      #ifdef USES_SILO
+      #ifdef USE_EXT_SILO
         shapeVec->copyVector(SpecificPowerShapeVec);
         // SpecificPowerShapeVec->copyVector(shapeVec);
         siloWriter->writeFile( "PowerShape-Zr" , i+3 );

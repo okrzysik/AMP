@@ -82,7 +82,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::LinearAlgebra::Vector::shared_ptr mechNlResVec = mechNlSolVec->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr mechNlScaledRhsVec = mechNlSolVec->cloneVector();
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
   siloWriter->registerVector(mechNlSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
@@ -161,7 +161,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     nonlinearSolver->setZeroInitialGuess(false);
   }
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   siloWriter->writeFile(exeName, 0);
 #endif
 

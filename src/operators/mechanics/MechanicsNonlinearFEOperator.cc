@@ -690,7 +690,7 @@ namespace AMP {
     AMP::LinearAlgebra::Vector::shared_ptr MechanicsNonlinearFEOperator :: mySubsetVector(AMP::LinearAlgebra::Vector::shared_ptr vec, 
         AMP::LinearAlgebra::Variable::shared_ptr var) {
       if(d_Mesh.get() != NULL) {
-        AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
+        AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, var->getName());
         return meshSubsetVec->subsetVectorForVariable(var);
       } else {
@@ -701,7 +701,7 @@ namespace AMP {
     AMP::LinearAlgebra::Vector::const_shared_ptr MechanicsNonlinearFEOperator :: mySubsetVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec, 
         AMP::LinearAlgebra::Variable::shared_ptr var) {
       if(d_Mesh.get() != NULL) {
-        AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
+        AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
         AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec = vec->constSelect(meshSelector, var->getName());
         return meshSubsetVec->constSubsetVectorForVariable(var);
       } else {

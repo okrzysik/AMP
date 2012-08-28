@@ -327,7 +327,7 @@ void myTest ( AMP::UnitTest *ut )
   double finalSolNorm = mechNlSolVec->L2Norm();
   AMP::pout<<"Final Solution Norm: "<<finalSolNorm<<std::endl;
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   // manager->writeFile<AMP::Mesh::SiloIO> ( "FrozenTemp_NonlinearMechExample" , 1 );
 #endif
 

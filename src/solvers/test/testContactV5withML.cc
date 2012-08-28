@@ -838,7 +838,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   freeMyData();
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   manager->registerVectorAsData ( columnSolVec, "Displacement" );
   manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 1 );
 #endif
