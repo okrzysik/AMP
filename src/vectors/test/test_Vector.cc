@@ -26,6 +26,9 @@ int main ( int argc , char **argv )
     AMP::UnitTest ut;
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
     
+    std::cout << "Testing NullVector" << std::endl;
+
+
     std::cout << "Testing SimpleVector" << std::endl;
     testSimpleVector<15> ( &ut );
     testSimpleVector<45> ( &ut );

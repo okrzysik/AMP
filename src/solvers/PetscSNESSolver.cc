@@ -36,7 +36,7 @@ PetscSNESSolver::~PetscSNESSolver()
     {
       MatDestroy(d_Jacobian);
     }
-
+  SNESMonitorCancel(d_SNESSolver);
   SNESDestroy(d_SNESSolver);
 }
 

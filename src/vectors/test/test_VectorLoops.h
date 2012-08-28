@@ -155,6 +155,14 @@ void testSimpleVector ( AMP::UnitTest *ut )
 }
 
 
+
+template <int I>
+void testNullVector ( AMP::UnitTest *ut )
+{
+    InstantiateVector<NullVectorFactory>( ut );
+}
+
+
 template <class FACTORY>
 void test_parallel_vectors_loop ( AMP::UnitTest *ut )
 {

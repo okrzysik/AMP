@@ -1,13 +1,11 @@
 
-#include "NullVariable.h"
-
 namespace AMP {
 namespace LinearAlgebra {
 
   inline
   Vector::shared_ptr   NullVector::create ( const std::string &name )
   {
-    return Vector::shared_ptr  ( new NullVector ( Variable::shared_ptr ( new NullVariable ( name ) ) ) );
+    return Vector::shared_ptr  ( new NullVector ( Variable::shared_ptr ( new Variable ( name ) ) ) );
   }
 
   inline
@@ -145,31 +143,31 @@ namespace LinearAlgebra {
   }
 
   inline
-  void NullVector::setValuesByLocalID ( int , int * , const double * ) 
+  void NullVector::setValuesByLocalID ( int , size_t * , const double * ) 
   { 
     AMP_ERROR( "Can't set values for NullVector" ); 
   }
 
   inline
-  void NullVector::setLocalValuesByGlobalID ( int , int * , const double * ) 
+  void NullVector::setLocalValuesByGlobalID ( int , size_t * , const double * ) 
   { 
     AMP_ERROR( "Can't set values for NullVector" ); 
   }
 
   inline
-  void NullVector::addValuesByLocalID ( int , int * , const double * ) 
+  void NullVector::addValuesByLocalID ( int , size_t * , const double * ) 
   { 
     AMP_ERROR( "Can't set values for NullVector" ); 
   }
 
   inline
-  void NullVector::addLocalValuesByGlobalID ( int , int * , const double * ) 
+  void NullVector::addLocalValuesByGlobalID ( int , size_t * , const double * ) 
   { 
     AMP_ERROR( "Can't set values for NullVector" ); 
   }
 
   inline
-  void NullVector::getLocalValuesByGlobalID ( int , int * , double * ) const 
+  void NullVector::getLocalValuesByGlobalID ( int , size_t * , double * ) const 
   { 
     AMP_ERROR( "Can't set values for NullVector" ); 
   }

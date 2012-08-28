@@ -116,7 +116,7 @@ namespace Solver {
    * sets the PETSc KSP object
    @param [in] ksp pointer to KSP object
    */
-  inline void setKrylovSolver(KSP *ksp){ d_KrylovSolver = *ksp;}
+  void setKrylovSolver(KSP *ksp);
 
   /**
    * Initialize the PetscKrylovSolver. Should not be necessary for the user to call in general.
