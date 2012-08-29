@@ -38,14 +38,13 @@ INCLUDE (macros)
 #     COPY_MESH_FILE ( mesh_file )
 #
 
-ADD_AMP_PROVISIONAL_TEST(testNonlinearKrylovAccelerator-NonlinearMechanics-1 )
-
 ADD_AMP_TEST(testSubchannelSolve)
 COPY_TEST_DATA_FILE ( input_testSubchannelSolve)
 
 ADD_AMP_TEST(testSubchannelSolution)
 COPY_TEST_DATA_FILE ( input_testSubchannelSolution)
 
+# R.S.: This needs to be fixed!
 ADD_AMP_PROVISIONAL_TEST ( testPelletStackMechanicsSolver )
 COPY_TEST_DATA_FILE ( input_testPelletStackMechanicsSolver-1 )
 COPY_TEST_DATA_FILE ( input_testPelletStackMechanicsSolver-2 )
@@ -58,16 +57,13 @@ COPY_MESH_FILE ( TC1-PELL-COARSE.e )
 COPY_MESH_FILE ( reg3ptBox1 )
 COPY_MESH_FILE ( reg3ptBox2 )
 
-ADD_AMP_PROVISIONAL_TEST ( jfnkPaperDriver )
-COPY_TEST_DATA_FILE ( input_jfnkPaperDriver )
-
 COPY_MESH_FILE ( regPlateWithHole1 )
 COPY_MESH_FILE ( regPlateWithHole2 )
 
 COPY_MESH_FILE ( regBox1 )
 COPY_MESH_FILE ( regBox2 )
 
-ADD_AMP_PROVISIONAL_TEST ( testMechElasticLUvsML )
+ADD_AMP_TEST_1_2_4 ( testMechElasticLUvsML )
 COPY_TEST_DATA_FILE ( input_testMechElasticLUvsML )
 
 COPY_MESH_FILE ( lumlmesh1 )
@@ -91,7 +87,6 @@ COPY_MESH_FILE ( cube343H8.e )
 
 ADD_AMP_TEST_1_2_4 ( testPetscSNESSolver )
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver )
-
 
 ADD_AMP_PROVISIONAL_TEST ( testContactV6 )
 COPY_TEST_DATA_FILE ( input_testContactV6 )
@@ -423,7 +418,6 @@ COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearFickSoret-cylinder-OxMS
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearFickSoret-cylinder-OxMSRZC09-BLog-1 )
 COPY_TEST_DATA_FILE ( input_testNonlinearKrylovAccelerator-NonlinearThermal-cylinder_kIsOne )
 COPY_TEST_DATA_FILE ( input_testNonlinearKrylovAccelerator-NonlinearThermal-cylinder_MATPRO )
-COPY_TEST_DATA_FILE ( input_testNonlinearKrylovAccelerator-ML-NonlinearMechanics-1-normal )
 #COPY_TEST_DATA_FILE ( input_testTrilinosMLSolver-LinearThermalOperator-1 )
 COPY_TEST_DATA_FILE ( input_testTrilinosMLSolver-LinearThermalOperator-2_HALDEN )
 COPY_TEST_DATA_FILE ( input_testTrilinosMLSolver-LinearThermalOperator-2_HALDEN_clad )

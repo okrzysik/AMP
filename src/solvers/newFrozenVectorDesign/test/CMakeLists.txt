@@ -38,6 +38,7 @@ INCLUDE (macros)
 #     COPY_MESH_FILE ( mesh_file )
 #
 
+# R.S.: This needs to be fixed! 
 ADD_AMP_PROVISIONAL_TEST ( testNewFrozenVectorDesign )
 COPY_TEST_DATA_FILE ( input_testNewFrozenVectorDesign )
 
