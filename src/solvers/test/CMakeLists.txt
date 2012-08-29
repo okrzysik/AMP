@@ -88,36 +88,17 @@ COPY_MESH_FILE ( cube343H8.e )
 ADD_AMP_TEST_1_2_4 ( testPetscSNESSolver )
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver )
 
-ADD_AMP_PROVISIONAL_TEST ( testContactV6 )
-COPY_TEST_DATA_FILE ( input_testContactV6 )
-
 ADD_AMP_WEEKLY_TEST ( testBrickPressureBoundary-1 4 )
 COPY_TEST_DATA_FILE ( input_testBrickPressureBoundary-1 )
 
 ADD_AMP_TEST ( testLinearThermalExpansion )
 COPY_TEST_DATA_FILE ( input_testLinearThermalExpansion )
 
-ADD_AMP_PROVISIONAL_TEST ( testContactV5withML 1 )
-COPY_TEST_DATA_FILE ( input_testContactV5withML )
-
-# ADD_AMP_TEST ( testContactV5 ) # Move to WEEKLY until it is running
-ADD_AMP_PROVISIONAL_TEST ( testContactV5 1 )
-COPY_TEST_DATA_FILE ( input_testContactV5 )
-
-# ADD_AMP_TEST ( testContactSearch ) # Move to WEEKLY until it is running
-ADD_AMP_PROVISIONAL_TEST ( testContactSearch 1 )
-COPY_TEST_DATA_FILE ( input_testContactSearch )
-
 ADD_AMP_TEST ( testJacobiVsML )
 COPY_TEST_DATA_FILE ( input_testJacobiVsML )
 COPY_MESH_FILE ( tiedContactV1_fusedpelletclad.e )
 
 COPY_MESH_FILE ( tiedContact_pellet.e )
-
-# ADD_AMP_TEST ( testTiedContactV3 ) # Move to WEEKLY until it is running
-ADD_AMP_PROVISIONAL_TEST ( testTiedContactV3 1 )
-COPY_TEST_DATA_FILE ( input_testTiedContactV3 )
-COPY_MESH_FILE ( tiedContactV3_clad.e )
 
 ADD_AMP_PROVISIONAL_TEST ( testDiffusionMMSInverse )
 
