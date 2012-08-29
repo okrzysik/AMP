@@ -247,7 +247,6 @@ ADD_AMP_TEST_1_2_4 ( testPetscSNESSolver-NonlinearFickSoret-1 )
 ADD_AMP_TEST_1_2_4 ( testPetscSNESSolver-NonlinearFickSoret-2 )
 ADD_AMP_TEST_1_2_4 ( testMaterialModels_VonMisesPlasticity-1 )
 ADD_AMP_TEST_1_2_4 ( testMaterialModels_VonMisesPlasticity-2 )
-ADD_AMP_TEST_1_2_4 ( testLibMeshFaceStuff )
 
 COPY_TEST_DATA_FILE (input_testFlowSolver )
 COPY_TEST_DATA_FILE ( input_testThermalRobinFlow-2 )
