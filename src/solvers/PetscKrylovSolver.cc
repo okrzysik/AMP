@@ -24,8 +24,6 @@ PetscKrylovSolver::PetscKrylovSolver()
 PetscKrylovSolver::PetscKrylovSolver(boost::shared_ptr<PetscKrylovSolverParameters> parameters):SolverStrategy(parameters)
 {
     assert(parameters.get()!=NULL);
-    d_comm = parameters->d_comm;
-    assert( !d_comm.isNull() );
 
     // Create a default KrylovSolver
     d_bKSPCreatedInternally = true;
@@ -52,9 +50,13 @@ PetscKrylovSolver::~PetscKrylovSolver()
 void
 PetscKrylovSolver::initialize(boost::shared_ptr<SolverStrategyParameters> const params)
 {
+    boost::shared_ptr<PetscKrylovSolverParameters> parameters = boost::dynamic_pointer_cast<PetscKrylovSolverParameters>(params);
+    AMP_ASSERT(parameters.get()!=NULL);
+    d_comm = parameters->d_comm;
+    AMP_ASSERT(!d_comm.isNull());
+
     int ierr;
 
-    boost::shared_ptr<PetscKrylovSolverParameters> parameters = boost::dynamic_pointer_cast<PetscKrylovSolverParameters>(params);
     d_pPreconditioner = parameters->d_pPreconditioner;
 
     getFromInput(parameters->d_db);
