@@ -184,16 +184,16 @@ PetscKrylovSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
                   boost::shared_ptr<AMP::LinearAlgebra::Vector>  u)
 {
 
-    // Get petsc views of the vectors
-    fVecView = AMP::LinearAlgebra::PetscVector::view ( f );
-    uVecView = AMP::LinearAlgebra::PetscVector::view ( u );
-
     // fVecView and uVecView may be held in KSPSolve internals.
     // by declaring a temporary vector, we ensure that the KSPSolve
     // will be replaced by fVecView and uVecView before they are
     // destroyed by boost.
     AMP::LinearAlgebra::Vector::shared_ptr  f_thisGetsAroundPETScSharedPtrIssue = fVecView;
     AMP::LinearAlgebra::Vector::shared_ptr  u_thisGetsAroundPETScSharedPtrIssue = uVecView;
+
+    // Get petsc views of the vectors
+    fVecView = AMP::LinearAlgebra::PetscVector::view ( f );
+    uVecView = AMP::LinearAlgebra::PetscVector::view ( u );
 
     // Check input vector states
     AMP_ASSERT( (f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
