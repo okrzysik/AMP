@@ -27,7 +27,7 @@ PetscKrylovSolver::PetscKrylovSolver(boost::shared_ptr<PetscKrylovSolverParamete
 
     // Create a default KrylovSolver
     d_bKSPCreatedInternally = true;
-    KSPCreate(d_comm.getCommunicator(), &d_KrylovSolver);
+    KSPCreate( parameters->d_comm.getCommunicator(), &d_KrylovSolver );
 
     // Initialize
     initialize(parameters);
