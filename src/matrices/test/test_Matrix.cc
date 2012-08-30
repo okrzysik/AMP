@@ -15,7 +15,7 @@ void  test_matrix_loop ( AMP::UnitTest *ut )
 {
     FACTORY factory;
     factory.initMesh();
-    #if defined(USES_PETSC) && defined(USES_PETSC)
+    #if defined(USE_EXT_PETSC) && defined(USE_EXT_PETSC)
         InstantiateMatrix<FACTORY>::run_test ( ut );
         VerifyGetSetValuesMatrix<FACTORY>::run_test ( ut );
         VerifyAXPYMatrix<FACTORY>::run_test ( ut );
@@ -44,7 +44,7 @@ int main ( int argc , char **argv )
 
     test_matrix_loop<SimpleMatrixFactory> ( &ut );
 
-    #ifdef USES_LIBMESH
+    #ifdef USE_EXT_LIBMESH
         test_matrix_loop<DOFMatrixTestFactory<3,3,ExodusReaderGenerator<> > > ( &ut );
     #else
         test_matrix_loop<DOFMatrixTestFactory<3,3,AMPCubeGenerator<5> > > ( &ut );

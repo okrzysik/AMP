@@ -56,7 +56,7 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName,
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
 #endif
@@ -156,9 +156,9 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName,
   (boost::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(bvpOperator->
                                                                          getVolumeOperator()))->printStressAndStrain(mechSolVec, fname);
 
-  AMP::LinearAlgebra::Vector::shared_ptr mechUvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride("U", 0, 3) , "U" );
-  AMP::LinearAlgebra::Vector::shared_ptr mechVvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride("V", 1, 3) , "V" );
-  AMP::LinearAlgebra::Vector::shared_ptr mechWvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride("W", 2, 3) , "W" );
+  AMP::LinearAlgebra::Vector::shared_ptr mechUvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride(0,3), "U" );
+  AMP::LinearAlgebra::Vector::shared_ptr mechVvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride(1,3), "V" );
+  AMP::LinearAlgebra::Vector::shared_ptr mechWvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride(2,3), "W" );
 
   double finalMaxU = mechUvec->maxNorm();
   double finalMaxV = mechVvec->maxNorm();
@@ -183,7 +183,7 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName,
   double epsilon = 1.0e-13*(((bvpOperator->getMatrix())->extractDiagonal())->L1Norm());
   AMP::pout<<"epsilon = "<<epsilon<<std::endl;
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   siloWriter->registerVector(mechSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
   char outFileName1[256];
   sprintf(outFileName1, "undeformedBeam_%d", exampleNum);

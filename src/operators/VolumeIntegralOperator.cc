@@ -72,7 +72,7 @@ namespace AMP {
       AMP_INSIST( (u != NULL), "NULL Input Vector" );
 
 
-      AMP::LinearAlgebra::VS_Mesh meshSelector("subset", d_Mesh);
+      AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
       AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetPrimary, meshSubsetAuxillary;
 
       if ( d_inpVariables->numVariables() > 0 )

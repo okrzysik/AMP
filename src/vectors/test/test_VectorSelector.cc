@@ -78,7 +78,7 @@ public:
     static AMP::LinearAlgebra::Vector::shared_ptr   getVector()
     {
         boost::shared_ptr<typename T::vector>  vec = T::getVector();
-        AMP::LinearAlgebra::VS_Stride criterion = AMP::LinearAlgebra::VS_Stride("thirds",1,3);
+        AMP::LinearAlgebra::VS_Stride criterion = AMP::LinearAlgebra::VS_Stride(1,3);
         AMP::LinearAlgebra::Vector::shared_ptr  vec_select = vec->select( criterion, "thirds" );
         size_t N1 = vec->getGlobalSize();
         size_t N2 = vec_select->getGlobalSize();
@@ -88,7 +88,7 @@ public:
 };
 
 
-#ifdef USES_TRILINOS
+#ifdef USE_EXT_TRILINOS
 typedef SimpleManagedVectorFactory<AMP::LinearAlgebra::ManagedEpetraVector>         SMEVFactory;
 #endif
 
@@ -98,7 +98,7 @@ int main ( int argc , char **argv )
     AMP::AMPManager::startup(argc, argv);
     AMP::UnitTest ut;
 
-    #ifdef USES_TRILINOS
+    #ifdef USE_EXT_TRILINOS
         SelectTester<SMEVFactory>::run_test ( &ut );
         test_managed_vectors_loop<StridedVectorFactory<SMEVFactory> > ( &ut );
     #else

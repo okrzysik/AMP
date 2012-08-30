@@ -30,7 +30,7 @@ inline void AMP_MPI::sumReduce(const type *x, type *y, const int n) const {
     }
 }
 // Define specializations of call_sumReduce(type*, const int)
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> void AMP_MPI::call_sumReduce<unsigned char>(unsigned char*, const int) const;
 template <> void AMP_MPI::call_sumReduce<char>(char*, const int) const;
 template <> void AMP_MPI::call_sumReduce<unsigned int>(unsigned int*, const int) const;
@@ -49,7 +49,7 @@ void AMP_MPI::call_sumReduce(type *x, const int n) const {
     AMP_ERROR(message);
 }
 // Define specializations of call_sumReduce(const type*, type*, const int)
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> void AMP_MPI::call_sumReduce<unsigned char>(const unsigned char*, unsigned char*, const int) const;
 template <> void AMP_MPI::call_sumReduce<char>(const char*,  char*, const int) const;
 template <> void AMP_MPI::call_sumReduce<unsigned int>(const unsigned int*, unsigned int*, const int) const;
@@ -106,7 +106,7 @@ inline void AMP_MPI::minReduce(const type *x, type *y, const int n, int *rank_of
     }
 }
 // Define specializations of call_minReduce(type*, const int, int*)
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> void AMP_MPI::call_minReduce<unsigned char>(unsigned char*, const int, int*) const;
 template <> void AMP_MPI::call_minReduce<char>(char*, const int, int*) const;
 template <> void AMP_MPI::call_minReduce<unsigned int>(unsigned int*, const int, int*) const;
@@ -124,7 +124,7 @@ void AMP_MPI::call_minReduce(type *x, const int n, int *rank_of_min) const {
     AMP_ERROR(message);
 }
 // Define specializations of call_minReduce(const type*, type*, const int, int*)
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> void AMP_MPI::call_minReduce<unsigned char>(const unsigned char*, unsigned char*, const int, int*) const;
 template <> void AMP_MPI::call_minReduce<char>(const char*, char*, const int, int*) const;
 template <> void AMP_MPI::call_minReduce<unsigned int>(const unsigned int*, unsigned int*, const int, int*) const;
@@ -180,7 +180,7 @@ inline void AMP_MPI::maxReduce(const type *x, type *y, const int n, int *rank_of
     }
 }
 // Define specializations of call_maxReduce(type*, const int, int*)
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> void AMP_MPI::call_maxReduce<unsigned char>(unsigned char*, const int, int*) const;
 template <> void AMP_MPI::call_maxReduce<char>(char*, const int, int*) const;
 template <> void AMP_MPI::call_maxReduce<unsigned int>(unsigned int*, const int, int*) const;
@@ -198,7 +198,7 @@ void AMP_MPI::call_maxReduce(type *x, const int n, int *rank_of_max) const {
     AMP_ERROR(message);
 }
 // Define specializations of call_maxReduce(const type*, type*, const int, int*)
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> void AMP_MPI::call_maxReduce<unsigned char>(const unsigned char*, unsigned char*, const int, int*) const;
 template <> void AMP_MPI::call_maxReduce<char>(const char*, char*, const int, int*) const;
 template <> void AMP_MPI::call_maxReduce<unsigned int>(const unsigned int*, unsigned int*, const int, int*) const;
@@ -252,7 +252,7 @@ void AMP_MPI::call_bcast(type *x, const int n, const int root) const {
 *  send                                                                 *
 ************************************************************************/
 // Define specializations of send(const type*, const int, const int, int)
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> void AMP_MPI::send<char>(const char*, const int, const int, int) const;
 template <> void AMP_MPI::send<int>(const int*, int, const int, int) const;
 template <> void AMP_MPI::send<float>(const float*, const int, const int, int) const;
@@ -272,7 +272,7 @@ inline void AMP_MPI::send(const type *buf, const int length, const int recv_proc
 *  Isend                                                                *
 ************************************************************************/
 // Define specializations of Isend(const type*, const int, const int, const int)
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> MPI_Request AMP_MPI::Isend<char>(const char*, const int, const int, const int) const;
 template <> MPI_Request AMP_MPI::Isend<int>(const int*, int, const int, const int) const;
 template <> MPI_Request AMP_MPI::Isend<float>(const float*, const int, const int, const int) const;
@@ -292,7 +292,7 @@ inline MPI_Request AMP_MPI::Isend(const type *buf, const int length, const int r
 *  recv                                                                 *
 ************************************************************************/
 // Define specializations of recv(type*, int&, const int, const bool, int)
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> void AMP_MPI::recv<char>(char*, int&, const int, const bool, int) const;
 template <> void AMP_MPI::recv<int>(int*, int&, const int, const bool, int) const;
 template <> void AMP_MPI::recv<float>(float*, int&, const int, const bool, int) const;
@@ -317,7 +317,7 @@ inline void AMP_MPI::recv(type *buf, int &length, const int send_proc_number, co
 *  Irecv                                                                *
 ************************************************************************/
 // Define specializations of recv(type*, int&, const int, const bool, int)
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> MPI_Request AMP_MPI::Irecv<char>(char*, const int, const int, const int) const;
 template <> MPI_Request AMP_MPI::Irecv<int>(int*, const int, const int, const int) const;
 template <> MPI_Request AMP_MPI::Irecv<float>(float*, const int, const int, const int) const;
@@ -397,7 +397,7 @@ int AMP_MPI::allGather(const type *send_data, const int send_cnt, type *recv_dat
     return N_recv;
 }
 // Define specializations of call_allGather(const type, type*) 
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> void AMP_MPI::call_allGather<unsigned char>(const unsigned char, unsigned char*) const;
 template <> void AMP_MPI::call_allGather<char>(const char, char*) const;
 template <> void AMP_MPI::call_allGather<unsigned int>(const unsigned int, unsigned int*) const;
@@ -414,7 +414,7 @@ void AMP_MPI::call_allGather(const type x_in, type *x_out)  const
     allGather<char>( (const char*) &x_in, (int) sizeof(type), (char*) x_out );
 }
 // Define specializations of call_allGather(const type*, int, type*, int*, int*)
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> void AMP_MPI::call_allGather<unsigned char>(const unsigned char*, int, unsigned char*, int*, int*) const;
 template <> void AMP_MPI::call_allGather<char>(const char*, int, char*, int*, int*) const;
 template <> void AMP_MPI::call_allGather<unsigned int>(const unsigned int*, int, unsigned int*, int*, int*) const;
@@ -525,7 +525,7 @@ inline void AMP_MPI::sumScan(const type *x, type *y, const int n) const {
     }
 }
 // Define specializations of call_sumScan(const type*, type*, int)
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> void AMP_MPI::call_sumScan<unsigned char>(const unsigned char*, unsigned char*, int) const;
 template <> void AMP_MPI::call_sumScan<char>(const char*, char*, int) const;
 template <> void AMP_MPI::call_sumScan<unsigned int>(const unsigned int*, unsigned int*, int) const;
@@ -558,7 +558,7 @@ inline void AMP_MPI::minScan(const type *x, type *y, const int n) const {
     }
 }
 // Define specializations of call_minScan(const type*, type*, int)
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> void AMP_MPI::call_minScan<unsigned char>(const unsigned char*, unsigned char*, int) const;
 template <> void AMP_MPI::call_minScan<char>(const char*, char*, int) const;
 template <> void AMP_MPI::call_minScan<unsigned int>(const unsigned int*, unsigned int*, int) const;
@@ -590,7 +590,7 @@ inline void AMP_MPI::maxScan(const type *x, type *y, const int n) const {
     }
 }
 // Define specializations of call_maxScan(const type*, type*, int)
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> void AMP_MPI::call_maxScan<unsigned char>(const unsigned char*, unsigned char*, int) const;
 template <> void AMP_MPI::call_maxScan<char>(const char*, char*, int) const;
 template <> void AMP_MPI::call_maxScan<unsigned int>(const unsigned int*, unsigned int*, int) const;
@@ -613,7 +613,7 @@ void AMP_MPI::call_maxScan(const type *x, type *y, int n) const {
 *  allToAll                                                             *
 ************************************************************************/
 // Define specializations of allToAll(const int n, const char*, char* )
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> void AMP_MPI::allToAll<unsigned char>(const int n, const unsigned char*, unsigned char* ) const;
 template <> void AMP_MPI::allToAll<char>(const int n, const char*, char* ) const;
 template <> void AMP_MPI::allToAll<unsigned int>(const int n, const unsigned int*, unsigned int* ) const;
@@ -624,7 +624,7 @@ template <> void AMP_MPI::allToAll<float>(const int n, const float*, float* ) co
 template <> void AMP_MPI::allToAll<double>(const int n, const double*, double* ) const;
 #endif
 // Default instantiations of allToAll(const int n, const char*, char* )
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <class type>
 void AMP_MPI::allToAll(const int n, const type *send_data, type *recv_data ) const {
     allToAll<char>(n*sizeof(type),(char*)send_data,(char*)recv_data);
@@ -693,7 +693,7 @@ int AMP_MPI::allToAll(const type *send_data, const int send_cnt[], const int sen
     return N_recieved;
 }
 // Define specializations of call_allToAll(const type*, const int*, const int*, type*, const int*, const int*);
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 template <> void AMP_MPI::call_allToAll<unsigned char>(const unsigned char*, const int*, const int*, unsigned char*, const int*, const int*) const;
 template <> void AMP_MPI::call_allToAll<char>(const char*, const int*, const int*, char*, const int*, const int*) const;
 template <> void AMP_MPI::call_allToAll<unsigned int>(const unsigned int*, const int*, const int*, unsigned int*, const int*, const int*) const;

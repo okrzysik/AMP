@@ -2,13 +2,14 @@
 #define included_test_Vector
 
 #include <vectors/Variable.h>
+#include "vectors/NullVector.h"
 #include "vectors/SimpleVector.h"
 #include "test_VectorTests.h"
 #include "utils/AMP_MPI.h"
-#ifdef USES_PETSC
+#ifdef USE_EXT_PETSC
     #include <vectors/petsc/NativePetscVector.h>
 #endif
-#ifdef USES_TRILINOS
+#ifdef USE_EXT_TRILINOS
     #include <vectors/trilinos/EpetraVectorEngine.h>
 #endif
 
@@ -35,6 +36,21 @@ public:
 };
 
 
+class  NullVectorFactory
+{
+public:
+    typedef AMP::LinearAlgebra::NullVector                  vector;
+
+    static AMP::LinearAlgebra::Variable::shared_ptr  getVariable() {
+        return AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "null" ) );
+    }
+
+    static AMP::LinearAlgebra::Vector::shared_ptr getVector() {
+        return AMP::LinearAlgebra::NullVector::create( "null" );
+    }
+};
+
+
 template <int I>
 class  SimpleVectorFactory
 {
@@ -51,7 +67,7 @@ public:
 };
 
 
-#ifdef USES_TRILINOS
+#ifdef USE_EXT_TRILINOS
 template <typename T>
 class  SimpleManagedVectorFactory
 {
@@ -82,7 +98,7 @@ class  SimpleManagedVectorFactory
 #endif
 
 
-#ifdef USES_PETSC
+#ifdef USE_EXT_PETSC
 template <typename T>
 class  PetscManagedVectorFactory
 {

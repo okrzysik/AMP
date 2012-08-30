@@ -5,7 +5,7 @@ extern "C"{
 }
 
 
-#ifdef USES_SUNDIALS
+#ifdef USE_EXT_SUNDIALS
 
 namespace AMP {
 namespace LinearAlgebra {

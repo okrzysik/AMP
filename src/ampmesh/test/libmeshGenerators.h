@@ -91,7 +91,7 @@ public:
             indexArray[i] = i+1;
         meshArrayDatabase->putIntegerArray("indicies",indexArray);
         meshArrayDatabase->putString("MeshName","pellet_%i");
-        #ifdef USES_LIBMESH
+        #ifdef USE_EXT_LIBMESH
             meshArrayDatabase->putString("FileName","pellet_lo_res.e");
             meshArrayDatabase->putString("MeshType","libMesh");
         #else

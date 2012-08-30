@@ -216,7 +216,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   AMP::pout<<"Final Residual Norm: "<<finalResidualNorm<<std::endl;
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 1 );
 #endif
 

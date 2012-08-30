@@ -46,7 +46,7 @@ void OxideTimeIntegrator::initialize( boost::shared_ptr<TimeIntegratorParameters
     AMP_INSIST((int)d_mesh->getGeomType()<d_mesh->getDim(),
         "Oxide mesh must be a surface mesh (dimension < physical dimension");
     AMP_INSIST(oxide_parameters->d_temp.get()!=NULL,"Oxide Time Integrator needs a temerature vector");
-    AMP::LinearAlgebra::VS_Mesh meshSelector("temperature",d_mesh);
+    AMP::LinearAlgebra::VS_Mesh meshSelector(d_mesh);
     d_temp = (oxide_parameters->d_temp)->select(meshSelector,"temperature");
     AMP_ASSERT(d_temp.get());
     std::vector<size_t> dofs;

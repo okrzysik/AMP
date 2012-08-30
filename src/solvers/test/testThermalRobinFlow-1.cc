@@ -367,7 +367,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   //---------------------------------------------------------------------------
 
   if( AMP::AMP_MPI::getNodes() == 1 ) {
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
     manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 0 );
 #endif
   }

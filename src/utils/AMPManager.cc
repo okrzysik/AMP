@@ -6,13 +6,13 @@
 #include "utils/ProfilerApp.h"
 #include "utils/AMP_MPI.h"
 
-#ifdef USES_PETSC
+#ifdef USE_EXT_PETSC
     #include "petsc.h"
     #include "petscsys.h"
     #include "petscerror.h"
 #endif
 
-//#ifdef USES_LIBMESH
+//#ifdef USE_EXT_LIBMESH
 //    #include "ampmesh/libmesh/initializeLibMesh.h"
 //#endif
 
@@ -126,7 +126,7 @@ void term_func()
 /****************************************************************************
 *  Function to handle MPI errors                                            *
 ****************************************************************************/
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
 MPI_Errhandler AMPManager::mpierr;
 static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
 {
@@ -150,7 +150,7 @@ static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
 /****************************************************************************
 *  Function to PETSc errors                                                 *
 ****************************************************************************/
-#ifdef USES_PETSC
+#ifdef USE_EXT_PETSC
 //PetscErrorCode petsc_err_handler(MPI_Comm,int,const char *,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*)
 PetscErrorCode petsc_err_handler(int, const char*, const char*, const char*, PetscErrorCode, int, const char*, void*)
 {
@@ -187,7 +187,7 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
     // Set the abort method
     AMPManager::use_MPI_Abort = properties.use_MPI_Abort;
     // Initialize PETSc
-    #ifdef USES_PETSC
+    #ifdef USE_EXT_PETSC
         double petsc_start_time = time();
         if ( PetscInitializeCalled ) {
             called_PetscInitialize = false;
@@ -201,7 +201,7 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
         petsc_time = time()-petsc_start_time;
     #endif
     // Initialize MPI
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         int flag;
         MPI_Initialized(&flag);
         if ( flag ) {
@@ -219,7 +219,7 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
     #endif
     // Initialize AMP's MPI
     if ( properties.COMM_WORLD == AMP_COMM_WORLD ) 
-		#ifdef USES_MPI
+		#ifdef USE_EXT_MPI
 			comm_world = AMP_MPI(MPI_COMM_WORLD);
 		#else
 			comm_world = AMP_MPI(AMP_COMM_WORLD);
@@ -268,27 +268,27 @@ void AMPManager::shutdown()
     // Shutdown the parallel IO
     PIO::finalize();
     // Shutdown LibMesh
-    /*#ifdef USES_LIBMESH
+    /*#ifdef USE_EXT_LIBMESH
         if ( AMP::Mesh::initializeLibMesh::isInitialized() ) {
             AMP_ERROR("Libmesh should be finalized before shutting down");
         }
     #endif*/
     // Shutdown MPI
     comm_world = AMP_MPI(AMP_COMM_NULL);    // Delete comm world
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         MPI_Errhandler_free( &mpierr );    // Delete the error handler
         MPI_Comm_set_errhandler( MPI_COMM_SELF, MPI_ERRORS_ARE_FATAL );
         MPI_Comm_set_errhandler( MPI_COMM_SELF, MPI_ERRORS_ARE_FATAL );
     #endif
     if ( called_MPI_Init ) {
         double MPI_start_time = time();
-        #ifdef USES_MPI
+        #ifdef USE_EXT_MPI
             MPI_Finalize();
         #endif
         MPI_time = time()-MPI_start_time;
     }
     // Shudown PETSc
-    #ifdef USES_PETSC
+    #ifdef USE_EXT_PETSC
         if ( called_PetscInitialize ) {
             double petsc_start_time = time();
             PetscFinalize();

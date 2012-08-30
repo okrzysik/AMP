@@ -42,7 +42,7 @@ export BASE=/opt/amp/packages/serial/
    -D SILO_DIRECTORY:PATH=${BASE}/silo/${METHOD}/${TYPE}                    \
    -D HDF5_DIRECTORY:PATH=${BASE}/hdf5/${METHOD}/${TYPE}                    \
    -D X11_DIRECTORY:PATH=/usr                                               \
-   -D USES_MPI=0                                                             \
+   -D USE_EXT_MPI=0                                                         \
    ${AMP_SOURCE}
 
 

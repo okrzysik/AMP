@@ -363,7 +363,7 @@ COPY_MESH_FILE(halden_1_clad.e)
 
 
 #NEK-5000 tests
-IF( USES_NEK ) 
+IF( USE_EXT_NEK ) 
   COPY_TEST_DATA_FILE ( SESSION.NAME )
   COPY_TEST_DATA_FILE ( input.h5m )
   COPY_TEST_DATA_FILE ( pipe.rea )
@@ -374,7 +374,7 @@ IF( USES_NEK )
 ENDIF()
 
 #MOAB tests
-IF( USES_MOAB )
+IF( USE_EXT_MOAB )
   COPY_TEST_DATA_FILE ( input_testMoabBasedOperator )
   ADD_AMP_TEST_1_2_4( testMoabBasedOperator )
   
@@ -384,7 +384,8 @@ IF( USES_MOAB )
   ADD_AMP_PROVISIONAL_TEST( testMoabInterface )
 ENDIF()
 
-IF( USES_DENDRO AND USES_PETSC )
+IF( USE_EXT_DENDRO AND USE_EXT_PETSC )
+   # R.S.: This needs to be fixed!
     ADD_AMP_PROVISIONAL_TEST( testNodeToSegmentConstraintsOperator )
     COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator-cube )
     COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator-cylinder )

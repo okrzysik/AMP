@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 
     // Create the comm used to initialize AMP
     MPI_Comm AMP_comm = AMP_COMM_WORLD;
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         if ( procMax > 0 ) {
             MPI_Init(&argc, &argv);
             // Create a new comm to initialize AMPManager
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
         // This is correct
     }
 
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         // Close MPI
         if ( procMax > 0 ) {
             MPI_Barrier(MPI_COMM_WORLD);

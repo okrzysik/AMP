@@ -328,7 +328,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
      }
          
     
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
     AMP::LinearAlgebra::Vector::shared_ptr pSolution=pIDATimeIntegrator->getCurrentSolution();
     meshAdapter->registerVectorAsData (  pSolution, "ThemalSolutionVector" );
     manager->writeFile<AMP::SiloIO> ( "IDA-NonlinearBVP" , 1 );

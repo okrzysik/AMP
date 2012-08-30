@@ -2,7 +2,7 @@
 
 #include "EpetraVectorEngine.h"
 
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
     #include <Epetra_MpiComm.h>
 #else
     #include <Epetra_SerialComm.h>
@@ -42,7 +42,7 @@ Epetra_Map  &EpetraVectorEngineParameters::getEpetraMap()
     if ( d_emap.get() != NULL )
         return *d_emap;
     // Create the epetra map
-    #ifdef USES_MPI
+    #ifdef USE_EXT_MPI
         Epetra_MpiComm  comm = d_comm.getCommunicator();
     #else
         Epetra_SerialComm  comm;

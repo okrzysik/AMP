@@ -112,7 +112,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   // create the following shared pointers for ease of use
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   //-------------------------------------------------------------------------------------------//
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
@@ -212,7 +212,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   double initialResidualNorm  = resVec->L2Norm();
   AMP::pout<<"Initial Residual Norm: "<< initialResidualNorm <<std::endl;
 
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
   siloWriter->writeFile( exeName , 0 );
 #endif
 
@@ -227,7 +227,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   ut->passes(exeName);
 
   if( globalComm.getSize() == 1 ) {
-#ifdef USES_SILO
+#ifdef USE_EXT_SILO
     siloWriter->writeFile( exeName , 0 );
 #endif
   }

@@ -12,9 +12,9 @@
 #include "Utilities.h"
 
 //! Define MPI objects
-#ifdef USES_MPI
+#ifdef USE_EXT_MPI
     #include "mpi.h"    // include mpi.h
-#elif defined(USES_TRILINOS)
+#elif defined(USE_EXT_TRILINOS)
     #include "mpi.h"    // trilinos serial builds include mpi.h
 #else
     typedef int MPI_Comm;
