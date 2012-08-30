@@ -28,13 +28,16 @@ protected:
 
 
 // Class to create a cube 
-template <int SIZE>
-class  AMPCubeGenerator : public MeshGenerator
+template <int SIZE_X, int SIZE_Y, int SIZE_Z>
+class  AMPCubeGenerator3 : public MeshGenerator
 {
 public:
     virtual void build_mesh() {
         // Set the dimensions of the mesh
-        std::vector<int> size(3,SIZE);
+        std::vector<int> size(3);
+        size[0] = SIZE_X;
+        size[1] = SIZE_Y;
+        size[2] = SIZE_Z;
         std::vector<double> range(6,0.0);
         range[1] = 1.0;
         range[3] = 1.0;
@@ -50,6 +53,16 @@ public:
         params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
         // Create an AMP mesh
         mesh = boost::shared_ptr<AMP::Mesh::BoxMesh>(new AMP::Mesh::BoxMesh(params));      
+    }
+};
+template <int SIZE>
+class  AMPCubeGenerator : public MeshGenerator
+{
+public:
+    virtual void build_mesh() {
+        AMPCubeGenerator3<SIZE,SIZE,SIZE> gen;
+        gen.build_mesh(); 
+        mesh = gen.getMesh();
     }
 };
 

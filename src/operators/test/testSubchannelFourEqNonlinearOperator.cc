@@ -22,6 +22,7 @@
 
 #include "ampmesh/StructuredMeshHelper.h"
 #include "discretization/simpleDOF_Manager.h"
+#include "discretization/MultiDOF_Manager.h"
 
 void Test(AMP::UnitTest *ut, const std::string exeName)
 {
@@ -45,18 +46,31 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   xyFaceMesh = subchannelMesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh , 0 ) );
 
   // get dof manager
-  int DofsPerAxialFace =  3;
-  AMP::Discretization::DOFManager::shared_ptr axialDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh,
-     AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerAxialFace);
+  AMP::Discretization::DOFManager::shared_ptr subchannelDOFManager;
+  if ( subchannelMesh.get() != NULL ) {
+    AMP::Mesh::MeshIterator axialFaces0 = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0);
+    AMP::Mesh::MeshIterator axialFaces1 = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1);
+    AMP::Mesh::MeshIterator gapFaces0 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, 
+      AMP::Mesh::StructuredMeshHelper::getXZFaceIterator(subchannelMesh,0), 
+      AMP::Mesh::StructuredMeshHelper::getYZFaceIterator(subchannelMesh,0) );
+    AMP::Mesh::MeshIterator gapFaces1 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, 
+      AMP::Mesh::StructuredMeshHelper::getXZFaceIterator(subchannelMesh,1), 
+      AMP::Mesh::StructuredMeshHelper::getYZFaceIterator(subchannelMesh,1) );
+    std::vector<AMP::Discretization::DOFManager::shared_ptr> subchannelChildrenDOFManagers(2);
+    subchannelChildrenDOFManagers[0] = AMP::Discretization::simpleDOFManager::create( subchannelMesh, axialFaces1, axialFaces0, 3 );
+    subchannelChildrenDOFManagers[1] = AMP::Discretization::simpleDOFManager::create( subchannelMesh, gapFaces1, gapFaces0, 1 );
+    subchannelDOFManager = AMP::Discretization::DOFManager::shared_ptr( 
+      new AMP::Discretization::multiDOFManager( subchannelMesh->getComm(), subchannelChildrenDOFManagers ) );
+  }
 
   // get input and output variables
   AMP::LinearAlgebra::Variable::shared_ptr inputVariable  (new AMP::LinearAlgebra::Variable("flow"));
   AMP::LinearAlgebra::Variable::shared_ptr outputVariable (new AMP::LinearAlgebra::Variable("flow"));
 
   // create solution, rhs, and residual vectors
-  AMP::LinearAlgebra::Vector::shared_ptr SolVec = AMP::LinearAlgebra::createVector( axialDOFManager , inputVariable , true );
-  AMP::LinearAlgebra::Vector::shared_ptr RhsVec = AMP::LinearAlgebra::createVector( axialDOFManager , outputVariable, true );
-  AMP::LinearAlgebra::Vector::shared_ptr ResVec = AMP::LinearAlgebra::createVector( axialDOFManager , outputVariable, true );
+  AMP::LinearAlgebra::Vector::shared_ptr SolVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable , true );
+  AMP::LinearAlgebra::Vector::shared_ptr RhsVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
+  AMP::LinearAlgebra::Vector::shared_ptr ResVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
 
   // create subchannel physics model
   boost::shared_ptr<AMP::Database> subchannelPhysics_db = input_db->getDatabase("SubchannelPhysicsModel");
@@ -69,7 +83,7 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
   subchannelOpParams->d_Mesh = subchannelMesh ;
   subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
-  subchannelOpParams->d_dofMap = axialDOFManager ;
+  subchannelOpParams->d_dofMap = subchannelDOFManager;
 
   boost::shared_ptr<AMP::Operator::SubchannelFourEqNonlinearOperator> subchannelOperator (new AMP::Operator::SubchannelFourEqNonlinearOperator(subchannelOpParams));
 
@@ -94,7 +108,7 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
 
   {
      for (; axialFace != axialFace.end(); axialFace++){
-        axialDOFManager->getDOFs(axialFace->globalID(),axialDofs);
+        subchannelDOFManager->getDOFs(axialFace->globalID(),axialDofs);
         SolVec->setValueByGlobalID(axialDofs[0], 5.0 );
         SolVec->setValueByGlobalID(axialDofs[1], 1000.0e3 );
         SolVec->setValueByGlobalID(axialDofs[2], 15.0e6 );
