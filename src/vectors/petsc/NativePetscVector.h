@@ -15,6 +15,10 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
+/*! \struct Vec
+    \brief PETSc vector
+*/
+
 
 /** \class NativePetscVectorParameters
   * \brief Parameters to set when creating a NativePetscVector
