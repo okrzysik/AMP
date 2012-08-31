@@ -45,7 +45,7 @@ namespace LinearAlgebra {
       template <typename RETURN_TYPE>
       const RETURN_TYPE *  getRawDataBlock() const;
 
-      virtual void copyVector(const Vector &);
+      virtual void copyVector( const Vector::const_shared_ptr &rhs );
       virtual void swapVectors(Vector &);
       virtual void aliasVector(Vector &);
 
@@ -92,6 +92,9 @@ namespace LinearAlgebra {
       virtual size_t numberOfDataBlocks () const;
       virtual size_t sizeOfDataBlock ( size_t ) const;
 
+      using Vector::cloneVector;
+      using Vector::dot;
+
     protected:
 
       virtual void  selectInto ( const VectorSelector & , Vector::shared_ptr ) {}
@@ -107,7 +110,6 @@ namespace LinearAlgebra {
 }
 }
 
-#include "NullVector.inline.h"
 #include "NullVector.tmpl.h"
 
 #endif

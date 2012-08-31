@@ -4,34 +4,47 @@ namespace AMP {
 namespace Mesh {
 
 
-AMP::Mesh::MeshIterator  StructuredMeshHelper::getXYFaceIterator(AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth)
+
+/************************************************************
+* Functions to iterators over particular sets of faces      *
+************************************************************/
+AMP::Mesh::MeshIterator  StructuredMeshHelper::getXYFaceIterator(
+    AMP::Mesh::Mesh::shared_ptr mesh, int gcw )
 {
-
-    std::multimap<double,AMP::Mesh::MeshElement> xyFace;
-
-    AMP::Mesh::MeshIterator iterator = subChannel->getIterator( AMP::Mesh::Face, ghostWidth );
-
+    return getFaceIterator( mesh, gcw, 2 );
+}
+AMP::Mesh::MeshIterator  StructuredMeshHelper::getXZFaceIterator(
+    AMP::Mesh::Mesh::shared_ptr mesh, int gcw )
+{
+    return getFaceIterator( mesh, gcw, 1 );
+}
+AMP::Mesh::MeshIterator  StructuredMeshHelper::getYZFaceIterator(
+    AMP::Mesh::Mesh::shared_ptr mesh, int gcw )
+{
+    return getFaceIterator( mesh, gcw, 0 );
+}
+AMP::Mesh::MeshIterator  StructuredMeshHelper::getFaceIterator(
+    AMP::Mesh::Mesh::shared_ptr mesh, int gcw, int direction)
+{
+    AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::Face, gcw );
+    std::vector<AMP::Mesh::MeshElement> face_list;
+    face_list.reserve(iterator.size());
     for(size_t i=0; i<iterator.size(); ++i ) {
         std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements(AMP::Mesh::Vertex);
         std::vector<double> center = iterator->centroid();
         bool is_valid = true;
         for (size_t j=0; j<nodes.size(); ++j) {
             std::vector<double> coord = nodes[j].coord();
-            if ( !AMP::Utilities::approx_equal(coord[2],center[2], 1e-6) )
+            if ( !AMP::Utilities::approx_equal(coord[direction],center[direction],1e-12) )
                 is_valid = false;
         }
-        if ( is_valid ) {
-            xyFace.insert(std::pair<double,AMP::Mesh::MeshElement>(center[2],*iterator));
-        }
+        if ( is_valid )
+            face_list.push_back(*iterator);
         ++iterator;
     }
-
     boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( 
         new std::vector<AMP::Mesh::MeshElement>() );
-    elements->reserve(xyFace.size());
-    for (std::multimap<double,AMP::Mesh::MeshElement>::iterator it=xyFace.begin(); it!=xyFace.end(); ++it)
-        elements->push_back( it->second );
-
+    *elements = face_list;
     return AMP::Mesh::MultiVectorIterator( elements );
 }
 

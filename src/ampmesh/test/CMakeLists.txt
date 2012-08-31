@@ -28,6 +28,7 @@ ENDIF()
 ADD_AMP_TEST( test_LoadBalance 512 inputMultiPellet348 )
 ADD_AMP_TEST( test_LoadBalance 64000 inputMultiPellet348 )
 #ADD_AMP_TEST( test_LoadBalance 64000 17x17_denovo_thermal_1x )
+ADD_AMP_TEST_1_2_4( test_StructuredMeshHelpers )
 
 ADD_AMP_TEST( testHex8ElementMapping )
 ADD_AMP_TEST( testHex8ElementLinearInterpolation )

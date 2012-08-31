@@ -12,6 +12,7 @@ namespace AMP {
 PetscMonitor::PetscMonitor( AMP_MPI comm ) 
 {
     d_comm = comm;
+    AMP_ASSERT(!d_comm.isNull());
 }
 PetscMonitor::~PetscMonitor()
 {

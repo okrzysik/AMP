@@ -5,6 +5,22 @@
 # For slightly better performance:
 # valgrind --leak-check=yes --show-reachable=yes --suppressions=../../../../../../AMP/ValgrindSuppresionFile --log-file=memory.log ./test_AMPManager
 
+
+#### Supress AMP errors
+{
+   yyMemoryLeak
+   Memcheck:Leak
+   ...
+   fun:realloc
+   fun:_Z9yyreallocPvj
+   fun:_ZL21yyensure_buffer_stackv
+   fun:_Z9yyrestartP7__sFILE
+   ...
+}
+
+
+
+
 #### Supress std::ios_base::sync_with_stdio memory errors
 {
    std/ios_base/sync_with_stdio
@@ -40,6 +56,16 @@
    ...
    fun:MPI_Init
    fun:PetscInitialize
+   ...
+}
+{
+   PetscMallocAlign
+   Memcheck:Leak
+   ...
+   fun:malloc
+   fun:PetscMallocAlign
+   fun:PetscTrMallocDefault
+   fun:PetscPushErrorHandler
    ...
 }
 
@@ -126,5 +152,28 @@
    fun:printf
    ...
 }
+{
+   printfLeak
+   Memcheck:Leak
+   ...
+   fun:malloc
+   fun:__Balloc_D2A
+   ...
+   fun:__dtoa
+   fun:__vfprintf
+   fun:vsnprintf
+   ...
+}
+{
+   demangeLeak
+   Memcheck:Leak
+   ...
+   fun:malloc
+   fun:realloc
+   ...
+   fun:__cxa_demangle
+   ...
+}
+
 
 

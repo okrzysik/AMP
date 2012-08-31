@@ -119,6 +119,14 @@ namespace Operator {
       void fillSubchannelGrid(AMP::Mesh::Mesh::shared_ptr); // function to fill the subchannel data for all processors
       int d_numSubchannels; // number of subchannels
 
+      double Volume(double,double);              // evaluates specific volume
+      double Temperature(double,double);         // evaluates temperature
+      double ThermalConductivity(double,double); // evaluates thermal conductivity
+      double Enthalpy(double,double);            // evaluates specific enthalpy
+
+      void getAxialFaces(AMP::Mesh::MeshElement,AMP::Mesh::MeshElement&,AMP::Mesh::MeshElement&);
+      AMP::Mesh::MeshElement getAxiallyAdjacentLateralFace(AMP::Mesh::MeshElement*,AMP::Mesh::MeshElement,
+         std::map<std::vector<double>,AMP::Mesh::MeshElement>);
   };
 
 }
