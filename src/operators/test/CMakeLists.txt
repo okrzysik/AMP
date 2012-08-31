@@ -385,6 +385,7 @@ IF( USE_EXT_MOAB )
 ENDIF()
 
 IF( USE_EXT_DENDRO AND USE_EXT_PETSC )
+   # R.S.: This needs to be fixed!
     ADD_AMP_PROVISIONAL_TEST( testNodeToSegmentConstraintsOperator )
     COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator-cube )
     COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator-cylinder )

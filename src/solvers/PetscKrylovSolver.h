@@ -4,6 +4,8 @@
 #include "utils/AMP_MPI.h"
 #include "SolverStrategy.h"
 #include "PetscKrylovSolverParameters.h"
+#include "solvers/PetscMonitor.h"
+
 
 extern "C"{
 
@@ -198,6 +200,8 @@ namespace Solver {
   // the last reference.
   AMP::LinearAlgebra::Vector::shared_ptr  fVecView;
   AMP::LinearAlgebra::Vector::shared_ptr  uVecView;
+
+  boost::shared_ptr<PetscMonitor> d_PetscMonitor;
 
   KSP d_KrylovSolver;
 

@@ -4,8 +4,8 @@
 #include <set>
 #include <map>
 #include <complex>
-#include "Utilities.h"
-#include "AMP_MPI.h"
+#include "utils/Utilities.h"
+#include "utils/AMP_MPI.h"
 
 #ifdef USE_EXT_PETSC
     #include "petsc.h"
@@ -54,12 +54,19 @@ public:
         //static PetscErrorCode (*)(void**)  getSNESMonitorDelete();
     #endif
 
+    // Function to remove the monitor options from the options
+    static std::string removeMonitor( std::string options );
+
 private:
 
     PetscMonitor();
 
     AMP::AMP_MPI d_comm;
 
+    #ifdef USE_EXT_PETSC
+        void printKSPStatus( KSP ksp, int iteration, double L2norm );
+        void printSNESStatus( SNES snes, int iteration, double L2norm );
+    #endif
 
 };
 

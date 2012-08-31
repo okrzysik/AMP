@@ -1,18 +1,10 @@
 #ifndef included_AMP_PetscSNESSolver
 #define included_AMP_PetscSNESSolver
 
-#ifndef included_AMP_SolverStrategy
-#include "SolverStrategy.h"
-#endif
-
-#ifndef included_AMP_PetscSNESSolverParameters
-#include "PetscSNESSolverParameters.h"
-#endif
-
-#ifndef included_AMP_PetscKrylovSolver
-#include "PetscKrylovSolver.h"
-#endif
-
+#include "solvers/SolverStrategy.h"
+#include "solvers/PetscSNESSolverParameters.h"
+#include "solvers/PetscKrylovSolver.h"
+#include "solvers/PetscMonitor.h"
 #include "utils/AMP_MPI.h"
 
 extern "C"{
@@ -210,6 +202,8 @@ namespace Solver {
     boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pSolutionVector;
     boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pResidualVector;
     boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchVector;
+    
+    boost::shared_ptr<PetscMonitor> d_PetscMonitor;
     
     // The following SNES solver keeps a reference to these vectors around. 
     // By declaring the vectors here, we ensure correct behavior during destruction.
