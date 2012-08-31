@@ -311,6 +311,11 @@ slaveFout.close();
     slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0);
   } // end if
 
+  // apply dirichlet rhs correction
+  if (slaveBVPOperator.get() != NULL) {
+    slaveBVPOperator->modifyRHSvector(columnRhsVec);
+  } // end if
+
   // get d
   contactOperator->addShiftToSlave(columnSolVec);
 
@@ -319,10 +324,6 @@ slaveFout.close();
   columnOperator->apply(nullVec, columnSolVec, rhsCorrectionVec, -1.0, 0.0);
   columnOperator->append(contactOperator);
 
-  if (slaveBVPOperator.get() != NULL) {
-    slaveBVPOperator->modifyRHSvector(columnRhsVec);
-  } // end if
-
   // f = f - Kd
   columnRhsVec->add(columnRhsVec, rhsCorrectionVec);
 
@@ -330,11 +331,6 @@ slaveFout.close();
   // f^s = 0
   contactOperator->addSlaveToMaster(columnRhsVec);
   contactOperator->setSlaveToZero(columnRhsVec);
-
-  // apply dirichlet rhs correction
-//  if (slaveBVPOperator.get() != NULL) {
-//    slaveBVPOperator->modifyRHSvector(columnRhsVec);
-//  } // end if
 
   // u_s = C u_m
   contactOperator->copyMasterToSlave(columnSolVec);
