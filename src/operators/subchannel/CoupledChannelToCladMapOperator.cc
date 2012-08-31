@@ -1,5 +1,7 @@
 #include "CoupledChannelToCladMapOperator.h"
 #include "CoupledChannelToCladMapOperatorParameters.h"
+#include "operators/subchannel/SubchannelConstants.h"
+
 #include "utils/Utilities.h"
 #include "ampmesh/StructuredMeshHelper.h"
 
@@ -28,6 +30,10 @@ namespace Operator {
           AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr ,
           const double a, const double b)
       {
+
+        const double h_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
+        const double P_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
+
         AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
 
         AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = subsetInputVector( u );
@@ -44,8 +50,8 @@ namespace Operator {
           faceDOFManager->getDOFs( face->globalID(), dofs );
           scalarFaceDOFManager->getDOFs( face->globalID(), scalarDofs );
           std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
-          temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,uInternal->getValueByGlobalID(dofs[0]))));
-          temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,uInternal->getValueByGlobalID(dofs[1]))));
+          temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_scale*uInternal->getValueByGlobalID(dofs[0]))));
+          temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,P_scale*uInternal->getValueByGlobalID(dofs[1]))));
           std::vector<double> temperatureResult(1);
           d_subchannelPhysicsModel->getProperty("Temperature", temperatureResult, temperatureArgMap); 
           d_subchannelTemperature->setValueByGlobalID(scalarDofs[0], temperatureResult[0]);

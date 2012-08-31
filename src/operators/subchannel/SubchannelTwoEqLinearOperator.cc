@@ -1,6 +1,7 @@
-
 #include "operators/subchannel/SubchannelTwoEqLinearOperator.h"
 #include "operators/subchannel/SubchannelOperatorParameters.h"
+#include "operators/subchannel/SubchannelConstants.h"
+
 #include "ampmesh/StructuredMeshHelper.h"
 #include "vectors/VectorBuilder.h"
 #include "matrices/MatrixBuilder.h"
@@ -32,6 +33,9 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
       d_diameter  = getDoubleParameter(myparams,"Rod_Diameter",0.0097028);  
       d_K    = getDoubleParameter(myparams,"Form_Loss_Coefficient",0.2);  
       d_source = getStringParameter(myparams,"Heat_Source_Type","totalHeatGeneration");
+
+      const double h_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
+      const double P_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
 
       // get additional parameters based on heat source type
       if (d_source == "totalHeatGeneration") {
@@ -157,7 +161,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
               // energy residual
               // ======================================================
               if (face == face.begin()){
-                double p_in = d_frozenVec->getValueByGlobalID(dofs[1]);
+                double p_in = P_scale*d_frozenVec->getValueByGlobalID(dofs[1]);
                 d_matrix->setValueByGlobalID(dofs[0], dofs[0], 1.0);
                 d_matrix->setValueByGlobalID(dofs[0], dofs[1], -1.0*dhdp(d_Tin,p_in));
               } else {
@@ -174,8 +178,8 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
               // ======================================================
               // residual at face corresponds to cell above
               d_dofMap->getDOFs( face->globalID(), dofs );
-              double h_minus = d_frozenVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
-              double p_minus = d_frozenVec->getValueByGlobalID(dofs[1]); // pressure evaluated at lower face
+              double h_minus = h_scale*d_frozenVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
+              double p_minus = P_scale*d_frozenVec->getValueByGlobalID(dofs[1]); // pressure evaluated at lower face
               if (face == end_face - 1){
                 d_dofMap->getDOFs( face->globalID(), dofs );
                 d_matrix->setValueByGlobalID(dofs[1], dofs[1], 1.0);
@@ -183,8 +187,8 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
                 ++face;
                 d_dofMap->getDOFs( face->globalID(), dofs_plus );
                 --face;
-                double h_plus  = d_frozenVec->getValueByGlobalID(dofs_plus[0]); // enthalpy evaluated at upper face
-                double p_plus  = d_frozenVec->getValueByGlobalID(dofs_plus[1]); // pressure evaluated at upper face
+                double h_plus  = h_scale*d_frozenVec->getValueByGlobalID(dofs_plus[0]); // enthalpy evaluated at upper face
+                double p_plus  = P_scale*d_frozenVec->getValueByGlobalID(dofs_plus[1]); // pressure evaluated at upper face
 
                 // evaluate specific volume at upper face
                 std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
@@ -208,7 +212,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
                 double dvdp_plus  = dvdp(h_plus, p_plus);
                 double dvdp_minus = dvdp(h_minus,p_minus);
 
-                // compute Jacobian entry
+                // compute Jacobian entries
                 double A_j = -1.0*std::pow(d_m/A,2)*dvdh_minus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
                   dvdh_minus/std::pow(v_plus+v_minus,2)+
                   (1.0/4.0)*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + d_K)*dvdh_minus;

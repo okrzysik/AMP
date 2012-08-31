@@ -1,6 +1,7 @@
-
 #include "operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
 #include "operators/subchannel/SubchannelOperatorParameters.h"
+#include "operators/subchannel/SubchannelConstants.h"
+
 #include "ampmesh/StructuredMeshHelper.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
@@ -148,6 +149,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
       const double perimeter = 4.0*(d_pitch-d_diameter) + pi*d_diameter;    // wetted perimeter
       const double A = std::pow(d_pitch,2) - pi*std::pow(d_diameter,2)/4.0; // flow area
       const double D = 4.0*A/perimeter;                                     // hydraulic diameter
+      const double h_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
+      const double P_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
 
       // Subset the vectors
       AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = subsetInputVector( u );
@@ -206,8 +209,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
           std::vector<size_t> dofs, scalarDofs;
           dof_manager->getDOFs( begin_face->globalID(), dofs );
 
-          double h_in  = inputVec->getValueByGlobalID(dofs[0]);
-          double P_in  = inputVec->getValueByGlobalID(dofs[1]);    
+          double h_in  = h_scale*inputVec->getValueByGlobalID(dofs[0]);
+          double P_in  = P_scale*inputVec->getValueByGlobalID(dofs[1]);    
 
           // evaluate enthalpy at inlet
           std::map<std::string, boost::shared_ptr<std::vector<double> > > enthalpyArgMap;
@@ -248,8 +251,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
               cladDofManager->getDOFs( face->globalID(), scalarDofs );
               double cladMinus = d_cladTemperature->getValueByGlobalID(scalarDofs[0]);
               std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
-              temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[0]))));
-              temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[1]))));
+              temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_scale*inputVec->getValueByGlobalID(dofs[0]))));
+              temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,P_scale*inputVec->getValueByGlobalID(dofs[1]))));
               std::vector<double> flowMinus(1), specificVolMinus(1);
               d_subchannelPhysicsModel->getProperty("Temperature", flowMinus, temperatureArgMap);
               d_subchannelPhysicsModel->getProperty("SpecificVolume", specificVolMinus, temperatureArgMap);
@@ -259,8 +262,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
               cladDofManager->getDOFs( face->globalID(), scalarDofs );
               double cladPlus = d_cladTemperature->getValueByGlobalID(scalarDofs[0]);;
               temperatureArgMap.clear();
-              temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[0]))));
-              temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,inputVec->getValueByGlobalID(dofs[1]))));
+              temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_scale*inputVec->getValueByGlobalID(dofs[0]))));
+              temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,P_scale*inputVec->getValueByGlobalID(dofs[1]))));
               std::vector<double> flowPlus(1), specificVolPlus(1);
               d_subchannelPhysicsModel->getProperty("Temperature", flowPlus, temperatureArgMap); 
               d_subchannelPhysicsModel->getProperty("SpecificVolume", specificVolPlus, temperatureArgMap);
@@ -321,10 +324,10 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
             } else {
               // residual at face corresponds to cell below
               dof_manager->getDOFs( face->globalID(), dofs );
-              double h_plus   = inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
+              double h_plus   = h_scale*inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
               --face;
               dof_manager->getDOFs( face->globalID(), dofs );
-              double h_minus  = inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
+              double h_minus  = P_scale*inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
               ++face;
 
               R_h = h_plus - h_minus - dh[j-2];
@@ -335,15 +338,15 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
             // ======================================================
             // residual at face corresponds to cell above
             dof_manager->getDOFs( face->globalID(), dofs );
-            double h_minus = inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
-            double p_minus = inputVec->getValueByGlobalID(dofs[1]); // pressure evaluated at lower face
+            double h_minus = h_scale*inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
+            double p_minus = P_scale*inputVec->getValueByGlobalID(dofs[1]); // pressure evaluated at lower face
             if (face == end_face - 1){
               R_p = p_minus - d_Pout;
             } else {
               ++face;
               dof_manager->getDOFs( face->globalID(), dofs );
-              double h_plus  = inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at upper face
-              double p_plus  = inputVec->getValueByGlobalID(dofs[1]); // pressure evaluated at upper face
+              double h_plus  = h_scale*inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at upper face
+              double p_plus  = P_scale*inputVec->getValueByGlobalID(dofs[1]); // pressure evaluated at upper face
               --face;
 
               double h_avg   = (1.0/2.0)*(h_minus + h_plus); // enthalpy evaluated at cell center
@@ -385,8 +388,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
 
             // put residual value in residual vector
             dof_manager->getDOFs( face->globalID(), dofs );
-            outputVec->setValueByGlobalID(dofs[0], R_h);
-            outputVec->setValueByGlobalID(dofs[1], R_p);
+            outputVec->setValueByGlobalID(dofs[0], Subchannel::scaleEnthalpy*R_h);
+            outputVec->setValueByGlobalID(dofs[1], Subchannel::scalePressure*R_p);
             ++face;
           }
         }

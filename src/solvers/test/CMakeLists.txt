@@ -38,8 +38,9 @@ INCLUDE (macros)
 #     COPY_MESH_FILE ( mesh_file )
 #
 
-ADD_AMP_TEST(testSubchannelSolve)
-COPY_TEST_DATA_FILE ( input_testSubchannelSolve)
+ADD_AMP_TEST(testSubchannelSolve input_testSubchannelSolve-1 )
+COPY_TEST_DATA_FILE ( input_testSubchannelSolve-1 )
+COPY_TEST_DATA_FILE ( input_testSubchannelSolve-2 )
 
 ADD_AMP_TEST(testSubchannelSolution)
 COPY_TEST_DATA_FILE ( input_testSubchannelSolution)
