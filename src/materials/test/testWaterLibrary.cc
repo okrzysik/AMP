@@ -16,6 +16,33 @@
 
 using namespace std;
 
+void checkConsistency(double h, double p, double T, bool &allCorrect, bool &allConsistent)
+{
+   using namespace AMP::Materials;
+   boost::shared_ptr<AMP::Materials::Material> mat =
+      AMP::voodoo::Factory<AMP::Materials::Material>::instance().create("WaterLibrary"); // get water library
+   PropertyPtr temperatureProperty = mat->property("Temperature");// temperature property
+   PropertyPtr enthalpyProperty	   = mat->property("Enthalpy");   // enthalpy property
+
+   std::map<std::string, boost::shared_ptr<std::vector<double> > > tempMap;
+   tempMap.insert( std::make_pair( "enthalpy", new std::vector<double>(1,h) ) );
+   tempMap.insert( std::make_pair( "pressure", new std::vector<double>(1,p) ) );
+   std::vector<double> tempOutput(1);
+   temperatureProperty->evalv(tempOutput, tempMap);
+   // check that answer is correct
+   if (!AMP::Utilities::approx_equal(tempOutput[0], T, 0.01)) {
+      AMP::pout << "Incorrect value: Calculated T: " << tempOutput[0] << ", Actual T: " << T << std::endl;
+      allCorrect = false;
+   }
+   // check that enthalpy function resturns original enthalpy
+   std::map<std::string, boost::shared_ptr<std::vector<double> > > hMap;
+   hMap.insert( std::make_pair( "temperature", new std::vector<double>(1,tempOutput[0]) ) );
+   hMap.insert( std::make_pair( "pressure",    new std::vector<double>(1,p) ) );
+   std::vector<double> hOutput(1);
+   enthalpyProperty->evalv(hOutput, hMap);
+   if (!AMP::Utilities::approx_equal(hOutput[0], h, 0.01)) allConsistent = false;
+}
+
 int main ( int argc , char **argv )
 {
   AMP::AMPManager::startup(argc, argv);
@@ -407,6 +434,21 @@ int main ( int argc , char **argv )
 
 	   if (good) ut.passes("basic tests of Material");
 	   else ut.failure("basic tests of Material");
+
+           // Test if thermodyamic properties are consistent
+           bool allCorrect = true;
+           bool allConsistent = true;
+           
+           checkConsistency(430.39e3,15.0e6,373.15,allCorrect,allConsistent);
+           checkConsistency(1334.4e3,20.0e6,573.15,allCorrect,allConsistent);
+           checkConsistency(176.37e3,10.0e6,313.15,allCorrect,allConsistent);
+           checkConsistency(507.19e3,5.0e6,393.15,allCorrect,allConsistent);
+           checkConsistency(684.01e3,15.0e6,433.15,allCorrect,allConsistent);
+
+	   if (allCorrect) ut.passes("Thermodynamic property value test");
+	   else ut.failure("Thermodynamic property value test");
+	   if (allConsistent) ut.passes("Thermodynamic property consistency test");
+	   else ut.failure("Thermodynamic property consistency test");
    }
    catch( std::exception &err )
    {
