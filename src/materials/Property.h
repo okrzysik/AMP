@@ -163,13 +163,13 @@ public:
 		d_defaults = defaults;
 	}
 
-	/// get ranges for all arguments used in this material
+	//! get ranges for all arguments used in this material
 	virtual std::vector<std::vector<Number> > get_arg_ranges()
 	{
 		return d_ranges;
 	}
 
-	/// determine if a string is an argument
+	//! determine if a string is an argument
 	bool is_argument(const std::string &argname)
 	{
 		std::map<std::string, size_t>::iterator it = d_argToIndexMap.find(
@@ -179,7 +179,7 @@ public:
 		return true;
 	}
 
-	/// get range for a specific argument
+	//! get range for a specific argument
 	virtual std::vector<Number> get_arg_range(const std::string &argname)
 	{
 		std::map<std::string, size_t>::iterator it = d_argToIndexMap.find(
@@ -196,26 +196,18 @@ public:
 		return d_ranges[index];
 	}
 
-	/// determine if a value is within range or not
-	bool in_range(const std::string &argname, const Number value)
-	{
-		if (!is_argument(argname))
-			return true;
-		std::vector<Number> range = get_arg_range(argname);
-		return value >= range[0] and value <= range[1];
-	}
+	//! determine if a value is within range or not
+	bool in_range(const std::string &argname, const Number value);
 
-	/// determine if a set of values are all within range or not
+	//! determine if a set of values are all within range or not
 	template<class INPUT_VTYPE>
-	bool
-	in_range(const std::string &argname, const INPUT_VTYPE &values);
+	bool in_range(const std::string &argname, const INPUT_VTYPE &values);
 
-	/// determine if a set of sets of values are all within range or not
+	//! determine if a set of sets of values are all within range or not
 	template<class INPUT_VTYPE>
-	bool
-	in_range(const std::map<std::string, boost::shared_ptr<INPUT_VTYPE> > &values);
+	bool in_range(const std::map<std::string, boost::shared_ptr<INPUT_VTYPE> > &values);
 
-	/// set the translation table between property arguments and AMP::Multivector entries
+	//! set the translation table between property arguments and AMP::Multivector entries
 	void set_translator(const std::map<std::string, std::string> &xlator)
 	{
 		// assure incoming map has correct keys
@@ -227,62 +219,62 @@ public:
 		d_translator = xlator;
 	}
 
-	/// get the translation table between property arguments and AMP::Multivector entries
+	//! get the translation table between property arguments and AMP::Multivector entries
 	std::map<std::string, std::string> get_translator()
 	{
 		return d_translator;
 	}
 
-	/// converts AMP::MultiVector to a map of pointers to AMP::Vectors based on argument names
+	//! converts AMP::MultiVector to a map of pointers to AMP::Vectors based on argument names
 	std::map<std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> >
 	make_map(const boost::shared_ptr<AMP::LinearAlgebra::MultiVector> &args);
 
-	/// indicator for scalar evaluator
+	//! indicator for scalar evaluator
 	virtual bool isScalar(){return true;}
 
-	/// indicator for vector evaluator
+	//! indicator for vector evaluator
 	virtual bool isVector(){return false;}
 
-	/// indicator for tensor evaluator
+	//! indicator for tensor evaluator
 	virtual bool isTensor(){return false;}
 
-	/// set auxiliary data
+	//! set auxiliary data
 	void setAuxiliaryData(const std::string key, const double val);
 
-	/// set auxiliary data
+	//! set auxiliary data
 	void setAuxiliaryData(const std::string key, const int val);
 
-	/// set auxiliary data
+	//! set auxiliary data
 	void setAuxiliaryData(const std::string key, const std::string val);
 
-	/// get auxiliary data
+	//! get auxiliary data
 	void getAuxiliaryData(const std::string key, double &val);
 
-	/// get auxiliary data
+	//! get auxiliary data
 	void getAuxiliaryData(const std::string key, int &val);
 
-	/// get auxiliary data
+	//! get auxiliary data
 	void getAuxiliaryData(const std::string key, std::string &val);
 
 protected:
-	std::string 						d_name; 			///< should be unique
-	std::string 						d_source; 			///< journal or report reference: from where did model come?
-	std::valarray<Number> 				d_params; 			///< parameters
-	unsigned int 						d_nparams; 			///< number of parameters
-	unsigned int 						d_n_arguments; 		///< number of arguments to the eval function
-	std::vector<std::string> 			d_arguments; 		///< names of the arguments to the eval function
-	std::vector<Number> 				d_defaults; 		///< default values of arguments to eval function
-	bool 								d_defaultsAreSet; 	///< indicates defaults have been set
-	std::vector<std::vector<Number> > 	d_ranges; 			///< allowed ranges of arguments
-	std::map<std::string, size_t> 		d_argToIndexMap; 	///< connects argument names to their indices
-	std::map<std::string, std::string> 	d_translator; 		///< standard names to multivector names
-	bool								d_variableNumberParameters; ///< can change number of parameters
+	std::string 						d_name; 			//!< should be unique
+	std::string 						d_source; 			//!< journal or report reference: from where did model come?
+	std::valarray<Number> 				d_params; 			//!< parameters
+	unsigned int 						d_nparams; 			//!< number of parameters
+	unsigned int 						d_n_arguments; 		//!< number of arguments to the eval function
+	std::vector<std::string> 			d_arguments; 		//!< names of the arguments to the eval function
+	std::vector<Number> 				d_defaults; 		//!< default values of arguments to eval function
+	bool 								d_defaultsAreSet; 	//!< indicates defaults have been set
+	std::vector<std::vector<Number> > 	d_ranges; 			//!< allowed ranges of arguments
+	std::map<std::string, size_t> 		d_argToIndexMap; 	//!< connects argument names to their indices
+	std::map<std::string, std::string> 	d_translator; 		//!< standard names to multivector names
+	bool								d_variableNumberParameters; //!< can change number of parameters
 
 	std::map<std::string, double>      d_AuxiliaryDataDouble;
 	std::map<std::string, int>         d_AuxiliaryDataInteger;
 	std::map<std::string, std::string> d_AuxiliaryDataString;
 
-///////////////////// Evaluators /////////////////////
+//!//!//!//!//!//!//! Evaluators //!//!//!//!//!//!//!
 
 private:
 	/* Loops through input vectors, calling the child eval function, returning scalar */

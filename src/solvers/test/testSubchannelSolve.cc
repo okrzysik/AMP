@@ -409,17 +409,15 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Database> subchannelToCladDb = global_input_db->getDatabase( "SubchannelToCladMaps" );
     subchannelToCladMap = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, subchannelToCladDb );
     subchannelToCladMap->setVector( thermalMapVec );
-    if ( subchannelMesh.get()!=NULL ) {
-      boost::shared_ptr<AMP::Operator::CoupledChannelToCladMapOperatorParameters> coupledChannelMapOperatorParams(new AMP::Operator::CoupledChannelToCladMapOperatorParameters( emptyDb ));
-      coupledChannelMapOperatorParams->d_variable       = flowVariable;
-      coupledChannelMapOperatorParams->d_vector         = subchannelFlowTemp;
-      coupledChannelMapOperatorParams->d_mapOperator    = subchannelToCladMap;
-      coupledChannelMapOperatorParams->d_subchannelMesh = subchannelMesh;
-      coupledChannelMapOperatorParams->d_subchannelPhysicsModel = subchannelPhysicsModel ;
-      boost::shared_ptr<AMP::Operator::Operator> coupledChannelMapOperator (new AMP::Operator::CoupledChannelToCladMapOperator(coupledChannelMapOperatorParams));
-      mapsColumn->append( coupledChannelMapOperator );
-    }
-
+    boost::shared_ptr<AMP::Operator::CoupledChannelToCladMapOperatorParameters> coupledChannelMapOperatorParams(new AMP::Operator::CoupledChannelToCladMapOperatorParameters( emptyDb ));
+    coupledChannelMapOperatorParams->d_variable       = flowVariable;
+    coupledChannelMapOperatorParams->d_vector         = subchannelFlowTemp;
+    coupledChannelMapOperatorParams->d_Mesh           = subchannelMesh;
+    coupledChannelMapOperatorParams->d_mapOperator    = subchannelToCladMap;
+    coupledChannelMapOperatorParams->d_subchannelMesh = subchannelMesh;
+    coupledChannelMapOperatorParams->d_subchannelPhysicsModel = subchannelPhysicsModel ;
+    boost::shared_ptr<AMP::Operator::Operator> coupledChannelMapOperator (new AMP::Operator::CoupledChannelToCladMapOperator(coupledChannelMapOperatorParams));
+    mapsColumn->append( coupledChannelMapOperator );
 
     if ( pinMesh.get()!=NULL ) {
       boost::shared_ptr<AMP::InputDatabase> copyOp_db = boost::dynamic_pointer_cast<AMP::InputDatabase>(global_input_db->getDatabase("CopyOperator"));
@@ -493,7 +491,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     PROFILE_START("Initialize");
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     if ( pinMesh.get()!=NULL ) {
-        globalThermalSolVec->setToScalar(569.26);
+        globalThermalSolVec->setToScalar(500);
         AMP::Discretization::DOFManager::shared_ptr gaussPtDOFManager = 
             AMP::Discretization::simpleDOFManager::create(pinMesh,AMP::Mesh::Volume,1,8);
         AMP::Mesh::MeshIterator it = pinMesh->getIterator(AMP::Mesh::Volume,0);
@@ -624,23 +622,32 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     }
     flowTempMin = globalComm.minReduce(flowTempMin);
     flowTempMax = globalComm.maxReduce(flowTempMax);
-    std::cout << "Subchannel Flow Temp Max : " << flowTempMax << " Min : "<< flowTempMin << std::endl;
+    AMP::pout << "Subchannel Flow Temp Max : " << flowTempMax << " Min : "<< flowTempMin << std::endl;
 
 
+    
+#ifdef USE_EXT_SILO
+    // Rescale the solution to get the correct units
+    const double h_scale = 1.0/AMP::Operator::Subchannel::scaleEnthalpy;    // Scale to change the input vector back to correct units
+    const double P_scale = 1.0/AMP::Operator::Subchannel::scaleEnthalpy;    // Scale to change the input vector back to correct units
+    AMP::LinearAlgebra::Vector::shared_ptr enthalpy, pressure;
+    enthalpy = flowSolVec->select( AMP::LinearAlgebra::VS_Stride(0,2), "H" );
+    pressure = flowSolVec->select( AMP::LinearAlgebra::VS_Stride(1,2), "P" );
+    enthalpy->scale(h_scale);
+    pressure->scale(P_scale);
     // Register the quantities to plot
-    #ifdef USE_EXT_SILO
-        AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
-        if(xyFaceMesh != NULL ){
-            siloWriter->registerVector( flowSolVec, xyFaceMesh, AMP::Mesh::Face, "SubchannelFlow" );
-            siloWriter->registerVector( flowTempVec, xyFaceMesh, AMP::Mesh::Face, "FlowTemp" );
-            siloWriter->registerVector( deltaFlowTempVec, xyFaceMesh, AMP::Mesh::Face, "FlowTempDelta" );
-        }
-        if ( pinMesh.get()!=NULL ) {
-            siloWriter->registerVector( globalThermalSolVec ,  pinMesh , AMP::Mesh::Vertex, "Temperature" );
-            siloWriter->registerVector( specificPowerGpVec,  pinMesh , AMP::Mesh::Volume, "Power" );
-        }
-        siloWriter->writeFile( silo_name , 0 );
-    #endif
+    AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
+    if(xyFaceMesh != NULL ){
+        siloWriter->registerVector( flowSolVec, xyFaceMesh, AMP::Mesh::Face, "SubchannelFlow" );
+        siloWriter->registerVector( flowTempVec, xyFaceMesh, AMP::Mesh::Face, "FlowTemp" );
+        siloWriter->registerVector( deltaFlowTempVec, xyFaceMesh, AMP::Mesh::Face, "FlowTempDelta" );
+    }
+    if ( pinMesh.get()!=NULL ) {
+        siloWriter->registerVector( globalThermalSolVec ,  pinMesh , AMP::Mesh::Vertex, "Temperature" );
+        siloWriter->registerVector( specificPowerGpVec,  pinMesh , AMP::Mesh::Volume, "Power" );
+    }
+    siloWriter->writeFile( silo_name , 0 );
+#endif
     PROFILE_STOP("Main");
 }
 
