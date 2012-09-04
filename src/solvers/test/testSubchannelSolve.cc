@@ -409,17 +409,15 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Database> subchannelToCladDb = global_input_db->getDatabase( "SubchannelToCladMaps" );
     subchannelToCladMap = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, subchannelToCladDb );
     subchannelToCladMap->setVector( thermalMapVec );
-    if ( subchannelMesh.get()!=NULL ) {
-      boost::shared_ptr<AMP::Operator::CoupledChannelToCladMapOperatorParameters> coupledChannelMapOperatorParams(new AMP::Operator::CoupledChannelToCladMapOperatorParameters( emptyDb ));
-      coupledChannelMapOperatorParams->d_variable       = flowVariable;
-      coupledChannelMapOperatorParams->d_vector         = subchannelFlowTemp;
-      coupledChannelMapOperatorParams->d_mapOperator    = subchannelToCladMap;
-      coupledChannelMapOperatorParams->d_subchannelMesh = subchannelMesh;
-      coupledChannelMapOperatorParams->d_subchannelPhysicsModel = subchannelPhysicsModel ;
-      boost::shared_ptr<AMP::Operator::Operator> coupledChannelMapOperator (new AMP::Operator::CoupledChannelToCladMapOperator(coupledChannelMapOperatorParams));
-      mapsColumn->append( coupledChannelMapOperator );
-    }
-
+    boost::shared_ptr<AMP::Operator::CoupledChannelToCladMapOperatorParameters> coupledChannelMapOperatorParams(new AMP::Operator::CoupledChannelToCladMapOperatorParameters( emptyDb ));
+    coupledChannelMapOperatorParams->d_variable       = flowVariable;
+    coupledChannelMapOperatorParams->d_vector         = subchannelFlowTemp;
+    coupledChannelMapOperatorParams->d_Mesh           = subchannelMesh;
+    coupledChannelMapOperatorParams->d_mapOperator    = subchannelToCladMap;
+    coupledChannelMapOperatorParams->d_subchannelMesh = subchannelMesh;
+    coupledChannelMapOperatorParams->d_subchannelPhysicsModel = subchannelPhysicsModel ;
+    boost::shared_ptr<AMP::Operator::Operator> coupledChannelMapOperator (new AMP::Operator::CoupledChannelToCladMapOperator(coupledChannelMapOperatorParams));
+    mapsColumn->append( coupledChannelMapOperator );
 
     if ( pinMesh.get()!=NULL ) {
       boost::shared_ptr<AMP::InputDatabase> copyOp_db = boost::dynamic_pointer_cast<AMP::InputDatabase>(global_input_db->getDatabase("CopyOperator"));
@@ -624,7 +622,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     }
     flowTempMin = globalComm.minReduce(flowTempMin);
     flowTempMax = globalComm.maxReduce(flowTempMax);
-    std::cout << "Subchannel Flow Temp Max : " << flowTempMax << " Min : "<< flowTempMin << std::endl;
+    std::pout << "Subchannel Flow Temp Max : " << flowTempMax << " Min : "<< flowTempMin << std::endl;
 
 
     // Register the quantities to plot
