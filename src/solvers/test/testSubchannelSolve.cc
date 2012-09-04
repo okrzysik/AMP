@@ -622,23 +622,32 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     }
     flowTempMin = globalComm.minReduce(flowTempMin);
     flowTempMax = globalComm.maxReduce(flowTempMax);
-    std::pout << "Subchannel Flow Temp Max : " << flowTempMax << " Min : "<< flowTempMin << std::endl;
+    AMP::pout << "Subchannel Flow Temp Max : " << flowTempMax << " Min : "<< flowTempMin << std::endl;
 
 
+    
+#ifdef USE_EXT_SILO
+    // Rescale the solution to get the correct units
+    const double h_scale = 1.0/AMP::Operator::Subchannel::scaleEnthalpy;    // Scale to change the input vector back to correct units
+    const double P_scale = 1.0/AMP::Operator::Subchannel::scaleEnthalpy;    // Scale to change the input vector back to correct units
+    AMP::LinearAlgebra::Vector::shared_ptr enthalpy, pressure;
+    enthalpy = flowSolVec->select( AMP::LinearAlgebra::VS_Stride(0,2), "H" );
+    pressure = flowSolVec->select( AMP::LinearAlgebra::VS_Stride(1,2), "P" );
+    enthalpy->scale(h_scale);
+    pressure->scale(P_scale);
     // Register the quantities to plot
-    #ifdef USE_EXT_SILO
-        AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
-        if(xyFaceMesh != NULL ){
-            siloWriter->registerVector( flowSolVec, xyFaceMesh, AMP::Mesh::Face, "SubchannelFlow" );
-            siloWriter->registerVector( flowTempVec, xyFaceMesh, AMP::Mesh::Face, "FlowTemp" );
-            siloWriter->registerVector( deltaFlowTempVec, xyFaceMesh, AMP::Mesh::Face, "FlowTempDelta" );
-        }
-        if ( pinMesh.get()!=NULL ) {
-            siloWriter->registerVector( globalThermalSolVec ,  pinMesh , AMP::Mesh::Vertex, "Temperature" );
-            siloWriter->registerVector( specificPowerGpVec,  pinMesh , AMP::Mesh::Volume, "Power" );
-        }
-        siloWriter->writeFile( silo_name , 0 );
-    #endif
+    AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
+    if(xyFaceMesh != NULL ){
+        siloWriter->registerVector( flowSolVec, xyFaceMesh, AMP::Mesh::Face, "SubchannelFlow" );
+        siloWriter->registerVector( flowTempVec, xyFaceMesh, AMP::Mesh::Face, "FlowTemp" );
+        siloWriter->registerVector( deltaFlowTempVec, xyFaceMesh, AMP::Mesh::Face, "FlowTempDelta" );
+    }
+    if ( pinMesh.get()!=NULL ) {
+        siloWriter->registerVector( globalThermalSolVec ,  pinMesh , AMP::Mesh::Vertex, "Temperature" );
+        siloWriter->registerVector( specificPowerGpVec,  pinMesh , AMP::Mesh::Volume, "Power" );
+    }
+    siloWriter->writeFile( silo_name , 0 );
+#endif
     PROFILE_STOP("Main");
 }
 

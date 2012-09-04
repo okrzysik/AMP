@@ -61,7 +61,18 @@ void Property<Number>::getAuxiliaryData(const std::string key, std::string &val)
 	val = *d_AuxiliaryDataString.find(key);
 }
 
-// determine if a set of values are all within range or not
+
+/************************************************************************
+*  Determine if a set of values are all within range or not             *
+************************************************************************/
+template<class Number>
+bool Property<Number>::in_range(const std::string &argname, const Number value)
+{
+	if (!is_argument(argname))
+		return true;
+	std::vector<Number> range = get_arg_range(argname);
+	return value >= range[0] and value <= range[1];
+}
 template<class Number>
 template <class INPUT_VTYPE>
 bool Property<Number>::in_range(const std::string &argname, const INPUT_VTYPE &values)
@@ -77,27 +88,14 @@ bool Property<Number>::in_range(const std::string &argname, const INPUT_VTYPE &v
     }
     return result;
 }
-
-// determine if a set of sets of values are all within range or not
 template<class Number>
 template<class INPUT_VTYPE>
-bool Property<Number>::in_range(
-        const std::map<std::string, boost::shared_ptr<INPUT_VTYPE> > &values)
+bool Property<Number>::in_range( const std::map<std::string,boost::shared_ptr<INPUT_VTYPE> > &values)
 {
     bool result = true;
     for (typename std::map<std::string, boost::shared_ptr<INPUT_VTYPE> >::const_iterator
-            j = values.begin(); j != values.end(); j++) {
-        if (is_argument(j->first)) {
-            std::vector<Number> range = get_arg_range(j->first);
-            boost::shared_ptr<INPUT_VTYPE> vec = j->second;
-            typename INPUT_VTYPE::const_iterator  pos = vec->begin();
-            typename INPUT_VTYPE::const_iterator  end = vec->end();
-            while ( pos != end ) {
-                Number datum = *pos;
-                result = result and datum >= range[0] and datum <= range[1];
-                ++pos;
-            }
-        }
+            it = values.begin(); it != values.end(); it++) {
+        result = result && in_range(it->first,*(it->second));
     }
     return result;
 }
@@ -187,13 +185,20 @@ Number Property<Number>::eval( std::vector<Number>& )
 
 template<class Number>
 void Property<Number>::evalv(std::vector<Number>& r,
-const std::map< std::string, boost::shared_ptr<std::vector<Number> > >& args)
+const std::map< std::string,boost::shared_ptr<std::vector<Number> > >& args)
 {
+    typedef boost::shared_ptr<std::vector<Number> > VTYPE;
     if( !in_range(args) ) {
-      AMP_ERROR(": out of range in property function '"+d_name+"'.");
+        bool result = true;
+        for (typename std::map<std::string, boost::shared_ptr<std::vector<Number> > >::const_iterator
+                it = args.begin(); it != args.end(); it++) {
+            if ( !in_range(it->first,*(it->second)) )
+                AMP_ERROR("Property '"+it->first+"' out of range in function '"+d_name+"'.");
+        }
     }
     evalvActual(r, args);
 }
+
 
 } // Materials namespace
 } // AMP namespace
