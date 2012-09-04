@@ -493,7 +493,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     PROFILE_START("Initialize");
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     if ( pinMesh.get()!=NULL ) {
-        globalThermalSolVec->setToScalar(569.26);
+        globalThermalSolVec->setToScalar(500);
         AMP::Discretization::DOFManager::shared_ptr gaussPtDOFManager = 
             AMP::Discretization::simpleDOFManager::create(pinMesh,AMP::Mesh::Volume,1,8);
         AMP::Mesh::MeshIterator it = pinMesh->getIterator(AMP::Mesh::Volume,0);
