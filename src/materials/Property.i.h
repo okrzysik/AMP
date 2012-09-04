@@ -189,7 +189,6 @@ const std::map< std::string,boost::shared_ptr<std::vector<Number> > >& args)
 {
     typedef boost::shared_ptr<std::vector<Number> > VTYPE;
     if( !in_range(args) ) {
-        bool result = true;
         for (typename std::map<std::string, boost::shared_ptr<std::vector<Number> > >::const_iterator
                 it = args.begin(); it != args.end(); it++) {
             if ( !in_range(it->first,*(it->second)) )
