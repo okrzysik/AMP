@@ -331,7 +331,9 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                    // get face
                    AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
                    // get crossflow
-                   double w = 0.0;//JEH: need to take crossflow from solution vector
+                   std::vector<size_t> gapDofs;
+                   dof_manager->getDOFs(lateralFace.globalID(),gapDofs);
+                   double w = inputVec->getValueByGlobalID(gapDofs[0]);
                    // compute turbulent crossflow
                    double wt = 0.0;//JEH: need to use turbulent crossflow model
                    // get index of neighboring subchannel
@@ -500,9 +502,8 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
             AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
             // get crossflow from solution vector
             std::vector<size_t> gapDofs;
-            //dof_manager->getDOFs(lateralFace.globalID(),gapDofs);
-            //double w = inputVec->getValueByGlobalID(gapDofs[0]);
-            double w_mid = 0.0;//JEH: need to use actual values
+            dof_manager->getDOFs(lateralFace.globalID(),gapDofs);
+            double w_mid = inputVec->getValueByGlobalID(gapDofs[0]);
 
             // get adjacent cells
             std::vector<AMP::Mesh::MeshElement> adjacentCells = d_Mesh->getElementParents(lateralFace, AMP::Mesh::Volume);
@@ -524,7 +525,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
             // if bottom face is at z = 0,
             if (AMP::Utilities::approx_equal(cell1MinusFaceCentroid[2],0.0)) {
                // implement fixed lateral mass flow rates inlet boundary condition
-               //outputVec->setValueByGlobalID(gapDofs[0],d_win);//JEH: need to fix dof manager
+               outputVec->setValueByGlobalID(gapDofs[0],d_win);
             } else {
                // get cells below bottom faces
                // get adjacent cells
@@ -571,8 +572,12 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                   bottomCell2 = &axialCell22;
                   bottomCell2Centroid = &axialCell22Centroid;
                }
+               AMP::pout<<" bottomCell1Centroid " << &bottomCell1Centroid[0] <<std::endl;
+               AMP::pout<<" bottomCell2Centroid " << &bottomCell2Centroid[0] <<std::endl;
                AMP::Mesh::MeshElement belowLateralFace = getAxiallyAdjacentLateralFace(bottomCell1,lateralFace,lateralFaceMap);
-               double w_minus = 0.0;//JEH: need to get from solution vector from belowLateralFace
+               std::vector<size_t> belowDofs;
+               dof_manager->getDOFs(belowLateralFace.globalID(),belowDofs);
+               double w_minus = inputVec->getValueByGlobalID(belowDofs[0]);
 
                // get axial faces of bottom cells
                AMP::Mesh::MeshElement bottomCell1PlusFace;
@@ -675,8 +680,11 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                         topCell = &axialCell2;
                         topCellCentroid = &axialCell2Centroid;
                      }
+                     AMP::pout<<" topCellCentroid[0] "<< &topCellCentroid[0] <<std::endl;
                      AMP::Mesh::MeshElement aboveLateralFace = getAxiallyAdjacentLateralFace(topCell,lateralFace,lateralFaceMap);
-                     double w_plus = 0.0;//JEH: need to get from aboveLateralFace
+                     std::vector<size_t> aboveDofs;
+                     dof_manager->getDOFs(aboveLateralFace.globalID(),aboveDofs);
+                     double w_plus = inputVec->getValueByGlobalID(aboveDofs[0]);
                      w_axialDonor_plus = w_plus;
                   }
                }
@@ -701,7 +709,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                           - s/l*dz*(p1_minus - p2_minus)
                           + d_KG/(2.0*dz*s*l)*std::abs(w_mid)*w_mid*vol_mid;
                           + s*l*dz*g*std::sin(d_theta)/vol_mid;
-               //outputVec->setValueByGlobalID(gapDofs[0],R_w);//JEH: need to fix dof manager
+               outputVec->setValueByGlobalID(gapDofs[0],R_w);
             }
          }
       }// end loop over lateral faces
