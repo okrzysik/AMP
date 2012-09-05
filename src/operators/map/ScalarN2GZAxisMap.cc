@@ -2,6 +2,8 @@
 #include "discretization/DOF_Manager.h"
 #include "utils/PIO.h"
 #include "utils/ProfilerApp.h"
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 
 
 /* Libmesh files */
@@ -48,6 +50,10 @@ ScalarN2GZAxisMap::ScalarN2GZAxisMap ( const boost::shared_ptr<AMP::Operator::Op
    
     AMP::Mesh::MeshIterator iterator = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, d_dstIterator1 , d_dstIterator2 );
     libmeshElements.reinit( iterator );
+
+    // Build the z-coordinates of the return gauss points
+    d_z_coord1 = getGaussPoints( d_dstIterator1 );
+    d_z_coord2 = getGaussPoints( d_dstIterator2 );
 }
 
 
@@ -98,11 +104,53 @@ std::multimap<double,double>  ScalarN2GZAxisMap::buildMap( AMP::LinearAlgebra::V
 
 
 /************************************************************************
+*  Function to build the z-coordinates of the gauss points              *
+************************************************************************/
+AMP::LinearAlgebra::Vector::const_shared_ptr ScalarN2GZAxisMap::getGaussPoints( const AMP::Mesh::MeshIterator& iterator )
+{
+    if ( iterator.size()==0 )
+        return AMP::LinearAlgebra::Vector::const_shared_ptr();
+    if ( iterator==d_dstIterator1 && d_z_coord1.get()!=NULL )
+        return d_z_coord1;
+    if ( iterator==d_dstIterator2 && d_z_coord2.get()!=NULL )
+        return d_z_coord2;
+    AMP::Discretization::DOFManager::shared_ptr GpDofMap = 
+        AMP::Discretization::simpleDOFManager::create(iterator,4);
+    AMP::LinearAlgebra::Variable::shared_ptr var(new AMP::LinearAlgebra::Variable("gauss_z"));
+    AMP::LinearAlgebra::Vector::shared_ptr z_pos = AMP::LinearAlgebra::createVector(  GpDofMap, var );
+    AMP::Mesh::MeshIterator cur = iterator.begin();
+    std::vector<size_t> ids;
+    for (size_t i=0; i<cur.size(); i++) {
+        // Create the libmesh element
+        libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
+        libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
+        boost::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
+        boost::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(2, (*d_feType))).release() );
+        libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>("SECOND");
+        boost::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", 2, qruleOrder)).release() );
+        d_fe->attach_quadrature_rule( d_qrule.get() );
+        d_fe->reinit ( libmeshElements.getElement( cur->globalID() ));
+        // Get the current position and DOF
+        std::vector<Point> coordinates = d_fe->get_xyz();
+        GpDofMap->getDOFs( cur->globalID(), ids );
+        for (unsigned int qp = 0; qp < ids.size(); qp++) {
+            double pos = coordinates[qp](2);
+            z_pos->setLocalValueByGlobalID( ids[qp], pos );
+        }
+        ++cur;
+    }
+    return z_pos;
+}
+
+
+/************************************************************************
 *  buildReturn                                                          *
 ************************************************************************/
 void ScalarN2GZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::Mesh::shared_ptr, 
     const AMP::Mesh::MeshIterator &iterator, const std::map<double,double> &map )
 {
+    if ( iterator.size()==0 )
+        return;
     PROFILE_START("buildReturn");
 
     // Get the endpoints of the map
@@ -115,67 +163,60 @@ void ScalarN2GZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_p
     double v0 = (*lb).second;
     double v1 = (*ub).second;
 
+    // Get the coordinates of the gauss points
+    AMP::LinearAlgebra::Vector::const_shared_ptr z_pos = getGaussPoints( iterator );
+    AMP_ASSERT(z_pos.get()!=NULL);
+
+    // Get the DOF managers
+    AMP::Discretization::DOFManager::shared_ptr  DOFs = vec->getDOFManager( );
+    AMP::Discretization::DOFManager::shared_ptr  gaussDOFs = z_pos->getDOFManager( );
+
     // Loop through the points in the output vector
     const double TOL = 1e-8;
-    AMP::Discretization::DOFManager::shared_ptr  DOFs = vec->getDOFManager( );
     AMP::Mesh::MeshIterator cur = iterator.begin();
-    AMP::Mesh::MeshIterator end = iterator.end();
-    std::vector<size_t> ids;
-    double pos;
-    while ( cur != end ) {
+    std::vector<size_t> id1, id2;
+    for (size_t i=0; i<cur.size(); i++) {
 
-        libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
-        libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
+        // Get the DOFs
+        DOFs->getDOFs( cur->globalID(), id1 );
+        gaussDOFs->getDOFs( cur->globalID(), id2 );
+        AMP_ASSERT(id1.size()==id2.size());
 
-        boost::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
-        boost::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(2, (*d_feType))).release() );
+        for (size_t qp=0; qp<id1.size(); qp++) {
+            double pos = z_pos->getLocalValueByGlobalID(id2[qp]);
+            // Check the endpoints
+            if ( fabs(pos-z0) <= TOL ) {
+                // We are within TOL of the first point
+                vec->setLocalValueByGlobalID( id1[qp], v0 );
+                continue;
+            } else if ( fabs(pos-z1) <= TOL ) {
+                // We are within TOL of the last point
+                vec->setLocalValueByGlobalID( id1[qp], v1 );
+                continue;
+            } else if ( pos<z0 || pos>z1 ) {
+                // We are outside the bounds of the map
+                continue;
+            } 
 
-        libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>("SECOND");
-        boost::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", 2, qruleOrder)).release() );
+            // Find the first point > the current position
+            ub = map.upper_bound( pos );
+            if ( ub == map.end() )
+                ub--;
+            else if ( ub == map.begin() )
+                ub++;
+            lb = ub;
+            lb--;
 
-        d_fe->attach_quadrature_rule( d_qrule.get() );
-
-        d_fe->reinit ( libmeshElements.getElement( cur->globalID() ));
-
-        // Get the current position and DOF
-        std::vector<Point> coordinates = d_fe->get_xyz();
-        DOFs->getDOFs( cur->globalID(), ids );
-
-        for (unsigned int qp = 0; qp < ids.size(); qp++) {
-          pos = coordinates[qp](2);
-          // Check the endpoints
-          if ( fabs(pos-z0) <= TOL ) {
-            // We are within TOL of the first point
-            vec->setLocalValueByGlobalID( ids[qp], v0 );
-            continue;
-          } else if ( fabs(pos-z1) <= TOL ) {
-            // We are within TOL of the last point
-            vec->setLocalValueByGlobalID( ids[qp], v1 );
-            continue;
-          } else if ( pos<z0 || pos>z1 ) {
-            // We are outside the bounds of the map
-            continue;
-          } 
-
-          // Find the first point > the current position
-          ub = map.upper_bound( pos );
-          if ( ub == map.end() )
-             ub--;
-          else if ( ub == map.begin() )
-             ub++;
-          lb = ub;
-          lb--;
-
-          // Perform linear interpolation
-          double lo = lb->first;
-          double hi = ub->first;
-          AMP_ASSERT(pos>=lo&&pos<hi);
-          double wt = (pos - lo) / (hi - lo);
-          double ans = (1.-wt) * lb->second + wt * ub->second;
-          vec->setLocalValueByGlobalID ( ids[qp], ans );
+            // Perform linear interpolation
+            double lo = lb->first;
+            double hi = ub->first;
+            AMP_ASSERT(pos>=lo&&pos<hi);
+            double wt = (pos - lo) / (hi - lo);
+            double ans = (1.-wt) * lb->second + wt * ub->second;
+            vec->setLocalValueByGlobalID ( id1[qp], ans );
 
         }
-        cur++;
+        ++cur;
     }
     PROFILE_STOP("buildReturn");
 }

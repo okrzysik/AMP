@@ -55,6 +55,16 @@ public:
         const AMP::Mesh::MeshIterator it1, const AMP::Mesh::MeshIterator it2, int DOFsPerElement );
 
 
+    /**
+     * \brief Create a new DOF manager object
+     * \details  This is will create a new simpleDOFManager from a mesh iterator
+     *   on the local processor only (no remote DOFs).
+     * \param it             The iterator over the elements (no ghost cells)
+     * \param DOFsPerElement The desired number of DOFs pere element
+     */
+    static DOFManager::shared_ptr  create( const AMP::Mesh::MeshIterator it, int DOFsPerElement );
+
+
     /** \brief Get the entry indices of DOFs given a mesh element ID
      * \details  This will return a vector of pointers into a Vector that are associated with which.
      *  Note: this function only works if the element we are search for is a element on which a DOF exists
