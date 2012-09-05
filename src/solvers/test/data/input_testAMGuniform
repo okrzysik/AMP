@@ -1,0 +1,73 @@
+mesh_file = "testAMGmesh"
+
+LinearBVPOperator {
+name="LinearBVPOperator"
+   print_info_level = 1
+   VolumeOperator = "DiffusionLinearFEOperator"
+   BoundaryOperator = "DirichletMatrixCorrection"
+}
+
+DiffusionLinearFEOperator{
+   name="DiffusionLinearFEOperator"
+   FixedTemperature = TRUE
+   FixedConcentration = TRUE
+   FixedBurnup   = TRUE
+   InputVariable = "therm"
+   OutputVariable = "therm"
+   print_info_level = 10
+
+   DiffusionElement {
+     name="DiffusionLinearElement"
+     print_info_level = 10
+     FE_ORDER = "FIRST"  
+     FE_FAMILY = "LAGRANGE"
+     QRULE_TYPE = "QGAUSS"
+     QRULE_ORDER = "DEFAULT"
+   }
+   LocalModel = "DiffusionTransportModel"
+}
+
+DiffusionTransportModel {
+     name="DiffusionTransportModel"
+     Material = "Independent"
+     Property = "ThermalConductivity"
+     print_info_level = 10
+     Default_Concentration = 0.0
+     Default_Temperature   = 300.
+     Default_Burnup   = 0.0
+   }
+
+DirichletMatrixCorrection {
+   name="DirichletMatrixCorrection"
+   skip_params = FALSE
+   skip_rhs_correction = TRUE
+   skip_rhs_add_correction = TRUE
+   print_info_level = 10
+   number_of_ids = 6
+   id_0             = 1
+   number_of_dofs_0 =   1
+   dof_0_0          =   0
+   id_1             = 2
+   number_of_dofs_1 =   1
+   dof_1_0          =   0
+   id_2             = 3
+   number_of_dofs_2 =   1
+   dof_2_0          =   0
+   id_3             = 4
+   number_of_dofs_3 =   1
+   dof_3_0          =   0
+   id_4             = 5
+   number_of_dofs_4 =   1
+   dof_4_0          =   0
+   id_5             = 6
+   number_of_dofs_5 =   1
+   dof_5_0          =   0
+}
+
+
+LinearSolver {
+  print_info_level = 10
+  max_iterations = 20
+  max_error = 1e-12
+}
+

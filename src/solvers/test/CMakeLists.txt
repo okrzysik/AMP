@@ -38,6 +38,10 @@ INCLUDE (macros)
 #     COPY_MESH_FILE ( mesh_file )
 #
 
+ADD_AMP_PROVISIONAL_TEST( testAMGuniform )
+COPY_TEST_DATA_FILE(input_testAMGuniform)
+COPY_MESH_FILE(testAMGmesh17)
+
 ADD_AMP_TEST(testSubchannelSolve testSubchannelSolve-1 )
 COPY_TEST_DATA_FILE ( input_testSubchannelSolve-1 )
 COPY_TEST_DATA_FILE ( input_testSubchannelSolve-2 )
