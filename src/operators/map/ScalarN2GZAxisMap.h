@@ -54,6 +54,13 @@ protected:
     // Implimented buildReturn routine
     virtual void buildReturn( AMP::LinearAlgebra::Vector::shared_ptr, const AMP::Mesh::Mesh::shared_ptr,
         const AMP::Mesh::MeshIterator&, const std::map<double,double>& );
+ 
+    // Function to return the coordinates of the gauss points
+    AMP::LinearAlgebra::Vector::const_shared_ptr getGaussPoints( const AMP::Mesh::MeshIterator& );
+
+    // Internal vector with the z-coordinates of the gauss points
+    AMP::LinearAlgebra::Vector::const_shared_ptr  d_z_coord1;
+    AMP::LinearAlgebra::Vector::const_shared_ptr  d_z_coord2;
 
 private:
 
