@@ -69,6 +69,27 @@ DOFManager::shared_ptr  simpleDOFManager::create( boost::shared_ptr<AMP::Mesh::M
     rtn->initialize();
     return rtn;
 }
+DOFManager::shared_ptr  simpleDOFManager::create( const AMP::Mesh::MeshIterator it, int DOFsPerElement )
+{
+    // Check the iterator
+    AMP::Mesh::MeshIterator tmp = it.begin();
+    AMP::Mesh::GeomType type = tmp->globalID().type();
+    for (size_t i=0; i<tmp.size(); i++) {
+        AMP::Mesh::MeshElementID id = tmp->globalID();
+        AMP_INSIST(id.type()==type,"All elements in the iterator must be the same type");
+        ++tmp;
+    }
+    // Create the simpleDOFManager
+    boost::shared_ptr<simpleDOFManager> rtn( new simpleDOFManager() );
+    rtn->d_mesh = AMP::Mesh::Mesh::shared_ptr();
+    rtn->d_type = type;
+    rtn->d_comm = AMP_MPI(AMP_COMM_SELF);
+    rtn->DOFsPerElement = DOFsPerElement;
+    rtn->d_ghostIterator = it;
+    rtn->d_localIterator = it;
+    rtn->initialize();
+    return rtn;
+}
 
 
 /****************************************************************
@@ -262,8 +283,10 @@ std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
 ****************************************************************/
 std::vector<size_t> simpleDOFManager::getRemoteDOF(std::vector<AMP::Mesh::MeshElementID> remote_ids ) const
 {
-    AMP_MPI comm = d_mesh->getComm();
+    if ( d_comm.getSize()==1 )
+        return std::vector<size_t>();     // There are no remote DOFs
     // Get the set of mesh ids (must match on all processors)
+    AMP_MPI comm = d_mesh->getComm();
     std::set<AMP::Mesh::MeshID> meshIDs;
     for (size_t i=0; i<remote_ids.size(); i++)
         meshIDs.insert(remote_ids[i].meshID());

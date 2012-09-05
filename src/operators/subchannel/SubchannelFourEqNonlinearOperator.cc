@@ -572,6 +572,8 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                   bottomCell2 = &axialCell22;
                   bottomCell2Centroid = &axialCell22Centroid;
                }
+               AMP::pout<<" bottomCell1Centroid " << &bottomCell1Centroid[0] <<std::endl;
+               AMP::pout<<" bottomCell2Centroid " << &bottomCell2Centroid[0] <<std::endl;
                AMP::Mesh::MeshElement belowLateralFace = getAxiallyAdjacentLateralFace(bottomCell1,lateralFace,lateralFaceMap);
                std::vector<size_t> belowDofs;
                dof_manager->getDOFs(belowLateralFace.globalID(),belowDofs);
@@ -678,6 +680,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                         topCell = &axialCell2;
                         topCellCentroid = &axialCell2Centroid;
                      }
+                     AMP::pout<<" topCellCentroid[0] "<< &topCellCentroid[0] <<std::endl;
                      AMP::Mesh::MeshElement aboveLateralFace = getAxiallyAdjacentLateralFace(topCell,lateralFace,lateralFaceMap);
                      std::vector<size_t> aboveDofs;
                      dof_manager->getDOFs(aboveLateralFace.globalID(),aboveDofs);
