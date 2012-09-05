@@ -56,7 +56,7 @@ void myTest(AMP::UnitTest *ut ) {
     std::vector<double> vals;
     mat->getRowByGlobalID(i, cols, vals);
     for(size_t j = 0; j < cols.size(); ++j) {
-      std::cout<<"A[i]["<<(cols[j])<<"] = "<<(vals[j])<<std::endl;
+      std::cout<<"A["<<i<<"]["<<(cols[j])<<"] = "<<std::setprecision(15)<<(vals[j])<<std::endl;
     }//end j
     std::cout<<std::endl;
   }//end i
