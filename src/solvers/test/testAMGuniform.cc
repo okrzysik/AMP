@@ -39,7 +39,8 @@ void myTest(AMP::UnitTest *ut ) {
     AMP::readTestMesh(mesh_file, mesh);
   }//end if root processor
   MeshCommunication().broadcast(*(mesh.get()));
-  mesh->prepare_for_use(false);
+  //mesh->prepare_for_use(false);
+  mesh->prepare_for_use(true);
   AMP::Mesh::Mesh::shared_ptr meshAdapter ( new AMP::Mesh::libMesh(mesh, "uniform") );
 
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
@@ -47,6 +48,18 @@ void myTest(AMP::UnitTest *ut ) {
     boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
           "LinearBVPOperator", input_db, elementPhysicsModel));
+
+  boost::shared_ptr<AMP::LinearAlgebra::Matrix> mat = bvpOperator->getMatrix();
+  size_t matSz = mat->numGlobalRows();
+  for(size_t i = 0; i < matSz; ++i) {
+    std::vector<unsigned int> cols;
+    std::vector<double> vals;
+    mat->getRowByGlobalID(i, cols, vals);
+    for(size_t j = 0; j < cols.size(); ++j) {
+      std::cout<<"A[i]["<<(cols[j])<<"] = "<<(vals[j])<<std::endl;
+    }//end j
+    std::cout<<std::endl;
+  }//end i
 
   int DOFsPerNode = 1;
   int DOFsPerElement = 8;
