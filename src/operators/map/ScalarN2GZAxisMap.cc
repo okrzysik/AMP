@@ -88,15 +88,14 @@ std::multimap<double,double>  ScalarN2GZAxisMap::buildMap( AMP::LinearAlgebra::V
     std::multimap<double,double> map;
     AMP::Discretization::DOFManager::shared_ptr  dof = vec->getDOFManager( );
     AMP::Mesh::MeshIterator cur = iterator.begin();
-    AMP::Mesh::MeshIterator end = iterator.end();
     std::vector<size_t> ids;
-    while ( cur != end ) {
+    for (size_t i=0; i<cur.size(); i++) {
         dof->getDOFs( cur->globalID(), ids );
         AMP_ASSERT(ids.size()==1);
         double val = vec->getValueByGlobalID ( ids[0] );
         std::vector<double> x = cur->coord();
         addTo1DMap( map, x[2], val );
-        cur++;
+        ++cur;
     }
     PROFILE_STOP("buildMap");
     return map;
@@ -152,16 +151,23 @@ void ScalarN2GZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_p
     if ( iterator.size()==0 )
         return;
     PROFILE_START("buildReturn");
+    const double TOL = 1e-8;
 
-    // Get the endpoints of the map
+    // Convert the map to a std::vector
     AMP_ASSERT(map.size()>1);
-    std::map<double,double>::const_iterator lb, ub;
-    lb = map.begin();
-    ub = map.end(); ub--;
-    double z0 = (*lb).first;
-    double z1 = (*ub).first;
-    double v0 = (*lb).second;
-    double v1 = (*ub).second;
+    std::vector<double> z(map.size()), f(map.size());
+    size_t i=0;
+    for (std::map<double,double>::const_iterator it=map.begin(); it!=map.end(); it++) {
+        z[i] = it->first;
+        f[i] = it->second;
+        i++;
+    }
+    for (size_t i=1; i<z.size(); i++)
+        AMP_ASSERT(z[i]>(z[i-1]+TOL));
+    double z0 = z[0];
+    double z1 = z[z.size()-1];
+    double v0 = f[0];
+    double v1 = f[z.size()-1];
 
     // Get the coordinates of the gauss points
     AMP::LinearAlgebra::Vector::const_shared_ptr z_pos = getGaussPoints( iterator );
@@ -172,50 +178,62 @@ void ScalarN2GZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_p
     AMP::Discretization::DOFManager::shared_ptr  gaussDOFs = z_pos->getDOFManager( );
 
     // Loop through the points in the output vector
-    const double TOL = 1e-8;
     AMP::Mesh::MeshIterator cur = iterator.begin();
     std::vector<size_t> id1, id2;
-    for (size_t i=0; i<cur.size(); i++) {
+    std::vector<double> zi, fi;
+    std::vector<bool> keep;
+    for (i=0; i<cur.size(); i++) {
 
         // Get the DOFs
         DOFs->getDOFs( cur->globalID(), id1 );
         gaussDOFs->getDOFs( cur->globalID(), id2 );
         AMP_ASSERT(id1.size()==id2.size());
+        size_t N = id1.size();
+        zi.resize(N);
+        fi.resize(N);
+        keep.resize(N);
 
-        for (size_t qp=0; qp<id1.size(); qp++) {
-            double pos = z_pos->getLocalValueByGlobalID(id2[qp]);
+        // Get the coordinates of the gauss points
+        z_pos->getLocalValuesByGlobalID(N,&id2[0],&zi[0]);
+
+        bool keep_all = true;
+        for (size_t j=0; j<N; j++) {
             // Check the endpoints
-            if ( fabs(pos-z0) <= TOL ) {
+            keep[j] = true;
+            if ( fabs(zi[j]-z0) <= TOL ) {
                 // We are within TOL of the first point
-                vec->setLocalValueByGlobalID( id1[qp], v0 );
+                zi[j] = v0;
                 continue;
-            } else if ( fabs(pos-z1) <= TOL ) {
+            } else if ( fabs(zi[j]-z1) <= TOL ) {
                 // We are within TOL of the last point
-                vec->setLocalValueByGlobalID( id1[qp], v1 );
+                zi[j] = v1;
                 continue;
-            } else if ( pos<z0 || pos>z1 ) {
+            } else if ( zi[j]<z0 || zi[j]>z1 ) {
                 // We are outside the bounds of the map
+                keep[j] = false;
+                keep_all = false;
                 continue;
             } 
 
             // Find the first point > the current position
-            ub = map.upper_bound( pos );
-            if ( ub == map.end() )
-                ub--;
-            else if ( ub == map.begin() )
-                ub++;
-            lb = ub;
-            lb--;
+            size_t k = AMP::Utilities::findfirst(z,zi[j]);
+            if ( k==0 ) { k++; }
+            if ( k==z.size() ) { k--; }
 
             // Perform linear interpolation
-            double lo = lb->first;
-            double hi = ub->first;
-            AMP_ASSERT(pos>=lo&&pos<hi);
-            double wt = (pos - lo) / (hi - lo);
-            double ans = (1.-wt) * lb->second + wt * ub->second;
-            vec->setLocalValueByGlobalID ( id1[qp], ans );
-
+            double wt = (zi[j]-z[k-1])/(z[k]-z[k-1]);
+            fi[j] = (1.0-wt)*f[k-1] + wt*f[k];
         }
+
+        if ( keep_all ) {
+            vec->setLocalValuesByGlobalID( N, &id1[0], &fi[0] );
+        } else {
+            for (size_t j=0; j<N; j++) {
+                if ( keep[j] )
+                    vec->setLocalValueByGlobalID( id1[j], fi[j] );
+            }
+        }
+
         ++cur;
     }
     PROFILE_STOP("buildReturn");
