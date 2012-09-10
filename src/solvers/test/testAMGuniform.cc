@@ -62,7 +62,7 @@ void myTest(AMP::UnitTest *ut ) {
   }//end i
 
   int DOFsPerNode = 1;
-  int DOFsPerElement = 8;
+  //int DOFsPerElement = 8;
   int nodalGhostWidth = 1;
   bool split = true;
   AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, 

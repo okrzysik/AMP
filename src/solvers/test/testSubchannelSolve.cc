@@ -103,12 +103,14 @@ void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh, AMP::Mesh::Mesh::shared
         AMP::Discretization::DOFManager::shared_ptr faceDOFManager = 
             AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
             AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), 
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), 2 );
+            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerFace );
         // dof manager for the scalar quanties on the z faces - for mapped temperature clad temp onto subchannel discretization
+        /*
         AMP::Discretization::DOFManager::shared_ptr scalarFaceDOFManager = 
             AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
             AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), 
             AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), 1);
+        */
         // create solution, rhs, and residual vectors
         flowVec = AMP::LinearAlgebra::createVector( faceDOFManager , flowVariable , true );
     }
@@ -243,11 +245,13 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr subchannelFlowTemp;
     if ( subchannelMesh.get()!=NULL ) {
         // dof manager for the scalar quanties on the z faces - for mapped temperature clad temp onto subchannel discretization
+        /*
         int DofsPerFace =  2;
         AMP::Discretization::DOFManager::shared_ptr faceDOFManager = 
             AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
             AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), 
             AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerFace );
+        */
         AMP::Discretization::DOFManager::shared_ptr scalarFaceDOFManager = 
             AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
             AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), 
@@ -587,7 +591,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         AMP::Discretization::DOFManager::shared_ptr faceDOFManager = 
             AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
             AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), 
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), 2 );
+            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerFace );
         AMP::Discretization::DOFManager::shared_ptr scalarFaceDOFManager = 
             AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
             AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), 
