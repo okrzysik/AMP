@@ -166,12 +166,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::vector<double> shiftGlobalCoords, projectionLocalCoordsOnFace;
   std::vector<int> flags;
   dendroSearch.projectOnBoundaryID(globalComm, 4, faceVerticesGlobalIDs, shiftGlobalCoords, projectionLocalCoordsOnFace, flags);
-  globalComm.barrier();
-  if(!rank) {
-    std::cout<<"PAR ICI"<<std::endl;
-    for (size_t i = 0; i < 100; ++i) { std::cout<<std::flush; }
-  }
-  globalComm.barrier();
+
   unsigned int localPtsNotFound = std::count(flags.begin(), flags.end(), DendroSearch::NotFound);
   unsigned int localPtsFoundNotOnBoundary = std::count(flags.begin(), flags.end(), DendroSearch::FoundNotOnBoundary);
   unsigned int localPtsFoundOnBoundary = std::count(flags.begin(), flags.end(), DendroSearch::FoundOnBoundary);

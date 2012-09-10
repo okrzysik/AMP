@@ -1,6 +1,9 @@
-useSlaveBVPOperator = FALSE
+skipFusedMesh = TRUE
+useSlaveBVPOperator = TRUE
 usePetscKrylovSolver = FALSE
-myPCGmaxIters = 20
+myPCGmaxIters = 500
+myPCGrelTol = 1.0e-10
+myPCGabsTol = 1.0e-16
 
 Mesh{
   MeshName = "MainMesh"
@@ -17,7 +20,7 @@ Mesh{
         dim = 3
         x_offset = 0.0, 0.0
         y_offset = 0.0, 0.0
-        z_offset = 0.0, 1.0
+        z_offset = 0.0, 0.9
         Generator = "cylinder"
         Size = 5, 4
         Range = 0.5, 0.0, 1.0
@@ -76,6 +79,68 @@ MasterDirichletMatrixCorrection{
     value_0_0 = 0.0
     value_0_1 = 0.0
     value_0_2 = 0.0
+}
+
+SlaveBVPOperator {
+  name = "LinearBVPOperator"
+    print_info_level = 1
+
+    VolumeOperator = "MechanicsLinearFEOperator"
+    BoundaryOperator = "SlaveDirichletMatrixCorrection"
+}
+
+SlaveDirichletMatrixCorrection{
+  name = "DirichletMatrixCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    symmetric_correction = TRUE
+    zero_dirichlet_block = FALSE
+    skip_rhs_correction = FALSE
+    skip_rhs_add_correction = FALSE
+    number_of_ids = 1
+    id_0 = 1
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+    value_0_0 = 0.0
+    value_0_1 = 0.0
+    value_0_2 = -0.1
+}
+
+FusedMeshBVPOperator {
+  name = "LinearBVPOperator"
+    print_info_level = 1
+
+    VolumeOperator = "MechanicsLinearFEOperator"
+    BoundaryOperator = "FusedMeshDirichletMatrixCorrection"
+}
+
+FusedMeshDirichletMatrixCorrection {
+  name = "DirichletMatrixCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    symmetric_correction = TRUE
+    zero_dirichlet_block = FALSE
+    skip_rhs_correction = FALSE
+    skip_rhs_add_correction = FALSE
+    number_of_ids = 2
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+    value_0_0 = 0.0
+    value_0_1 = 0.0
+    value_0_2 = 0.0
+    id_1 = 1
+    number_of_dofs_1 = 3
+    dof_1_0 = 0
+    dof_1_1 = 1
+    dof_1_2 = 2
+    value_1_0 = 0.0
+    value_1_1 = 0.0
+    value_1_2 = -0.1
 }
 
 SlaveLoadOperator {

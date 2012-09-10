@@ -86,7 +86,7 @@ void drawFacesOnBoundaryID(AMP::Mesh::Mesh::shared_ptr meshAdapter, int boundary
 
 void myPCG(AMP::LinearAlgebra::Vector::shared_ptr rhs, AMP::LinearAlgebra::Vector::shared_ptr sol, 
     AMP::Operator::Operator::shared_ptr op, boost::shared_ptr<AMP::Solver::SolverStrategy> pre,
-    size_t maxIters, double tol, bool verbose = false, std::ostream &os = std::cout) {
+    size_t maxIters, double relTol, double absTol, bool verbose = false, std::ostream &os = std::cout) {
   AMP::LinearAlgebra::Vector::shared_ptr res = sol->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr dir = sol->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr ext = sol->cloneVector();
@@ -102,6 +102,7 @@ void myPCG(AMP::LinearAlgebra::Vector::shared_ptr rhs, AMP::LinearAlgebra::Vecto
   oldDir->copyVector(ext);
   oldSol->copyVector(sol);
   double initialResNorm = oldRes->L2Norm();
+  double tol = absTol + relTol * initialResNorm;
   if (verbose) { os<<std::setprecision(15)<<"  iter=0  itialResNorm="<<initialResNorm<<"\n"; }
   for (size_t iter = 0; iter < maxIters; ++iter) {
     if (verbose) { os<<"  iter="<<iter+1<<"  "; }
@@ -115,6 +116,7 @@ void myPCG(AMP::LinearAlgebra::Vector::shared_ptr rhs, AMP::LinearAlgebra::Vecto
     res->axpy(-alpha, matVec, oldRes);
     double resNorm = res->L2Norm();
     if (verbose) { os<<"resNorm="<<resNorm<<"  "; }
+    if (resNorm < tol) { os<<"\n"; break; }
     pre->solve(res, ext);
     double extDOTres = ext->dot(res);
     double beta = extDOTres / extDOToldRes;
@@ -309,6 +311,11 @@ slaveFout.close();
     slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0);
   } // end if
 
+  // apply dirichlet rhs correction
+  if (slaveBVPOperator.get() != NULL) {
+    slaveBVPOperator->modifyRHSvector(columnRhsVec);
+  } // end if
+
   // get d
   contactOperator->addShiftToSlave(columnSolVec);
 
@@ -324,11 +331,6 @@ slaveFout.close();
   // f^s = 0
   contactOperator->addSlaveToMaster(columnRhsVec);
   contactOperator->setSlaveToZero(columnRhsVec);
-
-  // apply dirichlet rhs correction
-  if (slaveBVPOperator.get() != NULL) {
-    slaveBVPOperator->modifyRHSvector(columnRhsVec);
-  } // end if
 
   // u_s = C u_m
   contactOperator->copyMasterToSlave(columnSolVec);
@@ -366,7 +368,9 @@ slaveFout.close();
 
   } else {
     size_t myPCGmaxIters = input_db->getInteger("myPCGmaxIters");
-    myPCG(columnRhsVec, columnSolVec, columnOperator, columnPreconditioner, myPCGmaxIters, -99.0, true); 
+    double myPCGrelTol = input_db->getDouble("myPCGrelTol");
+    double myPCGabsTol = input_db->getDouble("myPCGabsTol");
+    myPCG(columnRhsVec, columnSolVec, columnOperator, columnPreconditioner, myPCGmaxIters, myPCGrelTol, myPCGabsTol, true); 
   }
   // u^s = C u^m + d
   contactOperator->copyMasterToSlave(columnSolVec);
@@ -428,6 +432,9 @@ void myTest2(AMP::UnitTest *ut, std::string exeName) {
     std::cout<<"Finished parsing the input file in "<<(inpReadEndTime - inpReadBeginTime)<<" seconds."<<std::endl;
   }
 
+  bool skipFusedMesh = input_db->getBool("skipFusedMesh");
+  if (skipFusedMesh) { return; }
+
   // Load the meshes
   globalComm.barrier();
   double meshBeginTime = MPI_Wtime();
@@ -464,11 +471,22 @@ void myTest2(AMP::UnitTest *ut, std::string exeName) {
   boost::shared_ptr<AMP::Solver::ColumnSolver> columnPreconditioner(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
 
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> masterElementPhysicsModel;
-    boost::shared_ptr<AMP::Operator::LinearBVPOperator> masterOperator = boost::dynamic_pointer_cast<
+    boost::shared_ptr<AMP::Operator::LinearBVPOperator> masterOperator;
+  bool useSlaveBVPOperator = input_db->getBool("useSlaveBVPOperator");
+  if (useSlaveBVPOperator) {
+     masterOperator = boost::dynamic_pointer_cast<
+        AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+                                                                                         "FusedMeshBVPOperator",
+                                                                                         input_db,
+                                                                                         masterElementPhysicsModel));
+
+  } else {
+     masterOperator = boost::dynamic_pointer_cast<
         AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
                                                                                          "MasterBVPOperator",
                                                                                          input_db,
                                                                                          masterElementPhysicsModel));
+  }
     columnOperator->append(masterOperator);
 
     boost::shared_ptr<AMP::Database> masterSolver_db = columnPreconditioner_db->getDatabase("MasterSolver"); 
@@ -496,7 +514,11 @@ void myTest2(AMP::UnitTest *ut, std::string exeName) {
   columnSolVec->zero();
   columnRhsVec->zero();
 
-  slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0);
+  if (useSlaveBVPOperator) {
+    masterOperator->modifyRHSvector(columnRhsVec);
+  } else {
+    slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0);
+  }
 
   bool usePetscKrylovSolver = input_db->getBool("usePetscKrylovSolver");
   if (usePetscKrylovSolver) {
@@ -526,7 +548,9 @@ void myTest2(AMP::UnitTest *ut, std::string exeName) {
 
   } else {
     size_t myPCGmaxIters = input_db->getInteger("myPCGmaxIters");
-    myPCG(columnRhsVec, columnSolVec, columnOperator, columnPreconditioner, myPCGmaxIters, -99.0, true); 
+    double myPCGrelTol = input_db->getDouble("myPCGrelTol");
+    double myPCGabsTol = input_db->getDouble("myPCGabsTol");
+    myPCG(columnRhsVec, columnSolVec, columnOperator, columnPreconditioner, myPCGmaxIters, myPCGrelTol, myPCGabsTol, true); 
   }
 
   ut->passes(exeName);
@@ -551,7 +575,7 @@ int main(int argc, char *argv[])
   try {
     for (size_t i = 0; i < exeNames.size(); ++i) { 
       myTest(&ut, exeNames[i]); 
-//      myTest2(&ut, exeNames[i]); 
+      myTest2(&ut, exeNames[i]); 
     } // end for
   } catch (std::exception &err) {
     std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;

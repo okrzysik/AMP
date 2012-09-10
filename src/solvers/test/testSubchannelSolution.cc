@@ -14,6 +14,7 @@
 #include "vectors/SimpleVector.h"
 #include "operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
 #include "operators/subchannel/SubchannelTwoEqLinearOperator.h"
+#include "operators/subchannel/SubchannelConstants.h"
 #include "operators/OperatorBuilder.h"
 #include "solvers/ColumnSolver.h"
 #include "solvers/PetscKrylovSolverParameters.h"
@@ -122,8 +123,8 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   //initial guess
   for( ; face != end_face; ++face){
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    solVec->setValueByGlobalID(dofs[0], 1000);
-    solVec->setValueByGlobalID(dofs[1], Pout);
+    solVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*1000);
+    solVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*Pout);
   }
 
   // get nonlinear solver database
@@ -173,24 +174,28 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   // solve
   nonlinearSolver->solve(rhsVec, solVec);
 
+  const double h_scale = 1.0/AMP::Operator::Subchannel::scaleEnthalpy;    // Scale to change the input vector back to correct units
+  const double P_scale = 1.0/AMP::Operator::Subchannel::scaleEnthalpy;    // Scale to change the input vector back to correct units
   face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
   faceDOFManager->getDOFs( face->globalID(), dofs );
-  std::cout<< "Inlet Computed Enthalpy = "<<solVec->getValueByGlobalID(dofs[0]) << " Computed Pressure = "<<solVec->getValueByGlobalID(dofs[1]) ;
+  std::cout<< "Inlet Computed Enthalpy = " << h_scale*solVec->getValueByGlobalID(dofs[0]) << std::endl;
+  std::cout<< "Inlet Computed Pressure = " << P_scale*solVec->getValueByGlobalID(dofs[1]) << std::endl;
   // compute inlet temperature 
   std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
-  temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,solVec->getValueByGlobalID(dofs[0]))));
-  temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,solVec->getValueByGlobalID(dofs[1]))));
+  temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_scale*solVec->getValueByGlobalID(dofs[0]))));
+  temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,P_scale*solVec->getValueByGlobalID(dofs[1]))));
   std::vector<double> temperatureResult(1);
   subchannelPhysicsModel->getProperty("Temperature", temperatureResult, temperatureArgMap); 
   double compTin = temperatureResult[0];
-  std::cout<< "Temperature Inlet :"<< compTin <<std::endl;
+  std::cout<< "Temperature Inlet :" << compTin << std::endl;
 
   face = --end_face;
   faceDOFManager->getDOFs( face->globalID(), dofs );
-  std::cout<< "Outlet Computed Enthalpy = "<<solVec->getValueByGlobalID(dofs[0]) << " Computed Pressure = "<<solVec->getValueByGlobalID(dofs[1]) ;
+  std::cout<< "Outlet Computed Enthalpy = " << h_scale*solVec->getValueByGlobalID(dofs[0]) << std::endl;
+  std::cout<< "Outlet Computed Pressure = " << P_scale*solVec->getValueByGlobalID(dofs[1]) << std::endl;
   std::map<std::string, boost::shared_ptr<std::vector<double> > > outTemperatureArgMap;
-  outTemperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,solVec->getValueByGlobalID(dofs[0]))));
-  outTemperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,solVec->getValueByGlobalID(dofs[1]))));
+  outTemperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_scale*solVec->getValueByGlobalID(dofs[0]))));
+  outTemperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,P_scale*solVec->getValueByGlobalID(dofs[1]))));
   std::vector<double> outTemperatureResult(1);
   subchannelPhysicsModel->getProperty("Temperature", outTemperatureResult, outTemperatureArgMap); 
   compTin = outTemperatureResult[0];
@@ -204,8 +209,8 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
   for( ; face != end_face; ++face,++j){
     faceDOFManager->getDOFs( face->globalID(), dofs );
-     std::cout<< "Computed Enthalpy["<<j<<"] = "<<solVec->getValueByGlobalID(dofs[0]) << "Computed Pressure["<<j<<"] = "<<solVec->getValueByGlobalID(dofs[1]) ;
-     std::cout<<" Manufactured Pressure["<<j<<"] = "<<manufacturedVec->getValueByGlobalID(dofs[1]) ;
+     std::cout<< "Computed Enthalpy["<<j<<"] = "<<h_scale*solVec->getValueByGlobalID(dofs[0]) << "Computed Pressure["<<j<<"] = "<<P_scale*solVec->getValueByGlobalID(dofs[1]) ;
+     std::cout<<" Manufactured Pressure["<<j<<"] = "<<P_scale*manufacturedVec->getValueByGlobalID(dofs[1]) ;
      std::cout<<std::endl;
   }
   // print manufactured solution
@@ -256,10 +261,26 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   input_db.reset();
 
 #ifdef USE_EXT_SILO
+    // Rescale the solution to get the correct units
+    AMP::LinearAlgebra::Vector::shared_ptr enthalpy, pressure;
+    enthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride(0,2), "H" );
+    pressure = solVec->select( AMP::LinearAlgebra::VS_Stride(1,2), "P" );
+    enthalpy->scale(h_scale);
+    pressure->scale(P_scale);
+    enthalpy = manufacturedVec->select( AMP::LinearAlgebra::VS_Stride(0,2), "H" );
+    pressure = manufacturedVec->select( AMP::LinearAlgebra::VS_Stride(1,2), "P" );
+    enthalpy->scale(h_scale);
+    pressure->scale(P_scale);
     // Register the quantities to plot
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
+    AMP::LinearAlgebra::Vector::shared_ptr subchannelEnthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride(0,2), "H" );
+    AMP::LinearAlgebra::Vector::shared_ptr subchannelPressure = solVec->select( AMP::LinearAlgebra::VS_Stride(1,2), "P" );
+    subchannelEnthalpy->scale(h_scale);
+    subchannelPressure->scale(P_scale);
     siloWriter->registerVector( manufacturedVec, xyFaceMesh, AMP::Mesh::Face, "ManufacturedSolution" );
     siloWriter->registerVector( solVec, xyFaceMesh, AMP::Mesh::Face, "ComputedSolution" );
+    siloWriter->registerVector( subchannelEnthalpy, xyFaceMesh, AMP::Mesh::Face, "Enthalpy" );
+    siloWriter->registerVector( subchannelPressure, xyFaceMesh, AMP::Mesh::Face, "Pressure" );
     siloWriter->writeFile( silo_name , 0 );
 #endif
 

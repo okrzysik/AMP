@@ -121,12 +121,20 @@ MeshIterator MeshIterator::operator--(int i)
 ********************************************************/
 bool MeshIterator::operator==(const MeshIterator& rhs) const
 {
+    if ( this->size()==0 && rhs.size()==0 )
+        return true;
+    if ( this->size()!=rhs.size() || this->position()!=rhs.position() )
+        return false;
     if ( iterator==NULL )
         return rhs.iterator==NULL;
     return iterator->operator==(rhs);
 }
 bool MeshIterator::operator!=(const MeshIterator& rhs) const
 {
+    if ( this->size()==0 && rhs.size()==0 )
+        return false;
+    if ( this->size()!=rhs.size() || this->position()!=rhs.position() )
+        return true;
     if ( iterator==NULL )
         return rhs.iterator!=NULL;
     return iterator->operator!=(rhs);

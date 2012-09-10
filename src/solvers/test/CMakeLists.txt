@@ -38,14 +38,20 @@ INCLUDE (macros)
 #     COPY_MESH_FILE ( mesh_file )
 #
 
-ADD_AMP_PROVISIONAL_TEST(testNonlinearKrylovAccelerator-NonlinearMechanics-1 )
+ADD_AMP_PROVISIONAL_TEST( testAMGuniform )
+COPY_TEST_DATA_FILE(input_testAMGuniform)
+COPY_MESH_FILE(testAMGmesh5)
+COPY_MESH_FILE(testAMGmesh17)
+COPY_MESH_FILE(testAMGmesh33)
 
-ADD_AMP_TEST(testSubchannelSolve)
-COPY_TEST_DATA_FILE ( input_testSubchannelSolve)
+ADD_AMP_TEST(testSubchannelSolve testSubchannelSolve-1 )
+COPY_TEST_DATA_FILE ( input_testSubchannelSolve-1 )
+COPY_TEST_DATA_FILE ( input_testSubchannelSolve-2 )
 
 ADD_AMP_TEST(testSubchannelSolution)
 COPY_TEST_DATA_FILE ( input_testSubchannelSolution)
 
+# R.S.: This needs to be fixed!
 ADD_AMP_PROVISIONAL_TEST ( testPelletStackMechanicsSolver )
 COPY_TEST_DATA_FILE ( input_testPelletStackMechanicsSolver-1 )
 COPY_TEST_DATA_FILE ( input_testPelletStackMechanicsSolver-2 )
@@ -58,16 +64,13 @@ COPY_MESH_FILE ( TC1-PELL-COARSE.e )
 COPY_MESH_FILE ( reg3ptBox1 )
 COPY_MESH_FILE ( reg3ptBox2 )
 
-ADD_AMP_PROVISIONAL_TEST ( jfnkPaperDriver )
-COPY_TEST_DATA_FILE ( input_jfnkPaperDriver )
-
 COPY_MESH_FILE ( regPlateWithHole1 )
 COPY_MESH_FILE ( regPlateWithHole2 )
 
 COPY_MESH_FILE ( regBox1 )
 COPY_MESH_FILE ( regBox2 )
 
-ADD_AMP_PROVISIONAL_TEST ( testMechElasticLUvsML )
+ADD_AMP_TEST_1_2_4 ( testMechElasticLUvsML )
 COPY_TEST_DATA_FILE ( input_testMechElasticLUvsML )
 
 COPY_MESH_FILE ( lumlmesh1 )
@@ -89,8 +92,8 @@ COPY_MESH_FILE ( halden_1_clad.e )
 COPY_MESH_FILE ( cube343H27.e )
 COPY_MESH_FILE ( cube343H8.e )
 
-ADD_AMP_PROVISIONAL_TEST ( testContactV6 )
-COPY_TEST_DATA_FILE ( input_testContactV6 )
+ADD_AMP_TEST_1_2_4 ( testPetscSNESSolver )
+COPY_TEST_DATA_FILE ( input_testPetscSNESSolver )
 
 ADD_AMP_WEEKLY_TEST ( testBrickPressureBoundary-1 4 )
 COPY_TEST_DATA_FILE ( input_testBrickPressureBoundary-1 )
@@ -98,27 +101,11 @@ COPY_TEST_DATA_FILE ( input_testBrickPressureBoundary-1 )
 ADD_AMP_TEST ( testLinearThermalExpansion )
 COPY_TEST_DATA_FILE ( input_testLinearThermalExpansion )
 
-ADD_AMP_PROVISIONAL_TEST ( testContactV5withML 1 )
-COPY_TEST_DATA_FILE ( input_testContactV5withML )
-
-# ADD_AMP_TEST ( testContactV5 ) # Move to WEEKLY until it is running
-ADD_AMP_PROVISIONAL_TEST ( testContactV5 1 )
-COPY_TEST_DATA_FILE ( input_testContactV5 )
-
-# ADD_AMP_TEST ( testContactSearch ) # Move to WEEKLY until it is running
-ADD_AMP_PROVISIONAL_TEST ( testContactSearch 1 )
-COPY_TEST_DATA_FILE ( input_testContactSearch )
-
 ADD_AMP_TEST ( testJacobiVsML )
 COPY_TEST_DATA_FILE ( input_testJacobiVsML )
 COPY_MESH_FILE ( tiedContactV1_fusedpelletclad.e )
 
 COPY_MESH_FILE ( tiedContact_pellet.e )
-
-# ADD_AMP_TEST ( testTiedContactV3 ) # Move to WEEKLY until it is running
-ADD_AMP_PROVISIONAL_TEST ( testTiedContactV3 1 )
-COPY_TEST_DATA_FILE ( input_testTiedContactV3 )
-COPY_MESH_FILE ( tiedContactV3_clad.e )
 
 ADD_AMP_PROVISIONAL_TEST ( testDiffusionMMSInverse )
 
@@ -162,7 +149,6 @@ ADD_AMP_WEEKLY_TEST ( testCook_Plastic 8 )
 ADD_AMP_WEEKLY_TEST ( testCook_Plastic 1 )
 ADD_AMP_WEEKLY_TEST ( testMacNealstraightBeam-regular 2 )
 ADD_AMP_PROVISIONAL_TEST ( testNonlinearThermalContact-1DFlow 8 )
-ADD_AMP_PROVISIONAL_TEST ( testPetscSNESSolver-NonlinearMechanics-3 4 )
 ADD_AMP_TEST_1_2_4 ( testThermalRobinFlow-2 )
 ADD_AMP_TEST ( testElementLevel-VonMisesPlasticity-LoadingUnloadingLoop )
 ADD_AMP_WEEKLY_TEST ( testTrilinosMLSolver-LinearThermalOperator-2 8 )
@@ -200,31 +186,6 @@ COPY_TEST_DATA_FILE ( input_testLinearFlow-1 )
 
 ADD_AMP_PROVISIONAL_TEST ( testMeshRefinementDiffusion-1 )
 COPY_TEST_DATA_FILE ( input_testMeshRefinementDiffusion-1 )
-
-ADD_AMP_PROVISIONAL_TEST ( testMPC 1 )
-ADD_AMP_WEEKLY_TEST ( testCG_MPC 1 )
-ADD_AMP_PROVISIONAL_TEST ( testPCG_MPC 1 )
-ADD_AMP_WEEKLY_TEST ( testMLCG_MPC 1 )
-COPY_TEST_DATA_FILE ( input_testMPC-1 )
-COPY_TEST_DATA_FILE ( input_testCG_MPC-1 )
-COPY_TEST_DATA_FILE ( input_testPCG_MPC-1 )
-COPY_TEST_DATA_FILE ( input_testMLCG_MPC-1 )
-COPY_TEST_DATA_FILE ( input_testMPC-2 )
-COPY_TEST_DATA_FILE ( input_testCG_MPC-2 )
-COPY_TEST_DATA_FILE ( input_testPCG_MPC-2 )
-COPY_TEST_DATA_FILE ( input_testMLCG_MPC-2 )
-COPY_TEST_DATA_FILE ( input_testMPC-3 )
-COPY_TEST_DATA_FILE ( input_testCG_MPC-3 )
-COPY_TEST_DATA_FILE ( input_testPCG_MPC-3 )
-COPY_TEST_DATA_FILE ( input_testMLCG_MPC-3 )
-COPY_TEST_DATA_FILE ( input_testMPC-4 )
-COPY_TEST_DATA_FILE ( input_testCG_MPC-4 )
-COPY_TEST_DATA_FILE ( input_testPCG_MPC-4 )
-COPY_TEST_DATA_FILE ( input_testMLCG_MPC-4 )
-COPY_TEST_DATA_FILE ( input_testMPC-5 )
-COPY_TEST_DATA_FILE ( input_testCG_MPC-5 )
-COPY_TEST_DATA_FILE ( input_testPCG_MPC-5 )
-COPY_TEST_DATA_FILE ( input_testMLCG_MPC-5 )
 
 COPY_MESH_FILE ( boxMesh-1 )
 COPY_MESH_FILE ( boxMesh-2 )
@@ -293,7 +254,6 @@ ADD_AMP_TEST_1_2_4 ( testPetscSNESSolver-NonlinearFickSoret-1 )
 ADD_AMP_TEST_1_2_4 ( testPetscSNESSolver-NonlinearFickSoret-2 )
 ADD_AMP_TEST_1_2_4 ( testMaterialModels_VonMisesPlasticity-1 )
 ADD_AMP_TEST_1_2_4 ( testMaterialModels_VonMisesPlasticity-2 )
-ADD_AMP_TEST_1_2_4 ( testLibMeshFaceStuff )
 
 COPY_TEST_DATA_FILE (input_testFlowSolver )
 COPY_TEST_DATA_FILE ( input_testThermalRobinFlow-2 )
@@ -419,7 +379,6 @@ COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearFickSoret-cylinder-OxMS
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearFickSoret-cylinder-OxMSRZC09-BLog-1 )
 COPY_TEST_DATA_FILE ( input_testNonlinearKrylovAccelerator-NonlinearThermal-cylinder_kIsOne )
 COPY_TEST_DATA_FILE ( input_testNonlinearKrylovAccelerator-NonlinearThermal-cylinder_MATPRO )
-COPY_TEST_DATA_FILE ( input_testNonlinearKrylovAccelerator-ML-NonlinearMechanics-1-normal )
 #COPY_TEST_DATA_FILE ( input_testTrilinosMLSolver-LinearThermalOperator-1 )
 COPY_TEST_DATA_FILE ( input_testTrilinosMLSolver-LinearThermalOperator-2_HALDEN )
 COPY_TEST_DATA_FILE ( input_testTrilinosMLSolver-LinearThermalOperator-2_HALDEN_clad )

@@ -1,11 +1,12 @@
-/*
- * Independent.h
- *
- *  Created on: Mar 11, 2010
- *	  Author: bm, gad
+//----------------------------------*-C++-*----------------------------------//
+/*!
+ * \file   materials/FixedClad.cc
+ * \author Aaron Phillippe
+ * \brief  Implementation file for constant cladding properties  
  */
+//---------------------------------------------------------------------------//
 
-#include "Independent.h"
+#include "FixedClad.h"
 
 #include "Property.h"
 #include "VectorProperty.h"
@@ -17,14 +18,14 @@
 namespace AMP { 
 namespace Materials {
 
-namespace Independent_NS {
+namespace FixedClad_NS {
 
 //  =================== Constants =====================================================
 
-	static const std::string name_base("Independent");
-	static const std::string source("none; all ones.");
+	static const std::string name_base("FixedClad");
+	static const std::string source("average values from matpro; as defined by Phillippe."); 
 
-	static const double thermalval=1.;
+	static const double thermalval=15.79;
 	static const double fickval=1.;
 	static const double soretval=1.;
 
@@ -362,26 +363,26 @@ namespace Independent_NS {
 
 //  =================== Materials =====================================================
 
-Independent::Independent()
+FixedClad::FixedClad()
 {
 		d_propertyMap = new std::map<std::string, boost::shared_ptr<Property<double> > >();
-		INSERT_PROPERTY_IN_MAP(ThermalConductivity, 	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(FickCoefficient,	      	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(SoretCoefficient,	      	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(DTThermalConductivity, 	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(DTFickCoefficient,	      	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(DTSoretCoefficient,	      	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(DxThermalConductivity, 	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(DxFickCoefficient,	      	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(DxSoretCoefficient,	      	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(Density, 				Independent_NS);
-		INSERT_PROPERTY_IN_MAP(HeatCapacityPressure, 	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(ThermalExpansion, 		Independent_NS);
-		INSERT_PROPERTY_IN_MAP(YoungsModulus, 			Independent_NS);
-		INSERT_PROPERTY_IN_MAP(PoissonRatio, 			Independent_NS);
-		INSERT_PROPERTY_IN_MAP(ThermalDiffusionCoefficient,	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(VectorFickCoefficient, Independent_NS);
-		INSERT_PROPERTY_IN_MAP(TensorFickCoefficient, Independent_NS);
+		INSERT_PROPERTY_IN_MAP(ThermalConductivity, 	FixedClad_NS);
+		INSERT_PROPERTY_IN_MAP(FickCoefficient,	      	FixedClad_NS);
+		INSERT_PROPERTY_IN_MAP(SoretCoefficient,	      	FixedClad_NS);
+		INSERT_PROPERTY_IN_MAP(DTThermalConductivity, 	FixedClad_NS);
+		INSERT_PROPERTY_IN_MAP(DTFickCoefficient,	      	FixedClad_NS);
+		INSERT_PROPERTY_IN_MAP(DTSoretCoefficient,	      	FixedClad_NS);
+		INSERT_PROPERTY_IN_MAP(DxThermalConductivity, 	FixedClad_NS);
+		INSERT_PROPERTY_IN_MAP(DxFickCoefficient,	      	FixedClad_NS);
+		INSERT_PROPERTY_IN_MAP(DxSoretCoefficient,	      	FixedClad_NS);
+		INSERT_PROPERTY_IN_MAP(Density, 				FixedClad_NS);
+		INSERT_PROPERTY_IN_MAP(HeatCapacityPressure, 	FixedClad_NS);
+		INSERT_PROPERTY_IN_MAP(ThermalExpansion, 		FixedClad_NS);
+		INSERT_PROPERTY_IN_MAP(YoungsModulus, 			FixedClad_NS);
+		INSERT_PROPERTY_IN_MAP(PoissonRatio, 			FixedClad_NS);
+		INSERT_PROPERTY_IN_MAP(ThermalDiffusionCoefficient,	FixedClad_NS);
+		INSERT_PROPERTY_IN_MAP(VectorFickCoefficient, FixedClad_NS);
+		INSERT_PROPERTY_IN_MAP(TensorFickCoefficient, FixedClad_NS);
 }
 
 } 

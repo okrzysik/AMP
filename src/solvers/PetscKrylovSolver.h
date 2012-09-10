@@ -4,6 +4,8 @@
 #include "utils/AMP_MPI.h"
 #include "SolverStrategy.h"
 #include "PetscKrylovSolverParameters.h"
+#include "solvers/PetscMonitor.h"
+
 
 extern "C"{
 
@@ -116,7 +118,7 @@ namespace Solver {
    * sets the PETSc KSP object
    @param [in] ksp pointer to KSP object
    */
-  inline void setKrylovSolver(KSP *ksp){ d_KrylovSolver = *ksp;}
+  void setKrylovSolver(KSP *ksp);
 
   /**
    * Initialize the PetscKrylovSolver. Should not be necessary for the user to call in general.
@@ -198,6 +200,8 @@ namespace Solver {
   // the last reference.
   AMP::LinearAlgebra::Vector::shared_ptr  fVecView;
   AMP::LinearAlgebra::Vector::shared_ptr  uVecView;
+
+  boost::shared_ptr<PetscMonitor> d_PetscMonitor;
 
   KSP d_KrylovSolver;
 

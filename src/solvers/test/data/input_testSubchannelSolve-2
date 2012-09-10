@@ -1,0 +1,396 @@
+// Database for all the meshes
+Mesh{
+    MeshName = "AllMeshes"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
+
+    // Pin meshes
+    Mesh_1 {
+        MeshName = "MultiPin"
+        MeshType = "Multimesh"
+        MeshDatabasePrefix = "Mesh_"
+        MeshArrayDatabasePrefix = "MeshArray_"
+        // The array of pins
+        MeshArray_1 {
+            N = 8
+            iterator = "%p"
+            indicies = 1, 2, 3, 4, 5, 6, 7, 8
+            MeshName = "pin_%p"
+            MeshType = "Multimesh"
+            MeshDatabasePrefix = "Mesh_"
+            MeshArrayDatabasePrefix = "MeshArray_"
+            x_offset = 0.0063, 0.0189, 0.0315, 0.0063, 0.0315, 0.0063, 0.0189, 0.0315
+            y_offset = 0.0063, 0.0063, 0.0063, 0.0189, 0.0189, 0.0315, 0.0315, 0.0315
+            z_offset = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+            // The clad mesh
+            Mesh_1 {
+                MeshName = "CladMeshes_%p"
+                MeshType = "Multimesh"
+                MeshDatabasePrefix = "Mesh_"
+                MeshArrayDatabasePrefix = "MeshArray_"
+                Mesh_1 {
+                  MeshName = "clad"
+                  MeshType = "AMP"
+                  dim = 3
+                  Generator = "tube"
+                  Size = 3, 24, 15
+                  Range = 0.004110, 0.004705, 0, 0.0315
+                  x_offset = 0.0
+                  y_offset = 0.0
+                  z_offset = 0.0
+                  Weight = 1.0
+                }
+            }
+        }
+    }
+
+    // Subchannel mesh
+    Mesh_2 {
+      MeshName = "subchannel"
+        MeshType = "AMP"
+        dim = 3
+        Generator = "cube"
+        Size = 4, 4, 10
+        x_grid = 0.0, 0.0063, 0.0189, 0.0315, 0.0378
+        y_grid = 0.0, 0.0063, 0.0189, 0.0315, 0.0378
+        z_grid = 0.0, 0.00315, 0.0063, 0.00945, 0.0126, 0.01575, 0.0189, 0.02205, 0.0252, 0.02835, 0.0315
+    }
+}
+
+CladToSubchannelMaps{
+    MapType = "CladToSubchannelMap"
+    N_maps = 1
+    Mesh1 = "clad"
+    Surface1 = 4
+    Mesh2 = "subchannel"
+    Surface2 = 4
+    DOFsPerObject = 1
+    VariableName = "Temperature"
+}
+
+SubchannelToCladMaps{
+    MapType = "SubchannelToCladMap"
+    N_maps = 1
+    Mesh1 = "subchannel"
+    Surface1 = 4
+    Mesh2 = "clad"
+    Surface2 = 4
+    DOFsPerObject = 1
+    VariableName = "Temperature"
+}
+
+CopyOperator{
+  name = "VectorCopyOperator"
+    print_info_level = 0
+}
+
+BottomPelletNonlinearThermalOperator {
+  name="NonlinearBVPOperator"
+    print_info_level = 1
+    VolumeOperator = "PelletDiffusionNonlinearFEOperator"
+    BoundaryOperator = "BottomPelletNonlinearThermalBoundaryConditions"
+}
+
+BottomPelletLinearThermalOperator {
+  name = "LinearBVPOperator"
+    print_info_level = 0
+    VolumeOperator = "PelletDiffusionLinearFEOperator"
+    BoundaryOperator = "BottomPelletLinearThermalBoundaryConditions"
+}
+
+BottomPelletNonlinearThermalBoundaryConditions {
+  name="ColumnBoundaryOperator"
+    numberOfBoundaryOperators = 1
+    boundaryOperators = "P2CRobinVectorCorrection"
+}
+
+BottomPelletLinearThermalBoundaryConditions {
+  name="ColumnBoundaryOperator"
+    numberOfBoundaryOperators = 1
+    boundaryOperators = "BottomP2PLinearRobinBoundaryCondition" 
+}
+
+
+CladNonlinearThermalOperator {
+  name="NonlinearBVPOperator"
+    print_info_level = 1
+    VolumeOperator = "CladDiffusionNonlinearFEOperator"
+    BoundaryOperator = "CladNonlinearThermalBoundaryConditions"
+}
+
+CladLinearThermalOperator {
+  name = "LinearBVPOperator"
+    print_info_level = 0
+    VolumeOperator = "CladDiffusionLinearFEOperator"
+    BoundaryOperator = "CladLinearThermalBoundaryConditions"
+}
+
+CladDiffusionNonlinearFEOperator {
+  name = "DiffusionNonlinearFEOperator"
+    print_info_level = 1
+    ActiveInputVariables {
+      temperature = "Temperature"
+    }
+  OutputVariable = "Temperature"
+    PrincipalVariable = 0
+    DiffusionElement{
+      name = "DiffusionNonlinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
+  LocalModel = "CladDiffusionTransportModel"
+}
+
+CladDiffusionLinearFEOperator {
+  name = "DiffusionLinearFEOperator"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    InputVariable = "Temperature"
+    OutputVariable = "Temperature"
+    FixedTemperature = FALSE
+    FixedConcentration = TRUE
+    FixedBurnup = TRUE
+    DiffusionElement {
+      name = "DiffusionLinearElement"
+        TransportAtGaussPoints = TRUE
+        FE_ORDER = "FIRST"
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
+  LocalModel = "CladDiffusionTransportModel"
+}
+
+
+CladNonlinearThermalBoundaryConditions {
+  name="ColumnBoundaryOperator"
+    numberOfBoundaryOperators = 1
+    boundaryOperators = "C2WBoundaryVectorCorrection"
+}
+
+CladLinearThermalBoundaryConditions {
+  name="ColumnBoundaryOperator"
+    numberOfBoundaryOperators = 1
+    boundaryOperators = "C2WBoundaryMatrixCorrection"
+}
+
+C2WBoundaryVectorCorrection {
+  name = "RobinVectorCorrection"
+    FE_ORDER = "FIRST"
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+    fConductivity  = 1.0
+    alpha          = 1.0
+    beta           = 9732.805 // This corresponds to the Dittus-Bolter heff in FlowFrapon with the constants defined in the FlowFrapconOperator below.
+    gamma          = 9732.805 // This corresponds to the Dittus-Bolter heff in FlowFrapon with the constants defined in the FlowFrapconOperator below.
+    print_info_level = 0
+    skip_params = FALSE
+    number_of_ids = 1
+    IsFluxGaussPtVector = FALSE
+    IsCoupledBoundary_0 = TRUE
+    id_0 = 4
+    number_of_dofs_0 = 1
+    dof_0_0 = 0
+    value_0_0 = 573.15
+    LocalModel = "ConvectiveHeatCoefficient"
+}
+
+C2WBoundaryMatrixCorrection {
+  name = "RobinMatrixCorrection"
+    FE_ORDER = "FIRST"
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+    fConductivity  = 1.0
+    alpha          = 1.0
+    beta           = 9732.805 // This corresponds to the Dittus-Bolter heff in FlowFrapon with the constants defined in the FlowFrapconOperator below.
+    gamma          = 9732.805 // This corresponds to the Dittus-Bolter heff in FlowFrapon with the constants defined in the FlowFrapconOperator below.
+    print_info_level = 0
+    skip_params = FALSE
+    number_of_ids = 1
+    IsFluxGaussPtVector = FALSE
+    IsCoupledBoundary_0 = TRUE
+    id_0 = 4
+    number_of_dofs_0 = 1
+    dof_0_0 = 0
+    value_0_0 = 0.0
+}
+
+CladVolumeIntegralOperator{
+  name="VolumeIntegralOperator"
+    InputVariableType = "IntegrationPointScalar"
+    Number_Active_Variables = 1
+    Number_Auxillary_Variables = 0
+    ConstantSource   = FALSE
+    ActiveInputVariables{
+      ActiveVariable_0 = "SpecificPowerInWattsPerGram"
+    }
+  OutputVariable = "Temperature"
+    print_info_level = 1
+    LocalModel = "CladSourcePhysicsModel"
+
+    SourceElement {
+      name="SourceNonlinearElement"
+        print_info_level = 0
+        FE_ORDER = "FIRST"
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
+}
+
+CladDiffusionTransportModel{
+  name = "DiffusionTransportModel"
+    Material = "Independent"
+    Property = "ThermalConductivity"
+    Default_Concentration = 0.1
+    Default_Temperature   = 557.0
+    Default_Burnup   = 0.0
+}
+
+CladSourcePhysicsModel {
+  name = "SourcePhysicsModel"
+    Material = "Independent"
+    USE_ELEMENT_PHYSICS = "MassDensityModel"
+    Equation = "ThermalSource"
+    USE_MATERIALS_LIBRARY = TRUE
+    Default_Concentration = 0.1
+    Default_Temperature   = 557.0
+    Default_Burnup        = 0.0
+}
+
+SubchannelTwoEqNonlinearOperator{
+    name = "SubchannelTwoEqNonlinearOperator"
+    InputVariable = "Flow"
+    OutputVariable = "Flow"
+    numpoints = 10
+    Exit_Pressure = 15.5132e6
+    Inlet_Temperature = 569.26
+    Mass_Flow_Rate = 0.3522
+    Fission_Heating_Coefficient = 0.0
+    Channel_Angle = 0.0
+    Friction_Factor = 0.1
+    Lattice_Pitch = 0.0128016
+    Rod_Diameter = 0.0097028
+    Form_Loss_Coefficient = 0.2
+    Rod_Power = 66.81e3
+    Heat_Source_Type = "averageCladdingTemperature"
+    Channel_Diameter = 0.01178  // Todreas, p.455
+    Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
+    Prandtl          = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
+    ChannelFractions = 0.25, 0.5, 0.5, 0.25, 0.5 , 0.75, 0.75 , 0.5,0.5 , 0.75, 0.75 , 0.5, 0.25, 0.5, 0.5, 0.25 
+    Heat_Shape = "Sinusoidal"
+    LocalModel = "SubchannelPhysicsModel"
+}
+
+SubchannelTwoEqLinearOperator{
+    name = "SubchannelTwoEqLinearOperator"
+    InputVariable = "Flow"
+    OutputVariable = "Flow"
+    numpoints = 10
+    Exit_Pressure = 15.5132e6
+    Inlet_Temperature = 569.26
+    Mass_Flow_Rate = 0.3522
+    Fission_Heating_Coefficient = 0.0
+    Channel_Angle = 0.0
+    Channel_Diameter = 0.01178  // Todreas, p.455
+    Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
+    Prandtl          = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
+    Friction_Factor = 0.1
+    Lattice_Pitch = 0.0128016
+    Rod_Diameter = 0.0097028
+    Form_Loss_Coefficient = 0.2
+    Rod_Power = 66.81e3
+    Heat_Source_Type = "averageCladdingTemperature"
+    ChannelFractions = 0.25, 0.5, 0.5, 0.25, 0.5 , 0.75, 0.75 , 0.5,0.5 , 0.75, 0.75 , 0.5, 0.25, 0.5, 0.5, 0.25 
+    Heat_Shape = "Sinusoidal"
+    LocalModel = "SubchannelPhysicsModel"
+}
+
+ConvectiveHeatCoefficient{
+    name = "ConvectiveHeatCoefficient"
+    Material = "WaterLibrary"
+    Property = "ConvectiveHeat"
+    ActiveInputVariables{
+      ActiveVariable_0 = "Temperature"
+    }
+    ActiveParameters{
+      FUEL_TEMPERATURE = "Temperature"
+    }
+    Defaults{
+      diameter         = 0.01178  // Todreas, p.455
+      temperature      = 400.0    // K
+      density          = 704      // Density of water ????
+      reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
+      prandtl          = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
+    }
+}
+
+SubchannelPhysicsModel{
+  name = "SubchannelPhysicsModel"
+    Material = "WaterLibrary"
+    Formulation = "FunctionsTesting"
+	Defaults{
+		enthalpy = 200.0e3
+		pressure = 0.5e6
+		temperature = 350.0
+		density = 973.919
+                reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
+                prandtl          = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
+                diameter         = 0.01178  // Todreas, p.455
+	}
+}
+
+NonlinearSolver {
+  print_info_level = 1
+    max_iterations = 500
+    max_error = 1e-5
+
+    absoluteTolerance = 1.0e-12
+    relativeTolerance = 1.0e-10
+    stepTolerance = 1.0e-15
+    maximumFunctionEvals = 10000
+    usesJacobian=FALSE
+    enableLineSearchPreCheck=FALSE
+
+    SNESOptions = "-snes_monitor -snes_type ls -snes_ksp_ew -snes_converged_reason -snes_ls_alpha 1.0e-4"
+
+    LinearSolver{
+      print_info_level = 0
+        max_iterations = 10000
+        max_error = 1e-10
+        absolute_tolerance = 1.0e-16
+        ksp_type = "fgmres"
+        relative_tolerance = 1.0e-13
+        divergence_tolerance = 1.0e03
+        max_krylov_dimension = 40
+        uses_preconditioner=TRUE
+        pc_type = "shell"
+        pc_side = "RIGHT"
+
+        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 10000 -ksp_rtol 1.0e-1 -ksp_atol 1.0e-13 -ksp_gmres_restart 100"
+
+        Preconditioner {
+          print_info_level = 1
+            max_iterations = 1
+            max_error = 1e-16
+            absolute_tolerance = 1.0e-16
+            relative_tolerance = 1.0e-13
+            divergence_tolerance = 1.0e03
+
+            TrilinosPreconditioner{
+              print_info_level = 0
+                max_iterations = 1
+                max_levels = 10
+                max_error = 1.0e-15
+                coarse_type="Amesos-KLU"
+                PDE_equations = 1
+            }
+        }
+    }
+}
