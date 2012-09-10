@@ -1,3 +1,10 @@
+//----------------------------------*-C++-*----------------------------------//
+/*!
+ * \file   materials/FixedFuel.h
+ * \author Aaron Phillippe
+ * \brief  Header file for constant fuel properties  
+ */
+//---------------------------------------------------------------------------//
 #ifndef FixedFuel_H
 #define FixedFuel_H
 

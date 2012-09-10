@@ -22,15 +22,7 @@ namespace Independent_NS {
 //  =================== Constants =====================================================
 
 	static const std::string name_base("Independent");
-	static const std::string source("\
-T=273, \
-Bogdan Mihaila, Marius Stan, Juan Ramirez, \
-Alek Zubelewicz, Petrica Cristea, \
-Journal of Nuclear Materials 394 (2009) 182--189");
-
-	/** \todo {the values of 1.0 below need to be filled in with defaults
-	 *		 for T=273, U=0, B=0}
-	 */
+	static const std::string source("none; all ones.");
 
 	static const double thermalval=1.;
 	static const double fickval=1.;

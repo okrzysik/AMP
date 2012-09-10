@@ -1,9 +1,10 @@
-/*
- * FixedFuel.h
- *
- *  Created on: Mar 11, 2010
- *	  Author: bm, gad
+//----------------------------------*-C++-*----------------------------------//
+/*!
+ * \file   materials/FixedFuel.cc
+ * \author Aaron Phillippe
+ * \brief  Implementation file for constant fuel properties  
  */
+//---------------------------------------------------------------------------//
 
 #include "FixedFuel.h"
 
@@ -22,15 +23,7 @@ namespace FixedFuel_NS {
 //  =================== Constants =====================================================
 
 	static const std::string name_base("FixedFuel");
-	static const std::string source("\
-T=273, \
-Bogdan Mihaila, Marius Stan, Juan Ramirez, \
-Alek Zubelewicz, Petrica Cristea, \
-Journal of Nuclear Materials 394 (2009) 182--189");
-
-	/** \todo {the values of 1.0 below need to be filled in with defaults
-	 *		 for T=273, U=0, B=0}
-	 */
+	static const std::string source("average values from matpro; as defined by Phillippe."); 
 
 	static const double thermalval=3.3;
 	static const double fickval=1.;

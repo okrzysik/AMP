@@ -1,3 +1,10 @@
+//----------------------------------*-C++-*----------------------------------//
+/*!
+ * \file   materials/FixedClad.h
+ * \author Aaron Phillippe
+ * \brief  Header file for constant cladding properties  
+ */
+//---------------------------------------------------------------------------//
 #ifndef FixedClad_H
 #define FixedClad_H
 
