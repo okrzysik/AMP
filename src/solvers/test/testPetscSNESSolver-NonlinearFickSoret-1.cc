@@ -95,7 +95,7 @@ void fickTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &resul
   AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fickVariable, true );
   AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fickVariable, true );
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // register some variables for plotting
   AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
@@ -174,7 +174,7 @@ void fickTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &resul
   solVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
   resVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
   siloWriter->writeFile( exeName , 0 );
 #endif
 
@@ -276,7 +276,7 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   fickOp->setVector(0, tVec);
   soretOp->setVector(0, tVec);
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // register some variables for plotting
   AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
@@ -346,7 +346,7 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   solVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
   resVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
   siloWriter->writeFile( exeName , 0 );
 #endif
 

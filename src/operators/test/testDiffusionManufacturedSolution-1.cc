@@ -144,6 +144,7 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
     nodalDofMap->getDOFs ( iterator->globalID() , i);
     solVec->setValueByGlobalID(i[0], poly[0]);
   }
+  solVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
   // Evaluate manufactured solution as an FE source
   sourceOp->apply(rhsVec, solVec, sourceVec, 1., 0.);
@@ -209,7 +210,7 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
 
   // Plot the results
   if( globalComm.getSize() == 1 ) {
- #ifdef USE_SILO
+ #ifdef USE_EXT_SILO
      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
      siloWriter->registerMesh( meshAdapter );
 

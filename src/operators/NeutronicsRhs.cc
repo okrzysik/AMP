@@ -173,9 +173,9 @@ namespace AMP {
      *************************************************************************
      */
     void 
-      NeutronicsRhs :: apply(const  SP_Vector & f, 
-          const  SP_Vector & u, 
-          SP_Vector & r,
+      NeutronicsRhs :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+          AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+          AMP::LinearAlgebra::Vector::shared_ptr r,
           const  double      a,
           const  double      b) {
         (void) f; (void) u;
@@ -184,7 +184,7 @@ namespace AMP {
         AMP_ASSERT(AMP::Utilities::approx_equal(b,0.));
 
         // subsetOutputVector is from Operator.h
-        SP_Vector rInternal = this->subsetOutputVector(r);
+        AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector(r);
 
         AMP_ASSERT(rInternal!=NULL);
 
@@ -227,6 +227,7 @@ namespace AMP {
           AMP_MPI(AMP_COMM_WORLD).barrier();
           AMP_ERROR("stop");*/
         }
+        rInternal->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
       }
 
 

@@ -1,20 +1,4 @@
-
-FusedMesh{
-  MeshName = "FusedMesh"
-    MeshType = "libMesh"
-    FileName = "Fused2Pellets_1x.e"
-    dim = 3
-}
-
-ContactOperator {
-  name = "NodeToSegmentConstraints"
-    MasterMeshIndex = 0
-    SlaveMeshIndex = 1
-    MasterBoundaryID = 1
-    SlaveBoundaryID = 2
-    InputVariable = "displacement"
-    OutputVariable = "displacement"
-}
+maxIters = 1000
 
 Mesh{
   MeshName = "MainMesh"
@@ -22,25 +6,42 @@ Mesh{
     MeshDatabasePrefix = "Mesh_"
     MeshArrayDatabasePrefix = "MeshArray_"
 
-    Mesh_1{
-      MeshName = "PelletMeshes"
-        MeshType = "Multimesh"
-        MeshDatabasePrefix = "Mesh_"
-        MeshArrayDatabasePrefix = "MeshArray_"
-
-        MeshArray_1 {
-          N = 2
-            iterator = "%i"
-            indicies = 1, 2
-            MeshName = "pellet_%i"
-            MeshType = "libMesh"
-            FileName = "pellet_1x.e"
-            dim = 3
-            x_offset = 0.0, 0.0
-            y_offset = 0.0, 0.0
-            z_offset = 0.0, 0.0105
-        }
+    MeshArray_1{
+        N = 2
+        iterator = "%p"
+        indicies = 1, 2
+        MeshName = "cube_%p"
+        MeshType = "AMP"
+        dim = 3
+        x_offset = 0.0, 0.0
+        y_offset = 0.0, 0.0
+        z_offset = 0.0, 1.0
+        Generator = "cube"
+        Size = 8, 8, 8
+        Range = 0.0, 1.0, 0.0, 1.0, 0.0, 1.0
     }
+}
+
+FusedMesh{
+  MeshName = "FusedMesh"
+    MeshType = "AMP"
+    dim = 3
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
+    Generator = "cube"
+    Size = 8, 8, 16
+    Range = 0.0, 1.0, 0.0, 1.0, 0.0, 2.0
+}
+
+ContactOperator {
+  name = "NodeToSegmentConstraints"
+    MasterMeshIndex = 0
+    SlaveMeshIndex = 1
+    MasterBoundaryID = 5
+    SlaveBoundaryID = 4
+    InputVariable = "displacement"
+    OutputVariable = "displacement"
 }
 
 MatrixShellOperator {
@@ -62,10 +63,10 @@ MasterDirichletMatrixCorrection{
     skip_params = FALSE
     symmetric_correction = TRUE
     zero_dirichlet_block = FALSE
-    skip_rhs_correction = TRUE
+    skip_rhs_correction = FALSE
     skip_add_rhs_correction = TRUE
     number_of_ids = 1
-    id_0 = 2
+    id_0 = 4
     number_of_dofs_0 = 3
     dof_0_0 = 0
     dof_0_1 = 1
@@ -83,7 +84,7 @@ SlaveLoadOperator {
     setResidual = FALSE
     valuesType = 1
     number_of_ids = 1
-    id_0 = 1
+    id_0 = 5
     number_of_dofs_0 = 1
     dof_0_0 = 2
     value_0_0 = -5.0e-3

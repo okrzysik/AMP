@@ -35,9 +35,9 @@ namespace TimeIntegrator{
     */
 
     void
-    IDATimeOperator::apply(const boost::shared_ptr<AMP::LinearAlgebra::Vector>  &f, 
-                           const boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u,
-                           boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r,
+    IDATimeOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+                           AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                           AMP::LinearAlgebra::Vector::shared_ptr r,
                            const double a, const double b)
     {
         if (d_cloningHappened==0)

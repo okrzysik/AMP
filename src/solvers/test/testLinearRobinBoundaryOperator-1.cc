@@ -181,6 +181,7 @@ void linearRobinTest(AMP::UnitTest *ut, std::string exeName )
       variableFluxVec->setValueByGlobalID(gid[0], val);
     }
   }//end for node
+  RightHandSideVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
   correctionParameters->d_variableFlux = variableFluxVec;
   robinBoundaryOp->reset(correctionParameters);
@@ -295,7 +296,7 @@ void linearRobinTest(AMP::UnitTest *ut, std::string exeName )
   // Plot the results
   AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
   AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
 
   siloWriter->registerVector( TemperatureInKelvinVec, meshAdapter, AMP::Mesh::Vertex, "TemperatureInKelvin" );

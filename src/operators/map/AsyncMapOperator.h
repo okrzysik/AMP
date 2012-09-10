@@ -29,8 +29,8 @@ public:
     virtual void setVector ( AMP::LinearAlgebra::Vector::shared_ptr &p ) = 0;
 
     // Overload the apply operator to include makeConsistent
-    virtual void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-             const  AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r,
+    virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+             AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
              const double a = -1.0, const double b = 1.0);    
 
     // Function to determine if a makeConsistentSet is required
@@ -43,7 +43,7 @@ public:
     AMP::Mesh::Mesh::shared_ptr getMesh(int which); 
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr  getInputVariable () { return d_inpVariable; }
-    virtual AMP::LinearAlgebra::Variable::shared_ptr  getOutputVariable () { return d_inpVariable; }
+    virtual AMP::LinearAlgebra::Variable::shared_ptr  getOutputVariable () { return d_outVariable; }
 
 protected:
 
@@ -55,6 +55,7 @@ protected:
     AMP::Mesh::Mesh::shared_ptr  d_mesh2;
     AMP::Discretization::DOFManager::shared_ptr  d_DOFManager;
     AMP::LinearAlgebra::Variable::shared_ptr      d_inpVariable;
+    AMP::LinearAlgebra::Variable::shared_ptr      d_outVariable;
 
     // Frozen vector for the output results
     AMP::LinearAlgebra::Vector::shared_ptr  d_OutputVector;

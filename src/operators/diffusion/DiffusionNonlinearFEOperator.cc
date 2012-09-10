@@ -72,7 +72,7 @@ std::vector<AMP::LinearAlgebra::Vector::shared_ptr> DiffusionNonlinearFEOperator
 
 void DiffusionNonlinearFEOperator::setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec)
 {
-    AMP::LinearAlgebra::VS_Mesh meshSelector(d_inpVariables->getVariable(id)->getName(), d_Mesh);
+    AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
     AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = frozenVec->select(meshSelector, d_inpVariables->getVariable(id)->getName());
     d_Frozen[id] = meshSubsetVec->subsetVectorForVariable(d_inpVariables->getVariable(id));
     (d_Frozen[id])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
@@ -141,7 +141,8 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
           if (d_isFrozen[var])
           {
             d_inVec[var] = d_Frozen[var];
-            if(d_inVec[var]!=NULL) (d_inVec[var])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+            if (d_inVec[var]!=NULL) 
+                AMP_ASSERT(d_inVec[var]->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
           }
         }
         else
@@ -158,12 +159,12 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
 
 
 void DiffusionNonlinearFEOperator::preAssembly(
-    const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, boost::shared_ptr<AMP::LinearAlgebra::Vector> &r)
+    AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r)
 {
     //PROFILE_START("preAssembly",2);
     AMP_INSIST( (u != NULL), "NULL Input Vector!" );
-    AMP::LinearAlgebra::VS_Mesh meshSelector("u_mesh", d_Mesh);
-    AMP::LinearAlgebra::Vector::shared_ptr u_meshVec = u->select(meshSelector, "u_mesh");
+    AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
+    AMP::LinearAlgebra::Vector::const_shared_ptr u_meshVec = u->constSelect(meshSelector, "u_mesh");
 
     if( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionNonlinearFEOperator::preAssembly, entering" << std::endl;
@@ -171,15 +172,16 @@ void DiffusionNonlinearFEOperator::preAssembly(
     for (unsigned int var = 0; var < Diffusion::NUMBER_VARIABLES; var++) {
         if (d_isActive[var]) {
             if(d_isFrozen[var]) {
+                d_Frozen[var]->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
                 d_inVec[var] = d_Frozen[var];
             } else {
                 AMP::LinearAlgebra::Variable::shared_ptr tvar = d_inpVariables->getVariable(var);
-                d_inVec[var] = u_meshVec->subsetVectorForVariable(tvar);
+                d_inVec[var] = u_meshVec->constSubsetVectorForVariable(tvar);
                 AMP_ASSERT(d_inVec[var]);
             }
 
             AMP_ASSERT(d_inVec[var]!=NULL);
-            (d_inVec[var])->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+            AMP_ASSERT(d_inVec[var]->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
             if (d_iDebugPrintInfoLevel > 5)
                 std::cout << "Max Value inside preAssembly: "
                     << d_inVec[var]->max() << std::endl;
@@ -211,6 +213,8 @@ void DiffusionNonlinearFEOperator::postAssembly()
 
 
 void DiffusionNonlinearFEOperator::preElementOperation(
+
+
         const AMP::Mesh::MeshElement & elem )
 {
     //PROFILE_START("preElementOperation",2);
@@ -308,14 +312,14 @@ void DiffusionNonlinearFEOperator::reset(
         d_inVec[d_PrincipalVariable] = dnlparams_sp->d_FrozenConcentration;
     if (d_PrincipalVariable == Diffusion::BURNUP)
         d_inVec[d_PrincipalVariable] = dnlparams_sp->d_FrozenBurnup;
-    (d_inVec[d_PrincipalVariable])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    AMP_ASSERT(d_inVec[d_PrincipalVariable]->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
 
     resetFrozen(dnlparams_sp);
     for (unsigned int var = 0; var < Diffusion::NUMBER_VARIABLES; var++) {
         if (d_isActive[var]) {
             if (d_isFrozen[var]) {
                 d_inVec[var] = d_Frozen[var];
-                (d_inVec[var])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+                AMP_ASSERT(d_inVec[var]->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
             }
         }
     }
@@ -326,7 +330,7 @@ boost::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianP
         const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u)
 {
     boost::shared_ptr<AMP::InputDatabase> tmp_db(new AMP::InputDatabase("Dummy"));
-    AMP::LinearAlgebra::VS_Mesh meshSelector("u_mesh", d_Mesh);
+    AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
     AMP::LinearAlgebra::Vector::shared_ptr u_meshVec = u->select(meshSelector, "u_mesh");
 
     // set up a database for the linear operator params
@@ -431,7 +435,7 @@ bool DiffusionNonlinearFEOperator::isValidInput(AMP::LinearAlgebra::Vector::shar
     }
 
     bool result = true;
-    AMP::LinearAlgebra::VS_Mesh meshSelector("u_mesh", d_Mesh);
+    AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
     AMP::LinearAlgebra::Vector::shared_ptr u_meshVec = u->select(meshSelector, "u_mesh");
     if (found) {
         AMP::LinearAlgebra::Vector::shared_ptr uinp = u_meshVec->subsetVectorForVariable(d_inpVariables->getVariable(d_PrincipalVariable));

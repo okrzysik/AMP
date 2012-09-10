@@ -87,6 +87,12 @@ MeshElement* MeshElement::getRawElement()
         return this;
     return element->getRawElement();
 }
+const MeshElement* MeshElement::getRawElement() const
+{
+    if ( element==NULL )
+        return this;
+    return element->getRawElement();
+}
 
 
 /********************************************************

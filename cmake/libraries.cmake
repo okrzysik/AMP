@@ -15,8 +15,8 @@ ENDMACRO ()
 # Macro to find and configure boost (we only need the headers)
 MACRO ( CONFIGURE_BOOST )
     # Determine if we want to use boost
-    CHECK_ENABLE_FLAG(USE_BOOST 1 )
-    IF ( USE_BOOST )
+    CHECK_ENABLE_FLAG(USE_EXT_BOOST 1 )
+    IF ( USE_EXT_BOOST )
         # Check if we specified the boost directory
         IF ( BOOST_DIRECTORY )
             VERIFY_PATH ( ${BOOST_DIRECTORY} )
@@ -28,7 +28,7 @@ MACRO ( CONFIGURE_BOOST )
             SET ( BOOST_INCLUDE ${AMP_SOURCE_DIR}/../external/boost/include )
         ENDIF()
         INCLUDE_DIRECTORIES ( ${BOOST_INCLUDE} )
-        ADD_DEFINITIONS ( "-D USE_BOOST" )
+        ADD_DEFINITIONS ( "-D USE_EXT_BOOST" )
         MESSAGE ( "Using boost" )
     ELSE()
         MESSAGE( FATAL_ERROR "boost headers are necessary for AMP" )
@@ -39,8 +39,8 @@ ENDMACRO()
 # Macro to find and configure the trilinos libraries
 MACRO ( CONFIGURE_TRILINOS_LIBRARIES )
     # Determine if we want to use trilinos
-    CHECK_ENABLE_FLAG(USE_TRILINOS 1 )
-    IF ( USE_TRILINOS )
+    CHECK_ENABLE_FLAG(USE_EXT_TRILINOS 1 )
+    IF ( USE_EXT_TRILINOS )
         IF ( NETCDF_DIRECTORY )
             VERIFY_PATH ( ${NETCDF_DIRECTORY} )
             INCLUDE_DIRECTORIES ( ${NETCDF_DIRECTORY}/include )
@@ -78,7 +78,9 @@ MACRO ( CONFIGURE_TRILINOS_LIBRARIES )
             SET ( TRILINOS_INCLUDE ${TRILINOS_DIRECTORY}/include )
             FIND_LIBRARY ( TRILINOS_EPETRA_LIB    NAMES epetra    PATHS ${TRILINOS_DIRECTORY}/lib  NO_DEFAULT_PATH )
             FIND_LIBRARY ( TRILINOS_EPETRAEXT_LIB NAMES epetraext PATHS ${TRILINOS_DIRECTORY}/lib  NO_DEFAULT_PATH )
+            FIND_LIBRARY ( TRILINOS_TRIUTILIT_LIB NAMES triutils    PATHS ${TRILINOS_DIRECTORY}/lib  NO_DEFAULT_PATH )
             FIND_LIBRARY ( TRILINOS_AZTECOO_LIB   NAMES aztecoo   PATHS ${TRILINOS_DIRECTORY}/lib  NO_DEFAULT_PATH )
+            FIND_LIBRARY ( TRILINOS_GALERI_LIB    NAMES galeri    PATHS ${TRILINOS_DIRECTORY}/lib  NO_DEFAULT_PATH )
             FIND_LIBRARY ( TRILINOS_ML_LIB        NAMES ml        PATHS ${TRILINOS_DIRECTORY}/lib  NO_DEFAULT_PATH )
             FIND_LIBRARY ( TRILINOS_IFPACK_LIB    NAMES ifpack    PATHS ${TRILINOS_DIRECTORY}/lib  NO_DEFAULT_PATH )
             FIND_LIBRARY ( TRILINOS_ZOLTAN_LIB    NAMES zoltan    PATHS ${TRILINOS_DIRECTORY}/lib  NO_DEFAULT_PATH )
@@ -140,9 +142,11 @@ MACRO ( CONFIGURE_TRILINOS_LIBRARIES )
                  (NOT TRILINOS_PAMGEN_LIB) )
                 MESSAGE ( ${TRILINOS_EPETRA_LIB} )
                 MESSAGE ( ${TRILINOS_EPETRAEXT_LIB} )
+                MESSAGE ( ${TRILINOS_TRIUTILIT_LIB} )
                 MESSAGE ( ${TRILINOS_TPETRA_LIB} )
                 MESSAGE ( ${TRILINOS_AZTECOO_LIB} )
                 MESSAGE ( ${TRILINOS_ML_LIB} )
+                MESSAGE ( ${TRILINOS_GALERI_LIB} )
                 MESSAGE ( ${TRILINOS_IFPACK_LIB} )
                 MESSAGE ( ${TRILINOS_ZOLTAN_LIB} )
                 MESSAGE ( ${TRILINOS_AMESOS_LIB} )
@@ -177,6 +181,8 @@ MACRO ( CONFIGURE_TRILINOS_LIBRARIES )
         # Add the libraries in the appropriate order
         SET ( TRILINOS_LIBS
             ${TRILINOS_ML_LIB}
+            ${TRILINOS_GALERI_LIB}
+            ${TRILINOS_TRIUTILIT_LIB}
             ${TRILINOS_IFPACK_LIB}
             ${TRILINOS_AZTECOO_LIB}
             ${TRILINOS_AMESOS_LIB}
@@ -224,10 +230,10 @@ MACRO ( CONFIGURE_TRILINOS_LIBRARIES )
             ${TRILINOS_TEUCHOS_LIB}
             ${TRILINOS_MOERTEL_LIB}
         )
-        IF ( USE_GCOV )
+        IF ( USE_EXT_GCOV )
             SET ( TRILINOS_LIBS ${TRILINOS_LIBS} -lgcov )
         ENDIF ()
-        ADD_DEFINITIONS ( "-D USE_TRILINOS" )
+        ADD_DEFINITIONS ( "-D USE_EXT_TRILINOS" )
         MESSAGE ( "Using trilinos" )
         MESSAGE ( "   " ${TRILINOS_LIBS} )
     ENDIF()
@@ -237,8 +243,8 @@ ENDMACRO ()
 # Macro to find and configure the silo libraries
 MACRO ( CONFIGURE_SILO )
     # Determine if we want to use silo
-    CHECK_ENABLE_FLAG(USE_SILO 1 )
-    IF ( USE_SILO )
+    CHECK_ENABLE_FLAG(USE_EXT_SILO 1 )
+    IF ( USE_EXT_SILO )
         # Check if we specified the silo directory
         IF ( SILO_DIRECTORY )
             VERIFY_PATH ( ${SILO_DIRECTORY} )
@@ -252,7 +258,7 @@ MACRO ( CONFIGURE_SILO )
         SET ( SILO_LIBS
             ${SILO_LIB}
         )
-        ADD_DEFINITIONS ( "-D USE_SILO" )  
+        ADD_DEFINITIONS ( "-D USE_EXT_SILO" )  
         MESSAGE ( "Using silo" )
     ENDIF ()
 ENDMACRO ()
@@ -261,8 +267,8 @@ ENDMACRO ()
 # Macro to find and configure the hdf5 libraries
 MACRO ( CONFIGURE_HDF5 )
     # Determine if we want to use hdf5
-    CHECK_ENABLE_FLAG(USE_HDF5 1 )
-    IF ( USE_HDF5 )
+    CHECK_ENABLE_FLAG(USE_EXT_HDF5 1 )
+    IF ( USE_EXT_HDF5 )
         # Check if we specified the silo directory
         IF ( HDF5_DIRECTORY )
             VERIFY_PATH ( ${HDF5_DIRECTORY} )
@@ -277,7 +283,7 @@ MACRO ( CONFIGURE_HDF5 )
             ${HDF5_HL_LIB}
             ${HDF5_LIB}
         )
-        ADD_DEFINITIONS ( "-D USE_HDF5" )  
+        ADD_DEFINITIONS ( "-D USE_EXT_HDF5" )  
         MESSAGE ( "Using hdf5" )
     ENDIF()
 ENDMACRO ()
@@ -286,8 +292,8 @@ ENDMACRO ()
 # Macro to find and configure the X11 libraries
 MACRO ( CONFIGURE_X11_LIBRARIES )
     # Determine if we want to use X11
-    CHECK_ENABLE_FLAG(USE_X11 1 )
-    IF ( USE_X11 )
+    CHECK_ENABLE_FLAG(USE_EXT_X11 1 )
+    IF ( USE_EXT_X11 )
         # Check if we specified the silo directory
         IF ( X11_DIRECTORY )
             VERIFY_PATH ( ${X11_DIRECTORY} )
@@ -304,7 +310,7 @@ MACRO ( CONFIGURE_X11_LIBRARIES )
             ${X11_ICE_LIB}
             ${X11_X11_LIB} 
         )
-        ADD_DEFINITIONS ( "-D USE_X11" )  
+        ADD_DEFINITIONS ( "-D USE_EXT_X11" )  
         MESSAGE ( "Using X11" )
     ENDIF()
 ENDMACRO ()
@@ -313,8 +319,8 @@ ENDMACRO ()
 # Macro to find and configure the MPI libraries
 MACRO ( CONFIGURE_MPI )
     # Determine if we want to use MPI
-    CHECK_ENABLE_FLAG(USE_MPI 1 )
-    IF ( USE_MPI )
+    CHECK_ENABLE_FLAG(USE_EXT_MPI 1 )
+    IF ( USE_EXT_MPI )
         # Check if we specified the MPI directory
         IF ( MPI_DIRECTORY )
             # Check the provided MPI directory for include files and the mpi executable
@@ -355,26 +361,36 @@ MACRO ( CONFIGURE_MPI )
             SET ( MPI_INCLUDE ${MPI_INCLUDE_PATH} )
         ENDIF()
         # Check if we need to use MPI for serial tests
-        CHECK_ENABLE_FLAG( USE_MPI_FOR_SERIAL_TESTS 0 )
+        CHECK_ENABLE_FLAG( USE_EXT_MPI_FOR_SERIAL_TESTS 0 )
         # Set the definitions
-        ADD_DEFINITIONS ( "-D USE_MPI" )  
+        ADD_DEFINITIONS ( "-D USE_EXT_MPI" )  
         MESSAGE ( "Using MPI" )
         MESSAGE ( "  MPIEXEC = ${MPIEXEC}" )
         MESSAGE ( "  MPIEXEC_NUMPROC_FLAG = ${MPIEXEC_NUMPROC_FLAG}" )
         MESSAGE ( "  MPI_LINK_FLAGS = ${MPI_LINK_FLAGS}" )
         MESSAGE ( "  MPI_LIBRARIES = ${MPI_LIBRARIES}" )
     ELSE()
-        SET( USE_MPI_FOR_SERIAL_TESTS 0 )
+        SET( USE_EXT_MPI_FOR_SERIAL_TESTS 0 )
         MESSAGE ( "Not using MPI, all parallel tests will be disabled" )
     ENDIF()
 ENDMACRO ()
 
 
+# Macro to find and configure the stkmesh libraries
+MACRO ( CONFIGURE_STKMESH )
+    # Determine if we want to use stkmesh
+    CHECK_ENABLE_FLAG(USE_EXT_STKMESH 1 )
+    IF ( USE_EXT_STKMESH )
+        ADD_DEFINITIONS ( "-D USE_EXT_STKMESH" )  
+        MESSAGE ( "Using libmesh" )
+    ENDIF()
+ENDMACRO ()
+
 # Macro to find and configure the libmesh libraries
 MACRO ( CONFIGURE_LIBMESH )
     # Determine if we want to use libmesh
-    CHECK_ENABLE_FLAG(USE_LIBMESH 1 )
-    IF ( USE_LIBMESH )
+    CHECK_ENABLE_FLAG(USE_EXT_LIBMESH 1 )
+    IF ( USE_EXT_LIBMESH )
         # Check if we specified the libmesh directory
         IF ( LIBMESH_DIRECTORY )
             VERIFY_PATH ( ${LIBMESH_DIRECTORY} )
@@ -406,7 +422,7 @@ MACRO ( CONFIGURE_LIBMESH )
             FIND_LIBRARY ( LIBMESH_METIS_LIB    NAMES metis     PATHS ${LIBMESH_CONTRIB_PATH_LIB}  NO_DEFAULT_PATH )
             FIND_LIBRARY ( LIBMESH_NEMESIS_LIB  NAMES nemesis   PATHS ${LIBMESH_CONTRIB_PATH_LIB}  NO_DEFAULT_PATH )
             FIND_LIBRARY ( LIBMESH_NETCDF_LIB   NAMES netcdf    PATHS ${LIBMESH_CONTRIB_PATH_LIB}  NO_DEFAULT_PATH )
-            IF ( USE_MPI ) 
+            IF ( USE_EXT_MPI ) 
                 FIND_LIBRARY ( LIBMESH_PARMETIS_LIB NAMES parmetis  PATHS ${LIBMESH_CONTRIB_PATH_LIB}  NO_DEFAULT_PATH )
             ENDIF()
             FIND_LIBRARY ( LIBMESH_SFCURVES_LIB NAMES sfcurves  PATHS ${LIBMESH_CONTRIB_PATH_LIB}  NO_DEFAULT_PATH )
@@ -438,7 +454,7 @@ MACRO ( CONFIGURE_LIBMESH )
                 MESSAGE ( ${LIBMESH_TRIANGLE_LIB} )
                 MESSAGE ( FATAL_ERROR "Libmesh contribution libraries not found in ${LIBMESH_PATH_LIB}" )
             ENDIF ()
-            IF ( USE_MPI AND (NOT LIBMESH_PARMETIS_LIB) )
+            IF ( USE_EXT_MPI AND (NOT LIBMESH_PARMETIS_LIB) )
                 MESSAGE ( ${LIBMESH_PARMETIS_LIB} )
                 MESSAGE ( FATAL_ERROR "Libmesh contribution libraries not found in ${LIBMESH_PATH_LIB}" )
             ENDIF ()
@@ -453,7 +469,7 @@ MACRO ( CONFIGURE_LIBMESH )
             ${LIBMESH_NEMESIS_LIB}
             ${LIBMESH_NETCDF_LIB}
          )
-        IF ( USE_MPI ) 
+        IF ( USE_EXT_MPI ) 
             SET ( LIBMESH_LIBS ${LIBMESH_LIBS} ${LIBMESH_PARMETIS_LIB} )
         ENDIF()
         SET ( LIBMESH_LIBS
@@ -469,7 +485,7 @@ MACRO ( CONFIGURE_LIBMESH )
             SET ( LIBMESH_LIBS ${LIBMESH_LIBS} ${LIBMESH_TECIO_LIB} )
         ENDIF ()
         ADD_DEFINITIONS ( -DLIBMESH_ENABLE_PARMESH )
-        ADD_DEFINITIONS ( "-D USE_LIBMESH" )  
+        ADD_DEFINITIONS ( "-D USE_EXT_LIBMESH" )  
         MESSAGE ( "Using libmesh" )
         MESSAGE ( "   " ${LIBMESH_LIBS} )
     ENDIF()
@@ -479,8 +495,8 @@ ENDMACRO ()
 # Macro to find and configure NEK
 MACRO ( CONFIGURE_NEK )
     # Determine if we want to use NEK
-    CHECK_ENABLE_FLAG( USE_NEK "false" )
-    IF ( USE_NEK )
+    CHECK_ENABLE_FLAG( USE_EXT_NEK "false" )
+    IF ( USE_EXT_NEK )
         # Check if we specified the NEK directory
         IF ( NEK_DIRECTORY )
             VERIFY_PATH ( ${NEK_DIRECTORY} )
@@ -508,7 +524,7 @@ MACRO ( CONFIGURE_NEK )
         CHECK_ENABLE_FLAG( CVODE    0 )
         CHECK_ENABLE_FLAG( NEKNEK   0 )
         CHECK_ENABLE_FLAG( MOAB     1 )
-        IF ( NOT USE_MOAB ) 
+        IF ( NOT USE_EXT_MOAB ) 
             MESSAGE ( FATAL_ERROR "Within AMP, MOAB is required to use Nek5000." )
         ENDIF()
         # Add the libraries in the appropriate order
@@ -516,7 +532,7 @@ MACRO ( CONFIGURE_NEK )
         SET ( NEK_LIBS
             ${NEK_LIB}
         )
-        ADD_DEFINITIONS ( "-D USE_NEK" )  
+        ADD_DEFINITIONS ( "-D USE_EXT_NEK" )  
         MESSAGE ( "Using NEK" )
         MESSAGE ( "   " ${NEK_LIBS} )
         SET ( CURPACKAGE "nek" )
@@ -527,8 +543,8 @@ ENDMACRO ()
 # Macro to find and configure DENDRO
 MACRO ( CONFIGURE_DENDRO )
     # Determine if we want to use DENDRO
-    CHECK_ENABLE_FLAG( USE_DENDRO "false" )
-    IF ( USE_DENDRO )
+    CHECK_ENABLE_FLAG( USE_EXT_DENDRO "false" )
+    IF ( USE_EXT_DENDRO )
         IF ( DENDRO_DIRECTORY )
             VERIFY_PATH ( ${DENDRO_DIRECTORY} )
             INCLUDE_DIRECTORIES ( ${DENDRO_DIRECTORY}/include )
@@ -570,7 +586,7 @@ MACRO ( CONFIGURE_DENDRO )
         ELSE()
             MESSAGE ( FATAL_ERROR "Default search for DENDRO is not supported.  Use -D DENDRO_DIRECTORY=" )
         ENDIF()
-        ADD_DEFINITIONS ( "-D USE_DENDRO" )  
+        ADD_DEFINITIONS ( "-D USE_EXT_DENDRO" )  
         MESSAGE ( "Using DENDRO" )
         MESSAGE ( "   " ${DENDRO_LIBS} )
     ENDIF()
@@ -580,8 +596,8 @@ ENDMACRO()
 # Macro to find and configure MOAB
 MACRO ( CONFIGURE_MOAB )
     # Determine if we want to use MOAB
-    CHECK_ENABLE_FLAG( USE_MOAB 0 )
-    IF ( USE_MOAB )
+    CHECK_ENABLE_FLAG( USE_EXT_MOAB 0 )
+    IF ( USE_EXT_MOAB )
         # Check if we specified the MOAB directory
         IF ( MOAB_DIRECTORY )
             VERIFY_PATH ( ${MOAB_DIRECTORY} )
@@ -650,7 +666,7 @@ MACRO ( CONFIGURE_MOAB )
             ${MOAB_iGEOM_LIB}
             ${MOAB_CUBIT_LIB}
         )
-        ADD_DEFINITIONS ( "-D USE_MOAB" )  
+        ADD_DEFINITIONS ( "-D USE_EXT_MOAB" )  
         MESSAGE ( "Using MOAB" )
         MESSAGE ( "   " ${MOAB_LIBS} )
     ENDIF()
@@ -660,8 +676,8 @@ ENDMACRO ()
 # Macro to configure the BLAS
 MACRO ( CONFIGURE_BLAS )
     # Determine if we want to use BLAS
-    CHECK_ENABLE_FLAG(USE_BLAS 1 )
-    IF ( USE_BLAS )
+    CHECK_ENABLE_FLAG(USE_EXT_BLAS 1 )
+    IF ( USE_EXT_BLAS )
         IF ( BLAS_LIBRARIES )
             # The user is specifying the blas command directly
         ELSEIF ( BLAS_DIRECTORY )
@@ -702,8 +718,8 @@ ENDMACRO ()
 # Macro to configure the LAPACK
 MACRO ( CONFIGURE_LAPACK )
     # Determine if we want to use LAPACK
-    CHECK_ENABLE_FLAG(USE_LAPACK 1 )
-    IF ( USE_LAPACK )
+    CHECK_ENABLE_FLAG(USE_EXT_LAPACK 1 )
+    IF ( USE_EXT_LAPACK )
         IF ( LAPACK_LIBRARIES )
             # The user is specifying the lapack command directly
         ELSEIF ( LAPACK_DIRECTORY )
@@ -744,8 +760,8 @@ ENDMACRO ()
 # Macro to find and configure the sundials libraries
 MACRO ( CONFIGURE_SUNDIALS_LIBRARIES )
     # Determine if we want to use sundials
-    CHECK_ENABLE_FLAG(USE_SUNDIALS 1 )
-    IF ( USE_SUNDIALS )
+    CHECK_ENABLE_FLAG(USE_EXT_SUNDIALS 1 )
+    IF ( USE_EXT_SUNDIALS )
         # Check if we specified the sundials directory
         IF ( SUNDIALS_DIRECTORY )
             VERIFY_PATH ( ${SUNDIALS_DIRECTORY} )
@@ -756,7 +772,7 @@ MACRO ( CONFIGURE_SUNDIALS_LIBRARIES )
             FIND_LIBRARY ( SUNDIALS_IDAS_LIB         NAMES  sundials_idas         PATHS ${SUNDIALS_DIRECTORY}/lib  NO_DEFAULT_PATH )
             FIND_LIBRARY ( SUNDIALS_KINSOL_LIB       NAMES  sundials_kinsol       PATHS ${SUNDIALS_DIRECTORY}/lib  NO_DEFAULT_PATH )
             FIND_LIBRARY ( SUNDIALS_NVECSERIAL_LIB   NAMES  sundials_nvecserial   PATHS ${SUNDIALS_DIRECTORY}/lib  NO_DEFAULT_PATH )
-            IF ( USE_MPI )
+            IF ( USE_EXT_MPI )
                 FIND_LIBRARY ( SUNDIALS_NVECPARALLEL_LIB NAMES  sundials_nvecparallel PATHS ${SUNDIALS_DIRECTORY}/lib  NO_DEFAULT_PATH )
             ENDIF()
             IF ( (NOT SUNDIALS_CVODE_LIB) OR (NOT SUNDIALS_IDA_LIB) OR (NOT SUNDIALS_IDAS_LIB) OR 
@@ -768,7 +784,7 @@ MACRO ( CONFIGURE_SUNDIALS_LIBRARIES )
                 MESSAGE ( ${SUNDIALS_NVECSERIAL_LIB} )
                 MESSAGE ( FATAL_ERROR "Sundials libraries not found in ${SUNDIALS_DIRECTORY}/lib" )
             ENDIF ()
-            IF ( USE_MPI AND (NOT SUNDIALS_NVECPARALLEL_LIB) )
+            IF ( USE_EXT_MPI AND (NOT SUNDIALS_NVECPARALLEL_LIB) )
                 MESSAGE ( ${SUNDIALS_NVECPARALLEL_LIB} )
                 MESSAGE ( FATAL_ERROR "Sundials libraries not found in ${SUNDIALS_DIRECTORY}/lib" )
             ENDIF ()
@@ -783,10 +799,10 @@ MACRO ( CONFIGURE_SUNDIALS_LIBRARIES )
             ${SUNDIALS_KINSOL_LIB}
             ${SUNDIALS_NVECPARALLEL_LIB}
         )
-        IF ( USE_MPI )
+        IF ( USE_EXT_MPI )
             SET ( SUNDIALS_LIBS  ${SUNDIALS_LIBS}  ${SUNDIALS_NVEC_PARALLEL_LIB} )
         ENDIF()
-        ADD_DEFINITIONS ( "-D USE_SUNDIALS" )  
+        ADD_DEFINITIONS ( "-D USE_EXT_SUNDIALS" )  
         MESSAGE ( "Using sundials" )
     ENDIF()
 ENDMACRO ()
@@ -795,8 +811,8 @@ ENDMACRO ()
 # Macro to find and configure the hypre libraries
 MACRO ( CONFIGURE_HYPRE_LIBRARIES )
     # Determine if we want to use silo
-    CHECK_ENABLE_FLAG(USE_HYPRE 1 )
-    IF ( USE_HYPRE )
+    CHECK_ENABLE_FLAG( USE_EXT_HYPRE 1 )
+    IF ( USE_EXT_HYPRE )
         # Check if we specified the hypre directory
         IF ( HYPRE_DIRECTORY )
             VERIFY_PATH ( ${HYPRE_DIRECTORY} )
@@ -845,7 +861,7 @@ MACRO ( CONFIGURE_HYPRE_LIBRARIES )
             ${HYPRE_UTIL_LIB}
             ${HYPRE_LIB}
         )
-        ADD_DEFINITIONS ( "-D USE_HYPRE" )  
+        ADD_DEFINITIONS ( "-D USE_EXT_HYPRE" )  
         MESSAGE ( "Using hypre" )
     ENDIF()
 ENDMACRO ()
@@ -854,8 +870,8 @@ ENDMACRO ()
 # Macro to find and configure the petsc libraries
 MACRO ( CONFIGURE_PETSC_LIBRARIES )
     # Determine if we want to use petsc
-    CHECK_ENABLE_FLAG(USE_PETSC 1 )
-    IF ( USE_PETSC )
+    CHECK_ENABLE_FLAG(USE_EXT_PETSC 1 )
+    IF ( USE_EXT_PETSC )
         # Check if we specified the petsc directory
         IF ( PETSC_DIRECTORY )
             VERIFY_PATH ( ${PETSC_DIRECTORY} )
@@ -884,7 +900,7 @@ MACRO ( CONFIGURE_PETSC_LIBRARIES )
                 MESSAGE ( ${PETSC_PETSCVEC_LIB} )
                 MESSAGE ( FATAL_ERROR "PETsc libraries not found in ${PETSC_LIB_DIRECTORY}" )
             ENDIF ()
-            IF ( NOT USE_MPI ) 
+            IF ( NOT USE_EXT_MPI ) 
                 FIND_LIBRARY ( PETSC_MPIUNI_LIB  NAMES mpiuni  PATHS ${PETSC_LIB_DIRECTORY}  NO_DEFAULT_PATH )
                 IF ( NOT PETSC_MPIUNI_LIB )
                     MESSAGE ( ${PETSC_MPIUNI_LIB} )
@@ -904,7 +920,7 @@ MACRO ( CONFIGURE_PETSC_LIBRARIES )
             ${PETSC_PETSCVEC_LIB}
             ${PETSC_LIB}
         )
-        IF ( NOT USE_MPI ) 
+        IF ( NOT USE_EXT_MPI ) 
             SET ( PETSC_LIBS  ${PETSC_LIBS} ${PETSC_MPIUNI_LIB} )
         ENDIF()
         # Set petsc-hypre info
@@ -914,21 +930,41 @@ MACRO ( CONFIGURE_PETSC_LIBRARIES )
         #    CONFIGURE_HYPRE_LIBRARIES ()
         #    SET ( PETSC_LIBS ${PETSC_LIBS} ${HYPRE_LIBS} )
         #ENDIF ()
-        ADD_DEFINITIONS ( "-D USE_PETSC" )  
+        ADD_DEFINITIONS ( "-D USE_EXT_PETSC" )  
         MESSAGE ( "Using petsc" )
         MESSAGE ( "   "  ${PETSC_LIBS} )
     ENDIF()
 ENDMACRO ()
 
 
-# Macro to configure system-specific libraries
-MACRO ( CONFIGURE_SYSTEM_LIBS )
+# Macro to configure system-specific libraries and flags
+MACRO ( CONFIGURE_SYSTEM )
+    # Remove extra library links
+    set(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)       # remove -Wl,-Bdynamic
+    set(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS)
+    set(CMAKE_SHARED_LIBRARY_C_FLAGS)         # remove -fPIC
+    set(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
+    set(CMAKE_SHARED_LINKER_FLAGS)
+    SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # Remove -rdynamic
+    SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)  # Remove -rdynamic
+    # Add the static flag if necessary
+    CHECK_ENABLE_FLAG( USE_EXT_STATIC 0 )
+    IF ( USE_EXT_STATIC )
+        SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static")    # Add static flag
+        SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static")  # Add static flag
+    ENDIF()
+    # Add system dependent flags
     IF ( USING_MICROSOFT )
         #FIND_LIBRARY ( SYSTEM_LIBS           NAMES "psapi"        PATHS C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/  )
         #C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/psapi
         SET( SYSTEM_LIBS "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/Psapi.lib" )
     ELSE()
-        SET( SYSTEM_LIBS "-lz -ldl" )
+        CHECK_C_COMPILER_FLAG("-rdynamic" RESULT)
+        IF(RESULT)
+            SET( SYSTEM_LIBS "-lz -ldl -rdynamic" )
+        ELSE()
+            SET( SYSTEM_LIBS "-lz -ldl" )
+        ENDIF()
     ENDIF()
 ENDMACRO ()
 
@@ -989,7 +1025,8 @@ MACRO ( CONFIGURE_AMP )
     ENDIF()
     # Check if we are using operators
     CHECK_ENABLE_FLAG( USE_AMP_OPERATORS 1 )
-    IF ( (NOT USE_AMP_MESH) OR (NOT USE_AMP_VECTORS) OR (NOT USE_AMP_MATRICIES) OR (NOT USE_LIBMESH) )
+    IF ( (NOT USE_AMP_MESH) OR (NOT USE_AMP_VECTORS) OR (NOT USE_AMP_MATRICIES) OR (NOT USE_EXT_LIBMESH) OR (NOT USE_EXT_STKMESH) )
+    #IF ( (NOT USE_AMP_MESH) OR (NOT USE_AMP_VECTORS) OR (NOT USE_AMP_MATRICIES) )
         SET ( USE_AMP_OPERATORS 0 )
     ENDIF()
     IF ( NOT USE_AMP_OPERATORS )
@@ -1014,9 +1051,9 @@ MACRO ( CONFIGURE_AMP )
     # Set the AMP libraries (the order matters for some platforms)
     SET ( AMP_LIBS )
     SET ( AMP_DOC_DIRS " ")
-    IF ( USE_NEK )
+    IF ( USE_EXT_NEK )
         SET ( AMP_LIBS ${AMP_LIBS} "nek" )
-        ADD_DEFINITIONS ( -D USE_NEK )  
+        ADD_DEFINITIONS ( -D USE_EXT_NEK )  
     ENDIF()
     IF ( USE_AMP_TIME_INTEGRATORS )
         SET ( AMP_LIBS ${AMP_LIBS} "time_integrators" )

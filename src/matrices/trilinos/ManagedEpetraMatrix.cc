@@ -8,7 +8,7 @@
 #include "utils/AMP_MPI.h"
 
 #include "EpetraExt_MatrixMatrix.h"
-#ifdef USE_MPI
+#ifdef USE_EXT_MPI
     #include <Epetra_MpiComm.h>
 #else
     #include <Epetra_SerialComm.h>
@@ -24,7 +24,7 @@ void ManagedEpetraMatrix::multiply ( shared_ptr other_op , shared_ptr &result )
     if ( !other_op->isA<ManagedEpetraMatrix>() )
         AMP_ERROR( "Incompatible matrix types" );
 
-    #ifdef USE_MPI
+    #ifdef USE_EXT_MPI
         MPI_Comm epetraComm = (dynamic_cast<const Epetra_MpiComm *> (&d_epetraMatrix->RowMap().Comm()))->Comm();
     #else
         MPI_Comm epetraComm = AMP_COMM_SELF;
@@ -193,7 +193,7 @@ ManagedEpetraMatrixParameters::ManagedEpetraMatrixParameters ( int local_size , 
 
 Epetra_Map  &ManagedEpetraMatrixParameters::getEpetraRowMap ()
 {
-    #ifdef USE_MPI
+    #ifdef USE_EXT_MPI
         Epetra_MpiComm  comm = d_comm.getCommunicator();
     #else
         Epetra_SerialComm  comm;
@@ -210,7 +210,7 @@ Epetra_Map  &ManagedEpetraMatrixParameters::getEpetraRowMap ()
 
 Epetra_Map  *ManagedEpetraMatrixParameters::getEpetraColMap ()
 {
-    #ifdef USE_MPI
+    #ifdef USE_EXT_MPI
         Epetra_MpiComm  comm = d_comm.getCommunicator();
     #else
         Epetra_SerialComm  comm;
@@ -277,21 +277,27 @@ Matrix::shared_ptr  ManagedEpetraMatrix::cloneMatrix () const
 */
 
 
-void ManagedEpetraMatrix::mult ( const Vector::shared_ptr &in , Vector::shared_ptr &out )
+void ManagedEpetraMatrix::mult ( Vector::const_shared_ptr in , Vector::shared_ptr out )
 {
     AMP_ASSERT ( in->getGlobalSize() == numGlobalRows() );
     AMP_ASSERT ( out->getGlobalSize() == numGlobalColumns() );
-    Vector::shared_ptr  in_view = EpetraVector::view ( in );
-    Vector::shared_ptr  out_view = EpetraVector::view ( out );
-    VerifyEpetraReturn ( d_epetraMatrix->Multiply ( false , in_view->castTo<EpetraVector>().getEpetra_Vector() , out_view->castTo<EpetraVector>().getEpetra_Vector() ) , "mult" );
+    boost::shared_ptr<const EpetraVector>  in_view = boost::dynamic_pointer_cast<const EpetraVector>( EpetraVector::constView( in ) );
+    boost::shared_ptr<EpetraVector>  out_view = boost::dynamic_pointer_cast<EpetraVector>( EpetraVector::view( out ) );
+    const Epetra_Vector &in_vec = in_view->getEpetra_Vector();
+    Epetra_Vector &out_vec = out_view->getEpetra_Vector();
+    int err = d_epetraMatrix->Multiply( false, in_vec, out_vec );
+    VerifyEpetraReturn( err, "mult" );
 }
 
 
-void ManagedEpetraMatrix::multTranspose ( const Vector::shared_ptr &in , Vector::shared_ptr &out )
+void ManagedEpetraMatrix::multTranspose ( Vector::const_shared_ptr in , Vector::shared_ptr out )
 {
-    Vector::shared_ptr  in_view = EpetraVector::view ( in );
-    Vector::shared_ptr  out_view = EpetraVector::view ( out );
-    VerifyEpetraReturn ( d_epetraMatrix->Multiply ( true , in_view->castTo<EpetraVector>().getEpetra_Vector() , out_view->castTo<EpetraVector>().getEpetra_Vector() ) , "mult" );
+    AMP_ASSERT ( in->getGlobalSize() == numGlobalColumns() );
+    AMP_ASSERT ( out->getGlobalSize() == numGlobalRows() );
+    boost::shared_ptr<const EpetraVector>  in_view = boost::dynamic_pointer_cast<const EpetraVector>( EpetraVector::constView( in ) );
+    boost::shared_ptr<EpetraVector>  out_view = boost::dynamic_pointer_cast<EpetraVector>( EpetraVector::view( out ) );
+    int err = d_epetraMatrix->Multiply( true, in_view->getEpetra_Vector(), out_view->getEpetra_Vector() );
+    VerifyEpetraReturn( err, "mult" );
 }
 
 

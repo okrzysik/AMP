@@ -39,17 +39,19 @@ INCLUDE (macros)
 #     COPY_MESH_FILE ( mesh_file )
 #
 
-ADD_AMP_PROVISIONAL_TEST(testRemDup)
-
-ADD_AMP_PROVISIONAL_TEST(testSubchannelPhysicsModel)
+ADD_AMP_TEST_1_2_4 (testSubchannelPhysicsModel)
 COPY_TEST_DATA_FILE ( input_testSubchannelPhysicsModel)
 
-ADD_AMP_PROVISIONAL_TEST( testRemDup )
+ADD_AMP_PROVISIONAL_TEST(testSubchannelTwoEqNonlinearOperator)
+COPY_TEST_DATA_FILE ( input_testSubchannelTwoEqNonlinearOperator)
+
+ADD_AMP_PROVISIONAL_TEST(testSubchannelTwoEqLinearOperator)
+COPY_TEST_DATA_FILE ( input_testSubchannelTwoEqLinearOperator)
+
+ADD_AMP_PROVISIONAL_TEST(testSubchannelFourEqNonlinearOperator)
+COPY_TEST_DATA_FILE ( input_testSubchannelFourEqNonlinearOperator)
 
 COPY_MESH_FILE ( cube8.with.boundary.labels.e )
-
-COPY_TEST_DATA_FILE ( input_testDofMap )
-ADD_AMP_PROVISIONAL_TEST( testDofMap )
 
 COPY_TEST_DATA_FILE ( input_testSurfaceIteratorBug )
 ADD_AMP_TEST( testSurfaceIteratorBug )
@@ -346,6 +348,12 @@ COPY_MESH_FILE(clad_1x_1pellet.e)
 ADD_AMP_TEST_1_2_4 ( testScalarN2GZAxisMap )
 COPY_TEST_DATA_FILE ( inputScalarN2GZAxisMap-1 )
 
+# Test CladToSubchannel map
+ADD_AMP_TEST_1_2_4 ( testCladToSubchannelMap )
+ADD_AMP_TEST_1_2_4 ( testSubchannelToCladMap )
+COPY_TEST_DATA_FILE ( inputCladToSubchannelMap-1 )
+COPY_TEST_DATA_FILE ( inputSubchannelToCladMap-1 )
+
 
 # Test map operators
 ADD_AMP_TEST_1_2_4 ( testMapOperator )
@@ -355,7 +363,7 @@ COPY_MESH_FILE(halden_1_clad.e)
 
 
 #NEK-5000 tests
-IF( USE_NEK ) 
+IF( USE_EXT_NEK ) 
   COPY_TEST_DATA_FILE ( SESSION.NAME )
   COPY_TEST_DATA_FILE ( input.h5m )
   COPY_TEST_DATA_FILE ( pipe.rea )
@@ -366,7 +374,7 @@ IF( USE_NEK )
 ENDIF()
 
 #MOAB tests
-IF( USE_MOAB )
+IF( USE_EXT_MOAB )
   COPY_TEST_DATA_FILE ( input_testMoabBasedOperator )
   ADD_AMP_TEST_1_2_4( testMoabBasedOperator )
   
@@ -376,8 +384,11 @@ IF( USE_MOAB )
   ADD_AMP_PROVISIONAL_TEST( testMoabInterface )
 ENDIF()
 
-IF( USE_DENDRO AND USE_PETSC )
+IF( USE_EXT_DENDRO AND USE_EXT_PETSC )
     ADD_AMP_PROVISIONAL_TEST( testNodeToSegmentConstraintsOperator )
-    COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator )
-    COPY_MESH_FILE( Fused2Pellets_1x.e )
+    COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator-cube )
+    COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator-cylinder )
+    COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator-pellet )
+    COPY_MESH_FILE( simple_pellet_1x.e )
+    COPY_MESH_FILE( two_fused_simple_pellets_1x.e )
 ENDIF()

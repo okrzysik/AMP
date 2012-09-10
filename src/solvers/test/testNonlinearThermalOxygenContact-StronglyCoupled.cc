@@ -425,7 +425,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   meshAdapter2->registerVectorAsData ( TemperatureSolutionVec2, "Temperature_clad");
   meshAdapter1->registerVectorAsData ( ConcentrationSolutionVec1, "Concentration_pellet");
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
   manager->writeFile<AMP::SiloIO> ( exeName , 0 );
 #endif
 

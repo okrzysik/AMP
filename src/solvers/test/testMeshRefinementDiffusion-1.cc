@@ -379,7 +379,7 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
   registerMapswithThermalOperator( input_db , nonlinearThermalColumnOperator , thermMapVec );
 
   //------------------------------------------
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
   AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
   siloWriter->registerMesh(manager);
 
@@ -422,7 +422,7 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
 
   integratedRHSVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
   siloWriter->registerVector( integratedRHSVec, manager, AMP::Mesh::Vertex ,"Source");
 #endif
 
@@ -472,7 +472,7 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
   double TotalNorm2 = 0;
 
   discretizationErrorNorm2 = 0;
-  AMP::LinearAlgebra::VS_Mesh meshSelector1("meshSelector", bottomAdapter );
+  AMP::LinearAlgebra::VS_Mesh meshSelector1(bottomAdapter );
   computeL2Norm( bottomAdapter , globalComm, TemperatureVec->select( meshSelector1, "Temperature"), &discretizationErrorNorm2 );
   TotalNorm2 += discretizationErrorNorm2; 
   std::cout << "Discretized error norm ^2 for Mesh  1: "<< discretizationErrorNorm2 << std::endl;
@@ -488,7 +488,7 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
   std::cout << "Max of U : "<< TemperatureVec->max() << " Min of U : "<< TemperatureVec->min()<< std::endl;
 
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
   siloWriter->writeFile( silo_file , 1 );
 #endif
 

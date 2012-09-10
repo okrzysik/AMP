@@ -84,8 +84,8 @@ void Map3to1to3::addTo1DMap ( std::multimap<double,double> &map, double z , doub
 /********************************************************
 * Function to start the communication                   *
 ********************************************************/
-void  Map3to1to3::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , const AMP::LinearAlgebra::Vector::shared_ptr &u ,
-                     AMP::LinearAlgebra::Vector::shared_ptr & , const double , const double )
+void  Map3to1to3::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr , AMP::LinearAlgebra::Vector::const_shared_ptr u ,
+                     AMP::LinearAlgebra::Vector::shared_ptr, const double, const double )
 {
     const double tol = 1e-8;
     PROFILE_START("applyStart");
@@ -93,9 +93,9 @@ void  Map3to1to3::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , 
     // Subset the vector (we only need to deal with the locally owned portion)
     PROFILE_START("subset");
     AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
-    AMP::LinearAlgebra::VS_Comm commSelector(var->getName(), AMP_MPI(AMP_COMM_SELF) );
-    AMP::LinearAlgebra::Vector::shared_ptr  commVec = u->select(commSelector, var->getName());
-    AMP::LinearAlgebra::Vector::shared_ptr  vec = commVec->subsetVectorForVariable(var);
+    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI(AMP_COMM_SELF) );
+    AMP::LinearAlgebra::Vector::const_shared_ptr  commVec = u->constSelect(commSelector, u->getVariable()->getName());
+    AMP::LinearAlgebra::Vector::const_shared_ptr  vec = commVec->constSubsetVectorForVariable(var);
     PROFILE_STOP("subset");
 
     // Build the local maps
@@ -197,8 +197,8 @@ void  Map3to1to3::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , 
 * Function to finish the communication and perform the  *
 * interpolation                                         *
 ********************************************************/
-void  Map3to1to3::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr & , const AMP::LinearAlgebra::Vector::shared_ptr & ,
-                      AMP::LinearAlgebra::Vector::shared_ptr & , const double , const double )
+void  Map3to1to3::applyFinish ( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr,
+                      AMP::LinearAlgebra::Vector::shared_ptr, const double , const double )
 {
     PROFILE_START("applyFinish");
 
@@ -325,7 +325,7 @@ void  Map3to1to3::setVector ( AMP::LinearAlgebra::Vector::shared_ptr &result )
 }
 
 
-std::multimap<double,double>  Map3to1to3::buildMap ( const AMP::LinearAlgebra::Vector::shared_ptr, 
+std::multimap<double,double>  Map3to1to3::buildMap ( AMP::LinearAlgebra::Vector::const_shared_ptr, 
     const AMP::Mesh::Mesh::shared_ptr, const AMP::Mesh::MeshIterator& )
 {
     AMP_ERROR("buildMap should never be called for the BaseClass");

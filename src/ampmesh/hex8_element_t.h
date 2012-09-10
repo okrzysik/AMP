@@ -15,6 +15,9 @@ public:
   double const * get_support_points() const;
   double const * get_bounding_box();
   triangle_t * get_bounding_polyhedron();
+  double const * get_scaling_factors();
+  void scale_support_points();
+  void unscale_support_points();
   bool within_bounding_box(double const *p, double tolerance = 1.0e-12);
   bool within_bounding_polyhedron(double const *p, double tolerance = 1.0e-12);
   // this the user responsability to call first within_bounding_box(...) and within_bounding_polyhedron(...)
@@ -94,6 +97,15 @@ private:
   //    o------ x
   //
   static unsigned int faces[];
+
+  bool support_points_scaled;
+  bool scaling_factors_updated;
+  void compute_scaling_factors();
+  std::vector<double> scaling_factors;
+  bool support_points_translated;
+  bool translation_vector_updated;
+  void compute_translation_vector();
+  std::vector<double> translation_vector;
 
   bool bounding_box_updated, bounding_polyhedron_updated;
   void build_bounding_box();

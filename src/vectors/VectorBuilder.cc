@@ -5,10 +5,10 @@
 #include "vectors/MultiVector.h"
 #include "vectors/SimpleVector.h"
 #include "discretization/MultiDOF_Manager.h"
-#ifdef USE_PETSC
+#ifdef USE_EXT_PETSC
     #include "vectors/petsc/ManagedPetscVector.h"
 #endif
-#ifdef USE_TRILINOS
+#ifdef USE_EXT_TRILINOS
     #include "vectors/trilinos/EpetraVectorEngine.h"
 #endif
 
@@ -98,7 +98,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
         }
         comm.barrier();
         // Create the vector parameters
-        #if defined(USE_PETSC) && defined(USE_TRILINOS)
+        #if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
             boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscVectorParameters> mvparams(
                 new AMP::LinearAlgebra::ManagedPetscVectorParameters() );
             boost::shared_ptr<AMP::LinearAlgebra::EpetraVectorEngineParameters> eveparams(

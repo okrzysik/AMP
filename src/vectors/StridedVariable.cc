@@ -12,7 +12,7 @@ StridedVariable::StridedVariable ( const std::string &name, size_t offset, size_
 }
 
 
-AMP::Discretization::DOFManager::shared_ptr  StridedVariable::getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr parentDOF )
+AMP::Discretization::DOFManager::shared_ptr  StridedVariable::getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr parentDOF ) const
 { 
     std::vector<size_t> dofs;
     dofs.reserve(parentDOF->numLocalDOF());

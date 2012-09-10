@@ -15,8 +15,6 @@ namespace AMP {
 namespace Operator {
 
 
-typedef ElementPhysicsModelParameters SubchannelPhysicsModelParameters;
-
 
 /**
   This class acts a interface to the water material library for the subchannel
@@ -26,29 +24,38 @@ class SubchannelPhysicsModel : public ElementPhysicsModel
 {
 public :
 
-      SubchannelPhysicsModel (const boost::shared_ptr<SubchannelPhysicsModelParameters>& params );
+     /**
+       Constructor
+       */
+     SubchannelPhysicsModel (const boost::shared_ptr<ElementPhysicsModelParameters>& params );
 
+     /**
+       Destructor
+       */
      virtual ~SubchannelPhysicsModel() { }
 
+     /**
+       Function to evaluate property functions
+       @param [in]  property property identifier string
+       @param [out] result   output vector
+       @param [in]  args of input argument strings and input vectors
+       */
      void getProperty(    std::string property,
                           std::vector<double>                & result, 
                           std::map<std::string, boost::shared_ptr<std::vector<double> > > & args);
 
+     /**
+       Function to return a pointer to the material
+       */
+     AMP::Materials::Material::shared_ptr getMaterial() {return d_material;}
+
 protected :
 
-     bool d_useMaterialsLibrary;
-
-     std::string d_physicsName;
-
+     // pointer to the material
      AMP::Materials::Material::shared_ptr d_material;
 
+     // map of property identifier strings and property pointers
      std::map<std::string,AMP::Materials::PropertyPtr> d_properties;
-
-private :
-
-     boost::shared_ptr<ElementPhysicsModel> elementPhysicsModel; 
-
-     boost::shared_ptr<ElementPhysicsModelParameters> elementPhysicsParams; 
 
   };
 

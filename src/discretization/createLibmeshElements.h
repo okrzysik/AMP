@@ -1,6 +1,6 @@
 #ifndef included_AMP_createLibmeshElements
 #define included_AMP_createLibmeshElements
-#ifdef USE_LIBMESH
+#ifdef USE_EXT_LIBMESH
 
 
 /* AMP files */

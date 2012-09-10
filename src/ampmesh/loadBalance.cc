@@ -4,7 +4,13 @@
 
 #include <iostream>
 #include <iomanip>
-inline double round(double x) { return (floor(x+0.5)); }
+
+
+// inline function to convert two size_t to double, divide, round the result, and return a size_t integer
+static inline size_t divide_double(size_t x, size_t y) { 
+    return (size_t) floor( (((double)x)/((double)y)) + 0.5 ); 
+}
+
 
 namespace AMP {
 namespace Mesh {
@@ -55,8 +61,8 @@ LoadBalance::LoadBalance( boost::shared_ptr<MeshParameters> params, const std::v
             d_N_elements = Mesh::estimateMeshSize( params );
         else 
             d_N_elements = N_elements;
-        d_min = (size_t) round(((double)d_N_elements)/((double)d_ranks.size()));
-        d_max = (size_t) round(((double)d_N_elements)/((double)d_ranks.size()));
+        d_min = divide_double(d_N_elements,d_ranks.size());
+        d_max = divide_double(d_N_elements,d_ranks.size());
         cache_valid = true;
     }
 }
@@ -134,7 +140,7 @@ size_t LoadBalance::max()
 }
 size_t LoadBalance::avg() 
 {
-    return (size_t) round(((double)d_N_elements)/((double)d_ranks.size()));
+    return divide_double(d_N_elements,d_ranks.size());
 }
 
 
@@ -188,8 +194,8 @@ void LoadBalance::countElements( const LoadBalance &mesh, std::vector<size_t> &N
 void LoadBalance::updateCache() 
 {
     if ( d_submeshes.empty() ) {
-        d_min = (size_t) round(((double)d_N_elements)/((double)d_ranks.size()));
-        d_max = (size_t) round(((double)d_N_elements)/((double)d_ranks.size()));
+        d_min = divide_double(d_N_elements,d_ranks.size());
+        d_max = divide_double(d_N_elements,d_ranks.size());
         return;
     }
     if ( d_decomp==0 ) {

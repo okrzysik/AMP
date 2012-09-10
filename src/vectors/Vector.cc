@@ -30,6 +30,8 @@ Vector::Vector ()
     d_AddBuffer = boost::shared_ptr<std::vector<double> > ( new std::vector<double> );
     d_UpdateState.reset( new UpdateState );
     *d_UpdateState = UNCHANGED;
+    d_Views = boost::shared_ptr<std::vector<boost::weak_ptr <Vector> > >( 
+        new std::vector<boost::weak_ptr <Vector> >() );
 }  
 Vector::Vector( const Vector&rhs ): 
     VectorOperations (),
@@ -47,6 +49,8 @@ Vector::Vector( VectorParameters::shared_ptr  parameters)
     d_UpdateState.reset( new UpdateState );
     *d_UpdateState = UNCHANGED;
     d_DOFManager = parameters->d_DOFManager;
+    d_Views = boost::shared_ptr<std::vector<boost::weak_ptr <Vector> > >( 
+        new std::vector<boost::weak_ptr <Vector> >() );
 }
 
 
@@ -75,6 +79,22 @@ void Vector::selectInto ( const VectorSelector &s , Vector::shared_ptr retVal )
         AMP_ASSERT(N2<=N1);
     }
 }
+void Vector::constSelectInto ( const VectorSelector &s , Vector::shared_ptr retVal ) const
+{
+    if ( s.isSelected ( shared_from_this () ) ) {
+        // Subset the vector
+        Vector::const_shared_ptr subvector = s.subset( shared_from_this() );
+        if ( subvector.get() == NULL )
+            return;
+        // Cast away the const (this is a temporary workaround)
+        Vector::shared_ptr subvector2 = boost::const_pointer_cast<Vector>( subvector );
+        retVal->castTo<MultiVector>().addVector ( subvector2 );
+        // Check the global size of the new vector to make sure it is <= the current size
+        size_t N1 = this->getGlobalSize();
+        size_t N2 = subvector->getGlobalSize();
+        AMP_ASSERT(N2<=N1);
+    }
+}
 Vector::shared_ptr  Vector::select ( const VectorSelector &s , const std::string &name )
 {
     // Create a new multivector to hold the subset
@@ -86,23 +106,39 @@ Vector::shared_ptr  Vector::select ( const VectorSelector &s , const std::string
         return retVal;
     return Vector::shared_ptr();
 }
-void Vector::registerView ( Vector::shared_ptr v )
+Vector::const_shared_ptr  Vector::constSelect ( const VectorSelector &s , const std::string &name ) const
 {
-    for ( size_t i = 0 ; i != d_Views.size() ; i++ )
-      if ( d_Views[i].lock() == v )
+    // Create a new multivector to hold the subset
+    AMP_MPI comm = s.communicator( shared_from_this() );
+    Vector::shared_ptr  retVal = MultiVector::create( name, comm );
+    // Add the subset vector
+    constSelectInto ( s , retVal );
+    if ( retVal->numberOfDataBlocks() )
+        return retVal;
+    return Vector::shared_ptr();
+}
+void Vector::registerView ( Vector::shared_ptr v ) const
+{
+    for ( size_t i = 0 ; i != d_Views->size() ; i++ )
+      if ( (*d_Views)[i].lock() == v )
         return;
-
-    d_Views.push_back ( v );
+    (*d_Views).push_back( v );
 }
 Vector::shared_ptr  Vector::subsetVectorForVariable ( const Variable::shared_ptr  &name )
 {
     Vector::shared_ptr retVal;
-    if ( d_pVariable )  // If there is a variable...
-    {
-      if ( *d_pVariable == *name )
-      {
-        retVal = shared_from_this ();
-      }
+    if ( d_pVariable ) {    // If there is a variable...
+        if ( *d_pVariable == *name )
+            retVal = shared_from_this();
+    }
+    return retVal;
+}
+Vector::const_shared_ptr  Vector::constSubsetVectorForVariable ( const Variable::shared_ptr  &name ) const
+{
+    Vector::const_shared_ptr retVal;
+    if ( d_pVariable ) {    // If there is a variable...
+        if ( *d_pVariable == *name )
+            retVal = shared_from_this();
     }
     return retVal;
 }
@@ -234,7 +270,6 @@ void Vector::zero()
     setToScalar (0.0);
     for ( size_t i = 0 ; i != d_Ghosts->size() ; i++ )
         (*d_Ghosts)[i] = 0.0;
-    (*getUpdateStatusPtr()) = UNCHANGED;
 }
 void Vector::setToScalar(double alpha)
 {
@@ -245,6 +280,9 @@ void Vector::setToScalar(double alpha)
       curMe++;
     }
     dataChanged();
+    for ( size_t i = 0 ; i != d_Ghosts->size() ; i++ )
+        (*d_Ghosts)[i] = alpha;
+    (*getUpdateStatusPtr()) = UNCHANGED;
 }
 void  Vector::setRandomValues ()
 {
@@ -257,6 +295,7 @@ void  Vector::setRandomValues ()
       curMe++;
     }
     dataChanged ();
+    this->makeConsistent(CONSISTENT_SET);
 }
 void  Vector::setRandomValues ( RNG::shared_ptr rng )
 {
@@ -268,6 +307,7 @@ void  Vector::setRandomValues ( RNG::shared_ptr rng )
       curMe++;
     }
     dataChanged ();
+    this->makeConsistent(CONSISTENT_SET);
 }
 
 
@@ -757,6 +797,7 @@ void Vector::makeConsistent ( ScatterType  t )
     d_CommList->scatter_set ( send_vec , recv_vec );
     d_CommList->unpackReceiveBufferSet ( recv_vec , *this );
     *d_UpdateState = UNCHANGED;
+    this->setUpdateStatus(UNCHANGED);
 }
 
 

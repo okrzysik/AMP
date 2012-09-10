@@ -1,7 +1,7 @@
 #include "EpetraMatrix.h"
 #include "ManagedEpetraMatrix.h"
 
-#ifdef USE_MPI
+#ifdef USE_EXT_MPI
     #include <Epetra_MpiComm.h>
 #else
     #include <Epetra_SerialComm.h>
@@ -42,7 +42,7 @@ Matrix::shared_ptr   EpetraMatrix::createView ( shared_ptr  in_matrix )
 void EpetraMatrix::setEpetraMaps ( Vector::shared_ptr range , Vector::shared_ptr domain )
 {
     if ( range ) {
-        #ifdef USE_MPI
+        #ifdef USE_EXT_MPI
             Epetra_MpiComm  comm = range->getComm().getCommunicator();
         #else
             Epetra_SerialComm  comm;

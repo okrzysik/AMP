@@ -130,6 +130,8 @@ inline double Vector::getValueByLocalID ( size_t ndx ) const
   inline
   void  Vector::dataChanged()
   {
+     if ( *d_UpdateState == UNCHANGED ) 
+        *d_UpdateState = LOCAL_CHANGED;
   }
 
 
@@ -239,13 +241,13 @@ inline double Vector::getValueByLocalID ( size_t ndx ) const
   }
 
   inline
-  void Vector::scale ( double alpha , const shared_ptr &x )
+  void Vector::scale ( double alpha , const_shared_ptr x )
   {
     scale ( alpha , *x );
   }
 
   inline
-  void Vector::addScalar ( const shared_ptr &x , double alpha )
+  void Vector::addScalar ( const_shared_ptr x , double alpha )
   {
     Vector::shared_ptr  one_vec = cloneVector ();
     one_vec->setToScalar ( 1. );
@@ -253,73 +255,73 @@ inline double Vector::getValueByLocalID ( size_t ndx ) const
   }
 
   inline
-  void Vector::add ( const shared_ptr &x , const shared_ptr &y )
+  void Vector::add ( const_shared_ptr x , const_shared_ptr y )
   {
     add ( *x , *y );
   }
 
   inline
-  void Vector::subtract ( const shared_ptr &x , const shared_ptr &y )
+  void Vector::subtract ( const_shared_ptr x , const_shared_ptr y )
   {
     subtract ( *x , *y );
   }
 
   inline
-  void Vector::multiply ( const shared_ptr &x , const shared_ptr &y )
+  void Vector::multiply ( const_shared_ptr x , const_shared_ptr y )
   {
     multiply ( *x , *y );
   }
 
   inline
-  void Vector::divide ( const shared_ptr &x , const shared_ptr &y )
+  void Vector::divide ( const_shared_ptr x , const_shared_ptr y )
   {
     divide ( *x , *y );
   }
 
   inline
-  void Vector::reciprocal ( const shared_ptr &x )
+  void Vector::reciprocal ( const_shared_ptr x )
   {
     reciprocal ( *x );
   }
 
   inline
-  double Vector::minQuotient(const shared_ptr &x, const shared_ptr &y)
+  double Vector::minQuotient(const_shared_ptr x, const_shared_ptr y)
   {
     return(minQuotient(*x, *y));
   }
 
   inline
-  double Vector::wrmsNorm(const shared_ptr &x, const shared_ptr &y)
+  double Vector::wrmsNorm(const_shared_ptr x, const_shared_ptr y)
   {
     return(wrmsNorm(*x, *y));
   }
 
   inline
-  void Vector::linearSum ( double alpha , const shared_ptr &x , double beta , const shared_ptr &y )
+  void Vector::linearSum ( double alpha , const_shared_ptr x , double beta , const_shared_ptr y )
   {
     linearSum ( alpha , *x , beta , *y );
   }
 
   inline
-  void Vector::axpy ( double alpha , const shared_ptr &x , const shared_ptr &y )
+  void Vector::axpy ( double alpha , const_shared_ptr x , const_shared_ptr y )
   {
     axpy ( alpha , *x , *y );
   }
 
   inline
-  void Vector::axpby(double alpha , double beta , const shared_ptr &x )
+  void Vector::axpby(double alpha , double beta , const_shared_ptr x )
   {
     axpby ( alpha , beta , *x );
   }
 
   inline
-  void Vector::abs ( const shared_ptr &x )
+  void Vector::abs ( const_shared_ptr x )
   {
     abs ( *x );
   }
 
   inline
-  double Vector::dot ( const shared_ptr &x )
+  double Vector::dot ( const_shared_ptr x )
   {
     return dot ( *x );
   }
@@ -328,6 +330,12 @@ inline double Vector::getValueByLocalID ( size_t ndx ) const
   Vector::UpdateState  Vector::getUpdateStatus () const
   {
     return *d_UpdateState;
+  }
+
+  inline
+  void  Vector::setUpdateStatus ( UpdateState state )
+  {
+    *d_UpdateState = state;
   }
 
   inline

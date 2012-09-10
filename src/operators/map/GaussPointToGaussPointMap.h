@@ -17,17 +17,17 @@ namespace AMP {
             d_useFrozenInputVec = params->d_db->getBoolWithDefault("FrozenInput", false);
           }
 
-        void applyStart(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-            AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0) {
-          AMP::LinearAlgebra::Vector::shared_ptr uInternal = u;
+        void applyStart(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0) {
+          AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = u;
           if(d_useFrozenInputVec) {
             uInternal = d_frozenInputVec;
           }
           AMP::Operator::NodeToNodeMap::applyStart(f, uInternal, r, a, b);
         }
 
-        void applyFinish(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-            AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0) {
+        void applyFinish(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0) {
           AMP::Operator::NodeToNodeMap::applyFinish(f, u, r, a, b);
           correctLocalOrdering();
         }

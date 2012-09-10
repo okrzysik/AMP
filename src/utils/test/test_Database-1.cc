@@ -64,12 +64,23 @@ void readInputDatabase(AMP::UnitTest *ut)
 
 /************************************************************************
 *                                                                       *
-* This tests whether we can put/get keys with a memory database         *
+* This tests whether we can put/get keys with a database                *
 *                                                                       *
 ************************************************************************/
-void testMemoryDatabase(AMP::UnitTest *ut)
+template<class DATABASE>
+void testCreateDatabase(AMP::UnitTest *ut)
 {
-    boost::shared_ptr<AMP::MemoryDatabase> db ( new AMP::MemoryDatabase("database") );
+    boost::shared_ptr<DATABASE> db ( new DATABASE("database") );
+    db->create("database");
+
+    int lower[3]={0,0,0}, upper[3]={10,10,10};
+    AMP::DatabaseBox box(3,lower,upper);
+    AMP_ASSERT(box==box);
+    AMP_ASSERT(box.getDimension()==3);
+    for (int i=0; i<3; i++) {
+        AMP_ASSERT(box.lower(i)==lower[i]);
+        AMP_ASSERT(box.upper(i)==upper[i]);
+    }
 
     db->putScalar("scalar_int",(int)1);
     db->putScalar("scalar_float",(float)1);
@@ -77,6 +88,8 @@ void testMemoryDatabase(AMP::UnitTest *ut)
     db->putScalar("scalar_complex",std::complex<double>(1,0));
     db->putScalar("scalar_char",(char)1);
     db->putScalar("scalar_bool",true);
+    db->putDatabaseBox("box",box);
+    db->putDatabaseBoxArray("box_array",std::vector<AMP::DatabaseBox>(1,box));
 
     AMP_ASSERT(db->keyExists("scalar_int"));
 
@@ -86,6 +99,7 @@ void testMemoryDatabase(AMP::UnitTest *ut)
     AMP_ASSERT(db->isComplex("scalar_complex"));
     AMP_ASSERT(db->isChar("scalar_char"));
     AMP_ASSERT(db->isBool("scalar_bool"));
+    AMP_ASSERT(db->isDatabaseBox("box"));
 
     AMP_ASSERT(db->getInteger("scalar_int")==1);
     AMP_ASSERT(db->getFloat("scalar_float")==1.0);
@@ -93,6 +107,8 @@ void testMemoryDatabase(AMP::UnitTest *ut)
     AMP_ASSERT(db->getComplex("scalar_complex")==std::complex<double>(1,0));
     AMP_ASSERT(db->getChar("scalar_char")==1);
     AMP_ASSERT(db->getBool("scalar_bool")==true);
+    AMP_ASSERT(db->getDatabaseBox("box")==box);
+    AMP_ASSERT(db->getDatabaseBoxArray("box_array").operator[](0)==box);
 
     AMP_ASSERT(db->getIntegerWithDefault("scalar_int",0)==1);
     AMP_ASSERT(db->getFloatWithDefault("scalar_float",0)==1.0);
@@ -108,7 +124,7 @@ void testMemoryDatabase(AMP::UnitTest *ut)
     AMP_ASSERT(db->getCharArray("scalar_char").size()==1);
     AMP_ASSERT(db->getBoolArray("scalar_bool").size()==1);
 
-    ut->passes("Memory database works.");
+    ut->passes("Create database passes");
 }
 
 
@@ -120,7 +136,8 @@ int main(int argc, char *argv[])
     AMP::UnitTest ut;
     
     readInputDatabase(&ut);
-    testMemoryDatabase(&ut);
+    testCreateDatabase<AMP::MemoryDatabase>(&ut);
+    testCreateDatabase<AMP::InputDatabase>(&ut);
 
     ut.report();
 

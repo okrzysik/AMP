@@ -5,10 +5,10 @@
 #include "vectors/SimpleVector.h"
 #include "test_VectorTests.h"
 #include "utils/AMP_MPI.h"
-#ifdef USE_PETSC
+#ifdef USE_EXT_PETSC
     #include <vectors/petsc/NativePetscVector.h>
 #endif
-#ifdef USE_TRILINOS
+#ifdef USE_EXT_TRILINOS
     #include <vectors/trilinos/EpetraVectorEngine.h>
 #endif
 
@@ -51,7 +51,7 @@ public:
 };
 
 
-#ifdef USE_TRILINOS
+#ifdef USE_EXT_TRILINOS
 template <typename T>
 class  SimpleManagedVectorFactory
 {
@@ -82,7 +82,7 @@ class  SimpleManagedVectorFactory
 #endif
 
 
-#ifdef USE_PETSC
+#ifdef USE_EXT_PETSC
 template <typename T>
 class  PetscManagedVectorFactory
 {
@@ -100,8 +100,8 @@ class  PetscManagedVectorFactory
       AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
       VecCreate ( globalComm.getCommunicator(), &v );
       VecSetSizes ( v , 15 , PETSC_DECIDE );
-      boost::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams ( new AMP::LinearAlgebra::NativePetscVectorParameters ( v ) );
-      npvParams->d_Deleteable = true;
+      boost::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams( 
+        new AMP::LinearAlgebra::NativePetscVectorParameters( v, true ) );
       AMP::LinearAlgebra::NativePetscVector *newVec = new AMP::LinearAlgebra::NativePetscVector ( npvParams );
       VecSetFromOptions ( v );
       newVec->assemble();

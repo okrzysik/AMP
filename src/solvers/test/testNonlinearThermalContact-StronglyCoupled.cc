@@ -375,7 +375,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
 
   nonlinearCoupledOperator->apply(RightHandSideVec, TemperatureInKelvin, ResidualVec, 1.0, -1.0);
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
   manager->writeFile<AMP::SiloIO> ( exeName , 0 );
 #endif
 

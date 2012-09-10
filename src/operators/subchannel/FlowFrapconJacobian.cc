@@ -98,8 +98,8 @@ void FlowFrapconJacobian :: reset(const boost::shared_ptr<OperatorParameters>& p
 
 
 // This is an in-place apply
-void FlowFrapconJacobian :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-      AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a, const double b)
+void FlowFrapconJacobian :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+      AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b)
 {
 
     // AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_inpVariable);
@@ -116,7 +116,7 @@ void FlowFrapconJacobian :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &
     //    std::cout << "Extreme Max Point in z = " << max_z << std::endl;
 
     
-    AMP::LinearAlgebra::Vector::shared_ptr flowInputVec = subsetInputVector(u);
+    AMP::LinearAlgebra::Vector::const_shared_ptr flowInputVec = subsetInputVector(u);
 
     AMP::LinearAlgebra::Vector::shared_ptr outputVec = subsetOutputVector(r);
 
@@ -132,6 +132,7 @@ void FlowFrapconJacobian :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &
 
     // set the inlet flow temperature value
     //flowInputVec->setValueByLocalID(0, 0.0);
+      outputVec->setValueByLocalID(0, flowInputVec->getValueByLocalID(0));
 
     zPoints[0] = min_z;
     for( int j=1; j<d_numpoints; j++) {
@@ -170,7 +171,7 @@ void FlowFrapconJacobian :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &
     if(f.get() == NULL) {
       outputVec->scale(a);
     } else {
-      AMP::LinearAlgebra::Vector::shared_ptr fInternal = subsetInputVector( f );
+      AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = subsetInputVector( f );
       if(fInternal.get() == NULL) {
         outputVec->scale(a);
       } else {
@@ -186,7 +187,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  FlowFrapconJacobian::subsetOutputVector(
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
     if(d_Mesh.get() != NULL) {
-        AMP::LinearAlgebra::VS_Comm commSelector( var->getName(), d_Mesh->getComm() );
+        AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::shared_ptr commVec = vec->select(commSelector, var->getName());
         return commVec->subsetVectorForVariable(var);
     } else {
@@ -200,11 +201,39 @@ AMP::LinearAlgebra::Vector::shared_ptr  FlowFrapconJacobian::subsetInputVector(A
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
     if(d_Mesh.get() != NULL) {
-        AMP::LinearAlgebra::VS_Comm commSelector( var->getName(), d_Mesh->getComm() );
+        AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::shared_ptr commVec = vec->select(commSelector, var->getName());
         return commVec->subsetVectorForVariable(var);
     } else {
         return vec->subsetVectorForVariable(var);
+    }
+}
+
+
+AMP::LinearAlgebra::Vector::const_shared_ptr  FlowFrapconJacobian::subsetOutputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
+{
+    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
+    if(d_Mesh.get() != NULL) {
+        AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
+        AMP::LinearAlgebra::Vector::const_shared_ptr commVec = vec->constSelect(commSelector, var->getName());
+        return commVec->constSubsetVectorForVariable(var);
+    } else {
+        return vec->constSubsetVectorForVariable(var);
+    }
+}
+
+
+AMP::LinearAlgebra::Vector::const_shared_ptr  FlowFrapconJacobian::subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
+{
+    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
+    if(d_Mesh.get() != NULL) {
+        AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
+        AMP::LinearAlgebra::Vector::const_shared_ptr commVec = vec->constSelect(commSelector, var->getName());
+        return commVec->constSubsetVectorForVariable(var);
+    } else {
+        return vec->constSubsetVectorForVariable(var);
     }
 }
 

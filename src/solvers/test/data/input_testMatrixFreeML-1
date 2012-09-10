@@ -75,7 +75,7 @@ DirichletMatrixCorrection{
     symmetric_correction = TRUE
     zero_dirichlet_block = FALSE
     skip_rhs_correction = FALSE
-    skip_add_rhs_correction = TRUE
+    skip_rhs_add_correction = TRUE
     number_of_ids = 1
     id_0 = 1
     number_of_dofs_0 = 3

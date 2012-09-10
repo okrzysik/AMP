@@ -56,14 +56,14 @@ namespace AMP {
           Sets Dirichlet values into the appropriate locations of the output vector (r). This does not affect
           the remaining values in that vector. f, u and b are not used.
           */
-        void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-            AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
+        void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
         void applyZeroValues(AMP::LinearAlgebra::Vector::shared_ptr r);
 
         void applyNonZeroValues(AMP::LinearAlgebra::Vector::shared_ptr r);
 
-        void applyResidual(AMP::LinearAlgebra::Vector::shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r);
+        void applyResidual(AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r);
 
         /**
           This function can be used to change the Dirichlet boundary conditions, if required.
@@ -97,15 +97,10 @@ namespace AMP {
       protected :
 
         AMP::LinearAlgebra::Vector::shared_ptr mySubsetVector(AMP::LinearAlgebra::Vector::shared_ptr vec, 
-            AMP::LinearAlgebra::Variable::shared_ptr var) {
-          if(d_Mesh.get() != NULL) {
-            AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
-            AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, var->getName());
-            return meshSubsetVec->subsetVectorForVariable(var);
-          } else {
-            return vec->subsetVectorForVariable(var);
-          }
-        }
+            AMP::LinearAlgebra::Variable::shared_ptr var);
+
+        AMP::LinearAlgebra::Vector::const_shared_ptr mySubsetVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec, 
+            AMP::LinearAlgebra::Variable::shared_ptr var);
 
         std::vector<short int> d_boundaryIds;
 

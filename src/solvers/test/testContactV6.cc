@@ -1031,7 +1031,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   }//end for picardIter
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
   manager->registerVectorAsData ( columnSolVec, "Displacement" );
   manager->registerVectorAsData ( currTempVec, "FinalTemperature" );
   manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 1 );

@@ -8,11 +8,11 @@
 #include "discretization/DOF_Manager.h"
 #include "vectors/Vector.h"
 #include "vectors/MultiVector.h"
-#ifdef USE_SUNDIALS
+#ifdef USE_EXT_SUNDIALS
     #include "vectors/sundials/ManagedSundialsVector.h"
     #include "vectors/sundials/SundialsVector.h"
 #endif
-#ifdef USE_PETSC
+#ifdef USE_EXT_PETSC
     #include "vectors/petsc/ManagedPetscVector.h"
     #include "vectors/petsc/PetscVector.h"
 #endif
@@ -147,7 +147,6 @@ void SetToScalarVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::iterator curVal = vector->begin();
     while ( curVal != endVec ) {
         if ( *curVal != 5. ) {
-            utils->failure ( "Failed to set scalar to 5" );
             fail = true;
             break;
         }
@@ -155,6 +154,18 @@ void SetToScalarVector( AMP::UnitTest *utils )
     }
     if ( !fail )
       utils->passes ( "Set data to 5" );
+    else 
+      utils->failure ( "Failed to set scalar to 5" );
+    std::vector<size_t> remoteDofs = vector->getDOFManager()->getRemoteDOFs();
+    fail = false;
+    for (size_t i=0; i<remoteDofs.size(); i++) {
+        if ( vector->getValueByGlobalID(remoteDofs[i])!=5. )
+            fail = true;
+    }
+    if ( !fail )
+      utils->passes ( "Set ghost data to 5" );
+    else 
+      utils->failure ( "Failed to set ghost scalar values to 5" );
 }
 
 
@@ -327,7 +338,7 @@ void ScaleVector( AMP::UnitTest *utils )
 }
 
 
-#ifdef USE_PETSC
+#ifdef USE_EXT_PETSC
 template <typename VECTOR_FACTORY>
 void Bug_491( AMP::UnitTest *utils )
 {

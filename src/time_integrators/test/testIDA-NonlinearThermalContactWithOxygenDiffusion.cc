@@ -477,7 +477,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
 
     }
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
   manager->writeFile<AMP::SiloIO> ( exeName , 0 );
 #endif
 

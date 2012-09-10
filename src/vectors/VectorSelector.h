@@ -47,6 +47,12 @@ public:
       * \details Base class defaults to returning all data in the vector
       */
     virtual  Vector::shared_ptr  subset ( Vector::shared_ptr vec ) const;
+
+    /** \brief Subset the given vector
+      * \param[in]  vec  The Vector to subset
+      * \details Base class defaults to returning all data in the vector
+      */
+    virtual  Vector::const_shared_ptr  subset ( Vector::const_shared_ptr vec ) const;
 };
 
 
@@ -69,31 +75,10 @@ protected:
     std::string    d_VecName;
 public:
     /** \brief Constructor
-      * \param[in] n  The name of the variable to subset on
+      * \param[in] name  The name of the variable to subset on
       */
-    VS_ByVariableName ( std::string  n );
+    VS_ByVariableName ( std::string  name );
 
-    virtual bool   isSelected ( Vector::const_shared_ptr v ) const;
-};
-
-
-/** \brief  Select a subvector based on the type of the variable
-  * \details  This can be used in the Vector::select or Vector::selectInto interface:
-  * \code
-       // Create a vector of all data in the simulation
-       Vector::shared_ptr   data = meshManager->createVector ( complexVariable );
-
-       // Extract all nodal scalar data
-       Vector::shared_ptr   reals = data->select ( VS_ByVariableType<NodalScalarVariable> () , "Real Fields" );
-
-       // Add 3-Vector data to a vector results
-       data->select ( VS_ByBariableType <Nodal3VectorVariable> () , "Positions" );
-       \endcode
-*/
-template <typename T>
-class VS_ByVariableType : public VectorSelector
-{
-public:
     virtual bool   isSelected ( Vector::const_shared_ptr v ) const;
 };
 
@@ -105,17 +90,22 @@ class VS_Stride : public VectorSelector
 {
 public:
     /** \brief Constructor
-      * \param[in]  n  The name of the new variable
       * \param[in]  a  The offset to stride
       * \param[in]  b  The length to stride
       */
-    VS_Stride ( const std::string &n , size_t a , size_t b );
+    VS_Stride ( size_t a , size_t b );
 
     /** \brief Subset the given vector
       * \param[in]  vec  The Vector to subset
       * \details Base class defaults to returning all data in the vector
       */
     virtual  Vector::shared_ptr  subset ( Vector::shared_ptr vec ) const;
+
+    /** \brief Subset the given vector
+      * \param[in]  vec  The Vector to subset
+      * \details Base class defaults to returning all data in the vector
+      */
+    virtual  Vector::const_shared_ptr  subset ( Vector::const_shared_ptr vec ) const;
 
 protected:
     //  Offset to start striding on
@@ -136,10 +126,9 @@ class VS_Comm : public VectorSelector
 {
 public:
     /** \brief Constructor
-      * \param[in]  name  The name of the new variable
       * \param[in]  comm  The new comm to use
       */
-    VS_Comm ( const std::string &name, AMP_MPI comm );
+    VS_Comm ( AMP_MPI comm );
 
     /** \brief Returns the communicator for the subset
       * \param[in]  vec  The Vector to match
@@ -155,6 +144,12 @@ public:
       */
     virtual  Vector::shared_ptr  subset ( Vector::shared_ptr vec ) const;
 
+    /** \brief Subset the given vector
+      * \param[in]  vec  The Vector to subset
+      * \details Base class defaults to returning all data in the vector
+      */
+    virtual  Vector::const_shared_ptr  subset ( Vector::const_shared_ptr vec ) const;
+
 protected:
     std::string d_Name;                 //  The name of this subset
     AMP_MPI     d_comm;                 // The new desired comm
@@ -169,11 +164,10 @@ class VS_Mesh : public VectorSelector
 {
 public:
     /** \brief Constructor
-      * \param[in]  name            The name of the new variable
       * \param[in]  mesh            The desired mesh
       * \param[in]  useMeshComm     Use the comm of the mesh (otherwise use the comm of the parent DOFManager)
       */
-    VS_Mesh ( const std::string &name, AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm=true );
+    VS_Mesh ( AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm=true );
 
     /** \brief Returns the communicator for the subset
       * \param[in]  vec  The Vector to match
@@ -189,8 +183,13 @@ public:
       */
     virtual  Vector::shared_ptr  subset ( Vector::shared_ptr vec ) const;
 
+    /** \brief Subset the given vector
+      * \param[in]  vec  The Vector to subset
+      * \details Base class defaults to returning all data in the vector
+      */
+    virtual  Vector::const_shared_ptr  subset ( Vector::const_shared_ptr vec ) const;
+
 protected:
-    std::string  d_Name;            //  The name of this subset
     bool d_useMeshComm;             //  Use the comm of the mesh
     Mesh::Mesh::shared_ptr  d_mesh; //  Mesh
 };
@@ -203,10 +202,9 @@ class VS_MeshIterator : public VectorSelector
 {
 public:
     /** \brief Constructor
-      * \param[in]  name        The name of the new variable
       * \param[in]  iterator    The mesh iterator to use
       */
-    VS_MeshIterator ( const std::string &name, const AMP::Mesh::MeshIterator &iterator, const AMP::AMP_MPI &comm );
+    VS_MeshIterator ( const AMP::Mesh::MeshIterator &iterator, const AMP::AMP_MPI &comm );
 
     /** \brief Subset the given vector
       * \param[in]  vec  The Vector to subset
@@ -214,8 +212,13 @@ public:
       */
     virtual  Vector::shared_ptr  subset ( Vector::shared_ptr vec ) const;
 
+    /** \brief Subset the given vector
+      * \param[in]  vec  The Vector to subset
+      * \details Base class defaults to returning all data in the vector
+      */
+    virtual  Vector::const_shared_ptr  subset ( Vector::const_shared_ptr vec ) const;
+
 protected:
-    std::string  d_Name;                    //  The name of this subset
     const AMP_MPI  d_comm;                  // comm for the subset
     const Mesh::MeshIterator  d_iterator;   //  MeshIterator
 };
@@ -225,6 +228,5 @@ protected:
 }
 }
 
-#include "VectorSelector.tmpl.h"
 
 #endif

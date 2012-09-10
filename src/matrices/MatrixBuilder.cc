@@ -4,11 +4,11 @@
 
 #include "discretization/DOF_Manager.h"
 
-#ifdef USE_PETSC
+#ifdef USE_EXT_PETSC
     #include "vectors/petsc/ManagedPetscVector.h"
     #include "matrices/petsc/ManagedPetscMatrix.h"
 #endif
-#ifdef USE_TRILINOS
+#ifdef USE_EXT_TRILINOS
     #include "vectors/trilinos/EpetraVectorEngine.h"
 #endif
 
@@ -24,7 +24,7 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix(
     AMP::LinearAlgebra::Vector::shared_ptr operandVec, 
     AMP::LinearAlgebra::Vector::shared_ptr resultVec )
 {
-#if defined(USE_PETSC) && defined(USE_TRILINOS)
+#if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
     // Get the DOFs
     AMP::Discretization::DOFManager::shared_ptr operandDOF = operandVec->getDOFManager();
     AMP::Discretization::DOFManager::shared_ptr resultDOF = resultVec->getDOFManager();

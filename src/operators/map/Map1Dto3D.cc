@@ -4,6 +4,23 @@
 #include "utils/InputDatabase.h"
 #include "discretization/DOF_Manager.h"
 
+/* Libmesh files */
+#include "fe_type.h"
+#include "fe_base.h"
+#include "elem.h"
+#include "quadrature.h"
+
+#include "enum_order.h"
+#include "enum_fe_family.h"
+#include "enum_quadrature_type.h"
+#include "auto_ptr.h"
+#include "string_to_enum.h"
+
+#include "face_quad4.h"
+#include "node.h"
+
+
+
 namespace AMP {
 namespace Operator {
 
@@ -39,8 +56,19 @@ void Map1Dto3D :: reset(const boost::shared_ptr<OperatorParameters>& params)
     d_MapComm = myparams->d_MapComm;
     d_MapMesh = myparams->d_MapMesh;
     AMP_INSIST( d_MapComm.sumReduce<int>(d_MapMesh.get()!=NULL?1:0)>0, "Somebody must own the mesh");
+      
+    d_useGaussVec = myparams->d_db->getBoolWithDefault("UseGaussVec", false);
 
-    computeZLocations();
+    if(d_useGaussVec){
+      AMP::Mesh::MeshIterator iterator = d_MapMesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryId, 0 );
+      libmeshElements.reinit( iterator );
+    }
+
+    if(d_useGaussVec){
+      computeZGaussLocations();
+    }else{
+      computeZNodeLocations();
+    }
 
     AMP_INSIST( myparams->d_db->keyExists("InputVariable"), "key not found" );
     std::string inpVar = myparams->d_db->getString("InputVariable");
@@ -52,8 +80,7 @@ void Map1Dto3D :: reset(const boost::shared_ptr<OperatorParameters>& params)
 
 }
 
-
-void Map1Dto3D::computeZLocations(){
+void Map1Dto3D::computeZNodeLocations(){
 
     // Check that the mesh exists on some processors
     int N_mesh = d_MapComm.sumReduce<int>((d_MapMesh.get()!=NULL?1:0));
@@ -95,6 +122,73 @@ void Map1Dto3D::computeZLocations(){
 
 }
 
+void Map1Dto3D::computeZGaussLocations(){
+
+    // Check that the mesh exists on some processors
+    int N_mesh = d_MapComm.sumReduce<int>((d_MapMesh.get()!=NULL?1:0));
+    AMP_ASSERT(N_mesh>0);
+    
+    // Get the local location of nodes on the boundary
+    std::vector<double> t_zLocations;
+    if ( d_MapMesh.get()!=NULL ) {
+        // Get an iterator over the nodes on the boundary
+        AMP::Mesh::MeshIterator  bnd = d_MapMesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryId, 0 );
+        AMP::Mesh::MeshIterator  end_bnd = bnd.end();
+
+        libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
+        libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
+
+        boost::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
+        boost::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(2, (*d_feType))).release() );
+
+        libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>("SECOND");
+        boost::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", 2, qruleOrder)).release() );
+
+        d_fe->attach_quadrature_rule( d_qrule.get() );
+
+        d_fe->reinit ( libmeshElements.getElement( bnd->globalID() ));
+
+        double Xx=0;
+        double Yy=0;
+        if(bnd!=end_bnd) {
+          // Get the current position and DOF
+          std::vector<Point> coordinates = d_fe->get_xyz();
+
+          for (unsigned int qp = 0; qp < coordinates.size(); qp++) {
+            t_zLocations.push_back(coordinates[qp](2));
+            Xx = coordinates[qp](0);
+            Yy = coordinates[qp](1);
+          }
+          bnd++;
+        }
+
+        for( ; bnd != end_bnd; ++bnd) {
+          d_feType.reset( new ::FEType(feTypeOrder, feFamily) );
+          d_fe.reset( (::FEBase::build(2, (*d_feType))).release() );
+          d_qrule.reset( (::QBase::build("QGAUSS", 2, qruleOrder)).release() );
+          d_fe->attach_quadrature_rule( d_qrule.get() );
+          d_fe->reinit ( libmeshElements.getElement( bnd->globalID() ));
+
+          std::vector<Point> x = d_fe->get_xyz();
+          for (unsigned int qp = 0; qp < x.size(); qp++) {
+            if( (fabs(Xx-x[qp](0)) <= 1.e-12) && (fabs(Yy-x[qp](1)) <= 1.e-12) ){ 
+              t_zLocations.push_back(x[qp](2));
+            }
+          }
+        }
+    }
+
+    // Make Z locations consistent across all processors.
+    size_t myLen = t_zLocations.size();
+    size_t totLen = d_MapComm.sumReduce(myLen);
+    std::vector<double> zLocations( totLen );
+    d_MapComm.allGather ( getPtr(t_zLocations), myLen , getPtr(zLocations) );
+
+    // Add the coordinates (internally this will make sure the values are unique and sort)
+    setZLocations( zLocations );
+
+}
+
 
 // Set the z locations
 void Map1Dto3D::setZLocations( const std::vector<double> &z )
@@ -117,8 +211,22 @@ void Map1Dto3D::setZLocations( const std::vector<double> &z )
 }
 
 
-void Map1Dto3D::apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-     AMP::LinearAlgebra::Vector::shared_ptr  &r, const double , const double )
+void Map1Dto3D :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+    AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double )
+{
+  AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
+  double a = 1.0,  b=0.0;
+
+  if(d_useGaussVec) {
+    apply_Gauss(nullVec, u, r, a, b);
+  } else {
+    apply_Nodal(nullVec, u, r, a, b);
+  }
+
+}
+
+void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+    AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double )
 { 
 
     if ( d_MapMesh.get()==NULL ) 
@@ -127,9 +235,94 @@ void Map1Dto3D::apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP:
     AMP_ASSERT(u != NULL);
 
     // Subset the input vector, it is a simple vector and we need to subset for the current comm before the variable
-    AMP::LinearAlgebra::VS_Comm commSelector( d_inpVariable->getName(), d_MapComm );
-    AMP::LinearAlgebra::Vector::shared_ptr commSubsetVec = u->select(commSelector, d_inpVariable->getName());
-    AMP::LinearAlgebra::Vector::shared_ptr inputVec = commSubsetVec->subsetVectorForVariable(d_inpVariable);
+    AMP::LinearAlgebra::VS_Comm commSelector( d_MapComm );
+    AMP::LinearAlgebra::Vector::const_shared_ptr commSubsetVec = u->constSelect(commSelector, d_inpVariable->getName());
+    AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = commSubsetVec->constSubsetVectorForVariable(d_inpVariable);
+
+    // AMP::LinearAlgebra::Vector::shared_ptr outputVec =  subsetOutputVector( r );
+    AMP_ASSERT(inputVec != NULL);
+    AMP_ASSERT(outputVec != NULL);
+    // outputVec->zero();
+
+    std::vector<int> numFaceGauss(outputVec->getLocalSize(),0);
+
+    // Loop through the points on the surface
+    AMP_ASSERT(d_zLocations.size()>=2);
+    AMP_ASSERT(d_zLocations.size()==inputVec->getLocalSize());
+    AMP_ASSERT(d_zLocations.size()==inputVec->getGlobalSize());
+    const double TOL = 1e-12;
+    AMP::Discretization::DOFManager::shared_ptr dof_map = outputVec->getDOFManager();
+    AMP::Mesh::MeshIterator  bnd = d_MapMesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryId, 0 );
+    const double z1 = d_zLocations[0]-TOL;
+    const double z2 = d_zLocations[d_zLocations.size()-1]+TOL;
+
+    for (size_t i=0; i<bnd.size(); i++) {
+      libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
+      libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
+
+      boost::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
+      boost::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(2, (*d_feType))).release() );
+
+      libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>("SECOND");
+      boost::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", 2, qruleOrder)).release() );
+
+      d_fe->attach_quadrature_rule( d_qrule.get() );
+
+      d_fe->reinit ( libmeshElements.getElement( bnd->globalID() ));
+
+      // Get the current position and DOF
+      std::vector<Point> coordinates = d_fe->get_xyz();
+
+      std::vector<size_t> ids;
+      dof_map->getDOFs( bnd->globalID(), ids );
+
+      for(size_t i=0; i<ids.size(); i++) {
+        // Perform linear interpolation
+        double z = coordinates[i](2);
+        if ( z<z1 || z>z2 ) {
+          // Point is outside interpolant, do nothing
+          AMP_ERROR("Bad interpolant");
+        }
+        size_t index = AMP::Utilities::findfirst(d_zLocations,z);
+        if ( index==0 ) { index = 1; }
+        if ( index==d_zLocations.size() ) { index = d_zLocations.size()-1; }
+        double dz = (z-d_zLocations[index-1])/(d_zLocations[index]-d_zLocations[index-1]);
+        double f1 = inputVec->getValueByLocalID(index-1);
+        double f2 = inputVec->getValueByLocalID(index);
+        double dz2 = 1.0-dz;
+        double f = dz2*f1 + dz*f2;
+        outputVec->setValueByGlobalID(ids[i],f);
+      }
+      ++bnd;
+    }
+
+    if(d_iDebugPrintInfoLevel>4) {
+      AMP::pout << "The input to Map1Dto3D " << std::endl;
+      AMP::pout << inputVec << std::endl;
+    }
+
+    outputVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+
+    if(d_iDebugPrintInfoLevel>5) {
+      AMP::pout << "The output to Map1Dto3D " << std::endl;
+      AMP::pout << outputVec << std::endl;
+    }
+
+}
+
+void Map1Dto3D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+    AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double )
+{ 
+
+  if ( d_MapMesh.get()==NULL ) 
+    return;
+
+  AMP_ASSERT(u != NULL);
+
+    // Subset the input vector, it is a simple vector and we need to subset for the current comm before the variable
+    AMP::LinearAlgebra::VS_Comm commSelector( d_MapComm );
+    AMP::LinearAlgebra::Vector::const_shared_ptr commSubsetVec = u->constSelect(commSelector, d_inpVariable->getName());
+    AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = commSubsetVec->constSubsetVectorForVariable(d_inpVariable);
 
     // AMP::LinearAlgebra::Vector::shared_ptr outputVec =  subsetOutputVector( r );
     AMP_ASSERT(inputVec != NULL);

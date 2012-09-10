@@ -37,7 +37,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   AMP::PIO::logOnlyNodeZero(log_file);
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
 #endif
@@ -92,7 +92,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::LinearAlgebra::Vector::shared_ptr mechNlResVec = mechNlSolVec->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr mechNlScaledRhsVec = mechNlSolVec->cloneVector();
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
   siloWriter->registerVector(mechNlSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
 #endif
 
@@ -167,7 +167,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   double finalSolNorm = mechNlSolVec->L2Norm();
   AMP::pout<<"Final Solution Norm: "<<finalSolNorm<<std::endl;
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
   siloWriter->writeFile( "vonMisesExample" , 1 );
 #endif
 

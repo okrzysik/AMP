@@ -10,7 +10,7 @@ namespace AMP {
       boost::shared_ptr<AMP::Operator::NodeToSegmentConstraintsOperator> op = boost::dynamic_pointer_cast<
         AMP::Operator::NodeToSegmentConstraintsOperator>(d_pOperator);
 
-      op->applySolutionConstraints(u);
+      op->applySolutionCorrection(u);
 
     }
 

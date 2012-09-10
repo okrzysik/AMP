@@ -190,6 +190,8 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
 
         }//end for i
     }//end for node
+    initialCondition->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+    initialConditionPrime->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     
     std::cout << "With Counter "<< counter << " Max initial temp "<< initialCondition->max()<< " Min initial temp "<<initialCondition->min() << std::endl;
 
@@ -250,7 +252,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
         ut->passes("Testing TrilinosMLSolver's constructor: PASS");
     }
     
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
     siloWriter->registerMesh( meshAdapter );
 
@@ -318,7 +320,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     }
     
     
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
 
     AMP::LinearAlgebra::Vector::shared_ptr pSolution=pIDATimeIntegrator->getCurrentSolution();
     siloWriter->registerVector( pSolution,                 meshAdapter, AMP::Mesh::Vertex, "Solution" );

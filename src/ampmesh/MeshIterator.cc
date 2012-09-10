@@ -144,6 +144,13 @@ MeshElement* MeshIterator::operator->()
 {
     return iterator->operator->();
 }
+MeshElement& MeshIterator::operator[](int i)
+{
+    if ( iterator!=NULL )
+        return iterator->operator[](i);
+    AMP_ERROR("Dereferencing iterator with offset is not supported by default");
+    return this->operator*();   // This line never executes and would return the wrong object
+}
 
 
 /********************************************************
@@ -162,6 +169,79 @@ size_t MeshIterator::position() const
     return iterator->position();
 }
 
+
+/********************************************************
+*  arithmetic operators                                 *
+********************************************************/
+MeshIterator MeshIterator::operator+(int n) const
+{
+    MeshIterator tmp(*this);            // Create a temporary iterator
+    for (int i=0; i<n; i++) { ++tmp; }  // increment temporary iterator
+    return tmp;                         // return temporary iterator
+}
+MeshIterator MeshIterator::operator+(const MeshIterator& it) const
+{
+    return this->operator+((int)it.position());
+}
+MeshIterator MeshIterator::operator-(int n) const
+{
+    MeshIterator tmp(*this);            // Create a temporary iterator
+    for (int i=0; i<n; i++) { --tmp; }  // decrement temporary iterator
+    return tmp;                         // return temporary iterator
+}
+MeshIterator MeshIterator::operator-(const MeshIterator& it) const
+{
+    return this->operator-((int)it.position());
+}
+MeshIterator& MeshIterator::operator+=(int n)
+{
+    if ( iterator!=NULL ) 
+        return iterator->operator+=(n);
+    for (int i=0; i<n; i++)
+        this->operator++();
+    return *this;
+}
+MeshIterator& MeshIterator::operator+=(const MeshIterator& it)
+{
+    if ( iterator!=NULL )
+        return iterator->operator+=((int)it.position());
+    return this->operator+=((int)it.position());
+}
+MeshIterator& MeshIterator::operator-=(int n)
+{
+    if ( iterator!=NULL )
+        return iterator->operator-=(n);
+    for (int i=0; i<n; i++)
+        this->operator--();
+    return *this;
+}
+MeshIterator& MeshIterator::operator-=(const MeshIterator& it)
+{
+    if ( iterator!=NULL )
+        return iterator->operator-=((int)it.position());
+    return this->operator-=((int)it.position());
+}
+
+
+/********************************************************
+*  Comparison operators                                 *
+********************************************************/
+bool MeshIterator::operator<(const MeshIterator& rhs)
+{
+    return this->position() < rhs.position();
+}
+bool MeshIterator::operator<=(const MeshIterator& rhs)
+{
+    return this->position() <= rhs.position();
+}
+bool MeshIterator::operator>(const MeshIterator& rhs)
+{
+    return this->position() > rhs.position();
+}
+bool MeshIterator::operator>=(const MeshIterator& rhs)
+{
+    return this->position() >= rhs.position();
+}
 
 
 } // Mesh namespace

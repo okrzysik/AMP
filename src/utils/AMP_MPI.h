@@ -12,9 +12,9 @@
 #include "Utilities.h"
 
 //! Define MPI objects
-#ifdef USE_MPI
+#ifdef USE_EXT_MPI
     #include "mpi.h"    // include mpi.h
-#elif defined(USE_TRILINOS)
+#elif defined(USE_EXT_TRILINOS)
     #include "mpi.h"    // trilinos serial builds include mpi.h
 #else
     typedef int MPI_Comm;
@@ -477,15 +477,12 @@ public:
      * @param buf       Pointer to array buffer with length integers.
      * @param length    Number of integers in buf that we want to send.
      * @param recv      Receiving processor number.
-     * @param send_length Optional boolean argument specifiying if 
-     *      we first need to send a message with the array size.
-     *      Default value is true.
      * @param tag       Optional integer argument specifying an integer tag
      *                  to be sent with this message.  Default tag is 0.
      *                  The matching recv must share this tag.
      */
     template <class type>
-    void send(const type *buf, const int length, const int recv, const bool send_length=true, int tag=0) const;
+    void send(const type *buf, const int length, const int recv, int tag=0) const;
 
 
     /*!
@@ -540,21 +537,22 @@ public:
     * array from another processer.
     *
     * If this processor knows in advance the length of the array,
-    * use "get_length = false;" otherwise, the sending processor 
-    * will first send the length of the array, then send the data.
+    * use "get_length = false;" otherwise we will get the return size.
     * This call must be paired with a matching call to AMP_MPI::send.
     *
     * @param buf        Pointer to integer array buffer with capacity of length integers.
-    * @param length     Maximum number of values that can be stored in buf.
+    * @param length     If get_length==true: The number of elements to be recieved, otherwise
+    *                   the maximum number of values that can be stored in buf.
+    *                   On output the number of recieved elements.
     * @param send       Processor number of sender.
     * @param get_length Optional boolean argument specifiying if we first 
-    *                   need to send a message to determine the array size.
+    *                   need to check the message size to get the size of the array.
     *                   Default value is true.
     * @param tag        Optional integer argument specifying a tag which must be matched 
     *                   by the tag of the incoming message. Default tag is 0.
     */
     template <class type>
-    void recv(type *buf, int &length, const int send, const bool get_length = true, int tag=0) const;
+    void recv(type *buf, int &length, const int send, const bool get_length=false, int tag=0) const;
 
 
     /*!

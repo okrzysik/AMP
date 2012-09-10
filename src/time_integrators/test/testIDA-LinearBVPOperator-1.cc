@@ -65,9 +65,9 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     AMP::Mesh::Mesh::shared_ptr manager = AMP::Mesh::Mesh::buildMesh(params);
     AMP::Mesh::Mesh::shared_ptr meshAdapter = manager->Subset( "ida" );
 
-//--------------------------------------------------
-// Create a DOF manager for a nodal vector 
-//--------------------------------------------------
+    //--------------------------------------------------
+    // Create a DOF manager for a nodal vector 
+    //--------------------------------------------------
     int DOFsPerNode = 1;
     int DOFsPerElement = 8;
     int nodalGhostWidth = 1;
@@ -75,8 +75,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     bool split = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth,      DOFsPerNode,    split);
     AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split);
-//--------------------------------------------------
-  
+  {
     // create a linear BVP operator
     boost::shared_ptr<AMP::Operator::LinearBVPOperator> IDARhsOperator;
     boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearPCOperator;
@@ -135,140 +134,133 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     AMP::LinearAlgebra::Vector::shared_ptr initialConditionPrime = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
     AMP::LinearAlgebra::Vector::shared_ptr   f                   = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
 
-  //----------------------------------------------------------------------------------------------------------------------------------------------//
-  // set initial conditions, initialize created vectors
-  int zeroGhostWidth = 0;
-  AMP::Mesh::MeshIterator  node = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
-  AMP::Mesh::MeshIterator  end_node = node.end();
-  
-  int counter=0;     
-  for( ; node != end_node ; ++node)
-    {
-      counter+=1;
+    //----------------------------------------------------------------------------------------------------------------------------------------------//
+    // set initial conditions, initialize created vectors
+    int zeroGhostWidth = 0;
+    AMP::Mesh::MeshIterator  node = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
+    AMP::Mesh::MeshIterator  end_node = node.end();
       
-      std::vector<size_t> gid;
-      nodalDofMap->getDOFs ( node->globalID() , gid);
+    int counter=0;     
+    for( ; node != end_node ; ++node) {
+        counter+=1;
+        std::vector<size_t> gid;
+        nodalDofMap->getDOFs ( node->globalID() , gid);
             
-      double px = ( node->coord() )[0];
-      double py = ( node->coord() )[1];
-      double pz = ( node->coord() )[2];
-      
-      double val = __INIT_FN__(px, py, pz, 0);
-      cout << "val = " << val << endl;
-      
-      cout << "counter = " << counter << "gid.size() = " << gid.size() << endl;
-      for(unsigned int i = 0; i < gid.size(); i++)
-    {
-      initialCondition->setValueByGlobalID(gid[i], val);
-    }//end for i
+        double px = ( node->coord() )[0];
+        double py = ( node->coord() )[1];
+        double pz = ( node->coord() )[2];
+        double val = __INIT_FN__(px, py, pz, 0);
+
+        //cout << "val = " << val << endl;
+        //cout << "counter = " << counter << "gid.size() = " << gid.size() << endl;
+        for(unsigned int i = 0; i < gid.size(); i++) {
+            initialCondition->setValueByGlobalID(gid[i], val);
+        }//end for i
     }//end for node
-  initialConditionPrime->zero();
+    initialConditionPrime->zero();
   
-  // create a copy of the rhs which can be modified at each time step (maybe)
-  f->copyVector(powerInWattsVec);
-  // modify the rhs to take into account boundary conditions
-  IDARhsOperator->modifyRHSvector(f);
+    // create a copy of the rhs which can be modified at each time step (maybe)
+    f->copyVector(powerInWattsVec);
+    // modify the rhs to take into account boundary conditions
+    IDARhsOperator->modifyRHSvector(f);
 
-  // ---------------------------------------------------------------------------------------
-  // create a preconditioner
+    // ---------------------------------------------------------------------------------------
+    // create a preconditioner
 
-  // get the ida database
-  AMP_INSIST(input_db->keyExists("IDATimeIntegrator"), "Key ''IDATimeIntegrator'' is missing!");
-  boost::shared_ptr<AMP::Database> ida_db = input_db->getDatabase("IDATimeIntegrator");
-  boost::shared_ptr<AMP::Database> pcSolver_db = ida_db->getDatabase("Preconditioner");
-  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> pcSolverParams(new AMP::Solver::SolverStrategyParameters(pcSolver_db));
+    // get the ida database
+    AMP_INSIST(input_db->keyExists("IDATimeIntegrator"), "Key ''IDATimeIntegrator'' is missing!");
+    boost::shared_ptr<AMP::Database> ida_db = input_db->getDatabase("IDATimeIntegrator");
+    boost::shared_ptr<AMP::Database> pcSolver_db = ida_db->getDatabase("Preconditioner");
+    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> pcSolverParams(new AMP::Solver::SolverStrategyParameters(pcSolver_db));
   
-  if(pcSolverParams.get() == NULL) {
-    ut->failure("Testing SolverStrategyParameters's constructor: FAIL");
-  } else {
-    ut->passes("Testing SolverStrategyParameters's constructor: PASS");
-  }
-  
-  boost::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(new AMP::Solver::TrilinosMLSolver(pcSolverParams));
-  
-  if(pcSolver.get() == NULL) {
-    ut->failure("Testing TrilinosMLSolver's constructor: FAIL");
-  } else {
-    ut->passes("Testing TrilinosMLSolver's constructor: PASS");
-  }
-
-  // ---------------------------------------------------------------------------------------
-  // create the IDA time integrator
-  boost::shared_ptr<AMP::TimeIntegrator::IDATimeIntegratorParameters> time_Params( new AMP::TimeIntegrator::IDATimeIntegratorParameters(ida_db));
-  
-  if( (time_Params.get()) == NULL ) {
-    ut->failure("Testing IDATimeIntegratorParameters' Constructor");
-  } else {
-    ut->passes("Testing IDATimeIntegratorParameters' Constructor");
-  }
-    
-  time_Params->d_pMassOperator = massOperator;
-  time_Params->d_operator = IDARhsOperator;
-  time_Params->d_pPreconditioner = pcSolver;
-  
-  time_Params->d_ic_vector = initialCondition;    
-  time_Params->d_ic_vector_prime = initialConditionPrime;
-  
-  time_Params->d_pSourceTerm = f;
-  time_Params->d_object_name = "IDATimeIntegratorParameters";
-    
-  cout << "Before IDATimeIntegrator" << endl;    
-#ifdef USE_SUNDIALS
-  boost::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> pIDATimeIntegrator(new AMP::TimeIntegrator::IDATimeIntegrator(time_Params));
-  
-  if(pIDATimeIntegrator.get() == NULL) {
-    ut->failure("Testing IDATimeIntegrator's constructor");
-  } else {
-    ut->passes("Tested IDATimeIntegrator's constructor");
-  }
-  // ---------------------------------------------------------------------------------------
-  // step in time
-  int retval=0;
-  double current_time=0;
-  double max=0;
-  //double abs_error=0.0;
-  double min=0;
-  //double rel_error=0.0;
-  //double exact_sol=0.0;
-
-  int j=1;
-  while(pIDATimeIntegrator->getCurrentTime() < pIDATimeIntegrator->getFinalTime())
-    {
-      retval = pIDATimeIntegrator->advanceSolution(pIDATimeIntegrator->getCurrentDt(), 0);
-      //pIDATimeIntegrator->updateSolution();
-      current_time = pIDATimeIntegrator->getCurrentTime();
-      
-      cout << j++ << "-th timestep" << endl;
-      if(retval == 0) {
-    ut->passes("Testing IDATimeIntegrator's advanceSolution. PASS!!");
-      } else {
-    ut->failure("Tested IDATimeIntegrator's advanceSolution. FAIL!!");
-      }
-      
-      max = pIDATimeIntegrator->getCurrentSolution()->max();
-      min = pIDATimeIntegrator->getCurrentSolution()->min();
-      
-      //      exact_sol = exp(-0.015 *__PI__ * __PI__ * current_time);
-      //exact_sol = exp(
-      //      abs_error = exact_sol-max;
-      //      rel_error = abs_error/exact_sol;
-      
-      cout << "current_time = " << current_time << endl;
-      cout << "max val of the current solution = " << max << endl;
-      cout << "min val of the current solution = " << min << endl;
-      //      cout << "exact solution = " << exact_sol << endl;
-      //      cout << "absolute error = " << abs_error << endl;
-      //      cout << "relative error = " << rel_error << endl;
+    if(pcSolverParams.get() == NULL) {
+        ut->failure("Testing SolverStrategyParameters's constructor: FAIL");
+    } else {
+        ut->passes("Testing SolverStrategyParameters's constructor: PASS");
     }
   
+    boost::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(new AMP::Solver::TrilinosMLSolver(pcSolverParams));
+  
+    if(pcSolver.get() == NULL) {
+      ut->failure("Testing TrilinosMLSolver's constructor: FAIL");
+    } else {
+        ut->passes("Testing TrilinosMLSolver's constructor: PASS");
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // create the IDA time integrator
+    boost::shared_ptr<AMP::TimeIntegrator::IDATimeIntegratorParameters> time_Params( new AMP::TimeIntegrator::IDATimeIntegratorParameters(ida_db));
+  
+    if( (time_Params.get()) == NULL ) {
+      ut->failure("Testing IDATimeIntegratorParameters' Constructor");
+    } else {
+        ut->passes("Testing IDATimeIntegratorParameters' Constructor");
+    }
+    
+    time_Params->d_pMassOperator = massOperator;
+    time_Params->d_operator = IDARhsOperator;
+    time_Params->d_pPreconditioner = pcSolver;
+  
+    time_Params->d_ic_vector = initialCondition;    
+    time_Params->d_ic_vector_prime = initialConditionPrime;
+  
+    time_Params->d_pSourceTerm = f;
+    time_Params->d_object_name = "IDATimeIntegratorParameters";
+    
+    cout << "Before IDATimeIntegrator" << endl;    
+#ifdef USE_EXT_SUNDIALS
+    boost::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> pIDATimeIntegrator(new AMP::TimeIntegrator::IDATimeIntegrator(time_Params));
+
+    if(pIDATimeIntegrator.get() == NULL) {
+        ut->failure("Testing IDATimeIntegrator's constructor");
+    } else {
+        ut->passes("Tested IDATimeIntegrator's constructor");
+    }
+    // ---------------------------------------------------------------------------------------
+    // step in time
+    int retval=0;
+    double current_time=0;
+    double max=0;
+    //double abs_error=0.0;
+    double min=0;
+    //double rel_error=0.0;
+    //double exact_sol=0.0;
+
+    int j=1;
+    while(pIDATimeIntegrator->getCurrentTime() < pIDATimeIntegrator->getFinalTime())
+    {
+        retval = pIDATimeIntegrator->advanceSolution(pIDATimeIntegrator->getCurrentDt(), 0);
+        //pIDATimeIntegrator->updateSolution();
+        current_time = pIDATimeIntegrator->getCurrentTime();
+      
+        cout << j++ << "-th timestep" << endl;
+        if(retval == 0) {
+            ut->passes("Testing IDATimeIntegrator's advanceSolution. PASS!!");
+        } else {
+            ut->failure("Tested IDATimeIntegrator's advanceSolution. FAIL!!");
+        }
+      
+        max = pIDATimeIntegrator->getCurrentSolution()->max();
+        min = pIDATimeIntegrator->getCurrentSolution()->min();
+      
+        //      exact_sol = exp(-0.015 *__PI__ * __PI__ * current_time);
+        //exact_sol = exp(
+        //      abs_error = exact_sol-max;
+        //      rel_error = abs_error/exact_sol;
+      
+        cout << "current_time = " << current_time << endl;
+        cout << "max val of the current solution = " << max << endl;
+        cout << "min val of the current solution = " << min << endl;
+        //      cout << "exact solution = " << exact_sol << endl;
+        //      cout << "absolute error = " << abs_error << endl;
+        //      cout << "relative error = " << rel_error << endl;
+    }
 #else
-    ut->passes("IDA will not fail a test if there is no IDA.");
+    ut->expected_failure("IDA will not fail a test if there is no IDA.");
 #endif  
-  
+  }
     if (ut->NumFailLocal() == 0)
-    {
-      ut->passes("testIDATimeIntegrator successful");
-    }
+        ut->passes("testIDATimeIntegrator successful");
 }
 
 

@@ -31,7 +31,7 @@ void SiloIO::setDecomposition( int d )
 }
 
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
 
 // Some internal functions
 static void createSiloDirectory( DBfile *FileHandle, std::string path );
@@ -526,7 +526,7 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID,siloMultiMeshData> &d
             delete [] recv_buf;
         } else {
             // Send my data
-            d_comm.send( send_buf, send_size, root, false, 24987 );
+            d_comm.send( send_buf, send_size, root, 24987 );
         }
     }
     delete [] send_buf;
@@ -626,7 +626,7 @@ void SiloIO::syncVariableList( std::set<std::string> &data_set, int root ) const
             }
         } else {
             // Send my data
-            d_comm.send( send_buf, tot_size_local, root, false, 24987 );
+            d_comm.send( send_buf, tot_size_local, root, 24987 );
         }
     }
     delete [] send_buf;

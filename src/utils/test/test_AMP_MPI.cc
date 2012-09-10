@@ -585,7 +585,7 @@ int testSendRecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
             } else if ( i==comm.getRank() ) {
                 // We are sending
                 x = v2;
-                comm.send(&x,1,j,false,tag);
+                comm.send(&x,1,j,tag);
             } else if ( j==comm.getRank() ) {
                 // We are recieving
                 int size=1;
@@ -609,7 +609,7 @@ int testSendRecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
             } else if ( i==comm.getRank() ) {
                 // We are sending
                 x = v2;
-                comm.send(&x,1,j,true,tag);
+                comm.send(&x,1,j,tag);
             } else if ( j==comm.getRank() ) {
                 // We are recieving
                 int size=1;
@@ -633,7 +633,7 @@ int testSendRecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
             } else if ( i==comm.getRank() ) {
                 // We are sending
                 x = v2;
-                comm.send(&x,0,j,false,tag);
+                comm.send(&x,0,j,tag);
             } else if ( j==comm.getRank() ) {
                 // We are recieving
                 int size = comm.probe(i,tag);
@@ -652,8 +652,6 @@ int testSendRecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
 // Routine to test Isend/Irecv
 template <class type>
 int testIsendIrecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
-    if ( comm.getSize() == 1 )
-        return 0;
     char message[500];
     std::vector<MPI_Request> sendRequest;
     std::vector<MPI_Request> recvRequest;
@@ -663,9 +661,6 @@ int testIsendIrecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
         if ( i!=comm.getRank() )
             continue;
         for (int j=0; j<comm.getSize(); j++) {
-            // We are not allowed to send/recieve from the same processor
-            if ( i==j )
-                continue;
             // Start a non-blocking send
             int tag = i+j*comm.getSize();
             MPI_Request request = comm.Isend(&v1,1,j,tag);
@@ -682,9 +677,6 @@ int testIsendIrecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
         if ( j!=comm.getRank() )
             continue;
         for (int i=0; i<comm.getSize(); i++) {
-            // We are not allowed to send/recieve from the same processor
-            if ( i==j )
-                continue;
             // Start a non-blocking recv
             int tag = i+j*comm.getSize();
             MPI_Request request = comm.Irecv(&recv_buffer[i],1,i,tag);
@@ -976,7 +968,7 @@ int main(int argc, char *argv[])
 
         // Print the global size (if we are using MPI)
         int global_size = 0;
-        #ifdef USE_MPI
+        #ifdef USE_EXT_MPI
             MPI_Comm_size(MPI_COMM_WORLD,&global_size);
         #else
             global_size = 1;
@@ -996,7 +988,7 @@ int main(int argc, char *argv[])
             std::cout << "MPI_COMM_WORLD = " << global_size << " processors" << std::endl;
             std::cout << "   Largest tag value = " << globalComm.maxTag() << std::endl << std::endl;
         }
-        #ifdef USE_MPI
+        #ifdef USE_EXT_MPI
             if ( globalComm.getCommunicator() == MPI_COMM_WORLD )
                 ut.passes("Communicator == MPI_COMM_WORLD");
             else
@@ -1015,7 +1007,7 @@ int main(int argc, char *argv[])
             ut.passes("Self communicator created");
         else
             ut.failure("Self communicator created");
-        #ifdef USE_MPI
+        #ifdef USE_EXT_MPI
             if ( selfComm.getCommunicator() == MPI_COMM_SELF )
                 ut.passes("Communicator == MPI_COMM_SELF");
             else
@@ -1039,7 +1031,7 @@ int main(int argc, char *argv[])
             ut.passes("Null communicator created");
         else
             ut.failure("Null communicator created");
-        #ifdef USE_MPI
+        #ifdef USE_EXT_MPI
             if ( nullComm.getCommunicator() == MPI_COMM_NULL )
                 ut.passes("Communicator == MPI_COMM_NULL");
             else

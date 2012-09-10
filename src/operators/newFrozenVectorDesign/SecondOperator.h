@@ -15,14 +15,14 @@ namespace AMP {
           d_secondaryVar.reset(new AMP::LinearAlgebra::Variable(params->d_db->getString("SecondaryVariable")));
         }
 
-        void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-            AMP::LinearAlgebra::Vector::shared_ptr &r, const double a = -1.0, const double b = 1.0) {
-          AMP::LinearAlgebra::Vector::shared_ptr inP = u->subsetVectorForVariable(d_primaryVar);
-          AMP::LinearAlgebra::Vector::shared_ptr inS = u->subsetVectorForVariable(d_secondaryVar);
+        void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0) {
+          AMP::LinearAlgebra::Vector::const_shared_ptr inP = u->constSubsetVectorForVariable(d_primaryVar);
+          AMP::LinearAlgebra::Vector::const_shared_ptr inS = u->constSubsetVectorForVariable(d_secondaryVar);
           AMP::LinearAlgebra::Vector::shared_ptr out = r->subsetVectorForVariable(d_primaryVar);
           out->linearSum((d_constant*a), inP, a, inS);
           if(f != NULL) {
-            AMP::LinearAlgebra::Vector::shared_ptr rhs = f->subsetVectorForVariable(d_primaryVar);
+            AMP::LinearAlgebra::Vector::const_shared_ptr rhs = f->constSubsetVectorForVariable(d_primaryVar);
             if(rhs != NULL) {
               out->axpy(b, rhs, out);
             }

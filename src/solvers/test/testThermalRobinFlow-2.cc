@@ -28,8 +28,8 @@
 #include "operators/diffusion/DiffusionTransportModel.h"
 
 #include "operators/VolumeIntegralOperator.h"
-#include "operators/FlowFrapconOperator.h"
-#include "operators/FlowFrapconJacobian.h"
+#include "operators/subchannel/FlowFrapconOperator.h"
+#include "operators/subchannel/FlowFrapconJacobian.h"
 #include "operators/NeutronicsRhs.h"
 
 #include "operators/ElementPhysicsModelFactory.h"
@@ -262,12 +262,12 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   thermalNonlinearOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
   AMP::pout<<"Final   Residual Norm for Step is: "<<globalResVec->L2Norm()<<std::endl;
   expectedVal = 1.-10;
-  if( !AMP::Utilities::approx_equal( expectedVal, globalResVec->L2Norm(), 10) ) {
+  if( !AMP::Utilities::approx_equal( expectedVal, globalResVec->L2Norm(), 10.0) ) {
         ut->failure("the Final Residual Norm has changed."); }
 
   //---------------------------------------------------------------------------
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
      siloWriter->registerMesh( meshAdapter );
 

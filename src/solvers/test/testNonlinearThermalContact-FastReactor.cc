@@ -464,7 +464,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
           vecLag2->subtract(TemperatureInKelvinVec2,vecLag2);
 
 //          if( nodes == 2 ) {
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
             manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 0 );
 #endif
 //          }

@@ -20,14 +20,14 @@ namespace AMP {
   namespace Operator {
 
 
-    void NodeToGaussPointOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &,
-        const AMP::LinearAlgebra::Vector::shared_ptr &u,
-        AMP::LinearAlgebra::Vector::shared_ptr  &r, const double , const double ) { 
+    void NodeToGaussPointOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr,
+        AMP::LinearAlgebra::Vector::const_shared_ptr u,
+        AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double ) { 
 
-      AMP::LinearAlgebra::Vector::shared_ptr nodalVec = u->subsetVectorForVariable(d_NodalVariable);
+      AMP::LinearAlgebra::Vector::const_shared_ptr nodalVec = u->constSubsetVectorForVariable(d_NodalVariable);
       AMP::LinearAlgebra::Vector::shared_ptr gaussPtVec = r->subsetVectorForVariable(d_GaussPtVariable);
 
-      nodalVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+      AMP_ASSERT(nodalVec->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
 
       AMP::Discretization::DOFManager::shared_ptr dof_map = nodalVec->getDOFManager();
       AMP::Discretization::DOFManager::shared_ptr gaussPt_dof_map = gaussPtVec->getDOFManager();

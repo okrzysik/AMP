@@ -9,7 +9,16 @@ namespace AMP {
 namespace Mesh {
 
 
-class MeshIterator
+/**
+ * \class MeshIterator
+ * \brief A class used to iterate over elements in a Mesh
+ *
+ * \details  This class provides routines for iterating over a set of elements.
+ *   It is inherited from std::iterator.  The base class provides routines for
+ *   the random access iterators, but does so using the increment/decrement routines.
+ *   Derived classes may (or may not) override these routines for performance optimizations.
+ */
+class MeshIterator : public std::iterator<std::random_access_iterator_tag,AMP::Mesh::MeshElement>
 {
 
 public:
@@ -68,7 +77,47 @@ public:
     //! Return the current position (from the beginning) in the iterator
     virtual size_t position() const;
 
+    //! Return the Unique (per class) ID for identifing the underlying iterator
     unsigned int type_id() const {return typeID;}
+
+    //! Arithmetic operator+
+    virtual MeshIterator operator+(int) const;
+
+    //! Arithmetic operator+
+    virtual MeshIterator operator+(const MeshIterator&) const;
+
+    //! Arithmetic operator-
+    virtual MeshIterator operator-(int) const;
+
+    //! Arithmetic operator-
+    virtual MeshIterator operator-(const MeshIterator&) const;
+
+    //! Arithmetic operator+=
+    virtual MeshIterator& operator+=(int);
+
+    //! Arithmetic operator+=
+    virtual MeshIterator& operator+=(const MeshIterator&);
+
+    //! Arithmetic operator-=
+    virtual MeshIterator& operator-=(int);
+
+    //! Arithmetic operator-=
+    virtual MeshIterator& operator-=(const MeshIterator&);
+
+    //! Operator <
+    virtual bool operator<(const MeshIterator&);
+
+    //! Operator <=
+    virtual bool operator<=(const MeshIterator&);
+
+    //! Operator >
+    virtual bool operator>(const MeshIterator&);
+
+    //! Operator >=
+    virtual bool operator>=(const MeshIterator&);
+
+    //! Dereference iterator with offset
+    virtual MeshElement& operator[](int);
 
 protected:
     // A pointer to the derived class

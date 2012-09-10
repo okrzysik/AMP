@@ -33,7 +33,6 @@ class MoabBasedOperator : public AMP::Operator::Operator
     public :
 
         // Typedefs
-        typedef AMP::LinearAlgebra::Vector::shared_ptr         SP_Vector;
         typedef boost::shared_ptr<MoabBasedOperatorParameters> SP_Params;
 
         // Constructor

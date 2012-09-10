@@ -14,7 +14,7 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "operators/SubchannelPhysicsModel.h"
+#include "operators/subchannel/SubchannelPhysicsModel.h"
 #include "operators/ElementPhysicsModelParameters.h"
 #include "operators/ElementPhysicsModelFactory.h"
 

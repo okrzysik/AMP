@@ -101,6 +101,7 @@ RobinVectorCorrection{
       beta           = 2920.
       gamma          = 1.0
       print_info_level = 3
+      IsFluxGaussPtVector = FALSE
       skip_params = FALSE
       number_of_ids = 1
       id_0         =   4

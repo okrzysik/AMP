@@ -1,4 +1,4 @@
-# Set some CMake properties
+# Set some CMake properties 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 CMAKE_POLICY(SET CMP0014 OLD)
 
@@ -17,6 +17,9 @@ ENDIF ()
 PROJECT (AMP)
 
 # Check if we want to enable fortran
+IF ( DEFINED USE_EXT_FORTRAN )
+    SET ( USE_FORTRAN ${USE_EXT_FORTRAN} )
+ENDIF()
 IF ( NOT DEFINED USE_FORTRAN )
     SET ( USE_FORTRAN 1 )
 ELSEIF ( ( ${USE_FORTRAN} STREQUAL "false" ) OR ( ${USE_FORTRAN} STREQUAL "0" ) OR ( ${USE_FORTRAN} STREQUAL "OFF" ) )
@@ -61,7 +64,7 @@ ADD_DISTCLEAN ()
 
 
 # Check the compile mode and compile flags
-SET_STATIC_FLAGS ()
+CONFIGURE_SYSTEM()
 VERIFY_VARIABLE ( "COMPILE_MODE" )
 IF ( ${COMPILE_MODE} STREQUAL "debug" )
   SET_DEBUG_MACROS()
@@ -73,8 +76,8 @@ ENDIF()
 
 
 # Create the target for documentation
-CHECK_ENABLE_FLAG(USE_DOXYGEN 1 )
-IF ( USE_DOXYGEN )
+CHECK_ENABLE_FLAG(USE_EXT_DOXYGEN 1 )
+IF ( USE_EXT_DOXYGEN )
     SET ( DOXYFILE_IN ${AMP_SOURCE_DIR}/doxygen/Doxyfile.in)
     SET ( DOXY_HEADER_FILE ${AMP_SOURCE_DIR}/doxygen/html/header.html )
     SET ( DOXY_FOOTER_FILE ${AMP_SOURCE_DIR}/doxygen/html/footer.html )
@@ -83,13 +86,12 @@ IF ( USE_DOXYGEN )
     SET ( DOXYFILE_SRC_HTML_DIR ${AMP_SOURCE_DIR}/doxygen/html )
     SET ( DOXYFILE_SOURCE_DIR ${AMP_SOURCE_DIR}/src )
     SET ( REL_PACKAGE_HTML "" )
-    SET ( DOXYGEN_MACROS "USE_SUNDIALS:=1" )
+    SET ( DOXYGEN_MACROS "USE_EXT_SUNDIALS:=1" )
     INCLUDE (UseDoxygen)
 ENDIF()
 
 
 # Configure external libraries
-CONFIGURE_SYSTEM_LIBS ()
 CONFIGURE_MPI ()   # MPI must be before other libraries
 CONFIGURE_TRILINOS_LIBRARIES ()
 CONFIGURE_SUNDIALS_LIBRARIES ()
@@ -99,6 +101,7 @@ CONFIGURE_X11_LIBRARIES ()
 CONFIGURE_BLAS ()
 CONFIGURE_LAPACK ()
 CONFIGURE_LIBMESH ()
+CONFIGURE_STKMESH ()
 CONFIGURE_NEK ()  # should go before MOAB since it requires MOAB.
 CONFIGURE_MOAB ()
 CONFIGURE_DENDRO ()

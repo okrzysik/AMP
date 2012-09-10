@@ -20,8 +20,8 @@
 #include "operators/diffusion/DiffusionLinearElement.h"
 #include "operators/diffusion/DiffusionTransportModel.h"
 #include "operators/VolumeIntegralOperator.h"
-#include "operators/FlowFrapconOperator.h"
-#include "operators/FlowFrapconJacobian.h"
+#include "operators/subchannel/FlowFrapconOperator.h"
+#include "operators/subchannel/FlowFrapconJacobian.h"
 #include "operators/NeutronicsRhs.h"
 #include "operators/ElementPhysicsModelFactory.h"
 #include "operators/ElementOperationFactory.h"
@@ -367,7 +367,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   //---------------------------------------------------------------------------
 
   if( AMP::AMP_MPI::getNodes() == 1 ) {
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
     manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 0 );
 #endif
   }

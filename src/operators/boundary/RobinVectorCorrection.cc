@@ -41,9 +41,9 @@ void RobinVectorCorrection::reset(const boost::shared_ptr<OperatorParameters>& p
 }
   
 void
-RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
-                 const AMP::LinearAlgebra::Vector::shared_ptr &u,
-                 AMP::LinearAlgebra::Vector::shared_ptr &r,
+RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+                 AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                 AMP::LinearAlgebra::Vector::shared_ptr r,
                  const double a,
                  const double b)
 {
@@ -52,9 +52,9 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
 
   AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetInputVector(r);
-  AMP::LinearAlgebra::Vector::shared_ptr uInternal = this->subsetInputVector(u);
+  AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = this->subsetInputVector(u);
 
-  uInternal->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+  AMP_ASSERT(uInternal->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
   //rInternal->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
   std::vector<std::string> variableNames;
@@ -78,19 +78,19 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
       {
         if( d_Frozen->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview ) != NULL )
         {
-          d_elementInputVec[i+1] = d_Frozen->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
+          d_elementInputVec[i+1] = d_Frozen->constSelect ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
         }
         else
         {
-          d_elementInputVec[i+1] = uInternal->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
+          d_elementInputVec[i+1] = uInternal->constSelect ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
         }
       }
       else
       {
-        d_elementInputVec[i+1] = uInternal->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
+        d_elementInputVec[i+1] = uInternal->constSelect ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
       }
       AMP_INSIST ( d_elementInputVec[i+1] , "Did not find vector" );
-      (d_elementInputVec[i+1])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+      AMP_ASSERT(d_elementInputVec[i+1]->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
     }
 
     //#define DEBUG_GAP_PRINT
@@ -115,15 +115,15 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
 
   std::vector<size_t> gpDofs;
   AMP::Discretization::DOFManager::shared_ptr gpDOFManager; 
-  if(d_isFluxGaussPtVector){
-    gpDOFManager = d_variableFlux->getDOFManager();
-  }
 
   unsigned int numIds = d_boundaryIds.size();
   std::vector<size_t> dofs;
   PROFILE_START("integration loop");
   for (unsigned int nid = 0; nid < numIds; nid++)
   {
+    if(d_isFluxGaussPtVector && d_IsCoupledBoundary[nid]){
+      gpDOFManager = d_variableFlux->getDOFManager();
+    }
 
     AMP::Mesh::MeshIterator bnd1     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
     AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
@@ -153,7 +153,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
       dofManager->getDOFs( ids, dofs );
       AMP_ASSERT(dofs.size()==numNodesInCurrElem);
 
-      if(d_isFluxGaussPtVector){
+      if(d_isFluxGaussPtVector && d_IsCoupledBoundary[nid]){
         gpDOFManager->getDOFs (bnd1->globalID(), gpDofs);
       }
       // Get the libmesh element
@@ -179,7 +179,8 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
       if(d_robinPhysicsModel.get() != NULL) 
       {
         unsigned int startIdx = 0;
-        if(d_isFluxGaussPtVector){
+        if(d_isFluxGaussPtVector && d_IsCoupledBoundary[nid]){
+          d_variableFlux->getValuesByGlobalID( gpDofs.size(), &gpDofs[0], &inputArgsAtGpts[0][0] );
           startIdx = 1;
         }
         for(unsigned int m = startIdx; m < d_elementInputVec.size(); m++){
@@ -243,7 +244,7 @@ RobinVectorCorrection::apply(const AMP::LinearAlgebra::Vector::shared_ptr &f,
   }
   else
   {
-    AMP::LinearAlgebra::Vector::shared_ptr fInternal = this->subsetOutputVector(f);
+    AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = this->subsetOutputVector(f);
     if (fInternal.get() == NULL)
     {
       rInternal->scale(a);
@@ -263,12 +264,13 @@ boost::shared_ptr<OperatorParameters> RobinVectorCorrection::getJacobianParamete
   tmp_db->putBool("skip_params", true);
   tmp_db->putBool("skip_rhs_correction", true);
   tmp_db->putBool("skip_matrix_correction", false);
-
+  tmp_db->putBool("IsFluxGaussPtVector", d_isFluxGaussPtVector );
   boost::shared_ptr<RobinMatrixCorrectionParameters> outParams(
       new RobinMatrixCorrectionParameters(tmp_db));
 
   outParams->d_robinPhysicsModel = d_robinPhysicsModel;
   outParams->d_elementInputVec   = d_elementInputVec;
+  outParams->d_variableFlux      = d_variableFlux;
 
   return outParams;
 }

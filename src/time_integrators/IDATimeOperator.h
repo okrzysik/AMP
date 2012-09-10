@@ -58,9 +58,9 @@ namespace TimeIntegrator{
        The result of apply is
        * r = b*f+a*A(u)
        */
-    void apply(const boost::shared_ptr<AMP::LinearAlgebra::Vector>  &f, 
-           const boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u,
-           boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r,
+    void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+           AMP::LinearAlgebra::Vector::const_shared_ptr u,
+           AMP::LinearAlgebra::Vector::shared_ptr r,
            const double a = -1.0, const double b=1.0);
 
     /**

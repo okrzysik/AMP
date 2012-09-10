@@ -54,7 +54,7 @@ namespace Operator {
       d_numBndIds = (myparams->d_db)->getInteger("number_of_ids");
 
       d_isConstantFlux = (myparams->d_db)->getBoolWithDefault("constant_flux", true);
-      d_isFluxGaussPtVector = (myparams->d_db)->getBoolWithDefault("isFluxGaussPtVector",false);
+      d_isFluxGaussPtVector = (myparams->d_db)->getBoolWithDefault("IsFluxGaussPtVector", true);
 
       d_boundaryIds.resize(d_numBndIds);
       d_dofIds.resize(d_numBndIds);
@@ -237,7 +237,7 @@ namespace Operator {
 
       }
 
-    void NeumannVectorCorrection :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u, AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a , const double b )
+    void NeumannVectorCorrection :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r, const double a , const double b )
     {
       (void) f; (void) u; (void) r; (void) a; (void) b; 
       //Do Nothing
@@ -294,7 +294,7 @@ namespace Operator {
         d_Frozen = AMP::LinearAlgebra::MultiVector::view ( f );
       }
 
-      AMP::LinearAlgebra::VS_Mesh meshSelector("meshSelector", d_Mesh);
+      AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
       d_Frozen = d_Frozen->select(meshSelector, d_Frozen->getVariable()->getName());
 
     }
@@ -302,7 +302,7 @@ namespace Operator {
 
     void NeumannVectorCorrection :: setVariableFlux(const AMP::LinearAlgebra::Vector::shared_ptr &flux) {
       if(d_Mesh.get() != NULL) {
-        AMP::LinearAlgebra::VS_Mesh meshSelector( d_variable->getName(), d_Mesh);
+        AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = flux->select(meshSelector, d_variable->getName());
         d_variableFlux = meshSubsetVec->subsetVectorForVariable( d_variable );
       } else {

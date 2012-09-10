@@ -35,7 +35,7 @@ void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh,
     AMP::LinearAlgebra::Variable::shared_ptr displacementVar,
     const boost::shared_ptr<AMP::LinearAlgebra::Vector> &currTemperatureVec, 
     const boost::shared_ptr<AMP::LinearAlgebra::Vector> &prevTemperatureVec, 
-    boost::shared_ptr<AMP::LinearAlgebra::Vector> &rhsVec);
+    AMP::LinearAlgebra::Vector::shared_ptr rhsVec);
 
 
 #endif

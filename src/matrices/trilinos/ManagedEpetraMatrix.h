@@ -216,8 +216,8 @@ namespace LinearAlgebra {
 
 
 
-      virtual void mult(const Vector::shared_ptr & in, Vector::shared_ptr & out);
-      virtual void multTranspose (const Vector::shared_ptr & in, Vector::shared_ptr & out);
+      virtual void mult(const Vector::const_shared_ptr in, Vector::shared_ptr out);
+      virtual void multTranspose (const Vector::const_shared_ptr in, Vector::shared_ptr out);
       virtual Vector::shared_ptr  extractDiagonal ( Vector::shared_ptr buf = Vector::shared_ptr() );
       virtual void  scale ( double alpha );
       virtual void  axpy ( double alpha , const Matrix &rhs );

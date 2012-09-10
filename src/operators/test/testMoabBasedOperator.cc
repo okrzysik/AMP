@@ -123,7 +123,9 @@ class MoabDummyOperator : public MoabBasedOp
 
         }
 
-        void apply( const SP_AMPVec &f, const SP_AMPVec &u, SP_AMPVec &r, double a, double b )
+        void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+                    AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+                    AMP::LinearAlgebra::Vector::shared_ptr r, double a, double b )
         {
             /* Don't need an apply for this operator */
         }
@@ -279,7 +281,7 @@ void moabInterface(AMP::UnitTest *ut)
     // How about some output?
     // Useful for making sure everything looks right
     
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
     siloWriter->registerMesh( mesh );
     siloWriter->registerVector( nodalVec, mesh, AMP::Mesh::Vertex, "Temperatures" );

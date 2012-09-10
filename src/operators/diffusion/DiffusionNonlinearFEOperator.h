@@ -68,7 +68,7 @@ namespace AMP {
 
       protected:
 
-        void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, boost::shared_ptr<AMP::LinearAlgebra::Vector> &r);
+        void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r);
 
         void postAssembly();
 
@@ -84,7 +84,7 @@ namespace AMP {
 
         boost::shared_ptr<DiffusionTransportModel> d_transportModel;
 
-        std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_inVec;
+        std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> d_inVec;
 
         std::vector<AMP::Mesh::MeshElement> d_currNodes; 
 

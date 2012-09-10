@@ -1154,9 +1154,7 @@ public:
 
 }
 
-#ifndef DEBUG_NO_INLINE
-#include "Database.I"
-#endif
+
 #endif
 
 

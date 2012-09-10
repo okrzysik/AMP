@@ -201,17 +201,17 @@ namespace AMP {
         computeResidual = true;
       }
 
-      double initialResNorm, finalResNorm;
+      double initialResNorm=0., finalResNorm=0.;
 
       if(computeResidual) {
         r = f->cloneVector();  
         d_pOperator->apply(f, u, r);
         initialResNorm = r->L2Norm();
-      }
 
-      if(d_iDebugPrintInfoLevel > 1) {
-        AMP::pout << "TrilinosMLSolver::solve(), L2 norm of residual before solve " 
-          <<std::setprecision(15)<< initialResNorm << std::endl;
+        if(d_iDebugPrintInfoLevel > 1) {
+          AMP::pout << "TrilinosMLSolver::solve(), L2 norm of residual before solve " 
+            <<std::setprecision(15)<< initialResNorm << std::endl;
+        }
       }
 
       if(d_iDebugPrintInfoLevel > 2) {
@@ -253,11 +253,11 @@ namespace AMP {
       if(computeResidual) {
         d_pOperator->apply(f, u, r);
         finalResNorm = r->L2Norm();
-      }
 
-      if(d_iDebugPrintInfoLevel > 1) {
-        AMP::pout << "TrilinosMLSolver::solve(), L2 norm of residual after solve "
-          <<std::setprecision(15)<< finalResNorm << std::endl;    
+        if(d_iDebugPrintInfoLevel > 1) {
+          AMP::pout << "TrilinosMLSolver::solve(), L2 norm of residual after solve "
+            <<std::setprecision(15)<< finalResNorm << std::endl;    
+        }
       }
 
       PROFILE_STOP("solve");

@@ -1,6 +1,7 @@
 #include "UnitTest.h"
 #include "AMPManager.h"
 
+#include <iostream>
 #include <sstream>
 #include <vector>
 #include <string>

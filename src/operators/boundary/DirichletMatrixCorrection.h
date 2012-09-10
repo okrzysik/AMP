@@ -45,16 +45,18 @@ namespace AMP {
           d_variable = var;
         }
 
-        void apply(const AMP::LinearAlgebra::Vector::shared_ptr &,
-            const AMP::LinearAlgebra::Vector::shared_ptr &, AMP::LinearAlgebra::Vector::shared_ptr &,
+        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_variable; }
+
+        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_variable; }
+
+        virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr, 
+            AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::shared_ptr,
             const double, const double)
         {
           //Do Nothing
         }
 
         void parseParams(const boost::shared_ptr<DirichletMatrixCorrectionParameters> & );
-
-        void computeRHScorrection(const boost::shared_ptr<DirichletMatrixCorrectionParameters> & );
 
         /**
           This function modifies the entries of the matrix formed by the volume operator
@@ -69,7 +71,12 @@ namespace AMP {
           */
         void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) {
           if(!d_skipRHSaddCorrection) {
-            AMP::LinearAlgebra::Vector::shared_ptr myRhs = rhs->subsetVectorForVariable(d_variable);
+            if (!d_applyMatrixCorrectionWasCalled) {
+              initRhsCorrectionAdd(rhs);
+              applyMatrixCorrection();
+            } // end if
+            AMP::LinearAlgebra::Vector::shared_ptr myRhs = subsetOutputVector(rhs);
+//            AMP::LinearAlgebra::Vector::shared_ptr myRhs = rhs->subsetVectorForVariable(d_variable);
             myRhs->add(myRhs, d_rhsCorrectionAdd);
           }
         }
@@ -119,6 +126,16 @@ namespace AMP {
         bool d_skipRHSsetCorrection;
 
         bool d_computedAddRHScorrection;
+
+        void initRhsCorrectionSet();
+
+        void initRhsCorrectionAdd(AMP::LinearAlgebra::Vector::shared_ptr rhs);
+
+        void applyMatrixCorrection();
+
+        bool d_applyMatrixCorrectionWasCalled;
+
+        AMP::LinearAlgebra::Matrix::shared_ptr d_inputMatrix;
 
       private :
 

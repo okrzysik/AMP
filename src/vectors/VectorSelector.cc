@@ -27,6 +27,10 @@ Vector::shared_ptr  VectorSelector::subset ( Vector::shared_ptr p ) const
 {
     return p;
 }
+Vector::const_shared_ptr  VectorSelector::subset ( Vector::const_shared_ptr p ) const
+{
+    return p;
+}
 
   
 
@@ -46,16 +50,21 @@ bool   VS_ByVariableName::isSelected ( Vector::const_shared_ptr v ) const
 /********************************************************
 * VS_Stride                                             *
 ********************************************************/
-VS_Stride::VS_Stride ( const std::string &n , size_t a , size_t b ) : 
+VS_Stride::VS_Stride ( size_t a , size_t b ) : 
     d_Offset ( a ),
-    d_Stride ( b ),
-    d_Name( n ) 
+    d_Stride ( b )
 {
 }
 Vector::shared_ptr  VS_Stride::subset ( Vector::shared_ptr p ) const
 { 
-    Variable::shared_ptr  variable ( new StridedVariable( d_Name , d_Offset , d_Stride ) );
+    Variable::shared_ptr  variable ( new StridedVariable( p->getVariable()->getName(), d_Offset, d_Stride ) );
     Vector::shared_ptr  vector = SubsetVector::view ( p, variable ); 
+    return vector;
+}
+Vector::const_shared_ptr  VS_Stride::subset ( Vector::const_shared_ptr p ) const
+{ 
+    Variable::shared_ptr  variable ( new StridedVariable( p->getVariable()->getName(), d_Offset, d_Stride ) );
+    Vector::const_shared_ptr  vector = SubsetVector::view ( p, variable ); 
     return vector;
 }
 
@@ -63,9 +72,8 @@ Vector::shared_ptr  VS_Stride::subset ( Vector::shared_ptr p ) const
 /********************************************************
 * VS_Comm                                               *
 ********************************************************/
-VS_Comm::VS_Comm ( const std::string &name, AMP_MPI comm )
+VS_Comm::VS_Comm ( AMP_MPI comm )
 {
-    d_Name = name;
     AMP_ASSERT(!comm.isNull());
     d_comm = comm;
 }
@@ -75,8 +83,14 @@ AMP_MPI  VS_Comm::communicator ( Vector::const_shared_ptr p ) const
 }
 Vector::shared_ptr  VS_Comm::subset ( Vector::shared_ptr p ) const
 { 
-    Variable::shared_ptr  variable ( new CommVariable( d_Name, communicator(p) ) );
+    Variable::shared_ptr  variable ( new CommVariable( p->getVariable()->getName(), communicator(p) ) );
     Vector::shared_ptr  vector = SubsetVector::view ( p, variable ); 
+    return vector;
+}
+Vector::const_shared_ptr  VS_Comm::subset ( Vector::const_shared_ptr p ) const
+{ 
+    Variable::shared_ptr  variable ( new CommVariable( p->getVariable()->getName(), communicator(p) ) );
+    Vector::const_shared_ptr  vector = SubsetVector::view ( p, variable ); 
     return vector;
 }
 
@@ -85,10 +99,9 @@ Vector::shared_ptr  VS_Comm::subset ( Vector::shared_ptr p ) const
 * VS_Mesh                                               *
 ********************************************************/
 #ifdef USE_AMP_MESH
-VS_Mesh::VS_Mesh ( const std::string &name, AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
+VS_Mesh::VS_Mesh ( AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
 {
     AMP_ASSERT(mesh.get()!=NULL);
-    d_Name = name;
     d_mesh = mesh;
     d_useMeshComm = useMeshComm;
 }
@@ -100,8 +113,14 @@ AMP_MPI  VS_Mesh::communicator ( Vector::const_shared_ptr p ) const
 }
 Vector::shared_ptr  VS_Mesh::subset ( Vector::shared_ptr p ) const
 { 
-    Variable::shared_ptr  variable ( new MeshVariable( d_Name, d_mesh, d_useMeshComm ) );
+    Variable::shared_ptr  variable ( new MeshVariable( p->getVariable()->getName(), d_mesh, d_useMeshComm ) );
     Vector::shared_ptr  vector = SubsetVector::view ( p, variable ); 
+    return vector;
+}
+Vector::const_shared_ptr  VS_Mesh::subset ( Vector::const_shared_ptr p ) const
+{ 
+    Variable::shared_ptr  variable ( new MeshVariable( p->getVariable()->getName(), d_mesh, d_useMeshComm ) );
+    Vector::const_shared_ptr  vector = SubsetVector::view ( p, variable ); 
     return vector;
 }
 #endif
@@ -111,16 +130,21 @@ Vector::shared_ptr  VS_Mesh::subset ( Vector::shared_ptr p ) const
 * VS_MeshIterator                                       *
 ********************************************************/
 #ifdef USE_AMP_MESH
-VS_MeshIterator::VS_MeshIterator ( const std::string &name, const AMP::Mesh::MeshIterator &iterator, const AMP::AMP_MPI &comm ):
+VS_MeshIterator::VS_MeshIterator ( const AMP::Mesh::MeshIterator &iterator, const AMP::AMP_MPI &comm ):
     d_iterator( iterator ),
     d_comm( comm )
 {
-    d_Name = name;
 }
 Vector::shared_ptr  VS_MeshIterator::subset ( Vector::shared_ptr p ) const
 { 
-    Variable::shared_ptr  variable ( new MeshIteratorVariable( d_Name, d_iterator, d_comm ) );
+    Variable::shared_ptr  variable ( new MeshIteratorVariable( p->getVariable()->getName(), d_iterator, d_comm ) );
     Vector::shared_ptr  vector = SubsetVector::view ( p, variable ); 
+    return vector;
+}
+Vector::const_shared_ptr  VS_MeshIterator::subset ( Vector::const_shared_ptr p ) const
+{ 
+    Variable::shared_ptr  variable ( new MeshIteratorVariable( p->getVariable()->getName(), d_iterator, d_comm ) );
+    Vector::const_shared_ptr  vector = SubsetVector::view ( p, variable ); 
     return vector;
 }
 #endif

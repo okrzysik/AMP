@@ -1,23 +1,11 @@
 #ifndef included_AMP_CoupledFlowFrapconParameters
 #define included_AMP_CoupledFlowFrapconParameters
 
-#ifndef included_Pointer
 #include "boost/shared_ptr.hpp"
-#endif
-
-#ifndef included_Database
 #include "utils/Database.h"
-#endif
-
-#include "operators/CoupledFlowFrapconOperator.h"
-
-#ifndef included_AMP_SolverStrategyParameters
+#include "operators/subchannel/CoupledFlowFrapconOperator.h"
 #include "SolverStrategyParameters.h"
-#endif
-
-#ifndef included_AMP_SolverStrategy
 #include "SolverStrategy.h"
-#endif
 
 namespace AMP {
 namespace Solver {

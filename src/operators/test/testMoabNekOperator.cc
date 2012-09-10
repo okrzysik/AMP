@@ -39,7 +39,7 @@
 
 void nekPipeOperator(AMP::UnitTest *ut)
 {
-#ifdef USE_NEK     
+#ifdef USE_EXT_NEK     
     // Print Banner
     AMP::Utilities::printBanner();
 
@@ -189,7 +189,7 @@ void nekPipeOperator(AMP::UnitTest *ut)
 
     // How about some output?
     
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
      siloWriter->registerMesh( mesh );
      siloWriter->registerVector( r_gp,   mesh, AMP::Mesh::Volume, "AllGaussPointPressures" );

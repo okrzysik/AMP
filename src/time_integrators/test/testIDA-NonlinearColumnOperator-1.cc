@@ -189,7 +189,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   AMP::Mesh::MeshIterator  node = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
   AMP::Mesh::MeshIterator  end_node = node.end();
   
-  AMP::LinearAlgebra::VS_Mesh vectorSelector( outputVar->getName() , meshAdapter );
+  AMP::LinearAlgebra::VS_Mesh vectorSelector( meshAdapter );
   AMP::LinearAlgebra::Vector::shared_ptr thermalIC = initialCondition->select( vectorSelector, outputVar->getName() );
   int counter=0;     
   for( ; node != end_node ; ++node)
@@ -276,7 +276,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   time_Params->d_object_name = "IDATimeIntegratorParameters";
     
   cout << "Before IDATimeIntegrator" << endl;    
-#ifdef USE_SUNDIALS
+#ifdef USE_EXT_SUNDIALS
   boost::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> pIDATimeIntegrator(new AMP::TimeIntegrator::IDATimeIntegrator(time_Params));
   
   if(pIDATimeIntegrator.get() == NULL) {

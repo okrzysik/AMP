@@ -35,9 +35,15 @@ public:
     size_t      d_localsize;
 
     /** \brief Constructor
-      * \param[in] v The vector to wrap
+      * \details  This will create NativePetscVectorParameters that can be used
+      *   to construct a NativePetscVector around the given ::Vec.  Note that the
+      *   existing vector must be destroyed once through a call to VecDestroy.
+      *   This can be done be the user or the NativePetscVector based on the deleteable
+      *   flag.
+      * \param[in] v            The vector to wrap
+      * \param[in] deleteable   Do we want ~NativePetscVector() to call VecDestroy() on v
       */
-    NativePetscVectorParameters ( Vec v );
+    NativePetscVectorParameters ( Vec v, bool deleteable );
 };
 
 

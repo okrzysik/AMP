@@ -131,6 +131,9 @@ public:
     //! Function to get a pointer to the raw mesh element (libMeshElement, structuredMeshElement, etc.)
     virtual MeshElement* getRawElement();
 
+    //! Function to get a pointer to the raw mesh element (libMeshElement, structuredMeshElement, etc.)
+    virtual const MeshElement* getRawElement() const;
+
 
 protected:
 

@@ -6,10 +6,10 @@
 
 #include "test_VectorLoops.h"
 
-#ifdef USE_PETSC
+#ifdef USE_EXT_PETSC
     typedef AMP::unit_test::SimplePetscNativeFactory<AMP::LinearAlgebra::NativePetscVector>         SNPVFactory;
 #endif
-#ifdef USE_TRILINOS
+#ifdef USE_EXT_TRILINOS
     typedef AMP::unit_test::SimpleManagedVectorFactory<AMP::LinearAlgebra::ManagedEpetraVector>     SMEVFactory;
     typedef AMP::unit_test::MultiVectorFactory<SMEVFactory,1,SNPVFactory,1>                         MVFactory1;
     typedef AMP::unit_test::MultiVectorFactory<SMEVFactory,3,SNPVFactory,2>                         MVFactory2;
@@ -32,7 +32,7 @@ int main ( int argc , char **argv )
     std::cout << std::endl;
     globalComm.barrier();
 
-#ifdef USE_PETSC
+#ifdef USE_EXT_PETSC
     std::cout << "Testing NativePetscVector" << std::endl;
     test_managed_vectors_loop<SNPVFactory> ( &ut );
     std::cout << std::endl;
@@ -41,7 +41,7 @@ int main ( int argc , char **argv )
     ut.expected_failure("Compiled without petsc");
 #endif
 
-#ifdef USE_TRILINOS
+#ifdef USE_EXT_TRILINOS
     std::cout << "Testing Iterator" << std::endl;
     VectorIteratorTests<MVFactory1> ( &ut );
     std::cout << std::endl;

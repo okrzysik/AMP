@@ -308,7 +308,7 @@ void inverseTest1(AMP::UnitTest *ut, const std::string exeName)
 
       // Plot the results
       if( globalComm.getSize() == 1 ) {
-     #ifdef USE_SILO
+     #ifdef USE_EXT_SILO
          AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
          siloWriter->registerVector( workVec, meshAdapter, AMP::Mesh::Vertex, "RelativeError" );
          siloWriter->registerVector( solVec,  meshAdapter, AMP::Mesh::Vertex, "Solution" );

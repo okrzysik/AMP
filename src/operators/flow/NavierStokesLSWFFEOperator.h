@@ -25,7 +25,7 @@ namespace AMP {
 
         ~NavierStokesLSWFFEOperator() { }
 
-        void preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r);
+        void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  r);
 
         void postAssembly();
 
@@ -56,15 +56,10 @@ namespace AMP {
       protected :
 
         AMP::LinearAlgebra::Vector::shared_ptr mySubsetVector(AMP::LinearAlgebra::Vector::shared_ptr vec, 
-            AMP::LinearAlgebra::Variable::shared_ptr var) {
-          if(d_Mesh.get() != NULL) {
-            AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
-            AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, var->getName());
-            return meshSubsetVec->subsetVectorForVariable(var);
-          } else {
-            return vec->subsetVectorForVariable(var);
-          }
-        }
+            AMP::LinearAlgebra::Variable::shared_ptr var);
+
+        AMP::LinearAlgebra::Vector::const_shared_ptr mySubsetVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec, 
+            AMP::LinearAlgebra::Variable::shared_ptr var);
 
         void getDofIndicesForCurrentElement(int varId, std::vector<std::vector<size_t> > & dofIds);
 
@@ -75,7 +70,7 @@ namespace AMP {
         boost::shared_ptr<FlowTransportModel> d_transportModel; 
 
 //        std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_inVec; 
-        AMP::LinearAlgebra::Vector::shared_ptr d_inVec; 
+        AMP::LinearAlgebra::Vector::const_shared_ptr d_inVec; 
 
         AMP::LinearAlgebra::Vector::shared_ptr d_outVec; 
 

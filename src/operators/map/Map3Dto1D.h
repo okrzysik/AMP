@@ -7,6 +7,7 @@
 #include "operators/OperatorParameters.h"
 #include "operators/map/MapOperator.h"
 #include "operators/map/MapOperatorParameters.h"
+#include "discretization/createLibmeshElements.h"
 #include "vectors/Vector.h"
 #include "vectors/Variable.h"
 
@@ -45,8 +46,14 @@ public:
       @param [in]  a first constant used in the expression: r = a*A(u) + b*f. The default value is -1.
       @param [in]  b second constant used in the expression: r = a*A(u) + b*f. The default value is 1.
      */
-    void apply(const AMP::LinearAlgebra::Vector::shared_ptr &f, const AMP::LinearAlgebra::Vector::shared_ptr &u,
-        AMP::LinearAlgebra::Vector::shared_ptr  &r, const double a = -1.0, const double b = 1.0);
+    void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+        AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
+
+    void apply_Gauss(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+        AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
+
+    void apply_Nodal(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+        AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
     AMP::LinearAlgebra::Variable::shared_ptr createInputVariable (const std::string & name, int  = -1)
     {
@@ -91,7 +98,11 @@ protected :
 
     std::vector<double> d_zLocations;/**< std vector to store 1D z locations. */
 
+    bool d_useGaussVec;
+
 private :
+
+    Discretization::createLibmeshElements libmeshElements;
 
 };
 

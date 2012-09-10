@@ -66,23 +66,23 @@ namespace AMP {
       init(params);
     }
 
-    void VolumeIntegralOperator::preAssembly(const boost::shared_ptr<AMP::LinearAlgebra::Vector> &u, 
-        boost::shared_ptr<AMP::LinearAlgebra::Vector> &r)
+    void VolumeIntegralOperator::preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+        AMP::LinearAlgebra::Vector::shared_ptr r)
     {
       AMP_INSIST( (u != NULL), "NULL Input Vector" );
 
 
-      AMP::LinearAlgebra::VS_Mesh meshSelector("subset", d_Mesh);
-      AMP::LinearAlgebra::Vector::shared_ptr meshSubsetPrimary, meshSubsetAuxillary;
+      AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
+      AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetPrimary, meshSubsetAuxillary;
 
       if ( d_inpVariables->numVariables() > 0 )
-        meshSubsetPrimary = u->select(meshSelector,d_inpVariables->getName());
+        meshSubsetPrimary = u->constSelect(meshSelector,d_inpVariables->getName());
       for(size_t var = 0; var < d_inpVariables->numVariables(); var++)
       {
         AMP::LinearAlgebra::Variable::shared_ptr primaryVariable = d_inpVariables->getVariable(var);
-        d_inVec[var] = meshSubsetPrimary->subsetVectorForVariable( primaryVariable );
+        d_inVec[var] = meshSubsetPrimary->constSubsetVectorForVariable( primaryVariable );
         AMP_ASSERT( d_inVec[var] != NULL );
-        (d_inVec[var])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        AMP_ASSERT(d_inVec[var]->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
       }
 
       if ( d_auxVariables->numVariables() > 0 )
@@ -90,8 +90,9 @@ namespace AMP {
       for(size_t var = 0; var < d_auxVariables->numVariables(); var++)
       {
         AMP::LinearAlgebra::Variable::shared_ptr auxillaryVariable = d_auxVariables->getVariable(var);
-        d_auxVec[var] = meshSubsetAuxillary->subsetVectorForVariable( auxillaryVariable );
-        (d_auxVec[var])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        d_auxVec[var] = meshSubsetAuxillary->constSubsetVectorForVariable( auxillaryVariable );
+        AMP_ASSERT( d_auxVec[var] != NULL );
+        AMP_ASSERT(d_auxVec[var]->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
       }
 
       // subsetOutputVector is from Operator.h

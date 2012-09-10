@@ -190,7 +190,7 @@ void Property<Number>::evalv(std::vector<Number>& r,
 const std::map< std::string, boost::shared_ptr<std::vector<Number> > >& args)
 {
     if( !in_range(args) ) {
-      AMP_ERROR("out of range.");
+      AMP_ERROR(": out of range in property function '"+d_name+"'.");
     }
     evalvActual(r, args);
 }

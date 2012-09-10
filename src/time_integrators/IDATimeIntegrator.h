@@ -24,7 +24,7 @@
  #include "ImplicitTimeIntegrator.h"
  #endif
  */
-#ifdef USE_SUNDIALS
+#ifdef USE_EXT_SUNDIALS
 extern "C"{
 #include "sundials/sundials_types.h"
 #include "sundials/sundials_nvector.h"

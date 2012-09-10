@@ -75,8 +75,8 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
 
     // Create a view of a vector
     #ifdef USE_AMP_VECTORS
-        AMP::LinearAlgebra::VS_MeshIterator meshSelector( "positionSubset", submesh->getIterator(AMP::Mesh::Vertex,1), submesh->getComm() );
-        AMP::LinearAlgebra::VS_Stride zSelector("thirds",2,3);
+        AMP::LinearAlgebra::VS_MeshIterator meshSelector( submesh->getIterator(AMP::Mesh::Vertex,1), submesh->getComm() );
+        AMP::LinearAlgebra::VS_Stride zSelector(2,3);
         AMP::LinearAlgebra::Vector::shared_ptr  vec_meshSubset = position->select( meshSelector, "mesh subset" );
         AMP_ASSERT(vec_meshSubset.get()!=NULL);
         AMP::LinearAlgebra::Vector::shared_ptr  z_surface = vec_meshSubset->select( zSelector, "z surface" );
@@ -85,7 +85,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
         AMP::LinearAlgebra::Vector::shared_ptr  cladPosition;
         if ( clad.get()!=NULL ) {
             clad->setName("clad");
-            AMP::LinearAlgebra::VS_Mesh cladMeshSelector( "cladPosition", clad );
+            AMP::LinearAlgebra::VS_Mesh cladMeshSelector( clad );
             cladPosition = position->select( cladMeshSelector, "cladPosition" );
         }
     #endif
@@ -177,7 +177,7 @@ int main ( int argc , char **argv )
     AMP::UnitTest ut;
     PROFILE_ENABLE();
 
-    #ifdef USE_SILO
+    #ifdef USE_EXT_SILO
         std::string filename = "input_SiloIO-1";
         if(argc == 2) filename = argv[1];
         test_Silo( &ut, filename );

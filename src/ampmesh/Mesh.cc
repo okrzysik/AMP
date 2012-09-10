@@ -4,13 +4,13 @@
 #include "ampmesh/MultiMesh.h"
 #include "ampmesh/SubsetMesh.h"
 #include "ampmesh/structured/BoxMesh.h"
-#ifdef USE_STKMESH
+#ifdef USE_EXT_STKMESH
     #include "ampmesh/STKmesh/STKMesh.h"
 #endif
-#ifdef USE_LIBMESH
+#ifdef USE_EXT_LIBMESH
     #include "ampmesh/libmesh/libMesh.h"
 #endif
-#ifdef USE_MOAB
+#ifdef USE_EXT_MOAB
     #include "ampmesh/moab/moabMesh.h"
 #endif
 #include "ampmesh/MeshElementVectorIterator.h"
@@ -96,14 +96,14 @@ boost::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared
         mesh = boost::shared_ptr<AMP::Mesh::BoxMesh>(new AMP::Mesh::BoxMesh(params) );
     } else if ( MeshType == std::string("libMesh") ) {
         // The mesh is a libmesh mesh
-        #ifdef USE_LIBMESH
+        #ifdef USE_EXT_LIBMESH
             mesh = boost::shared_ptr<AMP::Mesh::libMesh>(new AMP::Mesh::libMesh(params) );
         #else
             AMP_ERROR("AMP was compiled without support for libMesh");
         #endif
     } else if ( MeshType==std::string("moab") || MeshType==std::string("MOAB") ) {
         // The mesh is a MOAB mesh
-        #ifdef USE_MOAB
+        #ifdef USE_EXT_MOAB
             mesh = boost::shared_ptr<AMP::Mesh::moabMesh>(new AMP::Mesh::moabMesh(params) );
         #else
             AMP_ERROR("AMP was compiled without support for MOAB");
@@ -147,9 +147,9 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         meshSize = AMP::Mesh::BoxMesh::estimateMeshSize(params);
     } else if ( MeshType == std::string("libMesh") ) {
         // The mesh is a libmesh mesh
-        #ifdef USE_LIBMESH
+        #ifdef USE_EXT_LIBMESH
             meshSize = AMP::Mesh::libMesh::estimateMeshSize(params);
-        #elif USE_STKMESH
+        #elif USE_EXT_STKMESH
             meshSize = AMP::Mesh::STKMesh::estimateMeshSize(params);
         #else
             AMP_ERROR("AMP was compiled without support for libMesh");
@@ -253,6 +253,16 @@ MeshElement Mesh::getElement ( const MeshElementID &elem_id ) const
         ++iterator;
     }
     return MeshElement();
+}
+
+
+/********************************************************
+* Function to return parents of an element              *
+********************************************************/
+std::vector<MeshElement> Mesh::getElementParents ( const MeshElement, const GeomType ) const
+{
+    AMP_ERROR("getElementParents is not implimented for the base class");
+    return std::vector<MeshElement>();
 }
 
 

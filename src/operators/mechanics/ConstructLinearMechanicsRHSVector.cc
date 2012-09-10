@@ -6,7 +6,7 @@ void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh, boost::share
     AMP::LinearAlgebra::Variable::shared_ptr temperatureVar, AMP::LinearAlgebra::Variable::shared_ptr displacementVar,
     const boost::shared_ptr<AMP::LinearAlgebra::Vector> &currTemperatureVec,
     const boost::shared_ptr<AMP::LinearAlgebra::Vector> &prevTemperatureVec,
-    boost::shared_ptr<AMP::LinearAlgebra::Vector> &rhsVec) {
+    AMP::LinearAlgebra::Vector::shared_ptr rhsVec) {
   currTemperatureVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
   prevTemperatureVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 

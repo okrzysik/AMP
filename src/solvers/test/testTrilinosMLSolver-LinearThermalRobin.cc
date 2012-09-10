@@ -206,7 +206,7 @@ void linearThermalTest(AMP::UnitTest *ut )
 
   // Plot the results
   AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
      siloWriter->registerMesh( meshAdapter );
 

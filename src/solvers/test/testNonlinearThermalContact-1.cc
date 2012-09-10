@@ -100,8 +100,8 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   AMP::Discretization::DOFManager::shared_ptr nodalDofMap1     = AMP::Discretization::simpleDOFManager::create(meshAdapter1,AMP::Mesh::Vertex, nodalGhostWidth,      DOFsPerNode,    split);
   AMP::Discretization::DOFManager::shared_ptr nodalDofMap2     = AMP::Discretization::simpleDOFManager::create(meshAdapter2,AMP::Mesh::Vertex, nodalGhostWidth,      DOFsPerNode,    split);
   AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap1= AMP::Discretization::simpleDOFManager::create(meshAdapter1,AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split);
-  AMP::LinearAlgebra::VS_Mesh vectorSelector1( "pellet_mesh", meshAdapter1);
-  AMP::LinearAlgebra::VS_Mesh vectorSelector2( "clad_mesh",   meshAdapter2);
+  AMP::LinearAlgebra::VS_Mesh vectorSelector1(meshAdapter1);
+  AMP::LinearAlgebra::VS_Mesh vectorSelector2(meshAdapter2);
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
@@ -411,7 +411,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
           vecLag2->subtract(TemperatureInKelvinVec2,vecLag2);
 
 //          if( nodes == 2 ) {
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
 
      siloWriter->registerVector( TemperatureInKelvin, manager, AMP::Mesh::Vertex, "TemperatureInKelvin" );

@@ -182,7 +182,7 @@ void myTest(AMP::UnitTest *ut)
       //conditions
       mechNlSolVec->setRandomValues();
       dirichletDispInVecOp->apply(nullVec, nullVec, mechNlSolVec, 1.0, 0.0);
-
+      mechNlSolVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
       nonlinBvpOperator->apply(mechNlRhsVec, mechNlSolVec, mechNlResVec, 1.0, -1.0);
     }//end for i
 

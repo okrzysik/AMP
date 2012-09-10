@@ -41,9 +41,8 @@ Vector::shared_ptr NativePetscVector::cloneVector(const Variable::shared_ptr var
     resetArray();
     Vec  new_petscVec;
     VecDuplicate ( d_petscVec , &new_petscVec );
-    boost::shared_ptr<NativePetscVectorParameters> npvParams ( new NativePetscVectorParameters ( new_petscVec ) );
+    boost::shared_ptr<NativePetscVectorParameters> npvParams( new NativePetscVectorParameters( new_petscVec, true ) );
     npvParams->d_Comm = getComm();
-    npvParams->d_Deleteable = true;
     Vector::shared_ptr retVal =  Vector::shared_ptr ( new NativePetscVector ( npvParams ) );
     retVal->setVariable ( var );
     return retVal;

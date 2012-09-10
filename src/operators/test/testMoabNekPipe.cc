@@ -55,7 +55,7 @@ void nekPipe(AMP::UnitTest *ut)
 
     AMP::pout << "Starting to run Nek-500 for the pipe problem"<< std::endl;
 
-#ifdef USE_NEK     
+#ifdef USE_EXT_NEK     
 	  std::cout<<"Preparing NEK Init"<< std::endl;
     // must agree with first line of SESSION.NAME
     std::string nekName = "pipe";

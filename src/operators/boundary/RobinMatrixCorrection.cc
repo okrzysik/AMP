@@ -138,7 +138,14 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
     }
 
     unsigned int numIds = d_boundaryIds.size();
-    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> elementInputVec = myparams->d_elementInputVec;
+    std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> elementInputVec = myparams->d_elementInputVec;
+
+    std::vector<size_t> gpDofs;
+    AMP::Discretization::DOFManager::shared_ptr gpDOFManager; 
+    if(d_isFluxGaussPtVector && myparams->d_variableFlux.get()!=NULL ){
+      gpDOFManager = (myparams->d_variableFlux)->getDOFManager();
+    }
+
     for(unsigned int nid = 0; nid < numIds; nid++)
     {
       AMP::Mesh::MeshIterator bnd1     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
@@ -165,6 +172,10 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
 
         getDofIndicesForCurrentElement();
 
+        if(d_isFluxGaussPtVector && myparams->d_variableFlux.get()!=NULL ){
+          gpDOFManager->getDOFs (bnd1->globalID(), gpDofs);
+        }
+
         d_fe->attach_quadrature_rule( d_qrule.get() );
 
         d_phi = &(d_fe->get_phi());
@@ -184,6 +195,7 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
         {
           unsigned int startIdx = 0;
           if(d_isFluxGaussPtVector){
+            (myparams->d_variableFlux)->getValuesByGlobalID( gpDofs.size(), &gpDofs[0], &inputArgsAtGpts[0][0] );
             startIdx = 1;
           }
 
@@ -195,6 +207,7 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
               }
             }
           }
+
           d_robinPhysicsModel->getConductance(beta, gamma, inputArgsAtGpts);
         }
 

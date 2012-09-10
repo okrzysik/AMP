@@ -78,6 +78,7 @@ DiffusionLinearFEOperator{
 RobinMatrixCorrection{
    name="RobinMatrixCorrection"
    skip_params = FALSE
+   IsFluxGaussPtVector = FALSE
    FE_ORDER = "FIRST"  
    FE_FAMILY = "LAGRANGE"
    QRULE_TYPE = "QGAUSS"

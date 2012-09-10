@@ -1,3 +1,6 @@
+INCLUDE(CheckCSourceCompiles)
+
+
 # Macro to convert a m4 file
 # This command converts a file of the format "global_path/file.fm4"
 # and convertes it to file.f90.  It also requires the path.  
@@ -156,23 +159,6 @@ IF ( NOT EXISTS ${PATH_NAME} )
 ENDIF ()
 ENDMACRO ()
 
-# Macro to tell cmake to use static libraries
-MACRO ( SET_STATIC_FLAGS )
-    # Remove extra library links
-    set(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)       # remove -Wl,-Bdynamic
-    set(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS)
-    set(CMAKE_SHARED_LIBRARY_C_FLAGS)         # remove -fPIC
-    set(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
-    set(CMAKE_SHARED_LINKER_FLAGS)
-    set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # remove -rdynamic
-    set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
-    # Add the static flag if necessary
-    CHECK_ENABLE_FLAG( USE_STATIC 0 )
-    IF ( USE_STATIC )
-        SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static")    # Add static flag
-        SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static")  # Add static flag
-    ENDIF()
-ENDMACRO()
 
 # Macro to identify the compiler
 MACRO ( SET_COMPILER )
@@ -195,7 +181,7 @@ MACRO ( SET_COMPILER )
     MESSAGE("Unknown C/C++ compiler, default flags will be used")
   ENDIF()
   # SET the Fortran++ compiler
-  IF ( USE_FORTRAN )
+  IF ( USE_EXT_FORTRAN )
     IF ( CMAKE_COMPILE_IS_GFORTRAN OR (${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU") )
       SET( USING_GFORTRAN TRUE )
       MESSAGE("Using gfortran")
@@ -227,8 +213,8 @@ MACRO ( SET_WARNINGS )
     SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -Wno-unused-variable" )
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wno-unused-variable" )
     # Add gcc specific flags
-    SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -ldl" )
-    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -ldl" )
+    SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS}" )
+    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS}" )
   ELSEIF ( USING_MICROSOFT )
     # Add Microsoft specifc compiler options
     SET(CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} /D _SCL_SECURE_NO_WARNINGS" )
@@ -346,6 +332,9 @@ MACRO (COPY_MESH_FILE MESHNAME)
     FILE ( GLOB MESHPATH ${CMAKE_CURRENT_SOURCE_DIR}/data/${MESHNAME} )
     # Check the AMP_DATA/meshes directory
     IF ( NOT MESHPATH )
+        FILE ( GLOB MESHPATH ${AMP_DATA}/meshes/TestMeshes/${MESHNAME} )
+    ENDIF ()
+    IF ( NOT MESHPATH )
         FILE ( GLOB_RECURSE MESHPATH ${AMP_DATA}/meshes/*/${MESHNAME} )
     ENDIF ()
     # Check the AMP_DATA/vvu directory
@@ -380,7 +369,7 @@ MACRO ( ADD_AMP_EXE_DEP EXE )
     TARGET_LINK_LIBRARIES ( ${EXE} ${AMP_LIBS} )
     # Add external libraries
     TARGET_LINK_LIBRARIES ( ${EXE} ${LIBMESH_LIBS} ${NEK_LIBS} ${MOAB_LIBS} ${DENDRO_LIBS} ${TRILINOS_LIBS} ${NETCDF_LIBS} ${PETSC_LIBS} ${X11_LIBS} ${SILO_LIBS} ${HDF5_LIBS} ${HYPRE_LIBS} )
-    IF ( ${USE_SUNDIALS} )
+    IF ( ${USE_EXT_SUNDIALS} )
         TARGET_LINK_LIBRARIES ( ${EXE} ${SUNDIALS_LIBS} )
     ENDIF  ()
     TARGET_LINK_LIBRARIES ( ${EXE} ${MPI_LINK_FLAGS} ${MPI_LIBRARIES} )
@@ -447,7 +436,7 @@ ENDMACRO ()
 MACRO ( ADD_AMP_TEST EXEFILE ${ARGN} )
     ADD_AMP_PROVISIONAL_TEST ( ${EXEFILE} )
     CREATE_TEST_NAME( ${EXEFILE} ${ARGN} )
-    IF ( USE_MPI_FOR_SERIAL_TESTS )
+    IF ( USE_EXT_MPI_FOR_SERIAL_TESTS )
         ADD_TEST ( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} 1 ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
     ELSE()
         ADD_TEST ( ${TESTNAME} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
@@ -460,12 +449,12 @@ MACRO ( ADD_AMP_WEEKLY_TEST EXEFILE PROCS ${ARGN} )
     ADD_AMP_PROVISIONAL_TEST ( ${EXEFILE} )
     IF ( ${PROCS} STREQUAL "1" )
         CREATE_TEST_NAME( "${EXEFILE}_WEEKLY" ${ARGN} )
-        IF ( USE_MPI_FOR_SERIAL_TESTS )
+        IF ( USE_EXT_MPI_FOR_SERIAL_TESTS )
             ADD_TEST ( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} 1 ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
         ELSE()
             ADD_TEST ( ${TESTNAME} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
         ENDIF()
-    ELSEIF ( USE_MPI )
+    ELSEIF ( USE_EXT_MPI )
         CREATE_TEST_NAME( "${EXEFILE}_${PROCS}procs_WEEKLY" ${ARGN} )
         ADD_TEST ( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${PROCS} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
     ENDIF()
@@ -475,7 +464,7 @@ ENDMACRO ()
 # Add a executable as a parallel test
 MACRO ( ADD_AMP_TEST_PARALLEL EXEFILE PROCS ${ARGN} )
     ADD_AMP_PROVISIONAL_TEST ( ${EXEFILE} )
-    IF ( USE_MPI )
+    IF ( USE_EXT_MPI )
         CREATE_TEST_NAME( "${EXEFILE}_${PROCS}procs" ${ARGN} )
         ADD_TEST ( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${PROCS} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
         SET_TESTS_PROPERTIES ( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" )
@@ -502,6 +491,27 @@ MACRO ( CHECK_ENABLE_FLAG FLAG DEFAULT )
         MESSAGE ( "Bad value for ${FLAG} (${${FLAG}}); use true or false" )
     ENDIF ()
 ENDMACRO ()
+
+
+# Macro to check if a compiler flag is valid
+MACRO (CHECK_C_COMPILER_FLAG _FLAG _RESULT)
+   SET(SAFE_CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS}")
+   SET(CMAKE_REQUIRED_DEFINITIONS "${_FLAG}")
+   CHECK_C_SOURCE_COMPILES("int main() { return 0;}" ${_RESULT}
+     # Some compilers do not fail with a bad flag
+     FAIL_REGEX "error: bad value (.*) for .* switch"       # GNU
+     FAIL_REGEX "argument unused during compilation"        # clang
+     FAIL_REGEX "is valid for .* but not for C"             # GNU
+     FAIL_REGEX "unrecognized .*option"                     # GNU
+     FAIL_REGEX "ignoring unknown option"                   # MSVC
+     FAIL_REGEX "[Uu]nknown option"                         # HP
+     FAIL_REGEX "[Ww]arning: [Oo]ption"                     # SunPro
+     FAIL_REGEX "command option .* is not recognized"       # XL
+     FAIL_REGEX "WARNING: unknown flag:"                    # Open64
+     FAIL_REGEX " #10159: "                                 # ICC
+     )
+   SET (CMAKE_REQUIRED_DEFINITIONS "${SAFE_CMAKE_REQUIRED_DEFINITIONS}")
+ENDMACRO (CHECK_C_COMPILER_FLAG)
 
 
 # add custom target distclean
@@ -608,44 +618,50 @@ MACRO ( SAVE_CMAKE_FLAGS )
     # Create the external libraries and include paths in the order they are linked in AMP
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS )\n" )
     # Add boost
-    IF ( USE_BOOST )
+    IF ( USE_EXT_BOOST )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add boost\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${BOOST_INCLUDE} )\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_BOOST 1 ) \n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_BOOST ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_EXT_BOOST 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_EXT_BOOST ) \n" )
+    ENDIF()
+    # Add Stkmesh
+    IF ( USE_EXT_STKMESH )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add stkmesh\n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_EXT_STKMESH 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_EXT_STKMESH ) \n" )
     ENDIF()
     # Add Libmesh
-    IF ( USE_LIBMESH )
+    IF ( USE_EXT_LIBMESH )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add Libmesh\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${LIBMESH_INCLUDE} )\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${LIBMESH_LIBS} )\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -DLIBMESH_ENABLE_PARMESH )\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_LIBMESH 1 ) \n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_LIBMESH ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_EXT_LIBMESH 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_EXT_LIBMESH ) \n" )
     ENDIF()
     # Add NEK
-    IF ( USE_NEK )
+    IF ( USE_EXT_NEK )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add NEK\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${NEK_INCLUDE} )\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${NEK_LIBS} )\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_NEK 1 ) \n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_NEK ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_EXT_NEK 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_EXT_NEK ) \n" )
     ENDIF()
     # Add MOAB
-    IF ( USE_MOAB )
+    IF ( USE_EXT_MOAB )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add MOAB\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${MOAB_INCLUDE} )\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${MOAB_LIBS} )\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_MOAB 1 ) \n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_MOAB ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_EXT_MOAB 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_EXT_MOAB ) \n" )
     ENDIF()
     # Add DENDRO
-    IF ( USE_DENDRO )
+    IF ( USE_EXT_DENDRO )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add DENDRO\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${DENDRO_INCLUDE} )\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${DENDRO_LIBS} )\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_DENDRO 1 ) \n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_DENDRO ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_EXT_DENDRO 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_EXT_DENDRO ) \n" )
     ENDIF()
     # Add Netcdf
     IF ( USE_NETCDF )
@@ -656,73 +672,73 @@ MACRO ( SAVE_CMAKE_FLAGS )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_NETCDF ) \n" )
     ENDIF()
     # Add Trilinos
-    IF ( USE_TRILINOS )
+    IF ( USE_EXT_TRILINOS )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add Trilinos\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${TRILINOS_INCLUDE} )\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${TRILINOS_LIBS} )\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_TRILINOS 1 ) \n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_TRILINOS ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_EXT_TRILINOS 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_EXT_TRILINOS ) \n" )
     ENDIF()
     # Add PETsc
-    IF ( USE_PETSC )
+    IF ( USE_EXT_PETSC )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add PETsc\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${PETSC_INCLUDE} )\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${PETSC_LIBS} )\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_PETSC 1 ) \n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_PETSC ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_EXT_PETSC 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_EXT_PETSC ) \n" )
     ENDIF()
     # Add Sundials
-    IF ( USE_SUNDIALS )
+    IF ( USE_EXT_SUNDIALS )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add Sundials\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${SUNDIALS_INCLUDE} )\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${SUNDIALS_LIBS} )\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_SUNDIALS 1 ) \n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_SUNDIALS ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_EXT_SUNDIALS 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_EXT_SUNDIALS ) \n" )
     ENDIF()
     # Add Silo
-    IF ( USE_SILO )
+    IF ( USE_EXT_SILO )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add silo\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${SILO_INCLUDE} )\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${SILO_LIBS} )\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_SILO 1 ) \n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_SILO ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_EXT_SILO 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_EXT_SILO ) \n" )
     ENDIF()
     # Add Hypre
-    IF ( USE_HYPRE )
+    IF ( USE_EXT_HYPRE )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add hypre\n" )
         # file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${HYPRE_INCLUDE} )\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${HYPRE_LIBS} )\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_HYPRE 1 ) \n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_HYPRE ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_EXT_HYPRE 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_EXT_HYPRE ) \n" )
     ENDIF()
     # Add X11
-    IF ( USE_X11 )
+    IF ( USE_EXT_X11 )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add X11\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${X11_INCLUDE} )\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${X11_LIBS} )\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_X11 1 ) \n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_X11 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_EXT_X11 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_EXT_X11 ) \n" )
     ENDIF()
     # Add HDF5
-    IF ( USE_HDF5 )
+    IF ( USE_EXT_HDF5 )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add HDF5\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${HDF5_INCLUDE} )\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${HDF5_LIBS} )\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_HDF5 1 ) \n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_HDF5 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_EXT_HDF5 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_EXT_HDF5 ) \n" )
     ENDIF()
     # Add MPI
-    IF ( USE_MPI )
+    IF ( USE_EXT_MPI )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add MPI\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${MPI_INCLUDE} )\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS}  ${MPI_LINK_FLAGS} ${MPI_LIBRARIES} )\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_MPI 1 ) \n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_MPI ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( USE_EXT_MPI 1 ) \n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -D USE_EXT_MPI ) \n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(MPIEXEC ${MPIEXEC} )\n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(MPIEXEC_NUMPROC_FLAG ${MPIEXEC_NUMPROC_FLAG} )\n" )
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(USE_MPI_FOR_SERIAL_TESTS ${USE_MPI_FOR_SERIAL_TESTS} )\n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(USE_EXT_MPI_FOR_SERIAL_TESTS ${USE_EXT_MPI_FOR_SERIAL_TESTS} )\n" )
     ELSE()
-        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(USE_MPI_FOR_SERIAL_TESTS 0 )\n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(USE_EXT_MPI_FOR_SERIAL_TESTS 0 )\n" )
     ENDIF()
     # Add LAPACK and BLAS
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add LAPACK/BLAS\n" )

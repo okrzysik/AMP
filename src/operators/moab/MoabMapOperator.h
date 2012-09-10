@@ -54,8 +54,6 @@ class MoabMapOperator : public AMP::Operator::Operator
         typedef AMP::Database                                  Database;
         typedef AMP::InputDatabase                             InpDatabase;
         typedef AMP::Mesh::Mesh                                MeshManager;
-        typedef AMP::LinearAlgebra::Variable::shared_ptr       SP_Variable;
-        typedef AMP::LinearAlgebra::Vector::shared_ptr         SP_Vector;
         typedef AMP::Operator::ElementPhysicsModel             ElemPhysModel;
         typedef AMP::Operator::VolumeIntegralOperator          VolIntOp;
 
@@ -75,9 +73,9 @@ class MoabMapOperator : public AMP::Operator::Operator
         MoabMapOperator( const SP_MoabMapParams &params );
 
         // Apply
-        void apply( const SP_Vector &f,
-                    const SP_Vector &u,
-                          SP_Vector &r,
+        void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
+                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                    AMP::LinearAlgebra::Vector::shared_ptr r,
                     const double     a,
                     const double     b ); 
 

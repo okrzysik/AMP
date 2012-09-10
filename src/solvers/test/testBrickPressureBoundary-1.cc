@@ -46,7 +46,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
   // Create the silo writer and register the data
   AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
 #endif
@@ -124,6 +124,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   //Initial guess for NL solver must satisfy the displacement boundary conditions
   mechNlSolVec->setToScalar(0.0);
   dirichletDispInVecOp->apply(nullVec, nullVec, mechNlSolVec, 1.0, 0.0);
+  mechNlSolVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
   nonlinBvpOperator->apply(nullVec, mechNlSolVec, mechNlResVec, 1.0, 0.0);
   linBvpOperator->reset(nonlinBvpOperator->getJacobianParameters(mechNlSolVec));
@@ -175,6 +176,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
     double scaleValue  = ((double)step+1.0)/NumberOfLoadingSteps;
     mechNlScaledRhsVec->scale(scaleValue, mechNlRhsVec);
+    mechNlScaledRhsVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     AMP::pout << "L2 Norm of RHS at loading step " << (step+1) << " is " << mechNlScaledRhsVec->L2Norm() << std::endl;
 
     nonlinBvpOperator->apply(mechNlScaledRhsVec, mechNlSolVec, mechNlResVec, 1.0, -1.0);
@@ -198,9 +200,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
     AMP::pout<<"Final Solution Norm: "<<finalSolNorm<<std::endl;
 
-    AMP::LinearAlgebra::Vector::shared_ptr mechUvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride("U", 0, 3) , "U" );
-    AMP::LinearAlgebra::Vector::shared_ptr mechVvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride("V", 1, 3) , "V" );
-    AMP::LinearAlgebra::Vector::shared_ptr mechWvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride("W", 2, 3) , "W" );
+    AMP::LinearAlgebra::Vector::shared_ptr mechUvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride(0,3), "U" );
+    AMP::LinearAlgebra::Vector::shared_ptr mechVvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride(1,3), "V" );
+    AMP::LinearAlgebra::Vector::shared_ptr mechWvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride(2,3), "W" );
 
     double finalMaxU = mechUvec->maxNorm();
     double finalMaxV = mechVvec->maxNorm();
@@ -216,7 +218,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     (nonlinBvpOperator->getVolumeOperator())->reset(tmpParams);
     nonlinearSolver->setZeroInitialGuess(false);
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
     siloWriter->registerVector ( mechNlSolVec , meshAdapter, AMP::Mesh::Vertex, "Solution_Vector" );
     meshAdapter->displaceMesh(mechNlSolVec);
     char outFileName2[256];
@@ -229,7 +231,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   double finalSolNorm = mechNlSolVec->L2Norm();
   AMP::pout<<"Final Solution Norm: "<<finalSolNorm<<std::endl;
 
-#ifdef USE_SILO
+#ifdef USE_EXT_SILO
     siloWriter->writeFile(exeName, 1);
 #endif
 

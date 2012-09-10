@@ -26,7 +26,7 @@ namespace LinearAlgebra {
         * \return The DOFManager
         * \param[in]  manager  The DOF manager we want to subset
         */
-      virtual AMP::Discretization::DOFManager::shared_ptr  getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr manager ) = 0;
+      virtual AMP::Discretization::DOFManager::shared_ptr  getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr manager ) const = 0;
   };
 
 }

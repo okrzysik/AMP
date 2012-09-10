@@ -38,8 +38,8 @@ namespace AMP {
       }
     }
 
-    void TractionBoundaryOperator :: apply(const AMP::LinearAlgebra::Vector::shared_ptr &, const AMP::LinearAlgebra::Vector::shared_ptr &,
-        AMP::LinearAlgebra::Vector::shared_ptr &r, const double, const double) {
+    void TractionBoundaryOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr,
+        AMP::LinearAlgebra::Vector::shared_ptr r, const double, const double) {
       if(d_residualMode) {
         AMP::LinearAlgebra::Vector::shared_ptr rInternal = mySubsetVector(r, d_outputVar);
         if(d_correction == NULL) {
@@ -106,7 +106,7 @@ namespace AMP {
         AMP::LinearAlgebra::Variable::shared_ptr var) {
       if(vec != NULL) {
         if(d_Mesh.get() != NULL) {
-          AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);
+          AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
           AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, var->getName());
           return meshSubsetVec->subsetVectorForVariable(var);
         } else {
