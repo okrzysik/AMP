@@ -35,4 +35,6 @@ ADD_AMP_TEST ( test_Independent )
 ADD_AMP_TEST ( examiner )
 ADD_AMP_TEST ( testExtraParams2Eval )
 
+ADD_AMP_TEST ( test_FixedFuel )
+
 COPY_TEST_DATA_FILE ( inputExaminer )
