@@ -707,7 +707,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                double d_KG = 0.2;//JEH: need to get from input file
                double R_w = (u_plus*w_axialDonor_plus - u_minus*w_axialDonor_minus)/dz
                           - s/l*dz*(p1_minus - p2_minus)
-                          + d_KG/(2.0*dz*s*l)*std::abs(w_mid)*w_mid*vol_mid;
+                          + d_KG/(2.0*dz*s*l)*std::abs(w_mid)*w_mid*vol_mid
                           + s*l*dz*g*std::sin(d_theta)/vol_mid;
                outputVec->setValueByGlobalID(gapDofs[0],R_w);
             }
