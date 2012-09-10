@@ -82,6 +82,8 @@ namespace																\
 #include "UO2_MSRZC_09.h"
 #include "CylindricallySymmetric.h"
 #include "WaterLibrary.h"
+#include "FixedFuel.h"
+#include "FixedClad.h"
 
 
 
