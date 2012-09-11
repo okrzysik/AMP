@@ -253,7 +253,6 @@ namespace AMP {
 
           // these are only the m=even, n=zero moments.
           AMP_ASSERT( (int)d_numMoments > -1 );
-          AMP_ASSERT( (int)d_numMoments < 3 );
           if (d_numMoments > 0) {
             AMP_ASSERT (db->keyExists("Moments"));
             d_Moments.resize(d_numMoments, 0.);
@@ -982,17 +981,19 @@ namespace AMP {
 
     /*!
      *************************************************************************
-     * \brief Evaluates Zernike Radial power shape F(r).                           *
+     * \brief Evaluates Zernike Radial power shape F(r).                     *
+     * \param rho Relative radius.                                           *
+     * d_Moments are the coeffiecients for the (2*i=2, 0) moments.           * 
      *************************************************************************
      */
     double PowerShape::getZernikeRadial(double rho)
     {
       double fR = 0.0;
-      // i = m/2 - 1;
-      // i = 0; m=2
-      // i = 1; m=4
-      if ( d_numMoments > 0 ) fR += d_Moments[0] * (2.*rho*rho-1.);
-      if ( d_numMoments > 1 ) fR += d_Moments[1] * (1 - 6*rho*rho* (1. - rho*rho) );
+      unsigned int n;
+      for ( unsigned int m=0; m<d_numMoments; m++ ) {
+        n=2*m+2;
+        fR += d_Moments[m] * evalZernike(n, 0, rho, 0.);
+      }
       return fR;
     }
 
