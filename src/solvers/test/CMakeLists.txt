@@ -49,7 +49,8 @@ COPY_TEST_DATA_FILE ( input_testSubchannelSolve-1 )
 COPY_TEST_DATA_FILE ( input_testSubchannelSolve-2 )
 
 ADD_AMP_TEST(testSubchannelSolution)
-COPY_TEST_DATA_FILE ( input_testSubchannelSolution)
+COPY_TEST_DATA_FILE ( input_testSubchannelSolution-1 )
+COPY_TEST_DATA_FILE ( input_testSubchannelSolution-2 )
 
 # R.S.: This needs to be fixed!
 ADD_AMP_PROVISIONAL_TEST ( testPelletStackMechanicsSolver )
