@@ -200,8 +200,9 @@ Epetra_Map  &ManagedEpetraMatrixParameters::getEpetraRowMap ()
     #endif
     AMP_ASSERT(d_DOFManagerLeft.get()!=NULL);
     AMP_ASSERT(d_DOFManagerRight.get()!=NULL);
-    size_t N_row_local = d_DOFManagerLeft->numLocalDOF();
-    size_t N_row_global = d_DOFManagerLeft->numGlobalDOF();
+    AMP_INSIST(d_DOFManagerLeft->numGlobalDOF()<0x80000000,"Epetra does not support vectors with global size greater than 2^31");
+    int N_row_local = static_cast<int>( d_DOFManagerLeft->numLocalDOF() );
+    int N_row_global = static_cast<int>( d_DOFManagerLeft->numGlobalDOF() );
     if ( d_eRowMap.get() == 0 )
         d_eRowMap = boost::shared_ptr<Epetra_Map>( new Epetra_Map ( N_row_global, N_row_local, d_RowBase, comm ) );
     return *d_eRowMap;
