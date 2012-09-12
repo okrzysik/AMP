@@ -87,11 +87,11 @@ protected:
 
     /** Default constructors
      * \param dim       Spatial dimension
-     * \param type      Element type
      * \param element   Underlying STKmesh element
      * \param mesh      Underlying mesh
      * \param rank      Rank of the current processor (must agree with STKmesh->processor_id())
      * \param meshID    ID of the current mesh
+     *        type      Element type
      */
     STKMeshElement(int dim, stk::mesh::Entity* element, unsigned int rank, MeshID meshID, const STKMesh* mesh );
     STKMeshElement(int dim, boost::shared_ptr<stk::mesh::Entity> element, unsigned int rank, MeshID meshID, const STKMesh* mesh );

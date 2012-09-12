@@ -64,14 +64,14 @@ public:
 
 protected:
     /** Default constructor
-     * \param type      Entity type:  0: node, 1: element
+     * \param entities  Entity type:  0: node, 1: element
      * \param mesh      Pointer to the STKMesh mesh
      * \param gcw       gcw to use
-     * \param begin     Pointer to iterator with the begining position
-     * \param end       Pointer to iterator with the end position
-     * \param pos       Pointer to iterator with the current position
-     * \param size      Number of elements in the iterator (-1: unknown)
-     * \param pos2      Index of the current position in the iterator (-1: unknown)
+     *        begin     Pointer to iterator with the begining position
+     *        end       Pointer to iterator with the end position
+     *        pos       Pointer to iterator with the current position
+     *        size      Number of elements in the iterator (-1: unknown)
+     *        pos2      Index of the current position in the iterator (-1: unknown)
      */
     STKMeshIterator(const AMP::Mesh::STKMesh *mesh, int gcw, std::vector< stk::mesh::Entity*> &entities );
     STKMeshIterator(const AMP::Mesh::STKMesh *mesh, int gcw, MeshPtr entities );
