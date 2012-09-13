@@ -39,6 +39,7 @@ double getLinearHeatGeneration( double Q, double H, double z )
 
 
 // Function to get the enthalapy solution
+// Note: this is only an approximation that assumes incompressible water and no friction
 double getSolutionEnthalpy( double Q, double H, double m, double hin, double z )
 {
     const double pi = 3.141592653589793;
@@ -47,10 +48,13 @@ double getSolutionEnthalpy( double Q, double H, double m, double hin, double z )
 
 
 // Function to get the pressure solution
-// Note: this is only an approximation for an incompressible fluid (water)
-double getSolutionPressure(  double H, double Pout, double z )
+// Note: this is only an approximation for an incompressible fluid with a fixed density
+double getSolutionPressure( AMP::Database::shared_ptr db, double H, double Pout, double p, double z )
 {
-    return Pout + (H-z)*9806.65;
+    if ( db->keyExists("Inlet_Pressure") )
+        return Pout + (1.-z/H)*(db->getDouble("Inlet_Pressure")-Pout);
+    else
+        return Pout + (H-z)*9.80665*p;
 }
 
 
@@ -114,10 +118,10 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
         AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerFace );
 
     // create solution, rhs, and residual vectors
-    AMP::LinearAlgebra::Vector::shared_ptr manufacturedVec = AMP::LinearAlgebra::createVector( faceDOFManager , inputVariable  , true );
-    AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( faceDOFManager , inputVariable  , true );
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( faceDOFManager , outputVariable  , true );
-    AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( faceDOFManager , outputVariable  , true );
+    AMP::LinearAlgebra::Vector::shared_ptr manufacturedVec = AMP::LinearAlgebra::createVector( faceDOFManager, inputVariable, true );
+    AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( faceDOFManager, inputVariable,  true );
+    AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( faceDOFManager, outputVariable, true );
+    AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( faceDOFManager, outputVariable, true );
 
 
     // Get the problem parameters
@@ -130,12 +134,24 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     double Tin = nonlinearOperator_db->getDouble("Inlet_Temperature");
 
     // compute inlet enthalpy
-    std::map<std::string, boost::shared_ptr<std::vector<double> > > enthalpyArgMap;
-    enthalpyArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,Tin)));
-    enthalpyArgMap.insert(std::make_pair("pressure",   new std::vector<double>(1,getSolutionPressure(H,Pout,0))));
-    std::vector<double> enthalpyResult(1);
-    subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap); 
-    double hin = enthalpyResult[0];
+    double Pin = Pout;
+    double hin = 0.0;
+    double rho = 1000;
+    for (int i=0; i<3; i++) {
+        std::map<std::string, boost::shared_ptr<std::vector<double> > > enthalpyArgMap;
+        enthalpyArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,Tin)));
+        enthalpyArgMap.insert(std::make_pair("pressure",   new std::vector<double>(1,Pin)));
+        std::vector<double> enthalpyResult(1);
+        subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap); 
+        hin = enthalpyResult[0];
+        std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
+        volumeArgMap_plus.insert(std::make_pair("enthalpy",new std::vector<double>(1,hin)));
+        volumeArgMap_plus.insert(std::make_pair("pressure",new std::vector<double>(1,Pin)));
+        std::vector<double> volumeResult_plus(1);
+        subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_plus,volumeArgMap_plus); 
+        rho = 1.0/volumeResult_plus[0];
+        Pin = getSolutionPressure(input_db,H,Pout,rho,0);
+    }
     std::cout<< "Enthalpy Solution:"<< hin <<std::endl;
 
     // Compute the manufactured solution
@@ -148,7 +164,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
         std::vector<double> coord = face->centroid();
         double z = coord[2];
         double h = getSolutionEnthalpy( Q, H, m, hin, z );
-        double P = getSolutionPressure( H, Pout, z );
+        double P = getSolutionPressure( input_db, H, Pout, rho, z );
         manufacturedVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*h);
         manufacturedVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*P);
         ++face;
@@ -162,6 +178,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
         solVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*Pout);
         ++face;
     }
+    solVec->copyVector(manufacturedVec);
 
     // get nonlinear solver database
     boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
@@ -205,6 +222,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
     // solve
     nonlinearSolver->solve(rhsVec, solVec);
+    nonlinearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
 
     // Compute the flow temperature
     AMP::Discretization::DOFManager::shared_ptr tempDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
@@ -213,17 +231,31 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr tempVec = AMP::LinearAlgebra::createVector( tempDOFManager , tempVariable  , true );
     face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     std::vector<size_t> tdofs;
+    bool pass = true;
     for (int i=0; i<(int)face.size(); i++){
         faceDOFManager->getDOFs( face->globalID(), dofs );
         tempDOFManager->getDOFs( face->globalID(), tdofs );
+        double h = h_scale*solVec->getValueByGlobalID(dofs[0]);
+        double P = P_scale*solVec->getValueByGlobalID(dofs[1]);
         std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
-        temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_scale*solVec->getValueByGlobalID(dofs[0]))));
-        temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,P_scale*solVec->getValueByGlobalID(dofs[1]))));
+        temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h)));
+        temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,P)));
         std::vector<double> temperatureResult(1);
         subchannelPhysicsModel->getProperty("Temperature", temperatureResult, temperatureArgMap); 
         tempVec->setValueByGlobalID(tdofs[0],temperatureResult[0]);
+        // Check that we recover the enthalapy from the temperature
+        std::map<std::string, boost::shared_ptr<std::vector<double> > > enthalpyArgMap;
+        enthalpyArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,temperatureResult[0])));
+        enthalpyArgMap.insert(std::make_pair("pressure",   new std::vector<double>(1,P)));
+        std::vector<double> enthalpyResult(1);
+        subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap); 
+        double h2 = enthalpyResult[0];
+        if ( !AMP::Utilities::approx_equal(h,h2,1e-7) )
+            pass = false;
         ++face;
     } 
+    if ( !pass )
+        ut->failure("failed to recover h");
 
     // Print the Inlet/Outlet properties
     std::cout << std::endl << std::endl;
@@ -257,7 +289,8 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     double relErrorNorm = relErrorVec->L2Norm();
 
     // check that norm of relative error is less than tolerance
-    if(relErrorNorm > 2.0e-3){
+    double tol = input_db->getDoubleWithDefault("TOLERANCE",1e-6);
+    if(relErrorNorm > tol){
         ut->failure(exeName+": manufactured solution test");
     } else {
         ut->passes(exeName+": manufactured solution test");
@@ -316,15 +349,12 @@ int main(int argc, char *argv[])
     AMP::AMPManager::startup(argc, argv);
     AMP::UnitTest ut;
 
-    try {
-        flowTest(&ut, "testSubchannelSolution");
-    } catch (std::exception &err) {
-        std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-        ut.failure("ERROR: While testing");
-    } catch( ... ) {
-        std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-        ut.failure("ERROR: While testing");
-    }
+    std::vector<std::string> files(2);
+    files[0] = "testSubchannelSolution-1";
+    files[1] = "testSubchannelSolution-2";
+
+    for (size_t i=0; i<files.size(); i++)
+        flowTest(&ut,files[i]);
 
     ut.report();
 
