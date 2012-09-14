@@ -124,8 +124,9 @@ void SubchannelPhysicsModel::getProperty(
 	std::vector<double> & result,
         std::map<std::string, boost::shared_ptr<std::vector<double> > > & args)
 {
-
     // evaluate material property
+    std::map<std::string,AMP::Materials::PropertyPtr>::iterator it = d_properties.find(property);
+    AMP_INSIST(it!=d_properties.end(),"Model does not have property ("+property+")");
     d_properties.find(property)->second->evalv(result, args);
 
 }

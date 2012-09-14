@@ -355,7 +355,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
               viscosityArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,T_avg)));
               viscosityArgMap.insert(std::make_pair("density",new std::vector<double>(1,rho_avg)));
               std::vector<double> viscosityResult(1);
-              d_subchannelPhysicsModel->getProperty("Viscosity",viscosityResult,viscosityArgMap);
+              d_subchannelPhysicsModel->getProperty("DynamicViscosity",viscosityResult,viscosityArgMap);
               double visc = viscosityResult[0];
 
               // evaluate friction factor
