@@ -107,11 +107,14 @@ namespace Operator {
       double d_m;        // inlet mass flow rate [kg/s]
       double d_gamma;    // fission heating coefficient
       double d_theta;    // channel angle [rad]
-      double d_friction; // friction factor
       double d_pitch;    // lattice pitch [m]
       double d_diameter; // fuel rod diameter [m]
       double d_K;        // form loss coefficient
       double d_Q;        // rod power
+
+      std::string d_frictionModel; // friction model
+      double d_friction; // friction factor
+      double d_roughness; // surface roughness [m]
 
       double d_channelDia;
       double d_reynolds  ;

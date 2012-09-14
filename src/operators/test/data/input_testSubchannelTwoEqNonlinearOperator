@@ -29,6 +29,8 @@ SubchannelTwoEqNonlinearOperator{
     Heat_Source_Type = "totalHeatGeneration"
     Heat_Shape = "Sinusoidal"
     LocalModel = "SubchannelPhysicsModel"
+    Friction_Model = "Constant"
+    Surface_Roughness = 0.0015e-3
 }
 
 SubchannelPhysicsModel{
