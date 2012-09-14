@@ -18,6 +18,7 @@
 #include "operators/subchannel/SubchannelPhysicsModel.h"
 #include "operators/subchannel/SubchannelOperatorParameters.h"
 #include "operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
+#include "operators/subchannel/SubchannelConstants.h"
 #include "operators/OperatorBuilder.h"
 
 #include "ampmesh/StructuredMeshHelper.h"
@@ -99,44 +100,44 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
     // Test apply with known residual evaluation
     face = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 1000.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 16.4e6 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*1000.0e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*16.4e6 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 900.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 16.3e6 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*900.0e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*16.3e6 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 800.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 16.2e6 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*800.0e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*16.2e6 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 700.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 16.1e6 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*700.0e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*16.1e6 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 300.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 13.5e6 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*300.0e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*13.5e6 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 450.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 9.0e6 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*450.0e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*9.0e6 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 570.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 12.0e5 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*570.0e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*12.0e5 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 230.0e2 );
-    SolVec->setValueByGlobalID(dofs[1], 4.0e6 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*230.0e2 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*4.0e6 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 999.9e3 );
-    SolVec->setValueByGlobalID(dofs[1], 14.0e6 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*999.9e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*14.0e6 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 235.6e3 );
-    SolVec->setValueByGlobalID(dofs[1], 12.5e6 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*235.6e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*12.5e6 );
 
     subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
     bool passedKnownTest = true;
@@ -166,8 +167,8 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
     int i=0;
     for( ; face != end_face; ++face,++i){
       faceDOFManager->getDOFs( face->globalID(), dofs );
-      double h_val = ResVec->getValueByGlobalID(dofs[0]);
-      double p_val = ResVec->getValueByGlobalID(dofs[1]);
+      double h_val = ResVec->getValueByGlobalID(dofs[0])/AMP::Operator::Subchannel::scaleEnthalpy;
+      double p_val = ResVec->getValueByGlobalID(dofs[1])/AMP::Operator::Subchannel::scalePressure;
       if (!AMP::Utilities::approx_equal(h_val,known[2*i],0.01)){
          passedKnownTest = false;
          AMP::pout<<"Calculated: "<<h_val<<", Known: "<<known[2*i]<<"\n";
@@ -185,44 +186,44 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
     // Test apply with known residual evaluation
     face = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 950.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 15.0e6 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*950.0e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*15.0e6 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 850.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 15.1e6 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*850.0e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*15.1e6 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 700.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 15.25e6 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*700.0e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*15.25e6 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 500.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 15.26e6 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*500.0e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*15.26e6 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 324.6e3 );
-    SolVec->setValueByGlobalID(dofs[1], 11.0e5 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*324.6e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*11.0e5 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 457.7e3 );
-    SolVec->setValueByGlobalID(dofs[1], 12.5e5 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*457.7e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*12.5e5 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 134.6e2 );
-    SolVec->setValueByGlobalID(dofs[1], 34.5e5 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*134.6e2 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*34.5e5 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 457.6e3 );
-    SolVec->setValueByGlobalID(dofs[1], 12.0e6 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*457.6e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*12.0e6 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 325.7e3 );
-    SolVec->setValueByGlobalID(dofs[1], 11.5e6 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*325.7e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*11.5e6 );
     ++face;
     faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 898.6e3 );
-    SolVec->setValueByGlobalID(dofs[1], 15.7e6 );
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*898.6e3 );
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*15.7e6 );
 
     subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
     bool passedKnownTest = true;
@@ -252,8 +253,8 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
     int i=0;
     for( ; face != end_face; ++face,++i){
       faceDOFManager->getDOFs( face->globalID(), dofs );
-      double h_val = ResVec->getValueByGlobalID(dofs[0]);
-      double p_val = ResVec->getValueByGlobalID(dofs[1]);
+      double h_val = ResVec->getValueByGlobalID(dofs[0])/AMP::Operator::Subchannel::scaleEnthalpy;
+      double p_val = ResVec->getValueByGlobalID(dofs[1])/AMP::Operator::Subchannel::scalePressure;
       if (!AMP::Utilities::approx_equal(h_val,known[2*i],0.01)){
          passedKnownTest = false;
          AMP::pout<<"Calculated: "<<h_val<<", Known: "<<known[2*i]<<"\n";
@@ -272,44 +273,44 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
     face = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     faceDOFManager->getDOFs( face->globalID(), dofs );
     ++face;
-    SolVec->setValueByGlobalID(dofs[0],700.0e3);
-    SolVec->setValueByGlobalID(dofs[1], 12.4e6);;
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*700.0e3);
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*12.4e6);
     faceDOFManager->getDOFs( face->globalID(), dofs );
     ++face;
-    SolVec->setValueByGlobalID(dofs[0],900.0e3);
-    SolVec->setValueByGlobalID(dofs[1], 12.3e6);;
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*900.0e3);
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*12.3e6);
     faceDOFManager->getDOFs( face->globalID(), dofs );
     ++face;
-    SolVec->setValueByGlobalID(dofs[0],800.0e3);
-    SolVec->setValueByGlobalID(dofs[1], 16.2e6);;
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*800.0e3);
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*16.2e6);
     faceDOFManager->getDOFs( face->globalID(), dofs );
     ++face;
-    SolVec->setValueByGlobalID(dofs[0],650.0e3);
-    SolVec->setValueByGlobalID(dofs[1], 14.1e5);;
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*650.0e3);
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*14.1e5);
     faceDOFManager->getDOFs( face->globalID(), dofs );
     ++face;
-    SolVec->setValueByGlobalID(dofs[0],367.4e3);
-    SolVec->setValueByGlobalID(dofs[1], 31.5e5);;
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*367.4e3);
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*31.5e5);
     faceDOFManager->getDOFs( face->globalID(), dofs );
     ++face;
-    SolVec->setValueByGlobalID(dofs[0],657.2e3);
-    SolVec->setValueByGlobalID(dofs[1], 12.5e6);;
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*657.2e3);
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*12.5e6);
     faceDOFManager->getDOFs( face->globalID(), dofs );
     ++face;
-    SolVec->setValueByGlobalID(dofs[0],788.5e3);
-    SolVec->setValueByGlobalID(dofs[1], 12.7e6);;
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*788.5e3);
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*12.7e6);
     faceDOFManager->getDOFs( face->globalID(), dofs );
     ++face;
-    SolVec->setValueByGlobalID(dofs[0],235.7e2);
-    SolVec->setValueByGlobalID(dofs[1], 17.8e6);;
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*235.7e2);
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*17.8e6);
     faceDOFManager->getDOFs( face->globalID(), dofs );
     ++face;
-    SolVec->setValueByGlobalID(dofs[0],673.1e3);
-    SolVec->setValueByGlobalID(dofs[1], 13.6e6);;
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*673.1e3);
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*13.6e6);
     faceDOFManager->getDOFs( face->globalID(), dofs );
     ++face;
-    SolVec->setValueByGlobalID(dofs[0],385.2e3);
-    SolVec->setValueByGlobalID(dofs[1], 16.3e6);
+    SolVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*385.2e3);
+    SolVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*16.3e6);
 
     subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
     bool passedKnownTest = true;
@@ -339,8 +340,8 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
     int i=0;
     for( ; face != end_face; ++face,++i){
       faceDOFManager->getDOFs( face->globalID(), dofs );
-      double h_val = ResVec->getValueByGlobalID(dofs[0]);
-      double p_val = ResVec->getValueByGlobalID(dofs[1]);
+      double h_val = ResVec->getValueByGlobalID(dofs[0])/AMP::Operator::Subchannel::scaleEnthalpy;
+      double p_val = ResVec->getValueByGlobalID(dofs[1])/AMP::Operator::Subchannel::scalePressure;
       if (!AMP::Utilities::approx_equal(h_val,known[2*i],0.01)){
          passedKnownTest = false;
          AMP::pout<<"Calculated: "<<h_val<<", Known: "<<known[2*i]<<"\n";
