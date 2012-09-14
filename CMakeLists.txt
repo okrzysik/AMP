@@ -1,4 +1,4 @@
-# Set some CMake properties
+# Set some CMake properties 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 CMAKE_POLICY(SET CMP0014 OLD)
 
@@ -11,7 +11,7 @@ MESSAGE ("===============")
 # Prevent users from building in place
 IF ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}" )
   MESSAGE ( FATAL_ERROR "Building AMP in place is a bad idea" )
-ENDIF ()
+ENDIF()
 
 
 PROJECT (AMP)
@@ -28,7 +28,7 @@ ELSEIF ( ( ${USE_FORTRAN} STREQUAL "true" ) OR ( ${USE_FORTRAN} STREQUAL "1" ) O
     SET (USE_FORTRAN 1 )
 ELSE()
     MESSAGE ( "Bad value for USE_FORTRAN; use true or false" )
-ENDIF ()
+ENDIF()
 IF ( USE_FORTRAN )
 	ENABLE_LANGUAGE (Fortran)
 ENDIF()
@@ -39,7 +39,7 @@ SET ( DROP_SITE "thyme.ornl.gov" )
 SET ( DROP_LOCATION "/CDash/submit.php?project=AMP" )
 SET ( TRIGGER_SITE "" )
 SET ( DROP_SITE_CDASH TRUE )
-ENABLE_TESTING ()
+ENABLE_TESTING()
 INCLUDE (CTest)
 
 # Identify the source and build directories
@@ -60,7 +60,7 @@ INCLUDE ( libraries )
 # Create custom targets for build-test, check, and distclean
 ADD_CUSTOM_TARGET ( build-test )
 ADD_CUSTOM_TARGET ( check COMMAND  make test  )
-ADD_DISTCLEAN ()
+ADD_DISTCLEAN()
 
 
 # Check the compile mode and compile flags
@@ -70,7 +70,7 @@ IF ( ${COMPILE_MODE} STREQUAL "debug" )
   SET_DEBUG_MACROS()
 ELSEIF ( ${COMPILE_MODE} STREQUAL "optimized" )
     SET_OPTIMIZED_MACROS()
-ELSE ()
+ELSE()
     MESSAGE ( FATAL_ERROR "COMPILE_MODE must be either debug or optimized" )
 ENDIF()
 
@@ -92,30 +92,32 @@ ENDIF()
 
 
 # Configure external libraries
-CONFIGURE_MPI ()   # MPI must be before other libraries
-CONFIGURE_TRILINOS_LIBRARIES ()
-CONFIGURE_SUNDIALS_LIBRARIES ()
-CONFIGURE_PETSC_LIBRARIES ()
-CONFIGURE_HYPRE_LIBRARIES ()
-CONFIGURE_X11_LIBRARIES ()
-CONFIGURE_BLAS ()
-CONFIGURE_LAPACK ()
-CONFIGURE_LIBMESH ()
-CONFIGURE_NEK ()  # should go before MOAB since it requires MOAB.
-CONFIGURE_MOAB ()
-CONFIGURE_DENDRO ()
-CONFIGURE_SILO ()
-CONFIGURE_HDF5 ()
-CONFIGURE_BOOST ()
+CONFIGURE_MPI()     # MPI must be before other libraries
+CONFIGURE_TRILINOS_LIBRARIES()
+CONFIGURE_SUNDIALS_LIBRARIES()
+CONFIGURE_PETSC_LIBRARIES()
+CONFIGURE_HYPRE_LIBRARIES()
+CONFIGURE_X11_LIBRARIES()
+CONFIGURE_BLAS()
+CONFIGURE_LAPACK()
+CONFIGURE_LIBMESH()
+CONFIGURE_STKMESH() # Trilinos mush be configured before stkmesh
+CONFIGURE_NEK()     # should go before MOAB since it requires MOAB.
+CONFIGURE_MOAB()
+CONFIGURE_DENDRO()
+CONFIGURE_SILO()
+CONFIGURE_HDF5()
+CONFIGURE_NETCDF()
+CONFIGURE_BOOST()
 
 
 # Configure AMP (all external libraries must be configured first)
-CONFIGURE_AMP ()
+CONFIGURE_AMP()
 
 
 # Some more configure options
-CONFIGURE_TIMERS ()
-CONFIGURE_LINE_COVERAGE ()
+CONFIGURE_TIMERS()
+CONFIGURE_LINE_COVERAGE()
 ADD_DEFINITIONS ( -DCMAKE_CONFIGURED )
 IF ( USE_FORTRAN )
     INCLUDE (FortranCInterface)

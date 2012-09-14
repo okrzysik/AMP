@@ -4,6 +4,9 @@
 #include "ampmesh/MultiMesh.h"
 #include "ampmesh/SubsetMesh.h"
 #include "ampmesh/structured/BoxMesh.h"
+#ifdef USE_EXT_STKMESH
+    #include "ampmesh/STKmesh/STKMesh.h"
+#endif
 #ifdef USE_EXT_LIBMESH
     #include "ampmesh/libmesh/libMesh.h"
 #endif
@@ -146,6 +149,8 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         // The mesh is a libmesh mesh
         #ifdef USE_EXT_LIBMESH
             meshSize = AMP::Mesh::libMesh::estimateMeshSize(params);
+        #elif USE_EXT_STKMESH
+            meshSize = AMP::Mesh::STKMesh::estimateMeshSize(params);
         #else
             AMP_ERROR("AMP was compiled without support for libMesh");
         #endif

@@ -1,11 +1,12 @@
-/*
- * Independent.h
- *
- *  Created on: Mar 11, 2010
- *	  Author: bm, gad
+//----------------------------------*-C++-*----------------------------------//
+/*!
+ * \file   materials/FixedFuel.cc
+ * \author Aaron Phillippe
+ * \brief  Implementation file for constant fuel properties  
  */
+//---------------------------------------------------------------------------//
 
-#include "Independent.h"
+#include "FixedFuel.h"
 
 #include "Property.h"
 #include "VectorProperty.h"
@@ -17,18 +18,18 @@
 namespace AMP { 
 namespace Materials {
 
-namespace Independent_NS {
+namespace FixedFuel_NS {
 
 //  =================== Constants =====================================================
 
-	static const std::string name_base("Independent");
-	static const std::string source("none; all ones.");
+	static const std::string name_base("FixedFuel");
+	static const std::string source("average values from matpro; as defined by Phillippe."); 
 
-	static const double thermalval=1.;
+	static const double thermalval=3.3;
 	static const double fickval=1.;
 	static const double soretval=1.;
 
-	static const double densval=1.;
+	static const double densval=10540.;
 	static const double alphaval=1.;
 	static const double heatcpval=1.;
 
@@ -362,26 +363,26 @@ namespace Independent_NS {
 
 //  =================== Materials =====================================================
 
-Independent::Independent()
+FixedFuel::FixedFuel()
 {
 		d_propertyMap = new std::map<std::string, boost::shared_ptr<Property<double> > >();
-		INSERT_PROPERTY_IN_MAP(ThermalConductivity, 	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(FickCoefficient,	      	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(SoretCoefficient,	      	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(DTThermalConductivity, 	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(DTFickCoefficient,	      	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(DTSoretCoefficient,	      	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(DxThermalConductivity, 	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(DxFickCoefficient,	      	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(DxSoretCoefficient,	      	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(Density, 				Independent_NS);
-		INSERT_PROPERTY_IN_MAP(HeatCapacityPressure, 	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(ThermalExpansion, 		Independent_NS);
-		INSERT_PROPERTY_IN_MAP(YoungsModulus, 			Independent_NS);
-		INSERT_PROPERTY_IN_MAP(PoissonRatio, 			Independent_NS);
-		INSERT_PROPERTY_IN_MAP(ThermalDiffusionCoefficient,	Independent_NS);
-		INSERT_PROPERTY_IN_MAP(VectorFickCoefficient, Independent_NS);
-		INSERT_PROPERTY_IN_MAP(TensorFickCoefficient, Independent_NS);
+		INSERT_PROPERTY_IN_MAP(ThermalConductivity, 	FixedFuel_NS);
+		INSERT_PROPERTY_IN_MAP(FickCoefficient,	      	FixedFuel_NS);
+		INSERT_PROPERTY_IN_MAP(SoretCoefficient,	      	FixedFuel_NS);
+		INSERT_PROPERTY_IN_MAP(DTThermalConductivity, 	FixedFuel_NS);
+		INSERT_PROPERTY_IN_MAP(DTFickCoefficient,	      	FixedFuel_NS);
+		INSERT_PROPERTY_IN_MAP(DTSoretCoefficient,	      	FixedFuel_NS);
+		INSERT_PROPERTY_IN_MAP(DxThermalConductivity, 	FixedFuel_NS);
+		INSERT_PROPERTY_IN_MAP(DxFickCoefficient,	      	FixedFuel_NS);
+		INSERT_PROPERTY_IN_MAP(DxSoretCoefficient,	      	FixedFuel_NS);
+		INSERT_PROPERTY_IN_MAP(Density, 				FixedFuel_NS);
+		INSERT_PROPERTY_IN_MAP(HeatCapacityPressure, 	FixedFuel_NS);
+		INSERT_PROPERTY_IN_MAP(ThermalExpansion, 		FixedFuel_NS);
+		INSERT_PROPERTY_IN_MAP(YoungsModulus, 			FixedFuel_NS);
+		INSERT_PROPERTY_IN_MAP(PoissonRatio, 			FixedFuel_NS);
+		INSERT_PROPERTY_IN_MAP(ThermalDiffusionCoefficient,	FixedFuel_NS);
+		INSERT_PROPERTY_IN_MAP(VectorFickCoefficient, FixedFuel_NS);
+		INSERT_PROPERTY_IN_MAP(TensorFickCoefficient, FixedFuel_NS);
 }
 
 } 

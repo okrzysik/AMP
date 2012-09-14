@@ -178,11 +178,13 @@ std::vector<size_t> subsetDOFManager::getSubsetDOF( const std::vector<size_t> &p
         if ( DOF>=d_parentBegin && DOF<d_parentEnd ) {
             // The DOF is local
             size_t index = AMP::Utilities::findfirst(d_localDOFs,DOF);
+            if ( index==d_localDOFs.size() ) { index--; }
             if ( d_localDOFs[index] == DOF )
                 subsetDOFs[i] = index + d_begin;
         } else {
             // The DOF is a remote DOF
             size_t index = AMP::Utilities::findfirst(d_remoteParentDOFs,DOF);
+            if ( index==d_remoteParentDOFs.size() ) { index--; }
             if ( d_remoteParentDOFs[index] == DOF )
                 subsetDOFs[i] = d_remoteSubsetDOFs[index];
         }

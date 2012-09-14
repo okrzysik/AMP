@@ -116,7 +116,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     AMP::LinearAlgebra::Variable::shared_ptr Variable( new AMP::LinearAlgebra::Variable(varName) );
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
     AMP::Discretization::DOFManager::shared_ptr  DOFs    = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,1);
-    AMP::Discretization::DOFManager::shared_ptr GpDofMap = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Volume,1,DOFsPerObject,true);
+    AMP::Discretization::DOFManager::shared_ptr GpDofMap = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Face,1,DOFsPerObject,true);
 
     // Test the creation/destruction of ScalarN2GZAxisMap (no apply call)
     try { 
@@ -191,7 +191,9 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
 
 int main(int argc, char *argv[])
 {
-    AMP::AMPManager::startup(argc, argv);
+    AMP::AMPManagerProperties startup_properties;
+    startup_properties.use_MPI_Abort = false;
+    AMP::AMPManager::startup(argc,argv,startup_properties);
     AMP::UnitTest ut;
 
     AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);

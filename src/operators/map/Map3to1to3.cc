@@ -271,7 +271,6 @@ void  Map3to1to3::applyFinish ( AMP::LinearAlgebra::Vector::const_shared_ptr, AM
     PROFILE_START("makeConsistent");
     d_ResultVector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     PROFILE_STOP("makeConsistent");
-    // double a = d_ResultVector->L1Norm();
 
     PROFILE_STOP("applyFinish");
 }
@@ -287,14 +286,13 @@ void Map3to1to3::unpackBuffer( const std::vector<comm_data>& buffer, std::map<do
     for (size_t j=0; j<buffer.size(); j++) {
         iterator = map.end();
         if ( map.size() > 0 ) {
-            it1 = map.find( buffer[j].z );
+            it1 = map.lower_bound( buffer[j].z );
             if ( it1==map.end() ) { it1--; }
             it2 = it1;
             it3 = it1;
             if ( it1 != map.begin() )
                 it1--;
-            if ( it3 != map.end() )
-                it3++;
+            it3++;
             if ( it3 == map.end() )
                 it3 = it2;
             if ( fabs(it1->first-buffer[j].z)<tol )

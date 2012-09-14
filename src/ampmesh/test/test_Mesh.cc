@@ -15,6 +15,9 @@
 #include "meshGenerators.h"
 
 #include "ampmesh/structured/BoxMesh.h"
+#ifdef USE_EXT_STKMESH
+    #include "ampmesh/STKmesh/STKMesh.h"
+#endif
 #ifdef USE_EXT_LIBMESH
     #include "ampmesh/libmesh/libMesh.h"
 #endif
@@ -151,6 +154,31 @@ void testAMPMesh( AMP::UnitTest *ut )
 }
 
 
+// Function to test the creation/destruction of a STKmesh mesh
+#ifdef USE_EXT_STKMESH
+void testSTKMesh( AMP::UnitTest *ut )
+{
+    PROFILE_START("testSTKMesh");
+    // Create a generic MeshParameters object
+    boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+    database->putInteger("dim",3);
+    database->putString("MeshName","mesh1");
+    database->putString("FileName","pellet_lo_res.e");
+    boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+    params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
+
+    // Create an STKMesh mesh
+    boost::shared_ptr<AMP::Mesh::STKMesh> mesh(new AMP::Mesh::STKMesh(params));    
+
+    // Run the mesh tests
+    MeshTestLoop      ( ut, mesh );
+    MeshVectorTestLoop( ut, mesh );
+    MeshMatrixTestLoop( ut, mesh );
+    PROFILE_STOP("testSTKMesh");
+}
+#endif
+
+
 // Function to test the creation/destruction of a libmesh mesh
 #ifdef USE_EXT_LIBMESH
 void testlibMesh( AMP::UnitTest *ut )
@@ -271,6 +299,11 @@ int main ( int argc , char ** argv )
 
     // Run tests on a native AMP mesh
     testAMPMesh( &ut );
+
+    // Run tests on a STKmesh mesh
+    #ifdef USE_EXT_STKMESH
+        testSTKMesh( &ut );
+    #endif
 
     // Run tests on a libmesh mesh
     #ifdef USE_EXT_LIBMESH

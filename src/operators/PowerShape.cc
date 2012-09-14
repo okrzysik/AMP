@@ -249,17 +249,28 @@ namespace AMP {
         } else if (d_type == "zernikeRadial") {
 
           // Number of moments in the Radial direction. Default =0
-          d_numMoments = db->getIntegerWithDefault("numMoments",0);
+          d_numMoments = db->getIntegerWithDefault("numMoments",4);
+          d_Moments.resize(d_numMoments);
 
+          // Establish default values
+          if( d_numMoments == 4) {
+            d_Moments.resize(4);
+            d_Moments[0] = 0.215;
+            d_Moments[1] = 0.00879;
+            d_Moments[2] = 0.0000335;
+            d_Moments[3] = 0.0000450;
+          }
+ 
           // these are only the m=even, n=zero moments.
           AMP_ASSERT( (int)d_numMoments > -1 );
-          AMP_ASSERT( (int)d_numMoments < 3 );
           if (d_numMoments > 0) {
-            AMP_ASSERT (db->keyExists("Moments"));
-            d_Moments.resize(d_numMoments, 0.);
-            db->getDoubleArray("Moments", &d_Moments[0], d_numMoments);
-            for (unsigned int i=0 ; i < d_numMoments ; i++ ){
-              AMP_ASSERT (abs( d_Moments[i] ) <= 1.0  );
+            if ( d_numMoments !=4) AMP_ASSERT (db->keyExists("Moments"));
+            if (db->keyExists("Moments")) {
+              d_Moments.resize(d_numMoments, 0.);
+              db->getDoubleArray("Moments", &d_Moments[0], d_numMoments);
+              for (unsigned int i=0 ; i < d_numMoments ; i++ ){
+                AMP_ASSERT (abs( d_Moments[i] ) <= 1.0  );
+              }
             }
           }
 
@@ -982,17 +993,20 @@ namespace AMP {
 
     /*!
      *************************************************************************
-     * \brief Evaluates Zernike Radial power shape F(r).                           *
+     * \brief Evaluates Zernike Radial power shape F(r).                     *
+     * \param rhor Relative radius.                                          *
+     * d_Moments are the coeffiecients for the (2*i=2, 0) moments.           * 
      *************************************************************************
      */
-    double PowerShape::getZernikeRadial(double rho)
+    double PowerShape::getZernikeRadial(double rhor)
     {
       double fR = 0.0;
-      // i = m/2 - 1;
-      // i = 0; m=2
-      // i = 1; m=4
-      if ( d_numMoments > 0 ) fR += d_Moments[0] * (2.*rho*rho-1.);
-      if ( d_numMoments > 1 ) fR += d_Moments[1] * (1 - 6*rho*rho* (1. - rho*rho) );
+      double rho = rhor;
+      unsigned int m;
+      for ( unsigned int j=0; j<d_numMoments; j++ ) {
+        m = 2*j+2;
+        fR += d_Moments[j] * evalZernike(0, m, rho, 0.);
+      }
       return fR;
     }
 

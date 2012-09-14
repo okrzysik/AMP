@@ -34,7 +34,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
     // Get the databases for the nonlinear and linear solvers
     boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
-    boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
+    //boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
 
     // initialize the nonlinear solver parameters
     boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new

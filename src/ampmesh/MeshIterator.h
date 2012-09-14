@@ -77,6 +77,9 @@ public:
     //! Return the current position (from the beginning) in the iterator
     virtual size_t position() const;
 
+    //! Return the Unique (per class) ID for identifing the underlying iterator
+    unsigned int type_id() const {return typeID;}
+
     //! Arithmetic operator+
     virtual MeshIterator operator+(int) const;
 
