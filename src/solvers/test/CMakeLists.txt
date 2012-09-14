@@ -47,6 +47,7 @@ COPY_MESH_FILE(testAMGmesh33)
 ADD_AMP_TEST(testSubchannelSolve testSubchannelSolve-1 )
 COPY_TEST_DATA_FILE ( input_testSubchannelSolve-1 )
 COPY_TEST_DATA_FILE ( input_testSubchannelSolve-2 )
+COPY_TEST_DATA_FILE ( input_testSubchannelSolve-3 )
 
 ADD_AMP_TEST(testSubchannelSolution)
 COPY_TEST_DATA_FILE ( input_testSubchannelSolution-1 )

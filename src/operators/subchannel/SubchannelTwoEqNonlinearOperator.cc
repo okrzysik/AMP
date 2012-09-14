@@ -1,6 +1,7 @@
 #include "operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
 #include "operators/subchannel/SubchannelOperatorParameters.h"
 #include "operators/subchannel/SubchannelConstants.h"
+#include "operators/subchannel/SubchannelHelpers.h"
 
 #include "ampmesh/StructuredMeshHelper.h"
 #include "utils/Utilities.h"
@@ -242,74 +243,37 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
           } 
 
           // compute the enthalpy change in each interval
-          std::vector<double> dh(numCells);
-          AMP::Mesh::MeshIterator face = begin_face;
+          std::vector<double> flux(numCells);
           if (d_source == "averageCladdingTemperature") {
-            for (int j=0; j<numCells; j++){
-              //evalute flow average temperature 
-              dof_manager->getDOFs( face->globalID(), dofs );
-              cladDofManager->getDOFs( face->globalID(), scalarDofs );
-              double cladMinus = d_cladTemperature->getValueByGlobalID(scalarDofs[0]);
-              std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
-              temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_scale*inputVec->getValueByGlobalID(dofs[0]))));
-              temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,P_scale*inputVec->getValueByGlobalID(dofs[1]))));
-              std::vector<double> flowMinus(1), specificVolMinus(1);
-              d_subchannelPhysicsModel->getProperty("Temperature", flowMinus, temperatureArgMap);
-              d_subchannelPhysicsModel->getProperty("SpecificVolume", specificVolMinus, temperatureArgMap);
-
-              face++;
-              dof_manager->getDOFs( face->globalID(), dofs );
-              cladDofManager->getDOFs( face->globalID(), scalarDofs );
-              double cladPlus = d_cladTemperature->getValueByGlobalID(scalarDofs[0]);;
-              temperatureArgMap.clear();
-              temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_scale*inputVec->getValueByGlobalID(dofs[0]))));
-              temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,P_scale*inputVec->getValueByGlobalID(dofs[1]))));
-              std::vector<double> flowPlus(1), specificVolPlus(1);
-              d_subchannelPhysicsModel->getProperty("Temperature", flowPlus, temperatureArgMap); 
-              d_subchannelPhysicsModel->getProperty("SpecificVolume", specificVolPlus, temperatureArgMap);
-
-              double cladAvgTemp = (cladMinus + cladPlus)/2.0;
-              std::vector<double> flowTemp(1, (flowMinus[0] + flowPlus[0])/2.0);
-              std::vector<double> flowDens(1, ((1./specificVolMinus[0]) + (1./specificVolPlus[0]))/2.0);
-
-              std::map<std::string, boost::shared_ptr<std::vector<double> > > convectiveHeatArgMap;
-              convectiveHeatArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,flowTemp[0])));
-              convectiveHeatArgMap.insert(std::make_pair("density",new std::vector<double>(1,flowDens[0])));
-              convectiveHeatArgMap.insert(std::make_pair("diameter",new std::vector<double>(1,d_channelDia)));
-              convectiveHeatArgMap.insert(std::make_pair("reynolds",new std::vector<double>(1,d_reynolds)));
-              convectiveHeatArgMap.insert(std::make_pair("prandtl",new std::vector<double>(1,d_prandtl)));
-              std::vector<double> heff(1); 
-              d_subchannelPhysicsModel->getProperty("ConvectiveHeat", heff, convectiveHeatArgMap); 
-
-              double flux = heff[0]*(cladAvgTemp - flowTemp[0]) ;
-              double lin  = flux*pi*d_diameter*d_channelFractions[isub] ;
-              double flux_sum = 4.0*pi*d_diameter*1.0/4.0*flux;
+              AMP::Mesh::MeshIterator face = begin_face;
+              std::vector<AMP::Mesh::MeshElementID> face_ids(z.size());
+              for (size_t j=0; j<z.size(); j++) {
+                  std::vector<double> center = face->centroid();
+                  AMP_ASSERT(Utilities::approx_equal(center[2],z[j]));
+                  face_ids[j] = face->globalID();
+                  ++face;
+              }
+              flux = Subchannel::getHeatFluxClad( z, face_ids, d_diameter, d_channelDia, d_reynolds, d_prandtl, 
+                d_channelFractions[isub], d_subchannelPhysicsModel, inputVec, d_cladTemperature );
+          } else if (d_source == "averageHeatFlux") {
+              AMP_ERROR("Heat source type 'averageHeatFlux' not yet implemented.");
+          } else if (d_source == "totalHeatGeneration") {
+              flux = Subchannel::getHeatFluxGeneration( d_heatShape, z, d_diameter, d_Q );
+          } else {
+              AMP_ERROR("Heat source type '"+d_source+"' is invalid");
+          }
+          std::vector<double> dh(numCells);
+          for (int j=0; j<numCells; j++) {
+              double lin  = flux[j]*pi*d_diameter;
+              double flux_sum = 4.0*pi*d_diameter*1.0/4.0*flux[j];
               double lin_sum = 4.0*d_gamma*1.0/4.0*lin;
               dh[j] = del_z[j] / d_m * (flux_sum + lin_sum);
-            }
-          } else if (d_source == "averageHeatFlux") {
-            AMP_ERROR("Heat source type 'averageHeatFlux' not yet implemented.");
-          } else if (d_source == "totalHeatGeneration") {
-            if (d_heatShape == "Sinusoidal") {
-              // sinusoidal
-              for (int j=0; j<numCells; j++){
-                double flux = d_Q/(2.0*pi*d_diameter*del_z[j]) * (std::cos(pi*z[j]/height) - std::cos(pi*z[j+1]/height));
-                double lin = d_Q/(2.0*del_z[j])                * (std::cos(pi*z[j]/height) - std::cos(pi*z[j+1]/height));
-                double flux_sum = 4.0*pi*d_diameter*1.0/4.0*flux;
-                double lin_sum = 4.0*d_gamma*1.0/4.0*lin;
-                dh[j] = del_z[j] / d_m * (flux_sum + lin_sum);
-              }
-            } else {
-              AMP_ERROR("Heat shape '"+d_heatShape+" is invalid");
-            }
-          } else {
-            AMP_ERROR("Heat source type '"+d_source+"' is invalid");
           }
 
           // calculate residual for axial momentum equations
           double R_h, R_p; 
           int j = 1;
-          face = begin_face;
+          AMP::Mesh::MeshIterator face = begin_face;
           for(size_t iface = 0; iface < begin_face.size(); ++iface, ++j){
 
             // ======================================================

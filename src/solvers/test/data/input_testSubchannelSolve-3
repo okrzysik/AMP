@@ -13,16 +13,16 @@ Mesh{
         MeshArrayDatabasePrefix = "MeshArray_"
         // The array of pins
         MeshArray_1 {
-            N = 8
+            N = 1
             iterator = "%p"
-            indicies = 1, 2, 3, 4, 5, 6, 7, 8
+            indicies = 1
             MeshName = "pin_%p"
             MeshType = "Multimesh"
             MeshDatabasePrefix = "Mesh_"
             MeshArrayDatabasePrefix = "MeshArray_"
-            x_offset = 0.0063, 0.0189, 0.0315, 0.0063, 0.0315, 0.0063, 0.0189, 0.0315
-            y_offset = 0.0063, 0.0063, 0.0063, 0.0189, 0.0189, 0.0315, 0.0315, 0.0315
-            z_offset = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+            x_offset = 0.0063
+            y_offset = 0.0063
+            z_offset = 0.0
             // The pellet meshes
             Mesh_1{
                 MeshName = "PelletMeshes_%p"
@@ -37,11 +37,11 @@ Mesh{
                     MeshType = "AMP"
                     dim = 3
                     Generator = "cylinder"
-                    Size = 4, 5
-                    Range = 0.004025, 0, 0.0105
+                    Size = 4, 10
+                    Range = 0.004025, 0, 1.27
                     x_offset = 0.0
                     y_offset = 0.0
-                    z_offset = 0.0, 0.0105, 0.021
+                    z_offset = 0.0, 1.27, 2.54
                     Weight = 1.0
                 }
             }
@@ -56,8 +56,8 @@ Mesh{
                   MeshType = "AMP"
                   dim = 3
                   Generator = "tube"
-                  Size = 3, 24, 15
-                  Range = 0.004110, 0.004705, 0, 0.0315
+                  Size = 3, 20, 30
+                  Range = 0.004110, 0.004705, 0, 3.81
                   x_offset = 0.0
                   y_offset = 0.0
                   z_offset = 0.0
@@ -73,10 +73,10 @@ Mesh{
         MeshType = "AMP"
         dim = 3
         Generator = "cube"
-        Size = 4, 4, 10
-        x_grid = 0.0, 0.0063, 0.0189, 0.0315, 0.0378
-        y_grid = 0.0, 0.0063, 0.0189, 0.0315, 0.0378
-        z_grid = 0.0, 0.00315, 0.0063, 0.00945, 0.0126, 0.01575, 0.0189, 0.02205, 0.0252, 0.02835, 0.0315
+        Size = 2, 2, 10
+        x_grid = 0.0, 0.0063, 0.0126
+        y_grid = 0.0, 0.0063, 0.0126
+        z_grid = 0.0, 0.381, 0.762, 1.143, 1.524, 1.905, 2.286, 2.667, 3.048, 3.429, 3.810
     }
 }
 
@@ -93,10 +93,10 @@ ThermalNodeToNodeMaps{
 
 ThermalScalarZAxisMaps{
   MapType = "ScalarZAxis"
-    N_maps = 8
-    Mesh1 = "PelletMeshes_1", "PelletMeshes_2", "PelletMeshes_3", "PelletMeshes_4", "PelletMeshes_5", "PelletMeshes_6", "PelletMeshes_7", "PelletMeshes_8"
+    N_maps = 1
+    Mesh1 = "PelletMeshes_1"
     Surface1 = 4
-    Mesh2 = "CladMeshes_1", "CladMeshes_2", "CladMeshes_3", "CladMeshes_4", "CladMeshes_5", "CladMeshes_6", "CladMeshes_7", "CladMeshes_8"
+    Mesh2 = "CladMeshes_1"
     Surface2 = 8
     DOFsPerObject = 1
     VariableName = "Temperature"
@@ -701,7 +701,7 @@ SubchannelTwoEqLinearOperator{
     Form_Loss_Coefficient = 0.2
     Rod_Power = 66.81e3
     Heat_Source_Type = "averageCladdingTemperature"
-    ChannelFractions = 0.25, 0.5, 0.5, 0.25, 0.5 , 0.75, 0.75 , 0.5, 0.5 , 0.75, 0.75 , 0.5, 0.25, 0.5, 0.5, 0.25 
+    ChannelFractions = 0.25, 0.25, 0.25, 0.25 
     Heat_Shape = "Sinusoidal"
     LocalModel = "SubchannelPhysicsModel"
 }

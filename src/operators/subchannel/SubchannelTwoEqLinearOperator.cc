@@ -1,6 +1,7 @@
 #include "operators/subchannel/SubchannelTwoEqLinearOperator.h"
 #include "operators/subchannel/SubchannelOperatorParameters.h"
 #include "operators/subchannel/SubchannelConstants.h"
+#include "operators/subchannel/SubchannelHelpers.h"
 
 #include "ampmesh/StructuredMeshHelper.h"
 #include "vectors/VectorBuilder.h"
@@ -31,7 +32,10 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
       d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.1);  
       d_pitch     = getDoubleParameter(myparams,"Lattice_Pitch",0.0128016);  
       d_diameter  = getDoubleParameter(myparams,"Rod_Diameter",0.0097028);  
+      d_reynolds  = getDoubleParameter(myparams,"Reynolds",0.0);  
+      d_prandtl   = getDoubleParameter(myparams,"Prandtl",0.0);  
       d_K    = getDoubleParameter(myparams,"Form_Loss_Coefficient",0.2);  
+      d_channelDia= getDoubleParameter(myparams,"Channel_Diameter",0.0);  
       d_source = getStringParameter(myparams,"Heat_Source_Type","totalHeatGeneration");
 
       const double h_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
@@ -128,25 +132,6 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
             for( size_t j=1; j<numFaces; j++) {
               z[j] = z[j-1] + del_z[j-1];
             } 
-
-            // compute the enthalpy change in each interval
-            std::vector<double> dh(numCells);
-            if (d_source == "averageCladdingTemperature") {
-              // Do we need to Implement this at all
-            } else if (d_source == "averageHeatFlux") {
-              AMP_ERROR("Heat source type 'averageHeatFlux' not yet implemented.");
-            } else if (d_source == "totalHeatGeneration") {
-              // assuming cosine power shape
-              for (size_t j=0; j<numCells; j++){
-                double flux = d_Q/(2.0*pi*d_diameter*del_z[j]) * (std::cos(pi*z[j]/height) - std::cos(pi*z[j+1]/height));
-                double lin = d_Q/(2.0*del_z[j])                * (std::cos(pi*z[j]/height) - std::cos(pi*z[j+1]/height));
-                double flux_sum = 4.0*pi*d_diameter*1.0/4.0*flux;
-                double lin_sum = 4.0*d_gamma*1.0/4.0*lin;
-                dh[j] = del_z[j] / d_m * (flux_sum + lin_sum);
-              }
-            } else {
-              AMP_ERROR("Heat source type '"+d_source+"' is invalid");
-            }
 
             std::vector<size_t> dofs_minus;
             std::vector<size_t> dofs;

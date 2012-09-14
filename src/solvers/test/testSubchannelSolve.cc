@@ -70,9 +70,13 @@
 #include "ampmesh/StructuredMeshHelper.h"
 
 
-// Function to get an arbitrary power profile 
-double getPower(const std::vector<double> &x) {
-    return 2e6*( 1.0 + x[0]*50 + x[1]*100 + x[2]*500 );
+// Function to get an arbitrary power profile (W/g)
+double getPower( const std::vector<double> &range, const std::vector<double> &pos ) {
+    const double pi = 3.1415926535897932;
+    double x = (pos[0]-range[0])/(range[1]-range[0]);
+    double y = (pos[1]-range[2])/(range[3]-range[2]);
+    double z = (pos[2]-range[4])/(range[5]-range[4]);
+    return 5e7*(1.0+0.5*x+0.5*y)*sin(0.5*pi*z);
 }
 
 
@@ -412,7 +416,11 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     // unusual map - take flow variable (enthalpy and pressure) on subchannel mesh and convert to temperature then map to clad surface
     boost::shared_ptr<AMP::Database> subchannelToCladDb = global_input_db->getDatabase( "SubchannelToCladMaps" );
     subchannelToCladMap = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, subchannelToCladDb );
-    subchannelToCladMap->setVector( thermalMapVec );
+    if ( cladMesh.get()!=NULL ) {
+        AMP::LinearAlgebra::VS_Comm commSelector(cladMesh->getComm());
+        AMP::LinearAlgebra::Vector::shared_ptr subsetVec = thermalMapVec->select(commSelector, thermalMapVec->getVariable()->getName());
+        subchannelToCladMap->setVector( subsetVec );
+    }
     boost::shared_ptr<AMP::Operator::CoupledChannelToCladMapOperatorParameters> coupledChannelMapOperatorParams(new AMP::Operator::CoupledChannelToCladMapOperatorParameters( emptyDb ));
     coupledChannelMapOperatorParams->d_variable       = flowVariable;
     coupledChannelMapOperatorParams->d_vector         = subchannelFlowTemp;
@@ -494,6 +502,16 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     // Initialize the pin temperatures
     PROFILE_START("Initialize");
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+    int root_subchannel = -1;
+    std::vector<double> range(6);
+    if ( subchannelMesh.get()!=NULL ) {
+        range = subchannelMesh->getBoundingBox();
+        AMP_ASSERT(range.size()==6);
+        if ( subchannelMesh->getComm().getRank()==0 )
+            root_subchannel = globalComm.getRank();
+    }
+    root_subchannel = globalComm.maxReduce(root_subchannel);
+    globalComm.bcast(&range[0],6,root_subchannel);
     if ( pinMesh.get()!=NULL ) {
         globalThermalSolVec->setToScalar(500);
         AMP::Discretization::DOFManager::shared_ptr gaussPtDOFManager = 
@@ -503,14 +521,15 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         for (size_t i=0; i<it.size(); i++) {
             gaussPtDOFManager->getDOFs(it->globalID(),dofs);
             for (size_t j=0; j<dofs.size(); j++) {
-                specificPowerGpVec->setValueByGlobalID(dofs[j],getPower(it->centroid()));
+                specificPowerGpVec->setValueByGlobalID(dofs[j],getPower(range,it->centroid()));
             }
             ++it;
         }
-
-        AMP::LinearAlgebra::VS_Mesh meshSelector(cladMesh);
-        AMP::LinearAlgebra::Vector::shared_ptr cladPower = specificPowerGpVec->select(meshSelector,"cladPower");
-        cladPower->zero(); 
+        if ( cladMesh.get()!=NULL ) {
+            AMP::LinearAlgebra::VS_Mesh meshSelector(cladMesh);
+            AMP::LinearAlgebra::Vector::shared_ptr cladPower = specificPowerGpVec->select(meshSelector,"cladPower");
+            cladPower->zero(); 
+        }
         specificPowerGpVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
         volumeIntegralColumnOperator->apply(nullVec, specificPowerGpVec, globalThermalRhsVec , 1., 0.);
     }
@@ -637,11 +656,13 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr enthalpy, pressure;
     enthalpy = flowSolVec->select( AMP::LinearAlgebra::VS_Stride(0,2), "H" );
     pressure = flowSolVec->select( AMP::LinearAlgebra::VS_Stride(1,2), "P" );
-    enthalpy->scale(h_scale);
-    pressure->scale(P_scale);
+    if ( enthalpy.get()!=NULL ) {
+        enthalpy->scale(h_scale);
+        pressure->scale(P_scale);
+    }
     // Register the quantities to plot
     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
-    if(xyFaceMesh != NULL ){
+    if( xyFaceMesh != NULL ){
         siloWriter->registerVector( flowSolVec, xyFaceMesh, AMP::Mesh::Face, "SubchannelFlow" );
         siloWriter->registerVector( flowTempVec, xyFaceMesh, AMP::Mesh::Face, "FlowTemp" );
         siloWriter->registerVector( deltaFlowTempVec, xyFaceMesh, AMP::Mesh::Face, "FlowTempDelta" );
@@ -653,6 +674,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     siloWriter->writeFile( silo_name , 0 );
 #endif
     PROFILE_STOP("Main");
+    PROFILE_SAVE("exeName");
 }
 
 

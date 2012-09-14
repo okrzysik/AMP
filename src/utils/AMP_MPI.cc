@@ -242,18 +242,22 @@ AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 ) {
     MPI_Group_compare ( group1, group12, &compare1 );
     MPI_Group_compare ( group2, group12, &compare2 );
     AMP_MPI new_comm(AMP_COMM_NULL);
-    if ( compare1!=MPI_UNEQUAL ) {
+    int size;
+    MPI_Group_size( group12, &size );
+    if ( size==0 ) {
+        // We have no intersection, return NULL
+    } else if ( compare1!=MPI_UNEQUAL ) {
+        // The intersection matches comm1
         new_comm = comm1;
     } else if ( compare2!=MPI_UNEQUAL ) {
+        // The intersection matches comm2
         new_comm = comm2;
     } else {
+        // The intersection is smaller than comm1 or comm2
+        // Create the new comm using comm1
         MPI_Comm  new_MPI_comm;
         MPI_Comm_create( comm1.communicator, group12, &new_MPI_comm );
-        int size;
-        MPI_Group_size( group12, &size );
-        if ( size > 0 ) {
-            new_comm = AMP_MPI( new_MPI_comm );
-        }
+        new_comm = AMP_MPI( new_MPI_comm );
     }
     MPI_Group_free( &group1 );
     MPI_Group_free( &group2 );
