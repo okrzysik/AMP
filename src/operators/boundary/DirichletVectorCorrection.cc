@@ -175,8 +175,13 @@ namespace AMP {
       AMP::LinearAlgebra::Variable::shared_ptr var) {
       if(d_Mesh.get() != NULL) {
         AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
-        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, var->getName());
-        return meshSubsetVec->subsetVectorForVariable(var);
+        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, vec->getVariable()->getName());
+        AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec = meshSubsetVec->subsetVectorForVariable(var);
+        return varSubsetVec;
+
+//        AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
+//        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, var->getName());
+//        return meshSubsetVec->subsetVectorForVariable(var);
       } else {
         return vec->subsetVectorForVariable(var);
       }
@@ -187,8 +192,13 @@ namespace AMP {
       AMP::LinearAlgebra::Variable::shared_ptr var) {
       if(d_Mesh.get() != NULL) {
         AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
-        AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec = vec->constSelect(meshSelector, var->getName());
-        return meshSubsetVec->constSubsetVectorForVariable(var);
+        AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec = vec->constSelect(meshSelector, vec->getVariable()->getName());
+        AMP::LinearAlgebra::Vector::const_shared_ptr varSubsetVec = meshSubsetVec->constSubsetVectorForVariable(var);
+        return varSubsetVec;
+
+//        AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
+//        AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec = vec->constSelect(meshSelector, var->getName());
+//        return meshSubsetVec->constSubsetVectorForVariable(var);
       } else {
         return vec->constSubsetVectorForVariable(var);
       }

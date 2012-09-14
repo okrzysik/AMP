@@ -37,6 +37,7 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
       d_diameter  = getDoubleParameter(myparams,"Rod_Diameter",0.0097028);  
       d_K    = getDoubleParameter(myparams,"Form_Loss_Coefficient",0.2);  
       d_source = getStringParameter(myparams,"Heat_Source_Type","totalHeatGeneration");
+      d_frictionModel = getStringParameter(myparams,"Friction_Model","Constant");
 
       // get additional parameters based on heat source type
       if (d_source == "totalHeatGeneration") {
@@ -44,6 +45,13 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
           d_heatShape = getStringParameter(myparams,"Heat_Shape","Sinusoidal");
       }else if (d_source == "averageCladdingTemperature"){
         d_channelFractions = (myparams->d_db)->getDoubleArray("ChannelFractions");
+      }
+
+      // get additional parameters based on friction model
+      if (d_frictionModel == "Constant") {
+         d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);  
+      } else if (d_frictionModel == "Selander"){
+         d_roughness = getDoubleParameter(myparams,"Surface_Roughness",0.0015e-3);  
       }
 
       d_subchannelPhysicsModel   = myparams->d_subchannelPhysicsModel;  
@@ -194,16 +202,6 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
           AMP::Mesh::MeshIterator begin_face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(localSubchannel , 0);
           AMP::Mesh::MeshIterator end_face   = begin_face.end();
 
-          /**
-            get boundary values: u has ordering:
-            \f[ \vec{u}=\left[\begin{array}{c}
-            h_{0^+}\\
-            p_{0^+}\\
-            \vdots\\
-            h_{J^+}\\
-            p_{J^+}\\
-            \end{array}\right] \f]
-            */
           const int numFaces = begin_face.size() ;
           const int numCells = numFaces - 1;
 
@@ -342,11 +340,58 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
 
               double u_plus  = d_m / (A*rho_plus);  // velocity evaluated at upper face
               double u_minus = d_m / (A*rho_minus); // velocity evaluated at lower face
+              double u_avg = (1.0/2.0)*(u_minus + u_plus); // velocity evaluated at cell center
+
+              // evaluate temperature at cell center
+              std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
+              temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_avg)));
+              temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,p_avg)));
+              std::vector<double> temperatureResult(1);
+              d_subchannelPhysicsModel->getProperty("Temperature",temperatureResult,temperatureArgMap);
+              double T_avg = temperatureResult[0];
+
+              // evaluate viscosity at cell center
+              std::map<std::string, boost::shared_ptr<std::vector<double> > > viscosityArgMap;
+              viscosityArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,T_avg)));
+              viscosityArgMap.insert(std::make_pair("density",new std::vector<double>(1,rho_avg)));
+              std::vector<double> viscosityResult(1);
+              d_subchannelPhysicsModel->getProperty("Viscosity",viscosityResult,viscosityArgMap);
+              double visc = viscosityResult[0];
+
+              // evaluate friction factor
+              double Re = rho_avg*u_avg*D/visc;
+              double fl = 64.0/Re; // laminar friction factor
+              double fric; // friction factor
+              if (d_frictionModel == "Constant") {
+                 fric = d_friction;
+              } else {
+                 double ft; // turbulent friction factor evaluated from computed Re
+                 double ft4000; // turbulent friction factor evaluated from Re = 4000
+                 if (d_frictionModel == "Blasius") {
+                    ft = 0.316*std::pow(Re,-0.25);
+                    ft4000 = 0.316*std::pow(4000.0,-0.25);
+                 } else if (d_frictionModel == "Drew") {
+                    ft = 0.0056 + 0.5*std::pow(Re,-0.32);
+                    ft4000 = 0.0056 + 0.5*std::pow(4000.0,-0.32);
+                 } else if (d_frictionModel == "Filonenko") {
+                    ft = std::pow(1.82*std::log(Re)-1.64,-2);
+                    ft4000 = std::pow(1.82*std::log(4000.0)-1.64,-2);
+                 } else if (d_frictionModel == "Selander") {
+                    ft = 4.0*std::pow(3.8*std::log(10.0/Re+0.2*d_roughness/D),-2);
+                    ft4000 = 4.0*std::pow(3.8*std::log(10.0/4000.0+0.2*d_roughness/D),-2);
+                 } else {
+                    AMP_ERROR("Invalid choice for Friction_Model.");
+                 }
+                 if (Re < 4000.0)
+                    fric = std::max(fl,ft4000);
+                 else
+                    fric = ft;
+             } 
 
               // evaluate residual: axial momentum equation
               R_p = (d_m/A)*(u_plus - u_minus)
                 + g * del_z[j-1] * rho_avg * std::cos(d_theta)
-                + (1.0/2.0)*(del_z[j-1] * d_friction/D + d_K)* std::abs(d_m/(A*rho_avg))*(d_m/A)
+                + (1.0/2.0)*(del_z[j-1] * fric/D + d_K)* std::abs(d_m/(A*rho_avg))*(d_m/A)
                 + p_plus - p_minus;
             }
 

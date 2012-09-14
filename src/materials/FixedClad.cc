@@ -25,7 +25,7 @@ namespace FixedClad_NS {
 	static const std::string name_base("FixedClad");
 	static const std::string source("average values from matpro; as defined by Phillippe."); 
 
-	static const double thermalval=15.79;
+	static const double thermalval=16.05;
 	static const double fickval=1.;
 	static const double soretval=1.;
 
