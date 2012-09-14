@@ -6,6 +6,7 @@
 #include "ampmesh/StructuredMeshHelper.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
+#include "utils/ProfilerApp.h"
 
 #include <string>
 
@@ -146,49 +147,49 @@ int SubchannelTwoEqNonlinearOperator::getSubchannelIndex( double x, double y )
 void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
     AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b)
 {
+    PROFILE_START("apply");
+    // ensure that solution and residual vectors aren't NULL
+    AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
+    AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
 
-      // ensure that solution and residual vectors aren't NULL
-      AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
-      AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
+    // calculate extra parameters
+    const double pi = 4.0*atan(1.0); // pi
+    const double g = 9.805;          // acceleration due to gravity [m/s2]
+    // assuming square pitch
+    const double perimeter = 4.0*(d_pitch-d_diameter) + pi*d_diameter;    // wetted perimeter
+    const double A = std::pow(d_pitch,2) - pi*std::pow(d_diameter,2)/4.0; // flow area
+    const double D = 4.0*A/perimeter;                                     // hydraulic diameter
+    const double h_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
+    const double P_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
 
-      // calculate extra parameters
-      const double pi = 4.0*atan(1.0); // pi
-      const double g = 9.805;          // acceleration due to gravity [m/s2]
-      // assuming square pitch
-      const double perimeter = 4.0*(d_pitch-d_diameter) + pi*d_diameter;    // wetted perimeter
-      const double A = std::pow(d_pitch,2) - pi*std::pow(d_diameter,2)/4.0; // flow area
-      const double D = 4.0*A/perimeter;                                     // hydraulic diameter
-      const double h_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
-      const double P_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
+    // Subset the vectors
+    AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = subsetInputVector( u );
+    AMP::LinearAlgebra::Vector::shared_ptr outputVec = subsetOutputVector( r );
 
-      // Subset the vectors
-      AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = subsetInputVector( u );
-      AMP::LinearAlgebra::Vector::shared_ptr outputVec = subsetOutputVector( r );
-
-      AMP::Discretization::DOFManager::shared_ptr dof_manager = inputVec->getDOFManager();
-      AMP::Discretization::DOFManager::shared_ptr cladDofManager;
-      if (d_source == "averageCladdingTemperature"){
+    AMP::Discretization::DOFManager::shared_ptr dof_manager = inputVec->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr cladDofManager;
+    if (d_source == "averageCladdingTemperature"){
         cladDofManager = d_cladTemperature->getDOFManager();
-      }
+    }
 
-      fillSubchannelGrid(d_Mesh);
+    fillSubchannelGrid(d_Mesh);
 
-      AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
-      AMP::Mesh::MeshIterator end_el = el.end();
+    AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
+    AMP::Mesh::MeshIterator end_el = el.end();
 
-      std::vector<std::vector<AMP::Mesh::MeshElement> > d_elem(d_numSubchannels);
-      std::vector<bool> d_ownSubChannel(d_numSubchannels);
+    std::vector<std::vector<AMP::Mesh::MeshElement> > d_elem(d_numSubchannels);
+    std::vector<bool> d_ownSubChannel(d_numSubchannels);
 
-      for( ; el != end_el; ++el) {
+    for( ; el != end_el; ++el) {
         std::vector<double> center = el->centroid();
         int index = getSubchannelIndex( center[0], center[1] );
         if ( index>=0 ){
-          d_ownSubChannel[index] = true;
-          d_elem[index].push_back( *el );
+           d_ownSubChannel[index] = true;
+           d_elem[index].push_back( *el );
         }
-      }//end for el
+    }//end for el
 
-      for(int isub =0; isub<d_numSubchannels; ++isub){
+    for(int isub =0; isub<d_numSubchannels; ++isub){
         if(d_ownSubChannel[isub]){
           boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > subchannelElements( new std::vector<AMP::Mesh::MeshElement>() );
           subchannelElements->reserve(d_numSubchannels);
@@ -402,17 +403,18 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
             ++face;
           }
         }
-      }//end of isub
-      if(f.get() == NULL) {
+    }//end of isub
+    if(f.get() == NULL) {
         outputVec->scale(a);
-      } else {
+    } else {
         AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = subsetInputVector( f );
         if(fInternal.get() == NULL) {
-          outputVec->scale(a);
+            outputVec->scale(a);
         } else {
-          outputVec->axpby(b, a, fInternal);
+            outputVec->axpby(b, a, fInternal);
         }
-      }
+    }
+    PROFILE_STOP("apply");
 }
 
 // JEH: what is the purpose of this function?

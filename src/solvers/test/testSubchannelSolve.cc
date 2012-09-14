@@ -76,7 +76,7 @@ double getPower( const std::vector<double> &range, const std::vector<double> &po
     double x = (pos[0]-range[0])/(range[1]-range[0]);
     double y = (pos[1]-range[2])/(range[3]-range[2]);
     double z = (pos[2]-range[4])/(range[5]-range[4]);
-    return 5e7*(1.0+0.5*x+0.5*y)*sin(0.5*pi*z);
+    return 7e7*(0.6+0.2*x+0.2*y)*sin(0.5*pi*z);
 }
 
 
