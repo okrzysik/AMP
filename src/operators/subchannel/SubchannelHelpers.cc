@@ -36,7 +36,6 @@ std::vector<double> getHeatFluxClad( std::vector<double> z, std::vector<AMP::Mes
 {
     for (size_t i=1; i<z.size(); i++)
         AMP_ASSERT(z[i]>z[i-1]);
-    double height = z[z.size()-1];
     std::vector<double> dz(z.size()-1,0.0);
     for (size_t i=0; i<dz.size(); i++)
         dz[i] = z[i+1]-z[i];

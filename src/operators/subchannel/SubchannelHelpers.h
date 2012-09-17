@@ -29,7 +29,7 @@ std::vector<double> getHeatFluxGeneration( std::string shape, std::vector<double
   * \brief Function to get the heat flux of the rod
   * \details  This function returns the heat flux of the rod (W/m^2)
   * \param z            The axial positions of the faces
-  * \param ids          Element ids of the faces of interest (only used for source="averageCladdingTemperature")
+  * \param face_ids     Element ids of the faces of interest (only used for source="averageCladdingTemperature")
   * \param diam         The diameter of the fuel rods
   * \param channelDiam  The effective channel diameter
   * \param reynolds     The reynolds number

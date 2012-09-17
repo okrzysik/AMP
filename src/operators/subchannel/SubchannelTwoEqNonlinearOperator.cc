@@ -366,8 +366,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
               if (d_frictionModel == "Constant") {
                  fric = d_friction;
               } else {
-                 double ft; // turbulent friction factor evaluated from computed Re
-                 double ft4000; // turbulent friction factor evaluated from Re = 4000
+                 double ft = 0.; // turbulent friction factor evaluated from computed Re
+                 double ft4000 = 0.; // turbulent friction factor evaluated from Re = 4000
                  if (d_frictionModel == "Blasius") {
                     ft = 0.316*std::pow(Re,-0.25);
                     ft4000 = 0.316*std::pow(4000.0,-0.25);
