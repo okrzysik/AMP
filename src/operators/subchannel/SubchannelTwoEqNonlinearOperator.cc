@@ -36,15 +36,15 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
       d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.1);  
       d_pitch     = getDoubleParameter(myparams,"Lattice_Pitch",0.0128016);  
       d_diameter  = getDoubleParameter(myparams,"Rod_Diameter",0.0097028);  
-      d_K    = getDoubleParameter(myparams,"Form_Loss_Coefficient",0.2);  
       d_source = getStringParameter(myparams,"Heat_Source_Type","totalHeatGeneration");
       d_frictionModel = getStringParameter(myparams,"Friction_Model","Constant");
+      d_NGrid = getIntegerParameter(myparams,"Number_GridSpacers",0);
 
       // get additional parameters based on heat source type
       if (d_source == "totalHeatGeneration") {
           d_Q    = getDoubleParameter(myparams,"Rod_Power",66.81e3);  
           d_heatShape = getStringParameter(myparams,"Heat_Shape","Sinusoidal");
-      }else if (d_source == "averageCladdingTemperature"){
+      } else if (d_source == "averageCladdingTemperature"){
         d_channelFractions = (myparams->d_db)->getDoubleArray("ChannelFractions");
       }
 
@@ -53,6 +53,16 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
          d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);  
       } else if (d_frictionModel == "Selander"){
          d_roughness = getDoubleParameter(myparams,"Surface_Roughness",0.0015e-3);  
+      }
+
+      // get form loss parameters if there are grid spacers
+      if (d_NGrid > 0){
+         d_zMinGrid = (myparams->d_db)->getDoubleArray("zMin_GridSpacers");
+         d_zMaxGrid = (myparams->d_db)->getDoubleArray("zMax_GridSpacers");
+         d_lossGrid = (myparams->d_db)->getDoubleArray("LossCoefficient_GridSpacers");
+         // check that sizes of grid spacer loss vectors are consistent with the provided number of grid spacers
+         if (!(d_NGrid == d_zMinGrid.size() && d_NGrid == d_zMaxGrid.size() && d_NGrid == d_lossGrid.size()))
+            AMP_ERROR("The size of a grid spacer loss vector is inconsistent with the provided number of grid spacers");
       }
 
       d_subchannelPhysicsModel   = myparams->d_subchannelPhysicsModel;  
@@ -66,6 +76,20 @@ double SubchannelTwoEqNonlinearOperator::getDoubleParameter(	boost::shared_ptr<S
     bool keyExists = (myparams->d_db)->keyExists(paramString);
     if (keyExists) {
        return (myparams->d_db)->getDouble(paramString);
+    } else {
+       AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
+       return defaultValue;
+    }
+}
+
+// function used in reset to get integer parameter or set default if missing
+int SubchannelTwoEqNonlinearOperator::getIntegerParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+								std::string paramString,
+                                                                int defaultValue)
+{
+    bool keyExists = (myparams->d_db)->keyExists(paramString);
+    if (keyExists) {
+       return (myparams->d_db)->getInteger(paramString);
     } else {
        AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
        return defaultValue;
@@ -303,6 +327,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
             dof_manager->getDOFs( face->globalID(), dofs );
             double h_minus = h_scale*inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
             double p_minus = P_scale*inputVec->getValueByGlobalID(dofs[1]); // pressure evaluated at lower face
+            std::vector<double> minusFaceCentroid = face->centroid();
+            double z_minus = minusFaceCentroid[2]; // z-coordinate of lower face
             if (face == end_face - 1){
               R_p = p_minus - d_Pout;
             } else {
@@ -310,6 +336,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
               dof_manager->getDOFs( face->globalID(), dofs );
               double h_plus  = h_scale*inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at upper face
               double p_plus  = P_scale*inputVec->getValueByGlobalID(dofs[1]); // pressure evaluated at upper face
+              std::vector<double> plusFaceCentroid = face->centroid();
+              double z_plus = plusFaceCentroid[2]; // z-coordinate of lower face
               --face;
 
               double h_avg   = (1.0/2.0)*(h_minus + h_plus); // enthalpy evaluated at cell center
@@ -389,10 +417,43 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
                     fric = ft;
              } 
 
+              // compute form loss coefficient
+              double K = 0.0;
+              for (size_t igrid=0; igrid < d_lossGrid.size(); igrid++){
+                 double zMin_grid = d_zMinGrid[igrid];
+                 double zMax_grid = d_zMaxGrid[igrid];
+                 AMP_INSIST((zMax_grid > zMin_grid),"Grid spacer zMin > zMax");
+                 double K_grid = d_lossGrid[igrid];
+                 double K_perLength = K_grid/(zMax_grid - zMin_grid);
+                 if (zMax_grid >= z_plus){
+                    double overlap;
+                    if (zMin_grid >= z_plus){
+                       overlap = 0.0;
+                    } else if (zMin_grid > z_minus && zMin_grid < z_plus){
+                       overlap = z_plus - zMin_grid;
+                    } else if (zMin_grid <= z_minus){
+                       overlap = z_plus - z_minus;
+                    } else {
+                       AMP_ERROR("Unexpected position comparison for zMin_grid");
+                    }
+                    K += overlap*K_perLength;
+                 } else if (zMax_grid < z_plus && zMax_grid > z_minus){
+                    double overlap;
+                    if (zMin_grid > z_minus){
+                       overlap = zMax_grid - zMin_grid;
+                    } else if (zMin_grid <= z_minus){
+                       overlap = zMax_grid - z_minus;
+                    } else {
+                       AMP_ERROR("Unexpected position comparison for zMin_grid");
+                    }
+                    K += overlap*K_perLength;
+                 }
+              }
+
               // evaluate residual: axial momentum equation
               R_p = (d_m/A)*(u_plus - u_minus)
                 + g * del_z[j-1] * rho_avg * std::cos(d_theta)
-                + (1.0/2.0)*(del_z[j-1] * fric/D + d_K)* std::abs(d_m/(A*rho_avg))*(d_m/A)
+                + (1.0/2.0)*(del_z[j-1] * fric/D + K)* std::abs(d_m/(A*rho_avg))*(d_m/A)
                 + p_plus - p_minus;
             }
 

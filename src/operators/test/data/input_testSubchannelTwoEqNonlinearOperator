@@ -24,13 +24,16 @@ SubchannelTwoEqNonlinearOperator{
     Friction_Factor = 0.1
     Lattice_Pitch = 0.0128016
     Rod_Diameter = 0.0097028
-    Form_Loss_Coefficient = 0.2
     Rod_Power = 66.81e3
     Heat_Source_Type = "totalHeatGeneration"
     Heat_Shape = "Sinusoidal"
     LocalModel = "SubchannelPhysicsModel"
     Friction_Model = "Constant"
     Surface_Roughness = 0.0015e-3
+    Number_GridSpacers = 9
+    zMin_GridSpacers = 0.0, 0.4233, 0.8467, 1.2700, 1.6933, 2.1167, 2.5400, 2.9633, 3.3867
+    zMax_GridSpacers = 0.4233, 0.8467, 1.2700, 1.6933, 2.1167, 2.5400, 2.9633, 3.3867, 3.8100
+    LossCoefficient_GridSpacers = 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2
 }
 
 SubchannelPhysicsModel{

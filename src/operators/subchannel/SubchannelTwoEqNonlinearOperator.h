@@ -90,6 +90,11 @@ namespace Operator {
       double getDoubleParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, double);
 
       /**
+        Function used in reset to get integer parameter or use default if missing
+        */
+      int getIntegerParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, int);
+
+      /**
         Function used in reset to get double parameter or use default if missing
         */
       std::string getStringParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, std::string);
@@ -115,6 +120,11 @@ namespace Operator {
       std::string d_frictionModel; // friction model
       double d_friction; // friction factor
       double d_roughness; // surface roughness [m]
+
+      int d_NGrid;                    // number of grid spacers
+      std::vector<double> d_zMinGrid; // z min positions of each grid spacer
+      std::vector<double> d_zMaxGrid; // z max positions of each grid spacer
+      std::vector<double> d_lossGrid; // loss coefficients for each grid spacer
 
       double d_channelDia;
       double d_reynolds  ;
