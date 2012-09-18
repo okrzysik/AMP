@@ -152,6 +152,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
         rho = 1.0/volumeResult_plus[0];
         Pin = getSolutionPressure(input_db,H,Pout,rho,0);
     }
+    std::cout<< "Inlet density:"<< rho <<std::endl;
     std::cout<< "Enthalpy Solution:"<< hin <<std::endl;
 
     // Compute the manufactured solution
