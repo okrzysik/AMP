@@ -190,8 +190,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
     }//end for el
 
     if (d_source == "averageCladdingTemperature")
-        AMP_ASSERT((int)d_channelFractions.size()==d_numSubchannels);
-    for(int isub =0; isub<d_numSubchannels; ++isub){
+        AMP_ASSERT(d_channelFractions.size()==d_numSubchannels);
+    for(int isub =0; isub<(int)d_numSubchannels; ++isub){
         if(d_ownSubChannel[isub]){
           boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > subchannelElements( new std::vector<AMP::Mesh::MeshElement>() );
           subchannelElements->reserve(d_numSubchannels);
