@@ -8,7 +8,7 @@ namespace AMP {
 namespace Operator {
 namespace Subchannel {
 
-// Compute the heat flux for the subchannel assuming a head generation rate
+// Compute the heat flux for the subchannel assuming a heat generation rate
 std::vector<double> getHeatFluxGeneration( std::string heatShape, std::vector<double> z, double diameter, double Q_tot )
 {
     for (size_t i=1; i<z.size(); i++)
@@ -77,7 +77,7 @@ std::vector<double> getHeatFluxClad( std::vector<double> z, std::vector<AMP::Mes
     subchannelPhysicsModel->getProperty("SpecificVolume", specificVolume, temperatureArgMap);
     for (size_t i=0; i<N; i++) {
         (*flowTemp)[i] = 0.5*((*Tf)[i]+(*Tf)[i+1]);
-        (*cladTemp)[i] = 0.5*((*Tf)[i]+(*Tf)[i+1]);
+        (*cladTemp)[i] = 0.5*((*Tc)[i]+(*Tc)[i+1]);
         (*flowDens)[i] = 0.5*(1./specificVolume[i]+1./specificVolume[+1]);
     }
     std::map<std::string, boost::shared_ptr<std::vector<double> > > convectiveHeatArgMap;
@@ -91,7 +91,8 @@ std::vector<double> getHeatFluxClad( std::vector<double> z, std::vector<AMP::Mes
     std::vector<double> flux(dz.size(),0.0);
     for (size_t i=0; i<N; i++) {
         double dT = (*cladTemp)[i] - (*flowTemp)[i];
-        flux[i] = heff[0]*dT*pi*diameter*fraction;
+        //flux[i] = heff[i]*dT*pi*diameter*fraction;
+        flux[i] = heff[i]*dT*fraction;
     }
     return flux;
 }

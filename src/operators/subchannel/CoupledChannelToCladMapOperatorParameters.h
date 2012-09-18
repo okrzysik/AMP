@@ -27,6 +27,8 @@ namespace Operator {
 
       virtual ~CoupledChannelToCladMapOperatorParameters() { }
 
+      boost::shared_ptr<AMP::Operator::Operator> d_thermalMapOperator ; 
+      boost::shared_ptr<AMP::Operator::Operator> d_densityMapOperator ; 
       boost::shared_ptr<AMP::Operator::Operator> d_mapOperator ; 
       boost::shared_ptr<AMP::LinearAlgebra::Variable> d_variable ; 
       boost::shared_ptr<AMP::Mesh::Mesh> d_subchannelMesh ; 

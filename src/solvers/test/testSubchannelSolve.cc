@@ -70,13 +70,15 @@
 #include "ampmesh/StructuredMeshHelper.h"
 
 
-// Function to get an arbitrary power profile (W/g)
+// Function to get an arbitrary power profile (W/kg) assuming a density of 1 kg/m^3 for the volume integral
 double getPower( const std::vector<double> &range, const std::vector<double> &pos ) {
     const double pi = 3.1415926535897932;
+    double V = 1.939e-4;    // Volume of fuel in a 3.81m pin
+    double P = 66.81e3;     // Desired power of pin
     double x = (pos[0]-range[0])/(range[1]-range[0]);
     double y = (pos[1]-range[2])/(range[3]-range[2]);
     double z = (pos[2]-range[4])/(range[5]-range[4]);
-    return 7e7*(0.6+0.2*x+0.2*y)*sin(0.5*pi*z);
+    return 1.5e8*(0.6+0.2*x+0.2*y)*sin(0.5*pi*z);
 }
 
 
@@ -301,6 +303,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
 
     // CREATE MAPS
     AMP::LinearAlgebra::Vector::shared_ptr thermalMapVec;
+    AMP::LinearAlgebra::Vector::shared_ptr density_map_vec;
     if ( pinMesh.get()!=NULL ) {
         // flow temperature on clad outer surfaces and pellet temperature on clad innner surfaces, and clad inner surface temp on pellet outer surfaces
         AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = 
@@ -363,38 +366,41 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         std::vector<std::string>  opNames = curBCdb->getStringArray ( "boundaryOperators" );
         for ( int curBCentry = 0 ; curBCentry != curBCdb->getInteger ( "numberOfBoundaryOperators" ) ; curBCentry++ )
         {
-          if ( opNames[curBCentry] == "P2CRobinVectorCorrection" )
-          {
+          if ( opNames[curBCentry] == "P2CRobinVectorCorrection" ) {
             boost::shared_ptr<AMP::Operator::RobinVectorCorrection>  gapBC = boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( curBCentry ) );
             AMP_ASSERT(thermalMapVec!=NULL);
             gapBC->setVariableFlux ( thermalMapVec );
             gapBC->reset ( gapBC->getParameters() );
-          }
-          if ( ( opNames[curBCentry] == "BottomP2PNonlinearRobinVectorCorrection" )|| ( opNames[curBCentry] == "MiddleP2PNonlinearRobinBoundaryCondition" ) || ( opNames[curBCentry] == "TopP2PNonlinearRobinBoundaryCondition" ) )
-          {
+          } else if ( ( opNames[curBCentry] == "BottomP2PNonlinearRobinVectorCorrection" )|| ( opNames[curBCentry] == "MiddleP2PNonlinearRobinBoundaryCondition" ) || ( opNames[curBCentry] == "TopP2PNonlinearRobinBoundaryCondition" ) ) {
             boost::shared_ptr<AMP::Operator::RobinVectorCorrection>  p2pBC = boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( curBCentry ) );
             AMP_ASSERT(thermalMapVec!=NULL);
             p2pBC->setVariableFlux ( thermalMapVec );
             p2pBC->reset ( p2pBC->getParameters() );
-          }
-          if ( opNames[curBCentry] == "C2WBoundaryVectorCorrection" ) 
-          {
+          } else if ( opNames[curBCentry] == "C2WBoundaryVectorCorrection" ) {
             boost::shared_ptr<AMP::Database>  thisDb = global_input_db->getDatabase( opNames[curBCentry] );
             bool isCoupled = thisDb->getBoolWithDefault( "IsCoupledBoundary_0", false);
             if( isCoupled ) 
             {
-              boost::shared_ptr<AMP::Operator::RobinVectorCorrection>  p2pBC = boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( curBCentry ) );
+              boost::shared_ptr<AMP::Operator::RobinVectorCorrection>  c2wBC = boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( curBCentry ) );
               AMP_ASSERT(thermalMapVec!=NULL);
-              p2pBC->setVariableFlux ( thermalMapVec );
-              p2pBC->reset ( p2pBC->getParameters() );
+              c2wBC->setVariableFlux ( thermalMapVec );
+              if ( cladMesh.get()!=NULL ) {
+                  AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = 
+                    AMP::Discretization::simpleDOFManager::create(cladMesh,AMP::Mesh::Vertex,1,1,true);
+                  AMP::LinearAlgebra::Variable::shared_ptr densityVariable( new AMP::LinearAlgebra::Variable("Density") );
+                  density_map_vec = AMP::LinearAlgebra::createVector( nodalScalarDOF, densityVariable );
+                  density_map_vec->zero();
+                  c2wBC->setFrozenVector( density_map_vec );
+              }
+              c2wBC->reset ( c2wBC->getParameters() );
             }
-          }
-          if ( opNames[curBCentry] == "C2PRobinVectorCorrection" )
-          {
+          } else if ( opNames[curBCentry] == "C2PRobinVectorCorrection" ) {
             boost::shared_ptr<AMP::Operator::RobinVectorCorrection>  gapBC = boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( curBCentry ) );
             AMP_ASSERT(thermalMapVec!=NULL);
             gapBC->setVariableFlux ( thermalMapVec );
             gapBC->reset ( gapBC->getParameters() );
+          } else {
+            AMP_ERROR("Unknown boundary operator");
           }
         }
 
@@ -403,29 +409,33 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
 
     }
 
-    boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  cladToSubchannelMap, subchannelToCladMap; 
-
-    boost::shared_ptr<AMP::InputDatabase> emptyDb (new AMP::InputDatabase("empty"));
-    emptyDb->putInteger("print_info_level",0); 
-
+    // Create the maps from the clad temperature to the subchannel temperature
+    boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  cladToSubchannelMap; 
     boost::shared_ptr<AMP::Database> cladToSubchannelDb = global_input_db->getDatabase( "CladToSubchannelMaps" );
     cladToSubchannelMap = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap>( manager, cladToSubchannelDb );
     cladToSubchannelMap->setVector( subchannelFuelTemp );
     mapsColumn->append( cladToSubchannelMap );
 
-    // unusual map - take flow variable (enthalpy and pressure) on subchannel mesh and convert to temperature then map to clad surface
-    boost::shared_ptr<AMP::Database> subchannelToCladDb = global_input_db->getDatabase( "SubchannelToCladMaps" );
-    subchannelToCladMap = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, subchannelToCladDb );
+    // Create the maps from the flow variable (enthalpy and pressure) on subchannel mesh and convert to temperature and density then map to clad surface
+    boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  thermalSubchannelToCladMap, densitySubchannelToCladMap; 
+    boost::shared_ptr<AMP::Database> thermalCladToSubchannelDb = global_input_db->getDatabase( "ThermalSubchannelToCladMaps" );
+    thermalSubchannelToCladMap = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, thermalCladToSubchannelDb );
+    boost::shared_ptr<AMP::Database> densityCladToSubchannelDb = global_input_db->getDatabase( "DensitySubchannelToCladMaps" );
+    densitySubchannelToCladMap = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, densityCladToSubchannelDb );
     if ( cladMesh.get()!=NULL ) {
         AMP::LinearAlgebra::VS_Comm commSelector(cladMesh->getComm());
-        AMP::LinearAlgebra::Vector::shared_ptr subsetVec = thermalMapVec->select(commSelector, thermalMapVec->getVariable()->getName());
-        subchannelToCladMap->setVector( subsetVec );
+        AMP::LinearAlgebra::Vector::shared_ptr subsetTheramlVec = thermalMapVec->select(commSelector, thermalMapVec->getVariable()->getName());
+        thermalSubchannelToCladMap->setVector( subsetTheramlVec );
+        densitySubchannelToCladMap->setVector( density_map_vec );
     }
+    boost::shared_ptr<AMP::InputDatabase> emptyDb (new AMP::InputDatabase("empty"));
+    emptyDb->putInteger("print_info_level",0); 
     boost::shared_ptr<AMP::Operator::CoupledChannelToCladMapOperatorParameters> coupledChannelMapOperatorParams(new AMP::Operator::CoupledChannelToCladMapOperatorParameters( emptyDb ));
     coupledChannelMapOperatorParams->d_variable       = flowVariable;
     coupledChannelMapOperatorParams->d_vector         = subchannelFlowTemp;
     coupledChannelMapOperatorParams->d_Mesh           = subchannelMesh;
-    coupledChannelMapOperatorParams->d_mapOperator    = subchannelToCladMap;
+    coupledChannelMapOperatorParams->d_thermalMapOperator = thermalSubchannelToCladMap;
+    coupledChannelMapOperatorParams->d_densityMapOperator = densitySubchannelToCladMap;
     coupledChannelMapOperatorParams->d_subchannelMesh = subchannelMesh;
     coupledChannelMapOperatorParams->d_subchannelPhysicsModel = subchannelPhysicsModel ;
     boost::shared_ptr<AMP::Operator::Operator> coupledChannelMapOperator (new AMP::Operator::CoupledChannelToCladMapOperator(coupledChannelMapOperatorParams));
@@ -513,7 +523,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     root_subchannel = globalComm.maxReduce(root_subchannel);
     globalComm.bcast(&range[0],6,root_subchannel);
     if ( pinMesh.get()!=NULL ) {
-        globalThermalSolVec->setToScalar(500);
+        globalThermalSolVec->setToScalar(600);
         AMP::Discretization::DOFManager::shared_ptr gaussPtDOFManager = 
             AMP::Discretization::simpleDOFManager::create(pinMesh,AMP::Mesh::Volume,1,8);
         AMP::Mesh::MeshIterator it = pinMesh->getIterator(AMP::Mesh::Volume,0);

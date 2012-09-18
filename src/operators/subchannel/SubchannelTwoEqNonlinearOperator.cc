@@ -189,6 +189,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
         }
     }//end for el
 
+    if (d_source == "averageCladdingTemperature")
+        AMP_ASSERT((int)d_channelFractions.size()==d_numSubchannels);
     for(int isub =0; isub<d_numSubchannels; ++isub){
         if(d_ownSubChannel[isub]){
           boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > subchannelElements( new std::vector<AMP::Mesh::MeshElement>() );
@@ -263,9 +265,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
           }
           std::vector<double> dh(numCells);
           for (int j=0; j<numCells; j++) {
-              double lin  = flux[j]*pi*d_diameter;
-              double flux_sum = 4.0*pi*d_diameter*1.0/4.0*flux[j];
-              double lin_sum = 4.0*d_gamma*1.0/4.0*lin;
+              double flux_sum = pi*d_diameter*flux[j];
+              double lin_sum = d_gamma*pi*d_diameter*flux[j];
               dh[j] = del_z[j] / d_m * (flux_sum + lin_sum);
           }
 

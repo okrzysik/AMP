@@ -21,7 +21,7 @@ namespace Operator {
       }
 
       virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
-        return d_mapOperator->getOutputVariable();
+        return d_thermalMapOperator->getOutputVariable();
       }
 
       void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
@@ -36,8 +36,10 @@ namespace Operator {
       AMP::LinearAlgebra::Variable::shared_ptr d_flowVariable; 
 
       AMP::LinearAlgebra::Vector::shared_ptr d_subchannelTemperature;
+      AMP::LinearAlgebra::Vector::shared_ptr d_subchannelDensity;
 
-      boost::shared_ptr< AMP::Operator::Operator> d_mapOperator;
+      boost::shared_ptr< AMP::Operator::Operator> d_thermalMapOperator;
+      boost::shared_ptr< AMP::Operator::Operator> d_densityMapOperator;
 
       boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 
