@@ -276,7 +276,6 @@ SubchannelTwoEqNonlinearOperator{
     Friction_Factor = 0.001
     Lattice_Pitch = 0.0128016
     Rod_Diameter = 0.0097028
-    Form_Loss_Coefficient = 0.2
     Rod_Power = 66.81e3
     Heat_Source_Type = "averageCladdingTemperature"
     Channel_Diameter = 0.01178  // Todreas, p.455
@@ -286,6 +285,7 @@ SubchannelTwoEqNonlinearOperator{
     Heat_Shape = "Sinusoidal"
     LocalModel = "SubchannelPhysicsModel"
     Friction_Model = "Constant"
+    Number_GridSpacers = 0
 }
 
 SubchannelTwoEqLinearOperator{

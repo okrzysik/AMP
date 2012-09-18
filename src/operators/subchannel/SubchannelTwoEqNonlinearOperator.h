@@ -90,6 +90,11 @@ namespace Operator {
       double getDoubleParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, double);
 
       /**
+        Function used in reset to get integer parameter or use default if missing
+        */
+      int getIntegerParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, int);
+
+      /**
         Function used in reset to get double parameter or use default if missing
         */
       std::string getStringParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, std::string);
@@ -116,6 +121,11 @@ namespace Operator {
       double d_friction; // friction factor
       double d_roughness; // surface roughness [m]
 
+      size_t d_NGrid;                 // number of grid spacers
+      std::vector<double> d_zMinGrid; // z min positions of each grid spacer
+      std::vector<double> d_zMaxGrid; // z max positions of each grid spacer
+      std::vector<double> d_lossGrid; // loss coefficients for each grid spacer
+
       double d_channelDia;
       double d_reynolds  ;
       double d_prandtl   ;
@@ -127,7 +137,7 @@ namespace Operator {
       std::vector<bool> d_ownSubChannel;                      // Which subchannels do I own (multple procs my own a subchannel)
       int getSubchannelIndex( double x, double y );
       void fillSubchannelGrid(AMP::Mesh::Mesh::shared_ptr);   // Function to fill the subchannel data for all processors
-      int d_numSubchannels; 
+      size_t d_numSubchannels; 
   };
 
 }
