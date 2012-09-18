@@ -159,7 +159,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     AMP::Mesh::MeshIterator face = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     std::vector<size_t> dofs;
     const double h_scale = 1.0/AMP::Operator::Subchannel::scaleEnthalpy;    // Scale to change the input vector back to correct units
-    const double P_scale = 1.0/AMP::Operator::Subchannel::scaleEnthalpy;    // Scale to change the input vector back to correct units
+    const double P_scale = 1.0/AMP::Operator::Subchannel::scalePressure;    // Scale to change the input vector back to correct units
     for (int i=0; i<(int)face.size(); i++){
         faceDOFManager->getDOFs( face->globalID(), dofs );
         std::vector<double> coord = face->centroid();

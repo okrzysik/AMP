@@ -30,7 +30,7 @@ std::vector<double> getHeatFluxGeneration( std::string heatShape, std::vector<do
 }
 
 // Compute the heat flux for the subchannel using the clad temperature
-std::vector<double> getHeatFluxClad( std::vector<double> z, std::vector<AMP::Mesh::MeshElementID> face_ids, double diameter, 
+std::vector<double> getHeatFluxClad( std::vector<double> z, std::vector<AMP::Mesh::MeshElementID> face_ids,
     double channelDiam, double reynolds, double prandtl, double fraction, boost::shared_ptr<SubchannelPhysicsModel> subchannelPhysicsModel, 
     AMP::LinearAlgebra::Vector::const_shared_ptr flow, AMP::LinearAlgebra::Vector::const_shared_ptr clad_temp )
 {
@@ -46,7 +46,7 @@ std::vector<double> getHeatFluxClad( std::vector<double> z, std::vector<AMP::Mes
     AMP::Discretization::DOFManager::shared_ptr flow_manager = flow->getDOFManager();
     AMP::Discretization::DOFManager::shared_ptr clad_manager = clad_temp->getDOFManager();
     const double h_scale = 1.0/Subchannel::scaleEnthalpy;   // Scale to change the input vector back to correct units
-    const double P_scale = 1.0/Subchannel::scaleEnthalpy;   // Scale to change the input vector back to correct units 
+    const double P_scale = 1.0/Subchannel::scalePressure;   // Scale to change the input vector back to correct units 
 
     // Get the enthalapy, pressure, flow temperature, and clad temperature at the faces
     boost::shared_ptr<std::vector<double> >  h(new std::vector<double>(z.size(),0.0));
@@ -90,7 +90,6 @@ std::vector<double> getHeatFluxClad( std::vector<double> z, std::vector<AMP::Mes
     std::vector<double> flux(dz.size(),0.0);
     for (size_t i=0; i<N; i++) {
         double dT = (*cladTemp)[i] - (*flowTemp)[i];
-        //flux[i] = heff[i]*dT*pi*diameter*fraction;
         flux[i] = heff[i]*dT*fraction;
     }
     return flux;

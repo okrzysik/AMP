@@ -29,9 +29,9 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
       d_m    = getDoubleParameter(myparams,"Mass_Flow_Rate",0.3522);  
       d_gamma     = getDoubleParameter(myparams,"Fission_Heating_Coefficient",0.0);  
       d_theta     = getDoubleParameter(myparams,"Channel_Angle",0.0);  
-      d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.1);  
-      d_pitch     = getDoubleParameter(myparams,"Lattice_Pitch",0.0128016);  
-      d_diameter  = getDoubleParameter(myparams,"Rod_Diameter",0.0097028);  
+      d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);  
+      d_pitch     = getDoubleParameter(myparams,"Lattice_Pitch",0.0);  
+      d_diameter  = getDoubleParameter(myparams,"Rod_Diameter",0.0);  
       d_reynolds  = getDoubleParameter(myparams,"Reynolds",0.0);  
       d_prandtl   = getDoubleParameter(myparams,"Prandtl",0.0);  
       d_K    = getDoubleParameter(myparams,"Form_Loss_Coefficient",0.2);  
@@ -39,7 +39,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
       d_source = getStringParameter(myparams,"Heat_Source_Type","totalHeatGeneration");
 
       const double h_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
-      const double P_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
+      const double P_scale = 1.0/Subchannel::scalePressure;                 // Scale to change the input vector back to correct units
 
       // get additional parameters based on heat source type
       if (d_source == "totalHeatGeneration") {

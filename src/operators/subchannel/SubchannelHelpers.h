@@ -30,7 +30,6 @@ std::vector<double> getHeatFluxGeneration( std::string shape, std::vector<double
   * \details  This function returns the heat flux of the rod (W/m^2)
   * \param z            The axial positions of the faces
   * \param face_ids     Element ids of the faces of interest (only used for source="averageCladdingTemperature")
-  * \param diam         The diameter of the fuel rods
   * \param channelDiam  The effective channel diameter
   * \param reynolds     The reynolds number
   * \param prandtl      The prandtl number
@@ -39,7 +38,7 @@ std::vector<double> getHeatFluxGeneration( std::string shape, std::vector<double
   * \param flow         The flow vector (h and P) (only used for source="averageCladdingTemperature")
   * \param clad_temp    The clad temperature mapped onto the faces (only used for source="averageCladdingTemperature")
   */
-std::vector<double> getHeatFluxClad( std::vector<double> z, std::vector<AMP::Mesh::MeshElementID> face_ids, double diam, 
+std::vector<double> getHeatFluxClad( std::vector<double> z, std::vector<AMP::Mesh::MeshElementID> face_ids,
     double channelDiam, double reynolds, double prandtl, double fraction, boost::shared_ptr<SubchannelPhysicsModel> subchannelPhysicsModel, 
     AMP::LinearAlgebra::Vector::const_shared_ptr flow, AMP::LinearAlgebra::Vector::const_shared_ptr clad_temp );
 

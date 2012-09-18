@@ -633,7 +633,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         std::vector<size_t> dofs;
         std::vector<size_t> scalarDofs;
         const double h_scale = 1.0/AMP::Operator::Subchannel::scaleEnthalpy;    // Scale to change the input vector back to correct units
-        const double P_scale = 1.0/AMP::Operator::Subchannel::scaleEnthalpy;    // Scale to change the input vector back to correct units
+        const double P_scale = 1.0/AMP::Operator::Subchannel::scalePressure;    // Scale to change the input vector back to correct units
         for( ; face != end_face; ++face){
             faceDOFManager->getDOFs( face->globalID(), dofs );
             scalarFaceDOFManager->getDOFs( face->globalID(), scalarDofs );
@@ -665,7 +665,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
 #ifdef USE_EXT_SILO
     // Rescale the solution to get the correct units
     const double h_scale = 1.0/AMP::Operator::Subchannel::scaleEnthalpy;    // Scale to change the input vector back to correct units
-    const double P_scale = 1.0/AMP::Operator::Subchannel::scaleEnthalpy;    // Scale to change the input vector back to correct units
+    const double P_scale = 1.0/AMP::Operator::Subchannel::scalePressure;    // Scale to change the input vector back to correct units
     AMP::LinearAlgebra::Vector::shared_ptr enthalpy, pressure;
     enthalpy = flowSolVec->select( AMP::LinearAlgebra::VS_Stride(0,2), "H" );
     pressure = flowSolVec->select( AMP::LinearAlgebra::VS_Stride(1,2), "P" );
