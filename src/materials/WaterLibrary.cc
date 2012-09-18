@@ -78,10 +78,10 @@ September 1998");
 	static const unsigned int CondNumParams = 0;
 	static const double       CondParams[CondNumParams] = {};
 	static const std::string  CondArgs[CondNumArgs] = {"temperature", "density"};
-	static const double       CondTminVal = 100.0;		// minimum temperature [K]
-	static const double       CondTmaxVal = 2.0e3;		// maximum temperature [K] (arbitrary "very high" temperature)
-	static const double       CondRhominVal = 0;		// minimum density [kg/m3] 
-	static const double       CondRhomaxVal = 2000.;	// maximum density [kg/m3] (arbitrary "very high" density)
+	static const double       CondTminVal = 200.0;		// minimum temperature [K]
+	static const double       CondTmaxVal = 800;		// maximum temperature [K] (arbitrary "very high" temperature)
+	static const double       CondRhominVal = 500;		// minimum density [kg/m3] 
+	static const double       CondRhomaxVal = 1200.;	// maximum density [kg/m3] (arbitrary "very high" density)
 	static const double       CondRanges[2][2]={{CondTminVal, CondTmaxVal}, {CondRhominVal, CondRhomaxVal}};
 
   	// Convective Heat Coefficient as a function of thermal Conductivity,
@@ -90,10 +90,10 @@ September 1998");
 	static const unsigned int ConvNumParams = 0;
 	static const double       ConvParams[ConvNumParams] = {};
 	static const std::string  ConvArgs[ConvNumArgs] = {"temperature", "density", "diameter", "reynolds", "prandtl"};
-	static const double       ConvTminVal = 100.0;		// minimum temperature [K]
-	static const double       ConvTmaxVal = 2.0e3;		// maximum temperature [K] (arbitrary "very high" temperature)
-	static const double       ConvRhominVal = 0;		// minimum density [kg/m3] 
-	static const double       ConvRhomaxVal = 2000.;	// maximum density [kg/m3] (arbitrary "very high" density)
+	static const double       ConvTminVal = 200.0;		// minimum temperature [K]
+	static const double       ConvTmaxVal = 800;		// maximum temperature [K] (arbitrary "very high" temperature)
+	static const double       ConvRhominVal = 500;		// minimum density [kg/m3] 
+	static const double       ConvRhomaxVal = 1200.;	// maximum density [kg/m3] (arbitrary "very high" density)
 	static const double       ConvDminVal   = 0.0;		// minimum diameter [m]
 	static const double       ConvDmaxVal   = 1.0;		// maximum diameter [m] (arbitrary "very high" temperature)
 	static const double       ConvReyminVal = 1;		// minimum reynolds # [] 
@@ -115,8 +115,8 @@ September 1998");
 	static const std::string  ViscArgs[ViscNumArgs] = {"temperature", "density"};
 	static const double       ViscTminVal = 0.0;		// minimum temperature [K]
 	static const double       ViscTmaxVal = 1.0e3;		// maximum temperature [K] (arbitrary "very high" temperature)
-	static const double       ViscRhominVal = 0;		// minimum density [kg/m3] 
-	static const double       ViscRhomaxVal = 2000.;	// maximum density [kg/m3] (arbitrary "very high" density)
+	static const double       ViscRhominVal = 500;		// minimum density [kg/m3] 
+	static const double       ViscRhomaxVal = 1200.;	// maximum density [kg/m3] (arbitrary "very high" density)
 	static const double       ViscRanges[2][2]={{ViscTminVal, ViscTmaxVal}, {ViscRhominVal, ViscRhomaxVal}};
 
   	// enthalpy as a function of temperature and pressure

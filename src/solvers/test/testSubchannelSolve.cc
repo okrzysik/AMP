@@ -71,14 +71,13 @@
 
 
 // Function to get an arbitrary power profile (W/kg) assuming a density of 1 kg/m^3 for the volume integral
-double getPower( const std::vector<double> &range, const std::vector<double> &pos ) {
+// P is the total power of the pin, V is the volume of the pin
+double getPower( const std::vector<double> &range, double P, double V, const std::vector<double> &pos ) {
     const double pi = 3.1415926535897932;
-    double V = 1.939e-4;    // Volume of fuel in a 3.81m pin
-    double P = 66.81e3;     // Desired power of pin
     double x = (pos[0]-range[0])/(range[1]-range[0]);
     double y = (pos[1]-range[2])/(range[3]-range[2]);
     double z = (pos[2]-range[4])/(range[5]-range[4]);
-    return 1.5e8*(0.6+0.2*x+0.2*y)*sin(0.5*pi*z);
+    return P/V*(0.8+0.2*x+0.2*y)*pi/2*sin(pi*z);
 }
 
 
@@ -522,6 +521,10 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     }
     root_subchannel = globalComm.maxReduce(root_subchannel);
     globalComm.bcast(&range[0],6,root_subchannel);
+    // Desired power of the fuel pin (W)
+    double P = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )->getDouble("Rod_Power");
+    // Volume of fuel in a 3.81m pin
+    double V = 1.939e-4;
     if ( pinMesh.get()!=NULL ) {
         globalThermalSolVec->setToScalar(600);
         AMP::Discretization::DOFManager::shared_ptr gaussPtDOFManager = 
@@ -531,7 +534,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         for (size_t i=0; i<it.size(); i++) {
             gaussPtDOFManager->getDOFs(it->globalID(),dofs);
             for (size_t j=0; j<dofs.size(); j++) {
-                specificPowerGpVec->setValueByGlobalID(dofs[j],getPower(range,it->centroid()));
+                specificPowerGpVec->setValueByGlobalID(dofs[j],getPower(range,P,V,it->centroid()));
             }
             ++it;
         }
