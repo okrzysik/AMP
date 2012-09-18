@@ -121,7 +121,7 @@ namespace Operator {
       double d_friction; // friction factor
       double d_roughness; // surface roughness [m]
 
-      int d_NGrid;                    // number of grid spacers
+      size_t d_NGrid;                 // number of grid spacers
       std::vector<double> d_zMinGrid; // z min positions of each grid spacer
       std::vector<double> d_zMaxGrid; // z max positions of each grid spacer
       std::vector<double> d_lossGrid; // loss coefficients for each grid spacer
@@ -137,7 +137,7 @@ namespace Operator {
       std::vector<bool> d_ownSubChannel;                      // Which subchannels do I own (multple procs my own a subchannel)
       int getSubchannelIndex( double x, double y );
       void fillSubchannelGrid(AMP::Mesh::Mesh::shared_ptr);   // Function to fill the subchannel data for all processors
-      int d_numSubchannels; 
+      size_t d_numSubchannels; 
   };
 
 }

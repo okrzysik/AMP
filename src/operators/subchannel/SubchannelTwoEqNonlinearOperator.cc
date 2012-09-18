@@ -213,7 +213,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
         }
     }//end for el
 
-    for(int isub =0; isub<d_numSubchannels; ++isub){
+    for(size_t isub =0; isub<d_numSubchannels; ++isub){
         if(d_ownSubChannel[isub]){
           boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > subchannelElements( new std::vector<AMP::Mesh::MeshElement>() );
           subchannelElements->reserve(d_numSubchannels);
