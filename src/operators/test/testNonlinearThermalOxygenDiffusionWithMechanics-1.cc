@@ -60,36 +60,38 @@ void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)
   // create a nonlinear BVP operator for nonlinear mechanics
   AMP_INSIST( input_db->keyExists("testNonlinearMechanicsOperator"), "key missing!" );
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsOperator = 
-    boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-														    "testNonlinearMechanicsOperator",
-														    input_db,
-														    mechanicsMaterialModel));
-
+    boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+    AMP::Operator::OperatorBuilder::createOperator(meshAdapter,"testNonlinearMechanicsOperator",input_db));
+  boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> nonlinearMechanicsVolumeOperator = boost::dynamic_pointer_cast<
+    AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsOperator->getVolumeOperator());
+  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a nonlinear BVP operator for nonlinear thermal diffusion
   AMP_INSIST( input_db->keyExists("testNonlinearThermalOperator"), "key missing!" );
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 														    "testNonlinearThermalOperator",
-														    input_db,
-														    thermalTransportModel));
+														    input_db));
+  boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nonlinearThermalVolumeOperator = boost::dynamic_pointer_cast<
+    AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearThermalOperator->getVolumeOperator());
+  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel = nonlinearThermalVolumeOperator->getTransportModel();
+
   boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermOperator = boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearThermalOperator->getVolumeOperator());
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a nonlinear BVP operator for nonlinear oxygen diffusion
   AMP_INSIST( input_db->keyExists("testNonlinearOxygenOperator"), "key missing!" );
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> oxygenTransportModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearOxygenOperator = 
-    boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-														    "testNonlinearOxygenOperator",
-														    input_db,
-														    oxygenTransportModel));
+    boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+    AMP::Operator::OperatorBuilder::createOperator(meshAdapter,"testNonlinearOxygenOperator",input_db));
+  boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nonlinearOxygenVolumeOperator = boost::dynamic_pointer_cast<
+    AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearOxygenOperator->getVolumeOperator());
+  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> oxygenTransportModel = nonlinearOxygenVolumeOperator->getTransportModel();
+
   boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> fickOperator = boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearOxygenOperator->getVolumeOperator());
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//

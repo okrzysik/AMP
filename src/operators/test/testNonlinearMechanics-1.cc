@@ -39,11 +39,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   AMP_INSIST( input_db->keyExists("testNonlinearMechanicsOperator"), "key missing!" );
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
   boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> testNonlinOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-          "testNonlinearMechanicsOperator", input_db, elementPhysicsModel));
+        AMP::Operator::OperatorBuilder::createOperator( meshAdapter,
+          "testNonlinearMechanicsOperator", input_db ));
+  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel = testNonlinOperator->getMaterialModel();
 
   AMP_INSIST( input_db->keyExists("testLinearMechanicsOperator"), "key missing!" );
 

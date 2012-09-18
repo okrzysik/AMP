@@ -17,19 +17,19 @@ INCLUDE (macros)
 #  Adding tests and input files
 #
 #  To add a test in serial:
-#     ADD_AMP_TEST ( exe_name )
+#     ADD_AMP_TEST ( exe_name args )
 #
 #  To add a parallel test:
-#     ADD_AMP_TEST_PARALLEL ( exe_name num_cores )
+#     ADD_AMP_TEST_PARALLEL ( exe_name num_cores args )
 #
 #  To add the AMP 1, 2, and 4 processor test
-#     ADD_AMP_TEST_1_2_4 ( exe_name )
+#     ADD_AMP_TEST_1_2_4 ( exe_name args )
 #
 #  To add a build target without placing in the test suite
-#     ADD_AMP_PROVISIONAL_TEST ( exe_name )
+#     ADD_AMP_PROVISIONAL_TEST ( exe_name args )
 #
 #  To add a parallel test for the weekly regression:
-#     ADD_AMP_WEEKLY_TEST ( exe_name num_cores )
+#     ADD_AMP_WEEKLY_TEST ( exe_name num_cores args )
 #
 #  To add an input file from the data/ directory
 #     COPY_TEST_DATA_FILE ( input_file )
@@ -44,7 +44,8 @@ COPY_MESH_FILE(testAMGmesh5)
 COPY_MESH_FILE(testAMGmesh17)
 COPY_MESH_FILE(testAMGmesh33)
 
-ADD_AMP_TEST(testSubchannelSolve testSubchannelSolve-1 )
+ADD_AMP_TEST_PARALLEL(testSubchannelSolve 4 testSubchannelSolve-3 )
+ADD_AMP_WEEKLY_TEST(testSubchannelSolve 8 testSubchannelSolve-1 )
 COPY_TEST_DATA_FILE ( input_testSubchannelSolve-1 )
 COPY_TEST_DATA_FILE ( input_testSubchannelSolve-2 )
 COPY_TEST_DATA_FILE ( input_testSubchannelSolve-3 )

@@ -217,6 +217,7 @@ void DiffusionNonlinearFEOperator::preElementOperation(
 
         const AMP::Mesh::MeshElement & elem )
 {
+
     //PROFILE_START("preElementOperation",2);
     if( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionNonlinearFEOperator::preElementOperation, entering" << std::endl;     

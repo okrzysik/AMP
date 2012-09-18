@@ -62,16 +62,17 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int callLinReset) {
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::shared_ptr (
       new AMP::Mesh::libMesh (mesh, "TestMesh") );
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
   boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> nonlinOperator =
     boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
         AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-          "NonlinearMechanicsOperator", input_db, elementPhysicsModel));
+          "NonlinearMechanicsOperator", input_db));
+  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel = nonlinOperator->getMaterialModel();
 
   boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> linOperator =
     boost::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
         AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
           "LinearMechanicsOperator", input_db, elementPhysicsModel));
+
 
   AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
       meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 

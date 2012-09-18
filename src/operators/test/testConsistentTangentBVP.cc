@@ -21,9 +21,10 @@
 #include "libmesh.h"
 #include "mesh_communication.h"
 
-#include "OperatorBuilder.h"
-#include "LinearBVPOperator.h"
-#include "NonlinearBVPOperator.h"
+#include "operators/OperatorBuilder.h"
+#include "operators/LinearBVPOperator.h"
+#include "operators/NonlinearBVPOperator.h"
+#include "operators/mechanics/MechanicsNonlinearFEOperator.h"
 
 #include "ReadTestMesh.h"
 
@@ -61,11 +62,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int callLinReset) {
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::shared_ptr(
       new AMP::Mesh::libMesh(mesh, "TestMesh") );
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinOperator =
     boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-          "NonlinearMechanicsOperator", input_db, elementPhysicsModel));
+          "NonlinearMechanicsOperator", input_db ));
+
+  boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechNonlinOperator = 
+    boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>( nonlinOperator->getVolumeOperator() );
+  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel = mechNonlinOperator->getMaterialModel();
 
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linOperator =
     boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(

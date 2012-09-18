@@ -40,6 +40,8 @@ public:
 
         AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
+        boost::shared_ptr<DiffusionTransportModel> getTransportModel();
+
 protected:
 
         bool d_useConstantTemperature;

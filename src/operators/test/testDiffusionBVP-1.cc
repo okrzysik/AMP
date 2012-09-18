@@ -64,18 +64,15 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
 //--------------------------------------------------
 
   // Create nonlinear Diffusion BVP operator and access volume nonlinear Diffusion operator
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
   boost::shared_ptr<AMP::InputDatabase> nbvp_db =
           boost::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase("ThermalNonlinearBVPOperator"));
   boost::shared_ptr<AMP::Operator::Operator> nlinBVPOperator =
-    AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-						   "ThermalNonlinearBVPOperator",
-						   input_db,
-						   elementPhysicsModel);
+    AMP::Operator::OperatorBuilder::createOperator(meshAdapter,"ThermalNonlinearBVPOperator",input_db);
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nlinBVPOp =
           boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(nlinBVPOperator);
   boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nlinOp =
          boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nlinBVPOp->getVolumeOperator());
+  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel = nlinOp->getTransportModel();
   
   // use the linear BVP operator to create a thermal linear operator with bc's
   boost::shared_ptr<AMP::Operator::Operator> linBVPOperator =

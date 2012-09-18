@@ -61,12 +61,9 @@ void linearTest1(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::InputDatabase> diffLinFEOp_db =
           boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("LinearDiffusionOp"));
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
   diffOp = boost::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(
-										 AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-																"LinearDiffusionOp",
-																input_db,
-																elementModel));
+        AMP::Operator::OperatorBuilder::createOperator(meshAdapter,"LinearDiffusionOp",input_db));
+  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel = diffOp->getTransportModel();
 
   AMP::LinearAlgebra::Variable::shared_ptr diffSolVar = diffOp->getInputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr diffRhsVar = diffOp->getOutputVariable();

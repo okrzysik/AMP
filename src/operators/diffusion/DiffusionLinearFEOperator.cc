@@ -228,6 +228,11 @@ void DiffusionLinearFEOperator::postElementOperation()
 }
 
 
+boost::shared_ptr<DiffusionTransportModel> DiffusionLinearFEOperator::getTransportModel(){
+    return d_transportModel;
+}
+
+
 }
 }//end namespace
 

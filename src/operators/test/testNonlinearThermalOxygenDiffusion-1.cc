@@ -55,23 +55,24 @@ void thermalOxygenDiffusionTest(AMP::UnitTest *ut, std::string exeName)
   // create a nonlinear BVP operator for nonlinear thermal
   AMP_INSIST( input_db->keyExists("testNonlinearThermalOperator"), "key missing!" );
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalMaterialModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator = 
-    boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-														    "testNonlinearThermalOperator",
-														    input_db,
-														    thermalMaterialModel));
+    boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+    AMP::Operator::OperatorBuilder::createOperator( meshAdapter, "testNonlinearThermalOperator", input_db ) );
+  boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nonlinearThermalVolumeOperator = boost::dynamic_pointer_cast<
+    AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearThermalOperator->getVolumeOperator());
+  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalMaterialModel = nonlinearThermalVolumeOperator->getTransportModel();
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a nonlinear BVP operator for nonlinear oxygen diffusion
   AMP_INSIST( input_db->keyExists("testNonlinearOxygenOperator"), "key missing!" );
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> oxygenTransportModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearOxygenOperator = 
-    boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-														    "testNonlinearOxygenOperator",
-														    input_db,
-														    oxygenTransportModel));
+    boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+    AMP::Operator::OperatorBuilder::createOperator( meshAdapter, "testNonlinearOxygenOperator", input_db ) );
+  boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nonlinearOxygenVolumeOperator = boost::dynamic_pointer_cast<
+    AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearOxygenOperator->getVolumeOperator());
+  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> oxygenTransportModel = nonlinearOxygenVolumeOperator->getTransportModel();
+
   boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> fickOperator = boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearOxygenOperator->getVolumeOperator());
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
