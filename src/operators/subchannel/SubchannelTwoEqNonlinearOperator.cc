@@ -425,8 +425,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
                  AMP_INSIST((zMax_grid > zMin_grid),"Grid spacer zMin > zMax");
                  double K_grid = d_lossGrid[igrid];
                  double K_perLength = K_grid/(zMax_grid - zMin_grid);
+                 double overlap =0.;
                  if (zMax_grid >= z_plus){
-                    double overlap;
                     if (zMin_grid >= z_plus){
                        overlap = 0.0;
                     } else if (zMin_grid > z_minus && zMin_grid < z_plus){
@@ -438,7 +438,6 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
                     }
                     K += overlap*K_perLength;
                  } else if (zMax_grid < z_plus && zMax_grid > z_minus){
-                    double overlap;
                     if (zMin_grid > z_minus){
                        overlap = zMax_grid - zMin_grid;
                     } else if (zMin_grid <= z_minus){
