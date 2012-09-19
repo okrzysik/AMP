@@ -15,6 +15,27 @@
 namespace AMP {
 namespace Operator {
 
+
+SubchannelTwoEqLinearOperator::SubchannelTwoEqLinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params)
+    : LinearOperator (params)
+{
+    AMP_INSIST( params->d_db->keyExists("InputVariable"), "Key 'InputVariable' does not exist");
+    std::string inpVar = params->d_db->getString("InputVariable");
+    d_inpVariable.reset(new AMP::LinearAlgebra::Variable(inpVar));
+
+    AMP_INSIST( params->d_db->keyExists("OutputVariable"), "Key 'OutputVariable' does not exist");
+    std::string outVar = params->d_db->getString("OutputVariable");
+    d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar));
+
+    d_dofMap = (params->d_dofMap);
+
+    d_atConstruction = true ;  
+    d_nullFrozenvector = true; 
+       
+    reset(params);
+}
+
+
 // reset
 void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
 {
@@ -29,15 +50,15 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
       d_m    = getDoubleParameter(myparams,"Mass_Flow_Rate",0.3522);  
       d_gamma     = getDoubleParameter(myparams,"Fission_Heating_Coefficient",0.0);  
       d_theta     = getDoubleParameter(myparams,"Channel_Angle",0.0);  
+      d_channelDia= getDoubleParameter(myparams,"Channel_Diameter",0.0);  
+      d_reynolds  = getDoubleParameter(myparams,"Reynolds",0.0);  
+      d_prandtl   = getDoubleParameter(myparams,"Prandtl",0.0);  
       d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);  
       d_pitch     = getDoubleParameter(myparams,"Lattice_Pitch",0.0);  
       d_diameter  = getDoubleParameter(myparams,"Rod_Diameter",0.0);  
-      d_reynolds  = getDoubleParameter(myparams,"Reynolds",0.0);  
-      d_prandtl   = getDoubleParameter(myparams,"Prandtl",0.0);  
-      d_K    = getDoubleParameter(myparams,"Form_Loss_Coefficient",0.2);  
-      d_channelDia= getDoubleParameter(myparams,"Channel_Diameter",0.0);  
       d_source = getStringParameter(myparams,"Heat_Source_Type","totalHeatGeneration");
-
+      d_frictionModel = getStringParameter(myparams,"Friction_Model","Constant");
+      d_NGrid = getIntegerParameter(myparams,"Number_GridSpacers",0);
       const double h_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
       const double P_scale = 1.0/Subchannel::scalePressure;                 // Scale to change the input vector back to correct units
 
@@ -45,8 +66,25 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
       if (d_source == "totalHeatGeneration") {
           d_Q    = getDoubleParameter(myparams,"Rod_Power",66.81e3);  
           d_heatShape = getStringParameter(myparams,"Heat_Shape","Sinusoidal");
-      }else if (d_source == "averageCladdingTemperature"){
-        d_channelFractions = (myparams->d_db)->getDoubleArray("ChannelFractions");
+      } else if (d_source == "averageCladdingTemperature"){
+          d_channelFractions = (myparams->d_db)->getDoubleArray("ChannelFractions");
+      }
+
+      // get additional parameters based on friction model
+      if (d_frictionModel == "Constant") {
+         d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);  
+      } else if (d_frictionModel == "Selander"){
+         d_roughness = getDoubleParameter(myparams,"Surface_Roughness",0.0015e-3);  
+      }
+
+      // get form loss parameters if there are grid spacers
+      if (d_NGrid > 0){
+         d_zMinGrid = (myparams->d_db)->getDoubleArray("zMin_GridSpacers");
+         d_zMaxGrid = (myparams->d_db)->getDoubleArray("zMax_GridSpacers");
+         d_lossGrid = (myparams->d_db)->getDoubleArray("LossCoefficient_GridSpacers");
+         // check that sizes of grid spacer loss vectors are consistent with the provided number of grid spacers
+         if (!(d_NGrid == d_zMinGrid.size() && d_NGrid == d_zMaxGrid.size() && d_NGrid == d_lossGrid.size()))
+            AMP_ERROR("The size of a grid spacer loss vector is inconsistent with the provided number of grid spacers");
       }
 
       // get subchannel physics model
@@ -165,12 +203,16 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
               d_dofMap->getDOFs( face->globalID(), dofs );
               double h_minus = h_scale*d_frozenVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
               double p_minus = P_scale*d_frozenVec->getValueByGlobalID(dofs[1]); // pressure evaluated at lower face
+              std::vector<double> minusFaceCentroid = face->centroid();
+              double z_minus = minusFaceCentroid[2]; // z-coordinate of lower face
               if (face == end_face - 1){
                 d_dofMap->getDOFs( face->globalID(), dofs );
                 d_matrix->setValueByGlobalID(dofs[1], dofs[1], 1.0);
               } else {
                 ++face;
                 d_dofMap->getDOFs( face->globalID(), dofs_plus );
+                std::vector<double> plusFaceCentroid = face->centroid();
+                double z_plus = plusFaceCentroid[2]; // z-coordinate of lower face
                 --face;
                 double h_plus  = h_scale*d_frozenVec->getValueByGlobalID(dofs_plus[0]); // enthalpy evaluated at upper face
                 double p_plus  = P_scale*d_frozenVec->getValueByGlobalID(dofs_plus[1]); // pressure evaluated at upper face
@@ -197,19 +239,52 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
                 double dvdp_plus  = dvdp(h_plus, p_plus);
                 double dvdp_minus = dvdp(h_minus,p_minus);
 
+                // compute form loss coefficient
+                double K = 0.0;
+                for (size_t igrid=0; igrid < d_lossGrid.size(); igrid++){
+                   double zMin_grid = d_zMinGrid[igrid];
+                   double zMax_grid = d_zMaxGrid[igrid];
+                   AMP_INSIST((zMax_grid > zMin_grid),"Grid spacer zMin > zMax");
+                   double K_grid = d_lossGrid[igrid];
+                   double K_perLength = K_grid/(zMax_grid - zMin_grid);
+                   if (zMax_grid >= z_plus){
+                      double overlap;
+                      if (zMin_grid >= z_plus){
+                         overlap = 0.0;
+                      } else if (zMin_grid > z_minus && zMin_grid < z_plus){
+                         overlap = z_plus - zMin_grid;
+                      } else if (zMin_grid <= z_minus){
+                         overlap = z_plus - z_minus;
+                      } else {
+                         AMP_ERROR("Unexpected position comparison for zMin_grid");
+                      }
+                      K += overlap*K_perLength;
+                   } else if (zMax_grid < z_plus && zMax_grid > z_minus){
+                      double overlap;
+                      if (zMin_grid > z_minus){
+                         overlap = zMax_grid - zMin_grid;
+                      } else if (zMin_grid <= z_minus){
+                         overlap = zMax_grid - z_minus;
+                      } else {
+                        AMP_ERROR("Unexpected position comparison for zMin_grid");
+                      }
+                      K += overlap*K_perLength;
+                   }
+                }
+
                 // compute Jacobian entries
                 double A_j = -1.0*std::pow(d_m/A,2)*dvdh_minus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
                   dvdh_minus/std::pow(v_plus+v_minus,2)+
-                  (1.0/4.0)*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + d_K)*dvdh_minus;
+                  (1.0/4.0)*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + K)*dvdh_minus;
                 double B_j = -1.0*std::pow(d_m/A,2)*dvdp_minus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
                   dvdp_minus/std::pow(v_plus+v_minus,2)+
-                  (1.0/4.0)*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + d_K)*dvdp_minus - 1;
+                  (1.0/4.0)*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + K)*dvdp_minus - 1;
                 double C_j = std::pow(d_m/A,2)*dvdh_plus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
                   dvdh_plus/std::pow(v_plus+v_minus,2)+
-                  (1.0/4.0)*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + d_K)*dvdh_plus;
+                  (1.0/4.0)*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + K)*dvdh_plus;
                 double D_j = std::pow(d_m/A,2)*dvdp_plus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
                   dvdp_plus/std::pow(v_plus+v_minus,2)+
-                  (1.0/4.0)*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + d_K)*dvdp_plus + 1;
+                  (1.0/4.0)*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + K)*dvdp_plus + 1;
 
                 d_matrix->setValueByGlobalID(dofs[1] , dofs[0]       , A_j );
                 d_matrix->setValueByGlobalID(dofs[1] , dofs[1]       , B_j );
@@ -225,6 +300,49 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
       }
       d_atConstruction = false;   
 }
+
+// function used in reset to get double parameter or set default if missing
+double SubchannelTwoEqLinearOperator::getDoubleParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+								std::string paramString,
+                                                                double defaultValue)
+{
+    bool keyExists = (myparams->d_db)->keyExists(paramString);
+    if (keyExists) {
+       return (myparams->d_db)->getDouble(paramString);
+    } else {
+       AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
+       return defaultValue;
+    }
+}
+
+// function used in reset to get integer parameter or set default if missing
+int SubchannelTwoEqLinearOperator::getIntegerParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+								std::string paramString,
+                                                                int defaultValue)
+{
+    bool keyExists = (myparams->d_db)->keyExists(paramString);
+    if (keyExists) {
+       return (myparams->d_db)->getInteger(paramString);
+    } else {
+       AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
+       return defaultValue;
+    }
+}
+
+// function used in reset to get string parameter or set default if missing
+std::string SubchannelTwoEqLinearOperator::getStringParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+									std::string paramString,
+                                                                	std::string defaultValue)
+{
+    bool keyExists = (myparams->d_db)->keyExists(paramString);
+    if (keyExists) {
+       return (myparams->d_db)->getString(paramString);
+    } else {
+       AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
+       return defaultValue;
+    }
+}
+
 
 void SubchannelTwoEqLinearOperator::fillSubchannelGrid(AMP::Mesh::Mesh::shared_ptr mesh)
 {
@@ -282,35 +400,6 @@ int SubchannelTwoEqLinearOperator::getSubchannelIndex( double x, double y )
         return (i-1)+(j-1)*(d_x.size()-1);
     return -1;
 }
-
-// function used in reset to get double parameter or set default if missing
-double SubchannelTwoEqLinearOperator::getDoubleParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
-    std::string paramString,
-    double defaultValue)
-{
-  bool keyExists = (myparams->d_db)->keyExists(paramString);
-  if (keyExists) {
-    return (myparams->d_db)->getDouble(paramString);
-  } else {
-    AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
-    return defaultValue;
-  }
-}
-
-// function used in reset to get string parameter or set default if missing
-std::string SubchannelTwoEqLinearOperator::getStringParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
-    std::string paramString,
-    std::string defaultValue)
-{
-  bool keyExists = (myparams->d_db)->keyExists(paramString);
-  if (keyExists) {
-    return (myparams->d_db)->getString(paramString);
-  } else {
-    AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
-    return defaultValue;
-  }
-}
-
 
 
 // derivative of enthalpy with respect to pressure
