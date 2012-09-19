@@ -33,7 +33,11 @@ void CoupledOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
     }
     // Call copy vector
     if(d_Operators[1]) {
-      d_Operators[1]->apply(f,d_frozenGaussPointVector,r,a,b);
+      if(d_Operators[0]) {
+        d_Operators[1]->apply(f,d_frozenGaussPointVector,r,a,b);
+      } else {
+        d_Operators[1]->apply(f,u,r,a,b);
+      }
     }
     // Call the map
     if(d_Operators[2]) {

@@ -31,6 +31,10 @@ public :
         return d_Operators[3];
       }
 
+      void setBVPOperator( boost::shared_ptr<AMP::Operator::Operator> op ) {
+        d_Operators[3] = op;
+      }
+
       virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
         return d_Operators[3]->getOutputVariable();
       }
