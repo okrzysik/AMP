@@ -110,6 +110,15 @@ private :
     // Derivative of specific volume with respect to pressure
     double dvdp(double,double);
 
+    // Friction function
+    double friction(double,double,double,double,double,double);
+
+    // Derivatives of friction with respect to lower and upper enthalpy and pressure
+    double dfdh_lower(double,double,double,double,double,double);
+    double dfdh_upper(double,double,double,double,double,double);
+    double dfdp_lower(double,double,double,double,double,double);
+    double dfdp_upper(double,double,double,double,double,double);
+
     std::vector<double> d_x, d_y, d_z;
     std::vector<bool> d_ownSubChannel;                      // Which subchannels do I own (multple procs my own a subchannel)
     int getSubchannelIndex( double x, double y );

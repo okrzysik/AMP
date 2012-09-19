@@ -706,19 +706,20 @@ SubchannelTwoEqLinearOperator{
     Mass_Flow_Rate = 0.3522
     Fission_Heating_Coefficient = 0.0
     Channel_Angle = 0.0
-    Channel_Diameter = 0.01178  // Todreas, p.455
-    Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
-    Prandtl          = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
     Friction_Factor = 0.001
     Lattice_Pitch = 0.0128016
     Rod_Diameter = 0.009410
-    Form_Loss_Coefficient = 0.2
     Rod_Power = 66.81e3
     Heat_Source_Type = "averageCladdingTemperature"
     //Heat_Source_Type = "totalHeatGeneration"
+    Channel_Diameter = 0.01178  // Todreas, p.455
+    Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
+    Prandtl          = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
     ChannelFractions = 1.0
     Heat_Shape = "Sinusoidal"
     LocalModel = "SubchannelPhysicsModel"
+    Friction_Model = "Constant"
+    Number_GridSpacers = 0
 }
 
 ConvectiveHeatCoefficient{

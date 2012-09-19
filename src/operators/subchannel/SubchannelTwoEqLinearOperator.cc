@@ -233,11 +233,20 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
                 d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_minus,volumeArgMap_minus); 
                 double v_minus = volumeResult_minus[0];
 
-                // evaluate derivatives
+                // evaluate friction factor
+                double fric = friction(h_minus, p_minus, h_plus, p_plus, A, D);
+
+                // evaluate derivatives of specific volume
                 double dvdh_plus  = dvdh(h_plus, p_plus);
                 double dvdh_minus = dvdh(h_minus,p_minus);
                 double dvdp_plus  = dvdp(h_plus, p_plus);
                 double dvdp_minus = dvdp(h_minus,p_minus);
+
+                // evaluate derivatives of friction
+                double dfdh_minus = dfdh_lower(h_minus,p_minus,h_plus,p_plus,A,D);
+                double dfdh_plus  = dfdh_upper(h_minus,p_minus,h_plus,p_plus,A,D);
+                double dfdp_minus = dfdp_lower(h_minus,p_minus,h_plus,p_plus,A,D);
+                double dfdp_plus  = dfdp_upper(h_minus,p_minus,h_plus,p_plus,A,D);
 
                 // compute form loss coefficient
                 double K = 0.0;
@@ -275,16 +284,16 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
                 // compute Jacobian entries
                 double A_j = -1.0*std::pow(d_m/A,2)*dvdh_minus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
                   dvdh_minus/std::pow(v_plus+v_minus,2)+
-                  (1.0/4.0)*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + K)*dvdh_minus;
+                  (1.0/4.0)*std::pow(d_m/A,2)*((del_z[j-1]*fric/D + K)*dvdh_minus + del_z[j-1]/D*dfdh_minus*v_minus);
                 double B_j = -1.0*std::pow(d_m/A,2)*dvdp_minus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
                   dvdp_minus/std::pow(v_plus+v_minus,2)+
-                  (1.0/4.0)*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + K)*dvdp_minus - 1;
+                  (1.0/4.0)*std::pow(d_m/A,2)*((del_z[j-1]*fric/D + K)*dvdp_minus + del_z[j-1]/D*dfdp_minus*v_minus) - 1;
                 double C_j = std::pow(d_m/A,2)*dvdh_plus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
                   dvdh_plus/std::pow(v_plus+v_minus,2)+
-                  (1.0/4.0)*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + K)*dvdh_plus;
+                  (1.0/4.0)*std::pow(d_m/A,2)*((del_z[j-1]*fric/D + K)*dvdh_plus + del_z[j-1]/D*dfdh_plus*v_plus);
                 double D_j = std::pow(d_m/A,2)*dvdp_plus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
                   dvdp_plus/std::pow(v_plus+v_minus,2)+
-                  (1.0/4.0)*std::pow(d_m/A,2)*(del_z[j-1]*d_friction/D + K)*dvdp_plus + 1;
+                  (1.0/4.0)*std::pow(d_m/A,2)*((del_z[j-1]*fric/D + K)*dvdp_plus + del_z[j-1]/D*dfdp_plus*v_plus) + 1;
 
                 d_matrix->setValueByGlobalID(dofs[1] , dofs[0]       , A_j );
                 d_matrix->setValueByGlobalID(dofs[1] , dofs[1]       , B_j );
@@ -401,7 +410,6 @@ int SubchannelTwoEqLinearOperator::getSubchannelIndex( double x, double y )
     return -1;
 }
 
-
 // derivative of enthalpy with respect to pressure
 double SubchannelTwoEqLinearOperator::dhdp(double T, double p){
   // calculate perturbation
@@ -478,6 +486,139 @@ double SubchannelTwoEqLinearOperator::dvdp(double h, double p){
 
   // calculate derivative
   return (v_pert - v)/pert;
+}
+
+// friction factor
+double SubchannelTwoEqLinearOperator::friction(double h_minus, double p_minus, double h_plus, double p_plus, double A, double D){
+   double h_avg   = (1.0/2.0)*(h_minus + h_plus); // enthalpy evaluated at cell center
+   double p_avg   = (1.0/2.0)*(p_minus + p_plus);       // pressure evaluated at cell center
+
+   // evaluate specific volume at upper face
+   std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
+   volumeArgMap_plus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_plus)));
+   volumeArgMap_plus.insert(std::make_pair("pressure",new std::vector<double>(1,p_plus)));
+   std::vector<double> volumeResult_plus(1);
+   d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_plus,volumeArgMap_plus); 
+   double v_plus = volumeResult_plus[0];
+
+   // evaluate specific volume at lower face
+   std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_minus;
+   volumeArgMap_minus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_minus)));
+   volumeArgMap_minus.insert(std::make_pair("pressure",new std::vector<double>(1,p_minus)));
+   std::vector<double> volumeResult_minus(1);
+   d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_minus,volumeArgMap_minus); 
+   double v_minus = volumeResult_minus[0];
+
+   // evaluate density at cell center
+   std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_avg;
+   volumeArgMap_avg.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_avg)));
+   volumeArgMap_avg.insert(std::make_pair("pressure",new std::vector<double>(1,p_avg)));
+   std::vector<double> volumeResult_avg(1);
+   d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_avg,volumeArgMap_avg);
+   double rho_avg = 1.0/volumeResult_avg[0];
+
+   double u_plus  = d_m * v_plus  / A; // velocity evaluated at upper face
+   double u_minus = d_m * v_minus / A; // velocity evaluated at lower face
+   double u_avg = (1.0/2.0)*(u_minus + u_plus); // velocity evaluated at cell center
+   
+   // evaluate temperature at cell center
+   std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
+   temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_avg)));
+   temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,p_avg)));
+   std::vector<double> temperatureResult(1);
+   d_subchannelPhysicsModel->getProperty("Temperature",temperatureResult,temperatureArgMap);
+   double T_avg = temperatureResult[0];
+  
+   // evaluate viscosity at cell center
+   std::map<std::string, boost::shared_ptr<std::vector<double> > > viscosityArgMap;
+   viscosityArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,T_avg)));
+   viscosityArgMap.insert(std::make_pair("density",new std::vector<double>(1,rho_avg)));
+   std::vector<double> viscosityResult(1);
+   d_subchannelPhysicsModel->getProperty("DynamicViscosity",viscosityResult,viscosityArgMap);
+   double visc = viscosityResult[0];
+
+    // evaluate friction factor
+    double Re = rho_avg*u_avg*D/visc;
+    double fl = 64.0/Re; // laminar friction factor
+    double fric; // friction factor
+    if (d_frictionModel == "Constant") {
+       fric = d_friction;
+    } else {
+       double ft = 0.; // turbulent friction factor evaluated from computed Re
+       double ft4000 = 0.; // turbulent friction factor evaluated from Re = 4000
+       if (d_frictionModel == "Blasius") {
+          ft = 0.316*std::pow(Re,-0.25);
+          ft4000 = 0.316*std::pow(4000.0,-0.25);
+       } else if (d_frictionModel == "Drew") {
+          ft = 0.0056 + 0.5*std::pow(Re,-0.32);
+          ft4000 = 0.0056 + 0.5*std::pow(4000.0,-0.32);
+       } else if (d_frictionModel == "Filonenko") {
+          ft = std::pow(1.82*std::log(Re)-1.64,-2);
+          ft4000 = std::pow(1.82*std::log(4000.0)-1.64,-2);
+       } else if (d_frictionModel == "Selander") {
+          ft = 4.0*std::pow(3.8*std::log(10.0/Re+0.2*d_roughness/D),-2);
+          ft4000 = 4.0*std::pow(3.8*std::log(10.0/4000.0+0.2*d_roughness/D),-2);
+       } else {
+          AMP_ERROR("Invalid choice for Friction_Model.");
+       }
+       if (Re < 4000.0)
+          fric = std::max(fl,ft4000);
+       else
+          fric = ft;
+   } 
+   return fric;
+}
+
+// derivative of friction with respect to lower enthalpy
+double SubchannelTwoEqLinearOperator::dfdh_lower(double h_minus, double p_minus, double h_plus, double p_plus, double A, double D){
+  // calculate perturbation
+  double b = pow(d_machinePrecision,0.5);
+  double pert = (1.0 + h_minus)*b; // perturbation
+
+  double f_pert = friction(h_minus+pert, p_minus, h_plus, p_plus, A, D); // calculate perturbed value
+  double f      = friction(h_minus,      p_minus, h_plus, p_plus, A, D); // calculate unperturbed value
+  
+  // calculate derivative
+  return (f_pert - f)/pert;
+}
+
+// derivative of friction with respect to upper enthalpy
+double SubchannelTwoEqLinearOperator::dfdh_upper(double h_minus, double p_minus, double h_plus, double p_plus, double A, double D){
+  // calculate perturbation
+  double b = pow(d_machinePrecision,0.5);
+  double pert = (1.0 + h_plus)*b; // perturbation
+
+  double f_pert = friction(h_minus, p_minus, h_plus+pert, p_plus, A, D); // calculate perturbed value
+  double f      = friction(h_minus, p_minus, h_plus,      p_plus, A, D); // calculate unperturbed value
+  
+  // calculate derivative
+  return (f_pert - f)/pert;
+}
+
+// derivative of friction with respect to lower pressure
+double SubchannelTwoEqLinearOperator::dfdp_lower(double h_minus, double p_minus, double h_plus, double p_plus, double A, double D){
+  // calculate perturbation
+  double b = pow(d_machinePrecision,0.5);
+  double pert = (1.0 + p_minus)*b; // perturbation
+
+  double f_pert = friction(h_minus, p_minus+pert, h_plus, p_plus, A, D); // calculate perturbed value
+  double f      = friction(h_minus, p_minus,      h_plus, p_plus, A, D); // calculate unperturbed value
+  
+  // calculate derivative
+  return (f_pert - f)/pert;
+}
+
+// derivative of friction with respect to upper pressure
+double SubchannelTwoEqLinearOperator::dfdp_upper(double h_minus, double p_minus, double h_plus, double p_plus, double A, double D){
+  // calculate perturbation
+  double b = pow(d_machinePrecision,0.5);
+  double pert = (1.0 + p_plus)*b; // perturbation
+
+  double f_pert = friction(h_minus, p_minus, h_plus, p_plus+pert, A, D); // calculate perturbed value
+  double f      = friction(h_minus, p_minus, h_plus, p_plus,      A, D);      // calculate unperturbed value
+  
+  // calculate derivative
+  return (f_pert - f)/pert;
 }
 
 AMP::LinearAlgebra::Vector::shared_ptr  SubchannelTwoEqLinearOperator::subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)

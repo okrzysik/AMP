@@ -26,7 +26,6 @@ SubchannelTwoEqNonlinearOperator{
     Friction_Factor = 0.001
     Lattice_Pitch = 0.0128016
     Rod_Diameter = 0.0097028
-    Form_Loss_Coefficient = 0.2
     Rod_Power = 66.81e3
     Heat_Source_Type = "totalHeatGeneration"
     Channel_Diameter = 0.01178  // Todreas, p.455
@@ -53,7 +52,6 @@ SubchannelTwoEqLinearOperator{
     Friction_Factor = 0.001
     Lattice_Pitch = 0.0128016
     Rod_Diameter = 0.0097028
-    Form_Loss_Coefficient = 0.2
     Rod_Power = 66.81e3
     Heat_Source_Type = "totalHeatGeneration"
     Channel_Diameter = 0.01178  // Todreas, p.455
@@ -61,6 +59,11 @@ SubchannelTwoEqLinearOperator{
     Prandtl          = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
     Heat_Shape = "Sinusoidal"
     LocalModel = "SubchannelPhysicsModel"
+    Friction_Model = "Constant"
+    Number_GridSpacers = 15
+    zMin_GridSpacers = 0.0, 0.254, 0.508, 0.762, 1.016, 1.270, 1.524, 1.778, 2.032, 2.286, 2.540, 2.794, 3.048, 3.302, 3.556
+    zMax_GridSpacers = 0.254, 0.508, 0.762, 1.016, 1.270, 1.524, 1.778, 2.032, 2.286, 2.540, 2.794, 3.048, 3.302, 3.556, 3.810
+    LossCoefficient_GridSpacers = 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2
 }
 
 SubchannelPhysicsModel{

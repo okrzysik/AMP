@@ -1,4 +1,5 @@
 // Input file for testSubchannelTwoEqNonlinearOperator
+
 Mesh {
      MeshName = "clad"
      MeshType = "AMP"
@@ -15,7 +16,6 @@ SubchannelTwoEqNonlinearOperator{
     name = "SubchannelTwoEqNonlinearOperator"
     InputVariable = "flow"
     OutputVariable = "flow"
-    numpoints = 10
     Exit_Pressure = 15.5132e6
     Inlet_Temperature = 569.26
     Mass_Flow_Rate = 0.3522
