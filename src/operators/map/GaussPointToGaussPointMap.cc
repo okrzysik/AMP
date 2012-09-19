@@ -19,28 +19,71 @@
 #include <string>
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    void GaussPointToGaussPointMap :: correctLocalOrdering() {
-      AMP::Discretization::DOFManager::shared_ptr dofMap = d_OutputVector->getDOFManager();
-      std::vector<size_t> localDofs(DofsPerObj);
-      for(size_t i = 0; i < d_recvList.size(); ++i) {
+
+// Constructor
+GaussPointToGaussPointMap::GaussPointToGaussPointMap(const boost::shared_ptr<AMP::Operator::OperatorParameters> & params)
+    : NodeToNodeMap(params) 
+{
+    createIdxMap(params);
+    d_useFrozenInputVec = params->d_db->getBoolWithDefault("FrozenInput", false);
+}
+
+
+// Apply start
+void GaussPointToGaussPointMap::applyStart(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+            AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b ) 
+{
+    AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = u;
+    if(d_useFrozenInputVec) {
+        uInternal = d_frozenInputVec;
+    }
+    AMP::Operator::NodeToNodeMap::applyStart(f, uInternal, r, a, b);
+}
+
+
+// Apply finish
+void GaussPointToGaussPointMap::applyFinish(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+    AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b ) 
+{
+    AMP::Operator::NodeToNodeMap::applyFinish(f, u, r, a, b);
+    correctLocalOrdering();
+}
+
+
+// Check if we have the correct map
+bool GaussPointToGaussPointMap::validMapType ( const std::string &t ) {
+    if ( t == "GaussPointToGaussPoint" )
+        return true;
+    return false;
+}
+
+
+// Correct the local ordering
+void GaussPointToGaussPointMap :: correctLocalOrdering() 
+{
+    AMP::Discretization::DOFManager::shared_ptr dofMap = d_OutputVector->getDOFManager();
+    std::vector<size_t> localDofs(DofsPerObj);
+    for(size_t i = 0; i < d_recvList.size(); ++i) {
         dofMap->getDOFs( d_recvList[i], localDofs );
         std::vector<double> vals(DofsPerObj);
         for(int j = 0; j < DofsPerObj; ++j) {
-          vals[j] = d_OutputVector->getLocalValueByGlobalID(localDofs[j]);
+            vals[j] = d_OutputVector->getLocalValueByGlobalID(localDofs[j]);
         }//end j
         int DofsPerGaussPt = DofsPerObj/(d_idxMap[i].size());
         for(size_t j = 0; j < d_idxMap[i].size(); ++j) {
-          for(int k = 0; k < DofsPerGaussPt; ++k) {
-            d_OutputVector->setLocalValueByGlobalID(localDofs[(j*DofsPerGaussPt) + k],
-                vals[((d_idxMap[i][j])*DofsPerGaussPt) + k]);
-          }//end k
+            for(int k = 0; k < DofsPerGaussPt; ++k) {
+                d_OutputVector->setLocalValueByGlobalID(localDofs[(j*DofsPerGaussPt) + k],
+                    vals[((d_idxMap[i][j])*DofsPerGaussPt) + k]);
+            }//end k
         }//end j
-      }//end i
-    }
+    }//end i
+}
 
-    void GaussPointToGaussPointMap :: createIdxMap(boost::shared_ptr<AMP::Operator::OperatorParameters> params) {
+
+void GaussPointToGaussPointMap :: createIdxMap(boost::shared_ptr<AMP::Operator::OperatorParameters> params) 
+{
       boost::shared_ptr<AMP::Database> db = params->d_db;
       std::string feTypeOrderName = db->getStringWithDefault("FE_ORDER", "FIRST");
       libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>(feTypeOrderName);
@@ -184,9 +227,10 @@ namespace AMP {
         delete elem;
         elem = NULL;
       }//end for i
-    }
+}
 
-  }
+
+}
 }
 
 

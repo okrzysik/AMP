@@ -7,57 +7,41 @@
 #include <vector>
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    class GaussPointToGaussPointMap : public NodeToNodeMap {
-      public:
-        GaussPointToGaussPointMap(const boost::shared_ptr<AMP::Operator::OperatorParameters> & params)
-          : NodeToNodeMap(params) {
-            createIdxMap(params);
-            d_useFrozenInputVec = params->d_db->getBoolWithDefault("FrozenInput", false);
-          }
+class GaussPointToGaussPointMap : public NodeToNodeMap {
+public:
 
-        void applyStart(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0) {
-          AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = u;
-          if(d_useFrozenInputVec) {
-            uInternal = d_frozenInputVec;
-          }
-          AMP::Operator::NodeToNodeMap::applyStart(f, uInternal, r, a, b);
-        }
+    GaussPointToGaussPointMap(const boost::shared_ptr<AMP::Operator::OperatorParameters> & params);
 
-        void applyFinish(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0) {
-          AMP::Operator::NodeToNodeMap::applyFinish(f, u, r, a, b);
-          correctLocalOrdering();
-        }
+    virtual void applyStart(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
-        static bool  validMapType ( const std::string &t ) {
-          if ( t == "GaussPointToGaussPoint" ) {
-            return true;
-          }
-          return false;
-        }
+    virtual void applyFinish(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
-        void setFrozenInputVector(AMP::LinearAlgebra::Vector::shared_ptr u) {
+    static bool  validMapType ( const std::string &t );
+
+    void setFrozenInputVector(AMP::LinearAlgebra::Vector::shared_ptr u) {
           d_frozenInputVec = u;
-        }
+    }
 
-        virtual ~GaussPointToGaussPointMap() { }
+    virtual ~GaussPointToGaussPointMap() { }
 
-      protected:
-        void createIdxMap(boost::shared_ptr<AMP::Operator::OperatorParameters> params);
+protected:
+    void createIdxMap(boost::shared_ptr<AMP::Operator::OperatorParameters> params);
 
-        void correctLocalOrdering();
+    void correctLocalOrdering();
 
-        bool d_useFrozenInputVec;
+    bool d_useFrozenInputVec;
 
-        AMP::LinearAlgebra::Vector::shared_ptr d_frozenInputVec; 
+    AMP::LinearAlgebra::Vector::shared_ptr d_frozenInputVec; 
 
-        std::vector<std::vector<unsigned int> > d_idxMap;
-    };
+    std::vector<std::vector<unsigned int> > d_idxMap;
+};
 
-  }
+
+}
 }
 
 #endif
