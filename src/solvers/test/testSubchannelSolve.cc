@@ -211,9 +211,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
                 AMP_ERROR("Unknown Mesh");
             }
 
-            //-----------------------------------------------
-            //   CREATE THE NONLINEAR THERMAL OPERATOR 1 ----
-            //-----------------------------------------------
+            // CREATE THE NONLINEAR THERMAL OPERATOR 1
             AMP_INSIST( global_input_db->keyExists(prefix+"NonlinearThermalOperator"), "key missing!" );
             boost::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
             boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> thermalNonlinearOperator = boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator( adapter,
@@ -222,9 +220,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
                 thermalTransportModel));
             nonlinearColumnOperator->append(thermalNonlinearOperator);
 
-            //-------------------------------------
-            //   CREATE THE LINEAR THERMAL OPERATOR 1 ----
-            //-------------------------------------
+            // CREATE THE LINEAR THERMAL OPERATOR 1 
             AMP_INSIST( global_input_db->keyExists(prefix+"LinearThermalOperator"), "key missing!" );
             boost::shared_ptr<AMP::Operator::LinearBVPOperator> thermalLinearOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(adapter,
                 prefix+"LinearThermalOperator",
@@ -249,14 +245,6 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr subchannelFuelTemp; 
     AMP::LinearAlgebra::Vector::shared_ptr subchannelFlowTemp;
     if ( subchannelMesh.get()!=NULL ) {
-        // dof manager for the scalar quanties on the z faces - for mapped temperature clad temp onto subchannel discretization
-        /*
-        int DofsPerFace =  2;
-        AMP::Discretization::DOFManager::shared_ptr faceDOFManager = 
-            AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), 
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerFace );
-        */
         AMP::Discretization::DOFManager::shared_ptr scalarFaceDOFManager = 
             AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
             AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), 
@@ -303,6 +291,13 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     // CREATE MAPS
     AMP::LinearAlgebra::Vector::shared_ptr thermalMapVec;
     AMP::LinearAlgebra::Vector::shared_ptr density_map_vec;
+    if ( cladMesh.get()!=NULL ) {
+        AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = 
+            AMP::Discretization::simpleDOFManager::create(cladMesh,AMP::Mesh::Vertex,1,1,true);
+        AMP::LinearAlgebra::Variable::shared_ptr densityVariable( new AMP::LinearAlgebra::Variable("Density") );
+        density_map_vec = AMP::LinearAlgebra::createVector( nodalScalarDOF, densityVariable );
+        density_map_vec->zero();
+    }
     if ( pinMesh.get()!=NULL ) {
         // flow temperature on clad outer surfaces and pellet temperature on clad innner surfaces, and clad inner surface temp on pellet outer surfaces
         AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = 
@@ -334,78 +329,75 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         if ( szaColumn->getNumberOfOperators() > 0 )
             mapsColumn->append( szaColumn );
 
-      n2nColumn->setVector ( thermalMapVec );
-      szaColumn->setVector ( thermalMapVec );
+        n2nColumn->setVector ( thermalMapVec );
+        szaColumn->setVector ( thermalMapVec );
 
-      int  curOperator = 0;
-      for( size_t meshIndex=0; meshIndex < pinMeshIDs.size(); meshIndex++ )
-      {
-        AMP::Mesh::Mesh::shared_ptr adapter =  manager->Subset( pinMeshIDs[meshIndex] );
-        if( adapter.get() == NULL ) continue;
+        int curOperator = 0;
+        for( size_t meshIndex=0; meshIndex < pinMeshIDs.size(); meshIndex++ ) {
+            AMP::Mesh::Mesh::shared_ptr adapter =  manager->Subset( pinMeshIDs[meshIndex] );
+            if( adapter.get() == NULL ) continue;
 
-        std::string meshName = adapter->getName();
-        std::string prefix;
+            std::string meshName = adapter->getName();
+            std::string prefix;
 
-        if( meshName.compare("clad")==0 ) {
-          prefix="Clad";
-        } else if ( meshName.compare("pellet_1")==0 ) {
-          prefix="BottomPellet";
-        } else if ( meshName.compare("pellet_3")==0 ) {
-          prefix="TopPellet";
-        } else if ( meshName.compare(0,7,"pellet_")==0 ) {
-          prefix="MiddlePellet";
-        } else {
-          AMP_ERROR("Unknown Mesh");
-        }
-
-        boost::shared_ptr<AMP::Operator::NonlinearBVPOperator>  curBVPop = boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator> ( nonlinearColumnOperator->getOperator ( curOperator ) );
-        boost::shared_ptr<AMP::Operator::ColumnBoundaryOperator>  curBCcol = boost::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator> ( curBVPop->getBoundaryOperator () );
-        boost::shared_ptr<AMP::Database> operator_db = global_input_db->getDatabase ( prefix+"NonlinearThermalOperator" );
-        boost::shared_ptr<AMP::Database>  curBCdb = global_input_db->getDatabase(operator_db->getString ( "BoundaryOperator" ));
-        std::vector<std::string>  opNames = curBCdb->getStringArray ( "boundaryOperators" );
-        for ( int curBCentry = 0 ; curBCentry != curBCdb->getInteger ( "numberOfBoundaryOperators" ) ; curBCentry++ )
-        {
-          if ( opNames[curBCentry] == "P2CRobinVectorCorrection" ) {
-            boost::shared_ptr<AMP::Operator::RobinVectorCorrection>  gapBC = boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( curBCentry ) );
-            AMP_ASSERT(thermalMapVec!=NULL);
-            gapBC->setVariableFlux ( thermalMapVec );
-            gapBC->reset ( gapBC->getParameters() );
-          } else if ( ( opNames[curBCentry] == "BottomP2PNonlinearRobinVectorCorrection" )|| ( opNames[curBCentry] == "MiddleP2PNonlinearRobinBoundaryCondition" ) || ( opNames[curBCentry] == "TopP2PNonlinearRobinBoundaryCondition" ) ) {
-            boost::shared_ptr<AMP::Operator::RobinVectorCorrection>  p2pBC = boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( curBCentry ) );
-            AMP_ASSERT(thermalMapVec!=NULL);
-            p2pBC->setVariableFlux ( thermalMapVec );
-            p2pBC->reset ( p2pBC->getParameters() );
-          } else if ( opNames[curBCentry] == "C2WBoundaryVectorCorrection" ) {
-            boost::shared_ptr<AMP::Database>  thisDb = global_input_db->getDatabase( opNames[curBCentry] );
-            bool isCoupled = thisDb->getBoolWithDefault( "IsCoupledBoundary_0", false);
-            if( isCoupled ) 
-            {
-              boost::shared_ptr<AMP::Operator::RobinVectorCorrection>  c2wBC = boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( curBCentry ) );
-              AMP_ASSERT(thermalMapVec!=NULL);
-              c2wBC->setVariableFlux ( thermalMapVec );
-              if ( cladMesh.get()!=NULL ) {
-                  AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = 
-                    AMP::Discretization::simpleDOFManager::create(cladMesh,AMP::Mesh::Vertex,1,1,true);
-                  AMP::LinearAlgebra::Variable::shared_ptr densityVariable( new AMP::LinearAlgebra::Variable("Density") );
-                  density_map_vec = AMP::LinearAlgebra::createVector( nodalScalarDOF, densityVariable );
-                  density_map_vec->zero();
-                  c2wBC->setFrozenVector( density_map_vec );
-              }
-              c2wBC->reset ( c2wBC->getParameters() );
+            if( meshName.compare("clad")==0 ) {
+                prefix="Clad";
+            } else if ( meshName.compare("pellet_1")==0 ) {
+                prefix="BottomPellet";
+            } else if ( meshName.compare("pellet_3")==0 ) {
+                prefix="TopPellet";
+            } else if ( meshName.compare(0,7,"pellet_")==0 ) {
+                prefix="MiddlePellet";
+            } else {
+                AMP_ERROR("Unknown Mesh");
             }
-          } else if ( opNames[curBCentry] == "C2PRobinVectorCorrection" ) {
-            boost::shared_ptr<AMP::Operator::RobinVectorCorrection>  gapBC = boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( curBCentry ) );
-            AMP_ASSERT(thermalMapVec!=NULL);
-            gapBC->setVariableFlux ( thermalMapVec );
-            gapBC->reset ( gapBC->getParameters() );
-          } else {
-            AMP_ERROR("Unknown boundary operator");
-          }
+
+            boost::shared_ptr<AMP::Operator::NonlinearBVPOperator>  curBVPop = 
+                boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nonlinearColumnOperator->getOperator ( curOperator ) );
+            boost::shared_ptr<AMP::Operator::ColumnBoundaryOperator>  curBCcol = 
+                boost::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator> ( curBVPop->getBoundaryOperator () );
+            boost::shared_ptr<AMP::Database> operator_db = global_input_db->getDatabase ( prefix+"NonlinearThermalOperator" );
+            boost::shared_ptr<AMP::Database>  curBCdb = global_input_db->getDatabase(operator_db->getString ( "BoundaryOperator" ));
+            std::vector<std::string>  opNames = curBCdb->getStringArray( "boundaryOperators" );
+            int  opNumber = curBCdb->getInteger( "numberOfBoundaryOperators" );
+            for (int curBCentry=0; curBCentry!=opNumber; curBCentry++ ) {
+                if ( opNames[curBCentry] == "P2CRobinVectorCorrection" ) {
+                    boost::shared_ptr<AMP::Operator::RobinVectorCorrection>  gapBC = 
+                        boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( curBCentry ) );
+                    AMP_ASSERT(thermalMapVec!=NULL);
+                    gapBC->setVariableFlux ( thermalMapVec );
+                    gapBC->reset ( gapBC->getParameters() );
+                } else if ( ( opNames[curBCentry]=="BottomP2PNonlinearRobinVectorCorrection"  ) || 
+                            ( opNames[curBCentry]=="MiddleP2PNonlinearRobinBoundaryCondition" ) || 
+                            ( opNames[curBCentry]=="TopP2PNonlinearRobinBoundaryCondition"    ) ) {
+                    boost::shared_ptr<AMP::Operator::RobinVectorCorrection>  p2pBC = 
+                        boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( curBCentry ) );
+                    AMP_ASSERT(thermalMapVec!=NULL);
+                    p2pBC->setVariableFlux ( thermalMapVec );
+                    p2pBC->reset ( p2pBC->getParameters() );
+                } else if ( opNames[curBCentry] == "C2WBoundaryVectorCorrection" ) {
+                    boost::shared_ptr<AMP::Database>  thisDb = global_input_db->getDatabase( opNames[curBCentry] );
+                    bool isCoupled = thisDb->getBoolWithDefault( "IsCoupledBoundary_0", false);
+                    if( isCoupled ) {
+                        boost::shared_ptr<AMP::Operator::RobinVectorCorrection>  c2wBC = 
+                            boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>( curBCcol->getBoundaryOperator ( curBCentry ) );
+                        AMP_ASSERT(thermalMapVec!=NULL);
+                        c2wBC->setVariableFlux ( thermalMapVec );
+                        c2wBC->setFrozenVector( density_map_vec );
+                        c2wBC->reset ( c2wBC->getParameters() );
+                    }
+                } else if ( opNames[curBCentry] == "C2PRobinVectorCorrection" ) {
+                    boost::shared_ptr<AMP::Operator::RobinVectorCorrection>  gapBC = 
+                        boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>( curBCcol->getBoundaryOperator ( curBCentry ) );
+                    AMP_ASSERT(thermalMapVec!=NULL);
+                    gapBC->setVariableFlux ( thermalMapVec );
+                    gapBC->reset ( gapBC->getParameters() );
+                } else {
+                    AMP_ERROR("Unknown boundary operator");
+                }
+            }
+            curOperator++;
         }
-
-        curOperator++;
-      }
-
     }
 
     // Create the maps from the clad temperature to the subchannel temperature
@@ -441,13 +433,13 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     mapsColumn->append( coupledChannelMapOperator );
 
     if ( pinMesh.get()!=NULL ) {
-      boost::shared_ptr<AMP::InputDatabase> copyOp_db = boost::dynamic_pointer_cast<AMP::InputDatabase>(global_input_db->getDatabase("CopyOperator"));
-      boost::shared_ptr<AMP::Operator::VectorCopyOperatorParameters> vecCopyOperatorParams(new AMP::Operator::VectorCopyOperatorParameters( copyOp_db ));
-      vecCopyOperatorParams->d_copyVariable = thermalVariable;
-      vecCopyOperatorParams->d_copyVector = thermalMapVec;
-      vecCopyOperatorParams->d_Mesh = pinMesh ;
-      thermalCopyOperator.reset(new AMP::Operator::VectorCopyOperator(vecCopyOperatorParams));
-      thermalMapVec->zero();
+        boost::shared_ptr<AMP::InputDatabase> copyOp_db = boost::dynamic_pointer_cast<AMP::InputDatabase>(global_input_db->getDatabase("CopyOperator"));
+        boost::shared_ptr<AMP::Operator::VectorCopyOperatorParameters> vecCopyOperatorParams(new AMP::Operator::VectorCopyOperatorParameters( copyOp_db ));
+        vecCopyOperatorParams->d_copyVariable = thermalVariable;
+        vecCopyOperatorParams->d_copyVector = thermalMapVec;
+        vecCopyOperatorParams->d_Mesh = pinMesh ;
+        thermalCopyOperator.reset(new AMP::Operator::VectorCopyOperator(vecCopyOperatorParams));
+        thermalMapVec->zero();
     }
 
     boost::shared_ptr<AMP::Operator::CoupledOperatorParameters> CoupledOpParams(new AMP::Operator::CoupledOperatorParameters(emptyDb));
@@ -491,12 +483,11 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     columnPreconditioner.reset(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
 
     boost::shared_ptr<AMP::Database> trilinosPreconditioner_db = columnPreconditioner_db->getDatabase("TrilinosPreconditioner");
-    for(unsigned int id = 0; id != linearColumnOperator->getNumberOfOperators(); id++)
-    {
-      boost::shared_ptr<AMP::Solver::SolverStrategyParameters> trilinosPreconditionerParams(new AMP::Solver::SolverStrategyParameters(trilinosPreconditioner_db));
-      trilinosPreconditionerParams->d_pOperator = linearColumnOperator->getOperator(id);
-      boost::shared_ptr<AMP::Solver::TrilinosMLSolver> trilinosPreconditioner(new AMP::Solver::TrilinosMLSolver(trilinosPreconditionerParams));
-      columnPreconditioner->append(trilinosPreconditioner);
+    for(unsigned int id = 0; id != linearColumnOperator->getNumberOfOperators(); id++) {
+        boost::shared_ptr<AMP::Solver::SolverStrategyParameters> trilinosPreconditionerParams(new AMP::Solver::SolverStrategyParameters(trilinosPreconditioner_db));
+        trilinosPreconditionerParams->d_pOperator = linearColumnOperator->getOperator(id);
+        boost::shared_ptr<AMP::Solver::TrilinosMLSolver> trilinosPreconditioner(new AMP::Solver::TrilinosMLSolver(trilinosPreconditionerParams));
+        columnPreconditioner->append(trilinosPreconditioner);
     }
 
     // create linear solver
@@ -548,45 +539,44 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     }
 
     if ( subchannelMesh.get()!=NULL ) {
-      // get exit pressure
-      double Pout = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )->getDouble("Exit_Pressure");
-      // calculate initial guess
-      // get inlet temperature
-      double Tin = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )->getDouble("Inlet_Temperature");
-      // compute inlet enthalpy
-      std::map<std::string, boost::shared_ptr<std::vector<double> > > enthalpyArgMap;
-      enthalpyArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,Tin)));
-      enthalpyArgMap.insert(std::make_pair("pressure",   new std::vector<double>(1,Pout)));
-      std::vector<double> enthalpyResult(1);
-      subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap); 
-      double hin = enthalpyResult[0];
-      std::cout<< "Enthalpy Solution:"<< hin <<std::endl;
-      std::cout<< "Outlet pressure:"<< Pout <<std::endl;
+        // get exit pressure
+        double Pout = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )->getDouble("Exit_Pressure");
+        // get inlet temperature
+        double Tin = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )->getDouble("Inlet_Temperature");
+        // compute inlet enthalpy
+        std::map<std::string, boost::shared_ptr<std::vector<double> > > enthalpyArgMap;
+        enthalpyArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,Tin)));
+        enthalpyArgMap.insert(std::make_pair("pressure",   new std::vector<double>(1,Pout)));
+        std::vector<double> enthalpyResult(1);
+        subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap); 
+        double hin = enthalpyResult[0];
+        std::cout<< "Enthalpy Solution:"<< hin <<std::endl;
+        std::cout<< "Outlet pressure:"<< Pout <<std::endl;
 
-      AMP::LinearAlgebra::Vector::shared_ptr subchannelEnthalpy = flowSolVec->select( AMP::LinearAlgebra::VS_Stride(0,2), "H" );
-      AMP::LinearAlgebra::Vector::shared_ptr subchannelPressure = flowSolVec->select( AMP::LinearAlgebra::VS_Stride(1,2), "P" );
+        AMP::LinearAlgebra::Vector::shared_ptr subchannelEnthalpy = flowSolVec->select( AMP::LinearAlgebra::VS_Stride(0,2), "H" );
+        AMP::LinearAlgebra::Vector::shared_ptr subchannelPressure = flowSolVec->select( AMP::LinearAlgebra::VS_Stride(1,2), "P" );
 
-      subchannelEnthalpy->setToScalar(AMP::Operator::Subchannel::scaleEnthalpy*hin); 
-      subchannelPressure->setToScalar(AMP::Operator::Subchannel::scalePressure*Pout); 
+        subchannelEnthalpy->setToScalar(AMP::Operator::Subchannel::scaleEnthalpy*hin); 
+        subchannelPressure->setToScalar(AMP::Operator::Subchannel::scalePressure*Pout); 
 
-      // FIRST APPLY CALL
-      subchannelLinearOperator->reset(subchannelNonlinearOperator->getJacobianParameters(flowSolVec));
-      subchannelLinearOperator->apply( flowRhsVec, flowSolVec, flowResVec, 1.0, -1.0);
+        // FIRST APPLY CALL
+        subchannelLinearOperator->reset(subchannelNonlinearOperator->getJacobianParameters(flowSolVec));
+        subchannelLinearOperator->apply( flowRhsVec, flowSolVec, flowResVec, 1.0, -1.0);
     }
 
     nonlinearCoupledOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
    
     size_t totalOp;
     if(subchannelMesh != NULL ){
-      totalOp = nonlinearColumnOperator->getNumberOfOperators()-1;
+        totalOp = nonlinearColumnOperator->getNumberOfOperators()-1;
     }else{
-      totalOp = nonlinearColumnOperator->getNumberOfOperators();
+        totalOp = nonlinearColumnOperator->getNumberOfOperators();
     }
-    for( size_t id = 0; id != totalOp; id++)
-    {
-      boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator = boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nonlinearColumnOperator->getOperator(id));
-      nonlinearThermalOperator->modifyInitialSolutionVector(globalThermalSolVec);
-      nonlinearThermalOperator->modifyRHSvector(globalThermalRhsVec);
+    for( size_t id = 0; id != totalOp; id++) {
+        boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator = 
+            boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nonlinearColumnOperator->getOperator(id));
+        nonlinearThermalOperator->modifyInitialSolutionVector(globalThermalSolVec);
+        nonlinearThermalOperator->modifyRHSvector(globalThermalRhsVec);
     }
     globalThermalRhsVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     PROFILE_STOP("Initialize");

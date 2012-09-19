@@ -113,7 +113,7 @@ CladToSubchannelMaps{
     VariableName = "Temperature"
 }
 
-SubchannelToCladMaps{
+ThermalSubchannelToCladMaps{
     MapType = "SubchannelToCladMap"
     N_maps = 1
     Mesh1 = "subchannel"
@@ -122,6 +122,17 @@ SubchannelToCladMaps{
     Surface2 = 4
     DOFsPerObject = 1
     VariableName = "Temperature"
+}
+
+DensitySubchannelToCladMaps{
+    MapType = "SubchannelToCladMap"
+    N_maps = 1
+    Mesh1 = "subchannel"
+    Surface1 = 4
+    Mesh2 = "clad"
+    Surface2 = 4
+    DOFsPerObject = 1
+    VariableName = "Density"
 }
 
 CopyOperator{
@@ -554,7 +565,7 @@ C2PRobinVectorCorrection {
 }
 
 C2PRobinMatrixCorrection {
-  name = "RobinMatrixCorrection"
+    name = "RobinMatrixCorrection"
     FE_ORDER = "FIRST"
     FE_FAMILY = "LAGRANGE"
     QRULE_TYPE = "QGAUSS"
@@ -575,7 +586,7 @@ C2PRobinMatrixCorrection {
 }
 
 C2WBoundaryVectorCorrection {
-  name = "RobinVectorCorrection"
+    name = "RobinVectorCorrection"
     FE_ORDER = "FIRST"
     FE_FAMILY = "LAGRANGE"
     QRULE_TYPE = "QGAUSS"
@@ -597,7 +608,7 @@ C2WBoundaryVectorCorrection {
 }
 
 C2WBoundaryMatrixCorrection {
-  name = "RobinMatrixCorrection"
+    name = "RobinMatrixCorrection"
     FE_ORDER = "FIRST"
     FE_FAMILY = "LAGRANGE"
     QRULE_TYPE = "QGAUSS"
@@ -671,7 +682,7 @@ SubchannelTwoEqNonlinearOperator{
     Channel_Angle = 0.0
     Friction_Factor = 0.001
     Lattice_Pitch = 0.0128016
-    Rod_Diameter = 0.0097028
+    Rod_Diameter = 0.009410
     Rod_Power = 66.81e3
     Heat_Source_Type = "averageCladdingTemperature"
     Channel_Diameter = 0.01178  // Todreas, p.455
@@ -698,7 +709,7 @@ SubchannelTwoEqLinearOperator{
     Prandtl          = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
     Friction_Factor = 0.001
     Lattice_Pitch = 0.0128016
-    Rod_Diameter = 0.0097028
+    Rod_Diameter = 0.009410
     Form_Loss_Coefficient = 0.2
     Rod_Power = 66.81e3
     Heat_Source_Type = "averageCladdingTemperature"
@@ -713,6 +724,7 @@ ConvectiveHeatCoefficient{
     Property = "ConvectiveHeat"
     ActiveInputVariables{
       ActiveVariable_0 = "Temperature"
+      ActiveVariable_1 = "Density"
     }
     ActiveParameters{
       FUEL_TEMPERATURE = "Temperature"
@@ -727,18 +739,18 @@ ConvectiveHeatCoefficient{
 }
 
 SubchannelPhysicsModel{
-  name = "SubchannelPhysicsModel"
+    name = "SubchannelPhysicsModel"
     Material = "WaterLibrary"
     Formulation = "FunctionsTesting"
-	Defaults{
+    Defaults{
         diameter    = 0.01178  // Todreas, p.455
-		temperature = 350.0
-		enthalpy    = 200.0e3
-		pressure    = 0.5e6
-		density     = 973.919
+        temperature = 350.0
+        enthalpy    = 200.0e3
+        pressure    = 0.5e6
+        density     = 973.919
         reynolds    = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
         prandtl     = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
-	}
+    }
 }
 
 NonlinearSolver {

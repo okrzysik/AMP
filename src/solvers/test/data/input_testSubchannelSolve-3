@@ -693,6 +693,7 @@ SubchannelTwoEqNonlinearOperator{
     ChannelFractions = 1.0
     Heat_Shape = "Sinusoidal"
     LocalModel = "SubchannelPhysicsModel"
+    Friction_Model = "Constant"
     Number_GridSpacers = 0
 }
 
@@ -744,15 +745,15 @@ SubchannelPhysicsModel{
     name = "SubchannelPhysicsModel"
     Material = "WaterLibrary"
     Formulation = "FunctionsTesting"
-	Defaults{
+    Defaults{
         diameter    = 0.01178  // Todreas, p.455
-		temperature = 350.0
-		enthalpy    = 200.0e3
-		pressure    = 0.5e6
-		density     = 973.919
+        temperature = 350.0
+        enthalpy    = 200.0e3
+        pressure    = 0.5e6
+        density     = 973.919
         reynolds    = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
         prandtl     = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
-	}
+    }
 }
 
 NonlinearSolver {
