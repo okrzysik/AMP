@@ -257,7 +257,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
                    double K_grid = d_lossGrid[igrid];
                    double K_perLength = K_grid/(zMax_grid - zMin_grid);
                    if (zMax_grid >= z_plus){
-                      double overlap;
+                      double overlap = 0.0;
                       if (zMin_grid >= z_plus){
                          overlap = 0.0;
                       } else if (zMin_grid > z_minus && zMin_grid < z_plus){
@@ -269,7 +269,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
                       }
                       K += overlap*K_perLength;
                    } else if (zMax_grid < z_plus && zMax_grid > z_minus){
-                      double overlap;
+                      double overlap = 0.0;
                       if (zMin_grid > z_minus){
                          overlap = zMax_grid - zMin_grid;
                       } else if (zMin_grid <= z_minus){
