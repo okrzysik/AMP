@@ -264,7 +264,7 @@ namespace AMP {
           // these are only the m=even, n=zero moments.
           AMP_ASSERT( (int)d_numMoments > -1 );
           if (d_numMoments > 0) {
-            if ( d_numMoments !=4) AMP_ASSERT (db->keyExists("Moments"));
+            if ( d_numMoments !=4) AMP_INSIST (db->keyExists("Moments"), "if numMoments are not zero, and default is not used, you must define the Moments to use.");
             if (db->keyExists("Moments")) {
               d_Moments.resize(d_numMoments, 0.);
               db->getDoubleArray("Moments", &d_Moments[0], d_numMoments);
