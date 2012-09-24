@@ -560,6 +560,10 @@ namespace Operator {
       d_Nu[d_gaussPtCnt] = PR[0];
       d_alpha[d_gaussPtCnt] = TEC[0];
       d_tmp1ThermalStrain[d_gaussPtCnt] = d_alpha[d_gaussPtCnt];
+      
+      (*tempVec)[0] = d_EquilibriumTemperature[d_gaussPtCnt];
+      d_material->property(tecString)->evalv(TEC, inputMaterialParameters);
+      d_EquilibriumThermalStrain[d_gaussPtCnt] = TEC[0]; 
     }
   }
 
