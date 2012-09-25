@@ -190,8 +190,7 @@ namespace AMP {
       if(!d_skipRHSsetCorrection) {
         if(!d_skipRHSaddCorrection) {
           if(d_dispVals.get() == NULL) {
-            d_dispVals = subsetOutputVector(rhs);
-//            d_dispVals = d_inputMatrix->getRightVector();
+            d_dispVals = (subsetOutputVector(rhs))->cloneVector();
             AMP_ASSERT((*(d_dispVals->getVariable())) == (*d_variable));
           }
 
@@ -210,7 +209,6 @@ namespace AMP {
         }
       }
     }
-
 
   }
 }

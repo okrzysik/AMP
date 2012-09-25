@@ -76,7 +76,6 @@ namespace AMP {
               applyMatrixCorrection();
             } // end if
             AMP::LinearAlgebra::Vector::shared_ptr myRhs = subsetOutputVector(rhs);
-//            AMP::LinearAlgebra::Vector::shared_ptr myRhs = rhs->subsetVectorForVariable(d_variable);
             myRhs->add(myRhs, d_rhsCorrectionAdd);
           }
         }
