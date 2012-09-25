@@ -566,7 +566,6 @@ namespace AMP {
               int  offset = ndx[i];
               val *= u->getValueByGlobalID ( offset );
               r->setValueByGlobalID ( offset , val );
-              AMP::pout<<" powershape: "<<val<<" r: "<<radius<<" rmax: "<<rmax<<std::endl;
               AMP_ASSERT( AMP::Utilities::approx_equal( r->getValueByGlobalID ( offset ), val ) );
             } //end for gauss-points
             destroyCurrentLibMeshElement();
