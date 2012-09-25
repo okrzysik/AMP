@@ -566,6 +566,7 @@ namespace AMP {
               int  offset = ndx[i];
               val *= u->getValueByGlobalID ( offset );
               r->setValueByGlobalID ( offset , val );
+              AMP::pout<<" powershape: "<<val<<" r: "<<radius<<" rmax: "<<rmax<<std::endl;
               AMP_ASSERT( AMP::Utilities::approx_equal( r->getValueByGlobalID ( offset ), val ) );
             } //end for gauss-points
             destroyCurrentLibMeshElement();
@@ -958,7 +959,10 @@ namespace AMP {
         destroyCurrentLibMeshElement();
       } //end for elements
 
-      integralFr = integralFr/numerator;
+      double bot = (d_Mesh->getComm()).sumReduce(numerator);
+      double top = (d_Mesh->getComm()).sumReduce(integralFr);
+      //integralFr = integralFr/numerator;
+      integralFr = top/bot;
 
       return integralFr;
     }
