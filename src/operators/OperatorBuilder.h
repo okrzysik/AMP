@@ -24,7 +24,7 @@ public:
     /**
      * \brief Create operator from parameters
      * \details  This function will create a new operator given the parameters
-     * \param params  Parameters for constructing the operator
+     * \param in_params  Parameters for constructing the operator
      */
     static boost::shared_ptr<Operator> createOperator(boost::shared_ptr<OperatorParameters>  in_params);
 
@@ -59,7 +59,7 @@ public:
     /**
      * \brief Create operator from database
      * \details  This function will create a new operator given mesh, input database, elementPhysicsModel, and localModelFactory
-     * \param mesh                  Mesh for the operator
+     * \param meshAdapter           Mesh for the operator
      * \param boundaryOperatorName  Name of the operator to create
      * \param input_db              Input database
      * \param volumeOperator        Volume operator to use
@@ -76,7 +76,7 @@ public:
     /**
      * \brief Create operator from database
      * \details  This function will create a new operator given mesh, input database, elementPhysicsModel, and localModelFactory
-     * \param mesh                  Mesh for the operator
+     * \param meshAdapter           Mesh for the operator
      * \param boundaryOperatorName  Name of the operator to create
      * \param input_db              Input database
      * \param volumeOperator        Volume operator to use
