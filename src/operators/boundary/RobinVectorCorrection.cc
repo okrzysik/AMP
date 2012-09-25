@@ -89,7 +89,7 @@ RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
       {
         d_elementInputVec[i+1] = uInternal->constSelect ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
       }
-      AMP_INSIST ( d_elementInputVec[i+1] , "Did not find vector" );
+      AMP_INSIST ( d_elementInputVec[i+1] , "Did not find vector '"+variableNames[i]+"'" );
       AMP_ASSERT(d_elementInputVec[i+1]->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
     }
 
