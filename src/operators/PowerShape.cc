@@ -88,7 +88,6 @@ namespace AMP {
         if(d_type == "frapcon") {
   //      AMP_ASSERT(!(d_type == "frapcon"))
           d_numZmoments = 0;
-          d_frapconVolumeIntegral = "analytical";
           d_frapconConstant = 3.45;
           d_angularConstant = 0.0;
         } else if(d_type == "zernikeRadial") {
@@ -234,10 +233,6 @@ namespace AMP {
 
         // frapcon power shape
         if(d_type == "frapcon") {
-
-          // Read the type of the Frapcon volume integral calculations. 
-          // Currently two models are available: analytical and sum.
-          d_frapconVolumeIntegral = db->getStringWithDefault("frapconVolumeIntegral","analytical");
 
           // Read the Frapcon constant from input database.
           d_frapconConstant = db->getDoubleWithDefault("frapconConstant", 3.45);
@@ -519,11 +514,7 @@ namespace AMP {
           // Note: Dimensions are all in meter (m). 
 
           // Choose the type of volume integral calculation. 
-          if ( d_frapconVolumeIntegral == "analytical"){
-            volumeIntegral = getVolumeIntegralAnalytical(rmax);
-          }else if(d_frapconVolumeIntegral == "sum"){
-            volumeIntegral = getVolumeIntegralSum(rmax, centerx, centery);
-          }
+          volumeIntegral = getVolumeIntegralSum(rmax, centerx, centery);
 
           if(d_iDebugPrintInfoLevel>3)
             AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
@@ -824,100 +815,6 @@ namespace AMP {
         b = result;
       }
       return result;
-    }
-
-    /*!
-     *************************************************************************
-     * \brief Evaluates the integral Int(F(r)rdr, r=0..R).                  *
-     * Returns  Int(F(r)rdr, r=0..R).  R is in cm. Constants of the         *
-     * regression model were generated for the Int(F(r)rdr) where the       *
-     * Frapcon function is defined as F(r) = 1 + a * exp( -3*(R-r)^0.45 ).  *
-     * The 15th-oerder polynomial and the regression constants are given    *
-     * below for  a=3.45;                                                   *
-     *                                                                      *
-     * integralFr = c0 + c1*x^1 + c2*x^2 + c3*x^3 + c4*x^4 + c5*x^5         *
-     *              + c6*x^6 + c7*x^7 + c8*x^8 + c9*x^9 + c10*x^10          *
-     *              + c11*x^11 + c12*x^12 + c13*x^13 + c14*x^14 + c15*x^15  *
-     *                                                                      *
-     * where                                                                *
-     *                                                                      *
-     *   c0  = -2.094884E-06                                                *
-     *   c1  =  2.038755E-03                                                *
-     *   c2  =  1.804876E+00                                                *
-     *   c3  = -5.618491E+00                                                *
-     *   c4  =  3.188698E+01                                                *
-     *   c5  = -1.507042E+02                                                *
-     *   c6  =  5.253247E+02                                                *
-     *   c7  = -1.305846E+03                                                *
-     *   c8  =  2.250627E+03                                                *
-     *   c9  = -2.521437E+03                                                *
-     *   c10 =  1.452485E+03                                                *
-     *   c11 =  3.180649E+02                                                *
-     *   c12 = -1.326071E+03                                                *
-     *   c13 =  1.085670E+03                                                *
-     *   c14 = -4.226736E+02                                                *
-     *   c15 =  6.737906E+01                                                *
-     *                                                                      *
-     * For different values of 'a', these constants must be regenerated     *
-     * (look at the amp/docs/reports/frapconAnalysis.pdf).                  *
-     * This regression model is valid for  0cm <= radius <= 1cm.            *
-     * Standard error of the estimate of the above regression is 6.57E-07.  *
-     *                                                                      *
-     *************************************************************************
-     */
-    double PowerShape::getVolumeIntegralAnalytical(double rmax)
-    {
-      // Returns  Int(F(r)rdr, r=0..R).  R is in cm.
-      // Constants of the regression model were generated for the Int(F(r)rdr)
-      // where the Frapcon function is defined as F(r) = 1 + a * exp( -3*(R-r)^0.45 ).
-      // The following constants were found for a=3.45. For different values of 'a',
-      // these constants must be regenerated (look at the amp/docs/reports/frapconAnalysis.pdf).
-      // The following regression model is valid for  0cm <= radius <= 1cm. Standard error of 
-      // the estimate is 6.57E-07.
-
-      rmax = 100 * rmax; // converting rmax from meter to centimeter.
-
-      double c0  = -2.094884E-06;
-      double c1  =  2.038755E-03;
-      double c2  =  1.804876E+00;
-      double c3  = -5.618491E+00;
-      double c4  =  3.188698E+01;
-      double c5  = -1.507042E+02;
-      double c6  =  5.253247E+02;
-      double c7  = -1.305846E+03;
-      double c8  =  2.250627E+03;
-      double c9  = -2.521437E+03;
-      double c10 =  1.452485E+03;
-      double c11 =  3.180649E+02;
-      double c12 = -1.326071E+03;
-      double c13 =  1.085670E+03;
-      double c14 = -4.226736E+02;
-      double c15 =  6.737906E+01;
-
-      // R=rmax dependent terms of the tenth-order poly 
-      double x1  = rmax;
-      double x2  = x1*x1;
-      double x3  = x1*x2;
-      double x4  = x1*x3;
-      double x5  = x1*x4;
-      double x6  = x1*x5;
-      double x7  = x1*x6;
-      double x8  = x1*x7;
-      double x9  = x1*x8;
-      double x10 = x1*x9;
-      double x11 = x1*x10;
-      double x12 = x1*x11;
-      double x13 = x1*x12;
-      double x14 = x1*x13;
-      double x15 = x1*x14;
-
-      double integralFr = c0 + c1*x1 + c2*x2 + c3*x3 + c4*x4 + c5*x5
-        + c6*x6 + c7*x7 + c8*x8 + c9*x9 + c10*x10
-        + c11*x11 + c12*x12 + c13*x13 + c14*x14 + c15*x15;
-
-      double numerator = 2*integralFr/pow(rmax,2.0);
-
-      return numerator;
     }
 
     /*!

@@ -104,9 +104,6 @@ class PowerShape : public  Operator {
     // (4,5) = height (min, max)
     std::vector<double> d_radialBoundingBox;
 
-    // Frapcon volume integral type.
-    std::string d_frapconVolumeIntegral;
-
     // Frapcon constant.
     double d_frapconConstant;
 
@@ -174,7 +171,6 @@ class PowerShape : public  Operator {
       double choose(int, int);
       double evalZernike(const int m, const int n, const double rho, const double phi);
       double evalLegendre(const int n, const double x);
-      double getVolumeIntegralAnalytical(double rmax);
       double getVolumeIntegralSum(double rmax, double cx, double cy);
       double getFrapconFr(double radius, double rmax);
       double getZernikeRadial(double rho);
