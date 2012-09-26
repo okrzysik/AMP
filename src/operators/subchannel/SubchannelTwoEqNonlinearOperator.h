@@ -62,6 +62,12 @@ public:
     //! Get the element physics model
     boost::shared_ptr<SubchannelPhysicsModel> getSubchannelPhysicsModel() { return d_subchannelPhysicsModel; }
 
+    //! Get the Inlet Temperature [K]
+    double getInletTemperature() { return d_Tin; }
+
+    //! Get the Outlet Pressure [Pa]
+    double getOutletPressure() { return d_Pout; }
+
 protected:
 
     boost::shared_ptr<SubchannelOperatorParameters> d_params;
