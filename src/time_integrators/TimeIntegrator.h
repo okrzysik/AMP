@@ -88,6 +88,13 @@ public:
     * to construct the initial guess for the advanced solution may not be 
     * possible.  
     *
+    * This function may, or may not, copy the new solution into the 
+    * solution vector at the previous time step (updateSolution).
+    * If it is copied, this can reduce the memory requirements, but 
+    * restricts the implementation to those functions that will not be 
+    * called multiple times within a time step.  If it is not copied, 
+    * the update solution function must be called after each time step.  
+    * The concrete implementation needs to make this clear.
     *
     * @param dt Time step size
     * @param first_step Whether this is the first step
@@ -111,6 +118,11 @@ public:
     * when this routine is invoked, an acceptable new solution has been 
     * computed.  The double return value is the simulation time corresponding
     * to the advanced solution.
+    *
+    * In particular, this is designed to copy the solution vector
+    * advanced during the time integration process to the solution
+    * vector at the previous time and assumes that the new solution
+    * has already been checked with the checkNewSolution function.
     */
    virtual void updateSolution( void ) = 0;
 
