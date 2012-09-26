@@ -35,6 +35,10 @@ public :
         return d_Operators[2];
     }
 
+    void setMapOperator( boost::shared_ptr<AMP::Operator::Operator> op ) {
+        d_Operators[2] = op;
+    }
+
     boost::shared_ptr<AMP::Operator::Operator> getBVPOperator() {
         return d_Operators[3];
     }
