@@ -4,6 +4,8 @@
 
 #include "operators/LinearOperator.h"
 #include "operators/subchannel/SubchannelOperatorParameters.h"
+#include "operators/subchannel/SubchannelPhysicsModel.h"
+
 
 namespace AMP {
 namespace Operator {

@@ -6,9 +6,9 @@
 #include <map>
 #include <vector>
 
-#include "ElementPhysicsModel.h"
+#include "operators/ElementPhysicsModel.h"
+#include "operators/ElementPhysicsModelParameters.h"
 #include "materials/Material.h"
-#include "ElementPhysicsModelParameters.h"
 
 
 namespace AMP {

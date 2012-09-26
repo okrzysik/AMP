@@ -3,7 +3,8 @@
 #define included_AMP_SubchannelTwoEqNonlinearOperator
 
 #include "operators/Operator.h"
-#include "SubchannelOperatorParameters.h"
+#include "operators/subchannel/SubchannelOperatorParameters.h"
+#include "operators/subchannel/SubchannelPhysicsModel.h"
 
 #include "ampmesh/MeshElementVectorIterator.h"
 
@@ -57,6 +58,9 @@ public:
       
     //! Gets parameters from nonlinear operator for use in linear operator
     boost::shared_ptr<OperatorParameters> getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
+
+    //! Get the element physics model
+    boost::shared_ptr<SubchannelPhysicsModel> getSubchannelPhysicsModel() { return d_subchannelPhysicsModel; }
 
 protected:
 
