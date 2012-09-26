@@ -594,6 +594,27 @@ MeshElement MultiMesh::getElement( const MeshElementID &elem_id ) const
 
 
 /********************************************************
+* Function to return parents of an element              *
+********************************************************/
+std::vector<MeshElement> MultiMesh::getElementParents( const MeshElement& elem, const GeomType type ) const
+{
+    MeshID mesh_id = elem.globalID().meshID();
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        std::vector<MeshID> ids = d_meshes[i]->getLocalBaseMeshIDs();
+        bool mesh_found = false;
+        for (size_t j=0; j<ids.size(); j++) {
+            if ( ids[j]==mesh_id )
+                mesh_found = true;
+        }
+        if ( mesh_found )
+            return d_meshes[i]->getElementParents( elem, type );
+    }
+    AMP_ERROR("A mesh matching the element's mesh id was not found");
+    return std::vector<MeshElement>();
+}
+
+
+/********************************************************
 * Function to return the mesh with the given ID         *
 ********************************************************/
 boost::shared_ptr<Mesh>  MultiMesh::Subset( MeshID meshID ) const

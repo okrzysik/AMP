@@ -259,7 +259,7 @@ MeshElement Mesh::getElement ( const MeshElementID &elem_id ) const
 /********************************************************
 * Function to return parents of an element              *
 ********************************************************/
-std::vector<MeshElement> Mesh::getElementParents ( const MeshElement, const GeomType ) const
+std::vector<MeshElement> Mesh::getElementParents ( const MeshElement&, const GeomType ) const
 {
     AMP_ERROR("getElementParents is not implimented for the base class");
     return std::vector<MeshElement>();

@@ -182,6 +182,16 @@ public:
 
 
     /**
+     * \brief    Return the parent elements of the given mesh element
+     * \details  This function queries the mesh to get an element given the mesh id,
+     *    then returns the parent elements that have the element as a child
+     * \param elem  Mesh element of interest
+     * \param type  Element type of the parents requested
+     */
+    virtual std::vector<MeshElement> getElementParents ( const MeshElement& elem, const GeomType type ) const;
+
+
+    /**
      * \brief    Displace the entire mesh
      * \details  This function will displace the entire mesh by a scalar value.
      *   This function is a blocking call for the mesh communicator, and requires

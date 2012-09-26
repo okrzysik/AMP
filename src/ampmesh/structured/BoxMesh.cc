@@ -739,7 +739,7 @@ MeshElement BoxMesh::getElement ( const MeshElementID &elem_id ) const
 /********************************************************
 * Function to return parents of an element              *
 ********************************************************/
-std::vector<MeshElement> BoxMesh::getElementParents ( const MeshElement meshelem, const GeomType type ) const
+std::vector<MeshElement> BoxMesh::getElementParents ( const MeshElement& meshelem, const GeomType type ) const
 {
     AMP_INSIST(meshelem.globalID().meshID()==d_meshID,"MeshElement is not from the given mesh");
     AMP_INSIST(type>=meshelem.globalID().type()&&type<=GeomDim,"Cannot get the parents of the given type for the current element");

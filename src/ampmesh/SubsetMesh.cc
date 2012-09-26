@@ -415,6 +415,16 @@ MeshElement SubsetMesh::getElement( const MeshElementID &elem_id ) const
 }
 
 
+
+/********************************************************
+* Function to return parents of an element              *
+********************************************************/
+std::vector<MeshElement> SubsetMesh::getElementParents( const MeshElement& elem, const GeomType type ) const
+{
+    return d_parent_mesh->getElementParents(elem,type);
+}
+
+
 /********************************************************
 * Other functions                                       *
 ********************************************************/

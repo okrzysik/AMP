@@ -268,7 +268,7 @@ public:
      * \param elem  Mesh element of interest
      * \param type  Element type of the parents requested
      */
-    virtual std::vector<MeshElement> getElementParents ( const MeshElement elem, const GeomType type ) const;
+    virtual std::vector<MeshElement> getElementParents ( const MeshElement& elem, const GeomType type ) const;
  
 
     //! Get the largest geometric type in the mesh
