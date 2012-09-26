@@ -12,18 +12,15 @@ namespace AMP {
           AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
           const double a, const double b)
       {
-        PROFILE_START("apply");
         for(unsigned int i = 0; i < d_Operators.size(); i++)
         {
           d_Operators[i]->apply(f, u, r, a, b);
         }
-        PROFILE_STOP("apply");
       }
 
     boost::shared_ptr<OperatorParameters>
       ColumnOperator :: getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u)
       {
-        PROFILE_START("getJacobianParameters");
         boost::shared_ptr<AMP::Database> db;
         boost::shared_ptr<ColumnOperatorParameters> opParameters(new ColumnOperatorParameters(db));
 
@@ -33,14 +30,12 @@ namespace AMP {
         {
           (opParameters->d_OperatorParameters)[i] = (d_Operators[i]->getJacobianParameters(u));
         }
-        PROFILE_STOP("getJacobianParameters");
         return opParameters;
       }
 
     void
       ColumnOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
       {
-        PROFILE_START("reset");
         boost::shared_ptr<ColumnOperatorParameters> columnParameters =
           boost::dynamic_pointer_cast<ColumnOperatorParameters>(params);
 
@@ -52,7 +47,6 @@ namespace AMP {
         {
           d_Operators[i]->reset((columnParameters->d_OperatorParameters)[i]);
         }
-        PROFILE_STOP("reset");
       }
 
     void
