@@ -1,30 +1,14 @@
 #ifndef included_TimeIntegrator
 #define included_TimeIntegrator
 
-#ifndef included_AMP_config
-
-#endif
-
-#ifndef included_AMP_Vector
 #include "vectors/Vector.h"
-#endif
-#ifndef included_tbox_InputDatabase
 #include "utils/InputDatabase.h"
-#endif
-#ifndef included_tbox_Pointer
 #include "boost/shared_ptr.hpp"
-#endif
-#ifndef included_AMP_Operator
 #include "operators/Operator.h"
-#endif
-#ifndef included_TimeIntegratorParameters
 #include "time_integrators/TimeIntegratorParameters.h"
-#endif
 
 #include <string>
 
-// forward declarations
-class TimeIntegratorParameters;
 
 namespace AMP{
 namespace TimeIntegrator{
@@ -63,28 +47,28 @@ public:
    virtual ~TimeIntegrator();
 
    /**
-    * Initialize state of time integrator.  This includes creating
-    * solution vector and initializing solver components.
+    * @brief  Initialize state of time integrator.  
+    * @details  Initialize state of time integrator.  This includes 
+    * creating solution vector and initializing solver components.
     */
    virtual void initialize( boost::shared_ptr< TimeIntegratorParameters > parameters);
 
    /**
-   * Resets the internal state of the time integrator as needed.
+    * @brief  Resets the internal state of the time integrator.
+    * @details Resets the internal state of the time integrator as needed.
    * A parameter argument is passed to allow for general flexibility
    * in determining what needs to be reset.
    */
    virtual void reset(boost::shared_ptr< TimeIntegratorParameters > parameters) = 0;
 
    /*!
-    * @brief Integrate through the
-    * specified time increment.
+    * @brief Integrate through the specified time increment.
     *
-    * Integrate through the specified time 
-    * increment.  
+    * @details  Integrate through the specified time increment.  
     *
     * The boolean first_step argument is true when this is the very
-    * first call to the advance function.  Otherwise it is 
-    * false.  Note that, when the argument is true, the use of extrapolation 
+    * first call to the advance function.  Otherwise it is false.  
+    * Note that, when the argument is true, the use of extrapolation 
     * to construct the initial guess for the advanced solution may not be 
     * possible.  
     *
@@ -113,7 +97,9 @@ public:
    virtual bool checkNewSolution(void) const = 0;
 
    /**
-    * Update solution (e.g., reset pointers for solution data, update 
+    * @brief Update solution after time advance.
+    *
+    * @details  Update solution (e.g., reset pointers for solution data, update 
     * dependent variables, etc.) after time advance.  It is assumed that 
     * when this routine is invoked, an acceptable new solution has been 
     * computed.  The double return value is the simulation time corresponding
@@ -132,7 +118,8 @@ public:
    virtual boost::shared_ptr<AMP::LinearAlgebra::Vector> getCurrentSolution(void){ return d_solution; } 
 
    /**
-    * Return time increment for next solution advance.  Timestep selection
+    * @brief  Return time increment for next solution advance. 
+    * @details Return time increment for next solution advance.  Timestep selection
     * is generally based on whether the solution meets some user-defined 
     * criteria.  This routine assumes that, before it is called, the 
     * routine checkNewSolution() was called.  The boolean argument is the 
@@ -141,37 +128,44 @@ public:
    virtual double getNextDt(const bool good_solution) = 0;
 
    /**
-    * Return initial integration time.
+    * @brief  Return initial integration time.
+    * @details  Return initial integration time.
     */
    virtual double getInitialTime() const;
 
    /**
-    * Return final integration time.
+    * @brief  Return final integration time.
+    * @details Return final integration time.
     */
    virtual double getFinalTime() const;
 
    /**
-    * Return current integration time.
+    * @brief  Return final integration time.
+    * @details Return current integration time.
     */
    virtual double getCurrentTime() const;
 
    /**
-    * Return current timestep.
+    * @brief  Return current timestep.
+    * @details Return current timestep.
     */
    virtual double getCurrentDt() const;
 
    /**
-    * Return current integration step number.
+    * @brief  Return current integration step number.
+    * @details Return current integration step number.
     */
    virtual int getIntegratorStep() const;
 
    /**
-    * Return maximum number of integration steps.
+    * @brief  Return maximum number of integration steps.
+    * @details Return maximum number of integration steps.
     */
    virtual int getMaxIntegratorSteps() const;
 
    /**
-    * Return true if the number of integration steps performed by the 
+    * @brief Have the number of integration steps reached the maximum.
+    * @details  Return true if the number of integration steps performed by the 
     * integrator has not reached the specified maximum; return false 
     * otherwise.
     */

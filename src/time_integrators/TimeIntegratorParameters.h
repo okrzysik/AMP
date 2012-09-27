@@ -1,29 +1,12 @@
 #ifndef included_TimeIntegratorParameters
 #define included_TimeIntegratorParameters
 
-#ifndef included_AMP_config
 
-#endif
-
-#ifndef included_Pointer
 #include "boost/shared_ptr.hpp"
-#endif
-
-#ifndef included_Database
 #include "utils/Database.h"
-#endif
-
-#ifndef included_ParameterBase
 #include "utils/ParameterBase.h"
-#endif
-
-#ifndef included_AMP_Vector
 #include "vectors/Vector.h"
-#endif
-
-#ifndef included_AMP_Operator
 #include "operators/Operator.h"
-#endif
 
 #include <string>
 
