@@ -50,7 +50,7 @@ namespace AMP {
 
       /** do a dendro search for the boundary slave vertices on the master mesh */
       AMP::Mesh::Mesh::shared_ptr masterMesh = mesh->Subset(d_MasterMeshID);
-      DendroSearch dendroSearchOnMaster(masterMesh);
+      AMP::Mesh::DendroSearch dendroSearchOnMaster(masterMesh);
       dendroSearchOnMaster.setTolerance(1.0e-10);
       dendroSearchOnMaster.search(comm, tmpSlaveVerticesCoord);
 
@@ -67,11 +67,11 @@ namespace AMP {
       AMP_ASSERT( nSlaveVertices == flags.size() );
 
       /** build the constraints */
-      const unsigned int nConstraints = std::count(flags.begin(), flags.end(), DendroSearch::FoundOnBoundary);
+      const unsigned int nConstraints = std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::FoundOnBoundary);
 
-      unsigned int localPtsNotFound = std::count(flags.begin(), flags.end(), DendroSearch::NotFound);
-      unsigned int localPtsFoundNotOnBoundary = std::count(flags.begin(), flags.end(), DendroSearch::FoundNotOnBoundary);
-      unsigned int localPtsFoundOnBoundary = std::count(flags.begin(), flags.end(), DendroSearch::FoundOnBoundary);
+      unsigned int localPtsNotFound = std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::NotFound);
+      unsigned int localPtsFoundNotOnBoundary = std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::FoundNotOnBoundary);
+      unsigned int localPtsFoundOnBoundary = std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::FoundOnBoundary);
       unsigned int globalPtsNotFound = comm.sumReduce(localPtsNotFound);
       unsigned int globalPtsFoundNotOnBoundary = comm.sumReduce(localPtsFoundNotOnBoundary);
       unsigned int globalPtsFoundOnBoundary = comm.sumReduce(localPtsFoundOnBoundary);
@@ -80,7 +80,7 @@ namespace AMP {
       d_fout<<"Global number of points found on boundary is "<<globalPtsFoundOnBoundary<<" (local was "<<localPtsFoundOnBoundary<<")"<<std::endl;
       d_fout<<"Total number of points is "<<globalPtsNotFound+globalPtsFoundNotOnBoundary+globalPtsFoundOnBoundary<<std::endl;
 
-      AMP_ASSERT( std::count(flags.begin(), flags.end(), DendroSearch::FoundNotOnBoundary) == 0 ); // DendroSearch::FoundNotOnBoundary is not acceptable
+      AMP_ASSERT( std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::FoundNotOnBoundary) == 0 ); // DendroSearch::FoundNotOnBoundary is not acceptable
 
       d_SlaveVerticesGlobalIDs.resize(nConstraints);
       std::fill(d_SlaveVerticesGlobalIDs.begin(), d_SlaveVerticesGlobalIDs.end(), AMP::Mesh::MeshElementID());
@@ -108,14 +108,14 @@ namespace AMP {
         flagsIterator_end = flags.end();
       for ( ; flagsIterator != flagsIterator_end; ++flagsIterator) {
         // TODO: the following if statement is debug only
-        if (*flagsIterator == DendroSearch::NotFound) {
+        if (*flagsIterator == AMP::Mesh::DendroSearch::NotFound) {
           std::vector<double> blackSheepCoord = (mesh->getElement(*tmpSlaveVerticesGlobalIDsConstIterator)).coord();
           d_fout<<blackSheepCoord[0]<<"  "
               <<blackSheepCoord[1]<<"  "
               <<blackSheepCoord[2]<<"\n";
         } // end if
-        //    AMP_ASSERT( (*flagsIterator == DendroSearch::NotFound) || (*flagsIterator == DendroSearch::FoundOnBoundary) );
-        if (*flagsIterator == DendroSearch::FoundOnBoundary) {
+        //    AMP_ASSERT( (*flagsIterator == AMP::Mesh::DendroSearch::NotFound) || (*flagsIterator == AMP::Mesh::DendroSearch::FoundOnBoundary) );
+        if (*flagsIterator == AMP::Mesh::DendroSearch::FoundOnBoundary) {
           hex8_element_t::get_basis_functions_values_on_face(tmpSlaveVerticesLocalCoordOnFacePointerToConst, masterShapeFunctionsValuesPointer);
           for (size_t d = 0; d < 2; ++d) { ++tmpSlaveVerticesLocalCoordOnFacePointerToConst; }
           for (size_t v = 0; v < 4; ++v) { ++masterShapeFunctionsValuesPointer; }

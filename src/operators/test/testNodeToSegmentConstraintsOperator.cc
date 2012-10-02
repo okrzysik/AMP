@@ -19,7 +19,6 @@
 #include "ampmesh/libmesh/libMesh.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/SiloIO.h"
-#include "ampmesh/dendro/DendroSearch.h"
 
 #include "operators/OperatorBuilder.h"
 #include "operators/LinearBVPOperator.h"

@@ -7,7 +7,6 @@
 #include <fstream>
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
-#include <ampmesh/dendro/DendroSearch.h>
 #include <operators/Operator.h>
 #include <operators/contact/NodeToSegmentConstraintsOperatorParameters.h>
 #include <matrices/Matrix.h>

@@ -116,7 +116,7 @@ void run(const std::string & meshFileName,
   }
 
   // Perform the search
-  DendroSearch dendroSearch(meshAdapter, false);
+  AMP::Mesh::DendroSearch dendroSearch(meshAdapter, false);
   dendroSearch.search(globalComm, pts);
 
   // Interpolate
@@ -150,9 +150,9 @@ void run(const std::string & meshFileName,
   std::vector<int> flags;
   dendroSearch.projectOnBoundaryID(globalComm, 4, faceVerticesGlobalIDs, shiftGlobalCoords, projectionLocalCoordsOnFace, flags);
 
-  size_t localPtsNotFound = std::count(flags.begin(), flags.end(), DendroSearch::NotFound);
-  size_t localPtsFoundNotOnBoundary = std::count(flags.begin(), flags.end(), DendroSearch::FoundNotOnBoundary);
-  size_t localPtsFoundOnBoundary = std::count(flags.begin(), flags.end(), DendroSearch::FoundOnBoundary);
+  size_t localPtsNotFound = std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::NotFound);
+  size_t localPtsFoundNotOnBoundary = std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::FoundNotOnBoundary);
+  size_t localPtsFoundOnBoundary = std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::FoundOnBoundary);
   size_t globalPtsNotFound = globalComm.sumReduce(localPtsNotFound);
   size_t globalPtsFoundNotOnBoundary = globalComm.sumReduce(localPtsFoundNotOnBoundary);
   size_t globalPtsFoundOnBoundary = globalComm.sumReduce(localPtsFoundOnBoundary);
@@ -163,12 +163,12 @@ void run(const std::string & meshFileName,
     std::cout<<"Total number of points is "<<globalPtsNotFound+globalPtsFoundNotOnBoundary+globalPtsFoundOnBoundary<<std::endl;
   }
 
-  DendroSearch::TimingType timingTypes[5] = { 
-    DendroSearch::Setup, 
-    DendroSearch::CoarseSearch, 
-    DendroSearch::FineSearch,
-    DendroSearch::Interpolation,
-    DendroSearch::ProjectionOnBoundaryID
+  AMP::Mesh::DendroSearch::TimingType timingTypes[5] = { 
+    AMP::Mesh::DendroSearch::Setup, 
+    AMP::Mesh::DendroSearch::CoarseSearch, 
+    AMP::Mesh::DendroSearch::FineSearch,
+    AMP::Mesh::DendroSearch::Interpolation,
+    AMP::Mesh::DendroSearch::ProjectionOnBoundaryID
   };
   timingMeasurements.resize(5);
   dendroSearch.reportTiming(5, timingTypes, &(timingMeasurements[0]));

@@ -8,6 +8,10 @@
 #include <set>
 #include "ampmesh/latex_visualization_tools.h"
 
+namespace AMP {
+namespace Mesh {
+
+
 DendroSearch::DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh, bool verbose, std::ostream & oStream)
   : d_meshAdapter(mesh),
     d_verbose(verbose),
@@ -999,4 +1003,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
       timingMeasurements[i] = d_timingMeasurements[timingTypes[i]];
     } // end for i
   }
+
+}
+}
 

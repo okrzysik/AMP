@@ -120,7 +120,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     std::cout<<"Finished generating "<<totalNumPts <<" random points for search!"<<std::endl;
   }
 
-  DendroSearch dendroSearch(meshAdapter);
+  AMP::Mesh::DendroSearch dendroSearch(meshAdapter);
   std::vector<double> interpolatedData; 
   std::vector<bool> interpolationWasDone;
   dendroSearch.searchAndInterpolate(globalComm, dummyVector, DOFsPerNode, pts, interpolatedData, interpolationWasDone);
@@ -167,9 +167,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::vector<int> flags;
   dendroSearch.projectOnBoundaryID(globalComm, 4, faceVerticesGlobalIDs, shiftGlobalCoords, projectionLocalCoordsOnFace, flags);
 
-  unsigned int localPtsNotFound = std::count(flags.begin(), flags.end(), DendroSearch::NotFound);
-  unsigned int localPtsFoundNotOnBoundary = std::count(flags.begin(), flags.end(), DendroSearch::FoundNotOnBoundary);
-  unsigned int localPtsFoundOnBoundary = std::count(flags.begin(), flags.end(), DendroSearch::FoundOnBoundary);
+  unsigned int localPtsNotFound = std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::NotFound);
+  unsigned int localPtsFoundNotOnBoundary = std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::FoundNotOnBoundary);
+  unsigned int localPtsFoundOnBoundary = std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::FoundOnBoundary);
   unsigned int globalPtsNotFound = globalComm.sumReduce(localPtsNotFound);
   unsigned int globalPtsFoundNotOnBoundary = globalComm.sumReduce(localPtsFoundNotOnBoundary);
   unsigned int globalPtsFoundOnBoundary = globalComm.sumReduce(localPtsFoundOnBoundary);

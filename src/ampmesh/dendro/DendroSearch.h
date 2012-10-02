@@ -29,6 +29,10 @@
 #include "dendro.h"
 
 
+namespace AMP {
+namespace Mesh {
+
+
 class DendroSearch {
   public:
     struct ProjectOnBoundaryData; 
@@ -90,6 +94,10 @@ struct DendroSearch::ProjectOnBoundaryData {
   double d_ProjectionLocalCoordsOnFace[2]; 
   double d_ShiftGlobalCoords[3];
 };
+
+
+}
+}
 
 #endif // DENDRO_SEARCH
 

@@ -155,6 +155,7 @@ RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
 
       if(d_isFluxGaussPtVector && d_IsCoupledBoundary[nid]){
         gpDOFManager->getDOFs (bnd1->globalID(), gpDofs);
+        AMP_ASSERT(gpDofs.size()>0);
       }
       // Get the libmesh element
       d_currElemPtr = libmeshElements.getElement( bnd1->globalID() );
