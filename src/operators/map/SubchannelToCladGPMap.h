@@ -2,6 +2,7 @@
 #define included_AMP_SubchannelToCladGPMap
 
 #include "operators/map/SubchannelToCladMap.h"
+#include "discretization/createLibmeshElements.h"
 
 namespace AMP {
 namespace Operator {
@@ -37,8 +38,15 @@ protected:
 
     // For a given subchannel, fill the elements of interest using the coordinates
     virtual void fillReturnVector( AMP::LinearAlgebra::Vector::shared_ptr vec, double range[4], 
-        const std::vector<AMP::Mesh::MeshElementID>& ids, const std::vector<double>& z, const std::vector<double>& f );
+        AMP::Mesh::Mesh::shared_ptr mesh, const std::vector<AMP::Mesh::MeshElementID>& ids, 
+        const std::vector<double>& z, const std::vector<double>& f );
 
+private:
+
+    Discretization::createLibmeshElements libmeshElements;
+
+    struct gaussPointZCoord{ double z[4]; };
+    std::vector<gaussPointZCoord> getGaussPoints( AMP::Mesh::Mesh::shared_ptr mesh, const std::vector<AMP::Mesh::MeshElementID>& ids );
 
 };
 

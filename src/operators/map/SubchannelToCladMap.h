@@ -69,8 +69,12 @@ protected:
     
     // For a given subchannel, fill the elements of interest using the coordinates
     virtual void fillReturnVector( AMP::LinearAlgebra::Vector::shared_ptr vec, double range[4], 
-        const std::vector<AMP::Mesh::MeshElementID>& ids, const std::vector<double>& z, const std::vector<double>& f );
+        AMP::Mesh::Mesh::shared_ptr mesh, const std::vector<AMP::Mesh::MeshElementID>& ids, 
+        const std::vector<double>& z, const std::vector<double>& f );
 
+    // Iterators over the mesh elemens of interest
+    AMP::Mesh::MeshIterator d_iterator1;
+    AMP::Mesh::MeshIterator d_iterator2;
 
 private:
 
@@ -82,10 +86,8 @@ private:
     std::vector<std::vector<int> > d_subchannelRanks;       // The processors that own each x-y point in the subchannel
     std::vector<std::vector<int> > d_subchannelRecv;        // The processors that are recieving data from each subchannel
 
-    // Iterators over the mesh elemens of interest
+    // Function to get the iterator for the subchannel mesh
     static AMP::Mesh::MeshIterator getSubchannelIterator(AMP::Mesh::Mesh::shared_ptr);
-    AMP::Mesh::MeshIterator d_iterator1;
-    AMP::Mesh::MeshIterator d_iterator2;
 
     // The list of local MeshElements in each subchannel
     std::vector<std::vector<AMP::Mesh::MeshElementID> >   d_elem;

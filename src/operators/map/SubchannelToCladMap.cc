@@ -29,7 +29,7 @@ SubchannelToCladMap::SubchannelToCladMap ( const boost::shared_ptr<AMP::Operator
         d_iterator1 = getSubchannelIterator(d_mesh1);
     if ( d_mesh2.get() != NULL ) {
         int type = params->d_db->getIntegerWithDefault("GeomType",0);
-        d_iterator2 = d_mesh2->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID1, static_cast<AMP::Mesh::GeomType>(type) );
+        d_iterator2 = d_mesh2->getBoundaryIDIterator( static_cast<AMP::Mesh::GeomType>(type), params->d_BoundaryID2, 0 );
     }
     
     // Get the x-y-z grid for the subchannel mesh
@@ -211,9 +211,12 @@ void SubchannelToCladMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
     AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr,
     const double, const double)
 {
+    PROFILE_START("applyStart");
     // Check if we have any data to send
-    if ( d_mesh1.get() == NULL )
+    if ( d_mesh1.get() == NULL ) {
+        PROFILE_STOP2("applyStart");
         return;
+    }
 
     // Subset the vector for the variable (we only need the local portion of the vector)
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
@@ -259,7 +262,8 @@ void SubchannelToCladMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
             int rank = d_subchannelRecv[i][j];
             d_currRequests.push_back( d_MapComm.Isend<double>( &d_sendBuffer[i][0], d_sendBuffer[i].size(), rank, tag ) );
         }
-    }    
+    }
+    PROFILE_STOP("applyStart");
 }
 
 
@@ -270,11 +274,13 @@ void SubchannelToCladMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
     AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::shared_ptr,
     const double, const double)
 {
+    PROFILE_START("applyFinish");
     if ( d_mesh2.get() == NULL ) {
         // We don't have an output vector to fill, wait for communication to finish and return
         if ( d_currRequests.size() > 0 )
             AMP::AMP_MPI::waitAll( (int)d_currRequests.size(), &d_currRequests[0] );
         d_currRequests.resize(0);
+        PROFILE_STOP2("applyFinish");
         return;
     }
     // Recieve the data
@@ -303,7 +309,7 @@ void SubchannelToCladMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
             range[1] = d_x[(i%Nx)+1];
             range[2] = d_y[(i/Nx)];
             range[3] = d_y[(i/Nx)+1];
-            this->fillReturnVector( d_OutputVector, range, d_elem[i], d_z, f[i] );
+            this->fillReturnVector( d_OutputVector, range, d_mesh2, d_elem[i], d_z, f[i] );
         }
     }
     // Wait for all communication to finish
@@ -312,6 +318,7 @@ void SubchannelToCladMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
     d_currRequests.resize(0);
     // Call makeConsistent
     d_OutputVector->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    PROFILE_STOP("applyFinish");
 }
 
 
@@ -319,17 +326,20 @@ void SubchannelToCladMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
 *  Fill the return vector for the given subchannel                      *
 ************************************************************************/    
 void SubchannelToCladMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared_ptr vec, double range[4], 
-    const std::vector<AMP::Mesh::MeshElementID>& ids, const std::vector<double>& z, const std::vector<double>& f )
+    AMP::Mesh::Mesh::shared_ptr mesh, const std::vector<AMP::Mesh::MeshElementID>& ids, 
+    const std::vector<double>& z, const std::vector<double>& f )
 {
+    PROFILE_START("fillReturnVector");
     AMP::Discretization::DOFManager::shared_ptr  DOF = vec->getDOFManager( );
     std::vector<size_t> dofs(1);
     for (size_t j=0; j<ids.size(); j++) {
         DOF->getDOFs(ids[j],dofs);
         AMP_ASSERT(dofs.size()==1);
-        std::vector<double> pos = d_mesh2->getElement(ids[j]).coord();
+        std::vector<double> pos = mesh->getElement(ids[j]).coord();
         double val = interp_linear(z,f,pos[2]);
         vec->setLocalValueByGlobalID(dofs[0],val);
     }
+    PROFILE_STOP("fillReturnVector");
 }
 
 

@@ -89,18 +89,18 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     AMP::LinearAlgebra::Variable::shared_ptr temperature( new AMP::LinearAlgebra::Variable(varName) );
     AMP::Discretization::DOFManager::shared_ptr  pin_DOFs;
     AMP::Discretization::DOFManager::shared_ptr  subchannel_DOFs;
-    AMP::LinearAlgebra::Vector::shared_ptr T1;
-    AMP::LinearAlgebra::Vector::shared_ptr T2;
+    AMP::LinearAlgebra::Vector::shared_ptr T_clad;
+    AMP::LinearAlgebra::Vector::shared_ptr T_subchannel;
     AMP::LinearAlgebra::Vector::shared_ptr dummy;
     if ( pin_mesh.get()!=NULL ) {
         pin_DOFs = AMP::Discretization::simpleDOFManager::create(pin_mesh,AMP::Mesh::Vertex,1,DOFsPerNode);
-        T1 = AMP::LinearAlgebra::createVector( pin_DOFs, temperature );
-        T1->setToScalar(500);
+        T_clad = AMP::LinearAlgebra::createVector( pin_DOFs, temperature );
+        T_clad->setToScalar(500);
     }
     if ( subchannel_face.get()!=NULL ) {
         subchannel_DOFs = AMP::Discretization::simpleDOFManager::create(subchannel_face,AMP::Mesh::Face,1,DOFsPerNode);
-        T2 = AMP::LinearAlgebra::createVector( subchannel_DOFs, temperature );
-        T2->setToScalar(0.0);
+        T_subchannel = AMP::LinearAlgebra::createVector( subchannel_DOFs, temperature );
+        T_subchannel->setToScalar(0.0);
     }
 
     // Initialize the subchannel temperatures
@@ -109,10 +109,11 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
         std::vector<size_t> dofs;
         for (size_t i=0; i<it.size(); i++) {
             subchannel_DOFs->getDOFs(it->globalID(),dofs);
-            T2->setValueByGlobalID(dofs[0],getTemp(it->centroid()));
+            T_subchannel->setValueByGlobalID(dofs[0],getTemp(it->centroid()));
             ++it;
         }
     }
+
 
     // Test the creation/destruction of SubchannelToCladMap (no apply call)
     try { 
@@ -132,25 +133,26 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
         ut->failure("Created / Destroyed SubchannelToCladGPMap");
     }
 
+
     // Perform a complete test of SubchannelToCladMap
     boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  map;
     map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, nodal_map_db );
-    map->setVector( T1 );
+    map->setVector( T_clad );
     
     // Apply the map
     globalComm.barrier();
-    map->apply( dummy, T2, dummy );
+    map->apply( dummy, T_subchannel, dummy );
 
     // Check the results
-    if ( subchannel_face.get()!=NULL ) {
+    if (pin_mesh.get()!=NULL ) {
         bool passes = true;
-        AMP::Mesh::MeshIterator it = subchannel_face->getIterator(AMP::Mesh::Face,1);
+        AMP::Mesh::MeshIterator it = pin_mesh->getBoundaryIDIterator(AMP::Mesh::Vertex,4,1);
         std::vector<size_t> dofs;
         for (size_t i=0; i<it.size(); i++) {
-            subchannel_DOFs->getDOFs(it->globalID(),dofs);
+            pin_DOFs->getDOFs(it->globalID(),dofs);
             AMP_ASSERT(dofs.size()==1);
             std::vector<double> pos = it->centroid();
-            double v1 = T2->getValueByGlobalID(dofs[0]);
+            double v1 = T_clad->getValueByGlobalID(dofs[0]);
             double v2 = getTemp(pos);
             if ( !AMP::Utilities::approx_equal(v1,v2) )
                 passes = false;
@@ -161,16 +163,57 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
             ut->failure("correctly mapped temperature");
     }
 
+
+    // Perform a complete test of SubchannelToCladGPMap
+    AMP::Discretization::DOFManager::shared_ptr  gauss_DOFs;
+    AMP::LinearAlgebra::Vector::shared_ptr T_gauss;
+    if ( pin_mesh.get()!=NULL ) {
+        gauss_DOFs = AMP::Discretization::simpleDOFManager::create(pin_mesh,AMP::Mesh::Face,1,4);
+        T_gauss = AMP::LinearAlgebra::createVector( gauss_DOFs, temperature );
+        T_gauss->zero();
+    }
+    map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladGPMap>( manager, gauss_map_db );
+    map->setVector( T_gauss );
+    
+    // Apply the map
+    globalComm.barrier();
+    map->apply( dummy, T_subchannel, dummy );
+
+    // Check the results
+    if (clad_mesh.get()!=NULL ) {
+        bool passes = true;
+        AMP::Mesh::MeshIterator it = clad_mesh->getBoundaryIDIterator(AMP::Mesh::Face,4,1);
+        std::vector<size_t> dofs(4);
+        std::vector<double> vals(4);
+        for (size_t i=0; i<it.size(); i++) {
+            gauss_DOFs->getDOFs(it->globalID(),dofs);
+            AMP_ASSERT(dofs.size()==4);
+            std::vector<double> pos = it->centroid();
+            vals.resize(dofs.size());
+            T_gauss->getValuesByGlobalID(dofs.size(),&dofs[0],&vals[0]);
+            double v1 = (vals[0]+vals[1]+vals[2]+vals[3])/4;
+            double v2 = getTemp(pos);
+            if ( !AMP::Utilities::approx_equal(v1,v2) )
+                passes = false;
+        }
+        if ( passes )
+            ut->passes("correctly mapped temperature (gauss points)");
+        else
+            ut->failure("correctly mapped temperature (gauss points)");
+    }
+
+
     // Write the results
     #ifdef USE_EXT_SILO
         AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
-        if ( T1.get()!=NULL )
-            siloWriter->registerVector( T1, pin_mesh, AMP::Mesh::Vertex, "Temperature" );
-        if ( T2.get()!=NULL )
-            siloWriter->registerVector( T2, subchannel_face, AMP::Mesh::Face, "Temperature" );
+        if ( T_clad.get()!=NULL )
+            siloWriter->registerVector( T_clad, pin_mesh, AMP::Mesh::Vertex, "Temperature" );
+        if ( T_subchannel.get()!=NULL )
+            siloWriter->registerVector( T_subchannel, subchannel_face, AMP::Mesh::Face, "Temperature" );
         siloWriter->setDecomposition( 0 );
         siloWriter->writeFile( fname, 0 );
     #endif
+
 }
 
 
