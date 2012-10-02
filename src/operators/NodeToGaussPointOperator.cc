@@ -1,5 +1,6 @@
-
 #include "operators/NodeToGaussPointOperator.h"
+#include "utils/ProfilerApp.h"
+
 /* Libmesh files */
 #include "fe_type.h"
 #include "fe_base.h"
@@ -17,46 +18,48 @@
 #include "node.h"
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
 
-    void NodeToGaussPointOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr,
+void NodeToGaussPointOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr,
         AMP::LinearAlgebra::Vector::const_shared_ptr u,
-        AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double ) { 
+        AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double ) 
+{ 
+    PROFILE_START("apply");
 
-      AMP::LinearAlgebra::Vector::const_shared_ptr nodalVec = u->constSubsetVectorForVariable(d_NodalVariable);
-      AMP::LinearAlgebra::Vector::shared_ptr gaussPtVec = r->subsetVectorForVariable(d_GaussPtVariable);
+    AMP::LinearAlgebra::Vector::const_shared_ptr nodalVec = subsetInputVector(u);
+    AMP::LinearAlgebra::Vector::shared_ptr gaussPtVec = subsetOutputVector(r);
 
-      AMP_ASSERT(nodalVec->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
+    AMP_ASSERT(nodalVec->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
 
-      AMP::Discretization::DOFManager::shared_ptr dof_map = nodalVec->getDOFManager();
-      AMP::Discretization::DOFManager::shared_ptr gaussPt_dof_map = gaussPtVec->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr dof_map = nodalVec->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr gaussPt_dof_map = gaussPtVec->getDOFManager();
 
-      libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
-      libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
+    libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
+    libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
 
-      boost::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
+    boost::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
 
-      int dim;
-      if(d_UseSurfaceElements) {
+    int dim;
+    if(d_UseSurfaceElements) {
         dim = 2;
-      } else {
+    } else {
         dim = 3;
-      }
+    }
 
-      libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>("SECOND");
-      boost::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", dim, qruleOrder)).release() );
+    libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>("SECOND");
+    boost::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", dim, qruleOrder)).release() );
 
-      AMP::Mesh::MeshIterator el;
-      if(d_UseSurfaceElements) {
+    AMP::Mesh::MeshIterator el;
+    if(d_UseSurfaceElements) {
         el = d_Mesh->getIterator(AMP::Mesh::Face, 0);
-      } else {
+    } else {
         el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
-      }
+    }
 
-      AMP::Mesh::MeshIterator end_el = el.end();
+    AMP::Mesh::MeshIterator end_el = el.end();
 
-      for( ; el != end_el; ++el) {
+    for( ; el != end_el; ++el) {
         boost::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(dim, (*d_feType))).release() );
         d_fe->attach_quadrature_rule( d_qrule.get() );
 
@@ -103,11 +106,12 @@ namespace AMP {
         }//end for j
         delete d_currElemPtr;
         d_currElemPtr = NULL;
-      }//end for
+    }//end for
+    PROFILE_STOP("apply");
+}// end apply
 
-    }// end apply
 
-  }
+}
 }
 
 

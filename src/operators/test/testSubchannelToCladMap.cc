@@ -12,13 +12,14 @@
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "operators/map/SubchannelToCladMap.h"
+#include "operators/map/SubchannelToCladGPMap.h"
 #include "operators/map/AsyncMapColumnOperator.h"
 #include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
 
 
 double getTemp(const std::vector<double> &x) {
-    return 500 + x[0]*100 + x[1]*100 + x[2]*100;
+    return 500 + x[2]*100;
 }
 
 
@@ -77,7 +78,8 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     }
 
     // Get the database for the map
-    boost::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "MeshToMeshMaps" );
+    boost::shared_ptr<AMP::Database> nodal_map_db = input_db->getDatabase( "SubchannelToNodeMap" );
+    boost::shared_ptr<AMP::Database> gauss_map_db = input_db->getDatabase( "SubchannelToGPMap" );
 
     // Create the DOFManagers and the vectors
     //int DOFsPerNode = map_db->getInteger("DOFsPerObject");
@@ -115,16 +117,24 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     // Test the creation/destruction of SubchannelToCladMap (no apply call)
     try { 
         boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  map;
-        map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, map_db );
+        map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, nodal_map_db );
         map.reset();
         ut->passes("Created / Destroyed SubchannelToCladMap");
     } catch ( ... ) {
         ut->failure("Created / Destroyed SubchannelToCladMap");
     }
+    try { 
+        boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  map;
+        map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladGPMap>( manager, gauss_map_db );
+        map.reset();
+        ut->passes("Created / Destroyed SubchannelToCladGPMap");
+    } catch ( ... ) {
+        ut->failure("Created / Destroyed SubchannelToCladGPMap");
+    }
 
     // Perform a complete test of SubchannelToCladMap
     boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  map;
-    map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, map_db );
+    map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>( manager, nodal_map_db );
     map->setVector( T1 );
     
     // Apply the map
@@ -132,7 +142,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     map->apply( dummy, T2, dummy );
 
     // Check the results
-    /*if ( subchannel_face.get()!=NULL ) {
+    if ( subchannel_face.get()!=NULL ) {
         bool passes = true;
         AMP::Mesh::MeshIterator it = subchannel_face->getIterator(AMP::Mesh::Face,1);
         std::vector<size_t> dofs;
@@ -149,7 +159,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
             ut->passes("correctly mapped temperature");
         else
             ut->failure("correctly mapped temperature");
-    }*/
+    }
 
     // Write the results
     #ifdef USE_EXT_SILO

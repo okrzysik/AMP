@@ -76,7 +76,7 @@ Mesh{
 
 
 
-MeshToMeshMaps{
+SubchannelToNodeMap{
     MapType = "SubchannelToCladMap"
     N_maps = 1
     Mesh1 = "subchannel"
@@ -86,3 +86,19 @@ MeshToMeshMaps{
     DOFsPerObject = 1
     VariableName = "Temperature"
 }
+
+
+SubchannelToGPMap{
+    MapType = "SubchannelToCladGPMap"
+    N_maps = 1
+    Mesh1 = "subchannel"
+    Surface1 = 4
+    Mesh2 = "clad"
+    Surface2 = 4
+    DOFsPerObject = 4
+    VariableName = "Temperature"
+    GeomType = 2
+}
+
+
+

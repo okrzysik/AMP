@@ -1,4 +1,4 @@
-//#ifndef included_AMP_SubchannelToCladMap
+#ifndef included_AMP_SubchannelToCladMap
 #define included_AMP_SubchannelToCladMap
 
 #include "operators/map/ScalarZAxisMap.h"
@@ -25,7 +25,7 @@ public:
 
     /** \brief  Returns true if MapType = "SubchannelToCladMapParameters"
      * \param[in] s  A string extracted from the MapType line in a MeshToMeshMap db
-     * \return  True iff s == "SubchannelToCladMapParameters"
+     * \return  True iff s == "SubchannelToCladMap"
      */
     static bool validMapType ( const std::string &s );
 
@@ -63,6 +63,14 @@ public:
 
 protected:
 
+    // Return the list of local MeshElements in each subchannel
+    virtual std::vector<std::vector<AMP::Mesh::MeshElementID> >  getElementsInSubchannel(
+        const std::vector<double>& x, const std::vector<double>& y, AMP::Mesh::MeshIterator iterator );
+    
+    // For a given subchannel, fill the elements of interest using the coordinates
+    virtual void fillReturnVector( AMP::LinearAlgebra::Vector::shared_ptr vec, double range[4], 
+        const std::vector<AMP::Mesh::MeshElementID>& ids, const std::vector<double>& z, const std::vector<double>& f );
+
 
 private:
 
@@ -93,4 +101,5 @@ private:
 } // Operator namespace
 } // AMP namespace
 
+#endif
 
