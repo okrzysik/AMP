@@ -68,25 +68,16 @@ RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
   d_elementInputVec.resize( numVar + 1);
   d_elementInputVec[0] = d_variableFlux;
 
-  if(d_robinPhysicsModel.get() != NULL)
-  {
-
-    for (size_t i=0; i<variableNames.size(); i++)
-    {
+  if(d_robinPhysicsModel.get() != NULL) {
+    for (size_t i=0; i<variableNames.size(); i++) {
       std::string cview = variableNames[i] + " view";
-      if(d_Frozen.get() != NULL)
-      {
-        if( d_Frozen->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview ) != NULL )
-        {
+      if(d_Frozen.get() != NULL) {
+        if( d_Frozen->select ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview ) != NULL ) {
           d_elementInputVec[i+1] = d_Frozen->constSelect ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
-        }
-        else
-        {
+        } else {
           d_elementInputVec[i+1] = uInternal->constSelect ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
         }
-      }
-      else
-      {
+      } else {
         d_elementInputVec[i+1] = uInternal->constSelect ( AMP::LinearAlgebra::VS_ByVariableName ( variableNames[i] ) , cview );
       }
       AMP_INSIST ( d_elementInputVec[i+1] , "Did not find vector '"+variableNames[i]+"'" );
@@ -100,30 +91,29 @@ RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
       std::cout << "processing robin boundary operator " << d_InstanceID << "\n";
     }
 #endif
-
   }
 
+  // Get the DOF managers
   AMP::Discretization::DOFManager::shared_ptr dofManager = rInternal->getDOFManager();
-  if(d_robinPhysicsModel.get() != NULL) {
-//    for(unsigned int m = 0; m < d_elementInputVec.size(); m++)
-//      AMP_ASSERT(*dofManager==*(d_elementInputVec[m]->getDOFManager()));
-  }
+  AMP::Discretization::DOFManager::shared_ptr gpDOFManager; 
+  if(d_isFluxGaussPtVector)
+    gpDOFManager = d_variableFlux->getDOFManager();
+
+  // Check that the DOF managers match for the different vectors
   AMP_ASSERT(*dofManager==*(uInternal->getDOFManager()));
   AMP_ASSERT(*dofManager==*(rInternal->getDOFManager()));
-  if ( d_variableFlux.get()!= NULL && !d_isFluxGaussPtVector )
-    AMP_ASSERT(*dofManager==*(d_variableFlux->getDOFManager()));
-
-  std::vector<size_t> gpDofs;
-  AMP::Discretization::DOFManager::shared_ptr gpDOFManager; 
+  if ( !d_isFluxGaussPtVector ) {
+    if ( d_variableFlux.get()!= NULL  )
+      AMP_ASSERT(*dofManager==*(d_variableFlux->getDOFManager()));
+  }
 
   unsigned int numIds = d_boundaryIds.size();
+  std::vector<size_t> gpDofs;
   std::vector<size_t> dofs;
+  std::vector<size_t> dofsElementVec;
   PROFILE_START("integration loop");
   for (unsigned int nid = 0; nid < numIds; nid++)
   {
-    if(d_isFluxGaussPtVector && d_IsCoupledBoundary[nid]){
-      gpDOFManager = d_variableFlux->getDOFManager();
-    }
 
     AMP::Mesh::MeshIterator bnd1     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
     AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
@@ -185,7 +175,10 @@ RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
           startIdx = 1;
         }
         for(unsigned int m = startIdx; m < d_elementInputVec.size(); m++){
-          d_elementInputVec[m]->getValuesByGlobalID( dofs.size(), &dofs[0], &inputArgs[m][0] );
+          // Note: elementInputVecs may use different DOFManagers from u and r internal
+          d_elementInputVec[m]->getDOFManager()->getDOFs( ids, dofsElementVec );
+          AMP_ASSERT(dofsElementVec.size()==dofs.size());
+          d_elementInputVec[m]->getValuesByGlobalID( dofs.size(), &dofsElementVec[0], &inputArgs[m][0] );
           for (size_t qp = 0; qp < numGaussPts; qp++){ 
             for (size_t n = 0; n < numNodesInCurrElem ; n++) {
               inputArgsAtGpts[m][qp] += phi[n][qp] * inputArgs[m][n];
