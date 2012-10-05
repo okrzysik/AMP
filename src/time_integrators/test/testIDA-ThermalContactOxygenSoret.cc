@@ -51,8 +51,8 @@
 #include "solvers/TrilinosMLSolver.h"
 #include "solvers/ColumnSolver.h"
 #include "time_integrators/ColumnTimeOperator.h"
-#include "time_integrators/IDATimeIntegrator.h"
-#include "time_integrators/IDATimeOperator.h"
+#include "time_integrators/sundials/IDATimeIntegrator.h"
+#include "time_integrators/sundials/IDATimeOperator.h"
 
 #define ITFAILS ut.failure(__LINE__);
 #define UNIT_TEST(a) if (!(a)) ut.failure(__LINE__);

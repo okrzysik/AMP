@@ -4,9 +4,9 @@
 #include <string>
 
 
-#include "TimeIntegrator.h"
-#include "IDATimeIntegratorParameters.h"
-#include "IDATimeOperator.h"
+#include "time_integrators/TimeIntegrator.h"
+#include "time_integrators/sundials/IDATimeIntegratorParameters.h"
+#include "time_integrators/sundials/IDATimeOperator.h"
 #include "vectors/sundials/SundialsVector.h"
 #include "vectors/sundials/ManagedSundialsVector.h"
 #include "solvers/TrilinosMLSolver.h"
