@@ -145,6 +145,7 @@ void PetscKrylovSolver::getFromInput(const boost::shared_ptr<AMP::Database> &db)
     d_dRelativeTolerance = db->getDoubleWithDefault("relative_tolerance", 1.0e-9);
     d_dAbsoluteTolerance = db->getDoubleWithDefault("absolute_tolerance", 1.0e-14);
     d_dDivergenceTolerance = db->getDoubleWithDefault("divergence_tolerance", 1.0e+03);
+    d_iMaxIterations       = db->getDoubleWithDefault("max_iterations", 1000);
 
     d_KSPAppendOptionsPrefix = db->getStringWithDefault("KSPAppendOptionsPrefix", "");
 
