@@ -47,7 +47,7 @@
 #include "operators/LinearBVPOperator.h"
 
 #include "solvers/TrilinosMLSolver.h"
-#include "time_integrators/IDATimeIntegrator.h"
+#include "time_integrators/sundials/IDATimeIntegrator.h"
 
 #define ITFAILS ut.failure(__LINE__);
 #define UNIT_TEST(a) if (!(a)) ut.failure(__LINE__);
