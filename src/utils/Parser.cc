@@ -105,6 +105,7 @@ int Parser::parse(
 
    d_parse_stack.clear();
    d_scope_stack.clear();
+   pd.clear();
 
    return(d_errors);
 }
