@@ -96,7 +96,7 @@ RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
   // Get the DOF managers
   AMP::Discretization::DOFManager::shared_ptr dofManager = rInternal->getDOFManager();
   AMP::Discretization::DOFManager::shared_ptr gpDOFManager; 
-  if(d_isFluxGaussPtVector)
+  if ( d_isFluxGaussPtVector && d_variableFlux!=NULL )
     gpDOFManager = d_variableFlux->getDOFManager();
 
   // Check that the DOF managers match for the different vectors

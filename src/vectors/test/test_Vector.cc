@@ -7,6 +7,14 @@
 #include "test_VectorLoops.h"
 
 #ifdef USE_EXT_PETSC
+    #include "petsc/NativePetscVector.h"
+#endif
+#ifdef USE_EXT_TRILINOS
+    #include "trilinos/ManagedEpetraVector.h"
+#endif
+
+
+#ifdef USE_EXT_PETSC
     typedef AMP::unit_test::SimplePetscNativeFactory<AMP::LinearAlgebra::NativePetscVector>         SNPVFactory;
 #endif
 #ifdef USE_EXT_TRILINOS
