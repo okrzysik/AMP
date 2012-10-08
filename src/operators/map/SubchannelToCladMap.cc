@@ -167,8 +167,8 @@ std::vector<std::vector<AMP::Mesh::MeshElementID> >  SubchannelToCladMap::getEle
     for (size_t k=0; k<it.size(); k++) {
         std::vector<double> center = it->centroid();
         int index = getSubchannelIndex( center[0], center[1] );
-        if ( index>=0 )
-            list[index].push_back( it->globalID() );
+        AMP_ASSERT(index>=0);
+        list[index].push_back( it->globalID() );
         ++it;
     }
     return list;

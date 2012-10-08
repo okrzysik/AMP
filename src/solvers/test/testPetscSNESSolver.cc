@@ -11,7 +11,10 @@
 #include "utils/PIO.h"
 
 #include "ampmesh/Mesh.h"
+#include "operators/NullOperator.h"
 #include "vectors/NullVector.h"
+#include "vectors/SimpleVector.h"
+#include "vectors/MultiVector.h"
 #include "solvers/PetscSNESSolver.h"
 
 
@@ -41,11 +44,29 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
        AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
     nonlinearSolverParams->d_comm = solverComm;
     nonlinearSolverParams->d_pInitialGuess = nullVec;
+    nonlinearSolverParams->d_pOperator = AMP::Operator::Operator::shared_ptr(new AMP::Operator::NullOperator());
 
     // Create the nonlinear solver
     boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
-
     ut->passes("PetscSNESSolver created");
+
+    // Call solve with a simple vector
+    AMP::LinearAlgebra::Variable::shared_ptr var(new AMP::LinearAlgebra::Variable("x"));
+    AMP::LinearAlgebra::Vector::shared_ptr u = AMP::LinearAlgebra::SimpleVector::create(10,var);
+    AMP::LinearAlgebra::Vector::shared_ptr f = u->cloneVector();
+    u->zero();
+    f->zero();
+    nonlinearSolver->solve(u,f);
+    ut->passes("PetscSNESSolver solve called with simple vector");
+    
+    // Call solve with a multivector (there can be bugs when solve is called with a single vector and then a multivector)
+    boost::shared_ptr<AMP::LinearAlgebra::MultiVector> mu = AMP::LinearAlgebra::MultiVector::create("multivector",globalComm);
+    boost::shared_ptr<AMP::LinearAlgebra::MultiVector> mf = AMP::LinearAlgebra::MultiVector::create("multivector",globalComm);
+    mu->addVector(u);
+    mf->addVector(f);
+    nonlinearSolver->solve(mu,mf);
+    ut->passes("PetscSNESSolver solve called with multivector");
+
 }
 
 
