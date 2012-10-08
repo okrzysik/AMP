@@ -33,8 +33,8 @@
 
 #include "solvers/TrilinosMLSolver.h"
 
-#include "time_integrators/IDATimeIntegrator.h"
-#include "time_integrators/IDATimeOperator.h"
+#include "time_integrators/sundials/IDATimeIntegrator.h"
+#include "time_integrators/sundials/IDATimeOperator.h"
 
 
 void IDATimeIntegratorTest(AMP::UnitTest *ut )

@@ -50,8 +50,8 @@
 #include "operators/LinearBVPOperator.h"
 
 #include "solvers/TrilinosMLSolver.h"
-#include "time_integrators/IDATimeIntegrator.h"
-#include "time_integrators/IDATimeOperator.h"
+#include "time_integrators/sundials/IDATimeIntegrator.h"
+#include "time_integrators/sundials/IDATimeOperator.h"
 #include "time_integrators/LinearTimeOperator.h"
 
 #define ITFAILS ut.failure(__LINE__);

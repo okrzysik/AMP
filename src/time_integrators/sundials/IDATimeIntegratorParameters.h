@@ -3,15 +3,15 @@
 
 
 #ifndef included_TimeIntegratorParameters
-#include "TimeIntegratorParameters.h"
+#include "time_integrators/TimeIntegratorParameters.h"
 #endif
 
 #ifndef included_IDATimeOperator
-#include "IDATimeOperator.h"
+#include "time_integrators/sundials/IDATimeOperator.h"
 #endif
 
 #ifndef included_LinearTimeOperator
-#include "LinearTimeOperator.h"
+#include "time_integrators/LinearTimeOperator.h"
 #endif
 
 // BC : Altered this to get a compile going..

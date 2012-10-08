@@ -9,8 +9,8 @@
 #include "vectors/Vector.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
-#include "TimeOperatorParameters.h"
-#include "TimeOperator.h"
+#include "time_integrators/TimeOperatorParameters.h"
+#include "time_integrators/TimeOperator.h"
 #include "operators/OperatorBuilder.h"
 
 // BP : the next include is probably unnecessary

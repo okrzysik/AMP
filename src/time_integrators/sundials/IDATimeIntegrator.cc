@@ -1,10 +1,10 @@
 #include <iostream>
-#include "LinearTimeOperator.h"
+#include "time_integrators/LinearTimeOperator.h"
 
 #include "utils/Utilities.h"
 #include "operators/OperatorBuilder.h"
-#include "TimeIntegratorParameters.h"
-#include "IDATimeIntegrator.h"
+#include "time_integrators/TimeIntegratorParameters.h"
+#include "time_integrators/sundials/IDATimeIntegrator.h"
 
 #ifdef USE_EXT_SUNDIALS
     extern "C"{

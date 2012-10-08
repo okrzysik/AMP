@@ -1,6 +1,15 @@
 INCLUDE (macros)
 
 ADD_AMP_TEST_1_2_4 ( testTimeIntegratorParameters )
+ADD_AMP_PROVISIONAL_TEST ( testBackwardEulerTimeIntegrator )
+ADD_AMP_TEST_1_2_4 ( testOxideTimeIntegrator )
+
+COPY_TEST_DATA_FILE ( input_testBackwardEulerTimeIntegrator )
+COPY_TEST_DATA_FILE ( input_testOxideTimeIntegrator-1 )
+
+COPY_MESH_FILE ( unitCubeDirichlet.e )
+COPY_MESH_FILE ( simple_linear_thermomech.e )
+COPY_MESH_FILE ( clad_lo_res_4pellet.e )
 
 # Sundials tests
 IF ( USE_EXT_SUNDIALS )
@@ -12,26 +21,15 @@ IF ( USE_EXT_SUNDIALS )
     ADD_AMP_PROVISIONAL_TEST ( testIDA-NonlinearColumnOperator-1 2 )
     ADD_AMP_PROVISIONAL_TEST ( testIDA-NonlinearColumnOperator-1 4 )
     ADD_AMP_PROVISIONAL_TEST ( testIDA-NonlinearThermalOxygenDiffusion-1 )
+    COPY_TEST_DATA_FILE ( input_testIDA-LinearBVPOperator-1 )
+    COPY_TEST_DATA_FILE ( input_testIDA-NonlinearBVPOperator-1 )
+    COPY_TEST_DATA_FILE ( input_testIDA-NonlinearColumnOperator-1 )
+    COPY_TEST_DATA_FILE ( input_testIDA-TO-Preprocessor )
+    COPY_TEST_DATA_FILE ( input_testIDA-NonlinearOperator-short )
+    COPY_TEST_DATA_FILE ( input_testIDA-NonlinearOperator-long )
+    COPY_TEST_DATA_FILE ( input_testIDA-NonlinearThermalOxygenDiffusion-1 )
+    COPY_TEST_DATA_FILE ( inputIDATimeIntegrator )
+    COPY_TEST_DATA_FILE ( input-LinearIDA-1 )
+    COPY_TEST_DATA_FILE ( input-NonlinearIDA-1 )
 ENDIF()
 
-ADD_AMP_PROVISIONAL_TEST ( testBackwardEulerTimeIntegrator )
-
-ADD_AMP_TEST_1_2_4 ( testOxideTimeIntegrator )
-
-
-COPY_TEST_DATA_FILE ( inputIDATimeIntegrator )
-COPY_TEST_DATA_FILE ( input-LinearIDA-1 )
-COPY_TEST_DATA_FILE ( input-NonlinearIDA-1 )
-COPY_TEST_DATA_FILE ( input_testIDA-LinearBVPOperator-1 )
-COPY_TEST_DATA_FILE ( input_testIDA-NonlinearBVPOperator-1 )
-COPY_TEST_DATA_FILE ( input_testIDA-NonlinearColumnOperator-1 )
-COPY_TEST_DATA_FILE ( input_testIDA-TO-Preprocessor )
-COPY_TEST_DATA_FILE ( input_testIDA-NonlinearOperator-short )
-COPY_TEST_DATA_FILE ( input_testIDA-NonlinearOperator-long )
-COPY_TEST_DATA_FILE ( input_testIDA-NonlinearThermalOxygenDiffusion-1 )
-COPY_TEST_DATA_FILE ( input_testBackwardEulerTimeIntegrator )
-COPY_TEST_DATA_FILE ( input_testOxideTimeIntegrator-1 )
-
-COPY_MESH_FILE ( unitCubeDirichlet.e )
-COPY_MESH_FILE ( simple_linear_thermomech.e )
-COPY_MESH_FILE ( clad_lo_res_4pellet.e )
