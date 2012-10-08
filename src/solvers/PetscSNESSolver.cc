@@ -237,6 +237,13 @@ void PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
     if(d_iDebugPrintInfoLevel>2)
         AMP::pout << "L2 Norm of u in PetscSNESSolver::solve before view " << u->L2Norm() << std::endl;
   
+    // Create temporary copies of the petsc views
+    // This fixes a bug where a previous solve call creates and used views of a different vector,
+    // which then are destroyed when the views of the new vectors are created, but petsc still 
+    // holds a copy of the original views until the new solve call is created
+    AMP::LinearAlgebra::Vector::shared_ptr  f_thisGetsAroundPETScSharedPtrIssue = spRhs;
+    AMP::LinearAlgebra::Vector::shared_ptr  u_thisGetsAroundPETScSharedPtrIssue = spSol;
+
     // Get petsc views of the vectors
     spRhs = AMP::LinearAlgebra::PetscVector::view( f );
     spSol = AMP::LinearAlgebra::PetscVector::view( u );

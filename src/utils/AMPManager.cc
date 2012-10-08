@@ -151,11 +151,12 @@ static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
 *  Function to PETSc errors                                                 *
 ****************************************************************************/
 #ifdef USE_EXT_PETSC
-//PetscErrorCode petsc_err_handler(MPI_Comm,int,const char *,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*)
-PetscErrorCode petsc_err_handler(int, const char*, const char*, const char*, PetscErrorCode, int, const char*, void*)
+PetscErrorCode petsc_err_handler(int line, const char* func, const char* file, const char* dir, PetscErrorCode code, int p, const char* buf, void* ctx)
 {
     std::stringstream msg;
     msg << "PETSc error:" << std::endl;
+    msg << "   File: " << dir << file << ", line: " << line << std::endl;
+    msg << "   " << buf << std::endl;
     terminate_AMP( msg.str());
     return 0;
 }

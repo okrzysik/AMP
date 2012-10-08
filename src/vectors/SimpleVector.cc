@@ -27,6 +27,19 @@ Vector::shared_ptr  SimpleVector::create ( size_t localSize , Variable::shared_p
     retVal->d_globalSize = localSize;
     return retVal;
 }
+Vector::shared_ptr  SimpleVector::create ( size_t localSize , Variable::shared_ptr var, AMP_MPI comm )
+{
+    boost::shared_ptr<SimpleVector> retVal( new SimpleVector );
+    retVal->d_startIndex = 0;
+    retVal->setVariable ( var );
+    retVal->d_Data.resize ( localSize );
+    AMP::Discretization::DOFManager::shared_ptr DOFs( new AMP::Discretization::DOFManager( localSize, comm ) );
+    retVal->d_DOFManager = DOFs;
+    retVal->setCommunicationList( AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
+    retVal->d_comm = comm;
+    retVal->d_globalSize = localSize;
+    return retVal;
+}
 Vector::shared_ptr  SimpleVector::create ( Variable::shared_ptr var,
     AMP::Discretization::DOFManager::shared_ptr DOFs, 
     AMP::LinearAlgebra::CommunicationList::shared_ptr commlist )

@@ -44,6 +44,10 @@ Vector::const_shared_ptr  PetscVector::constView ( Vector::const_shared_ptr inVe
         t->setUpdateStatusPtr ( inVector->getUpdateStatusPtr () );
         retVal = Vector::shared_ptr ( t );
         inVector->registerView ( retVal );
+    } else if ( inVector->isA<SimpleVector> () ) {
+        Vector::shared_ptr inVector2 = boost::const_pointer_cast<Vector>( inVector );
+        retVal = view ( MultiVector::view ( inVector2, inVector->getComm() ) );
+        inVector->registerView ( retVal );
     } else {
         AMP_ERROR( "Nobody uses constView, anyway" );
     }
@@ -78,7 +82,7 @@ Vector::shared_ptr  PetscVector::view ( Vector::shared_ptr inVector )
         retVal = Vector::shared_ptr ( newVector );
         inVector->registerView ( retVal );
     } else if ( inVector->isA<SimpleVector> () ) {
-        retVal = view ( MultiVector::view ( inVector , AMP_MPI(AMP_COMM_SELF) ) );  // This is an extraordinary hack so for SimpleVectors
+        retVal = view ( MultiVector::view ( inVector, inVector->getComm() ) );
         inVector->registerView ( retVal );
     } else {
         AMP_ERROR( "Failed view" );

@@ -31,6 +31,15 @@ namespace LinearAlgebra {
 
       /** \brief    Create a SimpleVector
         * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
+        * to be used in the code
+        * \param    localSize  The number of elements in the vector on this processor
+        * \param    var The variable associated with the new vector
+        * \param    AMP_MPI The variable associated with the new vector
+        */
+      static Vector::shared_ptr  create ( size_t localSize, Variable::shared_ptr var, AMP_MPI comm );
+
+      /** \brief    Create a SimpleVector
+        * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
         * to be used in the code that spans a comm and contains ghost values.
         * \param    var The variable associated with the new vector
         * \param    DOFs The DOFManager

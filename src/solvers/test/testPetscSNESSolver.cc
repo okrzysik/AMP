@@ -52,7 +52,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
     // Call solve with a simple vector
     AMP::LinearAlgebra::Variable::shared_ptr var(new AMP::LinearAlgebra::Variable("x"));
-    AMP::LinearAlgebra::Vector::shared_ptr u = AMP::LinearAlgebra::SimpleVector::create(10,var);
+    AMP::LinearAlgebra::Vector::shared_ptr u = AMP::LinearAlgebra::SimpleVector::create(10,var,solverComm);
     AMP::LinearAlgebra::Vector::shared_ptr f = u->cloneVector();
     u->zero();
     f->zero();
@@ -60,8 +60,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     ut->passes("PetscSNESSolver solve called with simple vector");
     
     // Call solve with a multivector (there can be bugs when solve is called with a single vector and then a multivector)
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVector> mu = AMP::LinearAlgebra::MultiVector::create("multivector",globalComm);
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVector> mf = AMP::LinearAlgebra::MultiVector::create("multivector",globalComm);
+    boost::shared_ptr<AMP::LinearAlgebra::MultiVector> mu = AMP::LinearAlgebra::MultiVector::create("multivector",solverComm);
+    boost::shared_ptr<AMP::LinearAlgebra::MultiVector> mf = AMP::LinearAlgebra::MultiVector::create("multivector",solverComm);
     mu->addVector(u);
     mf->addVector(f);
     nonlinearSolver->solve(mu,mf);
