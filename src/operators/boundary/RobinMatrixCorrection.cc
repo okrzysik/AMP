@@ -140,7 +140,8 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
     unsigned int numIds = d_boundaryIds.size();
     std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> elementInputVec = myparams->d_elementInputVec;
 
-    std::vector<size_t> gpDofs;
+    std::vector<size_t> gpDofs, dofsElementVec;
+    std::vector<size_t> dofIndices; 
     AMP::Discretization::DOFManager::shared_ptr gpDOFManager; 
     if(d_isFluxGaussPtVector && myparams->d_variableFlux.get()!=NULL ){
       gpDOFManager = (myparams->d_variableFlux)->getDOFManager();
@@ -163,14 +164,18 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
         }
         boost::shared_ptr < ::QBase > d_qrule( (::QBase::build(d_qruleType, 2, d_qruleOrder)).release() );
 
-        d_currNodes = bnd1->getElements(AMP::Mesh::Vertex);
-
-        unsigned int numNodesInCurrElem = d_currNodes.size();
+        // Get the nodes for the element and their global ids
+        std::vector<AMP::Mesh::MeshElement> currNodes = bnd1->getElements(AMP::Mesh::Vertex);
+        dofIndices.resize(currNodes.size());
+        std::vector<AMP::Mesh::MeshElementID> globalIDs(currNodes.size()); 
+        for(size_t j=0; j<currNodes.size(); j++)
+            globalIDs[j] = currNodes[j].globalID();
 
         // Get the libmesh element
         d_currElemPtr = libmeshElements.getElement( bnd1->globalID() );
 
-        getDofIndicesForCurrentElement();
+        // Get the DOF indicies for the matrix
+        d_dofManager->getDOFs(globalIDs, dofIndices);
 
         if(d_isFluxGaussPtVector && myparams->d_variableFlux.get()!=NULL ){
           gpDOFManager->getDOFs (bnd1->globalID(), gpDofs);
@@ -187,7 +192,7 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
         const std::vector<std::vector<Real> > & phi = (*d_phi);
         unsigned int numGaussPts = d_qrule->n_points(); 
 
-        std::vector<std::vector<double> > inputArgs(elementInputVec.size(),std::vector<double>(numNodesInCurrElem));
+        std::vector<std::vector<double> > inputArgs(elementInputVec.size(),std::vector<double>(currNodes.size()));
         std::vector<std::vector<double> > inputArgsAtGpts(elementInputVec.size(),std::vector<double>(numGaussPts));
         std::vector<double> beta(numGaussPts,d_beta);
         std::vector<double> gamma(numGaussPts,d_gamma);
@@ -200,9 +205,11 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
           }
 
           for(unsigned int m = startIdx ; m < elementInputVec.size(); m++){
-            elementInputVec[m]->getValuesByGlobalID( d_dofIndices.size(), &d_dofIndices[0], &inputArgs[m][0] );
-            for (size_t qp = 0; qp < numGaussPts; qp++){ 
-              for (size_t n = 0; n < numNodesInCurrElem ; n++) {
+            elementInputVec[m]->getDOFManager()->getDOFs( globalIDs, dofsElementVec );
+            AMP_ASSERT(dofsElementVec.size()==dofIndices.size());
+            elementInputVec[m]->getValuesByGlobalID( dofsElementVec.size(), &dofsElementVec[0], &inputArgs[m][0] );
+            for (size_t qp = 0; qp < currNodes.size(); qp++){ 
+              for (size_t n = 0; n < currNodes.size(); n++) {
                 inputArgsAtGpts[m][qp] += phi[n][qp] * inputArgs[m][n];
               }
             }
@@ -214,12 +221,12 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
         double temp;
         for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
         {
-          for (unsigned int j=0; j < numNodesInCurrElem ; j++)
+          for (unsigned int j=0; j < currNodes.size(); j++)
           {
-            for (unsigned int i=0; i < numNodesInCurrElem ; i++)
+            for (unsigned int i=0; i < currNodes.size(); i++)
             {
               temp =  beta[qp] * ( JxW[qp]*phi[j][qp]*phi[i][qp] ) ;
-              inputMatrix->addValueByGlobalID ( d_dofIndices[j], d_dofIndices[i], temp );
+              inputMatrix->addValueByGlobalID ( dofIndices[j], dofIndices[i], temp );
             }//end for i
           }//end for j
         }//end for qp
@@ -234,15 +241,6 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
 
 }
 
-
-void RobinMatrixCorrection :: getDofIndicesForCurrentElement() {
-  d_dofIndices.resize(d_currNodes.size());
-  std::vector<AMP::Mesh::MeshElementID> globalIDs(d_currNodes.size()); 
-  for(unsigned int j = 0; j < d_currNodes.size(); j++) {
-    globalIDs[j] = d_currNodes[j].globalID();
-  } // end of j
-  d_dofManager->getDOFs(globalIDs, d_dofIndices);
-}
 
 }
 }
