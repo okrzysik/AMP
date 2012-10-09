@@ -226,10 +226,8 @@ PetscKrylovSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
 
 
 /****************************************************************
-*  Other functions                                              *
+*  Function to set the KrylovSolver                             *
 ****************************************************************/
-
-// Function to set the KrylovSolver
 void PetscKrylovSolver::setKrylovSolver(KSP *ksp)
 {
     if(d_bKSPCreatedInternally)
@@ -238,8 +236,11 @@ void PetscKrylovSolver::setKrylovSolver(KSP *ksp)
     d_KrylovSolver = *ksp;
 }
 
-void
-PetscKrylovSolver::registerOperator(const boost::shared_ptr<AMP::Operator::Operator> op)
+
+/****************************************************************
+*  Function to set the register the operator                    *
+****************************************************************/
+void PetscKrylovSolver::registerOperator(const boost::shared_ptr<AMP::Operator::Operator> op)
 {
   // in this case we make the assumption we can access a PetscMat for now
   assert(op.get()!=NULL);
@@ -258,13 +259,35 @@ PetscKrylovSolver::registerOperator(const boost::shared_ptr<AMP::Operator::Opera
   KSPSetOperators(d_KrylovSolver,mat,mat,DIFFERENT_NONZERO_PATTERN);
 
 }
+void PetscKrylovSolver::resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params)
+{
+  if(d_pOperator.get()!=NULL) {
+      d_pOperator->reset(params);
+      boost::shared_ptr<AMP::Operator::LinearOperator> linearOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pOperator);
+      assert(linearOperator.get() != NULL);
 
+      boost::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix = boost::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(linearOperator->getMatrix());
+      assert(pMatrix.get()!=NULL);
 
+      Mat mat;
+      mat = pMatrix->getMat();
 
+      // for now we will assume the pc is affected at every iteration
+      KSPSetOperators(d_KrylovSolver,mat,mat,DIFFERENT_NONZERO_PATTERN);
+  }
+
+  // should add a mechanism for the linear operator to provide updated parameters for the preconditioner operator
+  // though it's unclear where this might be necessary
+  if(d_pPreconditioner.get()!=NULL) {
+      d_pPreconditioner->resetOperator(params);
+  }
+}
+
+/****************************************************************
+*  Function to setup the preconditioner                         *
+****************************************************************/
 #if (PETSC_VERSION_RELEASE==1)
-
-int
-PetscKrylovSolver::setupPreconditioner(void*)
+int PetscKrylovSolver::setupPreconditioner(void*)
 {
    int ierr = 0;
 
@@ -275,11 +298,8 @@ PetscKrylovSolver::setupPreconditioner(void*)
 
    return ierr;
 }
-
 #else
-
-PetscErrorCode
-PetscKrylovSolver::setupPreconditioner(PC pc)
+PetscErrorCode PetscKrylovSolver::setupPreconditioner(PC pc)
 {
    int ierr = 0;
    Vec current_solution;
@@ -297,128 +317,60 @@ PetscKrylovSolver::setupPreconditioner(PC pc)
 }
 #endif
 
+
+/****************************************************************
+*  Function to call the preconditioner                          *
+****************************************************************/
 #if (PETSC_VERSION_RELEASE==1)
-
-PetscErrorCode
-PetscKrylovSolver::applyPreconditioner(void* ctx, Vec r, Vec z)
+PetscErrorCode  PetscKrylovSolver::applyPreconditioner(void* ctx, Vec r, Vec z)
+#else
+PetscErrorCode  PetscKrylovSolver::applyPreconditioner(PC ctx, Vec r, Vec z)
+#endif
 {
-  int ierr = 0;
-  double norm=0.0;
-/*
-  AMP::LinearAlgebra::PetscVector *rvec = new AMP::LinearAlgebra::PetscVector();
-  AMP::LinearAlgebra::PetscVector *zvec = new AMP::LinearAlgebra::PetscVector();
+    int ierr = 0;
+    AMP_ASSERT(ctx!=NULL);
 
-  rvec->setPetsc_Vector(&r);
-  zvec->setPetsc_Vector(&z);
+    boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_r ( reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>(r->data) , AMP::LinearAlgebra::ExternalVectorDeleter() );
+    boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_z ( reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>(z->data) , AMP::LinearAlgebra::ExternalVectorDeleter() );
 
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_r(rvec);
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_z(zvec);
-*/
-  AMP_ASSERT(ctx!=NULL);
-
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_r ( reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>(r->data) , AMP::LinearAlgebra::ExternalVectorDeleter() );
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_z ( reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>(z->data) , AMP::LinearAlgebra::ExternalVectorDeleter() );
-
-  // these tests were helpful in finding a bug
-  if(((PetscKrylovSolver*)ctx)->getDebugPrintInfoLevel()>5)
-    {
-      VecNorm(r, NORM_2,&norm);
-      double sp_r_norm = sp_r->L2Norm();
-      AMP_ASSERT(AMP::Utilities::approx_equal(norm, sp_r_norm));
+    // these tests were helpful in finding a bug
+    if(((PetscKrylovSolver*)ctx)->getDebugPrintInfoLevel()>5) {
+        double norm=0.0;
+        VecNorm(r, NORM_2,&norm);
+        double sp_r_norm = sp_r->L2Norm();
+        AMP_ASSERT(AMP::Utilities::approx_equal(norm, sp_r_norm));
     }  
   
-  AMP_ASSERT( (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
-      (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+    AMP_ASSERT( (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+        (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+    AMP_ASSERT( (sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+        (sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
 
-  AMP_ASSERT( (sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
-      (sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+    // Call the preconditioner
+    ((PetscKrylovSolver*)ctx)->getPreconditioner()->solve(sp_r,sp_z);
 
-  ((PetscKrylovSolver*)ctx)->getPreconditioner()->solve(sp_r,sp_z);
+    // Check for nans (no communication necessary)
+    double localNorm = sp_z->localL2Norm();
+    AMP_INSIST(localNorm==localNorm,"NaNs detected in preconditioner");
 
-  // not sure why, but the state of sp_z is not updated
-  // and petsc uses the cached norm
-  if ( sp_z->isA<AMP::LinearAlgebra::DataChangeFirer>() )
-    {
-      sp_z->castTo<AMP::LinearAlgebra::DataChangeFirer>().fireDataChange();
+    // not sure why, but the state of sp_z is not updated
+    // and petsc uses the cached norm
+    if ( sp_z->isA<AMP::LinearAlgebra::DataChangeFirer>() ) {
+        sp_z->castTo<AMP::LinearAlgebra::DataChangeFirer>().fireDataChange();
     }
 
-  // these tests were helpful in finding a bug
-  if(((PetscKrylovSolver*)ctx)->getDebugPrintInfoLevel()>5)
-    {
-      AMP::pout << "L2 Norm of sp_z " << sp_z->L2Norm() << std::endl;
-      VecNorm(z, NORM_2,&norm);
-      AMP::pout << "L2 Norm of z " << norm << std::endl;
-      AMP_ASSERT(norm==sp_z->L2Norm());      
+    // these tests were helpful in finding a bug
+    if(((PetscKrylovSolver*)ctx)->getDebugPrintInfoLevel()>5) {
+        double norm=0.0;
+        AMP::pout << "L2 Norm of sp_z " << sp_z->L2Norm() << std::endl;
+        VecNorm(z, NORM_2,&norm);
+        AMP::pout << "L2 Norm of z " << norm << std::endl;
+        AMP_ASSERT(norm==sp_z->L2Norm());      
     }
   
-  return (ierr);
+    return (ierr);
 }
 
-#else
-
-PetscErrorCode
-PetscKrylovSolver::applyPreconditioner(PC pc, Vec r, Vec z)
-{
-  int ierr = 0;
-  void *ctx = NULL;
-
- /*
-  AMP::LinearAlgebra::PetscVector *rvec = new AMP::LinearAlgebra::PetscVector();
-  AMP::LinearAlgebra::PetscVector *zvec = new AMP::LinearAlgebra::PetscVector();
-
-  rvec->setPetsc_Vector(&r);
-  zvec->setPetsc_Vector(&z);
-
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_r(rvec);
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_z(zvec);
-  */
-
-  ierr = PCShellGetContext(pc, &ctx);
-
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_r ( reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>(r->data) , AMP::LinearAlgebra::ExternalVectorDeleter() );
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_z ( reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>(z->data) , AMP::LinearAlgebra::ExternalVectorDeleter() );
-
-  ((PetscKrylovSolver*)ctx)->getPreconditioner()->solve(sp_r, sp_z);
-
-  // not sure why, but the state of sp_z is not updated
-  // and petsc uses the cached norm
-  if ( sp_z->isA<AMP::LinearAlgebra::DataChangeFirer>() )
-    {
-      sp_z->castTo<AMP::LinearAlgebra::DataChangeFirer>().fireDataChange();
-    }
-
-  return ierr;
-
-}
-#endif
-
-
-void
-PetscKrylovSolver::resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params)
-{
-  if(d_pOperator.get()!=NULL)
-    {
-      d_pOperator->reset(params);
-      boost::shared_ptr<AMP::Operator::LinearOperator> linearOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pOperator);
-      assert(linearOperator.get() != NULL);
-
-      boost::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix = boost::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(linearOperator->getMatrix());
-      assert(pMatrix.get()!=NULL);
-
-      Mat mat;
-      mat = pMatrix->getMat();
-
-      // for now we will assume the pc is affected at every iteration
-      KSPSetOperators(d_KrylovSolver,mat,mat,DIFFERENT_NONZERO_PATTERN);
-    }
-
-  // should add a mechanism for the linear operator to provide updated parameters for the preconditioner operator
-  // though it's unclear where this might be necessary
-  if(d_pPreconditioner.get()!=NULL)
-    {
-      d_pPreconditioner->resetOperator(params);
-    }
-}
 
 
 }
