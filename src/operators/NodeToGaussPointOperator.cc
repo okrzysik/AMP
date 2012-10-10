@@ -46,7 +46,7 @@ void NodeToGaussPointOperator::apply(AMP::LinearAlgebra::Vector::const_shared_pt
     AMP_ASSERT(nodalVec->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
 
     AMP::Discretization::DOFManager::shared_ptr dof_map = nodalVec->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr gaussPt_dof_map = gaussPtVec->getDOFManager();;
+    AMP::Discretization::DOFManager::shared_ptr gaussPt_dof_map = gaussPtVec->getDOFManager();
 
     int dim=0;
     if(d_UseSurfaceElements)
@@ -67,8 +67,10 @@ void NodeToGaussPointOperator::apply(AMP::LinearAlgebra::Vector::const_shared_pt
         gaussPt_dof_map->getDOFs( iterator->globalID(), gaussPtIndices );
 
         // Check if we need to set any gauss points for the current element
-        if ( gaussPtIndices.empty() )
+        if ( gaussPtIndices.size()==0 ) {
+            ++iterator;
             continue;
+        }
 
         // Get the nodes comprising the current element
         std::vector<AMP::Mesh::MeshElement> d_currNodes = iterator->getElements(AMP::Mesh::Vertex);  
@@ -97,7 +99,7 @@ void NodeToGaussPointOperator::apply(AMP::LinearAlgebra::Vector::const_shared_pt
             }//end for qp
         }//end for j
 
-        gaussPtVec->setLocalValuesByGlobalID( gaussPtIndices.size(), &gaussPtIndices[0], &computedAtGauss[0] );
+        gaussPtVec->setLocalValuesByGlobalID( gaussPtIndices.size(),&gaussPtIndices[0], &computedAtGauss[0]);
 
         ++iterator;
     }//end for
