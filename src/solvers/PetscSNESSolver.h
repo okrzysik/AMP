@@ -178,7 +178,6 @@ namespace Solver {
     static PetscErrorCode mffdCheckBounds(void *checkctx, Vec U, Vec a, PetscScalar *h);
     
     bool d_bUsesJacobian;
-    bool d_bSNESFunctionSet;
     bool d_bEnableLineSearchPreCheck;
     bool d_bEnableMFFDBoundsCheck;
     int    d_iMaximumFunctionEvals;
