@@ -39,7 +39,7 @@ std::vector<double> getHeatFluxClad( std::vector<double> z, std::vector<AMP::Mes
     std::vector<double> dz(z.size()-1,0.0);
     for (size_t i=0; i<dz.size(); i++)
         dz[i] = z[i+1]-z[i];
-    const double pi = 3.1415926535897932;
+    //const double pi = 3.1415926535897932;
     AMP_ASSERT(face_ids.size()==z.size());
     AMP_ASSERT(flow!=NULL);
     AMP_ASSERT(clad_temp!=NULL);

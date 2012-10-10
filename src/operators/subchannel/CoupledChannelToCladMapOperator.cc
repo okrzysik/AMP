@@ -45,7 +45,7 @@ void CoupledChannelToCladMapOperator :: apply( AMP::LinearAlgebra::Vector::const
         AMP::Discretization::DOFManager::shared_ptr scalarFaceDOFManager = d_subchannelTemperature->getDOFManager(); 
 
         AMP::Mesh::MeshIterator face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(d_Mesh, 0);
-        AMP::Mesh::MeshIterator end_face = face.end();
+        //AMP::Mesh::MeshIterator end_face = face.end();
         
         std::vector<size_t> dofs;
         std::vector<size_t> scalarDofs;
