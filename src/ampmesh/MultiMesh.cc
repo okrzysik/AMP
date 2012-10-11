@@ -1217,7 +1217,7 @@ std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups2(
         double total_weight = 0.0;
         for (size_t j=0; j<ids.size(); j++)
             total_weight += ids[j].first;
-        double weight_avg = total_weight/static_cast<double>(N_procs-groups.size()) - 1e-12;
+        double weight_avg = total_weight/static_cast<double>(N_procs-groups.size()) - 1e-14;
         tmp_group.ids.resize(0);
         double weight_sum = 0.0;
         while ( weight_sum < weight_avg ) {
