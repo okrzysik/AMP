@@ -22,6 +22,7 @@
 #include "vectors/VectorBuilder.h"
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"
+#include "vectors/SimpleVector.h"
 #include "vectors/VectorSelector.h"
 
 #include "operators/boundary/ColumnBoundaryOperator.h"
@@ -59,6 +60,7 @@
 #include "operators/subchannel/SubchannelPhysicsModel.h"
 #include "operators/subchannel/CoupledChannelToCladMapOperator.h"
 #include "operators/subchannel/SubchannelConstants.h"
+#include "operators/subchannel/SubchannelDensityToPointMap.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
 
@@ -604,11 +606,13 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     PROFILE_STOP("Solve");
 
 
-    // Compute the flow temperature
+    // Compute the flow temperature and density
     AMP::LinearAlgebra::Vector::shared_ptr flowTempVec;
     AMP::LinearAlgebra::Vector::shared_ptr deltaFlowTempVec;
+    AMP::LinearAlgebra::Vector::shared_ptr flowDensityVec;
     if(subchannelMesh != NULL ){
         flowTempVec = subchannelFuelTemp->cloneVector(); 
+        flowDensityVec = subchannelFuelTemp->cloneVector(); 
         int DofsPerFace =  2;
         AMP::Discretization::DOFManager::shared_ptr faceDOFManager = 
             AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
@@ -624,15 +628,19 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         std::vector<size_t> scalarDofs;
         const double h_scale = 1.0/AMP::Operator::Subchannel::scaleEnthalpy;    // Scale to change the input vector back to correct units
         const double P_scale = 1.0/AMP::Operator::Subchannel::scalePressure;    // Scale to change the input vector back to correct units
-        for( ; face != end_face; ++face){
+        for(size_t i=0; i<face.size(); i++) {
             faceDOFManager->getDOFs( face->globalID(), dofs );
             scalarFaceDOFManager->getDOFs( face->globalID(), scalarDofs );
-            std::map<std::string, boost::shared_ptr<std::vector<double> > > outTemperatureArgMap;
-            outTemperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_scale*flowSolVec->getValueByGlobalID(dofs[0]))));
-            outTemperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,P_scale*flowSolVec->getValueByGlobalID(dofs[1]))));
+            std::map<std::string, boost::shared_ptr<std::vector<double> > > subchannelArgMap;
+            subchannelArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_scale*flowSolVec->getValueByGlobalID(dofs[0]))));
+            subchannelArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,P_scale*flowSolVec->getValueByGlobalID(dofs[1]))));
             std::vector<double> outTemperatureResult(1);
-            subchannelPhysicsModel->getProperty("Temperature", outTemperatureResult, outTemperatureArgMap); 
-            flowTempVec->setValueByGlobalID(scalarDofs[0] ,outTemperatureResult[0]); 
+            subchannelPhysicsModel->getProperty("Temperature", outTemperatureResult, subchannelArgMap); 
+            std::vector<double> specificVolume(1);
+            subchannelPhysicsModel->getProperty("SpecificVolume", specificVolume, subchannelArgMap);
+            flowTempVec->setValueByGlobalID(scalarDofs[0],outTemperatureResult[0]); 
+            flowDensityVec->setValueByGlobalID(scalarDofs[0],1.0/specificVolume[0]); 
+            ++face;
         } 
         flowTempVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
         double Tin = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )->getDouble("Inlet_Temperature");
@@ -651,6 +659,45 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::pout << "Subchannel Flow Temp Max : " << flowTempMax << " Min : "<< flowTempMin << std::endl;
 
 
+    // Test the density to point map
+    boost::shared_ptr<AMP::Operator::SubchannelDensityToPointMapParameters> subchannelToPointMapParams(
+        new AMP::Operator::SubchannelDensityToPointMapParameters());
+    subchannelToPointMapParams->d_Mesh = subchannelMesh;
+    subchannelToPointMapParams->d_comm = globalComm;
+    subchannelToPointMapParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
+    if(subchannelMesh != NULL ){
+        AMP::Mesh::MeshIterator face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
+        for(size_t i=0; i<face.size(); i++) {
+            std::vector<double> pos = face->centroid();
+            subchannelToPointMapParams->x.push_back(pos[0]);
+            subchannelToPointMapParams->y.push_back(pos[1]);
+            subchannelToPointMapParams->z.push_back(pos[2]);
+            ++face;
+        }
+        AMP_ASSERT(subchannelToPointMapParams->x.size()==flowDensityVec->getLocalSize());
+    }
+    AMP::Operator::SubchannelDensityToPointMap subchannelDensityToPointMap(subchannelToPointMapParams);
+    AMP::LinearAlgebra::Vector::shared_ptr densityMapVec = AMP::LinearAlgebra::SimpleVector::create(
+        subchannelToPointMapParams->x.size(), subchannelDensityToPointMap.getOutputVariable() );
+    subchannelDensityToPointMap.apply( nullVec, flowSolVec, densityMapVec );
+    if(subchannelMesh != NULL ){
+        AMP::Mesh::MeshIterator face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
+        std::vector<size_t> dofs;
+        bool pass = true;
+        for(size_t i=0; i<face.size(); i++) {
+            flowDensityVec->getDOFManager()->getDOFs( face->globalID(), dofs );
+            double density1 = flowDensityVec->getValueByGlobalID(dofs[0]);
+            double density2 = densityMapVec->getValueByLocalID(i);
+            if ( !AMP::Utilities::approx_equal(density1,density2) )
+                pass = false;
+            ++face;
+        } 
+        if ( pass )
+            ut->passes("Subchannel density to point map");
+        else
+            ut->failure("Subchannel density to point map");
+    }
+    
     
 #ifdef USE_EXT_SILO
     // Rescale the solution to get the correct units
@@ -669,6 +716,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         siloWriter->registerVector( flowSolVec, xyFaceMesh, AMP::Mesh::Face, "SubchannelFlow" );
         siloWriter->registerVector( flowTempVec, xyFaceMesh, AMP::Mesh::Face, "FlowTemp" );
         siloWriter->registerVector( deltaFlowTempVec, xyFaceMesh, AMP::Mesh::Face, "FlowTempDelta" );
+        siloWriter->registerVector( flowDensityVec, xyFaceMesh, AMP::Mesh::Face, "FlowDensity" );
     }
     if ( pinMesh.get()!=NULL ) {
         siloWriter->registerVector( globalThermalSolVec ,  pinMesh , AMP::Mesh::Vertex, "Temperature" );
@@ -676,6 +724,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     }
     siloWriter->writeFile( silo_name , 0 );
 #endif
+    ut->passes("test runs to completion");
     PROFILE_STOP("Main");
     PROFILE_SAVE("exeName");
 }
