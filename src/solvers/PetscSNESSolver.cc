@@ -312,7 +312,9 @@ void PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
 
         Vec x = spSol->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
 
+        PROFILE_START("petsc-SNESSolve");
         ierr = SNESSolve(d_SNESSolver, b, x);
+        PROFILE_STOP("petsc-SNESSolve");
 
     } else {
         AMP_INSIST(spSol.get()!=NULL, "ERROR: Currently the SNES Solver can only be used with a Petsc_Vector, the supplied Vector does not appear to belong to this class");

@@ -85,6 +85,74 @@ std::vector<std::string> get_call_stack()
 }
 
 
+// Function to test the interpolants
+void test_interp( AMP::UnitTest *ut )
+{
+    const double a = 1.0;
+    const double bx = 1.0;
+    const double by = -1.0;
+    const double bz = 0.5;
+    int Nx = 20;
+    int Ny = 10;
+    int Nz = 5;
+    std::vector<double> x(Nx,0.0);
+    std::vector<double> y(Ny,0.0);
+    std::vector<double> z(Nz,0.0);
+    std::vector<double> f1(Nx,0.0);
+    std::vector<double> f2(Nx*Ny,0.0);
+    std::vector<double> f3(Nx*Ny*Nz,0.0);
+    for (int i=0; i<Nx; i++) {
+        x[i] = ((double)i)/((double)(Nx-1));
+        f1[i] = a + bx*x[i];
+        for (int j=0; j<Ny; j++) {
+            y[j] = ((double)j)/((double)(Ny-1));
+            f2[i+j*Nx] = a + bx*x[i] + by*y[j];
+            for (int k=0; k<Nz; k++) {
+                z[k] = ((double)k)/((double)(Nz-1));
+                f3[i+j*Nx+k*Nx*Ny] = a + bx*x[i] + by*y[j] + bz*z[k];
+            }
+        }
+    }
+    bool pass_linear = true;
+    bool pass_bilinear = true;
+    bool pass_trilinear = true;
+    int Nix = 100;
+    int Niy = 200;
+    int Niz = 50;
+    double fi;
+    for (int i=0; i<Nix; i++) {
+        double xi = ((double)i-2)/((double)(Nix-5));
+        fi = AMP::Utilities::linear(x,f1,xi);
+        if ( !AMP::Utilities::approx_equal(fi,a+bx*xi,1e-12) )
+            pass_linear = false;
+        for (int j=0; j<Niy; j++) {
+            double yi = ((double)j-2)/((double)(Niy-5));
+            fi = AMP::Utilities::bilinear(x,y,f2,xi,yi);
+            if ( !AMP::Utilities::approx_equal(fi,a+bx*xi+by*yi,1e-12) )
+                pass_bilinear = false;
+            for (int k=0; k<Niz; k++) {
+                double zi = ((double)k-2)/((double)(Niz-5));
+                fi = AMP::Utilities::trilinear(x,y,z,f3,xi,yi,zi);
+                if ( !AMP::Utilities::approx_equal(fi,a+bx*xi+by*yi+bz*zi,1e-12) )
+                    pass_trilinear = false;
+            }
+        }
+    }
+    if ( pass_linear )
+        ut->passes("Linear interpolation");
+    else
+        ut->failure("Linear interpolation");
+    if ( pass_bilinear )
+        ut->passes("Bi-linear interpolation");
+    else
+        ut->failure("Bi-linear interpolation");
+    if ( pass_trilinear )
+        ut->passes("Tri-linear interpolation");
+    else
+        ut->failure("Tri-linear interpolation");
+}
+
+
 //  This test will start and shutdown AMP
 int main(int argc, char *argv[])
 {
@@ -118,6 +186,9 @@ int main(int argc, char *argv[])
         testApproxEqualInt<size_t>( &ut );
         testApproxEqual<float>( &ut );
         testApproxEqual<double>( &ut );
+
+        // Test interpolations
+        test_interp( &ut );
 
         // Test quicksort performance
         size_t N = 10000;

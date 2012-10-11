@@ -438,6 +438,84 @@ std::vector<int> Utilities::factor(size_t number)
 }
 
 
+// Function to perform linear interpolation
+double Utilities::linear( const std::vector<double>& x, 
+    const std::vector<double>& f, double xi )
+{
+    size_t Nx = x.size();
+    AMP_ASSERT( Nx>1 );
+    AMP_ASSERT( f.size()==Nx );
+    size_t i = AMP::Utilities::findfirst( x, xi );
+    if ( i==0 ) { i=1; }
+    if ( i==x.size() ) { i=x.size()-1; }
+    double dx = (xi-x[i-1])/(x[i]-x[i-1]);
+    return dx*f[i] + (1.0-dx)*f[i-1];
+}
+
+
+// Function to perform bi-linear interpolation
+double Utilities::bilinear( const std::vector<double>& x, const std::vector<double>& y, 
+    const std::vector<double>& f, double xi, double yi )
+{
+    size_t Nx = x.size();
+    size_t Ny = y.size();
+    AMP_ASSERT( Nx>1 && Ny>1 );
+    AMP_ASSERT( f.size() == Nx*Ny );
+    size_t i = AMP::Utilities::findfirst( x, xi );
+    size_t j = AMP::Utilities::findfirst( y, yi );
+    if ( i==0 ) { i=1; }
+    if ( j==0 ) { j=1; }
+    if ( i==x.size() ) { i=x.size()-1; }
+    if ( j==y.size() ) { j=y.size()-1; }
+    double dx = (xi-x[i-1])/(x[i]-x[i-1]);
+    double dy = (yi-y[j-1])/(y[j]-y[j-1]);
+    double f1 = f[ i-1 + (j-1)*Nx ];
+    double f2 = f[ i   + (j-1)*Nx ];
+    double f3 = f[ i-1 + j*Nx     ];
+    double f4 = f[ i   + j*Nx     ];
+    double dx2 = 1.0-dx;
+    double dy2 = 1.0-dy;
+    return (dx*f2 + dx2*f1)*dy2 + (dx*f4 + dx2*f3)*dy;
+}
+
+
+// Function to perform tri-linear interpolation
+double Utilities::trilinear( const std::vector<double>& x, const std::vector<double>& y, 
+    const std::vector<double>& z, const std::vector<double>& f, double xi, double yi, double zi )
+{
+    size_t Nx = x.size();
+    size_t Ny = y.size();
+    size_t Nz = z.size();
+    AMP_ASSERT( Nx>1 && Ny>1 && Nz>1 );
+    AMP_ASSERT( f.size() == Nx*Ny*Nz );
+    size_t i = AMP::Utilities::findfirst( x, xi );
+    size_t j = AMP::Utilities::findfirst( y, yi );
+    size_t k = AMP::Utilities::findfirst( z, zi );
+    if ( i==0 ) { i=1; }
+    if ( j==0 ) { j=1; }
+    if ( k==0 ) { k=1; }
+    if ( i==x.size() ) { i=x.size()-1; }
+    if ( j==y.size() ) { j=y.size()-1; }
+    if ( k==z.size() ) { k=z.size()-1; }
+    double dx = (xi-x[i-1])/(x[i]-x[i-1]);
+    double dy = (yi-y[j-1])/(y[j]-y[j-1]);
+    double dz = (zi-z[k-1])/(z[k]-z[k-1]);
+    double f1 = f[ i-1 + (j-1)*Nx + (k-1)*Nx*Ny ];
+    double f2 = f[ i   + (j-1)*Nx + (k-1)*Nx*Ny ];
+    double f3 = f[ i-1 + j*Nx     + (k-1)*Nx*Ny ];
+    double f4 = f[ i   + j*Nx     + (k-1)*Nx*Ny ];
+    double f5 = f[ i-1 + (j-1)*Nx + k*Nx*Ny     ];
+    double f6 = f[ i   + (j-1)*Nx + k*Nx*Ny     ];
+    double f7 = f[ i-1 + j*Nx     + k*Nx*Ny     ];
+    double f8 = f[ i   + j*Nx     + k*Nx*Ny     ];
+    double dx2 = 1.0-dx;
+    double dy2 = 1.0-dy;
+    double dz2 = 1.0-dz;
+    double h0  = (dx*f2 + dx2*f1)*dy2 + (dx*f4 + dx2*f3)*dy;
+    double h1  = (dx*f6 + dx2*f5)*dy2 + (dx*f8 + dx2*f7)*dy;
+    return h0*dz2 + h1*dz;
+}
+
 
 }
 

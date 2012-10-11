@@ -175,6 +175,38 @@ namespace Utilities
     template<class T>
     size_t findfirst(const std::vector<T> &x, const T &value);
 
+    /*!
+     * Function to perform linear interpolation
+     * \param x     x-coordinates
+     * \param f     function values at the coordinates ( Nx )
+     * \param xi    x-coordinate of desired point
+     */
+    double linear( const std::vector<double>& x, const std::vector<double>& f, double xi );
+
+    /*!
+     * Function to perform tri-linear interpolation
+     * \param x     x-coordinates
+     * \param y     y-coordinates
+     * \param f     function values at the coordinates ( Nx x Ny )
+     * \param xi    x-coordinate of desired point
+     * \param yi    y-coordinate of desired point
+     */
+    double bilinear( const std::vector<double>& x, const std::vector<double>& y, 
+        const std::vector<double>& f, double xi, double yi );
+
+    /*!
+     * Function to perform tri-linear interpolation
+     * \param x     x-coordinates
+     * \param y     y-coordinates
+     * \param z     z-coordinates
+     * \param f     function values at the coordinates ( Nx x Ny x Nz )
+     * \param xi    x-coordinate of desired point
+     * \param yi    y-coordinate of desired point
+     * \param zi    z-coordinate of desired point
+     */
+    double trilinear( const std::vector<double>& x, const std::vector<double>& y, 
+        const std::vector<double>& z, const std::vector<double>& f, double xi, double yi, double zi );
+
     //! Create a hash key from a char array
     unsigned int hash_char(const char*);
 
