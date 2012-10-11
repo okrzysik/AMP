@@ -1,0 +1,72 @@
+
+#ifndef included_AMP_ContactOperator
+#define included_AMP_ContactOperator
+
+#include <operators/ConstraintsEliminationOperator.h>
+#include <operators/contact/ContactOperatorParameters.h>
+
+namespace AMP {
+  namespace Operator {
+
+    /**
+      An abstract base class for representing a linear operator. This class 
+      stores the matrix representation of the linear operator. It provides
+      an implementation of the apply() function.
+      @see Operator
+      */
+    class ContactOperator : public ConstraintsEliminationOperator 
+    {
+
+      public :
+
+        /**
+          Constructor. This resets the matrix shared pointer.
+          @param [in] params 
+          */
+        ContactOperator (const boost::shared_ptr<ContactOperatorParameters> & params)
+          : ConstraintsEliminationOperator(params)
+        {
+          d_GlobalComm = (params->d_GlobalComm);
+          d_DOFsPerNode = (params->d_DOFsPerNode);
+          d_DOFManager = (params->d_DOFManager);
+
+          d_MasterMeshID = (params->d_MasterMeshID);
+          d_SlaveMeshID = (params->d_SlaveMeshID);
+          d_MasterBoundaryID = (params->d_MasterBoundaryID);
+          d_SlaveBoundaryID = (params->d_SlaveBoundaryID);
+        }
+
+        AMP::Mesh::MeshID getMasterMeshID() const { return d_MasterMeshID; }
+
+        AMP::Mesh::MeshID getSlaveMeshID() const { return d_SlaveMeshID; }
+
+        /**
+          @return The local number of constrained DOFs.
+          */
+        size_t numLocalConstraints() { return d_SlaveIndices.size(); }
+
+        /**
+          @return The global number of constrained DOFs.
+          */
+        size_t numGlobalConstraints() { return d_GlobalComm.sumReduce(d_SlaveIndices.size()); }
+
+      protected :
+
+        AMP::AMP_MPI d_GlobalComm;
+        AMP::Discretization::DOFManager::shared_ptr d_DOFManager;
+        size_t d_DOFsPerNode;
+
+        AMP::Mesh::MeshID d_MasterMeshID;
+        AMP::Mesh::MeshID d_SlaveMeshID;
+
+        int d_MasterBoundaryID;
+        int d_SlaveBoundaryID;
+
+      private :
+
+    };
+
+  }
+}
+
+#endif
