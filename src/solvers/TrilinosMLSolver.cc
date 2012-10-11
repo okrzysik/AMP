@@ -236,6 +236,10 @@ namespace AMP {
         ML_Iterate(d_ml, uArr, fArr);
       }
 
+      // Check for NaNs in the solution (no communication necessary)
+      double localNorm = u->localL2Norm();
+      AMP_INSIST(localNorm==localNorm,"NaNs detected in solution");
+
       // we are forced to update the state of u here
       // as Epetra is not going to change the state of a managed vector
       // an example where this will and has caused problems is when the

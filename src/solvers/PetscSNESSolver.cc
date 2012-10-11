@@ -19,7 +19,6 @@ namespace Solver {
 PetscSNESSolver::PetscSNESSolver()
 {
     d_bUsesJacobian = false;
-    d_bSNESFunctionSet = false;
     d_Jacobian = NULL;
     d_SNESSolver   = NULL;
     d_sMFFDDifferencingStrategy = MATMFFD_WP;
@@ -31,11 +30,9 @@ PetscSNESSolver::PetscSNESSolver()
 PetscSNESSolver::PetscSNESSolver(boost::shared_ptr<PetscSNESSolverParameters> parameters):SolverStrategy(parameters)
 {
     d_bUsesJacobian = false;
-    d_bSNESFunctionSet = false;
     d_Jacobian = NULL;
     d_SNESSolver   = NULL;
     d_comm = parameters->d_comm;
-    d_bSNESFunctionSet = false;
     d_pKrylovSolver = parameters->d_pKrylovSolver;
     initialize(parameters);
 }
@@ -47,10 +44,13 @@ PetscSNESSolver::PetscSNESSolver(boost::shared_ptr<PetscSNESSolverParameters> pa
 PetscSNESSolver::~PetscSNESSolver()
 {
     // when we are using Matrix free delete the MF PETSc Jacobian
-    if((!d_bUsesJacobian)&&(d_Jacobian!=NULL))
+    if((!d_bUsesJacobian)&&(d_Jacobian!=NULL)) {
         MatDestroy(d_Jacobian);
+        d_Jacobian = NULL;
+    }
     SNESMonitorCancel(d_SNESSolver);
     SNESDestroy(d_SNESSolver);
+    d_SNESSolver = NULL;
 }
 
 
@@ -66,6 +66,9 @@ void  PetscSNESSolver::initialize(boost::shared_ptr<SolverStrategyParameters> pa
     getFromInput(parameters->d_db);
 
     // create the SNES solver
+    if ( d_SNESSolver != NULL ) {
+        this->~PetscSNESSolver();
+    }
     ierr = SNESCreate(d_comm.getCommunicator(), &d_SNESSolver);
 
     // set the type to line search, potentially modify this later to be from input
@@ -243,6 +246,7 @@ void PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
     // holds a copy of the original views until the new solve call is created
     AMP::LinearAlgebra::Vector::shared_ptr  f_thisGetsAroundPETScSharedPtrIssue = spRhs;
     AMP::LinearAlgebra::Vector::shared_ptr  u_thisGetsAroundPETScSharedPtrIssue = spSol;
+    AMP::LinearAlgebra::Vector::shared_ptr  r_thisGetsAroundPETScSharedPtrIssue = d_pResidualVector;
 
     // Get petsc views of the vectors
     spRhs = AMP::LinearAlgebra::PetscVector::view( f );
@@ -267,41 +271,42 @@ void PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
 
         if(spRhs.get()!=NULL) {
             b = spRhs->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-            if(!d_bSNESFunctionSet) {
-                setSNESFunction( spRhs );
-                d_bSNESFunctionSet= true;
-                if(!d_bUsesJacobian) {
-                    ierr = MatCreateSNESMF(d_SNESSolver, &d_Jacobian);
-                    ierr = MatMFFDSetType(d_Jacobian, (MatMFFDType) d_sMFFDDifferencingStrategy.c_str() );
-                    ierr = MatMFFDSetFunctionError(d_Jacobian, d_dMFFDFunctionDifferencingError);
-                    if(d_bEnableMFFDBoundsCheck) {
-                        ierr = MatMFFDSetCheckh(d_Jacobian, PetscSNESSolver::mffdCheckBounds, this);
-                    }
+            setSNESFunction( spRhs );
+            if(!d_bUsesJacobian) {
+                if ( d_Jacobian!=NULL ) {
+                    MatDestroy(d_Jacobian);
+                    d_Jacobian = NULL;
+                }
+                ierr = MatCreateSNESMF(d_SNESSolver, &d_Jacobian);
+                ierr = MatMFFDSetType(d_Jacobian, (MatMFFDType) d_sMFFDDifferencingStrategy.c_str() );
+                ierr = MatMFFDSetFunctionError(d_Jacobian, d_dMFFDFunctionDifferencingError);
+                if(d_bEnableMFFDBoundsCheck) {
+                    ierr = MatMFFDSetCheckh(d_Jacobian, PetscSNESSolver::mffdCheckBounds, this);
+                }
 
-                    ierr = MatMFFDSetFromOptions(d_Jacobian);
-                    boost::shared_ptr<AMP::Solver::SolverStrategy> pcSolver = d_pKrylovSolver->getPreconditioner();
+                ierr = MatMFFDSetFromOptions(d_Jacobian);
+                boost::shared_ptr<AMP::Solver::SolverStrategy> pcSolver = d_pKrylovSolver->getPreconditioner();
 
-                    Mat PCJacobian = d_Jacobian;
+                Mat PCJacobian = d_Jacobian;
 
-                    if(pcSolver.get()!=NULL) {
-                        boost::shared_ptr<AMP::Operator::LinearOperator> linearOp = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(pcSolver->getOperator());
+                if(pcSolver.get()!=NULL) {
+                    boost::shared_ptr<AMP::Operator::LinearOperator> linearOp = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(pcSolver->getOperator());
 
-                        if(linearOp.get()!=NULL) {
-                            boost::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix = boost::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(linearOp->getMatrix());
-                            //assert(pMatrix.get()!=NULL);
-                            if(pMatrix.get()!=NULL) {
-                                PCJacobian = pMatrix->getMat();
-                            }
+                    if(linearOp.get()!=NULL) {
+                        boost::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix = boost::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(linearOp->getMatrix());
+                        //assert(pMatrix.get()!=NULL);
+                        if(pMatrix.get()!=NULL) {
+                            PCJacobian = pMatrix->getMat();
                         }
                     }
-
-                    ierr = SNESSetJacobian(d_SNESSolver,
-                             d_Jacobian,
-                             PCJacobian,
-                             PetscSNESSolver::setJacobian,
-                             this);
-
                 }
+
+                ierr = SNESSetJacobian(d_SNESSolver,
+                        d_Jacobian,
+                        PCJacobian,
+                        PetscSNESSolver::setJacobian,
+                        this);
+
             }
         }
 
@@ -312,8 +317,8 @@ void PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
     } else {
         AMP_INSIST(spSol.get()!=NULL, "ERROR: Currently the SNES Solver can only be used with a Petsc_Vector, the supplied Vector does not appear to belong to this class");
     }
-
     AMP_INSIST(ierr==0, "non-zero PETSc error code");
+
     PROFILE_STOP("solve");
 }
 
@@ -351,147 +356,125 @@ PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat* A, Mat*, MatStruc
 ****************************************************************/
 bool PetscSNESSolver::isVectorValid ( boost::shared_ptr<AMP::Operator::Operator>  &op , AMP::LinearAlgebra::Vector::shared_ptr &v , AMP_MPI comm )
 {
-  bool retVal = false;
-  int msg = op->isValidInput ( v ) ? 1 : 0;
-  int result = comm.minReduce(msg);
-  retVal = ( result == 1 );
-  return retVal;
+    bool retVal = false;
+    int msg = op->isValidInput ( v ) ? 1 : 0;
+    int result = comm.minReduce(msg);
+    retVal = ( result == 1 );
+    return retVal;
 }
 
 PetscErrorCode
 PetscSNESSolver::lineSearchPreCheck(SNES snes, Vec x, Vec y, void *checkctx, PetscTruth *changed_y)
 {
-  int ierr=1;
-  PetscSNESSolver *pSNESSolver =  (PetscSNESSolver *) checkctx;
+    int ierr=1;
+    PetscSNESSolver *pSNESSolver =  (PetscSNESSolver *) checkctx;
 
-  boost::shared_ptr<AMP::Operator::Operator> pOperator = pSNESSolver->getOperator();
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> pScratchVector = pSNESSolver->getScratchVector();
+    boost::shared_ptr<AMP::Operator::Operator> pOperator = pSNESSolver->getOperator();
+    boost::shared_ptr<AMP::LinearAlgebra::Vector> pScratchVector = pSNESSolver->getScratchVector();
 
-  AMP::LinearAlgebra::ManagedPetscVector *xvec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( x->data );
-  AMP::LinearAlgebra::ManagedPetscVector *yvec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( y->data );
+    AMP::LinearAlgebra::ManagedPetscVector *xvec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( x->data );
+    AMP::LinearAlgebra::ManagedPetscVector *yvec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( y->data );
 
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_x(xvec, AMP::LinearAlgebra::ExternalVectorDeleter ());
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_y(yvec, AMP::LinearAlgebra::ExternalVectorDeleter ());
+    boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_x(xvec, AMP::LinearAlgebra::ExternalVectorDeleter ());
+    boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_y(yvec, AMP::LinearAlgebra::ExternalVectorDeleter ());
 
-  pScratchVector->add(sp_x, sp_y);
+    pScratchVector->add(sp_x, sp_y);
 
-  if ( isVectorValid ( pOperator , pScratchVector , xvec->getComm() ) )
-    {
-      *changed_y=PETSC_FALSE;
-      ierr=0;
-    }
-  else
-    {
-      int iNumberOfLineSearchPreCheckAttempts=pSNESSolver->getNumberOfLineSearchPreCheckAttempts();
-      boost::shared_ptr<AMP::Operator::ColumnOperator> pColumnOperator = boost::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(pOperator);
-      if(pColumnOperator.get()!=NULL)
-    {
-      for(int i=0; i< iNumberOfLineSearchPreCheckAttempts;i++)
-        {
-          AMP::pout << "Attempting to scale search, attempt number " << i<< std::endl;
-          double lambda = 0.5;
-          sp_y->scale(lambda, sp_y);
-          pScratchVector->add(sp_x, sp_y);
-        if ( isVectorValid ( pOperator , pScratchVector , xvec->getComm() ) )
-        {
-          ierr=0;
-          *changed_y=PETSC_TRUE;
-          break;
-        }
-          else
-        {
-          lambda=lambda/2.0;
-        }
+    if ( isVectorValid ( pOperator , pScratchVector , xvec->getComm() ) ) {
+        *changed_y=PETSC_FALSE;
+        ierr=0;
+    } else {
+        int iNumberOfLineSearchPreCheckAttempts=pSNESSolver->getNumberOfLineSearchPreCheckAttempts();
+        boost::shared_ptr<AMP::Operator::ColumnOperator> pColumnOperator = boost::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(pOperator);
+        if(pColumnOperator.get()!=NULL) {
+            for(int i=0; i< iNumberOfLineSearchPreCheckAttempts;i++) {
+                AMP::pout << "Attempting to scale search, attempt number " << i<< std::endl;
+                double lambda = 0.5;
+                sp_y->scale(lambda, sp_y);
+                pScratchVector->add(sp_x, sp_y);
+                if ( isVectorValid ( pOperator , pScratchVector , xvec->getComm() ) ) {
+                    ierr=0;
+                    *changed_y=PETSC_TRUE;
+                    break;
+                } else {
+                    lambda=lambda/2.0;
+                }
+            }
         }
     }
-    }
-  return ierr;
+    return ierr;
 }
+
 
 PetscErrorCode
 PetscSNESSolver::mffdCheckBounds(void *checkctx, Vec U, Vec a, PetscScalar *h)
 {
-  PetscSNESSolver *pSNESSolver =  (PetscSNESSolver *) checkctx;
-  boost::shared_ptr<AMP::Operator::Operator> pSNESOperator = pSNESSolver->getOperator();
-  boost::shared_ptr<AMP::Operator::Operator> pOperator;
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> pScratchVector = pSNESSolver->getScratchVector();
+    PetscSNESSolver *pSNESSolver =  (PetscSNESSolver *) checkctx;
+    boost::shared_ptr<AMP::Operator::Operator> pSNESOperator = pSNESSolver->getOperator();
+    boost::shared_ptr<AMP::Operator::Operator> pOperator;
+    boost::shared_ptr<AMP::LinearAlgebra::Vector> pScratchVector = pSNESSolver->getScratchVector();
 
-  AMP::LinearAlgebra::ManagedPetscVector *uvec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( U->data );
-  AMP::LinearAlgebra::ManagedPetscVector *avec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( a->data );
+    AMP::LinearAlgebra::ManagedPetscVector *uvec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( U->data );
+    AMP::LinearAlgebra::ManagedPetscVector *avec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( a->data );
 
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_u(uvec, AMP::LinearAlgebra::ExternalVectorDeleter ());
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_a(avec, AMP::LinearAlgebra::ExternalVectorDeleter ());
+    boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_u(uvec, AMP::LinearAlgebra::ExternalVectorDeleter ());
+    boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_a(avec, AMP::LinearAlgebra::ExternalVectorDeleter ());
 
-  // check for column operators
-  boost::shared_ptr<AMP::Operator::ColumnOperator> pColumnOperator = boost::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(pSNESOperator);
-  if(pColumnOperator.get()!=NULL)
-    {
-      pOperator = pColumnOperator->getOperator(pSNESSolver->getBoundsCheckComponent());
-    }
-  else
-    {
-      pOperator = pSNESOperator;
+    // check for column operators
+    boost::shared_ptr<AMP::Operator::ColumnOperator> pColumnOperator = boost::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(pSNESOperator);
+    if(pColumnOperator.get()!=NULL) {
+        pOperator = pColumnOperator->getOperator(pSNESSolver->getBoundsCheckComponent());
+    } else {
+        pOperator = pSNESOperator;
     }
 
-  AMP::LinearAlgebra::Variable::shared_ptr opVar=pOperator->getOutputVariable();
-  AMP::LinearAlgebra::Vector::shared_ptr scv = pScratchVector->subsetVectorForVariable(opVar);
-  AMP::LinearAlgebra::Vector::shared_ptr uv = sp_u->subsetVectorForVariable(opVar);
-  AMP::LinearAlgebra::Vector::shared_ptr av = sp_a->subsetVectorForVariable(opVar);
+    AMP::LinearAlgebra::Variable::shared_ptr opVar=pOperator->getOutputVariable();
+    AMP::LinearAlgebra::Vector::shared_ptr scv = pScratchVector->subsetVectorForVariable(opVar);
+    AMP::LinearAlgebra::Vector::shared_ptr uv = sp_u->subsetVectorForVariable(opVar);
+    AMP::LinearAlgebra::Vector::shared_ptr av = sp_a->subsetVectorForVariable(opVar);
 
-  scv->axpy(*h, av, uv);
+    scv->axpy(*h, av, uv);
 
-  // the code below is only valid for ensuring positivity
-  // will do for now
-  if ( isVectorValid ( pOperator , scv , uvec->getComm() ) )
-    {
-      double minVal = PetscAbsScalar((*h)*1.01);
-      scv->divide(uv, av);
-      scv->abs(scv);
-      minVal = std::min(scv->min(), minVal);
-      if(minVal<=PetscAbsScalar(*h))
-    {
-      AMP::pout << "Scaling h back from  " << (*h) << " to " << 0.99*minVal << std::endl;
-      if(PetscRealPart(*h)>0.0) *h = 0.99*minVal;
-      else                                  *h = -0.99*minVal;
+    // the code below is only valid for ensuring positivity
+    // will do for now
+    if ( isVectorValid ( pOperator , scv , uvec->getComm() ) ) {
+        double minVal = PetscAbsScalar((*h)*1.01);
+        scv->divide(uv, av);
+        scv->abs(scv);
+        minVal = std::min(scv->min(), minVal);
+        if(minVal<=PetscAbsScalar(*h)) {
+            AMP::pout << "Scaling h back from  " << (*h) << " to " << 0.99*minVal << std::endl;
+            if(PetscRealPart(*h)>0.0)
+                *h = 0.99*minVal;
+            else
+                *h = -0.99*minVal;
+        }
     }
-    }
 
-  return (0);
+    return (0);
 }
 
 
 void
 PetscSNESSolver::setSNESFunction( boost::shared_ptr<AMP::LinearAlgebra::Vector>  rhs)
 {
-  AMP_INSIST(rhs.get()!=NULL, "ERROR: PetscSNESSolver::setSNESFunction needs a non NULL rhs vector argument");
+    AMP_INSIST(rhs.get()!=NULL, "ERROR: PetscSNESSolver::setSNESFunction needs a non NULL rhs vector argument");
 
-  d_pResidualVector = rhs->cloneVector();
-  d_pScratchVector = d_pResidualVector->cloneVector();
+    // Create new residual and scratch vectors
+    d_pResidualVector = rhs->cloneVector();
+    d_pScratchVector = d_pResidualVector->cloneVector();
 
-  // set the function evaluation routine to a static member of this class which acts as a wrapper
-  Vec residualVector;
-
-  AMP::LinearAlgebra::Vector::shared_ptr  petscVec = AMP::LinearAlgebra::PetscVector::view ( d_pResidualVector );
-
-  if(petscVec.get() !=NULL)
-    {
-      residualVector = petscVec->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-
-      SNESSetFunction(d_SNESSolver,
-              residualVector,
-              PetscSNESSolver::apply,
-              (void*) this);
-    }
-  else
-    {
-      AMP_INSIST(petscVec.get() !=NULL,"ERROR: Currently the SNES Solver can only be used with a Petsc_Vector, the supplied Vector does not appear to belong to this class");
-    }
+    // set the function evaluation routine to a static member of this class which acts as a wrapper
+    AMP::LinearAlgebra::Vector::shared_ptr  petscVec = AMP::LinearAlgebra::PetscVector::view ( d_pResidualVector );
+    AMP_INSIST(petscVec.get() !=NULL,"ERROR: Currently the SNES Solver can only be used with a Petsc_Vector, the supplied Vector does not appear to belong to this class");
+    Vec residualVector = petscVec->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    SNESSetFunction( d_SNESSolver, residualVector, PetscSNESSolver::apply, (void*) this );
 }
 
 void
 PetscSNESSolver::setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess )
 {
-  d_pSolutionVector->copyVector(initialGuess);
+    d_pSolutionVector->copyVector(initialGuess);
 }
 
 

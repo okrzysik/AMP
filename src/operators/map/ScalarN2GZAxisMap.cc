@@ -145,7 +145,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr ScalarN2GZAxisMap::getGaussPoints( 
 /************************************************************************
 *  buildReturn                                                          *
 ************************************************************************/
-void ScalarN2GZAxisMap::buildReturn ( const AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::Mesh::shared_ptr, 
+void ScalarN2GZAxisMap::buildReturn ( AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::Mesh::shared_ptr, 
     const AMP::Mesh::MeshIterator &iterator, const std::map<double,double> &map )
 {
     if ( iterator.size()==0 )
