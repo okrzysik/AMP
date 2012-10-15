@@ -24,33 +24,28 @@ class ManagedEpetraMatrix : public EpetraMatrix ,
                               public ManagedMatrix
 {
 protected:
-      /** \brief  Parameters used to construct the matrix
-        */
-      boost::shared_ptr<ManagedEpetraMatrixParameters>         d_pParameters;
+    //!  Parameters used to construct the matrix
+    boost::shared_ptr<ManagedEpetraMatrixParameters>         d_pParameters;
       
-      /** \brief  Unimplemented constructor
-        */
-      ManagedEpetraMatrix();
+    //!  Unimplemented constructor
+    ManagedEpetraMatrix();
 
-      /** \brief  Unimplemented constructor
-        */
-      ManagedEpetraMatrix ( const ManagedEpetraMatrix &rhs );
+    //!  Unimplemented constructor
+    ManagedEpetraMatrix ( const ManagedEpetraMatrix &rhs );
 
-      /** \brief  \f$A_{i,j}\f$ storage of off-core data
-        */
-      std::map<int,std::map<int,double> >  d_OtherData;
+    //!  \f$A_{i,j}\f$ storage of off-core data
+    std::map<int,std::map<int,double> >  d_OtherData;
 
-      /** \brief  Update data off-core
-        */
-      void  setOtherData ();
+    //!  Update data off-core
+    void  setOtherData ();
 
-      virtual void multiply ( shared_ptr other_op , shared_ptr &result );
+    virtual void multiply ( shared_ptr other_op , shared_ptr &result );
 
 public:
       /** \brief Constructor
         * \param[in] p  The description of the matrix
         */
-      ManagedEpetraMatrix( MatrixParameters::shared_ptr p );
+      ManagedEpetraMatrix( boost::shared_ptr<ManagedEpetraMatrixParameters> p );
 
       /** \brief Constructor from Epetra_CrsMatrix
         * \param[in]  m  Matrix to wrap

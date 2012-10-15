@@ -68,7 +68,7 @@ namespace LinearAlgebra {
         * \param m2  Unused
         * \param[in] entriesRow  The number of entries in the matrix per local row
         */
-      EpetraMatrix ( Epetra_Map &m1 , Epetra_Map &m2 , int *entriesRow );  
+      EpetraMatrix ( Epetra_Map &m1 , Epetra_Map *m2 , int *entriesRow );  
 
       /** \brief Constructor
         * \param[in] inMatrix  Matrix to wrap

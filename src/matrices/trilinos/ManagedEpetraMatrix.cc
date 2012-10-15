@@ -4,6 +4,7 @@
 #include "vectors/trilinos/ManagedEpetraVector.h"
 #include <algorithm>
 #include "utils/Utilities.h"
+#include "utils/ProfilerApp.h"
 
 #include "utils/AMP_MPI.h"
 
@@ -31,38 +32,34 @@ void ManagedEpetraMatrix::multiply ( shared_ptr other_op , shared_ptr &result )
     #endif
     Vector::shared_ptr leftVec = this->getRightVector();
     Vector::shared_ptr rightVec = other_op->getRightVector();
-    ManagedEpetraMatrixParameters *memp = new ManagedEpetraMatrixParameters ( 
-                 d_epetraMatrix->RowMap().NumMyElements() , 
-                 d_epetraMatrix->RowMap().NumGlobalElements() , 
-                 d_epetraMatrix->RowMap().MinMyGID() , 
-                 AMP_MPI(epetraComm) );
+    boost::shared_ptr<ManagedEpetraMatrixParameters> memp( new ManagedEpetraMatrixParameters( 
+        leftVec->getDOFManager(), rightVec->getDOFManager(), AMP_MPI(epetraComm) ) );
     memp->d_CommListLeft = leftVec->getCommunicationList();
     memp->d_CommListRight = rightVec->getCommunicationList();
-    memp->d_DOFManagerLeft = leftVec->getDOFManager();
-    memp->d_DOFManagerRight = rightVec->getDOFManager();
-    ManagedEpetraMatrix *res = new ManagedEpetraMatrix ( MatrixParameters::shared_ptr ( memp ) );
-    EpetraExt::MatrixMatrix::Multiply ( *d_epetraMatrix , false , *(other_op->castTo<ManagedEpetraMatrix> ().d_epetraMatrix) , false , *(res->d_epetraMatrix) , true );
+    ManagedEpetraMatrix *res = new ManagedEpetraMatrix( memp );
+    PROFILE_START("Epetra::MatrixMultiply");
+    int ierr = EpetraExt::MatrixMatrix::Multiply( *d_epetraMatrix, false, 
+        *(other_op->castTo<ManagedEpetraMatrix> ().d_epetraMatrix), false, *(res->d_epetraMatrix), true );
+    AMP_ASSERT(ierr==0);
+    PROFILE_STOP("Epetra::MatrixMultiply");
     result = Matrix::shared_ptr ( res );
 }
 
 
 Vector::shared_ptr ManagedEpetraMatrix::getRightVector ()
 {
-    ManagedEpetraMatrixParameters &memp = d_pParameters->castTo<ManagedEpetraMatrixParameters> ();
-    int  localSize = memp.d_CommListRight->numLocalRows();
-    int  globalSize = memp.d_CommListRight->getTotalSize();
-    EpetraVectorEngineParameters *evep = new EpetraVectorEngineParameters  ( localSize , 
-                                                                             globalSize ,
-                                                                             memp.getEpetraRowMapPtr () ,
-                                                                             memp.getEpetraComm() );
+    boost::shared_ptr<ManagedEpetraMatrixParameters> memp = boost::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( d_pParameters );
+    int  localSize = memp->getLocalNumberOfColumns();
+    int  globalSize = memp->getGlobalNumberOfColumns();
+    EpetraVectorEngineParameters *evep = new EpetraVectorEngineParameters( localSize, globalSize, memp->getEpetraComm() );
     VectorEngineParameters::shared_ptr p_eng ( evep );
     boost::shared_ptr<ManagedVectorParameters> p_params( new ManagedVectorParameters );
     p_params->d_Buffer = VectorEngine::BufferPtr ( new std::vector<double> ( localSize ) );
     p_params->d_Engine = VectorEngine::shared_ptr ( new EpetraVectorEngine ( p_eng , p_params->d_Buffer ) );
-    p_params->d_CommList = memp.d_CommListRight;
-    p_params->d_DOFManager = memp.d_DOFManagerRight;
+    p_params->d_CommList = memp->d_CommListRight;
+    p_params->d_DOFManager = memp->getRightDOFManager();
     Vector::shared_ptr rtn = Vector::shared_ptr( new ManagedEpetraVector( p_params ) );
-    rtn->setVariable( memp.d_VariableRight );
+    rtn->setVariable( memp->d_VariableRight );
     //rtn->setVariable( Variable::shared_ptr( new Variable("right") ) );
     return rtn;
 }
@@ -70,58 +67,38 @@ Vector::shared_ptr ManagedEpetraMatrix::getRightVector ()
 
 Vector::shared_ptr ManagedEpetraMatrix::getLeftVector ()
 {
-    ManagedEpetraMatrixParameters &memp = d_pParameters->castTo<ManagedEpetraMatrixParameters> ();
-    int  localSize = memp.d_CommListLeft->numLocalRows();
-    int  globalSize = memp.d_CommListLeft->getTotalSize();
-    /*EpetraVectorEngineParameters *evep = new EpetraVectorEngineParameters  ( localSize , 
-                                                                             globalSize ,
-                                                                             memp.getEpetraColMapPtr () ,
-                                                                             memp.getEpetraComm() );
+    boost::shared_ptr<ManagedEpetraMatrixParameters> memp = boost::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( d_pParameters );
+    int  localSize = memp->getLocalNumberOfRows();
+    int  globalSize = memp->getGlobalNumberOfRows();
+    EpetraVectorEngineParameters *evep = new EpetraVectorEngineParameters( localSize, globalSize, memp->getEpetraComm() );
     VectorEngineParameters::shared_ptr p_eng ( evep );
     boost::shared_ptr<ManagedVectorParameters> p_params( new ManagedVectorParameters );
     p_params->d_Buffer = VectorEngine::BufferPtr ( new std::vector<double> ( localSize ) );
     p_params->d_Engine = VectorEngine::shared_ptr ( new EpetraVectorEngine ( p_eng , p_params->d_Buffer ) );
-    p_params->d_CommList = memp.d_CommListLeft;
-    p_params->d_DOFManager = memp.d_DOFManagerLeft;
+    p_params->d_CommList = memp->d_CommListLeft;
+    p_params->d_DOFManager = memp->getLeftDOFManager();
     Vector::shared_ptr rtn = Vector::shared_ptr( new ManagedEpetraVector( p_params ) );
-    rtn->setVariable( memp.d_VariableLeft );
+    rtn->setVariable( memp->d_VariableLeft );
     //rtn->setVariable( Variable::shared_ptr( new Variable("left") ) );
-    return rtn;*/
-
-    EpetraVectorEngineParameters *evep = new EpetraVectorEngineParameters  ( localSize , 
-                                                                             globalSize ,
-                                                                             memp.getEpetraColMapPtr () ,
-                                                                             memp.getEpetraComm() );
-    VectorEngineParameters::shared_ptr p_eng ( evep );
-    boost::shared_ptr<ManagedVectorParameters> p_params( new ManagedVectorParameters );
-    p_params->d_Buffer = VectorEngine::BufferPtr ( new std::vector<double> ( localSize ) );
-    p_params->d_Engine = VectorEngine::shared_ptr ( new EpetraVectorEngine ( p_eng , p_params->d_Buffer ) );
-    p_params->d_CommList = memp.d_CommListRight;
-    p_params->d_DOFManager = memp.d_DOFManagerRight;
-    Vector::shared_ptr rtn = Vector::shared_ptr( new ManagedEpetraVector( p_params ) );
-    rtn->setVariable( memp.d_VariableRight );
     return rtn;
-
 }
 
 
 Discretization::DOFManager::shared_ptr ManagedEpetraMatrix::getRightDOFManager ()
 {
-    ManagedEpetraMatrixParameters &memp = d_pParameters->castTo<ManagedEpetraMatrixParameters> ();
-    return memp.d_DOFManagerRight;
+    return d_pParameters->getRightDOFManager();
 }
 
 
 Discretization::DOFManager::shared_ptr ManagedEpetraMatrix::getLeftDOFManager ()
 {
-    ManagedEpetraMatrixParameters &memp = d_pParameters->castTo<ManagedEpetraMatrixParameters> ();
-    return memp.d_DOFManagerLeft;
+    return d_pParameters->getLeftDOFManager();
 }
 
 
 void ManagedEpetraMatrix::setOtherData ()
 {
-    AMP_MPI myComm(d_pParameters->castTo<ManagedEpetraMatrixParameters>().getEpetraComm());
+    AMP_MPI myComm = d_pParameters->getComm();
     int ndxLen = d_OtherData.size();
     int totNdxLen = myComm.sumReduce(ndxLen);
     if ( totNdxLen == 0 ) {
@@ -164,8 +141,8 @@ void ManagedEpetraMatrix::setOtherData ()
     myComm.allGather( cols, dataLen, aggregateCols );
     myComm.allGather( data, dataLen, aggregateData );
 
-    int MyFirstRow = d_pParameters->castTo<ManagedEpetraMatrixParameters>().d_DOFManagerLeft->beginDOF();
-    int MyEndRow = d_pParameters->castTo<ManagedEpetraMatrixParameters>().d_DOFManagerLeft->endDOF();
+    int MyFirstRow = d_pParameters->getLeftDOFManager()->beginDOF();
+    int MyEndRow = d_pParameters->getLeftDOFManager()->endDOF();
     for ( int i = 0 ; i != totDataLen ; i++ )
     {
       if ( ( aggregateRows[i] >= MyFirstRow ) && ( aggregateRows[i] < MyEndRow ) )
@@ -185,26 +162,25 @@ void ManagedEpetraMatrix::setOtherData ()
 
 
 
-ManagedEpetraMatrix::ManagedEpetraMatrix ( MatrixParameters::shared_ptr params )
-        : EpetraMatrix ( params->castTo<ManagedEpetraMatrixParameters>().getEpetraRowMap() , 
-                         params->castTo<ManagedEpetraMatrixParameters>().getEpetraColMap()  ,
-                         params->castTo<ManagedEpetraMatrixParameters>().entryList() ) ,
-          ManagedMatrix ( params ) ,
-          d_pParameters ( boost::static_pointer_cast<ManagedEpetraMatrixParameters>(params) )
+ManagedEpetraMatrix::ManagedEpetraMatrix ( boost::shared_ptr<ManagedEpetraMatrixParameters> params )
+        : EpetraMatrix ( params->getEpetraRowMap(), 
+                         params->getEpetraColMap(),
+                         params->entryList() ),
+          ManagedMatrix( params )
 {
+    d_pParameters = params;
 }
 
 
 ManagedEpetraMatrix::ManagedEpetraMatrix ( const ManagedEpetraMatrix &rhs )
         : Matrix () ,
-          EpetraMatrix ( rhs.d_pParameters->castTo<ManagedEpetraMatrixParameters>().getEpetraRowMap() , 
-                           rhs.d_pParameters->castTo<ManagedEpetraMatrixParameters>().getEpetraColMap()  ,
-                           rhs.d_pParameters->castTo<ManagedEpetraMatrixParameters>().entryList() ) ,
+          EpetraMatrix ( rhs.d_pParameters->getEpetraRowMap() , 
+                           rhs.d_pParameters->getEpetraColMap()  ,
+                           rhs.d_pParameters->entryList() ) ,
           ManagedMatrix ( rhs.d_pParameters ) ,
           d_pParameters ( rhs.d_pParameters )
 {
-    ManagedEpetraMatrixParameters  &params = d_pParameters->castTo<ManagedEpetraMatrixParameters> ();
-    for ( size_t i = params.d_DOFManagerLeft->beginDOF(); i!=params.d_DOFManagerLeft->endDOF(); i++ ) {
+    for ( size_t i = d_pParameters->getLeftDOFManager()->beginDOF(); i!=d_pParameters->getLeftDOFManager()->endDOF(); i++ ) {
       std::vector<unsigned int>  cols;
       std::vector<double>        vals;
       rhs.getRowByGlobalID ( (int)i , cols , vals );
@@ -311,10 +287,9 @@ void  ManagedEpetraMatrix::createValuesByGlobalID ( int  num_rows , int num_cols
 
 void  ManagedEpetraMatrix::setValuesByGlobalID ( int  num_rows , int num_cols , int *rows , int *cols , double *values )
 {
-    ManagedEpetraMatrixParameters &EpetraParamters = d_pParameters->castTo<ManagedEpetraMatrixParameters>();
 
-    int MyFirstRow = EpetraParamters.d_DOFManagerLeft->beginDOF();
-    int MyEndRow = EpetraParamters.d_DOFManagerLeft->endDOF();
+    int MyFirstRow = d_pParameters->getLeftDOFManager()->beginDOF();
+    int MyEndRow = d_pParameters->getLeftDOFManager()->endDOF();
     for ( int i = 0 ; i != num_rows ; i++ ) {
         VerifyEpetraReturn (d_epetraMatrix->ReplaceGlobalValues ( rows[i] , num_cols , values+num_cols*i , cols ) , "setValuesByGlobalID" );
         if ( rows[i]<MyFirstRow || rows[i]>=MyEndRow ) {
@@ -352,8 +327,8 @@ void ManagedEpetraMatrix::setDiagonal ( const Vector::shared_ptr &in )
 
 void ManagedEpetraMatrix::getRowByGlobalID ( int row , std::vector<unsigned int> &cols , std::vector<double> &values ) const
 {   
-    int firstRow = d_pParameters->d_DOFManagerLeft->beginDOF();
-    int numRows = d_pParameters->d_DOFManagerLeft->endDOF();
+    int firstRow = d_pParameters->getLeftDOFManager()->beginDOF();
+    int numRows = d_pParameters->getLeftDOFManager()->endDOF();
     AMP_ASSERT ( row >= firstRow );
     AMP_ASSERT ( row < firstRow + numRows );
 

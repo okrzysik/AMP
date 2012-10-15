@@ -4,150 +4,12 @@
 #include "utils/UnitTest.h"
 #include "discretization/DOF_Manager.h"
 
+#include "test_MatrixVectorFactory.h"
 #include "../../vectors/test/test_VectorLoops.h"
-
-#ifdef USE_EXT_PETSC
-    #include "matrices/petsc/PetscMatrix.h"
-#endif
-
 
 namespace AMP {
 namespace unit_test {
 
-
-AMP::LinearAlgebra::Matrix::shared_ptr global_cached_matrix = AMP::LinearAlgebra::Matrix::shared_ptr();
-
-
-// Classes to serve as the vector factories
-class AmpInterfaceLeftVectorFactory
-{
-public:
-    typedef  AMP::LinearAlgebra::ManagedPetscVector        vector;
-
-    static AMP::LinearAlgebra::Variable::shared_ptr   getVariable()
-    {
-        return AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable("left") );
-    }
-
-    static AMP::LinearAlgebra::Vector::shared_ptr     getVector()
-    {
-        PROFILE_START("AmpInterfaceLeftVectorFactory::getVector");
-        AMP::LinearAlgebra::Matrix::shared_ptr  matrix = global_cached_matrix;
-        AMP_ASSERT(global_cached_matrix!=NULL);
-        AMP::LinearAlgebra::Vector::shared_ptr  vector = matrix->getLeftVector();
-        vector->setVariable( getVariable() );
-        PROFILE_STOP("AmpInterfaceLeftVectorFactory::getVector");
-        return vector;
-    }
-};
-
-class AmpInterfaceRightVectorFactory
-{
-public:
-    typedef  AMP::LinearAlgebra::ManagedPetscVector        vector;
-
-    static AMP::LinearAlgebra::Variable::shared_ptr   getVariable()
-    {
-        return AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable("right") );
-    }
-
-    static AMP::LinearAlgebra::Vector::shared_ptr     getVector()
-    {
-        PROFILE_START("AmpInterfaceRightVectorFactory::getVector");
-        AMP::LinearAlgebra::Matrix::shared_ptr  matrix = global_cached_matrix;
-        AMP_ASSERT(global_cached_matrix!=NULL);
-        AMP::LinearAlgebra::Vector::shared_ptr  vector = matrix->getRightVector();
-        vector->setVariable( getVariable() );
-        PROFILE_STOP("AmpInterfaceRightVectorFactory::getVector");
-        return vector;
-    }
-};
-
-#if defined(USE_EXT_PETSC) && defined(USE_EXT_PETSC)
-
-class PETScInterfaceLeftVectorFactory
-{
- public:
-    typedef  AMP::LinearAlgebra::ManagedPetscVector        vector;
-
-    static AMP::LinearAlgebra::Variable::shared_ptr   getVariable()
-    {
-        return AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable("petsc_left") );
-    }
-
-    static AMP::LinearAlgebra::Vector::shared_ptr     getVector()
-    {
-        PROFILE_START("PETScInterfaceLeftVectorFactory::getVector");
-        AMP::LinearAlgebra::Matrix::shared_ptr  matrix = global_cached_matrix;
-        AMP_ASSERT(global_cached_matrix!=NULL);
-        ::Mat m = matrix->castTo<AMP::LinearAlgebra::PetscMatrix>().getMat ();
-        ::Vec v;
-        MatGetVecs ( m , &v , 0 );
-        boost::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> p( 
-            new AMP::LinearAlgebra::NativePetscVectorParameters( v, true ) );
-        AMP::LinearAlgebra::Vector::shared_ptr  vector( new AMP::LinearAlgebra::NativePetscVector ( p ) );
-        vector->setVariable( getVariable() );
-        PROFILE_STOP("PETScInterfaceLeftVectorFactory::getVector");
-        return vector;
-    }
-
-    static AMP::LinearAlgebra::Vector::shared_ptr   getNativeVector()
-    {
-        return getVector();
-    }
-
-    static AMP::LinearAlgebra::Vector::shared_ptr   getManagedVector()
-    {
-        AMP::LinearAlgebra::Matrix::shared_ptr  matrix = global_cached_matrix;
-        AMP_ASSERT(global_cached_matrix!=NULL);
-        return AMP::LinearAlgebra::PetscVector::view ( matrix->getLeftVector () );
-    }
-};
-
-class PETScInterfaceRightVectorFactory
-{
-public:
-    typedef  AMP::LinearAlgebra::ManagedPetscVector        vector;
-
-    static AMP::LinearAlgebra::Variable::shared_ptr   getVariable()
-    {
-        return AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable("petsc_right") );
-    }
-
-    static AMP::LinearAlgebra::Vector::shared_ptr     getVector()
-    {
-        PROFILE_START("PETScInterfaceRightVectorFactory::getVector");
-        AMP::LinearAlgebra::Matrix::shared_ptr  matrix = global_cached_matrix;
-        AMP_ASSERT(global_cached_matrix!=NULL);
-        ::Mat m = matrix->castTo<AMP::LinearAlgebra::PetscMatrix>().getMat ();
-        ::Vec v;
-        MatGetVecs ( m , &v , 0 );
-        boost::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> p( 
-            new AMP::LinearAlgebra::NativePetscVectorParameters( v, true ) );
-        AMP::LinearAlgebra::Vector::shared_ptr  vector( new AMP::LinearAlgebra::NativePetscVector ( p ) );
-        vector->setVariable( getVariable() );
-        PROFILE_STOP("PETScInterfaceRightVectorFactory::getVector");
-        return vector;
-    }
-
-    static AMP::LinearAlgebra::Vector::shared_ptr   getNativeVector()
-    {
-        return getVector();
-    }
-
-    static AMP::LinearAlgebra::Vector::shared_ptr   getManagedVector()
-    {
-        AMP::LinearAlgebra::Matrix::shared_ptr  matrix = global_cached_matrix;
-        AMP_ASSERT(global_cached_matrix!=NULL);
-        return AMP::LinearAlgebra::PetscVector::view ( matrix->getRightVector () );
-    }
-};
-#endif
-
-
-
-
-#if defined(USE_EXT_PETSC) && defined(USE_EXT_PETSC)
 
 template <class MATRIX_FACTORY>
 void  fillWithPseudoLaplacian ( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
@@ -202,9 +64,11 @@ public:
         PROFILE_START("VerifyGetLeftRightVector");
         global_cached_matrix = FACTORY::getMatrix();
         test_managed_vectors_loop<AmpInterfaceRightVectorFactory> ( utils );
-        test_managed_vectors_loop<PETScInterfaceRightVectorFactory> ( utils );
         test_managed_vectors_loop<AmpInterfaceLeftVectorFactory> ( utils );
+        #ifdef USE_EXT_PETSC
+        test_managed_vectors_loop<PETScInterfaceRightVectorFactory> ( utils );
         test_managed_vectors_loop<PETScInterfaceLeftVectorFactory> ( utils );
+        #endif
         global_cached_matrix.reset();
         PROFILE_STOP("VerifyGetLeftRightVector");
     }
@@ -328,59 +192,6 @@ public:
 
 
 template <typename FACTORY>
-class VerifyMultMatrix
-{
-public:
-    static const char * get_test_name () { return "verify mult"; }
-
-    static  void run_test ( AMP::UnitTest *utils )
-    {
-        PROFILE_START("VerifyMultMatrix");
-        AMP::LinearAlgebra::Matrix::shared_ptr  matrix = FACTORY::getMatrix();
-        AMP::LinearAlgebra::Vector::shared_ptr  vectorlhs = matrix->getRightVector();
-        AMP::LinearAlgebra::Vector::shared_ptr  vectorrhs = matrix->getRightVector();
-        double normlhs , normrhs;
-
-        /* Verify 0 matrix from factory */
-        vectorlhs->setRandomValues ();
-        matrix->mult ( vectorlhs , vectorrhs );
-        normlhs = vectorlhs->L2Norm();
-        normrhs = vectorrhs->L2Norm();
-        if ( (normlhs > 0) && (normrhs < 0.0000001) )
-            utils->passes ( "mult by 0 matrix" );
-        else
-            utils->failure ( "mult by 0 matrix" );
-
-        /* Verify mult with identity */
-        vectorlhs->setToScalar ( 1.0 );
-        matrix->setDiagonal ( vectorlhs );
-        
-        vectorlhs->setRandomValues ();
-        matrix->mult ( vectorlhs , vectorrhs );
-        normlhs = vectorlhs->L2Norm();
-        vectorrhs->subtract ( vectorlhs , vectorrhs );
-        normrhs = vectorrhs->L2Norm();
-        if ( (normlhs > 0) && (normrhs < 0.0000001) )
-            utils->passes ( "mult by I matrix" );
-        else
-            utils->failure ( "mult by I matrix" );
-
-        /* Try the non-trivial matrix */
-        fillWithPseudoLaplacian<FACTORY>( matrix );
-        vectorlhs->setRandomValues ();
-        matrix->mult ( vectorlhs , vectorrhs );
-        normlhs = vectorlhs->L2Norm();
-        normrhs = vectorrhs->L2Norm();
-        if ( (normlhs > 0) && (normrhs > 0) )
-            utils->passes ( "mult by other matrix" );
-        else
-            utils->failure ( "mult by other matrix" );
-        PROFILE_STOP("VerifyMultMatrix");
-    }
-};
-
-
-template <typename FACTORY>
 class VerifyExtractDiagonal
 {
 public:
@@ -413,10 +224,139 @@ public:
     }
 };
 
-#endif
+
+template <typename FACTORY>
+class VerifyMultMatrix
+{
+public:
+    static const char * get_test_name () { return "verify mult"; }
+
+    static  void run_test ( AMP::UnitTest *utils )
+    {
+        PROFILE_START("VerifyMultMatrix");
+        AMP::LinearAlgebra::Matrix::shared_ptr  matrix = FACTORY::getMatrix();
+        AMP::LinearAlgebra::Vector::shared_ptr  vectorlhs = matrix->getRightVector();
+        AMP::LinearAlgebra::Vector::shared_ptr  vectorrhs = matrix->getRightVector();
+        double normlhs , normrhs;
+
+        /* Verify 0 matrix from factory */
+        if ( matrix->L1Norm() == 0.0 )
+            utils->passes ( "Factory returns 0 matrix" );
+        else
+            utils->failure ( "Factory returns 0 matrix" );
+
+        /* Verify mult with 0 matrix */
+        matrix->zero();
+        vectorlhs->setRandomValues ();
+        matrix->mult ( vectorlhs , vectorrhs );
+        normlhs = vectorlhs->L2Norm();
+        normrhs = vectorrhs->L2Norm();
+        if ( (normlhs > 0) && (normrhs < 0.0000001) )
+            utils->passes ( "mult by 0 matrix" );
+        else
+            utils->failure ( "mult by 0 matrix" );
+
+        /* Verify mult with identity */
+        vectorlhs->setToScalar ( 1.0 );
+        matrix->setDiagonal ( vectorlhs );
+        vectorlhs->setRandomValues ();
+        matrix->mult ( vectorlhs , vectorrhs );
+        normlhs = vectorlhs->L2Norm();
+        vectorrhs->subtract ( vectorlhs , vectorrhs );
+        normrhs = vectorrhs->L2Norm();
+        if ( (normlhs > 0) && (normrhs < 0.0000001) )
+            utils->passes ( "mult by I matrix" );
+        else
+            utils->failure ( "mult by I matrix" );
+
+        /* Try the non-trivial matrix */
+        fillWithPseudoLaplacian<FACTORY>( matrix );
+        vectorlhs->setRandomValues ();
+        matrix->mult ( vectorlhs , vectorrhs );
+        normlhs = vectorlhs->L2Norm();
+        normrhs = vectorrhs->L2Norm();
+        if ( (normlhs > 0) && (normrhs > 0) )
+            utils->passes ( "mult by other matrix" );
+        else
+            utils->failure ( "mult by other matrix" );
+        PROFILE_STOP("VerifyMultMatrix");
+    }
+};
+
+
+// Test matrix-matrix multiplication (this tests takes a long time for large matricies)
+template <typename FACTORY>
+class VerifyMatMultMatrix
+{
+public:
+    static const char * get_test_name () { return "verify mult"; }
+
+    static  void run_test ( AMP::UnitTest *utils )
+    {
+        PROFILE_START("VerifyMatMultMatrix");
+        AMP::LinearAlgebra::Matrix::shared_ptr  matZero = FACTORY::getMatrix();
+        AMP::LinearAlgebra::Matrix::shared_ptr  matIdent = FACTORY::getMatrix();
+        AMP::LinearAlgebra::Matrix::shared_ptr  matLaplac = FACTORY::getMatrix();
+        AMP::LinearAlgebra::Matrix::shared_ptr  matSol = FACTORY::getMatrix();
+        AMP::LinearAlgebra::Vector::shared_ptr  vector1 = matZero->getRightVector();
+        AMP::LinearAlgebra::Vector::shared_ptr  vector2 = matZero->getRightVector();
+        AMP::LinearAlgebra::Vector::shared_ptr  vector3 = matZero->getRightVector();
+
+        if ( vector1->getGlobalSize() > 1000 ) {
+            // Matrix-matrix multiplies take a long time
+            utils->expected_failure("VerifyMatMultMatrix skipped");
+            return;
+        }
+
+        // Create the matricies and vectors of interest
+        matZero->zero();
+        matIdent->zero();
+        vector2->setToScalar( 1.0 );
+        matIdent->setDiagonal( vector2 );
+        fillWithPseudoLaplacian<FACTORY>( matLaplac );
+        vector1->setRandomValues();
+        double ans1, ans2, ans3;
+
+        /* Verify matMultiply with 0 matrix */
+        /*matSol = AMP::LinearAlgebra::Matrix::matMultiply( matZero, matLaplac );
+        if ( matSol->L1Norm()==0.0 )
+            utils->passes ( "matMultiply with 0 matrix" );
+        else
+            utils->failure ( "matMultiply with 0 matrix" );*/
+
+        /* Verify mult with identity */
+        matLaplac->mult( vector1, vector2 );
+        ans1 = vector2->L2Norm();
+        matSol = AMP::LinearAlgebra::Matrix::matMultiply( matIdent, matLaplac );
+        matSol->mult ( vector1, vector2 );
+        ans2 = vector2->L2Norm();
+        matSol = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matIdent );
+        matSol->mult ( vector1, vector2 );
+        ans3 = vector2->L2Norm();
+        if ( AMP::Utilities::approx_equal(ans1,ans2) && AMP::Utilities::approx_equal(ans1,ans3) && ans1!=0.0 )
+            utils->passes ( "matMultiply with identity matrix" );
+        else
+            utils->failure ( "matMultiply with identity matrix" );
+
+        /* Verify mult with two trival matricies */
+        matLaplac->mult( vector1, vector2 );
+        matLaplac->mult( vector2, vector3 );
+        ans1 = vector3->L2Norm();
+        matSol = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matLaplac );
+        matSol->mult ( vector1, vector2 );
+        ans2 = vector2->L2Norm();
+        if ( AMP::Utilities::approx_equal(ans1,ans2) && ans1!=0.0 )
+            utils->passes ( "matMultiply with trival matrix" );
+        else
+            utils->failure ( "matMultiply with trival matrix" );
+
+        PROFILE_STOP("VerifyMatMultMatrix");
+    }
+};
+
+
 
 }
 }
-
 
 #endif

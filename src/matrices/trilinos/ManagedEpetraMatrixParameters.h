@@ -3,10 +3,8 @@
 
 #include <set>
 
-#include "matrices/ManagedMatrix.h"
-#include "matrices/trilinos/EpetraMatrix.h"
-#include "vectors/trilinos/EpetraVector.h"
-#include "discretization/DOF_Manager.h"
+#include "matrices/MatrixParameters.h"
+
 
 #include <Epetra_FECrsMatrix.h>
 
@@ -19,72 +17,18 @@ namespace LinearAlgebra {
   */
 class ManagedEpetraMatrixParameters : public MatrixParameters
 {
-private:
-    boost::shared_ptr < Epetra_Map >   d_eRowMap;
-    boost::shared_ptr < Epetra_Map >   d_eColMap;
-    AMP_MPI                            d_comm;
+public:
 
-protected:
-      /** \brief Constructor -- unimplemented
-        */
-      ManagedEpetraMatrixParameters ();
+    /** \brief Constructor
+      * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
+      * \param[in] right    The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
+      * \param[in] comm     Communicator for the matrix
+      */
+    ManagedEpetraMatrixParameters( AMP::Discretization::DOFManager::shared_ptr left, AMP::Discretization::DOFManager::shared_ptr right, AMP_MPI comm );
 
-      /** \brief Constructor -- unimplemented
-        */
-      ManagedEpetraMatrixParameters ( const ManagedEpetraMatrixParameters & );
 
-      /** \brief  The number of nonzeros per row of the matrix
-        */
-      std::vector<int>             d_vEntriesPerRow;
-
-      /** \brief  The set of columns this processor has
-        */
-      std::set<int>                d_sColumns;
-
-      /** \brief  Total number of columns
-        */
-      int    d_ColGlobal;
-
-      /** \brief  First column on this core
-        */
-      int    d_ColBase;
-
-      /** \brief  First row on this core
-        */
-      int    d_RowBase;
-
-    public:
-
-      //!  The communication list of a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
-      CommunicationList::shared_ptr   d_CommListLeft;
-      //!  The communication list of a right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
-      CommunicationList::shared_ptr   d_CommListRight;
-      //!  The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
-      AMP::Discretization::DOFManager::shared_ptr   d_DOFManagerLeft;
-      //!  The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
-      AMP::Discretization::DOFManager::shared_ptr   d_DOFManagerRight;
-      //!  The variable for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
-      AMP::LinearAlgebra::Variable::shared_ptr   d_VariableLeft;
-      //!  The variable for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
-      AMP::LinearAlgebra::Variable::shared_ptr   d_VariableRight;
-
-      /** \brief Constructor
-        * \param[in] local_size  Number of rows on this core
-        * \param[in] global_size Number of total rows 
-        * \param[in] first_dof  Global ID of first row
-        * \param[in] c Communicator for the matrix
-        */
-      ManagedEpetraMatrixParameters ( int local_size , int global_size , int first_dof , AMP_MPI c );
-
-      /** \brief Constructor
-        * \param[in] row_local_size  Number of rows on this core
-        * \param[in] row_global_size Number of rows in the matrix
-        * \param[in] row_first_dof   ID of the first row on this core
-        * \param[in] col_global_size Number of columns in the matrix
-        * \param[in] col_first_dof   ID of the first column on this core
-        * \param[in] c The communicator for the matrix
-        */
-      ManagedEpetraMatrixParameters ( int row_local_size , int row_global_size , int row_first_dof , int col_global_size , int col_first_dof , AMP_MPI c );
+    //! Deconstructor
+    virtual ~ManagedEpetraMatrixParameters() {};
 
       /** \brief Return the number of entries in each row
         * \return  An integer array of the number of entries in each
@@ -136,7 +80,7 @@ protected:
       /** \brief  Get the Epetra_Map for the columns
         * \return  The Epetra_Map
         */
-      Epetra_Map      &getEpetraColMap ();
+      Epetra_Map      *getEpetraColMap ();
 
       /** \brief  Get the Epetra_Map for the rows as a shared pointer
         * \return  The Epetra_Map
@@ -158,6 +102,24 @@ protected:
         * \param[in] cols  The column ids
         */
       void             addColumns ( int i , int *cols );
+
+private:
+    boost::shared_ptr < Epetra_Map >   d_eRowMap;
+    boost::shared_ptr < Epetra_Map >   d_eColMap;
+
+protected:
+    //! Constructor -- unimplemented
+    ManagedEpetraMatrixParameters ();
+
+    //! Constructor -- unimplemented
+    ManagedEpetraMatrixParameters ( const ManagedEpetraMatrixParameters & );
+
+    //!  The number of nonzeros per row of the matrix
+    std::vector<int>             d_vEntriesPerRow;
+
+    //!  The set of columns this processor has
+    std::set<int>                d_sColumns;
+
 };
 
 
