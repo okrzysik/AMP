@@ -318,11 +318,11 @@ public:
         double ans1, ans2, ans3;
 
         /* Verify matMultiply with 0 matrix */
-        /*matSol = AMP::LinearAlgebra::Matrix::matMultiply( matZero, matLaplac );
+        matSol = AMP::LinearAlgebra::Matrix::matMultiply( matZero, matLaplac );
         if ( matSol->L1Norm()==0.0 )
             utils->passes ( "matMultiply with 0 matrix" );
         else
-            utils->failure ( "matMultiply with 0 matrix" );*/
+            utils->failure ( "matMultiply with 0 matrix" );
 
         /* Verify mult with identity */
         matLaplac->mult( vector1, vector2 );
