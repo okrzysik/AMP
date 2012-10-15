@@ -152,7 +152,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
 //d_fout.close();
   }
 
-  void DendroSearch::searchAndInterpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
+  void DendroSearch::searchAndInterpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::const_shared_ptr vectorField, const unsigned int dofsPerNode,
       const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt) {
     search(comm, pts);
     interpolate(comm, vectorField, dofsPerNode, results, foundPt); 
@@ -883,7 +883,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
     d_timingMeasurements[FineSearch] = fineSearchEndTime - fineSearchBeginTime;
   }
 
-  void DendroSearch::interpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
+  void DendroSearch::interpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::const_shared_ptr vectorField, const unsigned int dofsPerNode,
       std::vector<double> & results, std::vector<bool> & foundPt) {
     const int rank = comm.getRank();
     const int npes = comm.getSize();
@@ -894,7 +894,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
     }
     interpolateBeginTime = MPI_Wtime();
 
-    vectorField->makeConsistent(  AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    AMP_ASSERT( vectorField->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED );
     AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField->getDOFManager();
 
     for(unsigned int i = 0; i < npes; ++i) {
