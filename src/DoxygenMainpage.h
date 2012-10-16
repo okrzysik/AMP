@@ -86,9 +86,6 @@ find documentation about each component.<br />
 \ref Macros "Utility Macros"<br />
 
 
-\todo 
-We need to redesign the mesh interface and create a discretization class.<br />
-
 */
 
 // \par Packages

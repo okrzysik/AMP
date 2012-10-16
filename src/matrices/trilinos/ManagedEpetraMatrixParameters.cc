@@ -3,6 +3,7 @@
 #include "utils/AMP_MPI.h"
 
 #include "EpetraExt_MatrixMatrix.h"
+#include "Epetra_Map.h"
 #ifdef USE_EXT_MPI
     #include <Epetra_MpiComm.h>
 #else
