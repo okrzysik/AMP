@@ -83,6 +83,7 @@ find documentation about each component.<br />
 \ref AMP::Solver "Solvers"<br />
 \ref AMP::TimeIntegrator "Time Integrators"<br />
 \ref AMP::Utilities "Utilities"<br />
+\ref Macros "Utility Macros"<br />
 
 
 \todo 
