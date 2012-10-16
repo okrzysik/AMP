@@ -50,10 +50,10 @@
  *     line number of the abort are also printed.
  *  \param MSG  Error message to print
  */
-#define AMP_ERROR(MSG) ({					                    \
-    TBOXOSTREAM tboxos;					                        \
-    tboxos << MSG << std::ends;					                \
-    AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);    \
+#define AMP_ERROR(MSG) ({                                           \
+    TBOXOSTREAM tboxos;                                             \
+    tboxos << MSG << std::ends;                                     \
+    AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);        \
 })
 
 
@@ -62,9 +62,9 @@
  *  \details Print a warning without exit.  Print file and line number of the warning.
  *  \param MSG  Warning message to print
  */
-#define AMP_WARNING(MSG) ({					                    \
-    TBOXOSTREAM tboxos;					                        \
-    tboxos << MSG << std::ends;					                \
+#define AMP_WARNING(MSG) ({                                         \
+    TBOXOSTREAM tboxos;                                             \
+    tboxos << MSG << std::ends;                                     \
     AMP::Logger::getInstance() -> logWarning(tboxos.str(), __FILE__, __LINE__);\
 })
 
@@ -74,9 +74,9 @@
  *  \details Print a debug without exit.  Print file and line number of the debug.
  *  \param MSG  Debug message to print
  */
-#define AMP_DEBUG(MSG) ({					                    \
-    TBOXOSTREAM tboxos;					                        \
-    tboxos << MSG << std::ends;					                \
+#define AMP_DEBUG(MSG) ({                                           \
+    TBOXOSTREAM tboxos;                                             \
+    tboxos << MSG << std::ends;                                     \
     AMP::Logger::getInstance() -> logDebug(tboxos.str(), __FILE__, __LINE__);\
 })
 
@@ -91,7 +91,7 @@
  */
 #define AMP_ASSERT(EXP) ({                                          \
     if ( !(EXP) ) {                                                 \
-        TBOXOSTREAM tboxos;					                        \
+        TBOXOSTREAM tboxos;                                         \
         tboxos << "Failed assertion: " << #EXP << std::ends;        \
         AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);    \
     }                                                               \
@@ -107,9 +107,9 @@
  *  \param EXP  Expression to evaluate
  *  \param MSG  Debug message to print
  */
-#define AMP_INSIST(EXP,MSG) ({                                    \
+#define AMP_INSIST(EXP,MSG) ({                                      \
     if ( !(EXP) ) {                                                 \
-        TBOXOSTREAM tboxos;					                        \
+        TBOXOSTREAM tboxos;                                         \
         tboxos << "Failed insist: " << #EXP << std::endl;           \
         tboxos << "Message: " << MSG << std::ends;                  \
         AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);    \
@@ -160,19 +160,19 @@
      * a stack trace that led to the error; this may be useful for debugging.
      */
     #ifndef LACKS_SSTREAM
-    #define PETSC_AMP_ERROR(ierr) ({						\
-          if (ierr) {                                   				\
-             std::ostringstream tboxos;							\
-             AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);	\
-          } 									\
+    #define PETSC_AMP_ERROR(ierr) ({                                    \
+          if (ierr) {                                                   \
+             std::ostringstream tboxos;                                 \
+             AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);   \
+          }                                                             \
     })
-    #else
-    #define PETSC_AMP_ERROR(ierr) ({						\
-          if (ierr) {                                   				\
-             std::ostrstream tboxos;							\
-             CHKERRCONTINUE(ierr); 							\
-             AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);	        \
-          } 									\
+#else
+    #define PETSC_AMP_ERROR(ierr) ({                                    \
+          if (ierr) {                                                   \
+             std::ostrstream tboxos;                                    \
+             CHKERRCONTINUE(ierr);                                      \
+             AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);   \
+          }                                                             \
     })
     #endif
 #endif
