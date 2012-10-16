@@ -22,6 +22,20 @@ class StructuredMeshHelper
 public : 
 
     /**
+     * \brief Get the x, y, z, coordinates of a cube mesh
+     * \details  For a simple cube mesh with nodes aligned in the x, y, z directions,
+     *   this function returns the list of the x, y, and z coordinates across all processors.
+     *   This function will require communication on the mesh and will throw an error if
+     *   the mesh nodes are not aligned
+     * \param mesh  Mesh that we want to use for the iterator
+     * \param x     x-coordinates
+     * \param y     y-coordinates
+     * \param z     z-coordinates
+     */
+    static void getXYZCoordinates(AMP::Mesh::Mesh::shared_ptr mesh, 
+        std::vector<double>& x, std::vector<double>& y, std::vector<double>& z );
+
+    /**
      * \brief Get an iterator over the faces in the x-y planes
      * \details  For a simple mesh with nodes aligned in the x, y, z directions,
      *   this function returns an iterators that lie on the x-y planes 
