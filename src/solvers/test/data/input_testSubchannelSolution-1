@@ -25,17 +25,14 @@ SubchannelTwoEqNonlinearOperator{
     name = "SubchannelTwoEqNonlinearOperator"
     InputVariable = "flow"
     OutputVariable = "flow"
-    Exit_Pressure = 15.5132e6           // Pa
-    Inlet_Temperature = 569.26          // K
-    Mass_Flow_Rate = 0.3522             // kg/s
+    Exit_Pressure = 15.5132e6       // Exit pressure in Pa
+    Inlet_Temperature = 569.26      // Inlet temperature in K
+    Inlet_Mass_Flow_Rate = 0.3522   // Total mass flow rate for all subchannels in kg/s
     Fission_Heating_Coefficient = 0.0
-    Channel_Angle = 0.0
-    Friction_Factor = 0
-    Lattice_Pitch = 0.0128016
-    Rod_Diameter = 0.0097028
-    Rod_Power = 0
+    Channel_Angle = 0.0             // Channel angle
+    Friction_Factor = 0             // Friction factor
+    Rod_Power = 0.0                 // Rod power in W
     Heat_Source_Type = "totalHeatGeneration"
-    Channel_Diameter = 0.01178  // Todreas, p.455
     Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
     Prandtl          = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
     Friction_Model = "Constant"
@@ -48,17 +45,14 @@ SubchannelTwoEqLinearOperator{
     name = "SubchannelTwoEqLinearOperator"
     InputVariable = "flow"
     OutputVariable = "flow"
-    Exit_Pressure = 15.5132e6
-    Inlet_Temperature = 569.26
-    Mass_Flow_Rate = 0.3522
+    Exit_Pressure = 15.5132e6       // Exit pressure in Pa
+    Inlet_Temperature = 569.26      // Inlet temperature in K
+    Inlet_Mass_Flow_Rate = 0.3522   // Total mass flow rate for all subchannels in kg/s
     Fission_Heating_Coefficient = 0.0
-    Channel_Angle = 0.0
-    Friction_Factor = 0
-    Lattice_Pitch = 0.0128016
-    Rod_Diameter = 0.0097028
-    Rod_Power = 0
+    Channel_Angle = 0.0             // Channel angle
+    Friction_Factor = 0.001         // Friction factor
+    Rod_Power = 0.0                 // Rod power in W
     Heat_Source_Type = "totalHeatGeneration"
-    Channel_Diameter = 0.01178  // Todreas, p.455
     Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
     Prandtl          = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
     Friction_Model = "Constant"

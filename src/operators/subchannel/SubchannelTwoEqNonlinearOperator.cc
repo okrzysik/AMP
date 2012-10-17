@@ -41,10 +41,14 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
     AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );
     d_params = myparams;
 
+    // Get the subchannel mesh coordinates
+    AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( d_Mesh, d_x, d_y, d_z );
+    d_numSubchannels = (d_x.size()-1)*(d_y.size()-1);
+
     // Get the properties from the database
     d_Pout = getDoubleParameter(myparams,"Exit_Pressure",15.5132e6);
     d_Tin  = getDoubleParameter(myparams,"Inlet_Temperature",569.26);  
-    d_m    = getDoubleParameter(myparams,"Mass_Flow_Rate",0.3522);  
+    d_mass = getDoubleParameter(myparams,"Inlet_Mass_Flow_Rate",0.3522*d_numSubchannels);  
     d_gamma     = getDoubleParameter(myparams,"Fission_Heating_Coefficient",0.0);  
     d_theta     = getDoubleParameter(myparams,"Channel_Angle",0.0);  
     d_reynolds  = getDoubleParameter(myparams,"Reynolds",0.0);  
@@ -63,11 +67,20 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
         AMP_WARNING("Field 'attice_Pitch' is obsolete and should be removed from database");
     if ( (myparams->d_db)->keyExists("ChannelFractions") )
         AMP_WARNING("Field 'ChannelFractions' is obsolete and should be removed from database");
-
+    if ( (myparams->d_db)->keyExists("Mass_Flow_Rate") )
+        AMP_WARNING("Field 'Mass_Flow_Rate' is obsolete and should be removed from database");
+    
     // Get the subchannel properties from the mesh
     std::vector<double> x, y, perimeter;
     Subchannel::getSubchannelProperties( d_Mesh, myparams->clad_x, myparams->clad_y, myparams->clad_d, 
         x, y, d_channelArea, d_channelDiam, perimeter, d_rodDiameter, d_rodFraction );
+    AMP_ASSERT(d_channelArea.size()==d_numSubchannels);
+    double total_area = 0.0;
+    for (size_t i=0; i<d_numSubchannels; i++)
+        total_area += d_channelArea[i];
+    d_channelMass.resize(d_numSubchannels,0.0);
+    for (size_t i=0; i<d_numSubchannels; i++)
+        d_channelMass[i] = d_mass*d_channelArea[i]/total_area;
 
     // get additional parameters based on heat source type
     if (d_source == "totalHeatGeneration") {
@@ -96,8 +109,6 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
     d_subchannelPhysicsModel = myparams->d_subchannelPhysicsModel;
 
     // Get the subchannel elements
-    AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( d_Mesh, d_x, d_y, d_z );
-    d_numSubchannels = (d_x.size()-1)*(d_y.size()-1);
     d_ownSubChannel = std::vector<bool>(d_numSubchannels,false);
     d_subchannelElem = std::vector<std::vector<AMP::Mesh::MeshElement> >(d_numSubchannels,std::vector<AMP::Mesh::MeshElement>(0));
     AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
@@ -227,12 +238,13 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
         for (size_t j=0; j<numCells; j++) {
             double flux_sum = pi*d_rodDiameter[isub]*flux[j];
             double lin_sum = d_gamma*pi*d_rodDiameter[isub]*flux[j];
-            dh[j] = del_z[j] / d_m * (flux_sum + lin_sum);
+            dh[j] = del_z[j] / d_channelMass[isub] * (flux_sum + lin_sum);
         }
 
         // calculate residual for axial momentum equations
         double A = d_channelArea[isub];     // Channel area
         double D = d_channelDiam[isub];     // Channel hydraulic diameter
+        double mass = d_channelMass[isub];  // Mass flow rate in the current subchannel
         double R_h, R_p; 
         int j = 1;
         AMP::Mesh::MeshIterator face = localSubchannelIt.begin();
@@ -307,8 +319,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
               d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_avg,volumeArgMap_avg);
               double rho_avg = 1.0/volumeResult_avg[0];
 
-              double u_plus  = d_m / (A*rho_plus);  // velocity evaluated at upper face
-              double u_minus = d_m / (A*rho_minus); // velocity evaluated at lower face
+              double u_plus  = mass / (A*rho_plus);  // velocity evaluated at upper face
+              double u_minus = mass / (A*rho_minus); // velocity evaluated at lower face
               double u_avg = (1.0/2.0)*(u_minus + u_plus); // velocity evaluated at cell center
 
               // evaluate temperature at cell center
@@ -391,9 +403,9 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
               }
 
               // evaluate residual: axial momentum equation
-              R_p = (d_m/A)*(u_plus - u_minus)
+              R_p = (mass/A)*(u_plus - u_minus)
                 + g * del_z[j-1] * rho_avg * std::cos(d_theta)
-                + (1.0/2.0)*(del_z[j-1] * fric/D + K)* std::abs(d_m/(A*rho_avg))*(d_m/A)
+                + (1.0/2.0)*(del_z[j-1] * fric/D + K)* std::abs(mass/(A*rho_avg))*(mass/A)
                 + p_plus - p_minus;
             }
 
@@ -446,8 +458,8 @@ double SubchannelTwoEqNonlinearOperator::getDoubleParameter(
     if (keyExists) {
        return (myparams->d_db)->getDouble(paramString);
     } else {
-       AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
-       return defaultValue;
+        AMP_WARNING("Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n");
+        return defaultValue;
     }
 }
 

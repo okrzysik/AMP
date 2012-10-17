@@ -131,7 +131,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     std::vector<double> box = subchannelMesh->getBoundingBox();
     AMP_ASSERT(box[4]==0.0);
     double H = box[5]-box[4];
-    double m = nonlinearOperator_db->getDouble("Mass_Flow_Rate");
+    double m = nonlinearOperator_db->getDouble("Inlet_Mass_Flow_Rate");
     double Q = nonlinearOperator_db->getDouble("Rod_Power");
     double Pout = nonlinearOperator_db->getDouble("Exit_Pressure");
     double Tin = nonlinearOperator_db->getDouble("Inlet_Temperature");

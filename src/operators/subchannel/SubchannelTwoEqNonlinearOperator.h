@@ -96,7 +96,7 @@ private :
 
     double d_Pout;      // exit pressure [Pa]
     double d_Tin;       // inlet temperature [K]
-    double d_m;         // inlet mass flow rate [kg/s]
+    double d_mass;      // inlet global mass flow rate [kg/s]
     double d_gamma;     // fission heating coefficient
     double d_theta;     // channel angle [rad]
     double d_Q;         // rod power
@@ -111,6 +111,7 @@ private :
     std::vector<double> d_channelArea;  // Channel flow area
     std::vector<double> d_rodDiameter;  // Average rod diameter for each subchannel
     std::vector<double> d_rodFraction;  // Fraction of a rod in each subchannel
+    std::vector<double> d_channelMass;  // Mass flow rate for each subchannel [kg/s]
 
     size_t d_NGrid;                     // number of grid spacers
     std::vector<double> d_zMinGrid;     // z min positions of each grid spacer

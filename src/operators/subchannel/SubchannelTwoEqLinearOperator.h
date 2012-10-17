@@ -80,7 +80,7 @@ private :
 
     double d_Pout;      // exit pressure [Pa]
     double d_Tin;       // inlet temperature [K]
-    double d_m;         // inlet mass flow rate [kg/s]
+    double d_mass;      // inlet global mass flow rate [kg/s]
     double d_gamma;     // fission heating coefficient
     double d_theta;     // channel angle [rad]
     double d_Q;         // rod power
@@ -95,6 +95,7 @@ private :
     std::vector<double> d_channelArea;  // Channel flow area
     std::vector<double> d_rodDiameter;  // Average rod diameter for each subchannel
     std::vector<double> d_rodFraction;  // Fraction of a rod in each subchannel
+    std::vector<double> d_channelMass;  // Mass flow rate for each subchannel [kg/s]
 
     size_t d_NGrid;                 // number of grid spacers
     std::vector<double> d_zMinGrid; // z min positions of each grid spacer
@@ -118,13 +119,13 @@ private :
     double dvdp(double,double);
 
     // Friction function
-    double friction(double,double,double,double,double,double);
+    double friction(double h_minus, double p_minus, double h_plus, double p_plus, double mass, double A, double D);
 
     // Derivatives of friction with respect to lower and upper enthalpy and pressure
-    double dfdh_lower(double,double,double,double,double,double);
-    double dfdh_upper(double,double,double,double,double,double);
-    double dfdp_lower(double,double,double,double,double,double);
-    double dfdp_upper(double,double,double,double,double,double);
+    double dfdh_lower(double h_minus, double p_minus, double h_plus, double p_plus, double mass, double A, double D);
+    double dfdh_upper(double h_minus, double p_minus, double h_plus, double p_plus, double mass, double A, double D);
+    double dfdp_lower(double h_minus, double p_minus, double h_plus, double p_plus, double mass, double A, double D);
+    double dfdp_upper(double h_minus, double p_minus, double h_plus, double p_plus, double mass, double A, double D);
 
     std::vector<double> d_x, d_y, d_z;
     std::vector<bool> d_ownSubChannel;  // Which subchannels do I own

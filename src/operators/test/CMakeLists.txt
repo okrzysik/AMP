@@ -45,7 +45,7 @@ COPY_TEST_DATA_FILE ( input_testSubchannelPhysicsModel)
 ADD_AMP_TEST(testSubchannelTwoEqNonlinearOperator)
 COPY_TEST_DATA_FILE ( input_testSubchannelTwoEqNonlinearOperator)
 
-ADD_AMP_PROVISIONAL_TEST(testSubchannelTwoEqLinearOperator)
+ADD_AMP_TEST(testSubchannelTwoEqLinearOperator)
 COPY_TEST_DATA_FILE ( input_testSubchannelTwoEqLinearOperator)
 
 ADD_AMP_PROVISIONAL_TEST(testSubchannelFourEqNonlinearOperator)
