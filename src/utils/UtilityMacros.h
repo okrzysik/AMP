@@ -65,7 +65,7 @@
 #define AMP_WARNING(MSG) do {                                       \
     TBOXOSTREAM tboxos;                                             \
     tboxos << MSG << std::ends;                                     \
-    printf("WARNING: %s\n   Warning called in %s on line %i",tboxos.str().c_str(),__FILE__,__LINE__); \
+    printf("WARNING: %s\n   Warning called in %s on line %i\n",tboxos.str().c_str(),__FILE__,__LINE__); \
     AMP::Logger::getInstance() -> logWarning(tboxos.str(),__FILE__,__LINE__); \
 }while(0)
 
@@ -78,7 +78,7 @@
 #define AMP_DEBUG(MSG) do {                                         \
     TBOXOSTREAM tboxos;                                             \
     tboxos << MSG << std::ends;                                     \
-    printf("WARNING: %s\n   Warning called in %s on line %i",tboxos.str().c_str(),__FILE__,__LINE__); \
+    printf("WARNING: %s\n   Warning called in %s on line %i\n",tboxos.str().c_str(),__FILE__,__LINE__); \
     AMP::Logger::getInstance() -> logDebug(tboxos.str(), __FILE__, __LINE__); \
 }while(0)
 
@@ -91,7 +91,7 @@
  *     The file and line number of the abort are printed along with the stack trace (if availible).
  *  \param EXP  Expression to evaluate
  */
-#define AMP_ASSERT(EXP) do {                                         \
+#define AMP_ASSERT(EXP) do {                                        \
     if ( !(EXP) ) {                                                 \
         TBOXOSTREAM tboxos;                                         \
         tboxos << "Failed assertion: " << #EXP << std::ends;        \

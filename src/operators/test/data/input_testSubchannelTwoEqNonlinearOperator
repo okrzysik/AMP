@@ -6,11 +6,18 @@ Mesh {
      dim = 3
      Generator = "cube"
      Size = 1, 1, 9
-     Range = 0.0, 1.0, 0.0, 1.0, 0.0, 3.81 
+     Range = 0.0, 0.0128016, 0.0, 0.0128016, 0.0, 3.81 
      x_offset = 0.0
      y_offset = 0.0
      z_offset = 0.0
 }
+
+CladProperties{
+    x = 0.0, 0.0128016, 0.0, 0.0128016
+    y = 0.0, 0.0, 0.0128016, 0.0128016
+    d = 0.0097028, 0.0097028, 0.0097028, 0.0097028
+}
+
 
 SubchannelTwoEqNonlinearOperator{
     name = "SubchannelTwoEqNonlinearOperator"

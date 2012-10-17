@@ -91,6 +91,9 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( nonlinearOperator_db ));
     subchannelOpParams->d_Mesh = xyFaceMesh ;
     subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
+    subchannelOpParams->clad_x = input_db->getDatabase("CladProperties")->getDoubleArray("x");
+    subchannelOpParams->clad_y = input_db->getDatabase("CladProperties")->getDoubleArray("y");
+    subchannelOpParams->clad_d = input_db->getDatabase("CladProperties")->getDoubleArray("d");
 
     // create nonlinear operator
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;

@@ -239,6 +239,21 @@ namespace Utilities
         A first; 
         B second; 
         C third; 
+        inline triplet() {
+            first = A();
+            second = B();
+            third = C();
+        }
+        inline triplet(A a, B b, C c) {
+            first = a;
+            second = b;
+            third = c;
+        }
+        inline triplet(const triplet& rhs ) {
+            first = rhs.first;
+            second = rhs.second;
+            third = rhs.third;
+        }
         inline bool operator== (const triplet& rhs ) const {
             return first==first && second==second && third==third;
         }
