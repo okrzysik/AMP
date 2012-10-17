@@ -115,8 +115,8 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
     flags.resize(d_numLocalPts);
     std::fill(flags.begin(), flags.end(), NotFound);
 
-    for (size_t i = 0; i < npes; ++i) {
-      for (size_t j = 0; j < d_recvCnts[i]; ++j) {
+    for (int i = 0; i < npes; ++i) {
+      for (int j = 0; j < d_recvCnts[i]; ++j) {
         const ProjectOnBoundaryData tmpData = recvData[d_recvDisps[i] + j];
         const size_t pointLocalID = tmpData.d_PointLocalID;
         if (tmpData.d_SearchStatus > flags[pointLocalID]) { // FoundOnBoundary overwrites FoundNotOnBoundary 
@@ -219,7 +219,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
 
     AMP_ASSERT(!(d_localElemArr.empty()));
 
-    for(int eId = 0; eId < d_localElemArr.size(); ++eId) {
+    for(size_t eId = 0; eId < d_localElemArr.size(); ++eId) {
       std::vector<AMP::Mesh::MeshElement> currNodes = d_localElemArr[eId].getElements(AMP::Mesh::Vertex);
       int minId[3];
       int maxId[3];
@@ -382,7 +382,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
       if(gatherSendBuf > 0) {
         d_nodeList.clear();
       } else {
-        for(int i = 0; i < tmpBoxList.size(); ++i) {
+        for(size_t i = 0; i < tmpBoxList.size(); ++i) {
           if(tmpBoxList[i] == d_nodeList[d_nodeList.size() - 1]) {
             d_nodeList[d_nodeList.size() - 1].addWeight(tmpBoxList[i].getWeight());
           } else {
@@ -503,7 +503,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
       d_stIdxList.resize(d_nodeList.size());
 
       d_stIdxList[0] = 0;
-      for(int i = 1; i < d_nodeList.size(); ++i) {
+      for(size_t i = 1; i < d_nodeList.size(); ++i) {
         d_stIdxList[i] = d_stIdxList[i - 1] + d_nodeList[i - 1].getWeight();
       }//end i
     }
@@ -526,9 +526,9 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
     tmpMins.clear();
 
     if(d_verbose) {
-      int minFineListLen = d_nodeList[0].getWeight();
-      int maxFineListLen = d_nodeList[0].getWeight();
-      for(int i = 1; i < d_nodeList.size(); ++i) {
+      unsigned int minFineListLen = d_nodeList[0].getWeight();
+      unsigned int maxFineListLen = d_nodeList[0].getWeight();
+      for(size_t i = 1; i < d_nodeList.size(); ++i) {
         if(minFineListLen > d_nodeList[i].getWeight()) {
           minFineListLen = d_nodeList[i].getWeight();
         }
@@ -722,13 +722,13 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
     std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);
 
     std::vector<int> ptToOctMap((recvList.size()), -1);
-    for(int i = 0; i < recvList.size(); ++i) {
+    for(size_t i = 0; i < recvList.size(); ++i) {
       unsigned int retIdx;
       seq::maxLowerBound<ot::TreeNode>(d_nodeList, (recvList[i].node), retIdx, NULL, NULL);
       if( d_nodeList[retIdx].isAncestor(recvList[i].node) ) {
         ptToOctMap[i] = retIdx;
         int stIdx = d_stIdxList[retIdx];
-        for(int j = 0; j < d_nodeList[retIdx].getWeight(); ++j) {
+        for(size_t j = 0; j < d_nodeList[retIdx].getWeight(); ++j) {
           d_sendCnts[d_rankList[stIdx + j]]++;
         }//end j
       }
@@ -755,10 +755,10 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
 
     std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);
 
-    for(int i = 0; i < ptToOctMap.size(); ++i) {
+    for(size_t i = 0; i < ptToOctMap.size(); ++i) {
       if(ptToOctMap[i] >= 0) {
         int stIdx = d_stIdxList[ptToOctMap[i]];
-        for(int j = 0; j < d_nodeList[ptToOctMap[i]].getWeight(); ++j) {
+        for(size_t j = 0; j < d_nodeList[ptToOctMap[i]].getWeight(); ++j) {
           int recvRank = d_rankList[stIdx + j];
           int currIdx = 6*(d_sendDisps[recvRank] + d_sendCnts[recvRank]);
           //Local Id of this element on the processor that owns this element
@@ -897,7 +897,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
     AMP_ASSERT( vectorField->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED );
     AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField->getDOFManager();
 
-    for(unsigned int i = 0; i < npes; ++i) {
+    for(int i = 0; i < npes; ++i) {
       d_sendCnts[i] *= (dofsPerNode + 1);
       d_recvCnts[i] *= (dofsPerNode + 1);
       d_sendDisps[i] *= (dofsPerNode + 1);
@@ -909,7 +909,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
     std::vector<int> tmpSendCnts(npes, 0);
 
     std::vector<double> basis_functions_values(8);
-    for(int i = 0; i < d_foundPts.size(); i += 6) {
+    for(size_t i = 0; i < d_foundPts.size(); i += 6) {
       AMP::Mesh::MeshElement* amp_element = &(d_localElemArr[static_cast<unsigned int>(d_foundPts[i])]);
       std::vector<AMP::Mesh::MeshElement> amp_vector_support_points = amp_element->getElements(AMP::Mesh::Vertex);
       hex8_element_t::get_basis_functions_values(&(d_foundPts[i + 1]), &(basis_functions_values[0]));
@@ -919,7 +919,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
         std::vector<size_t> globalID;
         dofManager->getDOFs(amp_vector_support_points[j].globalID(), globalID);
         AMP_ASSERT(globalID.size() == dofsPerNode);
-        for(int d = 0; d < dofsPerNode; ++d) {
+        for(size_t d = 0; d < dofsPerNode; ++d) {
           double vecVal = vectorField->getValueByGlobalID(globalID[d]);
           value[d] += (vecVal * basis_functions_values[j]);
         }//end d
@@ -927,7 +927,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
       unsigned int ptProcId = static_cast<unsigned int>(d_foundPts[i + 5]);
       sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = d_foundPts[i + 4];
       ++(tmpSendCnts[ptProcId]);
-      for(int d = 0; d < dofsPerNode; ++d) {
+      for(size_t d = 0; d < dofsPerNode; ++d) {
         sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = value[d];
         ++(tmpSendCnts[ptProcId]);
       }//end d   
@@ -962,12 +962,12 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
     for(size_t i = 0; i < recvResults.size(); i += (dofsPerNode + 1)) {
       unsigned int locId = static_cast<unsigned int>(recvResults[i]);
       foundPt[locId] = static_cast<bool>(Found);
-      for(int d = 0; d < dofsPerNode; ++d) {
+      for(size_t d = 0; d < dofsPerNode; ++d) {
         results[(locId*dofsPerNode) + d] = recvResults[i + d + 1];
       }//end d
     }//end i
 
-    for(unsigned int i = 0; i < npes; ++i) {
+    for(int i = 0; i < npes; ++i) {
       d_sendCnts[i] /= (dofsPerNode + 1);
       d_recvCnts[i] /= (dofsPerNode + 1);
       d_sendDisps[i] /= (dofsPerNode + 1);
