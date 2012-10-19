@@ -115,55 +115,30 @@ void SubchannelDensityToPointMap::apply(AMP::LinearAlgebra::Vector::const_shared
 void SubchannelDensityToPointMap::createGrid()
 {
     PROFILE_START("createGrid");
-    std::set<double> x, y, z;
-    if ( d_Mesh.get() != NULL ) {
-        AMP::Mesh::MeshIterator it = d_Mesh->getIterator( AMP::Mesh::Vertex, 0 );
-        for (size_t i=0; i<it.size(); i++) {
-            std::vector<double> coord = it->coord();
-            AMP_ASSERT(coord.size()==3);
-            x.insert( coord[0] );
-            y.insert( coord[1] );
-            z.insert( coord[2] );
-            ++it;
-        }
+    // Create the grid for all processors
+    std::vector<double> x, y, z;
+    int root = -1;
+    if ( d_Mesh!=NULL ) {
+        root = d_comm.getRank();
+        AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( d_Mesh, x, y, z );
     }
-    d_comm.setGather(x);
-    d_comm.setGather(y);
-    d_comm.setGather(z);
-    double last = 1e300;
-    for (std::set<double>::iterator it=x.begin(); it!=x.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
-            x.erase(it);
-        else
-            last = *it;
-    }
-    for (std::set<double>::iterator it=y.begin(); it!=y.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
-            y.erase(it);
-        else
-            last = *it;
-    }
-    for (std::set<double>::iterator it=z.begin(); it!=z.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
-            z.erase(it);
-        else
-            last = *it;
-    }
-    std::vector<double> x_grid(x.begin(),x.end());
-    d_subchannel_x = std::vector<double>(x_grid.size()-1,0.0);
-    for (size_t i=0; i<d_subchannel_x.size(); i++)
-        d_subchannel_x[i] = 0.5*(x_grid[i]+x_grid[i+1]);
-    std::vector<double> y_grid(y.begin(),y.end());
-    d_subchannel_y = std::vector<double>(x_grid.size()-1,0.0);
-    for (size_t i=0; i<d_subchannel_y.size(); i++)
-        d_subchannel_y[i] = 0.5*(y_grid[i]+y_grid[i+1]);
-    d_subchannel_z = std::vector<double>(z.begin(),z.end());
-
-    size_t Nx = d_subchannel_x.size();
-    size_t Ny = d_subchannel_y.size();
-    size_t Nz = d_subchannel_z.size()-1;
-    if ( d_Mesh.get() != NULL ) 
-        AMP_ASSERT(Nx*Ny*Nz==d_Mesh->numGlobalElements(AMP::Mesh::Volume));
+    root = d_comm.maxReduce(root);
+    size_t Nx = d_comm.bcast<size_t>(x.size()-1,root);
+    size_t Ny = d_comm.bcast<size_t>(y.size()-1,root);
+    size_t Nz = d_comm.bcast<size_t>(z.size(),root);
+    x.resize(Nx+1,0.0);
+    y.resize(Ny+1,0.0);
+    z.resize(Nz,0.0);
+    d_comm.bcast<double>(&x[0],Nx+1,root);
+    d_comm.bcast<double>(&y[0],Ny+1,root);
+    d_comm.bcast<double>(&z[0],Nz,root);
+    d_subchannel_x.resize(Nx);
+    d_subchannel_y.resize(Ny);
+    d_subchannel_z = z;
+    for (size_t i=0; i<Nx; i++)
+        d_subchannel_x[i] = 0.5*(x[i+1]+x[i]);
+    for (size_t i=0; i<Ny; i++)
+        d_subchannel_y[i] = 0.5*(y[i+1]+y[i]);
     N_subchannels = Nx*Ny;
     PROFILE_STOP("createGrid");
 }

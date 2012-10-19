@@ -26,32 +26,31 @@ void StructuredMeshHelper::getXYZCoordinates(AMP::Mesh::Mesh::shared_ptr mesh,
     mesh->getComm().setGather(x);
     mesh->getComm().setGather(y);
     mesh->getComm().setGather(z);
-    double last = 1e300;
+    x_out.resize(0);
+    y_out.resize(0);
+    z_out.resize(0);
+    x_out.reserve(x.size());
+    y_out.reserve(y.size());
+    z_out.reserve(z.size());
+    x_out.push_back(*(x.begin()));
+    y_out.push_back(*(y.begin()));
+    z_out.push_back(*(z.begin()));
     for (std::set<double>::iterator it=x.begin(); it!=x.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
-            x.erase(it);
-        else
-            last = *it;
+        if ( !Utilities::approx_equal(x_out.back(),*it,1e-12) )
+            x_out.push_back(*it);
     }
     for (std::set<double>::iterator it=y.begin(); it!=y.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
-            y.erase(it);
-        else
-            last = *it;
+        if ( !Utilities::approx_equal(y_out.back(),*it,1e-12) )
+            y_out.push_back(*it);
     }
     for (std::set<double>::iterator it=z.begin(); it!=z.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
-            z.erase(it);
-        else
-            last = *it;
+        if ( !Utilities::approx_equal(z_out.back(),*it,1e-12) )
+            z_out.push_back(*it);
     }
     size_t Nx = x.size()-1;
     size_t Ny = y.size()-1;
     size_t Nz = z.size()-1;
     AMP_ASSERT(Nx*Ny*Nz==mesh->numGlobalElements(AMP::Mesh::Volume));
-    x_out = std::vector<double>(x.begin(),x.end());
-    y_out = std::vector<double>(y.begin(),y.end());
-    z_out = std::vector<double>(z.begin(),z.end());
 }
 
 
