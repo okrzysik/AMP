@@ -178,31 +178,13 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
 
         // Get the iterator over the faces in the local subchannel
         AMP::Mesh::MeshIterator localSubchannelIt = AMP::Mesh::MultiVectorIterator( d_subchannelFace[isub] );
+        AMP_ASSERT(localSubchannelIt.size()==d_z.size());
 
         // get solution sizes
-        const size_t numFaces = localSubchannelIt.size() ;
-        const size_t numCells = numFaces - 1;
+        const size_t numFaces = d_z.size();
+        const size_t numCells = numFaces-1;
 
-        // get interval lengths from mesh
-        std::vector<double> box = d_Mesh->getBoundingBox();
-        const double min_z = box[4];
-        const double max_z = box[5];
-        const double height = max_z - min_z;
 
-        // compute element heights
-        std::vector<double> del_z(numCells);
-        // assuming uniform mesh
-        for (size_t j=0; j<numCells; j++) {
-            del_z[j] = height/numCells; 
-        }
-
-        // create vector of axial positions
-        // axial positions are only used if some rod power shape is assumed
-        std::vector<double> z(numFaces);
-        z[0] = 0.0;
-        for( size_t j=1; j<numFaces; j++) {
-            z[j] = z[j-1] + del_z[j-1];
-        } 
 
         std::vector<size_t> dofs_minus;
         std::vector<size_t> dofs;
@@ -320,18 +302,19 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
               }
 
               // compute Jacobian entries
-              double A_j = -1.0*std::pow(mass/A,2)*dvdh_minus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
+              double dz = d_z[j]-d_z[j-1];
+              double A_j = -1.0*std::pow(mass/A,2)*dvdh_minus - 2.0*g*dz*std::cos(d_theta)*
                 dvdh_minus/std::pow(v_plus+v_minus,2)+
-                (1.0/4.0)*std::pow(mass/A,2)*((del_z[j-1]*fric/D + K)*dvdh_minus + del_z[j-1]/D*dfdh_minus*v_minus);
-              double B_j = -1.0*std::pow(mass/A,2)*dvdp_minus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
+                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdh_minus + dz/D*dfdh_minus*v_minus);
+              double B_j = -1.0*std::pow(mass/A,2)*dvdp_minus - 2.0*g*dz*std::cos(d_theta)*
                 dvdp_minus/std::pow(v_plus+v_minus,2)+
-                (1.0/4.0)*std::pow(mass/A,2)*((del_z[j-1]*fric/D + K)*dvdp_minus + del_z[j-1]/D*dfdp_minus*v_minus) - 1;
-              double C_j = std::pow(mass/A,2)*dvdh_plus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
+                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdp_minus + dz/D*dfdp_minus*v_minus) - 1;
+              double C_j = std::pow(mass/A,2)*dvdh_plus - 2.0*g*dz*std::cos(d_theta)*
                 dvdh_plus/std::pow(v_plus+v_minus,2)+
-                (1.0/4.0)*std::pow(mass/A,2)*((del_z[j-1]*fric/D + K)*dvdh_plus + del_z[j-1]/D*dfdh_plus*v_plus);
-              double D_j = std::pow(mass/A,2)*dvdp_plus - 2.0*g*del_z[j-1]*std::cos(d_theta)*
+                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdh_plus + dz/D*dfdh_plus*v_plus);
+              double D_j = std::pow(mass/A,2)*dvdp_plus - 2.0*g*dz*std::cos(d_theta)*
                 dvdp_plus/std::pow(v_plus+v_minus,2)+
-                (1.0/4.0)*std::pow(mass/A,2)*((del_z[j-1]*fric/D + K)*dvdp_plus + del_z[j-1]/D*dfdp_plus*v_plus) + 1;
+                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdp_plus + dz/D*dfdp_plus*v_plus) + 1;
 
               d_matrix->setValueByGlobalID(dofs[1] , dofs[0]       , A_j );
               d_matrix->setValueByGlobalID(dofs[1] , dofs[1]       , B_j );

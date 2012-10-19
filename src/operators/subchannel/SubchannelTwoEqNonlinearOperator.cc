@@ -174,10 +174,11 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
 
         // Get the iterator over the faces in the local subchannel
         AMP::Mesh::MeshIterator localSubchannelIt = AMP::Mesh::MultiVectorIterator( d_subchannelFace[isub] );
+        AMP_ASSERT(localSubchannelIt.size()==d_z.size());
 
         // get solution sizes
-        const size_t numFaces = localSubchannelIt.size() ;
-        const size_t numCells = numFaces - 1;
+        const size_t numFaces = d_z.size();
+        const size_t numCells = numFaces-1;
 
         std::vector<size_t> dofs, scalarDofs;
         dof_manager->getDOFs( (localSubchannelIt.begin())->globalID(), dofs );
@@ -193,52 +194,32 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
         d_subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap); 
         double h_eval = enthalpyResult[0];
 
-        // get interval lengths from mesh
-        std::vector<double> box = d_Mesh->getBoundingBox();
-        const double min_z = box[4];
-        const double max_z = box[5];
-        const double height = max_z - min_z;
-
-        // compute element heights
-        std::vector<double> del_z(numCells);
-        // assuming uniform mesh
-        for (size_t j=0; j<numCells; j++) {
-            del_z[j] = height/numCells; 
-        }
-
-        // create vector of axial positions
-        // axial positions are only used if some rod power shape is assumed
-        std::vector<double> z(numFaces);
-        z[0] = 0.0;
-        for( size_t j=1; j<numFaces; j++) {
-            z[j] = z[j-1] + del_z[j-1];
-        } 
-
         // compute the enthalpy change in each interval
         std::vector<double> flux(numCells);
         if (d_source == "averageCladdingTemperature") {
             AMP::Mesh::MeshIterator face = localSubchannelIt.begin();
-            std::vector<AMP::Mesh::MeshElementID> face_ids(z.size());
-            for (size_t j=0; j<z.size(); j++) {
+            std::vector<AMP::Mesh::MeshElementID> face_ids(face.size());
+            for (size_t j=0; j<face.size(); j++) {
                 std::vector<double> center = face->centroid();
-                AMP_ASSERT(Utilities::approx_equal(center[2],z[j]));
+                AMP_ASSERT(Utilities::approx_equal(center[2],d_z[j]));
                 face_ids[j] = face->globalID();
                 ++face;
             }
-            flux = Subchannel::getHeatFluxClad( z, face_ids, d_channelDiam[isub], d_reynolds, d_prandtl, 
+            flux = Subchannel::getHeatFluxClad( d_z, face_ids, d_channelDiam[isub], d_reynolds, d_prandtl, 
                 d_rodFraction[isub], d_subchannelPhysicsModel, inputVec, d_cladTemperature );
         } else if (d_source == "averageHeatFlux") {
             AMP_ERROR("Heat source type 'averageHeatFlux' not yet implemented.");
         } else if (d_source == "totalHeatGeneration") {
-            flux = Subchannel::getHeatFluxGeneration( d_heatShape, z, d_rodDiameter[isub], d_Q );
+            flux = Subchannel::getHeatFluxGeneration( d_heatShape, d_z, d_rodDiameter[isub], d_Q );
         } else {
             AMP_ERROR("Heat source type '"+d_source+"' is invalid");
         }
         std::vector<double> dh(numCells);
         for (size_t j=0; j<numCells; j++) {
+            double dz = d_z[j+1]-d_z[j];
             double flux_sum = pi*d_rodDiameter[isub]*flux[j];
             double lin_sum = d_gamma*pi*d_rodDiameter[isub]*flux[j];
-            dh[j] = del_z[j] / d_channelMass[isub] * (flux_sum + lin_sum);
+            dh[j] = (dz/d_channelMass[isub])*(flux_sum+lin_sum);
         }
 
         // calculate residual for axial momentum equations
@@ -403,9 +384,10 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
               }
 
               // evaluate residual: axial momentum equation
+              double dz = d_z[j]-d_z[j-1];
               R_p = (mass/A)*(u_plus - u_minus)
-                + g * del_z[j-1] * rho_avg * std::cos(d_theta)
-                + (1.0/2.0)*(del_z[j-1] * fric/D + K)* std::abs(mass/(A*rho_avg))*(mass/A)
+                + g * dz * rho_avg * std::cos(d_theta)
+                + (1.0/2.0)*(dz * fric/D + K)* std::abs(mass/(A*rho_avg))*(mass/A)
                 + p_plus - p_minus;
             }
 
