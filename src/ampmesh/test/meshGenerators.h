@@ -22,7 +22,7 @@ public:
             this->build_mesh();
         return mesh;
     }
-    virtual ~MeshGenerator();
+    virtual ~MeshGenerator() {};
 protected:
     AMP::Mesh::Mesh::shared_ptr  mesh;
 };
