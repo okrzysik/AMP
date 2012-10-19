@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
 
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -32,7 +33,6 @@
     #error Unknown OS
 #endif
 
-#include <iostream>
 
 namespace AMP {
 
@@ -164,7 +164,7 @@ public:
      *  that get called repeatedly and may negitivly impact the performance.
      * @param profile       Do we want to store detailed profiling data
      */
-    void set_store_trace(bool profile=false) { if ( N_timers==0 ) { store_trace_data=profile; } }
+    void set_store_trace(bool profile=false);
 
 private:
 
@@ -179,7 +179,7 @@ private:
         double total_time;          // Store the total time spent in the given block (seconds)
         double *start_time;         // Store when start was called for the given trace (seconds from constructor call)
         double *end_time;           // Store when stop was called for the given trace (seconds from constructor call)
-        // Constructor used to delete key values
+        // Constructor
         store_trace() {
             N_calls = 0;
             min_time = 0.0;
@@ -294,6 +294,9 @@ private:
 
     // Function to return a hopefully unique id based on the active bit array
     unsigned int get_trace_id( int N, BIT_WORD *trace );
+
+    // Function to return the string of active timers
+    std::string get_active_list( BIT_WORD *active, unsigned int myIndex, thread_info *head );
 
     // Function to get the hash index given a timer id
     unsigned int get_timer_hash( unsigned int id );
