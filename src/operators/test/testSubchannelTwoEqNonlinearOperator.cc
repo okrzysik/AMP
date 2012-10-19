@@ -72,19 +72,8 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
   subchannelOpParams->d_dofMap = faceDOFManager ;
 
-  boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> subchannelOperator (new AMP::Operator::SubchannelTwoEqNonlinearOperator(subchannelOpParams));
-/*
-  // set operator parameters
-  boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
-  subchannelOpParams->d_Mesh = subchannelMesh ;
-  subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
-
   // create nonlinear operator
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-  boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> subchannelOperator =
-      boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
-      subchannelMesh ,"SubchannelTwoEqNonlinearOperator",input_db,elementModel ));
-*/
+  boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> subchannelOperator (new AMP::Operator::SubchannelTwoEqNonlinearOperator(subchannelOpParams));
 
   // report successful creation
   ut->passes(exeName+": creation");
