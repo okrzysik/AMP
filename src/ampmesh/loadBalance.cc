@@ -23,6 +23,8 @@ LoadBalance::LoadBalance( )
 {
     d_N_elements = 0;
     d_decomp = 0;
+    d_min = 0;
+    d_max = 0;
     cache_valid = false;
 }
 LoadBalance::LoadBalance( boost::shared_ptr<MeshParameters> params, const std::vector<int> &ranks, size_t N_elements )
@@ -89,14 +91,15 @@ LoadBalance::LoadBalance( boost::shared_ptr<MeshParameters> params, const std::v
         cache_valid = true;
     }
 }
-LoadBalance::LoadBalance( const LoadBalance& rhs )
+LoadBalance::LoadBalance( const LoadBalance& rhs ):
+    d_name(rhs.d_name),
+    d_type(rhs.d_type),
+    d_ranks(rhs.d_ranks),
+    d_submeshes(rhs.d_submeshes)
 {
-    d_name = rhs.d_name;
-    d_type = rhs.d_type;
+
     d_N_elements = rhs.d_N_elements;
     d_params = rhs.d_params;
-    d_ranks = rhs.d_ranks;
-    d_submeshes = rhs.d_submeshes;
     d_decomp = rhs.d_decomp;
     cache_valid = rhs.cache_valid;
     d_min = rhs.d_min;

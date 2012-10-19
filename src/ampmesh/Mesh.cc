@@ -433,7 +433,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
                 intersection.push_back(idB);
             ++curB;
         }
-        if ( intersection.size() == 0 )
+        if ( intersection.empty() )
             return MeshIterator();
         // Sort the intersection and check for duplicates
         Utilities::quicksort(intersection);
@@ -472,7 +472,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
             ++curB;
         }
         std::vector<MeshElementID> compliment(compliment_set.begin(),compliment_set.end());
-        if ( compliment.size() == 0 )
+        if ( compliment.empty() )
             return MeshIterator();
         // Create the iterator
         if ( compliment.size()==A.size() ) {

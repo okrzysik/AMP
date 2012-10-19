@@ -105,7 +105,7 @@ std::vector<double> MeshElement::centroid() const
     if ( d_globalID.type()==Vertex )
         return coord();
     std::vector<MeshElement> nodes = getElements(Vertex);
-    AMP_ASSERT(nodes.size()>0);
+    AMP_ASSERT(!nodes.empty());
     std::vector<double> center = nodes[0].coord();
     for (size_t i=1; i<nodes.size(); i++) {
         std::vector<double> coord = nodes[i].coord();
