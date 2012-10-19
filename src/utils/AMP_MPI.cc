@@ -40,11 +40,14 @@
     #include <sched.h>
 #endif
 
+
 // Some special structs to work with MPI
-struct IntIntStruct { int j; int i; };
-struct LongIntStruct { long int j; int i; };
-struct FloatIntStruct { float f; int i; };
-struct DoubleIntStruct { double d; int i; };
+#ifdef USE_EXT_MPI
+    struct IntIntStruct { int j; int i; };
+    struct LongIntStruct { long int j; int i; };
+    struct FloatIntStruct { float f; int i; };
+    struct DoubleIntStruct { double d; int i; };
+#endif
 
 
 namespace AMP{

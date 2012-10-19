@@ -389,7 +389,7 @@ MeshIterator SubsetMesh::getBoundaryIDIterator ( const GeomType type, const int 
             continue;
         iterators.push_back( boost::shared_ptr<MeshIterator>( new MultiVectorIterator( map_it->second, 0 ) ) );
     }
-    if ( iterators.size() == 0 )
+    if ( iterators.empty() )
         return MeshIterator();
     if ( iterators.size() == 1 )
         return *iterators[0];

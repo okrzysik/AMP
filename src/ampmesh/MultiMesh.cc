@@ -513,40 +513,14 @@ std::vector<MeshID> MultiMesh::getAllMeshIDs() const
 {
     std::vector<MeshID> tmp = this->getLocalMeshIDs();
     std::set<MeshID> ids(tmp.begin(),tmp.end());
-    int send_cnt = (int) ids.size();
-    int recv_cnt = d_comm.sumReduce(send_cnt);
-    MeshID *send_data = new MeshID[send_cnt];
-    MeshID *recv_data = new MeshID[recv_cnt];
-    std::set<MeshID>::iterator iterator = ids.begin();
-    for (int i=0; i<send_cnt; i++) {
-        send_data[i] = *iterator;
-        ++iterator;
-    }
-    d_comm.allGather( send_data, send_cnt, recv_data );
-    for (int i=0; i<recv_cnt; i++)
-        ids.insert(recv_data[i]);
-    delete [] send_data;
-    delete [] recv_data;
+    d_comm.setGather(ids);
     return std::vector<MeshID>(ids.begin(),ids.end());
 }
 std::vector<MeshID> MultiMesh::getBaseMeshIDs() const
 {
     std::vector<MeshID> tmp = this->getLocalBaseMeshIDs();
     std::set<MeshID> ids(tmp.begin(),tmp.end());
-    int send_cnt = (int) ids.size();
-    int recv_cnt = d_comm.sumReduce(send_cnt);
-    MeshID *send_data = new MeshID[send_cnt];
-    MeshID *recv_data = new MeshID[recv_cnt];
-    std::set<MeshID>::iterator iterator = ids.begin();
-    for (int i=0; i<send_cnt; i++) {
-        send_data[i] = *iterator;
-        ++iterator;
-    }
-    d_comm.allGather( send_data, send_cnt, recv_data );
-    for (int i=0; i<recv_cnt; i++)
-        ids.insert(recv_data[i]);
-    delete [] send_data;
-    delete [] recv_data;
+    d_comm.setGather(ids);
     return std::vector<MeshID>(ids.begin(),ids.end());
 }
 std::vector<MeshID> MultiMesh::getLocalMeshIDs() const
