@@ -58,6 +58,7 @@
 #include "operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
 #include "operators/subchannel/SubchannelTwoEqLinearOperator.h"
 #include "operators/subchannel/SubchannelPhysicsModel.h"
+#include "operators/subchannel/SubchannelHelpers.h"
 #include "operators/subchannel/CoupledChannelToCladMapOperator.h"
 #include "operators/subchannel/SubchannelConstants.h"
 #include "operators/subchannel/SubchannelDensityToPointMap.h"
@@ -263,6 +264,9 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> subchannelNonlinearOperator;
     boost::shared_ptr<AMP::Operator::SubchannelTwoEqLinearOperator> subchannelLinearOperator; 
 
+    // Get the subchannel operators
+    std::vector<double> clad_x, clad_y, clad_d;
+    AMP::Operator::Subchannel::getCladProperties( globalComm, cladMesh, clad_x, clad_y,clad_d );
     if ( subchannelMesh.get()!=NULL ) {
         std::vector<AMP::Mesh::MeshID> subChannelMeshIDs = subchannelMesh->getBaseMeshIDs();
 
@@ -273,13 +277,19 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
             std::string meshName = adapter->getName();
             if ( meshName.compare("subchannel")==0 ){
                 // create the non-linear operator
-                boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-                subchannelNonlinearOperator = boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
-                    adapter ,"SubchannelTwoEqNonlinearOperator",global_input_db,elementModel ));
+                subchannelNonlinearOperator = boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(
+                    AMP::Operator::OperatorBuilder::createOperator( adapter ,"SubchannelTwoEqNonlinearOperator",global_input_db ) );
+                boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> nonlinearOpParams = subchannelNonlinearOperator->getParams();
+                nonlinearOpParams->clad_x = clad_x;
+                nonlinearOpParams->clad_y = clad_y;
+                nonlinearOpParams->clad_d = clad_d;
+                subchannelNonlinearOperator->reset(nonlinearOpParams);
                 // create linear operator
-                subchannelLinearOperator = boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqLinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
-                    adapter ,"SubchannelTwoEqLinearOperator",global_input_db,elementModel ));
+                subchannelLinearOperator = boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqLinearOperator>(
+                    AMP::Operator::OperatorBuilder::createOperator( adapter ,"SubchannelTwoEqLinearOperator",
+                    global_input_db, subchannelNonlinearOperator->getSubchannelPhysicsModel() ) );
                 subchannelNonlinearOperator->setVector(subchannelFuelTemp); 
+                subchannelLinearOperator->reset(subchannelNonlinearOperator->getJacobianParameters(subchannelFuelTemp));
                 // pass creation test
                 ut->passes(exeName+": creation");
                 std::cout.flush();

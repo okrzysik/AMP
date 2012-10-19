@@ -26,6 +26,13 @@ MultiVectorIterator::MultiVectorIterator( boost::shared_ptr<std::vector<MeshElem
     d_elements = elements;
     d_pos = pos;
 }
+MultiVectorIterator::MultiVectorIterator( const std::vector<MeshElement>& elements, size_t pos )
+{
+    typeID = MultiVectorIteratorTypeID;
+    iterator = NULL;
+    d_elements.reset( new std::vector<MeshElement>( elements ) );
+    d_pos = pos;
+}
 MultiVectorIterator::MultiVectorIterator(const MultiVectorIterator& rhs)
 {
     typeID = MultiVectorIteratorTypeID;

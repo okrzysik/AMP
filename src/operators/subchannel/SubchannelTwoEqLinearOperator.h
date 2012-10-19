@@ -46,7 +46,12 @@ public:
         d_frozenVec = frozenVec;
     }
 
+    //! Get the current operator parameters
+    boost::shared_ptr<SubchannelOperatorParameters> getParams() { return d_params; }
+
 protected:
+
+    boost::shared_ptr<SubchannelOperatorParameters> d_params;
 
     boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap;
 
@@ -58,7 +63,7 @@ protected:
 
 private :
 
-    bool d_atConstruction, d_nullFrozenvector; 
+    bool d_initialized, d_nullFrozenvector; 
 	  
     // Function used in reset to get double parameter or use default if missing
     double getDoubleParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, double);
@@ -73,29 +78,30 @@ private :
 
     boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
-    std::vector<double> d_channelFractions;     // channel fraction to calculate effective radius 
+    double d_Pout;      // exit pressure [Pa]
+    double d_Tin;       // inlet temperature [K]
+    double d_mass;      // inlet global mass flow rate [kg/s]
+    double d_gamma;     // fission heating coefficient
+    double d_theta;     // channel angle [rad]
+    double d_Q;         // rod power
+    double d_reynolds;  // reynolds number
+    double d_prandtl;   // prandtl number
 
-    double d_Pout;     // exit pressure [Pa]
-    double d_Tin;      // inlet temperature [K]
-    double d_m;        // inlet mass flow rate [kg/s]
-    double d_gamma;    // fission heating coefficient
-    double d_theta;    // channel angle [rad]
-    double d_pitch;    // lattice pitch [m]
-    double d_diameter; // fuel rod diameter [m]
-    double d_Q;        // rod power
+    std::string d_frictionModel;    // friction model
+    double d_friction;              // friction factor
+    double d_roughness;             // surface roughness [m]
 
-    std::string d_frictionModel; // friction model
-    double d_friction; // friction factor
-    double d_roughness; // surface roughness [m]
+    std::vector<double> d_channelDiam;  // Channel hydraulic diameter
+    std::vector<double> d_channelArea;  // Channel flow area
+    std::vector<double> d_rodDiameter;  // Average rod diameter for each subchannel
+    std::vector<double> d_rodFraction;  // Fraction of a rod in each subchannel
+    std::vector<double> d_channelMass;  // Mass flow rate for each subchannel [kg/s]
 
     size_t d_NGrid;                 // number of grid spacers
     std::vector<double> d_zMinGrid; // z min positions of each grid spacer
     std::vector<double> d_zMaxGrid; // z max positions of each grid spacer
     std::vector<double> d_lossGrid; // loss coefficients for each grid spacer
 
-    double d_channelDia;
-    double d_reynolds  ;
-    double d_prandtl   ;
     std::string d_source; // heat source type
     std::string d_heatShape; // heat shape used if heat source type is "totalHeatGeneration"
 
@@ -113,18 +119,19 @@ private :
     double dvdp(double,double);
 
     // Friction function
-    double friction(double,double,double,double,double,double);
+    double friction(double h_minus, double p_minus, double h_plus, double p_plus, double mass, double A, double D);
 
     // Derivatives of friction with respect to lower and upper enthalpy and pressure
-    double dfdh_lower(double,double,double,double,double,double);
-    double dfdh_upper(double,double,double,double,double,double);
-    double dfdp_lower(double,double,double,double,double,double);
-    double dfdp_upper(double,double,double,double,double,double);
+    double dfdh_lower(double h_minus, double p_minus, double h_plus, double p_plus, double mass, double A, double D);
+    double dfdh_upper(double h_minus, double p_minus, double h_plus, double p_plus, double mass, double A, double D);
+    double dfdp_lower(double h_minus, double p_minus, double h_plus, double p_plus, double mass, double A, double D);
+    double dfdp_upper(double h_minus, double p_minus, double h_plus, double p_plus, double mass, double A, double D);
 
     std::vector<double> d_x, d_y, d_z;
-    std::vector<bool> d_ownSubChannel;                      // Which subchannels do I own (multple procs my own a subchannel)
+    std::vector<bool> d_ownSubChannel;  // Which subchannels do I own
+    std::vector< std::vector<AMP::Mesh::MeshElement> >  d_subchannelElem;   // List of elements in each subchannel
+    std::vector< std::vector<AMP::Mesh::MeshElement> >  d_subchannelFace;   // List of z-face elements in each subchannel
     int getSubchannelIndex( double x, double y );
-    void fillSubchannelGrid(AMP::Mesh::Mesh::shared_ptr);   // Function to fill the subchannel data for all processors
     size_t d_numSubchannels; 
 
 };

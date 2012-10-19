@@ -675,20 +675,16 @@ SubchannelTwoEqNonlinearOperator{
     name = "SubchannelTwoEqNonlinearOperator"
     InputVariable = "Flow"
     OutputVariable = "Flow"
-    Exit_Pressure = 15.5132e6
-    Inlet_Temperature = 569.26
-    Mass_Flow_Rate = 0.3522
+    Exit_Pressure = 15.5132e6       // Exit pressure in Pa
+    Inlet_Temperature = 569.26      // Inlet temperature in K
+    Inlet_Mass_Flow_Rate = 9*0.3522   // Total mass flow rate for all subchannels in kg/s
     Fission_Heating_Coefficient = 0.0
-    Channel_Angle = 0.0
-    Friction_Factor = 0.001
-    Lattice_Pitch = 0.0128016
-    Rod_Diameter = 0.009410
-    Rod_Power = 66.81e3
+    Channel_Angle = 0.0             // Channel angle
+    Friction_Factor = 0.001         // Friction factor
+    Rod_Power = 66.81e3             // Rod power in W
     Heat_Source_Type = "averageCladdingTemperature"
-    Channel_Diameter = 0.01178  // Todreas, p.455
     Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
     Prandtl          = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
-    ChannelFractions = 0.25, 0.5, 0.5, 0.25, 0.5 , 0.75, 0.75 , 0.5, 0.5 , 0.75, 0.75 , 0.5, 0.25, 0.5, 0.5, 0.25 
     Heat_Shape = "Sinusoidal"
     LocalModel = "SubchannelPhysicsModel"
     Friction_Model = "Constant"
@@ -699,20 +695,16 @@ SubchannelTwoEqLinearOperator{
     name = "SubchannelTwoEqLinearOperator"
     InputVariable = "Flow"
     OutputVariable = "Flow"
-    Exit_Pressure = 15.5132e6
-    Inlet_Temperature = 569.26
-    Mass_Flow_Rate = 0.3522
+    Exit_Pressure = 15.5132e6       // Exit pressure in Pa
+    Inlet_Temperature = 569.26      // Inlet temperature in K
+    Inlet_Mass_Flow_Rate = 9*0.3522   // Total mass flow rate for all subchannels in kg/s
     Fission_Heating_Coefficient = 0.0
-    Channel_Angle = 0.0
-    Friction_Factor = 0.001
-    Lattice_Pitch = 0.0128016
-    Rod_Diameter = 0.009410
-    Rod_Power = 66.81e3
+    Channel_Angle = 0.0             // Channel angle
+    Friction_Factor = 0.001         // Friction factor
+    Rod_Power = 66.81e3             // Rod power in W
     Heat_Source_Type = "averageCladdingTemperature"
-    Channel_Diameter = 0.01178  // Todreas, p.455
     Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
     Prandtl          = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
-    ChannelFractions = 0.25, 0.5, 0.5, 0.25, 0.5 , 0.75, 0.75 , 0.5, 0.5 , 0.75, 0.75 , 0.5, 0.25, 0.5, 0.5, 0.25 
     Heat_Shape = "Sinusoidal"
     LocalModel = "SubchannelPhysicsModel"
     Friction_Model = "Constant"

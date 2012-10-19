@@ -21,6 +21,9 @@ CoupledChannelToCladMapOperator::CoupledChannelToCladMapOperator(const boost::sh
     d_Mesh                   = params->d_subchannelMesh; 
     d_subchannelPhysicsModel = params->d_subchannelPhysicsModel; 
     d_subchannelTemperature = params->d_vector; 
+    if ( d_Mesh.get()!=NULL ) {
+        AMP_ASSERT(d_subchannelPhysicsModel!=NULL);
+    }
     if ( d_subchannelTemperature.get()!=NULL ) {
         d_subchannelDensity = d_subchannelTemperature->cloneVector();
         AMP::LinearAlgebra::Variable::shared_ptr densityVariable( new AMP::LinearAlgebra::Variable("Density") );
