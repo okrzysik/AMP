@@ -962,31 +962,27 @@ ENDMACRO ()
 # Macro to configure system-specific libraries and flags
 MACRO ( CONFIGURE_SYSTEM )
     # Remove extra library links
-    set(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)       # remove -Wl,-Bdynamic
-    set(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS)
-    set(CMAKE_SHARED_LIBRARY_C_FLAGS)         # remove -fPIC
-    set(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
-    set(CMAKE_SHARED_LINKER_FLAGS)
-    SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # Remove -rdynamic
-    SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)  # Remove -rdynamic
-    # Add the static flag if necessary
-    CHECK_ENABLE_FLAG( USE_EXT_STATIC 0 )
-    IF ( USE_EXT_STATIC )
-        SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static")    # Add static flag
-        SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static")  # Add static flag
-    ENDIF()
+    SET_STATIC_FLAGS()
     # Add system dependent flags
-    IF ( USING_MICROSOFT )
+    MESSAGE("System is: ${CMAKE_SYSTEM_NAME}")
+    IF ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
+        # Windows specific system libraries
         #FIND_LIBRARY ( SYSTEM_LIBS           NAMES "psapi"        PATHS C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/  )
         #C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/psapi
         SET( SYSTEM_LIBS "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/Psapi.lib" )
-    ELSE()
-        CHECK_C_COMPILER_FLAG("-rdynamic" RESULT)
-        IF(RESULT)
-            SET( SYSTEM_LIBS "-lz -ldl -rdynamic" )
-        ELSE()
-            SET( SYSTEM_LIBS "-lz -ldl" )
+    ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
+        # Linux specific system libraries
+        SET( SYSTEM_LIBS "-lz -ldl" )
+        if ( NOT USE_STATIC )
+            SET( SYSTEM_LIBS "${SYSTEM_LIBS} -rdynamic" )   # Needed for backtrace to print function names
         ENDIF()
+    ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
+        # Max specific system libraries
+        SET( SYSTEM_LIBS "-lz -ldl" )
+    ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Generic" )
+        # Generic system libraries
+    ELSE()
+        MESSAGE( FATAL_ERROR "OS not detected" )
     ENDIF()
 ENDMACRO ()
 
@@ -1000,6 +996,10 @@ MACRO ( CONFIGURE_AMP )
         VERIFY_PATH ( ${AMP_DATA} )
     ELSE()
         MESSAGE ( FATAL_ERROR "AMP_DATA must be set" )
+    ENDIF()
+    # Set the maximum number of processors for the tests
+    IF ( NOT TEST_MAX_PROCS )
+        SET( TEST_MAX_PROCS 32 )
     ENDIF()
     # Remove extra library links
     set(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)       # remove -Wl,-Bdynamic
