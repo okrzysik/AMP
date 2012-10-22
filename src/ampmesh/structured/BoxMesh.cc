@@ -505,7 +505,7 @@ void BoxMesh::initialize()
                 d_elements[d][gcw]->reserve( N_elem_est );
             else if ( d==1 )
                 d_elements[d][gcw]->reserve( 6*N_elem_est );
-            else if ( d==1 )
+            else if ( d==2 )
                 d_elements[d][gcw]->reserve( 3*N_elem_est );
         }
         // Loop through the elements creating the ghosts

@@ -287,14 +287,18 @@ bool libMeshElement::isOnSurface() const
     GeomType type = d_globalID.type();
     MeshElement search = MeshElement(*this);
     if ( d_globalID.is_local() ) {
-        std::vector<MeshElement> &data = *(d_mesh->d_localSurfaceElements[type]);
+        const std::vector<MeshElement> &data = *(d_mesh->d_localSurfaceElements[type]);
+        if ( data.empty() )
+            return false;   // There are no elements on the surface for this processor
         size_t index = AMP::Utilities::findfirst( data, search );
         if ( index < data.size() ) {
             if ( d_mesh->d_localSurfaceElements[type]->operator[](index).globalID() == d_globalID )
                 return true;
         }
     } else {
-        std::vector<MeshElement> &data = *(d_mesh->d_ghostSurfaceElements[type]);
+        const std::vector<MeshElement> &data = *(d_mesh->d_ghostSurfaceElements[type]);
+        if ( data.empty() )
+            return false;   // There are no elements on the surface for this processor
         size_t index = AMP::Utilities::findfirst( data, search );
         if ( index < data.size() ) {
             if ( d_mesh->d_ghostSurfaceElements[type]->operator[](index).globalID() == d_globalID )

@@ -30,7 +30,7 @@ LoadBalance::LoadBalance( )
 LoadBalance::LoadBalance( boost::shared_ptr<MeshParameters> params, const std::vector<int> &ranks, size_t N_elements )
 {
     // Get required values from the parameters
-    AMP_ASSERT(ranks.size()>0);
+    AMP_ASSERT(!ranks.empty());
     boost::shared_ptr<AMP::Database> database = params->getDatabase();
     AMP_ASSERT(database!=NULL);
     AMP_INSIST(database->keyExists("MeshType"),"MeshType must exist in input database");

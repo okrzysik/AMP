@@ -136,7 +136,7 @@ void SetToScalarVector( AMP::UnitTest *utils )
             fail = true;
             break;
         }
-        curVec++;
+        ++curVec;
     }
     if ( !fail )
         utils->passes ( "Set data to 0" );
@@ -150,7 +150,7 @@ void SetToScalarVector( AMP::UnitTest *utils )
             fail = true;
             break;
         }
-        curVal++;
+        ++curVec;
     }
     if ( !fail )
       utils->passes ( "Set data to 5" );
@@ -295,7 +295,7 @@ void MaxNormVector( AMP::UnitTest *utils )
         while ( curData != endData )
         {
           local_ans = std::max ( local_ans , *curData );
-          curData++;
+          ++curData;
         }
         AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
         double global_ans = globalComm.maxReduce(local_ans);
@@ -322,8 +322,8 @@ void ScaleVector( AMP::UnitTest *utils )
         {
           if ( *curData1 != beta * *curData2 )
             pass = false;
-          curData1++;
-          curData2++;
+          ++curData1;
+          ++curData2;
         }
         if ( pass )
           utils->passes ( "scale vector 1" );
@@ -426,9 +426,9 @@ void AddVector( AMP::UnitTest *utils )
         {
           if ( *curData3 != *curData1 + *curData2 )
             pass = false;
-          curData1++;
-          curData2++;
-          curData3++;
+          ++curData1;
+          ++curData2;
+          ++curData3;
         }
 
         if ( pass )
@@ -457,9 +457,9 @@ void SubtractVector( AMP::UnitTest *utils )
         {
           if ( *curData3 != *curData1 - *curData2 )
             pass = false;
-          curData1++;
-          curData2++;
-          curData3++;
+          ++curData1;
+          ++curData2;
+          ++curData3;
         }
         if ( pass )
           utils->passes ( "vector subtract 1" );
@@ -493,9 +493,9 @@ void MultiplyVector( AMP::UnitTest *utils )
         {
           if ( *curData3 != *curData1 * *curData2 )
             pass = false;
-          curData1++;
-          curData2++;
-          curData3++;
+          ++curData1;
+          ++curData2;
+          ++curData3;
         }
         if ( pass )
           utils->passes  ( "vector::multiply" );
@@ -522,9 +522,9 @@ void DivideVector( AMP::UnitTest *utils )
         {
           if ( *curVal3 != *curVal1 / *curVal2 )
             pass = false;
-          curVal1++;
-          curVal2++;
-          curVal3++;
+          ++curData1;
+          ++curData2;
+          ++curData3;
         }
         if ( pass )
           utils->passes ( "vector::divide" );
@@ -548,7 +548,7 @@ void VectorIteratorLengthTest( AMP::UnitTest *utils )
         while ( curEntry != endEntry )
         {
           i++;
-          curEntry++;
+          ++curEntry;
         }
         size_t k = vector1->getLocalSize();
         if ( i == k )
@@ -576,13 +576,13 @@ void both_VectorIteratorTests ( AMP::LinearAlgebra::Vector::shared_ptr p , AMP::
         ITERATOR cur1 , cur2;
         cur1 = cur2 = ref.begin();
         ITERATOR end = ref.end();
-        cur1++;
-        cur2++;
+        ++cur1;
+        ++cur2;
         int i = 0;
         while ( cur2 != end )
         {
           if ( i == 10 ) break;
-          cur2++;
+          ++cur2;
           i++;
         }
         int tt = (cur2 - cur1);
@@ -608,7 +608,7 @@ void both_VectorIteratorTests ( AMP::LinearAlgebra::Vector::shared_ptr p , AMP::
         i = 0;
         do
         {
-          cur1--;
+          --cur1;
           if ( (*cur1) != 5.0 )
             break;
           i++;
@@ -632,7 +632,7 @@ void both_VectorIteratorTests ( AMP::LinearAlgebra::Vector::shared_ptr p , AMP::
           while ( cur2 != end )
           {
             i++;
-            cur2++;
+            ++cur2;
           }
           if ( i == ( (int)p->getLocalSize() - 5 ) )
             utils->passes ( "Adding and iterating" );
@@ -644,7 +644,7 @@ void both_VectorIteratorTests ( AMP::LinearAlgebra::Vector::shared_ptr p , AMP::
           while ( cur1 != end )
           {
             i++;
-            cur1++;
+            ++cur1;
           }
           if ( i == ( (int)p->getLocalSize() - 5 ) )
             utils->passes ( "Add-equal and iterating" );
@@ -1009,7 +1009,7 @@ void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
             utils->failure ( "overly ghosted value" );
             return;
         }
-        cur_replicated++;
+        ++cur_replicated;
     }
     size_t last_size = 0;
     for ( int i = 0 ; i != utils->size() ; i++ )

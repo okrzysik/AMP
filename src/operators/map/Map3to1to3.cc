@@ -107,7 +107,7 @@ void  Map3to1to3::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr , AM
     std::multimap<double,double>::const_iterator iterator;
     double z_last = -1e100;
     std::vector<double> z1;
-    for (iterator=map1.begin(); iterator!=map1.end(); iterator++) {
+    for (iterator=map1.begin(); iterator!=map1.end(); ++iterator) {
         if ( fabs(iterator->first-z_last) > tol ) {
             z_last = iterator->first;
             z1.push_back( z_last );
@@ -115,7 +115,7 @@ void  Map3to1to3::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr , AM
     }
     z_last = -1e100;
     std::vector<double> z2;
-    for (iterator=map2.begin(); iterator!=map2.end(); iterator++) {
+    for (iterator=map2.begin(); iterator!=map2.end(); ++iterator) {
         if ( fabs(iterator->first-z_last) > tol ) {
             z_last = iterator->first;
             z2.push_back( z_last );
@@ -125,7 +125,7 @@ void  Map3to1to3::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr , AM
     // Create the send buffers and sum the local data
     d_SendBuf1.resize(0);   // Reset the entries
     d_SendBuf1.resize(z1.size());
-    for (iterator=map1.begin(); iterator!=map1.end(); iterator++) {
+    for (iterator=map1.begin(); iterator!=map1.end(); ++iterator) {
         double z = iterator->first;
         size_t i1 = min(AMP::Utilities::findfirst(z1,z),z1.size()-1);
         size_t i2 = max(i1,(size_t)1)-1;
@@ -145,7 +145,7 @@ void  Map3to1to3::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr , AM
     }
     d_SendBuf2.resize(0);   // Reset the entries
     d_SendBuf2.resize(z2.size());
-    for (iterator=map2.begin(); iterator!=map2.end(); iterator++) {
+    for (iterator=map2.begin(); iterator!=map2.end(); ++iterator) {
         double z = iterator->first;
         size_t i1 = min(AMP::Utilities::findfirst(z2,z),z2.size()-1);
         size_t i2 = max(i1,(size_t)1)-1;
@@ -247,14 +247,14 @@ void  Map3to1to3::applyFinish ( AMP::LinearAlgebra::Vector::const_shared_ptr, AM
     // Smear the data to create the final map
     std::map<double,std::pair<int,double> >::iterator iterator;
     std::map<double,double> final_map1;
-    for (iterator=map1.begin(); iterator!=map1.end(); iterator++) {
+    for (iterator=map1.begin(); iterator!=map1.end(); ++iterator) {
         double sum = iterator->second.second;
         double N = iterator->second.first;
         std::pair<double,double> tmp( iterator->first, sum/N );
         final_map1.insert( tmp );
     }
     std::map<double,double> final_map2;
-    for (iterator=map2.begin(); iterator!=map2.end(); iterator++) {
+    for (iterator=map2.begin(); iterator!=map2.end(); ++iterator) {
         double sum = iterator->second.second;
         double N = iterator->second.first;
         std::pair<double,double> tmp( iterator->first, sum/N );
