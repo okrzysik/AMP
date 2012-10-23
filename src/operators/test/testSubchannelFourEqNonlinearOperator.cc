@@ -136,7 +136,7 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
       }// end for cell
 
       // for each subchannel,
-      for(int isub =0; isub < numSubchannels; ++isub){
+      for(size_t isub =0; isub < numSubchannels; ++isub){
           // extract subchannel cells from d_elem[isub]
           boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > subchannelElements( new std::vector<AMP::Mesh::MeshElement>() );
           subchannelElements->reserve(numSubchannels);
@@ -193,7 +193,7 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   // check known residual evaluations
   bool passedKnownTest = true;
   // subchannel 1: check inlet and outlet residuals
-  int isub = 0;
+  size_t isub = 0;
   // extract subchannel cells from d_elem[isub]
   boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > subchannelElements( new std::vector<AMP::Mesh::MeshElement>() );
   subchannelElements->reserve(numSubchannels);
@@ -202,12 +202,12 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   }
   AMP::Mesh::MeshIterator     localSubchannelCell = AMP::Mesh::MultiVectorIterator( subchannelElements ); // iterator over elements of current subchannel
 
-  double m_inlet_residual;
-  double h_inlet_residual;
-  double p_inlet_residual;
-  double m_outlet_residual;
-  double h_outlet_residual;
-  double p_outlet_residual;
+  double m_inlet_residual = 0.;
+  double h_inlet_residual = 0.;
+  double p_inlet_residual = 0.;
+  double m_outlet_residual = 0.;
+  double h_outlet_residual = 0.;
+  double p_outlet_residual = 1.;
   // loop over cells of current subchannel
   for (; localSubchannelCell != localSubchannelCell.end(); ++localSubchannelCell) {
      // get upper and lower axial faces of current cell

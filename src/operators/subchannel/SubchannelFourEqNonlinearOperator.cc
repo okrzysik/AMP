@@ -277,7 +277,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
       }// end for cell
 
       // for each subchannel,
-      for(int isub =0; isub<d_numSubchannels; ++isub){
+      for(size_t isub =0; isub<d_numSubchannels; ++isub){
         if(d_ownSubChannel[isub]){
           // extract subchannel cells from d_elem[isub]
           boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > subchannelElements( new std::vector<AMP::Mesh::MeshElement>() );
@@ -432,7 +432,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
              double axial_turbulence_sum = 0.0;
 
              // compute flux
-             double flux;
+             double flux = 0.;
              if (d_source == "averageCladdingTemperature") {
                 AMP_ERROR("Heat source type 'averageCladdingTemperature' not yet implemented.");
              } else if (d_source == "averageHeatFlux") {

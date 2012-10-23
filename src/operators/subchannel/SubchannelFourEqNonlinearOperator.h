@@ -134,7 +134,7 @@ namespace Operator {
 
       std::vector<double> d_x, d_y, d_z;
       std::vector<bool> d_ownSubchannel; // does this processor own this subchannel (multiple processors may own a subchannel)?
-      int d_numSubchannels; // number of subchannels
+      size_t d_numSubchannels; // number of subchannels
 
       double Volume(double,double);              // evaluates specific volume
       double Temperature(double,double);         // evaluates temperature
