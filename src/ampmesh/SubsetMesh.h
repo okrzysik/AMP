@@ -27,7 +27,7 @@ public:
 
 
     //! Deconstructor
-     ~SubsetMesh();
+    virtual ~SubsetMesh();
 
 
     /**

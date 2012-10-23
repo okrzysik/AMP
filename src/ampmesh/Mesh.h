@@ -111,7 +111,7 @@ public:
 
 
     //! Deconstructor
-     ~Mesh ();
+    virtual ~Mesh ();
 
 
     //! Assignment operator

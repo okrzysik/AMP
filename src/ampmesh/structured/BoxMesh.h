@@ -73,7 +73,7 @@ public:
 
 
     //! Deconstructor
-     ~BoxMesh ();
+    virtual ~BoxMesh ();
 
 
     /* Return the number of local element of the given type

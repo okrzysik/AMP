@@ -62,7 +62,7 @@ public:
     libMesh ( boost::shared_ptr< ::Mesh> mesh, std::string name );
 
     //! Deconstructor
-     ~libMesh ();
+    virtual ~libMesh ();
 
     //! Function to copy the mesh (allows use to proply copy the derived class)
     Mesh copy() const;

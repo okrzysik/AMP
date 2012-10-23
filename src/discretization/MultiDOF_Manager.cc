@@ -57,6 +57,14 @@ multiDOFManager::multiDOFManager ( AMP_MPI globalComm, std::vector<DOFManager::s
 
 
 /****************************************************************
+* Deconstructor                                                 *
+****************************************************************/
+DOFManager::~DOFManager( )
+{
+}
+
+
+/****************************************************************
 * Get the dofs for the element                                  *
 ****************************************************************/
 void multiDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <size_t> &dofs ) const

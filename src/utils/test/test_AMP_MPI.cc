@@ -65,7 +65,7 @@ int testReduce<std::complex<double> >(AMP::AMP_MPI comm, AMP::UnitTest *ut, int 
 }
 template <class type>
 int testReduce(AMP::AMP_MPI comm, AMP::UnitTest *ut, int flag) {
-    char message[500];
+    char message[128];
     type rank = (type) comm.getRank();
     type size = (type) comm.getSize();
     if ( (int)(size) != comm.getSize() ) {

@@ -40,6 +40,8 @@ public:
      */
     DOFManager( size_t N_local, AMP_MPI comm );
 
+    //! Deconstructor
+    virtual ~DOFManager();
 
     /** \brief  Compares two DOFManager for equality.
       * \details This operation compares two DOF managers to see if they are equivalent

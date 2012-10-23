@@ -65,6 +65,10 @@ public:
     static DOFManager::shared_ptr  create( const AMP::Mesh::MeshIterator it, int DOFsPerElement );
 
 
+    //! Deconstructor
+    virtual ~simpleDOFManager();
+
+
     /** \brief Get the entry indices of DOFs given a mesh element ID
      * \details  This will return a vector of pointers into a Vector that are associated with which.
      *  Note: this function only works if the element we are search for is a element on which a DOF exists

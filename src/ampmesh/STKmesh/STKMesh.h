@@ -61,10 +61,10 @@ public:
      * \param mesh The mesh in STKmesh we want to use to construct the new mesh object
      * \param name The name of the new mesh object
      */
-  STKMesh ( boost::shared_ptr< stk::mesh::BulkData> mesh, std::string name );
+    STKMesh ( boost::shared_ptr< stk::mesh::BulkData> mesh, std::string name );
 
     //! Deconstructor
-     ~STKMesh ();
+    virtual ~STKMesh ();
 
     //! Function to copy the mesh (allows use to proply copy the derived class)
     Mesh copy() const;

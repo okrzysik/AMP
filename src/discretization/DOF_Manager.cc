@@ -23,6 +23,14 @@ DOFManager::DOFManager ( size_t N_local, AMP_MPI comm )
 
 
 /****************************************************************
+* Deconstructor                                                 *
+****************************************************************/
+DOFManager::~DOFManager( )
+{
+}
+
+
+/****************************************************************
 * Get the DOFs for the element                                  *
 ****************************************************************/
 void DOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const
