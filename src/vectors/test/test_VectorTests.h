@@ -150,7 +150,7 @@ void SetToScalarVector( AMP::UnitTest *utils )
             fail = true;
             break;
         }
-        ++curVec;
+        ++curVal;
     }
     if ( !fail )
       utils->passes ( "Set data to 5" );

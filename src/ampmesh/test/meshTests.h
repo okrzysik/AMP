@@ -748,7 +748,7 @@ void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
                 break;
             }
             const std::vector<AMP::Mesh::MeshElementID> &neighbors = iterator->second;
-            if ( !neighbors.empty() ) {
+            if ( neighbors.empty() ) {
                 passed = false;
                 break;
             }
