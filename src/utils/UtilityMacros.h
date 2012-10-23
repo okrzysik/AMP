@@ -32,7 +32,7 @@
  */
 #define NULL_USE(variable) do {                         \
     if(0) {char *temp = (char *)&variable; temp++;}     \
-}while
+}while(0)
 
 
 // Get a ostream

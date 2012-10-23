@@ -130,11 +130,11 @@ Vector::UpdateState  ManagedVector::getUpdateStatus () const
     if ( vec.get()!=NULL ) {
         Vector::UpdateState  sub_state = vec->getUpdateStatus();
         if ( sub_state==UNCHANGED ) {
-            state = state;
+            // No change in state
         } else if ( sub_state==LOCAL_CHANGED && state==UNCHANGED ) {
             state = LOCAL_CHANGED;
         } else if ( sub_state==LOCAL_CHANGED ) {
-            state = state;
+            // No change in state
         } else if ( sub_state==ADDING && ( state==UNCHANGED || state==LOCAL_CHANGED || state==ADDING ) ) {
             state = ADDING;
         } else if ( sub_state==SETTING && ( state==UNCHANGED || state==LOCAL_CHANGED || state==SETTING ) ) {
@@ -263,9 +263,9 @@ void  ManagedVector::setUpdateStatus ( UpdateState state )
                 local_val.push_back(vals[i]);
             }
         }
-        if ( ghost_ndx.size() > 0 )
+        if ( !ghost_ndx.empty() )
             setGhostValuesByGlobalID( ghost_ndx.size(), &ghost_ndx[0], &ghost_val[0] );
-        if ( local_ndx.size() > 0 )
+        if ( !local_ndx.empty() )
             setLocalValuesByGlobalID( local_ndx.size(), &local_ndx[0], &local_val[0] );
     }
   }

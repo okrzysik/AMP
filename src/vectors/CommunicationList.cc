@@ -19,14 +19,14 @@ template <typename T>
 static T* getPtr( std::vector<T> &in )
 {
     T *retVal = 0;
-    if ( in.size() > 0 ) retVal = &(in[0]);
+    if ( !in.empty() ) retVal = &(in[0]);
     return retVal;
 }
 template <typename T>
 static T* getPtr( const std::vector<T> &in )
 {
     T *retVal = 0;
-    if ( in.size() > 0 ) retVal = (T*) &(in[0]);
+    if ( !in.empty() ) retVal = (T*) &(in[0]);
     return retVal;
 }
 
@@ -151,7 +151,7 @@ CommunicationList::shared_ptr  CommunicationList::createEmpty ( size_t local , A
   void  CommunicationList::packReceiveBuffer ( std::vector<double> &recv , const Vector &vec ) const
   {
     AMP_ASSERT ( recv.size() == d_ReceiveDOFList.size() );
-    if ( recv.size()==0 )
+    if ( recv.empty() )
         return;
     vec.getGhostAddValuesByGlobalID ( (int) recv.size(), getPtr(d_ReceiveDOFList),  getPtr(recv) );
   }
@@ -159,7 +159,7 @@ CommunicationList::shared_ptr  CommunicationList::createEmpty ( size_t local , A
   void  CommunicationList::packSendBuffer ( std::vector<double> &send , const Vector &vec ) const
   {
     AMP_ASSERT ( send.size() == d_SendDOFList.size() );
-    if ( send.size()==0 )
+    if ( send.empty() )
         return;
     vec.getLocalValuesByGlobalID ( (int) send.size(), getPtr(d_SendDOFList),  getPtr(send) );
   }
@@ -261,7 +261,7 @@ void CommunicationList::buildCommunicationArrays ( std::vector<size_t>  &DOFs , 
 
 void CommunicationList::scatter_set( std::vector<double> &in , std::vector<double> &out ) const
   {
-    if ( d_SendSizes.size() == 0 )
+    if ( d_SendSizes.empty() )
       return;
     double *send_buf = getPtr ( in );
     int *send_sizes = (int *)&(d_SendSizes[0]);

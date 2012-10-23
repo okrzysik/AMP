@@ -33,23 +33,6 @@ static bool check_prefix(std::string prefix, std::string str) {
 }
 
 
-// Some template functions for vector math
-template <class T> 
-static inline T vecmin(std::vector<T> x) {
-    T min = x[0];
-    for (size_t i=1; i<x.size(); i++)
-        min = (x[i]<min) ? x[i] : min;
-    return min;
-}
-template <class T> 
-static inline T vecmax(std::vector<T> x) {
-    T max = x[0];
-    for (size_t i=1; i<x.size(); i++)
-        max = (x[i]>max) ? x[i] : max;
-    return max;
-}
-
-
 // Misc function declerations
 static void copyKey(AMP::Database::shared_ptr,std::vector<AMP::Database::shared_ptr>,
     const std::string&,bool,const std::string&,const std::vector<std::string>&);

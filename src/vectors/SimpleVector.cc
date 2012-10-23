@@ -73,7 +73,7 @@ double SimpleVector::max(void) const
 double SimpleVector::L1Norm(void) const
 {
     double ans = 0.0;
-    for ( const_iterator cur = begin() ; cur != end() ; cur++ )
+    for ( const_iterator cur = begin() ; cur != end() ; ++cur )
         ans += fabs (*cur);
     ans = d_comm.sumReduce(ans);
     return ans;
@@ -81,7 +81,7 @@ double SimpleVector::L1Norm(void) const
 double SimpleVector::L2Norm(void) const
 {
     double ans = 0.0;
-    for ( const_iterator cur = begin() ; cur != end() ; cur++ )
+    for ( const_iterator cur = begin() ; cur != end() ; ++cur )
         ans += (*cur) * (*cur);
     ans = d_comm.sumReduce(ans);
     return sqrt ( ans );
@@ -89,7 +89,7 @@ double SimpleVector::L2Norm(void) const
 double SimpleVector::maxNorm(void) const
 {
     double ans = 0.0;
-    for ( const_iterator cur = begin() ; cur != end() ; cur++ )
+    for ( const_iterator cur = begin() ; cur != end() ; ++cur )
         ans = std::max ( ans , fabs (*cur) );
     ans = d_comm.maxReduce(ans);
     return ans;
@@ -119,7 +119,7 @@ double SimpleVector::dot(const VectorOperations &rhs ) const
 ****************************************************************/
 void SimpleVector::setToScalar(double alpha)
 {
-    for ( iterator cur = begin() ; cur != end() ; cur++ )
+    for ( iterator cur = begin() ; cur != end() ; ++cur )
         (*cur) = alpha;
     this->makeConsistent(CONSISTENT_SET);
 }
@@ -130,13 +130,13 @@ void SimpleVector::scale(double alpha, const VectorOperations &x)
     while ( cur != end() )
     {
       (*cur) = alpha * (*curx);
-      cur++;
+      ++cur;
       curx++;
     }
 }
 void SimpleVector::scale(double alpha)
 {
-    for ( iterator cur = begin() ; cur != end() ; cur++ )
+    for ( iterator cur = begin() ; cur != end() ; ++cur )
     {
       (*cur) *= alpha;
     }
@@ -154,7 +154,7 @@ void SimpleVector::scale(double alpha)
     while ( cur != end() )
     {
       (*cur) = (*curx) + (*cury );
-      curx++; cury++; cur++;
+      curx++; cury++; ++cur;
     }
   }
 
@@ -168,7 +168,7 @@ void SimpleVector::scale(double alpha)
     while ( cur != end() )
     {
       (*cur) = (*curx) - (*cury );
-      curx++; cury++; cur++;
+      curx++; cury++; ++cur;
     }
   }
 
@@ -182,7 +182,7 @@ void SimpleVector::scale(double alpha)
     while ( cur != end() )
     {
       (*cur) = (*curx) * (*cury );
-      curx++; cury++; cur++;
+      curx++; cury++; ++cur;
     }
   }
 
@@ -196,7 +196,7 @@ void SimpleVector::scale(double alpha)
     while ( cur != end() )
     {
       (*cur) = (*curx) / (*cury );
-      curx++; cury++; cur++;
+      curx++; cury++; ++cur;
     }
   }
 
@@ -207,7 +207,7 @@ void SimpleVector::scale(double alpha)
     while ( cur != end() )
     {
       (*cur) = 1. / (*curx);
-      cur++;
+      ++cur;
       curx++;
     }
   }
@@ -223,7 +223,7 @@ void SimpleVector::scale(double alpha)
     while ( cur != end() )
     {
       (*cur) = alpha * (*curx) + beta * (*cury);
-      curx++; cury++; cur++;
+      curx++; cury++; ++cur;
     }
   }
 
@@ -237,7 +237,7 @@ void SimpleVector::scale(double alpha)
     while ( cur != end() )
     {
       (*cur) = alpha * (*curx) + (*cury);
-      curx++; cury++; cur++;
+      curx++; cury++; ++cur;
     }
   }
 
@@ -250,7 +250,7 @@ void SimpleVector::scale(double alpha)
     while ( cur != end() )
     {
       (*cur) = alpha * (*curx) + beta * (*cur);
-      curx++; cur++;
+      curx++; ++cur;
     }
   }
 
@@ -261,7 +261,7 @@ void SimpleVector::scale(double alpha)
     while ( cur != end() )
     {
       (*cur) = fabs (*curx);
-      cur++;
+      ++cur;
       curx++;
     }
   }

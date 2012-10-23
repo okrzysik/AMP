@@ -175,7 +175,7 @@ void  Map3to1to3::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr , AM
                 continue;   // Don't communicate local data
             if ( d_own_mesh2[i] ) {
                 *curReq = d_MapComm.Isend( getPtr(d_SendBuf1), d_SendBuf1.size(), i, d_commTag+0 );
-                curReq++;
+                ++curReq;
             }
         }
     }
@@ -185,7 +185,7 @@ void  Map3to1to3::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr , AM
                 continue;   // Don't communicate local data
             if ( d_own_mesh1[i] ) {
                 *curReq = d_MapComm.Isend( getPtr(d_SendBuf2), d_SendBuf2.size(), i, d_commTag+1 );
-                curReq++;
+                ++curReq;
             }
         }
     }
@@ -287,12 +287,12 @@ void Map3to1to3::unpackBuffer( const std::vector<comm_data>& buffer, std::map<do
         iterator = map.end();
         if ( map.size() > 0 ) {
             it1 = map.lower_bound( buffer[j].z );
-            if ( it1==map.end() ) { it1--; }
+            if ( it1==map.end() ) { --it1; }
             it2 = it1;
             it3 = it1;
             if ( it1 != map.begin() )
-                it1--;
-            it3++;
+                --it1;
+            ++it3;
             if ( it3 == map.end() )
                 it3 = it2;
             if ( fabs(it1->first-buffer[j].z)<tol )

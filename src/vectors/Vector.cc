@@ -33,11 +33,6 @@ Vector::Vector ()
     d_Views = boost::shared_ptr<std::vector<boost::weak_ptr <Vector> > >( 
         new std::vector<boost::weak_ptr <Vector> >() );
 }  
-Vector::Vector( const Vector&rhs ): 
-    VectorOperations (),
-    boost::enable_shared_from_this<Vector> (rhs)
-{
-}
 Vector::Vector( VectorParameters::shared_ptr  parameters)
 {
     // Set default output stream
@@ -785,7 +780,7 @@ void Vector::makeConsistent ( ScatterType  t )
       d_CommList->unpackSendBufferAdd ( recv_vec_add , *this );
       for ( std::vector<double>::iterator curAdd = d_AddBuffer->begin() ;
             curAdd != d_AddBuffer->end() ;
-            curAdd++ )
+            ++curAdd )
       {
         *curAdd = 0.0;
       }
@@ -853,7 +848,7 @@ void  Vector::dumpGhostedData ( std::ostream &out , size_t offset ) const
     std::vector<double>::iterator curVal = d_Ghosts->begin();
     for (size_t i=0; i<ghosts.size(); i++) {
       out << "  GID: " << (ghosts[i] + offset ) << "  Value: " << (*curVal) << "\n";
-      curVal++;
+      ++curVal;
     }
 }
 
