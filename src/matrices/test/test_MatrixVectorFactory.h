@@ -24,7 +24,7 @@ AMP::LinearAlgebra::Matrix::shared_ptr global_cached_matrix = AMP::LinearAlgebra
 class AmpInterfaceLeftVectorFactory
 {
 public:
-    typedef  AMP::LinearAlgebra::ManagedPetscVector        vector;
+    typedef  AMP::LinearAlgebra::Vector        vector;
 
     static AMP::LinearAlgebra::Variable::shared_ptr   getVariable()
     {
@@ -47,7 +47,7 @@ public:
 class AmpInterfaceRightVectorFactory
 {
 public:
-    typedef  AMP::LinearAlgebra::ManagedPetscVector        vector;
+    typedef  AMP::LinearAlgebra::Vector        vector;
 
     static AMP::LinearAlgebra::Variable::shared_ptr   getVariable()
     {
