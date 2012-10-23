@@ -59,7 +59,7 @@ multiDOFManager::multiDOFManager ( AMP_MPI globalComm, std::vector<DOFManager::s
 /****************************************************************
 * Deconstructor                                                 *
 ****************************************************************/
-DOFManager::~DOFManager( )
+multiDOFManager::~multiDOFManager( )
 {
 }
 

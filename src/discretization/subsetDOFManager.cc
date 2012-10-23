@@ -84,7 +84,7 @@ DOFManager::shared_ptr  subsetDOFManager::create( boost::shared_ptr<const DOFMan
 /****************************************************************
 * Deconstructor                                                 *
 ****************************************************************/
-DOFManager::~DOFManager( )
+subsetDOFManager::~subsetDOFManager( )
 {
 }
 
