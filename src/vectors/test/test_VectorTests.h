@@ -522,9 +522,9 @@ void DivideVector( AMP::UnitTest *utils )
         {
           if ( *curVal3 != *curVal1 / *curVal2 )
             pass = false;
-          ++curData1;
-          ++curData2;
-          ++curData3;
+          ++curVal1;
+          ++curVal2;
+          ++curVal3;
         }
         if ( pass )
           utils->passes ( "vector::divide" );

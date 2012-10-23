@@ -41,6 +41,7 @@ SubchannelTwoEqLinearOperator::SubchannelTwoEqLinearOperator(const boost::shared
 // reset
 void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
 {
+    PROFILE_START("reset");
     d_initialized = true;
     boost::shared_ptr<SubchannelOperatorParameters> myparams = 
         boost::dynamic_pointer_cast<SubchannelOperatorParameters>(params);
@@ -157,6 +158,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
 
     if ( d_nullFrozenvector ) {
         // We are done with the reset
+        PROFILE_STOP2("reset");
         return;
     }
 
@@ -326,6 +328,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
 
     }//end of isub
     d_matrix->makeConsistent();
+    PROFILE_STOP("reset");
 }
 
 // function used in reset to get double parameter or set default if missing
