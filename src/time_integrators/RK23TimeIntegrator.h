@@ -25,12 +25,12 @@ public:
    /**
     * Constructor that accepts parameter list.
     */
-  RK23TimeIntegrator( boost::shared_ptr<TimeIntegratorParameters> parameters );
+   RK23TimeIntegrator( boost::shared_ptr<TimeIntegratorParameters> parameters );
 
    /**
     * Destructor.
     */
-   ~RK23TimeIntegrator();
+   virtual ~RK23TimeIntegrator();
 
    /**
     * Initialize from parameter list.

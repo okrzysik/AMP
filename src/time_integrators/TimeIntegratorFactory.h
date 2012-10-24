@@ -54,7 +54,7 @@ public:
    /**
     * Destructor.
     */
-   ~TimeIntegratorFactory();
+   virtual ~TimeIntegratorFactory();
 
    /**
     * Factory method for generating multilevel solvers with characteristics
