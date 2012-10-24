@@ -40,7 +40,7 @@ class ImplicitTimeIntegratorParameters: public TimeIntegratorParameters
 public:
   ImplicitTimeIntegratorParameters( boost::shared_ptr<AMP::Database> db);
   
-  ~ImplicitTimeIntegratorParameters();
+  virtual ~ImplicitTimeIntegratorParameters();
   
   /**
    * Pointers to implicit equation and solver strategy objects

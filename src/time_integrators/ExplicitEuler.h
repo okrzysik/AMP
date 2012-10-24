@@ -21,12 +21,12 @@ public:
    /**
     * Constructor that accepts parameter list.
     */
-  ExplicitEuler(  boost::shared_ptr<TimeIntegratorParameters> parameters );
+   ExplicitEuler(  boost::shared_ptr<TimeIntegratorParameters> parameters );
 
    /**
     * Destructor.
     */
-   ~ExplicitEuler();
+   virtual ~ExplicitEuler();
 
    /**
     * Initialize from parameter list.

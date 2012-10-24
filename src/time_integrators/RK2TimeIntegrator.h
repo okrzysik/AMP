@@ -26,7 +26,7 @@ public:
    /**
     * Destructor.
     */
-   ~RK2TimeIntegrator();
+   virtual ~RK2TimeIntegrator();
 
    /**
     * Initialize from parameter list.
