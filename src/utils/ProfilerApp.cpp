@@ -105,7 +105,7 @@ static inline void convert_timer_id( unsigned int id, char* str ) {
     if ( N_bits <= 9 ) {
         // The id is < 512, store it as a 3-digit number        
         sprintf(str,"%03u",id);
-    } else if ( N_bits <= 9 ) {
+    } else if ( N_bits <= 16 ) {
         // The id is < 2^16, store it as a 4-digit hex
         sprintf(str,"%04x",id);
     } else {
@@ -144,6 +144,8 @@ ProfilerApp::ProfilerApp() {
     #endif
     for (int i=0; i<THREAD_HASH_SIZE; i++)
         thread_head[i] = NULL;
+    for (int i=0; i<TIMER_HASH_SIZE; i++)
+        timer_table[i] = NULL;
     get_time(&construct_time);
     N_threads = 0;
     N_timers = 0;
@@ -799,7 +801,7 @@ ProfilerApp::thread_info* ProfilerApp::get_thread_data( ) {
         head = head->next;
     }
     // Return the pointer (Note: we no longer need volatile since we are accessing it from the creating thread)
-    return (thread_info*) head;
+    return const_cast<thread_info*>(head);
 }
 
 

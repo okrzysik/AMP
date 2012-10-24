@@ -190,9 +190,7 @@ private:
             end_time = NULL;
         }
         // Copy constuctor
-        store_trace(const store_trace& rhs) {
-            abort();
-        }
+        store_trace(const store_trace& rhs);
         // De-constructor
 		~store_trace() {
             if ( start_time == NULL )
