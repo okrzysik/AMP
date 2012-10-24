@@ -1,6 +1,8 @@
 #ifndef included_ProfilerApp
 #define included_ProfilerApp
 
+#include "utils/ProfilerAppMacros.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
@@ -108,11 +110,11 @@ public:
     //! Destructor
     ~ProfilerApp();
 
-   //! Function to start profiling a block of code
     /*!
-     * This function starts profiling a block of code until a corresponding stop is called.
-     * It is recommended to use PROFILE_START(message) to call this routine.  It will 
-     * automatically fill in the file name and the line number.  
+     * \brief  Function to start profiling a block of code
+     * \details  This function starts profiling a block of code until a corresponding stop is called.
+     *   It is recommended to use PROFILE_START(message) to call this routine.  It will 
+     *   automatically fill in the file name and the line number.  
      * @param message       Message to uniquely identify the block of code being profiled.
      *                      It must be a unique message to all start called within the same file.
      * @param filename      Name of the file containing the code
@@ -122,11 +124,11 @@ public:
      */
     void start( const std::string& message, const std::string& filename, const int line, const int level=0 );
 
-    //! Function to stop profiling a block of code
     /*!
-     * This function stop profiling a block of code until a corresponding stop is called.
-     * It is recommended to use PROFILE_STOP(message) to call this routine.  It will 
-     * automatically fill in the file name and the line number.  
+     * \brief  Function to stop profiling a block of code
+     * \details  This function stop profiling a block of code until a corresponding stop is called.
+     *   It is recommended to use PROFILE_STOP(message) to call this routine.  It will 
+     *   automatically fill in the file name and the line number.  
      * @param message       Message to uniquely identify the block of code being profiled.
      *                      It must match a start call.
      * @param filename      Name of the file containing the code
@@ -137,17 +139,18 @@ public:
      */
     void stop( const std::string& message, const std::string& filename, const int line, const int level=0 );
 
-    //! Function to save the profiling info
-    /* Note: .x.timer will automatically be appended to the filename, where x is the rank+1 of the process.
+    /*!
+     * \brief  Function to save the profiling info
+     * \details  This will save the current timer info
+     * Note: .x.timer will automatically be appended to the filename, where x is the rank+1 of the process.
      * Note: .x.trace will automatically be appended to the filename when detailed traces are used.
      * @param filename      File name for saving the results
-
      */
     void save( const std::string& filename );
 
-    //! Function to enable the timers
     /*!
-     * This function will enable the current timer clase.  It supports an optional level argument
+     * \brief  Function to enable the timers
+     * \details  This function will enable the current timer clase.  It supports an optional level argument
      * that specifies the level of detail to use for the timers. 
      * @param level         Level of detail to include this timer (default is 0)
      *                      Only timers whos level is <= the level of the specified by enable will be included.
@@ -157,14 +160,18 @@ public:
     //! Function to enable the timers (all current timers will be deleted)
     void disable( );
 
-    //! Function to change if we are storing detailed trace information (must be called before any start)
-    /*  Note: Enabling this option will store the starting and ending time for each call.
+    /*!
+     * \brief  Function to change if we are storing detailed trace information
+     * \details  This function will change if we are storing detailed trace information (must be called before any start)
+     *  Note: Enabling this option will store the starting and ending time for each call.
      *  This will allow the user to look at the detailed results to get trace information.
      *  However this will significantly increase the memory requirements for any traces
      *  that get called repeatedly and may negitivly impact the performance.
      * @param profile       Do we want to store detailed profiling data
      */
     void set_store_trace(bool profile=false);
+
+    inline int get_level( ) const { return d_level; }
 
 private:
 
@@ -319,91 +326,11 @@ private:
 
 }
 
+
+// The global profiler
 extern AMP::ProfilerApp global_profiler;
 
-/*! \addtogroup Macros
- *  @{
- */
-
-/*! \def PROFILE_START(NAME,..)
- *  \brief Start the profiler
- *  \details This is the primary call to start a timer.  Only one call within a file 
- *      may call the timer.  Any other calls must use PROFILE_START2(X).
- *      This call will automatically add the file and line number to the timer.
- *      See  \ref AMP::ProfilerApp "ProfilerApp" for more info.
- *  \param NAME  Name of the timer
- */
-#define PROFILE_START(NAME,...) \
-    global_profiler.start( NAME, __FILE__, __LINE__, ##__VA_ARGS__ )
-
-/*! \def PROFILE_STOP(NAME,..)
- *  \brief Stop the profiler
- *  \details This is the primary call to stop a timer.  Only one call within a file 
- *      may call the timer.  Any other calls must use PROFILE_STOP2(X).
- *      This call will automatically add the file and line number to the timer.
- *      An optional argument specifying the level to enable may be included.
- *      See  \ref AMP::ProfilerApp "ProfilerApp" for more info.
- *  \param NAME  Name of the timer
- */
-#define PROFILE_STOP(NAME,...) \
-    global_profiler.stop( NAME, __FILE__, __LINE__, ##__VA_ARGS__ )
-
-/*! \def PROFILE_START2(NAME,..)
- *  \brief Start the profiler
- *  \details This is a call to start a timer without the line number.
- *      An optional argument specifying the level to enable may be included.
- *      See  \ref AMP::ProfilerApp "ProfilerApp" for more info.
- *  \param NAME  Name of the timer
- */
-#define PROFILE_START2(NAME,...) \
-    global_profiler.start( NAME, __FILE__, -1, ##__VA_ARGS__ )
-
-/*! \def PROFILE_STOP2(NAME,..)
- *  \brief Start the profiler
- *  \details This is a call to start a timer without the line number.
- *      An optional argument specifying the level to enable may be included.
- *      See  \ref AMP::ProfilerApp "ProfilerApp" for more info.
- *  \param NAME  Name of the timer
- */
-#define PROFILE_STOP2(NAME,...) \
-    global_profiler.stop( NAME, __FILE__, -1, ##__VA_ARGS__ )
-
-/*! \def PROFILE_SAVE(FILE)
- *  \brief Save the profile results
- *  \details This will save the results of the timers the file provided
- *      An optional argument specifying the level to enable may be included.
- *      See  \ref AMP::ProfilerApp "ProfilerApp" for more info.
- *  \param FILE  Name of the file to save
- */
-#define PROFILE_SAVE(FILE) \
-    global_profiler.save( FILE )
-
-/*! \def PROFILE_STORE_TRACE(X)
- *  \brief Enable/Disable the trace data
- *  \details This will enable or disable trace timers.
- *      See  \ref AMP::ProfilerApp "ProfilerApp" for more info.
- *  \param X  Flag to indicate if we want to enable/disable the trace timers
- */
-#define PROFILE_STORE_TRACE(X) \
-    global_profiler.set_store_trace( X )
-
-/*! \def PROFILE_ENABLE(...)
- *  \brief Enable the timers
- *  \details This will enable the timers.
- *      An optional argument specifying the level to enable may be included.
- *      See  \ref AMP::ProfilerApp "ProfilerApp" for more info.
- */
-#define PROFILE_ENABLE(...) \
-    global_profiler.enable(__VA_ARGS__)
-
-/*! \def PROFILE_DISABLE
- *  \brief Disable the timers
- *  \details This will disable the timers.
- *      See  \ref AMP::ProfilerApp "ProfilerApp" for more info.
- */
-#define PROFILE_DISABLE() \
-    global_profiler.disable()
-
-/*! @} */
 
 #endif
+
+
