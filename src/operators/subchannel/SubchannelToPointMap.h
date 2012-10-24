@@ -1,10 +1,10 @@
-#ifndef included_AMP_SubchannelDensityToPointMap
-#define included_AMP_SubchannelDensityToPointMap
+#ifndef included_AMP_SubchannelToPointMapMap
+#define included_AMP_SubchannelToPointMapMap
 
 #include "utils/AMP_MPI.h"
 #include "ampmesh/Mesh.h"
 #include "operators/Operator.h"
-#include "operators/subchannel/SubchannelDensityToPointMapParameters.h"
+#include "operators/subchannel/SubchannelToPointMapParameters.h"
 #include "operators/subchannel/SubchannelPhysicsModel.h"
 
 namespace AMP {
@@ -12,25 +12,24 @@ namespace Operator {
 
 
 /**
- * \class SubchannelDensityToPointMap
- * \brief A class used to map subchannel density to points
- *
- * \details  This class provides routines for mapping the subchannel flow density 
- *     to a set of points provided.
+ * \class SubchannelToPointMap
+ * \brief A class used to map subchannel properties to points
+ * \details  This class provides routines for mapping the subchannel flow  
+ *     properties (Density, Temperature) to a set of points provided.
  */
-class SubchannelDensityToPointMap : public AMP::Operator::Operator
+class SubchannelToPointMap : public AMP::Operator::Operator
 {
 public :
 
     //! Default constructor
-    SubchannelDensityToPointMap(const boost::shared_ptr<SubchannelDensityToPointMapParameters>& params);
+    SubchannelToPointMap(const boost::shared_ptr<SubchannelToPointMapParameters>& params);
 
     //! Deconstructor
-    virtual ~SubchannelDensityToPointMap() { }
+    virtual ~SubchannelToPointMap() { }
 
     /**
      * \brief Perform the map
-     * \details  This performs the map of the density to the given points.
+     * \details  This performs the map of the output propertiy (Density or Temperature) to the given points.
      * \param f     Unused input
      * \param u     Vector containing the subchannel solution (may be a multivector containing other variables)
      * \param r     Vector to fill the densities.  The local size must match the number of points set
@@ -46,15 +45,14 @@ public :
     }
 
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
-        return AMP::LinearAlgebra::Variable::shared_ptr(new AMP::LinearAlgebra::Variable("Density"));
-    }
+    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_outputVar; }
 
 
 private:
 
     AMP_MPI d_comm;
     std::vector<double> d_point_x, d_point_y, d_point_z;
+    AMP::LinearAlgebra::Variable::shared_ptr d_outputVar;
 
     // Create the subchannel grid for all processors
     size_t N_subchannels;

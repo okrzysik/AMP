@@ -1,5 +1,5 @@
-#ifndef included_AMP_SubchannelDensityToPointMapParameters
-#define included_AMP_SubchannelDensityToPointMapParameters
+#ifndef included_AMP_SubchannelToPointMapParameters
+#define included_AMP_SubchannelToPointMapParameters
 
 #include "operators/OperatorParameters.h"
 #include "utils/AMP_MPI.h"
@@ -11,20 +11,20 @@ namespace Operator {
 
 
 /**
- * \class SubchannelDensityToPointMapParameters
- * \brief Parameters for the SubchannelDensityToPointMap
+ * \class SubchannelToPointMapParameters
+ * \brief Parameters for the SubchannelToPointMap
  */
-class SubchannelDensityToPointMapParameters : public AMP::Operator::OperatorParameters
+class SubchannelToPointMapParameters : public AMP::Operator::OperatorParameters
 {
 public :
 
     //! Default constructors
-    SubchannelDensityToPointMapParameters(): 
+    SubchannelToPointMapParameters(): 
         OperatorParameters(boost::shared_ptr<AMP::Database>()), 
         d_comm(AMP_COMM_WORLD) {};
 
     //! Deconstructor
-    virtual ~SubchannelDensityToPointMapParameters() { }
+    virtual ~SubchannelToPointMapParameters() { }
 
     //! Comm over which the points will be gathered (default is AMP_COMM_WORLD)
     AMP_MPI d_comm;
@@ -36,6 +36,10 @@ public :
     
     // Subchannel physics model
     boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
+
+    // Output variable (may be null on processors where x is empty)
+    // Valid variables are: "Density", "Temperature"
+    AMP::LinearAlgebra::Variable::shared_ptr d_outputVar;
 };
 
 

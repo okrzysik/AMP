@@ -61,7 +61,7 @@
 #include "operators/subchannel/SubchannelHelpers.h"
 #include "operators/subchannel/CoupledChannelToCladMapOperator.h"
 #include "operators/subchannel/SubchannelConstants.h"
-#include "operators/subchannel/SubchannelDensityToPointMap.h"
+#include "operators/subchannel/SubchannelToPointMap.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
 
@@ -669,13 +669,14 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::pout << "Subchannel Flow Temp Max : " << flowTempMax << " Min : "<< flowTempMin << std::endl;
 
 
-    // Test the density to point map
-    boost::shared_ptr<AMP::Operator::SubchannelDensityToPointMapParameters> subchannelToPointMapParams(
-        new AMP::Operator::SubchannelDensityToPointMapParameters());
+    // Test the subchannel to point map
+    boost::shared_ptr<AMP::Operator::SubchannelToPointMapParameters> subchannelToPointMapParams(
+        new AMP::Operator::SubchannelToPointMapParameters());
     subchannelToPointMapParams->d_Mesh = subchannelMesh;
     subchannelToPointMapParams->d_comm = globalComm;
     subchannelToPointMapParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
-    if(subchannelMesh != NULL ){
+    subchannelToPointMapParams->d_outputVar.reset( new AMP::LinearAlgebra::Variable("Density") );
+    if(subchannelMesh != NULL ) {
         AMP::Mesh::MeshIterator face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
         for(size_t i=0; i<face.size(); i++) {
             std::vector<double> pos = face->centroid();
@@ -686,26 +687,40 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         }
         AMP_ASSERT(subchannelToPointMapParams->x.size()==flowDensityVec->getLocalSize());
     }
-    AMP::Operator::SubchannelDensityToPointMap subchannelDensityToPointMap(subchannelToPointMapParams);
+    AMP::Operator::SubchannelToPointMap subchannelDensityToPointMap(subchannelToPointMapParams);
+    subchannelToPointMapParams->d_outputVar.reset( new AMP::LinearAlgebra::Variable("Temperature") );
+    AMP::Operator::SubchannelToPointMap subchannelTemperatureToPointMap(subchannelToPointMapParams);
     AMP::LinearAlgebra::Vector::shared_ptr densityMapVec = AMP::LinearAlgebra::SimpleVector::create(
         subchannelToPointMapParams->x.size(), subchannelDensityToPointMap.getOutputVariable() );
+    AMP::LinearAlgebra::Vector::shared_ptr temperatureMapVec = AMP::LinearAlgebra::SimpleVector::create(
+        subchannelToPointMapParams->x.size(), subchannelTemperatureToPointMap.getOutputVariable() );
     subchannelDensityToPointMap.apply( nullVec, flowSolVec, densityMapVec );
+    subchannelTemperatureToPointMap.apply( nullVec, flowSolVec, temperatureMapVec );
     if(subchannelMesh != NULL ){
         AMP::Mesh::MeshIterator face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
         std::vector<size_t> dofs;
-        bool pass = true;
+        bool pass_density = true;
+        bool pass_temperature = true;
         for(size_t i=0; i<face.size(); i++) {
             flowDensityVec->getDOFManager()->getDOFs( face->globalID(), dofs );
             double density1 = flowDensityVec->getValueByGlobalID(dofs[0]);
             double density2 = densityMapVec->getValueByLocalID(i);
             if ( !AMP::Utilities::approx_equal(density1,density2) )
-                pass = false;
+                pass_density = false;
+            double temp1 = flowTempVec->getValueByGlobalID(dofs[0]);
+            double temp2 = temperatureMapVec->getValueByLocalID(i);
+            if ( !AMP::Utilities::approx_equal(temp1,temp2) )
+                pass_temperature = false;
             ++face;
         } 
-        if ( pass )
+        if ( pass_density )
             ut->passes("Subchannel density to point map");
         else
             ut->failure("Subchannel density to point map");
+        if ( pass_temperature )
+            ut->passes("Subchannel temperature to point map");
+        else
+            ut->failure("Subchannel temperature to point map");
     }
     
     

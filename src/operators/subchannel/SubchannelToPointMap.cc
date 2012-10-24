@@ -1,4 +1,4 @@
-#include "operators/subchannel/SubchannelDensityToPointMap.h"
+#include "operators/subchannel/SubchannelToPointMap.h"
 #include "utils/Utilities.h"
 #include "ampmesh/StructuredMeshHelper.h"
 #include "operators/subchannel/SubchannelConstants.h"
@@ -11,7 +11,7 @@ namespace Operator {
 
 
 // Constructor
-SubchannelDensityToPointMap::SubchannelDensityToPointMap(const boost::shared_ptr<SubchannelDensityToPointMapParameters>& params)
+SubchannelToPointMap::SubchannelToPointMap(const boost::shared_ptr<SubchannelToPointMapParameters>& params)
 {
     // Copy the inputs
     AMP_ASSERT(params!=NULL);
@@ -20,6 +20,7 @@ SubchannelDensityToPointMap::SubchannelDensityToPointMap(const boost::shared_ptr
     d_point_x = params->x;
     d_point_y = params->y;
     d_point_z = params->z;
+    d_outputVar = params->d_outputVar;
     d_subchannelPhysicsModel = params->d_subchannelPhysicsModel;
     // Check the inputs
     AMP_INSIST(!d_comm.isNull(),"d_comm must not by NULL");
@@ -30,18 +31,23 @@ SubchannelDensityToPointMap::SubchannelDensityToPointMap(const boost::shared_ptr
     AMP_INSIST(d_comm>=mesh_comm,"d_comm must be >= comm of the subchannel mesh");
     AMP_ASSERT(d_point_x.size()==d_point_y.size()&&d_point_x.size()==d_point_z.size());
     AMP_ASSERT(d_subchannelPhysicsModel!=NULL);
+    if ( !d_point_x.empty() ) {
+        AMP_INSIST(d_outputVar!=NULL,"Output variable is NULL for subchannel to point map");
+        AMP_INSIST(d_outputVar->getName()=="Density"||d_outputVar->getName()=="Temperature",
+            "Invalid output variable for subchannel to point map");
+    }
     // Get the coordinates of the subchannel mesh
     this->createGrid();
 }
 
 
 // Perform the map
-void SubchannelDensityToPointMap::apply(AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+void SubchannelToPointMap::apply(AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
     AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b)
 {
     PROFILE_START("apply");
     // Get the list of all subchannel face densities
-    std::vector<double> density(N_subchannels*d_subchannel_z.size(),0.0);
+    std::vector<double> output(N_subchannels*d_subchannel_z.size(),0.0);
     if ( d_Mesh!=NULL ) {
         AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = subsetInputVector( u );
         AMP_ASSERT(uInternal!=NULL);
@@ -51,15 +57,24 @@ void SubchannelDensityToPointMap::apply(AMP::LinearAlgebra::Vector::const_shared
         const double h_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
         const double P_scale = 1.0/Subchannel::scalePressure;                 // Scale to change the input vector back to correct units
         for (size_t i=0; i<it.size(); i++) {
-            // Get the density for the current face
+            // Get the output variable for the current face
+            double output_face = 0.0;
             faceDOFManager->getDOFs( it->globalID(), dofs );
             AMP_ASSERT(dofs.size()==2);
             std::map<std::string, boost::shared_ptr<std::vector<double> > > subchannelArgMap;
             subchannelArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_scale*uInternal->getValueByGlobalID(dofs[0]))));
             subchannelArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,P_scale*uInternal->getValueByGlobalID(dofs[1]))));
-            std::vector<double> specificVolume(1);
-            d_subchannelPhysicsModel->getProperty("SpecificVolume", specificVolume, subchannelArgMap);
-            double density_face = 1.0/specificVolume[0];
+            if ( d_outputVar->getName()=="Density" ) {
+                std::vector<double> specificVolume(1);
+                d_subchannelPhysicsModel->getProperty("SpecificVolume", specificVolume, subchannelArgMap);
+                output_face = 1.0/specificVolume[0];
+            } else if ( d_outputVar->getName()=="Temperature" ) {
+                std::vector<double> temperature(1);
+                d_subchannelPhysicsModel->getProperty("Temperature", temperature, subchannelArgMap);
+                output_face = temperature[0];
+            } else { 
+                AMP_ERROR("Unknown output property");
+            }
             // Add it to the subchannel density vector
             std::vector<double> center = it->centroid();
             size_t ix = AMP::Utilities::findfirst( d_subchannel_x, center[0]-1e-9 );
@@ -69,50 +84,50 @@ void SubchannelDensityToPointMap::apply(AMP::LinearAlgebra::Vector::const_shared
             AMP_ASSERT(AMP::Utilities::approx_equal(d_subchannel_y[iy],center[1]));
             AMP_ASSERT(AMP::Utilities::approx_equal(d_subchannel_z[iz],center[2]));
             size_t index = ix + iy*d_subchannel_x.size() + iz*N_subchannels;
-            density[index] += density_face;
+            output[index] += output_face;
             ++it;
         }
     }
-    d_comm.sumReduce<double>(&density[0],density.size());
+    d_comm.sumReduce<double>(&output[0],output.size());
 
-    // Perform tri-linear interpolation to fill the density
+    // Perform tri-linear interpolation to fill the output
     AMP::LinearAlgebra::VS_Comm commSelector( d_comm );
-    AMP::LinearAlgebra::Vector::shared_ptr  densityVec = r->select(commSelector, u->getVariable()->getName());
-    if ( densityVec!=NULL )
-        densityVec = densityVec->subsetVectorForVariable(getOutputVariable());
-    std::vector<double> localDensity(d_point_x.size(),0.0);
+    AMP::LinearAlgebra::Vector::shared_ptr  outputVec = r->select(commSelector, u->getVariable()->getName());
+    if ( outputVec!=NULL )
+        outputVec = outputVec->subsetVectorForVariable(getOutputVariable());
+    std::vector<double> localOutput(d_point_x.size(),0.0);
     if ( d_subchannel_x.size()>1 && d_subchannel_y.size()>1 ) {
         for (size_t i=0; i<d_point_x.size(); i++)
-            localDensity[i] = AMP::Utilities::trilinear( d_subchannel_x, d_subchannel_y, 
-                d_subchannel_z, density, d_point_x[i], d_point_y[i], d_point_z[i] );
+            localOutput[i] = AMP::Utilities::trilinear( d_subchannel_x, d_subchannel_y, 
+                d_subchannel_z, output, d_point_x[i], d_point_y[i], d_point_z[i] );
     } else if ( d_subchannel_x.size()>1 ) {
         for (size_t i=0; i<d_point_x.size(); i++)
-            localDensity[i] = AMP::Utilities::bilinear( d_subchannel_x, d_subchannel_z, 
-                density, d_point_x[i], d_point_z[i] );
+            localOutput[i] = AMP::Utilities::bilinear( d_subchannel_x, d_subchannel_z, 
+                output, d_point_x[i], d_point_z[i] );
     } else if ( d_subchannel_y.size()>1 ) {
         for (size_t i=0; i<d_point_x.size(); i++)
-            localDensity[i] = AMP::Utilities::bilinear( d_subchannel_y, d_subchannel_z, 
-                density, d_point_y[i], d_point_z[i] );
+            localOutput[i] = AMP::Utilities::bilinear( d_subchannel_y, d_subchannel_z, 
+                output, d_point_y[i], d_point_z[i] );
     } else  {
         for (size_t i=0; i<d_point_x.size(); i++)
-            localDensity[i] = AMP::Utilities::linear( d_subchannel_z, density, d_point_z[i] );
+            localOutput[i] = AMP::Utilities::linear( d_subchannel_z, output, d_point_z[i] );
     }
     if ( d_point_x.size()>0 ) {
-        AMP_ASSERT(densityVec!=NULL);
-        AMP_ASSERT(densityVec->getLocalSize()==d_point_x.size());
+        AMP_ASSERT(outputVec!=NULL);
+        AMP_ASSERT(outputVec->getLocalSize()==d_point_x.size());
         std::vector<size_t> dofs(d_point_x.size());
         for (size_t i=0; i<d_point_x.size(); i++)
             dofs[i] = i;
-        densityVec->setValuesByLocalID( dofs.size(), &dofs[0], &localDensity[0] );
+        outputVec->setValuesByLocalID( dofs.size(), &dofs[0], &localOutput[0] );
     }
-    if ( densityVec )
-        densityVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    if ( outputVec )
+        outputVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     PROFILE_STOP("apply");
 }
 
 
 // Create the subchannel grid for all processors
-void SubchannelDensityToPointMap::createGrid()
+void SubchannelToPointMap::createGrid()
 {
     PROFILE_START("createGrid");
     // Create the grid for all processors
