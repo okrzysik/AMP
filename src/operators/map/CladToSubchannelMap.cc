@@ -64,11 +64,11 @@ CladToSubchannelMap::CladToSubchannelMap ( const boost::shared_ptr<AMP::Operator
 
     // Create the send/recv buffers
     d_sendMaxBufferSize = 0;
-    d_sendBuffer = std::vector<std::vector<std::pair<double,double> > >(N_subchannels);
+    d_sendBuffer = std::vector<double*>(N_subchannels,NULL);
     if ( d_mesh1.get() != NULL ) {
         for (size_t i=0; i<N_subchannels; i++) {
             if ( d_elem[i].size() > 0 ) {
-                d_sendBuffer[i] = std::vector<std::pair<double,double> >(d_elem[i].size());
+                d_sendBuffer[i] = new double[2*d_elem[i].size()];
                 if ( d_elem[i].size() > d_sendMaxBufferSize )
                     d_sendMaxBufferSize = d_elem[i].size();
             }
@@ -83,6 +83,19 @@ CladToSubchannelMap::CladToSubchannelMap ( const boost::shared_ptr<AMP::Operator
 ************************************************************************/
 CladToSubchannelMap::~CladToSubchannelMap ()
 {
+    for (size_t i=0; i<d_sendBuffer.size(); i++) {
+        delete [] d_sendBuffer[i];
+        d_sendBuffer[i] = NULL;
+    }
+    d_sendBuffer.resize(0);
+    d_x.resize(0);
+    d_y.resize(0);
+    d_z.resize(0);
+    d_ownSubChannel.resize(0);
+    d_subchannelRanks.resize(0);
+    d_subchannelSend.resize(0);
+    d_elem.resize(0);
+    d_currRequests.resize(0);
 }
 
 
@@ -197,15 +210,15 @@ void CladToSubchannelMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
     for (size_t i=0; i<N_subchannels; i++) {
         if ( d_elem[i].empty() )
             continue;
-        for (size_t j=0; j<d_z.size(); j++)
-            d_sendBuffer[i][j] = std::pair<double,double>(0.0,0.0);
+        for (size_t j=0; j<2*d_elem[i].size(); j++)
+            d_sendBuffer[i][j] = 0.0;
         for (size_t j=0; j<d_elem[i].size(); j++) {
             DOF->getDOFs(d_elem[i][j],dofs);
             AMP_ASSERT(dofs.size()==1);
             std::vector<double> pos = d_mesh1->getElement(d_elem[i][j]).centroid();
             double val = curPhysics->getLocalValueByGlobalID(dofs[0]);
-            d_sendBuffer[i][j].first = pos[2];
-            d_sendBuffer[i][j].second = val;
+            d_sendBuffer[i][2*j+0] = pos[2];
+            d_sendBuffer[i][2*j+1] = val;
         }
     }
     // Send the data
@@ -215,7 +228,7 @@ void CladToSubchannelMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
         int tag = (int) i;  // We have an independent comm
         for (size_t j=0; j<d_subchannelRanks[i].size(); j++) {
             int rank = d_subchannelRanks[i][j];
-            d_currRequests.push_back( d_MapComm.Isend( &d_sendBuffer[i][0], d_sendBuffer[i].size(), rank, tag ) );
+            d_currRequests.push_back( d_MapComm.Isend( &d_sendBuffer[i][0], 2*d_elem[i].size(), rank, tag ) );
         }
     }
 }
@@ -239,17 +252,18 @@ void CladToSubchannelMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
     std::vector<std::vector<double> >  x(N_subchannels);
     std::vector<std::vector<double> >  f(N_subchannels);
     std::vector<std::pair<double,double> >  mapData;
-    std::pair<double,double> *tmp_data = new std::pair<double,double>[d_sendMaxBufferSize];
+    double *tmp_data = new double[2*d_sendMaxBufferSize];
     for (size_t i=0; i<N_subchannels; i++) {
         if ( d_ownSubChannel[i] ) {
             int tag = (int) i;  // We have an independent comm
             mapData.resize(0);
             for (size_t j=0; j<d_subchannelSend[i].size(); j++) {
-                int length = d_sendMaxBufferSize;
+                int length = 2*d_sendMaxBufferSize;
                 d_MapComm.recv( tmp_data, length, d_subchannelSend[i][j], true, tag );
-                mapData.reserve(mapData.size()+length);
-                for (int k=0; k<length; k++)
-                    mapData.push_back( tmp_data[k] );
+                AMP_ASSERT(length%2==0);
+                mapData.reserve(mapData.size()+length/2);
+                for (int k=0; k<length/2; k++)
+                    mapData.push_back( std::pair<double,double>(tmp_data[2*k+0],tmp_data[2*k+1]) );
             }
             create_map( mapData, x[i], f[i] );
         }
