@@ -164,7 +164,6 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
 
     // calculate extra parameters
     // Constants
-    const double pi = 4.0*atan(1.0); // pi
     const double g = 9.805;          // acceleration due to gravity [m/s2]
     const double h_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
     const double P_scale = 1.0/Subchannel::scalePressure;                 // Scale to change the input vector back to correct units
@@ -181,12 +180,6 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
         // Get the iterator over the faces in the local subchannel
         AMP::Mesh::MeshIterator localSubchannelIt = AMP::Mesh::MultiVectorIterator( d_subchannelFace[isub] );
         AMP_ASSERT(localSubchannelIt.size()==d_z.size());
-
-        // get solution sizes
-        const size_t numFaces = d_z.size();
-        const size_t numCells = numFaces-1;
-
-
 
         std::vector<size_t> dofs_minus;
         std::vector<size_t> dofs;
