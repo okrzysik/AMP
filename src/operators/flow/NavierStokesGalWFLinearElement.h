@@ -30,7 +30,7 @@ namespace Operator {
 
         }
 
-      ~NavierStokesGalWFLinearElement() {  }
+      virtual ~NavierStokesGalWFLinearElement() {  }
 
       void setElementStiffnessMatrix( std::vector<std::vector<double> > & elementStiffnessMatrix )
       {

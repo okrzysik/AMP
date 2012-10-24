@@ -31,7 +31,7 @@ public:
      *  Deconstructor that finalizes libmesh.  This allows libmesh to be reinitialized on
      *  a new comm, and frees any memory in use by libmesh.
      */
-    ~initializeLibMesh();
+    virtual ~initializeLibMesh();
 
     /*!
      *  Function to check if libmesh can be initialized with the given comm.

@@ -229,7 +229,7 @@ public:
         mesh = AMP::Mesh::Mesh::shared_ptr ( new AMP::Mesh::libMesh(local_mesh,"3 Element") );
     }
         
-    ~libMeshThreeElementGenerator() {
+    virtual ~libMeshThreeElementGenerator() {
         mesh.reset();
         libmeshInit.reset();
     }

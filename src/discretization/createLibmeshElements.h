@@ -23,7 +23,7 @@ public:
     createLibmeshElements();
 
     //! De-constructor
-    ~createLibmeshElements();
+    virtual ~createLibmeshElements();
 
     /**
      *  This function initializes / re-intializes the class to create the libmesh elements

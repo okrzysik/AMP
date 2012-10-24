@@ -38,7 +38,7 @@ namespace Operator {
       /**
         Destructor
         */
-      ~SubchannelFourEqNonlinearOperator() { }
+      virtual ~SubchannelFourEqNonlinearOperator() { }
 
       /**
         For this operator we have an in-place apply.

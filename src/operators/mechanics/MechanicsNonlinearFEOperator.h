@@ -51,7 +51,7 @@ namespace AMP {
         /**
           Destructor.
           */
-        ~MechanicsNonlinearFEOperator() { }
+        virtual ~MechanicsNonlinearFEOperator() { }
 
         /**
           This is used to update the operator between successive solves with the operator. 

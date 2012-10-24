@@ -31,7 +31,7 @@ public:
      *  Deconstructor that finalizes STKmesh.  This allows STKmesh to be reinitialized on
      *  a new comm, and frees any memory in use by STKmesh.
      */
-    ~initializeSTKMesh();
+    virtual ~initializeSTKMesh();
 
     /*!
      *  Function to check if STKmesh can be initialized with the given comm.

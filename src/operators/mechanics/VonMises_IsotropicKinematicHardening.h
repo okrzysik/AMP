@@ -17,7 +17,7 @@ namespace Operator {
 
       VonMises_IsotropicKinematicHardening(const boost::shared_ptr<MechanicsMaterialModelParameters>& );
 
-      ~VonMises_IsotropicKinematicHardening() { }
+      virtual ~VonMises_IsotropicKinematicHardening() { }
 
       void getConstitutiveMatrix(double*& ); 
 

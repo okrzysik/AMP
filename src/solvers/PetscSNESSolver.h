@@ -99,7 +99,7 @@ namespace Solver {
      /**
       * Default destructor.
       */
-     ~PetscSNESSolver();
+    virtual ~PetscSNESSolver();
     
     /**
      * Solve the system \f$Au = 0\f$.

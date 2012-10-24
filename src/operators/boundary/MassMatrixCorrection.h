@@ -32,7 +32,7 @@ namespace Operator {
       /**
        Destructor
        */
-      ~MassMatrixCorrection() { }
+      virtual ~MassMatrixCorrection() { }
       
       /**
        Set the variable for the vector that will used with this operator.

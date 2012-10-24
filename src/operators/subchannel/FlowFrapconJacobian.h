@@ -33,7 +33,7 @@ namespace Operator {
       /**
         Destructor
         */
-      ~FlowFrapconJacobian() { }
+      virtual ~FlowFrapconJacobian() { }
 
       /**
         For this operator we have an in-place apply.

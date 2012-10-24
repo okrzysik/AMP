@@ -19,8 +19,7 @@ public:
     {
     }
 
-    ~VectorCopyOperatorParameters() {
-    }
+    virtual ~VectorCopyOperatorParameters() { }
 
     AMP::LinearAlgebra::Variable::shared_ptr d_copyVariable;
 

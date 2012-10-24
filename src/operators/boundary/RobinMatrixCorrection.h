@@ -54,7 +54,7 @@ namespace Operator {
     /**
        Destructor
     */
-    ~RobinMatrixCorrection() { }
+    virtual ~RobinMatrixCorrection() { }
     
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr,
            AMP::LinearAlgebra::Vector::shared_ptr, const double = -1.0, const double = 1.0)

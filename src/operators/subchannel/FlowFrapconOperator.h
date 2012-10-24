@@ -41,7 +41,7 @@ namespace Operator {
       /**
         Destructor
         */
-      ~FlowFrapconOperator() { }
+      virtual ~FlowFrapconOperator() { }
 
       /**
         For this operator we have an in-place apply.

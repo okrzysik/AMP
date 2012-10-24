@@ -15,7 +15,7 @@ namespace AMP {
 
         IsotropicElasticModel(const boost::shared_ptr<MechanicsMaterialModelParameters>& );
 
-        ~IsotropicElasticModel() { }
+        virtual ~IsotropicElasticModel() { }
 
         void getConstitutiveMatrix(double*&);
 

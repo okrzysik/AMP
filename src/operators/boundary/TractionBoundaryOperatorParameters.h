@@ -13,7 +13,7 @@ namespace AMP {
         TractionBoundaryOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
           : OperatorParameters(db) {  }
 
-        ~TractionBoundaryOperatorParameters() { }
+        virtual ~TractionBoundaryOperatorParameters() { }
 
         AMP::LinearAlgebra::Vector::shared_ptr d_traction;
 

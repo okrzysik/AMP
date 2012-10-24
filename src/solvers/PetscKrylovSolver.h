@@ -99,7 +99,7 @@ namespace Solver {
     /**
      * Default destructor. Currently destroys the PETSc KSP object if it was created internally. 
      */
-    ~PetscKrylovSolver();
+    virtual ~PetscKrylovSolver();
 
    /**
     * Solve the system \f$Au = 0\f$.

@@ -23,7 +23,7 @@ namespace AMP {
 
         NavierStokesLSWFFEOperator(const boost::shared_ptr<NavierStokesLSWFFEOperatorParameters>& params);
 
-        ~NavierStokesLSWFFEOperator() { }
+        virtual ~NavierStokesLSWFFEOperator() { }
 
         void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  r);
 

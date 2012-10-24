@@ -17,7 +17,7 @@ namespace Operator {
 
       ThermalVonMisesMatModel(const boost::shared_ptr<MechanicsMaterialModelParameters>& );
 
-      ~ThermalVonMisesMatModel() { }
+      virtual ~ThermalVonMisesMatModel() { }
 
       void getConstitutiveMatrix(double*& ); 
 

@@ -72,7 +72,7 @@ namespace Operator {
       /**
         Destructor.
         */
-      ~GeneralCladThermalCreepPlasticModel() { }
+      virtual ~GeneralCladThermalCreepPlasticModel() { }
 
       /**
         Calculates the linearized elasto-plastic stress-strain constitutive matrix at each gauss 

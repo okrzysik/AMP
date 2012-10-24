@@ -14,7 +14,7 @@ namespace AMP {
       public:
         PelletStackMechanicsSolver(boost::shared_ptr<PelletStackMechanicsSolverParameters> params);
 
-        ~PelletStackMechanicsSolver() { }
+        virtual ~PelletStackMechanicsSolver() { }
 
         void resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params);
 

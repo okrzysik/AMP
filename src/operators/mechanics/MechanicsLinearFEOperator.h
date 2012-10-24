@@ -44,7 +44,7 @@ namespace AMP {
         /**
           Destructor
           */
-        ~MechanicsLinearFEOperator() { }
+        virtual ~MechanicsLinearFEOperator() { }
 
         /**
           This is called at the start of the FE assembly. The matrix is set to 0.

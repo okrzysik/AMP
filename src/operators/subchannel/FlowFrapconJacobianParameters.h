@@ -13,7 +13,7 @@ namespace Operator {
       FlowFrapconJacobianParameters(const boost::shared_ptr<AMP::Database> &db)
         : OperatorParameters(db) {  }
 
-      ~FlowFrapconJacobianParameters() { }
+      virtual ~FlowFrapconJacobianParameters() { }
 
       AMP::LinearAlgebra::Variable::shared_ptr d_variable;
 

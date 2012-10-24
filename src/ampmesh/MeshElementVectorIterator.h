@@ -31,7 +31,7 @@ public:
     MultiVectorIterator( const std::vector<MeshElement>& elements, size_t pos=0 );
 
     //! Deconstructor
-    ~MultiVectorIterator ();
+    virtual ~MultiVectorIterator ();
 
     //! Copy constructor
     MultiVectorIterator(const MultiVectorIterator&);

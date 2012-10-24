@@ -15,7 +15,7 @@ namespace Operator {
       NeumannVectorCorrectionParameters(const boost::shared_ptr<AMP::Database> &db)
         : OperatorParameters(db) {  }
 
-      ~NeumannVectorCorrectionParameters() { }
+      virtual ~NeumannVectorCorrectionParameters() { }
 
       AMP::LinearAlgebra::Variable::shared_ptr d_variable;
  

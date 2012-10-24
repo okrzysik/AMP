@@ -23,7 +23,7 @@ public:
     SubchannelTwoEqNonlinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params);
 
     //! Destructor
-    ~SubchannelTwoEqNonlinearOperator() { }
+    virtual ~SubchannelTwoEqNonlinearOperator() { }
 
     /**
       For this operator we have an in-place apply.

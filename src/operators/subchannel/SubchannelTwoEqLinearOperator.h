@@ -23,7 +23,7 @@ public:
     SubchannelTwoEqLinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params);
 
     //! Destructor
-    ~SubchannelTwoEqLinearOperator() { }
+    virtual ~SubchannelTwoEqLinearOperator() { }
 
     void reset(const boost::shared_ptr<OperatorParameters>& params);
 

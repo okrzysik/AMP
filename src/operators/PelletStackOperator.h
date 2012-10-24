@@ -12,7 +12,7 @@ namespace AMP {
       public :
         PelletStackOperator(const boost::shared_ptr<PelletStackOperatorParameters> & params);
 
-        ~PelletStackOperator() { }
+        virtual ~PelletStackOperator() { }
 
         int getLocalIndexForPellet(unsigned int pellId);
 

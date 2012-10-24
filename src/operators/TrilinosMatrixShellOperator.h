@@ -14,7 +14,7 @@ namespace AMP {
 
         TrilinosMatrixShellOperator(const boost::shared_ptr<OperatorParameters>& params);
 
-        ~TrilinosMatrixShellOperator() { }
+        virtual ~TrilinosMatrixShellOperator() { }
 
         void setOperator(boost::shared_ptr<Operator> op); 
 

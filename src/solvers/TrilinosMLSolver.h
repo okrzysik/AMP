@@ -110,7 +110,7 @@ namespace AMP {
         /**
          * Default destructor
          */
-        ~TrilinosMLSolver();
+        virtual ~TrilinosMLSolver();
 
         /**
          * Solve the system \f$Au = f\f$.

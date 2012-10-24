@@ -17,7 +17,7 @@ namespace AMP {
 
         BlockOperator(const boost::shared_ptr<OperatorParameters>& params);
 
-        ~BlockOperator() { }
+        virtual ~BlockOperator() { }
 
         void setNumRowBlocks(int val);
 

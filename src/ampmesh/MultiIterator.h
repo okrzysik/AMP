@@ -26,7 +26,7 @@ public:
     MultiIterator( std::vector<boost::shared_ptr<MeshIterator> > iterators, size_t global_pos=0 );
 
     //! Deconstructor
-    ~MultiIterator ();
+    virtual ~MultiIterator ();
 
     //! Copy constructor
     MultiIterator(const MultiIterator&);

@@ -19,7 +19,7 @@ public :
         : OperatorParameters(db) {  }
 
     //! Destructor
-    ~SubchannelOperatorParameters() { }
+    virtual ~SubchannelOperatorParameters() { }
 
     // pointer to subchannel physics model
     boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;

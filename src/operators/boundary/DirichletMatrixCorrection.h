@@ -36,7 +36,7 @@ namespace AMP {
         /**
           Destructor
           */
-        ~DirichletMatrixCorrection() { }
+        virtual ~DirichletMatrixCorrection() { }
 
         /**
           Set the variable for the vector that will used with this operator.

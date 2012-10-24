@@ -51,7 +51,7 @@ namespace TimeIntegrator{
         public:
             IDATimeIntegratorParameters(const boost::shared_ptr<AMP::Database> db);
             
-            ~IDATimeIntegratorParameters();
+            virtual ~IDATimeIntegratorParameters();
             
 
             boost::shared_ptr<AMP::LinearAlgebra::Vector> d_ic_vector_prime;

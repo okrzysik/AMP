@@ -41,7 +41,7 @@ namespace Operator {
       /**
         Destructor.
         */
-      ~MechanicsLinearUpdatedLagrangianElement() {  }
+      virtual ~MechanicsLinearUpdatedLagrangianElement() {  }
 
       /**
         This function is used by MechanicsLinearFEOperator to pass the address 

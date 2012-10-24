@@ -16,7 +16,7 @@ protected:
 
 public:
 
-    ~TimeIntegratorParameterTest () {}
+    virtual ~TimeIntegratorParameterTest () {}
 
     void passes(const std::string &in) { d_ut->passes(in); }
     void failure(const std::string &in) { d_ut->failure(in); }

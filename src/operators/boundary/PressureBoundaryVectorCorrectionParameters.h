@@ -14,7 +14,7 @@ namespace Operator {
       PressureBoundaryVectorCorrectionParameters(const boost::shared_ptr<AMP::Database> &db)
         : OperatorParameters(db) {  }
 
-      ~PressureBoundaryVectorCorrectionParameters() { }
+      virtual ~PressureBoundaryVectorCorrectionParameters() { }
 
       AMP::LinearAlgebra::Variable::shared_ptr d_variable;
  

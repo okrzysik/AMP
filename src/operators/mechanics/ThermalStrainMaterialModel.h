@@ -17,7 +17,7 @@ namespace Operator {
 
       ThermalStrainMaterialModel(const boost::shared_ptr<MechanicsMaterialModelParameters>& );
 
-      ~ThermalStrainMaterialModel() { }
+      virtual ~ThermalStrainMaterialModel() { }
 
       void getConstitutiveMatrix(double*& );
 
