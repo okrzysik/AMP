@@ -574,7 +574,7 @@ void ProfilerApp::save( const std::string& filename ) {
                 }
             }
             // Save the timer to the file
-            fprintf(timerFile,"%32s  %24s   %4i   %7i    %7i  %8i     %8.3f  %8.3f  %10.3f\n",
+            fprintf(timerFile,"%30s  %26s   %4i   %7i    %7i  %8i     %8.3f  %8.3f  %10.3f\n",
                 message,filename2,thread_id,start_line,stop_line,timer->N_calls,min_time,max_time,tot_time);
             timer = timer->next;
         }

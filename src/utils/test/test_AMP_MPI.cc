@@ -46,7 +46,8 @@ template <class type>
 int testReduce(AMP::AMP_MPI comm, AMP::UnitTest *ut, int flag);
 template <>
 int testReduce<std::complex<double> >(AMP::AMP_MPI comm, AMP::UnitTest *ut, int flag) {
-    char message[500];
+    PROFILE_START("testReduce<complex double>");
+    char message[128];
     std::complex<double> rank = comm.getRank()+1;
     std::complex<double> N = ((comm.getSize()*(comm.getSize()+1))/2);
     // Test sumReduce
@@ -62,16 +63,19 @@ int testReduce<std::complex<double> >(AMP::AMP_MPI comm, AMP::UnitTest *ut, int 
         ut->passes(message);
     else
         ut->failure(message);
+    PROFILE_STOP("testReduce<complex double>");
     return 2;   // Return the number of tests
 }
 template <class type>
 int testReduce(AMP::AMP_MPI comm, AMP::UnitTest *ut, int flag) {
+    PROFILE_START("testReduce");
     char message[128];
     type rank = (type) comm.getRank();
     type size = (type) comm.getSize();
     if ( (int)(size) != comm.getSize() ) {
         sprintf(message,"Reduce (%s) cannot represent the number of processors",typeid(type).name());
         ut->expected_failure(message);
+        PROFILE_STOP2("testReduce<class type>");
         return 0;
     }
     type x, y;
@@ -183,6 +187,7 @@ int testReduce(AMP::AMP_MPI comm, AMP::UnitTest *ut, int flag) {
         else
             ut->failure(message);
     }
+    PROFILE_STOP("testReduce");
     return 10;   // Return the number of tests
 }
 
@@ -192,6 +197,7 @@ int testReduce(AMP::AMP_MPI comm, AMP::UnitTest *ut, int flag) {
 //        1: only sumScan is valid (complex<double>)
 template <class type>
 int testScan(AMP::AMP_MPI comm, AMP::UnitTest *ut, int flag=0) {
+    PROFILE_START("testScan");
     char message[500];
     type x = (type) (comm.getRank()+1);
     type y;
@@ -202,8 +208,10 @@ int testScan(AMP::AMP_MPI comm, AMP::UnitTest *ut, int flag=0) {
         ut->passes(message);
     else
         ut->failure(message);
-    if ( flag==1 )
+    if ( flag==1 ) {
+        PROFILE_STOP2("testScan");
         return 1;
+    }
     sprintf(message,"minScan (%s)",typeid(type).name());    
     comm.minScan<type>(&x,&y,1);
     if ( y == (type) 1 )
@@ -216,6 +224,7 @@ int testScan(AMP::AMP_MPI comm, AMP::UnitTest *ut, int flag=0) {
         ut->passes(message);
     else
         ut->failure(message);
+    PROFILE_STOP("testScan");
     return 3;   // Return the number of tests
 }
 
@@ -223,7 +232,8 @@ int testScan(AMP::AMP_MPI comm, AMP::UnitTest *ut, int flag=0) {
 // Routine to test bcast
 template <class type>
 int testBcast(AMP::AMP_MPI comm, AMP::UnitTest *ut, type default_val, type new_val) {
-    char message[500];
+    PROFILE_START("testBcast");
+    char message[128];
     for (int i=0; i<comm.getSize(); i++) {
         type tmp1 = default_val;
         if ( comm.getRank() == i )
@@ -247,6 +257,7 @@ int testBcast(AMP::AMP_MPI comm, AMP::UnitTest *ut, type default_val, type new_v
         else
             ut->failure(message);
     }
+    PROFILE_STOP("testBcast");
     return 2*comm.getSize();   // Return the number of tests
 }
 
@@ -254,7 +265,8 @@ int testBcast(AMP::AMP_MPI comm, AMP::UnitTest *ut, type default_val, type new_v
 // Routine to test allGather
 template <class type>
 int testAllGather(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
-    char message[500];
+    PROFILE_START("testAllGather");
+    char message[128];
     // Test scalar allGather
     type x1 = (type) comm.getRank();
     type *x2 = new type[comm.getSize()];
@@ -356,6 +368,7 @@ int testAllGather(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
         ut->failure(message);
     }
     delete [] size;
+    PROFILE_STOP("testAllGather");
     return 4;   // Return the number of tests
 }
 
@@ -363,6 +376,7 @@ int testAllGather(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
 // Routine to test setGather
 template <class type>
 int testSetGather(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
+    PROFILE_START("testSetGather");
     char message[500];
     type x1 = (type) comm.getRank();
     std::set<type> set;
@@ -379,6 +393,7 @@ int testSetGather(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
         ut->passes(message);
     else
         ut->failure(message);
+    PROFILE_STOP("testSetGather");
     return 1;   // Return the number of tests
 }
 
@@ -386,7 +401,8 @@ int testSetGather(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
 // Routine to test mapGather
 template <class type>
 int testMapGather(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
-    char message[500];
+    PROFILE_START("testMapGather");
+    char message[128];
     type x1 = (type) comm.getRank();
     std::map<int,type> map;
     map.insert( std::pair<int,type>( comm.getRank(), x1 ) );
@@ -406,6 +422,7 @@ int testMapGather(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
         ut->passes(message);
     else
         ut->failure(message);
+    PROFILE_STOP("testMapGather");
     return 1;   // Return the number of tests
 }
 
@@ -413,8 +430,9 @@ int testMapGather(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
 // Routine to test allToAll
 template <class type>
 int testAllToAll(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
+    PROFILE_START("testAllToAll");
     bool pass;
-    char message[500];
+    char message[128];
     int size = 0;    
     type *send_data, *recv_data;
     int *send_cnt = new int[comm.getSize()];
@@ -565,6 +583,7 @@ int testAllToAll(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     delete [] recv_cnt;
     delete [] send_disp;
     delete [] recv_disp;
+    PROFILE_STOP("testAllToAll");
     return 5;   // Return the number of tests
 
 }
@@ -573,7 +592,8 @@ int testAllToAll(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
 // Routine to test send/recv
 template <class type>
 int testSendRecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
-    char message[500];
+    PROFILE_START("testSendRecv");
+    char message[128];
     // Test send-recv with a known length
     for (int i=0; i<comm.getSize(); i++) {
         for (int j=0; j<comm.getSize(); j++) {
@@ -646,6 +666,7 @@ int testSendRecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
             }
         }
     }
+    PROFILE_STOP("testSendRecv");
     return 3*comm.getSize()*comm.getSize();   // Return the number of tests
 }
 
@@ -653,7 +674,8 @@ int testSendRecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
 // Routine to test Isend/Irecv
 template <class type>
 int testIsendIrecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
-    char message[500];
+    PROFILE_START("testIsendIrecv");
+    char message[128];
     std::vector<MPI_Request> sendRequest;
     std::vector<MPI_Request> recvRequest;
     // Send all messages
@@ -704,6 +726,7 @@ int testIsendIrecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
     else
         ut->failure(message);
     delete [] recv_buffer;
+    PROFILE_STOP("testIsendIrecv");
     return comm.getSize()*comm.getSize();   // Return the number of tests
 }
 
@@ -766,6 +789,7 @@ struct testCommTimerResults {
 
 // This routine will test a single MPI communicator
 testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
+    PROFILE_START("testComm");
     testCommTimerResults timer;
     double start_time;
     // Test all and any reduce
@@ -945,6 +969,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_IsendIrecv += testIsendIrecv<double>(comm,ut,-1.0,1.0);
     timer.N_IsendIrecv += testIsendIrecv<mytype>(comm,ut,tmp3,tmp4);
     timer.t_IsendIrecv = AMP::AMP_MPI::time()-start_time;
+    PROFILE_STOP("testComm");
     return timer;
 }
 
@@ -958,7 +983,7 @@ int main(int argc, char *argv[])
     startup_properties.use_MPI_Abort = false;
     AMP::AMPManager::startup(argc,argv,startup_properties);
     int num_failed = 0;
-    PROFILE_ENABLE(2);
+    PROFILE_ENABLE(0);
 
     // Limit the scope so objects are destroyed
     {
@@ -1072,6 +1097,7 @@ int main(int argc, char *argv[])
         }
 
         // Split the global comm and test
+        PROFILE_START("Split");
         int color;
         if ( globalComm.getRank()==0 )
             color = 0;
@@ -1109,6 +1135,7 @@ int main(int argc, char *argv[])
         splitComms[3] = splitComms[0];  // Make a copy to ensure there are no memory leaks
         splitComms[3] = splitComms[2];  // Perform assignement to check memory leaks
         AMP_ASSERT(splitComms[3]==splitComms[2]);
+        PROFILE_STOP("Split");
 
         // Test  <  <=  >  >=
         if ( globalComm.getSize()>1 ) {
@@ -1147,12 +1174,14 @@ int main(int argc, char *argv[])
         }
         
         // Finished testing, report the results
+        PROFILE_START("Report");
         start_time = AMP::AMP_MPI::time();
         ut.report();
         num_failed = ut.NumFailGlobal();
         end_time = AMP::AMP_MPI::time();
         if ( globalComm.getRank() == 0 )
             std::cout << "Time to report: " << end_time-start_time << std::endl << std::endl;
+        PROFILE_STOP("Report");
 
         PROFILE_STOP("Main");
     } // Limit the scope so objects are detroyed
