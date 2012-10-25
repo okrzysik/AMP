@@ -825,14 +825,14 @@ ProfilerApp::thread_info* ProfilerApp::get_thread_data( ) {
 ProfilerApp::store_timer* ProfilerApp::get_block( const char* message, const char* filename1, const int start, const int stop ) {
     // Get the name of the file without the path
     const char* filename = filename1;
-    size_t length = 0;
+    int length = 0;
     for (size_t i=0; i<1000; i++) {
         if ( filename[i]==0 ) {
-            length = i;
+            length = static_cast<int>(i);
             break;
         }
     }
-    for (size_t i=length-1; i>=0; --i) {
+    for (int i=length-1; i>=0; --i) {
         if ( filename[i]==47 || filename[i]==92 ) {
             filename = &filename[i+1];
             break;
