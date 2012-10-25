@@ -516,8 +516,8 @@ void ProfilerApp::save( const std::string& filename ) {
         }
     }
     // Create the file header
-    fprintf(timerFile,"             Message                 Filename        Thread  Start Line  Stop Line  N_calls  Min Time  Max Time  Total Time\n");
-    fprintf(timerFile,"---------------------------------------------------------------------------------------------------------------------------\n");
+    fprintf(timerFile,"                  Message                    Filename        Thread  Start Line  Stop Line  N_calls  Min Time  Max Time  Total Time\n");
+    fprintf(timerFile,"-----------------------------------------------------------------------------------------------------------------------------------\n");
     // Loop through the list of timers, storing the most expensive first
     for (int i=N_timers-1; i>=0; i--) {
         unsigned int id = id_order[i];              // Get the timer id
@@ -574,7 +574,7 @@ void ProfilerApp::save( const std::string& filename ) {
                 }
             }
             // Save the timer to the file
-            fprintf(timerFile,"%24s  %24s   %4i   %7i    %7i  %8i     %8.3f  %8.3f  %10.3f\n",
+            fprintf(timerFile,"%32s  %24s   %4i   %7i    %7i  %8i     %8.3f  %8.3f  %10.3f\n",
                 message,filename2,thread_id,start_line,stop_line,timer->N_calls,min_time,max_time,tot_time);
             timer = timer->next;
         }

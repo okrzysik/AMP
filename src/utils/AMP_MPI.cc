@@ -8,6 +8,7 @@
 // Include AMP headers
 #include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
+#include "utils/ProfilerApp.h"
 
 // Include all other headers
 #include <stdlib.h>
@@ -55,6 +56,8 @@ namespace AMP{
 
 // Initialized the static member variables
 volatile unsigned int AMP_MPI::N_MPI_Comm_created=0;
+int AMP_MPI::profile_level=127;
+
 
 // Static data for asyncronous communication without MPI
 #ifndef USE_EXT_MPI
@@ -645,118 +648,151 @@ bool AMP_MPI::anyReduce(const bool value) const {
 // unsigned char
 template <>
 void AMP_MPI::call_sumReduce<unsigned char>(const unsigned char *send, unsigned char *recv, const int n) const {
+    PROFILE_START("call_sumReduce1<unsigned char>",profile_level);
     MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_CHAR, MPI_SUM, communicator);
+    PROFILE_STOP("call_sumReduce1<unsigned char>",profile_level);
 }
 template <>
 void AMP_MPI::call_sumReduce<unsigned char>(unsigned char *x, const int n) const {
+    PROFILE_START("call_sumReduce2<unsigned char>",profile_level);
     unsigned char *send = x;
     unsigned char *recv = new unsigned char[n];
     MPI_Allreduce( send, recv, n, MPI_UNSIGNED_CHAR, MPI_SUM, communicator);
     for (int i=0; i<n; i++)
         x[i] = recv[i];
     delete [] recv;
+    PROFILE_STOP("call_sumReduce2<unsigned char>",profile_level);
 }
 // char
 template <>
 void AMP_MPI::call_sumReduce<char>(const char *send, char *recv, const int n) const {
+    PROFILE_START("call_sumReduce1<char>",profile_level);
     MPI_Allreduce( (void*) send, (void*) recv, n, MPI_SIGNED_CHAR, MPI_SUM, communicator);
+    PROFILE_STOP("call_sumReduce1<char>",profile_level);
 }
 template <>
 void AMP_MPI::call_sumReduce<char>(char *x, const int n) const {
+    PROFILE_START("call_sumReduce2<char>",profile_level);
     char *send = x;
     char *recv = new char[n];
     MPI_Allreduce( send, recv, n, MPI_SIGNED_CHAR, MPI_SUM, communicator);
     for (int i=0; i<n; i++)
         x[i] = recv[i];
     delete [] recv;
+    PROFILE_STOP("call_sumReduce2<char>",profile_level);
 }
 // unsigned int
 template <>
 void AMP_MPI::call_sumReduce<unsigned int>(const unsigned int *send, unsigned int *recv, const int n) const {
+    PROFILE_START("call_sumReduce1<unsigned int>",profile_level);
     MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED, MPI_SUM, communicator);
+    PROFILE_STOP("call_sumReduce1<unsigned int>",profile_level);
 }
 template <>
 void AMP_MPI::call_sumReduce<unsigned int>(unsigned int *x, const int n) const {
+    PROFILE_START("call_sumReduce2<unsigned int>",profile_level);
     unsigned int *send = x;
     unsigned int *recv = new unsigned int[n];
     MPI_Allreduce( send, recv, n, MPI_UNSIGNED, MPI_SUM, communicator);
     for (int i=0; i<n; i++)
         x[i] = recv[i];
     delete [] recv;
+    PROFILE_STOP("call_sumReduce2<unsigned int>",profile_level);
 }
 // int
 template <>
 void AMP_MPI::call_sumReduce<int>(const int *send, int *recv, const int n) const {
+    PROFILE_START("call_sumReduce1<int>",profile_level);
     MPI_Allreduce( (void*) send, (void*) recv, n, MPI_INT, MPI_SUM, communicator);
+    PROFILE_STOP("call_sumReduce1<int>",profile_level);
 }
 template <>
 void AMP_MPI::call_sumReduce<int>(int *x, const int n) const {
+    PROFILE_START("call_sumReduce2<int>",profile_level);
     int *send = x;
     int *recv = new int[n];
     MPI_Allreduce( send, recv, n, MPI_INT, MPI_SUM, communicator);
     for (int i=0; i<n; i++)
         x[i] = recv[i];
     delete [] recv;
+    PROFILE_STOP("call_sumReduce2<int>",profile_level);
 }
 // long int
 template <>
 void AMP_MPI::call_sumReduce<long int>(const long int *send, long int *recv, const int n) const {
+    PROFILE_START("call_sumReduce1<long int>",profile_level);
     MPI_Allreduce( (void*) send, (void*) recv, n, MPI_LONG, MPI_SUM, communicator);
+    PROFILE_STOP("call_sumReduce1<long int>",profile_level);
 }
 template <>
 void AMP_MPI::call_sumReduce<long int>(long int *x, const int n) const {
+    PROFILE_START("call_sumReduce2<long int>",profile_level);
     long int *send = x;
     long int *recv = new long int[n];
     MPI_Allreduce( send, recv, n, MPI_LONG, MPI_SUM, communicator);
     for (int i=0; i<n; i++)
         x[i] = recv[i];
     delete [] recv;
+    PROFILE_STOP("call_sumReduce2<long int>",profile_level);
 }
 // unsigned long int
 template <>
 void AMP_MPI::call_sumReduce<unsigned long>(const unsigned long *send, unsigned long *recv, const int n) const {
+    PROFILE_START("call_sumReduce1<unsigned long>",profile_level);
     MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_SUM, communicator);
+    PROFILE_STOP("call_sumReduce1<unsigned long>",profile_level);
 }
 template <>
 void AMP_MPI::call_sumReduce<unsigned long>(unsigned long *x, const int n) const {
+    PROFILE_START("call_sumReduce2<unsigned long>",profile_level);
     unsigned long int *send = x;
     unsigned long int *recv = new unsigned long int[n];
     MPI_Allreduce( send, recv, n, MPI_UNSIGNED_LONG, MPI_SUM, communicator);
     for (int i=0; i<n; i++)
         x[i] = recv[i];
     delete [] recv;
+    PROFILE_STOP("call_sumReduce2<unsigned long>",profile_level);
 }
 // float
 template <>
 void AMP_MPI::call_sumReduce<float>(const float *send, float *recv, const int n) const {
+    PROFILE_START("call_sumReduce1<float>",profile_level);
     MPI_Allreduce( (void*) send, (void*) recv, n, MPI_FLOAT, MPI_SUM, communicator);
+    PROFILE_STOP("call_sumReduce1<float>",profile_level);
 }
 template <>
 void AMP_MPI::call_sumReduce<float>(float *x, const int n) const {
+    PROFILE_START("call_sumReduce2<float>",profile_level);
     float *send = x;
     float *recv = new float[n];
     MPI_Allreduce( send, recv, n, MPI_FLOAT, MPI_SUM, communicator);
     for (int i=0; i<n; i++)
         x[i] = recv[i];
     delete [] recv;
+    PROFILE_STOP("call_sumReduce2<float>",profile_level);
 }
 // double
 template <>
 void AMP_MPI::call_sumReduce<double>(const double *send, double *recv, const int n) const {
+    PROFILE_START("call_sumReduce1<double>",profile_level);
     MPI_Allreduce( (void*) send, (void*) recv, n, MPI_DOUBLE, MPI_SUM, communicator);
+    PROFILE_STOP("call_sumReduce1<double>",profile_level);
 }
 template <>
 void AMP_MPI::call_sumReduce<double>(double *x, const int n) const {
+    PROFILE_START("call_sumReduce2<double>",profile_level);
     double *send = x;
     double *recv = new double[n];
     MPI_Allreduce( send, recv, n, MPI_DOUBLE, MPI_SUM, communicator);
     for (int i=0; i<n; i++)
         x[i] = recv[i];
     delete [] recv;
+    PROFILE_STOP("call_sumReduce2<double>",profile_level);
 }
 // std::complex<double>
 template <>
 void AMP_MPI::call_sumReduce< std::complex<double> >(const std::complex<double> *x, std::complex<double> *y, const int n) const {
+    PROFILE_START("call_sumReduce1<complex double>",profile_level);
     double *send = new double[2*n];
     double *recv = new double[2*n];
     for (int i=0; i<n; i++) {
@@ -768,9 +804,11 @@ void AMP_MPI::call_sumReduce< std::complex<double> >(const std::complex<double> 
         y[i] = std::complex<double>(recv[2*i+0],recv[2*i+1]);
     delete [] send;
     delete [] recv;
+    PROFILE_STOP("call_sumReduce1<complex double>",profile_level);
 }
 template <>
 void AMP_MPI::call_sumReduce< std::complex<double> >(std::complex<double> *x, const int n) const {
+    PROFILE_START("call_sumReduce2<complex double>",profile_level);
     double *send = new double[2*n];
     double *recv = new double[2*n];
     for (int i=0; i<n; i++) {
@@ -782,6 +820,7 @@ void AMP_MPI::call_sumReduce< std::complex<double> >(std::complex<double> *x, co
         x[i] = std::complex<double>(recv[2*i+0],recv[2*i+1]);
     delete [] send;
     delete [] recv;
+    PROFILE_STOP("call_sumReduce2<complex double>",profile_level);
 }
 #endif
 

@@ -8,6 +8,7 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/AMP_MPI.h"
+#include "utils/ProfilerApp.h"
 
 
 struct mytype{
@@ -957,9 +958,11 @@ int main(int argc, char *argv[])
     startup_properties.use_MPI_Abort = false;
     AMP::AMPManager::startup(argc,argv,startup_properties);
     int num_failed = 0;
+    PROFILE_ENABLE(2);
 
-    // Limit the scope so objects are detroyed
+    // Limit the scope so objects are destroyed
     {
+        PROFILE_START("Main");
         // Create the unit test
         AMP::UnitTest ut;
 
@@ -1151,9 +1154,11 @@ int main(int argc, char *argv[])
         if ( globalComm.getRank() == 0 )
             std::cout << "Time to report: " << end_time-start_time << std::endl << std::endl;
 
+        PROFILE_STOP("Main");
     } // Limit the scope so objects are detroyed
 
     // Shutdown
+    PROFILE_SAVE("test_AMP_MPI");
     AMP::AMPManager::shutdown();
     return num_failed;
 }   
