@@ -100,18 +100,29 @@ static inline void unset_trace_bit( unsigned int i, unsigned int N, BIT_WORD *tr
 * Inline function to convert the timer id to a string                  *
 ***********************************************************************/
 #define N_BITS_ID 24    // The probability of a collision is ~N^2/2^N_bits (N is the number of timers)
-static inline void convert_timer_id( unsigned int id, char* str ) {
+static inline void convert_timer_id( size_t key, char* str ) {
     int N_bits = MIN(N_BITS_ID,8*sizeof(unsigned int));
+    // Get a new key that is representable by N bits
+    size_t id = key;
+    if ( N_BITS_ID < 8*sizeof(size_t) ) {
+        if ( sizeof(size_t)==4 )
+            id = (key*0x9E3779B9) >> (8*sizeof(unsigned int)-N_BITS_ID);
+        else if ( sizeof(size_t)==8 )
+            id = (key*0x9E3779B97F4A7C15) >> (8*sizeof(unsigned int)-N_BITS_ID);
+        else
+            ERROR_MSG("Unhandled case");
+    }
+    // Convert the new key to a string
     if ( N_bits <= 9 ) {
         // The id is < 512, store it as a 3-digit number        
-        sprintf(str,"%03u",id);
+        sprintf(str,"%03u",static_cast<unsigned int>(id));
     } else if ( N_bits <= 16 ) {
         // The id is < 2^16, store it as a 4-digit hex
-        sprintf(str,"%04x",id);
+        sprintf(str,"%04x",static_cast<unsigned int>(id));
     } else {
         // We will store the id use the 64 character set { 0-9 a-z A-Z & $ }
         int N = MAX(4,(N_bits+5)/6);    // The number of digits we need to use
-        unsigned int tmp1 = id;
+        size_t tmp1 = id;
         for (int i=N-1; i>=0; i--) {
             unsigned char tmp2 = tmp1%64;
             tmp1 /= 64;
@@ -136,6 +147,8 @@ static inline void convert_timer_id( unsigned int id, char* str ) {
 * Consructor                                                           *
 ***********************************************************************/
 ProfilerApp::ProfilerApp() {
+    if ( sizeof(BIT_WORD)%sizeof(unsigned int) )
+        ERROR_MSG("sizeof(BIT_WORD) must be a product of sizeof(unsigned int)\n");
     get_frequency( &frequency );
     #ifdef USE_WINDOWS
         lock = CreateMutex (NULL, FALSE, NULL);
@@ -206,7 +219,7 @@ ProfilerApp::~ProfilerApp() {
 /***********************************************************************
 * Function to start profiling a block of code                          *
 ***********************************************************************/
-void ProfilerApp::start( const std::string& message, const std::string& filename, const int line, const int level ) {
+void ProfilerApp::start( const std::string& message, const char* filename, const int line, const int level ) {
     if ( level<0 || level>=128 )
         ERROR_MSG("level must be in the range 0-127");
     if ( this->d_level<level )
@@ -214,12 +227,12 @@ void ProfilerApp::start( const std::string& message, const std::string& filename
     // Get the thread data
     thread_info* thread_data = get_thread_data();
     // Get the appropriate timer
-    store_timer* timer = get_block(message,filename,line,-1);
+    store_timer* timer = get_block(message.c_str(),filename,line,-1);
     if ( timer == NULL )
         ERROR_MSG("Failed to get the appropriate timer");
     if ( timer->is_active ) {
         std::stringstream msg;
-        msg << "Timer is already active, did you forget to call stop? (" << message << " in " + filename << " at line " << line << ")\n";
+        msg << "Timer is already active, did you forget to call stop? (" << message << " in " << filename << " at line " << line << ")\n";
         ERROR_MSG(msg.str());
     }
     // Start the timer 
@@ -235,7 +248,7 @@ void ProfilerApp::start( const std::string& message, const std::string& filename
 /***********************************************************************
 * Function to stop profiling a block of code                           *
 ***********************************************************************/
-void ProfilerApp::stop( const std::string& message, const std::string& filename, const int line, const int level ) {
+void ProfilerApp::stop( const std::string& message, const char* filename, const int line, const int level ) {
     if ( level<0 || level>=128 )
         ERROR_MSG("level must be in the range 0-127");
     if ( this->d_level<level )
@@ -246,12 +259,12 @@ void ProfilerApp::stop( const std::string& message, const std::string& filename,
     // Get the thread data
     thread_info* thread_data = get_thread_data();
     // Get the appropriate timer
-    store_timer* timer = get_block(message,filename,-1,line);
+    store_timer* timer = get_block(message.c_str(),filename,-1,line);
     if ( timer == NULL )
         ERROR_MSG("Failed to get the appropriate timer");
     if ( !timer->is_active ) {
         std::stringstream msg;
-        msg << "Timer is not active, did you forget to call start? (" << message << " in " + filename << " at line " << line << ")\n";
+        msg << "Timer is not active, did you forget to call start? (" << message << " in " << filename << " at line " << line << ")\n";
         ERROR_MSG(msg.str());
     }
     timer->is_active = false;
@@ -809,11 +822,22 @@ ProfilerApp::thread_info* ProfilerApp::get_thread_data( ) {
 * Function to get the timmer for a particular block of code            *
 * Note: This function performs some blocking as necessary.             *
 ***********************************************************************/
-ProfilerApp::store_timer* ProfilerApp::get_block( const std::string& message, const std::string& filename1, const int start, const int stop ) {
+ProfilerApp::store_timer* ProfilerApp::get_block( const char* message, const char* filename1, const int start, const int stop ) {
     // Get the name of the file without the path
-    int i1 = ((int) filename1.find_last_of(47))+1;
-    int i2 = ((int) filename1.find_last_of(92))+1;
-    std::string filename = filename1.substr(MAX(i1,i2),filename1.size());
+    const char* filename = filename1;
+    size_t length = 0;
+    for (size_t i=0; i<1000; i++) {
+        if ( filename[i]==0 ) {
+            length = i;
+            break;
+        }
+    }
+    for (size_t i=length-1; i>=0; --i) {
+        if ( filename[i]==47 || filename[i]==92 ) {
+            filename = &filename[i+1];
+            break;
+        }
+    }
     // Get the id for the timer
     unsigned int id = get_timer_id(message,filename);
     // Search for the global timer info
@@ -831,8 +855,8 @@ ProfilerApp::store_timer* ProfilerApp::get_block( const std::string& message, co
             info_tmp->id = id;
             info_tmp->start_line = start;
             info_tmp->stop_line = stop;
-            info_tmp->message = message;
-            info_tmp->filename = filename;
+            info_tmp->message = std::string(message);
+            info_tmp->filename = std::string(filename);
             info_tmp->next = NULL;
             timer_table[key] = info_tmp;
             N_timers++;
@@ -855,8 +879,8 @@ ProfilerApp::store_timer* ProfilerApp::get_block( const std::string& message, co
                 info_tmp->id = id;
                 info_tmp->start_line = start;
                 info_tmp->stop_line = stop;
-                info_tmp->message = message;
-                info_tmp->filename = filename;
+                info_tmp->message = std::string(message);
+                info_tmp->filename = std::string(filename);
                 info_tmp->next = NULL;
                 info->next = info_tmp;
                 N_timers++;
@@ -867,15 +891,7 @@ ProfilerApp::store_timer* ProfilerApp::get_block( const std::string& message, co
         // Advance to the next entry
         info = info->next;
     }
-    // Check that the correct timer was found and it is unique
-    store_timer_info *info_tmp = const_cast<store_timer_info*>(info);
-    if ( message!=info_tmp->message || filename!=info_tmp->filename ) {
-        std::stringstream msg;
-        msg << "Error: multiple timers with the same id were detected (" << id << ")\n" << 
-            "    " << info_tmp->filename << "   " << info_tmp->message << std::endl << 
-            "    " << filename << "   " << message << std::endl;
-        ERROR_MSG(msg.str());
-    } 
+    // Check the status of the timer
     if ( start==-1 ) {
         // We either are dealing with a stop statement, or the special case for multiple start lines
     } else if ( info->start_line==-1 ) {
@@ -942,27 +958,31 @@ ProfilerApp::store_timer* ProfilerApp::get_block( const std::string& message, co
 * filename/message pair.  We want each process or thread to return the *
 * same id independent of the other calls.                              *
 ***********************************************************************/
-inline unsigned int ProfilerApp::get_timer_id( const std::string& message, const std::string& filename )
+inline size_t ProfilerApp::get_timer_id( const char* message, const char* filename )
 {
-    int c;
+    unsigned int c;
     // Hash the filename using DJB2
-    const char *s = filename.c_str();
+    const char *s = filename;
     unsigned int hash1 = 5381;
     while((c = *s++)) {
         // hash = hash * 33 ^ c
         hash1 = ((hash1 << 5) + hash1) ^ c;
     }
     // Hash the message using DJB2
-    s = message.c_str();
+    s = message;
     unsigned int hash2 = 5381;
     while((c = *s++)) {
         // hash = hash * 33 ^ c
         hash2 = ((hash2 << 5) + hash2) ^ c;
     }
     // Combine the two hashes
-    unsigned int key = hash1^hash2;
-    if ( N_BITS_ID < 8*sizeof(unsigned int) )
-        key = (key*0x9E3779B9) >> (8*sizeof(unsigned int)-N_BITS_ID);
+    size_t key = 0;
+    if ( sizeof(unsigned int)==sizeof(size_t) )
+        key = hash1^hash2;
+    else if ( sizeof(unsigned int)==4 && sizeof(size_t)==8 )
+        key = (static_cast<size_t>(hash1)<<4) + static_cast<size_t>(hash2);
+    else 
+        ERROR_MSG("Unhandled case");
     return key;
 }
 
@@ -971,15 +991,16 @@ inline unsigned int ProfilerApp::get_timer_id( const std::string& message, const
 * Function to return a unique id based on the active timer bit array.  *
 * This function works by performing a DJB2 hash on the bit array       *
 ***********************************************************************/
-inline unsigned int ProfilerApp::get_trace_id( int N, BIT_WORD *trace ) 
+inline unsigned int ProfilerApp::get_trace_id( size_t N, const BIT_WORD *trace ) 
 {
     unsigned int hash = 5381;
-    unsigned const char *s = (unsigned char*) trace;
-    int N_words = (int)N*sizeof(BIT_WORD)/sizeof(char);
-    for (int i=0; i<N_words; i++) {
-        int c = (int) s[i];
-        // hash = hash * 33 ^ c
-        hash = ((hash << 5) + hash) ^ c;
+    const unsigned int *s = reinterpret_cast<const unsigned int*>(trace);
+    size_t N_words = N*sizeof(BIT_WORD)/sizeof(unsigned int);
+    unsigned int c;
+    for (size_t i=0; i<N_words; ++i) {
+        // hash = hash * (2^16+1) ^ s[i]
+        c = *s++;
+        hash = ((hash << 16) + hash) ^ c;
     }
     return hash;
 }

@@ -27,9 +27,6 @@
     #include <sys/time.h>
     #include <pthread.h>
     #include <string.h>
-    #ifndef LACKS_NAMESPACE
-        using namespace std;
-    #endif
     #define TIME_TYPE timeval
 #else
     #error Unknown OS
@@ -60,7 +57,7 @@ namespace AMP {
   * depends of the amount of data to be written and the speed of the writes.  Additional 
   * details can be provided with set_store_trace which records the actual time (from startup)
   * for each start and stop call.  This method significantly increases the memory requirements.
-  * Several preprocessor define statement are given for easy incorporation:
+  * Several preprocessor define statement are given for easy incorporation: \verbatim
   *    PROFILE_START(NAME) - Start profiling a block of code with the given name
   *                          The name must be unique to the file and there must be a corresponding stop statement.
   *    PROFILE_STOP(NAME)  - Stop profiling a block of code with the given name
@@ -70,14 +67,18 @@ namespace AMP {
   *                          The name must match the given start block.  This is a special stop that does not use the current 
   *                          line as the final line of the block, but is provided for cases where there are multiple exit
   *                          paths for a given function or block of code.
-  *    PROFILE_SAVE(FILE)  - Save the results of profiling to a file.  
+  *    PROFILE_SAVE(FILE)  - Save the results of profiling to a file.   
+  * \endverbatim
   * Note that these commands are global and will create a global profiler.  It is possible
   * for a user to create multiple profilers and this should not create any problems, but the 
-  * class interface should be used.
-  * All start/stop and enable support an optional argument level that specifies the level of detail for the timers
-  * For repeated calls, the timer adds ~ 25us per call (with full trace info).  
-  * Most of this overhead is not in the timer returned by the timer.
-  * Note that when a timer is created the cost may be significantly higher, but this only occurs once per timer.  
+  * class interface should be used. <BR>
+  * All start/stop and enable support an optional argument level that specifies the level of detail 
+  * for the timers.  All timers with a number greater than the current level in the profiler will be ignored.
+  * The macros PROFILE_START and PROFILE_STOP automatically check the level for performance and calling an
+  * unused timer adds ~10ns per call. <BR>
+  * For repeated calls the timer adds ~ 5us per call with without trace info, and ~25us per call with full trace info. 
+  * Most of this overhead is not in the time returned by the timer.
+  * Note that when a timer is created the cost may be significantly higher, but this only occurs once per timer.  <BR>
   * Example usage:
   *    void my_function(void *arg) {
   *       PROFILE_START("my function");
@@ -122,7 +123,7 @@ public:
      * @param level         Level of detail to include this timer (default is 0)
      *                      Only timers whos level is <= the level of the specified by enable will be included.
      */
-    void start( const std::string& message, const std::string& filename, const int line, const int level=0 );
+    void start( const std::string& message, const char* filename, const int line, const int level=0 );
 
     /*!
      * \brief  Function to stop profiling a block of code
@@ -137,7 +138,7 @@ public:
      *                      Only timers whos level is <= the level of the specified by enable will be included.
      *                      Note: this must match the level in start
      */
-    void stop( const std::string& message, const std::string& filename, const int line, const int level=0 );
+    void stop( const std::string& message, const char* filename, const int line, const int level=0 );
 
     /*!
      * \brief  Function to save the profiling info
@@ -240,9 +241,9 @@ private:
     
     // Structure to store the timing information for a single block of code
     struct store_timer_info {
-        unsigned int id;            // A unique id for each timer
         int start_line;             // The starting line for the timer
         int stop_line;              // The ending line for the timer
+        size_t id;                  // A unique id for each timer
         std::string message;        // The message to identify the block of code
         std::string filename;       // The file containing the block of code to be timed
         volatile store_timer_info *next; // Pointer to the next entry in the list
@@ -292,13 +293,13 @@ private:
     thread_info* get_thread_data( );
 
     // Function to return the appropriate timer block
-    store_timer* get_block( const std::string& message, const std::string& filename, const int start, const int stop );
+    store_timer* get_block( const char* message, const char* filename, const int start, const int stop );
 
     // Function to return a hopefully unique id based on the message and filename
-    unsigned int get_timer_id( const std::string& message, const std::string& filename );
+    static size_t get_timer_id( const char* message, const char* filename );
 
     // Function to return a hopefully unique id based on the active bit array
-    unsigned int get_trace_id( int N, BIT_WORD *trace );
+    static inline unsigned int get_trace_id( size_t N, const BIT_WORD *trace );
 
     // Function to return the string of active timers
     std::string get_active_list( BIT_WORD *active, unsigned int myIndex, thread_info *head );
