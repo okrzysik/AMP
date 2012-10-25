@@ -43,8 +43,8 @@ namespace AMP {
 #define MAX_TRACE_TRACE 65536                   // The maximum number of stored start and stop times per trace
                                                 // Note: this is only used if store_trace is set, and should be a power of 2
                                                 // Note: the maximum ammount of memory used per trace is 16*MAX_TRACE_TRACE bytes (plus the trace itself)
-#define THREAD_HASH_SIZE 32                     // The size of the hash table to store the threads
-#define TIMER_HASH_SIZE 128                     // The size of the hash table to store the timers
+#define THREAD_HASH_SIZE 64                     // The size of the hash table to store the threads
+#define TIMER_HASH_SIZE 1024                    // The size of the hash table to store the timers
 
 
 /** \class ProfilerApp
@@ -179,7 +179,7 @@ private:
     // Structure to store the info for a trace log
     struct store_trace {
         int N_calls;                // Number of calls to this block
-        unsigned int id;            // This is a (hopefully) unique id that we can use for comparison
+        size_t id;                  // This is a (hopefully) unique id that we can use for comparison
         BIT_WORD trace[TRACE_SIZE]; // Store the trace
         store_trace *next;          // Pointer to the next entry in the list
         double min_time;            // Store the minimum time spent in the given block (seconds)
@@ -188,14 +188,10 @@ private:
         double *start_time;         // Store when start was called for the given trace (seconds from constructor call)
         double *end_time;           // Store when stop was called for the given trace (seconds from constructor call)
         // Constructor
-        store_trace() {
-            N_calls = 0;
-            min_time = 0.0;
-            max_time = 0.0;
-            total_time = 0.0;
-            next = NULL;
-            start_time = NULL;
-            end_time = NULL;
+        store_trace(): N_calls(0), id(0), next(NULL), min_time(0), max_time(0), total_time(0), start_time(NULL), end_time(NULL)
+        {
+            for (int i=0; i<TRACE_SIZE; ++i)
+                trace[i] = 0;
         }
         // Copy constuctor
         store_trace(const store_trace& rhs);
@@ -209,51 +205,38 @@ private:
             end_time = NULL;
 		}
     };
+    
+    // Structure to store the global timer information for a single block of code
+    struct store_timer_data_info {
+        int start_line;                     // The starting line for the timer
+        int stop_line;                      // The ending line for the timer
+        size_t id;                          // A unique id for each timer
+        std::string message;                // The message to identify the block of code
+        std::string filename;               // The file containing the block of code to be timed
+        volatile store_timer_data_info *next; // Pointer to the next entry in the list
+        // Constructor used to initialize key values
+		store_timer_data_info(): start_line(-1), stop_line(-1), id(0) {}
+    };
 
     // Structure to store the timing information for a single block of code
     struct store_timer {
-        bool is_active;             // Are we currently running a timer
-        unsigned int id;            // A unique id for each timer
-        unsigned int trace_index;   // The index of the current timer in the trace
-        int N_calls;                // Number of calls to this block
-        BIT_WORD trace[TRACE_SIZE]; // Store the current trace
-        double min_time;            // Store the minimum time spent in the given block (seconds)
-        double max_time;            // Store the maximum time spent in the given block (seconds)
-        double total_time;          // Store the total time spent in the given block (seconds)
-        store_trace *trace_head;    // Head of the trace-log list
-        store_timer *next;          // Pointer to the next entry in the list
-        TIME_TYPE start_time;       // Store when start was called for the given block
+        bool is_active;                     // Are we currently running a timer
+        unsigned int trace_index;           // The index of the current timer in the trace
+        int N_calls;                        // Number of calls to this block
+        size_t id;                          // A unique id for each timer
+        BIT_WORD trace[TRACE_SIZE];         // Store the current trace
+        double min_time;                    // Store the minimum time spent in the given block (seconds)
+        double max_time;                    // Store the maximum time spent in the given block (seconds)
+        double total_time;                  // Store the total time spent in the given block (seconds)
+        store_trace *trace_head;            // Head of the trace-log list
+        store_timer *next;                  // Pointer to the next entry in the list
+        store_timer_data_info *timer_data;  // Pointer to the timer data
+        TIME_TYPE start_time;               // Store when start was called for the given block
         // Constructor used to initialize key values
-		store_timer() {
-			is_active = false;
-            id = 0;
-            trace_index = 0;
-            N_calls = 0;
-            min_time = 0.0;
-            max_time = 0.0;
-            total_time = 0.0;
-            trace_head = NULL;
-            next = NULL;
-            for (int i=0; i<TRACE_SIZE; i++)
+		store_timer(): is_active(false), trace_index(0), N_calls(0), id(0), min_time(0), max_time(0), total_time(0), 
+            trace_head(NULL), next(NULL), timer_data(NULL) {
+            for (int i=0; i<TRACE_SIZE; ++i)
                 trace[i] = 0;
-		}
-    };
-    
-    // Structure to store the timing information for a single block of code
-    struct store_timer_info {
-        int start_line;             // The starting line for the timer
-        int stop_line;              // The ending line for the timer
-        size_t id;                  // A unique id for each timer
-        std::string message;        // The message to identify the block of code
-        std::string filename;       // The file containing the block of code to be timed
-        volatile store_timer_info *next; // Pointer to the next entry in the list
-        // Constructor used to initialize key values
-		store_timer_info() {
-            id = 0;
-            message = "";
-            filename = "";
-            start_line = -1;
-            stop_line = -1;
 		}
     };
     
@@ -267,11 +250,7 @@ private:
         store_timer *head[TIMER_HASH_SIZE]; // Store the timers in a hash table
         // Constructor used to initialize key values
 		thread_info() {
-            #ifdef USE_WINDOWS
-                id = NULL;
-            #elif defined(USE_LINUX)
-                id = 0;
-            #endif
+            id = 0;
             N_timers = 0;
             next = NULL;
             for (int i=0; i<TRACE_SIZE; i++)
@@ -287,28 +266,31 @@ private:
 
     // Store the global timer info in a hash table
     volatile int N_timers;
-    volatile store_timer_info *timer_table[TIMER_HASH_SIZE];
+    volatile store_timer_data_info *timer_table[TIMER_HASH_SIZE];
 
     // Function to return a pointer to the thread info (or create it if necessary)
     thread_info* get_thread_data( );
+
+    // Function to return a pointer to the global timer info (or create it if necessary)
+    store_timer_data_info* get_timer_data( size_t id );
 
     // Function to return the appropriate timer block
     store_timer* get_block( const char* message, const char* filename, const int start, const int stop );
 
     // Function to return a hopefully unique id based on the message and filename
-    static size_t get_timer_id( const char* message, const char* filename );
+    static inline size_t get_timer_id( const char* message, const char* filename );
 
     // Function to return a hopefully unique id based on the active bit array
-    static inline unsigned int get_trace_id( size_t N, const BIT_WORD *trace );
+    static inline size_t get_trace_id( size_t N, const BIT_WORD *trace );
 
     // Function to return the string of active timers
     std::string get_active_list( BIT_WORD *active, unsigned int myIndex, thread_info *head );
 
     // Function to get the hash index given a timer id
-    unsigned int get_timer_hash( unsigned int id );
+    unsigned int get_timer_hash( size_t id );
 
     // Function to get the hash index given a thread id
-    unsigned int get_thread_hash( unsigned int id );
+    unsigned int get_thread_hash( size_t id );
 
     // Handle to a mutex lock
     #ifdef USE_WINDOWS
