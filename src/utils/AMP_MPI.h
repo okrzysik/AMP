@@ -773,6 +773,14 @@ public:
     static double tick();
 
 
+    /*!
+     * \brief   Change the level of the internal timers
+     * \details This function changes the level of the timers used to profile MPI
+     * \param level         New level of the timers
+     */
+    static void changeProfileLevel(int level) { profile_level = level; }
+
+
 private:
     // The internal MPI communicator
     MPI_Comm  communicator;
@@ -801,6 +809,9 @@ private:
      * we don not need to block (recognizing that the value may not be 100% accurate).
      */
     static volatile unsigned int N_MPI_Comm_created;
+
+    // The level for the profiles of MPI
+    static int profile_level;
 
     // Some attributes
     int d_maxTag;

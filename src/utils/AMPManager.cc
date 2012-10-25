@@ -202,6 +202,7 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
         petsc_time = time()-petsc_start_time;
     #endif
     // Initialize MPI
+    AMP::AMP_MPI::changeProfileLevel( properties.profile_MPI_level );
     #ifdef USE_EXT_MPI
         int flag;
         MPI_Initialized(&flag);
@@ -319,6 +320,7 @@ void AMPManager::shutdown()
 AMPManagerProperties::AMPManagerProperties() {
     use_MPI_Abort = true;
     print_times = false;
+    profile_MPI_level = 2;
     COMM_WORLD = AMP_COMM_WORLD;
 }
 

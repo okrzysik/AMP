@@ -127,9 +127,9 @@ void  Map3to1to3::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr , AM
     d_SendBuf1.resize(z1.size());
     for (iterator=map1.begin(); iterator!=map1.end(); ++iterator) {
         double z = iterator->first;
-        size_t i1 = min(AMP::Utilities::findfirst(z1,z),z1.size()-1);
-        size_t i2 = max(i1,(size_t)1)-1;
-        size_t i3 = min(i1+1,z1.size()-1);
+        size_t i1 = std::min(AMP::Utilities::findfirst(z1,z),z1.size()-1);
+        size_t i2 = std::max(i1,(size_t)1)-1;
+        size_t i3 = std::min(i1+1,z1.size()-1);
         size_t i=0;
         if ( fabs(z-z1[i1])<tol )
             i = i1;
@@ -147,9 +147,9 @@ void  Map3to1to3::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr , AM
     d_SendBuf2.resize(z2.size());
     for (iterator=map2.begin(); iterator!=map2.end(); ++iterator) {
         double z = iterator->first;
-        size_t i1 = min(AMP::Utilities::findfirst(z2,z),z2.size()-1);
-        size_t i2 = max(i1,(size_t)1)-1;
-        size_t i3 = min(i1+1,z2.size()-1);
+        size_t i1 = std::min(AMP::Utilities::findfirst(z2,z),z2.size()-1);
+        size_t i2 = std::max(i1,(size_t)1)-1;
+        size_t i3 = std::min(i1+1,z2.size()-1);
         size_t i=0;
         if ( fabs(z-z2[i1])<tol )
             i = i1;
