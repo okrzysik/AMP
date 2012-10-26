@@ -37,6 +37,11 @@ extern "C"{
 
 }
 
+#ifndef PetscTruth
+    #define PetscTruth PetscBool
+#endif
+
+
 namespace AMP {
 namespace Solver {
 
@@ -173,7 +178,9 @@ namespace Solver {
     
     
     static bool isVectorValid ( boost::shared_ptr<AMP::Operator::Operator> &op , AMP::LinearAlgebra::Vector::shared_ptr &v , AMP_MPI comm );
+
     static PetscErrorCode lineSearchPreCheck(SNES snes, Vec x, Vec y, void *checkctx, PetscTruth *changed_y);
+
     
     static PetscErrorCode mffdCheckBounds(void *checkctx, Vec U, Vec a, PetscScalar *h);
     

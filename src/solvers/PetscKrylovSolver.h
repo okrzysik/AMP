@@ -39,13 +39,12 @@ extern "C"{
 namespace AMP {
 namespace Solver {
 
-  /**
-   * The PetscKrylovSolver class is a wrapper to the PETSc KSP Krylov solver which provides implementations of Krylov methods. Currently
-   the wrapper has only been tested with the GMRES and FGMRES Krylov methods provided by PETSc.
-   */
-  class PetscKrylovSolver: public SolverStrategy{
-    
-  public:
+/**
+ * The PetscKrylovSolver class is a wrapper to the PETSc KSP Krylov solver which provides implementations of Krylov methods. Currently
+ * the wrapper has only been tested with the GMRES and FGMRES Krylov methods provided by PETSc.
+ */
+class PetscKrylovSolver: public SolverStrategy{
+public:
     /**
      * default constructor, currently only sets a boolean flag d_bKSPCreatedInternally = false
      */
@@ -101,113 +100,111 @@ namespace Solver {
      */
     virtual ~PetscKrylovSolver();
 
-   /**
-    * Solve the system \f$Au = 0\f$.
-    @param [in] f : shared pointer to right hand side vector
-    @param [out] u : shared pointer to approximate computed solution 
-    */
-  void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
+    /**
+     * Solve the system \f$Au = 0\f$.
+     * @param [in] f : shared pointer to right hand side vector
+     * @param [out] u : shared pointer to approximate computed solution 
+     */
+    void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
 	     boost::shared_ptr<AMP::LinearAlgebra::Vector>  u);
 
-  /**
-   * returns the internally stored PETSc KSP object
-   */
-  inline KSP getKrylovSolver(void){ return d_KrylovSolver; }
+    /**
+     * returns the internally stored PETSc KSP object
+     */
+    inline KSP getKrylovSolver(void){ return d_KrylovSolver; }
 
-  /**
-   * sets the PETSc KSP object
-   @param [in] ksp pointer to KSP object
-   */
-  void setKrylovSolver(KSP *ksp);
+    /**
+     * sets the PETSc KSP object
+     * @param [in] ksp pointer to KSP object
+     */
+    void setKrylovSolver(KSP *ksp);
 
-  /**
-   * Initialize the PetscKrylovSolver. Should not be necessary for the user to call in general.
-   @param parameters
-   */
-  void initialize(boost::shared_ptr<SolverStrategyParameters> const parameters);
+    /**
+     * Initialize the PetscKrylovSolver. Should not be necessary for the user to call in general.
+     * @param parameters
+     */
+    void initialize(boost::shared_ptr<SolverStrategyParameters> const parameters);
 
-  /**
-   * returns a shared pointer to a preconditioner object. The preconditioner is derived from
-   * a SolverStrategy class
-   */
-  inline boost::shared_ptr<AMP::Solver::SolverStrategy> getPreconditioner(void){ return d_pPreconditioner; }
+    /**
+     * returns a shared pointer to a preconditioner object. The preconditioner is derived from
+     * a SolverStrategy class
+     */
+    inline boost::shared_ptr<AMP::Solver::SolverStrategy> getPreconditioner(void){ return d_pPreconditioner; }
 
-  /**
-   * sets a shared pointer to a preconditioner object. The preconditioner is derived from
-   * a SolverStrategy class
-   @param pc shared pointer to preconditioner
-   */
-  inline void setPreconditioner(boost::shared_ptr<AMP::Solver::SolverStrategy> pc){d_pPreconditioner = pc;}
+    /**
+     * sets a shared pointer to a preconditioner object. The preconditioner is derived from
+     * a SolverStrategy class
+     * @param pc shared pointer to preconditioner
+     */
+    inline void setPreconditioner(boost::shared_ptr<AMP::Solver::SolverStrategy> pc){d_pPreconditioner = pc;}
 
-   /**
-    * Register the operator that the solver will use during solves
-    @param [in] op shared pointer to operator $A()$ for equation \f$A(u) = f\f$ 
-   */
-  void registerOperator(const boost::shared_ptr<AMP::Operator::Operator> op);
+    /**
+     * Register the operator that the solver will use during solves
+     * @param [in] op shared pointer to operator $A()$ for equation \f$A(u) = f\f$ 
+     */
+    void registerOperator(const boost::shared_ptr<AMP::Operator::Operator> op);
 
-   /**
-   * Resets the registered operator internally with new parameters if necessary
-   * @param parameters
-   *        OperatorParameters object that is NULL by default
-   */
-  void resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> parameters);
+    /**
+     * Resets the registered operator internally with new parameters if necessary
+     * @param parameters    OperatorParameters object that is NULL by default
+     */
+    void resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> parameters);
   
-  protected:
+protected:
   
-  void getFromInput(const boost::shared_ptr<AMP::Database>& db);
+    void getFromInput(const boost::shared_ptr<AMP::Database>& db);
   
-  private:
+private:
   
-  // static functions to interface with PETSc
-  // the signatures of these functions currently vary depending on whether the dev or release
-  // release version of PETSc is being used
+    // static functions to interface with PETSc
+    // the signatures of these functions currently vary depending on whether the dev or release
+    // release version of PETSc is being used
   
-#if (PETSC_VERSION_RELEASE==1)
-  
-  static int setupPreconditioner(void*);
-  static PetscErrorCode applyPreconditioner(void* , Vec , Vec );
-  
+#if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+    static int setupPreconditioner(void*);
+    static PetscErrorCode applyPreconditioner(void* , Vec , Vec );
+#elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+    static PetscErrorCode setupPreconditioner(PC pc);
+    static PetscErrorCode applyPreconditioner(PC pc, Vec r, Vec z);
 #else
-  
-  static PetscErrorCode setupPreconditioner(PC pc);
-  static PetscErrorCode applyPreconditioner(PC pc, Vec r, Vec z);
-  
+    #error Not programmed for this version yet
 #endif
   
-  AMP_MPI d_comm;
+    AMP_MPI d_comm;
   
-  std::string d_sKspType;
+    std::string d_sKspType;
 
-  double d_dRelativeTolerance;
-  double d_dAbsoluteTolerance;
-  double d_dDivergenceTolerance;
+    double d_dRelativeTolerance;
+    double d_dAbsoluteTolerance;
+    double d_dDivergenceTolerance;
 
-  bool d_bKSPCreatedInternally;
+    bool d_bKSPCreatedInternally;
 
-  bool d_bUsesPreconditioner;
-  std::string d_sPcType;
-  std::string d_KSPAppendOptionsPrefix;
+    bool d_bUsesPreconditioner;
+    std::string d_sPcType;
+    std::string d_KSPAppendOptionsPrefix;
   
-  PCSide d_PcSide;
+    PCSide d_PcSide;
 
-  // FGMRES specific options
-  int d_iMaxKrylovDimension;
-  std::string d_sGmresOrthogonalizationAlgorithm;
+    // FGMRES specific options
+    int d_iMaxKrylovDimension;
+    std::string d_sGmresOrthogonalizationAlgorithm;
 
-  // The following KSP solver keeps a reference to these vectors around. 
-  // By declaring the vectors here, we ensure correct behavior during destruction.
-  // This will ensure that the boost::shared_ptr destructor calls VecDestroy on
-  // the last reference.
-  AMP::LinearAlgebra::Vector::shared_ptr  fVecView;
-  AMP::LinearAlgebra::Vector::shared_ptr  uVecView;
+    // The following KSP solver keeps a reference to these vectors around. 
+    // By declaring the vectors here, we ensure correct behavior during destruction.
+    // This will ensure that the boost::shared_ptr destructor calls VecDestroy on
+    // the last reference.
+    AMP::LinearAlgebra::Vector::shared_ptr  fVecView;
+    AMP::LinearAlgebra::Vector::shared_ptr  uVecView;
 
-  boost::shared_ptr<PetscMonitor> d_PetscMonitor;
+    boost::shared_ptr<PetscMonitor> d_PetscMonitor;
 
-  KSP d_KrylovSolver;
+    KSP d_KrylovSolver;
 
-  boost::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
+    boost::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 
 };
+
 
 }
 }
