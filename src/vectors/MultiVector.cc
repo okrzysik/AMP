@@ -19,6 +19,7 @@ namespace LinearAlgebra {
 MultiVector::MultiVector ( Variable::shared_ptr name )
 {
     setVariable ( name );
+    d_CommCreated = false;
 }
 boost::shared_ptr<MultiVector>  MultiVector::create ( Variable::shared_ptr variable, AMP_MPI comm )
 {
@@ -123,7 +124,7 @@ void MultiVector::addVector ( Vector::shared_ptr  v )
     d_DOFManager = AMP::Discretization::DOFManager::shared_ptr( new AMP::Discretization::multiDOFManager( d_Comm, managers ) );
     // Create a new communication list
     std::vector<size_t> remote_DOFs = d_DOFManager->getRemoteDOFs();
-    bool ghosts = d_Comm.maxReduce<char>(remote_DOFs.size()>0)==1;
+    bool ghosts = d_Comm.anyReduce(!remote_DOFs.empty());
     if ( !ghosts ) {
          d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( d_DOFManager->numLocalDOF(), d_Comm );
     } else {
@@ -173,7 +174,7 @@ void MultiVector::addVector ( std::vector<Vector::shared_ptr> v )
     d_DOFManager = AMP::Discretization::DOFManager::shared_ptr( new AMP::Discretization::multiDOFManager( d_Comm, managers ) );
     // Create a new communication list
     std::vector<size_t> remote_DOFs = d_DOFManager->getRemoteDOFs();
-    bool ghosts = d_Comm.maxReduce<char>(remote_DOFs.size()>0)==1;
+    bool ghosts = d_Comm.anyReduce(!remote_DOFs.empty());
     if ( !ghosts ) {
          d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( d_DOFManager->numLocalDOF(), d_Comm );
     } else {
@@ -606,7 +607,7 @@ Vector::shared_ptr  MultiVector::subsetVectorForVariable ( const Variable::share
     }
 
     // Create the new vector
-    int N_procs = comm.sumReduce<int>(subvectors.size()>0?1:0);
+    int N_procs = comm.sumReduce<int>(subvectors.empty()?0:1);
     if ( N_procs==0 )
         return Vector::shared_ptr();
     boost::shared_ptr<MultiVector> retVal;
@@ -616,7 +617,7 @@ Vector::shared_ptr  MultiVector::subsetVectorForVariable ( const Variable::share
         retVal->addVector( subvectors );
     } else {
         // Only a subset of processors have a variable
-        AMP_MPI new_comm = comm.split( subvectors.size()>0?0:-1, comm.getRank() );
+        AMP_MPI new_comm = comm.split( subvectors.empty()?-1:0, comm.getRank() );
         retVal = create ( name, new_comm );
         retVal->addVector( subvectors );
     }
@@ -624,7 +625,7 @@ Vector::shared_ptr  MultiVector::subsetVectorForVariable ( const Variable::share
 }
 Vector::const_shared_ptr  MultiVector::constSubsetVectorForVariable ( const Variable::shared_ptr  &name ) const
 {
-    MultiVector *tmp = (MultiVector*) this;
+    MultiVector *tmp = const_cast<MultiVector*>(this);
     return tmp->subsetVectorForVariable(name);
 }
 

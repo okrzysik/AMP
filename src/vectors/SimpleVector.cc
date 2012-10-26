@@ -106,8 +106,8 @@ double SimpleVector::dot(const VectorOperations &rhs ) const
     while ( a != a_end )
     {
       ans += *a * *b;
-      b++;
-      a++;
+      ++b;
+      ++a;
     }
     ans = d_comm.sumReduce(ans);
     return ans;
@@ -131,7 +131,7 @@ void SimpleVector::scale(double alpha, const VectorOperations &x)
     {
       (*cur) = alpha * (*curx);
       ++cur;
-      curx++;
+      ++curx;
     }
 }
 void SimpleVector::scale(double alpha)
@@ -154,7 +154,7 @@ void SimpleVector::scale(double alpha)
     while ( cur != end() )
     {
       (*cur) = (*curx) + (*cury );
-      curx++; cury++; ++cur;
+      ++curx; ++cury; ++cur;
     }
   }
 
@@ -168,7 +168,7 @@ void SimpleVector::scale(double alpha)
     while ( cur != end() )
     {
       (*cur) = (*curx) - (*cury );
-      curx++; cury++; ++cur;
+      ++curx; ++cury; ++cur;
     }
   }
 
@@ -182,7 +182,7 @@ void SimpleVector::scale(double alpha)
     while ( cur != end() )
     {
       (*cur) = (*curx) * (*cury );
-      curx++; cury++; ++cur;
+      ++curx; ++cury; ++cur;
     }
   }
 
@@ -196,7 +196,7 @@ void SimpleVector::scale(double alpha)
     while ( cur != end() )
     {
       (*cur) = (*curx) / (*cury );
-      curx++; cury++; ++cur;
+      ++curx; ++cury; ++cur;
     }
   }
 
@@ -208,7 +208,7 @@ void SimpleVector::scale(double alpha)
     {
       (*cur) = 1. / (*curx);
       ++cur;
-      curx++;
+      ++curx;
     }
   }
 
@@ -237,7 +237,7 @@ void SimpleVector::scale(double alpha)
     while ( cur != end() )
     {
       (*cur) = alpha * (*curx) + (*cury);
-      curx++; cury++; ++cur;
+      ++curx; ++cury; ++cur;
     }
   }
 
@@ -250,7 +250,7 @@ void SimpleVector::scale(double alpha)
     while ( cur != end() )
     {
       (*cur) = alpha * (*curx) + beta * (*cur);
-      curx++; ++cur;
+      ++curx; ++cur;
     }
   }
 
@@ -262,7 +262,7 @@ void SimpleVector::scale(double alpha)
     {
       (*cur) = fabs (*curx);
       ++cur;
-      curx++;
+      ++curx;
     }
   }
 

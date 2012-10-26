@@ -8,6 +8,8 @@
 
 #define ERROR_MSG AMP_ERROR
 
+#define MONITOR_PROFILER_PERFORMANCE 0
+
 
 AMP::ProfilerApp global_profiler = AMP::ProfilerApp();
 
@@ -34,6 +36,15 @@ namespace AMP {
 
 template <class type_a, class type_b>
 static inline void quicksort2(int n, type_a *arr, type_b *brr);
+
+#if MONITOR_PROFILER_PERFORMANCE==1
+    double total_start_time = 0;
+    double total_stop_time = 0;
+    double total_block_time = 0;
+    double total_thread_time = 0;
+    double total_trace_id_time = 0;
+#endif
+
 
 /******************************************************************
 * Some inline functions to acquire/release a mutex                *
@@ -224,10 +235,14 @@ void ProfilerApp::start( const std::string& message, const char* filename, const
         ERROR_MSG("level must be in the range 0-127");
     if ( this->d_level<level )
         return;
+    #if MONITOR_PROFILER_PERFORMANCE==1
+        TIME_TYPE start_time_local;
+        get_time(&start_time_local);
+    #endif
     // Get the thread data
     thread_info* thread_data = get_thread_data();
     // Get the appropriate timer
-    store_timer* timer = get_block(message.c_str(),filename,line,-1);
+    store_timer* timer = get_block(thread_data,message.c_str(),filename,line,-1);
     if ( timer == NULL )
         ERROR_MSG("Failed to get the appropriate timer");
     if ( timer->is_active ) {
@@ -236,12 +251,16 @@ void ProfilerApp::start( const std::string& message, const char* filename, const
         ERROR_MSG(msg.str());
     }
     // Start the timer 
-    for (unsigned int i=0; i<TRACE_SIZE; i++)
-        timer->trace[i] = thread_data->active[i];
+    memcpy(timer->trace,thread_data->active,TRACE_SIZE*sizeof(BIT_WORD));
     timer->is_active = true;
     timer->N_calls++;
     set_trace_bit(timer->trace_index,TRACE_SIZE,thread_data->active);
     get_time(&timer->start_time);
+    #if MONITOR_PROFILER_PERFORMANCE==1
+        TIME_TYPE stop_time_local;
+        get_time(&stop_time_local);
+        total_start_time += get_diff(start_time_local,stop_time_local,frequency);
+    #endif
 }
 
 
@@ -253,13 +272,17 @@ void ProfilerApp::stop( const std::string& message, const char* filename, const 
         ERROR_MSG("level must be in the range 0-127");
     if ( this->d_level<level )
         return;
+    #if MONITOR_PROFILER_PERFORMANCE==1
+        TIME_TYPE start_time_local;
+        get_time(&start_time_local);
+    #endif
     // Use the current time (minimize the effects of the overhead of the timer)
     TIME_TYPE end_time;
     get_time(&end_time);
     // Get the thread data
     thread_info* thread_data = get_thread_data();
     // Get the appropriate timer
-    store_timer* timer = get_block(message.c_str(),filename,-1,line);
+    store_timer* timer = get_block(thread_data,message.c_str(),filename,-1,line);
     if ( timer == NULL )
         ERROR_MSG("Failed to get the appropriate timer");
     if ( !timer->is_active ) {
@@ -272,7 +295,7 @@ void ProfilerApp::stop( const std::string& message, const char* filename, const 
     unset_trace_bit(timer->trace_index,TRACE_SIZE,thread_data->active );
     // The timer is only a calling timer if it was active before and after the current timer
     BIT_WORD active[TRACE_SIZE];
-    for (size_t i=0; i<TRACE_SIZE; i++)
+    for (size_t i=TRACE_SIZE; i-- >0;)
         active[i] = thread_data->active[i] & timer->trace[i];
     size_t trace_id = get_trace_id( TRACE_SIZE, active );
     // Find the trace to save
@@ -284,8 +307,7 @@ void ProfilerApp::stop( const std::string& message, const char* filename, const 
     }
     if ( trace == NULL ) {
         trace = new store_trace;
-        for (size_t i=0; i<TRACE_SIZE; i++)
-            trace->trace[i] = active[i];
+        memcpy(trace->trace,active,TRACE_SIZE*sizeof(BIT_WORD));
         trace->id = trace_id;
         if ( timer->trace_head == NULL ) {
             timer->trace_head = trace;
@@ -362,6 +384,11 @@ void ProfilerApp::stop( const std::string& message, const char* filename, const 
     }
     trace->total_time += time;
     trace->N_calls++;
+    #if MONITOR_PROFILER_PERFORMANCE==1
+        TIME_TYPE stop_time_local;
+        get_time(&stop_time_local);
+        total_stop_time += get_diff(start_time_local,stop_time_local,frequency);
+    #endif
 }
 
 
@@ -583,6 +610,7 @@ void ProfilerApp::save( const std::string& filename ) {
     fprintf(timerFile,"\n\n");
     fprintf(timerFile,"<N_procs=%i,id=%i>\n",N_procs,rank);
     get_time(&end_time);
+
     char id_str[16];
     // Loop through the list of timers, storing the most expensive first
     for (int i=N_timers-1; i>=0; i--) {
@@ -707,6 +735,10 @@ void ProfilerApp::save( const std::string& filename ) {
     delete [] id_order;
     // Release the mutex
     RELEASE_LOCK(&lock);
+    #if MONITOR_PROFILER_PERFORMANCE==1
+        printf("start = %e, stop = %e, block = %e, thread = %e, trace_id = %e\n",
+            total_start_time,total_stop_time,total_block_time,total_thread_time,total_trace_id_time);
+    #endif
 }
 
 
@@ -757,6 +789,10 @@ std::string ProfilerApp::get_active_list( BIT_WORD *active, unsigned int myIndex
 ***********************************************************************/
 ProfilerApp::thread_info* ProfilerApp::get_thread_data( ) 
 {
+    #if MONITOR_PROFILER_PERFORMANCE==1
+        TIME_TYPE start_time_local;
+        get_time(&start_time_local);
+    #endif
     // Get the thread id (as an integer)
     #ifdef USE_WINDOWS
         DWORD tmp_thread_id = GetCurrentThreadId();
@@ -815,6 +851,11 @@ ProfilerApp::thread_info* ProfilerApp::get_thread_data( )
         head = head->next;
     }
     // Return the pointer (Note: we no longer need volatile since we are accessing it from the creating thread)
+    #if MONITOR_PROFILER_PERFORMANCE==1
+        TIME_TYPE stop_time_local;
+        get_time(&stop_time_local);
+        total_thread_time += get_diff(start_time_local,stop_time_local,frequency);
+    #endif
     return const_cast<thread_info*>(head);
 }
 
@@ -823,17 +864,18 @@ ProfilerApp::thread_info* ProfilerApp::get_thread_data( )
 * Function to get the timmer for a particular block of code            *
 * Note: This function performs some blocking as necessary.             *
 ***********************************************************************/
-ProfilerApp::store_timer* ProfilerApp::get_block( const char* message, const char* filename1, const int start, const int stop ) 
+inline ProfilerApp::store_timer* ProfilerApp::get_block( thread_info *thread_data, 
+    const char* message, const char* filename1, const int start, const int stop ) 
 {
+    #if MONITOR_PROFILER_PERFORMANCE==1
+        TIME_TYPE start_time_local;
+        get_time(&start_time_local);
+    #endif
     // Get the name of the file without the path
+    const char *s = filename1;
+    int length = 1;
+    while(*(++s)) { ++length; }
     const char* filename = filename1;
-    int length = 0;
-    for (size_t i=0; i<1000; i++) {
-        if ( filename[i]==0 ) {
-            length = static_cast<int>(i);
-            break;
-        }
-    }
     for (int i=length-1; i>=0; --i) {
         if ( filename[i]==47 || filename[i]==92 ) {
             filename = &filename[i+1];
@@ -843,8 +885,6 @@ ProfilerApp::store_timer* ProfilerApp::get_block( const char* message, const cha
     // Get the id for the timer
     size_t id = get_timer_id(message,filename);
     unsigned int key = get_timer_hash( id );    // Get the hash index
-    // Get the thread-specific data block
-    thread_info *thread_data = get_thread_data();
     // Search for the thread-specific timer and create it if necessary (does not need blocking)
     if ( thread_data->head[key]==NULL ) {
         // The timer does not exist, create it
@@ -908,6 +948,11 @@ ProfilerApp::store_timer* ProfilerApp::get_block( const char* message, const cha
             << message << " in " << filename << " at lines " << stop << ", " << global_info->stop_line << ")\n";
         ERROR_MSG(msg.str());
     }
+    #if MONITOR_PROFILER_PERFORMANCE==1
+        TIME_TYPE stop_time_local;
+        get_time(&stop_time_local);
+        total_block_time += get_diff(start_time_local,stop_time_local,frequency);
+    #endif
     return timer;
 }
 
@@ -1009,6 +1054,10 @@ inline size_t ProfilerApp::get_timer_id( const char* message, const char* filena
 ***********************************************************************/
 inline size_t ProfilerApp::get_trace_id( size_t N, const BIT_WORD *trace ) 
 {
+    #if MONITOR_PROFILER_PERFORMANCE==1
+        TIME_TYPE start_time_local;
+        get_time(&start_time_local);
+    #endif
     size_t hash = 5381;
     const size_t* s = reinterpret_cast<const size_t*>(trace);
     size_t N_words = N*sizeof(BIT_WORD)/sizeof(size_t);
@@ -1028,6 +1077,11 @@ inline size_t ProfilerApp::get_trace_id( size_t N, const BIT_WORD *trace )
     } else {
         ERROR_MSG("Unhandled case");
     }
+    #if MONITOR_PROFILER_PERFORMANCE==1
+        TIME_TYPE stop_time_local;
+        get_time(&stop_time_local);
+        total_trace_id_time += get_diff(start_time_local,stop_time_local,frequency);
+    #endif
     return hash;
 }
 

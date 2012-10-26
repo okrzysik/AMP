@@ -275,7 +275,7 @@ private:
     store_timer_data_info* get_timer_data( size_t id );
 
     // Function to return the appropriate timer block
-    store_timer* get_block( const char* message, const char* filename, const int start, const int stop );
+    inline store_timer* get_block( thread_info *thread_data, const char* message, const char* filename, const int start, const int stop );
 
     // Function to return a hopefully unique id based on the message and filename
     static inline size_t get_timer_id( const char* message, const char* filename );
