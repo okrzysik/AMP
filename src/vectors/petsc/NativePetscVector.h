@@ -167,6 +167,9 @@ protected:
       void  resetArray ();
       void  resetArray () const;
 
+      // Function to perform  this = alpha x + beta y + gamma this
+      virtual void axpbypcz(double alpha, const VectorOperations &x, double beta, const VectorOperations &y, double gamma);
+
 private:
       parameters_ptr   d_pParameters;
       bool              d_bDeleteMe;

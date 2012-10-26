@@ -116,6 +116,10 @@ private:
 
     //! AMP_MPI must be a friend to access comm_world and the MPI error handler
     friend class AMP::AMP_MPI;
+
+    //! Function to create the arguments to pass to petsc
+    static std::vector<char*> getPetscArgs();
+
 };
 
 

@@ -23,7 +23,7 @@
 
 
 #ifdef _MSC_VER
-    #define _CRT_SECURE_NO_WARNINGS		// Supress depreciated warnings for visual studio
+    #define _CRT_SECURE_NO_WARNINGS        // Supress depreciated warnings for visual studio
 #endif
 
 #include <stdio.h>
@@ -151,7 +151,15 @@ static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
 *  Function to PETSc errors                                                 *
 ****************************************************************************/
 #ifdef USE_EXT_PETSC
-PetscErrorCode petsc_err_handler(int line, const char* func, const char* file, const char* dir, PetscErrorCode code, int p, const char* buf, void* ctx)
+#if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+PetscErrorCode petsc_err_handler( int line, const char* func, const char* file, 
+    const char* dir, PetscErrorCode code, int p, const char* buf, void* ctx)
+#elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+PetscErrorCode petsc_err_handler( MPI_Comm comm, int line, const char *func, 
+    const char* dir, const char* file, PetscErrorCode code, PetscErrorType p, const char* buf, void* ctx )
+#else
+#error Not programmed for this version of petsc
+#endif
 {
     std::stringstream msg;
     msg << "PETSc error:" << std::endl;
@@ -164,11 +172,11 @@ PetscErrorCode petsc_err_handler(int line, const char* func, const char* file, c
 
 
 /****************************************************************************
-*									                                        *
+*                                                                            *
 * Initialize the AMP package.  This routine performs the following tasks:   *
-*									                                        *
+*                                                                            *
 * (1) Initialize MPI                                                        *
-*									                                        *
+*                                                                            *
 ****************************************************************************/
 void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerProperties &properties_in)
 {
@@ -193,8 +201,15 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
         if ( PetscInitializeCalled ) {
             called_PetscInitialize = false;
         } else {
-            PetscInitialize(&argc, &argv,  PETSC_NULL,  PETSC_NULL);
+            std::vector<char*> petscArgs = getPetscArgs();
+            int n_args = static_cast<int>(petscArgs.size());
+            char** args = NULL;
+            if ( n_args>0 ) 
+                args = &petscArgs[0];
+            PetscInitialize(&n_args, &(args),  PETSC_NULL,  PETSC_NULL);
             called_PetscInitialize = true;
+            for (size_t i=0; i<petscArgs.size(); i++)
+                delete [] petscArgs[i];
         }
         // Set our error handler
         PetscPopSignalHandler();
@@ -221,11 +236,11 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
     #endif
     // Initialize AMP's MPI
     if ( properties.COMM_WORLD == AMP_COMM_WORLD ) 
-		#ifdef USE_EXT_MPI
-			comm_world = AMP_MPI(MPI_COMM_WORLD);
-		#else
-			comm_world = AMP_MPI(AMP_COMM_WORLD);
-		#endif
+        #ifdef USE_EXT_MPI
+            comm_world = AMP_MPI(MPI_COMM_WORLD);
+        #else
+            comm_world = AMP_MPI(AMP_COMM_WORLD);
+        #endif
     else
         comm_world = AMP_MPI(properties.COMM_WORLD);    // Initialize the parallel IO
     PIO::initialize();
@@ -250,10 +265,10 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
 
 
 /****************************************************************************
-*									                                        *
-* Shutdown the AMP package.  This routine currently only deallocates	    *
-* statically allocated memory and finalizes the output streams.		        *
-*									                                        *
+*                                                                            *
+* Shutdown the AMP package.  This routine currently only deallocates        *
+* statically allocated memory and finalizes the output streams.                *
+*                                                                            *
 ****************************************************************************/
 void AMPManager::shutdown()
 {    
@@ -311,13 +326,29 @@ void AMPManager::shutdown()
 }
 
 
+/****************************************************************************
+* Function to create the arguments for petsc                                *
+****************************************************************************/
+static inline void addArg( std::string arg, std::vector<char*>& args)
+{
+    char *tmp = new char[arg.length()+1];
+    memset( tmp, 0, arg.length()+1 );
+    memcpy( tmp, arg.c_str(), arg.length() );
+    args.push_back(tmp);
+}
+std::vector<char*> AMPManager::getPetscArgs()
+{
+    std::vector<char*> args;
+    addArg( "-malloc no", args);
+    return args;
+}
+
 
 /****************************************************************************
-*									                                        *
 * Empty constructor to setup default AMPManagerProperties                   *
-*									                                        *
 ****************************************************************************/
-AMPManagerProperties::AMPManagerProperties() {
+AMPManagerProperties::AMPManagerProperties() 
+{
     use_MPI_Abort = true;
     print_times = false;
     profile_MPI_level = 2;

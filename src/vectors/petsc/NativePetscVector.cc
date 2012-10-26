@@ -29,9 +29,14 @@ NativePetscVector::NativePetscVector ( VectorParameters::shared_ptr in_params ):
 NativePetscVector::~NativePetscVector ()
 {
     resetArray();
-    if ( d_bDeleteMe )
-    {
-      VecDestroy ( d_petscVec );
+    if ( d_bDeleteMe ) {
+        #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+            VecDestroy(d_petscVec);
+        #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+            VecDestroy(&d_petscVec);
+        #else
+            #error Not programmed for this version yet
+        #endif
     }
 }
 

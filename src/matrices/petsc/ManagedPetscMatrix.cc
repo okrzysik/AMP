@@ -11,84 +11,79 @@
 
 PetscErrorCode  _AMP_Mult ( Mat m , Vec i , Vec o )
 {
-  void *ctx;
-  MatShellGetContext ( m , &ctx );
-  AMP::LinearAlgebra::Matrix  *pMatrix = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *> ( ctx );
-  AMP::LinearAlgebra::Vector  *pVecIn = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( i->data );
-  AMP::LinearAlgebra::Vector  *pVecOut = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( o->data );
+    void *ctx;
+    MatShellGetContext ( m , &ctx );
+    AMP::LinearAlgebra::Matrix  *pMatrix = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *> ( ctx );
+    AMP::LinearAlgebra::Vector  *pVecIn = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( i->data );
+    AMP::LinearAlgebra::Vector  *pVecOut = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( o->data );
 
-  AMP::LinearAlgebra::Vector::shared_ptr  pvin ( pVecIn , AMP::LinearAlgebra::ExternalVectorDeleter() );
-  AMP::LinearAlgebra::Vector::shared_ptr  pvout ( pVecOut , AMP::LinearAlgebra::ExternalVectorDeleter() );
+    AMP::LinearAlgebra::Vector::shared_ptr  pvin ( pVecIn , AMP::LinearAlgebra::ExternalVectorDeleter() );
+    AMP::LinearAlgebra::Vector::shared_ptr  pvout ( pVecOut , AMP::LinearAlgebra::ExternalVectorDeleter() );
 
-  pMatrix->mult ( pvin , pvout );
-  return 0;
+    pMatrix->mult ( pvin , pvout );
+    return 0;
 }
 
 
 PetscErrorCode  _AMP_Mult_add ( Mat m , Vec i , Vec a , Vec o )
 {
-  void *ctx;
-  MatShellGetContext ( m , &ctx );
-  AMP::LinearAlgebra::Matrix  *pMatrix = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *> ( ctx );
-  AMP::LinearAlgebra::Vector  *pVecIn = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( i->data );
-  AMP::LinearAlgebra::Vector  *pVecAdd = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( a->data );
-  AMP::LinearAlgebra::Vector  *pVecOut = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( o->data );
+    void *ctx;
+    MatShellGetContext ( m , &ctx );
+    AMP::LinearAlgebra::Matrix  *pMatrix = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *> ( ctx );
+    AMP::LinearAlgebra::Vector  *pVecIn = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( i->data );
+    AMP::LinearAlgebra::Vector  *pVecAdd = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( a->data );
+    AMP::LinearAlgebra::Vector  *pVecOut = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( o->data );
 
-  AMP::LinearAlgebra::Vector::shared_ptr  pvin ( pVecIn , AMP::LinearAlgebra::ExternalVectorDeleter() );
-  AMP::LinearAlgebra::Vector::shared_ptr  pvout ( pVecOut , AMP::LinearAlgebra::ExternalVectorDeleter() );
+    AMP::LinearAlgebra::Vector::shared_ptr  pvin ( pVecIn , AMP::LinearAlgebra::ExternalVectorDeleter() );
+    AMP::LinearAlgebra::Vector::shared_ptr  pvout ( pVecOut , AMP::LinearAlgebra::ExternalVectorDeleter() );
 
-  pMatrix->mult ( pvin , pvout );
-  pVecOut->add ( *pVecOut , *pVecAdd );
-  return 0;
+    pMatrix->mult ( pvin , pvout );
+    pVecOut->add ( *pVecOut , *pVecAdd );
+    return 0;
 }
 
 
 PetscErrorCode _AMP_GetDiagonal ( Mat m , Vec d )
 {
-  void *ctx;
-  MatShellGetContext ( m , &ctx );
+    void *ctx;
+    MatShellGetContext ( m , &ctx );
 
-  AMP::LinearAlgebra::Matrix  *pMatrix = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *> ( ctx );
-  AMP::LinearAlgebra::Vector  *pVecIn = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( d->data );
-  AMP::LinearAlgebra::Vector::shared_ptr t ( pVecIn , AMP::LinearAlgebra::ExternalVectorDeleter () );
-  pMatrix->extractDiagonal ( t );
-  return 0;
+    AMP::LinearAlgebra::Matrix  *pMatrix = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *> ( ctx );
+    AMP::LinearAlgebra::Vector  *pVecIn = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( d->data );
+    AMP::LinearAlgebra::Vector::shared_ptr t ( pVecIn , AMP::LinearAlgebra::ExternalVectorDeleter () );
+    pMatrix->extractDiagonal ( t );
+    return 0;
 }
 
 
 PetscErrorCode _AMP_GetVecs(Mat m,Vec *right,Vec *left)
 {
-  void *ctx;
-  MatShellGetContext ( m , &ctx );
-  AMP::LinearAlgebra::Matrix    *pMatrix = static_cast<AMP::LinearAlgebra::ManagedPetscMatrix *> ( ctx );
-
-  if(right!=PETSC_NULL)
-    {
-      AMP::LinearAlgebra::Vector::shared_ptr pRight = AMP::LinearAlgebra::PetscVector::view ( pMatrix->getRightVector() );
-      VecDuplicate ( pRight->castTo<AMP::LinearAlgebra::PetscVector>().getVec() , right );
+    void *ctx;
+    MatShellGetContext ( m , &ctx );
+    AMP::LinearAlgebra::Matrix    *pMatrix = static_cast<AMP::LinearAlgebra::ManagedPetscMatrix *> ( ctx );
+    if(right!=PETSC_NULL) {
+        AMP::LinearAlgebra::Vector::shared_ptr pRight = AMP::LinearAlgebra::PetscVector::view ( pMatrix->getRightVector() );
+        VecDuplicate ( pRight->castTo<AMP::LinearAlgebra::PetscVector>().getVec() , right );
     }
-
-  if(left!=PETSC_NULL)
-    {
-      AMP::LinearAlgebra::Vector::shared_ptr pLeft = AMP::LinearAlgebra::PetscVector::view ( pMatrix->getLeftVector() );
-      VecDuplicate ( pLeft->castTo<AMP::LinearAlgebra::PetscVector>().getVec() , left );
+    if(left!=PETSC_NULL) {
+        AMP::LinearAlgebra::Vector::shared_ptr pLeft = AMP::LinearAlgebra::PetscVector::view ( pMatrix->getLeftVector() );
+        VecDuplicate ( pLeft->castTo<AMP::LinearAlgebra::PetscVector>().getVec() , left );
     }
-
-  return 0;
+    return 0;
 }
 
 
 PetscErrorCode _AMP_AXPY(Mat y,PetscScalar alpha , Mat x , MatStructure )
 {
-  void *ctx1;
-  void *ctx2;
-  MatShellGetContext ( x , &ctx1 );
-  MatShellGetContext ( y , &ctx2 );
-  AMP::LinearAlgebra::Matrix   *pX = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *> ( ctx1 );
-  AMP::LinearAlgebra::Matrix   *pY = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *> ( ctx2 );
+    void *ctx1;
+    void *ctx2;
+    MatShellGetContext ( x , &ctx1 );
+    MatShellGetContext ( y , &ctx2 );
+    AMP::LinearAlgebra::Matrix   *pX = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *> ( ctx1 );
+    AMP::LinearAlgebra::Matrix   *pY = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscMatrix *> ( ctx2 );
 
-  pY->axpy ( alpha , *pX );
-  return 0;
+    pY->axpy ( alpha , *pX );
+    return 0;
 }
 
 
@@ -194,6 +189,24 @@ void  ManagedPetscMatrix::copyFromMat ( Mat m )
         MatRestoreRow ( m, row, &num_cols, &cols, &data );
     }
     d_epetraMatrix->FillComplete ();
+}
+
+
+ManagedPetscMatrix::~ManagedPetscMatrix() 
+{ 
+    #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+        MatDestroy( d_Mat ); 
+    #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+        MatDestroy( &d_Mat ); 
+    #else
+        #error Not programmed for this version yet
+    #endif
+}
+
+
+Matrix::shared_ptr  ManagedPetscMatrix::cloneMatrix () const 
+{ 
+    return shared_ptr ( new ManagedPetscMatrix ( *this ) ); 
 }
 
 

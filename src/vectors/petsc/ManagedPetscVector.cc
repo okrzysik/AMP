@@ -2,10 +2,13 @@
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/trilinos/EpetraVectorEngine.h"
 
-
 extern "C"{
 #include "assert.h"
 }
+
+#ifndef PetscTruth
+    #define PetscTruth PetscBool
+#endif
 
 // Overridden Petsc functions!
 PetscErrorCode _AMP_setvalues(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode){ AMP_ERROR( "20 Not implemented" ); return 0; }
@@ -13,12 +16,10 @@ PetscErrorCode _AMP_setvaluesblocked(Vec,PetscInt,const PetscInt[],const PetscSc
 PetscErrorCode _AMP_view(Vec,PetscViewer){ AMP_ERROR( "32 Not implemented" ); return 0; }
 PetscErrorCode _AMP_placearray(Vec,const PetscScalar*) { AMP_ERROR( "33 Not implemented" ); return 0; }   /* place data array */
 PetscErrorCode _AMP_replacearray(Vec,const PetscScalar*) { AMP_ERROR( "34 Not implemented" ); return 0; }    /* replace data array */
-PetscErrorCode _AMP_loadintovector(PetscViewer,Vec){ AMP_ERROR( "40 Not implemented" ); return 0; }
-PetscErrorCode _AMP_loadintovectornative(PetscViewer,Vec){ AMP_ERROR( "41 Not implemented" ); return 0; }
 PetscErrorCode _AMP_viewnative(Vec,PetscViewer){ AMP_ERROR( "42 Not implemented" ); return 0; }
 PetscErrorCode _AMP_setlocaltoglobalmapping(Vec,ISLocalToGlobalMapping){ AMP_ERROR( "44 Not implemented" ); return 0; }
 PetscErrorCode _AMP_setvalueslocal(Vec,PetscInt,const PetscInt *,const PetscScalar *,InsertMode){ AMP_ERROR( "45 Not implemented" ); return 0; }
-PetscErrorCode _AMP_load(PetscViewer,const VecType,Vec*) { AMP_ERROR( "48 Not implemented" ); return 0; }
+
 PetscErrorCode _AMP_getvalues(Vec,PetscInt,const PetscInt[],PetscScalar[]) { AMP_ERROR( "52 Not implemented" ); return 0; }
 
 #define PETSC_RECAST(x,y)  AMP::LinearAlgebra::ManagedPetscVector *x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( y->data )
@@ -26,6 +27,17 @@ PetscErrorCode _AMP_getvalues(Vec,PetscInt,const PetscInt[],PetscScalar[]) { AMP
 PetscErrorCode _AMP_assemblybegin(Vec) { return 0; }
 PetscErrorCode _AMP_assemblyend(Vec) { return 0; }
 PetscErrorCode _AMP_setoption(Vec,VecOption,PetscTruth) { return 0; }
+
+#if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+PetscErrorCode _AMP_load(PetscViewer,const VecType,Vec*) { AMP_ERROR( "48 Not implemented" ); return 0; }
+PetscErrorCode _AMP_loadintovector(PetscViewer,Vec){ AMP_ERROR( "40 Not implemented" ); return 0; }
+PetscErrorCode _AMP_loadintovectornative(PetscViewer,Vec){ AMP_ERROR( "41 Not implemented" ); return 0; }
+#elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+PetscErrorCode _AMP_load(Vec,PetscViewer) { AMP_ERROR( "48 Not implemented" ); return 0; }
+#else
+    #error Not programmed for this version of petsc
+#endif
+
 
 // This function makes no sense wrt the PETSc interface VecShift ( Vec , PetscScalar );
 PetscErrorCode _AMP_shift(Vec)
@@ -361,6 +373,7 @@ PetscErrorCode _AMP_mtdot(Vec v,PetscInt num,const Vec vec[],PetscScalar *ans)
 
 
 
+#if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
 PetscErrorCode _AMP_destroyvecs(Vec vecArray [],PetscInt num)
 {
   for ( PetscInt i = 0 ; i != num ; i++ )
@@ -368,6 +381,17 @@ PetscErrorCode _AMP_destroyvecs(Vec vecArray [],PetscInt num)
   delete [] vecArray ;
   return 0;
 }
+#elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+PetscErrorCode _AMP_destroyvecs(PetscInt num,Vec vecArray [])
+{
+  for ( PetscInt i = 0 ; i != num ; i++ )
+    VecDestroy ( &vecArray[i] );
+  delete [] vecArray ;
+  return 0;
+}
+#else
+    #error Not programmed for this version of petsc
+#endif
 
 PetscErrorCode _AMP_axpy(Vec out ,PetscScalar alpha ,Vec in)
 {
@@ -578,10 +602,7 @@ void reset_vec_ops ( Vec t )
   t->ops->norm_local = _AMP_norm_local;
   t->ops->mdot_local = _AMP_mdot_local;
   t->ops->mtdot_local = _AMP_mtdot_local;
-  t->ops->loadintovector = _AMP_loadintovector;
-  t->ops->loadintovectornative = _AMP_loadintovectornative;
   t->ops->reciprocal = _AMP_reciprocal;
-  t->ops->viewnative = _AMP_viewnative;
   t->ops->conjugate = _AMP_conjugate;
   t->ops->setlocaltoglobalmapping = _AMP_setlocaltoglobalmapping;
   t->ops->setvalueslocal = _AMP_setvalueslocal;
@@ -598,6 +619,11 @@ void reset_vec_ops ( Vec t )
   t->ops->log = _AMP_log;
   t->ops->shift = _AMP_shift;
   t->ops->create = _AMP_create;
+#if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+  t->ops->loadintovector = _AMP_loadintovector;
+  t->ops->loadintovectornative = _AMP_loadintovectornative;
+  t->ops->viewnative = _AMP_viewnative;
+#endif
 
 /*** The following functions do not need to be overridden
   t->ops->setfromoptions = _AMP_setfromoptions;
@@ -610,8 +636,9 @@ void reset_vec_ops ( Vec t )
 namespace AMP {
 namespace LinearAlgebra {
 
-  void ManagedPetscVector::initPetsc ()
-  {
+
+void ManagedPetscVector::initPetsc ()
+{
     AMP_MPI comm = boost::dynamic_pointer_cast<ManagedVectorParameters>( getParameters() )->d_Engine->getComm();
     VecCreate( comm.getCommunicator() , &d_petscVec);
 
@@ -625,16 +652,18 @@ namespace LinearAlgebra {
 
     reset_vec_ops ( d_petscVec );
 
-#if (PETSC_VERSION_RELEASE==1)
+#if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
     PetscMapInitialize(comm.getCommunicator(), d_petscVec->map);
     PetscMapSetBlockSize(d_petscVec->map, 1);
     PetscMapSetSize(d_petscVec->map, this->getGlobalSize());
     PetscMapSetLocalSize(d_petscVec->map, this->getLocalSize());
-#else
-    PetscLayoutCreate(comm, &d_petscVec->map);
+#elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
     PetscLayoutSetBlockSize(d_petscVec->map, 1);
     PetscLayoutSetSize(d_petscVec->map, this->getGlobalSize());
     PetscLayoutSetLocalSize(d_petscVec->map, this->getLocalSize());
+    PetscLayoutSetUp(d_petscVec->map);
+#else
+    #error Not programmed for this version yet
 #endif
 
     d_bMadeWithPetscDuplicate = false;
@@ -651,50 +680,55 @@ namespace LinearAlgebra {
     AMP_INSIST(ierr==0, "PetscObjectChangeTypeName returned non-zero error code");
 
     VecSetFromOptions ( d_petscVec );
-  }
+}
 
-  ManagedPetscVector::ManagedPetscVector(VectorParameters::shared_ptr params):ManagedVector (params)
-                                                 , PetscVector ()
-  {
+
+ManagedPetscVector::ManagedPetscVector(VectorParameters::shared_ptr params):ManagedVector (params), PetscVector ()
+{
     initPetsc ();
     registerListener ( this );
-  }
+}
 
-  ManagedPetscVector::ManagedPetscVector ( Vector::shared_ptr alias ) : ManagedVector ( alias )
-                                                                      , PetscVector ()
-  {
+
+ManagedPetscVector::ManagedPetscVector ( Vector::shared_ptr alias ) : ManagedVector ( alias ), PetscVector ()
+{
     initPetsc ();
     alias->castTo<DataChangeFirer>().registerListener ( this );
-  }
+}
 
-  ManagedPetscVector::~ManagedPetscVector()
-  {
+
+ManagedPetscVector::~ManagedPetscVector()
+{
     int refct = (((PetscObject)d_petscVec)->refct);
 
     if ( !d_bMadeWithPetscDuplicate )
     {
       if ( refct > 1 )
       {
-//        refct++;
         AMP_ERROR( "Deleting a vector still held by PETSc" );
       }
-      VecDestroy(d_petscVec);
+      #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+        VecDestroy(d_petscVec);
+      #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+        VecDestroy(&d_petscVec);
+      #else
+          #error Not programmed for this version yet
+      #endif
     }
-    // end Methinks
-  }
+}
 
 
-  ManagedPetscVector  *ManagedPetscVector::petscDuplicate ()
-  {
-     ManagedPetscVector *pAns = rawClone ();
-     pAns->setVariable ( getVariable() );
-     pAns->d_bMadeWithPetscDuplicate = true;
-     return pAns;
-  }
+ManagedPetscVector  *ManagedPetscVector::petscDuplicate ()
+{
+    ManagedPetscVector *pAns = rawClone ();
+    pAns->setVariable ( getVariable() );
+    pAns->d_bMadeWithPetscDuplicate = true;
+    return pAns;
+}
 
 
-  void  ManagedPetscVector::copyFromPetscVec ( Vector &dest , Vec source )
-  {
+void  ManagedPetscVector::copyFromPetscVec ( Vector &dest , Vec source )
+{
     boost::shared_ptr<ManagedVectorParameters> params = 
         boost::dynamic_pointer_cast<ManagedVectorParameters>(dest.castTo<ManagedVector>().getParameters());
     if ( !params ) throw ( "Incompatible vector types" );
@@ -710,10 +744,11 @@ namespace LinearAlgebra {
         ids[i-begin] = i;
     VecGetValues( source, dest.getLocalSize(), ids, dest.getRawDataBlock<double>() );
     delete [] ids;
-  }
+}
 
-  boost::shared_ptr<AMP::LinearAlgebra::Vector>  ManagedPetscVector::createFromPetscVec ( Vec source , AMP_MPI &comm )
-  {
+
+boost::shared_ptr<AMP::LinearAlgebra::Vector>  ManagedPetscVector::createFromPetscVec ( Vec source , AMP_MPI &comm )
+{
     PetscInt  local_size, global_size, local_start , local_end;
     VecGetLocalSize ( source , &local_size );
     VecGetSize ( source , &global_size );
@@ -724,16 +759,18 @@ namespace LinearAlgebra {
     ManagedPetscVector *pRetVal_t = new ManagedPetscVector ( boost::dynamic_pointer_cast<VectorParameters> ( t ) );
     Vector::shared_ptr pRetVal ( pRetVal_t );
     return pRetVal;
-  }
+}
 
-  void ManagedPetscVector::swapVectors ( Vector &other )
-  {
+
+void ManagedPetscVector::swapVectors ( Vector &other )
+{
     ManagedPetscVector &tmp = other.castTo<ManagedPetscVector> ();
     ParentVector::swapVectors ( tmp );
-//    swapPetscVec ( tmp );
-//    getVec()->data = this;
-//    other.castTo<ManagedPetscVector> ().getVec()->data = &tmp;
-  }
+    // swapPetscVec ( tmp );
+    // getVec()->data = this;
+    // other.castTo<ManagedPetscVector> ().getVec()->data = &tmp;
+}
+
 
 }
 }
