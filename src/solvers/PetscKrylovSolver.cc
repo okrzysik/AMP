@@ -341,12 +341,16 @@ PetscErrorCode PetscKrylovSolver::setupPreconditioner(PC pc)
 #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
 PetscErrorCode  PetscKrylovSolver::applyPreconditioner(void* ctx, Vec r, Vec z)
 #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
-PetscErrorCode  PetscKrylovSolver::applyPreconditioner(PC ctx, Vec r, Vec z)
+PetscErrorCode  PetscKrylovSolver::applyPreconditioner(PC pc, Vec r, Vec z)
 #else
     #error Not programmed for this version yet
 #endif
 {
     int ierr = 0;
+    #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+        void* ctx;
+        PCShellGetContext(pc,&ctx);
+    #endif
     AMP_ASSERT(ctx!=NULL);
 
     boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_r ( reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>(r->data) , AMP::LinearAlgebra::ExternalVectorDeleter() );
