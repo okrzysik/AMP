@@ -676,34 +676,34 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                std::vector<double> axialCell22Centroid = axialCell22.centroid();
                // determine which cell is bottom cell
                AMP::Mesh::MeshElement *bottomCell1;
-               std::vector<double> *bottomCell1Centroid;
+               //std::vector<double> *bottomCell1Centroid;
                AMP::Mesh::MeshElement *bottomCell2;
-               std::vector<double> *bottomCell2Centroid;
+               //std::vector<double> *bottomCell2Centroid;
                if (axialCell11Centroid[2] < cell1MinusFaceCentroid[2]) {
                   // axialCell11 is bottom cell
                   // ensure that axialCell12 is above
                   AMP_INSIST(axialCell12Centroid[2] > cell1MinusFaceCentroid[2],"Both adjacent cells are below axial face parent");
                   bottomCell1 = &axialCell11;
-                  bottomCell1Centroid = &axialCell11Centroid;
+                  //bottomCell1Centroid = &axialCell11Centroid;
                } else {
                   // axialCell12 is bottom cell
                   // ensure that axialCell11 is above
                   AMP_INSIST(axialCell11Centroid[2] > cell1MinusFaceCentroid[2],"Both adjacent cells are below axial face parent");
                   bottomCell1 = &axialCell12;
-                  bottomCell1Centroid = &axialCell12Centroid;
+                  //bottomCell1Centroid = &axialCell12Centroid;
                }
                if (axialCell21Centroid[2] < cell2MinusFaceCentroid[2]) {
                   // axialCell21 is bottom cell
                   // ensure that axialCell22 is above
                   AMP_INSIST(axialCell22Centroid[2] > cell2MinusFaceCentroid[2],"Both adjacent cells are below axial face parent");
                   bottomCell2 = &axialCell21;
-                  bottomCell2Centroid = &axialCell21Centroid;
+                  //bottomCell2Centroid = &axialCell21Centroid;
                } else {
                   // axialCell22 is bottom cell
                   // ensure that axialCell21 is above
                   AMP_INSIST(axialCell21Centroid[2] > cell2MinusFaceCentroid[2],"Both adjacent cells are below axial face parent");
                   bottomCell2 = &axialCell22;
-                  bottomCell2Centroid = &axialCell22Centroid;
+                  //bottomCell2Centroid = &axialCell22Centroid;
                }
                AMP::Mesh::MeshElement belowLateralFace = getAxiallyAdjacentLateralFace(bottomCell1,lateralFace,lateralFaceMap);
                std::vector<size_t> belowDofs;
