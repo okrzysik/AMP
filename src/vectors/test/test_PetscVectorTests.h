@@ -3,9 +3,6 @@
 #include <algorithm>
 #include "string"
 
-#ifndef PetscTruth
-    #define PetscTruth PetscBool
-#endif
 
 /// \cond UNDOCUMENTED
 
@@ -1136,7 +1133,13 @@ class VerifyAXPYPetscVector
         vectorb2->copyVector ( vectorb );
         checkPetscError<VECTOR_FACTORY> ( utils , VecAXPY ( veca , 1.23456 , vecb ) );
         vectora2->axpy ( 1.23456 , vectorb2, vectora2 );
-        PetscTruth ans;
+        #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+            PetscTruth ans;
+        #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+            PetscBool ans;
+        #else
+            #error Not programmed for this version yet
+        #endif
         checkPetscError<VECTOR_FACTORY> ( utils , VecEqual ( veca , veca2 , &ans ) );
         if ( ans == PETSC_TRUE )
           utils->passes ( "native interface on native petsc axpy works" );

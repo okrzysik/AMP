@@ -25,9 +25,6 @@ static inline void checkErr(PetscErrorCode ierr) {
     #error Not programmed for this version yet
 #endif
 
-#ifndef PetscTruth
-    #define PetscTruth PetscBool
-#endif
 
 
 /****************************************************************
@@ -130,7 +127,13 @@ PetscKrylovSolver::initialize(boost::shared_ptr<SolverStrategyParameters> const 
     //PetscTruth useZeroGuess = (d_bUseZeroInitialGuess) ? PETSC_TRUE : PETSC_FALSE;
     //ierr = KSPSetInitialGuessNonzero(d_KrylovSolver, useZeroGuess);
 
-    PetscTruth useNonzeroGuess = (!d_bUseZeroInitialGuess) ? PETSC_TRUE : PETSC_FALSE;
+    #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+        PetscTruth useNonzeroGuess = (!d_bUseZeroInitialGuess) ? PETSC_TRUE : PETSC_FALSE;
+    #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+        PetscBool useNonzeroGuess = (!d_bUseZeroInitialGuess) ? PETSC_TRUE : PETSC_FALSE;
+    #else
+        #error Not programmed for this version yet
+    #endif
     checkErr(KSPSetInitialGuessNonzero(d_KrylovSolver, useNonzeroGuess));
 
     checkErr(KSPSetTolerances(d_KrylovSolver, d_dRelativeTolerance, d_dAbsoluteTolerance, d_dDivergenceTolerance, d_iMaxIterations));

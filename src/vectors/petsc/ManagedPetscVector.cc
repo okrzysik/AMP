@@ -6,9 +6,9 @@ extern "C"{
 #include "assert.h"
 }
 
-#ifndef PetscTruth
-    #define PetscTruth PetscBool
-#endif
+#include "petscsys.h"
+
+
 
 // Overridden Petsc functions!
 PetscErrorCode _AMP_setvalues(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode){ AMP_ERROR( "20 Not implemented" ); return 0; }
@@ -26,13 +26,14 @@ PetscErrorCode _AMP_getvalues(Vec,PetscInt,const PetscInt[],PetscScalar[]) { AMP
 
 PetscErrorCode _AMP_assemblybegin(Vec) { return 0; }
 PetscErrorCode _AMP_assemblyend(Vec) { return 0; }
-PetscErrorCode _AMP_setoption(Vec,VecOption,PetscTruth) { return 0; }
 
 #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+PetscErrorCode _AMP_setoption(Vec,VecOption,PetscTruth) { return 0; }
 PetscErrorCode _AMP_load(PetscViewer,const VecType,Vec*) { AMP_ERROR( "48 Not implemented" ); return 0; }
 PetscErrorCode _AMP_loadintovector(PetscViewer,Vec){ AMP_ERROR( "40 Not implemented" ); return 0; }
 PetscErrorCode _AMP_loadintovectornative(PetscViewer,Vec){ AMP_ERROR( "41 Not implemented" ); return 0; }
 #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+PetscErrorCode _AMP_setoption(Vec,VecOption,PetscBool) { return 0; }
 PetscErrorCode _AMP_load(Vec,PetscViewer) { AMP_ERROR( "48 Not implemented" ); return 0; }
 #else
     #error Not programmed for this version of petsc
@@ -591,7 +592,12 @@ void reset_vec_ops ( Vec t )
   t->ops->max = _AMP_max;
   t->ops->min = _AMP_min;
   t->ops->setrandom = _AMP_setrandom;
+
+
+
   t->ops->setoption = _AMP_setoption;
+
+
   t->ops->setvaluesblocked = _AMP_setvaluesblocked;
   t->ops->destroy = _AMP_destroy;
   t->ops->view = _AMP_view;

@@ -37,21 +37,17 @@ extern "C"{
 
 }
 
-#ifndef PetscTruth
-    #define PetscTruth PetscBool
-#endif
-
 
 namespace AMP {
 namespace Solver {
 
-  /**
-   * The PETScSNESSolver is a wrapper to the PETSc SNES solver which provides an implementation
-   * of the inexact Newton method.
-   */
-  
-  class PetscSNESSolver: public SolverStrategy{
-  public:
+
+/**
+  * The PETScSNESSolver is a wrapper to the PETSc SNES solver which provides an implementation
+  * of the inexact Newton method.
+  */
+class PetscSNESSolver: public SolverStrategy{
+public:
     
     /**
      * default constructor, sets default values for member variables
@@ -157,9 +153,8 @@ namespace Solver {
      */
     int getBoundsCheckComponent(void){ return d_operatorComponentToEnableBoundsCheck; }
     
-  protected:
-  private:
-    
+protected:
+private:
 
     void initialize(boost::shared_ptr<SolverStrategyParameters> parameters);
     
@@ -179,7 +174,13 @@ namespace Solver {
     
     static bool isVectorValid ( boost::shared_ptr<AMP::Operator::Operator> &op , AMP::LinearAlgebra::Vector::shared_ptr &v , AMP_MPI comm );
 
+#if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
     static PetscErrorCode lineSearchPreCheck(SNES snes, Vec x, Vec y, void *checkctx, PetscTruth *changed_y);
+#elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+    static PetscErrorCode lineSearchPreCheck(SNES snes, Vec x, Vec y, void *checkctx, PetscBool *changed_y);
+#else
+    #error Not programmed for this version yet
+#endif
 
     
     static PetscErrorCode mffdCheckBounds(void *checkctx, Vec U, Vec a, PetscScalar *h);
