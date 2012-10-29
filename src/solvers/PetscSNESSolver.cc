@@ -269,14 +269,19 @@ void PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
         AMP::pout << "L2 Norm of u in PetscSNESSolver::solve before view " << u->L2Norm() << std::endl;
   
     // Create temporary copies of the petsc views
-    // This fixes a bug where a previous solve call creates and used views of a different vector,
-    // which then are destroyed when the views of the new vectors are created, but petsc still 
-    // holds a copy of the original views until the new solve call is created
-    AMP::LinearAlgebra::Vector::shared_ptr  f_thisGetsAroundPETScSharedPtrIssue = spRhs;
-    AMP::LinearAlgebra::Vector::shared_ptr  u_thisGetsAroundPETScSharedPtrIssue = spSol;
-    AMP::LinearAlgebra::Vector::shared_ptr  r_thisGetsAroundPETScSharedPtrIssue = d_pResidualVector;
+    #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+        // This fixes a bug where a previous solve call creates and used views of a different vector,
+        // which then are destroyed when the views of the new vectors are created, but petsc still 
+        // holds a copy of the original views until the new solve call is created
+        AMP::LinearAlgebra::Vector::shared_ptr  f_thisGetsAroundPETScSharedPtrIssue = spRhs;
+        AMP::LinearAlgebra::Vector::shared_ptr  u_thisGetsAroundPETScSharedPtrIssue = spSol;
+        AMP::LinearAlgebra::Vector::shared_ptr  r_thisGetsAroundPETScSharedPtrIssue = d_pResidualVector;
+    #endif
 
     // Get petsc views of the vectors
+    #if !( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+        AMP::LinearAlgebra::Vector::shared_ptr  spRhs, spSol;
+    #endif
     spRhs = AMP::LinearAlgebra::PetscVector::view( f );
     spSol = AMP::LinearAlgebra::PetscVector::view( u );
 
@@ -359,6 +364,11 @@ void PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
     } else {
         AMP_INSIST(spSol.get()!=NULL, "ERROR: Currently the SNES Solver can only be used with a Petsc_Vector, the supplied Vector does not appear to belong to this class");
     }
+
+    // Reset the solvers
+    #if !( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+        SNESReset(d_SNESSolver);
+    #endif
 
     PROFILE_STOP("solve");
 }

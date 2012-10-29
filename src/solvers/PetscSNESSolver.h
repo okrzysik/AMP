@@ -212,12 +212,14 @@ private:
     
     boost::shared_ptr<PetscMonitor> d_PetscMonitor;
     
-    // The following SNES solver keeps a reference to these vectors around. 
-    // By declaring the vectors here, we ensure correct behavior during destruction.
-    // This will ensure that the boost::shared_ptr destructor calls VecDestroy on
-    // the last reference.
-    AMP::LinearAlgebra::Vector::shared_ptr  spRhs;
-    AMP::LinearAlgebra::Vector::shared_ptr  spSol;
+    #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+        // The following SNES solver keeps a reference to these vectors around. 
+        // By declaring the vectors here, we ensure correct behavior during destruction.
+        // This will ensure that the boost::shared_ptr destructor calls VecDestroy on
+        // the last reference.
+        AMP::LinearAlgebra::Vector::shared_ptr  spRhs;
+        AMP::LinearAlgebra::Vector::shared_ptr  spSol;
+    #endif
     
     SNES d_SNESSolver;
     

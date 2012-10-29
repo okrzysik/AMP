@@ -190,12 +190,14 @@ private:
     int d_iMaxKrylovDimension;
     std::string d_sGmresOrthogonalizationAlgorithm;
 
-    // The following KSP solver keeps a reference to these vectors around. 
-    // By declaring the vectors here, we ensure correct behavior during destruction.
-    // This will ensure that the boost::shared_ptr destructor calls VecDestroy on
-    // the last reference.
-    AMP::LinearAlgebra::Vector::shared_ptr  fVecView;
-    AMP::LinearAlgebra::Vector::shared_ptr  uVecView;
+    #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+        // The following KSP solver keeps a reference to these vectors around. 
+        // By declaring the vectors here, we ensure correct behavior during destruction.
+        // This will ensure that the boost::shared_ptr destructor calls VecDestroy on
+        // the last reference.
+        AMP::LinearAlgebra::Vector::shared_ptr  fVecView;
+        AMP::LinearAlgebra::Vector::shared_ptr  uVecView;
+    #endif
 
     boost::shared_ptr<PetscMonitor> d_PetscMonitor;
 

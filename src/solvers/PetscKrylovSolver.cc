@@ -215,6 +215,9 @@ PetscKrylovSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
     #endif
 
     // Get petsc views of the vectors
+    #if !( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+        AMP::LinearAlgebra::Vector::shared_ptr  fVecView, uVecView;
+    #endif
     fVecView = AMP::LinearAlgebra::PetscVector::view ( f );
     uVecView = AMP::LinearAlgebra::PetscVector::view ( u );
 
@@ -242,6 +245,12 @@ PetscKrylovSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
     if(d_iDebugPrintInfoLevel>2) {
         std::cout << "L2Norm of solution from KSP: " << u->L2Norm() << std::endl;
     }
+
+    // Reset the solvers
+    #if !( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+        KSPReset(d_KrylovSolver);
+    #endif
+
 }
 
 
