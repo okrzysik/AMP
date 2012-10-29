@@ -53,6 +53,10 @@ namespace AMP {
 
         void copyMasterToSlave(AMP::LinearAlgebra::Vector::shared_ptr u); 
 
+        void initialize();
+
+        size_t updateActiveSet();
+
       protected :
 
       private :
@@ -69,7 +73,7 @@ namespace AMP {
         std::vector<int> d_TransposeRecvDisps;
 
         // actually we don't need to store the meshelementids but maybe useful later to check whether the active set has changed
-        std::vector<AMP::Mesh::MeshElementID> d_SlaveVerticesGlobalIDs;
+//        std::vector<AMP::Mesh::MeshElementID> d_SlaveVerticesGlobalIDs;
         std::vector<AMP::Mesh::MeshElementID> d_RecvMasterVerticesGlobalIDs;
 
 //        std::vector<size_t> d_SlaveIndices;

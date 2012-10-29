@@ -10,6 +10,32 @@
 namespace AMP {
   namespace Operator {
 
+    void NodeToFaceContactOperator::initialize() {
+      AMP_ASSERT( d_ActiveSet.empty() );
+      AMP_ASSERT( d_InactiveSet.empty() );
+
+      /** get all slave boundary vertices and tag them as inactive */
+      AMP::Mesh::Mesh::shared_ptr slaveMesh = d_Mesh->Subset(d_SlaveMeshID);
+      if (slaveMesh.get() != NULL) {
+        AMP::Mesh::MeshIterator slaveMeshIterator = slaveMesh->getBoundaryIDIterator(AMP::Mesh::Vertex, d_SlaveBoundaryID);
+        AMP::Mesh::MeshIterator slaveMeshIterator_begin = slaveMeshIterator.begin(), 
+          slaveMeshIterator_end = slaveMeshIterator.end();
+        d_InactiveSet.resize(slaveMeshIterator.size());
+        std::vector<AMP::Mesh::MeshElementID>::iterator slaveVerticesGlobalIDsIterator = d_InactiveSet.begin();
+        for (slaveMeshIterator = slaveMeshIterator_begin; slaveMeshIterator != slaveMeshIterator_end; ++slaveMeshIterator) {
+          *slaveVerticesGlobalIDsIterator = slaveMeshIterator->globalID();
+          ++slaveVerticesGlobalIDsIterator;
+        } // end loop over the slave vertices on boundary
+        AMP_ASSERT( slaveVerticesGlobalIDsIterator == d_InactiveSet.end() );
+      } //end if
+    }
+
+    size_t NodeToFaceContactOperator::updateActiveSet() {
+      size_t nSlaveVerticesActivated = 0;
+      size_t nSlaveVerticesDeactivated = 0;
+      return nSlaveVerticesActivated + nSlaveVerticesDeactivated;
+    }
+
     void NodeToFaceContactOperator::reset(const boost::shared_ptr<OperatorParameters> & params) {
 
       AMP_INSIST( (params != NULL), "NULL parameter" );

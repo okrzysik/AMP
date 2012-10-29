@@ -47,7 +47,7 @@ namespace AMP {
         virtual void reset(const boost::shared_ptr<OperatorParameters> & params);
 
         /**
-          Calls first addSlaveToMaster(...) and setSlaveToZero(...) on the residual vector:
+          Calls first addSlaveToMaster(...) and second setSlaveToZero(...) on the residual vector:
           r^m = r^m + C^T r^s
           r^s = 0
 

@@ -26,6 +26,8 @@ namespace AMP {
         ContactOperator (const boost::shared_ptr<ContactOperatorParameters> & params)
           : ConstraintsEliminationOperator(params)
         {
+          d_Mesh = (params->d_Mesh);
+
           d_GlobalComm = (params->d_GlobalComm);
           d_DOFsPerNode = (params->d_DOFsPerNode);
           d_DOFManager = (params->d_DOFManager);
@@ -50,17 +52,30 @@ namespace AMP {
           */
         size_t numGlobalConstraints() { return d_GlobalComm.sumReduce(d_SlaveIndices.size()); }
 
+        void getActiveSet(std::vector<AMP::Mesh::MeshElementID> const * & activeSet) const { activeSet = & d_ActiveSet; }
+
+        virtual void initialize() = 0;
+
+        virtual size_t updateActiveSet() = 0;
+
       protected :
 
         AMP::AMP_MPI d_GlobalComm;
         AMP::Discretization::DOFManager::shared_ptr d_DOFManager;
         size_t d_DOFsPerNode;
 
+        AMP::Mesh::Mesh::shared_ptr d_Mesh;
+
         AMP::Mesh::MeshID d_MasterMeshID;
         AMP::Mesh::MeshID d_SlaveMeshID;
 
         int d_MasterBoundaryID;
         int d_SlaveBoundaryID;
+
+        std::vector<AMP::Mesh::MeshElementID> d_SlaveVerticesGlobalIDs;
+
+        std::vector<AMP::Mesh::MeshElementID> d_InactiveSet;
+        std::vector<AMP::Mesh::MeshElementID> d_ActiveSet;
 
       private :
 
