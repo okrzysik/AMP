@@ -17,7 +17,7 @@ namespace AMP {
 
         VonMisesElastoPlasticModel(const boost::shared_ptr<MechanicsMaterialModelParameters>& );
 
-        ~VonMisesElastoPlasticModel() { }
+        virtual ~VonMisesElastoPlasticModel() { }
 
         void getConstitutiveMatrix(double*& ); 
 

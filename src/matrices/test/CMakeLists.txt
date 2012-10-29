@@ -44,6 +44,5 @@ COPY_MESH_FILE ( clad_1x_1pellet.e )
 COPY_MESH_FILE ( clad_1x_2pellet.e )
 
 # Add matrix test
-ADD_AMP_WEEKLY_TEST ( test_Matrix 1 )
-ADD_AMP_WEEKLY_TEST ( test_Matrix 2 )
-ADD_AMP_TEST_PARALLEL ( test_Matrix 4 )
+ADD_AMP_TEST_1_2_4( test_Matrix )
+

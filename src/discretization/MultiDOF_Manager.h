@@ -37,6 +37,8 @@ public:
      */
     multiDOFManager ( AMP_MPI comm, std::vector<DOFManager::shared_ptr> managers );
 
+    //! Deconstructor
+    virtual ~multiDOFManager();
 
     /** \brief Get the entry indices of DOFs given a mesh element ID
      * \details  This will return a vector of pointers into a Vector that are associated with which.

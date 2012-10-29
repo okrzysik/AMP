@@ -1,47 +1,51 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-  inline
-  PetscVector::PetscVector ()
-  {
+inline PetscVector::PetscVector ()
+{
     d_PetscRandom = 0;
-  }
+}
 
-  inline
-  PetscRandom &PetscVector::getPetscRandom ( AMP_MPI comm )
-  {
-    if ( d_PetscRandom == 0 )
-    {
-      d_PetscRandom = new PetscRandom;
-      PetscRandomCreate ( comm.getCommunicator() , d_PetscRandom );
-      PetscRandomSetType ( *d_PetscRandom , PETSCRAND48 );  // This is a horrible RNG for
-                                                            // stochastic simulation.  Do not 
-                                                            // use.
+
+inline PetscRandom &PetscVector::getPetscRandom ( AMP_MPI comm )
+{
+    if ( d_PetscRandom == 0 ) {
+        d_PetscRandom = new PetscRandom;
+        PetscRandomCreate ( comm.getCommunicator() , d_PetscRandom );
+        PetscRandomSetType ( *d_PetscRandom , PETSCRAND48 );  // This is a horrible RNG for
+                                                              // stochastic simulation.  Do not 
+                                                              // use.
     }
     return *d_PetscRandom;
-  }
+}
 
-  inline
-  Vec &PetscVector::getVec() 
-  { 
+
+inline Vec &PetscVector::getVec() 
+{ 
     return d_petscVec; 
-  }
+}
 
-  inline
-  Vec  PetscVector::getVec() const 
-  { 
+
+inline Vec  PetscVector::getVec() const 
+{ 
     return d_petscVec; 
-  }
+}
 
-  inline
-  PetscVector::~PetscVector()
-  {
-    if ( d_PetscRandom )
-    {
-      PetscRandomDestroy ( *d_PetscRandom );
-      delete d_PetscRandom;
+
+inline PetscVector::~PetscVector()
+{
+    if ( d_PetscRandom ) {
+        #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+            PetscRandomDestroy ( *d_PetscRandom );
+        #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+            PetscRandomDestroy ( d_PetscRandom );
+        #else
+            #error Not programmed for this version of petsc
+        #endif
+        delete d_PetscRandom;
     }
-  }
+}
+
 
 }
 }

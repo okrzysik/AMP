@@ -22,7 +22,7 @@ namespace AMP {
 
         MassLinearFEOperator(const boost::shared_ptr<MassLinearFEOperatorParameters>& params);
 
-        ~MassLinearFEOperator() { }
+        virtual ~MassLinearFEOperator() { }
 
         void preAssembly(const boost::shared_ptr<AMP::Operator::OperatorParameters>&);
 

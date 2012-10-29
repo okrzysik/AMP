@@ -12,6 +12,14 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
+static inline double* getBufferPtr( VectorEngine::BufferPtr buf ) {
+    if ( buf->empty() ) 
+        return NULL;
+    return &buf->operator[](0);
+}
+
+
+
 /********************************************************
 * EpetraVectorEngineParameters constructors             *
 ********************************************************/
@@ -62,16 +70,23 @@ Epetra_Map  &EpetraVectorEngineParameters::getEpetraMap()
     AMP_ASSERT(0==(size_t)d_emap->MinAllGID());
     AMP_ASSERT(d_global-1==(size_t)d_emap->MaxAllGID());
     AMP_ASSERT(0==(size_t)d_emap->MinLID());
-    AMP_ASSERT(local_size-1==(size_t)d_emap->MaxLID());
+    if ( local_size==0 )
+        AMP_ASSERT(0==(size_t)d_emap->MaxLID());
+    else
+        AMP_ASSERT(local_size-1==(size_t)d_emap->MaxLID());
     return *d_emap;
 }
 
 
-  EpetraVectorEngine::EpetraVectorEngine ( VectorEngineParameters::shared_ptr  alias , BufferPtr buf )
-    : d_epetraVector ( View , alias->castTo<EpetraVectorEngineParameters>().getEpetraMap() , &*(buf->begin()) )
-  {
+/********************************************************
+* Constructor                                           *
+********************************************************/
+EpetraVectorEngine::EpetraVectorEngine ( VectorEngineParameters::shared_ptr  alias , BufferPtr buf )
+    : d_epetraVector ( View , alias->castTo<EpetraVectorEngineParameters>().getEpetraMap() , getBufferPtr(buf) )
+{
     d_Params = alias;
-  }
+}
+
 
   VectorEngine::BufferPtr  EpetraVectorEngine::getNewBuffer ()
   { 

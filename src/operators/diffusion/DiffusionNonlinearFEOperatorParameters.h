@@ -20,7 +20,7 @@ public:
     {
     }
 
-    ~DiffusionNonlinearFEOperatorParameters() {
+    virtual ~DiffusionNonlinearFEOperatorParameters() {
     }
 
     boost::shared_ptr<DiffusionTransportModel> d_transportModel;

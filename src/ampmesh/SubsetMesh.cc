@@ -25,7 +25,7 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
     this->d_name = mesh->getName() + "_subset";
     // Check the iterator
     GeomType type = null;
-    AMP_ASSERT(iterator_in.size()>0);
+    AMP_ASSERT(d_comm.sumReduce(iterator_in.size()));
     MeshIterator iterator = iterator_in.begin();
     for (size_t i=0; i<iterator.size(); i++) {
         if ( type==null )
@@ -34,7 +34,7 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::Mes
             AMP_ERROR("Subset mesh requires all of the elements to be the same type");
         ++iterator;
     }
-    int type2 = d_comm.maxReduce((int) type);
+    int type2 = d_comm.minReduce((int) type);
     if ( type!=null && type2!=(int)type )
         AMP_ERROR("Subset mesh requires all of the elements to be the same type");
     this->GeomDim = (GeomType) type2;
@@ -389,7 +389,7 @@ MeshIterator SubsetMesh::getBoundaryIDIterator ( const GeomType type, const int 
             continue;
         iterators.push_back( boost::shared_ptr<MeshIterator>( new MultiVectorIterator( map_it->second, 0 ) ) );
     }
-    if ( iterators.size() == 0 )
+    if ( iterators.empty() )
         return MeshIterator();
     if ( iterators.size() == 1 )
         return *iterators[0];

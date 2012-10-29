@@ -67,7 +67,7 @@ namespace LinearAlgebra {
 }
 }
 
-#include "ManagedPetscMatrix.inline.h"
+
 #endif
 
 

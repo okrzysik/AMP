@@ -28,6 +28,9 @@ public:
     //! Print the time required to initialize or shutdown each package.  Default is false.
     bool print_times;
 
+    //! The default level for the MPI timers.  Default is 2
+    int profile_MPI_level;
+
     /*!
      *  MPI communicator to use for AMP_COMM_WORLD.  By default this should be set to 
      *  AMP_COMM_WORLD if MPI is not initialized.  If MPI is initialized, this can be 
@@ -113,6 +116,10 @@ private:
 
     //! AMP_MPI must be a friend to access comm_world and the MPI error handler
     friend class AMP::AMP_MPI;
+
+    //! Function to create the arguments to pass to petsc
+    static std::vector<char*> getPetscArgs();
+
 };
 
 

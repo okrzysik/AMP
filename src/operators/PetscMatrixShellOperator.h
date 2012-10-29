@@ -42,7 +42,7 @@ namespace AMP {
 
         PetscMatrixShellOperator(const boost::shared_ptr<OperatorParameters>& params);
 
-        ~PetscMatrixShellOperator() { }
+        virtual ~PetscMatrixShellOperator() { }
 
         static PetscErrorCode mult(Mat, Vec, Vec);
 

@@ -15,7 +15,7 @@ namespace AMP {
         LinearBoundaryOperatorParameters(const boost::shared_ptr<AMP::Database> & db) : 
           OperatorParameters(db){}
 
-        ~LinearBoundaryOperatorParameters(){}
+        virtual ~LinearBoundaryOperatorParameters(){}
 
         AMP::LinearAlgebra::Matrix::shared_ptr d_inputMatrix;
 

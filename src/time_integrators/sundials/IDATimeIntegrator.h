@@ -132,7 +132,7 @@ namespace TimeIntegrator{
       /**
        * Destructor.
        */
-      ~IDATimeIntegrator();
+      virtual ~IDATimeIntegrator();
       
       /**
        * Initialize from parameter list.

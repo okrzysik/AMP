@@ -47,6 +47,10 @@ public:
     virtual void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <size_t> &dofs ) const;
 
 
+    //! Deconstructor
+    virtual ~subsetDOFManager();
+
+
     /** \brief   Get an entry over the mesh elements associated with the DOFs
      * \details  This will return an iterator over the mesh elements associated with the DOFs.  
      * Note: if any sub-DOFManagers are the same, then this will iterate over repeated elements.

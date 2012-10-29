@@ -38,7 +38,7 @@ namespace Operator {
       /**
         Destructor
         */
-      ~SubchannelFourEqNonlinearOperator() { }
+      virtual ~SubchannelFourEqNonlinearOperator() { }
 
       /**
         For this operator we have an in-place apply.
@@ -77,6 +77,12 @@ namespace Operator {
         */
       std::map<std::vector<double>,AMP::Mesh::MeshElement> getLateralFaces(AMP::Mesh::Mesh::shared_ptr);
 
+      void getAxialFaces(AMP::Mesh::MeshElement,AMP::Mesh::MeshElement&,AMP::Mesh::MeshElement&);
+
+      void fillSubchannelGrid(AMP::Mesh::Mesh::shared_ptr); // function to fill the subchannel data for all processors
+
+      int getSubchannelIndex( double x, double y ); // function to give unique index for each subchannel
+
     protected:
 
       boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
@@ -87,6 +93,11 @@ namespace Operator {
         Function used in reset to get double parameter or use default if missing
         */
       double getDoubleParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, double);
+
+      /**
+        Function used in reset to get integer parameter or use default if missing
+        */
+      int getIntegerParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, int);
 
       /**
         Function used in reset to get double parameter or use default if missing
@@ -101,30 +112,36 @@ namespace Operator {
       double d_Tin;      // inlet temperature [K]
       double d_min;      // inlet mass flow rate [kg/s]
       double d_win;      // inlet mass flow rate [kg/s]
-      std::vector<double> d_area; // subchannel cross section area
       double d_gamma;    // fission heating coefficient
       double d_theta;    // channel angle [rad]
-      double d_friction; // friction factor
       double d_pitch;    // lattice pitch [m]
       double d_diameter; // fuel rod diameter [m]
-      double d_K;        // form loss coefficient
-      double d_Q;        // rod power
+      double d_turbulenceCoef; // proportionality constant relating turbulent momentum to turbulent energy transport
+
+      std::string d_frictionModel; // friction model
+      double d_friction; // friction factor
+      double d_roughness; // surface roughness [m]
+
+      size_t d_NGrid;                 // number of grid spacers
+      std::vector<double> d_zMinGrid; // z min positions of each grid spacer
+      std::vector<double> d_zMaxGrid; // z max positions of each grid spacer
+      std::vector<double> d_lossGrid; // loss coefficients for each grid spacer
 
       std::string d_source; // heat source type
       std::string d_heatShape; // heat shape used if heat source type is "totalHeatGeneration"
+      double d_Q;        // (sum of rod powers)/4 for each subchannel
+      std::vector<double> d_QFraction; // fraction of max rod power in each subchannel
 
       std::vector<double> d_x, d_y, d_z;
       std::vector<bool> d_ownSubchannel; // does this processor own this subchannel (multiple processors may own a subchannel)?
-      int getSubchannelIndex( double x, double y ); // function to give unique index for each subchannel
-      void fillSubchannelGrid(AMP::Mesh::Mesh::shared_ptr); // function to fill the subchannel data for all processors
-      int d_numSubchannels; // number of subchannels
+      size_t d_numSubchannels; // number of subchannels
 
       double Volume(double,double);              // evaluates specific volume
       double Temperature(double,double);         // evaluates temperature
       double ThermalConductivity(double,double); // evaluates thermal conductivity
+      double DynamicViscosity(double,double);    // evaluates dynamic viscosity
       double Enthalpy(double,double);            // evaluates specific enthalpy
 
-      void getAxialFaces(AMP::Mesh::MeshElement,AMP::Mesh::MeshElement&,AMP::Mesh::MeshElement&);
       AMP::Mesh::MeshElement getAxiallyAdjacentLateralFace(AMP::Mesh::MeshElement*,AMP::Mesh::MeshElement,
          std::map<std::vector<double>,AMP::Mesh::MeshElement>);
   };

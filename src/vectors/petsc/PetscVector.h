@@ -117,7 +117,7 @@ namespace LinearAlgebra {
       /**
         *  \brief  Destructor
         */
-     ~PetscVector ();
+     virtual ~PetscVector ();
 
       /**
         *  \brief  Obtain PETSc Vec for use in PETSc routines

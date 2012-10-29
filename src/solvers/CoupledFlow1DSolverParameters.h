@@ -15,7 +15,7 @@ namespace Solver {
     CoupledFlow1DSolverParameters(){}
     CoupledFlow1DSolverParameters(const boost::shared_ptr<AMP::Database> &db): 
       SolverStrategyParameters(db){ }
-    ~CoupledFlow1DSolverParameters(){}
+    virtual ~CoupledFlow1DSolverParameters(){}
 
     boost::shared_ptr<AMP::Solver::SolverStrategy> d_flow1DSolver;
     boost::shared_ptr<AMP::Operator::Operator> d_pOperator;

@@ -93,6 +93,14 @@ DOFManager::shared_ptr  simpleDOFManager::create( const AMP::Mesh::MeshIterator 
 
 
 /****************************************************************
+* Deconstructor                                                 *
+****************************************************************/
+simpleDOFManager::~simpleDOFManager( )
+{
+}
+
+
+/****************************************************************
 * Initialize the data                                           *
 ****************************************************************/
 void simpleDOFManager::initialize()

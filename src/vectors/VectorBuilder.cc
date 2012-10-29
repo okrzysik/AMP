@@ -105,6 +105,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
                 new AMP::LinearAlgebra::EpetraVectorEngineParameters( DOFs->numLocalDOF(), DOFs->numGlobalDOF(), DOFs->getComm() ) );
             comm.barrier();
             AMP::LinearAlgebra::VectorEngine::BufferPtr t_buffer ( new AMP::LinearAlgebra::VectorEngine::Buffer( DOFs->numLocalDOF() ) );
+            AMP_ASSERT(t_buffer->size()==DOFs->numLocalDOF());
             AMP::LinearAlgebra::VectorEngine::shared_ptr epetra_engine( new AMP::LinearAlgebra::EpetraVectorEngine( eveparams, t_buffer ) );
             mvparams->d_Engine = epetra_engine;
             mvparams->d_Buffer = t_buffer;

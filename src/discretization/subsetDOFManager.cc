@@ -82,6 +82,14 @@ DOFManager::shared_ptr  subsetDOFManager::create( boost::shared_ptr<const DOFMan
 
 
 /****************************************************************
+* Deconstructor                                                 *
+****************************************************************/
+subsetDOFManager::~subsetDOFManager( )
+{
+}
+
+
+/****************************************************************
 * Get the dofs for the given element                            *
 ****************************************************************/
 void subsetDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <size_t> &dofs ) const

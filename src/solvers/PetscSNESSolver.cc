@@ -9,8 +9,27 @@
 #include "operators/LinearOperator.h"
 #include "operators/ColumnOperator.h"
 
+#include "petscsnes.h" 
+#include "petscmat.h"  
+
+
+
 namespace AMP {
 namespace Solver {
+
+
+#if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+static inline void checkErr(int ierr) {
+    AMP_INSIST(ierr==0, "Petsc returned non-zero error code");
+}
+#elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+static inline void checkErr(PetscErrorCode ierr) {
+    AMP_INSIST(ierr==0, "Petsc returned non-zero error code");
+}
+#else
+    #error Not programmed for this version yet
+#endif
+
 
 
 /****************************************************************
@@ -45,11 +64,23 @@ PetscSNESSolver::~PetscSNESSolver()
 {
     // when we are using Matrix free delete the MF PETSc Jacobian
     if((!d_bUsesJacobian)&&(d_Jacobian!=NULL)) {
-        MatDestroy(d_Jacobian);
+        #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+            MatDestroy(d_Jacobian);
+        #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+            MatDestroy(&d_Jacobian);
+        #else
+            #error Not programmed for this version yet
+        #endif
         d_Jacobian = NULL;
     }
     SNESMonitorCancel(d_SNESSolver);
-    SNESDestroy(d_SNESSolver);
+    #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+        SNESDestroy(d_SNESSolver);
+    #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+        SNESDestroy(&d_SNESSolver);
+    #else
+        #error Not programmed for this version yet
+    #endif
     d_SNESSolver = NULL;
 }
 
@@ -60,7 +91,6 @@ PetscSNESSolver::~PetscSNESSolver()
 void  PetscSNESSolver::initialize(boost::shared_ptr<SolverStrategyParameters> params)
 {
     PROFILE_START("initialize");
-    int ierr = 0;
 
     boost::shared_ptr<PetscSNESSolverParameters> parameters = boost::dynamic_pointer_cast<PetscSNESSolverParameters >(params);
     getFromInput(parameters->d_db);
@@ -69,14 +99,14 @@ void  PetscSNESSolver::initialize(boost::shared_ptr<SolverStrategyParameters> pa
     if ( d_SNESSolver != NULL ) {
         this->~PetscSNESSolver();
     }
-    ierr = SNESCreate(d_comm.getCommunicator(), &d_SNESSolver);
+    checkErr(SNESCreate(d_comm.getCommunicator(), &d_SNESSolver));
 
     // set the type to line search, potentially modify this later to be from input
-    ierr = SNESSetType(d_SNESSolver, SNESLS);
-    ierr = SNESSetApplicationContext(d_SNESSolver, this);
-    ierr = SNESSetTolerances(d_SNESSolver,
+    checkErr(SNESSetType(d_SNESSolver, SNESLS));
+    checkErr(SNESSetApplicationContext(d_SNESSolver, this));
+    checkErr(SNESSetTolerances(d_SNESSolver,
                d_dAbsoluteTolerance,  d_dRelativeTolerance, d_dStepTolerance,
-               d_iMaxIterations, d_iMaximumFunctionEvals);
+               d_iMaxIterations, d_iMaximumFunctionEvals));
     if(d_SNESAppendOptionsPrefix!="")
         SNESAppendOptionsPrefix(d_SNESSolver, d_SNESAppendOptionsPrefix.c_str());
   
@@ -135,23 +165,22 @@ void  PetscSNESSolver::initialize(boost::shared_ptr<SolverStrategyParameters> pa
             }
         }
 
-        ierr = SNESSetJacobian(d_SNESSolver,
+        checkErr(SNESSetJacobian(d_SNESSolver,
                  d_Jacobian,
                  PCJacobian,
                  PetscSNESSolver::setJacobian,
-                 this);
+                 this));
 
     }
 
     if(d_bEnableLineSearchPreCheck) {
-        ierr = SNESLineSearchSetPreCheck(d_SNESSolver, PetscSNESSolver::lineSearchPreCheck, this);
+        checkErr(SNESLineSearchSetPreCheck(d_SNESSolver, PetscSNESSolver::lineSearchPreCheck, this));
     }
 
-    ierr = SNESSetFromOptions(d_SNESSolver);
-    AMP_INSIST(ierr==0, "SNESSetFromOptions returned non-zero error code");
+    checkErr(SNESSetFromOptions(d_SNESSolver));
     if ( d_PetscMonitor.get()!=NULL ) {
         // Add the monitor
-        ierr = SNESMonitorSet(d_SNESSolver,PetscMonitor::monitorSNES,d_PetscMonitor.get(),PETSC_NULL);
+        SNESMonitorSet(d_SNESSolver,PetscMonitor::monitorSNES,d_PetscMonitor.get(),PETSC_NULL);
     }
     PROFILE_STOP("initialize");
 }
@@ -235,20 +264,24 @@ void PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
                   boost::shared_ptr<AMP::LinearAlgebra::Vector>  u)
 {
     PROFILE_START("solve");
-    int ierr=0;
 
     if(d_iDebugPrintInfoLevel>2)
         AMP::pout << "L2 Norm of u in PetscSNESSolver::solve before view " << u->L2Norm() << std::endl;
   
     // Create temporary copies of the petsc views
-    // This fixes a bug where a previous solve call creates and used views of a different vector,
-    // which then are destroyed when the views of the new vectors are created, but petsc still 
-    // holds a copy of the original views until the new solve call is created
-    AMP::LinearAlgebra::Vector::shared_ptr  f_thisGetsAroundPETScSharedPtrIssue = spRhs;
-    AMP::LinearAlgebra::Vector::shared_ptr  u_thisGetsAroundPETScSharedPtrIssue = spSol;
-    AMP::LinearAlgebra::Vector::shared_ptr  r_thisGetsAroundPETScSharedPtrIssue = d_pResidualVector;
+    #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+        // This fixes a bug where a previous solve call creates and used views of a different vector,
+        // which then are destroyed when the views of the new vectors are created, but petsc still 
+        // holds a copy of the original views until the new solve call is created
+        AMP::LinearAlgebra::Vector::shared_ptr  f_thisGetsAroundPETScSharedPtrIssue = spRhs;
+        AMP::LinearAlgebra::Vector::shared_ptr  u_thisGetsAroundPETScSharedPtrIssue = spSol;
+        AMP::LinearAlgebra::Vector::shared_ptr  r_thisGetsAroundPETScSharedPtrIssue = d_pResidualVector;
+    #endif
 
     // Get petsc views of the vectors
+    #if !( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+        AMP::LinearAlgebra::Vector::shared_ptr  spRhs, spSol;
+    #endif
     spRhs = AMP::LinearAlgebra::PetscVector::view( f );
     spSol = AMP::LinearAlgebra::PetscVector::view( u );
 
@@ -274,17 +307,29 @@ void PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
             setSNESFunction( spRhs );
             if(!d_bUsesJacobian) {
                 if ( d_Jacobian!=NULL ) {
-                    MatDestroy(d_Jacobian);
+                    #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+                        MatDestroy(d_Jacobian);
+                    #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+                        MatDestroy(&d_Jacobian);
+                    #else
+                        #error Not programmed for this version yet
+                    #endif
                     d_Jacobian = NULL;
                 }
-                ierr = MatCreateSNESMF(d_SNESSolver, &d_Jacobian);
-                ierr = MatMFFDSetType(d_Jacobian, (MatMFFDType) d_sMFFDDifferencingStrategy.c_str() );
-                ierr = MatMFFDSetFunctionError(d_Jacobian, d_dMFFDFunctionDifferencingError);
+                checkErr(MatCreateSNESMF(d_SNESSolver, &d_Jacobian));
+                checkErr(MatMFFDSetType(d_Jacobian, (MatMFFDType) d_sMFFDDifferencingStrategy.c_str() ));
+                checkErr(MatMFFDSetFunctionError(d_Jacobian, d_dMFFDFunctionDifferencingError));
                 if(d_bEnableMFFDBoundsCheck) {
-                    ierr = MatMFFDSetCheckh(d_Jacobian, PetscSNESSolver::mffdCheckBounds, this);
+                    checkErr(MatMFFDSetCheckh(d_Jacobian, PetscSNESSolver::mffdCheckBounds, this));
                 }
 
-                ierr = MatMFFDSetFromOptions(d_Jacobian);
+                #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+                    checkErr(MatMFFDSetFromOptions(d_Jacobian));
+                #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+                    checkErr(MatSetFromOptions(d_Jacobian));
+                #else
+                    #error Not programmed for this version yet
+                #endif
                 boost::shared_ptr<AMP::Solver::SolverStrategy> pcSolver = d_pKrylovSolver->getPreconditioner();
 
                 Mat PCJacobian = d_Jacobian;
@@ -301,11 +346,11 @@ void PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
                     }
                 }
 
-                ierr = SNESSetJacobian(d_SNESSolver,
+                checkErr(SNESSetJacobian(d_SNESSolver,
                         d_Jacobian,
                         PCJacobian,
                         PetscSNESSolver::setJacobian,
-                        this);
+                        this));
 
             }
         }
@@ -313,13 +358,17 @@ void PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
         Vec x = spSol->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
 
         PROFILE_START("petsc-SNESSolve");
-        ierr = SNESSolve(d_SNESSolver, b, x);
+        checkErr(SNESSolve(d_SNESSolver, b, x));
         PROFILE_STOP("petsc-SNESSolve");
 
     } else {
         AMP_INSIST(spSol.get()!=NULL, "ERROR: Currently the SNES Solver can only be used with a Petsc_Vector, the supplied Vector does not appear to belong to this class");
     }
-    AMP_INSIST(ierr==0, "non-zero PETSc error code");
+
+    // Reset the solvers
+    #if !( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+        SNESReset(d_SNESSolver);
+    #endif
 
     PROFILE_STOP("solve");
 }
@@ -354,7 +403,7 @@ PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat* A, Mat*, MatStruc
 
 
 /****************************************************************
-*  Other functions                                              *
+*  Check if the vector is valid                                 *
 ****************************************************************/
 bool PetscSNESSolver::isVectorValid ( boost::shared_ptr<AMP::Operator::Operator>  &op , AMP::LinearAlgebra::Vector::shared_ptr &v , AMP_MPI comm )
 {
@@ -365,8 +414,17 @@ bool PetscSNESSolver::isVectorValid ( boost::shared_ptr<AMP::Operator::Operator>
     return retVal;
 }
 
-PetscErrorCode
-PetscSNESSolver::lineSearchPreCheck(SNES snes, Vec x, Vec y, void *checkctx, PetscTruth *changed_y)
+
+/****************************************************************
+*  Linesearch precheck                                          *
+****************************************************************/
+#if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+PetscErrorCode PetscSNESSolver::lineSearchPreCheck(SNES snes, Vec x, Vec y, void *checkctx, PetscTruth *changed_y)
+#elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+PetscErrorCode PetscSNESSolver::lineSearchPreCheck(SNES snes, Vec x, Vec y, void *checkctx, PetscBool *changed_y)
+#else
+    #error Not programmed for this version yet
+#endif
 {
     int ierr=1;
     PetscSNESSolver *pSNESSolver =  (PetscSNESSolver *) checkctx;

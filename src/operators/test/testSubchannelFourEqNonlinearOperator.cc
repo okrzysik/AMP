@@ -18,6 +18,7 @@
 #include "operators/subchannel/SubchannelPhysicsModel.h"
 #include "operators/subchannel/SubchannelOperatorParameters.h"
 #include "operators/subchannel/SubchannelFourEqNonlinearOperator.h"
+#include "operators/subchannel/SubchannelConstants.h"
 #include "operators/OperatorBuilder.h"
 
 #include "ampmesh/StructuredMeshHelper.h"
@@ -85,298 +86,165 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
   subchannelOpParams->d_dofMap = subchannelDOFManager;
 
+  // create nonlinear operator
   boost::shared_ptr<AMP::Operator::SubchannelFourEqNonlinearOperator> subchannelOperator (new AMP::Operator::SubchannelFourEqNonlinearOperator(subchannelOpParams));
 
   // report successful creation
   ut->passes(exeName+": creation");
   std::cout.flush();
 
+  // reset the nonlinear operator
+  subchannelOperator->reset(subchannelOpParams);
+
   // check number of lateral gaps
   std::map<std::vector<double>,AMP::Mesh::MeshElement> lateralFaceMap = subchannelOperator->getLateralFaces(subchannelOpParams->d_Mesh);
   size_t Ngaps = lateralFaceMap.size();
-  if (Ngaps == 63) {
+  if (Ngaps == 108) {
      ut->passes(exeName+": number of lateral gaps");
   } else {
-     std::cout<<"Incorrent number of lateral gaps. Found: "<<Ngaps<<". Expected: 63."<<std::endl;
+     std::cout<<"Incorrent number of lateral gaps. Found: "<<Ngaps<<". Expected: 108."<<std::endl;
      ut->failure(exeName+": number of lateral gaps");
   }
 
-  // reset the nonlinear operator
-  subchannelOperator->reset(subchannelOpParams);
-  std::vector<size_t> axialDofs;
-  AMP::Mesh::MeshIterator axialFace     = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
+  // set SolVec
+  const size_t numSubchannels = 9;
+  const double m_scale = AMP::Operator::Subchannel::scaleAxialMassFlowRate;
+  const double h_scale = AMP::Operator::Subchannel::scaleEnthalpy;
+  const double p_scale = AMP::Operator::Subchannel::scalePressure;
+  const double w_scale = AMP::Operator::Subchannel::scaleLateralMassFlowRate;
 
-  {
-     for (; axialFace != axialFace.end(); axialFace++){
-        subchannelDOFManager->getDOFs(axialFace->globalID(),axialDofs);
-        SolVec->setValueByGlobalID(axialDofs[0], 5.0 );
-        SolVec->setValueByGlobalID(axialDofs[1], 1000.0e3 );
-        SolVec->setValueByGlobalID(axialDofs[2], 15.0e6 );
+      // get all of the unique x,y,z points in subchannel mesh
+      subchannelOperator->fillSubchannelGrid(subchannelOpParams->d_Mesh);
+
+      // compute height of subchannels
+      std::vector<double> box = subchannelOpParams->d_Mesh->getBoundingBox();
+      const double height = box[5] - box[4];
+
+      AMP::Mesh::MeshIterator cell = subchannelOpParams->d_Mesh->getIterator(AMP::Mesh::Volume, 0); // iterator for cells of mesh
+
+      std::vector<std::vector<AMP::Mesh::MeshElement> > d_elem(numSubchannels); // array of array of elements for each subchannel
+
+      // for each cell,
+      for( ; cell != cell.end(); ++cell) {
+        std::vector<double> center = cell->centroid();
+        // get the index of the subchannel
+        int isub = subchannelOperator->getSubchannelIndex( center[0], center[1] );
+        if ( isub >= 0 ){
+          // put cell into array of cells for that subchannel
+          d_elem[isub].push_back( *cell );
+        }
+      }// end for cell
+
+      // for each subchannel,
+      for(size_t isub =0; isub < numSubchannels; ++isub){
+          // extract subchannel cells from d_elem[isub]
+          boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > subchannelElements( new std::vector<AMP::Mesh::MeshElement>() );
+          subchannelElements->reserve(numSubchannels);
+          for(size_t ielem=0; ielem < d_elem[isub].size(); ++ielem){
+            subchannelElements->push_back(d_elem[isub][ielem]);
+          }
+          AMP::Mesh::MeshIterator     localSubchannelCell = AMP::Mesh::MultiVectorIterator( subchannelElements ); // iterator over elements of current subchannel
+          // loop over cells of current subchannel
+          for (; localSubchannelCell != localSubchannelCell.end(); ++localSubchannelCell) {
+             // get upper and lower axial faces of current cell
+             AMP::Mesh::MeshElement plusFace;  // upper axial face for current cell
+             AMP::Mesh::MeshElement minusFace; // lower axial face for current cell
+             // get the axial faces of cell
+             subchannelOperator->getAxialFaces(*localSubchannelCell,plusFace,minusFace);
+
+             std::vector<size_t> plusDofs;
+             std::vector<size_t> minusDofs;
+
+             // set unknowns of first face
+             std::vector<double> minusFaceCentroid = minusFace.centroid();
+             if (AMP::Utilities::approx_equal(minusFaceCentroid[2],0.0)) {
+                subchannelDOFManager->getDOFs(minusFace.globalID(),minusDofs);
+                SolVec->setValueByGlobalID(minusDofs[0], m_scale*0.35);
+                SolVec->setValueByGlobalID(minusDofs[1], h_scale*1000.0e3);
+                SolVec->setValueByGlobalID(minusDofs[2], p_scale*15.5e6);
+             }
+
+             // set unknowns of upper face
+             subchannelDOFManager->getDOFs(plusFace.globalID(),plusDofs);
+             SolVec->setValueByGlobalID(plusDofs[0], m_scale*0.35);
+             SolVec->setValueByGlobalID(plusDofs[1], h_scale*1000.0e3);
+             SolVec->setValueByGlobalID(plusDofs[2], p_scale*15.5e6);
+          }
+      }
+
+      // loop over lateral faces
+      AMP::Mesh::MeshIterator face = subchannelOpParams->d_Mesh->getIterator(AMP::Mesh::Face, 0); // iterator for cells of mesh
+      for (; face != face.end(); face++) {
+         std::vector<double> faceCentroid = face->centroid();
+         std::map<std::vector<double>,AMP::Mesh::MeshElement>::iterator lateralFaceIterator = lateralFaceMap.find(faceCentroid);
+         if (lateralFaceIterator != lateralFaceMap.end()) {
+            // get lateral face
+            AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
+            // get crossflow from solution vector
+            std::vector<size_t> gapDofs;
+            subchannelDOFManager->getDOFs(lateralFace.globalID(),gapDofs);
+            SolVec->setValueByGlobalID(gapDofs[0], w_scale*0.001);
+         }
+      }
+
+  // apply the operator
+  subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
+
+  // check known residual evaluations
+  bool passedKnownTest = true;
+  // subchannel 1: check inlet and outlet residuals
+  size_t isub = 0;
+  // extract subchannel cells from d_elem[isub]
+  boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > subchannelElements( new std::vector<AMP::Mesh::MeshElement>() );
+  subchannelElements->reserve(numSubchannels);
+  for(size_t ielem=0; ielem < d_elem[isub].size(); ++ielem){
+    subchannelElements->push_back(d_elem[isub][ielem]);
+  }
+  AMP::Mesh::MeshIterator     localSubchannelCell = AMP::Mesh::MultiVectorIterator( subchannelElements ); // iterator over elements of current subchannel
+
+  double m_inlet_residual = 0.;
+  double h_inlet_residual = 0.;
+  double p_inlet_residual = 0.;
+  double m_outlet_residual = 0.;
+  double h_outlet_residual = 0.;
+  double p_outlet_residual = 1.;
+  // loop over cells of current subchannel
+  for (; localSubchannelCell != localSubchannelCell.end(); ++localSubchannelCell) {
+     // get upper and lower axial faces of current cell
+     AMP::Mesh::MeshElement plusFace;  // upper axial face for current cell
+     AMP::Mesh::MeshElement minusFace; // lower axial face for current cell
+     // get the axial faces of cell
+     subchannelOperator->getAxialFaces(*localSubchannelCell,plusFace,minusFace);
+
+     std::vector<size_t> plusDofs;
+     std::vector<size_t> minusDofs;
+
+     // set unknowns of first face
+     std::vector<double> minusFaceCentroid = minusFace.centroid();
+     if (AMP::Utilities::approx_equal(minusFaceCentroid[2],0.0)) {
+        subchannelDOFManager->getDOFs( minusFace.globalID(), minusDofs);
+        m_inlet_residual = ResVec->getValueByGlobalID(minusDofs[0])/m_scale;
+        h_inlet_residual = ResVec->getValueByGlobalID(minusDofs[1])/h_scale;
+        p_inlet_residual = ResVec->getValueByGlobalID(minusDofs[2])/p_scale;
      }
-        
-/*
-    // Test apply with known residual evaluation
-    axialFace = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
-    axialDOFManager->getDOFs( axialFace->globalID(), axialDofs );
-    SolVec->setValueByGlobalID(axialDofs[0], 1000.0e3 );
-    SolVec->setValueByGlobalID(axialDofs[1], 16.4e6 );
-    ++axialFace;
-    axialDOFManager->getDOFs( axialFace->globalID(), axialDofs );
-    SolVec->setValueByGlobalID(axialDofs[0], 900.0e3 );
-    SolVec->setValueByGlobalID(axialDofs[1], 16.3e6 );
-    ++axialFace;
-    axialDOFManager->getDOFs( axialFace->globalID(), axialDofs );
-    SolVec->setValueByGlobalID(axialDofs[0], 800.0e3 );
-    SolVec->setValueByGlobalID(axialDofs[1], 16.2e6 );
-    ++axialFace;
-    axialDOFManager->getDOFs( axialFace->globalID(), axialDofs );
-    SolVec->setValueByGlobalID(axialDofs[0], 700.0e3 );
-    SolVec->setValueByGlobalID(axialDofs[1], 16.1e6 );
-    ++axialFace;
-    axialDOFManager->getDOFs( axialFace->globalID(), axialDofs );
-    SolVec->setValueByGlobalID(axialDofs[0], 300.0e3 );
-    SolVec->setValueByGlobalID(axialDofs[1], 13.5e6 );
-    ++axialFace;
-    axialDOFManager->getDOFs( axialFace->globalID(), axialDofs );
-    SolVec->setValueByGlobalID(axialDofs[0], 450.0e3 );
-    SolVec->setValueByGlobalID(axialDofs[1], 9.0e6 );
-    ++axialFace;
-    axialDOFManager->getDOFs( axialFace->globalID(), axialDofs );
-    SolVec->setValueByGlobalID(axialDofs[0], 570.0e3 );
-    SolVec->setValueByGlobalID(axialDofs[1], 12.0e5 );
-    ++axialFace;
-    axialDOFManager->getDOFs( axialFace->globalID(), axialDofs );
-    SolVec->setValueByGlobalID(axialDofs[0], 230.0e2 );
-    SolVec->setValueByGlobalID(axialDofs[1], 4.0e6 );
-    ++axialFace;
-    axialDOFManager->getDOFs( axialFace->globalID(), axialDofs );
-    SolVec->setValueByGlobalID(axialDofs[0], 999.9e3 );
-    SolVec->setValueByGlobalID(axialDofs[1], 14.0e6 );
-    ++axialFace;
-    axialDOFManager->getDOFs( axialFace->globalID(), axialDofs );
-    SolVec->setValueByGlobalID(axialDofs[0], 235.6e3 );
-    SolVec->setValueByGlobalID(axialDofs[1], 12.5e6 );
-*/
-
-    subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
-    bool passedKnownTest = true;
-/*
-    double known[20] = {
-       -316282.816245409,
-       -49816.4072925864,
-       -105719.954578781,
-       -50981.1590877952,
-       -116469.952796604,
-       -52019.8509439426,
-       -125233.43163654,
-       -2555060.31658177,
-       -430953.386215321,
-       -4454165.84966422,
-       117060.094406793,
-       -7752956.92558845,
-       89046.6137846786,
-       2843912.28207917,
-       -572233.43163654,
-       10049463.6715359,
-       960430.047203396,
-       -1455636.07309586,
-       -770019.954578781,
-       -3013200
-    };
-    face     = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
-    int i=0;
-    for( ; face != end_face; ++face,++i){
-      axialDOFManager->getDOFs( face->globalID(), dofs );
-      double h_val = ResVec->getValueByGlobalID(dofs[0]);
-      double p_val = ResVec->getValueByGlobalID(dofs[1]);
-      if (!AMP::Utilities::approx_equal(h_val,known[2*i],0.01)){
-         passedKnownTest = false;
-         AMP::pout<<"Calculated: "<<h_val<<", Known: "<<known[2*i]<<"\n";
-      }
-      if (!AMP::Utilities::approx_equal(p_val,known[2*i+1],0.01)){
-         passedKnownTest = false;
-         AMP::pout<<"Calculated: "<<p_val<<", Known: "<<known[2*i+1]<<"\n";
-      }
-    }
-*/
-    if (passedKnownTest) ut->passes(exeName+": known value test #1");
-    else ut->failure(exeName+": known residual test #1");
+     std::vector<double> plusFaceCentroid = plusFace.centroid();
+     if (AMP::Utilities::approx_equal(plusFaceCentroid[2],height)) {
+        subchannelDOFManager->getDOFs( plusFace.globalID(), plusDofs);
+        m_outlet_residual = ResVec->getValueByGlobalID(plusDofs[0])/m_scale;
+        h_outlet_residual = ResVec->getValueByGlobalID(plusDofs[1])/h_scale;
+        p_outlet_residual = ResVec->getValueByGlobalID(plusDofs[2])/p_scale;
+     }
   }
 
-/*
-  {
-    // Test apply with known residual evaluation
-    face = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 950.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 15.0e6 );
-    ++face;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 850.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 15.1e6 );
-    ++face;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 700.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 15.25e6 );
-    ++face;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 500.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], 15.26e6 );
-    ++face;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 324.6e3 );
-    SolVec->setValueByGlobalID(dofs[1], 11.0e5 );
-    ++face;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 457.7e3 );
-    SolVec->setValueByGlobalID(dofs[1], 12.5e5 );
-    ++face;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 134.6e2 );
-    SolVec->setValueByGlobalID(dofs[1], 34.5e5 );
-    ++face;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 457.6e3 );
-    SolVec->setValueByGlobalID(dofs[1], 12.0e6 );
-    ++face;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 325.7e3 );
-    SolVec->setValueByGlobalID(dofs[1], 11.5e6 );
-    ++face;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], 898.6e3 );
-    SolVec->setValueByGlobalID(dofs[1], 15.7e6 );
+  if (!AMP::Utilities::approx_equal(m_inlet_residual,0.038,1.0e-6)) passedKnownTest = false;
+  if (!AMP::Utilities::approx_equal(h_inlet_residual,-2.630791e5,1.0e-6)) passedKnownTest = false;
+  if (!AMP::Utilities::approx_equal(p_inlet_residual,3.782389e-1,1.0e-6)) passedKnownTest = false;
+  if (!AMP::Utilities::approx_equal(m_outlet_residual,0.002,1.0e-6)) passedKnownTest = false;
+  if (!AMP::Utilities::approx_equal(h_outlet_residual,1.185235e3,1.0e-6)) passedKnownTest = false;
+  if (!AMP::Utilities::approx_equal(p_outlet_residual,0.0,1.0e-6)) passedKnownTest = false;
 
-    subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
-    bool passedKnownTest = true;
-    double known[20] = {
-       -367603.556722071,
-       149631.268567802,
-       -105719.954578781,
-       198039.001082933,
-       -166469.952796604,
-       56265.1563678032,
-       -225233.43163654,
-       -14114645.1297306,
-       -206353.386215321,
-       196109.460143209,
-       100160.094406793,
-       2244037.06984132,
-       -475193.386215321,
-       8595470.36966505,
-       418906.56836346,
-       -454851.582252684,
-       -148369.952796604,
-       4249245.34387701,
-       567180.045421219,
-       186800
-    };
-    face     = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
-    int i=0;
-    for( ; face != end_face; ++face,++i){
-      axialDOFManager->getDOFs( face->globalID(), dofs );
-      double h_val = ResVec->getValueByGlobalID(dofs[0]);
-      double p_val = ResVec->getValueByGlobalID(dofs[1]);
-      if (!AMP::Utilities::approx_equal(h_val,known[2*i],0.01)){
-         passedKnownTest = false;
-         AMP::pout<<"Calculated: "<<h_val<<", Known: "<<known[2*i]<<"\n";
-      }
-      if (!AMP::Utilities::approx_equal(p_val,known[2*i+1],0.01)){
-         passedKnownTest = false;
-         AMP::pout<<"Calculated: "<<p_val<<", Known: "<<known[2*i+1]<<"\n";
-      }
-    }
-    if (passedKnownTest) ut->passes(exeName+": known value test #2");
-    else ut->failure(exeName+": known residual test #2");
-  }
-
-  {
-    // Test apply with known residual evaluation
-    face = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    ++face;
-    SolVec->setValueByGlobalID(dofs[0],700.0e3);
-    SolVec->setValueByGlobalID(dofs[1], 12.4e6);;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    ++face;
-    SolVec->setValueByGlobalID(dofs[0],900.0e3);
-    SolVec->setValueByGlobalID(dofs[1], 12.3e6);;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    ++face;
-    SolVec->setValueByGlobalID(dofs[0],800.0e3);
-    SolVec->setValueByGlobalID(dofs[1], 16.2e6);;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    ++face;
-    SolVec->setValueByGlobalID(dofs[0],650.0e3);
-    SolVec->setValueByGlobalID(dofs[1], 14.1e5);;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    ++face;
-    SolVec->setValueByGlobalID(dofs[0],367.4e3);
-    SolVec->setValueByGlobalID(dofs[1], 31.5e5);;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    ++face;
-    SolVec->setValueByGlobalID(dofs[0],657.2e3);
-    SolVec->setValueByGlobalID(dofs[1], 12.5e6);;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    ++face;
-    SolVec->setValueByGlobalID(dofs[0],788.5e3);
-    SolVec->setValueByGlobalID(dofs[1], 12.7e6);;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    ++face;
-    SolVec->setValueByGlobalID(dofs[0],235.7e2);
-    SolVec->setValueByGlobalID(dofs[1], 17.8e6);;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    ++face;
-    SolVec->setValueByGlobalID(dofs[0],673.1e3);
-    SolVec->setValueByGlobalID(dofs[1], 13.6e6);;
-    axialDOFManager->getDOFs( face->globalID(), dofs );
-    ++face;
-    SolVec->setValueByGlobalID(dofs[0],385.2e3);
-    SolVec->setValueByGlobalID(dofs[1], 16.3e6);
-
-    subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
-    bool passedKnownTest = true;
-    double known[20] = {
-       -620085.843930095,
-       -49986.4688121105,
-       194280.045421219,
-       3949028.44119528,
-       -116469.952796604,
-       -14741988.3976949,
-       -175233.43163654,
-       1785589.98266971,
-       -313553.386215321,
-       9397345.85264865,
-       256860.094406793,
-       248813.913712698,
-       100346.613784679,
-       5143446.55072186,
-       -790163.43163654,
-       -4153289.69480504,
-       633060.047203396,
-       2745414.89283861,
-       -293619.954578781,
-       786800
-    };
-    face     = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
-    int i=0;
-    for( ; face != end_face; ++face,++i){
-      axialDOFManager->getDOFs( face->globalID(), dofs );
-      double h_val = ResVec->getValueByGlobalID(dofs[0]);
-      double p_val = ResVec->getValueByGlobalID(dofs[1]);
-      if (!AMP::Utilities::approx_equal(h_val,known[2*i],0.01)){
-         passedKnownTest = false;
-         AMP::pout<<"Calculated: "<<h_val<<", Known: "<<known[2*i]<<"\n";
-      }
-      if (!AMP::Utilities::approx_equal(p_val,known[2*i+1],0.01)){
-         passedKnownTest = false;
-         AMP::pout<<"Calculated: "<<p_val<<", Known: "<<known[2*i+1]<<"\n";
-      }
-    }
-    if (passedKnownTest) ut->passes(exeName+": known value test #3");
-    else ut->failure(exeName+": known residual test #3");
-  }
-*/
+  if (passedKnownTest) ut->passes(exeName+": known value test");
+  else ut->failure(exeName+": known residual test");
 }
 
 int main(int argc, char *argv[])

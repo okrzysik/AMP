@@ -78,8 +78,15 @@ class  SimplePetscVectorFactory
       return retVal;
     }
 
-    static void  destroyNativeVector ( AMP::LinearAlgebra::NativePetscVector &rhs )
-    { VecDestroy ( rhs.getVec() ); }
+    static void  destroyNativeVector ( AMP::LinearAlgebra::NativePetscVector &rhs ) { 
+        #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+            VecDestroy ( rhs.getVec() ); 
+        #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+            VecDestroy ( &rhs.getVec() ); 
+        #else
+            #error Not programmed for this version yet
+        #endif
+    }
 
     static void  destroyNativeVector ( AMP::LinearAlgebra::Vector::shared_ptr rhs )
     {  destroyNativeVector ( *boost::dynamic_pointer_cast<AMP::LinearAlgebra::NativePetscVector> ( rhs ) ); }

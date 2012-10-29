@@ -31,7 +31,7 @@ public:
     SubchannelToCladGPMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> &params );
 
     //! Destructor
-    ~SubchannelToCladGPMap();
+    virtual ~SubchannelToCladGPMap();
 
 
 protected:

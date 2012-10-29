@@ -71,20 +71,10 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   subchannelOpParams->d_Mesh = subchannelMesh ;
   subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
   subchannelOpParams->d_dofMap = faceDOFManager ;
-
+  subchannelOpParams->clad_x = input_db->getDatabase("CladProperties")->getDoubleArray("x");
+  subchannelOpParams->clad_y = input_db->getDatabase("CladProperties")->getDoubleArray("y");
+  subchannelOpParams->clad_d = input_db->getDatabase("CladProperties")->getDoubleArray("d");
   boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> subchannelOperator (new AMP::Operator::SubchannelTwoEqNonlinearOperator(subchannelOpParams));
-/*
-  // set operator parameters
-  boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
-  subchannelOpParams->d_Mesh = subchannelMesh ;
-  subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
-
-  // create nonlinear operator
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-  boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> subchannelOperator =
-      boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
-      subchannelMesh ,"SubchannelTwoEqNonlinearOperator",input_db,elementModel ));
-*/
 
   // report successful creation
   ut->passes(exeName+": creation");

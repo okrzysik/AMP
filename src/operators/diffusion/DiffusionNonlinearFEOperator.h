@@ -21,7 +21,7 @@ namespace AMP {
 
         DiffusionNonlinearFEOperator(const boost::shared_ptr<DiffusionNonlinearFEOperatorParameters>& params);
 
-        ~DiffusionNonlinearFEOperator() {}
+        virtual ~DiffusionNonlinearFEOperator() {}
 
         void reset(const boost::shared_ptr<OperatorParameters>&);
 

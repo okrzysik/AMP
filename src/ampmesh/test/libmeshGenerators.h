@@ -40,6 +40,8 @@ public:
         // Create a libMesh mesh
         mesh = boost::shared_ptr<AMP::Mesh::libMesh> (new AMP::Mesh::libMesh(params));    
     }
+
+    static std::string name() { return "LibMeshCubeGenerator"; }
 };
 
 
@@ -67,6 +69,8 @@ public:
         // Create a libMesh mesh
         mesh = boost::shared_ptr<AMP::Mesh::libMesh>(new AMP::Mesh::libMesh(params));    
     }
+
+    static std::string name() { return "ExodusReaderGenerator"; }
 };
 
 
@@ -120,6 +124,7 @@ public:
         // Create the mesh
         mesh = AMP::Mesh::Mesh::buildMesh(params);
     }
+    static std::string name() { return "MultiMeshGenerator"; }
 };
 
 
@@ -127,6 +132,8 @@ public:
 class   libMeshThreeElementGenerator : public MeshGenerator
 {
 public:
+
+    static std::string name() { return "libMeshThreeElementGenerator"; }
 
     static std::vector<unsigned int> getBndDofIndices() {
         std::vector<unsigned int> bndDofIndices(4);
@@ -222,7 +229,7 @@ public:
         mesh = AMP::Mesh::Mesh::shared_ptr ( new AMP::Mesh::libMesh(local_mesh,"3 Element") );
     }
         
-    ~libMeshThreeElementGenerator() {
+    virtual ~libMeshThreeElementGenerator() {
         mesh.reset();
         libmeshInit.reset();
     }

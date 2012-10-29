@@ -16,7 +16,7 @@ protected:
     OperatorParameterTest ( UnitTest *ut ) { d_ut=ut; }
     UnitTest *d_ut;
 public:
-    ~OperatorParameterTest () {}
+    virtual ~OperatorParameterTest () {}
 
     void passes(const std::string &in) { d_ut->passes(in); }
     void failure(const std::string &in) { d_ut->failure(in); }

@@ -8,19 +8,19 @@
 \mainpage The AMP (Advanced Multi-Physics) Package Documentation System
 
 \par Authors
-<a href="mailto:clarnokt@ornl.gov">Kevin Clarno (ORNL)</a>.<br />
-<a href="mailto:philipb@ornl.gov">Bobby Philip (ORNL)</a>.<br />
-<a href="mailto:gad@lanl.gov">Gary Dilts (LANL)</a>.<br />
-<a href="mailto:cochranwk@ornl.gov">Bill Cochran (ORNL)</a>.<br />
-<a href="mailto:simunovics@ornl.gov">Srdjan Simunovic (ORNL)</a>.<br />
-<a href="mailto:billingsjj@ornl.gov">Jay Billings (ORNL)</a>.<br />
-<a href="mailto:sampathrs@ornl.gov">Rahul Sampath (ORNL)</a>.<br />
-<a href="mailto:allus@ornl.gov">Srikanth Allu (ORNL)</a>.<br />
-<a href="mailto:baraip@ornl.gov">Pallab Barai (ORNL)</a>.<br />
-<a href="mailto:berrillma@ornl.gov">Mark Berrill (ORNL)</a>.<br />
-<a href="mailto:banfieldje@ornl.gov">Jim Banfield (University of Tennessee/ORNL)</a>.<br />
-<a href="mailto:gyi@ornl.gov">Gokhan Yesilyurt (ORNL)</a>.<br />
-<a href="mailto:bmihaila@lanl.gov">Bogdan Mihaila (LANL)</a>.<br />
+<a href="mailto:clarnokt@ornl.gov">Kevin Clarno (ORNL)</a>.<BR>
+<a href="mailto:philipb@ornl.gov">Bobby Philip (ORNL)</a>.<BR>
+<a href="mailto:gad@lanl.gov">Gary Dilts (LANL)</a>.<BR>
+<a href="mailto:cochranwk@ornl.gov">Bill Cochran (ORNL)</a>.<BR>
+<a href="mailto:simunovics@ornl.gov">Srdjan Simunovic (ORNL)</a>.<BR>
+<a href="mailto:billingsjj@ornl.gov">Jay Billings (ORNL)</a>.<BR>
+<a href="mailto:sampathrs@ornl.gov">Rahul Sampath (ORNL)</a>.<BR>
+<a href="mailto:allus@ornl.gov">Srikanth Allu (ORNL)</a>.<BR>
+<a href="mailto:baraip@ornl.gov">Pallab Barai (ORNL)</a>.<BR>
+<a href="mailto:berrillma@ornl.gov">Mark Berrill (ORNL)</a>.<BR>
+<a href="mailto:banfieldje@ornl.gov">Jim Banfield (University of Tennessee/ORNL)</a>.<BR>
+<a href="mailto:gyi@ornl.gov">Gokhan Yesilyurt (ORNL)</a>.<BR>
+<a href="mailto:bmihaila@lanl.gov">Bogdan Mihaila (LANL)</a>.<BR>
 
 \par Executive Summary
 Simulations of multiphysics systems are becoming increasingly important in many science application areas. 
@@ -71,22 +71,21 @@ AMP users have the flexibility to choose different time integrators for the diff
 tailored according to the optimal strategy of each particular model using composition of individual time
 integrators.
 
-
-
 \par Components
 AMP consists of the following components.  Click on the links to
-find documentation about each component.<br />
-\ref AMP::LinearAlgebra "Linear Algebra"<br />
-\ref AMP::Materials "Materials"<br />
-\ref AMP::Mesh "Mesh"<br />
-\ref AMP::Operator "Operators"<br />
-\ref AMP::Solver "Solvers"<br />
-\ref AMP::TimeIntegrator "Time Integrators"<br />
-\ref AMP::Utilities "Utilities"<br />
+find documentation about each component.<BR>
+\ref AMP::LinearAlgebra "Linear Algebra"<BR>
+\ref AMP::Discretization "Discretization"<BR>
+\ref AMP::Materials "Materials"<BR>
+\ref AMP::Mesh "Mesh"<BR>
+\ref AMP::Operator "Operators"<BR>
+\ref AMP::Solver "Solvers"<BR>
+\ref AMP::TimeIntegrator "Time Integrators"<BR>
+\ref AMP::Utilities "Utilities"<BR>
+\ref Macros "Utility Macros"<BR>
 
-
-\todo 
-We need to redesign the mesh interface and create a discretization class.<br />
+\par Building:
+Build options for AMP can be found \ref BuildOptions "here".
 
 */
 

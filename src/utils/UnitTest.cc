@@ -61,6 +61,7 @@ void UnitTest::report(const int level0) {
         N_fail_tot += N_fail[i];
         N_expected_fail_tot += N_expected_fail[i];
     }
+    NULL_USE(N_fail_tot);
     // Send all messages to rank 0 (if needed)
     std::vector< std::vector<std::string> > pass_messages_rank(comm.getSize());
     std::vector< std::vector<std::string> > fail_messages_rank(comm.getSize());
@@ -75,7 +76,7 @@ void UnitTest::report(const int level0) {
                 else if ( N_pass[i]>0 )
                     pass_messages_rank[i] = unpack_message_stream(i,1);
             }
-        } else if ( pass_messages.size() ) {
+        } else if ( !pass_messages.empty() ) {
             // All other ranks send their message (use non-blocking communication)
             pack_message_stream(pass_messages,0,1);
         }
@@ -90,7 +91,7 @@ void UnitTest::report(const int level0) {
                 else if ( N_fail[i]>0 )
                     fail_messages_rank[i] = unpack_message_stream(i,2);
             }
-        } else if ( fail_messages.size() ){
+        } else if ( !fail_messages.empty() ){
             // All other ranks send their message (use non-blocking communication)
             pack_message_stream(fail_messages,0,2);
         }
@@ -105,7 +106,7 @@ void UnitTest::report(const int level0) {
                 else if ( N_expected_fail[i]>0 )
                     expected_fail_rank[i] = unpack_message_stream(i,3);
             }
-        } else if ( expected_fail_messages.size() ){
+        } else if ( !expected_fail_messages.empty() ){
             // All other ranks send their message (use non-blocking communication)
             pack_message_stream(expected_fail_messages,0,3);
         }
@@ -196,7 +197,7 @@ void UnitTest::report(const int level0) {
 /********************************************************************
 *  Pack and send the given messages                                 *
 ********************************************************************/
-void UnitTest::pack_message_stream(const std::vector<std::string> messages, const int rank, const int tag)
+void UnitTest::pack_message_stream(const std::vector<std::string>& messages, const int rank, const int tag)
 {
     // Get the size of the messages
     int N_messages =(int) messages.size();

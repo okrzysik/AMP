@@ -15,7 +15,7 @@ namespace AMP {
         VolumeIntegralOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
           : FEOperatorParameters(db) {  }
 
-        ~VolumeIntegralOperatorParameters() { }
+        virtual ~VolumeIntegralOperatorParameters() { }
 
         AMP::LinearAlgebra::Vector::shared_ptr d_auxVec;
         boost::shared_ptr<SourcePhysicsModel> d_sourcePhysicsModel;

@@ -14,7 +14,7 @@ namespace Operator {
 
 template <class T>
 static T* getPtr( std::vector<T> &x ) {
-    if ( x.size()== 0 )
+    if ( x.empty() )
         return NULL;
     return &x[0];
 }
@@ -149,9 +149,9 @@ void NodeToNodeMap::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr,
         } else if ( count > 0 ) {
             // Start asyncronous communication
             *curReq = d_MapComm.Isend( &d_sendBuffer[offset], count, i, d_commTag );
-            curReq++;
+            ++curReq;
             *curReq = d_MapComm.Irecv( &d_recvBuffer[offset], count, i, d_commTag );
-            curReq++;
+            ++curReq;
         }
     }
     PROFILE_STOP("applyStart");

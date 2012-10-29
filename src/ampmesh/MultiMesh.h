@@ -46,7 +46,7 @@ public:
 
 
     //! Deconstructor
-     ~MultiMesh ();
+    virtual ~MultiMesh ();
 
     //! Function to copy the mesh (allows use to proply copy the derived class)
     Mesh copy() const;

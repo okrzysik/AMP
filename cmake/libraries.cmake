@@ -1,3 +1,5 @@
+INCLUDE ( FindPetsc )
+
 MACRO ( CONFIGURE_LINE_COVERAGE )
     SET ( COVERAGE_LIBS )
     IF ( USE_EXT_GCOV )
@@ -898,61 +900,20 @@ MACRO ( CONFIGURE_PETSC_LIBRARIES )
         IF ( PETSC_DIRECTORY )
             VERIFY_PATH ( ${PETSC_DIRECTORY} )
             VERIFY_VARIABLE ( "PETSC_ARCH" )
-            SET ( PETSC_INCLUDE ${PETSC_INCLUDE} ${PETSC_DIRECTORY}/include )
-            SET ( PETSC_INCLUDE ${PETSC_INCLUDE} ${PETSC_DIRECTORY}/${PETSC_ARCH}/include )
-            INCLUDE_DIRECTORIES ( ${PETSC_INCLUDE} )
-            SET ( PETSC_LIB_DIRECTORY ${PETSC_DIRECTORY}/${PETSC_ARCH}/lib )
-            FIND_LIBRARY ( PETSC_LIB           NAMES petsc        PATHS ${PETSC_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( PETSC_CONTRIB_LIB   NAMES petsccontrib PATHS ${PETSC_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( PETSC_PETSCDM_LIB   NAMES petscdm      PATHS ${PETSC_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( PETSC_PETSCKSP_LIB  NAMES petscksp     PATHS ${PETSC_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( PETSC_PETSCMAT_LIB  NAMES petscmat     PATHS ${PETSC_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( PETSC_PETSCSNES_LIB NAMES petscsnes    PATHS ${PETSC_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( PETSC_PETSCTS_LIB   NAMES petscts      PATHS ${PETSC_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( PETSC_PETSCVEC_LIB  NAMES petscvec     PATHS ${PETSC_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            IF ( (NOT PETSC_LIB) OR (NOT PETSC_CONTRIB_LIB) OR (NOT PETSC_PETSCDM_LIB) OR (NOT PETSC_PETSCKSP_LIB) OR 
-                 (NOT PETSC_PETSCMAT_LIB) OR (NOT PETSC_PETSCSNES_LIB) OR (NOT PETSC_PETSCTS_LIB) OR (NOT PETSC_PETSCVEC_LIB) )
-                MESSAGE ( ${PETSC_LIB} )
-                MESSAGE ( ${PETSC_CONTRIB_LIB} )
-                MESSAGE ( ${PETSC_PETSCDM_LIB} )
-                MESSAGE ( ${PETSC_PETSCKSP_LIB} )
-                MESSAGE ( ${PETSC_PETSCMAT_LIB} )
-                MESSAGE ( ${PETSC_PETSCSNES_LIB} )
-                MESSAGE ( ${PETSC_PETSCTS_LIB} )
-                MESSAGE ( ${PETSC_PETSCVEC_LIB} )
-                MESSAGE ( FATAL_ERROR "PETsc libraries not found in ${PETSC_LIB_DIRECTORY}" )
-            ENDIF ()
-            IF ( NOT USE_EXT_MPI ) 
-                FIND_LIBRARY ( PETSC_MPIUNI_LIB  NAMES mpiuni  PATHS ${PETSC_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-                IF ( NOT PETSC_MPIUNI_LIB )
-                    MESSAGE ( ${PETSC_MPIUNI_LIB} )
-                    MESSAGE ( FATAL_ERROR "PETsc libraries not found in ${PETSC_LIB_DIRECTORY}" )
-                ENDIF ()
-            ENDIF()
         ELSE()
             MESSAGE ( FATAL_ERROR "Default search for petsc is not yet supported.  Use -D PETSC_DIRECTORY=" )
         ENDIF()
-        # Add the libraries in the appropriate order
-        SET ( PETSC_LIBS
-            ${PETSC_PETSCSNES_LIB}
-            ${PETSC_PETSCKSP_LIB}
-            ${PETSC_PETSCDM_LIB}
-            ${PETSC_CONTRIB_LIB}
-            ${PETSC_PETSCMAT_LIB}
-            ${PETSC_PETSCVEC_LIB}
-            ${PETSC_LIB}
-        )
-        IF ( NOT USE_EXT_MPI ) 
-            SET ( PETSC_LIBS  ${PETSC_LIBS} ${PETSC_MPIUNI_LIB} )
-        ENDIF()
-        # Set petsc-hypre info
-        #FILE ( GLOB HYPRE_FILES "${PETSC_LIB_DIRECTORY}/*HYPRE*" )
-        #IF ( HYPRE_FILES AND NOT HYPRE_DIRECTORY )
-        #    SET ( HYPRE_DIRECTORY ${PETSC_DIRECTORY}/${PETSC_ARCH} )
-        #    CONFIGURE_HYPRE_LIBRARIES ()
-        #    SET ( PETSC_LIBS ${PETSC_LIBS} ${HYPRE_LIBS} )
-        #ENDIF ()
+        # Get the petsc version
+        PETSC_GET_VERSION()
+        MESSAGE("Found PETSc version ${PETSC_VERSION}")
+        # Add the petsc include folders and definitiosn
+        SET ( PETSC_INCLUDE ${PETSC_INCLUDE} ${PETSC_DIRECTORY}/include )
+        SET ( PETSC_INCLUDE ${PETSC_INCLUDE} ${PETSC_DIRECTORY}/${PETSC_ARCH}/include )
+        INCLUDE_DIRECTORIES ( ${PETSC_INCLUDE} )
+        SET ( PETSC_LIB_DIRECTORY ${PETSC_DIRECTORY}/${PETSC_ARCH}/lib )
         ADD_DEFINITIONS ( "-D USE_EXT_PETSC" )  
+        # Find the petsc libraries
+        PETSC_SET_LIBRARIES()
         MESSAGE ( "Using petsc" )
         MESSAGE ( "   "  ${PETSC_LIBS} )
     ENDIF()
@@ -962,31 +923,27 @@ ENDMACRO ()
 # Macro to configure system-specific libraries and flags
 MACRO ( CONFIGURE_SYSTEM )
     # Remove extra library links
-    set(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)       # remove -Wl,-Bdynamic
-    set(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS)
-    set(CMAKE_SHARED_LIBRARY_C_FLAGS)         # remove -fPIC
-    set(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
-    set(CMAKE_SHARED_LINKER_FLAGS)
-    SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # Remove -rdynamic
-    SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)  # Remove -rdynamic
-    # Add the static flag if necessary
-    CHECK_ENABLE_FLAG( USE_EXT_STATIC 0 )
-    IF ( USE_EXT_STATIC )
-        SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static")    # Add static flag
-        SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static")  # Add static flag
-    ENDIF()
+    SET_STATIC_FLAGS()
     # Add system dependent flags
-    IF ( USING_MICROSOFT )
+    MESSAGE("System is: ${CMAKE_SYSTEM_NAME}")
+    IF ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
+        # Windows specific system libraries
         #FIND_LIBRARY ( SYSTEM_LIBS           NAMES "psapi"        PATHS C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/  )
         #C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/psapi
         SET( SYSTEM_LIBS "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/Psapi.lib" )
-    ELSE()
-        CHECK_C_COMPILER_FLAG("-rdynamic" RESULT)
-        IF(RESULT)
-            SET( SYSTEM_LIBS "-lz -ldl -rdynamic" )
-        ELSE()
-            SET( SYSTEM_LIBS "-lz -ldl" )
+    ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
+        # Linux specific system libraries
+        SET( SYSTEM_LIBS "-lz -ldl" )
+        if ( NOT USE_STATIC )
+            SET( SYSTEM_LIBS "${SYSTEM_LIBS} -rdynamic" )   # Needed for backtrace to print function names
         ENDIF()
+    ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
+        # Max specific system libraries
+        SET( SYSTEM_LIBS "-lz -ldl" )
+    ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Generic" )
+        # Generic system libraries
+    ELSE()
+        MESSAGE( FATAL_ERROR "OS not detected" )
     ENDIF()
 ENDMACRO ()
 
@@ -1000,6 +957,10 @@ MACRO ( CONFIGURE_AMP )
         VERIFY_PATH ( ${AMP_DATA} )
     ELSE()
         MESSAGE ( FATAL_ERROR "AMP_DATA must be set" )
+    ENDIF()
+    # Set the maximum number of processors for the tests
+    IF ( NOT TEST_MAX_PROCS )
+        SET( TEST_MAX_PROCS 32 )
     ENDIF()
     # Remove extra library links
     set(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)       # remove -Wl,-Bdynamic

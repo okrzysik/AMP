@@ -37,16 +37,17 @@ extern "C"{
 
 }
 
+
 namespace AMP {
 namespace Solver {
 
-  /**
-   * The PETScSNESSolver is a wrapper to the PETSc SNES solver which provides an implementation
-   * of the inexact Newton method.
-   */
-  
-  class PetscSNESSolver: public SolverStrategy{
-  public:
+
+/**
+  * The PETScSNESSolver is a wrapper to the PETSc SNES solver which provides an implementation
+  * of the inexact Newton method.
+  */
+class PetscSNESSolver: public SolverStrategy{
+public:
     
     /**
      * default constructor, sets default values for member variables
@@ -99,7 +100,7 @@ namespace Solver {
      /**
       * Default destructor.
       */
-     ~PetscSNESSolver();
+    virtual ~PetscSNESSolver();
     
     /**
      * Solve the system \f$Au = 0\f$.
@@ -152,9 +153,8 @@ namespace Solver {
      */
     int getBoundsCheckComponent(void){ return d_operatorComponentToEnableBoundsCheck; }
     
-  protected:
-  private:
-    
+protected:
+private:
 
     void initialize(boost::shared_ptr<SolverStrategyParameters> parameters);
     
@@ -173,7 +173,15 @@ namespace Solver {
     
     
     static bool isVectorValid ( boost::shared_ptr<AMP::Operator::Operator> &op , AMP::LinearAlgebra::Vector::shared_ptr &v , AMP_MPI comm );
+
+#if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
     static PetscErrorCode lineSearchPreCheck(SNES snes, Vec x, Vec y, void *checkctx, PetscTruth *changed_y);
+#elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+    static PetscErrorCode lineSearchPreCheck(SNES snes, Vec x, Vec y, void *checkctx, PetscBool *changed_y);
+#else
+    #error Not programmed for this version yet
+#endif
+
     
     static PetscErrorCode mffdCheckBounds(void *checkctx, Vec U, Vec a, PetscScalar *h);
     
@@ -204,12 +212,14 @@ namespace Solver {
     
     boost::shared_ptr<PetscMonitor> d_PetscMonitor;
     
-    // The following SNES solver keeps a reference to these vectors around. 
-    // By declaring the vectors here, we ensure correct behavior during destruction.
-    // This will ensure that the boost::shared_ptr destructor calls VecDestroy on
-    // the last reference.
-    AMP::LinearAlgebra::Vector::shared_ptr  spRhs;
-    AMP::LinearAlgebra::Vector::shared_ptr  spSol;
+    #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+        // The following SNES solver keeps a reference to these vectors around. 
+        // By declaring the vectors here, we ensure correct behavior during destruction.
+        // This will ensure that the boost::shared_ptr destructor calls VecDestroy on
+        // the last reference.
+        AMP::LinearAlgebra::Vector::shared_ptr  spRhs;
+        AMP::LinearAlgebra::Vector::shared_ptr  spSol;
+    #endif
     
     SNES d_SNESSolver;
     

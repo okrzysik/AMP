@@ -25,8 +25,7 @@ public:
         DiffusionLinearFEOperator(const boost::shared_ptr<
             DiffusionLinearFEOperatorParameters>& params);
 
-        ~DiffusionLinearFEOperator() {
-        }
+        virtual ~DiffusionLinearFEOperator() { }
 
         void preAssembly(const boost::shared_ptr<OperatorParameters>& params);
 

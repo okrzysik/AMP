@@ -38,7 +38,7 @@ public:
 
    TimeIntegratorParameters(const boost::shared_ptr<AMP::Database> db);
 
-   ~TimeIntegratorParameters();
+   virtual ~TimeIntegratorParameters();
    /**
    *  Database object which needs to be initialized specific to the time integrator.
    *  Documentation for parameters required by each integrator can be found in the

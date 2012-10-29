@@ -26,7 +26,7 @@ public:
    /**
     * Destructor.
     */
-   ~RK4TimeIntegrator();
+   virtual ~RK4TimeIntegrator();
 
    /**
     * Initialize from parameter list.

@@ -18,7 +18,7 @@ public:
     libMeshIterator();
 
     //! Deconstructor
-    ~libMeshIterator ();
+    virtual ~libMeshIterator ();
 
     //! Copy constructor
     libMeshIterator(const libMeshIterator&);

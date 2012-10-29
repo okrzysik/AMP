@@ -56,7 +56,7 @@ namespace Solver {
   public:
     PetscKrylovSolverParameters(){}
     PetscKrylovSolverParameters(const boost::shared_ptr<AMP::Database> db);
-    ~PetscKrylovSolverParameters(){}
+    virtual ~PetscKrylovSolverParameters(){}
 
     AMP_MPI d_comm;
 

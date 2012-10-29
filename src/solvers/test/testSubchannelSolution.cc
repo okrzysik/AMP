@@ -91,6 +91,9 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( nonlinearOperator_db ));
     subchannelOpParams->d_Mesh = xyFaceMesh ;
     subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
+    subchannelOpParams->clad_x = input_db->getDatabase("CladProperties")->getDoubleArray("x");
+    subchannelOpParams->clad_y = input_db->getDatabase("CladProperties")->getDoubleArray("y");
+    subchannelOpParams->clad_d = input_db->getDatabase("CladProperties")->getDoubleArray("d");
 
     // create nonlinear operator
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
@@ -128,7 +131,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     std::vector<double> box = subchannelMesh->getBoundingBox();
     AMP_ASSERT(box[4]==0.0);
     double H = box[5]-box[4];
-    double m = nonlinearOperator_db->getDouble("Mass_Flow_Rate");
+    double m = nonlinearOperator_db->getDouble("Inlet_Mass_Flow_Rate");
     double Q = nonlinearOperator_db->getDouble("Rod_Power");
     double Pout = nonlinearOperator_db->getDouble("Exit_Pressure");
     double Tin = nonlinearOperator_db->getDouble("Inlet_Temperature");

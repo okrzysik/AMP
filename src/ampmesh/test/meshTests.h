@@ -475,7 +475,7 @@ void VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh 
             continue;
         std::vector<AMP::Mesh::MeshElementID> ghost_global(N_ghost_global);
         AMP::Mesh::MeshElementID *send_data=NULL;
-        if ( ghost.size() > 0 ) { send_data = &ghost[0]; }
+        if ( !ghost.empty() ) { send_data = &ghost[0]; }
         AMP::Mesh::MeshElementID *recv_data = &ghost_global[0];
         mesh->getComm().allGather( send_data, (int) ghost.size(), recv_data );
         // Check that each ghost appears in the owner's rank's list
@@ -599,7 +599,7 @@ void VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr m
 void testBlockIDs( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) 
 {
     const std::vector<int> blockIDs = mesh->getBlockIDs();
-    if ( blockIDs.size() > 0 )
+    if ( !blockIDs.empty() )
         utils->passes("Block ids found");
     else if ( (int)mesh->getGeomType() != mesh->getDim() ) 
         utils->expected_failure("Block ids need work for surface meshes");
@@ -697,7 +697,7 @@ void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
         std::map< AMP::Mesh::MeshElementID, std::vector<AMP::Mesh::MeshElementID> >::iterator iterator;
         bool contains_self = false;
         bool contains_duplicate = false;
-        for (iterator=neighbor_list.begin(); iterator!=neighbor_list.end(); iterator++) {
+        for (iterator=neighbor_list.begin(); iterator!=neighbor_list.end(); ++iterator) {
             std::vector<AMP::Mesh::MeshElementID> neighbors = iterator->second;
             for (size_t i=0; i<neighbors.size(); i++) {
                 if ( neighbors[i] == iterator->first )
@@ -721,7 +721,7 @@ void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
     if ( mesh->numGhostElements(AMP::Mesh::Vertex,1) > 0 ) {
         std::map< AMP::Mesh::MeshElementID, std::vector<AMP::Mesh::MeshElementID> >::iterator iterator;
         bool ghost_neighbors = false;
-        for (iterator=neighbor_list.begin(); iterator!=neighbor_list.end(); iterator++) {
+        for (iterator=neighbor_list.begin(); iterator!=neighbor_list.end(); ++iterator) {
             std::vector<AMP::Mesh::MeshElementID> neighbors = iterator->second;
             for (size_t i=0; i<neighbors.size(); i++) {
                 if ( !neighbors[i].is_local() )
@@ -748,7 +748,7 @@ void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
                 break;
             }
             const std::vector<AMP::Mesh::MeshElementID> &neighbors = iterator->second;
-            if ( neighbors.size()==0 ) {
+            if ( neighbors.empty() ) {
                 passed = false;
                 break;
             }

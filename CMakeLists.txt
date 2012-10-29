@@ -1,4 +1,4 @@
-# Set some CMake properties  
+# Set some CMake properties    
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 CMAKE_POLICY(SET CMP0014 OLD)
 

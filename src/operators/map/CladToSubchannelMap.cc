@@ -1,5 +1,5 @@
-#if 1
 #include "operators/map/CladToSubchannelMap.h"
+#include "ampmesh/StructuredMeshHelper.h"
 #include "discretization/DOF_Manager.h"
 #include "utils/PIO.h"
 #include "utils/ProfilerApp.h"
@@ -64,11 +64,11 @@ CladToSubchannelMap::CladToSubchannelMap ( const boost::shared_ptr<AMP::Operator
 
     // Create the send/recv buffers
     d_sendMaxBufferSize = 0;
-    d_sendBuffer = std::vector<std::vector<std::pair<double,double> > >(N_subchannels);
+    d_sendBuffer = std::vector<double*>(N_subchannels,NULL);
     if ( d_mesh1.get() != NULL ) {
         for (size_t i=0; i<N_subchannels; i++) {
             if ( d_elem[i].size() > 0 ) {
-                d_sendBuffer[i] = std::vector<std::pair<double,double> >(d_elem[i].size());
+                d_sendBuffer[i] = new double[2*d_elem[i].size()];
                 if ( d_elem[i].size() > d_sendMaxBufferSize )
                     d_sendMaxBufferSize = d_elem[i].size();
             }
@@ -83,6 +83,19 @@ CladToSubchannelMap::CladToSubchannelMap ( const boost::shared_ptr<AMP::Operator
 ************************************************************************/
 CladToSubchannelMap::~CladToSubchannelMap ()
 {
+    for (size_t i=0; i<d_sendBuffer.size(); i++) {
+        delete [] d_sendBuffer[i];
+        d_sendBuffer[i] = NULL;
+    }
+    d_sendBuffer.resize(0);
+    d_x.resize(0);
+    d_y.resize(0);
+    d_z.resize(0);
+    d_ownSubChannel.resize(0);
+    d_subchannelRanks.resize(0);
+    d_subchannelSend.resize(0);
+    d_elem.resize(0);
+    d_currRequests.resize(0);
 }
 
 
@@ -103,48 +116,21 @@ bool CladToSubchannelMap::validMapType ( const std::string &t )
 void CladToSubchannelMap::fillSubchannelGrid(AMP::Mesh::Mesh::shared_ptr mesh)
 {
     // Create the grid for all processors
-    std::set<double> x, y, z;
-    if ( mesh.get() != NULL ) {
-        AMP::Mesh::MeshIterator it = mesh->getIterator( AMP::Mesh::Vertex, 0 );
-        for (size_t i=0; i<it.size(); i++) {
-            std::vector<double> coord = it->coord();
-            AMP_ASSERT(coord.size()==3);
-            x.insert( coord[0] );
-            y.insert( coord[1] );
-            z.insert( coord[2] );
-            ++it;
-        }
+    int root = -1;
+    if ( mesh!=NULL ) {
+        root = d_MapComm.getRank();
+        AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( mesh, d_x, d_y, d_z );
     }
-    d_MapComm.setGather(x);
-    d_MapComm.setGather(y);
-    d_MapComm.setGather(z);
-    double last = 1e300;
-    for (std::set<double>::iterator it=x.begin(); it!=x.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
-            x.erase(it);
-        else
-            last = *it;
-    }
-    for (std::set<double>::iterator it=y.begin(); it!=y.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
-            y.erase(it);
-        else
-            last = *it;
-    }
-    for (std::set<double>::iterator it=z.begin(); it!=z.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
-            z.erase(it);
-        else
-            last = *it;
-    }
-    d_x = std::vector<double>(x.begin(),x.end());
-    d_y = std::vector<double>(y.begin(),y.end());
-    d_z = std::vector<double>(z.begin(),z.end());
-    size_t Nx = d_x.size()-1;
-    size_t Ny = d_y.size()-1;
-    size_t Nz = d_z.size()-1;
-    if ( mesh.get() != NULL ) 
-        AMP_ASSERT(Nx*Ny*Nz==mesh->numGlobalElements(AMP::Mesh::Volume));
+    root = d_MapComm.maxReduce(root);
+    size_t Nx = d_MapComm.bcast<size_t>(d_x.size()-1,root);
+    size_t Ny = d_MapComm.bcast<size_t>(d_y.size()-1,root);
+    size_t Nz = d_MapComm.bcast<size_t>(d_z.size(),root);
+    d_x.resize(Nx+1,0.0);
+    d_y.resize(Ny+1,0.0);
+    d_z.resize(Nz,0.0);
+    d_MapComm.bcast<double>(&d_x[0],Nx+1,root);
+    d_MapComm.bcast<double>(&d_y[0],Ny+1,root);
+    d_MapComm.bcast<double>(&d_z[0],Nz,root);
     N_subchannels = Nx*Ny;
     // Get a list of processors that need each x-y point
     d_ownSubChannel = std::vector<bool>(Nx*Ny,false);
@@ -224,15 +210,15 @@ void CladToSubchannelMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
     for (size_t i=0; i<N_subchannels; i++) {
         if ( d_elem[i].empty() )
             continue;
-        for (size_t j=0; j<d_z.size(); j++)
-            d_sendBuffer[i][j] = std::pair<double,double>(0.0,0.0);
+        for (size_t j=0; j<2*d_elem[i].size(); j++)
+            d_sendBuffer[i][j] = 0.0;
         for (size_t j=0; j<d_elem[i].size(); j++) {
             DOF->getDOFs(d_elem[i][j],dofs);
             AMP_ASSERT(dofs.size()==1);
             std::vector<double> pos = d_mesh1->getElement(d_elem[i][j]).centroid();
             double val = curPhysics->getLocalValueByGlobalID(dofs[0]);
-            d_sendBuffer[i][j].first = pos[2];
-            d_sendBuffer[i][j].second = val;
+            d_sendBuffer[i][2*j+0] = pos[2];
+            d_sendBuffer[i][2*j+1] = val;
         }
     }
     // Send the data
@@ -242,7 +228,7 @@ void CladToSubchannelMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
         int tag = (int) i;  // We have an independent comm
         for (size_t j=0; j<d_subchannelRanks[i].size(); j++) {
             int rank = d_subchannelRanks[i][j];
-            d_currRequests.push_back( d_MapComm.Isend( &d_sendBuffer[i][0], d_sendBuffer[i].size(), rank, tag ) );
+            d_currRequests.push_back( d_MapComm.Isend( &d_sendBuffer[i][0], 2*d_elem[i].size(), rank, tag ) );
         }
     }
 }
@@ -266,17 +252,18 @@ void CladToSubchannelMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
     std::vector<std::vector<double> >  x(N_subchannels);
     std::vector<std::vector<double> >  f(N_subchannels);
     std::vector<std::pair<double,double> >  mapData;
-    std::pair<double,double> *tmp_data = new std::pair<double,double>[d_sendMaxBufferSize];
+    double *tmp_data = new double[2*d_sendMaxBufferSize];
     for (size_t i=0; i<N_subchannels; i++) {
         if ( d_ownSubChannel[i] ) {
             int tag = (int) i;  // We have an independent comm
             mapData.resize(0);
             for (size_t j=0; j<d_subchannelSend[i].size(); j++) {
-                int length = d_sendMaxBufferSize;
+                int length = 2*d_sendMaxBufferSize;
                 d_MapComm.recv( tmp_data, length, d_subchannelSend[i][j], true, tag );
-                mapData.reserve(mapData.size()+length);
-                for (int k=0; k<length; k++)
-                    mapData.push_back( tmp_data[k] );
+                AMP_ASSERT(length%2==0);
+                mapData.reserve(mapData.size()+length/2);
+                for (int k=0; k<length/2; k++)
+                    mapData.push_back( std::pair<double,double>(tmp_data[2*k+0],tmp_data[2*k+1]) );
             }
             create_map( mapData, x[i], f[i] );
         }
@@ -381,4 +368,3 @@ double interp_linear(const std::vector<double>& x, const std::vector<double>& f,
 } // Operator namespace
 } // AMP namespace
 
-#endif

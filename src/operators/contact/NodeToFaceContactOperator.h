@@ -40,7 +40,7 @@ namespace AMP {
         /**
           Destructor
           */
-        ~NodeToFaceContactOperator() { d_fout.close(); }
+        virtual ~NodeToFaceContactOperator() { d_fout.close(); }
 
         /**
          * This function is useful for re-initializing/updating an operator

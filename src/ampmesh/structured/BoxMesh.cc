@@ -83,7 +83,7 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
         // First, get the prime factors for number of processors and divide the dimensions
         std::vector<int> factors = AMP::Utilities::factor(d_comm.getSize());
         std::vector<int> div(PhysicalDim,1);
-        while ( factors.size() > 0 ) {
+        while ( !factors.empty() ) {
             int d = -1;
             double v = -1;
             for (int i=0; i<PhysicalDim; i++) {
@@ -505,7 +505,7 @@ void BoxMesh::initialize()
                 d_elements[d][gcw]->reserve( N_elem_est );
             else if ( d==1 )
                 d_elements[d][gcw]->reserve( 6*N_elem_est );
-            else if ( d==1 )
+            else if ( d==2 )
                 d_elements[d][gcw]->reserve( 3*N_elem_est );
         }
         // Loop through the elements creating the ghosts
@@ -930,12 +930,12 @@ std::vector<int> BoxMesh::getLocalBlock(unsigned int rank) const
     std::vector<int> range(2*PhysicalDim);
     int tmp = 1;
     for (int d=0; d<PhysicalDim; d++) {
-        size_t i = (size_t) ((rank/tmp)%d_numBlocks[d]);
+        size_t i = static_cast<size_t>((((int)rank)/tmp)%d_numBlocks[d]);
         tmp *= d_numBlocks[d];
         size_t size = (size_t) d_size[d];
         size_t N_blocks = (size_t) d_numBlocks[d];
-        range[2*d+0] = (int) ((i*size)/N_blocks);
-        range[2*d+1] = (int) (((i+1)*size)/N_blocks);
+        range[2*d+0] = static_cast<int>((i*size)/((size_t)N_blocks));
+        range[2*d+1] = static_cast<int>(((i+1)*size)/((size_t)N_blocks));
         range[2*d+1] = std::min(range[2*d+1],d_size[d]);
     }
     return range;

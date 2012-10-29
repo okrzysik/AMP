@@ -43,12 +43,12 @@ class DendroSearch {
 
     DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh, bool verbose = true, std::ostream & oStream = std::cout);
 
-    void searchAndInterpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
+    void searchAndInterpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::const_shared_ptr vectorField, const unsigned int dofsPerNode,
         const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt);
 
     void search(AMP::AMP_MPI comm, const std::vector<double> & pts);
 
-    void interpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::shared_ptr vectorField, const unsigned int dofsPerNode,
+    void interpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::const_shared_ptr vectorField, const unsigned int dofsPerNode,
         std::vector<double> & results, std::vector<bool> & foundPt);
 
     void projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 

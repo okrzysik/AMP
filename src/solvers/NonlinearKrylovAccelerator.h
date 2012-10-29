@@ -50,7 +50,7 @@ class NonlinearKrylovAccelerator
   /**
    * Default destructor
    */
-  ~NonlinearKrylovAccelerator();
+  virtual ~NonlinearKrylovAccelerator();
   
    /**
     * Initialize the solution vector 

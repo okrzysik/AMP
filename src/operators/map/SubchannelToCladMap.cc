@@ -1,4 +1,5 @@
 #include "operators/map/SubchannelToCladMap.h"
+#include "ampmesh/StructuredMeshHelper.h"
 #include "discretization/DOF_Manager.h"
 #include "utils/PIO.h"
 #include "utils/ProfilerApp.h"
@@ -88,48 +89,21 @@ bool SubchannelToCladMap::validMapType ( const std::string &t )
 void SubchannelToCladMap::fillSubchannelGrid(AMP::Mesh::Mesh::shared_ptr mesh)
 {
     // Create the grid for all processors
-    std::set<double> x, y, z;
-    if ( mesh.get() != NULL ) {
-        AMP::Mesh::MeshIterator it = mesh->getIterator( AMP::Mesh::Vertex, 0 );
-        for (size_t i=0; i<it.size(); i++) {
-            std::vector<double> coord = it->coord();
-            AMP_ASSERT(coord.size()==3);
-            x.insert( coord[0] );
-            y.insert( coord[1] );
-            z.insert( coord[2] );
-            ++it;
-        }
+    int root = -1;
+    if ( mesh!=NULL ) {
+        root = d_MapComm.getRank();
+        AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( mesh, d_x, d_y, d_z );
     }
-    d_MapComm.setGather(x);
-    d_MapComm.setGather(y);
-    d_MapComm.setGather(z);
-    double last = 1e300;
-    for (std::set<double>::iterator it=x.begin(); it!=x.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
-            x.erase(it);
-        else
-            last = *it;
-    }
-    for (std::set<double>::iterator it=y.begin(); it!=y.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
-            y.erase(it);
-        else
-            last = *it;
-    }
-    for (std::set<double>::iterator it=z.begin(); it!=z.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
-            z.erase(it);
-        else
-            last = *it;
-    }
-    d_x = std::vector<double>(x.begin(),x.end());
-    d_y = std::vector<double>(y.begin(),y.end());
-    d_z = std::vector<double>(z.begin(),z.end());
-    size_t Nx = d_x.size()-1;
-    size_t Ny = d_y.size()-1;
-    size_t Nz = d_z.size()-1;
-    if ( mesh.get() != NULL ) 
-        AMP_ASSERT(Nx*Ny*Nz==mesh->numGlobalElements(AMP::Mesh::Volume));
+    root = d_MapComm.maxReduce(root);
+    size_t Nx = d_MapComm.bcast<size_t>(d_x.size()-1,root);
+    size_t Ny = d_MapComm.bcast<size_t>(d_y.size()-1,root);
+    size_t Nz = d_MapComm.bcast<size_t>(d_z.size(),root);
+    d_x.resize(Nx+1,0.0);
+    d_y.resize(Ny+1,0.0);
+    d_z.resize(Nz,0.0);
+    d_MapComm.bcast<double>(&d_x[0],Nx+1,root);
+    d_MapComm.bcast<double>(&d_y[0],Ny+1,root);
+    d_MapComm.bcast<double>(&d_z[0],Nz,root);
     N_subchannels = Nx*Ny;
     // Get a list of processors that need each x-y point
     d_ownSubChannel = std::vector<bool>(Nx*Ny,false);

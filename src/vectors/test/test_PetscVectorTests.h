@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "string"
 
+
 /// \cond UNDOCUMENTED
 
 namespace AMP {
@@ -119,7 +120,13 @@ class DuplicatePetscVector
         else
           utils->passes ( "Associated variables are different" );
 
-        checkPetscError<VECTOR_FACTORY> ( utils , VecDestroy ( another_vec ) ) ;
+        #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+            checkPetscError<VECTOR_FACTORY> ( utils , VecDestroy ( another_vec ) ) ;
+        #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+            checkPetscError<VECTOR_FACTORY> ( utils , VecDestroy ( &another_vec ) ) ;
+        #else
+            #error Not programmed for this version yet
+        #endif
         utils->passes ( "managed duplicated destroyed" );
 
         if ( vectora->isA<AMP::LinearAlgebra::MultiVector>() )
@@ -979,23 +986,29 @@ class VerifySqrtPetscVector
 
       static void  run_test ( AMP::UnitTest *utils )
       {
-        AMP::LinearAlgebra::Vector::shared_ptr  vectora ( VECTOR_FACTORY::getNativeVector() );
+        #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+          AMP::LinearAlgebra::Vector::shared_ptr  vectora ( VECTOR_FACTORY::getNativeVector() );
 
-        vectora->setRandomValues();
+          vectora->setRandomValues();
 
-        AMP::LinearAlgebra::Vector::shared_ptr  vectorb ( VECTOR_FACTORY::getManagedVector() );
-        vectorb->copyVector ( vectora );
+          AMP::LinearAlgebra::Vector::shared_ptr  vectorb ( VECTOR_FACTORY::getManagedVector() );
+          vectorb->copyVector ( vectora );
 
-        Vec  veca, vecb;
-        veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-        vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-        checkPetscError<VECTOR_FACTORY> ( utils , VecSqrt ( veca ) );
-        checkPetscError<VECTOR_FACTORY> ( utils , VecSqrt ( vecb ) );
-        bool equal = vectora->equals ( vectorb );
-        if ( equal )
-          utils->passes ( "Vector square root passes" );
-        else
-          utils->failure ( "Vector square root fails" );
+          Vec  veca, vecb;
+          veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+          vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+          checkPetscError<VECTOR_FACTORY> ( utils , VecSqrt ( veca ) );
+          checkPetscError<VECTOR_FACTORY> ( utils , VecSqrt ( vecb ) );
+          bool equal = vectora->equals ( vectorb );
+          if ( equal )
+            utils->passes ( "Vector square root passes" );
+          else
+            utils->failure ( "Vector square root fails" );
+        #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+          utils->expected_failure ( "Vector square root does not exist" );
+        #else
+          #error Not programmed for this version yet
+        #endif
       }
 };
 
@@ -1120,7 +1133,13 @@ class VerifyAXPYPetscVector
         vectorb2->copyVector ( vectorb );
         checkPetscError<VECTOR_FACTORY> ( utils , VecAXPY ( veca , 1.23456 , vecb ) );
         vectora2->axpy ( 1.23456 , vectorb2, vectora2 );
-        PetscTruth ans;
+        #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+            PetscTruth ans;
+        #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+            PetscBool ans;
+        #else
+            #error Not programmed for this version yet
+        #endif
         checkPetscError<VECTOR_FACTORY> ( utils , VecEqual ( veca , veca2 , &ans ) );
         if ( ans == PETSC_TRUE )
           utils->passes ( "native interface on native petsc axpy works" );

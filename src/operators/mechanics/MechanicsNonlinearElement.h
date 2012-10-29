@@ -46,7 +46,7 @@ namespace Operator {
       /**
         Destructor.
         */
-      ~MechanicsNonlinearElement() {  }
+      virtual ~MechanicsNonlinearElement() {  }
 
       /**
         This function is used by MechanicsNonlinearFEOperator to pass the address 

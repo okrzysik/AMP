@@ -17,7 +17,7 @@ namespace Operator {
 
       PericElastoViscoPlasticModel(const boost::shared_ptr<MechanicsMaterialModelParameters>& );
 
-      ~PericElastoViscoPlasticModel() { }
+      virtual ~PericElastoViscoPlasticModel() { }
 
       void getConstitutiveMatrix(double*& ); 
 

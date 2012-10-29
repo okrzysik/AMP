@@ -16,7 +16,7 @@ namespace Solver {
 
       CoupledFlow1DSolver(boost::shared_ptr<SolverStrategyParameters> parameters);
       
-      ~CoupledFlow1DSolver();
+      virtual ~CoupledFlow1DSolver();
 
     void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
 	       boost::shared_ptr<AMP::LinearAlgebra::Vector>  u);

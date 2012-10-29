@@ -5,21 +5,12 @@
 #include "utils/ParameterBase.h"
 #include "vectors/Vector.h"
 #include "boost/shared_ptr.hpp"
+#include "matrices/MatrixParameters.h"
 
 namespace AMP {
 namespace LinearAlgebra {
 
 
-/** \class MatrixParameters
-  * \brief  Description of a matrix for construciton
-  */
-class MatrixParameters : public Castable
-{
-public:
-    /** \brief Convenience typedef
-      */
-    typedef boost::shared_ptr<MatrixParameters>     shared_ptr;
-};
 
 
 /** \class Matrix

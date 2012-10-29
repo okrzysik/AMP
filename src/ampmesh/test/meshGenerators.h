@@ -22,6 +22,7 @@ public:
             this->build_mesh();
         return mesh;
     }
+    virtual ~MeshGenerator() {};
 protected:
     AMP::Mesh::Mesh::shared_ptr  mesh;
 };
@@ -64,6 +65,11 @@ public:
         gen.build_mesh(); 
         mesh = gen.getMesh();
     }
+    static std::string name() {
+        char tmp[128];
+        sprintf(tmp,"AMPCubeGenerator<%i>",SIZE);
+        return std::string(tmp);
+    }
 };
 
 
@@ -92,6 +98,7 @@ public:
         // Create an AMP mesh
         mesh = boost::shared_ptr<AMP::Mesh::BoxMesh>(new AMP::Mesh::BoxMesh(params));      
     }
+    static std::string name() { return "AMPCylinderGenerator"; }
 };
 
 
@@ -122,6 +129,7 @@ public:
         // Create an AMP mesh
         mesh = boost::shared_ptr<AMP::Mesh::BoxMesh>(new AMP::Mesh::BoxMesh(params));      
     }
+    static std::string name() { return "AMPTubeGenerator"; }
 };
 
 
@@ -148,6 +156,7 @@ public:
         // Create the mesh
         mesh = AMP::Mesh::Mesh::buildMesh(params);
     }
+    static std::string name() { return "AMPMultiMeshGenerator"; }
 private:
     void createPelletMeshDatabase( boost::shared_ptr<Database> db ) {
         int N_pellet = 2;
@@ -223,6 +232,7 @@ public:
         AMP::Mesh::MeshIterator iterator = mesh1->getSurfaceIterator(type2,GCW);
         mesh = mesh1->Subset(iterator);
     }
+    static std::string name() { return "SurfaceSubsetGenerator"; }
 };
 
 

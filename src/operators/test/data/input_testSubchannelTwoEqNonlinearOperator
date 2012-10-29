@@ -6,25 +6,30 @@ Mesh {
      dim = 3
      Generator = "cube"
      Size = 1, 1, 9
-     Range = 0.0, 1.0, 0.0, 1.0, 0.0, 3.81 
+     Range = 0.0, 0.0128016, 0.0, 0.0128016, 0.0, 3.81 
      x_offset = 0.0
      y_offset = 0.0
      z_offset = 0.0
 }
 
+CladProperties{
+    x = 0.0, 0.0128016, 0.0, 0.0128016
+    y = 0.0, 0.0, 0.0128016, 0.0128016
+    d = 0.0097028, 0.0097028, 0.0097028, 0.0097028
+}
+
+
 SubchannelTwoEqNonlinearOperator{
     name = "SubchannelTwoEqNonlinearOperator"
     InputVariable = "flow"
     OutputVariable = "flow"
-    Exit_Pressure = 15.5132e6
-    Inlet_Temperature = 569.26
-    Mass_Flow_Rate = 0.3522
+    Exit_Pressure = 15.5132e6       // Exit pressure in Pa
+    Inlet_Temperature = 569.26      // Inlet temperature in K
+    Inlet_Mass_Flow_Rate = 0.3522   // Total mass flow rate for all subchannels in kg/s
     Fission_Heating_Coefficient = 0.0
-    Channel_Angle = 0.0
-    Friction_Factor = 0.1
-    Lattice_Pitch = 0.0128016
-    Rod_Diameter = 0.0097028
-    Rod_Power = 66.81e3
+    Channel_Angle = 0.0             // Channel angle
+    Friction_Factor = 0.1           // Friction factor
+    Rod_Power = 66.81e3             // Rod power in W
     Heat_Source_Type = "totalHeatGeneration"
     Heat_Shape = "Sinusoidal"
     LocalModel = "SubchannelPhysicsModel"

@@ -34,8 +34,11 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix(
 
     // Create the matrix parameters
     boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrixParameters> params( 
-        new AMP::LinearAlgebra::ManagedPetscMatrixParameters ( resultDOF->numLocalDOF(),
-        resultDOF->numGlobalDOF(), 0, operandDOF->numGlobalDOF(), 0, comm ) );
+        new AMP::LinearAlgebra::ManagedPetscMatrixParameters ( resultDOF, operandDOF, comm ) );
+    params->d_CommListLeft = resultVec->getCommunicationList();
+    params->d_CommListRight = operandVec->getCommunicationList();
+    params->d_VariableLeft = resultVec->getVariable();
+    params->d_VariableRight = operandVec->getVariable();
 
     // Add the rows to the matrix parameters
     AMP::Mesh::MeshIterator cur_elem = resultDOF->getIterator();
@@ -63,14 +66,6 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix(
         // Increment the iterator (pre-increment for speed)
         ++cur_elem;
     }
-
-    // Get the communication lists for the vectors
-    params->d_CommListLeft = resultVec->getCommunicationList();
-    params->d_CommListRight = operandVec->getCommunicationList();
-    params->d_DOFManagerLeft = resultDOF;
-    params->d_DOFManagerRight = operandDOF;
-    params->d_VariableLeft = resultVec->getVariable();
-    params->d_VariableRight = operandVec->getVariable();
 
     // Create the matrix
     boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrix>  newMatrix( new AMP::LinearAlgebra::ManagedPetscMatrix(params) );

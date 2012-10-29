@@ -159,6 +159,23 @@ IF ( NOT EXISTS ${PATH_NAME} )
 ENDIF ()
 ENDMACRO ()
 
+# Macro to tell cmake to use static libraries
+MACRO ( SET_STATIC_FLAGS )
+    # Remove extra library links
+    set(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)       # remove -Wl,-Bdynamic
+    set(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS)
+    set(CMAKE_SHARED_LIBRARY_C_FLAGS)         # remove -fPIC
+    set(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
+    set(CMAKE_SHARED_LINKER_FLAGS)
+    set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # remove -rdynamic
+    set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
+    # Add the static flag if necessary
+    CHECK_ENABLE_FLAG( USE_STATIC 0 )
+    IF ( USE_STATIC )
+        SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static")    # Add static flag
+        SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static")  # Add static flag
+    ENDIF()
+ENDMACRO()
 
 # Macro to identify the compiler
 MACRO ( SET_COMPILER )
@@ -167,6 +184,9 @@ MACRO ( SET_COMPILER )
     SET( USING_GCC TRUE )
     MESSAGE("Using gcc")
   ELSEIF ( MSVC OR MSVC_IDE OR MSVC60 OR MSVC70 OR MSVC71 OR MSVC80 OR CMAKE_COMPILER_2005 OR MSVC90 OR MSVC10 )
+    IF ( NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
+       MESSAGE( FATAL_ERROR "Using microsoft compilers on non-windows system?" )
+    ENDIF()
     SET( USING_MICROSOFT TRUE )
     MESSAGE("Using Microsoft")
   ELSEIF ( (${CMAKE_C_COMPILER_ID} MATCHES "Intel") OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel") ) 
@@ -181,7 +201,7 @@ MACRO ( SET_COMPILER )
     MESSAGE("Unknown C/C++ compiler, default flags will be used")
   ENDIF()
   # SET the Fortran++ compiler
-  IF ( USE_EXT_FORTRAN )
+  IF ( USE_FORTRAN )
     IF ( CMAKE_COMPILE_IS_GFORTRAN OR (${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU") )
       SET( USING_GFORTRAN TRUE )
       MESSAGE("Using gfortran")
@@ -280,8 +300,8 @@ ENDMACRO ()
 
 # Macro to add user compile flags
 MACRO ( ADD_USER_FLAGS )
-    SET(CMAKE_C_FLAGS   " ${CMAKE_C_FLAGS} ${CFLAGS} ${LDFLAGS}" )
-    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} ${CXXFLAGS} ${LDFLAGS}" )
+    SET(CMAKE_C_FLAGS   " ${CMAKE_C_FLAGS} ${CFLAGS}" )
+    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} ${CXXFLAGS}" )
     SET(CMAKE_Fortran_FLAGS " ${CMAKE_Fortran_FLAGS} ${FFLAGS}" )
 ENDMACRO ()
 
@@ -361,14 +381,10 @@ MACRO ( ADD_AMP_EXE_DEP EXE )
     # Add the executable to the dependencies of check and build-test
     ADD_DEPENDENCIES ( check ${EXE} )
     ADD_DEPENDENCIES ( build-test ${EXE} )
-    # Add test dependencies
-    #IF ( TEST_DEP_LIST )
-    #    TARGET_LINK_LIBRARIES ( ${EXE} ${TEST_DEP_LIST} )
-    #ENDIF()
     # Add the amp libraries
     TARGET_LINK_LIBRARIES ( ${EXE} ${AMP_LIBS} )
     # Add external libraries
-    TARGET_LINK_LIBRARIES ( ${EXE} ${LIBMESH_LIBS} ${NEK_LIBS} ${MOAB_LIBS} ${DENDRO_LIBS} ${TRILINOS_LIBS} ${NETCDF_LIBS} ${PETSC_LIBS} ${X11_LIBS} ${SILO_LIBS} ${HDF5_LIBS} ${HYPRE_LIBS} )
+    TARGET_LINK_LIBRARIES ( ${EXE} ${LDFLAGS} ${LIBMESH_LIBS} ${NEK_LIBS} ${MOAB_LIBS} ${DENDRO_LIBS} ${TRILINOS_LIBS} ${NETCDF_LIBS} ${PETSC_LIBS} ${X11_LIBS} ${SILO_LIBS} ${HDF5_LIBS} ${HYPRE_LIBS} )
     IF ( ${USE_EXT_SUNDIALS} )
         TARGET_LINK_LIBRARIES ( ${EXE} ${SUNDIALS_LIBS} )
     ENDIF  ()
@@ -454,7 +470,7 @@ MACRO ( ADD_AMP_WEEKLY_TEST EXEFILE PROCS ${ARGN} )
         ELSE()
             ADD_TEST ( ${TESTNAME} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
         ENDIF()
-    ELSEIF ( USE_EXT_MPI )
+    ELSEIF ( USE_EXT_MPI AND NOT (${PROCS} GREATER ${TEST_MAX_PROCS}) )
         CREATE_TEST_NAME( "${EXEFILE}_${PROCS}procs_WEEKLY" ${ARGN} )
         ADD_TEST ( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${PROCS} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
     ENDIF()
@@ -464,7 +480,7 @@ ENDMACRO ()
 # Add a executable as a parallel test
 MACRO ( ADD_AMP_TEST_PARALLEL EXEFILE PROCS ${ARGN} )
     ADD_AMP_PROVISIONAL_TEST ( ${EXEFILE} )
-    IF ( USE_EXT_MPI )
+    IF ( USE_EXT_MPI AND NOT (${PROCS} GREATER ${TEST_MAX_PROCS}) )
         CREATE_TEST_NAME( "${EXEFILE}_${PROCS}procs" ${ARGN} )
         ADD_TEST ( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${PROCS} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
         SET_TESTS_PROPERTIES ( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" )
@@ -757,6 +773,7 @@ MACRO ( SAVE_CMAKE_FLAGS )
     # Add misc flags
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add misc flags\n" )
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${SYSTEM_LIBS} )\n" )
+    file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( TEST_MAX_PROCS ${TEST_MAX_PROCS} )\n" )
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "\n" )
 ENDMACRO ()
 

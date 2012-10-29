@@ -39,7 +39,7 @@ namespace Operator {
       /**
         Destructor.
         */
-      ~NavierStokesLSWFElement() {  }
+      virtual ~NavierStokesLSWFElement() {  }
 
       /**
         This function is used by FlowNonlinearFEOperator to pass the address 

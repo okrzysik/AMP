@@ -50,7 +50,7 @@ public:
 
 
     //! Deconstructor
-     ~moabMesh ();
+    virtual ~moabMesh ();
 
 
     //! Function to copy the mesh (allows use to proply copy the derived class)

@@ -17,13 +17,14 @@
 #include <stdexcept>
 
 // Detect the OS and include system dependent headers
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
     // Note: windows has not been testeds
     #define USE_WINDOWS
     #include <windows.h>
     #include <stdio.h>   
     #include <tchar.h>
     #include <psapi.h>
+    #define mkdir(path, mode) _mkdir(path)
     //#pragma comment(lib, psapi.lib) //added
     //#pragma comment(linker, /DEFAULTLIB:psapi.lib)
 #elif defined(__APPLE__)
@@ -80,12 +81,7 @@ void Utilities::recursiveMkdir(
    bool only_node_zero_creates)
 {
 
-#ifdef _MSC_VER
-   const char seperator = '/';
-   #define mkdir(path, mode) _mkdir(path)
-#else
-   const char seperator = '/';
-#endif
+
 
    AMP_MPI comm = AMP_MPI(AMP_COMM_WORLD);
    if ( (!only_node_zero_creates) || (comm.getRank() == 0)) {
@@ -101,7 +97,7 @@ void Utilities::recursiveMkdir(
          /* slide backwards in string until next slash found */
          bool slash_found = false;
          while ( (!slash_found) && (pos >= 0) ) {
-           if (path_buf[pos] == seperator) {
+           if ( path_buf[pos]=='/' || path_buf[pos]==92 ) {
               slash_found = true;
               if (pos >= 0) path_buf[pos] = '\0';
            } else pos--;
@@ -145,7 +141,7 @@ void Utilities::recursiveMkdir(
          while ( (!null_found) && (pos < length) ) {
            if (path_buf[pos] == '\0') {
               null_found = true;
-              path_buf[pos] = seperator;
+              path_buf[pos] = '/';
            }
            pos++;
          }

@@ -1,6 +1,7 @@
+#include "operators/subchannel/SubchannelFourEqNonlinearOperator.h"
+#include "operators/subchannel/SubchannelOperatorParameters.h"
+#include "operators/subchannel/SubchannelConstants.h"
 
-#include "SubchannelFourEqNonlinearOperator.h"
-#include "SubchannelOperatorParameters.h"
 #include "ampmesh/StructuredMeshHelper.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
@@ -24,21 +25,41 @@ void SubchannelFourEqNonlinearOperator :: reset(const boost::shared_ptr<Operator
       d_Tin  = getDoubleParameter(myparams,"Inlet_Temperature",569.26);  
       d_min  = getDoubleParameter(myparams,"Inlet_Axial_Flow_Rate",0.3522);  
       d_win  = getDoubleParameter(myparams,"Inlet_Lateral_Flow_Rate",0.0);  
-      d_area = (myparams->d_db)->getDoubleArray("SubchannelArea");
       d_gamma     = getDoubleParameter(myparams,"Fission_Heating_Coefficient",0.0);  
       d_theta     = getDoubleParameter(myparams,"Channel_Angle",0.0);  
       d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.1);  
       d_pitch     = getDoubleParameter(myparams,"Lattice_Pitch",0.0128016);  
       d_diameter  = getDoubleParameter(myparams,"Rod_Diameter",0.0097028);  
-      d_K    = getDoubleParameter(myparams,"Form_Loss_Coefficient",0.2);  
-      d_source = getStringParameter(myparams,"Heat_Source_Type","totalHeatGeneration");
+      d_turbulenceCoef = getDoubleParameter(myparams,"Turbulence_Coefficient",1.0);
 
       // get additional parameters based on heat source type
+      d_source = getStringParameter(myparams,"Heat_Source_Type","totalHeatGeneration");
       if (d_source == "totalHeatGeneration") {
-          d_Q    = getDoubleParameter(myparams,"Rod_Power",66.81e3);  
+          d_Q            = getDoubleParameter(myparams,"Max_Rod_Power",66.0e3);
+          d_QFraction    = (myparams->d_db)->getDoubleArray("Rod_Power_Fraction");
           d_heatShape = getStringParameter(myparams,"Heat_Shape","Sinusoidal");
       }
 
+      // get additional parameters based on friction model
+      d_frictionModel = getStringParameter(myparams,"Friction_Model","Constant");
+      if (d_frictionModel == "Constant") {
+         d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);  
+      } else if (d_frictionModel == "Selander"){
+         d_roughness = getDoubleParameter(myparams,"Surface_Roughness",0.0015e-3);  
+      }
+
+      // get form loss parameters if there are grid spacers
+      d_NGrid = getIntegerParameter(myparams,"Number_GridSpacers",0);
+      if (d_NGrid > 0){
+         d_zMinGrid = (myparams->d_db)->getDoubleArray("zMin_GridSpacers");
+         d_zMaxGrid = (myparams->d_db)->getDoubleArray("zMax_GridSpacers");
+         d_lossGrid = (myparams->d_db)->getDoubleArray("LossCoefficient_GridSpacers");
+         // check that sizes of grid spacer loss vectors are consistent with the provided number of grid spacers
+         if (!(d_NGrid == d_zMinGrid.size() && d_NGrid == d_zMaxGrid.size() && d_NGrid == d_lossGrid.size()))
+            AMP_ERROR("The size of a grid spacer loss vector is inconsistent with the provided number of grid spacers");
+      }
+
+      // get subchannel physics model
       d_subchannelPhysicsModel = myparams->d_subchannelPhysicsModel;  
 }
 
@@ -50,6 +71,20 @@ double SubchannelFourEqNonlinearOperator::getDoubleParameter(	boost::shared_ptr<
     bool keyExists = (myparams->d_db)->keyExists(paramString);
     if (keyExists) {
        return (myparams->d_db)->getDouble(paramString);
+    } else {
+       AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
+       return defaultValue;
+    }
+}
+
+// function used in reset to get integer parameter or set default if missing
+int SubchannelFourEqNonlinearOperator::getIntegerParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+								std::string paramString,
+                                                                int defaultValue)
+{
+    bool keyExists = (myparams->d_db)->keyExists(paramString);
+    if (keyExists) {
+       return (myparams->d_db)->getInteger(paramString);
     } else {
        AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
        return defaultValue;
@@ -200,9 +235,13 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
       const double pi = 4.0*atan(1.0); // pi
       const double g = 9.805;          // acceleration due to gravity [m/s2]
       // assuming square pitch
-      const double perimeter = 4.0*(d_pitch-d_diameter) + pi*d_diameter;    // wetted perimeter
+      const double perimeter = pi*d_diameter;    // wetted perimeter
       const double area = std::pow(d_pitch,2) - pi*std::pow(d_diameter,2)/4.0; // flow area
       const double D = 4.0*area/perimeter;                                     // hydraulic diameter
+      const double m_scale = 1.0/Subchannel::scaleAxialMassFlowRate;
+      const double h_scale = 1.0/Subchannel::scaleEnthalpy;
+      const double p_scale = 1.0/Subchannel::scalePressure;
+      const double w_scale = 1.0/Subchannel::scaleLateralMassFlowRate;
 
       // Subset the vectors
       AMP::LinearAlgebra::Vector::const_shared_ptr inputVec  = subsetInputVector( u );
@@ -238,7 +277,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
       }// end for cell
 
       // for each subchannel,
-      for(int isub =0; isub<d_numSubchannels; ++isub){
+      for(size_t isub =0; isub<d_numSubchannels; ++isub){
         if(d_ownSubChannel[isub]){
           // extract subchannel cells from d_elem[isub]
           boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > subchannelElements( new std::vector<AMP::Mesh::MeshElement>() );
@@ -268,23 +307,23 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
              std::vector<size_t> minusDofs;
              dof_manager->getDOFs(plusFace.globalID(),plusDofs);
              dof_manager->getDOFs(minusFace.globalID(),minusDofs);
-             double m_plus = inputVec->getValueByGlobalID(plusDofs[0]);
-             double h_plus = inputVec->getValueByGlobalID(plusDofs[1]);
-             double p_plus = inputVec->getValueByGlobalID(plusDofs[2]);
-             double m_minus = inputVec->getValueByGlobalID(minusDofs[0]);
-             double h_minus = inputVec->getValueByGlobalID(minusDofs[1]);
-             double p_minus = inputVec->getValueByGlobalID(minusDofs[2]);
+             double m_plus = m_scale*inputVec->getValueByGlobalID(plusDofs[0]);
+             double h_plus = h_scale*inputVec->getValueByGlobalID(plusDofs[1]);
+             double p_plus = p_scale*inputVec->getValueByGlobalID(plusDofs[2]);
+             double m_minus = m_scale*inputVec->getValueByGlobalID(minusDofs[0]);
+             double h_minus = h_scale*inputVec->getValueByGlobalID(minusDofs[1]);
+             double p_minus = p_scale*inputVec->getValueByGlobalID(minusDofs[2]);
 
              // compute additional quantities
              // -----------------------------
              double m_mid = 1.0/2.0*(m_plus + m_minus);
+             double h_mid = 1.0/2.0*(h_plus + h_minus);
              double p_mid = 1.0/2.0*(p_plus + p_minus);
 
-             // evaluate specific volume at upper face
-             double vol_plus = Volume(h_plus,p_plus);
-
-             // evaluate specific volume at lower face
-             double vol_minus = Volume(h_minus,p_minus);
+             // evaluate specific volume
+             double vol_plus  = Volume(h_plus,p_plus);          // upper face
+             double vol_minus = Volume(h_minus,p_minus);        // lower face
+             double vol_mid   = 1.0/2.0*(vol_plus + vol_minus); // cell center
 
              // determine axial donor quantities
              double h_axialDonor;
@@ -297,20 +336,90 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                 h_axialDonor = h_minus;
              }
 
-             double rho_mid = 1.0/vol_axialDonor;
+             // evaluate density
+             double rho_mid = 1.0/vol_mid;
 
+             // evaluate axial velocity
              double u_plus  = m_plus*vol_plus/area;
              double u_minus = m_minus*vol_minus/area;
-             double u_mid = m_mid*vol_axialDonor/area;
+             double u_mid   = m_mid*vol_mid/area;
 
              // evaluate temperature for cell
-             double T_mid = Temperature(h_axialDonor,p_mid);
+             double T_mid = Temperature(h_mid,p_mid);
 
              // evaluate conductivity for cell
              double k_mid = ThermalConductivity(T_mid,rho_mid);
 
+             // evaluate dynamic viscosity
+             double visc_mid = DynamicViscosity(T_mid,rho_mid);
+
              // compute element height
-             double dz = plusFaceCentroid[2] - minusFaceCentroid[2];
+             double z_minus = minusFaceCentroid[2];
+             double z_plus  = plusFaceCentroid[2];
+             double dz = z_plus - z_minus;
+
+              // evaluate friction factor
+              double Re = rho_mid*u_mid*D/visc_mid;
+              double fl = 64.0/Re; // laminar friction factor
+              double fric; // friction factor
+              if (d_frictionModel == "Constant") {
+                 fric = d_friction;
+              } else {
+                 double ft = 0.; // turbulent friction factor evaluated from computed Re
+                 double ft4000 = 0.; // turbulent friction factor evaluated from Re = 4000
+                 if (d_frictionModel == "Blasius") {
+                    ft = 0.316*std::pow(Re,-0.25);
+                    ft4000 = 0.316*std::pow(4000.0,-0.25);
+                 } else if (d_frictionModel == "Drew") {
+                    ft = 0.0056 + 0.5*std::pow(Re,-0.32);
+                    ft4000 = 0.0056 + 0.5*std::pow(4000.0,-0.32);
+                 } else if (d_frictionModel == "Filonenko") {
+                    ft = std::pow(1.82*std::log(Re)-1.64,-2);
+                    ft4000 = std::pow(1.82*std::log(4000.0)-1.64,-2);
+                 } else if (d_frictionModel == "Selander") {
+                    ft = 4.0*std::pow(3.8*std::log(10.0/Re+0.2*d_roughness/D),-2);
+                    ft4000 = 4.0*std::pow(3.8*std::log(10.0/4000.0+0.2*d_roughness/D),-2);
+                 } else {
+                    AMP_ERROR("Invalid choice for Friction_Model.");
+                 }
+                 if (Re < 4000.0)
+                    fric = std::max(fl,ft4000);
+                 else
+                    fric = ft;
+             } 
+
+              // compute form loss coefficient
+              double K = 0.0;
+              for (size_t igrid=0; igrid < d_lossGrid.size(); igrid++){
+                 double zMin_grid = d_zMinGrid[igrid];
+                 double zMax_grid = d_zMaxGrid[igrid];
+                 AMP_INSIST((zMax_grid > zMin_grid),"Grid spacer zMin > zMax");
+                 double K_grid = d_lossGrid[igrid];
+                 double K_perLength = K_grid/(zMax_grid - zMin_grid);
+                 if (zMax_grid >= z_plus){
+                    double overlap = 0.0;
+                    if (zMin_grid >= z_plus){
+                       overlap = 0.0;
+                    } else if (zMin_grid > z_minus && zMin_grid < z_plus){
+                       overlap = z_plus - zMin_grid;
+                    } else if (zMin_grid <= z_minus){
+                       overlap = z_plus - z_minus;
+                    } else {
+                       AMP_ERROR("Unexpected position comparison for zMin_grid");
+                    }
+                    K += overlap*K_perLength;
+                 } else if (zMax_grid < z_plus && zMax_grid > z_minus){
+                    double overlap = 0.0;
+                    if (zMin_grid > z_minus){
+                       overlap = zMax_grid - zMin_grid;
+                    } else if (zMin_grid <= z_minus){
+                       overlap = zMax_grid - z_minus;
+                    } else {
+                       AMP_ERROR("Unexpected position comparison for zMin_grid");
+                    }
+                    K += overlap*K_perLength;
+                 }
+              }
 
              // initialize sum terms
              double mass_crossflow_sum = 0.0;
@@ -321,6 +430,21 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
              double energy_direct_heating_sum = 0.0;
              double axial_crossflow_sum = 0.0;
              double axial_turbulence_sum = 0.0;
+
+             // compute flux
+             double flux = 0.;
+             if (d_source == "averageCladdingTemperature") {
+                AMP_ERROR("Heat source type 'averageCladdingTemperature' not yet implemented.");
+             } else if (d_source == "averageHeatFlux") {
+                AMP_ERROR("Heat source type 'averageHeatFlux' not yet implemented.");
+             } else if (d_source == "totalHeatGeneration") {
+                AMP_ASSERT(d_QFraction.size()==d_numSubchannels);
+                flux = d_Q*d_QFraction[isub]/(2.0*pi*d_diameter*dz)*(cos(pi*z_minus/height) - cos(pi*z_plus/height));
+             } else {
+                AMP_ERROR("Heat source type '"+d_source+"' is invalid");
+             }
+             energy_heatflux_sum       = pi*d_diameter*flux;
+             energy_direct_heating_sum = d_gamma*pi*d_diameter*flux;
 
              // loop over gap faces
              std::vector<AMP::Mesh::MeshElement> cellFaces = localSubchannelCell->getElements(AMP::Mesh::Face);
@@ -333,9 +457,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                    // get crossflow
                    std::vector<size_t> gapDofs;
                    dof_manager->getDOFs(lateralFace.globalID(),gapDofs);
-                   double w = inputVec->getValueByGlobalID(gapDofs[0]);
-                   // compute turbulent crossflow
-                   double wt = 0.0;//JEH: need to use turbulent crossflow model
+                   double w = w_scale*inputVec->getValueByGlobalID(gapDofs[0]);
                    // get index of neighboring subchannel
                    std::vector<AMP::Mesh::MeshElement> adjacentCells = d_Mesh->getElementParents(lateralFace, AMP::Mesh::Volume);
                    AMP_INSIST(adjacentCells.size() == 2,"There were not 2 adjacent cells to a lateral gap face");
@@ -378,12 +500,12 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                    std::vector<size_t> neighborMinusDofs;
                    dof_manager->getDOFs(neighborPlusFace.globalID(),neighborPlusDofs);
                    dof_manager->getDOFs(neighborMinusFace.globalID(),neighborMinusDofs);
-                   double m_plus_neighbor = inputVec->getValueByGlobalID(neighborPlusDofs[0]);
-                   double h_plus_neighbor = inputVec->getValueByGlobalID(neighborPlusDofs[1]);
-                   double p_plus_neighbor = inputVec->getValueByGlobalID(neighborPlusDofs[2]);
-                   double m_minus_neighbor = inputVec->getValueByGlobalID(neighborMinusDofs[0]);
-                   double h_minus_neighbor = inputVec->getValueByGlobalID(neighborMinusDofs[1]);
-                   double p_minus_neighbor = inputVec->getValueByGlobalID(neighborMinusDofs[2]);
+                   double m_plus_neighbor = m_scale*inputVec->getValueByGlobalID(neighborPlusDofs[0]);
+                   double h_plus_neighbor = h_scale*inputVec->getValueByGlobalID(neighborPlusDofs[1]);
+                   double p_plus_neighbor = p_scale*inputVec->getValueByGlobalID(neighborPlusDofs[2]);
+                   double m_minus_neighbor = m_scale*inputVec->getValueByGlobalID(neighborMinusDofs[0]);
+                   double h_minus_neighbor = h_scale*inputVec->getValueByGlobalID(neighborMinusDofs[1]);
+                   double p_minus_neighbor = p_scale*inputVec->getValueByGlobalID(neighborMinusDofs[2]);
 
                    // compute additional quantities from neighboring cell
                    double m_mid_neighbor = 1.0/2.0*(m_plus_neighbor + m_minus_neighbor);
@@ -427,6 +549,9 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                    // compute thermal conductivity across gap
                    double k_gap = 2.0*k_mid*k_mid_neighbor/(k_mid + k_mid_neighbor);
 
+                   // evaluate dynamic viscosity for cell
+                   double visc_mid_neighbor = DynamicViscosity(T_mid_neighbor,rho_mid_neighbor);
+
                    // compute distance between centroids of cells adjacent to gap
                    std::vector<double> cellCentroid = localSubchannelCell->centroid();
                    double lx = std::abs(neighborCentroid[0] - cellCentroid[0]);
@@ -438,17 +563,25 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
 
                    double conductance = 1.0*k_gap/l;
 
+                   // compute turbulent crossflow
+                   double D_neighbor = D;
+                   double D_avg = 1.0/2.0*(D + D_neighbor);
+                   double Re_neighbor = rho_mid_neighbor*u_mid_neighbor*D_neighbor/visc_mid_neighbor;
+                   double Re_avg = 1.0/2.0*(Re + Re_neighbor);
+                   double beta = 0.005*D_avg/s*pow(s/d_diameter,0.106)*pow(Re_avg,-0.1);
+                   double massFlux_avg = 1.0/2.0*(m_mid/area + m_mid_neighbor/area);
+                   double wt = dz*beta*s*massFlux_avg;
+
                    // add to sums
                    mass_crossflow_sum += crossflowSign*w;
                    energy_crossflow_sum += crossflowSign*w*h_lateralDonor;
                    energy_turbulence_sum += wt*(h_axialDonor - h_axialDonor_neighbor);
                    energy_conduction_sum += conductance*s*(T_mid - T_mid_neighbor);
                    axial_crossflow_sum += crossflowSign*w*u_lateralDonor;
+                   axial_turbulence_sum += crossflowSign*wt*(u_mid - u_mid_neighbor);
                       
                 }// end if (lateralFaceIterator != lateralFaceMap.end()) {
              }// end loop over gap faces
-
-             // loop over rods
 
              // calculate residuals for current cell
              // ------------------------------------
@@ -464,29 +597,29 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                         + axial_crossflow_sum
                         + area*(p_plus-p_minus)
                         + g*area*dz*std::cos(d_theta)/vol_axialDonor
-                        + 1.0/(2.0*area)*(dz*d_friction/D + d_K)*std::abs(m_mid)*m_mid*vol_axialDonor
-                        + axial_turbulence_sum; // axial momentum
+                        + 1.0/(2.0*area)*(dz*fric/D + K)*std::abs(m_mid)*m_mid*vol_axialDonor
+                        + d_turbulenceCoef*axial_turbulence_sum; // axial momentum
 
              // put residuals into global residual vector
-             outputVec->setValueByGlobalID(plusDofs[0], R_m);
-             outputVec->setValueByGlobalID(plusDofs[1], R_h);
-             outputVec->setValueByGlobalID(minusDofs[2], R_p);
+             outputVec->setValueByGlobalID(plusDofs[0], Subchannel::scaleAxialMassFlowRate*R_m);
+             outputVec->setValueByGlobalID(plusDofs[1], Subchannel::scaleEnthalpy*R_h);
+             outputVec->setValueByGlobalID(minusDofs[2], Subchannel::scalePressure*R_p);
 
              // impose boundary conditions
              // --------------------------
              // if face is exit face,
              if (AMP::Utilities::approx_equal(plusFaceCentroid[2],height)){
                 // impose fixed exit pressure boundary condition
-                outputVec->setValueByGlobalID(plusDofs[2],p_plus-d_Pout);
+                outputVec->setValueByGlobalID(plusDofs[2],Subchannel::scalePressure*(p_plus-d_Pout));
              }
              if (AMP::Utilities::approx_equal(minusFaceCentroid[2],0.0)){
                 // impose fixed inlet axial mass flow rate boundary condition
-                outputVec->setValueByGlobalID(minusDofs[0],m_minus-d_min);
+                outputVec->setValueByGlobalID(minusDofs[0],Subchannel::scaleAxialMassFlowRate*(m_minus-d_min));
 
                 // evaluate enthalpy at inlet
                 double h_eval = Enthalpy(d_Tin,p_minus);
                 // impose fixed inlet temperature boundary condition
-                outputVec->setValueByGlobalID(minusDofs[0],h_minus-h_eval);
+                outputVec->setValueByGlobalID(minusDofs[1],Subchannel::scaleEnthalpy*(h_minus-h_eval));
              }
           }// end loop over cells of current subchannel
         }// end if(d_ownSubchannel[isub])
@@ -503,7 +636,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
             // get crossflow from solution vector
             std::vector<size_t> gapDofs;
             dof_manager->getDOFs(lateralFace.globalID(),gapDofs);
-            double w_mid = inputVec->getValueByGlobalID(gapDofs[0]);
+            double w_mid = w_scale*inputVec->getValueByGlobalID(gapDofs[0]);
 
             // get adjacent cells
             std::vector<AMP::Mesh::MeshElement> adjacentCells = d_Mesh->getElementParents(lateralFace, AMP::Mesh::Volume);
@@ -525,7 +658,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
             // if bottom face is at z = 0,
             if (AMP::Utilities::approx_equal(cell1MinusFaceCentroid[2],0.0)) {
                // implement fixed lateral mass flow rates inlet boundary condition
-               outputVec->setValueByGlobalID(gapDofs[0],d_win);
+               outputVec->setValueByGlobalID(gapDofs[0],Subchannel::scaleLateralMassFlowRate*d_win);
             } else {
                // get cells below bottom faces
                // get adjacent cells
@@ -543,41 +676,39 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                std::vector<double> axialCell22Centroid = axialCell22.centroid();
                // determine which cell is bottom cell
                AMP::Mesh::MeshElement *bottomCell1;
-               std::vector<double> *bottomCell1Centroid;
+               //std::vector<double> *bottomCell1Centroid;
                AMP::Mesh::MeshElement *bottomCell2;
-               std::vector<double> *bottomCell2Centroid;
+               //std::vector<double> *bottomCell2Centroid;
                if (axialCell11Centroid[2] < cell1MinusFaceCentroid[2]) {
                   // axialCell11 is bottom cell
                   // ensure that axialCell12 is above
                   AMP_INSIST(axialCell12Centroid[2] > cell1MinusFaceCentroid[2],"Both adjacent cells are below axial face parent");
                   bottomCell1 = &axialCell11;
-                  bottomCell1Centroid = &axialCell11Centroid;
+                  //bottomCell1Centroid = &axialCell11Centroid;
                } else {
                   // axialCell12 is bottom cell
                   // ensure that axialCell11 is above
                   AMP_INSIST(axialCell11Centroid[2] > cell1MinusFaceCentroid[2],"Both adjacent cells are below axial face parent");
                   bottomCell1 = &axialCell12;
-                  bottomCell1Centroid = &axialCell12Centroid;
+                  //bottomCell1Centroid = &axialCell12Centroid;
                }
                if (axialCell21Centroid[2] < cell2MinusFaceCentroid[2]) {
                   // axialCell21 is bottom cell
                   // ensure that axialCell22 is above
                   AMP_INSIST(axialCell22Centroid[2] > cell2MinusFaceCentroid[2],"Both adjacent cells are below axial face parent");
                   bottomCell2 = &axialCell21;
-                  bottomCell2Centroid = &axialCell21Centroid;
+                  //bottomCell2Centroid = &axialCell21Centroid;
                } else {
                   // axialCell22 is bottom cell
                   // ensure that axialCell21 is above
                   AMP_INSIST(axialCell21Centroid[2] > cell2MinusFaceCentroid[2],"Both adjacent cells are below axial face parent");
                   bottomCell2 = &axialCell22;
-                  bottomCell2Centroid = &axialCell22Centroid;
+                  //bottomCell2Centroid = &axialCell22Centroid;
                }
-               AMP::pout<<" bottomCell1Centroid " << &bottomCell1Centroid[0] <<std::endl;
-               AMP::pout<<" bottomCell2Centroid " << &bottomCell2Centroid[0] <<std::endl;
                AMP::Mesh::MeshElement belowLateralFace = getAxiallyAdjacentLateralFace(bottomCell1,lateralFace,lateralFaceMap);
                std::vector<size_t> belowDofs;
                dof_manager->getDOFs(belowLateralFace.globalID(),belowDofs);
-               double w_minus = inputVec->getValueByGlobalID(belowDofs[0]);
+               double w_minus = w_scale*inputVec->getValueByGlobalID(belowDofs[0]);
 
                // get axial faces of bottom cells
                AMP::Mesh::MeshElement bottomCell1PlusFace;
@@ -589,13 +720,13 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                // get unknowns from axial faces of bottom cells
                std::vector<size_t> dofs;
                dof_manager->getDOFs(bottomCell1PlusFace.globalID(),dofs);
-               double m1_bottomPlus = inputVec->getValueByGlobalID(dofs[0]);
+               double m1_bottomPlus = m_scale*inputVec->getValueByGlobalID(dofs[0]);
                dof_manager->getDOFs(bottomCell1MinusFace.globalID(),dofs);
-               double m1_bottomMinus = inputVec->getValueByGlobalID(dofs[0]);
+               double m1_bottomMinus = m_scale*inputVec->getValueByGlobalID(dofs[0]);
                dof_manager->getDOFs(bottomCell2PlusFace.globalID(),dofs);
-               double m2_bottomPlus = inputVec->getValueByGlobalID(dofs[0]);
+               double m2_bottomPlus = m_scale*inputVec->getValueByGlobalID(dofs[0]);
                dof_manager->getDOFs(bottomCell2MinusFace.globalID(),dofs);
-               double m2_bottomMinus = inputVec->getValueByGlobalID(dofs[0]);
+               double m2_bottomMinus = m_scale*inputVec->getValueByGlobalID(dofs[0]);
 
                double m1_bottomMid = 1.0/2.0*(m1_bottomPlus + m1_bottomMinus);
                double m2_bottomMid = 1.0/2.0*(m2_bottomPlus + m2_bottomMinus);
@@ -610,23 +741,23 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                dof_manager->getDOFs(cell1MinusFace.globalID(),cell1MinusDofs);
                dof_manager->getDOFs(cell2MinusFace.globalID(),cell2MinusDofs);
 
-               double m1_plus = inputVec->getValueByGlobalID(cell1PlusDofs[0]);
-               double m2_plus = inputVec->getValueByGlobalID(cell2PlusDofs[0]);
-               double m1_minus = inputVec->getValueByGlobalID(cell1MinusDofs[0]);
-               double m2_minus = inputVec->getValueByGlobalID(cell2MinusDofs[0]);
+               double m1_plus = m_scale*inputVec->getValueByGlobalID(cell1PlusDofs[0]);
+               double m2_plus = m_scale*inputVec->getValueByGlobalID(cell2PlusDofs[0]);
+               double m1_minus = m_scale*inputVec->getValueByGlobalID(cell1MinusDofs[0]);
+               double m2_minus = m_scale*inputVec->getValueByGlobalID(cell2MinusDofs[0]);
                double m1_mid = 1.0/2.0*(m1_plus + m1_minus);
                double m2_mid = 1.0/2.0*(m2_plus + m2_minus);
                double m_mid = 1.0/2.0*(m1_mid + m2_mid);
 
-               double h1_plus = inputVec->getValueByGlobalID(cell1PlusDofs[1]);
-               double h2_plus = inputVec->getValueByGlobalID(cell2PlusDofs[1]);
-               double h1_minus = inputVec->getValueByGlobalID(cell1MinusDofs[1]);
-               double h2_minus = inputVec->getValueByGlobalID(cell2MinusDofs[1]);
+               double h1_plus = h_scale*inputVec->getValueByGlobalID(cell1PlusDofs[1]);
+               double h2_plus = h_scale*inputVec->getValueByGlobalID(cell2PlusDofs[1]);
+               double h1_minus = h_scale*inputVec->getValueByGlobalID(cell1MinusDofs[1]);
+               double h2_minus = h_scale*inputVec->getValueByGlobalID(cell2MinusDofs[1]);
 
-               double p1_plus = inputVec->getValueByGlobalID(cell1PlusDofs[2]);
-               double p2_plus = inputVec->getValueByGlobalID(cell2PlusDofs[2]);
-               double p1_minus = inputVec->getValueByGlobalID(cell1MinusDofs[2]);
-               double p2_minus = inputVec->getValueByGlobalID(cell2MinusDofs[2]);
+               double p1_plus = p_scale*inputVec->getValueByGlobalID(cell1PlusDofs[2]);
+               double p2_plus = p_scale*inputVec->getValueByGlobalID(cell2PlusDofs[2]);
+               double p1_minus = p_scale*inputVec->getValueByGlobalID(cell1MinusDofs[2]);
+               double p2_minus = p_scale*inputVec->getValueByGlobalID(cell2MinusDofs[2]);
 
                double vol1_plus = Volume(h1_plus,p1_plus);
                double vol1_minus = Volume(h1_minus,p1_minus);
@@ -684,7 +815,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                      AMP::Mesh::MeshElement aboveLateralFace = getAxiallyAdjacentLateralFace(topCell,lateralFace,lateralFaceMap);
                      std::vector<size_t> aboveDofs;
                      dof_manager->getDOFs(aboveLateralFace.globalID(),aboveDofs);
-                     double w_plus = inputVec->getValueByGlobalID(aboveDofs[0]);
+                     double w_plus = w_scale*inputVec->getValueByGlobalID(aboveDofs[0]);
                      w_axialDonor_plus = w_plus;
                   }
                }
@@ -709,7 +840,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                           - s/l*dz*(p1_minus - p2_minus)
                           + d_KG/(2.0*dz*s*l)*std::abs(w_mid)*w_mid*vol_mid
                           + s*l*dz*g*std::sin(d_theta)/vol_mid;
-               outputVec->setValueByGlobalID(gapDofs[0],R_w);
+               outputVec->setValueByGlobalID(gapDofs[0],Subchannel::scaleLateralMassFlowRate*R_w);
             }
          }
       }// end loop over lateral faces
@@ -814,6 +945,19 @@ double SubchannelFourEqNonlinearOperator::ThermalConductivity(double T, double r
    argMap.insert(std::make_pair("density",new std::vector<double>(1,rho)));
    std::vector<double> result(1);
    d_subchannelPhysicsModel->getProperty("ThermalConductivity",result,argMap); 
+   return result[0];
+}
+
+double SubchannelFourEqNonlinearOperator::DynamicViscosity(double T, double rho)
+{
+   // evaluates dynamic viscosity
+   // T: temperature
+   // rho: density
+   std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
+   argMap.insert(std::make_pair("temperature",new std::vector<double>(1,T)));
+   argMap.insert(std::make_pair("density",new std::vector<double>(1,rho)));
+   std::vector<double> result(1);
+   d_subchannelPhysicsModel->getProperty("DynamicViscosity",result,argMap); 
    return result[0];
 }
 

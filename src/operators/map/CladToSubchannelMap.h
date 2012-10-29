@@ -39,7 +39,7 @@ public:
     CladToSubchannelMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> &params );
 
     //! Destructor
-    ~CladToSubchannelMap();
+    virtual ~CladToSubchannelMap();
 
     /** \brief   Set a frozen vector for results of the apply operation. 
      * \details  Set a frozen vector for results of the apply operation. 
@@ -84,7 +84,7 @@ private:
 
     // Buffers to send/recv the data
     std::vector<MPI_Request> d_currRequests;
-    std::vector<std::vector<std::pair<double,double> > > d_sendBuffer;
+    std::vector<double*> d_sendBuffer;
     size_t d_sendMaxBufferSize;
 
     int getSubchannelIndex( double x, double y );

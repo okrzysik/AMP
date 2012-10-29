@@ -33,23 +33,6 @@ static bool check_prefix(std::string prefix, std::string str) {
 }
 
 
-// Some template functions for vector math
-template <class T> 
-static inline T vecmin(std::vector<T> x) {
-    T min = x[0];
-    for (size_t i=1; i<x.size(); i++)
-        min = (x[i]<min) ? x[i] : min;
-    return min;
-}
-template <class T> 
-static inline T vecmax(std::vector<T> x) {
-    T max = x[0];
-    for (size_t i=1; i<x.size(); i++)
-        max = (x[i]>max) ? x[i] : max;
-    return max;
-}
-
-
 // Misc function declerations
 static void copyKey(AMP::Database::shared_ptr,std::vector<AMP::Database::shared_ptr>,
     const std::string&,bool,const std::string&,const std::vector<std::string>&);
@@ -289,7 +272,7 @@ std::vector<boost::shared_ptr<AMP::Database> >  MultiMesh::createDatabases(boost
     // We might have already created and stored the databases for each mesh
     if ( database->keyExists("submeshDatabases") ) {
         std::vector<std::string> databaseNames = database->getStringArray("submeshDatabases");
-        AMP_ASSERT(databaseNames.size()>0);
+        AMP_ASSERT(!databaseNames.empty());
         std::vector<boost::shared_ptr<AMP::Database> > meshDatabases(databaseNames.size());
         for (size_t i=0; i<databaseNames.size(); i++)
             meshDatabases[i] = database->getDatabase(databaseNames[i]);
@@ -513,40 +496,14 @@ std::vector<MeshID> MultiMesh::getAllMeshIDs() const
 {
     std::vector<MeshID> tmp = this->getLocalMeshIDs();
     std::set<MeshID> ids(tmp.begin(),tmp.end());
-    int send_cnt = (int) ids.size();
-    int recv_cnt = d_comm.sumReduce(send_cnt);
-    MeshID *send_data = new MeshID[send_cnt];
-    MeshID *recv_data = new MeshID[recv_cnt];
-    std::set<MeshID>::iterator iterator = ids.begin();
-    for (int i=0; i<send_cnt; i++) {
-        send_data[i] = *iterator;
-        iterator++;
-    }
-    d_comm.allGather( send_data, send_cnt, recv_data );
-    for (int i=0; i<recv_cnt; i++)
-        ids.insert(recv_data[i]);
-    delete [] send_data;
-    delete [] recv_data;
+    d_comm.setGather(ids);
     return std::vector<MeshID>(ids.begin(),ids.end());
 }
 std::vector<MeshID> MultiMesh::getBaseMeshIDs() const
 {
     std::vector<MeshID> tmp = this->getLocalBaseMeshIDs();
     std::set<MeshID> ids(tmp.begin(),tmp.end());
-    int send_cnt = (int) ids.size();
-    int recv_cnt = d_comm.sumReduce(send_cnt);
-    MeshID *send_data = new MeshID[send_cnt];
-    MeshID *recv_data = new MeshID[recv_cnt];
-    std::set<MeshID>::iterator iterator = ids.begin();
-    for (int i=0; i<send_cnt; i++) {
-        send_data[i] = *iterator;
-        iterator++;
-    }
-    d_comm.allGather( send_data, send_cnt, recv_data );
-    for (int i=0; i<recv_cnt; i++)
-        ids.insert(recv_data[i]);
-    delete [] send_data;
-    delete [] recv_data;
+    d_comm.setGather(ids);
     return std::vector<MeshID>(ids.begin(),ids.end());
 }
 std::vector<MeshID> MultiMesh::getLocalMeshIDs() const
@@ -663,7 +620,7 @@ boost::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in ) con
     // Count the number of globally unique sub-meshes
     d_comm.setGather( subsetID ); 
     if ( subsetID.size() <= 1 ) {
-        if ( subset.size() == 0 ) {
+        if ( subset.empty() ) {
             return boost::shared_ptr<Mesh>();
         } else {
             boost::shared_ptr<Mesh> subsetMultiMesh( new MultiMesh( subset[0]->getComm(), subset ) );
@@ -672,7 +629,7 @@ boost::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in ) con
         }
     }
     // Create a new multi-mesh to contain the subset
-    int color = subset.size()==0 ? -1:0;
+    int color = subset.empty() ? -1:0;
     AMP::AMP_MPI new_comm = d_comm.split( color );
     if ( new_comm.isNull() )
         return boost::shared_ptr<Mesh>();
@@ -711,7 +668,7 @@ boost::shared_ptr<Mesh>  MultiMesh::Subset( std::string name ) const
         }
     }
     // Create a new multi-mesh to contain the subset
-    int color = subset.size()==0 ? -1:0;
+    int color = subset.empty() ? -1:0;
     AMP::AMP_MPI new_comm = d_comm.split( color );
     if ( new_comm.isNull() )
         return boost::shared_ptr<Mesh>();
@@ -1242,7 +1199,7 @@ std::vector<MultiMesh::comm_groups>  MultiMesh::independentGroups2(
         groups.push_back( tmp_group );
     }
     AMP_ASSERT((int)groups.size()==N_procs);
-    AMP_ASSERT(ids.size()==0);
+    AMP_ASSERT(ids.empty());
     return groups;
 }
 

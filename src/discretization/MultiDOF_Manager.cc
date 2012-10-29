@@ -57,12 +57,20 @@ multiDOFManager::multiDOFManager ( AMP_MPI globalComm, std::vector<DOFManager::s
 
 
 /****************************************************************
+* Deconstructor                                                 *
+****************************************************************/
+multiDOFManager::~multiDOFManager( )
+{
+}
+
+
+/****************************************************************
 * Get the dofs for the element                                  *
 ****************************************************************/
 void multiDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <size_t> &dofs ) const
 {
     dofs.resize(0);
-    if ( d_managers.size()==0 )
+    if ( d_managers.empty() )
         return;
     if ( d_managers[0]->numGlobalDOF()==this->d_global ) {
         // We are dealing with a multiDOFManager with only 1 sub DOF (this happens with multivectors)
@@ -118,7 +126,7 @@ std::vector<size_t> multiDOFManager::getRemoteDOFs( ) const
     std::vector<size_t> global_dofs;
     for (size_t i=0; i<d_managers.size(); i++) {
         std::vector<size_t> local_dofs = d_managers[i]->getRemoteDOFs( );
-        if ( local_dofs.size() > 0 ) {
+        if ( !local_dofs.empty() ) {
             std::vector<size_t> tmp_dofs = getGlobalDOF( i, local_dofs );
             global_dofs.insert(global_dofs.end(),tmp_dofs.begin(),tmp_dofs.end());
         }
@@ -136,7 +144,7 @@ std::vector<size_t> multiDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &o
     std::vector<size_t> global_dofs;
     for (size_t i=0; i<d_managers.size(); i++) {
         std::vector<size_t> local_dofs = d_managers[i]->getRowDOFs( obj );
-        if ( local_dofs.size() > 0 ) {
+        if ( !local_dofs.empty() ) {
             std::vector<size_t> tmp_dofs = getGlobalDOF( i, local_dofs );
             global_dofs.insert(global_dofs.end(),tmp_dofs.begin(),tmp_dofs.end());
         }
@@ -230,7 +238,7 @@ boost::shared_ptr<DOFManager>  multiDOFManager::subset( AMP_MPI comm_in )
             return shared_from_this();
     }
     // Check that we have a valid DOF manager somewhere
-    bool valid_DOF = sub_managers.size()>0;
+    bool valid_DOF = !sub_managers.empty();
     valid_DOF = comm.anyReduce( valid_DOF );
     if ( !valid_DOF )
         return boost::shared_ptr<DOFManager>();
@@ -266,7 +274,7 @@ boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::Mesh::s
             return shared_from_this();
     }
     // Check that we have a valid DOF manager somewhere
-    bool valid_DOF = sub_managers.size()>0;
+    bool valid_DOF = !sub_managers.empty();
     valid_DOF = comm.anyReduce( valid_DOF );
     if ( !valid_DOF )
         return boost::shared_ptr<DOFManager>();
@@ -294,7 +302,7 @@ boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::MeshIte
             return shared_from_this();
     }
     // Check that we have a valid DOF manager somewhere
-    bool valid_DOF = sub_managers.size()>0;
+    bool valid_DOF = !sub_managers.empty();
     valid_DOF = comm.anyReduce( valid_DOF );
     if ( !valid_DOF )
         return boost::shared_ptr<DOFManager>();

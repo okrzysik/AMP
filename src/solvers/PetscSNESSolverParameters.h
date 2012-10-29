@@ -51,7 +51,7 @@ namespace Solver {
   public:
     PetscSNESSolverParameters(){}
     PetscSNESSolverParameters(const boost::shared_ptr<AMP::Database> &db);
-    ~PetscSNESSolverParameters(){}
+    virtual ~PetscSNESSolverParameters(){}
 
     AMP_MPI d_comm;
 

@@ -13,7 +13,7 @@ namespace Operator {
       RobinVectorCorrectionParameters(const boost::shared_ptr<AMP::Database> &db)
         : OperatorParameters(db) {  }
 
-      ~RobinVectorCorrectionParameters() { }
+      virtual ~RobinVectorCorrectionParameters() { }
 
       AMP::LinearAlgebra::Variable::shared_ptr d_variable;
 

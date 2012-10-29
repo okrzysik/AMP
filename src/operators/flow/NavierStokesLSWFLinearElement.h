@@ -30,7 +30,7 @@ namespace Operator {
 
         }
 
-      ~NavierStokesLSWFLinearElement() {  }
+      virtual ~NavierStokesLSWFLinearElement() {  }
 
       void setElementStiffnessMatrix( std::vector<std::vector<double> > & elementStiffnessMatrix )
       {

@@ -17,7 +17,7 @@ public:
     structuredMeshIterator();
 
     //! Deconstructor
-    ~structuredMeshIterator ();
+    virtual ~structuredMeshIterator ();
 
     //! Copy constructor
     structuredMeshIterator(const structuredMeshIterator&);

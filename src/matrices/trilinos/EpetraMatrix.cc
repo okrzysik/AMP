@@ -19,7 +19,7 @@ Matrix::shared_ptr  EpetraMatrix::transpose () const
 }
 
 
-EpetraMatrix::EpetraMatrix ( Epetra_Map &map , Epetra_Map * , int *entities ) 
+EpetraMatrix::EpetraMatrix ( Epetra_Map &map, Epetra_Map *, int *entities ) 
 {
     // if ( colMap )
     //     d_epetraMatrix = new Epetra_FECrsMatrix ( Copy , map , *colMap , entities , false );

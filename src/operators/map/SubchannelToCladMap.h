@@ -39,7 +39,7 @@ public:
     SubchannelToCladMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> &params );
 
     //! Destructor
-    ~SubchannelToCladMap();
+    virtual ~SubchannelToCladMap();
 
     /** \brief   Set a frozen vector for results of the apply operation. 
      * \details  Set a frozen vector for results of the apply operation. 

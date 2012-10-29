@@ -49,7 +49,7 @@ namespace Operator {
           d_InstanceID = d_iInstance_id;
       }
 
-      ~RobinVectorCorrection() { }
+      virtual ~RobinVectorCorrection() { }
 
       /**
         Sets Robin values into the appropriate locations of the output vector (r). 

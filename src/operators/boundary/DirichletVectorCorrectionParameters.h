@@ -13,7 +13,7 @@ namespace Operator {
       DirichletVectorCorrectionParameters(const boost::shared_ptr<AMP::Database> &db)
         : OperatorParameters(db) {  }
 
-      ~DirichletVectorCorrectionParameters() { }
+      virtual ~DirichletVectorCorrectionParameters() { }
 
       //This must be a simple variable not a dual or multivariable
       AMP::LinearAlgebra::Variable::shared_ptr d_variable;

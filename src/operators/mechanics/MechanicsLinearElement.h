@@ -39,7 +39,7 @@ namespace Operator {
       /**
         Destructor.
         */
-      ~MechanicsLinearElement() {  }
+      virtual ~MechanicsLinearElement() {  }
 
       /**
         This function is used by MechanicsLinearFEOperator to pass the address 

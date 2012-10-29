@@ -227,7 +227,7 @@ void STKMesh::initialize()
         neighborNodes[n] = std::vector< stk::mesh::Entity* >(tmpNeighborNodes[n].size());
         int j = 0;
         for (std::set<stk::mesh::EntityKey>::iterator it=tmpNeighborNodes[n].begin();
-             it!=tmpNeighborNodes[n].end(); it++) {
+             it!=tmpNeighborNodes[n].end(); ++it) {
             neighborNodes[n][j++] = d_STKMeshBulk->get_entity(*it);
         }
     }
@@ -248,7 +248,7 @@ void STKMesh::initialize()
         // Split the new elements into the local and ghost lists
         size_t N_local = 0;
         size_t N_ghost = 0;
-        for (std::set<MeshElement>::iterator it2 = element_list.begin(); it2!=element_list.end(); it2++) {
+        for (std::set<MeshElement>::iterator it2 = element_list.begin(); it2!=element_list.end(); ++it2) {
             MeshElementID id = it2->globalID();
             if ( id.is_local() )
                 N_local++;
@@ -261,7 +261,7 @@ void STKMesh::initialize()
         boost::shared_ptr<std::vector<MeshElement> >  ghost_elements( new std::vector<MeshElement>(N_ghost) );
         N_local = 0;
         N_ghost = 0;
-        for (std::set<MeshElement>::iterator it2 = element_list.begin(); it2!=element_list.end(); it2++) {
+        for (std::set<MeshElement>::iterator it2 = element_list.begin(); it2!=element_list.end(); ++it2) {
             MeshElementID id = it2->globalID();
             if ( id.is_local() ) {
                 local_elements->operator[](N_local) = *it2;
@@ -357,7 +357,7 @@ void STKMesh::initialize()
         MeshIterator it = getIterator( type, 0 );
         for (size_t i=0; i<it.size(); i++) {
             std::vector<MeshElement> nodes = it->getElements(Vertex);
-            AMP_ASSERT(nodes.size()>0);
+            AMP_ASSERT(!nodes.empty());
             bool on_boundary = true;
             for (size_t j=0; j<nodes.size(); j++) {
                 if ( !nodes[j].isOnSurface() )

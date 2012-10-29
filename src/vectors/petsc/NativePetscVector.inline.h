@@ -181,21 +181,45 @@ inline void  NativePetscVector::scale(double alpha)
 }
 
 
-inline void  NativePetscVector::add(const VectorOperations &x, const VectorOperations &y)
+// Function to perform  this = alpha x + beta y + gamma this
+inline void NativePetscVector::axpbypcz( double alpha, const VectorOperations &vx, 
+    double beta, const VectorOperations &vy, double gamma )
 {
     resetArray();
-    VecAXPBYPCZ ( d_petscVec , 1. , 1. , 0 ,
-        x.castTo<NativePetscVector> ().getVec() ,
-        y.castTo<NativePetscVector> ().getVec() );
+    Vec x = vx.castTo<NativePetscVector>().getVec();
+    Vec y = vy.castTo<NativePetscVector>().getVec();
+    Vec z = d_petscVec;
+    if ( x!=y && x!=z && y!=z ) {
+        // We can safely perform  z = alpha x + beta y + gamma z
+        VecAXPBYPCZ ( z, alpha, beta, gamma, x, y );
+    } else if ( x!=y && x==z ) {
+        // x==z:  z = (alpha+gamma)*z + beta*y
+        double scale = alpha+gamma;
+        VecAXPBY ( z, beta, scale, y );
+    } else if ( x!=y && y==z ) {
+        // y==z:  z = (beta+gamma)*z + alpha*x
+        double scale = beta+gamma;
+        VecAXPBY ( z, alpha, scale, x );
+    } else if ( x==y && x==z ) {
+        // x==y==z:  z = (alpha+beta+gamma)*z
+        double scale = alpha+beta+gamma;
+        VecScale ( z, scale );
+    } else {
+        AMP_ERROR("Internal error\n");
+    }
+}
+
+
+inline void  NativePetscVector::add(const VectorOperations &x, const VectorOperations &y)
+{
+    axpbypcz( 1.0, x, 1.0, y, 0.0 );
 }
 
 
 inline void  NativePetscVector::subtract(const VectorOperations &x, const VectorOperations &y)
 {
-    resetArray();
-    VecAXPBYPCZ ( d_petscVec , 1. , -1. , 0 ,
-        x.castTo<NativePetscVector> ().getVec() ,
-        y.castTo<NativePetscVector> ().getVec() );
+    axpbypcz( 1.0, x, -1.0, y, 0.0 );
+
 }
 
 
@@ -228,24 +252,20 @@ inline void  NativePetscVector::reciprocal(const VectorOperations &x)
 inline void  NativePetscVector::linearSum(double alpha, const VectorOperations &x,
        double beta, const VectorOperations &y)
 {
-    resetArray();
-    VecAXPBYPCZ ( d_petscVec , alpha , beta , 0. ,
-        x.castTo<NativePetscVector> ().getVec() ,
-        y.castTo<NativePetscVector> ().getVec() );
+    axpbypcz( alpha, x, beta, y, 0.0 );
+
 }
 
 
 inline void  NativePetscVector::axpy(double alpha, const VectorOperations &x, const VectorOperations &y)
 {
-    resetArray();
-    linearSum ( alpha , x , 1. , y );
+    axpbypcz( alpha, x, 1.0, y, 0.0 );
 }
 
 
 inline void  NativePetscVector::axpby(double alpha, double beta, const VectorOperations &x)
 {
-    resetArray();
-    VecAXPBY ( d_petscVec , alpha , beta , x.castTo<NativePetscVector>().getVec() );
+    axpbypcz( alpha, x, beta, *this, 0.0 );
 }
 
 

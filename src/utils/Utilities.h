@@ -7,6 +7,10 @@
 #endif
 
 
+// Include the utility macros
+#include "UtilityMacros.h"
+
+
 #include <string>
 #include <math.h>
 #include <vector>
@@ -49,7 +53,7 @@ template<class T>  inline T type_default_tol() { return pow(std::numeric_limits<
 
 /*!
  * Utilities is a Singleton class containing basic routines for error 
- * reporting, file manipulations, etc.
+ * reporting, file manipulations, etc.  Included are a set of \ref Macros "macros" that are commonly used.
  */
 namespace Utilities
 {
@@ -228,220 +232,65 @@ namespace Utilities
     //! Print AMP Banner
     void printBanner();
 
+
+    //! Triplet version of std::pair
+    template<class A, class B, class C>
+    struct triplet{ 
+        A first; 
+        B second; 
+        C third; 
+        inline triplet() {
+            first = A();
+            second = B();
+            third = C();
+        }
+        inline triplet(A a, B b, C c) {
+            first = a;
+            second = b;
+            third = c;
+        }
+        inline triplet(const triplet& rhs ) {
+            first = rhs.first;
+            second = rhs.second;
+            third = rhs.third;
+        }
+        inline bool operator== (const triplet& rhs ) const {
+            return first==first && second==second && third==third;
+        }
+        inline bool operator!= (const triplet& rhs ) const {
+            return first!=first || second!=second || third!=third;
+        }
+        inline bool operator>= (const triplet& rhs ) const {
+            if ( first < rhs.first )        { return false; }
+            else if ( first > rhs.first )   { return true;  }
+            if ( second < rhs.second )      { return false; }
+            else if ( second > rhs.second ) { return true;  }
+            return third>=third;
+        }
+        inline bool operator> (const triplet& rhs ) const {
+            if ( first < rhs.first )        { return false; }
+            else if ( first > rhs.first )   { return true;  }
+            if ( second < rhs.second )      { return false; }
+            else if ( second > rhs.second ) { return true;  }
+            return third>third;
+        }
+        inline bool operator< (const triplet& rhs ) const {
+            if ( first > rhs.first )        { return false; }
+            else if ( first < rhs.first )   { return true;  }
+            if ( second > rhs.second )      { return false; }
+            else if ( second < rhs.second ) { return true;  }
+            return third<third;
+        }
+        inline bool operator<= (const triplet& rhs ) const {
+            if ( first > rhs.first )        { return false; }
+            else if ( first < rhs.first )   { return true;  }
+            if ( second > rhs.second )      { return false; }
+            else if ( second < rhs.second ) { return true;  }
+            return third<=third;
+        }
+    };
+
 }
-
-
-/*!
- * A statement that does nothing, for insure++ make it something 
- * more complex than a simple C null statement to avoid a warning.
- */
-#ifdef __INSURE__
-#define NULL_STATEMENT if(0) int nullstatement=0
-#else
-#define NULL_STATEMENT
-#endif
-
-/*!
- * A null use of a variable, use to avoid GNU compiler 
- * warnings about unused variables.
- */
-#define NULL_USE(variable) do { \
-       if(0) {char *temp = (char *)&variable; temp++;} \
-    } while (0)
-
-/*!
- * Throw an error exception from within any C++ source code.  The 
- * macro argument may be any standard ostream expression.  The file and
- * line number of the abort are also printed.
- */
-#ifndef LACKS_SSTREAM
-#define AMP_ERROR(X) do {					\
-      std::ostringstream tboxos;					\
-      tboxos << X << std::ends;					\
-      AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);\
-} while (0)
-#else
-#define AMP_ERROR(X) do {					\
-      std::ostrstream tboxos;					\
-      tboxos << X << std::ends;					\
-      AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);\
-} while (0)
-#endif
-
-   /*!
-    * Print a warning without exit.  Print file and line number of the warning.
-    */
-#ifndef LACKS_SSTREAM
-#define AMP_WARNING(X) do {					\
-      std::ostringstream tboxos;					\
-      tboxos << X << std::ends;					\
-      AMP::Logger::getInstance() -> logWarning(tboxos.str(), __FILE__, __LINE__);\
-} while (0)
-#else
-#define AMP_WARNING(X) do {					\
-      std::ostrstream tboxos;					\
-      tboxos << X << std::ends;					\
-      AMP::Logger::getInstance() -> logWarning(tboxos.str(), __FILE__, __LINE__);\
-} while (0)
-#endif
-
-
-/*!
- * Print a debug without exit.  Print file and line number of the debug.
- * \todo 
- * Fix AMP_DEBUG so it uses a consistent stream io with AMP
- */
-#ifndef LACKS_SSTREAM
-#define AMP_DEBUG(X) do {					\
-      std::ostringstream tboxos;					\
-      tboxos << X << std::ends;					\
-      AMP::Logger::getInstance() -> logDebug(tboxos.str(), __FILE__, __LINE__);\
-} while (0)
-#else
-#define AMP_DEBUG(X) do {					\
-      std::ostrstream tboxos;					\
-      tboxos << X << std::ends;					\
-      AMP::Logger::getInstance() -> logDebug(tboxos.str(), __FILE__, __LINE__);\
-} while (0)
-#endif
-
-
-/*! \def AMP_ASSERT
- * \brief Assert error
- * Throw an error exception from within any C++ source code if the
- * given expression is not true.  This is a parallel-friendly version
- * of assert.
- * The file and line number of the abort are also printed.
- * \todo 
- * It would be helpful to add a full stack trace
- */
-/*! \def AMP_INSIST
- * \brief Insist error
- * Throw an error exception from within any C++ source code if the
- * given expression is not true.  This will also print the given message.
- * This is a parallel-friendly version of assert.
- * The file and line number of the abort are also printed.
- * \todo 
- * It would be helpful to add a full stack trace
- */
-#ifdef HAVE_STRINGIZE
-    #ifndef LACKS_SSTREAM
-
-        #define AMP_ASSERT(EXP) do {                                       \
-            if ( !(EXP) ) {                                                 \
-                std::ostringstream tboxos;                                  \
-                tboxos << "Failed assertion: " << #EXP << std::ends;        \
-                AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);    \
-            }                                                               \
-        } while (0)
-        #define AMP_INSIST(EXP,MSG) do {                                   \
-            if ( !(EXP) ) {                                                 \
-                std::ostringstream tboxos;                                  \
-                tboxos << "Failed insist: " << #EXP << std::endl;           \
-                tboxos << "Message: " << MSG << std::ends;                  \
-                AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);    \
-            }                                                               \
-        } while (0)
-    #else
-        #define AMP_ASSERT(EXP) do {                                       \
-            if ( !(EXP) ) {                                                 \
-                std::ostrstream tboxos;                                     \
-                tboxos << "Failed assertion: " << #EXP << std::ends;        \
-                AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);    \
-            }                                                               \
-        } while (0)
-        #define AMP_INSIST(EXP,MSG) do {                                   \
-            if ( !(EXP) ) {                                                 \
-                std::ostrstream tboxos;                                     \
-                tboxos << "Failed insist: " << #EXP << std::endl;           \
-                tboxos << "Message: " << MSG << std::ends;                  \
-                AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);    \
-            }                                                               \
-        } while (0)
-    #endif
-#else
-    #ifndef LACKS_SSTREAM
-        #define AMP_ASSERT(EXP) do {                                       \
-              if ( !(EXP) ) {                                               \
-                 std::ostringstream tboxos;                                 \
-                 tboxos << "Failed assertion: " << std::ends;               \
-                 AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);   \
-              }                                                             \
-        } while (0)
-        #define AMP_INSIST(EXP,MSG) do {                                   \
-              if ( !(EXP) ) {                                               \
-                 std::ostringstream tboxos;                                 \
-                 tboxos << "Failed insist: " << #EXP << std::endl;          \
-                 tboxos << "Message: " << MSG << std::ends;                 \
-                 AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);   \
-              }                                                             \
-        } while (0)
-    #else
-        #define AMP_ASSERT(EXP) do {                                       \
-              if ( !(EXP) ) {                                               \
-                 std::ostrstream tboxos;                                    \
-                 tboxos << "Failed assertion: " << std::ends;               \
-                 AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);   \
-              }                                                             \
-        } while (0)
-        #define AMP_INSIST(EXP,MSG) do {                                   \
-              if ( !(EXP) ) {                                               \
-                 std::ostrstream tboxos;                                    \
-                tboxos << "Failed insist: " << #EXP << std::endl;           \
-                tboxos << "Message: " << MSG << std::ends;                  \
-                 AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);   \
-              }                                                             \
-        } while (0)
-    #endif
-#endif
-
-
-/**
- * Macro for use when assertions are to be included
- * only when debugging.
- */
-#ifdef DEBUG_CHECK_ASSERTIONS
-#define AMP_CHECK_ASSERT(EXP) AMP_ASSERT(EXP)
-#else
-#define AMP_CHECK_ASSERT(EXP) 
-#endif
-
-
-/**
- * Throw an error exception from within any C++ source code.  This is
- * is similar to AMP_ERROR(), but is designed to be invoked after a
- * call to a PETSc library function.  In other words, it acts similarly
- * to the PETSc CHKERRQ(ierr) macro.
- */
-#ifdef HAVE_PETSC
-
-/*
- * In the following, "CHKERRCONTINUE(ierr);" will cause PETSc to print out
- * a stack trace that led to the error; this may be useful for debugging.
- */
- 
-#ifndef LACKS_SSTREAM
-#define PETSC_AMP_ERROR(ierr) do {						\
-      if (ierr) {                                   				\
-         std::ostringstream tboxos;							\
-         AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);	\
-      } 									\
-} while (0)
-#else
-#define PETSC_AMP_ERROR(ierr) do {						\
-      if (ierr) {                                   				\
-         std::ostrstream tboxos;							\
-         CHKERRCONTINUE(ierr); 							\
-         AMP::Utilities::abort(tboxos.str(), __FILE__, __LINE__);	        \
-      } 									\
-} while (0)
-#endif
-#endif
-
-
-//! Get a hash key from the class type (requires the RTTI (Run-time type information) to be available.
-#define TYPE_HASH(X)  AMP::Utilities::hash_char(typeid(X).name())
-
 
 
 // templated quicksort routine
@@ -709,3 +558,5 @@ size_t Utilities::findfirst(const std::vector<T> &x_in, const T &value)
 }
 
 #endif
+
+

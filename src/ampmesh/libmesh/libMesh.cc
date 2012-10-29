@@ -261,7 +261,7 @@ void libMesh::initialize()
     for (i=0; i<neighborNodeIDs.size(); i++) {
         neighborNodes[i] = std::vector< ::Node* >(tmpNeighborNodes[i].size());
         int j = 0;
-        for (std::set<unsigned int>::iterator it=tmpNeighborNodes[i].begin(); it!=tmpNeighborNodes[i].end(); it++) {
+        for (std::set<unsigned int>::iterator it=tmpNeighborNodes[i].begin(); it!=tmpNeighborNodes[i].end(); ++it) {
             neighborNodes[i][j] = d_libMesh->node_ptr(*it);
             j++;
         }
@@ -283,7 +283,7 @@ void libMesh::initialize()
         // Split the new elements into the local and ghost lists
         size_t N_local = 0;
         size_t N_ghost = 0;
-        for (std::set<MeshElement>::iterator it2 = element_list.begin(); it2!=element_list.end(); it2++) {
+        for (std::set<MeshElement>::iterator it2 = element_list.begin(); it2!=element_list.end(); ++it2) {
             MeshElementID id = it2->globalID();
             if ( id.is_local() )
                 N_local++;
@@ -296,7 +296,7 @@ void libMesh::initialize()
         boost::shared_ptr<std::vector<MeshElement> >  ghost_elements( new std::vector<MeshElement>(N_ghost) );
         N_local = 0;
         N_ghost = 0;
-        for (std::set<MeshElement>::iterator it2 = element_list.begin(); it2!=element_list.end(); it2++) {
+        for (std::set<MeshElement>::iterator it2 = element_list.begin(); it2!=element_list.end(); ++it2) {
             MeshElementID id = it2->globalID();
             if ( id.is_local() ) {
                 local_elements->operator[](N_local) = *it2;
@@ -360,28 +360,28 @@ void libMesh::initialize()
     std::set< ::Elem* >::iterator elem_iterator = localBoundaryElements.begin();
     for (size_t i=0; i<localBoundaryElements.size(); i++) {
         (*d_localSurfaceElements[GeomDim])[i] = libMeshElement(PhysicalDim, GeomDim, (void*) *elem_iterator, rank, d_meshID, this );
-        elem_iterator++;
+        ++elem_iterator;
     }
     AMP::Utilities::quicksort(*d_localSurfaceElements[GeomDim]);
     d_ghostSurfaceElements[GeomDim] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(ghostBoundaryElements.size()) );
     elem_iterator = ghostBoundaryElements.begin();
     for (size_t i=0; i<ghostBoundaryElements.size(); i++) {
         (*d_ghostSurfaceElements[GeomDim])[i] = libMeshElement(PhysicalDim, GeomDim, (void*) *elem_iterator, rank, d_meshID, this );
-        elem_iterator++;
+        ++elem_iterator;
     }
     AMP::Utilities::quicksort(*d_ghostSurfaceElements[GeomDim]);
     d_localSurfaceElements[Vertex] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(localBoundaryNodes.size()) );
     std::set< ::Node* >::iterator node_iterator = localBoundaryNodes.begin();
     for (size_t i=0; i<localBoundaryNodes.size(); i++) {
         (*d_localSurfaceElements[Vertex])[i] = libMeshElement(PhysicalDim, Vertex, (void*) *node_iterator, rank, d_meshID, this );
-        node_iterator++;
+        ++node_iterator;
     }
     AMP::Utilities::quicksort(*d_localSurfaceElements[Vertex]);
     d_ghostSurfaceElements[Vertex] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(ghostBoundaryNodes.size()) );
     node_iterator = ghostBoundaryNodes.begin();
     for (size_t i=0; i<ghostBoundaryNodes.size(); i++) {
         (*d_ghostSurfaceElements[Vertex])[i] = libMeshElement(PhysicalDim, Vertex, (void*) *node_iterator, rank, d_meshID, this );
-        node_iterator++;
+        ++node_iterator;
     }
     AMP::Utilities::quicksort(*d_ghostSurfaceElements[Vertex]);
     // Construct the boundary elements for all other types
@@ -393,7 +393,7 @@ void libMesh::initialize()
         MeshIterator it = getIterator( type, 0 );
         for (size_t i=0; i<it.size(); i++) {
             std::vector<MeshElement> nodes = it->getElements(Vertex);
-            AMP_ASSERT(nodes.size()>0);
+            AMP_ASSERT(!nodes.empty());
             bool on_boundary = true;
             for (size_t j=0; j<nodes.size(); j++) {
                 if ( !nodes[j].isOnSurface() )
