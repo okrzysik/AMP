@@ -31,9 +31,29 @@ namespace AMP {
     }
 
     size_t NodeToFaceContactOperator::updateActiveSet() {
-      size_t nSlaveVerticesActivated = 0;
-      size_t nSlaveVerticesDeactivated = 0;
-      return nSlaveVerticesActivated + nSlaveVerticesDeactivated;
+      size_t nInactiveSlaveVerticesActivated = 0;
+      std::vector<AMP::Mesh::MeshElementID>::iterator inactiveSlaveVerticesGlobalIDsIterator,
+        inactiveSlaveVerticesGlobalIDsIterator_begin = d_InactiveSet.begin(),
+        inactiveSlaveVerticesGlobalIDsIterator_end = d_InactiveSet.end();
+      size_t nInactiveSlaveVertices = d_InactiveSet.size();
+      std::vector<double> inactiveSlaveVertexCoord(3);
+      AMP::Mesh::MeshElement inactiveSlaveVertex;
+      std::vector<double> inactiveSlaveVerticesCoord(3*nInactiveSlaveVertices); 
+      std::vector<double>::iterator inactiveSlaveVerticesCoordIterator = inactiveSlaveVerticesCoord.begin();
+      for (inactiveSlaveVerticesGlobalIDsIterator = inactiveSlaveVerticesGlobalIDsIterator_begin; 
+        inactiveSlaveVerticesGlobalIDsIterator != inactiveSlaveVerticesGlobalIDsIterator_end; 
+        ++inactiveSlaveVerticesGlobalIDsIterator) 
+      {
+        inactiveSlaveVertex = d_Mesh->getElement(*inactiveSlaveVerticesGlobalIDsIterator); 
+        inactiveSlaveVertexCoord = inactiveSlaveVertex.coord();
+        std::copy(inactiveSlaveVertexCoord.begin(), inactiveSlaveVertexCoord.end(), inactiveSlaveVerticesCoordIterator);
+        for (size_t i = 0; i < 3; ++i) { ++inactiveSlaveVerticesCoordIterator; }
+      } // end for
+      AMP_ASSERT( inactiveSlaveVerticesCoordIterator == inactiveSlaveVerticesCoord.end() );
+
+      size_t nActiveSlaveVerticesDeactivated = 0;
+
+      return nInactiveSlaveVerticesActivated + nActiveSlaveVerticesDeactivated;
     }
 
     void NodeToFaceContactOperator::reset(const boost::shared_ptr<OperatorParameters> & params) {
