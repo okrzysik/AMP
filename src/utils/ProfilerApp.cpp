@@ -46,6 +46,15 @@ static inline void quicksort2(int n, type_a *arr, type_b *brr);
 #endif
 
 
+// Inline function to get the current time/date string (without the newline character)
+static inline std::string getDateString() {
+    time_t rawtime;
+    time ( &rawtime );
+    std::string tmp(ctime(&rawtime));
+    return tmp.substr(0,tmp.length()-1);
+}
+
+
 /******************************************************************
 * Some inline functions to acquire/release a mutex                *
 ******************************************************************/
@@ -608,9 +617,11 @@ void ProfilerApp::save( const std::string& filename ) {
     }
     // Loop through all of the entries, saving the detailed data and the trace logs
     fprintf(timerFile,"\n\n");
-    fprintf(timerFile,"<N_procs=%i,id=%i>\n",N_procs,rank);
+    fprintf(timerFile,"<N_procs=%i,id=%i",N_procs,rank);
+    if ( store_trace_data )
+        fprintf(timerFile,",trace_file=%s",filename_trace);
+    fprintf(timerFile,",date='%s'>\n",getDateString().c_str());
     get_time(&end_time);
-
     char id_str[16];
     // Loop through the list of timers, storing the most expensive first
     for (int i=N_timers-1; i>=0; i--) {
