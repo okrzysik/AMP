@@ -577,35 +577,23 @@ MACRO ( CONFIGURE_DENDRO )
             FIND_LIBRARY ( DENDRO_OCT_LIB   NAMES Oct    PATHS ${DENDRO_DIRECTORY}/lib  NO_DEFAULT_PATH )
             FIND_LIBRARY ( DENDRO_PAR_LIB   NAMES Par    PATHS ${DENDRO_DIRECTORY}/lib  NO_DEFAULT_PATH )
             FIND_LIBRARY ( DENDRO_POINT_LIB NAMES Point  PATHS ${DENDRO_DIRECTORY}/lib  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( DENDRO_SYS_LIB   NAMES Sys    PATHS ${DENDRO_DIRECTORY}/lib  NO_DEFAULT_PATH )
             FIND_LIBRARY ( DENDRO_TEST_LIB  NAMES Test   PATHS ${DENDRO_DIRECTORY}/lib  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( DENDRO_ODA_LIB   NAMES ODA    PATHS ${DENDRO_DIRECTORY}/lib  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( DENDRO_OMG_LIB   NAMES OMG    PATHS ${DENDRO_DIRECTORY}/lib  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( DENDRO_PC_LIB    NAMES PC     PATHS ${DENDRO_DIRECTORY}/lib  NO_DEFAULT_PATH )
-            IF ( (NOT DENDRO_BIN_LIB) OR (NOT DENDRO_OCT_LIB) OR (NOT DENDRO_PAR_LIB) OR (NOT DENDRO_POINT_LIB) OR 
-                 (NOT DENDRO_SYS_LIB) OR (NOT DENDRO_TEST_LIB) OR (NOT DENDRO_ODA_LIB) OR (NOT DENDRO_OMG_LIB) OR (NOT DENDRO_PC_LIB) )
+            IF ( (NOT DENDRO_BIN_LIB) OR (NOT DENDRO_OCT_LIB) OR (NOT DENDRO_PAR_LIB) OR
+                (NOT DENDRO_POINT_LIB) OR (NOT DENDRO_TEST_LIB) )
                 MESSAGE ( ${DENDRO_BIN_LIB} )
                 MESSAGE ( ${DENDRO_OCT_LIB} )
                 MESSAGE ( ${DENDRO_PAR_LIB} )
                 MESSAGE ( ${DENDRO_POINT_LIB} )
-                MESSAGE ( ${DENDRO_SYS_LIB} )
                 MESSAGE ( ${DENDRO_TEST_LIB} )
-                MESSAGE ( ${DENDRO_ODA_LIB} )
-                MESSAGE ( ${DENDRO_OMG_LIB} )
-                MESSAGE ( ${DENDRO_PC_LIB} )
                 MESSAGE ( FATAL_ERROR "DENDRO libraries not found in ${DENDRO_DIRECTORY}/lib" )
             ENDIF ()
             # Add the libraries in the appropriate order
             SET ( DENDRO_LIBS
-                ${DENDRO_OMG_LIB}
-                ${DENDRO_ODA_LIB}
                 ${DENDRO_OCT_LIB}
                 ${DENDRO_PAR_LIB}
                 ${DENDRO_POINT_LIB}
                 ${DENDRO_TEST_LIB}
-                ${DENDRO_SYS_LIB}
                 ${DENDRO_BIN_LIB}
-                ${DENDRO_PC_LIB}
              )
         ELSE()
             MESSAGE ( FATAL_ERROR "Default search for DENDRO is not supported.  Use -D DENDRO_DIRECTORY=" )
