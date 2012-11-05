@@ -10,8 +10,6 @@
 #include "materials/Material.h"
 #include "materials/Property.h"
 //#include "RobinPhysicsModelParameters.h"
-/* Libmesh files */
-#include "point.h"
 
 namespace AMP {
 namespace Operator {
