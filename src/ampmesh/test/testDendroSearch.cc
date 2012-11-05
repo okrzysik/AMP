@@ -13,8 +13,6 @@
 #include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
 
-#include "externVars.h"
-
 #include "ampmesh/Mesh.h"
 #include "ampmesh/dendro/DendroSearch.h"
 

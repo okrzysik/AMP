@@ -14,8 +14,6 @@
 #include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
 
-#include "externVars.h"
-
 #include "ampmesh/Mesh.h"
 #include "ampmesh/dendro/DendroSearch.h"
 
@@ -32,8 +30,6 @@ double dummyFunction(const std::vector<double> &xyz, const int dof) {
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
   std::string log_file = "output_" + exeName; 
-
-  ot::RegisterEvents();
 
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
