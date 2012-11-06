@@ -748,11 +748,9 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                    xyPos[0] = lateralFaceCentroid[0];
                    xyPos[1] = lateralFaceCentroid[1];
                    std::map<std::vector<double>,double>::iterator gapWidthIt = gapWidthMap.find(xyPos);
-                   double s; // gap width
-                   if (gapWidthIt != gapWidthMap.end())
-                      s = gapWidthIt->second;
-                   else
-                      AMP_ERROR("Gap was not found.");
+                   AMP_INSIST( gapWidthIt != gapWidthMap.end(), "Gap was not found.");
+                   // Josh- plese rename this to something like currentGapWidth because s is too short.
+                   double s = gapWidthIt->second;
 
                    double conductance = 1.0*k_gap/l;
 
@@ -1031,11 +1029,9 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                xyPos[0] = lateralFaceCentroid[0];
                xyPos[1] = lateralFaceCentroid[1];
                std::map<std::vector<double>,double>::iterator gapWidthIt = gapWidthMap.find(xyPos);
-               double s; // gap width
-               if (gapWidthIt != gapWidthMap.end())
-                  s = gapWidthIt->second;
-               else
-                  AMP_ERROR("Gap was not found.");
+               AMP_INSIST( gapWidthIt != gapWidthMap.end(), "Gap was not found.");
+               // Josh- plese rename this to something like currentGapWidth because s is too short.
+               double s = gapWidthIt->second;
     
                // compute element height
                double dz = cell1PlusFaceCentroid[2] - cell1MinusFaceCentroid[2];
