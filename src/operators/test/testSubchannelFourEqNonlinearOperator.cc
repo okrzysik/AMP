@@ -85,6 +85,9 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   subchannelOpParams->d_Mesh = subchannelMesh ;
   subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
   subchannelOpParams->d_dofMap = subchannelDOFManager;
+  subchannelOpParams->clad_x = input_db->getDatabase("CladProperties")->getDoubleArray("x");
+  subchannelOpParams->clad_y = input_db->getDatabase("CladProperties")->getDoubleArray("y");
+  subchannelOpParams->clad_d = input_db->getDatabase("CladProperties")->getDoubleArray("d");
 
   // create nonlinear operator
   boost::shared_ptr<AMP::Operator::SubchannelFourEqNonlinearOperator> subchannelOperator (new AMP::Operator::SubchannelFourEqNonlinearOperator(subchannelOpParams));

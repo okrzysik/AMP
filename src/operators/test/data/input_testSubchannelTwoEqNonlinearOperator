@@ -6,16 +6,16 @@ Mesh {
      dim = 3
      Generator = "cube"
      Size = 1, 1, 9
-     Range = 0.0, 0.0128016, 0.0, 0.0128016, 0.0, 3.81 
+     Range = 0.0, 0.0126, 0.0, 0.0126, 0.0, 3.66 
      x_offset = 0.0
      y_offset = 0.0
      z_offset = 0.0
 }
 
 CladProperties{
-    x = 0.0, 0.0128016, 0.0, 0.0128016
-    y = 0.0, 0.0, 0.0128016, 0.0128016
-    d = 0.0097028, 0.0097028, 0.0097028, 0.0097028
+    x = 0.0, 0.0126, 0.0, 0.0126
+    y = 0.0, 0.0, 0.0126, 0.0126
+    d = 0.0095, 0.0095, 0.0095, 0.0095
 }
 
 
@@ -23,22 +23,24 @@ SubchannelTwoEqNonlinearOperator{
     name = "SubchannelTwoEqNonlinearOperator"
     InputVariable = "flow"
     OutputVariable = "flow"
-    Exit_Pressure = 15.5132e6       // Exit pressure in Pa
-    Inlet_Temperature = 569.26      // Inlet temperature in K
-    Inlet_Mass_Flow_Rate = 0.3522   // Total mass flow rate for all subchannels in kg/s
+    Exit_Pressure = 15.5e6       // Exit pressure in Pa
+    Inlet_Temperature = 559.15      // Inlet temperature in K
+    Inlet_Mass_Flow_Rate = 0.312   // Total mass flow rate for all subchannels in kg/s
     Fission_Heating_Coefficient = 0.0
     Channel_Angle = 0.0             // Channel angle
     Friction_Factor = 0.1           // Friction factor
-    Rod_Power = 66.81e3             // Rod power in W
+    Rod_Power = 66.9e3             // Rod power in W
     Heat_Source_Type = "totalHeatGeneration"
     Heat_Shape = "Sinusoidal"
     LocalModel = "SubchannelPhysicsModel"
-    Friction_Model = "Constant"
-    Surface_Roughness = 0.0015e-3
-    Number_GridSpacers = 9
-    zMin_GridSpacers = 0.0, 0.4233, 0.8467, 1.2700, 1.6933, 2.1167, 2.5400, 2.9633, 3.3867
-    zMax_GridSpacers = 0.4233, 0.8467, 1.2700, 1.6933, 2.1167, 2.5400, 2.9633, 3.3867, 3.8100
-    LossCoefficient_GridSpacers = 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2
+    Friction_Model = "Selander"
+    Surface_Roughness = 0.5e-6
+    Number_GridSpacers = 7
+    zMin_GridSpacers = 0.4225, 0.8800, 1.3375, 1.7950, 2.2525, 2.7100, 3.1675
+    zMax_GridSpacers = 0.4925, 0.9500, 1.4075, 1.8650, 2.3225, 2.7800, 3.2375
+    LossCoefficient_GridSpacers = 0.684, 0.684, 0.684, 0.684, 0.684, 0.684, 0.684
+    Reynolds = 95432.91
+    Prandtl = 1.0
 }
 
 SubchannelPhysicsModel{
@@ -50,5 +52,8 @@ SubchannelPhysicsModel{
 		pressure = 0.5e6
 		temperature = 350.0
 		density = 973.919
+                reynolds = 4.4e5
+                prandtl = 1.0
+                diameter = 0.0095
 	}
 }

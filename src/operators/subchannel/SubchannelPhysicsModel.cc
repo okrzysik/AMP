@@ -107,8 +107,8 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
 					AMP_INSIST(property->in_range(argnames[i], prop_defaults[i]),
 						std::string("Default for argument ")+argnames[i]+std::string(" is out of range"));
 				} else {
-					AMP::pout << "Defaults key ''" << argnames[i] << "'' was not found in input file. ";
-					AMP::pout << "Default value set to argument range minimum: " << prop_defaults[i] << " (SI units)\n";
+					AMP_WARNING("Default value for key ''" + argnames[i] + "'' was not found in SubchannelPhysicsModel database. " +
+					   "Default value set to " << prop_defaults[i]);
 				}
 			}
 			// set the defaults

@@ -18,26 +18,10 @@ namespace Operator {
   {
     public :
 
-      /**
-        Constructor
-        */
-      SubchannelFourEqNonlinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params)
-        : Operator (params)
-      {
-        AMP_INSIST( params->d_db->keyExists("InputVariable"), "Key 'InputVariable' does not exist");
-        std::string inpVar = params->d_db->getString("InputVariable");
-        d_inpVariable.reset(new AMP::LinearAlgebra::Variable(inpVar));
+      //! Constructor
+      SubchannelFourEqNonlinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params);
 
-        AMP_INSIST( params->d_db->keyExists("OutputVariable"), "Key 'OutputVariable' does not exist");
-        std::string outVar = params->d_db->getString("OutputVariable");
-        d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar));
-
-        reset(params);
-      }
-
-      /**
-        Destructor
-        */
+      //! Destructor
       virtual ~SubchannelFourEqNonlinearOperator() { }
 
       /**
@@ -67,15 +51,31 @@ namespace Operator {
       virtual AMP::LinearAlgebra::Vector::shared_ptr subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec);
       virtual AMP::LinearAlgebra::Vector::const_shared_ptr subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec);
 
-      /**
-        Gets parameters from nonlinear operator for use in linear operator
-        */
+      void setVector(AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
+          d_cladTemperature = frozenVec;
+      }
+      
+      //! Gets parameters from nonlinear operator for use in linear operator
       boost::shared_ptr<OperatorParameters> getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
 
-      /**
-        Makes map of lateral gaps to their centroids
-        */
+      //! Get the element physics model
+      boost::shared_ptr<SubchannelPhysicsModel> getSubchannelPhysicsModel() { return d_subchannelPhysicsModel; }
+    
+      //! Get the Inlet Temperature [K]
+      double getInletTemperature() { return d_Tin; }
+
+      //! Get the Outlet Pressure [Pa]
+      double getOutletPressure() { return d_Pout; }
+
+      //! Get the current operator parameters
+      boost::shared_ptr<SubchannelOperatorParameters> getParams() { return d_params; }
+
+      //! Makes map of lateral gaps to their centroids
       std::map<std::vector<double>,AMP::Mesh::MeshElement> getLateralFaces(AMP::Mesh::Mesh::shared_ptr);
+
+      //! Makes map of gap widths to their xy positions
+      std::map<std::vector<double>,double> getGapWidths(AMP::Mesh::Mesh::shared_ptr,
+         const std::vector<double>&, const std::vector<double>&, const std::vector<double>&);
 
       void getAxialFaces(AMP::Mesh::MeshElement,AMP::Mesh::MeshElement&,AMP::Mesh::MeshElement&);
 
@@ -85,42 +85,46 @@ namespace Operator {
 
     protected:
 
+      boost::shared_ptr<SubchannelOperatorParameters> d_params;
+
       boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 
     private :
 
-      /**
-        Function used in reset to get double parameter or use default if missing
-        */
+      bool d_initialized;
+
+      // Function used in reset to get double parameter or use default if missing
       double getDoubleParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, double);
 
-      /**
-        Function used in reset to get integer parameter or use default if missing
-        */
+      // Function used in reset to get integer parameter or use default if missing
       int getIntegerParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, int);
 
-      /**
-        Function used in reset to get double parameter or use default if missing
-        */
+      // Function used in reset to get double parameter or use default if missing
       std::string getStringParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, std::string);
 
       boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
-
       boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
+      boost::shared_ptr<AMP::LinearAlgebra::Vector> d_cladTemperature;
 
       double d_Pout;     // exit pressure [Pa]
       double d_Tin;      // inlet temperature [K]
-      double d_min;      // inlet mass flow rate [kg/s]
-      double d_win;      // inlet mass flow rate [kg/s]
+      double d_mass;     // inlet global mass flow rate [kg/s]
+      double d_win;      // inlet lateral mass flow rate [kg/s]
       double d_gamma;    // fission heating coefficient
       double d_theta;    // channel angle [rad]
-      double d_pitch;    // lattice pitch [m]
-      double d_diameter; // fuel rod diameter [m]
       double d_turbulenceCoef; // proportionality constant relating turbulent momentum to turbulent energy transport
+      double d_reynolds;  // reynolds number
+      double d_prandtl;   // prandtl number
 
       std::string d_frictionModel; // friction model
       double d_friction; // friction factor
       double d_roughness; // surface roughness [m]
+
+      std::vector<double> d_channelDiam;  // Channel hydraulic diameter
+      std::vector<double> d_channelArea;  // Channel flow area
+      std::vector<double> d_rodDiameter;  // Average rod diameter for each subchannel
+      std::vector<double> d_rodFraction;  // Fraction of a rod in each subchannel
+      std::vector<double> d_channelMass;  // Mass flow rate for each subchannel [kg/s]
 
       size_t d_NGrid;                 // number of grid spacers
       std::vector<double> d_zMinGrid; // z min positions of each grid spacer
@@ -133,7 +137,9 @@ namespace Operator {
       std::vector<double> d_QFraction; // fraction of max rod power in each subchannel
 
       std::vector<double> d_x, d_y, d_z;
-      std::vector<bool> d_ownSubchannel; // does this processor own this subchannel (multiple processors may own a subchannel)?
+      std::vector<bool> d_ownSubChannel; // does this processor own this subchannel (multiple processors may own a subchannel)?
+      std::vector< std::vector<AMP::Mesh::MeshElement> >  d_subchannelElem;   // List of elements in each subchannel
+      std::vector< std::vector<AMP::Mesh::MeshElement> >  d_subchannelFace;   // List of z-face elements in each subchannel
       size_t d_numSubchannels; // number of subchannels
 
       double Volume(double,double);              // evaluates specific volume

@@ -17,7 +17,7 @@ namespace Subchannel {
 
 /**
   * \brief Function to get some basic properties for each subchannel based on the mesh
-  * \details  This function returns some basic properties including the hydrolic diameter, subchannel area, etc
+  * \details  This function returns some basic properties including the hydraulic diameter, subchannel area, etc
   *   from the mesh
   * \param[in] subchannel   The subchannel mesh
   * \param[in] clad_x       The x-coordinates of the clad
