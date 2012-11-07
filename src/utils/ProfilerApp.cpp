@@ -59,7 +59,7 @@ static inline std::string getDateString() {
 * Some inline functions to acquire/release a mutex                *
 ******************************************************************/
 #ifdef USE_WINDOWS
-    static inline bool GET_LOCK(HANDLE *lock) {
+    static inline bool GET_LOCK(const HANDLE *lock) {
         int retval = WaitForSingleObject(*lock,INFINITE);
         if ( retval != WAIT_OBJECT_0 ) {
             printf("Error locking mutex\n");
@@ -67,7 +67,7 @@ static inline std::string getDateString() {
         }
 	    return false;
     }
-    static inline bool RELEASE_LOCK(HANDLE *lock) {
+    static inline bool RELEASE_LOCK(const HANDLE *lock) {
         int retval = ReleaseMutex(*lock);
         if ( retval == 0 ) {
             printf("Error unlocking mutex\n");
@@ -76,16 +76,16 @@ static inline std::string getDateString() {
     	return false;
     }
 #else
-    static inline bool GET_LOCK(pthread_mutex_t *lock) {
-        int retval = pthread_mutex_lock(lock);
+    static inline bool GET_LOCK(const pthread_mutex_t *lock) {
+        int retval = pthread_mutex_lock(const_cast<pthread_mutex_t*>(lock));
         if ( retval == -1 ) {
             printf("Error locking mutex\n");
             return true;
         }
 	    return false;
     }
-    static inline bool RELEASE_LOCK(pthread_mutex_t *lock) {
-        int retval = pthread_mutex_unlock(lock);
+    static inline bool RELEASE_LOCK(const pthread_mutex_t *lock) {
+        int retval = pthread_mutex_unlock(const_cast<pthread_mutex_t*>(lock));
         if ( retval == -1 ) {
             printf("Error unlocking mutex\n");
             return true;
@@ -159,7 +159,7 @@ static inline void convert_timer_id( size_t key, char* str ) {
             else
                 str[i] = 0;   // We should never use this character
         }
-        str[N] = 0;            
+        str[N] = 0;
     }
 }
 
@@ -183,6 +183,7 @@ ProfilerApp::ProfilerApp() {
     N_threads = 0;
     N_timers = 0;
     d_level = 0;
+    d_shift = 0.0;
     store_trace_data = false;
 }
 void ProfilerApp::set_store_trace( bool profile ) { 
@@ -233,6 +234,22 @@ ProfilerApp::~ProfilerApp() {
         }
         timer_table[i] = NULL;
     }
+}
+
+
+/***********************************************************************
+* Function to syncronize the timers                                    *
+***********************************************************************/
+void ProfilerApp::syncronize() {
+    GET_LOCK(&lock);
+    AMP::AMP_MPI global_comm(AMP_COMM_WORLD);
+	global_comm.barrier();
+    TIME_TYPE sync_time_local;
+    get_time(&sync_time_local);
+    double current_time = get_diff(construct_time,sync_time_local,frequency);
+    double max_current_time = global_comm.maxReduce(current_time);
+    d_shift = max_current_time - current_time;
+    RELEASE_LOCK(&lock);
 }
 
 
@@ -449,7 +466,7 @@ void ProfilerApp::disable( )
 /***********************************************************************
 * Function to save the profiling info                                  *
 ***********************************************************************/
-void ProfilerApp::save( const std::string& filename ) {
+void ProfilerApp::save( const std::string& filename ) const {
     if ( this->d_level<0 ) {
         printf("Warning: Timers are not enabled, no data will be saved\n");
         return;
@@ -705,15 +722,24 @@ void ProfilerApp::save( const std::string& filename ) {
                 // Save the trace results
                 convert_timer_id(id,id_str);
                 std::string active_list = get_active_list( trace->trace, timer->trace_index, head );
-                fprintf(timerFile,"<trace:id=%s,thread=%i,N=%i,min=%e,max=%e,tot=%e,active=%s>\n",
+                fprintf(timerFile,"<trace:id=%s,thread=%i,N=%lu,min=%e,max=%e,tot=%e,active=%s>\n",
                     id_str,thread_id,trace->N_calls,trace_min_time,trace_max_time,trace_tot_time,active_list.c_str());
                 // Save the detailed trace results (this is a binary file)
                 if ( store_trace_data ) { 
                     convert_timer_id(id,id_str);
-                    fprintf(traceFile,"id=%s,thread=%i,active=%s,N=%i:",id_str,thread_id,active_list.c_str(),trace->N_calls);
-                    fwrite(trace->start_time,sizeof(double),trace->N_calls,traceFile);
-                    fwrite(trace->end_time,sizeof(double),trace->N_calls,traceFile);
+                    size_t N_stored_trace = std::min(trace->N_calls,static_cast<size_t>(MAX_TRACE_TRACE));
+                    fprintf(traceFile,"id=%s,thread=%i,active=%s,N=%lu:",id_str,thread_id,active_list.c_str(),N_stored_trace);
+                    double *start = new double[N_stored_trace];
+                    double *stop = new double[N_stored_trace];
+                    for (size_t i=0; i<N_stored_trace; i++) {
+                        start[i] = trace->start_time[i] + d_shift;
+                        stop[i] = trace->end_time[i] + d_shift;
+                    }
+                    fwrite(start,sizeof(double),N_stored_trace,traceFile);
+                    fwrite(stop,sizeof(double),N_stored_trace,traceFile);
                     fprintf(traceFile,"\n");
+                    delete [] start;
+                    delete [] stop;
                 }
                 // Advance to the next trace
                 trace = trace->next;
@@ -726,8 +752,8 @@ void ProfilerApp::save( const std::string& filename ) {
                     id_str,thread_id,1,time,time,time,active_list.c_str());
                 // Save the detailed trace results (this is a binary file)
                 if ( store_trace_data ) { 
-                    double start_time_trace = time = get_diff(construct_time,timer->start_time,frequency);
-                    double end_time_trace = time = get_diff(construct_time,end_time,frequency);
+                    double start_time_trace = get_diff(construct_time,timer->start_time,frequency) + d_shift;
+                    double end_time_trace = get_diff(construct_time,end_time,frequency) + d_shift;
                     convert_timer_id(id,id_str);
                     fprintf(traceFile,"id=%s,thread=%i,active=%s,N=%i:",id_str,thread_id,active_list.c_str(),1);
                     fwrite(&start_time_trace,sizeof(double),1,traceFile);
