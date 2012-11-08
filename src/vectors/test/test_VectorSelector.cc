@@ -104,7 +104,7 @@ int main ( int argc , char **argv )
 
     #ifdef USE_EXT_TRILINOS
         SelectTester<SMEVFactory>::run_test ( &ut );
-        test_managed_vectors_loop<StridedVectorFactory<SMEVFactory> > ( &ut );
+        testManagedVector<StridedVectorFactory<SMEVFactory> > ( &ut );
     #else
         ut.expected_failure("Compiled without trilinos");
     #endif

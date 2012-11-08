@@ -63,11 +63,11 @@ public:
     {
         PROFILE_START("VerifyGetLeftRightVector");
         global_cached_matrix = FACTORY::getMatrix();
-        test_managed_vectors_loop<AmpInterfaceRightVectorFactory> ( utils );
-        test_managed_vectors_loop<AmpInterfaceLeftVectorFactory> ( utils );
+        testManagedVector<AmpInterfaceRightVectorFactory> ( utils );
+        testManagedVector<AmpInterfaceLeftVectorFactory> ( utils );
         #ifdef USE_EXT_PETSC
-        test_managed_vectors_loop<PETScInterfaceRightVectorFactory> ( utils );
-        test_managed_vectors_loop<PETScInterfaceLeftVectorFactory> ( utils );
+        testManagedVector<PETScInterfaceRightVectorFactory> ( utils );
+        testManagedVector<PETScInterfaceLeftVectorFactory> ( utils );
         #endif
         global_cached_matrix.reset();
         PROFILE_STOP("VerifyGetLeftRightVector");

@@ -51,7 +51,7 @@ public:
 };
 
 
-template <int I>
+template <int I, bool GLOBAL>
 class  SimpleVectorFactory
 {
 public:
@@ -62,7 +62,12 @@ public:
     }
 
     static AMP::LinearAlgebra::Vector::shared_ptr getVector() {
-        return AMP::LinearAlgebra::SimpleVector::create ( I , getVariable() );
+        AMP::LinearAlgebra::Vector::shared_ptr  vec;
+        if ( GLOBAL )
+            vec = AMP::LinearAlgebra::SimpleVector::create ( I, getVariable(), AMP_MPI(AMP_COMM_WORLD) );
+        else
+            vec = AMP::LinearAlgebra::SimpleVector::create ( I, getVariable() );
+        return vec;
     }
 };
 
