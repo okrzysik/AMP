@@ -1,6 +1,6 @@
 #include "vectors/trilinos/NativeThyraVector.h"
 
-#include "Thyra_SpmdVectorBase_decl.hpp"
+#include "Thyra_SpmdVectorBase_def.hpp"
 #include "Thyra_DefaultSpmdVector_def.hpp"
 
 

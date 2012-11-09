@@ -6,8 +6,8 @@
 // Trilinos includes
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
-#include "Thyra_VectorDefaultBase_decl.hpp"
-#include "Thyra_VectorSpaceBase_decl.hpp"
+#include "Thyra_SpmdVectorBase_def.hpp"
+#include "Thyra_DefaultSpmdVector_def.hpp"
 #include "Thyra_EpetraThyraWrappers.hpp"
 
 #ifdef USE_EXT_MPI
