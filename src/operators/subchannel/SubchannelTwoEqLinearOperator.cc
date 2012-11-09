@@ -204,11 +204,15 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
               d_matrix->setValueByGlobalID(dofs[0], dofs[1], -1.0*dhdp(d_Tin,p_in));
             } else {
               // residual at face corresponds to cell below
+              double z_plus = (face->centroid())[2];
               --face;
               d_dofMap->getDOFs( face->globalID(), dofs_minus );
+              double z_minus = (face->centroid())[2];
               ++face;
-              d_matrix->setValueByGlobalID(dofs[0], dofs_minus[0], -1.0);
-              d_matrix->setValueByGlobalID(dofs[0], dofs[0],        1.0);
+              double dz = z_plus - z_minus;
+
+              d_matrix->setValueByGlobalID(dofs[0], dofs_minus[0], -mass/dz);
+              d_matrix->setValueByGlobalID(dofs[0], dofs[0],        mass/dz);
             }
 
             // ======================================================
@@ -300,21 +304,21 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
               double dz = d_z[j]-d_z[j-1];
               double A_j = -1.0*std::pow(mass/A,2)*dvdh_minus - 2.0*g*dz*std::cos(d_theta)*
                 dvdh_minus/std::pow(v_plus+v_minus,2)+
-                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdh_minus + dz/D*dfdh_minus*v_minus);
+                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdh_minus + dz/D*dfdh_minus*(v_plus + v_minus));
               double B_j = -1.0*std::pow(mass/A,2)*dvdp_minus - 2.0*g*dz*std::cos(d_theta)*
                 dvdp_minus/std::pow(v_plus+v_minus,2)+
-                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdp_minus + dz/D*dfdp_minus*v_minus) - 1;
+                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdp_minus + dz/D*dfdp_minus*(v_plus + v_minus)) - 1;
               double C_j = std::pow(mass/A,2)*dvdh_plus - 2.0*g*dz*std::cos(d_theta)*
                 dvdh_plus/std::pow(v_plus+v_minus,2)+
-                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdh_plus + dz/D*dfdh_plus*v_plus);
+                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdh_plus + dz/D*dfdh_plus*(v_plus + v_minus));
               double D_j = std::pow(mass/A,2)*dvdp_plus - 2.0*g*dz*std::cos(d_theta)*
                 dvdp_plus/std::pow(v_plus+v_minus,2)+
-                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdp_plus + dz/D*dfdp_plus*v_plus) + 1;
+                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdp_plus + dz/D*dfdp_plus*(v_plus + v_minus)) + 1;
 
-              d_matrix->setValueByGlobalID(dofs[1] , dofs[0]       , A_j );
-              d_matrix->setValueByGlobalID(dofs[1] , dofs[1]       , B_j );
-              d_matrix->setValueByGlobalID(dofs[1] , dofs_plus[0]  , C_j );
-              d_matrix->setValueByGlobalID(dofs[1] , dofs_plus[1]  , D_j );
+              d_matrix->setValueByGlobalID(dofs[1] , dofs[0]       , A*A_j );
+              d_matrix->setValueByGlobalID(dofs[1] , dofs[1]       , A*B_j );
+              d_matrix->setValueByGlobalID(dofs[1] , dofs_plus[0]  , A*C_j );
+              d_matrix->setValueByGlobalID(dofs[1] , dofs_plus[1]  , A*D_j );
             }
             ++face;
         }
@@ -475,13 +479,8 @@ double SubchannelTwoEqLinearOperator::friction(double h_minus, double p_minus, d
    d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_minus,volumeArgMap_minus); 
    double v_minus = volumeResult_minus[0];
 
-   // evaluate density at cell center
-   std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_avg;
-   volumeArgMap_avg.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_avg)));
-   volumeArgMap_avg.insert(std::make_pair("pressure",new std::vector<double>(1,p_avg)));
-   std::vector<double> volumeResult_avg(1);
-   d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_avg,volumeArgMap_avg);
-   double rho_avg = 1.0/volumeResult_avg[0];
+   double v_avg = 0.5*(v_plus + v_minus);
+   double rho_avg = 1.0/v_avg;
 
    double u_plus  = mass * v_plus  / A; // velocity evaluated at upper face
    double u_minus = mass * v_minus / A; // velocity evaluated at lower face
