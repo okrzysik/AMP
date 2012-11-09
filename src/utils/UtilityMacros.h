@@ -148,7 +148,7 @@
 #define TYPE_HASH(X)  AMP::Utilities::hash_char(typeid(X).name())
 
 
-/*! \def TYPE_HASH(X)
+/*! \def __VA_NARG__(...)
  *  \brief Macros to return the number of arguments in __VA_ARGS__
  *  \details These macros will return the number of arguments in __VA_ARGS__
  */

@@ -5,6 +5,7 @@
 #include "utils/AMP_MPI.h"
 
 #include "test_VectorLoops.h"
+#include "test_Vector.h"
 
 #ifdef USE_EXT_PETSC
     #include "petsc/NativePetscVector.h"
@@ -53,6 +54,12 @@ int main ( int argc , char **argv )
 #endif
 
 #ifdef USE_EXT_TRILINOS
+
+    AMP::pout << "Testing NativeThyraVector" << std::endl;
+    testBasicVector<NativeThyraFactory>( &ut );
+    AMP::pout << std::endl;
+    globalComm.barrier();
+
     AMP::pout << "Testing Iterator" << std::endl;
     VectorIteratorTests<MVFactory1> ( &ut );
     AMP::pout << std::endl;

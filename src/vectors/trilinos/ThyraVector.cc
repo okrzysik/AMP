@@ -13,7 +13,7 @@ namespace LinearAlgebra {
 Vector::const_shared_ptr  ThyraVector::constView ( Vector::const_shared_ptr inVector )
 {
     // Check if we have an exisiting view
-    if ( inVector->isA<ManagedThyraVector> () )
+    if ( boost::dynamic_pointer_cast<const ThyraVector>(inVector)!=NULL )
         return inVector;
     if ( inVector->hasView<ManagedThyraVector> () )
         return inVector->getView<ManagedThyraVector>();
@@ -57,7 +57,7 @@ Vector::const_shared_ptr  ThyraVector::constView ( Vector::const_shared_ptr inVe
 Vector::shared_ptr  ThyraVector::view ( Vector::shared_ptr inVector )
 {
     // Check if we have an exisiting view
-    if ( inVector->isA<ManagedThyraVector> () )
+    if ( boost::dynamic_pointer_cast<ThyraVector>(inVector)!=NULL )
         return inVector;
     if ( inVector->hasView<ManagedThyraVector> () )
         return inVector->getView<ManagedThyraVector>();
@@ -94,11 +94,11 @@ Vector::shared_ptr  ThyraVector::view ( Vector::shared_ptr inVector )
 /****************************************************************
 * Return the thyra vector                                       *
 ****************************************************************/
-Teuchos::RCP<Thyra::VectorSpaceBase<double> > ThyraVector::getVec()
+Teuchos::RCP<Thyra::VectorBase<double> > ThyraVector::getVec()
 {
     return d_thyraVec;
 }
-Teuchos::RCP<const Thyra::VectorSpaceBase<double> >  ThyraVector::getVec() const
+Teuchos::RCP<const Thyra::VectorBase<double> >  ThyraVector::getVec() const
 {
     return d_thyraVec;
 }
