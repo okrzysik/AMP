@@ -252,27 +252,6 @@ inline double NativeThyraVector::dot(const VectorOperations &x) const
 }
 
 
-inline double NativeThyraVector::localL1Norm(void) const
-{
-    AMP_ERROR( "not implemented" );
-    return 0;
-}
-
-
-inline double NativeThyraVector::localL2Norm(void) const
-{
-    AMP_ERROR( "not implemented" );
-    return 0;
-}
-
-
-inline double NativeThyraVector::localMaxNorm(void) const
-{
-    AMP_ERROR( "not implemented" );
-    return 0;
-}
-
-
 inline void  NativeThyraVector::setValuesByLocalID(int num , size_t *indices , const double *vals)
 {
     AMP_ERROR( "not implemented" );
