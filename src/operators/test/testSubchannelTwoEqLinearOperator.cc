@@ -158,204 +158,8 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   // reset the linear operator
   subchannelOperator->reset(subchannelOpParams);
 
-   {//test block #1
-      std::cout<<std::endl<<"Test #1 Computed Jacobian:"<<std::endl;
-      std::vector<size_t> dofs;
-      AMP::Mesh::MeshIterator face = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*1000.0e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 16.4e6);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*900.0e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 16.3e6);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*800.0e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 16.2e6);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*700.0e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 16.1e6);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*300.0e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 13.5e6);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*450.0e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 9.0e6);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*570.0e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 12.0e5);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*230.0e2);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 4.0e6);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*999.9e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 14.0e6);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*235.6e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 12.5e6);
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-    
-      subchannelOperator->setFrozenVector(FrozenVec);
-      subchannelOperator->reset(subchannelOpParams);
-      subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
-    
-      // get the matrix
-      boost::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian = subchannelOperator->getMatrix();
-    
-      double knownJacobian[num_dofs][num_dofs] = {
-         {1,0.000939452905154014,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0.00124759679718839,-1.00000429530722,0.011268692736763,0.999960685635811,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {-1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0.00105568179062782,-1.00000368307659,0.00999584631218802,0.999964874076558,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,-1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0.000913511255920129,-1.00000321012603,0.00899327482841767,0.999968798175212,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,-1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0.000776481818973986,-1.00000269397412,0.00462823638551236,0.999981493118125,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,-1,0,1,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0.000388303980414046,-1.00000155270719,0.00669650537073264,0.999977181456216,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,-1,0,1,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0.000585817765508914,-1.00000199619168,0.00851625738946539,0.999969145416505,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,-1,0,1,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,0.000721218570384414,-1.00000261299038,0.00125280086469404,0.999985692192925,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,-1,0,1,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.000113887289793515,-1.0000013006675,0.0130211335246558,0.999954800323239,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,1,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.00118338425166691,-1.00000410782867,0.00379642355524263,0.999982176930523},
-         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,1,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1}
-      };
-      bool passedJacobianTest = JacobianIsCorrect(testJacobian,knownJacobian);
-      if (passedJacobianTest) ut->passes(exeName+": apply: known Jacobian value test #1");
-      else ut->failure(exeName+": apply: known Jacobian value test #1");
-   }//end of test block #1
-
-   {//test block #2
-      std::cout<<std::endl<<"Test #2 Computed Jacobian:"<<std::endl;
-      std::vector<size_t> dofs;
-      AMP::Mesh::MeshIterator face = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*950.0e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 15.0e6);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*850.0e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 15.1e6);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*700.0e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 15.25e6);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*500.0e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 15.26e6);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*324.6e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 11.0e5);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*457.7e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 12.5e5);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*134.6e2);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 34.5e5);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*457.6e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 12.0e6);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*325.7e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 11.5e6);;
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-      ++face;
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      FrozenVec->setValueByGlobalID(dofs[0],h_scale*898.6e3);
-      FrozenVec->setValueByGlobalID(dofs[1],P_scale* 15.7e6);
-      SolVec->setValueByGlobalID(dofs[0],h_scale*1.0);
-      SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
-    
-      subchannelOperator->setFrozenVector(FrozenVec);
-      subchannelOperator->reset(subchannelOpParams);
-      subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
-    
-      // get the matrix
-      boost::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian = subchannelOperator->getMatrix();
-    
-      double knownJacobian[num_dofs][num_dofs] = {
-         {1,0.00094733031302362,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0.00115214013912312,-1.00000401532523,0.0106360680973219,0.999962385419614,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {-1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0.000978708909950683,-1.00000346121561,0.00903331568143602,0.999968413640661,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,-1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0.000795304332477446,-1.00000278090231,0.00708702135053376,0.999976234623364,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,-1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0.00060005764277089,-1.00000201221291,0.00520094270260578,0.999980754106999,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,-1,0,1,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0.000442342995882102,-1.00000163687363,0.00716016681591477,0.999975697667819,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,-1,0,1,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0.00059706187256616,-1.00000202648853,0.00118533412239022,0.999986316566661,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,-1,0,1,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,9.84847789253265e-05,-1.00000113690299,0.00666789816034634,0.99997734081775,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,-1,0,1,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.000563297800467833,-1.00000191422652,0.00499264551266783,0.999981035371265,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,1,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.000450602583900622,-1.00000171161976,0.0111938850587298,0.9999608026051},
-         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,1,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1}
-      };
-      bool passedJacobianTest = JacobianIsCorrect(testJacobian,knownJacobian);
-      if (passedJacobianTest) ut->passes(exeName+": apply: known Jacobian value test #2");
-      else ut->failure(exeName+": apply: known Jacobian value test #2");
-   }//end of test block #2
-
-   {//test block #3
-      std::cout<<std::endl<<"Test #3 Computed Jacobian:"<<std::endl;
+   {//test block
+      std::cout<<std::endl<<"Test Computed Jacobian:"<<std::endl;
       std::vector<size_t> dofs;
       AMP::Mesh::MeshIterator face = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
       faceDOFManager->getDOFs( face->globalID(), dofs );
@@ -426,31 +230,31 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
       boost::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian = subchannelOperator->getMatrix();
     
       double knownJacobian[num_dofs][num_dofs] = {
-         {1,0.000962166060627425,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0.000853056733520424,-1.00000305938232,0.0114067382625288,0.999959276096689,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {-1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0.00107453717325675,-1.00000383627177,0.00999779153622338,0.99996486724094,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,-1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0.00091397270775785,-1.0000032117476,0.00919870562562558,0.999964753297376,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,-1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0.000802428956144871,-1.00000307466897,0.00580374927940146,0.999979600978116,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,-1,0,1,0,0,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0.00050585549305329,-1.00000177798123,0.00871725609681695,0.999969151111928,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,-1,0,1,0,0,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0.000799562175628259,-1.00000282951468,0.00997834397602954,0.999963938940236,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,-1,0,1,0,0,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,0.000863464422657599,-1.00000312050198,0.000943493036102408,0.999983499948451,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,-1,0,1,0,0,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,8.03714696059628e-05,-1.00000140555716,0.00879232188379425,0.999969023095884,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,1,0,0,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.000767452302123088,-1.00000270387011,0.00567135482253266,0.999979886341977},
-         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,1,0},
-         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1}
+         {0.99999999749821,0.000778407237773775,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+         {-3.35541872265853e-07,-8.78766222791986e-05,3.2990887838029e-07,8.78766284349374e-05,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+         {-0.767213114757281,0,0.767213115083247,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+         {0,0,-3.51799478071037e-07,-8.78765679184489e-05,3.45890251361492e-07,8.78765921713374e-05,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+         {0,0,-0.767213115083247,0,0.767213116091066,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+         {0,0,0,0,-3.12341330405279e-07,-8.78767302051646e-05,3.15095630760153e-07,8.78765973055314e-05,0,0,0,0,0,0,0,0,0,0,0,0},
+         {0,0,0,0,-0.767213115515851,0,0.767213114998425,0,0,0,0,0,0,0,0,0,0,0,0,0},
+         {0,0,0,0,0,0,-2.96651446897112e-07,-8.78767082179109e-05,1.91141714652964e-07,8.78771187267925e-05,0,0,0,0,0,0,0,0,0,0},
+         {0,0,0,0,0,0,-0.767213114998425,0,0.767213113877773,0,0,0,0,0,0,0,0,0,0,0},
+         {0,0,0,0,0,0,0,0,-1.91535569085153e-07,-8.7877166661357e-05,2.91551133926647e-07,8.78767591853259e-05,0,0,0,0,0,0,0,0},
+         {0,0,0,0,0,0,0,0,-0.767213116382785,0,0.767213115308738,0,0,0,0,0,0,0,0,0},
+         {0,0,0,0,0,0,0,0,0,0,-2.75318671573501e-07,-8.78768536463993e-05,3.41860441331691e-07,8.787656753596e-05,0,0,0,0,0,0},
+         {0,0,0,0,0,0,0,0,0,0,-0.767213116008937,0,0.767213114510477,0,0,0,0,0,0,0},
+         {0,0,0,0,0,0,0,0,0,0,0,0,-3.25732837135205e-07,-8.78766789006946e-05,1.85314096485698e-08,8.78772557339642e-05,0,0,0,0},
+         {0,0,0,0,0,0,0,0,0,0,0,0,-0.767213114510477,0,0.767213005345743,0,0,0,0,0},
+         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,-4.64429155390083e-08,-8.7877285625751e-05,2.86792534131204e-07,8.78767567742423e-05,0,0},
+         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,-0.767213083436951,0,0.767213116597182,0,0,0},
+         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-3.35566038867217e-07,-8.78766570500576e-05,1.54853676092429e-07,8.78772425610155e-05},
+         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-0.767213116597182,0,0.767213114375646,0},
+         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.999999998997306}
       };
       bool passedJacobianTest = JacobianIsCorrect(testJacobian,knownJacobian);
-      if (passedJacobianTest) ut->passes(exeName+": apply: known Jacobian value test #3");
-      else ut->failure(exeName+": apply: known Jacobian value test #3");
-   }//end of test block #3
+      if (passedJacobianTest) ut->passes(exeName+": apply: known Jacobian value test");
+      else ut->failure(exeName+": apply: known Jacobian value test");
+   }//end of test block
 }
 
 int main(int argc, char *argv[])
