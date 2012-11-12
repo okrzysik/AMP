@@ -1,4 +1,6 @@
 #include "test_Vector.h"
+#include "discretization/DOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 #include "vectors/trilinos/ManagedThyraVector.h"
 #include "vectors/trilinos/NativeThyraVector.h"
 #include "utils/AMP_MPI.h"
@@ -56,6 +58,27 @@ public:
         boost::shared_ptr<AMP::LinearAlgebra::NativeThyraVector> vec( 
             new AMP::LinearAlgebra::NativeThyraVector( params ) );
         return vec;
+    }
+};
+
+
+template <typename FACTORY>
+class  ManagedThyraFactory
+{
+public:
+    typedef AMP::LinearAlgebra::ThyraVector                  vector;
+
+    static AMP::LinearAlgebra::Variable::shared_ptr  getVariable() {
+        return AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "managed_thyra" ) );
+    }
+
+    static AMP::LinearAlgebra::Vector::shared_ptr getVector() {
+        // Create an arbitrary vector
+        AMP::LinearAlgebra::Vector::shared_ptr vec1 = FACTORY::getVector();
+        // Create the managed vector
+        AMP::LinearAlgebra::Vector::shared_ptr vec2 = AMP::LinearAlgebra::ThyraVector::view(vec1);
+        vec2->setVariable( getVariable() );
+        return vec2;
     }
 };
 

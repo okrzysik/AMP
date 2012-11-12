@@ -10,6 +10,10 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
+//! ManagedThyraVectorParameters 
+typedef ManagedVectorParameters ManagedThyraVectorParameters;
+
+
 /** \class ManagedThyraVector
   * \brief  Vector capable of returning an Epetra_Vector from a ManagedVector
   * \details  One popular package of numerical algorithms is Trilinos.  Many

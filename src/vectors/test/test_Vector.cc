@@ -60,6 +60,11 @@ int main ( int argc , char **argv )
     AMP::pout << std::endl;
     globalComm.barrier();
 
+    AMP::pout << "Testing ManagedThyraVector" << std::endl;
+    testBasicVector<ManagedThyraFactory<SimpleVectorFactory<45,true> > >( &ut );
+    AMP::pout << std::endl;
+    globalComm.barrier();
+
     AMP::pout << "Testing Iterator" << std::endl;
     VectorIteratorTests<MVFactory1> ( &ut );
     AMP::pout << std::endl;

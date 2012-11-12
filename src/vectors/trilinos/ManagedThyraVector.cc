@@ -1,5 +1,8 @@
 #include "vectors/trilinos/ManagedThyraVector.h"
 #include "vectors/SimpleVector.h"
+#include "vectors/MultiVector.h"
+
+#include "vectors/trilinos/ThyraVectorWrapper.h"
 
 
 namespace AMP {
@@ -13,17 +16,19 @@ namespace LinearAlgebra {
 ManagedThyraVector::ManagedThyraVector( VectorParameters::shared_ptr  params ):
     ManagedVector( params )
 {
-    AMP_ERROR("Not implimented yet");
+    Vector::shared_ptr vec = boost::dynamic_pointer_cast<Vector>( d_Engine );
+    d_thyraVec = Teuchos::RCP<Thyra::VectorBase<double> >( new ThyraVectorWrapper(vec) );
 }
 ManagedThyraVector::ManagedThyraVector( Vector::shared_ptr  alias ):
     ManagedVector( alias )
 {
-    AMP_ERROR("Not implimented yet");
+    d_thyraVec = Teuchos::RCP<Thyra::VectorBase<double> >( new ThyraVectorWrapper(alias) );
 }
 ManagedVector* ManagedThyraVector::getNewRawPtr () const
 { 
     return new ManagedThyraVector( boost::dynamic_pointer_cast<VectorParameters>( d_pParameters ) ); 
 }
+
 
 /****************************************************************
 * Destructor                                                    *
@@ -49,17 +54,14 @@ std::string ManagedThyraVector::ManagedThyraVector::type() const
 ****************************************************************/
 Vector::shared_ptr  ManagedThyraVector::cloneVector ( const Variable::shared_ptr var ) const
 {
-    /*boost::shared_ptr<ManagedVectorParameters>  p ( new ManagedVectorParameters () );
-    p->d_Buffer = VectorEngine::BufferPtr ( new VectorEngine::Buffer ( d_vBuffer->size() ) );
+    boost::shared_ptr<ManagedThyraVectorParameters>  p ( new ManagedThyraVectorParameters() );
     p->d_Engine = d_pParameters->d_Engine->cloneEngine( p->d_Buffer );
     p->d_CommList = getCommunicationList();
     p->d_DOFManager = getDOFManager();
     p->d_CloneEngine = false;
-    Vector::shared_ptr retVal = Vector::shared_ptr ( new ManagedEpetraVector ( boost::dynamic_pointer_cast<VectorParameters> ( p ) ) );
+    Vector::shared_ptr retVal = Vector::shared_ptr( new ManagedThyraVector( p ) );
     retVal->setVariable ( var );
-    return retVal;*/
-    AMP_ERROR("Not implimented yet");
-    return Vector::shared_ptr();
+    return retVal;
 }
 
 
@@ -68,7 +70,8 @@ Vector::shared_ptr  ManagedThyraVector::cloneVector ( const Variable::shared_ptr
 ****************************************************************/
 void ManagedThyraVector::copyVector(const Vector::const_shared_ptr &vec)
 {
-    AMP_ERROR("Not implimented yet");
+    Vector::shared_ptr engineVec = boost::dynamic_pointer_cast<Vector>( d_Engine );
+    engineVec->copyVector( vec );
 }
 
 
