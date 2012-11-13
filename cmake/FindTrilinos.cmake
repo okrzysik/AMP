@@ -90,16 +90,16 @@ FUNCTION ( TRILINOS_SET_LIBRARIES )
         MESSAGE ( FATAL_ERROR "Trilinos libraries not found in ${TRILINOS_DIRECTORY}/lib" )
     ELSE()
         SET ( TRILINOS_MISC_LIBS
-        ${TRILINOS_TRIUTILIT_LIB}
-        ${TRILINOS_AZTECOO_LIB}
-        ${TRILINOS_GALERI_LIB}
-        ${TRILINOS_ML_LIB}
-        ${TRILINOS_IFPACK_LIB}
-        ${TRILINOS_ZOLTAN_LIB}
-        ${TRILINOS_AMESOS_LIB}
-        ${TRILINOS_LOCA_LIB}
-        ${TRILINOS_TEUCHOS_LIB}
-        ${TRILINOS_MOERTEL_LIB}
+            ${TRILINOS_ML_LIB}
+            ${TRILINOS_TRIUTILIT_LIB}
+            ${TRILINOS_AZTECOO_LIB}
+            ${TRILINOS_GALERI_LIB}
+            ${TRILINOS_IFPACK_LIB}
+            ${TRILINOS_ZOLTAN_LIB}
+            ${TRILINOS_AMESOS_LIB}
+            ${TRILINOS_LOCA_LIB}
+            ${TRILINOS_TEUCHOS_LIB}
+            ${TRILINOS_MOERTEL_LIB}
         )
     ENDIF()
     # Get all the libraries
