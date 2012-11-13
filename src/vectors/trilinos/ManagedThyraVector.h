@@ -28,7 +28,7 @@ typedef ManagedVectorParameters ManagedThyraVectorParameters;
   *
   * \see EpetraVector
   */
-class ManagedThyraVector : public ManagedVector, ThyraVector
+class ManagedThyraVector : public ManagedVector, public ThyraVector
 {
 public:
 

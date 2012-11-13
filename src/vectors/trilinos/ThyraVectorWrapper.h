@@ -10,6 +10,7 @@
 #include "Thyra_VectorBase.hpp"
 #include "Teuchos_ArrayViewDecl.hpp"
 #include "RTOpPack_RTOpT_decl.hpp"
+#include <Teuchos_Comm.hpp>
 
 
 namespace AMP {
@@ -30,6 +31,12 @@ public:
 
     //! Destructor
     virtual ~ThyraVectorWrapper();
+
+    //! Get the underlying AMP vector
+    Vector::shared_ptr getVec() { return d_vec; }
+
+    //! Get the underlying AMP vector
+    Vector::const_shared_ptr getVec() const { return d_vec; }
 
     // Functions derived from Thyra::LinearOpBase
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<double> > range() const;
@@ -85,11 +92,16 @@ protected:
     virtual void commitNonconstDetachedVectorViewImpl(RTOpPack::SubVectorView<double> *sub_vec);
     virtual void setSubVectorImpl(const RTOpPack::SparseSubVectorT<double> &sub_vec);
 
+    // Internal data
+    AMP::LinearAlgebra::Vector::shared_ptr d_vec;
+
+private:
+
     // Private constructor
     ThyraVectorWrapper() {}
 
-    // Internal data
-    AMP::LinearAlgebra::Vector::shared_ptr d_vec;
+    // Comm
+    Teuchos::Comm<RTOpPack::index_type> *d_comm;
 
 };
 
