@@ -633,7 +633,6 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
             AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), 
             AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), 1);
         AMP::Mesh::MeshIterator face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
-        AMP::Mesh::MeshIterator end_face = face.end();
         std::vector<size_t> dofs;
         std::vector<size_t> scalarDofs;
         const double h_scale = 1.0/AMP::Operator::Subchannel::scaleEnthalpy;    // Scale to change the input vector back to correct units

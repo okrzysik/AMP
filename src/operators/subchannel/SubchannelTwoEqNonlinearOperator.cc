@@ -63,8 +63,8 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
         AMP_WARNING("Field 'Rod_Diameter' is obsolete and should be removed from database");
     if ( (myparams->d_db)->keyExists("Channel_Diameter") )
         AMP_WARNING("Field 'Channel_Diameter' is obsolete and should be removed from database");
-    if ( (myparams->d_db)->keyExists("attice_Pitch") )
-        AMP_WARNING("Field 'attice_Pitch' is obsolete and should be removed from database");
+    if ( (myparams->d_db)->keyExists("Lattice_Pitch") )
+        AMP_WARNING("Field 'Lattice_Pitch' is obsolete and should be removed from database");
     if ( (myparams->d_db)->keyExists("ChannelFractions") )
         AMP_WARNING("Field 'ChannelFractions' is obsolete and should be removed from database");
     if ( (myparams->d_db)->keyExists("Mass_Flow_Rate") )
@@ -244,13 +244,16 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
             } else {
               // residual at face corresponds to cell below
               dof_manager->getDOFs( face->globalID(), dofs );
-              double h_plus   = h_scale*inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
+              double h_plus = h_scale*inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
+              double z_plus = (face->centroid())[2];
               --face;
               dof_manager->getDOFs( face->globalID(), dofs );
-              double h_minus  = h_scale*inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
+              double h_minus = h_scale*inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
+              double z_minus = (face->centroid())[2];
               ++face;
+              double dz = z_plus - z_minus;
 
-              R_h = h_plus - h_minus - dh[j-2];
+              R_h = mass/dz*(h_plus - h_minus - dh[j-2]);
             }
 
             // ======================================================
@@ -385,10 +388,10 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
 
               // evaluate residual: axial momentum equation
               double dz = d_z[j]-d_z[j-1];
-              R_p = (mass/A)*(u_plus - u_minus)
-                + g * dz * rho_avg * std::cos(d_theta)
-                + (1.0/2.0)*(dz * fric/D + K)* std::abs(mass/(A*rho_avg))*(mass/A)
-                + p_plus - p_minus;
+              R_p = mass*(u_plus - u_minus)
+                + g * A * dz * rho_avg * std::cos(d_theta)
+                + 0.5*(dz * fric/D + K)* std::abs(mass/(A*rho_avg))*mass
+                + A*(p_plus - p_minus);
             }
 
             // put residual value in residual vector
@@ -440,7 +443,7 @@ double SubchannelTwoEqNonlinearOperator::getDoubleParameter(
     if (keyExists) {
        return (myparams->d_db)->getDouble(paramString);
     } else {
-        AMP_WARNING("Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n");
+        AMP_WARNING("Key '" + paramString + "' was not provided. Using default value: " << defaultValue << "\n");
         return defaultValue;
     }
 }
@@ -453,7 +456,7 @@ int SubchannelTwoEqNonlinearOperator::getIntegerParameter(
     if (keyExists) {
        return (myparams->d_db)->getInteger(paramString);
     } else {
-       AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
+       AMP_WARNING("Key '" + paramString + "' was not provided. Using default value: " << defaultValue << "\n");
        return defaultValue;
     }
 }
@@ -466,7 +469,7 @@ std::string SubchannelTwoEqNonlinearOperator::getStringParameter(
     if (keyExists) {
        return (myparams->d_db)->getString(paramString);
     } else {
-       AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
+       AMP_WARNING("Key '" + paramString + "' was not provided. Using default value: " << defaultValue << "\n");
        return defaultValue;
     }
 }

@@ -36,12 +36,11 @@ void getSubchannelProperties( AMP::Mesh::Mesh::shared_ptr subchannel, const std:
     perimeter = std::vector<double>(N_subchannels,0.0);
     rod_diameter = std::vector<double>(N_subchannels,0.0);
     channel_fraction = std::vector<double>(N_subchannels,0.0);
-    // Get the area and perimeter of the subchannel without the clad
+    // Get the area of the subchannel without the clad
     for (size_t i=0; i<N_subchannels; i++) {
         size_t ix = i%(x.size()-1);
         size_t iy = i/(x.size()-1);
         area[i] = (x[ix+1]-x[ix])*(y[iy+1]-y[iy]);
-        perimeter[i] = 2*(x[ix+1]-x[ix]) + 2*(y[iy+1]-y[iy]);
     }
     // Add the area and perimeter corrections of the clad (assuming no clads overlap)
     const double TOL=1e-12;
@@ -56,7 +55,7 @@ void getSubchannelProperties( AMP::Mesh::Mesh::shared_ptr subchannel, const std:
         if ( fabs(x[index_x]-xc)<=TOL && fabs(y[index_y]-yc)<=TOL ) {
             // The clad is located at the subchannel boundaries
             double dA = 0.25*pi*0.25*dc*dc;
-            double dP = (1.0-0.25*pi)*dc;
+            double dP = 0.25*pi*dc;
             size_t i[4];
             for (int j=0; j<4; j++)
                 i[j] = static_cast<size_t>(-1);
@@ -72,7 +71,7 @@ void getSubchannelProperties( AMP::Mesh::Mesh::shared_ptr subchannel, const std:
                 if ( i[j]==static_cast<size_t>(-1) )
                     continue;
                 area[i[j]] -= dA;
-                perimeter[i[j]] -= dP;
+                perimeter[i[j]] += dP;
                 double R = 1.0/(channel_fraction[i[j]]+1.0);
                 channel_fraction[i[j]] += 0.25;
                 rod_diameter[i[j]] = (1.0-R)*rod_diameter[i[j]] + R*dc;

@@ -19,7 +19,7 @@ using namespace AMP::unit_test;
 
 #ifdef USE_EXT_PETSC
 template <class FACTORY>
-void  test_petsc_bottom ( AMP::UnitTest *ut )
+void  testPetscVector( AMP::UnitTest *ut )
 {
     InstantiatePetscVectors<FACTORY>::run_test( ut );
     DuplicatePetscVector<FACTORY>::run_test( ut );
@@ -52,17 +52,8 @@ void  test_petsc_bottom ( AMP::UnitTest *ut )
 
 
 template <class FACTORY>
-void test_managed_vectors_bottom ( AMP::UnitTest *ut )
+void testBasicVector( AMP::UnitTest *ut )
 {
-  #ifdef USE_EXT_PETSC
-    DeepCloneOfView<FACTORY,AMP::LinearAlgebra::PetscVector>( ut );
-    Bug_491<FACTORY>( ut );
-  #endif
-  #ifdef USE_EXT_SUNDIALS
-    DeepCloneOfView<FACTORY,AMP::LinearAlgebra::SundialsVector>( ut );
-  #endif
-    VectorIteratorLengthTest<FACTORY>( ut );
-    Bug_728<FACTORY>( ut );
     InstantiateVector<FACTORY>( ut );
     SetToScalarVector<FACTORY>( ut );
     SetRandomValuesVector<FACTORY>::run_test( ut );
@@ -85,13 +76,22 @@ void test_managed_vectors_bottom ( AMP::UnitTest *ut )
     VerifyVectorMin<FACTORY>( ut );
     VerifyVectorMax<FACTORY>( ut );
     VerifyVectorMaxMin<FACTORY>( ut );
+    #ifdef USE_EXT_PETSC
+        DeepCloneOfView<FACTORY,AMP::LinearAlgebra::PetscVector>( ut );
+        Bug_491<FACTORY>( ut );
+    #endif
+    #ifdef USE_EXT_SUNDIALS
+        DeepCloneOfView<FACTORY,AMP::LinearAlgebra::SundialsVector>( ut );
+    #endif
+    VectorIteratorLengthTest<FACTORY>( ut );
+    Bug_728<FACTORY>( ut );
 //    VectorIteratorTests<FACTORY>( ut );
 }
 
 
 #ifdef USE_EXT_SUNDIALS
 template <class FACTORY>
-void test_sundials_bottom ( AMP::UnitTest *ut )
+void testSundialsVector( AMP::UnitTest *ut )
 {
     CloneSundialsVector<FACTORY>::run_test( ut );
     LinearSumSundialsVector<FACTORY>::run_test( ut );
@@ -111,52 +111,26 @@ void test_sundials_bottom ( AMP::UnitTest *ut )
 
 
 template <class FACTORY>
-void test_managed_vectors_loop ( AMP::UnitTest *ut )
+void testManagedVector( AMP::UnitTest *ut )
 {
-  test_managed_vectors_bottom<FACTORY> ( ut );
+  testBasicVector<FACTORY> ( ut );
 
   #ifdef USE_EXT_PETSC
     typedef SimplePetscVectorFactory<FACTORY>   PETSC_FACTORY;
-    test_petsc_bottom<PetscViewFactory<PETSC_FACTORY> > ( ut );
-    test_petsc_bottom<PetscCloneFactory<PetscViewFactory<PETSC_FACTORY> > > ( ut );
+    testPetscVector<PetscViewFactory<PETSC_FACTORY> > ( ut );
+    testPetscVector<PetscCloneFactory<PetscViewFactory<PETSC_FACTORY> > > ( ut );
   #endif
 
   #ifdef USE_EXT_SUNDIALS
-    test_managed_vectors_bottom<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> >( ut );
-    test_managed_vectors_bottom<CloneFactory<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> > > ( ut );
-    test_sundials_bottom<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> >( ut );
-    test_sundials_bottom<CloneFactory<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> > > ( ut );
+    testBasicVector<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> >( ut );
+    testBasicVector<CloneFactory<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> > > ( ut );
+    testSundialsVector<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> >( ut );
+    testSundialsVector<CloneFactory<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> > > ( ut );
   #endif
 
 }
 
 
-template <int I>
-void testSimpleVector ( AMP::UnitTest *ut )
-{
-    InstantiateVector<SimpleVectorFactory<I> >( ut );
-    SetToScalarVector<SimpleVectorFactory<I> >( ut );
-    CloneVector<SimpleVectorFactory<I> >( ut );
-    ScaleVector<SimpleVectorFactory<I> >( ut );
-    AddVector<SimpleVectorFactory<I> >( ut );
-    SubtractVector<SimpleVectorFactory<I> >( ut );
-    MultiplyVector<SimpleVectorFactory<I> >( ut );
-    DivideVector<SimpleVectorFactory<I> >( ut );
-    ReciprocalVector<SimpleVectorFactory<I> >( ut );
-    LinearSumVector<SimpleVectorFactory<I> >::run_test( ut );
-    AxpyVector<SimpleVectorFactory<I> >::run_test( ut );
-    AxpbyVector<SimpleVectorFactory<I> >::run_test( ut );
-    CopyVector<SimpleVectorFactory<I> >::run_test( ut );
-    VectorIteratorTests<SimpleVectorFactory<I> >( ut );
-    L1NormVector<SimpleVectorFactory<I> >( ut );
-    L2NormVector<SimpleVectorFactory<I> >( ut );
-    DotProductVector<SimpleVectorFactory<I> >( ut );
-    AbsVector<SimpleVectorFactory<I> >( ut );
-}
-
-
-
-template <int I>
 void testNullVector ( AMP::UnitTest *ut )
 {
     InstantiateVector<NullVectorFactory>( ut );

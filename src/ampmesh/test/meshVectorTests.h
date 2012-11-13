@@ -110,10 +110,10 @@ void VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh
         if ( gcw==0 ) {
             // Only run the managed vector tests 
             // We need to check each test to see if it is valid for gcw==0
-            test_managed_vectors_loop< MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,0,SPLIT> > ( utils );
+            testManagedVector< MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,0,SPLIT> > ( utils );
             test_parallel_vectors_loop<MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,0,SPLIT> > ( utils );
         } else if ( gcw==1 ) {
-            test_managed_vectors_loop< MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,1,SPLIT> > ( utils );
+            testManagedVector< MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,1,SPLIT> > ( utils );
             test_parallel_vectors_loop<MeshVectorFactory<DOF_PER_NODE,AMP::Mesh::Vertex,1,SPLIT> > ( utils );
         } else {
             AMP_ERROR("Not finished");

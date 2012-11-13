@@ -14,17 +14,6 @@ namespace LinearAlgebra {
   {
   }
 
-  inline
-  size_t  NativeVector::numberOfDataBlocks () const 
-  { 
-    return 1; 
-  }
-
-  inline
-  size_t  NativeVector::sizeOfDataBlock ( size_t i ) const 
-  { 
-    return i?0:getLocalSize(); 
-  }
 
 }
 }

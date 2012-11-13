@@ -100,13 +100,37 @@
     global_profiler.enable(__VA_ARGS__)
 
 
-/*! \def PROFILE_DISABLE
+/*! \def PROFILE_DISABLE()
  *  \brief Disable the timers
  *  \details This will disable the timers.
  *      See  \ref AMP::ProfilerApp "ProfilerApp" for more info.
  */
 #define PROFILE_DISABLE() \
     global_profiler.disable()
+
+
+/*! \def PROFILE_ENABLE_TRACE()
+ *  \brief Enable the trace level timers
+ *  \details This will enable the trace capabilites within the timers.
+ *      It does not affect the which timers are enabled or disabled.
+ *      By default trace cabailities are disabled and may affect the
+ *      performance if enabled.
+ *      See  \ref AMP::ProfilerApp "ProfilerApp" for more info.
+ */
+#define PROFILE_ENABLE_TRACE() \
+    global_profiler.set_store_trace(true)
+
+
+/*! \def PROFILE_DISABLE_TRACE()
+ *  \brief Disable the trace level timers
+ *  \details This will disable the trace capabilites within the timers.
+ *      It does not affect the which timers are enabled or disabled.
+ *      By default trace cabailities are disabled and may affect the
+ *      performance if enabled.
+ *      See  \ref AMP::ProfilerApp "ProfilerApp" for more info.
+ */
+#define PROFILE_DISABLE_TRACE() \
+    global_profiler.set_store_trace(false)
 
 
 /*! @} */

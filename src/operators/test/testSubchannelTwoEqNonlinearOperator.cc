@@ -88,177 +88,6 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
 
   const double h_scale = AMP::Operator::Subchannel::scaleEnthalpy;
   const double P_scale = AMP::Operator::Subchannel::scalePressure;
-  {
-    // Test apply with known residual evaluation
-    face = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*1000.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*16.4e6 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*900.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*16.3e6 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*800.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*16.2e6 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*700.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*16.1e6 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*300.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*13.5e6 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*450.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*9.0e6 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*570.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*12.0e5 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*230.0e2 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*4.0e6 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*999.9e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*14.0e6 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*235.6e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*12.5e6 );
-
-    subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
-    bool passedKnownTest = true;
-    double known[20] = {
-       -316282.816245409,
-       -49816.4072925864,
-       -105719.954578781,
-       -50981.1590877952,
-       -116469.952796604,
-       -52019.8509439426,
-       -125233.43163654,
-       -2555060.31658177,
-       -430953.386215321,
-       -4454165.84966422,
-       117060.094406793,
-       -7752956.92558845,
-       89046.6137846786,
-       2843912.28207917,
-       -572233.43163654,
-       10049463.6715359,
-       960430.047203396,
-       -1455636.07309586,
-       -770019.954578781,
-       -3013200
-    };
-    face     = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
-    int i=0;
-    for( ; face != end_face; ++face,++i){
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      double h_val = ResVec->getValueByGlobalID(dofs[0])/h_scale;
-      double p_val = ResVec->getValueByGlobalID(dofs[1])/P_scale;
-      if (!AMP::Utilities::approx_equal(h_val,known[2*i],0.01)){
-         passedKnownTest = false;
-         AMP::pout<<"Calculated: "<<h_val<<", Known: "<<known[2*i]<<"\n";
-      }
-      if (!AMP::Utilities::approx_equal(p_val,known[2*i+1],0.01)){
-         passedKnownTest = false;
-         AMP::pout<<"Calculated: "<<p_val<<", Known: "<<known[2*i+1]<<"\n";
-      }
-    }
-    if (passedKnownTest) ut->passes(exeName+": known value test #1");
-    else ut->failure(exeName+": known residual test #1");
-  }
-
-  {
-    // Test apply with known residual evaluation
-    face = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*950.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*15.0e6 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*850.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*15.1e6 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*700.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*15.25e6 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*500.0e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*15.26e6 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*324.6e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*11.0e5 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*457.7e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*12.5e5 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*134.6e2 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*34.5e5 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*457.6e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*12.0e6 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*325.7e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*11.5e6 );
-    ++face;
-    faceDOFManager->getDOFs( face->globalID(), dofs );
-    SolVec->setValueByGlobalID(dofs[0], h_scale*898.6e3 );
-    SolVec->setValueByGlobalID(dofs[1], P_scale*15.7e6 );
-
-    subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
-    bool passedKnownTest = true;
-    double known[20] = {
-       -367603.556722071,
-       149631.268567802,
-       -105719.954578781,
-       198039.001082933,
-       -166469.952796604,
-       56265.1563678032,
-       -225233.43163654,
-       -14114645.1297306,
-       -206353.386215321,
-       196109.460143209,
-       100160.094406793,
-       2244037.06984132,
-       -475193.386215321,
-       8595470.36966505,
-       418906.56836346,
-       -454851.582252684,
-       -148369.952796604,
-       4249245.34387701,
-       567180.045421219,
-       186800
-    };
-    face     = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
-    int i=0;
-    for( ; face != end_face; ++face,++i){
-      faceDOFManager->getDOFs( face->globalID(), dofs );
-      double h_val = ResVec->getValueByGlobalID(dofs[0])/h_scale;
-      double p_val = ResVec->getValueByGlobalID(dofs[1])/P_scale;
-      if (!AMP::Utilities::approx_equal(h_val,known[2*i],0.01)){
-         passedKnownTest = false;
-         AMP::pout<<"Calculated: "<<h_val<<", Known: "<<known[2*i]<<"\n";
-      }
-      if (!AMP::Utilities::approx_equal(p_val,known[2*i+1],0.01)){
-         passedKnownTest = false;
-         AMP::pout<<"Calculated: "<<p_val<<", Known: "<<known[2*i+1]<<"\n";
-      }
-    }
-    if (passedKnownTest) ut->passes(exeName+": known value test #2");
-    else ut->failure(exeName+": known residual test #2");
-  }
 
   {
     // Test apply with known residual evaluation
@@ -307,26 +136,26 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
     subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
     bool passedKnownTest = true;
     double known[20] = {
-       -620085.843930095,
-       -49986.4688121105,
-       194280.045421219,
-       3949028.44119528,
-       -116469.952796604,
-       -14741988.3976949,
-       -175233.43163654,
-       1785589.98266971,
-       -313553.386215321,
-       9397345.85264865,
-       256860.094406793,
-       248813.913712698,
-       100346.613784679,
-       5143446.55072186,
-       -790163.43163654,
-       -4153289.69480504,
-       633060.047203396,
-       2745414.89283861,
-       -293619.954578781,
-       786800
+-565469.235701075,
+-8.34485290710296,
+148482.09384907,
+343.485735068754,
+-91004.5857613742,
+-1298.94510822818,
+-136965.213005729,
+153.631662269915,
+-243658.201123872,
+822.509798734236,
+193771.812083809,
+18.4080923950774,
+73891.3070728496,
+448.83209941079,
+-608747.573661467,
+-368.184663947199,
+484044.660140265,
+237.580675983725,
+-225841.184839454,
+800000
     };
     face     = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     int i=0;
@@ -343,8 +172,8 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
          AMP::pout<<"Calculated: "<<p_val<<", Known: "<<known[2*i+1]<<"\n";
       }
     }
-    if (passedKnownTest) ut->passes(exeName+": known value test #3");
-    else ut->failure(exeName+": known residual test #3");
+    if (passedKnownTest) ut->passes(exeName+": known value test");
+    else ut->failure(exeName+": known residual test");
   }
 
 }

@@ -259,7 +259,7 @@ void AbsVector( AMP::UnitTest *utils )
         if ( vec1->equals ( vec2 ) )
           utils->passes ( "Abs passes" );
         else
-          utils->failure ( "Abs failes" );
+          utils->failure ( "Abs fails" );
 }
 
 
@@ -297,8 +297,7 @@ void MaxNormVector( AMP::UnitTest *utils )
           local_ans = std::max ( local_ans , *curData );
           ++curData;
         }
-        AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
-        double global_ans = globalComm.maxReduce(local_ans);
+        double global_ans = vector->getComm().maxReduce(local_ans);
         if ( global_ans == infNorm )
           utils->passes ( "Inf norm" );
         else

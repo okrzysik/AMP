@@ -37,7 +37,7 @@ Vector::shared_ptr  SimpleVector::create ( size_t localSize , Variable::shared_p
     retVal->d_DOFManager = DOFs;
     retVal->setCommunicationList( AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
     retVal->d_comm = comm;
-    retVal->d_globalSize = localSize;
+    retVal->d_globalSize = comm.sumReduce(localSize);
     return retVal;
 }
 Vector::shared_ptr  SimpleVector::create ( Variable::shared_ptr var,

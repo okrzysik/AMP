@@ -19,7 +19,6 @@
 #include <cmath>
 #include <cstdlib>
 
-#include "sys/sys.h"
 #include "par/parUtils.h"
 #include "binOps/binUtils.h"
 #include "oct/TreeNode.h"

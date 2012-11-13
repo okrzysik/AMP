@@ -40,7 +40,7 @@ namespace AMP {
 #define TRACE_SIZE 100                          // The maximum number of timers that will be checked for the trace logs
                                                 // The actual number of timers is TRACE_SIZE * number of bits of BIT_WORD
                                                 // Note: this only affects the trace logs, the number of timers is unlimited
-#define MAX_TRACE_TRACE 65536                   // The maximum number of stored start and stop times per trace
+#define MAX_TRACE_TRACE 1e6                     // The maximum number of stored start and stop times per trace
                                                 // Note: this is only used if store_trace is set, and should be a power of 2
                                                 // Note: the maximum ammount of memory used per trace is 16*MAX_TRACE_TRACE bytes (plus the trace itself)
 #define THREAD_HASH_SIZE 64                     // The size of the hash table to store the threads
@@ -142,12 +142,21 @@ public:
 
     /*!
      * \brief  Function to save the profiling info
-     * \details  This will save the current timer info
+     * \details  This will save the current timer info.  This is a non-blocking function.
      * Note: .x.timer will automatically be appended to the filename, where x is the rank+1 of the process.
      * Note: .x.trace will automatically be appended to the filename when detailed traces are used.
      * @param filename      File name for saving the results
      */
-    void save( const std::string& filename );
+    void save( const std::string& filename ) const;
+
+    /*!
+     * \brief  Function to syncronize the timers
+     * \details  This function will syncronize the timers across multiple processors.  
+     *   If used, this function only needs to be called once.  This is only needed if 
+     *   the trace level data is being stored and the user wants the times syncronized.
+     *   Note: This is a blocking call for all processors and must be called after MPI_INIT.
+     */
+    void syncronize();
 
     /*!
      * \brief  Function to enable the timers
@@ -178,7 +187,7 @@ private:
 
     // Structure to store the info for a trace log
     struct store_trace {
-        int N_calls;                // Number of calls to this block
+        size_t N_calls;             // Number of calls to this block
         size_t id;                  // This is a (hopefully) unique id that we can use for comparison
         BIT_WORD trace[TRACE_SIZE]; // Store the trace
         store_trace *next;          // Pointer to the next entry in the list
@@ -284,13 +293,13 @@ private:
     static inline size_t get_trace_id( size_t N, const BIT_WORD *trace );
 
     // Function to return the string of active timers
-    std::string get_active_list( BIT_WORD *active, unsigned int myIndex, thread_info *head );
+    static std::string get_active_list( BIT_WORD *active, unsigned int myIndex, thread_info *head );
 
     // Function to get the hash index given a timer id
-    unsigned int get_timer_hash( size_t id );
+    static unsigned int get_timer_hash( size_t id );
 
     // Function to get the hash index given a thread id
-    unsigned int get_thread_hash( size_t id );
+    static unsigned int get_thread_hash( size_t id );
 
     // Handle to a mutex lock
     #ifdef USE_WINDOWS
@@ -304,6 +313,7 @@ private:
     char d_level;                   // Level of timing to use (default is 0, -1 is disabled)
     TIME_TYPE construct_time;       // Store when the constructor was called
     TIME_TYPE frequency;            // Clock frequency (only used for windows)
+    double d_shift;                 // Offset to add to all trace times when saving (used to syncronize the trace data)
 };
 
 

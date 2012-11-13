@@ -140,39 +140,6 @@ void  PetscSNESSolver::initialize(boost::shared_ptr<SolverStrategyParameters> pa
         }
     }
 
-    if(d_bUsesJacobian) {
-        boost::shared_ptr<AMP::Operator::LinearOperator> linearOp = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pKrylovSolver->getOperator());
-
-        if(linearOp.get()!=NULL) {
-            boost::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix = boost::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(linearOp->getMatrix());
-            assert(pMatrix.get()!=NULL);
-            d_Jacobian = pMatrix->getMat();
-        } else {
-            AMP_INSIST(linearOp.get()!=NULL, "ERROR: The LinearOperator pointer in the PetscKrylovSolver is NULL");
-        }
-
-        boost::shared_ptr<AMP::Solver::SolverStrategy> pcSolver = d_pKrylovSolver->getPreconditioner();
-
-        Mat PCJacobian = d_Jacobian;
-
-        if(pcSolver.get()!=NULL) {
-            boost::shared_ptr<AMP::Operator::LinearOperator> linearOp = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(pcSolver->getOperator());
-
-            if(linearOp.get()!=NULL) {
-                boost::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix = boost::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(linearOp->getMatrix());
-                assert(pMatrix.get()!=NULL);
-                PCJacobian = pMatrix->getMat();
-            }
-        }
-
-        checkErr(SNESSetJacobian(d_SNESSolver,
-                 d_Jacobian,
-                 PCJacobian,
-                 PetscSNESSolver::setJacobian,
-                 this));
-
-    }
-
     if(d_bEnableLineSearchPreCheck) {
         checkErr(SNESLineSearchSetPreCheck(d_SNESSolver, PetscSNESSolver::lineSearchPreCheck, this));
     }
@@ -300,63 +267,65 @@ void PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
   
     // if the dynamic cast yielded a valid pointer
     if(spSol.get()!=NULL) {
-        Vec b = PETSC_NULL;
-
-        if(spRhs.get()!=NULL) {
-            b = spRhs->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-            setSNESFunction( spRhs );
-            if(!d_bUsesJacobian) {
-                if ( d_Jacobian!=NULL ) {
-                    #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
-                        MatDestroy(d_Jacobian);
-                    #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
-                        MatDestroy(&d_Jacobian);
-                    #else
-                        #error Not programmed for this version yet
-                    #endif
-                    d_Jacobian = NULL;
-                }
-                checkErr(MatCreateSNESMF(d_SNESSolver, &d_Jacobian));
-                checkErr(MatMFFDSetType(d_Jacobian, (MatMFFDType) d_sMFFDDifferencingStrategy.c_str() ));
-                checkErr(MatMFFDSetFunctionError(d_Jacobian, d_dMFFDFunctionDifferencingError));
-                if(d_bEnableMFFDBoundsCheck) {
-                    checkErr(MatMFFDSetCheckh(d_Jacobian, PetscSNESSolver::mffdCheckBounds, this));
-                }
-
-                #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
-                    checkErr(MatMFFDSetFromOptions(d_Jacobian));
-                #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
-                    checkErr(MatSetFromOptions(d_Jacobian));
-                #else
-                    #error Not programmed for this version yet
-                #endif
-                boost::shared_ptr<AMP::Solver::SolverStrategy> pcSolver = d_pKrylovSolver->getPreconditioner();
-
-                Mat PCJacobian = d_Jacobian;
-
-                if(pcSolver.get()!=NULL) {
-                    boost::shared_ptr<AMP::Operator::LinearOperator> linearOp = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(pcSolver->getOperator());
-
-                    if(linearOp.get()!=NULL) {
-                        boost::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix = boost::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(linearOp->getMatrix());
-                        //assert(pMatrix.get()!=NULL);
-                        if(pMatrix.get()!=NULL) {
-                            PCJacobian = pMatrix->getMat();
-                        }
-                    }
-                }
-
-                checkErr(SNESSetJacobian(d_SNESSolver,
-                        d_Jacobian,
-                        PCJacobian,
-                        PetscSNESSolver::setJacobian,
-                        this));
-
-            }
-        }
 
         Vec x = spSol->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
 
+        Vec b = PETSC_NULL;
+        if(spRhs.get()!=NULL) {
+            b = spRhs->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+            setSNESFunction( spRhs );
+        }
+
+        // Set the jacobian
+        if(!d_bUsesJacobian) {
+            if ( d_Jacobian!=NULL ) {
+                #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+                    MatDestroy(d_Jacobian);
+                #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+                    MatDestroy(&d_Jacobian);
+                #else
+                    #error Not programmed for this version yet
+                #endif
+                d_Jacobian = NULL;
+            }
+            checkErr(MatCreateSNESMF(d_SNESSolver, &d_Jacobian));
+            checkErr(MatMFFDSetType(d_Jacobian, (MatMFFDType) d_sMFFDDifferencingStrategy.c_str() ));
+            checkErr(MatMFFDSetFunctionError(d_Jacobian, d_dMFFDFunctionDifferencingError));
+            if(d_bEnableMFFDBoundsCheck) {
+                checkErr(MatMFFDSetCheckh(d_Jacobian, PetscSNESSolver::mffdCheckBounds, this));
+            }
+            #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+                checkErr(MatMFFDSetFromOptions(d_Jacobian));
+            #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+                checkErr(MatSetFromOptions(d_Jacobian));
+            #else
+                #error Not programmed for this version yet
+            #endif
+
+        } else {
+            boost::shared_ptr<AMP::Operator::LinearOperator> linearOp = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pKrylovSolver->getOperator());
+            if(linearOp.get()!=NULL) {
+                boost::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix = boost::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(linearOp->getMatrix());
+                assert(pMatrix.get()!=NULL);
+                d_Jacobian = pMatrix->getMat();
+            } else {
+                AMP_INSIST(linearOp.get()!=NULL, "ERROR: The LinearOperator pointer in the PetscKrylovSolver is NULL");
+            }
+        }
+        boost::shared_ptr<AMP::Solver::SolverStrategy> pcSolver = d_pKrylovSolver->getPreconditioner();
+        Mat PCJacobian = d_Jacobian;
+        if(pcSolver.get()!=NULL) {
+            boost::shared_ptr<AMP::Operator::LinearOperator> linearOp = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(pcSolver->getOperator());
+            if(linearOp.get()!=NULL) {
+                boost::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix = boost::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(linearOp->getMatrix());
+                if(pMatrix.get()!=NULL) {
+                    PCJacobian = pMatrix->getMat();
+                }
+            }
+        }
+        checkErr( SNESSetJacobian( d_SNESSolver, d_Jacobian, PCJacobian, PetscSNESSolver::setJacobian, this ) );
+
+        // Solve
         PROFILE_START("petsc-SNESSolve");
         checkErr(SNESSolve(d_SNESSolver, b, x));
         PROFILE_STOP("petsc-SNESSolve");
