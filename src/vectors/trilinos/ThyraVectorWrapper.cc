@@ -3,6 +3,7 @@
 
 
 #include "RTOpPack_Types.hpp"
+#include "RTOpPack_RTOpT_decl.hpp"
 #include "RTOpPack_SPMD_apply_op_def.hpp"
 #ifdef USE_EXT_MPI
     #include "Teuchos_DefaultMpiComm.hpp"
@@ -225,8 +226,11 @@ void ThyraVectorWrapper::applyOpImpl( const RTOpPack::RTOpT<double> &op,
             targ_sub_vecs[i] = RTOpPack::SubVectorView<double>( 
                 Teuchos::ArrayRCP<double>(ptr->d_vec->getRawDataBlock<double>(j),0,block_size[j],false) );
         }
-        op.apply_op( Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double> >(sub_vecs), 
-            Teuchos::ArrayView<const RTOpPack::SubVectorView<double> >(targ_sub_vecs), reduct_obj2 );
+        Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double> > sub_vecs2 = 
+             Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double> >(sub_vecs);
+        Teuchos::ArrayView<const RTOpPack::SubVectorView<double> > targ_sub_vecs2 = 
+           Teuchos::ArrayView<const RTOpPack::SubVectorView<double> >(targ_sub_vecs);
+        op.apply_op( sub_vecs2, targ_sub_vecs2, reduct_obj2.ptr() );
     }
     // Reduce the result
     if ( reduct_obj.get()!=NULL ) {
