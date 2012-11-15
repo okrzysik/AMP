@@ -1,4 +1,6 @@
 #include "test_Vector.h"
+#include "discretization/DOF_Manager.h"
+#include "vectors/VectorBuilder.h"
 #include "vectors/trilinos/ManagedThyraVector.h"
 #include "vectors/trilinos/NativeThyraVector.h"
 #include "utils/AMP_MPI.h"
@@ -56,6 +58,58 @@ public:
         boost::shared_ptr<AMP::LinearAlgebra::NativeThyraVector> vec( 
             new AMP::LinearAlgebra::NativeThyraVector( params ) );
         return vec;
+    }
+};
+
+
+template <typename FACTORY>
+class  ManagedThyraFactory
+{
+public:
+    typedef AMP::LinearAlgebra::ThyraVector                  vector;
+
+    static AMP::LinearAlgebra::Variable::shared_ptr  getVariable() {
+        return AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "managed_thyra" ) );
+    }
+
+    static AMP::LinearAlgebra::Vector::shared_ptr getVector() {
+        // Create an arbitrary vector
+        AMP::LinearAlgebra::Vector::shared_ptr vec1 = FACTORY::getVector();
+        // Create the managed vector
+        AMP::LinearAlgebra::Vector::shared_ptr vec2 = AMP::LinearAlgebra::ThyraVector::view(vec1);
+        vec2->setVariable( getVariable() );
+        return vec2;
+    }
+};
+
+
+template <typename FACTORY>
+class  ManagedNativeThyraFactory
+{
+public:
+    typedef AMP::LinearAlgebra::ThyraVector                  vector;
+
+    static AMP::LinearAlgebra::Variable::shared_ptr  getVariable() {
+        return AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "managed_native_thyra" ) );
+    }
+
+    static AMP::LinearAlgebra::Vector::shared_ptr getVector() {
+        // Create an arbitrary vector
+        AMP::LinearAlgebra::Vector::shared_ptr vec1 = FACTORY::getVector();
+        // Create the managed vector
+        boost::shared_ptr<AMP::LinearAlgebra::ManagedThyraVector> vec2 = 
+            boost::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedThyraVector>(
+            AMP::LinearAlgebra::ThyraVector::view(vec1) );
+        // Create a native ThyraVector from the managed vector
+        boost::shared_ptr<AMP::LinearAlgebra::NativeThyraVectorParameters> params( 
+            new AMP::LinearAlgebra::NativeThyraVectorParameters() );
+        params->d_InVec = vec2->getVec();
+        params->d_local = vec2->getLocalSize();
+        params->d_comm = vec2->getComm();
+        params->d_var = getVariable();
+        boost::shared_ptr<AMP::LinearAlgebra::NativeThyraVector> vec3( 
+            new AMP::LinearAlgebra::NativeThyraVector( params ) );
+        return vec3;
     }
 };
 
