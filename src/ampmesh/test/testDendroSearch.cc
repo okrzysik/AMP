@@ -77,7 +77,7 @@ void run(const std::string & meshFileName,
   for ( ; node != end_node; ++node) {
     std::vector<size_t> globalID;
     DOFs->getDOFs(node->globalID(), globalID); 
-    for(int d = 0; d < globalID.size(); ++d) {
+    for(size_t d = 0; d < globalID.size(); ++d) {
       dummyVector->setLocalValueByGlobalID(globalID[d], dummyFunction(node->coord(), d));
     }//end d
   }
@@ -89,7 +89,7 @@ void run(const std::string & meshFileName,
   int avgNumPts = totalNumPts/npes;
   int extraNumPts = totalNumPts%npes;
 
-  int numLocalPts = avgNumPts;
+  size_t numLocalPts = avgNumPts;
   if(rank < extraNumPts) {
     numLocalPts++;
   }

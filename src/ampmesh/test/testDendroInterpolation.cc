@@ -95,7 +95,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   int avgNumPts = totalNumPts/npes;
   int extraNumPts = totalNumPts%npes;
 
-  int numLocalPts = avgNumPts;
+  size_t numLocalPts = avgNumPts;
   if(rank < extraNumPts) {
     numLocalPts++;
   }
@@ -105,7 +105,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   srand48(seed);
 
   std::vector<double> pts(3*numLocalPts);
-  for(int i = 0; i < numLocalPts; ++i) {
+  for(size_t i = 0; i < numLocalPts; ++i) {
     double x = ((maxCoords[0] - minCoords[0])*drand48()) + minCoords[0];
     double y = ((maxCoords[1] - minCoords[1])*drand48()) + minCoords[1];
     double z = ((maxCoords[2] - minCoords[2])*drand48()) + minCoords[2];

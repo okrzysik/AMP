@@ -348,7 +348,7 @@ slaveFout.close();
   if (masterMeshAdapter.get() != NULL) { numMasterLocalNodes = masterMeshAdapter->numLocalElements(AMP::Mesh::Vertex); }
   if (slaveMeshAdapter.get() != NULL) { numSlaveLocalNodes = slaveMeshAdapter->numLocalElements(AMP::Mesh::Vertex); }
   int matLocalSize = dofsPerNode * (numMasterLocalNodes + numSlaveLocalNodes);
-  AMP_ASSERT( matLocalSize == dofManager->numLocalDOF() );
+  AMP_ASSERT( matLocalSize == static_cast<int>(dofManager->numLocalDOF()) );
   matrixShellOperator->setComm(globalComm);
   matrixShellOperator->setMatLocalRowSize(matLocalSize);
   matrixShellOperator->setMatLocalColumnSize(matLocalSize);
@@ -529,7 +529,7 @@ void myTest2(AMP::UnitTest *ut, std::string exeName) {
       AMP::Operator::PetscMatrixShellOperator(matrixShellParams));
 
   int matLocalSize = dofsPerNode * meshAdapter->numLocalElements(AMP::Mesh::Vertex); 
-  AMP_ASSERT( matLocalSize == dofManager->numLocalDOF() );
+  AMP_ASSERT( matLocalSize == static_cast<int>(dofManager->numLocalDOF()) );
   matrixShellOperator->setComm(globalComm);
   matrixShellOperator->setMatLocalRowSize(matLocalSize);
   matrixShellOperator->setMatLocalColumnSize(matLocalSize);
