@@ -63,7 +63,7 @@ public:
 	string name;
 	bool vector[NVECTOR];
 	bool isVector;
-	bool tensor[NTENSOR, 0.];
+	bool tensor[NTENSOR, 0];
 	bool isTensor;
 };
 
