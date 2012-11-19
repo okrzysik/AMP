@@ -52,7 +52,7 @@ namespace Operator {
         u += elementInputVectors[NavierStokes::VELOCITY][(3*k) + 0]*phi[k][qp]; 
         v += elementInputVectors[NavierStokes::VELOCITY][(3*k) + 1]*phi[k][qp]; 
         w += elementInputVectors[NavierStokes::VELOCITY][(3*k) + 2]*phi[k][qp];
-        p += elementInputVectors[NavierStokes::PRESSURE][k]*phi[k][qp];
+        //p += elementInputVectors[NavierStokes::PRESSURE][k]*phi[k][qp];
 
 
         dudx += (elementInputVectors[NavierStokes::VELOCITY][(3*k) + 0]*dphi[k][qp](0));
