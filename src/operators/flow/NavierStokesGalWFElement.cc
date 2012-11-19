@@ -42,7 +42,7 @@ namespace Operator {
       double dwdy = 0;
       double dwdz = 0;
 
-      double p = 0;
+      //double p = 0;
       double dpdx = 0;
       double dpdy = 0;
       double dpdz = 0;

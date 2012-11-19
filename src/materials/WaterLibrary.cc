@@ -458,7 +458,6 @@ September 1998");
 		double C3 = -6.17937;
 		double C4 = 3.08976e-3;
 		double C5 = 8.22994e-2;
-		double C6 = 1.00932e1;
 	
 		// calculate temperature
 		double Tratiosum = 0.0;
@@ -473,7 +472,10 @@ September 1998");
 		double R = Q + 1.0;
 		double S;
 		if (T/Tstar >= 1.0) S = pow(dT,-1);
-		else S = C6*pow(dT,-0.6);
+		else {
+		  double C6 = 1.00932e1;
+      S = C6*pow(dT,-0.6);
+    }
 		double dk1 = (d1*pow(Tstar/T,10) + d2) * pow(rho/rhostar,1.8) * exp(C1*(1.0 - pow(rho/rhostar,2.8)));
 		double dk2 = d3*S*pow(rho/rhostar,Q)*exp(Q/R*(1.0-pow(rho/rhostar,R)));
 		double dk3 = d4*exp(C2*pow(T/Tstar,1.5)+C3*pow(rhostar/rho,5));

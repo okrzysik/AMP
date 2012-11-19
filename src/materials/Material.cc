@@ -19,7 +19,6 @@ size_t Material::counter=0;
 // check if a property exists in the material
 bool Material::hasProperty(std::string type) 
 {
-	std::map<std::string, PropertyPtr>::iterator it;
 	return d_propertyMap->find(type) != d_propertyMap->end();
 }
 
@@ -41,7 +40,7 @@ std::vector<std::string> Material::list()
 {
 	std::vector<std::string> result;
 	for (std::map<std::string, PropertyPtr>::iterator it=d_propertyMap->begin();
-			it != d_propertyMap->end(); it++)
+			it != d_propertyMap->end(); ++it)
 	{
 		std::string name = it->second->get_name();
 		size_t usIndex = name.rfind("_"); 

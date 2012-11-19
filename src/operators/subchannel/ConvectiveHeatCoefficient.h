@@ -33,8 +33,6 @@ class ConvectiveHeatCoefficient  : public RobinPhysicsModel
 
       AMP::Materials::PropertyPtr d_property;
 
-      double d_k , d_De , d_Re , d_Pr;
-
       std::vector<std::string> d_argNames;
     
       std::vector<double> d_defaults;

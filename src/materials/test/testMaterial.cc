@@ -63,7 +63,7 @@ public:
 	string name;
 	bool vector[NVECTOR];
 	bool isVector;
-	bool tensor[NTENSOR];
+	bool tensor[NTENSOR, 0.];
 	bool isTensor;
 };
 
@@ -291,7 +291,7 @@ MatTestResult testMaterial(string &name) {
 			}
 
 			// first out of range low, std::vector
-			if(args.size()>0) {
+			if(!args.empty()) {
 				try {
 					args.find(argnames[0])->second->operator[](5) = toosmall[0][5];
 					property->evalv(value, args);
@@ -309,7 +309,7 @@ MatTestResult testMaterial(string &name) {
 			}
 
 			// first out of range hi, std::vector
-			if(args.size() >0) {
+			if(!args.empty()) {
 				try {
 					args.find(argnames[0])->second->operator[](5) = toobig[0][5];
 					property->evalv(value, args);
@@ -497,7 +497,7 @@ MatTestResult testMaterial(string &name) {
 			map<string, boost::shared_ptr<vector<double> > > argsm(args);
 			if( nargs>0 ) {
 				map<string, boost::shared_ptr<vector<double> > >::iterator argend = argsm.end();
-				argend--;
+				--argend;
 				argsm.erase(argend);
 			}
 
@@ -659,7 +659,7 @@ MatTestResult testMaterial(string &name) {
 			}
 
 			// first out of range low, std::vector
-			if(args.size()>0) {
+			if(!args.empty()) {
 				try {
 					args.find(argnames[0])->second->operator[](5) = toosmall[0][5];
 					vectorProperty->evalv(stdEval, args);
@@ -677,7 +677,7 @@ MatTestResult testMaterial(string &name) {
 			}
 
 			// first out of range hi, std::vector
-			if(args.size() >0) {
+			if(!args.empty()) {
 				try {
 					args.find(argnames[0])->second->operator[](5) = toobig[0][5];
 					vectorProperty->evalv(stdEval, args);
@@ -831,7 +831,7 @@ MatTestResult testMaterial(string &name) {
 			map<string, boost::shared_ptr<vector<double> > > argsm(args);
 			if( nargs>0 ) {
 				map<string, boost::shared_ptr<vector<double> > >::iterator argend = argsm.end();
-				argend--;
+				--argend;
 				argsm.erase(argend);
 			}
 
@@ -994,7 +994,7 @@ MatTestResult testMaterial(string &name) {
 			}
 
 			// first out of range low, std::vector
-			if(args.size()>0) {
+			if(!args.empty()) {
 				try {
 					args.find(argnames[0])->second->operator[](5) = toosmall[0][5];
 					tensorProperty->evalv(stdEval, args);
@@ -1012,7 +1012,7 @@ MatTestResult testMaterial(string &name) {
 			}
 
 			// first out of range hi, std::vector
-			if(args.size() >0) {
+			if(!args.empty()) {
 				try {
 					args.find(argnames[0])->second->operator[](5) = toobig[0][5];
 					tensorProperty->evalv(stdEval, args);
@@ -1174,7 +1174,7 @@ MatTestResult testMaterial(string &name) {
 			map<string, boost::shared_ptr<vector<double> > > argsm(args);
 			if( nargs>0 ) {
 				map<string, boost::shared_ptr<vector<double> > >::iterator argend = argsm.end();
-				argend--;
+				--argend;
 				argsm.erase(argend);
 			}
 
@@ -1257,7 +1257,7 @@ int main(int argc, char **argv) {
 				cout << "          ";
 				cout << xlate(j->range) << "   ";
 				cout << xlate(j->params) << "    ";
-				unsigned int nsuccess = 0, nargeval = 0, nvector = 0, ntensor = 0;
+				unsigned int nsuccess = 0, nargeval = 0;
 				for (size_t k = 0; k < NSUCCESS; k++)
 					if (j->success[k])
 						nsuccess++;
@@ -1267,12 +1267,14 @@ int main(int argc, char **argv) {
 						nargeval++;
 				cout << nargeval << "/" << NARGEVAL << "      ";
 				if (j->isVector) {
+				  unsigned int nvector = 0;
 					for (size_t k = 0; k < NVECTOR; k++)
 						if (j->vector[k])
 							nvector++;
 					cout << nvector << "/" << NVECTOR << "      ";
 				}
 				if (j->isTensor) {
+				  unsigned int ntensor = 0;
 					for (size_t k = 0; k < NTENSOR; k++)
 						if (j->tensor[k])
 							ntensor++;
@@ -1428,7 +1430,7 @@ int main(int argc, char **argv) {
 			if(mat != NULL) maxpassed += 1;
 		} catch (std::exception &err) {
 			string msg = err.what();
-			bool check = msg == "Unregistered creator";
+			bool check = (msg == "Unregistered creator");
 			good = good and check;
 			if (good)
 				ut.passes("detected undefined material");

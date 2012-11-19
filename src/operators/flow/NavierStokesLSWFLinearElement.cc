@@ -25,7 +25,7 @@ namespace Operator {
       double v = 0;
       double w = 0;
 
-      double txx = 0;
+      /* double txx = 0;
       double tyy = 0;
       double tzz = 0;
       double txy = 0;
@@ -44,7 +44,7 @@ namespace Operator {
 
       double dtxzdx = 0;
       double dtxzdz = 0;
-
+*/
       double dudx = 0;
       double dudy = 0;
       double dudz = 0;
@@ -55,11 +55,11 @@ namespace Operator {
       double dwdy = 0;
       double dwdz = 0;
 
-      double p = 0;
+      /* double p = 0;
       double dpdx = 0;
       double dpdy = 0;
       double dpdz = 0;
-        
+*/        
       for(unsigned int k = 0; k < num_nodes; k++) {
 
         u += d_elementInputVectors[ 10*k + 1]*phi[k][qp]; 

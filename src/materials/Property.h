@@ -82,6 +82,7 @@ public:
 		{
 			d_defaults[i] = d_ranges[i][0];
 		}
+	  d_defaultsAreSet = true;
 	}
 
 	/**
