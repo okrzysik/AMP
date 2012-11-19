@@ -177,7 +177,7 @@ void  ManagedPetscMatrix::copyFromMat ( Mat m )
 {
     boost::shared_ptr<ManagedPetscMatrixParameters> params = boost::dynamic_pointer_cast<ManagedPetscMatrixParameters>(d_pParameters);
     AMP::Discretization::DOFManager::shared_ptr rowDOF = params->getLeftDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr colDOF = params->getRightDOFManager();
+    //AMP::Discretization::DOFManager::shared_ptr colDOF = params->getRightDOFManager();
     for (size_t i=rowDOF->beginDOF(); i<rowDOF->endDOF(); i++) {
         AMP_ASSERT(i<0x80000000);    // We have not converted matricies to 64-bits yet
         int row = (int) i;
