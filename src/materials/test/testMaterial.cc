@@ -54,6 +54,8 @@ public:
 			nargeval[i] = false;
 		for (size_t i = 0; i < NVECTOR; i++)
 			vector[i] = false;
+		for (size_t i = 0; i < NTENSOR; i++)
+			tensor[i] = false;
 	}
 	bool range;
 	bool success[NSUCCESS];
@@ -63,7 +65,7 @@ public:
 	string name;
 	bool vector[NVECTOR];
 	bool isVector;
-	bool tensor[NTENSOR, 0];
+	bool tensor[NTENSOR];
 	bool isTensor;
 };
 
