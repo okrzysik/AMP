@@ -72,8 +72,6 @@ namespace AMP {
         int d_MasterBoundaryID;
         int d_SlaveBoundaryID;
 
-        std::vector<AMP::Mesh::MeshElementID> d_SlaveVerticesGlobalIDs;
-
         std::vector<AMP::Mesh::MeshElementID> d_InactiveSet;
         std::vector<AMP::Mesh::MeshElementID> d_ActiveSet;
 

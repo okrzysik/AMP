@@ -208,7 +208,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       contactOperator( new AMP::Operator::NodeToFaceContactOperator(contactOperatorParams) );
 
   // TODO: RESET IN CONSTRUCTOR?
-  contactOperator->reset(contactOperatorParams);
+  contactOperator->initialize();
+  contactOperator->updateActiveSet();
+//  contactOperator->reset(contactOperatorParams);
 
   // Build the master and slave operators
   AMP::Mesh::MeshID masterMeshID = contactOperator->getMasterMeshID();
@@ -377,6 +379,8 @@ slaveFout.close();
   contactOperator->addShiftToSlave(columnSolVec);
 
   meshAdapter->displaceMesh(columnSolVec);
+  size_t dodo = contactOperator->updateActiveSet();
+  std::cout<<"DODO="<<dodo<<std::endl;
 
 if (masterMeshAdapter.get() != NULL) {
 std::fstream masterFout;
