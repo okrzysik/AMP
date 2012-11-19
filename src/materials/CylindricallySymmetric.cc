@@ -249,7 +249,7 @@ private:
 
 inline double ScalarRadialFickProp::eval(std::vector<double>& args)
 {
-	AMP_ASSERT(args.size()>0);
+	AMP_ASSERT(!args.empty());
 	double result;
 	result = d_params[d_nparams - 1];
 	for (size_t i = d_nparams - 1; i > 0; i--)
@@ -261,7 +261,7 @@ inline double ScalarRadialFickProp::eval(std::vector<double>& args)
 
 inline std::vector<double> RadialFickProp::evalVector(std::vector<double>& args)
 {
-	AMP_ASSERT(args.size()>0);
+	AMP_ASSERT(!args.empty());
 	std::vector<double> result(2);
 	result[0] = d_params[d_nparams - 1];
 	result[1] = (d_nparams-1)*d_params[d_nparams - 1];
@@ -278,7 +278,7 @@ inline std::vector<double> RadialFickProp::evalVector(std::vector<double>& args)
 
 inline std::vector<double> LongitudinalFickProp::evalVector(std::vector<double>& args)
 {
-	AMP_ASSERT(args.size()>0);
+	AMP_ASSERT(!args.empty());
 	std::vector<double> result(2);
 	result[0] = d_params[d_nparams - 1];
 	result[1] = (d_nparams-1)*d_params[d_nparams - 1];

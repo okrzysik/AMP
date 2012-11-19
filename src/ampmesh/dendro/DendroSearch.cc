@@ -38,7 +38,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
 //d_fout<<std::setprecision(6)<<std::fixed;
 //double point_of_view[] = { 0.725866, -0.334606, 0.600964 };
 
-  double projectBeginTime, projectStep1Time, projectStep2Time;
+  double projectBeginTime, projectStep1Time=0., projectStep2Time;
   if(d_verbose) {
     comm.barrier();
   }
@@ -616,7 +616,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
 
     d_numLocalPts = (pts.size())/3;
 
-    double searchBeginTime, searchStep1Time, searchStep2Time, searchStep3Time, searchStep4Time, searchStep5Time, searchStep6Time;
+    double searchBeginTime=0., searchStep1Time=0., searchStep2Time=0., searchStep3Time=0., searchStep4Time=0., searchStep5Time=0., searchStep6Time=0.;
     if(d_verbose) {
       comm.barrier();
       searchBeginTime = MPI_Wtime();
@@ -888,7 +888,7 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
     const int rank = comm.getRank();
     const int npes = comm.getSize();
 
-    double interpolateBeginTime, interpolateStep1Time, interpolateStep2Time;
+    double interpolateBeginTime, interpolateStep1Time=0., interpolateStep2Time;
     if(d_verbose) {
       comm.barrier();
     }

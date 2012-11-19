@@ -21,31 +21,25 @@ Vector::const_shared_ptr  ThyraVector::constView ( Vector::const_shared_ptr inVe
     Vector::shared_ptr  retVal;
     if ( inVector->isA<ManagedVector> () ) {
         Vector::shared_ptr inVector2 = boost::const_pointer_cast<Vector>( inVector );
-        retVal = Vector::shared_ptr( new ManagedThyraVector( inVector2 ) );
-        retVal->setVariable( inVector->getVariable() );
-        inVector->registerView( retVal );
+        retVal = Vector::shared_ptr ( new ManagedThyraVector( inVector2 ) );
+        retVal->setVariable ( inVector->getVariable() );
+        inVector->registerView ( retVal );
     } else if ( inVector->isA<VectorEngine> () ) {
-        AMP_ERROR("Not finished yet");
-        /*Vector::shared_ptr inVector2 = boost::const_pointer_cast<Vector>( inVector );
-        ManagedPetscVectorParameters *newParams = new ManagedPetscVectorParameters;
+        Vector::shared_ptr inVector2 = boost::const_pointer_cast<Vector>( inVector );
+        ManagedThyraVectorParameters *newParams = new ManagedThyraVectorParameters;
         newParams->d_Engine = boost::dynamic_pointer_cast<VectorEngine>( inVector2 );
         newParams->d_CloneEngine = false;
         AMP_INSIST(inVector->getCommunicationList().get()!=NULL,"All vectors must have a communication list");
         newParams->d_CommList = inVector->getCommunicationList();
         AMP_INSIST(inVector->getDOFManager().get()!=NULL,"All vectors must have a DOFManager list");
         newParams->d_DOFManager = inVector->getDOFManager();
-        ManagedPetscVector *t = new ManagedPetscVector ( VectorParameters::shared_ptr ( newParams ) );
-        inVector2->castTo<DataChangeFirer>().registerListener( t );
-        t->setVariable ( inVector->getVariable() );
-        t->setUpdateStatusPtr ( inVector->getUpdateStatusPtr () );
+        ManagedThyraVector *t = new ManagedThyraVector ( VectorParameters::shared_ptr ( newParams ) );
         retVal = Vector::shared_ptr ( t );
-        inVector->registerView ( retVal );*/
-    } else if ( inVector->isA<SimpleVector> () ) {
+        inVector->registerView ( retVal );
+    } else {
         Vector::shared_ptr inVector2 = boost::const_pointer_cast<Vector>( inVector );
         retVal = view ( MultiVector::view ( inVector2, inVector->getComm() ) );
         inVector->registerView ( retVal );
-    } else {
-        AMP_ERROR( "Nobody uses constView, anyway" );
     }
     return retVal;
 }
@@ -64,28 +58,24 @@ Vector::shared_ptr  ThyraVector::view ( Vector::shared_ptr inVector )
     // Create a new view
     Vector::shared_ptr  retVal;
     if ( inVector->isA<ManagedVector> () ) {
-        retVal = Vector::shared_ptr( new ManagedThyraVector( inVector ) );
-        inVector->registerView( retVal );
+        retVal = Vector::shared_ptr ( new ManagedThyraVector ( inVector ) );
+        inVector->registerView ( retVal );
     } else if ( inVector->isA<VectorEngine> () ) {
-        AMP_ERROR("Not finished yet");
-        /*ManagedPetscVectorParameters *newParams = new ManagedPetscVectorParameters;
+        ManagedThyraVectorParameters *newParams = new ManagedThyraVectorParameters;
         newParams->d_Engine = boost::dynamic_pointer_cast<VectorEngine> ( inVector );
         newParams->d_CloneEngine = false;
         AMP_INSIST(inVector->getCommunicationList().get()!=NULL,"All vectors must have a communication list");
         newParams->d_CommList = inVector->getCommunicationList();
         AMP_INSIST(inVector->getDOFManager().get()!=NULL,"All vectors must have a DOFManager list");
         newParams->d_DOFManager = inVector->getDOFManager();
-        ManagedPetscVector *newVector = new ManagedPetscVector ( VectorParameters::shared_ptr ( newParams ) );
-        inVector->castTo<DataChangeFirer>().registerListener( newVector );
+        ManagedThyraVector *newVector = new ManagedThyraVector ( VectorParameters::shared_ptr ( newParams ) );
         newVector->setVariable ( inVector->getVariable() );
         newVector->setUpdateStatusPtr ( inVector->getUpdateStatusPtr () );
         retVal = Vector::shared_ptr ( newVector );
-        inVector->registerView ( retVal );*/
-    } else if ( inVector->isA<SimpleVector> () ) {
-        retVal = view ( MultiVector::view ( inVector, inVector->getComm() ) );
         inVector->registerView ( retVal );
     } else {
-        AMP_ERROR( "Failed view" );
+        retVal = view ( MultiVector::view ( inVector, inVector->getComm() ) );
+        inVector->registerView ( retVal );
     }
     return retVal;
 }

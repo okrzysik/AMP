@@ -1,4 +1,5 @@
 #include "vectors/trilinos/NativeThyraVector.h"
+#include "vectors/trilinos/ThyraVectorWrapper.h"
 
 #include "Thyra_SpmdVectorBase_def.hpp"
 #include "Thyra_DefaultSpmdVector_def.hpp"
@@ -62,6 +63,9 @@ void* NativeThyraVector::getRawDataBlockAsVoid ( size_t i )
             AMP_ERROR("Invalid block");
         return spmdVector->getPtr();
     }
+    ThyraVectorWrapper* wrapperVector = dynamic_cast<ThyraVectorWrapper*>(ptr);
+    if ( wrapperVector!=NULL )
+        return wrapperVector->getVec()->getRawDataBlock<double>(i);
     AMP_ERROR( "not finished" );
     return NULL;
 }
@@ -77,6 +81,9 @@ const void* NativeThyraVector::getRawDataBlockAsVoid ( size_t i ) const
             AMP_ERROR("Invalid block");
         return spmdVector->getPtr();
     }
+    const ThyraVectorWrapper* wrapperVector = dynamic_cast<const ThyraVectorWrapper*>(ptr);
+    if ( wrapperVector!=NULL )
+        return wrapperVector->getVec()->getRawDataBlock<double>(i);
     return NULL;
 }
 
@@ -84,11 +91,11 @@ const void* NativeThyraVector::getRawDataBlockAsVoid ( size_t i ) const
 size_t NativeThyraVector::numberOfDataBlocks () const 
 { 
     const Thyra::VectorBase<double>* ptr = d_thyraVec.get();
-    const Thyra::DefaultSpmdVector<double>* spmdVector = 
-        dynamic_cast<const Thyra::DefaultSpmdVector<double>*>(ptr);
-    if ( spmdVector!=NULL ) {
+    if ( dynamic_cast<const Thyra::DefaultSpmdVector<double>*>(ptr)!=NULL )
         return 1;
-    }
+    const ThyraVectorWrapper* wrapperVector = dynamic_cast<const ThyraVectorWrapper*>(ptr);
+    if ( wrapperVector!=NULL )
+        return wrapperVector->getVec()->numberOfDataBlocks();
     AMP_ERROR( "not finished" );
     return 1;
 }
@@ -99,9 +106,11 @@ size_t NativeThyraVector::sizeOfDataBlock ( size_t i ) const
     const Thyra::VectorBase<double>* ptr = d_thyraVec.get();
     const Thyra::DefaultSpmdVector<double>* spmdVector = 
         dynamic_cast<const Thyra::DefaultSpmdVector<double>*>(ptr);
-    if ( spmdVector!=NULL ) {
+    if ( spmdVector!=NULL )
         return d_local;
-    }
+    const ThyraVectorWrapper* wrapperVector = dynamic_cast<const ThyraVectorWrapper*>(ptr);
+    if ( wrapperVector!=NULL )
+        return wrapperVector->getVec()->sizeOfDataBlock(i);
     AMP_ERROR( "not finished" );
     return d_local;
 }

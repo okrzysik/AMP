@@ -28,7 +28,7 @@ Property<double>::make_map(const boost::shared_ptr<AMP::LinearAlgebra::MultiVect
 			std::string name = (*vec)->getVariable()->getName();
 
 			for (std::map<std::string, std::string>::iterator pair=d_translator.begin();
-					pair != d_translator.end(); pair++)
+					pair != d_translator.end(); ++pair)
 			{
 				std::string key = pair->first;
 				if (pair->second == name) {

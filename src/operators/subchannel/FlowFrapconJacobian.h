@@ -131,13 +131,9 @@ namespace Operator {
 
       double getHeatCapacityGradient(double T_b)
       {
-        double dcp;
+        double dcp = 0.0;
 
-        if(T_b < 544){
-
-          dcp = 0.0;
-
-        }else if (544 <= T_b && T_b < 588){
+        if (544 <= T_b && T_b < 588){
 
           dcp = 2.4e5 * ( 2.9e-3 * 1.8*T_b );
 

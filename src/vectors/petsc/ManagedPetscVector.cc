@@ -699,7 +699,8 @@ ManagedPetscVector::ManagedPetscVector(VectorParameters::shared_ptr params):Mana
 ManagedPetscVector::ManagedPetscVector ( Vector::shared_ptr alias ) : ManagedVector ( alias ), PetscVector ()
 {
     initPetsc ();
-    alias->castTo<DataChangeFirer>().registerListener ( this );
+    if ( alias->isA<DataChangeFirer>() )
+        alias->castTo<DataChangeFirer>().registerListener ( this );
 }
 
 

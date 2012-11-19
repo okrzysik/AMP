@@ -25,7 +25,7 @@ namespace Operator {
       double v = 0;
       double w = 0;
 
-      double txx = 0;
+      /* double txx = 0;
       double tyy = 0;
       double tzz = 0;
       double txy = 0;
@@ -44,7 +44,7 @@ namespace Operator {
 
       double dtxzdx = 0;
       double dtxzdz = 0;
-
+*/
       double dudx = 0;
       double dudy = 0;
       double dudz = 0;
@@ -55,17 +55,17 @@ namespace Operator {
       double dwdy = 0;
       double dwdz = 0;
 
-      double p = 0;
+      /* double p = 0;
       double dpdx = 0;
       double dpdy = 0;
       double dpdz = 0;
-        
+*/        
       for(unsigned int k = 0; k < num_nodes; k++) {
 
         u += d_elementInputVectors[ 10*k + 1]*phi[k][qp]; 
         v += d_elementInputVectors[ 10*k + 2]*phi[k][qp]; 
         w += d_elementInputVectors[ 10*k + 3]*phi[k][qp];
-        p += d_elementInputVectors[ 10*k + 0]*phi[k][qp];
+        //p += d_elementInputVectors[ 10*k + 0]*phi[k][qp];
 
 
         dudx += (d_elementInputVectors[(10*k) + 1]*dphi[k][qp](0));
@@ -80,6 +80,7 @@ namespace Operator {
         dwdy += (d_elementInputVectors[(10*k) + 3]*dphi[k][qp](1));
         dwdz += (d_elementInputVectors[(10*k) + 3]*dphi[k][qp](2));
 
+        /*
         dpdx += (d_elementInputVectors[10*k + 0 ]*dphi[k][qp](0));
         dpdy += (d_elementInputVectors[10*k + 0 ]*dphi[k][qp](1));
         dpdz += (d_elementInputVectors[10*k + 0 ]*dphi[k][qp](2));
@@ -105,7 +106,6 @@ namespace Operator {
         dtxzdx += (d_elementInputVectors[(10*k) + 9]*dphi[k][qp](0));
 
 
-        /*
            u += d_elementInputVectors[NavierStokes::VELOCITY][(3*k) + 0]*phi[k][qp]; 
            v += d_elementInputVectors[NavierStokes::VELOCITY][(3*k) + 1]*phi[k][qp]; 
            w += d_elementInputVectors[NavierStokes::VELOCITY][(3*k) + 2]*phi[k][qp];

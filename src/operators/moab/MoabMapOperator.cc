@@ -115,7 +115,7 @@ void MoabMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     // Gives coordinates to Coupler
     unsigned int numCoords = allCoords.size() / 3;
     AMP_ASSERT( numCoords == r->getLocalSize() );
-    double relTol=1.0e-10, absTol=1.0e-10;
+    //double relTol=1.0e-10, absTol=1.0e-10;
     d_coupler->locate_points( &allCoords[0], numCoords);
     //d_coupler->locate_points( &allCoords[0], numCoords,
     //                           relTol,       absTol );
