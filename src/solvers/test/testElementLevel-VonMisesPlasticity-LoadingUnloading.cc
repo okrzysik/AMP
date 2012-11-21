@@ -244,7 +244,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     
     boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsBVPoperator->getVolumeOperator())->printStressAndStrain(solVec, fname);
 
-    double prev_stress = 1.0, prev_strain = 1.0, slope = 1.0;
     if(ExtractData) {
       FILE *fin; 
       fin = fopen(fname.c_str(),"r");
@@ -260,6 +259,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
           fscanf(fin,"%lf",&strain1[klm]);
         }
         if(ijk == 7) {
+          double prev_stress = 1.0, prev_strain = 1.0, slope = 1.0;
           if(step == 0) {
             slope = 0.0;
           } else {

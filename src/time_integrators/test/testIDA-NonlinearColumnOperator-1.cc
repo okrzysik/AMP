@@ -191,10 +191,10 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   
   AMP::LinearAlgebra::VS_Mesh vectorSelector( meshAdapter );
   AMP::LinearAlgebra::Vector::shared_ptr thermalIC = initialCondition->select( vectorSelector, outputVar->getName() );
-  int counter=0;     
+  //int counter=0;     
   for( ; node != end_node ; ++node)
     {
-      counter+=1;
+      //counter+=1;
       
       std::vector<size_t> gid;
       nodalDofMap->getDOFs ( node->globalID() , gid);

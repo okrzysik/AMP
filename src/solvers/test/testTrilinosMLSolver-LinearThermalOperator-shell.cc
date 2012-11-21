@@ -61,7 +61,6 @@ void linearThermalTest(AMP::UnitTest *ut )
   AMP::PIO::logAllNodes(log_file);
 
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  std::string mesh_file = input_db->getString("Mesh");
 
   // Construct a mesh manager which reads in the fuel mesh
   AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );

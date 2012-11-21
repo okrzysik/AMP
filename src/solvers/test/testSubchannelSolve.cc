@@ -138,7 +138,6 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     PROFILE_START("Main");
     std::string input_file = "input_" + exeName;
     std::string log_file = "output_" + exeName;
-    std::string silo_name = exeName;
     AMP::PIO::logAllNodes(log_file);
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
     globalComm.barrier();
@@ -746,7 +745,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         siloWriter->registerVector( globalThermalSolVec ,  pinMesh , AMP::Mesh::Vertex, "Temperature" );
         siloWriter->registerVector( specificPowerGpVec,  pinMesh , AMP::Mesh::Volume, "Power" );
     }
-    siloWriter->writeFile( silo_name , 0 );
+    siloWriter->writeFile( exeName, 0 );
 #endif
     ut->passes("test runs to completion");
     PROFILE_STOP("Main");

@@ -140,9 +140,9 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     AMP::Mesh::MeshIterator  node = meshAdapter->getIterator(AMP::Mesh::Vertex, zeroGhostWidth);
     AMP::Mesh::MeshIterator  end_node = node.end();
       
-    int counter=0;     
+    //int counter=0;     
     for( ; node != end_node ; ++node) {
-        counter+=1;
+        //counter+=1;
         std::vector<size_t> gid;
         nodalDofMap->getDOFs ( node->globalID() , gid);
             

@@ -136,7 +136,7 @@ NonlinearKrylovAccelerator::getFromInput(const boost::shared_ptr<AMP::Database>&
 void
 NonlinearKrylovAccelerator::setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess )
 {
-  int j, n;
+  int n;
 
   d_pvSolution = initialGuess;
   
@@ -146,14 +146,14 @@ NonlinearKrylovAccelerator::setInitialGuess( boost::shared_ptr<AMP::LinearAlgebr
     {  
       d_pCorrectionVectors = new boost::shared_ptr<AMP::LinearAlgebra::Vector>[n];
       
-      for (j = 0; j < n; j++) 
+      for (size_t j = 0; j < n; j++) 
 	{
 	  d_pCorrectionVectors[j] = d_pvSolution->cloneVector();
 	}
       
       d_pFunctionDifferenceVectors = new boost::shared_ptr<AMP::LinearAlgebra::Vector>[n];
       
-      for (j = 0; j < n; j++) 
+      for (size_t j = 0; j < n; j++) 
 	{
 	  d_pFunctionDifferenceVectors[j] = d_pvSolution->cloneVector();
 	}
@@ -182,8 +182,8 @@ NonlinearKrylovAccelerator::initialize(boost::shared_ptr<SolverStrategyParameter
 void
 NonlinearKrylovAccelerator::correction(boost::shared_ptr<AMP::LinearAlgebra::Vector> &f)
 {
-  int i, j, k, nvec, new_loc;
-  double s, hkk, hkj, cj;
+  int i, j, k, new_loc;
+  double s;
   boost::shared_ptr<AMP::LinearAlgebra::Vector>  v, w;
 
   double *hk, *hj, *c;
@@ -237,7 +237,7 @@ NonlinearKrylovAccelerator::correction(boost::shared_ptr<AMP::LinearAlgebra::Vec
      */
     
     /* Trivial initial factorization stage. */
-    nvec = 1;
+    int nvec = 1;
     d_ppdFunctionDifferenceInnerProducts[d_iFirstVectorIndex][d_iFirstVectorIndex] = 1.0;
     
     for (k = d_piNext[d_iFirstVectorIndex]; k != EOL; k = d_piNext[k]) 
@@ -257,11 +257,11 @@ NonlinearKrylovAccelerator::correction(boost::shared_ptr<AMP::LinearAlgebra::Vec
 	
 	/* Single stage of Choleski factorization. */
 	hk = d_ppdFunctionDifferenceInnerProducts[k];   /* row k of H */
-	hkk = 1.0;
+	double hkk = 1.0;
 	for (j = d_iFirstVectorIndex; j != k; j = d_piNext[j]) 
 	  {
 	    hj = d_ppdFunctionDifferenceInnerProducts[j];   /* row j of H */
-	    hkj = hj[k];
+	    double hkj = hj[k];
 	    for (i = d_iFirstVectorIndex; i != j; i = d_piNext[i])
 	      hkj -= hk[i] * hj[i];
 	    hkj /= hj[j];
@@ -319,7 +319,7 @@ NonlinearKrylovAccelerator::correction(boost::shared_ptr<AMP::LinearAlgebra::Vec
       /* forward substitution */
       for (j = d_iFirstVectorIndex; j != EOL; j = d_piNext[j]) 
 	{
-	  cj = f->dot( *d_pFunctionDifferenceVectors[j] );
+	  double cj = f->dot( *d_pFunctionDifferenceVectors[j] );
 
 	  for (i = d_iFirstVectorIndex; i != j; i = d_piNext[i])
 	    {
@@ -332,7 +332,7 @@ NonlinearKrylovAccelerator::correction(boost::shared_ptr<AMP::LinearAlgebra::Vec
       /* backward substitution */
       for (j = d_iLastVectorIndex; j != EOL; j = d_piPrevious[j]) 
 	{
-	  cj = c[j];
+	  double cj = c[j];
 	  for (i = d_iLastVectorIndex; i != j; i = d_piPrevious[i])
 	    cj -= d_ppdFunctionDifferenceInnerProducts[i][j] * c[i];
 	  c[j] = cj / d_ppdFunctionDifferenceInnerProducts[j][j];
@@ -486,13 +486,11 @@ NonlinearKrylovAccelerator::restart(void)
 void
 NonlinearKrylovAccelerator::relax(void)
 {
-  int new_loc;
-
   if (d_bContainsPendingVecs) 
     {
       /* Drop the initial slot where the pending vectors are stored. */
       AMP_INSIST(d_iFirstVectorIndex >= 0, "d_iFirstVectorIndex is not positive");
-      new_loc = d_iFirstVectorIndex;
+      int new_loc = d_iFirstVectorIndex;
       d_iFirstVectorIndex = d_piNext[d_iFirstVectorIndex];
       if (d_iFirstVectorIndex == EOL) 
 	{

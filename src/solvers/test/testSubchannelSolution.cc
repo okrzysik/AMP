@@ -62,7 +62,6 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file = "output_" + exeName;
-    std::string silo_name = exeName;
     AMP::PIO::logAllNodes(log_file);
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
@@ -342,7 +341,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     siloWriter->registerVector( subchannelEnthalpy, xyFaceMesh, AMP::Mesh::Face, "Enthalpy" );
     siloWriter->registerVector( subchannelPressure, xyFaceMesh, AMP::Mesh::Face, "Pressure" );
     siloWriter->registerVector( tempVec, xyFaceMesh, AMP::Mesh::Face, "Temperature" );
-    siloWriter->writeFile( silo_name , 0 );
+    siloWriter->writeFile( exeName, 0 );
 #endif
 
 

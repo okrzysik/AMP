@@ -131,7 +131,6 @@ void calculateSources(AMP::Mesh::Mesh::shared_ptr meshAdapter,
     std::vector<size_t> d_gaussPtIndices; 
     gaussPointDOF->getDOFs ( el->globalID(), d_gaussPtIndices);
 
-    std::vector<Point> coordinates = d_fe->get_xyz();
     for (unsigned int qp = 0; qp < d_gaussPtIndices.size(); qp++) {
       double manufacturedAtGauss1;
       manufacturedAtGauss1 = __FsnK__(); 
@@ -323,7 +322,6 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
     AMP::AMP_MPI globalComm)
 {
 
-  std::string silo_file = "testMeshRefinementDiffusion-1";
   boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
   AMP::Mesh::MeshParameters::shared_ptr meshmgrParams (new AMP::Mesh::MeshParameters ( mesh_db ) );
   meshmgrParams->setComm(globalComm);
@@ -389,6 +387,7 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
   siloWriter->registerVector( solutionError, manager, AMP::Mesh::Vertex , "SolutionErro" );
 
   siloWriter->registerVector( manufacturedRHS , manager, AMP::Mesh::Volume,"ManufacturedRhs");
+  std::string silo_file = "testMeshRefinementDiffusion-1";
   siloWriter->writeFile( silo_file , 0 );
 #endif 
 

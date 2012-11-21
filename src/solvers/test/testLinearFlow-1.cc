@@ -63,7 +63,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 {
 
 	std::string input_file = "input_" + exeName;
-    std::string silo_name = exeName;
 
     // Read the input file
     boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );

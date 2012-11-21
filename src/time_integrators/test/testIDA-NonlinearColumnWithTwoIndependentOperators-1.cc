@@ -311,10 +311,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   int retval=0;
   double current_time=0;
   double max=0;
-  double abs_error=0.0;
   double min=0;
-  double rel_error=0.0;
-  double exact_sol=0.0;
   int j=1;
   while(pIDATimeIntegrator->getCurrentTime() < pIDATimeIntegrator->getFinalTime())
     {

@@ -144,16 +144,17 @@ void inverseTest1(AMP::UnitTest *ut, const std::string exeName)
       std::string mfgName = mfgSolution->get_name();
       bool isCylindrical = mfgName.find("Cylindrical") < mfgName.size();
       for (; iterator != iterator.end(); iterator++) {
-            double x, y, z, r, th = 0.;
+            double x, y, z;
             std::valarray<double> poly(10);
             std::vector<double> coord = iterator->coord();
             x = coord[0];
             y = coord[1];
             z = coord[2];
             if (isCylindrical) {
-                r = sqrt(x * x + y * y);
-                double Pi = 3.1415926535898;
+                double th = 0.;
+                double r = sqrt(x * x + y * y);
                 if (r > 0) {
+                    double Pi = 3.1415926535898;
                     th = acos(x / r);
                     if (y < 0.) th = 2 * Pi - th;
                 }
@@ -177,15 +178,16 @@ void inverseTest1(AMP::UnitTest *ut, const std::string exeName)
           AMP::Mesh::MeshIterator iter;
           for (iter=beg_bnd; iter!=end_bnd; iter++) {
                   std::valarray<double> poly(10);
-                double x, y, z, r, th=0.;
+                double x, y, z;
                 std::vector<double> coord = iterator->coord();
                 x = coord[0];
                 y = coord[1];
                 z = coord[2];
                 if (isCylindrical) {
-                    r = sqrt(x * x + y * y);
-                    double Pi = 3.1415926535898;
+                    double th = 0.;
+                    double r = sqrt(x * x + y * y);
                     if (r > 0) {
+                        double Pi = 3.1415926535898;
                         th = acos(x / r);
                         if (y < 0.) th = 2 * Pi - th;
                     }

@@ -170,9 +170,9 @@ void linearFickTest(AMP::UnitTest *ut )
   double b = -10.*power;
   double a = 300. + 150.*power;
   bool passes = 1;
-  double cal, zee, sol, err;
 
   if (false) {
+      double cal, zee, sol, err;
       // Serialize the code
       for (int i=0; i<globalComm.getSize(); i++) {
          if ( globalComm.getRank()==i ) {

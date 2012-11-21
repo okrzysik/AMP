@@ -250,10 +250,10 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut)
     AMP::Mesh::MeshManager::Adapter::NodeIterator end_node = srcOpParams->d_MeshAdapter->endNode();
     
     AMP::Mesh::DOFMap::shared_ptr dof_map = meshAdapter->getDOFMap(ThermalInpVar);
-    int counter=0;     
+    //int counter=0;     
     for( ; node != end_node ; ++node)
     {
-        counter+=1;
+        //counter+=1;
         
          std::vector<unsigned int> bndGlobalIds;
          std::vector<unsigned int> d_dofIds;
@@ -367,9 +367,6 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut)
     double current_time=0;
     double max=0;
     double min=0;
-    double abs_error=0.0;
-    double rel_error=0.0;
-    double exact_sol=0.0;
     
     for (int j=0 ; j < 100 ; j++)
     {
