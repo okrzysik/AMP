@@ -136,7 +136,7 @@ NonlinearKrylovAccelerator::getFromInput(const boost::shared_ptr<AMP::Database>&
 void
 NonlinearKrylovAccelerator::setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess )
 {
-  int n;
+  size_t n;
 
   d_pvSolution = initialGuess;
   
