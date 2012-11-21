@@ -136,7 +136,7 @@ namespace AMP {
       for (size_t i = 1; i < npes; ++i) {
         d_SendDisps[i] = d_SendDisps[i-1] + d_SendCnts[i-1]; 
       } // end for i
-      AMP_ASSERT( d_SendDisps[npes-1] + d_SendCnts[npes-1] == 4*nConstraints );
+      AMP_ASSERT( d_SendDisps[npes-1] + d_SendCnts[npes-1] == 4* static_cast<int>(nConstraints) );
 
       std::vector<int> tmpSendCnts(npes, 0);
       d_MasterVerticesMap.resize(4*nConstraints, nConstraints);
@@ -465,7 +465,7 @@ namespace AMP {
 
       std::vector<double> sendMasterValues(d_SendDisps[npes-1]+d_SendCnts[npes-1]);
       for (size_t i = 0; i < npes; ++i) {
-        for (size_t j = 0; j < static_cast<int>(d_SendCnts[i]); j += d_DOFsPerNode) {
+        for (int j = 0; j < d_SendCnts[i]; j += d_DOFsPerNode) {
           size_t k = d_SendDisps[i] + j;
           u->getLocalValuesByGlobalID(d_DOFsPerNode, &(d_RecvMasterIndices[k]), &(sendMasterValues[k]));
         } // end for j

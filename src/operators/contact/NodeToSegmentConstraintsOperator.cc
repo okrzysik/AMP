@@ -277,7 +277,7 @@ namespace AMP {
 
       std::vector<double> sendMasterValues(d_SendDisps[npes-1]+d_SendCnts[npes-1]);
       for (size_t i = 0; i < npes; ++i) {
-        for (size_t j = 0; j < static_cast<int>(d_SendCnts[i]); j += d_DOFsPerNode) {
+        for (int j = 0; j < d_SendCnts[i]; j += d_DOFsPerNode) {
           size_t k = d_SendDisps[i] + j;
           u->getLocalValuesByGlobalID(d_DOFsPerNode, &(d_RecvMasterIndices[k]), &(sendMasterValues[k]));
         } // end for j

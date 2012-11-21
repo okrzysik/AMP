@@ -77,7 +77,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   for ( ; node != end_node; ++node) {
     std::vector<size_t> globalID;
     DOFs->getDOFs(node->globalID(), globalID); 
-    for(int d = 0; d < globalID.size(); ++d) {
+    for(size_t d = 0; d < globalID.size(); ++d) {
       dummyVector->setLocalValueByGlobalID(globalID[d], dummyFunction(node->coord(), d));
     }//end d
   }
