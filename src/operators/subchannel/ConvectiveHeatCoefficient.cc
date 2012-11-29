@@ -49,10 +49,13 @@ ConvectiveHeatCoefficient :: ConvectiveHeatCoefficient( const
 void ConvectiveHeatCoefficient :: getConductance(std::vector<double> & beta,
     std::vector<double> & gamma, const std::vector<std::vector <double> > & inputVectors)
 {
-    AMP_ASSERT(inputVectors.size()==3);
+    AMP_ASSERT(inputVectors.size()==4);
     std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
     argMap.insert(std::make_pair("temperature",new std::vector<double>(inputVectors[0].begin(), inputVectors[0].end())));
     argMap.insert(std::make_pair("density",new std::vector<double>(inputVectors[2].begin(), inputVectors[2].end())));
+    argMap.insert(std::make_pair("diameter",new std::vector<double>(inputVectors[3].begin(), inputVectors[3].end())));
+    //argMap.insert(std::make_pair("reynolds",new std::vector<double>(inputVectors[4].begin(), inputVectors[4].end())));
+    //argMap.insert(std::make_pair("prandtl",new std::vector<double>(inputVectors[5].begin(), inputVectors[5].end())));
 
     d_property->evalv(beta, argMap);
     d_property->evalv(gamma, argMap);

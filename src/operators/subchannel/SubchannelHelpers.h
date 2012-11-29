@@ -26,14 +26,14 @@ namespace Subchannel {
   * \param[out] x           The x-coordinates of the subchannel boundaries (Nx+1)
   * \param[out] y           The y-coordinates of the subchannel boundaries (Ny+1)
   * \param[out] area        The flow area of the subchannels (Nx x Ny)
-  * \param[out] diam        The hydraulic diameter of the subchannels (Nx x Ny)
-  * \param[out] perimeter   The wetted perimeter of the subchannels (Nx x Ny)
+  * \param[out] fric_diam   The hydraulic diameter of the subchannels defined using only the rod perimeter (Nx x Ny)
+  * \param[out] heat_diam   The hydraulic diameter of the subchannels defined using the rod and subchannel perimeters (Nx x Ny)
   * \param[out] rod_diameter  The average rod diameter for each subchannel (Nx x Ny)
   * \param[out] channel_fraction  The fraction of the rod in each subchannel (Nx x Ny)
   */
 void getSubchannelProperties( AMP::Mesh::Mesh::shared_ptr subchannel, const std::vector<double>& clad_x,
      const std::vector<double>& clad_y, const std::vector<double>& clad_d, std::vector<double>& x,
-     std::vector<double>& y, std::vector<double>& area, std::vector<double>& diam, std::vector<double>& perimeter, 
+     std::vector<double>& y, std::vector<double>& area, std::vector<double>& fric_diam, std::vector<double>& heat_diam, 
      std::vector<double>& rod_diameter, std::vector<double>& channel_fraction );
 
 
@@ -77,6 +77,17 @@ std::vector<double> getHeatFluxGeneration( std::string shape, std::vector<double
 std::vector<double> getHeatFluxClad( std::vector<double> z, std::vector<AMP::Mesh::MeshElementID> face_ids,
     double channelDiam, double reynolds, double prandtl, double fraction, boost::shared_ptr<SubchannelPhysicsModel> subchannelPhysicsModel, 
     AMP::LinearAlgebra::Vector::const_shared_ptr flow, AMP::LinearAlgebra::Vector::const_shared_ptr clad_temp );
+
+
+/**
+  * \brief Function to get the hydraulic diameter on the clad surface
+  * \details  This function returns the hydraulic diameter of the subchannels on the clad surface
+  * \param clad         Clad mesh
+  * \param subchannel   Subchannel mesh
+  * \param comm         Communicator to use for operatation (must be >= comm of both clad and subchannel, may be comm_world)
+  */
+AMP::LinearAlgebra::Vector::shared_ptr  getCladHydraulicDiameter( AMP::Mesh::Mesh::shared_ptr clad, 
+    AMP::Mesh::Mesh::shared_ptr subchannel, AMP::AMP_MPI comm );
 
 
 }

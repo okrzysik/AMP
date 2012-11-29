@@ -2,7 +2,7 @@
 #define included_ProfilerAppMacros
 
 
-//! Define some helper macros
+// Define some helper macros
 #define GET_LEVEL(_0,N,...) N 
 #define PROFILE_START_LEVEL(NAME,FILE,LINE,LEVEL)           \
     do {                                                    \

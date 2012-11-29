@@ -244,6 +244,11 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
 
     }
 
+    // Get the subchannel hydraulic diameter for the temperature boundary condition 
+    AMP::LinearAlgebra::Vector::shared_ptr ChannelDiameterVec = 
+        AMP::Operator::Subchannel::getCladHydraulicDiameter( cladMesh, subchannelMesh, globalComm );
+
+
     AMP::LinearAlgebra::Vector::shared_ptr subchannelFuelTemp; 
     AMP::LinearAlgebra::Vector::shared_ptr subchannelFlowTemp;
     if ( subchannelMesh.get()!=NULL ) {
@@ -395,6 +400,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
                         AMP_ASSERT(thermalMapVec!=NULL);
                         c2wBC->setVariableFlux ( thermalMapVec );
                         c2wBC->setFrozenVector( density_map_vec );
+                        c2wBC->setFrozenVector( ChannelDiameterVec );
                         c2wBC->reset ( c2wBC->getParameters() );
                     }
                 } else if ( opNames[curBCentry] == "C2PRobinVectorCorrection" ) {

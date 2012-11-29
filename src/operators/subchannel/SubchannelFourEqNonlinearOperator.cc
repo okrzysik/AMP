@@ -99,9 +99,9 @@ void SubchannelFourEqNonlinearOperator :: reset(const boost::shared_ptr<Operator
         AMP_WARNING("Field 'Mass_Flow_Rate' is obsolete and should be removed from database");
     
     // Get the subchannel properties from the mesh
-    std::vector<double> x, y, perimeter;
+    std::vector<double> x, y;
     Subchannel::getSubchannelProperties( d_Mesh, myparams->clad_x, myparams->clad_y, myparams->clad_d, 
-        x, y, d_channelArea, d_channelDiam, perimeter, d_rodDiameter, d_rodFraction );
+        x, y, d_channelArea, d_channelDiamFric, d_channelDiamHeat, d_rodDiameter, d_rodFraction );
     AMP_ASSERT(d_channelArea.size()==d_numSubchannels);
     double total_area = 0.0;
     for (size_t i=0; i<d_numSubchannels; i++)
@@ -448,10 +448,6 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
           std::vector<double> subchannelCentroid = localSubchannelCell->centroid();
           size_t currentSubchannelIndex = getSubchannelIndex(subchannelCentroid[0],subchannelCentroid[1]);
 
-          // compute subchannel quantities
-          double area = d_channelArea[isub]; // subchannel area
-          double D = d_channelDiam[isub];    // subchannel hydraulic diameter
-
           // compute flux
           std::vector<double> flux(d_z.size()-1);
           if (d_source == "averageCladdingTemperature") {
@@ -465,7 +461,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                 face_ids[j] = face->globalID();
                 ++face;
              }
-             flux = Subchannel::getHeatFluxClad( d_z, face_ids, d_channelDiam[isub], d_reynolds, d_prandtl, 
+             flux = Subchannel::getHeatFluxClad( d_z, face_ids, d_channelDiamHeat[isub], d_reynolds, d_prandtl, 
                 d_rodFraction[isub], d_subchannelPhysicsModel, inputVec, d_cladTemperature );
           } else if (d_source == "averageHeatFlux") {
              AMP_ERROR("Heat source type 'averageHeatFlux' not yet implemented.");
@@ -482,6 +478,8 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
           }
 
           // loop over cells of current subchannel
+          double area = d_channelArea[isub]; // subchannel area
+          double D = d_channelDiamFric[isub];    // subchannel hydraulic diameter
           for (; localSubchannelCell != localSubchannelCell.end(); ++localSubchannelCell) {
              // get upper and lower axial faces of current cell
              AMP::Mesh::MeshElement plusFace;  // upper axial face for current cell
@@ -676,7 +674,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                    getAxialFaces(neighborCell,neighborPlusFace,neighborMinusFace);
       
                    double neighborArea = d_channelArea[neighborSubchannelIndex]; // neighbor subchannel area
-                   double neighborDiam = d_channelDiam[neighborSubchannelIndex]; // neighbor hydraulic diameter
+                   double neighborDiam = d_channelDiamFric[neighborSubchannelIndex]; // neighbor hydraulic diameter
 
                    // extract unknowns from solution vector
                    // -------------------------------------

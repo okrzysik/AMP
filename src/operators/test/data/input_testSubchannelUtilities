@@ -1,0 +1,77 @@
+// Database for all the meshes
+Mesh{
+    MeshName = "AllMeshes"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
+
+    // Pin meshes
+    Mesh_1 {
+        MeshName = "MultiPin"
+        MeshType = "Multimesh"
+        MeshDatabasePrefix = "Mesh_"
+        MeshArrayDatabasePrefix = "MeshArray_"
+        // The array of pins
+        MeshArray_1 {
+            N = 1
+            iterator = "%p"
+            indicies = 1
+            MeshName = "pin_%p"
+            MeshType = "Multimesh"
+            MeshDatabasePrefix = "Mesh_"
+            MeshArrayDatabasePrefix = "MeshArray_"
+            x_offset = 0.0063
+            y_offset = 0.0063
+            z_offset = 0.0
+            // The clad mesh
+            Mesh_1 {
+                MeshName = "CladMeshes_%p"
+                MeshType = "Multimesh"
+                MeshDatabasePrefix = "Mesh_"
+                MeshArrayDatabasePrefix = "MeshArray_"
+                Mesh_1 {
+                  MeshName = "clad"
+                  MeshType = "AMP"
+                  dim = 3
+                  Generator = "tube"
+                  Size = 3, 20, 30
+                  Range = 0.004110, 0.004705, 0, 3.81
+                  x_offset = 0.0
+                  y_offset = 0.0
+                  z_offset = 0.0
+                  Weight = 1.0
+                }
+            }
+        }
+    }
+
+    // Subchannel mesh
+    Mesh_2 {
+      MeshName = "subchannel"
+        MeshType = "AMP"
+        dim = 3
+        Generator = "cube"
+        Size = 1, 1, 20
+        x_grid = 0.0, 0.0126
+        y_grid = 0.0, 0.0126
+        //z_grid = 0.0, 0.381, 0.762, 1.143, 1.524, 1.905, 2.286, 2.667, 3.048, 3.429, 3.810
+        z_grid = 0.0, 0.1905, 0.3810, 0.5715, 0.7620, 0.9525, 1.1430, 1.3335, 1.5240, 1.7145, 1.9050, 2.0955, 2.2860, 2.4765, 2.6670, 2.8575, 3.0480, 3.2385, 3.4290, 3.6195, 3.8100
+    }
+}
+
+
+SubchannelPhysicsModel{
+    name = "SubchannelPhysicsModel"
+    Material = "WaterLibrary"
+    Formulation = "FunctionsTesting"
+    Defaults{
+        diameter    = 0.01178  // Todreas, p.455
+        temperature = 350.0
+        enthalpy    = 200.0e3
+        pressure    = 0.5e6
+        density     = 973.919
+        reynolds    = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
+        prandtl     = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
+    }
+}
+

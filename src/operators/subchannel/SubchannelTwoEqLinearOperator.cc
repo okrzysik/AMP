@@ -83,7 +83,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
     // Get the subchannel properties from the mesh
     std::vector<double> x, y, perimeter;
     Subchannel::getSubchannelProperties( d_Mesh, myparams->clad_x, myparams->clad_y, myparams->clad_d, 
-        x, y, d_channelArea, d_channelDiam, perimeter, d_rodDiameter, d_rodFraction );
+        x, y, d_channelArea, d_channelDiamFric, d_channelDiamHeat, d_rodDiameter, d_rodFraction );
     AMP_ASSERT(d_channelArea.size()==d_numSubchannels);
     double total_area = 0.0;
     for (size_t i=0; i<d_numSubchannels; i++)
@@ -187,7 +187,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
 
         // calculate residual for axial momentum equations
         double A = d_channelArea[isub];     // Channel area
-        double D = d_channelDiam[isub];     // Channel hydraulic diameter
+        double D = d_channelDiamFric[isub]; // Channel hydraulic diameter
         double mass = d_channelMass[isub];  // Mass flow rate in the current subchannel
         int j = 1;
         AMP_ASSERT(*d_dofMap ==*(d_frozenVec->getDOFManager()));
