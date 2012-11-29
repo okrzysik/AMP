@@ -20,7 +20,7 @@ public:
         while ( cur != in.end() )
         {
           new_order[*cur] = i++;
-          cur++;
+          ++cur;
         }
     }
 
@@ -73,7 +73,7 @@ void   MultiVariable::add ( Variable::shared_ptr newVar )
         iterator curVar = multivariable->beginVariable();
         while ( curVar != multivariable->endVariable() ) {
             add ( *curVar );
-            curVar++;
+            ++curVar;
         }
     } else {
         d_vVariables.push_back ( newVar ); 
@@ -113,7 +113,7 @@ void MultiVariable::removeDuplicateVariables ()
         if ( iterator->get()==NULL )
             iterator = d_vVariables.erase(iterator);
         else
-            iterator++;
+            ++iterator;
     }
     // Next remove any duplicate entries
     // Note: while it would be faster to sort, then remove duplicate entires,

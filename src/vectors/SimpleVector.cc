@@ -223,7 +223,7 @@ void SimpleVector::scale(double alpha)
     while ( cur != end() )
     {
       (*cur) = alpha * (*curx) + beta * (*cury);
-      curx++; cury++; ++cur;
+      ++curx; ++cury; ++cur;
     }
   }
 

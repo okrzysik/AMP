@@ -28,7 +28,7 @@ Vector::shared_ptr  SubsetVector::view ( Vector::shared_ptr v , Variable::shared
     boost::shared_ptr<AMP::Discretization::subsetDOFManager> subsetDOF = boost::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( subsetDOF_ptr );
     AMP_ASSERT(subsetDOF.get()!=NULL);
     std::vector<size_t> remote_DOFs = subsetDOF->getRemoteDOFs();
-    bool ghosts = v->getComm().maxReduce<char>(remote_DOFs.size()>0)==1;
+    bool ghosts = v->getComm().anyReduce(!remote_DOFs.empty());
     AMP::LinearAlgebra::CommunicationList::shared_ptr commList;
     if ( !ghosts ) {
         commList = AMP::LinearAlgebra::CommunicationList::createEmpty( subsetDOF->numLocalDOF(), subsetDOF->getComm() );
@@ -77,7 +77,7 @@ Vector::const_shared_ptr  SubsetVector::view ( Vector::const_shared_ptr v , Vari
     boost::shared_ptr<AMP::Discretization::subsetDOFManager> subsetDOF = boost::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( subsetDOF_ptr );
     AMP_ASSERT(subsetDOF.get()!=NULL);
     std::vector<size_t> remote_DOFs = subsetDOF->getRemoteDOFs();
-    bool ghosts = v->getComm().maxReduce<char>(remote_DOFs.size()>0)==1;
+    bool ghosts = v->getComm().anyReduce(!remote_DOFs.empty());
     AMP::LinearAlgebra::CommunicationList::shared_ptr commList;
     if ( !ghosts ) {
         commList = AMP::LinearAlgebra::CommunicationList::createEmpty( subsetDOF->numLocalDOF(), subsetDOF->getComm() );
