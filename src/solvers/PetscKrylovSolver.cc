@@ -3,6 +3,7 @@
 #include "operators/LinearOperator.h"
 #include "matrices/Matrix.h"
 #include "matrices/petsc/PetscMatrix.h"
+#include "utils/ProfilerApp.h"
 
 extern "C"{
 #include "assert.h"
@@ -82,9 +83,6 @@ PetscKrylovSolver::initialize(boost::shared_ptr<SolverStrategyParameters> const 
 
     checkErr(KSPSetType(d_KrylovSolver,d_sKspType.c_str()));
 
-    PC pc;
-    checkErr(KSPGetPC(d_KrylovSolver,&pc));
-
     if(d_KSPAppendOptionsPrefix!="") {
         KSPAppendOptionsPrefix(d_KrylovSolver, d_KSPAppendOptionsPrefix.c_str());
         //      PCAppendOptionsPrefix(pc, d_KSPAppendOptionsPrefix.c_str());
@@ -94,6 +92,9 @@ PetscKrylovSolver::initialize(boost::shared_ptr<SolverStrategyParameters> const 
         checkErr(KSPGMRESSetRestart(d_KrylovSolver, d_iMaxKrylovDimension));
     }
 
+    // Create the preconditioner
+    PC pc;
+    checkErr(KSPGetPC(d_KrylovSolver,&pc));
     if(d_bUsesPreconditioner) {
         if(d_sPcType !="shell") {
             // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
@@ -106,12 +107,9 @@ PetscKrylovSolver::initialize(boost::shared_ptr<SolverStrategyParameters> const 
             // static member functions into every SolverStrategy that might be used as a preconditioner
             checkErr(PCSetType(pc,PCSHELL));
             checkErr(PCShellSetContext(pc, this));
-
             checkErr(PCShellSetSetUp(pc, PetscKrylovSolver::setupPreconditioner));
             checkErr(PCShellSetApply(pc, PetscKrylovSolver::applyPreconditioner));
-
         }
-
         #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
             checkErr(KSPSetPreconditionerSide(d_KrylovSolver, d_PcSide));
         #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
@@ -119,7 +117,6 @@ PetscKrylovSolver::initialize(boost::shared_ptr<SolverStrategyParameters> const 
         #else
             #error Not programmed for this version yet
         #endif
-
     } else {
         checkErr(PCSetType(pc,PCNONE));
     }
@@ -205,6 +202,7 @@ void
 PetscKrylovSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
                   boost::shared_ptr<AMP::LinearAlgebra::Vector>  u)
 {
+    PROFILE_START("solve");
     #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
         // fVecView and uVecView may be held in KSPSolve internals.
         // by declaring a temporary vector, we ensure that the KSPSolve
@@ -238,6 +236,38 @@ PetscKrylovSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
     Vec fVec = fVecView->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
     Vec uVec = uVecView->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
 
+    // Create the preconditioner and re-register the operator
+    PC pc;
+    checkErr(KSPGetPC(d_KrylovSolver,&pc));
+    if(d_bUsesPreconditioner) {
+        if(d_sPcType !="shell") {
+            // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
+            assert(d_pPreconditioner.get()==NULL);
+            PCSetType(pc, d_sPcType.c_str());
+        } else {
+            // for a shell preconditioner the user context is set to an instance of this class
+            // and the setup and apply preconditioner functions for the PCSHELL
+            // are set to static member functions of this class. By doing this we do not need to introduce
+            // static member functions into every SolverStrategy that might be used as a preconditioner
+            checkErr(PCSetType(pc,PCSHELL));
+            checkErr(PCShellSetContext(pc, this));
+            checkErr(PCShellSetSetUp(pc, PetscKrylovSolver::setupPreconditioner));
+            checkErr(PCShellSetApply(pc, PetscKrylovSolver::applyPreconditioner));
+        }
+        #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+            checkErr(KSPSetPreconditionerSide(d_KrylovSolver, d_PcSide));
+        #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+            checkErr(KSPSetPCSide(d_KrylovSolver, d_PcSide));
+        #else
+            #error Not programmed for this version yet
+        #endif
+    } else {
+        checkErr(PCSetType(pc,PCNONE));
+    }
+    if(d_pOperator.get()!=NULL) {
+       registerOperator(d_pOperator);
+    }
+
     // This will replace any PETSc references to pointers we also track
     // After this, we are free to delet f_thisGetsAroundPETScSharedPtrIssue without memory leak.
     KSPSolve(d_KrylovSolver, fVec, uVec);
@@ -250,7 +280,7 @@ PetscKrylovSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
     #if !( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
         KSPReset(d_KrylovSolver);
     #endif
-
+    PROFILE_STOP("solve");
 }
 
 
