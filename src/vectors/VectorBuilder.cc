@@ -53,7 +53,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
         AMP_INSIST(N_var==N_var0,"The multivariable has a different number of varaibles on different processors");
         // Create the Vector for each variable, then combine
         std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vectors;
-        for (AMP::LinearAlgebra::MultiVariable::iterator it=multiVariable->beginVariable(); it!=multiVariable->endVariable(); it++)
+        for (AMP::LinearAlgebra::MultiVariable::iterator it=multiVariable->beginVariable(); it!=multiVariable->endVariable(); ++it)
             vectors.push_back( createVector( DOFs, *it, split ) );
         // Create the multivector
         AMP_MPI comm = DOFs->getComm();
@@ -84,7 +84,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
         comm.barrier();
         AMP::LinearAlgebra::CommunicationList::shared_ptr comm_list;
         std::vector<size_t> remote_DOFs = DOFs->getRemoteDOFs();
-        bool ghosts = comm.maxReduce<char>(remote_DOFs.size()>0)==1;
+        bool ghosts = comm.anyReduce(!remote_DOFs.empty());
         if ( !ghosts ) {
             // No need for a communication list
             comm_list = AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), DOFs->getComm() );
