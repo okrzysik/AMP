@@ -247,8 +247,10 @@ std::vector<double> getHeatFluxClad( std::vector<double> z, std::vector<AMP::Mes
 AMP::LinearAlgebra::Vector::shared_ptr  getCladHydraulicDiameter( AMP::Mesh::Mesh::shared_ptr clad, 
     AMP::Mesh::Mesh::shared_ptr subchannel, AMP::AMP_MPI comm )
 {
-    AMP_ASSERT(comm>=clad->getComm());
-    AMP_ASSERT(comm>=subchannel->getComm());
+    if ( clad.get() != NULL )
+        AMP_ASSERT(clad->getComm()<=comm);
+    if ( subchannel.get() != NULL )
+        AMP_ASSERT(subchannel->getComm()<=comm);
     // Get the clad properties
     std::vector<double> clad_x, clad_y, clad_d;
     getCladProperties( comm, clad, clad_x, clad_y, clad_d );
