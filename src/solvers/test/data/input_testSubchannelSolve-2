@@ -322,6 +322,9 @@ ConvectiveHeatCoefficient{
     ActiveInputVariables{
       ActiveVariable_0 = "Temperature"
       ActiveVariable_1 = "Density"
+      ActiveVariable_2 = "ChannelDiameter"
+      //ActiveVariable_3 = "Reynolds"
+      //ActiveVariable_4 = "Prandtl"
     }
     ActiveParameters{
       FUEL_TEMPERATURE = "Temperature"
