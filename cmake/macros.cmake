@@ -770,6 +770,12 @@ MACRO ( SAVE_CMAKE_FLAGS )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET ( ENABLE_GCOV 1 ) \n" )
         file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS ( -fprofile-arcs -ftest-coverage ) \n" )
     ENDIF ()
+    # Add doxygen
+    IF ( USE_EXT_DOXYGEN )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add doxygen flags\n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_DOXYGEN ${USE_EXT_DOXYGEN} )\n" )
+        file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( DOXYGEN_MACROS \"${DOXYGEN_MACROS}\" )\n" )
+    ENDIF ()
     # Add misc flags
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add misc flags\n" )
     file(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $""{EXTERNAL_LIBS} ${SYSTEM_LIBS} )\n" )
