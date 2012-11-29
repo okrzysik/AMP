@@ -261,6 +261,12 @@ void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, 
       }//end k 
     }//end eId
 
+    if(d_verbose) {
+      if(!rank) {
+        d_oStream<<"Just before SampleSort!"<<std::endl;
+      }
+    }
+
     std::vector< ot::NodeAndValues<int, 1> > tmpList;
     par::sampleSort< ot::NodeAndValues<int, 1> >(
         nodeAndElemIdList, tmpList, (meshComm.getCommunicator()));
