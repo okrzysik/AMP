@@ -113,16 +113,28 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     pts[(3*i) + 1] = y;
     pts[(3*i) + 2] = z;
   }//end i
+  globalComm.barrier();
   if(!rank) {
     std::cout<<"Finished generating "<<totalNumPts <<" random points for search!"<<std::endl;
   }
 
   AMP::Mesh::DendroSearch dendroSearch(meshAdapter);
+
+  globalComm.barrier();
+  if(!rank) {
+    std::cout<<"Finished building DendroSearch object!"<<std::endl;
+  }
+
   std::vector<double> interpolatedData; 
   std::vector<bool> interpolationWasDone;
   dendroSearch.searchAndInterpolate(globalComm, dummyVector, DOFsPerNode, pts, interpolatedData, interpolationWasDone);
   AMP_ASSERT(interpolatedData.size() == (DOFsPerNode*numLocalPts));
   AMP_ASSERT(interpolationWasDone.size() == numLocalPts);
+
+  globalComm.barrier();
+  if(!rank) {
+    std::cout<<"Finished searching and interpolating!"<<std::endl;
+  }
 
   int localNotFound = 0;
   if(numLocalPts > 0) {
