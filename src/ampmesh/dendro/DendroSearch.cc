@@ -66,7 +66,7 @@ namespace AMP {
               for (size_t v = 0; v < 4; ++v) {
                 tmpData.d_FaceVerticesIDs[v] = faceVertices[v].globalID();
               } // end for v
-              d_volume_elements[elementLocalID].project_on_face(f, pointLocalCoords_ptr,
+              d_volume_elements[elementLocalID]->project_on_face(f, pointLocalCoords_ptr,
                   &(tmpData.d_ProjectionLocalCoordsOnFace[0]), &(tmpData.d_ShiftGlobalCoords[0]));
               //draw_shift(...)
               break; // we assume only one face will be on the boundary
@@ -178,7 +178,7 @@ namespace AMP {
 
       size_t localNumElems = d_meshAdapter->numLocalElements(AMP::Mesh::Volume);
       d_volume_elements.clear();
-      d_volume_elements.reserve(localNumElems);
+      d_volume_elements.resize(localNumElems, NULL);
       {
         std::vector<double> support_points(24);
         for (size_t i = 0; i < localNumElems; ++i) {
@@ -190,7 +190,7 @@ namespace AMP {
             support_points[3*j+1] = point_coord[1];
             support_points[3*j+2] = point_coord[2];
           } // end j
-          d_volume_elements.push_back(hex8_element_t(&(support_points[0])));
+          d_volume_elements[i] = new hex8_element_t(&(support_points[0]));
         } // end for i
       }
 
@@ -813,10 +813,10 @@ namespace AMP {
         double const * tmpPtGlobalCoordPtr = &(recvPtsList[6*i])+1;
         unsigned int eId = static_cast<unsigned int>(recvPtsList[6*i]);
         unsigned int procId = static_cast<unsigned int>(recvPtsList[6*i+5]);
-        if (d_volume_elements[eId].within_bounding_box(tmpPtGlobalCoordPtr, d_tolerance)) {
-          if (d_volume_elements[eId].within_bounding_polyhedron(tmpPtGlobalCoordPtr, d_tolerance)) {
-            d_volume_elements[eId].map_global_to_local(tmpPtGlobalCoordPtr, &(tmpPtLocalCoord[0]));
-            if (d_volume_elements[eId].contains_point(&(tmpPtLocalCoord[0]), coordinates_are_local, d_tolerance)) {
+        if (d_volume_elements[eId]->within_bounding_box(tmpPtGlobalCoordPtr, d_tolerance)) {
+          if (d_volume_elements[eId]->within_bounding_polyhedron(tmpPtGlobalCoordPtr, d_tolerance)) {
+            d_volume_elements[eId]->map_global_to_local(tmpPtGlobalCoordPtr, &(tmpPtLocalCoord[0]));
+            if (d_volume_elements[eId]->contains_point(&(tmpPtLocalCoord[0]), coordinates_are_local, d_tolerance)) {
               d_foundPts.push_back(recvPtsList[6*i]);
               for (unsigned int d = 0; d < 3; ++d) { d_foundPts.push_back(tmpPtLocalCoord[d]); }
               d_foundPts.push_back(recvPtsList[6*i+4]);

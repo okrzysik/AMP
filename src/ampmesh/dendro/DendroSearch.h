@@ -42,6 +42,13 @@ namespace AMP {
 
         DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh, bool verbose = true, std::ostream & oStream = std::cout);
 
+        ~DendroSearch() {
+          for(size_t i = 0; i < d_volume_elements.size(); ++i) {
+            delete (d_volume_elements[i]);
+          }//end i
+          d_volume_elements.clear();
+        }
+
         void searchAndInterpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::const_shared_ptr vectorField, const unsigned int dofsPerNode,
             const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt);
 
@@ -78,7 +85,7 @@ namespace AMP {
         std::ostream & d_oStream;
         std::vector<double> d_timingMeasurements;
 
-        std::vector<hex8_element_t> d_volume_elements;
+        std::vector<hex8_element_t*> d_volume_elements;
         double d_tolerance;
 
         void setupDSforSearch();
