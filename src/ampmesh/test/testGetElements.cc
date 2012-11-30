@@ -11,7 +11,7 @@
 #include "ampmesh/Mesh.h"
 
 void myTest(AMP::UnitTest *ut) {
-  std::string input_file = "input_Mesh";
+  std::string input_file = "input_testGetElements";
   std::string log_file = "output_testGetElements"; 
 
   AMP::PIO::logOnlyNodeZero(log_file);
@@ -45,18 +45,32 @@ void myTest(AMP::UnitTest *ut) {
     std::cout<<"Time to load the mesh = "<<(time2e - time2b)<<std::endl;
   }
 
+  size_t localNumElems = meshAdapter->numLocalElements(AMP::Mesh::Volume);
+
   globalComm.barrier();
   double time3b = MPI_Wtime();
   AMP::Mesh::MeshIterator el = meshAdapter->getIterator(AMP::Mesh::Volume, 0);
-  size_t localNumElems = meshAdapter->numLocalElements(AMP::Mesh::Volume);
   for(size_t i = 0; i < localNumElems; ++i, ++el) {
     std::vector<AMP::Mesh::MeshElement> vertices = el->getElements(AMP::Mesh::Vertex);
   }//end 
   globalComm.barrier();
   double time3e = MPI_Wtime();
   if(!rank) {
-    std::cout<<"Time to iterate through the mesh elements and access the vertices = "<<(time3e - time3b)<<std::endl;
+    std::cout<<"Time to iterate (Type 1) through the mesh elements and access the vertices = "<<(time3e - time3b)<<std::endl;
   }
+
+  globalComm.barrier();
+  double time4b = MPI_Wtime();
+  el = meshAdapter->getIterator(AMP::Mesh::Volume, 0);
+  for(size_t i = 0; i < localNumElems; ++i) {
+    std::vector<AMP::Mesh::MeshElement> vertices = (el + i)->getElements(AMP::Mesh::Vertex);
+  }//end 
+  globalComm.barrier();
+  double time4e = MPI_Wtime();
+  if(!rank) {
+    std::cout<<"Time to iterate (Type 2) through the mesh elements and access the vertices = "<<(time4e - time4b)<<std::endl;
+  }
+
 
   ut->passes("testGetElements");
 }

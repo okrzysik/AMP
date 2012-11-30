@@ -1,0 +1,12 @@
+
+Mesh{
+  MeshName = "Pellet"
+    MeshType = "libMesh"
+    FileName = "pellet_4x.e"
+    dim = 3
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
+    Weight = 1.0
+}
+
