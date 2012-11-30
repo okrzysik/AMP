@@ -167,7 +167,6 @@ namespace AMP {
       }//end i
 
       size_t globalNumElems = d_meshAdapter->numGlobalElements(AMP::Mesh::Volume);
-
       if(d_verbose) {
         if(!rank) {
           d_oStream<<"Total number of mesh elements = "<<globalNumElems<<std::endl;
@@ -177,6 +176,8 @@ namespace AMP {
       AMP::Mesh::MeshIterator el = d_meshAdapter->getIterator(AMP::Mesh::Volume, 0);
 
       size_t localNumElems = d_meshAdapter->numLocalElements(AMP::Mesh::Volume);
+      AMP_CHECK_ASSERT(localNumElems > 0);
+
       d_volume_elements.clear();
       d_volume_elements.resize(localNumElems, NULL);
       {
@@ -201,6 +202,7 @@ namespace AMP {
       if(d_boxLevel > 5) {
         d_boxLevel = 5;
       }
+      const double hBox = 1.0/(static_cast<double>(1u << d_boxLevel));
 
       if(d_verbose) {
         if(!rank) {
@@ -208,12 +210,7 @@ namespace AMP {
         }
       }
 
-      const double hBox = 1.0/(static_cast<double>(1u << d_boxLevel));
-
       std::vector< ot::NodeAndValues<int, 1> > nodeAndElemIdList;
-
-      AMP_CHECK_ASSERT(localNumElems > 0);
-
       for(size_t eId = 0; eId < localNumElems; ++eId) {
         std::vector<AMP::Mesh::MeshElement> currNodes = (el + eId)->getElements(AMP::Mesh::Vertex);
         int minId[3];
@@ -256,26 +253,18 @@ namespace AMP {
         }//end k 
       }//end eId
 
-      int numLocalOcts = nodeAndElemIdList.size();
-
-      if(d_verbose) {
-        int numGlobalOcts = meshComm.sumReduce<int>(numLocalOcts);
-        if(!rank) {
-          d_oStream<<"Total num initial octants = "<<numGlobalOcts <<std::endl;
-        }
-      }
-
       std::vector< ot::NodeAndValues<int, 1> > tmpList;
       par::sampleSort< ot::NodeAndValues<int, 1> >(
           nodeAndElemIdList, tmpList, (meshComm.getCommunicator()));
       swap(nodeAndElemIdList, tmpList);
       tmpList.clear();
 
-      numLocalOcts = nodeAndElemIdList.size();
+      int numLocalOcts = nodeAndElemIdList.size();
 
       if(d_verbose) {
+        int numGlobalOcts = meshComm.sumReduce<int>(numLocalOcts);
         if(!rank) {
-          d_oStream<<"Finished SampleSort!"<<std::endl;
+          d_oStream<<"Total num initial octants = "<<numGlobalOcts <<std::endl;
         }
       }
 
