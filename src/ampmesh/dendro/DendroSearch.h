@@ -59,7 +59,7 @@ class DendroSearch {
 
   private:
     AMP::Mesh::Mesh::shared_ptr d_meshAdapter;
-    std::vector<AMP::Mesh::MeshElement> d_localElemArr;
+   // std::vector<AMP::Mesh::MeshElement> d_localElemArr;
     std::vector<ot::TreeNode> d_nodeList;
     std::vector<ot::TreeNode> d_mins;
     std::vector<double> d_minCoords;
@@ -83,7 +83,7 @@ class DendroSearch {
     double d_tolerance;
 
     void setupDSforSearch();
-    void createLocalMeshElementArray();
+   // void createLocalMeshElementArray();
 };
 
 struct DendroSearch::ProjectOnBoundaryData {

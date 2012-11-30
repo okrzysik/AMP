@@ -22,6 +22,12 @@ namespace AMP {
         setupDSforSearch();
       }
 
+    void DendroSearch::searchAndInterpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::const_shared_ptr vectorField, 
+        const unsigned int dofsPerNode, const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt) {
+      search(comm, pts);
+      interpolate(comm, vectorField, dofsPerNode, results, foundPt); 
+    }
+
     void DendroSearch::setTolerance(double tolerance) {
       d_tolerance = tolerance;
     }
@@ -41,6 +47,7 @@ namespace AMP {
 
       std::vector<int> tmpSendCnts(npes, 0);
 
+      AMP::Mesh::MeshIterator el = d_meshAdapter->getIterator(AMP::Mesh::Volume, 0);
       for (unsigned int i = 0; i < d_foundPts.size(); i += 6) {
         ProjectOnBoundaryData tmpData;
         const double * pointLocalCoords_ptr = &(d_foundPts[i+1]);
@@ -48,7 +55,8 @@ namespace AMP {
         const size_t pointOwnerRank = static_cast<size_t>(d_foundPts[i+5]);
         const size_t elementLocalID = static_cast<size_t>(d_foundPts[i]);
         tmpData.d_PointLocalID = pointLocalID;
-        AMP::Mesh::MeshElement* meshElement = &(d_localElemArr[elementLocalID]);
+        //AMP::Mesh::MeshElement* meshElement = &(d_localElemArr[elementLocalID]);
+        AMP::Mesh::MeshElement* meshElement = &(*(el + elementLocalID));
         if (meshElement->isOnBoundary(boundaryID)) { // point was found and element is on boundary
           std::vector<AMP::Mesh::MeshElement> meshElementFaces = meshElement->getElements(AMP::Mesh::Face);
           AMP_ASSERT( meshElementFaces.size() == 6 );
@@ -134,14 +142,6 @@ namespace AMP {
           std::cout<<"Time for step-2 of project on boundary: "<<(projectStep2Time - projectStep1Time)<<" seconds."<<std::endl;
         }
       }
-
-      //d_fout.close();
-    }
-
-    void DendroSearch::searchAndInterpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::const_shared_ptr vectorField, 
-        const unsigned int dofsPerNode, const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt) {
-      search(comm, pts);
-      interpolate(comm, vectorField, dofsPerNode, results, foundPt); 
     }
 
     void DendroSearch::setupDSforSearch() {
@@ -161,11 +161,11 @@ namespace AMP {
       }
       setupBeginTime = MPI_Wtime();
 
-      size_t totalNumElems = d_meshAdapter->numGlobalElements(AMP::Mesh::Volume);
+      size_t globalNumElems = d_meshAdapter->numGlobalElements(AMP::Mesh::Volume);
 
       if(d_verbose) {
         if(!rank) {
-          d_oStream<<"Total number of mesh elements = "<<totalNumElems<<std::endl;
+          d_oStream<<"Total number of mesh elements = "<<globalNumElems<<std::endl;
         }
       }
 
@@ -176,13 +176,15 @@ namespace AMP {
         d_scalingFactor[i] = 1.0/(1.0e-10 + maxCoord - d_minCoords[i]);
       }//end i
 
-      createLocalMeshElementArray();
+      //createLocalMeshElementArray();
+      AMP::Mesh::MeshIterator el = d_meshAdapter->getIterator(AMP::Mesh::Volume, 0);
 
-      unsigned int n_volume_elements = d_localElemArr.size();
+      size_t localNumElems = d_meshAdapter->numLocalElements(AMP::Mesh::Volume);
       d_volume_elements.clear();
-      d_volume_elements.reserve(n_volume_elements);
-      for (unsigned int i = 0; i < n_volume_elements; ++i) {
-        AMP::Mesh::MeshElement* amp_element = &(d_localElemArr[i]);
+      d_volume_elements.reserve(localNumElems);
+      for (size_t i = 0; i < localNumElems; ++i) {
+        //AMP::Mesh::MeshElement* amp_element = &(d_localElemArr[i]);
+        AMP::Mesh::MeshElement* amp_element = &(*(el + i));
         std::vector<AMP::Mesh::MeshElement> amp_vector_support_points = amp_element->getElements(AMP::Mesh::Vertex);
         AMP_ASSERT(amp_vector_support_points.size() == 8);
         std::vector<double> support_points(24);
@@ -195,7 +197,7 @@ namespace AMP {
         d_volume_elements.push_back(hex8_element_t(&(support_points[0])));
       } // end for i
 
-      double avgHboxInv = std::pow(totalNumElems, (1.0/3.0));
+      double avgHboxInv = std::pow(globalNumElems, (1.0/3.0));
       AMP_ASSERT(avgHboxInv > 1.0);
       d_boxLevel = binOp::fastLog2(static_cast<unsigned int>(std::ceil(avgHboxInv)));
       AMP_ASSERT(d_boxLevel < MaxDepth);
@@ -213,10 +215,12 @@ namespace AMP {
 
       std::vector< ot::NodeAndValues<int, 1> > nodeAndElemIdList;
 
-      AMP_ASSERT(!(d_localElemArr.empty()));
+      //AMP_ASSERT(!(d_localElemArr.empty()));
+      AMP_ASSERT(localNumElems > 0);
 
-      for(size_t eId = 0; eId < d_localElemArr.size(); ++eId) {
-        std::vector<AMP::Mesh::MeshElement> currNodes = d_localElemArr[eId].getElements(AMP::Mesh::Vertex);
+      for(size_t eId = 0; eId < localNumElems; ++eId) {
+        //std::vector<AMP::Mesh::MeshElement> currNodes = d_localElemArr[eId].getElements(AMP::Mesh::Vertex);
+        std::vector<AMP::Mesh::MeshElement> currNodes = (el + eId)->getElements(AMP::Mesh::Vertex);
         int minId[3];
         int maxId[3];
         for(size_t i = 0; i < currNodes.size(); ++i) {
@@ -876,9 +880,12 @@ namespace AMP {
 
       std::vector<int> tmpSendCnts(npes, 0);
 
+      AMP::Mesh::MeshIterator el = d_meshAdapter->getIterator(AMP::Mesh::Volume, 0);
+
       std::vector<double> basis_functions_values(8);
       for(size_t i = 0; i < d_foundPts.size(); i += 6) {
-        AMP::Mesh::MeshElement* amp_element = &(d_localElemArr[static_cast<unsigned int>(d_foundPts[i])]);
+        //AMP::Mesh::MeshElement* amp_element = &(d_localElemArr[d_foundPts[i]]);
+        AMP::Mesh::MeshElement* amp_element = &(*(el + (d_foundPts[i])));
         std::vector<AMP::Mesh::MeshElement> amp_vector_support_points = amp_element->getElements(AMP::Mesh::Vertex);
         hex8_element_t::get_basis_functions_values(&(d_foundPts[i + 1]), &(basis_functions_values[0]));
 
@@ -954,6 +961,7 @@ namespace AMP {
       }
     }
 
+    /*
     void DendroSearch::createLocalMeshElementArray() {
       d_localElemArr.clear();
       AMP::Mesh::MeshIterator el = d_meshAdapter->getIterator(AMP::Mesh::Volume, 0);
@@ -963,6 +971,7 @@ namespace AMP {
         d_localElemArr.push_back(*el);
       }//end el
     }
+    */
 
     void DendroSearch::reportTiming(size_t n, TimingType const * timingTypes, double * timingMeasurements) {
       AMP_INSIST(!d_verbose, "verbose mode in DendroSearch implies calls to MPI_Barrier so timing measurements are bad!");
