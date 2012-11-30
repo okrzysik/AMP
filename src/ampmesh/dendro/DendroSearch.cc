@@ -47,16 +47,17 @@ namespace AMP {
 
       std::vector<int> tmpSendCnts(npes, 0);
 
-      AMP::Mesh::MeshIterator el = d_meshAdapter->getIterator(AMP::Mesh::Volume, 0);
+      AMP::Mesh::MeshIterator elStart = d_meshAdapter->getIterator(AMP::Mesh::Volume, 0);
       for (unsigned int i = 0; i < d_foundPts.size(); i += 6) {
         ProjectOnBoundaryData tmpData;
         const double * pointLocalCoords_ptr = &(d_foundPts[i+1]);
         const size_t pointLocalID = static_cast<size_t>(d_foundPts[i+4]);
         const size_t pointOwnerRank = static_cast<size_t>(d_foundPts[i+5]);
         const size_t elementLocalID = static_cast<size_t>(d_foundPts[i]);
+        AMP::Mesh::MeshIterator currEl = (elStart + elementLocalID);
         tmpData.d_PointLocalID = pointLocalID;
-        if ((el + elementLocalID)->isOnBoundary(boundaryID)) { // point was found and element is on boundary
-          std::vector<AMP::Mesh::MeshElement> meshElementFaces = (el + elementLocalID)->getElements(AMP::Mesh::Face);
+        if (currEl->isOnBoundary(boundaryID)) { // point was found and element is on boundary
+          std::vector<AMP::Mesh::MeshElement> meshElementFaces = currEl->getElements(AMP::Mesh::Face);
           AMP_CHECK_ASSERT( meshElementFaces.size() == 6 );
           for (size_t f = 0; f < 6; ++f) {
             if (meshElementFaces[f].isOnBoundary(boundaryID)) {
