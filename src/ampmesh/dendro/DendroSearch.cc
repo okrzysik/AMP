@@ -178,11 +178,14 @@ namespace AMP {
       size_t localNumElems = d_meshAdapter->numLocalElements(AMP::Mesh::Volume);
       AMP_CHECK_ASSERT(localNumElems > 0);
 
+      meshComm.barrier();
+      double loop1TimeBegin = MPI_Wtime();
+
       d_volume_elements.clear();
       d_volume_elements.resize(localNumElems, NULL);
       {
         std::vector<double> support_points(24);
-        for (size_t i = 0; i < localNumElems; ++i) {
+        for(size_t i = 0; i < localNumElems; ++i) {
           std::vector<AMP::Mesh::MeshElement> amp_vector_support_points = (el + i)->getElements(AMP::Mesh::Vertex);
           AMP_CHECK_ASSERT(amp_vector_support_points.size() == 8);
           for (unsigned int j = 0; j < 8; ++j) {
@@ -193,6 +196,12 @@ namespace AMP {
           } // end j
           d_volume_elements[i] = new hex8_element_t(&(support_points[0]));
         } // end for i
+      }
+
+      meshComm.barrier();
+      double loop1TimeEnd = MPI_Wtime();
+      if(!rank) {
+        d_oStream<<"SetupDS: Loop1-time = "<<(loop1TimeEnd - loop1TimeBegin)<<std::endl; 
       }
 
       double avgHboxInv = std::pow(globalNumElems, (1.0/3.0));
@@ -209,6 +218,9 @@ namespace AMP {
           d_oStream<<"BoxLevel = "<<d_boxLevel<<std::endl;
         }
       }
+
+      meshComm.barrier();
+      double loop2TimeBegin = MPI_Wtime();
 
       std::vector< ot::NodeAndValues<int, 1> > nodeAndElemIdList;
       for(size_t eId = 0; eId < localNumElems; ++eId) {
@@ -252,6 +264,12 @@ namespace AMP {
           }//end j 
         }//end k 
       }//end eId
+
+      meshComm.barrier();
+      double loop2TimeEnd = MPI_Wtime();
+      if(!rank) {
+        d_oStream<<"SetupDS: Loop2-time = "<<(loop2TimeEnd - loop2TimeBegin)<<std::endl; 
+      }
 
       std::vector< ot::NodeAndValues<int, 1> > tmpList;
       par::sampleSort< ot::NodeAndValues<int, 1> >(
@@ -546,7 +564,6 @@ namespace AMP {
       if(d_verbose) {
         meshComm.barrier();
       }
-
       setupEndTime = MPI_Wtime();
       d_timingMeasurements[Setup] = setupEndTime - setupBeginTime;
 
