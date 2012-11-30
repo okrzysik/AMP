@@ -2,7 +2,7 @@
 Mesh{
   MeshName = "Pellet"
     MeshType = "libMesh"
-    FileName = "pellet_4x.e"
+    FileName = "pellet_2x.e"
     dim = 3
     x_offset = 0.0
     y_offset = 0.0
