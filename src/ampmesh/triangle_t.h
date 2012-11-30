@@ -19,10 +19,13 @@ class triangle_t {
     int project_point(double const * point, double * projection, double tolerance = 1.0e-12);
 
   private:
-    std::vector<double const*> support_points_ptr;
-    std::vector<double> normal, centroid, tmp;
-    bool normal_updated, centroid_updated;
     std::vector<edge_t> edges;
+    std::vector<double const*> support_points_ptr;
+    std::vector<double> normal;
+    std::vector<double> centroid;
+    std::vector<double> tmp;
+    bool normal_updated;
+    bool centroid_updated;
     bool edges_updated;
 
     void build_edges();

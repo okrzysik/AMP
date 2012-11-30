@@ -77,7 +77,8 @@ class hex8_element_t {
     //      4       x=-1                    3047 
     //      5       z=+1                    4567 
     //
-    std::vector<double> support_points, point_candidate;
+    std::vector<double> support_points;
+    std::vector<double> point_candidate;
 
     // faces are oriented and defined by their 4 support nodes
     //   3          2    
@@ -106,17 +107,26 @@ class hex8_element_t {
     bool translation_vector_updated;
     std::vector<double> translation_vector;
 
-    bool bounding_box_updated, bounding_polyhedron_updated;
+    bool bounding_box_updated;
+    bool bounding_polyhedron_updated;
 
     std::vector<double> bounding_box;
-    std::vector<triangle_t> bounding_polyhedron, tmp_triangles;
+    std::vector<triangle_t> bounding_polyhedron;
+    std::vector<triangle_t> tmp_triangles;
 
     bool center_of_element_data_updated;
-    std::vector<double> center_of_element_local_coordinates, center_of_element_global_coordinates, jacobian_matrix_at_center_of_element, inverse_jacobian_matrix_at_center_of_element;
+    std::vector<double> center_of_element_local_coordinates;
+    std::vector<double> center_of_element_global_coordinates;
+    std::vector<double> jacobian_matrix_at_center_of_element;
+    std::vector<double> inverse_jacobian_matrix_at_center_of_element;
 
     bool memory_allocated_for_newton;
-    std::vector<double> residual_vector, jacobian_matrix, inverse_jacobian_matrix, inverse_jacobian_matrix_times_residual_vector;
-    std::vector<double> basis_functions_values, basis_functions_derivatives;
+    std::vector<double> residual_vector;
+    std::vector<double> jacobian_matrix;
+    std::vector<double> inverse_jacobian_matrix;
+    std::vector<double> inverse_jacobian_matrix_times_residual_vector;
+    std::vector<double> basis_functions_values;
+    std::vector<double> basis_functions_derivatives;
 
     void compute_scaling_factors();
     void compute_translation_vector();
