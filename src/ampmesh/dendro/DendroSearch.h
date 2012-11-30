@@ -29,73 +29,71 @@
 
 
 namespace AMP {
-namespace Mesh {
+  namespace Mesh {
 
 
-class DendroSearch {
-  public:
-    struct ProjectOnBoundaryData; 
+    class DendroSearch {
+      public:
+        struct ProjectOnBoundaryData; 
 
-    enum SearchStatus { NotFound = 0, Found, FoundNotOnBoundary, FoundOnBoundary };
+        enum SearchStatus { NotFound = 0, Found, FoundNotOnBoundary, FoundOnBoundary };
 
-    enum TimingType { Setup = 0, CoarseSearch, FineSearch, Interpolation, ProjectionOnBoundaryID, numTimingTypes };
+        enum TimingType { Setup = 0, CoarseSearch, FineSearch, Interpolation, ProjectionOnBoundaryID, numTimingTypes };
 
-    DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh, bool verbose = true, std::ostream & oStream = std::cout);
+        DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh, bool verbose = true, std::ostream & oStream = std::cout);
 
-    void searchAndInterpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::const_shared_ptr vectorField, const unsigned int dofsPerNode,
-        const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt);
+        void searchAndInterpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::const_shared_ptr vectorField, const unsigned int dofsPerNode,
+            const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt);
 
-    void search(AMP::AMP_MPI comm, const std::vector<double> & pts);
+        void search(AMP::AMP_MPI comm, const std::vector<double> & pts);
 
-    void interpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::const_shared_ptr vectorField, const unsigned int dofsPerNode,
-        std::vector<double> & results, std::vector<bool> & foundPt);
+        void interpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::const_shared_ptr vectorField, const unsigned int dofsPerNode,
+            std::vector<double> & results, std::vector<bool> & foundPt);
 
-    void projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
-        std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags);
+        void projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
+            std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags);
 
-    void setTolerance(double tolerance);
+        void setTolerance(double tolerance);
 
-    void reportTiming(size_t n, TimingType const * timingTypes, double * timingMeasurements);
+        void reportTiming(size_t n, TimingType const * timingTypes, double * timingMeasurements);
 
-  private:
-    AMP::Mesh::Mesh::shared_ptr d_meshAdapter;
-   // std::vector<AMP::Mesh::MeshElement> d_localElemArr;
-    std::vector<ot::TreeNode> d_nodeList;
-    std::vector<ot::TreeNode> d_mins;
-    std::vector<double> d_minCoords;
-    std::vector<double> d_scalingFactor;
-    std::vector<double> d_foundPts;
-    std::vector<int> d_stIdxList;
-    std::vector<int> d_rankList;
-    std::vector<int> d_elemIdList;
-    std::vector<int> d_sendCnts;
-    std::vector<int> d_sendDisps;
-    std::vector<int> d_recvCnts;
-    std::vector<int> d_recvDisps;
-    unsigned int d_boxLevel;
-    int d_numLocalPts;
+      private:
+        AMP::Mesh::Mesh::shared_ptr d_meshAdapter;
+        std::vector<ot::TreeNode> d_nodeList;
+        std::vector<ot::TreeNode> d_mins;
+        std::vector<double> d_minCoords;
+        std::vector<double> d_scalingFactor;
+        std::vector<double> d_foundPts;
+        std::vector<int> d_stIdxList;
+        std::vector<int> d_rankList;
+        std::vector<int> d_elemIdList;
+        std::vector<int> d_sendCnts;
+        std::vector<int> d_sendDisps;
+        std::vector<int> d_recvCnts;
+        std::vector<int> d_recvDisps;
+        unsigned int d_boxLevel;
+        int d_numLocalPts;
 
-    bool d_verbose;
-    std::ostream & d_oStream;
-    std::vector<double> d_timingMeasurements;
-  
-    std::vector<hex8_element_t> d_volume_elements;
-    double d_tolerance;
+        bool d_verbose;
+        std::ostream & d_oStream;
+        std::vector<double> d_timingMeasurements;
 
-    void setupDSforSearch();
-   // void createLocalMeshElementArray();
-};
+        std::vector<hex8_element_t> d_volume_elements;
+        double d_tolerance;
 
-struct DendroSearch::ProjectOnBoundaryData {
-  size_t d_PointLocalID;
-  SearchStatus d_SearchStatus;
-  AMP::Mesh::MeshElementID d_FaceVerticesIDs[4];
-  double d_ProjectionLocalCoordsOnFace[2]; 
-  double d_ShiftGlobalCoords[3];
-};
+        void setupDSforSearch();
+    };
+
+    struct DendroSearch::ProjectOnBoundaryData {
+      size_t d_PointLocalID;
+      SearchStatus d_SearchStatus;
+      AMP::Mesh::MeshElementID d_FaceVerticesIDs[4];
+      double d_ProjectionLocalCoordsOnFace[2]; 
+      double d_ShiftGlobalCoords[3];
+    };
 
 
-}
+  }
 }
 
 #endif // DENDRO_SEARCH

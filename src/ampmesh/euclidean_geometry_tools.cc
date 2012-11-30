@@ -1,12 +1,13 @@
+
 #include <ampmesh/euclidean_geometry_tools.h>
+#include <utils/Utilities.h>
 
 #include <numeric>
-#include <cassert>
 #include <cmath>
 #include <algorithm>
 
 void scale_points(unsigned int direction, double scaling_factor, unsigned int n_points, double * points) {
-  assert(direction < 3);
+  AMP_CHECK_ASSERT(direction < 3);
   for (unsigned int i = 0; i < n_points; ++i) { 
     points[3*i+direction] *= scaling_factor; 
   } // end for i
@@ -19,7 +20,7 @@ void scale_points(double const * scaling_factors, unsigned int n_points, double 
 }
 
 void translate_points(unsigned int direction, double distance, unsigned int n_points, double * points) {
-  assert(direction < 3);
+  AMP_CHECK_ASSERT(direction < 3);
   for (unsigned int i = 0; i < n_points; ++i) { 
     points[3*i+direction] += distance; 
   } // end for i
@@ -27,12 +28,12 @@ void translate_points(unsigned int direction, double distance, unsigned int n_po
 
 void translate_points(double const * translation_vector, unsigned int n_points, double * points) {
   for (unsigned int i = 0; i < 3; ++i) { 
-   translate_points(i, translation_vector[i], n_points, points); 
+    translate_points(i, translation_vector[i], n_points, points); 
   } // end for i
 }
 
 void rotate_points(unsigned int rotation_axis, double rotation_angle, unsigned int n_points, double * points) {
-  assert(rotation_axis < 3);
+  AMP_CHECK_ASSERT(rotation_axis < 3);
   unsigned int non_fixed_directions[2];
   unsigned int i = 0;
   for (unsigned int j = 0; j < 3; ++j) { 
@@ -70,7 +71,7 @@ double compute_vector_norm(double const * vector) {
 void normalize_vector(double * vector) {
   double vector_norm = compute_vector_norm(vector);
   double normalizing_factor = 1.0 / vector_norm;
-  assert(normalizing_factor < 1.0e12);
+  AMP_CHECK_ASSERT(normalizing_factor < 1.0e12);
   for (unsigned int i = 0; i < 3; ++i) { vector[i] *= normalizing_factor; }
 }
 

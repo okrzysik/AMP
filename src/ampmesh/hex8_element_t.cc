@@ -1,15 +1,17 @@
+
 #include <ampmesh/hex8_element_t.h>
 #include <ampmesh/euclidean_geometry_tools.h>
+#include <utils/Utilities.h>
 
 #include <iostream>
+#include <cassert>
 #include <numeric>
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 
 
 hex8_element_t::hex8_element_t(double const *p) : memory_allocated_for_newton(false) {
-//  newton_count = 0;
+  //  newton_count = 0;
   point_candidate.resize(3);
   support_points.resize(24);
   set_support_points(p); 
@@ -25,22 +27,22 @@ void hex8_element_t::set_support_points(double const *p) {
 }
 
 void hex8_element_t::scale_support_points() {
-  assert(!support_points_scaled);
+  AMP_CHECK_ASSERT(!support_points_scaled);
   if (!scaling_factors_updated) { compute_scaling_factors(); }
   scale_points(&(scaling_factors[0]), 8, &(support_points[0])); 
   support_points_scaled = true;
 }
 
 void hex8_element_t::unscale_support_points() {
- assert(support_points_scaled);
- for (unsigned int i = 0; i < 3; ++i) {
-   scale_points(i, 1.0/scaling_factors[i], 8, &(support_points[0])); 
- } // end for i
- support_points_scaled = false;
+  AMP_CHECK_ASSERT(support_points_scaled);
+  for (unsigned int i = 0; i < 3; ++i) {
+    scale_points(i, 1.0/scaling_factors[i], 8, &(support_points[0])); 
+  } // end for i
+  support_points_scaled = false;
 }
 
 void hex8_element_t::compute_scaling_factors() {
-  assert(!scaling_factors_updated);
+  AMP_CHECK_ASSERT(!scaling_factors_updated);
   if (!bounding_box_updated) { build_bounding_box(); };
   if (scaling_factors.size() == 0) { scaling_factors.resize(3); }
   for (unsigned int i = 0; i < 3; ++i) {
@@ -55,7 +57,7 @@ double const * hex8_element_t::get_scaling_factors() {
 }
 
 void hex8_element_t::compute_center_of_element_data() {
-  assert(!center_of_element_data_updated);
+  AMP_CHECK_ASSERT(!center_of_element_data_updated);
   compute_jacobian_matrix(&(center_of_element_local_coordinates[0]), &(jacobian_matrix_at_center_of_element[0]));
   compute_inverse_3_by_3_matrix(&(jacobian_matrix_at_center_of_element[0]), &(inverse_jacobian_matrix_at_center_of_element[0]));
   map_local_to_global(&(center_of_element_local_coordinates[0]), &(center_of_element_global_coordinates[0]));
@@ -63,7 +65,7 @@ void hex8_element_t::compute_center_of_element_data() {
 }
 
 double const * hex8_element_t::get_support_point(unsigned int i) const { 
-  assert(i < 8);
+  AMP_CHECK_ASSERT(i < 8);
   return &(support_points[3*i]);
 } 
 
@@ -72,7 +74,7 @@ double const * hex8_element_t::get_support_points() const {
 } 
 
 unsigned int const * hex8_element_t::get_face(unsigned int i) { 
-  assert(i < 6);
+  AMP_CHECK_ASSERT(i < 6);
   return &(faces[4*i]);
 } 
 unsigned int const * hex8_element_t::get_faces() { 
@@ -92,7 +94,7 @@ triangle_t * hex8_element_t::get_bounding_polyhedron() {
 bool hex8_element_t::within_bounding_box(double const *p, double tolerance) {
   if (!bounding_box_updated) { build_bounding_box(); };
   for (unsigned int j = 0; j < 3; ++j) {
-// should we scale the tolerance?
+    // should we scale the tolerance?
     if ((bounding_box[j+0] - tolerance*(bounding_box[j+3]-bounding_box[j+0]) > p[j]) || (bounding_box[j+3] + tolerance*(bounding_box[j+3]-bounding_box[j+0]) < p[j])) { return false; }
   } // end for j
   return true;
@@ -109,7 +111,7 @@ unsigned int hex8_element_t::faces[24] = {
 
 void hex8_element_t::build_bounding_polyhedron() {
   if (bounding_polyhedron.size() == 0) { bounding_polyhedron.reserve(12); tmp_triangles.reserve(4); }
-  assert(!bounding_polyhedron_updated);
+  AMP_CHECK_ASSERT(!bounding_polyhedron_updated);
   bounding_polyhedron.clear();
   for (unsigned int i = 0; i < 6; ++i) {
     tmp_triangles.clear();
@@ -150,23 +152,23 @@ void hex8_element_t::build_bounding_polyhedron() {
     //   0           
     tmp_triangles.push_back(triangle_t(get_support_point(faces[4*i+3]), get_support_point(faces[4*i+0]), get_support_point(faces[4*i+2]))); 
 
-//this might need scaling
+    //this might need scaling
     if (tmp_triangles[0].above_point(tmp_triangles[2].get_centroid())) {
       assert(tmp_triangles[0].above_point(tmp_triangles[3].get_centroid()));
       assert(tmp_triangles[1].above_point(tmp_triangles[2].get_centroid()));
       assert(tmp_triangles[1].above_point(tmp_triangles[3].get_centroid()));
-// will fail if the four points are coplanar 
-/*      assert(!tmp_triangles[2].above_point(tmp_triangles[0].get_centroid()));
-      assert(!tmp_triangles[2].above_point(tmp_triangles[1].get_centroid()));
-      assert(!tmp_triangles[3].above_point(tmp_triangles[0].get_centroid()));
-      assert(!tmp_triangles[3].above_point(tmp_triangles[1].get_centroid()));*/
+      // will fail if the four points are coplanar 
+      /*      assert(!tmp_triangles[2].above_point(tmp_triangles[0].get_centroid()));
+              assert(!tmp_triangles[2].above_point(tmp_triangles[1].get_centroid()));
+              assert(!tmp_triangles[3].above_point(tmp_triangles[0].get_centroid()));
+              assert(!tmp_triangles[3].above_point(tmp_triangles[1].get_centroid()));*/
       bounding_polyhedron.push_back(tmp_triangles[0]);
       bounding_polyhedron.push_back(tmp_triangles[1]);
     } else {
-/*
-      assert(!tmp_triangles[0].above_point(tmp_triangles[3].get_centroid()));
-      assert(!tmp_triangles[1].above_point(tmp_triangles[2].get_centroid()));
-      assert(!tmp_triangles[1].above_point(tmp_triangles[3].get_centroid()));*/
+      /*
+         assert(!tmp_triangles[0].above_point(tmp_triangles[3].get_centroid()));
+         assert(!tmp_triangles[1].above_point(tmp_triangles[2].get_centroid()));
+         assert(!tmp_triangles[1].above_point(tmp_triangles[3].get_centroid()));*/
       assert(tmp_triangles[2].above_point(tmp_triangles[0].get_centroid()));
       assert(tmp_triangles[2].above_point(tmp_triangles[1].get_centroid()));
       assert(tmp_triangles[3].above_point(tmp_triangles[0].get_centroid()));
@@ -182,7 +184,7 @@ bool hex8_element_t::within_bounding_polyhedron(double const *p, double toleranc
   if (!bounding_polyhedron_updated) { build_bounding_polyhedron(); }
   for (unsigned int i = 0; i < 6; ++i) {
     if ((!bounding_polyhedron[2*i+0].above_point(p, tolerance)) 
-      || (!bounding_polyhedron[2*i+1].above_point(p, tolerance))) { return false; }
+        || (!bounding_polyhedron[2*i+1].above_point(p, tolerance))) { return false; }
   } // end for i
   return true;
 }
@@ -217,10 +219,10 @@ bool hex8_element_t::contains_point(double const *coordinates, bool coordinates_
   } // end for i
   return true;
 }
-  
+
 void hex8_element_t::build_bounding_box() {
   if (bounding_box.size() == 0) { bounding_box.resize(6); }
-  assert(!bounding_box_updated); 
+  AMP_CHECK_ASSERT(!bounding_box_updated); 
   for (unsigned int j = 0; j < 3; ++j) {
     bounding_box[j+0] = support_points[3*0+j];
     bounding_box[j+3] = support_points[3*0+j];
@@ -311,7 +313,7 @@ double hex8_element_t::solve_newton(double *x, double abs_tol, double rel_tol, u
     memory_allocated_for_newton = true;
   }
 
-//  std::fill(&(x[0]), &(x[0])+3, 0.0);
+  //  std::fill(&(x[0]), &(x[0])+3, 0.0);
   compute_initial_guess(&(x[0]));
 
   compute_residual_vector(&x[0], &(residual_vector[0]));
@@ -319,16 +321,14 @@ double hex8_element_t::solve_newton(double *x, double abs_tol, double rel_tol, u
   double tol = abs_tol + rel_tol * residual_norm; 
 
   for (unsigned int iter = 0; iter < max_iter; ++iter) {
-//    ++newton_count;
+    //    ++newton_count;
     if (verbose) { std::cout<<iter<<"  "<<residual_norm<<std::endl; }
     if (residual_norm < tol) { 
       if (verbose) { std::cout<<"converged at iteration "<<iter<<" with residual norm "<<residual_norm<<"\n"; }
       return residual_norm; 
     } // end if
     compute_jacobian_matrix(&(x[0]), &(jacobian_matrix[0]));
-assert(fabs( 
-    compute_inverse_3_by_3_matrix(&(jacobian_matrix[0]), &(inverse_jacobian_matrix[0]))
-) > 1.0e-16);
+    assert(fabs(compute_inverse_3_by_3_matrix(&(jacobian_matrix[0]), &(inverse_jacobian_matrix[0]))) > 1.0e-16);
     compute_n_by_n_matrix_times_vector(3, &(inverse_jacobian_matrix[0]), &(residual_vector[0]), &(inverse_jacobian_matrix_times_residual_vector[0]));
     bool line_search_passed = false;
     for (double alpha = 1.0; alpha > 1.0e-14; alpha /= 2.0) {
@@ -343,7 +343,7 @@ assert(fabs(
         break;
       } // end if
     } // end for
-    assert(line_search_passed);
+    AMP_CHECK_ASSERT(line_search_passed);
   } // end for
   std::cerr<<"failed to converge with tolerance "<<tol<<" after "<<max_iter-1<<" iterations (residual norm was "<<residual_norm<<")"<<std::endl;
   std::cerr<<"support_points=\n";
@@ -398,9 +398,9 @@ void hex8_element_t::get_basis_functions_derivatives(double const *x, double *ba
 }
 
 void hex8_element_t::project_on_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face, double *shift_global_coordinates) {
-  assert(f < 6);
+  AMP_CHECK_ASSERT(f < 6);
   std::vector<double> projection_local_coordinates(local_coordinates, local_coordinates+3);
-    if (f == 0) {
+  if (f == 0) {
     projection_local_coordinates[2] = -1.0;
   } else if (f == 1) {
     projection_local_coordinates[1] = -1.0;
@@ -425,7 +425,7 @@ void hex8_element_t::project_on_face(unsigned int f, double const *local_coordin
 }
 
 void hex8_element_t::project_on_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face) {
-  assert(f < 6);
+  AMP_CHECK_ASSERT(f < 6);
   if (f == 0) {
     local_coordinates_on_face[0] = local_coordinates[1];
     local_coordinates_on_face[1] = local_coordinates[0];

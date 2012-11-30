@@ -1,5 +1,7 @@
+
 #include <ampmesh/triangle_t.h>
 #include <ampmesh/euclidean_geometry_tools.h>
+#include <utils/Utilities.h>
 
 #include <cassert>
 #include <iostream>
@@ -19,7 +21,7 @@ void triangle_t::set_support_points(double const * A, double const * B, double c
 }
 
 double const * triangle_t::get_support_point_ptr(unsigned int i) const {
-  assert(i < 3);
+  AMP_CHECK_ASSERT(i < 3);
   return support_points_ptr[i];
 }
 
@@ -34,7 +36,7 @@ double const * triangle_t::get_centroid() {
 }
 
 void triangle_t::compute_centroid() {
-  assert(!centroid_updated);
+  AMP_CHECK_ASSERT(!centroid_updated);
   if (centroid.size() == 0) { centroid.resize(3); }
   for (unsigned int i = 0; i < 3; ++i) {
     centroid[i] = 0.0;
@@ -47,7 +49,7 @@ void triangle_t::compute_centroid() {
 }
 
 void triangle_t::compute_normal() {
-  assert(!normal_updated);
+  AMP_CHECK_ASSERT(!normal_updated);
   if (normal.size() == 0) { normal.resize(3); }
   if (tmp.size() == 0) { tmp.resize(6); }
   make_vector_from_two_points(support_points_ptr[0], support_points_ptr[1], &(tmp[0])+0);
@@ -74,13 +76,13 @@ bool triangle_t::above_point(double const * point, double tolerance) {
 }
 
 edge_t * triangle_t::get_edge(unsigned int i) {
-  assert(i < 3);
+  AMP_CHECK_ASSERT(i < 3);
   if (!edges_updated) { build_edges(); }
   return &(edges[i]);
 }
 
 void triangle_t::build_edges() {
-  assert(!edges_updated);
+  AMP_CHECK_ASSERT(!edges_updated);
   if (edges.size() == 0) { edges.reserve(3); }
   edges.clear();
   if (!normal_updated) { compute_normal(); }
@@ -110,22 +112,22 @@ int triangle_t::project_point(double const * point, double * projection, double 
     // -1 -> edge is above the point, we cannot conclude and go to the next edge
     if (status == -1) {
       ++i;
-    // 2 -> projection onto the edge is normal, we have found the closest point on the triangle  
+      // 2 -> projection onto the edge is normal, we have found the closest point on the triangle  
     } else if (status == 2) {
       return 3+i;
-    // 0 -> point was projected onto the first support point
-    //      if we are on edge 0 we need to check edge 2
-    //      otherwise we are done
+      // 0 -> point was projected onto the first support point
+      //      if we are on edge 0 we need to check edge 2
+      //      otherwise we are done
     } else if (status == 0) {
       if (i == 0) { i = 2; continue; }
       return i;
-    // 1 -> point was projected onto the second support point
-    //      if we are on edge 2 we are done
-    //      otherwise we check the next edge
+      // 1 -> point was projected onto the second support point
+      //      if we are on edge 2 we are done
+      //      otherwise we check the next edge
     } else if (status == 1) {
       if (i == 2) { return 0; }
       ++i;
-    // just making sure nothing unexpected happened
+      // just making sure nothing unexpected happened
     } else {
       std::cerr<<"how did you end up here in the first place?"<<std::endl;
       assert(false);

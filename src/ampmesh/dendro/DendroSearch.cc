@@ -55,16 +55,14 @@ namespace AMP {
         const size_t pointOwnerRank = static_cast<size_t>(d_foundPts[i+5]);
         const size_t elementLocalID = static_cast<size_t>(d_foundPts[i]);
         tmpData.d_PointLocalID = pointLocalID;
-        //AMP::Mesh::MeshElement* meshElement = &(d_localElemArr[elementLocalID]);
-        AMP::Mesh::MeshElement* meshElement = &(*(el + elementLocalID));
-        if (meshElement->isOnBoundary(boundaryID)) { // point was found and element is on boundary
-          std::vector<AMP::Mesh::MeshElement> meshElementFaces = meshElement->getElements(AMP::Mesh::Face);
-          AMP_ASSERT( meshElementFaces.size() == 6 );
+        if ((el + elementLocalID)->isOnBoundary(boundaryID)) { // point was found and element is on boundary
+          std::vector<AMP::Mesh::MeshElement> meshElementFaces = (el + elementLocalID)->getElements(AMP::Mesh::Face);
+          AMP_CHECK_ASSERT( meshElementFaces.size() == 6 );
           for (size_t f = 0; f < 6; ++f) {
             if (meshElementFaces[f].isOnBoundary(boundaryID)) {
               tmpData.d_SearchStatus = FoundOnBoundary;
               std::vector<AMP::Mesh::MeshElement> faceVertices = meshElementFaces[f].getElements(AMP::Mesh::Vertex);
-              AMP_ASSERT( faceVertices.size() == 4 );
+              AMP_CHECK_ASSERT( faceVertices.size() == 4 );
               for (size_t v = 0; v < 4; ++v) {
                 tmpData.d_FaceVerticesIDs[v] = faceVertices[v].globalID();
               } // end for v
@@ -80,7 +78,7 @@ namespace AMP {
         sendData[d_sendDisps[pointOwnerRank] + tmpSendCnts[pointOwnerRank]] = tmpData;
         ++tmpSendCnts[pointOwnerRank];
       } //end i
-      AMP_ASSERT( std::equal(tmpSendCnts.begin(), tmpSendCnts.end(), d_sendCnts.begin()) );
+      AMP_CHECK_ASSERT( std::equal(tmpSendCnts.begin(), tmpSendCnts.end(), d_sendCnts.begin()) );
       tmpSendCnts.clear();
 
       if(d_verbose) {
@@ -161,6 +159,13 @@ namespace AMP {
       }
       setupBeginTime = MPI_Wtime();
 
+      std::vector<double> box = d_meshAdapter->getBoundingBox();
+      for(int i = 0; i < d_meshAdapter->getDim(); ++i) {
+        d_minCoords[i] = box[2*i+0];
+        double maxCoord = box[2*i+1];
+        d_scalingFactor[i] = 1.0/(1.0e-10 + maxCoord - d_minCoords[i]);
+      }//end i
+
       size_t globalNumElems = d_meshAdapter->numGlobalElements(AMP::Mesh::Volume);
 
       if(d_verbose) {
@@ -169,40 +174,32 @@ namespace AMP {
         }
       }
 
-      std::vector<double> box = d_meshAdapter->getBoundingBox();
-      for(int i = 0; i < d_meshAdapter->getDim(); ++i) {
-        d_minCoords[i] = box[2*i+0];
-        double maxCoord = box[2*i+1];
-        d_scalingFactor[i] = 1.0/(1.0e-10 + maxCoord - d_minCoords[i]);
-      }//end i
-
-      //createLocalMeshElementArray();
       AMP::Mesh::MeshIterator el = d_meshAdapter->getIterator(AMP::Mesh::Volume, 0);
 
       size_t localNumElems = d_meshAdapter->numLocalElements(AMP::Mesh::Volume);
       d_volume_elements.clear();
       d_volume_elements.reserve(localNumElems);
-      for (size_t i = 0; i < localNumElems; ++i) {
-        //AMP::Mesh::MeshElement* amp_element = &(d_localElemArr[i]);
-        AMP::Mesh::MeshElement* amp_element = &(*(el + i));
-        std::vector<AMP::Mesh::MeshElement> amp_vector_support_points = amp_element->getElements(AMP::Mesh::Vertex);
-        AMP_ASSERT(amp_vector_support_points.size() == 8);
+      {
         std::vector<double> support_points(24);
-        for (unsigned int j = 0; j < 8; ++j) {
-          std::vector<double> point_coord = amp_vector_support_points[j].coord();
-          support_points[3*j+0] = point_coord[0];
-          support_points[3*j+1] = point_coord[1];
-          support_points[3*j+2] = point_coord[2];
-        } // end j
-        d_volume_elements.push_back(hex8_element_t(&(support_points[0])));
-      } // end for i
+        for (size_t i = 0; i < localNumElems; ++i) {
+          std::vector<AMP::Mesh::MeshElement> amp_vector_support_points = (el + i)->getElements(AMP::Mesh::Vertex);
+          AMP_CHECK_ASSERT(amp_vector_support_points.size() == 8);
+          for (unsigned int j = 0; j < 8; ++j) {
+            std::vector<double> point_coord = amp_vector_support_points[j].coord();
+            support_points[3*j+0] = point_coord[0];
+            support_points[3*j+1] = point_coord[1];
+            support_points[3*j+2] = point_coord[2];
+          } // end j
+          d_volume_elements.push_back(hex8_element_t(&(support_points[0])));
+        } // end for i
+      }
 
       double avgHboxInv = std::pow(globalNumElems, (1.0/3.0));
-      AMP_ASSERT(avgHboxInv > 1.0);
+      AMP_CHECK_ASSERT(avgHboxInv > 1.0);
       d_boxLevel = binOp::fastLog2(static_cast<unsigned int>(std::ceil(avgHboxInv)));
-      AMP_ASSERT(d_boxLevel < MaxDepth);
-      if(d_boxLevel > 4) {
-        d_boxLevel = 4;
+      AMP_CHECK_ASSERT(d_boxLevel < MaxDepth);
+      if(d_boxLevel > 5) {
+        d_boxLevel = 5;
       }
 
       if(d_verbose) {
@@ -215,11 +212,9 @@ namespace AMP {
 
       std::vector< ot::NodeAndValues<int, 1> > nodeAndElemIdList;
 
-      //AMP_ASSERT(!(d_localElemArr.empty()));
-      AMP_ASSERT(localNumElems > 0);
+      AMP_CHECK_ASSERT(localNumElems > 0);
 
       for(size_t eId = 0; eId < localNumElems; ++eId) {
-        //std::vector<AMP::Mesh::MeshElement> currNodes = d_localElemArr[eId].getElements(AMP::Mesh::Vertex);
         std::vector<AMP::Mesh::MeshElement> currNodes = (el + eId)->getElements(AMP::Mesh::Vertex);
         int minId[3];
         int maxId[3];
@@ -284,8 +279,8 @@ namespace AMP {
         }
       }
 
-      AMP_ASSERT(d_rankList.empty());
-      AMP_ASSERT(d_elemIdList.empty());
+      AMP_CHECK_ASSERT(d_rankList.empty());
+      AMP_CHECK_ASSERT(d_elemIdList.empty());
 
       for(int i = 0; i < numLocalOcts; ++i) {
         ot::TreeNode currNode = nodeAndElemIdList[i].node;
@@ -293,8 +288,8 @@ namespace AMP {
         d_elemIdList.push_back(nodeAndElemIdList[i].values[0]);
       }//end i
 
-      AMP_ASSERT(numLocalOcts > 0);
-      AMP_ASSERT(d_nodeList.empty());
+      AMP_CHECK_ASSERT(numLocalOcts > 0);
+      AMP_CHECK_ASSERT(d_nodeList.empty());
 
       //Local Merge
       {
@@ -443,7 +438,7 @@ namespace AMP {
       }
 
       if(!(d_nodeList.empty())) {
-        AMP_ASSERT(d_nodeList.size() >= 2);
+        AMP_CHECK_ASSERT(d_nodeList.size() >= 2);
 
         ot::TreeNode prevBox;
         ot::TreeNode nextBox;
@@ -866,7 +861,7 @@ namespace AMP {
       }
       interpolateBeginTime = MPI_Wtime();
 
-      AMP_ASSERT( vectorField->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED );
+      AMP_CHECK_ASSERT( vectorField->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED );
       AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField->getDOFManager();
 
       for(int i = 0; i < npes; ++i) {
@@ -884,16 +879,15 @@ namespace AMP {
 
       std::vector<double> basis_functions_values(8);
       for(size_t i = 0; i < d_foundPts.size(); i += 6) {
-        //AMP::Mesh::MeshElement* amp_element = &(d_localElemArr[d_foundPts[i]]);
-        AMP::Mesh::MeshElement* amp_element = &(*(el + (d_foundPts[i])));
-        std::vector<AMP::Mesh::MeshElement> amp_vector_support_points = amp_element->getElements(AMP::Mesh::Vertex);
+        std::vector<AMP::Mesh::MeshElement> amp_vector_support_points =
+          (el + (static_cast<unsigned int>(d_foundPts[i])))->getElements(AMP::Mesh::Vertex);
         hex8_element_t::get_basis_functions_values(&(d_foundPts[i + 1]), &(basis_functions_values[0]));
 
         std::vector<double> value(dofsPerNode, 0.0);
         for (unsigned int j = 0; j < 8; ++j) {
           std::vector<size_t> globalID;
           dofManager->getDOFs(amp_vector_support_points[j].globalID(), globalID);
-          AMP_ASSERT(globalID.size() == dofsPerNode);
+          AMP_CHECK_ASSERT(globalID.size() == dofsPerNode);
           for(size_t d = 0; d < dofsPerNode; ++d) {
             double vecVal = vectorField->getValueByGlobalID(globalID[d]);
             value[d] += (vecVal * basis_functions_values[j]);
@@ -960,18 +954,6 @@ namespace AMP {
         }
       }
     }
-
-    /*
-    void DendroSearch::createLocalMeshElementArray() {
-      d_localElemArr.clear();
-      AMP::Mesh::MeshIterator el = d_meshAdapter->getIterator(AMP::Mesh::Volume, 0);
-      AMP::Mesh::MeshIterator end_el = el.end();
-      AMP_ASSERT(el != end_el);
-      for(; el != end_el; ++el) {
-        d_localElemArr.push_back(*el);
-      }//end el
-    }
-    */
 
     void DendroSearch::reportTiming(size_t n, TimingType const * timingTypes, double * timingMeasurements) {
       AMP_INSIST(!d_verbose, "verbose mode in DendroSearch implies calls to MPI_Barrier so timing measurements are bad!");
