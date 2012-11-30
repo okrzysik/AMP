@@ -20,6 +20,7 @@ private:
   double const * containing_plane_ptr;
   std::vector<double> normal, direction, center, tmp;
   bool normal_updated, direction_updated, center_updated;
+
   void compute_normal();
   void compute_direction();
   void compute_center();
