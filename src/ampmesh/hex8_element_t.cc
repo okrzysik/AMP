@@ -12,8 +12,8 @@
 
 hex8_element_t::hex8_element_t(double const *p) : memory_allocated_for_newton(false) {
   //  newton_count = 0;
-  point_candidate.resize(3);
-  support_points.resize(24);
+  //point_candidate.resize(3);
+  //support_points.resize(24);
   set_support_points(p); 
 }
 
@@ -195,7 +195,8 @@ void hex8_element_t::map_global_to_local(double const *global_coordinates, doubl
 }
 
 void hex8_element_t::map_local_to_global(double const *local_coordinates, double *global_coordinates) {
-  std::vector<double> tmp = point_candidate;
+  double tmp[3];
+  std::copy(point_candidate, point_candidate+3, tmp);
   std::fill(&(point_candidate[0]), &(point_candidate[0])+3, 0.0);
   compute_residual_vector(&(local_coordinates[0]), &(global_coordinates[0]));
   std::copy(&(tmp[0]), &(tmp[0])+3, &(point_candidate[0]));
@@ -421,10 +422,80 @@ void hex8_element_t::project_on_face(unsigned int f, double const *local_coordin
   std::vector<double> point_global_coordinates(3);
   map_local_to_global(local_coordinates, (&point_global_coordinates[0]));
   make_vector_from_two_points((&point_global_coordinates[0]), &(projection_global_coordinates[0]), shift_global_coordinates);
-  project_on_face(f, local_coordinates, local_coordinates_on_face);
+  map_local_to_face(f, local_coordinates, local_coordinates_on_face);
 }
 
+void hex8_element_t::compute_normal_to_face(unsigned int f, double const *local_coordinates, double *normal_vector) {
+  AMP_CHECK_ASSERT(f < 6);
+  double tangential_vectors[6];
+  double const perturbation = 1.0e-6;
+  double direction = 1.0;
+  double perturbated_local_coordinates_on_face[4];
+  for (unsigned int d = 0; d < 2; ++d) {
+    map_local_to_face(f, local_coordinates, &(perturbated_local_coordinates_on_face[2*d]));
+    if (perturbated_local_coordinates_on_face[3*d] > 0) { 
+      perturbated_local_coordinates_on_face[3*d] -= perturbation;
+      direction *= -1.0; 
+    } else {
+      perturbated_local_coordinates_on_face[3*d] += perturbation;
+    } // end if
+  } // end for d
+
+  double perturbated_local_coordinates[6];
+  for (unsigned int i = 0; i < 2; ++i) {
+    map_face_to_local(f, &(perturbated_local_coordinates_on_face[2*i]), &(perturbated_local_coordinates[3*i]));
+  } // end for i 
+
+  double global_coordinates[3];
+  map_local_to_global(local_coordinates, global_coordinates);
+  double perturbated_global_coordinates[6];
+  for (unsigned int i = 0; i < 2; ++i) {
+    map_local_to_global(&(perturbated_local_coordinates[3*i]), &(perturbated_global_coordinates[3*i]));
+    make_vector_from_two_points(global_coordinates, &(perturbated_global_coordinates[3*i]), &(tangential_vectors[3*i]));
+  } // end for i 
+  compute_cross_product(&(tangential_vectors[0]), &(tangential_vectors[3]), normal_vector); 
+}
+
+void hex8_element_t::map_face_to_local(unsigned int f, double const *local_coordinates_on_face, double *local_coordinates) {
+  AMP_CHECK_ASSERT(f < 6);
+  if (f == 0) {
+    local_coordinates[0] = local_coordinates_on_face[1];
+    local_coordinates[1] = local_coordinates_on_face[0];
+    local_coordinates[2] = -1.0;
+  } else if (f == 1) {
+    local_coordinates[0] = local_coordinates_on_face[0];
+    local_coordinates[1] = -1.0;
+    local_coordinates[2] = local_coordinates_on_face[1];
+  } else if (f == 2) {
+    local_coordinates[0] = 1.0;
+    local_coordinates[1] = local_coordinates_on_face[0];
+    local_coordinates[2] = local_coordinates_on_face[1];
+  } else if (f == 3) {
+    local_coordinates[0] = -local_coordinates_on_face[0];
+    local_coordinates[1] = 1.0;
+    local_coordinates[2] = local_coordinates_on_face[1];
+  } else if (f == 4) {
+    local_coordinates[0] = -1.0;
+    local_coordinates[1] = -local_coordinates_on_face[0];
+    local_coordinates[2] = local_coordinates_on_face[1];
+  } else if (f == 5) {
+    local_coordinates[0] = local_coordinates_on_face[0];
+    local_coordinates[1] = local_coordinates_on_face[1];
+    local_coordinates[2] = 1.0;
+  } else {
+    std::cerr<<"comment en es-tu arrive la tres cher?"<<std::endl;
+    assert(false);
+  } // end if
+}
+
+/*
 void hex8_element_t::project_on_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face) {
+  std::cout<<"hex8_element_t::project_on_face(...) is deprecated, use hex8_element_t::map_local_to_face(...) instead\n";
+  map_local_to_face(f, local_coordinates, local_coordinates_on_face);
+}
+*/
+
+void hex8_element_t::map_local_to_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face) {
   AMP_CHECK_ASSERT(f < 6);
   if (f == 0) {
     local_coordinates_on_face[0] = local_coordinates[1];
@@ -436,10 +507,10 @@ void hex8_element_t::project_on_face(unsigned int f, double const *local_coordin
     local_coordinates_on_face[0] = local_coordinates[1];
     local_coordinates_on_face[1] = local_coordinates[2];
   } else if (f == 3) {
-    local_coordinates_on_face[0] = - local_coordinates[0];
+    local_coordinates_on_face[0] = -local_coordinates[0];
     local_coordinates_on_face[1] = local_coordinates[2];
   } else if (f == 4) {
-    local_coordinates_on_face[0] = - local_coordinates[1];
+    local_coordinates_on_face[0] = -local_coordinates[1];
     local_coordinates_on_face[1] = local_coordinates[2];
   } else if (f == 5) {
     local_coordinates_on_face[0] = local_coordinates[0];
