@@ -66,6 +66,8 @@ namespace AMP {
 
       private:
         AMP::Mesh::Mesh::shared_ptr d_meshAdapter;
+        std::vector<AMP::Mesh::MeshElement> d_localElems;
+        std::vector<hex8_element_t*> d_volume_elements;
         std::vector<ot::TreeNode> d_nodeList;
         std::vector<ot::TreeNode> d_mins;
         std::vector<double> d_minCoords;
@@ -80,12 +82,9 @@ namespace AMP {
         std::vector<int> d_recvDisps;
         unsigned int d_boxLevel;
         int d_numLocalPts;
-
         bool d_verbose;
         std::ostream & d_oStream;
         std::vector<double> d_timingMeasurements;
-
-        std::vector<hex8_element_t*> d_volume_elements;
         double d_tolerance;
 
         void setupDSforSearch();
