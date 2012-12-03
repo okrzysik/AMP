@@ -243,6 +243,52 @@ MeshIterator libMeshIterator::operator--(int)
 
 
 /********************************************************
+* Random access incrementors                            *
+********************************************************/
+MeshIterator libMeshIterator::operator+(int n) const
+{
+    libMeshIterator tmp(*this);  // Create a temporary iterator
+    tmp.operator+=(n);                  // Increment temporary iterator
+    return tmp;
+}
+MeshIterator& libMeshIterator::operator+=(int n)
+{
+    // Check the input
+    if ( n>=0 ) {
+        if ( d_pos2+n > d_size )
+            AMP_ERROR("Iterated past end of iterator");
+    } else {                            // decrement *this
+        if ( -n > d_pos2 )
+            AMP_ERROR("Iterated past beginning of iterator");
+    }
+    // Prform the increment and return
+    if ( d_type==0 ) {
+        // Node iterator
+        ::Mesh::node_iterator* it = (::Mesh::node_iterator*) d_pos;
+        if ( n>=0 ) {
+            for (int i=0; i<n; i++)
+                it->operator++();
+        } else {
+            AMP_ERROR("Decrementing libMesh iterators is not supported");
+        }
+    } else if ( d_type==1 ) {
+        // Element iterator
+        ::Mesh::element_iterator* it = (::Mesh::element_iterator*) d_pos;
+        if ( n>=0 ) {
+            for (int i=0; i<n; i++)
+                it->operator++();
+        } else {
+            AMP_ERROR("Decrementing libMesh iterators is not supported");
+        }
+    } else {
+        AMP_ERROR("libMesh does not support iterators over this (unknown) type");
+    }
+    d_pos2 += n;
+    return *this;
+}
+
+
+/********************************************************
 * Compare two iterators                                 *
 ********************************************************/
 bool libMeshIterator::operator==(const MeshIterator& rhs) const

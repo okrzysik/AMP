@@ -34,17 +34,23 @@ public:
     //! Assignment operator
     MultiIterator& operator=(const MultiIterator&);
 
-    //! Increment
+    // Increment
     MeshIterator& operator++();
     
-    //! Increment
+    // Increment
     MeshIterator operator++(int);
 
-    //! Decrement
+    // Decrement
     MeshIterator& operator--();
     
-    //! Decrement
+    // Decrement
     MeshIterator operator--(int);
+
+    // Arithmetic operator+
+    virtual MeshIterator operator+(int) const;
+
+    // Arithmetic operator+=
+    virtual MeshIterator& operator+=(int N);
 
     //! Check if two iterators are equal
     bool operator==(const MeshIterator& rhs) const;

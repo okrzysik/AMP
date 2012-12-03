@@ -126,9 +126,35 @@ MeshIterator& structuredMeshIterator::operator--()
 MeshIterator structuredMeshIterator::operator--(int)
 {
     // Postfix decrement (increment and return temporary object)
-    structuredMeshIterator tmp(*this);      // Create a temporary variable
-    --(*this);                      // apply operator
-    return tmp;                     // return temporary result
+    structuredMeshIterator tmp(*this);  // Create a temporary variable
+    --(*this);                          // apply operator
+    return tmp;                         // return temporary result
+}
+
+
+/********************************************************
+* Random access incrementors                            *
+********************************************************/
+MeshIterator structuredMeshIterator::operator+(int n) const
+{
+    structuredMeshIterator tmp(*this);  // Create a temporary iterator
+    tmp.operator+=(n);                  // Increment temporary iterator
+    return tmp;
+}
+MeshIterator& structuredMeshIterator::operator+=(int n)
+{
+    if ( n>=0 ) {                       // increment *this
+        size_t n2 = static_cast<size_t>(n);
+        if ( d_pos+n2 > d_elements->size() )
+            AMP_ERROR("Iterated past end of iterator");
+        d_pos += n2;
+    } else {                            // decrement *this
+        size_t n2 = static_cast<size_t>(-n);
+        if ( n2 > d_pos )
+            AMP_ERROR("Iterated past beginning of iterator");
+        d_pos -= n2;
+    }
+    return *this;
 }
 
 

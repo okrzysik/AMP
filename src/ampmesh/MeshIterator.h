@@ -41,16 +41,34 @@ public:
     //! Deconstructor
     virtual ~MeshIterator ();
 
-    //! Pre-Increment
+    /** 
+     * \brief Pre-Increment
+     * \details  Pre-Increment the mesh iterator and return the reference to the iterator.
+     *   This should be the fastest way to increment the iterator.
+     */
     virtual MeshIterator& operator++();
     
-    //! Post-Increment (creates a temporary object)
+    /** 
+     * \brief Post-Increment
+     * \details  Post-Increment the mesh iterator and return a reference to a temporary iterator.
+     *   This should be avoided and pre-increment used whenever possible.
+     */
     virtual MeshIterator operator++(int);
 
-    //! Pre-Decrement
+    /** 
+     * \brief Pre-Decrement
+     * \details  Pre-Decrement the mesh iterator and return the reference to the iterator.
+     *   This should be the fastest way to decrement the iterator.
+     *   Note: not all iterators support decrementing the iterator (libmesh).
+     */
     virtual MeshIterator& operator--();
     
-    //! Post-Decrement (creates a temporary object)
+    /** 
+     * \brief Post-Decrement
+     * \details  Post-Decrement the mesh iterator and return a reference to a temporary iterator.
+     *   This should be avoided and pre-decrement used whenever possible.
+     *   Note: not all iterators support decrementing the iterator (libmesh).
+     */
     virtual MeshIterator operator--(int);
 
     //! Check if two iterators are equal
@@ -80,35 +98,87 @@ public:
     //! Return the Unique (per class) ID for identifing the underlying iterator
     unsigned int type_id() const {return typeID;}
 
-    //! Arithmetic operator+
+    /** 
+     * \brief Arithmetic operator+
+     * \details  Random access increment to advance the iterator by N.
+     *   Note: not all iterators support random access (libmesh).
+     *   In this case, the pre-increment will be used instead and may reduce performance.
+     *   Note: the default behavior of all random access iterators will be to call this function
+     *     so derived classes only need to impliment this function for improved performance.
+     * \param N  Number to increment by (may be negitive)
+     */
     virtual MeshIterator operator+(int) const;
 
-    //! Arithmetic operator+
-    virtual MeshIterator operator+(const MeshIterator&) const;
+    /** 
+     * \brief Arithmetic operator+
+     * \details  Random access increment to advance the iterator by the given iterator.
+     *   Note: not all iterators support random access (libmesh).
+     *   In this case, the pre-increment will be used instead and may reduce performance.
+     * \param it  Iterator to add
+     */
+    virtual MeshIterator operator+(const MeshIterator& it) const;
 
-    //! Arithmetic operator-
-    virtual MeshIterator operator-(int) const;
+    /** 
+     * \brief Arithmetic operator-
+     * \details  Random access decrement to reverse the iterator by N.
+     *   Note: not all iterators support random access (libmesh).
+     *   In this case, the pre-decrement will be used instead and may reduce performance.
+     * \param N  Number to decrement by (may be negitive)
+     */
+    virtual MeshIterator operator-(int N) const;
 
-    //! Arithmetic operator-
-    virtual MeshIterator operator-(const MeshIterator&) const;
+    /** 
+     * \brief Arithmetic operator-
+     * \details  Random access decrement to reverse the iterator by the given iterator.
+     *   Note: not all iterators support random access (libmesh).
+     *   In this case, the pre-decrement will be used instead and may reduce performance.
+     * \param it  Iterator to subtract
+     */
+    virtual MeshIterator operator-(const MeshIterator& it) const;
 
-    //! Arithmetic operator+=
-    virtual MeshIterator& operator+=(int);
+    /** 
+     * \brief Arithmetic operator+=
+     * \details  Random access increment to advance the iterator by N.
+     *   Note: not all iterators support random access (libmesh).
+     *   In this case, the pre-increment will be used instead and may reduce performance.
+     *   Note: the default behavior of all random access assignement iterators will be to call this function
+     *     so derived classes only need to impliment this function for improved performance.
+     * \param N  Number to increment by (may be negitive)
+     */
+    virtual MeshIterator& operator+=(int N);
 
-    //! Arithmetic operator+=
-    virtual MeshIterator& operator+=(const MeshIterator&);
+    /** 
+     * \brief Arithmetic operator+=
+     * \details  Random access increment to advance the iterator by the given iterator.
+     *   Note: not all iterators support random access (libmesh).
+     *   In this case, the pre-increment will be used instead and may reduce performance.
+     * \param it  Iterator to add
+     */
+    virtual MeshIterator& operator+=(const MeshIterator& it);
 
-    //! Arithmetic operator-=
-    virtual MeshIterator& operator-=(int);
+    /** 
+     * \brief Arithmetic operator-=
+     * \details  Random access decrement to reverse the iterator by N.
+     *   Note: not all iterators support random access (libmesh).
+     *   In this case, the pre-decrement will be used instead and may reduce performance.
+     * \param N  Number to decrement by (may be negitive)
+     */
+    virtual MeshIterator& operator-=(int N);
 
-    //! Arithmetic operator-=
-    virtual MeshIterator& operator-=(const MeshIterator&);
+    /** 
+     * \brief Arithmetic operator-=
+     * \details  Random access decrement to reverse the iterator by the given iterator.
+     *   Note: not all iterators support random access (libmesh).
+     *   In this case, the pre-decrement will be used instead and may reduce performance.
+     * \param it  Iterator to subtract
+     */
+    virtual MeshIterator& operator-=(const MeshIterator& it);
 
     //! Operator <
     virtual bool operator<(const MeshIterator&);
 
     //! Operator <=
-    virtual bool operator<=(const MeshIterator&);
+    virtual bool operator<=(const MeshIterator& it);
 
     //! Operator >
     virtual bool operator>(const MeshIterator&);
