@@ -129,6 +129,32 @@ MeshIterator MultiVectorIterator::operator--(int)
 
 
 /********************************************************
+* Random access incrementors                            *
+********************************************************/
+MeshIterator MultiVectorIterator::operator+(int n) const
+{
+    MultiVectorIterator tmp(*this);     // Create a temporary iterator
+    tmp.operator+=(n);                  // Increment temporary iterator
+    return tmp;
+}
+MeshIterator& MultiVectorIterator::operator+=(int n)
+{
+    if ( n>=0 ) {                       // increment *this
+        size_t n2 = static_cast<size_t>(n);
+        if ( d_pos+n2 > d_elements->size() )
+            AMP_ERROR("Iterated past end of iterator");
+        d_pos += n2;
+    } else {                            // decrement *this
+        size_t n2 = static_cast<size_t>(-n);
+        if ( n2 > d_pos )
+            AMP_ERROR("Iterated past beginning of iterator");
+        d_pos -= n2;
+    }
+    return *this;
+}
+
+
+/********************************************************
 * Compare two iterators                                 *
 ********************************************************/
 bool MultiVectorIterator::operator==(const MeshIterator& rhs) const

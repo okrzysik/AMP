@@ -37,6 +37,12 @@ public:
     //! Decrement
     MeshIterator operator--(int);
 
+    // Arithmetic operator+
+    virtual MeshIterator operator+(int) const;
+
+    // Arithmetic operator+=
+    virtual MeshIterator& operator+=(int N);
+
     //! Check if two iterators are equal
     bool operator==(const MeshIterator& rhs) const;
 

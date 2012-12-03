@@ -197,9 +197,81 @@ MeshIterator& MultiIterator::operator--()
 MeshIterator MultiIterator::operator--(int)
 {
     // Postfix decrement (increment and return temporary object)
-    MultiIterator tmp(*this);      // Create a temporary variable
+    MultiIterator tmp(*this);       // Create a temporary variable
     --(*this);                      // apply operator
     return tmp;                     // return temporary result
+}
+
+
+/********************************************************
+* Random access incrementors                            *
+********************************************************/
+MeshIterator MultiIterator::operator+(int n) const
+{
+    MultiIterator tmp(*this);           // Create a temporary iterator
+    tmp.operator+=(n);                  // Increment temporary iterator
+    return tmp;
+}
+MeshIterator& MultiIterator::operator+=(int n)
+{
+    if ( n>=0 ) {                       // increment *this
+        size_t n2 = static_cast<size_t>(n);
+        if ( d_globalPos+n2 > d_globalSize )
+            AMP_ERROR("Iterated past end of iterator");
+        if ( d_globalPos+n2 == d_globalSize ) {
+            // We reached the end of the iterator
+            d_globalPos = d_globalSize;
+            d_localPos = 0;
+            d_iteratorNum = d_iterators.size();
+            cur_iterator = MeshIterator();
+            return *this;
+        }
+        // Move to the correct iterator
+        if ( d_localPos+n2 >= d_iteratorSize[d_iteratorNum] ) {
+            size_t i = d_iteratorSize[d_iteratorNum] - d_localPos;
+            n2 -= i;
+            d_iteratorNum++;
+            while ( d_iteratorSize[d_iteratorNum] < n2 ) {
+                n2 -= d_iteratorSize[d_iteratorNum];
+                d_iteratorNum++;
+            }
+            cur_iterator = d_iterators[d_iteratorNum]->begin();
+            d_localPos = 0;
+        }
+        // Increment local iterator
+        cur_iterator.operator+=(n2);
+        d_localPos += n2;
+        d_globalPos += n;
+    } else {                            // decrement *this
+        size_t n2 = static_cast<size_t>(-n);
+        if ( d_globalPos < n2 )
+            AMP_ERROR("Iterated past beginning of iterator");
+        if ( d_globalPos == n2 ) {
+            // We reached the beginning of the iterator
+            d_globalPos = 0;
+            d_iteratorNum = 0;
+            d_localPos = 0;
+            cur_iterator = d_iterators[0]->begin();
+            return *this;
+        }
+        // Move to the correct iterator
+        if ( n2 > d_localPos ) {
+            size_t i = d_iteratorSize[d_iteratorNum] - d_localPos;
+            n2 -= d_localPos;
+            d_iteratorNum--;
+            while ( d_iteratorSize[d_iteratorNum] < n2 ) {
+                n2 -= d_iteratorSize[d_iteratorNum];
+                d_iteratorNum--;
+            }
+            cur_iterator = d_iterators[d_iteratorNum]->end();
+            d_localPos = d_iteratorSize[d_iteratorNum];
+        }
+        // Increment local iterator
+        cur_iterator.operator-=(n2);
+        d_localPos -= n2;
+        d_globalPos += n;
+    }
+    return *this;
 }
 
 
