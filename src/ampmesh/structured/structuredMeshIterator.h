@@ -67,6 +67,9 @@ public:
     //! Return the current position (from the beginning) in the iterator
     virtual size_t position() const;
 
+    using MeshIterator::operator+;
+    using MeshIterator::operator+=;
+
 protected:
 
     //! Default MultiVectorIterator constructor

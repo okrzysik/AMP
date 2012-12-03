@@ -68,6 +68,9 @@ public:
     //! Return the current position (from the beginning) in the iterator
     virtual size_t position() const;
 
+    using MeshIterator::operator+;
+    using MeshIterator::operator+=;
+
 protected:
     /** Default constructor
      * \param type      Entity type:  0: node, 1: element
