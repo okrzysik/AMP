@@ -47,17 +47,15 @@ namespace AMP {
 
       std::vector<int> tmpSendCnts(npes, 0);
 
-      AMP::Mesh::MeshIterator elStart = d_meshAdapter->getIterator(AMP::Mesh::Volume, 0);
       for (unsigned int i = 0; i < d_foundPts.size(); i += 6) {
         ProjectOnBoundaryData tmpData;
         const double * pointLocalCoords_ptr = &(d_foundPts[i+1]);
         const size_t pointLocalID = static_cast<size_t>(d_foundPts[i+4]);
         const size_t pointOwnerRank = static_cast<size_t>(d_foundPts[i+5]);
         const size_t elementLocalID = static_cast<size_t>(d_foundPts[i]);
-        AMP::Mesh::MeshIterator currEl = (elStart + elementLocalID);
         tmpData.d_PointLocalID = pointLocalID;
-        if (currEl->isOnBoundary(boundaryID)) { // point was found and element is on boundary
-          std::vector<AMP::Mesh::MeshElement> meshElementFaces = currEl->getElements(AMP::Mesh::Face);
+        if (d_localElems[elementLocalID].isOnBoundary(boundaryID)) { // point was found and element is on boundary
+          std::vector<AMP::Mesh::MeshElement> meshElementFaces = d_localElems[elementLocalID].getElements(AMP::Mesh::Face);
           AMP_CHECK_ASSERT( meshElementFaces.size() == 6 );
           for (size_t f = 0; f < 6; ++f) {
             if (meshElementFaces[f].isOnBoundary(boundaryID)) {
@@ -174,35 +172,10 @@ namespace AMP {
         }
       }
 
-      AMP::Mesh::MeshIterator el = d_meshAdapter->getIterator(AMP::Mesh::Volume, 0);
-
-      size_t localNumElems = d_meshAdapter->numLocalElements(AMP::Mesh::Volume);
-      AMP_CHECK_ASSERT(localNumElems > 0);
-
-      meshComm.barrier();
-      double loop1TimeBegin = MPI_Wtime();
-
-      d_volume_elements.clear();
-      d_volume_elements.resize(localNumElems, NULL);
-      {
-        std::vector<double> support_points(24);
-        for(size_t i = 0; i < localNumElems; ++i) {
-          std::vector<AMP::Mesh::MeshElement> amp_vector_support_points = (el + i)->getElements(AMP::Mesh::Vertex);
-          AMP_CHECK_ASSERT(amp_vector_support_points.size() == 8);
-          for (unsigned int j = 0; j < 8; ++j) {
-            std::vector<double> point_coord = amp_vector_support_points[j].coord();
-            support_points[3*j+0] = point_coord[0];
-            support_points[3*j+1] = point_coord[1];
-            support_points[3*j+2] = point_coord[2];
-          } // end j
-          d_volume_elements[i] = new hex8_element_t(&(support_points[0]));
-        } // end for i
-      }
-
-      meshComm.barrier();
-      double loop1TimeEnd = MPI_Wtime();
-      if(!rank) {
-        d_oStream<<"SetupDS: Loop1-time = "<<(loop1TimeEnd - loop1TimeBegin)<<std::endl; 
+      if(d_verbose) {
+        if(!rank) {
+          d_oStream<<"BoxLevel = "<<d_boxLevel<<std::endl;
+        }
       }
 
       double avgHboxInv = std::pow(globalNumElems, (1.0/3.0));
@@ -214,10 +187,34 @@ namespace AMP {
       }
       const double hBox = 1.0/(static_cast<double>(1u << d_boxLevel));
 
-      if(d_verbose) {
-        if(!rank) {
-          d_oStream<<"BoxLevel = "<<d_boxLevel<<std::endl;
-        }
+      size_t localNumElems = d_meshAdapter->numLocalElements(AMP::Mesh::Volume);
+      AMP_CHECK_ASSERT(localNumElems > 0);
+
+      meshComm.barrier();
+      double loop1TimeBegin = MPI_Wtime();
+
+      d_volume_elements.clear();
+      d_localElems.clear();
+      d_volume_elements.resize(localNumElems, NULL);
+      AMP::Mesh::MeshIterator el = d_meshAdapter->getIterator(AMP::Mesh::Volume, 0);
+      std::vector<double> support_points(24);
+      for(size_t i = 0; i < localNumElems; ++i, ++el) {
+        d_localElems.push_back(*el);
+        std::vector<AMP::Mesh::MeshElement> amp_vector_support_points = el->getElements(AMP::Mesh::Vertex);
+        AMP_CHECK_ASSERT(amp_vector_support_points.size() == 8);
+        for (unsigned int j = 0; j < 8; ++j) {
+          std::vector<double> point_coord = amp_vector_support_points[j].coord();
+          support_points[3*j+0] = point_coord[0];
+          support_points[3*j+1] = point_coord[1];
+          support_points[3*j+2] = point_coord[2];
+        } // end j
+        d_volume_elements[i] = new hex8_element_t(&(support_points[0]));
+      } // end for i
+
+      meshComm.barrier();
+      double loop1TimeEnd = MPI_Wtime();
+      if(!rank) {
+        d_oStream<<"SetupDS: Loop1-time = "<<(loop1TimeEnd - loop1TimeBegin)<<std::endl; 
       }
 
       meshComm.barrier();
@@ -225,7 +222,7 @@ namespace AMP {
 
       std::vector< ot::NodeAndValues<int, 1> > nodeAndElemIdList;
       for(size_t eId = 0; eId < localNumElems; ++eId) {
-        std::vector<AMP::Mesh::MeshElement> currNodes = (el + eId)->getElements(AMP::Mesh::Vertex);
+        std::vector<AMP::Mesh::MeshElement> currNodes = d_localElems[eId].getElements(AMP::Mesh::Vertex);
         int minId[3];
         int maxId[3];
         for(size_t i = 0; i < currNodes.size(); ++i) {
@@ -510,19 +507,19 @@ namespace AMP {
           d_rankList.erase(d_rankList.begin(), d_rankList.begin() + ((firstBox.getWeight())));
           d_elemIdList.erase(d_elemIdList.begin(), d_elemIdList.begin() + ((firstBox.getWeight())));
         }
-
-        d_stIdxList.resize(d_nodeList.size());
-
-        d_stIdxList[0] = 0;
-        for(size_t i = 1; i < d_nodeList.size(); ++i) {
-          d_stIdxList[i] = d_stIdxList[i - 1] + d_nodeList[i - 1].getWeight();
-        }//end i
       }
+
+      d_stIdxList.resize(d_nodeList.size());
 
       ot::TreeNode firstNode;
       if(!(d_nodeList.empty())) {
         firstNode = d_nodeList[0];
         firstNode.setWeight(rank);
+
+        d_stIdxList[0] = 0;
+        for(size_t i = 1; i < d_nodeList.size(); ++i) {
+          d_stIdxList[i] = d_stIdxList[i - 1] + d_nodeList[i - 1].getWeight();
+        }//end i
       }
       d_mins.resize(npes);
       meshComm.allGather(firstNode, &(d_mins[0]));
@@ -882,12 +879,11 @@ namespace AMP {
 
       std::vector<int> tmpSendCnts(npes, 0);
 
-      AMP::Mesh::MeshIterator el = d_meshAdapter->getIterator(AMP::Mesh::Volume, 0);
-
       std::vector<double> basis_functions_values(8);
       for(size_t i = 0; i < d_foundPts.size(); i += 6) {
+        unsigned int elemLocalId = static_cast<unsigned int>(d_foundPts[i]);
         std::vector<AMP::Mesh::MeshElement> amp_vector_support_points =
-          (el + (static_cast<unsigned int>(d_foundPts[i])))->getElements(AMP::Mesh::Vertex);
+          d_localElems[elemLocalId].getElements(AMP::Mesh::Vertex);
         hex8_element_t::get_basis_functions_values(&(d_foundPts[i + 1]), &(basis_functions_values[0]));
 
         std::vector<double> value(dofsPerNode, 0.0);

@@ -183,30 +183,40 @@ size_t MeshIterator::position() const
 ********************************************************/
 MeshIterator MeshIterator::operator+(int n) const
 {
+    if ( iterator!=NULL )
+        return iterator->operator+(n);
     MeshIterator tmp(*this);            // Create a temporary iterator
-    for (int i=0; i<n; i++) { ++tmp; }  // increment temporary iterator
+    tmp.operator+=(n);                  // Increment temporary iterator
     return tmp;                         // return temporary iterator
 }
 MeshIterator MeshIterator::operator+(const MeshIterator& it) const
 {
+    if ( iterator!=NULL )
+        return iterator->operator+(it);
     return this->operator+((int)it.position());
 }
 MeshIterator MeshIterator::operator-(int n) const
 {
+    if ( iterator!=NULL )
+        return iterator->operator-(n);
     MeshIterator tmp(*this);            // Create a temporary iterator
-    for (int i=0; i<n; i++) { --tmp; }  // decrement temporary iterator
-    return tmp;                         // return temporary iterator
+    return this->operator+(-n);
 }
 MeshIterator MeshIterator::operator-(const MeshIterator& it) const
 {
-    return this->operator-((int)it.position());
+    if ( iterator!=NULL )
+        return iterator->operator+(it);
+    return this->operator+(-static_cast<int>(it.position()));
 }
 MeshIterator& MeshIterator::operator+=(int n)
 {
     if ( iterator!=NULL ) 
         return iterator->operator+=(n);
-    for (int i=0; i<n; i++)
-        this->operator++();
+    if ( n>=0 ) {
+        for (int i=0; i<n; i++) { this->operator++(); }  // increment iterator
+    } else {
+        for (int i=0; i<-n; i++) { this->operator--(); }  // decrement iterator
+    }
     return *this;
 }
 MeshIterator& MeshIterator::operator+=(const MeshIterator& it)
@@ -219,15 +229,13 @@ MeshIterator& MeshIterator::operator-=(int n)
 {
     if ( iterator!=NULL )
         return iterator->operator-=(n);
-    for (int i=0; i<n; i++)
-        this->operator--();
-    return *this;
+    return this->operator+=(-n);
 }
 MeshIterator& MeshIterator::operator-=(const MeshIterator& it)
 {
     if ( iterator!=NULL )
         return iterator->operator-=((int)it.position());
-    return this->operator-=((int)it.position());
+    return this->operator+=(-static_cast<int>(it.position()));
 }
 
 

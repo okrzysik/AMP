@@ -38,6 +38,12 @@ public:
     //! Decrement
     MeshIterator operator--(int);
 
+    // Arithmetic operator+
+    virtual MeshIterator operator+(int) const;
+
+    // Arithmetic operator+=
+    virtual MeshIterator& operator+=(int N);
+
     //! Check if two iterators are equal
     bool operator==(const MeshIterator& rhs) const;
 
@@ -61,6 +67,9 @@ public:
 
     //! Return the current position (from the beginning) in the iterator
     virtual size_t position() const;
+
+    using MeshIterator::operator+;
+    using MeshIterator::operator+=;
 
 protected:
     /** Default constructor

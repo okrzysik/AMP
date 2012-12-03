@@ -102,11 +102,15 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
         AMP::Mesh::MeshIterator it1 = iterator.begin();
         AMP::Mesh::MeshIterator it2 = iterator.begin();
         AMP::Mesh::MeshIterator it3 = iterator.begin();
+        AMP::Mesh::MeshIterator it4 = iterator.begin();
+        AMP::Mesh::MeshIterator it5 = iterator.begin();
         it1++;
         ++it1;
         it2 = it2+2;
-        it3+=2;
-        if ( it1!=it2 || it1!=it3 )
+        it3 += 2;
+        it4 += 0;
+        it5 += iterator.size();
+        if ( it1!=it2 || it1!=it3 || it4!=iterator.begin() || it5!=iterator.end() )
             pass = false;
         /*it1--;
         --it1;

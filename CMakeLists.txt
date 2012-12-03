@@ -13,7 +13,7 @@ IF ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}" )
   MESSAGE ( FATAL_ERROR "Building AMP in place is a bad idea" )
 ENDIF()
 
-
+# Set the project name
 PROJECT (AMP)
 
 # Check if we want to enable fortran
@@ -30,9 +30,9 @@ ELSE()
     MESSAGE ( "Bad value for USE_FORTRAN; use true or false" )
 ENDIF()
 IF ( USE_FORTRAN )
-	ENABLE_LANGUAGE (Fortran)
+    ENABLE_LANGUAGE (Fortran)
 ENDIF()
-	
+
 # Set testing paramaters
 SET ( DROP_METHOD "http" )
 SET ( DROP_SITE "thyme.ornl.gov" )
