@@ -206,6 +206,8 @@ namespace AMP {
 
       d_SlaveVerticesGlobalIDs = d_ActiveSet;
       nInactiveSlaveVerticesActivated = nAddedConstraints;
+      std::cout<<"nInactiveSlaveVerticesActivated="<<nInactiveSlaveVerticesActivated<<"  "
+        <<"nActiveSlaveVerticesDeactivated="<<nActiveSlaveVerticesDeactivated<<"\n";
 
       return nInactiveSlaveVerticesActivated + nActiveSlaveVerticesDeactivated;
     }

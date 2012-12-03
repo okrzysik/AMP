@@ -27,8 +27,11 @@ class hex8_element_t {
     void map_local_to_global(double const *local_coordinates, double *global_coordinates);
     bool contains_point(double const *coordinates, bool coordinates_are_local = false, double tolerance = 1.0e-12);
     void project_on_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face, double *shift_global_coordinates);
+    void compute_normal_to_face(unsigned int f, double const *local_coordinates, double *normal_to_face);
 
-    static void project_on_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face);
+//    static void project_on_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face);
+    static void map_face_to_local(unsigned int f, double const *local_coordinates_on_face, double *local_coordinates);
+    static void map_local_to_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face);
     static void get_basis_functions_values(double const *x, double *basis_functions_values);
     static void get_basis_functions_derivatives( double const *x, double *basis_functions_derivatives);
     static void get_basis_functions_values_on_face(double const *x, double *basis_functions_values);
@@ -77,8 +80,10 @@ class hex8_element_t {
     //      4       x=-1                    3047 
     //      5       z=+1                    4567 
     //
-    std::vector<double> support_points;
-    std::vector<double> point_candidate;
+    //std::vector<double> support_points;
+    //std::vector<double> point_candidate;
+    double support_points[24];
+    double point_candidate[3];
 
     // faces are oriented and defined by their 4 support nodes
     //   3          2    
@@ -98,7 +103,7 @@ class hex8_element_t {
     //    |
     //    o------ x
     //
-    static unsigned int faces[];
+    static unsigned int faces[24];
 
     bool support_points_scaled;
     bool scaling_factors_updated;
