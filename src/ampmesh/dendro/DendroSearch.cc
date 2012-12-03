@@ -172,6 +172,21 @@ namespace AMP {
         }
       }
 
+      if(d_verbose) {
+        if(!rank) {
+          d_oStream<<"BoxLevel = "<<d_boxLevel<<std::endl;
+        }
+      }
+
+      double avgHboxInv = std::pow(globalNumElems, (1.0/3.0));
+      AMP_CHECK_ASSERT(avgHboxInv > 1.0);
+      d_boxLevel = binOp::fastLog2(static_cast<unsigned int>(std::ceil(avgHboxInv)));
+      AMP_CHECK_ASSERT(d_boxLevel < MaxDepth);
+      if(d_boxLevel > 5) {
+        d_boxLevel = 5;
+      }
+      const double hBox = 1.0/(static_cast<double>(1u << d_boxLevel));
+
       size_t localNumElems = d_meshAdapter->numLocalElements(AMP::Mesh::Volume);
       AMP_CHECK_ASSERT(localNumElems > 0);
 
@@ -200,21 +215,6 @@ namespace AMP {
       double loop1TimeEnd = MPI_Wtime();
       if(!rank) {
         d_oStream<<"SetupDS: Loop1-time = "<<(loop1TimeEnd - loop1TimeBegin)<<std::endl; 
-      }
-
-      double avgHboxInv = std::pow(globalNumElems, (1.0/3.0));
-      AMP_CHECK_ASSERT(avgHboxInv > 1.0);
-      d_boxLevel = binOp::fastLog2(static_cast<unsigned int>(std::ceil(avgHboxInv)));
-      AMP_CHECK_ASSERT(d_boxLevel < MaxDepth);
-      if(d_boxLevel > 5) {
-        d_boxLevel = 5;
-      }
-      const double hBox = 1.0/(static_cast<double>(1u << d_boxLevel));
-
-      if(d_verbose) {
-        if(!rank) {
-          d_oStream<<"BoxLevel = "<<d_boxLevel<<std::endl;
-        }
       }
 
       meshComm.barrier();
@@ -507,19 +507,19 @@ namespace AMP {
           d_rankList.erase(d_rankList.begin(), d_rankList.begin() + ((firstBox.getWeight())));
           d_elemIdList.erase(d_elemIdList.begin(), d_elemIdList.begin() + ((firstBox.getWeight())));
         }
-
-        d_stIdxList.resize(d_nodeList.size());
-
-        d_stIdxList[0] = 0;
-        for(size_t i = 1; i < d_nodeList.size(); ++i) {
-          d_stIdxList[i] = d_stIdxList[i - 1] + d_nodeList[i - 1].getWeight();
-        }//end i
       }
+
+      d_stIdxList.resize(d_nodeList.size());
 
       ot::TreeNode firstNode;
       if(!(d_nodeList.empty())) {
         firstNode = d_nodeList[0];
         firstNode.setWeight(rank);
+
+        d_stIdxList[0] = 0;
+        for(size_t i = 1; i < d_nodeList.size(); ++i) {
+          d_stIdxList[i] = d_stIdxList[i - 1] + d_nodeList[i - 1].getWeight();
+        }//end i
       }
       d_mins.resize(npes);
       meshComm.allGather(firstNode, &(d_mins[0]));
