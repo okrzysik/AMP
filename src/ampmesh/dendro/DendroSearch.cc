@@ -204,6 +204,7 @@ namespace AMP {
       d_localElems.reserve(localNumElems);
       AMP::Mesh::MeshIterator el = d_meshAdapter->getIterator(AMP::Mesh::Volume, 0);
       for(size_t eId = 0; eId < localNumElems; ++eId, ++el) {
+        std::vector<int> eIdSingleton(1, eId);
         d_localElems.push_back(*el);
         std::vector<AMP::Mesh::MeshElement> vertices = el->getElements(AMP::Mesh::Vertex);
         double support_points[24];
@@ -243,17 +244,14 @@ namespace AMP {
               bool found = seq::maxLowerBound<ot::TreeNode>(tmpNodeList, box, retIdx, NULL, NULL);
               if(found) {
                 if(tmpNodeList[retIdx] == box) {
-                  tmpNodeList[retIdx].addWeight(1); 
                   tmpElemIdList[retIdx].push_back(eId);
                 } else {
-                  box.setWeight(1);
                   tmpNodeList.insert(tmpNodeList.begin() + retIdx + 1, box);
-                  tmpElemIdList.insert(tmpElemIdList.begin() + retIdx + 1, std::vector<int>(1, eId));
+                  tmpElemIdList.insert(tmpElemIdList.begin() + retIdx + 1, eIdSingleton);
                 }
               } else {
-                box.setWeight(1);
                 tmpNodeList.insert(tmpNodeList.begin(), box);
-                tmpElemIdList.insert(tmpElemIdList.begin(), std::vector<int>(1, eId));
+                tmpElemIdList.insert(tmpElemIdList.begin(), eIdSingleton);
               }
             }//end i 
           }//end j 
