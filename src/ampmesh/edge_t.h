@@ -17,7 +17,7 @@ class edge_t {
     int project_point(double const * point_in_containing_plane, double * projection, double tolerance = 1.0e-12);
 
   private:
-    std::vector<double const *> support_points_ptr;
+    double const * support_points_ptr[2];
     double const * containing_plane_ptr;
     std::vector<double> normal;
     std::vector<double> direction;

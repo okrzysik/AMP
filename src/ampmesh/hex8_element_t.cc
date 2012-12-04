@@ -425,35 +425,33 @@ void hex8_element_t::project_on_face(unsigned int f, double const *local_coordin
   map_local_to_face(f, local_coordinates, local_coordinates_on_face);
 }
 
-void hex8_element_t::compute_normal_to_face(unsigned int f, double const *local_coordinates, double *normal_vector) {
+void hex8_element_t::compute_normal_to_face(unsigned int f, double const *local_coordinates, double const *global_coordinates, double *normal_vector) {
   AMP_CHECK_ASSERT(f < 6);
   double tangential_vectors[6];
   double const perturbation = 1.0e-6;
   double direction = 1.0;
-  double perturbated_local_coordinates_on_face[4];
+  double perturbated_local_coordinates_on_face[2];
+  double perturbated_local_coordinates[3];
+  double perturbated_global_coordinates[3];
   for (unsigned int d = 0; d < 2; ++d) {
-    map_local_to_face(f, local_coordinates, &(perturbated_local_coordinates_on_face[2*d]));
-    if (perturbated_local_coordinates_on_face[3*d] > 0) { 
-      perturbated_local_coordinates_on_face[3*d] -= perturbation;
+    map_local_to_face(f, local_coordinates, perturbated_local_coordinates_on_face);
+    if (perturbated_local_coordinates_on_face[d] > 0.0) { 
+      perturbated_local_coordinates_on_face[d] -= perturbation;
       direction *= -1.0; 
     } else {
-      perturbated_local_coordinates_on_face[3*d] += perturbation;
+      perturbated_local_coordinates_on_face[d] += perturbation;
     } // end if
+    map_face_to_local(f, perturbated_local_coordinates_on_face, perturbated_local_coordinates);
+    map_local_to_global(perturbated_local_coordinates, perturbated_global_coordinates);
+    make_vector_from_two_points(global_coordinates, perturbated_global_coordinates, &(tangential_vectors[3*d]));
   } // end for d
-
-  double perturbated_local_coordinates[6];
-  for (unsigned int i = 0; i < 2; ++i) {
-    map_face_to_local(f, &(perturbated_local_coordinates_on_face[2*i]), &(perturbated_local_coordinates[3*i]));
-  } // end for i 
-
-  double global_coordinates[3];
-  map_local_to_global(local_coordinates, global_coordinates);
-  double perturbated_global_coordinates[6];
-  for (unsigned int i = 0; i < 2; ++i) {
-    map_local_to_global(&(perturbated_local_coordinates[3*i]), &(perturbated_global_coordinates[3*i]));
-    make_vector_from_two_points(global_coordinates, &(perturbated_global_coordinates[3*i]), &(tangential_vectors[3*i]));
-  } // end for i 
   compute_cross_product(&(tangential_vectors[0]), &(tangential_vectors[3]), normal_vector); 
+  normalize_vector(normal_vector);
+  if (direction == -1.0) {
+    std::transform(normal_vector, normal_vector+3, normal_vector, std::bind1st(std::multiplies<double>(), direction));
+  } else {
+    AMP_CHECK_ASSERT(direction == 1.0);
+  }
 }
 
 void hex8_element_t::map_face_to_local(unsigned int f, double const *local_coordinates_on_face, double *local_coordinates) {

@@ -11,7 +11,6 @@ triangle_t::triangle_t(double const * A, double const * B, double const * C) {
 }
 
 void triangle_t::set_support_points(double const * A, double const * B, double const * C) {
-  if (support_points_ptr.size() == 0) { support_points_ptr.resize(3); }
   support_points_ptr[0] = A; 
   support_points_ptr[1] = B; 
   support_points_ptr[2] = C; 

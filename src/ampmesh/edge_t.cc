@@ -14,7 +14,6 @@ edge_t::edge_t(double const * A, double const * B, double const * ABC) {
 }
 
 void edge_t::set_support_points(double const * A, double const * B) {
-  if (support_points_ptr.size() == 0) { support_points_ptr.resize(2); }
   support_points_ptr[0] = A;
   support_points_ptr[1] = B;
   center_updated = false;

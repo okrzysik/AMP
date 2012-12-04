@@ -20,7 +20,7 @@ class triangle_t {
 
   private:
     std::vector<edge_t> edges;
-    std::vector<double const*> support_points_ptr;
+    double const* support_points_ptr[3];
     std::vector<double> normal;
     std::vector<double> centroid;
     std::vector<double> tmp;
