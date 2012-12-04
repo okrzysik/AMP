@@ -11,11 +11,12 @@ void compute_n_by_n_matrix_times_vector(unsigned int n, double const *mat, doubl
 class hex8_element_t {
   public:
     hex8_element_t(double const *p);
+    ~hex8_element_t();
     void set_support_points(double const *p);
     double const * get_support_point(unsigned int i) const;
     double const * get_support_points() const;
     double const * get_bounding_box();
-    triangle_t * get_bounding_polyhedron();
+    triangle_t * * get_bounding_polyhedron();
     double const * get_scaling_factors();
     void scale_support_points();
     void unscale_support_points();
@@ -116,8 +117,9 @@ class hex8_element_t {
     bool bounding_polyhedron_updated;
 
     std::vector<double> bounding_box;
-    std::vector<triangle_t> bounding_polyhedron;
-    std::vector<triangle_t> tmp_triangles;
+    std::vector<triangle_t*> bounding_polyhedron;
+    std::vector<triangle_t*> tmp_triangles_ptr;
+    void clear_triangles_ptr(std::vector<triangle_t*> &triangles_ptr);
 
     bool center_of_element_data_updated;
     std::vector<double> center_of_element_local_coordinates;
