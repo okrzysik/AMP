@@ -265,14 +265,14 @@ AMP::LinearAlgebra::Vector::shared_ptr  getCladHydraulicDiameter( AMP::Mesh::Mes
         std::vector<double> area, fric_diam, rod_diameter, channel_fraction;
         getSubchannelProperties( subchannel, clad_x, clad_y, clad_d, 
             x, y, area, fric_diam, heat_diam, rod_diameter, channel_fraction );
-        N[0] = x.size()-1;
-        N[1] = y.size()-1;
-        AMP_ASSERT(N[0]*N[1]==heat_diam.size());
+        N[0] = x.size();
+        N[1] = y.size();
+        AMP_ASSERT((N[0]-1)*(N[1]-1)==heat_diam.size());
         root = comm.getRank();
     }
     root = comm.maxReduce(root);
     comm.bcast(N,2,root);
-    size_t N_subchannels = N[0]*N[1];
+    size_t N_subchannels = (N[0]-1)*(N[1]-1);
     if ( subchannel.get() == NULL ) {
         x.resize(N[0]);
         y.resize(N[1]);
