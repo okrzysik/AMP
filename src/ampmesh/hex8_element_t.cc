@@ -12,9 +12,12 @@
 
 hex8_element_t::hex8_element_t(double const *p) : memory_allocated_for_newton(false) {
   //  newton_count = 0;
-  //point_candidate.resize(3);
-  //support_points.resize(24);
   set_support_points(p); 
+}
+
+hex8_element_t::~hex8_element_t() {
+  clear_triangles_ptr(tmp_triangles_ptr);
+  clear_triangles_ptr(bounding_polyhedron);
 }
 
 void hex8_element_t::set_support_points(double const *p) { 
@@ -86,7 +89,7 @@ double const * hex8_element_t::get_bounding_box() {
   return &(bounding_box[0]); 
 }
 
-triangle_t * hex8_element_t::get_bounding_polyhedron() { 
+triangle_t * * hex8_element_t::get_bounding_polyhedron() { 
   if (!bounding_polyhedron_updated) { build_bounding_polyhedron(); };
   return &(bounding_polyhedron[0]); 
 }
@@ -109,12 +112,20 @@ unsigned int hex8_element_t::faces[24] = {
   4, 5, 6, 7
 };
 
+void hex8_element_t::clear_triangles_ptr(std::vector<triangle_t*> &triangles_ptr) {
+  for (unsigned int i = 0; i < triangles_ptr.size(); ++i) {
+    if (triangles_ptr[i] != NULL) { delete triangles_ptr[i]; }
+    triangles_ptr[i] = NULL;
+  } // end for i
+  triangles_ptr.clear();
+}
+
 void hex8_element_t::build_bounding_polyhedron() {
-  if (bounding_polyhedron.size() == 0) { bounding_polyhedron.reserve(12); tmp_triangles.reserve(4); }
+  if (bounding_polyhedron.size() == 0) { bounding_polyhedron.reserve(12); tmp_triangles_ptr.reserve(4); }
   AMP_CHECK_ASSERT(!bounding_polyhedron_updated);
-  bounding_polyhedron.clear();
+  clear_triangles_ptr(bounding_polyhedron);
   for (unsigned int i = 0; i < 6; ++i) {
-    tmp_triangles.clear();
+    clear_triangles_ptr(tmp_triangles_ptr);
     //   3        
     //    o
     //    | .
@@ -123,7 +134,7 @@ void hex8_element_t::build_bounding_polyhedron() {
     //    |       .
     //    o--------o
     //   0          1
-    tmp_triangles.push_back(triangle_t(get_support_point(faces[4*i+0]), get_support_point(faces[4*i+1]), get_support_point(faces[4*i+3]))); 
+    tmp_triangles_ptr.push_back(new triangle_t(get_support_point(faces[4*i+0]), get_support_point(faces[4*i+1]), get_support_point(faces[4*i+3]))); 
     //   3          2    
     //    o--------o    
     //      .      |
@@ -132,7 +143,7 @@ void hex8_element_t::build_bounding_polyhedron() {
     //            .| 
     //             o
     //              1
-    tmp_triangles.push_back(triangle_t(get_support_point(faces[4*i+2]), get_support_point(faces[4*i+3]), get_support_point(faces[4*i+1]))); 
+    tmp_triangles_ptr.push_back(new triangle_t(get_support_point(faces[4*i+2]), get_support_point(faces[4*i+3]), get_support_point(faces[4*i+1]))); 
     //              2    
     //             o    
     //           . |
@@ -141,7 +152,7 @@ void hex8_element_t::build_bounding_polyhedron() {
     //     .       | 
     //    o--------o
     //   0          1
-    tmp_triangles.push_back(triangle_t(get_support_point(faces[4*i+1]), get_support_point(faces[4*i+2]), get_support_point(faces[4*i+0]))); 
+    tmp_triangles_ptr.push_back(new triangle_t(get_support_point(faces[4*i+1]), get_support_point(faces[4*i+2]), get_support_point(faces[4*i+0]))); 
     //   3          2    
     //    o--------o    
     //    |      .  
@@ -150,31 +161,35 @@ void hex8_element_t::build_bounding_polyhedron() {
     //    |.         
     //    o         
     //   0           
-    tmp_triangles.push_back(triangle_t(get_support_point(faces[4*i+3]), get_support_point(faces[4*i+0]), get_support_point(faces[4*i+2]))); 
+    tmp_triangles_ptr.push_back(new triangle_t(get_support_point(faces[4*i+3]), get_support_point(faces[4*i+0]), get_support_point(faces[4*i+2]))); 
 
     //this might need scaling
-    if (tmp_triangles[0].above_point(tmp_triangles[2].get_centroid())) {
-      assert(tmp_triangles[0].above_point(tmp_triangles[3].get_centroid()));
-      assert(tmp_triangles[1].above_point(tmp_triangles[2].get_centroid()));
-      assert(tmp_triangles[1].above_point(tmp_triangles[3].get_centroid()));
+    if (tmp_triangles_ptr[0]->above_point(tmp_triangles_ptr[2]->get_centroid())) {
+      assert(tmp_triangles_ptr[0]->above_point(tmp_triangles_ptr[3]->get_centroid()));
+      assert(tmp_triangles_ptr[1]->above_point(tmp_triangles_ptr[2]->get_centroid()));
+      assert(tmp_triangles_ptr[1]->above_point(tmp_triangles_ptr[3]->get_centroid()));
       // will fail if the four points are coplanar 
       /*      assert(!tmp_triangles[2].above_point(tmp_triangles[0].get_centroid()));
               assert(!tmp_triangles[2].above_point(tmp_triangles[1].get_centroid()));
               assert(!tmp_triangles[3].above_point(tmp_triangles[0].get_centroid()));
               assert(!tmp_triangles[3].above_point(tmp_triangles[1].get_centroid()));*/
-      bounding_polyhedron.push_back(tmp_triangles[0]);
-      bounding_polyhedron.push_back(tmp_triangles[1]);
+      bounding_polyhedron.push_back(tmp_triangles_ptr[0]);
+      bounding_polyhedron.push_back(tmp_triangles_ptr[1]);
+      tmp_triangles_ptr[0] = NULL;
+      tmp_triangles_ptr[1] = NULL;
     } else {
       /*
          assert(!tmp_triangles[0].above_point(tmp_triangles[3].get_centroid()));
          assert(!tmp_triangles[1].above_point(tmp_triangles[2].get_centroid()));
          assert(!tmp_triangles[1].above_point(tmp_triangles[3].get_centroid()));*/
-      assert(tmp_triangles[2].above_point(tmp_triangles[0].get_centroid()));
-      assert(tmp_triangles[2].above_point(tmp_triangles[1].get_centroid()));
-      assert(tmp_triangles[3].above_point(tmp_triangles[0].get_centroid()));
-      assert(tmp_triangles[3].above_point(tmp_triangles[1].get_centroid()));
-      bounding_polyhedron.push_back(tmp_triangles[2]);
-      bounding_polyhedron.push_back(tmp_triangles[3]);
+      assert(tmp_triangles_ptr[2]->above_point(tmp_triangles_ptr[0]->get_centroid()));
+      assert(tmp_triangles_ptr[2]->above_point(tmp_triangles_ptr[1]->get_centroid()));
+      assert(tmp_triangles_ptr[3]->above_point(tmp_triangles_ptr[0]->get_centroid()));
+      assert(tmp_triangles_ptr[3]->above_point(tmp_triangles_ptr[1]->get_centroid()));
+      bounding_polyhedron.push_back(tmp_triangles_ptr[2]);
+      bounding_polyhedron.push_back(tmp_triangles_ptr[3]);
+      tmp_triangles_ptr[2] = NULL;
+      tmp_triangles_ptr[3] = NULL;
     } // end if
   } // end for i
   bounding_polyhedron_updated = true;
@@ -183,8 +198,8 @@ void hex8_element_t::build_bounding_polyhedron() {
 bool hex8_element_t::within_bounding_polyhedron(double const *p, double tolerance) {
   if (!bounding_polyhedron_updated) { build_bounding_polyhedron(); }
   for (unsigned int i = 0; i < 6; ++i) {
-    if ((!bounding_polyhedron[2*i+0].above_point(p, tolerance)) 
-        || (!bounding_polyhedron[2*i+1].above_point(p, tolerance))) { return false; }
+    if ((!bounding_polyhedron[2*i+0]->above_point(p, tolerance)) 
+        || (!bounding_polyhedron[2*i+1]->above_point(p, tolerance))) { return false; }
   } // end for i
   return true;
 }
@@ -425,35 +440,33 @@ void hex8_element_t::project_on_face(unsigned int f, double const *local_coordin
   map_local_to_face(f, local_coordinates, local_coordinates_on_face);
 }
 
-void hex8_element_t::compute_normal_to_face(unsigned int f, double const *local_coordinates, double *normal_vector) {
+void hex8_element_t::compute_normal_to_face(unsigned int f, double const *local_coordinates, double const *global_coordinates, double *normal_vector) {
   AMP_CHECK_ASSERT(f < 6);
   double tangential_vectors[6];
   double const perturbation = 1.0e-6;
   double direction = 1.0;
-  double perturbated_local_coordinates_on_face[4];
+  double perturbated_local_coordinates_on_face[2];
+  double perturbated_local_coordinates[3];
+  double perturbated_global_coordinates[3];
   for (unsigned int d = 0; d < 2; ++d) {
-    map_local_to_face(f, local_coordinates, &(perturbated_local_coordinates_on_face[2*d]));
-    if (perturbated_local_coordinates_on_face[3*d] > 0) { 
-      perturbated_local_coordinates_on_face[3*d] -= perturbation;
+    map_local_to_face(f, local_coordinates, perturbated_local_coordinates_on_face);
+    if (perturbated_local_coordinates_on_face[d] > 0.0) { 
+      perturbated_local_coordinates_on_face[d] -= perturbation;
       direction *= -1.0; 
     } else {
-      perturbated_local_coordinates_on_face[3*d] += perturbation;
+      perturbated_local_coordinates_on_face[d] += perturbation;
     } // end if
+    map_face_to_local(f, perturbated_local_coordinates_on_face, perturbated_local_coordinates);
+    map_local_to_global(perturbated_local_coordinates, perturbated_global_coordinates);
+    make_vector_from_two_points(global_coordinates, perturbated_global_coordinates, &(tangential_vectors[3*d]));
   } // end for d
-
-  double perturbated_local_coordinates[6];
-  for (unsigned int i = 0; i < 2; ++i) {
-    map_face_to_local(f, &(perturbated_local_coordinates_on_face[2*i]), &(perturbated_local_coordinates[3*i]));
-  } // end for i 
-
-  double global_coordinates[3];
-  map_local_to_global(local_coordinates, global_coordinates);
-  double perturbated_global_coordinates[6];
-  for (unsigned int i = 0; i < 2; ++i) {
-    map_local_to_global(&(perturbated_local_coordinates[3*i]), &(perturbated_global_coordinates[3*i]));
-    make_vector_from_two_points(global_coordinates, &(perturbated_global_coordinates[3*i]), &(tangential_vectors[3*i]));
-  } // end for i 
   compute_cross_product(&(tangential_vectors[0]), &(tangential_vectors[3]), normal_vector); 
+  normalize_vector(normal_vector);
+  if (direction == -1.0) {
+    std::transform(normal_vector, normal_vector+3, normal_vector, std::bind1st(std::multiplies<double>(), direction));
+  } else {
+    AMP_CHECK_ASSERT(direction == 1.0);
+  }
 }
 
 void hex8_element_t::map_face_to_local(unsigned int f, double const *local_coordinates_on_face, double *local_coordinates) {

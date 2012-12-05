@@ -258,25 +258,28 @@ AMP::LinearAlgebra::Vector::shared_ptr  getCladHydraulicDiameter( AMP::Mesh::Mes
     if ( clad.get()!=NULL )
         clad_surface = clad->Subset( clad->getBoundaryIDIterator(AMP::Mesh::Face,4,1) );
     // Get the subchannel properties
-    size_t N_subchannels;
+    size_t N[2];
     std::vector<double> x, y, heat_diam;
     int root = -1;
     if ( subchannel.get() != NULL ) {
         std::vector<double> area, fric_diam, rod_diameter, channel_fraction;
         getSubchannelProperties( subchannel, clad_x, clad_y, clad_d, 
             x, y, area, fric_diam, heat_diam, rod_diameter, channel_fraction );
-        N_subchannels = x.size();
+        N[0] = x.size();
+        N[1] = y.size();
+        AMP_ASSERT((N[0]-1)*(N[1]-1)==heat_diam.size());
         root = comm.getRank();
     }
     root = comm.maxReduce(root);
-    N_subchannels = comm.bcast(N_subchannels,root);
+    comm.bcast(N,2,root);
+    size_t N_subchannels = (N[0]-1)*(N[1]-1);
     if ( subchannel.get() == NULL ) {
-        x.resize(N_subchannels);
-        y.resize(N_subchannels);
+        x.resize(N[0]);
+        y.resize(N[1]);
         heat_diam.resize(N_subchannels);
     }
-    comm.bcast(&x[0],N_subchannels,root);
-    comm.bcast(&y[0],N_subchannels,root);
+    comm.bcast(&x[0],N[0],root);
+    comm.bcast(&y[0],N[1],root);
     comm.bcast(&heat_diam[0],N_subchannels,root);
     // Return if we are not on the clad surface
     if ( clad_surface.get()==NULL )
@@ -296,7 +299,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  getCladHydraulicDiameter( AMP::Mesh::Mes
         DOF->getDOFs(it->globalID(),dofs);
         AMP_ASSERT(dofs.size()==1);
         size_t ix = AMP::Utilities::findfirst(x,pos[0]);
-        size_t iy = AMP::Utilities::findfirst(x,pos[0]);
+        size_t iy = AMP::Utilities::findfirst(y,pos[1]);
         if ( ix==0 ) { ix = 1; }
         if ( iy==0 ) { iy = 1; }
         ix--;

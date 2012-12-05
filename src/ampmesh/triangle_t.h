@@ -9,6 +9,7 @@
 class triangle_t {
   public:
     triangle_t(double const * A, double const * B, double const * C);
+    ~triangle_t();
     void set_support_points(double const * A, double const * B, double const * C);
     double const * get_support_point_ptr(unsigned int i) const;
     double const * get_normal();
@@ -19,8 +20,8 @@ class triangle_t {
     int project_point(double const * point, double * projection, double tolerance = 1.0e-12);
 
   private:
-    std::vector<edge_t> edges;
-    std::vector<double const*> support_points_ptr;
+    edge_t* edges_ptr[3];
+    double const* support_points_ptr[3];
     std::vector<double> normal;
     std::vector<double> centroid;
     std::vector<double> tmp;
@@ -29,6 +30,7 @@ class triangle_t {
     bool edges_updated;
 
     void build_edges();
+    void clear_edges();
     void compute_normal();
     void compute_centroid();
     double compute_distance_to_containing_plane(double const * point);

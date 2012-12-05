@@ -79,16 +79,16 @@ void draw_bounding_box(hex8_element_t * e_ptr, double const * point_of_view, std
 void draw_bounding_polyhedron(hex8_element_t * e_ptr, double const * point_of_view, std::ostream & os) {
   os<<"\\tikzset{facestyle/.style={opacity=0.4,line join=round}}\n";
   std::vector<std::string> options(12, "facestyle,");
-  triangle_t * t_ptr = e_ptr->get_bounding_polyhedron();
+  triangle_t * * t_ptr = e_ptr->get_bounding_polyhedron();
   for (unsigned int f = 0; f < 6; ++f) { 
     for (unsigned int t = 0; t < 2; ++t) {
-      if (compute_scalar_product(point_of_view, (t_ptr+2*f+t)->get_normal()) > 0.0) {
+      if (compute_scalar_product(point_of_view, t_ptr[2*f+t]->get_normal()) > 0.0) {
         options[2*f+t] += "fill=" + rubiks_cube_color_arrangement[f];
 //        options[2*f+t] += "fill=none";
       } else {
         options[2*f+t] += "fill=none,dotted";
       } // end if
-      draw_triangle(t_ptr+2*f+t, options[2*f+t], os);
+      draw_triangle(*(t_ptr+2*f+t), options[2*f+t], os);
     } // end for t
   } // end for f
 }
@@ -96,9 +96,9 @@ void draw_bounding_polyhedron(hex8_element_t * e_ptr, double const * point_of_vi
 void draw_hex8_element(hex8_element_t * e_ptr, double const * point_of_view, std::ostream & os) {
   os<<"\\tikzset{facestyle/.style={opacity=0.4,line join=round}}\n";
   std::vector<std::string> options(6, "facestyle,");
-  triangle_t * t_ptr = e_ptr->get_bounding_polyhedron();
+  triangle_t * * t_ptr = e_ptr->get_bounding_polyhedron();
   for (unsigned int f = 0; f < 6; ++f) { 
-    if (compute_scalar_product(point_of_view, (t_ptr+2*f)->get_normal()) > 0.0) {
+    if (compute_scalar_product(point_of_view, t_ptr[2*f]->get_normal()) > 0.0) {
       options[f] += "fill=" + rubiks_cube_color_arrangement[f];
 //      options[f] += "fill=none";
     } else {
