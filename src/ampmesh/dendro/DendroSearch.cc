@@ -351,7 +351,7 @@ namespace AMP {
           recvEidCnts.clear();
         } else {
           int scanResult;
-          meshComm.sumScan<int>(&numInitialLocalOcts, &scanResults, 1);
+          meshComm.sumScan<int>(&numInitialLocalOcts, &scanResult, 1);
           int globalOffset = scanResult - numInitialLocalOcts;
           for(size_t i = 0; i < numInitialLocalOcts; ++i) {
             tmpNodeList[i].setWeight(globalOffset + i);
@@ -401,6 +401,32 @@ namespace AMP {
           if(rank < extraSortInpSz) {
             ++newLocalSortInpSz;
           }
+
+          meshComm.sumScan<int>(&localSortInpSz, &scanResult, 1);
+          globalOffset = scanResult - localSortInpSz;
+
+          std::vector<int> newGlobalIds(localSortInpSz);
+          for(int i = 0; i < localSortInpSz; ++i) {
+            newGlobalIds[i] = globalOffset + i;
+          }//end i
+
+          std::vector<int> sendOctCnts(npes, 0);
+          for(int i = 0; i < localSortInpSz; ++i) {
+            if(newGlobalIds[i] < ((avgSortInpSz + 1)*extraSortInpSz)) {
+              int pid = (newGlobalIds[i])/(avgSortInpSz + 1);
+              ++(sendOctCnts[pid]);
+            } else {
+              int pid = (newGlobalIds[i] - ((avgSortInpSz + 1)*extraSortInpSz))/avgSortInpSz;
+              ++(sendOctCnts[extraSortInpSz + pid]);
+            }
+          }//end i
+
+          std::vector<int> recvOctCnts(npes);
+
+          std::vector<int> sendOctDisps(npes);
+          std::vector<int> recvOctDisps(npes);
+
+          sortOutVec.resize(newLocalSortInpSz);
 
         }
       }
