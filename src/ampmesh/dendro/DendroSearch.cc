@@ -67,7 +67,6 @@ namespace AMP {
               } // end for v
               d_volume_elements[elementLocalID]->project_on_face(f, pointLocalCoords_ptr,
                   &(tmpData.d_ProjectionLocalCoordsOnFace[0]), &(tmpData.d_ShiftGlobalCoords[0]));
-              //draw_shift(...)
               break; // we assume only one face will be on the boundary
             } // end if
           } // end for f
@@ -231,7 +230,7 @@ namespace AMP {
           }//end k
         }//end j
         d_volume_elements.push_back(new hex8_element_t(support_points));
-        //Performance Improvement: We can skip the boxes that lie
+        //PERFORMANCE IMPROVEMENT: We can skip the boxes that lie
         //completely outside the element.
         for(int k = minId[2]; k <= maxId[2]; ++k) {
           for(int j = minId[1]; j <= maxId[1]; ++j) {
@@ -351,48 +350,60 @@ namespace AMP {
           recvEidDisps.clear();
           recvEidCnts.clear();
         } else {
+          int scanResult;
+          meshComm.sumScan<int>(&numInitialLocalOcts, &scanResults, 1);
+          int globalOffset = scanResult - numInitialLocalOcts;
+          for(size_t i = 0; i < numInitialLocalOcts; ++i) {
+            tmpNodeList[i].setWeight(globalOffset + i);
+          }//end i
+
+          //PERFORMANCE IMPROVEMENT: This parallel sort can be improved. We can
+          //make use of the fact that tmpNodeList is already sorted and unique
+          //on each processor. SampleSort modifies the input vector too. So, we
+          //need to make a copy of tmpNodeList.
+          std::vector<ot::TreeNode> sortInpVec = tmpNodeList;
+          std::vector<ot::TreeNode> sortOutVec;
+          par::sampleSort<ot::TreeNode>(sortInpVec, sortOutVec, meshComm.getCommunicator());
+          sortInpVec.clear();
+
+          std::vector<std::vector<int> > globalIndices;
+          if(!(sortOutVec.empty())) {
+            globalIndices.push_back(std::vector<int>(1, sortOutVec[0].getWeight()));
+            sortOutVec[0].setWeight(0);
+            sortInpVec.push_back(sortOutVec[0]);
+          }
+          for(size_t i = 1; i < sortOutVec.size(); ++i) {
+            if(sortOutVec[i - 1] == sortOutVec[i]) {
+              globalIndices[globalIndices.size() - 1].push_back(sortOutVec[i].getWeight());
+            } else {
+              globalIndices.push_back(std::vector<int>(1, sortOutVec[i].getWeight()));
+              sortOutVec[i].setWeight(0);
+              sortInpVec.push_back(sortOutVec[i]);
+            }
+          }//end i
+          sortOutVec.clear();
+
+          int localSortInpSz = sortInpVec.size();
+          int globalSortInpSz = meshComm.sumReduce<int>(localSortInpSz);
+          int newNpes = npes;
+          int avgSortInpSz = globalSortInpSz/newNpes;
+          if(newNpes > 2) {
+            while(avgSortInpSz < 2) {
+              --newNpes;
+              avgSortInpSz = globalSortInpSz/newNpes;
+              if(newNpes == 2) {
+                break;
+              }
+            }
+          }
+          int extraSortInpSz = globalSortInpSz%newNpes;
+          int newLocalSortInpSz = avgSortInpSz;
+          if(rank < extraSortInpSz) {
+            ++newLocalSortInpSz;
+          }
+
         }
       }
-
-      /*
-         if(npes > 1) {
-         int scanResult;
-         meshComm.sumScan<int>(&numInitialLocalOcts, &scanResult, 1);
-         int initialGlobalOffset = scanResult - numInitialLocalOcts;
-         int initialAvgNumOcts = numInitialGlobalOcts/npes;
-
-         std::vector<ot::TreeNode> splitters((std::min(numInitialGlobalOcts, npes)) - 1);
-         assert(!(splitters.empty()));
-
-         ot::TreeNode* localSplittersPtr = NULL;
-         std::vector<ot::TreeNode> localSplitters;
-         int locSplitSz = 0;
-         if(numInitialGlobalOcts > npes) {
-         double sNum = initialGlobalOffset;
-         double eNum = initialGlobalOffset + numInitialLocalOcts - 1;
-         double den = initialAvgNumOcts;
-         int idxStart = std::min((std::max(1, std::ceil(sNum/den))), (npes - 1));
-         int idxEnd = std::min((std:max(1, std::floor(eNum/den))), (npes - 1));
-         for(int i = idxStart; i <= idxEnd; ++i) {
-         int k = (i*initialAvgNumOcts) - initialGlobalOffset;
-         if( (k >= 0) && (k < numInitialLocalOcts) ) {
-         localSplitters.push_back(tmpNodeList[k]);
-         }
-         }//end i
-         if(!(localSplitters.empty())) {
-         localSplittersPtr = &(localSplitters[0]);
-         }
-         } else {
-         if(!(tmpNodeList.empty())) {
-         localSplittersPtr = &(tmpNodeList[0]);
-         }
-         }
-
-         meshComm.allGather<ot::TreeNode>(localSplittersPtr, localSplitters.size(), &(splitters[0]), NULL, NULL, false);
-
-         std::sort(splitters.begin(), splitters.end());
-         }
-         */
 
       d_stIdxList.resize(d_nodeList.size());
 
@@ -523,7 +534,7 @@ namespace AMP {
         }
       }
 
-      //Performance Question: Should PtsWrapper be sorted or not?
+      //PERFORMANCE IMPROVEMENT: Should PtsWrapper be sorted or not?
       //If PtsWrapper is sorted (even just a local sort), we can skip the
       //binary searches and use binning instead.  Binning is amortized constant
       //time and using binary searches would be logarithmic. This is just a matter
