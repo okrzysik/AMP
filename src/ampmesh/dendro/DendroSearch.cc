@@ -266,6 +266,7 @@ namespace AMP {
       d_nodeList.clear();
       d_rankList.clear();
       d_elemIdList.clear();
+      d_mins.clear();
 
       if(npes == 1) {
         swap(d_nodeList, tmpNodeList);
@@ -278,6 +279,12 @@ namespace AMP {
         tmpElemIdList.clear();
 
         d_rankList.resize(d_elemIdList.size(), 0);
+
+        AMP_CHECK_ASSERT(!(d_nodeList.empty()));
+
+        ot::TreeNode firstNode = d_nodeList[0];
+        firstNode.setWeight(rank);
+        d_mins.resize(1, firstNode);
       } else {
         int numInitialLocalOcts = tmpNodeList.size();
         int numInitialGlobalOcts = meshComm.sumReduce<int>(numInitialLocalOcts);
@@ -337,7 +344,11 @@ namespace AMP {
             d_nodeList.resize(1, (globalNodeList[rank]));
             d_nodeList[0].setWeight(recvEidList.size());
           }
-          globalNodeList.clear();
+
+          swap(d_mins, globalNodeList);
+          for(int i = 0; i < d_mins.size(); ++i) {
+            d_mins[i].setWeight(i);
+          }//end i
 
           swap(d_elemIdList, recvEidList);
 
@@ -350,110 +361,38 @@ namespace AMP {
           recvEidDisps.clear();
           recvEidCnts.clear();
         } else {
-          int scanResult;
-          meshComm.sumScan<int>(&numInitialLocalOcts, &scanResult, 1);
-          int globalOffset = scanResult - numInitialLocalOcts;
-          for(size_t i = 0; i < numInitialLocalOcts; ++i) {
-            tmpNodeList[i].setWeight(globalOffset + i);
-          }//end i
+          //PERFORMANCE IMPROVEMENT: This parallel sort + unique step can be improved. We can
+          //make use of the fact that tmpNodeList is already sorted and unique on each processor. 
+          d_nodeList = tmpNodeList;
+          par::removeDuplicates<ot::TreeNode>(d_nodeList, false, meshComm.getCommunicator());
 
-          //PERFORMANCE IMPROVEMENT: This parallel sort can be improved. We can
-          //make use of the fact that tmpNodeList is already sorted and unique
-          //on each processor. SampleSort modifies the input vector too. So, we
-          //need to make a copy of tmpNodeList.
-          std::vector<ot::TreeNode> sortInpVec = tmpNodeList;
-          std::vector<ot::TreeNode> sortOutVec;
-          par::sampleSort<ot::TreeNode>(sortInpVec, sortOutVec, meshComm.getCommunicator());
-          sortInpVec.clear();
-
-          std::vector<std::vector<int> > globalIndices;
-          if(!(sortOutVec.empty())) {
-            globalIndices.push_back(std::vector<int>(1, sortOutVec[0].getWeight()));
-            sortOutVec[0].setWeight(0);
-            sortInpVec.push_back(sortOutVec[0]);
+          ot::TreeNode firstNode;
+          if(!(d_nodeList.empty())) {
+            firstNode = d_nodeList[0];
+            firstNode.setWeight(rank);
           }
-          for(size_t i = 1; i < sortOutVec.size(); ++i) {
-            if(sortOutVec[i - 1] == sortOutVec[i]) {
-              globalIndices[globalIndices.size() - 1].push_back(sortOutVec[i].getWeight());
-            } else {
-              globalIndices.push_back(std::vector<int>(1, sortOutVec[i].getWeight()));
-              sortOutVec[i].setWeight(0);
-              sortInpVec.push_back(sortOutVec[i]);
+          d_mins.resize(npes);
+          meshComm.allGather(firstNode, &(d_mins[0]));
+
+          std::vector<ot::TreeNode> tmpMins;
+          for(int i = 0; i < npes; ++i) {
+            if(d_mins[i].getDim() > 0) {
+              tmpMins.push_back(d_mins[i]);
             }
           }//end i
-          sortOutVec.clear();
-
-          int localSortInpSz = sortInpVec.size();
-          int globalSortInpSz = meshComm.sumReduce<int>(localSortInpSz);
-          int newNpes = npes;
-          int avgSortInpSz = globalSortInpSz/newNpes;
-          if(newNpes > 2) {
-            while(avgSortInpSz < 2) {
-              --newNpes;
-              avgSortInpSz = globalSortInpSz/newNpes;
-              if(newNpes == 2) {
-                break;
-              }
-            }
-          }
-          int extraSortInpSz = globalSortInpSz%newNpes;
-          int newLocalSortInpSz = avgSortInpSz;
-          if(rank < extraSortInpSz) {
-            ++newLocalSortInpSz;
-          }
-
-          meshComm.sumScan<int>(&localSortInpSz, &scanResult, 1);
-          globalOffset = scanResult - localSortInpSz;
-
-          std::vector<int> newGlobalIds(localSortInpSz);
-          for(int i = 0; i < localSortInpSz; ++i) {
-            newGlobalIds[i] = globalOffset + i;
-          }//end i
-
-          std::vector<int> sendOctCnts(npes, 0);
-          for(int i = 0; i < localSortInpSz; ++i) {
-            if(newGlobalIds[i] < ((avgSortInpSz + 1)*extraSortInpSz)) {
-              int pid = (newGlobalIds[i])/(avgSortInpSz + 1);
-              ++(sendOctCnts[pid]);
-            } else {
-              int pid = (newGlobalIds[i] - ((avgSortInpSz + 1)*extraSortInpSz))/avgSortInpSz;
-              ++(sendOctCnts[extraSortInpSz + pid]);
-            }
-          }//end i
-
-          std::vector<int> recvOctCnts(npes);
-
-          std::vector<int> sendOctDisps(npes);
-          std::vector<int> recvOctDisps(npes);
-
-          sortOutVec.resize(newLocalSortInpSz);
+          swap(d_mins, tmpMins);
+          tmpMins.clear();
 
         }
       }
 
       d_stIdxList.resize(d_nodeList.size());
-
-      ot::TreeNode firstNode;
       if(!(d_nodeList.empty())) {
-        firstNode = d_nodeList[0];
-        firstNode.setWeight(rank);
-
         d_stIdxList[0] = 0;
         for(size_t i = 1; i < d_nodeList.size(); ++i) {
           d_stIdxList[i] = d_stIdxList[i - 1] + d_nodeList[i - 1].getWeight();
         }//end i
       }
-      d_mins.resize(npes);
-      meshComm.allGather(firstNode, &(d_mins[0]));
-
-      std::vector<ot::TreeNode> tmpMins;
-      for(int i = 0; i < npes; ++i) {
-        if(d_mins[i].getDim() > 0) {
-          tmpMins.push_back(d_mins[i]);
-        }
-      }//end i
-      swap(d_mins, tmpMins);
-      tmpMins.clear();
 
       if(d_verbose) {
         int numFinalLocalOcts = d_nodeList.size();
