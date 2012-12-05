@@ -289,12 +289,6 @@ namespace AMP {
         int numInitialLocalOcts = tmpNodeList.size();
         int numInitialGlobalOcts = meshComm.sumReduce<int>(numInitialLocalOcts);
         AMP_CHECK_ASSERT(numInitialGlobalOcts > 0);
-        if(d_verbose) {
-          if(!rank) {
-            d_oStream<<"Total num initial octants = "<<numInitialGlobalOcts <<std::endl;
-          }
-        }
-
         if(numInitialGlobalOcts <= npes) {
           std::vector<ot::TreeNode> globalNodeList(numInitialGlobalOcts);
 
@@ -309,14 +303,16 @@ namespace AMP {
           seq::makeVectorUnique(globalNodeList, false);
 
           std::vector<int> sendEidList;
-          std::vector<int> sendEidCnts(npes, 0);
-          for(size_t i = 0, j = 0; i < numInitialLocalOcts; ++i, ++j) {
-            while(tmpNodeList[i] < globalNodeList[j]) {
-              ++j;
-            }
-            sendEidCnts[j] = tmpElemIdList[i].size();
+          for(size_t i = 0; i < numInitialLocalOcts; ++i) {
             sendEidList.insert(sendEidList.end(), tmpElemIdList[i].begin(), tmpEledIdList[i].end());
-            tmpElemIdList[i].clear();
+          }//end i
+
+          std::vector<int> sendEidCnts(npes, 0);
+          for(size_t i = 0; i < numInitialLocalOcts; ++i) {
+            unsigned int retIdx;
+            bool found = seq::maxLowerBound<ot::TreeNode>(globalNodeList, tmpNodeList[i], retIdx, NULL, NULL);
+            assert(found);
+            sendEidCnts[retIdx] = tmpElemIdList[i].size();
           }//end i
           tmpElemIdList.clear();
           tmpNodeList.clear();
@@ -382,6 +378,74 @@ namespace AMP {
           }//end i
           swap(d_mins, tmpMins);
           tmpMins.clear();
+
+          for(int i = 0; i < numInitialLocalOcts; ++i) {
+            tmpNodeList[i].setWeight(tmpElemIdList[i].size());
+          }//end i
+
+          std::vector<int> sendEidList;
+          for(size_t i = 0; i < numInitialLocalOcts; ++i) {
+            sendEidList.insert(sendEidList.end(), tmpElemIdList[i].begin(), tmpEledIdList[i].end());
+            tmpElemIdList[i].clear();
+          }//end i
+          tmpElemIdList.clear();
+
+          std::vector<int> sendOctCnts(npes, 0);
+          for(int i = 0; i < numInitialLocalOcts; ++i) {
+            unsigned int retIdx;
+            bool found = seq::maxLowerBound<ot::TreeNode>(d_mins, tmpNodeList[i], retIdx, NULL, NULL);
+            assert(found);
+            ++(sendOctCnts[d_mins[retIdx].getWeight()]);
+          }//end i
+
+          std::vector<int> recvOctCnts(npes);
+          meshComm.allToAll<int>(npes, &(sendOctCnts[0]), &(recvOctCnts[0]));
+
+          std::vector<int> sendOctDisps(npes);
+          std::vector<int> recvOctDisps(npes);
+          sendOctDisps[0] = 0;
+          recvOctDisps[0] = 0;
+          for(int i = 1; i < npes; ++i) {
+            sendOctDisps[i] = sendOctDisps[i - 1] + sendOctCnts[i - 1];
+            recvOctDisps[i] = recvOctDisps[i - 1] + recvOctCnts[i - 1];
+          }//end i
+
+          std::vector<int> sendEidCnts(npes, 0);
+          for(int i = 0; i < npes; ++i) {
+            for(int j = 0; j < sendOctCnts[i]; ++j) {
+              sendEidCnts[i] += (tmpNodeList[sendOctDisps[i] + j].getWeight());
+            }//end j
+          }//end i
+
+          std::vector<ot::TreeNode> recvOctList(recvOctDisps[npes - 1] + recvOctCnts[npes - 1]);
+          meshComm.allToAll<ot::TreeNode>(&(tmpNodeList[0]), &(sendOctCnts[0]), &(sendOctDisps[0]), 
+              &(recvOctList[0]), &(recvOctCnts[0]), &(recvOctDisps[0]), true);
+          tmpNodeList.clear();
+          sendOctCnts.clear();
+          sendOctDisps.clear();
+
+          std::vector<int> recvEidCnts(npes, 0);
+          for(int i = 0; i < npes; ++i) {
+            for(int j = 0; j < recvOctCnts[i]; ++j) {
+              recvEidCnts[i] += (recvOctList[recvOctDisps[i] + j].getWeight());
+            }//end j
+          }//end i
+
+          std::vector<int> sendEidDisps(npes);
+          std::vector<int> recvEidDisps(npes);
+          sendEidDisps[0] = 0;
+          recvEidDisps[0] = 0;
+          for(int i = 1; i < npes; ++i) {
+            sendEidDisps[i] = sendEidDisps[i - 1] + sendEidCnts[i - 1];
+            recvEidDisps[i] = recvEidDisps[i - 1] + recvEidCnts[i - 1];
+          }//end i
+
+          std::vector<int> recvEidList(recvEidDisps[npes - 1] + recvEidCnts[npes - 1]);
+          meshComm.allToAll<int>(&(sendEidList[0]), &(sendEidCnts[0]), &(sendEidDisps[0]), 
+              &(recvEidList[0]), &(recvEidCnts[0]), &(recvEidDisps[0]), true);
+          sendEidList.clear();
+          sendEidCnts.clear();
+          sendEidDisps.clear();
 
         }
       }
