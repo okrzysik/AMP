@@ -175,6 +175,9 @@ namespace AMP {
       double avgHboxInv = std::pow(globalNumElems, (1.0/3.0));
       AMP_CHECK_ASSERT(avgHboxInv > 1.0);
       d_boxLevel = binOp::fastLog2(static_cast<unsigned int>(std::ceil(avgHboxInv)));
+      if(d_boxLevel > 5) {
+        d_boxLevel = 5;
+      }
       AMP_CHECK_ASSERT(d_boxLevel < MaxDepth);
       const double hBox = 1.0/(static_cast<double>(1u << d_boxLevel));
 
@@ -259,6 +262,13 @@ namespace AMP {
       d_mins.clear();
 
       if(npes == 1) {
+        if(d_verbose) {
+          meshComm.barrier();
+          if(!rank) {
+            d_oStream<<"DendroSearch - Setup: Case A."<<std::endl;
+          }
+        }
+
         swap(d_nodeList, tmpNodeList);
 
         for(size_t i = 0; i < d_nodeList.size(); ++i) {
@@ -280,6 +290,13 @@ namespace AMP {
         int numInitialGlobalOcts = meshComm.sumReduce<int>(numInitialLocalOcts);
         AMP_CHECK_ASSERT(numInitialGlobalOcts > 0);
         if(numInitialGlobalOcts <= npes) {
+          if(d_verbose) {
+            meshComm.barrier();
+            if(!rank) {
+              d_oStream<<"DendroSearch - Setup: Case B. Total Number of Initial Octants = "<<numInitialGlobalOcts<<std::endl;
+            }
+          }
+
           std::vector<ot::TreeNode> globalNodeList(numInitialGlobalOcts);
 
           ot::TreeNode* sendOctPtr = NULL;
@@ -355,6 +372,13 @@ namespace AMP {
           recvEidDisps.clear();
           recvEidCnts.clear();
         } else {
+          if(d_verbose) {
+            meshComm.barrier();
+            if(!rank) {
+              d_oStream<<"DendroSearch - Setup: Case C. Total Number of Initial Octants = "<<numInitialGlobalOcts<<std::endl;
+            }
+          }
+
           //PERFORMANCE IMPROVEMENT: This parallel sort + unique step can be improved. We can
           //make use of the fact that tmpNodeList is already sorted and unique on each processor. 
           d_nodeList = tmpNodeList;
