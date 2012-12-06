@@ -89,7 +89,7 @@ namespace AMP {
 
       std::vector<ProjectOnBoundaryData> recvData(d_recvDisps[npes-1] + d_recvCnts[npes-1]);
 
-      comm.allToAll((!(sendData.empty()) ? &(sendData[0]) : NULL), &(d_sendCnts[0]), &(d_sendDisps[0]),
+      comm.allToAll<ProjectOnBoundaryData>((!(sendData.empty()) ? &(sendData[0]) : NULL), &(d_sendCnts[0]), &(d_sendDisps[0]),
           (!(recvData.empty()) ? &(recvData[0]) : NULL), &(d_recvCnts[0]), &(d_recvDisps[0]), true);
       sendData.clear();
 
@@ -166,6 +166,7 @@ namespace AMP {
 
       size_t globalNumElems = d_meshAdapter->numGlobalElements(AMP::Mesh::Volume);
       if(d_verbose) {
+        meshComm.barrier();
         if(!rank) {
           d_oStream<<"Total number of mesh elements = "<<globalNumElems<<std::endl;
         }
@@ -178,6 +179,7 @@ namespace AMP {
       const double hBox = 1.0/(static_cast<double>(1u << d_boxLevel));
 
       if(d_verbose) {
+        meshComm.barrier();
         if(!rank) {
           d_oStream<<"BoxLevel = "<<d_boxLevel<<std::endl;
         }
@@ -284,7 +286,6 @@ namespace AMP {
           if(numInitialLocalOcts > 0) {
             sendOctPtr = &(tmpNodeList[0]);
           }
-
           meshComm.allGather<ot::TreeNode>(sendOctPtr, numInitialLocalOcts,
               &(globalNodeList[0]), NULL, NULL, false);
 
@@ -307,7 +308,7 @@ namespace AMP {
           tmpNodeList.clear();
 
           std::vector<int> recvEidCnts(npes);
-          meshComm.allToAll<int>(npes, &(sendEidCnts[0]), &(recvEidCnts[0]));
+          meshComm.allToAll<int>(1, &(sendEidCnts[0]), &(recvEidCnts[0]));
 
           std::vector<int> sendEidDisps(npes);
           std::vector<int> recvEidDisps(npes);
@@ -396,7 +397,7 @@ namespace AMP {
           }//end i
 
           std::vector<int> recvOctCnts(npes);
-          meshComm.allToAll<int>(npes, &(sendOctCnts[0]), &(recvOctCnts[0]));
+          meshComm.allToAll<int>(1, &(sendOctCnts[0]), &(recvOctCnts[0]));
 
           std::vector<int> sendOctDisps(npes);
           std::vector<int> recvOctDisps(npes);
@@ -510,6 +511,7 @@ namespace AMP {
       if(d_verbose) {
         int numFinalLocalOcts = d_nodeList.size();
         int numFinalGlobalOcts = meshComm.sumReduce(numFinalLocalOcts);
+        meshComm.barrier();
         if(!rank) {
           d_oStream<<"Total num final octants = "<<numFinalGlobalOcts <<std::endl;
         }
@@ -522,6 +524,7 @@ namespace AMP {
       d_timingMeasurements[Setup] = setupEndTime - setupBeginTime;
 
       if(d_verbose) {
+        meshComm.barrier();
         if(!rank) {
           d_oStream<<"Finished setting up DS for search in "<<(setupEndTime - setupBeginTime)<<" seconds."<<std::endl;
         }
@@ -643,7 +646,7 @@ namespace AMP {
         }
       }
 
-      comm.allToAll(1, &(d_sendCnts[0]), &(d_recvCnts[0]));
+      comm.allToAll<int>(1, &(d_sendCnts[0]), &(d_recvCnts[0]));
 
       d_sendDisps[0] = 0;
       d_recvDisps[0] = 0;
