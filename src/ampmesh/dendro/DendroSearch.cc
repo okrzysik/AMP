@@ -449,9 +449,21 @@ namespace AMP {
           recvEidCnts.clear();
           recvEidDisps.clear();
 
+          std::vector<std::vector<int> > tmpEidList(recvOctList.size());
+          for(size_t i = 0, j = 0; i < recvOctList.size(); ++i) {
+            tmpEidList[i].resize(recvOctList[i].getWeight());
+            for(size_t k = 0; k < tmpEidList[i].size(); ++k, ++j) {
+              tmpEidList[i][k] = recvEidList[j];
+            }//end k            
+          }//end i
+          recvEidList.clear();
+
           for(size_t i = 0; i < d_nodeList.size(); ++i) {
             d_nodeList[i].setWeight(0);
           }//end i
+
+          std::vector<std::vector<int> > dummyElemIdList(d_nodeList.size());
+          std::vector<std::vector<int> > dummyRankList(d_nodeList.size());
 
           for(int i = 0; i < npes; ++i) {
             for(int j = 0; j < recvOctCnts[i]; ++j) {
@@ -459,11 +471,21 @@ namespace AMP {
               bool found = seq::maxLowerBound<ot::TreeNode>(d_nodeList, recvOctList[recvOctDisps[i] + j], retIdx, NULL, NULL);
               assert(found);
               d_nodeList[retIdx].addWeight(recvOctList[recvOctDisps[i] + j].getWeight());
+              dummyElemIdList[retIdx].insert(dummyElemIdList[retIdx].end(), tmpEidList[recvOctDisps[i] + j].begin(),
+                  tmpEidList[recvOctDisps[i] + j].end());
+              dummyRankList[retIdx].insert(dummyRankList[retIdx].end(), tmpEidList[recvOctDisps[i] + j].size(), i);
             }//end j
           }//end i
           recvOctCnts.clear();
           recvOctDisps.clear();
+          recvOctList.clear();
 
+          for(size_t i = 0; i < d_nodeList.size(); ++i) {
+            d_elemIdList.insert(d_elemIdList.end(), dummyElemIdList[i].begin(), dummyElemIdList[i].end());
+            d_rankList.insert(d_rankList.end(), dummyRankList[i].begin(), dummyRankList[i].end());
+          }//end i
+          dummyElemIdList.clear();
+          dummyRankList.clear();
         }
       }
 
