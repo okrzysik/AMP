@@ -175,9 +175,6 @@ namespace AMP {
       AMP_CHECK_ASSERT(avgHboxInv > 1.0);
       d_boxLevel = binOp::fastLog2(static_cast<unsigned int>(std::ceil(avgHboxInv)));
       AMP_CHECK_ASSERT(d_boxLevel < MaxDepth);
-      if(d_boxLevel > 5) {
-        d_boxLevel = 5;
-      }
       const double hBox = 1.0/(static_cast<double>(1u << d_boxLevel));
 
       if(d_verbose) {
@@ -190,9 +187,6 @@ namespace AMP {
 
       size_t localNumElems = d_meshAdapter->numLocalElements(AMP::Mesh::Volume);
       AMP_CHECK_ASSERT(localNumElems > 0);
-
-      meshComm.barrier();
-      double loop1TimeBegin = MPI_Wtime();
 
       std::vector<ot::TreeNode> tmpNodeList;
       std::vector<std::vector<int> > tmpElemIdList;
@@ -257,12 +251,6 @@ namespace AMP {
         }//end k 
       }//end eId
 
-      meshComm.barrier();
-      double loop1TimeEnd = MPI_Wtime();
-      if(!rank) {
-        d_oStream<<"SetupDS: Loop1-time = "<<(loop1TimeEnd - loop1TimeBegin)<<std::endl; 
-      }
-
       d_nodeList.clear();
       d_rankList.clear();
       d_elemIdList.clear();
@@ -311,7 +299,8 @@ namespace AMP {
           for(size_t i = 0; i < numInitialLocalOcts; ++i) {
             unsigned int retIdx;
             bool found = seq::maxLowerBound<ot::TreeNode>(globalNodeList, tmpNodeList[i], retIdx, NULL, NULL);
-            assert(found);
+            AMP_CHECK_ASSERT(found);
+            AMP_CHECK_ASSERT(globalNodeList[retIdx] == tmpNodeList[i]);
             sendEidCnts[retIdx] = tmpElemIdList[i].size();
           }//end i
           tmpElemIdList.clear();
@@ -330,8 +319,16 @@ namespace AMP {
           }//end i
 
           std::vector<int> recvEidList(recvEidDisps[npes - 1] + recvEidCnts[npes - 1]);
-          meshComm.allToAll<int>(&(sendEidList[0]), &(sendEidCnts[0]), &(sendEidDisps[0]), 
-              &(recvEidList[0]), &(recvEidCnts[0]), &(recvEidDisps[0]), true);
+          int* sendEidListPtr = NULL;
+          if(!(sendEidList.empty())) {
+            sendEidListPtr = &(sendEidList[0]);
+          }
+          int* recvEidListPtr = NULL;
+          if(!(recvEidList.empty())) {
+            recvEidListPtr = &(recvEidList[0]);
+          }
+          meshComm.allToAll<int>(sendEidListPtr, &(sendEidCnts[0]), &(sendEidDisps[0]), 
+              recvEidListPtr, &(recvEidCnts[0]), &(recvEidDisps[0]), true);
           sendEidDisps.clear();
           sendEidCnts.clear();
           sendEidList.clear();
@@ -394,7 +391,7 @@ namespace AMP {
           for(int i = 0; i < numInitialLocalOcts; ++i) {
             unsigned int retIdx;
             bool found = seq::maxLowerBound<ot::TreeNode>(d_mins, tmpNodeList[i], retIdx, NULL, NULL);
-            assert(found);
+            AMP_CHECK_ASSERT(found);
             ++(sendOctCnts[d_mins[retIdx].getWeight()]);
           }//end i
 
@@ -481,7 +478,8 @@ namespace AMP {
             for(int j = 0; j < recvOctCnts[i]; ++j) {
               unsigned int retIdx;
               bool found = seq::maxLowerBound<ot::TreeNode>(d_nodeList, recvOctList[recvOctDisps[i] + j], retIdx, NULL, NULL);
-              assert(found);
+              AMP_CHECK_ASSERT(found);
+              AMP_CHECK_ASSERT(d_nodeList[retIdx] == recvOctList[recvOctDisps[i] + j]);
               dummyElemIdList[retIdx].insert(dummyElemIdList[retIdx].end(), tmpEidList[recvOctDisps[i] + j].begin(),
                   tmpEidList[recvOctDisps[i] + j].end());
               dummyRankList[retIdx].insert(dummyRankList[retIdx].end(), tmpEidList[recvOctDisps[i] + j].size(), i);
@@ -917,7 +915,7 @@ namespace AMP {
     }
 
     void DendroSearch::reportTiming(size_t n, TimingType const * timingTypes, double * timingMeasurements) {
-      AMP_INSIST(!d_verbose, "verbose mode in DendroSearch implies calls to MPI_Barrier so timing measurements are bad!");
+      AMP_INSIST(!d_verbose, "Using verbose mode in DendroSearch. This involves calls to MPI_Barrier. So timing measurements are bad!");
       for (size_t i = 0; i < n; ++i) {
         timingMeasurements[i] = d_timingMeasurements[timingTypes[i]];
       } // end for i
