@@ -418,8 +418,16 @@ namespace AMP {
           }//end i
 
           std::vector<ot::TreeNode> recvOctList(recvOctDisps[npes - 1] + recvOctCnts[npes - 1]);
-          meshComm.allToAll<ot::TreeNode>(&(tmpNodeList[0]), &(sendOctCnts[0]), &(sendOctDisps[0]), 
-              &(recvOctList[0]), &(recvOctCnts[0]), &(recvOctDisps[0]), true);
+          ot::TreeNode* tmpNodeListPtr = NULL;
+          if(!(tmpNodeList.empty())) {
+            tmpNodeListPtr = &(tmpNodeList[0]);
+          }
+          ot::TreeNode* recvOctListPtr = NULL;
+          if(!(recvOctList.empty())) {
+            recvOctListPtr = &(recvOctList[0]);
+          }
+          meshComm.allToAll<ot::TreeNode>(tmpNodeListPtr, &(sendOctCnts[0]), &(sendOctDisps[0]), 
+              recvOctListPtr, &(recvOctCnts[0]), &(recvOctDisps[0]), true);
           tmpNodeList.clear();
           sendOctCnts.clear();
           sendOctDisps.clear();
@@ -441,8 +449,16 @@ namespace AMP {
           }//end i
 
           std::vector<int> recvEidList(recvEidDisps[npes - 1] + recvEidCnts[npes - 1]);
-          meshComm.allToAll<int>(&(sendEidList[0]), &(sendEidCnts[0]), &(sendEidDisps[0]), 
-              &(recvEidList[0]), &(recvEidCnts[0]), &(recvEidDisps[0]), true);
+          int* sendEidListPtr = NULL;
+          if(!(sendEidList.empty())) {
+            sendEidListPtr = &(sendEidList[0]);
+          }
+          int* recvEidListPtr = NULL;
+          if(!(recvEidList.empty())) {
+            recvEidListPtr = &(recvEidList[0]);
+          }
+          meshComm.allToAll<int>(sendEidListPtr, &(sendEidCnts[0]), &(sendEidDisps[0]), 
+              recvEidListPtr, &(recvEidCnts[0]), &(recvEidDisps[0]), true);
           sendEidList.clear();
           sendEidCnts.clear();
           sendEidDisps.clear();
