@@ -40,7 +40,7 @@ namespace AMP {
 
         enum TimingType { Setup = 0, CoarseSearch, FineSearch, Interpolation, ProjectionOnBoundaryID, numTimingTypes };
 
-        DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh, bool verbose = true, std::ostream & oStream = std::cout);
+        DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh, bool verbose, std::ostream & oStream = std::cout);
 
         ~DendroSearch() {
           for(size_t i = 0; i < d_volume_elements.size(); ++i) {

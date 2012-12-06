@@ -118,14 +118,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     std::cout<<"Finished generating "<<totalNumPts <<" random points for search!"<<std::endl;
   }
 
-  AMP::Mesh::DendroSearch dendroSearch(meshAdapter);
+  bool dendroVerbose = input_db->getBool("DENDRO_VERBOSE");
+  AMP::Mesh::DendroSearch dendroSearch(meshAdapter, dendroVerbose);
 
   globalComm.barrier();
   if(!rank) {
     std::cout<<"Finished building DendroSearch object!"<<std::endl;
   }
 
-  /*
   std::vector<double> interpolatedData; 
   std::vector<bool> interpolationWasDone;
   dendroSearch.searchAndInterpolate(globalComm, dummyVector, DOFsPerNode, pts, interpolatedData, interpolationWasDone);
@@ -189,7 +189,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     std::cout<<"Global number of points found on boundary is "<<globalPtsFoundOnBoundary<<std::endl;
     std::cout<<"Total number of points is "<<globalPtsNotFound+globalPtsFoundNotOnBoundary+globalPtsFoundOnBoundary<<std::endl;
   }
-  */
 
   ut->passes(exeName);
 }

@@ -37,9 +37,9 @@ void rescalePts(std::vector<double> & pts);
 double gaussian(double mean, double std_deviation);
 
 void run(const std::string & meshFileName, 
-         size_t numRandomPts, 
-         void (*randomPtsGenerator)(int, size_t, std::vector<double>&),
-         std::vector<double> & timingMeasurements) {
+    size_t numRandomPts, 
+    void (*randomPtsGenerator)(int, size_t, std::vector<double>&),
+    std::vector<double> & timingMeasurements) {
 
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
@@ -115,7 +115,8 @@ void run(const std::string & meshFileName,
   }
 
   // Perform the search
-  AMP::Mesh::DendroSearch dendroSearch(meshAdapter, false);
+  bool dendroVerbose = false; 
+  AMP::Mesh::DendroSearch dendroSearch(meshAdapter, dendroVerbose);
   dendroSearch.search(globalComm, pts);
 
   // Interpolate
@@ -174,17 +175,17 @@ void run(const std::string & meshFileName,
 
   timingMeasurements.push_back(timingMeasurements[1]+timingMeasurements[2]);
   timingMeasurements.push_back(timingMeasurements[0]+timingMeasurements[1]+timingMeasurements[2]);
-//  localTimingMeasurements[4] = std::accumulate(localTimingMeasurements, localTimingMeasurements+4, 0.0);
-//  
-//  globalComm.maxReduce(localTimingMeasurements, globalTimingMeasurements, 5);
-//
-//  if(!rank) {
-//    std::cout<<"Setup time = "<<globalTimingMeasurements[0]<<"\n";
-//    std::cout<<"Coarse Search time = "<<globalTimingMeasurements[1]<<"\n";
-//    std::cout<<"Fine Search time = "<<globalTimingMeasurements[2]<<"\n";
-//    std::cout<<"Interpolation time = "<<globalTimingMeasurements[3]<<"\n";
-//    std::cout<<"Total time = "<<globalTimingMeasurements[4]<<"\n";
-//  }
+  //  localTimingMeasurements[4] = std::accumulate(localTimingMeasurements, localTimingMeasurements+4, 0.0);
+  //  
+  //  globalComm.maxReduce(localTimingMeasurements, globalTimingMeasurements, 5);
+  //
+  //  if(!rank) {
+  //    std::cout<<"Setup time = "<<globalTimingMeasurements[0]<<"\n";
+  //    std::cout<<"Coarse Search time = "<<globalTimingMeasurements[1]<<"\n";
+  //    std::cout<<"Fine Search time = "<<globalTimingMeasurements[2]<<"\n";
+  //    std::cout<<"Interpolation time = "<<globalTimingMeasurements[3]<<"\n";
+  //    std::cout<<"Total time = "<<globalTimingMeasurements[4]<<"\n";
+  //  }
 }
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
@@ -199,7 +200,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   size_t n_j = 1;
   size_t numRandomPts[] = { 10000, 20000, 40000, 80000, 160000 };
-  
+
   size_t n_i = 1;
   void (*randomPtsGenerators[])(int, size_t, std::vector<double>&) = { &genUniformPts };
   std::string prefixes[] = { "uniform" };
@@ -229,12 +230,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
         size_t numTimingMeasurements = localTimingMeasurements.size();
         AMP_ASSERT(numTimingMeasurements > 0);
         std::vector<double> globalTimingMeasurements(numTimingMeasurements, -1.0); 
-        globalComm.maxReduce(&(localTimingMeasurements[0]), &(globalTimingMeasurements[0]), numTimingMeasurements);
+        r
+          globalComm.maxReduce(&(localTimingMeasurements[0]), &(globalTimingMeasurements[0]), numTimingMeasurements);
         if (!rank) {
           fout<<globalTimingMeasurements[0]<<"  " // setup
-              <<globalTimingMeasurements[1]<<"  " // coarse
-              <<globalTimingMeasurements[2]<<"  " // fine
-              <<globalTimingMeasurements[5]<<"  "<<std::flush; // coarse+fine
+            <<globalTimingMeasurements[1]<<"  " // coarse
+            <<globalTimingMeasurements[2]<<"  " // fine
+            <<globalTimingMeasurements[5]<<"  "<<std::flush; // coarse+fine
         } // end if
       } // end for k
       if (!rank) {

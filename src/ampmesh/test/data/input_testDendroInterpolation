@@ -1,4 +1,6 @@
 
+DENDRO_VERBOSE = FALSE
+
 TotalNumberOfPoints = 100000
 
 Mesh{
