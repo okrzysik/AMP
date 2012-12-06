@@ -16,7 +16,7 @@ namespace Subchannel {
 // Compute basic properties from the subchannel mesh
 void getSubchannelProperties( AMP::Mesh::Mesh::shared_ptr subchannel, const std::vector<double>& clad_x,
      const std::vector<double>& clad_y, const std::vector<double>& clad_d, std::vector<double>& x,
-     std::vector<double>& y, std::vector<double>& area, std::vector<double>& fric_diam, std::vector<double>& heat_diam,
+     std::vector<double>& y, std::vector<double>& area, std::vector<double>& hydraulic_diam,
      std::vector<double>& rod_diameter, std::vector<double>& channel_fraction )
 {
     const double pi = 3.1415926535897932;
@@ -34,8 +34,7 @@ void getSubchannelProperties( AMP::Mesh::Mesh::shared_ptr subchannel, const std:
     // For each subchannel, get the area, wetted perimeter, and the hydraulic diameter
     size_t N_subchannels = (x.size()-1)*(y.size()-1);
     area = std::vector<double>(N_subchannels,0.0);
-    fric_diam = std::vector<double>(N_subchannels,0.0);
-    heat_diam = std::vector<double>(N_subchannels,0.0);
+    hydraulic_diam = std::vector<double>(N_subchannels,0.0);
     rod_diameter = std::vector<double>(N_subchannels,0.0);
     channel_fraction = std::vector<double>(N_subchannels,0.0);
     std::vector<double> perimeter1(N_subchannels,0.0);    // Clad only perimeter
@@ -103,8 +102,7 @@ void getSubchannelProperties( AMP::Mesh::Mesh::shared_ptr subchannel, const std:
     }
     // Compute the hydraulic diameter
     for (size_t i=0; i<N_subchannels; i++) {
-        fric_diam[i] = 4.0*area[i]/perimeter1[i];
-        heat_diam[i] = 4.0*area[i]/perimeter2[i];
+        hydraulic_diam[i] = 4.0*area[i]/perimeter1[i];
     }
 }
 
@@ -259,15 +257,15 @@ AMP::LinearAlgebra::Vector::shared_ptr  getCladHydraulicDiameter( AMP::Mesh::Mes
         clad_surface = clad->Subset( clad->getBoundaryIDIterator(AMP::Mesh::Face,4,1) );
     // Get the subchannel properties
     size_t N[2];
-    std::vector<double> x, y, heat_diam;
+    std::vector<double> x, y, hydraulic_diam;
     int root = -1;
     if ( subchannel.get() != NULL ) {
-        std::vector<double> area, fric_diam, rod_diameter, channel_fraction;
+        std::vector<double> area, rod_diameter, channel_fraction;
         getSubchannelProperties( subchannel, clad_x, clad_y, clad_d, 
-            x, y, area, fric_diam, heat_diam, rod_diameter, channel_fraction );
+            x, y, area, hydraulic_diam, rod_diameter, channel_fraction );
         N[0] = x.size();
         N[1] = y.size();
-        AMP_ASSERT((N[0]-1)*(N[1]-1)==heat_diam.size());
+        AMP_ASSERT((N[0]-1)*(N[1]-1)==hydraulic_diam.size());
         root = comm.getRank();
     }
     root = comm.maxReduce(root);
@@ -276,11 +274,11 @@ AMP::LinearAlgebra::Vector::shared_ptr  getCladHydraulicDiameter( AMP::Mesh::Mes
     if ( subchannel.get() == NULL ) {
         x.resize(N[0]);
         y.resize(N[1]);
-        heat_diam.resize(N_subchannels);
+        hydraulic_diam.resize(N_subchannels);
     }
     comm.bcast(&x[0],N[0],root);
     comm.bcast(&y[0],N[1],root);
-    comm.bcast(&heat_diam[0],N_subchannels,root);
+    comm.bcast(&hydraulic_diam[0],N_subchannels,root);
     // Return if we are not on the clad surface
     if ( clad_surface.get()==NULL )
         return AMP::LinearAlgebra::Vector::shared_ptr();
@@ -306,7 +304,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  getCladHydraulicDiameter( AMP::Mesh::Mes
         iy--;
         if ( ix==Nx ) { ix = Nx-1; }
         if ( iy==Nx ) { iy = Ny-1; }
-        diameter->setValueByGlobalID( dofs[0], heat_diam[ix+iy*Nx] );
+        diameter->setValueByGlobalID( dofs[0], hydraulic_diam[ix+iy*Nx] );
         ++it;
     }
     diameter->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);

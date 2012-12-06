@@ -73,7 +73,7 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
     // Get the subchannel properties from the mesh
     std::vector<double> x, y;
     Subchannel::getSubchannelProperties( d_Mesh, myparams->clad_x, myparams->clad_y, myparams->clad_d, 
-        x, y, d_channelArea, d_channelDiamFric, d_channelDiamHeat, d_rodDiameter, d_rodFraction );
+        x, y, d_channelArea, d_channelDiam, d_rodDiameter, d_rodFraction );
     AMP_ASSERT(d_channelArea.size()==d_numSubchannels);
     double total_area = 0.0;
     for (size_t i=0; i<d_numSubchannels; i++)
@@ -205,7 +205,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
                 face_ids[j] = face->globalID();
                 ++face;
             }
-            flux = Subchannel::getHeatFluxClad( d_z, face_ids, d_channelDiamHeat[isub], d_reynolds, d_prandtl, 
+            flux = Subchannel::getHeatFluxClad( d_z, face_ids, d_channelDiam[isub], d_reynolds, d_prandtl, 
                 d_rodFraction[isub], d_subchannelPhysicsModel, inputVec, d_cladTemperature );
         } else if (d_source == "averageHeatFlux") {
             AMP_ERROR("Heat source type 'averageHeatFlux' not yet implemented.");
@@ -224,7 +224,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
 
         // calculate residual for axial momentum equations
         double A = d_channelArea[isub];     // Channel area
-        double D = d_channelDiamFric[isub]; // Channel hydraulic diameter
+        double D = d_channelDiam[isub]; // Channel hydraulic diameter
         double mass = d_channelMass[isub];  // Mass flow rate in the current subchannel
         double R_h, R_p; 
         int j = 1;

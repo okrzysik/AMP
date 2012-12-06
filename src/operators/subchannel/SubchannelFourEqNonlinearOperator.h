@@ -120,8 +120,7 @@ namespace Operator {
       double d_friction; // friction factor
       double d_roughness; // surface roughness [m]
 
-      std::vector<double> d_channelDiamFric;  // Channel hydraulic diameter using the clad perimeter
-      std::vector<double> d_channelDiamHeat;  // Channel hydraulic diameter using the total perimeter
+      std::vector<double> d_channelDiam;  // Channel hydraulic diameter using the wetted perimeter
       std::vector<double> d_channelArea;  // Channel flow area
       std::vector<double> d_rodDiameter;  // Average rod diameter for each subchannel
       std::vector<double> d_rodFraction;  // Fraction of a rod in each subchannel

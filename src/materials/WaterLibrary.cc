@@ -95,9 +95,9 @@ September 1998");
 	static const double       ConvRhominVal = 500;		// minimum density [kg/m3] 
 	static const double       ConvRhomaxVal = 1200.;	// maximum density [kg/m3] (arbitrary "very high" density)
 	static const double       ConvDminVal   = 0.0;		// minimum diameter [m]
-	static const double       ConvDmaxVal   = 1.0;		// maximum diameter [m] (arbitrary "very high" temperature)
-	static const double       ConvReyminVal = 1;		// minimum reynolds # [] 
-	static const double       ConvReymaxVal = 1.e6;  	// maximum reynolds # []
+	static const double       ConvDmaxVal   = 1.0;		// maximum diameter [m] (arbitrary "very high" diameter)
+	static const double       ConvReyminVal = 1e3;		// minimum reynolds # [] 
+	static const double       ConvReymaxVal = 1e6;  	// maximum reynolds # []
 	static const double       ConvPrtminVal = 0.87;		// minimum Prandtl # [] 
 	static const double       ConvPrtmaxVal = 14.;  	// maximum Prandtl # [] 
 	static const double       ConvRanges[5][2]={ {ConvTminVal, ConvTmaxVal}, {ConvRhominVal, ConvRhomaxVal}, {ConvDminVal ,ConvDmaxVal }, {ConvReyminVal,ConvReymaxVal}, {ConvPrtminVal,ConvPrtmaxVal}};
@@ -486,10 +486,11 @@ September 1998");
 		return k;
 	}
 
+    // Compute the turbulent heat transfer coefficient
 	inline double ConvectiveHeatProp::eval( std::vector<double>& args ){
 	    	double T            = args[0];  // local temperature in Kelvin
 	    	double rho          = args[1];  // local density in kg/m3
-	    	double D            = args[2];  // diameter in m
+	    	double D            = args[2];  // hydraulic diameter in m
 	    	double rey          = args[3];  // reynolds number 
 	    	double prt          = args[4];  // prandtl numner 
 	    	double k;                       // thermal conductivity in W/(K-m)
@@ -498,17 +499,26 @@ September 1998");
 		// check bounds of inputs
 		if (rho <= 0) AMP_ERROR("Convective Heat called with density <= 0 kg/m3.");
 		if (T <= 0) AMP_ERROR("Convective Heat called with temperature <= 0 K.");
-		if (D <= 0) AMP_ERROR("Convective Heat called with diameter <= 0 m.");
+		if (D <= 0) AMP_ERROR("Convective Heat called with hydaulic diameter <= 0 m.");
 		if (rey <= 0) AMP_ERROR("Convective Heat called with reynolds # <= 0.");
-	
-                // get thermal conductivity  
+	    
+        // get thermal conductivity  
 		ThermalConductivityProp tCond;
                 std::vector<double> largs(2);
                 largs[0]= T;
                 largs[1]= rho;
                 k = tCond.eval(largs);
 
-                h  =  (0.023*k/D) * pow(rey, 0.8) * pow(prt, 0.4);
+        // Get the Nusselt number
+        double Nu = 0.023 * pow(rey, 0.8) * pow(prt, 0.4);  // Dittus-Boelter correlation
+        if ( Nu < 8.0 ) AMP_WARNING("Convective Heat should take into account laminar heat transfer");
+
+        // Compute the heat transfer coefficient for flow
+        h  =  Nu*k/D;
+
+        // If the Nusselt number is small, we should account for thermal conduction
+        // This may require using a different distance than the hydraulic diameter D/2
+        if ( Nu < 4.0 ) AMP_WARNING("Convective Heat should take into account conduction");
 
 		return h;
 	}
