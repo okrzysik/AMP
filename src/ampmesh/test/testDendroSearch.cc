@@ -230,8 +230,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
         size_t numTimingMeasurements = localTimingMeasurements.size();
         AMP_ASSERT(numTimingMeasurements > 0);
         std::vector<double> globalTimingMeasurements(numTimingMeasurements, -1.0); 
-        r
-          globalComm.maxReduce(&(localTimingMeasurements[0]), &(globalTimingMeasurements[0]), numTimingMeasurements);
+        globalComm.maxReduce(&(localTimingMeasurements[0]), &(globalTimingMeasurements[0]), numTimingMeasurements);
         if (!rank) {
           fout<<globalTimingMeasurements[0]<<"  " // setup
             <<globalTimingMeasurements[1]<<"  " // coarse
