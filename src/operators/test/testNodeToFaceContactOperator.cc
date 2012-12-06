@@ -25,6 +25,8 @@
 #include "operators/ColumnOperator.h"
 #include "operators/PetscMatrixShellOperator.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
+#include "operators/mechanics/MechanicsModelParameters.h"
+#include "operators/mechanics/MechanicsMaterialModel.h"
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 #include "operators/contact/NodeToFaceContactOperator.h"
 
@@ -193,6 +195,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   columnPreconditionerParams->d_pOperator = columnOperator;
   boost::shared_ptr<AMP::Solver::ColumnSolver> columnPreconditioner(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
 
+  // Get the mechanics material model for the contact operator
+  boost::shared_ptr<AMP::Database> model_db = input_db->getDatabase("MechanicsMaterialModel");
+  boost::shared_ptr<AMP::Operator::MechanicsModelParameters> mechanicsMaterialModelParams(new AMP::Operator::MechanicsModelParameters(model_db));
+  boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> slaveMechanicsMaterialModel(new AMP::Operator::MechanicsMaterialModel(mechanicsMaterialModelParams));
+
   // Build the contact operator
   AMP_INSIST(input_db->keyExists("ContactOperator"), "Key ''ContactOperator'' is missing!");
   boost::shared_ptr<AMP::Database> contact_db = input_db->getDatabase("ContactOperator");
@@ -202,6 +209,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   contactOperatorParams->d_DOFManager = dofManager;
   contactOperatorParams->d_GlobalComm = globalComm;
   contactOperatorParams->d_Mesh = meshAdapter;
+  contactOperatorParams->d_SlaveMechanicsMaterialModel = slaveMechanicsMaterialModel;
   contactOperatorParams->reset(); // got segfault at constructor since d_Mesh was pointing to NULL
 
   boost::shared_ptr<AMP::Operator::NodeToFaceContactOperator> 

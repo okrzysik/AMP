@@ -2,8 +2,9 @@
 #ifndef included_AMP_ContactOperatorParameters
 #define included_AMP_ContactOperatorParameters
 
-#include "operators/OperatorParameters.h"
-#include "discretization/DOF_Manager.h"
+#include <operators/mechanics/MechanicsMaterialModel.h>
+#include <operators/OperatorParameters.h>
+#include <discretization/DOF_Manager.h>
 
 namespace AMP {
   namespace Operator {
@@ -41,6 +42,8 @@ namespace AMP {
 
         int d_MasterBoundaryID;
         int d_SlaveBoundaryID;
+
+        boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> d_SlaveMechanicsMaterialModel;
  
       protected :
 

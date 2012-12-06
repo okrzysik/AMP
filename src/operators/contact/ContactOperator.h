@@ -36,6 +36,8 @@ namespace AMP {
           d_SlaveMeshID = (params->d_SlaveMeshID);
           d_MasterBoundaryID = (params->d_MasterBoundaryID);
           d_SlaveBoundaryID = (params->d_SlaveBoundaryID);
+
+          d_SlaveMechanicsMaterialModel = (params->d_SlaveMechanicsMaterialModel);
         }
 
         AMP::Mesh::MeshID getMasterMeshID() const { return d_MasterMeshID; }
@@ -74,6 +76,8 @@ namespace AMP {
 
         std::vector<AMP::Mesh::MeshElementID> d_InactiveSet;
         std::vector<AMP::Mesh::MeshElementID> d_ActiveSet;
+
+        boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> d_SlaveMechanicsMaterialModel;
 
       private :
 

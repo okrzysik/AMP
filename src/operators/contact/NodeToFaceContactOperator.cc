@@ -85,6 +85,9 @@ namespace AMP {
         sendMasterVerticesCoordinates.clear();
         
         std::vector<double> slaveVerticesNormalVector(3*nActiveSlaveVertices, 0.0);
+        std::vector<double> slaveVerticesStressTensor(6*nActiveSlaveVertices, 0.0);
+        double * constitutiveMatrix;
+        d_SlaveMechanicsMaterialModel->getConstitutiveMatrix(constitutiveMatrix);
         double localCoordinatesOnFace[2];
         double const * masterFaceSupportPointsPointer[4];
         for (size_t i = 0; i < nActiveSlaveVertices; ++i) {
