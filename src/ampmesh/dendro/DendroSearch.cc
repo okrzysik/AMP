@@ -67,7 +67,6 @@ namespace AMP {
               } // end for v
               d_volume_elements[elementLocalID]->project_on_face(f, pointLocalCoords_ptr,
                   &(tmpData.d_ProjectionLocalCoordsOnFace[0]), &(tmpData.d_ShiftGlobalCoords[0]));
-              //draw_shift(...)
               break; // we assume only one face will be on the boundary
             } // end if
           } // end for f
@@ -160,8 +159,8 @@ namespace AMP {
 
       std::vector<double> box = d_meshAdapter->getBoundingBox();
       for(int i = 0; i < d_meshAdapter->getDim(); ++i) {
-        d_minCoords[i] = box[2*i+0];
-        double maxCoord = box[2*i+1];
+        d_minCoords[i] = box[(2*i) + 0];
+        double maxCoord = box[(2*i) + 1];
         d_scalingFactor[i] = 1.0/(1.0e-10 + maxCoord - d_minCoords[i]);
       }//end i
 
@@ -169,12 +168,6 @@ namespace AMP {
       if(d_verbose) {
         if(!rank) {
           d_oStream<<"Total number of mesh elements = "<<globalNumElems<<std::endl;
-        }
-      }
-
-      if(d_verbose) {
-        if(!rank) {
-          d_oStream<<"BoxLevel = "<<d_boxLevel<<std::endl;
         }
       }
 
@@ -187,29 +180,82 @@ namespace AMP {
       }
       const double hBox = 1.0/(static_cast<double>(1u << d_boxLevel));
 
+      if(d_verbose) {
+        if(!rank) {
+          d_oStream<<"BoxLevel = "<<d_boxLevel<<std::endl;
+        }
+      }
+
+      unsigned int twoPowFactor = (1u << (MaxDepth - d_boxLevel));
+
       size_t localNumElems = d_meshAdapter->numLocalElements(AMP::Mesh::Volume);
       AMP_CHECK_ASSERT(localNumElems > 0);
 
       meshComm.barrier();
       double loop1TimeBegin = MPI_Wtime();
 
+      std::vector<ot::TreeNode> tmpNodeList;
+      std::vector<std::vector<int> > tmpElemIdList;
+
       d_volume_elements.clear();
       d_localElems.clear();
-      d_volume_elements.resize(localNumElems, NULL);
+      d_volume_elements.reserve(localNumElems);
+      d_localElems.reserve(localNumElems);
       AMP::Mesh::MeshIterator el = d_meshAdapter->getIterator(AMP::Mesh::Volume, 0);
-      std::vector<double> support_points(24);
-      for(size_t i = 0; i < localNumElems; ++i, ++el) {
+      for(size_t eId = 0; eId < localNumElems; ++eId, ++el) {
+        std::vector<int> eIdSingleton(1, eId);
         d_localElems.push_back(*el);
-        std::vector<AMP::Mesh::MeshElement> amp_vector_support_points = el->getElements(AMP::Mesh::Vertex);
-        AMP_CHECK_ASSERT(amp_vector_support_points.size() == 8);
-        for (unsigned int j = 0; j < 8; ++j) {
-          std::vector<double> point_coord = amp_vector_support_points[j].coord();
-          support_points[3*j+0] = point_coord[0];
-          support_points[3*j+1] = point_coord[1];
-          support_points[3*j+2] = point_coord[2];
-        } // end j
-        d_volume_elements[i] = new hex8_element_t(&(support_points[0]));
-      } // end for i
+        std::vector<AMP::Mesh::MeshElement> vertices = el->getElements(AMP::Mesh::Vertex);
+        double support_points[24];
+        int minId[3];
+        int maxId[3];
+        for (size_t j = 0; j < vertices.size(); ++j) {
+          std::vector<double> pt = vertices[j].coord();
+          double scaledPt[3];
+          for(int k = 0; k < 3; ++k) {
+            support_points[(3*j) + k] = pt[k];
+            scaledPt[k] = ((pt[k] - d_minCoords[k])*d_scalingFactor[k]);
+            int id = static_cast<int>(scaledPt[k]/hBox);
+            if(j == 0) {
+              minId[k] = id;
+              maxId[k] = id;
+            } else {
+              if(minId[k] > id) {
+                minId[k] = id;
+              }
+              if(maxId[k] < id) {
+                maxId[k] = id;
+              }
+            }
+          }//end k
+        }//end j
+        d_volume_elements.push_back(new hex8_element_t(support_points));
+        //PERFORMANCE IMPROVEMENT: We can skip the boxes that lie
+        //completely outside the element.
+        for(int k = minId[2]; k <= maxId[2]; ++k) {
+          for(int j = minId[1]; j <= maxId[1]; ++j) {
+            for(int i = minId[0]; i <= maxId[0]; ++i) {
+              unsigned int bX = i*twoPowFactor;
+              unsigned int bY = j*twoPowFactor;
+              unsigned int bZ = k*twoPowFactor;
+              ot::TreeNode box(bX, bY, bZ, d_boxLevel, 3, MaxDepth);
+              unsigned int retIdx;
+              bool found = seq::maxLowerBound<ot::TreeNode>(tmpNodeList, box, retIdx, NULL, NULL);
+              if(found) {
+                if(tmpNodeList[retIdx] == box) {
+                  tmpElemIdList[retIdx].push_back(eId);
+                } else {
+                  tmpNodeList.insert(tmpNodeList.begin() + retIdx + 1, box);
+                  tmpElemIdList.insert(tmpElemIdList.begin() + retIdx + 1, eIdSingleton);
+                }
+              } else {
+                tmpNodeList.insert(tmpNodeList.begin(), box);
+                tmpElemIdList.insert(tmpElemIdList.begin(), eIdSingleton);
+              }
+            }//end i 
+          }//end j 
+        }//end k 
+      }//end eId
 
       meshComm.barrier();
       double loop1TimeEnd = MPI_Wtime();
@@ -217,345 +263,241 @@ namespace AMP {
         d_oStream<<"SetupDS: Loop1-time = "<<(loop1TimeEnd - loop1TimeBegin)<<std::endl; 
       }
 
-      meshComm.barrier();
-      double loop2TimeBegin = MPI_Wtime();
+      d_nodeList.clear();
+      d_rankList.clear();
+      d_elemIdList.clear();
+      d_mins.clear();
 
-      std::vector< ot::NodeAndValues<int, 1> > nodeAndElemIdList;
-      for(size_t eId = 0; eId < localNumElems; ++eId) {
-        std::vector<AMP::Mesh::MeshElement> currNodes = d_localElems[eId].getElements(AMP::Mesh::Vertex);
-        int minId[3];
-        int maxId[3];
-        for(size_t i = 0; i < currNodes.size(); ++i) {
-          std::vector<double> pt = currNodes[i].coord();
-          double scaledPt[3];
-          for(int j = 0; j < 3; ++j) {
-            scaledPt[j] = ((pt[j] - d_minCoords[j])*d_scalingFactor[j]);
-            int id = static_cast<int>(scaledPt[j]/hBox);
-            if(i == 0) {
-              minId[j] = id;
-              maxId[j] = id;
-            } else {
-              if(minId[j] > id) {
-                minId[j] = id;
-              }
-              if(maxId[j] < id) {
-                maxId[j] = id;
-              }
-            }
-          }//end j
+      if(npes == 1) {
+        swap(d_nodeList, tmpNodeList);
+
+        for(size_t i = 0; i < d_nodeList.size(); ++i) {
+          d_nodeList[i].setWeight(tmpElemIdList[i].size());
+          d_elemIdList.insert(d_elemIdList.end(), tmpElemIdList[i].begin(), tmpElemIdList[i].end());
+          tmpElemIdList[i].clear();
         }//end i
-        //Performance Improvement: We can skip the boxes that lie
-        //completely outside the element.
-        for(int k = minId[2]; k <= maxId[2]; ++k) {
-          for(int j = minId[1]; j <= maxId[1]; ++j) {
-            for(int i = minId[0]; i <= maxId[0]; ++i) {
-              unsigned int bX = i*(1u << (MaxDepth - d_boxLevel));
-              unsigned int bY = j*(1u << (MaxDepth - d_boxLevel));
-              unsigned int bZ = k*(1u << (MaxDepth - d_boxLevel));
-              ot::TreeNode box(bX, bY, bZ, d_boxLevel, 3, MaxDepth);
-              box.setWeight(rank);
-              ot::NodeAndValues<int, 1> obj;
-              obj.node = box;
-              obj.values[0] = eId;
-              nodeAndElemIdList.push_back(obj);
-            }//end i 
-          }//end j 
-        }//end k 
-      }//end eId
+        tmpElemIdList.clear();
 
-      meshComm.barrier();
-      double loop2TimeEnd = MPI_Wtime();
-      if(!rank) {
-        d_oStream<<"SetupDS: Loop2-time = "<<(loop2TimeEnd - loop2TimeBegin)<<std::endl; 
-      }
+        d_rankList.resize(d_elemIdList.size(), 0);
 
-      std::vector< ot::NodeAndValues<int, 1> > tmpList;
-      par::sampleSort< ot::NodeAndValues<int, 1> >(
-          nodeAndElemIdList, tmpList, (meshComm.getCommunicator()));
-      swap(nodeAndElemIdList, tmpList);
-      tmpList.clear();
+        AMP_CHECK_ASSERT(!(d_nodeList.empty()));
 
-      int numLocalOcts = nodeAndElemIdList.size();
+        ot::TreeNode firstNode = d_nodeList[0];
+        firstNode.setWeight(rank);
+        d_mins.resize(1, firstNode);
+      } else {
+        int numInitialLocalOcts = tmpNodeList.size();
+        int numInitialGlobalOcts = meshComm.sumReduce<int>(numInitialLocalOcts);
+        AMP_CHECK_ASSERT(numInitialGlobalOcts > 0);
+        if(numInitialGlobalOcts <= npes) {
+          std::vector<ot::TreeNode> globalNodeList(numInitialGlobalOcts);
 
-      if(d_verbose) {
-        int numGlobalOcts = meshComm.sumReduce<int>(numLocalOcts);
-        if(!rank) {
-          d_oStream<<"Total num initial octants = "<<numGlobalOcts <<std::endl;
-        }
-      }
+          ot::TreeNode* sendOctPtr = NULL;
+          if(numInitialLocalOcts > 0) {
+            sendOctPtr = &(tmpNodeList[0]);
+          }
 
-      AMP_CHECK_ASSERT(d_rankList.empty());
-      AMP_CHECK_ASSERT(d_elemIdList.empty());
+          meshComm.allGather<ot::TreeNode>(sendOctPtr, numInitialLocalOcts,
+              &(globalNodeList[0]), NULL, NULL, false);
 
-      for(int i = 0; i < numLocalOcts; ++i) {
-        ot::TreeNode currNode = nodeAndElemIdList[i].node;
-        d_rankList.push_back(currNode.getWeight());
-        d_elemIdList.push_back(nodeAndElemIdList[i].values[0]);
-      }//end i
+          seq::makeVectorUnique(globalNodeList, false);
 
-      AMP_CHECK_ASSERT(numLocalOcts > 0);
-      AMP_CHECK_ASSERT(d_nodeList.empty());
+          std::vector<int> sendEidList;
+          for(size_t i = 0; i < numInitialLocalOcts; ++i) {
+            sendEidList.insert(sendEidList.end(), tmpElemIdList[i].begin(), tmpElemIdList[i].end());
+          }//end i
 
-      //Local Merge
-      {
-        ot::TreeNode currNode = nodeAndElemIdList[0].node;
-        currNode.setWeight(1);
-        d_nodeList.push_back(currNode);
-      }
-      for(size_t i = 1; i < nodeAndElemIdList.size(); ++i) {
-        ot::TreeNode currNode = nodeAndElemIdList[i].node;
-        if( d_nodeList[d_nodeList.size() - 1] == currNode ) {
-          d_nodeList[d_nodeList.size() - 1].addWeight(1);
+          std::vector<int> sendEidCnts(npes, 0);
+          for(size_t i = 0; i < numInitialLocalOcts; ++i) {
+            unsigned int retIdx;
+            bool found = seq::maxLowerBound<ot::TreeNode>(globalNodeList, tmpNodeList[i], retIdx, NULL, NULL);
+            assert(found);
+            sendEidCnts[retIdx] = tmpElemIdList[i].size();
+          }//end i
+          tmpElemIdList.clear();
+          tmpNodeList.clear();
+
+          std::vector<int> recvEidCnts(npes);
+          meshComm.allToAll<int>(npes, &(sendEidCnts[0]), &(recvEidCnts[0]));
+
+          std::vector<int> sendEidDisps(npes);
+          std::vector<int> recvEidDisps(npes);
+          sendEidDisps[0] = 0;
+          recvEidDisps[0] = 0;
+          for(int i = 1; i < npes; ++i) {
+            sendEidDisps[i] = sendEidDisps[i - 1] + sendEidCnts[i - 1];
+            recvEidDisps[i] = recvEidDisps[i - 1] + recvEidCnts[i - 1];
+          }//end i
+
+          std::vector<int> recvEidList(recvEidDisps[npes - 1] + recvEidCnts[npes - 1]);
+          meshComm.allToAll<int>(&(sendEidList[0]), &(sendEidCnts[0]), &(sendEidDisps[0]), 
+              &(recvEidList[0]), &(recvEidCnts[0]), &(recvEidDisps[0]), true);
+          sendEidDisps.clear();
+          sendEidCnts.clear();
+          sendEidList.clear();
+
+          if(rank < globalNodeList.size()) {
+            d_nodeList.resize(1, (globalNodeList[rank]));
+            d_nodeList[0].setWeight(recvEidList.size());
+          }
+
+          swap(d_mins, globalNodeList);
+          for(int i = 0; i < d_mins.size(); ++i) {
+            d_mins[i].setWeight(i);
+          }//end i
+
+          swap(d_elemIdList, recvEidList);
+
+          d_rankList.resize(d_elemIdList.size());
+          for(int i = 0; i < npes; ++i) {
+            for(int j = 0; j < recvEidCnts[i]; ++j) {
+              d_rankList[recvEidDisps[i] + j] = i;
+            }//end j
+          }//end i
+          recvEidDisps.clear();
+          recvEidCnts.clear();
         } else {
-          currNode.setWeight(1);
-          d_nodeList.push_back(currNode);
-        }
-      }//end i
-      nodeAndElemIdList.clear();
+          //PERFORMANCE IMPROVEMENT: This parallel sort + unique step can be improved. We can
+          //make use of the fact that tmpNodeList is already sorted and unique on each processor. 
+          d_nodeList = tmpNodeList;
+          par::removeDuplicates<ot::TreeNode>(d_nodeList, false, meshComm.getCommunicator());
 
-      int localFlag = 0;
-      if( (rank > 0) && (rank < (npes - 1)) && ((d_nodeList.size()) == 1) ) {
-        localFlag = 1;
-      }
+          ot::TreeNode firstNode;
+          if(!(d_nodeList.empty())) {
+            firstNode = d_nodeList[0];
+            firstNode.setWeight(rank);
+          }
+          d_mins.resize(npes);
+          meshComm.allGather(firstNode, &(d_mins[0]));
 
-      int globalFlag = meshComm.sumReduce(localFlag);
-
-      int prevRank = rank - 1;
-      int nextRank = rank + 1;
-
-      if(globalFlag > 0) {
-        int gatherSendBuf = 0;
-        if( (rank > 0) && (rank < (npes - 1)) && (d_nodeList.size() == 1) ) {
-          gatherSendBuf = d_rankList.size();
-        }
-
-        int* gatherList = new int[npes];
-
-        meshComm.allGather(gatherSendBuf, gatherList);
-
-        if(rank > 0) {
-          while(gatherList[prevRank] > 0) {
-            --prevRank;
-          }//end while
-        }
-
-        if(rank < (npes - 1)) {
-          while(gatherList[nextRank] > 0) {
-            ++nextRank;
-          }//end while
-        }
-
-        int* sendBoxCnts = new int[npes];
-        int* recvBoxCnts = new int[npes];
-
-        int* sendSourceCnts = new int[npes];
-        int* recvSourceCnts = new int[npes];
-
-        for(int i = 0; i < npes; ++i) {
-          sendBoxCnts[i] = 0;
-          recvBoxCnts[i] = 0;
-          sendSourceCnts[i] = 0;
-          recvSourceCnts[i] = 0;
-        }//end i
-
-        if(gatherSendBuf > 0) {
-          sendBoxCnts[prevRank] = 1;
-          sendSourceCnts[prevRank] = gatherSendBuf;
-        }
-        for(int i = rank + 1; i < nextRank; ++i) {
-          recvBoxCnts[i] = 1;
-          recvSourceCnts[i] = gatherList[i];
-        }//end i
-
-        delete [] gatherList;
-
-        int* sendBoxDisps = new int[npes];
-        int* recvBoxDisps = new int[npes];
-        sendBoxDisps[0] = 0;
-        recvBoxDisps[0] = 0;
-        for(int i = 1; i < npes; ++i) {
-          sendBoxDisps[i] = sendBoxDisps[i - 1] + sendBoxCnts[i - 1];
-          recvBoxDisps[i] = recvBoxDisps[i - 1] + recvBoxCnts[i - 1];
-        }//end i
-
-        std::vector<ot::TreeNode> tmpBoxList(recvBoxDisps[npes - 1] + recvBoxCnts[npes - 1]);
-
-        ot::TreeNode* recvBoxBuf = NULL;
-        if(!(tmpBoxList.empty())) {
-          recvBoxBuf = (&(tmpBoxList[0]));
-        }
-
-        meshComm.allToAll( (&(d_nodeList[0])), sendBoxCnts, sendBoxDisps, recvBoxBuf, recvBoxCnts, recvBoxDisps, true);
-
-        if(gatherSendBuf > 0) {
-          d_nodeList.clear();
-        } else {
-          for(size_t i = 0; i < tmpBoxList.size(); ++i) {
-            if(tmpBoxList[i] == d_nodeList[d_nodeList.size() - 1]) {
-              d_nodeList[d_nodeList.size() - 1].addWeight(tmpBoxList[i].getWeight());
-            } else {
-              d_nodeList.push_back(tmpBoxList[i]);
+          std::vector<ot::TreeNode> tmpMins;
+          for(int i = 0; i < npes; ++i) {
+            if(d_mins[i].getDim() > 0) {
+              tmpMins.push_back(d_mins[i]);
             }
           }//end i
-        }
+          swap(d_mins, tmpMins);
+          tmpMins.clear();
 
-        delete [] sendBoxCnts;
-        delete [] recvBoxCnts;
-        delete [] sendBoxDisps;
-        delete [] recvBoxDisps;
+          for(int i = 0; i < numInitialLocalOcts; ++i) {
+            tmpNodeList[i].setWeight(tmpElemIdList[i].size());
+          }//end i
 
-        int* sendSourceDisps = new int[npes];
-        int* recvSourceDisps = new int[npes];
-        sendSourceDisps[0] = 0;
-        recvSourceDisps[0] = 0;
-        for(int i = 1; i < npes; ++i) {
-          sendSourceDisps[i] = sendSourceDisps[i - 1] + sendSourceCnts[i - 1];
-          recvSourceDisps[i] = recvSourceDisps[i - 1] + recvSourceCnts[i - 1];
-        }//end i
+          std::vector<int> sendEidList;
+          for(size_t i = 0; i < numInitialLocalOcts; ++i) {
+            sendEidList.insert(sendEidList.end(), tmpElemIdList[i].begin(), tmpElemIdList[i].end());
+            tmpElemIdList[i].clear();
+          }//end i
+          tmpElemIdList.clear();
 
-        std::vector<int> tmpRankList(recvSourceDisps[npes - 1] + recvSourceCnts[npes - 1]);
-        std::vector<int> tmpElemIdList(recvSourceDisps[npes - 1] + recvSourceCnts[npes - 1]);
+          std::vector<int> sendOctCnts(npes, 0);
+          for(int i = 0; i < numInitialLocalOcts; ++i) {
+            unsigned int retIdx;
+            bool found = seq::maxLowerBound<ot::TreeNode>(d_mins, tmpNodeList[i], retIdx, NULL, NULL);
+            assert(found);
+            ++(sendOctCnts[d_mins[retIdx].getWeight()]);
+          }//end i
 
-        int* recvRankBuf = NULL;
-        int* recvElemIdBuf = NULL;
-        if(!(tmpRankList.empty())) {
-          recvRankBuf = (&(tmpRankList[0]));
-          recvElemIdBuf = (&(tmpElemIdList[0]));
-        }
+          std::vector<int> recvOctCnts(npes);
+          meshComm.allToAll<int>(npes, &(sendOctCnts[0]), &(recvOctCnts[0]));
 
-        meshComm.allToAll( (&(d_rankList[0])), sendSourceCnts, sendSourceDisps, recvRankBuf, recvSourceCnts, recvSourceDisps, true);
-        meshComm.allToAll( (&(d_elemIdList[0])), sendSourceCnts, sendSourceDisps, recvElemIdBuf, recvSourceCnts, recvSourceDisps, true);
+          std::vector<int> sendOctDisps(npes);
+          std::vector<int> recvOctDisps(npes);
+          sendOctDisps[0] = 0;
+          recvOctDisps[0] = 0;
+          for(int i = 1; i < npes; ++i) {
+            sendOctDisps[i] = sendOctDisps[i - 1] + sendOctCnts[i - 1];
+            recvOctDisps[i] = recvOctDisps[i - 1] + recvOctCnts[i - 1];
+          }//end i
 
-        if(gatherSendBuf > 0) {
-          d_rankList.clear();
-          d_elemIdList.clear();
-        } else {
-          if(!(tmpRankList.empty())) {
-            d_rankList.insert(d_rankList.end(), tmpRankList.begin(), tmpRankList.end());
-            d_elemIdList.insert(d_elemIdList.end(), tmpElemIdList.begin(), tmpElemIdList.end());
-          }
-        }
+          std::vector<int> sendEidCnts(npes, 0);
+          for(int i = 0; i < npes; ++i) {
+            for(int j = 0; j < sendOctCnts[i]; ++j) {
+              sendEidCnts[i] += (tmpNodeList[sendOctDisps[i] + j].getWeight());
+            }//end j
+          }//end i
 
-        delete [] sendSourceCnts;
-        delete [] recvSourceCnts;
-        delete [] sendSourceDisps;
-        delete [] recvSourceDisps;
-      }
+          std::vector<ot::TreeNode> recvOctList(recvOctDisps[npes - 1] + recvOctCnts[npes - 1]);
+          meshComm.allToAll<ot::TreeNode>(&(tmpNodeList[0]), &(sendOctCnts[0]), &(sendOctDisps[0]), 
+              &(recvOctList[0]), &(recvOctCnts[0]), &(recvOctDisps[0]), true);
+          tmpNodeList.clear();
+          sendOctCnts.clear();
+          sendOctDisps.clear();
 
-      if(!(d_nodeList.empty())) {
-        AMP_CHECK_ASSERT(d_nodeList.size() >= 2);
+          std::vector<int> recvEidCnts(npes, 0);
+          for(int i = 0; i < npes; ++i) {
+            for(int j = 0; j < recvOctCnts[i]; ++j) {
+              recvEidCnts[i] += (recvOctList[recvOctDisps[i] + j].getWeight());
+            }//end j
+          }//end i
 
-        ot::TreeNode prevBox;
-        ot::TreeNode nextBox;
-        ot::TreeNode firstBox = d_nodeList[0];
-        ot::TreeNode lastBox = d_nodeList[d_nodeList.size() - 1];
-        MPI_Request recvPrevReq;
-        MPI_Request recvNextReq;
-        MPI_Request sendFirstReq;
-        MPI_Request sendLastReq;
-        if(rank > 0) {
-          recvPrevReq = meshComm.Irecv(&prevBox, 1, prevRank, 1);
-          sendFirstReq = meshComm.Isend(&firstBox, 1, prevRank, 2);
-        }
-        if(rank < (npes - 1)) {
-          recvNextReq = meshComm.Irecv(&nextBox, 1, nextRank, 2);
-          sendLastReq = meshComm.Isend(&lastBox, 1, nextRank, 1);
-        }
+          std::vector<int> sendEidDisps(npes);
+          std::vector<int> recvEidDisps(npes);
+          sendEidDisps[0] = 0;
+          recvEidDisps[0] = 0;
+          for(int i = 1; i < npes; ++i) {
+            sendEidDisps[i] = sendEidDisps[i - 1] + sendEidCnts[i - 1];
+            recvEidDisps[i] = recvEidDisps[i - 1] + recvEidCnts[i - 1];
+          }//end i
 
-        if(rank > 0) {
-          meshComm.wait(recvPrevReq);
-          meshComm.wait(sendFirstReq);
-        }
-        if(rank < (npes - 1)) {
-          meshComm.wait(recvNextReq);
-          meshComm.wait(sendLastReq);
-        }
+          std::vector<int> recvEidList(recvEidDisps[npes - 1] + recvEidCnts[npes - 1]);
+          meshComm.allToAll<int>(&(sendEidList[0]), &(sendEidCnts[0]), &(sendEidDisps[0]), 
+              &(recvEidList[0]), &(recvEidCnts[0]), &(recvEidDisps[0]), true);
+          sendEidList.clear();
+          sendEidCnts.clear();
+          sendEidDisps.clear();
+          recvEidCnts.clear();
+          recvEidDisps.clear();
 
-        bool removeFirst = false;
-        bool addToLast = false;
-        if(rank > 0) {
-          if(prevBox == firstBox) {
-            removeFirst = true;
-          }
-        }
-        if(rank < (npes - 1)) {
-          if(nextBox == lastBox) {
-            addToLast = true;
-          }
-        }
+          std::vector<std::vector<int> > tmpEidList(recvOctList.size());
+          for(size_t i = 0, j = 0; i < recvOctList.size(); ++i) {
+            tmpEidList[i].resize(recvOctList[i].getWeight());
+            for(size_t k = 0; k < tmpEidList[i].size(); ++k, ++j) {
+              tmpEidList[i][k] = recvEidList[j];
+            }//end k            
+          }//end i
+          recvEidList.clear();
 
-        MPI_Request recvRankReq;
-        MPI_Request recvElemIdReq;
-        if(addToLast) {
-          int numPts = d_rankList.size();
-          d_rankList.resize(numPts + (nextBox.getWeight()));
-          d_elemIdList.resize(numPts + (nextBox.getWeight()));
-          d_nodeList[d_nodeList.size() - 1].addWeight(nextBox.getWeight());
-          recvRankReq = meshComm.Irecv((&(d_rankList[numPts])), ((nextBox.getWeight())), nextRank, 3);
-          recvElemIdReq = meshComm.Irecv((&(d_elemIdList[numPts])), ((nextBox.getWeight())), nextRank, 4);
-        }
-        if(removeFirst) {
-          meshComm.send((&(d_rankList[0])), ((firstBox.getWeight())), prevRank, 3);
-          meshComm.send((&(d_elemIdList[0])), ((firstBox.getWeight())), prevRank, 4);
-          d_nodeList.erase(d_nodeList.begin());
-        }
-        if(addToLast) {
-          meshComm.wait(recvRankReq);
-          meshComm.wait(recvElemIdReq);
-        }
-        if(removeFirst) {
-          d_rankList.erase(d_rankList.begin(), d_rankList.begin() + ((firstBox.getWeight())));
-          d_elemIdList.erase(d_elemIdList.begin(), d_elemIdList.begin() + ((firstBox.getWeight())));
+          std::vector<std::vector<int> > dummyElemIdList(d_nodeList.size());
+          std::vector<std::vector<int> > dummyRankList(d_nodeList.size());
+
+          for(int i = 0; i < npes; ++i) {
+            for(int j = 0; j < recvOctCnts[i]; ++j) {
+              unsigned int retIdx;
+              bool found = seq::maxLowerBound<ot::TreeNode>(d_nodeList, recvOctList[recvOctDisps[i] + j], retIdx, NULL, NULL);
+              assert(found);
+              dummyElemIdList[retIdx].insert(dummyElemIdList[retIdx].end(), tmpEidList[recvOctDisps[i] + j].begin(),
+                  tmpEidList[recvOctDisps[i] + j].end());
+              dummyRankList[retIdx].insert(dummyRankList[retIdx].end(), tmpEidList[recvOctDisps[i] + j].size(), i);
+            }//end j
+          }//end i
+          recvOctCnts.clear();
+          recvOctDisps.clear();
+          recvOctList.clear();
+
+          for(size_t i = 0; i < d_nodeList.size(); ++i) {
+            d_nodeList[i].setWeight(dummyElemIdList[i].size());
+            d_elemIdList.insert(d_elemIdList.end(), dummyElemIdList[i].begin(), dummyElemIdList[i].end());
+            d_rankList.insert(d_rankList.end(), dummyRankList[i].begin(), dummyRankList[i].end());
+          }//end i
+          dummyElemIdList.clear();
+          dummyRankList.clear();
         }
       }
 
       d_stIdxList.resize(d_nodeList.size());
-
-      ot::TreeNode firstNode;
       if(!(d_nodeList.empty())) {
-        firstNode = d_nodeList[0];
-        firstNode.setWeight(rank);
-
         d_stIdxList[0] = 0;
         for(size_t i = 1; i < d_nodeList.size(); ++i) {
           d_stIdxList[i] = d_stIdxList[i - 1] + d_nodeList[i - 1].getWeight();
         }//end i
       }
-      d_mins.resize(npes);
-      meshComm.allGather(firstNode, &(d_mins[0]));
-
-      std::vector<ot::TreeNode> tmpMins;
-      for(int i = 0; i < npes; ++i) {
-        if(d_mins[i].getDim() > 0) {
-          tmpMins.push_back(d_mins[i]);
-        }
-      }//end i
-      swap(d_mins, tmpMins);
-      tmpMins.clear();
 
       if(d_verbose) {
-        unsigned int minFineListLen = d_nodeList[0].getWeight();
-        unsigned int maxFineListLen = d_nodeList[0].getWeight();
-        for(size_t i = 1; i < d_nodeList.size(); ++i) {
-          if(minFineListLen > d_nodeList[i].getWeight()) {
-            minFineListLen = d_nodeList[i].getWeight();
-          }
-          if(maxFineListLen < d_nodeList[i].getWeight()) {
-            maxFineListLen = d_nodeList[i].getWeight();
-          }
-        }//end i
-
-        int globalMinFineListLen = meshComm.minReduce(minFineListLen);
-        int globalMaxFineListLen = meshComm.maxReduce(maxFineListLen);
-
-        numLocalOcts = d_nodeList.size();
-
-        int numGlobalOcts = meshComm.sumReduce(numLocalOcts);
-
+        int numFinalLocalOcts = d_nodeList.size();
+        int numFinalGlobalOcts = meshComm.sumReduce(numFinalLocalOcts);
         if(!rank) {
-          d_oStream<<"Total num final octants = "<<numGlobalOcts <<std::endl;
-          d_oStream<<"Global Min Fine List Length = "<<globalMinFineListLen <<std::endl;
-          d_oStream<<"Global Max Fine List Length = "<<globalMaxFineListLen <<std::endl;
+          d_oStream<<"Total num final octants = "<<numFinalGlobalOcts <<std::endl;
         }
       }
 
@@ -656,7 +598,7 @@ namespace AMP {
         }
       }
 
-      //Performance Question: Should PtsWrapper be sorted or not?
+      //PERFORMANCE IMPROVEMENT: Should PtsWrapper be sorted or not?
       //If PtsWrapper is sorted (even just a local sort), we can skip the
       //binary searches and use binning instead.  Binning is amortized constant
       //time and using binary searches would be logarithmic. This is just a matter
