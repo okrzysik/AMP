@@ -119,23 +119,27 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   }
 
   bool dendroVerbose = input_db->getBool("DENDRO_VERBOSE");
-  AMP::Mesh::DendroSearch dendroSearch(meshAdapter, dendroVerbose);
-
   globalComm.barrier();
+  double dendroConBeginTime = MPI_Wtime();
+  AMP::Mesh::DendroSearch dendroSearch(meshAdapter, dendroVerbose);
+  globalComm.barrier();
+  double dendroConEndTime = MPI_Wtime();
   if(!rank) {
-    std::cout<<"Finished building DendroSearch object!"<<std::endl;
+    std::cout<<"Finished building the DendroSearch object in "<<(dendroConEndTime - dendroConBeginTime)<<" seconds."<<std::endl;
   }
 
   std::vector<double> interpolatedData; 
   std::vector<bool> interpolationWasDone;
+  globalComm.barrier();
+  double dendroSandIbeginTime = MPI_Wtime();
   dendroSearch.searchAndInterpolate(globalComm, dummyVector, DOFsPerNode, pts, interpolatedData, interpolationWasDone);
+  globalComm.barrier();
+  double dendroSandIendTime = MPI_Wtime();
+  if(!rank) {
+    std::cout<<"Finished searching and interpolating in "<<(dendroSandIendTime - dendroSandIbeginTime)<<" seconds."<<std::endl;
+  }
   AMP_ASSERT(interpolatedData.size() == (DOFsPerNode*numLocalPts));
   AMP_ASSERT(interpolationWasDone.size() == numLocalPts);
-
-  globalComm.barrier();
-  if(!rank) {
-    std::cout<<"Finished searching and interpolating!"<<std::endl;
-  }
 
   int localNotFound = 0;
   if(numLocalPts > 0) {
