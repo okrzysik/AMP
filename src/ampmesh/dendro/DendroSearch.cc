@@ -304,7 +304,7 @@ namespace AMP {
 
           std::vector<int> sendEidList;
           for(size_t i = 0; i < numInitialLocalOcts; ++i) {
-            sendEidList.insert(sendEidList.end(), tmpElemIdList[i].begin(), tmpEledIdList[i].end());
+            sendEidList.insert(sendEidList.end(), tmpElemIdList[i].begin(), tmpElemIdList[i].end());
           }//end i
 
           std::vector<int> sendEidCnts(npes, 0);
@@ -385,7 +385,7 @@ namespace AMP {
 
           std::vector<int> sendEidList;
           for(size_t i = 0; i < numInitialLocalOcts; ++i) {
-            sendEidList.insert(sendEidList.end(), tmpElemIdList[i].begin(), tmpEledIdList[i].end());
+            sendEidList.insert(sendEidList.end(), tmpElemIdList[i].begin(), tmpElemIdList[i].end());
             tmpElemIdList[i].clear();
           }//end i
           tmpElemIdList.clear();
@@ -450,7 +450,7 @@ namespace AMP {
           recvEidDisps.clear();
 
           for(size_t i = 0; i < d_nodeList.size(); ++i) {
-            d_nodeList.setWeight(0);
+            d_nodeList[i].setWeight(0);
           }//end i
 
           for(int i = 0; i < npes; ++i) {
