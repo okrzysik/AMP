@@ -51,7 +51,9 @@ namespace AMP {
       AMP_ASSERT( inactiveSlaveVerticesCoordIterator == inactiveSlaveVerticesCoord.end() );
       /** perform a dendro search for all inactive slave vertices over the master mesh */
       AMP::Mesh::Mesh::shared_ptr masterMesh = d_Mesh->Subset(d_MasterMeshID);
-      AMP::Mesh::DendroSearch dendroSearchOnMaster(masterMesh);
+      // TODO: read dummyVerboseFlag from input file
+      bool const dummyVerboseFlag = false;
+      AMP::Mesh::DendroSearch dendroSearchOnMaster(masterMesh, dummyVerboseFlag);
       dendroSearchOnMaster.setTolerance(1.0e-10);
       dendroSearchOnMaster.search(d_GlobalComm, inactiveSlaveVerticesCoord);
 
@@ -294,7 +296,7 @@ namespace AMP {
 
       /** do a dendro search for the boundary slave vertices on the master mesh */
       AMP::Mesh::Mesh::shared_ptr masterMesh = mesh->Subset(d_MasterMeshID);
-      AMP::Mesh::DendroSearch dendroSearchOnMaster(masterMesh);
+      AMP::Mesh::DendroSearch dendroSearchOnMaster(masterMesh, false);
       dendroSearchOnMaster.setTolerance(1.0e-10);
       dendroSearchOnMaster.search(comm, tmpSlaveVerticesCoord);
 

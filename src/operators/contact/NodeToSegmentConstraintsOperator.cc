@@ -50,7 +50,9 @@ namespace AMP {
 
       /** do a dendro search for the boundary slave vertices on the master mesh */
       AMP::Mesh::Mesh::shared_ptr masterMesh = mesh->Subset(d_MasterMeshID);
-      AMP::Mesh::DendroSearch dendroSearchOnMaster(masterMesh);
+      // TODO: read dendroVerboseFlag from input
+      bool const dendroVerboseFlag = false;
+      AMP::Mesh::DendroSearch dendroSearchOnMaster(masterMesh, dendroVerboseFlag);
       dendroSearchOnMaster.setTolerance(1.0e-10);
       dendroSearchOnMaster.search(comm, tmpSlaveVerticesCoord);
 
