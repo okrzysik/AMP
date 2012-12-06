@@ -36,6 +36,8 @@ class hex8_element_t {
     static void get_basis_functions_values(double const *x, double *basis_functions_values);
     static void get_basis_functions_derivatives( double const *x, double *basis_functions_derivatives);
     static void get_basis_functions_values_on_face(double const *x, double *basis_functions_values);
+    static void get_local_coordinates_on_face(double const *phi, double *local_coordinates_on_face);
+    static void get_normal_to_face(double const * * support_points_ptr, double const * local_coordinates_on_face, double * normal_vector);
     static unsigned int const * get_face(unsigned int i);
     static unsigned int const * get_faces();
 

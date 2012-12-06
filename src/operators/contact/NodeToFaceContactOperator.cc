@@ -63,10 +63,54 @@ namespace AMP {
 
 
       size_t const nActiveSlaveVertices = d_ActiveSet.size();
+
+      if (!d_ActiveSet.empty()) {
+        size_t const npes = d_GlobalComm.getSize();
+        /** compute the normal vectors at slave nodes */
+        AMP_ASSERT( d_DOFsPerNode == 3 );
+        AMP_ASSERT( d_SendDisps[npes-1]+d_SendCnts[npes-1] == 3*d_RecvMasterVerticesGlobalIDs.size() );
+        std::vector<double> tmpVertexCoordinates(3);
+        std::vector<double> sendMasterVerticesCoordinates(3*d_RecvMasterVerticesGlobalIDs.size());
+        for (size_t i = 0; i < d_RecvMasterVerticesGlobalIDs.size(); ++i) {
+          tmpVertexCoordinates = d_Mesh->getElement(d_RecvMasterVerticesGlobalIDs[i]).coord();
+          std::copy(tmpVertexCoordinates.begin(), tmpVertexCoordinates.end(), &(sendMasterVerticesCoordinates[3*i]));
+        } // end for i
+
+        AMP_ASSERT( d_RecvDisps[npes-1]+d_RecvCnts[npes-1] == 3*d_MasterVerticesGlobalIDs.size() );
+        std::vector<double> recvMasterVerticesCoordinates(3*d_MasterVerticesGlobalIDs.size());
+        d_GlobalComm.allToAll((!(sendMasterVerticesCoordinates.empty()) ? &(sendMasterVerticesCoordinates[0]) : NULL), &(d_SendCnts[0]), &(d_SendDisps[0]),
+            (!(recvMasterVerticesCoordinates.empty()) ? &(recvMasterVerticesCoordinates[0]) : NULL), &(d_RecvCnts[0]), &(d_RecvDisps[0]), true);
+        sendMasterVerticesCoordinates.clear();
+        
+        std::vector<double> slaveVerticesNormalVector(3*nActiveSlaveVertices, 0.0);
+        double localCoordinatesOnFace[2];
+        double const * masterFaceSupportPointsPointer[4];
+        for (size_t i = 0; i < nActiveSlaveVertices; ++i) {
+          hex8_element_t::get_local_coordinates_on_face(&(d_MasterShapeFunctionsValues[4*i]), localCoordinatesOnFace);
+          for (size_t j = 0; j < 4; ++j) {
+            masterFaceSupportPointsPointer[j] = &(recvMasterVerticesCoordinates[3*d_MasterVerticesMap[4*i+j]]);
+          } // end for j
+          hex8_element_t::get_normal_to_face(masterFaceSupportPointsPointer, localCoordinatesOnFace, &(slaveVerticesNormalVector[3*i]));
+        } // end for i
+
+//      for (size_t i = 0; i < d_SlaveVerticesGlobalIDs.size(); ++i) {
+//        for (size_t j = 0; j < 4; ++j) {
+//          for (size_t k = 0; k < d_DOFsPerNode; ++k) {
+//            slaveValues[d_DOFsPerNode*i+k] += d_MasterShapeFunctionsValues[4*i+j] * recvMasterValues[d_DOFsPerNode*d_MasterVerticesMap[4*i+j]+k];
+//          } // end for k
+//        } // end for j
+//      } // end for i
+
+
+      } // end if
+
       for (size_t i = 0; i < nActiveSlaveVertices; ++i) {
         // TODO:
       } // end for
       size_t const nRemovConstraints = 0;
+
+
+
 
       size_t const nAddedConstraints = static_cast<size_t>(std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::FoundOnBoundary)); // std::count returns ptrdiff_t 
       size_t const nOlderConstraints = d_ActiveSet.size();
@@ -136,7 +180,7 @@ namespace AMP {
       for (size_t i = 1; i < npes; ++i) {
         d_SendDisps[i] = d_SendDisps[i-1] + d_SendCnts[i-1]; 
       } // end for i
-      AMP_ASSERT( d_SendDisps[npes-1] + d_SendCnts[npes-1] == 4* static_cast<int>(nConstraints) );
+      AMP_ASSERT( d_SendDisps[npes-1] + d_SendCnts[npes-1] == 4 * static_cast<int>(nConstraints) );
 
       std::vector<int> tmpSendCnts(npes, 0);
       d_MasterVerticesMap.resize(4*nConstraints, nConstraints);
