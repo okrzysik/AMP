@@ -446,6 +446,23 @@ namespace AMP {
           sendEidList.clear();
           sendEidCnts.clear();
           sendEidDisps.clear();
+          recvEidCnts.clear();
+          recvEidDisps.clear();
+
+          for(size_t i = 0; i < d_nodeList.size(); ++i) {
+            d_nodeList.setWeight(0);
+          }//end i
+
+          for(int i = 0; i < npes; ++i) {
+            for(int j = 0; j < recvOctCnts[i]; ++j) {
+              unsigned int retIdx;
+              bool found = seq::maxLowerBound<ot::TreeNode>(d_nodeList, recvOctList[recvOctDisps[i] + j], retIdx, NULL, NULL);
+              assert(found);
+              d_nodeList[retIdx].addWeight(recvOctList[recvOctDisps[i] + j].getWeight());
+            }//end j
+          }//end i
+          recvOctCnts.clear();
+          recvOctDisps.clear();
 
         }
       }
