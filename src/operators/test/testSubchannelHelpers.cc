@@ -53,15 +53,15 @@ void testSubchannelHelpers( AMP::UnitTest* ut, std::string input_file ) {
         ut->failure("Get clad properties passes basic sanity check");
 
     // Get the subchannel properties
-    std::vector<double> x, y, z, area, fric_diam, heat_diam, rod_diameter, channel_fraction;
+    std::vector<double> x, y, z, area, subchannel_diam, rod_diameter, channel_fraction;
     AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( subchannelMesh, x, y, z );
     AMP::Operator::Subchannel::getSubchannelProperties( subchannelMesh, clad_x, clad_y, clad_d, 
-        x, y, area, fric_diam, heat_diam, rod_diameter, channel_fraction );
+        x, y, area, subchannel_diam, rod_diameter, channel_fraction );
     size_t N_subchannels = (x.size()-1)*(y.size()-1);
     AMP_ASSERT(area.size()==N_subchannels);
     pass = true;
     for (size_t i=0; i<N_subchannels; i++) {
-        if ( heat_diam[i]==0 || heat_diam[i]>fric_diam[i] )
+        if ( subchannel_diam[i]==0 )
             pass = false;
         if ( channel_fraction[i] > 1.0 )
             pass = false;
@@ -123,11 +123,11 @@ void testSubchannelHelpers( AMP::UnitTest* ut, std::string input_file ) {
         AMP::LinearAlgebra::Variable::shared_ptr thermalVariable(new AMP::LinearAlgebra::Variable("Temperature"));
         flowVec  = AMP::LinearAlgebra::createVector( flowDOF , flowVariable );
         cladTemp = AMP::LinearAlgebra::createVector( cladDOF , thermalVariable );
-        double clad_temp = 620;
+        double clad_temp = 632;
         double flow_temp = 570;
         double pressure = 1.6e7;
         std::map<std::string, boost::shared_ptr<std::vector<double> > > enthalpyArgMap;
-        enthalpyArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,clad_temp)));
+        enthalpyArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,flow_temp)));
         enthalpyArgMap.insert(std::make_pair("pressure",   new std::vector<double>(1,pressure)));
         std::vector<double> enthalpyResult(1);
         subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap);
@@ -135,7 +135,7 @@ void testSubchannelHelpers( AMP::UnitTest* ut, std::string input_file ) {
         AMP::LinearAlgebra::Vector::shared_ptr subchannelPressure = flowVec->select( AMP::LinearAlgebra::VS_Stride(1,2), "P" );
         subchannelEnthalpy->setToScalar(AMP::Operator::Subchannel::scaleEnthalpy*enthalpyResult[0]); 
         subchannelPressure->setToScalar(AMP::Operator::Subchannel::scalePressure*pressure); 
-        cladTemp->setToScalar(650);
+        cladTemp->setToScalar(clad_temp);
     }
     pass = true;
     for (size_t i=0; i<N_subchannels; i++) {
@@ -150,7 +150,7 @@ void testSubchannelHelpers( AMP::UnitTest* ut, std::string input_file ) {
         }
         double Q_tot3 = 0.0;
         std::vector<double> flux3 = AMP::Operator::Subchannel::getHeatFluxClad( 
-            z_face, face_ids, heat_diam[i], reynolds, prandtl, channel_fraction[i], subchannelPhysicsModel, flowVec, cladTemp );
+            z_face, face_ids, subchannel_diam[i], reynolds, prandtl, channel_fraction[i], subchannelPhysicsModel, flowVec, cladTemp );
         AMP_ASSERT(flux3.size()==N);
         for (size_t i=0; i<N; i++)
             Q_tot3 += flux3[i]*pi*diam*dz[i];

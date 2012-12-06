@@ -26,14 +26,13 @@ namespace Subchannel {
   * \param[out] x           The x-coordinates of the subchannel boundaries (Nx+1)
   * \param[out] y           The y-coordinates of the subchannel boundaries (Ny+1)
   * \param[out] area        The flow area of the subchannels (Nx x Ny)
-  * \param[out] fric_diam   The hydraulic diameter of the subchannels defined using only the rod perimeter (Nx x Ny)
-  * \param[out] heat_diam   The hydraulic diameter of the subchannels defined using the rod and subchannel perimeters (Nx x Ny)
+  * \param[out] diam        The hydraulic diameter of the subchannels defined using the wetted rod perimeter (Nx x Ny)
   * \param[out] rod_diameter  The average rod diameter for each subchannel (Nx x Ny)
   * \param[out] channel_fraction  The fraction of the rod in each subchannel (Nx x Ny)
   */
 void getSubchannelProperties( AMP::Mesh::Mesh::shared_ptr subchannel, const std::vector<double>& clad_x,
      const std::vector<double>& clad_y, const std::vector<double>& clad_d, std::vector<double>& x,
-     std::vector<double>& y, std::vector<double>& area, std::vector<double>& fric_diam, std::vector<double>& heat_diam, 
+     std::vector<double>& y, std::vector<double>& area, std::vector<double>& diam,
      std::vector<double>& rod_diameter, std::vector<double>& channel_fraction );
 
 
