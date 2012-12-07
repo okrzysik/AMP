@@ -534,18 +534,18 @@ void hex8_element_t::map_local_to_face(unsigned int f, double const *local_coord
   } // end if
 }
 
-void hex8_element_t::get_basis_functions_values_on_face(double const * x, double * basis_functions_values) {
-  basis_functions_values[0] = 0.25*(1.0-x[0])*(1.0-x[1]);
-  basis_functions_values[1] = 0.25*(1.0+x[0])*(1.0-x[1]);
-  basis_functions_values[2] = 0.25*(1.0+x[0])*(1.0+x[1]);
-  basis_functions_values[3] = 0.25*(1.0-x[0])*(1.0+x[1]);
+void hex8_element_t::get_basis_functions_values_on_face(double const * x, double * phi) {
+  phi[0] = 0.25*(1.0-x[0])*(1.0-x[1]);
+  phi[1] = 0.25*(1.0+x[0])*(1.0-x[1]);
+  phi[2] = 0.25*(1.0+x[0])*(1.0+x[1]);
+  phi[3] = 0.25*(1.0-x[0])*(1.0+x[1]);
 }
 
-void hex8_element_t::get_local_coordinates_on_face(double const * phi, double * local_coordinates_on_face) {
-  local_coordinates_on_face[0] = 2.0 * (phi[1] + phi[2]) - 1.0;
-  AMP_CHECK_ASSERT(abs(1.0 - 2.0 * (phi[0] + phi[3]) - local_coordinates_on_face[0]) < 1.0e-15);
-  local_coordinates_on_face[1] = 1.0 - 2.0 * (phi[0] + phi[1]);
-  AMP_CHECK_ASSERT(abs(2.0 * (phi[2] + phi[3]) - 1.0 - local_coordinates_on_face[2]) < 1.0e-15);
+void hex8_element_t::get_local_coordinates_on_face(double const * phi, double * x) {
+  x[0] = 2.0 * (phi[1] + phi[2]) - 1.0;
+  AMP_CHECK_ASSERT(abs(1.0 - 2.0 * (phi[0] + phi[3]) - x[0]) < 1.0e-15);
+  x[1] = 1.0 - 2.0 * (phi[0] + phi[1]);
+  AMP_CHECK_ASSERT(abs(2.0 * (phi[2] + phi[3]) - 1.0 - x[2]) < 1.0e-15);
 }
 
 void hex8_element_t::get_normal_to_face(double const * * support_points_ptr, double const * local_coordinates_on_face, double * normal_vector) {
@@ -580,9 +580,70 @@ void hex8_element_t::get_normal_to_face(double const * * support_points_ptr, dou
   } // end for d
   compute_cross_product(&(tangential_vectors[0]), &(tangential_vectors[3]), normal_vector); 
   normalize_vector(normal_vector);
-  if (direction == -1.0) {
-    std::transform(normal_vector, normal_vector+3, normal_vector, std::bind1st(std::multiplies<double>(), direction));
-  } else {
-    AMP_CHECK_ASSERT(direction == 1.0);
-  }
+  std::transform(normal_vector, normal_vector+3, normal_vector, std::bind1st(std::multiplies<double>(), direction));
+}
+
+void hex8_element_t::compute_normal_to_face(unsigned int f, double const * local_coordinates_on_face, double * normal_vector) {
+  double tangential_vectors[6];
+  double const perturbation = 1.0e-6;
+  double direction = 1.0;
+  double perturbated_local_coordinates_on_face[2], perturbated_global_coordinates[3];
+  double global_coordinates[3];
+  double basis_functions_values_on_face[4];
+  get_basis_functions_values_on_face(local_coordinates_on_face, basis_functions_values_on_face);
+  for (unsigned int i = 0; i < 4; ++i) {
+    for (unsigned int j = 0; j < 3; ++j) {
+      global_coordinates[j] += basis_functions_values_on_face[i] * support_points[3*faces[4*f+i]+j];
+    } // end for j
+  } // end for i
+  for (unsigned int d = 0; d < 2; ++d) {
+    std::copy(local_coordinates_on_face, local_coordinates_on_face+2, perturbated_local_coordinates_on_face);
+    if (perturbated_local_coordinates_on_face[d] > 0.0) { 
+      perturbated_local_coordinates_on_face[d] -= perturbation;
+      direction *= -1.0; 
+    } else {
+      perturbated_local_coordinates_on_face[d] += perturbation;
+    } // end if
+    get_basis_functions_values_on_face(perturbated_local_coordinates_on_face, basis_functions_values_on_face);
+    std::fill(perturbated_global_coordinates, perturbated_global_coordinates+3, 0.0);
+    for (unsigned int i = 0; i < 4; ++i) {
+      for (unsigned int j = 0; j < 3; ++j) {
+        perturbated_global_coordinates[j] += basis_functions_values_on_face[i] * support_points[3*faces[4*f+i]+j];
+      } // end for j
+    } // end for i
+    make_vector_from_two_points(global_coordinates, perturbated_global_coordinates, &(tangential_vectors[3*d]));
+  } // end for d
+  compute_cross_product(&(tangential_vectors[0]), &(tangential_vectors[3]), normal_vector); 
+  normalize_vector(normal_vector);
+  std::transform(normal_vector, normal_vector+3, normal_vector, std::bind1st(std::multiplies<double>(), direction));
+}
+void hex8_element_t::compute_strain_tensor(double const *x, double const *u, double *epsilon) {
+  // ,x ,y ,z
+  double nabla_phi[24];
+  get_basis_functions_derivatives(x, nabla_phi);
+  std::fill(epsilon, epsilon+6, 0.0);
+  for (unsigned int i = 0; i < 8; ++i) {
+    // xx yy zz yz xz xy
+    epsilon[0] += u[0*8] * nabla_phi[0*8];
+    epsilon[1] += u[1*8] * nabla_phi[1*8];
+    epsilon[2] += u[2*8] * nabla_phi[2*8];
+    epsilon[3] += 0.5 * (u[1*8] * nabla_phi[2*8] + u[2*8] * nabla_phi[1*8]);
+    epsilon[4] += 0.5 * (u[0*8] * nabla_phi[2*8] + u[2*8] * nabla_phi[0*8]);
+    epsilon[5] += 0.5 * (u[0*8] * nabla_phi[1*8] + u[1*8] * nabla_phi[0*8]);
+  } // end for i
+}
+
+void compute_stress_tensor(double const * C, double const * epsilon, double * sigma) {
+  std::fill(sigma, sigma+6, 0.0);
+  for (unsigned int i = 0; i < 6; ++i) {
+    for (unsigned int j = 0; j < 6; ++j) {
+      sigma[i] += C[6*i+j] * epsilon[j];
+    } // end for j
+  } // end for i
+}
+
+void compute_traction(double const * sigma, double const * n, double * t) {
+  t[0] = sigma[0] * n[0] + sigma[5] * n[1] + sigma[4] * n[2];
+  t[1] = sigma[5] * n[0] + sigma[1] * n[1] + sigma[3] * n[2];
+  t[2] = sigma[4] * n[0] + sigma[3] * n[1] + sigma[2] * n[2];
 }

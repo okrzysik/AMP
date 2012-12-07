@@ -7,6 +7,7 @@
 
 double compute_inverse_3_by_3_matrix(double const *mat, double *inv);
 void compute_n_by_n_matrix_times_vector(unsigned int n, double const *mat, double const *vec, double *res);
+void compute_stress_tensor(double const * constitutive_matrix, double const * strain_tensor, double * stress_tensor);
 
 class hex8_element_t {
   public:
@@ -29,15 +30,17 @@ class hex8_element_t {
     bool contains_point(double const *coordinates, bool coordinates_are_local = false, double tolerance = 1.0e-12);
     void project_on_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face, double *shift_global_coordinates);
     void compute_normal_to_face(unsigned int f, double const *local_coordinates, double const *global_coordinates, double *normal_to_face);
+    void compute_normal_to_face(unsigned int face, double const * local_coordinates_on_face, double * normal_vector);
 
 //    static void project_on_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face);
-    static void map_face_to_local(unsigned int f, double const *local_coordinates_on_face, double *local_coordinates);
-    static void map_local_to_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face);
-    static void get_basis_functions_values(double const *x, double *basis_functions_values);
-    static void get_basis_functions_derivatives( double const *x, double *basis_functions_derivatives);
-    static void get_basis_functions_values_on_face(double const *x, double *basis_functions_values);
-    static void get_local_coordinates_on_face(double const *phi, double *local_coordinates_on_face);
-    static void get_normal_to_face(double const * * support_points_ptr, double const * local_coordinates_on_face, double * normal_vector);
+    static void map_face_to_local(unsigned int face, double const * local_coordinates_on_face, double * local_coordinates);
+    static void map_local_to_face(unsigned int face, double const * local_coordinates, double * local_coordinates_on_face);
+    static void get_basis_functions_values(double const * local_coordinates, double * basis_functions_values);
+    static void get_basis_functions_derivatives( double const * local_coordinates, double * basis_functions_derivatives);
+    static void get_basis_functions_values_on_face(double const * local_coordinates_on_face, double * basis_functions_values_on_face);
+    static void get_local_coordinates_on_face(double const * basis_functions_values_on_face, double * local_coordinates_on_face);
+    static void get_normal_to_face(double const **support_points_ptr, double const * local_coordinates_on_face, double * normal_vector);
+    static void compute_strain_tensor(double const * local_coordinates, double const * displacement_values, double * strain_tensor_values);
     static unsigned int const * get_face(unsigned int i);
     static unsigned int const * get_faces();
 

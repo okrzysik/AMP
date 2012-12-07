@@ -31,6 +31,10 @@ void test_normal(hex8_element_t *volume_element, unsigned int n_random_candidate
       std::cout<<f<<" { ";
       for (unsigned int d = 0; d < 3; ++d) { std::cout<<normal_vector[d]<<" "; }
       std::cout<<"}  ";
+      volume_element->compute_normal_to_face(f, local_coordinates, normal_vector);
+      std::cout<<f<<" { ";
+      for (unsigned int d = 0; d < 3; ++d) { std::cout<<normal_vector[d]<<" "; }
+      std::cout<<"}  ";
       volume_element->get_normal_to_face(face_support_points_ptr, local_coordinates_on_face, normal_vector);
       std::cout<<f<<" { ";
       for (unsigned int d = 0; d < 3; ++d) { std::cout<<normal_vector[d]<<" "; }
