@@ -309,7 +309,7 @@ namespace AMP {
           seq::makeVectorUnique(globalNodeList, false);
 
           std::vector<int> sendEidList;
-          for(size_t i = 0; i < static_cast<int(numInitialLocalOcts); ++i) {
+          for(size_t i = 0; i < static_cast<int>(numInitialLocalOcts); ++i) {
             sendEidList.insert(sendEidList.end(), tmpElemIdList[i].begin(), tmpElemIdList[i].end());
           }//end i
 
