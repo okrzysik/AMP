@@ -256,7 +256,7 @@ MeshIterator& MultiIterator::operator+=(int n)
         }
         // Move to the correct iterator
         if ( n2 > d_localPos ) {
-            size_t i = d_iteratorSize[d_iteratorNum] - d_localPos;
+            //size_t i = d_iteratorSize[d_iteratorNum] - d_localPos;
             n2 -= d_localPos;
             d_iteratorNum--;
             while ( d_iteratorSize[d_iteratorNum] < n2 ) {
