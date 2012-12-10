@@ -70,7 +70,7 @@ namespace AMP {
         size_t const npes = d_GlobalComm.getSize();
         /** compute the normal vectors at slave nodes */
         AMP_ASSERT( d_DOFsPerNode == 3 );
-        AMP_ASSERT( d_SendDisps[npes-1]+d_SendCnts[npes-1] == 3*d_RecvMasterVerticesGlobalIDs.size() );
+        AMP_ASSERT( d_SendDisps[npes-1]+d_SendCnts[npes-1] == 3*(static_cast<int>(d_RecvMasterVerticesGlobalIDs.size())) );
         std::vector<double> tmpVertexCoordinates(3);
         std::vector<double> sendMasterVerticesCoordinates(3*d_RecvMasterVerticesGlobalIDs.size());
         for (size_t i = 0; i < d_RecvMasterVerticesGlobalIDs.size(); ++i) {
@@ -78,7 +78,7 @@ namespace AMP {
           std::copy(tmpVertexCoordinates.begin(), tmpVertexCoordinates.end(), &(sendMasterVerticesCoordinates[3*i]));
         } // end for i
 
-        AMP_ASSERT( d_RecvDisps[npes-1]+d_RecvCnts[npes-1] == 3*d_MasterVerticesGlobalIDs.size() );
+        AMP_ASSERT( d_RecvDisps[npes-1]+d_RecvCnts[npes-1] == 3*(static_cast<int>(d_MasterVerticesGlobalIDs.size())) );
         std::vector<double> recvMasterVerticesCoordinates(3*d_MasterVerticesGlobalIDs.size());
         d_GlobalComm.allToAll((!(sendMasterVerticesCoordinates.empty()) ? &(sendMasterVerticesCoordinates[0]) : NULL), &(d_SendCnts[0]), &(d_SendDisps[0]),
             (!(recvMasterVerticesCoordinates.empty()) ? &(recvMasterVerticesCoordinates[0]) : NULL), &(d_RecvCnts[0]), &(d_RecvDisps[0]), true);
