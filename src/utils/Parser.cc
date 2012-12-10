@@ -18,14 +18,12 @@
 #define NULL (0)
 #endif
 
+namespace AMP {
+   
 extern int yyparse();
 extern void yyrestart(FILE*);
 
 extern void parser_static_table_initialize();
-
-
-namespace AMP {
-   
 
 Parser *Parser::s_default_parser = NULL;
 bool Parser::s_static_tables_initialized = 0;
@@ -316,4 +314,7 @@ int Parser::yyinput(char *buffer, const int max_size)
    return(byte);
 }
 
-}
+
+} // namespace AMP
+
+

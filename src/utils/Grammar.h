@@ -1,3 +1,7 @@
+#include <string>
+
+namespace AMP {
+
 /* A Bison parser, made by GNU Bison 2.0.  */
 
 /* Skeleton parser for Yacc-like parsing with Bison,
@@ -102,14 +106,14 @@
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-
+struct KeyData;
 typedef union YYSTYPE {
   char          u_char;
   double        u_double;
   int           u_integer;
   KeyData* u_keydata;
-  string*       u_keyword;
-  string*       u_string;
+  std::string*       u_keyword;
+  std::string*       u_string;
 } YYSTYPE;
 /* Line 1274 of yacc.c.  */
 
@@ -120,5 +124,7 @@ typedef union YYSTYPE {
 
 extern YYSTYPE AMP_yylval;
 
+
+}
 
 
