@@ -19,7 +19,7 @@ SET ( TEST_DEP_LIST ${TEST_DEP_LIST} matrices vectors )
 #     ADD_AMP_TEST ( exe_name )
 #
 #  To add a parallel test:
-#     ADD_AMP_TEST_PARALLEL ( exe_name , num_cores )
+#     ADD_AMP_TEST_PARALLEL ( exe_name num_cores args )
 #
 #  To add the AMP 1, 2, and 4 processor test
 #     ADD_AMP_TEST_1_2_4 ( exe_name )

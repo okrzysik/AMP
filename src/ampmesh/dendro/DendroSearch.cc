@@ -309,12 +309,12 @@ namespace AMP {
           seq::makeVectorUnique(globalNodeList, false);
 
           std::vector<int> sendEidList;
-          for(size_t i = 0; i < numInitialLocalOcts; ++i) {
+          for(size_t i = 0; i < static_cast<int>(numInitialLocalOcts); ++i) {
             sendEidList.insert(sendEidList.end(), tmpElemIdList[i].begin(), tmpElemIdList[i].end());
           }//end i
 
           std::vector<int> sendEidCnts(npes, 0);
-          for(size_t i = 0; i < numInitialLocalOcts; ++i) {
+          for(size_t i = 0; i < static_cast<int>(numInitialLocalOcts); ++i) {
             unsigned int retIdx;
             bool found = seq::maxLowerBound<ot::TreeNode>(globalNodeList, tmpNodeList[i], retIdx, NULL, NULL);
             AMP_CHECK_ASSERT(found);
@@ -351,13 +351,13 @@ namespace AMP {
           sendEidCnts.clear();
           sendEidList.clear();
 
-          if(rank < globalNodeList.size()) {
+          if(rank < static_cast<int>(globalNodeList.size())) {
             d_nodeList.resize(1, (globalNodeList[rank]));
             d_nodeList[0].setWeight(recvEidList.size());
           }
 
           swap(d_mins, globalNodeList);
-          for(int i = 0; i < d_mins.size(); ++i) {
+          for(size_t i = 0; i < d_mins.size(); ++i) {
             d_mins[i].setWeight(i);
           }//end i
 
@@ -406,7 +406,7 @@ namespace AMP {
           }//end i
 
           std::vector<int> sendEidList;
-          for(size_t i = 0; i < numInitialLocalOcts; ++i) {
+          for(size_t i = 0; i < static_cast<int>(numInitialLocalOcts); ++i) {
             sendEidList.insert(sendEidList.end(), tmpElemIdList[i].begin(), tmpElemIdList[i].end());
             tmpElemIdList[i].clear();
           }//end i

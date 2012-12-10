@@ -5,11 +5,10 @@ INCLUDE (macros)
 ############################################################################
 #
 #  This sets up a library to be compiled with each test
-#  SET ( PACKAGE_TEST_LIB "operator_test" )
+#  SET ( PACKAGE_TEST_LIB "solver_test" )
 #
 #  To add source files to the test library
 #     ADD_FILES_TO_TEST_LIB ( source_name )
-
 
 ############################################################################
 #  Configure tests
@@ -18,19 +17,19 @@ INCLUDE (macros)
 #  Adding tests and input files
 #
 #  To add a test in serial:
-#     ADD_AMP_TEST ( exe_name )
+#     ADD_AMP_TEST ( exe_name args )
 #
 #  To add a parallel test:
-#     ADD_AMP_TEST_PARALLEL ( exe_name , num_cores )
+#     ADD_AMP_TEST_PARALLEL ( exe_name num_cores args )
 #
 #  To add the AMP 1, 2, and 4 processor test
-#     ADD_AMP_TEST_1_2_4 ( exe_name )
+#     ADD_AMP_TEST_1_2_4 ( exe_name args )
 #
 #  To add a build target without placing in the test suite
-#     ADD_AMP_PROVISIONAL_TEST ( exe_name )
+#     ADD_AMP_PROVISIONAL_TEST ( exe_name args )
 #
 #  To add a parallel test for the weekly regression:
-#     ADD_AMP_WEEKLY_TEST ( exe_name num_cores )
+#     ADD_AMP_WEEKLY_TEST ( exe_name num_cores args )
 #
 #  To add an input file from the data/ directory
 #     COPY_TEST_DATA_FILE ( input_file )
@@ -389,8 +388,9 @@ ENDIF()
 
 IF( USE_EXT_DENDRO AND USE_EXT_PETSC )
    # R.S.: This needs to be fixed!
-    ADD_AMP_PROVISIONAL_TEST( testNodeToFaceContactOperator )
-    ADD_AMP_PROVISIONAL_TEST( testNodeToSegmentConstraintsOperator )
+    ## does not work in parallel - ADD_AMP_TEST_1_2_4( testNodeToFaceContactOperator )
+    ADD_AMP_TEST( testNodeToFaceContactOperator )
+    ADD_AMP_TEST_1_2_4( testNodeToSegmentConstraintsOperator )
     COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator-cube )
     COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator-cylinder )
     COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator-pellet )

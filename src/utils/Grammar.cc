@@ -1,3 +1,19 @@
+// Description:	Yacc grammar description for the input database
+#include <math.h>
+#include <sstream>
+#include <vector>
+#include <complex>
+#include "Database.h"
+#include "Parser.h"
+#include <string>
+#include "boost/shared_ptr.hpp" 
+
+using namespace std;
+typedef ostringstream ostrstream;
+
+namespace AMP {
+
+
 /* A Bison parser, made by GNU Bison 2.0.  */
 
 /* Skeleton parser for Yacc-like parsing with Bison,
@@ -121,40 +137,6 @@
 #define T_STRING 288
 #define T_TRUE 289
 #define T_NEGATION 290
-
-
-
-
-/* Copy the first part of user declarations.  */
-
-
-//
-// File:	$URL: file:///usr/casc/samrai/repository/SAMRAI/tags/v-2-4-4/source/toolbox/inputdb/Grammar.y $
-// Package:	SAMRAI toolbox
-// Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
-
-
-// Description:	Yacc grammar description for the input database
-//
-
-
-#include <math.h>
-
-#include <sstream>
-
-using namespace std;
-
-typedef ostringstream ostrstream;
-
-#include <vector>
-#include <complex>
-#include "Database.h"
-#include "Parser.h"
-#include <string>
-#include "boost/shared_ptr.hpp" 
-using namespace std;
-
-using namespace AMP;
 
 
 #ifndef NULL
@@ -2547,4 +2529,7 @@ static KeyData* lookup_variable(
 
    return(result);
 }
+
+
+} // AMP namespace
 

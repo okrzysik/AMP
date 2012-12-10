@@ -39,7 +39,7 @@ void testSubchannelHelpers( AMP::UnitTest* ut, std::string input_file ) {
     AMP::Mesh::Mesh::shared_ptr subchannelMesh = manager->Subset("subchannel");
     std::vector<double> clad_x, clad_y, clad_d;
     AMP::Operator::Subchannel::getCladProperties( globalComm, cladMesh, clad_x, clad_y, clad_d );
-    std::vector<double> box = cladMesh->getBoundingBox();
+    //std::vector<double> box = cladMesh->getBoundingBox();
     bool pass = true;
     for (size_t i=0; i<clad_x.size(); i++) {
         if ( !AMP::Utilities::approx_equal(clad_d[i],clad_d[0]) )
