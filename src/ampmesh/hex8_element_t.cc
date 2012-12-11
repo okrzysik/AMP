@@ -360,8 +360,9 @@ double hex8_element_t::solve_newton(double *x, double abs_tol, double rel_tol, u
       } // end if
     } // end for
     AMP_CHECK_ASSERT(line_search_passed);
+    std::cerr<<" line search passed? " <<line_search_passed<<std::endl;
   } // end for
-  std::cerr<<"failed to converge with tolerance "<<tol<<" after "<<max_iter-1<<" iterations (residual norm was "<<residual_norm<<")"<<" and the line_search: "<<line_search_passed<<std::endl;
+  std::cerr<<"failed to converge with tolerance "<<tol<<" after "<<max_iter-1<<" iterations (residual norm was "<<residual_norm<<")"<<std::endl;
   std::cerr<<"support_points=\n";
   for (unsigned int i = 0; i < 8; ++i) {
     std::cerr<<i<<"  ["<<support_points[3*i]<<", "<<support_points[3*i+1]<<", "<<support_points[3*i+2]<<"]\n";  
