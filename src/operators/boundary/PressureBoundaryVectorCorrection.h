@@ -21,137 +21,142 @@
 #include <vector>
 
 namespace AMP {
-namespace Operator {
+  namespace Operator {
 
-  /**
-    A class to impose Pressure Boundary Conditions for both Linear and Nonlinear mechanics operator.
-    For both the Linear/Nonlinear operator to impose these conditions involves adding the corrections
-    to the RHS vector at the appropriate locations. When you do not impose these Pressure condition for 
-    the weak formulation, a natural condition is assumed.
-    */
-  class PressureBoundaryVectorCorrection : public BoundaryOperator
-  {
-    public :
+    /**
+      A class to impose Pressure Boundary Conditions for both Linear and Nonlinear mechanics operator.
+      For both the Linear/Nonlinear operator to impose these conditions involves adding the corrections
+      to the RHS vector at the appropriate locations. When you do not impose these Pressure condition for 
+      the weak formulation, a natural condition is assumed.
+      */
+    class PressureBoundaryVectorCorrection : public BoundaryOperator
+    {
+      public :
 
-      /**
-        Constructor. This function reads all the parameters required for surface elements.
-        */
+        /**
+          Constructor. This function reads all the parameters required for surface elements.
+          */
 
-    PressureBoundaryVectorCorrection(const boost::shared_ptr<PressureBoundaryVectorCorrectionParameters> & params);
-      /**
-        Set the variable for the vector that will be used with this operator.
-        */
-      void setVariable(const AMP::LinearAlgebra::Variable::shared_ptr & var) {
-        d_variable = var;
-      }
+        PressureBoundaryVectorCorrection(const boost::shared_ptr<PressureBoundaryVectorCorrectionParameters> & params);
+        /**
+          Set the variable for the vector that will be used with this operator.
+          */
+        void setVariable(const AMP::LinearAlgebra::Variable::shared_ptr & var) {
+          d_variable = var;
+        }
 
-      /**
-        Destructor
-        */
-      virtual ~PressureBoundaryVectorCorrection() { }
+        /**
+          Destructor
+          */
+        virtual ~PressureBoundaryVectorCorrection() { }
 
-      /**
-        Sets pressure values into the appropriate locations of the output vector (r). 
-        It also scales the total pressure by an amount "a". It is used for multiple 
-        loading steps.
-        */
-      virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-              AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
+        /**
+          Sets pressure values into the appropriate locations of the output vector (r). 
+          It also scales the total pressure by an amount "a". It is used for multiple 
+          loading steps.
+          */
+        virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
-      /**
-        This function reads parameters related to boundary Ids
-        */
-      virtual void reset(const boost::shared_ptr<OperatorParameters>& params);
+        /**
+          This function reads parameters related to boundary Ids
+          */
+        virtual void reset(const boost::shared_ptr<OperatorParameters>& params);
 
-      /**
-        This function computes the surface integral for either constant pressure values 
-        across the boundary.
-        */
-      void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) ;
+        /**
+          This function computes the surface integral for either constant pressure values 
+          across the boundary.
+          */
+        void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) ;
 
-      /**
-        This function returns a parameter object that can be used to reset the corresponding
-        PressureBoundaryVectorCorrection operator.
-        */
-      boost::shared_ptr<OperatorParameters> getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
+        /**
+          This function returns a parameter object that can be used to reset the corresponding
+          PressureBoundaryVectorCorrection operator.
+          */
+        boost::shared_ptr<OperatorParameters> getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
 
-      boost::shared_ptr<OperatorParameters> getParameters() {
-        return d_params;
-      }
+        boost::shared_ptr<OperatorParameters> getParameters() {
+          return d_params;
+        }
 
-      void setVariablePressure(const AMP::LinearAlgebra::Vector::shared_ptr &pressure){
-        d_variablePressure = pressure->subsetVectorForVariable(d_variable);
-      }
+        void setVariablePressure(const AMP::LinearAlgebra::Vector::shared_ptr &pressure){
+          d_variablePressure = mySubsetVector(pressure, d_variable);
+        }
 
-//      std::vector<std::vector<std::vector<Point> > > getNormals();
+        //      std::vector<std::vector<std::vector<Point> > > getNormals();
 
-    protected :
+      protected :
+        AMP::LinearAlgebra::Vector::shared_ptr mySubsetVector(AMP::LinearAlgebra::Vector::shared_ptr vec, 
+            AMP::LinearAlgebra::Variable::shared_ptr var);
 
-      std::vector<short int> d_boundaryIds;
+        AMP::LinearAlgebra::Vector::const_shared_ptr mySubsetVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec, 
+            AMP::LinearAlgebra::Variable::shared_ptr var);
 
-      std::vector<double> d_pressureValues;
+        std::vector<short int> d_boundaryIds;
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_rhsCorrectionAdd;
+        std::vector<double> d_pressureValues;
 
-      //This must be a simple variable not a dual or multivariable
-      AMP::LinearAlgebra::Variable::shared_ptr d_variable;
+        AMP::LinearAlgebra::Vector::shared_ptr d_rhsCorrectionAdd;
 
-      bool d_isConstantPressure;
+        //This must be a simple variable not a dual or multivariable
+        AMP::LinearAlgebra::Variable::shared_ptr d_variable;
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_Frozen;
+        bool d_isConstantPressure;
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_variablePressure;
+        AMP::LinearAlgebra::Vector::shared_ptr d_Frozen;
 
-      int d_numIds;
+        AMP::LinearAlgebra::Vector::shared_ptr d_variablePressure;
 
-      const std::vector<Real> *d_JxW;
+        int d_numIds;
 
-      const std::vector<std::vector<Real> > *d_phi;
+        const std::vector<Real> *d_JxW;
 
-      const std::vector<std::vector<RealGradient> > *d_dphi;
+        const std::vector<std::vector<Real> > *d_phi;
 
-      const std::vector<Point> *d_normal;
+        const std::vector<std::vector<RealGradient> > *d_dphi;
 
-      boost::shared_ptr < ::FEType > d_feType;
+        const std::vector<Point> *d_normal;
 
-      boost::shared_ptr < ::FEBase > d_fe;
+        boost::shared_ptr < ::FEType > d_feType;
 
-      boost::shared_ptr < ::FEBase > d_fe_3d;
+        boost::shared_ptr < ::FEBase > d_fe;
 
-      boost::shared_ptr < ::QBase > d_qrule;
+        boost::shared_ptr < ::FEBase > d_fe_3d;
 
-      const ::Elem *d_elem;
+        boost::shared_ptr < ::QBase > d_qrule;
 
-      const ::Elem *e_elem;
+        const ::Elem *d_elem;
 
-      boost::shared_ptr<PressureBoundaryVectorCorrectionParameters> d_params;
+        const ::Elem *e_elem;
 
-      void createCurrentLibMeshElement();
+        boost::shared_ptr<PressureBoundaryVectorCorrectionParameters> d_params;
 
-      void destroyCurrentLibMeshElement();
+        void createCurrentLibMeshElement();
 
-      void createCurrentLibMeshSide();
+        void destroyCurrentLibMeshElement();
 
-      void destroyCurrentLibMeshSide();
+        void createCurrentLibMeshSide();
 
-      void getDofIndicesForCurrentSide();
+        void destroyCurrentLibMeshSide();
 
-      std::vector<AMP::Mesh::MeshElement> d_currNodes;
-      std::vector<AMP::Mesh::MeshElement> d_currFaces;
+        void getDofIndicesForCurrentSide();
 
-      ::Elem* d_currElemPtr;
-      ::Elem* d_currSidePtr;
-      
-      std::vector<size_t> d_dofIndices; 
+        std::vector<AMP::Mesh::MeshElement> d_currNodes;
+        std::vector<AMP::Mesh::MeshElement> d_currFaces;
 
-      AMP::Discretization::DOFManager::shared_ptr d_dofManager; 
+        ::Elem* d_currElemPtr;
+        ::Elem* d_currSidePtr;
+
+        std::vector<size_t> d_dofIndices; 
+
+        AMP::Discretization::DOFManager::shared_ptr d_dofManager; 
 
 
-    private :
+      private :
 
-  };
+    };
 
-}
+  }
 }
 
 #endif
