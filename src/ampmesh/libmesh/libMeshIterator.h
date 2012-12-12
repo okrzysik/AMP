@@ -26,16 +26,16 @@ public:
     //! Assignment operator
     libMeshIterator& operator=(const libMeshIterator&);
 
-    //! Increment
+    // Increment
     MeshIterator& operator++();
     
-    //! Increment
+    // Increment
     MeshIterator operator++(int);
 
-    //! Decrement
+    // Decrement
     MeshIterator& operator--();
     
-    //! Decrement
+    // Decrement
     MeshIterator operator--(int);
 
     // Arithmetic operator+
@@ -44,28 +44,28 @@ public:
     // Arithmetic operator+=
     virtual MeshIterator& operator+=(int N);
 
-    //! Check if two iterators are equal
+    // Check if two iterators are equal
     bool operator==(const MeshIterator& rhs) const;
 
-    //! Check if two iterators are not equal
+    // Check if two iterators are not equal
     bool operator!=(const MeshIterator& rhs) const;
     
-    //! Dereference the iterator
+    // Dereference the iterator
     MeshElement &operator*(void);
 
-    //! Dereference the iterator
+    // Dereference the iterator
     MeshElement *operator->(void);
 
-    //! Return an iterator to the begining
+    // Return an iterator to the begining
     MeshIterator begin() const;
 
-    //! Return an iterator to the begining
+    // Return an iterator to the begining
     MeshIterator end() const;
 
-    //! Return the number of elements in the iterator
+    // Return the number of elements in the iterator
     virtual size_t size() const;
 
-    //! Return the current position (from the beginning) in the iterator
+    // Return the current position (from the beginning) in the iterator
     virtual size_t position() const;
 
     using MeshIterator::operator+;

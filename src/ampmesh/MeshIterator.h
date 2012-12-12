@@ -107,7 +107,7 @@ public:
      *     so derived classes only need to impliment this function for improved performance.
      * \param N  Number to increment by (may be negitive)
      */
-    virtual MeshIterator operator+(int) const;
+    virtual MeshIterator operator+(int N) const;
 
     /** 
      * \brief Arithmetic operator+

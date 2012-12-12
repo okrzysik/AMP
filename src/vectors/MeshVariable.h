@@ -41,7 +41,7 @@ public:
     /** \brief Constructor
       * \param[in] name     The name of the new variable
       * \param[in] iterator The iterator over the mesh elements of interest
-      * \param[in] mesh     The mesh to subset for
+      * \param[in] comm     The communicator to subset for
       */
     MeshIteratorVariable ( const std::string &name, const AMP::Mesh::MeshIterator &iterator, const AMP_MPI &comm );
 
