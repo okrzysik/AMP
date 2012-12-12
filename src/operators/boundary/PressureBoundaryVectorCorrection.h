@@ -36,8 +36,8 @@ namespace AMP {
         /**
           Constructor. This function reads all the parameters required for surface elements.
           */
-
         PressureBoundaryVectorCorrection(const boost::shared_ptr<PressureBoundaryVectorCorrectionParameters> & params);
+        
         /**
           Set the variable for the vector that will be used with this operator.
           */
@@ -64,8 +64,7 @@ namespace AMP {
         virtual void reset(const boost::shared_ptr<OperatorParameters>& params);
 
         /**
-          This function computes the surface integral for either constant pressure values 
-          across the boundary.
+          This function computes the surface integral of pressure values across the boundary.
           */
         void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) ;
 
@@ -78,12 +77,6 @@ namespace AMP {
         boost::shared_ptr<OperatorParameters> getParameters() {
           return d_params;
         }
-
-        void setVariablePressure(const AMP::LinearAlgebra::Vector::shared_ptr &pressure){
-          d_variablePressure = mySubsetVector(pressure, d_variable);
-        }
-
-        //      std::vector<std::vector<std::vector<Point> > > getNormals();
 
       protected :
         AMP::LinearAlgebra::Vector::shared_ptr mySubsetVector(AMP::LinearAlgebra::Vector::shared_ptr vec, 
@@ -104,8 +97,6 @@ namespace AMP {
         bool d_isConstantPressure;
 
         AMP::LinearAlgebra::Vector::shared_ptr d_Frozen;
-
-        AMP::LinearAlgebra::Vector::shared_ptr d_variablePressure;
 
         int d_numIds;
 
@@ -150,7 +141,6 @@ namespace AMP {
         std::vector<size_t> d_dofIndices; 
 
         AMP::Discretization::DOFManager::shared_ptr d_dofManager; 
-
 
       private :
 
