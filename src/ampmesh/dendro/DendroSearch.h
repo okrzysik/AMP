@@ -57,8 +57,13 @@ namespace AMP {
         void interpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::const_shared_ptr vectorField, const unsigned int dofsPerNode,
             std::vector<double> & results, std::vector<bool> & foundPt);
 
+        // deprecated
         void projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
             std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags);
+
+        void projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
+            std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags,
+            std::vector<AMP::Mesh::MeshElementID> & volumeGlobalIDs, std::vector<size_t> & faceLocalIndices);
 
         void setTolerance(double tolerance);
 
@@ -96,6 +101,8 @@ namespace AMP {
       AMP::Mesh::MeshElementID d_FaceVerticesIDs[4];
       double d_ProjectionLocalCoordsOnFace[2]; 
       double d_ShiftGlobalCoords[3];
+      size_t d_FaceLocalIndex; 
+      AMP::Mesh::MeshElementID d_VolumeID;
     };
 
 

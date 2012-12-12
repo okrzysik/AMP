@@ -34,6 +34,15 @@ namespace AMP {
 
     void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
         std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags) {
+      std::vector<size_t> faceLocalIndices;
+      std::vector<AMP::Mesh::MeshElementID> volumeGlobalIDs;
+      std::cerr<<"***WARNING*** the version of DendroSearch::projectOnBoundaryID() you are using is deprecated!"<<std::endl;
+      projectOnBoundaryID(comm, boundaryID, faceVerticesGlobalIDs, shiftGlobalCoords, projectionLocalCoordsOnFace, flags, volumeGlobalIDs, faceLocalIndices);
+    }
+
+    void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
+        std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags,
+        std::vector<AMP::Mesh::MeshElementID> & volumeGlobalIDs, std::vector<size_t> & faceLocalIndices) {
       const int rank = comm.getRank();
       const int npes = comm.getSize();
 
@@ -60,6 +69,8 @@ namespace AMP {
           for (size_t f = 0; f < 6; ++f) {
             if (meshElementFaces[f].isOnBoundary(boundaryID)) {
               tmpData.d_SearchStatus = FoundOnBoundary;
+              tmpData.d_FaceLocalIndex = f;
+              tmpData.d_VolumeID = d_localElems[elementLocalID].globalID();
               std::vector<AMP::Mesh::MeshElement> faceVertices = meshElementFaces[f].getElements(AMP::Mesh::Vertex);
               AMP_CHECK_ASSERT( faceVertices.size() == 4 );
               for (size_t v = 0; v < 4; ++v) {
@@ -105,6 +116,12 @@ namespace AMP {
       flags.resize(d_numLocalPts);
       std::fill(flags.begin(), flags.end(), NotFound);
 
+      faceLocalIndices.resize(d_numLocalPts);
+      std::fill(faceLocalIndices.begin(), faceLocalIndices.end(), 7);
+
+      volumeGlobalIDs.resize(d_numLocalPts);
+      std::fill(volumeGlobalIDs.begin(), volumeGlobalIDs.end(), AMP::Mesh::MeshElementID());
+
       for (int i = 0; i < npes; ++i) {
         for (int j = 0; j < d_recvCnts[i]; ++j) {
           const ProjectOnBoundaryData tmpData = recvData[d_recvDisps[i] + j];
@@ -121,6 +138,8 @@ namespace AMP {
               for (size_t v = 0; v < 4; ++v) {
                 faceVerticesGlobalIDs[4*pointLocalID+v] = tmpData.d_FaceVerticesIDs[v]; 
               } // end for v 
+              faceLocalIndices[pointLocalID] = tmpData.d_FaceLocalIndex;
+              volumeGlobalIDs[pointLocalID] = tmpData.d_VolumeID;
             } // end if
           } // end if
         } // end for j

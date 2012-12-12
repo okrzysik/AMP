@@ -60,8 +60,11 @@ namespace AMP {
       std::vector<AMP::Mesh::MeshElementID> tmpMasterVerticesGlobalIDs;
       std::vector<double> tmpSlaveVerticesShift, tmpSlaveVerticesLocalCoordOnFace;
       std::vector<int> flags;
+      std::vector<AMP::Mesh::MeshElementID> tmpMasterVolumesGlobalIDs;
+      std::vector<size_t> tmpMasterFacesLocalIndices;
       dendroSearchOnMaster.projectOnBoundaryID(d_GlobalComm, d_MasterBoundaryID,
-          tmpMasterVerticesGlobalIDs, tmpSlaveVerticesShift, tmpSlaveVerticesLocalCoordOnFace, flags);
+          tmpMasterVerticesGlobalIDs, tmpSlaveVerticesShift, tmpSlaveVerticesLocalCoordOnFace, flags, 
+          tmpMasterVolumesGlobalIDs, tmpMasterFacesLocalIndices);
 
 
       size_t const nActiveSlaveVertices = d_ActiveSet.size();
