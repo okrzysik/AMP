@@ -106,16 +106,26 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName,
   mechSolVec->setToScalar(0.0);
   mechRhsVec->setToScalar(0.0);
   mechResVec->setToScalar(0.0);
+  mechPressureVec->setToScalar(0.0);
 
   dirichletVecOp->apply(nullVec, nullVec, mechRhsVec, 1.0, 0.0);
 
+  double rhsNorm = mechRhsVec->L2Norm();
+  AMP::pout<<"RHS Norm after Dirichlet Apply: "<<rhsNorm<<std::endl;
+
+  double pressNorm = mechPressureVec->L2Norm();
+  AMP::pout<<"Pressure Norm before Apply: "<<pressNorm<<std::endl;
+
   //Applying the pressure load
   pressureLoadVecOp->apply(nullVec, nullVec, mechPressureVec, 1.0, 0.0);
+
+  pressNorm = mechPressureVec->L2Norm();
+  AMP::pout<<"Pressure Norm after Apply: "<<pressNorm<<std::endl;
+
   mechRhsVec->add(mechRhsVec, mechPressureVec);
 
-  double rhsNorm = mechRhsVec->L2Norm();
-
-  AMP::pout<<"RHS Norm: "<<rhsNorm<<std::endl;
+  rhsNorm = mechRhsVec->L2Norm();
+  AMP::pout<<"Total RHS Norm: "<<rhsNorm<<std::endl;
 
   double initSolNorm = mechSolVec->L2Norm();
 
@@ -209,15 +219,15 @@ int main(int argc, char *argv[])
     exeNames.push_back("testLinearMechanics-PressureBoundary-HaldenPellet");
     exeNames.push_back("testLinearMechanics-PressureBoundary-Cube");
   } else {
-    for(int i = 1; i < argc; i++) {
+    for(int i = 1; i < argc; ++i) {
       char inpName[100];
       sprintf(inpName, "testLinearMechanics-PressureBoundary-%s", argv[i]);
       exeNames.push_back(inpName);
     }//end for i
   }
 
-  for(size_t i = 0; i < exeNames.size(); i++) {
-      linearElasticTest(&ut, exeNames[i], i);
+  for(size_t i = 0; i < exeNames.size(); ++i) {
+    linearElasticTest(&ut, exeNames[i], i);
   }
 
   ut.report();
@@ -226,4 +236,5 @@ int main(int argc, char *argv[])
   AMP::AMPManager::shutdown();
   return num_failed;
 }  
+
 

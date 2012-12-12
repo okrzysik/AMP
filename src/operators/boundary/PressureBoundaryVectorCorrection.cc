@@ -22,55 +22,51 @@
 namespace AMP {
   namespace Operator {
 
-
     PressureBoundaryVectorCorrection::PressureBoundaryVectorCorrection(const boost::shared_ptr<PressureBoundaryVectorCorrectionParameters> & params)
-        : BoundaryOperator (params)
-      {
-              d_params = params;
+      : BoundaryOperator (params)
+    {
+      d_params = params;
 
-          std::string feTypeOrderName = (params->d_db)->getStringWithDefault("FE_ORDER", "FIRST");
+      std::string feTypeOrderName = (params->d_db)->getStringWithDefault("FE_ORDER", "FIRST");
 
-          libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>(feTypeOrderName);
+      libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>(feTypeOrderName);
 
-          std::string feFamilyName = (params->d_db)->getStringWithDefault("FE_FAMILY", "LAGRANGE");
+      std::string feFamilyName = (params->d_db)->getStringWithDefault("FE_FAMILY", "LAGRANGE");
 
-          libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>(feFamilyName);
+      libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>(feFamilyName);
 
-          std::string qruleTypeName = (params->d_db)->getStringWithDefault("QRULE_TYPE", "QGAUSS");
+      std::string qruleTypeName = (params->d_db)->getStringWithDefault("QRULE_TYPE", "QGAUSS");
 
-          libMeshEnums::QuadratureType qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>(qruleTypeName);
+      libMeshEnums::QuadratureType qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>(qruleTypeName);
 
-              const unsigned int dimension3 = 3;
+      d_feType.reset( new ::FEType(feTypeOrder, feFamily) );
 
-          d_feType.reset( new ::FEType(feTypeOrder, feFamily) );
+      d_fe.reset( (::FEBase::build(2, (*d_feType))).release() );
 
-          d_fe.reset( (::FEBase::build((dimension3 - 1), (*d_feType))).release() );
+      d_fe_3d.reset( (::FEBase::build(3, (*d_feType))).release() );
 
-          d_fe_3d.reset( (::FEBase::build(dimension3, (*d_feType))).release() );
+      std::string qruleOrderName = (params->d_db)->getStringWithDefault("QRULE_ORDER", "DEFAULT");
 
-          std::string qruleOrderName = (params->d_db)->getStringWithDefault("QRULE_ORDER", "DEFAULT");
+      libMeshEnums::Order qruleOrder;
 
-          libMeshEnums::Order qruleOrder;
-
-          if(qruleOrderName == "DEFAULT") {
-              qruleOrder = d_feType->default_quadrature_order();
-          } else {
-              qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(qruleOrderName);
-          }
-
-          d_qrule.reset( (::QBase::build(qruleType, (dimension3 - 1), qruleOrder)).release() );
-
-          d_fe->attach_quadrature_rule( d_qrule.get() );
-
-          d_fe_3d->attach_quadrature_rule( d_qrule.get() );
-
-          d_JxW = &(d_fe->get_JxW());
-
-          d_variable = params->d_variable;
-
-          reset(params);
+      if(qruleOrderName == "DEFAULT") {
+        qruleOrder = d_feType->default_quadrature_order();
+      } else {
+        qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(qruleOrderName);
       }
 
+      d_qrule.reset( (::QBase::build(qruleType, 2, qruleOrder)).release() );
+
+      d_fe->attach_quadrature_rule( d_qrule.get() );
+
+      d_fe_3d->attach_quadrature_rule( d_qrule.get() );
+
+      d_JxW = &(d_fe->get_JxW());
+
+      d_variable = params->d_variable;
+
+      reset(params);
+    }
 
     void PressureBoundaryVectorCorrection :: reset(const boost::shared_ptr<OperatorParameters>& params)
     {
@@ -84,6 +80,7 @@ namespace AMP {
       d_numIds = (myparams->d_db)->getInteger("number_of_ids");
 
       d_isConstantPressure = (myparams->d_db)->getBoolWithDefault("constant_pressure", true);
+      AMP_INSIST((d_isConstantPressure ==  true), "Variable pressure has not been implemented yet.");
 
       d_boundaryIds.resize(d_numIds);
       d_pressureValues.resize(d_numIds);
@@ -93,139 +90,33 @@ namespace AMP {
         sprintf(key, "id_%d", j);
         AMP_INSIST( (myparams->d_db)->keyExists(key), "Key is missing!" );
         d_boundaryIds[j] = (myparams->d_db)->getInteger(key);
-
-        if(d_isConstantPressure){
-          sprintf(key, "value_%d", j);
-          AMP_INSIST( (myparams->d_db)->keyExists(key), "Key is missing!" );
-          d_pressureValues[j] = (myparams->d_db)->getDouble(key);
-        }else{
-          AMP_INSIST((d_isConstantPressure ==  true), "Variable pressure has not been implemented yet.");
-          d_variablePressure = myparams->d_variablePressure;      
-        }
+        sprintf(key, "value_%d", j);
+        AMP_INSIST( (myparams->d_db)->keyExists(key), "Key is missing!" );
+        d_pressureValues[j] = (myparams->d_db)->getDouble(key);
       }//end for j
     }
-
-    /*
-    std::vector<std::vector<std::vector<Point > > > PressureBoundaryVectorCorrection :: getNormals()
-    {
-      if(!d_isConstantPressure){
-        d_variablePressure->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-      }
-
-      if(d_iDebugPrintInfoLevel>8)
-      {
-        AMP::pout << "Entered the getNormals function." << std::endl;
-      }
-
-      unsigned int numIds = d_boundaryIds.size();
-
-      std::vector<std::vector<std::vector<Point> > > allBoundaryIdsNormals;
-
-      for(unsigned int j = 0; j < numIds; j++) {
-        if(d_iDebugPrintInfoLevel>8)
-        {
-          AMP::pout << "Entered the numIds loop. d_boundaryIds[" << j << "] = " << d_boundaryIds[j] << std::endl;
-        }
-        std::vector<std::vector<Point> > thisBoundaryIdNormals;
-
-        AMP::Mesh::MeshIterator bnd     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[j], 0 );
-        AMP::Mesh::MeshIterator end_bnd = bnd.end();
-
-        for( ; bnd != end_bnd; ++bnd) {
-
-          if(d_iDebugPrintInfoLevel>8)
-          {
-            AMP::pout << "Entered the bnd loop." << std::endl;
-          }
-
-          d_currNodes = bnd->getElements(AMP::Mesh::Vertex);
-
-          unsigned int numNodesInCurrElem = d_currNodes.size();
-
-          createCurrentLibMeshElement();
-
-          getDofIndicesForCurrentElement();
-
-          AMP::Mesh::MeshManager::Adapter::Element cur_elem = d_MeshAdapter->getElementFromSide(*bnd);
-          AMP::Mesh::MeshManager::Adapter::Element cur_side = *bnd;
-
-          d_normal = &(d_fe_3d->get_normals());
-
-          d_elem = &cur_side.getElem();
-          e_elem = &cur_elem.getElem();
-
-          if(d_iDebugPrintInfoLevel>8)
-          {
-            AMP::pout << "Number of sides in d_elem = " << d_elem->n_sides() << " in e_elem =  " << e_elem->n_sides() << std::endl;
-          }
-
-          unsigned int k = 0;
-          for(unsigned int s = 0; s < e_elem->n_sides(); s++) {
-            AutoPtr< ::Elem> side (e_elem->build_side(s));
-            if(*(side.get()) == *d_elem) {
-              if(d_iDebugPrintInfoLevel>8)
-              {
-                AMP::pout << "The side that matched is = " << s << std::endl;
-              }
-              k = s;
-            }
-          }
-          if(d_iDebugPrintInfoLevel>8)
-          {
-            AMP::pout << "The side that matched is = " << k << std::endl;
-          }
-
-          d_fe->reinit ( d_elem );
-          d_fe_3d->reinit( e_elem, k );
-
-          const std::vector<Point> & normal = *d_normal;
-          thisBoundaryIdNormals.push_back(normal);
-
-        }//end for bnd
-
-        allBoundaryIdsNormals.push_back(thisBoundaryIdNormals);
-
-      }//end for j
-
-      return allBoundaryIdsNormals;
-    }
-    */
 
     void PressureBoundaryVectorCorrection :: addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhsCorrection)
     {
-      
-    
-      if(!d_isConstantPressure){
-        d_variablePressure->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-      }
-
-      if(d_iDebugPrintInfoLevel>8)
-      {
+      if(d_iDebugPrintInfoLevel > 8) {
         AMP::pout << "Entered the computeRHScorrection function." << std::endl;
       }
 
-      d_dofManager = rhsCorrection->getDOFManager() ;
-
-      AMP::LinearAlgebra::Vector::shared_ptr myRhs = rhsCorrection->subsetVectorForVariable(d_variable);
-      
-      AMP::LinearAlgebra::Vector::shared_ptr rInternal = myRhs->cloneVector();
-      rInternal->zero();
+      AMP::LinearAlgebra::Vector::shared_ptr myRhs = mySubsetVector(rhsCorrection, d_variable);
+      d_dofManager = myRhs->getDOFManager();
 
       unsigned int numIds = d_boundaryIds.size();
 
-      for(unsigned int j = 0; j < numIds; j++) {
-        if(d_iDebugPrintInfoLevel>8)
-        {
+      for(unsigned int j = 0; j < numIds; ++j) {
+        if(d_iDebugPrintInfoLevel > 8) {
           AMP::pout << "Entered the numIds loop. d_boundaryIds[" << j << "] = " << d_boundaryIds[j] << std::endl;
         }
-        
+
         AMP::Mesh::MeshIterator belem     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Volume, d_boundaryIds[j], 0 );
         AMP::Mesh::MeshIterator end_belem = belem.end();
 
         for( ; belem  != end_belem; ++belem) {
-
-          if(d_iDebugPrintInfoLevel>8)
-          {
+          if(d_iDebugPrintInfoLevel > 8) {
             AMP::pout << "Entered the bnd loop." << std::endl;
           }
 
@@ -233,15 +124,9 @@ namespace AMP {
           d_currNodes = belem->getElements(AMP::Mesh::Vertex);
           createCurrentLibMeshElement();
 
-          for(unsigned int bb=0; bb < d_currFaces.size(); bb++)
-          {
-
-            if(d_currFaces[bb].isOnBoundary(d_boundaryIds[j]))
-            {
-
-
-              if(d_iDebugPrintInfoLevel>8)
-              {
+          for(size_t bb = 0; bb < d_currFaces.size(); ++bb) {
+            if(d_currFaces[bb].isOnBoundary(d_boundaryIds[j])) {
+              if(d_iDebugPrintInfoLevel > 8) {
                 AMP::pout << "The side that matched is = " << bb << std::endl;
               }
 
@@ -263,10 +148,8 @@ namespace AMP {
               const std::vector<Real> & djxw = *d_JxW;
               const std::vector<Point> & normal = *d_normal;
 
-              for(int dofId = 0; dofId < 3; dofId++) {
-
-                if(d_iDebugPrintInfoLevel>8)
-                {
+              for(int dofId = 0; dofId < 3; ++dofId) {
+                if(d_iDebugPrintInfoLevel > 8) {
                   AMP::pout << "Entered the dofId loop." << std::endl;
                   AMP::pout << " d_qrule->n_points() =  " << d_qrule->n_points()<< std::endl; 
                   AMP::pout << " d_normal->size() = " << d_normal->size() << std::endl;
@@ -275,51 +158,40 @@ namespace AMP {
 
                 std::vector<double> pressure(numNodesInCurrSide , 0.0);
 
-                for(unsigned int i = 0; i < numNodesInCurrSide ; i++) {
-                  for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) 
-                  {
+                for(unsigned int i = 0; i < numNodesInCurrSide ; ++i) {
+                  for(unsigned int qp = 0; qp < d_qrule->n_points(); ++qp) {
                     //std::vector<std::vector<double> > temp(1) ;
-                    if(d_iDebugPrintInfoLevel>8)
-                    {
-                      AMP::pout << "The weights are as follows : "  << djxw[qp] << " shape function " << phi[i][qp] << " pressure " << d_pressureValues[j] << std::endl;
-                      AMP::pout << "Direction of the normals are as follows : " << normal[qp](0) << " , " << normal[qp](1) << " , " << normal[qp](2) << std::endl;
+                    if(d_iDebugPrintInfoLevel > 8) {
+                      AMP::pout << "The weights are as follows : "  << djxw[qp] << " shape function " <<
+                        phi[i][qp] << " pressure " << d_pressureValues[j] << std::endl;
+                      AMP::pout << "Direction of the normals are as follows : " << normal[qp](0) << " , " <<
+                        normal[qp](1) << " , " << normal[qp](2) << std::endl;
                     }
-
-                    if(d_isConstantPressure){
-                      if(dofId == 0) pressure[i] +=  (djxw[qp]*phi[i][qp]*d_pressureValues[j]*normal[qp](0));
-                      if(dofId == 1) pressure[i] +=  (djxw[qp]*phi[i][qp]*d_pressureValues[j]*normal[qp](1));
-                      if(dofId == 2) pressure[i] +=  (djxw[qp]*phi[i][qp]*d_pressureValues[j]*normal[qp](2));
-                      if(d_iDebugPrintInfoLevel>8)
-                      {
-                        AMP::pout << "dofID = " << dofId << " pressure[" << i << "] = " << pressure[i] << std::endl;
-                      }
-                    }else{
-                      AMP_INSIST((d_isConstantPressure == true), "Variable pressure has not been implemented yet.");
+                    if(dofId == 0) pressure[i] +=  (djxw[qp]*phi[i][qp]*d_pressureValues[j]*normal[qp](0));
+                    if(dofId == 1) pressure[i] +=  (djxw[qp]*phi[i][qp]*d_pressureValues[j]*normal[qp](1));
+                    if(dofId == 2) pressure[i] +=  (djxw[qp]*phi[i][qp]*d_pressureValues[j]*normal[qp](2));
+                    if(d_iDebugPrintInfoLevel > 8) {
+                      AMP::pout << "dofID = " << dofId << " pressure[" << i << "] = " << pressure[i] << std::endl;
                     }
-                  }
-
-                }//end for i
-                rInternal->addValuesByGlobalID((int)d_dofIndices.size() , (size_t *)&(d_dofIndices[0]), &(pressure[0]));
+                  }//end qp
+                }//end i
+                myRhs->addValuesByGlobalID(d_dofIndices.size(), &(d_dofIndices[0]), &(pressure[0]));
               }//end for dofId
-
               destroyCurrentLibMeshSide();
             }
-          }
+          }//end bb
           destroyCurrentLibMeshElement();
         }//end for belem
-
       }//end for j
       ////////////////////////////////////////////////////////////////
 
-      rInternal->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
-
-      myRhs->add(myRhs, rInternal);
-
+      myRhs->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
     }
 
-    void PressureBoundaryVectorCorrection :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r, const double a , const double b )
-    {
-      AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable(d_variable);
+    void PressureBoundaryVectorCorrection :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+        AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r, 
+        const double a , const double b ) {
+      AMP::LinearAlgebra::Vector::shared_ptr rInternal = mySubsetVector(r, d_variable);
 
       if(d_iDebugPrintInfoLevel>3)
       {
@@ -353,12 +225,8 @@ namespace AMP {
         for(int j = 0; j < d_numIds; j++) {
           sprintf(key, "id_%d", j);
           tmp_db->putInteger(key,d_boundaryIds[j]);
-          if(d_isConstantPressure){
-            sprintf(key, "value_%d", j);
-            tmp_db->putInteger(key,d_pressureValues[j]);
-          }else{
-            //d_variableFlux ??
-          }
+          sprintf(key, "value_%d", j);
+          tmp_db->putInteger(key,d_pressureValues[j]);
         }
 
         tmp_db->putBool("skip_params", true);
@@ -411,6 +279,32 @@ namespace AMP {
         globalIDs[j] = d_currNodes[j].globalID();
       } // end of j
       d_dofManager->getDOFs(globalIDs, d_dofIndices);
+    }
+
+    AMP::LinearAlgebra::Vector::shared_ptr PressureBoundaryVectorCorrection :: mySubsetVector(
+        AMP::LinearAlgebra::Vector::shared_ptr vec, 
+        AMP::LinearAlgebra::Variable::shared_ptr var) {
+      if(d_Mesh.get() != NULL) {
+        AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
+        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, (vec->getVariable())->getName());
+        AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec = meshSubsetVec->subsetVectorForVariable(var);
+        return varSubsetVec;
+      } else {
+        return vec->subsetVectorForVariable(var);
+      }
+    }
+
+    AMP::LinearAlgebra::Vector::const_shared_ptr PressureBoundaryVectorCorrection :: mySubsetVector(
+        AMP::LinearAlgebra::Vector::const_shared_ptr vec, 
+        AMP::LinearAlgebra::Variable::shared_ptr var) {
+      if(d_Mesh.get() != NULL) {
+        AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
+        AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec = vec->constSelect(meshSelector, (vec->getVariable())->getName());
+        AMP::LinearAlgebra::Vector::const_shared_ptr varSubsetVec = meshSubsetVec->constSubsetVectorForVariable(var);
+        return varSubsetVec;
+      } else {
+        return vec->constSubsetVectorForVariable(var);
+      }
     }
 
   }

@@ -203,6 +203,7 @@ class VS_MeshIterator : public VectorSelector
 public:
     /** \brief Constructor
       * \param[in]  iterator    The mesh iterator to use
+      * \param[in]  comm        The communicator to use
       */
     VS_MeshIterator ( const AMP::Mesh::MeshIterator &iterator, const AMP::AMP_MPI &comm );
 

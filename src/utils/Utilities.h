@@ -255,38 +255,38 @@ namespace Utilities
             third = rhs.third;
         }
         inline bool operator== (const triplet& rhs ) const {
-            return first==first && second==second && third==third;
+            return first==rhs.first && second==rhs.second && third==rhs.third;
         }
         inline bool operator!= (const triplet& rhs ) const {
-            return first!=first || second!=second || third!=third;
+            return first!=rhs.first || second!=rhs.second || third!=rhs.third;
         }
         inline bool operator>= (const triplet& rhs ) const {
             if ( first < rhs.first )        { return false; }
             else if ( first > rhs.first )   { return true;  }
             if ( second < rhs.second )      { return false; }
             else if ( second > rhs.second ) { return true;  }
-            return third>=third;
+            return third>=rhs.third;
         }
         inline bool operator> (const triplet& rhs ) const {
             if ( first < rhs.first )        { return false; }
             else if ( first > rhs.first )   { return true;  }
             if ( second < rhs.second )      { return false; }
             else if ( second > rhs.second ) { return true;  }
-            return third>third;
+            return third>rhs.third;
         }
         inline bool operator< (const triplet& rhs ) const {
             if ( first > rhs.first )        { return false; }
             else if ( first < rhs.first )   { return true;  }
             if ( second > rhs.second )      { return false; }
             else if ( second < rhs.second ) { return true;  }
-            return third<third;
+            return third<rhs.third;
         }
         inline bool operator<= (const triplet& rhs ) const {
             if ( first > rhs.first )        { return false; }
             else if ( first < rhs.first )   { return true;  }
             if ( second > rhs.second )      { return false; }
             else if ( second < rhs.second ) { return true;  }
-            return third<=third;
+            return third<=rhs.third;
         }
     };
 
