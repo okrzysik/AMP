@@ -82,6 +82,7 @@ namespace AMP {
       }
 
       rInternal->scale(a);
+      rInternal->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
       if(d_iDebugPrintInfoLevel>3)
       {
@@ -158,6 +159,7 @@ namespace AMP {
           }//end for i
         }//end for bnd
       }//end for j
+      r->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     }
 
     boost::shared_ptr<OperatorParameters> DirichletVectorCorrection :: 
@@ -171,8 +173,8 @@ namespace AMP {
       }
 
     AMP::LinearAlgebra::Vector::shared_ptr DirichletVectorCorrection :: mySubsetVector(
-      AMP::LinearAlgebra::Vector::shared_ptr vec, 
-      AMP::LinearAlgebra::Variable::shared_ptr var) {
+        AMP::LinearAlgebra::Vector::shared_ptr vec, 
+        AMP::LinearAlgebra::Variable::shared_ptr var) {
       if(d_Mesh.get() != NULL) {
         AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, (vec->getVariable())->getName());
@@ -184,8 +186,8 @@ namespace AMP {
     }
 
     AMP::LinearAlgebra::Vector::const_shared_ptr DirichletVectorCorrection :: mySubsetVector(
-      AMP::LinearAlgebra::Vector::const_shared_ptr vec, 
-      AMP::LinearAlgebra::Variable::shared_ptr var) {
+        AMP::LinearAlgebra::Vector::const_shared_ptr vec, 
+        AMP::LinearAlgebra::Variable::shared_ptr var) {
       if(d_Mesh.get() != NULL) {
         AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
         AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec = vec->constSelect(meshSelector, (vec->getVariable())->getName());
