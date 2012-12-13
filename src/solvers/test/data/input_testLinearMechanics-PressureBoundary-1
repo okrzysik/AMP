@@ -34,19 +34,11 @@ Load_Boundary {
 }
 
 Pressure_Boundary {
-  name = "PressureBoundaryVectorCorrection"
-    print_info_level = 1
-    USE_REDUCED_INTEGRATION = FALSE
-    FE_ORDER = "FIRST"
-    FE_FAMILY = "LAGRANGE"
-    QRULE_TYPE = "QGAUSS"
-    QRULE_ORDER = "DEFAULT"
-    skip_params = FALSE
-    number_of_ids = 1
-    constant_pressure = TRUE
-    id_0 = 1
-    value_0 = 1.0e8
-    //value_0 = 0.0
+  name = "PressureBoundaryOperator"
+  BoundaryID = 1
+  Value = 1.0e8
+  ResidualMode = FALSE
+  Variable = "displacement"
 }
 
 LinearSolver {
