@@ -11,8 +11,8 @@
 #include "operators/boundary/ColumnBoundaryOperator.h"
 #include "operators/boundary/DirichletMatrixCorrection.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
+#include "operators/boundary/PressureBoundaryOperator.h"
 #include "operators/boundary/NeumannVectorCorrection.h"
-#include "operators/boundary/PressureBoundaryVectorCorrection.h"
 #include "operators/boundary/RobinMatrixCorrection.h"
 #include "operators/boundary/RobinVectorCorrection.h"
 #include "operators/boundary/MassMatrixCorrection.h"
@@ -59,13 +59,13 @@ OperatorBuilder::createOperator(boost::shared_ptr<OperatorParameters>  in_params
     {
       retOperator.reset(new DirichletVectorCorrection(boost::dynamic_pointer_cast<DirichletVectorCorrectionParameters>(in_params)));
     }
+  else if (name=="PressureBoundaryOperator")
+    {
+      retOperator.reset(new PressureBoundaryOperator(in_params));
+    }
   else if (name=="NeumannVectorCorrection")
     {
       retOperator.reset(new NeumannVectorCorrection(boost::dynamic_pointer_cast<NeumannVectorCorrectionParameters>(in_params)));
-    }
-  else if (name=="PressureBoundaryVectorCorrection")
-    {
-      retOperator.reset(new PressureBoundaryVectorCorrection(boost::dynamic_pointer_cast<PressureBoundaryVectorCorrectionParameters>(in_params)));
     }
   else if (name=="RobinMatrixCorrection")
     {
@@ -258,12 +258,12 @@ OperatorBuilder::createOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter,
     {
       retOperator = OperatorBuilder::createDirichletVectorCorrection(meshAdapter, operator_db, elementPhysicsModel);
     }
+  else if (operatorType=="PressureBoundaryOperator")
+    {
+      retOperator = OperatorBuilder::createPressureBoundaryOperator(meshAdapter, operator_db, elementPhysicsModel);
+    }
   else if (operatorType=="NeumannVectorCorrection")
     {
-    }
-  else if (operatorType=="PressureBoundaryVectorCorrection")
-    {
-      retOperator = OperatorBuilder::createPressureBoundaryVectorCorrection(meshAdapter, operator_db, elementPhysicsModel);
     }
   else if (operatorType=="RobinMatrixCorrection")
     {
@@ -1090,12 +1090,11 @@ OperatorBuilder::createBoundaryOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter
 						    volumeOperator,
 						    elementPhysicsModel);
     }
-  else if(boundaryType=="PressureBoundaryVectorCorrection")
+  else if(boundaryType=="PressureBoundaryOperator")
     {
-      retOperator = createPressureBoundaryVectorCorrection(meshAdapter,
-							   operator_db,
-							   volumeOperator,
-							   elementPhysicsModel);
+      retOperator = createPressureBoundaryOperator(meshAdapter,
+						    operator_db,
+						    elementPhysicsModel);
     }
   else if(boundaryType=="ColumnBoundaryOperator")
     {
@@ -1296,31 +1295,15 @@ OperatorBuilder::createDirichletVectorCorrection(AMP::Mesh::Mesh::shared_ptr mes
 }
 
 boost::shared_ptr<BoundaryOperator>
-OperatorBuilder::createPressureBoundaryVectorCorrection(AMP::Mesh::Mesh::shared_ptr meshAdapter,
-							boost::shared_ptr<AMP::Database> input_db,
-							AMP::Operator::Operator::shared_ptr volumeOperator,
-							boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel)
+OperatorBuilder::createPressureBoundaryOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter,
+						 boost::shared_ptr<AMP::Database> input_db,
+						 boost::shared_ptr<AMP::Operator::ElementPhysicsModel>)
 {
   boost::shared_ptr<BoundaryOperator> retOperator;
-  boost::shared_ptr<AMP::Operator::PressureBoundaryVectorCorrectionParameters> vectorCorrectionParameters (new AMP::Operator::PressureBoundaryVectorCorrectionParameters( input_db ) );
-  vectorCorrectionParameters->d_variable = volumeOperator->getOutputVariable();
-  vectorCorrectionParameters->d_Mesh = meshAdapter;
+  boost::shared_ptr<AMP::Operator::OperatorParameters> params(new AMP::Operator::OperatorParameters( input_db ) );
+  params->d_Mesh = meshAdapter;
   
-  retOperator.reset(new AMP::Operator::PressureBoundaryVectorCorrection(vectorCorrectionParameters));
-  
-  return retOperator;
-}
-
-boost::shared_ptr<BoundaryOperator>
-OperatorBuilder::createPressureBoundaryVectorCorrection(AMP::Mesh::Mesh::shared_ptr meshAdapter,
-							boost::shared_ptr<AMP::Database> input_db,
-							boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel)
-{
-  boost::shared_ptr<BoundaryOperator> retOperator;
-  boost::shared_ptr<AMP::Operator::PressureBoundaryVectorCorrectionParameters> vectorCorrectionParameters (new AMP::Operator::PressureBoundaryVectorCorrectionParameters( input_db ) );
-  vectorCorrectionParameters->d_Mesh = meshAdapter;
-  
-  retOperator.reset(new AMP::Operator::PressureBoundaryVectorCorrection(vectorCorrectionParameters));
+  retOperator.reset(new AMP::Operator::PressureBoundaryOperator(params));
   
   return retOperator;
 }
@@ -1347,4 +1330,6 @@ OperatorBuilder::createOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter1, AMP::
 
 }
 }
+
+
 

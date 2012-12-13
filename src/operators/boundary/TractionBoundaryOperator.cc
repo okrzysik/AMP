@@ -22,6 +22,8 @@ namespace AMP {
         std::string outVarName = params->d_db->getString("OutputVariable");
         d_inputVar.reset(new AMP::LinearAlgebra::Variable(inpVarName));
         d_outputVar.reset(new AMP::LinearAlgebra::Variable(outVarName));
+        AMP_INSIST( params->d_db->keyExists("ResidualMode"), "key not found");
+        AMP_INSIST( params->d_db->keyExists("BoundaryID"), "key not found");
         d_residualMode = params->d_db->getBool("ResidualMode");
         d_boundaryId = params->d_db->getInteger("BoundaryID");
         setTraction(params->d_traction);
@@ -79,6 +81,7 @@ namespace AMP {
 
         std::vector<size_t> inpDofIndices;
         inpDofMap->getDOFs(bnd->globalID(), inpDofIndices);
+        AMP_ASSERT(inpDofIndices.size() == 12);
 
         std::vector<std::vector<size_t> > outDofIndices(numNodesInCurrElem);
         for(size_t i = 0; i < numNodesInCurrElem; ++i) {

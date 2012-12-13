@@ -197,17 +197,6 @@ protected:
                  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
 
   static boost::shared_ptr<BoundaryOperator>
-  createPressureBoundaryVectorCorrection(AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                     boost::shared_ptr<AMP::Database> input_db,
-                     AMP::Operator::Operator::shared_ptr volumeOperator,
-                     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel);
-
-  static boost::shared_ptr<BoundaryOperator>
-  createPressureBoundaryVectorCorrection(AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                     boost::shared_ptr<AMP::Database> input_db,
-                     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel);
-
-  static boost::shared_ptr<BoundaryOperator>
   createDirichletVectorCorrection( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                    boost::shared_ptr<AMP::Database> input_db,
                    AMP::Operator::Operator::shared_ptr volumeOperator,
@@ -215,6 +204,11 @@ protected:
   
   static boost::shared_ptr<BoundaryOperator>
   createDirichletVectorCorrection(AMP::Mesh::Mesh::shared_ptr meshAdapter,
+                  boost::shared_ptr<AMP::Database> input_db,
+                  boost::shared_ptr<AMP::Operator::ElementPhysicsModel>);
+
+  static boost::shared_ptr<BoundaryOperator>
+  createPressureBoundaryOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter,
                   boost::shared_ptr<AMP::Database> input_db,
                   boost::shared_ptr<AMP::Operator::ElementPhysicsModel>);
 

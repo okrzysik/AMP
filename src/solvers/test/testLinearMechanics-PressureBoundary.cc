@@ -31,7 +31,7 @@
 #include "operators/OperatorBuilder.h"
 
 #include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/boundary/PressureBoundaryVectorCorrection.h"
+#include "operators/boundary/PressureBoundaryOperator.h"
 
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 
@@ -87,12 +87,11 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName,
   dirichletVecOp->setVariable(dispVar);
 
   //Pressure RHS
-  boost::shared_ptr<AMP::Operator::PressureBoundaryVectorCorrection> pressureLoadVecOp =
-    boost::dynamic_pointer_cast<AMP::Operator::PressureBoundaryVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+  boost::shared_ptr<AMP::Operator::PressureBoundaryOperator> pressureLoadVecOp =
+    boost::dynamic_pointer_cast<AMP::Operator::PressureBoundaryOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
           "Pressure_Boundary", input_db, dummyModel));
   //This has an in-place apply. So, it has an empty input variable and
   //the output variable is the same as what it is operating on. 
-  pressureLoadVecOp->setVariable(dispVar);
 
   AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
       meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
