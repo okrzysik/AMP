@@ -37,6 +37,7 @@ namespace AMP {
         }
         computeCorrection();
         myRhs->add(myRhs, d_correction);
+        myRhs->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
       }
     }
 
@@ -49,6 +50,7 @@ namespace AMP {
         }
         computeCorrection();
         rInternal->subtract(rInternal, d_correction);
+        rInternal->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
       }
     }
 
