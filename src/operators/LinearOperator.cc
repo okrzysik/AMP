@@ -44,6 +44,7 @@ namespace AMP {
           rInternal->axpby(b, a, fInternal);
         }
       }
+      rInternal->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     }
 
   }
