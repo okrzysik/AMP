@@ -116,7 +116,7 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName,
   AMP::pout<<"Pressure Norm before Apply: "<<pressNorm<<std::endl;
 
   //Applying the pressure load
-  pressureLoadVecOp->apply(nullVec, nullVec, mechPressureVec, 1.0, 0.0);
+  pressureLoadVecOp->addRHScorrection(mechPressureVec);
 
   pressNorm = mechPressureVec->L2Norm();
   AMP::pout<<"Pressure Norm after Apply: "<<pressNorm<<std::endl;
@@ -216,7 +216,6 @@ int main(int argc, char *argv[])
     exeNames.push_back("testLinearMechanics-PressureBoundary-1");
     exeNames.push_back("testLinearMechanics-PressureBoundary-Cylinder");
     exeNames.push_back("testLinearMechanics-PressureBoundary-HaldenPellet");
-    exeNames.push_back("testLinearMechanics-PressureBoundary-Cube");
   } else {
     for(int i = 1; i < argc; ++i) {
       char inpName[100];
