@@ -5,38 +5,38 @@
 #include "operators/Operator.h"
 
 namespace AMP {
-namespace Operator {
+  namespace Operator {
 
-  //  An abstract base class for representing a linear operator.
-  class BoundaryOperator : public Operator 
-  {
+    //  An abstract base class for representing a linear operator.
+    class BoundaryOperator : public Operator 
+    {
 
-    public :
+      public :
 
-      BoundaryOperator (const boost::shared_ptr<OperatorParameters> & params)
-        : Operator (params) { }
+        BoundaryOperator (const boost::shared_ptr<OperatorParameters> & params)
+          : Operator (params) { }
 
-      virtual ~BoundaryOperator() { }
+        virtual ~BoundaryOperator() { }
 
-      virtual void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr ) {
-        //Do nothing
-      }
+        virtual void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr ) {
+          //Do nothing
+        }
 
-      virtual void setRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr ) {
-        //Do nothing
-      }
+        virtual void setRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr ) {
+          //Do nothing
+        }
 
-      virtual void modifyInitialSolutionVector(AMP::LinearAlgebra::Vector::shared_ptr ) {
-        //Do nothing
-      }
+        virtual void modifyInitialSolutionVector(AMP::LinearAlgebra::Vector::shared_ptr ) {
+          //Do nothing
+        }
 
-    protected :
+      protected :
 
-    private :
+      private :
 
-  };
+    };
 
-}
+  }
 }
 
 #endif
