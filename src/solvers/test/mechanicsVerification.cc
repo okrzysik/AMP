@@ -49,7 +49,6 @@
 #include "operators/boundary/DirichletVectorCorrection.h"
 #include "operators/boundary/DirichletMatrixCorrection.h"
 #include "operators/boundary/NeumannVectorCorrection.h"
-#include "operators/boundary/PressureBoundaryVectorCorrection.h"
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 #include "operators/mechanics/IsotropicElasticModel.h"
 

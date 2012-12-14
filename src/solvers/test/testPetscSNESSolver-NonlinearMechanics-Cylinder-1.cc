@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <string>
 
@@ -25,7 +26,7 @@
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"
 
 #include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/boundary/PressureBoundaryVectorCorrection.h"
+#include "operators/boundary/PressureBoundaryOperator.h"
 
 #include "operators/BVPOperatorParameters.h"
 #include "operators/LinearBVPOperator.h"
@@ -75,16 +76,16 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinBvpOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(mesh,
-														    "nonlinearMechanicsBVPOperator",
-														    input_db,
-														    elementPhysicsModel));
+          "nonlinearMechanicsBVPOperator",
+          input_db,
+          elementPhysicsModel));
 
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linBvpOperator =
     boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(mesh,
-														 "linearMechanicsBVPOperator",
-														 input_db,
-														 elementPhysicsModel));
-  
+          "linearMechanicsBVPOperator",
+          input_db,
+          elementPhysicsModel));
+
   boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> multivariable = boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
       nonlinBvpOperator->getVolumeOperator()->getInputVariable()); 
   AMP::LinearAlgebra::Variable::shared_ptr displacementVariable = multivariable->getVariable(AMP::Operator::Mechanics::DISPLACEMENT); 
@@ -94,21 +95,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletLoadVecOp =
     boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(mesh,
-															 "Load_Boundary",
-															 input_db,
-															 dummyModel));
+          "Load_Boundary", input_db, dummyModel));
   dirichletLoadVecOp->setVariable(residualVariable);
 
   //Pressure RHS
-  boost::shared_ptr<AMP::Operator::PressureBoundaryVectorCorrection> pressureLoadVecOp =
-    boost::dynamic_pointer_cast<AMP::Operator::PressureBoundaryVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(mesh,
-																"Pressure_Boundary",
-																input_db,
-																dummyModel));
-  //This has an in-place apply. So, it has an empty input variable and
-  //the output variable is the same as what it is operating on. 
-  pressureLoadVecOp->setVariable(nonlinBvpOperator->getOutputVariable());
-
+  boost::shared_ptr<AMP::Operator::PressureBoundaryOperator> pressureLoadVecOp =
+    boost::dynamic_pointer_cast<AMP::Operator::PressureBoundaryOperator>(AMP::Operator::OperatorBuilder::createOperator(mesh,
+          "Pressure_Boundary", input_db, dummyModel));
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
   AMP::LinearAlgebra::Vector::shared_ptr mechNlSolVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, displacementVariable );
@@ -118,14 +111,15 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::LinearAlgebra::Vector::shared_ptr mechNlScaledRhsVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, displacementVariable );
 
   // Create the silo writer and register the data
-  #ifdef USE_EXT_SILO
-    AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
-    siloWriter->registerVector( mechNlSolVec, mesh, AMP::Mesh::Vertex, "Solution_Vector" );
-    siloWriter->registerVector( mechNlResVec, mesh, AMP::Mesh::Vertex, "Residual_Vector" );
+#ifdef USE_EXT_SILO
+  AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+  siloWriter->registerVector( mechNlSolVec, mesh, AMP::Mesh::Vertex, "Solution_Vector" );
+  siloWriter->registerVector( mechNlResVec, mesh, AMP::Mesh::Vertex, "Residual_Vector" );
 #endif
 
   //Initial guess for NL solver must satisfy the displacement boundary conditions
   mechNlSolVec->setToScalar(0.0);
+  mechPressureVec->setToScalar(0.0);
 
   nonlinBvpOperator->apply(nullVec, mechNlSolVec, mechNlResVec, 1.0, 0.0);
   linBvpOperator->reset(nonlinBvpOperator->getJacobianParameters(mechNlSolVec));
@@ -135,7 +129,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   dirichletLoadVecOp->apply(nullVec, nullVec, mechNlRhsVec, 1.0, 0.0);
 
   //Applying the pressure load
-  pressureLoadVecOp->apply(nullVec, nullVec, mechPressureVec, 1.0, 0.0);
+  pressureLoadVecOp->addRHScorrection(mechPressureVec);
   mechNlRhsVec->add(mechNlRhsVec, mechPressureVec);
 
   boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
@@ -213,9 +207,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   double finalSolNorm = mechNlSolVec->L2Norm();
   AMP::pout<<"Final Solution Norm: "<<finalSolNorm<<std::endl;
 
-  #ifdef USE_EXT_SILO
-    siloWriter->writeFile( exeName, 1 );
-  #endif
+#ifdef USE_EXT_SILO
+  siloWriter->writeFile( exeName, 1 );
+#endif
 
   ut->passes(exeName);
 

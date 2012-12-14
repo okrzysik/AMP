@@ -1,3 +1,4 @@
+
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
@@ -29,7 +30,7 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
-#include "operators/boundary/PressureBoundaryVectorCorrection.h"
+#include "operators/boundary/PressureBoundaryOperator.h"
 
 #include "../PetscKrylovSolverParameters.h"
 #include "../PetscKrylovSolver.h"
@@ -55,9 +56,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-//--------------------------------------------------
-//   Create the Mesh.
-//--------------------------------------------------
+  //--------------------------------------------------
+  //   Create the Mesh.
+  //--------------------------------------------------
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
   boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
   boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
@@ -69,16 +70,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinBvpOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
-    AMP::Operator::OperatorBuilder::createOperator(meshAdapter,"nonlinearMechanicsBVPOperator",input_db));
+        AMP::Operator::OperatorBuilder::createOperator(meshAdapter,"nonlinearMechanicsBVPOperator",input_db));
   boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> nonlinearMechanicsVolumeOperator = 
     boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinBvpOperator->getVolumeOperator());
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
 
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> linBvpOperator =
     boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-														 "linearMechanicsBVPOperator",
-														 input_db,
-														 elementPhysicsModel));
+          "linearMechanicsBVPOperator", input_db, elementPhysicsModel));
 
   AMP::LinearAlgebra::Variable::shared_ptr displacementVariable = boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
       nonlinBvpOperator->getVolumeOperator())->getOutputVariable(); 
@@ -87,27 +86,18 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletLoadVecOp =
     boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-															 "Load_Boundary",
-															 input_db,
-															 dummyModel));
+          "Load_Boundary", input_db, dummyModel));
   dirichletLoadVecOp->setVariable(displacementVariable);
 
   //Pressure RHS
-  boost::shared_ptr<AMP::Operator::PressureBoundaryVectorCorrection> pressureLoadVecOp =
-    boost::dynamic_pointer_cast<AMP::Operator::PressureBoundaryVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-																"Pressure_Boundary",
-																input_db,
-															        dummyModel));
-  //This has an in-place apply. So, it has an empty input variable and
-  //the output variable is the same as what it is operating on. 
-  pressureLoadVecOp->setVariable(nonlinBvpOperator->getOutputVariable());
+  boost::shared_ptr<AMP::Operator::PressureBoundaryOperator> pressureLoadVecOp =
+    boost::dynamic_pointer_cast<AMP::Operator::PressureBoundaryOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+          "Pressure_Boundary", input_db, dummyModel));
 
   //For Initial-Guess
   boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletDispInVecOp =
     boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-															 "Displacement_Boundary",
-															 input_db,
-															 dummyModel));
+          "Displacement_Boundary", input_db, dummyModel));
   dirichletDispInVecOp->setVariable(displacementVariable);
 
   AMP::Discretization::DOFManager::shared_ptr nodalDofMap = AMP::Discretization::simpleDOFManager::create(
@@ -123,6 +113,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   //Initial guess for NL solver must satisfy the displacement boundary conditions
   mechNlSolVec->setToScalar(0.0);
+  mechPressureVec->setToScalar(0.0);
+
   dirichletDispInVecOp->apply(nullVec, nullVec, mechNlSolVec, 1.0, 0.0);
   mechNlSolVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
@@ -134,7 +126,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   dirichletLoadVecOp->apply(nullVec, nullVec, mechNlRhsVec, 1.0, 0.0);
 
   //Applying the pressure load
-  pressureLoadVecOp->apply(nullVec, nullVec, mechPressureVec, 1.0, 0.0);
+  pressureLoadVecOp->addRHScorrection(mechPressureVec);
   mechNlRhsVec->add(mechNlRhsVec, mechPressureVec);
 
   boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
@@ -232,7 +224,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::pout<<"Final Solution Norm: "<<finalSolNorm<<std::endl;
 
 #ifdef USE_EXT_SILO
-    siloWriter->writeFile(exeName, 1);
+  siloWriter->writeFile(exeName, 1);
 #endif
 
   ut->passes(exeName);
@@ -241,29 +233,29 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
 int main(int argc, char *argv[])
 {
-    AMP::AMPManager::startup(argc, argv);
-    AMP::UnitTest ut;
+  AMP::AMPManager::startup(argc, argv);
+  AMP::UnitTest ut;
 
-    std::vector<std::string> exeNames;
-    exeNames.push_back("testBrickPressureBoundary-1");
+  std::vector<std::string> exeNames;
+  exeNames.push_back("testBrickPressureBoundary-1");
 
-    for(size_t i = 0; i < exeNames.size(); i++) {
-        try {
-            myTest(&ut, exeNames[i]);
-        } catch (std::exception &err) {
-            std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-            ut.failure("ERROR: While testing");
-        } catch( ... ) {
-            std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
-            ut.failure("ERROR: While testing");
-        }
+  for(size_t i = 0; i < exeNames.size(); i++) {
+    try {
+      myTest(&ut, exeNames[i]);
+    } catch (std::exception &err) {
+      std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
+      ut.failure("ERROR: While testing");
+    } catch( ... ) {
+      std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown." << std::endl;
+      ut.failure("ERROR: While testing");
     }
-   
-    ut.report();
+  }
 
-    int num_failed = ut.NumFailGlobal();
-    AMP::AMPManager::shutdown();
-    return num_failed;
+  ut.report();
+
+  int num_failed = ut.NumFailGlobal();
+  AMP::AMPManager::shutdown();
+  return num_failed;
 }   
 
 

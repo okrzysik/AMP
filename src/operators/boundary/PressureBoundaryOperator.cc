@@ -20,6 +20,7 @@ namespace AMP {
 
     PressureBoundaryOperator :: PressureBoundaryOperator(const boost::shared_ptr<OperatorParameters> & params)
       : BoundaryOperator(params) {
+        AMP_ASSERT((params->d_db)->keyExists("BoundaryID"));
         short int bndId = (params->d_db)->getInteger("BoundaryID");
         AMP::Mesh::MeshIterator bnd = d_Mesh->getBoundaryIDIterator(AMP::Mesh::Face, bndId, 0);
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
@@ -36,6 +37,7 @@ namespace AMP {
         libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
         boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, 2, qruleOrder)).release() );
 
+        AMP_ASSERT((params->d_db)->keyExists("Value"));
         const double val = (params->d_db)->getDouble("Value");
         for( ; bnd != end_bnd; ++bnd) {
           d_currNodes = bnd->getElements(AMP::Mesh::Vertex);
@@ -65,9 +67,11 @@ namespace AMP {
 
         boost::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
         tmp_db->putString("InputVariable", "Pressure");
+        AMP_ASSERT((params->d_db)->keyExists("Variable"));
         std::string varName = params->d_db->getString("Variable");
         tmp_db->putString("OutputVariable", varName);
         tmp_db->putInteger("BoundaryID", bndId);
+        AMP_ASSERT((params->d_db)->keyExists("ResidualMode"));
         tmp_db->putBool("ResidualMode", ((params->d_db)->getBool("ResidualMode")));
 
         boost::shared_ptr<TractionBoundaryOperatorParameters> tracOpParams(new 
