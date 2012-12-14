@@ -46,7 +46,7 @@ namespace AMP {
           fe->reinit( d_currElemPtr );
 
           const std::vector<Point>& normals = fe->get_normals();
-          AMP_ASSERT(qrule-n_points() == 4);
+          AMP_ASSERT(qrule->n_points() == 4);
           AMP_ASSERT(normals.size() == 4);
 
           std::vector<size_t> dofIndices;
