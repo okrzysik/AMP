@@ -39,7 +39,6 @@ namespace AMP {
         const double val = (params->d_db)->getDouble("Value");
         for( ; bnd != end_bnd; ++bnd) {
           d_currNodes = bnd->getElements(AMP::Mesh::Vertex);
-          size_t numNodesInCurrElem = d_currNodes.size();
           createCurrentLibMeshElement();
 
           boost::shared_ptr < ::FEBase > fe( (::FEBase::build(2, (*feType))).release() );
@@ -47,6 +46,8 @@ namespace AMP {
           fe->reinit( d_currElemPtr );
 
           const std::vector<Point>& normals = fe->get_normals();
+          AMP_ASSERT(qrule-n_points() == 4);
+          AMP_ASSERT(normals.size() == 4);
 
           std::vector<size_t> dofIndices;
           dofMap->getDOFs(bnd->globalID(), dofIndices);
@@ -54,7 +55,8 @@ namespace AMP {
 
           for(int d = 0; d < 3; ++d) {
             for(size_t qp = 0; qp < qrule->n_points(); ++qp) {
-              pressure->setLocalValueByGlobalID((dofIndices[(3*qp) + d]), (val*(normals[qp](d))));
+              double tractionVal = val*(normals[qp](d));
+              pressure->setLocalValueByGlobalID(dofIndices[(3*qp) + d], tractionVal);
             }//end qp
           }//end d
 
