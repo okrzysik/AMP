@@ -14,49 +14,6 @@ double my_function_no_cross_terms(double const *xyz) {
   return 1.0 + 6.0 * x - 5.0 * y + 4.0 * z;
 }
 
-void test_normal(hex8_element_t *volume_element, unsigned int n_random_candidate_points = 20) {
-  double normal_vector[3];
-  double local_coordinates_on_face[2], local_coordinates[3], global_coordinates[3];
-  double local_coordinates_on_face_check[2];
-  double const * face_support_points_ptr[4];
-  for (unsigned int i = 0; i < n_random_candidate_points; ++i) {
-    for (unsigned int d = 0; d < 2; ++d) { local_coordinates_on_face[d] = -1.0+2.0*rand()/RAND_MAX; }
-    for (unsigned int f = 0; f < 6; ++f) {
-      for (unsigned int v = 0; v < 4; ++v) { face_support_points_ptr[v] = volume_element->get_support_point(volume_element->get_face(f)[v]); }
-      volume_element->map_face_to_local(f, local_coordinates_on_face, local_coordinates);
-      volume_element->map_local_to_face(f, local_coordinates, local_coordinates_on_face_check);
-      AMP_ASSERT(std::equal(local_coordinates_on_face, local_coordinates_on_face+2, local_coordinates_on_face_check));
-      volume_element->map_local_to_global(local_coordinates, global_coordinates);
-      volume_element->compute_normal_to_face(f, local_coordinates, global_coordinates, normal_vector);
-      std::cout<<f<<" { ";
-      for (unsigned int d = 0; d < 3; ++d) { std::cout<<normal_vector[d]<<" "; }
-      std::cout<<"}  ";
-      volume_element->compute_normal_to_face(f, local_coordinates, normal_vector);
-      std::cout<<f<<" { ";
-      for (unsigned int d = 0; d < 3; ++d) { std::cout<<normal_vector[d]<<" "; }
-      std::cout<<"}  ";
-      volume_element->get_normal_to_face(face_support_points_ptr, local_coordinates_on_face, normal_vector);
-      std::cout<<f<<" { ";
-      for (unsigned int d = 0; d < 3; ++d) { std::cout<<normal_vector[d]<<" "; }
-      std::cout<<"}\n";
-    } // end for f
-  } // end for i
-}
-
-inline bool soft_equal_to(double x, double y) { return abs(x-y) < 1.0e-15; }
-
-void test_recovering_local_coordinates_on_face_from_basis_functions_values(unsigned int n_random_candidate_points = 1000) {
-  double x[2], x_prime[2], phi[4];
-  for (unsigned int i = 0; i < n_random_candidate_points; ++i) {
-    for (unsigned j = 0; j < 2; ++j) {
-      x[j] = -1.0+2.0*rand()/RAND_MAX;
-    } // end for j
-    hex8_element_t::get_basis_functions_values_on_face(x, phi);
-    hex8_element_t::get_local_coordinates_on_face(phi, x_prime);
-    assert(std::equal(x, x+2, x_prime, soft_equal_to));
-  } // end for i
-}
-
 unsigned int perform_battery_of_tests(hex8_element_t *volume_element, double (*my_function_to_call)(double const *), unsigned int n_random_candidate_points = 1000, double tol_abs = 1.0e-12, double tol_rel = 1.0e-12) {
   std::vector<double> my_function_at_support_points(8);
   for (unsigned int i = 0; i < 8; ++i) { 
@@ -101,7 +58,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   hex8_element_t volume_element(points);
   AMP_ASSERT(perform_battery_of_tests(&volume_element, my_function) == 0);
   AMP_ASSERT(perform_battery_of_tests(&volume_element, my_function_no_cross_terms) == 0);
-  test_normal(&volume_element);
   srand(0);
 
   double scaling_factors[3] = { 4.0, 2.0, 1.0 };
@@ -135,8 +91,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   volume_element.set_support_points(points);
   AMP_ASSERT(perform_battery_of_tests(&volume_element, my_function) > 0);
   AMP_ASSERT(perform_battery_of_tests(&volume_element, my_function_no_cross_terms) == 0);
-
-  test_recovering_local_coordinates_on_face_from_basis_functions_values();
 
   ut->passes(exeName);
 }

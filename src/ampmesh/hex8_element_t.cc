@@ -584,13 +584,15 @@ void hex8_element_t::get_normal_to_face(double const * * support_points_ptr, dou
 }
 
 void hex8_element_t::compute_normal_to_face(unsigned int f, double const * local_coordinates_on_face, double * normal_vector) {
+  AMP_CHECK_ASSERT(f < 6);
   double tangential_vectors[6];
-  double const perturbation = 1.0e-6;
+  double const perturbation = 1.0e-2;
   double direction = 1.0;
   double perturbated_local_coordinates_on_face[2], perturbated_global_coordinates[3];
   double global_coordinates[3];
   double basis_functions_values_on_face[4];
   get_basis_functions_values_on_face(local_coordinates_on_face, basis_functions_values_on_face);
+  std::fill(global_coordinates, global_coordinates+3, 0.0);
   for (unsigned int i = 0; i < 4; ++i) {
     for (unsigned int j = 0; j < 3; ++j) {
       global_coordinates[j] += basis_functions_values_on_face[i] * support_points[3*faces[4*f+i]+j];
@@ -613,10 +615,13 @@ void hex8_element_t::compute_normal_to_face(unsigned int f, double const * local
     } // end for i
     make_vector_from_two_points(global_coordinates, perturbated_global_coordinates, &(tangential_vectors[3*d]));
   } // end for d
+//  normalize_vector(&(tangential_vectors[0]));
+//  normalize_vector(&(tangential_vectors[3]));
   compute_cross_product(&(tangential_vectors[0]), &(tangential_vectors[3]), normal_vector); 
   normalize_vector(normal_vector);
   std::transform(normal_vector, normal_vector+3, normal_vector, std::bind1st(std::multiplies<double>(), direction));
 }
+
 void hex8_element_t::compute_strain_tensor(double const *x, double const *u, double *epsilon) {
   // ,x ,y ,z
   double nabla_phi[24];
