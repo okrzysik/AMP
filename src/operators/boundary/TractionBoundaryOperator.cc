@@ -1,6 +1,5 @@
 
 #include "operators/boundary/TractionBoundaryOperator.h"
-#include "face_quad4.h"
 
 #include "enum_order.h"
 #include "enum_fe_family.h"
@@ -10,28 +9,29 @@
 #include "fe_type.h"
 #include "fe_base.h"
 #include "quadrature.h"
+#include "elem.h"
+#include "cell_hex8.h"
+#include "node.h"
 
 namespace AMP {
   namespace Operator {
 
     TractionBoundaryOperator :: TractionBoundaryOperator(const boost::shared_ptr<TractionBoundaryOperatorParameters> & params)
       : BoundaryOperator(params) {
-        AMP_INSIST( params->d_db->keyExists("InputVariable"), "key not found");
-        AMP_INSIST( params->d_db->keyExists("OutputVariable"), "key not found");
-        std::string inpVarName = params->d_db->getString("InputVariable");
-        std::string outVarName = params->d_db->getString("OutputVariable");
-        d_inputVar.reset(new AMP::LinearAlgebra::Variable(inpVarName));
-        d_outputVar.reset(new AMP::LinearAlgebra::Variable(outVarName));
+        AMP_INSIST( params->d_db->keyExists("Variable"), "key not found");
+        std::string varName = params->d_db->getString("Variable");
+        d_var.reset(new AMP::LinearAlgebra::Variable(varName));
         AMP_INSIST( params->d_db->keyExists("ResidualMode"), "key not found");
-        AMP_INSIST( params->d_db->keyExists("BoundaryID"), "key not found");
         d_residualMode = params->d_db->getBool("ResidualMode");
-        d_boundaryId = params->d_db->getInteger("BoundaryID");
-        setTraction(params->d_traction);
+        d_traction = params->d_traction;
+        d_volumeElements = params->d_volumeElements;
+        d_sideNumbers = params->d_sideNumbers;
+        d_nodeID = params->d_nodeID;
       }
 
     void TractionBoundaryOperator :: addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) {
       if(!d_residualMode) {
-        AMP::LinearAlgebra::Vector::shared_ptr myRhs = mySubsetVector(rhs, d_outputVar);
+        AMP::LinearAlgebra::Vector::shared_ptr myRhs = mySubsetVector(rhs, d_var);
         if(d_correction == NULL) {
           d_correction = myRhs->cloneVector();
         }
@@ -44,7 +44,7 @@ namespace AMP {
     void TractionBoundaryOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr,
         AMP::LinearAlgebra::Vector::shared_ptr r, const double, const double) {
       if(d_residualMode) {
-        AMP::LinearAlgebra::Vector::shared_ptr rInternal = mySubsetVector(r, d_outputVar);
+        AMP::LinearAlgebra::Vector::shared_ptr rInternal = mySubsetVector(r, d_var);
         if(d_correction == NULL) {
           d_correction = rInternal->cloneVector();
         }
@@ -62,48 +62,50 @@ namespace AMP {
       libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
       boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, 2, qruleOrder)).release() );
 
-      AMP::Mesh::MeshIterator bnd     = d_Mesh->getBoundaryIDIterator(AMP::Mesh::Face, d_boundaryId, 0);
-      AMP::Mesh::MeshIterator end_bnd = bnd.end();
-
-      AMP::Discretization::DOFManager::shared_ptr inpDofMap = d_traction->getDOFManager();
-      AMP::Discretization::DOFManager::shared_ptr outDofMap = d_correction->getDOFManager();
+      AMP::Discretization::DOFManager::shared_ptr dofMap = d_correction->getDOFManager();
 
       d_correction->zero();
-      for( ; bnd != end_bnd; ++bnd) {
-        d_currNodes = bnd->getElements(AMP::Mesh::Vertex);
-        size_t numNodesInCurrElem = d_currNodes.size();
-        createCurrentLibMeshElement();
+      for(size_t b = 0; b < d_sideNumbers.size(); ++b) {
+        ::Elem* elem = new ::Hex8;
+        for(int j = 0; j < 8; ++j) {
+          elem->set_node(j) = new ::Node(d_volumeElements[(24*b) + (3*j) + 0],
+              d_volumeElements[(24*b) + (3*j) + 1], d_volumeElements[(24*b) + (3*j) + 2], j);
+        }//end j
 
-        boost::shared_ptr < ::FEBase > fe( (::FEBase::build(2, (*feType))).release() );
+        boost::shared_ptr < ::FEBase > fe( (::FEBase::build(3, (*feType))).release() );
         fe->attach_quadrature_rule( qrule.get() );
-        fe->reinit( d_currElemPtr );
+        fe->reinit(elem, d_sideNumbers[b]);
 
         const std::vector<std::vector<Real> > &phi = fe->get_phi();
         const std::vector<Real> &djxw = fe->get_JxW(); 
 
-        std::vector<size_t> inpDofIndices;
-        inpDofMap->getDOFs(bnd->globalID(), inpDofIndices);
-        AMP_ASSERT(inpDofIndices.size() == 12);
+        AMP_ASSERT(phi.size() == 8);
+        AMP_ASSERT(djxw.size() == 4);
+        AMP_ASSERT(qrule->n_points() == 4);
 
-        std::vector<std::vector<size_t> > outDofIndices(numNodesInCurrElem);
-        for(size_t i = 0; i < numNodesInCurrElem; ++i) {
-          outDofMap->getDOFs(d_currNodes[i].globalID(), outDofIndices[i]);
+        std::vector<std::vector<size_t> > dofIndices(8);
+        for(int i = 0; i < 8; ++i) {
+          dofMap->getDOFs(d_nodeID[(8*b) + i], dofIndices[i]);
         }//end i
 
-        for(size_t i = 0; i < numNodesInCurrElem; ++i) {
+        for(size_t i = 0; i < 8; ++i) {
           for(int d = 0; d < 3; ++d) {
             double res = 0;
             for(size_t qp = 0; qp < qrule->n_points(); ++qp) {
-              double val = d_traction->getLocalValueByGlobalID(inpDofIndices[(3*qp) + d]);
+              double val = d_traction[(12*b) + (3*qp) + d];
               res +=  djxw[qp]*phi[i][qp]*val;
             }//end qp
-            d_correction->addValueByGlobalID(outDofIndices[i][d], res);
+            d_correction->addValueByGlobalID(dofIndices[i][d], res);
           }//end d
         }//end i
 
-        destroyCurrentLibMeshElement();
-      }//end bnd
-
+        for(size_t j = 0; j < elem->n_nodes(); ++j) {
+          delete (elem->get_node(j));
+          elem->set_node(j) = NULL;
+        }//end for j
+        delete elem;
+        elem = NULL;
+      }//end b
       d_correction->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
     }
 
@@ -112,7 +114,7 @@ namespace AMP {
       if(vec != NULL) {
         if(d_Mesh.get() != NULL) {
           AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
-          AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, var->getName());
+          AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, ((vec->getVariable())->getName()));
           return meshSubsetVec->subsetVectorForVariable(var);
         } else {
           return vec->subsetVectorForVariable(var);
@@ -120,23 +122,6 @@ namespace AMP {
       } else {
         return vec;
       }
-    }
-
-    void TractionBoundaryOperator :: createCurrentLibMeshElement() {
-      d_currElemPtr = new ::Quad4;
-      for(size_t j = 0; j < d_currNodes.size(); j++) {
-        std::vector<double> pt = d_currNodes[j].coord();
-        d_currElemPtr->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
-      }//end for j
-    }
-
-    void TractionBoundaryOperator :: destroyCurrentLibMeshElement() {
-      for(size_t j = 0; j < d_currElemPtr->n_nodes(); j++) {
-        delete (d_currElemPtr->get_node(j));
-        d_currElemPtr->set_node(j) = NULL;
-      }//end for j
-      delete d_currElemPtr;
-      d_currElemPtr = NULL;
     }
 
   }

@@ -214,7 +214,6 @@ int main(int argc, char *argv[])
 
   if(argc == 1) {
     exeNames.push_back("testLinearMechanics-PressureBoundary-1");
-    exeNames.push_back("testLinearMechanics-PressureBoundary-Cylinder");
     exeNames.push_back("testLinearMechanics-PressureBoundary-HaldenPellet");
   } else {
     for(int i = 1; i < argc; ++i) {

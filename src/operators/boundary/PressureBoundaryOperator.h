@@ -24,12 +24,6 @@ namespace AMP {
         }
 
       protected:
-        void createCurrentLibMeshElement();
-
-        void destroyCurrentLibMeshElement();
-
-        std::vector<AMP::Mesh::MeshElement> d_currNodes;
-        ::Elem* d_currElemPtr;
         boost::shared_ptr<AMP::Operator::TractionBoundaryOperator> d_tractionOp; 
     };
 

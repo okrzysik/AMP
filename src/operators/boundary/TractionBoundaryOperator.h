@@ -4,7 +4,6 @@
 
 #include "BoundaryOperator.h"
 #include "TractionBoundaryOperatorParameters.h"
-#include "elem.h"
 
 namespace AMP {
   namespace Operator {
@@ -15,10 +14,6 @@ namespace AMP {
         TractionBoundaryOperator(const boost::shared_ptr<TractionBoundaryOperatorParameters> & params);
 
         virtual ~TractionBoundaryOperator() { }
-
-        void setTraction(AMP::LinearAlgebra::Vector::shared_ptr vec) {
-          d_traction = mySubsetVector(vec, d_inputVar);
-        }
 
         void apply( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr,
             AMP::LinearAlgebra::Vector::shared_ptr r, const double, const double);
@@ -32,18 +27,13 @@ namespace AMP {
 
         void computeCorrection();
 
-        void createCurrentLibMeshElement();
-
-        void destroyCurrentLibMeshElement();
-
-        std::vector<AMP::Mesh::MeshElement> d_currNodes;
-        ::Elem* d_currElemPtr;
-        AMP::LinearAlgebra::Variable::shared_ptr d_inputVar;
-        AMP::LinearAlgebra::Variable::shared_ptr d_outputVar;
-        AMP::LinearAlgebra::Vector::shared_ptr d_traction;
+        AMP::LinearAlgebra::Variable::shared_ptr d_var;
         AMP::LinearAlgebra::Vector::shared_ptr d_correction;
+        std::vector<double> d_traction;
+        std::vector<double> d_volumeElements;
+        std::vector<unsigned int> d_sideNumbers;
+        std::vector<AMP::Mesh::MeshElementID> d_nodeID;
         bool d_residualMode;
-        short int d_boundaryId;
     };
 
   }

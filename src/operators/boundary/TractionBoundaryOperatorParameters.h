@@ -15,12 +15,15 @@ namespace AMP {
 
         virtual ~TractionBoundaryOperatorParameters() { }
 
-        AMP::LinearAlgebra::Vector::shared_ptr d_traction;
-
+        std::vector<double> d_traction;
+        std::vector<double> d_volumeElements;
+        std::vector<unsigned int> d_sideNumbers;
+        std::vector<AMP::Mesh::MeshElementID> d_nodeID;
     };
 
   }
 }
 
 #endif
+
 
