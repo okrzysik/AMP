@@ -148,6 +148,7 @@ LinearSolver {
             max_error = 1.0e-16
             uses_preconditioner = TRUE
             pc_type = "none"
+            pc_side = "LEFT"
             ksp_type = "preonly"
         }
 
@@ -157,6 +158,7 @@ LinearSolver {
           max_error = 1.0e-16
           uses_preconditioner = TRUE
           pc_type = "none"
+          pc_side = "LEFT"
           ksp_type = "preonly"
       }
 
