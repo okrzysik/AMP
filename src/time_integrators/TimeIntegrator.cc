@@ -43,6 +43,18 @@ TimeIntegrator::TimeIntegrator( boost::shared_ptr<AMP::TimeIntegrator::TimeInteg
 {
    AMP_INSIST(parameters.get()!=NULL, "Null parameter");
 
+   // initialize member data
+   d_initial_time = 0;
+   d_final_time = 0;
+   d_current_time = 0;
+   d_current_dt = 0;
+   d_old_dt = 0;
+   d_min_dt = 0;
+   d_max_dt = 0;
+   d_initial_dt = 0;
+   d_integrator_step = 0;
+   d_max_integrator_steps = 0;
+
    initialize(parameters);   
 }
 
