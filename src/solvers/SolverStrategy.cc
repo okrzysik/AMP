@@ -16,6 +16,10 @@ namespace AMP {
       d_dResidualNorm          = -1;
       d_bUseZeroInitialGuess = true;
       d_iDebugPrintInfoLevel = 0;
+      d_iMaxIterations       = 0;
+      d_dMaxRhs              = 0;
+      d_dMaxError            = 0;
+      d_iObjectId            = 0;
     }
 
     SolverStrategy::SolverStrategy(boost::shared_ptr<SolverStrategyParameters> parameters)

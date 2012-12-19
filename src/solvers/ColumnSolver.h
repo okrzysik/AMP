@@ -22,7 +22,7 @@ namespace Solver {
     /**
      * default empty constructor
      */
-      ColumnSolver(){}
+      ColumnSolver(){ d_resetColumnOperator=false; }
 
       /**
        * Main constructor

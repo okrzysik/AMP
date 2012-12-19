@@ -186,7 +186,7 @@ NonlinearKrylovAccelerator::correction(boost::shared_ptr<AMP::LinearAlgebra::Vec
   double s;
   boost::shared_ptr<AMP::LinearAlgebra::Vector>  v, w;
 
-  double *hk, *hj, *c;
+  double *hj, *c;
   
   /*
    *  UPDATE THE ACCELERATION SUBSPACE
@@ -240,6 +240,7 @@ NonlinearKrylovAccelerator::correction(boost::shared_ptr<AMP::LinearAlgebra::Vec
     int nvec = 1;
     d_ppdFunctionDifferenceInnerProducts[d_iFirstVectorIndex][d_iFirstVectorIndex] = 1.0;
     
+    double *hk;
     for (k = d_piNext[d_iFirstVectorIndex]; k != EOL; k = d_piNext[k]) 
       {
 	
