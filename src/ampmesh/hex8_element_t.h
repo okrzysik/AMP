@@ -8,6 +8,7 @@
 double compute_inverse_3_by_3_matrix(double const *mat, double *inv);
 void compute_n_by_n_matrix_times_vector(unsigned int n, double const *mat, double const *vec, double *res);
 void compute_stress_tensor(double const * constitutive_matrix, double const * strain_tensor, double * stress_tensor);
+void compute_traction(double const * stress_tensor, double const * normal_vector, double * traction);
 
 class hex8_element_t {
   public:

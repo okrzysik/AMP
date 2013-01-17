@@ -198,7 +198,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   // Get the mechanics material model for the contact operator
   boost::shared_ptr<AMP::Database> model_db = input_db->getDatabase("MechanicsMaterialModel");
   boost::shared_ptr<AMP::Operator::MechanicsModelParameters> mechanicsMaterialModelParams(new AMP::Operator::MechanicsModelParameters(model_db));
-  boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> slaveMechanicsMaterialModel(new AMP::Operator::MechanicsMaterialModel(mechanicsMaterialModelParams));
+  boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> masterMechanicsMaterialModel(new AMP::Operator::MechanicsMaterialModel(mechanicsMaterialModelParams));
 
   // Build the contact operator
   AMP_INSIST(input_db->keyExists("ContactOperator"), "Key ''ContactOperator'' is missing!");
@@ -209,7 +209,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   contactOperatorParams->d_DOFManager = dofManager;
   contactOperatorParams->d_GlobalComm = globalComm;
   contactOperatorParams->d_Mesh = meshAdapter;
-  contactOperatorParams->d_SlaveMechanicsMaterialModel = slaveMechanicsMaterialModel;
+  contactOperatorParams->d_MasterMechanicsMaterialModel = masterMechanicsMaterialModel;
   contactOperatorParams->reset(); // got segfault at constructor since d_Mesh was pointing to NULL
 
   boost::shared_ptr<AMP::Operator::NodeToFaceContactOperator> 
@@ -217,7 +217,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   // TODO: RESET IN CONSTRUCTOR?
   contactOperator->initialize();
-  contactOperator->updateActiveSet();
+//  contactOperator->updateActiveSet();
 //  contactOperator->reset(contactOperatorParams);
 
   // Build the master and slave operators
@@ -316,6 +316,9 @@ slaveFout.close();
   columnSolVec->zero();
   columnRhsVec->zero();
 
+  bool skipDisplaceMesh = true;
+  contactOperator->updateActiveSet(columnSolVec, skipDisplaceMesh);
+
   // compute f
   if (slaveLoadOperator.get() != NULL) { 
     slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0);
@@ -386,8 +389,9 @@ slaveFout.close();
   contactOperator->copyMasterToSlave(columnSolVec);
   contactOperator->addShiftToSlave(columnSolVec);
 
+//  meshAdapter->displaceMesh(columnSolVec);
+  size_t dodo = contactOperator->updateActiveSet(columnSolVec);
   meshAdapter->displaceMesh(columnSolVec);
-  size_t dodo = contactOperator->updateActiveSet();
   std::cout<<"DODO="<<dodo<<std::endl;
 
 if (masterMeshAdapter.get() != NULL) {

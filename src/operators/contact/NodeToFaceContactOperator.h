@@ -55,7 +55,7 @@ namespace AMP {
 
         void initialize();
 
-        size_t updateActiveSet();
+        size_t updateActiveSet(AMP::LinearAlgebra::Vector::shared_ptr displacementFieldVector, bool skipDisplaceMesh = false);
 
       protected :
 
@@ -85,10 +85,26 @@ namespace AMP {
         std::vector<double> d_MasterShapeFunctionsValues;
         std::vector<double> d_SlaveVerticesShift;
 
+        std::vector<AMP::Mesh::MeshElementID> d_MasterVolumesGlobalIDs;
+        std::vector<size_t> d_MasterFacesLocalIndices;
+        std::vector<double> d_SlaveVerticesNormalVectors;
+        std::vector<double> d_SlaveVerticesSurfaceTraction;
+
         boost::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable; /**< Input variable */
         boost::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
 
         std::fstream d_fout;
+    };
+
+    struct ProjectionData {
+      AMP::Mesh::MeshElementID d_MasterVolumeGlobalID;
+      size_t d_MasterFaceLocalIndex;
+      double d_SlaveVertexLocalCoordOnMasterFace[2];
+    };
+
+    struct StressStateData {
+      double d_SlaveVertexNormalVector[3];
+      double d_SlaveVertexSurfaceTraction[3];
     };
 
   }

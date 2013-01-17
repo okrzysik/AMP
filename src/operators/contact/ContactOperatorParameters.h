@@ -43,7 +43,7 @@ namespace AMP {
         int d_MasterBoundaryID;
         int d_SlaveBoundaryID;
 
-        boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> d_SlaveMechanicsMaterialModel;
+        boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> d_MasterMechanicsMaterialModel;
  
       protected :
 

@@ -37,7 +37,7 @@ namespace AMP {
           d_MasterBoundaryID = (params->d_MasterBoundaryID);
           d_SlaveBoundaryID = (params->d_SlaveBoundaryID);
 
-          d_SlaveMechanicsMaterialModel = (params->d_SlaveMechanicsMaterialModel);
+          d_MasterMechanicsMaterialModel = (params->d_MasterMechanicsMaterialModel);
         }
 
         AMP::Mesh::MeshID getMasterMeshID() const { return d_MasterMeshID; }
@@ -58,7 +58,7 @@ namespace AMP {
 
         virtual void initialize() = 0;
 
-        virtual size_t updateActiveSet() = 0;
+        virtual size_t updateActiveSet(AMP::LinearAlgebra::Vector::shared_ptr displacementFieldVector, bool skipDisplaceMesh) = 0;
 
       protected :
 
@@ -77,7 +77,7 @@ namespace AMP {
         std::vector<AMP::Mesh::MeshElementID> d_InactiveSet;
         std::vector<AMP::Mesh::MeshElementID> d_ActiveSet;
 
-        boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> d_SlaveMechanicsMaterialModel;
+        boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> d_MasterMechanicsMaterialModel;
 
       private :
 
