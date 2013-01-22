@@ -7,16 +7,16 @@
 #include <map>
 #include <set>
 
-#ifdef USE_EXT_SILO
-    #include <silo.h>
-#endif
-
-#include "boost/smart_ptr/shared_ptr.hpp"
+#include "utils/Writer.h"
 #include "ampmesh/Mesh.h"
 
 #ifdef USE_AMP_VECTORS
     #include "vectors/Vector.h"
 #endif
+#ifdef USE_EXT_SILO
+    #include <silo.h>
+#endif
+
 
 
 namespace AMP { 
@@ -29,38 +29,24 @@ namespace Mesh {
  * \details  This class provides routines for reading, accessing and writing meshes and vectors
  * using silo.
  */
-class SiloIO 
+class SiloIO: public AMP::Utilities::Writer
 {
 public:
-
-    //!  Convenience typedef
-    typedef boost::shared_ptr<AMP::Mesh::SiloIO>  shared_ptr;
 
     //!  Default constructor
     SiloIO();
 
-    //!  Function to return the file extension
-    std::string getExtension();
+    //!  Default destructor
+    virtual ~SiloIO();
 
-    /**
-     * \brief   Function to set the file decomposition
-     * \details This function will set the method used for file IO.  When writing files, 
-     *    there are different decompositions that affect the performance and usability 
-     *    of the output files.  By default, this writer will generate a single file.
-     * \param decomposition   Decomposition method to use:
-     *             1:  This will write all of the data to a single file.  
-     *                 Note that this requires a serial write and will have the worst performance
-     *             2:  Each processor will write a separate file and a separate 
-     *                 summary file will be written.  Note that this will have better performance
-     *                 at large scale, but will write many files simultaneously.  
-     */
-    void setDecomposition( int decomposition );
+    //!  Function to return the file extension
+    virtual std::string getExtension();
 
     //!  Function to read a file
-    void  readFile( const std::string &fname );
+    virtual void  readFile( const std::string &fname );
 
     //!  Function to write a file
-    void  writeFile( const std::string &fname, size_t iteration_count );
+    virtual void  writeFile( const std::string &fname, size_t iteration_count );
 
     /**
      * \brief    Function to register a mesh
@@ -75,7 +61,7 @@ public:
 
      * \param path  The directory path for the mesh.  Default is an empty string.
      */
-    void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level=1, std::string path=std::string() );
+    virtual void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level=1, std::string path=std::string() );
 
 #ifdef USE_AMP_VECTORS
     /**
@@ -91,7 +77,7 @@ public:
      *              the vector multiple times (one for each entity type).
      * \param name  Optional name for the vector.
      */
-    void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec, AMP::Mesh::Mesh::shared_ptr mesh,
+    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec, AMP::Mesh::Mesh::shared_ptr mesh,
         AMP::Mesh::GeomType type, const std::string &name = "" );
 #endif
 
@@ -154,14 +140,8 @@ private:
     // This function requires global communication
     void writeSummary( std::string filename );
 
-    // The comm of the writer
-    AMP_MPI d_comm;
-
     // The dimension
     int d_dim;
-
-    // The dimension
-    int decomposition;
 
     // List of all meshes and thier ids
     std::map<AMP::Mesh::MeshID,siloBaseMeshData>  d_baseMeshes;

@@ -14,7 +14,7 @@
 #include "utils/Database.h"
 #include "vectors/Variable.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "vectors/Vector.h"
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/diffusion/DiffusionLinearElement.h"
@@ -225,7 +225,7 @@ void linearFickTest(AMP::UnitTest *ut )
  
   // Plot the results
 #ifdef USE_EXT_SILO
-     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
      siloWriter->registerMesh( meshAdapter );
 
      siloWriter->registerVector( SolutionVec, meshAdapter, AMP::Mesh::Vertex, "Concentration" );

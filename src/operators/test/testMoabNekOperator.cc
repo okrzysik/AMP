@@ -23,7 +23,7 @@
 #include "utils/PIO.h"
 #include "utils/InputDatabase.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
 
@@ -190,7 +190,7 @@ void nekPipeOperator(AMP::UnitTest *ut)
     // How about some output?
     
 #ifdef USE_EXT_SILO
-     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
      siloWriter->registerMesh( mesh );
      siloWriter->registerVector( r_gp,   mesh, AMP::Mesh::Volume, "AllGaussPointPressures" );
      siloWriter->registerVector( r_node, mesh, AMP::Mesh::Vertex, "AllNodalPressures" );

@@ -11,7 +11,7 @@
 #include "utils/Database.h"
 #include "utils/ProfilerApp.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MultiMesh.h"
 
@@ -740,7 +740,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         pressure->scale(P_scale);
     }
     // Register the quantities to plot
-    AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
+    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
     if( xyFaceMesh != NULL ){
         siloWriter->registerVector( flowSolVec, xyFaceMesh, AMP::Mesh::Face, "SubchannelFlow" );
         siloWriter->registerVector( flowTempVec, xyFaceMesh, AMP::Mesh::Face, "FlowTemp" );

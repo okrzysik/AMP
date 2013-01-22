@@ -18,7 +18,7 @@
 #include "ampmesh/MeshVariable.h"
 #include "ampmesh/MeshOperations.h"
 #include "ampmesh/MeshUtils.h"
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 
 #include "operators/ThermalVonMisesMatModel.h"

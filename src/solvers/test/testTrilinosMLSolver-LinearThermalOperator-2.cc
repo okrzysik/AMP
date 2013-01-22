@@ -18,7 +18,7 @@
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "vectors/Vector.h"
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/diffusion/DiffusionLinearElement.h"
@@ -214,7 +214,7 @@ void linearThermalTest(AMP::UnitTest *ut )
   // Plot the results
   AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);
 #ifdef USE_EXT_SILO
-     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
      siloWriter->registerMesh( meshAdapter );
 
      siloWriter->registerVector( TemperatureInKelvinVec, meshAdapter, AMP::Mesh::Vertex, "TemperatureInKelvin" );

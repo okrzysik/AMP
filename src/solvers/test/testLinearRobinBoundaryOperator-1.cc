@@ -1,7 +1,7 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -297,7 +297,7 @@ void linearRobinTest(AMP::UnitTest *ut, std::string exeName )
   AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);
 
 #ifdef USE_EXT_SILO
-  AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+  AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
 
   siloWriter->registerVector( TemperatureInKelvinVec, meshAdapter, AMP::Mesh::Vertex, "TemperatureInKelvin" );
   siloWriter->registerVector( exactVec,               meshAdapter, AMP::Mesh::Vertex, "Exact"    );

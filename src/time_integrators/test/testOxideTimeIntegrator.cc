@@ -4,7 +4,7 @@
 #include "utils/InputManager.h"
 
 #include "ampmesh/Mesh.h"
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "vectors/Vector.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
@@ -67,7 +67,7 @@ void OxideTest( AMP::UnitTest *ut, std::string input_file )
     
     // Register the data with the silo writer
     #ifdef USE_EXT_SILO
-        AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+        AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
         siloWriter->registerVector( temp_vec, mesh, AMP::Mesh::Vertex, "temperature" );
         siloWriter->registerVector( oxide, surface, AMP::Mesh::Vertex, "oxide_thickness" );
         siloWriter->registerVector( alpha, surface, AMP::Mesh::Vertex, "alpha_thickness" );

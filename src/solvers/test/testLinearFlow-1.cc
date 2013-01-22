@@ -10,7 +10,7 @@
 #include "utils/PIO.h"
 
 #include "ampmesh/Mesh.h"
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"

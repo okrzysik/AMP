@@ -16,7 +16,7 @@
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "vectors/Vector.h"
 
 #include "operators/MassLinearElement.h"
@@ -268,7 +268,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   //---------------------------------------------------------------------------
 
 #ifdef USE_EXT_SILO
-     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
      siloWriter->registerMesh( meshAdapter );
 
      siloWriter->registerVector( globalSolVec, meshAdapter, AMP::Mesh::Vertex, "Temperature" );

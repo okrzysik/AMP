@@ -35,7 +35,7 @@
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 
 #include "vectors/Vector.h"
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "solvers/TrilinosMLSolver.h"
 

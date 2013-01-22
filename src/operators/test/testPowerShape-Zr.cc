@@ -11,7 +11,7 @@
 #include "utils/Database.h"
 #include "vectors/Variable.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "vectors/Vector.h"
 
 #include "ampmesh/Mesh.h"
@@ -61,7 +61,7 @@ void test_with_shape(AMP::UnitTest *ut )
     #ifdef USE_EXT_SILO
       AMP::LinearAlgebra::Variable::shared_ptr shapeVar(new AMP::LinearAlgebra::Variable("PowerShape"));
       AMP::LinearAlgebra::Vector::shared_ptr shapeVec = AMP::LinearAlgebra::createVector( dof_map, shapeVar, split );
-      AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+      AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
       siloWriter->registerMesh( meshAdapter );
       siloWriter->registerVector( shapeVec, meshAdapter, AMP::Mesh::Volume, "PowerShape" );
     #endif

@@ -37,7 +37,7 @@
 #include "utils/ReadTestMesh.h"
 
 #include "ampmesh/libmesh/libMesh.h"
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "ampmesh/Mesh.h"
 
 #include "materials/Material.h"
@@ -472,7 +472,7 @@ AMP_ERROR("Not converted yet"); /*
     abort();
   }
 #ifdef USE_EXT_SILO
-  AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+  AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
 
   siloWriter->registerVector( exactErrVec, meshAdapter , AMP::Mesh::Vertex, "Exact_Error_Vector");
   siloWriter->registerVector( exactSolVec, meshAdapter  , AMP::Mesh::Vertex, "Exact_Solution_Vector");
