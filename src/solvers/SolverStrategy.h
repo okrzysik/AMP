@@ -1,31 +1,10 @@
 #ifndef included_SolverStrategy
 #define included_SolverStrategy
 
-#ifndef included_AMP_config
-
-#endif
-
-#ifndef included_Pointer
 #include "boost/shared_ptr.hpp"
-#endif
-
-#ifdef DEBUG_CHECK_ASSERTIONS
-extern "C"{
-#include "assert.h"
-}
-#endif
-
-#ifndef included_AMP_Operator
 #include "operators/Operator.h"
-#endif
-
-#ifndef included_AMP_SolverStrategyParameters
 #include "SolverStrategyParameters.h"
-#endif
-
-#ifndef included_AMP_Vector
 #include "vectors/Vector.h"
-#endif
 
 
 namespace AMP {

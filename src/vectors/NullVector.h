@@ -87,8 +87,6 @@ namespace LinearAlgebra {
       virtual size_t getGlobalSize() const;
       virtual size_t getGhostSize() const;
 
-      virtual void setCommunicationList ( CommunicationList::shared_ptr  );
-
       virtual size_t numberOfDataBlocks () const;
       virtual size_t sizeOfDataBlock ( size_t ) const;
 
@@ -103,7 +101,6 @@ namespace LinearAlgebra {
       virtual void *getRawDataBlockAsVoid ( size_t );
       virtual const void *getRawDataBlockAsVoid ( size_t ) const;
 
-      virtual void addCommunicationListToParameters ( CommunicationList::shared_ptr );
 
   };
 

@@ -1,8 +1,13 @@
-#ifndef included_SolverStrategy
 #include "SolverStrategy.h"
+#include "utils/Utilities.h"
+#include "utils/Utilities.h"
+
+
+#ifdef DEBUG_CHECK_ASSERTIONS
+extern "C"{
+#include "assert.h"
+}
 #endif
-#include "utils/Utilities.h"
-#include "utils/Utilities.h"
 
 
 namespace AMP {

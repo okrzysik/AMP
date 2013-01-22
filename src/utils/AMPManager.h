@@ -95,6 +95,9 @@ public:
      */
     static AMPManagerProperties getAMPManagerProperties( );
 
+    //! Static function to terminate AMP
+    static void terminate_AMP(std::string message);
+
 private:
     // Private constructor (we do not actually want to create an object)
     AMPManager() {  }

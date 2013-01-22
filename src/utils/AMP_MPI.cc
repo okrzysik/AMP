@@ -217,7 +217,7 @@ AMP_MPI::AMP_MPI( MPI_Comm comm ) {
             }
         } else {
             comm_rank = 1;
-            comm_size = 1;
+            comm_size = 0;
             d_maxTag = 0x7FFFFFFF;
         }
         d_isNull = communicator==MPI_COMM_NULL;
@@ -240,9 +240,11 @@ AMP_MPI::AMP_MPI( MPI_Comm comm ) {
 ************************************************************************/
 #ifdef USE_EXT_MPI
 AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 ) {
-    MPI_Group group1, group2, group12;
-    MPI_Comm_group ( comm1.communicator, &group1 );
-    MPI_Comm_group ( comm2.communicator, &group2 );
+    MPI_Group group1=MPI_GROUP_EMPTY, group2=MPI_GROUP_EMPTY, group12=MPI_GROUP_EMPTY;
+    if ( !comm1.isNull() )
+        MPI_Comm_group ( comm1.communicator, &group1 );
+    if ( !comm2.isNull() )
+        MPI_Comm_group ( comm2.communicator, &group2 );
     MPI_Group_intersection( group1, group2, &group12 );
     int compare1, compare2;
     MPI_Group_compare ( group1, group12, &compare1 );
@@ -250,14 +252,14 @@ AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 ) {
     AMP_MPI new_comm(AMP_COMM_NULL);
     int size;
     MPI_Group_size( group12, &size );
-    if ( size==0 ) {
-        // We have no intersection, return NULL
-    } else if ( compare1!=MPI_UNEQUAL ) {
+    if ( compare1!=MPI_UNEQUAL && size!=0 ) {
         // The intersection matches comm1
         new_comm = comm1;
-    } else if ( compare2!=MPI_UNEQUAL ) {
+    } else if ( compare2!=MPI_UNEQUAL && size!=0 ) {
         // The intersection matches comm2
         new_comm = comm2;
+    } else if ( comm1.isNull() ) {
+        // comm1 is null, we can return safely (comm1 is needed for communication)
     } else {
         // The intersection is smaller than comm1 or comm2
         // Create the new comm using comm1
