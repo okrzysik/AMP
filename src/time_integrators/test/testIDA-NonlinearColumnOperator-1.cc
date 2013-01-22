@@ -12,7 +12,7 @@
 #include "operators/NeutronicsRhs.h"
 #include "vectors/Variable.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "vectors/Vector.h"
 #include "operators/VolumeIntegralOperator.h"
 #include "operators/NeutronicsRhs.h"

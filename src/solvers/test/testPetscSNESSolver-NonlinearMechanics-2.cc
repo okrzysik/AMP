@@ -14,7 +14,7 @@
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "operators/mechanics/ThermalVonMisesMatModel.h"
 #include "operators/mechanics/MechanicsNonlinearElement.h"
@@ -47,7 +47,7 @@ void myTest(AMP::UnitTest *ut)
 
 #ifdef USE_EXT_SILO
   // Create the silo writer and register the data
-  AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
+  AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
 #endif
 
   boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));

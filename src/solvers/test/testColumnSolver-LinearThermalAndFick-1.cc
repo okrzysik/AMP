@@ -15,7 +15,7 @@
 #include "materials/Material.h"
 
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "ampmesh/Mesh.h"
 #include "vectors/VectorBuilder.h"

@@ -24,7 +24,7 @@
 #include "solvers/PetscSNESSolver.h"
 #include "solvers/TrilinosMLSolver.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "vectors/VectorBuilder.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "ampmesh/StructuredMeshHelper.h"
@@ -331,7 +331,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     enthalpy->scale(h_scale);
     pressure->scale(P_scale);
     // Register the quantities to plot
-    AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
+    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
     AMP::LinearAlgebra::Vector::shared_ptr subchannelEnthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride(0,2), "H" );
     AMP::LinearAlgebra::Vector::shared_ptr subchannelPressure = solVec->select( AMP::LinearAlgebra::VS_Stride(1,2), "P" );
     subchannelEnthalpy->scale(h_scale);

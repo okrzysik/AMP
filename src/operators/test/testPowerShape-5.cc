@@ -10,7 +10,7 @@
 #include "utils/Database.h"
 #include "vectors/Variable.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "vectors/Vector.h"
 
 #include "ampmesh/Mesh.h"

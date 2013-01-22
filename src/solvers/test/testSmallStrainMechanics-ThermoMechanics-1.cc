@@ -12,7 +12,7 @@
 #include "vectors/VectorSelector.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "operators/mechanics/ThermalStrainMaterialModel.h"
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
@@ -49,7 +49,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
 #ifdef USE_EXT_SILO
   // Create the silo writer and register the data
-  AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
+  AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
 #endif
 
   //Read the input file

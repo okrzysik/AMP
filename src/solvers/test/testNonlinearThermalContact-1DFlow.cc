@@ -17,7 +17,7 @@
 #include "vectors/SimpleVector.h"
 #include "vectors/Vector.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "ampmesh/Mesh.h"
 #include "vectors/VectorBuilder.h"
@@ -519,7 +519,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
 
 //          if( nodes == 2 ) {
 #ifdef USE_EXT_SILO
-     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
 
      siloWriter->registerVector( TemperatureInKelvin, manager, AMP::Mesh::Vertex, "TemperatureInKelvin" );
  

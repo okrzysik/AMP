@@ -21,7 +21,7 @@
 #include "utils/PIO.h"
 #include "utils/Database.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
 
@@ -282,7 +282,7 @@ void moabInterface(AMP::UnitTest *ut)
     // Useful for making sure everything looks right
     
 #ifdef USE_EXT_SILO
-    AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
     siloWriter->registerMesh( mesh );
     siloWriter->registerVector( nodalVec, mesh, AMP::Mesh::Vertex, "Temperatures" );
     siloWriter->writeFile( "Moab_Temp", 0 );

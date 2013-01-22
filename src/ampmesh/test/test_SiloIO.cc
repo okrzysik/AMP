@@ -12,7 +12,7 @@
 #include "utils/ProfilerApp.h"
 
 #include "ampmesh/Mesh.h"
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #ifdef USE_AMP_VECTORS
 #include "discretization/DOF_Manager.h"
@@ -91,7 +91,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     #endif
 
     // Create the silo writer and register the data
-    AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
     int level = 1;  // How much detail do we want to register
     siloWriter->registerMesh( mesh, level );
     siloWriter->registerMesh( submesh, level );
@@ -141,7 +141,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
         std::stringstream  fname1;
         fname1 << input_file << "_" << globalComm.getSize() << "proc_single";
         globalComm.barrier();
-        siloWriter->setDecomposition( 0 );
+        siloWriter->setDecomposition( 1 );
         siloWriter->writeFile( fname1.str() , 0 );
         globalComm.barrier();
     }
@@ -151,7 +151,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file ) {
     std::stringstream  fname2;
     fname2 << input_file << "_" << globalComm.getSize() << "proc_multiple";
     globalComm.barrier();
-    siloWriter->setDecomposition( 1 );
+    siloWriter->setDecomposition( 2 );
     siloWriter->writeFile( fname2.str() , 0 );
     globalComm.barrier();
     double t7 = AMP::AMP_MPI::time();

@@ -1,10 +1,12 @@
 #ifndef included_SolverStrategy
 #define included_SolverStrategy
 
-#include "boost/shared_ptr.hpp"
-#include "operators/Operator.h"
 #include "SolverStrategyParameters.h"
+#include "boost/shared_ptr.hpp"
 #include "vectors/Vector.h"
+#include "vectors/MultiVector.h"
+#include "utils/Writer.h"
+#include "operators/Operator.h"
 
 
 namespace AMP {

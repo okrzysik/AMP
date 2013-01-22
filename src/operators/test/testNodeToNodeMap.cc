@@ -14,7 +14,7 @@
 #include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
 #ifdef USE_EXT_SILO
-    #include "ampmesh/SiloIO.h"
+    #include "utils/Writer.h"
 #endif
 
 
@@ -133,7 +133,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
 
     // Save the results
     #ifdef USE_EXT_SILO
-        AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
+        AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
         siloWriter->registerVector( v1, mesh, AMP::Mesh::Vertex, "v1" );
         siloWriter->registerVector( v2, mesh, AMP::Mesh::Vertex, "v2" );
         siloWriter->writeFile( "testNodeToNodeMap", 0 );

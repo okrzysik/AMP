@@ -46,7 +46,7 @@
 
 #include "vectors/Vector.h"
 #include "vectors/VectorSelector.h"
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/Variable.h"

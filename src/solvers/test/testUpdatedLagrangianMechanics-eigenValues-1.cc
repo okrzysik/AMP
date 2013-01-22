@@ -14,7 +14,7 @@
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "operators/mechanics/ThermalStrainMaterialModel.h"
 #include "operators/mechanics/MechanicsLinearFEOperator.h"

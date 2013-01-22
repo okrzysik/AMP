@@ -16,7 +16,7 @@
 #include "discretization/DOF_Manager.h"
 #include "vectors/VectorBuilder.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"

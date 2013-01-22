@@ -18,7 +18,7 @@
 #include "materials/Material.h"
 
 #include "ampmesh/Mesh.h"
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "vectors/Variable.h"
 #include "vectors/MultiVariable.h"
@@ -101,7 +101,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // register some variables for plotting
 #ifdef USE_EXT_SILO
-  AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+  AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
   siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
   siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
 #endif

@@ -35,7 +35,7 @@
 #include "operators/boundary/DirichletVectorCorrection.h"
 
 #include "vectors/Vector.h"
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "solvers/TrilinosMLSolver.h"
 

@@ -18,7 +18,7 @@
 
 #include "ampmesh/libmesh/libMesh.h"
 #include "ampmesh/Mesh.h"
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "operators/OperatorBuilder.h"
 #include "operators/LinearBVPOperator.h"
@@ -138,7 +138,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
 #ifdef USE_EXT_SILO
-  AMP::Mesh::SiloIO::shared_ptr siloWriter(new AMP::Mesh::SiloIO);
+  AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
 #endif
 
 //  int npes = globalComm.getSize();

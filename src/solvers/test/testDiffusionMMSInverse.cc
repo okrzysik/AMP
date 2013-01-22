@@ -17,7 +17,7 @@
 #include "utils/ManufacturedSolution.h"
 
 #include "ampmesh/Mesh.h"
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
@@ -311,7 +311,7 @@ void inverseTest1(AMP::UnitTest *ut, const std::string exeName)
       // Plot the results
       if( globalComm.getSize() == 1 ) {
      #ifdef USE_EXT_SILO
-         AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+         AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
          siloWriter->registerVector( workVec, meshAdapter, AMP::Mesh::Vertex, "RelativeError" );
          siloWriter->registerVector( solVec,  meshAdapter, AMP::Mesh::Vertex, "Solution" );
          siloWriter->registerVector( srcVec,  meshAdapter, AMP::Mesh::Vertex, "Source" );

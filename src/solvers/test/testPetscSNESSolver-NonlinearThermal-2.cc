@@ -17,7 +17,7 @@
 #include "materials/Material.h"
 
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "ampmesh/Mesh.h"
 #include "vectors/VectorBuilder.h"
@@ -253,7 +253,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
         ut->failure("the Final Residual Norm has changed."); }
 
 #ifdef USE_EXT_SILO
-     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
      siloWriter->registerMesh( meshAdapter );
 
      siloWriter->registerVector( solVec,                 meshAdapter, AMP::Mesh::Vertex, "Solution" );

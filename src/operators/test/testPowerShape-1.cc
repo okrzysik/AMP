@@ -12,7 +12,7 @@
 #include "vectors/Variable.h"
 #include "discretization/simpleDOF_Manager.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
 
@@ -75,7 +75,7 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
     ut->passes("PowerShape gets past apply with a non-flat power shape.");
     
     #ifdef USE_EXT_SILO
-    AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector( SpecificPowerShapeVec, meshAdapter, AMP::Mesh::Volume, "SpecificPowerInWattsPerKg" );
     siloWriter->writeFile( input_file , 0 );
