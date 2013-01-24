@@ -19,7 +19,7 @@ boost::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( std::string type 
     if ( type=="None" || type=="none" || type=="NONE" ) {
         writer.reset( new AMP::Utilities::NullWriter );
     } else if ( type=="Silo" || type=="silo" || type=="SILO" ) {
-        #ifdef USE_AMP_MESH
+        #if defined(USE_AMP_MESH) && defined(USE_EXT_SILO)
             writer.reset( new AMP::Mesh::SiloIO );
         #else
             writer.reset( new AMP::Utilities::NullWriter );
