@@ -210,7 +210,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
             siloWriter->registerVector( T_clad, pin_mesh, AMP::Mesh::Vertex, "Temperature" );
         if ( T_subchannel.get()!=NULL )
             siloWriter->registerVector( T_subchannel, subchannel_face, AMP::Mesh::Face, "Temperature" );
-        siloWriter->setDecomposition( 0 );
+        siloWriter->setDecomposition( 1 );
         siloWriter->writeFile( fname, 0 );
     #endif
 
