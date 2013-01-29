@@ -386,6 +386,8 @@ void ProfilerApp::stop( const std::string& message, const char* filename, const 
             }
             trace->start_time = tmp_s;
             trace->end_time = tmp_e;
+            delete [] tmp_s;
+            delete [] tmp_e;
         }
         // Calculate the time elapsed since the profiler was created
         trace->start_time[N] = get_diff(construct_time,timer->start_time,frequency);
@@ -569,8 +571,8 @@ void ProfilerApp::save( const std::string& filename ) const {
         }
     }
     // Create the file header
-    fprintf(timerFile,"                  Message                    Filename        Thread  Start Line  Stop Line  N_calls  Min Time  Max Time  Total Time\n");
-    fprintf(timerFile,"-----------------------------------------------------------------------------------------------------------------------------------\n");
+    fprintf(timerFile,"                  Message                      Filename          Thread  Start Line  Stop Line  N_calls  Min Time  Max Time  Total Time\n");
+    fprintf(timerFile,"---------------------------------------------------------------------------------------------------------------------------------------\n");
     // Loop through the list of timers, storing the most expensive first
     for (int i=N_timers-1; i>=0; i--) {
         size_t id = id_order[i];                    // Get the timer id
@@ -627,7 +629,7 @@ void ProfilerApp::save( const std::string& filename ) const {
                 }
             }
             // Save the timer to the file
-            fprintf(timerFile,"%30s  %26s   %4i   %7i    %7i  %8i     %8.3f  %8.3f  %10.3f\n",
+            fprintf(timerFile,"%30s  %30s   %4i   %7i    %7i  %8i     %8.3f  %8.3f  %10.3f\n",
                 message,filename2,thread_id,start_line,stop_line,timer->N_calls,min_time,max_time,tot_time);
             timer = timer->next;
         }

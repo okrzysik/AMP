@@ -1,11 +1,11 @@
 #include "solvers/TrilinosThyraModelEvaluator.h"
 #include "solvers/TrilinosLinearOP.h"
+#include "vectors/trilinos/ThyraVectorSpaceWrapper.h"
 #include "utils/Utilities.h"
 
 #include "Thyra_DetachedVectorView.hpp"
 #include "Thyra_VectorBase.hpp"
 #include "Thyra_LinearOpBase.hpp"
-
 
 namespace AMP {
 namespace Solver {
@@ -14,10 +14,16 @@ namespace Solver {
 /****************************************************************
 *  Constructors                                                 *
 ****************************************************************/
-TrilinosThyraModelEvaluator::TrilinosThyraModelEvaluator()
+TrilinosThyraModelEvaluator::TrilinosThyraModelEvaluator( boost::shared_ptr<TrilinosThyraModelEvaluatorParameters> params )
 {
+    d_dofs = params->d_dofs;
     d_linearOP = Teuchos::RCP<TrilinosLinearOP>( new TrilinosLinearOP() );
 }
+
+
+/****************************************************************
+*  Destructor                                                   *
+****************************************************************/
 TrilinosThyraModelEvaluator::~TrilinosThyraModelEvaluator()
 {
 }
@@ -77,13 +83,13 @@ void TrilinosThyraModelEvaluator::evalModelImpl( const ::Thyra::ModelEvaluatorBa
 ****************************************************************/
 Teuchos::RCP<const ::Thyra::VectorSpaceBase<double> > TrilinosThyraModelEvaluator::get_x_space() const
 {
-    AMP_ERROR("Not implimented yet");
-    return Teuchos::RCP<const ::Thyra::VectorSpaceBase<double> >();
+    Teuchos::RCP<LinearAlgebra::ThyraVectorSpaceWrapper> vector_space(new LinearAlgebra::ThyraVectorSpaceWrapper(d_dofs));
+    return vector_space;
 }
 Teuchos::RCP<const ::Thyra::VectorSpaceBase<double> > TrilinosThyraModelEvaluator::get_f_space() const
 {
-    AMP_ERROR("Not implimented yet");
-    return Teuchos::RCP<const ::Thyra::VectorSpaceBase<double> >();
+    Teuchos::RCP<LinearAlgebra::ThyraVectorSpaceWrapper> vector_space(new LinearAlgebra::ThyraVectorSpaceWrapper(d_dofs));
+    return vector_space;
 }
 ::Thyra::ModelEvaluatorBase::InArgs<double> TrilinosThyraModelEvaluator::getNominalValues() const
 {
@@ -104,13 +110,18 @@ Teuchos::RCP<const ::Thyra::LinearOpWithSolveFactoryBase<double> > TrilinosThyra
 }
 ::Thyra::ModelEvaluatorBase::InArgs<double> TrilinosThyraModelEvaluator::createInArgs() const
 {
-    AMP_ERROR("Not implimented yet");
-    return ::Thyra::ModelEvaluatorBase::InArgs<double>();
+    ::Thyra::ModelEvaluatorBase::InArgsSetup<double> inArgs;
+    inArgs.setModelEvalDescription(this->description());
+    inArgs.setSupports(::Thyra::ModelEvaluatorBase::IN_ARG_x);
+    return inArgs;
 }
 ::Thyra::ModelEvaluatorBase::OutArgs<double> TrilinosThyraModelEvaluator::createOutArgsImpl() const
 {
-    AMP_ERROR("Not implimented yet");
-    return ::Thyra::ModelEvaluatorBase::OutArgs<double>();
+    ::Thyra::ModelEvaluatorBase::OutArgsSetup<double> outArgs;
+    outArgs.setModelEvalDescription(this->description());
+    outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_f);
+    outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_op);
+    return outArgs;
 }
 
 

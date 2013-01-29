@@ -12,6 +12,7 @@ namespace LinearAlgebra {
 ****************************************************************/
 ThyraVectorSpaceWrapper::ThyraVectorSpaceWrapper( AMP::Discretization::DOFManager::shared_ptr dofs )
 {
+    AMP_INSIST(dofs!=NULL,"dofs may not be NULL");
     d_dofs = dofs;
 }
 
@@ -33,7 +34,15 @@ Teuchos::Ordinal ThyraVectorSpaceWrapper::dim() const
 }
 bool ThyraVectorSpaceWrapper::isCompatible(const Thyra::VectorSpaceBase<double> &vecSpc) const
 {
-    AMP_ERROR("Not finished");
+    const ThyraVectorSpaceWrapper* vecSpaceWrapper = dynamic_cast<const ThyraVectorSpaceWrapper*>( &vecSpc );
+    if ( vecSpaceWrapper==NULL )
+        return false;
+    if ( this==vecSpaceWrapper )
+        return true;
+    if ( this->d_dofs==vecSpaceWrapper->d_dofs )
+        return true;
+    if ( *this->d_dofs==*vecSpaceWrapper->d_dofs )
+        return true;
     return false;
 }
 Teuchos::RCP<const Thyra::VectorSpaceFactoryBase<double> > ThyraVectorSpaceWrapper::smallVecSpcFcty() const

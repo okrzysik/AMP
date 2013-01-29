@@ -163,19 +163,54 @@ void ThyraVectorWrapper::commitNonconstDetachedMultiVectorViewImpl( RTOpPack::Su
 ****************************************************************/
 void ThyraVectorWrapper::acquireDetachedVectorViewImpl(const Teuchos::Range1D &rng, RTOpPack::ConstSubVectorView<double> *sub_vec) const
 {
-    AMP_ERROR("Not finished");
+    Vector::const_shared_ptr vec = getVec();
+    AMP_ASSERT( vec->getLocalSize()>0 );
+    size_t lower = rng.lbound();
+    size_t upper = std::min<size_t>(rng.ubound(),vec->getLocalSize());
+    AMP_ASSERT( upper>lower );
+    size_t size = upper-lower;
+    double* ptr = new double[size];
+    Teuchos::ArrayRCP<double> array(ptr,rng.lbound(),rng.lbound()+size,true);
+    size_t *indices = new size_t[size];
+    for (size_t i=0; i<size; i++)
+        indices[i] = lower+i;
+    vec->getValuesByLocalID(size,indices,ptr);
+    delete [] indices;
+    sub_vec = new RTOpPack::ConstSubVectorView<double>( array );
 }
 void ThyraVectorWrapper::releaseDetachedVectorViewImpl(RTOpPack::ConstSubVectorView<double> *sub_vec) const
 {
-    AMP_ERROR("Not finished");
 }
 void ThyraVectorWrapper::acquireNonconstDetachedVectorViewImpl(const Teuchos::Range1D &rng, RTOpPack::SubVectorView<double> *sub_vec)
 {
-    AMP_ERROR("Not finished");
+    Vector::shared_ptr vec = getVec();
+    AMP_ASSERT( vec->getLocalSize()>0 );
+    size_t lower = rng.lbound();
+    size_t upper = std::min<size_t>(rng.ubound(),vec->getLocalSize());
+    AMP_ASSERT( upper>lower );
+    size_t size = upper-lower;
+    double* ptr = new double[size];
+    Teuchos::ArrayRCP<double> array(ptr,rng.lbound(),rng.lbound()+size,true);
+    size_t *indices = new size_t[size];
+    for (size_t i=0; i<size; i++)
+        indices[i] = lower+i;
+    vec->getValuesByLocalID(size,indices,ptr);
+    delete [] indices;
+    sub_vec = new RTOpPack::SubVectorView<double>( array );
 }
 void ThyraVectorWrapper::commitNonconstDetachedVectorViewImpl(RTOpPack::SubVectorView<double> *sub_vec)
 {
-    AMP_ERROR("Not finished");
+    Vector::shared_ptr vec = getVec();
+    const Teuchos::ArrayRCP<double> &array = sub_vec->values();
+    size_t lower = array.lowerOffset();
+    size_t upper = array.upperOffset();
+    AMP_ASSERT( upper>lower && upper<=vec->getLocalSize() );
+    size_t size = upper-lower;
+    size_t *indices = new size_t[size];
+    for (size_t i=0; i<size; i++)
+        indices[i] = lower+i;
+    vec->setValuesByLocalID(size,indices,array.get());
+    delete [] indices;
 }
 void ThyraVectorWrapper::setSubVectorImpl(const RTOpPack::SparseSubVectorT<double> &sub_vec)
 {

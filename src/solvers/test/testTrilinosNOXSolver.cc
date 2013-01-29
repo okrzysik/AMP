@@ -32,7 +32,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     input_db->printClassData(AMP::plog);
 
     // Create a null vector for the initial guess
-    AMP::LinearAlgebra::Vector::shared_ptr  nullVec = AMP::LinearAlgebra::NullVector::create("null");
+    AMP::LinearAlgebra::Variable::shared_ptr  icVar(new AMP::LinearAlgebra::Variable("ic"));
+    AMP::LinearAlgebra::Vector::shared_ptr  icVec = AMP::LinearAlgebra::SimpleVector::create(10,icVar);
 
     // Get the databases for the nonlinear and linear solvers
     boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
@@ -42,7 +43,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     boost::shared_ptr<AMP::Solver::TrilinosNOXSolverParameters> nonlinearSolverParams(new
        AMP::Solver::TrilinosNOXSolverParameters(nonlinearSolver_db));
     nonlinearSolverParams->d_comm = solverComm;
-    nonlinearSolverParams->d_pInitialGuess = nullVec;
+    nonlinearSolverParams->d_pInitialGuess = icVec;
     //nonlinearSolverParams->d_pOperator = AMP::Operator::Operator::shared_ptr(new AMP::Operator::NullOperator());
 
     // Create the nonlinear solver

@@ -4,6 +4,8 @@
 
 #include "boost/shared_ptr.hpp"
 #include "solvers/TrilinosLinearOP.h"
+#include "discretization/DOF_Manager.h"
+#include "solvers/TrilinosThyraModelEvaluatorParameters.h"
 
 
 // Trilinos includes
@@ -22,8 +24,8 @@ class TrilinosThyraModelEvaluator: public ::Thyra::StateFuncModelEvaluatorBase<d
 {
 public:
     
-    //! Empty constructor
-    TrilinosThyraModelEvaluator();
+    //! Default constructor
+    TrilinosThyraModelEvaluator( boost::shared_ptr<TrilinosThyraModelEvaluatorParameters> params );
 
     //! Destructor
     virtual ~TrilinosThyraModelEvaluator();
@@ -39,6 +41,9 @@ public:
 
 private:
 
+    //! Empty constructor
+    TrilinosThyraModelEvaluator() {}
+
     // Functions derived from Thyra::StateFuncModelEvaluatorBase<double>
     virtual ::Thyra::ModelEvaluatorBase::OutArgs<double> createOutArgsImpl() const;
     virtual void evalModelImpl( const ::Thyra::ModelEvaluatorBase::InArgs<double> &inArgs,
@@ -47,6 +52,7 @@ private:
     // Data members
     Teuchos::RCP<TrilinosLinearOP> d_linearOP;
     Teuchos::RCP<const ::Thyra::LinearOpWithSolveFactoryBase<double> > d_W_factory;
+    AMP::Discretization::DOFManager::shared_ptr d_dofs;
 
 };
 

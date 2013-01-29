@@ -5,6 +5,9 @@
 #include "solvers/TrilinosNOXSolverParameters.h"
 
 
+#include <NOX_Solver_Generic.H>
+
+
 namespace AMP {
 namespace Solver {
 
@@ -92,11 +95,13 @@ public:
    
 
 protected:
-private:
 
     void initialize( boost::shared_ptr<SolverStrategyParameters> parameters );
     
     AMP::LinearAlgebra::Vector::shared_ptr d_initialGuess;
+
+    Teuchos::RCP<NOX::Solver::Generic> d_solver;
+
 };
   
 }
