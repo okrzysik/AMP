@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <sstream>
+#include <time.h>
 
 #define ERROR_MSG AMP_ERROR
 
@@ -368,9 +369,9 @@ void ProfilerApp::stop( const std::string& message, const char* filename, const 
                 size_new = size_old;
             // Stop allocating memory if we reached the limit
             if ( size_new > MAX_TRACE_TRACE ) 
-                size_new = MAX_TRACE_TRACE;
+                size_new = static_cast<size_t>(MAX_TRACE_TRACE);
             if ( size_old > MAX_TRACE_TRACE ) 
-                size_old = MAX_TRACE_TRACE;
+                size_old = static_cast<size_t>(MAX_TRACE_TRACE);
         }
         if ( size_old != size_new ) {
             // Expand the trace list

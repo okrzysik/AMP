@@ -2,11 +2,6 @@
 #define included_AMP_Utilities
 
 
-#ifdef _MSC_VER
-    #define _CRT_SECURE_NO_WARNINGS		// Supress depreciated warnings for visual studio
-#endif
-
-
 // Include the utility macros
 #include "UtilityMacros.h"
 
@@ -26,7 +21,6 @@ namespace AMP {
   
 
 #ifdef _MSC_VER
-    #define _CRT_SECURE_NO_WARNINGS
     #include <sys/types.h>
     #include <sys/stat.h>
     #include <direct.h>
