@@ -262,14 +262,36 @@ AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 ) {
         // comm1 is null, we can return safely (comm1 is needed for communication)
     } else {
         // The intersection is smaller than comm1 or comm2
-        // Create the new comm using comm1
-        MPI_Comm  new_MPI_comm;
-        MPI_Comm_create( comm1.communicator, group12, &new_MPI_comm );
-        new_comm = AMP_MPI( new_MPI_comm );
+        // Check if the new comm is NULL for all processors
+        int max_size=0;
+        MPI_Allreduce(&size,&max_size,1,MPI_INT,MPI_MAX,comm1.communicator);
+        if ( max_size==0 ) {
+            // We are dealing with completely disjoint sets
+            new_comm = AMP_MPI( AMP_COMM_NULL );
+        } else {
+            // Create the new comm
+            // Note: OpenMPI crashes if the intersection group is EMPTY for any processors
+            // We will set it to SELF for the EMPTY processors, then create a NULL comm later
+            if ( group12==MPI_GROUP_EMPTY )
+                MPI_Comm_group( MPI_COMM_SELF, &group12 );
+            MPI_Comm  new_MPI_comm;
+            MPI_Comm_create( comm1.communicator, group12, &new_MPI_comm );
+            if ( size>0 ) {
+                // This is the valid case were we create a new intersection comm
+                new_comm = AMP_MPI( new_MPI_comm );
+            } else {
+                // We actually want a null comm for this communicator
+                new_comm = AMP_MPI( AMP_COMM_NULL );
+                MPI_Comm_free(&new_MPI_comm);
+            }
+        }
     }
-    MPI_Group_free( &group1 );
-    MPI_Group_free( &group2 );
-    MPI_Group_free( &group12 );
+    if ( group1!=MPI_GROUP_NULL && group1!=MPI_GROUP_EMPTY )
+        MPI_Group_free( &group1 );
+    if ( group2!=MPI_GROUP_NULL && group2!=MPI_GROUP_EMPTY )
+        MPI_Group_free( &group2 );
+    if ( group12!=MPI_GROUP_NULL && group12!=MPI_GROUP_EMPTY )
+        MPI_Group_free( &group12 );
     return new_comm;
 }
 #else
