@@ -125,8 +125,8 @@ namespace Utilities
      */
     template<class T>
     inline bool approx_equal(const T &v1, const T &v2, const T tol = type_default_tol<T>() ) {
-        T tol2 = tol*std::max( fabs(v1), fabs(v2) );    // Compute the absolute tolerance
-        return fabs(v1-v2)<=tol2;                       // Check if the two value are less than tolerance
+        T tol2 = tol*std::max( fabs((double)(v1)), fabs((double)(v2)) ); // Compute the absolute tolerance
+        return fabs((double)(v1-v2))<=tol2;                             // Check if the two value are less than tolerance
     }
 
     /*!
@@ -138,7 +138,7 @@ namespace Utilities
      */
     template<class T>
     inline bool approx_equal_abs(const T &v1, const T &v2, const T tol = type_default_tol<T>() ) {
-        return fabs(v1-v2)<=tol;                    // Check if the two value are less than tolerance
+        return fabs((double)(v1-v2))<=tol;          // Check if the two value are less than tolerance
     }
 
     /*!

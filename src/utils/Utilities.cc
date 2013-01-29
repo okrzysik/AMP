@@ -80,9 +80,6 @@ void Utilities::recursiveMkdir(
    mode_t mode,
    bool only_node_zero_creates)
 {
-
-
-
    AMP_MPI comm = AMP_MPI(AMP_COMM_WORLD);
    if ( (!only_node_zero_creates) || (comm.getRank() == 0)) {
       int length = (int) path.length();

@@ -68,15 +68,15 @@ int main ( int argc , char **argv )
 	   string tcname = temperatureProperty->get_name();
 	   string tcsorc = temperatureProperty->get_source();
 	   AMP::pout << "\n";
-	   good = good and tcname == string("WaterLibrary_Temperature");
+	   good = good && tcname == string("WaterLibrary_Temperature");
 	   AMP::pout << "Temperature name is " << tcname << "\n";
 	   AMP::pout << "Temperature source is " << tcsorc << "\n";
 	   vector<string> args = temperatureProperty->get_arguments();
-	   good = good and args[0] == "enthalpy";
-	   good = good and args[1] == "pressure";
+	   good = good && args[0] == "enthalpy";
+	   good = good && args[1] == "pressure";
 	   AMP::pout << "Temperature property arguments are " << args[0] << " and " << args[1] <<"\n\n";
 	   unsigned int nargs = temperatureProperty->get_number_arguments();
-	   good = good and nargs == 2;
+	   good = good && nargs == 2;
 
 	   // test material accessors, all arguments present
 	   const size_t n=3; // size of input and output arrays for comparison with known thermodynamic values

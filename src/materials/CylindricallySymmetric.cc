@@ -19,6 +19,9 @@
 #include <limits>
 #include <iostream>
 
+
+static inline int lround(double x) { return x>=0.0 ? ceil(x):floor(x); }
+
 namespace AMP
 {
 namespace Materials

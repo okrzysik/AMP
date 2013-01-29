@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 	AMP::AMPManager::startup(argc, argv);
 
 	// help message
-	if (argc == 2 and string(argv[1]) == "-h")
+	if (argc == 2 && string(argv[1]) == "-h")
 	{
 		for (size_t i = 0; i < nhelp; i++)
 			cout << helpmsg[i] << endl;
@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
 
 	string format;
 	format = inDb->getStringWithDefault("Format", "TSV");
-	AMP_INSIST(format=="TSV" or format=="CSV" or format=="Mathematica", "invalid format specified");
+	AMP_INSIST(format=="TSV" || format=="CSV" || format=="Mathematica", "invalid format specified");
 
 	AMP_INSIST(inDb->keyExists("Material"), "must specify material");
 	string matname = inDb->getString("Material");
@@ -135,8 +135,8 @@ int main(int argc, char* argv[])
 
 			bool haveLow = inDb->keyExists(string("Low_") + names[iarg]);
 			bool haveHi = inDb->keyExists(string("High_") + names[iarg]);
-			bool haveBoth = haveLow and haveHi;
-			if (haveLow or haveHi)
+			bool haveBoth = haveLow && haveHi;
+			if (haveLow || haveHi)
 				AMP_INSIST(haveBoth, string("must specify Low and High ")+names[iarg]+string(" together"));
 			if (haveBoth)
 			{
