@@ -35,8 +35,8 @@ int main ( int argc , char **argv )
 	   // test property accessors
 	   string tcname = prop->get_name();
 	   string tcsorc = prop->get_source();
-	   good = good and tcname == string("FixedClad")+string("_ThermalConductivity");
-	   good = good and tcsorc == prop->get_source();
+	   good = good && tcname == string("FixedClad")+string("_ThermalConductivity");
+	   good = good && tcsorc == prop->get_source();
 	   std::cout << "thermal conductivity name is " << tcname << "\n";
 	   std::cout << "thermal conductivity source is " << tcsorc << "\n";
 
@@ -87,20 +87,20 @@ int main ( int argc , char **argv )
 
 	   prop->evalv(tcv, argMap);
 
-	   good = good and AMP::Utilities::approx_equal(tcv[1], tcv[n-1]);
-	   good = good and AMP::Utilities::approx_equal(tcv[2], tcv[n-1]);
+	   good = good && AMP::Utilities::approx_equal(tcv[1], tcv[n-1]);
+	   good = good && AMP::Utilities::approx_equal(tcv[2], tcv[n-1]);
 	   valarray<double> params = prop->get_parameters();
-	   good = good and AMP::Utilities::approx_equal(tcv[1], params[0]);
+	   good = good && AMP::Utilities::approx_equal(tcv[1], params[0]);
 
 	   std::valarray<double> sparams = mat->property("PoissonRatio")->get_parameters();
 	   for (size_t i=0; i<n; i++) {
-		   good = good and prv[i] == sparams[0];
+		   good = good && prv[i] == sparams[0];
 	   }
 
 	   for (size_t i=0; i<3; i++) {
 		   for (size_t j=0; j<n; j++) {
 			   double val = (*vfcv[i])[j];
-			   good = good and val == vparams[i];
+			   good = good && val == vparams[i];
 		   }
 	   }
 
@@ -108,7 +108,7 @@ int main ( int argc , char **argv )
 		   for (size_t j=0; j<3; j++) {
 			   for (size_t k=0; k<n; k++) {
 				   double val = (*tfcv[i][j])[k];
-				   good = good and val == tparams[i*3+j];
+				   good = good && val == tparams[i*3+j];
 			   }
 		   }
 	   }
@@ -121,11 +121,11 @@ int main ( int argc , char **argv )
 
 	   prop->set_parameters(param,1U);
 	   double tcs = prop->eval(arg);
-	   good = good and AMP::Utilities::approx_equal(tcs, param[0]);
+	   good = good && AMP::Utilities::approx_equal(tcs, param[0]);
 
 	   mat->property("ThermalConductivity")->set_parameters(param, 1U);
 	   mat->property("ThermalConductivity")->evalv(tcv, argMap);
-	   good = good and AMP::Utilities::approx_equal(tcv[0], param[0]);
+	   good = good && AMP::Utilities::approx_equal(tcv[0], param[0]);
 
 	   if (good) ut.passes("basic tests of parameterized FixedClad");
 	   else ut.failure("basic tests of parameterized FixedClad");

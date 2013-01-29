@@ -71,7 +71,7 @@ bool Property<Number>::in_range(const std::string &argname, const Number value)
 	if (!is_argument(argname))
 		return true;
 	std::vector<Number> range = get_arg_range(argname);
-	return value >= range[0] and value <= range[1];
+	return value >= range[0] && value <= range[1];
 }
 template<class Number>
 template <class INPUT_VTYPE>
@@ -83,7 +83,7 @@ bool Property<Number>::in_range(const std::string &argname, const INPUT_VTYPE &v
     typename INPUT_VTYPE::const_iterator  pos = values.begin();
     typename INPUT_VTYPE::const_iterator  end = values.end();
     while ( pos != end ) {
-        result = result and *pos >= range[0] and *pos <= range[1];
+        result = result && *pos >= range[0] && *pos <= range[1];
         ++pos;
     }
     return result;

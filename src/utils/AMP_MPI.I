@@ -240,7 +240,16 @@ inline void AMP_MPI::bcast(type *x, const int n, const int root) const {
         call_bcast(x,n,root);
 }
 // Define specializations of bcast(type*, const int, const int)
+#ifdef USE_EXT_MPI
+template <> void AMP_MPI::call_bcast<unsigned char>(unsigned char*, const int, const int) const;
 template <> void AMP_MPI::call_bcast<char>(char*, const int, const int) const;
+template <> void AMP_MPI::call_bcast<unsigned int>(unsigned int*, const int, const int) const;
+template <> void AMP_MPI::call_bcast<int>(int*, const int, const int) const;
+template <> void AMP_MPI::call_bcast<float>(float*, const int, const int) const;
+template <> void AMP_MPI::call_bcast<double>(double*, const int, const int) const;
+#else
+template <> void AMP_MPI::call_bcast<char>(char*, const int, const int) const;
+#endif
 // Default instantiations of bcast(type*, const int, const int)
 template <class type>
 void AMP_MPI::call_bcast(type *x, const int n, const int root) const {

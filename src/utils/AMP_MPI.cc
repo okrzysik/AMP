@@ -1458,12 +1458,24 @@ void AMP_MPI::call_maxReduce<double>(double *x, const int n, int *comm_rank_of_m
 #ifdef USE_EXT_MPI
 // char
 template <>
+void AMP_MPI::call_bcast<unsigned char>(unsigned char *x, const int n, const int root) const {
+    PROFILE_START("bcast<char>",profile_level);
+    MPI_Bcast( x, n, MPI_CHAR, root, communicator);
+    PROFILE_STOP("bcast<char>",profile_level);
+}
+template <>
 void AMP_MPI::call_bcast<char>(char *x, const int n, const int root) const {
     PROFILE_START("bcast<char>",profile_level);
     MPI_Bcast( x, n, MPI_CHAR, root, communicator);
     PROFILE_STOP("bcast<char>",profile_level);
 }
 // int
+template <>
+void AMP_MPI::call_bcast<unsigned int>(unsigned int *x, const int n, const int root) const {
+    PROFILE_START("bcast<int>",profile_level);
+    MPI_Bcast( x, n, MPI_INT, root, communicator);
+    PROFILE_STOP("bcast<int>",profile_level);
+}
 template <>
 void AMP_MPI::call_bcast<int>(int *x, const int n, const int root) const {
     PROFILE_START("bcast<int>",profile_level);

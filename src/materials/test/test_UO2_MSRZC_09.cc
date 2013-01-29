@@ -37,15 +37,15 @@ int main ( int argc , char **argv )
 	   // test property accessors
 	   string tcname = prop->get_name();
 	   string tcsorc = prop->get_source();
-	   good = good and tcname == string("UO2_MSRZC_09_ThermalConductivity");
+	   good = good && tcname == string("UO2_MSRZC_09_ThermalConductivity");
 	   std::cout << "thermal conductivity name is " << tcname << "\n";
 	   std::cout << "thermal conductivity source is " << tcsorc << "\n";
 	   vector<string> args = prop->get_arguments();
-	   good = good and args[0] == "temperature";
-	   good = good and args[1] == "concentration";
+	   good = good && args[0] == "temperature";
+	   good = good && args[1] == "concentration";
 	   std::cout << "arguments are " << args[0] << " " << args[1] <<"\n";
 	   unsigned int nargs = prop->get_number_arguments();
-	   good = good and nargs == 2;
+	   good = good && nargs == 2;
 
 	   // test material accessors, all arguments present
 	   size_t n=10;
@@ -66,8 +66,8 @@ int main ( int argc , char **argv )
 		   std::vector<double> tcv_mat(tcv);
 		   mat->property("ThermalConductivity")->evalv(tcv_mat, argMap);
 		   prop->evalv(tcv, argMap);
-		   for (size_t i=0; i<n; i++) {good = good and AMP::Utilities::approx_equal(tcv[i],tcv_mat[i]);}
-		   for (size_t i=0; i<n; i++) {good = good and AMP::Utilities::approx_equal(tcv[0], tcv[i]);}
+		   for (size_t i=0; i<n; i++) {good = good && AMP::Utilities::approx_equal(tcv[i],tcv_mat[i]);}
+		   for (size_t i=0; i<n; i++) {good = good && AMP::Utilities::approx_equal(tcv[0], tcv[i]);}
 	   }
 
 	   // test material accessors, one argument present
@@ -82,7 +82,7 @@ int main ( int argc , char **argv )
 		   argMap.insert( std::make_pair( "temperature", tv ) );
 		   std::vector<double> tcv_def(tcv);
 		   prop->evalv(tcv_def, argMap);
-		   for (size_t i=0; i<n; i++) {good = good and AMP::Utilities::approx_equal(tcv[i], tcv_def[i]);}
+		   for (size_t i=0; i<n; i++) {good = good && AMP::Utilities::approx_equal(tcv[i], tcv_def[i]);}
 	   }
 
 	   // test material accessors, no arguments present
@@ -90,7 +90,7 @@ int main ( int argc , char **argv )
 		   std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
 		   std::vector<double> tcv_def(tcv);
 		   prop->evalv(tcv_def, argMap);
-		   for (size_t i=0; i<n; i++) {good = good and AMP::Utilities::approx_equal(tcv[i], tcv_def[i]);}
+		   for (size_t i=0; i<n; i++) {good = good && AMP::Utilities::approx_equal(tcv[i], tcv_def[i]);}
 	   }
 
 	   if (good) ut.passes("basic tests of Material");

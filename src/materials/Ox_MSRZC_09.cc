@@ -16,6 +16,7 @@
 
 #include <string>
 #include <valarray>
+#include <math.h>
 
 namespace AMP { 
 namespace Materials {
@@ -83,14 +84,14 @@ Journal of Nuclear Materials 394 (2009) 182--189");
 		double u 	= args[1];
 
 		  std::valarray<double> p=get_parameters();
-		  AMP_ASSERT(T > TminVal and T < TmaxVal);
-		  AMP_ASSERT(u >= uminVal and u <= umaxVal);
+		  AMP_ASSERT(T > TminVal && T < TmaxVal);
+		  AMP_ASSERT(u >= uminVal && u <= umaxVal);
 
 		  double x = u;
 		  if (x < 0.001) x = 0.001;
 
 		  double expDC = p[0] + p[1]/T + p[2]*T*x + p[3]*T*log10((2+x)/x);
-		  double fick = exp( expDC * log(10) );
+		  double fick = exp( expDC * log(10.0) );
 		  return fick;
 	}
 
@@ -99,8 +100,8 @@ Journal of Nuclear Materials 394 (2009) 182--189");
 		double u 	= args[1];
 
 		  std::valarray<double> p=get_parameters();
-		  AMP_ASSERT(T > TminVal and T < TmaxVal);
-		  AMP_ASSERT(u >= uminVal and u <= umaxVal);
+		  AMP_ASSERT(T > TminVal && T < TmaxVal);
+		  AMP_ASSERT(u >= uminVal && u <= umaxVal);
 
 		  double x = u;
 		  if (x < 0.001) x = 0.001;

@@ -3,6 +3,19 @@
 
 #include <string>
 
+#ifdef USE_WINDOWS
+    #define TIME_TYPE LARGE_INTEGER
+    #define get_time(x) QueryPerformanceCounter(x)
+    #define get_diff(start,end,f) (((double)(end.QuadPart-start.QuadPart))/((double)f.QuadPart))
+    #define get_frequency(f) QueryPerformanceFrequency(f)
+#elif defined(USE_LINUX)
+    #define TIME_TYPE timeval
+    #define get_time(x) gettimeofday(x,NULL);
+    #define get_diff(start,end,f) (((double)end.tv_sec-start.tv_sec)+1e-6*((double)end.tv_usec-start.tv_usec))
+    #define get_frequency(f) (*f=timeval())
+#else
+    #error Unknown OS
+#endif
 
 
 int main(int argc, char* argv[])
@@ -53,12 +66,12 @@ int main(int argc, char* argv[])
 
     // Check the performance
     for (int i=0; i<N_it; i++) {
-        // Test how long it takes to get the time of day
-        PROFILE_START("gettimeofday");
-        timeval time1;
+        // Test how long it takes to get the time
+        PROFILE_START("gettime");
+        TIME_TYPE time1;
         for (int j=0; j<N_timers; j++)
-            gettimeofday(&time1,NULL);
-        PROFILE_STOP("gettimeofday");
+            get_time(&time1);
+        PROFILE_STOP("gettime");
         // Test how long it takes to start/stop the timers
         PROFILE_START("level 0");
         for (int j=0; j<N_timers; j++) {

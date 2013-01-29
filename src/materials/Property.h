@@ -67,7 +67,7 @@ public:
 			d_argToIndexMap.insert(
 					std::pair<std::string, size_t>(d_arguments[i], i));
 		}
-		if (ranges == NULL and d_n_arguments > 0)
+		if (ranges == NULL && d_n_arguments > 0)
 		{
 			AMP_INSIST(false, "argument ranges not set");
 		}

@@ -19,6 +19,9 @@
 #include <limits>
 #include <iostream>
 
+
+static inline int round_zero(double x) { return x>=0.0 ? ceil(x):floor(x); }
+
 namespace AMP
 {
 namespace Materials
@@ -228,7 +231,7 @@ public:
 	{
 		Property<double>::set_parameters_and_number(params, nparams);
 		AMP_ASSERT(d_nparams >= 3);
-		d_nparamsRadial = lround(d_params[0]);
+		d_nparamsRadial = round_zero(d_params[0]);
 		AMP_ASSERT(d_nparamsRadial < d_nparams-1);
 		d_nparamsLongitudinal = d_nparams - 1 - d_nparamsRadial;
 		d_radialK.set_parameters_and_number(&d_params[1], d_nparamsRadial);

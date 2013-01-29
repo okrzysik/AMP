@@ -40,7 +40,7 @@ Journal of Nuclear Materials 394 (2009) 182--189");
 	static const double YMparams[3]={2.334e11, 1.095e-4, -1.34};
 	static const double PRatio=0.316;
 
-	static const std::string noarguments[0];
+	static const std::string noarguments[1];
 	static const std::string arguments[2]={"temperature", "concentration"};
 	static const unsigned int narguments = 2;
 
@@ -172,8 +172,8 @@ Journal of Nuclear Materials 394 (2009) 182--189");
 		double u 	= args[1];
 
 		std::valarray<double> p=get_parameters();
-		AMP_ASSERT(T > TminVal and T < TmaxVal);
-		AMP_ASSERT(u >= uminVal and u <= umaxVal);
+		AMP_ASSERT(T > TminVal && T < TmaxVal);
+		AMP_ASSERT(u >= uminVal && u <= umaxVal);
 
 		double x = u;
 		if (x < 0.001) x = 0.001;
@@ -190,8 +190,8 @@ Journal of Nuclear Materials 394 (2009) 182--189");
 		double u 	= args[1];
 
 		std::valarray<double> p=get_parameters();
-		AMP_ASSERT(T > TminVal and T < TmaxVal);
-		AMP_ASSERT(u >= uminVal and u <= umaxVal);
+		AMP_ASSERT(T > TminVal && T < TmaxVal);
+		AMP_ASSERT(u >= uminVal && u <= umaxVal);
 
 		double x = u;
 		if (x < 0.001) x = 0.001;
@@ -215,8 +215,8 @@ Journal of Nuclear Materials 394 (2009) 182--189");
 		double u 	= args[1];
 
 		std::valarray<double> p=get_parameters();
-		AMP_ASSERT(T > TminVal and T < TmaxVal);
-		AMP_ASSERT(u >= uminVal and u <= umaxVal);
+		AMP_ASSERT(T > TminVal && T < TmaxVal);
+		AMP_ASSERT(u >= uminVal && u <= umaxVal);
 
 		double x = u;
 		if (x < 0.001) x = 0.001;
@@ -239,8 +239,8 @@ Journal of Nuclear Materials 394 (2009) 182--189");
 		double u 	= args[1];
 
 		std::valarray<double> p=get_parameters();
-		AMP_ASSERT(T > TminVal and T < TmaxVal);
-		AMP_ASSERT(u >= uminVal and u <= umaxVal);
+		AMP_ASSERT(T > TminVal && T < TmaxVal);
+		AMP_ASSERT(u >= uminVal && u <= umaxVal);
 
 		double x = u;
 		if (x < 0.001) x = 0.001;
@@ -255,8 +255,8 @@ Journal of Nuclear Materials 394 (2009) 182--189");
 		double u 	= args[1];
 
 		std::valarray<double> p=get_parameters();
-		AMP_ASSERT(T > TminVal and T < TmaxVal);
-		AMP_ASSERT(u >= uminVal and u <= umaxVal);
+		AMP_ASSERT(T > TminVal && T < TmaxVal);
+		AMP_ASSERT(u >= uminVal && u <= umaxVal);
 
 		double x = u;
 		if (x < 0.001) x = 0.001;
@@ -274,8 +274,8 @@ Journal of Nuclear Materials 394 (2009) 182--189");
 		double u 	= args[1];
 
 		std::valarray<double> p=get_parameters();
-		AMP_ASSERT(T > TminVal and T < TmaxVal);
-		AMP_ASSERT(u >= uminVal and u <= umaxVal);
+		AMP_ASSERT(T > TminVal && T < TmaxVal);
+		AMP_ASSERT(u >= uminVal && u <= umaxVal);
 
 		double x = u;
 		if (x < 0.001) x = 0.001;
@@ -293,8 +293,8 @@ Journal of Nuclear Materials 394 (2009) 182--189");
 		double u 	= args[1];
 
 		std::valarray<double> p=get_parameters();
-		AMP_ASSERT(T > TminVal and T < TmaxVal);
-		AMP_ASSERT(u >= uminVal and u <= umaxVal);
+		AMP_ASSERT(T > TminVal && T < TmaxVal);
+		AMP_ASSERT(u >= uminVal && u <= umaxVal);
 
 		double x = u;
 		if (x < 0.001) x = 0.001;
