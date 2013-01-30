@@ -228,6 +228,8 @@ AMP_MPI::AMP_MPI( MPI_Comm comm ) {
         comm_size = 1;
         d_maxTag = mpi_max_tag;
         d_isNull = communicator==AMP_COMM_NULL;
+        if ( d_isNull )
+            comm_size = 0;
     #endif
     call_abort_in_serial_instead_of_exit = true;
     // We are creating a AMP_MPI comm from an MPI_Comm, the user is responsible for freeing the MPI_Comm object

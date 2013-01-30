@@ -291,12 +291,12 @@ namespace Utilities
 template <class T>
 void Utilities::quicksort(std::vector<T> &x)
 {
-    int n = (int) x.size();
+    long int n = static_cast<long int>(x.size());
     if ( n <= 1 )
         return;
     T *arr = &x[0];
     bool test;
-    int i, ir, j, jstack, k, l, istack[100];
+    long int i, ir, j, jstack, k, l, istack[100];
     T a, tmp_a;
     jstack = 0;
     l = 0;
@@ -383,13 +383,13 @@ void Utilities::quicksort(std::vector<T1> &x, std::vector<T2> &y)
 {
     if ( x.size() != y.size() )
         AMP_ERROR("x and y must be the same size");
-    int n = (int) x.size();
+    long int n = static_cast<long int>(x.size());
     if ( n <= 1 )
         return;
     T1 *arr = &x[0];
     T2 *brr = &y[0];
     bool test;
-    int i, ir, j, jstack, k, l, istack[100];
+    long int i, ir, j, jstack, k, l, istack[100];
     T1 a, tmp_a;
     T2 b, tmp_b;
     jstack = 0;
@@ -499,7 +499,7 @@ void Utilities::quicksort(std::vector<T1> &x, std::vector<T2> &y)
 template <class T>
 void Utilities::unique(std::vector<T> &x)
 {
-    if ( x.size()==0 )
+    if ( x.size()<=1 )
         return;
     // First perform a quicksort
     Utilities::quicksort(x);

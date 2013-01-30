@@ -18,13 +18,11 @@
 #endif
 
 
-int main(int argc, char* argv[])
+int run_tests( bool enable_trace ) 
 {
-    // Initialize AMP
-    AMP::AMPManagerProperties startup_properties;
-    startup_properties.use_MPI_Abort = false;
-    AMP::AMPManager::startup(argc,argv,startup_properties);
     PROFILE_ENABLE();
+    if ( enable_trace )
+        PROFILE_ENABLE_TRACE();
     PROFILE_START("MAIN");
 
     const int N_it = 100;
@@ -87,10 +85,25 @@ int main(int argc, char* argv[])
         PROFILE_STOP("level 1");
     }
 
-
     PROFILE_STOP("MAIN");
     PROFILE_SAVE("test_ProfilerApp");
+    return N_errors;
+}
 
+
+int main(int argc, char* argv[])
+{
+    // Initialize AMP
+    AMP::AMPManagerProperties startup_properties;
+    startup_properties.use_MPI_Abort = false;
+    AMP::AMPManager::startup(argc,argv,startup_properties);
+    
+    // Run the tests
+    int N_errors=0;
+    N_errors += run_tests( false );
+    PROFILE_DISABLE();
+    N_errors += run_tests( false );
+    
     // Finalize AMP
     if ( N_errors==0 ) 
         std::cout << "All tests passed" << std::endl;

@@ -12,7 +12,7 @@
 #define MONITOR_PROFILER_PERFORMANCE 0
 
 
-AMP::ProfilerApp global_profiler = AMP::ProfilerApp();
+AMP::ProfilerApp global_profiler;
 
 extern "C" {
     #include "assert.h"
@@ -355,7 +355,7 @@ void ProfilerApp::stop( const std::string& message, const char* filename, const 
         if ( trace->start_time==NULL ) {
             // We haven't allocated any memory yet
             size_old = 0;
-            size_new = 1;
+            size_new = 128;
         } else {
             // We want to allocate memory in powers of 2
             // The current allocated size is the smallest power of 2 that is >= N
@@ -387,8 +387,6 @@ void ProfilerApp::stop( const std::string& message, const char* filename, const 
             }
             trace->start_time = tmp_s;
             trace->end_time = tmp_e;
-            delete [] tmp_s;
-            delete [] tmp_e;
         }
         // Calculate the time elapsed since the profiler was created
         trace->start_time[N] = get_diff(construct_time,timer->start_time,frequency);
