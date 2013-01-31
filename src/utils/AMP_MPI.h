@@ -238,6 +238,15 @@ public:
 
 
     /**
+     * \brief   Return a new tag
+     * \details This routine will return an unused tag for communication.
+     *   Note that this tag may match a user tag, but this function will 
+     *   not return two duplicate tags.  This is a global operation.
+     */
+    int newTag();
+
+
+    /**
      * Call MPI_Abort or exit depending on whether running with one or more 
      * processes and value set by function above, if called.  The default is
      * to call exit(-1) if running with one processor and to call MPI_Abort()
@@ -459,7 +468,7 @@ public:
     /**
      * Perform a global barrier across all processors.
      */
-    void barrier();
+    void barrier() const;
 
 
     /*!
@@ -812,6 +821,7 @@ private:
 
     // Some attributes
     int d_maxTag;
+    volatile int d_currentTag;
 
     // Add a variable for data alignment (necessary for some Intel builds)
     double tmp_allignment;

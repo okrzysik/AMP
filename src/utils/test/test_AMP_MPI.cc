@@ -793,6 +793,17 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     PROFILE_START("testComm");
     testCommTimerResults timer;
     double start_time;
+    // Test the tag
+    int tag0 = comm.newTag();
+    bool pass = tag0>0 && tag0<comm.maxTag();
+    for (int i=1; i<255; i++) {
+        if ( comm.newTag()!=tag0+i )
+            pass = false;
+    }
+    if ( pass ) 
+        ut->passes("newTag");
+    else
+        ut->failure("newTag");
     // Test all and any reduce
     bool test1 = !comm.allReduce(comm.getRank()!=0);
     bool test2 = comm.allReduce(true);
@@ -814,6 +825,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_reduce += testReduce<int>(comm,ut,0);
     timer.N_reduce += testReduce<unsigned long int>(comm,ut,1);     // does not support rank of min/max
     timer.N_reduce += testReduce<long int>(comm,ut,0);
+    timer.N_reduce += testReduce<size_t>(comm,ut,1);                // does not support rank of min/max
     timer.N_reduce += testReduce<float>(comm,ut,0);
     timer.N_reduce += testReduce<double>(comm,ut,0);
     timer.N_reduce += testReduce<std::complex<double> >(comm,ut,2); // only sumreduce is valid for complex numbers
@@ -853,6 +865,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_scan += testScan<int>(comm,ut);
     timer.N_scan += testScan<unsigned long int>(comm,ut);
     timer.N_scan += testScan<long int>(comm,ut);
+    timer.N_scan += testScan<size_t>(comm,ut);
     timer.N_scan += testScan<float>(comm,ut);
     timer.N_scan += testScan<double>(comm,ut);
     timer.N_scan += testScan< std::complex<double> >(comm,ut,1);    // Only sumScan is valid with complex data
@@ -890,6 +903,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_bcast += testBcast<int>(comm,ut,-1,1);
     timer.N_bcast += testBcast<unsigned long int>(comm,ut,0,1);
     timer.N_bcast += testBcast<long int>(comm,ut,-1,1);
+    timer.N_bcast += testBcast<size_t>(comm,ut,-1,1);
     timer.N_bcast += testBcast<float>(comm,ut,-1.0,1.0);
     timer.N_bcast += testBcast<double>(comm,ut,-1.0,1.0);
     mytype tmp3(-1,-1.0);
@@ -906,6 +920,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_allGather += testAllGather<int>(comm,ut);
     timer.N_allGather += testAllGather<unsigned long int>(comm,ut);
     timer.N_allGather += testAllGather<long int>(comm,ut);
+    timer.N_allGather += testAllGather<size_t>(comm,ut);
     timer.N_allGather += testAllGather<float>(comm,ut);
     timer.N_allGather += testAllGather<double>(comm,ut);
     timer.N_allGather += testAllGather< std::complex<double> >(comm,ut);
@@ -919,6 +934,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_setGather += testSetGather<int>(comm,ut);
     timer.N_setGather += testSetGather<unsigned long int>(comm,ut);
     timer.N_setGather += testSetGather<long int>(comm,ut);
+    timer.N_setGather += testSetGather<size_t>(comm,ut);
     timer.N_setGather += testSetGather<float>(comm,ut);
     timer.N_setGather += testSetGather<double>(comm,ut);
     timer.t_setGather = AMP::AMP_MPI::time()-start_time;
@@ -930,6 +946,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_mapGather += testMapGather<int>(comm,ut);
     timer.N_mapGather += testMapGather<unsigned long int>(comm,ut);
     timer.N_mapGather += testMapGather<long int>(comm,ut);
+    timer.N_mapGather += testMapGather<size_t>(comm,ut);
     timer.N_mapGather += testMapGather<float>(comm,ut);
     timer.N_mapGather += testMapGather<double>(comm,ut);
     timer.t_mapGather = AMP::AMP_MPI::time()-start_time;
@@ -941,6 +958,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_allToAll += testAllToAll<int>(comm,ut);
     timer.N_allToAll += testAllToAll<unsigned long int>(comm,ut);
     timer.N_allToAll += testAllToAll<long int>(comm,ut);
+    timer.N_allToAll += testAllToAll<size_t>(comm,ut);
     timer.N_allToAll += testAllToAll<float>(comm,ut);
     timer.N_allToAll += testAllToAll<double>(comm,ut);
     timer.N_allToAll += testAllToAll< std::complex<double> >(comm,ut);
@@ -954,6 +972,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_sendRecv += testSendRecv<int>(comm,ut,-1,1);
     timer.N_sendRecv += testSendRecv<unsigned long int>(comm,ut,0,1);
     timer.N_sendRecv += testSendRecv<long int>(comm,ut,-1,1);
+    timer.N_sendRecv += testSendRecv<size_t>(comm,ut,0,1);
     timer.N_sendRecv += testSendRecv<float>(comm,ut,-1.0,1.0);
     timer.N_sendRecv += testSendRecv<double>(comm,ut,-1.0,1.0);
     timer.N_sendRecv += testSendRecv<mytype>(comm,ut,tmp3,tmp4);
@@ -966,6 +985,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_IsendIrecv += testIsendIrecv<int>(comm,ut,-1,1);
     timer.N_IsendIrecv += testIsendIrecv<unsigned long int>(comm,ut,0,1);
     timer.N_IsendIrecv += testIsendIrecv<long int>(comm,ut,-1,1);
+    timer.N_IsendIrecv += testIsendIrecv<size_t>(comm,ut,0,1);
     timer.N_IsendIrecv += testIsendIrecv<float>(comm,ut,-1.0,1.0);
     timer.N_IsendIrecv += testIsendIrecv<double>(comm,ut,-1.0,1.0);
     timer.N_IsendIrecv += testIsendIrecv<mytype>(comm,ut,tmp3,tmp4);

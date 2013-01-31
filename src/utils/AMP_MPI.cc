@@ -20,6 +20,7 @@
 #ifndef USE_EXT_MPI
     #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
         // We are using windows without mpi, we need windows timers
+        #define USE_WINDOWS
         #include <windows.h>
     #else
         // We are using linux without mpi, we need linux timers
@@ -231,6 +232,7 @@ AMP_MPI::AMP_MPI( MPI_Comm comm ) {
         if ( d_isNull )
             comm_size = 0;
     #endif
+    d_currentTag = (d_maxTag<=0x10000) ? 1:0x1FFF;
     call_abort_in_serial_instead_of_exit = true;
     // We are creating a AMP_MPI comm from an MPI_Comm, the user is responsible for freeing the MPI_Comm object
     count = NULL;
@@ -635,6 +637,21 @@ void AMP_MPI::abort() const
 
 
 /************************************************************************
+*  newTag                                                               *
+************************************************************************/
+int AMP_MPI::newTag() 
+{
+    // Syncronize the processes to ensure all ranks enter this call 
+    // Needed so the count will match
+    barrier();
+    // Return and increment the tag
+    AMP_INSIST(d_currentTag<d_maxTag,"Maximum number of tags exceeded\n");
+    int tag = d_currentTag++;
+    return tag;
+}
+
+
+/************************************************************************
 *  allReduce                                                            *
 ************************************************************************/
 bool AMP_MPI::allReduce(const bool value) const {
@@ -779,6 +796,36 @@ void AMP_MPI::call_sumReduce<unsigned long>(unsigned long *x, const int n) const
     delete [] recv;
     PROFILE_STOP("sumReduce2<unsigned long>",profile_level);
 }
+// size_t
+#ifdef USE_WINDOWS
+    template <>
+    void AMP_MPI::call_sumReduce<size_t>(const size_t *send, size_t *recv, const int n) const {
+        PROFILE_START("sumReduce1<size_t>",profile_level);
+        if ( sizeof(size_t)==sizeof(int) )
+            MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED, MPI_SUM, communicator);
+        else if ( sizeof(size_t)==sizeof(long int) )
+            MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_SUM, communicator);
+        else
+            AMP_ERROR("Internal error");
+        PROFILE_STOP("sumReduce1<size_t>",profile_level);
+    }
+    template <>
+    void AMP_MPI::call_sumReduce<size_t>(size_t *x, const int n) const {
+        PROFILE_START("sumReduce2<size_t>",profile_level);
+        size_t *send = x;
+        size_t *recv = new size_t[n];
+        if ( sizeof(size_t)==sizeof(int) )
+            MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED, MPI_SUM, communicator);
+        else if ( sizeof(size_t)==sizeof(long int) )
+            MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_SUM, communicator);
+        else
+            AMP_ERROR("Internal error");
+        for (int i=0; i<n; i++)
+            x[i] = recv[i];
+        delete [] recv;
+        PROFILE_STOP("sumReduce2<size_t>",profile_level);
+    }
+#endif
 // float
 template <>
 void AMP_MPI::call_sumReduce<float>(const float *send, float *recv, const int n) const {
@@ -1010,7 +1057,6 @@ void AMP_MPI::call_minReduce<unsigned long int>(unsigned long int *x, const int 
          AMP_ERROR("Returning the rank of min with unsigned long int is not supported yet");
     }
 }
-
 // long int
 template <>
 void AMP_MPI::call_minReduce<long int>(const long int *x, long int *y, const int n, int *comm_rank_of_min) const {
@@ -1061,6 +1107,44 @@ void AMP_MPI::call_minReduce<long int>(long int *x, const int n, int *comm_rank_
     }
     PROFILE_STOP("minReduce2<long int>",profile_level);
 }
+// size_t
+#ifdef USE_WINDOWS
+    template <>
+    void AMP_MPI::call_minReduce<size_t>(const size_t *send, size_t *recv, const int n, int *comm_rank_of_min) const {
+        if ( comm_rank_of_min==NULL ) {
+            PROFILE_START("minReduce1<size_t>",profile_level);
+            if ( sizeof(size_t)==sizeof(int) )
+                MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED, MPI_MIN, communicator);
+            else if ( sizeof(size_t)==sizeof(long int) )
+                MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_MIN, communicator);
+            else
+                AMP_ERROR("Internal error");
+            PROFILE_STOP("minReduce1<size_t>",profile_level);
+        } else {
+             AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        }
+    }
+    template <>
+    void AMP_MPI::call_minReduce<size_t>(size_t *x, size_t n, int *comm_rank_of_min) const {
+        if ( comm_rank_of_min==NULL ) {
+            PROFILE_START("minReduce2<size_t>",profile_level);
+            size_t *send = x;
+            size_t *recv = new size_t[n];
+            if ( sizeof(size_t)==sizeof(int) )
+                MPI_Allreduce( send, recv, n, MPI_UNSIGNED, MPI_MIN, communicator);
+            else if ( sizeof(size_t)==sizeof(long int) )
+                MPI_Allreduce( send, recv, n, MPI_UNSIGNED)LONG, MPI_MIN, communicator);
+            else
+                AMP_ERROR("Internal error");
+            for (int i=0; i<n; i++)
+                x[i] = recv[i];
+            delete [] recv;
+            PROFILE_STOP("minReduce2<size_t>",profile_level);
+        } else {
+             AMP_ERROR("Returning the rank of min with unsigned int is not supported yet");
+        }
+    }
+#endif
 // float
 template <>
 void AMP_MPI::call_minReduce<float>(const float *x, float *y, const int n, int *comm_rank_of_min) const {
@@ -1372,6 +1456,44 @@ void AMP_MPI::call_maxReduce<unsigned long int>(unsigned long int *x, const int 
          AMP_ERROR("Returning the rank of min with unsigned long int is not supported yet");
     }
 }
+// size_t
+#ifdef USE_WINDOWS
+    template <>
+    void AMP_MPI::call_maxReduce<size_t>(const size_t *send, size_t *recv, const int n, int *comm_rank_of_max) const {
+        if ( comm_rank_of_max==NULL ) {
+            PROFILE_START("minReduce1<size_t>",profile_level);
+            if ( sizeof(size_t)==sizeof(int) )
+                MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED, MPI_MAX, communicator);
+            else if ( sizeof(size_t)==sizeof(long int) )
+                MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_MAX, communicator);
+            else
+                AMP_ERROR("Internal error");
+            PROFILE_STOP("minReduce1<size_t>",profile_level);
+        } else {
+             AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        }
+    }
+    template <>
+    void AMP_MPI::call_maxReduce<size_t>(size_t *x, size_t n, int *comm_rank_of_max) const {
+        if ( comm_rank_of_max==NULL ) {
+            PROFILE_START("minReduce2<size_t>",profile_level);
+            size_t *send = x;
+            size_t *recv = new size_t[n];
+            if ( sizeof(size_t)==sizeof(int) )
+                MPI_Allreduce( send, recv, n, MPI_UNSIGNED, MPI_MAX, communicator);
+            else if ( sizeof(size_t)==sizeof(long int) )
+                MPI_Allreduce( send, recv, n, MPI_UNSIGNED)LONG, MPI_MAX, communicator);
+            else
+                AMP_ERROR("Internal error");
+            for (int i=0; i<n; i++)
+                x[i] = recv[i];
+            delete [] recv;
+            PROFILE_STOP("minReduce2<size_t>",profile_level);
+        } else {
+             AMP_ERROR("Returning the rank of min with unsigned int is not supported yet");
+        }
+    }
+#endif
 // float
 template <>
 void AMP_MPI::call_maxReduce<float>(const float *x, float *y, const int n, int *comm_rank_of_min) const {
@@ -1532,7 +1654,7 @@ void AMP_MPI::call_bcast<char>(char *x, const int n, const int root) const {
 /************************************************************************
 *  Perform a global barrier across all processors.                      *
 ************************************************************************/
-void AMP_MPI::barrier()
+void AMP_MPI::barrier() const
 {
     #ifdef USE_EXT_MPI
         MPI_Barrier(communicator);
