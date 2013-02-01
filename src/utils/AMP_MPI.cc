@@ -116,6 +116,7 @@ AMP_MPI::AMP_MPI() {
     comm_rank = 0;
     comm_size = 1;
     d_isNull = true;
+    d_currentTag = NULL;
     call_abort_in_serial_instead_of_exit = true;
 }
 
@@ -124,24 +125,12 @@ AMP_MPI::AMP_MPI() {
 *  Empty deconstructor                                                  *
 ************************************************************************/
 AMP_MPI::~AMP_MPI() {
-    /*#ifdef USE_EXT_MPI
-        // Temporary solution until memory bugs are sorted, remove!!
-        if ( count == NULL ) {
-        } else if ( *count == 1 ) {
-            int flag;
-            MPI_Finalized( &flag );
-            if ( flag ) {
-                printf("Warning: still destroying objects after MPI_Finialize\n");
-                return;
-            }
-        }
-    #endif*/
     // Check if the count is == 1
     if ( count == NULL ) {
         // We are not keeping a count, no need to free anything
     } else if ( *count > 1 ) {
         // We need to decrement count, but do not need to free anything
-        (*count)--;
+        --(*count);
     } else if ( *count == 1 ) {
         // We are holding that last reference to the MPI_Comm object, we need to free it
         #ifdef USE_EXT_MPI
@@ -158,6 +147,13 @@ AMP_MPI::~AMP_MPI() {
     } else {
         // The count is invalid
         AMP_ERROR("Invalid count");
+    }
+    if ( d_currentTag==NULL ) {
+        // No tag index
+    } else if ( d_currentTag[1] > 1 ) {
+        --(d_currentTag[1]);
+    } else {
+        delete [] d_currentTag;
     }
     comm_rank = 0;
     comm_size = 1;
@@ -177,11 +173,40 @@ AMP_MPI::AMP_MPI( const AMP::AMP_MPI& comm ) {
     comm_size = comm.comm_size;
     d_isNull = comm.d_isNull;
     d_maxTag = comm.d_maxTag;
+    d_currentTag = comm.d_currentTag;
+    if ( d_currentTag != NULL )
+        ++d_currentTag[1];
     call_abort_in_serial_instead_of_exit = comm.call_abort_in_serial_instead_of_exit;
     // Set and increment the count
     count = comm.count;
     if ( count != NULL )
-        (*count)++;
+        ++(*count);
+}
+
+
+/************************************************************************
+*  Assignment operator                                                  *
+************************************************************************/
+AMP_MPI& AMP_MPI::operator=(const AMP::AMP_MPI& comm) {
+    if (this == &comm) // protect against invalid self-assignment
+        return *this;
+    // Destroy a previous AMP_MPI object
+    this->~AMP_MPI();
+    // Initialize the data members to the existing AMP_MPI object
+    this->communicator = comm.communicator;
+    this->comm_rank = comm.comm_rank;
+    this->comm_size = comm.comm_size;
+    this->d_isNull = comm.d_isNull;
+    this->d_maxTag = comm.d_maxTag;
+    this->call_abort_in_serial_instead_of_exit = comm.call_abort_in_serial_instead_of_exit;
+    this->d_currentTag = comm.d_currentTag;
+    if ( this->d_currentTag != NULL )
+        ++(this->d_currentTag[1]);
+    // Set and increment the count
+    this->count = comm.count;
+    if ( this->count != NULL )
+        (*(this->count))++;
+    return *this;
 }
 
 
@@ -232,7 +257,13 @@ AMP_MPI::AMP_MPI( MPI_Comm comm ) {
         if ( d_isNull )
             comm_size = 0;
     #endif
-    d_currentTag = (d_maxTag<=0x10000) ? 1:0x1FFF;
+    if ( d_isNull ) {
+        d_currentTag = NULL;
+    } else {
+        d_currentTag = new int[2];
+        d_currentTag[0] = (d_maxTag<=0x10000) ? 1:0x1FFF;
+        d_currentTag[1] = 1;
+    }
     call_abort_in_serial_instead_of_exit = true;
     // We are creating a AMP_MPI comm from an MPI_Comm, the user is responsible for freeing the MPI_Comm object
     count = NULL;
@@ -307,28 +338,6 @@ AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 ) {
 }
 #endif
 
-/************************************************************************
-*  Assignment operator                                                  *
-************************************************************************/
-AMP_MPI& AMP_MPI::operator=(const AMP::AMP_MPI& comm) {
-    if (this == &comm) // protect against invalid self-assignment
-        return *this;
-    // Destroy a previous AMP_MPI object
-    this->~AMP_MPI();
-    // Initialize the data members to the existing AMP_MPI object
-    this->communicator = comm.communicator;
-    this->comm_rank = comm.comm_rank;
-    this->comm_size = comm.comm_size;
-    this->d_isNull = comm.d_isNull;
-    this->d_maxTag = comm.d_maxTag;
-    this->call_abort_in_serial_instead_of_exit = comm.call_abort_in_serial_instead_of_exit;
-    // Set and increment the count
-    this->count = comm.count;
-    if ( this->count != NULL )
-        (*(this->count))++;
-    return *this;
-}
-
 
 /************************************************************************
 *  Split an exisiting AMP_MPI object                                    *
@@ -352,11 +361,6 @@ AMP_MPI AMP_MPI::split( int color, int key ) const {
     #endif
     // Create the AMP_MPI object
     AMP_MPI new_comm(new_MPI_comm);
-    #ifdef USE_EXT_MPI
-        new_comm.d_isNull = new_comm.communicator==MPI_COMM_NULL;
-    #else
-        new_comm.d_isNull = new_comm.communicator==AMP_COMM_NULL;
-    #endif
     new_comm.call_abort_in_serial_instead_of_exit = call_abort_in_serial_instead_of_exit;
     // Create the count
     #ifdef USE_EXT_MPI
@@ -645,8 +649,8 @@ int AMP_MPI::newTag()
     // Needed so the count will match
     barrier();
     // Return and increment the tag
-    AMP_INSIST(d_currentTag<d_maxTag,"Maximum number of tags exceeded\n");
-    int tag = d_currentTag++;
+    int tag = (*d_currentTag)++;
+    AMP_INSIST(tag<=d_maxTag,"Maximum number of tags exceeded\n");
     return tag;
 }
 
@@ -1125,7 +1129,7 @@ void AMP_MPI::call_minReduce<long int>(long int *x, const int n, int *comm_rank_
         }
     }
     template <>
-    void AMP_MPI::call_minReduce<size_t>(size_t *x, size_t n, int *comm_rank_of_min) const {
+    void AMP_MPI::call_minReduce<size_t>(size_t *x, const int n, int *comm_rank_of_min) const {
         if ( comm_rank_of_min==NULL ) {
             PROFILE_START("minReduce2<size_t>",profile_level);
             size_t *send = x;
@@ -1133,7 +1137,7 @@ void AMP_MPI::call_minReduce<long int>(long int *x, const int n, int *comm_rank_
             if ( sizeof(size_t)==sizeof(int) )
                 MPI_Allreduce( send, recv, n, MPI_UNSIGNED, MPI_MIN, communicator);
             else if ( sizeof(size_t)==sizeof(long int) )
-                MPI_Allreduce( send, recv, n, MPI_UNSIGNED)LONG, MPI_MIN, communicator);
+                MPI_Allreduce( send, recv, n, MPI_UNSIGNED_LONG, MPI_MIN, communicator);
             else
                 AMP_ERROR("Internal error");
             for (int i=0; i<n; i++)
@@ -1474,7 +1478,7 @@ void AMP_MPI::call_maxReduce<unsigned long int>(unsigned long int *x, const int 
         }
     }
     template <>
-    void AMP_MPI::call_maxReduce<size_t>(size_t *x, size_t n, int *comm_rank_of_max) const {
+    void AMP_MPI::call_maxReduce<size_t>(size_t *x, const int n, int *comm_rank_of_max) const {
         if ( comm_rank_of_max==NULL ) {
             PROFILE_START("minReduce2<size_t>",profile_level);
             size_t *send = x;
@@ -1482,7 +1486,7 @@ void AMP_MPI::call_maxReduce<unsigned long int>(unsigned long int *x, const int 
             if ( sizeof(size_t)==sizeof(int) )
                 MPI_Allreduce( send, recv, n, MPI_UNSIGNED, MPI_MAX, communicator);
             else if ( sizeof(size_t)==sizeof(long int) )
-                MPI_Allreduce( send, recv, n, MPI_UNSIGNED)LONG, MPI_MAX, communicator);
+                MPI_Allreduce( send, recv, n, MPI_UNSIGNED_LONG, MPI_MAX, communicator);
             else
                 AMP_ERROR("Internal error");
             for (int i=0; i<n; i++)

@@ -791,14 +791,21 @@ private:
     // The internal MPI communicator
     MPI_Comm  communicator;
     
-    // The rank and size of the communicator
-    int comm_rank, comm_size;
-    
     // Is the communicator NULL
     bool d_isNull;
 
     // Do we want to call MPI_abort instead of exit
     bool call_abort_in_serial_instead_of_exit;
+
+    // The rank and size of the communicator
+    int comm_rank, comm_size;
+    
+    // The level for the profiles of MPI
+    static int profile_level;
+
+    // Some attributes
+    int d_maxTag;
+    int* volatile d_currentTag;
 
     /* How many AMP_MPI objects share the same underlying MPI communicator.
      * When the count goes to 0, the MPI comm will be free'd (assuming it was created
@@ -809,22 +816,15 @@ private:
      */
     int* volatile count;
 
+    // Add a variable for data alignment (necessary for some Intel builds)
+    double tmp_allignment;
+
     /* We want to keep track of how many MPI_Comm objects we have created over time.
      * Like the count, for thread safety this should be blocked, however the most likely error
      * caused by not blocking is a slight error in the MPI count.  Since this is just for reference
      * we don not need to block (recognizing that the value may not be 100% accurate).
      */
     static volatile unsigned int N_MPI_Comm_created;
-
-    // The level for the profiles of MPI
-    static int profile_level;
-
-    // Some attributes
-    int d_maxTag;
-    volatile int d_currentTag;
-
-    // Add a variable for data alignment (necessary for some Intel builds)
-    double tmp_allignment;
 
     // Private helper functions for templated MPI operations;
     template <class type>  void call_sumReduce(type *x, const int n=1) const;

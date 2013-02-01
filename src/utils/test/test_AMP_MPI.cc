@@ -12,6 +12,7 @@
 #include "utils/PIO.h"
 
 
+
 struct mytype{
     int a;
     double b;
@@ -795,9 +796,14 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     double start_time;
     // Test the tag
     int tag0 = comm.newTag();
+    AMP::AMP_MPI comm2 = comm;
     bool pass = tag0>0 && tag0<comm.maxTag();
-    for (int i=1; i<255; i++) {
+    for (int i=1; i<128; i++) {
         if ( comm.newTag()!=tag0+i )
+            pass = false;
+    }
+    for (int i=1; i<128; i++) {
+        if ( comm2.newTag()!=tag0+127+i )
             pass = false;
     }
     if ( pass ) 
@@ -1007,7 +1013,7 @@ void testCommDup(AMP::UnitTest *ut) {
         ut->failure("dup comm");
         return;
     }
-    size_t N_comm_try = 10000;  // Maximum number of comms to try and create
+    size_t N_comm_try = 100;  // Maximum number of comms to try and create
     std::vector<AMP::AMP_MPI> comms;
     comms.reserve(N_comm_try);
     try {
@@ -1145,8 +1151,8 @@ int main(int argc, char *argv[])
         #endif
 
         // Test dup
-        testCommDup(&ut);
         AMP::AMP_MPI dupComm = globalComm.dup();
+        testCommDup(&ut);
         
         // Test compare
         if ( globalComm.compare(globalComm)==1 )
@@ -1181,6 +1187,7 @@ int main(int argc, char *argv[])
         std::vector<AMP::AMP_MPI> splitComms(4);
         splitComms[0] = globalComm.split( color );
         splitComms[1] = globalComm.split( color, globalComm.getRank() );
+        printf("%i,%i\n",splitComms[0].isNull(),splitComms[1].isNull());
         if ( splitComms[0].getCommunicator()!=globalComm.getCommunicator() && 
              splitComms[1].getCommunicator()!=globalComm.getCommunicator() && 
              splitComms[0].getCommunicator()!=splitComms[1].getCommunicator() )
