@@ -12,7 +12,6 @@
 #include "utils/PIO.h"
 
 
-
 struct mytype{
     int a;
     double b;
@@ -1013,7 +1012,7 @@ void testCommDup(AMP::UnitTest *ut) {
         ut->failure("dup comm");
         return;
     }
-    size_t N_comm_try = 100;  // Maximum number of comms to try and create
+    size_t N_comm_try = 10000;  // Maximum number of comms to try and create
     std::vector<AMP::AMP_MPI> comms;
     comms.reserve(N_comm_try);
     try {
@@ -1152,6 +1151,10 @@ int main(int argc, char *argv[])
 
         // Test dup
         AMP::AMP_MPI dupComm = globalComm.dup();
+        if ( nullComm.dup().isNull() )
+            ut.passes("Null communicator duplicates a Null communicator");
+        else
+            ut.failure("Null communicator duplicates a Null communicator");
         testCommDup(&ut);
         
         // Test compare
@@ -1187,7 +1190,6 @@ int main(int argc, char *argv[])
         std::vector<AMP::AMP_MPI> splitComms(4);
         splitComms[0] = globalComm.split( color );
         splitComms[1] = globalComm.split( color, globalComm.getRank() );
-        printf("%i,%i\n",splitComms[0].isNull(),splitComms[1].isNull());
         if ( splitComms[0].getCommunicator()!=globalComm.getCommunicator() && 
              splitComms[1].getCommunicator()!=globalComm.getCommunicator() && 
              splitComms[0].getCommunicator()!=splitComms[1].getCommunicator() )

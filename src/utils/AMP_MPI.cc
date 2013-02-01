@@ -43,6 +43,9 @@
 #endif
 
 
+namespace AMP{
+
+
 // Some special structs to work with MPI
 #ifdef USE_EXT_MPI
     struct IntIntStruct { int j; int i; };
@@ -50,9 +53,6 @@
     struct FloatIntStruct { float f; int i; };
     struct DoubleIntStruct { double d; int i; };
 #endif
-
-
-namespace AMP{
 
 
 // Initialized the static member variables
@@ -164,7 +164,7 @@ AMP_MPI::~AMP_MPI() {
 
 
 /************************************************************************
-*  Constructor from existing AMP_MPI object                             *
+*  Copy constructor                                                     *
 ************************************************************************/
 AMP_MPI::AMP_MPI( const AMP::AMP_MPI& comm ) {
     // Initialize the data members to the existing AMP_MPI object
@@ -190,9 +190,9 @@ AMP_MPI::AMP_MPI( const AMP::AMP_MPI& comm ) {
 AMP_MPI& AMP_MPI::operator=(const AMP::AMP_MPI& comm) {
     if (this == &comm) // protect against invalid self-assignment
         return *this;
-    // Destroy a previous AMP_MPI object
+    // Destroy the previous object
     this->~AMP_MPI();
-    // Initialize the data members to the existing AMP_MPI object
+    // Initialize the data members to the existing object
     this->communicator = comm.communicator;
     this->comm_rank = comm.comm_rank;
     this->comm_size = comm.comm_size;
@@ -265,7 +265,7 @@ AMP_MPI::AMP_MPI( MPI_Comm comm ) {
         d_currentTag[1] = 1;
     }
     call_abort_in_serial_instead_of_exit = true;
-    // We are creating a AMP_MPI comm from an MPI_Comm, the user is responsible for freeing the MPI_Comm object
+    // We are creating a comm object from an MPI_Comm, the user is responsible for freeing the MPI_Comm object
     count = NULL;
 }
 
@@ -340,7 +340,7 @@ AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 ) {
 
 
 /************************************************************************
-*  Split an exisiting AMP_MPI object                                    *
+*  Split a comm						                                    *
 ************************************************************************/
 AMP_MPI AMP_MPI::split( int color, int key ) const {
     MPI_Comm  new_MPI_comm;
@@ -359,7 +359,7 @@ AMP_MPI AMP_MPI::split( int color, int key ) const {
             uniqueGlobalComm++;
         }
     #endif
-    // Create the AMP_MPI object
+    // Create the new object
     AMP_MPI new_comm(new_MPI_comm);
     new_comm.call_abort_in_serial_instead_of_exit = call_abort_in_serial_instead_of_exit;
     // Create the count
@@ -375,9 +375,11 @@ AMP_MPI AMP_MPI::split( int color, int key ) const {
 
 
 /************************************************************************
-*  Duplicate an exisiting AMP_MPI object                                *
+*  Duplicate an exisiting comm object                                   *
 ************************************************************************/
 AMP_MPI AMP_MPI::dup( ) const {
+    if ( d_isNull )
+        return AMP_MPI(AMP_COMM_NULL);
     MPI_Comm  new_MPI_comm;
     #ifdef USE_EXT_MPI
         // USE MPI to duplicate the communicator
@@ -386,7 +388,7 @@ AMP_MPI AMP_MPI::dup( ) const {
         new_MPI_comm = uniqueGlobalComm;
         uniqueGlobalComm++;
     #endif
-    // Create the AMP_MPI comm
+    // Create the new comm object
     AMP_MPI new_comm(new_MPI_comm);
     new_comm.d_isNull = d_isNull;
     new_comm.call_abort_in_serial_instead_of_exit = call_abort_in_serial_instead_of_exit;
@@ -581,7 +583,7 @@ bool AMP_MPI::operator>=(const AMP_MPI &comm) const {
 
 
 /************************************************************************
-*  Duplicate an exisiting AMP_MPI object                                *
+*  Compare two comm objects                                             *
 ************************************************************************/
 int AMP_MPI::compare(const AMP_MPI &comm) const {
     if ( communicator==comm.communicator )
@@ -1724,7 +1726,7 @@ void AMP_MPI::send<double>(const double *buf, const int length,
     PROFILE_STOP("send<double>",profile_level);
 }
 #else
-// We need a concrete instantiation of send for USE_EXT_MPI=false
+// We need a concrete instantiation of send for use without MPI
 template <>
 void AMP_MPI::send<char>(const char *buf, const int length, 
     const int recv_proc_number, int tag) const
@@ -1797,7 +1799,7 @@ MPI_Request AMP_MPI::Isend<double>(const double *buf, const int length, const in
     return request;
 }
 #else
-// We need a concrete instantiation of send for USE_EXT_MPI=false
+// We need a concrete instantiation of send for use without mpi
 template <>
 MPI_Request AMP_MPI::Isend<char>(const char *buf, const int length, const int recv_proc, const int tag) const
 {
@@ -1937,7 +1939,7 @@ void AMP_MPI::recv<double>(double *buf, int &length,
     PROFILE_STOP("recv<double>",profile_level);
 }
 #else
-// We need a concrete instantiation of send for USE_EXT_MPI=false
+// We need a concrete instantiation of recv for use without mpi
 template <>
 void AMP_MPI::recv<char>(char *buf, int &length, 
     const int send_proc_number, const bool get_length, int tag) const
@@ -2010,7 +2012,7 @@ MPI_Request AMP_MPI::Irecv<double>(double *buf, const int length, const int send
     return request;
 }
 #else
-// We need a concrete instantiation of send for USE_EXT_MPI=false
+// We need a concrete instantiation of irecv for use without mpi
 template <>
 MPI_Request AMP_MPI::Irecv<char>(char *buf, const int length, const int send_proc, const int tag) const
 {
@@ -2717,5 +2719,5 @@ int AMP_MPI::probe( int source, int tag) const {
 #endif
 
 
-} // namespace AMP
+} // namespace
 
