@@ -68,7 +68,14 @@
    fun:PetscPushErrorHandler
    ...
 }
-
+{
+   PetscOptionsInsert
+   Memcheck:Leak
+   ...
+   fun:PetscOptionsInsert
+   fun:PetscInitialize
+   ...
+}
 
 
 #### Suppress all libgfortran errors
@@ -174,6 +181,60 @@
    fun:__cxa_demangle
    ...
 }
-
+{
+   Mac/atexit
+   Memcheck:Leak
+   fun:malloc
+   fun:atexit_register
+   fun:__cxa_atexit
+   ...
+}
+{
+   Mac/initializer
+   Memcheck:Leak
+   ...
+   fun:_libxpc_initializer
+   fun:libSystem_initializer
+   ...
+}
+{
+   Mac/initializer2
+   Memcheck:Leak
+   ...
+   fun:libSystem_initializer
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+   ...
+}
+{
+   Mac/printf
+   Memcheck:Leak
+   ...
+   fun:vfprintf_l
+   fun:printf
+   ...
+}
+{
+   Mac/lookupMethod
+   Memcheck:Leak
+   ...
+   fun:lookUpMethod
+   fun:objc_msgSend
+   ...
+}
+{
+   Mac\si_module_with_name
+   Memcheck:Leak
+   ...
+   fun:si_module_with_name
+   ...
+}
+{
+   Mac\map_images
+   Memcheck:Leak
+   ...
+   fun:map_images_nolock
+   fun:map_images
+   ...
+}
 
 
