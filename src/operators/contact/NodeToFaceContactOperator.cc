@@ -139,7 +139,7 @@ namespace AMP {
             AMP_ASSERT(vertexCoord.size() == 3);
             std::copy(vertexCoord.begin(), vertexCoord.end(), &(masterVolumeVerticesCoordinates[3*j]));
             masterVolumeVerticesGlobalIDs[j] = masterVolumeVertices[j].globalID();
-            std::cout<<"v="<<j<<"  "<<masterVolumeVertices[j].globalID().local_id()<<"\n";
+//            std::cout<<"v="<<j<<"  "<<masterVolumeVertices[j].globalID().local_id()<<"\n";
           } // end for j
           std::vector<AMP::Mesh::MeshElement> masterVolumeFaces = d_Mesh->getElement(recvProjectionDataBuffer[i].d_MasterVolumeGlobalID).getElements(AMP::Mesh::Face);
           AMP_ASSERT( masterVolumeFaces[recvProjectionDataBuffer[i].d_MasterFaceLocalIndex].isOnBoundary(d_MasterBoundaryID) );
@@ -156,14 +156,14 @@ namespace AMP {
             if (f != recvProjectionDataBuffer[i].d_MasterFaceLocalIndex) {
               AMP_ASSERT( !masterVolumeFaces[f].isOnBoundary(d_MasterBoundaryID) );
             } else {
-              std::cout<<"###";
+//              std::cout<<"###";
               AMP_ASSERT( f == 5 );
             } // end if
             std::vector<AMP::Mesh::MeshElement> masterFaceVertices = masterVolumeFaces[f].getElements(AMP::Mesh::Vertex);
             unsigned int const * faces = hex8_element_t::get_faces();
             for (size_t v = 0; v < 4; ++v) {
               bool justChecking = masterFaceVertices[v].globalID() == masterVolumeVerticesGlobalIDs[faces[4*f+v]];
-              std::cout<<"f="<<f<<"  v="<<v<<"  index="<<faces[4*f+v]<<"  -> "<<justChecking<<"  "<<masterFaceVertices[v].globalID().local_id()<<"  "<<masterVolumeVerticesGlobalIDs[faces[4*f+v]].local_id()<<"\n";
+//              std::cout<<"f="<<f<<"  v="<<v<<"  index="<<faces[4*f+v]<<"  -> "<<justChecking<<"  "<<masterFaceVertices[v].globalID().local_id()<<"  "<<masterVolumeVerticesGlobalIDs[faces[4*f+v]].local_id()<<"\n";
               AMP_ASSERT( masterFaceVertices[v].globalID().local_id() == masterVolumeVerticesGlobalIDs[facesNew[4*f+v]].local_id() );
 //              AMP_ASSERT( masterFaceVertices[v].globalID().local_id() == masterVolumeVerticesGlobalIDs[faces[4*f+v]].local_id() );
 

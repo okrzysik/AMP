@@ -139,6 +139,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
 #ifdef USE_EXT_SILO
   AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
+  siloWriter->setDecomposition(1);
 #endif
 
 //  int npes = globalComm.getSize();
