@@ -317,7 +317,15 @@ slaveFout.close();
   columnRhsVec->zero();
 
   bool skipDisplaceMesh = true;
-  contactOperator->updateActiveSet(columnSolVec, skipDisplaceMesh);
+  contactOperator->updateActiveSet(nullVec, skipDisplaceMesh);
+//  contactOperator->updateActiveSet(columnSolVec, skipDisplaceMesh);
+
+  size_t const maxActiveSetIterations = 5;
+  for (size_t activeSetIteration = 0; activeSetIteration < maxActiveSetIterations; ++activeSetIteration) {
+  std::cout<<"ACTIVE SET ITERATION #"<<activeSetIteration+1<<"\n";
+
+  columnSolVec->zero();
+  columnRhsVec->zero();
 
   // compute f
   if (slaveLoadOperator.get() != NULL) { 
@@ -389,10 +397,25 @@ slaveFout.close();
   contactOperator->copyMasterToSlave(columnSolVec);
   contactOperator->addShiftToSlave(columnSolVec);
 
-//  meshAdapter->displaceMesh(columnSolVec);
-  size_t dodo = contactOperator->updateActiveSet(columnSolVec);
+#ifdef USE_EXT_SILO
   meshAdapter->displaceMesh(columnSolVec);
-  std::cout<<"DODO="<<dodo<<std::endl;
+  siloWriter->registerVector(columnSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution");
+  char outFileName[256];
+  sprintf(outFileName, "TOTO_%d", 0);
+  siloWriter->writeFile(outFileName, activeSetIteration);
+  columnSolVec->scale(-1.0);
+  meshAdapter->displaceMesh(columnSolVec);
+  columnSolVec->scale(-1.0);
+#endif
+
+//  meshAdapter->displaceMesh(columnSolVec);
+  size_t nChangesInActiveSet = contactOperator->updateActiveSet(columnSolVec);
+  std::cout<<nChangesInActiveSet<<" CHANGES IN ACTIVE SET\n";
+
+  if (nChangesInActiveSet == 0) { break; }
+  AMP_ASSERT( activeSetIteration != maxActiveSetIterations - 1 );
+  } // end for
+  meshAdapter->displaceMesh(columnSolVec);
 
 if (masterMeshAdapter.get() != NULL) {
 std::fstream masterFout;
@@ -585,8 +608,8 @@ int main(int argc, char *argv[])
 
   std::vector<std::string> exeNames; 
 //  exeNames.push_back("testNodeToSegmentConstraintsOperator-cube");
-//  exeNames.push_back("testNodeToSegmentConstraintsOperator-cylinder");
-  exeNames.push_back("testNodeToSegmentConstraintsOperator-pellet");
+  exeNames.push_back("testNodeToSegmentConstraintsOperator-cylinder");
+//  exeNames.push_back("testNodeToSegmentConstraintsOperator-pellet");
 
   try {
     for (size_t i = 0; i < exeNames.size(); ++i) { 

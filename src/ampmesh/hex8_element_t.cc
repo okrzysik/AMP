@@ -629,12 +629,15 @@ void hex8_element_t::compute_strain_tensor(double const *x, double const *u, dou
   std::fill(epsilon, epsilon+6, 0.0);
   for (unsigned int i = 0; i < 8; ++i) {
     // xx yy zz yz xz xy
-    epsilon[0] += u[0*8] * nabla_phi[0*8];
-    epsilon[1] += u[1*8] * nabla_phi[1*8];
-    epsilon[2] += u[2*8] * nabla_phi[2*8];
-    epsilon[3] += 0.5 * (u[1*8] * nabla_phi[2*8] + u[2*8] * nabla_phi[1*8]);
-    epsilon[4] += 0.5 * (u[0*8] * nabla_phi[2*8] + u[2*8] * nabla_phi[0*8]);
-    epsilon[5] += 0.5 * (u[0*8] * nabla_phi[1*8] + u[1*8] * nabla_phi[0*8]);
+    epsilon[0] += u[3*i+0] * nabla_phi[0*8+i];
+    epsilon[1] += u[3*i+1] * nabla_phi[1*8+i];
+    epsilon[2] += u[3*i+2] * nabla_phi[2*8+i];
+//    epsilon[3] += 0.5 * (u[1*8] * nabla_phi[2*8] + u[2*8] * nabla_phi[1*8]);
+//    epsilon[4] += 0.5 * (u[0*8] * nabla_phi[2*8] + u[2*8] * nabla_phi[0*8]);
+//    epsilon[5] += 0.5 * (u[0*8] * nabla_phi[1*8] + u[1*8] * nabla_phi[0*8]);
+    epsilon[3] += u[3*i+1] * nabla_phi[2*8+i] + u[3*i+2] * nabla_phi[1*8+i];
+    epsilon[4] += u[3*i+0] * nabla_phi[2*8+i] + u[3*i+2] * nabla_phi[0*8+i];
+    epsilon[5] += u[3*i+0] * nabla_phi[1*8+i] + u[3*i+1] * nabla_phi[0*8+i];
   } // end for i
 }
 
