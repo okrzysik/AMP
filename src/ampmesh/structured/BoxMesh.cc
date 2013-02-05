@@ -21,6 +21,8 @@
 namespace AMP {
 namespace Mesh {
 
+static inline double round(double x) { return x<0.0 ? ceil(x-0.5) : floor(x+0.5); }
+
 
 /****************************************************************
 * Constructor                                                   *

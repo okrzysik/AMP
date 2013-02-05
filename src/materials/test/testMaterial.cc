@@ -237,21 +237,21 @@ MatTestResult testMaterial(string &name) {
 		// test material range functions
 		vector<double> range(2);
 		bool good = true;
-		good = good and nargs == argnames.size();
+		good = good & nargs == argnames.size();
 		for (size_t i = 0; i < argnames.size(); i++) {
 			range = property->get_arg_range(argnames[i]);
-			good = good and range[0] <= range[1];
-			good = good and range[0] == ranges[i][0] and range[1] == ranges[i][1];
-			good = good and     property->in_range(argnames[i], justright[i]);
-			good = good and not property->in_range(argnames[i], toosmall[i]);
-			good = good and not property->in_range(argnames[i], toobig[i]);
-			good = good and     property->in_range(argnames[i], justright[i][0]);
-			good = good and not property->in_range(argnames[i], toosmall[i][0]);
-			good = good and not property->in_range(argnames[i], toobig[i][0]);
+			good = good && range[0] <= range[1];
+			good = good && range[0] == ranges[i][0] && range[1] == ranges[i][1];
+			good = good &&  property->in_range(argnames[i], justright[i]);
+			good = good && !property->in_range(argnames[i], toosmall[i]);
+			good = good && !property->in_range(argnames[i], toobig[i]);
+			good = good &&  property->in_range(argnames[i], justright[i][0]);
+			good = good && !property->in_range(argnames[i], toosmall[i][0]);
+			good = good && !property->in_range(argnames[i], toobig[i][0]);
 
-			good = good and     property->in_range(argnames[i], *justrightVec[i]);
-			good = good and not property->in_range(argnames[i], *toosmallVec[i]);
-			good = good and not property->in_range(argnames[i], *toobigVec[i]);
+			good = good &&  property->in_range(argnames[i], *justrightVec[i]);
+			good = good && !property->in_range(argnames[i], *toosmallVec[i]);
+			good = good && !property->in_range(argnames[i], *toobigVec[i]);
 		}
 		if (good)
 			results.propResults[type].range = true;
@@ -379,7 +379,7 @@ MatTestResult testMaterial(string &name) {
 			// test make_map, first without setting a translator or setting an empty translator
 			std::map<std::string, AMP::LinearAlgebra::Vector::shared_ptr> testMap;
 			std::map<std::string, std::string> currentXlator = property->get_translator();
-			if (not currentXlator.empty()) {
+			if (!currentXlator.empty()) {
 				currentXlator.clear();
 				property->set_translator(currentXlator);
 			}
@@ -399,7 +399,7 @@ MatTestResult testMaterial(string &name) {
 			}
 			property->set_translator(xlator);
 			std::map<std::string, std::string> testXlatorGet = property->get_translator();
-			if (testXlatorGet == xlator and xlateGood) {
+			if (testXlatorGet == xlator && xlateGood) {
 				results.propResults[type].success[7] = true;
 			}
 
@@ -418,7 +418,7 @@ MatTestResult testMaterial(string &name) {
 						AMP_INSIST(false, "argsVec composed incorrectly");
 					}
 					if (goodIt) {
-						good = good and vec1It->second == vec2It->second;
+						good = good && vec1It->second == vec2It->second;
 					}
 				}
 				if (good) results.propResults[type].success[8] = true;
@@ -480,15 +480,15 @@ MatTestResult testMaterial(string &name) {
 
 			// check vector, Vector, MultiVector all agree
 			good=true;
-			if (results.propResults[type].success[0] and
-				results.propResults[type].success[4] and
+			if (results.propResults[type].success[0] &&
+				results.propResults[type].success[4] &&
 				results.propResults[type].success[9])
 			{
 				for (size_t i=0; i<npoints; i++) {
 					double vstd = nominal[i];
 					double vVec = nominalVec->getValueByLocalID(i);
 					double vMultiVec = nominalMultiVec->getValueByLocalID(i);
-					good = good and (vstd == vVec and vVec == vMultiVec);
+					good = good && (vstd == vVec && vVec == vMultiVec);
 				}
 				if (good) results.propResults[type].success[3] = true;
 			} else {
@@ -561,7 +561,7 @@ MatTestResult testMaterial(string &name) {
 			// test make_map, first without setting a translator or setting an empty translator
 			std::map<std::string, AMP::LinearAlgebra::Vector::shared_ptr> testMap;
 			std::map<std::string, std::string> currentXlator = vectorProperty->get_translator();
-			if (not currentXlator.empty()) {
+			if (!currentXlator.empty()) {
 				currentXlator.clear();
 				vectorProperty->set_translator(currentXlator);
 			}
@@ -581,7 +581,7 @@ MatTestResult testMaterial(string &name) {
 			}
 			vectorProperty->set_translator(xlator);
 			std::map<std::string, std::string> testXlatorGet = vectorProperty->get_translator();
-			if (testXlatorGet == xlator and xlateGood) {
+			if (testXlatorGet == xlator && xlateGood) {
 				results.propResults[type].success[7] = true;
 			}
 
@@ -600,7 +600,7 @@ MatTestResult testMaterial(string &name) {
 						AMP_INSIST(false, "argsVec composed incorrectly");
 					}
 					if (goodIt) {
-						good = good and vec1It->second == vec2It->second;
+						good = good && vec1It->second == vec2It->second;
 					}
 				}
 				if (good) results.propResults[type].success[8] = true;
@@ -642,7 +642,7 @@ MatTestResult testMaterial(string &name) {
 			}
 
 			// check that number of components is positive
-			if (results.propResults[type].vector[0] and nvec>0) {
+			if (results.propResults[type].vector[0] && nvec>0) {
 				results.propResults[type].vector[1] = true;
 			} else {
 				results.propResults[type].vector[1] = false;
@@ -812,8 +812,8 @@ MatTestResult testMaterial(string &name) {
 
 			// check vector, Vector, MultiVector all agree
 			good=true;
-			if (results.propResults[type].success[0] and
-				results.propResults[type].success[4] and
+			if (results.propResults[type].success[0] &&
+				results.propResults[type].success[4] &&
 				results.propResults[type].success[9])
 			{
 				for (size_t j=0; j<nvec; j++) {
@@ -821,7 +821,7 @@ MatTestResult testMaterial(string &name) {
 						double vstd = (*nominalEval[j])[i];
 						double vVec = nominalAmpEval[j]->getValueByLocalID(i);
 						double vMultiVec = nominalMultiEval[j]->getValueByLocalID(i);
-						good = good and (vstd == vVec and vVec == vMultiVec);
+						good = good && (vstd == vVec && vVec == vMultiVec);
 					}
 				}
 				if (good) results.propResults[type].success[3] = true;
@@ -894,7 +894,7 @@ MatTestResult testMaterial(string &name) {
 			// test make_map, first without setting a translator or setting an empty translator
 			std::map<std::string, AMP::LinearAlgebra::Vector::shared_ptr> testMap;
 			std::map<std::string, std::string> currentXlator = tensorProperty->get_translator();
-			if (not currentXlator.empty()) {
+			if (!currentXlator.empty()) {
 				currentXlator.clear();
 				tensorProperty->set_translator(currentXlator);
 			}
@@ -914,7 +914,7 @@ MatTestResult testMaterial(string &name) {
 			}
 			tensorProperty->set_translator(xlator);
 			std::map<std::string, std::string> testXlatorGet = tensorProperty->get_translator();
-			if (testXlatorGet == xlator and xlateGood) {
+			if (testXlatorGet == xlator && xlateGood) {
 				results.propResults[type].success[7] = true;
 			}
 
@@ -933,7 +933,7 @@ MatTestResult testMaterial(string &name) {
 						AMP_INSIST(false, "argsVec composed incorrectly");
 					}
 					if (goodIt) {
-						good = good and vec1It->second == vec2It->second;
+						good = good && vec1It->second == vec2It->second;
 					}
 				}
 				if (good) results.propResults[type].success[8] = true;
@@ -977,7 +977,7 @@ MatTestResult testMaterial(string &name) {
 			}
 
 			// check that number of components is positive
-			if (results.propResults[type].tensor[0] and nvecs[0]>0 and nvecs[1]>0 and nvecs.size()==2) {
+			if (results.propResults[type].tensor[0] && nvecs[0]>0 && nvecs[1]>0 && nvecs.size()==2) {
 				results.propResults[type].tensor[1] = true;
 			} else {
 				results.propResults[type].tensor[1] = false;
@@ -1153,8 +1153,8 @@ MatTestResult testMaterial(string &name) {
 
 			// check vector, Vector, MultiVector all agree
 			good=true;
-			if (results.propResults[type].success[0] and
-				results.propResults[type].success[4] and
+			if (results.propResults[type].success[0] &&
+				results.propResults[type].success[4] &&
 				results.propResults[type].success[9])
 			{
 				for (size_t k=0; k<nvecs[0]; k++) {
@@ -1163,7 +1163,7 @@ MatTestResult testMaterial(string &name) {
 							double vstd = (*nominalEval[k][j])[i];
 							double vVec = nominalAmpEval[k][j]->getValueByLocalID(i);
 							double vMultiVec = nominalMultiEval[k][j]->getValueByLocalID(i);
-							good = good and (vstd == vVec and vVec == vMultiVec);
+							good = good && (vstd == vVec && vVec == vMultiVec);
 						}
 					}
 				}
@@ -1306,7 +1306,7 @@ int main(int argc, char **argv) {
 				else
 					ut.failure(msg + "get/set parameters");
 
-				if (not j->unknown)
+				if (!j->unknown)
 					ut.passes(msg + "unknown error");
 				else
 					ut.failure(msg + "unknown error");
@@ -1433,7 +1433,7 @@ int main(int argc, char **argv) {
 		} catch (std::exception &err) {
 			string msg = err.what();
 			bool check = (msg == "Unregistered creator");
-			good = good and check;
+			good = good && check;
 			if (good)
 				ut.passes("detected undefined material");
 			else

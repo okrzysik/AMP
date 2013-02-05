@@ -10,7 +10,11 @@ void SimpleVector::copyVector(const Vector &src_vec)
 {
     if ( getLocalSize() != src_vec.getLocalSize() )
         AMP_ERROR( "Mismatched vectors" );
-    std::copy ( src_vec.begin() , src_vec.end() , begin() );
+    ConstVectorDataIterator it = src_vec.begin();
+    for (size_t i=0; i<getLocalSize(); i++) {
+        d_Data[i] = *it;
+        ++it;
+    }
 }
 
 

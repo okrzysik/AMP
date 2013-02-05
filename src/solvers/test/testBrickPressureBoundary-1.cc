@@ -16,7 +16,7 @@
 #include "materials/Material.h"
 
 #include "ampmesh/Mesh.h"
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "ampmesh/libmesh/libMesh.h"
 #include "vectors/VectorBuilder.h"
 #include "discretization/DOF_Manager.h"
@@ -49,7 +49,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
 #ifdef USE_EXT_SILO
   // Create the silo writer and register the data
-  AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
+  AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
 #endif
 
   boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));

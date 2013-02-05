@@ -1,5 +1,5 @@
 #include "vectors/NullVector.h"
-
+#include "discretization/DOF_Manager.h"
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -20,6 +20,8 @@ Vector::shared_ptr  NullVector::create ( const Variable::shared_ptr var )
 NullVector::NullVector( Variable::shared_ptr var )
 {
     setVariable ( var );
+    d_CommList = CommunicationList::createEmpty( 0, AMP_MPI(AMP_COMM_SELF) );
+    d_DOFManager.reset( new AMP::Discretization::DOFManager( 0, AMP_MPI(AMP_COMM_SELF) ) );
 }
 
 
@@ -227,11 +229,6 @@ size_t NullVector::getGhostSize() const
 }
 
 
-void NullVector::setCommunicationList ( CommunicationList::shared_ptr  )
-{ 
-}
-
-
 size_t NullVector::numberOfDataBlocks () const 
 { 
     return 0; 
@@ -255,10 +252,6 @@ const void *NullVector::getRawDataBlockAsVoid ( size_t ) const
     return 0; 
 }
 
-
-void NullVector::addCommunicationListToParameters ( CommunicationList::shared_ptr ) 
-{
-}
 
       /// \endcond
 

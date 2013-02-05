@@ -91,10 +91,10 @@ void VectorProperty<Number>::evalvActual(std::vector<boost::shared_ptr<RETURN_VT
 	  bool alldone = true;
 	  for (size_t i=0; i<rdim0; i++) {
 		  if (r_iter[i] == r[i]->end()) goAgain = false;  // if goAgain true, none reached the end
-		  alldone = alldone and r_iter[i] == r[i]->end(); // if alldone true, all reached the end
+		  alldone = alldone && r_iter[i] == r[i]->end(); // if alldone true, all reached the end
 	  }
 	  // if one reached the end, make sure all did
-	  if (not goAgain) AMP_INSIST(alldone, "vector result vectors have unequal sizes");
+	  if (!goAgain) AMP_INSIST(alldone, "vector result vectors have unequal sizes");
   }
   // Make sure the input value iterators all got to the end.
   if (Property<Number>::d_n_arguments > 0) {

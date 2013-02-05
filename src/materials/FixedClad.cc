@@ -39,7 +39,7 @@ namespace FixedClad_NS {
 	static const double fickVectorVal[3]={1.,1.,1.};
 	static const double fickTensorVal[3*3]={1.,1.,1.,1.,1.,1.,1.,1.,1.};
 
-	static const std::string arguments[0];
+	static const std::string *arguments=NULL;
 
 //  =================== Classes =======================================================
 
@@ -280,9 +280,9 @@ namespace FixedClad_NS {
     static const unsigned int numberThDiffParams = 2;
     static double thermalDiffusionParams[numberThDiffParams] = {1.,1.};
 
-	static const std::string thermDiffArgs[0];
+	static const std::string *thermDiffArgs=NULL;
 	static const unsigned int numberThermDiffArgs = 0;
-	static const  double thermDiffRanges[0][2]={};
+	static const  double thermDiffRanges[1][2]={};
 
 #define THERMAL_DIFFUSION_DERIVATIVE
 #include "ThermalDiffusionCoefficientProp.h"

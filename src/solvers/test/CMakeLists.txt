@@ -98,6 +98,9 @@ COPY_MESH_FILE ( cube343H8.e )
 ADD_AMP_TEST_1_2_4 ( testPetscSNESSolver )
 COPY_TEST_DATA_FILE ( input_testPetscSNESSolver )
 
+ADD_AMP_PROVISIONAL_TEST ( testTrilinosNOXSolver )
+COPY_TEST_DATA_FILE ( input_testTrilinosNOXSolver )
+
 ADD_AMP_WEEKLY_TEST ( testBrickPressureBoundary-1 4 )
 COPY_TEST_DATA_FILE ( input_testBrickPressureBoundary-1 )
 

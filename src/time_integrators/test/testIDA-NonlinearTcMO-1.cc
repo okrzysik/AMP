@@ -15,7 +15,7 @@
 #include "vectors/SimpleVector.h"
 #include "vectors/Vector.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "ampmesh/MeshVariable.h"
 
 #include "operators/MassLinearElement.h"

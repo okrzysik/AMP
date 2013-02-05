@@ -2,9 +2,6 @@
 #ifndef included_AMP_MPI
 #define included_AMP_MPI
 
-#ifdef _MSC_VER
-    #define _CRT_SECURE_NO_WARNINGS		// Supress depreciated warnings for visual studio
-#endif
 
 #include <set>
 #include <map>
@@ -241,6 +238,15 @@ public:
 
 
     /**
+     * \brief   Return a new tag
+     * \details This routine will return an unused tag for communication.
+     *   Note that this tag may match a user tag, but this function will 
+     *   not return two duplicate tags.  This is a global operation.
+     */
+    int newTag();
+
+
+    /**
      * Call MPI_Abort or exit depending on whether running with one or more 
      * processes and value set by function above, if called.  The default is
      * to call exit(-1) if running with one processor and to call MPI_Abort()
@@ -462,7 +468,7 @@ public:
     /**
      * Perform a global barrier across all processors.
      */
-    void barrier();
+    void barrier() const;
 
 
     /*!
@@ -785,14 +791,21 @@ private:
     // The internal MPI communicator
     MPI_Comm  communicator;
     
-    // The rank and size of the communicator
-    int comm_rank, comm_size;
-    
     // Is the communicator NULL
     bool d_isNull;
 
     // Do we want to call MPI_abort instead of exit
     bool call_abort_in_serial_instead_of_exit;
+
+    // The rank and size of the communicator
+    int comm_rank, comm_size;
+    
+    // The level for the profiles of MPI
+    static int profile_level;
+
+    // Some attributes
+    int d_maxTag;
+    int* volatile d_currentTag;
 
     /* How many AMP_MPI objects share the same underlying MPI communicator.
      * When the count goes to 0, the MPI comm will be free'd (assuming it was created
@@ -803,21 +816,15 @@ private:
      */
     int* volatile count;
 
+    // Add a variable for data alignment (necessary for some Intel builds)
+    double tmp_allignment;
+
     /* We want to keep track of how many MPI_Comm objects we have created over time.
      * Like the count, for thread safety this should be blocked, however the most likely error
      * caused by not blocking is a slight error in the MPI count.  Since this is just for reference
      * we don not need to block (recognizing that the value may not be 100% accurate).
      */
     static volatile unsigned int N_MPI_Comm_created;
-
-    // The level for the profiles of MPI
-    static int profile_level;
-
-    // Some attributes
-    int d_maxTag;
-
-    // Add a variable for data alignment (necessary for some Intel builds)
-    double tmp_allignment;
 
     // Private helper functions for templated MPI operations;
     template <class type>  void call_sumReduce(type *x, const int n=1) const;
@@ -841,7 +848,7 @@ private:
 
 // Include the default instantiations
 // \cond HIDDEN_SYMBOLS
-#include "../utils/AMP_MPI.I"
+#include "utils/AMP_MPI.I"
 // \endcond
 
 }

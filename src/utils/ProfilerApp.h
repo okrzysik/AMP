@@ -17,7 +17,6 @@
 
 #ifdef USE_WINDOWS
     // Windows
-    #define _CRT_SECURE_NO_WARNINGS		// Supress depreciated warnings for visual studio
     #define NOMINMAX                    // Supress min max from being defined
     #include <windows.h>
     #include <string>
@@ -185,6 +184,10 @@ public:
 
 private:
 
+    // Protect against copy of the class
+    ProfilerApp( const ProfilerApp& );
+
+
     // Structure to store the info for a trace log
     struct store_trace {
         size_t N_calls;             // Number of calls to this block
@@ -206,10 +209,8 @@ private:
         store_trace(const store_trace& rhs);
         // De-constructor
 		~store_trace() {
-            if ( start_time == NULL )
-                delete [] start_time;
-            if ( end_time == NULL )
-                delete [] end_time;
+            delete [] start_time;
+            delete [] end_time;
             start_time = NULL;
             end_time = NULL;
 		}
@@ -224,7 +225,7 @@ private:
         std::string filename;               // The file containing the block of code to be timed
         volatile store_timer_data_info *next; // Pointer to the next entry in the list
         // Constructor used to initialize key values
-		store_timer_data_info(): start_line(-1), stop_line(-1), id(0) {}
+		store_timer_data_info(): start_line(-1), stop_line(-1), id(0), next(NULL) {}
     };
 
     // Structure to store the timing information for a single block of code
@@ -261,6 +262,7 @@ private:
 		thread_info() {
             id = 0;
             N_timers = 0;
+            thread_num = 0;
             next = NULL;
             for (int i=0; i<TRACE_SIZE; i++)
                 active[i] = 0;

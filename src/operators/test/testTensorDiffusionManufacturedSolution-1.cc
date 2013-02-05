@@ -16,7 +16,7 @@
 #include "utils/PIO.h"
 #include "utils/ManufacturedSolution.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "ampmesh/Mesh.h"
 #include "vectors/Vector.h"
@@ -246,7 +246,7 @@ void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string me
 
   // Plot the results
  #ifdef USE_EXT_SILO
-     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
      siloWriter->registerMesh( meshAdapter );
 
      siloWriter->registerVector(  workVec, meshAdapter, AMP::Mesh::Vertex, "RelativeError" );

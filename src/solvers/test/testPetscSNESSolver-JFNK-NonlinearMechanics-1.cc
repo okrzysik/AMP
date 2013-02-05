@@ -14,7 +14,7 @@
 
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"
@@ -86,7 +86,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
 #ifdef USE_EXT_SILO
   // Create the silo writer and register the data
-  AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+  AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
   siloWriter->registerVector(mechNlSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
   siloWriter->registerVector(mechNlResVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
 #endif

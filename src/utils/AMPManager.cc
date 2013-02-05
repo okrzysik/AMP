@@ -21,11 +21,6 @@
 #include <iostream>
 #include <sstream>
 
-
-#ifdef _MSC_VER
-    #define _CRT_SECURE_NO_WARNINGS        // Supress depreciated warnings for visual studio
-#endif
-
 #include <stdio.h>
 #include <stdexcept>
 #include <signal.h>
@@ -75,19 +70,30 @@ AMPManagerProperties AMPManager::properties=AMPManagerProperties();
 /****************************************************************************
 *  Function to terminate AMP with a message for exceptions                  *
 ****************************************************************************/
-void terminate_AMP(std::string message)
+void AMPManager::terminate_AMP(std::string message)
 {
     std::stringstream msg;
-    char text[100];
-    msg << message << std::endl;
-    long long unsigned int N_bytes = AMP::Utilities::getMemoryUsage();
-    sprintf(text,"Bytes used = %llu\n",N_bytes);
-    msg << text;
-    std::vector<std::string> stack = AMP::Utilities::getCallStack();
-    msg << "Stack Trace:\n";
-    for (size_t i=0; i<stack.size(); i++)
-        msg << "   " << stack[i];
-    std::cerr << msg.str();
+    if ( AMP::AMPManager::use_MPI_Abort==true) {
+        // Print the call stack and memory usage
+        char text[100];
+        msg << message << std::endl;
+        long long unsigned int N_bytes = AMP::Utilities::getMemoryUsage();
+        sprintf(text,"Bytes used = %llu\n",N_bytes);
+        msg << text;
+        std::vector<std::string> stack = AMP::Utilities::getCallStack();
+        msg << "Stack Trace:\n";
+        for (size_t i=0; i<stack.size(); i++)
+            msg << "   " << stack[i];
+        std::cerr << msg.str();
+        // Use MPI_abort (will terminate all processes)
+        AMP_MPI(AMP_COMM_WORLD).abort();
+    } else {
+        // Throw and standard exception (allows the use of try, catch)
+        // std::stringstream  stream;
+        // stream << message << std::endl << "  " << filename << ":  " << line;
+        // std::cout << stream.str() << std::endl;
+        throw std::logic_error(message);
+    }
     AMP_MPI(AMP_COMM_WORLD).abort();
 }
 
@@ -97,7 +103,7 @@ void terminate_AMP(std::string message)
 ****************************************************************************/
 void term_func_abort(int err) 
 {
-    terminate_AMP("");
+    AMPManager::terminate_AMP("");
 }
 static int tried_throw = 0;
 void term_func() 
@@ -119,7 +125,7 @@ void term_func()
             last_message = "unknown exception occurred.";
         }
     #endif
-    terminate_AMP( "Unhandled exception:\n" + last_message );
+    AMPManager::terminate_AMP( "Unhandled exception:\n" + last_message );
 }
 
 
@@ -142,7 +148,7 @@ static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
     if ( msg_len <= 0 )
         AMP_ERROR("Unkown error in MPI");
     msg << "Error calling MPI routine:\n" + std::string(message) << std::endl;
-    terminate_AMP( msg.str() );
+    AMPManager::terminate_AMP( msg.str() );
 }
 #endif
 
@@ -165,7 +171,7 @@ PetscErrorCode petsc_err_handler( MPI_Comm comm, int line, const char *func,
     msg << "PETSc error:" << std::endl;
     msg << "   File: " << dir << file << ", line: " << line << std::endl;
     msg << "   " << buf << std::endl;
-    terminate_AMP( msg.str());
+    AMPManager::terminate_AMP( msg.str());
     return 0;
 }
 #endif

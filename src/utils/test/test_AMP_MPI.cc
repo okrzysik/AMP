@@ -9,6 +9,7 @@
 #include "utils/UnitTest.h"
 #include "utils/AMP_MPI.h"
 #include "utils/ProfilerApp.h"
+#include "utils/PIO.h"
 
 
 struct mytype{
@@ -792,6 +793,22 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     PROFILE_START("testComm");
     testCommTimerResults timer;
     double start_time;
+    // Test the tag
+    int tag0 = comm.newTag();
+    AMP::AMP_MPI comm2 = comm;
+    bool pass = tag0>0 && tag0<comm.maxTag();
+    for (int i=1; i<128; i++) {
+        if ( comm.newTag()!=tag0+i )
+            pass = false;
+    }
+    for (int i=1; i<128; i++) {
+        if ( comm2.newTag()!=tag0+127+i )
+            pass = false;
+    }
+    if ( pass ) 
+        ut->passes("newTag");
+    else
+        ut->failure("newTag");
     // Test all and any reduce
     bool test1 = !comm.allReduce(comm.getRank()!=0);
     bool test2 = comm.allReduce(true);
@@ -813,6 +830,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_reduce += testReduce<int>(comm,ut,0);
     timer.N_reduce += testReduce<unsigned long int>(comm,ut,1);     // does not support rank of min/max
     timer.N_reduce += testReduce<long int>(comm,ut,0);
+    timer.N_reduce += testReduce<size_t>(comm,ut,1);                // does not support rank of min/max
     timer.N_reduce += testReduce<float>(comm,ut,0);
     timer.N_reduce += testReduce<double>(comm,ut,0);
     timer.N_reduce += testReduce<std::complex<double> >(comm,ut,2); // only sumreduce is valid for complex numbers
@@ -852,6 +870,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_scan += testScan<int>(comm,ut);
     timer.N_scan += testScan<unsigned long int>(comm,ut);
     timer.N_scan += testScan<long int>(comm,ut);
+    timer.N_scan += testScan<size_t>(comm,ut);
     timer.N_scan += testScan<float>(comm,ut);
     timer.N_scan += testScan<double>(comm,ut);
     timer.N_scan += testScan< std::complex<double> >(comm,ut,1);    // Only sumScan is valid with complex data
@@ -889,6 +908,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_bcast += testBcast<int>(comm,ut,-1,1);
     timer.N_bcast += testBcast<unsigned long int>(comm,ut,0,1);
     timer.N_bcast += testBcast<long int>(comm,ut,-1,1);
+    timer.N_bcast += testBcast<size_t>(comm,ut,-1,1);
     timer.N_bcast += testBcast<float>(comm,ut,-1.0,1.0);
     timer.N_bcast += testBcast<double>(comm,ut,-1.0,1.0);
     mytype tmp3(-1,-1.0);
@@ -905,6 +925,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_allGather += testAllGather<int>(comm,ut);
     timer.N_allGather += testAllGather<unsigned long int>(comm,ut);
     timer.N_allGather += testAllGather<long int>(comm,ut);
+    timer.N_allGather += testAllGather<size_t>(comm,ut);
     timer.N_allGather += testAllGather<float>(comm,ut);
     timer.N_allGather += testAllGather<double>(comm,ut);
     timer.N_allGather += testAllGather< std::complex<double> >(comm,ut);
@@ -918,6 +939,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_setGather += testSetGather<int>(comm,ut);
     timer.N_setGather += testSetGather<unsigned long int>(comm,ut);
     timer.N_setGather += testSetGather<long int>(comm,ut);
+    timer.N_setGather += testSetGather<size_t>(comm,ut);
     timer.N_setGather += testSetGather<float>(comm,ut);
     timer.N_setGather += testSetGather<double>(comm,ut);
     timer.t_setGather = AMP::AMP_MPI::time()-start_time;
@@ -929,6 +951,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_mapGather += testMapGather<int>(comm,ut);
     timer.N_mapGather += testMapGather<unsigned long int>(comm,ut);
     timer.N_mapGather += testMapGather<long int>(comm,ut);
+    timer.N_mapGather += testMapGather<size_t>(comm,ut);
     timer.N_mapGather += testMapGather<float>(comm,ut);
     timer.N_mapGather += testMapGather<double>(comm,ut);
     timer.t_mapGather = AMP::AMP_MPI::time()-start_time;
@@ -940,6 +963,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_allToAll += testAllToAll<int>(comm,ut);
     timer.N_allToAll += testAllToAll<unsigned long int>(comm,ut);
     timer.N_allToAll += testAllToAll<long int>(comm,ut);
+    timer.N_allToAll += testAllToAll<size_t>(comm,ut);
     timer.N_allToAll += testAllToAll<float>(comm,ut);
     timer.N_allToAll += testAllToAll<double>(comm,ut);
     timer.N_allToAll += testAllToAll< std::complex<double> >(comm,ut);
@@ -953,6 +977,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_sendRecv += testSendRecv<int>(comm,ut,-1,1);
     timer.N_sendRecv += testSendRecv<unsigned long int>(comm,ut,0,1);
     timer.N_sendRecv += testSendRecv<long int>(comm,ut,-1,1);
+    timer.N_sendRecv += testSendRecv<size_t>(comm,ut,0,1);
     timer.N_sendRecv += testSendRecv<float>(comm,ut,-1.0,1.0);
     timer.N_sendRecv += testSendRecv<double>(comm,ut,-1.0,1.0);
     timer.N_sendRecv += testSendRecv<mytype>(comm,ut,tmp3,tmp4);
@@ -965,6 +990,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_IsendIrecv += testIsendIrecv<int>(comm,ut,-1,1);
     timer.N_IsendIrecv += testIsendIrecv<unsigned long int>(comm,ut,0,1);
     timer.N_IsendIrecv += testIsendIrecv<long int>(comm,ut,-1,1);
+    timer.N_IsendIrecv += testIsendIrecv<size_t>(comm,ut,0,1);
     timer.N_IsendIrecv += testIsendIrecv<float>(comm,ut,-1.0,1.0);
     timer.N_IsendIrecv += testIsendIrecv<double>(comm,ut,-1.0,1.0);
     timer.N_IsendIrecv += testIsendIrecv<mytype>(comm,ut,tmp3,tmp4);
@@ -973,6 +999,59 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     return timer;
 }
 
+
+// Test comm dup and the number of communicators that can be created
+void testCommDup(AMP::UnitTest *ut) {
+    AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
+    AMP::AMP_MPI dupComm = globalComm.dup();
+    if ( globalComm.getCommunicator()!=dupComm.getCommunicator() &&
+        dupComm.getSize()==globalComm.getSize() && dupComm.getRank()==globalComm.getRank() ) 
+    {
+        ut->passes("dup comm");
+    } else {
+        ut->failure("dup comm");
+        return;
+    }
+    size_t N_comm_try = 10000;  // Maximum number of comms to try and create
+    std::vector<AMP::AMP_MPI> comms;
+    comms.reserve(N_comm_try);
+    try {
+        for (size_t i=0; i<N_comm_try; i++) {
+            comms.push_back( globalComm.dup() );
+            AMP_ASSERT(globalComm.getCommunicator()!=comms[i].getCommunicator());
+        }
+        ut->passes("Created an unlimited number of comms");
+    } catch (...) {
+        if ( comms.size() < 252 ) {
+            ut->failure("Could not create 252 different communicators");
+        } else {
+            char message[128];
+            sprintf(message,"Failed to create an unlimited number of comms (%llu)",
+                static_cast<unsigned long long int>(comms.size()));
+            ut->expected_failure(message);
+        }
+        AMP::pout << "Maximum number of concurrent communicators: " << comms.size() << std::endl;
+    }
+    comms = std::vector<AMP::AMP_MPI>();
+    size_t N_dup = 0;
+    globalComm.barrier();
+    try {
+        double start = AMP::AMP_MPI::time();
+        for (size_t i=0; i<N_comm_try; i++) {
+            AMP::AMP_MPI tmp_comm = globalComm.dup();
+            AMP_ASSERT(globalComm.getCommunicator()!=tmp_comm.getCommunicator());
+            N_dup++;
+        }
+        double stop = AMP::AMP_MPI::time();
+        ut->passes("Created/Destroyed an unlimited number of comms");
+        char message[128];
+        sprintf(message,"Time to create/destroy comm using AMP::AMP_MPI::dup() is: %0.1f us",1e6*(stop-start)/N_dup);
+        AMP::pout << message << std::endl;
+    } catch (...) {
+        ut->failure("Failed to create/destroy an unlimited number of comms");
+        AMP::pout << "Maximum number of communicators created with destruction: " << N_dup << std::endl;
+    }
+}
 
 
 //  This test will test the AMP_MPI routines
@@ -1059,6 +1138,10 @@ int main(int argc, char *argv[])
             ut.passes("Null communicator created");
         else
             ut.failure("Null communicator created");
+        if ( nullComm.getSize()==0 )
+            ut.passes("Null communicator has zero size");
+        else
+            ut.failure("Null communicator has zero size");
         #ifdef USE_EXT_MPI
             if ( nullComm.getCommunicator() == MPI_COMM_NULL )
                 ut.passes("Communicator == MPI_COMM_NULL");
@@ -1068,12 +1151,11 @@ int main(int argc, char *argv[])
 
         // Test dup
         AMP::AMP_MPI dupComm = globalComm.dup();
-        if ( globalComm.getCommunicator()!=dupComm.getCommunicator() &&
-             dupComm.getSize()==globalComm.getSize() &&
-             dupComm.getRank()==globalComm.getRank() )
-            ut.passes("dup comm");
+        if ( nullComm.dup().isNull() )
+            ut.passes("Null communicator duplicates a Null communicator");
         else
-            ut.failure("dup comm");
+            ut.failure("Null communicator duplicates a Null communicator");
+        testCommDup(&ut);
         
         // Test compare
         if ( globalComm.compare(globalComm)==1 )
@@ -1158,7 +1240,58 @@ int main(int argc, char *argv[])
         }
 
         // Test intersection
-        
+        // Test globalComm with selfComm
+        if ( globalComm.getSize() > 1 ) {
+            AMP::AMP_MPI comm1 = AMP::AMP_MPI::intersect( globalComm, selfComm );
+            AMP::AMP_MPI comm2 = AMP::AMP_MPI::intersect( selfComm, globalComm );
+            AMP::AMP_MPI comm3 = AMP::AMP_MPI::intersect( globalComm, globalComm );
+            if ( comm1.compare(globalComm)==0 && comm1.compare(selfComm)!=0 &&
+                 comm2.compare(globalComm)==0 && comm2.compare(selfComm)!=0 &&  
+                 comm3.compare(globalComm)!=0 && comm3.compare(selfComm)==0 )
+                ut.passes("intersection of globalComm and selfComm");
+            else
+                ut.failure("intersection of globalComm and selfComm");
+        }
+        // Test case where we have disjoint sets (this can only happen of one of the comms is null)
+        AMP::AMP_MPI intersection = AMP::AMP_MPI::intersect( globalComm, nullComm );
+        if ( intersection.isNull() )
+            ut.passes("intersection of non-overlapping comms");
+        else
+            ut.failure("intersection of non-overlapping comms");
+        // Test case where the comms partially overlap
+        if ( globalComm.getSize() > 2 ) {
+            int n = globalComm.getSize()-1;
+            // Intersect 2 comms (all other ranks will be null)
+            AMP::AMP_MPI split1 = globalComm.split(globalComm.getRank()==0?-1:0);
+            AMP::AMP_MPI split2 = globalComm.split(globalComm.getRank()==n?-1:0);
+            AMP::AMP_MPI intersection = AMP::AMP_MPI::intersect( split1, split2 );
+            bool pass = true;
+            if ( globalComm.getRank()==0 || globalComm.getRank()==n ) {
+                if ( !intersection.isNull() )
+                    pass = false;
+            } else {
+                if ( intersection.compare(split1)!=0 || intersection.compare(split2)!=0 ||
+                     intersection.getSize()!=globalComm.getSize()-2 )
+                    pass = false;
+            }
+            // Intersect 2 sets for ranks (3 groups should result)
+            /*split1 = globalComm.split(globalComm.getRank()==0?1:2);
+            split2 = globalComm.split(globalComm.getRank()==n?1:2);
+            intersection = AMP::AMP_MPI::intersect( split1, split2 );
+            bool pass = true;
+            if ( globalComm.getRank()==0 || globalComm.getRank()==n ) {
+                if ( intersection.compare(selfComm)==0 )
+                    pass = false;
+            } else {
+                if ( intersection.compare(split1)!=0 || intersection.compare(split2)!=0 ||
+                     intersection.getSize()!=globalComm.getSize()-2 )
+                    pass = false;
+            }*/
+            if ( pass )
+                ut.passes("intersection of partially overlapping comms");
+            else
+                ut.failure("intersection of partially overlapping comms");
+        }
 
         // Test time and tick
         double end_time = AMP::AMP_MPI::time();

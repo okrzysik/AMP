@@ -17,7 +17,7 @@
 #include "utils/PIO.h"
 #include "materials/Material.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
@@ -115,7 +115,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 #ifdef USE_EXT_SILO
   //-------------------------------------------------------------------------------------------//
   // Create the silo writer and register the data
-  AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+  AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
   siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
   siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
 #endif

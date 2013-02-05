@@ -3,6 +3,7 @@
 
 #include "vectors/Vector.h"
 #include "utils/InputDatabase.h"
+#include "utils/Writer.h"
 #include "boost/shared_ptr.hpp"
 #include "operators/Operator.h"
 #include "time_integrators/TimeIntegratorParameters.h"
@@ -172,6 +173,32 @@ public:
    virtual bool stepsRemaining() const;
 
    /**
+    * \brief  Append the vectors of interest to the solution vector
+    * \details  This function will append the necessary vectors that this solver
+    *  owns to the global vector provided.  Note that each solver may own any number
+    *  of vectors, but no vector may be owned by multiple solvers.
+    * \param vec   The multivector to append
+    */
+   virtual void appendSolutionVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> vec ) {}
+
+   /**
+    * \brief  Append the vectors of interest to the rhs vector
+    * \details  This function will append the necessary vectors that this solver
+    *  owns to the global vector provided.  Note that each solver may own any number
+    *  of vectors, but no vector may be owned by multiple solvers.
+    * \param vec   The multivector to append
+    */
+   virtual void appendRhsVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> vec ) {}
+
+   /**
+    * \brief  Registers a writer with the solver
+    * \details  This function will register a writer with the solver.  The solver
+    *  may then register any vector components it "owns" with the writer.
+    * \param writer   The writer to register
+    */
+   virtual void registerWriter( boost::shared_ptr<AMP::Utilities::Writer> writer ) { d_writer=writer; }
+
+   /**
     * Print out all members of integrator instance to given output stream.
     */
    void printClassData(std::ostream& os) const;
@@ -250,6 +277,9 @@ protected:
    
    int d_integrator_step;
    int d_max_integrator_steps;
+
+   // Writer for internal data
+   boost::shared_ptr<AMP::Utilities::Writer> d_writer;
 
    // declare the default constructor to be private
    TimeIntegrator() {};

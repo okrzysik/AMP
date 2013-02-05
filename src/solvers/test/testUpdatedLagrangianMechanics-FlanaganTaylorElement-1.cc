@@ -11,7 +11,7 @@
 #include "ampmesh/Mesh.h"
 #include "ampmesh/libmesh/libMesh.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"

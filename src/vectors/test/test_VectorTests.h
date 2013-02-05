@@ -23,6 +23,9 @@ namespace AMP {
 namespace unit_test {
 
 
+static inline int lround(double x) { return x>=0 ? floor(x):ceil(x); }
+
+
 template <typename VECTOR_FACTORY>
 void InstantiateVector( AMP::UnitTest *utils )
 {

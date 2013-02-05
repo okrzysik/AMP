@@ -13,7 +13,7 @@
 #include "utils/Database.h"
 
 #include "ampmesh/Mesh.h"
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
@@ -532,7 +532,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 
 #ifdef USE_EXT_SILO
     // Register the quantities to plot
-    AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO );
+    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
     if ( meshAdapter1.get()!=NULL ) {
         siloWriter->registerVector( globalSolVec, meshAdapter1, AMP::Mesh::Vertex, "PelletTemperature" );
     }

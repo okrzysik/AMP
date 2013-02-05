@@ -5,13 +5,14 @@
 #include <stdio.h>
 #include <iostream>
 #include <sstream>
+#include <time.h>
 
 #define ERROR_MSG AMP_ERROR
 
 #define MONITOR_PROFILER_PERFORMANCE 0
 
 
-AMP::ProfilerApp global_profiler = AMP::ProfilerApp();
+AMP::ProfilerApp global_profiler;
 
 extern "C" {
     #include "assert.h"
@@ -354,7 +355,7 @@ void ProfilerApp::stop( const std::string& message, const char* filename, const 
         if ( trace->start_time==NULL ) {
             // We haven't allocated any memory yet
             size_old = 0;
-            size_new = 1;
+            size_new = 128;
         } else {
             // We want to allocate memory in powers of 2
             // The current allocated size is the smallest power of 2 that is >= N
@@ -368,9 +369,9 @@ void ProfilerApp::stop( const std::string& message, const char* filename, const 
                 size_new = size_old;
             // Stop allocating memory if we reached the limit
             if ( size_new > MAX_TRACE_TRACE ) 
-                size_new = MAX_TRACE_TRACE;
+                size_new = static_cast<size_t>(MAX_TRACE_TRACE);
             if ( size_old > MAX_TRACE_TRACE ) 
-                size_old = MAX_TRACE_TRACE;
+                size_old = static_cast<size_t>(MAX_TRACE_TRACE);
         }
         if ( size_old != size_new ) {
             // Expand the trace list
@@ -569,8 +570,8 @@ void ProfilerApp::save( const std::string& filename ) const {
         }
     }
     // Create the file header
-    fprintf(timerFile,"                  Message                    Filename        Thread  Start Line  Stop Line  N_calls  Min Time  Max Time  Total Time\n");
-    fprintf(timerFile,"-----------------------------------------------------------------------------------------------------------------------------------\n");
+    fprintf(timerFile,"                  Message                      Filename          Thread  Start Line  Stop Line  N_calls  Min Time  Max Time  Total Time\n");
+    fprintf(timerFile,"---------------------------------------------------------------------------------------------------------------------------------------\n");
     // Loop through the list of timers, storing the most expensive first
     for (int i=N_timers-1; i>=0; i--) {
         size_t id = id_order[i];                    // Get the timer id
@@ -627,7 +628,7 @@ void ProfilerApp::save( const std::string& filename ) const {
                 }
             }
             // Save the timer to the file
-            fprintf(timerFile,"%30s  %26s   %4i   %7i    %7i  %8i     %8.3f  %8.3f  %10.3f\n",
+            fprintf(timerFile,"%30s  %30s   %4i   %7i    %7i  %8i     %8.3f  %8.3f  %10.3f\n",
                 message,filename2,thread_id,start_line,stop_line,timer->N_calls,min_time,max_time,tot_time);
             timer = timer->next;
         }

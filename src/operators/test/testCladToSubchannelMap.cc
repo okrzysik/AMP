@@ -7,7 +7,7 @@
 #include "utils/Utilities.h"
 #include "utils/PIO.h"
 #include "ampmesh/Mesh.h"
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "ampmesh/MeshElementVectorIterator.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
@@ -153,12 +153,12 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
 
     // Write the results
     #ifdef USE_EXT_SILO
-        AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+        AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
         if ( T1.get()!=NULL )
             siloWriter->registerVector( T1, pin_mesh, AMP::Mesh::Vertex, "Temperature" );
         if ( T2.get()!=NULL )
             siloWriter->registerVector( T2, subchannel_face, AMP::Mesh::Face, "Temperature" );
-        siloWriter->setDecomposition( 0 );
+        siloWriter->setDecomposition( 1 );
         siloWriter->writeFile( fname, 0 );
     #endif
 }

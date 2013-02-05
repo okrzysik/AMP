@@ -22,7 +22,7 @@
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
@@ -265,7 +265,7 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   // write graphical output
 
 #ifdef USE_EXT_SILO
-     AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
      siloWriter->registerMesh( meshAdapter );
 
      siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );

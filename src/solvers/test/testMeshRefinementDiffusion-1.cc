@@ -3,7 +3,7 @@
 #include "utils/AMPManager.h"
 #include "utils/InputManager.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 #include "ampmesh/Mesh.h"
 #include "vectors/VectorBuilder.h"
 #include "discretization/DOF_Manager.h"
@@ -378,7 +378,7 @@ void myTest(AMP::UnitTest *ut, boost::shared_ptr<AMP::InputDatabase> input_db ,
 
   //------------------------------------------
 #ifdef USE_EXT_SILO
-  AMP::Mesh::SiloIO::shared_ptr  siloWriter( new AMP::Mesh::SiloIO);
+  AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
   siloWriter->registerMesh(manager);
 
   siloWriter->registerVector( manufacturedSolution , manager, AMP::Mesh::Vertex , "ManufacturedSolution" );

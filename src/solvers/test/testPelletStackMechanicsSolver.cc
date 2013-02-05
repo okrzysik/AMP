@@ -15,7 +15,7 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
-#include "ampmesh/SiloIO.h"
+#include "utils/Writer.h"
 
 #include "solvers/PetscSNESSolver.h"
 
@@ -28,7 +28,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
 #ifdef USE_EXT_SILO
   // Create the silo writer and register the data
-  AMP::Mesh::SiloIO::shared_ptr siloWriter( new AMP::Mesh::SiloIO);
+  AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
 #endif
 
   boost::shared_ptr<AMP::InputDatabase> global_input_db(new AMP::InputDatabase("global_input_db"));

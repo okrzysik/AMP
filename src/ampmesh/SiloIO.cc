@@ -1,4 +1,4 @@
-#include "SiloIO.h"
+#include "ampmesh/SiloIO.h"
 #include "ampmesh/MultiMesh.h"
 #include "utils/ProfilerApp.h"
 
@@ -7,13 +7,15 @@ namespace Mesh {
 
 
 /************************************************************
-* Constructor                                               *
+* Constructor/Destructor                                    *
 ************************************************************/
-SiloIO::SiloIO( )
+SiloIO::SiloIO( ) :
+    AMP::Utilities::Writer()
 {
-    d_comm = AMP_MPI(AMP_COMM_WORLD);
     d_dim = -1;
-    decomposition = 0;
+}
+SiloIO::~SiloIO( )
+{
 }
 
 
@@ -23,11 +25,6 @@ SiloIO::SiloIO( )
 std::string SiloIO::getExtension() 
 { 
     return "silo"; 
-}
-void SiloIO::setDecomposition( int d )
-{
-    AMP_INSIST(d>=0&&d<=1,"decomposition must be 0 or 1");
-    decomposition = d;
 }
 
 
@@ -82,7 +79,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
     PROFILE_STOP("makeConsistent");
     #endif
     // Write the data for each base mesh
-    if ( decomposition==0 ) {
+    if ( d_decomposition==1 ) {
         // Write all mesh data to the main file
         for (int i=0; i<d_comm.getSize(); ++i) {
             if ( d_comm.getRank()==i ) {
@@ -106,7 +103,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
             }
             d_comm.barrier();
         }
-    } else if ( decomposition==1 ) {
+    } else if ( d_decomposition==2 ) {
         // Every rank will write a seperate file
         std::stringstream tmp2;
         tmp2 << fname_in << "_" << iteration_count << "." << d_comm.getRank()+1 << "." << getExtension();
@@ -126,7 +123,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
         AMP_ERROR("Unknown file decomposition");
     }
     // Write the summary results (multimeshes, multivariables, etc.)
-    if ( decomposition!=0 ) {
+    if ( d_decomposition!=1 ) {
         if ( d_comm.getRank()==0 ) {
             DBfile *FileHandle = DBCreate( fname.c_str(), DB_CLOBBER, DB_LOCAL, NULL, DB_HDF5 );
             DBClose ( FileHandle );

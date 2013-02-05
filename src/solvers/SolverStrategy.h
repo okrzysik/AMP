@@ -1,31 +1,12 @@
 #ifndef included_SolverStrategy
 #define included_SolverStrategy
 
-#ifndef included_AMP_config
-
-#endif
-
-#ifndef included_Pointer
-#include "boost/shared_ptr.hpp"
-#endif
-
-#ifdef DEBUG_CHECK_ASSERTIONS
-extern "C"{
-#include "assert.h"
-}
-#endif
-
-#ifndef included_AMP_Operator
-#include "operators/Operator.h"
-#endif
-
-#ifndef included_AMP_SolverStrategyParameters
 #include "SolverStrategyParameters.h"
-#endif
-
-#ifndef included_AMP_Vector
+#include "boost/shared_ptr.hpp"
 #include "vectors/Vector.h"
-#endif
+#include "vectors/MultiVector.h"
+#include "utils/Writer.h"
+#include "operators/Operator.h"
 
 
 namespace AMP {
@@ -133,6 +114,45 @@ class SolverStrategy
    virtual void registerOperator(const boost::shared_ptr<AMP::Operator::Operator> op){d_pOperator = op;}
 
    /**
+    * \brief  Append the vectors of interest to the solution vector
+    * \details  This function will append the necessary vectors that this solver
+    *  owns to the global vector provided.  Note that each solver may own any number
+    *  of vectors, but no vector may be owned by multiple solvers.
+    * \param vec   The multivector to append
+    */
+   virtual void appendSolutionVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> vec ) {}
+
+   /**
+    * \brief  Append the vectors of interest to the rhs vector
+    * \details  This function will append the necessary vectors that this solver
+    *  owns to the global vector provided.  Note that each solver may own any number
+    *  of vectors, but no vector may be owned by multiple solvers.
+    * \param vec   The multivector to append
+    */
+   virtual void appendRhsVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> vec ) {}
+
+   /**
+    * \brief  Registers a writer with the solver
+    * \details  This function will register a writer with the solver.  The solver
+    *  may then register any vector components it "owns" with the writer.
+    * \param writer   The writer to register
+    */
+   virtual void registerWriter( boost::shared_ptr<AMP::Utilities::Writer> writer ) { d_writer=writer; }
+
+   /**
+    * \brief Prepare for solve. 
+    * \details This function provides a solver an opportunity to perform certain
+    *  operations in preparation for a solve that are not formally part of the 
+    *  solve.  Updating time-step dependent parameters and building RHS vectors
+    *  would naturally fall into this category.
+    * \param step The current time step.
+    * \param f The global rhs multivector.
+    * \param u The global solution multivector.
+    */
+   virtual void formRhs( int step, AMP::LinearAlgebra::Vector::shared_ptr       f,
+                                    AMP::LinearAlgebra::Vector::const_shared_ptr u) {}
+
+   /**
    * Resets the operator registered with the solver with new parameters if necessary
    * @param parameters
    *        OperatorParameters object that is NULL by default
@@ -174,6 +194,9 @@ protected:
    static int d_iInstanceId;       // used to differentiate between different instances of the class
 
    boost::shared_ptr<AMP::Operator::Operator> d_pOperator;
+
+   boost::shared_ptr<AMP::Utilities::Writer> d_writer;
+
 
 private:
 

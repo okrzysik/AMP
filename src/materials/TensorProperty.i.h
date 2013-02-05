@@ -40,7 +40,7 @@ void TensorProperty<Number>::evalvActual(
   for (size_t i=0; i<rdim0; i++) for (size_t j=0; j<rdim1; j++) {
 	  AMP_ASSERT( r[i][j]->begin() != r[i][j]->end() );
   }
-  AMP_INSIST(rdim0 == d_dimensions[0] and rdim1 == d_dimensions[1], "incorrect dimensionality of output tensor");
+  AMP_INSIST(rdim0 == d_dimensions[0] && rdim1 == d_dimensions[1], "incorrect dimensionality of output tensor");
 
   // Make a tensor of iterators for the results tensor
   typename RETURN_VTYPE::iterator dummy_iter=r[0][0]->begin(); // for idiosyncracy of AMP::Vector
@@ -99,10 +99,10 @@ void TensorProperty<Number>::evalvActual(
 	  bool alldone = true;
 	  for (size_t i=0; i<rdim0; i++) for (size_t j=0; j<rdim1; j++)  {
 		  if (r_iter[i][j] == r[i][j]->end()) goAgain = false;  // if goAgain true, none reached the end
-		  alldone = alldone and r_iter[i][j] == r[i][j]->end(); // if alldone true, all reached the end
+		  alldone = alldone && r_iter[i][j] == r[i][j]->end(); // if alldone true, all reached the end
 	  }
 	  // if one reached the end, make sure all did
-	  if (not goAgain) AMP_INSIST(alldone, "tensor result vectors have unequal sizes");
+	  if (!goAgain) AMP_INSIST(alldone, "tensor result vectors have unequal sizes");
   }
   // Make sure the input value iterators all got to the end.
   if (Property<Number>::d_n_arguments > 0) {
