@@ -44,7 +44,7 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/MassMatrixCorrection.h"
 
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 #include "time_integrators/sundials/IDATimeIntegrator.h"
 #include "time_integrators/sundials/IDATimeOperator.h"
 

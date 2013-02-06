@@ -20,7 +20,7 @@
 #include "solvers/PetscKrylovSolver.h"
 #include "solvers/ColumnSolver.h"
 #include "solvers/PelletStackMechanicsSolver.h"
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 void helperCreateStackOperatorForPelletMechanics(AMP::Mesh::Mesh::shared_ptr manager,
     boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps, 

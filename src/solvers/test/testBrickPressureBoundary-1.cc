@@ -32,12 +32,12 @@
 #include "operators/OperatorBuilder.h"
 #include "operators/boundary/PressureBoundaryOperator.h"
 
-#include "../PetscKrylovSolverParameters.h"
-#include "../PetscKrylovSolver.h"
-#include "../PetscSNESSolverParameters.h"
-#include "../PetscSNESSolver.h"
+#include "solvers/PetscKrylovSolverParameters.h"
+#include "solvers/PetscKrylovSolver.h"
+#include "solvers/PetscSNESSolverParameters.h"
+#include "solvers/PetscSNESSolver.h"
 
-#include "../TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 void myTest(AMP::UnitTest *ut, std::string exeName)
 {

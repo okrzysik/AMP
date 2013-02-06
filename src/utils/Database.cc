@@ -59,8 +59,8 @@ void Database::putBoolArray(
    const std::vector<unsigned char>& data)
 {
    AMP_ASSERT(!key.empty());
-   if ( data.size() > 0 ) {
-     putBoolArray(key, &(data[0]), data.size());
+   if ( static_cast<int>(data.size()) > 0 ) {
+     putBoolArray(key, &(data[0]), static_cast<int>(data.size()));
    } else {
       AMP_ERROR("Database::putBoolArray() error in database "
 		 << getName()
@@ -179,8 +179,8 @@ void Database::putDatabaseBoxArray(
    const std::vector<DatabaseBox>& data)
 {
    AMP_ASSERT(!key.empty());
-   if ( data.size() > 0 ) {
-     putDatabaseBoxArray(key, &(data[0]), data.size());
+   if ( static_cast<int>(data.size()) > 0 ) {
+     putDatabaseBoxArray(key, &(data[0]), static_cast<int>(data.size()));
    } else {
       AMP_ERROR("Database::putDatabaseBoxArray() error in database "
 		 << getName()
@@ -294,8 +294,8 @@ void Database::putCharArray(
    const std::vector<char>& data)
 {
    AMP_ASSERT(!key.empty());
-   if ( data.size() > 0 ) {
-     putCharArray(key, &(data[0]), data.size());
+   if ( static_cast<int>(data.size()) > 0 ) {
+     putCharArray(key, &(data[0]), static_cast<int>(data.size()));
    } else { 
       AMP_ERROR("Database::putCharArray() error in database "
          << getName()
@@ -428,8 +428,8 @@ void Database::putComplexArray(
    const std::vector<std::complex<double> >& data)
 {
    AMP_ASSERT(!key.empty());
-   if ( data.size() > 0 ) {
-     putComplexArray(key, &(data[0]), data.size());
+   if ( static_cast<int>(data.size()) > 0 ) {
+     putComplexArray(key, &(data[0]), static_cast<int>(data.size()));
    } else {
       AMP_ERROR("Database::putComplexArray() error in database "
          << getName()
@@ -564,8 +564,8 @@ void Database::putFloatArray(
    const std::vector<float>& data)
 {
    AMP_ASSERT(!key.empty());
-   if ( data.size() > 0 ) {
-     putFloatArray(key, &(data[0]), data.size());
+   if ( static_cast<int>(data.size()) > 0 ) {
+     putFloatArray(key, &(data[0]), static_cast<int>(data.size()));
    } else {
       AMP_ERROR("Database::putFloatArray() error in database "
          << getName()
@@ -700,8 +700,8 @@ void Database::putDoubleArray(
    const std::vector<double>& data)
 {
    AMP_ASSERT(!key.empty());
-   if ( data.size() > 0 ) {
-     putDoubleArray(key, &(data[0]), data.size());
+   if ( static_cast<int>(data.size()) > 0 ) {
+     putDoubleArray(key, &(data[0]), static_cast<int>(data.size()));
    } else {
       AMP_ERROR("Database::putDoubleArray() error in database "
          << getName()
@@ -834,8 +834,8 @@ void Database::putIntegerArray(
    const std::vector<int>& data)
 {
    AMP_ASSERT(!key.empty());
-   if ( data.size() > 0 ) {
-     putIntegerArray(key, &(data[0]), data.size());
+   if ( static_cast<int>(data.size()) > 0 ) {
+     putIntegerArray(key, &(data[0]), static_cast<int>(data.size()));
    } else {
       AMP_ERROR("Database::putIntegerArray() error in database "
          << getName()
@@ -968,8 +968,8 @@ void Database::putStringArray(
    const std::vector<std::string>& data)
 {
    AMP_ASSERT(!key.empty());
-   if ( data.size() > 0 ) {
-     putStringArray(key, &(data[0]), data.size());
+   if ( static_cast<int>(data.size()) > 0 ) {
+     putStringArray(key, &(data[0]), static_cast<int>(data.size()));
    } else {
       AMP_ERROR("Database::putStringArray() error in database "
          << getName()

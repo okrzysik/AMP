@@ -25,7 +25,7 @@
 #include "solvers/PetscSNESSolverParameters.h"
 #include "solvers/PetscSNESSolver.h"
 
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 #include "solvers/Flow1DSolver.h"
 
 #include "operators/OperatorBuilder.h"

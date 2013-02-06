@@ -31,15 +31,7 @@
 #include "operators/OperatorBuilder.h"
 #include "operators/ElementPhysicsModelFactory.h"
 
-#include "../PetscKrylovSolverParameters.h"
-#include "../PetscKrylovSolver.h"
-#include "../PetscSNESSolverParameters.h"
-#include "../PetscSNESSolver.h"
 
-#include "../TrilinosMLSolver.h"
-
-#define ITFAILS ut.failure(__LINE__);
-#define UNIT_TEST(a) if (!(a)) ut.failure(__LINE__);
 
 void myTest(AMP::UnitTest *ut, std::string exeName)
 {

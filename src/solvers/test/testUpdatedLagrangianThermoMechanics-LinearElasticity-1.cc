@@ -25,7 +25,7 @@
 #include "solvers/PetscKrylovSolver.h"
 #include "solvers/PetscSNESSolverParameters.h"
 #include "solvers/PetscSNESSolver.h"
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 #include "ReadTestMesh.h"
 #include "mesh_communication.h"

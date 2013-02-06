@@ -32,7 +32,7 @@
 #include "operators/boundary/DirichletMatrixCorrection.h"
 #include "operators/boundary/NeumannVectorCorrection.h"
 
-#include "../TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 
 void linearThermalTest(AMP::UnitTest *ut )

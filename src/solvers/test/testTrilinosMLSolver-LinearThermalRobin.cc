@@ -33,7 +33,7 @@
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 
-#include "../TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 void linearThermalTest(AMP::UnitTest *ut )
 {

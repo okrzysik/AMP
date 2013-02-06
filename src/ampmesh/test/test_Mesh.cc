@@ -15,7 +15,7 @@
 #include "meshGenerators.h"
 
 #include "ampmesh/structured/BoxMesh.h"
-#ifdef USE_EXT_STKMESH
+#ifdef USE_TRILINOS_STKMESH
     #include "ampmesh/STKmesh/STKMesh.h"
 #endif
 #ifdef USE_EXT_LIBMESH
@@ -155,7 +155,7 @@ void testAMPMesh( AMP::UnitTest *ut )
 
 
 // Function to test the creation/destruction of a STKmesh mesh
-#ifdef USE_EXT_STKMESH
+#ifdef USE_TRILINOS_STKMESH
 void testSTKMesh( AMP::UnitTest *ut )
 {
     PROFILE_START("testSTKMesh");
@@ -301,7 +301,7 @@ int main ( int argc , char ** argv )
     testAMPMesh( &ut );
 
     // Run tests on a STKmesh mesh
-    #ifdef USE_EXT_STKMESH
+    #ifdef USE_TRILINOS_STKMESH
         testSTKMesh( &ut );
     #endif
 

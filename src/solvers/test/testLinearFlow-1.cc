@@ -45,7 +45,7 @@
 #include "operators/TrilinosMatrixShellOperator.h"
 #include "operators/PetscMatrixShellOperator.h"
 
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 #include "solvers/ColumnSolver.h"
 #include "solvers/PetscKrylovSolverParameters.h"
 #include "solvers/PetscKrylovSolver.h"

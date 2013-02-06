@@ -23,7 +23,7 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 void linearElasticTest(AMP::UnitTest *ut )
 {
