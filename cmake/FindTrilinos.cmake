@@ -33,7 +33,7 @@ MACRO ( TRILINOS_SET_SUBPACKAGES )
         MESSAGE ( "Using thyra and NOX" )
     ENDIF()
     # Check if we need stratimikos
-    CHECK_ENABLE_FLAG( USE_TRILINOS_STRATIMIKOS 0 )
+    CHECK_ENABLE_FLAG( USE_TRILINOS_STRATIMIKOS 1 )
     # Determine if we want to use stkmesh
     CHECK_ENABLE_FLAG(USE_TRILINOS_STKMESH 0 )
     IF ( USE_TRILINOS_STKMESH )
