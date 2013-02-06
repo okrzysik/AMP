@@ -4,6 +4,9 @@
 #include <ampmesh/hex8_element_t.h>
 #include <ampmesh/euclidean_geometry_tools.h>
 
+#include <iostream>
+
+
 double my_function(double const *xyz) {
   double x = xyz[0], y = xyz[1], z = xyz[2];
   return (1.0 + 6.0 * x) * (2.0 - 5.0 * y) * (3.0 + 4.0 * z);

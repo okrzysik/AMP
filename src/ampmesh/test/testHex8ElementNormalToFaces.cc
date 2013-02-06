@@ -4,6 +4,8 @@
 #include <ampmesh/hex8_element_t.h>
 #include <ampmesh/euclidean_geometry_tools.h>
 
+#include <iostream>
+
 
 void test_normal(hex8_element_t *volume_element, unsigned int n_random_candidate_points = 20) {
   double normal_vector[3];
