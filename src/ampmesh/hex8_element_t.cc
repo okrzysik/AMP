@@ -12,7 +12,7 @@
 
 hex8_element_t::hex8_element_t(double const *p) : memory_allocated_for_newton(false) {
   //  newton_count = 0;
-  set_support_points(p); 
+  set_support_points(p);
 }
 
 hex8_element_t::~hex8_element_t() {
@@ -20,8 +20,8 @@ hex8_element_t::~hex8_element_t() {
   clear_triangles_ptr(bounding_polyhedron);
 }
 
-void hex8_element_t::set_support_points(double const *p) { 
-  std::copy(p, p+24, &(support_points[0])); 
+void hex8_element_t::set_support_points(double const *p) {
+  std::copy(p, p+24, &(support_points[0]));
   bounding_box_updated = false;
   bounding_polyhedron_updated = false;
   center_of_element_data_updated = false;
@@ -32,14 +32,14 @@ void hex8_element_t::set_support_points(double const *p) {
 void hex8_element_t::scale_support_points() {
   AMP_CHECK_ASSERT(!support_points_scaled);
   if (!scaling_factors_updated) { compute_scaling_factors(); }
-  scale_points(&(scaling_factors[0]), 8, &(support_points[0])); 
+  scale_points(&(scaling_factors[0]), 8, &(support_points[0]));
   support_points_scaled = true;
 }
 
 void hex8_element_t::unscale_support_points() {
   AMP_CHECK_ASSERT(support_points_scaled);
   for (unsigned int i = 0; i < 3; ++i) {
-    scale_points(i, 1.0/scaling_factors[i], 8, &(support_points[0])); 
+    scale_points(i, 1.0/scaling_factors[i], 8, &(support_points[0]));
   } // end for i
   support_points_scaled = false;
 }
@@ -67,31 +67,31 @@ void hex8_element_t::compute_center_of_element_data() {
   center_of_element_data_updated = true;
 }
 
-double const * hex8_element_t::get_support_point(unsigned int i) const { 
+double const * hex8_element_t::get_support_point(unsigned int i) const {
   AMP_CHECK_ASSERT(i < 8);
   return &(support_points[3*i]);
-} 
-
-double const * hex8_element_t::get_support_points() const { 
-  return &(support_points[0]);
-} 
-
-unsigned int const * hex8_element_t::get_face(unsigned int i) { 
-  AMP_CHECK_ASSERT(i < 6);
-  return &(faces[4*i]);
-} 
-unsigned int const * hex8_element_t::get_faces() { 
-  return &(faces[0]);
-} 
-
-double const * hex8_element_t::get_bounding_box() { 
-  if (!bounding_box_updated) { build_bounding_box(); };
-  return &(bounding_box[0]); 
 }
 
-triangle_t * * hex8_element_t::get_bounding_polyhedron() { 
+double const * hex8_element_t::get_support_points() const {
+  return &(support_points[0]);
+}
+
+unsigned int const * hex8_element_t::get_face(unsigned int i) {
+  AMP_CHECK_ASSERT(i < 6);
+  return &(faces[4*i]);
+}
+unsigned int const * hex8_element_t::get_faces() {
+  return &(faces[0]);
+}
+
+double const * hex8_element_t::get_bounding_box() {
+  if (!bounding_box_updated) { build_bounding_box(); };
+  return &(bounding_box[0]);
+}
+
+triangle_t * * hex8_element_t::get_bounding_polyhedron() {
   if (!bounding_polyhedron_updated) { build_bounding_polyhedron(); };
-  return &(bounding_polyhedron[0]); 
+  return &(bounding_polyhedron[0]);
 }
 
 bool hex8_element_t::within_bounding_box(double const *p, double tolerance) {
@@ -104,11 +104,11 @@ bool hex8_element_t::within_bounding_box(double const *p, double tolerance) {
 }
 
 unsigned int hex8_element_t::faces[24] = {
-  0, 3, 2, 1, 
-  0, 1, 5, 4, 
-  1, 2, 6, 5, 
-  2, 3, 7, 6, 
-  3, 0, 4, 7, 
+  0, 3, 2, 1,
+  0, 1, 5, 4,
+  1, 2, 6, 5,
+  2, 3, 7, 6,
+  3, 0, 4, 7,
   4, 5, 6, 7
 };
 
@@ -126,7 +126,7 @@ void hex8_element_t::build_bounding_polyhedron() {
   clear_triangles_ptr(bounding_polyhedron);
   for (unsigned int i = 0; i < 6; ++i) {
     clear_triangles_ptr(tmp_triangles_ptr);
-    //   3        
+    //   3
     //    o
     //    | .
     //    |   .
@@ -134,41 +134,41 @@ void hex8_element_t::build_bounding_polyhedron() {
     //    |       .
     //    o--------o
     //   0          1
-    tmp_triangles_ptr.push_back(new triangle_t(get_support_point(faces[4*i+0]), get_support_point(faces[4*i+1]), get_support_point(faces[4*i+3]))); 
-    //   3          2    
-    //    o--------o    
+    tmp_triangles_ptr.push_back(new triangle_t(get_support_point(faces[4*i+0]), get_support_point(faces[4*i+1]), get_support_point(faces[4*i+3])));
+    //   3          2
+    //    o--------o
     //      .      |
-    //        .    |   
-    //          .  |  
-    //            .| 
+    //        .    |
+    //          .  |
+    //            .|
     //             o
     //              1
-    tmp_triangles_ptr.push_back(new triangle_t(get_support_point(faces[4*i+2]), get_support_point(faces[4*i+3]), get_support_point(faces[4*i+1]))); 
-    //              2    
-    //             o    
+    tmp_triangles_ptr.push_back(new triangle_t(get_support_point(faces[4*i+2]), get_support_point(faces[4*i+3]), get_support_point(faces[4*i+1])));
+    //              2
+    //             o
     //           . |
-    //         .   |   
-    //       .     |  
-    //     .       | 
+    //         .   |
+    //       .     |
+    //     .       |
     //    o--------o
     //   0          1
-    tmp_triangles_ptr.push_back(new triangle_t(get_support_point(faces[4*i+1]), get_support_point(faces[4*i+2]), get_support_point(faces[4*i+0]))); 
-    //   3          2    
-    //    o--------o    
-    //    |      .  
-    //    |    .       
-    //    |  .        
-    //    |.         
-    //    o         
-    //   0           
-    tmp_triangles_ptr.push_back(new triangle_t(get_support_point(faces[4*i+3]), get_support_point(faces[4*i+0]), get_support_point(faces[4*i+2]))); 
+    tmp_triangles_ptr.push_back(new triangle_t(get_support_point(faces[4*i+1]), get_support_point(faces[4*i+2]), get_support_point(faces[4*i+0])));
+    //   3          2
+    //    o--------o
+    //    |      .
+    //    |    .
+    //    |  .
+    //    |.
+    //    o
+    //   0
+    tmp_triangles_ptr.push_back(new triangle_t(get_support_point(faces[4*i+3]), get_support_point(faces[4*i+0]), get_support_point(faces[4*i+2])));
 
     //this might need scaling
     if (tmp_triangles_ptr[0]->above_point(tmp_triangles_ptr[2]->get_centroid())) {
       assert(tmp_triangles_ptr[0]->above_point(tmp_triangles_ptr[3]->get_centroid()));
       assert(tmp_triangles_ptr[1]->above_point(tmp_triangles_ptr[2]->get_centroid()));
       assert(tmp_triangles_ptr[1]->above_point(tmp_triangles_ptr[3]->get_centroid()));
-      // will fail if the four points are coplanar 
+      // will fail if the four points are coplanar
       /*      assert(!tmp_triangles[2].above_point(tmp_triangles[0].get_centroid()));
               assert(!tmp_triangles[2].above_point(tmp_triangles[1].get_centroid()));
               assert(!tmp_triangles[3].above_point(tmp_triangles[0].get_centroid()));
@@ -198,7 +198,7 @@ void hex8_element_t::build_bounding_polyhedron() {
 bool hex8_element_t::within_bounding_polyhedron(double const *p, double tolerance) {
   if (!bounding_polyhedron_updated) { build_bounding_polyhedron(); }
   for (unsigned int i = 0; i < 6; ++i) {
-    if ((!bounding_polyhedron[2*i+0]->above_point(p, tolerance)) 
+    if ((!bounding_polyhedron[2*i+0]->above_point(p, tolerance))
         || (!bounding_polyhedron[2*i+1]->above_point(p, tolerance))) { return false; }
   } // end for i
   return true;
@@ -238,7 +238,7 @@ bool hex8_element_t::contains_point(double const *coordinates, bool coordinates_
 
 void hex8_element_t::build_bounding_box() {
   if (bounding_box.size() == 0) { bounding_box.resize(6); }
-  AMP_CHECK_ASSERT(!bounding_box_updated); 
+  AMP_CHECK_ASSERT(!bounding_box_updated);
   for (unsigned int j = 0; j < 3; ++j) {
     bounding_box[j+0] = support_points[3*0+j];
     bounding_box[j+3] = support_points[3*0+j];
@@ -260,7 +260,7 @@ void hex8_element_t::compute_residual_vector(double const *x, double *f) {
   if (basis_functions_values.size() == 0) { basis_functions_values.resize(8); }
   get_basis_functions_values(x, &(basis_functions_values[0]));
   for (unsigned int i = 0; i < 3; ++i) {
-    f[i] = -point_candidate[i]; 
+    f[i] = -point_candidate[i];
     for (unsigned int j = 0; j < 8; ++j) {
       f[i] += support_points[3*j+i] * basis_functions_values[j];
     } // end for j
@@ -270,7 +270,7 @@ void hex8_element_t::compute_residual_vector(double const *x, double *f) {
 void hex8_element_t::compute_jacobian_matrix(double const *x, double *J) {
   get_basis_functions_derivatives(x, &(basis_functions_derivatives[0]));
   for (unsigned int i = 0; i < 3; ++i) {
-    for (unsigned int j = 0; j < 3; ++j) { 
+    for (unsigned int j = 0; j < 3; ++j) {
       J[3*i+j] = 0.0;
       for (unsigned int k = 0; k < 8; ++k) {
         J[3*i+j] += support_points[3*k+i] * basis_functions_derivatives[8*j+k];
@@ -305,7 +305,7 @@ void compute_n_by_n_matrix_times_vector(unsigned int n, double const *A, double 
 
 void hex8_element_t::compute_initial_guess(double *initial_guess) {
   if (!center_of_element_data_updated) { compute_center_of_element_data(); }
-  std::vector<double> tmp(3); 
+  std::vector<double> tmp(3);
   make_vector_from_two_points(&(center_of_element_global_coordinates[0]), &(point_candidate[0]), &(tmp[0]));
   compute_n_by_n_matrix_times_vector(3, &(inverse_jacobian_matrix_at_center_of_element[0]), &(tmp[0]), initial_guess);
 }
@@ -334,17 +334,18 @@ double hex8_element_t::solve_newton(double *x, double abs_tol, double rel_tol, u
 
   compute_residual_vector(&x[0], &(residual_vector[0]));
   double residual_norm = sqrt(std::inner_product(residual_vector.begin(), residual_vector.end(), residual_vector.begin(), 0.0));
-  double tol = abs_tol + rel_tol * residual_norm; 
+  double tol = abs_tol + rel_tol * residual_norm;
 
   for (unsigned int iter = 0; iter < max_iter; ++iter) {
     //    ++newton_count;
     if (verbose) { std::cout<<iter<<"  "<<residual_norm<<std::endl; }
-    if (residual_norm < tol) { 
+    if (residual_norm < tol) {
       if (verbose) { std::cout<<"converged at iteration "<<iter<<" with residual norm "<<residual_norm<<"\n"; }
-      return residual_norm; 
+      return residual_norm;
     } // end if
     compute_jacobian_matrix(&(x[0]), &(jacobian_matrix[0]));
-    assert(fabs(compute_inverse_3_by_3_matrix(&(jacobian_matrix[0]), &(inverse_jacobian_matrix[0]))) > 1.0e-16);
+    double det = compute_inverse_3_by_3_matrix(&(jacobian_matrix[0]), &(inverse_jacobian_matrix[0]));
+    AMP_ASSERT( !AMP::Utilities::approx_equal( det, 0.0, 1.0e-14 ) );
     compute_n_by_n_matrix_times_vector(3, &(inverse_jacobian_matrix[0]), &(residual_vector[0]), &(inverse_jacobian_matrix_times_residual_vector[0]));
     bool line_search_passed = false;
     for (double alpha = 1.0; alpha > 1.0e-14; alpha /= 2.0) {
@@ -364,13 +365,13 @@ double hex8_element_t::solve_newton(double *x, double abs_tol, double rel_tol, u
   std::cerr<<"failed to converge with tolerance "<<tol<<" after "<<max_iter-1<<" iterations (residual norm was "<<residual_norm<<")"<<std::endl;
   std::cerr<<"support_points=\n";
   for (unsigned int i = 0; i < 8; ++i) {
-    std::cerr<<i<<"  ["<<support_points[3*i]<<", "<<support_points[3*i+1]<<", "<<support_points[3*i+2]<<"]\n";  
+    std::cerr<<i<<"  ["<<support_points[3*i]<<", "<<support_points[3*i+1]<<", "<<support_points[3*i+2]<<"]\n";
   } // end for i
   std::cerr<<"bounding_box=\n";
   for (unsigned int i = 0; i < 3; ++i) { std::cerr<<bounding_box[i]<<"  "<<bounding_box[i+3]<<"\n"; }
   std::cerr<<"point_candidate=["<<point_candidate[0]<<", "<<point_candidate[1]<<", "<<point_candidate[2]<<"]\n";
   for (unsigned int i = 0; i < 1000; ++i) { std::cerr<<std::flush; }
-  abort(); 
+  abort();
 }
 
 void hex8_element_t::get_basis_functions_values(double const *x, double *basis_functions_values) {
@@ -450,9 +451,9 @@ void hex8_element_t::compute_normal_to_face(unsigned int f, double const *local_
   double perturbated_global_coordinates[3];
   for (unsigned int d = 0; d < 2; ++d) {
     map_local_to_face(f, local_coordinates, perturbated_local_coordinates_on_face);
-    if (perturbated_local_coordinates_on_face[d] > 0.0) { 
+    if (perturbated_local_coordinates_on_face[d] > 0.0) {
       perturbated_local_coordinates_on_face[d] -= perturbation;
-      direction *= -1.0; 
+      direction *= -1.0;
     } else {
       perturbated_local_coordinates_on_face[d] += perturbation;
     } // end if
@@ -460,7 +461,7 @@ void hex8_element_t::compute_normal_to_face(unsigned int f, double const *local_
     map_local_to_global(perturbated_local_coordinates, perturbated_global_coordinates);
     make_vector_from_two_points(global_coordinates, perturbated_global_coordinates, &(tangential_vectors[3*d]));
   } // end for d
-  compute_cross_product(&(tangential_vectors[0]), &(tangential_vectors[3]), normal_vector); 
+  compute_cross_product(&(tangential_vectors[0]), &(tangential_vectors[3]), normal_vector);
   normalize_vector(normal_vector);
   if (direction == -1.0) {
     std::transform(normal_vector, normal_vector+3, normal_vector, std::bind1st(std::multiplies<double>(), direction));
@@ -563,9 +564,9 @@ void hex8_element_t::get_normal_to_face(double const * * support_points_ptr, dou
   } // end for i
   for (unsigned int d = 0; d < 2; ++d) {
     std::copy(local_coordinates_on_face, local_coordinates_on_face+2, perturbated_local_coordinates_on_face);
-    if (perturbated_local_coordinates_on_face[d] > 0.0) { 
+    if (perturbated_local_coordinates_on_face[d] > 0.0) {
       perturbated_local_coordinates_on_face[d] -= perturbation;
-      direction *= -1.0; 
+      direction *= -1.0;
     } else {
       perturbated_local_coordinates_on_face[d] += perturbation;
     } // end if
@@ -578,7 +579,7 @@ void hex8_element_t::get_normal_to_face(double const * * support_points_ptr, dou
     } // end for i
     make_vector_from_two_points(global_coordinates, perturbated_global_coordinates, &(tangential_vectors[3*d]));
   } // end for d
-  compute_cross_product(&(tangential_vectors[0]), &(tangential_vectors[3]), normal_vector); 
+  compute_cross_product(&(tangential_vectors[0]), &(tangential_vectors[3]), normal_vector);
   normalize_vector(normal_vector);
   std::transform(normal_vector, normal_vector+3, normal_vector, std::bind1st(std::multiplies<double>(), direction));
 }
@@ -600,9 +601,9 @@ void hex8_element_t::compute_normal_to_face(unsigned int f, double const * local
   } // end for i
   for (unsigned int d = 0; d < 2; ++d) {
     std::copy(local_coordinates_on_face, local_coordinates_on_face+2, perturbated_local_coordinates_on_face);
-    if (perturbated_local_coordinates_on_face[d] > 0.0) { 
+    if (perturbated_local_coordinates_on_face[d] > 0.0) {
       perturbated_local_coordinates_on_face[d] -= perturbation;
-      direction *= -1.0; 
+      direction *= -1.0;
     } else {
       perturbated_local_coordinates_on_face[d] += perturbation;
     } // end if
@@ -617,7 +618,7 @@ void hex8_element_t::compute_normal_to_face(unsigned int f, double const * local
   } // end for d
 //  normalize_vector(&(tangential_vectors[0]));
 //  normalize_vector(&(tangential_vectors[3]));
-  compute_cross_product(&(tangential_vectors[0]), &(tangential_vectors[3]), normal_vector); 
+  compute_cross_product(&(tangential_vectors[0]), &(tangential_vectors[3]), normal_vector);
   normalize_vector(normal_vector);
   std::transform(normal_vector, normal_vector+3, normal_vector, std::bind1st(std::multiplies<double>(), direction));
 }
