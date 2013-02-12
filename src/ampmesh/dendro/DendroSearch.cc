@@ -225,8 +225,8 @@ namespace AMP {
         d_localElems.push_back(*el);
         std::vector<AMP::Mesh::MeshElement> vertices = el->getElements(AMP::Mesh::Vertex);
         double support_points[24];
-        int minId[3];
-        int maxId[3];
+        std::vector<int> minId(3,0);
+        std::vector<int> maxId(3,0);
         for (size_t j = 0; j < vertices.size(); ++j) {
           std::vector<double> pt = vertices[j].coord();
           double scaledPt[3];
