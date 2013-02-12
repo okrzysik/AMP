@@ -698,10 +698,10 @@ namespace Operator {
                j3 = j+3;
                k3 = k+3;
           
-               m1j = map1[j3];
-               m2j = map2[j3];
-               m1k = map1[k3];
-               m2k = map2[k3];
+               m1j = map1[j3]-1;
+               m2j = map2[j3]-1;
+               m1k = map1[k3]-1;
+               m2k = map2[k3]-1;
           
                Tijab[j][k] = Qia[j][k] * Qjb[j][k];
           
