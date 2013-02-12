@@ -116,66 +116,66 @@ void IDATimeIntegrator::initializeIDA()
     id = N_VClone(pSundials_sol->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector());
         
     d_ida_mem = IDACreate();
-    assert(d_ida_mem!=0);    
+    AMP_ASSERT(d_ida_mem!=0);    
         
     int ierr = IDASetUserData(d_ida_mem, this);
-    assert(ierr==IDA_SUCCESS);
+    AMP_ASSERT(ierr==IDA_SUCCESS);
         
     N_VConst(1.0, id);
     ierr = IDASetId(d_ida_mem, id);
-    assert(ierr==IDA_SUCCESS);
+    AMP_ASSERT(ierr==IDA_SUCCESS);
         
     // boost::shared_ptr<AMP::LinearAlgebra::SundialsVector> pSun_nvec =  boost::dynamic_pointer_cast<AMP::LinearAlgebra::SundialsVector>(pSundials_sol);
                 
     ierr = IDAInit(d_ida_mem, IDAResTrial, d_initial_time, pSundials_sol->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector(), pSundials_sol_prime->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector());
-    assert(ierr==IDA_SUCCESS);        
+    AMP_ASSERT(ierr==IDA_SUCCESS);        
         
     ierr = IDASStolerances(d_ida_mem, d_relative_tolerance, d_absolute_tolerance);
-    assert(ierr==IDA_SUCCESS);
+    AMP_ASSERT(ierr==IDA_SUCCESS);
                 
     N_VDestroy(id);
     // set the initial step size
     ierr = IDASetInitStep(d_ida_mem, d_initial_dt);
-    assert(ierr==IDA_SUCCESS);
+    AMP_ASSERT(ierr==IDA_SUCCESS);
 
     // set the max step size
     ierr = IDASetMaxStep(d_ida_mem, d_max_dt);
-    assert(ierr==IDA_SUCCESS);
+    AMP_ASSERT(ierr==IDA_SUCCESS);
 
     // set final time
     ierr = IDASetStopTime(d_ida_mem, d_final_time);
-    assert(ierr==IDA_SUCCESS);
+    AMP_ASSERT(ierr==IDA_SUCCESS);
         
 
     // ideally, the linear solver type needs to be determined by the user input
     ierr = IDASpgmr(d_ida_mem, 0);
-    assert(ierr==IDA_SUCCESS);
+    AMP_ASSERT(ierr==IDA_SUCCESS);
     if (d_bUsePreconditioner) {
         ierr = IDASpilsSetPreconditioner(d_ida_mem, IDAPrecSetup, IDAPrecSolve);
-        assert(ierr==IDASPILS_SUCCESS);
+        AMP_ASSERT(ierr==IDASPILS_SUCCESS);
     }
         
     //ierr = IDASpilsSetMaxRestarts(d_ida_mem, 15);
     ierr = IDASpilsSetMaxRestarts(d_ida_mem, 100);
-    assert(ierr==IDA_SUCCESS);
+    AMP_ASSERT(ierr==IDA_SUCCESS);
 
     // if we want IDA to calculate consistent IC's
     if (d_bCallCalcIC) {
         double tout1 = d_initial_time+d_current_dt;
         // choice of the last argument...?
         ierr = IDACalcIC(d_ida_mem, IDA_YA_YDP_INIT, tout1);    
-        assert(ierr==IDA_SUCCESS);
+        AMP_ASSERT(ierr==IDA_SUCCESS);
         ierr = IDAGetConsistentIC(d_ida_mem, pSundials_sol->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector(), pSundials_sol_prime->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector());
-        assert(ierr==IDA_SUCCESS);
+        AMP_ASSERT(ierr==IDA_SUCCESS);
     }
         
     // For now, just use BDF2
     //ierr = IDASetMaxOrd(d_ida_mem, 2);
-    //assert(ierr==IDA_SUCCESS);
+    //AMP_ASSERT(ierr==IDA_SUCCESS);
 
     //d_init_step_size = 0.1;
     //ierr = IDASetInitStep(d_ida_mem, d_init_step_size);
-    //assert(ierr==IDA_SUCCESS);
+    //AMP_ASSERT(ierr==IDA_SUCCESS);
 
 }
     
@@ -183,7 +183,7 @@ void IDATimeIntegrator::initializeIDA()
 void IDATimeIntegrator::reset( boost::shared_ptr< TimeIntegratorParameters > parameters )
 {
     #ifdef DEBUG_CHECK_ASSERTIONS
-        assert(parameters.get() != NULL);
+        AMP_ASSERT(parameters.get() != NULL);
     #endif
         
     abort();
@@ -209,7 +209,7 @@ void IDATimeIntegrator::updateSolution( void )
     realtype hlast;
          
     retval = IDAGetLastStep(d_ida_mem, &hlast);
-    assert(retval==IDA_SUCCESS);
+    AMP_ASSERT(retval==IDA_SUCCESS);
          
     d_current_time += hlast;
     //d_solution->add( d_predictor, d_corrector );
@@ -264,7 +264,7 @@ void IDATimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db 
     IDATimeIntegrator::getNextDt(const bool good_solution)
     {
         int ierr = IDAGetCurrentStep(d_ida_mem, &d_current_dt);
-        assert(ierr!=IDA_SUCCESS);
+        AMP_ASSERT(ierr!=IDA_SUCCESS);
         
         return d_current_dt;
     }
@@ -395,7 +395,7 @@ void IDATimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db 
         ierr = IDAGetCurrentOrder(((IDATimeIntegrator*)user_data)->getIDAMem(), &current_order);
         ierr = IDAGetLastStep(((IDATimeIntegrator*)user_data)->getIDAMem(), &last_stepsize);
         ierr = IDAGetCurrentStep(((IDATimeIntegrator*)user_data)->getIDAMem(), &current_stepsize);
-        assert(ierr==IDA_SUCCESS);
+        AMP_ASSERT(ierr==IDA_SUCCESS);
         
         AMP::pout << "cj = " << cj << std::endl;
         
