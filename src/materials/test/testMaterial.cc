@@ -237,7 +237,7 @@ MatTestResult testMaterial(string &name) {
 		// test material range functions
 		vector<double> range(2);
 		bool good = true;
-		good = good & nargs == argnames.size();
+		good = (good && (nargs == argnames.size()) );
 		for (size_t i = 0; i < argnames.size(); i++) {
 			range = property->get_arg_range(argnames[i]);
 			good = good && range[0] <= range[1];
