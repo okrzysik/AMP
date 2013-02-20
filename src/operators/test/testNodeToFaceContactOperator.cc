@@ -78,7 +78,8 @@ void drawFacesOnBoundaryID(AMP::Mesh::Mesh::shared_ptr meshAdapter, int boundary
     } // end for i
     triangle_t t(faceDataPtr[0], faceDataPtr[1], faceDataPtr[2]);
 
-    if (compute_scalar_product(point_of_view, t.get_normal()) > 0.0) {
+//    if (compute_scalar_product(point_of_view, t.get_normal()) > 0.0) {
+    if (true) {
       os<<"\\draw["<<option<<"]\n";
       write_face(faceDataPtr, os);
     } // end if
@@ -244,8 +245,16 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 std::fstream masterFout;
 masterFout.open("master_pellet", std::fstream::out);
 double point_of_view[3] = { 1.0, 1.0, 1.0 };
-drawFacesOnBoundaryID(masterMeshAdapter, 1, masterFout, point_of_view);
-drawFacesOnBoundaryID(masterMeshAdapter, 4, masterFout, point_of_view);
+drawFacesOnBoundaryID(masterMeshAdapter, 0, masterFout, point_of_view, "blue");
+drawFacesOnBoundaryID(masterMeshAdapter, 1, masterFout, point_of_view, "green");
+drawFacesOnBoundaryID(masterMeshAdapter, 2, masterFout, point_of_view, "red");
+drawFacesOnBoundaryID(masterMeshAdapter, 3, masterFout, point_of_view, "magenta");
+drawFacesOnBoundaryID(masterMeshAdapter, 4, masterFout, point_of_view, "black");
+drawFacesOnBoundaryID(masterMeshAdapter, 5, masterFout, point_of_view, "orange");
+drawFacesOnBoundaryID(masterMeshAdapter, 6, masterFout, point_of_view, "pink");
+drawFacesOnBoundaryID(masterMeshAdapter, 7, masterFout, point_of_view, "violet");
+//drawFacesOnBoundaryID(masterMeshAdapter, 1, masterFout, point_of_view);
+//drawFacesOnBoundaryID(masterMeshAdapter, 4, masterFout, point_of_view);
 masterFout.close();
   } // end if
 
@@ -297,9 +306,10 @@ masterFout.close();
 std::fstream slaveFout;
 slaveFout.open("slave_pellet", std::fstream::out);
 double point_of_view[3] = { 1.0, 1.0, 1.0 };
-drawFacesOnBoundaryID(slaveMeshAdapter, 1, slaveFout, point_of_view, "dashed");
-drawFacesOnBoundaryID(slaveMeshAdapter, 4, slaveFout, point_of_view, "dashed");
-drawVerticesOnBoundaryID(slaveMeshAdapter, 2, slaveFout, point_of_view, "red");
+drawFacesOnBoundaryID(slaveMeshAdapter, 0, slaveFout, point_of_view, "dashed,red");
+//drawFacesOnBoundaryID(slaveMeshAdapter, 1, slaveFout, point_of_view, "dashed");
+//drawFacesOnBoundaryID(slaveMeshAdapter, 4, slaveFout, point_of_view, "dashed");
+//drawVerticesOnBoundaryID(slaveMeshAdapter, 2, slaveFout, point_of_view, "red");
 slaveFout.close();
   } // end if
 
@@ -608,8 +618,8 @@ int main(int argc, char *argv[])
   AMP::UnitTest ut;
 
   std::vector<std::string> exeNames; 
-//  exeNames.push_back("testNodeToSegmentConstraintsOperator-cube");
-  exeNames.push_back("testNodeToSegmentConstraintsOperator-cylinder");
+  exeNames.push_back("testNodeToSegmentConstraintsOperator-cube");
+//  exeNames.push_back("testNodeToSegmentConstraintsOperator-cylinder");
 //  exeNames.push_back("testNodeToSegmentConstraintsOperator-pellet");
 
   try {

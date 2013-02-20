@@ -56,6 +56,36 @@ namespace AMP {
 
       std::vector<int> tmpSendCnts(npes, 0);
 
+      unsigned int const * faceOrdering = hex8_element_t::get_faces();
+      std::vector<size_t> mapFaces(6, 6);
+      if (!d_foundPts.empty()) {
+        AMP::Mesh::MeshElement controlVolumeElement = d_localElems[0];
+        std::vector<AMP::Mesh::MeshElement> controlVolumeElementVertices = controlVolumeElement.getElements(AMP::Mesh::Vertex);
+        AMP_CHECK_ASSERT( controlVolumeElementVertices.size() == 8 );
+        AMP::Mesh::MeshElement hex8ElementFaceVertices[24];
+        for (size_t f = 0; f < 6; ++f) {
+          for (size_t v = 0; v < 4; ++v) {
+            hex8ElementFaceVertices[4*f+v] = controlVolumeElementVertices[faceOrdering[4*f+v]];
+          } // end for v
+          std::sort(&(hex8ElementFaceVertices[4*f]), &(hex8ElementFaceVertices[4*f])+4);
+        } // end for f
+        std::vector<AMP::Mesh::MeshElement> controlVolumeElementFaces = controlVolumeElement.getElements(AMP::Mesh::Face);
+        AMP_CHECK_ASSERT( controlVolumeElementFaces.size() == 6 );
+//        std::vector<size_t> mapFaces(6, 6);
+        for (size_t f = 0; f < 6; ++f) {
+          std::vector<AMP::Mesh::MeshElement> faceVertices = controlVolumeElementFaces[f].getElements(AMP::Mesh::Vertex);
+          AMP_CHECK_ASSERT( faceVertices.size() == 4 );
+          std::sort(faceVertices.begin(), faceVertices.end());
+          for (size_t g = 0; g < 6; ++g) {
+            if (std::equal(faceVertices.begin(), faceVertices.end(), &(hex8ElementFaceVertices[4*g]))) {
+              mapFaces[f] = g;
+//              std::cout<<f<<"  ->  "<<g<<"\n";
+              break;
+            } // end if
+          } // end for g
+        } // end for f
+      } // end if
+
       for (unsigned int i = 0; i < d_foundPts.size(); i += 6) {
         ProjectOnBoundaryData tmpData;
         const double * pointLocalCoords_ptr = &(d_foundPts[i+1]);
@@ -69,14 +99,19 @@ namespace AMP {
           for (size_t f = 0; f < 6; ++f) {
             if (meshElementFaces[f].isOnBoundary(boundaryID)) {
               tmpData.d_SearchStatus = FoundOnBoundary;
-              tmpData.d_FaceLocalIndex = f;
+//              tmpData.d_FaceLocalIndex = f;
+              tmpData.d_FaceLocalIndex = mapFaces[f];
               tmpData.d_VolumeID = d_localElems[elementLocalID].globalID();
-              std::vector<AMP::Mesh::MeshElement> faceVertices = meshElementFaces[f].getElements(AMP::Mesh::Vertex);
-              AMP_CHECK_ASSERT( faceVertices.size() == 4 );
+//              std::vector<AMP::Mesh::MeshElement> faceVertices = meshElementFaces[f].getElements(AMP::Mesh::Vertex);
+//              AMP_CHECK_ASSERT( faceVertices.size() == 4 );
+              std::vector<AMP::Mesh::MeshElement> meshElementVertices = d_localElems[elementLocalID].getElements(AMP::Mesh::Vertex);
+              AMP_CHECK_ASSERT( meshElementVertices.size() == 8 );
               for (size_t v = 0; v < 4; ++v) {
-                tmpData.d_FaceVerticesIDs[v] = faceVertices[v].globalID();
+//                tmpData.d_FaceVerticesIDs[v] = faceVertices[v].globalID();
+                tmpData.d_FaceVerticesIDs[v] = meshElementVertices[faceOrdering[4*mapFaces[f]+v]].globalID();
               } // end for v
-              d_volume_elements[elementLocalID]->project_on_face(f, pointLocalCoords_ptr,
+//              d_volume_elements[elementLocalID]->project_on_face(f, pointLocalCoords_ptr,
+              d_volume_elements[elementLocalID]->project_on_face(mapFaces[f], pointLocalCoords_ptr,
                   &(tmpData.d_ProjectionLocalCoordsOnFace[0]), &(tmpData.d_ShiftGlobalCoords[0]));
               break; // we assume only one face will be on the boundary
             } // end if

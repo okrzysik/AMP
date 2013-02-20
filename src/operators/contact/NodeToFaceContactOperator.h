@@ -107,6 +107,10 @@ namespace AMP {
       double d_SlaveVertexSurfaceTraction[3];
     };
 
+   struct FaceData {
+     AMP::Mesh::MeshElementID d_FaceVerticesGlobalIDs[4];
+   };
+
   }
 }
 

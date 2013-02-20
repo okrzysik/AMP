@@ -4,6 +4,7 @@
 #include "ampmesh/dendro/DendroSearch.h"
 #include "ampmesh/MeshID.h"
 #include "ampmesh/euclidean_geometry_tools.h"
+#include "ampmesh/latex_visualization_tools.h"
 
 #include <iterator>
 #include <algorithm>
@@ -35,17 +36,10 @@ namespace AMP {
       size_t const npes = d_GlobalComm.getSize();
       size_t const rank = d_GlobalComm.getRank();
 
-      std::cout<<"### "<<rank<<" / "<<npes<<" ###"<<std::endl;
-
       size_t nActiveSlaveVerticesDeactivated = 0;
       size_t nInactiveSlaveVerticesActivated = 0;
-
-      size_t const activeSetSizeInitial = d_GlobalComm.sumReduce(d_ActiveSet.size());
-      size_t const inactiveSetSizeInitial = d_GlobalComm.sumReduce(d_InactiveSet.size());
-      if (!rank) {
-        std::cout<<"d_ActiveSet.size()="<<activeSetSizeInitial<<"  "
-            <<"d_InactiveSet.size()="<<inactiveSetSizeInitial<<"\n";
-      } // end if
+      size_t const nInactiveSlaveVerticesBeforeUpdate = d_InactiveSet.size();
+      size_t const nActiveSlaveVerticesBeforeUpdate = d_ActiveSet.size();
 
       /** displace the mesh */
       if (!skipDisplaceMesh) {
@@ -62,6 +56,7 @@ namespace AMP {
         tmpInactiveSlaveVertexCoord = tmpInactiveSlaveVertex.coord();
         std::copy(tmpInactiveSlaveVertexCoord.begin(), tmpInactiveSlaveVertexCoord.end(), &(inactiveSlaveVerticesCoord[3*i]));
       } // end for i
+
       /** perform a dendro search for all inactive slave vertices over the master mesh */
       AMP::Mesh::Mesh::shared_ptr masterMesh = d_Mesh->Subset(d_MasterMeshID);
       // TODO: read dummyVerboseFlag from input file
@@ -79,18 +74,24 @@ namespace AMP {
           tmpMasterVerticesGlobalIDs, tmpSlaveVerticesShift, tmpSlaveVerticesLocalCoordOnFace, flags, 
           tmpMasterVolumesGlobalIDs, tmpMasterFacesLocalIndices);
 
+      /** move the mesh back */
+//      if (!skipDisplaceMesh) {
+//        displacementFieldVector->scale(-1.0);
+//        d_Mesh->displaceMesh(displacementFieldVector);
+//        displacementFieldVector->scale(-1.0);
+//      } // end if
 
-      size_t const nActiveSlaveVertices = d_ActiveSet.size();
+//      size_t const nActiveSlaveVertices = d_ActiveSet.size();
 
       if (d_GlobalComm.anyReduce(!d_ActiveSet.empty())) {
         /** compute the normal vectors at slave nodes */
 
         // to be moved in the class private data
-        std::vector<AMP::Mesh::MeshElementID> d_RecvMasterVolumesGlobalIDs;
-        std::vector<size_t> d_RecvMasterFacesLocalIndices;
+//        std::vector<AMP::Mesh::MeshElementID> d_RecvMasterVolumesGlobalIDs;
+//        std::vector<size_t> d_RecvMasterFacesLocalIndices;
 
         std::vector<int> sendCnts(npes, 0);
-        for (size_t i = 0; i < nActiveSlaveVertices; ++i) {
+        for (size_t i = 0; i < nActiveSlaveVerticesBeforeUpdate; ++i) {
           ++sendCnts[d_MasterVolumesGlobalIDs[i].owner_rank()];
         } // end for i
         std::vector<int> sendDisps(npes, 0);
@@ -99,7 +100,7 @@ namespace AMP {
           sendDisps[i] = sendDisps[i-1] + sendCnts[i-1];
         } // end for i
         size_t const nSendData = static_cast<size_t>(sendDisps[npes-1] + sendCnts[npes-1]);
-        AMP_ASSERT( nSendData == nActiveSlaveVertices );
+        AMP_ASSERT( nSendData == nActiveSlaveVerticesBeforeUpdate );
         std::vector<ProjectionData> sendProjectionDataBuffer(nSendData);
         std::fill(sendCnts.begin(), sendCnts.end(), 0);
         std::vector<size_t> sendMap(nSendData, nSendData);
@@ -141,7 +142,7 @@ namespace AMP {
             masterVolumeVerticesGlobalIDs[j] = masterVolumeVertices[j].globalID();
 //            std::cout<<"v="<<j<<"  "<<masterVolumeVertices[j].globalID().local_id()<<"\n";
           } // end for j
-          std::vector<AMP::Mesh::MeshElement> masterVolumeFaces = d_Mesh->getElement(recvProjectionDataBuffer[i].d_MasterVolumeGlobalID).getElements(AMP::Mesh::Face);
+/*          std::vector<AMP::Mesh::MeshElement> masterVolumeFaces = d_Mesh->getElement(recvProjectionDataBuffer[i].d_MasterVolumeGlobalID).getElements(AMP::Mesh::Face);
           AMP_ASSERT( masterVolumeFaces[recvProjectionDataBuffer[i].d_MasterFaceLocalIndex].isOnBoundary(d_MasterBoundaryID) );
           bool stopHere = false;
           unsigned int const facesNew[24] = {
@@ -171,7 +172,7 @@ namespace AMP {
             } // end for v
           } // end for f
 //          if (stopHere) { std::cout<<std::endl; AMP_ASSERT(false); }
-
+*/
           hex8_element_t masterVolumeElement(masterVolumeVerticesCoordinates);
           masterVolumeElement.compute_normal_to_face(recvProjectionDataBuffer[i].d_MasterFaceLocalIndex, recvProjectionDataBuffer[i].d_SlaveVertexLocalCoordOnMasterFace, sendStressStateDataBuffer[i].d_SlaveVertexNormalVector);
           double slaveVertexLocalCoordinates[3];
@@ -196,8 +197,8 @@ namespace AMP {
     for(int ii = 0; ii < 6; ii++) {
       for(int jj = 0; jj < 6; jj++) {
         constitutiveMatrix[ii][jj] = 0.0;
-      }//end for j
-    }//end for i
+      }//end for jj
+    }//end for ii
 
     constitutiveMatrix[0][0] = a;
     constitutiveMatrix[1][1] = a;
@@ -267,8 +268,8 @@ namespace AMP {
             (!(recvStressStateDataBuffer.empty()) ? &(recvStressStateDataBuffer[0]) : NULL), &(recvCnts[0]), &(recvDisps[0]), true);
         sendStressStateDataBuffer.clear(); 
 
-        d_SlaveVerticesNormalVectors.resize(3*nActiveSlaveVertices);
-        d_SlaveVerticesSurfaceTraction.resize(3*nActiveSlaveVertices);
+        d_SlaveVerticesNormalVectors.resize(3*nActiveSlaveVerticesBeforeUpdate);
+        d_SlaveVerticesSurfaceTraction.resize(3*nActiveSlaveVerticesBeforeUpdate);
         for (size_t i = 0; i < nSendData; ++i) {
           std::copy(recvStressStateDataBuffer[i].d_SlaveVertexNormalVector, recvStressStateDataBuffer[i].d_SlaveVertexNormalVector+3, &(d_SlaveVerticesNormalVectors[3*recvMap[i]]));
           std::copy(recvStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction, recvStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction+3, &(d_SlaveVerticesSurfaceTraction[3*recvMap[i]]));
@@ -281,7 +282,7 @@ namespace AMP {
         std::vector<size_t>::iterator masterFacesLocalIndicesIterator = d_MasterFacesLocalIndices.begin();
 
         std::vector<AMP::Mesh::MeshElementID>::iterator activeSetIterator = d_ActiveSet.begin();
-        for (size_t i = 0; i < nActiveSlaveVertices; ++i) {
+        for (size_t i = 0; i < nActiveSlaveVerticesBeforeUpdate; ++i) {
           double nDotT = compute_scalar_product(&(d_SlaveVerticesNormalVectors[3*i]), &(d_SlaveVerticesSurfaceTraction[3*i]));
           std::cout<<i<<"  "<<std::setprecision(15)<<"n.t="<<nDotT<<"\n";
           std::cout<<"n="
@@ -294,7 +295,38 @@ namespace AMP {
             <<d_SlaveVerticesSurfaceTraction[3*i+2]<<"\n";
             std::vector<double> xv2france = d_Mesh->getElement(*activeSetIterator).coord();
             std::cout<<"  ( "<<xv2france[0]<<" , "<<xv2france[1]<<" , "<<xv2france[2]<<" )\n";
+std::vector<AMP::Mesh::MeshElement> elementVertices = d_Mesh->getElement(d_MasterVolumesGlobalIDs[i]).getElements(AMP::Mesh::Vertex);
+std::string colors[8] = { "red", "green", "blue", "cyan", "magenta", "lime", "olive", "orange" };
+double verticesCoordinates[24];
+for (size_t kk = 0; kk < 8; ++kk) {
+  std::vector<double> vertexCoordinates = elementVertices[kk].coord();
+  draw_point(&(vertexCoordinates[0]), colors[kk], std::cout);
+  std::copy(vertexCoordinates.begin(), vertexCoordinates.end(), &(verticesCoordinates[3*kk]));
+} // end for kk
+hex8_element_t volumeElement(verticesCoordinates);
+double point_of_view[3] = { 1.0, 1.0, 1.0 };
+draw_hex8_element(&volumeElement, point_of_view, std::cout);
+double localCoordinatesOnFace[2] = { 0.0, 0.0 };
+double localCoordinates[3];
+volumeElement.map_face_to_local(d_MasterFacesLocalIndices[i], localCoordinatesOnFace, localCoordinates);
+double globalCoordinates[3];
+volumeElement.map_local_to_global(localCoordinates, globalCoordinates);
+draw_point(globalCoordinates, "darkgray", std::cout);
+unsigned int const * faceOrdering = volumeElement.get_face(d_MasterFacesLocalIndices[i]);
+double scalingFactor = 0.0;
+for (size_t ll = 0; ll < 4; ++ll) {
+  scalingFactor += compute_distance_between_two_points(verticesCoordinates+3*faceOrdering[ll], verticesCoordinates+3*faceOrdering[(ll+1)%4]);
+} // end for ll
+scalingFactor *= 0.25;
+double normalVector[3];
+std::copy(&(d_SlaveVerticesNormalVectors[3*i]), &(d_SlaveVerticesNormalVectors[3*i])+3, normalVector);
+for (size_t mm = 0; mm < 3; ++mm) { scale_points(mm, scalingFactor, 1, normalVector); }
+translate_points(globalCoordinates, 1, normalVector);
+draw_point(normalVector, "darkgray", std::cout);
+
+
           if (nDotT > 1.0e-14) { 
+            std::cout<<d_MasterFacesLocalIndices[i]<<"\n";
             std::cout<<"@@@@@@@@@@@@@@@@\n";
             std::cout<<"@@@@@@@@@@@@@@@@\n";
             std::cout<<"@@@@@@@@@@@@@@@@\n";
@@ -323,11 +355,8 @@ namespace AMP {
         AMP_ASSERT( masterVolumesGlobalIDsIterator == d_MasterVolumesGlobalIDs.end() );
         AMP_ASSERT( masterFacesLocalIndicesIterator == d_MasterFacesLocalIndices.end() );
       } // end if
-//      if (!rank) { std::cout<<"nActiveSlaveVerticesDeactivated="<<d_GlobalComm.sumReduce(nActiveSlaveVerticesDeactivated)<<"\n"; }
-std::cout<<"nActiveSlaveVerticesDeactivated="<<d_GlobalComm.sumReduce(nActiveSlaveVerticesDeactivated)<<"\n";
 
-      size_t const nAddedConstraints = static_cast<size_t>(std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::FoundOnBoundary)); // std::count returns ptrdiff_t 
-      size_t const nOlderConstraints = d_ActiveSet.size();
+      nInactiveSlaveVerticesActivated = static_cast<size_t>(std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::FoundOnBoundary)); // std::count returns ptrdiff_t 
 
       ptrdiff_t localPtsNotFound = std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::NotFound);
       ptrdiff_t localPtsFoundNotOnBoundary = std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::FoundNotOnBoundary);
@@ -342,26 +371,28 @@ std::cout<<"nActiveSlaveVerticesDeactivated="<<d_GlobalComm.sumReduce(nActiveSla
 
       AMP_ASSERT( std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::FoundNotOnBoundary) == 0 ); // DendroSearch::FoundNotOnBoundary is not acceptable
 
-      // TODO: bof bof
-      size_t const nConstraints = nOlderConstraints + nAddedConstraints;
+      size_t const nActiveSlaveVerticesAfterUpdate = nActiveSlaveVerticesBeforeUpdate - nActiveSlaveVerticesDeactivated + nInactiveSlaveVerticesActivated;
+      size_t const nInactiveSlaveVerticesAfterUpdate = nInactiveSlaveVerticesBeforeUpdate + nActiveSlaveVerticesDeactivated - nInactiveSlaveVerticesActivated;
 
-//      d_ActiveSet.resize(nOlderConstraints+nAddedConstraints, AMP::Mesh::MeshElementID());
-      d_SlaveShift.resize(3*nConstraints, 0.0);
-      d_MasterVerticesGlobalIDs.resize(4*nConstraints, AMP::Mesh::MeshElementID());
-      d_MasterShapeFunctionsValues.resize(4*nConstraints, 0.0);
-      d_MasterVolumesGlobalIDs.resize(nConstraints, AMP::Mesh::MeshElementID());
-      d_MasterFacesLocalIndices.resize(nConstraints, 7);
+      size_t const nActiveSlaveVerticesTmp = d_ActiveSet.size();
+      d_SlaveShift.resize(3*nActiveSlaveVerticesAfterUpdate, 0.0);
+      d_MasterVerticesGlobalIDs.resize(4*nActiveSlaveVerticesAfterUpdate, AMP::Mesh::MeshElementID());
+      d_MasterShapeFunctionsValues.resize(4*nActiveSlaveVerticesAfterUpdate, 0.0);
+      d_MasterVolumesGlobalIDs.resize(nActiveSlaveVerticesAfterUpdate, AMP::Mesh::MeshElementID());
+      d_MasterFacesLocalIndices.resize(nActiveSlaveVerticesAfterUpdate, 6);
       
       std::vector<double>::iterator slaveVerticesShiftIterator = d_SlaveShift.begin();
       std::vector<AMP::Mesh::MeshElementID>::iterator masterVerticesGlobalIDsIterator = d_MasterVerticesGlobalIDs.begin();
       double * masterShapeFunctionsValuesPointer = &(d_MasterShapeFunctionsValues[0]); // needed this way to work with hex8_element_t::get_basis_functions_values_on_face(...)
       std::vector<AMP::Mesh::MeshElementID>::iterator masterVolumesGlobalIDsIterator = d_MasterVolumesGlobalIDs.begin();
       std::vector<size_t>::iterator masterFacesLocalIndicesIterator = d_MasterFacesLocalIndices.begin();
-      std::advance(slaveVerticesShiftIterator, 3*nOlderConstraints);
-      std::advance(masterVerticesGlobalIDsIterator, 4*nOlderConstraints);
-      std::advance(masterShapeFunctionsValuesPointer, 4*nOlderConstraints);
-      std::advance(masterVolumesGlobalIDsIterator, nOlderConstraints);
-      std::advance(masterFacesLocalIndicesIterator, nOlderConstraints);
+
+      AMP_ASSERT( nActiveSlaveVerticesTmp == nActiveSlaveVerticesBeforeUpdate - nActiveSlaveVerticesDeactivated );
+      std::advance(slaveVerticesShiftIterator, 3*nActiveSlaveVerticesTmp);
+      std::advance(masterVerticesGlobalIDsIterator, 4*nActiveSlaveVerticesTmp);
+      std::advance(masterShapeFunctionsValuesPointer, 4*nActiveSlaveVerticesTmp);
+      std::advance(masterVolumesGlobalIDsIterator, nActiveSlaveVerticesTmp);
+      std::advance(masterFacesLocalIndicesIterator, nActiveSlaveVerticesTmp);
 
       std::vector<AMP::Mesh::MeshElementID>::iterator inactiveSetIterator = d_InactiveSet.begin();
       for (size_t i = 0; i < nInactiveSlaveVertices; ++i) {
@@ -373,21 +404,22 @@ std::cout<<"nActiveSlaveVerticesDeactivated="<<d_GlobalComm.sumReduce(nActiveSla
           std::copy(&(tmpSlaveVerticesShift[3*i]), &(tmpSlaveVerticesShift[3*i])+3, slaveVerticesShiftIterator);
           std::advance(slaveVerticesShiftIterator, 3);
           std::copy(&(tmpMasterVerticesGlobalIDs[4*i]), &(tmpMasterVerticesGlobalIDs[4*i])+4, masterVerticesGlobalIDsIterator);
+//          for (size_t kk = 0; kk < 4; ++kk) {
+//            AMP_ASSERT( d_Mesh->getElement(tmpMasterVerticesGlobalIDs[4*i+kk]).isOnBoundary(d_MasterBoundaryID) );
+//          } // end for kk
           std::advance(masterVerticesGlobalIDsIterator, 4);
           *masterVolumesGlobalIDsIterator = tmpMasterVolumesGlobalIDs[i];
           ++masterVolumesGlobalIDsIterator;
           *masterFacesLocalIndicesIterator = tmpMasterFacesLocalIndices[i];
           ++masterFacesLocalIndicesIterator;
-          ++nInactiveSlaveVerticesActivated;
         } else {
           ++inactiveSetIterator;
         } // end if
       } // end for i
-//      std::advance(inactiveSetIterator, nRemovConstraints);
       std::advance(inactiveSetIterator, nActiveSlaveVerticesDeactivated);
       AMP_ASSERT( inactiveSetIterator == d_InactiveSet.end() );
       AMP_ASSERT( slaveVerticesShiftIterator == d_SlaveShift.end() );
-      AMP_ASSERT( masterShapeFunctionsValuesPointer == &(d_MasterShapeFunctionsValues[0])+4*(nOlderConstraints+nAddedConstraints) );
+      AMP_ASSERT( masterShapeFunctionsValuesPointer == &(d_MasterShapeFunctionsValues[0])+4*nActiveSlaveVerticesAfterUpdate );
       AMP_ASSERT( masterVerticesGlobalIDsIterator == d_MasterVerticesGlobalIDs.end() );
       AMP_ASSERT( masterVolumesGlobalIDsIterator == d_MasterVolumesGlobalIDs.end() );
       AMP_ASSERT( masterFacesLocalIndicesIterator == d_MasterFacesLocalIndices.end() );
@@ -398,10 +430,98 @@ std::cout<<"nActiveSlaveVerticesDeactivated="<<d_GlobalComm.sumReduce(nActiveSla
       tmpMasterVolumesGlobalIDs.clear(); 
       tmpMasterFacesLocalIndices.clear();
 
-//      if (!rank) { std::cout<<"nInactiveSlaveVerticesActivated="<<d_GlobalComm.sumReduce(nInactiveSlaveVerticesActivated)<<"\n"; }
+      /** compute slave vertices shift correction */
+      if (!skipDisplaceMesh) {
+//      if (false) {
+        std::vector<int> sendCnts(npes, 0);
+        for (size_t i = nActiveSlaveVerticesTmp; i < nActiveSlaveVerticesAfterUpdate; ++i) {
+          ++sendCnts[d_MasterVolumesGlobalIDs[i].owner_rank()];
+        } // end for i
+        std::vector<int> sendDisps(npes, 0);
+        sendDisps[0] = 0;
+        for (size_t i = 1; i < npes; ++i) {
+          sendDisps[i] = sendDisps[i-1] + sendCnts[i-1];
+        } // end for i
+        size_t const nSendData = static_cast<size_t>(sendDisps[npes-1] + sendCnts[npes-1]);
+        AMP_ASSERT( nSendData == nInactiveSlaveVerticesActivated );
+        std::vector<ProjectionData> sendProjectionDataBuffer(nSendData);
+        std::fill(sendCnts.begin(), sendCnts.end(), 0);
+        std::vector<size_t> sendMap(nSendData, nSendData);
+        std::vector<size_t> recvMap(nSendData, nSendData);
+        for (size_t i = 0; i < nSendData; ++i) {
+          size_t sendToRank = d_MasterVolumesGlobalIDs[nActiveSlaveVerticesTmp+i].owner_rank();
+          sendMap[i] = static_cast<size_t>(sendDisps[sendToRank]+sendCnts[sendToRank]);
+          recvMap[sendMap[i]] = i;
+          sendProjectionDataBuffer[sendMap[i]].d_MasterVolumeGlobalID = d_MasterVolumesGlobalIDs[nActiveSlaveVerticesTmp+i];
+          sendProjectionDataBuffer[sendMap[i]].d_MasterFaceLocalIndex = d_MasterFacesLocalIndices[nActiveSlaveVerticesTmp+i];
+          hex8_element_t::get_local_coordinates_on_face(&(d_MasterShapeFunctionsValues[4*(nActiveSlaveVerticesTmp+i)]), sendProjectionDataBuffer[sendMap[i]].d_SlaveVertexLocalCoordOnMasterFace);
+          ++sendCnts[sendToRank];
+        } // end for i
+        std::vector<int> recvCnts(npes, 0);
+        d_GlobalComm.allToAll(1, &(sendCnts[0]), &(recvCnts[0]));
+        std::vector<int> recvDisps(npes, 0);
+        recvDisps[0] = 0;
+        for (size_t i = 1; i < npes; ++i) {
+          recvDisps[i] = recvDisps[i-1] + recvCnts[i-1];
+        } // end for i
+        size_t const nRecvData = static_cast<size_t>(recvDisps[npes-1] + recvCnts[npes-1]);
+        std::vector<ProjectionData> recvProjectionDataBuffer(nRecvData);
+        d_GlobalComm.allToAll((!(sendProjectionDataBuffer.empty()) ? &(sendProjectionDataBuffer[0]) : NULL), &(sendCnts[0]), &(sendDisps[0]),
+            (!(recvProjectionDataBuffer.empty()) ? &(recvProjectionDataBuffer[0]) : NULL), &(recvCnts[0]), &(recvDisps[0]), true);
+        sendProjectionDataBuffer.clear();
+
+        std::vector<double> sendProjOnMasterFaceDisplacements(3*nRecvData);
+        for (size_t i = 0; i < nRecvData; ++i) { 
+          std::vector<AMP::Mesh::MeshElement> masterVolumeVertices = d_Mesh->getElement(recvProjectionDataBuffer[i].d_MasterVolumeGlobalID).getElements(AMP::Mesh::Vertex);
+          std::vector<AMP::Mesh::MeshElementID> masterVolumeVerticesGlobalIDs(8);
+          AMP_ASSERT(masterVolumeVertices.size() == 8);
+          for (size_t j = 0; j < masterVolumeVertices.size(); ++j) {
+            masterVolumeVerticesGlobalIDs[j] = masterVolumeVertices[j].globalID();
+          } // end for j
+          std::vector<size_t> displacementIndices;
+          getVectorIndicesFromGlobalIDs(masterVolumeVerticesGlobalIDs, displacementIndices);
+          AMP_ASSERT(displacementIndices.size() == 24);
+          double displacementValues[24];
+          displacementFieldVector->getLocalValuesByGlobalID(24, &(displacementIndices[0]), &(displacementValues[0]));
+          double basis_functions_values_on_face[4];
+          hex8_element_t::get_basis_functions_values_on_face(recvProjectionDataBuffer[i].d_SlaveVertexLocalCoordOnMasterFace, basis_functions_values_on_face);
+          std::fill(&(sendProjOnMasterFaceDisplacements[3*i]), &(sendProjOnMasterFaceDisplacements[3*i])+3, 0.0);
+          unsigned int const * faceOrdering = hex8_element_t::get_face(recvProjectionDataBuffer[i].d_MasterFaceLocalIndex);
+          for (size_t j = 0; j < 4; ++j) {
+            for (size_t k = 0; k < 3; ++k) {
+              sendProjOnMasterFaceDisplacements[3*i+k] += displacementValues[3*faceOrdering[j]+k] * basis_functions_values_on_face[j];
+            } // end for k 
+          } // end for j
+        } // end for i
+
+        sendCnts.swap(recvCnts);
+        sendDisps.swap(recvDisps);
+        std::transform(sendCnts.begin(), sendCnts.end(), sendCnts.begin(), std::bind1st(std::multiplies<int>(), 3));
+        std::transform(sendDisps.begin(), sendDisps.end(), sendDisps.begin(), std::bind1st(std::multiplies<int>(), 3));
+        std::transform(recvCnts.begin(), recvCnts.end(), recvCnts.begin(), std::bind1st(std::multiplies<int>(), 3));
+        std::transform(recvDisps.begin(), recvDisps.end(), recvDisps.begin(), std::bind1st(std::multiplies<int>(), 3));
+      
+        std::vector<double> recvProjOnMasterFaceDisplacements(3*nSendData);
+        d_GlobalComm.allToAll((!(sendProjOnMasterFaceDisplacements.empty()) ? &(sendProjOnMasterFaceDisplacements[0]) : NULL), &(sendCnts[0]), &(sendDisps[0]),
+            (!(recvProjOnMasterFaceDisplacements.empty()) ? &(recvProjOnMasterFaceDisplacements[0]) : NULL), &(recvCnts[0]), &(recvDisps[0]), true);
+
+        double activatedSlaveVertexShiftCorrection[3];
+        double activatedSlaveVertexDisplacementValues[3];
+        for (size_t i = 0; i < nInactiveSlaveVerticesActivated; ++i) {
+          std::vector<size_t> activatedSlaveVertexDisplacementIndices;
+          getVectorIndicesFromGlobalIDs(std::vector<AMP::Mesh::MeshElementID>(1, d_ActiveSet[nActiveSlaveVerticesTmp+i]), activatedSlaveVertexDisplacementIndices);
+          AMP_ASSERT( activatedSlaveVertexDisplacementIndices.size() == 3 );
+          displacementFieldVector->getLocalValuesByGlobalID(3, &(activatedSlaveVertexDisplacementIndices[0]), activatedSlaveVertexDisplacementValues);
+          make_vector_from_two_points(activatedSlaveVertexDisplacementValues, &(recvProjOnMasterFaceDisplacements[recvMap[3*i]]), activatedSlaveVertexShiftCorrection);
+          std::transform(&(d_SlaveShift[3*(nActiveSlaveVerticesTmp+i)]), &(d_SlaveShift[3*(nActiveSlaveVerticesTmp+i)])+3, activatedSlaveVertexShiftCorrection, &(d_SlaveShift[3*(nActiveSlaveVerticesTmp+i)]), std::minus<double>());
+        } // end for i
+      } // end if
+
+
 
       /** setup for apply */
 //      size_t const npes = d_GlobalComm.getSize();
+      size_t const nConstraints = nActiveSlaveVerticesAfterUpdate;
       d_SendCnts.resize(npes);
       std::fill(d_SendCnts.begin(), d_SendCnts.end(), 0);
       for (size_t i = 0; i < 4*nConstraints; ++i) {
@@ -481,17 +601,28 @@ std::cout<<"nActiveSlaveVerticesDeactivated="<<d_GlobalComm.sumReduce(nActiveSla
       } // end for i
 
       d_SlaveVerticesGlobalIDs = d_ActiveSet;
-      nInactiveSlaveVerticesActivated = nAddedConstraints;
+//      nInactiveSlaveVerticesActivated = nAddedConstraints;
 
-      size_t const activeSetSizeFinal = d_GlobalComm.sumReduce(d_ActiveSet.size());
-      size_t const inactiveSetSizeFinal = d_GlobalComm.sumReduce(d_InactiveSet.size());
+      AMP_ASSERT( nActiveSlaveVerticesAfterUpdate == d_ActiveSet.size() );
+      AMP_ASSERT( nInactiveSlaveVerticesAfterUpdate == d_InactiveSet.size() );
+      size_t const nInactiveSlaveVerticesAfterUpdateReduced = d_GlobalComm.sumReduce(nInactiveSlaveVerticesAfterUpdate);
+      size_t const nActiveSlaveVerticesAfterUpdateReduced = d_GlobalComm.sumReduce(nActiveSlaveVerticesAfterUpdate);
+      size_t const nInactiveSlaveVerticesBeforeUpdateReduced = d_GlobalComm.sumReduce(nInactiveSlaveVerticesBeforeUpdate);
+      size_t const nActiveSlaveVerticesBeforeUpdateReduced = d_GlobalComm.sumReduce(nActiveSlaveVerticesBeforeUpdate);
       size_t const nInactiveSlaveVerticesActivatedReduced = d_GlobalComm.sumReduce(nInactiveSlaveVerticesActivated);
       size_t const nActiveSlaveVerticesDeactivatedReduced = d_GlobalComm.sumReduce(nActiveSlaveVerticesDeactivated);
       if (!rank) {
-        std::cout<<"nInactiveSlaveVerticesActivated="<<nInactiveSlaveVerticesActivatedReduced<<"  "
-            <<"nActiveSlaveVerticesDeactivated="<<nActiveSlaveVerticesDeactivatedReduced<<"\n";
-        std::cout<<"d_ActiveSet.size()="<<activeSetSizeFinal<<"  "
-            <<"d_InactiveSet.size()="<<inactiveSetSizeFinal<<"\n";
+        std::cout<<"---------------------------------\n";
+        std::cout<<"BEFORE UPDATING ACTIVE SET || "
+             <<"ACTIVE SET SIZE="<<nActiveSlaveVerticesBeforeUpdateReduced<<"  "
+             <<"INACTIVE SET SIZE="<<nInactiveSlaveVerticesBeforeUpdateReduced<<" || \n";
+        std::cout<<"AFTER UPDATING ACTIVE SET  || "
+             <<"ACTIVE SET SIZE="<<nActiveSlaveVerticesAfterUpdateReduced<<"  "
+             <<"INACTIVE SET SIZE="<<nInactiveSlaveVerticesAfterUpdateReduced<<" || \n";
+        std::cout<<"UPDATE ACTIVE SET -> "
+             <<"# INACTIVE VERTICES ACTIVATED="<<nInactiveSlaveVerticesActivatedReduced<<"  "
+             <<"# ACTIVE VERTICES DESCTIVATED="<<nActiveSlaveVerticesDeactivatedReduced<<"\n";
+        std::cout<<"---------------------------------\n";
       } // end if
 
       /** move the mesh back */
