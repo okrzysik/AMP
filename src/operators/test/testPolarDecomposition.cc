@@ -3,6 +3,8 @@
 #include "utils/Utilities.h"
 #include "operators/mechanics/UpdatedLagrangianUtils.h" 
 
+#include <iostream>
+
 
 void myTest(AMP::UnitTest *ut) {
 

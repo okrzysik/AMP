@@ -25,7 +25,7 @@
 
 #include "solvers/PetscKrylovSolverParameters.h"
 #include "solvers/PetscKrylovSolver.h"
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 #include "ampmesh/libmesh/initializeLibMesh.h"
 #include "ampmesh/libmesh/libMesh.h"

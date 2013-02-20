@@ -47,7 +47,7 @@
 #include "operators/NeumannVectorCorrection.h"
 #include "operators/LinearBVPOperator.h"
 
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 #include "time_integrators/sundials/IDATimeIntegrator.h"
 #include "time_integrators/sundials/IDATimeOperator.h"
 

@@ -32,7 +32,7 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 #include "time_integrators/ImplicitTimeIntegratorParameters.h"
 #include "time_integrators/BackwardEulerTimeIntegrator.h"

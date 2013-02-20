@@ -42,7 +42,7 @@
 
 #include "solvers/PetscSNESSolver.h"
 #include "solvers/PetscKrylovSolver.h"
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 #include "../../operators/test/applyTests.h"
 

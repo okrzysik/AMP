@@ -9,7 +9,6 @@
 #include "time_integrators/sundials/IDATimeOperator.h"
 #include "vectors/sundials/SundialsVector.h"
 #include "vectors/sundials/ManagedSundialsVector.h"
-#include "solvers/TrilinosMLSolver.h"
 #include "matrices/ManagedMatrix.h"
 
 //Changed by BC

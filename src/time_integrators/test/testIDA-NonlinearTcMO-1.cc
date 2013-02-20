@@ -49,7 +49,7 @@
 #include "operators/CoupledOperatorParameters.h"
 
 #include "solvers/PetscKrylovSolver.h"
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 #include "solvers/ColumnSolver.h"
 #include "time_integrators/ColumnTimeOperator.h"
 #include "time_integrators/sundials/IDATimeIntegrator.h"

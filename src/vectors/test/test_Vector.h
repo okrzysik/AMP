@@ -11,7 +11,9 @@
 #endif
 #ifdef USE_EXT_TRILINOS
     #include <vectors/trilinos/EpetraVectorEngine.h>
-    #include "test_ThyraVector.h"
+    #ifdef USE_TRILINOS_THYRA
+        #include "test_ThyraVector.h"
+    #endif
 #endif
 
 /// \cond UNDOCUMENTED

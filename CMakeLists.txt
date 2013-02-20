@@ -87,7 +87,6 @@ CONFIGURE_X11_LIBRARIES()
 CONFIGURE_BLAS()
 CONFIGURE_LAPACK()
 CONFIGURE_LIBMESH()
-CONFIGURE_STKMESH() # Trilinos mush be configured before stkmesh
 CONFIGURE_NEK()     # should go before MOAB since it requires MOAB.
 CONFIGURE_MOAB()
 CONFIGURE_DENDRO()

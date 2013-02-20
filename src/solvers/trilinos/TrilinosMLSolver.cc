@@ -1,5 +1,5 @@
 
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 #include "utils/Utilities.h"
 #include "utils/ProfilerApp.h"

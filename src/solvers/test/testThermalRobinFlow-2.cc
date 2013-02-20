@@ -53,12 +53,12 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 
-#include "../TrilinosMLSolver.h"
-#include "../ColumnSolver.h"
-#include "../PetscKrylovSolverParameters.h"
-#include "../PetscKrylovSolver.h"
-#include "../PetscSNESSolverParameters.h"
-#include "../PetscSNESSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/ColumnSolver.h"
+#include "solvers/PetscKrylovSolverParameters.h"
+#include "solvers/PetscKrylovSolver.h"
+#include "solvers/PetscSNESSolverParameters.h"
+#include "solvers/PetscSNESSolver.h"
 #include "solvers/Flow1DSolver.h"
 
 

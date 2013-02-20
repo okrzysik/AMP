@@ -18,7 +18,7 @@
 #include "ampmesh/libmesh/initializeLibMesh.h"
 #include "utils/AMPManager.h"
 
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 void myTest(AMP::UnitTest *ut ) { 
   std::string exeName("testAMGuniform");

@@ -95,33 +95,17 @@ MACRO ( CONFIGURE_TRILINOS_LIBRARIES )
         # Get the trilinos version
         TRILINOS_GET_VERSION()
         MESSAGE("Found Trilinos version ${TRILINOS_VERSION}")
+        # Set the subpackages we want to use
+        TRILINOS_SET_SUBPACKAGES()
         # Get the trilinos libraries
         TRILINOS_SET_LIBRARIES()
-        IF ( USE_EXT_GCOV )
-            SET ( TRILINOS_LIBS ${TRILINOS_LIBS} -lgcov )
-        ENDIF ()
         ADD_DEFINITIONS ( "-D USE_EXT_TRILINOS" )
         MESSAGE ( "Using trilinos" )
         MESSAGE ( "   " ${TRILINOS_LIBS} )
+    ELSE()
+        MESSAGE("Warning: configuring without trilinos")
     ENDIF()
 ENDMACRO ()
-
-
-
-# Macro to find and configure the stkmesh libraries
-MACRO ( CONFIGURE_STKMESH )
-    # Determine if we want to use stkmesh
-    CHECK_ENABLE_FLAG(USE_EXT_STKMESH 0 )
-    IF ( USE_EXT_STKMESH )
-        IF ( NOT USE_EXT_TRILINOS )
-            MESSAGE( FATAL_ERROR "stkmesh requires trilinos" )
-        ENDIF()
-        ADD_DEFINITIONS ( "-D USE_EXT_STKMESH" )  
-        STKMESH_SET_LIBRARIES()
-        MESSAGE ( "Using stkmesh" )
-    ENDIF()
-ENDMACRO ()
-
 
 
 # Macro to find and configure the silo libraries

@@ -237,11 +237,11 @@ MatTestResult testMaterial(string &name) {
 		// test material range functions
 		vector<double> range(2);
 		bool good = true;
-		good = good & nargs == argnames.size();
+		good = (good && (nargs == argnames.size()) );
 		for (size_t i = 0; i < argnames.size(); i++) {
 			range = property->get_arg_range(argnames[i]);
 			good = good && range[0] <= range[1];
-			good = good && range[0] == ranges[i][0] && range[1] == ranges[i][1];
+			good = good && (range[0]==ranges[i][0]) && (range[1]==ranges[i][1]);
 			good = good &&  property->in_range(argnames[i], justright[i]);
 			good = good && !property->in_range(argnames[i], toosmall[i]);
 			good = good && !property->in_range(argnames[i], toobig[i]);

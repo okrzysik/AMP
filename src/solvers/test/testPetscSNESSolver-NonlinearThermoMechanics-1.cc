@@ -34,7 +34,7 @@
 #include "solvers/ColumnSolver.h"
 #include "solvers/PetscKrylovSolver.h"
 #include "solvers/PetscSNESSolver.h"
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 void myTest(AMP::UnitTest *ut, std::string exeName)
 {

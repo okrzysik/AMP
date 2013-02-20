@@ -282,7 +282,20 @@ protected:
    boost::shared_ptr<AMP::Utilities::Writer> d_writer;
 
    // declare the default constructor to be private
-   TimeIntegrator() {};
+   TimeIntegrator()
+   {
+     // initialize member data
+     d_initial_time = 0;
+     d_final_time = 0;
+     d_current_time = 0;
+     d_current_dt = 0;
+     d_old_dt = 0;
+     d_min_dt = 0;
+     d_max_dt = 0;
+     d_initial_dt = 0;
+     d_integrator_step = 0;
+     d_max_integrator_steps = 0;
+  };
 
 private:
 

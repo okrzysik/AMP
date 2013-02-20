@@ -23,7 +23,6 @@
 
 #include "../PetscKrylovSolverParameters.h"
 #include "../PetscKrylovSolver.h"
-#include "../TrilinosMLSolver.h"
 
 #include "operators/NeutronicsRhs.h"
 #include "operators/LinearBVPOperator.h"
@@ -35,7 +34,7 @@
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 
-#include "../TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 
 void linearThermalTest(AMP::UnitTest *ut )

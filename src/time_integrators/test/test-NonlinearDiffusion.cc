@@ -46,7 +46,7 @@
 #include "operators/DirichletVectorCorrection.h"
 #include "operators/LinearBVPOperator.h"
 
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 #include "time_integrators/sundials/IDATimeIntegrator.h"
 
 #define ITFAILS ut.failure(__LINE__);

@@ -260,8 +260,8 @@ namespace AMP {
         d_localElems.push_back(*el);
         std::vector<AMP::Mesh::MeshElement> vertices = el->getElements(AMP::Mesh::Vertex);
         double support_points[24];
-        int minId[3];
-        int maxId[3];
+        std::vector<int> minId(3,0);
+        std::vector<int> maxId(3,0);
         for (size_t j = 0; j < vertices.size(); ++j) {
           std::vector<double> pt = vertices[j].coord();
           double scaledPt[3];
@@ -292,7 +292,7 @@ namespace AMP {
               unsigned int bY = j*twoPowFactor;
               unsigned int bZ = k*twoPowFactor;
               ot::TreeNode box(bX, bY, bZ, d_boxLevel, 3, MaxDepth);
-              unsigned int retIdx;
+              unsigned int retIdx=0;
               bool found = seq::maxLowerBound<ot::TreeNode>(tmpNodeList, box, retIdx, NULL, NULL);
               if(found) {
                 if(tmpNodeList[retIdx] == box) {
@@ -369,7 +369,7 @@ namespace AMP {
 
           std::vector<int> sendEidCnts(npes, 0);
           for(int i = 0; i < numInitialLocalOcts; ++i) {
-            unsigned int retIdx;
+            unsigned int retIdx=0;
             bool found = seq::maxLowerBound<ot::TreeNode>(globalNodeList, tmpNodeList[i], retIdx, NULL, NULL);
             AMP_CHECK_ASSERT(found);
             AMP_CHECK_ASSERT(globalNodeList[retIdx] == tmpNodeList[i]);
@@ -468,7 +468,7 @@ namespace AMP {
 
           std::vector<int> sendOctCnts(npes, 0);
           for(int i = 0; i < numInitialLocalOcts; ++i) {
-            unsigned int retIdx;
+            unsigned int retIdx=0;
             bool found = seq::maxLowerBound<ot::TreeNode>(d_mins, tmpNodeList[i], retIdx, NULL, NULL);
             AMP_CHECK_ASSERT(found);
             ++(sendOctCnts[d_mins[retIdx].getWeight()]);
@@ -555,7 +555,7 @@ namespace AMP {
 
           for(int i = 0; i < npes; ++i) {
             for(int j = 0; j < recvOctCnts[i]; ++j) {
-              unsigned int retIdx;
+              unsigned int retIdx=0;
               bool found = seq::maxLowerBound<ot::TreeNode>(d_nodeList, recvOctList[recvOctDisps[i] + j], retIdx, NULL, NULL);
               AMP_CHECK_ASSERT(found);
               AMP_CHECK_ASSERT(d_nodeList[retIdx] == recvOctList[recvOctDisps[i] + j]);
@@ -708,7 +708,7 @@ namespace AMP {
       std::vector<int> part(d_numLocalPts, -1);
 
       for(int i = 0; i < d_numLocalPts; ++i) {
-        unsigned int retIdx;
+        unsigned int retIdx=0;
         bool found = seq::maxLowerBound<ot::TreeNode>(d_mins, (ptsWrapper[i].node), retIdx, NULL, NULL);
         if(found) {
           part[i] = invRankMap[d_mins[retIdx].getWeight()];
@@ -762,7 +762,7 @@ namespace AMP {
 
       std::vector<int> ptToOctMap((recvList.size()), -1);
       for(size_t i = 0; i < recvList.size(); ++i) {
-        unsigned int retIdx;
+        unsigned int retIdx=0;
         seq::maxLowerBound<ot::TreeNode>(d_nodeList, (recvList[i].node), retIdx, NULL, NULL);
         if( d_nodeList[retIdx].isAncestor(recvList[i].node) ) {
           ptToOctMap[i] = retIdx;

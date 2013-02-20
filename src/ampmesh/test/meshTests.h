@@ -172,15 +172,6 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
                 std::vector<AMP::Mesh::MeshElement> pieces = element.getElements(type2);
                 if ( pieces.empty() )
                     elements_pass = false;
-#ifdef USE_EXT_STKMESH
-                if (mesh->DB().get() && 
-                    mesh->DB()->keyExists("FileName")   &&
-                    mesh->DB()->getString("FileName") == "pellet_lo_res.e") {
-                  if (type == AMP::Mesh::Face   && type2 == AMP::Mesh::Edge) elements_pass = true; // Faces do not have edges
-                  if (type == AMP::Mesh::Volume && type2 == AMP::Mesh::Edge) elements_pass = true; // neither do volumes      
-                  if (type == AMP::Mesh::Volume && type2 == AMP::Mesh::Face) elements_pass = true; // Not all elements have faces.
-                }
-#endif
                 AMP::Utilities::quicksort(pieces);
                 for (size_t j=1; j<pieces.size(); j++) {
                     if ( pieces[j]==pieces[j-1] )
@@ -368,14 +359,6 @@ void MeshCountTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
         const size_t N_ghost0 = mesh->numGhostElements(type,0);
         const size_t N_ghost1 = comm.sumReduce( mesh->numGhostElements(type,1) );
         const size_t N_sum    = comm.sumReduce(N_local);
-#ifdef USE_EXT_STKMESH
-        if (mesh->DB().get() && 
-            mesh->DB()->keyExists("FileName")   &&
-            mesh->DB()->getString("FileName") == "pellet_lo_res.e" &&
-            type ==  AMP::Mesh::Edge) { // no edges in this test..
-          ut->passes("Non-trival mesh created");
-        } else
-#endif
         if ( N_global > 0 )
             ut->passes("Non-trival mesh created");
         else
@@ -578,14 +561,6 @@ void VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr m
             AMP::Mesh::MeshIterator iterator = mesh->getSurfaceIterator( type, gcw );
             size_t global_size = mesh->getComm().sumReduce(iterator.size());
             bool passes = global_size>0;
-#ifdef USE_EXT_STKMESH
-            if (mesh->DB().get() && 
-                mesh->DB()->keyExists("FileName")   &&
-                mesh->DB()->getString("FileName") == "pellet_lo_res.e" &&
-                type ==  AMP::Mesh::Edge) { // no edges in this test..
-                passes = global_size == 0;
-            } 
-#endif
             if ( boost::dynamic_pointer_cast<AMP::Mesh::SubsetMesh>(mesh).get()==NULL ) {
                 if ( mesh->numGlobalElements(type) >= 100 )
                     passes = passes && (global_size < mesh->numGlobalElements(type));

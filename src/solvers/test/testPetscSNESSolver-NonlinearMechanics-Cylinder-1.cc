@@ -39,7 +39,7 @@
 #include "solvers/PetscSNESSolverParameters.h"
 #include "solvers/PetscSNESSolver.h"
 
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 AMP::LinearAlgebra::Matrix::shared_ptr myMatrix;
 

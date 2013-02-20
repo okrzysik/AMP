@@ -2,11 +2,12 @@
 #ifndef included_AMP_TrilinosMLSolver
 #define included_AMP_TrilinosMLSolver
 
-#include "SolverStrategy.h"
-#include "SolverStrategyParameters.h"
+#include "solvers/SolverStrategy.h"
+#include "solvers/SolverStrategyParameters.h"
+#include "solvers/trilinos/MLoptions.h"
+
 #include "ml_MultiLevelPreconditioner.h"
 #include "ml_include.h"
-#include "MLoptions.h"
 
 
 namespace AMP {

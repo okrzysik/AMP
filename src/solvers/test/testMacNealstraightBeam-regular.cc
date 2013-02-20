@@ -33,7 +33,7 @@
 
 #include "solvers/PetscKrylovSolverParameters.h"
 #include "solvers/PetscKrylovSolver.h"
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 #include "mesh_communication.h"
 #include "ampmesh/libmesh/initializeLibMesh.h"

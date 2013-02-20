@@ -40,7 +40,7 @@
 #include "solvers/PetscKrylovSolver.h"
 #include "solvers/PetscSNESSolverParameters.h"
 #include "solvers/PetscSNESSolver.h"
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 /* Libmesh files */
 #include "fe_type.h"

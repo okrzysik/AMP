@@ -52,7 +52,7 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/ColumnOperator.h"
 #include "solvers/ColumnSolver.h"
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 #include "time_integrators/ColumnTimeOperator.h"
 #include "time_integrators/sundials/IDATimeIntegrator.h"

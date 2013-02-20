@@ -41,13 +41,13 @@
 #include "operators/ColumnOperator.h"
 #include "operators/OperatorBuilder.h"
 
-#include "../ColumnSolver.h"
-#include "../PetscKrylovSolverParameters.h"
-#include "../PetscKrylovSolver.h"
-#include "../PetscSNESSolverParameters.h"
-#include "../PetscSNESSolver.h"
+#include "solvers/ColumnSolver.h"
+#include "solvers/PetscKrylovSolverParameters.h"
+#include "solvers/PetscKrylovSolver.h"
+#include "solvers/PetscSNESSolverParameters.h"
+#include "solvers/PetscSNESSolver.h"
 
-#include "../TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 
 void fickTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &results)

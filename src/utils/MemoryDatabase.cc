@@ -235,7 +235,7 @@ namespace AMP {
   void MemoryDatabase::putBoolArray(
       const std::string& key, const std::vector<unsigned char>& data)
   {
-    this->putBoolArray(key, &(data[0]), data.size());
+    this->putBoolArray(key, &(data[0]), static_cast<int>(data.size()));
   }
 
   void MemoryDatabase::putBoolArray(
@@ -325,7 +325,7 @@ namespace AMP {
   void MemoryDatabase::putDatabaseBoxArray(
       const std::string& key, const std::vector<DatabaseBox>& data)
   {
-    this->putDatabaseBoxArray(key, &(data[0]), data.size());
+    this->putDatabaseBoxArray(key, &(data[0]), static_cast<int>(data.size()));
   }
 
   void MemoryDatabase::putDatabaseBoxArray(
@@ -415,7 +415,7 @@ namespace AMP {
   void MemoryDatabase::putCharArray(
       const std::string& key, const std::vector<char>& data)
   {
-    this->putCharArray(key, &(data[0]), data.size());
+    this->putCharArray(key, &(data[0]), static_cast<int>(data.size()));
   }
 
   void MemoryDatabase::putCharArray(
@@ -510,7 +510,7 @@ namespace AMP {
   void MemoryDatabase::putComplexArray(
       const std::string& key, const std::vector<std::complex< double > >& data)
   {
-    this->putComplexArray(key, &(data[0]), data.size());
+    this->putComplexArray(key, &(data[0]), static_cast<int>(data.size()));
   }
 
   void MemoryDatabase::putComplexArray(
@@ -652,7 +652,7 @@ namespace AMP {
   void MemoryDatabase::putDoubleArray(
       const std::string& key, const std::vector<double>& data)
   {
-    this->putDoubleArray(key, &(data[0]), data.size());
+    this->putDoubleArray(key, &(data[0]), static_cast<int>(data.size()));
   }
 
   void MemoryDatabase::putDoubleArray(
@@ -783,7 +783,7 @@ namespace AMP {
   void MemoryDatabase::putFloatArray(
       const std::string& key, const std::vector<float>& data)
   {
-    this->putFloatArray(key, &(data[0]), data.size());
+    this->putFloatArray(key, &(data[0]), static_cast<int>(data.size()));
   }
 
   void MemoryDatabase::putFloatArray(
@@ -919,7 +919,7 @@ namespace AMP {
   void MemoryDatabase::putIntegerArray(
       const std::string& key, const std::vector<int>& data)
   {
-    this->putIntegerArray(key, &(data[0]), data.size());
+    this->putIntegerArray(key, &(data[0]), static_cast<int>(data.size()));
   }
 
   void MemoryDatabase::putIntegerArray(
@@ -1013,7 +1013,7 @@ namespace AMP {
       const std::string& key, 
       const std::vector<std::string>& data)
   {
-    this->putStringArray(key, &(data[0]), data.size());
+    this->putStringArray(key, &(data[0]), static_cast<int>(data.size()));
   }
 
   void MemoryDatabase::putStringArray(

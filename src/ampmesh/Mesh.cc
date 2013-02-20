@@ -4,7 +4,7 @@
 #include "ampmesh/MultiMesh.h"
 #include "ampmesh/SubsetMesh.h"
 #include "ampmesh/structured/BoxMesh.h"
-#ifdef USE_EXT_STKMESH
+#ifdef USE_TRILINOS_STKMESH
     #include "ampmesh/STKmesh/STKMesh.h"
 #endif
 #ifdef USE_EXT_LIBMESH
@@ -101,6 +101,13 @@ boost::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared
         #else
             AMP_ERROR("AMP was compiled without support for libMesh");
         #endif
+    } else if ( MeshType == std::string("STKMesh") ) {
+        // The mesh is a libmesh mesh
+        #ifdef USE_TRILINOS_STKMESH
+            mesh = boost::shared_ptr<AMP::Mesh::STKMesh>(new AMP::Mesh::STKMesh(params) );
+        #else
+            AMP_ERROR("AMP was compiled without support for STKMesh");
+        #endif
     } else if ( MeshType==std::string("moab") || MeshType==std::string("MOAB") ) {
         // The mesh is a MOAB mesh
         #ifdef USE_EXT_MOAB
@@ -149,10 +156,15 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         // The mesh is a libmesh mesh
         #ifdef USE_EXT_LIBMESH
             meshSize = AMP::Mesh::libMesh::estimateMeshSize(params);
-        #elif USE_EXT_STKMESH
-            meshSize = AMP::Mesh::STKMesh::estimateMeshSize(params);
         #else
             AMP_ERROR("AMP was compiled without support for libMesh");
+        #endif
+    } else if ( MeshType == std::string("STKMesh") ) {
+        // The mesh is a stkMesh mesh
+        #ifdef USE_TRILINOS_STKMESH
+            meshSize = AMP::Mesh::STKMesh::estimateMeshSize(params);
+        #else
+            AMP_ERROR("AMP was compiled without support for STKMesh");
         #endif
     } else if ( database->keyExists("NumberOfElements") ) {
         int NumberOfElements = database->getInteger("NumberOfElements");

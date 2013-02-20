@@ -55,20 +55,22 @@ int main ( int argc , char **argv )
 
     #ifdef USE_EXT_TRILINOS
 
-        AMP::pout << "Testing NativeThyraVector" << std::endl;
-        testBasicVector<NativeThyraFactory>( &ut );
-        AMP::pout << std::endl;
-        globalComm.barrier();
+        #ifdef USE_TRILINOS_THYRA
+            AMP::pout << "Testing NativeThyraVector" << std::endl;
+            testBasicVector<NativeThyraFactory>( &ut );
+            AMP::pout << std::endl;
+            globalComm.barrier();
 
-        AMP::pout << "Testing ManagedThyraVector" << std::endl;
-        testBasicVector<ManagedThyraFactory<SimpleVectorFactory<45,true> > >( &ut );
-        AMP::pout << std::endl;
-        globalComm.barrier();
+            AMP::pout << "Testing ManagedThyraVector" << std::endl;
+            testBasicVector<ManagedThyraFactory<SimpleVectorFactory<45,true> > >( &ut );
+            AMP::pout << std::endl;
+            globalComm.barrier();
 
-        AMP::pout << "Testing NativeThyraVector of a ManagedThyraVector" << std::endl;
-        testBasicVector<ManagedNativeThyraFactory<SimpleVectorFactory<45,true> > >( &ut );
-        AMP::pout << std::endl;
-        globalComm.barrier();
+            AMP::pout << "Testing NativeThyraVector of a ManagedThyraVector" << std::endl;
+            testBasicVector<ManagedNativeThyraFactory<SimpleVectorFactory<45,true> > >( &ut );
+            AMP::pout << std::endl;
+            globalComm.barrier();
+        #endif
 
         AMP::pout << "Testing Iterator" << std::endl;
         VectorIteratorTests<MVFactory1> ( &ut );
@@ -95,10 +97,12 @@ int main ( int argc , char **argv )
         AMP::pout << std::endl;
         globalComm.barrier();
 
-        AMP::pout << "Testing NativeThyraVector of a ManagedThyraVector of a MultVector" << std::endl;
-        testBasicVector<ManagedNativeThyraFactory<MVFactory1> >( &ut );
-        AMP::pout << std::endl;
-        globalComm.barrier();
+        #ifdef USE_TRILINOS_THYRA
+            AMP::pout << "Testing NativeThyraVector of a ManagedThyraVector of a MultVector" << std::endl;
+            testBasicVector<ManagedNativeThyraFactory<MVFactory1> >( &ut );
+            AMP::pout << std::endl;
+            globalComm.barrier();
+        #endif
 
     #else
         ut.expected_failure("Compiled without trilinos");
