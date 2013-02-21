@@ -170,7 +170,7 @@ namespace AMP {
               if (!justChecking) { stopHere = true; }
             } // end for v
           } // end for f
-//          if (stopHere) { std::cout<<std::endl; AMP_ASSERT(false); }
+          if (stopHere) { AMP_ASSERT(false); }
 
           hex8_element_t masterVolumeElement(masterVolumeVerticesCoordinates);
           masterVolumeElement.compute_normal_to_face(recvProjectionDataBuffer[i].d_MasterFaceLocalIndex, recvProjectionDataBuffer[i].d_SlaveVertexLocalCoordOnMasterFace, sendStressStateDataBuffer[i].d_SlaveVertexNormalVector);
