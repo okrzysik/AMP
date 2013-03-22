@@ -335,12 +335,12 @@ slaveFout.close();
   contactOperator->updateActiveSet(nullVec, skipDisplaceMesh);
 
 #ifdef USE_EXT_SILO
-{
-  siloWriter->registerVector(columnSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution");
-  char outFileName[256];
-  sprintf(outFileName, "TOTO_%d", 0);
-  siloWriter->writeFile(outFileName, 0);
-}
+  {
+    siloWriter->registerVector(columnSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution");
+    char outFileName[256];
+    sprintf(outFileName, "TOTO_%d", 0);
+    siloWriter->writeFile(outFileName, 0);
+  }
 #endif
 
   size_t const maxActiveSetIterations = input_db->getIntegerWithDefault("maxActiveSetIterations", 5);
@@ -350,14 +350,43 @@ slaveFout.close();
   columnSolVec->zero();
   columnRhsVec->zero();
 
+if (slaveMeshAdapter.get() != NULL) {
+AMP::Mesh::MeshIterator slaveBoundaryIterator = slaveMeshAdapter->getBoundaryIDIterator(AMP::Mesh::Vertex, 4, 0);
+AMP::Mesh::MeshIterator slaveBoundaryIterator_begin = slaveBoundaryIterator.begin(),
+    slaveBoundaryIterator_end = slaveBoundaryIterator.end();
+std::vector<double> vertexCoordinates;
+
+size_t count = 0;
+for (slaveBoundaryIterator = slaveBoundaryIterator_begin; slaveBoundaryIterator != slaveBoundaryIterator_end; ++slaveBoundaryIterator) {
+  vertexCoordinates = slaveBoundaryIterator->coord();
+  AMP_ASSERT( vertexCoordinates.size() == 3 );
+  fout<<std::setprecision(15);
+  double slaveLoadParameter = input_db->getDouble("SlaveLoadParameter");
+  if (vertexCoordinates[1] > input_db->getDouble("SlaveLoadCutoff")) {
+    ++count;
+    fout<<vertexCoordinates[0]<<"  "<<vertexCoordinates[1]<<"  "<<vertexCoordinates[2]<<std::endl;
+    std::vector<size_t> DOFsIndices;
+    dofManager->getDOFs(slaveBoundaryIterator->globalID(), DOFsIndices);
+    AMP_ASSERT( DOFsIndices.size() == 3 );
+    columnRhsVec->setLocalValueByGlobalID(DOFsIndices[1], slaveLoadParameter);
+  } // end if
+} // end for
+size_t count_total = slaveMeshAdapter->getComm().sumReduce(count);
+if (!slaveMeshAdapter->getComm().getRank()) {
+std::cout<<"count_total="<<count_total<<"\n";
+}
+columnRhsVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+} // end if
+
+
 //  if (slaveLoadOperator.get() != NULL) { 
 //    slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0);
 //  } // end if
 
   // apply dirichlet rhs correction
-  if (masterBVPOperator.get() != NULL) {
-    masterBVPOperator->modifyRHSvector(columnRhsVec);
-  } // end if
+//  if (masterBVPOperator.get() != NULL) {
+//    masterBVPOperator->modifyRHSvector(columnRhsVec);
+//  } // end if
   if (slaveBVPOperator.get() != NULL) {
     slaveBVPOperator->modifyRHSvector(columnRhsVec);
   } // end if
@@ -479,9 +508,7 @@ int main(int argc, char *argv[])
   AMP::UnitTest ut;
 
   std::vector<std::string> exeNames; 
-  exeNames.push_back("testNodeToSegmentConstraintsOperator-cube");
-//  exeNames.push_back("testNodeToSegmentConstraintsOperator-cylinder");
-//  exeNames.push_back("testNodeToSegmentConstraintsOperator-pellet");
+  exeNames.push_back("testNodeToFaceContactOperator-2");
 
   try {
     for (size_t i = 0; i < exeNames.size(); ++i) { 

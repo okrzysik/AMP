@@ -268,6 +268,7 @@ void hex8_element_t::compute_residual_vector(double const *x, double *f) {
 }
 
 void hex8_element_t::compute_jacobian_matrix(double const *x, double *J) {
+  if (basis_functions_derivatives.empty()) { basis_functions_derivatives.resize(24); }
   get_basis_functions_derivatives(x, &(basis_functions_derivatives[0]));
   for (unsigned int i = 0; i < 3; ++i) {
     for (unsigned int j = 0; j < 3; ++j) {
@@ -627,6 +628,16 @@ void hex8_element_t::compute_strain_tensor(double const *x, double const *u, dou
   // ,x ,y ,z
   double nabla_phi[24];
   get_basis_functions_derivatives(x, nabla_phi);
+  double J[9], tmp[3];
+  compute_jacobian_matrix(x, J);
+  for (unsigned int i = 0; i < 8; ++i) {
+    tmp[0] = nabla_phi[0*8+i];
+    tmp[1] = nabla_phi[1*8+i];
+    tmp[2] = nabla_phi[2*8+i];
+    nabla_phi[0*8+i] = J[0] * tmp[0] + J[1] * tmp[1] + J[2] * tmp[2];
+    nabla_phi[1*8+i] = J[3] * tmp[0] + J[4] * tmp[1] + J[5] * tmp[2];
+    nabla_phi[2*8+i] = J[6] * tmp[0] + J[7] * tmp[1] + J[8] * tmp[2];
+  } // end for i
   std::fill(epsilon, epsilon+6, 0.0);
   for (unsigned int i = 0; i < 8; ++i) {
     // xx yy zz yz xz xy

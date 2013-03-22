@@ -41,7 +41,8 @@ class hex8_element_t {
     static void get_basis_functions_values_on_face(double const * local_coordinates_on_face, double * basis_functions_values_on_face);
     static void get_local_coordinates_on_face(double const * basis_functions_values_on_face, double * local_coordinates_on_face);
     static void get_normal_to_face(double const **support_points_ptr, double const * local_coordinates_on_face, double * normal_vector);
-    static void compute_strain_tensor(double const * local_coordinates, double const * displacement_values, double * strain_tensor_values);
+//    static void compute_strain_tensor(double const * local_coordinates, double const * displacement_values, double * strain_tensor_values);
+    void compute_strain_tensor(double const * local_coordinates, double const * displacement_values, double * strain_tensor_values);
     static unsigned int const * get_face(unsigned int i);
     static unsigned int const * get_faces();
 
