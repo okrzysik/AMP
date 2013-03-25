@@ -38,7 +38,7 @@ double getLinearHeatGeneration( double Q, double H, double z )
 }
 
 
-// Function to get the enthalapy solution
+// Function to get the enthalpy solution
 // Note: this is only an approximation that assumes incompressible water and no friction
 double getSolutionEnthalpy( double Q, double H, double m, double hin, double z )
 {
