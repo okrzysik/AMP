@@ -55,6 +55,10 @@ void SubchannelFourEqNonlinearOperator :: reset(const boost::shared_ptr<Operator
       d_prandtl   = getDoubleParameter(myparams,"Prandtl",0.0);  
       d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);  
       d_turbulenceCoef = getDoubleParameter(myparams,"Turbulence_Coefficient",1.0);
+      d_forceNoConduction = getBoolParameter(myparams,"Force_No_Conduction",false);
+      d_forceNoTurbulence = getBoolParameter(myparams,"Force_No_Turbulence",false);
+      d_forceNoHeatSource = getBoolParameter(myparams,"Force_No_Heat_Source",false);
+      d_forceNoFriction = getBoolParameter(myparams,"Force_No_Friction",false);
 
       // get additional parameters based on heat source type
       d_source = getStringParameter(myparams,"Heat_Source_Type","totalHeatGeneration");
@@ -175,6 +179,20 @@ std::string SubchannelFourEqNonlinearOperator::getStringParameter(	boost::shared
     bool keyExists = (myparams->d_db)->keyExists(paramString);
     if (keyExists) {
        return (myparams->d_db)->getString(paramString);
+    } else {
+       AMP_WARNING("Key '" + paramString + "' was not provided. Using default value: " << defaultValue << "\n");
+       return defaultValue;
+    }
+}
+
+// function used in reset to get bool parameter or set default if missing
+bool SubchannelFourEqNonlinearOperator::getBoolParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+									std::string paramString,
+                                                                	bool defaultValue)
+{
+    bool keyExists = (myparams->d_db)->keyExists(paramString);
+    if (keyExists) {
+       return (myparams->d_db)->getBool(paramString);
     } else {
        AMP_WARNING("Key '" + paramString + "' was not provided. Using default value: " << defaultValue << "\n");
        return defaultValue;
@@ -505,14 +523,12 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
 
              // compute additional quantities
              // -----------------------------
-             double m_mid = 1.0/2.0*(m_plus + m_minus);
-             double h_mid = 1.0/2.0*(h_plus + h_minus);
-             double p_mid = 1.0/2.0*(p_plus + p_minus);
+             double m_mid = 0.5*(m_plus + m_minus);
+             double p_mid = 0.5*(p_plus + p_minus);
 
              // evaluate specific volume
              double vol_plus  = Volume(h_plus,p_plus);          // upper face
              double vol_minus = Volume(h_minus,p_minus);        // lower face
-             double vol_mid   = 1.0/2.0*(vol_plus + vol_minus); // cell center
 
              // determine axial donor quantities
              double h_axialDonor;
@@ -526,15 +542,15 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
              }
 
              // evaluate density
-             double rho_mid = 1.0/vol_mid;
+             double rho_mid = 1.0/vol_axialDonor;
 
              // evaluate axial velocity
              double u_plus  = m_plus*vol_plus/area;
              double u_minus = m_minus*vol_minus/area;
-             double u_mid   = m_mid*vol_mid/area;
+             double u_mid   = m_mid*vol_axialDonor/area;
 
              // evaluate temperature for cell
-             double T_mid = Temperature(h_mid,p_mid);
+             double T_mid = Temperature(h_axialDonor,p_mid);
 
              // evaluate conductivity for cell
              double k_mid = ThermalConductivity(T_mid,rho_mid);
@@ -548,8 +564,8 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
              double dz = z_plus - z_minus;
 
               // evaluate friction factor
-              double Re = rho_mid*u_mid*D/visc_mid;
-              double fl = 64.0/Re; // laminar friction factor
+              double Re_mid = rho_mid*u_mid*D/visc_mid;
+              double fl = 64.0/Re_mid; // laminar friction factor
               double fric; // friction factor
               if (d_frictionModel == "Constant") {
                  fric = d_friction;
@@ -557,21 +573,21 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                  double ft = 0.; // turbulent friction factor evaluated from computed Re
                  double ft4000 = 0.; // turbulent friction factor evaluated from Re = 4000
                  if (d_frictionModel == "Blasius") {
-                    ft = 0.316*std::pow(Re,-0.25);
+                    ft = 0.316*std::pow(Re_mid,-0.25);
                     ft4000 = 0.316*std::pow(4000.0,-0.25);
                  } else if (d_frictionModel == "Drew") {
-                    ft = 0.0056 + 0.5*std::pow(Re,-0.32);
+                    ft = 0.0056 + 0.5*std::pow(Re_mid,-0.32);
                     ft4000 = 0.0056 + 0.5*std::pow(4000.0,-0.32);
                  } else if (d_frictionModel == "Filonenko") {
-                    ft = std::pow(1.82*std::log(Re)-1.64,-2);
+                    ft = std::pow(1.82*std::log(Re_mid)-1.64,-2);
                     ft4000 = std::pow(1.82*std::log(4000.0)-1.64,-2);
                  } else if (d_frictionModel == "Selander") {
-                    ft = 4.0*std::pow(3.8*std::log(10.0/Re+0.2*d_roughness/D),-2);
+                    ft = 4.0*std::pow(3.8*std::log(10.0/Re_mid+0.2*d_roughness/D),-2);
                     ft4000 = 4.0*std::pow(3.8*std::log(10.0/4000.0+0.2*d_roughness/D),-2);
                  } else {
                     AMP_ERROR("Invalid choice for Friction_Model.");
                  }
-                 if (Re < 4000.0)
+                 if (Re_mid < 4000.0)
                     fric = std::max(fl,ft4000);
                  else
                     fric = ft;
@@ -616,14 +632,12 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
              double energy_heatflux_sum = 0.0;
              double energy_turbulence_sum = 0.0;
              double energy_conduction_sum = 0.0;
-             double energy_direct_heating_sum = 0.0;
              double axial_crossflow_sum = 0.0;
              double axial_turbulence_sum = 0.0;
 
              double zMidCell = 0.5*(plusFaceCentroid[2] + minusFaceCentroid[2]);
              size_t j = Utilities::findfirst(zMid,zMidCell);
-             energy_heatflux_sum       = pi*d_rodDiameter[isub]*flux[j];
-             energy_direct_heating_sum = d_gamma*pi*d_rodDiameter[isub]*flux[j];
+             energy_heatflux_sum       = (1+d_gamma)*pi*d_rodDiameter[isub]*flux[j];
 
              // loop over gap faces
              std::vector<AMP::Mesh::MeshElement> cellFaces = localSubchannelCell->getElements(AMP::Mesh::Face);
@@ -690,8 +704,8 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                    double p_minus_neighbor = p_scale*inputVec->getValueByGlobalID(neighborMinusDofs[2]);
 
                    // compute additional quantities from neighboring cell
-                   double m_mid_neighbor = 1.0/2.0*(m_plus_neighbor + m_minus_neighbor);
-                   double p_mid_neighbor = 1.0/2.0*(p_plus_neighbor + p_minus_neighbor);
+                   double m_mid_neighbor = 0.5*(m_plus_neighbor + m_minus_neighbor);
+                   double p_mid_neighbor = 0.5*(p_plus_neighbor + p_minus_neighbor);
 
                    // evaluate specific volume at upper face
                    double vol_plus_neighbor = Volume(h_plus_neighbor,p_plus_neighbor);
@@ -729,16 +743,16 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                    double k_mid_neighbor = ThermalConductivity(T_mid_neighbor,rho_mid_neighbor);
 
                    // compute thermal conductivity across gap
-                   double k_gap = 2.0*k_mid*k_mid_neighbor/(k_mid + k_mid_neighbor);
+                   double k_gap_harmonic_avg = 2.0*k_mid*k_mid_neighbor/(k_mid + k_mid_neighbor);
 
                    // evaluate dynamic viscosity for cell
                    double visc_mid_neighbor = DynamicViscosity(T_mid_neighbor,rho_mid_neighbor);
 
                    // compute distance between centroids of cells adjacent to gap
                    std::vector<double> cellCentroid = localSubchannelCell->centroid();
-                   double lx = std::abs(neighborCentroid[0] - cellCentroid[0]);
-                   double ly = std::abs(neighborCentroid[1] - cellCentroid[1]);
-                   double l = std::pow(std::pow(lx,2)+std::pow(ly,2),0.5);
+                   double x_distance = std::abs(neighborCentroid[0] - cellCentroid[0]);
+                   double y_distance = std::abs(neighborCentroid[1] - cellCentroid[1]);
+                   double pitch = std::pow(std::pow(x_distance,2)+std::pow(y_distance,2),0.5);
 
                    // compute gap width
                    std::vector<double> lateralFaceCentroid = lateralFace.centroid();
@@ -747,47 +761,58 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                    xyPos[1] = lateralFaceCentroid[1];
                    std::map<std::vector<double>,double>::iterator gapWidthIt = gapWidthMap.find(xyPos);
                    AMP_INSIST( gapWidthIt != gapWidthMap.end(), "Gap was not found.");
-                   // Josh- plese rename this to something like currentGapWidth because s is too short.
-                   double s = gapWidthIt->second;
+                   double gapWidth = gapWidthIt->second;
 
-                   double conductance = 1.0*k_gap/l;
+                   double conductance = 1.0*k_gap_harmonic_avg/pitch;
 
                    // compute turbulent crossflow
-                   double D_avg = 1.0/2.0*(D + neighborDiam);
-                   double Re_neighbor = rho_mid_neighbor*u_mid_neighbor*neighborDiam/visc_mid_neighbor;
-                   double Re_avg = 1.0/2.0*(Re + Re_neighbor);
+                   double D_gap_avg = 0.5*(D + neighborDiam);
+                   double Re_mid_neighbor = rho_mid_neighbor*u_mid_neighbor*neighborDiam/visc_mid_neighbor;
+                   double Re_gap_avg = 0.5*(Re_mid + Re_mid_neighbor);
                    double rodDiameter = 0.5*(d_rodDiameter[isub]+d_rodDiameter[neighborSubchannelIndex]);
-                   double beta = 0.005*D_avg/s*pow(s/rodDiameter,0.106)*pow(Re_avg,-0.1);
-                   double massFlux_avg = 1.0/2.0*(m_mid/area + m_mid_neighbor/neighborArea);
-                   double wt = dz*beta*s*massFlux_avg;
+                   double beta = 0.005*D_gap_avg/gapWidth*pow(gapWidth/rodDiameter,0.106)*pow(Re_gap_avg,-0.1);
+                   double massFlux_gap_avg = 0.5*(m_mid/area + m_mid_neighbor/neighborArea);
+                   double wt = beta*gapWidth*massFlux_gap_avg;
 
                    // add to sums
                    mass_crossflow_sum += crossflowSign*w;
                    energy_crossflow_sum += crossflowSign*w*h_lateralDonor;
                    energy_turbulence_sum += wt*(h_axialDonor - h_axialDonor_neighbor);
-                   energy_conduction_sum += conductance*s*(T_mid - T_mid_neighbor);
+                   energy_conduction_sum += conductance*gapWidth*(T_mid - T_mid_neighbor);
                    axial_crossflow_sum += crossflowSign*w*u_lateralDonor;
-                   axial_turbulence_sum += crossflowSign*wt*(u_mid - u_mid_neighbor);
+                   axial_turbulence_sum += wt*(u_mid - u_mid_neighbor);
                       
                 }// end if (lateralFaceIterator != lateralFaceMap.end()) {
              }// end loop over gap faces
 
+             // force terms to zero if requested
+             double force_factor_conduction = 1.0;
+             double force_factor_turbulence = 1.0;
+             double force_factor_heat_source = 1.0;
+             double force_factor_friction = 1.0;
+             if (d_forceNoConduction) force_factor_conduction  = 0.0;
+             if (d_forceNoTurbulence) force_factor_turbulence  = 0.0;
+             if (d_forceNoHeatSource) force_factor_heat_source = 0.0;
+             if (d_forceNoFriction)   force_factor_friction    = 0.0;
+
              // calculate residuals for current cell
              // ------------------------------------
+             // mass
              double R_m = m_plus - m_minus
-                        + mass_crossflow_sum; // mass
-             double R_h = (m_plus*h_plus - m_minus*h_minus)/dz
-                        + energy_crossflow_sum/dz
-                        - energy_heatflux_sum
-                        + energy_turbulence_sum/dz
-                        + energy_conduction_sum
-                        - energy_direct_heating_sum; // energy
+                        + mass_crossflow_sum;
+             // energy
+             double R_h = m_plus*h_plus - m_minus*h_minus
+                        + energy_crossflow_sum
+                        - dz*energy_heatflux_sum   * force_factor_heat_source
+                        + dz*energy_turbulence_sum * force_factor_turbulence
+                        + dz*energy_conduction_sum * force_factor_conduction;
+             // axial momentum
              double R_p = m_plus*u_plus - m_minus*u_minus
                         + axial_crossflow_sum
                         + area*(p_plus-p_minus)
                         + g*area*dz*std::cos(d_theta)/vol_axialDonor
-                        + 1.0/(2.0*area)*(dz*fric/D + K)*std::abs(m_mid)*m_mid*vol_axialDonor
-                        + d_turbulenceCoef*axial_turbulence_sum; // axial momentum
+                        + 1.0/(2.0*area)*(dz*fric/D + K)*std::abs(m_mid)*m_mid*vol_axialDonor * force_factor_friction
+                        + d_turbulenceCoef*dz*axial_turbulence_sum                            * force_factor_turbulence;
 
              // put residuals into global residual vector
              outputVec->setValueByGlobalID(plusDofs[0], Subchannel::scaleAxialMassFlowRate*R_m);
@@ -918,9 +943,9 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                dof_manager->getDOFs(bottomCell2MinusFace.globalID(),dofs);
                double m2_bottomMinus = m_scale*inputVec->getValueByGlobalID(dofs[0]);
 
-               double m1_bottomMid = 1.0/2.0*(m1_bottomPlus + m1_bottomMinus);
-               double m2_bottomMid = 1.0/2.0*(m2_bottomPlus + m2_bottomMinus);
-               double m_bottomMid = 1.0/2.0*(m1_bottomMid + m2_bottomMid);
+               double m1_bottomMid = 0.5*(m1_bottomPlus + m1_bottomMinus);
+               double m2_bottomMid = 0.5*(m2_bottomPlus + m2_bottomMinus);
+               double m_bottomMid = 0.5*(m1_bottomMid + m2_bottomMid);
 
                std::vector<size_t> cell1PlusDofs;
                std::vector<size_t> cell2PlusDofs;
@@ -935,9 +960,9 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                double m2_plus = m_scale*inputVec->getValueByGlobalID(cell2PlusDofs[0]);
                double m1_minus = m_scale*inputVec->getValueByGlobalID(cell1MinusDofs[0]);
                double m2_minus = m_scale*inputVec->getValueByGlobalID(cell2MinusDofs[0]);
-               double m1_mid = 1.0/2.0*(m1_plus + m1_minus);
-               double m2_mid = 1.0/2.0*(m2_plus + m2_minus);
-               double m_mid = 1.0/2.0*(m1_mid + m2_mid);
+               double m1_mid = 0.5*(m1_plus + m1_minus);
+               double m2_mid = 0.5*(m2_plus + m2_minus);
+               double m_gap_avg = 0.5*(m1_mid + m2_mid);
 
                double h1_plus = h_scale*inputVec->getValueByGlobalID(cell1PlusDofs[1]);
                double h2_plus = h_scale*inputVec->getValueByGlobalID(cell2PlusDofs[1]);
@@ -961,7 +986,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                if (m2_mid >= 0.0) vol2_axialDonor = vol2_plus;
                else vol2_axialDonor = vol2_minus;
 
-               double vol_mid = 1.0/2.0*(vol1_axialDonor + vol2_axialDonor);
+               double vol_gap_avg = 0.5*(vol1_axialDonor + vol2_axialDonor);
 
                size_t isubCell1 = getSubchannelIndex(cell1Centroid[0],cell1Centroid[1]);
                size_t isubCell2 = getSubchannelIndex(cell2Centroid[0],cell2Centroid[1]);
@@ -971,12 +996,12 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                double u1_minus = m1_minus*vol1_minus/area1;
                double u2_plus = m2_plus*vol2_plus/area2;
                double u2_minus = m2_minus*vol2_minus/area2;
-               double u_plus = 1.0/2.0*(u1_plus + u2_plus);
-               double u_minus = 1.0/2.0*(u1_minus + u2_minus);
+               double u_plus = 0.5*(u1_plus + u2_plus);
+               double u_minus = 0.5*(u1_minus + u2_minus);
 
                double w_axialDonor_plus;
                double w_axialDonor_minus;
-               if (m_mid >= 0.0) w_axialDonor_plus = w_mid;
+               if (m_gap_avg >= 0.0) w_axialDonor_plus = w_mid;
                else {
                   std::vector<double> cell1PlusFaceCentroid = cell1PlusFace.centroid();
                   if (AMP::Utilities::approx_equal(cell1PlusFaceCentroid[2],height,1.0e-6)) {
@@ -1017,9 +1042,9 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                else w_axialDonor_minus = w_mid;
 
                // compute distance between centroids of cells adjacent to gap
-               double lx = std::abs(cell1Centroid[0] - cell2Centroid[0]);
-               double ly = std::abs(cell1Centroid[1] - cell2Centroid[1]);
-               double l = std::pow(std::pow(lx,2)+std::pow(ly,2),0.5);
+               double x_distance = std::abs(cell1Centroid[0] - cell2Centroid[0]);
+               double y_distance = std::abs(cell1Centroid[1] - cell2Centroid[1]);
+               double pitch = std::pow(std::pow(x_distance,2)+std::pow(y_distance,2),0.5);
 
                // compute gap width
                std::vector<double> lateralFaceCentroid = lateralFace.centroid();
@@ -1029,16 +1054,16 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                std::map<std::vector<double>,double>::iterator gapWidthIt = gapWidthMap.find(xyPos);
                AMP_INSIST( gapWidthIt != gapWidthMap.end(), "Gap was not found.");
                // Josh- plese rename this to something like currentGapWidth because s is too short.
-               double s = gapWidthIt->second;
+               double gapWidth = gapWidthIt->second;
     
                // compute element height
                double dz = cell1PlusFaceCentroid[2] - cell1MinusFaceCentroid[2];
 
                double d_KG = 0.2;//JEH: need to get from input file
                double R_w = (u_plus*w_axialDonor_plus - u_minus*w_axialDonor_minus)/dz
-                          - s/l*dz*(p1_minus - p2_minus)
-                          + d_KG/(2.0*dz*s*l)*std::abs(w_mid)*w_mid*vol_mid
-                          + s*l*dz*g*std::sin(d_theta)/vol_mid;
+                          - gapWidth/pitch*dz*(p1_minus - p2_minus)
+                          + d_KG/(2.0*dz*gapWidth*pitch)*std::abs(w_mid)*w_mid*vol_gap_avg
+                          + gapWidth*pitch*dz*g*std::sin(d_theta)/vol_gap_avg;
                outputVec->setValueByGlobalID(gapDofs[0],Subchannel::scaleLateralMassFlowRate*R_w);
             }
          }

@@ -45,7 +45,7 @@ SubchannelFourEqNonlinearOperator{
     Heat_Source_Type = "totalHeatGeneration"
     Heat_Shape = "Sinusoidal"
     LocalModel = "SubchannelPhysicsModel"
-    Friction_Model = "Selander"
+    Friction_Model = "Constant"
     Surface_Roughness = 0.5e-6
     Number_GridSpacers = 7
     zMin_GridSpacers = 0.4225, 0.8800, 1.3375, 1.7950, 2.2525, 2.7100, 3.1675
@@ -53,6 +53,10 @@ SubchannelFourEqNonlinearOperator{
     LossCoefficient_GridSpacers = 0.684, 0.684, 0.684, 0.684, 0.684, 0.684, 0.684
     Reynolds = 95432.91
     Prandtl = 1.0
+    Force_No_Conduction = FALSE
+    Force_No_Turbulence = FALSE
+    Force_No_Heat_Source = FALSE
+    Force_No_Friction = FALSE
 }
 
 SubchannelPhysicsModel{
