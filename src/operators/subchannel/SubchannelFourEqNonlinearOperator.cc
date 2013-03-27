@@ -376,7 +376,9 @@ int SubchannelFourEqNonlinearOperator::getSubchannelIndex( double x, double y )
     size_t iy = Utilities::findfirst(d_y,y);
     // check that indices are valid
     if ( ix>0 && ix<d_x.size() && iy>0 && iy<d_y.size() ) {
-        return (ix-1)+(iy-1)*(d_x.size()-1);
+        size_t Nx = d_x.size()-1;
+        size_t Ny = d_y.size()-1;
+        return (ix-1)+((Ny-1)-(iy-1))*Nx;
     } else {
         AMP_ERROR("Invalid indices found for getSubchannelIndex()");
     }
@@ -399,7 +401,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
 
       // Constants
       const double pi = 4.0*atan(1.0); // pi
-      const double g = 9.805;          // acceleration due to gravity [m/s2]
+      const double gravity = 9.805;          // acceleration due to gravity [m/s2]
       const double m_scale = 1.0/Subchannel::scaleAxialMassFlowRate;
       const double h_scale = 1.0/Subchannel::scaleEnthalpy;
       const double p_scale = 1.0/Subchannel::scalePressure;
@@ -810,7 +812,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
              double R_p = m_plus*u_plus - m_minus*u_minus
                         + axial_crossflow_sum
                         + area*(p_plus-p_minus)
-                        + g*area*dz*std::cos(d_theta)/vol_axialDonor
+                        + gravity*area*dz*std::cos(d_theta)/vol_axialDonor
                         + 1.0/(2.0*area)*(dz*fric/D + K)*std::abs(m_mid)*m_mid*vol_axialDonor * force_factor_friction
                         + d_turbulenceCoef*dz*axial_turbulence_sum                            * force_factor_turbulence;
 
@@ -873,7 +875,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
             // if bottom face is at z = 0,
             if (AMP::Utilities::approx_equal(cell1MinusFaceCentroid[2],0.0)) {
                // implement fixed lateral mass flow rates inlet boundary condition
-               outputVec->setValueByGlobalID(gapDofs[0],Subchannel::scaleLateralMassFlowRate*d_win);
+               outputVec->setValueByGlobalID(gapDofs[0],Subchannel::scaleLateralMassFlowRate*w_mid);
             } else {
                // get cells below bottom faces
                // get adjacent cells
@@ -990,6 +992,9 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
 
                size_t isubCell1 = getSubchannelIndex(cell1Centroid[0],cell1Centroid[1]);
                size_t isubCell2 = getSubchannelIndex(cell2Centroid[0],cell2Centroid[1]);
+               double crossflowSign;
+               if (isubCell1 < isubCell2) crossflowSign = 1.0;
+               else crossflowSign = -1.0;
                double area1 = d_channelArea[isubCell1];
                double area2 = d_channelArea[isubCell2];
                double u1_plus = m1_plus*vol1_plus/area1;
@@ -1053,17 +1058,17 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                xyPos[1] = lateralFaceCentroid[1];
                std::map<std::vector<double>,double>::iterator gapWidthIt = gapWidthMap.find(xyPos);
                AMP_INSIST( gapWidthIt != gapWidthMap.end(), "Gap was not found.");
-               // Josh- plese rename this to something like currentGapWidth because s is too short.
                double gapWidth = gapWidthIt->second;
     
                // compute element height
                double dz = cell1PlusFaceCentroid[2] - cell1MinusFaceCentroid[2];
 
                double d_KG = 0.2;//JEH: need to get from input file
-               double R_w = (u_plus*w_axialDonor_plus - u_minus*w_axialDonor_minus)/dz
-                          - gapWidth/pitch*dz*(p1_minus - p2_minus)
-                          + d_KG/(2.0*dz*gapWidth*pitch)*std::abs(w_mid)*w_mid*vol_gap_avg
-                          + gapWidth*pitch*dz*g*std::sin(d_theta)/vol_gap_avg;
+
+               double R_w = u_plus*w_axialDonor_plus - u_minus*w_axialDonor_minus
+                          - crossflowSign*gapWidth/pitch*dz*dz*(p1_minus - p2_minus)
+                          + d_KG/(2.0*gapWidth*pitch)*std::abs(w_mid)*w_mid*vol_gap_avg
+                          + gapWidth*pitch*dz*dz*gravity*std::sin(d_theta)/vol_gap_avg;
                outputVec->setValueByGlobalID(gapDofs[0],Subchannel::scaleLateralMassFlowRate*R_w);
             }
          }
