@@ -4,7 +4,6 @@
 // AMP includes
 #include "vectors/Vector.h"
 
-
 // Trilinos includes
 #include "Thyra_VectorDefaultBase_decl.hpp"
 #include "Thyra_VectorBase.hpp"
@@ -27,16 +26,28 @@ class ThyraVectorWrapper : public Thyra::VectorBase<double>
 public:
 
     // Default constructor
-    ThyraVectorWrapper( AMP::LinearAlgebra::Vector::shared_ptr vec );
+    ThyraVectorWrapper( const std::vector<AMP::LinearAlgebra::Vector::shared_ptr>& vecs );
 
     //! Destructor
     virtual ~ThyraVectorWrapper();
 
     //! Get the underlying AMP vector
-    Vector::shared_ptr getVec() { return d_vec; }
+    Vector::shared_ptr getVec(int i) { return d_vecs[i]; }
 
     //! Get the underlying AMP vector
-    Vector::const_shared_ptr getVec() const { return d_vec; }
+    Vector::const_shared_ptr getVec(int i) const { return d_vecs[i]; }
+
+    //! Get the number of duplicate vectors stored
+    size_t numVecs() const { return d_vecs.size(); }
+
+    //! Get the number of rows
+    size_t numRows() const;
+
+    //! Get the number of columns
+    size_t numColumns() const;
+
+    //! Get the DOF Manager for the vector (all vectors must share compatible DOFManagers)
+    AMP::Discretization::DOFManager::const_shared_ptr getDOFManager() const { return d_vecs[0]->getDOFManager(); }
 
     // Functions derived from Thyra::LinearOpBase
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<double> > range() const;
@@ -50,6 +61,10 @@ public:
     virtual Teuchos::RCP<Thyra::VectorBase<double> > clone_v() const;
 
 protected:
+
+    // Protected constructor for view of subset of columns
+    ThyraVectorWrapper( const std::vector<AMP::LinearAlgebra::Vector::shared_ptr>& vecs, const std::vector<size_t>& cols, size_t N_cols );
+    void initialize( const std::vector<AMP::LinearAlgebra::Vector::shared_ptr>& vecs, const std::vector<size_t>& cols, size_t N_cols );
 
     // Functions derived from Thyra::LinearOpBase
     virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
@@ -93,7 +108,9 @@ protected:
     virtual void setSubVectorImpl(const RTOpPack::SparseSubVectorT<double> &sub_vec);
 
     // Internal data
-    AMP::LinearAlgebra::Vector::shared_ptr d_vec;
+    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_vecs;
+    std::vector<size_t> d_cols;
+    size_t d_N_cols;
 
 private:
 
@@ -102,6 +119,9 @@ private:
 
     // Comm
     Teuchos::Comm<RTOpPack::index_type> *d_comm;
+
+    // Get shared_ptr to *this
+    boost::shared_ptr<const ThyraVectorWrapper> shared_from_this() const;
 
 };
 

@@ -1,11 +1,17 @@
 #ifndef included_AMP_TrilinosNOXSolver
 #define included_AMP_TrilinosNOXSolver
 
+// AMP includes
 #include "solvers/SolverStrategy.h"
-#include "solvers/TrilinosNOXSolverParameters.h"
+#include "solvers/trilinos/nox/TrilinosNOXSolverParameters.h"
+#include "solvers/trilinos/thyra/TrilinosThyraModelEvaluator.h"
 
 
+// Trilinos includes
+#include "NOX_StatusTest_Combo.H"
+#include "NOX_Thyra.H"
 #include <NOX_Solver_Generic.H>
+#include "NOX_Solver_Factory.H"
 
 
 namespace AMP {
@@ -101,6 +107,10 @@ protected:
     AMP::LinearAlgebra::Vector::shared_ptr d_initialGuess;
 
     Teuchos::RCP<NOX::Solver::Generic> d_solver;
+
+    Teuchos::RCP<TrilinosThyraModelEvaluator> d_thyraModel;
+    Teuchos::RCP<Teuchos::ParameterList> d_nlParams;
+    Teuchos::RCP<NOX::StatusTest::Combo> d_status;
 
 };
   

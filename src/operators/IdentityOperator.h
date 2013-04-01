@@ -1,10 +1,7 @@
+#ifndef included_AMP_IdentityOperator
+#define included_AMP_IdentityOperator
 
-#ifndef included_AMP_LinearOperator
-#define included_AMP_LinearOperator
-
-#include "boost/shared_ptr.hpp"
-#include "matrices/Matrix.h"
-#include "operators/Operator.h"
+#include "operators/LinearOperator.h"
 #include "operators/OperatorParameters.h"
 #include "vectors/Vector.h"
 
@@ -13,23 +10,23 @@ namespace Operator {
 
 
 /**
-  * An abstract base class for representing a linear operator. This class 
-  * stores the matrix representation of the linear operator. It provides
-  * an implementation of the apply() function.
-  * @see Operator
-*/
-class LinearOperator : public Operator 
+ * Class IdentityOperator is the identity operator A(u) = u
+ */
+class IdentityOperator : public LinearOperator 
 {
 public :
+
+    //! Constructor. This resets the matrix shared pointer.
+    IdentityOperator ();
 
     /**
      * Constructor. This resets the matrix shared pointer.
      * @param [in] params 
      */
-    LinearOperator (const boost::shared_ptr<OperatorParameters> & params);
+    IdentityOperator (const boost::shared_ptr<OperatorParameters> & params);
 
     //! Destructor
-    virtual ~LinearOperator() { }
+    virtual ~IdentityOperator() { }
 
     /**
      * The apply function for this operator, A, performs the following operation:
@@ -45,24 +42,35 @@ public :
         AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
     /**
-     * @return The matrix representation of this linear operator.
-     */
-    boost::shared_ptr<AMP::LinearAlgebra::Matrix> getMatrix();
-
-    /**
      * Copies the shared pointer for the matrix representation of this linear operator.
      *  @param [in] in_mat The matrix representation of this linear operator.
      */
     virtual void setMatrix(const boost::shared_ptr<AMP::LinearAlgebra::Matrix> & in_mat);
 
-protected :
+    //! Return the input variable    
+    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
+        return d_outVar;
+    }
 
-    //! Empty constructor
-    LinearOperator( );
+    //! Return the output variable
+    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
+        return d_inVar;
+    }
 
-    boost::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix; /**< The matrix shared pointer. */
+    //! Set the input variable    
+    virtual void setInputVariable(AMP::LinearAlgebra::Variable::shared_ptr var) {
+        d_inVar = var;
+    }
 
-private :
+    //! Set the output variable
+    virtual void setOutputVariable(AMP::LinearAlgebra::Variable::shared_ptr var) {
+        d_outVar = var;
+    }
+
+private:
+    
+    AMP::LinearAlgebra::Variable::shared_ptr d_inVar;
+    AMP::LinearAlgebra::Variable::shared_ptr d_outVar;
 
 };
 

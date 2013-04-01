@@ -90,7 +90,12 @@ public:
       */
     static Vector::const_shared_ptr  constView ( Vector::const_shared_ptr AmpVector );
 
+    
+    //! Return an AMP Vector from the Thyra::VectorBase
+    static AMP::LinearAlgebra::Vector::shared_ptr view( Thyra::VectorBase<double>* vec );
 
+    //! Return an AMP Vector from the Thyra::VectorBase
+    static AMP::LinearAlgebra::Vector::const_shared_ptr constView( const Thyra::VectorBase<double> *vec );
 
 protected:
     /**

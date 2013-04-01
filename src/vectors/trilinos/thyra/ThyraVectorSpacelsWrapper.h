@@ -6,7 +6,8 @@
 #include "Thyra_VectorDefaultBase_decl.hpp"
 
 // AMP includes
-#include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
+#include "discretization/DOF_Manager.h"
+#include "vectors/Vector.h"
 
 
 namespace AMP {
@@ -23,7 +24,7 @@ class ThyraVectorSpaceWrapper : public Thyra::VectorSpaceBase<double>
 public:
 
     //! Default constuctor
-    ThyraVectorSpaceWrapper( boost::shared_ptr<const ThyraVectorWrapper> thyra_vec, bool is_range=true );
+    ThyraVectorSpaceWrapper( AMP::LinearAlgebra::Vector::const_shared_ptr vec, bool range=true );
 
     //! Destructor
     virtual ~ThyraVectorSpaceWrapper();
@@ -47,8 +48,8 @@ protected:
     virtual void scalarProdsImpl(const Thyra::MultiVectorBase<double> &X, const Thyra::MultiVectorBase<double> &Y, const Teuchos::ArrayView<double> &scalarProds) const;
 
     // Local data
-    bool d_is_range;
-    boost::shared_ptr<const ThyraVectorWrapper> d_thyra_vec;
+    AMP::LinearAlgebra::Vector::const_shared_ptr d_vec;
+    bool d_range;   // Is this the rage (default) or domain (number of vectors)
 
 private:
 
