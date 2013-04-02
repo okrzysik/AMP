@@ -908,7 +908,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_bcast += testBcast<int>(comm,ut,-1,1);
     timer.N_bcast += testBcast<unsigned long int>(comm,ut,0,1);
     timer.N_bcast += testBcast<long int>(comm,ut,-1,1);
-    timer.N_bcast += testBcast<size_t>(comm,ut,-1,1);
+    timer.N_bcast += testBcast<size_t>(comm,ut,0,1);
     timer.N_bcast += testBcast<float>(comm,ut,-1.0,1.0);
     timer.N_bcast += testBcast<double>(comm,ut,-1.0,1.0);
     mytype tmp3(-1,-1.0);
