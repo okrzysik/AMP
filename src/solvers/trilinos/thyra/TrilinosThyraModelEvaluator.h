@@ -3,9 +3,9 @@
 
 
 #include "boost/shared_ptr.hpp"
-#include "solvers/TrilinosLinearOP.h"
+#include "solvers/trilinos/thyra/TrilinosLinearOP.h"
+#include "solvers/trilinos/thyra/TrilinosThyraModelEvaluatorParameters.h"
 #include "discretization/DOF_Manager.h"
-#include "solvers/TrilinosThyraModelEvaluatorParameters.h"
 
 
 // Trilinos includes
@@ -30,6 +30,9 @@ public:
     //! Destructor
     virtual ~TrilinosThyraModelEvaluator();
 
+    //! Function to set the rhs vector
+    void setRhs( AMP::LinearAlgebra::Vector::const_shared_ptr rhs );
+
     // Functions derived from Thyra::StateFuncModelEvaluatorBase<double>
     virtual Teuchos::RCP<const ::Thyra::VectorSpaceBase<double> > get_x_space() const;
     virtual Teuchos::RCP<const ::Thyra::VectorSpaceBase<double> > get_f_space() const;
@@ -39,20 +42,27 @@ public:
     virtual Teuchos::RCP<const ::Thyra::LinearOpWithSolveFactoryBase<double> > get_W_factory() const;
     virtual ::Thyra::ModelEvaluatorBase::InArgs<double> createInArgs() const;
 
-private:
+protected:
 
-    //! Empty constructor
-    TrilinosThyraModelEvaluator() {}
+    // Return TrilinosLinearOP from Thyra::LinearOpBase<double>
+    static boost::shared_ptr<AMP::Solver::TrilinosLinearOP> view( Teuchos::RCP< Thyra::LinearOpBase<double> > op );
 
     // Functions derived from Thyra::StateFuncModelEvaluatorBase<double>
     virtual ::Thyra::ModelEvaluatorBase::OutArgs<double> createOutArgsImpl() const;
     virtual void evalModelImpl( const ::Thyra::ModelEvaluatorBase::InArgs<double> &inArgs,
         const ::Thyra::ModelEvaluatorBase::OutArgs<double> &outArgs ) const;
 
+private:
+
+    //! Empty constructor
+    TrilinosThyraModelEvaluator() {}
+
     // Data members
-    Teuchos::RCP<TrilinosLinearOP> d_linearOP;
     Teuchos::RCP<const ::Thyra::LinearOpWithSolveFactoryBase<double> > d_W_factory;
-    AMP::Discretization::DOFManager::shared_ptr d_dofs;
+    AMP::LinearAlgebra::Vector::shared_ptr d_icVec;
+    AMP::LinearAlgebra::Vector::const_shared_ptr d_rhs;
+    AMP::Operator::Operator::shared_ptr d_nonlinearOp;
+    AMP::Operator::Operator::shared_ptr d_linearOp;
 
 };
 

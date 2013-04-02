@@ -1,4 +1,4 @@
-// This is the input file for testPetscSNESSolver
+// This is the input file for testTrilinosNOXSolver
 
 
 NonlinearSolver{

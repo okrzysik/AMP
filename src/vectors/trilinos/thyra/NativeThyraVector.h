@@ -2,7 +2,7 @@
 #define included_AMP_NativeThyraVector
 
 #include "vectors/NativeVector.h"
-#include "vectors/trilinos/ThyraVector.h"
+#include "vectors/trilinos/thyra/ThyraVector.h"
 
 
 namespace AMP {

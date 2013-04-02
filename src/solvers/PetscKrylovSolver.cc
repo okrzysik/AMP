@@ -409,7 +409,14 @@ PetscErrorCode  PetscKrylovSolver::applyPreconditioner(PC pc, Vec r, Vec z)
         (sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
 
     // Call the preconditioner
-    ((PetscKrylovSolver*)ctx)->getPreconditioner()->solve(sp_r,sp_z);
+    boost::shared_ptr<AMP::Solver::SolverStrategy> preconditioner = 
+        ((PetscKrylovSolver*)ctx)->getPreconditioner();
+    if ( preconditioner!=NULL ) {
+        preconditioner->solve(sp_r,sp_z);
+    } else {
+        // Use the identity preconditioner
+        sp_z->copyVector(sp_r);
+    }
 
     // Check for nans (no communication necessary)
     double localNorm = sp_z->localL2Norm();

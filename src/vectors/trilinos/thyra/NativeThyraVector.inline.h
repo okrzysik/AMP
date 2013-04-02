@@ -1,4 +1,4 @@
-#include "vectors/trilinos/NativeThyraVector.h"
+#include "vectors/trilinos/thyra/NativeThyraVector.h"
 
 
 #include "Trilinos_version.h"

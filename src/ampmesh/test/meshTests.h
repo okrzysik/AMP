@@ -131,10 +131,12 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
     bool coord_pass = true;
     bool centroid_pass = true;
     bool elements_pass = true;
+    bool block_pass = true;
     int neighbor_pass = 1;
     cur_it = iterator.begin();
     int myRank = mesh->getComm().getRank();
     int maxRank = mesh->getComm().getSize()-1;
+    std::vector<int> blockIds = mesh->getBlockIDs();
     while ( cur_it != end_it ) {
         AMP::Mesh::MeshElement element = *cur_it;
         // Get the current id
@@ -155,6 +157,15 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
         } else {
             if ( element.volume() <= 0.0 )
                 volume_pass = false;
+        }
+        if ( id.type()==AMP::Mesh::Volume ) {
+            bool in_a_block = false;
+            for (size_t i=0; i<blockIds.size(); i++) {
+                if ( element.isInBlock(blockIds[i]) )
+                    in_a_block = true;
+            }
+            if ( !in_a_block ) 
+                block_pass = false;
         }
         std::vector<double> centroid = element.centroid();
         if ( centroid.size()!=mesh->getDim() )
@@ -193,7 +204,7 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
         }
         ++cur_it;   // Pre-increment is faster than post-increment
     }
-    if ( id_pass && type_pass && volume_pass && coord_pass && elements_pass && neighbor_pass==1 ) {
+    if ( id_pass && type_pass && volume_pass && coord_pass && elements_pass && neighbor_pass==1 && block_pass ) {
         ut->passes( "elements passed" );
     } else {
         if ( !id_pass )
@@ -212,6 +223,8 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
             ut->failure( "elements failed getNeighbors test" );
         else if ( neighbor_pass==2 ) 
             ut->expected_failure( "elements failed getNeighbors test" );
+        if ( !block_pass )
+            ut->failure("Element is not in a block");
     }
     // Check that we can get the element from the global id for all elements
     cur_it = iterator.begin();

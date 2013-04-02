@@ -161,6 +161,13 @@ ADD_AMP_WEEKLY_TEST ( testTrilinosMLSolver-LinearThermalOperator-2 8 )
 ADD_AMP_PROVISIONAL_TEST ( testNonlinearThermalContact-1 8 )
 ADD_AMP_WEEKLY_TEST ( testElementLevel-VonMisesPlasticity 1 )
 
+IF( USE_EXT_TRILINOS )
+    IF( USE_TRILINOS_NOX )
+        COPY_TEST_DATA_FILE ( input_testTrilinosNOXSolver )
+        ADD_AMP_TEST ( testTrilinosNOXSolver )
+    ENDIF()
+ENDIF()
+
 ADD_AMP_TEST ( testElementLevel-VonMisesPlasticity-LoadingUnloading )
 
 ADD_AMP_TEST ( testElasticThermalPatch )
