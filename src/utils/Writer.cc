@@ -1,6 +1,7 @@
-#include "Writer.h"
+#include "utils/Writer.h"
+#include "utils/Utilities.h"
 
-#include "NullWriter.h"
+#include "utils/NullWriter.h"
 #ifdef USE_AMP_MESH
     #include "ampmesh/SiloIO.h"
 #endif
