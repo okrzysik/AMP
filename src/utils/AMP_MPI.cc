@@ -1144,7 +1144,7 @@ void AMP_MPI::call_minReduce<long int>(long int *x, const int n, int *comm_rank_
             PROFILE_START("minReduce2<size_t>",profile_level);
             size_t *send = x;
             size_t *recv = new size_t[n];
-            MPI_Allreduce( send, recv, n, MPI_MPI_SIZE_T, MPI_MIN, communicator);
+            MPI_Allreduce( send, recv, n, MPI_SIZE_T, MPI_MIN, communicator);
             for (int i=0; i<n; i++)
                 x[i] = recv[i];
             delete [] recv;
