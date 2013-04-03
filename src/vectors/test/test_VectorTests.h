@@ -473,7 +473,7 @@ void SubtractVector( AMP::UnitTest *utils )
         if ( vector4->maxNorm() < 0.0000001 )
           utils->passes ( "vector subtract 2" );
         else
-          utils->passes ( "vector subtract 2" );
+          utils->failure ( "vector subtract 2" );
 }
 
 
