@@ -61,25 +61,27 @@ int AMP_MPI::profile_level=127;
 
 
 // Define a type for use with size_t
-static MPI_Datatype MPI_SIZE_T = 0x0;
-static MPI_Datatype getSizeTDataType( )
-{
-    int size_int, size_long, size_longlong;
-    MPI_Type_size( MPI_UNSIGNED, &size_int );
-    MPI_Type_size( MPI_UNSIGNED_LONG, &size_long );
-    MPI_Type_size( MPI_LONG_LONG, &size_longlong );
-    if ( sizeof(size_t) == size_int ) {
-        return MPI_UNSIGNED;
-    } else if ( sizeof(size_t) == size_long ) {
-        return MPI_UNSIGNED_LONG;
-    } else if ( sizeof(size_t) == size_longlong ) {
-        AMP_WARNING("Using signed long long datatype for size_t in MPI");
-        return MPI_LONG_LONG;   // Note: this is not unsigned
-    } else {
-        AMP_ERROR("No suitable datatype found");
+#ifdef USE_EXT_MPI
+    static MPI_Datatype MPI_SIZE_T = 0x0;
+    static MPI_Datatype getSizeTDataType( )
+    {
+        int size_int, size_long, size_longlong;
+        MPI_Type_size( MPI_UNSIGNED, &size_int );
+        MPI_Type_size( MPI_UNSIGNED_LONG, &size_long );
+        MPI_Type_size( MPI_LONG_LONG, &size_longlong );
+        if ( sizeof(size_t) == size_int ) {
+            return MPI_UNSIGNED;
+        } else if ( sizeof(size_t) == size_long ) {
+            return MPI_UNSIGNED_LONG;
+        } else if ( sizeof(size_t) == size_longlong ) {
+            AMP_WARNING("Using signed long long datatype for size_t in MPI");
+            return MPI_LONG_LONG;   // Note: this is not unsigned
+        } else {
+            AMP_ERROR("No suitable datatype found");
+        }
+        return 0;
     }
-    return 0;
-}
+#endif
 
 
 // Static data for asyncronous communication without MPI
@@ -204,8 +206,10 @@ AMP_MPI::AMP_MPI( const AMP::AMP_MPI& comm ) {
     if ( count != NULL )
         ++(*count);
     // Set the MPI_SIZE_T datatype if it has not been set
-    if ( MPI_SIZE_T==0x0 )
-        MPI_SIZE_T = getSizeTDataType();
+    #ifdef USE_EXT_MPI
+        if ( MPI_SIZE_T==0x0 )
+            MPI_SIZE_T = getSizeTDataType();
+    #endif
 }
 
 
