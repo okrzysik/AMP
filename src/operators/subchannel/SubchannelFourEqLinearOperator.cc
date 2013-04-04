@@ -1,0 +1,483 @@
+#include "operators/subchannel/SubchannelFourEqLinearOperator.h"
+#include "operators/subchannel/SubchannelOperatorParameters.h"
+#include "operators/subchannel/SubchannelConstants.h"
+#include "operators/subchannel/SubchannelHelpers.h"
+
+#include "ampmesh/StructuredMeshHelper.h"
+#include "vectors/VectorBuilder.h"
+#include "matrices/MatrixBuilder.h"
+#include "utils/Utilities.h"
+#include "utils/InputDatabase.h"
+#include "utils/ProfilerApp.h"
+
+#include <string>
+
+
+namespace AMP {
+namespace Operator {
+
+
+//Constructor
+SubchannelFourEqLinearOperator::SubchannelFourEqLinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params)
+    : LinearOperator (params)
+{
+    AMP_INSIST( params->d_db->keyExists("InputVariable"), "Key 'InputVariable' does not exist");
+    std::string inpVar = params->d_db->getString("InputVariable");
+    d_inpVariable.reset(new AMP::LinearAlgebra::Variable(inpVar));
+
+    AMP_INSIST( params->d_db->keyExists("OutputVariable"), "Key 'OutputVariable' does not exist");
+    std::string outVar = params->d_db->getString("OutputVariable");
+    d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar));
+
+/*
+    d_dofMap = (params->d_dofMap);
+*/
+
+    d_nullFrozenvector = true; 
+    
+    d_params = params;
+    d_initialized = false;
+
+    // create nonlinear operator
+    boost::shared_ptr<AMP::Operator::SubchannelFourEqNonlinearOperator> subchannelOperator (new AMP::Operator::SubchannelFourEqNonlinearOperator(params));
+    // reset the nonlinear operator
+    subchannelOperator->reset(subchannelOpParams);
+}
+
+
+// reset
+void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
+{
+    PROFILE_START("reset");
+    d_initialized = true;
+
+    boost::shared_ptr<SubchannelOperatorParameters> myparams = 
+        boost::dynamic_pointer_cast<SubchannelOperatorParameters>(params);
+
+    AMP_INSIST( ((myparams.get()) != NULL), "NULL parameters" );
+    AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );
+
+    d_params = myparams;
+
+/*
+    // Get the subchannel mesh coordinates
+    AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( d_Mesh, d_x, d_y, d_z );
+    d_numSubchannels = (d_x.size()-1)*(d_y.size()-1);
+
+    // Get the properties from the database
+    d_Pout = getDoubleParameter(myparams,"Exit_Pressure",15.5132e6);
+    d_Tin  = getDoubleParameter(myparams,"Inlet_Temperature",569.26);  
+    d_mass = getDoubleParameter(myparams,"Inlet_Mass_Flow_Rate",0.3522*d_numSubchannels);  
+    d_gamma     = getDoubleParameter(myparams,"Fission_Heating_Coefficient",0.0);  
+    d_theta     = getDoubleParameter(myparams,"Channel_Angle",0.0);  
+    d_reynolds  = getDoubleParameter(myparams,"Reynolds",0.0);  
+    d_prandtl   = getDoubleParameter(myparams,"Prandtl",0.0);  
+    d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);  
+    d_source = getStringParameter(myparams,"Heat_Source_Type","totalHeatGeneration");
+    d_frictionModel = getStringParameter(myparams,"Friction_Model","Constant");
+    d_NGrid = getIntegerParameter(myparams,"Number_GridSpacers",0);
+
+    // Check for obsolete properites
+    if ( (myparams->d_db)->keyExists("Rod_Diameter") )
+        AMP_WARNING("Field 'Rod_Diameter' is obsolete and should be removed from database");
+    if ( (myparams->d_db)->keyExists("Channel_Diameter") )
+        AMP_WARNING("Field 'Channel_Diameter' is obsolete and should be removed from database");
+    if ( (myparams->d_db)->keyExists("attice_Pitch") )
+        AMP_WARNING("Field 'attice_Pitch' is obsolete and should be removed from database");
+    if ( (myparams->d_db)->keyExists("ChannelFractions") )
+        AMP_WARNING("Field 'ChannelFractions' is obsolete and should be removed from database");
+    if ( (myparams->d_db)->keyExists("Mass_Flow_Rate") )
+        AMP_WARNING("Field 'Mass_Flow_Rate' is obsolete and should be removed from database");
+    
+    // Get the subchannel properties from the mesh
+    std::vector<double> x, y, perimeter;
+    Subchannel::getSubchannelProperties( d_Mesh, myparams->clad_x, myparams->clad_y, myparams->clad_d, 
+        x, y, d_channelArea, d_channelDiam, d_rodDiameter, d_rodFraction );
+    AMP_ASSERT(d_channelArea.size()==d_numSubchannels);
+    double total_area = 0.0;
+    for (size_t i=0; i<d_numSubchannels; i++)
+        total_area += d_channelArea[i];
+    d_channelMass.resize(d_numSubchannels,0.0);
+    for (size_t i=0; i<d_numSubchannels; i++)
+        d_channelMass[i] = d_mass*d_channelArea[i]/total_area;
+
+    // get additional parameters based on heat source type
+    if (d_source == "totalHeatGeneration") {
+        d_Q    = getDoubleParameter(myparams,"Rod_Power",66.81e3);  
+        d_heatShape = getStringParameter(myparams,"Heat_Shape","Sinusoidal");
+    }
+
+    // get additional parameters based on friction model
+    if (d_frictionModel == "Constant") {
+        d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);  
+    } else if (d_frictionModel == "Selander"){
+        d_roughness = getDoubleParameter(myparams,"Surface_Roughness",0.0015e-3);  
+    }
+
+    // get form loss parameters if there are grid spacers
+    if (d_NGrid > 0){
+        d_zMinGrid = (myparams->d_db)->getDoubleArray("zMin_GridSpacers");
+        d_zMaxGrid = (myparams->d_db)->getDoubleArray("zMax_GridSpacers");
+        d_lossGrid = (myparams->d_db)->getDoubleArray("LossCoefficient_GridSpacers");
+        // check that sizes of grid spacer loss vectors are consistent with the provided number of grid spacers
+        if (!(d_NGrid == d_zMinGrid.size() && d_NGrid == d_zMaxGrid.size() && d_NGrid == d_lossGrid.size()))
+            AMP_ERROR("The size of a grid spacer loss vector is inconsistent with the provided number of grid spacers");
+    }
+
+    // get subchannel physics model
+    d_subchannelPhysicsModel = myparams->d_subchannelPhysicsModel;
+
+    // Get the subchannel elements
+    d_ownSubChannel = std::vector<bool>(d_numSubchannels,false);
+    d_subchannelElem = std::vector<std::vector<AMP::Mesh::MeshElement> >(d_numSubchannels,std::vector<AMP::Mesh::MeshElement>(0));
+    AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
+    for(size_t i=0; i<el.size(); i++) {
+        std::vector<double> center = el->centroid();
+        int index = getSubchannelIndex( center[0], center[1] );
+        if ( index>=0 ){
+           d_ownSubChannel[index] = true;
+           d_subchannelElem[index].push_back( *el );
+        }
+        ++el;
+    }
+    d_subchannelFace = std::vector<std::vector<AMP::Mesh::MeshElement> >(d_numSubchannels,std::vector<AMP::Mesh::MeshElement>(0));
+    for (size_t i=0; i<d_numSubchannels; i++) {
+        if ( !d_ownSubChannel[i] )
+            continue;
+        AMP::Mesh::MeshIterator localSubchannelIt = AMP::Mesh::MultiVectorIterator( d_subchannelElem[i] );
+        AMP::Mesh::Mesh::shared_ptr localSubchannel = d_Mesh->Subset( localSubchannelIt  );
+        AMP::Mesh::MeshIterator face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(localSubchannel, 0);
+        for (size_t j=0; j<face.size(); j++) {
+            d_subchannelFace[i].push_back( *face );
+            ++face;
+        }
+    }
+*/
+
+    // get frozen solution
+    if ((myparams->d_frozenSolution.get()) != NULL){ 
+        d_frozenVec = myparams->d_frozenSolution;
+        d_nullFrozenvector = false; 
+    }
+
+    // size of system
+    size_t N = d_FrozenVec.size();
+
+    // create matrix if null
+    if( d_matrix.get() == NULL ) {
+/*
+        AMP::LinearAlgebra::Vector::shared_ptr inVec  = AMP::LinearAlgebra::createVector(d_dofMap, getInputVariable(),  true);
+        AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector(d_dofMap, getOutputVariable(), true);
+        d_matrix = AMP::LinearAlgebra::createMatrix(inVec, outVec);
+*/
+        d_matrix = AMP::LinearAlgebra::createMatrix(N, N);
+    }
+
+    if ( d_nullFrozenvector ) {
+        // We are done with the reset
+        PROFILE_STOP2("reset");
+        return;
+    }
+
+    // create vectors
+    AMP::LinearAlgebra::Vector::shared_ptr SolVec_unperturbed = d_FrozenVec;
+/*
+    AMP::LinearAlgebra::Vector::shared_ptr SolVec_perturbed   = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable,  true );
+    AMP::LinearAlgebra::Vector::shared_ptr RhsVec             = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
+    AMP::LinearAlgebra::Vector::shared_ptr ResVec_unperturbed = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
+    AMP::LinearAlgebra::Vector::shared_ptr ResVec_perturbed   = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
+*/
+    AMP::LinearAlgebra::Vector::shared_ptr SolVec_perturbed   = AMP::LinearAlgebra::createVector( N );
+    AMP::LinearAlgebra::Vector::shared_ptr RhsVec             = AMP::LinearAlgebra::createVector( N ); 
+    AMP::LinearAlgebra::Vector::shared_ptr ResVec_unperturbed = AMP::LinearAlgebra::createVector( N );
+    AMP::LinearAlgebra::Vector::shared_ptr ResVec_perturbed   = AMP::LinearAlgebra::createVector( N );
+    // get unperturbed nonlinear residual
+    subchannelOperator->apply(RhsVec, d_SolVec_unperturbed, ResVec_unperturbed, 1.0, 0.0);
+    // small numbers
+    double small = 1.0e-15;
+    double b = std::sqrt(small);
+    // loop over columns of Jacobian
+    for (size_t j = 0; j < N; ++j) {
+       // perturb solution vector
+       double perturbation = (1.0 + SolVec_unperturbed[j]) * b;
+       SolVec_perturbed = SolVec_unperturbed;
+       SolVec_perturbed[j] += perturbation;
+       // get perturbed nonlinear residual
+       subchannelOperator->apply(RhsVec, d_SolVec_perturbed, ResVec_perturbed, 1.0, 0.0);
+       // f_perturbed := (f_perturbed - f_unperturbed)/perturbation
+       ResVec_perturbed -= ResVec_unperturbed;
+       ResVec_perturbed /= perturbation;
+       for (size_t i = 0; i < N; ++i) {
+          if (std::abs(ResVec_perturbed[i]) < small) {
+             d_matrix[i][j] = ResVec_perturbed[i];
+          }
+       }
+    }
+/*
+    // calculate extra parameters
+    // Constants
+    const double g = 9.805;          // acceleration due to gravity [m/s2]
+    const double h_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
+    const double P_scale = 1.0/Subchannel::scalePressure;                 // Scale to change the input vector back to correct units
+
+    for (size_t isub =0; isub<d_numSubchannels; ++isub) {
+        if ( !d_ownSubChannel[isub] )
+            continue;
+        // Get the iterator over the faces in the local subchannel
+        AMP::Mesh::MeshIterator localSubchannelIt = AMP::Mesh::MultiVectorIterator( d_subchannelFace[isub] );
+        AMP_ASSERT(localSubchannelIt.size()==d_z.size());
+
+        std::vector<size_t> dofs_minus;
+        std::vector<size_t> dofs;
+        std::vector<size_t> dofs_plus;
+
+        // calculate residual for axial momentum equations
+        double A = d_channelArea[isub];     // Channel area
+        double D = d_channelDiam[isub]; // Channel hydraulic diameter
+        double mass = d_channelMass[isub];  // Mass flow rate in the current subchannel
+
+        size_t j = 1;
+        AMP_ASSERT(*d_dofMap ==*(d_frozenVec->getDOFManager()));
+        AMP::Mesh::MeshIterator face = localSubchannelIt.begin();
+        AMP::Mesh::MeshIterator end_face = localSubchannelIt.end();
+        for(size_t iface = 0; iface < localSubchannelIt.size(); ++iface, ++j){
+            d_dofMap->getDOFs( face->globalID(), dofs );
+            if (face == localSubchannelIt.begin()){
+              double p_in = P_scale*d_frozenVec->getValueByGlobalID(dofs[1]);
+              d_matrix->setValueByGlobalID(dofs[0], dofs[0], 1.0);
+              d_matrix->setValueByGlobalID(dofs[0], dofs[1], -1.0*dhdp(d_Tin,p_in));
+            } else {
+              // residual at face corresponds to cell below
+              double z_plus = (face->centroid())[2];
+              --face;
+              d_dofMap->getDOFs( face->globalID(), dofs_minus );
+              double z_minus = (face->centroid())[2];
+              ++face;
+              double dz = z_plus - z_minus;
+
+              d_matrix->setValueByGlobalID(dofs[0], dofs_minus[0], -mass/dz);
+              d_matrix->setValueByGlobalID(dofs[0], dofs[0],        mass/dz);
+            }
+
+            // ======================================================
+            // axial momentum residual
+            // ======================================================
+            // residual at face corresponds to cell above
+            d_dofMap->getDOFs( face->globalID(), dofs );
+            double h_minus = h_scale*d_frozenVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
+            double p_minus = P_scale*d_frozenVec->getValueByGlobalID(dofs[1]); // pressure evaluated at lower face
+            std::vector<double> minusFaceCentroid = face->centroid();
+            double z_minus = minusFaceCentroid[2]; // z-coordinate of lower face
+            if (face == end_face - 1){
+              d_dofMap->getDOFs( face->globalID(), dofs );
+              d_matrix->setValueByGlobalID(dofs[1], dofs[1], 1.0);
+            } else {
+              ++face;
+              d_dofMap->getDOFs( face->globalID(), dofs_plus );
+              std::vector<double> plusFaceCentroid = face->centroid();
+              double z_plus = plusFaceCentroid[2]; // z-coordinate of lower face
+              --face;
+              double h_plus  = h_scale*d_frozenVec->getValueByGlobalID(dofs_plus[0]); // enthalpy evaluated at upper face
+              double p_plus  = P_scale*d_frozenVec->getValueByGlobalID(dofs_plus[1]); // pressure evaluated at upper face
+
+              // evaluate specific volume at upper face
+              std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
+              volumeArgMap_plus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_plus)));
+              volumeArgMap_plus.insert(std::make_pair("pressure",new std::vector<double>(1,p_plus)));
+              std::vector<double> volumeResult_plus(1);
+              d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_plus,volumeArgMap_plus); 
+              double v_plus = volumeResult_plus[0];
+
+              // evaluate specific volume at lower face
+              std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_minus;
+              volumeArgMap_minus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_minus)));
+              volumeArgMap_minus.insert(std::make_pair("pressure",new std::vector<double>(1,p_minus)));
+              std::vector<double> volumeResult_minus(1);
+              d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_minus,volumeArgMap_minus); 
+              double v_minus = volumeResult_minus[0];
+
+              // evaluate friction factor
+              double fric = friction(h_minus, p_minus, h_plus, p_plus, mass, A, D);
+
+              // evaluate derivatives of specific volume
+              double dvdh_plus  = dvdh(h_plus, p_plus);
+              double dvdh_minus = dvdh(h_minus,p_minus);
+              double dvdp_plus  = dvdp(h_plus, p_plus);
+              double dvdp_minus = dvdp(h_minus,p_minus);
+
+              // evaluate derivatives of friction
+              double dfdh_minus = dfdh_lower(h_minus,p_minus,h_plus,p_plus,mass,A,D);
+              double dfdh_plus  = dfdh_upper(h_minus,p_minus,h_plus,p_plus,mass,A,D);
+              double dfdp_minus = dfdp_lower(h_minus,p_minus,h_plus,p_plus,mass,A,D);
+              double dfdp_plus  = dfdp_upper(h_minus,p_minus,h_plus,p_plus,mass,A,D);
+
+              // compute form loss coefficient
+              double K = 0.0;
+              for (size_t igrid=0; igrid < d_lossGrid.size(); igrid++){
+                 double zMin_grid = d_zMinGrid[igrid];
+                 double zMax_grid = d_zMaxGrid[igrid];
+                 AMP_INSIST((zMax_grid > zMin_grid),"Grid spacer zMin > zMax");
+                 double K_grid = d_lossGrid[igrid];
+                 double K_perLength = K_grid/(zMax_grid - zMin_grid);
+                 if (zMax_grid >= z_plus){
+                    double overlap = 0.0;
+                    if (zMin_grid >= z_plus){
+                       overlap = 0.0;
+                    } else if (zMin_grid > z_minus && zMin_grid < z_plus){
+                       overlap = z_plus - zMin_grid;
+                    } else if (zMin_grid <= z_minus){
+                       overlap = z_plus - z_minus;
+                    } else {
+                       AMP_ERROR("Unexpected position comparison for zMin_grid");
+                    }
+                    K += overlap*K_perLength;
+                 } else if (zMax_grid < z_plus && zMax_grid > z_minus){
+                    double overlap = 0.0;
+                    if (zMin_grid > z_minus){
+                       overlap = zMax_grid - zMin_grid;
+                    } else if (zMin_grid <= z_minus){
+                       overlap = zMax_grid - z_minus;
+                    } else {
+                       AMP_ERROR("Unexpected position comparison for zMin_grid");
+                    }
+                    K += overlap*K_perLength;
+                 }
+              }
+
+              // compute Jacobian entries
+              double dz = d_z[j]-d_z[j-1];
+              double A_j = -1.0*std::pow(mass/A,2)*dvdh_minus - 2.0*g*dz*std::cos(d_theta)*
+                dvdh_minus/std::pow(v_plus+v_minus,2)+
+                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdh_minus + dz/D*dfdh_minus*(v_plus + v_minus));
+              double B_j = -1.0*std::pow(mass/A,2)*dvdp_minus - 2.0*g*dz*std::cos(d_theta)*
+                dvdp_minus/std::pow(v_plus+v_minus,2)+
+                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdp_minus + dz/D*dfdp_minus*(v_plus + v_minus)) - 1;
+              double C_j = std::pow(mass/A,2)*dvdh_plus - 2.0*g*dz*std::cos(d_theta)*
+                dvdh_plus/std::pow(v_plus+v_minus,2)+
+                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdh_plus + dz/D*dfdh_plus*(v_plus + v_minus));
+              double D_j = std::pow(mass/A,2)*dvdp_plus - 2.0*g*dz*std::cos(d_theta)*
+                dvdp_plus/std::pow(v_plus+v_minus,2)+
+                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdp_plus + dz/D*dfdp_plus*(v_plus + v_minus)) + 1;
+
+              d_matrix->setValueByGlobalID(dofs[1] , dofs[0]       , A*A_j );
+              d_matrix->setValueByGlobalID(dofs[1] , dofs[1]       , A*B_j );
+              d_matrix->setValueByGlobalID(dofs[1] , dofs_plus[0]  , A*C_j );
+              d_matrix->setValueByGlobalID(dofs[1] , dofs_plus[1]  , A*D_j );
+            }
+            ++face;
+        }
+*/
+
+    }//end of isub
+    d_matrix->makeConsistent();
+    PROFILE_STOP("reset");
+}
+
+/*
+// function used in reset to get double parameter or set default if missing
+double SubchannelFourEqLinearOperator::getDoubleParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+								std::string paramString,
+                                                                double defaultValue)
+{
+    bool keyExists = (myparams->d_db)->keyExists(paramString);
+    if (keyExists) {
+        return (myparams->d_db)->getDouble(paramString);
+    } else {
+        AMP_WARNING("Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n");
+        return defaultValue;
+    }
+}
+
+// function used in reset to get integer parameter or set default if missing
+int SubchannelFourEqLinearOperator::getIntegerParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+								std::string paramString,
+                                                                int defaultValue)
+{
+    bool keyExists = (myparams->d_db)->keyExists(paramString);
+    if (keyExists) {
+       return (myparams->d_db)->getInteger(paramString);
+    } else {
+       AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
+       return defaultValue;
+    }
+}
+
+// function used in reset to get string parameter or set default if missing
+std::string SubchannelFourEqLinearOperator::getStringParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+									std::string paramString,
+                                                                	std::string defaultValue)
+{
+    bool keyExists = (myparams->d_db)->keyExists(paramString);
+    if (keyExists) {
+       return (myparams->d_db)->getString(paramString);
+    } else {
+       AMP::pout << "Key '"+paramString+"' was not provided. Using default value: " << defaultValue << "\n";
+       return defaultValue;
+    }
+}
+
+
+int SubchannelFourEqLinearOperator::getSubchannelIndex( double x, double y )
+{
+    size_t i = Utilities::findfirst(d_x,x);
+    size_t j = Utilities::findfirst(d_y,y);
+    if ( i>0 && i<d_x.size() && j>0 && j<d_y.size() )
+        return (i-1)+(j-1)*(d_x.size()-1);
+    return -1;
+}
+
+AMP::LinearAlgebra::Vector::shared_ptr  SubchannelFourEqLinearOperator::subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)
+{
+  AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+  // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
+  if(d_Mesh.get() != NULL) {
+    AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
+    AMP::LinearAlgebra::Vector::shared_ptr commVec = vec->select(commSelector, var->getName());
+    return commVec->subsetVectorForVariable(var);
+  } else {
+    return vec->subsetVectorForVariable(var);
+  }
+}
+
+AMP::LinearAlgebra::Vector::const_shared_ptr  SubchannelFourEqLinearOperator::subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
+{
+  AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+  // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
+  if(d_Mesh.get() != NULL) {
+    AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
+    AMP::LinearAlgebra::Vector::const_shared_ptr commVec = vec->constSelect(commSelector, var->getName());
+    return commVec->constSubsetVectorForVariable(var);
+  } else {
+    return vec->constSubsetVectorForVariable(var);
+  }
+}
+
+AMP::LinearAlgebra::Vector::shared_ptr  SubchannelFourEqLinearOperator::subsetOutputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)
+{
+  AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
+  // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
+  if(d_Mesh.get() != NULL) {
+    AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
+    AMP::LinearAlgebra::Vector::shared_ptr commVec = vec->select(commSelector, var->getName());
+    return commVec->subsetVectorForVariable(var);
+  } else {
+    return vec->subsetVectorForVariable(var);
+  }
+}
+
+AMP::LinearAlgebra::Vector::const_shared_ptr  SubchannelFourEqLinearOperator::subsetOutputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
+{
+  AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
+  // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
+  if(d_Mesh.get() != NULL) {
+    AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
+    AMP::LinearAlgebra::Vector::const_shared_ptr commVec = vec->constSelect(commSelector, var->getName());
+    return commVec->constSubsetVectorForVariable(var);
+  } else {
+    return vec->constSubsetVectorForVariable(var);
+  }
+}
+*/
+
+}
+}
