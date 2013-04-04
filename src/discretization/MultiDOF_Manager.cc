@@ -79,7 +79,7 @@ void multiDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <
         std::vector<size_t> local_dofs;
         for (size_t i=0; i<d_managers.size(); i++) {
             d_managers[i]->getDOFs( id, local_dofs );
-            if ( local_dofs.size() > 0 ) {
+            if ( !local_dofs.empty() ) {
                 std::vector<size_t> tmp_dofs = getGlobalDOF( i, local_dofs );
                 dofs.insert(dofs.end(),tmp_dofs.begin(),tmp_dofs.end());
             }

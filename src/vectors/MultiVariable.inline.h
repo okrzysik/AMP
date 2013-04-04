@@ -10,7 +10,7 @@ void  MultiVariable::setUnits ( const std::string &units )
     while ( curVar != endVariable() )
     {
         (*curVar)->setUnits ( units );
-        curVar++;
+        ++curVar;
     }
 }
 

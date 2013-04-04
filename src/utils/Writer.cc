@@ -1,6 +1,7 @@
-#include "Writer.h"
+#include "utils/Writer.h"
+#include "utils/Utilities.h"
 
-#include "NullWriter.h"
+#include "utils/NullWriter.h"
 #ifdef USE_AMP_MESH
     #include "ampmesh/SiloIO.h"
 #endif
@@ -27,6 +28,14 @@ boost::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( std::string type 
     } else {
         AMP_ERROR("Unknown writer");
     }
+    return writer;
+}
+boost::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( boost::shared_ptr<AMP::Database> db )
+{
+    std::string type = db->getString("Name");
+    boost::shared_ptr<AMP::Utilities::Writer> writer = Writer::buildWriter(type);
+    if ( db->keyExists("Decomposition") )
+        writer->setDecomposition( db->getInteger("Decomposition") );
     return writer;
 }
 

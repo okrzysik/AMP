@@ -40,11 +40,11 @@ CommunicationListParameters::CommunicationListParameters()
     d_localsize = (size_t) -1;
     d_remote_DOFs = std::vector<size_t>(0);
 }
-CommunicationListParameters::CommunicationListParameters(const CommunicationListParameters& rhs)
+CommunicationListParameters::CommunicationListParameters(const CommunicationListParameters& rhs):
+    d_comm(rhs.d_comm),
+    d_localsize(rhs.d_localsize),
+    d_remote_DOFs(rhs.d_remote_DOFs)
 {
-    d_comm = rhs. d_comm;
-    d_localsize = rhs.d_localsize;
-    d_remote_DOFs = rhs.d_remote_DOFs;
 }
 CommunicationList::CommunicationList ( CommunicationListParameters::shared_ptr params ):
     d_comm ( params->d_comm ),

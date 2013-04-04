@@ -12,7 +12,7 @@ namespace LinearAlgebra {
   inline
   DataChangeListener::~DataChangeListener ()
   {
-    for ( iterator cur = begin() ; cur != end() ; cur++ )
+    for ( iterator cur = begin() ; cur != end() ;++ cur )
       (*cur)->deregisterListener ( this );
   }
 
