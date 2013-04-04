@@ -46,6 +46,13 @@ public:
      */
     static boost::shared_ptr<AMP::Utilities::Writer> buildWriter( std::string type );
 
+    /**
+     * \brief   Function to build a writer
+     * \details This function will build a default writer for use.
+     * \param db   Input database for the writer
+     */
+    static boost::shared_ptr<AMP::Utilities::Writer> buildWriter( boost::shared_ptr<AMP::Database> db );
+
     //!  Default constructor
     Writer();
 
