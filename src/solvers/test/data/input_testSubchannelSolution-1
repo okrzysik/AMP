@@ -98,8 +98,8 @@ NonlinearSolver{
         relative_tolerance = 1.0e-1
         divergence_tolerance = 1.0e03
         max_krylov_dimension = 40
-        uses_preconditioner=FALSE
-        pc_type = "none"
+        uses_preconditioner=TRUE
+        pc_type = "shell"
         pc_side = "RIGHT"
 
         KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 1000"

@@ -96,6 +96,9 @@ protected:
     ~OperatorBuilder(){}
 
   
+  static boost::shared_ptr<Operator> createIdentityOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+                                boost::shared_ptr<AMP::Database> input_db);
+  
   static boost::shared_ptr<Operator> createFlowFrapconOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                                 boost::shared_ptr<AMP::Database> input_db);
   
