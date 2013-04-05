@@ -49,7 +49,7 @@ public:
 	 * \param ranges ranges of arguments
 	 */
 	Property(
-		const std::string name = std::string("NotDefined"),
+		const std::string& name = std::string("NotDefined"),
 		const std::string& source = std::string("None"),
 		const Number *params = NULL, const unsigned int nparams = 0,
 		const std::string* args = NULL, const unsigned int nargs = 0,
@@ -240,22 +240,22 @@ public:
 	virtual bool isTensor(){return false;}
 
 	//! set auxiliary data
-	void setAuxiliaryData(const std::string key, const double val);
+	void setAuxiliaryData(const std::string& key, const double val);
 
 	//! set auxiliary data
-	void setAuxiliaryData(const std::string key, const int val);
+	void setAuxiliaryData(const std::string& key, const int val);
 
 	//! set auxiliary data
-	void setAuxiliaryData(const std::string key, const std::string val);
+	void setAuxiliaryData(const std::string& key, const std::string& val);
 
 	//! get auxiliary data
-	void getAuxiliaryData(const std::string key, double &val);
+	void getAuxiliaryData(const std::string& key, double &val);
 
 	//! get auxiliary data
-	void getAuxiliaryData(const std::string key, int &val);
+	void getAuxiliaryData(const std::string& key, int &val);
 
 	//! get auxiliary data
-	void getAuxiliaryData(const std::string key, std::string &val);
+	void getAuxiliaryData(const std::string& key, std::string &val);
 
 protected:
 	std::string 						d_name; 			//!< should be unique

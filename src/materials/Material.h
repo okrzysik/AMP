@@ -29,7 +29,7 @@ typedef boost::shared_ptr<Property<double> > PropertyPtr;
 class Material
 {
 public:
-	Material()
+	Material(): d_propertyMap(NULL)
 	{
 	}
 

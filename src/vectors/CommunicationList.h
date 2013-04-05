@@ -254,7 +254,7 @@ private:
     size_t                        d_iTotalRows;
     bool                          d_bFinalized;
 
-    CommunicationList () {}
+    CommunicationList();
 
 };
 

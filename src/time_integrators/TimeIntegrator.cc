@@ -254,7 +254,7 @@ TimeIntegrator::printClassData(std::ostream& os) const
 {
    os << "\nTimeIntegrator::printClassData..." << endl;
    os << "TimeIntegrator: this = "
-      << (TimeIntegrator*)this << endl;
+      << this << endl;
    os << "d_object_name = " << d_object_name << endl; 
 
    os << "d_initial_time = " << d_initial_time << endl;

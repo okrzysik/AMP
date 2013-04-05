@@ -272,7 +272,7 @@ void Vector::setToScalar(double alpha)
     iterator  last = end();
     while ( curMe != last ) {
       *curMe = alpha;
-      curMe++;
+      ++curMe;
     }
     dataChanged();
     for ( size_t i = 0 ; i != d_Ghosts->size() ; i++ )
@@ -287,7 +287,7 @@ void  Vector::setRandomValues ()
     while ( curMe != last ) {
       double curRand = r;
       *curMe = curRand;
-      curMe++;
+      ++curMe;
     }
     dataChanged ();
     this->makeConsistent(CONSISTENT_SET);
@@ -299,7 +299,7 @@ void  Vector::setRandomValues ( RNG::shared_ptr rng )
     iterator  last = end();
     while ( curMe != last ) {
       *curMe = r;
-      curMe++;
+      ++curMe;
     }
     dataChanged ();
     this->makeConsistent(CONSISTENT_SET);
@@ -321,7 +321,7 @@ void Vector::copyVector ( const Vector::const_shared_ptr &rhs )
     while ( cur1 != end1 )
     {
       *cur1 = *cur2;
-      cur1++; cur2++;
+      ++cur1; ++cur2;
     }
     if ( isA<DataChangeFirer>() )
     {
@@ -338,7 +338,7 @@ void Vector::scale(double alpha)
     while ( curMe != last )
     {
       *curMe *= alpha;
-      curMe++;
+      ++curMe;
     }
     dataChanged();
 }
@@ -352,8 +352,8 @@ void Vector::scale(double alpha, const VectorOperations &x)
     while ( curMe != last )
     {
       *curMe = alpha * *curRhs;
-      curRhs++;
-      curMe++;
+      ++curRhs;
+      ++curMe;
     }
     dataChanged ();
 }
@@ -370,9 +370,9 @@ void Vector::add(const VectorOperations &x, const VectorOperations &y)
     while ( curMe != last )
     {
       *curMe = *curXRhs + *curYRhs;
-      curXRhs++;
-      curYRhs++;
-      curMe++;
+      ++curXRhs;
+      ++curYRhs;
+      ++curMe;
     }
     dataChanged ();
 }
@@ -389,9 +389,9 @@ void Vector::subtract(const VectorOperations &x, const VectorOperations &y)
     while ( curMe != last )
     {
       *curMe = *curXRhs - *curYRhs;
-      curXRhs++;
-      curYRhs++;
-      curMe++;
+      ++curXRhs;
+      ++curYRhs;
+      ++curMe;
     }
     dataChanged ();
 }
@@ -408,9 +408,9 @@ void Vector::multiply( const VectorOperations &x, const VectorOperations &y)
     while ( curMe != last )
     {
       *curMe = *curXRhs * *curYRhs;
-      curXRhs++;
-      curYRhs++;
-      curMe++;
+      ++curXRhs;
+      ++curYRhs;
+      ++curMe;
     }
     dataChanged ();
 }
@@ -427,9 +427,9 @@ void Vector::divide( const VectorOperations &x, const VectorOperations &y)
     while ( curMe != last )
     {
       *curMe = *curXRhs / *curYRhs;
-      curXRhs++;
-      curYRhs++;
-      curMe++;
+      ++curXRhs;
+      ++curYRhs;
+      ++curMe;
     }
     dataChanged ();
 }
@@ -443,8 +443,8 @@ void Vector::reciprocal(const VectorOperations &x)
     while ( curMe != last )
     {
       *curMe = 1. / *curRhs;
-      curRhs++;
-      curMe++;
+      ++curRhs;
+      ++curMe;
     }
     dataChanged ();
 }
@@ -461,9 +461,9 @@ void Vector::linearSum(double alpha, const VectorOperations &x, double beta, con
     while ( curMe != last )
     {
       *curMe = alpha * *curXRhs + beta * *curYRhs;
-      curXRhs++;
-      curYRhs++;
-      curMe++;
+      ++curXRhs;
+      ++curYRhs;
+      ++curMe;
     }
     dataChanged ();
 }
@@ -480,9 +480,9 @@ void Vector::axpy(double alpha, const VectorOperations &x, const VectorOperation
     while ( curMe != last )
     {
       *curMe = alpha * *curXRhs + *curYRhs;
-      curXRhs++;
-      curYRhs++;
-      curMe++;
+      ++curXRhs;
+      ++curYRhs;
+      ++curMe;
     }
     dataChanged ();
 }
@@ -496,8 +496,8 @@ void Vector::axpby(double alpha, double beta, const VectorOperations &x)
     while ( curMe != last )
     {
       *curMe = alpha * *curXRhs + beta * *curMe;
-      curXRhs++;
-      curMe++;
+      ++curXRhs;
+      ++curMe;
     }
     dataChanged ();
 }
@@ -511,8 +511,8 @@ void Vector::abs(const VectorOperations &x)
     while ( curMe != last )
     {
       *curMe = fabs ( *curXRhs );
-      curXRhs++;
-      curMe++;
+      ++curXRhs;
+      ++curMe;
     }
     dataChanged ();
 }
@@ -705,8 +705,8 @@ double Vector::minQuotient(const VectorOperations &x, const VectorOperations &y)
     while ( curx != endx )
     {
       if ( *cury != 0.0 ) break;
-      curx++;
-      cury++;
+      ++curx;
+      ++cury;
     }
     //Probably should do a test across processors, not just the one
     AMP_INSIST ( curx != endx , "denominator is the zero vector on an entire process" );
@@ -717,8 +717,8 @@ double Vector::minQuotient(const VectorOperations &x, const VectorOperations &y)
       {
         myRetVal = std::min ( myRetVal , (*curx)/(*cury) );
       }
-      curx++;
-      cury++;
+      ++curx;
+      ++cury;
     }
     double retVal = x_vec.getComm().minReduce(myRetVal);
     return retVal;
@@ -756,7 +756,7 @@ double Vector::wrmsNormMask ( const VectorOperations &x , const VectorOperations
       {
         dot_prod += (*curx)*(*curx)*(*cury)*(*cury);
       }
-      curx++; cury++; curm++;
+      ++curx; ++cury; ++curm;
     }
     AMP_ASSERT ( cury == y_vec.end() );
     AMP_ASSERT ( curm == m_vec.end() );
@@ -834,9 +834,9 @@ void  Vector::dumpOwnedData ( std::ostream &out , size_t GIDoffset , size_t LIDo
       out << "  GID: " << gid
           << "  LID: " << lid
           << "  Value: " << *curElement << "\n";
-      curElement++;
-      gid++;
-      lid++;
+      ++curElement;
+      ++gid;
+      ++lid;
     }
 }
 

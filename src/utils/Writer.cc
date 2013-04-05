@@ -58,7 +58,7 @@ Writer::~Writer( )
 ************************************************************/
 void Writer::setDecomposition( int d )
 {
-    AMP_INSIST(d!=1||d!=2,"decomposition must be 1 or 2");
+    AMP_INSIST(d==1||d==2,"decomposition must be 1 or 2");
     d_decomposition = d;
 }
 

@@ -37,7 +37,6 @@ void readInputDatabase(AMP::UnitTest *ut)
     std::string log_file = "output_Database-1";
 
     // Process command line arguments and dump to log file.
-    std::string info = "test_Database-1: tests the getDatabase function and the destructor of AMP::Database";
     AMP::PIO::logOnlyNodeZero(log_file);
 
     // Create input database and parse all data in input file.

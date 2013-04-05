@@ -25,7 +25,8 @@ static inline double* getBufferPtr( VectorEngine::BufferPtr buf ) {
 ********************************************************/
 EpetraVectorEngineParameters::EpetraVectorEngineParameters ( size_t local_size , size_t global_size , AMP_MPI c ):
     VectorEngineParameters(),
-    d_comm( c.getCommunicator() ) 
+    d_comm( c.getCommunicator() ),
+    d_end(0)
 {
     d_global = global_size;
     d_comm.sumScan( &local_size, &d_end, 1 );
@@ -34,7 +35,8 @@ EpetraVectorEngineParameters::EpetraVectorEngineParameters ( size_t local_size ,
 EpetraVectorEngineParameters::EpetraVectorEngineParameters ( size_t local_size , size_t global_size , boost::shared_ptr<Epetra_Map> emap , AMP_MPI ecomm ):
     VectorEngineParameters(),
     d_emap( emap ),
-    d_comm( ecomm )
+    d_comm( ecomm ),
+    d_end(0)
 {
     d_global = global_size;
     d_comm.sumScan( &local_size, &d_end, 1 );
@@ -81,8 +83,10 @@ Epetra_Map  &EpetraVectorEngineParameters::getEpetraMap()
 /********************************************************
 * Constructor                                           *
 ********************************************************/
-EpetraVectorEngine::EpetraVectorEngine ( VectorEngineParameters::shared_ptr  alias , BufferPtr buf )
-    : d_epetraVector ( View , alias->castTo<EpetraVectorEngineParameters>().getEpetraMap() , getBufferPtr(buf) )
+EpetraVectorEngine::EpetraVectorEngine ( VectorEngineParameters::shared_ptr  alias , BufferPtr buf ) :
+    d_epetraVector( View , alias->castTo<EpetraVectorEngineParameters>().getEpetraMap() , getBufferPtr(buf) ),
+    d_iLocalSize(0),
+    d_iGlobalSize(0)
 {
     d_Params = alias;
 }

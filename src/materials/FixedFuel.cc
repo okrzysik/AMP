@@ -254,7 +254,7 @@ namespace FixedFuel_NS {
 
 	class TensorFickCoefficientProp : public TensorProperty<double>{
 	public:
-		TensorFickCoefficientProp(const std::vector<size_t> dims=std::vector<size_t>(2,1)) :
+		TensorFickCoefficientProp(const std::vector<size_t>& dims=std::vector<size_t>(2,1)) :
 		TensorProperty<double> (name_base + "_" + "TensorFickCoefficient",		// Name string
 								source,										// Reference source
 								fickTensorVal,								// Property parameters

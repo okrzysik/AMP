@@ -266,8 +266,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
             slope = (stress1[2] - prev_stress) / (strain1[2] - prev_strain);
           }
           fprintf(fout123,"%lf %lf %lf\n",strain1[2],stress1[2],slope);
-          prev_stress = stress1[2];
-          prev_strain = strain1[2];
         }
       }
       fclose(fin);

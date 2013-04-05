@@ -108,7 +108,7 @@ void ManagedEpetraMatrix::setOtherData ()
     std::map<int,std::map<int , double> >::iterator cur_row = d_OtherData.begin();
     while ( cur_row != d_OtherData.end() ) {
         dataLen += cur_row->second.size();
-        cur_row++;
+        ++cur_row;
     }
     int *rows = new int [ dataLen+1 ];   //Add one to have the new work
     int *cols = new int [ dataLen+1 ];
@@ -125,10 +125,10 @@ void ManagedEpetraMatrix::setOtherData ()
         rows[cur_ptr] = cur_row->first;
         cols[cur_ptr] = cur_elem->first;
         data[cur_ptr] = cur_elem->second;
-        cur_ptr++;
-        cur_elem++;
+        ++cur_ptr;
+        ++cur_elem;
       }
-      cur_row++;
+      ++cur_row;
     }
 
     int totDataLen = myComm.sumReduce(dataLen);
@@ -188,7 +188,7 @@ ManagedEpetraMatrix::ManagedEpetraMatrix ( const ManagedEpetraMatrix &rhs )
       {
         vals[j] = 0;
       }
-      if ( cols.size() )
+      if ( !cols.empty() )
         createValuesByGlobalID ( 1 , (int)cols.size() , (int *)&i , (int *)&(cols[0]) , &(vals[0]) );
     }
     d_RangeMap = rhs.d_RangeMap;

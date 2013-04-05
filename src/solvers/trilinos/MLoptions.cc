@@ -3,53 +3,54 @@
 #include "MLoptions.h"
 
 namespace AMP {
-  namespace Solver {
+namespace Solver {
 
-    MLoptions :: MLoptions(const boost::shared_ptr<AMP::Database> &db)
-    {
-      d_problemType = db->getStringWithDefault("problem_type", "SA");
-      addDefaults(d_problemType, db);
+MLoptions :: MLoptions(const boost::shared_ptr<AMP::Database> &db):
+    d_problemType(db->getStringWithDefault("problem_type","SA"))
+{
+    addDefaults(d_problemType, db);
 
-      d_maxLevels = db->getInteger("max_levels");
-      d_pdeEquations = db->getInteger("PDE_equations");
-      d_precType = db->getString("prec_type");
+    d_maxLevels = db->getInteger("max_levels");
+    d_pdeEquations = db->getInteger("PDE_equations");
+    d_precType = db->getString("prec_type");
 
-      // increasing sets level 0 to be finest 
-      // decreasing sets level (maxLevels - 1) to be the finest.
-      d_increasingDecreasing = db->getString("increasingordecreasing");
-      d_aggregationType = db->getString("aggregationtype");
-      d_aggregationDampingFactor = db->getDouble("aggregation_dampingfactor");
-      d_aggregationThreshold = db->getDouble("aggregationthreshold");
+    // increasing sets level 0 to be finest 
+    // decreasing sets level (maxLevels - 1) to be the finest.
+    d_increasingDecreasing = db->getString("increasingordecreasing");
+    d_aggregationType = db->getString("aggregationtype");
+    d_aggregationDampingFactor = db->getDouble("aggregation_dampingfactor");
+    d_aggregationThreshold = db->getDouble("aggregationthreshold");
 
-      //This is only for METIS and ParMETIS.
-      d_nodesPerAggregate = db->getInteger("aggregation_nodes_per_aggregate");
-      d_nextLevelAggregatesPerProcess = db->getInteger("aggregation_nextlevel_aggregates_per_process");
+    //This is only for METIS and ParMETIS.
+    d_nodesPerAggregate = db->getInteger("aggregation_nodes_per_aggregate");
+    d_nextLevelAggregatesPerProcess = db->getInteger("aggregation_nextlevel_aggregates_per_process");
 
-      d_eigenAnalysisType = db->getString("eigen-analysis_type");
-      d_eigenAnalysisIterations = db->getInteger("eigen-analysis_iterations");
-      d_enableEnergyMinimization = db->getBool("energy_minimization_enable");
+    d_eigenAnalysisType = db->getString("eigen-analysis_type");
+    d_eigenAnalysisIterations = db->getInteger("eigen-analysis_iterations");
+    d_enableEnergyMinimization = db->getBool("energy_minimization_enable");
 
-      d_smootherType = db->getString("smoothertype");
-      d_smootherSweeps = db->getInteger("smoother_sweeps");
-      d_smootherDampingFactor = db->getDouble("smoother_dampingfactor");
-      d_prePost = db->getString("smoother_preorpost");
+    d_smootherType = db->getString("smoothertype");
+    d_smootherSweeps = db->getInteger("smoother_sweeps");
+    d_smootherDampingFactor = db->getDouble("smoother_dampingfactor");
+    d_prePost = db->getString("smoother_preorpost");
 
-      d_coarseMaxSize = db->getInteger("coarse_maxsize");
-      d_coarseType = db->getString("coarse_type");
+    d_coarseMaxSize = db->getInteger("coarse_maxsize");
+    d_coarseType = db->getString("coarse_type");
 
-      // Should we give ML a list of coordinates?
-      d_aggregationAuxEnable = db->getBool("aggregation_aux_enable");
-      d_aggregationAuxThreshold = db->getDouble("aggregation_aux_threshold");
+    // Should we give ML a list of coordinates?
+    d_aggregationAuxEnable = db->getBool("aggregation_aux_enable");
+    d_aggregationAuxThreshold = db->getDouble("aggregation_aux_threshold");
 
-      // Should we add vectors to default ML null space
-      d_nullSpaceType = db->getString("null_space_type");
-      d_nullSpaceDimension = db->getInteger("null_space_dimension");
-      d_nullSpaceAddDefaultVectors = db->getBool("null_space_add_default_vectors");
-    }
+    // Should we add vectors to default ML null space
+    d_nullSpaceType = db->getString("null_space_type");
+    d_nullSpaceDimension = db->getInteger("null_space_dimension");
+    d_nullSpaceAddDefaultVectors = db->getBool("null_space_add_default_vectors");
+}
 
-    void MLoptions :: addDefaults(const std::string & problemType, const boost::shared_ptr<AMP::Database> &db) 
-    {
-      if(problemType == "SA") {
+
+void MLoptions :: addDefaults(const std::string & problemType, const boost::shared_ptr<AMP::Database> &db) 
+{
+    if(problemType == "SA") {
         if(!(db->keyExists("max_levels"))) {
           db->putInteger("max_levels", 10);
         }
@@ -124,7 +125,7 @@ namespace AMP {
         if(!(db->keyExists("null_space_add_default_vectors"))) {
           db->putBool("null_space_add_default_vectors", false);
         }
-      } else if(problemType == "NSSA") {
+    } else if(problemType == "NSSA") {
         if(!(db->keyExists("max_levels"))) {
           db->putInteger("max_levels", 10);
         }
@@ -199,11 +200,12 @@ namespace AMP {
         if(!(db->keyExists("null_space_add_default_vectors"))) {
           db->putBool("null_space_add_default_vectors", false);
         }
-      } else {
+    } else {
         AMP_ERROR("The option, problem_type = \"" << problemType << "\" , is not supported.");
-      }
     }
+}
 
-  }
+
+}
 }
 
