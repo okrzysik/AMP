@@ -167,7 +167,7 @@ std::vector<double> getHeatFluxGeneration( std::string heatShape, std::vector<do
     } else if (heatShape == "Sinusoidal") {
         // sinusoidal
         for (size_t i=0; i<dz.size(); i++)
-            flux[i] = Q_tot/(4.0*diameter*height) * (sin(pi*(z[i]-z[0])/height) + sin(pi*(z[i+1]-z[0])/height));
+            flux[i] = Q_tot/(2.0*pi*diameter*dz[i]) * (cos(pi*(z[i]-z[0])/height) - cos(pi*(z[i+1]-z[0])/height));
     } else {
         AMP_ERROR("Heat shape '"+heatShape+" is invalid");
     }
