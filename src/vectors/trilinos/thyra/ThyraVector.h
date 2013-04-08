@@ -42,7 +42,7 @@ class ThyraVector: public DataChangePassThrough
 public:
 
     //!  Destructor
-    virtual ~ThyraVector() {}
+    virtual ~ThyraVector();
 
     /**
       *  \brief  Obtain Thyra Vector for use in Thyra routines
@@ -121,7 +121,7 @@ protected:
       *  This can only be called by a derived class or the static function below.  There is
       *  no need to create this vector directly since it is virtual.
       */
-    ThyraVector() {};
+    ThyraVector();
 
 };
 

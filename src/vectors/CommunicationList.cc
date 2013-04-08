@@ -213,7 +213,7 @@ void CommunicationList::buildCommunicationArrays ( std::vector<size_t>  &DOFs , 
 
     // Check if we are working in serial
     if ( commSize == 1 ) {
-        AMP_INSIST(!DOFs.empty(),"Error in communication list, remote DOFs are present for a serial vector");
+        AMP_INSIST(DOFs.empty(),"Error in communication list, remote DOFs are present for a serial vector");
         d_ReceiveSizes.resize(1,0);
         d_ReceiveDisplacements.resize(1,0);
         d_SendSizes.resize(1,0);

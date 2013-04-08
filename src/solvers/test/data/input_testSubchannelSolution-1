@@ -7,7 +7,7 @@ Mesh {
      MeshType = "AMP"
      dim = 3
      Generator = "cube"
-     Size = 1, 1, 10
+     Size = 1, 1, 15
      Range = 0.0, 1.28016e-2, 0.0, 1.28016e-2, 0.0, 3.81 
      x_offset = 0.0
      y_offset = 0.0
@@ -97,7 +97,7 @@ NonlinearSolver{
         absolute_tolerance = 1.0e-7
         relative_tolerance = 1.0e-1
         divergence_tolerance = 1.0e03
-        max_krylov_dimension = 40
+        max_krylov_dimension = 200
         uses_preconditioner=TRUE
         pc_type = "shell"
         pc_side = "RIGHT"
