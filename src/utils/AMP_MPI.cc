@@ -205,11 +205,6 @@ AMP_MPI::AMP_MPI( const AMP::AMP_MPI& comm ) {
     count = comm.count;
     if ( count != NULL )
         ++(*count);
-    // Set the MPI_SIZE_T datatype if it has not been set
-    #ifdef USE_EXT_MPI
-        if ( MPI_SIZE_T==0x0 )
-            MPI_SIZE_T = getSizeTDataType();
-    #endif
 }
 
 
@@ -255,6 +250,9 @@ AMP_MPI::AMP_MPI( MPI_Comm comm ) {
             communicator = comm;
         }
         if ( communicator!=MPI_COMM_NULL) {
+            // Set the MPI_SIZE_T datatype if it has not been set
+            if ( MPI_SIZE_T==0x0 )
+                MPI_SIZE_T = getSizeTDataType();
             // Attach the error handler
             MPI_Comm_set_errhandler( communicator, AMP::AMPManager::mpierr );
             // Get the communicator properties
@@ -2365,6 +2363,15 @@ void AMP_MPI::call_sumScan<unsigned long>(const unsigned long *send, unsigned lo
     MPI_Scan( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_SUM, communicator);
     PROFILE_STOP("sumScan<unsigned long>",profile_level);
 }
+// size_t
+#ifdef USE_WINDOWS
+template <>
+void AMP_MPI::call_sumScan<size_t>(const size_t *send, size_t *recv, int n) const {
+    PROFILE_START("sumScan<size_t>",profile_level);
+    MPI_Scan( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_SUM, communicator);
+    PROFILE_STOP("sumScan<size_t>",profile_level);
+}
+#endif
 // float
 template <>
 void AMP_MPI::call_sumScan<float>(const float *send, float *recv, int n) const {
@@ -2444,6 +2451,15 @@ void AMP_MPI::call_minScan<long int>(const long int *send, long int *recv, int n
     MPI_Scan( (void*) send, (void*) recv, n, MPI_LONG, MPI_MIN, communicator);
     PROFILE_STOP("minScan<long int>",profile_level);
 }
+// size_t
+#ifdef USE_WINDOWS
+template <>
+void AMP_MPI::call_minScan<size_t>(const size_t *send, size_t *recv, int n) const {
+    PROFILE_START("minScan<size_t>",profile_level);
+    MPI_Scan( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_MIN, communicator);
+    PROFILE_STOP("minScan<size_t>",profile_level);
+}
+#endif
 // float
 template <>
 void AMP_MPI::call_minScan<float>(const float *send, float *recv, int n) const {
@@ -2508,6 +2524,15 @@ void AMP_MPI::call_maxScan<unsigned long int>(const unsigned long int *send, uns
     MPI_Scan( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_MAX, communicator);
     PROFILE_STOP("maxScan<unsigned long>",profile_level);
 }
+// size_t
+#ifdef USE_WINDOWS
+template <>
+void AMP_MPI::call_maxScan<size_t>(const size_t *send, size_t *recv, int n) const {
+    PROFILE_START("maxScan<size_t>",profile_level);
+    MPI_Scan( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_MAX, communicator);
+    PROFILE_STOP("maxScan<size_t>",profile_level);
+}
+#endif
 // float
 template <>
 void AMP_MPI::call_maxScan<float>(const float *send, float *recv, int n) const {
