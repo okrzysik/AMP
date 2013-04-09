@@ -707,21 +707,27 @@ ManagedPetscVector::ManagedPetscVector ( Vector::shared_ptr alias ) : ManagedVec
 ManagedPetscVector::~ManagedPetscVector()
 {
     int refct = (((PetscObject)d_petscVec)->refct);
-
     if ( !d_bMadeWithPetscDuplicate )
     {
-      if ( refct > 1 )
-      {
-        AMP_ERROR( "Deleting a vector still held by PETSc" );
-      }
-      #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
-        VecDestroy(d_petscVec);
-      #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
-        VecDestroy(&d_petscVec);
-      #else
-          #error Not programmed for this version yet
-      #endif
+        if ( refct > 1 )
+            AMP_ERROR( "Deleting a vector still held by PETSc" );
+        #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+            VecDestroy(d_petscVec);
+        #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
+            VecDestroy(&d_petscVec);
+        #else
+            #error Not programmed for this version yet
+        #endif
     }
+}
+
+
+bool ManagedPetscVector::petscHoldsView() const
+{
+    int refct = (((PetscObject)d_petscVec)->refct);
+    if ( !d_bMadeWithPetscDuplicate && refct>1 )
+        return true;
+    return false;
 }
 
 

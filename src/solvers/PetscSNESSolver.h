@@ -7,6 +7,8 @@
 #include "solvers/PetscMonitor.h"
 #include "utils/AMP_MPI.h"
 
+#include <list>
+
 extern "C"{
 
 #ifdef MPICH_SKIP_MPICXX
@@ -213,12 +215,10 @@ private:
     boost::shared_ptr<PetscMonitor> d_PetscMonitor;
     
     #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
-        // The following SNES solver keeps a reference to these vectors around. 
+        // The following SNES solver keeps a reference to certain vectors around. 
         // By declaring the vectors here, we ensure correct behavior during destruction.
-        // This will ensure that the boost::shared_ptr destructor calls VecDestroy on
-        // the last reference.
-        AMP::LinearAlgebra::Vector::shared_ptr  spRhs;
-        AMP::LinearAlgebra::Vector::shared_ptr  spSol;
+        // This will ensure that the boost::shared_ptr destructor calls VecDestroy on the last reference.
+        std::list<AMP::LinearAlgebra::Vector::const_shared_ptr>  d_refVectors;
     #endif
     
     SNES d_SNESSolver;

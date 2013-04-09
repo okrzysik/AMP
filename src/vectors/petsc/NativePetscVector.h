@@ -159,6 +159,9 @@ public:
 
       virtual boost::shared_ptr<ParameterBase> getParameters ();
 
+      // We can always delete a NativePetscVector
+      virtual bool petscHoldsView() const { return false; }
+
 protected:
 
       void *getRawDataBlockAsVoid ( size_t i );
