@@ -103,7 +103,7 @@ MACRO ( CONFIGURE_TRILINOS_LIBRARIES )
         MESSAGE ( "Using trilinos" )
         MESSAGE ( "   " ${TRILINOS_LIBS} )
     ELSE()
-        MESSAGE("Warning: configuring without trilinos")
+        MESSAGE("Configuring without trilinos")
     ENDIF()
 ENDMACRO ()
 
