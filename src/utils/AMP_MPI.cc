@@ -843,6 +843,8 @@ void AMP_MPI::call_sumReduce<unsigned long>(unsigned long *x, const int n) const
         size_t *send = x;
         size_t *recv = new size_t[n];
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_SUM, communicator);
+        for (int i=0; i<n; i++)
+            x[i] = recv[i];
         delete [] recv;
         PROFILE_STOP("sumReduce2<size_t>",profile_level);
     }

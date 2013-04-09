@@ -219,6 +219,8 @@ MACRO ( CONFIGURE_MPI )
             IF ( NOT MPIEXEC_NUMPROC_FLAG )
                 SET( MPIEXEC_NUMPROC_FLAG "-np" )
             ENDIF()
+        ELSEIF ( MPI_COMPILER )
+            # The mpi compiler should take care of everything
         ELSE()
             # Perform the default search for MPI
             INCLUDE ( FindMPI )
