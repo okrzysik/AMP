@@ -165,6 +165,7 @@ IF( USE_EXT_TRILINOS )
     IF( USE_TRILINOS_NOX )
         COPY_TEST_DATA_FILE ( input_testTrilinosNOXSolver )
         ADD_AMP_TEST ( testTrilinosNOXSolver )
+        ADD_AMP_PROVISIONAL_TEST ( testTrilinosNOX-NonlinearThermal-1 )
     ENDIF()
 ENDIF()
 
