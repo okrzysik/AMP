@@ -174,6 +174,31 @@ std::vector<double> getHeatFluxGeneration( std::string heatShape, std::vector<do
     return flux;
 }
 
+// Compute the heat flux for the subchannel assuming a heat generation rate
+std::vector<double> getHeatFluxGenerationWithDiscretizationError( std::string heatShape, std::vector<double> z, double diameter, double Q_tot )
+{
+    for (size_t i=1; i<z.size(); i++)
+        AMP_ASSERT(z[i]>z[i-1]);
+    double height = z.back()-z.front();
+    std::vector<double> dz(z.size()-1,0.0);
+    for (size_t i=0; i<dz.size(); i++)
+        dz[i] = z[i+1]-z[i];
+    const double pi = 3.1415926535897932;
+    std::vector<double> flux(dz.size(),0.0);
+    if (heatShape == "Flat") {
+        // sinusoidal
+        for (size_t i=0; i<dz.size(); i++)
+            flux[i] = Q_tot/(pi*diameter*height);
+    } else if (heatShape == "Sinusoidal") {
+        // sinusoidal
+        for (size_t i=0; i<dz.size(); i++)
+            flux[i] = Q_tot/(4.0*diameter*height) * (sin(pi*(z[i]-z[0])/height) + sin(pi*(z[i+1]-z[0])/height));
+    } else {
+        AMP_ERROR("Heat shape '"+heatShape+" is invalid");
+    }
+    return flux;
+}
+
 // Compute the heat flux for the subchannel using the clad temperature
 std::vector<double> getHeatFluxClad( std::vector<double> z, std::vector<AMP::Mesh::MeshElementID> face_ids,
     double channelDiam, double reynolds, double prandtl, double fraction, boost::shared_ptr<SubchannelPhysicsModel> subchannelPhysicsModel, 

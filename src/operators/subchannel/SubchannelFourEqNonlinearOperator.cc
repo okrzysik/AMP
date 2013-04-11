@@ -62,7 +62,7 @@ void SubchannelFourEqNonlinearOperator :: reset(const boost::shared_ptr<Operator
 
       // get additional parameters based on heat source type
       d_source = getStringParameter(myparams,"Heat_Source_Type","totalHeatGeneration");
-      if (d_source == "totalHeatGeneration") {
+      if ((d_source == "totalHeatGeneration")||(d_source == "totalHeatGenerationWithDiscretizationError")) {
           d_Q            = getDoubleParameter(myparams,"Max_Rod_Power",66.0e3);
           d_QFraction    = (myparams->d_db)->getDoubleArray("Rod_Power_Fraction");
           d_heatShape = getStringParameter(myparams,"Heat_Shape","Sinusoidal");
@@ -487,12 +487,16 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
              AMP_ERROR("Heat source type 'averageHeatFlux' not yet implemented.");
           } else if (d_source == "totalHeatGeneration") {
              AMP_ASSERT(d_QFraction.size()==d_numSubchannels);
-             //flux = d_Q*d_QFraction[isub]/(2.0*pi*d_diameter*dz)*(cos(pi*z_minus/height) - cos(pi*z_plus/height));
              flux = Subchannel::getHeatFluxGeneration( d_heatShape, d_z, d_rodDiameter[isub], d_Q );
              // multiply by power fraction
              for (size_t i=0; i < flux.size(); i++)
                 flux[i] = flux[i]*d_QFraction[isub];
-
+          } else if (d_source == "totalHeatGenerationWithDiscretizationError") {
+             AMP_ASSERT(d_QFraction.size()==d_numSubchannels);
+             flux = Subchannel::getHeatFluxGenerationWithDiscretizationError( d_heatShape, d_z, d_rodDiameter[isub], d_Q );
+             // multiply by power fraction
+             for (size_t i=0; i < flux.size(); i++)
+                flux[i] = flux[i]*d_QFraction[isub];
           } else {
              AMP_ERROR("Heat source type '"+d_source+"' is invalid");
           }
