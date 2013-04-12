@@ -184,6 +184,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   // change the next line to get the correct communicator out
   nonlinearSolverParams->d_comm = globalComm;
   nonlinearSolverParams->d_pOperator = nonlinearThermalOperator;
+  nonlinearSolverParams->d_pLinearOperator = linearThermalOperator;
   nonlinearSolverParams->d_pInitialGuess = solVec;
 
   boost::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(new AMP::Solver::TrilinosNOXSolver(nonlinearSolverParams));
@@ -195,19 +196,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   boost::shared_ptr<AMP::Solver::TrilinosMLSolver> linearThermalPreconditioner(new AMP::Solver::TrilinosMLSolver(thermalPreconditionerParams));
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
-  // initialize the linear solver
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new
-      AMP::Solver::PetscKrylovSolverParameters(linearSolver_db));
-
-  // change the next line to get the correct communicator out
-  linearSolverParams->d_comm = globalComm;
-  linearSolverParams->d_pOperator = linearThermalOperator;
-
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(new AMP::Solver::PetscKrylovSolver(linearSolverParams));
-
-  //----------------------------------------------------------------------------------------------------------------------------------------------//
   // register the preconditioner with the Jacobian free Krylov solver
-  linearSolver->setPreconditioner(linearThermalPreconditioner);
+  //boost::shared_ptr<AMP::Solver::TrilinosBelosSolver> linearSolver = nonlinearSolver->getKrylovSolver();
+
+  //linearSolver->setPreconditioner(linearThermalPreconditioner);
 
   nonlinearThermalOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
   double initialResidualNorm  = resVec->L2Norm();

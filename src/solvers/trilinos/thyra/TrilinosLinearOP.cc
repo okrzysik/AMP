@@ -50,6 +50,8 @@ void TrilinosLinearOP::applyImpl(const Thyra::EOpTransp M_trans, const Thyra::Mu
         AMP::LinearAlgebra::ThyraVector::constView( dynamic_cast<const Thyra::VectorBase<double>*>(&X) );
     AMP::LinearAlgebra::Vector::shared_ptr y = 
         AMP::LinearAlgebra::ThyraVector::view( dynamic_cast<Thyra::VectorBase<double>*>(Y.get()) );
+    //x->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    //y->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     AMP::LinearAlgebra::Vector::shared_ptr f = y->cloneVector();
     d_op->apply( f, x, y, alpha, beta );
 }
