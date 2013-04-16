@@ -24,6 +24,7 @@
     #include <stdio.h>   
     #include <tchar.h>
     #include <psapi.h>
+    #include <DbgHelp.h>
     #define mkdir(path, mode) _mkdir(path)
     //#pragma comment(lib, psapi.lib) //added
     //#pragma comment(linker, /DEFAULTLIB:psapi.lib)
@@ -342,8 +343,109 @@ std::vector<std::string>  Utilities::getCallStack()
             }
         } 
     #elif defined(USE_WINDOWS)
+        ::CONTEXT lContext;
+        ::ZeroMemory( &lContext, sizeof( ::CONTEXT ) );
+        ::RtlCaptureContext( &lContext );
+        ::STACKFRAME64 lFrameStack;
+        ::ZeroMemory( &lFrameStack, sizeof( ::STACKFRAME64 ) );
+        lFrameStack.AddrPC.Offset = lContext.Rip;
+        lFrameStack.AddrFrame.Offset = lContext.Rbp;
+        lFrameStack.AddrStack.Offset = lContext.Rsp;
+        lFrameStack.AddrPC.Mode = lFrameStack.AddrFrame.Mode = lFrameStack.AddrStack.Mode = AddrModeFlat;
+        #ifdef _M_IX86
+            DWORD MachineType = IMAGE_FILE_MACHINE_I386;
+        #endif
+        #ifdef _M_X64
+            DWORD MachineType = IMAGE_FILE_MACHINE_AMD64;
+        #endif
+        #ifdef _M_IA64
+            DWORD MachineType = IMAGE_FILE_MACHINE_IA64;
+        #endif
+        while ( 1 ) {
+            bool rtn = ::StackWalk64( MachineType, ::GetCurrentProcess(), ::GetCurrentThread(), &lFrameStack, MachineType == IMAGE_FILE_MACHINE_I386 ? 0 : &lContext,
+                NULL, &::SymFunctionTableAccess64, &::SymGetModuleBase64, NULL );
+            if( !rtn )
+                break;
+            if( lFrameStack.AddrPC.Offset == 0 )
+                break;
+            ::MEMORY_BASIC_INFORMATION lInfoMemory;
+            ::VirtualQuery( ( ::PVOID )lFrameStack.AddrPC.Offset, &lInfoMemory, sizeof( lInfoMemory ) );
+            ::DWORD64 lBaseAllocation = reinterpret_cast<::DWORD64>( lInfoMemory.AllocationBase );
+            ::TCHAR lNameModule[ 1024 ];
+            ::GetModuleFileName( reinterpret_cast< ::HMODULE >( lBaseAllocation ), lNameModule, 1024 );
+            PIMAGE_DOS_HEADER lHeaderDOS = reinterpret_cast<PIMAGE_DOS_HEADER>( lBaseAllocation );
+            PIMAGE_NT_HEADERS lHeaderNT = reinterpret_cast<PIMAGE_NT_HEADERS>( lBaseAllocation + lHeaderDOS->e_lfanew );
+            PIMAGE_SECTION_HEADER lHeaderSection = IMAGE_FIRST_SECTION( lHeaderNT );
+            ::DWORD64 lRVA = lFrameStack.AddrPC.Offset - lBaseAllocation;
+            ::DWORD64 lNumberSection = ::DWORD64();
+            ::DWORD64 lOffsetSection = ::DWORD64();
+            for( int lCnt = ::DWORD64(); lCnt < lHeaderNT->FileHeader.NumberOfSections; lCnt++, lHeaderSection++ ) {
+                ::DWORD64 lSectionBase = lHeaderSection->VirtualAddress;
+                ::DWORD64 lSectionEnd = lSectionBase + max( lHeaderSection->SizeOfRawData, lHeaderSection->Misc.VirtualSize );
+                if( ( lRVA >= lSectionBase ) && ( lRVA <= lSectionEnd ) ) {
+                    lNumberSection = lCnt + 1;
+                    lOffsetSection = lRVA - lSectionBase;
+                    break;
+                }
+            }
+            std::stringstream stream;
+            stream << lNameModule << " : 000" << lNumberSection << " : " << reinterpret_cast<void*>(lOffsetSection);
+            stack_list.push_back(stream.str());
 
+            /*DWORD lineDisplacement = 0;
+            IMAGEHLP_LINE64  line;
+            bool bLine = SymGetLineFromAddr64( ::GetCurrentProcess(), lFrameStack.AddrPC.Offset, &lineDisplacement, &line );
+            PDWORD64 symDisplacement = 0;
+            enum { emMaxNameLength = 512 };
+            union {
+                SYMBOL_INFO symb;
+                BYTE symbolBuffer[ sizeof(SYMBOL_INFO) + emMaxNameLength ];
+            } u;
+            PSYMBOL_INFO pSymbol = & u.symb;
+            char buf[100];
+            DWORD64 pFrame = lFrameStack.AddrFrame.Offset;
+            if ( SymFromAddr( ::GetCurrentProcess(), lFrameStack.AddrPC.Offset,
+                                symDisplacement, pSymbol) )
+            {
+                if( bLine ) {
+                    sprintf( buf, "   %s() line %d\n",
+                        lFrameStack.AddrPC.Offset, pFrame,
+                        pSymbol->Name, line.LineNumber );
+                } else {
+                    sprintf( buf, "  %s() + %X\n",
+                        lFrameStack.AddrPC.Offset, pFrame,
+                        pSymbol->Name, symDisplacement );
+                }
 
+            }
+            else    // No symbol found.  Print out the logical address instead.
+            {
+                DWORD err = GetLastError();
+                //FIXED_ARRAY( szModule , TCHAR, MAX_PATH );
+                //char szModule = '\0';
+                DWORD section = 0, offset = 0;
+
+                //GetLogicalAddress(  (PVOID)lFrameStack.AddrPC.Offset,
+                //                    szModule, sizeof(szModule), section, offset );
+
+                char szModule=0;
+                sprintf( buf, "  %04X:%08X %s (err = %d)\n",
+                    lFrameStack.AddrPC.Offset, pFrame,
+                    section, offset, szModule, err );
+            }*/
+
+/*            // Save line
+            size_t l = strlen(buf);
+            if( i_line >= m_Levels || i_buf + l >= m_Bytes ) {
+                // We have saved all of the stack we can save
+                break;
+            }
+            buf[ l - 1 ] = '\0';    // Remove trailing '\n'
+            char * s = & m_Buffer[ i_buf ];
+            m_Lines[ i_line++ ] = s;
+            strncpy( s, buf, l );
+            i_buf += l;*/
+        }
     #endif
     return stack_list;
 }
