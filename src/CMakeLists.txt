@@ -1,5 +1,6 @@
-INCLUDE (macros)
-
+INCLUDE (${AMP_SOURCE_DIR}/cmake/macros.cmake)
+INCLUDE (${AMP_SOURCE_DIR}/cmake/libraries.cmake)
+SET_AMP_PACKAGE_FLAGS()
 
 
 # Add the AMP folders and libraries

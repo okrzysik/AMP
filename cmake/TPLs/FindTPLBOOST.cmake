@@ -1,0 +1,9 @@
+INCLUDE(TribitsTplDeclareLibraries)
+
+
+TRIBITS_TPL_DECLARE_LIBRARIES( BOOST
+    REQUIRED_HEADERS boost/shared_ptr.hpp
+)
+
+INCLUDE_DIRECTORIES ( ${TPL_BOOST_INCLUDE_DIRS} )
+

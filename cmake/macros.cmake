@@ -1,6 +1,11 @@
 INCLUDE(CheckCSourceCompiles)
 
 
+MACRO(GLOBAL_SET VARNAME)
+  SET(${VARNAME} ${ARGN} CACHE INTERNAL "")
+ENDMACRO()
+
+
 # Macro to convert a m4 file
 # This command converts a file of the format "global_path/file.fm4"
 # and convertes it to file.f90.  It also requires the path.  
@@ -116,6 +121,7 @@ ENDMACRO()
 
 # Add a subdirectory
 MACRO ( ADD_PACKAGE_SUBDIRECTORY SUBDIR )
+  CMAKE_POLICY(SET CMP0014 OLD)
   SET( FULLSUBDIR ${CMAKE_CURRENT_SOURCE_DIR}/${SUBDIR} )
   FIND_FILES_PATH ( ${SUBDIR} )
   FILE ( GLOB HFILES RELATIVE ${FULLSUBDIR} ${SUBDIR}/*.h ${SUBDIR}/*.hh ${SUBDIR}/*.I )
@@ -141,6 +147,7 @@ MACRO ( INSTALL_AMP_TARGET PACKAGE )
     # Install the package
     INSTALL ( TARGETS ${PACKAGE} DESTINATION ${AMP_INSTALL_DIR}/lib )
     INSTALL ( FILES ${HEADERS} DESTINATION ${AMP_INSTALL_DIR}/include/${PACKAGE} )
+    GLOBAL_SET ( AMP_LIBS ${PACKAGE} ${AMP_LIBS} )
 ENDMACRO ()
 
 
@@ -392,7 +399,7 @@ MACRO ( ADD_AMP_EXE_DEP EXE )
     ADD_DEPENDENCIES ( check ${EXE} )
     ADD_DEPENDENCIES ( build-test ${EXE} )
     # Add the amp libraries
-    TARGET_LINK_LIBRARIES ( ${EXE} ${AMP_LIBS} )
+    TARGET_LINK_LIBRARIES ( ${EXE} ${AMP_LIBS} ${AMP_LIBS} )    # Double link for circular dependencies
     # Add external libraries
     TARGET_LINK_LIBRARIES ( ${EXE} ${LDFLAGS} ${LIBMESH_LIBS} ${NEK_LIBS} ${MOAB_LIBS} ${DENDRO_LIBS} ${TRILINOS_LIBS} ${NETCDF_LIBS} ${PETSC_LIBS} ${X11_LIBS} ${SILO_LIBS} ${HDF5_LIBS} ${HYPRE_LIBS} )
     IF ( ${USE_EXT_SUNDIALS} )
@@ -540,6 +547,15 @@ MACRO (CHECK_C_COMPILER_FLAG _FLAG _RESULT)
      )
    SET(CMAKE_REQUIRED_DEFINITIONS "${SAFE_CMAKE_REQUIRED_DEFINITIONS}")
 ENDMACRO (CHECK_C_COMPILER_FLAG)
+
+
+# Macro to print all variables
+MACRO( PRINT_ALL_VARIABLES )
+    GET_CMAKE_PROPERTY(_variableNames VARIABLES)
+    FOREACH(_variableName ${_variableNames})
+        message(STATUS "${_variableName}=${${_variableName}}")
+    ENDFOREACH()
+ENDMACRO()
 
 
 # add custom target distclean
