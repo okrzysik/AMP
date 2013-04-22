@@ -46,8 +46,9 @@ COPY_MESH_FILE ( clad_lo_res_4pellet.e )
 #COPY_TEST_DATA_FILE ( input_Mesh )
 
 # Add tests
-ADD_AMP_TEST_1_2_4 ( test_Discretization )
-IF ( USE_EXT_LIBMESH )
-    ADD_AMP_TEST_1_2_4 ( test_libmeshElement )
+IF ( USE_AMP_MESH )
+    ADD_AMP_TEST_1_2_4 ( test_Discretization )
+    IF ( USE_EXT_LIBMESH )
+        ADD_AMP_TEST_1_2_4 ( test_libmeshElement )
+    ENDIF()
 ENDIF()
-

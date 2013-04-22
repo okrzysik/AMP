@@ -131,8 +131,8 @@ Vector::const_shared_ptr  VS_Mesh::subset ( Vector::const_shared_ptr p ) const
 ********************************************************/
 #ifdef USE_AMP_MESH
 VS_MeshIterator::VS_MeshIterator ( const AMP::Mesh::MeshIterator &iterator, const AMP::AMP_MPI &comm ):
-    d_iterator( iterator ),
-    d_comm( comm )
+    d_comm( comm ),
+    d_iterator( iterator )
 {
 }
 Vector::shared_ptr  VS_MeshIterator::subset ( Vector::shared_ptr p ) const

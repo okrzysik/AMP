@@ -1,0 +1,47 @@
+INCLUDE(TribitsTplDeclareLibraries)
+INCLUDE( ${AMP_SOURCE_DIR}/cmake/macros.cmake )
+INCLUDE( ${AMP_SOURCE_DIR}/cmake/FindPetsc.cmake )
+
+# Get PETSC_DIRECTORY and PETSC_ARCH and verify the directories
+IF ( PETSC_DIR )
+    SET( PETSC_DIRECTORY ${PETSC_DIR} )
+ELSEIF( TPL_PETSC_DIR )
+    SET( PETSC_DIRECTORY ${TPL_PETSC_DIR} )
+ELSE()
+    MESSAGE(FATAL_ERROR "Could not find PETSc.  Please manually set PETSC_DIR or TPL_PETSC_DIR to point to the PETSc installation directory" )
+ENDIF()
+IF ( TPL_PETSC_ARCH )
+    SET( PETSC_ARCH ${TPL_PETSC_ARCH} )
+ELSEIF ( NOT PETSC_ARCH )
+    MESSAGE(FATAL_ERROR "PETSC_ARCH is not set.  Please manually set PETSC_ARCH or TPL_PETSC_ARCH" )
+ENDIF()
+VERIFY_PATH ( ${PETSC_DIRECTORY} )
+VERIFY_PATH ( ${PETSC_DIRECTORY}/${PETSC_ARCH} )
+VERIFY_PATH ( ${PETSC_DIRECTORY}/include )
+VERIFY_PATH ( ${PETSC_DIRECTORY}/${PETSC_ARCH}/include )
+VERIFY_PATH ( ${PETSC_DIRECTORY}/${PETSC_ARCH}/lib )
+
+
+# Get the petsc version
+PETSC_GET_VERSION( ${PETSC_DIRECTORY}/include )
+MESSAGE("Found PETSc version ${PETSC_VERSION}")
+
+
+# Find the petsc libraries
+PETSC_SET_LIBRARIES( ${PETSC_DIRECTORY}/${PETSC_ARCH}/lib )
+MESSAGE ( "Using petsc" )
+MESSAGE ( "   "  ${PETSC_LIBS} )
+
+
+# Add the tribits flags
+SET( TPL_ENABLE_PETSC_AMP ON )
+SET( TPL_PETSC_AMP_INCLUDE_DIRS ${PETSC_DIRECTORY}/include ${PETSC_DIRECTORY}/${PETSC_ARCH}/include )
+SET( TPL_PETSC_AMP_LIBRARY_DIRS ${PETSC_DIRECTORY}/${PETSC_ARCH}/lib )
+SET( TPL_PETSC_AMP_LIBRARIES ${PETSC_LIBS} )
+SET( ${PETSC_LIBS} )
+
+
+# Add the definitions
+SET( USE_EXT_PETSC 1 )
+
+

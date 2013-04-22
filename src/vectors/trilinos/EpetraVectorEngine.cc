@@ -25,8 +25,10 @@ static inline double* getBufferPtr( VectorEngine::BufferPtr buf ) {
 ********************************************************/
 EpetraVectorEngineParameters::EpetraVectorEngineParameters ( size_t local_size , size_t global_size , AMP_MPI c ):
     VectorEngineParameters(),
-    d_comm( c.getCommunicator() ),
-    d_end(0)
+    d_begin(0),
+    d_end(0),
+    d_global(0),
+    d_comm( c.getCommunicator() )
 {
     d_global = global_size;
     d_comm.sumScan( &local_size, &d_end, 1 );
@@ -34,9 +36,11 @@ EpetraVectorEngineParameters::EpetraVectorEngineParameters ( size_t local_size ,
 }
 EpetraVectorEngineParameters::EpetraVectorEngineParameters ( size_t local_size , size_t global_size , boost::shared_ptr<Epetra_Map> emap , AMP_MPI ecomm ):
     VectorEngineParameters(),
+    d_begin(0),
+    d_end(0),
+    d_global(0),
     d_emap( emap ),
-    d_comm( ecomm ),
-    d_end(0)
+    d_comm( ecomm )
 {
     d_global = global_size;
     d_comm.sumScan( &local_size, &d_end, 1 );

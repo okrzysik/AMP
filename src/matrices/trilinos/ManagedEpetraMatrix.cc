@@ -1,4 +1,4 @@
-#include "ManagedEpetraMatrix.h"
+#include "matrices/trilinos/ManagedEpetraMatrix.h"
 #include "vectors/trilinos/EpetraVector.h"
 #include "vectors/trilinos/EpetraVectorEngine.h"
 #include "vectors/trilinos/ManagedEpetraVector.h"
@@ -8,7 +8,9 @@
 
 #include "utils/AMP_MPI.h"
 
-#include "EpetraExt_MatrixMatrix.h"
+#include <EpetraExt_MatrixMatrix.h>
+#include <EpetraExt_Transpose_RowMatrix.h>
+
 #ifdef USE_EXT_MPI
     #include <Epetra_MpiComm.h>
 #else

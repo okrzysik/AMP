@@ -134,7 +134,7 @@ ENDMACRO ()
 
 
 # Install a package
-MACRO ( INSTALL_AMP_TARGET PACKAGE )
+MACRO ( INSTALL_AMP_TARGET LIBNAME )
     # Find all files in the current directory
     FIND_FILES ()
     # Copy the header files to the include path
@@ -143,11 +143,10 @@ MACRO ( INSTALL_AMP_TARGET PACKAGE )
         CONFIGURE_FILE ( ${CMAKE_CURRENT_SOURCE_DIR}/${HFILE} ${AMP_INSTALL_DIR}/include/${CURPACKAGE}/${HFILE} COPYONLY )
     ENDFOREACH ()
     # Add the library
-    ADD_LIBRARY ( ${PACKAGE} ${SOURCES} )
+    ADD_LIBRARY ( ${LIBNAME} ${SOURCES} )
     # Install the package
-    INSTALL ( TARGETS ${PACKAGE} DESTINATION ${AMP_INSTALL_DIR}/lib )
-    INSTALL ( FILES ${HEADERS} DESTINATION ${AMP_INSTALL_DIR}/include/${PACKAGE} )
-    GLOBAL_SET ( AMP_LIBS ${PACKAGE} ${AMP_LIBS} )
+    INSTALL ( TARGETS ${LIBNAME} DESTINATION ${AMP_INSTALL_DIR}/lib )
+    INSTALL ( FILES ${HEADERS} DESTINATION ${AMP_INSTALL_DIR}/include/${LIBNAME} )
 ENDMACRO ()
 
 
@@ -324,11 +323,11 @@ MACRO ( SET_DEBUG_MACROS )
         SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -D_GLIBCXX_DEBUG_PEDANTIC" )
     ENDIF ()
     IF ( USING_MICROSOFT )
-        SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -DDEBUG /DEBUG /Od" )
-        SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -DDEBUG /DEBUG /Od" )
+        SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -D_DEBUG /DEBUG /Od" )
+        SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -D_DEBUG /DEBUG /Od" )
     ELSE()
-        SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -DDEBUG -g -O0" )
-        SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -DDEBUG -g -O0" )
+        SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -g -D_DEBUG -O0" )
+        SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -g -D_DEBUG -O0" )
         SET(CMAKE_Fortran_FLAGS " ${CMAKE_Fortran_FLAGS} -g -O0" )
     ENDIF()
     SET_WARNINGS()
@@ -398,8 +397,9 @@ MACRO ( ADD_AMP_EXE_DEP EXE )
     # Add the executable to the dependencies of check and build-test
     ADD_DEPENDENCIES ( check ${EXE} )
     ADD_DEPENDENCIES ( build-test ${EXE} )
-    # Add the amp libraries
-    TARGET_LINK_LIBRARIES ( ${EXE} ${AMP_LIBS} ${AMP_LIBS} )    # Double link for circular dependencies
+    # Add the libraries
+    TARGET_LINK_LIBRARIES ( ${EXE} ${AMP_LIBS} ${AMP_LIBS} )
+    TARGET_LINK_LIBRARIES ( ${EXE} ${${PROJECT_NAME}_LIBRARIES} )
     # Add external libraries
     TARGET_LINK_LIBRARIES ( ${EXE} ${LDFLAGS} ${LIBMESH_LIBS} ${NEK_LIBS} ${MOAB_LIBS} ${DENDRO_LIBS} ${TRILINOS_LIBS} ${NETCDF_LIBS} ${PETSC_LIBS} ${X11_LIBS} ${SILO_LIBS} ${HDF5_LIBS} ${HYPRE_LIBS} )
     IF ( ${USE_EXT_SUNDIALS} )

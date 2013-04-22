@@ -16,7 +16,7 @@
 #include "boundary_info.h"
 
 
-#include "ReadTestMesh.h"
+#include "utils/ReadTestMesh.h"
 
 /* Libmesh files */
 #include "fe_type.h"

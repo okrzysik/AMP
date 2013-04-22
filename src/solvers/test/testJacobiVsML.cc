@@ -17,9 +17,9 @@
 #include "operators/OperatorBuilder.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
 
-#include "PetscKrylovSolverParameters.h"
-#include "PetscKrylovSolver.h"
-#include "TrilinosMLSolver.h"
+#include "solvers/PetscKrylovSolverParameters.h"
+#include "solvers/PetscKrylovSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;

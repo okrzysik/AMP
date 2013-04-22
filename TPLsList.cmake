@@ -49,8 +49,8 @@ SET(AMP_TPLS_FINDMODS_CLASSIFICATIONS
   SILO              "cmake/TPLs/"                           SS
   Zlib              "cmake/TPLs/"                           SS
   PETSC             "cmake/TPLs/"                           SS
+  PETSC_AMP         "cmake/TPLs/"                           SS
   LIBMESH           "cmake/TPLs/"                           SS
-  TRILINOS          "cmake/TPLS/"                           SS
 )
-SET(SCALE_TPLS_FINDMODS_CLASSIFICATIONS ${Scale_TPLS_FINDMODS_CLASSIFICATIONS} )
+
 

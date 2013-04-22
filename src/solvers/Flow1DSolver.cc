@@ -1,7 +1,7 @@
 #include "utils/Utilities.h"
 #include "operators/subchannel/FlowFrapconJacobian.h"
-#include "Flow1DSolver.h"
-#include "MultiVector.h"
+#include "solvers/Flow1DSolver.h"
+#include "vectors/MultiVector.h"
 
 namespace AMP {
 namespace Solver {

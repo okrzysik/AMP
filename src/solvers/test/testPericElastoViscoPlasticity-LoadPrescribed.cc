@@ -34,7 +34,7 @@
 #include "solvers/PetscSNESSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
 
-#include "ReadTestMesh.h"
+#include "utils/ReadTestMesh.h"
 #include "mesh_communication.h"
 
 
@@ -71,15 +71,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
-/*  std::string mesh_file = input_db->getString("mesh_file");
-  const unsigned int mesh_dim = 3;
-  boost::shared_ptr< ::Mesh > mesh(new ::Mesh(mesh_dim));
-  AMP::readTestMesh(mesh_file, mesh);
-  MeshCommunication().broadcast(*(mesh.get()));
-  mesh->prepare_for_use(false);
-  AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter ( new AMP::Mesh::MeshManager::Adapter (mesh) );
-  manager->addMesh(meshAdapter, "cook");
-*/
   AMP_INSIST(input_db->keyExists("NumberOfLoadingSteps"), "Key ''NumberOfLoadingSteps'' is missing!");
   int NumberOfLoadingSteps = input_db->getInteger("NumberOfLoadingSteps");
 

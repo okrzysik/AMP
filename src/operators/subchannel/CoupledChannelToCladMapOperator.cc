@@ -1,5 +1,5 @@
-#include "CoupledChannelToCladMapOperator.h"
-#include "CoupledChannelToCladMapOperatorParameters.h"
+#include "operators/subchannel/CoupledChannelToCladMapOperator.h"
+#include "operators/subchannel/CoupledChannelToCladMapOperatorParameters.h"
 #include "operators/subchannel/SubchannelConstants.h"
 
 #include "utils/Utilities.h"
