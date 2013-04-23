@@ -40,17 +40,23 @@
 # other enables that the user has to set.
 #
 
+# Get the source directory if it is not set yet
+IF ( NOT AMP_SOURCE_DIR )
+    STRING(REGEX REPLACE "/PackagesList.cmake" "" AMP_SOURCE_DIR ${CMAKE_CURRENT_LIST_FILE} )
+ENDIF()
+
+# Set the TPLs
 SET(AMP_TPLS_FINDMODS_CLASSIFICATIONS 
-  MPI               "cmake/TPLs/"                           SS
-  BLAS              "cmake/TPLs/"                           PS
-  LAPACK            "cmake/TPLs/"                           PS
-  BOOST             "cmake/TPLs/"                           PS
-  HDF5              "cmake/TPLs/"                           SS
-  SILO              "cmake/TPLs/"                           SS
-  Zlib              "cmake/TPLs/"                           SS
-  PETSC             "cmake/TPLs/"                           SS
-  PETSC_AMP         "cmake/TPLs/"                           SS
-  LIBMESH           "cmake/TPLs/"                           SS
+    MPI                 "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
+    BLAS                "${AMP_SOURCE_DIR}/cmake/TPLs/"         PS
+    LAPACK              "${AMP_SOURCE_DIR}/cmake/TPLs/"         PS
+    BOOST               "${AMP_SOURCE_DIR}/cmake/TPLs/"         PS
+    HDF5                "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
+    SILO                "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
+    Zlib                "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
+    PETSC               "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
+    PETSC_AMP           "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
+    LIBMESH             "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
 )
 
 
