@@ -20,11 +20,11 @@
       (Degrees of Freedom) and discretization.  It requires MESH. <BR>
   \ref AMP::LinearAlgebra "VECTORS": The VECTORS package provides the vector classes 
       in LinearAlgebra that are used within AMP<BR>
-  \ref AMP::LinearAlgebra "MATRICIES": The MATRICIES package provides the matrix classes 
+  \ref AMP::LinearAlgebra "MATRICES": The MATRICES package provides the matrix classes 
       in LinearAlgebra that are used within AMP.  It requires VECTORS. <BR>
   \ref AMP::Materials "MATERIALS": The MATERIALS package provides the materials interface and requires VECTORS. <BR>
   \ref AMP::Operator "OPERATORS": The OPERATORS package provides the interface and all operators within AMP.
-      It requires MESH, VECTORS, MATRICIES, and the external package LIBMESH. <BR>
+      It requires MESH, VECTORS, MATRICES, and the external package LIBMESH. <BR>
   \ref AMP::Solver "SOLVERS": The SOLVERS package provides routines for solving and requires OPERATORS. <BR>
   \ref AMP::TimeIntegrator "TIME_INTEGRATORS": The TIME_INTEGRATORS package provides routines for time integration and requires SOLVERS. <BR>
   
