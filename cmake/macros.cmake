@@ -577,6 +577,7 @@ IF (UNIX)
     core core.*
     src
     ampdir
+    AMP
     DartConfiguration.tcl
     Testing
     install_manifest.txt
