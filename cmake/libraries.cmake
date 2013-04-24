@@ -1,6 +1,7 @@
 INCLUDE( ${AMP_SOURCE_DIR}/cmake/FindPetsc.cmake )
 INCLUDE( ${AMP_SOURCE_DIR}/cmake/FindTrilinos.cmake )
 INCLUDE( ${AMP_SOURCE_DIR}/cmake/FindLibmesh.cmake )
+INCLUDE( ${AMP_SOURCE_DIR}/cmake/configureAMP.cmake )
 
 
 MACRO ( CONFIGURE_LINE_COVERAGE )
@@ -851,6 +852,8 @@ MACRO ( CONFIGURE_AMP )
     IF ( USE_AMP_UTILS )
         SET ( AMP_DOC_DIRS "${AMP_DOC_DIRS}  \"${AMP_SOURCE_DIR}/src/utils\"" )
     ENDIF()
+    # Set the flags
+    SET_AMP_PACKAGE_FLAGS()
 ENDMACRO ()
 
 
