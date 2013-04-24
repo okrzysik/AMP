@@ -125,6 +125,8 @@ CONFIGURE_AMP()
 CONFIGURE_TIMERS()
 CONFIGURE_LINE_COVERAGE()
 ADD_DEFINITIONS ( -DCMAKE_CONFIGURED )
+
+# Create the fortran interface file
 IF ( USE_FORTRAN )
     INCLUDE (FortranCInterface)
     FORTRANCINTERFACE_HEADER ( ${AMP_INSTALL_DIR}/include/utils/FC.h MACRO_NAMESPACE "FC_" )
@@ -134,7 +136,6 @@ IF ( USE_FORTRAN )
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-common")
     endif( (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel") AND (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin") )
 ENDIF()
-
 
 
 # Add the src directory

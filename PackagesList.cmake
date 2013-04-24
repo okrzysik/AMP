@@ -46,6 +46,8 @@ INCLUDE(TribitsListHelpers)
 # will be printed during configuration with CMake.
 #
 
+CMAKE_POLICY(SET CMP0014 OLD)
+
 SET( AMP_PACKAGES_AND_DIRS_AND_CLASSIFICATIONS
     AMP_UTILITIES           src/utils               PS  # Does not have any required dependencies
     AMP_MESH                src/ampmesh             PS  # Requires utils
@@ -92,6 +94,25 @@ ADD_CUSTOM_TARGET ( build-test )
 ADD_CUSTOM_TARGET ( check COMMAND  make test  )
 ADD_DISTCLEAN()
 
+# Check if we want to enable fortran
+ENABLE_LANGUAGE(C)
+ENABLE_LANGUAGE(CXX)
+IF ( DEFINED USE_EXT_FORTRAN )
+    SET ( USE_FORTRAN ${USE_EXT_FORTRAN} )
+ENDIF()
+IF ( NOT DEFINED USE_FORTRAN )
+    SET ( USE_FORTRAN 1 )
+ELSEIF ( ( ${USE_FORTRAN} STREQUAL "false" ) OR ( ${USE_FORTRAN} STREQUAL "0" ) OR ( ${USE_FORTRAN} STREQUAL "OFF" ) )
+    SET ( USE_FORTRAN 0 )
+ELSEIF ( ( ${USE_FORTRAN} STREQUAL "true" ) OR ( ${USE_FORTRAN} STREQUAL "1" ) OR ( ${USE_FORTRAN} STREQUAL "ON" ) )
+    SET (USE_FORTRAN 1 )
+ELSE()
+    MESSAGE ( "Bad value for USE_FORTRAN; use true or false" )
+ENDIF()
+IF ( USE_FORTRAN )
+    ENABLE_LANGUAGE (Fortran)
+ENDIF()
+
 # Set the compile flags
 CONFIGURE_SYSTEM()
 IF ( CMAKE_BUILD_TYPE ) 
@@ -113,6 +134,18 @@ ELSE()
     ELSE()
         MESSAGE ( FATAL_ERROR "COMPILE_MODE must be either debug or optimized" )
     ENDIF()
+ENDIF()
+
+# Create the fortran interface file
+ADD_DEFINITIONS ( -DCMAKE_CONFIGURED )
+IF ( USE_FORTRAN )
+    INCLUDE (FortranCInterface)
+    FORTRANCINTERFACE_HEADER ( ${AMP_INSTALL_DIR}/include/utils/FC.h MACRO_NAMESPACE "FC_" )
+    if( (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel") AND (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin") )
+        set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} -fno-common")
+        set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -fno-common")
+        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-common")
+    endif( (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel") AND (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin") )
 ENDIF()
 
 
