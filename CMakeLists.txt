@@ -1,5 +1,6 @@
 # Set some CMake properties    
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+CMAKE_POLICY(SET CMP0011 OLD)
 CMAKE_POLICY(SET CMP0014 OLD)
 
 
@@ -8,73 +9,35 @@ MESSAGE ("Configuring AMP")
 MESSAGE ("===============")
 
 
-# Prevent users from building in place
-IF ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}" )
-  MESSAGE ( FATAL_ERROR "Building AMP in place is a bad idea" )
-ENDIF()
+ENABLE_LANGUAGE(C)
+ENABLE_LANGUAGE(CXX)
+
 
 # Set the project name
 PROJECT (AMP)
 
-# Check if we want to enable fortran
-IF ( DEFINED USE_EXT_FORTRAN )
-    SET ( USE_FORTRAN ${USE_EXT_FORTRAN} )
-ENDIF()
-IF ( NOT DEFINED USE_FORTRAN )
-    SET ( USE_FORTRAN 1 )
-ELSEIF ( ( ${USE_FORTRAN} STREQUAL "false" ) OR ( ${USE_FORTRAN} STREQUAL "0" ) OR ( ${USE_FORTRAN} STREQUAL "OFF" ) )
-    SET ( USE_FORTRAN 0 )
-ELSEIF ( ( ${USE_FORTRAN} STREQUAL "true" ) OR ( ${USE_FORTRAN} STREQUAL "1" ) OR ( ${USE_FORTRAN} STREQUAL "ON" ) )
-    SET (USE_FORTRAN 1 )
-ELSE()
-    MESSAGE ( "Bad value for USE_FORTRAN; use true or false" )
-ENDIF()
-IF ( USE_FORTRAN )
-    ENABLE_LANGUAGE (Fortran)
-ENDIF()
+
+# Call TPLsList to get the TPLs
+INCLUDE( ${CMAKE_CURRENT_SOURCE_DIR}/TPLsList.cmake )
+
+
+# Call PackageList to get the pacakages, configure the directories and compilers, etc
+INCLUDE( ${CMAKE_CURRENT_SOURCE_DIR}/PackagesList.cmake )
+
 
 # Set testing paramaters
-SET ( DROP_METHOD "http" )
-SET ( DROP_SITE "thyme.ornl.gov" )
-SET ( DROP_LOCATION "/CDash/submit.php?project=AMP" )
-SET ( TRIGGER_SITE "" )
-SET ( DROP_SITE_CDASH TRUE )
+SET( DROP_METHOD "http" )
+SET( DROP_SITE "thyme.ornl.gov" )
+SET( DROP_LOCATION "/CDash/submit.php?project=AMP" )
+SET( TRIGGER_SITE "" )
+SET( DROP_SITE_CDASH TRUE )
 ENABLE_TESTING()
-INCLUDE (CTest)
+INCLUDE(CTest)
 
-# Identify the source and build directories
-SET (AMP_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
-SET (AMP_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR} )
-IF ( NOT AMP_INSTALL_DIR )
-  SET ( AMP_INSTALL_DIR ${AMP_BUILD_DIR}/ampdir )
-ENDIF()
-MESSAGE ( "Installing AMP in "${AMP_INSTALL_DIR} )
-SET (CMAKE_MODULE_PATH ${AMP_SOURCE_DIR} ${AMP_SOURCE_DIR}/cmake)
 
 # Set Cmake include files
-INCLUDE ( CheckIncludeFile )
-INCLUDE ( macros )
-INCLUDE ( libraries )
-
-
-# Create custom targets for build-test, check, and distclean
-ADD_CUSTOM_TARGET ( build-test )
-ADD_CUSTOM_TARGET ( check COMMAND  make test  )
-ADD_DISTCLEAN()
-
-
-# Check the compile mode and compile flags
-CONFIGURE_SYSTEM()
-VERIFY_VARIABLE ( "COMPILE_MODE" )
-IF ( ${COMPILE_MODE} STREQUAL "debug" )
-    SET(CMAKE_BUILD_TYPE "Debug")
-    SET_DEBUG_MACROS()
-ELSEIF ( ${COMPILE_MODE} STREQUAL "optimized" )
-    SET(CMAKE_BUILD_TYPE "Release")
-    SET_OPTIMIZED_MACROS()
-ELSE()
-    MESSAGE ( FATAL_ERROR "COMPILE_MODE must be either debug or optimized" )
-ENDIF()
+INCLUDE( ${AMP_SOURCE_DIR}/cmake/macros.cmake )
+INCLUDE( ${AMP_SOURCE_DIR}/cmake/libraries.cmake )
 
 
 # Configure external libraries
@@ -96,6 +59,10 @@ CONFIGURE_NETCDF()
 CONFIGURE_BOOST()
 
 
+# Configure AMP (all external libraries must be configured first)
+CONFIGURE_AMP()
+
+
 # Create the target for documentation
 CHECK_ENABLE_FLAG(USE_EXT_DOXYGEN 1 )
 IF ( USE_EXT_DOXYGEN )
@@ -113,28 +80,7 @@ IF ( USE_EXT_DOXYGEN )
     SET ( DOXYGEN_MACROS "${DOXYGEN_MACROS} USE_EXT_MPI USE_EXT_LAPACK USE_EXT_BLAS USE_EXT_PETSC" )
     SET ( DOXYGEN_MACROS "${DOXYGEN_MACROS} USE_EXT_LIBMESH USE_EXT_SUNDIALS USE_EXT_TRILINOS" )
     MESSAGE("DOXYGEN_MACROS = ${DOXYGEN_MACROS}")
-    INCLUDE (UseDoxygen)
-ENDIF()
-
-
-# Configure AMP (all external libraries must be configured first)
-CONFIGURE_AMP()
-
-
-# Some more configure options
-CONFIGURE_TIMERS()
-CONFIGURE_LINE_COVERAGE()
-ADD_DEFINITIONS ( -DCMAKE_CONFIGURED )
-
-# Create the fortran interface file
-IF ( USE_FORTRAN )
-    INCLUDE (FortranCInterface)
-    FORTRANCINTERFACE_HEADER ( ${AMP_INSTALL_DIR}/include/utils/FC.h MACRO_NAMESPACE "FC_" )
-    if( (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel") AND (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin") )
-        set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} -fno-common")
-        set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -fno-common")
-        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-common")
-    endif( (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel") AND (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin") )
+    INCLUDE( ${AMP_SOURCE_DIR}/cmake/UseDoxygen.cmake )
 ENDIF()
 
 

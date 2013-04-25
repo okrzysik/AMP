@@ -2,6 +2,7 @@ INCLUDE( ${AMP_SOURCE_DIR}/cmake/FindPetsc.cmake )
 INCLUDE( ${AMP_SOURCE_DIR}/cmake/FindTrilinos.cmake )
 INCLUDE( ${AMP_SOURCE_DIR}/cmake/FindLibmesh.cmake )
 INCLUDE( ${AMP_SOURCE_DIR}/cmake/configureAMP.cmake )
+INCLUDE( CheckIncludeFile )
 
 
 MACRO ( CONFIGURE_LINE_COVERAGE )

@@ -313,39 +313,44 @@ ENDMACRO ()
 
 
 # Macro to set the flags for debug mode
-MACRO ( SET_DEBUG_MACROS )
+MACRO ( SET_COMPILER_FLAGS )
+    # Initilaize the compiler
     SET_COMPILER ()
-    ADD_USER_FLAGS()
+    # Set the default flags for each build type
+    IF ( USING_MICROSOFT )
+        SET(CMAKE_C_FLAGS_DEBUG       "-D_DEBUG /DEBUG /Od" )
+        SET(CMAKE_C_FLAGS_RELEASE     "/O2"                 )
+        SET(CMAKE_CXX_FLAGS_DEBUG     "-D_DEBUG /DEBUG /Od" )
+        SET(CMAKE_CXX_FLAGS_RELEASE   "/O2"                 )
+        SET(CMAKE_Fortran_FLAGS_DEBUG ""                    )
+        SET(CMAKE_Fortran_FLAGS_RELEASE ""                  )
+    ELSE()
+        SET(CMAKE_C_FLAGS_DEBUG       "-g -D_DEBUG -O0" )
+        SET(CMAKE_C_FLAGS_RELEASE     "-O2"             )
+        SET(CMAKE_CXX_FLAGS_DEBUG     "-g -D_DEBUG -O0" )
+        SET(CMAKE_CXX_FLAGS_RELEASE   "-O2"             )
+        SET(CMAKE_Fortran_FLAGS_DEBUG "-g -O0"          )
+        SET(CMAKE_Fortran_FLAGS_RELEASE "-O2"           )
+    ENDIF()
     IF ( NOT DISABLE_GXX_DEBUG )
-        SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -D_GLIBCXX_DEBUG" )
-        SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -D_GLIBCXX_DEBUG" )
-        SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -D_GLIBCXX_DEBUG_PEDANTIC" )
-        SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -D_GLIBCXX_DEBUG_PEDANTIC" )
+        SET(CMAKE_C_FLAGS_DEBUG   " ${CMAKE_C_FLAGS_DEBUG}   -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC" )
+        SET(CMAKE_CXX_FLAGS_DEBUG " ${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC" )
     ENDIF ()
-    IF ( USING_MICROSOFT )
-        SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -D_DEBUG /DEBUG /Od" )
-        SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -D_DEBUG /DEBUG /Od" )
+    # Set the compiler flags to use
+    IF ( ${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
+        SET(CMAKE_C_FLAGS       ${CMAKE_C_FLAGS_DEBUG}       )
+        SET(CMAKE_CXX_FLAGS     ${CMAKE_CXX_FLAGS_DEBUG}     )
+        SET(CMAKE_Fortran_FLAGS ${CMAKE_Fortran_FLAGS_DEBUG} )
+    ELSEIF ( ${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "RELEASE")
+        SET(CMAKE_C_FLAGS       ${CMAKE_C_FLAGS_RELEASE}       )
+        SET(CMAKE_CXX_FLAGS     ${CMAKE_CXX_FLAGS_RELEASE}     )
+        SET(CMAKE_Fortran_FLAGS ${CMAKE_Fortran_FLAGS_RELEASE} )
     ELSE()
-        SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -g -D_DEBUG -O0" )
-        SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -g -D_DEBUG -O0" )
-        SET(CMAKE_Fortran_FLAGS " ${CMAKE_Fortran_FLAGS} -g -O0" )
+        MESSAGE(FATAL_ERROR "Unknown value for CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
     ENDIF()
-    SET_WARNINGS()
-ENDMACRO ()
-
-
-# Macro to set the flags for optimized mode
-MACRO ( SET_OPTIMIZED_MACROS )
-    SET_COMPILER ()
+    # Add the user flags
     ADD_USER_FLAGS()
-    IF ( USING_MICROSOFT )
-        SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} /O2" )
-        SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} /O2" )
-    ELSE()
-        SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -O2" )
-        SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -O2" )
-        SET(CMAKE_Fortran_FLAGS " ${CMAKE_Fortran_FLAGS} -O2" )
-    ENDIF()
+    # Set the warnings to use
     SET_WARNINGS()
 ENDMACRO ()
 
@@ -555,6 +560,38 @@ MACRO( PRINT_ALL_VARIABLES )
     GET_CMAKE_PROPERTY(_variableNames VARIABLES)
     FOREACH(_variableName ${_variableNames})
         message(STATUS "${_variableName}=${${_variableName}}")
+    ENDFOREACH()
+ENDMACRO()
+
+
+# Macro to change the classification of a package
+MACRO( SET_PACKAGE_CLASSIFICATION  PACKAGE_LIST  PACKAGE_NAME  CLASS )
+    LIST(FIND ${PACKAGE_LIST} ${PACKAGE_NAME} PACKAGE_NAME_IDX)
+    IF (PACKAGE_NAME_IDX EQUAL -1)
+        MESSAGE(FATAL_ERROR "Package ${PACKAGE_NAME} not found in list of packages!")
+    ELSE()
+        MATH(EXPR PACKAGE_CLASSIFICATION_IDX "${PACKAGE_NAME_IDX}+2")
+        LIST(INSERT ${PACKAGE_LIST} ${PACKAGE_CLASSIFICATION_IDX} ${CLASS})
+        MATH(EXPR PACKAGE_CLASSIFICATION_IDX "${PACKAGE_CLASSIFICATION_IDX} + 1")
+        LIST (REMOVE_AT ${PACKAGE_LIST} ${PACKAGE_CLASSIFICATION_IDX})
+    ENDIF()
+ENDMACRO()
+
+
+# Macro to "disable" a package on the given platform (this mearly changes it to experimental)
+MACRO( PACKAGE_DISABLE_ON_PLATFORMS  PACKAGE_LIST  PACKAGE_NAME )
+    FOREACH(HOSTTYPE ${ARGN})
+        IF (${PROJECT_NAME}_HOSTTYPE STREQUAL ${HOSTTYPE})
+            SET_PACKAGE_CLASSIFICATION(${PACKAGE_LIST} ${PACKAGE_NAME} EX)
+            IF (${PROJECT_NAME}_ENABLE_${PACKAGE_NAME})
+                MESSAGE(
+                  "\n***"
+                  "\n*** WARNING: User has set ${PROJECT_NAME}_ENABLE_${PACKAGE_NAME}=ON but the"
+                  "\n*** package ${PACKAGE_NAME} is not supported on this platform type '${HOSTTYPE}'!"
+                  "\n***\n"
+               )
+            ENDIF()
+        ENDIF()
     ENDFOREACH()
 ENDMACRO()
 
@@ -828,13 +865,13 @@ ENDMACRO ()
 
 # Add an external subdirectory
 MACRO ( ADD_EXTERNAL_PACKAGE_SUBDIRECTORY SUBDIR_NAME SUBDIR_PATH )
-  VERIFY_PATH ( ${SUBDIR_PATH} )
-  FIND_FILES_PATH ( ${SUBDIR_PATH} )
-  FILE ( GLOB HFILES RELATIVE ${SUBDIR_PATH} ${SUBDIR_PATH}/*.h ${SUBDIR_PATH}/*.hh ${SUBDIR_PATH}/*.I )
-  FOREACH (HFILE ${HFILES})
-    CONFIGURE_FILE ( ${SUBDIR_PATH}/${HFILE} ${AMP_INSTALL_DIR}/include/${CURPACKAGE}/${HFILE} COPYONLY )
-  ENDFOREACH ()
-  ADD_SUBDIRECTORY ( ${SUBDIR_PATH} ${CMAKE_CURRENT_BINARY_DIR}/${SUBDIR_NAME} )
+    VERIFY_PATH ( ${SUBDIR_PATH} )
+    FIND_FILES_PATH ( ${SUBDIR_PATH} )
+    FILE ( GLOB HFILES RELATIVE ${SUBDIR_PATH} ${SUBDIR_PATH}/*.h ${SUBDIR_PATH}/*.hh ${SUBDIR_PATH}/*.I )
+    FOREACH (HFILE ${HFILES})
+        CONFIGURE_FILE ( ${SUBDIR_PATH}/${HFILE} ${AMP_INSTALL_DIR}/include/${CURPACKAGE}/${HFILE} COPYONLY )
+    ENDFOREACH ()
+    ADD_SUBDIRECTORY ( ${SUBDIR_PATH} ${CMAKE_CURRENT_BINARY_DIR}/${SUBDIR_NAME} )
 ENDMACRO ()
 
 
