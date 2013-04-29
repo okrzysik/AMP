@@ -274,7 +274,7 @@ ENDMACRO ()
 # Macro to find and configure NEK
 MACRO ( CONFIGURE_NEK )
     # Determine if we want to use NEK
-    CHECK_ENABLE_FLAG( USE_EXT_NEK "false" )
+    CHECK_ENABLE_FLAG( USE_EXT_NEK 0 )
     IF ( USE_EXT_NEK )
         # Check if we specified the NEK directory
         IF ( NEK_DIRECTORY )
@@ -321,8 +321,8 @@ ENDMACRO ()
 
 # Macro to find and configure DENDRO
 MACRO ( CONFIGURE_DENDRO )
-    # Determine if we want to use DENDRO
-    CHECK_ENABLE_FLAG( USE_EXT_DENDRO "false" )
+    # Determine if we want to use 
+    CHECK_ENABLE_FLAG( USE_EXT_DENDRO 0 )
     IF ( USE_EXT_DENDRO )
         IF ( DENDRO_DIRECTORY )
             VERIFY_PATH ( ${DENDRO_DIRECTORY} )
