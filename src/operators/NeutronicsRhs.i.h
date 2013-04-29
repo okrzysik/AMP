@@ -37,6 +37,9 @@ inline void NeutronicsRhs::setTimeInSeconds( double setSeconds ) {
     }
     AMP_INSIST(false,"Could not find the appropriate time.");
 }
+inline void NeutronicsRhs::setTimeInDays( double days ) {
+    setTimeInSeconds(days*d_secondsPerDay);
+}
 
 
 }
