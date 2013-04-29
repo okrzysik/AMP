@@ -666,7 +666,7 @@ ENDMACRO ()
 # Macro to configure system-specific libraries and flags
 MACRO ( CONFIGURE_SYSTEM )
     # Remove extra library links
-    SET_STATIC_FLAGS()
+    #SET_STATIC_FLAGS()
     # Add system dependent flags
     MESSAGE("System is: ${CMAKE_SYSTEM_NAME}")
     IF ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
@@ -674,6 +674,7 @@ MACRO ( CONFIGURE_SYSTEM )
         #FIND_LIBRARY ( SYSTEM_LIBS           NAMES "psapi"        PATHS C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/  )
         #C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/psapi
         SET( SYSTEM_LIBS "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/Psapi.lib" )
+        SET( SYSTEM_LIBS ${SYSTEM_LIBS} "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/DbgHelp.lib" )
     ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
         # Linux specific system libraries
         SET( SYSTEM_LIBS "-lz -ldl" )
