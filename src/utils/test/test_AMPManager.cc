@@ -42,12 +42,11 @@ int main(int argc, char *argv[])
 
     // Start AMP
     AMP::AMPManager::startup(argc,argv,startup_properties);
-    int globalSize=0;
     // Limit the scope of variables
     { 
         // Create the global comm
         AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
-        globalSize = globalComm.getSize();
+        int globalSize = globalComm.getSize();
         if ( procMax>0 && globalSize>procMax )
             AMP_ERROR("AMP did not initialize on a sub-communicator");
         // Introduce a memory leak to catch in valgrind later

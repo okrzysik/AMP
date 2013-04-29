@@ -24,7 +24,7 @@ public:
 	 * \param dimension dimension of return value vector
 	 */
 	VectorProperty(
-			const std::string name = std::string("NotDefined"),
+			const std::string& name = std::string("NotDefined"),
 			const std::string& source = std::string("None"),
 			const Number *params = NULL,
 			const unsigned int nparams = 0,

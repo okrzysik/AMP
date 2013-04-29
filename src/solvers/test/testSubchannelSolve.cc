@@ -35,6 +35,7 @@
 
 #include "operators/VectorCopyOperator.h"
 
+#include "operators/IdentityOperator.h"
 #include "operators/VolumeIntegralOperator.h"
 #include "operators/CoupledOperator.h"
 #include "operators/CoupledOperatorParameters.h"
@@ -266,7 +267,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params( new AMP::Operator::ElementPhysicsModelParameters(subchannelPhysics_db));
     boost::shared_ptr<AMP::Operator::SubchannelPhysicsModel>  subchannelPhysicsModel (new AMP::Operator::SubchannelPhysicsModel(params));
     boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> subchannelNonlinearOperator;
-    boost::shared_ptr<AMP::Operator::SubchannelTwoEqLinearOperator> subchannelLinearOperator; 
+    boost::shared_ptr<AMP::Operator::LinearOperator> subchannelLinearOperator; 
 
     // Get the subchannel operators
     std::vector<double> clad_x, clad_y, clad_d;
@@ -292,6 +293,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
                 subchannelLinearOperator = boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqLinearOperator>(
                     AMP::Operator::OperatorBuilder::createOperator( adapter ,"SubchannelTwoEqLinearOperator",
                     global_input_db, subchannelNonlinearOperator->getSubchannelPhysicsModel() ) );
+                //subchannelLinearOperator.reset( new AMP::Operator::IdentityOperator( nonlinearOpParams ) );
                 subchannelNonlinearOperator->setVector(subchannelFuelTemp); 
                 subchannelLinearOperator->reset(subchannelNonlinearOperator->getJacobianParameters(subchannelFuelTemp));
                 // pass creation test
@@ -500,7 +502,9 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     columnPreconditioner.reset(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
 
     boost::shared_ptr<AMP::Database> trilinosPreconditioner_db = columnPreconditioner_db->getDatabase("TrilinosPreconditioner");
-    for(unsigned int id = 0; id != linearColumnOperator->getNumberOfOperators(); id++) {
+    unsigned int N_preconditioners = linearColumnOperator->getNumberOfOperators();
+    //N_preconditioners--;    // Don't use a preconditioner for subchannel
+    for(unsigned int id=0; id<N_preconditioners; id++) {
         boost::shared_ptr<AMP::Solver::SolverStrategyParameters> trilinosPreconditionerParams(new AMP::Solver::SolverStrategyParameters(trilinosPreconditioner_db));
         trilinosPreconditionerParams->d_pOperator = linearColumnOperator->getOperator(id);
         boost::shared_ptr<AMP::Solver::TrilinosMLSolver> trilinosPreconditioner(new AMP::Solver::TrilinosMLSolver(trilinosPreconditionerParams));

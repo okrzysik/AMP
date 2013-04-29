@@ -13,7 +13,7 @@ namespace LinearAlgebra {
   inline
   DataChangeFirer::~DataChangeFirer ()
   {
-    for ( iterator cur = begin() ; cur != end() ; cur++ )
+    for ( iterator cur = begin() ; cur != end() ; ++cur )
       (*cur)->deregisterFromFirer ( this );
   }
 
@@ -38,7 +38,7 @@ namespace LinearAlgebra {
   inline
   void   DataChangeFirer::fireDataChange ()
   {
-    for ( iterator cur = begin() ; cur != end() ; cur++ )
+    for ( iterator cur = begin() ; cur != end() ; ++cur )
       (*cur)->dataChanged();
   }
 

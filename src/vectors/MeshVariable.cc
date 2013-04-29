@@ -22,8 +22,8 @@ AMP::Discretization::DOFManager::shared_ptr  MeshVariable::getSubsetDOF( AMP::Di
 
 MeshIteratorVariable::MeshIteratorVariable ( const std::string &name, const AMP::Mesh::MeshIterator &iterator, const AMP_MPI &comm ):
     SubsetVariable( name ),
-    d_iterator( iterator ),
-    d_comm( comm )
+    d_comm( comm ),
+    d_iterator( iterator )
 {
 }
 

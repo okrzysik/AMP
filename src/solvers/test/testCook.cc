@@ -56,7 +56,7 @@
 #include "solvers/PetscKrylovSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
 
-#include "ReadTestMesh.h"
+#include "utils/ReadTestMesh.h"
 
 extern "C"{
 #include "petsc.h"

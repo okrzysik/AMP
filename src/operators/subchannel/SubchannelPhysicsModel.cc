@@ -3,7 +3,7 @@
  *
  */
 
-#include "SubchannelPhysicsModel.h"
+#include "operators/subchannel/SubchannelPhysicsModel.h"
 #include "utils/Database.h"
 #include "utils/Utilities.h"
 #include <cmath>

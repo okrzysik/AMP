@@ -107,14 +107,6 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
     neutronicsParams->d_Mesh = meshAdapter1;
 
-    //--------------------------------------------------
-    //  Creating a time-steps loop that will be used for the burnup loop.
-    //--------------------------------------------------
-    int numTimeSteps=3;
-    std::vector<double> d_Heff;
-    d_Heff.resize(numTimeSteps);
-    d_Heff=input_db->getDatabase ( "BoundaryConditions" )->getDoubleArray ( "Heff" );
-
     //----------------------------------------------------------------------------
     //  Constructing the neutornicsRHS for the Thermal diffusion source (aka specific power).
     //----------------------------------------------------------------------------

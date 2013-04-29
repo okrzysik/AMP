@@ -9,7 +9,7 @@ namespace Materials {
 
 // set auxiliary data
 template<class Number>
-void Property<Number>::setAuxiliaryData(const std::string key, const double val){
+void Property<Number>::setAuxiliaryData(const std::string& key, const double val){
 	std::map<std::string, double>::iterator loc=d_AuxiliaryDataDouble.find(key);
 
 	// this guarantees that the host code can not set just any old data value.
@@ -21,7 +21,7 @@ void Property<Number>::setAuxiliaryData(const std::string key, const double val)
 
 // set auxiliary data
 template<class Number>
-void Property<Number>::setAuxiliaryData(const std::string key, const int val){
+void Property<Number>::setAuxiliaryData(const std::string& key, const int val){
 	std::map<std::string, int>::iterator loc=d_AuxiliaryDataInteger.find(key);
 
 	// this guarantees that the host code can not set just any old data value.
@@ -33,7 +33,7 @@ void Property<Number>::setAuxiliaryData(const std::string key, const int val){
 
 // set auxiliary data
 template<class Number>
-void Property<Number>::setAuxiliaryData(const std::string key, const std::string val){
+void Property<Number>::setAuxiliaryData(const std::string& key, const std::string& val){
 	std::map<std::string, std::string>::iterator loc=d_AuxiliaryDataString.find(key);
 
 	// this guarantees that the host code can not set just any old data value.
@@ -45,19 +45,19 @@ void Property<Number>::setAuxiliaryData(const std::string key, const std::string
 
 /// get auxiliary data
 template<class Number>
-void Property<Number>::getAuxiliaryData(const std::string key, double &val) {
+void Property<Number>::getAuxiliaryData(const std::string& key, double &val) {
 	val = *d_AuxiliaryDataDouble.find(key);
 }
 
 /// get auxiliary data
 template<class Number>
-void Property<Number>::getAuxiliaryData(const std::string key, int &val) {
+void Property<Number>::getAuxiliaryData(const std::string& key, int &val) {
 	val = *d_AuxiliaryDataInteger.find(key);
 }
 
 /// get auxiliary data
 template<class Number>
-void Property<Number>::getAuxiliaryData(const std::string key, std::string &val) {
+void Property<Number>::getAuxiliaryData(const std::string& key, std::string &val) {
 	val = *d_AuxiliaryDataString.find(key);
 }
 

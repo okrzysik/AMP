@@ -8,6 +8,10 @@
 namespace AMP {
 namespace LinearAlgebra {
 
+
+/************************************************************************
+* Constructors                                                          *
+************************************************************************/
 NativeThyraVector::NativeThyraVector ( VectorParameters::shared_ptr in_params ): 
     NativeVector(), 
     ThyraVector(), 
@@ -31,11 +35,17 @@ NativeThyraVector::NativeThyraVector ( VectorParameters::shared_ptr in_params ):
 }
 
 
+/************************************************************************
+* Destructor                                                            *
+************************************************************************/
 NativeThyraVector::~NativeThyraVector ()
 {
 }
 
 
+/************************************************************************
+* Vector functions                                                      *
+************************************************************************/
 Vector::shared_ptr NativeThyraVector::cloneVector(const Variable::shared_ptr var ) const 
 { 
     boost::shared_ptr<NativeThyraVectorParameters> params( new NativeThyraVectorParameters() );

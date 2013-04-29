@@ -1,6 +1,7 @@
-#include "Writer.h"
+#include "utils/Writer.h"
+#include "utils/Utilities.h"
 
-#include "NullWriter.h"
+#include "utils/NullWriter.h"
 #ifdef USE_AMP_MESH
     #include "ampmesh/SiloIO.h"
 #endif
@@ -29,6 +30,14 @@ boost::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( std::string type 
     }
     return writer;
 }
+boost::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( boost::shared_ptr<AMP::Database> db )
+{
+    std::string type = db->getString("Name");
+    boost::shared_ptr<AMP::Utilities::Writer> writer = Writer::buildWriter(type);
+    if ( db->keyExists("Decomposition") )
+        writer->setDecomposition( db->getInteger("Decomposition") );
+    return writer;
+}
 
 
 /************************************************************
@@ -49,7 +58,7 @@ Writer::~Writer( )
 ************************************************************/
 void Writer::setDecomposition( int d )
 {
-    AMP_INSIST(d!=1||d!=2,"decomposition must be 1 or 2");
+    AMP_INSIST(d==1||d==2,"decomposition must be 1 or 2");
     d_decomposition = d;
 }
 

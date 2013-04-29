@@ -47,7 +47,7 @@
 #include "../../operators/test/applyTests.h"
 
 
-void inverseTest1(AMP::UnitTest *ut, const std::string exeName)
+void inverseTest1(AMP::UnitTest *ut, const std::string& exeName)
 {   
     // Tests diffusion Dirchlet BVP operator for temperature
 
@@ -140,6 +140,7 @@ void inverseTest1(AMP::UnitTest *ut, const std::string exeName)
       srcVec->setToScalar(0.);
 
       // Fill in manufactured solution in mesh interior
+      const double Pi = 3.1415926535898;
       AMP::Mesh::MeshIterator iterator = meshAdapter->getIterator(AMP::Mesh::Vertex,0);
       std::string mfgName = mfgSolution->get_name();
       bool isCylindrical = mfgName.find("Cylindrical") < mfgName.size();
@@ -154,9 +155,9 @@ void inverseTest1(AMP::UnitTest *ut, const std::string exeName)
                 double th = 0.;
                 double r = sqrt(x * x + y * y);
                 if (r > 0) {
-                    double Pi = 3.1415926535898;
                     th = acos(x / r);
-                    if (y < 0.) th = 2 * Pi - th;
+                    if (y < 0.)
+                        th = 2 * Pi - th;
                 }
                 mfgSolution->evaluate(poly, r, th, z);
             }
@@ -187,9 +188,9 @@ void inverseTest1(AMP::UnitTest *ut, const std::string exeName)
                     double th = 0.;
                     double r = sqrt(x * x + y * y);
                     if (r > 0) {
-                        double Pi = 3.1415926535898;
                         th = acos(x / r);
-                        if (y < 0.) th = 2 * Pi - th;
+                        if (y < 0.) 
+                            th = 2 * Pi - th;
                     }
                     mfgSolution->evaluate(poly, r, th, z);
                 } else {

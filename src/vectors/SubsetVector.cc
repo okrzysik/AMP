@@ -1,9 +1,9 @@
 #include <algorithm>
 
-#include "SubsetVector.h"
-#include "SubsetVariable.h"
-#include "VectorBuilder.h"
-#include "VectorBuilder.h"
+#include "vectors/SubsetVector.h"
+#include "vectors/SubsetVariable.h"
+#include "vectors/VectorBuilder.h"
+#include "vectors/VectorBuilder.h"
 #include "discretization/subsetDOFManager.h"
 
 namespace AMP {
@@ -115,7 +115,7 @@ Vector::shared_ptr  SubsetVector::cloneVector ( Variable::shared_ptr var ) const
 {
     // Ideally this function should create a new dense vector of the same type as d_ViewVector
     // For now, create a dense vector of a possibly new type
-    Vector::shared_ptr vec = createVector( d_DOFManager, var );
+    Vector::shared_ptr vec = AMP::LinearAlgebra::createVector( d_DOFManager, var );
     return vec;
 }
 

@@ -7,7 +7,7 @@
 #include "utils/UnitTest.h"
 
 #ifdef USE_EXT_TRILINOS
-    #include "trilinos/ManagedEpetraVector.h"
+    #include "vectors/trilinos/ManagedEpetraVector.h"
 #endif
 
 using namespace AMP::unit_test;

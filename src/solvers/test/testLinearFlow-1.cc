@@ -113,7 +113,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     AMP::LinearAlgebra::Vector::shared_ptr globalRhsVec = globalSolVec->cloneVector("globalRhsVec");
     // AMP::LinearAlgebra::Vector::shared_ptr globalResVec = globalSolVec->cloneVector("globalResVec");
 
-    // Get the matricies
+    // Get the matrices
     AMP::LinearAlgebra::Matrix::shared_ptr FMat = ConsMomentumOperator->getMatrix();
     AMP::LinearAlgebra::Matrix::shared_ptr BMat = ConsMassOperator->getMatrix();
 

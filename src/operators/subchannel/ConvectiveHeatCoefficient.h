@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 
-#include "ElementPhysicsModelFactory.h"
-#include "RobinPhysicsModel.h"
+#include "operators/ElementPhysicsModelFactory.h"
+#include "operators/boundary/RobinPhysicsModel.h"
 #include "boost/shared_ptr.hpp"
 
 namespace AMP {

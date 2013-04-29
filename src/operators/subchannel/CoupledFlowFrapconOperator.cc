@@ -1,5 +1,5 @@
-#include "CoupledFlowFrapconOperator.h"
-#include "CoupledFlowFrapconOperatorParameters.h"
+#include "operators/subchannel/CoupledFlowFrapconOperator.h"
+#include "operators/subchannel/CoupledFlowFrapconOperatorParameters.h"
 #include "utils/Utilities.h"
 #include "vectors/SimpleVector.h"
 

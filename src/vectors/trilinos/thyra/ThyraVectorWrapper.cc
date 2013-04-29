@@ -196,13 +196,9 @@ void ThyraVectorWrapper::applyImpl(const Thyra::EOpTransp M_trans, const Thyra::
             AMP_ASSERT(x!=NULL);
             size_t N = d_vecs.size();       // Number of columns of M
             size_t M = x->d_vecs.size();    // Number of columns of X
-            int i1 = Y->domain()->dim();
-            int i2 = Y->range()->dim();
             AMP_ASSERT(Y->domain()->dim()==(Teuchos::Ordinal)M);
             for (size_t i=0; i<M; i++) {
                 Teuchos::RCP<Thyra::VectorBase<double> > Y2 = Y->col(0);
-                int i3 = Y2->domain()->dim();
-                int i4 = Y2->range()->dim();
                 size_t N2 = static_cast<size_t>( Y2->space()->dim() );
                 AMP_ASSERT(d_N_cols==N2);
                 for (size_t j=0; j<N; j++) {

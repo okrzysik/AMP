@@ -364,7 +364,6 @@ int PetscKrylovSolver::setupPreconditioner(void*)
 PetscErrorCode PetscKrylovSolver::setupPreconditioner(PC pc)
 {
    int ierr = 0;
-   Vec current_solution;
    void *ctx = NULL;
    ierr = PCShellGetContext(pc, &ctx);
    return ierr;

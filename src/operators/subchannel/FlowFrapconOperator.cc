@@ -1,5 +1,5 @@
 
-#include "FlowFrapconOperator.h"
+#include "operators/subchannel/FlowFrapconOperator.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 

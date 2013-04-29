@@ -3,7 +3,9 @@
 #include "utils/Utilities.h"
 
 #include "face_quad4.h"
+#include "face_quad9.h"
 #include "cell_hex8.h"
+#include "cell_hex27.h"
 #include "node.h"
 
 
@@ -49,9 +51,15 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in )
         if ( dim==3 && nodes.size()==8 ) {
             // We are dealing with a hex8 element
             d_elements[i] = new ::Hex8;
+        } else if ( dim==3 && nodes.size()==27 ) {
+            // We are dealing with a hex27 element
+            d_elements[i] = new ::Hex27;
         } else if ( dim==2 && nodes.size()==4 ) {
             // We are dealing with a hex8 element
             d_elements[i] = new ::Quad4;
+        } else if ( dim==2 && nodes.size()==4 ) {
+            // We are dealing with a hex8 element
+            d_elements[i] = new ::Quad9;
         } else {
             AMP_ERROR("Unknown element type");
         }

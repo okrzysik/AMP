@@ -4,7 +4,7 @@
 #include "petscvec.h"
 //}
 
-#include "Matrix.h"
+#include "matrices/Matrix.h"
 #include "matrices/petsc/NativePetscMatrix.h"
 #include "vectors/Vector.h"
 #include "vectors/petsc/NativePetscVector.h"

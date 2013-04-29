@@ -119,10 +119,9 @@ void test_interp( AMP::UnitTest *ut )
     int Nix = 100;
     int Niy = 200;
     int Niz = 50;
-    double fi;
     for (int i=0; i<Nix; i++) {
         double xi = ((double)i-2)/((double)(Nix-5));
-        fi = AMP::Utilities::linear(x,f1,xi);
+        double fi = AMP::Utilities::linear(x,f1,xi);
         if ( !AMP::Utilities::approx_equal(fi,a+bx*xi,1e-12) )
             pass_linear = false;
         for (int j=0; j<Niy; j++) {

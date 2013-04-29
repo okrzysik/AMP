@@ -1439,7 +1439,6 @@ int main(int argc, char **argv) {
 			else
 				ut.failure("did not detect undefined material");
 			maxpassed += 1;
-			good = true;
 		}
 
 		cout << endl << endl << endl;

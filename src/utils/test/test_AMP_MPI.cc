@@ -1032,7 +1032,7 @@ void testCommDup(AMP::UnitTest *ut) {
         }
         AMP::pout << "Maximum number of concurrent communicators: " << comms.size() << std::endl;
     }
-    comms = std::vector<AMP::AMP_MPI>();
+    comms.clear();
     size_t N_dup = 0;
     globalComm.barrier();
     try {
@@ -1212,8 +1212,6 @@ int main(int argc, char *argv[])
             ut.passes("split with color=-1 returns NULL communicator");
         else
             ut.failure("split with color=-1 returns NULL communicator");
-        if ( globalComm.getRank()==0 )
-            color = -1;
         splitComms[3] = splitComms[0];  // Make a copy to ensure there are no memory leaks
         splitComms[3] = splitComms[2];  // Perform assignement to check memory leaks
         AMP_ASSERT(splitComms[3]==splitComms[2]);

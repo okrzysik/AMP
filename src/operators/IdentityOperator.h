@@ -42,6 +42,13 @@ public :
         AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
     /**
+      * This function is useful for re-initializing/updating an operator
+      * \param params
+      *    parameter object containing parameters to change
+      */
+     virtual void reset(const boost::shared_ptr<OperatorParameters>& params);
+
+    /**
      * Copies the shared pointer for the matrix representation of this linear operator.
      *  @param [in] in_mat The matrix representation of this linear operator.
      */

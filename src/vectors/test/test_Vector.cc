@@ -8,10 +8,10 @@
 #include "test_Vector.h"
 
 #ifdef USE_EXT_PETSC
-    #include "petsc/NativePetscVector.h"
+    #include "vectors/petsc/NativePetscVector.h"
 #endif
 #ifdef USE_EXT_TRILINOS
-    #include "trilinos/ManagedEpetraVector.h"
+    #include "vectors/trilinos/ManagedEpetraVector.h"
 #endif
 
 

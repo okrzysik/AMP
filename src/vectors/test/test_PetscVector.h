@@ -1,3 +1,6 @@
+#ifndef included_test_PetscVector
+#define included_test_PetscVector
+
 #include "test_Vector.h"
 #include "vectors/petsc/NativePetscVector.h"
 #include "vectors/petsc/ManagedPetscVector.h"
@@ -120,3 +123,5 @@ class  SimplePetscNativeFactory : public SimplePetscVectorFactory<SimpleManagedV
 }
 
 /// \endcond
+#endif
+

@@ -17,10 +17,10 @@ namespace AMP {
 
 
 inline
-MemoryDatabase::MemoryDatabase(const std::string& name)
+MemoryDatabase::MemoryDatabase(const std::string& name):
+   d_database_name(name),
+   comm(AMP_COMM_WORLD)
 {
-   d_database_name = name;
-   comm = AMP_MPI(AMP_COMM_WORLD);
 }
 
 inline

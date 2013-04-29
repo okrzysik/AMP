@@ -24,14 +24,14 @@ public:
 	 * \param dimensions the first and second dimensions of return value tensor
 	 */
 	TensorProperty(
-			const std::string name = std::string("NotDefined"),
+			const std::string& name = std::string("NotDefined"),
 			const std::string& source = std::string("None"),
 			const Number *params = NULL,
 			const unsigned int nparams = 0,
 			const std::string* args = NULL,
 			const unsigned int nargs = 0,
 			const Number ranges[][2] = NULL,
-			const std::vector<size_t> dimensions = std::vector<size_t>(2,1)) :
+			const std::vector<size_t>& dimensions = std::vector<size_t>(2,1)) :
 				Property<Number>(name,source,params,nparams,args,nargs,ranges),
 				d_dimensions(dimensions), d_variableDimensions(false)
 	{

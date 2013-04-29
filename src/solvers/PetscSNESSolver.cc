@@ -235,22 +235,20 @@ void PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
     if(d_iDebugPrintInfoLevel>2)
         AMP::pout << "L2 Norm of u in PetscSNESSolver::solve before view " << u->L2Norm() << std::endl;
   
+    // Get petsc views of the vectors
+    AMP::LinearAlgebra::Vector::shared_ptr  spRhs = AMP::LinearAlgebra::PetscVector::view( f );
+    AMP::LinearAlgebra::Vector::shared_ptr  spSol = AMP::LinearAlgebra::PetscVector::view( u );
+
     // Create temporary copies of the petsc views
     #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
         // This fixes a bug where a previous solve call creates and used views of a different vector,
         // which then are destroyed when the views of the new vectors are created, but petsc still 
         // holds a copy of the original views until the new solve call is created
-        AMP::LinearAlgebra::Vector::shared_ptr  f_thisGetsAroundPETScSharedPtrIssue = spRhs;
-        AMP::LinearAlgebra::Vector::shared_ptr  u_thisGetsAroundPETScSharedPtrIssue = spSol;
-        AMP::LinearAlgebra::Vector::shared_ptr  r_thisGetsAroundPETScSharedPtrIssue = d_pResidualVector;
+        d_refVectors.push_back(spRhs);
+        d_refVectors.push_back(spSol);
+        if ( d_pResidualVector!=NULL )
+            d_refVectors.push_back(AMP::LinearAlgebra::PetscVector::constView(d_pResidualVector));
     #endif
-
-    // Get petsc views of the vectors
-    #if !( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
-        AMP::LinearAlgebra::Vector::shared_ptr  spRhs, spSol;
-    #endif
-    spRhs = AMP::LinearAlgebra::PetscVector::view( f );
-    spSol = AMP::LinearAlgebra::PetscVector::view( u );
 
     // Check input vector states
     AMP_ASSERT( (f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
@@ -338,6 +336,23 @@ void PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
     #if !( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
         SNESReset(d_SNESSolver);
     #endif
+
+    // Delete any copies of the reference vectors that we can
+    #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
+        std::list<AMP::LinearAlgebra::Vector::const_shared_ptr>::iterator it = d_refVectors.begin();
+        while ( it != d_refVectors.end() ) {
+            const AMP::LinearAlgebra::PetscVector* view = 
+                dynamic_cast<const AMP::LinearAlgebra::PetscVector*>(it->get());
+            AMP_ASSERT(view!=NULL);
+            if ( view->petscHoldsView() )
+                ++it;
+            else
+                it = d_refVectors.erase(it);
+        }
+    #endif
+
+    spRhs.reset();
+    spSol.reset();
 
     PROFILE_STOP("solve");
 }

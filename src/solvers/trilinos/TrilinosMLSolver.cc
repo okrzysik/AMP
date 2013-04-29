@@ -409,17 +409,14 @@ namespace AMP {
       AMP::Mesh::MeshIterator thisNode = myMesh->getIterator(AMP::Mesh::Vertex,0);
       AMP::Mesh::MeshIterator  endNode = thisNode.end();
 
-      double thisX;
-      double thisY;
-      double thisZ;
       int nodeCounter = 0;
       int offset = 0;
       for( ; thisNode != endNode; ++thisNode ) {
         std::vector<double> coord = thisNode->coord();
         AMP_INSIST(coord.size()==3,"Currently only programmed for 3d");
-        thisX = coord[0];
-        thisY = coord[1];
-        thisZ = coord[2];
+        double thisX = coord[0];
+        double thisY = coord[1];
+        double thisZ = coord[2];
 
         int dof = numPDE * nodeCounter;
 

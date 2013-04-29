@@ -547,6 +547,7 @@ template <> void AMP_MPI::call_sumScan<unsigned int>(const unsigned int*, unsign
 template <> void AMP_MPI::call_sumScan<int>(const int*, int*, int) const;
 template <> void AMP_MPI::call_sumScan<unsigned long int>(const unsigned long int*, unsigned long int*, int) const;
 template <> void AMP_MPI::call_sumScan<long int>(const long int*, long int*, int) const;
+template <> void AMP_MPI::call_sumScan<size_t>(const size_t*, size_t*, int) const;
 template <> void AMP_MPI::call_sumScan<float>(const float*, float*, int) const;
 template <> void AMP_MPI::call_sumScan<double>(const double*, double*, int) const;
 template <> void AMP_MPI::call_sumScan< std::complex<double> >(const std::complex<double>*, std::complex<double>*, int) const;
@@ -580,6 +581,7 @@ template <> void AMP_MPI::call_minScan<unsigned int>(const unsigned int*, unsign
 template <> void AMP_MPI::call_minScan<int>(const int*, int*, int) const;
 template <> void AMP_MPI::call_minScan<unsigned long int>(const unsigned long int*, unsigned long int*, int) const;
 template <> void AMP_MPI::call_minScan<long int>(const long int*, long int*, int) const;
+template <> void AMP_MPI::call_minScan<size_t>(const size_t*, size_t*, int) const;
 template <> void AMP_MPI::call_minScan<float>(const float*, float*, int) const;
 template <> void AMP_MPI::call_minScan<double>(const double*, double*, int) const;
 #endif
@@ -612,6 +614,7 @@ template <> void AMP_MPI::call_maxScan<unsigned int>(const unsigned int*, unsign
 template <> void AMP_MPI::call_maxScan<int>(const int*, int*, int) const;
 template <> void AMP_MPI::call_maxScan<unsigned long int>(const unsigned long int*, unsigned long int*, int) const;
 template <> void AMP_MPI::call_maxScan<long int>(const long int*, long int*, int) const;
+template <> void AMP_MPI::call_maxScan<size_t>(const size_t*, size_t*, int) const;
 template <> void AMP_MPI::call_maxScan<float>(const float*, float*, int) const;
 template <> void AMP_MPI::call_maxScan<double>(const double*, double*, int) const;
 #endif

@@ -5,7 +5,6 @@
 
 #include "matrices/MatrixParameters.h"
 
-
 #include <Epetra_FECrsMatrix.h>
 
 namespace AMP {

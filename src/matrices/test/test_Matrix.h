@@ -36,7 +36,7 @@ public:
     static void initMesh() 
     {
         PROFILE_START("initMesh");
-        // Delete any existing mesh/matricies
+        // Delete any existing mesh/matrices
         endMesh();
         // Create the mesh
         GENERATOR meshGenerator;

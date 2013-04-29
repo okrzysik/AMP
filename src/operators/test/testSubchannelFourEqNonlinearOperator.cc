@@ -54,7 +54,7 @@ unsigned int getMATLABGapIndex(AMP::Mesh::MeshElement gapFace)
    // get gap face centroid
    std::vector<double> centroid = gapFace.centroid();
    // gap MATLAB index
-   unsigned int k;
+   unsigned int k=0;
    // look at location of gap to determine gap MATLAB index
    if      ((AMP::Utilities::approx_equal(centroid[0],x1,1.0e-12))&&(AMP::Utilities::approx_equal(centroid[1],x4,1.0e-12))) k = 1;
    else if ((AMP::Utilities::approx_equal(centroid[0],x3,1.0e-12))&&(AMP::Utilities::approx_equal(centroid[1],x4,1.0e-12))) k = 2;
@@ -82,7 +82,7 @@ unsigned int getMATLABAxialIndex(AMP::Mesh::MeshElement gapFace)
    // get gap face centroid
    std::vector<double> centroid = gapFace.centroid();
    // axial interval MATLAB index
-   unsigned int j;
+   unsigned int j=0;
    // boolean for if the axial index has been found
    bool foundIndex = false;
    // loop over axial intervals

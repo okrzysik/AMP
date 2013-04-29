@@ -27,6 +27,9 @@ namespace AMP {
       d_volumeOperator->reset(inParams->d_volumeOperatorParams);
 
       // first case - single linear boundary operator parameter object
+      // This logic does not work with NeumannVectorCorrection boundary
+      // operator. As Neumann does not do a matrix correction and its params is
+      // not derived from LinearBoundaryOperatorParameters - Allu 
       boost::shared_ptr<LinearBoundaryOperatorParameters> linearBoundaryParams =
         boost::dynamic_pointer_cast<LinearBoundaryOperatorParameters>(inParams->d_boundaryOperatorParams);
 

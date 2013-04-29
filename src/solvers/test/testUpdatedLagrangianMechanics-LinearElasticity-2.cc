@@ -26,7 +26,7 @@
 #include "solvers/PetscSNESSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
 
-#include "ReadTestMesh.h"
+#include "utils/ReadTestMesh.h"
 #include "mesh_communication.h"
 
 #include <iostream>
