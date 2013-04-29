@@ -30,6 +30,13 @@ public:
      */
     typedef boost::shared_ptr<AMP::Discretization::DOFManager>  shared_ptr;
 
+    /**
+     *\typedef const_shared_ptr
+     *\brief  Name for the shared pointer.
+     *\details  Use this typedef for a reference counted pointer to a DOF manager object.
+     */
+    typedef boost::shared_ptr<const AMP::Discretization::DOFManager>  const_shared_ptr;
+
 
     /** \brief Basic constructor for DOFManager
      * \details  This will create a very simple DOFManager with the given number of DOFs on each processor.

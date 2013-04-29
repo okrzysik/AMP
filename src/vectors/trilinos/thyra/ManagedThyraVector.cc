@@ -1,8 +1,7 @@
-#include "vectors/trilinos/ManagedThyraVector.h"
+#include "vectors/trilinos/thyra/ManagedThyraVector.h"
+#include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
 #include "vectors/SimpleVector.h"
 #include "vectors/MultiVector.h"
-
-#include "vectors/trilinos/ThyraVectorWrapper.h"
 
 
 namespace AMP {
@@ -17,12 +16,12 @@ ManagedThyraVector::ManagedThyraVector( VectorParameters::shared_ptr  params ):
     ManagedVector( params )
 {
     Vector::shared_ptr vec = boost::dynamic_pointer_cast<Vector>( d_Engine );
-    d_thyraVec = Teuchos::RCP<Thyra::VectorBase<double> >( new ThyraVectorWrapper(vec) );
+    d_thyraVec = Teuchos::RCP<Thyra::VectorBase<double> >( new ThyraVectorWrapper(std::vector<Vector::shared_ptr>(1,vec)) );
 }
 ManagedThyraVector::ManagedThyraVector( Vector::shared_ptr  alias ):
     ManagedVector( alias )
 {
-    d_thyraVec = Teuchos::RCP<Thyra::VectorBase<double> >( new ThyraVectorWrapper(alias) );
+    d_thyraVec = Teuchos::RCP<Thyra::VectorBase<double> >( new ThyraVectorWrapper(std::vector<Vector::shared_ptr>(1,alias)) );
 }
 ManagedVector* ManagedThyraVector::getNewRawPtr () const
 { 

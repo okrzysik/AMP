@@ -61,6 +61,17 @@ std::vector<double> getHeatFluxGeneration( std::string shape, std::vector<double
 
 
 /**
+  * \brief Function to get the heat flux of the rod; uses a midpoint average, leading to discretization error
+  * \details  This function returns the heat flux of the rod (W/m^2) assuming a given generation rate
+  * \param shape    The heat shape 
+  * \param z        The axial positions of the faces (m)
+  * \param diam     The diameter of the fuel rods (m)
+  * \param Q_tot    The total heat generation rate (W)
+  */
+std::vector<double> getHeatFluxGenerationWithDiscretizationError( std::string shape, std::vector<double> z, double diam, double Q_tot );
+
+
+/**
   * \brief Function to get the heat flux of the rod
   * \details  This function returns the heat flux of the rod (W/m^2)
   * \param z            The axial positions of the faces

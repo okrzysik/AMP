@@ -40,11 +40,18 @@ CommunicationListParameters::CommunicationListParameters()
     d_localsize = (size_t) -1;
     d_remote_DOFs = std::vector<size_t>(0);
 }
-CommunicationListParameters::CommunicationListParameters(const CommunicationListParameters& rhs)
+CommunicationListParameters::CommunicationListParameters(const CommunicationListParameters& rhs):
+    d_comm(rhs.d_comm),
+    d_localsize(rhs.d_localsize),
+    d_remote_DOFs(rhs.d_remote_DOFs)
 {
-    d_comm = rhs. d_comm;
-    d_localsize = rhs.d_localsize;
-    d_remote_DOFs = rhs.d_remote_DOFs;
+}
+CommunicationList::CommunicationList ( ):
+    d_iBegin(0),
+    d_iNumRows(0),
+    d_iTotalRows(0),
+    d_bFinalized(false)
+{
 }
 CommunicationList::CommunicationList ( CommunicationListParameters::shared_ptr params ):
     d_comm ( params->d_comm ),
@@ -186,7 +193,7 @@ CommunicationList::shared_ptr  CommunicationList::createEmpty ( size_t local , A
   {
     // Search d_ReceiveDOFList for GID
     // Note: d_ReceiveDOFList must be sorted for this to work
-    AMP_INSIST(d_ReceiveDOFList.size()>0,"Tried to access ghost entry, but vector does not contain ghosts");
+    AMP_INSIST(!d_ReceiveDOFList.empty(),"Tried to access ghost entry, but vector does not contain ghosts");
     size_t pos = AMP::Utilities::findfirst( d_ReceiveDOFList, (size_t) GID );
     bool found = pos<d_ReceiveDOFList.size();
     if ( found ) { if ( d_ReceiveDOFList[pos]!=GID ) { found = false; } }
@@ -206,7 +213,7 @@ void CommunicationList::buildCommunicationArrays ( std::vector<size_t>  &DOFs , 
 
     // Check if we are working in serial
     if ( commSize == 1 ) {
-        AMP_INSIST(DOFs.size()==0,"Error in communication list, remote DOFs are present for a serial vector");
+        AMP_INSIST(DOFs.empty(),"Error in communication list, remote DOFs are present for a serial vector");
         d_ReceiveSizes.resize(1,0);
         d_ReceiveDisplacements.resize(1,0);
         d_SendSizes.resize(1,0);

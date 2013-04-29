@@ -1,6 +1,7 @@
 #include "OperatorBuilder.h"
 #include "utils/Utilities.h"
 
+#include "operators/IdentityOperator.h"
 #include "operators/VolumeIntegralOperator.h"
 #include "operators/MassLinearFEOperator.h"
 #include "operators/NeutronicsRhs.h"
@@ -51,7 +52,11 @@ OperatorBuilder::createOperator(boost::shared_ptr<OperatorParameters>  in_params
   
   std::string name = in_params->d_db->getString("name");
   
-  if(name=="DirichletMatrixCorrection")
+  if(name=="IdentityOperator")
+    {
+      retOperator.reset(new IdentityOperator(in_params));
+    }
+  else if(name=="DirichletMatrixCorrection")
     {
       retOperator.reset(new DirichletMatrixCorrection(boost::dynamic_pointer_cast<DirichletMatrixCorrectionParameters>(in_params)));
     }
@@ -185,7 +190,11 @@ OperatorBuilder::createOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter,
 
   std::string operatorType =operator_db->getString("name");
   
-  if(operatorType=="MechanicsLinearFEOperator")
+  if(operatorType=="IdentityOperator")
+    {
+      retOperator = OperatorBuilder::createIdentityOperator(meshAdapter, operator_db);
+    }
+  else if(operatorType=="MechanicsLinearFEOperator")
     {
       retOperator = OperatorBuilder::createLinearMechanicsOperator(meshAdapter, operator_db, elementPhysicsModel);
     }
@@ -272,6 +281,23 @@ OperatorBuilder::createOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter,
   return retOperator;
 }
   
+
+// Create the identity operator
+AMP::Operator::Operator::shared_ptr
+OperatorBuilder::createIdentityOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+					    boost::shared_ptr<AMP::Database> input_db)
+{
+    AMP_INSIST(input_db.get()!=NULL, "Error: The database object for SubchannelTwoEqLinearOperator is NULL");
+
+    boost::shared_ptr<AMP::Operator::OperatorParameters> params(new AMP::Operator::OperatorParameters( input_db ));
+    params->d_Mesh = meshAdapter;
+    boost::shared_ptr<AMP::Operator::IdentityOperator> subchannelOp (new AMP::Operator::IdentityOperator( params ));
+
+    return subchannelOp;
+}
+
+
+// Create the FlowFrapconOperator
 AMP::Operator::Operator::shared_ptr
 OperatorBuilder::createFlowFrapconOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 					    boost::shared_ptr<AMP::Database> input_db)

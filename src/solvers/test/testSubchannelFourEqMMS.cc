@@ -20,7 +20,7 @@
 #include "solvers/PetscKrylovSolver.h"
 #include "solvers/PetscSNESSolverParameters.h"
 #include "solvers/PetscSNESSolver.h"
-#include "solvers/TrilinosMLSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 #include "ampmesh/SiloIO.h"
 #include "vectors/VectorBuilder.h"
@@ -61,7 +61,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file = "output_" + exeName;
-    std::string silo_name = exeName;
+    //std::string silo_name = exeName;
     AMP::PIO::logAllNodes(log_file);
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 

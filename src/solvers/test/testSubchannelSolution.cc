@@ -13,6 +13,7 @@
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"
 #include "vectors/SimpleVector.h"
+#include "operators/IdentityOperator.h"
 #include "operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
 #include "operators/subchannel/SubchannelTwoEqLinearOperator.h"
 #include "operators/subchannel/SubchannelConstants.h"
@@ -101,11 +102,10 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
         subchannelMesh ,"SubchannelTwoEqNonlinearOperator",input_db,elementModel ));
   
 
-  // create linear operator
-  boost::shared_ptr<AMP::Operator::SubchannelTwoEqLinearOperator> linearOperator =
-      boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqLinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
-      subchannelMesh ,"SubchannelTwoEqLinearOperator",input_db,elementModel ));
-
+    // create linear operator
+    boost::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
+        boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
+        subchannelMesh ,"SubchannelTwoEqLinearOperator",input_db,elementModel ));
   
     // pass creation test
     ut->passes(exeName+": creation");

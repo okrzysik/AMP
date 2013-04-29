@@ -284,7 +284,7 @@ public:
 };
 
 
-// Test matrix-matrix multiplication (this tests takes a long time for large matricies)
+// Test matrix-matrix multiplication (this tests takes a long time for large matrices)
 template <typename FACTORY>
 class VerifyMatMultMatrix
 {
@@ -308,7 +308,7 @@ public:
             return;
         }
 
-        // Create the matricies and vectors of interest
+        // Create the matrices and vectors of interest
         matZero->zero();
         matIdent->zero();
         vector2->setToScalar( 1.0 );
@@ -338,7 +338,7 @@ public:
         else
             utils->failure ( "matMultiply with identity matrix" );
 
-        /* Verify mult with two trival matricies */
+        /* Verify mult with two trival matrices */
         matLaplac->mult( vector1, vector2 );
         matLaplac->mult( vector2, vector3 );
         ans1 = vector3->L2Norm();

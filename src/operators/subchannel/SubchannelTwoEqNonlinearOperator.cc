@@ -83,7 +83,7 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
         d_channelMass[i] = d_mass*d_channelArea[i]/total_area;
 
     // get additional parameters based on heat source type
-    if (d_source == "totalHeatGeneration") {
+    if ((d_source == "totalHeatGeneration")||(d_source == "totalHeatGenerationWithDiscretizationError")) {
         d_Q    = getDoubleParameter(myparams,"Rod_Power",66.81e3);  
         d_heatShape = getStringParameter(myparams,"Heat_Shape","Sinusoidal");
     }
@@ -211,6 +211,8 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
             AMP_ERROR("Heat source type 'averageHeatFlux' not yet implemented.");
         } else if (d_source == "totalHeatGeneration") {
             flux = Subchannel::getHeatFluxGeneration( d_heatShape, d_z, d_rodDiameter[isub], d_Q );
+        } else if (d_source == "totalHeatGenerationWithDiscretizationError") {
+            flux = Subchannel::getHeatFluxGenerationWithDiscretizationError( d_heatShape, d_z, d_rodDiameter[isub], d_Q );
         } else {
             AMP_ERROR("Heat source type '"+d_source+"' is invalid");
         }

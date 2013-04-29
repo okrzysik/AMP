@@ -43,7 +43,7 @@ rm -rf CMake*
       -D USE_AMP_MESH=1                                         \
       -D USE_AMP_DISCRETIZATION=1                               \
       -D USE_AMP_VECTORS=1                                      \
-      -D USE_AMP_MATRICIES=1                                    \
+      -D USE_AMP_MATRICES=1                                     \
       -D USE_AMP_MATERIALS=1                                    \
       -D USE_AMP_OPERATORS=0                                    \
       -D USE_AMP_SOLVERS=0                                      \

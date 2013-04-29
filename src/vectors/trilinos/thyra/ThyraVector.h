@@ -42,7 +42,7 @@ class ThyraVector: public DataChangePassThrough
 public:
 
     //!  Destructor
-    virtual ~ThyraVector() {}
+    virtual ~ThyraVector();
 
     /**
       *  \brief  Obtain Thyra Vector for use in Thyra routines
@@ -90,7 +90,12 @@ public:
       */
     static Vector::const_shared_ptr  constView ( Vector::const_shared_ptr AmpVector );
 
+    
+    //! Return an AMP Vector from the Thyra::VectorBase
+    static AMP::LinearAlgebra::Vector::shared_ptr view( Thyra::VectorBase<double>* vec );
 
+    //! Return an AMP Vector from the Thyra::VectorBase
+    static AMP::LinearAlgebra::Vector::const_shared_ptr constView( const Thyra::VectorBase<double> *vec );
 
 protected:
     /**
@@ -116,7 +121,7 @@ protected:
       *  This can only be called by a derived class or the static function below.  There is
       *  no need to create this vector directly since it is virtual.
       */
-    ThyraVector() {};
+    ThyraVector();
 
 };
 

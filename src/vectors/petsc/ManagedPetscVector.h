@@ -108,6 +108,8 @@ namespace LinearAlgebra {
 
       virtual std::string type() const;
       void  assemble();
+ 
+      virtual bool petscHoldsView() const;
 
     protected:
       virtual ManagedVector *getNewRawPtr () const;

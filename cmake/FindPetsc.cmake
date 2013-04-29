@@ -1,6 +1,6 @@
-FUNCTION ( PETSC_GET_VERSION )
-    if (EXISTS "${PETSC_DIRECTORY}/include/petscversion.h")
-        FILE (STRINGS "${PETSC_DIRECTORY}/include/petscversion.h" vstrings REGEX "#define PETSC_VERSION_(RELEASE|MAJOR|MINOR|SUBMINOR|PATCH) ")
+FUNCTION ( PETSC_GET_VERSION PETSC_INCLUDE_DIR )
+    if (EXISTS "${PETSC_INCLUDE_DIR}/petscversion.h")
+        FILE (STRINGS "${PETSC_INCLUDE_DIR}/petscversion.h" vstrings REGEX "#define PETSC_VERSION_(RELEASE|MAJOR|MINOR|SUBMINOR|PATCH) ")
         foreach (line ${vstrings})
             STRING (REGEX REPLACE " +" ";" fields ${line}) # break line into three fields (the first is always "#define")
             LIST (GET fields 1 var)
@@ -20,7 +20,7 @@ FUNCTION ( PETSC_GET_VERSION )
 ENDFUNCTION ()
 
 
-FUNCTION ( PETSC_SET_LIBRARIES )
+FUNCTION ( PETSC_SET_LIBRARIES  PETSC_LIB_DIRECTORY )
     IF ( "${PETSC_VERSION_MAJOR}.${PETSC_VERSION_MINOR}" STREQUAL "3.0" )
         FIND_LIBRARY ( PETSC_LIB           NAMES petsc        PATHS ${PETSC_LIB_DIRECTORY}  NO_DEFAULT_PATH )
         FIND_LIBRARY ( PETSC_CONTRIB_LIB   NAMES petsccontrib PATHS ${PETSC_LIB_DIRECTORY}  NO_DEFAULT_PATH )

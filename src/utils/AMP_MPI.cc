@@ -60,6 +60,30 @@ volatile unsigned int AMP_MPI::N_MPI_Comm_created=0;
 int AMP_MPI::profile_level=127;
 
 
+// Define a type for use with size_t
+#ifdef USE_EXT_MPI
+    static MPI_Datatype MPI_SIZE_T = 0x0;
+    static MPI_Datatype getSizeTDataType( )
+    {
+        int size_int, size_long, size_longlong;
+        MPI_Type_size( MPI_UNSIGNED, &size_int );
+        MPI_Type_size( MPI_UNSIGNED_LONG, &size_long );
+        MPI_Type_size( MPI_LONG_LONG, &size_longlong );
+        if ( sizeof(size_t) == size_int ) {
+            return MPI_UNSIGNED;
+        } else if ( sizeof(size_t) == size_long ) {
+            return MPI_UNSIGNED_LONG;
+        } else if ( sizeof(size_t) == size_longlong ) {
+            AMP_WARNING("Using signed long long datatype for size_t in MPI");
+            return MPI_LONG_LONG;   // Note: this is not unsigned
+        } else {
+            AMP_ERROR("No suitable datatype found");
+        }
+        return 0;
+    }
+#endif
+
+
 // Static data for asyncronous communication without MPI
 #ifndef USE_EXT_MPI
 static const int mpi_max_tag = 0x003FFFFF;
@@ -226,6 +250,9 @@ AMP_MPI::AMP_MPI( MPI_Comm comm ) {
             communicator = comm;
         }
         if ( communicator!=MPI_COMM_NULL) {
+            // Set the MPI_SIZE_T datatype if it has not been set
+            if ( MPI_SIZE_T==0x0 )
+                MPI_SIZE_T = getSizeTDataType();
             // Attach the error handler
             MPI_Comm_set_errhandler( communicator, AMP::AMPManager::mpierr );
             // Get the communicator properties
@@ -807,12 +834,7 @@ void AMP_MPI::call_sumReduce<unsigned long>(unsigned long *x, const int n) const
     template <>
     void AMP_MPI::call_sumReduce<size_t>(const size_t *send, size_t *recv, const int n) const {
         PROFILE_START("sumReduce1<size_t>",profile_level);
-        if ( sizeof(size_t)==sizeof(int) )
-            MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED, MPI_SUM, communicator);
-        else if ( sizeof(size_t)==sizeof(long int) )
-            MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_SUM, communicator);
-        else
-            AMP_ERROR("Internal error");
+        MPI_Allreduce( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_SUM, communicator);
         PROFILE_STOP("sumReduce1<size_t>",profile_level);
     }
     template <>
@@ -820,12 +842,7 @@ void AMP_MPI::call_sumReduce<unsigned long>(unsigned long *x, const int n) const
         PROFILE_START("sumReduce2<size_t>",profile_level);
         size_t *send = x;
         size_t *recv = new size_t[n];
-        if ( sizeof(size_t)==sizeof(int) )
-            MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED, MPI_SUM, communicator);
-        else if ( sizeof(size_t)==sizeof(long int) )
-            MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_SUM, communicator);
-        else
-            AMP_ERROR("Internal error");
+        MPI_Allreduce( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_SUM, communicator);
         for (int i=0; i<n; i++)
             x[i] = recv[i];
         delete [] recv;
@@ -1119,15 +1136,10 @@ void AMP_MPI::call_minReduce<long int>(long int *x, const int n, int *comm_rank_
     void AMP_MPI::call_minReduce<size_t>(const size_t *send, size_t *recv, const int n, int *comm_rank_of_min) const {
         if ( comm_rank_of_min==NULL ) {
             PROFILE_START("minReduce1<size_t>",profile_level);
-            if ( sizeof(size_t)==sizeof(int) )
-                MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED, MPI_MIN, communicator);
-            else if ( sizeof(size_t)==sizeof(long int) )
-                MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_MIN, communicator);
-            else
-                AMP_ERROR("Internal error");
+            MPI_Allreduce( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_MIN, communicator);
             PROFILE_STOP("minReduce1<size_t>",profile_level);
         } else {
-             AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+             AMP_ERROR("Returning the rank of min with size_t is not supported yet");
         }
     }
     template <>
@@ -1136,18 +1148,13 @@ void AMP_MPI::call_minReduce<long int>(long int *x, const int n, int *comm_rank_
             PROFILE_START("minReduce2<size_t>",profile_level);
             size_t *send = x;
             size_t *recv = new size_t[n];
-            if ( sizeof(size_t)==sizeof(int) )
-                MPI_Allreduce( send, recv, n, MPI_UNSIGNED, MPI_MIN, communicator);
-            else if ( sizeof(size_t)==sizeof(long int) )
-                MPI_Allreduce( send, recv, n, MPI_UNSIGNED_LONG, MPI_MIN, communicator);
-            else
-                AMP_ERROR("Internal error");
+            MPI_Allreduce( send, recv, n, MPI_SIZE_T, MPI_MIN, communicator);
             for (int i=0; i<n; i++)
                 x[i] = recv[i];
             delete [] recv;
             PROFILE_STOP("minReduce2<size_t>",profile_level);
         } else {
-             AMP_ERROR("Returning the rank of min with unsigned int is not supported yet");
+             AMP_ERROR("Returning the rank of min with size_t is not supported yet");
         }
     }
 #endif
@@ -1468,12 +1475,7 @@ void AMP_MPI::call_maxReduce<unsigned long int>(unsigned long int *x, const int 
     void AMP_MPI::call_maxReduce<size_t>(const size_t *send, size_t *recv, const int n, int *comm_rank_of_max) const {
         if ( comm_rank_of_max==NULL ) {
             PROFILE_START("minReduce1<size_t>",profile_level);
-            if ( sizeof(size_t)==sizeof(int) )
-                MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED, MPI_MAX, communicator);
-            else if ( sizeof(size_t)==sizeof(long int) )
-                MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_MAX, communicator);
-            else
-                AMP_ERROR("Internal error");
+            MPI_Allreduce( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_MAX, communicator);
             PROFILE_STOP("minReduce1<size_t>",profile_level);
         } else {
              AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
@@ -1485,12 +1487,7 @@ void AMP_MPI::call_maxReduce<unsigned long int>(unsigned long int *x, const int 
             PROFILE_START("minReduce2<size_t>",profile_level);
             size_t *send = x;
             size_t *recv = new size_t[n];
-            if ( sizeof(size_t)==sizeof(int) )
-                MPI_Allreduce( send, recv, n, MPI_UNSIGNED, MPI_MAX, communicator);
-            else if ( sizeof(size_t)==sizeof(long int) )
-                MPI_Allreduce( send, recv, n, MPI_UNSIGNED_LONG, MPI_MAX, communicator);
-            else
-                AMP_ERROR("Internal error");
+            MPI_Allreduce( send, recv, n, MPI_SIZE_T, MPI_MAX, communicator);
             for (int i=0; i<n; i++)
                 x[i] = recv[i];
             delete [] recv;
@@ -2368,6 +2365,15 @@ void AMP_MPI::call_sumScan<unsigned long>(const unsigned long *send, unsigned lo
     MPI_Scan( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_SUM, communicator);
     PROFILE_STOP("sumScan<unsigned long>",profile_level);
 }
+// size_t
+#ifdef USE_WINDOWS
+template <>
+void AMP_MPI::call_sumScan<size_t>(const size_t *send, size_t *recv, int n) const {
+    PROFILE_START("sumScan<size_t>",profile_level);
+    MPI_Scan( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_SUM, communicator);
+    PROFILE_STOP("sumScan<size_t>",profile_level);
+}
+#endif
 // float
 template <>
 void AMP_MPI::call_sumScan<float>(const float *send, float *recv, int n) const {
@@ -2447,6 +2453,15 @@ void AMP_MPI::call_minScan<long int>(const long int *send, long int *recv, int n
     MPI_Scan( (void*) send, (void*) recv, n, MPI_LONG, MPI_MIN, communicator);
     PROFILE_STOP("minScan<long int>",profile_level);
 }
+// size_t
+#ifdef USE_WINDOWS
+template <>
+void AMP_MPI::call_minScan<size_t>(const size_t *send, size_t *recv, int n) const {
+    PROFILE_START("minScan<size_t>",profile_level);
+    MPI_Scan( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_MIN, communicator);
+    PROFILE_STOP("minScan<size_t>",profile_level);
+}
+#endif
 // float
 template <>
 void AMP_MPI::call_minScan<float>(const float *send, float *recv, int n) const {
@@ -2511,6 +2526,15 @@ void AMP_MPI::call_maxScan<unsigned long int>(const unsigned long int *send, uns
     MPI_Scan( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_MAX, communicator);
     PROFILE_STOP("maxScan<unsigned long>",profile_level);
 }
+// size_t
+#ifdef USE_WINDOWS
+template <>
+void AMP_MPI::call_maxScan<size_t>(const size_t *send, size_t *recv, int n) const {
+    PROFILE_START("maxScan<size_t>",profile_level);
+    MPI_Scan( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_MAX, communicator);
+    PROFILE_STOP("maxScan<size_t>",profile_level);
+}
+#endif
 // float
 template <>
 void AMP_MPI::call_maxScan<float>(const float *send, float *recv, int n) const {

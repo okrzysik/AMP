@@ -15,8 +15,8 @@ namespace LinearAlgebra {
 
 
 template<class T>
-static T* getPtr( std::vector<T> &x ) {
-    if ( x.size()>0 )
+static inline T* getPtr( std::vector<T> &x ) {
+    if ( !x.empty() )
         return &x[0];
     return NULL;
 }

@@ -16,12 +16,12 @@
 #include <fstream>
 
 #include <sys/stat.h>
-#include "../Database.h"
-#include "../InputDatabase.h"
-#include "../InputManager.h"
-#include "../AMP_MPI.h"
-#include "../AMPManager.h"
-#include "../PIO.h"
+#include "utils/Database.h"
+#include "utils/InputDatabase.h"
+#include "utils/InputManager.h"
+#include "utils/AMP_MPI.h"
+#include "utils/AMPManager.h"
+#include "utils/PIO.h"
 #include "boost/shared_ptr.hpp"
 
 
@@ -36,7 +36,6 @@ void mytest(AMP::UnitTest *ut)
     std::string log_file = "output_InputManager-1";
 
     // Process command line arguments and dump to log file.
-    std::string info = "test_InputManager-1:creates an input manager and reads in a couple of database objects";
     AMP::PIO::logOnlyNodeZero(log_file);
 
     // Create input database and parse all data in input file.

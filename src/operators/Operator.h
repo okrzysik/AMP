@@ -79,12 +79,14 @@ public :
         d_iDebugPrintInfoLevel = print_level;
     }
 
+    //! Return the output variable
     virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
         //Implemented in derived classes
         AMP::LinearAlgebra::Variable::shared_ptr emptyPointer;
         return emptyPointer;
     }
 
+    //! Return the input variable
     virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
         //Implemented in derived classes
         AMP::LinearAlgebra::Variable::shared_ptr emptyPointer;

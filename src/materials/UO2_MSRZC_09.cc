@@ -7,11 +7,9 @@
  *
  */
 
-#include "UO2_MSRZC_09.h"
-
-#include "Utilities.h"
-#include "Property.h"
-#include "Material.h"
+#include "materials/UO2_MSRZC_09.h"
+#include "materials/Property.h"
+#include "materials/Material.h"
 
 #include <string>
 #include <vector>
@@ -193,9 +191,6 @@ Journal of Nuclear Materials 394 (2009) 182--189");
 		AMP_ASSERT(T > TminVal && T < TmaxVal);
 		AMP_ASSERT(u >= uminVal && u <= umaxVal);
 
-		double x = u;
-		if (x < 0.001) x = 0.001;
-
 		double T2 = T*T;
 		double expDe;
 		if ( T > 923 )
@@ -217,9 +212,6 @@ Journal of Nuclear Materials 394 (2009) 182--189");
 		std::valarray<double> p=get_parameters();
 		AMP_ASSERT(T > TminVal && T < TmaxVal);
 		AMP_ASSERT(u >= uminVal && u <= umaxVal);
-
-		double x = u;
-		if (x < 0.001) x = 0.001;
 
 		double T2 = T*T;
 		double alpha;

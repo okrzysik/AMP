@@ -3,7 +3,7 @@
 
 void helperCreateStackOperatorForPelletMechanics(AMP::Mesh::Mesh::shared_ptr manager,
     boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps, 
-    boost::shared_ptr<AMP::InputDatabase> global_input_db, 
+    boost::shared_ptr<AMP::Database> global_input_db, 
     boost::shared_ptr<AMP::Operator::PelletStackOperator> & pelletStackOp)
 {
   boost::shared_ptr<AMP::Database> pelletStackOp_db = global_input_db->getDatabase("PelletStackOperator");
@@ -21,7 +21,7 @@ void helperCreateStackOperatorForPelletMechanics(AMP::Mesh::Mesh::shared_ptr man
 
 void helperCreateColumnOperatorsForPelletMechanics(std::vector<unsigned int> localPelletIds, 
     std::vector<AMP::Mesh::Mesh::shared_ptr> localMeshes,
-    boost::shared_ptr<AMP::InputDatabase> global_input_db,
+    boost::shared_ptr<AMP::Database> global_input_db,
     boost::shared_ptr<AMP::Operator::ColumnOperator> & nonlinearColumnOperator,
     boost::shared_ptr<AMP::Operator::ColumnOperator> & linearColumnOperator) 
 {
@@ -54,7 +54,7 @@ void helperCreateCoupledOperatorForPelletMechanics(boost::shared_ptr<AMP::Operat
     boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator,
     boost::shared_ptr<AMP::Operator::CoupledOperator> & coupledOp) 
 {
-  boost::shared_ptr<AMP::InputDatabase> emptyDb;
+  boost::shared_ptr<AMP::Database> emptyDb;
   boost::shared_ptr<AMP::Operator::CoupledOperatorParameters> coupledOpParams(new
       AMP::Operator::CoupledOperatorParameters(emptyDb));
   coupledOpParams->d_MapOperator = n2nmaps;
@@ -86,7 +86,7 @@ void helperSetFrozenVectorForMapsForPelletMechanics(AMP::Mesh::Mesh::shared_ptr 
 }
 
 void helperCreateAllOperatorsForPelletMechanics(AMP::Mesh::Mesh::shared_ptr manager,
-    AMP::AMP_MPI globalComm, boost::shared_ptr<AMP::InputDatabase> global_input_db,
+    AMP::AMP_MPI globalComm, boost::shared_ptr<AMP::Database> global_input_db,
     boost::shared_ptr<AMP::Operator::CoupledOperator> & coupledOp,
     boost::shared_ptr<AMP::Operator::ColumnOperator> & linearColumnOperator, 
     boost::shared_ptr<AMP::Operator::PelletStackOperator> & pelletStackOp)
@@ -121,7 +121,7 @@ void helperCreateVectorsForPelletMechanics(AMP::Mesh::Mesh::shared_ptr manager,
   scaledRhsVec = rhsVec->cloneVector();
 }
 
-void helperBuildPointLoadRHSForPelletMechanics(boost::shared_ptr<AMP::InputDatabase> global_input_db, 
+void helperBuildPointLoadRHSForPelletMechanics(boost::shared_ptr<AMP::Database> global_input_db, 
     boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp,
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec) 
 {
@@ -245,7 +245,7 @@ void helperResetNonlinearOperatorForPelletMechanics(boost::shared_ptr<AMP::Opera
 {
   boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator =
     boost::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(coupledOp->getOperator(3));
-  boost::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
+  boost::shared_ptr<AMP::Database> tmp_db (new AMP::InputDatabase("Dummy"));
   boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperatorParameters> tmpParams(new
       AMP::Operator::MechanicsNonlinearFEOperatorParameters(tmp_db));
 

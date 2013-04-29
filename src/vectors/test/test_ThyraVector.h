@@ -1,8 +1,8 @@
 #include "test_Vector.h"
 #include "discretization/DOF_Manager.h"
 #include "vectors/VectorBuilder.h"
-#include "vectors/trilinos/ManagedThyraVector.h"
-#include "vectors/trilinos/NativeThyraVector.h"
+#include "vectors/trilinos/thyra/ManagedThyraVector.h"
+#include "vectors/trilinos/thyra/NativeThyraVector.h"
 #include "utils/AMP_MPI.h"
 
 // Trilinos includes

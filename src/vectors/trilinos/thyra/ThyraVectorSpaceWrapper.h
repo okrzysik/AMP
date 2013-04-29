@@ -6,7 +6,7 @@
 #include "Thyra_VectorDefaultBase_decl.hpp"
 
 // AMP includes
-#include "discretization/DOF_Manager.h"
+#include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
 
 namespace AMP {
@@ -23,7 +23,7 @@ class ThyraVectorSpaceWrapper : public Thyra::VectorSpaceBase<double>
 public:
 
     //! Default constuctor
-    ThyraVectorSpaceWrapper( AMP::Discretization::DOFManager::shared_ptr dofs );
+    ThyraVectorSpaceWrapper( boost::shared_ptr<const ThyraVectorWrapper> thyra_vec, bool is_range=true );
 
     //! Destructor
     virtual ~ThyraVectorSpaceWrapper();
@@ -33,6 +33,7 @@ public:
     virtual bool isCompatible(const Thyra::VectorSpaceBase<double> &vecSpc) const;
     virtual Teuchos::RCP<const Thyra::VectorSpaceFactoryBase<double> > smallVecSpcFcty() const;
     virtual double scalarProd(const Thyra::VectorBase<double> &x, const Thyra::VectorBase<double> &y) const;
+
 
 protected:
 
@@ -46,7 +47,8 @@ protected:
     virtual void scalarProdsImpl(const Thyra::MultiVectorBase<double> &X, const Thyra::MultiVectorBase<double> &Y, const Teuchos::ArrayView<double> &scalarProds) const;
 
     // Local data
-    AMP::Discretization::DOFManager::shared_ptr d_dofs;
+    bool d_is_range;
+    boost::shared_ptr<const ThyraVectorWrapper> d_thyra_vec;
 
 private:
 

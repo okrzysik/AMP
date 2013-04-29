@@ -4,7 +4,7 @@
 #include "boost/shared_ptr.hpp"
 #include "utils/Database.h"
 #include "utils/AMP_MPI.h"
-#include "SolverStrategyParameters.h"
+#include "solvers/SolverStrategyParameters.h"
 
 
 namespace AMP {
@@ -24,6 +24,7 @@ public:
 
     AMP_MPI d_comm;
     AMP::LinearAlgebra::Vector::shared_ptr  d_pInitialGuess;
+    AMP::Operator::Operator::shared_ptr  d_pLinearOperator;
 
 protected:
 private:

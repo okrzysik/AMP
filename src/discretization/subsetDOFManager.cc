@@ -149,8 +149,9 @@ std::vector<size_t> subsetDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
     std::vector<size_t>::iterator end = subsetDOFs.end();
     while ( cur != end ) {
         if ( *cur >= d_global )
-            subsetDOFs.erase(cur);
-        ++cur;
+            cur = subsetDOFs.erase(cur);
+        else
+            ++cur;
     }
     return subsetDOFs;
 }

@@ -33,10 +33,10 @@ namespace AMP {
 *************************************************************************
 */
 
-ParallelBuffer::ParallelBuffer()
+ParallelBuffer::ParallelBuffer():
+    d_prefix()
 {
    d_active        = true;
-   d_prefix        = std::string();
    d_ostream1      = NULL;
    d_ostream2      = NULL;
    d_buffer        = NULL;

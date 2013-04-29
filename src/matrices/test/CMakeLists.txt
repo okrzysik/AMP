@@ -1,5 +1,4 @@
-INCLUDE (macros)
-
+INCLUDE (${AMP_SOURCE_DIR}/cmake/macros.cmake)
 ############################################################################
 #  Configure dependencies for the tests
 ############################################################################

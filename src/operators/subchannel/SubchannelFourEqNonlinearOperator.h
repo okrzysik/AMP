@@ -99,12 +99,20 @@ namespace Operator {
       // Function used in reset to get integer parameter or use default if missing
       int getIntegerParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, int);
 
-      // Function used in reset to get double parameter or use default if missing
+      // Function used in reset to get string parameter or use default if missing
       std::string getStringParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, std::string);
+
+      // Function used in reset to get bool parameter or use default if missing
+      bool getBoolParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, bool);
 
       boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
       boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
       boost::shared_ptr<AMP::LinearAlgebra::Vector> d_cladTemperature;
+
+      bool d_forceNoConduction; // option to force conduction terms to zero; used for testing
+      bool d_forceNoTurbulence; // option to force turbulence terms to zero; used for testing
+      bool d_forceNoHeatSource; // option to force heat source terms to zero; used for testing
+      bool d_forceNoFriction; // option to force friction and form loss terms to zero; used for testing
 
       double d_Pout;     // exit pressure [Pa]
       double d_Tin;      // inlet temperature [K]

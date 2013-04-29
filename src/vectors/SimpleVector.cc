@@ -10,7 +10,10 @@ namespace LinearAlgebra {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-SimpleVector::SimpleVector () : Vector ()
+SimpleVector::SimpleVector (): 
+    Vector(),
+    d_startIndex(0),
+    d_globalSize(0)
 {
 }
 Vector::shared_ptr  SimpleVector::create ( size_t localSize , Variable::shared_ptr var )

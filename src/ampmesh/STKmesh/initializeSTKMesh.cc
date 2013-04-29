@@ -6,7 +6,7 @@
 #include <string.h>
 
 // STKMesh include
-#include "Mesh.h"
+#include "ampmesh/Mesh.h"
 
 
 namespace AMP {

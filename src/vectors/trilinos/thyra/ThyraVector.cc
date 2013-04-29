@@ -1,10 +1,29 @@
-#include "vectors/trilinos/ThyraVector.h"
-#include "vectors/trilinos/ManagedThyraVector.h"
+#include "vectors/trilinos/thyra/ThyraVector.h"
+#include "vectors/trilinos/thyra/ManagedThyraVector.h"
+#include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
 #include "vectors/SimpleVector.h"
 
 
 namespace AMP {
 namespace LinearAlgebra {
+
+
+/************************************************************************
+* Constructors                                                          *
+************************************************************************/
+ThyraVector::ThyraVector()
+{
+    d_thyraVec.reset();
+}
+
+
+/************************************************************************
+* Destructors                                                           *
+************************************************************************/
+ThyraVector::~ThyraVector()
+{
+    d_thyraVec.reset();
+}
 
 
 /****************************************************************
@@ -92,6 +111,41 @@ Teuchos::RCP<const Thyra::VectorBase<double> >  ThyraVector::getVec() const
 {
     return d_thyraVec;
 }
+
+
+/****************************************************************
+* Return the views to the AMP vectors                           *
+****************************************************************/
+template<class T> static void nullDeleter( T* ) {};
+AMP::LinearAlgebra::Vector::shared_ptr ThyraVector::view( Thyra::VectorBase<double>* vec )
+{
+    AMP::LinearAlgebra::Vector::shared_ptr vec_out;
+    if ( vec==NULL ) {
+        // Null vec, do nothing
+    } else if ( dynamic_cast<AMP::LinearAlgebra::ThyraVectorWrapper*>(vec) ) {
+        AMP::LinearAlgebra::ThyraVectorWrapper* tmp = dynamic_cast<AMP::LinearAlgebra::ThyraVectorWrapper*>(vec);
+        AMP_INSIST(tmp->numVecs()==1,"Not ready for dealing with multiple copies of the vector yet");
+        vec_out = tmp->getVec(0);
+    } else {
+        AMP_ERROR("Not finished");
+    }
+    return vec_out;
+}
+AMP::LinearAlgebra::Vector::const_shared_ptr ThyraVector::constView( const Thyra::VectorBase<double>* vec )
+{
+    AMP::LinearAlgebra::Vector::const_shared_ptr vec_out;
+    if ( vec==NULL ) {
+        // Null vec, do nothing
+    } else if ( dynamic_cast<const AMP::LinearAlgebra::ThyraVectorWrapper*>(vec) ) {
+        const AMP::LinearAlgebra::ThyraVectorWrapper* tmp = dynamic_cast<const AMP::LinearAlgebra::ThyraVectorWrapper*>(vec);
+        AMP_INSIST(tmp->numVecs()==1,"Not ready for dealing with multiple copies of the vector yet");
+        vec_out = tmp->getVec(0);
+    } else {
+        AMP_ERROR("Not finished");
+    }
+    return vec_out;
+}
+
 
 
 }

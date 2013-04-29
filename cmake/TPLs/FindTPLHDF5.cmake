@@ -1,0 +1,14 @@
+INCLUDE(TribitsTplDeclareLibraries)
+
+TRIBITS_TPL_DECLARE_LIBRARIES( HDF5
+    REQUIRED_HEADERS hdf5.h
+    REQUIRED_LIBS_NAMES hdf5
+)
+
+MESSAGE ( "Using HDF5" )
+MESSAGE ( "   "  ${HDF5_LIBS} )
+
+# Add the definitions
+SET( TPL_ENABLE_HDF5 ON )
+SET( USE_EXT_HDF5 1 )
+

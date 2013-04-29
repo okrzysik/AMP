@@ -279,7 +279,7 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
 void AMPManager::shutdown()
 {    
     double start_time = time();
-    double shutdown_time=0, petsc_time=0, MPI_time=0;
+    double shutdown_time=0, MPI_time=0;
     int rank = comm_world.getRank();
     if ( initialized==0 )
         AMP_ERROR("AMP is not initialized, did you forget to call startup or call shutdown more than once");
@@ -311,6 +311,7 @@ void AMPManager::shutdown()
         MPI_time = time()-MPI_start_time;
     }
     // Shudown PETSc
+    double petsc_time = 0.0;
     #ifdef USE_EXT_PETSC
         if ( called_PetscInitialize ) {
             double petsc_start_time = time();

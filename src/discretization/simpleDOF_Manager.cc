@@ -305,7 +305,7 @@ std::vector<size_t> simpleDOFManager::getRemoteDOF(std::vector<AMP::Mesh::MeshEl
         return std::vector<size_t>();
     }
     AMP::Mesh::MeshID *send_ptr=NULL;
-    if ( tmpLocalIDs.size()>0 )
+    if ( !tmpLocalIDs.empty() )
         send_ptr = &tmpLocalIDs[0];
     std::vector<AMP::Mesh::MeshID> tmpGlobalIDs(N);
     int N_recv = comm.allGather<AMP::Mesh::MeshID>(send_ptr,tmpLocalIDs.size(),&tmpGlobalIDs[0]);
@@ -314,7 +314,7 @@ std::vector<size_t> simpleDOFManager::getRemoteDOF(std::vector<AMP::Mesh::MeshEl
         meshIDs.insert(tmpGlobalIDs[i]);
     // Get the rank that will own each MeshElement on the current communicator
     std::vector<int> owner_rank(remote_ids.size(),-1);
-    for (std::set<AMP::Mesh::MeshID>::iterator it=meshIDs.begin() ; it!=meshIDs.end(); it++) {
+    for (std::set<AMP::Mesh::MeshID>::iterator it=meshIDs.begin() ; it!=meshIDs.end(); ++it) {
         // Get the mesh with the given meshID
         AMP::Mesh::MeshID meshID = *it;
         AMP::Mesh::Mesh::shared_ptr submesh = d_mesh->Subset(meshID);
@@ -389,7 +389,7 @@ std::vector<size_t> simpleDOFManager::getRemoteDOF(std::vector<AMP::Mesh::MeshEl
     }
     std::vector<AMP::Mesh::MeshElementID> recv_id(tot_size+1); 
     AMP::Mesh::MeshElementID* send_buffer = NULL;
-    if ( remote_ids2.size() > 0 )
+    if ( !remote_ids2.empty() )
         send_buffer = &remote_ids2[0];
     N = comm.allToAll<AMP::Mesh::MeshElementID>( 
         send_buffer, &send_cnt[0], &send_disp[0], 

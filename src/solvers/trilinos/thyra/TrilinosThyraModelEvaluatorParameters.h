@@ -2,7 +2,8 @@
 #define included_AMP_TrilinosThyraModelEvaluatorParameters
 
 
-#include "discretization/DOF_Manager.h"
+#include "vectors/Vector.h"
+#include "operators/Operator.h"
 
 
 namespace AMP {
@@ -17,7 +18,9 @@ class TrilinosThyraModelEvaluatorParameters
 {
 public:
     
-    AMP::Discretization::DOFManager::shared_ptr d_dofs;
+    AMP::LinearAlgebra::Vector::shared_ptr d_icVec;         //!< The dofs to use for the vectors
+    AMP::Operator::Operator::shared_ptr d_nonlinearOp;      //!< The non-linear operator
+    AMP::Operator::Operator::shared_ptr d_linearOp;         //!< The linear operator
 
 };
 

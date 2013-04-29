@@ -197,6 +197,15 @@ namespace LinearAlgebra {
       static Vector::const_shared_ptr  constView ( Vector::const_shared_ptr AmpVector );
 
 
+      /**
+        *  \brief  Check if petsc is holding a view that might prevent us from deleting the vector
+        *  \details This function checks if petsc might be holding a view of the vector
+        *    that would prevent us from deleting the vector.  This function returns false
+        *    if we can safely delete the vector.
+        */
+      virtual bool petscHoldsView() const =0;
+
+
       virtual void  dataChanged ();
 
   };

@@ -1,8 +1,9 @@
-#include "solvers/TrilinosNOXSolver.h"
+#include "solvers/trilinos/nox/TrilinosNOXSolver.h"
 #include "utils/ProfilerApp.h"
 
-#include "vectors/trilinos/ThyraVector.h"
-#include "solvers/TrilinosThyraModelEvaluator.h"
+#include "vectors/trilinos/thyra/ThyraVector.h"
+#include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
+#include "solvers/trilinos/thyra/TrilinosThyraModelEvaluator.h"
 
 
 // Trilinos includes
@@ -15,6 +16,7 @@
 #include "NOX_StatusTest_NormWRMS.H"
 #include "NOX_StatusTest_FiniteValue.H"
 #include "NOX_Solver_Factory.H"
+#include "BelosTypes.hpp"
 
 
 namespace AMP {
@@ -28,7 +30,7 @@ TrilinosNOXSolver::TrilinosNOXSolver()
 {
     
 }
-TrilinosNOXSolver::TrilinosNOXSolver(boost::shared_ptr<TrilinosNOXSolverParameters> parameters)
+TrilinosNOXSolver::TrilinosNOXSolver(boost::shared_ptr<TrilinosNOXSolverParameters> parameters):SolverStrategy(parameters)
 {
     TrilinosNOXSolver();
     initialize(parameters);
@@ -54,27 +56,39 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
     if ( params->d_pInitialGuess.get()!=NULL )
         d_initialGuess = params->d_pInitialGuess;
     AMP_ASSERT(d_initialGuess!=NULL);
+    // Create the default OStream
+    Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::VerboseObjectBase::getDefaultOStream();
+    //Teuchos::RCP<Teuchos::FancyOStream> defaultOStream( new Teuchos::FancyOStream(Teuchos::rcpFromRef(std::cout)) );
+    //Teuchos::VerboseObjectBase::setDefaultOStream(defaultOStream);
     // Create a model evaluator
     boost::shared_ptr<TrilinosThyraModelEvaluatorParameters> modelParams( new TrilinosThyraModelEvaluatorParameters );
-    modelParams->d_dofs = d_initialGuess->getDOFManager();
-    Teuchos::RCP<TrilinosThyraModelEvaluator> thyraModel( new TrilinosThyraModelEvaluator(modelParams) );
+    modelParams->d_nonlinearOp = d_pOperator;
+    modelParams->d_linearOp = params->d_pLinearOperator;
+    modelParams->d_icVec = d_initialGuess;
+    d_thyraModel = Teuchos::RCP<TrilinosThyraModelEvaluator>( new TrilinosThyraModelEvaluator(modelParams) );
     // Create the linear solver factory
     ::Stratimikos::DefaultLinearSolverBuilder builder;
     Teuchos::RCP<Teuchos::ParameterList> p = Teuchos::rcp(new Teuchos::ParameterList);
-    p->set("Linear Solver Type", "AztecOO");
-    p->set("Preconditioner Type", "Ifpack");
+    p->set("Linear Solver Type", "Belos");
+    p->set("Preconditioner Type", "None");
+    //p->set("Linear Solver Type", "AztecOO");
+    //p->set("Preconditioner Type", "Ifpack");
     //p->set("Enable Delayed Solver Construction", true);
+    Teuchos::ParameterList& linearSolverParams = p->sublist("Linear Solver Types");
+    Teuchos::ParameterList& belosParams = linearSolverParams.sublist("Belos");
+    std::string belosSolverType = "Block CG";
+    belosParams.set("Solver Type",belosSolverType);
+    Teuchos::ParameterList& belosSolverTypeParams = belosParams.sublist("Solver Types");
+    Teuchos::ParameterList& belosSolverParams = belosSolverTypeParams.sublist(belosSolverType);
+    if ( d_iDebugPrintInfoLevel >= 2 ) {
+        belosSolverParams.set("Verbosity",Belos::Warnings+Belos::IterationDetails+
+            Belos::OrthoDetails+Belos::FinalSummary+Belos::Debug+Belos::StatusTestDetails);
+    }
     builder.setParameterList(p);
     Teuchos::RCP< ::Thyra::LinearOpWithSolveFactoryBase<double> > 
         lowsFactory = builder.createLinearSolveStrategy("");
-    thyraModel->set_W_factory(lowsFactory);
-    // Get the initial guess
-    boost::shared_ptr<AMP::LinearAlgebra::ThyraVector> thyraVec = 
-        boost::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
-        AMP::LinearAlgebra::ThyraVector::view( d_initialGuess ) );
-    Teuchos::RCP< ::Thyra::VectorBase<double> > initial_guess = thyraVec->getVec();
-    // Create the NOX::Thyra::Group
-    Teuchos::RCP<NOX::Thyra::Group> nox_group( new NOX::Thyra::Group( *initial_guess, thyraModel ) );
+    lowsFactory->initializeVerboseObjectBase();
+    d_thyraModel->set_W_factory(lowsFactory);
     // Create the convergence tests (these will need to be on the input database)
     Teuchos::RCP<NOX::StatusTest::NormF> absresid =
         Teuchos::rcp(new NOX::StatusTest::NormF(1.0e-8));
@@ -88,24 +102,32 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
         Teuchos::rcp(new NOX::StatusTest::MaxIters(20));
     Teuchos::RCP<NOX::StatusTest::FiniteValue> fv =
         Teuchos::rcp(new NOX::StatusTest::FiniteValue);
-    Teuchos::RCP<NOX::StatusTest::Combo> combo =
-        Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
-    combo->addStatusTest(fv);
-    combo->addStatusTest(converged);
-    combo->addStatusTest(maxiters);
+    d_status = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+    d_status->addStatusTest(fv);
+    d_status->addStatusTest(converged);
+    d_status->addStatusTest(maxiters);
     // Create nox parameter list
-    Teuchos::RCP<Teuchos::ParameterList> nlParams =
-        Teuchos::rcp(new Teuchos::ParameterList);
-    nlParams->set("Nonlinear Solver", "Line Search Based");
+    d_nlParams = Teuchos::rcp(new Teuchos::ParameterList);
+    d_nlParams->set("Nonlinear Solver", "Line Search Based");
     // Set the printing parameters in the "Printing" sublist
-    Teuchos::ParameterList& printParams = nlParams->sublist("Printing");
+    Teuchos::ParameterList& printParams = d_nlParams->sublist("Printing");
     //printParams.set("MyPID",0); 
     printParams.set("Output Precision", 3);
     printParams.set("Output Processor", 0);
-    printParams.set("Output Information",NOX::Utils::Error+NOX::Utils::TestDetails);
-    // Create the solver
-    d_solver = NOX::Solver::buildSolver(nox_group, combo, nlParams);
-
+    //printParams.set("Output Information",NOX::Utils::Error+NOX::Utils::TestDetails);
+    if ( d_iDebugPrintInfoLevel >= 2 ) {
+        printParams.set("Output Information", 
+			     NOX::Utils::OuterIteration + 
+			     NOX::Utils::OuterIterationStatusTest + 
+			     NOX::Utils::InnerIteration +
+			     NOX::Utils::LinearSolverDetails +
+			     NOX::Utils::Parameters + 
+			     NOX::Utils::Details + 
+			     NOX::Utils::Warning +
+                             NOX::Utils::Debug +
+			     NOX::Utils::TestDetails +
+			     NOX::Utils::Error);
+    }
 }
 
 
@@ -116,10 +138,34 @@ void TrilinosNOXSolver::solve( boost::shared_ptr<AMP::LinearAlgebra::Vector> f,
                   boost::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START("solve");
-    // Create the NOX::Solver
+    // Get thyra vectors
+    boost::shared_ptr<AMP::LinearAlgebra::ThyraVector> initial = 
+        boost::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
+        AMP::LinearAlgebra::ThyraVector::view( d_initialGuess ) );
+    boost::shared_ptr<AMP::LinearAlgebra::ThyraVector> U = 
+        boost::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
+        AMP::LinearAlgebra::ThyraVector::view( u ) );
+    boost::shared_ptr<AMP::LinearAlgebra::ThyraVector> F = 
+        boost::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
+        AMP::LinearAlgebra::ThyraVector::view( f ) );
+    // Set the rhs for the thyra model
+    d_thyraModel->setRhs( f );
+    // Create the NOX::Thyra::Group
+    Teuchos::RCP<NOX::Thyra::Group> nox_group( new NOX::Thyra::Group( initial->getVec(), d_thyraModel ) );
+    nox_group->setX(U->getVec());
+    // Create the solver
+    d_solver = NOX::Solver::buildSolver(nox_group, d_status, d_nlParams);
+    // Solve
     NOX::StatusTest::StatusType solvStatus = d_solver->solve();
-    if (solvStatus != NOX::StatusTest::Converged)
+    if ( solvStatus != NOX::StatusTest::Converged )
         AMP_ERROR("Failed to solve");
+    // Copy the solution back to u
+    const NOX::Thyra::Vector* tmp = dynamic_cast<const NOX::Thyra::Vector*>(&(nox_group->getX()));
+    const AMP::LinearAlgebra::ThyraVectorWrapper* thyraVec = 
+        dynamic_cast<const AMP::LinearAlgebra::ThyraVectorWrapper*>(&(tmp->getThyraVector()));
+    AMP_ASSERT(thyraVec!=NULL);
+    AMP_ASSERT(thyraVec->numVecs()==1);
+    u->copyVector(thyraVec->getVec(0));
     PROFILE_STOP("solve");
 }
 

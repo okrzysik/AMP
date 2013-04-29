@@ -1,5 +1,4 @@
 #include "boost/shared_ptr.hpp"
-#include "Logger.cc"
 #include <vector>
 #include <list>
 #include <complex>

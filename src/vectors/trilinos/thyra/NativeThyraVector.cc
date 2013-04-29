@@ -1,5 +1,5 @@
-#include "vectors/trilinos/NativeThyraVector.h"
-#include "vectors/trilinos/ThyraVectorWrapper.h"
+#include "vectors/trilinos/thyra/NativeThyraVector.h"
+#include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
 #include "Thyra_SpmdVectorBase_def.hpp"
 #include "Thyra_DefaultSpmdVector_def.hpp"
@@ -8,6 +8,10 @@
 namespace AMP {
 namespace LinearAlgebra {
 
+
+/************************************************************************
+* Constructors                                                          *
+************************************************************************/
 NativeThyraVector::NativeThyraVector ( VectorParameters::shared_ptr in_params ): 
     NativeVector(), 
     ThyraVector(), 
@@ -31,11 +35,17 @@ NativeThyraVector::NativeThyraVector ( VectorParameters::shared_ptr in_params ):
 }
 
 
+/************************************************************************
+* Destructor                                                            *
+************************************************************************/
 NativeThyraVector::~NativeThyraVector ()
 {
 }
 
 
+/************************************************************************
+* Vector functions                                                      *
+************************************************************************/
 Vector::shared_ptr NativeThyraVector::cloneVector(const Variable::shared_ptr var ) const 
 { 
     boost::shared_ptr<NativeThyraVectorParameters> params( new NativeThyraVectorParameters() );
@@ -64,8 +74,10 @@ void* NativeThyraVector::getRawDataBlockAsVoid ( size_t i )
         return spmdVector->getPtr();
     }
     ThyraVectorWrapper* wrapperVector = dynamic_cast<ThyraVectorWrapper*>(ptr);
-    if ( wrapperVector!=NULL )
-        return wrapperVector->getVec()->getRawDataBlock<double>(i);
+    if ( wrapperVector!=NULL ) {
+        AMP_INSIST(wrapperVector->numVecs()==1,"Not ready for dealing with multiple copies of the vector yet");
+        return wrapperVector->getVec(0)->getRawDataBlock<double>(i);
+    }
     AMP_ERROR( "not finished" );
     return NULL;
 }
@@ -82,8 +94,10 @@ const void* NativeThyraVector::getRawDataBlockAsVoid ( size_t i ) const
         return spmdVector->getPtr();
     }
     const ThyraVectorWrapper* wrapperVector = dynamic_cast<const ThyraVectorWrapper*>(ptr);
-    if ( wrapperVector!=NULL )
-        return wrapperVector->getVec()->getRawDataBlock<double>(i);
+    if ( wrapperVector!=NULL ) {
+        AMP_INSIST(wrapperVector->numVecs()==1,"Not ready for dealing with multiple copies of the vector yet");
+        return wrapperVector->getVec(0)->getRawDataBlock<double>(i);
+    }
     return NULL;
 }
 
@@ -95,7 +109,7 @@ size_t NativeThyraVector::numberOfDataBlocks () const
         return 1;
     const ThyraVectorWrapper* wrapperVector = dynamic_cast<const ThyraVectorWrapper*>(ptr);
     if ( wrapperVector!=NULL )
-        return wrapperVector->getVec()->numberOfDataBlocks();
+        return wrapperVector->getVec(0)->numberOfDataBlocks();
     AMP_ERROR( "not finished" );
     return 1;
 }
@@ -109,8 +123,10 @@ size_t NativeThyraVector::sizeOfDataBlock ( size_t i ) const
     if ( spmdVector!=NULL )
         return d_local;
     const ThyraVectorWrapper* wrapperVector = dynamic_cast<const ThyraVectorWrapper*>(ptr);
-    if ( wrapperVector!=NULL )
-        return wrapperVector->getVec()->sizeOfDataBlock(i);
+    if ( wrapperVector!=NULL ) {
+        AMP_INSIST(wrapperVector->numVecs()==1,"Not ready for dealing with multiple copies of the vector yet");
+        return wrapperVector->getVec(0)->sizeOfDataBlock(i);
+    }
     AMP_ERROR( "not finished" );
     return d_local;
 }

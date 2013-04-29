@@ -1,4 +1,6 @@
-INCLUDE (macros)
+INCLUDE (${AMP_SOURCE_DIR}/cmake/macros.cmake)
+INCLUDE (${AMP_SOURCE_DIR}/cmake/libraries.cmake)
+SET_AMP_PACKAGE_FLAGS()
 
 IF ( USE_AMP_MESH ) 
     # Copy some mesh files

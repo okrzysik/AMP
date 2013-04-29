@@ -1,6 +1,10 @@
 #ifndef included_AMP_TrilinosLinearOP
 #define included_AMP_TrilinosLinearOP
 
+// AMP includes
+#include "operators/LinearOperator.h"
+#include "vectors/Vector.h"
+
 // Trilinos includes
 #include "Thyra_LinearOpBase_def.hpp"
 
@@ -17,8 +21,8 @@ class TrilinosLinearOP: public Thyra::LinearOpBase<double>
 {
 public:
     
-    //! Empty constructor
-    TrilinosLinearOP();
+    //! Default constructor
+    TrilinosLinearOP( AMP::Operator::Operator::shared_ptr );
 
     //! Destructor
     virtual ~TrilinosLinearOP();
@@ -31,8 +35,12 @@ public:
         const Teuchos::Ptr< Thyra::MultiVectorBase<double> > &Y, const double alpha, const double beta) const;
 
 private:
+    
+    //! Empty constructor
+    TrilinosLinearOP();
 
-
+    //! Data variables
+    boost::shared_ptr<AMP::Operator::LinearOperator> d_op;
 
 };
 
