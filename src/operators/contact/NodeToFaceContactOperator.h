@@ -57,9 +57,27 @@ namespace AMP {
 
         size_t updateActiveSet(AMP::LinearAlgebra::Vector::shared_ptr displacementFieldVector, bool skipDisplaceMesh = false);
 
+        void uglyHack(AMP::LinearAlgebra::Vector::shared_ptr temperatureFieldVector, AMP::Discretization::DOFManager::shared_ptr temperatureDOFManager, 
+            double thermalExpansionCoefficient, double referenceTemperature) {
+          d_TemperatureFieldVector = temperatureFieldVector;
+          d_TemperatureDOFManager = temperatureDOFManager;
+          d_ThermalExpansionCoefficient = thermalExpansionCoefficient;
+          d_ReferenceTemperature = referenceTemperature;
+        }
+
+        void getSlaveVerticesNormalVectorAndSurfaceTraction(std::vector<double> const * & normalVector, std::vector<double> const * & surfaceTraction) const {
+          normalVector = & d_SlaveVerticesNormalVectors;
+          surfaceTraction = & d_SlaveVerticesSurfaceTraction;
+        }
+
       protected :
 
       private :
+        AMP::LinearAlgebra::Vector::shared_ptr d_TemperatureFieldVector;
+        AMP::Discretization::DOFManager::shared_ptr d_TemperatureDOFManager;
+        double d_ThermalExpansionCoefficient;
+        double d_ReferenceTemperature;
+
         void getVectorIndicesFromGlobalIDs(const std::vector<AMP::Mesh::MeshElementID> & globalIDs, 
             std::vector<size_t> & vectorIndices);
 
@@ -106,6 +124,10 @@ namespace AMP {
       double d_SlaveVertexNormalVector[3];
       double d_SlaveVertexSurfaceTraction[3];
     };
+
+   struct FaceData {
+     AMP::Mesh::MeshElementID d_FaceVerticesGlobalIDs[4];
+   };
 
   }
 }

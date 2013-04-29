@@ -9,6 +9,7 @@ double compute_inverse_3_by_3_matrix(double const *mat, double *inv);
 void compute_n_by_n_matrix_times_vector(unsigned int n, double const *mat, double const *vec, double *res);
 void compute_stress_tensor(double const * constitutive_matrix, double const * strain_tensor, double * stress_tensor);
 void compute_traction(double const * stress_tensor, double const * normal_vector, double * traction);
+void compute_constitutive_matrix(double const youngs_modulus, double const poissons_ratio, double * constitutive_matrix);
 
 class hex8_element_t {
   public:
@@ -41,7 +42,8 @@ class hex8_element_t {
     static void get_basis_functions_values_on_face(double const * local_coordinates_on_face, double * basis_functions_values_on_face);
     static void get_local_coordinates_on_face(double const * basis_functions_values_on_face, double * local_coordinates_on_face);
     static void get_normal_to_face(double const **support_points_ptr, double const * local_coordinates_on_face, double * normal_vector);
-    static void compute_strain_tensor(double const * local_coordinates, double const * displacement_values, double * strain_tensor_values);
+//    static void compute_strain_tensor(double const * local_coordinates, double const * displacement_values, double * strain_tensor_values);
+    void compute_strain_tensor(double const * local_coordinates, double const * displacement_values, double * strain_tensor_values);
     static unsigned int const * get_face(unsigned int i);
     static unsigned int const * get_faces();
 

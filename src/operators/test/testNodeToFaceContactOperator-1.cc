@@ -222,6 +222,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   contactOperator->initialize();
   
+  boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> masterLoadOperator;
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> masterBVPOperator;
 
   // Build the master and slave operators
@@ -244,6 +245,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 //    masterSolverParams->d_comm = globalComm;
     boost::shared_ptr<AMP::Solver::PetscKrylovSolver> masterSolver(new AMP::Solver::PetscKrylovSolver(masterSolverParams));
     columnPreconditioner->append(masterSolver);
+
+    masterLoadOperator = boost::dynamic_pointer_cast<
+        AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(masterMeshAdapter, 
+                                                                                                 "MasterLoadOperator", 
+                                                                                                 input_db, 
+                                                                                                 masterElementPhysicsModel));
+    AMP::LinearAlgebra::Variable::shared_ptr masterVar = masterBVPOperator->getOutputVariable();
+    masterLoadOperator->setVariable(masterVar);
 
 std::fstream masterFout;
 masterFout.open("master_pellet", std::fstream::out);
@@ -333,15 +342,7 @@ slaveFout.close();
 
   bool skipDisplaceMesh = true;
   contactOperator->updateActiveSet(nullVec, skipDisplaceMesh);
-
-#ifdef USE_EXT_SILO
-{
-  siloWriter->registerVector(columnSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution");
-  char outFileName[256];
-  sprintf(outFileName, "TOTO_%d", 0);
-  siloWriter->writeFile(outFileName, 0);
-}
-#endif
+//  contactOperator->updateActiveSet(columnSolVec, skipDisplaceMesh);
 
   size_t const maxActiveSetIterations = input_db->getIntegerWithDefault("maxActiveSetIterations", 5);
   for (size_t activeSetIteration = 0; activeSetIteration < maxActiveSetIterations; ++activeSetIteration) {
@@ -350,9 +351,13 @@ slaveFout.close();
   columnSolVec->zero();
   columnRhsVec->zero();
 
-//  if (slaveLoadOperator.get() != NULL) { 
-//    slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0);
-//  } // end if
+  // compute f
+  if (masterLoadOperator.get() != NULL) { 
+    masterLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0);
+  } // end if
+  if (slaveLoadOperator.get() != NULL) { 
+    slaveLoadOperator->apply(nullVec, nullVec, columnRhsVec, 1.0, 0.0);
+  } // end if
 
   // apply dirichlet rhs correction
   if (masterBVPOperator.get() != NULL) {
@@ -427,7 +432,7 @@ slaveFout.close();
   siloWriter->registerVector(columnSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution");
   char outFileName[256];
   sprintf(outFileName, "TOTO_%d", 0);
-  siloWriter->writeFile(outFileName, activeSetIteration+1);
+  siloWriter->writeFile(outFileName, activeSetIteration);
   columnSolVec->scale(-1.0);
   meshAdapter->displaceMesh(columnSolVec);
   columnSolVec->scale(-1.0);
@@ -479,9 +484,7 @@ int main(int argc, char *argv[])
   AMP::UnitTest ut;
 
   std::vector<std::string> exeNames; 
-  exeNames.push_back("testNodeToSegmentConstraintsOperator-cube");
-//  exeNames.push_back("testNodeToSegmentConstraintsOperator-cylinder");
-//  exeNames.push_back("testNodeToSegmentConstraintsOperator-pellet");
+  exeNames.push_back("testNodeToFaceContactOperator-1");
 
   try {
     for (size_t i = 0; i < exeNames.size(); ++i) { 

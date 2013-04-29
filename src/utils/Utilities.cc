@@ -370,7 +370,7 @@ std::vector<std::string>  Utilities::getCallStack()
                 break;
             ::MEMORY_BASIC_INFORMATION lInfoMemory;
             ::VirtualQuery( ( ::PVOID )lFrameStack.AddrPC.Offset, &lInfoMemory, sizeof( lInfoMemory ) );
-            ::DWORD64 lBaseAllocation = reinterpret_cast<::DWORD64>( lInfoMemory.AllocationBase );
+            ::DWORD64 lBaseAllocation = reinterpret_cast< ::DWORD64 >( lInfoMemory.AllocationBase );
             ::TCHAR lNameModule[ 1024 ];
             ::GetModuleFileName( reinterpret_cast< ::HMODULE >( lBaseAllocation ), lNameModule, 1024 );
             PIMAGE_DOS_HEADER lHeaderDOS = reinterpret_cast<PIMAGE_DOS_HEADER>( lBaseAllocation );
