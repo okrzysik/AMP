@@ -284,22 +284,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   if (masterMeshAdapter.get() != NULL) {
     boost::shared_ptr<AMP::Database> masterSolver_db = columnPreconditioner_db->getDatabase("MasterSolver");
     boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> masterKrylovSolverParams(new AMP::Solver::PetscKrylovSolverParameters(masterSolver_db));
-    masterKrylovSolverParams->d_pOperator = masterLinearBVPOperator;
+//    masterKrylovSolverParams->d_pOperator = masterLinearBVPOperator;
     masterKrylovSolverParams->d_comm = masterMeshAdapter->getComm();
     boost::shared_ptr<AMP::Solver::PetscKrylovSolver> masterKrylovSolver(new AMP::Solver::PetscKrylovSolver(masterKrylovSolverParams));
-
-/*    boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> masterSNESSolverParams(new AMP::Solver::PetscSNESSolverParameters(masterSolver_db));
-    masterSNESSolverParams->d_pOperator = masterNonlinearBVPOperator;
-    masterSNESSolverParams->d_comm = masterMeshAdapter->getComm();
-    AMP::LinearAlgebra::VS_Mesh masterVectorSelector(masterMeshAdapter);
-//    AMP::LinearAlgebra::Vector::shared_ptr masterInitialGuess = masterVectorSelector.subset(columnSolVec);
-    AMP::LinearAlgebra::Vector::shared_ptr masterInitialGuess = columnSolVec->select(masterVectorSelector, columnVar->getName());
-    masterSNESSolverParams->d_pInitialGuess = masterInitialGuess;
-    masterSNESSolverParams->d_pKrylovSolver = masterKrylovSolver;
-
-    boost::shared_ptr<AMP::Solver::PetscSNESSolver> masterSNESSolver(new AMP::Solver::PetscSNESSolver(masterSNESSolverParams));
-    columnPreconditioner->append(masterSNESSolver);
-*/
 
     columnPreconditioner->append(masterKrylovSolver);
   } // end if
@@ -307,24 +294,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   if (slaveMeshAdapter.get() != NULL) {
     boost::shared_ptr<AMP::Database> slaveSolver_db = columnPreconditioner_db->getDatabase("SlaveSolver"); 
     boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> slaveKrylovSolverParams(new AMP::Solver::PetscKrylovSolverParameters(slaveSolver_db));
-    slaveKrylovSolverParams->d_pOperator = slaveLinearBVPOperator;
+//    slaveKrylovSolverParams->d_pOperator = slaveLinearBVPOperator;
     slaveKrylovSolverParams->d_comm = slaveMeshAdapter->getComm();
     boost::shared_ptr<AMP::Solver::PetscKrylovSolver> slaveKrylovSolver(new AMP::Solver::PetscKrylovSolver(slaveKrylovSolverParams));
+
     columnPreconditioner->append(slaveKrylovSolver);
-
-/*
-    boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> slaveSNESSolverParams(new AMP::Solver::PetscSNESSolverParameters(slaveSolver_db));
-    slaveSNESSolverParams->d_pOperator = slaveNonlinearBVPOperator;
-    slaveSNESSolverParams->d_comm = slaveMeshAdapter->getComm();
-    AMP::LinearAlgebra::VS_Mesh slaveVectorSelector(slaveMeshAdapter);
-    AMP::LinearAlgebra::Vector::shared_ptr slaveInitialGuess = columnSolVec->select(slaveVectorSelector, columnVar->getName());
-    slaveSNESSolverParams->d_pInitialGuess = columnSolVec;
-//    slaveSNESSolverParams->d_pInitialGuess = slaveInitialGuess;
-    slaveSNESSolverParams->d_pKrylovSolver = slaveKrylovSolver;
-
-    boost::shared_ptr<AMP::Solver::PetscSNESSolver> slaveSNESSolver(new AMP::Solver::PetscSNESSolver(slaveSNESSolverParams));
-    columnPreconditioner->append(slaveSNESSolver);
-*/
   } // end if
 
   boost::shared_ptr<AMP::Database> contactPreconditioner_db = columnPreconditioner_db->getDatabase("ContactPreconditioner"); 
@@ -354,6 +328,34 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     columnSolVec->zero();
     columnRhsVec->zero();
 
+if (slaveMeshAdapter.get() != NULL) {
+AMP::Mesh::MeshIterator slaveBoundaryIterator = slaveMeshAdapter->getBoundaryIDIterator(AMP::Mesh::Vertex, 4, 0);
+AMP::Mesh::MeshIterator slaveBoundaryIterator_begin = slaveBoundaryIterator.begin(),
+    slaveBoundaryIterator_end = slaveBoundaryIterator.end();
+std::vector<double> vertexCoordinates;
+
+size_t count = 0;
+for (slaveBoundaryIterator = slaveBoundaryIterator_begin; slaveBoundaryIterator != slaveBoundaryIterator_end; ++slaveBoundaryIterator) {
+  vertexCoordinates = slaveBoundaryIterator->coord();
+  AMP_ASSERT( vertexCoordinates.size() == 3 );
+  fout<<std::setprecision(15);
+  double slaveLoadParameter = input_db->getDouble("SlaveLoadParameter");
+  if (vertexCoordinates[1] > input_db->getDouble("SlaveLoadCutoff")) {
+    ++count;
+    fout<<vertexCoordinates[0]<<"  "<<vertexCoordinates[1]<<"  "<<vertexCoordinates[2]<<std::endl;
+    std::vector<size_t> DOFsIndices;
+    dofManager->getDOFs(slaveBoundaryIterator->globalID(), DOFsIndices);
+    AMP_ASSERT( DOFsIndices.size() == 3 );
+    columnRhsVec->setLocalValueByGlobalID(DOFsIndices[1], slaveLoadParameter);
+  } // end if
+} // end for
+size_t count_total = slaveMeshAdapter->getComm().sumReduce(count);
+if (!slaveMeshAdapter->getComm().getRank()) {
+std::cout<<"count_total="<<count_total<<"\n";
+}
+columnRhsVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+} // end if
+
     // apply dirichlet corrections on rhs and initial guess
     if (masterNonlinearBVPOperator.get() != NULL) {
       masterNonlinearBVPOperator->modifyRHSvector(columnRhsVec);
@@ -370,10 +372,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     // compute - Kd
     AMP::LinearAlgebra::Vector::shared_ptr rhsCorrectionVec = createVector(dofManager, columnVar, split);
 
-std::cout<<"RHS correction = "<<(rhsCorrectionVec->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED ? "y" : "n")<<std::endl;
-std::cout<<"SOL = "<<(columnSolVec->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED ? "y" : "n")<<std::endl;
+//std::cout<<"RHS correction = "<<(rhsCorrectionVec->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED ? "y" : "n")<<std::endl;
+//std::cout<<"SOL = "<<(columnSolVec->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED ? "y" : "n")<<std::endl;
 columnSolVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-std::cout<<"SOL = "<<(columnSolVec->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED ? "y" : "n")<<std::endl;
+//std::cout<<"SOL = "<<(columnSolVec->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED ? "y" : "n")<<std::endl;
 
     columnOperator->apply(nullVec, columnSolVec, rhsCorrectionVec, -1.0, 0.0);
 

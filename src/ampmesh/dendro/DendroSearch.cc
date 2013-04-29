@@ -118,6 +118,7 @@ namespace AMP {
           } // end for f
         } else { // point was found but element is not on boundary
           tmpData.d_SearchStatus = FoundNotOnBoundary;
+          tmpData.d_VolumeID = d_localElems[elementLocalID].globalID();
         } // end if
         sendData[d_sendDisps[pointOwnerRank] + tmpSendCnts[pointOwnerRank]] = tmpData;
         ++tmpSendCnts[pointOwnerRank];
@@ -163,6 +164,7 @@ namespace AMP {
           const size_t pointLocalID = tmpData.d_PointLocalID;
           if (tmpData.d_SearchStatus > flags[pointLocalID]) { // FoundOnBoundary overwrites FoundNotOnBoundary 
             flags[pointLocalID] = tmpData.d_SearchStatus;
+            volumeGlobalIDs[pointLocalID] = tmpData.d_VolumeID;
             if (flags[pointLocalID] == FoundOnBoundary) {
               for (size_t d = 0; d < 2; ++d) {
                 projectionLocalCoordsOnFace[2*pointLocalID+d] = tmpData.d_ProjectionLocalCoordsOnFace[d];
@@ -174,7 +176,6 @@ namespace AMP {
                 faceVerticesGlobalIDs[4*pointLocalID+v] = tmpData.d_FaceVerticesIDs[v]; 
               } // end for v 
               faceLocalIndices[pointLocalID] = tmpData.d_FaceLocalIndex;
-              volumeGlobalIDs[pointLocalID] = tmpData.d_VolumeID;
             } // end if
           } // end if
         } // end for j

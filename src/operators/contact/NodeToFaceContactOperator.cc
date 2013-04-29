@@ -8,6 +8,7 @@
 
 #include <iterator>
 #include <algorithm>
+#include <numeric>
 #include <cmath>
 #include <iomanip>
 
@@ -155,11 +156,11 @@ AMP_ASSERT( std::find(recvMap.begin(), recvMap.end(), nSendData) == recvMap.end(
             masterVolumeVerticesGlobalIDs[j] = masterVolumeVertices[j].globalID();
           } // end for j
           hex8_element_t masterVolumeElement(masterVolumeVerticesCoordinates);
-double pov[3] = { 1.0, 1.0, 1.0 };
-draw_hex8_element(&masterVolumeElement, pov, d_fout);
-for (size_t ii = 0; ii < 8; ++ii){
-  draw_point(masterVolumeVerticesCoordinates+3*ii, "", d_fout);
-} // end for ii 
+//double pov[3] = { 1.0, 1.0, 1.0 };
+//draw_hex8_element(&masterVolumeElement, pov, d_fout);
+//for (size_t ii = 0; ii < 8; ++ii){
+//  draw_point(masterVolumeVerticesCoordinates+3*ii, "", d_fout);
+//} // end for ii 
           masterVolumeElement.compute_normal_to_face(recvProjectionDataBuffer[i].d_MasterFaceLocalIndex, recvProjectionDataBuffer[i].d_SlaveVertexLocalCoordOnMasterFace, sendStressStateDataBuffer[i].d_SlaveVertexNormalVector);
           double slaveVertexLocalCoordinates[3];
           hex8_element_t::map_face_to_local(recvProjectionDataBuffer[i].d_MasterFaceLocalIndex, recvProjectionDataBuffer[i].d_SlaveVertexLocalCoordOnMasterFace, slaveVertexLocalCoordinates);
@@ -167,29 +168,40 @@ for (size_t ii = 0; ii < 8; ++ii){
           getVectorIndicesFromGlobalIDs(masterVolumeVerticesGlobalIDs, displacementIndices);
           AMP_ASSERT(displacementIndices.size() == 24);
           double displacementValues[24];
-//displacementFieldVector->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
-//          displacementFieldVector->getLocalValuesByGlobalID(24, &(displacementIndices[0]), &(displacementValues[0]));
           displacementFieldVector->getValuesByGlobalID(24, &(displacementIndices[0]), &(displacementValues[0]));
-std::transform(masterVolumeVerticesCoordinates, masterVolumeVerticesCoordinates+24, displacementValues, masterVolumeVerticesCoordinates, std::plus<double>());
-hex8_element_t displacedMasterVolumeElement(masterVolumeVerticesCoordinates);
-draw_hex8_element(&displacedMasterVolumeElement, pov, d_fout);
-for (size_t ii = 0; ii < 8; ++ii){
-  draw_point(masterVolumeVerticesCoordinates+3*ii, "", d_fout);
-} // end for ii 
+//std::transform(masterVolumeVerticesCoordinates, masterVolumeVerticesCoordinates+24, displacementValues, masterVolumeVerticesCoordinates, std::plus<double>());
+//hex8_element_t displacedMasterVolumeElement(masterVolumeVerticesCoordinates);
+//draw_hex8_element(&displacedMasterVolumeElement, pov, d_fout);
+//for (size_t ii = 0; ii < 8; ++ii){
+//  draw_point(masterVolumeVerticesCoordinates+3*ii, "", d_fout);
+//} // end for ii 
 
-d_fout<<i<<"  ";
-for (size_t ii = 0; ii < 8; ++ii) {
-  d_fout<<"u["<<ii<<"]="
-      <<displacementValues[3*ii+0]<<"  "
-      <<displacementValues[3*ii+1]<<"  "
-      <<displacementValues[3*ii+2]<<"  ";
-}
-d_fout<<"\n";
-d_fout<<displacementFieldVector->localMax()<<"  "<<displacementFieldVector->localMin()<<"\n";
+//d_fout<<i<<"  ";
+//for (size_t ii = 0; ii < 8; ++ii) {
+//  d_fout<<"u["<<ii<<"]="
+//      <<displacementValues[3*ii+0]<<"  "
+//      <<displacementValues[3*ii+1]<<"  "
+//      <<displacementValues[3*ii+2]<<"  ";
+//}
+//d_fout<<"\n";
+//d_fout<<displacementFieldVector->localMax()<<"  "<<displacementFieldVector->localMin()<<"\n";
           double strainTensor[6];
-//          hex8_element_t::compute_strain_tensor(slaveVertexLocalCoordinates, displacementValues, strainTensor);
           masterVolumeElement.compute_strain_tensor(slaveVertexLocalCoordinates, displacementValues, strainTensor);
+
+          if (d_TemperatureFieldVector.get() != NULL) {
+            std::vector<size_t> temperatureIndices;
+            d_TemperatureDOFManager->getDOFs(masterVolumeVerticesGlobalIDs, temperatureIndices);
+            AMP_ASSERT(temperatureIndices.size() == 8);
+            double temperatureValues[8];
+            d_TemperatureFieldVector->getValuesByGlobalID(8, &(temperatureIndices[0]), &(temperatureValues[0]));
+            double basisFunctionsValues[8];
+            hex8_element_t::get_basis_functions_values(slaveVertexLocalCoordinates, basisFunctionsValues);
+            double temperature = std::inner_product(temperatureValues, temperatureValues+8, basisFunctionsValues, 0.0);
+            std::transform(strainTensor, strainTensor+3, strainTensor, std::bind2nd(std::minus<double>(), d_ThermalExpansionCoefficient * (temperature - d_ReferenceTemperature)));
+          } // end if
+
           // compute normal of the surface traction at slave vertex
+/*
           double constitutiveMatrix[6][6];
           double E = 1.0e6;//boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getYoungsModulus();
           double Nu = 0.3;//boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getPoissonsRatio();
@@ -228,7 +240,14 @@ d_fout<<displacementFieldVector->localMax()<<"  "<<displacementFieldVector->loca
         stressTensor[ii] += constitutiveMatrix[ii][jj] * strainTensor[jj];
       } // end for jj
     } // end for ii
-///*
+*/
+double youngsModulus = 1.0e6;//boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getYoungsModulus();
+double poissonsRatio = 0.3;//boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getPoissonsRatio();
+double constitutiveMatrix[36];
+compute_constitutive_matrix(youngsModulus, poissonsRatio, constitutiveMatrix);
+double stressTensor[6];
+compute_stress_tensor(constitutiveMatrix, strainTensor, stressTensor);
+/*
           d_fout<<"epsilon="
               <<strainTensor[0]<<"  "
               <<strainTensor[1]<<"  "
@@ -243,18 +262,55 @@ d_fout<<displacementFieldVector->localMax()<<"  "<<displacementFieldVector->loca
               <<stressTensor[3]<<"  "
               <<stressTensor[4]<<"  "
               <<stressTensor[5]<<"  ";
-//*/
+*/
 
 //          compute_stress_tensor(constitutiveMatrix, strainTensor, stressTensor);
           compute_traction(stressTensor, sendStressStateDataBuffer[i].d_SlaveVertexNormalVector, sendStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction);
-double basisFunctionsDerivatives[24];
-std::fill(basisFunctionsDerivatives, basisFunctionsDerivatives+24, -99.0);
-hex8_element_t::get_basis_functions_derivatives(slaveVertexLocalCoordinates, basisFunctionsDerivatives);
-d_fout<<"nabla phi=";
-for (size_t ii = 0; ii < 24; ++ii) {
-  d_fout<<basisFunctionsDerivatives[ii]<<"  ";
-} // end for ii
-///*
+
+/*
+std::cout<<std::setprecision(6)<<std::fixed;
+draw_hex8_element(&masterVolumeElement, pov, std::cout);
+double slaveVertexGlobalCoordinates[3];
+masterVolumeElement.map_local_to_global(slaveVertexLocalCoordinates, slaveVertexGlobalCoordinates);
+
+unsigned int const * faceOrdering = masterVolumeElement.get_face(d_MasterFacesLocalIndices[i]);
+double scalingFactor = 0.0;
+for (size_t ll = 0; ll < 4; ++ll) {
+  scalingFactor += compute_distance_between_two_points(masterVolumeVerticesCoordinates+3*faceOrdering[ll], masterVolumeVerticesCoordinates+3*faceOrdering[(ll+1)%4]);
+} // end for ll
+scalingFactor *= 0.25;
+double normalVector[3];
+std::copy(sendStressStateDataBuffer[i].d_SlaveVertexNormalVector, sendStressStateDataBuffer[i].d_SlaveVertexNormalVector+3, normalVector);
+for (size_t mm = 0; mm < 3; ++mm) { scale_points(mm, scalingFactor, 1, normalVector); }
+translate_points(slaveVertexGlobalCoordinates, 1, normalVector);
+
+{
+std::string option = "darkgray,->";
+std::cout<<"\\draw["<<option<<"]" ;
+write_point(slaveVertexGlobalCoordinates);
+std::cout<<" -- ";
+write_point(normalVector);
+std::cout<<" ;\n";
+}
+double surfaceTraction[3];
+std::copy(sendStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction, sendStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction+3, surfaceTraction);
+normalize_vector(surfaceTraction);
+for (size_t mm = 0; mm < 3; ++mm) { scale_points(mm, scalingFactor, 1, surfaceTraction); }
+translate_points(slaveVertexGlobalCoordinates, 1, surfaceTraction);
+
+{
+std::string option = "pink,->";
+std::cout<<"\\draw["<<option<<"]" ;
+write_point(slaveVertexGlobalCoordinates);
+std::cout<<" -- ";
+write_point(surfaceTraction);
+std::cout<<" ;\n";
+}
+*/
+
+
+
+/*
           d_fout<<"t="
               <<sendStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction[0]<<"  "
               <<sendStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction[1]<<"  "
@@ -268,7 +324,7 @@ for (size_t ii = 0; ii < 24; ++ii) {
               <<slaveVertexLocalCoordinates[1]<<"  "
               <<slaveVertexLocalCoordinates[2]<<"  ";
           d_fout<<" #"<<std::endl;
-//*/
+*/
         } // end for i
         recvProjectionDataBuffer.clear();
 
@@ -297,7 +353,7 @@ for (size_t ii = 0; ii < 24; ++ii) {
         for (size_t i = 0; i < nActiveSlaveVerticesBeforeUpdate; ++i) {
           double nDotT = compute_scalar_product(&(d_SlaveVerticesNormalVectors[3*i]), &(d_SlaveVerticesSurfaceTraction[3*i]));
           std::vector<double> slaveVertexCoordinates = d_Mesh->getElement(*activeSetIterator).coord();
-          d_fout<<i<<"  "<<std::setprecision(15)<<"n.t = "<<nDotT<<"  "<<"f = "<<d_MasterFacesLocalIndices[i]<<"  ";
+          d_fout<<i<<"  "<<std::setprecision(15)<<"n.t = "<<nDotT<<"  "<<"f = "<<*masterFacesLocalIndicesIterator<<"  ";
           d_fout<<" n = ( "
             <<d_SlaveVerticesNormalVectors[3*i+0]<<" , "
             <<d_SlaveVerticesNormalVectors[3*i+1]<<" , "
@@ -310,24 +366,35 @@ for (size_t ii = 0; ii < 24; ++ii) {
             <<slaveVertexCoordinates[0]<<" , "
             <<slaveVertexCoordinates[1]<<" , "
             <<slaveVertexCoordinates[2]<<" ) ";
+
 /*
-std::vector<AMP::Mesh::MeshElement> elementVertices = d_Mesh->getElement(d_MasterVolumesGlobalIDs[i]).getElements(AMP::Mesh::Vertex);
-std::string colors[8] = { "red", "green", "blue", "cyan", "magenta", "lime", "olive", "orange" };
+std::vector<size_t> slaveVertexDisplacementDOFIndices;
+displacementFieldVector->getDOFManager()->getDOFs(*activeSetIterator, slaveVertexDisplacementDOFIndices);
+std::vector<double> slaveVertexDisplacementValues(3, 0.0);
+displacementFieldVector->getLocalValuesByGlobalID(3, &(slaveVertexDisplacementDOFIndices[0]), &(slaveVertexDisplacementValues[0]));
+std::transform(slaveVertexCoordinates.begin(), slaveVertexCoordinates.end(), slaveVertexDisplacementValues.begin(), slaveVertexCoordinates.begin(), std::plus<double>());
+draw_point(&(slaveVertexCoordinates[0]), "cyan", std::cout);
+
+std::cout<<std::setprecision(6)<<std::fixed;
+std::vector<AMP::Mesh::MeshElement> elementVertices = d_Mesh->getElement(*masterVolumesGlobalIDsIterator).getElements(AMP::Mesh::Vertex);
+//std::string colors[8] = { "red", "green", "blue", "cyan", "magenta", "lime", "olive", "orange" };
 double verticesCoordinates[24];
 for (size_t kk = 0; kk < 8; ++kk) {
   std::vector<double> vertexCoordinates = elementVertices[kk].coord();
-  draw_point(&(vertexCoordinates[0]), colors[kk], std::cout);
+//  draw_point(&(vertexCoordinates[0]), colors[kk], std::cout);
   std::copy(vertexCoordinates.begin(), vertexCoordinates.end(), &(verticesCoordinates[3*kk]));
 } // end for kk
 hex8_element_t volumeElement(verticesCoordinates);
 double point_of_view[3] = { 1.0, 1.0, 1.0 };
 draw_hex8_element(&volumeElement, point_of_view, std::cout);
-double localCoordinatesOnFace[2] = { 0.0, 0.0 };
+double localCoordinatesOnFace[2];// = { 0.0, 0.0 };
+hex8_element_t::get_local_coordinates_on_face(&(*masterShapeFunctionsValuesIterator), localCoordinatesOnFace);
+
 double localCoordinates[3];
 volumeElement.map_face_to_local(d_MasterFacesLocalIndices[i], localCoordinatesOnFace, localCoordinates);
 double globalCoordinates[3];
 volumeElement.map_local_to_global(localCoordinates, globalCoordinates);
-draw_point(globalCoordinates, "darkgray", std::cout);
+//draw_point(globalCoordinates, "darkgray", std::cout);
 unsigned int const * faceOrdering = volumeElement.get_face(d_MasterFacesLocalIndices[i]);
 double scalingFactor = 0.0;
 for (size_t ll = 0; ll < 4; ++ll) {
@@ -338,10 +405,33 @@ double normalVector[3];
 std::copy(&(d_SlaveVerticesNormalVectors[3*i]), &(d_SlaveVerticesNormalVectors[3*i])+3, normalVector);
 for (size_t mm = 0; mm < 3; ++mm) { scale_points(mm, scalingFactor, 1, normalVector); }
 translate_points(globalCoordinates, 1, normalVector);
-draw_point(normalVector, "darkgray", std::cout);
+//draw_point(normalVector, "darkgray", std::cout);
+{
+std::string option = "darkgray,->";
+std::cout<<"\\draw["<<option<<"]" ;
+write_point(globalCoordinates);
+std::cout<<" -- ";
+write_point(normalVector);
+std::cout<<" ;\n";
+}
+double surfaceTraction[3];
+std::copy(&(d_SlaveVerticesSurfaceTraction[3*i]), &(d_SlaveVerticesSurfaceTraction[3*i])+3, surfaceTraction);
+normalize_vector(surfaceTraction);
+for (size_t mm = 0; mm < 3; ++mm) { scale_points(mm, scalingFactor, 1, surfaceTraction); }
+translate_points(globalCoordinates, 1, surfaceTraction);
+
+{
+std::string option = "pink,->";
+std::cout<<"\\draw["<<option<<"]" ;
+write_point(globalCoordinates);
+std::cout<<" -- ";
+write_point(surfaceTraction);
+std::cout<<" ;\n";
+}
 */
 
-          if (nDotT > 1.0e-14) { 
+//          if (nDotT > 1.0e-14) { 
+          if (nDotT > 0) { 
             d_fout<<"@@@@@@@@@@@@@@@@\n";
             ++nActiveSlaveVerticesDeactivated;
             d_InactiveSet.push_back(*activeSetIterator);
@@ -382,7 +472,7 @@ draw_point(normalVector, "darkgray", std::cout);
       d_fout<<"Global number of points found on boundary is "<<globalPtsFoundOnBoundary<<" (local was "<<localPtsFoundOnBoundary<<")"<<std::endl;
       d_fout<<"Total number of points is "<<globalPtsNotFound+globalPtsFoundNotOnBoundary+globalPtsFoundOnBoundary<<std::endl;
 
-      AMP_ASSERT( std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::FoundNotOnBoundary) == 0 ); // DendroSearch::FoundNotOnBoundary is not acceptable
+//      AMP_ASSERT( std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::FoundNotOnBoundary) == 0 ); // DendroSearch::FoundNotOnBoundary is not acceptable
 
       size_t const nActiveSlaveVerticesAfterUpdate = nActiveSlaveVerticesBeforeUpdate - nActiveSlaveVerticesDeactivated + nInactiveSlaveVerticesActivated;
       size_t const nInactiveSlaveVerticesAfterUpdate = nInactiveSlaveVerticesBeforeUpdate + nActiveSlaveVerticesDeactivated - nInactiveSlaveVerticesActivated;
@@ -423,6 +513,21 @@ draw_point(normalVector, "darkgray", std::cout);
           *masterFacesLocalIndicesIterator = tmpMasterFacesLocalIndices[i];
           ++masterFacesLocalIndicesIterator;
         } else {
+// check what master elements the slave vertices where found in before killing the run
+if (flags[i] == AMP::Mesh::DendroSearch::FoundNotOnBoundary) {
+std::cout<<std::setprecision(6)<<std::fixed;
+std::vector<AMP::Mesh::MeshElement> elementVertices = d_Mesh->getElement(tmpMasterVolumesGlobalIDs[i]).getElements(AMP::Mesh::Vertex);
+double verticesCoordinates[24];
+for (size_t kk = 0; kk < 8; ++kk) {
+  std::vector<double> vertexCoordinates = elementVertices[kk].coord();
+  std::copy(vertexCoordinates.begin(), vertexCoordinates.end(), &(verticesCoordinates[3*kk]));
+} // end for kk
+hex8_element_t volumeElement(verticesCoordinates);
+double point_of_view[3] = { 1.0, 1.0, 1.0 };
+draw_hex8_element(&volumeElement, point_of_view, d_fout);
+} // end if
+d_fout<<std::flush;
+
           ++inactiveSetIterator;
         } // end if
       } // end for i
@@ -433,6 +538,7 @@ draw_point(normalVector, "darkgray", std::cout);
       AMP_ASSERT( masterVerticesGlobalIDsIterator == d_MasterVerticesGlobalIDs.end() );
       AMP_ASSERT( masterVolumesGlobalIDsIterator == d_MasterVolumesGlobalIDs.end() );
       AMP_ASSERT( masterFacesLocalIndicesIterator == d_MasterFacesLocalIndices.end() );
+AMP_ASSERT( std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::FoundNotOnBoundary) == 0 ); // DendroSearch::FoundNotOnBoundary is not acceptable
       tmpMasterVerticesGlobalIDs.clear();
       tmpSlaveVerticesShift.clear();
       tmpSlaveVerticesLocalCoordOnFace.clear();
@@ -601,6 +707,7 @@ draw_point(normalVector, "darkgray", std::cout);
         d_TransposeRecvDisps[i] *= d_DOFsPerNode; 
       } // end for i
 
+/*
       d_fout<<std::setprecision(15);
       for (size_t i = 0; i < d_ActiveSet.size(); ++i) {
         for (size_t j = 0; j < 4; ++j) {
@@ -621,6 +728,7 @@ draw_point(normalVector, "darkgray", std::cout);
         } // end for k
       } // end for i
 d_fout<<std::flush;
+*/
 
       // TODO: need to be converted at some point...
       d_SlaveVerticesGlobalIDs = d_ActiveSet;

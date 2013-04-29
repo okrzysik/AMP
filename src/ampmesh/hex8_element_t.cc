@@ -628,15 +628,16 @@ void hex8_element_t::compute_strain_tensor(double const *x, double const *u, dou
   // ,x ,y ,z
   double nabla_phi[24];
   get_basis_functions_derivatives(x, nabla_phi);
-  double J[9], tmp[3];
+  double J[9], invJ[9], tmp[3];
   compute_jacobian_matrix(x, J);
+  compute_inverse_3_by_3_matrix(J, invJ);
   for (unsigned int i = 0; i < 8; ++i) {
     tmp[0] = nabla_phi[0*8+i];
     tmp[1] = nabla_phi[1*8+i];
     tmp[2] = nabla_phi[2*8+i];
-    nabla_phi[0*8+i] = J[0] * tmp[0] + J[1] * tmp[1] + J[2] * tmp[2];
-    nabla_phi[1*8+i] = J[3] * tmp[0] + J[4] * tmp[1] + J[5] * tmp[2];
-    nabla_phi[2*8+i] = J[6] * tmp[0] + J[7] * tmp[1] + J[8] * tmp[2];
+    nabla_phi[0*8+i] = invJ[0] * tmp[0] + invJ[1] * tmp[1] + invJ[2] * tmp[2];
+    nabla_phi[1*8+i] = invJ[3] * tmp[0] + invJ[4] * tmp[1] + invJ[5] * tmp[2];
+    nabla_phi[2*8+i] = invJ[6] * tmp[0] + invJ[7] * tmp[1] + invJ[8] * tmp[2];
   } // end for i
   std::fill(epsilon, epsilon+6, 0.0);
   for (unsigned int i = 0; i < 8; ++i) {
@@ -644,20 +645,34 @@ void hex8_element_t::compute_strain_tensor(double const *x, double const *u, dou
     epsilon[0] += u[3*i+0] * nabla_phi[0*8+i];
     epsilon[1] += u[3*i+1] * nabla_phi[1*8+i];
     epsilon[2] += u[3*i+2] * nabla_phi[2*8+i];
-//    epsilon[3] += 0.5 * (u[1*8] * nabla_phi[2*8] + u[2*8] * nabla_phi[1*8]);
-//    epsilon[4] += 0.5 * (u[0*8] * nabla_phi[2*8] + u[2*8] * nabla_phi[0*8]);
-//    epsilon[5] += 0.5 * (u[0*8] * nabla_phi[1*8] + u[1*8] * nabla_phi[0*8]);
     epsilon[3] += u[3*i+1] * nabla_phi[2*8+i] + u[3*i+2] * nabla_phi[1*8+i];
     epsilon[4] += u[3*i+0] * nabla_phi[2*8+i] + u[3*i+2] * nabla_phi[0*8+i];
     epsilon[5] += u[3*i+0] * nabla_phi[1*8+i] + u[3*i+1] * nabla_phi[0*8+i];
   } // end for i
 }
 
+void compute_constitutive_matrix(double const E, double const nu, double * C) {
+  double const K = E / (3.0 * (1.0 - (2.0 * nu)));
+  double const G = E / (2.0 * (1.0 + nu));
+  std::fill(C, C+36, 0.0);
+  for (size_t i = 0; i < 3; ++i) {
+    C[7*i] += (2.0 * G);
+  } // end for i
+  for (size_t i = 3; i < 6; ++i) {
+    C[7*i] += G;
+  } // end for i
+  for(size_t i = 0; i < 3; ++i) {
+    for(size_t j = 0; j < 3; ++j) {
+      C[6*i+j] += (K - ((2.0 * G) / 3.0));
+    } // end for j
+  } // end for i
+}
+
 void compute_stress_tensor(double const * C, double const * epsilon, double * sigma) {
   std::fill(sigma, sigma+6, 0.0);
-  for (unsigned int i = 0; i < 6; ++i) {
-    for (unsigned int j = 0; j < 6; ++j) {
-      sigma[i] += C[6*i+j] * epsilon[j];
+  for (size_t i = 0; i < 6; ++i) {
+    for (size_t j = 0; j < 6; ++j) {
+      sigma[i] += (C[6*i+j] * epsilon[j]);
     } // end for j
   } // end for i
 }
