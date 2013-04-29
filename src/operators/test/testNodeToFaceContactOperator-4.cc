@@ -438,10 +438,76 @@ void too_young_too_dumb(AMP::Mesh::Mesh::shared_ptr mesh, AMP::LinearAlgebra::Ve
   for (size_t i = 0; i < 24; ++i) {
     std::cout<<surprise[i]<<"  ";
   } // end for i
-std::cout<<std::endl;
-abort();
-  
-  
+  std::cout<<std::endl;
+  abort();
+}
+
+void why_cant_we_be_friend(AMP::Mesh::Mesh::shared_ptr mesh, AMP::LinearAlgebra::Vector::shared_ptr displacementVector) {
+  double gaussianQuadrature[24];
+  double gamma = std::sqrt(3.0) / 3.0;
+  for (int i = 0; i < 2; ++i) {
+    for (int j = 0; j < 2; ++j) {
+      for (int k = 0; k < 2; ++k) {
+        gaussianQuadrature[3*(4*i+2*j+k)+0] = gamma * std::pow(-1.0, i);
+        gaussianQuadrature[3*(4*i+2*j+k)+1] = gamma * std::pow(-1.0, j);
+        gaussianQuadrature[3*(4*i+2*j+k)+2] = gamma * std::pow(-1.0, k);
+      } // end for k
+    } // end for j
+  } // end for i
+  double constitutiveMatrix[36];
+  compute_constitutive_matrix(1.0e6, 0.3, constitutiveMatrix);
+  double strainTensor[6];
+  double stressTensor[6];
+  AMP::Mesh::MeshIterator meshIterator = mesh->getIterator(AMP::Mesh::Volume);
+  std::vector<AMP::Mesh::MeshElement> vertices = meshIterator->getElements(AMP::Mesh::Vertex);
+  AMP_ASSERT(vertices.size() == 8);
+  std::vector<AMP::Mesh::MeshElementID> verticesGlobalIDs(8);
+  double verticesCoordinates[24];
+  for (size_t v = 0; v < 8; ++v) {
+    std::vector<double> vertexCoord = vertices[v].coord();
+    std::copy(vertexCoord.begin(), vertexCoord.end(), &(verticesCoordinates[3*v]));
+    verticesGlobalIDs[v] = vertices[v].globalID();
+  } // end for v
+  std::vector<size_t> dofIndices;
+  displacementVector->getDOFManager()->getDOFs(verticesGlobalIDs, dofIndices);
+  double displacementValues[24];
+  hex8_element_t volumel(verticesCoordinates);
+  displacementVector->getLocalValuesByGlobalID(24, &(dofIndices[0]), &(displacementValues[0]));
+  double localCoordinates[3] = { 0.0, 0.0, 0.0 };
+  for (size_t q = 0; q < 8; ++q) {
+    volumel.compute_strain_tensor(&(gaussianQuadrature[3*q]), displacementValues, strainTensor);
+    for (size_t i = 0; i < 3; ++i) {
+      std::cout<<gaussianQuadrature[3*q+i]<<"  ";
+    } // end for i
+    std::cout<<"|  ";
+    for (size_t i = 0; i < 6; ++i) {
+      std::cout<<strainTensor[i]<<"  ";
+    } // end for i
+    std::cout<<"|  ";
+    compute_stress_tensor(constitutiveMatrix, strainTensor, stressTensor);
+    for (size_t i = 0; i < 6; ++i) {
+      std::cout<<stressTensor[i]<<"  ";
+    } // end for i
+    std::cout<<"\n";
+  } // end for q
+
+  for (double x = -1.0; x <= 1.0; x += 0.2) {
+    localCoordinates[0] = x;
+    for (size_t i = 0; i < 3; ++i) {
+      std::cout<<localCoordinates[i]<<"  ";
+    } // end for i
+    std::cout<<"|  ";
+    volumel.compute_strain_tensor(localCoordinates, displacementValues, strainTensor);
+    for (size_t i = 0; i < 6; ++i) {
+      std::cout<<strainTensor[i]<<"  ";
+    } // end for i
+    std::cout<<"|  ";
+    compute_stress_tensor(constitutiveMatrix, strainTensor, stressTensor);
+    for (size_t i = 0; i < 6; ++i) {
+      std::cout<<stressTensor[i]<<"  ";
+    } // end for i
+    std::cout<<"\n";
+  } // end for x 
 }
 
 
@@ -858,6 +924,7 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     std::vector<double> const * slaveVerticesNormalVector;
     std::vector<double> const * slaveVerticesSurfaceTraction;
     contactOperator->getSlaveVerticesNormalVectorAndSurfaceTraction(slaveVerticesNormalVector, slaveVerticesSurfaceTraction);
+std::cout<<slaveVerticesSurfaceTraction->size()<<"  "<<slaveVerticesNormalVector->size()<<"  "<<sizeOfActiveSetBeforeUpdate<<std::endl;
     AMP_ASSERT( slaveVerticesSurfaceTraction->size() == 3*sizeOfActiveSetBeforeUpdate);
     AMP_ASSERT( slaveVerticesNormalVector->size() == 3*sizeOfActiveSetBeforeUpdate);
     surfaceTractionVec->zero();
@@ -871,6 +938,8 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     suckItVec->setLocalValuesByGlobalID(sizeOfActiveSetBeforeUpdate, &(activeSetTempDOFsIndicesBeforeUpdate[0]), &(surfaceTractionDOTnormalVector[0]));
     
     
+//why_cant_we_be_friend(masterMeshAdapter, columnSolVec);
+
 oldSolVec->subtract(columnSolVec, oldSolVec);
 #ifdef USE_EXT_SILO
     meshAdapter->displaceMesh(columnSolVec);

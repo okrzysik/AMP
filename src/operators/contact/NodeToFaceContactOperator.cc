@@ -42,6 +42,10 @@ namespace AMP {
       size_t const nInactiveSlaveVerticesBeforeUpdate = d_InactiveSet.size();
       size_t const nActiveSlaveVerticesBeforeUpdate = d_ActiveSet.size();
 
+// TODO:  find a better place to put these
+d_SlaveVerticesNormalVectors.resize(3*nActiveSlaveVerticesBeforeUpdate);
+d_SlaveVerticesSurfaceTraction.resize(3*nActiveSlaveVerticesBeforeUpdate);
+
       /** displace the mesh */
       if (!skipDisplaceMesh) {
         d_Mesh->displaceMesh(displacementFieldVector);
@@ -335,8 +339,8 @@ std::cout<<" ;\n";
             (!(recvStressStateDataBuffer.empty()) ? &(recvStressStateDataBuffer[0]) : NULL), &(recvCnts[0]), &(recvDisps[0]), true);
         sendStressStateDataBuffer.clear(); 
 
-        d_SlaveVerticesNormalVectors.resize(3*nActiveSlaveVerticesBeforeUpdate);
-        d_SlaveVerticesSurfaceTraction.resize(3*nActiveSlaveVerticesBeforeUpdate);
+//        d_SlaveVerticesNormalVectors.resize(3*nActiveSlaveVerticesBeforeUpdate);
+//        d_SlaveVerticesSurfaceTraction.resize(3*nActiveSlaveVerticesBeforeUpdate);
         for (size_t i = 0; i < nSendData; ++i) {
           std::copy(recvStressStateDataBuffer[i].d_SlaveVertexNormalVector, recvStressStateDataBuffer[i].d_SlaveVertexNormalVector+3, &(d_SlaveVerticesNormalVectors[3*recvMap[i]]));
           std::copy(recvStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction, recvStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction+3, &(d_SlaveVerticesSurfaceTraction[3*recvMap[i]]));

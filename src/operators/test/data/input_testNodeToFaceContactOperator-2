@@ -1,4 +1,4 @@
-maxActiveSetIterations = 1
+maxActiveSetIterations = 5
 useSlaveBVPOperator = TRUE
 usePetscKrylovSolver = FALSE
 myPCGmaxIters = 500
