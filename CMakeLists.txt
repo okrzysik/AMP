@@ -85,6 +85,7 @@ ENDIF()
 
 
 # Add the src directory
+SET( EXCLUDE_TESTS_FROM_ALL 1 )
 ADD_SUBDIRECTORY ( src )
 
 

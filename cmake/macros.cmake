@@ -420,7 +420,7 @@ ENDMACRO ()
 
 # Add a executable
 MACRO ( INSTALL_AMP_EXE EXE )
-    FIND_FILES ()
+    SET ( SOURCES ${EXE}.cc )
     ADD_EXECUTABLE ( ${EXE} ${SOURCES} )
     ADD_AMP_EXE_DEP ( ${EXE} )
 ENDMACRO()
@@ -435,15 +435,33 @@ MACRO ( ADD_FILES_TO_TEST_LIB FILENAMES )
 ENDMACRO ()
 
 
+# Check if we want to keep the test
+FUNCTION( KEEP_TEST RESULT )
+    SET( ${RESULT} 1 PARENT_SCOPE )
+    IF ( NOT ${PACKAGE_NAME}_ENABLE_TESTS )
+        SET( ${RESULT} 0 PARENT_SCOPE )
+    ENDIF()
+ENDFUNCTION()
+
+
 # Macro to add a provisional test
 MACRO ( ADD_AMP_PROVISIONAL_TEST EXEFILE )
+    # Check if we actually want to add the test
+    KEEP_TEST( RESULT )
+    IF ( NOT RESULT )
+        RETURN()
+    ENDIF()
     # Check if test has already been added
     get_target_property(tmp ${EXEFILE} LOCATION)
     IF ( NOT tmp )
         # The target has not been added
         SET( CXXFILE ${EXEFILE}.cc )
         SET( TESTS_SO_FAR ${TESTS_SO_FAR} ${EXEFILE} )
-        ADD_EXECUTABLE ( ${EXEFILE} EXCLUDE_FROM_ALL ${CXXFILE} )
+        IF ( NOT EXCLUDE_TESTS_FROM_ALL )
+            ADD_EXECUTABLE ( ${EXEFILE} ${CXXFILE} )
+        ELSE()
+            ADD_EXECUTABLE ( ${EXEFILE} EXCLUDE_FROM_ALL ${CXXFILE} )
+        ENDIF()
         ADD_AMP_EXE_DEP( ${EXEFILE} )
     ELSEIF ( ${tmp} STREQUAL "${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE}" )
         # The correct target has already been added
@@ -458,6 +476,7 @@ MACRO ( ADD_AMP_PROVISIONAL_TEST EXEFILE )
         MESSAGE ( FATAL_ERROR "Trying to add 2 different tests with the same name" )
     ENDIF()
 ENDMACRO ()
+
 
 # Macro to create the test name
 MACRO ( CREATE_TEST_NAME TEST ${ARGN} )
@@ -475,6 +494,12 @@ ENDMACRO()
 
 # Add a executable as a test
 MACRO ( ADD_AMP_TEST EXEFILE ${ARGN} )
+    # Check if we actually want to add the test
+    KEEP_TEST( RESULT )
+    IF ( NOT RESULT )
+        RETURN()
+    ENDIF()
+    # Add the provisional test
     ADD_AMP_PROVISIONAL_TEST ( ${EXEFILE} )
     CREATE_TEST_NAME( ${EXEFILE} ${ARGN} )
     IF ( USE_EXT_MPI_FOR_SERIAL_TESTS )
@@ -487,6 +512,12 @@ ENDMACRO()
 
 # Add a executable as a weekly test
 MACRO ( ADD_AMP_WEEKLY_TEST EXEFILE PROCS ${ARGN} )
+    # Check if we actually want to add the test
+    KEEP_TEST( RESULT )
+    IF ( NOT RESULT )
+        RETURN()
+    ENDIF()
+    # Add the provisional test
     ADD_AMP_PROVISIONAL_TEST ( ${EXEFILE} )
     IF ( ${PROCS} STREQUAL "1" )
         CREATE_TEST_NAME( "${EXEFILE}_WEEKLY" ${ARGN} )
@@ -504,6 +535,12 @@ ENDMACRO()
 
 # Add a executable as a parallel test
 MACRO ( ADD_AMP_TEST_PARALLEL EXEFILE PROCS ${ARGN} )
+    # Check if we actually want to add the test
+    KEEP_TEST( RESULT )
+    IF ( NOT RESULT )
+        RETURN()
+    ENDIF()
+    # Add the provisional test
     ADD_AMP_PROVISIONAL_TEST ( ${EXEFILE} )
     IF ( USE_EXT_MPI AND NOT (${PROCS} GREATER ${TEST_MAX_PROCS}) )
         CREATE_TEST_NAME( "${EXEFILE}_${PROCS}procs" ${ARGN} )
@@ -526,7 +563,7 @@ MACRO ( CHECK_ENABLE_FLAG FLAG DEFAULT )
         SET( ${FLAG} ${DEFAULT} )
     ELSEIF ( ( ${${FLAG}} STREQUAL "false" ) OR ( ${${FLAG}} STREQUAL "0" ) OR ( ${${FLAG}} STREQUAL "OFF" ) )
         SET( ${FLAG} 0 )
-    ELSEIF ( ( ${${FLAG}} STREQUAL "true" ) OR ( ${${FLAG}} STREQUAL "1" ) OR ( ${${FLAG}} STREQUAL "OFF" ) )
+    ELSEIF ( ( ${${FLAG}} STREQUAL "true" ) OR ( ${${FLAG}} STREQUAL "1" ) OR ( ${${FLAG}} STREQUAL "ON" ) )
         SET( ${FLAG} 1 )
     ELSE()
         MESSAGE ( "Bad value for ${FLAG} (${${FLAG}}); use true or false" )

@@ -100,6 +100,7 @@ INCLUDE ( ${AMP_SOURCE_DIR}/cmake/libraries.cmake )
 ADD_CUSTOM_TARGET ( build-test )
 ADD_CUSTOM_TARGET ( check COMMAND  make test  )
 ADD_DISTCLEAN()
+SET( EXCLUDE_TESTS_FROM_ALL 0 )
 
 # Check if we want to enable fortran
 ENABLE_LANGUAGE(C)
