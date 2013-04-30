@@ -88,7 +88,7 @@ if (masterMesh.get() != NULL) {
 d_GlobalComm.allGather(myRank, &(rankMap[0]));
 
 std::vector<int> invRankMap(npes, -1);
-for(int i = 0; i < npes; ++i) {
+for(unsigned int i = 0; i < npes; ++i) {
   if(rankMap[i] >= 0) {
     invRankMap[rankMap[i]] = i;
   }

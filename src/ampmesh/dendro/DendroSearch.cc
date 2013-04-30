@@ -640,12 +640,12 @@ d_fout<<"local elements="<<(d_meshAdapter.get() != NULL ? static_cast<int>(d_mes
         }
       }//end i
 d_fout<<"rankmap=";
-for (size_t i = 0; i < npes; ++i) {
+for (int i = 0; i < npes; ++i) {
   d_fout<<rankMap[i]<<"  ";
 }
 d_fout<<"\n";
 d_fout<<"invRankmap=";
-for (size_t i = 0; i < npes; ++i) {
+for (int i = 0; i < npes; ++i) {
   d_fout<<invRankMap[i]<<"  ";
 }
 d_fout<<"\n";
@@ -917,12 +917,12 @@ npes = comm.getSize();
         d_recvDisps[i] = d_recvDisps[i - 1] + d_recvCnts[i - 1];
       }//end i
 d_fout<<"d_sendCnts=";
-for (size_t i = 0; i < npes; ++i) {
+for (int i = 0; i < npes; ++i) {
   d_fout<<d_sendCnts[i]<<"  ";
 } // end for i
 d_fout<<"\n";
 d_fout<<"d_recvCnts=";
-for (size_t i = 0; i < npes; ++i) {
+for (int i = 0; i < npes; ++i) {
   d_fout<<d_recvCnts[i]<<"  ";
 } // end for i
 d_fout<<"\n";
