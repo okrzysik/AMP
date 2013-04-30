@@ -445,7 +445,7 @@ ENDFUNCTION()
 
 
 # Macro to add a provisional test
-MACRO ( ADD_AMP_PROVISIONAL_TEST EXEFILE )
+FUNCTION ( ADD_AMP_PROVISIONAL_TEST EXEFILE )
     # Check if we actually want to add the test
     KEEP_TEST( RESULT )
     IF ( NOT RESULT )
@@ -475,7 +475,7 @@ MACRO ( ADD_AMP_PROVISIONAL_TEST EXEFILE )
         MESSAGE ( "New test:      ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE}" )
         MESSAGE ( FATAL_ERROR "Trying to add 2 different tests with the same name" )
     ENDIF()
-ENDMACRO ()
+ENDFUNCTION ()
 
 
 # Macro to create the test name
@@ -493,7 +493,7 @@ ENDMACRO()
 
 
 # Add a executable as a test
-MACRO ( ADD_AMP_TEST EXEFILE ${ARGN} )
+FUNCTION ( ADD_AMP_TEST EXEFILE ${ARGN} )
     # Check if we actually want to add the test
     KEEP_TEST( RESULT )
     IF ( NOT RESULT )
@@ -508,10 +508,10 @@ MACRO ( ADD_AMP_TEST EXEFILE ${ARGN} )
         ADD_TEST ( ${TESTNAME} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
     ENDIF()
     SET_TESTS_PROPERTIES ( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" )
-ENDMACRO()
+ENDFUNCTION()
 
 # Add a executable as a weekly test
-MACRO ( ADD_AMP_WEEKLY_TEST EXEFILE PROCS ${ARGN} )
+FUNCTION ( ADD_AMP_WEEKLY_TEST EXEFILE PROCS ${ARGN} )
     # Check if we actually want to add the test
     KEEP_TEST( RESULT )
     IF ( NOT RESULT )
@@ -531,10 +531,10 @@ MACRO ( ADD_AMP_WEEKLY_TEST EXEFILE PROCS ${ARGN} )
         ADD_TEST ( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${PROCS} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
     ENDIF()
     SET_TESTS_PROPERTIES ( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" )
-ENDMACRO()
+ENDFUNCTION()
 
 # Add a executable as a parallel test
-MACRO ( ADD_AMP_TEST_PARALLEL EXEFILE PROCS ${ARGN} )
+FUNCTION ( ADD_AMP_TEST_PARALLEL EXEFILE PROCS ${ARGN} )
     # Check if we actually want to add the test
     KEEP_TEST( RESULT )
     IF ( NOT RESULT )
@@ -547,7 +547,7 @@ MACRO ( ADD_AMP_TEST_PARALLEL EXEFILE PROCS ${ARGN} )
         ADD_TEST ( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${PROCS} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
         SET_TESTS_PROPERTIES ( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" )
     ENDIF()
-ENDMACRO()
+ENDFUNCTION()
 
 # Add a executable as a parallel 1, 2, 4 processor test
 MACRO ( ADD_AMP_TEST_1_2_4 EXENAME ${ARGN} )
