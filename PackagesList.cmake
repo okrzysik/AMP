@@ -92,7 +92,9 @@ ENDIF()
 
 # Initialize the libaries (flags will be overwritten when the libraries are configured)
 CHECK_ENABLE_FLAG( USE_EXT_MPI 1 )
-SET( TEST_MAX_PROCS 8 )
+IF ( NOT TEST_MAX_PROCS )
+    SET( TEST_MAX_PROCS 8 )
+ENDIF()
 
 # Create custom targets for build-test, check, and distclean
 INCLUDE ( ${AMP_SOURCE_DIR}/cmake/macros.cmake )
