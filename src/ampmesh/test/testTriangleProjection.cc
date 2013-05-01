@@ -10,7 +10,7 @@
 void test_above_point(triangle_t * t_ptr, unsigned int n_random_candidate_points = 10000) {
   double const * centroid = t_ptr->get_centroid();
   double const * normal = t_ptr->get_normal();
-  double edges[9];
+  double edges[9]={0,0,0,0,0,0,0,0,0};
   make_vector_from_two_points(t_ptr->get_support_point_ptr(0), t_ptr->get_support_point_ptr(1), edges+0);
   make_vector_from_two_points(t_ptr->get_support_point_ptr(1), t_ptr->get_support_point_ptr(2), edges+3);
   make_vector_from_two_points(t_ptr->get_support_point_ptr(2), t_ptr->get_support_point_ptr(0), edges+6);

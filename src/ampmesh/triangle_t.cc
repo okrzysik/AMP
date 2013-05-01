@@ -152,15 +152,15 @@ int triangle_t::project_point(double const * point, double * projection, double 
 
 
 int project_point_onto_collection_of_triangles(unsigned int n_triangles, triangle_t **triangles_ptr, double const *point, double *projection, unsigned int &position, double &distance, double tolerance) {
-  int status, tmp_status;
-  double tmp_distance, tmp_projection[3];
+  int status;
   status = triangles_ptr[0]->project_point(point, projection, tolerance);
   position = 0;
   distance = compute_distance_between_two_points(point, projection);
   for (unsigned int i = 1; i < n_triangles; ++i) {
     if (distance < tolerance) { break; }
-    tmp_status = triangles_ptr[i]->project_point(point, tmp_projection, tolerance); 
-    tmp_distance = compute_distance_between_two_points(point, tmp_projection);
+    double tmp_projection[3];
+    int tmp_status = triangles_ptr[i]->project_point(point, tmp_projection, tolerance); 
+    double tmp_distance = compute_distance_between_two_points(point, tmp_projection);
     if (tmp_distance < distance) {
       distance = tmp_distance;
       position = i;
