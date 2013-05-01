@@ -230,10 +230,23 @@ int main(int argc, char *argv[])
             ut.failure("Correctly factored 13958");
 
         // Test the memory usage
-        size_t n_bytes = AMP::Utilities::getMemoryUsage();
-        if ( globalComm.getRank()==0 )
-            std::cout << "Number of bytes used for a basic test: " << n_bytes << std::endl;
-        if ( n_bytes > 1e4 )
+        double t0 = AMP::AMP_MPI::time();
+        size_t n_bytes1 = AMP::Utilities::getMemoryUsage();
+        double time1 = AMP::AMP_MPI::time() - t0;
+        double *tmp = new double[0x10000];
+        NULL_USE(tmp);
+        t0 = AMP::AMP_MPI::time();
+        size_t n_bytes2 = AMP::Utilities::getMemoryUsage();
+        double time2 = AMP::AMP_MPI::time() - t0;
+        delete [] tmp;
+        t0 = AMP::AMP_MPI::time();
+        size_t n_bytes3 = AMP::Utilities::getMemoryUsage();
+        double time3 = AMP::AMP_MPI::time() - t0;
+        if ( globalComm.getRank()==0 ) {
+            std::cout << "Number of bytes used for a basic test: " << n_bytes1 << ", " << n_bytes2 << ", " << n_bytes3 << std::endl;
+            std::cout << "   Time to query: " << time1*1e6 << " us, " << time2*1e6 << " us, " << time3*1e6 << " us" << std::endl;
+        }
+        if ( n_bytes1>1e4 && n_bytes2>n_bytes1 && n_bytes3==n_bytes1 )
             ut.passes("getMemoryUsage");
         else
             ut.failure("getMemoryUsage");

@@ -215,7 +215,7 @@ namespace Utilities
      * Function to get the memory usage.
      * This function will return the total memory used by the application.
      * Note: depending on the implimentation, this number may be rounded to
-     * to a multiple of 1024 (2^3n).
+     * to a multiple of the page size.
      * If this function fails, it will return 0.
      */
     size_t getMemoryUsage();
