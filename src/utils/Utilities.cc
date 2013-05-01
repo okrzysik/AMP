@@ -265,6 +265,9 @@ unsigned int Utilities::hash_char(const char* name)
     static void fidDeleter(FILE* fid) { fclose(fid); };
     static boost::shared_ptr<FILE> proc_fid;
     static size_t N_bytes_initialization = Utilities::getMemoryUsage();
+#elif defined(USE_MAC)
+    // Get the page size on mac
+    size_t page_size = static_cast<size_t>(sysconf(_SC_PAGESIZE));
 #endif
 size_t Utilities::getMemoryUsage()
 {
@@ -310,7 +313,7 @@ size_t Utilities::getMemoryUsage()
                               &t_info_count)) {
             return 0;
         }
-        N_bytes = t_info.resident_size;
+        N_bytes = t_info.virtual_size;
     #elif defined(USE_WINDOWS)
         PROCESS_MEMORY_COUNTERS memCounter;
         GetProcessMemoryInfo( GetCurrentProcess(), &memCounter, sizeof(memCounter) );

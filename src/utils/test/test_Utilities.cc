@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
         double t0 = AMP::AMP_MPI::time();
         size_t n_bytes1 = AMP::Utilities::getMemoryUsage();
         double time1 = AMP::AMP_MPI::time() - t0;
-        double *tmp = new double[0x10000];
+        double *tmp = new double[0x100000];
         NULL_USE(tmp);
         t0 = AMP::AMP_MPI::time();
         size_t n_bytes2 = AMP::Utilities::getMemoryUsage();
@@ -246,10 +246,19 @@ int main(int argc, char *argv[])
             std::cout << "Number of bytes used for a basic test: " << n_bytes1 << ", " << n_bytes2 << ", " << n_bytes3 << std::endl;
             std::cout << "   Time to query: " << time1*1e6 << " us, " << time2*1e6 << " us, " << time3*1e6 << " us" << std::endl;
         }
-        if ( n_bytes1>1e4 && n_bytes2>n_bytes1 && n_bytes3==n_bytes1 )
-            ut.passes("getMemoryUsage");
-        else
-            ut.failure("getMemoryUsage");
+        if ( n_bytes1==0 ) {
+            ut.failure("getMemoryUsage returns 0");
+        } else {
+            ut.passes("getMemoryUsage returns non-zero");
+            if ( n_bytes2>n_bytes1 )
+                ut.passes("getMemoryUsage increases size");
+            else
+                ut.failure("getMemoryUsage increases size");
+            if ( n_bytes1==n_bytes3 )
+                ut.passes("getMemoryUsage decreases size properly");
+            else
+                ut.expected_failure("getMemoryUsage does not decrease size properly");
+        }
 
         // Test getting the current call stack
         std::vector<std::string> call_stack = get_call_stack();
