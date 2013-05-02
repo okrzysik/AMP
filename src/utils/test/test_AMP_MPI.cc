@@ -9,6 +9,7 @@
 #include "utils/UnitTest.h"
 #include "utils/AMP_MPI.h"
 #include "utils/ProfilerApp.h"
+#include "utils/Utilities.h"
 #include "utils/PIO.h"
 
 
@@ -1077,14 +1078,15 @@ int main(int argc, char *argv[])
     AMP::AMPManagerProperties startup_properties;
     startup_properties.use_MPI_Abort = false;
     AMP::AMPManager::startup(argc,argv,startup_properties);
-    int num_failed = 0;
+
+    // Create the unit test
+    AMP::UnitTest ut;		
     PROFILE_ENABLE(0);
+    PROFILE_START("Main");
+
 
     // Limit the scope so objects are destroyed
     {
-        PROFILE_START("Main");
-        // Create the unit test
-        AMP::UnitTest ut;
 
         // Get the start time for the tests
         double start_time = AMP::AMP_MPI::time();
@@ -1123,6 +1125,16 @@ int main(int argc, char *argv[])
             commTimer.print();
             std::cout << std::endl;
         }
+
+        // Test bcast with std::string
+        std::string rank_string;
+        if ( globalComm.getRank()==0 )
+            rank_string = "Rank 0";
+        rank_string = globalComm.bcast(rank_string,0);
+        if ( rank_string == "Rank 0" )
+            ut.passes("Bcast std::string");
+        else
+            ut.failure("Bcast std::string");
 
         // Test AMP_COMM_SELF
         AMP::AMP_MPI selfComm = AMP::AMP_MPI(AMP_COMM_SELF);
@@ -1228,6 +1240,8 @@ int main(int argc, char *argv[])
             ut.passes("split with color=-1 returns NULL communicator");
         else
             ut.failure("split with color=-1 returns NULL communicator");
+        if ( globalComm.getRank()==0 )
+            color = -1;
         splitComms[3] = splitComms[0];  // Make a copy to ensure there are no memory leaks
         splitComms[3] = splitComms[2];  // Perform assignement to check memory leaks
         AMP_ASSERT(splitComms[3]==splitComms[2]);
@@ -1329,18 +1343,19 @@ int main(int argc, char *argv[])
             std::cout << std::endl;
         }
         
-        // Finished testing, report the results
-        PROFILE_START("Report");
-        start_time = AMP::AMP_MPI::time();
-        ut.report();
-        num_failed = ut.NumFailGlobal();
-        end_time = AMP::AMP_MPI::time();
-        if ( globalComm.getRank() == 0 )
-            std::cout << "Time to report: " << end_time-start_time << std::endl << std::endl;
-        PROFILE_STOP("Report");
-
-        PROFILE_STOP("Main");
     } // Limit the scope so objects are detroyed
+
+    // Finished testing, report the results
+    PROFILE_START("Report");
+    double start_time = AMP::AMP_MPI::time();
+    ut.report();
+    int num_failed = ut.NumFailGlobal();
+    double end_time = AMP::AMP_MPI::time();
+    if ( AMP::AMP_MPI(AMP_COMM_WORLD).getRank() == 0 )
+        std::cout << "Time to report: " << end_time-start_time << std::endl << std::endl;
+    PROFILE_STOP("Report");
+
+    PROFILE_STOP("Main");
 
     // Shutdown
     PROFILE_SAVE("test_AMP_MPI");
