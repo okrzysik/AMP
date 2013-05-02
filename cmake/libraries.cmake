@@ -672,10 +672,12 @@ MACRO ( CONFIGURE_SYSTEM )
     MESSAGE("System is: ${CMAKE_SYSTEM_NAME}")
     IF ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
         # Windows specific system libraries
-        #FIND_LIBRARY ( SYSTEM_LIBS           NAMES "psapi"        PATHS C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/  )
-        #C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/psapi
-        SET( SYSTEM_LIBS "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/Psapi.lib" )
-        SET( SYSTEM_LIBS ${SYSTEM_LIBS} "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64/DbgHelp.lib" )
+        SET( SYSTEM_PATHS "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/x64" 
+                          "C:/Program Files (x86)/Microsoft Visual Studio 8/VC/PlatformSDK/Lib/AMD64" )
+        FIND_LIBRARY ( PSAPI_LIB    NAMES Psapi    PATHS ${SYSTEM_PATHS}  NO_DEFAULT_PATH )
+        FIND_LIBRARY ( DBGHELP_LIB  NAMES DbgHelp  PATHS ${SYSTEM_PATHS}  NO_DEFAULT_PATH )
+        SET( SYSTEM_LIBS ${PSAPI_LIB} ${DBGHELP_LIB} )
+        MESSAGE("System libs: ${SYSTEM_LIBS}")
     ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
         # Linux specific system libraries
         SET( SYSTEM_LIBS "-lz -ldl" )

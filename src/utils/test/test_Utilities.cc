@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"

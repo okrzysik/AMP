@@ -318,12 +318,12 @@ MACRO ( SET_COMPILER_FLAGS )
     SET_COMPILER ()
     # Set the default flags for each build type
     IF ( USING_MICROSOFT )
-        SET(CMAKE_C_FLAGS_DEBUG       "-D_DEBUG /DEBUG /Od" )
-        SET(CMAKE_C_FLAGS_RELEASE     "/O2"                 )
-        SET(CMAKE_CXX_FLAGS_DEBUG     "-D_DEBUG /DEBUG /Od" )
-        SET(CMAKE_CXX_FLAGS_RELEASE   "/O2"                 )
-        SET(CMAKE_Fortran_FLAGS_DEBUG ""                    )
-        SET(CMAKE_Fortran_FLAGS_RELEASE ""                  )
+        SET(CMAKE_C_FLAGS_DEBUG       "-D_DEBUG /DEBUG /Od /EHsc /MTd" )
+        SET(CMAKE_C_FLAGS_RELEASE     "/O2 /EHsc /MT"                  )
+        SET(CMAKE_CXX_FLAGS_DEBUG     "-D_DEBUG /DEBUG /Od /EHsc /MTd" )
+        SET(CMAKE_CXX_FLAGS_RELEASE   "/O2 /EHsc/MT"                   )
+        SET(CMAKE_Fortran_FLAGS_DEBUG ""                               )
+        SET(CMAKE_Fortran_FLAGS_RELEASE ""                             )
     ELSE()
         SET(CMAKE_C_FLAGS_DEBUG       "-g -D_DEBUG -O0" )
         SET(CMAKE_C_FLAGS_RELEASE     "-O2"             )
@@ -414,7 +414,7 @@ MACRO ( ADD_AMP_EXE_DEP EXE )
     TARGET_LINK_LIBRARIES ( ${EXE} ${MPI_LINK_FLAGS} ${MPI_LIBRARIES} )
     TARGET_LINK_LIBRARIES ( ${EXE} ${LAPACK_LIBS} ${BLAS_LIBS} )
     TARGET_LINK_LIBRARIES ( ${EXE} ${COVERAGE_LIBS} ${LDLIBS} )
-    TARGET_LINK_LIBRARIES ( ${EXE} "${SYSTEM_LIBS}" )
+    TARGET_LINK_LIBRARIES ( ${EXE} ${SYSTEM_LIBS} )
 ENDMACRO ()
 
 
@@ -468,6 +468,8 @@ FUNCTION ( ADD_AMP_PROVISIONAL_TEST EXEFILE )
     ELSEIF ( ${tmp} STREQUAL "${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE}.exe" )
         # The correct target has already been added
     ELSEIF ( ${tmp} STREQUAL "${CMAKE_CURRENT_BINARY_DIR}/$(Configuration)/${EXEFILE}.exe" )
+        # The correct target has already been added
+    ELSEIF ( ${tmp} STREQUAL "${CMAKE_CURRENT_BINARY_DIR}/$(OutDir)/${EXEFILE}.exe" )
         # The correct target has already been added
     ELSE()
         # We are trying to add 2 different tests with the same name
