@@ -635,9 +635,10 @@ void hex8_element_t::compute_strain_tensor(double const *x, double const *u, dou
     tmp[0] = nabla_phi[0*8+i];
     tmp[1] = nabla_phi[1*8+i];
     tmp[2] = nabla_phi[2*8+i];
-    nabla_phi[0*8+i] = invJ[0] * tmp[0] + invJ[1] * tmp[1] + invJ[2] * tmp[2];
-    nabla_phi[1*8+i] = invJ[3] * tmp[0] + invJ[4] * tmp[1] + invJ[5] * tmp[2];
-    nabla_phi[2*8+i] = invJ[6] * tmp[0] + invJ[7] * tmp[1] + invJ[8] * tmp[2];
+    // apply transpose inverse jacobian matrix
+    nabla_phi[0*8+i] = invJ[0] * tmp[0] + invJ[3] * tmp[1] + invJ[6] * tmp[2];
+    nabla_phi[1*8+i] = invJ[1] * tmp[0] + invJ[4] * tmp[1] + invJ[7] * tmp[2];
+    nabla_phi[2*8+i] = invJ[2] * tmp[0] + invJ[5] * tmp[1] + invJ[8] * tmp[2];
   } // end for i
   std::fill(epsilon, epsilon+6, 0.0);
   for (unsigned int i = 0; i < 8; ++i) {
