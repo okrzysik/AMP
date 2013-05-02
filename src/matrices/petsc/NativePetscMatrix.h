@@ -88,10 +88,6 @@ namespace LinearAlgebra {
 
     private:
 
-      /** \brief  Communicator for the matrix
-        */
-      AMP_MPI d_comm;
-
 
   };
 

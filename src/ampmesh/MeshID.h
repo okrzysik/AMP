@@ -149,7 +149,7 @@ public:
         return (GeomType) tmp; 
     }
     inline unsigned int local_id() const { 
-        int tmp = (int) (data[1]&0x00000000FFFFFFFF);
+        unsigned int tmp = (unsigned int) (data[1]&0x00000000FFFFFFFF);
         return tmp;
     }
     inline unsigned int owner_rank() const { 

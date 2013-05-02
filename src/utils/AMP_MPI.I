@@ -226,25 +226,6 @@ void AMP_MPI::call_maxReduce(const type *x, type *y, const int n, int *rank_of_m
 /************************************************************************
 *  bcast                                                                *
 ************************************************************************/
-template <class type>
-inline type AMP_MPI::bcast(const type value, const int root) const {
-    if ( root >= comm_size )
-        AMP_ERROR("root cannot be >= size in bcast");
-    if ( comm_size > 1 ) {
-        type tmp = value;
-        call_bcast(&tmp,1,root);
-        return tmp;
-    } else {
-        return value;
-    }
-}
-template <class type>
-inline void AMP_MPI::bcast(type *x, const int n, const int root) const {
-    if ( root >= comm_size )
-        AMP_ERROR("root cannot be >= size in bcast");
-    if ( comm_size > 1 )
-        call_bcast(x,n,root);
-}
 // Define specializations of bcast(type*, const int, const int)
 #ifdef USE_EXT_MPI
 template <> void AMP_MPI::call_bcast<unsigned char>(unsigned char*, const int, const int) const;
@@ -260,6 +241,50 @@ template <> void AMP_MPI::call_bcast<char>(char*, const int, const int) const;
 template <class type>
 void AMP_MPI::call_bcast(type *x, const int n, const int root) const {
     call_bcast<char>((char*)x,(int)n*sizeof(type),root);
+}
+// Specialization of bcast for std::string
+template<> inline std::string AMP_MPI::bcast<std::string>(const std::string value, const int root) const 
+{
+    int length = static_cast<int>(value.size());
+    call_bcast<int>(&length,1,root);
+    if ( length==0 )
+        return std::string();
+    char *str = new char[length+1];
+    if ( root==comm_rank ) {
+        for (int i=0; i<length; i++)
+            str[i] = value[i];
+    }
+    call_bcast<char>(str,length,root);
+    str[length] = 0;
+    std::string result(str);
+    delete [] str;
+    return result;
+}
+template <> inline void AMP_MPI::bcast<std::string>(std::string *x, const int n, const int root) const 
+{
+    AMP_ERROR("Cannot bcast an array of strings");
+}
+// Default implimentation of bcast
+template <class type>
+inline type AMP_MPI::bcast(const type value, const int root) const 
+{
+    if ( root >= comm_size )
+        AMP_ERROR("root cannot be >= size in bcast");
+    if ( comm_size > 1 ) {
+        type tmp = value;
+        call_bcast(&tmp,1,root);
+        return tmp;
+    } else {
+        return value;
+    }
+}
+template <class type>
+inline void AMP_MPI::bcast(type *x, const int n, const int root) const 
+{
+    if ( root >= comm_size )
+        AMP_ERROR("root cannot be >= size in bcast");
+    if ( comm_size > 1 )
+        call_bcast(x,n,root);
 }
 
 

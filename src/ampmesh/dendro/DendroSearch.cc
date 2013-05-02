@@ -620,7 +620,7 @@ d_fout.open(fileName.c_str(), std::fstream::out);
 d_fout<<"local elements="<<(d_meshAdapter.get() != NULL ? static_cast<int>(d_meshAdapter->numLocalElements(AMP::Mesh::Volume)) : -1)
   <<"  global="<<(d_meshAdapter.get() != NULL ? static_cast<int>(d_meshAdapter->numGlobalElements(AMP::Mesh::Volume)) : -1)<<"\n";
 
-      double coarseSearchBeginTime, coarseSearchEndTime, fineSearchBeginTime, fineSearchEndTime;
+      double coarseSearchBeginTime, fineSearchBeginTime, fineSearchEndTime;
       coarseSearchBeginTime = MPI_Wtime();
 
       std::vector<int> rankMap(npes);
@@ -640,12 +640,12 @@ d_fout<<"local elements="<<(d_meshAdapter.get() != NULL ? static_cast<int>(d_mes
         }
       }//end i
 d_fout<<"rankmap=";
-for (size_t i = 0; i < npes; ++i) {
+for (int i = 0; i < npes; ++i) {
   d_fout<<rankMap[i]<<"  ";
 }
 d_fout<<"\n";
 d_fout<<"invRankmap=";
-for (size_t i = 0; i < npes; ++i) {
+for (int i = 0; i < npes; ++i) {
   d_fout<<invRankMap[i]<<"  ";
 }
 d_fout<<"\n";
@@ -866,7 +866,7 @@ d_fout<<"recvPtsList.size()="<<recvPtsList.size()<<"\n";
         }
       }
 
-      coarseSearchEndTime = MPI_Wtime();
+      double coarseSearchEndTime = MPI_Wtime();
       d_timingMeasurements[CoarseSearch] = coarseSearchEndTime - coarseSearchBeginTime;
       fineSearchBeginTime = MPI_Wtime();
 
@@ -917,12 +917,12 @@ npes = comm.getSize();
         d_recvDisps[i] = d_recvDisps[i - 1] + d_recvCnts[i - 1];
       }//end i
 d_fout<<"d_sendCnts=";
-for (size_t i = 0; i < npes; ++i) {
+for (int i = 0; i < npes; ++i) {
   d_fout<<d_sendCnts[i]<<"  ";
 } // end for i
 d_fout<<"\n";
 d_fout<<"d_recvCnts=";
-for (size_t i = 0; i < npes; ++i) {
+for (int i = 0; i < npes; ++i) {
   d_fout<<d_recvCnts[i]<<"  ";
 } // end for i
 d_fout<<"\n";

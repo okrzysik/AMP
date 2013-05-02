@@ -15,6 +15,8 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdexcept>
+#include <stdio.h>
+#include <string.h>
 
 // Detect the OS and include system dependent headers
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
@@ -255,42 +257,54 @@ unsigned int Utilities::hash_char(const char* name)
 
 
 // Function to get the memory usage
+// Note: this function should be thread-safe
+#if defined(USE_LINUX)
+    // Get the page size on linux
+    size_t page_size = static_cast<size_t>(sysconf(_SC_PAGESIZE));
+    // Open the /proc/self/status so we can cache the access
+    static void fidDeleter(FILE* fid) { fclose(fid); };
+    static boost::shared_ptr<FILE> proc_fid;
+    static size_t N_bytes_initialization = Utilities::getMemoryUsage();
+#elif defined(USE_MAC)
+    // Get the page size on mac
+    size_t page_size = static_cast<size_t>(sysconf(_SC_PAGESIZE));
+#endif
 size_t Utilities::getMemoryUsage()
 {
     size_t N_bytes = 0;
     #if defined(USE_LINUX)
-        std::string mem;
-        std::ifstream proc("/proc/self/status");
-        std::string s;
-        while(getline(proc, s), !proc.fail()) {
-            if(s.substr(0, 6) == "VmSize") {
-                mem = s.substr(7);
-                break;
-            }
+        /* Use /proc/self/statm
+         *     Provides information about memory usage, measured in pages.
+         *     The columns are:
+         *         size       (1) total program size (same as VmSize in /proc/[pid]/status)
+         *         resident   (2) resident set size  (same as VmRSS in /proc/[pid]/status)
+         *         share      (3) shared pages (i.e., backed by a file)
+         *         text       (4) text (code)
+         *         lib        (5) library (unused in Linux 2.6)
+         *         data       (6) data + stack
+         *         dt         (7) dirty pages (unused in Linux 2.6)
+         */
+        if ( proc_fid==NULL ) 
+            proc_fid = boost::shared_ptr<FILE>(fopen("/proc/self/statm","rb"),fidDeleter);
+        FILE* fid = proc_fid.get();
+        if (fid==NULL) { return 0; }
+        char data_text[128];
+        flockfile(fid);     // lock file for thread safety
+        int size = fread(data_text,1,127,fid);  // read the data
+        rewind(fid);        // rewind the file so it is availible for the next read
+        funlockfile(fid);   // unlock file
+        char* tmp = data_text;
+        long int data[10];
+        int i = 0;
+        while ( tmp-data_text < size-1 ) {
+            data[i] = strtol(tmp,&tmp,10);
+            i++;
         }
-        for (size_t i=0; i<mem.size(); i++) {
-            if ( mem[i]==9 || mem[i]==10 || mem[i]==12 || mem[i]==13 )
-                mem[i] = 32;
+        if ( i!=7 ) {
+            printf("Format for /proc/self/statm changed\n");
+            return 0;
         }
-        size_t mult = 1;
-        if ( mem.find("kB")!=std::string::npos ) {
-            mult = 0x400;
-            mem.erase(mem.find("kB"),2);
-        } else if ( mem.find("MB")!=std::string::npos ) {
-            mult = 0x100000;
-            mem.erase(mem.find("MB"),2);
-        } else if ( mem.find("GB")!=std::string::npos ) {
-            mult = 0x40000000;
-            mem.erase(mem.find("GB"),2);
-        }
-        for (size_t i=0; i<mem.size(); i++) {
-            if ( ( mem[i]<48 || mem[i]>57 ) && mem[i]!=32 ) {
-                printf("Unable to get size from string: %s\n",s.c_str());
-                return 0;
-            }
-        }
-        long int N = atol(mem.c_str());
-        N_bytes = ((size_t)N)*mult;
+        N_bytes = page_size*static_cast<size_t>(data[5]);
     #elif defined(USE_MAC)
         struct task_basic_info t_info;
         mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
@@ -299,7 +313,7 @@ size_t Utilities::getMemoryUsage()
                               &t_info_count)) {
             return 0;
         }
-        N_bytes = t_info.resident_size;
+        N_bytes = t_info.virtual_size;
     #elif defined(USE_WINDOWS)
         PROCESS_MEMORY_COUNTERS memCounter;
         GetProcessMemoryInfo( GetCurrentProcess(), &memCounter, sizeof(memCounter) );
