@@ -180,15 +180,6 @@ AMP_ASSERT( std::find(recvMap.begin(), recvMap.end(), nSendData) == recvMap.end(
 //  draw_point(masterVolumeVerticesCoordinates+3*ii, "", d_fout);
 //} // end for ii 
 
-//d_fout<<i<<"  ";
-//for (size_t ii = 0; ii < 8; ++ii) {
-//  d_fout<<"u["<<ii<<"]="
-//      <<displacementValues[3*ii+0]<<"  "
-//      <<displacementValues[3*ii+1]<<"  "
-//      <<displacementValues[3*ii+2]<<"  ";
-//}
-//d_fout<<"\n";
-//d_fout<<displacementFieldVector->localMax()<<"  "<<displacementFieldVector->localMin()<<"\n";
           double strainTensor[6];
           masterVolumeElement.compute_strain_tensor(slaveVertexLocalCoordinates, displacementValues, strainTensor);
 
@@ -205,70 +196,12 @@ AMP_ASSERT( std::find(recvMap.begin(), recvMap.end(), nSendData) == recvMap.end(
           } // end if
 
           // compute normal of the surface traction at slave vertex
-/*
-          double constitutiveMatrix[6][6];
-          double E = 1.0e6;//boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getYoungsModulus();
-          double Nu = 0.3;//boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getPoissonsRatio();
-    double G = E/(2.0*(1.0 + Nu));
-
-    double c = G;
-    double a = 2.0*c*(1.0 - Nu)/(1.0 - (2.0*Nu));
-    double b = 2.0*c*Nu/(1.0 - (2.0*Nu));
-
-    for(int ii = 0; ii < 6; ii++) {
-      for(int jj = 0; jj < 6; jj++) {
-        constitutiveMatrix[ii][jj] = 0.0;
-      }//end for jj
-    }//end for ii
-
-    constitutiveMatrix[0][0] = a;
-    constitutiveMatrix[1][1] = a;
-    constitutiveMatrix[2][2] = a;
-
-    constitutiveMatrix[0][1] = b;
-    constitutiveMatrix[0][2] = b;
-    constitutiveMatrix[1][0] = b;
-    constitutiveMatrix[1][2] = b;
-    constitutiveMatrix[2][0] = b;
-    constitutiveMatrix[2][1] = b;
-
-    constitutiveMatrix[3][3] = c;
-    constitutiveMatrix[4][4] = c;
-    constitutiveMatrix[5][5] = c;
-
-//          d_MasterMechanicsMaterialModel->getConstitutiveMatrix(constitutiveMatrix);
+          double youngsModulus = 1.0e6;//boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getYoungsModulus();
+          double poissonsRatio = 0.3;//boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getPoissonsRatio();
+          double constitutiveMatrix[36];
+          compute_constitutive_matrix(youngsModulus, poissonsRatio, constitutiveMatrix);
           double stressTensor[6];
-    for (size_t ii = 0; ii < 6; ++ii) {
-      stressTensor[ii] = 0.0;
-      for (size_t jj = 0; jj < 6; ++jj) {
-        stressTensor[ii] += constitutiveMatrix[ii][jj] * strainTensor[jj];
-      } // end for jj
-    } // end for ii
-*/
-double youngsModulus = 1.0e6;//boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getYoungsModulus();
-double poissonsRatio = 0.3;//boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getPoissonsRatio();
-double constitutiveMatrix[36];
-compute_constitutive_matrix(youngsModulus, poissonsRatio, constitutiveMatrix);
-double stressTensor[6];
-compute_stress_tensor(constitutiveMatrix, strainTensor, stressTensor);
-/*
-          d_fout<<"epsilon="
-              <<strainTensor[0]<<"  "
-              <<strainTensor[1]<<"  "
-              <<strainTensor[2]<<"  "
-              <<strainTensor[3]<<"  "
-              <<strainTensor[4]<<"  "
-              <<strainTensor[5]<<"  ";
-          d_fout<<"sigma="
-              <<stressTensor[0]<<"  "
-              <<stressTensor[1]<<"  "
-              <<stressTensor[2]<<"  "
-              <<stressTensor[3]<<"  "
-              <<stressTensor[4]<<"  "
-              <<stressTensor[5]<<"  ";
-*/
-
-//          compute_stress_tensor(constitutiveMatrix, strainTensor, stressTensor);
+          compute_stress_tensor(constitutiveMatrix, strainTensor, stressTensor);
           compute_traction(stressTensor, sendStressStateDataBuffer[i].d_SlaveVertexNormalVector, sendStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction);
 
 /*

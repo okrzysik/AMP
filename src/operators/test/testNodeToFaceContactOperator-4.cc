@@ -59,7 +59,7 @@ void rotateMesh(AMP::Mesh::Mesh::shared_ptr mesh) {
     std::vector<double> newVertexCoord(oldVertexCoord);
     // 15 degrees around the z axis
 //    rotate_points(2, M_PI / 12.0, 1, &(newVertexCoord[0]));
-    rotate_points(1, M_PI / 3.0, 1, &(newVertexCoord[0]));
+    rotate_points(2, M_PI / 2.0, 1, &(newVertexCoord[0]));
     std::vector<double> vertexDisp(3, 0.0);
     make_vector_from_two_points(&(oldVertexCoord[0]), &(newVertexCoord[0]), &(vertexDisp[0]));  
     dispVec->setLocalValuesByGlobalID(3, &(dofIndices[0]), &(vertexDisp[0]));
@@ -687,19 +687,22 @@ double referenceTemperature = input_db->getDouble("ReferenceTemperature");
 if (!rank) { std::cout<<"temperatureCenterLine="<<temperatureCenterLine<<"\n"; }
   refTempVec->setToScalar(referenceTemperature);
   tempVec->setToScalar(referenceTemperature);
+
 for (meshIterator = meshIterator_begin; meshIterator != meshIterator_end; ++meshIterator) {
   vertexCoord = meshIterator->coord();
-//rotate_points(1, M_PI / -3.0, 1, &(vertexCoord[0]));
+//rotate_points(2, M_PI / -2.0, 1, &(vertexCoord[0]));
   double radiusSquared = vertexCoord[0]*vertexCoord[0] + vertexCoord[1]*vertexCoord[1];
   double temperature = temperatureCenterLine - heatGenerationRate * radiusSquared / (4.0 * thermalConductivity);
   tempDofManager->getDOFs(meshIterator->globalID(), DOFsIndices);
   AMP_ASSERT(DOFsIndices.size() == 1);
   tempVec->setLocalValuesByGlobalID(1, &(DOFsIndices[0]), &temperature);
 } // end for
+AMP::LinearAlgebra::VS_Mesh slaveVectorSelector(slaveMeshAdapter);
+AMP::LinearAlgebra::Vector::shared_ptr slaveTempVec = tempVec->select(slaveVectorSelector, tempVar->getName());
+//slaveTempVec->setToScalar(900.0);
 boost::shared_ptr<AMP::Database> tmp_db = temperatureRhs_db->getDatabase("RhsMaterialModel");
 double thermalExpansionCoefficient = tmp_db->getDouble("THERMAL_EXPANSION_COEFFICIENT");
   contactOperator->uglyHack(tempVec, tempDofManager, thermalExpansionCoefficient, referenceTemperature);
-//  refTempVec->setToScalar(300.0);
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
   AMP::LinearAlgebra::Variable::shared_ptr columnVar = columnOperator->getOutputVariable();
@@ -711,6 +714,7 @@ double thermalExpansionCoefficient = tmp_db->getDouble("THERMAL_EXPANSION_COEFFI
   AMP::LinearAlgebra::Vector::shared_ptr activeSetVec = sigma_eff->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr suckItVec = sigma_eff->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr surfaceTractionVec = columnSolVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr normalVectorVec = columnSolVec->cloneVector();
 
   computeStressTensor(meshAdapter, columnSolVec, 
       sigma_xx, sigma_yy, sigma_zz, sigma_yz, sigma_xz, sigma_xy,
@@ -741,6 +745,7 @@ double thermalExpansionCoefficient = tmp_db->getDouble("THERMAL_EXPANSION_COEFFI
     siloWriter->registerVector(activeSetVec, meshAdapter, AMP::Mesh::Vertex, "Contact");
     siloWriter->registerVector(oldSolVec, meshAdapter, AMP::Mesh::Vertex, "Error");
     siloWriter->registerVector(surfaceTractionVec, meshAdapter, AMP::Mesh::Vertex, "Traction");
+    siloWriter->registerVector(normalVectorVec, meshAdapter, AMP::Mesh::Vertex, "Normal");
     siloWriter->registerVector(suckItVec, meshAdapter, AMP::Mesh::Vertex, "Suction");
     siloWriter->registerVector(contactShiftVec, meshAdapter, AMP::Mesh::Vertex, "Shift");
     char outFileName[256];
@@ -753,7 +758,7 @@ double thermalExpansionCoefficient = tmp_db->getDouble("THERMAL_EXPANSION_COEFFI
   columnSolVec->zero();
   columnOperator->append(contactOperator);
 
-{
+/*{
 AMP::Mesh::MeshIterator meshIterator;
 std::vector<int> boundaryIDs;
 
@@ -794,7 +799,7 @@ std::fstream fout;
 fout.open("uhntissuhntiss", std::fstream::out);
 drawFacesOnBoundaryID(masterMeshAdapter, 8, fout, pov, "");
 fout.close();
-}
+}*/
 
   // Build a matrix shell operator to use the column operator with the petsc krylov solvers
   boost::shared_ptr<AMP::Database> matrixShellDatabase = input_db->getDatabase("MatrixShellOperator");
@@ -924,11 +929,12 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     std::vector<double> const * slaveVerticesNormalVector;
     std::vector<double> const * slaveVerticesSurfaceTraction;
     contactOperator->getSlaveVerticesNormalVectorAndSurfaceTraction(slaveVerticesNormalVector, slaveVerticesSurfaceTraction);
-std::cout<<slaveVerticesSurfaceTraction->size()<<"  "<<slaveVerticesNormalVector->size()<<"  "<<sizeOfActiveSetBeforeUpdate<<std::endl;
     AMP_ASSERT( slaveVerticesSurfaceTraction->size() == 3*sizeOfActiveSetBeforeUpdate);
     AMP_ASSERT( slaveVerticesNormalVector->size() == 3*sizeOfActiveSetBeforeUpdate);
     surfaceTractionVec->zero();
     surfaceTractionVec->setLocalValuesByGlobalID(3*sizeOfActiveSetBeforeUpdate, &(activeSetDispDOFsIndicesBeforeUpdate[0]), &((*slaveVerticesSurfaceTraction)[0]));
+    normalVectorVec->zero();
+    normalVectorVec->setLocalValuesByGlobalID(3*sizeOfActiveSetBeforeUpdate, &(activeSetDispDOFsIndicesBeforeUpdate[0]), &((*slaveVerticesNormalVector)[0]));
 
     std::vector<double> surfaceTractionDOTnormalVector(sizeOfActiveSetBeforeUpdate);
     for (size_t kk = 0; kk < sizeOfActiveSetBeforeUpdate; ++kk) {
