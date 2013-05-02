@@ -227,13 +227,10 @@ public:
 
 
 protected:
-      /** \brief Unimplemented constructor
-        */
+      //! Protected constructor
       Matrix();
 
-
-      /** \brief Unused copy constructor
-        */
+      //! Protected copy constructor
       Matrix ( const Matrix & );
 
       /** \brief  Multiply two matrices and store in a third
@@ -241,6 +238,9 @@ protected:
         * \param[out] result  The matrix to store the result
         */
       virtual void multiply ( shared_ptr other_op , shared_ptr &result ) = 0;
+
+      //!  Communicator for the matrix
+      AMP_MPI d_comm;
 
 };
 
