@@ -12,6 +12,14 @@
 #include "utils/PIO.h"
 
 
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+    #include <windows.h>
+    #define sched_yield() Sleep(0)
+#else
+    #include <sched.h>
+#endif
+
+
 struct mytype{
     int a;
     double b;
@@ -714,7 +722,15 @@ int testIsendIrecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
         int index = comm.waitAny(sendRequest.size(),&(sendRequest[0]));
         sendRequest.erase(sendRequest.begin()+index);
     }
-    AMP::AMP_MPI::waitAll(recvRequest.size(),&(recvRequest[0]));
+    std::vector<int> finished = AMP::AMP_MPI::waitSome(recvRequest.size(),&(recvRequest[0]));
+    if ( !recvRequest.empty() ) {
+        AMP_ASSERT(!finished.empty());
+        for (std::vector<int>::const_reverse_iterator it=finished.rbegin(); it!=finished.rend(); ++it )
+            recvRequest.erase(recvRequest.begin()+(*it));
+    }
+    if ( !recvRequest.empty() )
+        AMP::AMP_MPI::waitAll(recvRequest.size(),&(recvRequest[0]));
+    AMP::Utilities::unique(finished);
     // Check the recieved values
     bool pass = true;
     for (int i=0; i<comm.getSize(); i++) {
@@ -1290,6 +1306,15 @@ int main(int argc, char *argv[])
             else
                 ut.failure("intersection of partially overlapping comms");
         }
+
+        // Test the performance of sched_yield (used internally by AMP_MPI wait routines)
+        globalComm.barrier();
+        double start_yield = AMP::AMP_MPI::time();
+        for (int i=0; i<10000; i++)
+            sched_yield();
+        double time_yield = (AMP::AMP_MPI::time()-start_yield)/10000;
+        if ( globalComm.getRank() == 0 )
+            std::cout << "Time to yield: " << time_yield*1e6 << " us" << std::endl;
 
         // Test time and tick
         double end_time = AMP::AMP_MPI::time();

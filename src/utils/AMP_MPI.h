@@ -739,6 +739,17 @@ public:
 
 
     /*!
+     * \brief   Wait for some communications to finish.
+     * \details This function waits for one (or more) communications to finish.  
+     *    It returns an array of the indicies that have finished.
+     *    Note: this does not require a communicator.
+     * \param count      Number of communications to check
+     * \param request    Array of communication requests to wait for (returned for Isend or Irecv)
+     */
+    static std::vector<int> waitSome( int count, MPI_Request *request );
+
+
+    /*!
      * \brief   Nonblocking test for a message
      * \details This function performs a non-blocking test for a message.
      *    It will return the number of bytes in the message if a message with 
