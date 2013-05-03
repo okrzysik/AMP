@@ -4,7 +4,9 @@ HeatGenerationRate = 3200.0
 OuterRadius = 0.5
 ThermalConductivity = 0.125
 
-maxActiveSetIterations = 10
+maxThermalLoadingIterations = 3
+
+maxActiveSetIterations = 6
 usePetscKrylovSolver = TRUE
 myPCGmaxIters = 500
 myPCGrelTol = 1.0e-10
@@ -21,35 +23,37 @@ Mesh{
 
     Mesh_1{
         MeshName = "cylinder_1"
-        MeshType = "AMP"
+        MeshType = "libMesh"
+        FileName= "my_cylinder.e"
         dim = 3
         x_offset = 0.0
         y_offset = 0.0
         z_offset = 0.0
         Generator = "cylinder"
-        Size = 4, 4
+        Size = 5, 5
         Range = 0.5, 0.0, 1.0
     }
- 
+
     Mesh_2{
-        MeshName = "cylinder_2"
+        MeshName = "tube_1"
         MeshType = "AMP"
         dim = 3
         x_offset = 0.0
         y_offset = 0.0
-        z_offset = 1.0
-        Generator = "cylinder"
-        Size = 5, 5
-        Range = 0.5, 0.0, 1.0
+        z_offset = 0.0
+        Generator = "tube"
+        Size = 3, 64, 48
+        Range = 0.56, 0.65, -0.25, 1.25
     }
+
 }
 
 ContactOperator {
   name = "NodeToSegmentConstraints"
-    MasterMeshIndex = 0
-    SlaveMeshIndex = 1
-    MasterBoundaryID = 1
-    SlaveBoundaryID = 2
+    MasterMeshIndex = 1
+    SlaveMeshIndex = 0
+    MasterBoundaryID = 8
+    SlaveBoundaryID = 4
     InputVariable = "displacement"
     OutputVariable = "displacement"
 }
@@ -75,15 +79,23 @@ MasterDirichletMatrixCorrection{
     zero_dirichlet_block = FALSE
     skip_rhs_correction = FALSE
     skip_rhs_add_correction = FALSE
-    number_of_ids = 1
+    number_of_ids = 2
     id_0 = 2
-    number_of_dofs_0 = 1
-    dof_0_0 = 2
+    id_1 = 1
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
     dof_0_1 = 1
     dof_0_2 = 2
     value_0_0 = 0.0
     value_0_1 = 0.0
     value_0_2 = 0.0
+    number_of_dofs_1 = 3
+    dof_1_0 = 0
+    dof_1_1 = 1
+    dof_1_2 = 2
+    value_1_0 = 0.0
+    value_1_1 = 0.0
+    value_1_2 = 0.0
 }
 
 SlaveBVPOperator {
@@ -103,14 +115,18 @@ SlaveDirichletMatrixCorrection{
     skip_rhs_correction = FALSE
     skip_rhs_add_correction = FALSE
     number_of_ids = 0
-    id_0 = 1
-    number_of_dofs_0 = 3
-    dof_0_0 = 0
+    id_0 = 2
+    id_1 = 1
+    number_of_dofs_0 = 1
+    dof_0_0 = 2
     dof_0_1 = 1
     dof_0_2 = 2
     value_0_0 = 0.0
     value_0_1 = 0.0
     value_0_2 = -0.0
+    number_of_dofs_1 = 1
+    dof_1_0 = 2
+    value_1_0 = 0.0
 }
 
 MechanicsLinearFEOperator{
@@ -164,7 +180,7 @@ TemperatureRHSVectorCorrection {
 
 LinearSolver {
   print_info_level = 1
-    max_iterations = 500
+    max_iterations = 2500
     max_error = 1.0e-16
     ksp_type = "cg"
     absolute_tolerance = 1.0e-16
@@ -174,7 +190,7 @@ LinearSolver {
     pc_type = "shell"
     pc_side = "LEFT"
 
-    KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason"
+    KSPOptions = "-ksp_converged_reason"
 
     Preconditioner {
       print_info_level = 1
