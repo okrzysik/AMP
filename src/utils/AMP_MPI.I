@@ -245,6 +245,8 @@ void AMP_MPI::call_bcast(type *x, const int n, const int root) const {
 // Specialization of bcast for std::string
 template<> inline std::string AMP_MPI::bcast<std::string>(const std::string value, const int root) const 
 {
+    if ( comm_size==1 )
+        return value;
     int length = static_cast<int>(value.size());
     call_bcast<int>(&length,1,root);
     if ( length==0 )

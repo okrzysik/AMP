@@ -2866,14 +2866,12 @@ std::vector<int> AMP_MPI::waitSome( int count, MPI_Request *request )
     if ( count==0 ) 
         return std::vector<int>();
     PROFILE_START("waitSome",profile_level);
-    std::vector<int> indicies();
+    std::vector<int> indicies;
     while ( 1 ) {
         // Check if the request is in our list
         for (int i=0; i<count; i++) {
-            if ( global_isendrecv_list.find(request[i])==global_isendrecv_list.end() ) {
-                found_any = true;
+            if ( global_isendrecv_list.find(request[i])==global_isendrecv_list.end() )
                 indicies.push_back(i);
-            }
         }
         if ( !indicies.empty() )
             break;

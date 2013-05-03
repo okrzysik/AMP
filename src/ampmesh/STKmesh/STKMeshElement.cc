@@ -215,6 +215,7 @@ std::vector< MeshElement::shared_ptr > STKMeshElement::getNeighbors() const
                                                                                           subcell_rank,
                                                                                           id,
                                                                                           subcell_nodes);
+            NULL_USE(subcell_topology);
             get_entities_through_relations(subcell_nodes, elem->entity_rank(), adj_entities);
             adjacent_entities.insert(adjacent_entities.end(), adj_entities.begin(), adj_entities.end());
         }
@@ -222,7 +223,7 @@ std::vector< MeshElement::shared_ptr > STKMeshElement::getNeighbors() const
         adjacent_entities.resize(std::unique(adjacent_entities.begin(), adjacent_entities.end()) - adjacent_entities.begin());
         adjacent_entities.erase (std::find  (adjacent_entities.begin(), adjacent_entities.end(), elem));
 
-	neighbors.resize(adjacent_entities.size());
+        neighbors.resize(adjacent_entities.size());
         for (size_t i=0; i<neighbors.size(); i++) {
             stk::mesh::Entity *neighbor_elem = adjacent_entities[i];
             boost::shared_ptr<STKMeshElement> neighbor(new STKMeshElement( d_dim, neighbor_elem, d_rank, d_meshID, d_mesh ) );

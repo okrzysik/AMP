@@ -9,40 +9,50 @@
 #include "ampmesh/latex_visualization_tools.h"
 
 namespace AMP {
-  namespace Mesh {
+namespace Mesh {
 
-    DendroSearch::DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh, bool verbose, std::ostream & oStream)
-        : d_meshAdapter(mesh),
-          d_verbose(verbose),
-          d_oStream(oStream),
-          d_timingMeasurements(std::vector<double>(numTimingTypes, -1.0)),
-          d_tolerance(1.0e-12) {
-      d_minCoords.resize(3);
-      d_scalingFactor.resize(3);
-      setupDSforSearch();
-    }
 
-    void DendroSearch::searchAndInterpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::const_shared_ptr vectorField, 
-        const unsigned int dofsPerNode, const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt) {
-      search(comm, pts);
-      interpolate(comm, vectorField, dofsPerNode, results, foundPt); 
-    }
+DendroSearch::DendroSearch(AMP::Mesh::Mesh::shared_ptr mesh, bool verbose, std::ostream & oStream):
+    d_meshAdapter(mesh),
+    d_verbose(verbose),
+    d_oStream(oStream),
+    d_timingMeasurements(std::vector<double>(numTimingTypes, -1.0)),
+    d_tolerance(1.0e-12) 
+{
+    d_minCoords.resize(3);
+    d_scalingFactor.resize(3);
+    setupDSforSearch();
+}
 
-    void DendroSearch::setTolerance(double tolerance) {
-      d_tolerance = tolerance;
-    }
 
-    void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
-        std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags) {
-      std::vector<size_t> faceLocalIndices;
-      std::vector<AMP::Mesh::MeshElementID> volumeGlobalIDs;
-      std::cerr<<"***WARNING*** the version of DendroSearch::projectOnBoundaryID() you are using is deprecated!"<<std::endl;
-      projectOnBoundaryID(comm, boundaryID, faceVerticesGlobalIDs, shiftGlobalCoords, projectionLocalCoordsOnFace, flags, volumeGlobalIDs, faceLocalIndices);
-    }
+void DendroSearch::searchAndInterpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::const_shared_ptr vectorField, 
+    const unsigned int dofsPerNode, const std::vector<double> & pts, std::vector<double> & results, std::vector<bool> & foundPt) 
+{
+    search(comm, pts);
+    interpolate(comm, vectorField, dofsPerNode, results, foundPt); 
+}
 
-    void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
-        std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags,
-        std::vector<AMP::Mesh::MeshElementID> & volumeGlobalIDs, std::vector<size_t> & faceLocalIndices) {
+
+void DendroSearch::setTolerance(double tolerance) 
+{
+    d_tolerance = tolerance;
+}
+
+
+void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
+    std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags) 
+{
+    std::vector<size_t> faceLocalIndices;
+    std::vector<AMP::Mesh::MeshElementID> volumeGlobalIDs;
+    std::cerr<<"***WARNING*** the version of DendroSearch::projectOnBoundaryID() you are using is deprecated!"<<std::endl;
+    projectOnBoundaryID(comm, boundaryID, faceVerticesGlobalIDs, shiftGlobalCoords, projectionLocalCoordsOnFace, flags, volumeGlobalIDs, faceLocalIndices);
+}
+
+
+void DendroSearch::projectOnBoundaryID(AMP::AMP_MPI comm, const int boundaryID, std::vector<AMP::Mesh::MeshElementID> & faceVerticesGlobalIDs, 
+    std::vector<double> & shiftGlobalCoords, std::vector<double> & projectionLocalCoordsOnFace, std::vector<int> & flags,
+    std::vector<AMP::Mesh::MeshElementID> & volumeGlobalIDs, std::vector<size_t> & faceLocalIndices) 
+{
       const int rank = comm.getRank();
       const int npes = comm.getSize();
 
@@ -193,9 +203,11 @@ namespace AMP {
           std::cout<<"Time for step-2 of project on boundary: "<<(projectStep2Time - projectStep1Time)<<" seconds."<<std::endl;
         }
       }
-    }
+}
 
-    void DendroSearch::setupDSforSearch() {
+
+void DendroSearch::setupDSforSearch() 
+{
       if(d_meshAdapter == NULL) {
         return;
       }
@@ -608,83 +620,82 @@ namespace AMP {
           d_oStream<<"Finished setting up DS for search in "<<(setupEndTime - setupBeginTime)<<" seconds."<<std::endl;
         }
       }
-    }
+}
 
-    void DendroSearch::search(AMP::AMP_MPI comm, const std::vector<double> & pts) {
-      int rank = comm.getRank();
-      int npes = comm.getSize();
 
-std::string fileName = "debug_dendro_" + boost::lexical_cast<std::string>(rank);
-std::fstream d_fout;
-d_fout.open(fileName.c_str(), std::fstream::out);
-d_fout<<"local elements="<<(d_meshAdapter.get() != NULL ? static_cast<int>(d_meshAdapter->numLocalElements(AMP::Mesh::Volume)) : -1)
-  <<"  global="<<(d_meshAdapter.get() != NULL ? static_cast<int>(d_meshAdapter->numGlobalElements(AMP::Mesh::Volume)) : -1)<<"\n";
+void DendroSearch::search(AMP::AMP_MPI comm, const std::vector<double> & pts) 
+{
+    int rank = comm.getRank();
+    int npes = comm.getSize();
 
-      double coarseSearchBeginTime, fineSearchBeginTime, fineSearchEndTime;
-      coarseSearchBeginTime = MPI_Wtime();
+    std::string fileName = "debug_dendro_" + boost::lexical_cast<std::string>(rank);
+    std::fstream d_fout;
+    d_fout.open(fileName.c_str(), std::fstream::out);
+    d_fout<<"local elements="<<(d_meshAdapter.get() != NULL ? static_cast<int>(d_meshAdapter->numLocalElements(AMP::Mesh::Volume)) : -1)
+        <<"  global="<<(d_meshAdapter.get() != NULL ? static_cast<int>(d_meshAdapter->numGlobalElements(AMP::Mesh::Volume)) : -1)<<"\n";
 
-      std::vector<int> rankMap(npes);
+    double coarseSearchBeginTime = MPI_Wtime();
 
-      int myRank = -1;
-      if(d_meshAdapter != NULL) {
+    std::vector<int> rankMap(npes);
+
+    int myRank = -1;
+    if(d_meshAdapter != NULL) {
         AMP::AMP_MPI meshComm = d_meshAdapter->getComm();
         myRank = meshComm.getRank();
-      }
+    }
 
-      comm.allGather(myRank, &(rankMap[0]));
+    comm.allGather(myRank, &(rankMap[0]));
 
-      std::vector<int> invRankMap(npes, -1);
-      for(int i = 0; i < npes; ++i) {
+    std::vector<int> invRankMap(npes, -1);
+    for(int i = 0; i < npes; ++i) {
         if(rankMap[i] >= 0) {
-          invRankMap[rankMap[i]] = i;
+            invRankMap[rankMap[i]] = i;
         }
-      }//end i
-d_fout<<"rankmap=";
-for (int i = 0; i < npes; ++i) {
-  d_fout<<rankMap[i]<<"  ";
-}
-d_fout<<"\n";
-d_fout<<"invRankmap=";
-for (int i = 0; i < npes; ++i) {
-  d_fout<<invRankMap[i]<<"  ";
-}
-d_fout<<"\n";
+    }//end i
+    d_fout<<"rankmap=";
+    for (int i = 0; i < npes; ++i) {
+        d_fout<<rankMap[i]<<"  ";
+    }
+    d_fout<<"\n";
+    d_fout<<"invRankmap=";
+    for (int i = 0; i < npes; ++i) {
+      d_fout<<invRankMap[i]<<"  ";
+    }
+    d_fout<<"\n";
 
-      std::vector<double> bcastBuff(7);
-      if(myRank == 0) {
-        bcastBuff[0] = static_cast<double>(d_mins.size());
+    std::vector<double> bcastBuff(7);
+    if(myRank == 0) {
+    bcastBuff[0] = static_cast<double>(d_mins.size());
         std::copy(d_minCoords.begin(), d_minCoords.end(), &(bcastBuff[1])); 
         std::copy(d_scalingFactor.begin(), d_scalingFactor.end(), &(bcastBuff[4])); 
-      }
+    }
 
-      comm.bcast(&(bcastBuff[0]), 7, invRankMap[0]);
+    comm.bcast(&(bcastBuff[0]), 7, invRankMap[0]);
 
-      int minsSize = static_cast<int>(bcastBuff[0]);
-      std::copy(&(bcastBuff[1]), &(bcastBuff[1])+3, d_minCoords.begin());
-      std::copy(&(bcastBuff[4]), &(bcastBuff[4])+3, d_scalingFactor.begin());
-      bcastBuff.clear();
+    int minsSize = static_cast<int>(bcastBuff[0]);
+    std::copy(&(bcastBuff[1]), &(bcastBuff[1])+3, d_minCoords.begin());
+    std::copy(&(bcastBuff[4]), &(bcastBuff[4])+3, d_scalingFactor.begin());
+    bcastBuff.clear();
 
-      d_mins.resize(minsSize);
-      comm.bcast(&(d_mins[0]), minsSize, invRankMap[0]);
+    d_mins.resize(minsSize);
+    comm.bcast(&(d_mins[0]), minsSize, invRankMap[0]);
 
-      d_numLocalPts = (pts.size())/3;
-d_fout<<"d_numLocalPts="<<d_numLocalPts<<"\n";
+    d_numLocalPts = (pts.size())/3;
+    d_fout<<"d_numLocalPts="<<d_numLocalPts<<"\n";
 
-      double searchBeginTime=0., searchStep1Time=0.,
-             searchStep2Time=0., searchStep3Time=0.,
-             searchStep4Time=0., searchStep5Time=0., searchStep6Time=0.;
+    double searchTime[7]={0,0,0,0,0,0,0};
 
-      if(d_verbose) {
+    if(d_verbose) {
         comm.barrier();
-        searchBeginTime = MPI_Wtime();
-      }
+        searchTime[0] = MPI_Wtime();
+    }
 
-      const unsigned int MaxDepth = 30;
-      const unsigned int ITPMD = (1u << MaxDepth);
-      const double DTPMD = static_cast<double>(ITPMD);
+    const unsigned int MaxDepth = 30;
+    const unsigned int ITPMD = (1u << MaxDepth);
+    const double DTPMD = static_cast<double>(ITPMD);
 
-      std::vector<ot::NodeAndValues<double, 4> > ptsWrapper(d_numLocalPts);
-      for(int i = 0; i < d_numLocalPts; ++i) {
+    std::vector<ot::NodeAndValues<double, 4> > ptsWrapper(d_numLocalPts);
+    for(int i = 0; i < d_numLocalPts; ++i) {
         double x = pts[3*i];
         double y = pts[(3*i) + 1];
         double z = pts[(3*i) + 2];
@@ -701,247 +712,250 @@ d_fout<<"d_numLocalPts="<<d_numLocalPts<<"\n";
         ptsWrapper[i].values[1] = y;
         ptsWrapper[i].values[2] = z;
         ptsWrapper[i].values[3] = i;     
-      }//end i
+    }//end i
 
-      if(d_verbose) {
+    if(d_verbose) {
         comm.barrier();
-        searchStep1Time = MPI_Wtime();
+        searchTime[1] = MPI_Wtime();
         if(!rank) {
-          std::cout<<"Time for step-1 of search: "<<(searchStep1Time - searchBeginTime)<<" seconds."<<std::endl;
+          std::cout<<"Time for step-1 of search: "<< searchTime[1]-searchTime[0] <<" seconds."<<std::endl;
         }
-      }
+    }
 
-      //PERFORMANCE IMPROVEMENT: Should PtsWrapper be sorted or not?
-      //If PtsWrapper is sorted (even just a local sort), we can skip the
-      //binary searches and use binning instead.  Binning is amortized constant
-      //time and using binary searches would be logarithmic. This is just a matter
-      //of constants since sorting is also logarithmic.
+    //PERFORMANCE IMPROVEMENT: Should PtsWrapper be sorted or not?
+    //If PtsWrapper is sorted (even just a local sort), we can skip the
+    //binary searches and use binning instead.  Binning is amortized constant
+    //time and using binary searches would be logarithmic. This is just a matter
+    //of constants since sorting is also logarithmic.
 
-      d_sendCnts.resize(npes);
-      d_recvCnts.resize(npes);
-      d_sendDisps.resize(npes);
-      d_recvDisps.resize(npes);
-      std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);
+    d_sendCnts.resize(npes);
+    d_recvCnts.resize(npes);
+    d_sendDisps.resize(npes);
+    d_recvDisps.resize(npes);
+    std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);
 
-      std::vector<int> part(d_numLocalPts, -1);
+    std::vector<int> part(d_numLocalPts, -1);
 
-      for(int i = 0; i < d_numLocalPts; ++i) {
+    for(int i = 0; i < d_numLocalPts; ++i) {
         unsigned int retIdx=0;
         bool found = seq::maxLowerBound<ot::TreeNode>(d_mins, (ptsWrapper[i].node), retIdx, NULL, NULL);
         if(found) {
           part[i] = invRankMap[d_mins[retIdx].getWeight()];
           ++(d_sendCnts[part[i]]);
         }
-      }//end i
+    }//end i
 
-      if(d_verbose) {
+    if(d_verbose) {
         comm.barrier();
-        searchStep2Time = MPI_Wtime();
+        searchTime[2] = MPI_Wtime();
         if(!rank) {
-          std::cout<<"Time for step-2 of search: "<<(searchStep2Time - searchStep1Time)<<" seconds."<<std::endl;
+          std::cout<<"Time for step-2 of search: "<< searchTime[2]-searchTime[1] <<" seconds."<<std::endl;
         }
-      }
+    }
 
-      comm.allToAll<int>(1, &(d_sendCnts[0]), &(d_recvCnts[0]));
+    comm.allToAll<int>(1, &(d_sendCnts[0]), &(d_recvCnts[0]));
 
-      d_sendDisps[0] = 0;
-      d_recvDisps[0] = 0;
-      for(int i = 1; i < npes; ++i) {
+    d_sendDisps[0] = 0;
+    d_recvDisps[0] = 0;
+    for(int i = 1; i < npes; ++i) {
         d_sendDisps[i] = d_sendDisps[i - 1] + d_sendCnts[i - 1];
         d_recvDisps[i] = d_recvDisps[i - 1] + d_recvCnts[i - 1];
-      }//end i
+    }//end i
 
-      std::vector<ot::NodeAndValues<double, 4> > sendList(d_sendDisps[npes - 1] + d_sendCnts[npes - 1]);
+    std::vector<ot::NodeAndValues<double, 4> > sendList(d_sendDisps[npes - 1] + d_sendCnts[npes - 1]);
 
-      std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);
+    std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);
 
-      for(int i = 0; i < d_numLocalPts; ++i) {
+    for(int i = 0; i < d_numLocalPts; ++i) {
         if(part[i] >= 0) {
           sendList[d_sendDisps[part[i]] + d_sendCnts[part[i]]] = ptsWrapper[i];
           ++(d_sendCnts[part[i]]);
         }
-      }//end i
-      ptsWrapper.clear();
+    }//end i
+    ptsWrapper.clear();
 
-      std::vector<ot::NodeAndValues<double, 4> > recvList(d_recvDisps[npes - 1] + d_recvCnts[npes - 1]);
-d_fout<<"sendList.size()="<<sendList.size()<<"\n";
-d_fout<<"recvList.size()="<<recvList.size()<<"\n";
-      comm.allToAll((!(sendList.empty()) ? &(sendList[0]) : NULL), &(d_sendCnts[0]), &(d_sendDisps[0]),
-          (!(recvList.empty()) ? &(recvList[0]) : NULL), &(d_recvCnts[0]), &(d_recvDisps[0]), true);
-      sendList.clear();
+    std::vector<ot::NodeAndValues<double, 4> > recvList(d_recvDisps[npes - 1] + d_recvCnts[npes - 1]);
+    d_fout<<"sendList.size()="<<sendList.size()<<"\n";
+    d_fout<<"recvList.size()="<<recvList.size()<<"\n";
+    comm.allToAll((!(sendList.empty()) ? &(sendList[0]) : NULL), &(d_sendCnts[0]), &(d_sendDisps[0]),
+        (!(recvList.empty()) ? &(recvList[0]) : NULL), &(d_recvCnts[0]), &(d_recvDisps[0]), true);
+    sendList.clear();
 
-      if(d_verbose) {
+    if(d_verbose) {
         comm.barrier();
-        searchStep3Time = MPI_Wtime();
+        searchTime[3] = MPI_Wtime();
         if(!rank) {
-          std::cout<<"Time for step-3 of search: "<<(searchStep3Time - searchStep2Time)<<" seconds."<<std::endl;
+            std::cout<<"Time for step-3 of search: "<< searchTime[3]-searchTime[2] <<" seconds."<<std::endl;
         }
-      }
-
-      std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);
-
-rank = -1;
-if (d_meshAdapter.get() != NULL) {
-AMP::AMP_MPI meshComm = d_meshAdapter->getComm();
-rank = meshComm.getRank();
-npes = meshComm.getSize();
-
-      std::vector<int> ptToOctMap((recvList.size()), -1);
-      for(size_t i = 0; i < recvList.size(); ++i) {
-        unsigned int retIdx=0;
-        seq::maxLowerBound<ot::TreeNode>(d_nodeList, (recvList[i].node), retIdx, NULL, NULL);
-        if( d_nodeList[retIdx].isAncestor(recvList[i].node) ) {
-          ptToOctMap[i] = retIdx;
-          int stIdx = d_stIdxList[retIdx];
-          for(size_t j = 0; j < d_nodeList[retIdx].getWeight(); ++j) {
-            d_sendCnts[d_rankList[stIdx + j]]++;
-          }//end j
-        }
-      }//end i
-
-      if(d_verbose) {
-        meshComm.barrier();
-        searchStep4Time = MPI_Wtime();
-        if(!rank) {
-          std::cout<<"Time for step-4 of search: "<<(searchStep4Time - searchStep3Time)<<" seconds."<<std::endl;
-        }
-      }
-
-      meshComm.allToAll(1, &(d_sendCnts[0]), &(d_recvCnts[0]));
-
-      d_sendDisps[0] = 0;
-      d_recvDisps[0] = 0;
-      for(int i = 1; i < npes; ++i) {
-        d_sendDisps[i] = d_sendDisps[i - 1] + d_sendCnts[i - 1];
-        d_recvDisps[i] = d_recvDisps[i - 1] + d_recvCnts[i - 1];
-      }//end i
-
-      std::vector<double> sendPtsList(6*(d_sendDisps[npes - 1] + d_sendCnts[npes - 1]));
-
-      std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);
-
-      for(size_t i = 0; i < ptToOctMap.size(); ++i) {
-        if(ptToOctMap[i] >= 0) {
-          int stIdx = d_stIdxList[ptToOctMap[i]];
-          for(size_t j = 0; j < d_nodeList[ptToOctMap[i]].getWeight(); ++j) {
-            int recvRank = d_rankList[stIdx + j];
-            int currIdx = 6*(d_sendDisps[recvRank] + d_sendCnts[recvRank]);
-            //Local Id of this element on the processor that owns this element
-            sendPtsList[currIdx] = d_elemIdList[stIdx + j];
-            //Pt's x coordinate
-            sendPtsList[currIdx + 1] = recvList[i].values[0];
-            //Pt's y coordinate
-            sendPtsList[currIdx + 2] = recvList[i].values[1];
-            //Pt's z coordinate
-            sendPtsList[currIdx + 3] = recvList[i].values[2];
-            //Local Id of Pt on the processor that owns this Pt
-            sendPtsList[currIdx + 4] = recvList[i].values[3];
-            //rank of processor that owns Pt
-            sendPtsList[currIdx + 5] = recvList[i].node.getWeight();
-            ++(d_sendCnts[recvRank]);
-          }//end j
-        }
-      }//end i
-      recvList.clear();
-
-      for(int i = 0; i < npes; ++i) {
-        d_sendCnts[i] *= 6;
-        d_sendDisps[i] *= 6;
-        d_recvCnts[i] *= 6;
-        d_recvDisps[i] *= 6;
-      }//end i
-
-      std::vector<double> recvPtsList(d_recvDisps[npes - 1] + d_recvCnts[npes - 1]);
-d_fout<<"sendPtsList.size()="<<sendPtsList.size()<<"\n";
-d_fout<<"recvPtsList.size()="<<recvPtsList.size()<<"\n";
-      meshComm.allToAll((!(sendPtsList.empty()) ? &(sendPtsList[0]) : NULL), &(d_sendCnts[0]), &(d_sendDisps[0]), 
-          (!(recvPtsList.empty()) ? &(recvPtsList[0]) : NULL), &(d_recvCnts[0]), &(d_recvDisps[0]), true);
-      sendPtsList.clear();
-
-      if(d_verbose) {
-        meshComm.barrier();
-        searchStep5Time = MPI_Wtime();
-        if(!rank) {
-          std::cout<<"Time for step-5 of search: "<<(searchStep5Time - searchStep4Time)<<" seconds."<<std::endl;
-        }
-      }
-
-      double coarseSearchEndTime = MPI_Wtime();
-      d_timingMeasurements[CoarseSearch] = coarseSearchEndTime - coarseSearchBeginTime;
-      fineSearchBeginTime = MPI_Wtime();
-
-      std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);
-
-      int numRecvPts = recvPtsList.size()/6;
-      std::vector<double> tmpPtLocalCoord(3);
-
-      d_foundPts.reserve(6*numRecvPts);
-      unsigned int numFoundPts = 0;
-      bool coordinates_are_local = true;
-d_fout<<"numRecvPts="<<numRecvPts<<"\n";
-d_fout<<"d_volume_elements.size()="<<d_volume_elements.size()<<std::endl;
-      for(int i = 0; i < numRecvPts; ++i) {
-        double const * tmpPtGlobalCoordPtr = &(recvPtsList[6*i])+1;
-        unsigned int eId = static_cast<unsigned int>(recvPtsList[6*i]);
-        unsigned int procId = static_cast<unsigned int>(recvPtsList[6*i+5]);
-d_fout<<"i="<<i<<"  eid="<<eId<<"  procId="<<procId<<"  loaclId="<<recvPtsList[6*i+4];
-        if (d_volume_elements[eId]->within_bounding_box(tmpPtGlobalCoordPtr, d_tolerance)) {
-d_fout<<"  bbox";
-          if (d_volume_elements[eId]->within_bounding_polyhedron(tmpPtGlobalCoordPtr, d_tolerance)) {
-d_fout<<"  bhedron";
-            d_volume_elements[eId]->map_global_to_local(tmpPtGlobalCoordPtr, &(tmpPtLocalCoord[0]));
-            if (d_volume_elements[eId]->contains_point(&(tmpPtLocalCoord[0]), coordinates_are_local, d_tolerance)) {
-d_fout<<"  ###";
-              d_foundPts.push_back(recvPtsList[6*i]);
-              for (unsigned int d = 0; d < 3; ++d) { d_foundPts.push_back(tmpPtLocalCoord[d]); }
-              d_foundPts.push_back(recvPtsList[6*i+4]);
-              d_foundPts.push_back(recvPtsList[6*i+5]);
-              ++numFoundPts;
-              ++(d_sendCnts[procId]);
-            } // end if
-          } // end if
-        } // end if
-d_fout<<"\n";
-      }//end i
-      recvPtsList.clear();
-d_fout<<"myRank="<<rank<<"\n";
-npes = comm.getSize();
-} // end if
-
-      comm.allToAll(1, &(d_sendCnts[0]), &(d_recvCnts[0]));
-
-      d_sendDisps[0] = 0;
-      d_recvDisps[0] = 0;
-      for(int i = 1; i < npes; ++i) {
-        d_sendDisps[i] = d_sendDisps[i - 1] + d_sendCnts[i - 1];
-        d_recvDisps[i] = d_recvDisps[i - 1] + d_recvCnts[i - 1];
-      }//end i
-d_fout<<"d_sendCnts=";
-for (int i = 0; i < npes; ++i) {
-  d_fout<<d_sendCnts[i]<<"  ";
-} // end for i
-d_fout<<"\n";
-d_fout<<"d_recvCnts=";
-for (int i = 0; i < npes; ++i) {
-  d_fout<<d_recvCnts[i]<<"  ";
-} // end for i
-d_fout<<"\n";
-
-      if(d_verbose) {
-        comm.barrier();
-        searchStep6Time = MPI_Wtime();
-        if(!rank) {
-          std::cout<<"Time for step-6 of search: "<<(searchStep6Time - searchStep5Time)<<" seconds."<<std::endl;
-        }
-      }
-
-      fineSearchEndTime = MPI_Wtime();
-      d_timingMeasurements[FineSearch] = fineSearchEndTime - fineSearchBeginTime;
-      comm.bcast(&(d_timingMeasurements[0]), numTimingTypes, invRankMap[0]);
     }
 
-    void DendroSearch::interpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::const_shared_ptr vectorField, const unsigned int dofsPerNode,
-        std::vector<double> & results, std::vector<bool> & foundPt) {
+    std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);
+
+    rank = -1;
+    double fineSearchBeginTime = MPI_Wtime();
+    if (d_meshAdapter.get() != NULL) {
+        AMP::AMP_MPI meshComm = d_meshAdapter->getComm();
+        rank = meshComm.getRank();
+        npes = meshComm.getSize();
+
+        std::vector<int> ptToOctMap((recvList.size()), -1);
+        for(size_t i = 0; i < recvList.size(); ++i) {
+            unsigned int retIdx=0;
+            seq::maxLowerBound<ot::TreeNode>(d_nodeList, (recvList[i].node), retIdx, NULL, NULL);
+            if( d_nodeList[retIdx].isAncestor(recvList[i].node) ) {
+                ptToOctMap[i] = retIdx;
+                int stIdx = d_stIdxList[retIdx];
+                for(size_t j = 0; j < d_nodeList[retIdx].getWeight(); ++j) {
+                    d_sendCnts[d_rankList[stIdx + j]]++;
+                }//end j
+            }
+        }//end i
+
+        if(d_verbose) {
+            meshComm.barrier();
+            searchTime[4] = MPI_Wtime();
+            if(!rank) {
+                std::cout<<"Time for step-4 of search: "<< searchTime[4]-searchTime[3] <<" seconds."<<std::endl;
+            }
+        }
+
+        meshComm.allToAll(1, &(d_sendCnts[0]), &(d_recvCnts[0]));
+
+        d_sendDisps[0] = 0;
+        d_recvDisps[0] = 0;
+        for(int i = 1; i < npes; ++i) {
+            d_sendDisps[i] = d_sendDisps[i - 1] + d_sendCnts[i - 1];
+            d_recvDisps[i] = d_recvDisps[i - 1] + d_recvCnts[i - 1];
+        }//end i
+
+        std::vector<double> sendPtsList(6*(d_sendDisps[npes - 1] + d_sendCnts[npes - 1]));
+
+        std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);
+
+        for(size_t i = 0; i < ptToOctMap.size(); ++i) {
+            if(ptToOctMap[i] >= 0) {
+                int stIdx = d_stIdxList[ptToOctMap[i]];
+                for(size_t j = 0; j < d_nodeList[ptToOctMap[i]].getWeight(); ++j) {
+                    int recvRank = d_rankList[stIdx + j];
+                    int currIdx = 6*(d_sendDisps[recvRank] + d_sendCnts[recvRank]);
+                    //Local Id of this element on the processor that owns this element
+                    sendPtsList[currIdx] = d_elemIdList[stIdx + j];
+                    //Pt's x coordinate
+                    sendPtsList[currIdx + 1] = recvList[i].values[0];
+                    //Pt's y coordinate
+                    sendPtsList[currIdx + 2] = recvList[i].values[1];
+                    //Pt's z coordinate
+                    sendPtsList[currIdx + 3] = recvList[i].values[2];
+                    //Local Id of Pt on the processor that owns this Pt
+                    sendPtsList[currIdx + 4] = recvList[i].values[3];
+                    //rank of processor that owns Pt
+                    sendPtsList[currIdx + 5] = recvList[i].node.getWeight();
+                    ++(d_sendCnts[recvRank]);
+                }//end j
+            }
+        }//end i
+        recvList.clear();
+
+        for(int i = 0; i < npes; ++i) {
+            d_sendCnts[i] *= 6;
+            d_sendDisps[i] *= 6;
+            d_recvCnts[i] *= 6;
+            d_recvDisps[i] *= 6;
+        }//end i
+
+        std::vector<double> recvPtsList(d_recvDisps[npes - 1] + d_recvCnts[npes - 1]);
+        d_fout<<"sendPtsList.size()="<<sendPtsList.size()<<"\n";
+        d_fout<<"recvPtsList.size()="<<recvPtsList.size()<<"\n";
+        meshComm.allToAll((!(sendPtsList.empty()) ? &(sendPtsList[0]) : NULL), &(d_sendCnts[0]), &(d_sendDisps[0]), 
+          (!(recvPtsList.empty()) ? &(recvPtsList[0]) : NULL), &(d_recvCnts[0]), &(d_recvDisps[0]), true);
+        sendPtsList.clear();
+
+        if(d_verbose) {
+            meshComm.barrier();
+            searchTime[5] = MPI_Wtime();
+            if(!rank) {
+              std::cout<<"Time for step-5 of search: "<< searchTime[5]-searchTime[4] <<" seconds."<<std::endl;
+            }
+        }
+
+        double coarseSearchEndTime = MPI_Wtime();
+        d_timingMeasurements[CoarseSearch] = coarseSearchEndTime - coarseSearchBeginTime;
+        fineSearchBeginTime = MPI_Wtime();
+
+        std::fill(d_sendCnts.begin(), d_sendCnts.end(), 0);
+
+        int numRecvPts = recvPtsList.size()/6;
+        std::vector<double> tmpPtLocalCoord(3);
+
+        d_foundPts.reserve(6*numRecvPts);
+        unsigned int numFoundPts = 0;
+        bool coordinates_are_local = true;
+        d_fout<<"numRecvPts="<<numRecvPts<<"\n";
+        d_fout<<"d_volume_elements.size()="<<d_volume_elements.size()<<std::endl;
+        for(int i = 0; i < numRecvPts; ++i) {
+            double const * tmpPtGlobalCoordPtr = &(recvPtsList[6*i])+1;
+            unsigned int eId = static_cast<unsigned int>(recvPtsList[6*i]);
+            unsigned int procId = static_cast<unsigned int>(recvPtsList[6*i+5]);
+            d_fout<<"i="<<i<<"  eid="<<eId<<"  procId="<<procId<<"  loaclId="<<recvPtsList[6*i+4];
+            if (d_volume_elements[eId]->within_bounding_box(tmpPtGlobalCoordPtr, d_tolerance)) {
+                d_fout<<"  bbox";
+                if (d_volume_elements[eId]->within_bounding_polyhedron(tmpPtGlobalCoordPtr, d_tolerance)) {
+                    d_fout<<"  bhedron";
+                    d_volume_elements[eId]->map_global_to_local(tmpPtGlobalCoordPtr, &(tmpPtLocalCoord[0]));
+                    if (d_volume_elements[eId]->contains_point(&(tmpPtLocalCoord[0]), coordinates_are_local, d_tolerance)) {
+                        d_fout<<"  ###";
+                        d_foundPts.push_back(recvPtsList[6*i]);
+                        for (unsigned int d = 0; d < 3; ++d) { d_foundPts.push_back(tmpPtLocalCoord[d]); }
+                        d_foundPts.push_back(recvPtsList[6*i+4]);
+                        d_foundPts.push_back(recvPtsList[6*i+5]);
+                        ++numFoundPts;
+                        ++(d_sendCnts[procId]);
+                    } // end if
+                } // end if
+            } // end if
+            d_fout<<"\n";
+        }//end i
+        recvPtsList.clear();
+        d_fout<<"myRank="<<rank<<"\n";
+        npes = comm.getSize();
+    } // end if
+
+    comm.allToAll(1, &(d_sendCnts[0]), &(d_recvCnts[0]));
+
+    d_sendDisps[0] = 0;
+    d_recvDisps[0] = 0;
+    for(int i = 1; i < npes; ++i) {
+        d_sendDisps[i] = d_sendDisps[i - 1] + d_sendCnts[i - 1];
+        d_recvDisps[i] = d_recvDisps[i - 1] + d_recvCnts[i - 1];
+    }//end i
+    d_fout<<"d_sendCnts=";
+    for (int i = 0; i < npes; ++i) {
+        d_fout<<d_sendCnts[i]<<"  ";
+    } // end for i
+    d_fout<<"\n";
+    d_fout<<"d_recvCnts=";
+    for (int i = 0; i < npes; ++i) {
+        d_fout<<d_recvCnts[i]<<"  ";
+    } // end for i
+    d_fout<<"\n";
+
+    if(d_verbose) {
+        comm.barrier();
+        searchTime[6] = MPI_Wtime();
+        if(!rank) {
+          std::cout<<"Time for step-6 of search: "<< searchTime[6]-searchTime[5] <<" seconds."<<std::endl;
+        }
+    }
+
+    double fineSearchEndTime = MPI_Wtime();
+    d_timingMeasurements[FineSearch] = fineSearchEndTime - fineSearchBeginTime;
+    comm.bcast(&(d_timingMeasurements[0]), numTimingTypes, invRankMap[0]);
+}
+
+
+void DendroSearch::interpolate(AMP::AMP_MPI comm, AMP::LinearAlgebra::Vector::const_shared_ptr vectorField, 
+    const unsigned int dofsPerNode, std::vector<double> & results, std::vector<bool> & foundPt) 
+{
       const int rank = comm.getRank();
       const int npes = comm.getSize();
 
@@ -1042,17 +1056,19 @@ d_fout<<"\n";
           std::cout<<"Time for step-2 of interpolate: "<<(interpolateStep2Time - interpolateStep1Time)<<" seconds."<<std::endl;
         }
       }
-    }
-
-    void DendroSearch::reportTiming(size_t n, TimingType const * timingTypes, double * timingMeasurements) {
-      AMP_INSIST(!d_verbose, "Using verbose mode in DendroSearch. This involves calls to MPI_Barrier. So timing measurements are bad!");
-      for (size_t i = 0; i < n; ++i) {
-        timingMeasurements[i] = d_timingMeasurements[timingTypes[i]];
-      } // end for i
-    }
-
-  }
 }
+
+
+void DendroSearch::reportTiming(size_t n, TimingType const * timingTypes, double * timingMeasurements) {
+    AMP_INSIST(!d_verbose, "Using verbose mode in DendroSearch. This involves calls to MPI_Barrier. So timing measurements are bad!");
+    for (size_t i = 0; i < n; ++i) {
+        timingMeasurements[i] = d_timingMeasurements[timingTypes[i]];
+    } // end for i
+}
+
+
+}  // Mesh
+}  // AMP
 
 
 
