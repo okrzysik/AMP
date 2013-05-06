@@ -1305,7 +1305,7 @@ unsigned int ProfilerApp::get_thread_hash( size_t id )
 ***********************************************************************/
 #if defined(USE_MAC)
     // Get the page size on mac
-    size_t page_size = static_cast<size_t>(sysconf(_SC_PAGESIZE));
+    static size_t page_size = static_cast<size_t>(sysconf(_SC_PAGESIZE));
 #endif
 inline size_t ProfilerApp::get_memory_usage( )
 {
@@ -1318,7 +1318,8 @@ inline size_t ProfilerApp::get_memory_usage( )
     #elif defined(USE_MAC)
         struct task_basic_info t_info;
         mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
-        kern_return_t rtn = task_info(mach_task_self(),
+        kern_return_t rtn = task_info( mach_task_self(), 
+            TASK_BASIC_INFO, (task_info_t)&t_info, &t_info_count );
         if ( rtn != KERN_SUCCESS ) { return 0; }
         N_bytes = t_info.virtual_size;
     #elif defined(USE_WINDOWS)

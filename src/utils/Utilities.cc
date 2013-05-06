@@ -261,7 +261,7 @@ unsigned int Utilities::hash_char(const char* name)
 // Note: this function should be thread-safe
 #if defined(USE_MAC)
     // Get the page size on mac
-    size_t page_size = static_cast<size_t>(sysconf(_SC_PAGESIZE));
+    static size_t page_size = static_cast<size_t>(sysconf(_SC_PAGESIZE));
 #endif
 static size_t N_bytes_initialization = Utilities::getMemoryUsage();
 size_t Utilities::getMemoryUsage()

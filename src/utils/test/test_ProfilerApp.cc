@@ -8,7 +8,7 @@
     #define get_time(x) QueryPerformanceCounter(x)
     #define get_diff(start,end,f) (((double)(end.QuadPart-start.QuadPart))/((double)f.QuadPart))
     #define get_frequency(f) QueryPerformanceFrequency(f)
-#elif defined(USE_LINUX)
+#elif defined(USE_LINUX) || defined(USE_MAC)
     #define TIME_TYPE timeval
     #define get_time(x) gettimeofday(x,NULL);
     #define get_diff(start,end,f) (((double)end.tv_sec-start.tv_sec)+1e-6*((double)end.tv_usec-start.tv_usec))
