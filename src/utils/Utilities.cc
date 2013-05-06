@@ -43,6 +43,7 @@
     #include <execinfo.h>
     #include <cxxabi.h>
     #include <dlfcn.h>
+    #include <malloc.h>
 #else
     #error Unknown OS
 #endif
@@ -258,53 +259,19 @@ unsigned int Utilities::hash_char(const char* name)
 
 // Function to get the memory usage
 // Note: this function should be thread-safe
-#if defined(USE_LINUX)
-    // Get the page size on linux
-    size_t page_size = static_cast<size_t>(sysconf(_SC_PAGESIZE));
-    // Open the /proc/self/status so we can cache the access
-    static void fidDeleter(FILE* fid) { fclose(fid); };
-    static boost::shared_ptr<FILE> proc_fid;
-    static size_t N_bytes_initialization = Utilities::getMemoryUsage();
-#elif defined(USE_MAC)
+#if defined(USE_MAC)
     // Get the page size on mac
     size_t page_size = static_cast<size_t>(sysconf(_SC_PAGESIZE));
 #endif
+static size_t N_bytes_initialization = Utilities::getMemoryUsage();
 size_t Utilities::getMemoryUsage()
 {
     size_t N_bytes = 0;
     #if defined(USE_LINUX)
-        /* Use /proc/self/statm
-         *     Provides information about memory usage, measured in pages.
-         *     The columns are:
-         *         size       (1) total program size (same as VmSize in /proc/[pid]/status)
-         *         resident   (2) resident set size  (same as VmRSS in /proc/[pid]/status)
-         *         share      (3) shared pages (i.e., backed by a file)
-         *         text       (4) text (code)
-         *         lib        (5) library (unused in Linux 2.6)
-         *         data       (6) data + stack
-         *         dt         (7) dirty pages (unused in Linux 2.6)
-         */
-        if ( proc_fid==NULL ) 
-            proc_fid = boost::shared_ptr<FILE>(fopen("/proc/self/statm","rb"),fidDeleter);
-        FILE* fid = proc_fid.get();
-        if (fid==NULL) { return 0; }
-        char data_text[128];
-        flockfile(fid);     // lock file for thread safety
-        int size = fread(data_text,1,127,fid);  // read the data
-        rewind(fid);        // rewind the file so it is availible for the next read
-        funlockfile(fid);   // unlock file
-        char* tmp = data_text;
-        long int data[10];
-        int i = 0;
-        while ( tmp-data_text < size-1 ) {
-            data[i] = strtol(tmp,&tmp,10);
-            i++;
-        }
-        if ( i!=7 ) {
-            printf("Format for /proc/self/statm changed\n");
-            return 0;
-        }
-        N_bytes = page_size*static_cast<size_t>(data[5]);
+        struct mallinfo meminfo = mallinfo();
+        size_t size_hblkhd = static_cast<size_t>( meminfo.hblkhd );
+        size_t size_uordblks = static_cast<size_t>( meminfo.uordblks );
+        N_bytes = static_cast<size_t>( size_hblkhd + size_uordblks );
     #elif defined(USE_MAC)
         struct task_basic_info t_info;
         mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;

@@ -69,6 +69,22 @@
     PROFILE_STOP_LEVEL( NAME, __FILE__, -1, GET_LEVEL(_0,##__VA_ARGS__,0) )
 
 
+/*! \def PROFILE_SYNCRONIZE()
+ *  \brief Syncronize the time across multiple processors
+ *  \details This will syncronize time zero across all processors.
+ *      In a MPI program, the different processes may start a slightly
+ *      different times.  Since we often want to examine the timers
+ *      on different processors we need to syncronize time zero so it is 
+ *      consistent.  
+ *      Note:  This program should be called once after MPI has been initialized.
+ *        it does not need to be called in a serial program and there is no benifit
+ *        to multiple calls.
+ *      Note: this is blocking call.
+ */
+#define PROFILE_SYNCRONIZE(FILE) \
+    global_profiler.syncronize( )
+
+
 /*! \def PROFILE_SAVE(FILE)
  *  \brief Save the profile results
  *  \details This will save the results of the timers the file provided
@@ -131,6 +147,26 @@
  */
 #define PROFILE_DISABLE_TRACE() \
     global_profiler.set_store_trace(false)
+
+
+/*! \def PROFILE_ENABLE_MEMORY()
+ *  \brief Enable the memory trace
+ *  \details This will enable the monitoring of the memory usage within
+ *      the application. 
+ *      See  \ref AMP::ProfilerApp "ProfilerApp" for more info.
+ */
+#define PROFILE_ENABLE_MEMORY() \
+    global_profiler.set_store_memory(true)
+
+
+/*! \def PROFILE_DISABLE_MEMORY()
+ *  \brief Disable the memory trace
+ *  \details This will disable the monitoring of the memory usage within
+ *      the application. 
+ *      See  \ref AMP::ProfilerApp "ProfilerApp" for more info.
+ */
+#define PROFILE_DISABLE_MEMORY() \
+    global_profiler.set_store_memory(false)
 
 
 /*! @} */

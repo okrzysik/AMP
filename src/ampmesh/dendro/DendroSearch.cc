@@ -659,7 +659,7 @@ void DendroSearch::search(AMP::AMP_MPI comm, const std::vector<double> & pts)
     d_fout<<"\n";
     d_fout<<"invRankmap=";
     for (int i = 0; i < npes; ++i) {
-      d_fout<<invRankMap[i]<<"  ";
+        d_fout<<invRankMap[i]<<"  ";
     }
     d_fout<<"\n";
 

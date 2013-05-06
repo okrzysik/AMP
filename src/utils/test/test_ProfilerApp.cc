@@ -18,11 +18,14 @@
 #endif
 
 
-int run_tests( bool enable_trace ) 
+int run_tests( bool enable_trace, std::string save_name ) 
 {
     PROFILE_ENABLE();
-    if ( enable_trace )
+    PROFILE_SYNCRONIZE();
+    if ( enable_trace ) {
         PROFILE_ENABLE_TRACE();
+        PROFILE_ENABLE_MEMORY();
+    }
     PROFILE_START("MAIN");
 
     const int N_it = 100;
@@ -83,10 +86,23 @@ int run_tests( bool enable_trace )
             PROFILE_STOP(names[j],1);
         }
         PROFILE_STOP("level 1");
+        // Test the memory around allocations
+        PROFILE_START("allocate1");
+        PROFILE_START("allocate2");
+        double *tmp = new double[5000000];
+        NULL_USE(tmp);
+        PROFILE_STOP("allocate2");
+        delete [] tmp;
+        PROFILE_START("allocate3");
+        tmp = new double[100000];
+        NULL_USE(tmp);
+        PROFILE_STOP("allocate3");
+        delete [] tmp;
+        PROFILE_STOP("allocate1");
     }
 
     PROFILE_STOP("MAIN");
-    PROFILE_SAVE("test_ProfilerApp");
+    PROFILE_SAVE(save_name);
     return N_errors;
 }
 
@@ -100,9 +116,9 @@ int main(int argc, char* argv[])
     
     // Run the tests
     int N_errors=0;
-    N_errors += run_tests( false );
+    N_errors += run_tests( false, "test_ProfilerApp" );
     PROFILE_DISABLE();
-    N_errors += run_tests( false );
+    N_errors += run_tests( true, "test_ProfilerApp-trace" );
     
     // Finalize AMP
     if ( N_errors==0 ) 

@@ -10,6 +10,8 @@
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     #define USE_WINDOWS
+#elif defined(__APPLE__)
+    #define USE_MAC
 #else
     #define USE_LINUX
 #endif
@@ -21,6 +23,12 @@
     #include <windows.h>
     #include <string>
     #define TIME_TYPE LARGE_INTEGER
+#elif defined(USE_MAC)
+    // Mac
+    #include <sys/time.h>
+    #include <pthread.h>
+    #include <string.h>
+    #define TIME_TYPE timeval
 #elif defined(USE_LINUX)
     // Linux
     #include <sys/time.h>
@@ -42,6 +50,7 @@ namespace AMP {
 #define MAX_TRACE_TRACE 1e6                     // The maximum number of stored start and stop times per trace
                                                 // Note: this is only used if store_trace is set, and should be a power of 2
                                                 // Note: the maximum ammount of memory used per trace is 16*MAX_TRACE_TRACE bytes (plus the trace itself)
+#define MAX_TRACE_MEMORY 1e8                    // The maximum number of times to store the memory usage
 #define THREAD_HASH_SIZE 64                     // The size of the hash table to store the threads
 #define TIMER_HASH_SIZE 1024                    // The size of the hash table to store the timers
 
@@ -67,6 +76,13 @@ namespace AMP {
   *                          line as the final line of the block, but is provided for cases where there are multiple exit
   *                          paths for a given function or block of code.
   *    PROFILE_SAVE(FILE)  - Save the results of profiling to a file.   
+  *    PROFILE_ENABLE(0)   - Enable the profiler with a default level of 0
+  *    PROFILE_ENABLE(ln)  - Enable the profiler with the given level
+  *    PROFILE_DISABLE()   - Disable the profiler
+  *    PROFILE_ENABLE_TRACE()  - Enable the trace-level data 
+  *    PROFILE_DISABLE_TRACE() - Disable the trace-level data 
+  *    PROFILE_ENABLE_MEMORY()  - Enable tracing the memory usage over time
+  *    PROFILE_DISABLE_MEMORY() - Disable tracing the memory usage over time
   * \endverbatim
   * Note that these commands are global and will create a global profiler.  It is possible
   * for a user to create multiple profilers and this should not create any problems, but the 
@@ -146,7 +162,7 @@ public:
      * Note: .x.trace will automatically be appended to the filename when detailed traces are used.
      * @param filename      File name for saving the results
      */
-    void save( const std::string& filename ) const;
+    void save( const std::string& filename );
 
     /*!
      * \brief  Function to syncronize the timers
@@ -180,6 +196,19 @@ public:
      */
     void set_store_trace(bool profile=false);
 
+    /*!
+     * \brief  Function to change if we are storing memory information
+     * \details  This function will change if we are storing information about the memory usage
+     *  as a function of time (must be called before any start).
+     *  Note: Enabling this option will check the memory usage evergy time we enter or leave
+     *  timer.  This data will be combined from all timers/threads to get the memory usage
+     *  of the application over time.  Combined with the trace level data, we can determine
+     *  when memory is allocated and which timers are active.
+     * @param profile       Do we want to store detailed profiling data
+     */
+    void set_store_memory(bool memory=false);
+
+    //! Return the current timer level
     inline int get_level( ) const { return d_level; }
 
 private:
@@ -205,15 +234,18 @@ private:
             for (int i=0; i<TRACE_SIZE; ++i)
                 trace[i] = 0;
         }
-        // Copy constuctor
-        store_trace(const store_trace& rhs);
-        // De-constructor
+        // Destructor
 		~store_trace() {
             delete [] start_time;
             delete [] end_time;
             start_time = NULL;
             end_time = NULL;
+            delete next;
+            next = NULL;
 		}
+      private:
+        store_trace( const store_trace& rhs );              // Private copy constructor
+        store_trace& operator=( const store_trace& rhs );   // Private assignment operator
     };
     
     // Structure to store the global timer information for a single block of code
@@ -226,6 +258,14 @@ private:
         volatile store_timer_data_info *next; // Pointer to the next entry in the list
         // Constructor used to initialize key values
 		store_timer_data_info(): start_line(-1), stop_line(-1), id(0), next(NULL) {}
+        // Destructor
+		~store_timer_data_info() {
+            delete next;
+            next = NULL;
+		}
+      private:
+        store_timer_data_info( const store_timer_data_info& rhs );              // Private copy constructor
+        store_timer_data_info& operator=( const store_timer_data_info& rhs );   // Private assignment operator
     };
 
     // Structure to store the timing information for a single block of code
@@ -248,6 +288,17 @@ private:
             for (int i=0; i<TRACE_SIZE; ++i)
                 trace[i] = 0;
 		}
+        // Destructor 
+		~store_timer() {
+            delete trace_head;
+            trace_head = NULL;
+            delete next;
+            next = NULL;
+            timer_data = NULL;  // timer_data will be destroyed in the global list
+		}
+      private:
+        store_timer( const store_timer& rhs );              // Private copy constructor
+        store_timer& operator=( const store_timer& rhs );   // Private assignment operator
     };
     
     // Structure to store thread specific information
@@ -258,6 +309,9 @@ private:
         volatile thread_info *next;         // Pointer to the next entry in the head list
         BIT_WORD active[TRACE_SIZE];        // Store the current active traces
         store_timer *head[TIMER_HASH_SIZE]; // Store the timers in a hash table
+        size_t N_memory_steps;              // The number of steps we have for the memory usage
+        double* time_memory;                // The times at which we know the memory usage
+        size_t* size_memory;                // The memory usage at each time
         // Constructor used to initialize key values
 		thread_info() {
             id = 0;
@@ -268,7 +322,27 @@ private:
                 active[i] = 0;
             for (int i=0; i<TIMER_HASH_SIZE; i++)
                 head[i] = NULL;
+            N_memory_steps = 0;
+            time_memory = NULL;
+            size_memory = NULL;
 		}
+        // Destructor
+		~thread_info() {
+            delete next;
+            next = NULL;
+            for (int i=0; i<TIMER_HASH_SIZE; i++) {
+                delete head[i];
+                head[i] = NULL;
+            }
+            delete [] time_memory;
+            delete [] size_memory;
+            N_memory_steps = 0;
+            time_memory = NULL;
+            size_memory = NULL;
+		}
+      private:
+        thread_info( const thread_info& rhs );              // Private copy constructor
+        thread_info& operator=( const thread_info& rhs );   // Private assignment operator
     };
     
     // Store thread specific info (use a small hash table to make searching faster)
@@ -303,19 +377,30 @@ private:
     // Function to get the hash index given a thread id
     static unsigned int get_thread_hash( size_t id );
 
+    // Function to get the current memory usage
+    static inline size_t get_memory_usage();
+
     // Handle to a mutex lock
     #ifdef USE_WINDOWS
         HANDLE lock;                // Handle to a mutex lock
-    #elif defined(USE_LINUX)
+    #elif defined(USE_LINUX) || defined(USE_MAC)
         pthread_mutex_t lock;       // Handle to a mutex lock
+    #else
+        #error Unknown OS
     #endif
     
     // Misc variables
     bool store_trace_data;          // Do we want to store trace information
+    bool store_memory_data;          // Do we want to store memory information
     char d_level;                   // Level of timing to use (default is 0, -1 is disabled)
     TIME_TYPE construct_time;       // Store when the constructor was called
     TIME_TYPE frequency;            // Clock frequency (only used for windows)
     double d_shift;                 // Offset to add to all trace times when saving (used to syncronize the trace data)
+    size_t d_max_trace_remaining;   // The number of traces remaining to store for each thread
+    size_t d_N_memory_steps;        // The number of steps we have for the memory usage
+    double* d_time_memory;          // The times at which we know the memory usage
+    size_t* d_size_memory;          // The memory usage at each time
+
 };
 
 
