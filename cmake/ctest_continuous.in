@@ -53,7 +53,7 @@ WHILE( ${CTEST_ELAPSED_TIME} LESS 64800 )
     ENDWHILE()
     MESSAGE("Old revision: ${OLDREV}")
     MESSAGE("New revision: ${NEWREV}\n")
-    MESSAGE("Current time: ${START_TIME}\n")
+    MESSAGE("Current time: ${CTEST_ELAPSED_TIME}\n")
     SET( OLDREV ${NEWREV} )
 
     # Configure and run the tests
