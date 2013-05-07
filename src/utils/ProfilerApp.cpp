@@ -843,8 +843,6 @@ void ProfilerApp::save( const std::string& filename ) {
         }
         if ( (int) N_time.size() != N_threads )
             ERROR_MSG("Unhandled case");
-        double* tmp_time = d_time_memory;
-        size_t* tmp_size = d_size_memory;
         if ( d_N_memory_steps>0 ) {
             N_time.push_back(d_N_memory_steps);
             data_time.push_back(d_time_memory);
@@ -908,10 +906,12 @@ void ProfilerApp::save( const std::string& filename ) {
         }
         int N1 = fwrite(time,sizeof(double),d_N_memory_steps,memoryFile);
         int N2 = fwrite(size,sizeof(unsigned int),d_N_memory_steps,memoryFile);
-        if ( N1!=(int)d_N_memory_steps || N2!=(int)d_N_memory_steps )
-            ERROR_MSG("Failed to write memory results\n");
+        delete [] time;
+        delete [] size;
         fprintf(memoryFile,"\n");
         fclose(memoryFile);
+        if ( N1!=(int)d_N_memory_steps || N2!=(int)d_N_memory_steps )
+            ERROR_MSG("Failed to write memory results\n");
     }
     // Release the mutex
     RELEASE_LOCK(&lock);
