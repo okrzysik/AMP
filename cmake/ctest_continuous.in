@@ -1,8 +1,8 @@
 # Sample script to run ctest and submit the results
 SET ( CTEST_PROJECT_NAME "AMP" )
-SET ( CTEST_SOURCE_DIRECTORY "../../../AMP/src" )
+SET ( CTEST_SOURCE_DIRECTORY "../../../AMP-source" )
 SET ( CTEST_BINARY_DIRECTORY "." )
-SET ( CTEST_CMAKE_COMMAND "./lap0086227_cmake" )
+SET ( CTEST_CMAKE_COMMAND "./lapHOSTNAME_cmake" )
 
 SET ( CTEST_BUILD_NAME "AMP-Continuous" )
 SET ( CTEST_TEST_TIMEOUT 300 )
@@ -19,7 +19,7 @@ SET ( CTEST_CONFIGURE_COMMAND ${CTEST_CMAKE_COMMAND} )
 SET ( CTEST_BUILD_COMMAND "make build-test -i -j4" )
 SET ( CTEST_COVERAGE_COMMAND ${COVERAGE_COMMAND} )
 
-# Clear the binary directory and create an initial cache6
+# Clear the binary directory and create an initial cache
 CTEST_EMPTY_BINARY_DIRECTORY (${CTEST_BINARY_DIRECTORY})
 FILE(WRITE "${CTEST_BINARY_DIRECTORY}/CMakeCache.txt" "CTEST_TEST_CTEST:BOOL=1")
 SITE_NAME( CTEST_SITE )
@@ -48,17 +48,18 @@ WHILE( ${CTEST_ELAPSED_TIME} LESS 64800 )
         STRING(REGEX REPLACE "(\r?\n)+$" "" NEWREV "${NEWREV}")
         IF( ${OLDREV} STREQUAL ${NEWREV} )
             MESSAGE("Source not updated, no need to build source")
-            CTEST_SLEEP(6)
+            CTEST_SLEEP(60)
         ENDIF()
     ENDWHILE()
     MESSAGE("Old revision: ${OLDREV}")
     MESSAGE("New revision: ${NEWREV}\n")
+    MESSAGE("Current time: ${START_TIME}\n")
     SET( OLDREV ${NEWREV} )
 
     # Configure and run the tests
-    #CTEST_CONFIGURE( BUILD "${CTEST_BUILD_DIRECTORY}" )
-    #CTEST_BUILD( BUILD "${CTEST_BUILD_DIRECTORY}" APPEND )
-    #CTEST_TEST( EXCLUDE test   PARALLEL_LEVEL 1 )
+    CTEST_CONFIGURE( BUILD "${CTEST_BUILD_DIRECTORY}" )
+    CTEST_BUILD( BUILD "${CTEST_BUILD_DIRECTORY}" APPEND )
+    CTEST_TEST( EXCLUDE test   PARALLEL_LEVEL 1 )
 
     # Submit the results to billmp1
     SET ( CTEST_DROP_METHOD "http" )
@@ -66,7 +67,7 @@ WHILE( ${CTEST_ELAPSED_TIME} LESS 64800 )
     SET ( CTEST_DROP_LOCATION "/CDash/submit.php?project=AMP" )
     SET ( CTEST_DROP_SITE_CDASH TRUE )
     SET ( DROP_SITE_CDASH TRUE )
-    #CTEST_SUBMIT()
+    CTEST_SUBMIT()
 
     # Submit the results to oblivion
     SET ( CTEST_DROP_METHOD "http" )
@@ -74,12 +75,8 @@ WHILE( ${CTEST_ELAPSED_TIME} LESS 64800 )
     SET ( CTEST_DROP_LOCATION "/CDash/submit.php?project=AMP" )
     SET ( CTEST_DROP_SITE_CDASH TRUE )
     SET ( CTEST_DROP_SITE_CDASH TRUE )
-    #CTEST_SUBMIT()
+    CTEST_SUBMIT()
 
 ENDWHILE()
-MESSAGE("FATAL_ERROR")
-
-
-
 
 
