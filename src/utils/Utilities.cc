@@ -1,5 +1,5 @@
 #include "Utilities.h"
-  
+
 #include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
 #include "utils/Logger.h"
