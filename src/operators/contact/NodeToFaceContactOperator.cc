@@ -452,7 +452,7 @@ std::cout<<" ;\n";
         } else {
 // check what master elements the slave vertices where found in before killing the run
 if (flags[i] == AMP::Mesh::DendroSearch::FoundNotOnBoundary) {
-std::cout<<std::setprecision(6)<<std::fixed;
+d_fout<<std::setprecision(6)<<std::fixed;
 std::vector<AMP::Mesh::MeshElement> elementVertices = d_Mesh->getElement(tmpMasterVolumesGlobalIDs[i]).getElements(AMP::Mesh::Vertex);
 double verticesCoordinates[24];
 for (size_t kk = 0; kk < 8; ++kk) {
