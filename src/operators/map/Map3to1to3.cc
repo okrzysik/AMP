@@ -20,8 +20,9 @@ static T* getPtr( std::vector<T> &x ) {
 /********************************************************
 * Constructor                                           *
 ********************************************************/
-Map3to1to3::Map3to1to3 ( const boost::shared_ptr<OperatorParameters> & params_in )
-    : AsyncMapOperator ( params_in )
+Map3to1to3::Map3to1to3 ( const boost::shared_ptr<OperatorParameters> & params_in ) :
+    AsyncMapOperator ( params_in ),
+    d_FirstApply(true)
 {
     // Get the input parameters
     boost::shared_ptr <Map3to1to3Parameters>  params = boost::dynamic_pointer_cast<Map3to1to3Parameters> ( params_in );
@@ -285,7 +286,7 @@ void Map3to1to3::unpackBuffer( const std::vector<comm_data>& buffer, std::map<do
     std::map<double,std::pair<int,double> >::iterator iterator, it1, it2, it3;
     for (size_t j=0; j<buffer.size(); j++) {
         iterator = map.end();
-        if ( map.size() > 0 ) {
+        if ( !map.empty() ) {
             it1 = map.lower_bound( buffer[j].z );
             if ( it1==map.end() ) { --it1; }
             it2 = it1;

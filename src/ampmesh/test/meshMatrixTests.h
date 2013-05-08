@@ -73,6 +73,7 @@ void GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 
     // For each mesh, get a mapping of it's processor id's to the comm of the mesh
     std::map<AMP::Mesh::MeshID,std::vector<int> > proc_map = createRankMap( mesh );
+    NULL_USE(proc_map);
 
     // For each processor, make sure it can write to all entries
     AMP::AMP_MPI comm = mesh->getComm();

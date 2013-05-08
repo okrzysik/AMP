@@ -32,7 +32,7 @@ void  AsyncMapColumnOperator::append ( boost::shared_ptr < Operator > op )
       while ( curOp != mapColumn.get()->d_Operators.end() )
       {
         append ( *curOp );
-        curOp++;
+        ++curOp;
       }
     }
     else
