@@ -860,7 +860,7 @@ private:
 
 // Include the default instantiations
 // \cond HIDDEN_SYMBOLS
-#include "utils/AMP_MPI.I"
+#include "AMP_MPI.I"
 // \endcond
 
 }
