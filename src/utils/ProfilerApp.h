@@ -204,7 +204,7 @@ public:
      *  timer.  This data will be combined from all timers/threads to get the memory usage
      *  of the application over time.  Combined with the trace level data, we can determine
      *  when memory is allocated and which timers are active.
-     * @param profile       Do we want to store detailed profiling data
+     * @param memory        Do we want to store detailed profiling data
      */
     void set_store_memory(bool memory=false);
 
