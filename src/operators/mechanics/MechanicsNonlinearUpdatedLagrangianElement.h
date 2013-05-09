@@ -406,7 +406,6 @@ namespace Operator {
         double Bl_np1[6][24], d_np1[3][3], spin_np1[3][3], el_np1[6], Bl_dil[6][24], F_n[3][3], F_np1[3][3], F_np1o2[3][3];
         double R_n[3][3], U_n[3][3], R_np1[3][3], U_np1[3][3], R_np1o2[3][3], U_np1o2[3][3];
         double e_np1o2_tilda_rotated[3][3];
-        double dN_dxnp1o2[8], dN_dynp1o2[8], dN_dznp1o2[8], detJ_np1o2[1], d_np1o2[3][3], d_np1o2_temp[3][3];
 
         if(d_useJaumannRate == false) {
           if(d_useFlanaganTaylorElem == false) {
@@ -422,6 +421,7 @@ namespace Operator {
           }
 
           // Gradient of the incremental displacement with respect to the np1o2 configuration.
+          double dN_dxnp1o2[8], dN_dynp1o2[8], dN_dznp1o2[8], detJ_np1o2[1], d_np1o2[3][3], d_np1o2_temp[3][3];
           constructShapeFunctionDerivatives(dN_dxnp1o2, dN_dynp1o2, dN_dznp1o2, x_np1o2, y_np1o2, z_np1o2, currXi[qp], currEta[qp], currZeta[qp], detJ_np1o2);
 
           // Calculate the rate of deformation tensor with respect to the np1o2 configuration.
