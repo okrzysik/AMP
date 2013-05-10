@@ -36,7 +36,7 @@
 #include "applyTests.h"
 
 
-void forwardTest1(AMP::UnitTest *ut, const std::string exeName)
+void forwardTest1(AMP::UnitTest *ut, std::string exeName)
 {
   // Tests diffusion operator for temperature
 

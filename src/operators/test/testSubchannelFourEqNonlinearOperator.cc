@@ -100,7 +100,7 @@ unsigned int getMATLABAxialIndex(AMP::Mesh::MeshElement gapFace)
    return j;
 }
 
-void Test(AMP::UnitTest *ut, const std::string exeName)
+void Test(AMP::UnitTest *ut, std::string exeName)
 {
   // create input and output file names
   std::string input_file = "input_"  + exeName;
