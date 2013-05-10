@@ -78,6 +78,15 @@ namespace Operator {
     default_BURNUP = (params->d_db)->getDoubleWithDefault("Default_Burnup",0.0);
 
     default_OXYGEN_CONCENTRATION = (params->d_db)->getDoubleWithDefault("Default_Oxygen_Concentration",0.0);
+
+    for(size_t i=0; i<6; i++) {
+      for(size_t j=0; j<6; j++) d_constitutiveMatrix[i][j] = 0.;
+    }
+    d_gaussPtCnt                 = 0;
+    Total_Gauss_Point            = 0;
+    Plastic_Gauss_Point          = 0;
+    d_resetReusesRadialReturn    = false;
+    d_jacobianReusesRadialReturn = false;
   }
 
   void VonMises_IsotropicKinematicHardening :: preNonlinearInit(bool resetReusesRadialReturn, bool jacobianReusesRadialReturn)
