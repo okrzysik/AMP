@@ -319,7 +319,7 @@ namespace Operator {
       const double currXi[8] = {-rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3};
       const double currEta[8] = {-rsq3, -rsq3, rsq3, rsq3, -rsq3, -rsq3, rsq3, rsq3};
       const double currZeta[8] = {-rsq3, -rsq3, -rsq3, -rsq3, rsq3, rsq3, rsq3, rsq3};
-      double Bl_np1_bar[6][24], sum_detJ, Bl_center[6][24];
+      double Bl_np1_bar[6][24], Bl_center[6][24];
 
       for(unsigned int ijk = 0; ijk < num_nodes; ijk++) {
         xyz_n[ijk](0) = xyz[ijk](0) + elementInputVectors_pre[Mechanics::DISPLACEMENT][(3*ijk) + 0];
@@ -340,7 +340,7 @@ namespace Operator {
       }
       
       if(d_useReducedIntegration && d_useJaumannRate) {
-        sum_detJ = 0.0;
+        double sum_detJ = 0.0;
         for(unsigned int i = 0; i < 6; i++) {
           for(unsigned int j = 0; j < (3 * num_nodes); j++) {
             Bl_np1_bar[i][j] = 0.0;
@@ -403,12 +403,15 @@ namespace Operator {
           Identity[i][i] = 1.0;
         }
 
-        double Bl_np1[6][24], d_np1[3][3], spin_np1[3][3], el_np1[6], Bl_dil[6][24], F_n[3][3], F_np1[3][3], F_np1o2[3][3];
-        double R_n[3][3], U_n[3][3], R_np1[3][3], U_np1[3][3], R_np1o2[3][3], U_np1o2[3][3];
+        double Bl_np1[6][24], spin_np1[3][3], el_np1[6];
+        double R_n[3][3], R_np1[3][3];
         double e_np1o2_tilda_rotated[3][3];
 
         if(d_useJaumannRate == false) {
+          double R_np1o2[3][3];
           if(d_useFlanaganTaylorElem == false) {
+            double U_n[3][3], U_np1[3][3], U_np1o2[3][3];
+            double F_n[3][3], F_np1[3][3], F_np1o2[3][3];
             // The deformation gradients are computed in the next three lines.
             computeDeformationGradient(dphi, xyz_n, num_nodes, qp, F_n);
             computeDeformationGradient(dphi, xyz_np1, num_nodes, qp, F_np1);
@@ -440,6 +443,7 @@ namespace Operator {
           // Calculate the derivatives of the shape functions at the current coordinate.
           constructShapeFunctionDerivatives(dNdx, dNdy, dNdz, currX, currY, currZ, currXi[qp], currEta[qp], currZeta[qp], detJ);
   
+          double Bl_dil[6][24];
           for(int i = 0; i < 6; i++) {
             el_np1[i] = 0.0;
             for(int j = 0; j < 24; j++) {
@@ -472,6 +476,7 @@ namespace Operator {
           }
 
           // Calculate the spin tensor for the jaumann rate.
+          double d_np1[3][3];
           computeGradient(dNdx, dNdy, dNdz, delta_u, delta_v, delta_w, num_nodes, d_np1);
           for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 3; j++) {

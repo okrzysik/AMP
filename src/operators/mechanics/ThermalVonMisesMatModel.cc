@@ -50,7 +50,7 @@ namespace AMP {
       d_Is_Init_Called = false;
 
       for(size_t i=0; i<6; i++) {
-        for(size_t j=0; j<6; j++) d_constitutiveMatrix[i][j] = 0.;
+//        for(size_t j=0; j<6; j++) d_constitutiveMatrix[i][j] = 0.;
       }
       d_gaussPtCnt                 = 0;
       Total_Gauss_Point            = 0;

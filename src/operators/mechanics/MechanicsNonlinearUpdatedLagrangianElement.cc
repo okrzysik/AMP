@@ -352,7 +352,6 @@ namespace Operator {
       //double Identity[3][3], e_np1o2_tilda_rotated[3][3], Bl_np1[6][24], spin_np1[3][3], d_np1[3][3], el_np1[6], detF = 1.0, detF_np1, detF_n;
       double Identity[3][3], e_np1o2_tilda_rotated[3][3], Bl_np1[6][24], spin_np1[3][3], el_np1[6], detF = 1.0;
       double d_np1o2[3][3];
-      double dN_dxnp1o2[8], dN_dynp1o2[8], dN_dznp1o2[8], detJ_np1o2[1], d_np1o2_temp[3][3];
      
       computeShapeFunctions(N, currXi[qp], currEta[qp], currZeta[qp]);
 
@@ -381,13 +380,15 @@ namespace Operator {
   
       if(d_useJaumannRate == false) {
         double R_np1o2[3][3];
+        /*
         double difference = 0.0;
         for(int i = 0; i < 3; i++) {
           for(int j = 0; j < 3; j++) {
             difference += fabs((0.5*(F_n[i][j]+F_np1[i][j]))-F_np1o2[i][j]);
           }
         }
-        //std::cout<<"difference in F's = "<<difference<<std::endl;
+        std::cout<<"difference in F's = "<<difference<<std::endl;
+        */
 
         if(d_useFlanaganTaylorElem == false) {
           // Polar decomposition (F=RU) of the deformation gradient is conducted here.

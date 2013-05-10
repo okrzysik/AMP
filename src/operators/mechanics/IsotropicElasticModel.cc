@@ -41,16 +41,18 @@ namespace Operator {
     //fout = fopen("Stress-Strain-Response.txt","w");
 
     //fprintf(fout,"%le %le %le %le %le %le\n",0.0,0.0,0.0,0.0,0.0,0.0);
-
     for(size_t i=0; i<6; i++) {
       for(size_t j=0; j<6; j++) {
-        d_constitutiveMatrix[i][j]    = 0.;
+//      if this is initialized, the tests will fail - uh oh.
+//      d_constitutiveMatrix[i][j]    = -12345.;
         d_constitutiveMatrix_UL[i][j] = 0.;
       }
     }
     d_gaussPtCnt                 = 0;
     d_resetReusesRadialReturn    = false;
     d_jacobianReusesRadialReturn = false;
+/*
+*/
   }
 
   void IsotropicElasticModel :: preNonlinearInit(bool resetReusesRadialReturn, bool jacobianReusesRadialReturn)
