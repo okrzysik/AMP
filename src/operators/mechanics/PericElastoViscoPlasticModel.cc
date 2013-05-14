@@ -376,7 +376,7 @@ namespace AMP {
       double one3, two3, three2 = 3.0 / 2.0;
       double sig_dev[6], n_dir[6];
       double q_np1, sig_np1_kk, q_trial, lam, dlam_dqtr;
-      double gamma = 0.0, term1, term2;
+      double term1, term2;
       double term3, term4, term5, term6;
 
       one3 = 1.0/3.0;
@@ -410,13 +410,14 @@ namespace AMP {
           d_constitutiveMatrix[i][i] += (2.0 * G); 
         }
 
-        if(d_useUpdatedLagrangian == true) {
+        // this if block has identical components.
+        //if(d_useUpdatedLagrangian == true) {
           for(int i = 3; i < 6; i++)
             d_constitutiveMatrix[i][i] += (1.0 * G);
-        } else {
-          for(int i = 3; i < 6; i++)
-            d_constitutiveMatrix[i][i] += (1.0 * G);
-        }
+        //} else {
+        //  for(int i = 3; i < 6; i++)
+        //    d_constitutiveMatrix[i][i] += (1.0 * G);
+        //}
 
         for(int i = 0; i < 3; i++) {
           for(int j = 0; j < 3; j++) {
@@ -503,11 +504,12 @@ namespace AMP {
 
         for(int i = 0; i < 3; i++) {
           d_constitutiveMatrix[i][i] += term5;
-          if(d_useUpdatedLagrangian == true) {
+          // this if block has identical components.
+          //if(d_useUpdatedLagrangian == true) {
             d_constitutiveMatrix[i + 3][i + 3] += (0.5 * term5);
-          } else {
-            d_constitutiveMatrix[i + 3][i + 3] += (0.5 * term5);
-          }
+          //} else {
+          //  d_constitutiveMatrix[i + 3][i + 3] += (0.5 * term5);
+          //}
         }
 
         for(int i = 0; i < 6; i++) {
@@ -525,15 +527,17 @@ namespace AMP {
 
         for(int i = 0; i < 3; i++) {
           d_constitutiveMatrix[i][i] += (2.0 * G);
-          if(d_useUpdatedLagrangian == true) {
+          // this if block has identical components.
+          //if(d_useUpdatedLagrangian == true) {
             d_constitutiveMatrix[i + 3][i + 3] += G;
-          } else {
-            d_constitutiveMatrix[i + 3][i + 3] += G;
-          }
+          //} else {
+          //  d_constitutiveMatrix[i + 3][i + 3] += G;
+          //}
         }
 
         for(int i = 0; i < 6; i++) {
           for(int j = 0; j < 6; j++) {
+            double gamma = 0.0; // seems like gamma should be something other than zero.
             d_constitutiveMatrix[i][j] -= (2.0 * G * gamma * n_dir[i] * n_dir[j]);
           }
         }

@@ -42,6 +42,8 @@ namespace Operator {
         d_xyz = &(d_fe->get_xyz());
 
         d_onePointShearIntegration = false;
+
+        this->zeroOutGaussPointCount();
       }
 
       /**
@@ -125,7 +127,7 @@ namespace Operator {
         Computes the deformation gradient at n-th, (n+1)-th and (n+1/2)-th time step.
         */
       void computeDeformationGradient(const std::vector<std::vector<RealGradient> > & dphi, 
-          const std::vector<Point> xyz, unsigned int num_nodes, unsigned int qp, double F[3][3]);
+          const std::vector<Point> & xyz, unsigned int num_nodes, unsigned int qp, double F[3][3]);
 
       /**
         Initializes the reference x, y and z coordinates.

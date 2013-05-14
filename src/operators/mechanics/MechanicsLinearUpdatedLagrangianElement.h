@@ -96,9 +96,9 @@ namespace Operator {
 
       /**
         Computes the deformation gradient at (n+1)-th time step.
-        */
       void computeDeformationGradientLin(const std::vector<std::vector<RealGradient> > & dphi, 
-          const std::vector<Point> xyz, unsigned int num_nodes, unsigned int qp, double F[3][3]);
+          const std::vector<Point> & xyz, unsigned int num_nodes, unsigned int qp, double F[3][3]);
+        */
 
       /**
         Initializes the reference x, y and z coordinates.

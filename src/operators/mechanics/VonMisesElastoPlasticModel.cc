@@ -391,13 +391,14 @@ namespace AMP {
           d_constitutiveMatrix[i][i] += (2.0 * G); 
         }
 
-        if(d_useUpdatedLagrangian == true) {
+        // this if block has identical components.
+        //if(d_useUpdatedLagrangian == true) {
           for(int i = 3; i < 6; i++)
             d_constitutiveMatrix[i][i] += (1.0 * G);
-        } else {
-          for(int i = 3; i < 6; i++)
-            d_constitutiveMatrix[i][i] += (1.0 * G);
-        }
+        //} else {
+        //  for(int i = 3; i < 6; i++)
+        //    d_constitutiveMatrix[i][i] += (1.0 * G);
+        //}
 
         for(int i = 0; i < 3; i++) {
           for(int j = 0; j < 3; j++) {
@@ -481,12 +482,13 @@ namespace AMP {
 
         for(int i = 0; i < 3; i++) {
           d_constitutiveMatrix[i][i] += term1;
-          if(d_useUpdatedLagrangian == true) {
+          // this if block has identical components.
+          //if(d_useUpdatedLagrangian == true) {
             //d_constitutiveMatrix[i + 3][i + 3] += (G + (2.0 * G * (beta - 1.0)));
             d_constitutiveMatrix[i + 3][i + 3] += (0.5 * term1);
-          } else {
-            d_constitutiveMatrix[i + 3][i + 3] += (0.5 * term1);
-          }
+          //} else {
+          //  d_constitutiveMatrix[i + 3][i + 3] += (0.5 * term1);
+          //}
         }
 
         for(int i = 0; i < 6; i++) {

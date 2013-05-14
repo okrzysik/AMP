@@ -167,6 +167,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   fprintf(fp, " dT/dx = %.15lf, dTdy = %.15lf, dTdz = %.15lf \n", dTdx , dTdy , dTdz );
   fprintf(fp, " lib_dT/dx = %.15lf, lib_dTdy = %.15lf, lib_dTdz = %.15lf \n", lib_dTdx , lib_dTdy , lib_dTdz );
+  fclose(fp);
 }
 
 int main(int argc, char *argv[])

@@ -357,7 +357,6 @@ namespace AMP {
       const double PI = 4.0*atan(1.0);
       double x, y, z;
       double newval, val;
-      double volumeIntegral=0;
       int countGP =0 ; 
 
       double xmin, ymin, zmin, centerx, centery;
@@ -514,7 +513,7 @@ namespace AMP {
           // Note: Dimensions are all in meter (m). 
 
           // Choose the type of volume integral calculation. 
-          volumeIntegral = getVolumeIntegralSum(rmax, centerx, centery);
+          double volumeIntegral = getVolumeIntegralSum(rmax, centerx, centery);
 
           if(d_iDebugPrintInfoLevel>3)
             AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
