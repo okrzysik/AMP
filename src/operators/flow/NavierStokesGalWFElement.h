@@ -32,7 +32,12 @@ namespace Operator {
         d_xyz = &(d_fe->get_xyz());
 
         d_alpha_conv  = params->d_db->getDoubleWithDefault("Convection_Coefficient", 1.0);
+
         d_alpha_diff  = params->d_db->getDoubleWithDefault("Diffusion_Coefficient", 1.0);
+
+        d_density = 0.;
+
+        d_fmu     = 0.;
 
       }
 

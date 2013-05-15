@@ -28,6 +28,12 @@ namespace Operator {
 
           d_xyz = &(d_fe->get_xyz());
 
+          d_density = 0.;
+
+          d_fmu     = 0.;
+
+          d_Re      = 0.;
+
         }
 
       virtual ~NavierStokesLSWFLinearElement() {  }
