@@ -337,7 +337,7 @@ void SubchannelFourEqNonlinearOperator::fillSubchannelGrid(AMP::Mesh::Mesh::shar
     std::set<double>::iterator it=x.begin();
     while ( it!=x.end() ) {
         if ( Utilities::approx_equal(last,*it,1e-12) ) {
-            x.erase(it);
+            x.erase(it++); // increments before erasing
         } else {
             last = *it;
             ++it;
@@ -348,7 +348,7 @@ void SubchannelFourEqNonlinearOperator::fillSubchannelGrid(AMP::Mesh::Mesh::shar
     it=y.begin();
     while ( it!=y.end() ) {
         if ( Utilities::approx_equal(last,*it,1e-12) ) {
-            y.erase(it);
+            y.erase(it++); // increments before erasing
         } else {
             last = *it;
             ++it;
@@ -359,7 +359,7 @@ void SubchannelFourEqNonlinearOperator::fillSubchannelGrid(AMP::Mesh::Mesh::shar
     it=z.begin();
     while ( it!=z.end() ) {
         if ( Utilities::approx_equal(last,*it,1e-12) ) {
-            z.erase(it);
+            z.erase(it++); // increments before erasing
         } else {
             last = *it;
             ++it;
