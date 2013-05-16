@@ -23,6 +23,7 @@ extern "C" {
     #include <windows.h>
     #include <stdio.h>   
     #include <tchar.h>
+    #include <Psapi.h>
     #define get_time(x) QueryPerformanceCounter(x)
     #define get_diff(start,end,f) (((double)(end.QuadPart-start.QuadPart))/((double)f.QuadPart))
     #define get_frequency(f) QueryPerformanceFrequency(f)
