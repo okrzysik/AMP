@@ -130,13 +130,13 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
     AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = myparams->d_inputMatrix;
     AMP_INSIST( ((inputMatrix.get()) != NULL), "NULL matrix" );
 
+/*
     std::vector<std::string> variableNames;
-
     if(d_robinPhysicsModel.get() != NULL)
     {
       variableNames = d_robinPhysicsModel->getVariableName();
     }
-
+*/
     unsigned int numIds = d_boundaryIds.size();
     std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> elementInputVec = myparams->d_elementInputVec;
 

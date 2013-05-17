@@ -172,17 +172,14 @@ namespace Operator {
                 }
 
                 // Get the libmesh element
-                d_currElemPtr = libmeshElements.getElement( bnd->globalID() );
+                ::Elem* currElemPtr = libmeshElements.getElement( bnd->globalID() );
 
                 d_fe->attach_quadrature_rule( d_qrule.get() );
 
-                d_phi = &(d_fe->get_phi());
-                d_JxW = &(d_fe->get_JxW());
+                d_fe->reinit ( currElemPtr );
 
-                d_fe->reinit ( d_currElemPtr );
-
-                const std::vector<std::vector<Real> > &phi = *d_phi;
-                const std::vector<Real> &djxw = *d_JxW;
+                const std::vector<std::vector<Real> > phi = d_fe->get_phi();
+                const std::vector<Real> djxw = d_fe->get_JxW();
 
                 std::vector<std::vector<double> > temp(1) ;
                 std::vector<double> gamma(d_qrule->n_points(), gammaValue);

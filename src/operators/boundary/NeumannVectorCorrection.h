@@ -122,14 +122,6 @@ namespace Operator {
 
       std::vector<short int> d_numDofIds;
 
-      const std::vector<Real> *d_JxW;
-
-      const std::vector<std::vector<Real> > *d_phi;
-
-      const std::vector<std::vector<RealGradient> > *d_dphi;
-
-      const std::vector<Point> *d_normal;
-
       boost::shared_ptr<NeumannVectorCorrectionParameters> d_params;
 
       boost::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
@@ -142,8 +134,6 @@ namespace Operator {
       libMeshEnums::Order d_qruleOrder;
 
       std::vector<AMP::Mesh::MeshElement> d_currNodes;
-
-      ::Elem* d_currElemPtr;
 
     private :
 

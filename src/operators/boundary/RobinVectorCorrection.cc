@@ -148,17 +148,14 @@ RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
         AMP_ASSERT(gpDofs.size()>0);
       }
       // Get the libmesh element
-      d_currElemPtr = libmeshElements.getElement( bnd1->globalID() );
+      ::Elem* currElemPtr = libmeshElements.getElement( bnd1->globalID() );
 
       d_fe->attach_quadrature_rule( d_qrule.get() );
 
-      d_phi = &(d_fe->get_phi());
-      d_JxW = &(d_fe->get_JxW());
+      d_fe->reinit ( currElemPtr );
 
-      d_fe->reinit ( d_currElemPtr );
-
-      const std::vector<Real> & JxW = (*d_JxW);
-      const std::vector<std::vector<Real> > & phi = (*d_phi);
+      const std::vector<Real> JxW = d_fe->get_JxW();
+      const std::vector<std::vector<Real> > phi = d_fe->get_phi();
       unsigned int numGaussPts = d_qrule->n_points(); 
       PROFILE_STOP("prepare element",2);
 

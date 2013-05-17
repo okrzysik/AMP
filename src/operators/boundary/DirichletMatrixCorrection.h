@@ -30,6 +30,12 @@ namespace AMP {
         {
           d_variable = params->d_variable;
           d_computedAddRHScorrection = false;
+          d_symmetricCorrection = (params->d_db)->getBoolWithDefault("symmetric_correction", true);
+          d_zeroDirichletBlock = (params->d_db)->getBoolWithDefault("zero_dirichlet_block", false);
+          d_skipRHSsetCorrection = (params->d_db)->getBoolWithDefault("skip_rhs_correction", true);
+          d_skipRHSaddCorrection = (params->d_db)->getBoolWithDefault("skip_rhs_add_correction", d_skipRHSsetCorrection);
+          d_applyMatrixCorrectionWasCalled = false;
+
           reset(params);
         }
 
