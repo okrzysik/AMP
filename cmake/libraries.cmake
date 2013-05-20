@@ -1,6 +1,7 @@
 INCLUDE( ${AMP_SOURCE_DIR}/cmake/FindPetsc.cmake )
 INCLUDE( ${AMP_SOURCE_DIR}/cmake/FindTrilinos.cmake )
 INCLUDE( ${AMP_SOURCE_DIR}/cmake/FindLibmesh.cmake )
+INCLUDE( ${AMP_SOURCE_DIR}/cmake/FindSundials.cmake )
 INCLUDE( ${AMP_SOURCE_DIR}/cmake/configureAMP.cmake )
 INCLUDE( CheckIncludeFile )
 
@@ -530,48 +531,16 @@ MACRO ( CONFIGURE_SUNDIALS_LIBRARIES )
     # Determine if we want to use sundials
     CHECK_ENABLE_FLAG(USE_EXT_SUNDIALS 1 )
     IF ( USE_EXT_SUNDIALS )
-        # Check if we specified the sundials directory
+        # Check if we specified the libmesh directory
         IF ( SUNDIALS_DIRECTORY )
-            VERIFY_PATH ( ${SUNDIALS_DIRECTORY} )
-            INCLUDE_DIRECTORIES ( ${SUNDIALS_DIRECTORY}/include )
-            SET ( SUNDIALS_INCLUDE ${SUNDIALS_DIRECTORY}/include )
-            FIND_LIBRARY ( SUNDIALS_CVODE_LIB        NAMES  sundials_cvode        PATHS ${SUNDIALS_DIRECTORY}/lib  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( SUNDIALS_IDA_LIB          NAMES  sundials_ida          PATHS ${SUNDIALS_DIRECTORY}/lib  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( SUNDIALS_IDAS_LIB         NAMES  sundials_idas         PATHS ${SUNDIALS_DIRECTORY}/lib  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( SUNDIALS_KINSOL_LIB       NAMES  sundials_kinsol       PATHS ${SUNDIALS_DIRECTORY}/lib  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( SUNDIALS_NVECSERIAL_LIB   NAMES  sundials_nvecserial   PATHS ${SUNDIALS_DIRECTORY}/lib  NO_DEFAULT_PATH )
-            IF ( USE_EXT_MPI )
-                FIND_LIBRARY ( SUNDIALS_NVECPARALLEL_LIB NAMES  sundials_nvecparallel PATHS ${SUNDIALS_DIRECTORY}/lib  NO_DEFAULT_PATH )
-            ENDIF()
-            IF ( (NOT SUNDIALS_CVODE_LIB) OR (NOT SUNDIALS_IDA_LIB) OR (NOT SUNDIALS_IDAS_LIB) OR 
-                 (NOT SUNDIALS_KINSOL_LIB) OR (NOT SUNDIALS_NVECSERIAL_LIB) )
-                MESSAGE ( ${SUNDIALS_CVODE_LIB} )
-                MESSAGE ( ${SUNDIALS_IDA_LIB} )
-                MESSAGE ( ${SUNDIALS_IDAS_LIB} )
-                MESSAGE ( ${SUNDIALS_KINSOL_LIB} )
-                MESSAGE ( ${SUNDIALS_NVECSERIAL_LIB} )
-                MESSAGE ( FATAL_ERROR "Sundials libraries not found in ${SUNDIALS_DIRECTORY}/lib" )
-            ENDIF ()
-            IF ( USE_EXT_MPI AND (NOT SUNDIALS_NVECPARALLEL_LIB) )
-                MESSAGE ( ${SUNDIALS_NVECPARALLEL_LIB} )
-                MESSAGE ( FATAL_ERROR "Sundials libraries not found in ${SUNDIALS_DIRECTORY}/lib" )
-            ENDIF ()
+            SUNDIALS_SET_INCLUDES( ${SUNDIALS_DIRECTORY} )
+            SUNDIALS_SET_LIBRARIES( ${SUNDIALS_DIRECTORY} )
+            INCLUDE_DIRECTORIES ( ${SUNDIALS_INCLUDE} )
         ELSE()
-            MESSAGE ( FATAL_ERROR "Default search for sundials is not yet supported.  Use -D SUNDIALS_DIRECTORY=" )
+            MESSAGE ( FATAL_ERROR "Default search for sundials is not supported.  Use -D SUNDIALS_DIRECTORY=" )
         ENDIF()
-        # Add the libraries in the appropriate order
-        SET ( SUNDIALS_LIBS
-            ${SUNDIALS_CVODE_LIB}
-            ${SUNDIALS_IDA_LIB}
-            ${SUNDIALS_IDAS_LIB}
-            ${SUNDIALS_KINSOL_LIB}
-            ${SUNDIALS_NVECPARALLEL_LIB}
-        )
-        IF ( USE_EXT_MPI )
-            SET ( SUNDIALS_LIBS  ${SUNDIALS_LIBS}  ${SUNDIALS_NVEC_PARALLEL_LIB} )
-        ENDIF()
-        ADD_DEFINITIONS ( "-D USE_EXT_SUNDIALS" )  
         MESSAGE ( "Using sundials" )
+        MESSAGE ( "   " ${SUNDIALS_LIBS} )
     ENDIF()
 ENDMACRO ()
 

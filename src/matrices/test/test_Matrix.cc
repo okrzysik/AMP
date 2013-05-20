@@ -27,6 +27,7 @@ void  test_matrix_loop ( AMP::UnitTest *ut )
         VerifyExtractDiagonal<FACTORY>::run_test ( ut );
         VerifyMultMatrix<FACTORY>::run_test ( ut );
         VerifyMatMultMatrix<FACTORY>::run_test ( ut );
+        VerifySetElementNode<FACTORY>::run_test ( ut );
     #else
         ut->failure("Tests require petsc and trilinos");
     #endif

@@ -355,6 +355,52 @@ public:
 };
 
 
+template <typename FACTORY>
+class VerifySetElementNode
+{
+public:
+    static const char * get_test_name () { return "verify set nodes by element"; }
+
+    static  void run_test ( AMP::UnitTest *utils )
+    {
+        PROFILE_START("VerifySetElementNode");
+        AMP::Mesh::Mesh::shared_ptr  mesh = FACTORY::getMesh();
+        AMP::Discretization::DOFManager::shared_ptr  dofmap = FACTORY::getDOFMap();
+        AMP::LinearAlgebra::Matrix::shared_ptr  matrix = FACTORY::getMatrix();
+        matrix->zero();
+
+        AMP::Mesh::MeshIterator it = mesh->getIterator(AMP::Mesh::Volume,0);
+        AMP::Mesh::MeshIterator end = it.end();
+        std::vector<size_t> dofs;
+        dofs.reserve(24);
+        while ( it != end ) {
+            std::vector<AMP::Mesh::MeshElement> nodes = it->getElements(AMP::Mesh::Vertex);
+            dofs.clear();
+            for (size_t i=0; i<nodes.size(); i++) {
+                std::vector<size_t> dofsNode;
+                dofmap->getDOFs( nodes[i].globalID(), dofsNode );
+                for (size_t j=0; j<dofsNode.size(); j++)
+                    dofs.push_back( dofsNode[j] );
+            }
+            for (size_t r=0; r<dofs.size(); r++) {
+                for (size_t c=0; c<dofs.size(); c++) {
+                    double val = -1.0/dofs.size();
+                    if ( r==c )
+                        val = 1.0;
+                    matrix->addValueByGlobalID( dofs[r], dofs[c], val );
+                }
+            }
+            ++it;
+        }
+        matrix->makeConsistent();
+        
+        
+
+        PROFILE_STOP("VerifySetElementNode");
+    }
+};
+
+
 
 }
 }

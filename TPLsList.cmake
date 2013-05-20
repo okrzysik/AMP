@@ -53,6 +53,7 @@ SET(AMP_TPLS_FINDMODS_CLASSIFICATIONS
     BOOST               "${AMP_SOURCE_DIR}/cmake/TPLs/"         PS
     HDF5                "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
     SILO                "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
+    SUNDIALS            "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
     PETSC               "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
     PETSC_AMP           "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
     LIBMESH             "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS

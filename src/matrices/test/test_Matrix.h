@@ -49,6 +49,11 @@ public:
         PROFILE_STOP("initMesh");
     }
 
+    static AMP::Mesh::Mesh::shared_ptr getMesh() 
+    {
+        return mesh;
+    }
+
     static void endMesh() 
     {
         DOFs.reset();
