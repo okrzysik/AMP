@@ -129,9 +129,10 @@ void  ManagedPetscMatrix::initPetscMat ()
 }
 
 
-ManagedPetscMatrix::ManagedPetscMatrix ( MatrixParameters::shared_ptr params )
-    : PetscMatrix ( params )
-    , ManagedEpetraMatrix ( boost::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( params ) )
+ManagedPetscMatrix::ManagedPetscMatrix ( MatrixParameters::shared_ptr params ) :
+    Matrix ( params ),
+    PetscMatrix ( params ),
+    ManagedEpetraMatrix ( boost::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( params ) )
 {
 //    std::cout << "ManagedPetscMatrix:: WARNING!!!!!! the matrix is currently assumed to be square. This needs to be fixed!!!" << std::endl;
     initPetscMat ();
