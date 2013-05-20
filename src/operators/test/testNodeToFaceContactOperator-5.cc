@@ -282,7 +282,7 @@ void drawFacesOnBoundaryID(AMP::Mesh::Mesh::shared_ptr meshAdapter, int boundary
       boundaryIterator_end = boundaryIterator.end();
   std::vector<AMP::Mesh::MeshElement> faceVertices;
   std::vector<double> faceVertexCoordinates;
-  double faceData[12];
+  double faceData[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   double const * faceDataPtr[4] = { faceData, faceData+3, faceData+6, faceData+9 };
 
   os<<std::setprecision(6)<<std::fixed;
@@ -824,8 +824,6 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     surfaceTractionVec->zero();
     normalVectorVec->zero();
 
-    size_t const bottomPelletTopPelletSizeOfActiveSetAfterUpdate = bottomPelletTopPelletPointerToActiveSet->size();
-
     std::vector<double> const * bottomPelletTopPelletSlaveVerticesNormalVector;
     std::vector<double> const * bottomPelletTopPelletSlaveVerticesSurfaceTraction;
     bottomPelletTopPelletContactOperator->getSlaveVerticesNormalVectorAndSurfaceTraction(bottomPelletTopPelletSlaveVerticesNormalVector, bottomPelletTopPelletSlaveVerticesSurfaceTraction);
@@ -840,8 +838,6 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     } // end for kk
     suckItVec->setLocalValuesByGlobalID(bottomPelletTopPelletSizeOfActiveSetBeforeUpdate, &(bottomPelletTopPelletActiveSetTempDOFsIndicesBeforeUpdate[0]), &(bottomPelletTopPelletSurfaceTractionDOTnormalVector[0]));
 //
-    size_t const bottomPelletCladSizeOfActiveSetAfterUpdate = bottomPelletCladPointerToActiveSet->size();
-
     std::vector<double> const * bottomPelletCladSlaveVerticesNormalVector;
     std::vector<double> const * bottomPelletCladSlaveVerticesSurfaceTraction;
     bottomPelletCladContactOperator->getSlaveVerticesNormalVectorAndSurfaceTraction(bottomPelletCladSlaveVerticesNormalVector, bottomPelletCladSlaveVerticesSurfaceTraction);
@@ -856,8 +852,6 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     } // end for kk
     suckItVec->setLocalValuesByGlobalID(bottomPelletCladSizeOfActiveSetBeforeUpdate, &(bottomPelletCladActiveSetTempDOFsIndicesBeforeUpdate[0]), &(bottomPelletCladSurfaceTractionDOTnormalVector[0]));
 //
-    size_t const topPelletCladSizeOfActiveSetAfterUpdate = topPelletCladPointerToActiveSet->size();
-
     std::vector<double> const * topPelletCladSlaveVerticesNormalVector;
     std::vector<double> const * topPelletCladSlaveVerticesSurfaceTraction;
     topPelletCladContactOperator->getSlaveVerticesNormalVectorAndSurfaceTraction(topPelletCladSlaveVerticesNormalVector, topPelletCladSlaveVerticesSurfaceTraction);

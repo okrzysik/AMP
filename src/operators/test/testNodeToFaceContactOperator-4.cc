@@ -282,7 +282,7 @@ void drawFacesOnBoundaryID(AMP::Mesh::Mesh::shared_ptr meshAdapter, int boundary
       boundaryIterator_end = boundaryIterator.end();
   std::vector<AMP::Mesh::MeshElement> faceVertices;
   std::vector<double> faceVertexCoordinates;
-  double faceData[12];
+  double faceData[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   double const * faceDataPtr[4] = { faceData, faceData+3, faceData+6, faceData+9 };
 
   os<<std::setprecision(6)<<std::fixed;
@@ -918,7 +918,7 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
 
     size_t nChangesInActiveSet = contactOperator->updateActiveSet(columnSolVec);
 
-    size_t const sizeOfActiveSetAfterUpdate = pointerToActiveSet->size();
+//    size_t const sizeOfActiveSetAfterUpdate = pointerToActiveSet->size();
 //    std::vector<size_t> activeSetDOFsIndicesAfterUpdate;
 //    tempDofManager->getDOFs(*pointerToActiveSet, activeSetDOFsIndicesAfterUpdate);
 //    AMP_ASSERT( activeSetDOFsIndicesAfterUpdate.size() == sizeOfActiveSetAfterUpdate );
