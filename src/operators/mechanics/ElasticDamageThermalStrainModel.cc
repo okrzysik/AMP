@@ -18,6 +18,10 @@ namespace Operator {
 
     d_Is_Source = (params->d_db)->getBoolWithDefault("THERMAL_STRAIN_AS_SOURCE_TERM", false);
 
+    for(size_t i=0; i<6; i++) {
+      for(size_t j=0; j<6; j++) d_constitutiveMatrix[i][j] = 0.;
+    }
+
     if(d_useMaterialsLibrary == false)
     {
       //IsotropicElasticModel C_Elastic(params);
@@ -65,9 +69,6 @@ namespace Operator {
 
     default_OXYGEN_CONCENTRATION = (params->d_db)->getDoubleWithDefault("Default_Oxygen_Concentration",0.0);
 
-    for(size_t i=0; i<6; i++) {
-//      for(size_t j=0; j<6; j++) d_constitutiveMatrix[i][j] = 0.;
-    }
     d_gaussPtCnt                 = 0;
     d_resetReusesRadialReturn    = false;
     d_jacobianReusesRadialReturn = false;
