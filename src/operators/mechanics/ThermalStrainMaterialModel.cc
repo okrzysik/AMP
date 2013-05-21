@@ -51,7 +51,7 @@ namespace AMP {
 
       for(size_t i=0; i<6; i++) {
         for(size_t j=0; j<6; j++) {
-//          d_constitutiveMatrix[i][j]    = 0.;
+          d_constitutiveMatrix[i][j]    = 0.;
           d_constitutiveMatrix_UL[i][j] = 0.;
         }
       }
