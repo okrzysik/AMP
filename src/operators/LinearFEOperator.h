@@ -10,96 +10,81 @@
 #include "elem.h"
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
+
+/**
+  An abstract base class for representing a linear finite element (FE) operator.
+  This class implements a "shell" for building the FE stiffness matrix. 
+  This class only deals with the volume integration, the boundary conditions are 
+  handled separately by the boundary operators. 
+  */
+class LinearFEOperator : public LinearOperator 
+{
+public :
+
+    //! Constructor. This copies the share pointer to the element operation from the input parameter object.
+    LinearFEOperator(const boost::shared_ptr<LinearFEOperatorParameters>& params);
+
+    //! Destructor
+    virtual ~LinearFEOperator() { }
 
     /**
-      An abstract base class for representing a linear finite element (FE) operator.
-      This class implements a "shell" for building the FE stiffness matrix. 
-      This class only deals with the volume integration, the boundary conditions are 
-      handled separately by the boundary operators. 
+      This function will be called just before looping over the elements to 
+      build the stiffness matrix, so if the derived classes need to perform 
+      some initialization operations just before looping over the elements they can 
+      do so by implementing these operations in this function.
+      Also, the derived classes can access the parameters passed to the reset
+      function by implementing this function.
       */
-    class LinearFEOperator : public LinearOperator 
-    {
-      public :
+    virtual void preAssembly(const boost::shared_ptr<OperatorParameters>& )=0;
 
-        /**
-          Constructor. This copies the share pointer to the element operation from the input parameter object.
-          */
-        LinearFEOperator(const boost::shared_ptr<LinearFEOperatorParameters>& params)
-          : LinearOperator (params) 
-        { 
-          d_elemOp = (params->d_elemOp);
-          d_inDofMap = (params->d_inDofMap);
-          d_outDofMap = (params->d_outDofMap);
-          if(d_inDofMap == NULL) {
-            d_inDofMap = d_outDofMap;
-          }
-          if(d_outDofMap == NULL) {
-            d_outDofMap = d_inDofMap;
-          }
-        }
+    /**
+      This function will be called just after looping over all the elements to
+      build the stiffness matrix, so if the derived classes need to perform any
+      operations such as freeing any temporary memory allocations they
+      can do so by implementing these operations in this function.
+      */
+    virtual void postAssembly()=0;
 
-        /**
-          Destructor
-          */
-        virtual ~LinearFEOperator() { }
+    /**
+      This function will be called once for each element, just before performing
+      the element operation. Ideally, the element operation should not deal with 
+      global mesh related information such as DOFMap and global vectors and matrices. 
+      This function typically extracts the local information from
+      these global objects and passes them to the element operation.
+      */
+    virtual void preElementOperation(const AMP::Mesh::MeshElement &)=0;
 
-        /**
-          This function will be called just before looping over the elements to 
-          build the stiffness matrix, so if the derived classes need to perform 
-          some initialization operations just before looping over the elements they can 
-          do so by implementing these operations in this function.
-          Also, the derived classes can access the parameters passed to the reset
-          function by implementing this function.
-          */
-        virtual void preAssembly(const boost::shared_ptr<OperatorParameters>& )=0;
+    /**
+      This function will be called once for each element, just after performing the element operation.
+      Typically, the element stiffness matrix is added to the global stiffness matrix in this function.
+      */
+    virtual void postElementOperation()=0;
 
-        /**
-          This function will be called just after looping over all the elements to
-          build the stiffness matrix, so if the derived classes need to perform any
-          operations such as freeing any temporary memory allocations they
-          can do so by implementing these operations in this function.
-          */
-        virtual void postAssembly()=0;
+    /**
+      This function creates the stiffness matrix and uses virtual
+      function calls for setting values into the matrix.
+      */
+    void reset(const boost::shared_ptr<OperatorParameters>& );
 
-        /**
-          This function will be called once for each element, just before performing
-          the element operation. Ideally, the element operation should not deal with 
-          global mesh related information such as DOFMap and global vectors and matrices. 
-          This function typically extracts the local information from
-          these global objects and passes them to the element operation.
-          */
-        virtual void preElementOperation(const AMP::Mesh::MeshElement &)=0;
+protected :
 
-        /**
-          This function will be called once for each element, just after performing the element operation.
-          Typically, the element stiffness matrix is added to the global stiffness matrix in this function.
-          */
-        virtual void postElementOperation()=0;
+    void createCurrentLibMeshElement();
 
-        /**
-          This function creates the stiffness matrix and uses virtual
-          function calls for setting values into the matrix.
-          */
-        void reset(const boost::shared_ptr<OperatorParameters>& );
+    void destroyCurrentLibMeshElement();
 
-      protected :
+    std::vector<AMP::Mesh::MeshElement> d_currNodes;
 
-        void createCurrentLibMeshElement();
+    ::Elem* d_currElemPtr;
 
-        void destroyCurrentLibMeshElement();
+    boost::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
+    boost::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
+    boost::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
 
-        std::vector<AMP::Mesh::MeshElement> d_currNodes;
+};
 
-        ::Elem* d_currElemPtr;
 
-        boost::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
-        boost::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
-        boost::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
-
-    };
-
-  }
+}
 }
 
 #endif

@@ -11,6 +11,23 @@
 namespace AMP {
 namespace Operator {
 
+
+LinearFEOperator :: LinearFEOperator(const boost::shared_ptr<LinearFEOperatorParameters>& params) :
+    LinearOperator(params),
+    d_currElemPtr(NULL)
+{ 
+    d_elemOp = (params->d_elemOp);
+    d_inDofMap = (params->d_inDofMap);
+    d_outDofMap = (params->d_outDofMap);
+    if(d_inDofMap == NULL) {
+        d_inDofMap = d_outDofMap;
+    }
+    if(d_outDofMap == NULL) {
+        d_outDofMap = d_inDofMap;
+    }
+}
+
+
 void LinearFEOperator :: reset(const boost::shared_ptr<OperatorParameters>& params) 
 {
     PROFILE_START("reset");
