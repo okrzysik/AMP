@@ -14,9 +14,9 @@ namespace Operator {
 class DiffusionLinearElement: public DiffusionElement {
 public:
 
-    DiffusionLinearElement(
-            const boost::shared_ptr<ElementOperationParameters>& params) :
-        DiffusionElement(params)
+    DiffusionLinearElement(const boost::shared_ptr<ElementOperationParameters>& params) :
+        DiffusionElement(params),
+        d_elementStiffnessMatrix(NULL)
     {
         d_num_dofs = 0;
         d_transportAtGauss = params->d_db->getBoolWithDefault(
