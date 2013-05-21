@@ -39,6 +39,7 @@ void DirichletMatrixCorrection :: reset(const boost::shared_ptr<OperatorParamete
 
     d_inputMatrix = myParams->d_inputMatrix;
     AMP_INSIST( ((d_inputMatrix.get()) != NULL), "NULL matrix" );
+    d_inputMatrix->makeConsistent();    // Check that we can call makeConsistent
 
     if(d_skipRHSsetCorrection) { AMP_ASSERT(d_skipRHSaddCorrection); }
     if(!d_skipRHSaddCorrection) { AMP_ASSERT(!d_skipRHSsetCorrection); }
@@ -117,6 +118,8 @@ void DirichletMatrixCorrection :: applyMatrixCorrection()
 
     AMP::LinearAlgebra::Vector::shared_ptr inVec = d_inputMatrix->getRightVector();
     AMP::Discretization::DOFManager::shared_ptr dof_map = inVec->getDOFManager();
+    AMP_ASSERT((*dof_map)==(*d_inputMatrix->getLeftDOFManager()));
+    AMP_ASSERT((*dof_map)==(*d_inputMatrix->getRightDOFManager()));
 
     for(size_t k = 0; k < d_boundaryIds.size(); ++k) {
         AMP::Mesh::MeshIterator bnd = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_boundaryIds[k], 0 );

@@ -24,7 +24,10 @@ namespace AMP {
         AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector(d_outDofMap, getOutputVariable(), true);
         d_matrix = AMP::LinearAlgebra::createMatrix(inVec, outVec);
         d_matrix->zero();
+        d_matrix->makeConsistent();
       }
+      AMP_ASSERT((*d_inDofMap)==(*d_matrix->getLeftDOFManager()));
+      AMP_ASSERT((*d_inDofMap)==(*d_matrix->getRightDOFManager()));
 
       AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
       AMP::Mesh::MeshIterator end_el = el.end();
