@@ -22,57 +22,57 @@ DiffusionLinearFEOperator::DiffusionLinearFEOperator(const boost::shared_ptr<
     DiffusionLinearFEOperatorParameters> & params) :
     LinearFEOperator(params) 
 {
-        AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
+    AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
 
-        d_diffLinElem = boost::dynamic_pointer_cast<DiffusionLinearElement>(d_elemOp);
+    d_diffLinElem = boost::dynamic_pointer_cast<DiffusionLinearElement>(d_elemOp);
 
-        AMP_INSIST( ((d_diffLinElem.get()) != NULL), "d_elemOp is not of type DiffusionLinearElement" );
+    AMP_INSIST( ((d_diffLinElem.get()) != NULL), "d_elemOp is not of type DiffusionLinearElement" );
 
-        d_useConstantTemperature = params->d_db->getBoolWithDefault("FixedTemperature", false);
-        d_useConstantConcentration = params->d_db->getBoolWithDefault("FixedConcentration", false);
-        d_useConstantBurnup = params->d_db->getBoolWithDefault("FixedBurnup", false);
+    d_useConstantTemperature = params->d_db->getBoolWithDefault("FixedTemperature", false);
+    d_useConstantConcentration = params->d_db->getBoolWithDefault("FixedConcentration", false);
+    d_useConstantBurnup = params->d_db->getBoolWithDefault("FixedBurnup", false);
 
-        std::string inpVar = params->d_db->getString("InputVariable");
-        d_inpVariable.reset(new AMP::LinearAlgebra::Variable(inpVar));
+    std::string inpVar = params->d_db->getString("InputVariable");
+    d_inpVariable.reset(new AMP::LinearAlgebra::Variable(inpVar));
 
-        std::string outVar = params->d_db->getString("OutputVariable");
-        d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar));
+    std::string outVar = params->d_db->getString("OutputVariable");
+    d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar));
 
-        reset(params);
+    reset(params);
 }
 
 
 void DiffusionLinearFEOperator::preAssembly(const boost::shared_ptr<
     OperatorParameters>& oparams) 
 {
-      boost::shared_ptr<DiffusionLinearFEOperatorParameters> params =
+    boost::shared_ptr<DiffusionLinearFEOperatorParameters> params =
         boost::dynamic_pointer_cast<DiffusionLinearFEOperatorParameters>(oparams);
 
-      if( d_iDebugPrintInfoLevel > 7 )
-      {
+    if( d_iDebugPrintInfoLevel > 7 )
+    {
         AMP::pout << "DiffusionLinearFEOperator::preAssembly, entering" << std::endl;
-      }
+    }
 
-      d_transportModel = params->d_transportModel;
+    d_transportModel = params->d_transportModel;
 
-      if(d_temperature.get() == NULL and params->d_temperature.get() != NULL) {
+    if(d_temperature.get() == NULL and params->d_temperature.get() != NULL) {
         d_temperature = params->d_temperature->cloneVector();
-      }
-      if(d_temperature.get() != NULL){
+    }
+    if(d_temperature.get() != NULL){
         if(params->d_temperature.get() != NULL) {
-          d_temperature->copyVector(params->d_temperature);
-          d_temperature->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+            d_temperature->copyVector(params->d_temperature);
+            d_temperature->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
         }
         else {
-          d_temperature.reset();
+            d_temperature.reset();
         }
         //    std::cout << d_temperature << std::endl;
-      }
+    }
 
-      if(d_concentration.get() == NULL and params->d_concentration.get() != NULL) {
+    if(d_concentration.get() == NULL and params->d_concentration.get() != NULL) {
         d_concentration = params->d_concentration->cloneVector();
-      }
-      if(d_concentration.get() != NULL){
+    }
+    if(d_concentration.get() != NULL){
         if(params->d_concentration.get() != NULL) {
           d_concentration->copyVector(params->d_concentration);
           d_concentration->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
@@ -80,12 +80,12 @@ void DiffusionLinearFEOperator::preAssembly(const boost::shared_ptr<
         else {
           d_concentration.reset();
         }
-      }
+    }
 
-      if(d_burnup.get() == NULL and params->d_burnup.get() != NULL) {
+    if(d_burnup.get() == NULL and params->d_burnup.get() != NULL) {
         d_burnup = params->d_burnup->cloneVector();
-      }
-      if(d_burnup.get() != NULL){
+    }
+    if(d_burnup.get() != NULL){
         if(params->d_burnup.get() != NULL) {
           d_burnup->copyVector(params->d_burnup);
           d_burnup->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
@@ -93,35 +93,35 @@ void DiffusionLinearFEOperator::preAssembly(const boost::shared_ptr<
         else {
           d_burnup.reset();
         }
-      }
+    }
 
-      d_matrix->zero();
+    d_matrix->zero();
 
-      d_transportModel->preLinearAssembly();
+    d_transportModel->preLinearAssembly();
 
-      if( d_iDebugPrintInfoLevel > 7 )
-      {
+    if( d_iDebugPrintInfoLevel > 7 )
+    {
         AMP::pout << "DiffusionLinearFEOperator::preAssembly, leaving" << std::endl;
-      }
+    }
 }
 
 
 void DiffusionLinearFEOperator::postAssembly() 
 {
 
-      if( d_iDebugPrintInfoLevel > 7 )
-      {
+    if( d_iDebugPrintInfoLevel > 7 )
+    {
         AMP::pout << "DiffusionLinearFEOperator::postAssembly, entering" << std::endl;
-      }
+    }
 
-      d_transportModel->postLinearAssembly();
+    d_transportModel->postLinearAssembly();
 
-      d_matrix->makeConsistent();
+    d_matrix->makeConsistent();
 
-      if( d_iDebugPrintInfoLevel > 7 )
-      {
+    if( d_iDebugPrintInfoLevel > 7 )
+    {
         AMP::pout << "DiffusionLinearFEOperator::postAssembly, leaving" << std::endl;
-      }
+    }
 }
 
 
@@ -184,7 +184,7 @@ void DiffusionLinearFEOperator::preElementOperation(
         for (size_t r = 0; r < d_currNodes.size(); r++) {
             DOF->getDOFs( d_currNodes[r].globalID(), dofs );
             AMP_ASSERT(dofs.size()==1);
-          localBurnup[r] = d_burnup->getValueByGlobalID(dofs[0]);
+            localBurnup[r] = d_burnup->getValueByGlobalID(dofs[0]);
         }
     }
 
@@ -216,8 +216,8 @@ void DiffusionLinearFEOperator::postElementOperation()
 
     for (size_t r=0; r<d_dofIndices.size(); r++) {
         for (size_t c=0; c<d_dofIndices.size(); c++) {
-          d_matrix->addValueByGlobalID(d_dofIndices[r], d_dofIndices[c],
-              d_elementStiffnessMatrix[r][c]);
+            d_matrix->addValueByGlobalID(d_dofIndices[r], d_dofIndices[c],
+                d_elementStiffnessMatrix[r][c]);
         }
     }
 
