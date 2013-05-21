@@ -34,7 +34,7 @@ void AsynchronousOperator::waitForAllRequests ()
         MPI_Request request = *curReq;
         if ( request!=0 )
             AMP_MPI::wait( request );
-        curReq++;
+        ++curReq;
     }
 }
 

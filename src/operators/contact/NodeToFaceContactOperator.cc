@@ -500,12 +500,12 @@ AMP_ASSERT( std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::Foun
         std::vector<ProjectionData> sendProjectionDataBuffer(nSendData);
         std::fill(sendCnts.begin(), sendCnts.end(), 0);
         std::vector<size_t> sendMap(nSendData, nSendData);
-        std::vector<size_t> recvMap(nSendData, nSendData);
+//        std::vector<size_t> recvMap(nSendData, nSendData);
         for (size_t i = 0; i < nSendData; ++i) {
 //          size_t sendToRank = d_MasterVolumesGlobalIDs[nActiveSlaveVerticesTmp+i].owner_rank();
           size_t sendToRank = invRankMap[d_MasterVolumesGlobalIDs[nActiveSlaveVerticesTmp+i].owner_rank()];
           sendMap[i] = static_cast<size_t>(sendDisps[sendToRank]+sendCnts[sendToRank]);
-          recvMap[sendMap[i]] = i;
+//          recvMap[sendMap[i]] = i;
           sendProjectionDataBuffer[sendMap[i]].d_MasterVolumeGlobalID = d_MasterVolumesGlobalIDs[nActiveSlaveVerticesTmp+i];
           sendProjectionDataBuffer[sendMap[i]].d_MasterFaceLocalIndex = d_MasterFacesLocalIndices[nActiveSlaveVerticesTmp+i];
           hex8_element_t::get_local_coordinates_on_face(&(d_MasterShapeFunctionsValues[4*(nActiveSlaveVerticesTmp+i)]), sendProjectionDataBuffer[sendMap[i]].d_SlaveVertexLocalCoordOnMasterFace);

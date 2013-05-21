@@ -441,11 +441,11 @@ bool DiffusionNonlinearFEOperator::isValidInput(AMP::LinearAlgebra::Vector::shar
     if (found) {
         AMP::LinearAlgebra::Vector::shared_ptr uinp = u_meshVec->subsetVectorForVariable(d_inpVariables->getVariable(d_PrincipalVariable));
         size_t nvals = 0, nit=0;
-        for (AMP::LinearAlgebra::Vector::iterator val = uinp->begin(); val != uinp->end(); val++) {
+        for (AMP::LinearAlgebra::Vector::iterator val = uinp->begin(); val != uinp->end(); ++val) {
             nvals++;
         }
         std::vector<double> vals(nvals);
-        for (AMP::LinearAlgebra::Vector::iterator val = uinp->begin(); val != uinp->end(); val++) {
+        for (AMP::LinearAlgebra::Vector::iterator val = uinp->begin(); val != uinp->end(); ++val) {
             vals[nit] = *val;
             nit++;
         }
