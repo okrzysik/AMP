@@ -18,6 +18,7 @@ public:
             const boost::shared_ptr<ElementOperationParameters>& params) :
         DiffusionElement(params)
     {
+        d_num_dofs = 0;
         d_transportAtGauss = params->d_db->getBoolWithDefault(
                 "TransportAtGaussPoints", true);
     }
