@@ -7,7 +7,8 @@ namespace Operator {
 
 
 TrilinosMatrixShellOperator :: TrilinosMatrixShellOperator(const boost::shared_ptr<OperatorParameters>& params) :
-    LinearOperator (params) 
+    LinearOperator (params),
+    d_getRow(NULL)
 { 
 }
 

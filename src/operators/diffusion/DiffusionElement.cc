@@ -13,9 +13,11 @@
 namespace AMP {
 namespace Operator {
 
-DiffusionElement::DiffusionElement(const boost::shared_ptr<
-        ElementOperationParameters> & params) :
-    ElementOperation(params) {
+
+DiffusionElement::DiffusionElement(const boost::shared_ptr<ElementOperationParameters> & params) :
+    ElementOperation(params),
+    d_elem(NULL)
+{
 
     AMP_INSIST( (params.get() != NULL), "''params'' is NULL");
 
@@ -66,12 +68,14 @@ DiffusionElement::DiffusionElement(const boost::shared_ptr<
 
 }
 
-void DiffusionElement::initializeForCurrentElement(const ::Elem* elem,
-        const boost::shared_ptr<DiffusionTransportModel> & transportModel) {
-    d_elem = elem;
 
+void DiffusionElement::initializeForCurrentElement(const ::Elem* elem,
+        const boost::shared_ptr<DiffusionTransportModel> & transportModel) 
+{
+    d_elem = elem;
     d_transportModel = transportModel;
 }
+
 
 }
 }

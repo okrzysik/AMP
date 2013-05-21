@@ -16,9 +16,12 @@ namespace Operator {
 class DiffusionNonlinearElement: public DiffusionElement {
 public:
 
-    DiffusionNonlinearElement(const boost::shared_ptr<
-            ElementOperationParameters>& params) :
-        DiffusionElement(params) {
+    DiffusionNonlinearElement(const boost::shared_ptr<ElementOperationParameters>& params) :
+        DiffusionElement(params),
+        d_elementOutputVector(NULL),
+        d_transportOutputVector(NULL),
+        d_PrincipalVariable(0)
+    {
         d_JxW = &(d_fe->get_JxW());
 
         d_dphi = &(d_fe->get_dphi());
