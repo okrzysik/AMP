@@ -283,6 +283,8 @@ void VonMisesElastoPlasticModel :: getInternalStress_UL(const std::vector<std::v
 
 void VonMisesElastoPlasticModel :: getEffectiveStress(double*& sigma_e)
 {
+    AMP_ERROR("Redesign this function so we do not assign a pointer to a temporary variable");
+    /*
     double stress[6], eff_stress;
     for(int i = 0; i < 6; i++) {
         stress[i] = d_tmp1Stress[(6*d_gaussPtCnt)+i];
@@ -290,7 +292,7 @@ void VonMisesElastoPlasticModel :: getEffectiveStress(double*& sigma_e)
     eff_stress = sqrt((stress[0] * stress[0]) + (stress[1] * stress[1]) +
         (stress[2] * stress[2]) + (2.0 * stress[3] * stress[3]) + 
         (2.0 * stress[4] * stress[4]) + (2.0 * stress[5] * stress[5]));
-    sigma_e = &(eff_stress);
+    sigma_e = &(eff_stress);*/
 }
 
 
