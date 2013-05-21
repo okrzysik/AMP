@@ -78,7 +78,7 @@ namespace Operator {
         This function is used to by the VolumeIntegralOperatorset input 
         variable type.
         */
-      void setElementFlags(const std::string inputVariableType){
+      void setElementFlags(const std::string & inputVariableType){
           d_isInputType = inputVariableType;
       }
 

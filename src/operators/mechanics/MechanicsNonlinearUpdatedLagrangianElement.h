@@ -43,7 +43,7 @@ namespace Operator {
 
         d_onePointShearIntegration = false;
 
-        this->zeroOutGaussPointCount();
+        d_gaussPtCnt = 0;
       }
 
       /**
