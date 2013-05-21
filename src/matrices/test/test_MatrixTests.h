@@ -393,8 +393,7 @@ public:
             ++it;
         }
         matrix->makeConsistent();
-        
-        
+        matrix->makeConsistent();   // Call makeConsistent twice (causes a crash in some cases)
 
         PROFILE_STOP("VerifySetElementNode");
     }
