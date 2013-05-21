@@ -83,7 +83,7 @@ public:
     /** \brief   Get an entry over the mesh elements associated with the DOFs
      * \details  This will return an iterator over the mesh elements associated
      *  with the DOFs.  Each element in the iterator will have 1 or more DOFs
-     *  that are associated with that element.  For eaxample, a NodalVectorDOF
+     *  that are associated with that element.  For example, a NodalVectorDOF
      *  would have 3 DOFs stored at each node, and would return an iterator over
      *  all the nodes. 
      */

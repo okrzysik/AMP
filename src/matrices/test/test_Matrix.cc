@@ -27,7 +27,7 @@ void  test_matrix_loop ( AMP::UnitTest *ut )
         VerifyExtractDiagonal<FACTORY>::run_test ( ut );
         VerifyMultMatrix<FACTORY>::run_test ( ut );
         VerifyMatMultMatrix<FACTORY>::run_test ( ut );
-        VerifySetElementNode<FACTORY>::run_test ( ut );
+        VerifyAddElementNode<FACTORY>::run_test ( ut );
     #else
         ut->failure("Tests require petsc and trilinos");
     #endif
@@ -45,7 +45,9 @@ void  test_petsc_matrix_loop ( AMP::UnitTest *ut )
 int main ( int argc , char **argv )
 {
 
-    AMP::AMPManager::startup(argc, argv);
+    AMP::AMPManagerProperties startup_properties;
+    startup_properties.use_MPI_Abort = true;
+    AMP::AMPManager::startup(argc,argv,startup_properties);
     AMP::UnitTest ut;
     PROFILE_ENABLE();
 
