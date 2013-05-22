@@ -356,7 +356,7 @@ public:
 
 
 template <typename FACTORY>
-class VerifySetElementNode
+class VerifyAddElementNode
 {
 public:
     static const char * get_test_name () { return "verify set nodes by element"; }
@@ -369,6 +369,7 @@ public:
         AMP::LinearAlgebra::Matrix::shared_ptr  matrix = FACTORY::getMatrix();
         matrix->zero();
 
+        // Fill all the node-node entries
         AMP::Mesh::MeshIterator it = mesh->getIterator(AMP::Mesh::Volume,0);
         AMP::Mesh::MeshIterator end = it.end();
         std::vector<size_t> dofs;
@@ -384,16 +385,49 @@ public:
             }
             for (size_t r=0; r<dofs.size(); r++) {
                 for (size_t c=0; c<dofs.size(); c++) {
-                    double val = -1.0/dofs.size();
+                    double val = -1.0;
                     if ( r==c )
-                        val = 1.0;
+                        val = dofs.size()-1;
                     matrix->addValueByGlobalID( dofs[r], dofs[c], val );
                 }
             }
             ++it;
         }
         matrix->makeConsistent();
-        matrix->makeConsistent();   // Call makeConsistent twice (causes a crash in some cases)
+
+        // Call makeConsistent a second time
+        // This can illustrate a bug where the fill pattern of remote data has changed
+        //   and epetra maintains the list of remote rows, but updates the columns
+        //   resulting in an access error using the std::vector
+        // Another example of this bug can be found in extra_tests/test_Epetra_FECrsMatrix_bug
+        // Note: there is no point in catching this bug with a try catch since a failure
+        //   will cause asymettric behavior that create a deadlock with one process waiting
+        //   for the failed process
+        // The current workaround is to disable the GLIBCXX_DEBUG flags?
+        matrix->makeConsistent();
+        
+        // Check the values
+        bool pass = true;
+        it = mesh->getIterator(AMP::Mesh::Vertex,0);
+        end = it.end();
+        std::vector<unsigned int> cols;
+        std::vector<double> values;
+        while ( it != end ) {
+            dofmap->getDOFs( it->globalID(), dofs );
+            for (size_t i=0; i<dofs.size(); i++) {
+                matrix->getRowByGlobalID( dofs[i], cols, values );
+                double sum = 0.0;
+                for (size_t j=0; j<values.size(); j++)
+                    sum += values[j];
+                if ( fabs(sum) > 1e-14 || cols.empty() )
+                    pass = false;
+            }
+            ++it;
+        }
+        if ( pass )
+            utils->passes( "VerifySetElementNode" );
+        else
+            utils->failure( "VerifySetElementNode" );
 
         PROFILE_STOP("VerifySetElementNode");
     }

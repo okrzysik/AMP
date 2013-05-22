@@ -14,9 +14,10 @@
 namespace AMP {
 namespace Operator {
 
-  MechanicsElement :: MechanicsElement (const boost::shared_ptr<ElementOperationParameters> & params)
-    : ElementOperation(params)
-  {
+MechanicsElement :: MechanicsElement (const boost::shared_ptr<ElementOperationParameters> & params) :
+    ElementOperation(params),
+    d_elem(NULL)
+{
     AMP_INSIST( (params.get() != NULL), "''params'' is NULL");
 
     AMP_INSIST( (((params->d_db).get()) != NULL), "NULL database" );
@@ -28,7 +29,7 @@ namespace Operator {
     d_useFlanaganTaylorElem = (params->d_db)->getBoolWithDefault("USE_FLANAGAN_TAYLOR_ELEMENT_FORMULATION", false);
 
     if(d_useFlanaganTaylorElem == true) {
-      AMP_INSIST((d_useJaumannRate == false), "Flanagan Taylor element formulation can only be used with Green-Naghdi stress rate.");
+        AMP_INSIST((d_useJaumannRate == false), "Flanagan Taylor element formulation can only be used with Green-Naghdi stress rate.");
     }
 
     std::string feTypeOrderName = (params->d_db)->getStringWithDefault("FE_ORDER", "FIRST");
@@ -54,9 +55,9 @@ namespace Operator {
     libMeshEnums::Order qruleOrder;
 
     if(qruleOrderName == "DEFAULT") {
-      qruleOrder = d_feType->default_quadrature_order();
+        qruleOrder = d_feType->default_quadrature_order();
     } else {
-      qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(qruleOrderName);
+        qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(qruleOrderName);
     }
 
     d_qrule.reset( (::QBase::build(qruleType, dimension, qruleOrder)).release() );
@@ -64,7 +65,8 @@ namespace Operator {
     d_fe->attach_quadrature_rule( d_qrule.get() );
 
     d_iDebugPrintInfoLevel = (params->d_db)->getIntegerWithDefault("print_info_level",0);
-  }
+}
+
 
 }
 }
