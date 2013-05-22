@@ -483,7 +483,8 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr globalThermalRhsVec = globalRhsMultiVector->subsetVectorForVariable(thermalVariable);
     AMP::LinearAlgebra::Vector::shared_ptr globalThermalResVec = globalResMultiVector->subsetVectorForVariable(thermalVariable);
 
-
+    boost::shared_ptr<AMP::Solver::Solver> nonlinearSolver;
+{
     // get nonlinear solver database
     boost::shared_ptr<AMP::Database> nonlinearSolver_db = global_input_db->getDatabase("NonlinearSolver"); 
     boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
@@ -493,7 +494,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     nonlinearSolverParams->d_comm = globalComm;
     nonlinearSolverParams->d_pOperator = nonlinearCoupledOperator;
     nonlinearSolverParams->d_pInitialGuess = globalSolMultiVector;
-    boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
+    nonlinearSolver.reset(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
 
     // create preconditioner
     boost::shared_ptr<AMP::Database> columnPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
@@ -515,6 +516,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
     // set preconditioner
     linearSolver->setPreconditioner(columnPreconditioner);
+}
 
     // don't use zero initial guess
     nonlinearSolver->setZeroInitialGuess(false);
