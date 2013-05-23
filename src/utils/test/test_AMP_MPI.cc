@@ -1319,6 +1319,31 @@ int main(int argc, char *argv[])
                 ut.failure("intersection of partially overlapping comms");
         }
 
+        // Test splitByNode
+        AMP::AMP_MPI nodeComm = globalComm.splitByNode();
+        int length;
+        char name[MPI_MAX_PROCESSOR_NAME];
+        MPI_Get_processor_name( name, &length );
+        std::string localName(name);
+        std::vector<std::string> globalStrings(globalComm.getSize());
+        std::vector<std::string> nodeStrings(nodeComm.getSize());
+        globalComm.allGather<std::string>(localName,&globalStrings[0]);
+        nodeComm.allGather<std::string>(localName,&nodeStrings[0]);
+        int N_local = 0;
+        for (size_t i=0; i<nodeStrings.size(); i++) {
+            if ( nodeStrings[i] == localName )
+                N_local++;
+        }
+        int N_global = 0;
+        for (size_t i=0; i<globalStrings.size(); i++) {
+            if ( globalStrings[i] == localName )
+                N_global++;
+        }
+        if ( !nodeComm.isNull() && N_local==nodeComm.getSize() && N_local==N_global )
+            ut.passes("splitByNode");
+        else
+            ut.failure("splitByNode");
+
         // Test the performance of sched_yield (used internally by AMP_MPI wait routines)
         globalComm.barrier();
         double start_yield = AMP::AMP_MPI::time();

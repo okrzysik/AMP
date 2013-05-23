@@ -106,6 +106,21 @@ public:
 
 
     /**
+     * \brief Split an existing AMP_MPI communicator
+     * \details  This creates a new AMP_MPI object by splitting an exisiting AMP_MPI object 
+     *   by the node.  This will result in a seperate MPI_Comm for each physical node.
+     *   Internally this will use MPI_Get_processor_name to identify the nodes.
+     *   Note: the underlying MPI_Comm object will be free'd automatically when it is no longer 
+     *   used by any AMP_MPI objects.ed)
+     * \param key    Control of rank assigment (integer).
+     *               Note that, for a fixed color, the keys need not be unique. The processes will be sorted 
+     *               in ascending order according to this key, then all the processes in a given color will 
+     *               have the relative rank order as they did in their parent group. (See MPI_Comm_split) 
+     */
+    AMP_MPI splitByNode( int key=-1 ) const;
+
+
+    /**
      * \brief Duplicate an existing AMP_MPI communicator
      * \details  This creates a new AMP_MPI object by duplicating an exisiting AMP_MPI object.
      *   The resulting communicator will exist over the same processes, but have a different context. 

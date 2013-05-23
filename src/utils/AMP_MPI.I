@@ -378,6 +378,24 @@ inline MPI_Request AMP_MPI::Irecv(type *buf, const int length, const int send_pr
 /************************************************************************
 *  allGather                                                            *
 ************************************************************************/
+// Specialization of AMP_MPI::allGather for std::string
+template <>
+inline void AMP_MPI::allGather<std::string>(const std::string x_in, std::string *x_out) const
+{
+    // Get the bytes recvied per processor
+    std::vector<int> recv_cnt(comm_size,0);
+    allGather<int>(x_in.size()+1,&recv_cnt[0]);
+    std::vector<int> recv_disp(comm_size,0);
+    for (int i=1; i<comm_size; i++)
+        recv_disp[i] = recv_disp[i-1]+recv_cnt[i-1];
+    // Call the vector form of allGather for the char arrays
+    char *recv_data = new char[recv_disp[comm_size-1]+recv_cnt[comm_size-1]];
+    allGather<char>(x_in.c_str(),x_in.size()+1, recv_data, &recv_cnt[0], &recv_disp[0], true );
+    for (int i=0; i<comm_size; i++)
+        x_out[i] = std::string(&recv_data[recv_disp[i]]);
+    delete [] recv_data;
+}
+// Default instantiation of AMP_MPI::allGather
 template <class type>
 inline void AMP_MPI::allGather(const type x_in, type *x_out) const
 {
@@ -389,8 +407,17 @@ inline void AMP_MPI::allGather(const type x_in, type *x_out) const
         x_out[0] = x_in;
     }
 }
+// Specialization of AMP_MPI::allGather for std::string
+template <>
+inline int AMP_MPI::allGather<std::string>(const std::string *send_data, const int send_cnt, 
+    std::string *recv_data, int *recv_cnt, int* recv_disp, bool known_recv) const
+{
+    AMP_ERROR("Cannot allGather an array of strings");
+    return 0;
+}
+// Default instantiation of AMP_MPI::allGather
 template <class type>
-int AMP_MPI::allGather(const type *send_data, const int send_cnt, type *recv_data, 
+inline int AMP_MPI::allGather(const type *send_data, const int send_cnt, type *recv_data, 
     int *recv_cnt, int* recv_disp, bool known_recv) const
 {
     // Check the inputs

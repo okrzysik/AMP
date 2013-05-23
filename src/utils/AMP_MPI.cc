@@ -447,6 +447,44 @@ AMP_MPI AMP_MPI::split( int color, int key ) const
     #endif
     return new_comm;
 }
+AMP_MPI AMP_MPI::splitByNode( int key ) const
+{
+    #ifdef USE_MPI
+        // Get the node name
+        int length;
+        char name[MPI_MAX_PROCESSOR_NAME];
+        memset(name,0,MPI_MAX_PROCESSOR_NAME);
+        MPI_Get_processor_name( name, &length );
+        // Gather the names from all ranks
+        std::vector<int> recv_cnt(comm_size,MPI_MAX_PROCESSOR_NAME);
+        std::vector<int> recv_disp(comm_size,0);
+        for (int i=1; i<comm_size; i++)
+            recv_disp[i] = i*(MPI_MAX_PROCESSOR_NAME);
+        char *recv_data = new char[comm_size*MPI_MAX_PROCESSOR_NAME];
+        this->allGather<char>( name, MPI_MAX_PROCESSOR_NAME, 
+            recv_data, &recv_cnt[0], &recv_disp[0], true );
+        // Create the colors
+        std::vector<int> color(comm_size,-1);
+        color[0] = 0;
+        for (int i=1; i<comm_size; i++) {
+            const char *tmp1 = &recv_data[i*MPI_MAX_PROCESSOR_NAME];
+            for (int j=0; j<i; j++) {
+                const char *tmp2 = &recv_data[j*MPI_MAX_PROCESSOR_NAME];
+                if ( strncmp(tmp1,tmp2,MPI_MAX_PROCESSOR_NAME) == 0 ) {
+                    color[i] = color[j];
+                    break;
+                }
+                color[i] = color[i-1] + 1;
+            }
+        }
+        delete [] recv_data;
+        AMP_MPI new_comm = this->split(color[comm_rank],key);
+        return new_comm;
+    #else
+        // No MPI, just call split
+        return this->split(0,0);
+    #endif
+}
 
 
 /************************************************************************
