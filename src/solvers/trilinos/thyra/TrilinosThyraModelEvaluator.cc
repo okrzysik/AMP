@@ -57,6 +57,12 @@ void TrilinosThyraModelEvaluator::evalModelImpl( const ::Thyra::ModelEvaluatorBa
     //const Teuchos::RCP< Thyra::LinearOpBase<double> > W_out = outArgs.get_W_op();
     AMP_ASSERT(x!=NULL);
 
+    // Temporary workaround to ensure x and rhs are consistent
+    const_cast<AMP::LinearAlgebra::Vector*>(x.get())->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+    if ( d_rhs != NULL ) {
+        const_cast<AMP::LinearAlgebra::Vector*>(d_rhs.get())->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+    }
+
     if ( f_out != NULL ) {
         // Evaluate the residual:  r = A(u) - rhs
         d_nonlinearOp->apply( d_rhs, x, f_out, 1.0, -1.0 );

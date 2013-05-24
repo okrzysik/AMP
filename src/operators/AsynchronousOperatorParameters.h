@@ -14,7 +14,7 @@ namespace Operator {
       size_t  d_ConstructionPhase;
 
       AsynchronousOperatorParameters ( const boost::shared_ptr<AMP::Database> &db )
-        : OperatorParameters ( db )
+        : OperatorParameters ( db ), d_AsynchronousConstructionParam(0), d_ConstructionPhase(0)
       {
       }
 

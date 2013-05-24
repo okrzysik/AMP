@@ -5,11 +5,9 @@
  *	  Author: bm
  */
 
-#include "Dr_nonlinear.h"
-
-#include "Property.h"
-#include "Material.h"
-#include "Utilities.h"
+#include "materials/Dr_nonlinear.h"
+#include "materials/Property.h"
+#include "materials/Material.h"
 
 #include <string>
 #include <valarray>

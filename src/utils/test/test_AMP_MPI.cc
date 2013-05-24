@@ -9,7 +9,16 @@
 #include "utils/UnitTest.h"
 #include "utils/AMP_MPI.h"
 #include "utils/ProfilerApp.h"
+#include "utils/Utilities.h"
 #include "utils/PIO.h"
+
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+    #include <windows.h>
+    #define sched_yield() Sleep(0)
+#else
+    #include <sched.h>
+#endif
 
 
 struct mytype{
@@ -714,7 +723,15 @@ int testIsendIrecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
         int index = comm.waitAny(sendRequest.size(),&(sendRequest[0]));
         sendRequest.erase(sendRequest.begin()+index);
     }
-    AMP::AMP_MPI::waitAll(recvRequest.size(),&(recvRequest[0]));
+    std::vector<int> finished = AMP::AMP_MPI::waitSome(recvRequest.size(),&(recvRequest[0]));
+    if ( !recvRequest.empty() ) {
+        AMP_ASSERT(!finished.empty());
+        for (std::vector<int>::const_reverse_iterator it=finished.rbegin(); it!=finished.rend(); ++it )
+            recvRequest.erase(recvRequest.begin()+(*it));
+    }
+    if ( !recvRequest.empty() )
+        AMP::AMP_MPI::waitAll(recvRequest.size(),&(recvRequest[0]));
+    AMP::Utilities::unique(finished);
     // Check the recieved values
     bool pass = true;
     for (int i=0; i<comm.getSize(); i++) {
@@ -1061,14 +1078,15 @@ int main(int argc, char *argv[])
     AMP::AMPManagerProperties startup_properties;
     startup_properties.use_MPI_Abort = false;
     AMP::AMPManager::startup(argc,argv,startup_properties);
-    int num_failed = 0;
+
+    // Create the unit test
+    AMP::UnitTest ut;		
     PROFILE_ENABLE(0);
+    PROFILE_START("Main");
+
 
     // Limit the scope so objects are destroyed
     {
-        PROFILE_START("Main");
-        // Create the unit test
-        AMP::UnitTest ut;
 
         // Get the start time for the tests
         double start_time = AMP::AMP_MPI::time();
@@ -1107,6 +1125,16 @@ int main(int argc, char *argv[])
             commTimer.print();
             std::cout << std::endl;
         }
+
+        // Test bcast with std::string
+        std::string rank_string;
+        if ( globalComm.getRank()==0 )
+            rank_string = "Rank 0";
+        rank_string = globalComm.bcast(rank_string,0);
+        if ( rank_string == "Rank 0" )
+            ut.passes("Bcast std::string");
+        else
+            ut.failure("Bcast std::string");
 
         // Test AMP_COMM_SELF
         AMP::AMP_MPI selfComm = AMP::AMP_MPI(AMP_COMM_SELF);
@@ -1291,6 +1319,40 @@ int main(int argc, char *argv[])
                 ut.failure("intersection of partially overlapping comms");
         }
 
+        // Test splitByNode
+        AMP::AMP_MPI nodeComm = globalComm.splitByNode();
+        int length;
+        char name[MPI_MAX_PROCESSOR_NAME];
+        MPI_Get_processor_name( name, &length );
+        std::string localName(name);
+        std::vector<std::string> globalStrings(globalComm.getSize());
+        std::vector<std::string> nodeStrings(nodeComm.getSize());
+        globalComm.allGather<std::string>(localName,&globalStrings[0]);
+        nodeComm.allGather<std::string>(localName,&nodeStrings[0]);
+        int N_local = 0;
+        for (size_t i=0; i<nodeStrings.size(); i++) {
+            if ( nodeStrings[i] == localName )
+                N_local++;
+        }
+        int N_global = 0;
+        for (size_t i=0; i<globalStrings.size(); i++) {
+            if ( globalStrings[i] == localName )
+                N_global++;
+        }
+        if ( !nodeComm.isNull() && N_local==nodeComm.getSize() && N_local==N_global )
+            ut.passes("splitByNode");
+        else
+            ut.failure("splitByNode");
+
+        // Test the performance of sched_yield (used internally by AMP_MPI wait routines)
+        globalComm.barrier();
+        double start_yield = AMP::AMP_MPI::time();
+        for (int i=0; i<10000; i++)
+            sched_yield();
+        double time_yield = (AMP::AMP_MPI::time()-start_yield)/10000;
+        if ( globalComm.getRank() == 0 )
+            std::cout << "Time to yield: " << time_yield*1e6 << " us" << std::endl;
+
         // Test time and tick
         double end_time = AMP::AMP_MPI::time();
         double time_res = AMP::AMP_MPI::tick();
@@ -1304,18 +1366,19 @@ int main(int argc, char *argv[])
             std::cout << std::endl;
         }
         
-        // Finished testing, report the results
-        PROFILE_START("Report");
-        start_time = AMP::AMP_MPI::time();
-        ut.report();
-        num_failed = ut.NumFailGlobal();
-        end_time = AMP::AMP_MPI::time();
-        if ( globalComm.getRank() == 0 )
-            std::cout << "Time to report: " << end_time-start_time << std::endl << std::endl;
-        PROFILE_STOP("Report");
-
-        PROFILE_STOP("Main");
     } // Limit the scope so objects are detroyed
+
+    // Finished testing, report the results
+    PROFILE_START("Report");
+    double start_time = AMP::AMP_MPI::time();
+    ut.report();
+    int num_failed = ut.NumFailGlobal();
+    double end_time = AMP::AMP_MPI::time();
+    if ( AMP::AMP_MPI(AMP_COMM_WORLD).getRank() == 0 )
+        std::cout << "Time to report: " << end_time-start_time << std::endl << std::endl;
+    PROFILE_STOP("Report");
+
+    PROFILE_STOP("Main");
 
     // Shutdown
     PROFILE_SAVE("test_AMP_MPI");

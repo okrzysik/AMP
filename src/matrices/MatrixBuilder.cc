@@ -1,6 +1,7 @@
 #ifdef USE_AMP_VECTORS
 
-#include "MatrixBuilder.h"
+#include "matrices/MatrixBuilder.h"
+#include "matrices/DenseSerialMatrix.h"
 
 #include "discretization/DOF_Manager.h"
 
@@ -18,9 +19,9 @@ namespace LinearAlgebra {
 
 
 /********************************************************
-* Matrix builder                                        *
+* Build a ManagedPetscMatrix                             *
 ********************************************************/
-AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix( 
+AMP::LinearAlgebra::Matrix::shared_ptr  createManagedPetscMatrix( 
     AMP::LinearAlgebra::Vector::shared_ptr operandVec, 
     AMP::LinearAlgebra::Vector::shared_ptr resultVec )
 {
@@ -31,6 +32,8 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix(
     if ( operandDOF->getComm().compare(resultVec->getComm()) == 0 )
         AMP_ERROR("operandDOF and resultDOF on different comm groups is NOT tested, and needs to be fixed");
     AMP_MPI comm = operandDOF->getComm();
+    if ( comm.getSize()==1 )
+        comm = AMP_MPI(AMP_COMM_SELF);
 
     // Create the matrix parameters
     boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrixParameters> params( 
@@ -98,9 +101,65 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix(
 
     return newMatrix;
 #else
-    AMP_ERROR("PETSc and Trilinos are currently required to build a matrix");
-    return boost::shared_ptr<AMP::LinearAlgebra::Matrix>();
+    AMP_ERROR("Unable to build a ManagedPetscMatrix without PETSc or TRILINOS");
+    return AMP::LinearAlgebra::Matrix::shared_ptr();
 #endif
+}
+
+
+/********************************************************
+* Build a DenseSerialMatrix                             *
+********************************************************/
+AMP::LinearAlgebra::Matrix::shared_ptr  createDenseSerialMatrix( 
+    AMP::LinearAlgebra::Vector::shared_ptr operandVec, 
+    AMP::LinearAlgebra::Vector::shared_ptr resultVec )
+{
+    // Get the DOFs
+    AMP::Discretization::DOFManager::shared_ptr operandDOF = operandVec->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr resultDOF = resultVec->getDOFManager();
+    if ( operandDOF->getComm().compare(resultVec->getComm()) == 0 )
+        AMP_ERROR("operandDOF and resultDOF on different comm groups is NOT tested, and needs to be fixed");
+    AMP_MPI comm = operandDOF->getComm();
+    if ( comm.getSize()==1 )
+        comm = AMP_MPI(AMP_COMM_SELF);
+    else 
+        AMP_ERROR("The only native matrix is a serial dense matrix");
+    // Create the matrix parameters
+    boost::shared_ptr<AMP::LinearAlgebra::MatrixParameters> params( 
+        new AMP::LinearAlgebra::MatrixParameters( resultDOF, operandDOF, comm ) );
+    params->d_VariableLeft = resultVec->getVariable();
+    params->d_VariableRight = operandVec->getVariable();
+    // Create the matrix
+    boost::shared_ptr<AMP::LinearAlgebra::DenseSerialMatrix>  newMatrix( new AMP::LinearAlgebra::DenseSerialMatrix(params) );
+    // Initialize the matrix
+    newMatrix->zero();
+    newMatrix->makeConsistent();
+    return newMatrix;
+}
+
+
+/********************************************************
+* Matrix builder                                        *
+********************************************************/
+AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix( 
+    AMP::LinearAlgebra::Vector::shared_ptr operandVec, 
+    AMP::LinearAlgebra::Vector::shared_ptr resultVec, int type )
+{
+    AMP::LinearAlgebra::Matrix::shared_ptr matrix;
+    if ( type==0 ) {
+        #if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
+            matrix = createManagedPetscMatrix(operandVec,resultVec);
+        #else
+            matrix = createDenseSerialMatrix(operandVec,resultVec);
+        #endif
+    } else if ( type==1 ) {
+        matrix = createManagedPetscMatrix(operandVec,resultVec);
+    } else if ( type==2 ) {
+        matrix = createDenseSerialMatrix(operandVec,resultVec);
+    } else {
+        AMP_ERROR("Unknown matrix type to build");
+    }
+    return matrix;
 }
 
 

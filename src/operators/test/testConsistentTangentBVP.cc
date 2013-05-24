@@ -26,7 +26,7 @@
 #include "operators/NonlinearBVPOperator.h"
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"
 
-#include "ReadTestMesh.h"
+#include "utils/ReadTestMesh.h"
 
 void myTest(AMP::UnitTest *ut, std::string exeName, int callLinReset) {
   std::string input_file = "input_" + exeName;

@@ -185,8 +185,11 @@ inline double Vector::getValueByLocalID ( size_t ndx ) const
   inline
   void Vector::copyOutRawData ( double **in )
   {
-    *in = new double [ getLocalSize() ];
-    std::copy ( *in , *in + getLocalSize() , begin() );
+    size_t N = getLocalSize();
+    *in = new double[N];
+    VectorDataIterator it = begin();
+    for (size_t i=0; i<N; ++i, ++it)
+        (*in)[i] = *it;
   }
 
   inline

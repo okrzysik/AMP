@@ -3,11 +3,9 @@
  * \brief Material library that contains all the properties of water as a coolant for subchannel flow.
  */
 
-#include "WaterLibrary.h"
-
-#include "Property.h"
-#include "Material.h"
-#include "Utilities.h"
+#include "materials/WaterLibrary.h"
+#include "materials/Property.h"
+#include "materials/Material.h"
 
 #include <string>
 #include <valarray>

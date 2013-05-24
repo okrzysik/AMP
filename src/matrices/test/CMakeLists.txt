@@ -1,5 +1,4 @@
-INCLUDE (macros)
-
+INCLUDE (${AMP_SOURCE_DIR}/cmake/macros.cmake)
 ############################################################################
 #  Configure dependencies for the tests
 ############################################################################
@@ -45,4 +44,6 @@ COPY_MESH_FILE ( clad_1x_2pellet.e )
 
 # Add matrix test
 ADD_AMP_TEST_1_2_4( test_Matrix )
+
+ADD_SUBDIRECTORY ( extra_tests )
 

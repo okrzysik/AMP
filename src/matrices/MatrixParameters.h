@@ -46,7 +46,7 @@ public:
     inline AMP::Discretization::DOFManager::shared_ptr getRightDOFManager() { return d_DOFManagerRight; }
 
     //!  Get the communicator for the matric
-    inline AMP::AMP_MPI getComm() { return d_comm; }
+    inline AMP::AMP_MPI& getComm() { return d_comm; }
 
     //!  The communication list of a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
     CommunicationList::shared_ptr   d_CommListLeft;

@@ -45,7 +45,7 @@
 #include "applyTests.h"
 
 
-void bvpTest1(AMP::UnitTest *ut, const std::string exeName, const std::string meshName)
+void bvpTest1(AMP::UnitTest *ut, std::string exeName, std::string meshName)
 {
   // Tests diffusion Dirchlet BVP operator for temperature
 

@@ -145,12 +145,12 @@ class SolverStrategy
     *  operations in preparation for a solve that are not formally part of the 
     *  solve.  Updating time-step dependent parameters and building RHS vectors
     *  would naturally fall into this category.
-    * \param step The current time step.
-    * \param f The global rhs multivector.
-    * \param u The global solution multivector.
+    * \param t  The current time.
+    * \param f  The global rhs multivector.
+    * \param u  The global solution multivector.
     */
-   virtual void formRhs( int step, AMP::LinearAlgebra::Vector::shared_ptr       f,
-                                    AMP::LinearAlgebra::Vector::const_shared_ptr u) {}
+   virtual void formRhs( double t,   AMP::LinearAlgebra::Vector::shared_ptr       f,
+                                    AMP::LinearAlgebra::Vector::const_shared_ptr u) {};
 
    /**
    * Resets the operator registered with the solver with new parameters if necessary

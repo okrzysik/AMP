@@ -5,8 +5,9 @@
 
 #include <set>
 #include <map>
+#include <string>
 #include <complex>
-#include "Utilities.h"
+#include "utils/Utilities.h"
 
 //! Define MPI objects
 #ifdef USE_EXT_MPI
@@ -66,7 +67,7 @@ public:
      *   This does not create a new internal MPI_Comm, but uses the existing comm.
      * \param comm Existing AMP_MPI object
      */
-    AMP_MPI (const AMP::AMP_MPI& comm);
+    AMP_MPI(const AMP::AMP_MPI& comm);
 
     /**
      * \brief Constructor from existing MPI communicator
@@ -76,7 +77,7 @@ public:
      *   MPI_Comm when it is no longer used.
      * \param comm Existing MPI communicator
      */
-    AMP_MPI ( MPI_Comm comm );
+    AMP_MPI( MPI_Comm comm );
 
 
     /**
@@ -102,6 +103,21 @@ public:
      *               have the relative rank order as they did in their parent group. (See MPI_Comm_split) 
      */
     AMP_MPI split( int color, int key=-1 ) const;
+
+
+    /**
+     * \brief Split an existing AMP_MPI communicator
+     * \details  This creates a new AMP_MPI object by splitting an exisiting AMP_MPI object 
+     *   by the node.  This will result in a seperate MPI_Comm for each physical node.
+     *   Internally this will use MPI_Get_processor_name to identify the nodes.
+     *   Note: the underlying MPI_Comm object will be free'd automatically when it is no longer 
+     *   used by any AMP_MPI objects.ed)
+     * \param key    Control of rank assigment (integer).
+     *               Note that, for a fixed color, the keys need not be unique. The processes will be sorted 
+     *               in ascending order according to this key, then all the processes in a given color will 
+     *               have the relative rank order as they did in their parent group. (See MPI_Comm_split) 
+     */
+    AMP_MPI splitByNode( int key=-1 ) const;
 
 
     /**
@@ -149,7 +165,7 @@ public:
      * \details  Overload operator comm1 == comm2.  Two AMP_MPI objects are == if they share the same communicator.
      *   Note: this is a local operation.  
      */
-    bool operator== (const AMP_MPI& ) const;
+    bool operator==(const AMP_MPI& ) const;
 
 
     /**
@@ -157,7 +173,7 @@ public:
      * \details  Overload operator comm1 != comm2.  Two AMP_MPI objects are != if they do not share the same communicator.
      *   Note: this is a local operation.  
      */
-    bool operator!= (const AMP_MPI& ) const;
+    bool operator!=(const AMP_MPI& ) const;
 
 
     /**
@@ -739,6 +755,17 @@ public:
 
 
     /*!
+     * \brief   Wait for some communications to finish.
+     * \details This function waits for one (or more) communications to finish.  
+     *    It returns an array of the indicies that have finished.
+     *    Note: this does not require a communicator.
+     * \param count      Number of communications to check
+     * \param request    Array of communication requests to wait for (returned for Isend or Irecv)
+     */
+    static std::vector<int> waitSome( int count, MPI_Request *request );
+
+
+    /*!
      * \brief   Nonblocking test for a message
      * \details This function performs a non-blocking test for a message.
      *    It will return the number of bytes in the message if a message with 
@@ -811,10 +838,9 @@ private:
      * When the count goes to 0, the MPI comm will be free'd (assuming it was created
      * by an AMP_MPI object).  This may not be perfect, but is likely to be good enough.
      * Note that for thread safety, any access to this variable should be blocked for thread safety.
-     * This is not implimented yet.  The value of count MUST be volatile to ensure the correct
-     * value is always used.
+     * The value of count MUST be volatile to ensure the correct value is always used.
      */
-    int* volatile count;
+    int* volatile d_count;
 
     // Add a variable for data alignment (necessary for some Intel builds)
     double tmp_allignment;
@@ -822,9 +848,10 @@ private:
     /* We want to keep track of how many MPI_Comm objects we have created over time.
      * Like the count, for thread safety this should be blocked, however the most likely error
      * caused by not blocking is a slight error in the MPI count.  Since this is just for reference
-     * we don not need to block (recognizing that the value may not be 100% accurate).
+     * we do not need to block (recognizing that the value may not be 100% accurate).
      */
     static volatile unsigned int N_MPI_Comm_created;
+    static volatile unsigned int N_MPI_Comm_destroyed;
 
     // Private helper functions for templated MPI operations;
     template <class type>  void call_sumReduce(type *x, const int n=1) const;
@@ -848,7 +875,7 @@ private:
 
 // Include the default instantiations
 // \cond HIDDEN_SYMBOLS
-#include "utils/AMP_MPI.I"
+#include "AMP_MPI.I"
 // \endcond
 
 }

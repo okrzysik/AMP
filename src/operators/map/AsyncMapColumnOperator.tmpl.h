@@ -32,12 +32,6 @@ boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build (
     AMP::Mesh::Mesh::shared_ptr manager, boost::shared_ptr<Database> database )
 {
 
-    typedef boost::shared_ptr < AsyncMapOperator >             AsyncOp_ptr;
-    typedef boost::shared_ptr < AsyncMapOperatorParameters >   AsyncOpParams_ptr;
-
-    std::vector < AsyncOp_ptr >           asyncToDo;
-    std::vector < AsyncOpParams_ptr >     asyncParams;
-
     boost::shared_ptr<AsyncMapColumnOperatorParameters>  newParams ( new AsyncMapColumnOperatorParameters ( database ) );
     boost::shared_ptr<AsyncMapColumnOperator>  newMapColumn ( new AsyncMapColumnOperator ( newParams ) );
 
@@ -86,7 +80,7 @@ boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build (
         mapParams->callMakeConsistentSet = false;
 
         // Create the map
-        AsyncOp_ptr  mapOp ( new MAP_TYPE ( mapParams ) );
+        boost::shared_ptr <AsyncMapOperator>  mapOp ( new MAP_TYPE ( mapParams ) );
         newMapColumn->append ( mapOp );
 
     }

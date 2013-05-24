@@ -4,7 +4,7 @@
 
 #include <cstring>
 
-#include "ElementPhysicsModel.h"
+#include "operators/ElementPhysicsModel.h"
 
 #include "materials/Material.h"
 

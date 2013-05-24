@@ -16,8 +16,13 @@ namespace LinearAlgebra {
  * \details  This function is responsible for creating vectors from a DOFManager and variable.
  * \param operand  Variable that will be used to create the matrix
  * \param result   Variable that will be used to create the matrix
+ * \param type     Type of matrix to build:
+ *                 0: Automatically determined based on build (default)
+ *                 1: ManagedPetscMatrix
+ *                 2: DenseSerialMatrix
  */
-AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix( AMP::LinearAlgebra::Vector::shared_ptr operand , AMP::LinearAlgebra::Vector::shared_ptr result );
+AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix( AMP::LinearAlgebra::Vector::shared_ptr operand, 
+    AMP::LinearAlgebra::Vector::shared_ptr result, int type=0 );
 
 
 }

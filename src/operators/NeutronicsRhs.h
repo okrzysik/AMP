@@ -93,6 +93,7 @@ namespace Operator {
 
       void   setTimeStep ( int tStep ) { d_timeStep = tStep; }
       void   setTimeInSeconds ( double seconds );
+      void   setTimeInDays ( double days );
 
     protected:
 

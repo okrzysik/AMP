@@ -9,26 +9,34 @@
 namespace AMP {
 namespace Operator {
 
-  IsotropicElasticModel :: IsotropicElasticModel (const boost::shared_ptr<MechanicsMaterialModelParameters> & params)
-    : MechanicsMaterialModel(params)
-  {
+
+IsotropicElasticModel :: IsotropicElasticModel (const boost::shared_ptr<MechanicsMaterialModelParameters> & params) :
+    MechanicsMaterialModel(params)
+{
+    // Zero d_constitutiveMatrix and d_constitutiveMatrix_UL
+    // Must be initialized before call to constructConstitutiveMatrix
+    for(size_t i=0; i<6; i++) {
+        for(size_t j=0; j<6; j++) {
+            d_constitutiveMatrix[i][j]    = 0.;
+            d_constitutiveMatrix_UL[i][j] = 0.;
+        }
+    }
+    d_gaussPtCnt                 = 0;
+    d_resetReusesRadialReturn    = false;
+    d_jacobianReusesRadialReturn = false;
+
     if(d_useMaterialsLibrary == false)
     {
-      AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
+        AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
+        AMP_INSIST( (((params->d_db).get()) != NULL), "NULL database" );
+        AMP_INSIST( (params->d_db)->keyExists("Youngs_Modulus"), "Missing key: Youngs_Modulus" );
+        AMP_INSIST( (params->d_db)->keyExists("Poissons_Ratio"), "Missing key: Poissons_Ratio" );
 
-      AMP_INSIST( (((params->d_db).get()) != NULL), "NULL database" );
+        default_E = (params->d_db)->getDouble("Youngs_Modulus");
+        default_Nu = (params->d_db)->getDouble("Poissons_Ratio");
 
-      AMP_INSIST( (params->d_db)->keyExists("Youngs_Modulus"), "Missing key: Youngs_Modulus" );
-
-      AMP_INSIST( (params->d_db)->keyExists("Poissons_Ratio"), "Missing key: Poissons_Ratio" );
-
-      default_E = (params->d_db)->getDouble("Youngs_Modulus");
-
-      default_Nu = (params->d_db)->getDouble("Poissons_Ratio");
-
-      constructConstitutiveMatrix(default_E, default_Nu);
-
-      constructConstitutiveMatrixUpdatedLagrangian(default_E, default_Nu);
+        constructConstitutiveMatrix(default_E, default_Nu);
+        constructConstitutiveMatrixUpdatedLagrangian(default_E, default_Nu);
 
     }//end d_useMaterialsLibrary == false
 
@@ -39,12 +47,12 @@ namespace Operator {
     default_OXYGEN_CONCENTRATION = (params->d_db)->getDoubleWithDefault("Default_Oxygen_Concentration",0.0);
 
     //fout = fopen("Stress-Strain-Response.txt","w");
-
     //fprintf(fout,"%le %le %le %le %le %le\n",0.0,0.0,0.0,0.0,0.0,0.0);
-  }
+}
 
-  void IsotropicElasticModel :: preNonlinearInit(bool resetReusesRadialReturn, bool jacobianReusesRadialReturn)
-  {
+
+void IsotropicElasticModel :: preNonlinearInit(bool resetReusesRadialReturn, bool jacobianReusesRadialReturn)
+{
     d_resetReusesRadialReturn = resetReusesRadialReturn;
     d_jacobianReusesRadialReturn = jacobianReusesRadialReturn;
 
@@ -57,10 +65,11 @@ namespace Operator {
 
     d_tmp1Stress.clear();
     d_tmp1Strain.clear();
-  }
+}
 
-  void IsotropicElasticModel :: nonlinearInitGaussPointOperation(double )
-  {
+
+void IsotropicElasticModel :: nonlinearInitGaussPointOperation(double )
+{
     if(d_useMaterialsLibrary == false)
     {
       d_E.push_back(default_E);
@@ -79,10 +88,11 @@ namespace Operator {
       d_tmp1Stress.push_back(0);
       d_tmp1Strain.push_back(0);
     }//end for i
-  }
+}
 
-  void IsotropicElasticModel :: globalReset()
-  {
+
+void IsotropicElasticModel :: globalReset()
+{
     AMP_INSIST( (d_resetReusesRadialReturn == true), "Inconsistent options!");
 
     d_EquilibriumStress = d_tmp1Stress;
@@ -90,10 +100,11 @@ namespace Operator {
 
     //double gaussPtCnt = 3;
     //fprintf(fout,"%le %le %le %le %le %le\n",d_EquilibriumStrain[(6 * gaussPtCnt) + 1],d_EquilibriumStress[(6 * gaussPtCnt) + 1],d_EquilibriumStrain[(6 * gaussPtCnt) + 2],d_EquilibriumStress[(6 * gaussPtCnt) + 2],d_EquilibriumStrain[(6 * gaussPtCnt) + 3],d_EquilibriumStress[(6 * gaussPtCnt) + 3]);
-  }
+}
 
-  void IsotropicElasticModel :: nonlinearResetGaussPointOperation(const std::vector<std::vector<double> >& strain)
-  {
+
+void IsotropicElasticModel :: nonlinearResetGaussPointOperation(const std::vector<std::vector<double> >& strain)
+{
     for(int i = 0; i < 6; i++) {
       d_tmp1Strain[(6*d_gaussPtCnt) + i] = strain[Mechanics::DISPLACEMENT][i];
     }
@@ -101,10 +112,11 @@ namespace Operator {
     double* stress = &(d_tmp1Stress[6*d_gaussPtCnt]);
 
     calculateStress(strain, stress);
-  }
+}
 
-  void IsotropicElasticModel :: nonlinearResetGaussPointOperation_UL(const std::vector<std::vector<double> >& strain, double R_n[3][3], double R_np1[3][3])
-  {
+
+void IsotropicElasticModel :: nonlinearResetGaussPointOperation_UL(const std::vector<std::vector<double> >& strain, double R_n[3][3], double R_np1[3][3])
+{
     for(int i = 0; i < 6; i++) {
       d_tmp1Strain[(6*d_gaussPtCnt) + i] = d_EquilibriumStrain[(6*d_gaussPtCnt) + i] + strain[Mechanics::DISPLACEMENT][i];
     }
@@ -124,45 +136,50 @@ namespace Operator {
 
     //calculateStress(strain, stress, Om, Identity);
     calculateStress(strain, stress, R_n, R_np1);
-  }
+}
 
-  void IsotropicElasticModel :: nonlinearJacobianGaussPointOperation(const std::vector<std::vector<double> >& strain)
-  {
+
+void IsotropicElasticModel :: nonlinearJacobianGaussPointOperation(const std::vector<std::vector<double> >& strain)
+{
     if(d_useMaterialsLibrary == true) {
-      computeEvalv(strain);
+        computeEvalv(strain);
     }
-  }
+}
 
-  void IsotropicElasticModel :: nonlinearJacobianGaussPointOperation_UL(const std::vector<std::vector<double> >& strain, double R_n[3][3], double R_np1[3][3])
-  {
+
+void IsotropicElasticModel :: nonlinearJacobianGaussPointOperation_UL(const std::vector<std::vector<double> >& strain, double R_n[3][3], double R_np1[3][3])
+{
     if(d_useMaterialsLibrary == true) {
-      computeEvalv(strain);
+        computeEvalv(strain);
     }
-  }
+}
 
-  void IsotropicElasticModel :: postNonlinearReset()
-  {
+
+void IsotropicElasticModel :: postNonlinearReset()
+{
     d_EquilibriumStress = d_tmp1Stress;
     d_EquilibriumStrain = d_tmp1Strain;
-  }
+}
 
-  void IsotropicElasticModel :: getConstitutiveMatrix(double*& constitutiveMatrix)
-  {
+
+void IsotropicElasticModel :: getConstitutiveMatrix(double*& constitutiveMatrix)
+{
     if(d_useMaterialsLibrary == false) {
-      constitutiveMatrix = &(d_constitutiveMatrix[0][0]);
+        constitutiveMatrix = &(d_constitutiveMatrix[0][0]);
     }
 
     if(d_useMaterialsLibrary == true) {
-      double pass_E = d_E[d_gaussPtCnt];
-      double pass_Nu = d_Nu[d_gaussPtCnt];
+        double pass_E = d_E[d_gaussPtCnt];
+        double pass_Nu = d_Nu[d_gaussPtCnt];
 
-      constructConstitutiveMatrix(pass_E, pass_Nu);
-      constitutiveMatrix = &(d_constitutiveMatrix[0][0]);
+        constructConstitutiveMatrix(pass_E, pass_Nu);
+        constitutiveMatrix = &(d_constitutiveMatrix[0][0]);
     }
-  }
+}
 
-  void IsotropicElasticModel :: getConstitutiveMatrixUpdatedLagrangian(double constitutiveMatrix[6][6], double R_np1[3][3])
-  {
+
+void IsotropicElasticModel :: getConstitutiveMatrixUpdatedLagrangian(double constitutiveMatrix[6][6], double R_np1[3][3])
+{
     //if(d_useMaterialsLibrary == false) {
     //  constitutiveMatrix = &(d_constitutiveMatrix_UL[0][0]);
     //}
@@ -184,10 +201,11 @@ namespace Operator {
         constitutiveMatrix[i][j] = d_constitutiveMatrix_UL[i][j];
       }
     }
-  }
+}
 
-  void IsotropicElasticModel :: getInternalStress(const std::vector<std::vector<double> >& strain, double*& stress)
-  {
+
+void IsotropicElasticModel :: getInternalStress(const std::vector<std::vector<double> >& strain, double*& stress)
+{
     for(int i = 0; i < 6; i++) {
       d_tmp1Strain[(6*d_gaussPtCnt) + i] = strain[Mechanics::DISPLACEMENT][i];
     }
@@ -195,20 +213,21 @@ namespace Operator {
     stress = &(d_tmp1Stress[6*d_gaussPtCnt]);
 
     calculateStress(strain, stress);
-  }
+}
 
-  void IsotropicElasticModel :: getInternalStress_UL(const std::vector<std::vector<double> >& strain, double*& stress, double R_n[3][3], double R_np1[3][3], double detF)
-  {
+
+void IsotropicElasticModel :: getInternalStress_UL(const std::vector<std::vector<double> >& strain, double*& stress, double R_n[3][3], double R_np1[3][3], double detF)
+{
     for(int i = 0; i < 6; i++) {
-      d_tmp1Strain[(6*d_gaussPtCnt) + i] = d_EquilibriumStrain[(6*d_gaussPtCnt) + i] + strain[Mechanics::DISPLACEMENT][i];
+        d_tmp1Strain[(6*d_gaussPtCnt) + i] = d_EquilibriumStrain[(6*d_gaussPtCnt) + i] + strain[Mechanics::DISPLACEMENT][i];
     }
 
     stress = &(d_tmp1Stress[6*d_gaussPtCnt]);
 
     if(d_iDebugPrintInfoLevel > 11) {
-      for(int i = 0; i < 6; i++) {
-        AMP::pout<<"strain["<<i<<"] = "<<strain[Mechanics::DISPLACEMENT][i]<<std::endl;
-      }
+        for(int i = 0; i < 6; i++) {
+            AMP::pout<<"strain["<<i<<"] = "<<strain[Mechanics::DISPLACEMENT][i]<<std::endl;
+        }
     }
 
     calculateStress(strain, stress, R_n, R_np1);
@@ -216,14 +235,15 @@ namespace Operator {
     d_detULF[d_gaussPtCnt] = detF;
 
     if(d_useJaumannRate == true) {
-      for(int i = 0; i < 6; i++) {
-        stress[i] /= detF;
-      }
+        for(int i = 0; i < 6; i++) {
+            stress[i] /= detF;
+        }
     }
-  }
+}
 
-  void IsotropicElasticModel :: constructConstitutiveMatrix(const double E, const double Nu)
-  {
+
+void IsotropicElasticModel :: constructConstitutiveMatrix(const double E, const double Nu)
+{
 
     double G = E/(2.0*(1.0 + Nu));
 
@@ -272,31 +292,33 @@ namespace Operator {
        }//end for j
        }//end for i
        */
-  }
+}
 
-  void IsotropicElasticModel :: constructConstitutiveMatrixUpdatedLagrangian(const double E, const double Nu)
-  {
+
+void IsotropicElasticModel :: constructConstitutiveMatrixUpdatedLagrangian(const double E, const double Nu)
+{
     double G = E / (2.0 * (1.0 + Nu));
     double K = E / (3.0 * (1.0 - (2.0 * Nu)));
     double twoG_three = 2.0 * G / 3.0;
     
     for(int i = 0; i < 6; i++) {
-      for(int j = 0; j < 6; j++) {
-        d_constitutiveMatrix_UL[i][j] = 0.0;
-      }//end for j
+        for(int j = 0; j < 6; j++) {
+            d_constitutiveMatrix_UL[i][j] = 0.0;
+        }//end for j
     }//end for i
 
     for(int i = 0; i < 3; i++) {
-      for(int j = 0; j < 3; j++) {
-        d_constitutiveMatrix_UL[i][j] += (K - twoG_three);
-      }
-      d_constitutiveMatrix_UL[i][i] += (2.0 * G);
-      d_constitutiveMatrix_UL[i + 3][i + 3] += (1.0 * G);
+        for(int j = 0; j < 3; j++) {
+            d_constitutiveMatrix_UL[i][j] += (K - twoG_three);
+        }
+        d_constitutiveMatrix_UL[i][i] += (2.0 * G);
+        d_constitutiveMatrix_UL[i + 3][i + 3] += (1.0 * G);
     }
-  }
+}
 
-  void IsotropicElasticModel :: computeEvalv(const std::vector<std::vector<double> >& strain)
-  {
+
+void IsotropicElasticModel :: computeEvalv(const std::vector<std::vector<double> >& strain)
+{
     if(d_useMaterialsLibrary == true) {
       std::map<std::string, boost::shared_ptr<std::vector<double> > > inputMaterialParameters;
 
@@ -345,10 +367,11 @@ namespace Operator {
       d_E[d_gaussPtCnt] = YM[0];
       d_Nu[d_gaussPtCnt] = PR[0];
     }
-  }
+}
 
-  void IsotropicElasticModel :: calculateStress(const std::vector<std::vector<double> >& strain, double*& stress)
-  {
+
+void IsotropicElasticModel :: calculateStress(const std::vector<std::vector<double> >& strain, double*& stress)
+{
     if(d_useMaterialsLibrary == true) {
 
       computeEvalv(strain);
@@ -367,10 +390,11 @@ namespace Operator {
     }//end for i
 
     //for(int i=0; i<6; i++) std::cout<<"stress["<<i<<"]="<<stress[i]<<std::endl;
-  }
+}
 
-  void IsotropicElasticModel :: calculateStress(const std::vector<std::vector<double> >& strain, double*& stress, double R_n[3][3], double R_np1[3][3])
-  {
+
+void IsotropicElasticModel :: calculateStress(const std::vector<std::vector<double> >& strain, double*& stress, double R_n[3][3], double R_np1[3][3])
+{
     if(d_useMaterialsLibrary == true) {
       computeEvalv(strain);
       double pass_E = d_E[d_gaussPtCnt];
@@ -471,7 +495,8 @@ namespace Operator {
       stress[i] = stress_np1[i];
     }
     //for(int i=0; i<6; i++) std::cout<<"stress["<<i<<"]="<<stress[i]<<std::endl;
-  }
+}
+
 
 }
 }

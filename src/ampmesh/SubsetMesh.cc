@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS		// Supress depreciated warnings for visual studio
 #include <vector>
 #include <set>
 

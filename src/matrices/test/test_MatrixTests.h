@@ -7,6 +7,10 @@
 #include "test_MatrixVectorFactory.h"
 #include "../../vectors/test/test_VectorLoops.h"
 
+#ifdef USE_EXT_PETSC
+    #include "matrices/petsc/ManagedPetscMatrix.h"
+#endif
+
 namespace AMP {
 namespace unit_test {
 
@@ -66,8 +70,12 @@ public:
         testManagedVector<AmpInterfaceRightVectorFactory> ( utils );
         testManagedVector<AmpInterfaceLeftVectorFactory> ( utils );
         #ifdef USE_EXT_PETSC
-        testManagedVector<PETScInterfaceRightVectorFactory> ( utils );
-        testManagedVector<PETScInterfaceLeftVectorFactory> ( utils );
+            if ( global_cached_matrix->isA<AMP::LinearAlgebra::ManagedPetscMatrix> () ) {
+                testManagedVector<PETScInterfaceRightVectorFactory> ( utils );
+                testManagedVector<PETScInterfaceLeftVectorFactory> ( utils );
+            } else {
+                utils->expected_failure("PetscMatrix::createView is not ready for arbitrary matricies");
+            }
         #endif
         global_cached_matrix.reset();
         PROFILE_STOP("VerifyGetLeftRightVector");
@@ -92,11 +100,13 @@ public:
         for ( size_t i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ ) {
             std::vector<unsigned int>  cols;
             std::vector<double>        vals;
+            matrix->getRowByGlobalID( i, cols, vals );
             for ( size_t j = 0 ; j != cols.size() ; j++ ) {
                 double ans = ( i == cols[j] ) ? 6. : -1.;
-                if ( vals[j] != ans ) {
-                  utils->failure ( "bad value in matrix" );
-                  return;
+                double value = matrix->getValueByGlobalID( i, cols[j] );
+                if ( vals[j]!=ans || value!=vals[j] ) {
+                    utils->failure ( "bad value in matrix" );
+                    return;
                 }
             }
         }
@@ -284,7 +294,7 @@ public:
 };
 
 
-// Test matrix-matrix multiplication (this tests takes a long time for large matricies)
+// Test matrix-matrix multiplication (this tests takes a long time for large matrices)
 template <typename FACTORY>
 class VerifyMatMultMatrix
 {
@@ -304,11 +314,12 @@ public:
 
         if ( vector1->getGlobalSize() > 1000 ) {
             // Matrix-matrix multiplies take a long time
+            PROFILE_STOP2("VerifyMatMultMatrix");
             utils->expected_failure("VerifyMatMultMatrix skipped");
             return;
         }
 
-        // Create the matricies and vectors of interest
+        // Create the matrices and vectors of interest
         matZero->zero();
         matIdent->zero();
         vector2->setToScalar( 1.0 );
@@ -338,7 +349,7 @@ public:
         else
             utils->failure ( "matMultiply with identity matrix" );
 
-        /* Verify mult with two trival matricies */
+        /* Verify mult with two trival matrices */
         matLaplac->mult( vector1, vector2 );
         matLaplac->mult( vector2, vector3 );
         ans1 = vector3->L2Norm();
@@ -351,6 +362,85 @@ public:
             utils->failure ( "matMultiply with trival matrix" );
 
         PROFILE_STOP("VerifyMatMultMatrix");
+    }
+};
+
+
+template <typename FACTORY>
+class VerifyAddElementNode
+{
+public:
+    static const char * get_test_name () { return "verify set nodes by element"; }
+
+    static  void run_test ( AMP::UnitTest *utils )
+    {
+        PROFILE_START("VerifySetElementNode");
+        AMP::Mesh::Mesh::shared_ptr  mesh = FACTORY::getMesh();
+        AMP::Discretization::DOFManager::shared_ptr  dofmap = FACTORY::getDOFMap();
+        AMP::LinearAlgebra::Matrix::shared_ptr  matrix = FACTORY::getMatrix();
+        matrix->zero();
+
+        // Fill all the node-node entries
+        AMP::Mesh::MeshIterator it = mesh->getIterator(AMP::Mesh::Volume,0);
+        AMP::Mesh::MeshIterator end = it.end();
+        std::vector<size_t> dofs;
+        dofs.reserve(24);
+        while ( it != end ) {
+            std::vector<AMP::Mesh::MeshElement> nodes = it->getElements(AMP::Mesh::Vertex);
+            dofs.clear();
+            for (size_t i=0; i<nodes.size(); i++) {
+                std::vector<size_t> dofsNode;
+                dofmap->getDOFs( nodes[i].globalID(), dofsNode );
+                for (size_t j=0; j<dofsNode.size(); j++)
+                    dofs.push_back( dofsNode[j] );
+            }
+            for (size_t r=0; r<dofs.size(); r++) {
+                for (size_t c=0; c<dofs.size(); c++) {
+                    double val = -1.0;
+                    if ( r==c )
+                        val = dofs.size()-1;
+                    matrix->addValueByGlobalID( dofs[r], dofs[c], val );
+                }
+            }
+            ++it;
+        }
+        matrix->makeConsistent();
+
+        // Call makeConsistent a second time
+        // This can illustrate a bug where the fill pattern of remote data has changed
+        //   and epetra maintains the list of remote rows, but updates the columns
+        //   resulting in an access error using the std::vector
+        // Another example of this bug can be found in extra_tests/test_Epetra_FECrsMatrix_bug
+        // Note: there is no point in catching this bug with a try catch since a failure
+        //   will cause asymettric behavior that create a deadlock with one process waiting
+        //   for the failed process
+        // The current workaround is to disable the GLIBCXX_DEBUG flags?
+        matrix->makeConsistent();
+        
+        // Check the values
+        bool pass = true;
+        it = mesh->getIterator(AMP::Mesh::Vertex,0);
+        end = it.end();
+        std::vector<unsigned int> cols;
+        std::vector<double> values;
+        while ( it != end ) {
+            dofmap->getDOFs( it->globalID(), dofs );
+            for (size_t i=0; i<dofs.size(); i++) {
+                matrix->getRowByGlobalID( dofs[i], cols, values );
+                double sum = 0.0;
+                for (size_t j=0; j<values.size(); j++)
+                    sum += values[j];
+                if ( fabs(sum) > 1e-14 || cols.empty() )
+                    pass = false;
+            }
+            ++it;
+        }
+        if ( pass )
+            utils->passes( "VerifySetElementNode" );
+        else
+            utils->failure( "VerifySetElementNode" );
+
+        PROFILE_STOP("VerifySetElementNode");
     }
 };
 

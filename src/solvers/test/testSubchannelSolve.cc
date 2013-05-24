@@ -483,38 +483,41 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr globalThermalRhsVec = globalRhsMultiVector->subsetVectorForVariable(thermalVariable);
     AMP::LinearAlgebra::Vector::shared_ptr globalThermalResVec = globalResMultiVector->subsetVectorForVariable(thermalVariable);
 
+    // create nonlinear solver
+    boost::shared_ptr<AMP::Solver::SolverStrategy> nonlinearSolver;
+    { // Limit the scope so we can add an if else statement for Petsc vs NOX
 
-    // get nonlinear solver database
-    boost::shared_ptr<AMP::Database> nonlinearSolver_db = global_input_db->getDatabase("NonlinearSolver"); 
-    boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
+        // create nonlinear solver parameters
+        boost::shared_ptr<AMP::Database> nonlinearSolver_db = global_input_db->getDatabase("NonlinearSolver"); 
+        boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
+        nonlinearSolverParams->d_comm = globalComm;
+        nonlinearSolverParams->d_pOperator = nonlinearCoupledOperator;
+        nonlinearSolverParams->d_pInitialGuess = globalSolMultiVector;
+        nonlinearSolver.reset(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
 
-    // create nonlinear solver parameters
-    boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
-    nonlinearSolverParams->d_comm = globalComm;
-    nonlinearSolverParams->d_pOperator = nonlinearCoupledOperator;
-    nonlinearSolverParams->d_pInitialGuess = globalSolMultiVector;
-    boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
+        // create preconditioner
+        boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
+        boost::shared_ptr<AMP::Database> columnPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
+        boost::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(new AMP::Solver::SolverStrategyParameters(columnPreconditioner_db));
+        columnPreconditionerParams->d_pOperator = linearColumnOperator;
+        columnPreconditioner.reset(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
 
-    // create preconditioner
-    boost::shared_ptr<AMP::Database> columnPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
-    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(new AMP::Solver::SolverStrategyParameters(columnPreconditioner_db));
-    columnPreconditionerParams->d_pOperator = linearColumnOperator;
-    columnPreconditioner.reset(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
+        boost::shared_ptr<AMP::Database> trilinosPreconditioner_db = columnPreconditioner_db->getDatabase("TrilinosPreconditioner");
+        unsigned int N_preconditioners = linearColumnOperator->getNumberOfOperators();
+        //N_preconditioners--;    // Don't use a preconditioner for subchannel
+        for(unsigned int id=0; id<N_preconditioners; id++) {
+            boost::shared_ptr<AMP::Solver::SolverStrategyParameters> trilinosPreconditionerParams(new AMP::Solver::SolverStrategyParameters(trilinosPreconditioner_db));
+            trilinosPreconditionerParams->d_pOperator = linearColumnOperator->getOperator(id);
+            boost::shared_ptr<AMP::Solver::TrilinosMLSolver> trilinosPreconditioner(new AMP::Solver::TrilinosMLSolver(trilinosPreconditionerParams));
+            columnPreconditioner->append(trilinosPreconditioner);
+        }
 
-    boost::shared_ptr<AMP::Database> trilinosPreconditioner_db = columnPreconditioner_db->getDatabase("TrilinosPreconditioner");
-    unsigned int N_preconditioners = linearColumnOperator->getNumberOfOperators();
-    //N_preconditioners--;    // Don't use a preconditioner for subchannel
-    for(unsigned int id=0; id<N_preconditioners; id++) {
-        boost::shared_ptr<AMP::Solver::SolverStrategyParameters> trilinosPreconditionerParams(new AMP::Solver::SolverStrategyParameters(trilinosPreconditioner_db));
-        trilinosPreconditionerParams->d_pOperator = linearColumnOperator->getOperator(id);
-        boost::shared_ptr<AMP::Solver::TrilinosMLSolver> trilinosPreconditioner(new AMP::Solver::TrilinosMLSolver(trilinosPreconditionerParams));
-        columnPreconditioner->append(trilinosPreconditioner);
+        // create linear solver
+        boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = 
+            boost::dynamic_pointer_cast<AMP::Solver::PetscSNESSolver>(nonlinearSolver)->getKrylovSolver();
+        // set preconditioner
+        linearSolver->setPreconditioner(columnPreconditioner);
     }
-
-    // create linear solver
-    boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
-    // set preconditioner
-    linearSolver->setPreconditioner(columnPreconditioner);
 
     // don't use zero initial guess
     nonlinearSolver->setZeroInitialGuess(false);

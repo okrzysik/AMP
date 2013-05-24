@@ -38,7 +38,7 @@
 
 
 
-void bvpTest1(AMP::UnitTest *ut, const std::string exeName)
+void bvpTest1(AMP::UnitTest *ut, std::string exeName)
 {
   // Tests diffusion Dirchlet BVP operator for temperature
 

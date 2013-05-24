@@ -66,11 +66,10 @@ namespace AMP {
         arguments.resize(0);
       }
 
-      double fkm, d_r;
       for (size_t l=1; l<inputVectors[0].size(); l++)
       {
-        fkm = 2*d_conductivity[0][l]*d_conductivity[1][l]/(d_conductivity[0][l]+d_conductivity[1][l]);
-        d_r = 1.414 * 1.4e-6;
+        double fkm = 2*d_conductivity[0][l]*d_conductivity[1][l]/(d_conductivity[0][l]+d_conductivity[1][l]);
+        double d_r = 1.414 * 1.4e-6;
         beta[l]  = 0.00125 * fkm / (d_r * exp(5.3778 - 0.528 * log(d_r*3.937*exp(7))) ) ;
         gamma[l] = 0.00125 * fkm / (d_r * exp(5.3778 - 0.528 * log(d_r*3.937*exp(7))) ) ;
       }

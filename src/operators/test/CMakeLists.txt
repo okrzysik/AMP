@@ -1,5 +1,4 @@
-INCLUDE (macros)
-
+INCLUDE (${AMP_SOURCE_DIR}/cmake/macros.cmake)
 ############################################################################
 #  Configure test library
 ############################################################################
@@ -399,4 +398,17 @@ IF( USE_EXT_DENDRO AND USE_EXT_PETSC )
     COPY_TEST_DATA_FILE ( input_testNodeToSegmentConstraintsOperator-pellet )
     COPY_MESH_FILE( simple_pellet_1x.e )
     COPY_MESH_FILE( two_fused_simple_pellets_1x.e )
+    ADD_AMP_TEST( testNodeToFaceContactOperator-1 )
+    ADD_AMP_TEST( testNodeToFaceContactOperator-2 )
+    ADD_AMP_TEST( testNodeToFaceContactOperator-3 )
+    COPY_MESH_FILE(my_cylinder.e)
+    ADD_AMP_WEEKLY_TEST( testNodeToFaceContactOperator-4 1 )
+    ADD_AMP_WEEKLY_TEST( testNodeToFaceContactOperator-5 1 )
+    COPY_TEST_DATA_FILE ( input_testNodeToFaceContactOperator-1 )
+    COPY_TEST_DATA_FILE ( input_testNodeToFaceContactOperator-2 )
+    COPY_TEST_DATA_FILE ( input_testNodeToFaceContactOperator-2bis )
+    COPY_TEST_DATA_FILE ( input_testNodeToFaceContactOperator-3 )
+    COPY_TEST_DATA_FILE ( input_testNodeToFaceContactOperator-4 )
+    COPY_TEST_DATA_FILE ( input_testNodeToFaceContactOperator-4bis )
+    COPY_TEST_DATA_FILE ( input_testNodeToFaceContactOperator-5 )
 ENDIF()

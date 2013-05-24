@@ -1,4 +1,4 @@
-#include "ConvectiveHeatCoefficient.h"
+#include "operators/subchannel/ConvectiveHeatCoefficient.h"
 #include "utils/Utilities.h"
 #include <cmath>
 

@@ -14,8 +14,8 @@ public:
     int          d_MasterValue;
     int          d_NumToSend;
 
-    Map3to1to3Parameters ( const boost::shared_ptr<AMP::Database> &db )
-        : AsyncMapOperatorParameters ( db ) 
+    Map3to1to3Parameters ( const boost::shared_ptr<AMP::Database> &db ):
+        AsyncMapOperatorParameters(db), d_MasterValue(0), d_NumToSend(0)
     {
     }
 };

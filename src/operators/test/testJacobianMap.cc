@@ -16,7 +16,7 @@
 #include "boundary_info.h"
 
 
-#include "ReadTestMesh.h"
+#include "utils/ReadTestMesh.h"
 
 /* Libmesh files */
 #include "fe_type.h"
@@ -70,7 +70,7 @@ void calculateGrad(AMP::UnitTest *ut)
     const Elem* elem = *el;
 
     fe_3d->reinit(elem);
-    std::vector<Point> coordinates = fe_3d->get_xyz();
+    //std::vector<Point> coordinates = fe_3d->get_xyz();
     std::vector<double>  computedAtGauss(qrule.n_points(), 0.0);
     std::cout << "Entering Gauss Point loop : "<< qrule.n_points()<< std::endl;
     for(unsigned int qp = 0; qp < qrule.n_points(); qp++) 

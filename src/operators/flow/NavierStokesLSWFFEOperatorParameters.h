@@ -2,9 +2,9 @@
 #ifndef included_AMP_NavierStokesLSWFFEOperatorParameters
 #define included_AMP_NavierStokesLSWFFEOperatorParameters
 
-#include "FlowTransportModel.h"
-#include "NavierStokesConstants.h"
-#include "FEOperatorParameters.h"
+#include "operators/flow/FlowTransportModel.h"
+#include "operators/flow/NavierStokesConstants.h"
+#include "operators/FEOperatorParameters.h"
 #include "vectors/Vector.h"
 
 namespace AMP {

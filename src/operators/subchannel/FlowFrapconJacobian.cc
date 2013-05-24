@@ -1,4 +1,4 @@
-#include "FlowFrapconJacobian.h"
+#include "operators/subchannel/FlowFrapconJacobian.h"
 #include "utils/Utilities.h"
 
 

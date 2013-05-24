@@ -1,5 +1,7 @@
-#include "EpetraMatrix.h"
-#include "ManagedEpetraMatrix.h"
+#include "matrices/trilinos/EpetraMatrix.h"
+#include "matrices/trilinos/ManagedEpetraMatrix.h"
+
+#include <EpetraExt_Transpose_RowMatrix.h>
 
 #ifdef USE_EXT_MPI
     #include <Epetra_MpiComm.h>

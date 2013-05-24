@@ -9,138 +9,113 @@
 #include "vectors/Variable.h"
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
+
+/**
+ *  A class used to impose Dirichlet boundary conditions for a linear operator. For a linear operator, imposing
+ *  Dirichlet boundary conditions involves the following steps:
+ *  1) Modify the entries of the matrix appropriately.
+ *  2) Add a vector of corrections to the RHS vector
+ *  3) Set the Dirichlet values at the appropriate locations in the RHS vector.
+ */
+class DirichletMatrixCorrection : public BoundaryOperator
+{
+public :
+
+    //! Constructor
+    DirichletMatrixCorrection(const boost::shared_ptr<DirichletMatrixCorrectionParameters> & params);
+
+    //! Destructor
+    virtual ~DirichletMatrixCorrection() { }
+
+    //! Set the variable for the vector that will used with this operator.
+    void setVariable(const AMP::LinearAlgebra::Variable::shared_ptr & var) {
+        d_variable = var;
+    }
+
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_variable; }
+
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_variable; }
+
+    virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr, 
+        AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::shared_ptr,
+        const double, const double)
+    {
+        //Do Nothing
+    }
+
+    void parseParams(const boost::shared_ptr<DirichletMatrixCorrectionParameters> & );
 
     /**
-      A class used to impose Dirichlet boundary conditions for a linear operator. For a linear operator, imposing
-      Dirichlet boundary conditions involves the following steps:
-      1) Modify the entries of the matrix appropriately.
-      2) Add a vector of corrections to the RHS vector
-      3) Set the Dirichlet values at the appropriate locations in the RHS vector.
+      This function modifies the entries of the matrix formed by the volume operator
+      in order to impose Dirichlet boundary conditions. This function can also be used
+      to change the Dirichlet boundary conditions, if required.
       */
-    class DirichletMatrixCorrection : public BoundaryOperator
-    {
-      public :
+    void reset(const boost::shared_ptr<OperatorParameters>& );
 
-        /**
-          Constructor
-          */
-        DirichletMatrixCorrection(const boost::shared_ptr<DirichletMatrixCorrectionParameters> & params)
-          : BoundaryOperator (params)
-        {
-          d_variable = params->d_variable;
-          d_computedAddRHScorrection = false;
-          reset(params);
-        }
+    /**
+      Adds a vector to the RHS vector. This is one of the steps for imposing Dirichlet boundary conditions.  
+      This step can be skipped if the Dirichlet boundary conditons are homogeneous.
+      */
+    void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs);
 
-        /**
-          Destructor
-          */
-        virtual ~DirichletMatrixCorrection() { }
+    /**
+      Sets the Dirichlet values at the appropriate locations in the RHS vector. This is one
+      of the steps for imposing Dirichlet boundary conditions.  
+      */
+    void setRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs);
 
-        /**
-          Set the variable for the vector that will used with this operator.
-          */
-        void setVariable(const AMP::LinearAlgebra::Variable::shared_ptr & var) {
-          d_variable = var;
-        }
+    std::vector<short int> getBoundaryIds() {
+        return d_boundaryIds;
+    }
 
-        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_variable; }
+    std::vector<std::vector<unsigned int> > getDofIds() {
+        return d_dofIds;
+    }
 
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_variable; }
+protected :
 
-        virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr, 
-            AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::shared_ptr,
-            const double, const double)
-        {
-          //Do Nothing
-        }
+    //This must be a simple variable not a dual or multivariable
+    AMP::LinearAlgebra::Variable::shared_ptr d_variable;
 
-        void parseParams(const boost::shared_ptr<DirichletMatrixCorrectionParameters> & );
+    std::vector<short int> d_boundaryIds;
 
-        /**
-          This function modifies the entries of the matrix formed by the volume operator
-          in order to impose Dirichlet boundary conditions. This function can also be used
-          to change the Dirichlet boundary conditions, if required.
-          */
-        void reset(const boost::shared_ptr<OperatorParameters>& );
+    std::vector<std::vector<double> > d_dirichletValues;
 
-        /**
-          Adds a vector to the RHS vector. This is one of the steps for imposing Dirichlet boundary conditions.  
-          This step can be skipped if the Dirichlet boundary conditons are homogeneous.
-          */
-        void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) {
-          if(!d_skipRHSaddCorrection) {
-            if (!d_applyMatrixCorrectionWasCalled) {
-              initRhsCorrectionAdd(rhs);
-              applyMatrixCorrection();
-            } // end if
-            AMP::LinearAlgebra::Vector::shared_ptr myRhs = subsetOutputVector(rhs);
-            myRhs->add(myRhs, d_rhsCorrectionAdd);
-          }
-        }
+    std::vector<std::vector<unsigned int> > d_dofIds;
 
-        /**
-          Sets the Dirichlet values at the appropriate locations in the RHS vector. This is one
-          of the steps for imposing Dirichlet boundary conditions.  
-          */
-        void setRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) {
-          if(!d_skipRHSsetCorrection) {
-            AMP::LinearAlgebra::Vector::shared_ptr emptyVec;
-            d_rhsCorrectionSet->apply(emptyVec, emptyVec, rhs, 1.0, 0.0);
-          }
-        }
+    AMP::LinearAlgebra::Vector::shared_ptr d_rhsCorrectionAdd;
 
-        std::vector<short int> getBoundaryIds() {
-          return d_boundaryIds;
-        }
+    AMP::LinearAlgebra::Vector::shared_ptr d_dispVals;
 
-        std::vector<std::vector<unsigned int> > getDofIds() {
-          return d_dofIds;
-        }
+    boost::shared_ptr<DirichletVectorCorrection> d_rhsCorrectionSet;
 
-      protected :
+    bool d_symmetricCorrection;
 
-        //This must be a simple variable not a dual or multivariable
-        AMP::LinearAlgebra::Variable::shared_ptr d_variable;
+    bool d_zeroDirichletBlock;
 
-        std::vector<short int> d_boundaryIds;
+    bool d_skipRHSaddCorrection;
 
-        std::vector<std::vector<double> > d_dirichletValues;
+    bool d_skipRHSsetCorrection;
 
-        std::vector<std::vector<unsigned int> > d_dofIds;
+    bool d_computedAddRHScorrection;
 
-        AMP::LinearAlgebra::Vector::shared_ptr d_rhsCorrectionAdd;
+    void initRhsCorrectionSet();
 
-        AMP::LinearAlgebra::Vector::shared_ptr d_dispVals;
+    void initRhsCorrectionAdd(AMP::LinearAlgebra::Vector::shared_ptr rhs);
 
-        boost::shared_ptr<DirichletVectorCorrection> d_rhsCorrectionSet;
+    void applyMatrixCorrection();
 
-        bool d_symmetricCorrection;
+    bool d_applyMatrixCorrectionWasCalled;
 
-        bool d_zeroDirichletBlock;
+    AMP::LinearAlgebra::Matrix::shared_ptr d_inputMatrix;
 
-        bool d_skipRHSaddCorrection;
+private :
 
-        bool d_skipRHSsetCorrection;
+};
 
-        bool d_computedAddRHScorrection;
 
-        void initRhsCorrectionSet();
-
-        void initRhsCorrectionAdd(AMP::LinearAlgebra::Vector::shared_ptr rhs);
-
-        void applyMatrixCorrection();
-
-        bool d_applyMatrixCorrectionWasCalled;
-
-        AMP::LinearAlgebra::Matrix::shared_ptr d_inputMatrix;
-
-      private :
-
-    };
-
-  }
+}
 }
 
 #endif

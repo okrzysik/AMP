@@ -771,7 +771,6 @@ void DisplaceMesh( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
     std::vector<double> displacement(mesh->getDim(),1.0);
     mesh->displaceMesh(displacement);
     std::vector<double> box2 = mesh->getBoundingBox();
-    displacement = std::vector<double>(mesh->getDim(),-1.0);
     double volume = 1.0;
     for (int i=0; i<mesh->getDim(); i++)
         volume *= box1[2*i+1]-box1[2*i+0];

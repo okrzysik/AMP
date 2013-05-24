@@ -215,6 +215,7 @@ std::vector< MeshElement::shared_ptr > STKMeshElement::getNeighbors() const
                                                                                           subcell_rank,
                                                                                           id,
                                                                                           subcell_nodes);
+            NULL_USE(subcell_topology);
             get_entities_through_relations(subcell_nodes, elem->entity_rank(), adj_entities);
             adjacent_entities.insert(adjacent_entities.end(), adj_entities.begin(), adj_entities.end());
         }
@@ -222,7 +223,7 @@ std::vector< MeshElement::shared_ptr > STKMeshElement::getNeighbors() const
         adjacent_entities.resize(std::unique(adjacent_entities.begin(), adjacent_entities.end()) - adjacent_entities.begin());
         adjacent_entities.erase (std::find  (adjacent_entities.begin(), adjacent_entities.end(), elem));
 
-	neighbors.resize(adjacent_entities.size());
+        neighbors.resize(adjacent_entities.size());
         for (size_t i=0; i<neighbors.size(); i++) {
             stk::mesh::Entity *neighbor_elem = adjacent_entities[i];
             boost::shared_ptr<STKMeshElement> neighbor(new STKMeshElement( d_dim, neighbor_elem, d_rank, d_meshID, d_mesh ) );
@@ -337,8 +338,8 @@ bool STKMeshElement::containsPoint( const std::vector<double> &pos, double TOL )
             dist2 += (point[i]-pos[i])*(point[i]-pos[i]);
         return dist2<=TOL*TOL;
     }
-    stk::mesh::Entity* elem = (stk::mesh::Entity*) ptr_element;
-    std::vector<double> point ;//(pos[0],pos[1],pos[2]);
+    //stk::mesh::Entity* elem = (stk::mesh::Entity*) ptr_element;
+    //std::vector<double> point ;//(pos[0],pos[1],pos[2]);
     return false; //elem->contains_point(point,TOL);
 }
 bool STKMeshElement::isOnSurface() const
@@ -376,7 +377,7 @@ bool STKMeshElement::isInBlock(int id) const
         AMP_ERROR("isInBlock is not currently implimented for anything but elements");
     } else if ( (int)type==d_dim ) {
         // Entity is a libmesh node
-        stk::mesh::Entity* elem = (stk::mesh::Entity*) ptr_element;
+        //stk::mesh::Entity* elem = (stk::mesh::Entity*) ptr_element;
         in_block = false;//elem->subdomain_id() == id;
     } else  {
         // All other entities are on the boundary iff all of their verticies are on the surface

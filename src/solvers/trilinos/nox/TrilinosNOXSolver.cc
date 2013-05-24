@@ -26,11 +26,13 @@ namespace Solver {
 /****************************************************************
 *  Constructors                                                 *
 ****************************************************************/
-TrilinosNOXSolver::TrilinosNOXSolver()
+TrilinosNOXSolver::TrilinosNOXSolver():
+    SolverStrategy()
 {
     
 }
-TrilinosNOXSolver::TrilinosNOXSolver(boost::shared_ptr<TrilinosNOXSolverParameters> parameters):SolverStrategy(parameters)
+TrilinosNOXSolver::TrilinosNOXSolver(boost::shared_ptr<TrilinosNOXSolverParameters> parameters):
+    SolverStrategy(parameters)
 {
     TrilinosNOXSolver();
     initialize(parameters);
@@ -91,15 +93,15 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
     d_thyraModel->set_W_factory(lowsFactory);
     // Create the convergence tests (these will need to be on the input database)
     Teuchos::RCP<NOX::StatusTest::NormF> absresid =
-        Teuchos::rcp(new NOX::StatusTest::NormF(1.0e-8));
+        Teuchos::rcp(new NOX::StatusTest::NormF(d_dMaxError));
     Teuchos::RCP<NOX::StatusTest::NormWRMS> wrms =
-        Teuchos::rcp(new NOX::StatusTest::NormWRMS(1.0e-2, 1.0e-8));
+        Teuchos::rcp(new NOX::StatusTest::NormWRMS(1.0e-2,d_dMaxError));
     Teuchos::RCP<NOX::StatusTest::Combo> converged =
         Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
     converged->addStatusTest(absresid);
     converged->addStatusTest(wrms);
     Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters =
-        Teuchos::rcp(new NOX::StatusTest::MaxIters(20));
+        Teuchos::rcp(new NOX::StatusTest::MaxIters(d_iMaxIterations));
     Teuchos::RCP<NOX::StatusTest::FiniteValue> fv =
         Teuchos::rcp(new NOX::StatusTest::FiniteValue);
     d_status = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));

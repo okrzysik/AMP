@@ -103,10 +103,6 @@ namespace Operator {
     
     const std::vector<std::vector<Real> > *d_phi;
     
-    const std::vector<std::vector<RealGradient> > *d_dphi;
-    
-    const std::vector<Point> *d_normal;
-    
     boost::shared_ptr < ::FEType > d_feType;
     
     boost::shared_ptr < ::FEBase > d_fe;

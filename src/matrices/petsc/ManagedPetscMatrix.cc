@@ -129,9 +129,10 @@ void  ManagedPetscMatrix::initPetscMat ()
 }
 
 
-ManagedPetscMatrix::ManagedPetscMatrix ( MatrixParameters::shared_ptr params )
-    : PetscMatrix ( params )
-    , ManagedEpetraMatrix ( boost::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( params ) )
+ManagedPetscMatrix::ManagedPetscMatrix ( MatrixParameters::shared_ptr params ) :
+    Matrix ( params ),
+    PetscMatrix ( params ),
+    ManagedEpetraMatrix ( boost::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( params ) )
 {
 //    std::cout << "ManagedPetscMatrix:: WARNING!!!!!! the matrix is currently assumed to be square. This needs to be fixed!!!" << std::endl;
     initPetscMat ();
@@ -179,7 +180,7 @@ void  ManagedPetscMatrix::copyFromMat ( Mat m )
     AMP::Discretization::DOFManager::shared_ptr rowDOF = params->getLeftDOFManager();
     //AMP::Discretization::DOFManager::shared_ptr colDOF = params->getRightDOFManager();
     for (size_t i=rowDOF->beginDOF(); i<rowDOF->endDOF(); i++) {
-        AMP_ASSERT(i<0x80000000);    // We have not converted matricies to 64-bits yet
+        AMP_ASSERT(i<0x80000000);    // We have not converted matrices to 64-bits yet
         int row = (int) i;
         int num_cols;
         const int *cols;

@@ -4,7 +4,6 @@
 #include "matrices/Matrix.h"
 
 #include <Epetra_FECrsMatrix.h>
-#include <EpetraExt_Transpose_RowMatrix.h>
 
 namespace AMP {
 namespace LinearAlgebra {

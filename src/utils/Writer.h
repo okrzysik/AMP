@@ -10,6 +10,7 @@
 #include "boost/smart_ptr/shared_ptr.hpp"
 
 #include "utils/AMP_MPI.h"
+#include "utils/Database.h"
 
 #ifdef USE_AMP_MESH
     #include "ampmesh/Mesh.h"

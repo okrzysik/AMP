@@ -46,7 +46,7 @@
 #include "solvers/PetscKrylovSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
 
-#include "ReadTestMesh.h"
+#include "utils/ReadTestMesh.h"
 
 void linearElasticTest(AMP::UnitTest *ut, std::string exeName, 
     int exampleNum) {

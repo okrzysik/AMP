@@ -7,7 +7,7 @@
 #ifdef USE_AMP_VECTORS
     #include "meshVectorTests.h"
 #endif
-#ifdef USE_AMP_MATRICIES
+#ifdef USE_AMP_MATRICES
     #include "meshMatrixTests.h"
 #endif
 #include "utils/ProfilerApp.h"
@@ -72,9 +72,9 @@ void MeshVectorTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> m
 void MeshMatrixTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // Run the matrix tests
-    #ifdef USE_AMP_MATRICIES
+    #ifdef USE_AMP_MATRICES
         PROFILE_START("MeshMatrixTestLoop");
-        //ut->failure("Matricies are not implimented yet");
+        //ut->failure("Matrices are not implimented yet");
         VerifyGetMatrixTrivialTest<1,false>( ut, mesh );
         VerifyGetMatrixTrivialTest<3,false>( ut, mesh );
         VerifyGetMatrixTrivialTest<1,true>( ut, mesh );

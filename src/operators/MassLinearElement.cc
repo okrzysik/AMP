@@ -41,46 +41,50 @@ void MassLinearElement::apply() {
         }//end for qp
 
         switch (d_equation) {
-        case MassDensityModel::Mechanics:
-            d_densityModel->getDensityMechanics(density, temperature,
-                    concentration, burnup);
-            break;
-        case MassDensityModel::Thermal:
-            d_densityModel->getDensityThermal(density, temperature,
-                    concentration, burnup);
-            break;
-        case MassDensityModel::Chemical:
-            d_densityModel->getDensityChemical(density, temperature,
-                    concentration, burnup);
-            break;
-        case MassDensityModel::Manufactured:
-            const std::vector<Point>& q_point = d_fe->get_xyz();
-            d_densityModel->getDensityManufactured(density, temperature,
-                    concentration, burnup, q_point);
-            break;
+            case MassDensityModel::Mechanics:
+                d_densityModel->getDensityMechanics(density, temperature,
+                        concentration, burnup);
+                break;
+            case MassDensityModel::Thermal:
+                d_densityModel->getDensityThermal(density, temperature,
+                        concentration, burnup);
+                break;
+            case MassDensityModel::Chemical:
+                d_densityModel->getDensityChemical(density, temperature,
+                        concentration, burnup);
+                break;
+            case MassDensityModel::Manufactured:
+                d_densityModel->getDensityManufactured(density, temperature,
+                        concentration, burnup, d_fe->get_xyz() );
+                break;
+            default:
+                AMP_ERROR("Unknown enum for d_equation");
         }
     } else {
         std::vector<double> nodalDensity(num_local_dofs);
-
+        std::vector<Point> elem_nodes;
         switch (d_equation) {
-        case MassDensityModel::Mechanics:
-            d_densityModel->getDensityMechanics(nodalDensity,
-                    d_LocalTemperature, d_LocalConcentration, d_LocalBurnup);
-            break;
-        case MassDensityModel::Thermal:
-            d_densityModel->getDensityThermal(nodalDensity, d_LocalTemperature,
-                    d_LocalConcentration, d_LocalBurnup);
-            break;
-        case MassDensityModel::Chemical:
-            d_densityModel->getDensityChemical(nodalDensity, d_LocalTemperature,
-                    d_LocalConcentration, d_LocalBurnup);
-            break;
-        case MassDensityModel::Manufactured:
-            std::vector<Point> elem_nodes(num_local_dofs);
-            for (size_t i=0; i<num_local_dofs; i++) {elem_nodes[i] = d_elem->point(i);}
-            d_densityModel->getDensityManufactured(nodalDensity, d_LocalTemperature,
-                    d_LocalConcentration, d_LocalBurnup, elem_nodes);
-            break;
+            case MassDensityModel::Mechanics:
+                d_densityModel->getDensityMechanics(nodalDensity,
+                        d_LocalTemperature, d_LocalConcentration, d_LocalBurnup);
+                break;
+            case MassDensityModel::Thermal:
+                d_densityModel->getDensityThermal(nodalDensity, d_LocalTemperature,
+                        d_LocalConcentration, d_LocalBurnup);
+                break;
+            case MassDensityModel::Chemical:
+                d_densityModel->getDensityChemical(nodalDensity, d_LocalTemperature,
+                        d_LocalConcentration, d_LocalBurnup);
+                break;
+            case MassDensityModel::Manufactured:
+                elem_nodes.resize(num_local_dofs);
+                for (size_t i=0; i<num_local_dofs; i++) 
+                    elem_nodes[i] = d_elem->point(i);
+                d_densityModel->getDensityManufactured(nodalDensity, d_LocalTemperature,
+                        d_LocalConcentration, d_LocalBurnup, elem_nodes);
+                break;
+            default:
+                AMP_ERROR("Unknown enum for d_equation");
         }
 
         for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++) {

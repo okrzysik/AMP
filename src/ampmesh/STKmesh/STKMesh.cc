@@ -318,7 +318,7 @@ void STKMesh::initialize()
     std::set< stk::mesh::Entity* >::iterator elem_iterator = localBoundaryElements.begin();
     for (size_t i=0; i<localBoundaryElements.size(); i++) {
         (*d_localSurfaceElements[GeomDim])[i] = STKMeshElement(PhysicalDim, *elem_iterator, rank, d_meshID, this );
-        elem_iterator++;
+        ++elem_iterator;
     }
     AMP::Utilities::quicksort(*d_localSurfaceElements[GeomDim]);
 
@@ -327,7 +327,7 @@ void STKMesh::initialize()
     elem_iterator = ghostBoundaryElements.begin();
     for (size_t i=0; i<ghostBoundaryElements.size(); i++) {
         (*d_ghostSurfaceElements[GeomDim])[i] = STKMeshElement(PhysicalDim, *elem_iterator, rank, d_meshID, this );
-        elem_iterator++;
+        ++elem_iterator;
     }
     AMP::Utilities::quicksort(*d_ghostSurfaceElements[GeomDim]);
 
@@ -336,7 +336,7 @@ void STKMesh::initialize()
     std::set< stk::mesh::Entity* >::iterator node_iterator = localBoundaryNodes.begin();
     for (size_t i=0; i<localBoundaryNodes.size(); i++) {
         (*d_localSurfaceElements[Vertex])[i] = STKMeshElement(PhysicalDim, *node_iterator, rank, d_meshID, this );
-        node_iterator++;
+        ++node_iterator;
     }
     AMP::Utilities::quicksort(*d_localSurfaceElements[Vertex]);
 
@@ -345,7 +345,7 @@ void STKMesh::initialize()
     node_iterator = ghostBoundaryNodes.begin();
     for (size_t i=0; i<ghostBoundaryNodes.size(); i++) {
         (*d_ghostSurfaceElements[Vertex])[i] = STKMeshElement(PhysicalDim,  *node_iterator, rank, d_meshID, this );
-        node_iterator++;
+        ++node_iterator;
     }
     AMP::Utilities::quicksort(*d_ghostSurfaceElements[Vertex]);
     // Construct the boundary elements for all other types
@@ -382,8 +382,6 @@ void STKMesh::initialize()
 //        AMP_ASSERT(global_size>=element_surface_global_size);
     }
     // Construct the boundary lists
-    std::vector<int> side_ids;
-    std::vector<int> node_ids;
     std::vector<int> bids;
     const Ioss::SideSetContainer& side_sets = d_STKIORegion->get_sidesets();
     for(Ioss::SideSetContainer::const_iterator it = side_sets.begin(); it != side_sets.end(); ++it) {

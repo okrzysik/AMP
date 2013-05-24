@@ -70,12 +70,13 @@ AMPManagerProperties AMPManager::properties=AMPManagerProperties();
 /****************************************************************************
 *  Function to terminate AMP with a message for exceptions                  *
 ****************************************************************************/
+static bool force_exit = false;
 void AMPManager::terminate_AMP(std::string message)
 {
-    std::stringstream msg;
-    if ( AMP::AMPManager::use_MPI_Abort==true) {
+    if ( AMP::AMPManager::use_MPI_Abort==true || force_exit ) {
         // Print the call stack and memory usage
         char text[100];
+        std::stringstream msg;
         msg << message << std::endl;
         long long unsigned int N_bytes = AMP::Utilities::getMemoryUsage();
         sprintf(text,"Bytes used = %llu\n",N_bytes);
@@ -85,8 +86,12 @@ void AMPManager::terminate_AMP(std::string message)
         for (size_t i=0; i<stack.size(); i++)
             msg << "   " << stack[i];
         std::cerr << msg.str();
+    }
+    if ( AMP::AMPManager::use_MPI_Abort==true ) {
         // Use MPI_abort (will terminate all processes)
         AMP_MPI(AMP_COMM_WORLD).abort();
+    } else if ( force_exit ) {
+        exit(-1);
     } else {
         // Throw and standard exception (allows the use of try, catch)
         // std::stringstream  stream;
@@ -94,7 +99,6 @@ void AMPManager::terminate_AMP(std::string message)
         // std::cout << stream.str() << std::endl;
         throw std::logic_error(message);
     }
-    AMP_MPI(AMP_COMM_WORLD).abort();
 }
 
 
@@ -125,6 +129,7 @@ void term_func()
             last_message = "unknown exception occurred.";
         }
     #endif
+    force_exit = true;
     AMPManager::terminate_AMP( "Unhandled exception:\n" + last_message );
 }
 

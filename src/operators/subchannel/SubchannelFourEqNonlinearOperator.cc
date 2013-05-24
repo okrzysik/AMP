@@ -334,25 +334,36 @@ void SubchannelFourEqNonlinearOperator::fillSubchannelGrid(AMP::Mesh::Mesh::shar
     d_Mesh->getComm().setGather(z);
     double last = 1.0e300; // arbitary large number
     // erase duplicate x points
-    for (std::set<double>::iterator it=x.begin(); it!=x.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
-            x.erase(it);
-        else
+    std::set<double>::iterator it=x.begin();
+    while ( it!=x.end() ) {
+        if ( Utilities::approx_equal(last,*it,1e-12) ) {
+            x.erase(it++); // increments before erasing
+        } else {
             last = *it;
+            ++it;
+        }
     }
     // erase duplicate y points
-    for (std::set<double>::iterator it=y.begin(); it!=y.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
-            y.erase(it);
-        else
+    last = 1.0e300; // arbitary large number
+    it=y.begin();
+    while ( it!=y.end() ) {
+        if ( Utilities::approx_equal(last,*it,1e-12) ) {
+            y.erase(it++); // increments before erasing
+        } else {
             last = *it;
+            ++it;
+        }
     }
     // erase duplicate z points
-    for (std::set<double>::iterator it=z.begin(); it!=z.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
-            z.erase(it);
-        else
+    last = 1.0e300; // arbitary large number
+    it=z.begin();
+    while ( it!=z.end() ) {
+        if ( Utilities::approx_equal(last,*it,1e-12) ) {
+            z.erase(it++); // increments before erasing
+        } else {
             last = *it;
+            ++it;
+        }
     }
     d_x = std::vector<double>(x.begin(),x.end());
     d_y = std::vector<double>(y.begin(),y.end());

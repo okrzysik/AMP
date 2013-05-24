@@ -126,15 +126,15 @@ namespace AMP {
       std::vector<double> min_max_pos = d_Mesh->getBoundingBox();
       double centerx = 0.5*( min_max_pos[0] + min_max_pos[1] );
       double centery = 0.5*( min_max_pos[2] + min_max_pos[3] );
-      double minR=1e100, maxR=-1e100, rx, ry;
+      double minR=1e100, maxR=-1e100;
 
       // Create the cylindrical bounding box
       d_radialBoundingBox = min_max_pos;
       AMP::Mesh::MeshIterator iterator = d_Mesh->getIterator(AMP::Mesh::Vertex,0);
       for (size_t i=0; i<iterator.size(); i++) {
         std::vector<double> coord = iterator->coord();
-        rx = (coord[0] - centerx);
-        ry = (coord[1] - centery);
+        double rx = (coord[0] - centerx);
+        double ry = (coord[1] - centery);
         minR = std::min( minR, sqrt(rx*rx+ry*ry) );
         maxR = std::max( maxR, sqrt(rx*rx+ry*ry) );
         ++iterator;
@@ -355,9 +355,8 @@ namespace AMP {
       using namespace std;
 
       const double PI = 4.0*atan(1.0);
-      double x, y, z, radius, theta;
+      double x, y, z;
       double newval, val;
-      double volumeIntegral=0;
       int countGP =0 ; 
 
       double xmin, ymin, zmin, centerx, centery;
@@ -514,7 +513,7 @@ namespace AMP {
           // Note: Dimensions are all in meter (m). 
 
           // Choose the type of volume integral calculation. 
-          volumeIntegral = getVolumeIntegralSum(rmax, centerx, centery);
+          double volumeIntegral = getVolumeIntegralSum(rmax, centerx, centery);
 
           if(d_iDebugPrintInfoLevel>3)
             AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
@@ -531,13 +530,13 @@ namespace AMP {
               z = d_fe->get_xyz()[i](2);
 
               // r based on Frapcon.
-              radius = sqrt ( x*x + y*y );
+              double radius = sqrt ( x*x + y*y );
               double Fr = getFrapconFr(radius, rmax);
               newval = Fr/volumeIntegral; 
               val = newval;
 
               // phi. 
-              theta = atan2(y,x);
+              double theta = atan2(y,x);
               newval = 1 + d_angularConstant*sin(theta);
               val *= newval;
 
@@ -674,7 +673,7 @@ namespace AMP {
               val = 1+getZernikeRadial(relativeRadius);
 
               // phi. 
-              theta = atan2(y,x);
+              double theta = atan2(y,x);
               newval = 1 + d_angularConstant*sin(theta);
               val *= newval;
 
@@ -901,11 +900,9 @@ namespace AMP {
     double PowerShape::getZernikeRadial(double rhor)
     {
       double fR = 0.0;
-      double rho = rhor;
-      unsigned int m;
-      for ( unsigned int j=0; j<d_numMoments; j++ ) {
-        m = 2*j+2;
-        fR += d_Moments[j] * evalZernike(0, m, rho, 0.);
+      for (unsigned int j=0; j<d_numMoments; j++) {
+        unsigned int m = 2*j+2;
+        fR += d_Moments[j] * evalZernike(0, m, rhor, 0.);
       }
       return fR;
     }

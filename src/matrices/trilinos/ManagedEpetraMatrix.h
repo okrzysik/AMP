@@ -67,11 +67,11 @@ public:
 
       virtual void mult(const Vector::const_shared_ptr in, Vector::shared_ptr out);
       virtual void multTranspose (const Vector::const_shared_ptr in, Vector::shared_ptr out);
-      virtual Vector::shared_ptr  extractDiagonal ( Vector::shared_ptr buf = Vector::shared_ptr() );
+      virtual Vector::shared_ptr  extractDiagonal ( Vector::shared_ptr buf = Vector::shared_ptr() ) const;
       virtual void  scale ( double alpha );
       virtual void  axpy ( double alpha , const Matrix &rhs );
-      virtual size_t  numGlobalRows () { return d_epetraMatrix->NumGlobalRows(); }
-      virtual size_t  numGlobalColumns () { return d_epetraMatrix->NumGlobalCols(); }
+      virtual size_t  numGlobalRows () const { return d_epetraMatrix->NumGlobalRows(); }
+      virtual size_t  numGlobalColumns () const { return d_epetraMatrix->NumGlobalCols(); }
       virtual void  addValuesByGlobalID ( int   num_rows ,
                                           int   num_cols ,
                                           int  *rows ,
@@ -87,16 +87,22 @@ public:
                                        std::vector<unsigned int> &cols,
                                        std::vector<double>       &values ) const;
 
+      virtual void  getValuesByGlobalID ( int   num_rows ,
+                                          int   num_cols ,
+                                          int  *rows ,
+                                          int  *cols ,
+                                          double  *values ) const;
+
       virtual void setScalar ( double );
       virtual void setDiagonal ( const Vector::shared_ptr &in );
 
       virtual void makeConsistent ();
       virtual double  L1Norm() const;
       virtual Matrix::shared_ptr cloneMatrix () const;
-      virtual Vector::shared_ptr  getRightVector ();
-      virtual Vector::shared_ptr  getLeftVector ();
-      virtual Discretization::DOFManager::shared_ptr  getRightDOFManager ();
-      virtual Discretization::DOFManager::shared_ptr  getLeftDOFManager ();
+      virtual Vector::shared_ptr  getRightVector () const;
+      virtual Vector::shared_ptr  getLeftVector () const;
+      virtual Discretization::DOFManager::shared_ptr  getRightDOFManager () const;
+      virtual Discretization::DOFManager::shared_ptr  getLeftDOFManager () const;
       virtual void fillComplete();
 };
 

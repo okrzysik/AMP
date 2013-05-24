@@ -224,7 +224,7 @@ void moabInterface(AMP::UnitTest *ut)
     bool nonZero = false;
     for( myIter  = nodalVec->begin();
          myIter != nodalVec->end();
-         myIter++ )
+         ++myIter )
     {
         if( *myIter != 0.0 )
             nonZero = true;

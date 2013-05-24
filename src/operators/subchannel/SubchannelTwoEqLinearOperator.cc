@@ -81,7 +81,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
         AMP_WARNING("Field 'Mass_Flow_Rate' is obsolete and should be removed from database");
     
     // Get the subchannel properties from the mesh
-    std::vector<double> x, y, perimeter;
+    std::vector<double> x, y;
     Subchannel::getSubchannelProperties( d_Mesh, myparams->clad_x, myparams->clad_y, myparams->clad_d, 
         x, y, d_channelArea, d_channelDiam, d_rodDiameter, d_rodFraction );
     AMP_ASSERT(d_channelArea.size()==d_numSubchannels);

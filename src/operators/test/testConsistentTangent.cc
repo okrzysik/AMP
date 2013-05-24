@@ -21,11 +21,11 @@
 #include "libmesh.h"
 #include "mesh_communication.h"
 
-#include "OperatorBuilder.h"
-#include "MechanicsLinearFEOperator.h"
-#include "MechanicsNonlinearFEOperator.h"
+#include "operators/OperatorBuilder.h"
+#include "operators/mechanics/MechanicsLinearFEOperator.h"
+#include "operators/mechanics/MechanicsNonlinearFEOperator.h"
 
-#include "ReadTestMesh.h"
+#include "utils/ReadTestMesh.h"
 
 void myTest(AMP::UnitTest *ut, std::string exeName, int callLinReset) {
   std::string input_file = "input_" + exeName;

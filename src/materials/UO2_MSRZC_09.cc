@@ -7,11 +7,9 @@
  *
  */
 
-#include "UO2_MSRZC_09.h"
-
-#include "Utilities.h"
-#include "Property.h"
-#include "Material.h"
+#include "materials/UO2_MSRZC_09.h"
+#include "materials/Property.h"
+#include "materials/Material.h"
 
 #include <string>
 #include <vector>
