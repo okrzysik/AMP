@@ -427,7 +427,7 @@ int main(int argc, char *argv[])
     AMP::UnitTest ut;
 
     std::vector<std::string> files(1);
-    files[0] = "testSubchannelFourEqMMS-1";
+    files[0] = "testSubchannelFourEqMMS-2";
 
     for (size_t i=0; i<files.size(); i++)
         flowTest(&ut,files[i]);

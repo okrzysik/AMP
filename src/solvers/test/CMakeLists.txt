@@ -40,6 +40,7 @@ INCLUDE (macros)
 
 ADD_AMP_PROVISIONAL_TEST( testSubchannelFourEqMMS )
 COPY_TEST_DATA_FILE(input_testSubchannelFourEqMMS-1)
+COPY_TEST_DATA_FILE(input_testSubchannelFourEqMMS-2)
 
 ADD_AMP_PROVISIONAL_TEST( testAMGuniform )
 COPY_TEST_DATA_FILE(input_testAMGuniform)

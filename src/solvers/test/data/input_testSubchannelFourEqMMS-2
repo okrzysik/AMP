@@ -1,0 +1,108 @@
+// Input file for testSubchannelFourEqMMS
+TOLERANCE = 1e-6
+
+Mesh {
+     MeshName = "clad"
+     MeshType = "AMP"
+     dim = 3
+     Generator = "cube"
+     Size = 3, 3, 9
+     Range = 0.0, 0.0378, 0.0, 0.0378, 0.0, 3.66 
+     x_offset = 0.0
+     y_offset = 0.0
+     z_offset = 0.0
+}
+
+CladProperties{
+    x = 0.0,    0.0126, 0.0252, 0.0378,
+        0.0,    0.0126, 0.0252, 0.0378,
+        0.0,    0.0126, 0.0252, 0.0378,
+        0.0,    0.0126, 0.0252, 0.0378
+    y = 0.0,    0.0,    0.0,    0.0,
+        0.0126, 0.0126, 0.0126, 0.0126,
+        0.0252, 0.0252, 0.0252, 0.0252,
+        0.0378, 0.0378, 0.0378, 0.0378
+    d = 0.0095, 0.0095, 0.0095, 0.0095,
+        0.0095, 0.0095, 0.0095, 0.0095,
+        0.0095, 0.0095, 0.0095, 0.0095,
+        0.0095, 0.0095, 0.0095, 0.0095
+}
+
+SubchannelFourEqNonlinearOperator{
+    name = "SubchannelFourEqNonlinearOperator"
+    InputVariable = "flow"
+    OutputVariable = "flow"
+    Exit_Pressure = 15.5e6
+    Inlet_Temperature = 559.15
+    Inlet_Mass_Flow_Rate = 2.808
+    Inlet_Lateral_Flow_Rate = 0.0
+    Fission_Heating_Coefficient = 0.0
+    Channel_Angle = 0.0
+    Friction_Factor = 0.1
+    Turbulence_Coefficient = 1.0
+    Max_Rod_Power = 6.69e4
+    Rod_Power_Fraction = 1.0,1.0,1.0,
+                         1.0,1.0,1.0,
+                         1.0,1.0,1.0
+    Heat_Source_Type = "totalHeatGeneration"
+    Heat_Shape = "Sinusoidal"
+    LocalModel = "SubchannelPhysicsModel"
+    Friction_Model = "Selander"
+    Surface_Roughness = 0.5e-6
+    Number_GridSpacers = 7
+    zMin_GridSpacers = 0.4225, 0.8800, 1.3375, 1.7950, 2.2525, 2.7100, 3.1675
+    zMax_GridSpacers = 0.4925, 0.9500, 1.4075, 1.8650, 2.3225, 2.7800, 3.2375
+    LossCoefficient_GridSpacers = 0.684, 0.684, 0.684, 0.684, 0.684, 0.684, 0.684
+    Reynolds = 95432.91
+    Prandtl = 1.0
+}
+
+SubchannelPhysicsModel{
+	name = "SubchannelPhysicsModel"
+	Material = "WaterLibrary"
+	Formulation = "FunctionsTesting"
+	Defaults{
+		enthalpy = 200.0e3
+		pressure = 0.5e6
+		temperature = 350.0
+		density = 973.919
+                reynolds = 4.4e5
+                prandtl = 1.0
+                diameter = 0.0095
+	}
+}
+
+NonlinearSolver{
+  print_info_level = 7
+    max_iterations = 1000
+    max_error = 1e-10
+
+    absoluteTolerance = 1.0e-6
+    relativeTolerance = 1.0e-5
+    stepTolerance = 1.0e-10
+    maximumFunctionEvals = 1000
+    usesJacobian=FALSE
+
+    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ksp_ew_version 1 -snes_ls_alpha 0.001"
+
+    LinearSolver{
+      print_info_level = 10
+        max_iterations = 1000
+        max_error = 1e-7
+        ksp_type = "fgmres"
+        absolute_tolerance = 1.0e-7
+        relative_tolerance = 1.0e-1
+        divergence_tolerance = 1.0e03
+        max_krylov_dimension = 40
+        uses_preconditioner=FALSE
+        pc_type = "none"
+        pc_side = "RIGHT"
+
+        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 1000"
+        Preconditioner{
+          print_info_level = 1
+            max_iterations = 1
+            max_error = 1.0e-7
+        }
+    }
+}

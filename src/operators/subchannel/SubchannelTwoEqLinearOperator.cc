@@ -153,7 +153,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
     if( d_matrix.get() == NULL ) {
         AMP::LinearAlgebra::Vector::shared_ptr inVec  = AMP::LinearAlgebra::createVector(d_dofMap, getInputVariable(),  true);
         AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector(d_dofMap, getOutputVariable(), true);
-      d_matrix = AMP::LinearAlgebra::createMatrix(inVec, outVec);
+        d_matrix = AMP::LinearAlgebra::createMatrix(inVec, outVec);
     }
 
     if ( d_nullFrozenvector ) {

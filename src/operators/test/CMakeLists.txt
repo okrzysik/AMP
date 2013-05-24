@@ -53,6 +53,9 @@ COPY_TEST_DATA_FILE ( input_testSubchannelTwoEqLinearOperator)
 ADD_AMP_TEST(testSubchannelFourEqNonlinearOperator)
 COPY_TEST_DATA_FILE ( input_testSubchannelFourEqNonlinearOperator)
 
+ADD_AMP_TEST(testSubchannelFourEqLinearOperator)
+COPY_TEST_DATA_FILE ( input_testSubchannelFourEqLinearOperator)
+
 COPY_MESH_FILE ( cube8.with.boundary.labels.e )
 
 COPY_TEST_DATA_FILE ( input_testSurfaceIteratorBug )
