@@ -14,23 +14,19 @@ using namespace AMP::unit_test;
 template <typename FACTORY>
 void  test_matrix_loop ( AMP::UnitTest *ut )
 {
-    std::string name = "test_matrix_loop: "+FACTORY::name();
+    std::string name = FACTORY::name();
     PROFILE_START(name);
     FACTORY factory;
     factory.initMesh();
-    #if defined(USE_EXT_PETSC) && defined(USE_EXT_PETSC)
-        InstantiateMatrix<FACTORY>::run_test ( ut );
-        VerifyGetSetValuesMatrix<FACTORY>::run_test ( ut );
-        VerifyAXPYMatrix<FACTORY>::run_test ( ut );
-        VerifyScaleMatrix<FACTORY>::run_test ( ut );
-        VerifyGetLeftRightVector<FACTORY>::run_test ( ut );
-        VerifyExtractDiagonal<FACTORY>::run_test ( ut );
-        VerifyMultMatrix<FACTORY>::run_test ( ut );
-        VerifyMatMultMatrix<FACTORY>::run_test ( ut );
-        VerifyAddElementNode<FACTORY>::run_test ( ut );
-    #else
-        ut->failure("Tests require petsc and trilinos");
-    #endif
+    InstantiateMatrix<FACTORY>::run_test ( ut );
+    VerifyGetSetValuesMatrix<FACTORY>::run_test ( ut );
+    VerifyAXPYMatrix<FACTORY>::run_test ( ut );
+    VerifyScaleMatrix<FACTORY>::run_test ( ut );
+    VerifyGetLeftRightVector<FACTORY>::run_test ( ut );
+    VerifyExtractDiagonal<FACTORY>::run_test ( ut );
+    VerifyMultMatrix<FACTORY>::run_test ( ut );
+    VerifyMatMultMatrix<FACTORY>::run_test ( ut );
+    VerifyAddElementNode<FACTORY>::run_test ( ut );
     factory.endMesh();
     PROFILE_STOP(name);
 }
@@ -51,13 +47,21 @@ int main ( int argc , char **argv )
     AMP::UnitTest ut;
     PROFILE_ENABLE();
 
-    test_matrix_loop<SimpleMatrixFactory> ( &ut );
-
-    #ifdef USE_EXT_LIBMESH
-        test_matrix_loop<DOFMatrixTestFactory<3,3,ExodusReaderGenerator<> > > ( &ut );
-    #else
-        test_matrix_loop<DOFMatrixTestFactory<3,3,AMPCubeGenerator<5> > > ( &ut );
+    // Test the ManagedPetscMatrix (requires both petsc and trilinos)
+    #if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
+        test_matrix_loop<DOFMatrixTestFactory<1,1,AMPCubeGenerator<5>,1> >( &ut );
+        test_matrix_loop<DOFMatrixTestFactory<3,3,AMPCubeGenerator<5>,1> >( &ut );
+        #ifdef USE_EXT_LIBMESH
+            test_matrix_loop<DOFMatrixTestFactory<3,3,ExodusReaderGenerator<>,1> >( &ut );
+        #endif
     #endif
+
+    // Test the DenseSerialMatrix (only valid for serial meshes)
+    // Note: we need to be careful, the memory requirement can be very large
+    if ( AMP::AMP_MPI(AMP_COMM_WORLD).getSize()==1 ) {
+        test_matrix_loop<DOFMatrixTestFactory<1,1,AMPCubeGenerator<5>,2> >( &ut );
+        test_matrix_loop<DOFMatrixTestFactory<3,3,AMPCubeGenerator<5>,2> >( &ut );
+    }
 
     ut.report();
     PROFILE_SAVE("test_Matrix");

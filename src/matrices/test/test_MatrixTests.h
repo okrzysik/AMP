@@ -7,6 +7,10 @@
 #include "test_MatrixVectorFactory.h"
 #include "../../vectors/test/test_VectorLoops.h"
 
+#ifdef USE_EXT_PETSC
+    #include "matrices/petsc/ManagedPetscMatrix.h"
+#endif
+
 namespace AMP {
 namespace unit_test {
 
@@ -66,8 +70,12 @@ public:
         testManagedVector<AmpInterfaceRightVectorFactory> ( utils );
         testManagedVector<AmpInterfaceLeftVectorFactory> ( utils );
         #ifdef USE_EXT_PETSC
-        testManagedVector<PETScInterfaceRightVectorFactory> ( utils );
-        testManagedVector<PETScInterfaceLeftVectorFactory> ( utils );
+            if ( global_cached_matrix->isA<AMP::LinearAlgebra::ManagedPetscMatrix> () ) {
+                testManagedVector<PETScInterfaceRightVectorFactory> ( utils );
+                testManagedVector<PETScInterfaceLeftVectorFactory> ( utils );
+            } else {
+                utils->expected_failure("PetscMatrix::createView is not ready for arbitrary matricies");
+            }
         #endif
         global_cached_matrix.reset();
         PROFILE_STOP("VerifyGetLeftRightVector");
@@ -92,11 +100,13 @@ public:
         for ( size_t i = dofmap->beginDOF() ; i != dofmap->endDOF() ; i++ ) {
             std::vector<unsigned int>  cols;
             std::vector<double>        vals;
+            matrix->getRowByGlobalID( i, cols, vals );
             for ( size_t j = 0 ; j != cols.size() ; j++ ) {
                 double ans = ( i == cols[j] ) ? 6. : -1.;
-                if ( vals[j] != ans ) {
-                  utils->failure ( "bad value in matrix" );
-                  return;
+                double value = matrix->getValueByGlobalID( i, cols[j] );
+                if ( vals[j]!=ans || value!=vals[j] ) {
+                    utils->failure ( "bad value in matrix" );
+                    return;
                 }
             }
         }
@@ -304,6 +314,7 @@ public:
 
         if ( vector1->getGlobalSize() > 1000 ) {
             // Matrix-matrix multiplies take a long time
+            PROFILE_STOP2("VerifyMatMultMatrix");
             utils->expected_failure("VerifyMatMultMatrix skipped");
             return;
         }

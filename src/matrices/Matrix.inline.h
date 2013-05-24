@@ -42,6 +42,13 @@ inline void Matrix::setValueByGlobalID ( int row , int col , double value )
     setValuesByGlobalID( 1u , 1u , &row , &col , &value ); 
 }
 
+inline double Matrix::getValueByGlobalID ( int row , int col ) const
+{  
+    double rtn = 0.0;
+    getValuesByGlobalID( 1u , 1u , &row , &col , &rtn ); 
+    return rtn;
+}
+
 inline void Matrix::zero () 
 { 
     setScalar(0.0); 

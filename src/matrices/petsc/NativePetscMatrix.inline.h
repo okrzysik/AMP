@@ -13,7 +13,7 @@ inline Matrix::shared_ptr  NativePetscMatrix::cloneMatrix () const
 }
 
 
-inline size_t NativePetscMatrix::numGlobalRows ()
+inline size_t NativePetscMatrix::numGlobalRows () const
 {
     int rows , cols;
     MatGetSize ( d_Mat , &rows , &cols );
@@ -21,7 +21,7 @@ inline size_t NativePetscMatrix::numGlobalRows ()
 }
 
 
-inline size_t NativePetscMatrix::numGlobalColumns ()
+inline size_t NativePetscMatrix::numGlobalColumns () const
 {
     int rows , cols;
     MatGetSize ( d_Mat , &rows , &cols );
