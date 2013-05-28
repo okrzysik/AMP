@@ -435,10 +435,10 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   AMP::LinearAlgebra::Variable::shared_ptr outputVariable (new AMP::LinearAlgebra::Variable("flow"));
 
   // create solution, rhs, and residual vectors
-  AMP::LinearAlgebra::Vector::shared_ptr FrozenVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable , true );
-  AMP::LinearAlgebra::Vector::shared_ptr SolVec    = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable , true );
-  AMP::LinearAlgebra::Vector::shared_ptr RhsVec    = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
-  AMP::LinearAlgebra::Vector::shared_ptr ResVec    = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
+  AMP::LinearAlgebra::Vector::shared_ptr FrozenVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable , false );
+  AMP::LinearAlgebra::Vector::shared_ptr SolVec    = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable , false );
+  AMP::LinearAlgebra::Vector::shared_ptr RhsVec    = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, false );
+  AMP::LinearAlgebra::Vector::shared_ptr ResVec    = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, false );
 
   // create subchannel physics model
   boost::shared_ptr<AMP::Database> subchannelPhysics_db = input_db->getDatabase("SubchannelPhysicsModel");
@@ -578,7 +578,7 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   // apply the operator
   subchannelOperator->setFrozenVector(FrozenVec);
   subchannelOperator->reset(subchannelOpParams);
-//  subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
+  subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
 
   // get the AMP Jacobian matrix to be tested against the MATLAB Jacobian matrix
   boost::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian = subchannelOperator->getMatrix();
