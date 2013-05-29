@@ -451,17 +451,16 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
   subchannelOpParams->d_Mesh = subchannelMesh ;
   subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
+  subchannelOpParams->d_frozenSolution = FrozenVec;
   subchannelOpParams->d_dofMap = subchannelDOFManager;
   subchannelOpParams->clad_x = input_db->getDatabase("CladProperties")->getDoubleArray("x");
   subchannelOpParams->clad_y = input_db->getDatabase("CladProperties")->getDoubleArray("y");
   subchannelOpParams->clad_d = input_db->getDatabase("CladProperties")->getDoubleArray("d");
   // create linear operator
   boost::shared_ptr<AMP::Operator::SubchannelFourEqLinearOperator> subchannelOperator (new AMP::Operator::SubchannelFourEqLinearOperator(subchannelOpParams));
-  // reset the nonlinear operator
-  subchannelOperator->reset(subchannelOpParams);
 
   // report successful creation
-  ut->passes(exeName+": creation");
+  ut->passes(exeName+": linear operator creation");
   std::cout.flush();
 
   // check number of lateral gaps
@@ -475,16 +474,16 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   }
 
   // compute height of subchannels
-  std::vector<double> box = subchannelOpParams->d_Mesh->getBoundingBox();
+  std::vector<double> box = subchannelMesh->getBoundingBox();
   const double height = box[5] - box[4];
   // height of each axial interval
   const double dz = height/numAxialIntervals;
   // get all of the unique x,y,z points in subchannel mesh
-  subchannelOperator->fillSubchannelGrid(subchannelOpParams->d_Mesh);
+  subchannelOperator->fillSubchannelGrid(subchannelMesh);
 
   // put all cells in an array by subchannel
   AMP::Mesh::MeshElement d_elem[numSubchannels][numAxialIntervals]; // array of array of elements for each subchannel
-  AMP::Mesh::MeshIterator cell = subchannelOpParams->d_Mesh->getIterator(AMP::Mesh::Volume, 0); // iterator for cells of mesh
+  AMP::Mesh::MeshIterator cell = subchannelMesh->getIterator(AMP::Mesh::Volume, 0); // iterator for cells of mesh
   for( ; cell != cell.end(); ++cell) { // loop over all cells
     std::vector<double> center = cell->centroid();
     // get the index of the subchannel
@@ -530,9 +529,12 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
             std::vector<size_t> minusDofs;
             subchannelDOFManager->getDOFs(minusFace.globalID(),minusDofs);
             // set values of minus face
-            SolVec->setValueByGlobalID(minusDofs[0], m_scale*0.35     *(1.0 + 1.0/100.0*cos(ii)*cos(17.3*jj)));
-            SolVec->setValueByGlobalID(minusDofs[1], h_scale*1000.0e3 *(1.0 + 1.0/100.0*cos(ii)*cos(17.3*jj)));
-            SolVec->setValueByGlobalID(minusDofs[2], p_scale*15.5e6   *(1.0 + 1.0/100.0*cos(ii)*cos(17.3*jj)));
+            FrozenVec->setValueByGlobalID(minusDofs[0], m_scale*0.35     *(1.0 + 1.0/100.0*cos(ii)*cos(17.3*jj)));
+            FrozenVec->setValueByGlobalID(minusDofs[1], h_scale*1000.0e3 *(1.0 + 1.0/100.0*cos(ii)*cos(17.3*jj)));
+            FrozenVec->setValueByGlobalID(minusDofs[2], p_scale*15.5e6   *(1.0 + 1.0/100.0*cos(ii)*cos(17.3*jj)));
+            SolVec->setValueByGlobalID(minusDofs[0], m_scale*1.0);
+            SolVec->setValueByGlobalID(minusDofs[1], h_scale*1.0);
+            SolVec->setValueByGlobalID(minusDofs[2], p_scale*1.0);
          }
 
          size_t jj = j+2; // corresponding MATLAB index for this axial face
@@ -540,9 +542,12 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
          std::vector<size_t> plusDofs;
          subchannelDOFManager->getDOFs(plusFace.globalID(),plusDofs);
          // set values of plus face
-         SolVec->setValueByGlobalID(plusDofs[0], m_scale*0.35     *(1.0 + 1.0/100.0*cos(ii)*cos(17.3*jj)));
-         SolVec->setValueByGlobalID(plusDofs[1], h_scale*1000.0e3 *(1.0 + 1.0/100.0*cos(ii)*cos(17.3*jj)));
-         SolVec->setValueByGlobalID(plusDofs[2], p_scale*15.5e6   *(1.0 + 1.0/100.0*cos(ii)*cos(17.3*jj)));
+         FrozenVec->setValueByGlobalID(plusDofs[0], m_scale*0.35     *(1.0 + 1.0/100.0*cos(ii)*cos(17.3*jj)));
+         FrozenVec->setValueByGlobalID(plusDofs[1], h_scale*1000.0e3 *(1.0 + 1.0/100.0*cos(ii)*cos(17.3*jj)));
+         FrozenVec->setValueByGlobalID(plusDofs[2], p_scale*15.5e6   *(1.0 + 1.0/100.0*cos(ii)*cos(17.3*jj)));
+         SolVec->setValueByGlobalID(plusDofs[0], m_scale*1.0);
+         SolVec->setValueByGlobalID(plusDofs[1], h_scale*1.0);
+         SolVec->setValueByGlobalID(plusDofs[2], p_scale*1.0);
       }
   }
 
@@ -553,7 +558,7 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   // array of gap faces
   AMP::Mesh::MeshElement gapFaces[numGaps_MATLAB][numAxialIntervals]; // gap faces
   // loop over all faces in mesh
-  AMP::Mesh::MeshIterator face = subchannelOpParams->d_Mesh->getIterator(AMP::Mesh::Face, 0);
+  AMP::Mesh::MeshIterator face = subchannelMesh->getIterator(AMP::Mesh::Face, 0);
   for (; face != face.end(); face++) { // loop over all faces in mesh
      std::vector<double> faceCentroid = face->centroid();
      // try to find face in lateral face map
@@ -571,7 +576,8 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
         std::vector<size_t> gapDofs;
         subchannelDOFManager->getDOFs(lateralFace.globalID(),gapDofs);
         // set test value for crossflow
-        SolVec->setValueByGlobalID(gapDofs[0], w_scale*0.001*(1.0 + 1.0/100.0*cos(k)*cos(17.3*j)));
+        FrozenVec->setValueByGlobalID(gapDofs[0], w_scale*0.001*(1.0 + 1.0/100.0*cos(k)*cos(17.3*j)));
+        SolVec->setValueByGlobalID(gapDofs[0], w_scale*1.0);
      }
   }
 
@@ -733,7 +739,7 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
 
    AMP::Discretization::DOFManager::shared_ptr left_DOFManager  = testJacobian->getLeftDOFManager();
    AMP::Discretization::DOFManager::shared_ptr right_DOFManager = testJacobian->getRightDOFManager();
-   bool equal_to_leftDOFManager, equal_to_rightDOFManager;
+   bool equal_to_leftDOFManager = false, equal_to_rightDOFManager = false;
    if (*left_DOFManager  == *subchannelDOFManager) equal_to_leftDOFManager  = true;
    if (*right_DOFManager == *subchannelDOFManager) equal_to_rightDOFManager = true;
    AMP_ASSERT(equal_to_leftDOFManager);
@@ -748,7 +754,7 @@ double max_entry = 0.0;
 for (size_t i = 0; i < num_dofs_AMP; ++i)
    for (size_t j = 0; j < num_dofs_AMP; ++j) {
       double entry = testJacobian->getValueByGlobalID(i,j);
-      max_entry = std::max(max_entry,entry);
+      max_entry = std::max(max_entry,std::abs(entry));
    }
 std::cout << "max value: " << max_entry << std::endl;
   // initialize success boolean for known residual comparison test

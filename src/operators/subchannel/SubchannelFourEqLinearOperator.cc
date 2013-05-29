@@ -155,7 +155,7 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
     if( d_matrix.get() == NULL ) {
         AMP::LinearAlgebra::Vector::shared_ptr inVec  = AMP::LinearAlgebra::createVector(d_dofMap, getInputVariable(),  true);
         AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector(d_dofMap, getOutputVariable(), true);
-      d_matrix = AMP::LinearAlgebra::createMatrix(inVec, outVec);
+        d_matrix = AMP::LinearAlgebra::createMatrix(inVec, outVec);
     }
 
     if ( d_nullFrozenvector ) {
@@ -174,6 +174,14 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
 
     // get DoF manager
     AMP::Discretization::DOFManager::shared_ptr dof_manager = d_frozenVec->getDOFManager();
+    AMP_ASSERT(*d_dofMap == *dof_manager);
+   AMP::Discretization::DOFManager::shared_ptr left_DOFManager  = d_matrix->getLeftDOFManager();
+   AMP::Discretization::DOFManager::shared_ptr right_DOFManager = d_matrix->getRightDOFManager();
+   bool equal_to_leftDOFManager = false, equal_to_rightDOFManager = false;
+   if (*left_DOFManager  == *dof_manager) equal_to_leftDOFManager  = true;
+   if (*right_DOFManager == *dof_manager) equal_to_rightDOFManager = true;
+   AMP_ASSERT(equal_to_leftDOFManager);
+   AMP_ASSERT(equal_to_rightDOFManager);
     AMP::Discretization::DOFManager::shared_ptr cladDofManager;
     if (d_source == "averageCladdingTemperature"){
        cladDofManager = d_cladTemperature->getDOFManager();
