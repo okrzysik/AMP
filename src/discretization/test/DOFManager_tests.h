@@ -39,6 +39,54 @@ void testGetDOFIterator(  AMP::UnitTest *ut, const AMP::Mesh::MeshIterator &iter
 }
 
 
+// Function to test some very basic properites
+void testBasics( AMP::Discretization::DOFManager::shared_ptr DOF, AMP::UnitTest *ut )
+{
+    bool passAll = true;
+
+    // Get the comm
+    AMP::AMP_MPI comm = DOF->getComm();
+    if ( comm.isNull() ) {
+        passAll = false;
+        ut->failure("Comm is not valid");
+    }
+
+    // Get the dof ranges
+    size_t start = DOF->beginDOF();
+    size_t end = DOF->endDOF();
+    size_t N_local = DOF->numLocalDOF();
+    size_t N_global = DOF->numGlobalDOF();
+    if ( N_local != end-start ) {
+        passAll = false;
+        ut->failure("N_local is the wrong size");
+    }
+    if ( N_global != comm.sumReduce(N_local) ) {
+        passAll = false;
+        ut->failure("N_global is the wrong size");
+    }
+ 
+    // Trivial check of == and !=
+    if ( *DOF!=*DOF || !(*DOF==*DOF) ) {
+        passAll = false;
+        ut->failure("Failed operator==");
+    }
+    
+    // Test getting the DOFs for the DOF iterator
+    AMP::UnitTest ut2;
+    testGetDOFIterator( &ut2, DOF->getIterator(), DOF );
+    if ( ut2.NumFailLocal()!=0 ) {
+        passAll = false;
+        ut->failure("Failed checking local iterator");
+    }
+
+    // Check the results of the basic tests
+    if ( passAll )
+        ut->passes("Basic DOF tests");
+    else
+        ut->failure("Basic DOF tests");
+}
+
+
 // Test subsetting for different comms
 void testSubsetComm( AMP::Discretization::DOFManager::shared_ptr DOF, AMP::UnitTest *ut )
 {

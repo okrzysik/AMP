@@ -25,7 +25,7 @@
 
 #include "ampmesh/StructuredMeshHelper.h"
 #include "discretization/simpleDOF_Manager.h"
-#include "discretization/MultiDOF_Manager.h"
+#include "discretization/structuredFaceDOFManager.h"
 
 // number of subchannels
 const size_t numSubchannels = 3*3; // 3x3 subchannel array
@@ -408,19 +408,8 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   // get dof manager
   AMP::Discretization::DOFManager::shared_ptr subchannelDOFManager;
   if ( subchannelMesh.get() != NULL ) {
-    AMP::Mesh::MeshIterator axialFaces0 = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0);
-    AMP::Mesh::MeshIterator axialFaces1 = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1);
-    AMP::Mesh::MeshIterator gapFaces0 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, 
-      AMP::Mesh::StructuredMeshHelper::getXZFaceIterator(subchannelMesh,0), 
-      AMP::Mesh::StructuredMeshHelper::getYZFaceIterator(subchannelMesh,0) );
-    AMP::Mesh::MeshIterator gapFaces1 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, 
-      AMP::Mesh::StructuredMeshHelper::getXZFaceIterator(subchannelMesh,1), 
-      AMP::Mesh::StructuredMeshHelper::getYZFaceIterator(subchannelMesh,1) );
-    std::vector<AMP::Discretization::DOFManager::shared_ptr> subchannelChildrenDOFManagers(2);
-    subchannelChildrenDOFManagers[0] = AMP::Discretization::simpleDOFManager::create( subchannelMesh, axialFaces1, axialFaces0, 3 );
-    subchannelChildrenDOFManagers[1] = AMP::Discretization::simpleDOFManager::create( subchannelMesh, gapFaces1, gapFaces0, 1 );
-    subchannelDOFManager = AMP::Discretization::DOFManager::shared_ptr( 
-      new AMP::Discretization::multiDOFManager( subchannelMesh->getComm(), subchannelChildrenDOFManagers ) );
+    int DOFsPerFace[3]={1,1,3};
+    subchannelDOFManager = AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
   }
 
   // check number of DOFs

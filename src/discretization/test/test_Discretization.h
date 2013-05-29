@@ -29,6 +29,7 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
     testGetDOFIterator(  ut, mesh->getIterator(AMP::Mesh::Vertex,1), DOF );
 
     // Run basic tests that should be valid for all DOFManagers
+    testBasics( DOF, ut );
     testSubsetComm( DOF, ut );
     testSubsetMesh( mesh, DOF, true, 1, 1, ut );
 
@@ -75,6 +76,10 @@ void testSimpleDOFManager( AMP::UnitTest *ut )
     AMP::Discretization::DOFManager::shared_ptr DOF4 =  AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1, true );
     
     // Run basic tests that should be valid for all DOFManagers
+    testBasics( DOF1, ut );
+    testBasics( DOF2, ut );
+    testBasics( DOF3, ut );
+    testBasics( DOF4, ut );
     testSubsetComm( DOF1, ut );
     testSubsetComm( DOF2, ut );
     testSubsetComm( DOF3, ut );
@@ -162,6 +167,7 @@ void testMultiDOFManager( AMP::UnitTest *ut )
     }
 
     // Run basic tests that should be valid for all DOFManagers
+    testBasics( DOFs, ut );
     testSubsetComm( DOFs, ut );
     testSubsetMesh( mesh, DOFs, true, 1, 1, ut );
 
@@ -183,6 +189,7 @@ void testMultiDOFManager( AMP::UnitTest *ut )
         ut->failure("multiDOFManager iterates once through each element");
 
     // Run basic tests that should be valid for all DOFManagers
+    testBasics( DOF2, ut );
     testSubsetComm( DOF2, ut );
     testSubsetMesh( mesh, DOF2, true, 2, 1, ut );
 }
@@ -202,6 +209,7 @@ void testStructureDOFManager( AMP::UnitTest *ut )
     AMP::Discretization::DOFManager::shared_ptr DOFs = AMP::Discretization::structuredFaceDOFManager::create( mesh, dofsPerFace, GCW );
 
     // Run basic tests that should be valid for all DOFManagers
+    testBasics( DOFs, ut );
     testSubsetComm( DOFs, ut );
     testSubsetMesh( mesh, DOFs, false, 0, GCW, ut );
 

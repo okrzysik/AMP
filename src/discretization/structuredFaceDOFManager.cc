@@ -22,6 +22,7 @@ DOFManager::shared_ptr  structuredFaceDOFManager::create( boost::shared_ptr<AMP:
     if ( mesh->getGeomType()!=AMP::Mesh::Volume || mesh->getDim()!=3 )
         AMP_ERROR("The mesh must be a volume/3d mesh for structuredFaceDOFManager");
     boost::shared_ptr<structuredFaceDOFManager> manager( new structuredFaceDOFManager() );
+    manager->d_comm = mesh->getComm();
     manager->d_mesh = mesh;
     manager->d_gcw = gcw;
     for (int i=0; i<3; i++)
@@ -174,13 +175,15 @@ std::vector<size_t> structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshE
     std::vector<AMP::Mesh::MeshElementID> ids;
     ids.reserve(12);
     std::vector<AMP::Mesh::MeshElement> parents = d_mesh->getElementParents(obj,AMP::Mesh::Volume);
+    AMP_ASSERT(parents.size()==1||parents.size()==2);
     for (size_t i=0; i<parents.size(); i++) {
         std::vector<AMP::Mesh::MeshElement> children = parents[i].getElements(AMP::Mesh::Face);
-        ids.reserve(ids.size()+children.size());
+        AMP_ASSERT(children.size()==6);
         for (size_t j=0; j<children.size(); j++)
             ids.push_back(children[j].globalID());
     }
     AMP::Utilities::unique(ids);
+    AMP_ASSERT(ids.size()==6||ids.size()==11);
     // Get all dofs for each element id
     int maxDOFsPerFace = 0;
     for (int i=0; i<3; i++)
