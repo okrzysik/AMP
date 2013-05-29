@@ -65,12 +65,21 @@ public :
      */
     static AMP::Mesh::MeshIterator getYZFaceIterator(AMP::Mesh::Mesh::shared_ptr mesh, int gcw);
 
+    /**
+     * \brief Get an iterator over the faces
+     * \details  For a simple mesh with nodes aligned in the x, y, z directions,
+     *   this function returns an iterator of the faces that lie on the faces 
+     *   perpendicular to the given direction.
+     * \param mesh  Mesh that we want to use for the iterator
+     * \param gcw   Desired ghost width
+     */
+    static AMP::Mesh::MeshIterator getFaceIterator(AMP::Mesh::Mesh::shared_ptr mesh, int gcw, int direction);
+
 
     static AMP::Mesh::MeshIterator getGapFaceIterator(AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth);
 
 protected:
 
-    static AMP::Mesh::MeshIterator getFaceIterator(AMP::Mesh::Mesh::shared_ptr mesh, int gcw, int direction);
 
 };
 
