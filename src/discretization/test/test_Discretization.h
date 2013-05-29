@@ -213,7 +213,31 @@ void testStructureDOFManager( AMP::UnitTest *ut )
     testSubsetComm( DOFs, ut );
     testSubsetMesh( mesh, DOFs, false, 0, GCW, ut );
 
-
+    // Check getRowDOFs
+    if ( Nx>0 && Ny>0 && Nz>0 ) {
+        bool pass = true;
+        AMP::Mesh::MeshIterator it = mesh->getIterator(AMP::Mesh::Volume,0);
+        for (size_t ii=0; ii<it.size(); ++ii, ++it) {
+            std::vector<AMP::Mesh::MeshElement> faces = it->getElements(AMP::Mesh::Face);
+            for (size_t i=0; i<faces.size(); i++) {
+                std::vector<size_t> row = DOFs->getRowDOFs(faces[i]);
+                std::vector<size_t> dofs;
+                for (size_t j=0; j<faces.size(); j++) {
+                    DOFs->getDOFs(faces[j].globalID(),dofs);
+                    for (size_t k=0; k<dofs.size(); k++) {
+                        size_t index = AMP::Utilities::findfirst(row,dofs[k]);
+                        if ( index == row.size() ) { index--; }
+                        if ( row[index] != dofs[k] )
+                            pass = false;
+                    }
+                }
+            }
+        }
+        if ( pass )
+            ut->passes("getRowDOFs found all faces that share a volume");
+        else
+            ut->failure("getRowDOFs found all faces that share a volume");
+    }
 }
 
 
