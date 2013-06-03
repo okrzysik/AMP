@@ -376,17 +376,6 @@ std::vector<std::string>  Utilities::getCallStack()
             std::stringstream stream;
             stream << lNameModule << " : 000" << lNumberSection << " : " << reinterpret_cast<void*>(lOffsetSection);
             stack_list.push_back(stream.str());
-            // Save line
-            size_t l = strlen(buf);
-            if( i_line >= m_Levels || i_buf + l >= m_Bytes ) {
-                // We have saved all of the stack we can save
-                break;
-            }
-            buf[ l - 1 ] = '\0';    // Remove trailing '\n'
-            char * s = & m_Buffer[ i_buf ];
-            m_Lines[ i_line++ ] = s;
-            strncpy( s, buf, l );
-            i_buf += l;*/
         }
     #endif
     return stack_list;
