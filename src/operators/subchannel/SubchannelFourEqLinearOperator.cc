@@ -246,7 +246,7 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
            std::vector<AMP::Mesh::MeshElementID> face_ids(face.size());
            for (size_t j=0; j<face.size(); j++) {
               std::vector<double> center = face->centroid();
-              AMP_ASSERT(Utilities::approx_equal(center[2],d_z[j]));
+              AMP_ASSERT(Utilities::approx_equal_abs(center[2],d_z[j],1.0e-12));
               face_ids[j] = face->globalID();
               ++face;
            }
@@ -324,9 +324,6 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
 
            // evaluate temperature for cell
            double T_mid = Temperature(h_axialDonor,p_mid);
-
-           // evaluate conductivity for cell
-           double k_mid = ThermalConductivity(T_mid,rho_mid);
 
            // evaluate dynamic viscosity
            double visc_mid = DynamicViscosity(T_mid,rho_mid);
@@ -446,7 +443,6 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
                  }
                  // get upper and lower axial faces of neighbor cell
                  // ------------------------------------------------
-                 std::vector<double> neighborCentroid = neighborCell.centroid();
                  // get axial faces of current cell
                  AMP::Mesh::MeshElement neighborPlusFace;  // upper axial face for current cell
                  AMP::Mesh::MeshElement neighborMinusFace; // lower axial face for current cell
@@ -508,9 +504,6 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
                  // evaluate temperature for neighbor cell
                  double T_mid_neighbor = Temperature(h_axialDonor_neighbor,p_mid_neighbor);
     
-                 // evaluate conductivity for cell
-                 double k_mid_neighbor = ThermalConductivity(T_mid_neighbor,rho_mid_neighbor);
-
                  // evaluate dynamic viscosity for cell
                  double visc_mid_neighbor = DynamicViscosity(T_mid_neighbor,rho_mid_neighbor);
 
@@ -532,18 +525,18 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
                  double massFlux_gap_avg = 0.5*(m_mid/area + m_mid_neighbor/neighborArea);
                  double wt = beta*gapWidth*massFlux_gap_avg;
 
-                 double turbulence_term_energy = (h_axialDonor - h_axialDonor_neighbor)*(0.000125*D_gap_avg*pow(gapWidth/rodDiameter,0.106)
-                    *(-0.1*Re_gap_avg*neighborDiam*massFlux_gap_avg/(visc_mid_neighbor*neighborArea)+pow(Re_gap_avg,-0.1)/neighborArea));
-                 double turbulence_term_axial  = (0.000125*D_gap_avg*pow(gapWidth/rodDiameter,0.106)
-                    *(-0.1*Re_gap_avg*neighborDiam*massFlux_gap_avg/(visc_mid_neighbor*neighborArea)+pow(Re_gap_avg,-0.1)/neighborArea))
-                    *(u_mid - u_mid_neighbor) + 0.5*wt*vol_axialDonor_neighbor/neighborArea;
+                 double turbulence_term_energy = (h_axialDonor - h_axialDonor_neighbor)*(0.00125*D_gap_avg*pow(gapWidth/rodDiameter,0.106)
+                    *(-0.1*std::pow(Re_gap_avg,-1.1)*neighborDiam*massFlux_gap_avg/(visc_mid_neighbor*neighborArea)+pow(Re_gap_avg,-0.1)/neighborArea));
+                 double turbulence_term_axial  = (0.00125*D_gap_avg*pow(gapWidth/rodDiameter,0.106)
+                    *(-0.1*std::pow(Re_gap_avg,-1.1)*neighborDiam*massFlux_gap_avg/(visc_mid_neighbor*neighborArea)+pow(Re_gap_avg,-0.1)/neighborArea))
+                    *(u_mid - u_mid_neighbor) - 0.5*wt*vol_axialDonor_neighbor/neighborArea;
 
                  // add to sums
-                 turbulence_sum_energy += (h_axialDonor - h_axialDonor_neighbor)*(0.000125*D_gap_avg*pow(gapWidth/rodDiameter,0.106)
-                    *(-0.1*Re_gap_avg*D*massFlux_gap_avg/(visc_mid*area)+pow(Re_gap_avg,-0.1)/area));
+                 turbulence_sum_energy += (h_axialDonor - h_axialDonor_neighbor)*(0.00125*D_gap_avg*pow(gapWidth/rodDiameter,0.106)
+                    *(-0.1*std::pow(Re_gap_avg,-1.1)*D*massFlux_gap_avg/(visc_mid*area)+pow(Re_gap_avg,-0.1)/area));
                  turbulence_sum += wt;
-                 turbulence_sum_axial += (0.000125*D_gap_avg*pow(gapWidth/rodDiameter,0.106)
-                    *(-0.1*Re_gap_avg*D*massFlux_gap_avg/(visc_mid*area)+pow(Re_gap_avg,-0.1)/area))
+                 turbulence_sum_axial += (0.00125*D_gap_avg*pow(gapWidth/rodDiameter,0.106)
+                    *(-0.1*std::pow(Re_gap_avg,-1.1)*D*massFlux_gap_avg/(visc_mid*area)+pow(Re_gap_avg,-0.1)/area))
                     *(u_mid - u_mid_neighbor) + 0.5*wt*vol_axialDonor/area;
                     
                  // add Jacobian entries
@@ -574,12 +567,18 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
            }// end loop over gap faces
 
            // add Jacobian entries
-           // ------------------------------------
-           // mass
+           // =================================================================
+           // axial momentum
            // ---axial mass flow rate
-           d_matrix->addValueByGlobalID(plusDofs[0],minusDofs[0],-1.0);
-           d_matrix->addValueByGlobalID(plusDofs[0],minusDofs[0],1.0);
-           
+           d_matrix->addValueByGlobalID(minusDofs[2],minusDofs[0],-2.0*m_minus*vol_minus/area);
+           d_matrix->addValueByGlobalID(minusDofs[2],plusDofs[0],  2.0*m_plus* vol_plus/ area);
+           d_matrix->addValueByGlobalID(minusDofs[2],minusDofs[0],vol_axialDonor/(2.0*area)*(dz*fric/D + K)*std::abs(m_mid));
+           d_matrix->addValueByGlobalID(minusDofs[2],plusDofs[0], vol_axialDonor/(2.0*area)*(dz*fric/D + K)*std::abs(m_mid));
+           d_matrix->addValueByGlobalID(minusDofs[2],minusDofs[0],d_turbulenceCoef*dz*turbulence_sum_axial);
+           d_matrix->addValueByGlobalID(minusDofs[2],plusDofs[0], d_turbulenceCoef*dz*turbulence_sum_axial);
+           // ---pressure
+           d_matrix->addValueByGlobalID(minusDofs[2],minusDofs[2],-area);
+           d_matrix->addValueByGlobalID(minusDofs[2],plusDofs[2],  area);
            // energy
            // ---axial mass flow rate
            d_matrix->addValueByGlobalID(plusDofs[1],minusDofs[0],-h_minus);
@@ -591,31 +590,20 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
            d_matrix->addValueByGlobalID(plusDofs[1],plusDofs[1],  m_plus);
            if (m_mid >= 0.0) d_matrix->addValueByGlobalID(plusDofs[1],minusDofs[1],dz*turbulence_sum);
            else              d_matrix->addValueByGlobalID(plusDofs[1],plusDofs[1], dz*turbulence_sum);
-
-           // axial momentum
+           // mass
            // ---axial mass flow rate
-           d_matrix->addValueByGlobalID(minusDofs[2],minusDofs[0],-2.0*m_minus*vol_minus/area);
-           d_matrix->addValueByGlobalID(minusDofs[2],plusDofs[0], -2.0*m_plus* vol_plus/ area);
-           d_matrix->addValueByGlobalID(minusDofs[2],minusDofs[0],vol_axialDonor/(2.0*area)*(dz*fric/D + K)*abs(m_mid));
-           d_matrix->addValueByGlobalID(minusDofs[2],plusDofs[0], vol_axialDonor/(2.0*area)*(dz*fric/D + K)*abs(m_mid));
-           d_matrix->addValueByGlobalID(minusDofs[2],minusDofs[0],d_turbulenceCoef*dz*turbulence_sum_axial);
-           d_matrix->addValueByGlobalID(minusDofs[2],plusDofs[0], d_turbulenceCoef*dz*turbulence_sum_axial);
-           // ---pressure
-           d_matrix->addValueByGlobalID(minusDofs[2],minusDofs[2],-area);
-           d_matrix->addValueByGlobalID(minusDofs[2],plusDofs[2],  area);
-
-           // impose boundary conditions
-           // --------------------------
-           // if face is exit face,
-           if (AMP::Utilities::approx_equal(plusFaceCentroid[2],height)){
-              // impose fixed exit pressure boundary condition
+           d_matrix->addValueByGlobalID(plusDofs[0],minusDofs[0],-1.0);
+           d_matrix->addValueByGlobalID(plusDofs[0],plusDofs[0],  1.0);
+           
+           // boundary conditions
+           // -----------------------------------------------------------------
+           if (AMP::Utilities::approx_equal_abs(plusFaceCentroid[2],height,1.0e-12)){
+              // exit BC
               d_matrix->addValueByGlobalID(plusDofs[2],plusDofs[2],1.0);
            }
-           if (AMP::Utilities::approx_equal(minusFaceCentroid[2],0.0)){
-              // impose fixed inlet axial mass flow rate boundary condition
+           if (AMP::Utilities::approx_equal_abs(minusFaceCentroid[2],0.0,1.0e-12)){
+              // inlet BC
               d_matrix->addValueByGlobalID(minusDofs[0],minusDofs[0],1.0);
-
-              // impose fixed inlet temperature boundary condition
               d_matrix->addValueByGlobalID(minusDofs[1],minusDofs[1],1.0);
            }
         }// end loop over cells of current subchannel
@@ -653,7 +641,7 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
             std::vector<double> cell1MinusFaceCentroid = cell1MinusFace.centroid();
             std::vector<double> cell2MinusFaceCentroid = cell2MinusFace.centroid();
             // if bottom face is at z = 0,
-            if (AMP::Utilities::approx_equal(cell1MinusFaceCentroid[2],0.0)) {
+            if (AMP::Utilities::approx_equal_abs(cell1MinusFaceCentroid[2],0.0,1.0e-12)) {
                // implement fixed lateral mass flow rates inlet boundary condition
                d_matrix->addValueByGlobalID(gapDofs[0],gapDofs[0],1.0);
             } else {
@@ -759,14 +747,14 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
                double vol1_plus = Volume(h1_plus,p1_plus);
                double vol1_minus = Volume(h1_minus,p1_minus);
                double vol1_axialDonor;
-               if (m1_mid >= 0.0) vol1_axialDonor = vol1_plus;
-               else vol1_axialDonor = vol1_minus;
+               if (m1_mid >= 0.0) vol1_axialDonor = vol1_minus;
+               else vol1_axialDonor = vol1_plus;
 
                double vol2_plus = Volume(h2_plus,p2_plus);
                double vol2_minus = Volume(h2_minus,p2_minus);
                double vol2_axialDonor;
-               if (m2_mid >= 0.0) vol2_axialDonor = vol2_plus;
-               else vol2_axialDonor = vol2_minus;
+               if (m2_mid >= 0.0) vol2_axialDonor = vol2_minus;
+               else vol2_axialDonor = vol2_plus;
 
                double vol_gap_avg = 0.5*(vol1_axialDonor + vol2_axialDonor);
 
@@ -790,7 +778,7 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
                // determine if cell is uppermost cell
                bool is_uppermost_cell = false;
                std::vector<double> cell1PlusFaceCentroid = cell1PlusFace.centroid();
-               if (AMP::Utilities::approx_equal(cell1PlusFaceCentroid[2],height,1.0e-6)) is_uppermost_cell = true;
+               if (AMP::Utilities::approx_equal_abs(cell1PlusFaceCentroid[2],height,1.0e-12)) is_uppermost_cell = true;
 
                double w_plus;
                std::vector<size_t> gapPlusDofs;
@@ -818,7 +806,6 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
                      topCell = &axialCell2;
                      topCellCentroid = &axialCell2Centroid;
                   }
-                  AMP::pout<<" topCellCentroid[0] "<< &topCellCentroid[0] <<std::endl;
                   AMP::Mesh::MeshElement aboveLateralFace = getAxiallyAdjacentLateralFace(topCell,lateralFace,lateralFaceMap);
                   dof_manager->getDOFs(aboveLateralFace.globalID(),gapPlusDofs);
                   w_plus = w_scale*d_frozenVec->getValueByGlobalID(gapPlusDofs[0]);
@@ -866,7 +853,7 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
                   if (is_uppermost_cell) d_matrix->addValueByGlobalID(gapDofs[0],gapDofs[0],     u_plus);
                   else                   d_matrix->addValueByGlobalID(gapDofs[0],gapPlusDofs[0], u_plus);
                }
-               d_matrix->addValueByGlobalID(gapDofs[0],gapDofs[0],d_KG/(gapWidth*pitch)*vol_gap_avg*abs(w_mid));
+               d_matrix->addValueByGlobalID(gapDofs[0],gapDofs[0],d_KG/(gapWidth*pitch)*vol_gap_avg*std::abs(w_mid));
             }
          }
       }// end loop over lateral faces
@@ -954,11 +941,11 @@ std::map<std::vector<double>,AMP::Mesh::MeshElement> SubchannelFourEqLinearOpera
         // get coordinates of current vertex
         std::vector<double> vertexCoord = vertices[j].coord();
         // if any vertex does not have the same x-coordinate as the face centroid,
-        if ( !AMP::Utilities::approx_equal(vertexCoord[0],faceCentroid[0], 1.0e-6) )
+        if ( !AMP::Utilities::approx_equal_abs(vertexCoord[0],faceCentroid[0],1.0e-12) )
           // then the face is not perpindicular to x-axis
           perpindicular_to_x = false;
         // if any vertex does not have the same y-coordinate as the face centroid,
-        if ( !AMP::Utilities::approx_equal(vertexCoord[1],faceCentroid[1], 1.0e-6) )
+        if ( !AMP::Utilities::approx_equal_abs(vertexCoord[1],faceCentroid[1],1.0e-12) )
           // then the face is not perpindicular to y-axis
           perpindicular_to_y = false;
       }
@@ -991,7 +978,7 @@ std::map<std::vector<double>,double> SubchannelFourEqLinearOperator::getGapWidth
    AMP::Mesh::MeshIterator face = mesh->getIterator(AMP::Mesh::Face,0);
    for (; face != face.end(); face++) {
       std::vector<double> faceCentroid = face->centroid();
-      if (AMP::Utilities::approx_equal(faceCentroid[2],topZ,1.0e-12)) {
+      if (AMP::Utilities::approx_equal_abs(faceCentroid[2],topZ,1.0e-12)) {
          // if the face has more than 1 adjacent cell
          if ((mesh->getElementParents(*face,AMP::Mesh::Volume)).size() > 1) {
             // create vector of xy position of gap face
@@ -1009,7 +996,7 @@ std::map<std::vector<double>,double> SubchannelFourEqLinearOperator::getGapWidth
             for (size_t j=0; j<vertices.size(); ++j) {
                // get coordinates of current vertex
                std::vector<double> vertexCoord = vertices[j].coord();
-               if (AMP::Utilities::approx_equal(vertexCoord[2],d_z[Nz],1.0e-12)) {
+               if (AMP::Utilities::approx_equal_abs(vertexCoord[2],d_z[Nz],1.0e-12)) {
                   if (topVertex1Found) { // second top vertex has been found
                      // check for clad centered at this vertex
                      for (size_t k=0; k < clad_x.size(); k++) {
@@ -1067,21 +1054,21 @@ void SubchannelFourEqLinearOperator::fillSubchannelGrid(AMP::Mesh::Mesh::shared_
     double last = 1.0e300; // arbitary large number
     // erase duplicate x points
     for (std::set<double>::iterator it=x.begin(); it!=x.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
+        if ( Utilities::approx_equal_abs(last,*it,1e-12) )
             x.erase(it);
         else
             last = *it;
     }
     // erase duplicate y points
     for (std::set<double>::iterator it=y.begin(); it!=y.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
+        if ( Utilities::approx_equal_abs(last,*it,1e-12) )
             y.erase(it);
         else
             last = *it;
     }
     // erase duplicate z points
     for (std::set<double>::iterator it=z.begin(); it!=z.end(); ++it) {
-        if ( Utilities::approx_equal(last,*it,1e-12) )
+        if ( Utilities::approx_equal_abs(last,*it,1e-12) )
             z.erase(it);
         else
             last = *it;
@@ -1261,7 +1248,7 @@ void SubchannelFourEqLinearOperator::getAxialFaces(
    for (std::vector<AMP::Mesh::MeshElement>::iterator face = cellFaces.begin(); face != cellFaces.end(); ++face) {
       std::vector<double> faceCentroid = face->centroid();
       // if z-coordinates of centroids of the cell and face are not equal,
-      if (!AMP::Utilities::approx_equal(faceCentroid[2],cellCentroid[2],1.0e-6)) {
+      if (!AMP::Utilities::approx_equal_abs(faceCentroid[2],cellCentroid[2],1.0e-12)) {
          // if face is above cell centroid,
          if (faceCentroid[2] > cellCentroid[2])
             // face is the upper axial face
@@ -1309,7 +1296,7 @@ AMP::Mesh::MeshElement SubchannelFourEqLinearOperator::getAxiallyAdjacentLateral
          double knownCentroid[3] = {parentLateralFaceCentroid[0],parentLateralFaceCentroid[1],daughterCellCentroid[2]};
          bool isAxiallyAdjacentLateralFace = true;
          for (size_t i = 0; i < 3; i++) {
-            if (!AMP::Utilities::approx_equal(daughterLateralFaceCentroid[i],knownCentroid[i],1.0e-6)) isAxiallyAdjacentLateralFace = false;
+            if (!AMP::Utilities::approx_equal_abs(daughterLateralFaceCentroid[i],knownCentroid[i],1.0e-12)) isAxiallyAdjacentLateralFace = false;
          }
          if (isAxiallyAdjacentLateralFace) {
             axiallyAdjacentLateralFace = daughterLateralFace; 
@@ -1321,6 +1308,7 @@ AMP::Mesh::MeshElement SubchannelFourEqLinearOperator::getAxiallyAdjacentLateral
    AMP_INSIST(axiallyAdjacentLateralFaceFound,"Axially adjacent lateral face was not found.");
    return axiallyAdjacentLateralFace;
 }
+
 
 }
 }

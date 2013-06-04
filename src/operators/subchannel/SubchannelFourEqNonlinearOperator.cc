@@ -994,14 +994,14 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                double vol1_plus = Volume(h1_plus,p1_plus);
                double vol1_minus = Volume(h1_minus,p1_minus);
                double vol1_axialDonor;
-               if (m1_mid >= 0.0) vol1_axialDonor = vol1_plus;
-               else vol1_axialDonor = vol1_minus;
+               if (m1_mid >= 0.0) vol1_axialDonor = vol1_minus;
+               else vol1_axialDonor = vol1_plus;
 
                double vol2_plus = Volume(h2_plus,p2_plus);
                double vol2_minus = Volume(h2_minus,p2_minus);
                double vol2_axialDonor;
-               if (m2_mid >= 0.0) vol2_axialDonor = vol2_plus;
-               else vol2_axialDonor = vol2_minus;
+               if (m2_mid >= 0.0) vol2_axialDonor = vol2_minus;
+               else vol2_axialDonor = vol2_plus;
 
                double vol_gap_avg = 0.5*(vol1_axialDonor + vol2_axialDonor);
 
