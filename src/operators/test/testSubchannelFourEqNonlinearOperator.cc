@@ -173,8 +173,10 @@ void Test(AMP::UnitTest *ut, std::string exeName)
   std::cout.flush();
 
   // check number of lateral gaps
-  std::map<std::vector<double>,AMP::Mesh::MeshElement> lateralFaceMap = subchannelOperator->getLateralFaces(subchannelOpParams->d_Mesh);
-  size_t Ngaps = lateralFaceMap.size();
+  std::map<std::vector<double>,AMP::Mesh::MeshElement> interiorLateralFaceMap;
+  std::map<std::vector<double>,AMP::Mesh::MeshElement> exteriorLateralFaceMap;
+  subchannelOperator->getLateralFaces(subchannelOpParams->d_Mesh,interiorLateralFaceMap,exteriorLateralFaceMap);
+  size_t Ngaps = interiorLateralFaceMap.size();
   if (Ngaps == 108) {// for 3x3 subchannel array with 9 axial intervals, there are 12x9=108 gaps
      ut->passes(exeName+": number of lateral gaps");
   } else {
@@ -271,8 +273,8 @@ void Test(AMP::UnitTest *ut, std::string exeName)
   for (; face != face.end(); face++) { // loop over all faces in mesh
      std::vector<double> faceCentroid = face->centroid();
      // try to find face in lateral face map
-     std::map<std::vector<double>,AMP::Mesh::MeshElement>::iterator lateralFaceIterator = lateralFaceMap.find(faceCentroid);
-     if (lateralFaceIterator != lateralFaceMap.end()) { // if face in lateral face map,
+     std::map<std::vector<double>,AMP::Mesh::MeshElement>::iterator lateralFaceIterator = interiorLateralFaceMap.find(faceCentroid);
+     if (lateralFaceIterator != interiorLateralFaceMap.end()) { // if face in lateral face map,
         // get lateral face
         AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
         // get MATLAB index for gap

@@ -71,7 +71,11 @@ namespace Operator {
       boost::shared_ptr<SubchannelOperatorParameters> getParams() { return d_params; }
 
       //! Makes map of lateral gaps to their centroids
-      std::map<std::vector<double>,AMP::Mesh::MeshElement> getLateralFaces(AMP::Mesh::Mesh::shared_ptr);
+      void getLateralFaces(
+         AMP::Mesh::Mesh::shared_ptr,
+         std::map<std::vector<double>,AMP::Mesh::MeshElement>&,
+         std::map<std::vector<double>,AMP::Mesh::MeshElement>&
+      );
 
       //! Makes map of gap widths to their xy positions
       std::map<std::vector<double>,double> getGapWidths(AMP::Mesh::Mesh::shared_ptr,

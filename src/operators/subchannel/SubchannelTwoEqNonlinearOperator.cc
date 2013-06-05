@@ -416,7 +416,6 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
     PROFILE_STOP("apply");
 }
 
-// JEH: what is the purpose of this function?
 boost::shared_ptr<OperatorParameters> SubchannelTwoEqNonlinearOperator :: 
 getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u) 
 {

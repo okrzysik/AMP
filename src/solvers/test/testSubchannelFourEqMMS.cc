@@ -13,6 +13,7 @@
 #include "vectors/Vector.h"
 #include "vectors/SimpleVector.h"
 #include "operators/subchannel/SubchannelFourEqNonlinearOperator.h"
+#include "operators/subchannel/SubchannelFourEqLinearOperator.h"
 #include "operators/subchannel/SubchannelConstants.h"
 #include "operators/OperatorBuilder.h"
 #include "solvers/ColumnSolver.h"
@@ -24,9 +25,9 @@
 
 #include "ampmesh/SiloIO.h"
 #include "vectors/VectorBuilder.h"
-#include "discretization/simpleDOF_Manager.h"
-#include "discretization/MultiDOF_Manager.h"
 #include "ampmesh/StructuredMeshHelper.h"
+#include "discretization/structuredFaceDOFManager.h"
+#include "discretization/simpleDOF_Manager.h"
 
 
 // Function to get the linear heat generation rate
@@ -61,7 +62,6 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file = "output_" + exeName;
-    //std::string silo_name = exeName;
     AMP::PIO::logAllNodes(log_file);
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
@@ -84,27 +84,25 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
     xyFaceMesh = subchannelMesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh , 0 ) );
 
-    // create DOF manager
+    // get dof manager
     AMP::Discretization::DOFManager::shared_ptr subchannelDOFManager;
     if ( subchannelMesh.get() != NULL ) {
-      AMP::Mesh::MeshIterator axialFaces0 = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0);
-      AMP::Mesh::MeshIterator axialFaces1 = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1);
-      AMP::Mesh::MeshIterator gapFaces0 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, 
-        AMP::Mesh::StructuredMeshHelper::getXZFaceIterator(subchannelMesh,0), 
-        AMP::Mesh::StructuredMeshHelper::getYZFaceIterator(subchannelMesh,0) );
-      AMP::Mesh::MeshIterator gapFaces1 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, 
-        AMP::Mesh::StructuredMeshHelper::getXZFaceIterator(subchannelMesh,1), 
-        AMP::Mesh::StructuredMeshHelper::getYZFaceIterator(subchannelMesh,1) );
-      std::vector<AMP::Discretization::DOFManager::shared_ptr> subchannelChildrenDOFManagers(2);
-      subchannelChildrenDOFManagers[0] = AMP::Discretization::simpleDOFManager::create( subchannelMesh, axialFaces1, axialFaces0, 3 );
-      subchannelChildrenDOFManagers[1] = AMP::Discretization::simpleDOFManager::create( subchannelMesh, gapFaces1, gapFaces0, 1 );
-      subchannelDOFManager = AMP::Discretization::DOFManager::shared_ptr( 
-        new AMP::Discretization::multiDOFManager( subchannelMesh->getComm(), subchannelChildrenDOFManagers ) );
+      int DOFsPerFace[3]={1,1,3};
+      subchannelDOFManager = AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
     }
 
 //=============================================================================
 // physics model, parameters, and operator creation
 //=============================================================================
+    // get input and output variables
+    AMP::LinearAlgebra::Variable::shared_ptr inputVariable  (new AMP::LinearAlgebra::Variable("flow"));
+    AMP::LinearAlgebra::Variable::shared_ptr outputVariable (new AMP::LinearAlgebra::Variable("flow"));
+
+    // create solution, rhs, and residual vectors
+    AMP::LinearAlgebra::Vector::shared_ptr manufacturedVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable,  false );
+    AMP::LinearAlgebra::Vector::shared_ptr solVec          = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable,  false );
+    AMP::LinearAlgebra::Vector::shared_ptr rhsVec          = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, false );
+    AMP::LinearAlgebra::Vector::shared_ptr resVec          = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, false );
 
     // get subchannel physics model
     boost::shared_ptr<AMP::Database> subchannelPhysics_db = input_db->getDatabase("SubchannelPhysicsModel");
@@ -113,31 +111,33 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
     // Create the SubchannelOperatorParameters
     boost::shared_ptr<AMP::Database> nonlinearOperator_db = input_db->getDatabase("SubchannelFourEqNonlinearOperator");
-    boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( nonlinearOperator_db ));
-    subchannelOpParams->d_Mesh = subchannelMesh ;
-    subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
-    subchannelOpParams->clad_x = input_db->getDatabase("CladProperties")->getDoubleArray("x");
-    subchannelOpParams->clad_y = input_db->getDatabase("CladProperties")->getDoubleArray("y");
-    subchannelOpParams->clad_d = input_db->getDatabase("CladProperties")->getDoubleArray("d");
+    boost::shared_ptr<AMP::Database> linearOperator_db    = input_db->getDatabase("SubchannelFourEqLinearOperator");
+    boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> nonlinearOpParams(new AMP::Operator::SubchannelOperatorParameters( nonlinearOperator_db ));
+    boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> linearOpParams(   new AMP::Operator::SubchannelOperatorParameters( linearOperator_db ));
+    nonlinearOpParams->d_Mesh = subchannelMesh ;
+    nonlinearOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
+    nonlinearOpParams->d_dofMap = subchannelDOFManager;
+    nonlinearOpParams->clad_x = input_db->getDatabase("CladProperties")->getDoubleArray("x");
+    nonlinearOpParams->clad_y = input_db->getDatabase("CladProperties")->getDoubleArray("y");
+    nonlinearOpParams->clad_d = input_db->getDatabase("CladProperties")->getDoubleArray("d");
+    linearOpParams->d_Mesh = subchannelMesh ;
+    linearOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
+    linearOpParams->d_dofMap = subchannelDOFManager;
+    linearOpParams->clad_x = input_db->getDatabase("CladProperties")->getDoubleArray("x");
+    linearOpParams->clad_y = input_db->getDatabase("CladProperties")->getDoubleArray("y");
+    linearOpParams->clad_d = input_db->getDatabase("CladProperties")->getDoubleArray("d");
 
     // create nonlinear operator
-    boost::shared_ptr<AMP::Operator::SubchannelFourEqNonlinearOperator> nonlinearOperator (new AMP::Operator::SubchannelFourEqNonlinearOperator(subchannelOpParams));
+    boost::shared_ptr<AMP::Operator::SubchannelFourEqNonlinearOperator> nonlinearOperator (new AMP::Operator::SubchannelFourEqNonlinearOperator(nonlinearOpParams));
     // reset the nonlinear operator
-    nonlinearOperator->reset(subchannelOpParams);
+    nonlinearOperator->reset(nonlinearOpParams);
+
+    // create linear operator
+    boost::shared_ptr<AMP::Operator::SubchannelFourEqLinearOperator> linearOperator (new AMP::Operator::SubchannelFourEqLinearOperator(linearOpParams));
 
     // pass creation test
     ut->passes(exeName+": creation");
     std::cout.flush();
-
-    // get input and output variables
-    AMP::LinearAlgebra::Variable::shared_ptr inputVariable  = nonlinearOperator->getInputVariable();
-    AMP::LinearAlgebra::Variable::shared_ptr outputVariable = nonlinearOperator->getOutputVariable();
-
-    // create solution, rhs, and residual vectors
-    AMP::LinearAlgebra::Vector::shared_ptr manufacturedVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable, true );
-    AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable,  true );
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
-    AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
 
 //=============================================================================
 // compute manufactured solution
@@ -200,12 +200,14 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
         ++face;
     }
     // get lateral face map
-    std::map<std::vector<double>,AMP::Mesh::MeshElement> lateralFaceMap = nonlinearOperator->getLateralFaces(subchannelOpParams->d_Mesh);
+    std::map<std::vector<double>,AMP::Mesh::MeshElement> interiorLateralFaceMap;
+    std::map<std::vector<double>,AMP::Mesh::MeshElement> exteriorLateralFaceMap;
+    nonlinearOperator->getLateralFaces(nonlinearOpParams->d_Mesh,interiorLateralFaceMap,exteriorLateralFaceMap);
     // loop over lateral faces
     for (face = face.begin(); face != face.end(); face++) {
        std::vector<double> faceCentroid = face->centroid();
-       std::map<std::vector<double>,AMP::Mesh::MeshElement>::iterator lateralFaceIterator = lateralFaceMap.find(faceCentroid);
-       if (lateralFaceIterator != lateralFaceMap.end()) {
+       std::map<std::vector<double>,AMP::Mesh::MeshElement>::iterator lateralFaceIterator = interiorLateralFaceMap.find(faceCentroid);
+       if (lateralFaceIterator != interiorLateralFaceMap.end()) {
           // get lateral face
           AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
           // get crossflow from solution vector
@@ -233,8 +235,8 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     // loop over lateral faces
     for (face = face.begin(); face != face.end(); face++) {
        std::vector<double> faceCentroid = face->centroid();
-       std::map<std::vector<double>,AMP::Mesh::MeshElement>::iterator lateralFaceIterator = lateralFaceMap.find(faceCentroid);
-       if (lateralFaceIterator != lateralFaceMap.end()) {
+       std::map<std::vector<double>,AMP::Mesh::MeshElement>::iterator lateralFaceIterator = interiorLateralFaceMap.find(faceCentroid);
+       if (lateralFaceIterator != interiorLateralFaceMap.end()) {
           // get lateral face
           AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
           // get crossflow from solution vector
@@ -253,11 +255,12 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
   
     // get linear solver database
-//    boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
+    boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
  
     // put manufactured RHS into resVec
-//    linearOperator->reset(nonlinearOperator->getJacobianParameters(solVec));
-//    linearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+    nonlinearOperator->reset(nonlinearOpParams);
+    linearOperator->reset(nonlinearOperator->getJacobianParameters(solVec));
+    linearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
    
     // create nonlinear solver parameters
     boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
@@ -271,9 +274,8 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
 
     // create linear solver
-//    boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
+    boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
 
-/*
     // create preconditioner
     boost::shared_ptr<AMP::Database> Preconditioner_db =  linearSolver_db->getDatabase("Preconditioner");
     boost::shared_ptr<AMP::Solver::SolverStrategyParameters> PreconditionerParams(new AMP::Solver::SolverStrategyParameters(Preconditioner_db));
@@ -281,7 +283,6 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Solver::TrilinosMLSolver> linearFlowPreconditioner(new AMP::Solver::TrilinosMLSolver(PreconditionerParams));
     // set preconditioner
     linearSolver->setPreconditioner(linearFlowPreconditioner);
-*/
 
     // don't use zero initial guess
     nonlinearSolver->setZeroInitialGuess(false);
@@ -427,7 +428,7 @@ int main(int argc, char *argv[])
     AMP::UnitTest ut;
 
     std::vector<std::string> files(1);
-    files[0] = "testSubchannelFourEqMMS-2";
+    files[0] = "testSubchannelFourEqMMS-1";
 
     for (size_t i=0; i<files.size(); i++)
         flowTest(&ut,files[i]);

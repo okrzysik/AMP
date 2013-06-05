@@ -200,10 +200,12 @@ bool SubchannelFourEqNonlinearOperator::getBoolParameter(	boost::shared_ptr<Subc
 }
 
 // function used to get all lateral gaps
-std::map<std::vector<double>,AMP::Mesh::MeshElement> SubchannelFourEqNonlinearOperator::getLateralFaces(AMP::Mesh::Mesh::shared_ptr mesh)
+void SubchannelFourEqNonlinearOperator::getLateralFaces(
+   AMP::Mesh::Mesh::shared_ptr mesh,
+   std::map<std::vector<double>,AMP::Mesh::MeshElement> &interiorLateralFaceMap,
+   std::map<std::vector<double>,AMP::Mesh::MeshElement> &exteriorLateralFaceMap
+)
 {
-   // map of lateral gaps to their centroids
-   std::map<std::vector<double>,AMP::Mesh::MeshElement> lateralFaceMap;
    // get iterator over all faces of mesh
    AMP::Mesh::MeshIterator face = mesh->getIterator(AMP::Mesh::Face,0);
    // loop over faces
@@ -237,11 +239,14 @@ std::map<std::vector<double>,AMP::Mesh::MeshElement> SubchannelFourEqNonlinearOp
          // if the face has more than 1 adjacent cell
          if ((mesh->getElementParents(*face,AMP::Mesh::Volume)).size() > 1) {
             // insert face into map with centroid
-            lateralFaceMap.insert(std::pair<std::vector<double>,AMP::Mesh::MeshElement>(faceCentroid,*face));
+            interiorLateralFaceMap.insert(std::pair<std::vector<double>,AMP::Mesh::MeshElement>(faceCentroid,*face));
+         } else {
+            // insert face into exterior lateral face map with centroid
+            exteriorLateralFaceMap.insert(std::pair<std::vector<double>,AMP::Mesh::MeshElement>(faceCentroid,*face));
          }
       }
    }// end loop over faces
-   return lateralFaceMap;
+   return;
 }
 
 // function to map x,y position to gap widths
@@ -432,7 +437,9 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
       fillSubchannelGrid(d_Mesh);
 
       // get map of all of the lateral faces to their centroids
-      std::map<std::vector<double>,AMP::Mesh::MeshElement> lateralFaceMap = getLateralFaces(d_Mesh);
+      std::map<std::vector<double>,AMP::Mesh::MeshElement> interiorLateralFaceMap;
+      std::map<std::vector<double>,AMP::Mesh::MeshElement> exteriorLateralFaceMap;
+      getLateralFaces(d_Mesh,interiorLateralFaceMap,exteriorLateralFaceMap);
       
       // get map of gap widths to their xy positions
       std::map<std::vector<double>,double> gapWidthMap = getGapWidths(d_Mesh,d_params->clad_x,d_params->clad_y,d_params->clad_d);
@@ -660,8 +667,8 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
              std::vector<AMP::Mesh::MeshElement> cellFaces = localSubchannelCell->getElements(AMP::Mesh::Face);
              for (std::vector<AMP::Mesh::MeshElement>::iterator face = cellFaces.begin(); face != cellFaces.end(); ++face) {
                 std::vector<double> faceCentroid = face->centroid();
-                std::map<std::vector<double>,AMP::Mesh::MeshElement>::iterator lateralFaceIterator = lateralFaceMap.find(faceCentroid);
-                if (lateralFaceIterator != lateralFaceMap.end()) {
+                std::map<std::vector<double>,AMP::Mesh::MeshElement>::iterator lateralFaceIterator = interiorLateralFaceMap.find(faceCentroid);
+                if (lateralFaceIterator != interiorLateralFaceMap.end()) {
                    // get face
                    AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
                    // get crossflow
@@ -799,7 +806,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                    axial_crossflow_sum += crossflowSign*w*u_lateralDonor;
                    axial_turbulence_sum += wt*(u_mid - u_mid_neighbor);
                       
-                }// end if (lateralFaceIterator != lateralFaceMap.end()) {
+                }// end if (lateralFaceIterator != interiorLateralFaceMap.end()) {
              }// end loop over gap faces
 
              // force terms to zero if requested
@@ -859,8 +866,8 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
       AMP::Mesh::MeshIterator face = d_Mesh->getIterator(AMP::Mesh::Face, 0); // iterator for cells of mesh
       for (; face != face.end(); face++) {
          std::vector<double> faceCentroid = face->centroid();
-         std::map<std::vector<double>,AMP::Mesh::MeshElement>::iterator lateralFaceIterator = lateralFaceMap.find(faceCentroid);
-         if (lateralFaceIterator != lateralFaceMap.end()) {
+         std::map<std::vector<double>,AMP::Mesh::MeshElement>::iterator lateralFaceIterator = interiorLateralFaceMap.find(faceCentroid);
+         if (lateralFaceIterator != interiorLateralFaceMap.end()) {
             // get lateral face
             AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
             // get crossflow from solution vector
@@ -937,7 +944,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                   bottomCell2 = &axialCell22;
                   //bottomCell2Centroid = &axialCell22Centroid;
                }
-               AMP::Mesh::MeshElement belowLateralFace = getAxiallyAdjacentLateralFace(bottomCell1,lateralFace,lateralFaceMap);
+               AMP::Mesh::MeshElement belowLateralFace = getAxiallyAdjacentLateralFace(bottomCell1,lateralFace,interiorLateralFaceMap);
                std::vector<size_t> belowDofs;
                dof_manager->getDOFs(belowLateralFace.globalID(),belowDofs);
                double w_minus = w_scale*inputVec->getValueByGlobalID(belowDofs[0]);
@@ -1051,7 +1058,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                         topCellCentroid = &axialCell2Centroid;
                      }
                      AMP::pout<<" topCellCentroid[0] "<< &topCellCentroid[0] <<std::endl;
-                     AMP::Mesh::MeshElement aboveLateralFace = getAxiallyAdjacentLateralFace(topCell,lateralFace,lateralFaceMap);
+                     AMP::Mesh::MeshElement aboveLateralFace = getAxiallyAdjacentLateralFace(topCell,lateralFace,interiorLateralFaceMap);
                      std::vector<size_t> aboveDofs;
                      dof_manager->getDOFs(aboveLateralFace.globalID(),aboveDofs);
                      double w_plus = w_scale*inputVec->getValueByGlobalID(aboveDofs[0]);
@@ -1086,6 +1093,18 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                           + gapWidth*pitch*dz*dz*gravity*std::sin(d_theta)/vol_gap_avg;
                outputVec->setValueByGlobalID(gapDofs[0],Subchannel::scaleLateralMassFlowRate*R_w);
             }
+         } else {
+            // determine if face is an external gap face; in this case, a zero must by set
+            // to the nonlinear residual entry for this DOF, i.e., a zero Dirichlet BC
+            // is applied to exterior gap face lateral mass flow rates
+            lateralFaceIterator = exteriorLateralFaceMap.find(faceCentroid);
+            if (lateralFaceIterator != exteriorLateralFaceMap.end()) {
+               // get lateral face
+               AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
+               std::vector<size_t> gapDofs;
+               dof_manager->getDOFs(lateralFace.globalID(),gapDofs);
+               outputVec->setValueByGlobalID(gapDofs[0],0.0);
+            }
          }
       }// end loop over lateral faces
 }// end of apply function
@@ -1095,9 +1114,17 @@ getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u)
 {
   boost::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
 
-  tmp_db->putString("name","SubchannelFourEqNonlinearOperator");
+  tmp_db->putString("name","SubchannelFourEqLinearOperator");
 
   boost::shared_ptr<SubchannelOperatorParameters> outParams(new SubchannelOperatorParameters(tmp_db));
+  outParams->d_db = d_params->d_db; 
+  outParams->d_dofMap = d_params->d_dofMap; 
+  outParams->d_frozenSolution =  subsetInputVector( u );
+  outParams->d_subchannelPhysicsModel =  d_subchannelPhysicsModel;
+  outParams->clad_x = d_params->clad_x;
+  outParams->clad_y = d_params->clad_y;
+  outParams->clad_d = d_params->clad_d;
+
   return outParams;
 }
 
@@ -1258,7 +1285,7 @@ void SubchannelFourEqNonlinearOperator::getAxialFaces(
 AMP::Mesh::MeshElement SubchannelFourEqNonlinearOperator::getAxiallyAdjacentLateralFace(
    AMP::Mesh::MeshElement* daughterCell,
    AMP::Mesh::MeshElement parentLateralFace,
-   std::map<std::vector<double>,AMP::Mesh::MeshElement> lateralFaceMap)
+   std::map<std::vector<double>,AMP::Mesh::MeshElement> interiorLateralFaceMap)
 {
    // gets the lateral face that is either below or above another lateral face
    // daughterCell: cell that is either above or below the parent cell
@@ -1273,8 +1300,8 @@ AMP::Mesh::MeshElement SubchannelFourEqNonlinearOperator::getAxiallyAdjacentLate
    std::vector<AMP::Mesh::MeshElement> daughterCellFaces = daughterCell->getElements(AMP::Mesh::Face);
    for (std::vector<AMP::Mesh::MeshElement>::iterator face = daughterCellFaces.begin(); face != daughterCellFaces.end(); ++face) {
       std::vector<double> faceCentroid = face->centroid();
-      std::map<std::vector<double>,AMP::Mesh::MeshElement>::iterator lateralFaceIterator = lateralFaceMap.find(faceCentroid);
-      if (lateralFaceIterator != lateralFaceMap.end()) {
+      std::map<std::vector<double>,AMP::Mesh::MeshElement>::iterator lateralFaceIterator = interiorLateralFaceMap.find(faceCentroid);
+      if (lateralFaceIterator != interiorLateralFaceMap.end()) {
          // get lateral face
          AMP::Mesh::MeshElement daughterLateralFace = lateralFaceIterator->second;
          std::vector<double> daughterLateralFaceCentroid = daughterLateralFace.centroid();

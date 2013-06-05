@@ -1,4 +1,4 @@
-// Input file for testSubchannelFourEqMMS
+// Input file for testSubchannelSolution
 // This version has no friction or power
 TOLERANCE = 1e-6
 
@@ -29,33 +29,63 @@ CladProperties{
         0.0095, 0.0095, 0.0095, 0.0095
 }
 
+
 SubchannelFourEqNonlinearOperator{
     name = "SubchannelFourEqNonlinearOperator"
     InputVariable = "flow"
     OutputVariable = "flow"
-    Exit_Pressure = 15.5e6
-    Inlet_Temperature = 559.15
-    Inlet_Mass_Flow_Rate = 2.808
+    Exit_Pressure = 15.5132e6       // Exit pressure in Pa
+    Inlet_Temperature = 569.26      // Inlet temperature in K
+    Inlet_Mass_Flow_Rate = 0.3522   // Total mass flow rate for all subchannels in kg/s
     Inlet_Lateral_Flow_Rate = 0.0
     Fission_Heating_Coefficient = 0.0
-    Channel_Angle = 0.0
-    Friction_Factor = 0.1
+    Channel_Angle = 0.0             // Channel angle
+    Friction_Factor = 0.001         // Friction factor
     Turbulence_Coefficient = 1.0
-    Max_Rod_Power = 6.69e4
-    Rod_Power_Fraction = 0.7525, 0.83, 0.7475,
-                         0.8275, 0.99, 0.8375,
-                         0.7375, 0.8275, 0.76
+    Max_Rod_Power = 0.0                 // Rod power in W
+    Rod_Power_Fraction = 0.0, 0.0, 0.0,
+                         0.0, 0.0, 0.0,
+                         0.0, 0.0, 0.0
     Heat_Source_Type = "totalHeatGeneration"
     Heat_Shape = "Sinusoidal"
+    Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
+    Prandtl          = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
+    Friction_Model = "Constant"
     LocalModel = "SubchannelPhysicsModel"
-    Friction_Model = "Selander"
-    Surface_Roughness = 0.5e-6
-    Number_GridSpacers = 7
-    zMin_GridSpacers = 0.4225, 0.8800, 1.3375, 1.7950, 2.2525, 2.7100, 3.1675
-    zMax_GridSpacers = 0.4925, 0.9500, 1.4075, 1.8650, 2.3225, 2.7800, 3.2375
-    LossCoefficient_GridSpacers = 0.684, 0.684, 0.684, 0.684, 0.684, 0.684, 0.684
-    Reynolds = 95432.91
-    Prandtl = 1.0
+    Number_GridSpacers = 0
+    Force_No_Conduction = FALSE
+    Force_No_Turbulence = FALSE
+    Force_No_Heat_Source = FALSE
+    Force_No_Friction = FALSE
+}
+
+SubchannelFourEqLinearOperator{
+    name = "SubchannelFourEqLinearOperator"
+    InputVariable = "flow"
+    OutputVariable = "flow"
+    Exit_Pressure = 15.5132e6       // Exit pressure in Pa
+    Inlet_Temperature = 569.26      // Inlet temperature in K
+    Inlet_Mass_Flow_Rate = 0.3522   // Total mass flow rate for all subchannels in kg/s
+    Inlet_Lateral_Flow_Rate = 0.0
+    Fission_Heating_Coefficient = 0.0
+    Channel_Angle = 0.0             // Channel angle
+    Friction_Factor = 0.001         // Friction factor
+    Turbulence_Coefficient = 1.0
+    Max_Rod_Power = 0.0                 // Rod power in W
+    Rod_Power_Fraction = 0.0, 0.0, 0.0,
+                         0.0, 0.0, 0.0,
+                         0.0, 0.0, 0.0
+    Heat_Source_Type = "totalHeatGeneration"
+    Heat_Shape = "Sinusoidal"
+    Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
+    Prandtl          = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
+    Friction_Model = "Constant"
+    LocalModel = "SubchannelPhysicsModel"
+    Number_GridSpacers = 0
+    Force_No_Conduction = FALSE
+    Force_No_Turbulence = FALSE
+    Force_No_Heat_Source = FALSE
+    Force_No_Friction = FALSE
 }
 
 SubchannelPhysicsModel{
@@ -63,13 +93,13 @@ SubchannelPhysicsModel{
 	Material = "WaterLibrary"
 	Formulation = "FunctionsTesting"
 	Defaults{
-		enthalpy = 200.0e3
-		pressure = 0.5e6
+        diameter    = 0.01178  // Todreas, p.455
 		temperature = 350.0
-		density = 973.919
-                reynolds = 4.4e5
-                prandtl = 1.0
-                diameter = 0.0095
+		enthalpy    = 200.0e3
+		pressure    = 0.5e6
+		density     = 973.919
+        reynolds    = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
+        prandtl     = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
 	}
 }
 
@@ -94,9 +124,9 @@ NonlinearSolver{
         absolute_tolerance = 1.0e-7
         relative_tolerance = 1.0e-1
         divergence_tolerance = 1.0e03
-        max_krylov_dimension = 40
-        uses_preconditioner=FALSE
-        pc_type = "none"
+        max_krylov_dimension = 200
+        uses_preconditioner=TRUE
+        pc_type = "shell"
         pc_side = "RIGHT"
 
         KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 1000"
