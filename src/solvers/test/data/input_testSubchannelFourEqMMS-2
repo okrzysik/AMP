@@ -40,6 +40,7 @@ SubchannelFourEqNonlinearOperator{
     Channel_Angle = 0.0
     Friction_Factor = 0.1
     Turbulence_Coefficient = 1.0
+    Lateral_Form_Loss_Coefficient = 0.2
     Max_Rod_Power = 6.69e4
     Rod_Power_Fraction = 1.0,1.0,1.0,
                          1.0,1.0,1.0,

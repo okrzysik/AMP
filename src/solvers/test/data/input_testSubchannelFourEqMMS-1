@@ -42,6 +42,7 @@ SubchannelFourEqNonlinearOperator{
     Channel_Angle = 0.0             // Channel angle
     Friction_Factor = 0.001         // Friction factor
     Turbulence_Coefficient = 1.0
+    Lateral_Form_Loss_Coefficient = 0.2
     Max_Rod_Power = 0.0                 // Rod power in W
     Rod_Power_Fraction = 0.0, 0.0, 0.0,
                          0.0, 0.0, 0.0,
@@ -71,6 +72,7 @@ SubchannelFourEqLinearOperator{
     Channel_Angle = 0.0             // Channel angle
     Friction_Factor = 0.001         // Friction factor
     Turbulence_Coefficient = 1.0
+    Lateral_Form_Loss_Coefficient = 0.2
     Max_Rod_Power = 0.0                 // Rod power in W
     Rod_Power_Fraction = 0.0, 0.0, 0.0,
                          0.0, 0.0, 0.0,
@@ -131,6 +133,9 @@ NonlinearSolver{
 
         KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 1000"
         Preconditioner{
+//max_levels = 1
+aggregation_aux_enable = TRUE
+//problem_type = "NSSA"
           print_info_level = 1
             max_iterations = 1
             max_error = 1.0e-7
