@@ -288,6 +288,11 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     nonlinearSolver->setZeroInitialGuess(false);
 
     // solve
+    std::cout<<" the matrix entries are: "<<std::endl;
+    std::cout<< *linearOperator->getMatrix() <<std::endl;
+    std::cout<<" those were the matrix entries. "<<std::endl;
+    std::cout<<" vector is size "<<rhsVec->getGlobalSize() <<std::endl;
+
     nonlinearSolver->solve(rhsVec, solVec);
     nonlinearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
 
