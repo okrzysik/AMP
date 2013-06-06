@@ -120,6 +120,7 @@ namespace Operator {
       double d_turbulenceCoef; // proportionality constant relating turbulent momentum to turbulent energy transport
       double d_reynolds;  // reynolds number
       double d_prandtl;   // prandtl number
+      double d_KG;        // lateral form loss coefficient
 
       std::string d_frictionModel; // friction model
       double d_friction; // friction factor

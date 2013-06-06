@@ -55,6 +55,8 @@ void SubchannelFourEqNonlinearOperator :: reset(const boost::shared_ptr<Operator
       d_prandtl   = getDoubleParameter(myparams,"Prandtl",0.0);  
       d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);  
       d_turbulenceCoef = getDoubleParameter(myparams,"Turbulence_Coefficient",1.0);
+      d_KG = getDoubleParameter(myparams,"Lateral_Form_Loss_Coefficient",0.2);
+
       d_forceNoConduction = getBoolParameter(myparams,"Force_No_Conduction",false);
       d_forceNoTurbulence = getBoolParameter(myparams,"Force_No_Turbulence",false);
       d_forceNoHeatSource = getBoolParameter(myparams,"Force_No_Heat_Source",false);
@@ -107,9 +109,11 @@ void SubchannelFourEqNonlinearOperator :: reset(const boost::shared_ptr<Operator
     Subchannel::getSubchannelProperties( d_Mesh, myparams->clad_x, myparams->clad_y, myparams->clad_d, 
         x, y, d_channelArea, d_channelDiam, d_rodDiameter, d_rodFraction );
     AMP_ASSERT(d_channelArea.size()==d_numSubchannels);
+    // compute total area
     double total_area = 0.0;
     for (size_t i=0; i<d_numSubchannels; i++)
         total_area += d_channelArea[i];
+    // inlet mass flow rate for each subchannel
     d_channelMass.resize(d_numSubchannels,0.0);
     for (size_t i=0; i<d_numSubchannels; i++)
         d_channelMass[i] = d_mass*d_channelArea[i]/total_area;
@@ -1084,8 +1088,6 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
     
                // compute element height
                double dz = cell1PlusFaceCentroid[2] - cell1MinusFaceCentroid[2];
-
-               double d_KG = 0.2;//JEH: need to get from input file
 
                double R_w = u_plus*w_axialDonor_plus - u_minus*w_axialDonor_minus
                           - crossflowSign*gapWidth/pitch*dz*dz*(p1_minus - p2_minus)
