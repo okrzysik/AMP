@@ -827,16 +827,16 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
              // ------------------------------------
              // mass
              double R_m = m_plus - m_minus
-                        + mass_crossflow_sum;
+                        + dz*mass_crossflow_sum;
              // energy
              double R_h = m_plus*h_plus - m_minus*h_minus
-                        + energy_crossflow_sum
+                        + dz*energy_crossflow_sum
                         - dz*energy_heatflux_sum   * force_factor_heat_source
                         + dz*energy_turbulence_sum * force_factor_turbulence
                         + dz*energy_conduction_sum * force_factor_conduction;
              // axial momentum
              double R_p = m_plus*u_plus - m_minus*u_minus
-                        + axial_crossflow_sum
+                        + dz*axial_crossflow_sum
                         + area*(p_plus-p_minus)
                         + gravity*area*dz*std::cos(d_theta)/vol_axialDonor
                         + 1.0/(2.0*area)*(dz*fric/D + K)*std::abs(m_mid)*m_mid*vol_axialDonor * force_factor_friction
@@ -1090,9 +1090,9 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
                double dz = cell1PlusFaceCentroid[2] - cell1MinusFaceCentroid[2];
 
                double R_w = u_plus*w_axialDonor_plus - u_minus*w_axialDonor_minus
-                          - crossflowSign*gapWidth/pitch*dz*dz*(p1_minus - p2_minus)
-                          + d_KG/(2.0*gapWidth*pitch)*std::abs(w_mid)*w_mid*vol_gap_avg
-                          + gapWidth*pitch*dz*dz*gravity*std::sin(d_theta)/vol_gap_avg;
+                          - crossflowSign*gapWidth/pitch*dz*(p1_minus - p2_minus)
+                          + dz*d_KG/(2.0*gapWidth*pitch)*std::abs(w_mid)*w_mid*vol_gap_avg
+                          + gapWidth*pitch*dz*gravity*std::sin(d_theta)/vol_gap_avg;
                outputVec->setValueByGlobalID(gapDofs[0],Subchannel::scaleLateralMassFlowRate*R_w);
             }
          } else {

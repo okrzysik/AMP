@@ -498,13 +498,13 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
                  if (crossflowSign*w >= 0.0) {
                     h_lateralDonor = h_axialDonor;
                     u_lateralDonor = u_mid;
-                    if (m_mid >= 0.0) d_matrix->addValueByGlobalID(plusDofs[1],minusDofs[1],crossflowSign*w);
-                    else              d_matrix->addValueByGlobalID(plusDofs[1],plusDofs[1], crossflowSign*w);
+                    if (m_mid >= 0.0) d_matrix->addValueByGlobalID(plusDofs[1],minusDofs[1],dz*crossflowSign*w);
+                    else              d_matrix->addValueByGlobalID(plusDofs[1],plusDofs[1], dz*crossflowSign*w);
                  } else {
                     h_lateralDonor = h_axialDonor_neighbor;
                     u_lateralDonor = u_mid_neighbor;
-                    if (m_mid_neighbor >= 0.0) d_matrix->addValueByGlobalID(plusDofs[1],neighborMinusDofs[1],crossflowSign*w);
-                    else                       d_matrix->addValueByGlobalID(plusDofs[1],neighborPlusDofs[1], crossflowSign*w);
+                    if (m_mid_neighbor >= 0.0) d_matrix->addValueByGlobalID(plusDofs[1],neighborMinusDofs[1],dz*crossflowSign*w);
+                    else                       d_matrix->addValueByGlobalID(plusDofs[1],neighborPlusDofs[1], dz*crossflowSign*w);
                  }
            
                  // evaluate temperature for neighbor cell
@@ -548,26 +548,26 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
                  // add Jacobian entries
                  // --------------------
                  // mass
-                 d_matrix->addValueByGlobalID(plusDofs[0],gapDofs[0],crossflowSign);
+                 d_matrix->addValueByGlobalID(plusDofs[0],gapDofs[0],dz*crossflowSign);
 
                  // energy
                  d_matrix->addValueByGlobalID(plusDofs[1],neighborMinusDofs[0],dz*turbulence_term_energy);
                  d_matrix->addValueByGlobalID(plusDofs[1],neighborPlusDofs[0], dz*turbulence_term_energy);
                  if (m_mid_neighbor >= 0.0) d_matrix->addValueByGlobalID(plusDofs[1],neighborMinusDofs[1],-dz*wt);
                  else                       d_matrix->addValueByGlobalID(plusDofs[1],neighborPlusDofs[1], -dz*wt);
-                 d_matrix->addValueByGlobalID(plusDofs[1],gapDofs[0],crossflowSign*h_lateralDonor);
+                 d_matrix->addValueByGlobalID(plusDofs[1],gapDofs[0],dz*crossflowSign*h_lateralDonor);
                 
                  // axial momentum
                  if (crossflowSign*w >= 0.0) {
-                    d_matrix->addValueByGlobalID(minusDofs[2],minusDofs[0],0.5*vol_axialDonor/area*crossflowSign*w);
-                    d_matrix->addValueByGlobalID(minusDofs[2],plusDofs[0], 0.5*vol_axialDonor/area*crossflowSign*w);
+                    d_matrix->addValueByGlobalID(minusDofs[2],minusDofs[0],0.5*dz*vol_axialDonor/area*crossflowSign*w);
+                    d_matrix->addValueByGlobalID(minusDofs[2],plusDofs[0], 0.5*dz*vol_axialDonor/area*crossflowSign*w);
                  } else {
-                    d_matrix->addValueByGlobalID(minusDofs[2],neighborMinusDofs[0],0.5*vol_axialDonor_neighbor/neighborArea*crossflowSign*w);
-                    d_matrix->addValueByGlobalID(minusDofs[2],neighborPlusDofs[0], 0.5*vol_axialDonor_neighbor/neighborArea*crossflowSign*w);
+                    d_matrix->addValueByGlobalID(minusDofs[2],neighborMinusDofs[0],0.5*dz*vol_axialDonor_neighbor/neighborArea*crossflowSign*w);
+                    d_matrix->addValueByGlobalID(minusDofs[2],neighborPlusDofs[0], 0.5*dz*vol_axialDonor_neighbor/neighborArea*crossflowSign*w);
                  }
                  d_matrix->addValueByGlobalID(minusDofs[2],neighborMinusDofs[0],d_turbulenceCoef*dz*turbulence_term_axial);
                  d_matrix->addValueByGlobalID(minusDofs[2],neighborPlusDofs[0], d_turbulenceCoef*dz*turbulence_term_axial);
-                 d_matrix->addValueByGlobalID(minusDofs[2],gapDofs[0], crossflowSign*u_lateralDonor);
+                 d_matrix->addValueByGlobalID(minusDofs[2],gapDofs[0], dz*crossflowSign*u_lateralDonor);
 
               }// end if (lateralFaceIterator != interiorLateralFaceMap.end()) {
            }// end loop over gap faces
@@ -847,8 +847,8 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
                d_matrix->addValueByGlobalID(gapDofs[0],cell1PlusDofs[0],  0.5*w_axialDonor_plus* vol1_plus/ area1);
                d_matrix->addValueByGlobalID(gapDofs[0],cell2PlusDofs[0],  0.5*w_axialDonor_plus* vol2_plus/ area2);
                // ---pressure
-               d_matrix->addValueByGlobalID(gapDofs[0],cell1MinusDofs[2],-crossflowSign*gapWidth/pitch*dz*dz);
-               d_matrix->addValueByGlobalID(gapDofs[0],cell2MinusDofs[2], crossflowSign*gapWidth/pitch*dz*dz);
+               d_matrix->addValueByGlobalID(gapDofs[0],cell1MinusDofs[2],-crossflowSign*gapWidth/pitch*dz);
+               d_matrix->addValueByGlobalID(gapDofs[0],cell2MinusDofs[2], crossflowSign*gapWidth/pitch*dz);
                // ---lateral mass flow rate
                if (m_bottomMid >= 0.0) d_matrix->addValueByGlobalID(gapDofs[0],belowDofs[0],-u_minus);
                else                    d_matrix->addValueByGlobalID(gapDofs[0],gapDofs[0],  -u_minus);
@@ -857,7 +857,7 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
                   if (is_uppermost_cell) d_matrix->addValueByGlobalID(gapDofs[0],gapDofs[0],     u_plus);
                   else                   d_matrix->addValueByGlobalID(gapDofs[0],gapPlusDofs[0], u_plus);
                }
-               d_matrix->addValueByGlobalID(gapDofs[0],gapDofs[0],d_KG/(gapWidth*pitch)*vol_gap_avg*std::abs(w_mid));
+               d_matrix->addValueByGlobalID(gapDofs[0],gapDofs[0],dz*d_KG/(gapWidth*pitch)*vol_gap_avg*std::abs(w_mid));
             }
          } else {
             // determine if face is an external gap face; in this case, a one must by set
