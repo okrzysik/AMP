@@ -80,12 +80,24 @@ std::ostream &operator << ( std::ostream &out , const Matrix &M_in )
     // Loop through each local row
     std::vector<unsigned int> cols;
     std::vector<double> values;
-    for (size_t row=leftDOF->beginDOF(); row<leftDOF->beginDOF(); row++) {
+    out << "Compressed Matix: " << std::endl;
+    for (size_t row=leftDOF->beginDOF(); row<leftDOF->endDOF(); row++) {
         M->getRowByGlobalID( row, cols, values );
         out << "Row " << row << " (" << cols.size() << " entries):" << "\n";
         for (size_t i=0; i<cols.size(); i++)
         out << "    M(" << row << "," << cols[i] << ") = " << values[i] << "\n";
     }
+/*
+    out << "Full Matix: " << std::endl;
+    for (size_t row=0; row<leftDOF->numGlobalDOF(); row++) {
+        M->getRowByGlobalID( row, cols, values );
+        std::vector<double> A(M->numGlobalColumns(),0.);
+        for (size_t i=0; i<cols.size(); i++)
+          A[cols[i]]=values[i];
+        for (size_t i=0; i<A.size(); i++) out<< A[i]<<"  ";
+        out<<std::endl;
+    }
+*/
     return out;
 }
 
