@@ -813,13 +813,18 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     // Test the tag
     int tag0 = comm.newTag();
     AMP::AMP_MPI comm2 = comm;
+    AMP::AMP_MPI comm3(comm);
     bool pass = tag0>0 && tag0<comm.maxTag();
-    for (int i=1; i<128; i++) {
+    for (int i=1; i<64; i++) {
         if ( comm.newTag()!=tag0+i )
             pass = false;
     }
-    for (int i=1; i<128; i++) {
-        if ( comm2.newTag()!=tag0+127+i )
+    for (int i=1; i<=64; i++) {
+        if ( comm2.newTag()!=tag0+63+i )
+            pass = false;
+    }
+    for (int i=1; i<=128; i++) {
+        if ( comm3.newTag()!=tag0+127+i )
             pass = false;
     }
     if ( pass ) 
@@ -1036,6 +1041,7 @@ void testCommDup(AMP::UnitTest *ut) {
         for (size_t i=0; i<N_comm_try; i++) {
             comms.push_back( globalComm.dup() );
             AMP_ASSERT(globalComm.getCommunicator()!=comms[i].getCommunicator());
+            AMP_ASSERT(comms.back().sumReduce<int>(1)==globalComm.getSize());  // We need to communicate as part of the test
         }
         ut->passes("Created an unlimited number of comms");
     } catch (...) {
@@ -1055,9 +1061,14 @@ void testCommDup(AMP::UnitTest *ut) {
     try {
         double start = AMP::AMP_MPI::time();
         for (size_t i=0; i<N_comm_try; i++) {
-            AMP::AMP_MPI tmp_comm = globalComm.dup();
-            AMP_ASSERT(globalComm.getCommunicator()!=tmp_comm.getCommunicator());
-            N_dup++;
+            AMP::AMP_MPI tmp_comm1 = globalComm.dup();
+            AMP::AMP_MPI tmp_comm2 = globalComm.dup();
+            AMP_ASSERT(globalComm.getCommunicator()!=tmp_comm1.getCommunicator());
+            AMP_ASSERT(globalComm.getCommunicator()!=tmp_comm2.getCommunicator());
+            AMP_ASSERT(tmp_comm1.getCommunicator()!=tmp_comm2.getCommunicator());
+            AMP_ASSERT(tmp_comm1.sumReduce<int>(1)==globalComm.getSize());  // We need to communicate as part of the test
+            AMP_ASSERT(tmp_comm2.sumReduce<int>(1)==globalComm.getSize());  // We need to communicate as part of the test
+            N_dup+=2;
         }
         double stop = AMP::AMP_MPI::time();
         ut->passes("Created/Destroyed an unlimited number of comms");
