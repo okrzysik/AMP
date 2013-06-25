@@ -288,13 +288,38 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     nonlinearSolver->setZeroInitialGuess(false);
 
     // solve
-    std::cout<<" the matrix entries are: "<<std::endl;
+/*
+    std::cout<<" the initial matrix entries are: "<<std::endl;
     std::cout<< *linearOperator->getMatrix() <<std::endl;
-    std::cout<<" those were the matrix entries. "<<std::endl;
-    std::cout<<" vector is size "<<rhsVec->getGlobalSize() <<std::endl;
-
-    nonlinearSolver->solve(rhsVec, solVec);
+    std::cout<<" those were the initial matrix entries. "<<std::endl;
+    std::cout<<" the source is... "<<rhsVec->getGlobalSize() <<std::endl;
+    std::cout<< *rhsVec <<std::endl;
+    std::cout<<" ... was the source "<<std::endl;
+*/
     nonlinearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+/*
+    std::cout<<" the initial residual is... "<<rhsVec->getGlobalSize() <<std::endl;
+    std::cout<< *resVec <<std::endl;
+    std::cout<<" ... was the initial residual "<<std::endl;
+    std::cout<<" the initial solution is... "<<rhsVec->getGlobalSize() <<std::endl;
+    std::cout<< *solVec <<std::endl;
+    std::cout<<" ... was the initial solution "<<std::endl;
+*/
+    nonlinearSolver->solve(rhsVec, solVec);
+/*
+    std::cout<<" the solution is... "<<rhsVec->getGlobalSize() <<std::endl;
+    std::cout<< *solVec <<std::endl;
+    std::cout<<" ... was the solution "<<std::endl;
+*/
+    nonlinearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+/*
+    std::cout<<" the residual is... "<<rhsVec->getGlobalSize() <<std::endl;
+    std::cout<< *resVec <<std::endl;
+    std::cout<<" ... was the residual "<<std::endl;
+    std::cout<<" the final matrix entries are: "<<std::endl;
+    std::cout<< *linearOperator->getMatrix() <<std::endl;
+    std::cout<<" those were the final matrix entries. "<<std::endl;
+*/
 
 //=============================================================================
 // examine solution
