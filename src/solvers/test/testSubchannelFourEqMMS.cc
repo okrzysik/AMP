@@ -337,8 +337,8 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     for (int i=0; i<(int)face.size(); i++){
         subchannelDOFManager->getDOFs( face->globalID(), axialDofs );
         tempDOFManager->getDOFs( face->globalID(), tdofs );
-        double h = h_scale*solVec->getValueByGlobalID(axialDofs[0]);
-        double P = P_scale*solVec->getValueByGlobalID(axialDofs[1]);
+        double h = h_scale*solVec->getValueByGlobalID(axialDofs[1]);
+        double P = P_scale*solVec->getValueByGlobalID(axialDofs[2]);
         std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
         temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h)));
         temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,P)));
@@ -364,18 +364,20 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     subchannelDOFManager->getDOFs( face->globalID(), axialDofs );
     tempDOFManager->getDOFs( face->globalID(), tdofs );
+    double TinSol  = tempVec->getValueByGlobalID(tdofs[0]);
     std::cout<< "Inlet Computed Mass Flow Rate = " << m_scale*solVec->getValueByGlobalID(axialDofs[0]) << std::endl;
     std::cout<< "Inlet Computed Enthalpy = " << h_scale*solVec->getValueByGlobalID(axialDofs[1]) << std::endl;
     std::cout<< "Inlet Computed Pressure = " << P_scale*solVec->getValueByGlobalID(axialDofs[2]) << std::endl;
-    std::cout<< "Inlet Computed Temperature = " << tempVec->getValueByGlobalID(tdofs[0]) << std::endl;
+    std::cout<< "Inlet Computed Temperature = " << TinSol << std::endl;
     std::cout << std::endl;
     face = --((xyFaceMesh->getIterator(AMP::Mesh::Face,0)).end());
     subchannelDOFManager->getDOFs( face->globalID(), axialDofs );
     tempDOFManager->getDOFs( face->globalID(), tdofs );
+    double ToutSol = tempVec->getValueByGlobalID(tdofs[0]);
     std::cout<< "Outlet Computed Mass Flow Rate = " << m_scale*solVec->getValueByGlobalID(axialDofs[0]) << std::endl;
     std::cout<< "Outlet Computed Enthalpy = " << h_scale*solVec->getValueByGlobalID(axialDofs[1]) << std::endl;
     std::cout<< "Outlet Computed Pressure = " << P_scale*solVec->getValueByGlobalID(axialDofs[2]) << std::endl;
-    std::cout<< "Outlet Computed Temperature = " << tempVec->getValueByGlobalID(tdofs[0]) << std::endl;
+    std::cout<< "Outlet Computed Temperature = " << ToutSol << std::endl;
 
     // Compute the error
     AMP::LinearAlgebra::Vector::shared_ptr absErrorVec = solVec->cloneVector();
@@ -393,7 +395,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
     // check that norm of relative error is less than tolerance
     double tol = input_db->getDoubleWithDefault("TOLERANCE",1e-6);
-    if(relErrorNorm <= tol){
+    if( relErrorNorm<=tol && fabs(Tin-TinSol)<tol ){
         ut->passes(exeName+": manufactured solution test");
     } else {
         ut->failure(exeName+": manufactured solution test");
@@ -416,6 +418,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
         }
         ++face;
     }
+    std::cout<<"Delta T: " << ToutSol-TinSol << std::endl << std::endl;
     std::cout<<"L2 Norm of Absolute Error: "<<absErrorNorm<<std::endl;
     std::cout<<"L2 Norm of Relative Error: "<<relErrorNorm<<std::endl;
 

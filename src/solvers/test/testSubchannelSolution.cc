@@ -16,6 +16,7 @@
 #include "operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
 #include "operators/subchannel/SubchannelTwoEqLinearOperator.h"
 #include "operators/subchannel/SubchannelConstants.h"
+#include "operators/subchannel/SubchannelHelpers.h"
 #include "operators/OperatorBuilder.h"
 #include "solvers/ColumnSolver.h"
 #include "solvers/PetscKrylovSolverParameters.h"
@@ -283,16 +284,18 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     subchannelDOFManager->getDOFs( face->globalID(), dofs );
     tempDOFManager->getDOFs( face->globalID(), tdofs );
+    double TinSol  = tempVec->getValueByGlobalID(tdofs[0]);
     std::cout<< "Inlet Computed Enthalpy = " << h_scale*solVec->getValueByGlobalID(dofs[0]) << std::endl;
     std::cout<< "Inlet Computed Pressure = " << P_scale*solVec->getValueByGlobalID(dofs[1]) << std::endl;
-    std::cout<< "Inlet Computed Temperature = " << tempVec->getValueByGlobalID(tdofs[0]) << std::endl;
+    std::cout<< "Inlet Computed Temperature = " << TinSol << std::endl;
     std::cout << std::endl;
     face = --((xyFaceMesh->getIterator(AMP::Mesh::Face,0)).end());
     subchannelDOFManager->getDOFs( face->globalID(), dofs );
     tempDOFManager->getDOFs( face->globalID(), tdofs );
+    double ToutSol = tempVec->getValueByGlobalID(tdofs[0]);
     std::cout<< "Outlet Computed Enthalpy = " << h_scale*solVec->getValueByGlobalID(dofs[0]) << std::endl;
     std::cout<< "Outlet Computed Pressure = " << P_scale*solVec->getValueByGlobalID(dofs[1]) << std::endl;
-    std::cout<< "Outlet Computed Temperature = " << tempVec->getValueByGlobalID(tdofs[0]) << std::endl;
+    std::cout<< "Outlet Computed Temperature = " << ToutSol << std::endl;
 
     // Compute the error
     AMP::LinearAlgebra::Vector::shared_ptr absErrorVec = solVec->cloneVector();
@@ -304,15 +307,15 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
     // check that norm of relative error is less than tolerance
     double tol = input_db->getDoubleWithDefault("TOLERANCE",1e-6);
-    if(relErrorNorm <= tol){
+    if( relErrorNorm<=tol && fabs(Tin-TinSol)<tol ){
         ut->passes(exeName+": manufactured solution test");
     } else {
         ut->failure(exeName+": manufactured solution test");
     }
 
     // Print final solution
-    face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
-    std::cout<<std::endl;
+    AMP::Mesh::Mesh::shared_ptr channel0 = AMP::Operator::Subchannel::subsetForSubchannel( subchannelMesh, 0, 0 );
+    face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(channel0,0);
     int N_print = std::max(1,(int)face.size()/10);
     for (int i=0; i<(int)face.size(); i++){
         if ( i%N_print==0 ) {
@@ -325,6 +328,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
         }
         ++face;
     }
+    std::cout<<"Delta T: " << ToutSol-TinSol << std::endl << std::endl;
     std::cout<<"L2 Norm of Absolute Error: "<<absErrorNorm<<std::endl;
     std::cout<<"L2 Norm of Relative Error: "<<relErrorNorm<<std::endl;
 
