@@ -16,6 +16,22 @@ namespace Subchannel {
 
 
 /**
+  * \brief Function to get the number of subchannels from the mesh
+  * \param[in] subchannel   The subchannel mesh
+  */
+size_t getNumberOfSubchannels( AMP::Mesh::Mesh::shared_ptr subchannel );
+
+
+/**
+  * \brief Function to subset the subchannel mesh for a particular subchannel
+  * \param[in] subchannel   The subchannel mesh
+  * \param[in] i            The x-index of the subchannel of interest
+  * \param[in] j            The y-index of the subchannel of interest
+  */
+AMP::Mesh::Mesh::shared_ptr subsetForSubchannel( AMP::Mesh::Mesh::shared_ptr subchannel, size_t i, size_t j );
+
+
+/**
   * \brief Function to get some basic properties for each subchannel based on the mesh
   * \details  This function returns some basic properties including the hydraulic diameter, subchannel area, etc
   *   from the mesh

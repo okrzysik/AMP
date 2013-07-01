@@ -62,22 +62,22 @@ SubchannelTwoEqLinearOperator{
 }
 
 SubchannelPhysicsModel{
-	name = "SubchannelPhysicsModel"
-	Material = "WaterLibrary"
-	Formulation = "FunctionsTesting"
-	Defaults{
+    name = "SubchannelPhysicsModel"
+    Material = "WaterLibrary"
+    Formulation = "FunctionsTesting"
+    Defaults{
         diameter    = 0.01178  // Todreas, p.455
-		temperature = 350.0
-		enthalpy    = 200.0e3
-		pressure    = 0.5e6
-		density     = 973.919
+        temperature = 350.0
+        enthalpy    = 200.0e3
+        pressure    = 0.5e6
+        density     = 973.919
         reynolds    = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
         prandtl     = 1.0      // Todreas, p.455, based on viscosity=8.69e-5; Conductivity; & Heat_Capacity 
-	}
+    }
 }
 
 NonlinearSolver{
-  print_info_level = 7
+    print_info_level = 7
     max_iterations = 1000
     max_error = 1e-10
 
@@ -90,7 +90,7 @@ NonlinearSolver{
     SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ksp_ew_version 1 -snes_ls_alpha 0.001"
 
     LinearSolver{
-      print_info_level = 10
+        print_info_level = 10
         max_iterations = 1000
         max_error = 1e-7
         ksp_type = "fgmres"
@@ -104,7 +104,7 @@ NonlinearSolver{
 
         KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 1000"
         Preconditioner{
-          print_info_level = 1
+            print_info_level = 1
             max_iterations = 1
             max_error = 1.0e-7
         }

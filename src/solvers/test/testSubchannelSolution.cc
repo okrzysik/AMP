@@ -82,12 +82,11 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
     // Create the meshes from the input database
     boost::shared_ptr<AMP::Mesh::Mesh> subchannelMesh = AMP::Mesh::Mesh::buildMesh(meshParams);
-    AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
-    xyFaceMesh = subchannelMesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh , 0 ) );
 
     // get dof manager
     int DOFsPerFace[3]={0,0,2};
-    AMP::Discretization::DOFManager::shared_ptr subchannelDOFManager = AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
+    AMP::Discretization::DOFManager::shared_ptr subchannelDOFManager = 
+        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
 
 //=============================================================================
 // physics model, parameters, and operator creation
@@ -110,7 +109,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     // Create the SubchannelOperatorParameters
     boost::shared_ptr<AMP::Database> nonlinearOperator_db = input_db->getDatabase("SubchannelTwoEqNonlinearOperator");
     boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( nonlinearOperator_db ));
-    subchannelOpParams->d_Mesh = xyFaceMesh ;
+    subchannelOpParams->d_Mesh = subchannelMesh;
     subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
     subchannelOpParams->clad_x = input_db->getDatabase("CladProperties")->getDoubleArray("x");
     subchannelOpParams->clad_y = input_db->getDatabase("CladProperties")->getDoubleArray("y");
@@ -167,6 +166,8 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     std::cout<< "Enthalpy Solution:"<< hin <<std::endl;
 
     // Compute the manufactured solution
+    AMP::Mesh::Mesh::shared_ptr xyFaceMesh = 
+        subchannelMesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh , 0 ) );
     AMP::Mesh::MeshIterator face = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     std::vector<size_t> dofs;
     const double h_scale = 1.0/AMP::Operator::Subchannel::scaleEnthalpy;    // Scale to change the input vector back to correct units
@@ -298,22 +299,15 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     absErrorVec->axpy(-1.0,solVec,manufacturedVec);
     AMP::LinearAlgebra::Vector::shared_ptr relErrorVec = solVec->cloneVector();
     relErrorVec->divide(absErrorVec,manufacturedVec);
-    /*face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
-    for (int i=0; i<(int)face.size(); i++){
-        subchannelDOFManager->getDOFs( face->globalID(), dofs );
-        absErrorVec->setValueByGlobalID(dofs[1],0.0);   // We don't have the correct solution for the pressure yet
-        relErrorVec->setValueByGlobalID(dofs[1],0.0);
-        ++face;
-    }*/
     double absErrorNorm = absErrorVec->L2Norm();
     double relErrorNorm = relErrorVec->L2Norm();
 
     // check that norm of relative error is less than tolerance
     double tol = input_db->getDoubleWithDefault("TOLERANCE",1e-6);
-    if(relErrorNorm > tol){
-        ut->failure(exeName+": manufactured solution test");
-    } else {
+    if(relErrorNorm <= tol){
         ut->passes(exeName+": manufactured solution test");
+    } else {
+        ut->failure(exeName+": manufactured solution test");
     }
 
     // Print final solution
@@ -369,9 +363,16 @@ int main(int argc, char *argv[])
     AMP::AMPManager::startup(argc, argv);
     AMP::UnitTest ut;
 
-    std::vector<std::string> files(2);
-    files[0] = "testSubchannelSolution-1";
-    files[1] = "testSubchannelSolution-2";
+    std::vector<std::string> files;
+    if ( argc >= 2 ) {
+        files.resize(argc-1);
+        for (int i=0; i<argc-1; i++)
+            files[i] = std::string(argv[i+1]);
+    } else {
+        files.resize(2);
+        files[0] = "testSubchannelSolution-1";
+        files[1] = "testSubchannelSolution-2";
+    }
 
     for (size_t i=0; i<files.size(); i++)
         flowTest(&ut,files[i]);
