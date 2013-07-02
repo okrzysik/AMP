@@ -30,8 +30,8 @@ while 1
         % Load a matrix
         data(i).type = 'Matrix';
         index = find(tline=='"');
-        data(i).name = [tline(index(1)+1:index(2)-1),' - ',tline(index(3)+1:index(4)-1)];
-        N = str2num(tline(index(4)+1:length(tline))); %#ok<ST2NM>
+        data(i).name = tline(index(1)+1:index(2)-1);
+        N = str2num(tline(index(2)+1:length(tline))); %#ok<ST2NM>
         tmp = [];
         tline = fgetl(fid);
         while ~isempty(tline)

@@ -98,7 +98,7 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
                 dst_vec->getVariable()->getName().c_str(),
                 static_cast<int>(dst_vec->getGlobalSize()) );
             for (size_t i=0; i<dst_vec->getGlobalSize(); i++)
-                fprintf(fid,"   %0.8e\n",dst_vec->getValueByGlobalID(i));
+                fprintf(fid,"   %0.14e\n",dst_vec->getValueByGlobalID(i));
             fprintf(fid,"\n\n");
         }
     }
@@ -109,22 +109,20 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
         AMP::LinearAlgebra::Matrix::shared_ptr mat;
         if ( d_matrices.find(*it) != d_matrices.end() )
             mat = d_matrices[*it];
-        std::string name[2];
+        std::string name;
         size_t size[2]={0,0};
         if ( mat!=NULL ) {
-            name[0] = mat->getLeftVector()->getVariable()->getName();
-            name[1] = mat->getRightVector()->getVariable()->getName();
+            name = mat->getLeftVector()->getVariable()->getName() + " - " +
+                   mat->getRightVector()->getVariable()->getName();
             size[0] = mat->getLeftVector()->getGlobalSize();
             size[1] = mat->getRightVector()->getGlobalSize();
         }
-        name[0] = d_comm.bcast(name[0],it->first);
-        name[1] = d_comm.bcast(name[1],it->first);
+        name = d_comm.bcast(name,it->first);
         size[0] = d_comm.bcast(size[0],it->first);
         size[1] = d_comm.bcast(size[1],it->first);
         // Write the data
         if ( d_comm.getRank()==0 ) {
-            fprintf(fid,"Matrix: \"%s\" \"%s\" %i %i\n",
-                name[0].c_str(), name[1].c_str(),
+            fprintf(fid,"Matrix: \"%s\" %i %i\n", name.c_str(), 
                 static_cast<int>(size[0]), static_cast<int>(size[1]) );
         }
         std::vector<unsigned int> col;
@@ -134,7 +132,7 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
             sendRowToRoot( mat, d_comm, row, col, data );
             if ( d_comm.getRank()==0 ) {
                 for (size_t i=0; i<col.size(); i++)
-                    fprintf(fid,"   %4i %4i  %0.8e\n",row,col[i],data[i]);
+                    fprintf(fid,"   %4i %4i  %0.14e\n",row,col[i],data[i]);
             }
         }
         if ( d_comm.getRank()==0 ) {
