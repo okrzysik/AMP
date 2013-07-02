@@ -1,5 +1,5 @@
-#ifndef included_AMP_Writer
-#define included_AMP_Writer
+#ifndef included_AMP_AsciiWriter
+#define included_AMP_AsciiWriter
 
 #include <string.h>
 #include <sstream>
@@ -7,10 +7,7 @@
 #include <map>
 #include <set>
 
-#include "boost/smart_ptr/shared_ptr.hpp"
-
-#include "utils/AMP_MPI.h"
-#include "utils/Database.h"
+#include "utils/Writer.h"
 
 #ifdef USE_AMP_MESH
     #include "ampmesh/Mesh.h"
@@ -28,64 +25,30 @@ namespace Utilities {
 
 
 /**
- * \class Writer
+ * \class AsciiWriter
  * \brief A class used to abstract away reading/writing files.
- * \details  This class provides routines for reading, accessing and writing meshes and vectors.
- *    The writers can be used to generate files for visualization or interfacing with other codes.
+ * \details  This class provides routines for reading, accessing and writing vectors
+ *    and matrices using a simple ASCII format.  
+ *    Note: this format only supports a decomposition of 1, and will write all data using rank0
  */
-class Writer
+class AsciiWriter: public AMP::Utilities::Writer
 {
 public:
 
-    //!  Convenience typedef
-    typedef boost::shared_ptr<AMP::Utilities::Writer>  shared_ptr;
-
-    /**
-     * \brief   Function to build a writer
-     * \details This function will build a default writer for use.
-     * \param type   Writer type:
-     *               "None"  - An empty writer will be created
-     *               "Silo"  - A silo writer will be created if silo is configured, 
-     *                        otherwise an empty writer will be created.
-     *               "Ascii" - A simple ascii writer
-     */
-    static boost::shared_ptr<AMP::Utilities::Writer> buildWriter( std::string type );
-
-    /**
-     * \brief   Function to build a writer
-     * \details This function will build a default writer for use.
-     * \param db   Input database for the writer
-     */
-    static boost::shared_ptr<AMP::Utilities::Writer> buildWriter( boost::shared_ptr<AMP::Database> db );
-
     //!  Default constructor
-    Writer();
+    AsciiWriter();
 
     //!  Default destructor
-    virtual ~Writer();
+    virtual ~AsciiWriter();
 
     //!  Function to return the file extension
-    virtual std::string getExtension()=0;
-
-    /**
-     * \brief   Function to set the file decomposition
-     * \details This function will set the method used for file IO.  When writing files, 
-     *    there are different decompositions that affect the performance and usability 
-     *    of the output files.  By default, this writer will generate a single file.
-     * \param decomposition   Decomposition method to use:
-     *             1:  This will write all of the data to a single file.  
-     *                 Note that this requires a serial write and will have the worst performance
-     *             2:  Each processor will write a separate file and a separate 
-     *                 summary file will be written.  Note that this will have better performance
-     *                 at large scale, but will write many files simultaneously.  
-     */
-    virtual void setDecomposition( int decomposition );
+    virtual std::string getExtension();
 
     //!  Function to read a file
-    virtual void  readFile( const std::string &fname )=0;
+    virtual void  readFile( const std::string &fname );
 
     //!  Function to write a file
-    virtual void  writeFile( const std::string &fname, size_t iteration_count )=0;
+    virtual void  writeFile( const std::string &fname, size_t iteration_count );
 
 #ifdef USE_AMP_MESH
     /**
@@ -101,7 +64,7 @@ public:
 
      * \param path  The directory path for the mesh.  Default is an empty string.
      */
-    virtual void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level=1, std::string path=std::string() )=0;
+    virtual void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level=1, std::string path=std::string() );
 #endif
 
 #if defined(USE_AMP_VECTORS) && defined(USE_AMP_MESH)
@@ -121,7 +84,7 @@ public:
      * \param name  Optional name for the vector.
      */
     virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec, AMP::Mesh::Mesh::shared_ptr mesh,
-        AMP::Mesh::GeomType type, const std::string &name = "" )=0;
+        AMP::Mesh::GeomType type, const std::string &name = "" );
 #endif
 
 #if defined(USE_AMP_VECTORS) 
@@ -131,7 +94,7 @@ public:
      *     This version of registerVector only stores the raw data.  It is not associated with a mesh.
      * \param vec   The vector we want to write
      */
-    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec )=0;
+    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec );
 #endif
 
 #ifdef USE_AMP_MATRICES
@@ -141,17 +104,35 @@ public:
      *     This version of registerMatrix only stores the raw data.  It is not associated with a mesh.
      * \param mat   The matrix we want to write
      */
-    virtual void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat )=0;
+    virtual void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat );
 #endif
 
-protected:
 
-    // The comm of the writer
-    AMP_MPI d_comm;
+private:
 
-    // The decomposition to use
-    int d_decomposition;
+    // A typedef for ids
+    typedef std::pair<unsigned int,unsigned int> global_id;
+    static global_id getID( AMP_MPI local_comm, AMP_MPI global_comm );
 
+    // List of all vectors that have been registered
+#ifdef USE_AMP_VECTORS
+    std::map<global_id,AMP::LinearAlgebra::Vector::shared_ptr> d_vectors;
+#endif
+
+    // List of all matrices that have been registered
+#ifdef USE_AMP_MATRICES
+    std::map<global_id,AMP::LinearAlgebra::Matrix::shared_ptr> d_matrices;
+#endif
+
+    // Helper functions
+#ifdef USE_AMP_VECTORS
+    static AMP::LinearAlgebra::Vector::const_shared_ptr sendVecToRoot( 
+        AMP::LinearAlgebra::Vector::const_shared_ptr src_vec, int vec_root, AMP_MPI d_comm );
+#endif
+#ifdef USE_AMP_MATRICES
+    static void sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr mat, 
+        AMP_MPI d_comm, int row, std::vector<unsigned int>& col, std::vector<double>& data );
+#endif
 
 };
 

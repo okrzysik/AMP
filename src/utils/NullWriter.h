@@ -33,6 +33,10 @@ public:
     #ifdef USE_AMP_VECTORS
         virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec, AMP::Mesh::Mesh::shared_ptr mesh,
             AMP::Mesh::GeomType type, const std::string &name = "" ) {}
+        virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) {}
+    #endif
+    #ifdef USE_AMP_MATRICES
+        virtual void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat ) {}
     #endif
 };
 

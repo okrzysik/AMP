@@ -869,7 +869,6 @@ private:
     template <class type>  void call_allToAll(const type *send_data, const int send_cnt[], 
         const int send_disp[], type *recv_data, const int *recv_cnt, const int *recv_disp) const;
 
-
 };
 
 

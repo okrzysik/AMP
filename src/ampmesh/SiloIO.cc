@@ -273,6 +273,16 @@ void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
     // Add the variable name to the list of variables
     d_varNames.insert(name);
 }
+void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
+{ 
+    AMP_ERROR("SiloIO currently requires a mesh to register a vector with");
+}
+#endif
+#ifdef USE_AMP_MATRICES
+void SiloIO::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat )
+{
+    AMP_ERROR("SiloIO does not yet support matrices");
+}
 #endif
 
 
