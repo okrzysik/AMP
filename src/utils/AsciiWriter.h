@@ -108,31 +108,32 @@ public:
 #endif
 
 
-private:
-
     // A typedef for ids
     typedef std::pair<unsigned int,unsigned int> global_id;
-    static global_id getID( AMP_MPI local_comm, AMP_MPI global_comm );
+
+private:
+
 
     // List of all vectors that have been registered
-#ifdef USE_AMP_VECTORS
-    std::map<global_id,AMP::LinearAlgebra::Vector::shared_ptr> d_vectors;
-#endif
+    #ifdef USE_AMP_VECTORS
+        std::map<global_id,AMP::LinearAlgebra::Vector::shared_ptr> d_vectors;
+    #endif
 
-    // List of all matrices that have been registered
-#ifdef USE_AMP_MATRICES
-    std::map<global_id,AMP::LinearAlgebra::Matrix::shared_ptr> d_matrices;
-#endif
+        // List of all matrices that have been registered
+    #ifdef USE_AMP_MATRICES
+        std::map<global_id,AMP::LinearAlgebra::Matrix::shared_ptr> d_matrices;
+    #endif
 
     // Helper functions
-#ifdef USE_AMP_VECTORS
-    static AMP::LinearAlgebra::Vector::const_shared_ptr sendVecToRoot( 
-        AMP::LinearAlgebra::Vector::const_shared_ptr src_vec, int vec_root, AMP_MPI d_comm );
-#endif
-#ifdef USE_AMP_MATRICES
-    static void sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr mat, 
-        AMP_MPI d_comm, int row, std::vector<unsigned int>& col, std::vector<double>& data );
-#endif
+    static global_id getID( AMP_MPI local_comm, AMP_MPI global_comm );
+    #ifdef USE_AMP_VECTORS
+        static AMP::LinearAlgebra::Vector::const_shared_ptr sendVecToRoot( 
+            AMP::LinearAlgebra::Vector::const_shared_ptr src_vec, int vec_root, AMP_MPI d_comm );
+    #endif
+    #ifdef USE_AMP_MATRICES
+        static void sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr mat, 
+            AMP_MPI d_comm, int row, std::vector<unsigned int>& col, std::vector<double>& data );
+    #endif
 
 };
 
