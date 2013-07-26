@@ -155,6 +155,7 @@ public:
      */
     void stop( const std::string& message, const char* filename, const int line, const int level=0 );
 
+
     /*!
      * \brief  Function to save the profiling info
      * \details  This will save the current timer info.  This is a non-blocking function.
@@ -255,6 +256,7 @@ private:
         size_t id;                          // A unique id for each timer
         std::string message;                // The message to identify the block of code
         std::string filename;               // The file containing the block of code to be timed
+        std::string path;                   // The path to the file (if availible)
         volatile store_timer_data_info *next; // Pointer to the next entry in the list
         // Constructor used to initialize key values
 		store_timer_data_info(): start_line(-1), stop_line(-1), id(0), next(NULL) {}

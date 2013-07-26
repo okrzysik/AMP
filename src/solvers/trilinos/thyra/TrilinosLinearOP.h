@@ -40,7 +40,7 @@ private:
     TrilinosLinearOP();
 
     //! Data variables
-    boost::shared_ptr<AMP::Operator::LinearOperator> d_op;
+    boost::shared_ptr<AMP::Operator::Operator> d_op;
 
 };
 

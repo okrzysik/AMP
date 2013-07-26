@@ -15,8 +15,8 @@ TrilinosLinearOP::TrilinosLinearOP()
 }
 TrilinosLinearOP::TrilinosLinearOP( AMP::Operator::Operator::shared_ptr op )
 {
-    d_op = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
-
+    this->d_op = op;
+    AMP_ASSERT(d_op!=NULL);
 }
 TrilinosLinearOP::~TrilinosLinearOP()
 {

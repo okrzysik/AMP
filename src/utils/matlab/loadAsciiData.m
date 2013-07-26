@@ -32,13 +32,13 @@ while 1
         index = find(tline=='"');
         data(i).name = tline(index(1)+1:index(2)-1);
         N = str2num(tline(index(2)+1:length(tline))); %#ok<ST2NM>
-        tmp = [];
+        data(i).data = sparse(N(1),N(2));
         tline = fgetl(fid);
         while ~isempty(tline)
-            tmp(size(tmp,1)+1,1:3) = str2num(tline); %#ok<ST2NM,AGROW>
+            x = str2num(tline); %#ok<ST2NM>
+            data(i).data(x(1)+1,x(2)+1) = x(3);
             tline = fgetl(fid);
         end
-        data(i).data = sparse(tmp(:,1)+1,tmp(:,2)+1,tmp(:,3),N(1),N(2));
     elseif isempty(tline)
         % Empty line, ignore
     else

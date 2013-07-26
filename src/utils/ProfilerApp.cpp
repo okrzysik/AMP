@@ -712,6 +712,7 @@ void ProfilerApp::save( const std::string& filename ) {
         }
         const char* filename2 = timer_global->filename.c_str();
         const char* message = timer_global->message.c_str();
+        const char* path = timer_global->path.c_str();
         int start_line = timer_global->start_line;
         int stop_line = timer_global->stop_line;
         // Loop through the thread entries
@@ -751,8 +752,8 @@ void ProfilerApp::save( const std::string& filename ) {
             }
             // Save the timer info
             convert_timer_id(id,id_str);
-            fprintf(timerFile,"<timer:id=%s,message=%s,file=%s,thread=%i,start=%i,stop=%i,N=%i,min=%e,max=%e,tot=%e>\n",
-                id_str,message,filename2,thread_id,start_line,stop_line,timer->N_calls,min_time,max_time,tot_time);
+            fprintf(timerFile,"<timer:id=%s,message=%s,file=%s,path=%s,thread=%i,start=%i,stop=%i,N=%i,min=%e,max=%e,tot=%e>\n",
+                id_str,message,filename2,path,thread_id,start_line,stop_line,timer->N_calls,min_time,max_time,tot_time);
             // Store each trace
             store_trace *trace = timer->trace_head;
             while ( trace != NULL ) {
@@ -1101,6 +1102,7 @@ inline ProfilerApp::store_timer* ProfilerApp::get_block( thread_info *thread_dat
             global_info->stop_line = stop;
             global_info->message = std::string(message);
             global_info->filename = std::string(filename);
+            global_info->path = std::string(filename1,0,filename-filename1);
         }
     }
     // Check the status of the timer

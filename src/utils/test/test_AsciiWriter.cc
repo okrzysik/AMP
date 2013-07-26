@@ -67,13 +67,13 @@ void test_AsciiWriter( AMP::UnitTest *ut )
 
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
     AMP::AMP_MPI selfComm(AMP_COMM_SELF);
-    std::string rankString = AMP::Utilities::intToString(globalComm.getRank()+1,1);
 
     // Create the ascii writer
     AMP::Utilities::Writer::shared_ptr writer = AMP::Utilities::Writer::buildWriter("ASCII");
 
     // Create and register a vector
     #ifdef USE_AMP_VECTORS
+        std::string rankString = AMP::Utilities::intToString(globalComm.getRank()+1,1);
         AMP::LinearAlgebra::Variable::shared_ptr var1(
             new AMP::LinearAlgebra::Variable("vec_global") );
         AMP::LinearAlgebra::Variable::shared_ptr var2(
