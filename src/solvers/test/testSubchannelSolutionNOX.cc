@@ -199,7 +199,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm = globalComm;
     nonlinearSolverParams->d_pOperator = nonlinearOperator;
-    nonlinearSolverParams->d_pLinearOperator = nonlinearOperator
+    nonlinearSolverParams->d_pLinearOperator = nonlinearOperator;
     nonlinearSolverParams->d_pInitialGuess = solVec;
 
 

@@ -491,6 +491,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     nonlinearSolverParams->d_comm = globalComm;
     nonlinearSolverParams->d_pOperator = nonlinearCoupledOperator;
     nonlinearSolverParams->d_pInitialGuess = globalSolMultiVector;
+    nonlinearSolverParams->d_pLinearOperator = linearColumnOperator;
     boost::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(new AMP::Solver::TrilinosNOXSolver(nonlinearSolverParams));
 
     // create preconditioner

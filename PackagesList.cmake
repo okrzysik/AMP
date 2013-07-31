@@ -104,6 +104,9 @@ ADD_CUSTOM_TARGET ( check COMMAND  make test  )
 ADD_DISTCLEAN()
 SET( EXCLUDE_TESTS_FROM_ALL 0 )
 
+# Add custom targets to copy data files needed for tests
+ADD_CUSTOM_TARGET ( copy-AMP-Data ALL )
+
 # Check if we want to enable fortran
 ENABLE_LANGUAGE(C)
 ENABLE_LANGUAGE(CXX)
