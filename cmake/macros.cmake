@@ -355,39 +355,19 @@ MACRO ( SET_COMPILER_FLAGS )
 ENDMACRO ()
 
 
-# Macro to copy files at build time
-# Arguments - 
-#   FROM_DIR - this is the source directory
-#   TO_DIR   - this is the destination directory
-#   FILES    - names of the files to copy 
-#              TODO: add globing. 
-#   TARGETS  - List of targets
-MACRO(COPY_IF_DIFFERENT FROM_DIR TO_DIR FILES TARGETS)
-    SET(AddTargets "")
-    FOREACH(SRC ${FILES})
-        GET_FILENAME_COMPONENT(SRCFILE ${SRC} NAME) 
-        # Command to copy the files to ${STEP1}/src, if changed.
-        SET(TARGET  "${TO_DIR}/${SRCFILE}")
-        IF("${FROM_DIR}" STREQUAL "")
-            SET(FROM ${SRC})
-        ELSE("${FROM_DIR}" STREQUAL "")
-            SET(FROM ${FROM_DIR}/${SRC})
-        ENDIF("${FROM_DIR}" STREQUAL "")        
-        IF("${TO_DIR}" STREQUAL "")
-            SET(TO ${SRCFILE})
-        ELSE("${TO_DIR}" STREQUAL "")
-            SET(TO   ${TO_DIR}/${SRCFILE})
-        ENDIF("${TO_DIR}" STREQUAL "")
-        ADD_CUSTOM_COMMAND(
-            OUTPUT  ${TARGET}
-                COMMAND ${CMAKE_COMMAND}
-                ARGS    -E copy_if_different ${FROM} ${TO}
-                COMMENT "Copying ${SRCFILE} ${TO_DIR}"
-            )
-        SET(AddTargets ${AddTargets} ${TARGET})
-    ENDFOREACH(SRC ${FILES})
-    SET(${TARGETS} ${AddTargets})
-ENDMACRO(COPY_IF_DIFFERENT FROM_DIR TO_DIR FILES TARGETS)
+# Macro to copy data file at build time
+MACRO(COPY_DATA_FILE SRC_FILE DST_FILE)
+    STRING(REGEX REPLACE "${AMP_SOURCE_DIR}/" "" COPY_TARGET "copy-${CMAKE_CURRENT_SOURCE_DIR}" )
+    STRING(REGEX REPLACE "/" "-" COPY_TARGET ${COPY_TARGET} )
+    if(NOT TARGET ${COPY_TARGET})
+        ADD_CUSTOM_TARGET ( ${COPY_TARGET} ALL )
+        ADD_DEPENDENCIES ( copy-AMP-Data ${COPY_TARGET} )
+    ENDIF()
+    ADD_CUSTOM_COMMAND(TARGET ${COPY_TARGET} 
+        PRE_BUILD 
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SRC_FILE}" "${DST_FILE}"
+    )
+ENDMACRO()
 
 
 # Macro to copy a data file
@@ -396,8 +376,7 @@ MACRO ( COPY_TEST_DATA_FILE FILENAME )
     SET( DESTINATION_NAME ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME} )
     IF ( EXISTS ${FILE_TO_COPY} )
         # CONFIGURE_FILE ( ${FILE_TO_COPY} ${DESTINATION_NAME} COPYONLY )
-        COPY_IF_DIFFERENT( ${CMAKE_CURRENT_SOURCE_DIR}/data 
-            ${CMAKE_CURRENT_BINARY_DIR} ${FILENAME} copy-AMP-Data )
+        COPY_DATA_FILE( ${FILE_TO_COPY} ${DESTINATION_NAME} )
     ELSE()
         MESSAGE ( WARNING "Cannot find file: " ${FILE_TO_COPY} )
     ENDIF()
@@ -425,7 +404,7 @@ MACRO (COPY_MESH_FILE MESHNAME)
     ELSE ()
         STRING(REGEX REPLACE ${MESHNAME} "" MESHPATH ${MESHPATH} )
         # CONFIGURE_FILE ( ${MESHPATH}/${MESHNAME} ${CMAKE_CURRENT_BINARY_DIR}/${MESHNAME} COPYONLY )
-        COPY_IF_DIFFERENT( ${MESHPATH} ${CMAKE_CURRENT_BINARY_DIR} ${MESHNAME} copy-AMP-Data )
+        COPY_DATA_FILE( ${MESHPATH}/${MESHNAME} ${CMAKE_CURRENT_BINARY_DIR}/${MESHNAME} )
     ENDIF ()
 ENDMACRO()
 
