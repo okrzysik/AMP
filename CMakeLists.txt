@@ -9,12 +9,13 @@ MESSAGE ("Configuring AMP")
 MESSAGE ("===============")
 
 
-ENABLE_LANGUAGE(C)
-ENABLE_LANGUAGE(CXX)
-
-
 # Set the project name
 PROJECT (AMP)
+
+
+# Enable the required compilers
+ENABLE_LANGUAGE(C)
+ENABLE_LANGUAGE(CXX)
 
 
 # Call TPLsList to get the TPLs

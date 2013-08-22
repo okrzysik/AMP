@@ -71,12 +71,12 @@ Flow1DSolver::resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParam
 }
 
   void
-Flow1DSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
+Flow1DSolver::solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
 		          boost::shared_ptr<AMP::LinearAlgebra::Vector>  u)
 {
   
-  AMP::LinearAlgebra::Vector::shared_ptr flowInputVec = u->subsetVectorForVariable(d_inpVariable);
-  AMP::LinearAlgebra::Vector::shared_ptr flowRhsVec   = f->subsetVectorForVariable(d_inpVariable);
+  AMP::LinearAlgebra::Vector::shared_ptr  flowInputVec = u->subsetVectorForVariable(d_inpVariable);
+  AMP::LinearAlgebra::Vector::const_shared_ptr  flowRhsVec = f->constSubsetVectorForVariable(d_inpVariable);
 
   d_numpoints   = zPoints.size();
 

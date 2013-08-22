@@ -101,7 +101,6 @@ void TrilinosThyraModelEvaluator::evalModelImpl( const ::Thyra::ModelEvaluatorBa
 
 /****************************************************************
 * Functions derived from Thyra::StateFuncModelEvaluatorBase     *
-* that are not implimented yet                                  *
 ****************************************************************/
 Teuchos::RCP<const ::Thyra::VectorSpaceBase<double> > TrilinosThyraModelEvaluator::get_x_space() const
 {
@@ -148,6 +147,20 @@ Teuchos::RCP<const ::Thyra::LinearOpWithSolveFactoryBase<double> > TrilinosThyra
     outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_f);
     outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_op);
     return outArgs;
+}
+
+
+/****************************************************************
+* Function to create the preconditioner                         *
+****************************************************************/
+Teuchos::RCP< ::Thyra::PreconditionerBase<double> > TrilinosThyraModelEvaluator::create_W_prec() const
+{
+    Teuchos::RCP<Thyra::DefaultPreconditioner<double> > preconditioner;
+    if ( d_preconditioner != NULL ) {
+        Teuchos::RCP<Thyra::LinearOpBase<double> > solver_operator( new TrilinosLinearOP(d_preconditioner) );
+        preconditioner.reset( new Thyra::DefaultPreconditioner<double>(solver_operator) );
+    }
+    return preconditioner;
 }
 
 

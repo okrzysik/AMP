@@ -2,44 +2,44 @@
 #include "ElementPhysicsModelFactory.h"
 
 // mechanics material models
-#include "mechanics/IsotropicElasticModel.h"
-#include "mechanics/ThermalStrainMaterialModel.h"
-#include "mechanics/VonMisesElastoPlasticModel.h"
-#include "mechanics/ThermalVonMisesMatModel.h"
-#include "mechanics/GeneralCladThermalCreepPlasticModel.h"
-#include "mechanics/VonMises_IsotropicKinematicHardening.h"
-#include "mechanics/ElasticDamageThermalStrainModel.h"
-#include "mechanics/PericElastoViscoPlasticModel.h"
+#include "operators/mechanics/IsotropicElasticModel.h"
+#include "operators/mechanics/ThermalStrainMaterialModel.h"
+#include "operators/mechanics/VonMisesElastoPlasticModel.h"
+#include "operators/mechanics/ThermalVonMisesMatModel.h"
+#include "operators/mechanics/GeneralCladThermalCreepPlasticModel.h"
+#include "operators/mechanics/VonMises_IsotropicKinematicHardening.h"
+#include "operators/mechanics/ElasticDamageThermalStrainModel.h"
+#include "operators/mechanics/PericElastoViscoPlasticModel.h"
 
 // flow transport model
-#include "flow/FlowTransportModel.h"
+#include "operators/flow/FlowTransportModel.h"
 
 // diffusion transport model
-#include "diffusion/DiffusionTransportModel.h"
+#include "operators/diffusion/DiffusionTransportModel.h"
 
 // diffusion transport tensor model
-#include "diffusion/DiffusionTransportTensorModel.h"
+#include "operators/diffusion/DiffusionTransportTensorModel.h"
 
 // diffusion transport cylindrical model
-#include "diffusion/DiffusionCylindricalTransportModel.h"
+#include "operators/diffusion/DiffusionCylindricalTransportModel.h"
 
 // Pellet Contact Conductance model
-#include "PelletContactConductanceModel.h"
+#include "operators/PelletContactConductanceModel.h"
 
 // Convective Heat Coefficient model
-#include "ConvectiveHeatCoefficient.h"
+#include "operators/subchannel/ConvectiveHeatCoefficient.h"
 
 // source physics model
-#include "SourcePhysicsModel.h"
+#include "operators/SourcePhysicsModel.h"
 
 // mass density model
-#include "MassDensityModel.h"
+#include "operators/MassDensityModel.h"
 
 // manufactured diffusion transport model
-#include "ManufacturedDiffusionTransportModel.h"
+#include "operators/ManufacturedDiffusionTransportModel.h"
 
 // subchannel physics model
-#include "SubchannelPhysicsModel.h"
+#include "operators/subchannel/SubchannelPhysicsModel.h"
 
 namespace AMP {
   namespace Operator {

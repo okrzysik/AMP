@@ -19,7 +19,7 @@ namespace AMP {
           d_pOperator = in->getOperator();
         }
 
-        void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
+        void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
             boost::shared_ptr<AMP::LinearAlgebra::Vector>  u) {
           boost::shared_ptr<AMP::Operator::OperatorWrapper> wrapOp = boost::dynamic_pointer_cast<
             AMP::Operator::OperatorWrapper>(d_pOperator);

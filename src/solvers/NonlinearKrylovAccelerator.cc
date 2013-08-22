@@ -371,7 +371,7 @@ NonlinearKrylovAccelerator::correction(boost::shared_ptr<AMP::LinearAlgebra::Vec
 
 
 void
-NonlinearKrylovAccelerator::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector> f, 
+NonlinearKrylovAccelerator::solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector> f, 
                   boost::shared_ptr<AMP::LinearAlgebra::Vector> u)
 {
     AMP_INSIST(d_pOperator!=NULL,"Operator cannot be NULL");

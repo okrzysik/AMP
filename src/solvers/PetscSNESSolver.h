@@ -109,7 +109,7 @@ public:
     @param [in] f : shared pointer to right hand side vector
     @param [out] u : shared pointer to approximate computed solution 
      */
-    void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
+    void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
 	       boost::shared_ptr<AMP::LinearAlgebra::Vector>  u);
     
     
@@ -162,7 +162,7 @@ private:
     
     void getFromInput(const boost::shared_ptr<AMP::Database> db);
     
-    void setSNESFunction( boost::shared_ptr<AMP::LinearAlgebra::Vector>  rhs);
+    void setSNESFunction( boost::shared_ptr<const AMP::LinearAlgebra::Vector>  rhs);
     
     static PetscErrorCode apply(SNES snes,Vec x,Vec f,void *ctx);
     

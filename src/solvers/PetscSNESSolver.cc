@@ -227,7 +227,7 @@ PetscErrorCode PetscSNESSolver::apply(SNES ,Vec x,Vec r,void *ctx)
 /****************************************************************
 *  Solve                                                        *
 ****************************************************************/
-void PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
+void PetscSNESSolver::solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
                   boost::shared_ptr<AMP::LinearAlgebra::Vector>  u)
 {
     PROFILE_START("solve");
@@ -236,7 +236,7 @@ void PetscSNESSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
         AMP::pout << "L2 Norm of u in PetscSNESSolver::solve before view " << u->L2Norm() << std::endl;
   
     // Get petsc views of the vectors
-    AMP::LinearAlgebra::Vector::shared_ptr  spRhs = AMP::LinearAlgebra::PetscVector::view( f );
+    AMP::LinearAlgebra::Vector::const_shared_ptr  spRhs = AMP::LinearAlgebra::PetscVector::constView( f );
     AMP::LinearAlgebra::Vector::shared_ptr  spSol = AMP::LinearAlgebra::PetscVector::view( u );
 
     // Create temporary copies of the petsc views
@@ -500,7 +500,7 @@ PetscSNESSolver::mffdCheckBounds(void *checkctx, Vec U, Vec a, PetscScalar *h)
 
 
 void
-PetscSNESSolver::setSNESFunction( boost::shared_ptr<AMP::LinearAlgebra::Vector>  rhs)
+PetscSNESSolver::setSNESFunction( boost::shared_ptr<const AMP::LinearAlgebra::Vector>  rhs)
 {
     AMP_INSIST(rhs.get()!=NULL, "ERROR: PetscSNESSolver::setSNESFunction needs a non NULL rhs vector argument");
 

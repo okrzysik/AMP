@@ -18,7 +18,7 @@ namespace Solver {
       
       virtual ~CoupledFlow1DSolver();
 
-    void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
+    void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
 	       boost::shared_ptr<AMP::LinearAlgebra::Vector>  u);
     
     void setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess );
@@ -40,7 +40,7 @@ namespace Solver {
 
     boost::shared_ptr<AMP::LinearAlgebra::Variable> d_SimpleVariable; /**< Simple Input Variable */
 
-    AMP::LinearAlgebra::Vector::shared_ptr d_Rhs;
+    AMP::LinearAlgebra::Vector::const_shared_ptr d_Rhs;
     AMP::LinearAlgebra::Vector::shared_ptr d_Sol;
     AMP::LinearAlgebra::Vector::shared_ptr d_flowInput;
     AMP::LinearAlgebra::Vector::shared_ptr d_flowOutput;

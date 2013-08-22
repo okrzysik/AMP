@@ -15,8 +15,13 @@ TrilinosLinearOP::TrilinosLinearOP()
 }
 TrilinosLinearOP::TrilinosLinearOP( AMP::Operator::Operator::shared_ptr op )
 {
-    this->d_op = op;
-    AMP_ASSERT(d_op!=NULL);
+    this->d_operator = op;
+    AMP_ASSERT(d_operator!=NULL);
+}
+TrilinosLinearOP::TrilinosLinearOP( AMP::Solver::SolverStrategy::shared_ptr solver )
+{
+    this->d_solver = solver;
+    AMP_ASSERT(d_solver!=NULL);
 }
 TrilinosLinearOP::~TrilinosLinearOP()
 {
@@ -44,7 +49,7 @@ bool TrilinosLinearOP::opSupportedImpl(Thyra::EOpTransp) const
 void TrilinosLinearOP::applyImpl(const Thyra::EOpTransp M_trans, const Thyra::MultiVectorBase<double> &X, 
         const Teuchos::Ptr< Thyra::MultiVectorBase<double> > &Y, const double alpha, const double beta) const
 {
-    // Compute r = alpha*OP(M)*X + beta*Y 
+    // Compute Y = alpha*OP(M)*X + beta*Y 
     AMP_ASSERT(M_trans==Thyra::NOTRANS);
     AMP::LinearAlgebra::Vector::const_shared_ptr x = 
         AMP::LinearAlgebra::ThyraVector::constView( dynamic_cast<const Thyra::VectorBase<double>*>(&X) );
@@ -52,8 +57,14 @@ void TrilinosLinearOP::applyImpl(const Thyra::EOpTransp M_trans, const Thyra::Mu
         AMP::LinearAlgebra::ThyraVector::view( dynamic_cast<Thyra::VectorBase<double>*>(Y.get()) );
     //x->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     //y->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-    AMP::LinearAlgebra::Vector::shared_ptr f = y->cloneVector();
-    d_op->apply( f, x, y, alpha, beta );
+    if ( d_operator != NULL ) {
+        // Apply the AMP::Operator to compute the residual
+        AMP::LinearAlgebra::Vector::shared_ptr f = y->cloneVector();
+        d_operator->apply( f, x, y, alpha, beta );
+    } else {
+        // Apply the AMP::Solver
+        d_solver->solve( x, y );
+    }
 }
 
 

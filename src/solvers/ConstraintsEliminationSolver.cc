@@ -11,7 +11,7 @@ namespace AMP {
 
     }
 
-    void ConstraintsEliminationSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>, 
+    void ConstraintsEliminationSolver::solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>, 
       boost::shared_ptr<AMP::LinearAlgebra::Vector> u) 
     {
       boost::shared_ptr<AMP::Operator::ConstraintsEliminationOperator> op = boost::dynamic_pointer_cast<

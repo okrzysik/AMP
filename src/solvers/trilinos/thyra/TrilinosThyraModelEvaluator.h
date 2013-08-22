@@ -42,6 +42,9 @@ public:
     virtual Teuchos::RCP<const ::Thyra::LinearOpWithSolveFactoryBase<double> > get_W_factory() const;
     virtual ::Thyra::ModelEvaluatorBase::InArgs<double> createInArgs() const;
 
+    // Functions derived from Thyra::ModelEvaluator
+    virtual Teuchos::RCP< ::Thyra::PreconditionerBase<double> > create_W_prec() const;
+
 protected:
 
     // Return TrilinosLinearOP from Thyra::LinearOpBase<double>
@@ -59,10 +62,11 @@ private:
 
     // Data members
     Teuchos::RCP<const ::Thyra::LinearOpWithSolveFactoryBase<double> > d_W_factory;
-    AMP::LinearAlgebra::Vector::shared_ptr d_icVec;
-    AMP::LinearAlgebra::Vector::const_shared_ptr d_rhs;
-    AMP::Operator::Operator::shared_ptr d_nonlinearOp;
-    AMP::Operator::Operator::shared_ptr d_linearOp;
+    AMP::LinearAlgebra::Vector::shared_ptr          d_icVec;
+    AMP::LinearAlgebra::Vector::const_shared_ptr    d_rhs;
+    AMP::Operator::Operator::shared_ptr             d_nonlinearOp;
+    AMP::Operator::Operator::shared_ptr             d_linearOp;
+    AMP::Solver::SolverStrategy::shared_ptr         d_preconditioner;
 
 };
 

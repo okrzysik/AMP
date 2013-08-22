@@ -82,7 +82,7 @@ CoupledFlow1DSolver::resetOperator(const boost::shared_ptr<AMP::Operator::Operat
 }
 
   void
-CoupledFlow1DSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
+CoupledFlow1DSolver::solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
 		          boost::shared_ptr<AMP::LinearAlgebra::Vector>  u)
 {
 	AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
@@ -91,8 +91,8 @@ CoupledFlow1DSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
     d_outVariable = d_flowInternal1to3->getOutputVariable();
 
     d_Sol = u->subsetVectorForVariable(d_outVariable);
-    d_Rhs = f->subsetVectorForVariable(d_outVariable);
-    d_Rhs->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+    d_Rhs = f->constSubsetVectorForVariable(d_outVariable);
+    AMP_ASSERT(d_Rhs->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
 
     (boost::dynamic_pointer_cast<AMP::Operator::Map3Dto1D> (d_flowInternal3to1))->setVector(d_flowInput);
     (boost::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_flowInternal1to3))->setVector(d_Sol );

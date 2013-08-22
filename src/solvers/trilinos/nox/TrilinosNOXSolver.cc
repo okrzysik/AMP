@@ -67,7 +67,10 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
     modelParams->d_nonlinearOp = d_pOperator;
     modelParams->d_linearOp = params->d_pLinearOperator;
     modelParams->d_icVec = d_initialGuess;
+    modelParams->d_preconditioner = params->d_preconditioner;
     d_thyraModel = Teuchos::RCP<TrilinosThyraModelEvaluator>( new TrilinosThyraModelEvaluator(modelParams) );
+    // Create the Preconditioner operator
+    Teuchos::RCP<Thyra::PreconditionerBase<double> > precOp = d_thyraModel->create_W_prec();
     // Create the linear solver factory
     ::Stratimikos::DefaultLinearSolverBuilder builder;
     Teuchos::RCP<Teuchos::ParameterList> p = Teuchos::rcp(new Teuchos::ParameterList);
@@ -136,7 +139,7 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
 /****************************************************************
 *  Solve                                                        *
 ****************************************************************/
-void TrilinosNOXSolver::solve( boost::shared_ptr<AMP::LinearAlgebra::Vector> f,
+void TrilinosNOXSolver::solve( boost::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                   boost::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START("solve");
@@ -147,9 +150,9 @@ void TrilinosNOXSolver::solve( boost::shared_ptr<AMP::LinearAlgebra::Vector> f,
     boost::shared_ptr<AMP::LinearAlgebra::ThyraVector> U = 
         boost::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
         AMP::LinearAlgebra::ThyraVector::view( u ) );
-    boost::shared_ptr<AMP::LinearAlgebra::ThyraVector> F = 
-        boost::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
-        AMP::LinearAlgebra::ThyraVector::view( f ) );
+    boost::shared_ptr<const AMP::LinearAlgebra::ThyraVector> F = 
+        boost::dynamic_pointer_cast<const AMP::LinearAlgebra::ThyraVector>(
+        AMP::LinearAlgebra::ThyraVector::constView( f ) );
     // Set the rhs for the thyra model
     d_thyraModel->setRhs( f );
     // Create the NOX::Thyra::Group

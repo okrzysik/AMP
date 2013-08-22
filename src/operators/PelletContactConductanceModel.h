@@ -5,9 +5,9 @@
 #include <string>
 #include <vector>
 
-#include "ElementPhysicsModelFactory.h"
-#include "diffusion/DiffusionTransportModel.h"
-#include "RobinPhysicsModel.h"
+#include "operators/ElementPhysicsModelFactory.h"
+#include "operators/diffusion/DiffusionTransportModel.h"
+#include "operators/boundary/RobinPhysicsModel.h"
 #include "boost/shared_ptr.hpp"
 
 namespace AMP {

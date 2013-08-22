@@ -1,8 +1,8 @@
-#include "ParameterFactory.h"
-#include "DirichletMatrixCorrectionParameters.h"
-#include "MechanicsLinearFEOperatorParameters.h"
-#include "MechanicsNonlinearFEOperatorParameters.h"
-#include "NeutronicsRhsParameters.h"
+#include "operators/ParameterFactory.h"
+#include "operators/boundary/DirichletMatrixCorrectionParameters.h"
+#include "operators/mechanics/MechanicsLinearFEOperatorParameters.h"
+#include "operators/mechanics/MechanicsNonlinearFEOperatorParameters.h"
+#include "operators/NeutronicsRhsParameters.h"
 
 namespace AMP {
 namespace Operator {

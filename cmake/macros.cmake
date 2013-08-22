@@ -26,37 +26,37 @@ ENDMACRO ()
 
 # Add a package to the test dependency list
 MACRO (ADD_PACKAGE_TO_TEST_DEP_LIST PACKAGE)
-  IF ( TEST_DEP_LIST )
-    SET( TEST_DEP_LIST ${PACKAGE} ${TEST_DEP_LIST} )
-  ELSE()
-    SET( TEST_DEP_LIST ${PACKAGE} )
-  ENDIF()
+    IF ( TEST_DEP_LIST )
+        SET( TEST_DEP_LIST ${PACKAGE} ${TEST_DEP_LIST} )
+    ELSE()
+        SET( TEST_DEP_LIST ${PACKAGE} )
+    ENDIF()
 ENDMACRO ()
 
 
 # Add a package to the AMP library
 MACRO (ADD_AMP_LIBRARY PACKAGE)
-  ADD_PACKAGE_TO_TEST_DEP_LIST ( ${PACKAGE} )
-  INCLUDE_DIRECTORIES ( ${AMP_INSTALL_DIR}/include/${PACKAGE} )
-  ADD_SUBDIRECTORY ( ${PACKAGE} )
+    ADD_PACKAGE_TO_TEST_DEP_LIST ( ${PACKAGE} )
+    INCLUDE_DIRECTORIES ( ${AMP_INSTALL_DIR}/include/${PACKAGE} )
+    ADD_SUBDIRECTORY ( ${PACKAGE} )
 ENDMACRO ()
 
 
 # Add an AMP executable
 MACRO (ADD_AMP_EXECUTABLE PACKAGE)
-  ADD_SUBDIRECTORY ( ${PACKAGE} )
+    ADD_SUBDIRECTORY ( ${PACKAGE} )
 ENDMACRO ()
 
 
 # Initialize a package
 MACRO (BEGIN_PACKAGE_CONFIG PACKAGE)
-  SET( HEADERS "" )
-  SET( CXXSOURCES "" )
-  SET( CSOURCES "" )
-  SET( FSOURCES "" )
-  SET( M4FSOURCES "" )
-  SET( SOURCES "" )
-  SET( CURPACKAGE ${PACKAGE} )
+    SET( HEADERS "" )
+    SET( CXXSOURCES "" )
+    SET( CSOURCES "" )
+    SET( FSOURCES "" )
+    SET( M4FSOURCES "" )
+    SET( SOURCES "" )
+    SET( CURPACKAGE ${PACKAGE} )
 ENDMACRO ()
 
 
@@ -64,13 +64,13 @@ ENDMACRO ()
 MACRO (FIND_FILES)
     # Find the C/C++ headers
     SET( T_HEADERS "" )
-    FILE ( GLOB T_HEADERS "*.h" "*.hh" "*.I" )
+    FILE( GLOB T_HEADERS "*.h" "*.hh" "*.hpp" "*.I" )
     # Find the C sources
     SET( T_CSOURCES "" )
-    FILE ( GLOB T_CSOURCES "*.c" )
+    FILE( GLOB T_CSOURCES "*.c" )
     # Find the C++ sources
     SET( T_CXXSOURCES "" )
-    FILE ( GLOB T_CXXSOURCES "*.cc" "*.cpp" "*.cxx" "*.C" )
+    FILE( GLOB T_CXXSOURCES "*.cc" "*.cpp" "*.cxx" "*.C" )
     # Find the Fortran sources
     SET( T_FSOURCES "" )
     FILE ( GLOB T_FSOURCES "*.f" "*.f90" )
@@ -94,19 +94,19 @@ ENDMACRO()
 MACRO (FIND_FILES_PATH IN_PATH)
     # Find the C/C++ headers
     SET( T_HEADERS "" )
-    FILE ( GLOB T_HEADERS "${IN_PATH}/*.h" "${IN_PATH}/*.hh" "${IN_PATH}/*.I" )
+    FILE( GLOB T_HEADERS "${IN_PATH}/*.h" "${IN_PATH}/*.hh" "${IN_PATH}/*.hpp" "${IN_PATH}/*.I" )
     # Find the C sources
     SET( T_CSOURCES "" )
-    FILE ( GLOB T_CSOURCES "${IN_PATH}/*.c" )
+    FILE( GLOB T_CSOURCES "${IN_PATH}/*.c" )
     # Find the C++ sources
     SET( T_CXXSOURCES "" )
-    FILE ( GLOB T_CXXSOURCES "${IN_PATH}/*.cc" "${IN_PATH}/*.cpp" "${IN_PATH}/*.cxx" )
+    FILE( GLOB T_CXXSOURCES "${IN_PATH}/*.cc" "${IN_PATH}/*.cpp" "${IN_PATH}/*.cxx" )
     # Find the Fortran sources
     SET( T_FSOURCES "" )
-    FILE ( GLOB T_FSOURCES "${IN_PATH}/*.f" "${IN_PATH}/*.f90" )
+    FILE( GLOB T_FSOURCES "${IN_PATH}/*.f" "${IN_PATH}/*.f90" )
     # Find the m4 fortran source (and convert)
     SET( T_M4FSOURCES "" )
-    FILE ( GLOB T_M4FSOURCES "${IN_PATH}/*.fm4" )
+    FILE( GLOB T_M4FSOURCES "${IN_PATH}/*.fm4" )
     FOREACH (m4file ${T_M4FSOURCES})
         CONVERT_M4_FORTRAN ( ${m4file} ${CMAKE_CURRENT_SOURCE_DIR}/${IN_PATH} )
     ENDFOREACH ()
@@ -121,15 +121,8 @@ ENDMACRO()
 
 # Add a subdirectory
 MACRO ( ADD_PACKAGE_SUBDIRECTORY SUBDIR )
-  CMAKE_POLICY(SET CMP0014 OLD)
-  SET( FULLSUBDIR ${CMAKE_CURRENT_SOURCE_DIR}/${SUBDIR} )
-  FIND_FILES_PATH ( ${SUBDIR} )
-  FILE ( GLOB HFILES RELATIVE ${FULLSUBDIR} ${SUBDIR}/*.h ${SUBDIR}/*.hh ${SUBDIR}/*.I )
-  FOREACH (HFILE ${HFILES})
-    CONFIGURE_FILE ( ${FULLSUBDIR}/${HFILE} ${AMP_INSTALL_DIR}/include/${CURPACKAGE}/${SUBDIR}/${HFILE} COPYONLY )
-    INCLUDE_DIRECTORIES ( ${FULLSUBDIR} )
-  ENDFOREACH ()
-  ADD_SUBDIRECTORY ( ${SUBDIR} )
+    CMAKE_POLICY(SET CMP0014 OLD)
+    FIND_FILES_PATH ( ${SUBDIR} )
 ENDMACRO ()
 
 
@@ -138,9 +131,13 @@ MACRO ( INSTALL_AMP_TARGET LIBNAME )
     # Find all files in the current directory
     FIND_FILES ()
     # Copy the header files to the include path
-    FILE ( GLOB HFILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*.h ${CMAKE_CURRENT_SOURCE_DIR}/*.hh ${CMAKE_CURRENT_SOURCE_DIR}/*.I )
+    FILE ( GLOB HFILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${HEADERS} )
     FOREACH (HFILE ${HFILES})
         CONFIGURE_FILE ( ${CMAKE_CURRENT_SOURCE_DIR}/${HFILE} ${AMP_INSTALL_DIR}/include/${CURPACKAGE}/${HFILE} COPYONLY )
+        #ADD_CUSTOM_COMMAND(TARGET ${CURPACKAGE} PRE_BUILD 
+        #    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/${HFILE}" 
+        #        "${AMP_INSTALL_DIR}/include/${CURPACKAGE}/${HFILE}"
+        #)
     ENDFOREACH ()
     # Add the library
     ADD_LIBRARY ( ${LIBNAME} ${SOURCES} )
@@ -161,7 +158,7 @@ ENDMACRO ()
 # Macro to verify that a path has been set
 MACRO ( VERIFY_PATH PATH_NAME )
 IF ( NOT EXISTS ${PATH_NAME} )
-  MESSAGE ( FATAL_ERROR "Path does not exist: " ${PATH_NAME} )
+    MESSAGE ( FATAL_ERROR "Path does not exist: " ${PATH_NAME} )
 ENDIF ()
 ENDMACRO ()
 
@@ -185,48 +182,48 @@ ENDMACRO()
 
 # Macro to identify the compiler
 MACRO ( SET_COMPILER )
-  # SET the C/C++ compiler
-  IF ( CMAKE_COMPILE_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
-    SET( USING_GCC TRUE )
-    MESSAGE("Using gcc")
-  ELSEIF ( MSVC OR MSVC_IDE OR MSVC60 OR MSVC70 OR MSVC71 OR MSVC80 OR CMAKE_COMPILER_2005 OR MSVC90 OR MSVC10 )
-    IF ( NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
-       MESSAGE( FATAL_ERROR "Using microsoft compilers on non-windows system?" )
-    ENDIF()
-    SET( USING_MICROSOFT TRUE )
-    MESSAGE("Using Microsoft")
-  ELSEIF ( (${CMAKE_C_COMPILER_ID} MATCHES "Intel") OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel") ) 
-    SET(USING_ICC TRUE)
-    MESSAGE("Using icc")
-  ELSEIF ( ${CMAKE_C_COMPILER_ID} MATCHES "PGI")
-    SET(USING_PGCC TRUE)
-    MESSAGE("Using pgCC")    
-  ELSE ()
-    SET(USING_DEFAULT TRUE)
-    MESSAGE("${CMAKE_C_COMPILER_ID}")
-    MESSAGE("Unknown C/C++ compiler, default flags will be used")
-  ENDIF()
-  # SET the Fortran++ compiler
-  IF ( USE_FORTRAN )
-    IF ( CMAKE_COMPILE_IS_GFORTRAN OR (${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU") )
-      SET( USING_GFORTRAN TRUE )
-      MESSAGE("Using gfortran")
-    ELSEIF ( (${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel") ) 
-      SET(USING_IFORT TRUE)
-      MESSAGE("Using ifort")
-    ELSEIF ( ${CMAKE_Fortran_COMPILER_ID} MATCHES "PGI")
-      SET(USING_PGF90 TRUE)
-      MESSAGE("Using pgf90")
+    # SET the C/C++ compiler
+    IF ( CMAKE_COMPILE_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
+        SET( USING_GCC TRUE )
+        MESSAGE("Using gcc")
+    ELSEIF ( MSVC OR MSVC_IDE OR MSVC60 OR MSVC70 OR MSVC71 OR MSVC80 OR CMAKE_COMPILER_2005 OR MSVC90 OR MSVC10 )
+        IF ( NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
+            MESSAGE( FATAL_ERROR "Using microsoft compilers on non-windows system?" )
+        ENDIF()
+        SET( USING_MICROSOFT TRUE )
+        MESSAGE("Using Microsoft")
+    ELSEIF ( (${CMAKE_C_COMPILER_ID} MATCHES "Intel") OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel") ) 
+        SET(USING_ICC TRUE)
+        MESSAGE("Using icc")
+    ELSEIF ( ${CMAKE_C_COMPILER_ID} MATCHES "PGI")
+        SET(USING_PGCC TRUE)
+        MESSAGE("Using pgCC")    
     ELSE ()
-      SET(USING_DEFAULT TRUE)
-      MESSAGE("${CMAKE_Fortran_COMPILER_ID}")
-      MESSAGE("Unknown Fortran compiler, default flags will be used")
+        SET(USING_DEFAULT TRUE)
+        MESSAGE("${CMAKE_C_COMPILER_ID}")
+        MESSAGE("Unknown C/C++ compiler, default flags will be used")
     ENDIF()
-  ENDIF()
+    # SET the Fortran++ compiler
+    IF ( USE_FORTRAN )
+        IF ( CMAKE_COMPILE_IS_GFORTRAN OR (${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU") )
+            SET( USING_GFORTRAN TRUE )
+            MESSAGE("Using gfortran")
+        ELSEIF ( (${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel") ) 
+            SET(USING_IFORT TRUE)
+            MESSAGE("Using ifort")
+        ELSEIF ( ${CMAKE_Fortran_COMPILER_ID} MATCHES "PGI")
+            SET(USING_PGF90 TRUE)
+            MESSAGE("Using pgf90")
+        ELSE ()
+            SET(USING_DEFAULT TRUE)
+            MESSAGE("${CMAKE_Fortran_COMPILER_ID}")
+            MESSAGE("Unknown Fortran compiler, default flags will be used")
+        ENDIF()
+    ENDIF()
 ENDMACRO ()
 
 
-# Macro to set the proper warning level for AMP code
+# Macro to set the proper warnings
 MACRO ( SET_WARNINGS )
   IF ( USING_GCC )
     # Add gcc specific compiler options
@@ -243,8 +240,8 @@ MACRO ( SET_WARNINGS )
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS}" )
   ELSEIF ( USING_MICROSOFT )
     # Add Microsoft specifc compiler options
-    SET(CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} /D _SCL_SECURE_NO_WARNINGS /D _CRT_SECURE_NO_WARNINGS" )
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _SCL_SECURE_NO_WARNINGS /D _CRT_SECURE_NO_WARNINGS" )
+    SET(CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} /D _SCL_SECURE_NO_WARNINGS /D _CRT_SECURE_NO_WARNINGS /D _ITERATOR_DEBUG_LEVEL=0" )
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _SCL_SECURE_NO_WARNINGS /D _CRT_SECURE_NO_WARNINGS /D _ITERATOR_DEBUG_LEVEL=0" )
   ELSEIF ( USING_ICC )
     # Add Intel specifc compiler options
     #    111: statement is unreachable
@@ -375,7 +372,6 @@ MACRO ( COPY_TEST_DATA_FILE FILENAME )
     SET( FILE_TO_COPY  ${CMAKE_CURRENT_SOURCE_DIR}/data/${FILENAME} )
     SET( DESTINATION_NAME ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME} )
     IF ( EXISTS ${FILE_TO_COPY} )
-        # CONFIGURE_FILE ( ${FILE_TO_COPY} ${DESTINATION_NAME} COPYONLY )
         COPY_DATA_FILE( ${FILE_TO_COPY} ${DESTINATION_NAME} )
     ELSE()
         MESSAGE ( WARNING "Cannot find file: " ${FILE_TO_COPY} )
@@ -403,7 +399,6 @@ MACRO (COPY_MESH_FILE MESHNAME)
         MESSAGE ( WARNING "Cannot find mesh: " ${MESHNAME} )
     ELSE ()
         STRING(REGEX REPLACE ${MESHNAME} "" MESHPATH ${MESHPATH} )
-        # CONFIGURE_FILE ( ${MESHPATH}/${MESHNAME} ${CMAKE_CURRENT_BINARY_DIR}/${MESHNAME} COPYONLY )
         COPY_DATA_FILE( ${MESHPATH}/${MESHNAME} ${CMAKE_CURRENT_BINARY_DIR}/${MESHNAME} )
     ENDIF ()
 ENDMACRO()
@@ -446,11 +441,11 @@ ENDMACRO()
 
 
 MACRO ( ADD_FILES_TO_TEST_LIB FILENAMES )
-  ADD_LIBRARY ( ${PACKAGE_TEST_LIB} ${FILENAMES} )
-  IF ( TEST_DEP_LIST )
-      TARGET_LINK_LIBRARIES ( ${PACKAGE_TEST_LIB} ${TEST_DEP_LIST} )
-  ENDIF()
-  SET( AMP_TEST_LIB_EXISTS ${PACKAGE_TEST_LIB} )
+    ADD_LIBRARY ( ${PACKAGE_TEST_LIB} ${FILENAMES} )
+    IF ( TEST_DEP_LIST )
+        TARGET_LINK_LIBRARIES ( ${PACKAGE_TEST_LIB} ${TEST_DEP_LIST} )
+    ENDIF()
+    SET( AMP_TEST_LIB_EXISTS ${PACKAGE_TEST_LIB} )
 ENDMACRO ()
 
 
@@ -528,7 +523,7 @@ FUNCTION ( ADD_AMP_TEST EXEFILE ${ARGN} )
     ELSE()
         ADD_TEST ( ${TESTNAME} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
     ENDIF()
-    SET_TESTS_PROPERTIES ( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" )
+    SET_TESTS_PROPERTIES ( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" PROCESSORS 1 )
 ENDFUNCTION()
 
 # Add a executable as a weekly test
@@ -566,7 +561,7 @@ FUNCTION ( ADD_AMP_TEST_PARALLEL EXEFILE PROCS ${ARGN} )
     IF ( USE_EXT_MPI AND NOT (${PROCS} GREATER ${TEST_MAX_PROCS}) )
         CREATE_TEST_NAME( "${EXEFILE}_${PROCS}procs" ${ARGN} )
         ADD_TEST ( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${PROCS} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
-        SET_TESTS_PROPERTIES ( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" )
+        SET_TESTS_PROPERTIES ( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" PROCESSORS ${PROCS} )
     ENDIF()
 ENDFUNCTION()
 
@@ -659,36 +654,58 @@ ENDMACRO()
 # add custom target distclean
 # cleans and removes cmake generated files etc.
 MACRO ( ADD_DISTCLEAN )
-IF (UNIX)
-  ADD_CUSTOM_TARGET (distclean @echo cleaning for source distribution)
-  SET(DISTCLEANED
-    cmake.depends
-    cmake.check_depends
-    CMakeCache.txt
-    CMakeFiles
-    cmake.check_cache
-    *.cmake
-    compile.log
-    Doxyfile
-    Makefile
-    core core.*
-    src
-    ampdir
-    AMP
-    DartConfiguration.tcl
-    Testing
-    install_manifest.txt
-    nek
-  )
-  ADD_CUSTOM_COMMAND(
-    DEPENDS clean
-    COMMENT "distribution clean"
-    COMMAND rm
-    ARGS    -Rf CMakeTmp ${DISTCLEANED}
-    TARGET  distclean
-  )
-ENDIF(UNIX)
-ENDMACRO ()
+    SET(DISTCLEANED
+        cmake.depends
+        cmake.check_depends
+        CMakeCache.txt
+        CMakeFiles
+        CMakeTmp
+        cmake.check_cache
+        *.cmake
+        compile.log
+        Doxyfile
+        Makefile
+        core core.*
+        src
+        ampdir
+        AMP
+        DartConfiguration.tcl
+        Testing
+        install_manifest.txt
+        nek
+    )
+    ADD_CUSTOM_TARGET (distclean @echo cleaning for source distribution)
+    IF (UNIX)
+        ADD_CUSTOM_COMMAND(
+            DEPENDS clean
+            COMMENT "distribution clean"
+            COMMAND rm
+            ARGS    -Rf ${DISTCLEANED}
+            TARGET  distclean
+        )
+    ELSE()
+        SET( DISTCLEANED
+            ${DISTCLEANED}
+            *.vcxproj*
+            ipch
+            x64
+        )
+        FILE(WRITE  ${CMAKE_CURRENT_BINARY_DIR}/distclean.bat "del /s /q /f " )
+        FOREACH (fileToDelete ${DISTCLEANED})
+            FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/distclean.bat "${fileToDelete} " )
+        ENDFOREACH ()
+        FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/distclean.bat "\n" )
+        FOREACH (fileToDelete ${DISTCLEANED})
+            FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/distclean.bat "for /d %%x in (${fileToDelete}) do rd /s /q \"%%x\"\n" )
+        ENDFOREACH ()
+        ADD_CUSTOM_COMMAND(
+            DEPENDS clean
+            COMMENT "distribution clean"
+            COMMAND distclean.bat & del /s/q/f distclean.bat
+            TARGET  distclean
+        )
+    ENDIF()
+ENDMACRO()
 
 
 # Save the necessary cmake variables to a file for applications to load

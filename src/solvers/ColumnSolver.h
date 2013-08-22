@@ -45,7 +45,7 @@ namespace Solver {
        @param [in] f shared pointer to right hand side
        @param [out] u shared pointer to computed approximate solution
        */
-      void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f, boost::shared_ptr<AMP::LinearAlgebra::Vector>  u);
+      void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f, boost::shared_ptr<AMP::LinearAlgebra::Vector>  u);
 
       /**
        * sets the initial guess
@@ -78,9 +78,9 @@ namespace Solver {
 
     protected :
 
-      void GaussSeidel(boost::shared_ptr<AMP::LinearAlgebra::Vector>  &f, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u);
+      void GaussSeidel(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  &f, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u);
 
-      void SymmetricGaussSeidel(boost::shared_ptr<AMP::LinearAlgebra::Vector>  &f, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u);
+      void SymmetricGaussSeidel(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  &f, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u);
 
       std::vector< boost::shared_ptr<AMP::Solver::SolverStrategy> > d_Solvers;
       /**
