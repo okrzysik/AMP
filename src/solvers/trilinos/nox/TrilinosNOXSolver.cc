@@ -17,6 +17,8 @@
 #include "NOX_StatusTest_FiniteValue.H"
 #include "NOX_Solver_Factory.H"
 #include "BelosTypes.hpp"
+#include "NOX_Thyra_MatrixFreeJacobianOperator.hpp"
+#include "NOX_MatrixFree_ModelEvaluatorDecorator.hpp"
 
 
 namespace AMP {
@@ -70,12 +72,19 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
     modelParams->d_preconditioner = params->d_preconditioner;
     d_thyraModel = Teuchos::RCP<TrilinosThyraModelEvaluator>( new TrilinosThyraModelEvaluator(modelParams) );
     // Create the Preconditioner operator
-    Teuchos::RCP<Thyra::PreconditionerBase<double> > precOp = d_thyraModel->create_W_prec();
+    d_precOp = d_thyraModel->create_W_prec();
     // Create the linear solver factory
     ::Stratimikos::DefaultLinearSolverBuilder builder;
     Teuchos::RCP<Teuchos::ParameterList> p = Teuchos::rcp(new Teuchos::ParameterList);
+/*p->set("Linear Solver Type", "AztecOO");
+p->sublist("Linear Solver Types").sublist("AztecOO").sublist("Forward Solve").set("Tolerance",1.0e-1);
+p->sublist("Linear Solver Types").sublist("AztecOO").sublist("Forward Solve").sublist("AztecOO Settings").set("Output Frequency",1);
+p->set("Preconditioner Type", "None");*/
     p->set("Linear Solver Type", "Belos");
     p->set("Preconditioner Type", "None");
+p->sublist("Linear Solver Types").sublist("Belos").sublist("Solver Types").sublist("Pseudo Block GMRES").set("Output Frequency",1);
+p->sublist("Linear Solver Types").sublist("Belos").sublist("Solver Types").sublist("Pseudo Block GMRES").set("Verbosity",10);
+p->sublist("Linear Solver Types").sublist("Belos").sublist("VerboseObject").set("Verbosity Level","extreme");
     //p->set("Linear Solver Type", "AztecOO");
     //p->set("Preconditioner Type", "Ifpack");
     //p->set("Enable Delayed Solver Construction", true);
@@ -90,10 +99,9 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
             Belos::OrthoDetails+Belos::FinalSummary+Belos::Debug+Belos::StatusTestDetails);
     }
     builder.setParameterList(p);
-    Teuchos::RCP< ::Thyra::LinearOpWithSolveFactoryBase<double> > 
-        lowsFactory = builder.createLinearSolveStrategy("");
-    lowsFactory->initializeVerboseObjectBase();
-    d_thyraModel->set_W_factory(lowsFactory);
+    d_lowsFactory = builder.createLinearSolveStrategy("");
+    d_lowsFactory->initializeVerboseObjectBase();
+    d_thyraModel->set_W_factory(d_lowsFactory);
     // Create the convergence tests (these will need to be on the input database)
     Teuchos::RCP<NOX::StatusTest::NormF> absresid =
         Teuchos::rcp(new NOX::StatusTest::NormF(d_dMaxError));
@@ -155,9 +163,26 @@ void TrilinosNOXSolver::solve( boost::shared_ptr<const AMP::LinearAlgebra::Vecto
         AMP::LinearAlgebra::ThyraVector::constView( f ) );
     // Set the rhs for the thyra model
     d_thyraModel->setRhs( f );
+    // Create the JFNK operator
+    Teuchos::ParameterList printParams;
+    Teuchos::RCP<Teuchos::ParameterList> jfnkParams = Teuchos::parameterList();
+    jfnkParams->set("Difference Type","Forward");
+    jfnkParams->set("Perturbation Algorithm","KSP NOX 2001");
+    jfnkParams->set("lambda",1.0e-4);
+    Teuchos::RCP<NOX::Thyra::MatrixFreeJacobianOperator<double> > jfnkOp(
+        new NOX::Thyra::MatrixFreeJacobianOperator<double>(printParams) );
+    jfnkOp->setParameterList(jfnkParams);
+    jfnkParams->print(std::cout);
     // Create the NOX::Thyra::Group
-    Teuchos::RCP<NOX::Thyra::Group> nox_group( new NOX::Thyra::Group( initial->getVec(), d_thyraModel ) );
+    //Teuchos::RCP<NOX::Thyra::Group> nox_group( new NOX::Thyra::Group( initial->getVec(), d_thyraModel ) );
+    Teuchos::RCP< ::Thyra::ModelEvaluator<double> > thyraModel = 
+        Teuchos::rcp(new NOX::MatrixFreeModelEvaluatorDecorator<double>(d_thyraModel));
+    Teuchos::RCP<NOX::Thyra::Group> nox_group( new NOX::Thyra::Group( initial->getVec(), thyraModel, jfnkOp, d_lowsFactory, d_precOp, Teuchos::null));
     nox_group->setX(U->getVec());
+    nox_group->computeF();
+    // VERY IMPORTANT!!!  jfnk object needs base evaluation objects.
+    // This creates a circular dependency, so use a weak pointer.
+    jfnkOp->setBaseEvaluationToNOXGroup(nox_group.create_weak());
     // Create the solver
     d_solver = NOX::Solver::buildSolver(nox_group, d_status, d_nlParams);
     // Solve

@@ -110,6 +110,8 @@ protected:
 
     Teuchos::RCP<TrilinosThyraModelEvaluator> d_thyraModel;
     Teuchos::RCP<Teuchos::ParameterList> d_nlParams;
+    Teuchos::RCP<Thyra::PreconditionerBase<double> > d_precOp;
+    Teuchos::RCP< ::Thyra::LinearOpWithSolveFactoryBase<double> > d_lowsFactory;
     Teuchos::RCP<NOX::StatusTest::Combo> d_status;
 
 };

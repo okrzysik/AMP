@@ -23,6 +23,7 @@ TrilinosThyraModelEvaluator::TrilinosThyraModelEvaluator( boost::shared_ptr<Tril
     d_nonlinearOp = params->d_nonlinearOp;
     d_linearOp = params->d_linearOp;
     d_icVec = params->d_icVec;
+    d_preconditioner = params->d_preconditioner;
 }
 
 
@@ -69,11 +70,12 @@ void TrilinosThyraModelEvaluator::evalModelImpl( const ::Thyra::ModelEvaluatorBa
     }
 
     if ( outArgs.supports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_op) ) {
-        boost::shared_ptr<AMP::Solver::TrilinosLinearOP> W_out = this->view( outArgs.get_W_op() );
-        if ( W_out != NULL ) {
+        Teuchos::RCP<Thyra::LinearOpBase<double> >  W_out = outArgs.get_W_op();
+        if ( W_out.get() != NULL ) {
             // Get the jacobian
-            //AMP_ERROR("Not finished");
-            /*Teuchos::RCP<Epetra_Operator> W_epetra = Thyra::get_Epetra_Operator(*W_out);
+            AMP_ERROR("Not finished");
+            /*boost::shared_ptr<AMP::Solver::TrilinosLinearOP> W_out = this->view( outArgs.get_W_op() );
+            Teuchos::RCP<Epetra_Operator> W_epetra = Thyra::get_Epetra_Operator(*W_out);
             Teuchos::RCP<Epetra_CrsMatrix> W_epetracrs = rcp_dynamic_cast<Epetra_CrsMatrix>(W_epetra);
             TEUCHOS_ASSERT(nonnull(W_epetracrs));
             Epetra_CrsMatrix& DfDx = *W_epetracrs;
@@ -118,7 +120,6 @@ Teuchos::RCP<const ::Thyra::VectorSpaceBase<double> > TrilinosThyraModelEvaluato
 }
 ::Thyra::ModelEvaluatorBase::InArgs<double> TrilinosThyraModelEvaluator::getNominalValues() const
 {
-    AMP_ERROR("Not implimented yet");
     return ::Thyra::ModelEvaluatorBase::InArgs<double>();
 }
 Teuchos::RCP< ::Thyra::LinearOpBase<double> > TrilinosThyraModelEvaluator::create_W_op() const
@@ -146,6 +147,7 @@ Teuchos::RCP<const ::Thyra::LinearOpWithSolveFactoryBase<double> > TrilinosThyra
     outArgs.setModelEvalDescription(this->description());
     outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_f);
     outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_op);
+    outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_prec);
     return outArgs;
 }
 

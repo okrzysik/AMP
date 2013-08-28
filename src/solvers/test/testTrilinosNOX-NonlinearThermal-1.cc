@@ -187,7 +187,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   nonlinearSolverParams->d_pLinearOperator = linearThermalOperator;
   nonlinearSolverParams->d_pInitialGuess = solVec;
 
-  boost::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(new AMP::Solver::TrilinosNOXSolver(nonlinearSolverParams));
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   boost::shared_ptr<AMP::Database> thermalPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
@@ -200,6 +199,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   //boost::shared_ptr<AMP::Solver::TrilinosBelosSolver> linearSolver = nonlinearSolver->getKrylovSolver();
 
   //linearSolver->setPreconditioner(linearThermalPreconditioner);
+
+  nonlinearSolverParams->d_preconditioner = linearThermalPreconditioner;
+  boost::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(new AMP::Solver::TrilinosNOXSolver(nonlinearSolverParams));
 
   nonlinearThermalOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
   double initialResidualNorm  = resVec->L2Norm();
