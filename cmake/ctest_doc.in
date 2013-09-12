@@ -21,7 +21,7 @@ SET ( COVERAGE_COMMAND /usr/bin/gcov )
 
 SET ( CTEST_COMMAND "\"${CTEST_EXECUTABLE_NAME}\" -D ${CTEST_DASHBOARD}" )
 SET ( CTEST_CONFIGURE_COMMAND ${CTEST_CMAKE_COMMAND} )
-SET ( CTEST_BUILD_COMMAND "make doc -j 4" )
+SET ( CTEST_BUILD_COMMAND "make doc -j 4 -i" )
 SET ( CTEST_COVERAGE_COMMAND ${COVERAGE_COMMAND} )
 
 # Clear the binary directory and create an initial cache
