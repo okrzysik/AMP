@@ -128,21 +128,23 @@ ENDIF()
 
 
 # Set the compile flags
-CONFIGURE_SYSTEM()
-IF ( NOT CMAKE_BUILD_TYPE ) 
-    IF ( NOT COMPILE_MODE )
-        MESSAGE(FATAL_ERROR "PLease set: COMPILE_MODE")
+IF ( NOT ONLY_BUILD_DOCS )
+    CONFIGURE_SYSTEM()
+    IF ( NOT CMAKE_BUILD_TYPE ) 
+        IF ( NOT COMPILE_MODE )
+            MESSAGE(FATAL_ERROR "PLease set: COMPILE_MODE")
+        ENDIF()
+        STRING(TOUPPER ${COMPILE_MODE} COMPILE_MODE)
+        IF ( ${COMPILE_MODE} STREQUAL "DEBUG" )
+            SET(CMAKE_BUILD_TYPE "Debug")
+        ELSEIF ( ${COMPILE_MODE} STREQUAL "OPTIMIZED" OR ${COMPILE_MODE} STREQUAL "RELEASE" )
+            SET(CMAKE_BUILD_TYPE "Release")
+        ELSE()
+            MESSAGE ( FATAL_ERROR "COMPILE_MODE must be either debug or optimized" )
+       ENDIF()
     ENDIF()
-    STRING(TOUPPER ${COMPILE_MODE} COMPILE_MODE)
-    IF ( ${COMPILE_MODE} STREQUAL "DEBUG" )
-        SET(CMAKE_BUILD_TYPE "Debug")
-    ELSEIF ( ${COMPILE_MODE} STREQUAL "OPTIMIZED" OR ${COMPILE_MODE} STREQUAL "RELEASE" )
-        SET(CMAKE_BUILD_TYPE "Release")
-    ELSE()
-        MESSAGE ( FATAL_ERROR "COMPILE_MODE must be either debug or optimized" )
-    ENDIF()
+    SET_COMPILER_FLAGS()
 ENDIF()
-SET_COMPILER_FLAGS()
 
 
 # Some more configure options
@@ -165,5 +167,4 @@ IF ( USE_FORTRAN )
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-common")
     endif( (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel") AND (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin") )
 ENDIF()
-
 

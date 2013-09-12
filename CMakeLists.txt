@@ -13,6 +13,12 @@ MESSAGE ("===============")
 PROJECT (AMP)
 
 
+# Check if we are only compiling docs
+INCLUDE( ${AMP_SOURCE_DIR}/cmake/macros.cmake )
+INCLUDE( ${AMP_SOURCE_DIR}/cmake/libraries.cmake )
+CHECK_ENABLE_FLAG( ONLY_BUILD_DOCS 0 )
+
+
 # Enable the required compilers
 ENABLE_LANGUAGE(C)
 ENABLE_LANGUAGE(CXX)
@@ -36,32 +42,31 @@ ENABLE_TESTING()
 INCLUDE(CTest)
 
 
-# Set Cmake include files
-INCLUDE( ${AMP_SOURCE_DIR}/cmake/macros.cmake )
-INCLUDE( ${AMP_SOURCE_DIR}/cmake/libraries.cmake )
-
-
 # Configure external libraries
-CONFIGURE_MPI()     # MPI must be before other libraries
-CONFIGURE_TRILINOS_LIBRARIES()
-CONFIGURE_SUNDIALS_LIBRARIES()
-CONFIGURE_PETSC_LIBRARIES()
-CONFIGURE_HYPRE_LIBRARIES()
-CONFIGURE_X11_LIBRARIES()
-CONFIGURE_BLAS()
-CONFIGURE_LAPACK()
-CONFIGURE_LIBMESH()
-CONFIGURE_NEK()     # should go before MOAB since it requires MOAB.
-CONFIGURE_MOAB()
-CONFIGURE_DENDRO()
-CONFIGURE_SILO()
-CONFIGURE_HDF5()
-CONFIGURE_NETCDF()
-CONFIGURE_BOOST()
+IF ( NOT ONLY_BUILD_DOCS )
+    CONFIGURE_MPI()     # MPI must be before other libraries
+    CONFIGURE_TRILINOS_LIBRARIES()
+    CONFIGURE_SUNDIALS_LIBRARIES()
+    CONFIGURE_PETSC_LIBRARIES()
+    CONFIGURE_HYPRE_LIBRARIES()
+    CONFIGURE_X11_LIBRARIES()
+    CONFIGURE_BLAS()
+    CONFIGURE_LAPACK()
+    CONFIGURE_LIBMESH()
+    CONFIGURE_NEK()     # should go before MOAB since it requires MOAB.
+    CONFIGURE_MOAB()
+    CONFIGURE_DENDRO()
+    CONFIGURE_SILO()
+    CONFIGURE_HDF5()
+    CONFIGURE_NETCDF()
+    CONFIGURE_BOOST()
+ENDIF()
 
 
 # Configure AMP (all external libraries must be configured first)
-CONFIGURE_AMP()
+IF ( NOT ONLY_BUILD_DOCS )
+    CONFIGURE_AMP()
+ENDIF()
 
 
 # Create the target for documentation
@@ -86,11 +91,14 @@ ENDIF()
 
 
 # Add the src directory
-SET( EXCLUDE_TESTS_FROM_ALL 1 )
-ADD_SUBDIRECTORY ( src )
+IF ( NOT ONLY_BUILD_DOCS )
+    SET( EXCLUDE_TESTS_FROM_ALL 1 )
+    ADD_SUBDIRECTORY ( src )
+ENDIF()
 
 
 # Save the configuration info for applications 
-SAVE_CMAKE_FLAGS()
-
+IF ( NOT ONLY_BUILD_DOCS )
+    SAVE_CMAKE_FLAGS()
+ENDIF()
 
