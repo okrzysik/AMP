@@ -8,7 +8,7 @@
 // Trilinos includes
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
-#include "Thyra_SpmdVectorBase_def.hpp"
+//#include "Thyra_SpmdVectorBase_def.hpp"
 #include "Thyra_DefaultSpmdVector_def.hpp"
 #include "Thyra_EpetraThyraWrappers.hpp"
 

@@ -57,6 +57,7 @@ SET(AMP_TPLS_FINDMODS_CLASSIFICATIONS
     PETSC               "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
     PETSC_AMP           "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
     LIBMESH             "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
+    DENDRO              "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
     X11                 "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
 )
 

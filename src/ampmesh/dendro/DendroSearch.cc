@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <boost/lexical_cast.hpp>
 #include <set>
+#include "externVars.h"
 #include "ampmesh/latex_visualization_tools.h"
 
 namespace AMP {

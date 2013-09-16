@@ -1,7 +1,7 @@
 #include "vectors/trilinos/thyra/NativeThyraVector.h"
 #include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
-#include "Thyra_SpmdVectorBase_def.hpp"
+//#include "Thyra_SpmdVectorBase_def.hpp"
 #include "Thyra_DefaultSpmdVector_def.hpp"
 
 
