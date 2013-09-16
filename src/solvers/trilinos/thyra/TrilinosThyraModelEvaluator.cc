@@ -63,6 +63,8 @@ void TrilinosThyraModelEvaluator::evalModelImpl( const ::Thyra::ModelEvaluatorBa
     if ( d_rhs != NULL ) {
         const_cast<AMP::LinearAlgebra::Vector*>(d_rhs.get())->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     }
+    AMP_ASSERT(x->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
+    AMP_ASSERT(d_rhs->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
 
     if ( f_out != NULL ) {
         // Evaluate the residual:  r = A(u) - rhs

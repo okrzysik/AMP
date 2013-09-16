@@ -421,7 +421,8 @@ double MultiVector::dot ( const VectorOperations &x ) const
 void MultiVector::makeConsistent ( ScatterType t )
 {
     for (size_t i=0; i!=d_vVectors.size(); i++ )
-      d_vVectors[i]->makeConsistent ( t );
+        d_vVectors[i]->makeConsistent ( t );
+    *d_UpdateState = Vector::UNCHANGED;
 }
 
 

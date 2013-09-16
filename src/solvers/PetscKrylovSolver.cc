@@ -395,6 +395,14 @@ PetscErrorCode  PetscKrylovSolver::applyPreconditioner(PC pc, Vec r, Vec z)
     boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_r ( reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>(r->data) , AMP::LinearAlgebra::ExternalVectorDeleter() );
     boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_z ( reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>(z->data) , AMP::LinearAlgebra::ExternalVectorDeleter() );
 
+    // Make sure the vectors are in a consistent state
+    AMP_ASSERT( (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+        (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+    AMP_ASSERT( (sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+        (sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+    sp_r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    sp_z->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+
     // these tests were helpful in finding a bug
     if(((PetscKrylovSolver*)ctx)->getDebugPrintInfoLevel()>5) {
         double norm=0.0;
@@ -403,10 +411,6 @@ PetscErrorCode  PetscKrylovSolver::applyPreconditioner(PC pc, Vec r, Vec z)
         AMP_ASSERT(AMP::Utilities::approx_equal(norm, sp_r_norm));
     }  
   
-    AMP_ASSERT( (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
-        (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
-    AMP_ASSERT( (sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
-        (sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
 
     // Call the preconditioner
     boost::shared_ptr<AMP::Solver::SolverStrategy> preconditioner = 

@@ -513,9 +513,10 @@ static std::vector<ThyraVectorWrapper*> getPtr( std::vector<size_t> block_size,
         ptr[i] = dynamic_cast<ThyraVectorWrapper*>( vecs[i].getRawPtr() );
         AMP_INSIST(ptr[i]!=NULL,"All vectors used in applyOpImpl must be of the type ThyraVectorWrapper");
         for (size_t j=0; j<ptr[i]->numVecs(); j++) {
-            AMP_ASSERT(ptr[i]->getVec(j)->numberOfDataBlocks()==block_size.size());
+            AMP::LinearAlgebra::Vector::const_shared_ptr tmp = ptr[i]->getVec(j);
+            AMP_ASSERT(tmp->numberOfDataBlocks()==block_size.size());
             for (size_t k=0; k<block_size.size(); k++)
-                AMP_ASSERT(block_size[k]==ptr[i]->getVec(j)->sizeOfDataBlock());
+                AMP_ASSERT(block_size[k]==tmp->sizeOfDataBlock(k));
         }
     }
     return ptr;
@@ -530,9 +531,10 @@ static std::vector<const ThyraVectorWrapper*> getConstPtr( std::vector<size_t> b
         ptr[i] = dynamic_cast<const ThyraVectorWrapper*>( vecs[i].getRawPtr() );
         AMP_INSIST(ptr[i]!=NULL,"All vectors used in applyOpImpl must be of the type ThyraVectorWrapper");
         for (size_t j=0; j<ptr[i]->numVecs(); j++) {
-            AMP_ASSERT(ptr[i]->getVec(j)->numberOfDataBlocks()==block_size.size());
+            AMP::LinearAlgebra::Vector::const_shared_ptr tmp = ptr[i]->getVec(j);
+            AMP_ASSERT(tmp->numberOfDataBlocks()==block_size.size());
             for (size_t k=0; k<block_size.size(); k++)
-                AMP_ASSERT(block_size[k]==ptr[i]->getVec(j)->sizeOfDataBlock());
+                AMP_ASSERT(block_size[k]==tmp->sizeOfDataBlock(k));
         }
     }
     return ptr;
