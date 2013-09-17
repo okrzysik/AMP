@@ -1,4 +1,7 @@
 #include "solvers/PelletStackHelpers.h"
+#ifdef USE_EXT_PETSC
+    #include "solvers/petsc/PetscKrylovSolver.h"
+#endif
 
 
 void helperCreateStackOperatorForPelletMechanics(AMP::Mesh::Mesh::shared_ptr manager,
@@ -214,15 +217,19 @@ void helperBuildColumnSolverForPelletMechanics(boost::shared_ptr<AMP::Database> 
     boost::shared_ptr<AMP::Solver::TrilinosMLSolver> mlSolver(new
         AMP::Solver::TrilinosMLSolver(mlSolverParams));
 
-    boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> ikspSolverParams(new
-        AMP::Solver::PetscKrylovSolverParameters(ikspSolver_db));
-    ikspSolverParams->d_pOperator = currOp;
-    ikspSolverParams->d_comm = (currOp->getMesh())->getComm();
-    ikspSolverParams->d_pPreconditioner = mlSolver;
-    boost::shared_ptr<AMP::Solver::PetscKrylovSolver> ikspSolver(new
-        AMP::Solver::PetscKrylovSolver(ikspSolverParams));
+    #ifdef USE_EXT_PETSC
+        boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> ikspSolverParams(new
+            AMP::Solver::PetscKrylovSolverParameters(ikspSolver_db));
+        ikspSolverParams->d_pOperator = currOp;
+        ikspSolverParams->d_comm = (currOp->getMesh())->getComm();
+        ikspSolverParams->d_pPreconditioner = mlSolver;
+        boost::shared_ptr<AMP::Solver::PetscKrylovSolver> ikspSolver(new
+            AMP::Solver::PetscKrylovSolver(ikspSolverParams));
+        columnSolver->append(ikspSolver);
+    #else
+        AMP_ERROR("petsc required");
+    #endif
 
-    columnSolver->append(ikspSolver);
   }//end for id
 }
 

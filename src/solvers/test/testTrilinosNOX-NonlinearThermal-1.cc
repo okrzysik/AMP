@@ -39,8 +39,6 @@
 #include "operators/OperatorBuilder.h"
 
 #include "solvers/ColumnSolver.h"
-#include "solvers/PetscKrylovSolverParameters.h"
-#include "solvers/PetscKrylovSolver.h"
 #include "solvers/trilinos/nox/TrilinosNOXSolverParameters.h"
 #include "solvers/trilinos/nox/TrilinosNOXSolver.h"
 
