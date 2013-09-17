@@ -119,7 +119,14 @@ linearSolverParams.sublist("Solver Types").sublist("Pseudo Block GMRES").set("Ma
     d_status->addStatusTest(maxiters);
     // Create nox parameter list
     d_nlParams = Teuchos::rcp(new Teuchos::ParameterList);
-    d_nlParams->set("Nonlinear Solver", "Line Search Based");
+    //d_nlParams->set("Nonlinear Solver", "Line Search Based");
+    d_nlParams->set("Nonlinear Solver", "Anderson Accelerated Fixed-Point");
+    d_nlParams->sublist("Anderson Parameters").set("Storage Depth", 100);
+    d_nlParams->sublist("Anderson Parameters").set("Mixing Parameter", -0.9);
+    d_nlParams->sublist("Anderson Parameters").sublist("Preconditioning").set("Precondition", false);
+
+    d_nlParams->sublist("Line Search").set("Method", "Polynomial");
+    d_nlParams->sublist("Direction").sublist("Newton").sublist("Linear Solver").set("Tolerance",1e-4);
     // Set the printing parameters in the "Printing" sublist
     Teuchos::ParameterList& printParams = d_nlParams->sublist("Printing");
     printParams.set("Output Precision", 3);

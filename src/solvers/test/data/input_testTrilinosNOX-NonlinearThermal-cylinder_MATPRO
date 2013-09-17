@@ -1,13 +1,23 @@
 
 Mesh{
-    FileName = "halden_1_pellet_9mil.e"
-    MeshType = "libMesh"
     MeshName = "Pellet"
-    dim      = 3
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 5226
+    MeshType = "AMP"
+                    dim = 3
+                    Generator = "cylinder"
+                    Size = 4, 5
+                    Range = 0.5, 0, 1.0
+                    x_offset = 0.0
+                    y_offset = 0.0
+                    z_offset = 0.0
+                    Weight = 1.0
+//    FileName = "halden_1_pellet_9mil.e"
+//    MeshType = "libMesh"
+//    MeshName = "Pellet"
+//    dim      = 3
+//    x_offset = 0
+//    y_offset = 0
+//    z_offset = 0
+//    NumberOfElements = 5226
 }
 
 NeutronicsOperator{
@@ -17,7 +27,8 @@ NeutronicsOperator{
     numTimeSteps       = 1
     timeSteps          = .1
     useFixedValue      = TRUE
-    fixedValues        = 4045.83
+    //fixedValues        = 4045.83
+    fixedValues        = 0.0
     print_info_level   = 3
 }
 
@@ -94,7 +105,7 @@ DirichletVectorCorrection1 {
     id_0             = 4
     number_of_dofs_0 =   1
     dof_0_0          =   0
-    value_0_0        = 557.2
+    value_0_0        = 400.2
 }
 
 DiffusionTransportModel1{
@@ -102,7 +113,7 @@ DiffusionTransportModel1{
     Material = "UO2_MSRZC_09"
     Property = "ThermalConductivity"
     Default_Concentration = .1
-    Default_Temperature   = 557.2
+    Default_Temperature   = 400.2
     Default_Burnup   = 0.0
 } 
 

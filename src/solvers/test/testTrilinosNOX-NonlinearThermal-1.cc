@@ -187,12 +187,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
-  boost::shared_ptr<AMP::Database> thermalPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
-  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams(new AMP::Solver::SolverStrategyParameters(thermalPreconditioner_db));
-  thermalPreconditionerParams->d_pOperator = linearThermalOperator;
-  boost::shared_ptr<AMP::Solver::TrilinosMLSolver> linearThermalPreconditioner(new AMP::Solver::TrilinosMLSolver(thermalPreconditionerParams));
+  // boost::shared_ptr<AMP::Database> thermalPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
+  // boost::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams(new AMP::Solver::SolverStrategyParameters(thermalPreconditioner_db));
+  // thermalPreconditionerParams->d_pOperator = linearThermalOperator;
+  // boost::shared_ptr<AMP::Solver::TrilinosMLSolver> linearThermalPreconditioner(new AMP::Solver::TrilinosMLSolver(thermalPreconditionerParams));
 
-  nonlinearSolverParams->d_preconditioner = linearThermalPreconditioner;
+  // ROGER disable prec
+  //nonlinearSolverParams->d_preconditioner = linearThermalPreconditioner;
   boost::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(new AMP::Solver::TrilinosNOXSolver(nonlinearSolverParams));
 
   nonlinearThermalOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
