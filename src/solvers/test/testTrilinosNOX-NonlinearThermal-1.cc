@@ -194,12 +194,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   thermalPreconditionerParams->d_pOperator = linearThermalOperator;
   boost::shared_ptr<AMP::Solver::TrilinosMLSolver> linearThermalPreconditioner(new AMP::Solver::TrilinosMLSolver(thermalPreconditionerParams));
 
-  //----------------------------------------------------------------------------------------------------------------------------------------------//
-  // register the preconditioner with the Jacobian free Krylov solver
-  //boost::shared_ptr<AMP::Solver::TrilinosBelosSolver> linearSolver = nonlinearSolver->getKrylovSolver();
-
-  //linearSolver->setPreconditioner(linearThermalPreconditioner);
-
   nonlinearSolverParams->d_preconditioner = linearThermalPreconditioner;
   boost::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(new AMP::Solver::TrilinosNOXSolver(nonlinearSolverParams));
 
@@ -257,8 +251,7 @@ int main(int argc, char *argv[])
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    //  exeNames.push_back("testPetscSNESSolver-NonlinearThermal-cylinder_kIsOne");
-    exeNames.push_back("testPetscSNESSolver-NonlinearThermal-cylinder_MATPRO");
+    exeNames.push_back("testTrilinosNOX-NonlinearThermal-cylinder_MATPRO");
 
     for(unsigned int i = 0; i < exeNames.size(); i++) {
         try {

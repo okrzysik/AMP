@@ -178,12 +178,17 @@ void ThyraVectorWrapper::applyImpl(const Thyra::EOpTransp M_trans, const Thyra::
             // We are performing a series of axpby operations
             const ThyraVectorWrapper* y = dynamic_cast<const ThyraVectorWrapper*>(Y.get());
             AMP_ASSERT(y!=NULL);
-            AMP_ASSERT(d_cols.size()==y->d_cols.size());
-            for (size_t i=0; i<d_cols.size(); i++)
-                AMP_ASSERT(d_cols[i]==y->d_cols[i]);
-            for (size_t i=0; i<d_cols.size(); i++) {
-                double x = Thyra::get_ele(*(X.col(0)),d_cols[i]);
-                y->d_vecs[i]->axpby(alpha*x,beta,d_vecs[i]);
+            for (size_t i1=0; i1<y->d_cols.size(); i1++) {
+                size_t i2 = d_cols.size();
+                for (size_t j=0; j<d_cols.size(); j++) {
+                    if ( d_cols[j]==y->d_cols[i1] ) {
+                        i2 = j;
+                        break;
+                    }
+                }
+                AMP_ASSERT(i2<d_cols.size());
+                double x = Thyra::get_ele(*(X.col(0)),d_cols[i2]);
+                y->d_vecs[i1]->axpby(alpha*x,beta,d_vecs[i2]);
             }
         } else {
             AMP_ERROR("Not finished");

@@ -60,15 +60,17 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
     if ( params->d_pInitialGuess.get()!=NULL )
         d_initialGuess = params->d_pInitialGuess;
     AMP_ASSERT(d_initialGuess!=NULL);
+    boost::shared_ptr<AMP::Database> nonlinear_db = parameters->d_db;
+    boost::shared_ptr<AMP::Database> linear_db = nonlinear_db->getDatabase("LinearSolver");
+    AMP_ASSERT(linear_db!=NULL);
     // Create the default OStream
     Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::VerboseObjectBase::getDefaultOStream();
-    //Teuchos::RCP<Teuchos::FancyOStream> defaultOStream( new Teuchos::FancyOStream(Teuchos::rcpFromRef(std::cout)) );
-    //Teuchos::VerboseObjectBase::setDefaultOStream(defaultOStream);
     // Create a model evaluator
     boost::shared_ptr<TrilinosThyraModelEvaluatorParameters> modelParams( new TrilinosThyraModelEvaluatorParameters );
     modelParams->d_nonlinearOp = d_pOperator;
     modelParams->d_linearOp = params->d_pLinearOperator;
     modelParams->d_icVec = d_initialGuess;
+    //modelParams->d_preconditioner.reset();
     modelParams->d_preconditioner = params->d_preconditioner;
     d_thyraModel = Teuchos::RCP<TrilinosThyraModelEvaluator>( new TrilinosThyraModelEvaluator(modelParams) );
     // Create the Preconditioner operator
@@ -76,28 +78,24 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
     // Create the linear solver factory
     ::Stratimikos::DefaultLinearSolverBuilder builder;
     Teuchos::RCP<Teuchos::ParameterList> p = Teuchos::rcp(new Teuchos::ParameterList);
-/*p->set("Linear Solver Type", "AztecOO");
-p->sublist("Linear Solver Types").sublist("AztecOO").sublist("Forward Solve").set("Tolerance",1.0e-1);
-p->sublist("Linear Solver Types").sublist("AztecOO").sublist("Forward Solve").sublist("AztecOO Settings").set("Output Frequency",1);
-p->set("Preconditioner Type", "None");*/
-    p->set("Linear Solver Type", "Belos");
-    p->set("Preconditioner Type", "None");
-p->sublist("Linear Solver Types").sublist("Belos").sublist("Solver Types").sublist("Pseudo Block GMRES").set("Output Frequency",1);
-p->sublist("Linear Solver Types").sublist("Belos").sublist("Solver Types").sublist("Pseudo Block GMRES").set("Verbosity",10);
-p->sublist("Linear Solver Types").sublist("Belos").sublist("VerboseObject").set("Verbosity Level","extreme");
-    //p->set("Linear Solver Type", "AztecOO");
-    //p->set("Preconditioner Type", "Ifpack");
-    //p->set("Enable Delayed Solver Construction", true);
-    Teuchos::ParameterList& linearSolverParams = p->sublist("Linear Solver Types");
-    Teuchos::ParameterList& belosParams = linearSolverParams.sublist("Belos");
-    std::string belosSolverType = "Block CG";
-    belosParams.set("Solver Type",belosSolverType);
-    Teuchos::ParameterList& belosSolverTypeParams = belosParams.sublist("Solver Types");
-    Teuchos::ParameterList& belosSolverParams = belosSolverTypeParams.sublist(belosSolverType);
-    if ( d_iDebugPrintInfoLevel >= 2 ) {
-        belosSolverParams.set("Verbosity",Belos::Warnings+Belos::IterationDetails+
-            Belos::OrthoDetails+Belos::FinalSummary+Belos::Debug+Belos::StatusTestDetails);
+    std::string linearSolverType = linear_db->getString("linearSolverType");
+    std::string linearSolver     = linear_db->getString("linearSolver");
+    p->set("Linear Solver Type",linearSolverType);
+    p->set("Preconditioner Type","None");
+    p->sublist("Linear Solver Types").sublist(linearSolverType).set("Solver Type",linearSolver);
+    Teuchos::ParameterList& linearSolverParams = p->sublist("Linear Solver Types").sublist(linearSolverType);
+linearSolverParams.sublist("Solver Types").sublist("Pseudo Block GMRES").set("Maximum Iterations",100);
+    if ( linear_db->getIntegerWithDefault("print_info_level",0) >= 2 ) {
+        linearSolverParams.sublist("Solver Types").sublist(linearSolver).set("Output Frequency",1);
+        linearSolverParams.sublist("Solver Types").sublist(linearSolver).set("Verbosity",10);
+        linearSolverParams.sublist("VerboseObject").set("Verbosity Level","extreme");
+        if ( linearSolverType == "Belos" ) {
+            linearSolverParams.sublist("Solver Types").sublist(linearSolver).set("Verbosity",
+                Belos::Warnings+Belos::IterationDetails+Belos::OrthoDetails+
+                Belos::FinalSummary+Belos::Debug+Belos::StatusTestDetails);
+        }
     }
+    //Teuchos::ParameterList::writeParameterListToXmlFile(*p,xmlFileName);
     builder.setParameterList(p);
     d_lowsFactory = builder.createLinearSolveStrategy("");
     d_lowsFactory->initializeVerboseObjectBase();
@@ -124,10 +122,8 @@ p->sublist("Linear Solver Types").sublist("Belos").sublist("VerboseObject").set(
     d_nlParams->set("Nonlinear Solver", "Line Search Based");
     // Set the printing parameters in the "Printing" sublist
     Teuchos::ParameterList& printParams = d_nlParams->sublist("Printing");
-    //printParams.set("MyPID",0); 
     printParams.set("Output Precision", 3);
     printParams.set("Output Processor", 0);
-    //printParams.set("Output Information",NOX::Utils::Error+NOX::Utils::TestDetails);
     if ( d_iDebugPrintInfoLevel >= 2 ) {
         printParams.set("Output Information", 
 			     NOX::Utils::OuterIteration + 
