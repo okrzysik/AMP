@@ -64,13 +64,13 @@ int main ( int argc , char **argv )
 	   PropertyPtr enthalpyProperty		= mat->property("Enthalpy");			// enthalpy property
 
 	   // test property accessors for temperature
-	   string tcname = temperatureProperty->get_name();
-	   string tcsorc = temperatureProperty->get_source();
+	   std::string tcname = temperatureProperty->get_name();
+	   std::string tcsorc = temperatureProperty->get_source();
 	   AMP::pout << "\n";
-	   good = good && tcname == string("WaterLibrary_Temperature");
+	   good = good && tcname == std::string("WaterLibrary_Temperature");
 	   AMP::pout << "Temperature name is " << tcname << "\n";
 	   AMP::pout << "Temperature source is " << tcsorc << "\n";
-	   vector<string> args = temperatureProperty->get_arguments();
+	   std::vector<std::string> args = temperatureProperty->get_arguments();
 	   good = good && args[0] == "enthalpy";
 	   good = good && args[1] == "pressure";
 	   AMP::pout << "Temperature property arguments are " << args[0] << " and " << args[1] <<"\n\n";
@@ -87,13 +87,13 @@ int main ( int argc , char **argv )
 	   boost::shared_ptr<std::vector<double> > temperatureIdenticalInput(new std::vector<double>(n));// temperature input array with identical values
 	   boost::shared_ptr<std::vector<double> > enthalpyIdenticalInput(new std::vector<double>(n));// enthalpy input array with identical values
 	   boost::shared_ptr<std::vector<double> > pressureIdenticalInput(new std::vector<double>(n));	// pressure input array with identical values
-	   vector<double> temperatureOutput(n);		// temperature output
-	   vector<double> liquidEnthalpyOutput(n);	// saturated liquid enthalpy output
-	   vector<double> volumeOutput(n);		// specific volume output
-	   vector<double> conductivityOutput(n);	// thermal conductivity output
-	   vector<double> viscosityOutput(n);		// dynamic viscosity output
-	   vector<double> enthalpyOutput(n);		// enthalpy output
-	   vector<double> temperatureIdenticalOutput(n);		// temperature output array with identical values
+	   std::vector<double> temperatureOutput(n);		// temperature output
+	   std::vector<double> liquidEnthalpyOutput(n);	// saturated liquid enthalpy output
+	   std::vector<double> volumeOutput(n);		// specific volume output
+	   std::vector<double> conductivityOutput(n);	// thermal conductivity output
+	   std::vector<double> viscosityOutput(n);		// dynamic viscosity output
+	   std::vector<double> enthalpyOutput(n);		// enthalpy output
+	   std::vector<double> temperatureIdenticalOutput(n);		// temperature output array with identical values
 	   for (size_t i=0; i<n; i++) 
 	   {
 		(*temperatureIdenticalInput)[i]=400.0;	// temperature: 400 K
@@ -456,7 +456,7 @@ int main ( int argc , char **argv )
    }
    catch( ... )
    {
-     AMP::pout << "ERROR: While testing " << argv[0] <<  "An unknown exception was thrown" << endl;
+     AMP::pout << "ERROR: While testing " << argv[0] <<  "An unknown exception was thrown" << std::endl;
      ut.failure("ERROR: While testing");
    }
 
