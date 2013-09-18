@@ -233,10 +233,10 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
       
       double tval = __INIT_THERMAL_FN__(px, py, pz, 0);
       double oval = __INIT_OXYGEN_FN__(px, py, pz, 0);
-      cout << "tval = " << tval << endl;
-      cout << "oval = " << oval << endl;
+      std::cout << "tval = " << tval << std::endl;
+      std::cout << "oval = " << oval << std::endl;
       
-      cout << "counter = " << counter << "bndGlobalIds.size() = " << gid.size() << endl;
+      std::cout << "counter = " << counter << "bndGlobalIds.size() = " << gid.size() << std::endl;
       for(unsigned int i = 0; i < gid.size(); i++)
     {
       thermalIC->setValueByGlobalID(gid[i], tval);
@@ -313,7 +313,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   time_Params->d_pSourceTerm = f;
   time_Params->d_object_name = "IDATimeIntegratorParameters";
     
-  cout << "Before IDATimeIntegrator" << endl;    
+  std::cout << "Before IDATimeIntegrator" << std::endl;
   boost::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> pIDATimeIntegrator(new AMP::TimeIntegrator::IDATimeIntegrator(time_Params));
   
   if(pIDATimeIntegrator.get() == NULL) {
@@ -340,7 +340,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
       //pIDATimeIntegrator->updateSolution();
       current_time = pIDATimeIntegrator->getCurrentTime();
       
-      cout << j++ << "-th timestep" << endl;
+      std::cout << j++ << "-th timestep" << std::endl;
       if(retval == 0) {
     ut->passes("Testing IDATimeIntegrator's advanceSolution. PASS!!");
       } else {
@@ -357,11 +357,11 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
       maxO = currentOxygenSolution->max();
       minO = currentOxygenSolution->min();
       
-      cout << "current_time = " << current_time << endl;
-      cout << "max val of the current thermal solution = " << maxT << endl;
-      cout << "min val of the current thermal solution = " << minT << endl;
-      cout << "max val of the current oxygen solution = " << maxO << endl;
-      cout << "min val of the current oxygen solution = " << minO << endl;
+      std::cout << "current_time = " << current_time << std::endl;
+      std::cout << "max val of the current thermal solution = " << maxT << std::endl;
+      std::cout << "min val of the current thermal solution = " << minT << std::endl;
+      std::cout << "max val of the current oxygen solution = "  << maxO << std::endl;
+      std::cout << "min val of the current oxygen solution = "  << minO << std::endl;
     }
   
   

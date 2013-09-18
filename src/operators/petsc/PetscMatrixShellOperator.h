@@ -1,9 +1,9 @@
-
 #ifndef included_PetscMatrixShellOperator
 #define included_PetscMatrixShellOperator
 
-#include "LinearOperator.h"
+#include "operators/LinearOperator.h"
 #include "utils/AMP_MPI.h"
+
 
 extern "C" {
 
@@ -35,44 +35,46 @@ extern "C" {
 
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    class PetscMatrixShellOperator : public LinearOperator {
-      public:
 
-        PetscMatrixShellOperator(const boost::shared_ptr<OperatorParameters>& params);
+class PetscMatrixShellOperator : public LinearOperator {
+public:
 
-        virtual ~PetscMatrixShellOperator() { }
+    PetscMatrixShellOperator(const boost::shared_ptr<OperatorParameters>& params);
 
-        static PetscErrorCode mult(Mat, Vec, Vec);
+    virtual ~PetscMatrixShellOperator() { }
 
-        void setMatLocalRowSize(int val); 
+    static PetscErrorCode mult(Mat, Vec, Vec);
 
-        void setMatLocalColumnSize(int val);  
+    void setMatLocalRowSize(int val); 
 
-        void setComm(AMP_MPI comm);
+    void setMatLocalColumnSize(int val);  
 
-        void setOperator(boost::shared_ptr<Operator> op);       
+    void setComm(AMP_MPI comm);
 
-        void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
+    void setOperator(boost::shared_ptr<Operator> op);       
 
-        void reset(const boost::shared_ptr<OperatorParameters>& params);
+    void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+        AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
-        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
+    void reset(const boost::shared_ptr<OperatorParameters>& params);
 
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
-      private:
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
 
-        boost::shared_ptr<Operator> d_operator;
-        int d_iMatLocalRowSize;
-        int d_iMatLocalColumnSize;
-        Mat d_mat;
-        AMP_MPI d_comm;
-    };
+private:
 
-  }
+    boost::shared_ptr<Operator> d_operator;
+    int d_iMatLocalRowSize;
+    int d_iMatLocalColumnSize;
+    Mat d_mat;
+    AMP_MPI d_comm;
+};
+
+
+}
 }
 
 #endif

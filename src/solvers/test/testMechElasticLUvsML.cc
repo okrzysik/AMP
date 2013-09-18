@@ -23,8 +23,8 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
 
-#include "solvers/PetscKrylovSolverParameters.h"
-#include "solvers/PetscKrylovSolver.h"
+#include "solvers/petsc/PetscKrylovSolverParameters.h"
+#include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
 
 #include "ampmesh/libmesh/initializeLibMesh.h"

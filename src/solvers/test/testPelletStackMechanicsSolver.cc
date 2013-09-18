@@ -17,7 +17,7 @@
 
 #include "utils/Writer.h"
 
-#include "solvers/PetscSNESSolver.h"
+#include "solvers/petsc/PetscSNESSolver.h"
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string input_file = "input_" + exeName;
@@ -112,16 +112,16 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
     resVec->zero();
     coupledOp->apply(scaledRhsVec, solVec, resVec);
-    AMP::pout<< "initial, rhsVec: "<<scaledRhsVec->L2Norm()<<endl; 
-    AMP::pout<< "initial, solVec: "<<solVec->L2Norm()<<endl ; 
-    AMP::pout<< "initial, resVec: "<<resVec->L2Norm()<<endl ; 
+    AMP::pout<< "initial, rhsVec: "<<scaledRhsVec->L2Norm()<< std::endl; 
+    AMP::pout<< "initial, solVec: "<<solVec->L2Norm()<< std::endl;
+    AMP::pout<< "initial, resVec: "<<resVec->L2Norm()<< std::endl; 
     nonlinearSolver->solve(scaledRhsVec, solVec);
-    AMP::pout<< "solved,  rhsVec: "<<scaledRhsVec->L2Norm()<<endl ; 
-    AMP::pout<< "solved,  solVec: "<<solVec->L2Norm()<<endl ; 
+    AMP::pout<< "solved,  rhsVec: "<<scaledRhsVec->L2Norm()<< std::endl;
+    AMP::pout<< "solved,  solVec: "<<solVec->L2Norm()<< std::endl;
     coupledOp->apply(scaledRhsVec, solVec, resVec);
-    AMP::pout<< "final,   rhsVec: "<<scaledRhsVec->L2Norm()<<endl ; 
-    AMP::pout<< "final,   solVec: "<<solVec->L2Norm()<<endl ; 
-    AMP::pout<< "final,   resVec: "<<resVec->L2Norm()<<endl ; 
+    AMP::pout<< "final,   rhsVec: "<<scaledRhsVec->L2Norm()<< std::endl;
+    AMP::pout<< "final,   solVec: "<<solVec->L2Norm()<< std::endl;
+    AMP::pout<< "final,   resVec: "<<resVec->L2Norm()<< std::endl;
 
 #ifdef USE_EXT_SILO
     siloWriter->writeFile(exeName, step);

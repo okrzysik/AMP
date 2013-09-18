@@ -53,10 +53,10 @@
 
 #include "solvers/trilinos/TrilinosMLSolver.h"
 #include "solvers/ColumnSolver.h"
-#include "solvers/PetscKrylovSolverParameters.h"
-#include "solvers/PetscKrylovSolver.h"
-#include "solvers/PetscSNESSolverParameters.h"
-#include "solvers/PetscSNESSolver.h"
+#include "solvers/petsc/PetscKrylovSolverParameters.h"
+#include "solvers/petsc/PetscKrylovSolver.h"
+#include "solvers/petsc/PetscSNESSolverParameters.h"
+#include "solvers/petsc/PetscSNESSolver.h"
 
 
 void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
@@ -372,7 +372,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
           correctionParameters1->d_variableFlux = variableFluxVec1;
           robinBoundaryOp1->reset(correctionParameters1);
 
-          std::cout<<"Variable flux1 norm inside loop : "<< variableFluxVec1->L2Norm() <<endl;
+          std::cout<<"Variable flux1 norm inside loop : "<< variableFluxVec1->L2Norm() << std::endl;
 
           nonlinearThermalOperator1->modifyRHSvector(RightHandSideVec1);
           a = RightHandSideVec1->L2Norm();
@@ -382,16 +382,16 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
           a = TemperatureInKelvinVec1->L2Norm();
           nonlinearThermalOperator1->apply(RightHandSideVec1, TemperatureInKelvinVec1, ResidualVec1);
 
-          std::cout<<"Norm of TemperatureInKelvinVec1: "<< a <<endl;
+          std::cout<<"Norm of TemperatureInKelvinVec1: "<< a << std::endl;
 
           //------------------------------------------------------------
           map1ToLowDim->apply(nullVec,TemperatureInKelvinVec1,gapVecClad ,1.0, 0.0);
     
-          std::cout<<"Norm of solVec after map1toLowDim: "<< gapVecClad->L2Norm() <<endl;
+          std::cout<<"Norm of solVec after map1toLowDim: "<< gapVecClad->L2Norm() << std::endl;
 
           map1ToHighDim->apply(nullVec,gapVecClad , scratchTempVec2,1.0, 0.0);
 
-          std::cout<<"Norm of scratch2: "<< scratchTempVec2->L2Norm() <<endl;
+          std::cout<<"Norm of scratch2: "<< scratchTempVec2->L2Norm() << std::endl;
 
           scratchTempVec2->scale(heff);
           variableFluxVec2->copyVector(scratchTempVec2); 
@@ -399,7 +399,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
           correctionParameters2->d_variableFlux = variableFluxVec2; 
           robinBoundaryOp2->reset(correctionParameters2);
 
-          std::cout<<"Variable flux2 norm inside loop : "<< variableFluxVec2->L2Norm() <<endl;
+          std::cout<<"Variable flux2 norm inside loop : "<< variableFluxVec2->L2Norm() << std::endl;
 
           linearThermalOperator2->modifyRHSvector(RightHandSideVec2);
           linearThermalOperator2->apply(RightHandSideVec2, TemperatureInKelvinVec2, ResidualVec2);

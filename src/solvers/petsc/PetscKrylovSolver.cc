@@ -1,4 +1,4 @@
-#include "PetscKrylovSolver.h"
+#include "solvers/petsc/PetscKrylovSolver.h"
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "operators/LinearOperator.h"
 #include "matrices/Matrix.h"

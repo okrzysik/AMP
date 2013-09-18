@@ -32,8 +32,8 @@
 #include "operators/OperatorBuilder.h"
 
 #include "solvers/ColumnSolver.h"
-#include "solvers/PetscKrylovSolver.h"
-#include "solvers/PetscSNESSolver.h"
+#include "solvers/petsc/PetscKrylovSolver.h"
+#include "solvers/petsc/PetscSNESSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
 
 void myTest(AMP::UnitTest *ut, std::string exeName)

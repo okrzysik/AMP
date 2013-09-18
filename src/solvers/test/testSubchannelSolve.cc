@@ -66,8 +66,8 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
 
-#include "solvers/PetscKrylovSolver.h"
-#include "solvers/PetscSNESSolver.h"
+#include "solvers/petsc/PetscKrylovSolver.h"
+#include "solvers/petsc/PetscSNESSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
 #include "solvers/ColumnSolver.h"
 

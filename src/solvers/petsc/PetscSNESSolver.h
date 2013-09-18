@@ -2,9 +2,9 @@
 #define included_AMP_PetscSNESSolver
 
 #include "solvers/SolverStrategy.h"
-#include "solvers/PetscSNESSolverParameters.h"
-#include "solvers/PetscKrylovSolver.h"
-#include "solvers/PetscMonitor.h"
+#include "solvers/petsc/PetscSNESSolverParameters.h"
+#include "solvers/petsc/PetscKrylovSolver.h"
+#include "solvers/petsc/PetscMonitor.h"
 #include "utils/AMP_MPI.h"
 
 #include <list>

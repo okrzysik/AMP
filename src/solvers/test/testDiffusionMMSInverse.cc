@@ -40,8 +40,8 @@
 #include "operators/MassDensityModel.h"
 #include "operators/OperatorBuilder.h"
 
-#include "solvers/PetscSNESSolver.h"
-#include "solvers/PetscKrylovSolver.h"
+#include "solvers/petsc/PetscSNESSolver.h"
+#include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
 
 #include "../../operators/test/applyTests.h"

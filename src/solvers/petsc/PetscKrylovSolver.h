@@ -2,9 +2,9 @@
 #define included_AMP_PetscKrylovSolver
 
 #include "utils/AMP_MPI.h"
-#include "SolverStrategy.h"
-#include "PetscKrylovSolverParameters.h"
-#include "solvers/PetscMonitor.h"
+#include "solvers/SolverStrategy.h"
+#include "solvers/petsc/PetscKrylovSolverParameters.h"
+#include "solvers/petsc/PetscMonitor.h"
 
 
 extern "C"{

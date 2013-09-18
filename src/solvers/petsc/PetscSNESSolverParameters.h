@@ -1,14 +1,11 @@
 #ifndef included_AMP_PetscSNESSolverParameters
 #define included_AMP_PetscSNESSolverParameters
 
-#ifndef included_Pointer
 #include "boost/shared_ptr.hpp"
-#endif
-
-
 #include "utils/Database.h"
 #include "utils/AMP_MPI.h"
-#include "SolverStrategyParameters.h"
+#include "solvers/SolverStrategyParameters.h"
+#include "solvers/petsc/PetscKrylovSolver.h"
 
 extern "C"{
 #ifdef MPICH_SKIP_MPICXX
@@ -36,7 +33,6 @@ extern "C"{
 #endif
 }
 
-#include "PetscKrylovSolver.h"
 
 namespace AMP {
 namespace Solver {

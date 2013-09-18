@@ -14,7 +14,6 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 
-using namespace std;
 
 void checkConsistency(double h, double p, double T, bool &allCorrect, bool &allConsistent)
 {

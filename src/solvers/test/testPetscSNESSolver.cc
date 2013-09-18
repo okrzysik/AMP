@@ -16,7 +16,7 @@
 #include "vectors/MultiVector.h"
 #include "operators/NullOperator.h"
 #include "operators/IdentityOperator.h"
-#include "solvers/PetscSNESSolver.h"
+#include "solvers/petsc/PetscSNESSolver.h"
 
 
 

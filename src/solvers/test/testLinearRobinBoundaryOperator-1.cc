@@ -35,11 +35,6 @@
 #include "operators/boundary/NeumannVectorCorrection.h"
 #include "operators/boundary/ColumnBoundaryOperator.h"
 
-#include "solvers/PetscKrylovSolverParameters.h"
-#include "solvers/PetscKrylovSolver.h"
-#include "solvers/PetscSNESSolverParameters.h"
-#include "solvers/PetscSNESSolver.h"
-
 #include "solvers/trilinos/TrilinosMLSolver.h"
 
 
