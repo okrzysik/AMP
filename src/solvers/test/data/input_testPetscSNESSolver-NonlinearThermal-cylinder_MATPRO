@@ -1,13 +1,10 @@
+// Sample input file to test thermal solve
 
 Mesh{
     FileName = "halden_1_pellet_9mil.e"
     MeshType = "libMesh"
     MeshName = "Pellet"
     dim      = 3
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 5226
 }
 
 NeutronicsOperator{
@@ -89,6 +86,7 @@ DirichletVectorCorrection1 {
   name = "DirichletVectorCorrection"
     print_info_level = 0
     skip_params = FALSE
+    setResidual = TRUE
     isAttachedToVolumeOperator = TRUE
     number_of_ids = 1
     id_0             = 4
@@ -146,10 +144,9 @@ DirichletMatrixCorrection2 {
 }
 
 NonlinearSolver{
-  print_info_level = 7
+    print_info_level = 7
     max_iterations = 500
     max_error = 1e-10
-
     absoluteTolerance = 1.0e-10
     relativeTolerance = 1.0e-10
     stepTolerance = 1.0e-10
@@ -159,7 +156,7 @@ NonlinearSolver{
     SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ls_alpha 0.0001"
 
     LinearSolver{
-      print_info_level = 0
+        print_info_level = 0
         max_iterations = 100
         max_error = 1e-10
         ksp_type = "fgmres"

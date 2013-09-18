@@ -84,7 +84,7 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
     p->set("Preconditioner Type","None");
     p->sublist("Linear Solver Types").sublist(linearSolverType).set("Solver Type",linearSolver);
     Teuchos::ParameterList& linearSolverParams = p->sublist("Linear Solver Types").sublist(linearSolverType);
-linearSolverParams.sublist("Solver Types").sublist("Pseudo Block GMRES").set("Maximum Iterations",100);
+    linearSolverParams.sublist("Solver Types").sublist("Pseudo Block GMRES").set("Maximum Iterations",100);
     if ( linear_db->getIntegerWithDefault("print_info_level",0) >= 2 ) {
         linearSolverParams.sublist("Solver Types").sublist(linearSolver).set("Output Frequency",1);
         linearSolverParams.sublist("Solver Types").sublist(linearSolver).set("Verbosity",10);
@@ -119,14 +119,17 @@ linearSolverParams.sublist("Solver Types").sublist("Pseudo Block GMRES").set("Ma
     d_status->addStatusTest(maxiters);
     // Create nox parameter list
     d_nlParams = Teuchos::rcp(new Teuchos::ParameterList);
-    //d_nlParams->set("Nonlinear Solver", "Line Search Based");
-    d_nlParams->set("Nonlinear Solver", "Anderson Accelerated Fixed-Point");
-    d_nlParams->sublist("Anderson Parameters").set("Storage Depth", 100);
-    d_nlParams->sublist("Anderson Parameters").set("Mixing Parameter", -0.9);
-    d_nlParams->sublist("Anderson Parameters").sublist("Preconditioning").set("Precondition", false);
-
+    std::string solverType = nonlinear_db->getString("solver");
+    if ( solverType == "JFNK" ) {
+        d_nlParams->set("Nonlinear Solver", "Line Search Based");
+    } else if ( solverType == "Anderson" ) {
+        d_nlParams->set("Nonlinear Solver", "Anderson Accelerated Fixed-Point");
+        d_nlParams->sublist("Anderson Parameters").set("Storage Depth", 100);
+        d_nlParams->sublist("Anderson Parameters").set("Mixing Parameter", -0.9);
+        d_nlParams->sublist("Anderson Parameters").sublist("Preconditioning").set("Precondition", false);
+    }
     d_nlParams->sublist("Line Search").set("Method", "Polynomial");
-    d_nlParams->sublist("Direction").sublist("Newton").sublist("Linear Solver").set("Tolerance",1e-4);
+    d_nlParams->sublist("Direction").sublist("Newton").sublist("Linear Solver").set("Tolerance",1e-2);
     // Set the printing parameters in the "Printing" sublist
     Teuchos::ParameterList& printParams = d_nlParams->sublist("Printing");
     printParams.set("Output Precision", 3);

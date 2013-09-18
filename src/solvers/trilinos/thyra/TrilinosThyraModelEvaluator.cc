@@ -68,6 +68,7 @@ void TrilinosThyraModelEvaluator::evalModelImpl( const ::Thyra::ModelEvaluatorBa
 
     if ( f_out != NULL ) {
         // Evaluate the residual:  r = A(u) - rhs
+        f_out->zero();
         d_nonlinearOp->apply( d_rhs, x, f_out, 1.0, -1.0 );
     }
 

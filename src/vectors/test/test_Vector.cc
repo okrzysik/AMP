@@ -20,9 +20,15 @@
 #endif
 #ifdef USE_EXT_TRILINOS
     typedef AMP::unit_test::SimpleManagedVectorFactory<AMP::LinearAlgebra::ManagedEpetraVector>     SMEVFactory;
-    typedef AMP::unit_test::MultiVectorFactory<SMEVFactory,1,SNPVFactory,1>                         MVFactory1;
-    typedef AMP::unit_test::MultiVectorFactory<SMEVFactory,3,SNPVFactory,2>                         MVFactory2;
-    typedef AMP::unit_test::MultiVectorFactory<MVFactory1,2,MVFactory2,2>                           MVFactory3;
+    #ifdef USE_EXT_PETSC
+        typedef AMP::unit_test::MultiVectorFactory<SMEVFactory,1,SNPVFactory,1>                     MVFactory1;
+        typedef AMP::unit_test::MultiVectorFactory<SMEVFactory,3,SNPVFactory,2>                     MVFactory2;
+        typedef AMP::unit_test::MultiVectorFactory<MVFactory1,2,MVFactory2,2>                       MVFactory3;
+    #else
+    typedef AMP::unit_test::MultiVectorFactory<SimpleVectorFactory<15,false>,1,SNPVFactory,1>       MVFactory1;
+        typedef AMP::unit_test::MultiVectorFactory<SimpleVectorFactory<15,false>,3,SNPVFactory,2>   MVFactory2;
+        typedef AMP::unit_test::MultiVectorFactory<MVFactory1,2,MVFactory2,2>                       MVFactory3;
+    #endif
 #endif
 
 
@@ -46,7 +52,7 @@ int main ( int argc , char **argv )
 
     #ifdef USE_EXT_PETSC
         AMP::pout << "Testing NativePetscVector" << std::endl;
-        testManagedVector<SNPVFactory> ( &ut );
+        testManagedVector<SNPVFactory>( &ut );
         AMP::pout << std::endl;
         globalComm.barrier();
     #else
@@ -73,33 +79,44 @@ int main ( int argc , char **argv )
         #endif
 
         AMP::pout << "Testing Iterator" << std::endl;
-        VectorIteratorTests<MVFactory1> ( &ut );
+        VectorIteratorTests<MVFactory1>( &ut );
         AMP::pout << std::endl;
         globalComm.barrier();
 
         AMP::pout << "Testing ManagedEpetraVector" << std::endl;
-        testManagedVector<SMEVFactory> ( &ut );
+        testManagedVector<SMEVFactory>( &ut );
         AMP::pout << std::endl;
         globalComm.barrier();
 
         AMP::pout << "Testing simple multivector" << std::endl;
-        testManagedVector<MVFactory1> ( &ut );
+        testManagedVector<MVFactory1>( &ut );
         AMP::pout << std::endl;
         globalComm.barrier();
 
         AMP::pout << "Testing bigger multivector" << std::endl;
-        testManagedVector<MVFactory2> ( &ut );
+        testManagedVector<MVFactory2>( &ut );
         AMP::pout << std::endl;
         globalComm.barrier();
 
         AMP::pout << "Testing multivector of multivector" << std::endl;
-        testManagedVector<MVFactory3> ( &ut );
+        testManagedVector<MVFactory3>( &ut );
         AMP::pout << std::endl;
         globalComm.barrier();
 
         #ifdef USE_TRILINOS_THYRA
             AMP::pout << "Testing NativeThyraVector of a ManagedThyraVector of a MultVector" << std::endl;
             testBasicVector<ManagedNativeThyraFactory<MVFactory1> >( &ut );
+            AMP::pout << std::endl;
+            globalComm.barrier();
+        #endif
+
+        // Run Belos tests of thyra vectors
+        #ifdef USE_TRILINOS_THYRA
+            AMP::pout << "Testing Belos interface to Thyra vectors" << std::endl;
+            testBelosThyraVector<NativeThyraFactory>( &ut );
+            testBelosThyraVector<ManagedThyraFactory<SimpleVectorFactory<45,true> > >( &ut );
+            testBelosThyraVector<ManagedNativeThyraFactory<SimpleVectorFactory<45,true> > >( &ut );
+            testBelosThyraVector<ManagedNativeThyraFactory<MVFactory1> >( &ut );
             AMP::pout << std::endl;
             globalComm.barrier();
         #endif

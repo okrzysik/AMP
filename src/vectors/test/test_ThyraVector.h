@@ -11,6 +11,8 @@
 //#include "Thyra_SpmdVectorBase_def.hpp"
 #include "Thyra_DefaultSpmdVector_def.hpp"
 #include "Thyra_EpetraThyraWrappers.hpp"
+#include "BelosThyraAdapter.hpp"
+#include "BelosMVOPTester.hpp"
 
 #ifdef USE_EXT_MPI
     #include <Epetra_MpiComm.h>
@@ -112,6 +114,23 @@ public:
         return vec3;
     }
 };
+
+
+
+template <typename FACTORY>
+void testBelosThyraVector( AMP::UnitTest *utils )
+{
+    boost::shared_ptr<AMP::LinearAlgebra::ThyraVector> vector = 
+        boost::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(FACTORY::getVector());
+    typedef Thyra::MultiVectorBase<double> TMVB;
+    Teuchos::RCP<Belos::OutputManager<double> > outputmgr = Teuchos::rcp(new Belos::OutputManager<double>());
+    bool pass = Belos::TestMultiVecTraits<double,TMVB>(outputmgr,vector->getVec());
+    if ( pass )
+        utils->passes("Belos::TestMultiVecTraits of thyra vector");
+    else
+        utils->failure("Belos::TestMultiVecTraits of thyra vector");
+}
+
 
 
 }
