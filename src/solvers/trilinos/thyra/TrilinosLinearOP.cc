@@ -51,21 +51,43 @@ void TrilinosLinearOP::applyImpl(const Thyra::EOpTransp M_trans, const Thyra::Mu
 {
     // Compute Y = alpha*OP(M)*X + beta*Y 
     AMP_ASSERT(M_trans==Thyra::NOTRANS);
-    AMP::LinearAlgebra::Vector::const_shared_ptr x = 
+    AMP::LinearAlgebra::Vector::const_shared_ptr x0 = 
         AMP::LinearAlgebra::ThyraVector::constView( dynamic_cast<const Thyra::VectorBase<double>*>(&X) );
-    AMP::LinearAlgebra::Vector::shared_ptr y = 
+    AMP::LinearAlgebra::Vector::shared_ptr y0 = 
         AMP::LinearAlgebra::ThyraVector::view( dynamic_cast<Thyra::VectorBase<double>*>(Y.get()) );
-    if ( x!=NULL )
-        const_cast<AMP::LinearAlgebra::Vector*>(x.get())->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-    if ( y!=NULL )
-        y->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-    if ( d_operator != NULL ) {
-        // Apply the AMP::Operator to compute the residual
-        AMP::LinearAlgebra::Vector::shared_ptr f = y->cloneVector();
-        d_operator->apply( f, x, y, alpha, beta );
+    if ( x0!=NULL )
+        const_cast<AMP::LinearAlgebra::Vector*>(x0.get())->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    if ( y0!=NULL )
+        y0->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> x;
+    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> y;
+    if ( x0->getVariable()->getName()=="ThyraMultiVec" || y0->getVariable()->getName()=="ThyraMultiVec" ) {
+        // We are dealing with a column thyra multivector
+        if ( x0->getVariable()->getName()!="ThyraMultiVec" || y0->getVariable()->getName()!="ThyraMultiVec" )
+            AMP_ERROR("Not finished");
+        boost::shared_ptr<const AMP::LinearAlgebra::MultiVector> x1 = boost::dynamic_pointer_cast<const AMP::LinearAlgebra::MultiVector>(x0);
+        boost::shared_ptr<AMP::LinearAlgebra::MultiVector> y1 = boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(y0);
+        AMP_ASSERT(x1!=NULL&&y1!=NULL);
+        size_t N_vecs_x = x1->getNumberOfSubvectors();
+        size_t N_vecs_y = y1->getNumberOfSubvectors();
+        AMP_ASSERT(N_vecs_x!=N_vecs_y);
+        for (size_t i=0; i<N_vecs_x; i++) {
+            x.push_back(x1->getVector(i));
+            y.push_back(y1->getVector(i));
+        }
     } else {
-        // Apply the AMP::Solver
-        d_solver->solve( x, y );
+        x.push_back(x0);
+        y.push_back(y0);
+    }
+    for (size_t i=0; i<x.size(); i++) {
+        if ( d_operator != NULL ) {
+            // Apply the AMP::Operator to compute the residual
+            AMP::LinearAlgebra::Vector::shared_ptr f = y[i]->cloneVector();
+            d_operator->apply( f, x[i], y[i], alpha, beta );
+        } else {
+            // Apply the AMP::Solver
+            d_solver->solve( x[i], y[i] );
+        }
     }
 }
 

@@ -104,6 +104,8 @@ protected:
 
     void initialize( boost::shared_ptr<SolverStrategyParameters> parameters );
     
+    AMP_MPI d_comm;
+
     AMP::LinearAlgebra::Vector::shared_ptr d_initialGuess;
 
     Teuchos::RCP<NOX::Solver::Generic> d_solver;

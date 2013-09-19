@@ -149,9 +149,9 @@ NonlinearSolver{
     solver = "JFNK"
     max_iterations = 500
     max_error = 1e-10
-    absoluteTolerance = 1.0e-10
-    relativeTolerance = 1.0e-10
-    stepTolerance = 1.0e-10
+    absoluteTolerance = 1e-10
+    relativeTolerance = 1e-3
+    stepTolerance = 1e-10
     maximumFunctionEvals = 100
     usesJacobian=FALSE
 
@@ -163,20 +163,19 @@ NonlinearSolver{
         max_iterations = 100
         max_error = 1e-10
         ksp_type = "fgmres"
-        absolute_tolerance = 1.0e-9
-        relative_tolerance = 1.0e-01
-        divergence_tolerance = 1.0e03
+        absolute_tolerance = 1e-9
+        relative_tolerance = 1e-03
+        divergence_tolerance = 1e03
         max_krylov_dimension = 40
-        uses_preconditioner=TRUE
+        uses_preconditioner=FALSE
         pc_type = "shell"
         pc_side = "RIGHT"
 
-        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100"
-
         Preconditioner{
-          print_info_level = 0
-            max_iterations = 1
-            max_error = 1.0e-15
+            print_info_level = 0
+            max_iterations = 3
+            max_levels = 5
+            max_error = 1e-15
         }
     }
 }

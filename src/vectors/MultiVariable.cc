@@ -33,40 +33,34 @@ public:
 };
 
 
-MultiVariable::MultiVariable ( const std::string &name ) : Variable ( name ) {}
+
+/****************************************************************
+* Constructors/Destructors                                      *
+****************************************************************/
+MultiVariable::MultiVariable ( const std::string &name, const std::vector<Variable::shared_ptr>& vars ) : 
+    Variable ( name ) 
+{
+    d_vVariables = vars;
+}
+MultiVariable::~MultiVariable () 
+{
+}
 
 
-MultiVariable::~MultiVariable () {}
-
-
+/****************************************************************
+* Get/set a variable                                            *
+****************************************************************/
 Variable::shared_ptr  MultiVariable::getVariable ( size_t which )
 {
     AMP_ASSERT ( which < d_vVariables.size() );
     return d_vVariables[which];
 }
-
-
-size_t  MultiVariable::numVariables ()
-{
-    return d_vVariables.size();
-}
-
-
 void MultiVariable::setVariable ( size_t i , Variable::shared_ptr & p ) 
 { 
     AMP_ASSERT ( i < d_vVariables.size() );
     d_vVariables[i] = p; 
 }
-
-
-void   MultiVariable::sortVariablesByName ( const std::vector<std::string> &order )
-{
-    MVSortByName sorter ( order );
-    std::sort ( beginVariable() , endVariable() , sorter );
-}
-
-
-void   MultiVariable::add ( Variable::shared_ptr newVar ) 
+void MultiVariable::add ( Variable::shared_ptr newVar ) 
 {
     boost::shared_ptr<MultiVariable> multivariable = boost::dynamic_pointer_cast<MultiVariable>(newVar);
     if ( multivariable.get() != NULL ) {
@@ -79,6 +73,24 @@ void   MultiVariable::add ( Variable::shared_ptr newVar )
         d_vVariables.push_back ( newVar ); 
     }
 }
+
+
+/****************************************************************
+* Misc                                                          *
+****************************************************************/
+size_t  MultiVariable::numVariables ()
+{
+    return d_vVariables.size();
+}
+
+void   MultiVariable::sortVariablesByName ( const std::vector<std::string> &order )
+{
+    MVSortByName sorter ( order );
+    std::sort ( beginVariable() , endVariable() , sorter );
+}
+
+
+
 
 
 bool   MultiVariable::operator == ( const Variable &rhs ) const

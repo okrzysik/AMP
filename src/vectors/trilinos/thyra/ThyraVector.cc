@@ -124,22 +124,50 @@ AMP::LinearAlgebra::Vector::shared_ptr ThyraVector::view( Thyra::VectorBase<doub
         // Null vec, do nothing
     } else if ( dynamic_cast<AMP::LinearAlgebra::ThyraVectorWrapper*>(vec) ) {
         AMP::LinearAlgebra::ThyraVectorWrapper* tmp = dynamic_cast<AMP::LinearAlgebra::ThyraVectorWrapper*>(vec);
-        AMP_INSIST(tmp->numVecs()==1,"Not ready for dealing with multiple copies of the vector yet");
-        vec_out = tmp->getVec(0);
+        if ( tmp->numVecs()==0 ) {
+            vec_out.reset();
+        } else if ( tmp->numVecs()==1 ) {
+            vec_out = tmp->getVec(0);
+        } else {
+            std::vector<AMP::LinearAlgebra::Variable::shared_ptr> vars;
+            for (size_t i=0; i<tmp->d_vecs.size(); i++) {
+                char name[100];
+                sprintf(name,"col-%i\n",(int)tmp->d_cols[i]);
+                vars.push_back( AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable(name) ) );
+            }
+            AMP::LinearAlgebra::Variable::shared_ptr multiVar( new AMP::LinearAlgebra::MultiVariable("ThyraMultiVec",vars) );
+            vec_out = AMP::LinearAlgebra::MultiVector::create( multiVar, tmp->d_vecs[0]->getComm(), tmp->d_vecs );
+            // Currently our multivectors can't be easily subsetted to create the original vectors
+            AMP_ERROR("Not ready for ThyraMultiVectors yet");
+        }
     } else {
         AMP_ERROR("Not finished");
     }
     return vec_out;
 }
-AMP::LinearAlgebra::Vector::const_shared_ptr ThyraVector::constView( const Thyra::VectorBase<double>* vec )
+AMP::LinearAlgebra::Vector::const_shared_ptr ThyraVector::constView( const Thyra::VectorBase<double>* vec ) 
 {
     AMP::LinearAlgebra::Vector::const_shared_ptr vec_out;
     if ( vec==NULL ) {
         // Null vec, do nothing
     } else if ( dynamic_cast<const AMP::LinearAlgebra::ThyraVectorWrapper*>(vec) ) {
         const AMP::LinearAlgebra::ThyraVectorWrapper* tmp = dynamic_cast<const AMP::LinearAlgebra::ThyraVectorWrapper*>(vec);
-        AMP_INSIST(tmp->numVecs()==1,"Not ready for dealing with multiple copies of the vector yet");
-        vec_out = tmp->getVec(0);
+        if ( tmp->numVecs()==0 ) {
+            vec_out.reset();
+        } else if ( tmp->numVecs()==1 ) {
+            vec_out = tmp->getVec(0);
+        } else {
+            std::vector<AMP::LinearAlgebra::Variable::shared_ptr> vars;
+            for (size_t i=0; i<tmp->d_vecs.size(); i++) {
+                char name[100];
+                sprintf(name,"col-%i\n",(int)tmp->d_cols[i]);
+                vars.push_back( AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable(name) ) );
+            }
+            AMP::LinearAlgebra::Variable::shared_ptr multiVar( new AMP::LinearAlgebra::MultiVariable("ThyraMultiVec",vars) );
+            vec_out = AMP::LinearAlgebra::MultiVector::create( multiVar, tmp->d_vecs[0]->getComm(), tmp->d_vecs );
+            // Currently our multivectors can't be easily subsetted to create the original vectors
+            AMP_ERROR("Not ready for ThyraMultiVectors yet");
+        }
     } else {
         AMP_ERROR("Not finished");
     }

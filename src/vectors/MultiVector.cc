@@ -21,20 +21,37 @@ MultiVector::MultiVector ( Variable::shared_ptr name )
     setVariable ( name );
     d_CommCreated = false;
 }
-boost::shared_ptr<MultiVector>  MultiVector::create ( Variable::shared_ptr variable, AMP_MPI comm )
+boost::shared_ptr<MultiVector>  MultiVector::create( Variable::shared_ptr variable, AMP_MPI comm, 
+    const std::vector<Vector::shared_ptr>& vecs )
 {
     boost::shared_ptr<MultiVector>  retval( new MultiVector( variable ) );
     retval->d_Comm = comm;
+    retval->d_vVectors = vecs;
+    retval->addVector(vecs);
     return retval;
 }
-boost::shared_ptr<MultiVector>  MultiVector::create ( const std::string &name, AMP_MPI comm )
+boost::shared_ptr<MultiVector>  MultiVector::create( const std::string &name, AMP_MPI comm,
+    const std::vector<Vector::shared_ptr>& vecs )
 {
     Variable::shared_ptr  variable( new MultiVariable( name ) );
-    boost::shared_ptr<MultiVector>  retval( new MultiVector( variable ) );
-    retval->d_Comm = comm;
-    std::vector<AMP::Discretization::DOFManager::shared_ptr> managers;
-    retval->d_DOFManager = AMP::Discretization::DOFManager::shared_ptr( new AMP::Discretization::multiDOFManager( retval->d_Comm, managers ) );
-    return retval;
+    return MultiVector::create( variable, comm, vecs );
+}
+boost::shared_ptr<const MultiVector>  MultiVector::const_create( Variable::shared_ptr variable, AMP_MPI comm, 
+    const std::vector<Vector::const_shared_ptr>& vecs )
+{
+    std::vector<Vector::shared_ptr> vecs2(vecs.size());
+    for (size_t i=0; i<vecs.size(); i++)
+        vecs2[i] = boost::const_pointer_cast<Vector>(vecs[i]);
+    return MultiVector::create( variable, comm, vecs2 );
+}
+boost::shared_ptr<const MultiVector>  MultiVector::const_create( const std::string &name, AMP_MPI comm,
+    const std::vector<Vector::const_shared_ptr>& vecs )
+{
+    Variable::shared_ptr  variable( new MultiVariable( name ) );
+    std::vector<Vector::shared_ptr> vecs2(vecs.size());
+    for (size_t i=0; i<vecs.size(); i++)
+        vecs2[i] = boost::const_pointer_cast<Vector>(vecs[i]);
+    return MultiVector::create( variable, comm, vecs2 );
 }
 boost::shared_ptr<MultiVector>  MultiVector::encapsulate ( Vector::shared_ptr &vec, AMP_MPI comm )
 {
@@ -45,12 +62,9 @@ boost::shared_ptr<MultiVector>  MultiVector::encapsulate ( Vector::shared_ptr &v
     }
     if ( comm.isNull() )
         comm = vec->getComm();
-    boost::shared_ptr<MultiVector>  retval = create ( vec->getVariable()->getName(), comm );
-    retval->addVector ( vec );
+    boost::shared_ptr<MultiVector>  retval = create( vec->getVariable()->getName(), comm, std::vector<Vector::shared_ptr>(1,vec) );
     if ( vec->isA<DataChangeFirer>() )
-    {
-      vec->castTo<DataChangeFirer>().registerListener ( &(retval->castTo<DataChangeListener>()) );
-    }
+        vec->castTo<DataChangeFirer>().registerListener ( &(retval->castTo<DataChangeListener>()) );
     return retval;
 }
 boost::shared_ptr<MultiVector>  MultiVector::view ( Vector::shared_ptr &vec, AMP_MPI comm )
@@ -74,8 +88,7 @@ boost::shared_ptr<MultiVector>  MultiVector::view ( Vector::shared_ptr &vec, AMP
     if ( !retval ) {
         if ( comm.isNull() )
             comm = vec->getComm();
-        retval = create ( vec->getVariable()->getName(), comm );
-        retval->addVector ( vec );
+        retval = create ( vec->getVariable()->getName(), comm, std::vector<Vector::shared_ptr>(1,vec) );
         if ( vec->isA<DataChangeFirer>() ) {
             vec->castTo<DataChangeFirer>().registerListener ( retval.get() );
         }

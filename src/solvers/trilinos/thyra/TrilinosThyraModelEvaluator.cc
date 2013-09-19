@@ -101,6 +101,14 @@ void TrilinosThyraModelEvaluator::evalModelImpl( const ::Thyra::ModelEvaluatorBa
             DfDx.SumIntoGlobalValues( 1, 2, values, indexes );*/
         }
     }
+
+    const Teuchos::RCP<Thyra::PreconditionerBase<double> > W_prec_out = outArgs.get_W_prec();
+    if ( nonnull(W_prec_out) ) {
+        // Reset the preconditioner
+        AMP::LinearAlgebra::Vector::shared_ptr x2 = boost::const_pointer_cast<AMP::LinearAlgebra::Vector>(x);
+        boost::shared_ptr<AMP::Operator::OperatorParameters> op_params = d_nonlinearOp->getJacobianParameters(x2);
+        d_preconditioner->resetOperator(op_params);
+    }
 }
 
 
@@ -162,8 +170,9 @@ Teuchos::RCP< ::Thyra::PreconditionerBase<double> > TrilinosThyraModelEvaluator:
 {
     Teuchos::RCP<Thyra::DefaultPreconditioner<double> > preconditioner;
     if ( d_preconditioner != NULL ) {
-        Teuchos::RCP<Thyra::LinearOpBase<double> > solver_operator( new TrilinosLinearOP(d_preconditioner) );
-        preconditioner.reset( new Thyra::DefaultPreconditioner<double>(solver_operator) );
+        Teuchos::RCP<Thyra::LinearOpBase<double> > leftPrec;
+        Teuchos::RCP<Thyra::LinearOpBase<double> > rightPrec( new TrilinosLinearOP(d_preconditioner) );
+        preconditioner.reset( new Thyra::DefaultPreconditioner<double>( leftPrec, rightPrec ) );
     }
     return preconditioner;
 }
