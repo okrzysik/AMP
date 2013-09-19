@@ -134,8 +134,8 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
         d_nlParams->set("Nonlinear Solver", "Line Search Based");
     } else if ( solverType == "Anderson" ) {
         d_nlParams->set("Nonlinear Solver", "Anderson Accelerated Fixed-Point");
-        d_nlParams->sublist("Anderson Parameters").set("Storage Depth", 100);
-        d_nlParams->sublist("Anderson Parameters").set("Mixing Parameter", -0.9);
+        d_nlParams->sublist("Anderson Parameters").set("Storage Depth", 30);
+        d_nlParams->sublist("Anderson Parameters").set("Mixing Parameter", -0.5);
         d_nlParams->sublist("Anderson Parameters").sublist("Preconditioning").set("Precondition", true);
     }
     d_nlParams->sublist("Line Search").set("Method", "Polynomial");

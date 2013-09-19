@@ -119,6 +119,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     //Initial guess
 
     solVec->setToScalar(400.);
+    //solVec->setToScalar(557.2);
     double initialGuessNorm  = solVec->L2Norm();
     std::cout << "initial guess norm = " << initialGuessNorm <<"\n";
 

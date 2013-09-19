@@ -11,6 +11,7 @@
 #endif
 #ifdef USE_EXT_TRILINOS
     #include "vectors/trilinos/EpetraVectorEngine.h"
+    #include "matrices/trilinos/ManagedEpetraMatrix.h"
 #endif
 
 
@@ -21,11 +22,11 @@ namespace LinearAlgebra {
 /********************************************************
 * Build a ManagedPetscMatrix                             *
 ********************************************************/
-AMP::LinearAlgebra::Matrix::shared_ptr  createManagedPetscMatrix( 
+AMP::LinearAlgebra::Matrix::shared_ptr  createManagedMatrix( 
     AMP::LinearAlgebra::Vector::shared_ptr operandVec, 
     AMP::LinearAlgebra::Vector::shared_ptr resultVec )
 {
-#if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
+#if defined(USE_EXT_TRILINOS)
     // Get the DOFs
     AMP::Discretization::DOFManager::shared_ptr operandDOF = operandVec->getDOFManager();
     AMP::Discretization::DOFManager::shared_ptr resultDOF = resultVec->getDOFManager();
@@ -36,8 +37,8 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createManagedPetscMatrix(
         comm = AMP_MPI(AMP_COMM_SELF);
 
     // Create the matrix parameters
-    boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrixParameters> params( 
-        new AMP::LinearAlgebra::ManagedPetscMatrixParameters ( resultDOF, operandDOF, comm ) );
+    boost::shared_ptr<AMP::LinearAlgebra::ManagedEpetraMatrixParameters> params( 
+        new AMP::LinearAlgebra::ManagedEpetraMatrixParameters( resultDOF, operandDOF, comm ) );
     params->d_CommListLeft = resultVec->getCommunicationList();
     params->d_CommListRight = operandVec->getCommunicationList();
     params->d_VariableLeft = resultVec->getVariable();
@@ -71,7 +72,11 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createManagedPetscMatrix(
     }
 
     // Create the matrix
-    boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrix>  newMatrix( new AMP::LinearAlgebra::ManagedPetscMatrix(params) );
+    #if defined(USE_EXT_PETSC)
+        boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrix>  newMatrix( new AMP::LinearAlgebra::ManagedPetscMatrix(params) );
+    #else
+        boost::shared_ptr<AMP::LinearAlgebra::ManagedEpetraMatrix>  newMatrix( new AMP::LinearAlgebra::ManagedEpetraMatrix(params) );
+    #endif
 
     // Initialize the matrix
     cur_elem = resultDOF->getIterator();
@@ -101,7 +106,7 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createManagedPetscMatrix(
 
     return newMatrix;
 #else
-    AMP_ERROR("Unable to build a ManagedPetscMatrix without PETSc or TRILINOS");
+    AMP_ERROR("Unable to build a ManagedMatrix without TRILINOS");
     return AMP::LinearAlgebra::Matrix::shared_ptr();
 #endif
 }
@@ -147,13 +152,13 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix(
 {
     AMP::LinearAlgebra::Matrix::shared_ptr matrix;
     if ( type==0 ) {
-        #if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
-            matrix = createManagedPetscMatrix(operandVec,resultVec);
+        #if defined(USE_EXT_TRILINOS)
+            matrix = createManagedMatrix(operandVec,resultVec);
         #else
             matrix = createDenseSerialMatrix(operandVec,resultVec);
         #endif
     } else if ( type==1 ) {
-        matrix = createManagedPetscMatrix(operandVec,resultVec);
+        matrix = createManagedMatrix(operandVec,resultVec);
     } else if ( type==2 ) {
         matrix = createDenseSerialMatrix(operandVec,resultVec);
     } else {
