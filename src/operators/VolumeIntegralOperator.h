@@ -119,7 +119,7 @@ protected :
 
     AMP::LinearAlgebra::Vector::shared_ptr d_outVec; /**< Output vector. */
 
-    std::vector<std::vector<size_t> > d_dofIndices; /**<Node dof Ids */
+    std::vector<size_t> d_dofIndices; /**<Node dof Ids */
 
     AMP::Discretization::DOFManager::shared_ptr d_elementDofMap;
     AMP::Discretization::DOFManager::shared_ptr d_nodeDofMap;

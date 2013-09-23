@@ -156,6 +156,7 @@ public:
     void stop( const std::string& message, const char* filename, const int line, const int level=0 );
 
 
+
     /*!
      * \brief  Function to save the profiling info
      * \details  This will save the current timer info.  This is a non-blocking function.
@@ -211,6 +212,16 @@ public:
 
     //! Return the current timer level
     inline int get_level( ) const { return d_level; }
+
+    /*!
+     * \brief  Function to change the behavior of timer errors
+     * \details  This function controls the behavior of the profiler when we encounter a timer
+     *   error.  The default behavior is to abort.  Timer errors include starting a timer
+     *   that is already started, or stopping a timer that is not running.
+     *   The user should only disable theses checks if they understand the behavior.  
+     * @param flag        Do we want to ignore timer errors
+     */
+    void ignore_timer_errors(bool flag=false) { d_check_timer_error = flag; }
 
 private:
 
@@ -392,11 +403,12 @@ private:
     #endif
     
     // Misc variables
-    bool store_trace_data;          // Do we want to store trace information
-    bool store_memory_data;          // Do we want to store memory information
+    bool d_store_trace_data;        // Do we want to store trace information
+    bool d_store_memory_data;       // Do we want to store memory information
+    bool d_check_timer_error;       // Do we want to store memory information
     char d_level;                   // Level of timing to use (default is 0, -1 is disabled)
-    TIME_TYPE construct_time;       // Store when the constructor was called
-    TIME_TYPE frequency;            // Clock frequency (only used for windows)
+    TIME_TYPE d_construct_time;     // Store when the constructor was called
+    TIME_TYPE d_frequency;          // Clock frequency (only used for windows)
     double d_shift;                 // Offset to add to all trace times when saving (used to syncronize the trace data)
     size_t d_max_trace_remaining;   // The number of traces remaining to store for each thread
     size_t d_N_memory_steps;        // The number of steps we have for the memory usage

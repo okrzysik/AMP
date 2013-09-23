@@ -1,5 +1,6 @@
 #include "SourceNonlinearElement.h"
 #include "utils/Utilities.h"
+#include "utils/ProfilerApp.h"
 
 /* Libmesh files */
 #include "enum_order.h"
@@ -76,27 +77,20 @@ void SourceNonlinearElement :: initializeForCurrentElement( const ::Elem* elem, 
 
 void SourceNonlinearElement::apply() {
 
+    PROFILE_START("apply",5);
+
     d_fe->reinit(d_elem);
-
+    const unsigned int n_nodes = d_elem->n_nodes();
+    const unsigned int n_points = d_qrule->n_points();
     const std::vector<Real> & JxW = (*d_JxW);
-
     const std::vector<std::vector<Real> > & phi = (*d_phi);
-
-    //        const std::vector<std::vector<RealGradient> > & dphi = (*d_dphi);
-
-    //std::vector<std::vector<double> > & elementInputVector = d_elementInputVector;
-
+    // const std::vector<std::vector<RealGradient> > & dphi = (*d_dphi);
+    // std::vector<std::vector<double> > & elementInputVector = d_elementInputVector;
     std::vector<double> & elementOutputVector = (*d_elementOutputVector);
-
-    std::vector<double> source_physics(static_cast<int>(d_qrule->n_points()));
-
+    std::vector<double> source_physics(static_cast<int>(n_points));
     std::vector<std::vector<double> > source_vectors(d_elementInputVector.size());
-
     std::vector<std::vector<double> > auxillary_vectors(d_elementAuxVector.size());
-
     const std::vector<Point>& coordinates = d_fe->get_xyz();
-
-    const unsigned int num_nodes = d_elem->n_nodes();
 
     if (d_isInputType == "IntegrationPointScalar") {
 
@@ -113,21 +107,21 @@ void SourceNonlinearElement::apply() {
 
         for (unsigned int var = 0; var < d_elementInputVector.size(); var++)
         {
-            source_vectors[var].resize(d_qrule->n_points());
-            for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
+            source_vectors[var].resize(n_points);
+            for (unsigned int qp = 0; qp < n_points; qp++)
             {
                 source_vectors[var][qp] = 0.0;
-                for (unsigned int j = 0; j < num_nodes; j++)
+                for (unsigned int j = 0; j < n_nodes; j++)
                 {
                     source_vectors[var][qp]     += d_elementInputVector[var][j] * phi[j][qp];
                 }//end for j
             }//end for qp
             if(d_elementAuxVector.size()>0){
-                auxillary_vectors[var].resize(d_qrule->n_points());
-                for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
+                auxillary_vectors[var].resize(n_points);
+                for (unsigned int qp = 0; qp < n_points; qp++)
                 {
                     auxillary_vectors[var][qp] = 0.0;
-                    for (unsigned int j = 0; j < num_nodes; j++)
+                    for (unsigned int j = 0; j < n_nodes; j++)
                     {
                         auxillary_vectors[var][qp]    += d_elementAuxVector[var][j] * phi[j][qp];
                     }//end for j
@@ -139,26 +133,25 @@ void SourceNonlinearElement::apply() {
             d_sourcePhysicsModel->getConstitutiveProperty(source_physics, source_vectors, auxillary_vectors, coordinates);}
 
     } 
-
-    for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++) {
-
-        for (unsigned int j = 0; j < num_nodes; j++) {
-          if(d_sourcePhysicsModel.get() != NULL){
-            elementOutputVector[j] += (JxW[qp] * source_physics[qp] * phi[j][qp] );
-          }else{
-            if(d_integrateVolume){
-              AMP_INSIST( (source_vectors.size() == 1), "In absence of SourcePhysicsModel Element Operation Expects only one source vector" );
-              elementOutputVector[j] += (JxW[qp] * source_vectors[0][qp] * phi[j][qp] );
+    
+    if(d_sourcePhysicsModel.get() == NULL) {
+        AMP_INSIST( (source_vectors.size() == 1), "In absence of SourcePhysicsModel Element Operation Expects only one source vector" );
+    }
+    for (unsigned int j = 0; j < n_nodes; j++) {
+        for (unsigned int qp = 0; qp < n_points; qp++) {
+            if(d_sourcePhysicsModel.get() != NULL){
+                elementOutputVector[j] += (JxW[qp] * source_physics[qp] * phi[j][qp] );
             }else{
-              AMP_INSIST( (source_vectors.size() == 1), "In absence of SourcePhysicsModel Element Operation Expects only one source vector" );
-              elementOutputVector[j] += ( source_vectors[0][qp] * phi[j][qp] )/8;
+                if(d_integrateVolume){
+                    elementOutputVector[j] += (JxW[qp] * source_vectors[0][qp] * phi[j][qp] );
+                }else{
+                    elementOutputVector[j] += ( source_vectors[0][qp] * phi[j][qp] )/8;
+                }
             }
-
-          }
         }//end for j
-
     }//end for qp
 
+    PROFILE_STOP("apply",5);
 }
 
 

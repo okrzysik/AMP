@@ -2,6 +2,7 @@
 #include "VolumeIntegralOperator.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
+#include "utils/ProfilerApp.h"
 
 #include "vectors/VectorBuilder.h"
 #include "matrices/MatrixBuilder.h"
@@ -109,12 +110,29 @@ void VolumeIntegralOperator::preAssembly(AMP::LinearAlgebra::Vector::const_share
     }
 
     d_nodeDofMap = d_outVec->getDOFManager();
+
+    if ( d_isInputType== "NodalScalar" ) {
+        for (unsigned int var = 0; var < d_inpVariables->numVariables(); var++)
+        {
+            AMP::Mesh::MeshElementID tmp = d_inVec[var]->getDOFManager()->getIterator()->globalID();
+            if ( tmp.type() != AMP::Mesh::Vertex )
+                AMP_ERROR("Input vector isn't really a NodalScalar");
+        }
+        for (unsigned int var = 0; var < d_auxVariables->numVariables(); var++)
+        {
+            AMP::Mesh::MeshElementID tmp = d_auxVec[var]->getDOFManager()->getIterator()->globalID();
+            if ( tmp.type() != AMP::Mesh::Vertex )
+                AMP_ERROR("aux vector isn't really a NodalScalar");
+        } 
+    }
+
 }
 
 
 void VolumeIntegralOperator::preElementOperation(
     const AMP::Mesh::MeshElement & elem )
 {
+    PROFILE_START("preElementOperation",5);
     d_currNodes = elem.getElements(AMP::Mesh::Vertex);
 
     std::vector<size_t> elemDofIds;
@@ -125,42 +143,15 @@ void VolumeIntegralOperator::preElementOperation(
     std::vector<std::vector<double> > elementInputVectors(d_inpVariables->numVariables());
     std::vector<std::vector<double> > elementAuxVectors(d_auxVariables->numVariables());
 
-    if(d_isInputType == "IntegrationPointScalar"){
-        for (unsigned int var = 0; var < d_inpVariables->numVariables(); var++)
-        {
-            elementInputVectors[var].resize(elemDofIds.size());
-            for(size_t i = 0; i < elemDofIds.size(); i++) {
-                elementInputVectors[var][i] =  d_inVec[var]->getValueByGlobalID( elemDofIds[i] );
-            }
-        }
-        for (unsigned int var = 0; var < d_auxVariables->numVariables(); var++)
-        {
-            elementAuxVectors[var].resize(elemDofIds.size());
-            for (size_t i = 0; i < elemDofIds.size(); i++) {
-                elementAuxVectors[var][i] =  d_auxVec[var]->getValueByGlobalID( elemDofIds[i] );
-            }
-        }
-    }else if(d_isInputType== "NodalScalar"){
-        for (unsigned int var = 0; var < d_inpVariables->numVariables(); var++)
-        {
-            AMP::Mesh::MeshElementID tmp = d_inVec[var]->getDOFManager()->getIterator()->globalID();
-            if ( tmp.type() != AMP::Mesh::Vertex )
-                AMP_ERROR("Input vector isn't really a NodalScalar");
-            elementInputVectors[var].resize(d_dofIndices.size());
-            for (size_t i = 0; i < d_dofIndices.size(); i++) {
-                elementInputVectors[var][i] =  d_inVec[var]->getValueByGlobalID( d_dofIndices[i][0] );
-            }
-        }
-        for (unsigned int var = 0; var < d_auxVariables->numVariables(); var++)
-        {
-            AMP::Mesh::MeshElementID tmp = d_auxVec[var]->getDOFManager()->getIterator()->globalID();
-            if ( tmp.type() != AMP::Mesh::Vertex )
-                AMP_ERROR("aux vector isn't really a NodalScalar");
-            elementAuxVectors[var].resize(d_dofIndices.size());
-            for(size_t i = 0; i < d_dofIndices.size(); i++) {
-                elementAuxVectors[var][i] =  d_auxVec[var]->getValueByGlobalID( d_dofIndices[i][0] );
-          }
-        } 
+    for (unsigned int var = 0; var < d_inpVariables->numVariables(); var++)
+    {
+        elementInputVectors[var].resize(elemDofIds.size());
+        d_inVec[var]->getValuesByGlobalID( elemDofIds.size(), &elemDofIds[0], &elementInputVectors[var][0] );
+    }
+    for (unsigned int var = 0; var < d_auxVariables->numVariables(); var++)
+    {
+        elementAuxVectors[var].resize(elemDofIds.size());
+        d_auxVec[var]->getValuesByGlobalID( elemDofIds.size(), &elemDofIds[0], &elementAuxVectors[var][0] );
     }
 
     d_elementOutputVector.resize(d_dofIndices.size());
@@ -171,15 +162,17 @@ void VolumeIntegralOperator::preElementOperation(
     d_srcNonlinElem->initializeForCurrentElement(d_currElemPtrs[d_currElemIdx], d_sourcePhysicsModel);
 
     d_srcNonlinElem->setElementVectors(elementInputVectors, elementAuxVectors, d_elementOutputVector);
+    PROFILE_STOP("preElementOperation",5);
 }
 
 
 void VolumeIntegralOperator::postElementOperation() 
 {
-    for (size_t i = 0; i < d_dofIndices.size(); i++) {
-        d_outVec->addValueByGlobalID(d_dofIndices[i][0], d_elementOutputVector[i]);
-    }
+    PROFILE_START("postElementOperation",5);
+    d_outVec->addValuesByGlobalID( d_dofIndices.size(), &d_dofIndices[0], &d_elementOutputVector[0] );
+    PROFILE_STOP("postElementOperation",5);
 }
+
 
 void VolumeIntegralOperator::postAssembly()
 {
@@ -190,9 +183,8 @@ void VolumeIntegralOperator::postAssembly()
 void VolumeIntegralOperator :: init(const boost::shared_ptr<VolumeIntegralOperatorParameters>& params) 
 {
     AMP::Mesh::MeshIterator  el     = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
-    AMP::Mesh::MeshIterator  end_el = el.end();
     d_srcNonlinElem->setElementFlags(d_isInputType);
-    for(d_currElemIdx = 0; el != end_el; ++el, ++d_currElemIdx) {
+    for(d_currElemIdx=0; d_currElemIdx<el.size(); ++d_currElemIdx, ++el) {
         d_currNodes = el->getElements(AMP::Mesh::Vertex);
         d_srcNonlinElem->initializeForCurrentElement(d_currElemPtrs[d_currElemIdx], d_sourcePhysicsModel);
     }//end for el
@@ -248,8 +240,11 @@ boost::shared_ptr<AMP::LinearAlgebra::Matrix> VolumeIntegralOperator::getLineari
 
 void VolumeIntegralOperator::getNodeDofIndicesForCurrentElement() {
     d_dofIndices.resize(d_currNodes.size());
+    std::vector<size_t> dofs;
     for(unsigned int j = 0; j < d_currNodes.size(); j++) {
-        d_nodeDofMap->getDOFs(d_currNodes[j].globalID(), d_dofIndices[j]);
+        d_nodeDofMap->getDOFs(d_currNodes[j].globalID(),dofs);
+        AMP_ASSERT(dofs.size()==1);
+        d_dofIndices[j] = dofs[0];
     }// end of j
 }
 
