@@ -26,7 +26,6 @@ boost::shared_ptr<MultiVector>  MultiVector::create( Variable::shared_ptr variab
 {
     boost::shared_ptr<MultiVector>  retval( new MultiVector( variable ) );
     retval->d_Comm = comm;
-    retval->d_vVectors = vecs;
     retval->addVector(vecs);
     return retval;
 }
