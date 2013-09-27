@@ -17,7 +17,7 @@ ColumnSolver::ColumnSolver(boost::shared_ptr<SolverStrategyParameters> parameter
 void
 ColumnSolver::solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f, boost::shared_ptr<AMP::LinearAlgebra::Vector>  u)
 {
-    u->zero();
+    //u->zero();
 
     if(d_IterationType=="GaussSeidel") {
         GaussSeidel(f,u);
@@ -44,7 +44,7 @@ ColumnSolver::GaussSeidel(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  &
             AMP_INSIST(su.get()!=NULL, "ERROR: subset on solution u yields NULL vector in ColumnSolver::solve");
 
             d_Solvers[i]->solve(sf, su);
-        }	
+        }
     }
 }
 
@@ -64,7 +64,7 @@ ColumnSolver::SymmetricGaussSeidel(boost::shared_ptr<const AMP::LinearAlgebra::V
             AMP_INSIST(su.get()!=NULL, "ERROR: subset on solution u yields NULL vector in ColumnSolver::solve");
 
             d_Solvers[i]->solve(sf, su);
-        }	
+        }
 
         for(int i=(int)d_Solvers.size()-1; i>=0;i--)
         {
