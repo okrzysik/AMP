@@ -16,6 +16,8 @@
 #ifdef USE_AMP_MESH
 #include "ampmesh/Mesh.h"
 #include "ampmesh/structured/BoxMesh.h"
+#endif
+#ifdef USE_AMP_DISCRETIZATION
 #include "discretization/simpleDOF_Manager.h"
 #endif
 #ifdef USE_AMP_VECTORS

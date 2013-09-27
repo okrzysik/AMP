@@ -80,65 +80,68 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
         fid = fopen(fname.c_str(),"w");
         AMP_ASSERT(fid!=NULL);
     }
-    // First get the ids for the vectors/matricies
-    std::set<global_id> vec_ids = getKeys(d_vectors,d_comm);
-    std::set<global_id> mat_ids = getKeys(d_matrices,d_comm);
-    // Loop through each vector saving the data
-    for (std::set<global_id>::const_iterator it=vec_ids.begin(); it!=vec_ids.end(); ++it) {
-        // Send the data to rank 0
-        d_comm.barrier();
-        AMP::LinearAlgebra::Vector::shared_ptr src_vec;
-        if ( d_vectors.find(*it) != d_vectors.end() )
-            src_vec = d_vectors[*it];
-        AMP::LinearAlgebra::Vector::const_shared_ptr dst_vec = 
-            sendVecToRoot( src_vec, it->first, d_comm );
-        // Write the data
-        if ( d_comm.getRank()==0 ) {
-            fprintf(fid,"Vector: \"%s\" %i\n",
-                dst_vec->getVariable()->getName().c_str(),
-                static_cast<int>(dst_vec->getGlobalSize()) );
-            for (size_t i=0; i<dst_vec->getGlobalSize(); i++)
-                fprintf(fid,"   %0.14e\n",dst_vec->getValueByGlobalID(i));
-            fprintf(fid,"\n\n");
-        }
-    }
-    // Loop through each matrix saving the data
-    for (std::set<global_id>::const_iterator it=mat_ids.begin(); it!=mat_ids.end(); ++it) {
-        // Send the header data to rank 0
-        d_comm.barrier();
-        AMP::LinearAlgebra::Matrix::shared_ptr mat;
-        if ( d_matrices.find(*it) != d_matrices.end() )
-            mat = d_matrices[*it];
-        std::string name;
-        size_t size[2]={0,0};
-        if ( mat!=NULL ) {
-            name = mat->getLeftVector()->getVariable()->getName() + " - " +
-                   mat->getRightVector()->getVariable()->getName();
-            size[0] = mat->getLeftVector()->getGlobalSize();
-            size[1] = mat->getRightVector()->getGlobalSize();
-        }
-        name = d_comm.bcast(name,it->first);
-        size[0] = d_comm.bcast(size[0],it->first);
-        size[1] = d_comm.bcast(size[1],it->first);
-        // Write the data
-        if ( d_comm.getRank()==0 ) {
-            fprintf(fid,"Matrix: \"%s\" %i %i\n", name.c_str(), 
-                static_cast<int>(size[0]), static_cast<int>(size[1]) );
-        }
-        std::vector<unsigned int> col;
-        std::vector<double> data;
-        for (int row=0; row<static_cast<int>(size[0]); row++) {
-            // Get and print the current row
-            sendRowToRoot( mat, d_comm, row, col, data );
+    // Get the ids for the vectors and save the data
+    #ifdef USE_AMP_VECTORS
+        std::set<global_id> vec_ids = getKeys(d_vectors,d_comm);
+        for (std::set<global_id>::const_iterator it=vec_ids.begin(); it!=vec_ids.end(); ++it) {
+            // Send the data to rank 0
+            d_comm.barrier();
+            AMP::LinearAlgebra::Vector::shared_ptr src_vec;
+            if ( d_vectors.find(*it) != d_vectors.end() )
+                src_vec = d_vectors[*it];
+            AMP::LinearAlgebra::Vector::const_shared_ptr dst_vec = 
+                sendVecToRoot( src_vec, it->first, d_comm );
+            // Write the data
             if ( d_comm.getRank()==0 ) {
-                for (size_t i=0; i<col.size(); i++)
-                    fprintf(fid,"   %4i %4i  %0.14e\n",row,col[i],data[i]);
+                fprintf(fid,"Vector: \"%s\" %i\n",
+                    dst_vec->getVariable()->getName().c_str(),
+                    static_cast<int>(dst_vec->getGlobalSize()) );
+                for (size_t i=0; i<dst_vec->getGlobalSize(); i++)
+                    fprintf(fid,"   %0.14e\n",dst_vec->getValueByGlobalID(i));
+                fprintf(fid,"\n\n");
             }
         }
-        if ( d_comm.getRank()==0 ) {
-            fprintf(fid,"\n\n");
+    #endif
+    // Get the ids for the matricies and save the data
+    #ifdef USE_AMP_MATRICES
+        std::set<global_id> mat_ids = getKeys(d_matrices,d_comm);
+        for (std::set<global_id>::const_iterator it=mat_ids.begin(); it!=mat_ids.end(); ++it) {
+            // Send the header data to rank 0
+            d_comm.barrier();
+            AMP::LinearAlgebra::Matrix::shared_ptr mat;
+            if ( d_matrices.find(*it) != d_matrices.end() )
+                mat = d_matrices[*it];
+            std::string name;
+            size_t size[2]={0,0};
+            if ( mat!=NULL ) {
+                name = mat->getLeftVector()->getVariable()->getName() + " - " +
+                       mat->getRightVector()->getVariable()->getName();
+                size[0] = mat->getLeftVector()->getGlobalSize();
+                size[1] = mat->getRightVector()->getGlobalSize();
+            }
+            name = d_comm.bcast(name,it->first);
+            size[0] = d_comm.bcast(size[0],it->first);
+            size[1] = d_comm.bcast(size[1],it->first);
+            // Write the data
+            if ( d_comm.getRank()==0 ) {
+                fprintf(fid,"Matrix: \"%s\" %i %i\n", name.c_str(), 
+                    static_cast<int>(size[0]), static_cast<int>(size[1]) );
+            }
+            std::vector<unsigned int> col;
+            std::vector<double> data;
+            for (int row=0; row<static_cast<int>(size[0]); row++) {
+                // Get and print the current row
+                sendRowToRoot( mat, d_comm, row, col, data );
+                if ( d_comm.getRank()==0 ) {
+                    for (size_t i=0; i<col.size(); i++)
+                        fprintf(fid,"   %4i %4i  %0.14e\n",row,col[i],data[i]);
+                }
+            }
+            if ( d_comm.getRank()==0 ) {
+                fprintf(fid,"\n\n");
+            }
         }
-    }
+    #endif
     // Close the file
     if ( fid!=NULL )
         fclose(fid);
