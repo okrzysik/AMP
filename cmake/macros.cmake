@@ -6,6 +6,14 @@ MACRO(GLOBAL_SET VARNAME)
 ENDMACRO()
 
 
+# CMake assert
+MACRO(ASSERT test comment)
+    IF (NOT ${test})
+        MESSSAGE(FATAL_ERROR "Assertion failed: ${comment}")
+    ENDIF(NOT ${test})
+ENDMACRO(ASSERT)
+
+
 # Macro to convert a m4 file
 # This command converts a file of the format "global_path/file.fm4"
 # and convertes it to file.f90.  It also requires the path.  
@@ -167,10 +175,14 @@ ENDMACRO ()
 
 # Macro to verify that a path has been set
 MACRO ( VERIFY_PATH PATH_NAME )
+    IF ("${PATH_NAME}" STREQUAL "")
+        MESSAGE ( FATAL_ERROR "Path is not set: ${PATH_NAME}" )
+    ENDIF()
     IF ( NOT EXISTS ${PATH_NAME} )
-        MESSAGE ( FATAL_ERROR "Path does not exist: " ${PATH_NAME} )
-    ENDIF ()
+        MESSAGE ( FATAL_ERROR "Path does not exist: ${PATH_NAME}" )
+    ENDIF()
 ENDMACRO ()
+
 
 # Macro to tell cmake to use static libraries
 MACRO ( SET_STATIC_FLAGS )
