@@ -92,6 +92,11 @@ void Vector::constSelectInto ( const VectorSelector &s , Vector::shared_ptr retV
 }
 Vector::shared_ptr  Vector::select ( const VectorSelector &s , const std::string &name )
 {
+    if ( dynamic_cast<const VS_ByVariableName*>(&s) ) {
+        std::string name = dynamic_cast<const VS_ByVariableName*>(&s)->getName();
+        if ( name==this->getVariable()->getName() )
+            return shared_from_this();
+    }
     // Create a new multivector to hold the subset
     AMP_MPI comm = s.communicator( shared_from_this() );
     Vector::shared_ptr  retVal = MultiVector::create( name, comm );
@@ -103,6 +108,11 @@ Vector::shared_ptr  Vector::select ( const VectorSelector &s , const std::string
 }
 Vector::const_shared_ptr  Vector::constSelect ( const VectorSelector &s , const std::string &name ) const
 {
+    if ( dynamic_cast<const VS_ByVariableName*>(&s) ) {
+        std::string name = dynamic_cast<const VS_ByVariableName*>(&s)->getName();
+        if ( name==this->getVariable()->getName() )
+            return shared_from_this();
+    }
     // Create a new multivector to hold the subset
     AMP_MPI comm = s.communicator( shared_from_this() );
     Vector::shared_ptr  retVal = MultiVector::create( name, comm );

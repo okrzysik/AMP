@@ -218,7 +218,7 @@ std::vector<DOFManager::shared_ptr>  multiDOFManager::getDOFManagers() const
 boost::shared_ptr<DOFManager>  multiDOFManager::subset( AMP_MPI comm_in )
 {
     // Get the comm for the new DOFManager
-    if ( comm_in == d_comm ) 
+    if ( comm_in.compare(d_comm)!=0 ) 
         return shared_from_this();
     AMP_MPI comm = AMP_MPI::intersect( comm_in, d_comm );
     // Subset all of the DOFManagers within this DOFManager

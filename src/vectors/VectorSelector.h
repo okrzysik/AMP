@@ -80,6 +80,8 @@ public:
     VS_ByVariableName ( std::string  name );
 
     virtual bool   isSelected ( Vector::const_shared_ptr v ) const;
+
+    std::string   getName ( ) const { return d_VecName; };
 };
 
 

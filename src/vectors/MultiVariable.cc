@@ -96,13 +96,24 @@ void   MultiVariable::sortVariablesByName ( const std::vector<std::string> &orde
 bool   MultiVariable::operator == ( const Variable &rhs ) const
 { 
     const MultiVariable *multivariable = dynamic_cast<const MultiVariable*>( &rhs );
-    if ( multivariable==NULL ) 
-        return false;
-    for (size_t i=0; i!=d_vVariables.size(); i++) {
-        if ( i == multivariable->d_vVariables.size() )
+    if ( multivariable==NULL ) {
+        // We are comparing a multi variable to another variable
+        // The two variables match if the variable equals all sub-variable and
+        // the names match
+        if ( rhs.getName() != this->getName() )
             return false;
-        if ( d_vVariables[i] != multivariable->d_vVariables[i] )
-            return false;
+        for (size_t i=0; i!=d_vVariables.size(); i++) {
+            if ( *d_vVariables[i] != rhs )
+                return false;
+        }
+    } else {
+        // We are dealing with two multivariables, check that the internal variables match
+        for (size_t i=0; i!=d_vVariables.size(); i++) {
+            if ( i == multivariable->d_vVariables.size() )
+                return false;
+            if ( (*d_vVariables[i]) != (*(multivariable->d_vVariables[i])) )
+                return false;
+        }
     }
     return true;
 }

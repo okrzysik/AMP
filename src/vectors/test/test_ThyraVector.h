@@ -77,6 +77,7 @@ public:
     static AMP::LinearAlgebra::Vector::shared_ptr getVector() {
         // Create an arbitrary vector
         AMP::LinearAlgebra::Vector::shared_ptr vec1 = FACTORY::getVector();
+        vec1->setVariable( getVariable() );
         // Create the managed vector
         AMP::LinearAlgebra::Vector::shared_ptr vec2 = AMP::LinearAlgebra::ThyraVector::view(vec1);
         vec2->setVariable( getVariable() );

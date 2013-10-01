@@ -113,7 +113,7 @@ void SourceNonlinearElement::apply() {
                 source_vectors[var][qp] = 0.0;
                 for (unsigned int j = 0; j < n_nodes; j++)
                 {
-                    source_vectors[var][qp]     += d_elementInputVector[var][j] * phi[j][qp];
+                    source_vectors[var][qp] += d_elementInputVector[var][j] * phi[j][qp];
                 }//end for j
             }//end for qp
             if(d_elementAuxVector.size()>0){

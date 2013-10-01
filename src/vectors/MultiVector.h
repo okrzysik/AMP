@@ -241,7 +241,7 @@ protected:
     /** Constructor:  create a MultiVector with a particular variable
       * \param[in]  names  The vector to create the MultiVector from
       */
-    MultiVector ( Variable::shared_ptr names );
+    MultiVector ( const std::string& name );
 
     virtual void dataChanged ();
 

@@ -3,6 +3,7 @@
 
 NonlinearSolver{
     print_info_level = 7
+    solver = "JFNK"
     max_iterations = 500
     max_error = 1e-10
     absoluteTolerance = 1.0e-10
@@ -13,7 +14,9 @@ NonlinearSolver{
     SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ls_alpha 0.0001"
 
     LinearSolver{
-        print_info_level = 0
+        print_info_level = 7
+        linearSolverType = "Belos"
+        linearSolver = "Pseudo Block GMRES"
         max_iterations = 100
         max_error = 1e-10
         ksp_type = "fgmres"

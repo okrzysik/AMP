@@ -190,7 +190,7 @@ std::vector<size_t> subsetDOFManager::getSubsetDOF( const std::vector<size_t> &p
             if ( index==d_localDOFs.size() ) { index--; }
             if ( d_localDOFs[index] == DOF )
                 subsetDOFs[i] = index + d_begin;
-        } else {
+        } else if ( !d_remoteParentDOFs.empty() ) {
             // The DOF is a remote DOF
             size_t index = AMP::Utilities::findfirst(d_remoteParentDOFs,DOF);
             if ( index==d_remoteParentDOFs.size() ) { index--; }

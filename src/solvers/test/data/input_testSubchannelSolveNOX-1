@@ -749,8 +749,10 @@ SubchannelPhysicsModel{
     }
 }
 
+
 NonlinearSolver {
-  print_info_level = 1
+    print_info_level = 1
+    solver = "JFNK"
     max_iterations = 500
     max_error = 1e-5
 
@@ -762,7 +764,9 @@ NonlinearSolver {
     enableLineSearchPreCheck=FALSE
 
     LinearSolver{
-      print_info_level = 0
+        print_info_level = 1
+        linearSolverType = "Belos"
+        linearSolver = "Pseudo Block GMRES"
         max_iterations = 10000
         max_error = 1e-10
         absolute_tolerance = 1.0e-16

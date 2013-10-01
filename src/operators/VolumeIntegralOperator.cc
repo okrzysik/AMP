@@ -143,15 +143,30 @@ void VolumeIntegralOperator::preElementOperation(
     std::vector<std::vector<double> > elementInputVectors(d_inpVariables->numVariables());
     std::vector<std::vector<double> > elementAuxVectors(d_auxVariables->numVariables());
 
-    for (unsigned int var = 0; var < d_inpVariables->numVariables(); var++)
-    {
-        elementInputVectors[var].resize(elemDofIds.size());
-        d_inVec[var]->getValuesByGlobalID( elemDofIds.size(), &elemDofIds[0], &elementInputVectors[var][0] );
-    }
-    for (unsigned int var = 0; var < d_auxVariables->numVariables(); var++)
-    {
-        elementAuxVectors[var].resize(elemDofIds.size());
-        d_auxVec[var]->getValuesByGlobalID( elemDofIds.size(), &elemDofIds[0], &elementAuxVectors[var][0] );
+    if ( d_isInputType == "IntegrationPointScalar" ) {
+        AMP_INSIST(!elemDofIds.empty(),"d_elementDofMap does not contain element, but type is IntegrationPointScalar");
+        for (unsigned int var = 0; var < d_inpVariables->numVariables(); var++)
+        {
+            elementInputVectors[var].resize(elemDofIds.size());
+            d_inVec[var]->getValuesByGlobalID( elemDofIds.size(), &elemDofIds[0], &elementInputVectors[var][0] );
+        }
+        for (unsigned int var = 0; var < d_auxVariables->numVariables(); var++)
+        {
+            elementAuxVectors[var].resize(elemDofIds.size());
+            d_auxVec[var]->getValuesByGlobalID( elemDofIds.size(), &elemDofIds[0], &elementAuxVectors[var][0] );
+        }
+    } else if( d_isInputType== "NodalScalar" ) {
+        AMP_INSIST(elemDofIds.empty(),"d_elementDofMap contains elements, but type is NodalScalar");
+        for (unsigned int var = 0; var < d_inpVariables->numVariables(); var++)
+        {
+            elementInputVectors[var].resize(d_dofIndices.size());
+            d_inVec[var]->getValuesByGlobalID( d_dofIndices.size(), &d_dofIndices[0], &elementInputVectors[var][0] );
+        }
+        for (unsigned int var = 0; var < d_auxVariables->numVariables(); var++)
+        {
+            elementAuxVectors[var].resize(d_dofIndices.size());
+            d_auxVec[var]->getValuesByGlobalID( d_dofIndices.size(), &d_dofIndices[0], &elementAuxVectors[var][0] );
+        }
     }
 
     d_elementOutputVector.resize(d_dofIndices.size());
