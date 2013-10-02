@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 #include <time.h>
 
 #define ERROR_MSG AMP_ERROR
@@ -303,7 +304,7 @@ void ProfilerApp::syncronize() {
 	global_comm.barrier();
     TIME_TYPE sync_time_local;
     get_time(&sync_time_local);
-    double current_time = get_diff(d_construct_time,sync_time_local,frequency);
+    double current_time = get_diff(d_construct_time,sync_time_local,d_frequency);
     double max_current_time = global_comm.maxReduce(current_time);
     d_shift = max_current_time - current_time;
     RELEASE_LOCK(&lock);
@@ -359,11 +360,11 @@ void ProfilerApp::start( const std::string& message, const char* filename, const
     #if MONITOR_PROFILER_PERFORMANCE==1
         TIME_TYPE stop_time_local;
         get_time(&stop_time_local);
-        total_start_time += get_diff(start_time_local,stop_time_local,frequency);
+        total_start_time += get_diff(start_time_local,stop_time_local,d_frequency);
     #endif
     // Record the time of the memory usage
     if ( d_store_memory_data && thread_data->N_memory_steps<d_max_trace_remaining ) {
-        thread_data->time_memory[thread_data->N_memory_steps] = get_diff(d_construct_time,timer->start_time,frequency);
+        thread_data->time_memory[thread_data->N_memory_steps] = get_diff(d_construct_time,timer->start_time,d_frequency);
         thread_data->N_memory_steps++;
     }
 }
@@ -429,15 +430,15 @@ void ProfilerApp::stop( const std::string& message, const char* filename, const 
         }
     }
     // Calculate the time elapsed since start was called
-    double time = get_diff(timer->start_time,end_time,frequency);
+    double time = get_diff(timer->start_time,end_time,d_frequency);
     // Save the starting and ending time if we are storing the detailed traces
     if ( d_store_trace_data && trace->N_calls<MAX_TRACE_TRACE) {
         // Check if we need to allocate more memory to store the times
         check_allocate_array(&trace->start_time,trace->N_calls,MAX_TRACE_TRACE);
         check_allocate_array(&trace->end_time,trace->N_calls,MAX_TRACE_TRACE);
         // Calculate the time elapsed since the profiler was created
-        trace->start_time[trace->N_calls] = get_diff(d_construct_time,timer->start_time,frequency);
-        trace->end_time[trace->N_calls]   = get_diff(d_construct_time,end_time,frequency);
+        trace->start_time[trace->N_calls] = get_diff(d_construct_time,timer->start_time,d_frequency);
+        trace->end_time[trace->N_calls]   = get_diff(d_construct_time,end_time,d_frequency);
     }
     // Save the minimum, maximum, and total times
     if ( timer->N_calls == 1 ) {
@@ -471,7 +472,7 @@ void ProfilerApp::stop( const std::string& message, const char* filename, const 
         check_allocate_array(&thread_data->time_memory,N,N_max);
         check_allocate_array(&thread_data->size_memory,N,N_max);
         // Get the current memroy usage
-        thread_data->time_memory[N] = get_diff(d_construct_time,end_time,frequency);
+        thread_data->time_memory[N] = get_diff(d_construct_time,end_time,d_frequency);
         thread_data->size_memory[N] = get_memory_usage();
         thread_data->N_memory_steps++;
     }
@@ -589,7 +590,7 @@ void ProfilerApp::save( const std::string& filename ) {
                     total_time[k] = MAX(total_time[k],timer->total_time);
                     // If the timer is still running, add the current processing to the totals
                     if ( timer->is_active ) {
-                        double time = get_diff(timer->start_time,end_time,frequency);
+                        double time = get_diff(timer->start_time,end_time,d_frequency);
                         total_time[k] += time;
                     }
                 }
@@ -674,7 +675,7 @@ void ProfilerApp::save( const std::string& filename ) {
             double tot_time = timer->total_time;
             // If the timer is still running, add the current processing to the totals
             if ( timer->is_active ) {
-                double time = get_diff(timer->start_time,end_time,frequency);
+                double time = get_diff(timer->start_time,end_time,d_frequency);
                 if ( tot_time == 0.0 ) { 
                     min_time = time;
                     max_time = time;
@@ -751,7 +752,7 @@ void ProfilerApp::save( const std::string& filename ) {
             BIT_WORD active[TRACE_SIZE];
             if ( timer->is_active ) {
                 add_trace = true;
-                time = get_diff(timer->start_time,end_time,frequency);
+                time = get_diff(timer->start_time,end_time,d_frequency);
                 min_time = MIN(min_time,time);
                 max_time = MAX(min_time,time);
                 tot_time += time;
@@ -814,8 +815,8 @@ void ProfilerApp::save( const std::string& filename ) {
                     id_str,thread_id,1,time,time,time,active_list.c_str());
                 // Save the detailed trace results (this is a binary file)
                 if ( d_store_trace_data ) { 
-                    double start_time_trace = get_diff(d_construct_time,timer->start_time,frequency) + d_shift;
-                    double end_time_trace = get_diff(d_construct_time,end_time,frequency) + d_shift;
+                    double start_time_trace = get_diff(d_construct_time,timer->start_time,d_frequency) + d_shift;
+                    double end_time_trace = get_diff(d_construct_time,end_time,d_frequency) + d_shift;
                     convert_timer_id(id,id_str);
                     fprintf(traceFile,"id=%s,thread=%i,active=%s,N=%i:",id_str,thread_id,active_list.c_str(),1);
                     fwrite(&start_time_trace,sizeof(double),1,traceFile);

@@ -155,8 +155,6 @@ public:
      */
     void stop( const std::string& message, const char* filename, const int line, const int level=0 );
 
-
-
     /*!
      * \brief  Function to save the profiling info
      * \details  This will save the current timer info.  This is a non-blocking function.
