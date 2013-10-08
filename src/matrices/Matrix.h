@@ -165,7 +165,6 @@ public:
       /** \brief  Get values in the matrix
         * \param[in] row  The row id of value
         * \param[in] col  The column id of value
-        * \param[in] value  The value to get from the matrix
         * \details  This method will return zero for any values that have not been allocated.
         */
       virtual double getValueByGlobalID ( int row , int col ) const;

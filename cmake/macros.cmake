@@ -156,11 +156,12 @@ MACRO( INSTALL_AMP_TARGET LIBNAME )
         ADD_DEPENDENCIES( ${COPY_TARGET}  "${CMAKE_CURRENT_SOURCE_DIR}/${HFILE}" )
     ENDFOREACH()
     ADD_DEPENDENCIES( copy-AMP-include ${COPY_TARGET} )
-    # Add the library
-    ADD_LIBRARY( ${LIBNAME} ${SOURCES} )
-    ADD_DEPENDENCIES ( ${LIBNAME} copy-AMP-include )
-    # Install the package
-    INSTALL( TARGETS ${LIBNAME} DESTINATION ${AMP_INSTALL_DIR}/lib )
+    # Add the library and install the package
+    IF ( NOT ONLY_BUILD_DOCS )
+        ADD_LIBRARY( ${LIBNAME} ${SOURCES} )
+        ADD_DEPENDENCIES ( ${LIBNAME} copy-AMP-include )
+        INSTALL( TARGETS ${LIBNAME} DESTINATION ${AMP_INSTALL_DIR}/lib )
+    ENDIF()
     INSTALL( FILES ${HEADERS} DESTINATION ${AMP_INSTALL_DIR}/include/${LIBNAME} )
 ENDMACRO ()
 
@@ -400,6 +401,20 @@ MACRO ( COPY_TEST_DATA_FILE FILENAME )
 ENDMACRO ()
 
 
+# Macro to copy a data file
+MACRO ( COPY_EXAMPLE_DATA_FILE FILENAME )
+    SET( FILE_TO_COPY  ${CMAKE_CURRENT_SOURCE_DIR}/data/${FILENAME} )
+    SET( DESTINATION1 ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME} )
+    SET( DESTINATION2 ${EXAMPLE_INSTALL_DIR}/${FILENAME} )
+    IF ( EXISTS ${FILE_TO_COPY} )
+        COPY_DATA_FILE( ${FILE_TO_COPY} ${DESTINATION1} )
+        COPY_DATA_FILE( ${FILE_TO_COPY} ${DESTINATION2} )
+    ELSE()
+        MESSAGE ( WARNING "Cannot find file: " ${FILE_TO_COPY} )
+    ENDIF()
+ENDMACRO ()
+
+
 # Macro to copy a mesh file
 MACRO (COPY_MESH_FILE MESHNAME)
     # Check the local data directory
@@ -474,6 +489,9 @@ ENDMACRO()
 FUNCTION( KEEP_TEST RESULT )
     SET( ${RESULT} 1 PARENT_SCOPE )
     IF ( NOT ${PACKAGE_NAME}_ENABLE_TESTS )
+        SET( ${RESULT} 0 PARENT_SCOPE )
+    ENDIF()
+    IF ( ONLY_BUILD_DOCS )
         SET( ${RESULT} 0 PARENT_SCOPE )
     ENDIF()
 ENDFUNCTION()
@@ -593,6 +611,61 @@ FUNCTION( ADD_AMP_TEST_PARALLEL EXEFILE PROCS ${ARGN} )
         SET_TESTS_PROPERTIES( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" PROCESSORS ${PROCS} )
     ENDIF()
 ENDFUNCTION()
+
+
+# Add a executable as an example
+FUNCTION( ADD_AMP_EXAMPLE EXEFILE PROCS ${ARGN} )
+    # Add the file to the example doxygen file
+    SET( VALUE 0 )
+    FOREACH(_variableName ${EXAMPLE_LIST})
+        IF ( "${_variableName}" STREQUAL "${EXEFILE}" )
+            SET( VALUE 1 )
+        ENDIF()
+    ENDFOREACH()
+    IF ( NOT ${VALUE} )
+        FILE(APPEND ${EXAMPLE_INSTALL_DIR}/examples.h "* \\ref ${EXEFILE} \"${EXEFILE}\"\n" )
+        SET( EXAMPLE_LIST ${EXAMPLE_LIST} ${EXEFILE} CACHE INTERNAL "example_list" FORCE )
+    ENDIF()
+    # Check if we actually want to add the test
+    IF ( ONLY_BUILD_DOCS )
+        RETURN()
+    ENDIF()
+    # Add the provisional test
+    ADD_AMP_PROVISIONAL_TEST( ${EXEFILE} )
+    GET_TARGET_PROPERTY(EXE ${EXEFILE} LOCATION)
+    STRING(REGEX REPLACE "\\$\\(Configuration\\)" "${CONFIGURATION}" EXE "${EXE}" )
+    ADD_DEPENDENCIES( build-examples ${EXEFILE} )
+    ADD_CUSTOM_COMMAND( TARGET ${EXEFILE} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${EXEFILE} "${EXAMPLE_INSTALL_DIR}/${EXEFILE}"
+    )
+    IF( ${PROCS} STREQUAL "1" AND (NOT USE_EXT_MPI_FOR_SERIAL_TESTS) )
+        CREATE_TEST_NAME( "example--${EXEFILE}" ${ARGN} )
+        ADD_TEST( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${PROCS} ${EXE} ${ARGN} )    
+    ELSEIF ( USE_EXT_MPI AND NOT (${PROCS} GREATER ${TEST_MAX_PROCS}) )
+        CREATE_TEST_NAME( "example--${EXEFILE}_${PROCS}procs" ${ARGN} )
+        ADD_TEST( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${PROCS} ${EXE} ${ARGN} )
+        SET_TESTS_PROPERTIES( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" PROCESSORS ${PROCS} )
+    ENDIF()
+ENDFUNCTION()
+
+
+# Begin configure for the examples for a package
+MACRO( BEGIN_EXAMPLE_CONFIG PACKAGE )
+    # Set example install dir
+    SET( EXAMPLE_INSTALL_DIR ${AMP_INSTALL_DIR}/examples/${PACKAGE} )
+    # Create list of examples
+    SET( EXAMPLE_LIST "dummy" CACHE INTERNAL "example_list" FORCE )
+    # Create doxygen input file for examples
+    SET( DOXYFILE_EXTRA_SOURCES ${DOXYFILE_EXTRA_SOURCES} ${EXAMPLE_INSTALL_DIR} CACHE INTERNAL "doxyfile_extra_sources") 
+    FILE(WRITE  ${EXAMPLE_INSTALL_DIR}/examples.h "// Include file for doxygen providing the examples for ${PACKAGE}\n")
+    FILE(APPEND ${EXAMPLE_INSTALL_DIR}/examples.h "/*! \\page Examples_${PACKAGE}\n" )
+ENDMACRO()
+
+# Install the examples
+MACRO( INSTALL_AMP_EXAMPLE PACKAGE )
+    FILE(APPEND ${EXAMPLE_INSTALL_DIR}/examples.h "*/\n" )
+    SET( EXAMPLE_INSTALL_DIR "" )
+ENDMACRO()
 
 
 # Add a test with 1, 2, and 4 processors

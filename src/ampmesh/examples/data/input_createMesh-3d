@@ -1,0 +1,50 @@
+// This demonstrates creating the different object types in 3d
+// This includes a multimesh to wrap all mesh objects into one multimesh object
+Mesh{
+    MeshName = "AllMeshes"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
+
+    // A simple 4x5x6 unit cube centered at (0,0,0)
+    Mesh_1 {
+        MeshName = "cube"               // Name of the mesh
+        MeshType = "AMP"                // Mesh type
+        dim = 3                         // Dimension of the mesh
+        Generator = "cube"              // Generator to use (AMP specific meshes)
+        Size = 4, 5, 6                  // # of elements in x, y, z (cube specific)
+        Range = 0, 1, 0, 1, 0, 1        // x_min, x_max, y_min, y_max, z_min, z_max (cube specific)
+        x_offset = -0.5                 // Offset in x-direction (optional)
+        y_offset = -0.5                 // Offset in y-direction (optional)
+        z_offset = -0.5                // Offset in z-direction (optional)
+    }
+
+    // A simple cylinder with radius 0.5, heigh 1, centered at (2,0,0)
+    Mesh_2 {
+        MeshName = "cylinder"           // Name of the mesh
+        MeshType = "AMP"                // Mesh type
+        dim = 3                         // Dimension of the mesh
+        Generator = "cylinder"          // Generator to use (AMP specific meshes)
+        Size = 4, 5                     // # of elements in r, z (cylinder specific)
+        Range = 0.5, 0, 1               // r, z_min, z_max (cylinder specific)
+        x_offset = 2.0                  // Offset in x-direction (optional)
+        y_offset = 0.0                  // Offset in y-direction (optional)
+        z_offset = -0.5                 // Offset in z-direction (optional)
+    }
+
+    // A simple tube with outer radius 0.5, inner radius 0.4, heigh 1, centered at (-2,0,0)
+    Mesh_3 {
+        MeshName = "tube"               // Name of the mesh
+        MeshType = "AMP"                // Mesh type
+        dim = 3                         // Dimension of the mesh
+        Generator = "tube"              // Generator to use (AMP specific meshes)
+        Size = 3, 15, 5                 // # of elements in r, theta, z (tube specific)
+        Range = 0.4, 0.5, 0, 1          // r_min, r_max, z_min, z_max (tube specific)
+        x_offset = -2.0                 // Offset in x-direction (optional)
+        y_offset = 0.0                  // Offset in y-direction (optional)
+        z_offset = -0.5                 // Offset in z-direction (optional)
+    }
+
+
+}
+

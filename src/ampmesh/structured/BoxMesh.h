@@ -292,6 +292,13 @@ protected:
     friend class structuredMeshElement;
     friend class structuredMeshIterator;
 
+
+protected:
+    
+    // Helper function to map x,y logical coordinates in [0,1] to x,y coordinate in a unit circle
+    // Note: this changes the x and y values
+    static void map_logical_circle( size_t N, double R, double *x, double *y );
+
 };
 
 

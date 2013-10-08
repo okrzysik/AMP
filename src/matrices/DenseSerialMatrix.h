@@ -142,7 +142,6 @@ public:
     /** \brief  Set values in the matrix
       * \param[in] row  The row id of value
       * \param[in] col  The column id of value
-      * \param[in] value  The value to set to the matrix
       * \details  This method may fail if the matrix has not
       * allocated a particular(row,col) specified, depending
       * on the actual subclass of matrix used.

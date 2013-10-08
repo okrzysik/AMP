@@ -70,8 +70,9 @@ public :
      * \details  For a simple mesh with nodes aligned in the x, y, z directions,
      *   this function returns an iterator of the faces that lie on the faces 
      *   perpendicular to the given direction.
-     * \param mesh  Mesh that we want to use for the iterator
-     * \param gcw   Desired ghost width
+     * \param mesh      Mesh that we want to use for the iterator
+     * \param gcw       Desired ghost width
+     * \param direction Direction of faces to iterate
      */
     static AMP::Mesh::MeshIterator getFaceIterator(AMP::Mesh::Mesh::shared_ptr mesh, int gcw, int direction);
 

@@ -43,7 +43,7 @@ public:
     /** \brief Create a new multivector in parallel
       * \param[in] name  Variable describing the new vector
       * \param[in] comm  Communicator to build the MultiVector on
-      * \param[in] vec   Optional list of vectors in the MultiVector
+      * \param[in] vecs  Optional list of vectors in the MultiVector
       */
     static boost::shared_ptr<MultiVector>  create ( Variable::shared_ptr name, AMP_MPI comm, 
         const std::vector<Vector::shared_ptr>& vecs=std::vector<Vector::shared_ptr>() );
@@ -51,7 +51,7 @@ public:
     /** \brief Create a new multivector in parallel
       * \param[in] name  Name of the new vector
       * \param[in] comm  Communicator to build the MultiVector on
-      * \param[in] vec   Optional list of vectors in the MultiVector
+      * \param[in] vecs  Optional list of vectors in the MultiVector
       */
     static boost::shared_ptr<MultiVector>  create ( const std::string &name, AMP_MPI comm, 
         const std::vector<Vector::shared_ptr>& vecs=std::vector<Vector::shared_ptr>() );
@@ -59,7 +59,7 @@ public:
     /** \brief Create a new multivector in parallel
       * \param[in] name  Variable describing the new vector
       * \param[in] comm  Communicator to build the MultiVector on
-      * \param[in] vec   Optional list of vectors in the MultiVector
+      * \param[in] vecs  Optional list of vectors in the MultiVector
       */
     static boost::shared_ptr<const MultiVector>  const_create ( Variable::shared_ptr name, AMP_MPI comm, 
         const std::vector<Vector::const_shared_ptr>& vecs=std::vector<Vector::const_shared_ptr>() );
@@ -67,7 +67,7 @@ public:
     /** \brief Create a new multivector in parallel
       * \param[in] name  Name of the new vector
       * \param[in] comm  Communicator to build the MultiVector on
-      * \param[in] vec   Optional list of vectors in the MultiVector
+      * \param[in] vecs  Optional list of vectors in the MultiVector
       */
     static boost::shared_ptr<const MultiVector>  const_create ( const std::string &name, AMP_MPI comm, 
         const std::vector<Vector::const_shared_ptr>& vecs=std::vector<Vector::const_shared_ptr>() );
@@ -239,7 +239,7 @@ protected:
     Vector::shared_ptr &getVector (     VectorOperations &vec , size_t which ) const;
 
     /** Constructor:  create a MultiVector with a particular variable
-      * \param[in]  names  The vector to create the MultiVector from
+      * \param[in]  name  The vector to create the MultiVector from
       */
     MultiVector ( const std::string& name );
 

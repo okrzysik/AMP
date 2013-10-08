@@ -1,0 +1,35 @@
+// This demonstrates creating the different object types in 2d
+// This includes a multimesh to wrap all mesh objects into one multimesh object
+Mesh{
+    MeshName = "AllMeshes"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
+
+    // A simple 5x6 unit cube centered at (0,0)
+    Mesh_1 {
+        MeshName = "cube"               // Name of the mesh
+        MeshType = "AMP"                // Mesh type
+        dim = 2                         // Dimension of the mesh
+        Generator = "cube"              // Generator to use (AMP specific meshes)
+        Size = 5, 6                     // # of elements in x, y, z (cube specific)
+        Range = 0, 1, 0, 1              // x_min, x_max, y_min, y_max
+        x_offset = -0.5                 // Offset in x-direction (optional)
+        y_offset = -0.5                 // Offset in y-direction (optional)
+    }
+
+    // A simple circle with radius 0.5 centered at (2,0,0)
+    Mesh_2 {
+        MeshName = "circle"             // Name of the mesh
+        MeshType = "AMP"                // Mesh type
+        dim = 2                         // Dimension of the mesh
+        Generator = "circle"            // Generator to use (AMP specific meshes)
+        Size = 5                        // # of elements in r(circle specific)
+        Range = 0.5                     // r (cylinder circle)
+        x_offset = 2.0                  // Offset in x-direction (optional)
+        y_offset = 0.0                  // Offset in y-direction (optional)
+        z_offset = 0.0                  // Offset in z-direction (optional)
+    }
+
+}
+
