@@ -1,6 +1,7 @@
 /** @page createMesh
 \par createMesh
 This is a simple mesh that will load an input file, read the mesh database, and create the desired mesh.
+See \ref AMP::Mesh::Mesh "Mesh" and \ref AMP::Mesh::BoxMesh "BoxMesh" for more info on the mesh interfaces and options.
 To run the test compile the example and then run the command "createMesh inputFile".  
 If AMP was compiled with silo, the mesh will be written to a silo file named "output/inputFile.silo".
 

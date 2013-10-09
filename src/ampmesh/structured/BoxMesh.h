@@ -28,23 +28,47 @@ class structuredMeshIterator;
 
 
 /**
- * \class Mesh
+ * \class BoxMesh
  * \brief A class used to represent a logically rectangular box mesh
  * \details  This class provides routines for creating and managing a logically 
  *    rectangular mesh domain.  The mesh is described by the number of elements 
  *    in each direction and may be periodic along any given direction.  
- *    The database may specify some simple options to generate meshes:
- *    Generator - "cube", "sphere", "cyliner", "tube"
- *    Size - ndim array with the number of intervals in each direction.
- *           [nx,ny,nz] for box, [nr,nphi,nz] for tube, [nr,nz] for cylinder, 
- *           and [nr,nphi,ntheta] for sphere.
- *    Range - Array specifying the physical size of the mesh.
- *           cube: [ x-min  x-max  y-min  y-max  z-min  z-max ]
- *           sphere: [ r ]
- *           cyliner: [ r  z-min  z-max ]
- *           tube: [ r-min  r-max  z-min  z-max ]
- *    Periodic: Are any dimensions periodic (only applies to cubes)
- *    GCW: The maximum ghost cell width to support (default is 1)
+ *    The database may specify some simple options to generate meshes: 
+\verbatim
+   MeshName - Name of the mesh
+   dim - Dimension of the mesh
+   Generator - "cube", "circle, "cylinder", "tube", "sphere", "shell"
+   Size - ndim array with the number of intervals in each direction.
+          nx, ny, nz are the number of intervals in each direction, nr is the number of intervals
+          in the radius, and nphi is the number of intervals in the asmuthal direction.
+          cube (2d) - [ nx, ny      ] 
+          cube (3d) - [ nx, ny, nz  ]
+          circle    - [ nr          ]
+          cylinder  - [ nr, nz      ]
+          tube      - [ nr, nphi, nz]
+          sphere    - [ nr          ]
+          shell     - [ nr, nphi    ]
+   Range - Array specifying the physical size of the mesh.
+          cube (2d) - [ x-min, x-max, y-min, y-max, z-min, z-max ]
+          cube (3d) - [ x-min, x-max, y-min, y-max               ]
+          circle    - [ r                                        ]
+          cylinder  - [ r,     z                                 ]
+          tube      - [ r_min, r_max, z                          ]
+          sphere    - [ r                                        ]
+          shell     - [ r_min, r_max                             ]
+   Periodic - Are any dimensions periodic (optional)
+          cube (2d) - [ x_dir, y_dir ] 
+          cube (3d) - [ x_dir, y_dir, z_dir ] 
+          circle    - Not supported
+          cylinder  - [ z_dir ]
+          tube      - [ z_dir ]
+          sphere    - Not supported
+          shell     - Not supported
+   GCW -  The maximum ghost cell width to support (optional, default is 1)
+   x_offset - Offset in x-direction (optional)
+   y_offset - Offset in y-direction (optional)
+   z_offset - Offset in z-direction (optional)
+\endverbatim
  */
 class BoxMesh: public AMP::Mesh::Mesh
 {
@@ -295,9 +319,17 @@ protected:
 
 protected:
     
-    // Helper function to map x,y logical coordinates in [0,1] to x,y coordinate in a unit circle
+    // Helper function to map x,y logical coordinates in [0,1] to x,y coordinate in a circle
     // Note: this changes the x and y values
-    static void map_logical_circle( size_t N, double R, double *x, double *y );
+    static void map_logical_circle( size_t N, double R, int method, double *x, double *y );
+
+    // Helper function to map x,y,z logical coordinates in [0,1] to x,y,z coordinate in a shell
+    // Note: this changes the x, y, and z values
+    static void map_logical_shell( size_t N, double r1, double r2, double *x, double *y, double *z );
+
+    // Helper function to map x,y,z logical coordinates in [0,1] to x,y,z coordinate in a shpere
+    // Note: this changes the x, y, and z values
+    static void map_logical_sphere( size_t N, double r, double *x, double *y, double *z );
 
 };
 

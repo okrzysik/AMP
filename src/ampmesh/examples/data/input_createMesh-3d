@@ -32,7 +32,7 @@ Mesh{
         z_offset = -0.5                 // Offset in z-direction (optional)
     }
 
-    // A simple tube with outer radius 0.5, inner radius 0.4, heigh 1, centered at (-2,0,0)
+    // A simple tube with outer radius 0.5, inner radius 0.4, heigh 1, centered at (2,2,0)
     Mesh_3 {
         MeshName = "tube"               // Name of the mesh
         MeshType = "AMP"                // Mesh type
@@ -40,11 +40,36 @@ Mesh{
         Generator = "tube"              // Generator to use (AMP specific meshes)
         Size = 3, 15, 5                 // # of elements in r, theta, z (tube specific)
         Range = 0.4, 0.5, 0, 1          // r_min, r_max, z_min, z_max (tube specific)
-        x_offset = -2.0                 // Offset in x-direction (optional)
-        y_offset = 0.0                  // Offset in y-direction (optional)
+        x_offset = 2.0                  // Offset in x-direction (optional)
+        y_offset = 2.0                  // Offset in y-direction (optional)
         z_offset = -0.5                 // Offset in z-direction (optional)
     }
 
+    // A simple shell with outer radius 0.5, inner radius 0.3, centered at (4,0,0)
+    Mesh_4 {
+        MeshName = "shell"              // Name of the mesh
+        MeshType = "AMP"                // Mesh type
+        dim = 3                         // Dimension of the mesh
+        Generator = "shell"             // Generator to use (AMP specific meshes)
+        Size = 3, 7                     // # of elements in r, phi (shell specific)
+        Range = 0.3, 0.5                // r_min, r_max (shell specific)
+        x_offset = 4.0                  // Offset in x-direction (optional)
+        y_offset = 0.0                  // Offset in y-direction (optional)
+        z_offset = 0.0                  // Offset in z-direction (optional)
+    }
+
+    // A simple shell with radius 0.5, centered at (4,0,0)
+    Mesh_5 {
+        MeshName = "sphere"             // Name of the mesh
+        MeshType = "AMP"                // Mesh type
+        dim = 3                         // Dimension of the mesh
+        Generator = "sphere"            // Generator to use (AMP specific meshes)
+        Size = 5                        // # of elements in r (sphere specific)
+        Range = 0.5                     // r (sphere specific)
+        x_offset = 4.0                  // Offset in x-direction (optional)
+        y_offset = 2.0                  // Offset in y-direction (optional)
+        z_offset = 0.0                  // Offset in z-direction (optional)
+    }
 
 }
 
