@@ -434,8 +434,8 @@ void ProfilerApp::stop( const std::string& message, const char* filename, const 
     // Save the starting and ending time if we are storing the detailed traces
     if ( d_store_trace_data && trace->N_calls<MAX_TRACE_TRACE) {
         // Check if we need to allocate more memory to store the times
-        check_allocate_array(&trace->start_time,trace->N_calls,MAX_TRACE_TRACE);
-        check_allocate_array(&trace->end_time,trace->N_calls,MAX_TRACE_TRACE);
+        check_allocate_array(&trace->start_time,trace->N_calls,static_cast<size_t>(MAX_TRACE_TRACE));
+        check_allocate_array(&trace->end_time,trace->N_calls,static_cast<size_t>(MAX_TRACE_TRACE));
         // Calculate the time elapsed since the profiler was created
         trace->start_time[trace->N_calls] = get_diff(d_construct_time,timer->start_time,d_frequency);
         trace->end_time[trace->N_calls]   = get_diff(d_construct_time,end_time,d_frequency);
@@ -916,10 +916,10 @@ void ProfilerApp::save( const std::string& filename ) {
         unsigned int *size = new unsigned int[d_N_memory_steps];
         for (size_t i=0; i<d_N_memory_steps; i++) {
             time[i] = d_time_memory[i] + d_shift;
-            size[i] = d_size_memory[i]/scale;
+            size[i] = static_cast<unsigned int>(d_size_memory[i]/scale);
         }
-        int N1 = fwrite(time,sizeof(double),d_N_memory_steps,memoryFile);
-        int N2 = fwrite(size,sizeof(unsigned int),d_N_memory_steps,memoryFile);
+        size_t N1 = fwrite(time,sizeof(double),d_N_memory_steps,memoryFile);
+        size_t N2 = fwrite(size,sizeof(unsigned int),d_N_memory_steps,memoryFile);
         delete [] time;
         delete [] size;
         fprintf(memoryFile,"\n");
