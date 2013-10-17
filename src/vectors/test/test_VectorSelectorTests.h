@@ -1,5 +1,6 @@
 #include "vectors/VectorSelector.h"
 #include "vectors/MultiVector.h"
+#include "vectors/ManagedVector.h"
 #include "vectors/VectorSelector.h"
 
 #include "utils/AMPManager.h"
