@@ -24,9 +24,12 @@ using namespace AMP::unit_test;
         typedef AMP::unit_test::MultiVectorFactory<SMEVFactory,1,SNPVFactory,1>                     MVFactory1;
         typedef AMP::unit_test::MultiVectorFactory<SMEVFactory,3,SNPVFactory,2>                     MVFactory2;
         typedef AMP::unit_test::MultiVectorFactory<MVFactory1,2,MVFactory2,2>                       MVFactory3;
-    #else
-    typedef AMP::unit_test::MultiVectorFactory<SimpleVectorFactory<15,false>,1,SNPVFactory,1>       MVFactory1;
+        typedef AMP::unit_test::MultiVectorFactory<SimpleVectorFactory<15,false>,1,SNPVFactory,1>   MVFactory1;
         typedef AMP::unit_test::MultiVectorFactory<SimpleVectorFactory<15,false>,3,SNPVFactory,2>   MVFactory2;
+        typedef AMP::unit_test::MultiVectorFactory<MVFactory1,2,MVFactory2,2>                       MVFactory3;
+    #else
+        typedef AMP::unit_test::MultiVectorFactory<SimpleVectorFactory<15,false>,1,SMEVFactory,1>   MVFactory1;
+        typedef AMP::unit_test::MultiVectorFactory<SimpleVectorFactory<15,false>,3,SMEVFactory,2>   MVFactory2;
         typedef AMP::unit_test::MultiVectorFactory<MVFactory1,2,MVFactory2,2>                       MVFactory3;
     #endif
 #endif

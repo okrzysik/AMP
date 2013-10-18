@@ -322,11 +322,11 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
     } 
     // Displace the mesh
     std::vector<double> displacement(PhysicalDim,0.0);
-    if ( d_db->keyExists("x_offset") )
+    if ( d_db->keyExists("x_offset") && PhysicalDim>=1 )
         displacement[0] = d_db->getDouble("x_offset");
-    if ( d_db->keyExists("y_offset") )
+    if ( d_db->keyExists("y_offset") && PhysicalDim>=2 )
         displacement[1] = d_db->getDouble("y_offset");
-    if ( d_db->keyExists("z_offset") )
+    if ( d_db->keyExists("z_offset") && PhysicalDim>=3 )
         displacement[2] = d_db->getDouble("z_offset");
     bool test = false;
     for (size_t i=0; i<displacement.size(); i++) {
