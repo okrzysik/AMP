@@ -516,10 +516,10 @@ void BoxMesh::initialize()
     for (int gcw=1; gcw<=d_max_gcw; gcw++) {
         d_elements[PhysicalDim][gcw] = ElementIndexList( new std::vector<MeshElementIndex>() );
         AMP_ASSERT(PhysicalDim<=3);
-        int range2[6] = {0,0,0,0,0,0};
+        int range2[6] = {0,1,0,1,0,1};
         for (int d=0; d<PhysicalDim; d++) {
-            range2[2*d+0] = range[d]-gcw;
-            range2[2*d+1] = range[d]+gcw;
+            range2[2*d+0] = range[2*d+0]-gcw;
+            range2[2*d+1] = range[2*d+1]+gcw;
         }
         for (int k=range2[4]; k<range2[5]; k++) {
             for (int j=range2[2]; j<range2[3]; j++) {

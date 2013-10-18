@@ -145,14 +145,14 @@ std::vector<size_t> subsetDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
 {
     std::vector<size_t> parentDOFs = d_parentDOFManager->getRowDOFs( obj );
     std::vector<size_t> subsetDOFs = getSubsetDOF( parentDOFs );
-    std::vector<size_t>::iterator cur = subsetDOFs.begin();
-    std::vector<size_t>::iterator end = subsetDOFs.end();
-    while ( cur != end ) {
-        if ( *cur >= d_global )
-            cur = subsetDOFs.erase(cur);
-        else
-            ++cur;
+    size_t index = 0;
+    for (size_t i=0; i<subsetDOFs.size(); i++) {
+        if ( subsetDOFs[i] < d_global ) {
+            subsetDOFs[index] = subsetDOFs[i];
+            index++;
+        }
     }
+    subsetDOFs.resize(index);
     return subsetDOFs;
 }
 
