@@ -654,13 +654,20 @@ void MultiVector::setUpdateStatus ( UpdateState state )
 void MultiVector::copyVector ( const Vector::const_shared_ptr &src )
 {
     boost::shared_ptr<const MultiVector> rhs = boost::dynamic_pointer_cast<const MultiVector>(src);
-    if ( rhs.get()!=NULL )  {
+    if ( rhs.get()!=NULL ) {
+        // We are dealing with 2 multivectors
         AMP_ASSERT(rhs->d_vVectors.size()==d_vVectors.size());
         for (size_t i=0; i!=d_vVectors.size(); i++ )
           d_vVectors[i]->copyVector( rhs->d_vVectors[i] );
         *d_UpdateState = *(rhs->getUpdateStatusPtr());
     } else if ( d_vVectors.size()==1 ) {
+        // We have a multivector of a single vector
         d_vVectors[0]->copyVector( src );
+    } else if ( *getDOFManager()==*(src->getDOFManager()) ) {
+        // The two DOFManagers are compatible, we can perform a basic copy
+        VectorDataIterator dst_it = Vector::begin();
+        for (ConstVectorDataIterator src_it=src->begin(); src_it!=src->end(); ++dst_it, ++src_it)
+            *dst_it = *src_it;
     } else {
         AMP_ERROR("Unable to copy vector");
     }
