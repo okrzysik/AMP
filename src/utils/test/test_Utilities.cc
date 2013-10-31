@@ -14,6 +14,11 @@
 #include "utils/Utilities.h"
 
 
+// Subract two size_t numbers, returning the absolute value
+size_t abs_diff(size_t a, size_t b) {
+    return (a>=b) ? a-b:b-a;
+}
+
 
 // This checks approx_equal
 template <class T>
@@ -281,7 +286,7 @@ int main(int argc, char *argv[])
             n_bytes2 = AMP::Utilities::getMemoryUsage();
             delete [] tmp;  tmp = NULL; NULL_USE(tmp);
             size_t n_bytes3 = AMP::Utilities::getMemoryUsage();
-            if ( n_bytes2 > 0x80000000 && n_bytes2 < n_bytes1+0x81000000 && n_bytes3==n_bytes1 ) 
+            if ( n_bytes2 > 0x80000000 && n_bytes2 < n_bytes1+0x81000000 && abs_diff(n_bytes1,n_bytes3)<20e3 ) 
                 ut.passes("getMemoryUsage correctly handles 2^31 - 2^32 bytes"); 
             else
                 ut.failure("getMemoryUsage correctly handles 2^31 - 2^32 bytes"); 
@@ -290,15 +295,20 @@ int main(int argc, char *argv[])
             // Test getting the memory usage for > 4 GB bytes
             // Note: we only run this test on machines with more than 8 GB of memory
             n_bytes1 = AMP::Utilities::getMemoryUsage();
-            tmp = new double[0x20000000]; // Allocate 2^32+8 bytes
-            memset(tmp,0,0x10000000);
-            n_bytes2 = AMP::Utilities::getMemoryUsage();
-            delete [] tmp;  tmp = NULL; NULL_USE(tmp);
-            size_t n_bytes7 = AMP::Utilities::getMemoryUsage();
-            if ( n_bytes2 > 0x100000000 && n_bytes2 < n_bytes1+0x110000000 && n_bytes3==n_bytes1 ) 
-                ut.passes("getMemoryUsage correctly handles memory > 2^32 bytes"); 
-            else
-                ut.expected_failure("getMemoryUsage does not handle memory > 2^32 bytes"); 
+            size_t size = 0x20000000;
+            tmp = new double[size]; // Allocate 2^32+8 bytes
+            if ( tmp==NULL ) {
+                ut.expected_failure("Unable to allocate variable of size 4 GB");
+            } else {
+                memset(tmp,0,0x10000000);
+                n_bytes2 = AMP::Utilities::getMemoryUsage();
+                delete [] tmp;  tmp = NULL; NULL_USE(tmp);
+                size_t n_bytes7 = AMP::Utilities::getMemoryUsage();
+                if ( n_bytes2 > 0x100000000 && n_bytes2 < n_bytes1+0x110000000 && abs_diff(n_bytes1,n_bytes3)<20e3 ) 
+                    ut.passes("getMemoryUsage correctly handles memory > 2^32 bytes"); 
+                else
+                    ut.expected_failure("getMemoryUsage does not handle memory > 2^32 bytes"); 
+            }
         }
 
         // Test getting the current call stack
