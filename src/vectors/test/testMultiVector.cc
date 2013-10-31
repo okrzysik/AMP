@@ -15,6 +15,7 @@
 
 #include "ampmesh/Mesh.h"
 #include "utils/Writer.h"
+#include "utils/Utilities.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/Vector.h"
@@ -41,36 +42,57 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh(params);
 
     // Construct Variables
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> Variable1 (new AMP::LinearAlgebra::Variable("Var1"));
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> Variable2 (new AMP::LinearAlgebra::Variable("Var2"));
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> Variable3 (new AMP::LinearAlgebra::Variable("Var3"));
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> Variable4 (new AMP::LinearAlgebra::Variable("Var4"));
+    boost::shared_ptr<AMP::LinearAlgebra::Variable> Variable1(new AMP::LinearAlgebra::Variable("Var1"));
+    boost::shared_ptr<AMP::LinearAlgebra::Variable> Variable2(new AMP::LinearAlgebra::Variable("Var2"));
+    boost::shared_ptr<AMP::LinearAlgebra::Variable> Variable3(new AMP::LinearAlgebra::Variable("Var3"));
+    boost::shared_ptr<AMP::LinearAlgebra::Variable> Variable4(new AMP::LinearAlgebra::Variable("Var4"));
+    boost::shared_ptr<AMP::LinearAlgebra::Variable> dummyVar( new AMP::LinearAlgebra::Variable("dummy"));
 
     boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> subVariable (new AMP::LinearAlgebra::MultiVariable("subVar"));
-    subVariable->add( Variable1   );
-    subVariable->add( Variable2   );
+    subVariable->add( Variable1 );
+    subVariable->add( Variable2 );
 
     boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> fullVariable(new AMP::LinearAlgebra::MultiVariable("fullVariable"));
-    fullVariable->add( Variable1   );
-    fullVariable->add( Variable2   );
-    fullVariable->add( Variable3   );
-    fullVariable->add( Variable4   );
+    fullVariable->add( Variable1 );
+    fullVariable->add( Variable2 );
+    fullVariable->add( Variable3 );
+    fullVariable->add( Variable4 );
 
     // Create the DOF manager
     AMP::Discretization::DOFManager::shared_ptr DOFs = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,1);
 
     // Create the vectors
-    AMP::LinearAlgebra::Vector::shared_ptr FullVector = AMP::LinearAlgebra::createVector( DOFs, fullVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr SubVector  = FullVector->subsetVectorForVariable( subVariable );
-    if ( SubVector.get()!=NULL ) {
+    AMP::LinearAlgebra::Vector::shared_ptr multiVector = AMP::LinearAlgebra::createVector( DOFs, fullVariable, true );
+    AMP::LinearAlgebra::Vector::shared_ptr singleVector = AMP::LinearAlgebra::createVector( multiVector->getDOFManager(), dummyVar, false );
+    AMP::LinearAlgebra::Vector::shared_ptr subVector  = multiVector->subsetVectorForVariable( subVariable );
+    if ( singleVector->getGlobalSize()==multiVector->getGlobalSize() )
+        ut->passes("single and multivector are the right size");
+    else
+        ut->failure("Sub Vector is the right size");
+    if ( subVector.get()!=NULL ) {
         ut->passes("Sub Vector is not NULL");
-        if ( FullVector->getGlobalSize() == 2*SubVector->getGlobalSize() )
+        if ( multiVector->getGlobalSize() == 2*subVector->getGlobalSize() )
             ut->passes("Sub Vector is the right size");
         else
             ut->failure("Sub Vector is the right size");
     } else {
         ut->failure("Sub Vector is not NULL");
     }
+
+    // Try to copy data between the single vector and multivector
+    singleVector->setRandomValues();
+    multiVector->copyVector(singleVector);
+    if ( AMP::Utilities::approx_equal(singleVector->L2Norm(),multiVector->L2Norm(),1e-12) )
+        ut->passes("Data copied from single vector to multivector");
+    else
+        ut->failure("Data copied from single vector to multivector");
+    singleVector->zero();
+    singleVector->copyVector(multiVector);
+    if ( AMP::Utilities::approx_equal(singleVector->L2Norm(),multiVector->L2Norm(),1e-12) )
+        ut->passes("Data copied from multivector to single vector");
+    else
+        ut->failure("Data copied from multivector to single vector");
+
 }
 
 
