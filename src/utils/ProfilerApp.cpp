@@ -174,6 +174,26 @@ template<class type> void check_allocate_array( type** data, size_t N_current, s
 #endif
 
 
+/******************************************************************
+* Some inline functions to get the rank and comm size             *
+* Note: we want these functions to be safe to use, even if MPI    *
+*    has not been initialized.                                    *
+******************************************************************/
+static inline int comm_size() {
+    return AMP::AMP_MPI(AMP_COMM_WORLD).getSize();
+
+}
+static inline int comm_rank() {
+    return AMP::AMP_MPI(AMP_COMM_WORLD).getRank();
+}
+static inline void comm_barrier() {
+    AMP::AMP_MPI(AMP_COMM_WORLD).barrier();
+}
+static inline double comm_max_reduce(double val) {
+    return AMP::AMP_MPI(AMP_COMM_WORLD).maxReduce(val);
+}
+
+
 /***********************************************************************
 * Inline functions to set or unset the ith bit of the bit array trace  *
 ***********************************************************************/
@@ -300,12 +320,11 @@ ProfilerApp::~ProfilerApp() {
 ***********************************************************************/
 void ProfilerApp::syncronize() {
     GET_LOCK(&lock);
-    AMP::AMP_MPI global_comm(AMP_COMM_WORLD);
-	global_comm.barrier();
+	comm_barrier();
     TIME_TYPE sync_time_local;
     get_time(&sync_time_local);
     double current_time = get_diff(d_construct_time,sync_time_local,d_frequency);
-    double max_current_time = global_comm.maxReduce(current_time);
+    double max_current_time = comm_max_reduce(current_time);
     d_shift = max_current_time - current_time;
     RELEASE_LOCK(&lock);
 }
@@ -530,9 +549,8 @@ void ProfilerApp::save( const std::string& filename ) {
         printf("Warning: Timers are not enabled, no data will be saved\n");
         return;
     }
-    AMP::AMP_MPI global_comm(AMP_COMM_WORLD);
-    int N_procs = global_comm.getSize();
-    int rank = global_comm.getRank();
+    int N_procs = comm_size();
+    int rank = comm_rank();
     // Get the current time in case we need to "stop" and timers
     TIME_TYPE end_time;
     get_time(&end_time);
@@ -924,7 +942,7 @@ void ProfilerApp::save( const std::string& filename ) {
         delete [] size;
         fprintf(memoryFile,"\n");
         fclose(memoryFile);
-        if ( N1!=(int)d_N_memory_steps || N2!=(int)d_N_memory_steps )
+        if ( N1!=(size_t)d_N_memory_steps || N2!=(size_t)d_N_memory_steps )
             ERROR_MSG("Failed to write memory results\n");
     }
     // Release the mutex

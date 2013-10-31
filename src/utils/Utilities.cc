@@ -261,19 +261,53 @@ unsigned int Utilities::hash_char(const char* name)
 *  Function to get the memory usage                                         *
 *  Note: this function should be thread-safe                                *
 ****************************************************************************/
-#if defined(USE_MAC)
-    // Get the page size on mac
+#if defined(USE_MAC) || defined(USE_LINUX)
+    // Get the page size on mac or linux
     static size_t page_size = static_cast<size_t>(sysconf(_SC_PAGESIZE));
 #endif
 static size_t N_bytes_initialization = Utilities::getMemoryUsage();
+size_t Utilities::getSystemMemory()
+{
+    size_t N_bytes = 0;
+    #if defined(USE_LINUX)
+        static long pages = sysconf(_SC_PHYS_PAGES);
+        N_bytes = pages * page_size;
+    #elif defined(USE_MAC)
+        // Not implimented yet
+    #elif defined(USE_WINDOWS)
+        MEMORYSTATUSEX status;
+        status.dwLength = sizeof(status);
+        GlobalMemoryStatusEx(&status);
+        N_bytes = status.ullTotalPhys;
+    #endif
+    return N_bytes;
+}
 size_t Utilities::getMemoryUsage()
 {
     size_t N_bytes = 0;
     #if defined(USE_LINUX)
+        // Get the memory usage according to mallinfo 
         struct mallinfo meminfo = mallinfo();
-        size_t size_hblkhd = static_cast<size_t>( meminfo.hblkhd );
-        size_t size_uordblks = static_cast<size_t>( meminfo.uordblks );
-        N_bytes = static_cast<size_t>( size_hblkhd + size_uordblks );
+        unsigned int size_hblkhd = static_cast<unsigned int>( meminfo.hblkhd );
+        unsigned int size_uordblks = static_cast<unsigned int>( meminfo.uordblks );
+        N_bytes = size_hblkhd + size_uordblks;
+        /*// Correct if we wrapped around 2^32
+        FILE *stderr_tmp = stderr;
+        char buffer[512];
+        memset(buffer,0,512);
+        stderr = fmemopen(buffer,511,"wb+");
+        malloc_stats();
+        fclose(stderr);
+        stderr = stderr_tmp;
+        std::string tmp(buffer);
+        size_t pos = tmp.find("max mmap bytes");
+        tmp = tmp.substr(pos);
+        pos = tmp.find("=");
+        tmp = tmp.substr(pos+1);
+        size_t max_mmap = static_cast<size_t>(atol(tmp.c_str()));
+        while ( max_mmap+size_uordblks >= N_bytes+0x100000000 ) {
+            N_bytes += 0x100000000;
+        }*/
     #elif defined(USE_MAC)
         struct task_basic_info t_info;
         mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
