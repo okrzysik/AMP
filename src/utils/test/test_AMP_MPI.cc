@@ -108,7 +108,7 @@ int testReduce(AMP::AMP_MPI comm, AMP::UnitTest *ut, int flag) {
     else
         ut->failure(message);
     // Test minReduce
-    sprintf(message,"minReduce (%s)",typeid(type).name());    
+    sprintf(message,"minReduce (%s)",typeid(type).name());
     if ( comm.minReduce<type>(rank+1) == 1 )
         ut->passes(message);
     else
@@ -846,13 +846,13 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
         ut->failure("anyReduce");
     // Test min, max, and sum reduce
     start_time = AMP::AMP_MPI::time();
-    timer.N_reduce += testReduce<unsigned char>(comm,ut,1);         // does not support rank of min/max
-    timer.N_reduce += testReduce<char>(comm,ut,1);                  // does not support rank of min/max
-    timer.N_reduce += testReduce<unsigned int>(comm,ut,1);          // does not support rank of min/max
+    timer.N_reduce += testReduce<unsigned char>(comm,ut,0);
+    timer.N_reduce += testReduce<char>(comm,ut,0);
+    timer.N_reduce += testReduce<unsigned int>(comm,ut,0);
     timer.N_reduce += testReduce<int>(comm,ut,0);
-    timer.N_reduce += testReduce<unsigned long int>(comm,ut,1);     // does not support rank of min/max
+    timer.N_reduce += testReduce<unsigned long int>(comm,ut,0);
     timer.N_reduce += testReduce<long int>(comm,ut,0);
-    timer.N_reduce += testReduce<size_t>(comm,ut,1);                // does not support rank of min/max
+    timer.N_reduce += testReduce<size_t>(comm,ut,0);
     timer.N_reduce += testReduce<float>(comm,ut,0);
     timer.N_reduce += testReduce<double>(comm,ut,0);
     timer.N_reduce += testReduce<std::complex<double> >(comm,ut,2); // only sumreduce is valid for complex numbers

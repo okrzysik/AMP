@@ -12,12 +12,13 @@
 #include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
 #include "utils/ProfilerApp.h"
+#include "Utilities.h"
 
 // Include all other headers
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "Utilities.h"
+#include <limits>
 
 // Include OS specific headers
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -123,6 +124,41 @@ int AMP_MPI::profile_level=127;
         return request;
     }
 #endif
+
+
+/******************************************************************
+* Some helper functions to convert between signed/unsigned types  *
+******************************************************************/
+static inline unsigned char signed_to_unsigned(char x) 
+{
+    const unsigned char offset = static_cast<unsigned char>(-std::numeric_limits<char>::min());
+    return ( x>=0 ) ? static_cast<unsigned char>(x)+offset : offset-static_cast<unsigned char>(-x);
+}
+static inline unsigned int signed_to_unsigned(int x) 
+{
+    const unsigned int offset = static_cast<unsigned int>(-std::numeric_limits<int>::min());
+    return ( x>=0 ) ? static_cast<unsigned int>(x)+offset : offset-static_cast<unsigned int>(-x);
+}
+static inline unsigned long int signed_to_unsigned(long int x) 
+{
+    const unsigned long int offset = static_cast<unsigned long int>(-std::numeric_limits<long int>::min());
+    return ( x>=0 ) ? static_cast<unsigned long int>(x)+offset : offset-static_cast<unsigned long int>(-x);
+}
+static inline char unsigned_to_signed(unsigned char x) 
+{
+    const unsigned char offset = static_cast<unsigned char>(-std::numeric_limits<char>::min());
+    return ( x>=offset ) ? static_cast<unsigned char>(x-offset) : -static_cast<unsigned char>(offset-x);
+}
+static inline int unsigned_to_signed(unsigned int x) 
+{
+    const unsigned int offset = static_cast<unsigned int>(-std::numeric_limits<int>::min());
+    return ( x>=offset ) ? static_cast<unsigned int>(x-offset) : -static_cast<unsigned int>(offset-x);
+}
+static inline long int unsigned_to_signed(unsigned long int x) 
+{
+    const unsigned long int offset = static_cast<unsigned long int>(-std::numeric_limits<long int>::min());
+    return ( x>=offset ) ? static_cast<unsigned long int>(x-offset) : -static_cast<unsigned long int>(offset-x);
+}
 
 
 /******************************************************************
@@ -1051,7 +1087,13 @@ void AMP_MPI::call_minReduce<unsigned char>(const unsigned char *send, unsigned 
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_CHAR, MPI_MIN, communicator);
         PROFILE_STOP("minReduce1<unsigned char>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = send[i];
+        AMP_MPI::call_minReduce<int>(tmp,n,comm_rank_of_min);
+        for (int i=0; i<n; i++)
+            recv[i] = static_cast<unsigned char>(tmp[i]);
+        delete [] tmp;
     }
 }
 template <>
@@ -1067,7 +1109,13 @@ void AMP_MPI::call_minReduce<unsigned char>(unsigned char *x, const int n, int *
         delete [] recv;
         PROFILE_STOP("minReduce2<unsigned char>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = x[i];
+        AMP_MPI::call_minReduce<int>(tmp,n,comm_rank_of_min);
+        for (int i=0; i<n; i++)
+            x[i] = static_cast<unsigned char>(tmp[i]);
+        delete [] tmp;
     }
 }
 // char
@@ -1079,7 +1127,13 @@ void AMP_MPI::call_minReduce<char>(const char *send, char *recv, const int n, in
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_SIGNED_CHAR, MPI_MIN, communicator);
         PROFILE_STOP("minReduce1<char>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = send[i];
+        AMP_MPI::call_minReduce<int>(tmp,n,comm_rank_of_min);
+        for (int i=0; i<n; i++)
+            recv[i] = static_cast<char>(tmp[i]);
+        delete [] tmp;
     }
 }
 template <>
@@ -1095,7 +1149,13 @@ void AMP_MPI::call_minReduce<char>(char *x, const int n, int *comm_rank_of_min) 
         delete [] recv;
         PROFILE_STOP("minReduce2<char>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = x[i];
+        AMP_MPI::call_minReduce<int>(tmp,n,comm_rank_of_min);
+        for (int i=0; i<n; i++)
+            x[i] = static_cast<char>(tmp[i]);
+        delete [] tmp;
     }
 }
 // unsigned int
@@ -1107,7 +1167,13 @@ void AMP_MPI::call_minReduce<unsigned int>(const unsigned int *send, unsigned in
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED, MPI_MIN, communicator);
         PROFILE_STOP("minReduce1<unsigned int>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = unsigned_to_signed(send[i]); 
+        AMP_MPI::call_minReduce<int>(tmp,n,comm_rank_of_min);
+        for (int i=0; i<n; i++)
+            recv[i] = signed_to_unsigned(tmp[i]); 
+        delete [] tmp;
     }
 }
 template <>
@@ -1123,7 +1189,13 @@ void AMP_MPI::call_minReduce<unsigned int>(unsigned int *x, const int n, int *co
         delete [] recv;
         PROFILE_STOP("minReduce2<unsigned int>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned int is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = unsigned_to_signed(x[i]); 
+        AMP_MPI::call_minReduce<int>(tmp,n,comm_rank_of_min);
+        for (int i=0; i<n; i++)
+            x[i] = signed_to_unsigned(tmp[i]); 
+        delete [] tmp;
     }
 }
 // int
@@ -1187,7 +1259,13 @@ void AMP_MPI::call_minReduce<unsigned long int>(const unsigned long int *send, u
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_MIN, communicator);
         PROFILE_STOP("minReduce1<unsigned long>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        long int *tmp = new long int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = unsigned_to_signed(send[i]); 
+        AMP_MPI::call_minReduce<long int>(tmp,n,comm_rank_of_min);
+        for (int i=0; i<n; i++)
+            recv[i] = signed_to_unsigned(tmp[i]); 
+        delete [] tmp;
     }
 }
 template <>
@@ -1203,7 +1281,13 @@ void AMP_MPI::call_minReduce<unsigned long int>(unsigned long int *x, const int 
         delete [] recv;
         PROFILE_STOP("minReduce2<unsigned long>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned long int is not supported yet");
+        long int *tmp = new long int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = unsigned_to_signed(x[i]); 
+        AMP_MPI::call_minReduce<long int>(tmp,n,comm_rank_of_min);
+        for (int i=0; i<n; i++)
+            x[i] = signed_to_unsigned(tmp[i]); 
+        delete [] tmp;
     }
 }
 // long int
@@ -1263,28 +1347,23 @@ void AMP_MPI::call_minReduce<long int>(long int *x, const int n, int *comm_rank_
     template <>
     void AMP_MPI::call_minReduce<size_t>(const size_t *send, size_t *recv, const int n, int *comm_rank_of_min) const 
     {
-        if ( comm_rank_of_min==NULL ) {
-            PROFILE_START("minReduce1<size_t>",profile_level);
-            MPI_Allreduce( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_MIN, communicator);
-            PROFILE_STOP("minReduce1<size_t>",profile_level);
+        if ( sizeof(size_t)==sizeof(unsigned int) ) {
+            AMP_MPI::call_minReduce<unsigned int>( (const unsigned int*) send, (unsigned int*) recv, n, comm_rank_of_min); 
+        } else if ( sizeof(size_t)==sizeof(unsigned long long) ) {
+            AMP_MPI::call_minReduce<unsigned int>( (const unsigned long long*) send, (unsigned long long*) recv, n, comm_rank_of_min); 
         } else {
-             AMP_ERROR("Returning the rank of min with size_t is not supported yet");
+            AMP_ERROR("Unable to determine type of size_t");
         }
     }
     template <>
     void AMP_MPI::call_minReduce<size_t>(size_t *x, const int n, int *comm_rank_of_min) const 
     {
-        if ( comm_rank_of_min==NULL ) {
-            PROFILE_START("minReduce2<size_t>",profile_level);
-            size_t *send = x;
-            size_t *recv = new size_t[n];
-            MPI_Allreduce( send, recv, n, MPI_SIZE_T, MPI_MIN, communicator);
-            for (int i=0; i<n; i++)
-                x[i] = recv[i];
-            delete [] recv;
-            PROFILE_STOP("minReduce2<size_t>",profile_level);
+        if ( sizeof(size_t)==sizeof(unsigned int) ) {
+            AMP_MPI::call_minReduce<unsigned int>( (unsigned int*) x, n, comm_rank_of_min); 
+        } else if ( sizeof(size_t)==sizeof(unsigned long long) ) {
+            AMP_MPI::call_minReduce<unsigned int>( (unsigned long long*) x, n, comm_rank_of_min); 
         } else {
-             AMP_ERROR("Returning the rank of min with size_t is not supported yet");
+            AMP_ERROR("Unable to determine type of size_t");
         }
     }
 #endif
@@ -1402,14 +1481,20 @@ void AMP_MPI::call_minReduce<double>(double *x, const int n, int *comm_rank_of_m
 #ifdef USE_MPI
 // unsigned char
 template <>
-void AMP_MPI::call_maxReduce<unsigned char>(const unsigned char *send, unsigned char *recv, const int n, int *comm_rank_of_min) const 
+void AMP_MPI::call_maxReduce<unsigned char>(const unsigned char *send, unsigned char *recv, const int n, int *comm_rank_of_max) const 
 {
-    if ( comm_rank_of_min==NULL ) {
+    if ( comm_rank_of_max==NULL ) {
         PROFILE_START("maxReduce1<unsigned char>",profile_level);
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_CHAR, MPI_MAX, communicator);
         PROFILE_STOP("maxReduce1<unsigned char>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = send[i];
+        AMP_MPI::call_maxReduce<int>(tmp,n,comm_rank_of_max);
+        for (int i=0; i<n; i++)
+            recv[i] = static_cast<unsigned char>(tmp[i]);
+        delete [] tmp;
     }
 }template <>
 void AMP_MPI::call_maxReduce<unsigned char>(unsigned char *x, const int n, int *comm_rank_of_max) const 
@@ -1424,19 +1509,31 @@ void AMP_MPI::call_maxReduce<unsigned char>(unsigned char *x, const int n, int *
         delete [] recv;
         PROFILE_STOP("maxReduce2<unsigned char>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = x[i];
+        AMP_MPI::call_maxReduce<int>(tmp,n,comm_rank_of_max);
+        for (int i=0; i<n; i++)
+            x[i] = static_cast<unsigned char>(tmp[i]);
+        delete [] tmp;
     }
 }
 // char
 template <>
-void AMP_MPI::call_maxReduce<char>(const char *send, char *recv, const int n, int *comm_rank_of_min) const 
+void AMP_MPI::call_maxReduce<char>(const char *send, char *recv, const int n, int *comm_rank_of_max) const 
 {
-    if ( comm_rank_of_min==NULL ) {
+    if ( comm_rank_of_max==NULL ) {
         PROFILE_START("maxReduce1<char>",profile_level);
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_SIGNED_CHAR, MPI_MAX, communicator);
         PROFILE_STOP("maxReduce1<char>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = send[i];
+        AMP_MPI::call_maxReduce<int>(tmp,n,comm_rank_of_max);
+        for (int i=0; i<n; i++)
+            recv[i] = static_cast<char>(tmp[i]);
+        delete [] tmp;
     }
 }
 template <>
@@ -1452,19 +1549,31 @@ void AMP_MPI::call_maxReduce<char>(char *x, const int n, int *comm_rank_of_max) 
         delete [] recv;
         PROFILE_STOP("maxReduce2<char>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = x[i];
+        AMP_MPI::call_maxReduce<int>(tmp,n,comm_rank_of_max);
+        for (int i=0; i<n; i++)
+            x[i] = static_cast<char>(tmp[i]);
+        delete [] tmp;
     }
 }
 // unsigned int
 template <>
-void AMP_MPI::call_maxReduce<unsigned int>(const unsigned int *send, unsigned int *recv, const int n, int *comm_rank_of_min) const 
+void AMP_MPI::call_maxReduce<unsigned int>(const unsigned int *send, unsigned int *recv, const int n, int *comm_rank_of_max) const 
 {
-    if ( comm_rank_of_min==NULL ) {
+    if ( comm_rank_of_max==NULL ) {
         PROFILE_START("maxReduce1<unsigned int>",profile_level);
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED, MPI_MAX, communicator);
         PROFILE_STOP("maxReduce1<unsigned int>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = unsigned_to_signed(send[i]); 
+        AMP_MPI::call_maxReduce<int>(tmp,n,comm_rank_of_max);
+        for (int i=0; i<n; i++)
+            recv[i] = signed_to_unsigned(tmp[i]); 
+        delete [] tmp;
     }
 }
 template <>
@@ -1480,15 +1589,21 @@ void AMP_MPI::call_maxReduce<unsigned int>(unsigned int *x, const int n, int *co
         delete [] recv;
         PROFILE_STOP("maxReduce2<unsigned int>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned int is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = unsigned_to_signed(x[i]); 
+        AMP_MPI::call_maxReduce<int>(tmp,n,comm_rank_of_max);
+        for (int i=0; i<n; i++)
+            x[i] = signed_to_unsigned(tmp[i]); 
+        delete [] tmp;
     }
 }
 // int
 template <>
-void AMP_MPI::call_maxReduce<int>(const int *x, int *y, const int n, int *comm_rank_of_min) const 
+void AMP_MPI::call_maxReduce<int>(const int *x, int *y, const int n, int *comm_rank_of_max) const 
 {
     PROFILE_START("maxReduce1<int>",profile_level);
-    if ( comm_rank_of_min==NULL ) {
+    if ( comm_rank_of_max==NULL ) {
         MPI_Allreduce( (void*) x, (void*) y, n, MPI_INT, MPI_MAX, communicator);
     } else {
          IntIntStruct *recv = new IntIntStruct[n];
@@ -1500,7 +1615,7 @@ void AMP_MPI::call_maxReduce<int>(const int *x, int *y, const int n, int *comm_r
          MPI_Allreduce( send, recv, n, MPI_2INT, MPI_MAXLOC, communicator);
          for ( int i=0; i<n; ++i ) {
             y[i] = recv[i].j;
-            comm_rank_of_min[i] = recv[i].i;
+            comm_rank_of_max[i] = recv[i].i;
          }
          delete [] recv;
          delete [] send;
@@ -1537,10 +1652,10 @@ void AMP_MPI::call_maxReduce<int>(int *x, const int n, int *comm_rank_of_max) co
 }
 // long int
 template <>
-void AMP_MPI::call_maxReduce<long int>(const long int *x, long int *y, const int n, int *comm_rank_of_min) const 
+void AMP_MPI::call_maxReduce<long int>(const long int *x, long int *y, const int n, int *comm_rank_of_max) const 
 {
     PROFILE_START("maxReduce1<lond int>",profile_level);
-    if ( comm_rank_of_min==NULL ) {
+    if ( comm_rank_of_max==NULL ) {
         MPI_Allreduce( (void*) x, (void*) y, n, MPI_LONG, MPI_MAX, communicator);
     } else {
          LongIntStruct *recv = new LongIntStruct[n];
@@ -1552,7 +1667,7 @@ void AMP_MPI::call_maxReduce<long int>(const long int *x, long int *y, const int
          MPI_Allreduce( send, recv, n, MPI_LONG_INT, MPI_MAXLOC, communicator);
          for ( int i=0; i<n; ++i ) {
             y[i] = recv[i].j;
-            comm_rank_of_min[i] = recv[i].i;
+            comm_rank_of_max[i] = recv[i].i;
          }
          delete [] recv;
          delete [] send;
@@ -1589,14 +1704,20 @@ void AMP_MPI::call_maxReduce<long int>(long int *x, const int n, int *comm_rank_
 }
 // unsigned long int
 template <>
-void AMP_MPI::call_maxReduce<unsigned long int>(const unsigned long int *send, unsigned long int *recv, const int n, int *comm_rank_of_min) const 
+void AMP_MPI::call_maxReduce<unsigned long int>(const unsigned long int *send, unsigned long int *recv, const int n, int *comm_rank_of_max) const 
 {
-    if ( comm_rank_of_min==NULL ) {
+    if ( comm_rank_of_max==NULL ) {
         PROFILE_START("maxReduce1<unsigned long>",profile_level);
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_MAX, communicator);
         PROFILE_STOP("maxReduce1<unsigned long>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        long int *tmp = new long int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = unsigned_to_signed(send[i]); 
+        AMP_MPI::call_maxReduce<long int>(tmp,n,comm_rank_of_max);
+        for (int i=0; i<n; i++)
+            recv[i] = signed_to_unsigned(tmp[i]); 
+        delete [] tmp;
     }
 }
 template <>
@@ -1612,7 +1733,13 @@ void AMP_MPI::call_maxReduce<unsigned long int>(unsigned long int *x, const int 
         delete [] recv;
         PROFILE_STOP("maxReduce2<unsigned long>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned long int is not supported yet");
+        long int *tmp = new long int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = unsigned_to_signed(x[i]); 
+        AMP_MPI::call_maxReduce<long int>(tmp,n,comm_rank_of_max);
+        for (int i=0; i<n; i++)
+            x[i] = signed_to_unsigned(tmp[i]); 
+        delete [] tmp;
     }
 }
 // size_t
@@ -1620,37 +1747,32 @@ void AMP_MPI::call_maxReduce<unsigned long int>(unsigned long int *x, const int 
     template <>
     void AMP_MPI::call_maxReduce<size_t>(const size_t *send, size_t *recv, const int n, int *comm_rank_of_max) const 
 {
-        if ( comm_rank_of_max==NULL ) {
-            PROFILE_START("minReduce1<size_t>",profile_level);
-            MPI_Allreduce( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_MAX, communicator);
-            PROFILE_STOP("minReduce1<size_t>",profile_level);
+        if ( sizeof(size_t)==sizeof(unsigned int) ) {
+            AMP_MPI::call_maxReduce<unsigned int>( (const unsigned int*) send, (unsigned int*) recv, n, comm_rank_of_max); 
+        } else if ( sizeof(size_t)==sizeof(unsigned long long) ) {
+            AMP_MPI::call_maxReduce<unsigned int>( (const unsigned long long*) send, (unsigned long long*) recv, n, comm_rank_of_max); 
         } else {
-             AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+            AMP_ERROR("Unable to determine type of size_t");
         }
     }
     template <>
     void AMP_MPI::call_maxReduce<size_t>(size_t *x, const int n, int *comm_rank_of_max) const 
 {
-        if ( comm_rank_of_max==NULL ) {
-            PROFILE_START("minReduce2<size_t>",profile_level);
-            size_t *send = x;
-            size_t *recv = new size_t[n];
-            MPI_Allreduce( send, recv, n, MPI_SIZE_T, MPI_MAX, communicator);
-            for (int i=0; i<n; i++)
-                x[i] = recv[i];
-            delete [] recv;
-            PROFILE_STOP("minReduce2<size_t>",profile_level);
+        if ( sizeof(size_t)==sizeof(unsigned int) ) {
+            AMP_MPI::call_maxReduce<unsigned int>( (const unsigned int*) send, (unsigned int*) recv, n, comm_rank_of_max); 
+        } else if ( sizeof(size_t)==sizeof(unsigned long long) ) {
+            AMP_MPI::call_maxReduce<unsigned int>( (const unsigned long long*) send, (unsigned long long*) recv, n, comm_rank_of_max); 
         } else {
-             AMP_ERROR("Returning the rank of min with unsigned int is not supported yet");
+            AMP_ERROR("Unable to determine type of size_t");
         }
     }
 #endif
 // float
 template <>
-void AMP_MPI::call_maxReduce<float>(const float *x, float *y, const int n, int *comm_rank_of_min) const 
+void AMP_MPI::call_maxReduce<float>(const float *x, float *y, const int n, int *comm_rank_of_max) const 
 {
     PROFILE_START("maxReduce1<float>",profile_level);
-    if ( comm_rank_of_min==NULL ) {
+    if ( comm_rank_of_max==NULL ) {
         MPI_Allreduce( (void*) x, (void*) y, n, MPI_FLOAT, MPI_MAX, communicator);
     } else {
          FloatIntStruct *recv = new FloatIntStruct[n];
@@ -1662,7 +1784,7 @@ void AMP_MPI::call_maxReduce<float>(const float *x, float *y, const int n, int *
          MPI_Allreduce( send, recv, n, MPI_FLOAT_INT, MPI_MAXLOC, communicator);
          for ( int i=0; i<n; ++i ) {
             y[i] = recv[i].f;
-            comm_rank_of_min[i] = recv[i].i;
+            comm_rank_of_max[i] = recv[i].i;
          }
          delete [] recv;
          delete [] send;
@@ -1699,10 +1821,10 @@ void AMP_MPI::call_maxReduce<float>(float *x, const int n, int *comm_rank_of_max
 }
 // double
 template <>
-void AMP_MPI::call_maxReduce<double>(const double *x, double *y, const int n, int *comm_rank_of_min) const 
+void AMP_MPI::call_maxReduce<double>(const double *x, double *y, const int n, int *comm_rank_of_max) const 
 {
     PROFILE_START("maxReduce1<double>",profile_level);
-    if ( comm_rank_of_min==NULL ) {
+    if ( comm_rank_of_max==NULL ) {
         MPI_Allreduce( (void*) x, (void*) y, n, MPI_DOUBLE, MPI_MAX, communicator);
     } else {
          DoubleIntStruct *recv = new DoubleIntStruct[n];
@@ -1714,7 +1836,7 @@ void AMP_MPI::call_maxReduce<double>(const double *x, double *y, const int n, in
          MPI_Allreduce( send, recv, n, MPI_DOUBLE_INT, MPI_MAXLOC, communicator);
          for ( int i=0; i<n; ++i ) {
             y[i] = recv[i].d;
-            comm_rank_of_min[i] = recv[i].i;
+            comm_rank_of_max[i] = recv[i].i;
          }
          delete [] recv;
          delete [] send;
