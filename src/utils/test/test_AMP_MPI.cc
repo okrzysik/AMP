@@ -21,6 +21,10 @@
 #endif
 
 
+// Return the time elapsed in seconds
+static inline double time() { return AMP::AMP_MPI::time(); }
+
+
 struct mytype{
     int a;
     double b;
@@ -719,7 +723,7 @@ int testIsendIrecv(AMP::AMP_MPI comm, AMP::UnitTest *ut, type v1, type v2) {
     // Wait for all communications to finish
     AMP::AMP_MPI::wait(sendRequest[0]);
     sendRequest.erase(sendRequest.begin()+0);
-    while ( sendRequest.size() > 0 ) {
+    while ( !sendRequest.empty() ) {
         int index = comm.waitAny(sendRequest.size(),&(sendRequest[0]));
         sendRequest.erase(sendRequest.begin()+index);
     }
@@ -845,7 +849,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     else
         ut->failure("anyReduce");
     // Test min, max, and sum reduce
-    start_time = AMP::AMP_MPI::time();
+    start_time = time();
     timer.N_reduce += testReduce<unsigned char>(comm,ut,0);
     timer.N_reduce += testReduce<char>(comm,ut,0);
     timer.N_reduce += testReduce<unsigned int>(comm,ut,0);
@@ -883,9 +887,9 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
         }
         timer.N_reduce += 3;
     }
-    timer.t_reduce = AMP::AMP_MPI::time()-start_time;
+    timer.t_reduce = time()-start_time;
     // Test min, max, and sum scan
-    start_time = AMP::AMP_MPI::time();
+    start_time = time();
     timer.N_scan += testScan<unsigned char>(comm,ut);
     timer.N_scan += testScan<char>(comm,ut);
     timer.N_scan += testScan<unsigned int>(comm,ut);
@@ -921,9 +925,9 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
         }
         timer.N_scan += 3;
     }
-    timer.t_scan = AMP::AMP_MPI::time()-start_time;
+    timer.t_scan = time()-start_time;
     // Test bcast
-    start_time = AMP::AMP_MPI::time();
+    start_time = time();
     timer.N_bcast += testBcast<unsigned char>(comm,ut,0,1);
     timer.N_bcast += testBcast<char>(comm,ut,-1,1);
     timer.N_bcast += testBcast<unsigned int>(comm,ut,0,1);
@@ -936,11 +940,11 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     mytype tmp3(-1,-1.0);
     mytype tmp4(1,1.0);
     timer.N_bcast += testBcast<mytype>(comm,ut,tmp3,tmp4);
-    timer.t_bcast = AMP::AMP_MPI::time()-start_time;
+    timer.t_bcast = time()-start_time;
     // Test barrier
     comm.barrier();
     // Test gather
-    start_time = AMP::AMP_MPI::time();
+    start_time = time();
     timer.N_allGather += testAllGather<unsigned char>(comm,ut);
     timer.N_allGather += testAllGather<char>(comm,ut);
     timer.N_allGather += testAllGather<unsigned int>(comm,ut);
@@ -952,9 +956,9 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_allGather += testAllGather<double>(comm,ut);
     timer.N_allGather += testAllGather< std::complex<double> >(comm,ut);
     timer.N_allGather += testAllGather<mytype>(comm,ut);
-    timer.t_allGather = AMP::AMP_MPI::time()-start_time;
+    timer.t_allGather = time()-start_time;
     // Test std::set gather
-    start_time = AMP::AMP_MPI::time();
+    start_time = time();
     timer.N_setGather += testSetGather<unsigned char>(comm,ut);
     timer.N_setGather += testSetGather<char>(comm,ut);
     timer.N_setGather += testSetGather<unsigned int>(comm,ut);
@@ -964,9 +968,9 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_setGather += testSetGather<size_t>(comm,ut);
     timer.N_setGather += testSetGather<float>(comm,ut);
     timer.N_setGather += testSetGather<double>(comm,ut);
-    timer.t_setGather = AMP::AMP_MPI::time()-start_time;
+    timer.t_setGather = time()-start_time;
     // Test std::map gather
-    start_time = AMP::AMP_MPI::time();
+    start_time = time();
     timer.N_mapGather += testMapGather<unsigned char>(comm,ut);
     timer.N_mapGather += testMapGather<char>(comm,ut);
     timer.N_mapGather += testMapGather<unsigned int>(comm,ut);
@@ -976,9 +980,9 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_mapGather += testMapGather<size_t>(comm,ut);
     timer.N_mapGather += testMapGather<float>(comm,ut);
     timer.N_mapGather += testMapGather<double>(comm,ut);
-    timer.t_mapGather = AMP::AMP_MPI::time()-start_time;
+    timer.t_mapGather = time()-start_time;
     // Test allToAlll
-    start_time = AMP::AMP_MPI::time();
+    start_time = time();
     timer.N_allToAll += testAllToAll<unsigned char>(comm,ut);
     timer.N_allToAll += testAllToAll<char>(comm,ut);
     timer.N_allToAll += testAllToAll<unsigned int>(comm,ut);
@@ -990,9 +994,9 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_allToAll += testAllToAll<double>(comm,ut);
     timer.N_allToAll += testAllToAll< std::complex<double> >(comm,ut);
     timer.N_allToAll += testAllToAll<mytype>(comm,ut);
-    timer.t_allToAll = AMP::AMP_MPI::time()-start_time;
+    timer.t_allToAll = time()-start_time;
     // Test send/recv
-    start_time = AMP::AMP_MPI::time();
+    start_time = time();
     timer.N_sendRecv += testSendRecv<unsigned char>(comm,ut,0,1);
     timer.N_sendRecv += testSendRecv<char>(comm,ut,-1,1);
     timer.N_sendRecv += testSendRecv<unsigned int>(comm,ut,0,1);
@@ -1003,9 +1007,9 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_sendRecv += testSendRecv<float>(comm,ut,-1.0,1.0);
     timer.N_sendRecv += testSendRecv<double>(comm,ut,-1.0,1.0);
     timer.N_sendRecv += testSendRecv<mytype>(comm,ut,tmp3,tmp4);
-    timer.t_sendRecv = AMP::AMP_MPI::time()-start_time;
+    timer.t_sendRecv = time()-start_time;
     // Test Isend/Irecv
-    start_time = AMP::AMP_MPI::time();
+    start_time = time();
     timer.N_IsendIrecv += testIsendIrecv<unsigned char>(comm,ut,0,1);
     timer.N_IsendIrecv += testIsendIrecv<char>(comm,ut,-1,1);
     timer.N_IsendIrecv += testIsendIrecv<unsigned int>(comm,ut,0,1);
@@ -1016,7 +1020,7 @@ testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
     timer.N_IsendIrecv += testIsendIrecv<float>(comm,ut,-1.0,1.0);
     timer.N_IsendIrecv += testIsendIrecv<double>(comm,ut,-1.0,1.0);
     timer.N_IsendIrecv += testIsendIrecv<mytype>(comm,ut,tmp3,tmp4);
-    timer.t_IsendIrecv = AMP::AMP_MPI::time()-start_time;
+    timer.t_IsendIrecv = time()-start_time;
     PROFILE_STOP("testComm");
     return timer;
 }
@@ -1082,7 +1086,7 @@ void testCommDup(AMP::UnitTest *ut) {
 }
 
 
-//  This test will test the AMP_MPI routines
+//  This test will test the AMP::AMP_MPI class
 int main(int argc, char *argv[])
 {
     // Startup
@@ -1100,7 +1104,7 @@ int main(int argc, char *argv[])
     {
 
         // Get the start time for the tests
-        double start_time = AMP::AMP_MPI::time();
+        double start_time = time();
 
         // Print the global size (if we are using MPI)
         int global_size = 0;
@@ -1355,12 +1359,31 @@ int main(int argc, char *argv[])
         else
             ut.failure("splitByNode");
 
+        // Test the call to load balance the processes
+        AMP::AMP_MPI::balanceProcesses( globalComm, 1 );
+        std::vector<int> cpus = AMP::AMP_MPI::getProcessAffinity();
+        size_t maxProcNode = nodeComm.maxReduce(cpus.size());
+        bool pass_balance = cpus.size()==maxProcNode && !cpus.empty();
+        AMP::AMP_MPI::balanceProcesses( globalComm, 2 );
+        cpus = AMP::AMP_MPI::getProcessAffinity();
+        if ( cpus.size()<1 || cpus.size()>maxProcNode/nodeComm.getSize() )
+            pass_balance = false;
+        if ( pass_balance ) {
+            ut.passes("balanceProcesses");
+        } else {
+            #ifdef __APPLE__
+                ut.expected_failure("balanceProcesses");
+            #else
+                ut.failure("balanceProcesses");
+            #endif
+        }
+
         // Test the performance of sched_yield (used internally by AMP_MPI wait routines)
         globalComm.barrier();
-        double start_yield = AMP::AMP_MPI::time();
+        double start_yield = time();
         for (int i=0; i<10000; i++)
             sched_yield();
-        double time_yield = (AMP::AMP_MPI::time()-start_yield)/10000;
+        double time_yield = (time()-start_yield)/10000;
         if ( globalComm.getRank() == 0 )
             std::cout << "Time to yield: " << time_yield*1e6 << " us" << std::endl;
 
@@ -1381,10 +1404,10 @@ int main(int argc, char *argv[])
 
     // Finished testing, report the results
     PROFILE_START("Report");
-    double start_time = AMP::AMP_MPI::time();
+    double start_time = time();
     ut.report();
     int num_failed = ut.NumFailGlobal();
-    double end_time = AMP::AMP_MPI::time();
+    double end_time = time();
     if ( AMP::AMP_MPI(AMP_COMM_WORLD).getRank() == 0 )
         std::cout << "Time to report: " << end_time-start_time << std::endl << std::endl;
     PROFILE_STOP("Report");

@@ -544,7 +544,8 @@ void ProfilerApp::disable( )
 /***********************************************************************
 * Function to save the profiling info                                  *
 ***********************************************************************/
-void ProfilerApp::save( const std::string& filename ) {
+void ProfilerApp::save( const std::string& filename ) 
+{
     if ( this->d_level<0 ) {
         printf("Warning: Timers are not enabled, no data will be saved\n");
         return;
