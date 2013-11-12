@@ -36,7 +36,10 @@
     #include <execinfo.h>
     #include <cxxabi.h>
     #include <dlfcn.h>
-    #include<mach/mach.h>
+    #include <mach/mach.h>
+    #include <stdint.h>
+    #include <sys/types.h>
+    #include <sys/sysctl.h>
 #elif defined(__linux) || defined(__unix) || defined(__posix)
     #define USE_LINUX
     #include <signal.h>
@@ -273,7 +276,12 @@ size_t Utilities::getSystemMemory()
         static long pages = sysconf(_SC_PHYS_PAGES);
         N_bytes = pages * page_size;
     #elif defined(USE_MAC)
-        // Not implimented yet
+        int mib[2] = { CTL_HW, HW_MEMSIZE };
+        u_int namelen = sizeof(mib) / sizeof(mib[0]);
+        uint64_t size;
+        size_t len = sizeof(size);
+        if (sysctl(mib, namelen, &size, &len, NULL, 0) == 0)
+            N_bytes = size;
     #elif defined(USE_WINDOWS)
         MEMORYSTATUSEX status;
         status.dwLength = sizeof(status);
