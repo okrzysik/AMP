@@ -147,6 +147,7 @@ void BackwardEulerTimeIntegrator(AMP::UnitTest *ut )
 
     boost::shared_ptr<AMP::Database> pcSolver_db = input_db->getDatabase("Solver");
     boost::shared_ptr<AMP::Solver::SolverStrategyParameters> pcSolverParams(new AMP::Solver::SolverStrategyParameters(pcSolver_db));
+    pcSolverParams->d_pOperator = diffusionOperator;
     boost::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(new AMP::Solver::TrilinosMLSolver(pcSolverParams));
 
     boost::shared_ptr<AMP::Database> timeIntegrator_db = input_db->getDatabase("BDFTimeIntegrator");
