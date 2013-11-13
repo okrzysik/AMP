@@ -89,6 +89,56 @@ public:
 
 
     /**
+     * \brief Get the node name
+     * \details  This function returns a unique name for each node.  
+     *    It is a wrapper for MPI_Get_processor_name.
+     */
+    static std::string getNodeName( );
+
+
+    //! Function to return the number of processors availible
+    static int getNumberOfProcessors();
+
+
+    //! Function to return the affinity of the current process
+    static std::vector<int> getProcessAffinity();
+
+
+    //! Function to set the affinity of the current process
+    static void setProcessAffinity( std::vector<int> procs );
+
+
+    /**
+     * \brief Load balance the processes within a node
+     * \details  This function will redistribute the processes within a node using the
+     *    process affinities to achieve the desired load balance.  
+     *    Note: this is a global operation on the given comm, and it is STRONGLY 
+     *    recommended to use COMM_WORLD.
+     * \param comm      The communicator to use (Default is COMM_WORLD)
+     * \param method    The desired load balance method to use:
+     *                  1:  Adjust the affinities so all processes share the given processors.
+     *                      This effectively allows the OS to handle the load balancing 
+     *                      by migrating the processes as necessary.  This is recommended
+     *                      for most users and use cases. (default)
+     *                  2:  Adjust the affinities so that the fewest number of processes overlap.
+     *                      This will try to give each process a unique set of processors while
+     *                      ensuring that each process has at least N_min processes.
+     * \param procs     An optional list of processors to use.  By default, setting this to an
+     *                  empty vector will use all availible processors on the given node.
+     * \param N_min     The minimum number of processors for any process (-1 indicates all availible processors).
+     * \param N_max     The maximum number of processors for any process (-1 indicates all availible processors).
+     *                      
+     */
+    static void balanceProcesses( 
+        const AMP_MPI comm = AMP_MPI(AMP_COMM_WORLD), 
+        const int method = 1, 
+        const std::vector<int>& procs = std::vector<int>(), 
+        const int N_min = 1, 
+        const int N_max = -1 
+    );
+
+
+    /**
      * \brief Split an existing AMP_MPI communicator
      * \details  This creates a new AMP_MPI object by splitting an exisiting AMP_MPI object.
      *   See MPI_Comm_split for information on how the underlying split willl occur.

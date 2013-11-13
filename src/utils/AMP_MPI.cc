@@ -12,12 +12,17 @@
 #include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
 #include "utils/ProfilerApp.h"
+#include "Utilities.h"
 
 // Include all other headers
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "Utilities.h"
+#include <typeinfo>
+#include <stdexcept>
+#include <limits>
+#include <climits>
+
 
 // Include OS specific headers
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -26,20 +31,35 @@
     #include <windows.h>
     #include <process.h>
     #define sched_yield() Sleep(0)
-#else
+#elif defined(__APPLE__)
+    // Using MAC
+    #define USE_MAC
+    #include <sys/time.h>
+    #include <sched.h>
+    #include <pthread.h>
+#elif defined(__linux) || defined(__unix) || defined(__posix)
     // We are using linux
     #define USE_LINUX
     #include <sys/time.h>
     #include <sched.h>
     #include <pthread.h>
+#else
+    #error Unknown OS
 #endif
+
+
+// Convience defines
+#define MPI_CLASS    AMP_MPI
+#define MPI_ERROR    AMP_ERROR
+#define MPI_INSIST   AMP_INSIST
+#define MPI_WARNING  AMP_WARNING
+#define MPI_ASSERT   AMP_ASSERT
 
 
 // Global variable to track create new unique comms (dup and split)
 #ifndef USE_MPI
     MPI_Comm uniqueGlobalComm=11;
 #endif
-
 
 
 namespace AMP{
@@ -55,9 +75,9 @@ namespace AMP{
 
 
 // Initialized the static member variables
-volatile unsigned int AMP_MPI::N_MPI_Comm_created=0;
-volatile unsigned int AMP_MPI::N_MPI_Comm_destroyed=0;
-int AMP_MPI::profile_level=127;
+volatile unsigned int MPI_CLASS::N_MPI_Comm_created=0;
+volatile unsigned int MPI_CLASS::N_MPI_Comm_destroyed=0;
+int MPI_CLASS::profile_level=127;
 
 
 // Define a type for use with size_t
@@ -74,10 +94,10 @@ int AMP_MPI::profile_level=127;
         } else if ( sizeof(size_t) == size_long ) {
             return MPI_UNSIGNED_LONG;
         } else if ( sizeof(size_t) == size_longlong ) {
-            AMP_WARNING("Using signed long long datatype for size_t in MPI");
+            MPI_WARNING("Using signed long long datatype for size_t in MPI");
             return MPI_LONG_LONG;   // Note: this is not unsigned
         } else {
-            AMP_ERROR("No suitable datatype found");
+            MPI_ERROR("No suitable datatype found");
         }
         return 0;
     }
@@ -95,34 +115,69 @@ int AMP_MPI::profile_level=127;
     std::map<MPI_Request,Isendrecv_struct>  global_isendrecv_list;
     static MPI_Request getRequest( MPI_Comm comm, int tag )
     {
-        AMP_ASSERT(tag>=0&&tag<=mpi_max_tag);
+        MPI_ASSERT(tag>=0&&tag<=mpi_max_tag);
         MPI_Request request = 0;
         if ( sizeof(MPI_Request)==4 && sizeof(MPI_Comm)==4 ) {
-            AMP_ASSERT(sizeof(unsigned int)==4);
+            MPI_ASSERT(sizeof(unsigned int)==4);
             unsigned int hash = comm*0x9E3779B9;                        // 2^32*0.5*(sqrt(5)-1)
             unsigned int key  = (hash&0xFFFFFFFF)>>22;                  // Get a key 0-1024
             request = (MPI_Request) tag + (key<<22);
         } else if ( sizeof(MPI_Request)==8 && sizeof(MPI_Comm)==4 ) {
-            AMP_ASSERT(sizeof(unsigned long int)==8);
+            MPI_ASSERT(sizeof(unsigned long int)==8);
             request = (MPI_Request) ((unsigned long)tag + (((unsigned long)comm)<<32));
         } else if ( sizeof(MPI_Request)==4 && sizeof(MPI_Comm)==8 ) {
-            AMP_ASSERT(sizeof(unsigned long int)==8);
+            MPI_ASSERT(sizeof(unsigned long int)==8);
             unsigned long int hash = comm*0x9E3779B97F4A7C15;           // 2^64*0.5*(sqrt(5)-1)
             unsigned long int key  = (hash&0xFFFFFFFF)>>22;             // Get a key 0-1024
             request = (MPI_Request) ((unsigned int)tag + (key<<32));
         } else if ( sizeof(MPI_Request)==8 && sizeof(MPI_Comm)==8 ) {
-            AMP_ASSERT(sizeof(unsigned long int)==8);
+            MPI_ASSERT(sizeof(unsigned long int)==8);
             unsigned long int hash = comm*0x9E3779B97F4A7C15;           // 2^64*0.5*(sqrt(5)-1)
             unsigned long int key  = (hash&0xFFFFFFFF);                 // Get a key 0-2^32-1
             request = (MPI_Request) ((unsigned int)tag + (key<<32));
         } else {
             char text[50];
             sprintf(text,"Not Programmed (%i,%i)",(int)sizeof(MPI_Request),(int)sizeof(MPI_Comm));
-            AMP_ERROR(std::string(text));
+            MPI_ERROR(std::string(text));
         }
         return request;
     }
 #endif
+
+
+/******************************************************************
+* Some helper functions to convert between signed/unsigned types  *
+******************************************************************/
+static inline unsigned char signed_to_unsigned(char x) 
+{
+    const unsigned char offset = static_cast<unsigned char>(-std::numeric_limits<char>::min());
+    return ( x>=0 ) ? static_cast<unsigned char>(x)+offset : offset-static_cast<unsigned char>(-x);
+}
+static inline unsigned int signed_to_unsigned(int x) 
+{
+    const unsigned int offset = static_cast<unsigned int>(-std::numeric_limits<int>::min());
+    return ( x>=0 ) ? static_cast<unsigned int>(x)+offset : offset-static_cast<unsigned int>(-x);
+}
+static inline unsigned long int signed_to_unsigned(long int x) 
+{
+    const unsigned long int offset = static_cast<unsigned long int>(-std::numeric_limits<long int>::min());
+    return ( x>=0 ) ? static_cast<unsigned long int>(x)+offset : offset-static_cast<unsigned long int>(-x);
+}
+static inline char unsigned_to_signed(unsigned char x) 
+{
+    const unsigned char offset = static_cast<unsigned char>(-std::numeric_limits<char>::min());
+    return ( x>=offset ) ? static_cast<unsigned char>(x-offset) : -static_cast<unsigned char>(offset-x);
+}
+static inline int unsigned_to_signed(unsigned int x) 
+{
+    const unsigned int offset = static_cast<unsigned int>(-std::numeric_limits<int>::min());
+    return ( x>=offset ) ? static_cast<unsigned int>(x-offset) : -static_cast<unsigned int>(offset-x);
+}
+static inline long int unsigned_to_signed(unsigned long int x) 
+{
+    const unsigned long int offset = static_cast<unsigned long int>(-std::numeric_limits<long int>::min());
+    return ( x>=offset ) ? static_cast<unsigned long int>(x-offset) : -static_cast<unsigned long int>(offset-x);
+}
 
 
 /******************************************************************
@@ -166,9 +221,122 @@ int AMP_MPI::profile_level=127;
 
 
 /************************************************************************
+*  Functions to get/set the process affinities                          *
+************************************************************************/
+int MPI_CLASS::getNumberOfProcessors()
+{
+    #if defined(USE_LINUX) || defined(USE_MAC)
+       return sysconf( _SC_NPROCESSORS_ONLN );
+    #elif defined(USE_WINDOWS)
+        SYSTEM_INFO sysinfo;
+        GetSystemInfo( &sysinfo );
+        return static_cast<int>(sysinfo.dwNumberOfProcessors);
+    #else
+        #error Unknown OS
+    #endif
+}
+std::vector<int> MPI_CLASS::getProcessAffinity()
+{
+    std::vector<int> procs;
+    #ifdef USE_LINUX
+        cpu_set_t mask;
+        int error = sched_getaffinity(getpid(), sizeof(cpu_set_t), &mask );
+        if ( error!=0 )
+            MPI_ERROR("Error getting process affinity");
+        for (int i=0; i<(int)sizeof(cpu_set_t)*CHAR_BIT; i++) {
+            if ( CPU_ISSET(i,&mask) )
+                procs.push_back(i);
+        }
+    #elif defined(USE_MAC)
+        // MAC does not support getting or setting the affinity
+        printf("Warning: MAC does not support getting the process affinity\n");
+        procs.clear();
+    #elif defined(USE_WINDOWS)
+        HANDLE hProc = GetCurrentProcess();
+        size_t procMask;
+        size_t sysMask;
+        PDWORD_PTR procMaskPtr = reinterpret_cast<PDWORD_PTR>(&procMask);
+        PDWORD_PTR sysMaskPtr  = reinterpret_cast<PDWORD_PTR>(&sysMask);
+        GetProcessAffinityMask(hProc,procMaskPtr,sysMaskPtr);
+        for (int i=0; i<(int)sizeof(size_t)*CHAR_BIT; i++) {
+            if ( (procMask&0x1) != 0 )
+                procs.push_back(i);
+            procMask >>= 1;
+        }
+    #else
+        #error Unknown OS
+    #endif
+    return procs;
+}
+void MPI_CLASS::setProcessAffinity( std::vector<int> procs )
+{
+    #ifdef USE_LINUX
+        cpu_set_t mask;
+        CPU_ZERO(&mask);
+        for (size_t i=0; i<procs.size(); i++)
+            CPU_SET(procs[i],&mask);
+        int error = sched_setaffinity(getpid(), sizeof(cpu_set_t), &mask );
+        if ( error!=0 )
+            MPI_ERROR("Error setting process affinity");
+    #elif defined(USE_MAC)
+        // MAC does not support getting or setting the affinity
+    #elif defined(USE_WINDOWS)
+        DWORD mask = 0;
+        for (size_t i=0; i<procs.size(); i++)
+            mask |= ((DWORD)1) << procs[i];
+        HANDLE hProc = GetCurrentProcess();
+        SetProcessAffinityMask( hProc, mask );
+    #else
+        #error Unknown OS
+    #endif
+}
+
+
+/************************************************************************
+*  Function to perform a load balance of the given processes            *
+************************************************************************/
+void MPI_CLASS::balanceProcesses( const MPI_CLASS globalComm, const int method, 
+   const std::vector<int>& procs, const int N_min_in, const int N_max_in )
+{
+    // Build the list of processors to use
+    std::vector<int> cpus = procs;
+    if ( cpus.empty() ) {
+        for (int i=0; i<getNumberOfProcessors(); i++)
+            cpus.push_back(i);
+    }
+    // Handle the "easy cases"
+    if ( method==1 ) {
+        // Trivial case where we do not need any communication
+        setProcessAffinity( cpus );
+        return;
+    }
+    // Get the sub-communicator for the current node
+    MPI_CLASS nodeComm = globalComm.splitByNode();
+    int N_min = std::min<int>(std::max<int>(N_min_in,1),cpus.size());
+    int N_max = N_max_in;
+    if ( N_max==-1 )
+        N_max = cpus.size();
+    N_max = std::min<int>(N_max,cpus.size());
+    MPI_ASSERT(N_max>=N_min);
+    // Perform the load balance within the node
+    if ( method==2 ) {
+        int N_proc = cpus.size()/nodeComm.getSize();
+        N_proc = std::max<int>(N_proc,N_min);
+        N_proc = std::min<int>(N_proc,N_max);
+        std::vector<int> cpus2(N_proc,-1);
+        for (int i=0; i<N_proc; i++)
+            cpus2[i] = cpus[(nodeComm.getRank()*N_proc+i)%cpus.size()];
+        setProcessAffinity( cpus2 );
+    } else {
+        MPI_ERROR("Unknown method for load balance");
+    }
+}
+
+
+/************************************************************************
 *  Empty constructor                                                    *
 ************************************************************************/
-AMP_MPI::AMP_MPI() 
+MPI_CLASS::MPI_CLASS() 
 {
     // Initialize the data members to a defaul communicator of self
     #ifdef USE_MPI
@@ -191,7 +359,7 @@ AMP_MPI::AMP_MPI()
 /************************************************************************
 *  Empty deconstructor                                                  *
 ************************************************************************/
-AMP_MPI::~AMP_MPI() 
+MPI_CLASS::~MPI_CLASS() 
 {
     // Decrement the count if used
     int count = -1;
@@ -204,11 +372,11 @@ AMP_MPI::~AMP_MPI()
             d_count = NULL;
             int err = MPI_Comm_free(&communicator);
             if ( err != MPI_SUCCESS )
-                AMP_ERROR("Problem free'ing MPI_Comm object");
+                MPI_ERROR("Problem free'ing MPI_Comm object");
             communicator = AMP_COMM_NULL;
             ++N_MPI_Comm_destroyed;
         #else
-            AMP_ERROR("Internal Error (why do we have a count in serial)");
+            MPI_ERROR("Internal Error (why do we have a count in serial)");
         #endif
     }
     if ( d_currentTag==NULL ) {
@@ -229,7 +397,7 @@ AMP_MPI::~AMP_MPI()
 /************************************************************************
 *  Copy constructor                                                     *
 ************************************************************************/
-AMP_MPI::AMP_MPI( const AMP::AMP_MPI& comm ) 
+MPI_CLASS::MPI_CLASS( const MPI_CLASS& comm ) 
 {
     // Initialize the data members to the existing comm object
     communicator = comm.communicator;
@@ -252,12 +420,12 @@ AMP_MPI::AMP_MPI( const AMP::AMP_MPI& comm )
 /************************************************************************
 *  Assignment operator                                                  *
 ************************************************************************/
-AMP_MPI& AMP_MPI::operator=(const AMP::AMP_MPI& comm) 
+MPI_CLASS& MPI_CLASS::operator=(const MPI_CLASS& comm) 
 {
     if (this == &comm) // protect against invalid self-assignment
         return *this;
     // Destroy the previous object
-    this->~AMP_MPI();
+    this->~MPI_CLASS();
     // Initialize the data members to the existing object
     this->communicator = comm.communicator;
     this->comm_rank = comm.comm_rank;
@@ -280,7 +448,7 @@ AMP_MPI& AMP_MPI::operator=(const AMP::AMP_MPI& comm)
 /************************************************************************
 *  Constructor from existing MPI communicator                           *
 ************************************************************************/
-AMP_MPI::AMP_MPI( MPI_Comm comm ) 
+MPI_CLASS::MPI_CLASS( MPI_Comm comm ) 
 {
     #ifdef USE_MPI
         // We are using MPI, use the MPI communicator to initialize the data
@@ -304,13 +472,13 @@ AMP_MPI::AMP_MPI( MPI_Comm comm )
             MPI_Comm_size(communicator, &comm_size);
             int flag, *val;
             int ierr = MPI_Comm_get_attr(communicator,MPI_TAG_UB,&val,&flag);
-            AMP_ASSERT(ierr==MPI_SUCCESS);
+            MPI_ASSERT(ierr==MPI_SUCCESS);
             if ( flag==0 ) { 
                 d_maxTag = 0x7FFFFFFF;     // The tag is not a valid attribute (set to 2^31-1)
             } else {
                 d_maxTag = *val;
                 if ( d_maxTag<0 ) { d_maxTag = 0x7FFFFFFF; }    // The maximum tag is > a signed int (set to 2^31-1)
-                AMP_INSIST(d_maxTag>=0x7FFF,"maximum tag size is < MPI standard");
+                MPI_INSIST(d_maxTag>=0x7FFF,"maximum tag size is < MPI standard");
             }
         } else {
             comm_rank = 1;
@@ -346,7 +514,7 @@ AMP_MPI::AMP_MPI( MPI_Comm comm )
 *  Intersect two communicators                                          *
 ************************************************************************/
 #ifdef USE_MPI
-AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 ) 
+MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 ) 
 {
     MPI_Group group1=MPI_GROUP_EMPTY, group2=MPI_GROUP_EMPTY, group12=MPI_GROUP_EMPTY;
     if ( !comm1.isNull() )
@@ -357,7 +525,7 @@ AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 )
     int compare1, compare2;
     MPI_Group_compare ( group1, group12, &compare1 );
     MPI_Group_compare ( group2, group12, &compare2 );
-    AMP_MPI new_comm(AMP_COMM_NULL);
+    MPI_CLASS new_comm(AMP_COMM_NULL);
     int size;
     MPI_Group_size( group12, &size );
     if ( compare1!=MPI_UNEQUAL && size!=0 ) {
@@ -375,7 +543,7 @@ AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 )
         MPI_Allreduce(&size,&max_size,1,MPI_INT,MPI_MAX,comm1.communicator);
         if ( max_size==0 ) {
             // We are dealing with completely disjoint sets
-            new_comm = AMP_MPI( AMP_COMM_NULL );
+            new_comm = MPI_CLASS( AMP_COMM_NULL );
         } else {
             // Create the new comm
             // Note: OpenMPI crashes if the intersection group is EMPTY for any processors
@@ -386,10 +554,10 @@ AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 )
             MPI_Comm_create( comm1.communicator, group12, &new_MPI_comm );
             if ( size>0 ) {
                 // This is the valid case were we create a new intersection comm
-                new_comm = AMP_MPI( new_MPI_comm );
+                new_comm = MPI_CLASS( new_MPI_comm );
             } else {
                 // We actually want a null comm for this communicator
-                new_comm = AMP_MPI( AMP_COMM_NULL );
+                new_comm = MPI_CLASS( AMP_COMM_NULL );
                 MPI_Comm_free(&new_MPI_comm);
             }
         }
@@ -403,11 +571,11 @@ AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 )
     return new_comm;
 }
 #else
-AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 ) 
+MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 ) 
 {
     if ( comm1.isNull() || comm2.isNull() )
-        return AMP_MPI(AMP_COMM_NULL);
-    AMP_ASSERT(comm1.comm_size==1&&comm2.comm_size==1);
+        return MPI_CLASS(AMP_COMM_NULL);
+    MPI_ASSERT(comm1.comm_size==1&&comm2.comm_size==1);
     return comm1;
 }
 #endif
@@ -416,7 +584,7 @@ AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 )
 /************************************************************************
 *  Split a comm						                                    *
 ************************************************************************/
-AMP_MPI AMP_MPI::split( int color, int key ) const 
+MPI_CLASS MPI_CLASS::split( int color, int key ) const 
 {
     MPI_Comm  new_MPI_comm;
     #ifdef USE_MPI
@@ -447,50 +615,39 @@ AMP_MPI AMP_MPI::split( int color, int key ) const
     #endif
     return new_comm;
 }
-AMP_MPI AMP_MPI::splitByNode( int key ) const
+MPI_CLASS MPI_CLASS::splitByNode( int key ) const
 {
-    #ifdef USE_MPI
-        // Get the node name
-        int length;
-        char name[MPI_MAX_PROCESSOR_NAME];
-        memset(name,0,MPI_MAX_PROCESSOR_NAME);
-        MPI_Get_processor_name( name, &length );
-        // Gather the names from all ranks
-        std::vector<int> recv_cnt(comm_size,MPI_MAX_PROCESSOR_NAME);
-        std::vector<int> recv_disp(comm_size,0);
-        for (int i=1; i<comm_size; i++)
-            recv_disp[i] = i*(MPI_MAX_PROCESSOR_NAME);
-        char *recv_data = new char[comm_size*MPI_MAX_PROCESSOR_NAME];
-        this->allGather<char>( name, MPI_MAX_PROCESSOR_NAME, 
-            recv_data, &recv_cnt[0], &recv_disp[0], true );
-        // Create the colors
-        std::vector<int> color(comm_size,-1);
-        color[0] = 0;
-        for (int i=1; i<comm_size; i++) {
-            const char *tmp1 = &recv_data[i*MPI_MAX_PROCESSOR_NAME];
-            for (int j=0; j<i; j++) {
-                const char *tmp2 = &recv_data[j*MPI_MAX_PROCESSOR_NAME];
-                if ( strncmp(tmp1,tmp2,MPI_MAX_PROCESSOR_NAME) == 0 ) {
-                    color[i] = color[j];
-                    break;
-                }
-                color[i] = color[i-1] + 1;
-            }
-        }
-        delete [] recv_data;
-        AMP_MPI new_comm = this->split(color[comm_rank],key);
-        return new_comm;
-    #else
-        // No MPI, just call split
+    // Check if we are dealing with a single processor (trivial case)
+    if ( comm_size==1 )
         return this->split(0,0);
-    #endif
+    // Get the node name
+    std::string name = MPI_CLASS::getNodeName();
+    // Gather the names from all ranks
+    std::vector<std::string> list(comm_size);
+    allGather(name,&list[0]);
+    // Create the colors
+    std::vector<int> color(comm_size,-1);
+    color[0] = 0;
+    for (int i=1; i<comm_size; i++) {
+        const std::string tmp1 = list[i];
+        for (int j=0; j<i; j++) {
+            const std::string tmp2 = list[j];
+            if ( tmp1==tmp2 ) {
+                color[i] = color[j];
+                break;
+            }
+            color[i] = color[i-1] + 1;
+        }
+    }
+    MPI_CLASS new_comm = this->split(color[comm_rank],key);
+    return new_comm;
 }
 
 
 /************************************************************************
 *  Duplicate an exisiting comm object                                   *
 ************************************************************************/
-AMP_MPI AMP_MPI::dup( ) const 
+AMP_MPI MPI_CLASS::dup( ) const 
 {
     if ( d_isNull )
         return AMP_MPI(AMP_COMM_NULL);
@@ -519,9 +676,27 @@ AMP_MPI AMP_MPI::dup( ) const
 
 
 /************************************************************************
+*  Get the node name                                                    *
+************************************************************************/
+std::string MPI_CLASS::getNodeName( )
+{
+    #ifdef USE_MPI
+        int length;
+        char name[MPI_MAX_PROCESSOR_NAME+1];
+        memset(name,0,MPI_MAX_PROCESSOR_NAME+1);
+        MPI_Get_processor_name( name, &length );
+        return std::string(name);
+    #else
+        return "Node0";
+    #endif
+}
+
+
+
+/************************************************************************
 *  Overload operator ==                                                 *
 ************************************************************************/
-bool AMP_MPI::operator==(const AMP_MPI &comm) const 
+bool MPI_CLASS::operator==(const MPI_CLASS &comm) const 
 {
     return communicator==comm.communicator;
 }
@@ -530,7 +705,7 @@ bool AMP_MPI::operator==(const AMP_MPI &comm) const
 /************************************************************************
 *  Overload operator !=                                                 *
 ************************************************************************/
-bool AMP_MPI::operator!=(const AMP_MPI &comm) const 
+bool MPI_CLASS::operator!=(const MPI_CLASS &comm) const 
 {
     return communicator!=comm.communicator;
 }
@@ -539,9 +714,9 @@ bool AMP_MPI::operator!=(const AMP_MPI &comm) const
 /************************************************************************
 *  Overload operator <                                                  *
 ************************************************************************/
-bool AMP_MPI::operator<(const AMP_MPI &comm) const 
+bool MPI_CLASS::operator<(const MPI_CLASS &comm) const 
 {
-    AMP_ASSERT( !this->d_isNull && !comm.d_isNull );
+    MPI_ASSERT( !this->d_isNull && !comm.d_isNull );
     bool flag = true;
     // First check if either communicator is NULL
     #ifdef USE_MPI
@@ -581,9 +756,9 @@ bool AMP_MPI::operator<(const AMP_MPI &comm) const
 /************************************************************************
 *  Overload operator <=                                                 *
 ************************************************************************/
-bool AMP_MPI::operator<=(const AMP_MPI &comm) const 
+bool MPI_CLASS::operator<=(const MPI_CLASS &comm) const 
 {
-    AMP_ASSERT( !this->d_isNull && !comm.d_isNull );
+    MPI_ASSERT( !this->d_isNull && !comm.d_isNull );
     bool flag = true;
     // First check if either communicator is NULL
     #ifdef USE_MPI
@@ -623,7 +798,7 @@ bool AMP_MPI::operator<=(const AMP_MPI &comm) const
 /************************************************************************
 *  Overload operator >                                                  *
 ************************************************************************/
-bool AMP_MPI::operator>(const AMP_MPI &comm) const 
+bool MPI_CLASS::operator>(const MPI_CLASS &comm) const 
 {
     bool flag = true;
     // First check if either communicator is NULL
@@ -664,7 +839,7 @@ bool AMP_MPI::operator>(const AMP_MPI &comm) const
 /************************************************************************
 *  Overload operator >=                                                 *
 ************************************************************************/
-bool AMP_MPI::operator>=(const AMP_MPI &comm) const 
+bool MPI_CLASS::operator>=(const MPI_CLASS &comm) const 
 {
     bool flag = true;
     // First check if either communicator is NULL
@@ -705,7 +880,7 @@ bool AMP_MPI::operator>=(const AMP_MPI &comm) const
 /************************************************************************
 *  Compare two comm objects                                             *
 ************************************************************************/
-int AMP_MPI::compare(const AMP_MPI &comm) const 
+int MPI_CLASS::compare(const MPI_CLASS &comm) const 
 {
     if ( communicator==comm.communicator )
         return 1;
@@ -720,7 +895,7 @@ int AMP_MPI::compare(const AMP_MPI &comm) const
             return 4;
         else if ( result==MPI_UNEQUAL )
             return 0;
-        AMP_ERROR("Unknown results from AMP_Comm_compare");
+        MPI_ERROR("Unknown results from AMP_Comm_compare");
     #else
         if ( comm.communicator==AMP_COMM_NULL || communicator==AMP_COMM_NULL )
             return 0;
@@ -734,11 +909,11 @@ int AMP_MPI::compare(const AMP_MPI &comm) const
 /************************************************************************
 *  Abort the program.                                                   *
 ************************************************************************/
-void AMP_MPI::setCallAbortInSerialInsteadOfExit(bool flag)
+void MPI_CLASS::setCallAbortInSerialInsteadOfExit(bool flag)
 {
     call_abort_in_serial_instead_of_exit = flag;
 }
-void AMP_MPI::abort() const
+void MPI_CLASS::abort() const
 {
     #ifdef USE_MPI
         int initialized=0, finalized=0;
@@ -766,14 +941,14 @@ void AMP_MPI::abort() const
 /************************************************************************
 *  newTag                                                               *
 ************************************************************************/
-int AMP_MPI::newTag() 
+int MPI_CLASS::newTag() 
 {
     // Syncronize the processes to ensure all ranks enter this call 
     // Needed so the count will match
     barrier();
     // Return and increment the tag
     int tag = (*d_currentTag)++;
-    AMP_INSIST(tag<=d_maxTag,"Maximum number of tags exceeded\n");
+    MPI_INSIST(tag<=d_maxTag,"Maximum number of tags exceeded\n");
     return tag;
 }
 
@@ -781,14 +956,14 @@ int AMP_MPI::newTag()
 /************************************************************************
 *  allReduce                                                            *
 ************************************************************************/
-bool AMP_MPI::allReduce(const bool value) const 
+bool MPI_CLASS::allReduce(const bool value) const 
 {
     bool ret = value;
     if ( comm_size > 1 ) {
         #ifdef USE_MPI
             MPI_Allreduce( (void*) &value, (void*) &ret, 1, MPI_UNSIGNED_CHAR, MPI_MIN, communicator);
         #else
-            AMP_ERROR("This shouldn't be possible");
+            MPI_ERROR("This shouldn't be possible");
         #endif
     }
     return ret;
@@ -798,14 +973,14 @@ bool AMP_MPI::allReduce(const bool value) const
 /************************************************************************
 *  anyReduce                                                            *
 ************************************************************************/
-bool AMP_MPI::anyReduce(const bool value) const 
+bool MPI_CLASS::anyReduce(const bool value) const 
 {
     bool ret = value;
     if ( comm_size > 1 ) {
         #ifdef USE_MPI
             MPI_Allreduce( (void*) &value, (void*) &ret, 1, MPI_UNSIGNED_CHAR, MPI_MAX, communicator);
         #else
-            AMP_ERROR("This shouldn't be possible");
+            MPI_ERROR("This shouldn't be possible");
         #endif
     }
     return ret;
@@ -819,14 +994,14 @@ bool AMP_MPI::anyReduce(const bool value) const
 #ifdef USE_MPI
 // unsigned char
 template <>
-void AMP_MPI::call_sumReduce<unsigned char>(const unsigned char *send, unsigned char *recv, const int n) const 
+void MPI_CLASS::call_sumReduce<unsigned char>(const unsigned char *send, unsigned char *recv, const int n) const 
 {
     PROFILE_START("sumReduce1<unsigned char>",profile_level);
     MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_CHAR, MPI_SUM, communicator);
     PROFILE_STOP("sumReduce1<unsigned char>",profile_level);
 }
 template <>
-void AMP_MPI::call_sumReduce<unsigned char>(unsigned char *x, const int n) const 
+void MPI_CLASS::call_sumReduce<unsigned char>(unsigned char *x, const int n) const 
 {
     PROFILE_START("sumReduce2<unsigned char>",profile_level);
     unsigned char *send = x;
@@ -839,14 +1014,14 @@ void AMP_MPI::call_sumReduce<unsigned char>(unsigned char *x, const int n) const
 }
 // char
 template <>
-void AMP_MPI::call_sumReduce<char>(const char *send, char *recv, const int n) const 
+void MPI_CLASS::call_sumReduce<char>(const char *send, char *recv, const int n) const 
 {
     PROFILE_START("sumReduce1<char>",profile_level);
     MPI_Allreduce( (void*) send, (void*) recv, n, MPI_SIGNED_CHAR, MPI_SUM, communicator);
     PROFILE_STOP("sumReduce1<char>",profile_level);
 }
 template <>
-void AMP_MPI::call_sumReduce<char>(char *x, const int n) const 
+void MPI_CLASS::call_sumReduce<char>(char *x, const int n) const 
 {
     PROFILE_START("sumReduce2<char>",profile_level);
     char *send = x;
@@ -859,14 +1034,14 @@ void AMP_MPI::call_sumReduce<char>(char *x, const int n) const
 }
 // unsigned int
 template <>
-void AMP_MPI::call_sumReduce<unsigned int>(const unsigned int *send, unsigned int *recv, const int n) const 
+void MPI_CLASS::call_sumReduce<unsigned int>(const unsigned int *send, unsigned int *recv, const int n) const 
 {
     PROFILE_START("sumReduce1<unsigned int>",profile_level);
     MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED, MPI_SUM, communicator);
     PROFILE_STOP("sumReduce1<unsigned int>",profile_level);
 }
 template <>
-void AMP_MPI::call_sumReduce<unsigned int>(unsigned int *x, const int n) const 
+void MPI_CLASS::call_sumReduce<unsigned int>(unsigned int *x, const int n) const 
 {
     PROFILE_START("sumReduce2<unsigned int>",profile_level);
     unsigned int *send = x;
@@ -879,14 +1054,14 @@ void AMP_MPI::call_sumReduce<unsigned int>(unsigned int *x, const int n) const
 }
 // int
 template <>
-void AMP_MPI::call_sumReduce<int>(const int *send, int *recv, const int n) const 
+void MPI_CLASS::call_sumReduce<int>(const int *send, int *recv, const int n) const 
 {
     PROFILE_START("sumReduce1<int>",profile_level);
     MPI_Allreduce( (void*) send, (void*) recv, n, MPI_INT, MPI_SUM, communicator);
     PROFILE_STOP("sumReduce1<int>",profile_level);
 }
 template <>
-void AMP_MPI::call_sumReduce<int>(int *x, const int n) const 
+void MPI_CLASS::call_sumReduce<int>(int *x, const int n) const 
 {
     PROFILE_START("sumReduce2<int>",profile_level);
     int *send = x;
@@ -899,14 +1074,14 @@ void AMP_MPI::call_sumReduce<int>(int *x, const int n) const
 }
 // long int
 template <>
-void AMP_MPI::call_sumReduce<long int>(const long int *send, long int *recv, const int n) const 
+void MPI_CLASS::call_sumReduce<long int>(const long int *send, long int *recv, const int n) const 
 {
     PROFILE_START("sumReduce1<long int>",profile_level);
     MPI_Allreduce( (void*) send, (void*) recv, n, MPI_LONG, MPI_SUM, communicator);
     PROFILE_STOP("sumReduce1<long int>",profile_level);
 }
 template <>
-void AMP_MPI::call_sumReduce<long int>(long int *x, const int n) const 
+void MPI_CLASS::call_sumReduce<long int>(long int *x, const int n) const 
 {
     PROFILE_START("sumReduce2<long int>",profile_level);
     long int *send = x;
@@ -919,14 +1094,14 @@ void AMP_MPI::call_sumReduce<long int>(long int *x, const int n) const
 }
 // unsigned long int
 template <>
-void AMP_MPI::call_sumReduce<unsigned long>(const unsigned long *send, unsigned long *recv, const int n) const 
+void MPI_CLASS::call_sumReduce<unsigned long>(const unsigned long *send, unsigned long *recv, const int n) const 
 {
     PROFILE_START("sumReduce1<unsigned long>",profile_level);
     MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_SUM, communicator);
     PROFILE_STOP("sumReduce1<unsigned long>",profile_level);
 }
 template <>
-void AMP_MPI::call_sumReduce<unsigned long>(unsigned long *x, const int n) const 
+void MPI_CLASS::call_sumReduce<unsigned long>(unsigned long *x, const int n) const 
 {
     PROFILE_START("sumReduce2<unsigned long>",profile_level);
     unsigned long int *send = x;
@@ -940,14 +1115,14 @@ void AMP_MPI::call_sumReduce<unsigned long>(unsigned long *x, const int n) const
 // size_t
 #ifdef USE_WINDOWS
     template <>
-    void AMP_MPI::call_sumReduce<size_t>(const size_t *send, size_t *recv, const int n) const 
+    void MPI_CLASS::call_sumReduce<size_t>(const size_t *send, size_t *recv, const int n) const 
     {
         PROFILE_START("sumReduce1<size_t>",profile_level);
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_SUM, communicator);
         PROFILE_STOP("sumReduce1<size_t>",profile_level);
     }
     template <>
-    void AMP_MPI::call_sumReduce<size_t>(size_t *x, const int n) const 
+    void MPI_CLASS::call_sumReduce<size_t>(size_t *x, const int n) const 
     {
         PROFILE_START("sumReduce2<size_t>",profile_level);
         size_t *send = x;
@@ -961,14 +1136,14 @@ void AMP_MPI::call_sumReduce<unsigned long>(unsigned long *x, const int n) const
 #endif
 // float
 template <>
-void AMP_MPI::call_sumReduce<float>(const float *send, float *recv, const int n) const 
+void MPI_CLASS::call_sumReduce<float>(const float *send, float *recv, const int n) const 
 {
     PROFILE_START("sumReduce1<float>",profile_level);
     MPI_Allreduce( (void*) send, (void*) recv, n, MPI_FLOAT, MPI_SUM, communicator);
     PROFILE_STOP("sumReduce1<float>",profile_level);
 }
 template <>
-void AMP_MPI::call_sumReduce<float>(float *x, const int n) const 
+void MPI_CLASS::call_sumReduce<float>(float *x, const int n) const 
 {
     PROFILE_START("sumReduce2<float>",profile_level);
     float *send = x;
@@ -981,14 +1156,14 @@ void AMP_MPI::call_sumReduce<float>(float *x, const int n) const
 }
 // double
 template <>
-void AMP_MPI::call_sumReduce<double>(const double *send, double *recv, const int n) const 
+void MPI_CLASS::call_sumReduce<double>(const double *send, double *recv, const int n) const 
 {
     PROFILE_START("sumReduce1<double>",profile_level);
     MPI_Allreduce( (void*) send, (void*) recv, n, MPI_DOUBLE, MPI_SUM, communicator);
     PROFILE_STOP("sumReduce1<double>",profile_level);
 }
 template <>
-void AMP_MPI::call_sumReduce<double>(double *x, const int n) const 
+void MPI_CLASS::call_sumReduce<double>(double *x, const int n) const 
 {
     PROFILE_START("sumReduce2<double>",profile_level);
     double *send = x;
@@ -1001,7 +1176,7 @@ void AMP_MPI::call_sumReduce<double>(double *x, const int n) const
 }
 // std::complex<double>
 template <>
-void AMP_MPI::call_sumReduce< std::complex<double> >(const std::complex<double> *x, std::complex<double> *y, const int n) const 
+void MPI_CLASS::call_sumReduce< std::complex<double> >(const std::complex<double> *x, std::complex<double> *y, const int n) const 
 {
     PROFILE_START("sumReduce1<complex double>",profile_level);
     double *send = new double[2*n];
@@ -1018,7 +1193,7 @@ void AMP_MPI::call_sumReduce< std::complex<double> >(const std::complex<double> 
     PROFILE_STOP("sumReduce1<complex double>",profile_level);
 }
 template <>
-void AMP_MPI::call_sumReduce< std::complex<double> >(std::complex<double> *x, const int n) const 
+void MPI_CLASS::call_sumReduce< std::complex<double> >(std::complex<double> *x, const int n) const 
 {
     PROFILE_START("sumReduce2<complex double>",profile_level);
     double *send = new double[2*n];
@@ -1044,18 +1219,24 @@ void AMP_MPI::call_sumReduce< std::complex<double> >(std::complex<double> *x, co
 #ifdef USE_MPI
 // unsigned char
 template <>
-void AMP_MPI::call_minReduce<unsigned char>(const unsigned char *send, unsigned char *recv, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_minReduce<unsigned char>(const unsigned char *send, unsigned char *recv, const int n, int *comm_rank_of_min) const 
 {
     if ( comm_rank_of_min==NULL ) {
         PROFILE_START("minReduce1<unsigned char>",profile_level);
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_CHAR, MPI_MIN, communicator);
         PROFILE_STOP("minReduce1<unsigned char>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = send[i];
+        call_minReduce<int>(tmp,n,comm_rank_of_min);
+        for (int i=0; i<n; i++)
+            recv[i] = static_cast<unsigned char>(tmp[i]);
+        delete [] tmp;
     }
 }
 template <>
-void AMP_MPI::call_minReduce<unsigned char>(unsigned char *x, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_minReduce<unsigned char>(unsigned char *x, const int n, int *comm_rank_of_min) const 
 {
     if ( comm_rank_of_min==NULL ) {
         PROFILE_START("minReduce2<unsigned char>",profile_level);
@@ -1067,23 +1248,35 @@ void AMP_MPI::call_minReduce<unsigned char>(unsigned char *x, const int n, int *
         delete [] recv;
         PROFILE_STOP("minReduce2<unsigned char>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = x[i];
+        call_minReduce<int>(tmp,n,comm_rank_of_min);
+        for (int i=0; i<n; i++)
+            x[i] = static_cast<unsigned char>(tmp[i]);
+        delete [] tmp;
     }
 }
 // char
 template <>
-void AMP_MPI::call_minReduce<char>(const char *send, char *recv, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_minReduce<char>(const char *send, char *recv, const int n, int *comm_rank_of_min) const 
 {
     if ( comm_rank_of_min==NULL ) {
         PROFILE_START("minReduce1<char>",profile_level);
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_SIGNED_CHAR, MPI_MIN, communicator);
         PROFILE_STOP("minReduce1<char>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = send[i];
+        call_minReduce<int>(tmp,n,comm_rank_of_min);
+        for (int i=0; i<n; i++)
+            recv[i] = static_cast<char>(tmp[i]);
+        delete [] tmp;
     }
 }
 template <>
-void AMP_MPI::call_minReduce<char>(char *x, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_minReduce<char>(char *x, const int n, int *comm_rank_of_min) const 
 {
     if ( comm_rank_of_min==NULL ) {
         PROFILE_START("minReduce2<char>",profile_level);
@@ -1095,23 +1288,35 @@ void AMP_MPI::call_minReduce<char>(char *x, const int n, int *comm_rank_of_min) 
         delete [] recv;
         PROFILE_STOP("minReduce2<char>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = x[i];
+        call_minReduce<int>(tmp,n,comm_rank_of_min);
+        for (int i=0; i<n; i++)
+            x[i] = static_cast<char>(tmp[i]);
+        delete [] tmp;
     }
 }
 // unsigned int
 template <>
-void AMP_MPI::call_minReduce<unsigned int>(const unsigned int *send, unsigned int *recv, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_minReduce<unsigned int>(const unsigned int *send, unsigned int *recv, const int n, int *comm_rank_of_min) const 
 {
     if ( comm_rank_of_min==NULL ) {
         PROFILE_START("minReduce1<unsigned int>",profile_level);
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED, MPI_MIN, communicator);
         PROFILE_STOP("minReduce1<unsigned int>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = unsigned_to_signed(send[i]); 
+        call_minReduce<int>(tmp,n,comm_rank_of_min);
+        for (int i=0; i<n; i++)
+            recv[i] = signed_to_unsigned(tmp[i]); 
+        delete [] tmp;
     }
 }
 template <>
-void AMP_MPI::call_minReduce<unsigned int>(unsigned int *x, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_minReduce<unsigned int>(unsigned int *x, const int n, int *comm_rank_of_min) const 
 {
     if ( comm_rank_of_min==NULL ) {
         PROFILE_START("minReduce2<unsigned int>",profile_level);
@@ -1123,12 +1328,18 @@ void AMP_MPI::call_minReduce<unsigned int>(unsigned int *x, const int n, int *co
         delete [] recv;
         PROFILE_STOP("minReduce2<unsigned int>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned int is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = unsigned_to_signed(x[i]); 
+        call_minReduce<int>(tmp,n,comm_rank_of_min);
+        for (int i=0; i<n; i++)
+            x[i] = signed_to_unsigned(tmp[i]); 
+        delete [] tmp;
     }
 }
 // int
 template <>
-void AMP_MPI::call_minReduce<int>(const int *x, int *y, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_minReduce<int>(const int *x, int *y, const int n, int *comm_rank_of_min) const 
 {
     PROFILE_START("minReduce1<int>",profile_level);
     if ( comm_rank_of_min==NULL ) {
@@ -1151,7 +1362,7 @@ void AMP_MPI::call_minReduce<int>(const int *x, int *y, const int n, int *comm_r
     PROFILE_STOP("minReduce1<int>",profile_level);
 }
 template <>
-void AMP_MPI::call_minReduce<int>(int *x, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_minReduce<int>(int *x, const int n, int *comm_rank_of_min) const 
 {
     PROFILE_START("minReduce2<int>",profile_level);
     if ( comm_rank_of_min==NULL ) {
@@ -1180,18 +1391,24 @@ void AMP_MPI::call_minReduce<int>(int *x, const int n, int *comm_rank_of_min) co
 }
 // unsigned long int
 template <>
-void AMP_MPI::call_minReduce<unsigned long int>(const unsigned long int *send, unsigned long int *recv, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_minReduce<unsigned long int>(const unsigned long int *send, unsigned long int *recv, const int n, int *comm_rank_of_min) const 
 {
     if ( comm_rank_of_min==NULL ) {
         PROFILE_START("minReduce1<unsigned long>",profile_level);
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_MIN, communicator);
         PROFILE_STOP("minReduce1<unsigned long>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        long int *tmp = new long int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = unsigned_to_signed(send[i]); 
+        call_minReduce<long int>(tmp,n,comm_rank_of_min);
+        for (int i=0; i<n; i++)
+            recv[i] = signed_to_unsigned(tmp[i]); 
+        delete [] tmp;
     }
 }
 template <>
-void AMP_MPI::call_minReduce<unsigned long int>(unsigned long int *x, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_minReduce<unsigned long int>(unsigned long int *x, const int n, int *comm_rank_of_min) const 
 {
     if ( comm_rank_of_min==NULL ) {
         PROFILE_START("minReduce2<unsigned long>",profile_level);
@@ -1203,12 +1420,18 @@ void AMP_MPI::call_minReduce<unsigned long int>(unsigned long int *x, const int 
         delete [] recv;
         PROFILE_STOP("minReduce2<unsigned long>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned long int is not supported yet");
+        long int *tmp = new long int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = unsigned_to_signed(x[i]); 
+        call_minReduce<long int>(tmp,n,comm_rank_of_min);
+        for (int i=0; i<n; i++)
+            x[i] = signed_to_unsigned(tmp[i]); 
+        delete [] tmp;
     }
 }
 // long int
 template <>
-void AMP_MPI::call_minReduce<long int>(const long int *x, long int *y, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_minReduce<long int>(const long int *x, long int *y, const int n, int *comm_rank_of_min) const 
 {
     PROFILE_START("minReduce1<long int>",profile_level);
     if ( comm_rank_of_min==NULL ) {
@@ -1231,7 +1454,7 @@ void AMP_MPI::call_minReduce<long int>(const long int *x, long int *y, const int
     PROFILE_STOP("minReduce1<long int>",profile_level);
 }
 template <>
-void AMP_MPI::call_minReduce<long int>(long int *x, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_minReduce<long int>(long int *x, const int n, int *comm_rank_of_min) const 
 {
     PROFILE_START("minReduce2<long int>",profile_level);
     if ( comm_rank_of_min==NULL ) {
@@ -1261,36 +1484,31 @@ void AMP_MPI::call_minReduce<long int>(long int *x, const int n, int *comm_rank_
 // size_t
 #ifdef USE_WINDOWS
     template <>
-    void AMP_MPI::call_minReduce<size_t>(const size_t *send, size_t *recv, const int n, int *comm_rank_of_min) const 
+    void MPI_CLASS::call_minReduce<size_t>(const size_t *send, size_t *recv, const int n, int *comm_rank_of_min) const 
     {
-        if ( comm_rank_of_min==NULL ) {
-            PROFILE_START("minReduce1<size_t>",profile_level);
-            MPI_Allreduce( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_MIN, communicator);
-            PROFILE_STOP("minReduce1<size_t>",profile_level);
+        if ( sizeof(size_t)==sizeof(unsigned int) ) {
+            call_minReduce<unsigned int>( (const unsigned int*) send, (unsigned int*) recv, n, comm_rank_of_min); 
+        } else if ( sizeof(size_t)==sizeof(unsigned long long) ) {
+            call_minReduce<unsigned int>( (const unsigned long long*) send, (unsigned long long*) recv, n, comm_rank_of_min); 
         } else {
-             AMP_ERROR("Returning the rank of min with size_t is not supported yet");
+            MPI_ERROR("Unable to determine type of size_t");
         }
     }
     template <>
-    void AMP_MPI::call_minReduce<size_t>(size_t *x, const int n, int *comm_rank_of_min) const 
+    void MPI_CLASS::call_minReduce<size_t>(size_t *x, const int n, int *comm_rank_of_min) const 
     {
-        if ( comm_rank_of_min==NULL ) {
-            PROFILE_START("minReduce2<size_t>",profile_level);
-            size_t *send = x;
-            size_t *recv = new size_t[n];
-            MPI_Allreduce( send, recv, n, MPI_SIZE_T, MPI_MIN, communicator);
-            for (int i=0; i<n; i++)
-                x[i] = recv[i];
-            delete [] recv;
-            PROFILE_STOP("minReduce2<size_t>",profile_level);
+        if ( sizeof(size_t)==sizeof(unsigned int) ) {
+            call_minReduce<unsigned int>( (unsigned int*) x, n, comm_rank_of_min); 
+        } else if ( sizeof(size_t)==sizeof(unsigned long long) ) {
+            call_minReduce<unsigned int>( (unsigned long long*) x, n, comm_rank_of_min); 
         } else {
-             AMP_ERROR("Returning the rank of min with size_t is not supported yet");
+            MPI_ERROR("Unable to determine type of size_t");
         }
     }
 #endif
 // float
 template <>
-void AMP_MPI::call_minReduce<float>(const float *x, float *y, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_minReduce<float>(const float *x, float *y, const int n, int *comm_rank_of_min) const 
 {
     PROFILE_START("minReduce1<float>",profile_level);
     if ( comm_rank_of_min==NULL ) {
@@ -1313,7 +1531,7 @@ void AMP_MPI::call_minReduce<float>(const float *x, float *y, const int n, int *
     PROFILE_STOP("minReduce1<float>",profile_level);
 }
 template <>
-void AMP_MPI::call_minReduce<float>(float *x, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_minReduce<float>(float *x, const int n, int *comm_rank_of_min) const 
 {
     PROFILE_START("minReduce2<float>",profile_level);
     if ( comm_rank_of_min==NULL ) {
@@ -1342,7 +1560,7 @@ void AMP_MPI::call_minReduce<float>(float *x, const int n, int *comm_rank_of_min
 }
 // double
 template <>
-void AMP_MPI::call_minReduce<double>(const double *x, double *y, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_minReduce<double>(const double *x, double *y, const int n, int *comm_rank_of_min) const 
 {
     PROFILE_START("minReduce1<double>",profile_level);
     if ( comm_rank_of_min==NULL ) {
@@ -1365,7 +1583,7 @@ void AMP_MPI::call_minReduce<double>(const double *x, double *y, const int n, in
     PROFILE_STOP("minReduce1<double>",profile_level);
 }
 template <>
-void AMP_MPI::call_minReduce<double>(double *x, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_minReduce<double>(double *x, const int n, int *comm_rank_of_min) const 
 {
     PROFILE_START("minReduce2<double>",profile_level);
     if ( comm_rank_of_min==NULL ) {
@@ -1402,17 +1620,23 @@ void AMP_MPI::call_minReduce<double>(double *x, const int n, int *comm_rank_of_m
 #ifdef USE_MPI
 // unsigned char
 template <>
-void AMP_MPI::call_maxReduce<unsigned char>(const unsigned char *send, unsigned char *recv, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_maxReduce<unsigned char>(const unsigned char *send, unsigned char *recv, const int n, int *comm_rank_of_max) const 
 {
-    if ( comm_rank_of_min==NULL ) {
+    if ( comm_rank_of_max==NULL ) {
         PROFILE_START("maxReduce1<unsigned char>",profile_level);
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_CHAR, MPI_MAX, communicator);
         PROFILE_STOP("maxReduce1<unsigned char>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = send[i];
+        call_maxReduce<int>(tmp,n,comm_rank_of_max);
+        for (int i=0; i<n; i++)
+            recv[i] = static_cast<unsigned char>(tmp[i]);
+        delete [] tmp;
     }
 }template <>
-void AMP_MPI::call_maxReduce<unsigned char>(unsigned char *x, const int n, int *comm_rank_of_max) const 
+void MPI_CLASS::call_maxReduce<unsigned char>(unsigned char *x, const int n, int *comm_rank_of_max) const 
 {
     if ( comm_rank_of_max==NULL ) {
         PROFILE_START("maxReduce2<unsigned char>",profile_level);
@@ -1424,23 +1648,35 @@ void AMP_MPI::call_maxReduce<unsigned char>(unsigned char *x, const int n, int *
         delete [] recv;
         PROFILE_STOP("maxReduce2<unsigned char>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = x[i];
+        call_maxReduce<int>(tmp,n,comm_rank_of_max);
+        for (int i=0; i<n; i++)
+            x[i] = static_cast<unsigned char>(tmp[i]);
+        delete [] tmp;
     }
 }
 // char
 template <>
-void AMP_MPI::call_maxReduce<char>(const char *send, char *recv, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_maxReduce<char>(const char *send, char *recv, const int n, int *comm_rank_of_max) const 
 {
-    if ( comm_rank_of_min==NULL ) {
+    if ( comm_rank_of_max==NULL ) {
         PROFILE_START("maxReduce1<char>",profile_level);
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_SIGNED_CHAR, MPI_MAX, communicator);
         PROFILE_STOP("maxReduce1<char>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = send[i];
+        call_maxReduce<int>(tmp,n,comm_rank_of_max);
+        for (int i=0; i<n; i++)
+            recv[i] = static_cast<char>(tmp[i]);
+        delete [] tmp;
     }
 }
 template <>
-void AMP_MPI::call_maxReduce<char>(char *x, const int n, int *comm_rank_of_max) const 
+void MPI_CLASS::call_maxReduce<char>(char *x, const int n, int *comm_rank_of_max) const 
 {
     if ( comm_rank_of_max==NULL ) {
         PROFILE_START("maxReduce2<char>",profile_level);
@@ -1452,23 +1688,35 @@ void AMP_MPI::call_maxReduce<char>(char *x, const int n, int *comm_rank_of_max) 
         delete [] recv;
         PROFILE_STOP("maxReduce2<char>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = x[i];
+        call_maxReduce<int>(tmp,n,comm_rank_of_max);
+        for (int i=0; i<n; i++)
+            x[i] = static_cast<char>(tmp[i]);
+        delete [] tmp;
     }
 }
 // unsigned int
 template <>
-void AMP_MPI::call_maxReduce<unsigned int>(const unsigned int *send, unsigned int *recv, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_maxReduce<unsigned int>(const unsigned int *send, unsigned int *recv, const int n, int *comm_rank_of_max) const 
 {
-    if ( comm_rank_of_min==NULL ) {
+    if ( comm_rank_of_max==NULL ) {
         PROFILE_START("maxReduce1<unsigned int>",profile_level);
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED, MPI_MAX, communicator);
         PROFILE_STOP("maxReduce1<unsigned int>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = unsigned_to_signed(send[i]); 
+        call_maxReduce<int>(tmp,n,comm_rank_of_max);
+        for (int i=0; i<n; i++)
+            recv[i] = signed_to_unsigned(tmp[i]); 
+        delete [] tmp;
     }
 }
 template <>
-void AMP_MPI::call_maxReduce<unsigned int>(unsigned int *x, const int n, int *comm_rank_of_max) const 
+void MPI_CLASS::call_maxReduce<unsigned int>(unsigned int *x, const int n, int *comm_rank_of_max) const 
 {
     if ( comm_rank_of_max==NULL ) {
         PROFILE_START("maxReduce2<unsigned int>",profile_level);
@@ -1480,15 +1728,21 @@ void AMP_MPI::call_maxReduce<unsigned int>(unsigned int *x, const int n, int *co
         delete [] recv;
         PROFILE_STOP("maxReduce2<unsigned int>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned int is not supported yet");
+        int *tmp = new int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = unsigned_to_signed(x[i]); 
+        call_maxReduce<int>(tmp,n,comm_rank_of_max);
+        for (int i=0; i<n; i++)
+            x[i] = signed_to_unsigned(tmp[i]); 
+        delete [] tmp;
     }
 }
 // int
 template <>
-void AMP_MPI::call_maxReduce<int>(const int *x, int *y, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_maxReduce<int>(const int *x, int *y, const int n, int *comm_rank_of_max) const 
 {
     PROFILE_START("maxReduce1<int>",profile_level);
-    if ( comm_rank_of_min==NULL ) {
+    if ( comm_rank_of_max==NULL ) {
         MPI_Allreduce( (void*) x, (void*) y, n, MPI_INT, MPI_MAX, communicator);
     } else {
          IntIntStruct *recv = new IntIntStruct[n];
@@ -1500,7 +1754,7 @@ void AMP_MPI::call_maxReduce<int>(const int *x, int *y, const int n, int *comm_r
          MPI_Allreduce( send, recv, n, MPI_2INT, MPI_MAXLOC, communicator);
          for ( int i=0; i<n; ++i ) {
             y[i] = recv[i].j;
-            comm_rank_of_min[i] = recv[i].i;
+            comm_rank_of_max[i] = recv[i].i;
          }
          delete [] recv;
          delete [] send;
@@ -1508,7 +1762,7 @@ void AMP_MPI::call_maxReduce<int>(const int *x, int *y, const int n, int *comm_r
     PROFILE_STOP("maxReduce1<int>",profile_level);
 }
 template <>
-void AMP_MPI::call_maxReduce<int>(int *x, const int n, int *comm_rank_of_max) const 
+void MPI_CLASS::call_maxReduce<int>(int *x, const int n, int *comm_rank_of_max) const 
 {
     PROFILE_START("maxReduce2<int>",profile_level);
     if ( comm_rank_of_max==NULL ) {
@@ -1537,10 +1791,10 @@ void AMP_MPI::call_maxReduce<int>(int *x, const int n, int *comm_rank_of_max) co
 }
 // long int
 template <>
-void AMP_MPI::call_maxReduce<long int>(const long int *x, long int *y, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_maxReduce<long int>(const long int *x, long int *y, const int n, int *comm_rank_of_max) const 
 {
     PROFILE_START("maxReduce1<lond int>",profile_level);
-    if ( comm_rank_of_min==NULL ) {
+    if ( comm_rank_of_max==NULL ) {
         MPI_Allreduce( (void*) x, (void*) y, n, MPI_LONG, MPI_MAX, communicator);
     } else {
          LongIntStruct *recv = new LongIntStruct[n];
@@ -1552,7 +1806,7 @@ void AMP_MPI::call_maxReduce<long int>(const long int *x, long int *y, const int
          MPI_Allreduce( send, recv, n, MPI_LONG_INT, MPI_MAXLOC, communicator);
          for ( int i=0; i<n; ++i ) {
             y[i] = recv[i].j;
-            comm_rank_of_min[i] = recv[i].i;
+            comm_rank_of_max[i] = recv[i].i;
          }
          delete [] recv;
          delete [] send;
@@ -1560,7 +1814,7 @@ void AMP_MPI::call_maxReduce<long int>(const long int *x, long int *y, const int
     PROFILE_STOP("maxReduce1<lond int>",profile_level);
 }
 template <>
-void AMP_MPI::call_maxReduce<long int>(long int *x, const int n, int *comm_rank_of_max) const 
+void MPI_CLASS::call_maxReduce<long int>(long int *x, const int n, int *comm_rank_of_max) const 
 {
     PROFILE_START("maxReduce2<lond int>",profile_level);
     if ( comm_rank_of_max==NULL ) {
@@ -1589,18 +1843,24 @@ void AMP_MPI::call_maxReduce<long int>(long int *x, const int n, int *comm_rank_
 }
 // unsigned long int
 template <>
-void AMP_MPI::call_maxReduce<unsigned long int>(const unsigned long int *send, unsigned long int *recv, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_maxReduce<unsigned long int>(const unsigned long int *send, unsigned long int *recv, const int n, int *comm_rank_of_max) const 
 {
-    if ( comm_rank_of_min==NULL ) {
+    if ( comm_rank_of_max==NULL ) {
         PROFILE_START("maxReduce1<unsigned long>",profile_level);
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_MAX, communicator);
         PROFILE_STOP("maxReduce1<unsigned long>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+        long int *tmp = new long int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = unsigned_to_signed(send[i]); 
+        call_maxReduce<long int>(tmp,n,comm_rank_of_max);
+        for (int i=0; i<n; i++)
+            recv[i] = signed_to_unsigned(tmp[i]); 
+        delete [] tmp;
     }
 }
 template <>
-void AMP_MPI::call_maxReduce<unsigned long int>(unsigned long int *x, const int n, int *comm_rank_of_max) const 
+void MPI_CLASS::call_maxReduce<unsigned long int>(unsigned long int *x, const int n, int *comm_rank_of_max) const 
 {
     if ( comm_rank_of_max==NULL ) {
         PROFILE_START("maxReduce2<unsigned long>",profile_level);
@@ -1612,45 +1872,46 @@ void AMP_MPI::call_maxReduce<unsigned long int>(unsigned long int *x, const int 
         delete [] recv;
         PROFILE_STOP("maxReduce2<unsigned long>",profile_level);
     } else {
-         AMP_ERROR("Returning the rank of min with unsigned long int is not supported yet");
+        long int *tmp = new long int[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = unsigned_to_signed(x[i]); 
+        call_maxReduce<long int>(tmp,n,comm_rank_of_max);
+        for (int i=0; i<n; i++)
+            x[i] = signed_to_unsigned(tmp[i]); 
+        delete [] tmp;
     }
 }
 // size_t
 #ifdef USE_WINDOWS
     template <>
-    void AMP_MPI::call_maxReduce<size_t>(const size_t *send, size_t *recv, const int n, int *comm_rank_of_max) const 
+    void MPI_CLASS::call_maxReduce<size_t>(const size_t *send, size_t *recv, const int n, int *comm_rank_of_max) const 
 {
-        if ( comm_rank_of_max==NULL ) {
-            PROFILE_START("minReduce1<size_t>",profile_level);
-            MPI_Allreduce( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_MAX, communicator);
-            PROFILE_STOP("minReduce1<size_t>",profile_level);
+        if ( sizeof(size_t)==sizeof(unsigned int) ) {
+            call_maxReduce<unsigned int>( (const unsigned int*) send, (unsigned int*) recv, n, comm_rank_of_max); 
+        } else if ( sizeof(size_t)==sizeof(unsigned long long) ) {
+            call_maxReduce<unsigned int>( (const unsigned long long*) send, (unsigned long long*) recv, n, comm_rank_of_max); 
         } else {
-             AMP_ERROR("Returning the rank of min with unsigned char is not supported yet");
+            MPI_ERROR("Unable to determine type of size_t");
         }
     }
     template <>
-    void AMP_MPI::call_maxReduce<size_t>(size_t *x, const int n, int *comm_rank_of_max) const 
+    void MPI_CLASS::call_maxReduce<size_t>(size_t *x, const int n, int *comm_rank_of_max) const 
 {
-        if ( comm_rank_of_max==NULL ) {
-            PROFILE_START("minReduce2<size_t>",profile_level);
-            size_t *send = x;
-            size_t *recv = new size_t[n];
-            MPI_Allreduce( send, recv, n, MPI_SIZE_T, MPI_MAX, communicator);
-            for (int i=0; i<n; i++)
-                x[i] = recv[i];
-            delete [] recv;
-            PROFILE_STOP("minReduce2<size_t>",profile_level);
+        if ( sizeof(size_t)==sizeof(unsigned int) ) {
+            call_maxReduce<unsigned int>( (const unsigned int*) send, (unsigned int*) recv, n, comm_rank_of_max); 
+        } else if ( sizeof(size_t)==sizeof(unsigned long long) ) {
+            call_maxReduce<unsigned int>( (const unsigned long long*) send, (unsigned long long*) recv, n, comm_rank_of_max); 
         } else {
-             AMP_ERROR("Returning the rank of min with unsigned int is not supported yet");
+            MPI_ERROR("Unable to determine type of size_t");
         }
     }
 #endif
 // float
 template <>
-void AMP_MPI::call_maxReduce<float>(const float *x, float *y, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_maxReduce<float>(const float *x, float *y, const int n, int *comm_rank_of_max) const 
 {
     PROFILE_START("maxReduce1<float>",profile_level);
-    if ( comm_rank_of_min==NULL ) {
+    if ( comm_rank_of_max==NULL ) {
         MPI_Allreduce( (void*) x, (void*) y, n, MPI_FLOAT, MPI_MAX, communicator);
     } else {
          FloatIntStruct *recv = new FloatIntStruct[n];
@@ -1662,7 +1923,7 @@ void AMP_MPI::call_maxReduce<float>(const float *x, float *y, const int n, int *
          MPI_Allreduce( send, recv, n, MPI_FLOAT_INT, MPI_MAXLOC, communicator);
          for ( int i=0; i<n; ++i ) {
             y[i] = recv[i].f;
-            comm_rank_of_min[i] = recv[i].i;
+            comm_rank_of_max[i] = recv[i].i;
          }
          delete [] recv;
          delete [] send;
@@ -1670,7 +1931,7 @@ void AMP_MPI::call_maxReduce<float>(const float *x, float *y, const int n, int *
     PROFILE_STOP("maxReduce1<float>",profile_level);
 }
 template <>
-void AMP_MPI::call_maxReduce<float>(float *x, const int n, int *comm_rank_of_max) const 
+void MPI_CLASS::call_maxReduce<float>(float *x, const int n, int *comm_rank_of_max) const 
 {
     PROFILE_START("maxReduce2<float>",profile_level);
     if ( comm_rank_of_max==NULL ) {
@@ -1699,10 +1960,10 @@ void AMP_MPI::call_maxReduce<float>(float *x, const int n, int *comm_rank_of_max
 }
 // double
 template <>
-void AMP_MPI::call_maxReduce<double>(const double *x, double *y, const int n, int *comm_rank_of_min) const 
+void MPI_CLASS::call_maxReduce<double>(const double *x, double *y, const int n, int *comm_rank_of_max) const 
 {
     PROFILE_START("maxReduce1<double>",profile_level);
-    if ( comm_rank_of_min==NULL ) {
+    if ( comm_rank_of_max==NULL ) {
         MPI_Allreduce( (void*) x, (void*) y, n, MPI_DOUBLE, MPI_MAX, communicator);
     } else {
          DoubleIntStruct *recv = new DoubleIntStruct[n];
@@ -1714,7 +1975,7 @@ void AMP_MPI::call_maxReduce<double>(const double *x, double *y, const int n, in
          MPI_Allreduce( send, recv, n, MPI_DOUBLE_INT, MPI_MAXLOC, communicator);
          for ( int i=0; i<n; ++i ) {
             y[i] = recv[i].d;
-            comm_rank_of_min[i] = recv[i].i;
+            comm_rank_of_max[i] = recv[i].i;
          }
          delete [] recv;
          delete [] send;
@@ -1722,7 +1983,7 @@ void AMP_MPI::call_maxReduce<double>(const double *x, double *y, const int n, in
     PROFILE_STOP("maxReduce1<double>",profile_level);
 }
 template <>
-void AMP_MPI::call_maxReduce<double>(double *x, const int n, int *comm_rank_of_max) const 
+void MPI_CLASS::call_maxReduce<double>(double *x, const int n, int *comm_rank_of_max) const 
 {
     PROFILE_START("maxReduce2<double>",profile_level);
     if ( comm_rank_of_max==NULL ) {
@@ -1759,14 +2020,14 @@ void AMP_MPI::call_maxReduce<double>(double *x, const int n, int *comm_rank_of_m
 #ifdef USE_MPI
 // char
 template <>
-void AMP_MPI::call_bcast<unsigned char>(unsigned char *x, const int n, const int root) const 
+void MPI_CLASS::call_bcast<unsigned char>(unsigned char *x, const int n, const int root) const 
 {
     PROFILE_START("bcast<char>",profile_level);
     MPI_Bcast( x, n, MPI_CHAR, root, communicator);
     PROFILE_STOP("bcast<char>",profile_level);
 }
 template <>
-void AMP_MPI::call_bcast<char>(char *x, const int n, const int root) const 
+void MPI_CLASS::call_bcast<char>(char *x, const int n, const int root) const 
 {
     PROFILE_START("bcast<char>",profile_level);
     MPI_Bcast( x, n, MPI_CHAR, root, communicator);
@@ -1774,14 +2035,14 @@ void AMP_MPI::call_bcast<char>(char *x, const int n, const int root) const
 }
 // int
 template <>
-void AMP_MPI::call_bcast<unsigned int>(unsigned int *x, const int n, const int root) const 
+void MPI_CLASS::call_bcast<unsigned int>(unsigned int *x, const int n, const int root) const 
 {
     PROFILE_START("bcast<int>",profile_level);
     MPI_Bcast( x, n, MPI_INT, root, communicator);
     PROFILE_STOP("bcast<int>",profile_level);
 }
 template <>
-void AMP_MPI::call_bcast<int>(int *x, const int n, const int root) const 
+void MPI_CLASS::call_bcast<int>(int *x, const int n, const int root) const 
 {
     PROFILE_START("bcast<int>",profile_level);
     MPI_Bcast( x, n, MPI_INT, root, communicator);
@@ -1789,7 +2050,7 @@ void AMP_MPI::call_bcast<int>(int *x, const int n, const int root) const
 }
 // float
 template <>
-void AMP_MPI::call_bcast<float>(float *x, const int n, const int root) const 
+void MPI_CLASS::call_bcast<float>(float *x, const int n, const int root) const 
 {
     PROFILE_START("bcast<float>",profile_level);
     MPI_Bcast( x, n, MPI_FLOAT, root, communicator);
@@ -1797,7 +2058,7 @@ void AMP_MPI::call_bcast<float>(float *x, const int n, const int root) const
 }
 // double
 template <>
-void AMP_MPI::call_bcast<double>(double *x, const int n, const int root) const 
+void MPI_CLASS::call_bcast<double>(double *x, const int n, const int root) const 
 {
     PROFILE_START("bcast<double>",profile_level);
     MPI_Bcast( x, n, MPI_DOUBLE, root, communicator);
@@ -1806,9 +2067,9 @@ void AMP_MPI::call_bcast<double>(double *x, const int n, const int root) const
 #else
 // We need a concrete instantiation of bcast<char>(x,n,root);
 template <>
-void AMP_MPI::call_bcast<char>(char *x, const int n, const int root) const 
+void MPI_CLASS::call_bcast<char>(char *x, const int n, const int root) const 
 {
-    AMP_ERROR("Internal error in AMP_MPI (bcast) ");
+    MPI_ERROR("Internal error in AMP_MPI (bcast) ");
 }
 #endif
 
@@ -1816,7 +2077,7 @@ void AMP_MPI::call_bcast<char>(char *x, const int n, const int root) const
 /************************************************************************
 *  Perform a global barrier across all processors.                      *
 ************************************************************************/
-void AMP_MPI::barrier() const
+void MPI_CLASS::barrier() const
 {
     #ifdef USE_MPI
         MPI_Barrier(communicator);
@@ -1831,12 +2092,12 @@ void AMP_MPI::barrier() const
 #ifdef USE_MPI
 // char
 template <>
-void AMP_MPI::send<char>(const char *buf, const int length, 
+void MPI_CLASS::send<char>(const char *buf, const int length, 
     const int recv_proc_number, int tag) const
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Send the data
     PROFILE_START("send<char>",profile_level);
     MPI_Send((void*)buf, length, MPI_CHAR, recv_proc_number, tag, communicator);
@@ -1844,12 +2105,12 @@ void AMP_MPI::send<char>(const char *buf, const int length,
 }
 // int
 template <>
-void AMP_MPI::send<int>(const int *buf, const int length, 
+void MPI_CLASS::send<int>(const int *buf, const int length, 
     const int recv_proc_number, int tag) const
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Send the data 
     PROFILE_START("send<int>",profile_level);
     MPI_Send((void*)buf, length, MPI_INT, recv_proc_number, tag, communicator);
@@ -1857,12 +2118,12 @@ void AMP_MPI::send<int>(const int *buf, const int length,
 }
 // float
 template <>
-void AMP_MPI::send<float>(const float *buf, const int length, 
+void MPI_CLASS::send<float>(const float *buf, const int length, 
     const int recv_proc_number, int tag) const
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Send the data 
     PROFILE_START("send<float>",profile_level);
     MPI_Send((void*)buf, length, MPI_FLOAT, recv_proc_number, tag, communicator);
@@ -1870,12 +2131,12 @@ void AMP_MPI::send<float>(const float *buf, const int length,
 }
 // double
 template <>
-void AMP_MPI::send<double>(const double *buf, const int length, 
+void MPI_CLASS::send<double>(const double *buf, const int length, 
     const int recv_proc_number, int tag) const
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     // Send the data 
     PROFILE_START("send<double>",profile_level);
     MPI_Send((void*)buf, length, MPI_DOUBLE, recv_proc_number, tag, communicator);
@@ -1884,16 +2145,16 @@ void AMP_MPI::send<double>(const double *buf, const int length,
 #else
 // We need a concrete instantiation of send for use without MPI
 template <>
-void AMP_MPI::send<char>(const char *buf, const int length, 
+void MPI_CLASS::send<char>(const char *buf, const int length, 
     const int recv_proc_number, int tag) const
 {
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag>=0,"tag must be >= 0");
     PROFILE_START("send<char>",profile_level);
     MPI_Request id = getRequest( communicator, tag );
     std::map<MPI_Request,Isendrecv_struct>::iterator it = global_isendrecv_list.find(id);
-    AMP_INSIST(it==global_isendrecv_list.end(),"send must be paired with a previous call to irecv in serial");
-    AMP_ASSERT(it->second.status==2);
+    MPI_INSIST(it==global_isendrecv_list.end(),"send must be paired with a previous call to irecv in serial");
+    MPI_ASSERT(it->second.status==2);
     memcpy((char*)it->second.data,buf,length);
     global_isendrecv_list.erase( it );
     PROFILE_START("send<char>",profile_level);
@@ -1908,10 +2169,10 @@ void AMP_MPI::send<char>(const char *buf, const int length,
 #ifdef USE_MPI
 // char
 template <>
-MPI_Request AMP_MPI::Isend<char>(const char *buf, const int length, const int recv_proc, const int tag) const
+MPI_Request MPI_CLASS::Isend<char>(const char *buf, const int length, const int recv_proc, const int tag) const
 {
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag>=0,"tag must be >= 0");
     MPI_Request request;
     PROFILE_START("Isend<char>",profile_level);
     MPI_Isend((void*)buf, length, MPI_CHAR, recv_proc, tag, communicator, &request);
@@ -1920,10 +2181,10 @@ MPI_Request AMP_MPI::Isend<char>(const char *buf, const int length, const int re
 }
 // int
 template <>
-MPI_Request AMP_MPI::Isend<int>(const int *buf, const int length, const int recv_proc, const int tag) const
+MPI_Request MPI_CLASS::Isend<int>(const int *buf, const int length, const int recv_proc, const int tag) const
 {
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag>=0,"tag must be >= 0");
     MPI_Request request;
     PROFILE_START("Isend<int>",profile_level);
     MPI_Isend((void*)buf, length, MPI_INT, recv_proc, tag, communicator, &request);
@@ -1932,10 +2193,10 @@ MPI_Request AMP_MPI::Isend<int>(const int *buf, const int length, const int recv
 }
 // float
 template <>
-MPI_Request AMP_MPI::Isend<float>(const float *buf, const int length, const int recv_proc, const int tag) const
+MPI_Request MPI_CLASS::Isend<float>(const float *buf, const int length, const int recv_proc, const int tag) const
 {
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag>=0,"tag must be >= 0");
     MPI_Request request;
     PROFILE_START("Isend<float>",profile_level);
     MPI_Isend((void*)buf, length, MPI_FLOAT, recv_proc, tag, communicator, &request);
@@ -1944,10 +2205,10 @@ MPI_Request AMP_MPI::Isend<float>(const float *buf, const int length, const int 
 }
 // double
 template <>
-MPI_Request AMP_MPI::Isend<double>(const double *buf, const int length, const int recv_proc, const int tag) const
+MPI_Request MPI_CLASS::Isend<double>(const double *buf, const int length, const int recv_proc, const int tag) const
 {
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag>=0,"tag must be >= 0");
     MPI_Request request;
     PROFILE_START("Isend<double>",profile_level);
     MPI_Isend((void*)buf, length, MPI_DOUBLE, recv_proc, tag, communicator, &request);
@@ -1957,10 +2218,10 @@ MPI_Request AMP_MPI::Isend<double>(const double *buf, const int length, const in
 #else
 // We need a concrete instantiation of send for use without mpi
 template <>
-MPI_Request AMP_MPI::Isend<char>(const char *buf, const int length, const int recv_proc, const int tag) const
+MPI_Request MPI_CLASS::Isend<char>(const char *buf, const int length, const int recv_proc, const int tag) const
 {
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag>=0,"tag must be >= 0");
     PROFILE_START("Isend<char>",profile_level);
     MPI_Request id = getRequest( communicator, tag );
     std::map<MPI_Request,Isendrecv_struct>::iterator it = global_isendrecv_list.find(id);
@@ -1972,7 +2233,7 @@ MPI_Request AMP_MPI::Isend<char>(const char *buf, const int length, const int re
         global_isendrecv_list.insert( std::pair<MPI_Request,Isendrecv_struct>(id,data) );
     } else {
         // We called irecv first
-        AMP_ASSERT(it->second.status==2);
+        MPI_ASSERT(it->second.status==2);
         memcpy((char*)it->second.data,buf,length);
         global_isendrecv_list.erase( it );
     }
@@ -1985,11 +2246,11 @@ MPI_Request AMP_MPI::Isend<char>(const char *buf, const int length, const int re
 /************************************************************************
 *  Send byte array to another processor.                                *
 ************************************************************************/
-void AMP_MPI::sendBytes(const void *buf, const int number_bytes, 
+void MPI_CLASS::sendBytes(const void *buf, const int number_bytes, 
     const int recv_proc_number, int tag) const
 {
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag>=0,"tag must be >= 0");
     send<char>((const char*)buf,number_bytes,recv_proc_number,tag);
 }
 
@@ -1997,10 +2258,10 @@ void AMP_MPI::sendBytes(const void *buf, const int number_bytes,
 /************************************************************************
 *  Non-blocking send byte array to another processor.                   *
 ************************************************************************/
-MPI_Request AMP_MPI::IsendBytes(const void *buf, const int number_bytes, const int recv_proc, const int tag) const
+MPI_Request MPI_CLASS::IsendBytes(const void *buf, const int number_bytes, const int recv_proc, const int tag) const
 {
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag>=0,"tag must be >= 0");
     return Isend<char>((const char*)buf,number_bytes,recv_proc,tag);
 }
 
@@ -2012,18 +2273,18 @@ MPI_Request AMP_MPI::IsendBytes(const void *buf, const int number_bytes, const i
 #ifdef USE_MPI
 // char
 template <>
-void AMP_MPI::recv<char>(char *buf, int &length, 
+void MPI_CLASS::recv<char>(char *buf, int &length, 
     const int send_proc_number, const bool get_length, int tag) const
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     PROFILE_START("recv<char>",profile_level);
     // Get the recieve length if necessary
     if (get_length) {
         int bytes = this->probe( send_proc_number, tag );
         int recv_length = bytes/sizeof(char);
-        AMP_INSIST(length>=recv_length,"Recived length is larger than allocated array");
+        MPI_INSIST(length>=recv_length,"Recived length is larger than allocated array");
         length = recv_length;
     }
     // Send the data 
@@ -2033,18 +2294,18 @@ void AMP_MPI::recv<char>(char *buf, int &length,
 }
 // int
 template <>
-void AMP_MPI::recv<int>(int *buf, int &length, 
+void MPI_CLASS::recv<int>(int *buf, int &length, 
     const int send_proc_number, const bool get_length, int tag) const
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     PROFILE_START("recv<int>",profile_level);
     // Get the recieve length if necessary
     if (get_length) {
         int bytes = this->probe( send_proc_number, tag );
         int recv_length = bytes/sizeof(int);
-        AMP_INSIST(length>=recv_length,"Recived length is larger than allocated array");
+        MPI_INSIST(length>=recv_length,"Recived length is larger than allocated array");
         length = recv_length;
     }
     // Send the data 
@@ -2054,18 +2315,18 @@ void AMP_MPI::recv<int>(int *buf, int &length,
 }
 // float
 template <>
-void AMP_MPI::recv<float>(float *buf, int &length, 
+void MPI_CLASS::recv<float>(float *buf, int &length, 
     const int send_proc_number, const bool get_length, int tag) const
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     PROFILE_START("recv<float>",profile_level);
     // Get the recieve length if necessary
     if (get_length) {
         int bytes = this->probe( send_proc_number, tag );
         int recv_length = bytes/sizeof(float);
-        AMP_INSIST(length>=recv_length,"Recived length is larger than allocated array");
+        MPI_INSIST(length>=recv_length,"Recived length is larger than allocated array");
         length = recv_length;
     }
     // Send the data 
@@ -2075,18 +2336,18 @@ void AMP_MPI::recv<float>(float *buf, int &length,
 }
 // double
 template <>
-void AMP_MPI::recv<double>(double *buf, int &length, 
+void MPI_CLASS::recv<double>(double *buf, int &length, 
     const int send_proc_number, const bool get_length, int tag) const
 {
     // Set the tag to 0 if it is < 0
     tag = (tag >= 0) ? tag : 0;
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
     PROFILE_START("recv<double>",profile_level);
     // Get the recieve length if necessary
     if (get_length) {
         int bytes = this->probe( send_proc_number, tag );
         int recv_length = bytes/sizeof(double);
-        AMP_INSIST(length>=recv_length,"Recived length is larger than allocated array");
+        MPI_INSIST(length>=recv_length,"Recived length is larger than allocated array");
         length = recv_length;
     }
     // Send the data 
@@ -2097,16 +2358,16 @@ void AMP_MPI::recv<double>(double *buf, int &length,
 #else
 // We need a concrete instantiation of recv for use without mpi
 template <>
-void AMP_MPI::recv<char>(char *buf, int &length, 
+void MPI_CLASS::recv<char>(char *buf, int &length, 
     const int send_proc_number, const bool get_length, int tag) const
 {
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag>=0,"tag must be >= 0");
     PROFILE_START("recv<char>",profile_level);
     MPI_Request id = getRequest( communicator, tag );
     std::map<MPI_Request,Isendrecv_struct>::iterator it = global_isendrecv_list.find(id);
-    AMP_INSIST(it!=global_isendrecv_list.end(),"recv must be paired with a previous call to isend in serial");
-    AMP_ASSERT(it->second.status==1);
+    MPI_INSIST(it!=global_isendrecv_list.end(),"recv must be paired with a previous call to isend in serial");
+    MPI_ASSERT(it->second.status==1);
     memcpy(buf,it->second.data,length);
     global_isendrecv_list.erase( it );
     PROFILE_STOP("recv<char>",profile_level);
@@ -2121,10 +2382,10 @@ void AMP_MPI::recv<char>(char *buf, int &length,
 #ifdef USE_MPI
 // char
 template <>
-MPI_Request AMP_MPI::Irecv<char>(char *buf, const int length, const int send_proc, const int tag) const
+MPI_Request MPI_CLASS::Irecv<char>(char *buf, const int length, const int send_proc, const int tag) const
 {
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag>=0,"tag must be >= 0");
     MPI_Request request;
     PROFILE_START("Irecv<char>",profile_level);
     MPI_Irecv((void*)buf, length, MPI_CHAR, send_proc, tag, communicator, &request);
@@ -2133,10 +2394,10 @@ MPI_Request AMP_MPI::Irecv<char>(char *buf, const int length, const int send_pro
 }
 // int
 template <>
-MPI_Request AMP_MPI::Irecv<int>(int *buf, const int length, const int send_proc, const int tag) const
+MPI_Request MPI_CLASS::Irecv<int>(int *buf, const int length, const int send_proc, const int tag) const
 {
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag>=0,"tag must be >= 0");
     MPI_Request request;
     PROFILE_START("Irecv<int>",profile_level);
     MPI_Irecv((void*)buf, length, MPI_INT, send_proc, tag, communicator, &request);
@@ -2145,10 +2406,10 @@ MPI_Request AMP_MPI::Irecv<int>(int *buf, const int length, const int send_proc,
 }
 // float
 template <>
-MPI_Request AMP_MPI::Irecv<float>(float *buf, const int length, const int send_proc, const int tag) const
+MPI_Request MPI_CLASS::Irecv<float>(float *buf, const int length, const int send_proc, const int tag) const
 {
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag>=0,"tag must be >= 0");
     MPI_Request request;
     PROFILE_START("Irecv<float>",profile_level);
     MPI_Irecv((void*)buf, length, MPI_FLOAT, send_proc, tag, communicator, &request);
@@ -2157,10 +2418,10 @@ MPI_Request AMP_MPI::Irecv<float>(float *buf, const int length, const int send_p
 }
 // double
 template <>
-MPI_Request AMP_MPI::Irecv<double>(double *buf, const int length, const int send_proc, const int tag) const
+MPI_Request MPI_CLASS::Irecv<double>(double *buf, const int length, const int send_proc, const int tag) const
 {
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag>=0,"tag must be >= 0");
     MPI_Request request;
     PROFILE_START("Irecv<double>",profile_level);
     MPI_Irecv((void*)buf, length, MPI_DOUBLE, send_proc, tag, communicator, &request);
@@ -2170,10 +2431,10 @@ MPI_Request AMP_MPI::Irecv<double>(double *buf, const int length, const int send
 #else
 // We need a concrete instantiation of irecv for use without mpi
 template <>
-MPI_Request AMP_MPI::Irecv<char>(char *buf, const int length, const int send_proc, const int tag) const
+MPI_Request MPI_CLASS::Irecv<char>(char *buf, const int length, const int send_proc, const int tag) const
 {
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag>=0,"tag must be >= 0");
     PROFILE_START("Irecv<char>",profile_level);
     MPI_Request id = getRequest( communicator, tag );
     std::map<MPI_Request,Isendrecv_struct>::iterator it = global_isendrecv_list.find(id);
@@ -2185,7 +2446,7 @@ MPI_Request AMP_MPI::Irecv<char>(char *buf, const int length, const int send_pro
         global_isendrecv_list.insert( std::pair<MPI_Request,Isendrecv_struct>(id,data) );
     } else {
         // We called Isend first
-        AMP_ASSERT(it->second.status==1);
+        MPI_ASSERT(it->second.status==1);
         memcpy(buf,it->second.data,length);
         global_isendrecv_list.erase( it );
     }
@@ -2198,7 +2459,7 @@ MPI_Request AMP_MPI::Irecv<char>(char *buf, const int length, const int send_pro
 /************************************************************************
 *  Recieve byte array to another processor.                             *
 ************************************************************************/
-void AMP_MPI::recvBytes(void *buf, int &number_bytes, const int send_proc, int tag) const
+void MPI_CLASS::recvBytes(void *buf, int &number_bytes, const int send_proc, int tag) const
 {
     recv<char>((char*)buf,number_bytes,send_proc,false,tag);
 }
@@ -2207,10 +2468,10 @@ void AMP_MPI::recvBytes(void *buf, int &number_bytes, const int send_proc, int t
 /************************************************************************
 *  Recieve byte array to another processor.                             *
 ************************************************************************/
-MPI_Request AMP_MPI::IrecvBytes(void *buf, const int number_bytes, const int send_proc, const int tag) const
+MPI_Request MPI_CLASS::IrecvBytes(void *buf, const int number_bytes, const int send_proc, const int tag) const
 {
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag>=0,"tag must be >= 0");
     return Irecv<char>((char*)buf,number_bytes,send_proc,tag);
 }
 
@@ -2222,14 +2483,14 @@ MPI_Request AMP_MPI::IrecvBytes(void *buf, const int number_bytes, const int sen
 #ifdef USE_MPI
 // unsigned char
 template <>
-void AMP_MPI::call_allGather<unsigned char>(const unsigned char x_in, unsigned char *x_out) const 
+void MPI_CLASS::call_allGather<unsigned char>(const unsigned char x_in, unsigned char *x_out) const 
 {
     PROFILE_START("allGather<unsigned char>",profile_level);
     MPI_Allgather( (void*) &x_in, 1, MPI_UNSIGNED_CHAR, (void*) x_out, 1, MPI_UNSIGNED_CHAR, communicator );
     PROFILE_STOP("allGather<unsigned char>",profile_level);
 }
 template <>
-void AMP_MPI::call_allGather<unsigned char>(const unsigned char *x_in, int size_in, unsigned char *x_out, int *size_out, int *disp_out) const 
+void MPI_CLASS::call_allGather<unsigned char>(const unsigned char *x_in, int size_in, unsigned char *x_out, int *size_out, int *disp_out) const 
 {
     PROFILE_START("allGatherv<unsigned char>",profile_level);
     MPI_Allgatherv( (void*) x_in, size_in, MPI_CHAR, (void*) x_out, size_out, disp_out, MPI_CHAR, communicator );
@@ -2237,14 +2498,14 @@ void AMP_MPI::call_allGather<unsigned char>(const unsigned char *x_in, int size_
 }
 // char
 template <>
-void AMP_MPI::call_allGather<char>(const char x_in, char *x_out) const 
+void MPI_CLASS::call_allGather<char>(const char x_in, char *x_out) const 
 {
     PROFILE_START("allGather<char>",profile_level);
     MPI_Allgather( (void*) &x_in, 1, MPI_CHAR, (void*) x_out, 1, MPI_CHAR, communicator );
     PROFILE_STOP("allGather<char>",profile_level);
 }
 template <>
-void AMP_MPI::call_allGather<char>(const char *x_in, int size_in, char *x_out, int *size_out, int *disp_out) const 
+void MPI_CLASS::call_allGather<char>(const char *x_in, int size_in, char *x_out, int *size_out, int *disp_out) const 
 {
     PROFILE_START("allGatherv<char>",profile_level);
     MPI_Allgatherv( (void*) x_in, size_in, MPI_CHAR, (void*) x_out, size_out, disp_out, MPI_CHAR, communicator );
@@ -2252,14 +2513,14 @@ void AMP_MPI::call_allGather<char>(const char *x_in, int size_in, char *x_out, i
 }
 // unsigned int
 template <>
-void AMP_MPI::call_allGather<unsigned int>(const unsigned int x_in, unsigned int *x_out) const 
+void MPI_CLASS::call_allGather<unsigned int>(const unsigned int x_in, unsigned int *x_out) const 
 {
     PROFILE_START("allGather<unsigned int>",profile_level);
     MPI_Allgather( (void*) &x_in, 1, MPI_UNSIGNED, (void*) x_out, 1, MPI_UNSIGNED, communicator );
     PROFILE_STOP("allGather<unsigned int>",profile_level);
 }
 template <>
-void AMP_MPI::call_allGather<unsigned int>(const unsigned int *x_in, int size_in, unsigned int *x_out, int *size_out, int *disp_out) const 
+void MPI_CLASS::call_allGather<unsigned int>(const unsigned int *x_in, int size_in, unsigned int *x_out, int *size_out, int *disp_out) const 
 {
     PROFILE_START("allGatherv<unsigned int>",profile_level);
     MPI_Allgatherv( (void*) x_in, size_in, MPI_UNSIGNED, (void*) x_out, size_out, disp_out, MPI_UNSIGNED, communicator );
@@ -2267,14 +2528,14 @@ void AMP_MPI::call_allGather<unsigned int>(const unsigned int *x_in, int size_in
 }
 // int
 template <>
-void AMP_MPI::call_allGather<int>(const int x_in, int *x_out) const 
+void MPI_CLASS::call_allGather<int>(const int x_in, int *x_out) const 
 {
     PROFILE_START("allGather<int>",profile_level);
     MPI_Allgather( (void*) &x_in, 1, MPI_INT, (void*) x_out, 1, MPI_INT, communicator );
     PROFILE_STOP("allGather<int>",profile_level);
 }
 template <>
-void AMP_MPI::call_allGather<int>(const int *x_in, int size_in, int *x_out, int *size_out, int *disp_out) const 
+void MPI_CLASS::call_allGather<int>(const int *x_in, int size_in, int *x_out, int *size_out, int *disp_out) const 
 {
     PROFILE_START("allGatherv<int>",profile_level);
     MPI_Allgatherv( (void*) x_in, size_in, MPI_INT, (void*) x_out, size_out, disp_out, MPI_INT, communicator );
@@ -2282,14 +2543,14 @@ void AMP_MPI::call_allGather<int>(const int *x_in, int size_in, int *x_out, int 
 }
 // unsigned long int
 template <>
-void AMP_MPI::call_allGather<unsigned long int>(const unsigned long int x_in, unsigned long int *x_out) const 
+void MPI_CLASS::call_allGather<unsigned long int>(const unsigned long int x_in, unsigned long int *x_out) const 
 {
     PROFILE_START("allGather<unsigned long>",profile_level);
     MPI_Allgather( (void*) &x_in, 1, MPI_UNSIGNED_LONG, (void*) x_out, 1, MPI_UNSIGNED_LONG, communicator );
     PROFILE_STOP("allGather<unsigned long>",profile_level);
 }
 template <>
-void AMP_MPI::call_allGather<unsigned long int>(const unsigned long int *x_in, int size_in, unsigned long int *x_out, int *size_out, int *disp_out) const 
+void MPI_CLASS::call_allGather<unsigned long int>(const unsigned long int *x_in, int size_in, unsigned long int *x_out, int *size_out, int *disp_out) const 
 {
     PROFILE_START("allGatherv<unsigned long>",profile_level);
     MPI_Allgatherv( (void*) x_in, size_in, MPI_UNSIGNED_LONG, (void*) x_out, size_out, disp_out, MPI_UNSIGNED_LONG, communicator );
@@ -2297,14 +2558,14 @@ void AMP_MPI::call_allGather<unsigned long int>(const unsigned long int *x_in, i
 }
 // long int
 template <>
-void AMP_MPI::call_allGather<long int>(const long int x_in, long int *x_out) const 
+void MPI_CLASS::call_allGather<long int>(const long int x_in, long int *x_out) const 
 {
     PROFILE_START("allGather<long int>",profile_level);
     MPI_Allgather( (void*) &x_in, 1, MPI_LONG, (void*) x_out, 1, MPI_LONG, communicator );
     PROFILE_STOP("allGather<long int>",profile_level);
 }
 template <>
-void AMP_MPI::call_allGather<long int>(const long int *x_in, int size_in, long int *x_out, int *size_out, int *disp_out) const 
+void MPI_CLASS::call_allGather<long int>(const long int *x_in, int size_in, long int *x_out, int *size_out, int *disp_out) const 
 {
     PROFILE_START("allGatherv<long int>",profile_level);
     MPI_Allgatherv( (void*) x_in, size_in, MPI_LONG, (void*) x_out, size_out, disp_out, MPI_LONG, communicator );
@@ -2312,14 +2573,14 @@ void AMP_MPI::call_allGather<long int>(const long int *x_in, int size_in, long i
 }
 // float
 template <>
-void AMP_MPI::call_allGather<float>(const float x_in, float *x_out) const 
+void MPI_CLASS::call_allGather<float>(const float x_in, float *x_out) const 
 {
     PROFILE_START("allGather<float>",profile_level);
     MPI_Allgather( (void*) &x_in, 1, MPI_FLOAT, (void*) x_out, 1, MPI_FLOAT, communicator );
     PROFILE_STOP("allGather<float>",profile_level);
 }
 template <>
-void AMP_MPI::call_allGather<float>(const float *x_in, int size_in, float *x_out, int *size_out, int *disp_out) const 
+void MPI_CLASS::call_allGather<float>(const float *x_in, int size_in, float *x_out, int *size_out, int *disp_out) const 
 {
     PROFILE_START("allGatherv<float>",profile_level);
     MPI_Allgatherv( (void*) x_in, size_in, MPI_FLOAT, (void*) x_out, size_out, disp_out, MPI_FLOAT, communicator );
@@ -2327,14 +2588,14 @@ void AMP_MPI::call_allGather<float>(const float *x_in, int size_in, float *x_out
 }
 // double
 template <>
-void AMP_MPI::call_allGather<double>(const double x_in, double *x_out) const 
+void MPI_CLASS::call_allGather<double>(const double x_in, double *x_out) const 
 {
     PROFILE_START("allGather<double>",profile_level);
     MPI_Allgather( (void*) &x_in, 1, MPI_DOUBLE, (void*) x_out, 1, MPI_DOUBLE, communicator );
     PROFILE_STOP("allGather<double>",profile_level);
 }
 template <>
-void AMP_MPI::call_allGather<double>(const double *x_in, int size_in, double *x_out, int *size_out, int *disp_out) const 
+void MPI_CLASS::call_allGather<double>(const double *x_in, int size_in, double *x_out, int *size_out, int *disp_out) const 
 {
     PROFILE_START("allGatherv<double>",profile_level);
     MPI_Allgatherv( (void*) x_in, size_in, MPI_DOUBLE, (void*) x_out, size_out, disp_out, MPI_DOUBLE, communicator );
@@ -2343,9 +2604,9 @@ void AMP_MPI::call_allGather<double>(const double *x_in, int size_in, double *x_
 #else
 // We need a concrete instantiation of call_allGather<char>(x_in,size_in,x_out,size_out)
 template <>
-void AMP_MPI::call_allGather<char>(const char *x_in, int size_in, char *x_out, int *size_out, int *disp_out) const 
+void MPI_CLASS::call_allGather<char>(const char *x_in, int size_in, char *x_out, int *size_out, int *disp_out) const 
 {
-    AMP_ERROR("Internal error in AMP_MPI (allGather) ");
+    MPI_ERROR("Internal error in AMP_MPI (allGather) ");
 }
 #endif
 
@@ -2355,49 +2616,49 @@ void AMP_MPI::call_allGather<char>(const char *x_in, int size_in, char *x_out, i
 *  Note: these specializations are only called when using MPI.          *
 ************************************************************************/
 #ifdef USE_MPI
-template <> void AMP_MPI::allToAll<unsigned char>(const int n, const unsigned char *send, unsigned char *recv ) const 
+template <> void MPI_CLASS::allToAll<unsigned char>(const int n, const unsigned char *send, unsigned char *recv ) const 
 {
     PROFILE_START("allToAll<unsigned char>",profile_level);
     MPI_Alltoall( (void*) send, n, MPI_UNSIGNED_CHAR, (void*) recv, n, MPI_UNSIGNED_CHAR, communicator);
     PROFILE_STOP("allToAll<unsigned char>",profile_level);
 }
-template <> void AMP_MPI::allToAll<char>(const int n, const char *send, char *recv ) const 
+template <> void MPI_CLASS::allToAll<char>(const int n, const char *send, char *recv ) const 
 {
     PROFILE_START("allToAll<char>",profile_level);
     MPI_Alltoall( (void*) send, n, MPI_CHAR, (void*) recv, n, MPI_CHAR, communicator);
     PROFILE_STOP("allToAll<char>",profile_level);
 }
-template <> void AMP_MPI::allToAll<unsigned int>(const int n, const unsigned int *send, unsigned int *recv ) const 
+template <> void MPI_CLASS::allToAll<unsigned int>(const int n, const unsigned int *send, unsigned int *recv ) const 
 {
     PROFILE_START("allToAll<unsigned int>",profile_level);
     MPI_Alltoall( (void*) send, n, MPI_UNSIGNED, (void*) recv, n, MPI_UNSIGNED, communicator);
     PROFILE_STOP("allToAll<unsigned int>",profile_level);
 }
-template <> void AMP_MPI::allToAll<int>(const int n, const int *send, int *recv ) const 
+template <> void MPI_CLASS::allToAll<int>(const int n, const int *send, int *recv ) const 
 {
     PROFILE_START("allToAll<int>",profile_level);
     MPI_Alltoall( (void*) send, n, MPI_INT, (void*) recv, n, MPI_INT, communicator);
     PROFILE_STOP("allToAll<int>",profile_level);
 }
-template <> void AMP_MPI::allToAll<unsigned long int>(const int n, const unsigned long int *send, unsigned long int *recv ) const 
+template <> void MPI_CLASS::allToAll<unsigned long int>(const int n, const unsigned long int *send, unsigned long int *recv ) const 
 {
     PROFILE_START("allToAll<unsigned long>",profile_level);
     MPI_Alltoall( (void*) send, n, MPI_UNSIGNED_LONG, (void*) recv, n, MPI_UNSIGNED_LONG, communicator);
     PROFILE_STOP("allToAll<unsigned long>",profile_level);
 }
-template <> void AMP_MPI::allToAll<long int>(const int n, const long int *send, long int *recv ) const 
+template <> void MPI_CLASS::allToAll<long int>(const int n, const long int *send, long int *recv ) const 
 {
     PROFILE_START("allToAll<long int>",profile_level);
     MPI_Alltoall( (void*) send, n, MPI_LONG, (void*) recv, n, MPI_LONG, communicator);
     PROFILE_STOP("allToAll<long int>",profile_level);
 }
-template <> void AMP_MPI::allToAll<float>(const int n, const float *send, float *recv ) const 
+template <> void MPI_CLASS::allToAll<float>(const int n, const float *send, float *recv ) const 
 {
     PROFILE_START("allToAll<float>",profile_level);
     MPI_Alltoall( (void*) send, n, MPI_FLOAT, (void*) recv, n, MPI_FLOAT, communicator);
     PROFILE_STOP("allToAll<float>",profile_level);
 }
-template <> void AMP_MPI::allToAll<double>(const int n, const double *send, double *recv ) const 
+template <> void MPI_CLASS::allToAll<double>(const int n, const double *send, double *recv ) const 
 {
     PROFILE_START("allToAll<double>",profile_level);
     MPI_Alltoall( (void*) send, n, MPI_DOUBLE, (void*) recv, n, MPI_DOUBLE, communicator);
@@ -2413,7 +2674,7 @@ template <> void AMP_MPI::allToAll<double>(const int n, const double *send, doub
 #ifdef USE_MPI
 // unsigned char
 template <>
-void AMP_MPI::call_allToAll<unsigned char>(const unsigned char *send_data, const int send_cnt[], 
+void MPI_CLASS::call_allToAll<unsigned char>(const unsigned char *send_data, const int send_cnt[], 
         const int send_disp[], unsigned char *recv_data, const int *recv_cnt, const int *recv_disp) const
 {
     PROFILE_START("allToAllv<unsigned char>",profile_level);
@@ -2423,7 +2684,7 @@ void AMP_MPI::call_allToAll<unsigned char>(const unsigned char *send_data, const
 }
 // char
 template <>
-void AMP_MPI::call_allToAll<char>(const char *send_data, const int send_cnt[], 
+void MPI_CLASS::call_allToAll<char>(const char *send_data, const int send_cnt[], 
         const int send_disp[], char *recv_data, const int *recv_cnt, const int *recv_disp) const
 {
     PROFILE_START("allToAllv<char>",profile_level);
@@ -2433,7 +2694,7 @@ void AMP_MPI::call_allToAll<char>(const char *send_data, const int send_cnt[],
 }
 // unsigned int
 template <>
-void AMP_MPI::call_allToAll<unsigned int>(const unsigned int *send_data, const int send_cnt[], 
+void MPI_CLASS::call_allToAll<unsigned int>(const unsigned int *send_data, const int send_cnt[], 
         const int send_disp[], unsigned int *recv_data, const int *recv_cnt, const int *recv_disp) const
 {
     PROFILE_START("allToAllv<unsigned int>",profile_level);
@@ -2443,7 +2704,7 @@ void AMP_MPI::call_allToAll<unsigned int>(const unsigned int *send_data, const i
 }
 // int
 template <>
-void AMP_MPI::call_allToAll<int>(const int *send_data, const int send_cnt[], 
+void MPI_CLASS::call_allToAll<int>(const int *send_data, const int send_cnt[], 
         const int send_disp[], int *recv_data, const int *recv_cnt, const int *recv_disp) const
 {
     PROFILE_START("allToAllv<int>",profile_level);
@@ -2453,7 +2714,7 @@ void AMP_MPI::call_allToAll<int>(const int *send_data, const int send_cnt[],
 }
 // unsigned long int
 template <>
-void AMP_MPI::call_allToAll<unsigned long int>(const unsigned long int *send_data, const int send_cnt[], 
+void MPI_CLASS::call_allToAll<unsigned long int>(const unsigned long int *send_data, const int send_cnt[], 
         const int send_disp[], unsigned long int *recv_data, const int *recv_cnt, const int *recv_disp) const
 {
     PROFILE_START("allToAllv<unsigned long>",profile_level);
@@ -2463,7 +2724,7 @@ void AMP_MPI::call_allToAll<unsigned long int>(const unsigned long int *send_dat
 }
 // long int
 template <>
-void AMP_MPI::call_allToAll<long int>(const long int *send_data, const int send_cnt[], 
+void MPI_CLASS::call_allToAll<long int>(const long int *send_data, const int send_cnt[], 
         const int send_disp[], long int *recv_data, const int *recv_cnt, const int *recv_disp) const
 {
     PROFILE_START("allToAllv<long int>",profile_level);
@@ -2473,7 +2734,7 @@ void AMP_MPI::call_allToAll<long int>(const long int *send_data, const int send_
 }
 // float
 template <>
-void AMP_MPI::call_allToAll<float>(const float *send_data, const int send_cnt[], 
+void MPI_CLASS::call_allToAll<float>(const float *send_data, const int send_cnt[], 
         const int send_disp[], float *recv_data, const int *recv_cnt, const int *recv_disp) const
 {
     PROFILE_START("allToAllv<float>",profile_level);
@@ -2483,7 +2744,7 @@ void AMP_MPI::call_allToAll<float>(const float *send_data, const int send_cnt[],
 }
 // double
 template <>
-void AMP_MPI::call_allToAll<double>(const double *send_data, const int send_cnt[], 
+void MPI_CLASS::call_allToAll<double>(const double *send_data, const int send_cnt[], 
         const int send_disp[], double *recv_data, const int *recv_cnt, const int *recv_disp) const
 {
     PROFILE_START("allToAllv<double>",profile_level);
@@ -2494,10 +2755,10 @@ void AMP_MPI::call_allToAll<double>(const double *send_data, const int send_cnt[
 #else
 // Default instatiation of unsigned char
 template <>
-void AMP_MPI::call_allToAll<char>(const char *send_data, const int send_cnt[], 
+void MPI_CLASS::call_allToAll<char>(const char *send_data, const int send_cnt[], 
         const int send_disp[], char *recv_data, const int *recv_cnt, const int *recv_disp) const
 {
-    AMP_ERROR("Should not reach this point");
+    MPI_ERROR("Should not reach this point");
 }
 #endif
 
@@ -2509,7 +2770,7 @@ void AMP_MPI::call_allToAll<char>(const char *send_data, const int send_cnt[],
 #ifdef USE_MPI
 // unsigned char
 template <>
-void AMP_MPI::call_sumScan<unsigned char>(const unsigned char *send, unsigned char *recv, int n) const 
+void MPI_CLASS::call_sumScan<unsigned char>(const unsigned char *send, unsigned char *recv, int n) const 
 {
     PROFILE_START("sumScan<unsigned char>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_UNSIGNED_CHAR, MPI_SUM, communicator);
@@ -2517,7 +2778,7 @@ void AMP_MPI::call_sumScan<unsigned char>(const unsigned char *send, unsigned ch
 }
 // char
 template <>
-void AMP_MPI::call_sumScan<char>(const char *send, char *recv, int n) const 
+void MPI_CLASS::call_sumScan<char>(const char *send, char *recv, int n) const 
 {
     PROFILE_START("sumScan<char>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_SIGNED_CHAR, MPI_SUM, communicator);
@@ -2525,7 +2786,7 @@ void AMP_MPI::call_sumScan<char>(const char *send, char *recv, int n) const
 }
 // unsigned int
 template <>
-void AMP_MPI::call_sumScan<unsigned int>(const unsigned int *send, unsigned int *recv, int n) const 
+void MPI_CLASS::call_sumScan<unsigned int>(const unsigned int *send, unsigned int *recv, int n) const 
 {
     PROFILE_START("sumScan<unsigned int>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_UNSIGNED, MPI_SUM, communicator);
@@ -2533,7 +2794,7 @@ void AMP_MPI::call_sumScan<unsigned int>(const unsigned int *send, unsigned int 
 }
 // int
 template <>
-void AMP_MPI::call_sumScan<int>(const int *send, int *recv, int n) const 
+void MPI_CLASS::call_sumScan<int>(const int *send, int *recv, int n) const 
 {
     PROFILE_START("sumScan<int>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_INT, MPI_SUM, communicator);
@@ -2541,7 +2802,7 @@ void AMP_MPI::call_sumScan<int>(const int *send, int *recv, int n) const
 }
 // long int
 template <>
-void AMP_MPI::call_sumScan<long int>(const long int *send, long int *recv, int n) const 
+void MPI_CLASS::call_sumScan<long int>(const long int *send, long int *recv, int n) const 
 {
     PROFILE_START("sumScan<long int>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_LONG, MPI_SUM, communicator);
@@ -2549,7 +2810,7 @@ void AMP_MPI::call_sumScan<long int>(const long int *send, long int *recv, int n
 }
 // unsigned long int
 template <>
-void AMP_MPI::call_sumScan<unsigned long>(const unsigned long *send, unsigned long *recv, int n) const 
+void MPI_CLASS::call_sumScan<unsigned long>(const unsigned long *send, unsigned long *recv, int n) const 
 {
     PROFILE_START("sumScan<unsigned long>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_SUM, communicator);
@@ -2558,7 +2819,7 @@ void AMP_MPI::call_sumScan<unsigned long>(const unsigned long *send, unsigned lo
 // size_t
 #ifdef USE_WINDOWS
 template <>
-void AMP_MPI::call_sumScan<size_t>(const size_t *send, size_t *recv, int n) const 
+void MPI_CLASS::call_sumScan<size_t>(const size_t *send, size_t *recv, int n) const 
 {
     PROFILE_START("sumScan<size_t>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_SUM, communicator);
@@ -2567,7 +2828,7 @@ void AMP_MPI::call_sumScan<size_t>(const size_t *send, size_t *recv, int n) cons
 #endif
 // float
 template <>
-void AMP_MPI::call_sumScan<float>(const float *send, float *recv, int n) const 
+void MPI_CLASS::call_sumScan<float>(const float *send, float *recv, int n) const 
 {
     PROFILE_START("sumScan<float>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_FLOAT, MPI_SUM, communicator);
@@ -2575,7 +2836,7 @@ void AMP_MPI::call_sumScan<float>(const float *send, float *recv, int n) const
 }
 // double
 template <>
-void AMP_MPI::call_sumScan<double>(const double *send, double *recv, int n) const 
+void MPI_CLASS::call_sumScan<double>(const double *send, double *recv, int n) const 
 {
     PROFILE_START("sumScan<double>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_DOUBLE, MPI_SUM, communicator);
@@ -2583,7 +2844,7 @@ void AMP_MPI::call_sumScan<double>(const double *send, double *recv, int n) cons
 }
 // std::complex<double>
 template <>
-void AMP_MPI::call_sumScan< std::complex<double> >(const std::complex<double> *x, std::complex<double> *y, int n) const 
+void MPI_CLASS::call_sumScan< std::complex<double> >(const std::complex<double> *x, std::complex<double> *y, int n) const 
 {
     double *send = new double[2*n];
     double *recv = new double[2*n];
@@ -2607,7 +2868,7 @@ void AMP_MPI::call_sumScan< std::complex<double> >(const std::complex<double> *x
 #ifdef USE_MPI
 // unsigned char
 template <>
-void AMP_MPI::call_minScan<unsigned char>(const unsigned char *send, unsigned char *recv, int n) const 
+void MPI_CLASS::call_minScan<unsigned char>(const unsigned char *send, unsigned char *recv, int n) const 
 {
     PROFILE_START("minScan<unsigned char>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_UNSIGNED_CHAR, MPI_MIN, communicator);
@@ -2615,7 +2876,7 @@ void AMP_MPI::call_minScan<unsigned char>(const unsigned char *send, unsigned ch
 }
 // char
 template <>
-void AMP_MPI::call_minScan<char>(const char *send, char *recv, int n) const 
+void MPI_CLASS::call_minScan<char>(const char *send, char *recv, int n) const 
 {
     PROFILE_START("minScan<char>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_SIGNED_CHAR, MPI_MIN, communicator);
@@ -2623,7 +2884,7 @@ void AMP_MPI::call_minScan<char>(const char *send, char *recv, int n) const
 }
 // unsigned int
 template <>
-void AMP_MPI::call_minScan<unsigned int>(const unsigned int *send, unsigned int *recv, int n) const 
+void MPI_CLASS::call_minScan<unsigned int>(const unsigned int *send, unsigned int *recv, int n) const 
 {
     PROFILE_START("minScan<unsigned int>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_UNSIGNED, MPI_MIN, communicator);
@@ -2631,7 +2892,7 @@ void AMP_MPI::call_minScan<unsigned int>(const unsigned int *send, unsigned int 
 }
 // int
 template <>
-void AMP_MPI::call_minScan<int>(const int *send, int *recv, int n) const 
+void MPI_CLASS::call_minScan<int>(const int *send, int *recv, int n) const 
 {
     PROFILE_START("minScan<int>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_INT, MPI_MIN, communicator);
@@ -2639,7 +2900,7 @@ void AMP_MPI::call_minScan<int>(const int *send, int *recv, int n) const
 }
 // unsigned long int
 template <>
-void AMP_MPI::call_minScan<unsigned long int>(const unsigned long int *send, unsigned long int *recv, int n) const 
+void MPI_CLASS::call_minScan<unsigned long int>(const unsigned long int *send, unsigned long int *recv, int n) const 
 {
     PROFILE_START("minScan<unsigned long>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_MIN, communicator);
@@ -2647,7 +2908,7 @@ void AMP_MPI::call_minScan<unsigned long int>(const unsigned long int *send, uns
 }
 // long int
 template <>
-void AMP_MPI::call_minScan<long int>(const long int *send, long int *recv, int n) const 
+void MPI_CLASS::call_minScan<long int>(const long int *send, long int *recv, int n) const 
 {
     PROFILE_START("minScan<long int>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_LONG, MPI_MIN, communicator);
@@ -2656,7 +2917,7 @@ void AMP_MPI::call_minScan<long int>(const long int *send, long int *recv, int n
 // size_t
 #ifdef USE_WINDOWS
 template <>
-void AMP_MPI::call_minScan<size_t>(const size_t *send, size_t *recv, int n) const 
+void MPI_CLASS::call_minScan<size_t>(const size_t *send, size_t *recv, int n) const 
 {
     PROFILE_START("minScan<size_t>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_MIN, communicator);
@@ -2665,7 +2926,7 @@ void AMP_MPI::call_minScan<size_t>(const size_t *send, size_t *recv, int n) cons
 #endif
 // float
 template <>
-void AMP_MPI::call_minScan<float>(const float *send, float *recv, int n) const 
+void MPI_CLASS::call_minScan<float>(const float *send, float *recv, int n) const 
 {
     PROFILE_START("minScan<float>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_FLOAT, MPI_MIN, communicator);
@@ -2673,7 +2934,7 @@ void AMP_MPI::call_minScan<float>(const float *send, float *recv, int n) const
 }
 // double
 template <>
-void AMP_MPI::call_minScan<double>(const double *send, double *recv, int n) const 
+void MPI_CLASS::call_minScan<double>(const double *send, double *recv, int n) const 
 {
     PROFILE_START("minScan<double>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_DOUBLE, MPI_MIN, communicator);
@@ -2689,7 +2950,7 @@ void AMP_MPI::call_minScan<double>(const double *send, double *recv, int n) cons
 #ifdef USE_MPI
 // unsigned char
 template <>
-void AMP_MPI::call_maxScan<unsigned char>(const unsigned char *send, unsigned char *recv, int n) const 
+void MPI_CLASS::call_maxScan<unsigned char>(const unsigned char *send, unsigned char *recv, int n) const 
 {
     PROFILE_START("maxScan<unsigned char>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_UNSIGNED_CHAR, MPI_MAX, communicator);
@@ -2697,7 +2958,7 @@ void AMP_MPI::call_maxScan<unsigned char>(const unsigned char *send, unsigned ch
 }
 // char
 template <>
-void AMP_MPI::call_maxScan<char>(const char *send, char *recv, int n) const 
+void MPI_CLASS::call_maxScan<char>(const char *send, char *recv, int n) const 
 {
     PROFILE_START("maxScan<char>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_SIGNED_CHAR, MPI_MAX, communicator);
@@ -2705,7 +2966,7 @@ void AMP_MPI::call_maxScan<char>(const char *send, char *recv, int n) const
 }
 // unsigned int
 template <>
-void AMP_MPI::call_maxScan<unsigned int>(const unsigned int *send, unsigned int *recv, int n) const 
+void MPI_CLASS::call_maxScan<unsigned int>(const unsigned int *send, unsigned int *recv, int n) const 
 {
     PROFILE_START("maxScan<unsigned int>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_UNSIGNED, MPI_MAX, communicator);
@@ -2713,7 +2974,7 @@ void AMP_MPI::call_maxScan<unsigned int>(const unsigned int *send, unsigned int 
 }
 // int
 template <>
-void AMP_MPI::call_maxScan<int>(const int *send, int *recv, int n) const 
+void MPI_CLASS::call_maxScan<int>(const int *send, int *recv, int n) const 
 {
     PROFILE_START("maxScan<int>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_INT, MPI_MAX, communicator);
@@ -2721,7 +2982,7 @@ void AMP_MPI::call_maxScan<int>(const int *send, int *recv, int n) const
 }
 // long int
 template <>
-void AMP_MPI::call_maxScan<long int>(const long int *send, long int *recv, int n) const 
+void MPI_CLASS::call_maxScan<long int>(const long int *send, long int *recv, int n) const 
 {
     PROFILE_START("maxScan<long int>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_LONG, MPI_MAX, communicator);
@@ -2729,7 +2990,7 @@ void AMP_MPI::call_maxScan<long int>(const long int *send, long int *recv, int n
 }
 // unsigned long int
 template <>
-void AMP_MPI::call_maxScan<unsigned long int>(const unsigned long int *send, unsigned long int *recv, int n) const 
+void MPI_CLASS::call_maxScan<unsigned long int>(const unsigned long int *send, unsigned long int *recv, int n) const 
 {
     PROFILE_START("maxScan<unsigned long>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_UNSIGNED_LONG, MPI_MAX, communicator);
@@ -2738,7 +2999,7 @@ void AMP_MPI::call_maxScan<unsigned long int>(const unsigned long int *send, uns
 // size_t
 #ifdef USE_WINDOWS
 template <>
-void AMP_MPI::call_maxScan<size_t>(const size_t *send, size_t *recv, int n) const 
+void MPI_CLASS::call_maxScan<size_t>(const size_t *send, size_t *recv, int n) const 
 {
     PROFILE_START("maxScan<size_t>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_MAX, communicator);
@@ -2747,7 +3008,7 @@ void AMP_MPI::call_maxScan<size_t>(const size_t *send, size_t *recv, int n) cons
 #endif
 // float
 template <>
-void AMP_MPI::call_maxScan<float>(const float *send, float *recv, int n) const 
+void MPI_CLASS::call_maxScan<float>(const float *send, float *recv, int n) const 
 {
     PROFILE_START("maxScan<float>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_INT, MPI_MAX, communicator);
@@ -2755,7 +3016,7 @@ void AMP_MPI::call_maxScan<float>(const float *send, float *recv, int n) const
 }
 // double
 template <>
-void AMP_MPI::call_maxScan<double>(const double *send, double *recv, int n) const 
+void MPI_CLASS::call_maxScan<double>(const double *send, double *recv, int n) const 
 {
     PROFILE_START("maxScan<double>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_DOUBLE, MPI_MAX, communicator);
@@ -2768,13 +3029,13 @@ void AMP_MPI::call_maxScan<double>(const double *send, double *recv, int n) cons
 *  Wait functions                                                       *
 ************************************************************************/
 #ifdef USE_MPI
-void AMP_MPI::wait( MPI_Request request) 
+void MPI_CLASS::wait( MPI_Request request) 
 {
     PROFILE_START("wait",profile_level);
     MPI_Status  status;
     int flag = 0;
     int err = MPI_Test( &request, &flag, &status );
-    AMP_ASSERT(err==MPI_SUCCESS);   // Check that the first call is valid
+    MPI_ASSERT(err==MPI_SUCCESS);   // Check that the first call is valid
     while ( !flag ) {
         // Put the current thread to sleep to allow other threads to run
         sched_yield();
@@ -2783,7 +3044,7 @@ void AMP_MPI::wait( MPI_Request request)
     }
     PROFILE_STOP("wait",profile_level);
 }
-int AMP_MPI::waitAny( int count, MPI_Request *request) 
+int MPI_CLASS::waitAny( int count, MPI_Request *request) 
 {
     if ( count==0 ) 
         return -1;
@@ -2792,19 +3053,19 @@ int AMP_MPI::waitAny( int count, MPI_Request *request)
     int flag = 0;
     MPI_Status *status = new MPI_Status[count];
     int err = MPI_Testany( count, request, &index, &flag, status );
-    AMP_ASSERT(err==MPI_SUCCESS);   // Check that the first call is valid
+    MPI_ASSERT(err==MPI_SUCCESS);   // Check that the first call is valid
     while ( !flag ) {
         // Put the current thread to sleep to allow other threads to run
         sched_yield();
         // Check if the request has finished
         MPI_Testany( count, request, &index, &flag, status );
     }
-    AMP_ASSERT(index>=0);   // Check that the index is valid
+    MPI_ASSERT(index>=0);   // Check that the index is valid
     delete [] status;
     PROFILE_STOP("waitAny",profile_level);
     return index;
 }
-void AMP_MPI::waitAll( int count, MPI_Request *request) 
+void MPI_CLASS::waitAll( int count, MPI_Request *request) 
 {
     if ( count==0 ) 
         return;
@@ -2812,7 +3073,7 @@ void AMP_MPI::waitAll( int count, MPI_Request *request)
     int flag = 0;
     MPI_Status *status = new MPI_Status[count];
     int err = MPI_Testall( count, request, &flag, status );
-    AMP_ASSERT(err==MPI_SUCCESS);   // Check that the first call is valid
+    MPI_ASSERT(err==MPI_SUCCESS);   // Check that the first call is valid
     while ( !flag ) {
         // Put the current thread to sleep to allow other threads to run
         sched_yield();
@@ -2822,7 +3083,7 @@ void AMP_MPI::waitAll( int count, MPI_Request *request)
     PROFILE_STOP("waitAll",profile_level);
     delete [] status;
 }
-std::vector<int> AMP_MPI::waitSome( int count, MPI_Request *request )
+std::vector<int> MPI_CLASS::waitSome( int count, MPI_Request *request )
 {
     if ( count==0 ) 
         return std::vector<int>();
@@ -2831,8 +3092,8 @@ std::vector<int> AMP_MPI::waitSome( int count, MPI_Request *request )
     MPI_Status *status = new MPI_Status[count];
     int outcount=0;
     int err = MPI_Testsome( count, request, &outcount, &indicies[0], status );
-    AMP_ASSERT(err==MPI_SUCCESS);           // Check that the first call is valid
-    AMP_ASSERT(outcount!=MPI_UNDEFINED);    // Check that the first call is valid
+    MPI_ASSERT(err==MPI_SUCCESS);           // Check that the first call is valid
+    MPI_ASSERT(outcount!=MPI_UNDEFINED);    // Check that the first call is valid
     while ( outcount==0 ) {
         // Put the current thread to sleep to allow other threads to run
         sched_yield();
@@ -2845,7 +3106,7 @@ std::vector<int> AMP_MPI::waitSome( int count, MPI_Request *request )
     return indicies;
 }
 #else
-void AMP_MPI::wait( MPI_Request request) 
+void MPI_CLASS::wait( MPI_Request request) 
 {
     PROFILE_START("wait",profile_level);
     while ( 1 ) {
@@ -2857,7 +3118,7 @@ void AMP_MPI::wait( MPI_Request request)
     }
     PROFILE_STOP("wait",profile_level);
 }
-int AMP_MPI::waitAny( int count, MPI_Request *request) 
+int MPI_CLASS::waitAny( int count, MPI_Request *request) 
 {
     if ( count==0 ) 
         return -1;
@@ -2880,7 +3141,7 @@ int AMP_MPI::waitAny( int count, MPI_Request *request)
     PROFILE_STOP("waitAny",profile_level);
     return index;
 }
-void AMP_MPI::waitAll( int count, MPI_Request *request) 
+void MPI_CLASS::waitAll( int count, MPI_Request *request) 
 {
     if ( count==0 ) 
         return;
@@ -2899,7 +3160,7 @@ void AMP_MPI::waitAll( int count, MPI_Request *request)
     }
     PROFILE_STOP("waitAll",profile_level);
 }
-std::vector<int> AMP_MPI::waitSome( int count, MPI_Request *request )
+std::vector<int> MPI_CLASS::waitSome( int count, MPI_Request *request )
 {
     if ( count==0 ) 
         return std::vector<int>();
@@ -2926,10 +3187,10 @@ std::vector<int> AMP_MPI::waitSome( int count, MPI_Request *request )
 *  Probe functions                                                      *
 ************************************************************************/
 #ifdef USE_MPI
-int AMP_MPI::Iprobe( int source, int tag) const 
+int MPI_CLASS::Iprobe( int source, int tag) const 
 {
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag>=0,"tag must be >= 0");
     MPI_Status status;
     int flag = 0;
     MPI_Iprobe(source,tag,communicator,&flag,&status);
@@ -2937,29 +3198,29 @@ int AMP_MPI::Iprobe( int source, int tag) const
         return -1;
     int count;
     MPI_Get_count(&status,MPI_BYTE,&count);
-    AMP_ASSERT(count>=0);
+    MPI_ASSERT(count>=0);
     return count;
 }
-int AMP_MPI::probe( int source, int tag) const 
+int MPI_CLASS::probe( int source, int tag) const 
 {
-    AMP_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
-    AMP_INSIST(tag>=0,"tag must be >= 0");
+    MPI_INSIST(tag<=d_maxTag,"Maximum tag value exceeded");
+    MPI_INSIST(tag>=0,"tag must be >= 0");
     MPI_Status status;
     MPI_Probe(source,tag,communicator,&status);
     int count;
     MPI_Get_count(&status,MPI_BYTE,&count);
-    AMP_ASSERT(count>=0);
+    MPI_ASSERT(count>=0);
     return count;
 }
 #else
-int AMP_MPI::Iprobe( int source, int tag) const 
+int MPI_CLASS::Iprobe( int source, int tag) const 
 {
-    AMP_ERROR("Not implimented for serial codes (Iprobe)");
+    MPI_ERROR("Not implimented for serial codes (Iprobe)");
     return 0;
 }
-int AMP_MPI::probe( int source, int tag) const 
+int MPI_CLASS::probe( int source, int tag) const 
 {
-    AMP_ERROR("Not implimented for serial codes (probe)");
+    MPI_ERROR("Not implimented for serial codes (probe)");
     return 0;
 }
 #endif
@@ -2970,17 +3231,17 @@ int AMP_MPI::probe( int source, int tag) const
 *  Timer functions                                                      *
 ************************************************************************/
 #ifdef USE_MPI
-    double AMP_MPI::time() 
+    double MPI_CLASS::time() 
     { 
         return MPI_Wtime();
     }
-    double AMP_MPI::tick() 
+    double MPI_CLASS::tick() 
     { 
         return MPI_Wtick();
     }
 #else
     #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-        double AMP_MPI::time() 
+        double MPI_CLASS::time() 
         { 
             LARGE_INTEGER end, f;
             QueryPerformanceFrequency(&f);
@@ -2988,7 +3249,7 @@ int AMP_MPI::probe( int source, int tag) const
             double time = ((double)end.QuadPart)/((double)f.QuadPart);
             return time;
         }
-        double AMP_MPI::tick() 
+        double MPI_CLASS::tick() 
         { 
             LARGE_INTEGER f;
             QueryPerformanceFrequency(&f);
@@ -2996,14 +3257,14 @@ int AMP_MPI::probe( int source, int tag) const
             return resolution;
         }
     #else
-        double AMP_MPI::time() 
+        double MPI_CLASS::time() 
         { 
             timeval current_time;
             gettimeofday(&current_time,NULL);
             double time = ((double)current_time.tv_sec)+1e-6*((double)current_time.tv_usec);
             return time;
         }
-        double AMP_MPI::tick() 
+        double MPI_CLASS::tick() 
         { 
             timeval start, end;
             gettimeofday(&start,NULL);

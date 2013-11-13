@@ -6,11 +6,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 #include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
+
+
+// Subract two size_t numbers, returning the absolute value
+size_t abs_diff(size_t a, size_t b) {
+    return (a>=b) ? a-b:b-a;
+}
 
 
 // This checks approx_equal
@@ -230,6 +237,14 @@ int main(int argc, char *argv[])
         else
             ut.failure("Correctly factored 13958");
 
+        // Test getSystemMemory
+        size_t system_bytes = AMP::Utilities::getSystemMemory();
+        std::cout << "Total system bytes = " << system_bytes << std::endl;
+        if ( system_bytes > 0 )
+            ut.passes("getSystemMemory");
+        else
+            ut.failure("getSystemMemory");
+        
         // Test the memory usage
         double t0 = AMP::AMP_MPI::time();
         size_t n_bytes1 = AMP::Utilities::getMemoryUsage();
@@ -261,6 +276,41 @@ int main(int argc, char *argv[])
                 ut.expected_failure("getMemoryUsage does not decrease size properly");
         }
 
+        // Run large memory test of getMemoryUsage
+        if ( system_bytes >= 4e9 ) {
+            // Test getting the memory usage for 2-4 GB bytes
+            // Note: we only run this test on machines with more than 4 GB of memory
+            n_bytes1 = AMP::Utilities::getMemoryUsage();
+            tmp = new double[0x10000001]; // Allocate 2^31+8 bytes
+            memset(tmp,0,0x10000000);
+            n_bytes2 = AMP::Utilities::getMemoryUsage();
+            delete [] tmp;  tmp = NULL; NULL_USE(tmp);
+            size_t n_bytes3 = AMP::Utilities::getMemoryUsage();
+            if ( n_bytes2 > 0x80000000 && n_bytes2 < n_bytes1+0x81000000 && abs_diff(n_bytes1,n_bytes3)<20e3 ) 
+                ut.passes("getMemoryUsage correctly handles 2^31 - 2^32 bytes"); 
+            else
+                ut.failure("getMemoryUsage correctly handles 2^31 - 2^32 bytes"); 
+        }
+        if ( system_bytes >= 8e9 ) {
+            // Test getting the memory usage for > 4 GB bytes
+            // Note: we only run this test on machines with more than 8 GB of memory
+            n_bytes1 = AMP::Utilities::getMemoryUsage();
+            size_t size = 0x20000000;
+            tmp = new double[size]; // Allocate 2^32+8 bytes
+            if ( tmp==NULL ) {
+                ut.expected_failure("Unable to allocate variable of size 4 GB");
+            } else {
+                memset(tmp,0,0x10000000);
+                n_bytes2 = AMP::Utilities::getMemoryUsage();
+                delete [] tmp;  tmp = NULL; NULL_USE(tmp);
+                size_t n_bytes7 = AMP::Utilities::getMemoryUsage();
+                if ( n_bytes2 > 0x100000000 && n_bytes2 < n_bytes1+0x110000000 && abs_diff(n_bytes1,n_bytes3)<20e3 ) 
+                    ut.passes("getMemoryUsage correctly handles memory > 2^32 bytes"); 
+                else
+                    ut.expected_failure("getMemoryUsage does not handle memory > 2^32 bytes"); 
+            }
+        }
+
         // Test getting the current call stack
         std::vector<std::string> call_stack = get_call_stack();
         if ( globalComm.getRank()==0 ) {
@@ -268,10 +318,16 @@ int main(int argc, char *argv[])
             for (size_t i=0; i<call_stack.size(); i++)
                 std::cout << "   " << call_stack[i];
         }
-        if ( call_stack.size() > 0 )
+        if ( !call_stack.empty() ) {
             ut.passes("non empty call stack");
-        else
+            if ( call_stack[0].find("get_call_stack()") != std::string::npos )
+                ut.passes("call stack decoded function symbols");
+            else
+                ut.expected_failure("call stack was unable to decode function symbols");
+        } else {
             ut.failure("non empty call stack");
+        }
+
 
         // Test deleting and checking if a file exists
         if ( globalComm.getRank()==0 ) {

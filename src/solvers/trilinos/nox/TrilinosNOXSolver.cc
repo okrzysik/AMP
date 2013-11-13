@@ -57,6 +57,7 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
     boost::shared_ptr<TrilinosNOXSolverParameters> params = 
         boost::dynamic_pointer_cast<TrilinosNOXSolverParameters>( parameters );
     AMP_ASSERT(params.get()!=NULL);
+    AMP_ASSERT(params->d_db.get()!=NULL);
     d_comm = params->d_comm;
     if ( params->d_pInitialGuess.get()!=NULL )
         d_initialGuess = params->d_pInitialGuess;
@@ -134,9 +135,11 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
         d_nlParams->set("Nonlinear Solver", "Line Search Based");
     } else if ( solverType == "Anderson" ) {
         d_nlParams->set("Nonlinear Solver", "Anderson Accelerated Fixed-Point");
-        d_nlParams->sublist("Anderson Parameters").set("Storage Depth", 30);
-        d_nlParams->sublist("Anderson Parameters").set("Mixing Parameter", -0.5);
-        d_nlParams->sublist("Anderson Parameters").sublist("Preconditioning").set("Precondition", true);
+        int depth = nonlinear_db->getIntegerWithDefault("StorageDepth",5);
+        double mixing = nonlinear_db->getDoubleWithDefault("MixingParameter",1.0);
+        d_nlParams->sublist("Anderson Parameters").set("Storage Depth", depth);
+        d_nlParams->sublist("Anderson Parameters").set("Mixing Parameter", mixing);
+        d_nlParams->sublist("Anderson Parameters").sublist("Preconditioning").set("Precondition",d_precOp.get()!=NULL);
     }
     d_nlParams->sublist("Line Search").set("Method", "Polynomial");
     d_nlParams->sublist("Direction").sublist("Newton").sublist("Linear Solver").set("Tolerance",linearRelativeTolerance);
