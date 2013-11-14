@@ -123,7 +123,7 @@ int testReduce(AMP::AMP_MPI comm, AMP::UnitTest *ut, int flag) {
         ut->passes(message);
     else
         ut->failure(message);
-    // Test minReduce
+    // Test maxReduce
     sprintf(message,"maxReduce (%s)",typeid(type).name());    
     if ( comm.maxReduce<type>(rank+1) == size )
         ut->passes(message);
@@ -443,7 +443,8 @@ int testMapGather(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
 
 // Routine to test allToAll
 template <class type>
-int testAllToAll(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
+int testAllToAll(AMP::AMP_MPI comm, AMP::UnitTest *ut) 
+{
     PROFILE_START("testAllToAll");
     bool pass;
     char message[128];
@@ -810,7 +811,8 @@ struct testCommTimerResults {
 
 
 // This routine will test a single MPI communicator
-testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) {
+testCommTimerResults testComm(AMP::AMP_MPI comm, AMP::UnitTest *ut) 
+{
     PROFILE_START("testComm");
     testCommTimerResults timer;
     double start_time;

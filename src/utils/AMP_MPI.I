@@ -115,6 +115,8 @@ template <> void AMP_MPI::call_minReduce<unsigned int>(unsigned int*, const int,
 template <> void AMP_MPI::call_minReduce<int>(int*, const int, int*) const;
 template <> void AMP_MPI::call_minReduce<unsigned long int>(unsigned long int*, const int, int*) const;
 template <> void AMP_MPI::call_minReduce<long int>(long int*, const int, int*) const;
+template <> void AMP_MPI::call_minReduce<unsigned long long int>(unsigned long long int*, const int, int*) const;
+template <> void AMP_MPI::call_minReduce<long long int>(long long int*, const int, int*) const;
 template <> void AMP_MPI::call_minReduce<size_t>(size_t*, const int, int*) const;
 template <> void AMP_MPI::call_minReduce<float>(float*, const int, int*) const;
 template <> void AMP_MPI::call_minReduce<double>(double*, const int, int*) const;
@@ -134,6 +136,8 @@ template <> void AMP_MPI::call_minReduce<unsigned int>(const unsigned int*, unsi
 template <> void AMP_MPI::call_minReduce<int>(const int*, int*, const int, int*) const;
 template <> void AMP_MPI::call_minReduce<unsigned long int>(const unsigned long int*, unsigned long int*, const int, int*) const;
 template <> void AMP_MPI::call_minReduce<long int>(const long int*, long int*, const int, int*) const;
+template <> void AMP_MPI::call_minReduce<unsigned long long int>(const unsigned long long int*, unsigned long long int*, const int, int*) const;
+template <> void AMP_MPI::call_minReduce<long long int>(const long long int*, long long int*, const int, int*) const;
 template <> void AMP_MPI::call_minReduce<size_t>(const size_t*, size_t*, const int, int*) const;
 template <> void AMP_MPI::call_minReduce<float>(const float*, float*, const int, int*) const;
 template <> void AMP_MPI::call_minReduce<double>(const double*, double*, const int, int*) const;
@@ -191,6 +195,8 @@ template <> void AMP_MPI::call_maxReduce<unsigned int>(unsigned int*, const int,
 template <> void AMP_MPI::call_maxReduce<int>(int*, const int, int*) const;
 template <> void AMP_MPI::call_maxReduce<unsigned long int>(unsigned long int*, const int, int*) const;
 template <> void AMP_MPI::call_maxReduce<long int>(long int*, const int, int*) const;
+template <> void AMP_MPI::call_maxReduce<unsigned long long int>(unsigned long long int*, const int, int*) const;
+template <> void AMP_MPI::call_maxReduce<long long int>(long long int*, const int, int*) const;
 template <> void AMP_MPI::call_maxReduce<size_t>(size_t*, const int, int*) const;
 template <> void AMP_MPI::call_maxReduce<float>(float*, const int, int*) const;
 template <> void AMP_MPI::call_maxReduce<double>(double*, const int, int*) const;
@@ -210,6 +216,8 @@ template <> void AMP_MPI::call_maxReduce<unsigned int>(const unsigned int*, unsi
 template <> void AMP_MPI::call_maxReduce<int>(const int*, int*, const int, int*) const;
 template <> void AMP_MPI::call_maxReduce<unsigned long int>(const unsigned long int*, unsigned long int*, const int, int*) const;
 template <> void AMP_MPI::call_maxReduce<long int>(const long int*, long int*, const int, int*) const;
+template <> void AMP_MPI::call_maxReduce<unsigned long long int>(const unsigned long long int*, unsigned long long int*, const int, int*) const;
+template <> void AMP_MPI::call_maxReduce<long long int>(const long long int*, long long int*, const int, int*) const;
 template <> void AMP_MPI::call_maxReduce<size_t>(const size_t*, size_t*, const int, int*) const;
 template <> void AMP_MPI::call_maxReduce<float>(const float*, float*, const int, int*) const;
 template <> void AMP_MPI::call_maxReduce<double>(const double*, double*, const int, int*) const;
