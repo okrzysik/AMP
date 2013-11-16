@@ -277,7 +277,7 @@ int main(int argc, char *argv[])
         }
 
         // Run large memory test of getMemoryUsage
-        if ( system_bytes >= 4e9 ) {
+        if ( system_bytes >= 4e9 && globalComm.getRank()==0 ) {
             // Test getting the memory usage for 2-4 GB bytes
             // Note: we only run this test on machines with more than 4 GB of memory
             n_bytes1 = AMP::Utilities::getMemoryUsage();
@@ -286,12 +286,14 @@ int main(int argc, char *argv[])
             n_bytes2 = AMP::Utilities::getMemoryUsage();
             delete [] tmp;  tmp = NULL; NULL_USE(tmp);
             size_t n_bytes3 = AMP::Utilities::getMemoryUsage();
-            if ( n_bytes2 > 0x80000000 && n_bytes2 < n_bytes1+0x81000000 && abs_diff(n_bytes1,n_bytes3)<20e3 ) 
+            if ( n_bytes2 > 0x80000000 && n_bytes2 < n_bytes1+0x81000000 && abs_diff(n_bytes1,n_bytes3)<20e3 ) {
                 ut.passes("getMemoryUsage correctly handles 2^31 - 2^32 bytes"); 
-            else
+            } else {
+                printf("Memtest 2-4 GB failes: %e %e %e\n",n_bytes1,n_bytes2,n_bytes3);
                 ut.failure("getMemoryUsage correctly handles 2^31 - 2^32 bytes"); 
+            }
         }
-        if ( system_bytes >= 8e9 ) {
+        if ( system_bytes >= 8e9 && globalComm.getRank()==0 ) {
             // Test getting the memory usage for > 4 GB bytes
             // Note: we only run this test on machines with more than 8 GB of memory
             n_bytes1 = AMP::Utilities::getMemoryUsage();
@@ -303,11 +305,13 @@ int main(int argc, char *argv[])
                 memset(tmp,0,0x10000000);
                 n_bytes2 = AMP::Utilities::getMemoryUsage();
                 delete [] tmp;  tmp = NULL; NULL_USE(tmp);
-                size_t n_bytes7 = AMP::Utilities::getMemoryUsage();
-                if ( n_bytes2 > 0x100000000 && n_bytes2 < n_bytes1+0x110000000 && abs_diff(n_bytes1,n_bytes3)<20e3 ) 
+                n_bytes3 = AMP::Utilities::getMemoryUsage();
+                if ( n_bytes2 > 0x100000000 && n_bytes2 < n_bytes1+0x110000000 && abs_diff(n_bytes1,n_bytes3)<20e3 ) {
                     ut.passes("getMemoryUsage correctly handles memory > 2^32 bytes"); 
-                else
+                } else {
+                    printf("Memtest >4 GB failes: %e %e %e\n",n_bytes1,n_bytes2,n_bytes3);
                     ut.expected_failure("getMemoryUsage does not handle memory > 2^32 bytes"); 
+                }
             }
         }
 
