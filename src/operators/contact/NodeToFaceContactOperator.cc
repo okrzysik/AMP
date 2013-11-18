@@ -196,8 +196,8 @@ AMP_ASSERT( std::find(recvMap.begin(), recvMap.end(), nSendData) == recvMap.end(
           } // end if
 
           // compute normal of the surface traction at slave vertex
-          double youngsModulus = 1.0e6;//boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getYoungsModulus();
-          double poissonsRatio = 0.3;//boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getPoissonsRatio();
+          double youngsModulus = boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getYoungsModulus();
+          double poissonsRatio = boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getPoissonsRatio();
           double constitutiveMatrix[36];
           compute_constitutive_matrix(youngsModulus, poissonsRatio, constitutiveMatrix);
           double stressTensor[6];
@@ -367,8 +367,8 @@ std::cout<<" ;\n";
 }
 */
 
-//          if (nDotT > 1.0e-14) { 
-          if (nDotT > 0) { 
+          if (nDotT > 1.0e-10) { 
+//          if (nDotT > 0) { 
             d_fout<<"@@@@@@@@@@@@@@@@\n";
             ++nActiveSlaveVerticesDeactivated;
             d_InactiveSet.push_back(*activeSetIterator);

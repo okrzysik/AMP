@@ -683,3 +683,18 @@ void compute_traction(double const * sigma, double const * n, double * t) {
   t[1] = sigma[5] * n[0] + sigma[1] * n[1] + sigma[3] * n[2];
   t[2] = sigma[4] * n[0] + sigma[3] * n[1] + sigma[2] * n[2];
 }
+
+double compute_von_mises_stress(double const * sigma) {
+  double sigma_v = std::sqrt(
+    0.5 * (
+      std::pow(sigma[0] - sigma[1], 2) + 
+      std::pow(sigma[1] - sigma[2], 2) + 
+      std::pow(sigma[2] - sigma[0], 2)
+    ) + 3.0 * (
+        std::pow(sigma[3], 2) + 
+        std::pow(sigma[4], 2) + 
+        std::pow(sigma[5], 2)
+    )
+  );
+  return sigma_v;
+}

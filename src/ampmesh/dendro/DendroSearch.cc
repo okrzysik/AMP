@@ -898,22 +898,29 @@ void DendroSearch::search(AMP::AMP_MPI comm, const std::vector<double> & pts)
             unsigned int procId = static_cast<unsigned int>(recvPtsList[6*i+5]);
             d_fout<<"i="<<i<<"  eid="<<eId<<"  procId="<<procId<<"  loaclId="<<recvPtsList[6*i+4];
             if (d_volume_elements[eId]->within_bounding_box(tmpPtGlobalCoordPtr, d_tolerance)) {
-                d_fout<<"  bbox";
-                if (d_volume_elements[eId]->within_bounding_polyhedron(tmpPtGlobalCoordPtr, d_tolerance)) {
-                    d_fout<<"  bhedron";
-                    d_volume_elements[eId]->map_global_to_local(tmpPtGlobalCoordPtr, &(tmpPtLocalCoord[0]));
-                    if (d_volume_elements[eId]->contains_point(&(tmpPtLocalCoord[0]), coordinates_are_local, d_tolerance)) {
-                        d_fout<<"  ###";
-                        d_foundPts.push_back(recvPtsList[6*i]);
-                        for (unsigned int d = 0; d < 3; ++d) { d_foundPts.push_back(tmpPtLocalCoord[d]); }
-                        d_foundPts.push_back(recvPtsList[6*i+4]);
-                        d_foundPts.push_back(recvPtsList[6*i+5]);
-                        ++numFoundPts;
-                        ++(d_sendCnts[procId]);
-                    } // end if
-                } // end if
+              d_fout<<"  bbox";
+              if (d_volume_elements[eId]->within_bounding_polyhedron(tmpPtGlobalCoordPtr, d_tolerance)) {
+                  d_fout<<"  bhedron";
+                  d_volume_elements[eId]->map_global_to_local(tmpPtGlobalCoordPtr, &(tmpPtLocalCoord[0]));
+                  if (d_volume_elements[eId]->contains_point(&(tmpPtLocalCoord[0]), coordinates_are_local, d_tolerance)) {
+                      d_fout<<"  ###";
+                      d_foundPts.push_back(recvPtsList[6*i]);
+                      for (unsigned int d = 0; d < 3; ++d) { d_foundPts.push_back(tmpPtLocalCoord[d]); }
+                      d_foundPts.push_back(recvPtsList[6*i+4]);
+                      d_foundPts.push_back(recvPtsList[6*i+5]);
+                      ++numFoundPts;
+                      ++(d_sendCnts[procId]);
+                  } // end if
+              } // end if
             } // end if
             d_fout<<"\n";
+//            if( (static_cast<unsigned int>(recvPtsList[6*i+4]) == 3)
+//                || (static_cast<unsigned int>(recvPtsList[6*i+4]) == 4)
+//                || (static_cast<unsigned int>(recvPtsList[6*i+4]) == 2)) {
+//              double point_of_view[3] = { 1.0, 1.0, 1.0 };
+//              draw_point(tmpPtGlobalCoordPtr, "red", std::cout, "$\\diamond$");
+//              draw_hex8_element(d_volume_elements[eId], point_of_view, std::cout);
+//            } // end if
         }//end i
         recvPtsList.clear();
         d_fout<<"myRank="<<rank<<"\n";
