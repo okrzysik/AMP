@@ -448,8 +448,6 @@ double gaussian(double mean, double std_deviation) {
   static double t1 = 0, t2=0;
   double x1, x2, x3, r;
 
-  using namespace std;
-
   // reuse previous calculations
   if(t1) {
     const double tmp = t1;

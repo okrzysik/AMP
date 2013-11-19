@@ -2,9 +2,9 @@
 #define included_AMP_PetscKrylovSolver
 
 #include "utils/AMP_MPI.h"
-#include "SolverStrategy.h"
-#include "PetscKrylovSolverParameters.h"
-#include "solvers/PetscMonitor.h"
+#include "solvers/SolverStrategy.h"
+#include "solvers/petsc/PetscKrylovSolverParameters.h"
+#include "solvers/petsc/PetscMonitor.h"
 
 
 extern "C"{
@@ -105,7 +105,7 @@ public:
      * @param [in] f : shared pointer to right hand side vector
      * @param [out] u : shared pointer to approximate computed solution 
      */
-    void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
+    void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
 	     boost::shared_ptr<AMP::LinearAlgebra::Vector>  u);
 
     /**
@@ -195,7 +195,7 @@ private:
         // By declaring the vectors here, we ensure correct behavior during destruction.
         // This will ensure that the boost::shared_ptr destructor calls VecDestroy on
         // the last reference.
-        AMP::LinearAlgebra::Vector::shared_ptr  fVecView;
+        AMP::LinearAlgebra::Vector::const_shared_ptr  fVecView;
         AMP::LinearAlgebra::Vector::shared_ptr  uVecView;
     #endif
 

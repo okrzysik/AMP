@@ -15,7 +15,7 @@ namespace AMP {
           d_onePointOp = boost::dynamic_pointer_cast<AMP::Operator::OnePointOperator>(d_pOperator);
         }
 
-        void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector> f, boost::shared_ptr<AMP::LinearAlgebra::Vector> u) {
+        void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector> f, boost::shared_ptr<AMP::LinearAlgebra::Vector> u) {
           //Assumption: primaryInputVar = outputVar
           //General solution: To avoid making the above assumption, we can replace 
           //getInputVariable() with getPrimaryInputVariable() and use it for the u vector. 

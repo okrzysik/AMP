@@ -15,84 +15,81 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-	/**
-    * \class ManagedSundialsVector
-    * \brief A class that can provide a Sundials N_Vector view of an AMP Vector.
-    * \details
-    *  This class should not be used explicitly.  It is the return type of
-    *  SundialsVector::view() and SundialsVector::constView().
-    *
-    * \see SundialsVector
-	 */
-	typedef ManagedVectorParameters ManagedSundialsVectorParameters;
+/**
+* \class ManagedSundialsVector
+* \brief A class that can provide a Sundials N_Vector view of an AMP Vector.
+* \details
+*  This class should not be used explicitly.  It is the return type of
+*  SundialsVector::view() and SundialsVector::constView().
+*
+* \see SundialsVector
+ */
+typedef ManagedVectorParameters ManagedSundialsVectorParameters;
 
-	class ManagedSundialsVector: public ManagedVector ,
-                               public SundialsVector ,
-                               public CyclicSharedPtr <Vector,ExternalVectorDeleter>
-  {
+class ManagedSundialsVector: public ManagedVector ,
+                           public SundialsVector ,
+                           public CyclicSharedPtr <Vector,ExternalVectorDeleter>
+{
 
-    public:
-      /** \brief Construct a ManagedSundialsVector from a set of parameters
-        * \param[in] params Description of the new vector
-        */
-      ManagedSundialsVector ( VectorParameters::shared_ptr params);
+public:
+    /** \brief Construct a ManagedSundialsVector from a set of parameters
+      * \param[in] params Description of the new vector
+      */
+    ManagedSundialsVector ( VectorParameters::shared_ptr params);
 
-      /** \brief Create a view to an AMP vector
-        * \param[in] alias  Vector to view
-        */
-      ManagedSundialsVector ( shared_ptr alias );
+    /** \brief Create a view to an AMP vector
+      * \param[in] alias  Vector to view
+      */
+    ManagedSundialsVector ( shared_ptr alias );
 
-      /** \brief Destructor
-        */
-	  	virtual ~ManagedSundialsVector();
+    /** \brief Destructor
+      */
+    virtual ~ManagedSundialsVector();
 
-      // These are adequately documented in a base class or there
-      // is little need for the documentation
-	  protected:
-  		virtual ManagedVector  *getNewRawPtr () const;
+    // These are adequately documented in a base class or there is little need for the documentation
+    ManagedSundialsVector  *rawClone () const;
+    virtual std::string type() const;
+    using Vector::cloneVector;
+    Vector::shared_ptr  cloneVector ( const Variable::shared_ptr var ) const;
+    virtual void assemble ();
 
-  	private:
+protected:
+    virtual ManagedVector  *getNewRawPtr () const;
 
-      ManagedSundialsVector(const ManagedSundialsVector&);
-      void operator=(const ManagedSundialsVector&);
+private:
 
-      static N_Vector_Ops createNVectorOps();
-      static N_Vector cloneVector_AMP(N_Vector w);
-      static N_Vector cloneempty_no_impl(N_Vector w);
-      static void freeVectorComponents_AMP(N_Vector v);
-      //static void space_no_impl(N_Vector v, long int *lrw, long int *liw);
-      static realtype *getarraypointer_no_impl(N_Vector v);
-      static void setarraypointer_no_impl(realtype *v_data, N_Vector v);
-      static void linearSum_AMP(realtype a, N_Vector x, realtype b, N_Vector y, N_Vector z);
-      static void setToScalar_AMP(realtype c, N_Vector z);
-      static void multiply_AMP(N_Vector x, N_Vector y, N_Vector z);
-      static void divide_AMP(N_Vector x, N_Vector y, N_Vector z);
-      static void scale_AMP(realtype c, N_Vector x, N_Vector z);
-      static void abs_AMP(N_Vector x, N_Vector z);
-      static void reciprocal_AMP(N_Vector x, N_Vector z);
-      static void addScalar_AMP(N_Vector x, realtype b, N_Vector z);
-      static realtype dot_AMP(N_Vector x, N_Vector y);
-      static realtype maxNorm_AMP(N_Vector x);
-      static realtype WRMSNorm_AMP(N_Vector x, N_Vector w);
-      static realtype WRMSNormMask_AMP(N_Vector x, N_Vector w, N_Vector mask );
-      static realtype min_AMP(N_Vector x);
-      static realtype wl2norm_no_impl(N_Vector x, N_Vector w);
-      static realtype L1Norm_AMP(N_Vector x);
-      static void compare_no_impl(realtype c, N_Vector x, N_Vector z);
-      static booleantype invtest_no_impl(N_Vector x, N_Vector z);
-      static booleantype constrmask_no_impl(N_Vector c, N_Vector x, N_Vector m);
-      static realtype minquotient_AMP(N_Vector num, N_Vector denom);
+    ManagedSundialsVector(const ManagedSundialsVector&);
+    void operator=(const ManagedSundialsVector&);
 
-    public:
-      ManagedSundialsVector  *rawClone () const;
-      virtual std::string type() const;
-      using Vector::cloneVector;
-      Vector::shared_ptr  cloneVector ( const Variable::shared_ptr var ) const;
+    static N_Vector_Ops createNVectorOps();
+    static N_Vector cloneVector_AMP(N_Vector w);
+    static N_Vector cloneempty_no_impl(N_Vector w);
+    static void freeVectorComponents_AMP(N_Vector v);
+    //static void space_no_impl(N_Vector v, long int *lrw, long int *liw);
+    static realtype *getarraypointer_no_impl(N_Vector v);
+    static void setarraypointer_no_impl(realtype *v_data, N_Vector v);
+    static void linearSum_AMP(realtype a, N_Vector x, realtype b, N_Vector y, N_Vector z);
+    static void setToScalar_AMP(realtype c, N_Vector z);
+    static void multiply_AMP(N_Vector x, N_Vector y, N_Vector z);
+    static void divide_AMP(N_Vector x, N_Vector y, N_Vector z);
+    static void scale_AMP(realtype c, N_Vector x, N_Vector z);
+    static void abs_AMP(N_Vector x, N_Vector z);
+    static void reciprocal_AMP(N_Vector x, N_Vector z);
+    static void addScalar_AMP(N_Vector x, realtype b, N_Vector z);
+    static realtype dot_AMP(N_Vector x, N_Vector y);
+    static realtype maxNorm_AMP(N_Vector x);
+    static realtype WRMSNorm_AMP(N_Vector x, N_Vector w);
+    static realtype WRMSNormMask_AMP(N_Vector x, N_Vector w, N_Vector mask );
+    static realtype min_AMP(N_Vector x);
+    static realtype wl2norm_no_impl(N_Vector x, N_Vector w);
+    static realtype L1Norm_AMP(N_Vector x);
+    static void compare_no_impl(realtype c, N_Vector x, N_Vector z);
+    static booleantype invtest_no_impl(N_Vector x, N_Vector z);
+    static booleantype constrmask_no_impl(N_Vector c, N_Vector x, N_Vector m);
+    static realtype minquotient_AMP(N_Vector num, N_Vector denom);
 
-      virtual void assemble ();
+};
 
-
-	};
 
 }
 }

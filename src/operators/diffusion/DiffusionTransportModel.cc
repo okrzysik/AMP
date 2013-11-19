@@ -9,6 +9,7 @@
 #include "DiffusionTransportTensorModel.h"
 #include "utils/Database.h"
 #include "utils/Utilities.h"
+#include "utils/ProfilerApp.h"
 #include <cmath>
 #include <map>
 #include <algorithm>
@@ -131,6 +132,7 @@ void DiffusionTransportModel::getTransport(std::vector<double> & result,
         std::map<std::string, boost::shared_ptr<std::vector<double> > >& args,
         const std::vector<Point>&)
 {
+    PROFILE_START("getTransport",7);
     boost::shared_ptr<std::vector<double> >scaledp;
     double lower,upper;
     
@@ -163,7 +165,7 @@ void DiffusionTransportModel::getTransport(std::vector<double> & result,
 
         if (d_BilogScaleCoefficient) bilogScale(result, lower,upper);
     }
-
+    PROFILE_STOP("getTransport",7);
 }
 
 }

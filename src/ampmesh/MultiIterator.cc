@@ -30,7 +30,13 @@ MultiIterator::MultiIterator( std::vector<boost::shared_ptr<MeshIterator> > iter
 {
     typeID = MultiIteratorTypeID;
     iterator = NULL;
-    d_iterators = iterators;
+    d_iterators.resize(0);
+    for (size_t i=0; i<iterators.size(); i++) {
+        if ( iterators[i]==NULL )
+            continue;
+        if ( iterators[i]->size() > 0 )
+            d_iterators.push_back(iterators[i]);
+    }
     d_iteratorSize = std::vector<size_t>(d_iterators.size(),0);
     d_globalSize = 0;
     for (size_t i=0; i<d_iterators.size(); i++) {

@@ -52,28 +52,58 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
     for (size_t d=0; d<size.size(); d++)
         AMP_INSIST(size[d]>0,"All dimensions must have a size > 0");
     // Create the logical mesh
-    AMP_ASSERT(PhysicalDim<=3);
+    AMP_INSIST(PhysicalDim<=3,"DIM>3 not programmed yet");
     if ( generator.compare("cube")==0 ) {
         AMP_INSIST(size.size()==PhysicalDim,"Size of field 'Size' must match dim");
         for (int d=0; d<PhysicalDim; d++)
             d_size[d] = size[d];
+        if ( d_db->keyExists("Periodic") ) {
+            std::vector<unsigned char> per = d_db->getBoolArray("Periodic");
+            AMP_INSIST(per.size()==(size_t)GeomDim,"Periodic must match dim");
+            for (size_t d=0; d<per.size(); d++)
+                d_isPeriodic[d] = per[d];
+        }
+    } else if ( generator.compare("circle")==0 ) {
+        AMP_INSIST(PhysicalDim==2,"cylinder generator requires a 2d mesh");
+        AMP_INSIST(size.size()==1,"Size of field 'Size' must be of size 1");
+        d_size[0] = 2*size[0];
+        d_size[1] = 2*size[0];
+        d_size[2] = 0;
     } else if ( generator.compare("cylinder")==0 ) {
         AMP_INSIST(PhysicalDim==3,"cylinder generator requires a 3d mesh");
         AMP_INSIST(size.size()==2,"Size of field 'Size' must be of size 2");
         d_size[0] = 2*size[0];
         d_size[1] = 2*size[0];
         d_size[2] = size[1];
+        if ( d_db->keyExists("Periodic") ) {
+            std::vector<unsigned char> per = d_db->getBoolArray("Periodic");
+            AMP_INSIST(per.size()==1,"Periodic must be 1x1 for cylinder");
+            d_isPeriodic[2] = per[0];
+        }
     } else if ( generator.compare("tube")==0 ) {
         AMP_INSIST(PhysicalDim==3,"tube generator requires a 3d mesh");
         AMP_INSIST(size.size()==PhysicalDim,"Size of field 'Size' must match dim");
         for (int d=0; d<PhysicalDim; d++)
             d_size[d] = size[d];
         d_isPeriodic[1] = true;    // We will use the logical mesh (r,theta,z), so theta is periodic
+        if ( d_db->keyExists("Periodic") ) {
+            std::vector<unsigned char> per = d_db->getBoolArray("Periodic");
+            AMP_INSIST(per.size()==1,"Periodic must be 1x1 for tube");
+            d_isPeriodic[2] = per[0];
+        }
+    } else if ( generator.compare("shell")==0 ) {
+        AMP_INSIST(PhysicalDim==3,"shell generator requires a 3d mesh");
+        AMP_INSIST(size.size()==2,"Size of field 'Size' must be of size 1");
+        d_isPeriodic[0] = true;
+        d_size[0] = size[1];
+        d_size[1] = size[1]/2;
+        d_size[2] = size[0];
     } else if ( generator.compare("sphere")==0 ) {
         AMP_INSIST(PhysicalDim==3,"sphere generator requires a 3d mesh");
-        d_isPeriodic[1] = true;    // We will use the logical mesh (r,theta,phi), so theta and phi are periodic
-        d_isPeriodic[2] = true;
-        AMP_ERROR("Not finished");
+        AMP_INSIST(size.size()==1,"Size of field 'Size' must be of size 1");
+        d_size[0] = 2*size[0];
+        d_size[1] = 2*size[0];
+        d_size[2] = 2*size[0];
     } 
     // Create the load balance
     for (int d=0; d<PhysicalDim; d++)
@@ -177,6 +207,16 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
             y[i] = r*sin(theta);
             z[i] = range[2] + z[i]*(range[3]-range[2]);
         }
+    } else if ( generator.compare("circle")==0 ) {
+        AMP_INSIST(d_db->keyExists("Range"),"Field 'Range' must exist in database'");
+        std::vector<double> range = d_db->getDoubleArray("Range");
+        AMP_INSIST(range.size()==1,"Range must be 1x1 for circle generator");
+        // Create the coordinates (currently the points lie in [0,1])
+        double r = range[0];
+        double *x = &d_coord[0][0];
+        double *y = &d_coord[1][0];
+        // Perform the mapping for the circle
+        map_logical_circle( d_coord[0].size(), r, 2, x, y );
     } else if ( generator.compare("cylinder")==0 ) {
         AMP_INSIST(d_db->keyExists("Range"),"Field 'Range' must exist in database'");
         std::vector<double> range = d_db->getDoubleArray("Range");
@@ -219,44 +259,47 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
         }
         d_id_list = new_ids;
         // Create the coordinates (currently the points lie in [0,1])
-        double r1 = range[0];
+        double r = range[0];
         double *x = &d_coord[0][0];
         double *y = &d_coord[1][0];
         double *z = &d_coord[2][0];
         // Perform the mapping for the circle
-        const double sqrt2 = 1.41421356237;
-        for (size_t i=0; i<d_coord[0].size(); i++) {
-            // map [0,1] x [0,1] to circle of radius r1
-            double xc = 2*(x[i]-0.5);                   // Change domain to [-1,1]
-            double yc = 2*(y[i]-0.5);                   // Change domain to [-1,1]
-            if ( fabs(xc)<1e-12 && fabs(yc)<1e-12 ) {
-                // We are dealing with the center point
-                x[i] = 0.0;
-                y[i] = 0.0;
-                continue;
-            }
-            double d = std::max(fabs(xc),fabs(yc));     // value on diagonal of computational grid
-            double D = r1*d/sqrt2;                      // mapping d to D(d)
-            double R = r1;                              // mapping d to R(d) (alternative is R = r1*d)
-            double center = D - sqrt(R*R-D*D);
-            double xp = D/d*fabs(xc);
-            double yp = D/d*fabs(yc);
-            if ( fabs(yc)>=fabs(xc) )
-                yp = center + sqrt(R*R-xp*xp);
-            if ( fabs(xc)>=fabs(yc) )
-                xp = center + sqrt(R*R-yp*yp);
-            if ( xc<0.0 )
-                xp = -xp;
-            if ( yc<0.0 )
-                yp = -yp;
-            x[i] = xp;
-            y[i] = yp;
-        }
+        map_logical_circle( d_coord[0].size(), r, 2, x, y );
         // Perform the mapping for z
         for (size_t i=0; i<d_coord[0].size(); i++)
             z[i] = range[1] + z[i]*(range[2]-range[1]);
+    } else if ( generator.compare("shell")==0 ) {
+        AMP_INSIST(d_db->keyExists("Range"),"Field 'Range' must exist in database'");
+        std::vector<double> range = d_db->getDoubleArray("Range");
+        AMP_INSIST(range.size()==2,"Range must be 1x1 for shell generator");
+        // Create the coordinates (currently the points lie in [0,1])
+        double r1 = range[0];
+        double r2 = range[1];
+        double *x = &d_coord[0][0];
+        double *y = &d_coord[1][0];
+        double *z = &d_coord[2][0];
+        // Perform the mapping for the circle
+        map_logical_shell( d_coord[0].size(), r1, r2, x, y, z );
+    } else if ( generator.compare("sphere")==0 ) {
+        AMP_INSIST(d_db->keyExists("Range"),"Field 'Range' must exist in database'");
+        std::vector<double> range = d_db->getDoubleArray("Range");
+        AMP_INSIST(range.size()==1,"Range must be 1x1 for sphere generator");
+        // Create the coordinates (currently the points lie in [0,1])
+        double r = range[0];
+        double *x = &d_coord[0][0];
+        double *y = &d_coord[1][0];
+        double *z = &d_coord[2][0];
+        // Perform the mapping for the circle
+        map_logical_sphere( d_coord[0].size(), r, x, y,z );
     } else { 
         AMP_ERROR("Unknown generator");
+    }
+    // Check that all points are valid
+    for (int d=0; d<PhysicalDim; d++) {
+        for (size_t i=0; i<d_coord[d].size(); i++) {
+            if ( d_coord[d][i]!=d_coord[d][i] )
+                AMP_ERROR("NaNs detected");
+        }
     }
     // Fill in the final info for the mesh
     AMP_INSIST(d_db->keyExists("MeshName"),"MeshName must exist in input database");
@@ -279,11 +322,11 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
     } 
     // Displace the mesh
     std::vector<double> displacement(PhysicalDim,0.0);
-    if ( d_db->keyExists("x_offset") )
+    if ( d_db->keyExists("x_offset") && PhysicalDim>=1 )
         displacement[0] = d_db->getDouble("x_offset");
-    if ( d_db->keyExists("y_offset") )
+    if ( d_db->keyExists("y_offset") && PhysicalDim>=2 )
         displacement[1] = d_db->getDouble("y_offset");
-    if ( d_db->keyExists("z_offset") )
+    if ( d_db->keyExists("z_offset") && PhysicalDim>=3 )
         displacement[2] = d_db->getDouble("z_offset");
     bool test = false;
     for (size_t i=0; i<displacement.size(); i++) {
@@ -364,7 +407,29 @@ void BoxMesh::initialize()
                 }
             }
             // Create the elements
-            if ( PhysicalDim==3 ) {
+            if ( PhysicalDim==1 ) {
+                for (int i=range2[0]; i<range2[1]; i++) {
+                    MeshElementIndex index;
+                    index.type = (GeomType) d;
+                    index.index[0] = i;
+                    index.index[1] = 0;
+                    index.index[2] = 0;
+                    index.side = s;
+                    d_elements[d][0]->push_back( index );
+                }
+            } else if ( PhysicalDim==2 ) {
+                for (int j=range2[2]; j<range2[3]; j++) {
+                    for (int i=range2[0]; i<range2[1]; i++) {
+                        MeshElementIndex index;
+                        index.type = (GeomType) d;
+                        index.index[0] = i;
+                        index.index[1] = j;
+                        index.index[2] = 0;
+                        index.side = s;
+                        d_elements[d][0]->push_back( index );
+                    }
+                }
+            } else if ( PhysicalDim==3 ) {
                 for (int k=range2[4]; k<range2[5]; k++) {
                     for (int j=range2[2]; j<range2[3]; j++) {
                         for (int i=range2[0]; i<range2[1]; i++) {
@@ -378,6 +443,8 @@ void BoxMesh::initialize()
                         }
                     }
                 }
+            } else {
+                AMP_ERROR("Not yet programmed for dimensions > 3");
             }
         }
     }
@@ -448,10 +515,36 @@ void BoxMesh::initialize()
     PROFILE_START("create_ghost_elements: 1");
     for (int gcw=1; gcw<=d_max_gcw; gcw++) {
         d_elements[PhysicalDim][gcw] = ElementIndexList( new std::vector<MeshElementIndex>() );
-        if ( PhysicalDim==3 ) {
-            for (int k=range[4]-gcw; k<range[5]+gcw; k++) {
-                for (int j=range[2]-gcw; j<range[3]+gcw; j++) {
-                    for (int i=range[0]-gcw; i<range[1]+gcw; i++) {
+        AMP_ASSERT(PhysicalDim<=3);
+        int range2[6] = {0,1,0,1,0,1};
+        for (int d=0; d<PhysicalDim; d++) {
+            range2[2*d+0] = range[2*d+0]-gcw;
+            range2[2*d+1] = range[2*d+1]+gcw;
+        }
+        for (int k=range2[4]; k<range2[5]; k++) {
+            for (int j=range2[2]; j<range2[3]; j++) {
+                for (int i=range2[0]; i<range2[1]; i++) {
+                    if ( PhysicalDim == 1 ) {
+                        if ( i>range[0]-gcw && i<range[1]+gcw-1 ) {
+                            // The element was already included by another ghost (or owned) cell
+                            continue;
+                        }
+                        if ( (i<0||i>=d_size[0]) && !d_isPeriodic[0] ) {
+                            // The element is outside the domain
+                            continue;
+                        }
+                    } else if ( PhysicalDim == 2 ) {
+                        if ( ( i>range[0]-gcw && i<range[1]+gcw-1 ) &&
+                             ( j>range[2]-gcw && j<range[3]+gcw-1 ) ) {
+                            // The element was already included by another ghost (or owned) cell
+                            continue;
+                        }
+                        if ( ( (i<0||i>=d_size[0]) && !d_isPeriodic[0] ) ||
+                             ( (j<0||j>=d_size[1]) && !d_isPeriodic[1] ) ) {
+                            // The element is outside the domain
+                            continue;
+                        }
+                    } else if ( PhysicalDim == 3 ) {
                         if ( ( i>range[0]-gcw && i<range[1]+gcw-1 ) &&
                              ( j>range[2]-gcw && j<range[3]+gcw-1 ) &&
                              ( k>range[4]-gcw && k<range[5]+gcw-1 ) ) {
@@ -464,31 +557,31 @@ void BoxMesh::initialize()
                             // The element is outside the domain
                             continue;
                         }
-                        // Create the index (adjusting for periodic boundaries)
-                        MeshElementIndex index( PhysicalDim, 0, i, j, k );
-                        if ( i<0 ) { index.index[0] += d_size[0]; }
-                        if ( j<0 ) { index.index[1] += d_size[1]; }
-                        if ( k<0 ) { index.index[2] += d_size[2]; }
-                        if ( i>=d_size[0] ) { index.index[0] -= d_size[0]; }
-                        if ( j>=d_size[1] ) { index.index[1] -= d_size[1]; }
-                        if ( k>=d_size[2] ) { index.index[2] -= d_size[2]; }
-                        // Check if the element is already in one of the lists
-                        bool found = false;
-                        for (int k=0; k<gcw; k++) {
-                            if ( d_elements[PhysicalDim][k]->size()==0 )
-                                continue;
-                            size_t m = AMP::Utilities::findfirst( *d_elements[PhysicalDim][k], index );
-                            if ( m==d_elements[PhysicalDim][k]->size() ) { m--; }
-                            if ( d_elements[PhysicalDim][k]->operator[](m) == index )
-                                found = true;
-                        }
-                        if ( !found )
-                            d_elements[PhysicalDim][gcw]->push_back( index );
+                    } else { 
+                        AMP_ERROR("Not programmed for this dimension yet");
                     }
+                    // Create the index (adjusting for periodic boundaries)
+                    MeshElementIndex index( PhysicalDim, 0, i, j, k );
+                    if ( i<0 ) { index.index[0] += d_size[0]; }
+                    if ( j<0 ) { index.index[1] += d_size[1]; }
+                    if ( k<0 ) { index.index[2] += d_size[2]; }
+                    if ( i>=d_size[0] ) { index.index[0] -= d_size[0]; }
+                    if ( j>=d_size[1] ) { index.index[1] -= d_size[1]; }
+                    if ( k>=d_size[2] ) { index.index[2] -= d_size[2]; }
+                    // Check if the element is already in one of the lists
+                    bool found = false;
+                    for (int k2=0; k2<gcw; k2++) {
+                        if ( d_elements[PhysicalDim][k2]->size()==0 )
+                            continue;
+                        size_t m = AMP::Utilities::findfirst( *d_elements[PhysicalDim][k2], index );
+                        if ( m==d_elements[PhysicalDim][k2]->size() ) { m--; }
+                        if ( d_elements[PhysicalDim][k2]->operator[](m) == index )
+                            found = true;
+                    }
+                    if ( !found )
+                        d_elements[PhysicalDim][gcw]->push_back( index );
                 }
             }
-        } else { 
-            AMP_ERROR("Not programmed for this dimension yet");
         }
         // Sort the elements for easy searching and remove any duplicates
         AMP::Utilities::unique( *d_elements[PhysicalDim][gcw] );
@@ -689,10 +782,22 @@ size_t BoxMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
             AMP_INSIST(dim==3,"tube requires a 3d mesh");
             AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must be 1x3 for tube");
             N_elements = size[0]*size[1]*size[2];
+        } else if ( generator.compare("circle")==0 ) {
+            AMP_INSIST(dim==2,"circle requires a 2d mesh");
+            AMP_INSIST((int)size.size()==1,"Size of field 'Size' must be 1x1 for cylinder");
+            N_elements = (2*size[0])*(2*size[0]);
         } else if ( generator.compare("cylinder")==0 ) {
             AMP_INSIST(dim==3,"cylinder requires a 3d mesh");
             AMP_INSIST((int)size.size()==2,"Size of field 'Size' must be 1x2 for cylinder");
             N_elements = (2*size[0])*(2*size[0])*size[1];
+        } else if ( generator.compare("shell")==0 ) {
+            AMP_INSIST(dim==3,"cylinder requires a 3d mesh");
+            AMP_INSIST((int)size.size()==2,"Size of field 'Size' must be 1x2 for shell");
+            N_elements = size[0]*(2*size[1])*(2*size[1]);
+        } else if ( generator.compare("sphere")==0 ) {
+            AMP_INSIST(dim==3,"cylinder requires a 3d mesh");
+            AMP_INSIST((int)size.size()==1,"Size of field 'Size' must be 1x1 for sphere");
+            N_elements = (2*size[0])*(2*size[0])*(2*size[0]);
         } else {
             AMP_ERROR("Unkown generator");
         }
@@ -989,6 +1094,126 @@ void BoxMesh::fillCartesianNodes(int dim, const int* globalSize, const double *r
         AMP_ASSERT(index[i].type==0);
         for (int d=0; d<dim; d++)
             coord[d][i] = range[2*d+0] + (range[2*d+1]-range[2*d+0])*((double)index[i].index[d])/((double)globalSize[d]);
+    }
+}
+
+
+/****************************************************************
+* Helper function to map x,y logical coordinates in [0,1]       *
+* to x,y coordinate in a circle of radius r                     *
+* There are 3 methods to choose from:                           *
+*    1 - D(d) = r*d/sqrt(2), R(d) = r*d                         *
+*    2 - D(d) = r*d/sqrt(2), R(d) = r                           *
+*    3 - D(d) = r*d*(2-d)/sqrt(2), R(d) = r1                    *
+****************************************************************/
+void BoxMesh::map_logical_circle( size_t N, double r, int method, double *x, double *y )
+{
+    // This maps from a a logically rectangular 2D mesh to a circular mesh using the mapping by:
+    // Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids and Finite Volume
+    //    Methods for PDEs in Circular and Spherical Domains", SIAM REVIEW, Vol. 50, No. 4, pp. 723–752 (2008)
+    const double sqrt2 = 1.41421356237;
+    for (size_t i=0; i<N; i++) {
+        // map [0,1] x [0,1] to circle of radius r
+        double xc = 2*x[i]-1;                   // Change domain to [-1,1]
+        double yc = 2*y[i]-1;                   // Change domain to [-1,1]
+        if ( fabs(xc)<1e-12 && fabs(yc)<1e-12 ) {
+            // We are dealing with the center point
+            x[i] = 0.0;
+            y[i] = 0.0;
+            continue;
+        }
+        double d = std::max(fabs(xc),fabs(yc)); // value on diagonal of computational grid
+        double D=0, R=0;
+        if ( method == 1 ) {
+            D = r*d/sqrt2;                      // mapping d to D(d)
+            R = r*d;                            // mapping d to R(d)
+        } else if ( method == 2 ) {
+            D = r*d/sqrt2;                      // mapping d to D(d)
+            R = r;                              // mapping d to R(d)
+        } else if ( method == 3 ) {
+            D = r*d*(2-d)/sqrt2;                // mapping d to D(d)
+            R = r;                              // mapping d to R(d)
+        } else {
+            AMP_ERROR("Invalid method");
+        }
+        double center = D - sqrt(R*R-D*D);
+        double xp = D/d*fabs(xc);
+        double yp = D/d*fabs(yc);
+        if ( fabs(yc)>=fabs(xc) )
+            yp = center + sqrt(R*R-xp*xp);
+        if ( fabs(xc)>=fabs(yc) )
+            xp = center + sqrt(R*R-yp*yp);
+        if ( xc<0.0 )
+            xp = -xp;
+        if ( yc<0.0 )
+            yp = -yp;
+        x[i] = xp;
+        y[i] = yp;
+    }
+}
+
+
+/****************************************************************
+* Helper function to map x,y,z logical coordinates in [0,1]     *
+* to x,y,z coordinates in a shell with r1 <= r <= r2            *
+****************************************************************/
+void BoxMesh::map_logical_shell( size_t N, double r1, double r2, double *x, double *y, double *z )
+{
+    // This maps from a a logically rectangular 3D mesh to a shell mesh using the mapping by:
+    // Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids and Finite Volume
+    //    Methods for PDEs in Circular and Spherical Domains", SIAM REVIEW, Vol. 50, No. 4, pp. 723–752 (2008)
+    double dr = r2-r1;
+    AMP_ASSERT( r1>=0 && r2>0 && dr>0 );
+    bool *index = new bool[N];
+    memset(index,0,N*sizeof(bool));
+    for (size_t i=0; i<N; i++) {
+        x[i] = 2*x[i]-1;                    // Change domain to [-1,1]
+        if ( x[i] < 0 ) {
+            x[i] = -x[i];                   // We need to make x go from 1:0:1                   
+            index[i] = true;                // Keep track of the values we changed sign
+        }
+    }
+    // Map x,y to the unit circle
+    map_logical_circle( N, 1.0, 3, x, y );
+    for (size_t i=0; i<N; i++) {
+        double xp = x[i];
+        double yp = y[i];
+        double zp = sqrt(fabs(1.0-(xp*xp+yp*yp)));
+        if ( index[i] )
+            zp = -zp;                       // negate z in lower hemisphere
+        double Rz = r1 + z[i]*dr;           // radius based on z[0,1]
+        x[i] = Rz*xp;
+        y[i] = Rz*yp;
+        z[i] = Rz*zp;
+    }
+    delete [] index;
+}
+
+
+/****************************************************************
+* Helper function to map x,y,z logical coordinates in [0,1]     *
+* to x,y,z coordinates in a sphere with radius r                *
+****************************************************************/
+void BoxMesh::map_logical_sphere( size_t N, double r, double *x, double *y, double *z )
+{
+    // This maps from a a logically rectangular 3D mesh to a sphere mesh using the mapping by:
+    // Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids and Finite Volume
+    //    Methods for PDEs in Circular and Spherical Domains", SIAM REVIEW, Vol. 50, No. 4, pp. 723–752 (2008)
+    const double sqrt3 = 1.732050807568877;
+    for (size_t i=0; i<N; i++) {
+        double xc = 2*x[i]-1;                   // Change domain to [-1,1]
+        double yc = 2*y[i]-1;                   // Change domain to [-1,1]
+        double zc = 2*z[i]-1;                   // Change domain to [-1,1]
+        double d = std::max(std::max(fabs(xc),fabs(yc)),fabs(zc));
+        double r2 = sqrt(xc*xc+yc*yc+zc*zc);
+        r2 = std::max(r2,1e-10);
+        x[i] = r*d*xc/r2;
+        y[i] = r*d*yc/r2;
+        z[i] = r*d*zc/r2;
+        double w = d*d;
+        x[i] = w*x[i] + r*(1-w)*xc/sqrt3;
+        y[i] = w*y[i] + r*(1-w)*yc/sqrt3;
+        z[i] = w*z[i] + r*(1-w)*zc/sqrt3;
     }
 }
 

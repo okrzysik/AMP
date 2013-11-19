@@ -41,6 +41,14 @@ int main ( int argc , char ** argv )
         testSubsetDOFManager<MultiMeshGenerator,true>( &ut );
     #endif
 
+    // Run the tests for the structureMeshDOFManager
+    testStructureDOFManager<AMPCubeGenerator<10>,1,0,0,1>( &ut );
+    testStructureDOFManager<AMPCubeGenerator<10>,0,1,0,1>( &ut );
+    testStructureDOFManager<AMPCubeGenerator<10>,0,0,1,1>( &ut );
+    testStructureDOFManager<AMPCubeGenerator<10>,1,1,1,1>( &ut );
+    testStructureDOFManager<AMPCubeGenerator<10>,1,1,1,0>( &ut );
+    testStructureDOFManager<AMPCubeGenerator<10>,1,1,1,2>( &ut );
+
     // Print the results and return
     ut.report ();
     int num_failed = ut.NumFailGlobal();

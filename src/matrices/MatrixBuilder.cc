@@ -11,6 +11,7 @@
 #endif
 #ifdef USE_EXT_TRILINOS
     #include "vectors/trilinos/EpetraVectorEngine.h"
+    #include "matrices/trilinos/ManagedEpetraMatrix.h"
 #endif
 
 
@@ -19,12 +20,13 @@ namespace LinearAlgebra {
 
 
 /********************************************************
-* Matrix builder                                        *
+* Build a ManagedPetscMatrix                             *
 ********************************************************/
-AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix( 
+AMP::LinearAlgebra::Matrix::shared_ptr  createManagedMatrix( 
     AMP::LinearAlgebra::Vector::shared_ptr operandVec, 
     AMP::LinearAlgebra::Vector::shared_ptr resultVec )
 {
+#if defined(USE_EXT_TRILINOS)
     // Get the DOFs
     AMP::Discretization::DOFManager::shared_ptr operandDOF = operandVec->getDOFManager();
     AMP::Discretization::DOFManager::shared_ptr resultDOF = resultVec->getDOFManager();
@@ -34,10 +36,9 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix(
     if ( comm.getSize()==1 )
         comm = AMP_MPI(AMP_COMM_SELF);
 
-#if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
     // Create the matrix parameters
-    boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrixParameters> params( 
-        new AMP::LinearAlgebra::ManagedPetscMatrixParameters ( resultDOF, operandDOF, comm ) );
+    boost::shared_ptr<AMP::LinearAlgebra::ManagedEpetraMatrixParameters> params( 
+        new AMP::LinearAlgebra::ManagedEpetraMatrixParameters( resultDOF, operandDOF, comm ) );
     params->d_CommListLeft = resultVec->getCommunicationList();
     params->d_CommListRight = operandVec->getCommunicationList();
     params->d_VariableLeft = resultVec->getVariable();
@@ -71,7 +72,11 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix(
     }
 
     // Create the matrix
-    boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrix>  newMatrix( new AMP::LinearAlgebra::ManagedPetscMatrix(params) );
+    #if defined(USE_EXT_PETSC)
+        boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrix>  newMatrix( new AMP::LinearAlgebra::ManagedPetscMatrix(params) );
+    #else
+        boost::shared_ptr<AMP::LinearAlgebra::ManagedEpetraMatrix>  newMatrix( new AMP::LinearAlgebra::ManagedEpetraMatrix(params) );
+    #endif
 
     // Initialize the matrix
     cur_elem = resultDOF->getIterator();
@@ -101,18 +106,65 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix(
 
     return newMatrix;
 #else
-    if ( comm.getSize()!=1 )
+    AMP_ERROR("Unable to build a ManagedMatrix without TRILINOS");
+    return AMP::LinearAlgebra::Matrix::shared_ptr();
+#endif
+}
+
+
+/********************************************************
+* Build a DenseSerialMatrix                             *
+********************************************************/
+AMP::LinearAlgebra::Matrix::shared_ptr  createDenseSerialMatrix( 
+    AMP::LinearAlgebra::Vector::shared_ptr operandVec, 
+    AMP::LinearAlgebra::Vector::shared_ptr resultVec )
+{
+    // Get the DOFs
+    AMP::Discretization::DOFManager::shared_ptr operandDOF = operandVec->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr resultDOF = resultVec->getDOFManager();
+    if ( operandDOF->getComm().compare(resultVec->getComm()) == 0 )
+        AMP_ERROR("operandDOF and resultDOF on different comm groups is NOT tested, and needs to be fixed");
+    AMP_MPI comm = operandDOF->getComm();
+    if ( comm.getSize()==1 )
+        comm = AMP_MPI(AMP_COMM_SELF);
+    else 
         AMP_ERROR("The only native matrix is a serial dense matrix");
     // Create the matrix parameters
     boost::shared_ptr<AMP::LinearAlgebra::MatrixParameters> params( 
         new AMP::LinearAlgebra::MatrixParameters( resultDOF, operandDOF, comm ) );
+    params->d_VariableLeft = resultVec->getVariable();
+    params->d_VariableRight = operandVec->getVariable();
     // Create the matrix
     boost::shared_ptr<AMP::LinearAlgebra::DenseSerialMatrix>  newMatrix( new AMP::LinearAlgebra::DenseSerialMatrix(params) );
     // Initialize the matrix
     newMatrix->zero();
     newMatrix->makeConsistent();
     return newMatrix;
-#endif
+}
+
+
+/********************************************************
+* Matrix builder                                        *
+********************************************************/
+AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix( 
+    AMP::LinearAlgebra::Vector::shared_ptr operandVec, 
+    AMP::LinearAlgebra::Vector::shared_ptr resultVec, int type )
+{
+    AMP::LinearAlgebra::Matrix::shared_ptr matrix;
+    if ( type==0 ) {
+        #if defined(USE_EXT_TRILINOS)
+            matrix = createManagedMatrix(operandVec,resultVec);
+        #else
+            matrix = createDenseSerialMatrix(operandVec,resultVec);
+        #endif
+    } else if ( type==1 ) {
+        matrix = createManagedMatrix(operandVec,resultVec);
+    } else if ( type==2 ) {
+        matrix = createDenseSerialMatrix(operandVec,resultVec);
+    } else {
+        AMP_ERROR("Unknown matrix type to build");
+    }
+    return matrix;
 }
 
 

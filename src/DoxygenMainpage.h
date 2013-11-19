@@ -1,5 +1,4 @@
 //---------------------------------------------------------------------------//
-// mainpage.dcc
 // Front page to the AMP autodoc system.
 //---------------------------------------------------------------------------//
 
@@ -8,19 +7,11 @@
 \mainpage The AMP (Advanced Multi-Physics) Package Documentation System
 
 \par Authors
-<a href="mailto:clarnokt@ornl.gov">Kevin Clarno (ORNL)</a>.<BR>
 <a href="mailto:philipb@ornl.gov">Bobby Philip (ORNL)</a>.<BR>
-<a href="mailto:gad@lanl.gov">Gary Dilts (LANL)</a>.<BR>
-<a href="mailto:cochranwk@ornl.gov">Bill Cochran (ORNL)</a>.<BR>
-<a href="mailto:simunovics@ornl.gov">Srdjan Simunovic (ORNL)</a>.<BR>
-<a href="mailto:billingsjj@ornl.gov">Jay Billings (ORNL)</a>.<BR>
-<a href="mailto:sampathrs@ornl.gov">Rahul Sampath (ORNL)</a>.<BR>
-<a href="mailto:allus@ornl.gov">Srikanth Allu (ORNL)</a>.<BR>
-<a href="mailto:baraip@ornl.gov">Pallab Barai (ORNL)</a>.<BR>
 <a href="mailto:berrillma@ornl.gov">Mark Berrill (ORNL)</a>.<BR>
-<a href="mailto:banfieldje@ornl.gov">Jim Banfield (University of Tennessee/ORNL)</a>.<BR>
-<a href="mailto:gyi@ornl.gov">Gokhan Yesilyurt (ORNL)</a>.<BR>
-<a href="mailto:bmihaila@lanl.gov">Bogdan Mihaila (LANL)</a>.<BR>
+<a href="mailto:clarnokt@ornl.gov">Kevin Clarno (ORNL)</a>.<BR>
+<a href="mailto:sampathrs@ornl.gov">Rahul Sampath (ORNL)</a>.<BR>
+<a href="mailto:hamiltonsp@ornl.gov">Steven Hamilton (ORNL)</a>.<BR>
 
 \par Executive Summary
 Simulations of multiphysics systems are becoming increasingly important in many science application areas. 
@@ -87,13 +78,26 @@ find documentation about each component.<BR>
 \par Building:
 Build options for AMP can be found \ref BuildOptions "here".
 
-*/
+\par Examples
+A limited set of examples are provided for illustrating the usage of the AMP components.
+To build the examples use the command "make build-examples".  
+Additional cases may be demonstrated in the unit tests.<BR>
+\ref Examples_ampmesh "Mesh Examples"<BR>
 
-// \par Packages
-//@PACKAGE_LINKS@
+\par Documentation
+To build the documentation use the command "make doc".  To build the basic documentation
+without compiling AMP, the "-D ONLY_BUILD_DOCS=1" flag can be used: \verbatim
+   /usr/bin/cmake                           \
+      -D AMP_DATA:PATH=${PATH_TO_AMP_DATA}  \
+      -D ONLY_BUILD_DOCS=1                  \
+      ${PATH_TO_AMP_SOURCE}<BR>
+\endverbatim
+Note that building the documenation requires doxygen and dot.  Latex is recommended.  
+
+\par Packages
 
 
-//---------------------------------------------------------------------------//
-// end of mainpage.dcc
-//---------------------------------------------------------------------------//
+*/  
+
+// end of mainpage
 

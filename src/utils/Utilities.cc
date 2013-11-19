@@ -36,7 +36,10 @@
     #include <execinfo.h>
     #include <cxxabi.h>
     #include <dlfcn.h>
-    #include<mach/mach.h>
+    #include <mach/mach.h>
+    #include <stdint.h>
+    #include <sys/types.h>
+    #include <sys/sysctl.h>
 #elif defined(__linux) || defined(__unix) || defined(__posix)
     #define USE_LINUX
     #include <signal.h>
@@ -257,21 +260,62 @@ unsigned int Utilities::hash_char(const char* name)
 }
 
 
-// Function to get the memory usage
-// Note: this function should be thread-safe
-#if defined(USE_MAC)
-    // Get the page size on mac
+/****************************************************************************
+*  Function to get the memory usage                                         *
+*  Note: this function should be thread-safe                                *
+****************************************************************************/
+#if defined(USE_MAC) || defined(USE_LINUX)
+    // Get the page size on mac or linux
     static size_t page_size = static_cast<size_t>(sysconf(_SC_PAGESIZE));
 #endif
 static size_t N_bytes_initialization = Utilities::getMemoryUsage();
+size_t Utilities::getSystemMemory()
+{
+    size_t N_bytes = 0;
+    #if defined(USE_LINUX)
+        static long pages = sysconf(_SC_PHYS_PAGES);
+        N_bytes = pages * page_size;
+    #elif defined(USE_MAC)
+        int mib[2] = { CTL_HW, HW_MEMSIZE };
+        u_int namelen = sizeof(mib) / sizeof(mib[0]);
+        uint64_t size;
+        size_t len = sizeof(size);
+        if (sysctl(mib, namelen, &size, &len, NULL, 0) == 0)
+            N_bytes = size;
+    #elif defined(USE_WINDOWS)
+        MEMORYSTATUSEX status;
+        status.dwLength = sizeof(status);
+        GlobalMemoryStatusEx(&status);
+        N_bytes = status.ullTotalPhys;
+    #endif
+    return N_bytes;
+}
 size_t Utilities::getMemoryUsage()
 {
     size_t N_bytes = 0;
     #if defined(USE_LINUX)
+        // Get the memory usage according to mallinfo 
         struct mallinfo meminfo = mallinfo();
-        size_t size_hblkhd = static_cast<size_t>( meminfo.hblkhd );
-        size_t size_uordblks = static_cast<size_t>( meminfo.uordblks );
-        N_bytes = static_cast<size_t>( size_hblkhd + size_uordblks );
+        unsigned int size_hblkhd = static_cast<unsigned int>( meminfo.hblkhd );
+        unsigned int size_uordblks = static_cast<unsigned int>( meminfo.uordblks );
+        N_bytes = size_hblkhd + size_uordblks;
+        /*// Correct if we wrapped around 2^32
+        FILE *stderr_tmp = stderr;
+        char buffer[512];
+        memset(buffer,0,512);
+        stderr = fmemopen(buffer,511,"wb+");
+        malloc_stats();
+        fclose(stderr);
+        stderr = stderr_tmp;
+        std::string tmp(buffer);
+        size_t pos = tmp.find("max mmap bytes");
+        tmp = tmp.substr(pos);
+        pos = tmp.find("=");
+        tmp = tmp.substr(pos+1);
+        size_t max_mmap = static_cast<size_t>(atol(tmp.c_str()));
+        while ( max_mmap+size_uordblks >= N_bytes+0x100000000 ) {
+            N_bytes += 0x100000000;
+        }*/
     #elif defined(USE_MAC)
         struct task_basic_info t_info;
         mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
@@ -290,7 +334,9 @@ size_t Utilities::getMemoryUsage()
 }
 
 
-//! Function to print the current call stack
+/****************************************************************************
+*  Function to get the current call stack                                   *
+****************************************************************************/
 std::vector<std::string>  Utilities::getCallStack()
 {
     std::vector<std::string>  stack_list;
@@ -372,60 +418,6 @@ std::vector<std::string>  Utilities::getCallStack()
             std::stringstream stream;
             stream << lNameModule << " : 000" << lNumberSection << " : " << reinterpret_cast<void*>(lOffsetSection);
             stack_list.push_back(stream.str());
-
-            /*DWORD lineDisplacement = 0;
-            IMAGEHLP_LINE64  line;
-            bool bLine = SymGetLineFromAddr64( ::GetCurrentProcess(), lFrameStack.AddrPC.Offset, &lineDisplacement, &line );
-            PDWORD64 symDisplacement = 0;
-            enum { emMaxNameLength = 512 };
-            union {
-                SYMBOL_INFO symb;
-                BYTE symbolBuffer[ sizeof(SYMBOL_INFO) + emMaxNameLength ];
-            } u;
-            PSYMBOL_INFO pSymbol = & u.symb;
-            char buf[100];
-            DWORD64 pFrame = lFrameStack.AddrFrame.Offset;
-            if ( SymFromAddr( ::GetCurrentProcess(), lFrameStack.AddrPC.Offset,
-                                symDisplacement, pSymbol) )
-            {
-                if( bLine ) {
-                    sprintf( buf, "   %s() line %d\n",
-                        lFrameStack.AddrPC.Offset, pFrame,
-                        pSymbol->Name, line.LineNumber );
-                } else {
-                    sprintf( buf, "  %s() + %X\n",
-                        lFrameStack.AddrPC.Offset, pFrame,
-                        pSymbol->Name, symDisplacement );
-                }
-
-            }
-            else    // No symbol found.  Print out the logical address instead.
-            {
-                DWORD err = GetLastError();
-                //FIXED_ARRAY( szModule , TCHAR, MAX_PATH );
-                //char szModule = '\0';
-                DWORD section = 0, offset = 0;
-
-                //GetLogicalAddress(  (PVOID)lFrameStack.AddrPC.Offset,
-                //                    szModule, sizeof(szModule), section, offset );
-
-                char szModule=0;
-                sprintf( buf, "  %04X:%08X %s (err = %d)\n",
-                    lFrameStack.AddrPC.Offset, pFrame,
-                    section, offset, szModule, err );
-            }*/
-
-/*            // Save line
-            size_t l = strlen(buf);
-            if( i_line >= m_Levels || i_buf + l >= m_Bytes ) {
-                // We have saved all of the stack we can save
-                break;
-            }
-            buf[ l - 1 ] = '\0';    // Remove trailing '\n'
-            char * s = & m_Buffer[ i_buf ];
-            m_Lines[ i_line++ ] = s;
-            strncpy( s, buf, l );
-            i_buf += l;*/
         }
     #endif
     return stack_list;

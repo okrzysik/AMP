@@ -1,0 +1,13 @@
+// This is the a simple 4x5x6 cube in the domain (0,0,0)-(1,1,1)
+Mesh{
+    MeshName = "cube"               // Name of the mesh
+    MeshType = "AMP"                // Mesh type
+    dim = 3                         // Dimension of the mesh
+    Generator = "cube"              // Generator to use (AMP specific meshes)
+    Size = 4, 5, 6                  // # of elements in x, y, z (cube specific)
+    Range = 0, 1, 0, 1, 0, 1        // x_min, x_max, y_min, y_max, z_min, z_max (cube specific)
+    x_offset = 0.0                  // Offset in x-direction (optional)
+    y_offset = 0.0                  // Offset in y-direction (optional)
+    z_offset = 0.0                  // Offset in z-direction (optional)
+}
+

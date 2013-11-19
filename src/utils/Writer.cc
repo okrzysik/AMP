@@ -2,6 +2,7 @@
 #include "utils/Utilities.h"
 
 #include "utils/NullWriter.h"
+#include "utils/AsciiWriter.h"
 #ifdef USE_AMP_MESH
     #include "ampmesh/SiloIO.h"
 #endif
@@ -18,13 +19,15 @@ boost::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( std::string type 
 {
     boost::shared_ptr<AMP::Utilities::Writer> writer;
     if ( type=="None" || type=="none" || type=="NONE" ) {
-        writer.reset( new AMP::Utilities::NullWriter );
+        writer.reset( new AMP::Utilities::NullWriter() );
     } else if ( type=="Silo" || type=="silo" || type=="SILO" ) {
         #if defined(USE_AMP_MESH) && defined(USE_EXT_SILO)
-            writer.reset( new AMP::Mesh::SiloIO );
+            writer.reset( new AMP::Mesh::SiloIO() );
         #else
-            writer.reset( new AMP::Utilities::NullWriter );
+            writer.reset( new AMP::Utilities::NullWriter() );
         #endif
+    } else if ( type=="Ascii" || type=="ascii" || type=="ASCII" ) {
+        writer.reset( new AMP::Utilities::AsciiWriter() );
     } else {
         AMP_ERROR("Unknown writer");
     }

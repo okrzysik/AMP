@@ -89,7 +89,7 @@ public:
      * @param [in] f : shared pointer to right hand side vector
      * @param [out] u : shared pointer to approximate computed solution 
      */
-    virtual void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
+    virtual void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
 	       boost::shared_ptr<AMP::LinearAlgebra::Vector>  u);
     
     /**
@@ -104,12 +104,16 @@ protected:
 
     void initialize( boost::shared_ptr<SolverStrategyParameters> parameters );
     
+    AMP_MPI d_comm;
+
     AMP::LinearAlgebra::Vector::shared_ptr d_initialGuess;
 
     Teuchos::RCP<NOX::Solver::Generic> d_solver;
 
     Teuchos::RCP<TrilinosThyraModelEvaluator> d_thyraModel;
     Teuchos::RCP<Teuchos::ParameterList> d_nlParams;
+    Teuchos::RCP<Thyra::PreconditionerBase<double> > d_precOp;
+    Teuchos::RCP< ::Thyra::LinearOpWithSolveFactoryBase<double> > d_lowsFactory;
     Teuchos::RCP<NOX::StatusTest::Combo> d_status;
 
 };

@@ -348,10 +348,10 @@ namespace Operator {
     for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) {
       d_materialModel->preNonlinearAssemblyGaussPointOperation();
 
-      double F_n[3][3], F_np1[3][3], F_np1o2[3][3], U_n[3][3], U_np1[3][3], U_np1o2[3][3], R_n[3][3], R_np1[3][3], R_np1o2[3][3];
+      double F_n[3][3], F_np1[3][3], F_np1o2[3][3], R_n[3][3], R_np1[3][3];
       //double Identity[3][3], e_np1o2_tilda_rotated[3][3], Bl_np1[6][24], spin_np1[3][3], d_np1[3][3], el_np1[6], detF = 1.0, detF_np1, detF_n;
-      double Identity[3][3], e_np1o2_tilda_rotated[3][3], Bl_np1[6][24], spin_np1[3][3], d_np1[3][3], el_np1[6], detF = 1.0;
-      double dN_dxnp1o2[8], dN_dynp1o2[8], dN_dznp1o2[8], detJ_np1o2[1], d_np1o2[3][3], d_np1o2_temp[3][3];
+      double Identity[3][3], e_np1o2_tilda_rotated[3][3], Bl_np1[6][24], spin_np1[3][3], el_np1[6], detF = 1.0;
+      double d_np1o2[3][3];
      
       computeShapeFunctions(N, currXi[qp], currEta[qp], currZeta[qp]);
 
@@ -379,17 +379,21 @@ namespace Operator {
       computeGradient(dNdX, dNdY, dNdZ, x_np1o2, y_np1o2, z_np1o2, num_nodes, F_np1o2);
   
       if(d_useJaumannRate == false) {
+        double R_np1o2[3][3];
+        /*
         double difference = 0.0;
         for(int i = 0; i < 3; i++) {
           for(int j = 0; j < 3; j++) {
             difference += fabs((0.5*(F_n[i][j]+F_np1[i][j]))-F_np1o2[i][j]);
           }
         }
-        //std::cout<<"difference in F's = "<<difference<<std::endl;
+        std::cout<<"difference in F's = "<<difference<<std::endl;
+        */
 
         if(d_useFlanaganTaylorElem == false) {
           // Polar decomposition (F=RU) of the deformation gradient is conducted here.
           //std::cout<<"Will do it for the n-th step."<<std::endl;
+          double U_n[3][3], U_np1[3][3], U_np1o2[3][3];
           polarDecompositionFeqRU_Simo(F_n, R_n, U_n);
           //polarDecomposeRU(F_n, R_n, U_n);
           polarDecompositionFeqRU_Simo(F_np1, R_np1, U_np1);
@@ -536,6 +540,7 @@ namespace Operator {
         }
         
         // Gradient of the incremental displacement with respect to the np1o2 configuration.
+        double dN_dxnp1o2[8], dN_dynp1o2[8], dN_dznp1o2[8], detJ_np1o2[1], d_np1o2_temp[3][3];
         constructShapeFunctionDerivatives(dN_dxnp1o2, dN_dynp1o2, dN_dznp1o2, x_np1o2, y_np1o2, z_np1o2, currXi[qp], currEta[qp], currZeta[qp], detJ_np1o2);
         
         // Calculate the rate of deformation tensor with respect to the np1o2 configuration.
@@ -580,6 +585,7 @@ namespace Operator {
       }
 
       if(d_useJaumannRate == true) {
+        double d_np1[3][3];
         computeGradient(dNdx, dNdy, dNdz, delta_u, delta_v, delta_w, num_nodes, d_np1);
         for(int i = 0; i < 3; i++) {
           for(int j = 0; j < 3; j++) {
@@ -787,7 +793,7 @@ namespace Operator {
     const double currXi[8] = {-rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3};
     const double currEta[8] = {-rsq3, -rsq3, rsq3, rsq3, -rsq3, -rsq3, rsq3, rsq3};
     const double currZeta[8] = {-rsq3, -rsq3, -rsq3, -rsq3, rsq3, rsq3, rsq3, rsq3};
-    double Bl_np1_bar[6][24], sum_detJ, Bl_center[6][24];
+    double Bl_np1_bar[6][24], Bl_center[6][24];
     
     for(unsigned int ijk = 0; ijk < num_nodes; ijk++) {
       prevX[ijk] = xyz_n[ijk](0) = xyz[ijk](0) + elementInputVectors_pre[Mechanics::DISPLACEMENT][(3*ijk) + 0];
@@ -813,7 +819,7 @@ namespace Operator {
       }
     }
 
-    double ebar_np1o2[3][3], sum_detJ_np1o2 = 0.0, avg_dil_strain = 0.0;
+    double ebar_np1o2[3][3], avg_dil_strain = 0.0;
     if(d_useJaumannRate == false) {
       for(int i = 0; i < 3; i++) {
         for(int j = 0; j < 3; j++) {
@@ -821,8 +827,9 @@ namespace Operator {
         }
       }
 
+      double sum_detJ_np1o2 = 0.0;
       for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) {
-        double F_np1o2[3][3], R_np1o2[3][3], U_np1o2[3][3];
+        double F_np1o2[3][3];
         //double dN_dxnp1o2[8], dN_dynp1o2[8], dN_dznp1o2[8], detJ_np1o2[1], d_np1o2[3][3], d_np1o2_temp[3][3], e_np1o2_tilda_rotated[3][3];
         double dN_dxnp1o2[8], dN_dynp1o2[8], dN_dznp1o2[8], detJ_np1o2[1], d_np1o2_temp[3][3];
   
@@ -834,6 +841,7 @@ namespace Operator {
         if(d_useFlanaganTaylorElem == false) {
           // Polar decomposition (F=RU) of the deformation gradient is conducted here.
           //std::cout<<"Will do it for the n-th step."<<std::endl;
+          double R_np1o2[3][3], U_np1o2[3][3];
           polarDecompositionFeqRU_Simo(F_np1o2, R_np1o2, U_np1o2);
           //polarDecomposeRU(F_np1o2, R_np1o2, U_np1o2);
         }
@@ -856,7 +864,6 @@ namespace Operator {
       avg_dil_strain = ((1.0 / 3.0) * (ebar_np1o2[0][0] + ebar_np1o2[1][1] + ebar_np1o2[2][2]));
     } // end of if - condition......
 
-    sum_detJ = 0.0;
     for(unsigned int i = 0; i < 6; i++) {
       for(unsigned int j = 0; j < (3 * num_nodes); j++) {
         Bl_np1_bar[i][j] = 0.0;
@@ -864,6 +871,7 @@ namespace Operator {
       }
     }
 
+    double sum_detJ = 0.0;
     for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) {
       constructShapeFunctionDerivatives(dNdx, dNdy, dNdz, currX, currY, currZ, currXi[qp], currEta[qp], currZeta[qp], detJ);
       sum_detJ += detJ[0];
@@ -914,9 +922,9 @@ namespace Operator {
     for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) {
       d_materialModel->preNonlinearAssemblyGaussPointOperation();
 
-      double Bl_np1[6][24], d_np1[3][3], spin_np1[3][3], el_np1[6], Bl_dil[6][24], F_np1o2[3][3], R_np1o2[3][3], U_np1o2[3][3];
-      double F_n[3][3], R_n[3][3], U_n[3][3], F_np1[3][3], R_np1[3][3], U_np1[3][3];
-      double dN_dxnp1o2[8], dN_dynp1o2[8], dN_dznp1o2[8], detJ_np1o2[1], d_np1o2[3][3], d_np1o2_temp[3][3], e_np1o2_tilda_rotated[3][3];
+      double Bl_np1[6][24], d_np1[3][3], spin_np1[3][3], el_np1[6], Bl_dil[6][24], F_np1o2[3][3];
+      double F_n[3][3], R_n[3][3], F_np1[3][3], R_np1[3][3];
+      double d_np1o2[3][3], e_np1o2_tilda_rotated[3][3];
       double detF = 1.0;
 
       computeShapeFunctions(N, currXi[qp], currEta[qp], currZeta[qp]);
@@ -931,7 +939,9 @@ namespace Operator {
       computeGradient(dNdX, dNdY, dNdZ, x_np1o2, y_np1o2, z_np1o2, num_nodes, F_np1o2);
   
       if(d_useJaumannRate == false) {
+        double R_np1o2[3][3];
         if(d_useFlanaganTaylorElem == false) {
+          double U_n[3][3], U_np1[3][3], U_np1o2[3][3];
           // Polar decomposition (F=RU) of the deformation gradient is conducted here.
           //std::cout<<"Will do it for the n-th step."<<std::endl;
           polarDecompositionFeqRU_Simo(F_n, R_n, U_n);
@@ -943,6 +953,7 @@ namespace Operator {
         }
         
         // Gradient of the incremental displacement with respect to the np1o2 configuration.
+        double dN_dxnp1o2[8], dN_dynp1o2[8], dN_dznp1o2[8], detJ_np1o2[1], d_np1o2_temp[3][3];
         constructShapeFunctionDerivatives(dN_dxnp1o2, dN_dynp1o2, dN_dznp1o2, x_np1o2, y_np1o2, z_np1o2, currXi[qp], currEta[qp], currZeta[qp], detJ_np1o2);
         
         // Calculate the rate of deformation tensor with respect to the np1o2 configuration.
@@ -1148,7 +1159,7 @@ namespace Operator {
   }
 
   void MechanicsNonlinearUpdatedLagrangianElement :: computeDeformationGradient(const std::vector<std::vector<RealGradient> > & dphi, 
-      const std::vector<Point> xyz, unsigned int num_nodes, unsigned int qp, double F[3][3])
+      const std::vector<Point> & xyz, unsigned int num_nodes, unsigned int qp, double F[3][3])
   {
     for(unsigned int i = 0; i < 3; i++) {
       for(unsigned int j = 0; j < 3; j++) {

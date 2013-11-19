@@ -78,6 +78,15 @@ namespace Operator {
     default_BURNUP = (params->d_db)->getDoubleWithDefault("Default_Burnup",0.0);
 
     default_OXYGEN_CONCENTRATION = (params->d_db)->getDoubleWithDefault("Default_Oxygen_Concentration",0.0);
+
+    for(size_t i=0; i<6; i++) {
+      for(size_t j=0; j<6; j++) d_constitutiveMatrix[i][j] = 0.;
+    }
+    d_gaussPtCnt                 = 0;
+    Total_Gauss_Point            = 0;
+    Plastic_Gauss_Point          = 0;
+    d_resetReusesRadialReturn    = false;
+    d_jacobianReusesRadialReturn = false;
   }
 
   void VonMises_IsotropicKinematicHardening :: preNonlinearInit(bool resetReusesRadialReturn, bool jacobianReusesRadialReturn)
@@ -339,7 +348,7 @@ namespace Operator {
     //double q_np1 = 1.0, sig_np1_kk = 1.0, lam = 1.0;
     double sig_np1_kk = 1.0, lam = 1.0;
     double beta = 1.0, gamma = 1.0, gamma_bar = 1.0, term1 = 1.0, term2 = 1.0, kappa_prime = 1.0;
-    double delta = 1.0, h_alpha = 1.0, k_0 = 1.0, k_inf = 1.0, beta_1 = 1.0, h_alpha_prime = 1.0;
+    double delta = 1.0, k_0 = 1.0, k_inf = 1.0, beta_1 = 1.0;
     if(d_TW_Test == true) {
       delta = d_delta;
       k_0 = d_K_0; 
@@ -479,6 +488,7 @@ namespace Operator {
     // The trial effective stress. 
     //q_trial = q_np1 + (2.0 * G * lam);
     if(d_TW_Test == true) {
+      double h_alpha = 1.0, h_alpha_prime = 1.0;
       h_alpha = k_inf - ((k_inf - k_0) * exp(-delta * ephbp_np1)) + (Ep * ephbp_np1);
       h_alpha_prime = ((delta * (k_inf - k_0)) * exp(-delta * ephbp_np1)) + Ep;
       H_alpha_prime = (1.0 - beta_1) * h_alpha_prime;

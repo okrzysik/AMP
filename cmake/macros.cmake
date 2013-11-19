@@ -6,13 +6,21 @@ MACRO(GLOBAL_SET VARNAME)
 ENDMACRO()
 
 
+# CMake assert
+MACRO(ASSERT test comment)
+    IF (NOT ${test})
+        MESSSAGE(FATAL_ERROR "Assertion failed: ${comment}")
+    ENDIF(NOT ${test})
+ENDMACRO(ASSERT)
+
+
 # Macro to convert a m4 file
 # This command converts a file of the format "global_path/file.fm4"
 # and convertes it to file.f90.  It also requires the path.  
-MACRO (CONVERT_M4_FORTRAN IN LOCAL_PATH)
+MACRO (CONVERT_M4_FORTRAN IN LOCAL_PATH OUT_PATH )
     STRING(REGEX REPLACE ${LOCAL_PATH} "" OUT ${IN} )
     STRING(REGEX REPLACE "/" "" OUT ${OUT} )
-    STRING(REGEX REPLACE ".fm4" ".f90" OUT ${CMAKE_CURRENT_BINARY_DIR}/${OUT} )
+    STRING(REGEX REPLACE ".fm4" ".f90" OUT ${CMAKE_CURRENT_BINARY_DIR}/${OUT_PATH}/${OUT} )
     CONFIGURE_FILE ( ${IN} ${IN} COPYONLY )
     add_custom_command(
         OUTPUT ${OUT}
@@ -26,37 +34,37 @@ ENDMACRO ()
 
 # Add a package to the test dependency list
 MACRO (ADD_PACKAGE_TO_TEST_DEP_LIST PACKAGE)
-  IF ( TEST_DEP_LIST )
-    SET( TEST_DEP_LIST ${PACKAGE} ${TEST_DEP_LIST} )
-  ELSE()
-    SET( TEST_DEP_LIST ${PACKAGE} )
-  ENDIF()
+    IF ( TEST_DEP_LIST )
+        SET( TEST_DEP_LIST ${PACKAGE} ${TEST_DEP_LIST} )
+    ELSE()
+        SET( TEST_DEP_LIST ${PACKAGE} )
+    ENDIF()
 ENDMACRO ()
 
 
 # Add a package to the AMP library
-MACRO (ADD_AMP_LIBRARY PACKAGE)
-  ADD_PACKAGE_TO_TEST_DEP_LIST ( ${PACKAGE} )
-  INCLUDE_DIRECTORIES ( ${AMP_INSTALL_DIR}/include/${PACKAGE} )
-  ADD_SUBDIRECTORY ( ${PACKAGE} )
-ENDMACRO ()
+MACRO( ADD_AMP_LIBRARY PACKAGE )
+    ADD_PACKAGE_TO_TEST_DEP_LIST( ${PACKAGE} )
+    INCLUDE_DIRECTORIES( ${AMP_INSTALL_DIR}/include/${PACKAGE} )
+    ADD_SUBDIRECTORY( ${PACKAGE} )
+ENDMACRO()
 
 
-# Add an AMP executable
-MACRO (ADD_AMP_EXECUTABLE PACKAGE)
-  ADD_SUBDIRECTORY ( ${PACKAGE} )
-ENDMACRO ()
+# Add an executable
+MACRO( ADD_AMP_EXECUTABLE PACKAGE )
+    ADD_SUBDIRECTORY( ${PACKAGE} )
+ENDMACRO()
 
 
 # Initialize a package
 MACRO (BEGIN_PACKAGE_CONFIG PACKAGE)
-  SET( HEADERS "" )
-  SET( CXXSOURCES "" )
-  SET( CSOURCES "" )
-  SET( FSOURCES "" )
-  SET( M4FSOURCES "" )
-  SET( SOURCES "" )
-  SET( CURPACKAGE ${PACKAGE} )
+    SET( HEADERS "" )
+    SET( CXXSOURCES "" )
+    SET( CSOURCES "" )
+    SET( FSOURCES "" )
+    SET( M4FSOURCES "" )
+    SET( SOURCES "" )
+    SET( CURPACKAGE ${PACKAGE} )
 ENDMACRO ()
 
 
@@ -64,21 +72,21 @@ ENDMACRO ()
 MACRO (FIND_FILES)
     # Find the C/C++ headers
     SET( T_HEADERS "" )
-    FILE ( GLOB T_HEADERS "*.h" "*.hh" "*.I" )
+    FILE( GLOB T_HEADERS "*.h" "*.hh" "*.hpp" "*.I" )
     # Find the C sources
     SET( T_CSOURCES "" )
-    FILE ( GLOB T_CSOURCES "*.c" )
+    FILE( GLOB T_CSOURCES "*.c" )
     # Find the C++ sources
     SET( T_CXXSOURCES "" )
-    FILE ( GLOB T_CXXSOURCES "*.cc" "*.cpp" "*.cxx" "*.C" )
+    FILE( GLOB T_CXXSOURCES "*.cc" "*.cpp" "*.cxx" "*.C" )
     # Find the Fortran sources
     SET( T_FSOURCES "" )
-    FILE ( GLOB T_FSOURCES "*.f" "*.f90" )
+    FILE( GLOB T_FSOURCES "*.f" "*.f90" )
     # Find the m4 fortran source (and convert)
     SET( T_M4FSOURCES "" )
-    FILE ( GLOB T_M4FSOURCES "*.fm4" )
-    FOREACH (m4file ${T_M4FSOURCES})
-        CONVERT_M4_FORTRAN ( ${m4file} ${CMAKE_CURRENT_SOURCE_DIR} )
+    FILE( GLOB T_M4FSOURCES "*.fm4" )
+    FOREACH( m4file ${T_M4FSOURCES} )
+        CONVERT_M4_FORTRAN( ${m4file} ${CMAKE_CURRENT_SOURCE_DIR} "" )
     ENDFOREACH ()
     # Add all found files to the current lists
     SET( HEADERS ${HEADERS} ${T_HEADERS} )
@@ -94,21 +102,21 @@ ENDMACRO()
 MACRO (FIND_FILES_PATH IN_PATH)
     # Find the C/C++ headers
     SET( T_HEADERS "" )
-    FILE ( GLOB T_HEADERS "${IN_PATH}/*.h" "${IN_PATH}/*.hh" "${IN_PATH}/*.I" )
+    FILE( GLOB T_HEADERS "${IN_PATH}/*.h" "${IN_PATH}/*.hh" "${IN_PATH}/*.hpp" "${IN_PATH}/*.I" )
     # Find the C sources
     SET( T_CSOURCES "" )
-    FILE ( GLOB T_CSOURCES "${IN_PATH}/*.c" )
+    FILE( GLOB T_CSOURCES "${IN_PATH}/*.c" )
     # Find the C++ sources
     SET( T_CXXSOURCES "" )
-    FILE ( GLOB T_CXXSOURCES "${IN_PATH}/*.cc" "${IN_PATH}/*.cpp" "${IN_PATH}/*.cxx" )
+    FILE( GLOB T_CXXSOURCES "${IN_PATH}/*.cc" "${IN_PATH}/*.cpp" "${IN_PATH}/*.cxx" )
     # Find the Fortran sources
     SET( T_FSOURCES "" )
-    FILE ( GLOB T_FSOURCES "${IN_PATH}/*.f" "${IN_PATH}/*.f90" )
+    FILE( GLOB T_FSOURCES "${IN_PATH}/*.f" "${IN_PATH}/*.f90" )
     # Find the m4 fortran source (and convert)
     SET( T_M4FSOURCES "" )
-    FILE ( GLOB T_M4FSOURCES "${IN_PATH}/*.fm4" )
+    FILE( GLOB T_M4FSOURCES "${IN_PATH}/*.fm4" )
     FOREACH (m4file ${T_M4FSOURCES})
-        CONVERT_M4_FORTRAN ( ${m4file} ${CMAKE_CURRENT_SOURCE_DIR}/${IN_PATH} )
+        CONVERT_M4_FORTRAN( ${m4file} ${CMAKE_CURRENT_SOURCE_DIR}/${IN_PATH} "" )
     ENDFOREACH ()
     # Add all found files to the current lists
     SET( HEADERS ${HEADERS} ${T_HEADERS} )
@@ -121,49 +129,61 @@ ENDMACRO()
 
 # Add a subdirectory
 MACRO ( ADD_PACKAGE_SUBDIRECTORY SUBDIR )
-  CMAKE_POLICY(SET CMP0014 OLD)
-  SET( FULLSUBDIR ${CMAKE_CURRENT_SOURCE_DIR}/${SUBDIR} )
-  FIND_FILES_PATH ( ${SUBDIR} )
-  FILE ( GLOB HFILES RELATIVE ${FULLSUBDIR} ${SUBDIR}/*.h ${SUBDIR}/*.hh ${SUBDIR}/*.I )
-  FOREACH (HFILE ${HFILES})
-    CONFIGURE_FILE ( ${FULLSUBDIR}/${HFILE} ${AMP_INSTALL_DIR}/include/${CURPACKAGE}/${SUBDIR}/${HFILE} COPYONLY )
-    INCLUDE_DIRECTORIES ( ${FULLSUBDIR} )
-  ENDFOREACH ()
-  ADD_SUBDIRECTORY ( ${SUBDIR} )
+    CMAKE_POLICY(SET CMP0014 OLD)
+    FIND_FILES_PATH ( ${SUBDIR} )
 ENDMACRO ()
 
 
 # Install a package
-MACRO ( INSTALL_AMP_TARGET LIBNAME )
+MACRO( INSTALL_AMP_TARGET LIBNAME )
     # Find all files in the current directory
-    FIND_FILES ()
+    FIND_FILES()
     # Copy the header files to the include path
-    FILE ( GLOB HFILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*.h ${CMAKE_CURRENT_SOURCE_DIR}/*.hh ${CMAKE_CURRENT_SOURCE_DIR}/*.I )
-    FOREACH (HFILE ${HFILES})
-        CONFIGURE_FILE ( ${CMAKE_CURRENT_SOURCE_DIR}/${HFILE} ${AMP_INSTALL_DIR}/include/${CURPACKAGE}/${HFILE} COPYONLY )
-    ENDFOREACH ()
-    # Add the library
-    ADD_LIBRARY ( ${LIBNAME} ${SOURCES} )
-    # Install the package
-    INSTALL ( TARGETS ${LIBNAME} DESTINATION ${AMP_INSTALL_DIR}/lib )
-    INSTALL ( FILES ${HEADERS} DESTINATION ${AMP_INSTALL_DIR}/include/${LIBNAME} )
+    FILE( GLOB HFILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${HEADERS} )
+    STRING(REGEX REPLACE "${AMP_SOURCE_DIR}/" "" COPY_TARGET "copy-AMP-${CMAKE_CURRENT_SOURCE_DIR}-include" )
+    STRING(REGEX REPLACE "/" "-" COPY_TARGET ${COPY_TARGET} )
+    IF(NOT TARGET ${COPY_TARGET})
+        ADD_CUSTOM_TARGET ( ${COPY_TARGET} ALL )
+        ADD_DEPENDENCIES ( copy-AMP-Data ${COPY_TARGET} )
+    ENDIF()
+    FOREACH( HFILE ${HFILES} )
+        SET( SRC_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${HFILE}" )
+        SET( DST_FILE "${AMP_INSTALL_DIR}/include/${CURPACKAGE}/${HFILE}" )
+        ADD_CUSTOM_COMMAND(TARGET ${COPY_TARGET} 
+            PRE_BUILD 
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SRC_FILE}" "${DST_FILE}"
+        )
+        ADD_DEPENDENCIES( ${COPY_TARGET}  "${CMAKE_CURRENT_SOURCE_DIR}/${HFILE}" )
+    ENDFOREACH()
+    ADD_DEPENDENCIES( copy-AMP-include ${COPY_TARGET} )
+    # Add the library and install the package
+    IF ( NOT ONLY_BUILD_DOCS )
+        ADD_LIBRARY( ${LIBNAME} ${SOURCES} )
+        ADD_DEPENDENCIES ( ${LIBNAME} copy-AMP-include )
+        INSTALL( TARGETS ${LIBNAME} DESTINATION ${AMP_INSTALL_DIR}/lib )
+    ENDIF()
+    INSTALL( FILES ${HEADERS} DESTINATION ${AMP_INSTALL_DIR}/include/${LIBNAME} )
 ENDMACRO ()
 
 
 # Macro to verify that a variable has been set
-MACRO ( VERIFY_VARIABLE VARIABLE_NAME )
-IF ( NOT ${VARIABLE_NAME} )
-    MESSAGE ( FATAL_ERROR "PLease set: " ${VARIABLE_NAME} )
-ENDIF ()
+MACRO( VERIFY_VARIABLE VARIABLE_NAME )
+    IF ( NOT ${VARIABLE_NAME} )
+        MESSAGE ( FATAL_ERROR "PLease set: " ${VARIABLE_NAME} )
+    ENDIF ()
 ENDMACRO ()
 
 
 # Macro to verify that a path has been set
 MACRO ( VERIFY_PATH PATH_NAME )
-IF ( NOT EXISTS ${PATH_NAME} )
-  MESSAGE ( FATAL_ERROR "Path does not exist: " ${PATH_NAME} )
-ENDIF ()
+    IF ("${PATH_NAME}" STREQUAL "")
+        MESSAGE ( FATAL_ERROR "Path is not set: ${PATH_NAME}" )
+    ENDIF()
+    IF ( NOT EXISTS ${PATH_NAME} )
+        MESSAGE ( FATAL_ERROR "Path does not exist: ${PATH_NAME}" )
+    ENDIF()
 ENDMACRO ()
+
 
 # Macro to tell cmake to use static libraries
 MACRO ( SET_STATIC_FLAGS )
@@ -184,49 +204,49 @@ MACRO ( SET_STATIC_FLAGS )
 ENDMACRO()
 
 # Macro to identify the compiler
-MACRO ( SET_COMPILER )
-  # SET the C/C++ compiler
-  IF ( CMAKE_COMPILE_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
-    SET( USING_GCC TRUE )
-    MESSAGE("Using gcc")
-  ELSEIF ( MSVC OR MSVC_IDE OR MSVC60 OR MSVC70 OR MSVC71 OR MSVC80 OR CMAKE_COMPILER_2005 OR MSVC90 OR MSVC10 )
-    IF ( NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
-       MESSAGE( FATAL_ERROR "Using microsoft compilers on non-windows system?" )
+MACRO( SET_COMPILER )
+    # SET the C/C++ compiler
+    IF( CMAKE_COMPILE_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
+        SET( USING_GCC TRUE )
+        MESSAGE("Using gcc")
+    ELSEIF( MSVC OR MSVC_IDE OR MSVC60 OR MSVC70 OR MSVC71 OR MSVC80 OR CMAKE_COMPILER_2005 OR MSVC90 OR MSVC10 )
+        IF( NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
+            MESSAGE( FATAL_ERROR "Using microsoft compilers on non-windows system?" )
+        ENDIF()
+        SET( USING_MICROSOFT TRUE )
+        MESSAGE("Using Microsoft")
+    ELSEIF( (${CMAKE_C_COMPILER_ID} MATCHES "Intel") OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel") ) 
+        SET(USING_ICC TRUE)
+        MESSAGE("Using icc")
+    ELSEIF( ${CMAKE_C_COMPILER_ID} MATCHES "PGI")
+        SET(USING_PGCC TRUE)
+        MESSAGE("Using pgCC")
+    ELSE()
+        SET(USING_DEFAULT TRUE)
+        MESSAGE("${CMAKE_C_COMPILER_ID}")
+        MESSAGE("Unknown C/C++ compiler, default flags will be used")
     ENDIF()
-    SET( USING_MICROSOFT TRUE )
-    MESSAGE("Using Microsoft")
-  ELSEIF ( (${CMAKE_C_COMPILER_ID} MATCHES "Intel") OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel") ) 
-    SET(USING_ICC TRUE)
-    MESSAGE("Using icc")
-  ELSEIF ( ${CMAKE_C_COMPILER_ID} MATCHES "PGI")
-    SET(USING_PGCC TRUE)
-    MESSAGE("Using pgCC")    
-  ELSE ()
-    SET(USING_DEFAULT TRUE)
-    MESSAGE("${CMAKE_C_COMPILER_ID}")
-    MESSAGE("Unknown C/C++ compiler, default flags will be used")
-  ENDIF()
-  # SET the Fortran++ compiler
-  IF ( USE_FORTRAN )
-    IF ( CMAKE_COMPILE_IS_GFORTRAN OR (${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU") )
-      SET( USING_GFORTRAN TRUE )
-      MESSAGE("Using gfortran")
-    ELSEIF ( (${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel") ) 
-      SET(USING_IFORT TRUE)
-      MESSAGE("Using ifort")
-    ELSEIF ( ${CMAKE_Fortran_COMPILER_ID} MATCHES "PGI")
-      SET(USING_PGF90 TRUE)
-      MESSAGE("Using pgf90")
-    ELSE ()
-      SET(USING_DEFAULT TRUE)
-      MESSAGE("${CMAKE_Fortran_COMPILER_ID}")
-      MESSAGE("Unknown Fortran compiler, default flags will be used")
+    # SET the Fortran++ compiler
+    IF( USE_FORTRAN )
+        IF( CMAKE_COMPILE_IS_GFORTRAN OR (${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU") )
+            SET( USING_GFORTRAN TRUE )
+            MESSAGE("Using gfortran")
+        ELSEIF( (${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel") ) 
+            SET(USING_IFORT TRUE)
+            MESSAGE("Using ifort")
+        ELSEIF( ${CMAKE_Fortran_COMPILER_ID} MATCHES "PGI")
+            SET(USING_PGF90 TRUE)
+            MESSAGE("Using pgf90")
+        ELSE()
+            SET(USING_DEFAULT TRUE)
+            MESSAGE("${CMAKE_Fortran_COMPILER_ID}")
+            MESSAGE("Unknown Fortran compiler, default flags will be used")
+        ENDIF()
     ENDIF()
-  ENDIF()
-ENDMACRO ()
+ENDMACRO()
 
 
-# Macro to set the proper warning level for AMP code
+# Macro to set the proper warnings
 MACRO ( SET_WARNINGS )
   IF ( USING_GCC )
     # Add gcc specific compiler options
@@ -243,8 +263,8 @@ MACRO ( SET_WARNINGS )
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS}" )
   ELSEIF ( USING_MICROSOFT )
     # Add Microsoft specifc compiler options
-    SET(CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} /D _SCL_SECURE_NO_WARNINGS /D _CRT_SECURE_NO_WARNINGS" )
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _SCL_SECURE_NO_WARNINGS /D _CRT_SECURE_NO_WARNINGS" )
+    SET(CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} /D _SCL_SECURE_NO_WARNINGS /D _CRT_SECURE_NO_WARNINGS /D _ITERATOR_DEBUG_LEVEL=0" )
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _SCL_SECURE_NO_WARNINGS /D _CRT_SECURE_NO_WARNINGS /D _ITERATOR_DEBUG_LEVEL=0" )
   ELSEIF ( USING_ICC )
     # Add Intel specifc compiler options
     #    111: statement is unreachable
@@ -282,7 +302,6 @@ MACRO ( SET_WARNINGS )
     #         This is bad practice, use an explict coversion instead
     #         Unfortunatelly many of these come from LibMesh
     #   6843: A dummy argument with an explicit INTENT(OUT) declaration is not given an explicit value.
-    #         This is fortran error in scalelib
     SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -Wall" )
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wall" )
     # Disable warnings that I think are irrelavent (may need to be revisited)
@@ -318,12 +337,12 @@ MACRO ( SET_COMPILER_FLAGS )
     SET_COMPILER ()
     # Set the default flags for each build type
     IF ( USING_MICROSOFT )
-        SET(CMAKE_C_FLAGS_DEBUG       "-D_DEBUG /DEBUG /Od /EHsc /MTd" )
-        SET(CMAKE_C_FLAGS_RELEASE     "/O2 /EHsc /MT"                  )
-        SET(CMAKE_CXX_FLAGS_DEBUG     "-D_DEBUG /DEBUG /Od /EHsc /MTd" )
-        SET(CMAKE_CXX_FLAGS_RELEASE   "/O2 /EHsc/MT"                   )
-        SET(CMAKE_Fortran_FLAGS_DEBUG ""                               )
-        SET(CMAKE_Fortran_FLAGS_RELEASE ""                             )
+        SET(CMAKE_C_FLAGS_DEBUG       "-D_DEBUG /DEBUG /Od /EHsc /MDd /Zi" )
+        SET(CMAKE_C_FLAGS_RELEASE     "/O2 /EHsc /MD"                      )
+        SET(CMAKE_CXX_FLAGS_DEBUG     "-D_DEBUG /DEBUG /Od /EHsc /MDd /Zi" )
+        SET(CMAKE_CXX_FLAGS_RELEASE   "/O2 /EHsc /MD"                      )
+        SET(CMAKE_Fortran_FLAGS_DEBUG ""                                   )
+        SET(CMAKE_Fortran_FLAGS_RELEASE ""                                 )
     ELSE()
         SET(CMAKE_C_FLAGS_DEBUG       "-g -D_DEBUG -O0" )
         SET(CMAKE_C_FLAGS_RELEASE     "-O2"             )
@@ -355,12 +374,41 @@ MACRO ( SET_COMPILER_FLAGS )
 ENDMACRO ()
 
 
+# Macro to copy data file at build time
+MACRO(COPY_DATA_FILE SRC_FILE DST_FILE)
+    STRING(REGEX REPLACE "${AMP_SOURCE_DIR}/" "" COPY_TARGET "copy-AMP-${CMAKE_CURRENT_SOURCE_DIR}" )
+    STRING(REGEX REPLACE "/" "-" COPY_TARGET ${COPY_TARGET} )
+    if(NOT TARGET ${COPY_TARGET})
+        ADD_CUSTOM_TARGET ( ${COPY_TARGET} ALL )
+        ADD_DEPENDENCIES ( copy-AMP-Data ${COPY_TARGET} )
+    ENDIF()
+    ADD_CUSTOM_COMMAND(TARGET ${COPY_TARGET} 
+        PRE_BUILD 
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SRC_FILE}" "${DST_FILE}"
+    )
+ENDMACRO()
+
+
 # Macro to copy a data file
 MACRO ( COPY_TEST_DATA_FILE FILENAME )
     SET( FILE_TO_COPY  ${CMAKE_CURRENT_SOURCE_DIR}/data/${FILENAME} )
     SET( DESTINATION_NAME ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME} )
     IF ( EXISTS ${FILE_TO_COPY} )
-        CONFIGURE_FILE ( ${FILE_TO_COPY} ${DESTINATION_NAME} COPYONLY )
+        COPY_DATA_FILE( ${FILE_TO_COPY} ${DESTINATION_NAME} )
+    ELSE()
+        MESSAGE ( WARNING "Cannot find file: " ${FILE_TO_COPY} )
+    ENDIF()
+ENDMACRO ()
+
+
+# Macro to copy a data file
+MACRO ( COPY_EXAMPLE_DATA_FILE FILENAME )
+    SET( FILE_TO_COPY  ${CMAKE_CURRENT_SOURCE_DIR}/data/${FILENAME} )
+    SET( DESTINATION1 ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME} )
+    SET( DESTINATION2 ${EXAMPLE_INSTALL_DIR}/${FILENAME} )
+    IF ( EXISTS ${FILE_TO_COPY} )
+        COPY_DATA_FILE( ${FILE_TO_COPY} ${DESTINATION1} )
+        COPY_DATA_FILE( ${FILE_TO_COPY} ${DESTINATION2} )
     ELSE()
         MESSAGE ( WARNING "Cannot find file: " ${FILE_TO_COPY} )
     ENDIF()
@@ -386,8 +434,8 @@ MACRO (COPY_MESH_FILE MESHNAME)
     IF ( NOT MESHPATH )
         MESSAGE ( WARNING "Cannot find mesh: " ${MESHNAME} )
     ELSE ()
-        SET( DESTINATION_NAME ${CMAKE_CURRENT_BINARY_DIR}/${MESHNAME} )
-        CONFIGURE_FILE ( ${MESHPATH} ${DESTINATION_NAME} COPYONLY )
+        STRING(REGEX REPLACE ${MESHNAME} "" MESHPATH ${MESHPATH} )
+        COPY_DATA_FILE( ${MESHPATH}/${MESHNAME} ${CMAKE_CURRENT_BINARY_DIR}/${MESHNAME} )
     ENDIF ()
 ENDMACRO()
 
@@ -402,11 +450,13 @@ MACRO ( ADD_AMP_EXE_DEP EXE )
     # Add the executable to the dependencies of check and build-test
     ADD_DEPENDENCIES ( check ${EXE} )
     ADD_DEPENDENCIES ( build-test ${EXE} )
+    # Add the file copy targets to the dependency list
+    ADD_DEPENDENCIES ( ${EXE} copy-AMP-Data )
     # Add the libraries
     TARGET_LINK_LIBRARIES ( ${EXE} ${AMP_LIBS} ${AMP_LIBS} )
     TARGET_LINK_LIBRARIES ( ${EXE} ${${PROJECT_NAME}_LIBRARIES} )
     # Add external libraries
-    TARGET_LINK_LIBRARIES ( ${EXE} ${LDFLAGS} )
+    SET_TARGET_PROPERTIES(${EXE} PROPERTIES LINK_FLAGS "${LDFLAGS}")
     TARGET_LINK_LIBRARIES ( ${EXE} ${LIBMESH_LIBS} ${NEK_LIBS} ${MOAB_LIBS} ${DENDRO_LIBS} ${TRILINOS_LIBS} ${NETCDF_LIBS} ${PETSC_LIBS} ${X11_LIBS} ${SILO_LIBS} ${HDF5_LIBS} ${HYPRE_LIBS} )
     IF ( ${USE_EXT_SUNDIALS} )
         TARGET_LINK_LIBRARIES ( ${EXE} ${SUNDIALS_LIBS} )
@@ -419,20 +469,20 @@ ENDMACRO ()
 
 
 # Add a executable
-MACRO ( INSTALL_AMP_EXE EXE )
-    SET ( SOURCES ${EXE}.cc )
-    ADD_EXECUTABLE ( ${EXE} ${SOURCES} )
-    ADD_AMP_EXE_DEP ( ${EXE} )
+MACRO( INSTALL_AMP_EXE EXE )
+    SET( SOURCES ${EXE}.cc )
+    ADD_EXECUTABLE( ${EXE} ${SOURCES} )
+    ADD_AMP_EXE_DEP( ${EXE} )
 ENDMACRO()
 
 
-MACRO ( ADD_FILES_TO_TEST_LIB FILENAMES )
-  ADD_LIBRARY ( ${PACKAGE_TEST_LIB} ${FILENAMES} )
-  IF ( TEST_DEP_LIST )
-      TARGET_LINK_LIBRARIES ( ${PACKAGE_TEST_LIB} ${TEST_DEP_LIST} )
-  ENDIF()
-  SET( AMP_TEST_LIB_EXISTS ${PACKAGE_TEST_LIB} )
-ENDMACRO ()
+MACRO( ADD_FILES_TO_TEST_LIB FILENAMES )
+    ADD_LIBRARY( ${PACKAGE_TEST_LIB} ${FILENAMES} )
+    IF ( TEST_DEP_LIST )
+        TARGET_LINK_LIBRARIES ( ${PACKAGE_TEST_LIB} ${TEST_DEP_LIST} )
+    ENDIF()
+    SET( AMP_TEST_LIB_EXISTS ${PACKAGE_TEST_LIB} )
+ENDMACRO()
 
 
 # Check if we want to keep the test
@@ -441,35 +491,38 @@ FUNCTION( KEEP_TEST RESULT )
     IF ( NOT ${PACKAGE_NAME}_ENABLE_TESTS )
         SET( ${RESULT} 0 PARENT_SCOPE )
     ENDIF()
+    IF ( ONLY_BUILD_DOCS )
+        SET( ${RESULT} 0 PARENT_SCOPE )
+    ENDIF()
 ENDFUNCTION()
 
 
-# Macro to add a provisional test
-FUNCTION ( ADD_AMP_PROVISIONAL_TEST EXEFILE )
+# Add a provisional test
+FUNCTION( ADD_AMP_PROVISIONAL_TEST EXEFILE )
     # Check if we actually want to add the test
     KEEP_TEST( RESULT )
     IF ( NOT RESULT )
         RETURN()
     ENDIF()
     # Check if test has already been added
-    get_target_property(tmp ${EXEFILE} LOCATION)
+    GET_TARGET_PROPERTY(tmp ${EXEFILE} LOCATION)
     IF ( NOT tmp )
         # The target has not been added
         SET( CXXFILE ${EXEFILE}.cc )
         SET( TESTS_SO_FAR ${TESTS_SO_FAR} ${EXEFILE} )
         IF ( NOT EXCLUDE_TESTS_FROM_ALL )
-            ADD_EXECUTABLE ( ${EXEFILE} ${CXXFILE} )
+            ADD_EXECUTABLE( ${EXEFILE} ${CXXFILE} )
         ELSE()
-            ADD_EXECUTABLE ( ${EXEFILE} EXCLUDE_FROM_ALL ${CXXFILE} )
+            ADD_EXECUTABLE( ${EXEFILE} EXCLUDE_FROM_ALL ${CXXFILE} )
         ENDIF()
         ADD_AMP_EXE_DEP( ${EXEFILE} )
-    ELSEIF ( ${tmp} STREQUAL "${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE}" )
+    ELSEIF( ${tmp} STREQUAL "${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE}" )
         # The correct target has already been added
-    ELSEIF ( ${tmp} STREQUAL "${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE}.exe" )
+    ELSEIF( ${tmp} STREQUAL "${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE}.exe" )
         # The correct target has already been added
-    ELSEIF ( ${tmp} STREQUAL "${CMAKE_CURRENT_BINARY_DIR}/$(Configuration)/${EXEFILE}.exe" )
+    ELSEIF( ${tmp} STREQUAL "${CMAKE_CURRENT_BINARY_DIR}/$(Configuration)/${EXEFILE}.exe" )
         # The correct target has already been added
-    ELSEIF ( ${tmp} STREQUAL "${CMAKE_CURRENT_BINARY_DIR}/$(OutDir)/${EXEFILE}.exe" )
+    ELSEIF( ${tmp} STREQUAL "${CMAKE_CURRENT_BINARY_DIR}/$(OutDir)/${EXEFILE}.exe" )
         # The correct target has already been added
     ELSE()
         # We are trying to add 2 different tests with the same name
@@ -477,17 +530,17 @@ FUNCTION ( ADD_AMP_PROVISIONAL_TEST EXEFILE )
         MESSAGE ( "New test:      ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE}" )
         MESSAGE ( FATAL_ERROR "Trying to add 2 different tests with the same name" )
     ENDIF()
-ENDFUNCTION ()
+ENDFUNCTION()
 
 
 # Macro to create the test name
-MACRO ( CREATE_TEST_NAME TEST ${ARGN} )
+MACRO( CREATE_TEST_NAME TEST ${ARGN} )
     IF ( PACKAGE )
         SET( TESTNAME "${PACKAGE}::${TEST}" )
     ELSE()
         SET( TESTNAME "${TEST}" )
     ENDIF()
-    foreach ( tmp ${ARGN})
+    foreach( tmp ${ARGN})
         SET( TESTNAME "${TESTNAME}--${tmp}")
     endforeach()
     # STRING(REGEX REPLACE "--" "-" TESTNAME ${TESTNAME} )
@@ -495,7 +548,7 @@ ENDMACRO()
 
 
 # Add a executable as a test
-FUNCTION ( ADD_AMP_TEST EXEFILE ${ARGN} )
+FUNCTION( ADD_AMP_TEST EXEFILE ${ARGN} )
     # Check if we actually want to add the test
     KEEP_TEST( RESULT )
     IF ( NOT RESULT )
@@ -504,16 +557,19 @@ FUNCTION ( ADD_AMP_TEST EXEFILE ${ARGN} )
     # Add the provisional test
     ADD_AMP_PROVISIONAL_TEST ( ${EXEFILE} )
     CREATE_TEST_NAME( ${EXEFILE} ${ARGN} )
+    GET_TARGET_PROPERTY(EXE ${EXEFILE} LOCATION)
+    STRING(REGEX REPLACE "\\$\\(Configuration\\)" "${CONFIGURATION}" EXE "${EXE}" )
     IF ( USE_EXT_MPI_FOR_SERIAL_TESTS )
-        ADD_TEST ( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} 1 ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
+        ADD_TEST ( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} 1 ${EXE} ${ARGN} )
     ELSE()
         ADD_TEST ( ${TESTNAME} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
     ENDIF()
-    SET_TESTS_PROPERTIES ( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" )
+    SET_TESTS_PROPERTIES ( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" PROCESSORS 1 )
 ENDFUNCTION()
+
 
 # Add a executable as a weekly test
-FUNCTION ( ADD_AMP_WEEKLY_TEST EXEFILE PROCS ${ARGN} )
+FUNCTION( ADD_AMP_WEEKLY_TEST EXEFILE PROCS ${ARGN} )
     # Check if we actually want to add the test
     KEEP_TEST( RESULT )
     IF ( NOT RESULT )
@@ -521,38 +577,100 @@ FUNCTION ( ADD_AMP_WEEKLY_TEST EXEFILE PROCS ${ARGN} )
     ENDIF()
     # Add the provisional test
     ADD_AMP_PROVISIONAL_TEST ( ${EXEFILE} )
-    IF ( ${PROCS} STREQUAL "1" )
+    GET_TARGET_PROPERTY(EXE ${EXEFILE} LOCATION)
+    STRING(REGEX REPLACE "\\$\\(Configuration\\)" "${CONFIGURATION}" EXE "${EXE}" )
+    IF( ${PROCS} STREQUAL "1" )
         CREATE_TEST_NAME( "${EXEFILE}_WEEKLY" ${ARGN} )
-        IF ( USE_EXT_MPI_FOR_SERIAL_TESTS )
-            ADD_TEST ( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} 1 ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
+        IF( USE_EXT_MPI_FOR_SERIAL_TESTS )
+            ADD_TEST( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} 1 ${EXE} ${ARGN} )
         ELSE()
-            ADD_TEST ( ${TESTNAME} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
+            ADD_TEST( ${TESTNAME} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
         ENDIF()
-    ELSEIF ( USE_EXT_MPI AND NOT (${PROCS} GREATER ${TEST_MAX_PROCS}) )
+    ELSEIF( USE_EXT_MPI AND NOT (${PROCS} GREATER ${TEST_MAX_PROCS}) )
         CREATE_TEST_NAME( "${EXEFILE}_${PROCS}procs_WEEKLY" ${ARGN} )
-        ADD_TEST ( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${PROCS} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
+        ADD_TEST( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${PROCS} ${EXE} ${ARGN} )
     ENDIF()
-    SET_TESTS_PROPERTIES ( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" )
+    SET_TESTS_PROPERTIES ( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" PROCESSORS ${PROCS} )
 ENDFUNCTION()
+
 
 # Add a executable as a parallel test
-FUNCTION ( ADD_AMP_TEST_PARALLEL EXEFILE PROCS ${ARGN} )
+FUNCTION( ADD_AMP_TEST_PARALLEL EXEFILE PROCS ${ARGN} )
     # Check if we actually want to add the test
     KEEP_TEST( RESULT )
     IF ( NOT RESULT )
         RETURN()
     ENDIF()
     # Add the provisional test
-    ADD_AMP_PROVISIONAL_TEST ( ${EXEFILE} )
+    ADD_AMP_PROVISIONAL_TEST( ${EXEFILE} )
+    GET_TARGET_PROPERTY(EXE ${EXEFILE} LOCATION)
+    STRING(REGEX REPLACE "\\$\\(Configuration\\)" "${CONFIGURATION}" EXE "${EXE}" )
     IF ( USE_EXT_MPI AND NOT (${PROCS} GREATER ${TEST_MAX_PROCS}) )
         CREATE_TEST_NAME( "${EXEFILE}_${PROCS}procs" ${ARGN} )
-        ADD_TEST ( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${PROCS} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
-        SET_TESTS_PROPERTIES ( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" )
+        ADD_TEST( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${PROCS} ${EXE} ${ARGN} )
+        SET_TESTS_PROPERTIES( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" PROCESSORS ${PROCS} )
     ENDIF()
 ENDFUNCTION()
 
-# Add a executable as a parallel 1, 2, 4 processor test
-MACRO ( ADD_AMP_TEST_1_2_4 EXENAME ${ARGN} )
+
+# Add a executable as an example
+FUNCTION( ADD_AMP_EXAMPLE EXEFILE PROCS ${ARGN} )
+    # Add the file to the example doxygen file
+    SET( VALUE 0 )
+    FOREACH(_variableName ${EXAMPLE_LIST})
+        IF ( "${_variableName}" STREQUAL "${EXEFILE}" )
+            SET( VALUE 1 )
+        ENDIF()
+    ENDFOREACH()
+    IF ( NOT ${VALUE} )
+        FILE(APPEND ${EXAMPLE_INSTALL_DIR}/examples.h "* \\ref ${EXEFILE} \"${EXEFILE}\"\n" )
+        SET( EXAMPLE_LIST ${EXAMPLE_LIST} ${EXEFILE} CACHE INTERNAL "example_list" FORCE )
+    ENDIF()
+    # Check if we actually want to add the test
+    IF ( ONLY_BUILD_DOCS )
+        RETURN()
+    ENDIF()
+    # Add the provisional test
+    ADD_AMP_PROVISIONAL_TEST( ${EXEFILE} )
+    GET_TARGET_PROPERTY(EXE ${EXEFILE} LOCATION)
+    STRING(REGEX REPLACE "\\$\\(Configuration\\)" "${CONFIGURATION}" EXE "${EXE}" )
+    ADD_DEPENDENCIES( build-examples ${EXEFILE} )
+    GET_TARGET_PROPERTY(EXE2 ${EXEFILE} LOCATION)
+    ADD_CUSTOM_COMMAND( TARGET ${EXEFILE} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${EXE2} "${EXAMPLE_INSTALL_DIR}/${EXEFILE}"
+    )
+    IF( ${PROCS} STREQUAL "1" AND (NOT USE_EXT_MPI_FOR_SERIAL_TESTS) )
+        CREATE_TEST_NAME( "example--${EXEFILE}" ${ARGN} )
+        ADD_TEST( ${TESTNAME} ${EXE} ${ARGN} )    
+    ELSEIF ( USE_EXT_MPI AND NOT (${PROCS} GREATER ${TEST_MAX_PROCS}) )
+        CREATE_TEST_NAME( "example--${EXEFILE}_${PROCS}procs" ${ARGN} )
+        ADD_TEST( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${PROCS} ${EXE} ${ARGN} )
+        SET_TESTS_PROPERTIES( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION ".*FAILED.*" PROCESSORS ${PROCS} )
+    ENDIF()
+ENDFUNCTION()
+
+
+# Begin configure for the examples for a package
+MACRO( BEGIN_EXAMPLE_CONFIG PACKAGE )
+    # Set example install dir
+    SET( EXAMPLE_INSTALL_DIR ${AMP_INSTALL_DIR}/examples/${PACKAGE} )
+    # Create list of examples
+    SET( EXAMPLE_LIST "dummy" CACHE INTERNAL "example_list" FORCE )
+    # Create doxygen input file for examples
+    SET( DOXYFILE_EXTRA_SOURCES ${DOXYFILE_EXTRA_SOURCES} ${EXAMPLE_INSTALL_DIR} CACHE INTERNAL "doxyfile_extra_sources") 
+    FILE(WRITE  ${EXAMPLE_INSTALL_DIR}/examples.h "// Include file for doxygen providing the examples for ${PACKAGE}\n")
+    FILE(APPEND ${EXAMPLE_INSTALL_DIR}/examples.h "/*! \\page Examples_${PACKAGE}\n" )
+ENDMACRO()
+
+# Install the examples
+MACRO( INSTALL_AMP_EXAMPLE PACKAGE )
+    FILE(APPEND ${EXAMPLE_INSTALL_DIR}/examples.h "*/\n" )
+    SET( EXAMPLE_INSTALL_DIR "" )
+ENDMACRO()
+
+
+# Add a test with 1, 2, and 4 processors
+MACRO( ADD_AMP_TEST_1_2_4 EXENAME ${ARGN} )
     ADD_AMP_TEST ( ${EXENAME} ${ARGN} )
     ADD_AMP_TEST_PARALLEL ( ${EXENAME} 2 ${ARGN} )
     ADD_AMP_TEST_PARALLEL ( ${EXENAME} 4 ${ARGN} )
@@ -561,38 +679,38 @@ ENDMACRO()
 
 # Macro to check if a flag is enabled
 MACRO ( CHECK_ENABLE_FLAG FLAG DEFAULT )
-    IF ( NOT DEFINED ${FLAG} )
+    IF( NOT DEFINED ${FLAG} )
         SET( ${FLAG} ${DEFAULT} )
-    ELSEIF ( ${FLAG}  STREQUAL "" )
+    ELSEIF( ${FLAG}  STREQUAL "" )
         SET( ${FLAG} ${DEFAULT} )
-    ELSEIF ( ( ${${FLAG}} STREQUAL "false" ) OR ( ${${FLAG}} STREQUAL "0" ) OR ( ${${FLAG}} STREQUAL "OFF" ) )
+    ELSEIF( ( ${${FLAG}} STREQUAL "false" ) OR ( ${${FLAG}} STREQUAL "0" ) OR ( ${${FLAG}} STREQUAL "OFF" ) )
         SET( ${FLAG} 0 )
-    ELSEIF ( ( ${${FLAG}} STREQUAL "true" ) OR ( ${${FLAG}} STREQUAL "1" ) OR ( ${${FLAG}} STREQUAL "ON" ) )
+    ELSEIF( ( ${${FLAG}} STREQUAL "true" ) OR ( ${${FLAG}} STREQUAL "1" ) OR ( ${${FLAG}} STREQUAL "ON" ) )
         SET( ${FLAG} 1 )
     ELSE()
-        MESSAGE ( "Bad value for ${FLAG} (${${FLAG}}); use true or false" )
+        MESSAGE( "Bad value for ${FLAG} (${${FLAG}}); use true or false" )
     ENDIF ()
 ENDMACRO()
 
 
 # Macro to check if a compiler flag is valid
 MACRO (CHECK_C_COMPILER_FLAG _FLAG _RESULT)
-   SET(SAFE_CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS}")
-   SET(CMAKE_REQUIRED_DEFINITIONS "${_FLAG}")
-   CHECK_C_SOURCE_COMPILES("int main() { return 0;}" ${_RESULT}
-     # Some compilers do not fail with a bad flag
-     FAIL_REGEX "error: bad value (.*) for .* switch"       # GNU
-     FAIL_REGEX "argument unused during compilation"        # clang
-     FAIL_REGEX "is valid for .* but not for C"             # GNU
-     FAIL_REGEX "unrecognized .*option"                     # GNU
-     FAIL_REGEX "ignoring unknown option"                   # MSVC
-     FAIL_REGEX "[Uu]nknown option"                         # HP
-     FAIL_REGEX "[Ww]arning: [Oo]ption"                     # SunPro
-     FAIL_REGEX "command option .* is not recognized"       # XL
-     FAIL_REGEX "WARNING: unknown flag:"                    # Open64
-     FAIL_REGEX " #10159: "                                 # ICC
-     )
-   SET(CMAKE_REQUIRED_DEFINITIONS "${SAFE_CMAKE_REQUIRED_DEFINITIONS}")
+    SET(SAFE_CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS}")
+    SET(CMAKE_REQUIRED_DEFINITIONS "${_FLAG}")
+    CHECK_C_SOURCE_COMPILES("int main() { return 0;}" ${_RESULT}
+        # Some compilers do not fail with a bad flag
+        FAIL_REGEX "error: bad value (.*) for .* switch"       # GNU
+        FAIL_REGEX "argument unused during compilation"        # clang
+        FAIL_REGEX "is valid for .* but not for C"             # GNU
+        FAIL_REGEX "unrecognized .*option"                     # GNU
+        FAIL_REGEX "ignoring unknown option"                   # MSVC
+        FAIL_REGEX "[Uu]nknown option"                         # HP
+        FAIL_REGEX "[Ww]arning: [Oo]ption"                     # SunPro
+        FAIL_REGEX "command option .* is not recognized"       # XL
+        FAIL_REGEX "WARNING: unknown flag:"                    # Open64
+        FAIL_REGEX " #10159: "                                 # ICC
+    )
+    SET(CMAKE_REQUIRED_DEFINITIONS "${SAFE_CMAKE_REQUIRED_DEFINITIONS}")
 ENDMACRO(CHECK_C_COMPILER_FLAG)
 
 
@@ -640,36 +758,58 @@ ENDMACRO()
 # add custom target distclean
 # cleans and removes cmake generated files etc.
 MACRO ( ADD_DISTCLEAN )
-IF (UNIX)
-  ADD_CUSTOM_TARGET (distclean @echo cleaning for source distribution)
-  SET(DISTCLEANED
-    cmake.depends
-    cmake.check_depends
-    CMakeCache.txt
-    CMakeFiles
-    cmake.check_cache
-    *.cmake
-    compile.log
-    Doxyfile
-    Makefile
-    core core.*
-    src
-    ampdir
-    AMP
-    DartConfiguration.tcl
-    Testing
-    install_manifest.txt
-    nek
-  )
-  ADD_CUSTOM_COMMAND(
-    DEPENDS clean
-    COMMENT "distribution clean"
-    COMMAND rm
-    ARGS    -Rf CMakeTmp ${DISTCLEANED}
-    TARGET  distclean
-  )
-ENDIF(UNIX)
-ENDMACRO ()
+    SET(DISTCLEANED
+        cmake.depends
+        cmake.check_depends
+        CMakeCache.txt
+        CMakeFiles
+        CMakeTmp
+        cmake.check_cache
+        *.cmake
+        compile.log
+        Doxyfile
+        Makefile
+        core core.*
+        src
+        ampdir
+        AMP
+        DartConfiguration.tcl
+        Testing
+        install_manifest.txt
+        nek
+    )
+    ADD_CUSTOM_TARGET (distclean @echo cleaning for source distribution)
+    IF (UNIX)
+        ADD_CUSTOM_COMMAND(
+            DEPENDS clean
+            COMMENT "distribution clean"
+            COMMAND rm
+            ARGS    -Rf ${DISTCLEANED}
+            TARGET  distclean
+        )
+    ELSE()
+        SET( DISTCLEANED
+            ${DISTCLEANED}
+            *.vcxproj*
+            ipch
+            x64
+        )
+        FILE(WRITE  ${CMAKE_CURRENT_BINARY_DIR}/distclean.bat "del /s /q /f " )
+        FOREACH (fileToDelete ${DISTCLEANED})
+            FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/distclean.bat "${fileToDelete} " )
+        ENDFOREACH ()
+        FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/distclean.bat "\n" )
+        FOREACH (fileToDelete ${DISTCLEANED})
+            FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/distclean.bat "for /d %%x in (${fileToDelete}) do rd /s /q \"%%x\"\n" )
+        ENDFOREACH ()
+        ADD_CUSTOM_COMMAND(
+            DEPENDS clean
+            COMMENT "distribution clean"
+            COMMAND distclean.bat & del /s/q/f distclean.bat
+            TARGET  distclean
+        )
+    ENDIF()
+ENDMACRO()
 
 
 # Save the necessary cmake variables to a file for applications to load

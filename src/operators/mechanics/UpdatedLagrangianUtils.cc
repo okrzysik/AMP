@@ -720,8 +720,8 @@ namespace Operator {
     // F -> The input deformation gradient.
     // R -> The rotation matrix (output).
     // U -> The strecth tensor (output).
-    double I1, I2, I3, i1, i2, i3, b, c, x[3], m, n, t, lambda[3], D, Uinv[3][3], C[3][3], Ft[3][3], C2[3][3], I[3][3];
-    double tol = 1.0e-8, pi_d = 3.14159265358979;
+    double I1, I2, I3, i1, i2, i3, b, c, x[3], lambda[3], D, Uinv[3][3], C[3][3], Ft[3][3], C2[3][3], I[3][3];
+    double tol = 1.0e-8;
 
     for(int i = 0; i < 3; i++)
       for(int j = 0; j < 3; j++)
@@ -750,12 +750,13 @@ namespace Operator {
         x[i] = -pow(c, (1.0 / 3.0));
     } else {
       AMP_INSIST((b <= 0.0), "Error in the polar decomposition (Simo), value of b is greater than zero.");
-      m = 2.0 * sqrt(-b / 3.0);
-      n = (3.0 * c) / (m * b);
+      double m = 2.0 * sqrt(-b / 3.0);
+      double n = (3.0 * c) / (m * b);
       double term1 = 1.0 - (n * n);
       term1 = std::max(tol, term1);
       AMP_INSIST((term1 >= 0.0), "(1.0 - n*n) is not greater than or equal to zero. Error in the polar decomposition (Simo)");
-      t = (atan2(sqrt(term1), n)) / 3.0;
+      double t = (atan2(sqrt(term1), n)) / 3.0;
+      double pi_d = 3.14159265358979;
       for(int i = 0; i < 3; i++)
         x[i] = m * cos(t + ((2.0 * ((double)(i)) * pi_d) / 3.0));
     }

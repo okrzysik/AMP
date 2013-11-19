@@ -1,7 +1,7 @@
 #include "vectors/trilinos/thyra/NativeThyraVector.h"
 #include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
-#include "Thyra_SpmdVectorBase_def.hpp"
+//#include "Thyra_SpmdVectorBase_def.hpp"
 #include "Thyra_DefaultSpmdVector_def.hpp"
 
 
@@ -52,7 +52,7 @@ Vector::shared_ptr NativeThyraVector::cloneVector(const Variable::shared_ptr var
     params->d_InVec = d_thyraVec->clone_v();
     params->d_local = d_local;
     params->d_comm = getComm();
-    params->d_var = d_pVariable;
+    params->d_var = var;
     return boost::shared_ptr<NativeThyraVector>( new NativeThyraVector(params) );
 }
 

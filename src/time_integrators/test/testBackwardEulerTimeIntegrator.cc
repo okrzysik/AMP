@@ -147,6 +147,7 @@ void BackwardEulerTimeIntegrator(AMP::UnitTest *ut )
 
     boost::shared_ptr<AMP::Database> pcSolver_db = input_db->getDatabase("Solver");
     boost::shared_ptr<AMP::Solver::SolverStrategyParameters> pcSolverParams(new AMP::Solver::SolverStrategyParameters(pcSolver_db));
+    pcSolverParams->d_pOperator = diffusionOperator;
     boost::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(new AMP::Solver::TrilinosMLSolver(pcSolverParams));
 
     boost::shared_ptr<AMP::Database> timeIntegrator_db = input_db->getDatabase("BDFTimeIntegrator");
@@ -175,14 +176,14 @@ void BackwardEulerTimeIntegrator(AMP::UnitTest *ut )
       BDFTimeIntegrator->advanceSolution(BDFTimeIntegrator->getCurrentDt(), 0);
       current_time = BDFTimeIntegrator->getCurrentTime();
 
-      cout << j++ << "-th timestep" << endl;
+      std::cout << j++ << "-th timestep" << std::endl;
 
       max = BDFTimeIntegrator->getCurrentSolution()->max();
       min = BDFTimeIntegrator->getCurrentSolution()->min();
 
-      cout << "current_time = " << current_time << endl;
-      cout << "max val of the current solution = " << max << endl;
-      cout << "min val of the current solution = " << min << endl;
+      std::cout << "current_time = " << current_time << std::endl;
+      std::cout << "max val of the current solution = " << max << std::endl;
+      std::cout << "min val of the current solution = " << min << std::endl;
     }
 
     if (ut->NumFailLocal() == 0)

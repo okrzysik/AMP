@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fstream>
-using namespace std;
 #include "utils/AMP_MPI.h"
 #include "utils/Utilities.h"
 
@@ -236,7 +235,6 @@ TimeIntegrator::putToDatabase(boost::shared_ptr<AMP::Database> db)
    db->putDouble("d_current_time", d_current_time);
    db->putDouble("d_current_dt", d_current_dt);
    db->putDouble("d_old_dt", d_old_dt);
-
    db->putInteger("d_integrator_step", d_integrator_step);
    db->putInteger("d_max_integrator_steps", d_max_integrator_steps);
 
@@ -252,18 +250,16 @@ TimeIntegrator::putToDatabase(boost::shared_ptr<AMP::Database> db)
 void 
 TimeIntegrator::printClassData(std::ostream& os) const
 {
-   os << "\nTimeIntegrator::printClassData..." << endl;
-   os << "TimeIntegrator: this = "
-      << this << endl;
-   os << "d_object_name = " << d_object_name << endl; 
-
-   os << "d_initial_time = " << d_initial_time << endl;
-   os << "d_final_time = " << d_final_time << endl;
-   os << "d_current_time = " << d_current_time << endl;
-   os << "d_current_dt = " << d_current_dt << endl;
-   os << "d_old_dt = " << d_old_dt << endl;
-   os << "d_integrator_step = " << d_integrator_step << endl;
-   os << "d_max_integrator_steps = " << d_max_integrator_steps << endl;
+   os << "\nTimeIntegrator::printClassData..." << std::endl;
+   os << "TimeIntegrator: this = " << this << std::endl;
+   os << "d_object_name = " << d_object_name << std::endl;
+   os << "d_initial_time = " << d_initial_time << std::endl;
+   os << "d_final_time = " << d_final_time << std::endl;
+   os << "d_current_time = " << d_current_time << std::endl;
+   os << "d_current_dt = " << d_current_dt << std::endl;
+   os << "d_old_dt = " << d_old_dt << std::endl;
+   os << "d_integrator_step = " << d_integrator_step << std::endl;
+   os << "d_max_integrator_steps = " << d_max_integrator_steps << std::endl;
 }
 
 }

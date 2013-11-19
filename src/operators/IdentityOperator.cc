@@ -19,15 +19,15 @@ IdentityOperator :: IdentityOperator (const boost::shared_ptr<OperatorParameters
 
 void IdentityOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
 {
-    d_inVar.reset();
-    d_outVar.reset();
-    if ( params->d_db->keyExists("InputVariable") ) {
-        std::string inpVar = params->d_db->getString("InputVariable");
-        d_inVar.reset(new AMP::LinearAlgebra::Variable(inpVar));
-    }
-    if ( params->d_db->keyExists("OutputVariable") ) {
-        std::string outVar = params->d_db->getString("OutputVariable");
-        d_outVar.reset(new AMP::LinearAlgebra::Variable(outVar));
+    if ( params->d_db.get() != NULL ) {
+        if ( params->d_db->keyExists("InputVariable") ) {
+            std::string inpVar = params->d_db->getString("InputVariable");
+            d_inVar.reset(new AMP::LinearAlgebra::Variable(inpVar));
+        }
+        if ( params->d_db->keyExists("OutputVariable") ) {
+            std::string outVar = params->d_db->getString("OutputVariable");
+            d_outVar.reset(new AMP::LinearAlgebra::Variable(outVar));
+        }
     }
 }
 

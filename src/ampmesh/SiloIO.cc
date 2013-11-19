@@ -6,6 +6,21 @@ namespace AMP {
 namespace Mesh {
 
 
+static inline size_t find_slash( const std::string& filename )
+{
+    size_t i1 = filename.find_last_of(47);
+    size_t i2 = filename.find_last_of(92);
+    size_t i = std::string::npos;
+    if ( i1==std::string::npos )
+        i = i2;
+    else if ( i2==std::string::npos )
+        i = i1;
+    else if ( i1!=std::string::npos && i2!=std::string::npos )
+        i = std::max(i1,i2);
+    return i;
+}
+
+
 /************************************************************
 * Constructor/Destructor                                    *
 ************************************************************/
@@ -272,6 +287,16 @@ void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
     d_vectors.push_back(vec);
     // Add the variable name to the list of variables
     d_varNames.insert(name);
+}
+void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
+{ 
+    AMP_ERROR("SiloIO currently requires a mesh to register a vector with");
+}
+#endif
+#ifdef USE_AMP_MATRICES
+void SiloIO::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat )
+{
+    AMP_ERROR("SiloIO does not yet support matrices");
 }
 #endif
 
@@ -675,6 +700,9 @@ void SiloIO::writeSummary( std::string filename )
     syncMultiMeshData( multiMeshes, 0 );
     syncVariableList( d_varNames, 0 );
     // Write the multimeshes
+    std::string base_path;
+    if ( find_slash(filename)!=std::string::npos )
+        base_path = filename.substr(0,find_slash(filename)+1);
     if ( d_comm.getRank()==0 ) {
         DBfile  *FileHandle;
         FileHandle = DBOpen ( filename.c_str(), DB_HDF5, DB_APPEND );
@@ -684,9 +712,13 @@ void SiloIO::writeSummary( std::string filename )
         std::set<std::string> subdirs;
         for (it=multiMeshes.begin(); it!=multiMeshes.end(); ++it) {
             siloMultiMeshData data = it->second;
-            size_t pos = data.name.find_last_of("/");
+            std::string file = data.name;
+            size_t pos = file.compare(0,base_path.size(),base_path);
             if ( pos!=std::string::npos )
-                subdirs.insert( data.name.substr(0,pos) );
+                file = file.substr(base_path.size());
+            pos = find_slash(file);
+            if ( pos!=std::string::npos )
+                subdirs.insert( file.substr(0,pos) );
         }
         for (std::set<std::string>::iterator it2=subdirs.begin(); it2!=subdirs.end(); ++it2)
             createSiloDirectory( FileHandle, *it2 );
@@ -696,8 +728,13 @@ void SiloIO::writeSummary( std::string filename )
         for (it=multiMeshes.begin(); it!=multiMeshes.end(); ++it) {
             siloMultiMeshData data = it->second;
             std::vector<std::string> meshNames(data.meshes.size());
-            for (size_t i=0; i<data.meshes.size(); ++i)
-                meshNames[i] = data.meshes[i].file+":"+data.meshes[i].path+"/"+data.meshes[i].meshName;
+            for (size_t i=0; i<data.meshes.size(); ++i) {
+                std::string file = data.meshes[i].file;
+                size_t pos = file.compare(0,base_path.size(),base_path);
+                if ( pos!=std::string::npos )
+                    file = file.substr(base_path.size());
+                meshNames[i] = file+":"+data.meshes[i].path+"/"+data.meshes[i].meshName;
+            }
             char **meshnames = new char*[data.meshes.size()];
             int *meshtypes = new int[data.meshes.size()];
             for (size_t i=0; i<data.meshes.size(); ++i) {

@@ -212,6 +212,15 @@ namespace Utilities
     std::vector<int> factor(size_t);
 
     /*!
+     * Function to get the memory availible.
+     * This function will return the total memory availible
+     * Note: depending on the implimentation, this number may be rounded to
+     * to a multiple of the page size.
+     * If this function fails, it will return 0.
+     */
+    size_t getSystemMemory();
+
+    /*!
      * Function to get the memory usage.
      * This function will return the total memory used by the application.
      * Note: depending on the implimentation, this number may be rounded to

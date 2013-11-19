@@ -352,12 +352,9 @@ namespace AMP {
       AMP_INSIST( ((u.get()) != NULL), "NULL Power Vector" );
       AMP_INSIST( ((r.get()) != NULL), "NULL PowerWithShape Vector" );
 
-      using namespace std;
-
       const double PI = 4.0*atan(1.0);
       double x, y, z;
       double newval, val;
-      double volumeIntegral=0;
       int countGP =0 ; 
 
       double xmin, ymin, zmin, centerx, centery;
@@ -398,7 +395,7 @@ namespace AMP {
         if(d_type == "legendre") {
 
           if(d_iDebugPrintInfoLevel>3)
-            AMP::pout << "Starting Power Shape Loop over Gauss Points." << endl;
+            AMP::pout << "Starting Power Shape Loop over Gauss Points." << std::endl;
 
           // Loop over all elements on the mesh
           for( ; elem != end_elems; ++elem) {
@@ -451,12 +448,12 @@ namespace AMP {
           r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
           if(d_iDebugPrintInfoLevel>3)
-            AMP::pout << "End Power Shape Loop over : " << countGP << " Gauss Points." << endl;
+            AMP::pout << "End Power Shape Loop over : " << countGP << " Gauss Points." << std::endl;
 
         } else if(d_type == "gaussian") {
 
           if(d_iDebugPrintInfoLevel>3)
-            AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
+            AMP::pout<<"Power Shape: Processing all Gauss-Points." << std::endl;
           // Loop over all elements on the mesh
           for( ; elem != end_elems; ++elem) {
             d_currNodes = elem->getElements(AMP::Mesh::Vertex);
@@ -501,7 +498,7 @@ namespace AMP {
           r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
           if(d_iDebugPrintInfoLevel>3)
-            AMP::pout << "Power Shape: Processing GP #: " << countGP << endl;
+            AMP::pout << "Power Shape: Processing GP #: " << countGP << std::endl;
 
         } else {
           AMP_INSIST(0,"The power shape type used is not valid for cylindrical coordinate systems.");
@@ -514,10 +511,10 @@ namespace AMP {
           // Note: Dimensions are all in meter (m). 
 
           // Choose the type of volume integral calculation. 
-          volumeIntegral = getVolumeIntegralSum(rmax, centerx, centery);
+          double volumeIntegral = getVolumeIntegralSum(rmax, centerx, centery);
 
           if(d_iDebugPrintInfoLevel>3)
-            AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
+            AMP::pout<<"Power Shape: Processing all Gauss-Points." << std::endl;
           // Loop over all elements on the mesh
           for( ; elem != end_elems; elem++) {
             d_currNodes = elem->getElements(AMP::Mesh::Vertex);
@@ -564,14 +561,14 @@ namespace AMP {
           r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
           if(d_iDebugPrintInfoLevel>3)
-            AMP::pout << "Power Shape: Processing GP #: " << countGP << endl;
+            AMP::pout << "Power Shape: Processing GP #: " << countGP << std::endl;
 
         }  else if (d_type == "diffusion") {
 
           // Infinite cylinder diffusion shape
           // Note: Dimensions are all in meter (m). 
           if(d_iDebugPrintInfoLevel>3)
-            AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
+            AMP::pout<<"Power Shape: Processing all Gauss-Points." << std::endl;
           // Loop over all elements on the mesh
           for( ; elem != end_elems; ++elem) {
             d_currNodes = elem->getElements(AMP::Mesh::Vertex);
@@ -647,7 +644,7 @@ namespace AMP {
 
           r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
           if(d_iDebugPrintInfoLevel>3)
-            AMP::pout << "Power Shape: Processed GP #: " << countGP << endl;
+            AMP::pout << "Power Shape: Processed GP #: " << countGP << std::endl;
 
         }
 
@@ -656,7 +653,7 @@ namespace AMP {
           // Note: Dimensions are all in meter (m). 
 
           if(d_iDebugPrintInfoLevel>3)
-            AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
+            AMP::pout<<"Power Shape: Processing all Gauss-Points." << std::endl;
           // Loop over all elements on the mesh
           for( ; elem != end_elems; ++elem) {
             d_currNodes = elem->getElements(AMP::Mesh::Vertex);
@@ -701,14 +698,14 @@ namespace AMP {
           r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
           if(d_iDebugPrintInfoLevel>3)
-            AMP::pout << "Power Shape: Processed GP #: " << countGP << endl;
+            AMP::pout << "Power Shape: Processed GP #: " << countGP << std::endl;
 
         } else if (d_type == "zernike") {
 
           // Note: Dimensions are all in meter (m). 
 
           if(d_iDebugPrintInfoLevel>3)
-            AMP::pout<<"Power Shape: Processing all Gauss-Points."<<endl;
+            AMP::pout<<"Power Shape: Processing all Gauss-Points." << std::endl;
           // Loop over all elements on the mesh
           for( ; elem != end_elems; ++elem) {
             d_currNodes = elem->getElements(AMP::Mesh::Vertex);
@@ -749,7 +746,7 @@ namespace AMP {
           r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
           if(d_iDebugPrintInfoLevel>3)
-            AMP::pout << "Power Shape: Processed GP #: " << countGP << endl;
+            AMP::pout << "Power Shape: Processed GP #: " << countGP << std::endl;
 
         } else {
           AMP_INSIST(0,"The power shape type used is not valid for cylindrical coordinate systems");

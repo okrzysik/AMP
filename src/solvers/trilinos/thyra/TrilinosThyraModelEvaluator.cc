@@ -23,6 +23,7 @@ TrilinosThyraModelEvaluator::TrilinosThyraModelEvaluator( boost::shared_ptr<Tril
     d_nonlinearOp = params->d_nonlinearOp;
     d_linearOp = params->d_linearOp;
     d_icVec = params->d_icVec;
+    d_preconditioner = params->d_preconditioner;
 }
 
 
@@ -57,17 +58,27 @@ void TrilinosThyraModelEvaluator::evalModelImpl( const ::Thyra::ModelEvaluatorBa
     //const Teuchos::RCP< Thyra::LinearOpBase<double> > W_out = outArgs.get_W_op();
     AMP_ASSERT(x!=NULL);
 
+    // Temporary workaround to ensure x and rhs are consistent
+    const_cast<AMP::LinearAlgebra::Vector*>(x.get())->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+    if ( d_rhs != NULL ) {
+        const_cast<AMP::LinearAlgebra::Vector*>(d_rhs.get())->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+    }
+    AMP_ASSERT(x->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
+    AMP_ASSERT(d_rhs->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
+
     if ( f_out != NULL ) {
         // Evaluate the residual:  r = A(u) - rhs
+        f_out->zero();
         d_nonlinearOp->apply( d_rhs, x, f_out, 1.0, -1.0 );
     }
 
     if ( outArgs.supports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_op) ) {
-        boost::shared_ptr<AMP::Solver::TrilinosLinearOP> W_out = this->view( outArgs.get_W_op() );
-        if ( W_out != NULL ) {
+        Teuchos::RCP<Thyra::LinearOpBase<double> >  W_out = outArgs.get_W_op();
+        if ( W_out.get() != NULL ) {
             // Get the jacobian
-            //AMP_ERROR("Not finished");
-            /*Teuchos::RCP<Epetra_Operator> W_epetra = Thyra::get_Epetra_Operator(*W_out);
+            AMP_ERROR("Not finished");
+            /*boost::shared_ptr<AMP::Solver::TrilinosLinearOP> W_out = this->view( outArgs.get_W_op() );
+            Teuchos::RCP<Epetra_Operator> W_epetra = Thyra::get_Epetra_Operator(*W_out);
             Teuchos::RCP<Epetra_CrsMatrix> W_epetracrs = rcp_dynamic_cast<Epetra_CrsMatrix>(W_epetra);
             TEUCHOS_ASSERT(nonnull(W_epetracrs));
             Epetra_CrsMatrix& DfDx = *W_epetracrs;
@@ -90,12 +101,19 @@ void TrilinosThyraModelEvaluator::evalModelImpl( const ::Thyra::ModelEvaluatorBa
             DfDx.SumIntoGlobalValues( 1, 2, values, indexes );*/
         }
     }
+
+    const Teuchos::RCP<Thyra::PreconditionerBase<double> > W_prec_out = outArgs.get_W_prec();
+    if ( nonnull(W_prec_out) ) {
+        // Reset the preconditioner
+        AMP::LinearAlgebra::Vector::shared_ptr x2 = boost::const_pointer_cast<AMP::LinearAlgebra::Vector>(x);
+        boost::shared_ptr<AMP::Operator::OperatorParameters> op_params = d_nonlinearOp->getJacobianParameters(x2);
+        d_preconditioner->resetOperator(op_params);
+    }
 }
 
 
 /****************************************************************
 * Functions derived from Thyra::StateFuncModelEvaluatorBase     *
-* that are not implimented yet                                  *
 ****************************************************************/
 Teuchos::RCP<const ::Thyra::VectorSpaceBase<double> > TrilinosThyraModelEvaluator::get_x_space() const
 {
@@ -113,7 +131,6 @@ Teuchos::RCP<const ::Thyra::VectorSpaceBase<double> > TrilinosThyraModelEvaluato
 }
 ::Thyra::ModelEvaluatorBase::InArgs<double> TrilinosThyraModelEvaluator::getNominalValues() const
 {
-    AMP_ERROR("Not implimented yet");
     return ::Thyra::ModelEvaluatorBase::InArgs<double>();
 }
 Teuchos::RCP< ::Thyra::LinearOpBase<double> > TrilinosThyraModelEvaluator::create_W_op() const
@@ -141,7 +158,23 @@ Teuchos::RCP<const ::Thyra::LinearOpWithSolveFactoryBase<double> > TrilinosThyra
     outArgs.setModelEvalDescription(this->description());
     outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_f);
     outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_op);
+    outArgs.setSupports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_prec);
     return outArgs;
+}
+
+
+/****************************************************************
+* Function to create the preconditioner                         *
+****************************************************************/
+Teuchos::RCP< ::Thyra::PreconditionerBase<double> > TrilinosThyraModelEvaluator::create_W_prec() const
+{
+    Teuchos::RCP<Thyra::DefaultPreconditioner<double> > preconditioner;
+    if ( d_preconditioner != NULL ) {
+        Teuchos::RCP<Thyra::LinearOpBase<double> > leftPrec;
+        Teuchos::RCP<Thyra::LinearOpBase<double> > rightPrec( new TrilinosLinearOP(d_preconditioner) );
+        preconditioner.reset( new Thyra::DefaultPreconditioner<double>( leftPrec, rightPrec ) );
+    }
+    return preconditioner;
 }
 
 

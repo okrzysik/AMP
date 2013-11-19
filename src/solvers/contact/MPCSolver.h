@@ -14,7 +14,7 @@ namespace AMP {
         MPCSolver(boost::shared_ptr<MPCSolverParameters> params)
           : SolverStrategy(params) { }
 
-        void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector> f, boost::shared_ptr<AMP::LinearAlgebra::Vector> u);
+        void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector> f, boost::shared_ptr<AMP::LinearAlgebra::Vector> u);
 
     };
 

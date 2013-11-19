@@ -1,6 +1,7 @@
 #include "operators/subchannel/SubchannelHelpers.h"
 #include "operators/subchannel/SubchannelConstants.h"
 #include "ampmesh/StructuredMeshHelper.h"
+#include "ampmesh/MeshElementVectorIterator.h"
 #include "utils/Utilities.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
@@ -11,6 +12,42 @@ namespace AMP {
 namespace Operator {
 namespace Subchannel {
 
+
+
+// Get the number of subchannels from the mesh
+size_t getNumberOfSubchannels( AMP::Mesh::Mesh::shared_ptr subchannel )
+{
+    AMP_MPI comm = subchannel->getComm();
+    std::vector<double> x, y, z;
+    AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( subchannel, x, y, z );
+    AMP_ASSERT(x.size()>=2&&y.size()>=2);
+    size_t Nx = x.size()-1;
+    size_t Ny = y.size()-1;
+    return Nx*Ny;
+}
+
+
+// Subset the subchannel mesh for a particular subchannel
+AMP::Mesh::Mesh::shared_ptr subsetForSubchannel( AMP::Mesh::Mesh::shared_ptr subchannel, size_t i, size_t j )
+{
+    // Get the coordinates of the subchannel mesh
+    AMP_MPI comm = subchannel->getComm();
+    std::vector<double> x, y, z;
+    AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( subchannel, x, y, z );
+    AMP_ASSERT(x.size()>=2&&y.size()>=2);
+    size_t Nx = x.size()-1;
+    size_t Ny = y.size()-1;
+    // Get the elements in the subchannel of interest
+    AMP::Mesh::MeshIterator el = subchannel->getIterator(AMP::Mesh::Volume,0);
+    boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( new std::vector<AMP::Mesh::MeshElement>() );
+    elements->reserve(el.size()/(Nx*Ny));
+    for (size_t k=0; k<el.size(); ++k, ++el) {
+        std::vector<double> coord = el->centroid();
+        if ( coord[0]>=x[i] && coord[0]<=x[i+1] && coord[1]>=y[j] && coord[1]<=y[j+1] )
+            elements->push_back(*el);
+    }
+    return subchannel->Subset( AMP::Mesh::MultiVectorIterator( elements ) );
+}
 
 
 // Compute basic properties from the subchannel mesh

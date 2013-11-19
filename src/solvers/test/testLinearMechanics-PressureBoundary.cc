@@ -42,8 +42,8 @@
 #include "vectors/VectorSelector.h"
 #include "utils/Writer.h"
 
-#include "solvers/PetscKrylovSolverParameters.h"
-#include "solvers/PetscKrylovSolver.h"
+#include "solvers/petsc/PetscKrylovSolverParameters.h"
+#include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
 
 #include "utils/ReadTestMesh.h"

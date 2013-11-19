@@ -103,6 +103,22 @@ public:
                             int  *cols ,
                             double  *values );
 
+    /** \brief  Get values in the matrix
+      * \param[in] num_rows The number of rows represented in values
+      * \param[in] num_cols The number of cols represented in values
+      * \param[in] rows  The row ids of values
+      * \param[in] cols  The column ids of values
+      * \param[in] values  The values to get from the matrix (row-major ordering)
+      * \details  This method will return zero for any entries that 
+      *   have not been allocated or are not ghosts on the current processor.
+      */
+    virtual void  getValuesByGlobalID ( int   num_rows ,
+                                        int   num_cols ,
+                                        int  *rows ,
+                                        int  *cols ,
+                                        double  *values ) const;
+
+
     /** \brief  Add values to those in the matrix
       * \param[in] row  The row id of value
       * \param[in] col  The column id of value
@@ -122,6 +138,16 @@ public:
       * on the actual subclass of matrix used.
       */
     virtual void setValueByGlobalID( int row , int col , double value );
+
+    /** \brief  Set values in the matrix
+      * \param[in] row  The row id of value
+      * \param[in] col  The column id of value
+      * \details  This method may fail if the matrix has not
+      * allocated a particular(row,col) specified, depending
+      * on the actual subclass of matrix used.
+      */
+    virtual double getValueByGlobalID( int row , int col ) const;
+
 
     /** \brief  Set the non-zeros of the matrix to a scalar
       * \param[in]  alpha  The value to set the non-zeros to
@@ -151,27 +177,27 @@ public:
       * \param[in]  buf  An optional vector to use as a buffer
       * \return  A vector of the diagonal values
       */
-    virtual Vector::shared_ptr  extractDiagonal( Vector::shared_ptr buf = Vector::shared_ptr() );
+    virtual Vector::shared_ptr  extractDiagonal( Vector::shared_ptr buf = Vector::shared_ptr() ) const;
 
     /** \brief Get a right vector( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$ is a right vector )
       * \return  A newly created right vector
       */
-    virtual Vector::shared_ptr  getRightVector();
+    virtual Vector::shared_ptr  getRightVector() const;
 
     /** \brief Get a left vector( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{y}\f$ is a left vector )
       * \return  A newly created left vector
       */
-    virtual Vector::shared_ptr  getLeftVector();
+    virtual Vector::shared_ptr  getLeftVector() const;
 
     /** \brief Get the DOFManager associated with a right vector( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$ is a right vector )
       * \return  The DOFManager associated with a right vector
       */
-    virtual Discretization::DOFManager::shared_ptr  getRightDOFManager();
+    virtual Discretization::DOFManager::shared_ptr  getRightDOFManager() const;
 
     /** \brief Get the DOFManager associated with a left vector( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{y}\f$ is a left vector )
       * \return  The DOFManager associated with a left vector
       */
-    virtual Discretization::DOFManager::shared_ptr  getLeftDOFManager();
+    virtual Discretization::DOFManager::shared_ptr  getLeftDOFManager() const;
 
     /** \brief Compute the maximum column sum
       * \return  The L1 norm of the matrix
@@ -183,7 +209,7 @@ protected:
     //! Unimplemented constructor
     DenseSerialMatrix();
 
-    //! Unused copy constructor
+    //! Protected copy constructor
     DenseSerialMatrix( const DenseSerialMatrix & );
 
     /** \brief  Multiply two matrices and store in a third

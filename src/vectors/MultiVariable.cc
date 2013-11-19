@@ -33,40 +33,34 @@ public:
 };
 
 
-MultiVariable::MultiVariable ( const std::string &name ) : Variable ( name ) {}
+
+/****************************************************************
+* Constructors/Destructors                                      *
+****************************************************************/
+MultiVariable::MultiVariable ( const std::string &name, const std::vector<Variable::shared_ptr>& vars ) : 
+    Variable ( name ) 
+{
+    d_vVariables = vars;
+}
+MultiVariable::~MultiVariable () 
+{
+}
 
 
-MultiVariable::~MultiVariable () {}
-
-
+/****************************************************************
+* Get/set a variable                                            *
+****************************************************************/
 Variable::shared_ptr  MultiVariable::getVariable ( size_t which )
 {
     AMP_ASSERT ( which < d_vVariables.size() );
     return d_vVariables[which];
 }
-
-
-size_t  MultiVariable::numVariables ()
-{
-    return d_vVariables.size();
-}
-
-
 void MultiVariable::setVariable ( size_t i , Variable::shared_ptr & p ) 
 { 
     AMP_ASSERT ( i < d_vVariables.size() );
     d_vVariables[i] = p; 
 }
-
-
-void   MultiVariable::sortVariablesByName ( const std::vector<std::string> &order )
-{
-    MVSortByName sorter ( order );
-    std::sort ( beginVariable() , endVariable() , sorter );
-}
-
-
-void   MultiVariable::add ( Variable::shared_ptr newVar ) 
+void MultiVariable::add ( Variable::shared_ptr newVar ) 
 {
     boost::shared_ptr<MultiVariable> multivariable = boost::dynamic_pointer_cast<MultiVariable>(newVar);
     if ( multivariable.get() != NULL ) {
@@ -81,16 +75,45 @@ void   MultiVariable::add ( Variable::shared_ptr newVar )
 }
 
 
+/****************************************************************
+* Misc                                                          *
+****************************************************************/
+size_t  MultiVariable::numVariables ()
+{
+    return d_vVariables.size();
+}
+
+void   MultiVariable::sortVariablesByName ( const std::vector<std::string> &order )
+{
+    MVSortByName sorter ( order );
+    std::sort ( beginVariable() , endVariable() , sorter );
+}
+
+
+
+
+
 bool   MultiVariable::operator == ( const Variable &rhs ) const
 { 
     const MultiVariable *multivariable = dynamic_cast<const MultiVariable*>( &rhs );
-    if ( multivariable==NULL ) 
-        return false;
-    for (size_t i=0; i!=d_vVariables.size(); i++) {
-        if ( i == multivariable->d_vVariables.size() )
+    if ( multivariable==NULL ) {
+        // We are comparing a multi variable to another variable
+        // The two variables match if the variable equals all sub-variable and
+        // the names match
+        if ( rhs.getName() != this->getName() )
             return false;
-        if ( d_vVariables[i] != multivariable->d_vVariables[i] )
-            return false;
+        for (size_t i=0; i!=d_vVariables.size(); i++) {
+            if ( *d_vVariables[i] != rhs )
+                return false;
+        }
+    } else {
+        // We are dealing with two multivariables, check that the internal variables match
+        for (size_t i=0; i!=d_vVariables.size(); i++) {
+            if ( i == multivariable->d_vVariables.size() )
+                return false;
+            if ( (*d_vVariables[i]) != (*(multivariable->d_vVariables[i])) )
+                return false;
+        }
     }
     return true;
 }

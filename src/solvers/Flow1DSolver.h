@@ -16,7 +16,7 @@ namespace Solver {
       
      virtual ~Flow1DSolver();
 
-    void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
+    void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
 	       boost::shared_ptr<AMP::LinearAlgebra::Vector>  u);
     
     void setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess );

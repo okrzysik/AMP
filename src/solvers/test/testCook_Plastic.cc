@@ -55,16 +55,12 @@
 #include "vectors/MultiVariable.h"
 #include "vectors/VectorBuilder.h"
 
-#include "solvers/PetscKrylovSolverParameters.h"
-#include "solvers/PetscKrylovSolver.h"
-#include "solvers/PetscSNESSolver.h"
+#include "solvers/petsc/PetscSNESSolver.h"
+#include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
 
 #include "utils/ReadTestMesh.h"
 
-extern "C"{
-#include "petsc.h"
-}
 
 
 void myTest(AMP::UnitTest *ut, std::string exeName)

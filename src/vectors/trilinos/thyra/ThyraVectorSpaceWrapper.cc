@@ -61,9 +61,7 @@ Teuchos::RCP<const Thyra::VectorSpaceFactoryBase<double> > ThyraVectorSpaceWrapp
 }
 double ThyraVectorSpaceWrapper::scalarProd(const Thyra::VectorBase<double> &x, const Thyra::VectorBase<double> &y) const
 {
-    AMP_ASSERT(d_is_range);
-    AMP_ERROR("Not finished");
-    return 0.0;
+    return dot(x,y);
 }
 Teuchos::RCP<Thyra::VectorBase<double> >  ThyraVectorSpaceWrapper::createMember() const
 {

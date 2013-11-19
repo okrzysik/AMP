@@ -14,9 +14,10 @@
 namespace AMP {
 namespace Operator {
 
-  FlowElement :: FlowElement (const boost::shared_ptr<ElementOperationParameters> & params)
-    : ElementOperation(params)
-  {
+FlowElement :: FlowElement (const boost::shared_ptr<ElementOperationParameters> & params) :
+    ElementOperation(params),
+    d_elem(NULL)
+{
     AMP_INSIST( (params.get() != NULL), "''params'' is NULL");
 
     AMP_INSIST( (((params->d_db).get()) != NULL), "NULL database" );
@@ -51,7 +52,8 @@ namespace Operator {
 
     d_fe->attach_quadrature_rule( (d_qrule).get() );
 
-  }
+}
+
 
 }
 }

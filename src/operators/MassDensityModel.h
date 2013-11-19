@@ -22,12 +22,12 @@ public:
     // MechanicsConstants.h.  --WKC
     enum MassEquation
     {
-        Mechanics, Thermal, Chemical, Manufactured
+        Mechanics, Thermal, Chemical, Manufactured, UnknownMassEquation
     };
 
     enum ManufacturedEquation
     {
-        ThermalSrc, FickSrc, SoretSrc, FickSoretSrc
+        ThermalSrc, FickSrc, SoretSrc, FickSoretSrc, UnknownManufacturedEquation
     };
 
     MassDensityModel(const boost::shared_ptr<MassDensityModelParameters>& params);

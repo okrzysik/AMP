@@ -145,14 +145,14 @@ std::vector<size_t> subsetDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
 {
     std::vector<size_t> parentDOFs = d_parentDOFManager->getRowDOFs( obj );
     std::vector<size_t> subsetDOFs = getSubsetDOF( parentDOFs );
-    std::vector<size_t>::iterator cur = subsetDOFs.begin();
-    std::vector<size_t>::iterator end = subsetDOFs.end();
-    while ( cur != end ) {
-        if ( *cur >= d_global )
-            cur = subsetDOFs.erase(cur);
-        else
-            ++cur;
+    size_t index = 0;
+    for (size_t i=0; i<subsetDOFs.size(); i++) {
+        if ( subsetDOFs[i] < d_global ) {
+            subsetDOFs[index] = subsetDOFs[i];
+            index++;
+        }
     }
+    subsetDOFs.resize(index);
     return subsetDOFs;
 }
 
@@ -190,7 +190,7 @@ std::vector<size_t> subsetDOFManager::getSubsetDOF( const std::vector<size_t> &p
             if ( index==d_localDOFs.size() ) { index--; }
             if ( d_localDOFs[index] == DOF )
                 subsetDOFs[i] = index + d_begin;
-        } else {
+        } else if ( !d_remoteParentDOFs.empty() ) {
             // The DOF is a remote DOF
             size_t index = AMP::Utilities::findfirst(d_remoteParentDOFs,DOF);
             if ( index==d_remoteParentDOFs.size() ) { index--; }

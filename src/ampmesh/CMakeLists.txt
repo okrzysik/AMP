@@ -18,5 +18,9 @@ IF ( USE_EXT_DENDRO )
 ENDIF()
 INSTALL_AMP_TARGET ( ampmesh )
 
-ADD_SUBDIRECTORY ( test )
+# Add the unit tests
+ADD_SUBDIRECTORY( test )
+
+# Add the examples
+ADD_SUBDIRECTORY( examples )
 

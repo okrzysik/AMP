@@ -198,7 +198,6 @@ namespace AMP {
         // determine the present time and extras
         int this_step = d_timeStep;
         int this_extrasId = d_extrasId;
-        using namespace std;
 
         // compute power distribution
         if(d_useFixedValue) {

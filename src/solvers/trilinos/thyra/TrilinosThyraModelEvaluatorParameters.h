@@ -4,6 +4,7 @@
 
 #include "vectors/Vector.h"
 #include "operators/Operator.h"
+#include "solvers/SolverStrategy.h"
 
 
 namespace AMP {
@@ -18,9 +19,10 @@ class TrilinosThyraModelEvaluatorParameters
 {
 public:
     
-    AMP::LinearAlgebra::Vector::shared_ptr d_icVec;         //!< The dofs to use for the vectors
-    AMP::Operator::Operator::shared_ptr d_nonlinearOp;      //!< The non-linear operator
-    AMP::Operator::Operator::shared_ptr d_linearOp;         //!< The linear operator
+    AMP::LinearAlgebra::Vector::shared_ptr  d_icVec;            //!< The dofs to use for the vectors
+    AMP::Operator::Operator::shared_ptr     d_nonlinearOp;      //!< The non-linear operator
+    AMP::Operator::Operator::shared_ptr     d_linearOp;         //!< The linear operator
+    AMP::Solver::SolverStrategy::shared_ptr d_preconditioner;   //!< The preconditioner
 
 };
 

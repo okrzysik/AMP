@@ -17,7 +17,6 @@
 #include "vectors/VectorBuilder.h"
 #include "matrices/MatrixBuilder.h"
 
-#include "solvers/PetscKrylovSolver.h"
 #include "solvers/ColumnSolver.h"
 #include "solvers/PelletStackMechanicsSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"

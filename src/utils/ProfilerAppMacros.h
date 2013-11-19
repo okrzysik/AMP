@@ -81,7 +81,7 @@
  *        to multiple calls.
  *      Note: this is blocking call.
  */
-#define PROFILE_SYNCRONIZE(FILE) \
+#define PROFILE_SYNCRONIZE() \
     global_profiler.syncronize( )
 
 

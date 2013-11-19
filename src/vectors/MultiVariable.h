@@ -56,12 +56,13 @@ public:
     void  sortVariablesByName ( const std::vector<std::string> &v );
 
     /** \brief Constructor
-      * \param name The name of the MultiVariable
-      *
       * \details Because a MultiVariable is a Variable, it must have a name.  This does
-      * not change the names of the variables in the list of vectors.
+      *    not change the names of the variables in the list of vectors.
+      * \param[in] name  The name of the MultiVariable
+      * \param[in] vars  Optional list of variables in the MultiVariable
+      *
       */
-    MultiVariable ( const std::string &name );
+    MultiVariable ( const std::string &name, const std::vector<Variable::shared_ptr>& vars=std::vector<Variable::shared_ptr>() );
 
     /** \brief Destructor
       *

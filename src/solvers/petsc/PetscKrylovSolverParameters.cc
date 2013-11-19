@@ -1,4 +1,4 @@
-#include "PetscKrylovSolverParameters.h"
+#include "solvers/petsc/PetscKrylovSolverParameters.h"
 
 namespace AMP {
 namespace Solver {

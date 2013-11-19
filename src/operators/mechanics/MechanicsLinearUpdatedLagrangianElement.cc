@@ -309,7 +309,7 @@ namespace Operator {
       }
 
       double constitutiveMatrix[6][6];
-      double currentStress[6], materialMatrix[6][6], F_np1[3][3], R_np1[3][3], U_np1[3][3];
+      double currentStress[6], materialMatrix[6][6], R_np1[3][3];
 
       for(unsigned int i = 0; i < 3; i++) {
         for(unsigned int j = 0; j < 3; j++) {
@@ -319,10 +319,12 @@ namespace Operator {
       }
     
       if(d_useJaumannRate == false) {
+        double F_np1[3][3];
         constructShapeFunctionDerivatives(dNdX, dNdY, dNdZ, refX, refY, refZ, currXi[qp], currEta[qp], currZeta[qp], detJ_0);
-        //computeDeformationGradientLin(dphi, xyz_np1, num_nodes, qp, F_np1);
+        //computeDeformationGradientLin(dphi, *xyz_np1, num_nodes, qp, F_np1);
         computeGradient(dNdX, dNdY, dNdZ, currX, currY, currZ, num_nodes, F_np1);
         if(d_useFlanaganTaylorElem == false) {
+          double U_np1[3][3];
           polarDecompositionFeqRU_Simo(F_np1, R_np1, U_np1);
         }
       }
@@ -586,7 +588,7 @@ namespace Operator {
       }
 */
       double constitutiveMatrix[6][6];
-      double currentStress[6], materialMatrix[6][6], R_np1[3][3], F_np1[3][3], U_np1[3][3];
+      double currentStress[6], materialMatrix[6][6], R_np1[3][3];
 
       for(unsigned int i = 0; i < 3; i++) {
         for(unsigned int j = 0; j < 3; j++) {
@@ -596,10 +598,12 @@ namespace Operator {
       }
     
       if(d_useJaumannRate == false) {
+        double F_np1[3][3];
         constructShapeFunctionDerivatives(dNdX, dNdY, dNdZ, refX, refY, refZ, currXi[qp], currEta[qp], currZeta[qp], detJ_0);
-        //computeDeformationGradientLin(dphi, xyz_np1, num_nodes, qp, F_np1);
+        //computeDeformationGradientLin(dphi, *xyz_np1, num_nodes, qp, F_np1);
         computeGradient(dNdX, dNdY, dNdZ, currX, currY, currZ, num_nodes, F_np1);
         if(d_useFlanaganTaylorElem == false) {
+          double U_np1[3][3];
           polarDecompositionFeqRU_Simo(F_np1, R_np1, U_np1);
         } else {
           for(int i = 0; i < 3; i++) {
@@ -761,8 +765,9 @@ namespace Operator {
     d_materialModel->postLinearElementOperation();
   }
 
+/*
   void MechanicsLinearUpdatedLagrangianElement :: computeDeformationGradientLin(const std::vector<std::vector<RealGradient> > & dphi, 
-      const std::vector<Point> xyz, unsigned int num_nodes, unsigned int qp, double F[3][3])
+      const std::vector<Point> & xyz, unsigned int num_nodes, unsigned int qp, double F[3][3])
   {
     for(unsigned int i = 0; i < 3; i++) {
       for(unsigned int j = 0; j < 3; j++) {
@@ -782,6 +787,7 @@ namespace Operator {
       F[2][2] += (xyz[k](2) * dphi[k][qp](2));
     }
   }
+*/
 
   void MechanicsLinearUpdatedLagrangianElement :: initializeReferenceXYZ(std::vector<double> & elementRefXYZ)
   {

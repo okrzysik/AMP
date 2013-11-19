@@ -134,12 +134,12 @@ void moabInterface(AMP::UnitTest *ut)
 
 
     // create MBParallelComm
-    //AMP::pout << "Creating MBParallelComm" << std::endl;
-    //int moabCommOut = 0;
-    //MBParallelComm *moabCommunicator = new MBParallelComm( moabInterface, 
-    //                                                       globalComm.getCommunicator(),
-    //                                                       &moabCommOut );
-    moab::ParallelComm *moabCommunicator;
+    AMP::pout << "Creating MBParallelComm" << std::endl;
+    int moabCommOut = 0;
+    MBParallelComm *moabCommunicator = new MBParallelComm( moabInterface, 
+                                                           globalComm.getCommunicator(),
+                                                           &moabCommOut );
+    //moab::ParallelComm *moabCommunicator;
 
     // Access the Range on the source mesh.
     AMP::pout << "Getting MGRange object" << std::endl;

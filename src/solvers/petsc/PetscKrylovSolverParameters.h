@@ -1,17 +1,10 @@
 #ifndef included_AMP_PetscKrylovSolverParameters
 #define included_AMP_PetscKrylovSolverParameters
 
-#ifndef included_Pointer
 #include "boost/shared_ptr.hpp"
-#endif
-
-#ifndef included_Database
 #include "utils/Database.h"
-#endif
-
-#ifndef included_AMP_SolverStrategyParameters
-#include "SolverStrategyParameters.h"
-#endif
+#include "solvers/SolverStrategyParameters.h"
+#include "solvers/SolverStrategy.h"
 
 extern "C"{
 #ifdef MPICH_SKIP_MPICXX
@@ -40,9 +33,6 @@ extern "C"{
 
 }
 
-#ifndef included_AMP_SolverStrategy
-#include "SolverStrategy.h"
-#endif
 
 namespace AMP {
 namespace Solver {

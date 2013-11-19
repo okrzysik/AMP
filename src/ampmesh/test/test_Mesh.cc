@@ -1,6 +1,3 @@
-#ifdef _MSC_VER
-    #define _CRT_SECURE_NO_WARNINGS		// Supress depreciated warnings for visual studio
-#endif
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/AMP_MPI.h"

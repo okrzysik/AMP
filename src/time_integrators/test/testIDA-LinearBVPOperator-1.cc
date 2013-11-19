@@ -207,7 +207,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     time_Params->d_pSourceTerm = f;
     time_Params->d_object_name = "IDATimeIntegratorParameters";
     
-    cout << "Before IDATimeIntegrator" << endl;    
+    std::cout << "Before IDATimeIntegrator" << std::endl;    
 #ifdef USE_EXT_SUNDIALS
     boost::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> pIDATimeIntegrator(new AMP::TimeIntegrator::IDATimeIntegrator(time_Params));
 
@@ -233,7 +233,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
         //pIDATimeIntegrator->updateSolution();
         current_time = pIDATimeIntegrator->getCurrentTime();
       
-        cout << j++ << "-th timestep" << endl;
+        std::cout << j++ << "-th timestep" << std::endl;
         if(retval == 0) {
             ut->passes("Testing IDATimeIntegrator's advanceSolution. PASS!!");
         } else {
@@ -248,9 +248,9 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
         //      abs_error = exact_sol-max;
         //      rel_error = abs_error/exact_sol;
       
-        cout << "current_time = " << current_time << endl;
-        cout << "max val of the current solution = " << max << endl;
-        cout << "min val of the current solution = " << min << endl;
+        std::cout << "current_time = " << current_time << std::endl;
+        std::cout << "max val of the current solution = " << max << std::endl;
+        std::cout << "min val of the current solution = " << min << std::endl;
         //      cout << "exact solution = " << exact_sol << endl;
         //      cout << "absolute error = " << abs_error << endl;
         //      cout << "relative error = " << rel_error << endl;

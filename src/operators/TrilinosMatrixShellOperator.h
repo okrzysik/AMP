@@ -1,4 +1,3 @@
-
 #ifndef included_TrilinosMatrixShellOperator
 #define included_TrilinosMatrixShellOperator
 
@@ -6,51 +5,55 @@
 
 #include "ml_include.h"
 
+
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    class TrilinosMatrixShellOperator : public LinearOperator {
-      public:
 
-        TrilinosMatrixShellOperator(const boost::shared_ptr<OperatorParameters>& params);
+class TrilinosMatrixShellOperator : public LinearOperator 
+{
+public:
 
-        virtual ~TrilinosMatrixShellOperator() { }
+    TrilinosMatrixShellOperator(const boost::shared_ptr<OperatorParameters>& params);
 
-        void setOperator(boost::shared_ptr<Operator> op); 
+    virtual ~TrilinosMatrixShellOperator() { }
 
-        void setNodalDofMap(boost::shared_ptr<AMP::Discretization::DOFManager> dofMap);
+    void setOperator(boost::shared_ptr<Operator> op); 
 
-        void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
+    void setNodalDofMap(boost::shared_ptr<AMP::Discretization::DOFManager> dofMap);
 
-        void reset(const boost::shared_ptr<OperatorParameters>& params);
+    void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+        AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
-        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
+    void reset(const boost::shared_ptr<OperatorParameters>& params);
 
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
-        static int matVec(ML_Operator *data, int in_length, double in[], int out_length, double out[]);
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
 
-        static int getRow(ML_Operator *data, int N_requested_rows, int requested_rows[],
-            int allocated_space, int columns[], double values[], int row_lengths[]);
+    static int matVec(ML_Operator *data, int in_length, double in[], int out_length, double out[]);
 
-        void setGetRow(void (*func)(void* object, int row, std::vector<unsigned int> &cols, std::vector<double> &values));
+    static int getRow(ML_Operator *data, int N_requested_rows, int requested_rows[],
+        int allocated_space, int columns[], double values[], int row_lengths[]);
 
-        void getColumn(int column, std::vector<unsigned int> &rows, std::vector<double> &values);
+    void setGetRow(void (*func)(void* object, int row, std::vector<unsigned int> &cols, std::vector<double> &values));
 
-        size_t getMatrixSize();
+    void getColumn(int column, std::vector<unsigned int> &rows, std::vector<double> &values);
 
-      private:
+    size_t getMatrixSize();
 
-        boost::shared_ptr<AMP::Discretization::DOFManager> d_nodalDofMap;
+private:
 
-        boost::shared_ptr<Operator> d_operator;
+    boost::shared_ptr<AMP::Discretization::DOFManager> d_nodalDofMap;
 
-        void (*d_getRow)(void* object, int row, std::vector<unsigned int> &cols, std::vector<double> &values);
+    boost::shared_ptr<Operator> d_operator;
 
-    };
+    void (*d_getRow)(void* object, int row, std::vector<unsigned int> &cols, std::vector<double> &values);
 
-  }
+};
+
+
+}
 }
 
 #endif

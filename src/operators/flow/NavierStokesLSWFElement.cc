@@ -66,7 +66,7 @@ namespace Operator {
       double dwdy = 0;
       double dwdz = 0;
 
-      double p = 0;
+      //double p = 0;
       double dpdx = 0;
       double dpdy = 0;
       double dpdz = 0;
@@ -75,7 +75,7 @@ namespace Operator {
         u += elementInputVectors[ 10*k + 1]*phi[k][qp]; 
         v += elementInputVectors[ 10*k + 2]*phi[k][qp]; 
         w += elementInputVectors[ 10*k + 3]*phi[k][qp];
-        p += elementInputVectors[ 10*k + 0]*phi[k][qp];
+        //p += elementInputVectors[ 10*k + 0]*phi[k][qp]; // code that uses it is commented out.
 
 
         dudx += (elementInputVectors[(10*k) + 1]*dphi[k][qp](0));

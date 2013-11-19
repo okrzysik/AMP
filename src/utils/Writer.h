@@ -15,9 +15,11 @@
 #ifdef USE_AMP_MESH
     #include "ampmesh/Mesh.h"
 #endif
-
 #ifdef USE_AMP_VECTORS
     #include "vectors/Vector.h"
+#endif
+#ifdef USE_AMP_MATRICES
+    #include "matrices/Matrix.h"
 #endif
 
 
@@ -27,8 +29,9 @@ namespace Utilities {
 
 /**
  * \class Writer
- * \brief A class used to abstract away reading/writing files for visualization
+ * \brief A class used to abstract away reading/writing files.
  * \details  This class provides routines for reading, accessing and writing meshes and vectors.
+ *    The writers can be used to generate files for visualization or interfacing with other codes.
  */
 class Writer
 {
@@ -41,9 +44,10 @@ public:
      * \brief   Function to build a writer
      * \details This function will build a default writer for use.
      * \param type   Writer type:
-     *               "None" - An empty writer will be created
-     *               "Silo" - A silo writer will be created if silo is configured, 
+     *               "None"  - An empty writer will be created
+     *               "Silo"  - A silo writer will be created if silo is configured, 
      *                        otherwise an empty writer will be created.
+     *               "Ascii" - A simple ascii writer
      */
     static boost::shared_ptr<AMP::Utilities::Writer> buildWriter( std::string type );
 
@@ -86,7 +90,7 @@ public:
 #ifdef USE_AMP_MESH
     /**
      * \brief    Function to register a mesh
-     * \details  This function will register a mesh with the silo writer.  
+     * \details  This function will register a mesh with the writer.  
      *           Note: if mesh is a MultiMesh, it will register all sub meshes.
      * \param mesh  The mesh to register
      * \param level How many sub meshes do we want?
@@ -100,22 +104,44 @@ public:
     virtual void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level=1, std::string path=std::string() )=0;
 #endif
 
-#ifdef USE_AMP_VECTORS
+#if defined(USE_AMP_VECTORS) && defined(USE_AMP_MESH)
     /**
      * \brief    Function to register a vector
-     * \details  This function will register a vector with the silo writer.  
+     * \details  This function will register a vector with the writer and register it with the given mesh.
+     *     This version of registerVector allows the data to be "stored" on the mesh for visualization
+     *     or mesh-based operations.
      * \param vec   The vector we want to write
      * \param mesh  The mesh we want to write the vector over.
-     *              Note: the vector must completely cover the mesh (silo limitiation).
+     *              Note: for many writers the vector must completely cover the mesh.
      *              Note: mesh does not have to be previously registered with registerMesh.
      * \param type  The entity type we want to save (vertex, face, cell, etc.)
-     *              Note: silo only supports writing one entity type.  If the vector
+     *              Note: some writers only supports writing one entity type.  If the vector
      *              spans multiple entity type (eg cell+vertex) the user should register
      *              the vector multiple times (one for each entity type).
      * \param name  Optional name for the vector.
      */
     virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec, AMP::Mesh::Mesh::shared_ptr mesh,
         AMP::Mesh::GeomType type, const std::string &name = "" )=0;
+#endif
+
+#if defined(USE_AMP_VECTORS) 
+    /**
+     * \brief    Function to register a vector
+     * \details  This function will register a vector with the writer.  
+     *     This version of registerVector only stores the raw data.  It is not associated with a mesh.
+     * \param vec   The vector we want to write
+     */
+    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec )=0;
+#endif
+
+#ifdef USE_AMP_MATRICES
+    /**
+     * \brief    Function to register a matrix
+     * \details  This function will register a matrix with the writer.  
+     *     This version of registerMatrix only stores the raw data.  It is not associated with a mesh.
+     * \param mat   The matrix we want to write
+     */
+    virtual void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat )=0;
 #endif
 
 protected:

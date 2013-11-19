@@ -13,6 +13,9 @@
 #ifdef USE_AMP_VECTORS
     #include "vectors/Vector.h"
 #endif
+#ifdef USE_AMP_MATRICES
+    #include "matrices/Matrix.h"
+#endif
 #ifdef USE_EXT_SILO
     #include <silo.h>
 #endif
@@ -79,7 +82,26 @@ public:
      */
     virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec, AMP::Mesh::Mesh::shared_ptr mesh,
         AMP::Mesh::GeomType type, const std::string &name = "" );
+
+    /**
+     * \brief    Function to register a vector
+     * \details  This function will register a vector with the writer.  
+     *     This version of registerVector only stores the raw data.  It is not associated with a mesh.
+     * \param vec   The vector we want to write
+     */
+    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec );
 #endif
+
+#ifdef USE_AMP_MATRICES
+    /**
+     * \brief    Function to register a matrix
+     * \details  This function will register a matrix with the writer.  
+     *     This version of registerMatrix only stores the raw data.  It is not associated with a mesh.
+     * \param mat   The matrix we want to write
+     */
+    virtual void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat );
+#endif
+
 
 private:
 

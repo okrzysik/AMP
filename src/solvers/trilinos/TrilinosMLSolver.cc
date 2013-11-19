@@ -171,7 +171,7 @@ namespace AMP {
       PROFILE_STOP("reset");
     }
 
-    void TrilinosMLSolver :: solve(boost::shared_ptr<AMP::LinearAlgebra::Vector> f,
+    void TrilinosMLSolver :: solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         boost::shared_ptr<AMP::LinearAlgebra::Vector> u) {
       PROFILE_START("solve");
       // in this case we make the assumption we can access a EpetraMat for now
@@ -223,15 +223,15 @@ namespace AMP {
       if(d_bUseEpetra) {
         // These functions throw exceptions if this cannot be performed.
         AMP_ASSERT(f != NULL); 
-        Epetra_Vector &fVec = (AMP::LinearAlgebra::EpetraVector::view ( f ))->
-          castTo<AMP::LinearAlgebra::EpetraVector>().getEpetra_Vector();
+        const Epetra_Vector &fVec = (AMP::LinearAlgebra::EpetraVector::constView ( f ))->
+          castTo<const AMP::LinearAlgebra::EpetraVector>().getEpetra_Vector();
         Epetra_Vector &uVec = (AMP::LinearAlgebra::EpetraVector::view ( u ))->
           castTo<AMP::LinearAlgebra::EpetraVector>().getEpetra_Vector();
 
         d_mlSolver->ApplyInverse(fVec, uVec);
       } else {
         double * uArr = u->getRawDataBlock<double>();
-        double * fArr = f->getRawDataBlock<double>();
+        double * fArr = const_cast<double*>( f->getRawDataBlock<double>() );
 
         ML_Iterate(d_ml, uArr, fArr);
       }
@@ -274,7 +274,7 @@ namespace AMP {
       }
     }
 
-    void TrilinosMLSolver :: reSolveWithLU(boost::shared_ptr<AMP::LinearAlgebra::Vector> f,
+    void TrilinosMLSolver :: reSolveWithLU(boost::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         boost::shared_ptr<AMP::LinearAlgebra::Vector> u) {
       PROFILE_START("reSolveWithLU");
 

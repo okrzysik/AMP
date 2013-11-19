@@ -26,7 +26,8 @@ class Matrix : public Castable
 {
 public:
       //! Convenience typedef
-      typedef  boost::shared_ptr<Matrix>      shared_ptr;
+      typedef  boost::shared_ptr<Matrix>        shared_ptr;
+      typedef  boost::shared_ptr<const Matrix>  const_shared_ptr;
 
       /** \brief Constructor
         * \param[in] params  Description of the matrix
@@ -98,7 +99,7 @@ public:
         * \param[in] num_cols The number of cols represented in values
         * \param[in] rows  The row ids of values
         * \param[in] cols  The column ids of values
-        * \param[in] values  The values to add to the matrix
+        * \param[in] values  The values to add to the matrix (row-major ordering)
         * \details  This method may fail if the matrix has not
         * allocated a particular (row,col) specified, depending
         * on the actual subclass of matrix used.
@@ -114,7 +115,7 @@ public:
         * \param[in] num_cols The number of cols represented in values
         * \param[in] rows  The row ids of values
         * \param[in] cols  The column ids of values
-        * \param[in] values  The values to set to the matrix
+        * \param[in] values  The values to set to the matrix (row-major ordering)
         * \details  This method may fail if the matrix has not
         * allocated a particular (row,col) specified, depending
         * on the actual subclass of matrix used.
@@ -124,6 +125,21 @@ public:
                                           int  *rows ,
                                           int  *cols ,
                                           double  *values ) = 0;
+
+      /** \brief  Get values in the matrix
+        * \param[in] num_rows The number of rows represented in values
+        * \param[in] num_cols The number of cols represented in values
+        * \param[in] rows  The row ids of values
+        * \param[in] cols  The column ids of values
+        * \param[in] values  The values to get from the matrix (row-major ordering)
+        * \details  This method will return zero for any entries that 
+        *   have not been allocated or are not ghosts on the current processor.
+        */
+      virtual void  getValuesByGlobalID ( int   num_rows ,
+                                          int   num_cols ,
+                                          int  *rows ,
+                                          int  *cols ,
+                                          double  *values ) const = 0;
 
 
       /** \brief  Add values to those in the matrix
@@ -145,6 +161,14 @@ public:
         * on the actual subclass of matrix used.
         */
       virtual void setValueByGlobalID ( int row , int col , double value );
+
+      /** \brief  Get values in the matrix
+        * \param[in] row  The row id of value
+        * \param[in] col  The column id of value
+        * \details  This method will return zero for any values that have not been allocated.
+        */
+      virtual double getValueByGlobalID ( int row , int col ) const;
+
 
       /** \brief  Set the non-zeros of the matrix to a scalar
         * \param[in]  alpha  The value to set the non-zeros to
@@ -177,48 +201,48 @@ public:
       /** \brief  Get the number of local rows in the matrix
         * \return  The number of local rows
         */
-      virtual size_t numLocalRows();
+      virtual size_t numLocalRows() const;
 
       /** \brief  Get the number of global rows in the matrix
         * \return  The number of global rows
         */
-      virtual size_t numGlobalRows();
+      virtual size_t numGlobalRows() const;
 
       /** \brief  Get the number of local columns in the matrix
         * \return  The number of local columns
         */
-      virtual size_t numLocalColumns();
+      virtual size_t numLocalColumns() const;
 
       /** \brief  Get the number of global columns in the matrix
         * \return  The number of global columns
         */
-      virtual size_t numGlobalColumns();
+      virtual size_t numGlobalColumns() const;
 
       /** \brief  Extract the diagonal from a matrix
         * \param[in]  buf  An optional vector to use as a buffer
         * \return  A vector of the diagonal values
         */
-      virtual Vector::shared_ptr  extractDiagonal ( Vector::shared_ptr buf = Vector::shared_ptr() ) = 0;
+      virtual Vector::shared_ptr  extractDiagonal ( Vector::shared_ptr buf = Vector::shared_ptr() ) const = 0;
 
       /** \brief Get a right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$ is a right vector )
         * \return  A newly created right vector
         */
-      virtual Vector::shared_ptr  getRightVector () = 0;
+      virtual Vector::shared_ptr  getRightVector () const = 0 ;
 
       /** \brief Get a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{y}\f$ is a left vector )
         * \return  A newly created left vector
         */
-      virtual Vector::shared_ptr  getLeftVector () = 0;
+      virtual Vector::shared_ptr  getLeftVector () const = 0 ;
 
       /** \brief Get the DOFManager associated with a right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$ is a right vector )
         * \return  The DOFManager associated with a right vector
         */
-      virtual Discretization::DOFManager::shared_ptr  getRightDOFManager () = 0;
+      virtual Discretization::DOFManager::shared_ptr  getRightDOFManager () const = 0 ;
 
       /** \brief Get the DOFManager associated with a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{y}\f$ is a left vector )
         * \return  The DOFManager associated with a left vector
         */
-      virtual Discretization::DOFManager::shared_ptr  getLeftDOFManager () = 0;
+      virtual Discretization::DOFManager::shared_ptr  getLeftDOFManager () const = 0 ;
 
       /** \brief Compute the maximum column sum
         * \return  The L1 norm of the matrix
@@ -234,6 +258,7 @@ protected:
       Matrix ( const Matrix & );
 
       /** \brief  Multiply two matrices and store in a third
+        *    result = this * other_op
         * \param[in]  other_op  The other matrix to multiply
         * \param[out] result  The matrix to store the result
         */

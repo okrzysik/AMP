@@ -43,14 +43,34 @@ public:
     /** \brief Create a new multivector in parallel
       * \param[in] name  Variable describing the new vector
       * \param[in] comm  Communicator to build the MultiVector on
+      * \param[in] vecs  Optional list of vectors in the MultiVector
       */
-    static boost::shared_ptr<MultiVector>  create ( Variable::shared_ptr name , AMP_MPI  comm );
+    static boost::shared_ptr<MultiVector>  create ( Variable::shared_ptr name, AMP_MPI comm, 
+        const std::vector<Vector::shared_ptr>& vecs=std::vector<Vector::shared_ptr>() );
 
     /** \brief Create a new multivector in parallel
       * \param[in] name  Name of the new vector
       * \param[in] comm  Communicator to build the MultiVector on
+      * \param[in] vecs  Optional list of vectors in the MultiVector
       */
-    static boost::shared_ptr<MultiVector>  create ( const std::string &name , AMP_MPI comm );
+    static boost::shared_ptr<MultiVector>  create ( const std::string &name, AMP_MPI comm, 
+        const std::vector<Vector::shared_ptr>& vecs=std::vector<Vector::shared_ptr>() );
+
+    /** \brief Create a new multivector in parallel
+      * \param[in] name  Variable describing the new vector
+      * \param[in] comm  Communicator to build the MultiVector on
+      * \param[in] vecs  Optional list of vectors in the MultiVector
+      */
+    static boost::shared_ptr<const MultiVector>  const_create ( Variable::shared_ptr name, AMP_MPI comm, 
+        const std::vector<Vector::const_shared_ptr>& vecs=std::vector<Vector::const_shared_ptr>() );
+
+    /** \brief Create a new multivector in parallel
+      * \param[in] name  Name of the new vector
+      * \param[in] comm  Communicator to build the MultiVector on
+      * \param[in] vecs  Optional list of vectors in the MultiVector
+      */
+    static boost::shared_ptr<const MultiVector>  const_create ( const std::string &name, AMP_MPI comm, 
+        const std::vector<Vector::const_shared_ptr>& vecs=std::vector<Vector::const_shared_ptr>() );
 
     /** \brief Create a multivector view of a vector
       * \param[in] vec  The vector to view
@@ -103,10 +123,16 @@ public:
       */
     virtual Vector::shared_ptr  getVector ( size_t i );
 
+    /** \brief  Return the i-th Vector in this MultiVector
+      * \param[in]  i  Which vector to return
+      * \return  The i-th Vector
+      */
+    virtual Vector::const_shared_ptr  getVector ( size_t i ) const;
+
     /** \brief  Obtain the number of Vector objects in this MultiVector
       * \return  The number of Vector objects in this MultiVector
       */
-    size_t  getNumberOfSubvectors ();
+    size_t  getNumberOfSubvectors () const;
 
     //!  Destructor
     virtual ~MultiVector();
@@ -213,9 +239,9 @@ protected:
     Vector::shared_ptr &getVector (     VectorOperations &vec , size_t which ) const;
 
     /** Constructor:  create a MultiVector with a particular variable
-      * \param[in]  names  The vector to create the MultiVector from
+      * \param[in]  name  The vector to create the MultiVector from
       */
-    MultiVector ( Variable::shared_ptr names );
+    MultiVector ( const std::string& name );
 
     virtual void dataChanged ();
 

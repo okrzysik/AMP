@@ -180,7 +180,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
         const size_t numFaces = d_z.size();
         const size_t numCells = numFaces-1;
 
-        std::vector<size_t> dofs, scalarDofs;
+        std::vector<size_t> dofs;
         dof_manager->getDOFs( (localSubchannelIt.begin())->globalID(), dofs );
 
         double h_in  = h_scale*inputVec->getValueByGlobalID(dofs[0]);
@@ -416,7 +416,6 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
     PROFILE_STOP("apply");
 }
 
-// JEH: what is the purpose of this function?
 boost::shared_ptr<OperatorParameters> SubchannelTwoEqNonlinearOperator :: 
 getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u) 
 {

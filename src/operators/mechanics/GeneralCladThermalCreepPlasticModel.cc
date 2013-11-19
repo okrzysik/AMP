@@ -43,6 +43,15 @@ namespace Operator {
     
     d_Is_Init_Called = false;
 
+    for(size_t i=0; i<6; i++) {
+      for(size_t j=0; j<6; j++) d_constitutiveMatrix[i][j] = 0.;
+    }
+    d_Delta_Time                 = 0.;
+    d_gaussPtCnt                 = 0;
+    Total_Gauss_Point            = 0;
+    Plastic_Gauss_Point          = 0;
+    d_resetReusesRadialReturn    = false;
+    d_jacobianReusesRadialReturn = false;
   }
 
   void GeneralCladThermalCreepPlasticModel :: preNonlinearInit(bool resetReusesRadialReturn, bool jacobianReusesRadialReturn)
@@ -166,8 +175,6 @@ namespace Operator {
 
     double net_stra_np1[6];
 
-    double stress_n[6], creep_strain_prev, delta_creep_strain[6];
-
     for(int i = 0; i < 6; i++) {
       net_stra_np1[i] = stra_np1[i];
     }
@@ -181,9 +188,11 @@ namespace Operator {
     }
 
     if(d_UseCreepStrain == true) {
+      double stress_n[6], delta_creep_strain[6];
+
       d_Delta_Time = d_currentTime - d_previousTime;
 
-      creep_strain_prev = d_EquilibriumCreepStrain[d_gaussPtCnt];
+      double creep_strain_prev = d_EquilibriumCreepStrain[d_gaussPtCnt];
       
       for(int i = 0; i < 6; i++) {
         stress_n[i] = d_EquilibriumStress[(6*d_gaussPtCnt) + i];
@@ -220,8 +229,6 @@ namespace Operator {
             
     double net_stra_np1[6];
 
-    double stress_n[6], creep_strain_prev, delta_creep_strain[6];
-
     for(int i = 0; i < 6; i++) {
       net_stra_np1[i] = stra_np1[i];
     }
@@ -235,9 +242,11 @@ namespace Operator {
     }
 
     if(d_UseCreepStrain == true) {
+      double stress_n[6], delta_creep_strain[6];
+
       d_Delta_Time = d_currentTime - d_previousTime;
 
-      creep_strain_prev = d_EquilibriumCreepStrain[d_gaussPtCnt];
+      double creep_strain_prev = d_EquilibriumCreepStrain[d_gaussPtCnt];
       
       for(int i = 0; i < 6; i++) {
         stress_n[i] = d_EquilibriumStress[(6*d_gaussPtCnt) + i];
@@ -291,8 +300,6 @@ namespace Operator {
 
     double net_stra_np1[6];
 
-    double stress_n[6], creep_strain_prev, delta_creep_strain[6];
-
     for(int i = 0; i < 6; i++) {
       net_stra_np1[i] = stra_np1[i];
     }
@@ -306,9 +313,11 @@ namespace Operator {
     }
 
     if(d_UseCreepStrain == true) {
+      double stress_n[6], delta_creep_strain[6];
+
       d_Delta_Time = d_currentTime - d_previousTime;
 
-      creep_strain_prev = d_EquilibriumCreepStrain[d_gaussPtCnt];
+      double creep_strain_prev = d_EquilibriumCreepStrain[d_gaussPtCnt];
       
       for(int i = 0; i < 6; i++) {
         stress_n[i] = d_EquilibriumStress[(6*d_gaussPtCnt) + i];
@@ -807,15 +816,13 @@ namespace Operator {
     }
 
     // Updating the plastic parameters. 
-    double delta_lam;
-    double kappa_np1, g_np1, g_prime;
     lam = 0.0;
     for(int i = 0; i < 1000; i++) {
       ephbp_np1 = ephbp_n + (sq23 * lam);
-      kappa_np1 = Sig0 + (Ep * pow(ephbp_np1, n));
-      g_np1 = q_trial - (twoG * lam) - (sq23 * kappa_np1);
-      g_prime = -(twoG + (two3 * Ep * n * pow(ephbp_np1,  (n - 1.0))));
-      delta_lam = g_np1 / g_prime;
+      double kappa_np1 = Sig0 + (Ep * pow(ephbp_np1, n));
+      double g_np1 = q_trial - (twoG * lam) - (sq23 * kappa_np1);
+      double g_prime = -(twoG + (two3 * Ep * n * pow(ephbp_np1,  (n - 1.0))));
+      double delta_lam = g_np1 / g_prime;
       lam = lam - delta_lam;
       if(fabs(delta_lam / lam) < tol) break;
       if(i > 995) {

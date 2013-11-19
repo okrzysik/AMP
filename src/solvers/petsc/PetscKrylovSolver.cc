@@ -1,4 +1,4 @@
-#include "PetscKrylovSolver.h"
+#include "solvers/petsc/PetscKrylovSolver.h"
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "operators/LinearOperator.h"
 #include "matrices/Matrix.h"
@@ -199,7 +199,7 @@ void PetscKrylovSolver::getFromInput(const boost::shared_ptr<AMP::Database> &db)
 *  Solve                                                        *
 ****************************************************************/
 void
-PetscKrylovSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
+PetscKrylovSolver::solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
                   boost::shared_ptr<AMP::LinearAlgebra::Vector>  u)
 {
     PROFILE_START("solve");
@@ -208,15 +208,16 @@ PetscKrylovSolver::solve(boost::shared_ptr<AMP::LinearAlgebra::Vector>  f,
         // by declaring a temporary vector, we ensure that the KSPSolve
         // will be replaced by fVecView and uVecView before they are
         // destroyed by boost.
-        AMP::LinearAlgebra::Vector::shared_ptr  f_thisGetsAroundPETScSharedPtrIssue = fVecView;
+        AMP::LinearAlgebra::Vector::const_shared_ptr  f_thisGetsAroundPETScSharedPtrIssue = fVecView;
         AMP::LinearAlgebra::Vector::shared_ptr  u_thisGetsAroundPETScSharedPtrIssue = uVecView;
     #endif
 
     // Get petsc views of the vectors
     #if !( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
-        AMP::LinearAlgebra::Vector::shared_ptr  fVecView, uVecView;
+        AMP::LinearAlgebra::Vector::const_shared_ptr  fVecView;
+        AMP::LinearAlgebra::Vector::shared_ptr  uVecView;
     #endif
-    fVecView = AMP::LinearAlgebra::PetscVector::view ( f );
+    fVecView = AMP::LinearAlgebra::PetscVector::constView ( f );
     uVecView = AMP::LinearAlgebra::PetscVector::view ( u );
 
     // Check input vector states
@@ -394,6 +395,14 @@ PetscErrorCode  PetscKrylovSolver::applyPreconditioner(PC pc, Vec r, Vec z)
     boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_r ( reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>(r->data) , AMP::LinearAlgebra::ExternalVectorDeleter() );
     boost::shared_ptr<AMP::LinearAlgebra::Vector> sp_z ( reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>(z->data) , AMP::LinearAlgebra::ExternalVectorDeleter() );
 
+    // Make sure the vectors are in a consistent state
+    AMP_ASSERT( (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+        (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+    AMP_ASSERT( (sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+        (sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+    sp_r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    sp_z->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+
     // these tests were helpful in finding a bug
     if(((PetscKrylovSolver*)ctx)->getDebugPrintInfoLevel()>5) {
         double norm=0.0;
@@ -402,10 +411,6 @@ PetscErrorCode  PetscKrylovSolver::applyPreconditioner(PC pc, Vec r, Vec z)
         AMP_ASSERT(AMP::Utilities::approx_equal(norm, sp_r_norm));
     }  
   
-    AMP_ASSERT( (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
-        (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
-    AMP_ASSERT( (sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
-        (sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
 
     // Call the preconditioner
     boost::shared_ptr<AMP::Solver::SolverStrategy> preconditioner = 

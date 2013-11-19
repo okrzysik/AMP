@@ -23,6 +23,7 @@
 
 #include "ampmesh/StructuredMeshHelper.h"
 #include "discretization/simpleDOF_Manager.h"
+#include "discretization/structuredFaceDOFManager.h"
 
 const size_t dofs_per_var = 10; // dofs per variable; number of axial faces
 const size_t num_dofs = 2*dofs_per_var; // total number of dofs
@@ -79,7 +80,7 @@ bool JacobianIsCorrect(boost::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobia
    return passed;
 }
 
-void Test(AMP::UnitTest *ut, const std::string exeName)
+void Test(AMP::UnitTest *ut, std::string exeName)
 {
   // create input and output file names
   std::string input_file = "input_"  + exeName;
@@ -101,9 +102,8 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
   xyFaceMesh = subchannelMesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh , 0 ) );
 
   // get dof manager
-  int DofsPerFace =  2;
-  AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
-		  AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerFace);
+  int DOFsPerFace[3]={0,0,2};
+  AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
 
   // get input and output variables
   AMP::LinearAlgebra::Variable::shared_ptr inputVariable  (new AMP::LinearAlgebra::Variable("flow"));

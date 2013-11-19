@@ -118,7 +118,7 @@ namespace AMP {
          @param [in] f : shared pointer to right hand side vector
          @param [out] u : shared pointer to approximate computed solution 
          */
-        void solve(boost::shared_ptr<AMP::LinearAlgebra::Vector> f,
+        void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             boost::shared_ptr<AMP::LinearAlgebra::Vector> u);
 
         /**
@@ -160,7 +160,7 @@ namespace AMP {
 
       protected:
 
-        void reSolveWithLU(boost::shared_ptr<AMP::LinearAlgebra::Vector> f,
+        void reSolveWithLU(boost::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             boost::shared_ptr<AMP::LinearAlgebra::Vector> u);
 
         void getFromInput(const boost::shared_ptr<AMP::Database>& db);

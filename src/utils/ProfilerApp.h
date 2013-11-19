@@ -204,12 +204,22 @@ public:
      *  timer.  This data will be combined from all timers/threads to get the memory usage
      *  of the application over time.  Combined with the trace level data, we can determine
      *  when memory is allocated and which timers are active.
-     * @param profile       Do we want to store detailed profiling data
+     * @param memory        Do we want to store detailed profiling data
      */
     void set_store_memory(bool memory=false);
 
     //! Return the current timer level
     inline int get_level( ) const { return d_level; }
+
+    /*!
+     * \brief  Function to change the behavior of timer errors
+     * \details  This function controls the behavior of the profiler when we encounter a timer
+     *   error.  The default behavior is to abort.  Timer errors include starting a timer
+     *   that is already started, or stopping a timer that is not running.
+     *   The user should only disable theses checks if they understand the behavior.  
+     * @param flag        Do we want to ignore timer errors
+     */
+    void ignore_timer_errors(bool flag=false) { d_check_timer_error = flag; }
 
 private:
 
@@ -255,6 +265,7 @@ private:
         size_t id;                          // A unique id for each timer
         std::string message;                // The message to identify the block of code
         std::string filename;               // The file containing the block of code to be timed
+        std::string path;                   // The path to the file (if availible)
         volatile store_timer_data_info *next; // Pointer to the next entry in the list
         // Constructor used to initialize key values
 		store_timer_data_info(): start_line(-1), stop_line(-1), id(0), next(NULL) {}
@@ -390,11 +401,12 @@ private:
     #endif
     
     // Misc variables
-    bool store_trace_data;          // Do we want to store trace information
-    bool store_memory_data;          // Do we want to store memory information
+    bool d_store_trace_data;        // Do we want to store trace information
+    bool d_store_memory_data;       // Do we want to store memory information
+    bool d_check_timer_error;       // Do we want to store memory information
     char d_level;                   // Level of timing to use (default is 0, -1 is disabled)
-    TIME_TYPE construct_time;       // Store when the constructor was called
-    TIME_TYPE frequency;            // Clock frequency (only used for windows)
+    TIME_TYPE d_construct_time;     // Store when the constructor was called
+    TIME_TYPE d_frequency;          // Clock frequency (only used for windows)
     double d_shift;                 // Offset to add to all trace times when saving (used to syncronize the trace data)
     size_t d_max_trace_remaining;   // The number of traces remaining to store for each thread
     size_t d_N_memory_steps;        // The number of steps we have for the memory usage

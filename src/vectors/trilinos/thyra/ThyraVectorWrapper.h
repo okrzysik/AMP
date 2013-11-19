@@ -3,6 +3,7 @@
 
 // AMP includes
 #include "vectors/Vector.h"
+#include "vectors/trilinos/thyra/ThyraVector.h"
 
 // Trilinos includes
 #include "Thyra_VectorDefaultBase_decl.hpp"
@@ -122,6 +123,8 @@ private:
 
     // Get shared_ptr to *this
     boost::shared_ptr<const ThyraVectorWrapper> shared_from_this() const;
+
+friend class ThyraVector;
 
 };
 

@@ -34,10 +34,10 @@
 #include "operators/OperatorBuilder.h"
 #include "operators/TrilinosMatrixShellOperator.h"
 
-#include "solvers/PetscKrylovSolverParameters.h"
-#include "solvers/PetscKrylovSolver.h"
-#include "solvers/PetscSNESSolverParameters.h"
-#include "solvers/PetscSNESSolver.h"
+#include "solvers/petsc/PetscKrylovSolverParameters.h"
+#include "solvers/petsc/PetscKrylovSolver.h"
+#include "solvers/petsc/PetscSNESSolverParameters.h"
+#include "solvers/petsc/PetscSNESSolver.h"
 
 #include "solvers/trilinos/TrilinosMLSolver.h"
 

@@ -5,6 +5,7 @@
 
 #include "test_Vector.h"
 #include "test_VectorTests.h"
+#include "test_VectorSelectorTests.h"
 #ifdef USE_EXT_SUNDIALS
     #include "test_SundialsVectorTests.h"
 #endif
@@ -146,6 +147,16 @@ void test_parallel_vectors_loop ( AMP::UnitTest *ut )
     VerifyVectorMakeConsistentAdd<FACTORY>( ut );
     CopyVectorConsistency<FACTORY>( ut );
 }
+
+
+template <class FACTORY>
+void test_vector_selector_loop ( AMP::UnitTest *ut )
+{
+    testAllSelectors<FACTORY>( ut );
+    test_VS_ByVariableName<FACTORY>( ut );
+    test_VS_Comm<FACTORY>( ut );
+}
+
 
 /// \endcond
 

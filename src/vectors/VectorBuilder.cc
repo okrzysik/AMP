@@ -5,11 +5,15 @@
 #include "vectors/MultiVector.h"
 #include "vectors/SimpleVector.h"
 #include "discretization/MultiDOF_Manager.h"
+#include "vectors/ManagedVector.h"
 #ifdef USE_EXT_PETSC
+    #include "vectors/petsc/PetscVector.h"
     #include "vectors/petsc/ManagedPetscVector.h"
 #endif
 #ifdef USE_EXT_TRILINOS
+    #include "vectors/trilinos/EpetraVector.h"
     #include "vectors/trilinos/EpetraVectorEngine.h"
+    #include "vectors/trilinos/ManagedEpetraVector.h"
 #endif
 
 #include <iostream>
@@ -114,6 +118,25 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
             // Create the vector
             comm.barrier();
             AMP::LinearAlgebra::Vector::shared_ptr vector = AMP::LinearAlgebra::Vector::shared_ptr( new AMP::LinearAlgebra::ManagedPetscVector(mvparams) );
+            vector->setVariable(variable);
+            comm.barrier();
+            return vector;
+        #elif defined(USE_EXT_TRILINOS)
+            boost::shared_ptr<AMP::LinearAlgebra::ManagedVectorParameters> mvparams(
+                new AMP::LinearAlgebra::ManagedVectorParameters() );
+            boost::shared_ptr<AMP::LinearAlgebra::EpetraVectorEngineParameters> eveparams(
+                new AMP::LinearAlgebra::EpetraVectorEngineParameters( DOFs->numLocalDOF(), DOFs->numGlobalDOF(), DOFs->getComm() ) );
+            comm.barrier();
+            AMP::LinearAlgebra::VectorEngine::BufferPtr t_buffer ( new AMP::LinearAlgebra::VectorEngine::Buffer( DOFs->numLocalDOF() ) );
+            AMP_ASSERT(t_buffer->size()==DOFs->numLocalDOF());
+            AMP::LinearAlgebra::VectorEngine::shared_ptr epetra_engine( new AMP::LinearAlgebra::EpetraVectorEngine( eveparams, t_buffer ) );
+            mvparams->d_Engine = epetra_engine;
+            mvparams->d_Buffer = t_buffer;
+            mvparams->d_CommList = comm_list;
+            mvparams->d_DOFManager = DOFs;
+            // Create the vector
+            comm.barrier();
+            AMP::LinearAlgebra::Vector::shared_ptr vector = AMP::LinearAlgebra::Vector::shared_ptr( new AMP::LinearAlgebra::ManagedEpetraVector(mvparams) );
             vector->setVariable(variable);
             comm.barrier();
             return vector;

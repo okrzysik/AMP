@@ -50,10 +50,10 @@ void ThyraVectorWrapper::initialize( const std::vector<AMP::LinearAlgebra::Vecto
     for (size_t i=0; i<vecs.size(); i++) {
         AMP_ASSERT(vecs[i]!=NULL);
         AMP_ASSERT(cols[i]<N_cols);
-        for (size_t j=0; j<i; j++) {
+        /*for (size_t j=0; j<i; j++) {
             AMP_ASSERT(vecs[i]!=vecs[j]);
             AMP_ASSERT(cols[i]>cols[j]);
-        }
+        }*/
     }
     // Check that the DOFs are compatible for all copies of the vector
     AMP::Discretization::DOFManager::shared_ptr dofs1 = vecs[0]->getDOFManager();
@@ -107,7 +107,7 @@ size_t ThyraVectorWrapper::numRows() const
 size_t ThyraVectorWrapper::numColumns() const
 {
     // The number of columns is the number of internal vectors
-    return d_N_cols;
+    return d_cols.size();
 }
 
 
@@ -173,20 +173,23 @@ void ThyraVectorWrapper::applyImpl(const Thyra::EOpTransp M_trans, const Thyra::
     Y_dim[1] = Y->domain()->dim();                          // Number of columns of Y
     if ( M_trans==Thyra::NOTRANS || M_trans==Thyra::CONJ ) {
         // We are computing: Y = alpha*M*X + beta*Y 
+        const ThyraVectorWrapper* y = dynamic_cast<const ThyraVectorWrapper*>(Y.get());
+        AMP_ASSERT(y!=NULL);
         AMP_ASSERT( M_dim[1]==X_dim[0] && M_dim[0]==Y_dim[0] && X_dim[1]==Y_dim[1] );
-        if ( X_dim[1]==1 ) {
-            // We are performing a series of axpby operations
-            const ThyraVectorWrapper* y = dynamic_cast<const ThyraVectorWrapper*>(Y.get());
-            AMP_ASSERT(y!=NULL);
-            AMP_ASSERT(d_cols.size()==y->d_cols.size());
-            for (size_t i=0; i<d_cols.size(); i++)
-                AMP_ASSERT(d_cols[i]==y->d_cols[i]);
-            for (size_t i=0; i<d_cols.size(); i++) {
-                double x = Thyra::get_ele(*(X.col(0)),d_cols[i]);
-                y->d_vecs[i]->axpby(alpha*x,beta,d_vecs[i]);
+        AMP_ASSERT( M_dim[1]==d_vecs.size() && Y_dim[1]==y->d_vecs.size() );
+        AMP::LinearAlgebra::Vector::shared_ptr tmp = d_vecs[0]->cloneVector();
+        for (size_t i=0; i<X_dim[1]; i++ ) {    // Loop over the columns of y
+            // We are performing a series of axpby operations:
+            //    y(:,i) = alpha*sum(M(:,j)*X(j,i)) + beta*Y(:,i)
+            // First compute tmp = sum(M(:,j)*X(j,i))
+            tmp->zero();
+            for (size_t j=0; j<d_vecs.size(); j++) {
+                AMP_ASSERT(j<d_cols.size());
+                double x = Thyra::get_ele(*(X.col(i)),d_cols[j]);
+                tmp->axpby(x,1.0,d_vecs[j]);
             }
-        } else {
-            AMP_ERROR("Not finished");
+            // Perform the final axpby
+            y->d_vecs[i]->axpby(alpha,beta,tmp);
         }
     } else if ( M_trans==Thyra::TRANS || M_trans==Thyra::CONJTRANS ) {
         // We are computing: Y = alpha*transpose(M)*X + beta*Y 
@@ -200,7 +203,7 @@ void ThyraVectorWrapper::applyImpl(const Thyra::EOpTransp M_trans, const Thyra::
             for (size_t i=0; i<M; i++) {
                 Teuchos::RCP<Thyra::VectorBase<double> > Y2 = Y->col(0);
                 size_t N2 = static_cast<size_t>( Y2->space()->dim() );
-                AMP_ASSERT(d_N_cols==N2);
+                AMP_ASSERT(d_cols.size()==N2);
                 for (size_t j=0; j<N; j++) {
                     double dot = d_vecs[j]->dot(x->d_vecs[i]);
                     double y = 0.0;
@@ -407,6 +410,7 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl( const RTOpPack::RTOpT<double>
         const Teuchos::ArrayView< const Teuchos::Ptr< RTOpPack::ReductTarget > > &reduct_objs, 
         const Teuchos::Ordinal primary_global_offset ) const
 {
+    AMP_INSIST(primary_global_offset==0,"Not programmed for a global offset yet");
     size_t n_blocks = d_vecs[0]->numberOfDataBlocks();
     std::vector<size_t> block_size(n_blocks,0);
     for (size_t i=0; i<n_blocks; i++)
@@ -415,7 +419,9 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl( const RTOpPack::RTOpT<double>
     std::vector<const ThyraVectorWrapper*> vecs_ptr = getConstPtr( block_size, multi_vecs );
     std::vector<ThyraVectorWrapper*> targ_vecs_ptr = getPtr( block_size, targ_multi_vecs );
     // Apply the operation
-    Teuchos::RCP<RTOpPack::ReductTarget> reduct_obj2 = primary_op.reduct_obj_create();
+    std::vector<Teuchos::RCP<RTOpPack::ReductTarget> > reduct_obj2(d_vecs.size());
+    for (size_t i=0; i<reduct_obj2.size(); i++)
+        reduct_obj2[i] = primary_op.reduct_obj_create();
     for (size_t k=0; k<d_vecs.size(); k++) {
         for (size_t j=0; j<n_blocks; j++) {
             std::vector<RTOpPack::ConstSubVectorView<double> >  sub_vecs(vecs_ptr.size());
@@ -432,14 +438,28 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl( const RTOpPack::RTOpT<double>
                  Teuchos::ArrayView<const RTOpPack::ConstSubVectorView<double> >(sub_vecs);
             Teuchos::ArrayView<const RTOpPack::SubVectorView<double> > targ_sub_vecs2 = 
                Teuchos::ArrayView<const RTOpPack::SubVectorView<double> >(targ_sub_vecs);
-            primary_op.apply_op( sub_vecs2, targ_sub_vecs2, reduct_obj2.ptr() );
+            primary_op.apply_op( sub_vecs2, targ_sub_vecs2, reduct_obj2[k].ptr() );
         }
     }
     // Reduce the result
-    for (int i=0; i<reduct_objs.size(); i++) {
-        RTOpPack::SPMD_all_reduce<double>( d_comm, primary_op, 1, 
-            Teuchos::tuple<const RTOpPack::ReductTarget*>(&*reduct_obj2).getRawPtr(),
-            Teuchos::tuple<RTOpPack::ReductTarget*>(&*reduct_objs[i]).getRawPtr() );
+    if ( reduct_objs.size()==0 ) {
+        // The reduce object does not exist
+    } else if ( reduct_objs.size() == (int)d_cols.size() ) {
+        // We have one reduce object per column
+        for (size_t i=0; i<reduct_obj2.size(); i++) {
+            RTOpPack::SPMD_all_reduce<double>( d_comm, primary_op, 1, 
+                Teuchos::tuple<const RTOpPack::ReductTarget*>(&*reduct_obj2[i]).getRawPtr(),
+                Teuchos::tuple<RTOpPack::ReductTarget*>(&*reduct_objs[i]).getRawPtr() );
+        }
+    } else if ( reduct_objs.size() == (int)d_N_cols ) {
+        // We have one reduce object per column
+        for (size_t i=0; i<reduct_obj2.size(); i++) {
+            RTOpPack::SPMD_all_reduce<double>( d_comm, primary_op, 1, 
+                Teuchos::tuple<const RTOpPack::ReductTarget*>(&*reduct_obj2[i]).getRawPtr(),
+                Teuchos::tuple<RTOpPack::ReductTarget*>(&*reduct_objs[d_cols[i]]).getRawPtr() );
+        }
+    } else {
+        AMP_ERROR("Not programmed yet");
     }
     // Change the vector state targ_vecs
     for (size_t i=0; i<targ_vecs_ptr.size(); i++) {
@@ -513,9 +533,10 @@ static std::vector<ThyraVectorWrapper*> getPtr( std::vector<size_t> block_size,
         ptr[i] = dynamic_cast<ThyraVectorWrapper*>( vecs[i].getRawPtr() );
         AMP_INSIST(ptr[i]!=NULL,"All vectors used in applyOpImpl must be of the type ThyraVectorWrapper");
         for (size_t j=0; j<ptr[i]->numVecs(); j++) {
-            AMP_ASSERT(ptr[i]->getVec(j)->numberOfDataBlocks()==block_size.size());
+            AMP::LinearAlgebra::Vector::const_shared_ptr tmp = ptr[i]->getVec(j);
+            AMP_ASSERT(tmp->numberOfDataBlocks()==block_size.size());
             for (size_t k=0; k<block_size.size(); k++)
-                AMP_ASSERT(block_size[k]==ptr[i]->getVec(j)->sizeOfDataBlock());
+                AMP_ASSERT(block_size[k]==tmp->sizeOfDataBlock(k));
         }
     }
     return ptr;
@@ -530,9 +551,10 @@ static std::vector<const ThyraVectorWrapper*> getConstPtr( std::vector<size_t> b
         ptr[i] = dynamic_cast<const ThyraVectorWrapper*>( vecs[i].getRawPtr() );
         AMP_INSIST(ptr[i]!=NULL,"All vectors used in applyOpImpl must be of the type ThyraVectorWrapper");
         for (size_t j=0; j<ptr[i]->numVecs(); j++) {
-            AMP_ASSERT(ptr[i]->getVec(j)->numberOfDataBlocks()==block_size.size());
+            AMP::LinearAlgebra::Vector::const_shared_ptr tmp = ptr[i]->getVec(j);
+            AMP_ASSERT(tmp->numberOfDataBlocks()==block_size.size());
             for (size_t k=0; k<block_size.size(); k++)
-                AMP_ASSERT(block_size[k]==ptr[i]->getVec(j)->sizeOfDataBlock());
+                AMP_ASSERT(block_size[k]==tmp->sizeOfDataBlock(k));
         }
     }
     return ptr;

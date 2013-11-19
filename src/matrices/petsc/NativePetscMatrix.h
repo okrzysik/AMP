@@ -53,13 +53,13 @@ namespace LinearAlgebra {
       virtual shared_ptr  cloneMatrix () const;
 
 
-      virtual Vector::shared_ptr getRightVector ();
-      virtual Vector::shared_ptr getLeftVector ();
-      virtual Discretization::DOFManager::shared_ptr  getRightDOFManager ();
-      virtual Discretization::DOFManager::shared_ptr  getLeftDOFManager ();
+      virtual Vector::shared_ptr getRightVector () const;
+      virtual Vector::shared_ptr getLeftVector () const;
+      virtual Discretization::DOFManager::shared_ptr  getRightDOFManager () const;
+      virtual Discretization::DOFManager::shared_ptr  getLeftDOFManager () const;
 
-      virtual size_t  numGlobalRows ();
-      virtual size_t  numGlobalColumns ();
+      virtual size_t  numGlobalRows () const;
+      virtual size_t  numGlobalColumns () const;
 
       virtual void  scale ( double alpha );
       virtual void  axpy ( double alpha , const Matrix &x );
@@ -76,13 +76,19 @@ namespace LinearAlgebra {
                                           int  *cols ,
                                           double  *values );
 
+      virtual void  getValuesByGlobalID ( int   num_rows ,
+                                          int   num_cols ,
+                                          int  *rows ,
+                                          int  *cols ,
+                                          double  *values ) const;
+
       virtual void getRowByGlobalID ( int row , std::vector<unsigned int> &cols , std::vector<double> &values ) const;
 
       virtual void setScalar ( double );
       virtual void setDiagonal ( const Vector::shared_ptr &in );
 
       virtual void makeConsistent ();
-      virtual Vector::shared_ptr  extractDiagonal ( Vector::shared_ptr p = Vector::shared_ptr() );
+      virtual Vector::shared_ptr  extractDiagonal ( Vector::shared_ptr p = Vector::shared_ptr() ) const;
       virtual double L1Norm () const;
 
 

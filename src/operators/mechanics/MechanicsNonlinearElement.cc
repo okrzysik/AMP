@@ -337,11 +337,13 @@ namespace Operator {
 
     xyz.resize(num_nodes);
 
+/*
     Point p1;
     for(unsigned int ijk = 0; ijk < num_nodes; ijk++) {
       p1 = d_elem->point(ijk);
       xyz[ijk] = p1;
     }
+*/
 
     for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) {
       d_materialModel->preNonlinearAssemblyGaussPointOperation();
@@ -629,12 +631,14 @@ namespace Operator {
       avgTraceTerm[i] = avgTraceTerm[i]/sumJxW;
     }//end for i
 
+/*
     double avgDivDisp = 0.0;
     for(unsigned int j = 0; j < num_nodes; j++) {
       for(int d = 0; d < 3; d++) {
         avgDivDisp += (avgTraceTerm[(3*j) + d]*elementInputVectors[Mechanics::DISPLACEMENT][(3*j) + d]);
       }//end for d
     }//end for j
+*/
 
     for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) {
       d_materialModel->preNonlinearAssemblyGaussPointOperation();
