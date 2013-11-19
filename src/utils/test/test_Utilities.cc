@@ -289,7 +289,7 @@ int main(int argc, char *argv[])
             if ( n_bytes2 > 0x80000000 && n_bytes2 < n_bytes1+0x81000000 && abs_diff(n_bytes1,n_bytes3)<20e3 ) {
                 ut.passes("getMemoryUsage correctly handles 2^31 - 2^32 bytes"); 
             } else {
-                printf("Memtest 2-4 GB failes: %e %e %e\n",n_bytes1,n_bytes2,n_bytes3);
+                std::cout<<"Memtest 2-4 GB failes: "<<n_bytes1<<" "<<n_bytes2<<" "<<n_bytes3<<std::endl;
                 ut.failure("getMemoryUsage correctly handles 2^31 - 2^32 bytes"); 
             }
         }
@@ -309,7 +309,7 @@ int main(int argc, char *argv[])
                 if ( n_bytes2 > 0x100000000 && n_bytes2 < n_bytes1+0x110000000 && abs_diff(n_bytes1,n_bytes3)<20e3 ) {
                     ut.passes("getMemoryUsage correctly handles memory > 2^32 bytes"); 
                 } else {
-                    printf("Memtest >4 GB failes: %e %e %e\n",n_bytes1,n_bytes2,n_bytes3);
+                    std::cout<<"Memtest >4 GB failes: "<<n_bytes1<<" "<<n_bytes2<<" "<<n_bytes3<<std::endl;
                     ut.expected_failure("getMemoryUsage does not handle memory > 2^32 bytes"); 
                 }
             }
