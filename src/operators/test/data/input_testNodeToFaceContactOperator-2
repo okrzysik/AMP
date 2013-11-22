@@ -1,12 +1,42 @@
 maxActiveSetIterations = 5
 useSlaveBVPOperator = TRUE
 usePetscKrylovSolver = FALSE
-myPCGmaxIters = 500
+myPCGmaxIters = 2000
 myPCGrelTol = 1.0e-10
 myPCGabsTol = 1.0e-16
 
-SlaveLoadParameter = -3.0e2
-SlaveLoadCutoff = 1.47
+MasterLoadParameter = -1.5625
+MasterLoadCutoff = 1.492
+
+maxLoadingIterations = 2
+
+NewMesh{
+  MeshName = "MainMesh"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
+
+    Mesh_1{
+        MeshName = "cube_1"
+        MeshType = "libMesh"
+        FileName = "my_brick_0025.e"
+        dim = 3
+        x_offset = 0.5
+        y_offset = 0.25
+        z_offset = 0.5
+    }
+
+    Mesh_2{
+        MeshName = "cylinder_1"
+        MeshType = "libMesh"
+        FileName = "my_cylinder_0025.e"
+        dim = 3
+        x_offset = 0.5
+        y_offset = 1.0
+        z_offset = 0.0
+    }
+
+}
 
 Mesh{
   MeshName = "MainMesh"
@@ -19,11 +49,11 @@ Mesh{
         MeshType = "AMP"
         dim = 3
         x_offset = 0.0
-        y_offset = -0.5
+        y_offset = 0.0
         z_offset = 0.0
         Generator = "cube"
-        Size = 8, 8, 8
-        Range = 0.0, 1.0, 0.0, 1.0, 0.0, 1.0
+        Size = 16, 8, 16
+        Range = 0.0, 1.0, 0.0, 0.5, 0.0, 1.0
     }
 
     Mesh_2{
@@ -34,7 +64,7 @@ Mesh{
         y_offset = 1.0
         z_offset = 0.0
         Generator = "cylinder"
-        Size = 7, 7
+        Size = 8, 16
         Range = 0.5, 0.0, 1.0
     }
 
@@ -42,10 +72,10 @@ Mesh{
 
 ContactOperator {
   name = "NodeToSegmentConstraints"
-    MasterMeshIndex = 0
-    SlaveMeshIndex = 1
-    MasterBoundaryID = 3
-    SlaveBoundaryID = 4
+    MasterMeshIndex = 1
+    SlaveMeshIndex = 0
+    MasterBoundaryID = 4
+    SlaveBoundaryID = 3
     InputVariable = "displacement"
     OutputVariable = "displacement"
 }
@@ -59,38 +89,11 @@ MasterBVPOperator {
   name = "LinearBVPOperator"
     print_info_level = 1
 
-    VolumeOperator = "MechanicsLinearFEOperator"
+    VolumeOperator = "MasterMechanicsLinearFEOperator"
     BoundaryOperator = "MasterDirichletMatrixCorrection"
 }
 
 MasterDirichletMatrixCorrection{
-  name = "DirichletMatrixCorrection"
-    print_info_level = 1
-    skip_params = FALSE
-    symmetric_correction = TRUE
-    zero_dirichlet_block = FALSE
-    skip_rhs_correction = FALSE
-    skip_rhs_add_correction = TRUE
-    number_of_ids = 1
-    id_0 = 2
-    number_of_dofs_0 = 3
-    dof_0_0 = 0
-    dof_0_1 = 1
-    dof_0_2 = 2
-    value_0_0 = 0.0
-    value_0_1 = 0.0
-    value_0_2 = 0.0
-}
-
-SlaveBVPOperator {
-  name = "LinearBVPOperator"
-    print_info_level = 1
-
-    VolumeOperator = "MechanicsLinearFEOperator"
-    BoundaryOperator = "SlaveDirichletMatrixCorrection"
-}
-
-SlaveDirichletMatrixCorrection{
   name = "DirichletMatrixCorrection"
     print_info_level = 1
     skip_params = FALSE
@@ -109,6 +112,33 @@ SlaveDirichletMatrixCorrection{
     value_0_2 = -0.0
 }
 
+SlaveBVPOperator {
+  name = "LinearBVPOperator"
+    print_info_level = 1
+
+    VolumeOperator = "SlaveMechanicsLinearFEOperator"
+    BoundaryOperator = "SlaveDirichletMatrixCorrection"
+}
+
+SlaveDirichletMatrixCorrection{
+  name = "DirichletMatrixCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    symmetric_correction = TRUE
+    zero_dirichlet_block = FALSE
+    skip_rhs_correction = FALSE
+    skip_rhs_add_correction = TRUE 
+    number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+    value_0_0 = 0.0
+    value_0_1 = 0.0
+    value_0_2 = 0.0
+}
+
 SlaveLoadOperator {
   name="DirichletVectorCorrection"
     print_info_level = 1
@@ -123,7 +153,7 @@ SlaveLoadOperator {
     value_0_0 = 5.0e2
 }
 
-MechanicsLinearFEOperator{
+MasterMechanicsLinearFEOperator{
   name = "MechanicsLinearFEOperator"
     print_info_level = 1
     reset_reuses_matrix = TRUE
@@ -139,23 +169,53 @@ MechanicsLinearFEOperator{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }
-  LocalModel = "MechanicsMaterialModel"
+  LocalModel = "MasterMechanicsMaterialModel"
 }
 
-MechanicsMaterialModel {
+MasterMechanicsMaterialModel {
   USE_MATERIALS_LIBRARY = FALSE
     Material = ""
     name="IsotropicElasticModel"
-    Youngs_Modulus = 1.0e6
+    Youngs_Modulus = 7000.0
     Poissons_Ratio = 0.3
     Default_Temperature = 0.0
     Default_Burnup = 0.0
     Default_Oxygen_Concentration = 0.0
 }
 
+SlaveMechanicsLinearFEOperator{
+  name = "MechanicsLinearFEOperator"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    isAttachedToNonlinearOperator = FALSE
+    InputVariable = "displacement"
+    OutputVariable = "displacement"
+
+    MechanicsElement {
+      name="MechanicsLinearElement"
+        USE_REDUCED_INTEGRATION = FALSE 
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
+  LocalModel = "SlaveMechanicsMaterialModel"
+}
+
+SlaveMechanicsMaterialModel {
+  USE_MATERIALS_LIBRARY = FALSE
+    Material = ""
+    name="IsotropicElasticModel"
+    Youngs_Modulus = 1.0e6
+    Poissons_Ratio = 0.45
+    Default_Temperature = 0.0
+    Default_Burnup = 0.0
+    Default_Oxygen_Concentration = 0.0
+}
+
 LinearSolver {
-  print_info_level = 10
-    max_iterations = 500
+  print_info_level = 1
+    max_iterations = 20000
     max_error = 1.0e-16
     ksp_type = "cg"
     absolute_tolerance = 1.0e-16
@@ -165,7 +225,7 @@ LinearSolver {
     pc_type = "shell"
     pc_side = "LEFT"
 
-    KSPOptions = "-ksp_monitor_true_residual -ksp_converged_reason"
+    KSPOptions = "-ksp_converged_reason"
 
     Preconditioner {
       print_info_level = 1
@@ -175,6 +235,14 @@ LinearSolver {
         relative_tolerance = 1.0e-10
         divergence_tolerance = 1.0e03
 
+        MLSolver {
+          print_info_level = 1
+            PDE_equations = 3
+            max_iterations = 1
+            max_error = 1.0e-15
+        }
+
+
         MasterSolver {
           print_info_level = 1
             max_iterations = 1
@@ -183,6 +251,22 @@ LinearSolver {
             pc_type = "none"
             pc_side = "LEFT"
             ksp_type = "preonly"
+        }
+
+        NewMasterSolver {
+          problem_type = "SA"
+            print_info_level = 1
+            PDE_equations = 3
+            max_iterations = 1
+            max_error = 1.0e-16
+        }
+
+        NewSlaveSolver {
+          problem_type = "SA"
+            print_info_level = 1
+            PDE_equations = 3
+            max_iterations = 1
+            max_error = 1.0e-16
         }
 
       SlaveSolver {

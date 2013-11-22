@@ -23,6 +23,8 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
+#include "operators/TrilinosMatrixShellOperator.h"
+#include "operators/ColumnOperator.h"
 #include "mesh_communication.h"
 
 #include "vectors/trilinos/EpetraVector.h"
@@ -32,6 +34,13 @@
 #include "solvers/trilinos/TrilinosMLSolver.h"
 
 #include "ml_include.h"
+
+void myGetRow2(void *object, int row, std::vector<unsigned int> &cols, std::vector<double> &values) {
+//    AMP::Operator::LinearOperator * op = reinterpret_cast<AMP::Operator::LinearOperator *>(object);
+    AMP::Operator::ColumnOperator * op = reinterpret_cast<AMP::Operator::ColumnOperator *>(object);
+    AMP::LinearAlgebra::Matrix::shared_ptr mat = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(op->getOperator(0))->getMatrix();
+    mat->getRowByGlobalID(row, cols, values);
+}
 
 int myMatVec(ML_Operator *data, int in_length, double in[], int out_length, double out[]) {
 
@@ -220,7 +229,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int type) {
     ML_Comm_Destroy(&comm);
   }
 
-  //Matrix-Free-2
+  //Matrix-free-2
   if(type == 2) {
     ML_set_random_seed(123456);
     std::cout<<"Matrix-Free ML Type-2: "<<std::endl;
@@ -281,6 +290,39 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int type) {
     std::cout<<std::endl;
   }
 
+  //matrix-free-3 using TrilinosMatrixShellOperator and customized getRow()
+  if(type == 3) {
+    boost::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
+    boost::shared_ptr<AMP::Operator::ColumnOperator> columnOperator(new AMP::Operator::ColumnOperator(emptyParams));
+    columnOperator->append(fusedOperator);
+
+    boost::shared_ptr<AMP::Database> matrixShellDatabase(new AMP::MemoryDatabase("MatrixShellOperator"));
+    matrixShellDatabase->putString("name", "MatShellOperator");
+    matrixShellDatabase->putInteger("print_info_level", 1);
+    boost::shared_ptr<AMP::Operator::OperatorParameters> matrixShellParams(new AMP::Operator::OperatorParameters(matrixShellDatabase));
+    boost::shared_ptr<AMP::Operator::TrilinosMatrixShellOperator> trilinosMatrixShellOperator(new
+        AMP::Operator::TrilinosMatrixShellOperator(matrixShellParams));
+    trilinosMatrixShellOperator->setNodalDofMap(NodalVectorDOF);
+    trilinosMatrixShellOperator->setGetRow(&myGetRow2);
+//    trilinosMatrixShellOperator->setOperator(fusedOperator);
+    trilinosMatrixShellOperator->setOperator(columnOperator);
+
+    mlSolver_db->putBool("USE_EPETRA", false);
+    boost::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> mlSolverParams(new AMP::Solver::TrilinosMLSolverParameters(mlSolver_db));
+    mlSolverParams->d_pOperator = trilinosMatrixShellOperator;
+    boost::shared_ptr<AMP::Solver::TrilinosMLSolver> mlSolver(new AMP::Solver::TrilinosMLSolver(mlSolverParams));
+
+    std::cout << "MatFree-3: L2 norm of residual before solve " <<std::setprecision(15)<< fusedResVec->L2Norm() << std::endl;
+
+    mlSolver->solve(fusedRhsVec, fusedSolVec);
+
+    std::cout << "MatFree-3:  solution norm: " <<std::setprecision(15)<< fusedSolVec->L2Norm() << std::endl;
+    fusedOperator->apply(fusedRhsVec, fusedSolVec, fusedResVec, 1.0, -1.0);
+    std::cout << "MatFree-3: L2 norm of residual after solve " <<std::setprecision(15)<< fusedResVec->L2Norm() << std::endl;    
+
+    std::cout<<std::endl;
+  }
+
   char outFile[200];
   sprintf(outFile, "%s-%d", exeName.c_str(), type);
   printSolution(fusedMeshAdapter, fusedSolVec, outFile);
@@ -288,8 +330,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int type) {
   ut->passes(exeName);
 }
 
+
 void loopMyTest(AMP::UnitTest *ut, std::string exeName) {
-  for(int type = 0; type < 3; type++) {
+  for(int type = 0; type < 4; type++) {
     myTest(ut, exeName, type);
   }
 }

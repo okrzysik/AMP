@@ -23,7 +23,7 @@
 #include "operators/OperatorBuilder.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/ColumnOperator.h"
-#include "operators/PetscMatrixShellOperator.h"
+#include "operators/petsc/PetscMatrixShellOperator.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
 #include "operators/mechanics/MechanicsModelParameters.h"
 #include "operators/mechanics/MechanicsMaterialModel.h"
@@ -32,8 +32,8 @@
 #include "operators/mechanics/IsotropicElasticModel.h"
 
 #include "solvers/ColumnSolver.h"
-#include "solvers/PetscKrylovSolverParameters.h"
-#include "solvers/PetscKrylovSolver.h"
+#include "solvers/petsc/PetscKrylovSolverParameters.h"
+#include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/ConstraintsEliminationSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
 
@@ -222,19 +222,19 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
                                                                                          masterElementPhysicsModel));
     columnOperator->append(masterBVPOperator);
 
-//    boost::shared_ptr<AMP::Database> masterSolver_db = columnPreconditioner_db->getDatabase("MasterSolver"); 
-//    boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> masterSolverParams(new
-//        AMP::Solver::PetscKrylovSolverParameters(masterSolver_db));
-//    masterSolverParams->d_pOperator = masterBVPOperator;
-//    masterSolverParams->d_comm = masterMeshAdapter->getComm();
-////    masterSolverParams->d_comm = globalComm;
-//    boost::shared_ptr<AMP::Solver::PetscKrylovSolver> masterSolver(new AMP::Solver::PetscKrylovSolver(masterSolverParams));
-//    columnPreconditioner->append(masterSolver);
     boost::shared_ptr<AMP::Database> masterSolver_db = columnPreconditioner_db->getDatabase("MasterSolver"); 
-    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> masterSolverParams(new AMP::Solver::SolverStrategyParameters(masterSolver_db));
+    boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> masterSolverParams(new
+        AMP::Solver::PetscKrylovSolverParameters(masterSolver_db));
     masterSolverParams->d_pOperator = masterBVPOperator;
-    boost::shared_ptr<AMP::Solver::TrilinosMLSolver> masterSolver(new AMP::Solver::TrilinosMLSolver(masterSolverParams));
+    masterSolverParams->d_comm = masterMeshAdapter->getComm();
+//    masterSolverParams->d_comm = globalComm;
+    boost::shared_ptr<AMP::Solver::PetscKrylovSolver> masterSolver(new AMP::Solver::PetscKrylovSolver(masterSolverParams));
     columnPreconditioner->append(masterSolver);
+//    boost::shared_ptr<AMP::Database> masterSolver_db = columnPreconditioner_db->getDatabase("MasterSolver"); 
+//    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> masterSolverParams(new AMP::Solver::SolverStrategyParameters(masterSolver_db));
+//    masterSolverParams->d_pOperator = masterBVPOperator;
+//    boost::shared_ptr<AMP::Solver::TrilinosMLSolver> masterSolver(new AMP::Solver::TrilinosMLSolver(masterSolverParams));
+//    columnPreconditioner->append(masterSolver);
 
 
 std::fstream masterFout;
@@ -261,9 +261,9 @@ masterFout.close();
   if (slaveMeshAdapter.get() != NULL) {
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> slaveElementPhysicsModel;
 
-//    boost::shared_ptr<AMP::Database> slaveSolver_db = columnPreconditioner_db->getDatabase("SlaveSolver"); 
-//    boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> slaveSolverParams(new
-//        AMP::Solver::PetscKrylovSolverParameters(slaveSolver_db));
+    boost::shared_ptr<AMP::Database> slaveSolver_db = columnPreconditioner_db->getDatabase("SlaveSolver"); 
+    boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> slaveSolverParams(new
+        AMP::Solver::PetscKrylovSolverParameters(slaveSolver_db));
 
     slaveBVPOperator = boost::dynamic_pointer_cast<
         AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(slaveMeshAdapter,
@@ -271,7 +271,7 @@ masterFout.close();
                                                                                          input_db,
                                                                                          slaveElementPhysicsModel));
     columnOperator->append(slaveBVPOperator);
-//    slaveSolverParams->d_pOperator = slaveBVPOperator;
+    slaveSolverParams->d_pOperator = slaveBVPOperator;
 
     slaveLoadOperator = boost::dynamic_pointer_cast<
         AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(slaveMeshAdapter, 
@@ -281,15 +281,15 @@ masterFout.close();
     AMP::LinearAlgebra::Variable::shared_ptr slaveVar = slaveBVPOperator->getOutputVariable();
     slaveLoadOperator->setVariable(slaveVar);
 
-////    slaveSolverParams->d_comm = globalComm;
-//    slaveSolverParams->d_comm = slaveMeshAdapter->getComm();
-//    boost::shared_ptr<AMP::Solver::PetscKrylovSolver> slaveSolver(new AMP::Solver::PetscKrylovSolver(slaveSolverParams));
-//    columnPreconditioner->append(slaveSolver);
-    boost::shared_ptr<AMP::Database> slaveSolver_db = columnPreconditioner_db->getDatabase("SlaveSolver"); 
-    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> slaveSolverParams(new AMP::Solver::SolverStrategyParameters(slaveSolver_db));
-    slaveSolverParams->d_pOperator = slaveBVPOperator;
-    boost::shared_ptr<AMP::Solver::TrilinosMLSolver> slaveSolver(new AMP::Solver::TrilinosMLSolver(slaveSolverParams));
+//    slaveSolverParams->d_comm = globalComm;
+    slaveSolverParams->d_comm = slaveMeshAdapter->getComm();
+    boost::shared_ptr<AMP::Solver::PetscKrylovSolver> slaveSolver(new AMP::Solver::PetscKrylovSolver(slaveSolverParams));
     columnPreconditioner->append(slaveSolver);
+//    boost::shared_ptr<AMP::Database> slaveSolver_db = columnPreconditioner_db->getDatabase("SlaveSolver"); 
+//    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> slaveSolverParams(new AMP::Solver::SolverStrategyParameters(slaveSolver_db));
+//    slaveSolverParams->d_pOperator = slaveBVPOperator;
+//    boost::shared_ptr<AMP::Solver::TrilinosMLSolver> slaveSolver(new AMP::Solver::TrilinosMLSolver(slaveSolverParams));
+//    columnPreconditioner->append(slaveSolver);
 
 std::fstream slaveFout;
 slaveFout.open("slave_pellet", std::fstream::out);
@@ -300,12 +300,6 @@ drawFacesOnBoundaryID(slaveMeshAdapter, 0, slaveFout, point_of_view, "dashed,red
 //drawVerticesOnBoundaryID(slaveMeshAdapter, 2, slaveFout, point_of_view, "red");
 slaveFout.close();
   } // end if
-
-//    boost::shared_ptr<AMP::Database> masterSolver_db = columnPreconditioner_db->getDatabase("MasterSolver"); 
-//    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> masterSolverParams(new AMP::Solver::SolverStrategyParameters(masterSolver_db));
-//    masterSolverParams->d_pOperator = columnOperator;
-//    boost::shared_ptr<AMP::Solver::TrilinosMLSolver> masterSolver(new AMP::Solver::TrilinosMLSolver(masterSolverParams));
-//    columnPreconditioner->append(masterSolver);
 
   boost::shared_ptr<AMP::Database> contactPreconditioner_db = columnPreconditioner_db->getDatabase("ContactPreconditioner"); 
   boost::shared_ptr<AMP::Solver::ConstraintsEliminationSolverParameters> contactPreconditionerParams(new 

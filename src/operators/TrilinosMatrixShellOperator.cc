@@ -67,8 +67,8 @@ int TrilinosMatrixShellOperator :: matVec(ML_Operator *data, int in_length, doub
 {
     TrilinosMatrixShellOperator* op = reinterpret_cast<TrilinosMatrixShellOperator *>(ML_Get_MyMatvecData(data));
 
-    AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector( (op->d_nodalDofMap), (op->getInputVariable()), false );
-    AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector( (op->d_nodalDofMap), (op->getOutputVariable()), false );
+    AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector( (op->d_nodalDofMap), (op->getInputVariable()), true );
+    AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector( (op->d_nodalDofMap), (op->getOutputVariable()), true );
 
     inVec->putRawData(in);
 
@@ -77,8 +77,9 @@ int TrilinosMatrixShellOperator :: matVec(ML_Operator *data, int in_length, doub
 
     double* outPtr = outVec->getRawDataBlock<double>();
     for(int i = 0; i < out_length; i++) {
-    out[i] = outPtr[i];
+      out[i] = outPtr[i];
     }
+
     return 0;
 }
 
