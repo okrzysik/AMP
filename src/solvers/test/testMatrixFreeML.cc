@@ -11,6 +11,7 @@
 #include "utils/ReadTestMesh.h"
 #include "utils/WriteSolutionToFile.h"
 
+#include "ampmesh/MultiMesh.h"
 #include "ampmesh/libmesh/initializeLibMesh.h"
 #include "ampmesh/libmesh/libMesh.h"
 #include "utils/ReadTestMesh.h"
@@ -36,10 +37,25 @@
 #include "ml_include.h"
 
 void myGetRow2(void *object, int row, std::vector<unsigned int> &cols, std::vector<double> &values) {
-//    AMP::Operator::LinearOperator * op = reinterpret_cast<AMP::Operator::LinearOperator *>(object);
-    AMP::Operator::ColumnOperator * op = reinterpret_cast<AMP::Operator::ColumnOperator *>(object);
-    AMP::LinearAlgebra::Matrix::shared_ptr mat = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(op->getOperator(0))->getMatrix();
-    mat->getRowByGlobalID(row, cols, values);
+  AMP::Operator::ColumnOperator * op = reinterpret_cast<AMP::Operator::ColumnOperator *>(object);
+  AMP::LinearAlgebra::Matrix::shared_ptr mat = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(op->getOperator(0))->getMatrix();
+  mat->getRowByGlobalID(row, cols, values);
+}
+
+void myGetRow3(void *object, int row, std::vector<unsigned int> &cols, std::vector<double> &values) {
+  AMP::Operator::ColumnOperator * op = reinterpret_cast<AMP::Operator::ColumnOperator *>(object);
+  AMP::LinearAlgebra::Matrix::shared_ptr firstMat = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(op->getOperator(0))->getMatrix();
+  AMP::LinearAlgebra::Matrix::shared_ptr secondMat = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(op->getOperator(1))->getMatrix();
+  size_t firstMatNumGlobalRows = firstMat->numGlobalRows();
+  size_t firstMatNumGlobalColumns = firstMat->numGlobalColumns();
+  if (row < firstMatNumGlobalRows) {
+    firstMat->getRowByGlobalID(row, cols, values);
+  } else {
+    secondMat->getRowByGlobalID(row - firstMatNumGlobalRows, cols, values);
+    for (size_t j = 0; j < cols.size(); ++j) {
+      cols[j] += firstMatNumGlobalColumns; 
+    } // end for j
+  } // end if
 }
 
 int myMatVec(ML_Operator *data, int in_length, double in[], int out_length, double out[]) {
@@ -330,8 +346,146 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int type) {
   ut->passes(exeName);
 }
 
+void myTest2(AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes) {
+  std::string input_file = "input_" + exeName;
+  char log_file[200];
+  int type = 4;
+  if (useTwoMeshes) {
+    type = 5;
+  } // end if
+  sprintf(log_file, "output_%s_%d", exeName.c_str(), type);
+
+  AMP::PIO::logOnlyNodeZero(log_file);
+  AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
+
+  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
+  input_db->printClassData(AMP::plog);
+  std::string mesh_file = input_db->getString("mesh_file");
+
+  boost::shared_ptr<AMP::InputDatabase> mesh_file_db(new AMP::InputDatabase("mesh_file_db"));
+  AMP::InputManager::getManager()->parseInputFile(mesh_file, mesh_file_db);
+
+  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(globalComm));
+
+  const unsigned int mesh_dim = 3;
+  boost::shared_ptr< ::Mesh > firstFusedMesh(new ::Mesh(mesh_dim));
+  boost::shared_ptr< ::Mesh > secondFusedMesh(new ::Mesh(mesh_dim));
+
+  AMP::readTestMesh(mesh_file, firstFusedMesh);
+  AMP::readTestMesh(mesh_file, secondFusedMesh);
+
+  MeshCommunication().broadcast(*(firstFusedMesh.get()));
+  MeshCommunication().broadcast(*(secondFusedMesh.get()));
+
+  firstFusedMesh->prepare_for_use(false);
+  secondFusedMesh->prepare_for_use(false);
+
+  AMP::Mesh::Mesh::shared_ptr firstMesh(new AMP::Mesh::libMesh(firstFusedMesh, "Mesh_1"));
+  AMP::Mesh::Mesh::shared_ptr secondMesh(new AMP::Mesh::libMesh(secondFusedMesh, "Mesh_2"));
+
+  std::vector<AMP::Mesh::Mesh::shared_ptr> vectorOfMeshes;
+  vectorOfMeshes.push_back(firstMesh);
+  if (useTwoMeshes) {
+    vectorOfMeshes.push_back(secondMesh);
+  } // end if
+
+  AMP::Mesh::Mesh::shared_ptr fusedMeshesAdapter(new AMP::Mesh::MultiMesh(globalComm, vectorOfMeshes));
+  std::vector<AMP::Mesh::Mesh::shared_ptr> fusedMeshes = boost::dynamic_pointer_cast<AMP::Mesh::MultiMesh>(fusedMeshesAdapter)->getMeshes();
+  fusedMeshesAdapter->setName("MultiMesh");
+  
+  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> fusedElementPhysicsModel;
+  boost::shared_ptr<AMP::Operator::LinearBVPOperator> firstFusedOperator = boost::dynamic_pointer_cast<
+      AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(fusedMeshes[0],
+                                                                                       "BVPOperator",
+                                                                                       input_db,
+                                                                                       fusedElementPhysicsModel));
+  AMP::LinearAlgebra::Variable::shared_ptr firstFusedVar = firstFusedOperator->getOutputVariable();
+  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
+  boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> firstLoadOperator = boost::dynamic_pointer_cast<
+      AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(fusedMeshes[0], 
+                                                                                               "LoadOperator", 
+                                                                                               input_db, 
+                                                                                               dummyModel));
+  firstLoadOperator->setVariable(firstFusedVar);
+
+  boost::shared_ptr<AMP::Operator::OperatorParameters> emptyOperatorParams;
+  boost::shared_ptr<AMP::Operator::ColumnOperator> fusedColumnOperator(new AMP::Operator::ColumnOperator(emptyOperatorParams));
+  fusedColumnOperator->append(firstFusedOperator);
+
+  boost::shared_ptr<AMP::Operator::ColumnOperator> loadColumnOperator(new AMP::Operator::ColumnOperator(emptyOperatorParams));
+  loadColumnOperator->append(firstLoadOperator);
+  if (useTwoMeshes) {
+    boost::shared_ptr<AMP::Operator::LinearBVPOperator> secondFusedOperator = boost::dynamic_pointer_cast<
+        AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(fusedMeshes[1],
+                                                                                         "BVPOperator",
+                                                                                         input_db,
+                                                                                         fusedElementPhysicsModel));
+    AMP::LinearAlgebra::Variable::shared_ptr secondFusedVar = secondFusedOperator->getOutputVariable();
+    boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> secondLoadOperator = boost::dynamic_pointer_cast<
+        AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(fusedMeshes[1], 
+                                                                                                 "LoadOperator", 
+                                                                                                 input_db, 
+                                                                                                 dummyModel));
+    secondLoadOperator->setVariable(secondFusedVar);
+    fusedColumnOperator->append(secondFusedOperator);
+    loadColumnOperator->append(secondLoadOperator);
+  } // end if
+
+
+  AMP::Discretization::DOFManager::shared_ptr dofManager = AMP::Discretization::simpleDOFManager::create(fusedMeshesAdapter, AMP::Mesh::Vertex, 1, 3);
+
+  AMP::LinearAlgebra::Variable::shared_ptr fusedColumnVar = fusedColumnOperator->getOutputVariable();
+  AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+  AMP::LinearAlgebra::Vector::shared_ptr fusedColumnSolVec = AMP::LinearAlgebra::createVector(dofManager, fusedColumnVar);
+  AMP::LinearAlgebra::Vector::shared_ptr fusedColumnRhsVec = fusedColumnSolVec->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr fusedColumnResVec = fusedColumnSolVec->cloneVector();
+
+  fusedColumnRhsVec->zero();
+  loadColumnOperator->apply(nullVec, nullVec, fusedColumnRhsVec, 1.0, 0.0);
+
+  std::cout<<std::endl;
+
+  size_t localSize = fusedColumnSolVec->getLocalSize();
+
+  boost::shared_ptr<AMP::Database> matrixShellDatabase(new AMP::MemoryDatabase("MatrixShellOperator"));
+  matrixShellDatabase->putString("name", "MatShellOperator");
+  matrixShellDatabase->putInteger("print_info_level", 1);
+  boost::shared_ptr<AMP::Operator::OperatorParameters> matrixShellParams(new AMP::Operator::OperatorParameters(matrixShellDatabase));
+  boost::shared_ptr<AMP::Operator::TrilinosMatrixShellOperator> trilinosMatrixShellOperator(new AMP::Operator::TrilinosMatrixShellOperator(matrixShellParams));
+  trilinosMatrixShellOperator->setNodalDofMap(dofManager);
+  if (!useTwoMeshes) {
+    trilinosMatrixShellOperator->setGetRow(&myGetRow2);
+  } else {
+    trilinosMatrixShellOperator->setGetRow(&myGetRow3);
+  } // end if
+  trilinosMatrixShellOperator->setOperator(fusedColumnOperator);
+
+
+  boost::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase("MLoptions");
+  mlSolver_db->putBool("USE_EPETRA", false);
+  boost::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> mlSolverParams(new AMP::Solver::TrilinosMLSolverParameters(mlSolver_db));
+  mlSolverParams->d_pOperator = trilinosMatrixShellOperator;
+  boost::shared_ptr<AMP::Solver::TrilinosMLSolver> mlSolver(new AMP::Solver::TrilinosMLSolver(mlSolverParams));
+
+  std::cout << "MatFree-4: L2 norm of residual before solve " <<std::setprecision(15)<< fusedColumnResVec->L2Norm() << std::endl;
+
+  mlSolver->solve(fusedColumnRhsVec, fusedColumnSolVec);
+
+  std::cout << "MatFree-4:  solution norm: " <<std::setprecision(15)<< fusedColumnSolVec->L2Norm() << std::endl;
+  fusedColumnOperator->apply(fusedColumnRhsVec, fusedColumnSolVec, fusedColumnResVec, 1.0, -1.0);
+  std::cout << "MatFree-4: L2 norm of residual after solve " <<std::setprecision(15)<< fusedColumnResVec->L2Norm() << std::endl;
+
+  std::cout<<std::endl;
+
+  ut->passes(exeName);
+}
+
+
 
 void loopMyTest(AMP::UnitTest *ut, std::string exeName) {
+  myTest2(ut, exeName, false);
+  myTest2(ut, exeName, true);
   for(int type = 0; type < 4; type++) {
     myTest(ut, exeName, type);
   }
