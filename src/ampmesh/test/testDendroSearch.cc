@@ -173,20 +173,99 @@ void run(const std::string & meshFileName,
   int rank = globalComm.getRank();
   int npes = globalComm.getSize();
 
+  int size_radius = 16, size_height = 38;
+
+  int numberOfMeshes = npes;
+  numRandomPts *= static_cast<size_t>(npes);
   // Load the mesh
   globalComm.barrier();
   double meshBeginTime = MPI_Wtime();
   boost::shared_ptr<AMP::InputDatabase> mesh_db(new AMP::InputDatabase("input_db"));
-  mesh_db->putString("MeshName", "PelletMesh");
-  mesh_db->putString("MeshType", "libMesh");
-  mesh_db->putString("FileName", meshFileName);
-  mesh_db->putInteger("dim", 3);
+  mesh_db->putString("MeshName", "PelletMeshes");
+  mesh_db->putString("MeshType", "Multimesh");
+  mesh_db->putString("MeshDatabasePrefix", "Mesh_");
+  mesh_db->putString("MeshArrayDatabasePrefix", "MeshArray_");
+if (false) {
+  mesh_db->putDatabase("MeshArray_1");
+  boost::shared_ptr<AMP::Database> meshArray_db = mesh_db->getDatabase("MeshArray_1");
+  meshArray_db->putInteger("N", numberOfMeshes);
+  meshArray_db->putString("iterator", "%i");
+  std::vector<int> meshIndices;
+  std::vector<double> x_offset, y_offset, z_offset;
+  for (int i = 0; i < numberOfMeshes; ++i) {
+    meshIndices.push_back(i);
+    x_offset.push_back(0.0);
+    y_offset.push_back(0.0);
+    z_offset.push_back(0.0105*static_cast<double>(i));
+  } // end for i
+  meshArray_db->putIntegerArray("indicies", meshIndices);
+  meshArray_db->putString("MeshName", "Pellet_%i");
+  meshArray_db->putString("MeshType", "libMesh");
+  meshArray_db->putString("FileName", meshFileName);
+  meshArray_db->putInteger("dim", 3);
+  meshArray_db->putDoubleArray("x_offset", x_offset);
+  meshArray_db->putDoubleArray("y_offset", y_offset);
+  meshArray_db->putDoubleArray("z_offset", z_offset);
+} else {
+  mesh_db->putDatabase("Mesh_1");
+  boost::shared_ptr<AMP::Database> meshArray_db = mesh_db->getDatabase("Mesh_1");
+  meshArray_db->putString("MeshName", "Cylinder_1");
+  meshArray_db->putString("MeshType", "AMP");
+  meshArray_db->putInteger("dim", 3);
+  meshArray_db->putDouble("x_offset", 0.0);
+  meshArray_db->putDouble("y_offset", 0.0);
+  meshArray_db->putDouble("z_offset", 0.0);
+  meshArray_db->putString("Generator", "cylinder");
+  std::vector<int> size;
+  if (npes == 1) {
+    size.push_back(size_radius);
+    size.push_back(size_height);
+  } else if (npes == 2) {
+    size.push_back(size_radius+5);
+    size.push_back(size_height+6);
+//    size.push_back(size_radius);
+//    size.push_back(size_height*2);
+  } else if (npes == 4) {
+    size.push_back(size_radius+9);
+    size.push_back(size_height+24);
+//    size.push_back(size_radius*2);
+//    size.push_back(size_height);
+  } else if (npes == 8) {
+    size.push_back(size_radius+16);
+    size.push_back(size_height+38);
+//    size.push_back(size_radius*2);
+//    size.push_back(size_height*2);
+  } else if (npes == 16) {
+    size.push_back(size_radius+29);
+    size.push_back(size_height+39);
+//    size.push_back(size_radius*2);
+//    size.push_back(size_height*4);
+  } else if (npes == 32) {
+    size.push_back(size_radius+48);
+    size.push_back(size_height+38);
+//    size.push_back(size_radius*4);
+//    size.push_back(size_height*2);
+  } else {
+    AMP_ASSERT(false);
+  }
+  std::vector<double> range;
+  range.push_back(0.004095);
+  range.push_back(0.0);
+  range.push_back(0.01);
+  meshArray_db->putIntegerArray("Size", size);
+  meshArray_db->putDoubleArray("Range", range);
+}
+  
+  
   boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
   meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
   globalComm.barrier();
   double meshEndTime = MPI_Wtime();
+  size_t numberGlobalVolumeElements = meshAdapter->numGlobalElements(AMP::Mesh::Volume);
+//  AMP_ASSERT(static_cast<size_t>(npes) * size_radius * size_radius * 4 * size_height == numberGlobalVolumeElements);
   if(!rank) {
+    std::cout<<"Number volume elements is "<<numberGlobalVolumeElements<<"\n";
     std::cout<<"Finished reading the mesh in "<<(meshEndTime - meshBeginTime)<<" seconds."<<std::endl;
   }
   
@@ -205,11 +284,10 @@ void run(const std::string & meshFileName,
   fout.close();
 */
   
-  drawSpacePartition(meshAdapter, point_of_view, std::cout);
-
-  std::cout<<std::flush;
-  char a;
-  std::cin>>a;
+//  drawSpacePartition(meshAdapter, point_of_view, std::cout);
+//  std::cout<<std::flush;
+//  char a;
+//  std::cin>>a;
 
   // Build the vector field
   int DOFsPerNode = 1;
@@ -342,12 +420,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   int rank = globalComm.getRank();
   int npes = globalComm.getSize();
 
-  size_t n_k = 3;
+  size_t n_k = 1;
   std::string meshFileNames[] = { "pellet_1x.e", "pellet_2x.e", "pellet_4x.e" };
   size_t meshNumElements[] = { 3705, 26146, 183210 };
 
   size_t n_j = 1;
-  size_t numRandomPts[] = { 10000, 20000, 40000, 80000, 160000 };
+  size_t numRandomPts[] = { 100000, 20000, 40000, 80000, 160000, 320000 };
 
   size_t n_i = 1;
   void (*randomPtsGenerators[])(int, size_t, std::vector<double>&) = { &genUniformPts };
@@ -361,18 +439,18 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     if (!rank) { 
       std::string fileName = prefixes[i] + "_" + suffix;
       fout.open(fileName.c_str(), std::fstream::out);
-      fout<<n_j<<"  "<<n_k<<"\n";
-      for (size_t j = 0; j < n_j; ++j) {
-        fout<<numRandomPts[j]<<"  ";
-      } // end for j
-      fout<<"\n";
-      for (size_t k = 0; k < n_k; ++k) { 
-        fout<<meshNumElements[k]<<"  ";
-      } // end for k
-      fout<<"\n";
+//      fout<<n_j<<"  "<<n_k<<"\n";
+//      for (size_t j = n_j-1; j < n_j; ++j) {
+//        fout<<numRandomPts[j]<<"  ";
+//      } // end for j
+//      fout<<"\n";
+//      for (size_t k = 0; k < n_k; ++k) { 
+//        fout<<meshNumElements[k]<<"  ";
+//      } // end for k
+//      fout<<"\n";
     } // end if
-    for (size_t j = 0; j < n_j; ++j) {
-      for (size_t k = 0; k < n_k; ++k) {
+    for (size_t j = n_j-1; j < n_j; ++j) {
+      for (size_t k = n_k-1; k < n_k; ++k) {
         std::vector<double> localTimingMeasurements;
         run(meshFileNames[k], numRandomPts[j], randomPtsGenerators[i], localTimingMeasurements);
         size_t numTimingMeasurements = localTimingMeasurements.size();

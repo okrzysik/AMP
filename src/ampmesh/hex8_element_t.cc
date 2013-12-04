@@ -164,10 +164,16 @@ void hex8_element_t::build_bounding_polyhedron() {
     tmp_triangles_ptr.push_back(new triangle_t(get_support_point(faces[4*i+3]), get_support_point(faces[4*i+0]), get_support_point(faces[4*i+2])));
 
     //this might need scaling
-    if (tmp_triangles_ptr[0]->above_point(tmp_triangles_ptr[2]->get_centroid())) {
-      assert(tmp_triangles_ptr[0]->above_point(tmp_triangles_ptr[3]->get_centroid()));
-      assert(tmp_triangles_ptr[1]->above_point(tmp_triangles_ptr[2]->get_centroid()));
-      assert(tmp_triangles_ptr[1]->above_point(tmp_triangles_ptr[3]->get_centroid()));
+    double tolerance = 0.0;
+    tolerance += compute_distance_between_two_points(get_support_point(faces[4*i+0]), get_support_point(faces[4*i+1]));
+    tolerance += compute_distance_between_two_points(get_support_point(faces[4*i+1]), get_support_point(faces[4*i+2]));
+    tolerance += compute_distance_between_two_points(get_support_point(faces[4*i+2]), get_support_point(faces[4*i+3]));
+    tolerance += compute_distance_between_two_points(get_support_point(faces[4*i+3]), get_support_point(faces[4*i+0]));
+    tolerance *= 0.25e-12;
+    if (tmp_triangles_ptr[0]->above_point(tmp_triangles_ptr[2]->get_centroid(), tolerance)) {
+      assert(tmp_triangles_ptr[0]->above_point(tmp_triangles_ptr[3]->get_centroid(), tolerance));
+      assert(tmp_triangles_ptr[1]->above_point(tmp_triangles_ptr[2]->get_centroid(), tolerance));
+      assert(tmp_triangles_ptr[1]->above_point(tmp_triangles_ptr[3]->get_centroid(), tolerance));
       // will fail if the four points are coplanar
       /*      assert(!tmp_triangles[2].above_point(tmp_triangles[0].get_centroid()));
               assert(!tmp_triangles[2].above_point(tmp_triangles[1].get_centroid()));
@@ -182,10 +188,10 @@ void hex8_element_t::build_bounding_polyhedron() {
          assert(!tmp_triangles[0].above_point(tmp_triangles[3].get_centroid()));
          assert(!tmp_triangles[1].above_point(tmp_triangles[2].get_centroid()));
          assert(!tmp_triangles[1].above_point(tmp_triangles[3].get_centroid()));*/
-      assert(tmp_triangles_ptr[2]->above_point(tmp_triangles_ptr[0]->get_centroid()));
-      assert(tmp_triangles_ptr[2]->above_point(tmp_triangles_ptr[1]->get_centroid()));
-      assert(tmp_triangles_ptr[3]->above_point(tmp_triangles_ptr[0]->get_centroid()));
-      assert(tmp_triangles_ptr[3]->above_point(tmp_triangles_ptr[1]->get_centroid()));
+      assert(tmp_triangles_ptr[2]->above_point(tmp_triangles_ptr[0]->get_centroid(), tolerance));
+      assert(tmp_triangles_ptr[2]->above_point(tmp_triangles_ptr[1]->get_centroid(), tolerance));
+      assert(tmp_triangles_ptr[3]->above_point(tmp_triangles_ptr[0]->get_centroid(), tolerance));
+      assert(tmp_triangles_ptr[3]->above_point(tmp_triangles_ptr[1]->get_centroid(), tolerance));
       bounding_polyhedron.push_back(tmp_triangles_ptr[2]);
       bounding_polyhedron.push_back(tmp_triangles_ptr[3]);
       tmp_triangles_ptr[2] = NULL;

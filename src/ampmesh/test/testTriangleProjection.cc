@@ -120,6 +120,22 @@ void test_return_status(triangle_t * t_ptr) {
 
 }
 
+void test_project_and_orthogonalize() {
+  double direction[3] = { 1.0, 0.0, 0.0 };
+  double vector[3] = { 1.0, 1.0, 1.0 };
+  double tmp[3];
+  std::copy(vector, vector+3, tmp);
+  project_vector_onto_direction(direction, tmp);
+  AMP_ASSERT( std::equal(tmp, tmp+3, direction) );
+  orthogonalize_vector_against_direction(direction, tmp);
+  AMP_ASSERT( compute_vector_norm(tmp) == 0.0 );
+  std::copy(vector, vector+3, tmp);
+  orthogonalize_vector_against_direction(direction, tmp);
+  AMP_ASSERT( compute_scalar_product(tmp, direction) == 0.0 );
+  project_vector_onto_direction(direction, tmp);
+  AMP_ASSERT( compute_vector_norm(tmp) == 0.0 );
+}
+
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   const double pi = 3.141592653589793;
   double points[9] = {
@@ -148,6 +164,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   test_project_point(&triangle);
  
   test_return_status(&triangle);
+
+  test_project_and_orthogonalize();
 
   ut->passes(exeName);
 }
