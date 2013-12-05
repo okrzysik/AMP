@@ -412,3 +412,6 @@ IF( USE_EXT_DENDRO AND USE_EXT_PETSC )
     COPY_TEST_DATA_FILE ( input_testNodeToFaceContactOperator-4bis )
     COPY_TEST_DATA_FILE ( input_testNodeToFaceContactOperator-5 )
 ENDIF()
+
+ADD_AMP_TEST_1_2_4 ( testConstraintsEliminationOperator )
+COPY_TEST_DATA_FILE ( input_testConstraintsEliminationOperator )

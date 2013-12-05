@@ -1,0 +1,148 @@
+
+Mesh {
+  MeshType = "libMesh"
+    dim = 3
+    MeshName = "TestMesh"
+    FileName = "brick.e"
+}
+
+BVPOperator {
+  name = "LinearBVPOperator"
+    print_info_level = 1
+
+    VolumeOperator = "MechanicsLinearFEOperator"
+    BoundaryOperator = "DirichletMatrixCorrection"
+}
+
+DirichletMatrixCorrection{
+  name = "DirichletMatrixCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    symmetric_correction = TRUE
+    zero_dirichlet_block = FALSE
+    skip_rhs_correction = FALSE
+    skip_rhs_add_correction = FALSE
+    number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+    value_0_0 = 2.0
+    value_0_1 = 1.0
+    value_0_2 = 0.0
+}
+
+DummyBVPOperator {
+  name = "LinearBVPOperator"
+    print_info_level = 1
+
+    VolumeOperator = "MechanicsLinearFEOperator"
+    BoundaryOperator = "DummyDirichletMatrixCorrection"
+}
+
+DummyDirichletMatrixCorrection{
+  name = "DirichletMatrixCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    symmetric_correction = TRUE
+    zero_dirichlet_block = FALSE
+    skip_rhs_correction = FALSE
+    skip_rhs_add_correction = FALSE
+    number_of_ids = 0
+}
+
+MechanicsLinearFEOperator{
+  name = "MechanicsLinearFEOperator"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    isAttachedToNonlinearOperator = FALSE
+    InputVariable = "displacement"
+    OutputVariable = "displacement"
+
+    MechanicsElement {
+      name="MechanicsLinearElement"
+        USE_REDUCED_INTEGRATION = FALSE 
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
+  LocalModel = "MechanicsMaterialModel"
+}
+
+MechanicsMaterialModel {
+  USE_MATERIALS_LIBRARY = FALSE
+    Material = ""
+    name="IsotropicElasticModel"
+    Youngs_Modulus = 1.0e6
+    Poissons_Ratio = 0.3
+}
+
+LoadOperator {
+  name="DirichletVectorCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    isAttachedToVolumeOperator = FALSE
+    setResidual = FALSE
+    valuesType = 1
+    number_of_ids = 1
+    id_0 = 1
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+    value_0_0 = 0.0
+    value_0_1 = 0.0
+    value_0_2 = 1.0e1
+}
+
+LinearSolver {
+  print_info_level = 1
+    max_iterations = 5000
+    max_error = 1.0e-16
+    ksp_type = "cg"
+    absolute_tolerance = 1.0e-16
+    relative_tolerance = 1.0e-16
+    divergence_tolerance = 1.0e03
+    uses_preconditioner = TRUE
+    pc_type = "shell"
+    pc_side = "LEFT"
+
+    KSPOptions = "-ksp_converged_reason"
+
+  Preconditioner {
+    print_info_level = 1
+      max_iterations = 1
+      max_error = 1.0e-16
+      absolute_tolerance = 1.0e-16
+      relative_tolerance = 1.0e-12
+      divergence_tolerance = 1.0e03
+
+    Solver {
+      print_info_level = 1
+        max_iterations = 1
+        max_error = 1.0e-16
+        uses_preconditioner = TRUE
+        pc_type = "none"
+        pc_side = "LEFT"
+        ksp_type = "preonly"
+    }
+
+    MLSolver {
+      print_info_level = 1
+        problem_type = "SA"
+        PDE_equations = 3
+        max_iterations = 1
+        max_error = 1.0e-16
+    }
+
+    ContactPreconditioner {
+      print_info_level = 1
+        max_iterations = 1
+        max_error = 1.0e-16
+    }
+
+  }
+
+}

@@ -294,7 +294,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   } // end if
 
   boost::shared_ptr<AMP::InputDatabase> dummyOperator_db(new AMP::InputDatabase("dummyOperator_db"));
-  boost::shared_ptr<AMP::Operator::OperatorParmeters> dummyOperatorParams(new AMP::Operator::OperatorParmeters(dummyOperator_db));
+  dummyOperator_db->putString("InputVariable", "displacement");
+  dummyOperator_db->putString("OutputVariable", "displacement");
+  boost::shared_ptr<AMP::Operator::OperatorParameters> dummyOperatorParams(new AMP::Operator::OperatorParameters(dummyOperator_db));
   boost::shared_ptr<AMP::Operator::CustomConstraintsEliminationOperator> dirichletCustomConstraintsEliminationOperator(new AMP::Operator::CustomConstraintsEliminationOperator(dummyOperatorParams));
 
   boost::shared_ptr<AMP::Database> contactPreconditioner_db = columnPreconditioner_db->getDatabase("ContactPreconditioner"); 
