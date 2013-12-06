@@ -30,7 +30,8 @@ namespace AMP {
           @param [in] params 
           */
         NodeToFaceContactOperator (const boost::shared_ptr<ContactOperatorParameters> & params)
-          : ContactOperator(params)
+          : ContactOperator(params),
+            d_ContactIsFrictionless(false)
         {
           size_t rank = d_GlobalComm.getRank();
           std::string fileName = "debug_operator_" + boost::lexical_cast<std::string>(rank);
@@ -53,6 +54,10 @@ namespace AMP {
 
         void copyMasterToSlave(AMP::LinearAlgebra::Vector::shared_ptr u); 
 
+        void setSlaveToZero(AMP::LinearAlgebra::Vector::shared_ptr u);
+
+        void addShiftToSlave(AMP::LinearAlgebra::Vector::shared_ptr u);
+
         void initialize();
 
         size_t updateActiveSet(AMP::LinearAlgebra::Vector::shared_ptr displacementFieldVector, bool skipDisplaceMesh = false);
@@ -69,6 +74,8 @@ namespace AMP {
           normalVector = & d_SlaveVerticesNormalVectors;
           surfaceTraction = & d_SlaveVerticesSurfaceTraction;
         }
+
+        void setContactIsFrictionless(bool isItReally) { d_ContactIsFrictionless = isItReally; }
 
       protected :
 
@@ -111,6 +118,8 @@ namespace AMP {
         boost::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable; /**< Input variable */
         boost::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
 
+        bool d_ContactIsFrictionless;
+
         std::fstream d_fout;
     };
 
@@ -125,9 +134,14 @@ namespace AMP {
       double d_SlaveVertexSurfaceTraction[3];
     };
 
-   struct FaceData {
-     AMP::Mesh::MeshElementID d_FaceVerticesGlobalIDs[4];
-   };
+    struct AnotherDataWithNoName {
+      double d_NormalVector[3];
+      double d_Displacement[3];
+    };
+
+    struct FaceData {
+      AMP::Mesh::MeshElementID d_FaceVerticesGlobalIDs[4];
+    };
 
   }
 }
