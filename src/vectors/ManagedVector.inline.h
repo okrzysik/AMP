@@ -170,18 +170,6 @@ namespace LinearAlgebra {
   }
 
   inline
-  void ManagedVector::putRawData ( double *in )
-  {
-    d_Engine->putRawData ( in );
-  }
-
-  inline
-  void ManagedVector::copyOutRawData ( double **in )
-  {
-    d_Engine->copyOutRawData ( in );
-  }
-
-  inline
   void ManagedVector::setToScalar(double alpha)
   {
     d_Engine->setToScalar ( alpha );

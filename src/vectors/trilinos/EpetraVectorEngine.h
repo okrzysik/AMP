@@ -146,8 +146,8 @@ private:
       double L2Norm(void) const;
       double maxNorm(void) const;
       double dot(const VectorOperations &x) const;
-      void   putRawData ( double *in );
-      void   copyOutRawData ( double **out );
+      void   putRawData ( const double *in );
+      void   copyOutRawData ( double *out ) const;
   };
 
 }

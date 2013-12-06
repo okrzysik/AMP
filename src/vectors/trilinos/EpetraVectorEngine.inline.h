@@ -101,21 +101,6 @@ inline size_t  EpetraVectorEngineParameters::endDOF ()
     return getLocalSize();
   }
 
-  inline
-  void EpetraVectorEngine::putRawData ( double *in )
-  {
-    double *p;
-    getEpetra_Vector().ExtractView ( &p );
-    std::copy ( in , in+getLocalSize() , p );
-  }
-
-  inline
-  void EpetraVectorEngine::copyOutRawData ( double **out )
-  {
-    *out = new double [ getLocalSize() ];
-    getEpetra_Vector().ExtractCopy ( *out );
-  }
-
 }
 }
 

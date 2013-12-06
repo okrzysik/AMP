@@ -892,7 +892,7 @@ class CopyVector
     public:
       static const char * get_test_name () { return "vector::copyVector"; }
 
-      static void  do_instance ( AMP::UnitTest *utils , const char *msg1 , const char *msg2 )
+      static void  run_test( AMP::UnitTest *utils )
       {
         AMP::LinearAlgebra::Vector::shared_ptr  vectora ( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr  vectorb ( VECTOR_FACTORY::getVector() );
@@ -901,28 +901,33 @@ class CopyVector
         vectora->setRandomValues ();
         vectorb->copyVector ( vectora );
         vectorc->subtract ( vectora , vectorb );
-        if ( vectorc->maxNorm() < 0.0000001 )
-          utils->passes ( msg1 );
+        if ( vectorc->maxNorm() == 0 )
+          utils->passes ( "copy vector 1" );
         else
-          utils->failure ( msg1 );
+          utils->failure ( "copy vector 1" );
+
         vectora->scale ( 100. );
         vectorc->subtract ( vectora , vectorb );
-
         double c_maxNorm = vectorc->maxNorm();
         double b_maxNorm = vectorb->maxNorm();
-        if ( c_maxNorm >= 98.999 * b_maxNorm )
-          utils->passes ( msg2 );
+        if ( fabs(c_maxNorm-99*b_maxNorm) < 1e-12*b_maxNorm )
+          utils->passes( "copy vector 2" );
         else
-          utils->failure ( msg2 );
+          utils->failure( "copy vector 2" );
+        
+        vectorb->zero();
+        double *buf = new double[vectora->getLocalSize()];
+        vectora->copyOutRawData( buf );
+        vectorb->putRawData( buf );
+        delete [] buf;
+        vectorc->subtract ( vectora , vectorb );
+        if ( vectorc->maxNorm() == 0 )
+          utils->passes ( "copy vector 3" );
+        else
+          utils->failure ( "copy vector 3" );
+
       }
 
-      static void  run_test ( AMP::UnitTest *utils )
-      {
-        do_instance ( utils , "copy vector 1" , "copy vector 2" );
-        do_instance ( utils , "copy vector 3" , "copy vector 4" );
-        do_instance ( utils , "copy vector 5" , "copy vector 6" );
-        do_instance ( utils , "copy vector 7" , "copy vector 8" );
-    }
 };
 
 

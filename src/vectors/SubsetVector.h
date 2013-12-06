@@ -54,21 +54,22 @@ public:
 
     using Vector::cloneVector;
     virtual Vector::shared_ptr  cloneVector ( Variable::shared_ptr ) const;
-    virtual size_t   numberOfDataBlocks () const;
-    virtual size_t   sizeOfDataBlock ( size_t i ) const;
-    virtual void     swapVectors ( Vector &rhs );
-    virtual void     aliasVector ( Vector &rhs );
-    virtual void     putRawData ( double * );
-    virtual size_t   getLocalSize () const;
-    virtual size_t   getGlobalSize () const;
-    virtual void     assemble () {}
+    virtual size_t numberOfDataBlocks () const;
+    virtual size_t sizeOfDataBlock ( size_t i ) const;
+    virtual void   swapVectors ( Vector &rhs );
+    virtual void   aliasVector ( Vector &rhs );
+    virtual size_t getLocalSize () const;
+    virtual size_t getGlobalSize () const;
+    virtual void   assemble () {}
 
-    virtual void     addValuesByLocalID ( int , size_t * , const double * );
-    virtual void     setValuesByLocalID ( int , size_t * , const double * );
-    virtual void     getValuesByLocalID ( int , size_t * , double *vals ) const;
-    virtual void     addLocalValuesByGlobalID ( int , size_t * , const double * );
-    virtual void     setLocalValuesByGlobalID ( int , size_t * , const double * );
-    virtual void     getLocalValuesByGlobalID ( int , size_t * , double * ) const ;
+    virtual void   addValuesByLocalID ( int , size_t * , const double * );
+    virtual void   setValuesByLocalID ( int , size_t * , const double * );
+    virtual void   getValuesByLocalID ( int , size_t * , double *vals ) const;
+    virtual void   addLocalValuesByGlobalID ( int , size_t * , const double * );
+    virtual void   setLocalValuesByGlobalID ( int , size_t * , const double * );
+    virtual void   getLocalValuesByGlobalID ( int , size_t * , double * ) const ;
+    virtual void   putRawData ( const double *in );
+    virtual void   copyOutRawData ( double *out ) const;
 
 private:
     SubsetVector  () {}

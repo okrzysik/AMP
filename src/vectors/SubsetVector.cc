@@ -113,16 +113,31 @@ size_t SubsetVector::sizeOfDataBlock ( size_t i ) const
 {
     return d_dataBlockSize[i];
 }
-void *SubsetVector::getRawDataBlockAsVoid ( size_t i )
+void* SubsetVector::getRawDataBlockAsVoid ( size_t i )
 {
     double *ptr = d_dataBlockPtr[i];
     return (void *) ptr;
-  }
-
-const void *SubsetVector::getRawDataBlockAsVoid ( size_t i ) const
+}
+const void* SubsetVector::getRawDataBlockAsVoid ( size_t i ) const
 {
     double *ptr = d_dataBlockPtr[i];
     return (const void *) ptr;
+}
+void SubsetVector::putRawData ( const double *in )
+{
+    size_t k = 0;
+    for (size_t i=0; i<d_dataBlockPtr.size(); i++) {
+        for (size_t j=0; j<d_dataBlockSize[i]; j++, k++)
+            d_dataBlockPtr[i][j] = in[k];
+    }
+}
+void SubsetVector::copyOutRawData ( double *out ) const
+{
+    size_t k = 0;
+    for (size_t i=0; i<d_dataBlockPtr.size(); i++) {
+        for (size_t j=0; j<d_dataBlockSize[i]; j++, k++)
+            out[k] = d_dataBlockPtr[i][j];
+    }
 }
 
 
@@ -226,20 +241,10 @@ void  SubsetVector::getValuesByLocalID ( int cnt , size_t *ndx ,  double *vals )
     delete [] t;
 }
 
-
-
-
-void  SubsetVector::putRawData ( double *t )
-{
-    AMP_ASSERT(d_ViewVector.get()!=NULL);
-    d_ViewVector->setLocalValuesByGlobalID ( getLocalSize() , &(d_SubsetLocalIDToViewGlobalID[0]) , t );
-}
-
 size_t SubsetVector::getLocalSize () const
 {
     return getCommunicationList ()->numLocalRows ();
 }
-
 size_t SubsetVector::getGlobalSize () const
 {
     return getCommunicationList ()->getTotalSize();

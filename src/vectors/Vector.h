@@ -316,13 +316,13 @@ public:
     /**\brief Copy data into this vector
       *\param[in] buf  Buffer to copy from
       */
-    virtual void   putRawData ( double *buf ) = 0;
+    virtual void   putRawData ( const double *buf ) = 0;
 
     /**\brief Copy data out of this vector
       *\param[out] buf  Buffer to copy to
-      *\details The Vector will allocate *buf to the appropriate length
+      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
       */
-    virtual void   copyOutRawData ( double **buf );
+    virtual void   copyOutRawData ( double *buf ) const = 0;
 
     /**\brief Number of elements "owned" by this core
       *\return  Number of entries stored contiguously on this processor
