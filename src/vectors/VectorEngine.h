@@ -101,7 +101,7 @@ namespace LinearAlgebra {
       /** \brief  Copy data into the engine's buffer
         * \param[in] in  The data to copy in
         */
-      virtual   void        putRawData ( double *in ) = 0;
+      virtual   void        putRawData ( const double *in ) = 0;
 
       /** \brief Return a contiguous block of data
         */
@@ -173,7 +173,7 @@ namespace LinearAlgebra {
         * \param[out] out The buffer to create and copy to
         * \details  The caller of this method is responsible for deleting the array *out
         */
-      virtual void copyOutRawData ( double **out ) = 0;
+      virtual void copyOutRawData ( double *out ) const = 0;
 
   };
 

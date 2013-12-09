@@ -4,6 +4,7 @@
 #include <typeinfo>
 #include <float.h>
 #include <math.h>
+#include <string.h>
 
 #include "utils/AMP_MPI.h"
 #include "utils/Utilities.h"
@@ -322,21 +323,17 @@ void  Vector::setRandomValues ( RNG::shared_ptr rng )
 void Vector::copyVector ( const Vector::const_shared_ptr &rhs )
 {
     if ( rhs->getLocalSize() != getLocalSize() )
-    {  // Another error condition
-      AMP_ERROR( "Destination vector and source vector not the same size" );
-    }
+        AMP_ERROR( "Destination vector and source vector not the same size" );
     VectorDataIterator  cur1 = begin();
     VectorDataIterator  end1 = end();
     ConstVectorDataIterator  cur2 = rhs->begin();
     while ( cur1 != end1 )
     {
-      *cur1 = *cur2;
-      ++cur1; ++cur2;
+        *cur1 = *cur2;
+        ++cur1; ++cur2;
     }
     if ( isA<DataChangeFirer>() )
-    {
-      castTo<DataChangeFirer>().fireDataChange();
-    }
+        castTo<DataChangeFirer>().fireDataChange();
     copyGhostValues ( rhs );
     // Copy the consistency state from the rhs
     *d_UpdateState = *(rhs->getUpdateStatusPtr());
@@ -347,8 +344,8 @@ void Vector::scale(double alpha)
     iterator  last = end();
     while ( curMe != last )
     {
-      *curMe *= alpha;
-      ++curMe;
+        *curMe *= alpha;
+        ++curMe;
     }
     dataChanged();
 }
@@ -361,9 +358,9 @@ void Vector::scale(double alpha, const VectorOperations &x)
     const_iterator  curRhs = t_c.begin();
     while ( curMe != last )
     {
-      *curMe = alpha * *curRhs;
-      ++curRhs;
-      ++curMe;
+        *curMe = alpha * *curRhs;
+        ++curRhs;
+        ++curMe;
     }
     dataChanged ();
 }
@@ -379,10 +376,10 @@ void Vector::add(const VectorOperations &x, const VectorOperations &y)
     const_iterator  curYRhs = t_y.begin();
     while ( curMe != last )
     {
-      *curMe = *curXRhs + *curYRhs;
-      ++curXRhs;
-      ++curYRhs;
-      ++curMe;
+        *curMe = *curXRhs + *curYRhs;
+        ++curXRhs;
+        ++curYRhs;
+        ++curMe;
     }
     dataChanged ();
 }
@@ -398,10 +395,10 @@ void Vector::subtract(const VectorOperations &x, const VectorOperations &y)
     const_iterator  curYRhs = t_y.begin();
     while ( curMe != last )
     {
-      *curMe = *curXRhs - *curYRhs;
-      ++curXRhs;
-      ++curYRhs;
-      ++curMe;
+        *curMe = *curXRhs - *curYRhs;
+        ++curXRhs;
+        ++curYRhs;
+        ++curMe;
     }
     dataChanged ();
 }
@@ -417,10 +414,10 @@ void Vector::multiply( const VectorOperations &x, const VectorOperations &y)
     const_iterator  curYRhs = t_y.begin();
     while ( curMe != last )
     {
-      *curMe = *curXRhs * *curYRhs;
-      ++curXRhs;
-      ++curYRhs;
-      ++curMe;
+        *curMe = *curXRhs * *curYRhs;
+        ++curXRhs;
+        ++curYRhs;
+        ++curMe;
     }
     dataChanged ();
 }
@@ -436,10 +433,10 @@ void Vector::divide( const VectorOperations &x, const VectorOperations &y)
     const_iterator  curYRhs = t_y.begin();
     while ( curMe != last )
     {
-      *curMe = *curXRhs / *curYRhs;
-      ++curXRhs;
-      ++curYRhs;
-      ++curMe;
+        *curMe = *curXRhs / *curYRhs;
+        ++curXRhs;
+        ++curYRhs;
+        ++curMe;
     }
     dataChanged ();
 }
@@ -452,9 +449,9 @@ void Vector::reciprocal(const VectorOperations &x)
     const_iterator  curRhs = t_c.begin();
     while ( curMe != last )
     {
-      *curMe = 1. / *curRhs;
-      ++curRhs;
-      ++curMe;
+        *curMe = 1. / *curRhs;
+        ++curRhs;
+        ++curMe;
     }
     dataChanged ();
 }
@@ -470,10 +467,10 @@ void Vector::linearSum(double alpha, const VectorOperations &x, double beta, con
     const_iterator  curYRhs = t_y.begin();
     while ( curMe != last )
     {
-      *curMe = alpha * *curXRhs + beta * *curYRhs;
-      ++curXRhs;
-      ++curYRhs;
-      ++curMe;
+        *curMe = alpha * *curXRhs + beta * *curYRhs;
+        ++curXRhs;
+        ++curYRhs;
+        ++curMe;
     }
     dataChanged ();
 }
@@ -489,10 +486,10 @@ void Vector::axpy(double alpha, const VectorOperations &x, const VectorOperation
     const_iterator  curYRhs = t_y.begin();
     while ( curMe != last )
     {
-      *curMe = alpha * *curXRhs + *curYRhs;
-      ++curXRhs;
-      ++curYRhs;
-      ++curMe;
+        *curMe = alpha * *curXRhs + *curYRhs;
+        ++curXRhs;
+        ++curYRhs;
+        ++curMe;
     }
     dataChanged ();
 }
@@ -505,9 +502,9 @@ void Vector::axpby(double alpha, double beta, const VectorOperations &x)
     const_iterator  curXRhs = t_x.begin();
     while ( curMe != last )
     {
-      *curMe = alpha * *curXRhs + beta * *curMe;
-      ++curXRhs;
-      ++curMe;
+        *curMe = alpha * *curXRhs + beta * *curMe;
+        ++curXRhs;
+        ++curMe;
     }
     dataChanged ();
 }
@@ -520,9 +517,9 @@ void Vector::abs(const VectorOperations &x)
     const_iterator  curXRhs = t_x.begin();
     while ( curMe != last )
     {
-      *curMe = fabs ( *curXRhs );
-      ++curXRhs;
-      ++curMe;
+        *curMe = fabs ( *curXRhs );
+        ++curXRhs;
+        ++curMe;
     }
     dataChanged ();
 }

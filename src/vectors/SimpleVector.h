@@ -105,7 +105,8 @@ namespace LinearAlgebra {
         */
       virtual void getLocalValuesByGlobalID ( int num , size_t *indices , double *vals ) const;
       virtual void assemble();
-      virtual void   putRawData ( double *in );
+      virtual void putRawData ( const double *in );
+      virtual void copyOutRawData ( double *out ) const;
       virtual size_t getLocalSize() const;
       virtual size_t getGlobalSize() const;
       virtual void *getRawDataBlockAsVoid ( size_t i );

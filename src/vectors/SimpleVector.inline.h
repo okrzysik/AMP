@@ -130,13 +130,6 @@ void SimpleVector::assemble()
 
 
 inline
-void   SimpleVector::putRawData ( double *in )
-{
-    std::copy ( in , in + d_Data.size() , d_Data.begin() );
-}
-
-
-inline
 size_t SimpleVector::getLocalSize() const
 {
     return d_Data.size();

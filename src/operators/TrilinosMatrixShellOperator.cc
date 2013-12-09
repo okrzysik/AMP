@@ -67,6 +67,9 @@ int TrilinosMatrixShellOperator :: matVec(ML_Operator *data, int in_length, doub
 {
     TrilinosMatrixShellOperator* op = reinterpret_cast<TrilinosMatrixShellOperator *>(ML_Get_MyMatvecData(data));
 
+    AMP_ASSERT(in_length==out_length);
+    AMP_ASSERT((int)op->d_nodalDofMap->numLocalDOF()==out_length);
+
     AMP::LinearAlgebra::Vector::shared_ptr inVec = AMP::LinearAlgebra::createVector( (op->d_nodalDofMap), (op->getInputVariable()), true );
     AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector( (op->d_nodalDofMap), (op->getOutputVariable()), true );
 
@@ -75,10 +78,7 @@ int TrilinosMatrixShellOperator :: matVec(ML_Operator *data, int in_length, doub
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     (op->d_operator)->apply(nullVec, inVec, outVec, 1.0, 0.0);
 
-    double* outPtr = outVec->getRawDataBlock<double>();
-    for(int i = 0; i < out_length; i++) {
-      out[i] = outPtr[i];
-    }
+    outVec->copyOutRawData(out);
 
     return 0;
 }
@@ -127,8 +127,9 @@ void TrilinosMatrixShellOperator :: getColumn(int column, std::vector<unsigned i
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     d_operator->apply(nullVec, inVec, outVec, 1.0, 0.0);
 
-    size_t outLength = outVec->getGlobalSize();
-    double* outPtr = outVec->getRawDataBlock<double>();
+    size_t outLength = outVec->getLocalSize();
+    double* outPtr = new double[outLength];
+    outVec->copyOutRawData(outPtr);
 
     rows.clear();
     values.clear();
@@ -138,6 +139,7 @@ void TrilinosMatrixShellOperator :: getColumn(int column, std::vector<unsigned i
             values.push_back(outPtr[i]);
         }
     }
+    delete [] outPtr;
 }
 
 

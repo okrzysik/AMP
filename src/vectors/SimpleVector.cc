@@ -118,6 +118,19 @@ double SimpleVector::dot(const VectorOperations &rhs ) const
 
 
 /****************************************************************
+* Copy raw data                                                 *
+****************************************************************/
+void SimpleVector::putRawData ( const double *in )
+{
+    std::copy( in, in + d_Data.size(), d_Data.begin() );
+}
+void SimpleVector::copyOutRawData ( double *out ) const
+{
+    std::copy( d_Data.begin(), d_Data.end(), out );
+}
+
+
+/****************************************************************
 * Scale the vector and set to scalar                            *
 ****************************************************************/
 void SimpleVector::setToScalar(double alpha)
@@ -132,23 +145,24 @@ void SimpleVector::scale(double alpha, const VectorOperations &x)
     const_iterator curx = x.castTo<Vector>().begin();
     while ( cur != end() )
     {
-      (*cur) = alpha * (*curx);
-      ++cur;
-      ++curx;
+        (*cur) = alpha * (*curx);
+        ++cur;
+        ++curx;
     }
 }
 void SimpleVector::scale(double alpha)
 {
     for ( iterator cur = begin() ; cur != end() ; ++cur )
     {
-      (*cur) *= alpha;
+(       *cur) *= alpha;
     }
 }
 
 
 
-  void SimpleVector::add(const VectorOperations &x, const VectorOperations &y)
-  {
+
+void SimpleVector::add(const VectorOperations &x, const VectorOperations &y)
+{
     const_iterator curx , cury;
     iterator cur;
     curx = x.castTo<Vector>().begin();
@@ -156,13 +170,13 @@ void SimpleVector::scale(double alpha)
     cur = begin();
     while ( cur != end() )
     {
-      (*cur) = (*curx) + (*cury );
-      ++curx; ++cury; ++cur;
+        (*cur) = (*curx) + (*cury );
+        ++curx; ++cury; ++cur;
     }
-  }
+}
 
-  void SimpleVector::subtract(const VectorOperations &x, const VectorOperations &y)
-  {
+void SimpleVector::subtract(const VectorOperations &x, const VectorOperations &y)
+{
     const_iterator curx , cury; 
     iterator cur;
     curx = x.castTo<Vector>().begin();
@@ -170,13 +184,13 @@ void SimpleVector::scale(double alpha)
     cur = begin();
     while ( cur != end() )
     {
-      (*cur) = (*curx) - (*cury );
-      ++curx; ++cury; ++cur;
+        (*cur) = (*curx) - (*cury );
+        ++curx; ++cury; ++cur;
     }
-  }
+}
 
-  void SimpleVector::multiply( const VectorOperations &x, const VectorOperations &y)
-  {
+void SimpleVector::multiply( const VectorOperations &x, const VectorOperations &y)
+{
     const_iterator curx , cury;
     iterator cur;
     curx = x.castTo<Vector>().begin();
@@ -184,13 +198,13 @@ void SimpleVector::scale(double alpha)
     cur = begin();
     while ( cur != end() )
     {
-      (*cur) = (*curx) * (*cury );
-      ++curx; ++cury; ++cur;
+        (*cur) = (*curx) * (*cury );
+        ++curx; ++cury; ++cur;
     }
-  }
+}
 
-  void SimpleVector::divide( const VectorOperations &x, const VectorOperations &y)
-  {
+void SimpleVector::divide( const VectorOperations &x, const VectorOperations &y)
+{
     const_iterator curx , cury;
     iterator cur;
     curx = x.castTo<Vector>().begin();
@@ -198,26 +212,26 @@ void SimpleVector::scale(double alpha)
     cur = begin();
     while ( cur != end() )
     {
-      (*cur) = (*curx) / (*cury );
-      ++curx; ++cury; ++cur;
+        (*cur) = (*curx) / (*cury );
+        ++curx; ++cury; ++cur;
     }
-  }
+}
 
-  void SimpleVector::reciprocal(const VectorOperations &x)
-  {
+void SimpleVector::reciprocal(const VectorOperations &x)
+{
     iterator cur = begin();
     const_iterator curx = x.castTo<Vector>().begin();
     while ( cur != end() )
     {
-      (*cur) = 1. / (*curx);
-      ++cur;
-      ++curx;
+        (*cur) = 1. / (*curx);
+        ++cur;
+        ++curx;
     }
-  }
+}
 
-  void SimpleVector::linearSum(double alpha, const VectorOperations &x,
-                      double beta, const VectorOperations &y)
-  {
+void SimpleVector::linearSum(double alpha, const VectorOperations &x,
+                  double beta, const VectorOperations &y)
+{
     const_iterator curx , cury;
     iterator cur;
     curx = x.castTo<Vector>().begin();
@@ -225,13 +239,13 @@ void SimpleVector::scale(double alpha)
     cur = begin();
     while ( cur != end() )
     {
-      (*cur) = alpha * (*curx) + beta * (*cury);
-      ++curx; ++cury; ++cur;
+        (*cur) = alpha * (*curx) + beta * (*cury);
+        ++curx; ++cury; ++cur;
     }
-  }
+}
 
-  void SimpleVector::axpy(double alpha, const VectorOperations &x, const VectorOperations &y)
-  {
+void SimpleVector::axpy(double alpha, const VectorOperations &x, const VectorOperations &y)
+{
     const_iterator curx , cury;
     iterator cur;
     curx = x.castTo<Vector>().begin();
@@ -239,35 +253,35 @@ void SimpleVector::scale(double alpha)
     cur = begin();
     while ( cur != end() )
     {
-      (*cur) = alpha * (*curx) + (*cury);
-      ++curx; ++cury; ++cur;
+        (*cur) = alpha * (*curx) + (*cury);
+        ++curx; ++cury; ++cur;
     }
-  }
+}
 
-  void SimpleVector::axpby(double alpha, double beta, const VectorOperations &x)
-  {
+void SimpleVector::axpby(double alpha, double beta, const VectorOperations &x)
+{
     const_iterator curx;
     iterator cur;
     curx = x.castTo<Vector>().begin();
     cur = begin();
     while ( cur != end() )
     {
-      (*cur) = alpha * (*curx) + beta * (*cur);
-      ++curx; ++cur;
+        (*cur) = alpha * (*curx) + beta * (*cur);
+        ++curx; ++cur;
     }
-  }
+}
 
-  void SimpleVector::abs(const VectorOperations &x)
-  {
+void SimpleVector::abs(const VectorOperations &x)
+{
     iterator cur = begin();
     const_iterator curx = x.castTo<Vector>().begin();
     while ( cur != end() )
     {
-      (*cur) = fabs (*curx);
-      ++cur;
-      ++curx;
+        (*cur) = fabs (*curx);
+        ++cur;
+        ++curx;
     }
-  }
+}
 
 
 }
