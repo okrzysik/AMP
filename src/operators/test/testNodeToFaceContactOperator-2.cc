@@ -298,6 +298,48 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   dummyOperator_db->putString("OutputVariable", "displacement");
   boost::shared_ptr<AMP::Operator::OperatorParameters> dummyOperatorParams(new AMP::Operator::OperatorParameters(dummyOperator_db));
   boost::shared_ptr<AMP::Operator::CustomConstraintsEliminationOperator> dirichletCustomConstraintsEliminationOperator(new AMP::Operator::CustomConstraintsEliminationOperator(dummyOperatorParams));
+  std::vector<size_t> dofIndices;
+  std::vector<double> dirichletValues;
+  AMP::Mesh::MeshIterator it = masterMeshAdapter->getIterator(AMP::Mesh::Vertex);
+//  AMP::Mesh::MeshIterator it = masterMeshAdapter->getBoundaryIDIterator(AMP::Mesh::Vertex, 4);
+  AMP::Mesh::MeshIterator it_begin = it.begin();
+  AMP::Mesh::MeshIterator it_end = it.end();
+  std::vector<double> coord;
+  std::vector<size_t> dof;
+  double const epsilon = 1.0e-10;
+  size_t count = 0;
+  for(it = it_begin; it != it_end; ++it) {
+    coord = it->coord();
+    dispDofManager->getDOFs(it->globalID(), dof);
+    if (fabs(coord[1] - 1.5) < epsilon) {
+      dofIndices.push_back(dof[0]);
+      dirichletValues.push_back(0.0);
+      std::cout<<++count<<" ("<<coord[0]<<", "<<coord[1]<<", "<<coord[2]<<") x \n";
+      if (fabs(coord[2] - 0.5) < epsilon) {
+        dofIndices.push_back(dof[2]);
+        dirichletValues.push_back(0.0);
+        std::cout<<++count<<" ("<<coord[0]<<", "<<coord[1]<<", "<<coord[2]<<") z \n";
+      } // end if
+    } else if((fabs(coord[0] - 0.5) < epsilon) 
+           && (fabs(coord[1] - 1.0) < epsilon) 
+           && (fabs(coord[2] - 0.5) < epsilon)) {
+        std::cout<<++count<<" ("<<coord[0]<<", "<<coord[1]<<", "<<coord[2]<<") x \n";
+        std::cout<<++count<<" ("<<coord[0]<<", "<<coord[1]<<", "<<coord[2]<<") z \n";
+        dofIndices.push_back(dof[0]);
+        dofIndices.push_back(dof[2]);
+        dirichletValues.push_back(0.0);
+        dirichletValues.push_back(0.0);
+    } // end if
+  } // end for
+  dirichletCustomConstraintsEliminationOperator->initialize(dofIndices, dirichletValues);
+  boost::shared_ptr<AMP::InputDatabase> dirichletSolver_db(new AMP::InputDatabase("DirichletSolver"));
+  dirichletSolver_db->putInteger("print_info_level", 1);
+  dirichletSolver_db->putInteger("max_iterations", 1);
+  dirichletSolver_db->putDouble("max_error", 1.0e-16);
+  boost::shared_ptr<AMP::Solver::ConstraintsEliminationSolverParameters> dirichletSolverParams(new AMP::Solver::ConstraintsEliminationSolverParameters(dirichletSolver_db));
+  dirichletSolverParams->d_pOperator = dirichletCustomConstraintsEliminationOperator;
+  boost::shared_ptr<AMP::Solver::ConstraintsEliminationSolver> dirichletCustomConstraintsEliminationSolver(new AMP::Solver::ConstraintsEliminationSolver(dirichletSolverParams));
+  columnPreconditioner->append(dirichletCustomConstraintsEliminationSolver);
 
   boost::shared_ptr<AMP::Database> contactPreconditioner_db = columnPreconditioner_db->getDatabase("ContactPreconditioner"); 
   boost::shared_ptr<AMP::Solver::ConstraintsEliminationSolverParameters> contactPreconditionerParams(new 
@@ -479,11 +521,13 @@ columnRhsVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
   } // end if
 
   // get d
+  dirichletCustomConstraintsEliminationOperator->addShiftToSlave(columnSolVec);
   contactOperator->addShiftToSlave(columnSolVec);
 
   // compute - Kd
   AMP::LinearAlgebra::Vector::shared_ptr rhsCorrectionVec = createVector(dispDofManager, columnVar, split);
   columnOperator->apply(nullVec, columnSolVec, rhsCorrectionVec, -1.0, 0.0);
+  columnOperator->append(dirichletCustomConstraintsEliminationOperator);
   columnOperator->append(contactOperator);
 
   // f = f - Kd
@@ -491,15 +535,20 @@ columnRhsVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
   // f^m = f^m + C^T f^s
   // f^s = 0
+  dirichletCustomConstraintsEliminationOperator->addSlaveToMaster(columnRhsVec);
+  dirichletCustomConstraintsEliminationOperator->setSlaveToZero(columnRhsVec);
   contactOperator->addSlaveToMaster(columnRhsVec);
   contactOperator->setSlaveToZero(columnRhsVec);
 
   // u_s = C u_m
+  dirichletCustomConstraintsEliminationOperator->copyMasterToSlave(columnSolVec);
   contactOperator->copyMasterToSlave(columnSolVec);
 
   linearSolver->solve(columnRhsVec, columnSolVec);
 
   // u^s = C u^m + d
+  dirichletCustomConstraintsEliminationOperator->copyMasterToSlave(columnSolVec);
+  dirichletCustomConstraintsEliminationOperator->addShiftToSlave(columnSolVec);
   contactOperator->copyMasterToSlave(columnSolVec);
   contactOperator->addShiftToSlave(columnSolVec);
 

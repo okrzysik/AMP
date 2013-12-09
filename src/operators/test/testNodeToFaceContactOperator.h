@@ -1,4 +1,5 @@
-void rotateMesh(AMP::Mesh::Mesh::shared_ptr mesh);
+#include "ampmesh/latex_visualization_tools.h"
+#include "ampmesh/euclidean_geometry_tools.h"
 
 
 void rotateMesh(AMP::Mesh::Mesh::shared_ptr mesh) {
@@ -89,6 +90,8 @@ void computeStressTensor(AMP::Mesh::Mesh::shared_ptr mesh, AMP::LinearAlgebra::V
       temperatureField->getDOFManager()->getDOFs(volumeVerticesGlobalIDs, temperatureIndices);
       AMP_ASSERT(temperatureIndices.size() == 8);
       temperatureField->getValuesByGlobalID(8, &(temperatureIndices[0]), &(temperatureValues[0]));
+    } else {
+      std::fill(temperatureValues, temperatureValues+8, referenceTemperature);
     } // end if
 
     double strainTensor[6];
