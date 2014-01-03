@@ -117,6 +117,7 @@ protected :
     static int d_iInstance_id;
 
     AMP::Mesh::Mesh::shared_ptr d_Mesh;
+double tmp;
 
 private :
 
