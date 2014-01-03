@@ -658,6 +658,31 @@ void hex8_element_t::compute_strain_tensor(double const *x, double const *u, dou
   } // end for i
 }
 
+void hex8_element_t::compute_rotation_tensor(double const *x, double const *u, double *omega) {
+  // ,x ,y ,z
+  double nabla_phi[24];
+  get_basis_functions_derivatives(x, nabla_phi);
+  double J[9], invJ[9], tmp[3];
+  compute_jacobian_matrix(x, J);
+  compute_inverse_3_by_3_matrix(J, invJ);
+  for (unsigned int i = 0; i < 8; ++i) {
+    tmp[0] = nabla_phi[0*8+i];
+    tmp[1] = nabla_phi[1*8+i];
+    tmp[2] = nabla_phi[2*8+i];
+    // apply transpose inverse jacobian matrix
+    nabla_phi[0*8+i] = invJ[0] * tmp[0] + invJ[3] * tmp[1] + invJ[6] * tmp[2];
+    nabla_phi[1*8+i] = invJ[1] * tmp[0] + invJ[4] * tmp[1] + invJ[7] * tmp[2];
+    nabla_phi[2*8+i] = invJ[2] * tmp[0] + invJ[5] * tmp[1] + invJ[8] * tmp[2];
+  } // end for i
+  std::fill(omega, omega+3, 0.0);
+  for (unsigned int i = 0; i < 8; ++i) {
+    // yz xz xy
+    omega[0] += u[3*i+1] * nabla_phi[2*8+i] - u[3*i+2] * nabla_phi[1*8+i];
+    omega[1] += u[3*i+0] * nabla_phi[2*8+i] - u[3*i+2] * nabla_phi[0*8+i];
+    omega[2] += u[3*i+0] * nabla_phi[1*8+i] - u[3*i+1] * nabla_phi[0*8+i];
+  } // end for i
+}
+
 void compute_constitutive_matrix(double const E, double const nu, double * C) {
   double const K = E / (3.0 * (1.0 - (2.0 * nu)));
   double const G = E / (2.0 * (1.0 + nu));

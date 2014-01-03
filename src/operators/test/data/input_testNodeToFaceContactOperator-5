@@ -5,15 +5,9 @@ OuterRadius = 0.5
 ThermalConductivity = 0.125
 
 maxThermalLoadingIterations = 3
-
 maxActiveSetIterations = 3
-usePetscKrylovSolver = TRUE
-myPCGmaxIters = 500
-myPCGrelTol = 1.0e-10
-myPCGabsTol = 1.0e-16
 
-SlaveLoadParameter = -3.0e2
-SlaveLoadCutoff = 1.47
+useML = TRUE
 
 Mesh {
   MeshName = "MainMesh"
@@ -226,6 +220,15 @@ LinearSolver {
         absolute_tolerance = 1.0e-16
         relative_tolerance = 1.0e-10
         divergence_tolerance = 1.0e03
+
+        MLSolver {
+          print_info_level = 1
+            problem_type = "SA"
+            PDE_equations = 3
+            max_iterations = 1
+            max_error = 1.0e-16
+            prec_type = "MGV"
+        }
 
       DummySolver {
         print_info_level = 1

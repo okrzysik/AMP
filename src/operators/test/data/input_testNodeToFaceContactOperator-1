@@ -3,6 +3,9 @@ maxActiveSetIterations = 20
 loadParameterX = 1.0e1
 loadParameterZ = 1.0e2
 
+useML = TRUE
+matrixFree = FALSE
+
 Mesh{
   MeshName = "MainMesh"
     MeshType = "Multimesh"
@@ -42,6 +45,7 @@ ContactOperator {
     SlaveBoundaryID = 4
     InputVariable = "displacement"
     OutputVariable = "displacement"
+ContactIsFrictionless = TRUE
 }
 
 MatrixShellOperator {
@@ -222,12 +226,11 @@ LinearSolver {
         divergence_tolerance = 1.0e03
 
       MLSolver {
-        print_info_level = 10
-          max_iterations = 10
+        print_info_level = 1
+          max_iterations = 1
           max_error = 1.0e-16
           PDE_equations = 3
           max_levels = 10
-USE_EPETRA = FALSE
       }
 
       MasterSolver {

@@ -56,6 +56,8 @@ namespace AMP {
 
         void getActiveSet(std::vector<AMP::Mesh::MeshElementID> const * & activeSet) const { activeSet = & d_ActiveSet; }
 
+        std::vector<AMP::Mesh::MeshElementID> const & getActiveSet() const { return d_ActiveSet; }
+
         virtual void initialize() = 0;
 
         virtual size_t updateActiveSet(AMP::LinearAlgebra::Vector::shared_ptr displacementFieldVector, bool skipDisplaceMesh) = 0;

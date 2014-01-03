@@ -23,6 +23,7 @@
 #include "operators/OperatorBuilder.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/ColumnOperator.h"
+#include "operators/TrilinosMatrixShellOperator.h"
 #include "operators/petsc/PetscMatrixShellOperator.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
 #include "operators/mechanics/MechanicsModelParameters.h"
@@ -33,8 +34,9 @@
 #include "operators/mechanics/IsotropicElasticModel.h"
 
 #include "solvers/ColumnSolver.h"
-#include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/ConstraintsEliminationSolver.h"
+#include "solvers/petsc/PetscKrylovSolver.h"
+#include "solvers/trilinos/TrilinosMLSolver.h"
 
 #include "utils/ReadTestMesh.h"
 
@@ -155,6 +157,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   bottomPelletCladContactOperator->initialize();
   topPelletCladContactOperator->initialize();
   
+  bool useML = input_db->getBoolWithDefault("useML", false);
   // Build the BVP operators
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> bottomPelletBVPOperator;
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> topPelletBVPOperator;
@@ -210,12 +213,21 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
                                                                                                                                    cladElementPhysicsModel));
     columnOperator->append(cladBVPOperator);
 
-    boost::shared_ptr<AMP::Database> cladSolver_db = columnPreconditioner_db->getDatabase("DummySolver"); 
-    boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> cladSolverParams(new AMP::Solver::PetscKrylovSolverParameters(cladSolver_db));
-    cladSolverParams->d_pOperator = cladBVPOperator;
-    cladSolverParams->d_comm = cladMeshAdapter->getComm();
-    boost::shared_ptr<AMP::Solver::PetscKrylovSolver> cladSolver(new AMP::Solver::PetscKrylovSolver(cladSolverParams));
-    columnPreconditioner->append(cladSolver);
+    if (useML) {
+      boost::shared_ptr<AMP::Database> cladSolver_db = columnPreconditioner_db->getDatabase("MLSolver"); 
+      boost::shared_ptr<AMP::Solver::SolverStrategyParameters> cladSolverParams(new AMP::Solver::SolverStrategyParameters(cladSolver_db));
+      cladSolverParams->d_pOperator = cladBVPOperator;
+      boost::shared_ptr<AMP::Solver::TrilinosMLSolver> cladSolver(new AMP::Solver::TrilinosMLSolver(cladSolverParams));
+      columnPreconditioner->append(cladSolver);
+    } else {
+      boost::shared_ptr<AMP::Database> cladSolver_db = columnPreconditioner_db->getDatabase("DummySolver"); 
+      boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> cladSolverParams(new AMP::Solver::PetscKrylovSolverParameters(cladSolver_db));
+      cladSolverParams->d_pOperator = cladBVPOperator;
+      cladSolverParams->d_comm = cladMeshAdapter->getComm();
+      boost::shared_ptr<AMP::Solver::PetscKrylovSolver> cladSolver(new AMP::Solver::PetscKrylovSolver(cladSolverParams));
+      columnPreconditioner->append(cladSolver);
+   } // end if
+
   } // end if
 
 
@@ -542,7 +554,7 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     std::vector<double> const * bottomPelletTopPelletSlaveVerticesSurfaceTraction;
     bottomPelletTopPelletContactOperator->getSlaveVerticesNormalVectorAndSurfaceTraction(bottomPelletTopPelletSlaveVerticesNormalVector, bottomPelletTopPelletSlaveVerticesSurfaceTraction);
     AMP_ASSERT( bottomPelletTopPelletSlaveVerticesSurfaceTraction->size() == 3*bottomPelletTopPelletSizeOfActiveSetBeforeUpdate);
-    AMP_ASSERT( bottomPelletTopPelletSlaveVerticesNormalVector->size() == 3*bottomPelletTopPelletSizeOfActiveSetBeforeUpdate);
+    AMP_ASSERT( bottomPelletTopPelletSlaveVerticesNormalVector->size() == 3*bottomPelletTopPelletSizeOfActiveSetAfterUpdate);
     surfaceTractionVec->setLocalValuesByGlobalID(3*bottomPelletTopPelletSizeOfActiveSetBeforeUpdate, &(bottomPelletTopPelletActiveSetDispDOFsIndicesBeforeUpdate[0]), &((*bottomPelletTopPelletSlaveVerticesSurfaceTraction)[0]));
     normalVectorVec->setLocalValuesByGlobalID(3*bottomPelletTopPelletSizeOfActiveSetBeforeUpdate, &(bottomPelletTopPelletActiveSetDispDOFsIndicesBeforeUpdate[0]), &((*bottomPelletTopPelletSlaveVerticesNormalVector)[0]));
 
@@ -558,7 +570,7 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     std::vector<double> const * bottomPelletCladSlaveVerticesSurfaceTraction;
     bottomPelletCladContactOperator->getSlaveVerticesNormalVectorAndSurfaceTraction(bottomPelletCladSlaveVerticesNormalVector, bottomPelletCladSlaveVerticesSurfaceTraction);
     AMP_ASSERT( bottomPelletCladSlaveVerticesSurfaceTraction->size() == 3*bottomPelletCladSizeOfActiveSetBeforeUpdate);
-    AMP_ASSERT( bottomPelletCladSlaveVerticesNormalVector->size() == 3*bottomPelletCladSizeOfActiveSetBeforeUpdate);
+    AMP_ASSERT( bottomPelletCladSlaveVerticesNormalVector->size() == 3*bottomPelletCladSizeOfActiveSetAfterUpdate);
     surfaceTractionVec->setLocalValuesByGlobalID(3*bottomPelletCladSizeOfActiveSetBeforeUpdate, &(bottomPelletCladActiveSetDispDOFsIndicesBeforeUpdate[0]), &((*bottomPelletCladSlaveVerticesSurfaceTraction)[0]));
     normalVectorVec->setLocalValuesByGlobalID(3*bottomPelletCladSizeOfActiveSetBeforeUpdate, &(bottomPelletCladActiveSetDispDOFsIndicesBeforeUpdate[0]), &((*bottomPelletCladSlaveVerticesNormalVector)[0]));
 
@@ -574,7 +586,7 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     std::vector<double> const * topPelletCladSlaveVerticesSurfaceTraction;
     topPelletCladContactOperator->getSlaveVerticesNormalVectorAndSurfaceTraction(topPelletCladSlaveVerticesNormalVector, topPelletCladSlaveVerticesSurfaceTraction);
     AMP_ASSERT( topPelletCladSlaveVerticesSurfaceTraction->size() == 3*topPelletCladSizeOfActiveSetBeforeUpdate);
-    AMP_ASSERT( topPelletCladSlaveVerticesNormalVector->size() == 3*topPelletCladSizeOfActiveSetBeforeUpdate);
+    AMP_ASSERT( topPelletCladSlaveVerticesNormalVector->size() == 3*topPelletCladSizeOfActiveSetAfterUpdate);
     surfaceTractionVec->setLocalValuesByGlobalID(3*topPelletCladSizeOfActiveSetBeforeUpdate, &(topPelletCladActiveSetDispDOFsIndicesBeforeUpdate[0]), &((*topPelletCladSlaveVerticesSurfaceTraction)[0]));
     normalVectorVec->setLocalValuesByGlobalID(3*topPelletCladSizeOfActiveSetBeforeUpdate, &(topPelletCladActiveSetDispDOFsIndicesBeforeUpdate[0]), &((*topPelletCladSlaveVerticesNormalVector)[0]));
 
