@@ -587,7 +587,7 @@ void Test(AMP::UnitTest *ut, const std::string& exeName)
         SolVec->setValueByGlobalID(gapDofs[0], w_scale*1.0);
      }
   }
-  NUL_USE(gapFaces);
+  NULL_USE(gapFaces);
 
   // apply the operator
   subchannelOperator->setFrozenVector(FrozenVec);
