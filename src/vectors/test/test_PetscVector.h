@@ -62,41 +62,51 @@ class  PetscViewFactory
 template <typename MANAGED_FACTORY>
 class  SimplePetscVectorFactory
 {
-  public:
+public:
     typedef  AMP::LinearAlgebra::Vector                               vector;
 
     static AMP::LinearAlgebra::Vector::shared_ptr getNativeVector()
     {
-      AMP::LinearAlgebra::Vector::shared_ptr  t = getManagedVector();
-      Vec  ans;
-      AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
-      VecCreate ( globalComm.getCommunicator(), &ans );
-      VecSetSizes ( ans , t->getLocalSize() , PETSC_DECIDE );
-      VecSetFromOptions ( ans );
-      boost::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams( 
-        new AMP::LinearAlgebra::NativePetscVectorParameters( ans, true ) );
-      npvParams->d_Deleteable = true;
-      AMP::LinearAlgebra::Vector::shared_ptr retVal ( new AMP::LinearAlgebra::NativePetscVector ( npvParams ) );
-      retVal->setVariable ( AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "petsc vector" ) ) );
-      return retVal;
+        AMP::LinearAlgebra::Vector::shared_ptr  t = getManagedVector();
+        size_t localSize = t->getLocalSize();
+        Vec  ans;
+        AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
+        VecCreate( globalComm.getCommunicator(), &ans );
+        VecSetSizes( ans, localSize, PETSC_DECIDE );
+        VecSetFromOptions( ans );
+        PetscInt N;
+        VecGetSize(ans,&N);
+        AMP_ASSERT(N==(int)(globalComm.getSize()*localSize));
+        int a , b;
+        VecGetOwnershipRange ( ans, &a, &b );
+        AMP_ASSERT(b-a==(int)localSize);
+        boost::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams( 
+            new AMP::LinearAlgebra::NativePetscVectorParameters( ans, true ) );
+        npvParams->d_Deleteable = true;
+        boost::shared_ptr<AMP::LinearAlgebra::NativePetscVector> retVal( new AMP::LinearAlgebra::NativePetscVector( npvParams ) );
+        retVal->setVariable ( AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable( "petsc vector" ) ) );
+        return retVal;
     }
 
-    static void  destroyNativeVector ( AMP::LinearAlgebra::NativePetscVector &rhs ) { 
+    static void  destroyNativeVector ( AMP::LinearAlgebra::NativePetscVector &rhs ) 
+    { 
         #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
-            VecDestroy ( rhs.getVec() ); 
+            VecDestroy( rhs.getVec() ); 
         #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
-            VecDestroy ( &rhs.getVec() ); 
+            VecDestroy( &rhs.getVec() ); 
         #else
             #error Not programmed for this version yet
         #endif
     }
 
     static void  destroyNativeVector ( AMP::LinearAlgebra::Vector::shared_ptr rhs )
-    {  destroyNativeVector ( *boost::dynamic_pointer_cast<AMP::LinearAlgebra::NativePetscVector> ( rhs ) ); }
+    {
+        destroyNativeVector ( *boost::dynamic_pointer_cast<AMP::LinearAlgebra::NativePetscVector> ( rhs ) ); 
+    }
 
     static AMP::LinearAlgebra::Vector::shared_ptr getManagedVector()
     {
-      return MANAGED_FACTORY::getVector();
+        return MANAGED_FACTORY::getVector();
     }
 };
 

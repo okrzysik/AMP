@@ -677,11 +677,6 @@ void ManagedPetscVector::initPetsc ()
     d_petscVec->data = this;
     d_petscVec->petscnative = PETSC_FALSE;
 
-  // First, replace the mapping info with magic.
-    //    d_petscVector->map->n = this->getLocalSize();
-    //    d_petscVector->map->N = this->getGlobalSize();
-    //    d_petscVector->map->bs = 1;
-
     reset_vec_ops ( d_petscVec );
 
 #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
@@ -689,6 +684,8 @@ void ManagedPetscVector::initPetsc ()
     PetscMapSetBlockSize(d_petscVec->map, 1);
     PetscMapSetSize(d_petscVec->map, this->getGlobalSize());
     PetscMapSetLocalSize(d_petscVec->map, this->getLocalSize());
+    d_petscVec->map->rstart = static_cast<PetscInt>(this->getDOFManager()->beginDOF());
+    d_petscVec->map->rend   = static_cast<PetscInt>(this->getDOFManager()->endDOF());
 #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
     PetscLayoutSetBlockSize(d_petscVec->map, 1);
     PetscLayoutSetSize(d_petscVec->map, this->getGlobalSize());
