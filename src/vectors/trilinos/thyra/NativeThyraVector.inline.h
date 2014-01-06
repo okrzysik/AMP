@@ -53,12 +53,11 @@ inline void NativeThyraVector::getValuesByLocalID ( int numVals , size_t *ndx , 
 }
 
 
-inline void NativeThyraVector::copyOutRawData ( double **out )
+inline void NativeThyraVector::copyOutRawData ( double *out ) const
 {
-    *out = new double [getLocalSize()];
-    std::copy ( getRawDataBlock<double> ( 0 ) ,
-                getRawDataBlock<double> ( 0 ) + getLocalSize() ,
-                *out );
+    std::copy( getRawDataBlock<double> ( 0 ) ,
+               getRawDataBlock<double> ( 0 ) + getLocalSize() ,
+               out );
 }
 
 

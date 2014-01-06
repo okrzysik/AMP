@@ -393,7 +393,7 @@ bool JacobianIsCorrect(
    return passed;
 }
 
-void Test(AMP::UnitTest *ut, const std::string exeName)
+void Test(AMP::UnitTest *ut, const std::string& exeName)
 {
   // create input and output file names
   std::string input_file = "input_"  + exeName;
@@ -587,6 +587,7 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
         SolVec->setValueByGlobalID(gapDofs[0], w_scale*1.0);
      }
   }
+  NUL_USE(gapFaces);
 
   // apply the operator
   subchannelOperator->setFrozenVector(FrozenVec);
@@ -766,8 +767,10 @@ void Test(AMP::UnitTest *ut, const std::string exeName)
                                               elements_by_globalID,
                                               variables_by_globalID);
 
-  if (passed_known_test) ut->passes(exeName+": known value test");
-  else ut->failure(exeName+": known residual test");
+  if (passed_known_test) 
+     ut->passes(exeName+": known value test");
+  else 
+     ut->failure(exeName+": known residual test");
 }
 
 int main(int argc, char *argv[])

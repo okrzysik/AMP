@@ -125,7 +125,7 @@ void drawFacesOnBoundaryID(AMP::Mesh::Mesh::shared_ptr meshAdapter, int boundary
       boundaryIterator_end = boundaryIterator.end();
   std::vector<AMP::Mesh::MeshElement> faceVertices;
   std::vector<double> faceVertexCoordinates;
-  double faceData[12];
+  double faceData[12]={0.0};
   double const * faceDataPtr[4] = { faceData, faceData+3, faceData+6, faceData+9 };
 
   os<<std::setprecision(6)<<std::fixed;
@@ -269,8 +269,8 @@ if (false) {
     std::cout<<"Finished reading the mesh in "<<(meshEndTime - meshBeginTime)<<" seconds."<<std::endl;
   }
   
-  double const point_of_view[3] = { 1.0, 1.0, 1.0 };
-/*
+/*  double const point_of_view[3] = { 1.0, 1.0, 1.0 };
+
   std::fstream fout;
   std::string file_name;
   file_name = "outer_surface_" + meshFileName;
@@ -422,7 +422,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   size_t n_k = 1;
   std::string meshFileNames[] = { "pellet_1x.e", "pellet_2x.e", "pellet_4x.e" };
-  size_t meshNumElements[] = { 3705, 26146, 183210 };
+//  size_t meshNumElements[] = { 3705, 26146, 183210 };
 
   size_t n_j = 1;
   size_t numRandomPts[] = { 100000, 20000, 40000, 80000, 160000, 320000 };

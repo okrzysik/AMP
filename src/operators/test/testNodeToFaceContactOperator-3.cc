@@ -24,7 +24,7 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
 #include "operators/ColumnOperator.h"
-#include "operators/PetscMatrixShellOperator.h"
+#include "operators/petsc/PetscMatrixShellOperator.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
 #include "operators/mechanics/MechanicsModelParameters.h"
 #include "operators/mechanics/MechanicsMaterialModel.h"
@@ -32,10 +32,10 @@
 #include "operators/contact/NodeToFaceContactOperator.h"
 
 #include "solvers/ColumnSolver.h"
-#include "solvers/PetscKrylovSolverParameters.h"
-#include "solvers/PetscKrylovSolver.h"
-#include "solvers/PetscSNESSolverParameters.h"
-#include "solvers/PetscSNESSolver.h"
+#include "solvers/petsc/PetscKrylovSolverParameters.h"
+#include "solvers/petsc/PetscKrylovSolver.h"
+#include "solvers/petsc/PetscSNESSolverParameters.h"
+#include "solvers/petsc/PetscSNESSolver.h"
 #include "solvers/ConstraintsEliminationSolver.h"
 
 #include "utils/ReadTestMesh.h"

@@ -9,9 +9,12 @@ extern "C"{
 #include "petscsys.h"
 
 
+// Macro to cast the petsc vector y to an AMP ManagedPetscVector x
+#define PETSC_RECAST(x,y)  AMP::LinearAlgebra::ManagedPetscVector *x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( y->data )
+
+
 
 // Overridden Petsc functions!
-PetscErrorCode _AMP_setvalues(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode){ AMP_ERROR( "20 Not implemented" ); return 0; }
 PetscErrorCode _AMP_setvaluesblocked(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode){ AMP_ERROR( "31 Not implemented" ); return 0; }
 PetscErrorCode _AMP_view(Vec,PetscViewer){ AMP_ERROR( "32 Not implemented" ); return 0; }
 PetscErrorCode _AMP_placearray(Vec,const PetscScalar*) { AMP_ERROR( "33 Not implemented" ); return 0; }   /* place data array */
@@ -22,7 +25,6 @@ PetscErrorCode _AMP_setvalueslocal(Vec,PetscInt,const PetscInt *,const PetscScal
 
 PetscErrorCode _AMP_getvalues(Vec,PetscInt,const PetscInt[],PetscScalar[]) { AMP_ERROR( "52 Not implemented" ); return 0; }
 
-#define PETSC_RECAST(x,y)  AMP::LinearAlgebra::ManagedPetscVector *x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> ( y->data )
 
 PetscErrorCode _AMP_assemblybegin(Vec) { return 0; }
 PetscErrorCode _AMP_assemblyend(Vec) { return 0; }
@@ -38,6 +40,30 @@ PetscErrorCode _AMP_load(Vec,PetscViewer) { AMP_ERROR( "48 Not implemented" ); r
 #else
     #error Not programmed for this version of petsc
 #endif
+
+
+// Inserts or adds values into certain locations of a vector.
+PetscErrorCode _AMP_setvalues( Vec px, PetscInt ni, const PetscInt ix[], const PetscScalar y[], InsertMode iora )
+{ 
+    PETSC_RECAST(x,px);
+    size_t *indices = new size_t[ni];
+    double *vals = new double[ni];
+    for (PetscInt i=0; i<ni; i++) {
+        indices[i] = static_cast<size_t>(ix[i]);
+        vals[i] = static_cast<double>(y[i]);
+    }
+    if ( iora==INSERT_VALUES ) {
+        x->setValuesByGlobalID( ni, indices, vals );
+    } else if ( iora==ADD_VALUES ) {
+        x->addValuesByGlobalID( ni, indices, vals );
+    } else {
+        AMP_ERROR("Invalid option for InsertMode");
+    }
+    delete [] indices;
+    delete [] vals;
+    return 0; 
+}
+
 
 
 // This function makes no sense wrt the PETSc interface VecShift ( Vec , PetscScalar );

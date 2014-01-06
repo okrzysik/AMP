@@ -274,7 +274,7 @@ std::cout<<" ;\n";
         std::vector<AMP::Mesh::MeshElementID>::iterator activeSetIterator = d_ActiveSet.begin();
         for (size_t i = 0; i < nActiveSlaveVerticesBeforeUpdate; ++i) {
           double nDotT = compute_scalar_product(&(d_SlaveVerticesNormalVectors[3*i]), &(d_SlaveVerticesSurfaceTraction[3*i]));
-          std::vector<double> slaveVertexCoordinates = d_Mesh->getElement(*activeSetIterator).coord();
+//          std::vector<double> slaveVertexCoordinates = d_Mesh->getElement(*activeSetIterator).coord();
 //          d_fout<<i<<"  "<<std::setprecision(15)<<"n.t = "<<nDotT<<"  "<<"f = "<<*masterFacesLocalIndicesIterator<<"  ";
 //          d_fout<<" n = ( "
 //            <<d_SlaveVerticesNormalVectors[3*i+0]<<" , "

@@ -57,7 +57,7 @@ Vector::shared_ptr NativeThyraVector::cloneVector(const Variable::shared_ptr var
 }
 
 
-void NativeThyraVector::putRawData ( double *in )
+void NativeThyraVector::putRawData( const double *in )
 {
     AMP_ERROR( "not implemented" );
 }

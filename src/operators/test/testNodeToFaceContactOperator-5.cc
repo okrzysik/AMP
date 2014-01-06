@@ -303,7 +303,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   columnRhsVec->zero();
 
   AMP::LinearAlgebra::Vector::shared_ptr activeSetVec = sigma_eff->cloneVector();
-  AMP::LinearAlgebra::Vector::shared_ptr suckItVec = sigma_eff->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr suctionVec = sigma_eff->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr surfaceTractionVec = columnSolVec->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr normalVectorVec = columnSolVec->cloneVector();
 
@@ -339,7 +339,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     siloWriter->registerVector(oldSolVec, meshAdapter, AMP::Mesh::Vertex, "Error");
     siloWriter->registerVector(surfaceTractionVec, meshAdapter, AMP::Mesh::Vertex, "Traction");
     siloWriter->registerVector(normalVectorVec, meshAdapter, AMP::Mesh::Vertex, "Normal");
-    siloWriter->registerVector(suckItVec, meshAdapter, AMP::Mesh::Vertex, "Suction");
+    siloWriter->registerVector(suctionVec, meshAdapter, AMP::Mesh::Vertex, "Suction");
     siloWriter->registerVector(contactShiftVec, meshAdapter, AMP::Mesh::Vertex, "Shift");
     char outFileName[256];
     sprintf(outFileName, "TATA_%d", 0);
@@ -532,11 +532,9 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     nChangesInActiveSet += bottomPelletCladContactOperator->updateActiveSet(columnSolVec);
     nChangesInActiveSet += topPelletCladContactOperator->updateActiveSet(columnSolVec);
 
-    suckItVec->zero();
+    suctionVec->zero();
     surfaceTractionVec->zero();
     normalVectorVec->zero();
-
-    size_t const bottomPelletTopPelletSizeOfActiveSetAfterUpdate = bottomPelletTopPelletPointerToActiveSet->size();
 
     std::vector<double> const * bottomPelletTopPelletSlaveVerticesNormalVector;
     std::vector<double> const * bottomPelletTopPelletSlaveVerticesSurfaceTraction;
@@ -550,9 +548,7 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     for (size_t kk = 0; kk < bottomPelletTopPelletSizeOfActiveSetBeforeUpdate; ++kk) {
       bottomPelletTopPelletSurfaceTractionDOTnormalVector[kk] = - compute_scalar_product(&((*bottomPelletTopPelletSlaveVerticesSurfaceTraction)[3*kk]), &((*bottomPelletTopPelletSlaveVerticesNormalVector)[3*kk]));
     } // end for kk
-    suckItVec->setLocalValuesByGlobalID(bottomPelletTopPelletSizeOfActiveSetBeforeUpdate, &(bottomPelletTopPelletActiveSetTempDOFsIndicesBeforeUpdate[0]), &(bottomPelletTopPelletSurfaceTractionDOTnormalVector[0]));
-//
-    size_t const bottomPelletCladSizeOfActiveSetAfterUpdate = bottomPelletCladPointerToActiveSet->size();
+    suctionVec->setLocalValuesByGlobalID(bottomPelletTopPelletSizeOfActiveSetBeforeUpdate, &(bottomPelletTopPelletActiveSetTempDOFsIndicesBeforeUpdate[0]), &(bottomPelletTopPelletSurfaceTractionDOTnormalVector[0]));
 
     std::vector<double> const * bottomPelletCladSlaveVerticesNormalVector;
     std::vector<double> const * bottomPelletCladSlaveVerticesSurfaceTraction;
@@ -566,9 +562,7 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     for (size_t kk = 0; kk < bottomPelletCladSizeOfActiveSetBeforeUpdate; ++kk) {
       bottomPelletCladSurfaceTractionDOTnormalVector[kk] = - compute_scalar_product(&((*bottomPelletCladSlaveVerticesSurfaceTraction)[3*kk]), &((*bottomPelletCladSlaveVerticesNormalVector)[3*kk]));
     } // end for kk
-    suckItVec->setLocalValuesByGlobalID(bottomPelletCladSizeOfActiveSetBeforeUpdate, &(bottomPelletCladActiveSetTempDOFsIndicesBeforeUpdate[0]), &(bottomPelletCladSurfaceTractionDOTnormalVector[0]));
-//
-    size_t const topPelletCladSizeOfActiveSetAfterUpdate = topPelletCladPointerToActiveSet->size();
+    suctionVec->setLocalValuesByGlobalID(bottomPelletCladSizeOfActiveSetBeforeUpdate, &(bottomPelletCladActiveSetTempDOFsIndicesBeforeUpdate[0]), &(bottomPelletCladSurfaceTractionDOTnormalVector[0]));
 
     std::vector<double> const * topPelletCladSlaveVerticesNormalVector;
     std::vector<double> const * topPelletCladSlaveVerticesSurfaceTraction;
@@ -582,7 +576,7 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     for (size_t kk = 0; kk < topPelletCladSizeOfActiveSetBeforeUpdate; ++kk) {
       topPelletCladSurfaceTractionDOTnormalVector[kk] = - compute_scalar_product(&((*topPelletCladSlaveVerticesSurfaceTraction)[3*kk]), &((*topPelletCladSlaveVerticesNormalVector)[3*kk]));
     } // end for kk
-    suckItVec->setLocalValuesByGlobalID(topPelletCladSizeOfActiveSetBeforeUpdate, &(topPelletCladActiveSetTempDOFsIndicesBeforeUpdate[0]), &(topPelletCladSurfaceTractionDOTnormalVector[0]));
+    suctionVec->setLocalValuesByGlobalID(topPelletCladSizeOfActiveSetBeforeUpdate, &(topPelletCladActiveSetTempDOFsIndicesBeforeUpdate[0]), &(topPelletCladSurfaceTractionDOTnormalVector[0]));
     
 
 oldSolVec->subtract(columnSolVec, oldSolVec);

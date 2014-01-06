@@ -56,7 +56,7 @@ void myGetRow(void *object, int row, std::vector<unsigned int> &cols, std::vecto
 //  AMP::LinearAlgebra::Matrix::shared_ptr masterMatrix = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(op->getOperator(0))->getMatrix();
 //  AMP::LinearAlgebra::Matrix::shared_ptr slaveMatrix = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(op->getOperator(1))->getMatrix();
   size_t masterMatrixNumberGlobalRows = masterMatrix->numGlobalRows();
-  size_t masterMatrixNumberGlobalColumns = masterMatrix->numGlobalColumns();
+//  size_t masterMatrixNumberGlobalColumns = masterMatrix->numGlobalColumns();
 //  size_t slaveMatrixNumberGlobalRows = slaveMatrix->numGlobalRows();
 //  size_t slaveMatrixNumberGlobalColumns = slaveMatrix->numGlobalColumns();
 

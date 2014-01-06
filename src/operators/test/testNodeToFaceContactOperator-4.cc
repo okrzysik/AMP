@@ -23,7 +23,7 @@
 #include "operators/OperatorBuilder.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/ColumnOperator.h"
-#include "operators/PetscMatrixShellOperator.h"
+#include "operators/petsc/PetscMatrixShellOperator.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
 #include "operators/mechanics/MechanicsModelParameters.h"
 #include "operators/mechanics/MechanicsMaterialModel.h"
@@ -32,7 +32,7 @@
 #include "operators/contact/NodeToFaceContactOperator.h"
 
 #include "solvers/ColumnSolver.h"
-#include "solvers/PetscKrylovSolver.h"
+#include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/ConstraintsEliminationSolver.h"
 
 #include "utils/ReadTestMesh.h"

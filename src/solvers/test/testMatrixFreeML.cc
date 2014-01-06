@@ -171,7 +171,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int type)
 
     std::cout<<std::endl;
 
-    size_t localSize = fusedSolVec->getLocalSize();
+    const size_t localSize = fusedSolVec->getLocalSize();
+    NULL_USE(localSize);
 
     //Matrix-based
     if(type == 0) {
@@ -455,8 +456,6 @@ void myTest2(AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes) {
     loadColumnOperator->apply(nullVec, nullVec, fusedColumnRhsVec, 1.0, 0.0);
 
     std::cout<<std::endl;
-
-    size_t localSize = fusedColumnSolVec->getLocalSize();
 
     boost::shared_ptr<AMP::Database> matrixShellDatabase(new AMP::MemoryDatabase("MatrixShellOperator"));
     matrixShellDatabase->putString("name", "MatShellOperator");

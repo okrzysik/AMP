@@ -981,35 +981,36 @@ class VerifyPointwiseDividePetscVector
 template <typename VECTOR_FACTORY>
 class VerifySqrtPetscVector
 {
-    public:
-      static const char * get_test_name () { return "PETSc VecSqrt test"; }
+public:
+    static const char * get_test_name () { return "PETSc VecSqrt test"; }
 
-      static void  run_test ( AMP::UnitTest *utils )
-      {
+    static void  run_test ( AMP::UnitTest *utils )
+    {
+        AMP::LinearAlgebra::Vector::shared_ptr  vectora ( VECTOR_FACTORY::getNativeVector() );
+
+        vectora->setRandomValues();
+
+        AMP::LinearAlgebra::Vector::shared_ptr  vectorb ( VECTOR_FACTORY::getManagedVector() );
+        vectorb->copyVector ( vectora );
+
+        Vec  veca, vecb;
+        veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+        vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
         #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
-          AMP::LinearAlgebra::Vector::shared_ptr  vectora ( VECTOR_FACTORY::getNativeVector() );
-
-          vectora->setRandomValues();
-
-          AMP::LinearAlgebra::Vector::shared_ptr  vectorb ( VECTOR_FACTORY::getManagedVector() );
-          vectorb->copyVector ( vectora );
-
-          Vec  veca, vecb;
-          veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-          vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-          checkPetscError<VECTOR_FACTORY> ( utils , VecSqrt ( veca ) );
-          checkPetscError<VECTOR_FACTORY> ( utils , VecSqrt ( vecb ) );
-          bool equal = vectora->equals ( vectorb );
-          if ( equal )
-            utils->passes ( "Vector square root passes" );
-          else
-            utils->failure ( "Vector square root fails" );
+            checkPetscError<VECTOR_FACTORY>( utils, VecSqrt( veca ) );
+            checkPetscError<VECTOR_FACTORY>( utils, VecSqrt( vecb ) );
         #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
-          utils->expected_failure ( "Vector square root does not exist" );
+            checkPetscError<VECTOR_FACTORY>( utils, VecSqrtAbs( veca ) );
+            checkPetscError<VECTOR_FACTORY>( utils, VecSqrtAbs( vecb ) );
         #else
-          #error Not programmed for this version yet
+            #error Not programmed for this version yet
         #endif
-      }
+        bool equal = vectora->equals ( vectorb );
+        if ( equal )
+            utils->passes ( "Vector square root passes" );
+        else
+            utils->failure ( "Vector square root fails" );
+    }
 };
 
 
