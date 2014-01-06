@@ -219,11 +219,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     AMP::pout << "Final Solution Norm: " << finalSolutionNorm << std::endl;
     AMP::pout << "Final Rhs Norm: "      << finalRhsNorm      << std::endl;
 
-    if( fabs(finalResidualNorm) > 1e-9 )
+    if( fabs(finalResidualNorm) > 1e-8 )
         ut->failure("the Final Residual is larger than the tolerance");
     if( !AMP::Utilities::approx_equal( 45431.3, solVec->L2Norm(), 1e-5) )
         ut->failure("the Final Solution Norm has changed.");
-    if( !AMP::Utilities::approx_equal( initialRhsNorm, finalRhsNorm, 1e-12) )
+    if( !AMP::Utilities::approx_equal( initialRhsNorm, finalRhsNorm, 1e-9) )
         ut->failure("the Final Rhs Norm has changed.");
 
     #ifdef USE_EXT_SILO

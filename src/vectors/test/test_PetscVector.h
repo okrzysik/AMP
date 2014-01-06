@@ -76,7 +76,7 @@ public:
         VecSetFromOptions( ans );
         PetscInt N;
         VecGetSize(ans,&N);
-        AMP_ASSERT(N==(int)(globalComm.getSize()*localSize));
+        AMP_ASSERT(N==(int)(t->getGlobalSize()));
         int a , b;
         VecGetOwnershipRange ( ans, &a, &b );
         AMP_ASSERT(b-a==(int)localSize);

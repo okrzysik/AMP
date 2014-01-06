@@ -250,7 +250,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     AMP::pout<<"Final Solution Norm: "<< std::setprecision(10) <<finalSolutionNorm <<std::endl;
 
     expectedVal = 4.561204386863e4;
-    if( fabs(finalResidualNorm) > 1e-9 )
+    if( fabs(finalResidualNorm) > 1e-8 )
         ut->failure("the Final Residual is larger than the tolerance");
     if( !AMP::Utilities::approx_equal( expectedVal, finalSolutionNorm, 1e-7) ) {
         ut->failure("the Final Residual Norm has changed."); }
@@ -263,14 +263,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
         siloWriter->writeFile( exeName , 0 );
     #endif
 
-    if(finalResidualNorm > 1.0e-08) {
-        ut->failure("error");
-    } else {
-        ut->passes("PetscSNES Solver successfully solves a nonlinear mechanics equation with Jacobian provided, FGMRES for Krylov");
-    }
-    ut->passes(exeName);
-
-
+    if ( N_error0 == ut->NumFailLocal() )
+        ut->passes(exeName);
+    else
+        ut->failure(exeName);
 }
 
 int main(int argc, char *argv[])

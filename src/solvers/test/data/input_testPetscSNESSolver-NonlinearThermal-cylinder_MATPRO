@@ -148,7 +148,7 @@ NonlinearSolver{
     max_iterations = 500
     max_error = 1e-10
     absoluteTolerance = 1.0e-10
-    relativeTolerance = 1e-13
+    relativeTolerance = 1e-14
     stepTolerance = 1.0e-10
     maximumFunctionEvals = 100
     usesJacobian=FALSE
@@ -160,7 +160,7 @@ NonlinearSolver{
         max_iterations = 100
         max_error = 1e-10
         ksp_type = "fgmres"
-        absolute_tolerance = 1e-9
+        absolute_tolerance = 1e-12
         relative_tolerance = 1e-4
         divergence_tolerance = 1e3
         max_krylov_dimension = 40
