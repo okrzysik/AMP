@@ -53,7 +53,7 @@ size_t getMATLABSubchannelIndex(AMP::Mesh::MeshElement face)
    // get face centroid
    std::vector<double> centroid = face.centroid();
    // gap MATLAB index
-   size_t i;
+   size_t i=0;
    // look at location of subchannel to determine subchannel MATLAB index
    if      ((AMP::Utilities::approx_equal(centroid[0],x1,1.0e-12))&&(AMP::Utilities::approx_equal(centroid[1],x3,1.0e-12))) i = 0;
    else if ((AMP::Utilities::approx_equal(centroid[0],x2,1.0e-12))&&(AMP::Utilities::approx_equal(centroid[1],x3,1.0e-12))) i = 1;
@@ -188,7 +188,7 @@ std::map<std::vector<double>,AMP::Mesh::MeshElement> getLateralFaces(
 // find the MATLAB index for a variable on a given face
 size_t AMP_to_MATLAB(AMP::Mesh::MeshElement face, size_t variable_id) {
    // determine if variable is axial face quantity or lateral face quantity
-   bool is_axial_face_quantity;
+   bool is_axial_face_quantity=false;
    switch (variable_id) {
       case 0: {
          is_axial_face_quantity = true;
@@ -292,7 +292,7 @@ bool JacobianIsCorrect(
    std::map<size_t,size_t>                       variables_by_globalID
 )
 {
-   double J_test_MATLAB[num_dofs_MATLAB][num_dofs_MATLAB] = {0.0};
+   double J_test_MATLAB[num_dofs_MATLAB][num_dofs_MATLAB] = {{0.0}};
    // loop over axial faces  
    AMP::Mesh::Mesh::shared_ptr xyMesh =
       mesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(mesh, 0));
