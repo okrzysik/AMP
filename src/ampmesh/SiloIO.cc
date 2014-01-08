@@ -931,6 +931,27 @@ SiloIO::siloBaseMeshData SiloIO::siloBaseMeshData::unpack( char* ptr )
 /************************************************************
 * Functions for siloMultiMeshData                           *
 ************************************************************/
+SiloIO::siloMultiMeshData::siloMultiMeshData(const SiloIO::siloMultiMeshData& rhs)
+{
+    id      = rhs.id;
+    mesh    = rhs.mesh;
+    ownerRank = rhs.ownerRank;
+    name    = rhs.name;
+    meshes  = rhs.meshes;
+    varName = rhs.varName;
+}
+SiloIO::siloMultiMeshData& SiloIO::siloMultiMeshData::operator=(const SiloIO::siloMultiMeshData& rhs)
+{
+    if (this == &rhs) // protect against invalid self-assignment
+        return *this;
+    this->id      = rhs.id;
+    this->mesh    = rhs.mesh;
+    this->ownerRank = rhs.ownerRank;
+    this->name    = rhs.name;
+    this->meshes  = rhs.meshes;
+    this->varName = rhs.varName;
+    return *this;
+}
 size_t SiloIO::siloMultiMeshData::size()
 {
     size_t N_bytes = sizeof(AMP::Mesh::MeshID);     // Store the mesh id

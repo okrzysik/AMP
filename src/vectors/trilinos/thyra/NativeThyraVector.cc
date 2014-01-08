@@ -59,7 +59,23 @@ Vector::shared_ptr NativeThyraVector::cloneVector(const Variable::shared_ptr var
 
 void NativeThyraVector::putRawData( const double *in )
 {
-    AMP_ERROR( "not implemented" );
+    size_t i=0;
+    for (size_t b=0; b<numberOfDataBlocks(); b++) {
+        double *data = reinterpret_cast<double*>(getRawDataBlockAsVoid(b));
+        for (size_t j=0; j<sizeOfDataBlock(b); j++, i++)
+            data[j] = in[i];
+    }
+}
+
+
+void NativeThyraVector::copyOutRawData ( double *out ) const
+{
+    size_t i=0;
+    for (size_t b=0; b<numberOfDataBlocks(); b++) {
+        const double *data = reinterpret_cast<const double*>(getRawDataBlockAsVoid(b));
+        for (size_t j=0; j<sizeOfDataBlock(b); j++, i++)
+            out[i] = data[j];
+    }
 }
 
 
