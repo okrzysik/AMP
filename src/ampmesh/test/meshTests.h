@@ -192,9 +192,9 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
             std::vector< AMP::Mesh::MeshElement::shared_ptr > neighbors = element.getNeighbors();
             if ( neighbors.empty() ) {
                 if ( element.elementType()==AMP::Mesh::Vertex || element.elementType()==mesh->getDim() )
-                    neighbor_pass = 0;
+                    neighbor_pass = 0;      // All nodes / elements should have neighbors
                 else if ( neighbor_pass==1 )
-                    neighbor_pass = 2;
+                    neighbor_pass = 2;      // Neighbors of other element types are not always supported
             }
             if ( ownerRank!=myRank )
                 id_pass = false;

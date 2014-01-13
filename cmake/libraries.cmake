@@ -740,7 +740,6 @@ MACRO ( CONFIGURE_AMP )
         ENDIF()
         # Check if we are using operators
         IF ( (NOT USE_AMP_MESH) OR (NOT USE_AMP_VECTORS) OR (NOT USE_AMP_MATRICES) OR (NOT USE_EXT_LIBMESH) )
-        #IF ( (NOT USE_AMP_MESH) OR (NOT USE_AMP_VECTORS) OR (NOT USE_AMP_MATRICES) )
             SET ( USE_AMP_OPERATORS 0 )
         ENDIF()
         IF ( NOT USE_AMP_OPERATORS )
