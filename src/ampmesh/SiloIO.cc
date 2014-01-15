@@ -665,6 +665,7 @@ void SiloIO::syncVariableList( std::set<std::string> &data_set, int root ) const
 void SiloIO::writeSummary( std::string filename )
 {
     PROFILE_START("writeSummary");
+    AMP_ASSERT(!filename.empty());
     // Add the siloBaseMeshData to the multimeshes
     std::map<AMP::Mesh::MeshID,siloMultiMeshData> multiMeshes = d_multiMeshes;
     std::map<AMP::Mesh::MeshID,siloMultiMeshData>::iterator iterator;
@@ -713,10 +714,10 @@ void SiloIO::writeSummary( std::string filename )
         for (it=multiMeshes.begin(); it!=multiMeshes.end(); ++it) {
             siloMultiMeshData data = it->second;
             std::string file = data.name;
-            size_t pos = file.compare(0,base_path.size(),base_path);
-            if ( pos!=std::string::npos )
+            AMP_ASSERT(!file.empty());
+            if ( file.compare(0,base_path.size(),base_path)==0 )
                 file = file.substr(base_path.size());
-            pos = find_slash(file);
+            size_t pos = find_slash(file);
             if ( pos!=std::string::npos )
                 subdirs.insert( file.substr(0,pos) );
         }
@@ -730,8 +731,8 @@ void SiloIO::writeSummary( std::string filename )
             std::vector<std::string> meshNames(data.meshes.size());
             for (size_t i=0; i<data.meshes.size(); ++i) {
                 std::string file = data.meshes[i].file;
-                size_t pos = file.compare(0,base_path.size(),base_path);
-                if ( pos!=std::string::npos )
+                AMP_ASSERT(!file.empty());
+                if ( file.compare(0,base_path.size(),base_path)==0 )
                     file = file.substr(base_path.size());
                 meshNames[i] = file+":"+data.meshes[i].path+"/"+data.meshes[i].meshName;
             }

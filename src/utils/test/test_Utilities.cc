@@ -286,7 +286,7 @@ int main(int argc, char *argv[])
             n_bytes2 = AMP::Utilities::getMemoryUsage();
             delete [] tmp;  tmp = NULL; NULL_USE(tmp);
             size_t n_bytes3 = AMP::Utilities::getMemoryUsage();
-            if ( n_bytes2 > 0x80000000 && n_bytes2 < n_bytes1+0x81000000 && abs_diff(n_bytes1,n_bytes3)<20e3 ) {
+            if ( n_bytes2 > 0x80000000 && n_bytes2 < n_bytes1+0x81000000 && abs_diff(n_bytes1,n_bytes3)<50e3 ) {
                 ut.passes("getMemoryUsage correctly handles 2^31 - 2^32 bytes"); 
             } else {
                 std::cout<<"Memtest 2-4 GB failes: "<<n_bytes1<<" "<<n_bytes2<<" "<<n_bytes3<<std::endl;
@@ -306,7 +306,7 @@ int main(int argc, char *argv[])
                 n_bytes2 = AMP::Utilities::getMemoryUsage();
                 delete [] tmp;  tmp = NULL; NULL_USE(tmp);
                 n_bytes3 = AMP::Utilities::getMemoryUsage();
-                if ( n_bytes2 > 0x100000000 && n_bytes2 < n_bytes1+0x110000000 && abs_diff(n_bytes1,n_bytes3)<20e3 ) {
+                if ( n_bytes2 > 0x100000000 && n_bytes2 < n_bytes1+0x110000000 && abs_diff(n_bytes1,n_bytes3)<50e3 ) {
                     ut.passes("getMemoryUsage correctly handles memory > 2^32 bytes"); 
                 } else {
                     std::cout<<"Memtest >4 GB failes: "<<n_bytes1<<" "<<n_bytes2<<" "<<n_bytes3<<std::endl;
