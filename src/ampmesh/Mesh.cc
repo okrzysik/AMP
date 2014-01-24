@@ -178,6 +178,46 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 
 
 /********************************************************
+* Estimate the maximum number of processors             *
+********************************************************/
+size_t Mesh::maxProcs( const MeshParameters::shared_ptr &params )
+{
+    boost::shared_ptr<AMP::Database> database = params->d_db;
+    AMP_ASSERT(database!=NULL);
+    // This is being called through the base class, call the appropriate function
+    AMP_INSIST(database->keyExists("MeshType"),"MeshType must exist in input database");
+    std::string MeshType = database->getString("MeshType");
+    boost::shared_ptr<AMP::Mesh::Mesh> mesh;
+    size_t maxSize = 0;
+    if ( MeshType == std::string("Multimesh") ) {
+        // The mesh is a multimesh
+        maxSize = AMP::Mesh::MultiMesh::maxProcs(params);
+    } else if ( MeshType == std::string("AMP") ) {
+        // The mesh is a AMP mesh
+        maxSize = AMP::Mesh::BoxMesh::maxProcs(params);
+    } else if ( MeshType == std::string("libMesh") ) {
+        // The mesh is a libmesh mesh
+        #ifdef USE_EXT_LIBMESH
+            maxSize = AMP::Mesh::libMesh::maxProcs(params);
+        #else
+            AMP_ERROR("AMP was compiled without support for libMesh");
+        #endif
+    } else if ( MeshType == std::string("STKMesh") ) {
+        // The mesh is a stkMesh mesh
+        #ifdef USE_TRILINOS_STKMESH
+            maxSize = AMP::Mesh::STKMesh::maxProcs(params);
+        #else
+            AMP_ERROR("AMP was compiled without support for STKMesh");
+        #endif
+    } else {
+        // Unknown mesh type
+        AMP_ERROR( "Unknown mesh type and NumberOfElements does not exist in database" );
+    }
+    return maxSize;
+}
+
+
+/********************************************************
 * Function to set the mesh ID                           *
 * This function will create a unique ID for every mesh. *
 * To accomplish this goal, the ID will consist of the   *

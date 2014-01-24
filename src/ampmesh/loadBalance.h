@@ -52,7 +52,7 @@ public:
      *    adjusting the load balance of any subsequent meshes
      * \param rank  The rank of the processor to add
      */
-    void addProc( int rank );
+    bool addProc( int rank );
 
     //! Function to get the current ranks in the load balance
     size_t getSize() const { return d_N_elements; }
@@ -66,8 +66,15 @@ public:
     //! Function to get the mesh parameters
     boost::shared_ptr<MeshParameters> getParams() const { return d_params; }
 
-    //! Function to print the mesh hierarchy
-    void print();
+    /**
+     * \brief    Print the mesh hierarchy
+     * \details  This function will print the load balance and mesh hierarchy
+     * \param detail    The details on what to print (bit array)
+     *                  Bit 0: print the load balance by rank
+     *                  Bit 1: print the number of procs per mesh
+     * \param indent    Number of spaces to indent the printing
+     */
+    void print( unsigned char detail=3, unsigned char indent=0 );
 
     //! Function to return the minimum number of elements on a processor
     size_t min();
@@ -84,6 +91,7 @@ private:
     std::string         d_name;
     std::string         d_type;
     size_t              d_N_elements;
+    size_t              d_max_ranks;
     std::vector<int>    d_ranks;
     boost::shared_ptr<MeshParameters> d_params;
     std::vector<LoadBalance>  d_submeshes;
