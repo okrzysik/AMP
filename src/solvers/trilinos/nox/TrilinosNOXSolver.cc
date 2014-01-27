@@ -143,6 +143,10 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
     }
     d_nlParams->sublist("Line Search").set("Method", "Polynomial");
     d_nlParams->sublist("Direction").sublist("Newton").sublist("Linear Solver").set("Tolerance",linearRelativeTolerance);
+    if ( params->d_prePostOperator.get()!=NULL ) {
+         d_nlParams->sublist("Solver Options").set< Teuchos::RCP<NOX::Abstract::PrePostOperator> >(
+            "User Defined Pre/Post Operator",params->d_prePostOperator);
+    }
     // Set the printing parameters in the "Printing" sublist
     Teuchos::ParameterList& printParams = d_nlParams->sublist("Printing");
     printParams.set("Output Precision", 3);
@@ -210,6 +214,7 @@ void TrilinosNOXSolver::solve( boost::shared_ptr<const AMP::LinearAlgebra::Vecto
     // Create the solver
     d_solver = NOX::Solver::buildSolver(nox_group, d_status, d_nlParams);
     // Solve
+    d_nlParams->print(std::cout);
     NOX::StatusTest::StatusType solvStatus = d_solver->solve();
     if ( solvStatus != NOX::StatusTest::Converged )
         AMP_ERROR("Failed to solve");
