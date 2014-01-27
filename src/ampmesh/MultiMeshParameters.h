@@ -29,9 +29,6 @@ protected:
     //! A vector containing the number of elements in each submesh
     std::vector<size_t> N_elements;
 
-    //! The load balance method to use
-    int method;
-
     //! See AMP::Mesh::Mesh for Mesh class
     friend class Mesh;
     friend class MultiMesh;

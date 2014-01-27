@@ -96,6 +96,15 @@ public:
     static size_t estimateMeshSize( const MeshParameters::shared_ptr &params );
 
 
+    /**
+     * \brief   Return the maximum number of processors that can be used with the mesh
+     * \details  This function will return the maximum number of processors that can 
+     *   be used with the mesh.
+     * \param params Parameters for constructing a mesh from an input database
+     */
+    static size_t maxProcs( const MeshParameters::shared_ptr &params );
+
+
     //! Deconstructor
     virtual ~BoxMesh ();
 
@@ -330,6 +339,10 @@ protected:
     // Helper function to map x,y,z logical coordinates in [0,1] to x,y,z coordinate in a shpere
     // Note: this changes the x, y, and z values
     static void map_logical_sphere( size_t N, double r, double *x, double *y, double *z );
+
+    // Helper function to create the logical mesh
+    static void createLogicalMesh( boost::shared_ptr<AMP::Database> db,
+        std::vector<int>& meshSize, std::vector<bool>& isPeriodic, std::vector<int>& minSize );
 
 };
 

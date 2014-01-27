@@ -112,6 +112,15 @@ public:
     static size_t estimateMeshSize( const MeshParameters::shared_ptr &params );
 
 
+    /**
+     * \brief   Return the maximum number of processors that can be used with the mesh
+     * \details  This function will return the maximum number of processors that can 
+     *   be used with the mesh.
+     * \param params Parameters for constructing a mesh from an input database
+     */
+    static size_t maxProcs( const MeshParameters::shared_ptr &params );
+
+
     //! Deconstructor
     virtual ~Mesh ();
 

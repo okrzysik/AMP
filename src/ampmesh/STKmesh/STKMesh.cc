@@ -500,6 +500,15 @@ size_t STKMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 }
 
 
+/****************************************************************
+* Estimate the maximum number of processors                     *
+****************************************************************/
+size_t STKMesh::maxProcs( const MeshParameters::shared_ptr &params )
+{
+    return estimateMeshSize( params );
+}
+
+
 /********************************************************
 * Return the number of elements                         *
 ********************************************************/

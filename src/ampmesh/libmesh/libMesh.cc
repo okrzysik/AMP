@@ -541,6 +541,15 @@ size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 }
 
 
+/****************************************************************
+* Estimate the maximum number of processors                     *
+****************************************************************/
+size_t libMesh::maxProcs( const MeshParameters::shared_ptr &params )
+{
+    return estimateMeshSize( params );
+}
+
+
 /********************************************************
 * Return the number of elements                         *
 ********************************************************/
