@@ -187,7 +187,6 @@ template<class Number>
 void Property<Number>::evalv(std::vector<Number>& r,
 const std::map< std::string,boost::shared_ptr<std::vector<Number> > >& args)
 {
-    typedef boost::shared_ptr<std::vector<Number> > VTYPE;
     if( !in_range(args) ) {
         for (typename std::map<std::string, boost::shared_ptr<std::vector<Number> > >::const_iterator
                 it = args.begin(); it != args.end(); it++) {

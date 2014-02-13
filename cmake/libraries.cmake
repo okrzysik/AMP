@@ -646,7 +646,10 @@ ENDMACRO ()
 # Macro to configure system-specific libraries and flags
 MACRO ( CONFIGURE_SYSTEM )
     # Remove extra library links
-    #SET_STATIC_FLAGS()
+    CHECK_ENABLE_FLAG( USE_STATIC 0 )
+    IF ( USE_STATIC )
+        SET_STATIC_FLAGS()
+    ENDIF()
     # Add system dependent flags
     MESSAGE("System is: ${CMAKE_SYSTEM_NAME}")
     IF ( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )

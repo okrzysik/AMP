@@ -195,11 +195,8 @@ MACRO ( SET_STATIC_FLAGS )
     set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # remove -rdynamic
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
     # Add the static flag if necessary
-    CHECK_ENABLE_FLAG( USE_STATIC 0 )
-    IF ( USE_STATIC )
-        SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static")    # Add static flag
-        SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static")  # Add static flag
-    ENDIF()
+    SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static")    # Add static flag
+    SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static")  # Add static flag
 ENDMACRO()
 
 # Macro to identify the compiler
