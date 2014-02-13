@@ -162,7 +162,7 @@ CONFIGURE_LINE_COVERAGE()
 
 
 # Print the install directory
-MESSAGE ( "Installing AMP in "${AMP_INSTALL_DIR} )
+MESSAGE( "Installing AMP in ${AMP_INSTALL_DIR}" )
 
 
 # Create the fortran interface file
