@@ -684,7 +684,7 @@ MACRO ( CONFIGURE_AMP )
     # Set the data directory for AMP (needed to find the meshes)
     IF ( AMP_DATA )
         VERIFY_PATH ( ${AMP_DATA} )
-    ELSE()
+    ELSEIF ( NOT ONLY_BUILD_DOCS )
         MESSAGE( FATAL_ERROR "AMP_DATA must be set" )
     ENDIF()
     # Set the maximum number of processors for the tests

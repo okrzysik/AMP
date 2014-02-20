@@ -93,8 +93,10 @@ ENDIF()
 
 
 # Add the src directory
-SET( EXCLUDE_TESTS_FROM_ALL 1 )
-ADD_SUBDIRECTORY( src )
+IF ( NOT ONLY_BUILD_DOCS )
+    SET( EXCLUDE_TESTS_FROM_ALL 1 )
+    ADD_SUBDIRECTORY( src )
+ENDIF()
 
 
 # Install the documentation
